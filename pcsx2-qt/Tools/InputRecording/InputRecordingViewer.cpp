@@ -24,7 +24,7 @@
 
 // TODO - for now this uses a very naive implementation that fills the entire table
 // this needs to be replaced with a lazy-loading QTableView implementation
-// 
+//
 // For now, especially for just debugging input recording issues, its good enough!
 
 InputRecordingViewer::InputRecordingViewer(QWidget* parent)
@@ -35,6 +35,24 @@ InputRecordingViewer::InputRecordingViewer(QWidget* parent)
 	m_ui.tableWidget->setSelectionMode(QAbstractItemView::NoSelection);
 
 	connect(m_ui.actionOpen, &QAction::triggered, this, &InputRecordingViewer::openFile);
+	connect(m_ui.actionClose, &QAction::triggered, this, &InputRecordingViewer::closeFile);
+}
+
+QTableWidgetItem* InputRecordingViewer::createRowItem(std::tuple<u8, u8> analog)
+{
+	const auto [left, right] = analog;
+	return new QTableWidgetItem(tr("%1 %2").arg(left).arg(right));
+}
+
+QTableWidgetItem* InputRecordingViewer::createRowItem(bool pressed)
+{
+	return new QTableWidgetItem(tr("%1").arg(pressed));
+}
+
+QTableWidgetItem* InputRecordingViewer::createRowItem(std::tuple<bool, u8> buttonInfo)
+{
+	const auto [isPressed, pressure] = buttonInfo;
+	return new QTableWidgetItem(tr("%1 [%2]").arg(isPressed).arg(pressure));
 }
 
 void InputRecordingViewer::loadTable()
@@ -44,46 +62,36 @@ void InputRecordingViewer::loadTable()
 	m_ui.tableWidget->setHorizontalHeaderLabels(headers);
 
 	// TODO - only port 1 for now
-	auto data = m_file.bulkReadPadData(0, m_file.getTotalFrames(), 0);
-	m_ui.tableWidget->setRowCount(data.size());
-	
-	static constexpr auto constructItem_analog = [](u8 analogX, u8 analogY) {
-		return new QTableWidgetItem(tr("%1 %2").arg(analogX).arg(analogY));
-	};
-	static constexpr auto constructItem_pressed = [](bool pressed) {
-		return new QTableWidgetItem(tr("%1").arg(pressed));
-	};
-	static constexpr auto constructItem_pressured = [](bool pressed, u8 pressure) {
-		return new QTableWidgetItem(tr("%1 [%2]").arg(pressed).arg(pressure));
-	};
+	auto dataColl = m_file.bulkReadPadData(0, m_file.getTotalFrames(), 0);
+	m_ui.tableWidget->setRowCount(dataColl.size());
 
 	int frameNum = 0;
-	for (const auto& frame : data)
+	for (const auto& frameData : dataColl)
 	{
-		// TODO - disgusting, clean it up
-		m_ui.tableWidget->setItem(frameNum, 0,  constructItem_analog   (frame.m_leftAnalogX, frame.m_leftAnalogY));
-		m_ui.tableWidget->setItem(frameNum, 1,  constructItem_analog   (frame.m_rightAnalogX, frame.m_rightAnalogY));
-		m_ui.tableWidget->setItem(frameNum, 2,  constructItem_pressured(frame.m_crossPressed.m_pressed, frame.m_crossPressure));
-		m_ui.tableWidget->setItem(frameNum, 3,  constructItem_pressured(frame.m_squarePressed.m_pressed, frame.m_squarePressure));
-		m_ui.tableWidget->setItem(frameNum, 4,  constructItem_pressured(frame.m_trianglePressed.m_pressed, frame.m_trianglePressure));
-		m_ui.tableWidget->setItem(frameNum, 5,  constructItem_pressured(frame.m_circlePressed.m_pressed, frame.m_circlePressure));
-		m_ui.tableWidget->setItem(frameNum, 6,  constructItem_pressured(frame.m_l1Pressed.m_pressed, frame.m_l1Pressure));
-		m_ui.tableWidget->setItem(frameNum, 7,  constructItem_pressured(frame.m_l2Pressed.m_pressed, frame.m_l2Pressure));
-		m_ui.tableWidget->setItem(frameNum, 8,  constructItem_pressured(frame.m_r1Pressed.m_pressed, frame.m_r1Pressure));
-		m_ui.tableWidget->setItem(frameNum, 9,  constructItem_pressured(frame.m_r1Pressed.m_pressed, frame.m_r2Pressure));
-		m_ui.tableWidget->setItem(frameNum, 10, constructItem_pressured(frame.m_downPressed.m_pressed, frame.m_downPressure));
-		m_ui.tableWidget->setItem(frameNum, 11, constructItem_pressured(frame.m_rightPressed.m_pressed, frame.m_rightPressure));
-		m_ui.tableWidget->setItem(frameNum, 12, constructItem_pressured(frame.m_upPressed.m_pressed, frame.m_upPressure));
-		m_ui.tableWidget->setItem(frameNum, 13, constructItem_pressured(frame.m_leftPressed.m_pressed, frame.m_leftPressure));
-		m_ui.tableWidget->setItem(frameNum, 14, constructItem_pressed  (frame.m_l3.m_pressed));
-		m_ui.tableWidget->setItem(frameNum, 15, constructItem_pressed  (frame.m_r3.m_pressed));
-		m_ui.tableWidget->setItem(frameNum, 16, constructItem_pressed  (frame.m_select.m_pressed));
-		m_ui.tableWidget->setItem(frameNum, 17, constructItem_pressed  (frame.m_start.m_pressed));
+		m_ui.tableWidget->setItem(frameNum, 0, createRowItem(frameData.m_leftAnalog));
+		m_ui.tableWidget->setItem(frameNum, 1, createRowItem(frameData.m_rightAnalog));
+		m_ui.tableWidget->setItem(frameNum, 2, createRowItem(frameData.m_cross));
+		m_ui.tableWidget->setItem(frameNum, 3, createRowItem(frameData.m_square));
+		m_ui.tableWidget->setItem(frameNum, 4, createRowItem(frameData.m_triangle));
+		m_ui.tableWidget->setItem(frameNum, 5, createRowItem(frameData.m_circle));
+		m_ui.tableWidget->setItem(frameNum, 6, createRowItem(frameData.m_l1));
+		m_ui.tableWidget->setItem(frameNum, 7, createRowItem(frameData.m_l2));
+		m_ui.tableWidget->setItem(frameNum, 8, createRowItem(frameData.m_r1));
+		m_ui.tableWidget->setItem(frameNum, 9, createRowItem(frameData.m_r2));
+		m_ui.tableWidget->setItem(frameNum, 10, createRowItem(frameData.m_down));
+		m_ui.tableWidget->setItem(frameNum, 11, createRowItem(frameData.m_right));
+		m_ui.tableWidget->setItem(frameNum, 12, createRowItem(frameData.m_up));
+		m_ui.tableWidget->setItem(frameNum, 13, createRowItem(frameData.m_left));
+		m_ui.tableWidget->setItem(frameNum, 14, createRowItem(frameData.m_l3));
+		m_ui.tableWidget->setItem(frameNum, 15, createRowItem(frameData.m_r3));
+		m_ui.tableWidget->setItem(frameNum, 16, createRowItem(frameData.m_select));
+		m_ui.tableWidget->setItem(frameNum, 17, createRowItem(frameData.m_select));
 		frameNum++;
 	}
 }
 
-void InputRecordingViewer::openFile() {
+void InputRecordingViewer::openFile()
+{
 	QFileDialog dialog(this);
 	dialog.setFileMode(QFileDialog::ExistingFile);
 	dialog.setWindowTitle("Select a File");
@@ -96,7 +104,25 @@ void InputRecordingViewer::openFile() {
 	if (!fileNames.isEmpty())
 	{
 		const std::string fileName = fileNames.first().toStdString();
-		m_file.openExisting(fileName);
-		loadTable();
+		m_file_open = m_file.openExisting(fileName);
+		m_ui.actionClose->setEnabled(m_file_open);
+		if (m_file_open)
+		{
+			loadTable();
+		} // TODO else error
 	}
+}
+
+void InputRecordingViewer::closeFile()
+{
+	if (m_file_open)
+	{
+		m_file_open = !m_file.close();
+		if (!m_file_open)
+		{
+			m_ui.tableWidget->clearContents();
+			m_ui.tableWidget->setRowCount(0);
+		}
+	} // TODO else error
+	m_ui.actionClose->setEnabled(m_file_open);
 }

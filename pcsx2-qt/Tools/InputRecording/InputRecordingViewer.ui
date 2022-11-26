@@ -37,6 +37,7 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionClose"/>
    </widget>
    <widget class="QMenu" name="menuTest">
     <property name="title">
@@ -56,6 +57,14 @@
   <action name="actionOpen">
    <property name="text">
     <string>Open</string>
+   </property>
+  </action>
+  <action name="actionClose">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Close</string>
    </property>
   </action>
  </widget>

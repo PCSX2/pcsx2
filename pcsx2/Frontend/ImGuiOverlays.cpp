@@ -469,7 +469,6 @@ void ImGuiManager::DrawInputRecordingOverlay()
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 	std::string text;
 	ImVec2 text_size;
-	bool first = true;
 
 	text.reserve(128);
 #define DRAW_LINE(font, text, color) \
