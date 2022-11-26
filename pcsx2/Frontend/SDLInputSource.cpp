@@ -158,6 +158,7 @@ void SDLInputSource::Shutdown()
 void SDLInputSource::LoadSettings(SettingsInterface& si)
 {
 	m_controller_enhanced_mode = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
+	m_sdl_hints = si.GetKeyValueList("SDLHints");
 }
 
 void SDLInputSource::SetHints()
@@ -173,6 +174,9 @@ void SDLInputSource::SetHints()
 	// New as of SDL 2.26, so use string
 	SDL_SetHint("SDL_JOYSTICK_HIDAPI_PS3", "1");
 #endif
+
+	for (const std::pair<std::string, std::string>& hint : m_sdl_hints)
+		SDL_SetHint(hint.first.c_str(), hint.second.c_str());
 }
 
 bool SDLInputSource::InitializeSubsystem()
