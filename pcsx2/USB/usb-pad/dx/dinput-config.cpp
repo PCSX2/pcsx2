@@ -563,7 +563,6 @@ namespace usb_pad
 
 			// Get source bits
 			int srcWidth = scale * pwidth;
-			int srcHeight = scale * pheight;
 			int srcPitch = srcWidth * 4;
 			int srcSize = srcWidth * srcPitch;
 			BYTE* lpSrcBits = new BYTE[srcSize];

@@ -25,7 +25,7 @@ namespace usb_pad
 
 		void RawInputPad::WriterThread(void* ptr)
 		{
-			DWORD res = 0, res2 = 0, written = 0;
+			DWORD written = 0;
 			std::array<uint8_t, 8> buf;
 
 			RawInputPad* pad = static_cast<RawInputPad*>(ptr);
@@ -35,7 +35,7 @@ namespace usb_pad
 			{
 				if (pad->mFFData.wait_dequeue_timed(buf, std::chrono::milliseconds(1000)))
 				{
-					res = WriteFile(pad->mUsbHandle, buf.data(), buf.size(), &written, &pad->mOLWrite);
+					const DWORD res = WriteFile(pad->mUsbHandle, buf.data(), buf.size(), &written, &pad->mOLWrite);
 					uint8_t* d = buf.data();
 
 					WaitForSingleObject(pad->mOLWrite.hEvent, 1000);
@@ -48,7 +48,7 @@ namespace usb_pad
 		void RawInputPad::ReaderThread(void* ptr)
 		{
 			RawInputPad* pad = static_cast<RawInputPad*>(ptr);
-			DWORD res = 0, res2 = 0, read = 0;
+			DWORD read = 0;
 			std::array<uint8_t, 32> report; //32 is random
 
 			pad->mReaderThreadIsRunning = true;
@@ -75,8 +75,7 @@ namespace usb_pad
 
 		int RawInputPad::TokenIn(uint8_t* buf, int len)
 		{
-			ULONG value = 0;
-			int player = 1 - mPort;
+			const int player = 1 - mPort;
 
 			//Console.Warning("usb-pad: poll len=%li\n", len);
 			if (mDoPassthrough)
