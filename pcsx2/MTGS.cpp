@@ -953,6 +953,12 @@ void SysMtgsThread::ResizeDisplayWindow(int width, int height, float scale)
 		GSResetAPIState();
 		Host::ResizeHostDisplay(width, height, scale);
 		GSRestoreAPIState();
+
+#ifdef PCSX2_CORE
+		// If we're paused, re-present the current frame at the new window size.
+		if (VMManager::GetState() == VMState::Paused)
+			GSPresentCurrentFrame();
+#endif
 	});
 }
 
@@ -963,6 +969,12 @@ void SysMtgsThread::UpdateDisplayWindow()
 		GSResetAPIState();
 		Host::UpdateHostDisplay();
 		GSRestoreAPIState();
+
+#ifdef PCSX2_CORE
+		// If we're paused, re-present the current frame at the new window size.
+		if (VMManager::GetState() == VMState::Paused)
+			GSPresentCurrentFrame();
+#endif
 	});
 }
 
@@ -1030,7 +1042,15 @@ bool SysMtgsThread::SaveMemorySnapshot(u32 width, u32 height, std::vector<u32>* 
 
 void SysMtgsThread::PresentCurrentFrame()
 {
-	GSPresentCurrentFrame();
+	if (m_run_idle_flag.load(std::memory_order_relaxed))
+	{
+		// If we're running idle, we're going to re-present anyway.
+		return;
+	}
+
+	RunOnGSThread([]() {
+		GSPresentCurrentFrame();
+	});
 }
 
 void SysMtgsThread::SetRunIdle(bool enabled)
