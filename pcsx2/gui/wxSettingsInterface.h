@@ -23,39 +23,39 @@
 class wxSettingsInterface : public SettingsInterface
 {
 public:
-  wxSettingsInterface(wxConfigBase* config);
-  ~wxSettingsInterface();
+	wxSettingsInterface(wxConfigBase* config);
+	~wxSettingsInterface();
 
-  bool Save() override;
-  void Clear() override;
+	bool Save() override;
+	void Clear() override;
 
-  bool GetIntValue(const char* section, const char* key, int* value) const override;
-  bool GetUIntValue(const char* section, const char* key, uint* value) const override;
-  bool GetFloatValue(const char* section, const char* key, float* value) const override;
-  bool GetDoubleValue(const char* section, const char* key, double* value) const override;
-  bool GetBoolValue(const char* section, const char* key, bool* value) const override;
-  bool GetStringValue(const char* section, const char* key, std::string* value) const override;
+	bool GetIntValue(const char* section, const char* key, int* value) const override;
+	bool GetUIntValue(const char* section, const char* key, uint* value) const override;
+	bool GetFloatValue(const char* section, const char* key, float* value) const override;
+	bool GetDoubleValue(const char* section, const char* key, double* value) const override;
+	bool GetBoolValue(const char* section, const char* key, bool* value) const override;
+	bool GetStringValue(const char* section, const char* key, std::string* value) const override;
 
-  void SetIntValue(const char* section, const char* key, int value) override;
-  void SetUIntValue(const char* section, const char* key, uint value) override;
-  void SetFloatValue(const char* section, const char* key, float value) override;
-  void SetDoubleValue(const char* section, const char* key, double value) override;
-  void SetBoolValue(const char* section, const char* key, bool value) override;
+	void SetIntValue(const char* section, const char* key, int value) override;
+	void SetUIntValue(const char* section, const char* key, uint value) override;
+	void SetFloatValue(const char* section, const char* key, float value) override;
+	void SetDoubleValue(const char* section, const char* key, double value) override;
+	void SetBoolValue(const char* section, const char* key, bool value) override;
 
-  void SetStringValue(const char* section, const char* key, const char* value) override;
+	void SetStringValue(const char* section, const char* key, const char* value) override;
 
-  std::vector<std::string> GetStringList(const char* section, const char* key) const override;
-  void SetStringList(const char* section, const char* key, const std::vector<std::string>& items) override;
-  bool RemoveFromStringList(const char* section, const char* key, const char* item) override;
-  bool AddToStringList(const char* section, const char* key, const char* item) override;
+	std::vector<std::string> GetStringList(const char* section, const char* key) const override;
+	void SetStringList(const char* section, const char* key, const std::vector<std::string>& items) override;
+	bool RemoveFromStringList(const char* section, const char* key, const char* item) override;
+	bool AddToStringList(const char* section, const char* key, const char* item) override;
 
-  bool ContainsValue(const char* section, const char* key) const override;
-  void DeleteValue(const char* section, const char* key) override;
-  void ClearSection(const char* section) override;
+	bool ContainsValue(const char* section, const char* key) const override;
+	void DeleteValue(const char* section, const char* key) override;
+	void ClearSection(const char* section) override;
 
 private:
-  void CheckPath(const char* section) const;
+	void CheckPath(const char* section) const;
 
-  wxConfigBase* m_config;
-  mutable wxString m_current_path;
+	wxConfigBase* m_config;
+	mutable wxString m_current_path;
 };
