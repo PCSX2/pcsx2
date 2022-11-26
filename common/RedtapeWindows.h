@@ -28,8 +28,8 @@
 #define _WIN32_WINNT 0x0A00 // Windows 10
 
 #include <windows.h>
-#include <VersionHelpers.h>
-#include <ShTypes.h>
+#include <versionhelpers.h>
+#include <shtypes.h>
 #include <timeapi.h>
 #include <tchar.h>
 
