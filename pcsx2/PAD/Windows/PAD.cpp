@@ -836,17 +836,15 @@ struct QueryInfo
 
 s32 PADinit()
 {
-	const u32 flags = 3;
 	// Note:  Won't load settings if already loaded.
 	if (LoadSettings() < 0)
 	{
 		return -1;
 	}
-	int port = (flags & 3);
 
 	for (int i = 2; i > 0; i--)
 	{
-		port = i;
+		int port = i;
 		port--;
 
 		for (int slot = 0; slot < 4; slot++)
