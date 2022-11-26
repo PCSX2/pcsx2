@@ -163,6 +163,17 @@ bool wxSettingsInterface::AddToStringList(const char* section, const char* key, 
 	return false;
 }
 
+std::vector<std::pair<std::string, std::string>> wxSettingsInterface::GetKeyValueList(const char* section) const
+{
+	pxFailRel("Not implemented");
+	return {};
+}
+
+void wxSettingsInterface::SetKeyValueList(const char* section, const std::vector<std::pair<std::string, std::string>>& items)
+{
+	pxFailRel("Not implemented");
+}
+
 bool wxSettingsInterface::ContainsValue(const char* section, const char* key) const
 {
 	CheckPath(section);

@@ -61,6 +61,9 @@ public:
 	bool RemoveFromStringList(const char* section, const char* key, const char* item) override;
 	bool AddToStringList(const char* section, const char* key, const char* item) override;
 
+	std::vector<std::pair<std::string, std::string>> GetKeyValueList(const char* section) const override;
+	void SetKeyValueList(const char* section, const std::vector<std::pair<std::string, std::string>>& items) override;
+
 	// default parameter overloads
 	using SettingsInterface::GetBoolValue;
 	using SettingsInterface::GetDoubleValue;
