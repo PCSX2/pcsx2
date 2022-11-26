@@ -48,13 +48,11 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, u32 width, u32 heigh
 	{
 		case Type::Texture:
 		{
-			// this is a little annoying. basically, to do mipmap generation, we need to be a render target.
-			const D3D12_RESOURCE_FLAGS flags = (levels > 1) ? D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET : D3D12_RESOURCE_FLAG_NONE;
-			if (levels > 1 && d3d_format != DXGI_FORMAT_R8G8B8A8_UNORM)
-			{
-				Console.Warning("DX12: Refusing to create a %ux%u format %u mipmapped texture", width, height, format);
-				return nullptr;
-			}
+			// This is a little annoying. basically, to do mipmap generation, we need to be a render target.
+			// If it's a compressed texture, we won't be generating mips anyway, so this should be fine.
+			const D3D12_RESOURCE_FLAGS flags = (levels > 1 && !IsCompressedFormat(format)) ?
+												   D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET :
+                                                   D3D12_RESOURCE_FLAG_NONE;
 
 			D3D12::Texture texture;
 			if (!texture.Create(width, height, levels, d3d_format, srv_format,
@@ -184,10 +182,12 @@ bool GSTexture12::Update(const GSVector4i& r, const void* data, int pitch, int l
 
 	g_perfmon.Put(GSPerfMon::TextureUploads, 1);
 
-	const u32 width = r.width();
-	const u32 height = r.height();
+	// Footprint and box must be block aligned for compressed textures.
+	const u32 block_size = GetCompressedBlockSize();
+	const u32 width = Common::AlignUpPow2(r.width(), block_size);
+	const u32 height = Common::AlignUpPow2(r.height(), block_size);
 	const u32 upload_pitch = Common::AlignUpPow2<u32>(pitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
-	const u32 required_size = CalcUploadSize(height, upload_pitch);
+	const u32 required_size = CalcUploadSize(r.height(), upload_pitch);
 
 	D3D12_TEXTURE_COPY_LOCATION srcloc;
 	srcloc.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
@@ -250,8 +250,9 @@ bool GSTexture12::Update(const GSVector4i& r, const void* data, int pitch, int l
 	dstloc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 	dstloc.SubresourceIndex = layer;
 
-	const D3D12_BOX srcbox{0u, 0u, 0u, static_cast<UINT>(r.width()), static_cast<UINT>(r.height()), 1u};
-	cmdlist->CopyTextureRegion(&dstloc, r.x, r.y, 0, &srcloc, &srcbox);
+	const D3D12_BOX srcbox{0u, 0u, 0u, width, height, 1u};
+	cmdlist->CopyTextureRegion(&dstloc, Common::AlignDownPow2((u32)r.x, block_size),
+		Common::AlignDownPow2((u32)r.y, block_size), 0, &srcloc, &srcbox);
 
 	if (m_texture.GetState() != D3D12_RESOURCE_STATE_COPY_DEST)
 		m_texture.TransitionSubresourceToState(cmdlist, layer, D3D12_RESOURCE_STATE_COPY_DEST, m_texture.GetState());
@@ -293,7 +294,8 @@ bool GSTexture12::Map(GSMap& m, const GSVector4i* r, int layer)
 
 void GSTexture12::Unmap()
 {
-	pxAssert(m_map_level < m_texture.GetLevels());
+	// this can't handle blocks/compressed formats at the moment.
+	pxAssert(m_map_level < m_texture.GetLevels() && !IsCompressedFormat());
 	g_perfmon.Put(GSPerfMon::TextureUploads, 1);
 
 	// TODO: non-tightly-packed formats
@@ -351,6 +353,8 @@ void GSTexture12::Unmap()
 
 void GSTexture12::GenerateMipmap()
 {
+	pxAssert(!IsCompressedFormat(m_format));
+
 	for (int dst_level = 1; dst_level < m_mipmap_levels; dst_level++)
 	{
 		const int src_level = dst_level - 1;

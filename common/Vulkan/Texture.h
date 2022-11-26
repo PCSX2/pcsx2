@@ -72,7 +72,7 @@ namespace Vulkan
 		VkFramebuffer CreateFramebuffer(VkRenderPass render_pass);
 
 		void UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 level, u32 layer, u32 x, u32 y, u32 width, u32 height,
-			u32 row_length, VkBuffer buffer, u32 buffer_offset);
+			u32 buffer_height, u32 row_length, VkBuffer buffer, u32 buffer_offset);
 
 	private:
 		u32 m_width = 0;

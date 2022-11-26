@@ -1644,9 +1644,7 @@ void GSTextureCache::IncAge()
 		HashCacheEntry& e = it->second;
 		if (e.refcount == 0 && ++e.age > max_hash_cache_age)
 		{
-			if (!e.is_replacement)
-				m_hash_cache_memory_usage -= e.texture->GetMemUsage();
-
+			m_hash_cache_memory_usage -= e.texture->GetMemUsage();
 			g_gs_device->Recycle(e.texture);
 			m_hash_cache.erase(it++);
 		}
@@ -2129,6 +2127,7 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 			// found a replacement texture! insert it into the hash cache, and clear paltex (since it's not indexed)
 			paltex = false;
 			const HashCacheEntry entry{replacement_tex, 1u, 0u, true};
+			m_hash_cache_memory_usage += entry.texture->GetMemUsage();
 			return &m_hash_cache.emplace(key, entry).first->second;
 		}
 		else if (
@@ -3163,6 +3162,9 @@ void GSTextureCache::InvalidateTemporarySource()
 
 void GSTextureCache::InjectHashCacheTexture(const HashCacheKey& key, GSTexture* tex)
 {
+	// When we insert we update memory usage. Old texture gets removed below.
+	m_hash_cache_memory_usage += tex->GetMemUsage();
+
 	auto it = m_hash_cache.find(key);
 	if (it == m_hash_cache.end())
 	{

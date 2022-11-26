@@ -30,6 +30,8 @@ namespace GSTextureReplacements
 
 		struct MipData
 		{
+			u32 width;
+			u32 height;
 			u32 pitch;
 			std::vector<u8> data;
 		};
