@@ -37,7 +37,7 @@ bool LayeredSettingsInterface::GetIntValue(const char* section, const char* key,
 {
 	for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
 	{
-		if (SettingsInterface* sif = m_layers[layer]; sif != nullptr)
+		if (SettingsInterface* sif = m_layers[layer])
 		{
 			if (sif->GetIntValue(section, key, value))
 				return true;
@@ -51,7 +51,7 @@ bool LayeredSettingsInterface::GetUIntValue(const char* section, const char* key
 {
 	for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
 	{
-		if (SettingsInterface* sif = m_layers[layer]; sif != nullptr)
+		if (SettingsInterface* sif = m_layers[layer])
 		{
 			if (sif->GetUIntValue(section, key, value))
 				return true;
@@ -65,7 +65,7 @@ bool LayeredSettingsInterface::GetFloatValue(const char* section, const char* ke
 {
 	for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
 	{
-		if (SettingsInterface* sif = m_layers[layer]; sif != nullptr)
+		if (SettingsInterface* sif = m_layers[layer])
 		{
 			if (sif->GetFloatValue(section, key, value))
 				return true;
@@ -79,7 +79,7 @@ bool LayeredSettingsInterface::GetDoubleValue(const char* section, const char* k
 {
 	for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
 	{
-		if (SettingsInterface* sif = m_layers[layer]; sif != nullptr)
+		if (SettingsInterface* sif = m_layers[layer])
 		{
 			if (sif->GetDoubleValue(section, key, value))
 				return true;
@@ -93,7 +93,7 @@ bool LayeredSettingsInterface::GetBoolValue(const char* section, const char* key
 {
 	for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
 	{
-		if (SettingsInterface* sif = m_layers[layer]; sif != nullptr)
+		if (SettingsInterface* sif = m_layers[layer])
 		{
 			if (sif->GetBoolValue(section, key, value))
 				return true;
@@ -107,7 +107,7 @@ bool LayeredSettingsInterface::GetStringValue(const char* section, const char* k
 {
 	for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
 	{
-		if (SettingsInterface* sif = m_layers[layer]; sif != nullptr)
+		if (SettingsInterface* sif = m_layers[layer])
 		{
 			if (sif->GetStringValue(section, key, value))
 				return true;
@@ -151,7 +151,7 @@ bool LayeredSettingsInterface::ContainsValue(const char* section, const char* ke
 {
 	for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
 	{
-		if (SettingsInterface* sif = m_layers[layer]; sif != nullptr)
+		if (SettingsInterface* sif = m_layers[layer])
 		{
 			if (sif->ContainsValue(key, section))
 				return true;
@@ -176,7 +176,7 @@ std::vector<std::string> LayeredSettingsInterface::GetStringList(const char* sec
 
 	for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
 	{
-		if (SettingsInterface* sif = m_layers[layer]; sif != nullptr)
+		if (SettingsInterface* sif = m_layers[layer])
 		{
 			ret = sif->GetStringList(section, key);
 			if (!ret.empty())
