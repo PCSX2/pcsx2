@@ -42,6 +42,9 @@ void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<Device>>& vjoy
 		// Super annoying to have a bright blue LED shining in your face all the time
 		// New as of SDL 2.0.18, so use string
 		SDL_SetHint("SDL_JOYSTICK_HIDAPI_SWITCH_HOME_LED", "0");
+		// Enable Wii U Pro Controller support
+		// New as of SDL 2.26, so use string
+		SDL_SetHint("SDL_JOYSTICK_HIDAPI_WII", "1");
 
 		for (const auto& hint : g_conf.sdl2_hints)
 			SDL_SetHint(hint.first.c_str(), hint.second.c_str());
