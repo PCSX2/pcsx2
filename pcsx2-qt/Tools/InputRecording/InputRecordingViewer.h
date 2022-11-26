@@ -29,11 +29,16 @@ public:
 
 private Q_SLOTS:
 	void openFile();
+	void closeFile();
 
 private:
 	Ui::InputRecordingViewer m_ui;
 
 	InputRecordingFile m_file;
+	bool m_file_open;
 
 	void loadTable();
+	QTableWidgetItem* createRowItem(std::tuple<u8, u8> analog);
+	QTableWidgetItem* createRowItem(bool pressed);
+	QTableWidgetItem* createRowItem(std::tuple<bool, u8> buttonInfo);
 };
