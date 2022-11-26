@@ -1042,7 +1042,7 @@ VkSampler GSDeviceVK::GetSampler(GSHWDrawConfig::SamplerSelector ss)
 	if (it != m_samplers.end())
 		return it->second;
 
-	const bool aniso = (ss.aniso && GSConfig.MaxAnisotropy > 1);
+	const bool aniso = (ss.aniso && GSConfig.MaxAnisotropy > 1 && g_vulkan_context->GetDeviceFeatures().samplerAnisotropy);
 
 	// See https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkSamplerCreateInfo.html#_description
 	// for the reasoning behind 0.25f here.

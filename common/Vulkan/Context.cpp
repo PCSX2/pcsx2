@@ -483,6 +483,7 @@ namespace Vulkan
 		m_device_features.wideLines = available_features.wideLines;
 		m_device_features.fragmentStoresAndAtomics = available_features.fragmentStoresAndAtomics;
 		m_device_features.textureCompressionBC = available_features.textureCompressionBC;
+		m_device_features.samplerAnisotropy = available_features.samplerAnisotropy;
 
 		return true;
 	}
