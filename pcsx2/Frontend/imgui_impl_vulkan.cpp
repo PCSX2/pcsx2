@@ -428,7 +428,7 @@ bool ImGui_ImplVulkan_CreateFontsTexture()
     std::memcpy(ai.pMappedData, pixels, upload_size);
     vmaFlushAllocation(g_vulkan_context->GetAllocator(), allocation, 0, upload_size);
     bd->FontTexture.TransitionToLayout(g_vulkan_context->GetCurrentInitCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    bd->FontTexture.UpdateFromBuffer(g_vulkan_context->GetCurrentInitCommandBuffer(), 0, 0, 0, 0, width, height, width, buffer, 0);
+    bd->FontTexture.UpdateFromBuffer(g_vulkan_context->GetCurrentInitCommandBuffer(), 0, 0, 0, 0, width, height, height, width, buffer, 0);
     bd->FontTexture.TransitionToLayout(g_vulkan_context->GetCurrentInitCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     // Immediately queue it for freeing after the command buffer finishes, since it's only needed for the copy.

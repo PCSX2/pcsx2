@@ -222,7 +222,7 @@ static bool UploadBufferToTexture(
 	StringUtil::StrideMemCpy(buf.GetCurrentHostPointer(), upload_stride, data, data_stride, row_size, height);
 	buf.CommitMemory(upload_size);
 
-	texture->UpdateFromBuffer(cmdbuf, 0, 0, 0, 0, width, height, upload_stride / texel_size, buf.GetBuffer(), buf_offset);
+	texture->UpdateFromBuffer(cmdbuf, 0, 0, 0, 0, width, height, height, upload_stride / texel_size, buf.GetBuffer(), buf_offset);
 	return true;
 }
 

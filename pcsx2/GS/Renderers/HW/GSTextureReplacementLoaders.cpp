@@ -68,7 +68,7 @@ static u32 GetBlockCount(u32 extent, u32 block_size)
 static void CalcBlockMipmapSize(u32 block_size, u32 bytes_per_block, u32 base_width, u32 base_height, u32 mip, u32& width, u32& height, u32& pitch, u32& size)
 {
 	width = std::max<u32>(base_width >> mip, 1u);
-	height = std::max<u32>(base_width >> mip, 1u);
+	height = std::max<u32>(base_height >> mip, 1u);
 
 	const u32 blocks_wide = GetBlockCount(width, block_size);
 	const u32 blocks_high = GetBlockCount(height, block_size);
@@ -635,9 +635,9 @@ bool DDSLoader(const std::string& filename, GSTextureReplacements::ReplacementTe
 		for (u32 level = 1; level <= info.mip_count; level++)
 		{
 			GSTextureReplacements::ReplacementTexture::MipData md;
-			u32 mip_width, mip_height, mip_size;
-			CalcBlockMipmapSize(info.block_size, info.bytes_per_block, info.width, info.height, level, mip_width, mip_height, md.pitch, mip_size);
-			if (!ReadDDSMipLevel(fp.get(), filename, level, info, mip_width, mip_height, md.data, md.pitch, mip_size))
+			u32 mip_size;
+			CalcBlockMipmapSize(info.block_size, info.bytes_per_block, info.width, info.height, level, md.width, md.height, md.pitch, mip_size);
+			if (!ReadDDSMipLevel(fp.get(), filename, level, info, md.width, md.height, md.data, md.pitch, mip_size))
 				break;
 
 			tex->mips.push_back(std::move(md));

@@ -369,14 +369,14 @@ namespace Vulkan
 	}
 
 	void Texture::UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 level, u32 layer, u32 x, u32 y, u32 width, u32 height,
-		u32 row_length, VkBuffer buffer, u32 buffer_offset)
+		u32 buffer_height, u32 row_length, VkBuffer buffer, u32 buffer_offset)
 	{
 		const VkImageLayout old_layout = m_layout;
 		if (old_layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 			TransitionSubresourcesToLayout(
 				cmdbuf, level, 1, layer, 1, old_layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-		const VkBufferImageCopy bic = {static_cast<VkDeviceSize>(buffer_offset), row_length, height,
+		const VkBufferImageCopy bic = {static_cast<VkDeviceSize>(buffer_offset), row_length, buffer_height,
 			{VK_IMAGE_ASPECT_COLOR_BIT, level, layer, 1u}, {static_cast<int32_t>(x), static_cast<int32_t>(y), 0},
 			{width, height, 1u}};
 

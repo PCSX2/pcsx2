@@ -262,6 +262,7 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 	}
 
 	m_texture.UpdateFromBuffer(cmdbuf, layer, 0, r.x, r.y, width, height,
+		Common::AlignUpPow2(height, GetCompressedBlockSize()),
 		CalcUploadRowLengthFromPitch(upload_pitch), buffer, buffer_offset);
 	m_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
@@ -303,7 +304,8 @@ bool GSTextureVK::Map(GSMap& m, const GSVector4i* r, int layer)
 
 void GSTextureVK::Unmap()
 {
-	pxAssert(m_map_level < m_texture.GetLevels());
+	// this can't handle blocks/compressed formats at the moment.
+	pxAssert(m_map_level < m_texture.GetLevels() && !IsCompressedFormat());
 	g_perfmon.Put(GSPerfMon::TextureUploads, 1);
 
 	// TODO: non-tightly-packed formats
@@ -334,6 +336,7 @@ void GSTextureVK::Unmap()
 	}
 
 	m_texture.UpdateFromBuffer(cmdbuf, m_map_level, 0, m_map_area.x, m_map_area.y, width, height,
+		Common::AlignUpPow2(height, GetCompressedBlockSize()),
 		CalcUploadRowLengthFromPitch(pitch), buffer.GetBuffer(), buffer_offset);
 	m_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
