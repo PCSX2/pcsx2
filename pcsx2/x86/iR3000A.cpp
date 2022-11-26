@@ -1216,10 +1216,9 @@ void psxSetBranchReg(u32 reg)
 	{
 		const bool swap = psxTrySwapDelaySlot(reg, 0, 0);
 
-		int wbreg = -1;
 		if (!swap)
 		{
-			wbreg = _allocX86reg(X86TYPE_PCWRITEBACK, 0, MODE_WRITE | MODE_CALLEESAVED);
+			const int wbreg = _allocX86reg(X86TYPE_PCWRITEBACK, 0, MODE_WRITE | MODE_CALLEESAVED);
 			_psxMoveGPRtoR(xRegister32(wbreg), reg);
 
 			psxRecompileNextInstruction(true, false);
