@@ -480,6 +480,7 @@ bool Pcsx2App::OnInit()
 #ifdef SDL_BUILD
 	// MacOS Game Controller framework requires a few runs of the main event loop after interest in game controllers is first indicated to connect controllers
 	// Since OnePad doesn't currently handle connection/disconnection events and requires controllers to be connected on start, we need to initialize SDL before OnePad looks at the controller list
+	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 	SDL_Init(SDL_INIT_GAMECONTROLLER);
 #endif
 	return true;
