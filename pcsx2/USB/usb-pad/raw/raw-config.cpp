@@ -51,8 +51,7 @@ namespace usb_pad
 		{
 			maps.clear();
 
-			WCHAR sec[1024] = {0}, bind[32] = {0};
-			int v = 0;
+			WCHAR bind[32] = {0};
 			for (int j = 0; j < 25; j++)
 			{
 				std::wstring hid, tmp;
