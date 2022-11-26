@@ -385,7 +385,7 @@ public:
 	void ShutdownThread();
 
 	/// Re-presents the current frame. Call when things like window resizes happen to re-display
-	/// the current frame with the correct proportions. Should only be called on the GS thread.
+	/// the current frame with the correct proportions. Should only be called from the CPU thread.
 	void PresentCurrentFrame();
 
 	// Waits for the GS to empty out the entire ring buffer contents.
