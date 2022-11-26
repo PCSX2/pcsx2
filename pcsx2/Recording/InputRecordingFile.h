@@ -164,13 +164,13 @@ public:
 	bool openNew(const std::string& path, bool fromSaveState);
 	// Reads the current frame's input data from the file in order to intercept and overwrite
 	// the current frame's value from the emulator
-	bool readKeyBuffer(u8& result, const uint frame, const uint port, const uint bufIndex);
+	std::optional<PadData> readPadData(const uint frame, const uint port, const uint slot);
 	// Updates the total frame counter and commit it to the recording file
 	void setTotalFrames(u32 frames);
 	// Persist the input recording file header's current state to the file
 	bool writeHeader() const;
 	// Writes the current frame's input data to the file so it can be replayed
-	bool writeKeyBuffer(const uint frame, const uint port, const uint bufIndex, const u8 buf) const;
+	bool writePadData(const uint frame, const PadData data) const;
 
 
 	// Retrieve the input recording's filename (not the path)

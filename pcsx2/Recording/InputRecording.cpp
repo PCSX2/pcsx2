@@ -479,18 +479,7 @@ wxString InputRecording::resolveGameName()
 #include "DebugTools/Debug.h"
 #include "GameDatabase.h"
 #include "fmt/format.h"
-
-// Future TODOs
-// - restart
-// - tooltips on GUI options
-// - Controller Logging (virtual pad related)
-// - persist last browsed IR path
-// - logs are weirdly formatted
-// - force OSD updates since a lot of input recording occurs during a paused state
-// - differentiating OSD logs somehow would be nice (color / a preceding icon?)
-
-#include <queue>
-#include <fmt/format.h>
+#include "GS.h"
 
 void SaveStateBase::InputRecordingFreeze()
 {
@@ -517,9 +506,11 @@ bool InputRecording::create(const std::string& fileName, const bool fromSaveStat
 		{
 			FileSystem::CopyFilePath(savestatePath.c_str(), fmt::format("{}.bak", savestatePath).c_str(), true);
 		}
-		m_initial_load_complete = false;
 		m_type = Type::FROM_SAVESTATE;
 		m_is_active = true;
+		m_initial_load_complete = true;
+		m_watching_for_rerecords = true;
+		setStartingFrame(g_FrameCount);
 		// TODO - error handling
 		VMManager::SaveState(savestatePath.c_str());
 	}
@@ -590,73 +581,98 @@ bool InputRecording::play(const std::string& filename)
 	{
 		InputRec::consoleLog(fmt::format("Input recording was possibly constructed for a different game. Expected: {}, Actual: {}", m_file.getGameName(), resolveGameName()));
 	}
-
 	return true;
+}
+
+void InputRecording::closeActiveFile()
+{
+	if (!m_is_active)
+	{
+		return;
+	}
+	if (m_file.close())
+	{
+		m_is_active = false;
+		InputRec::log("Input recording stopped");
+		GetMTGS().PresentCurrentFrame();
+	}
+	else
+	{
+		InputRec::log("Unable to stop input recording");
+	}
 }
 
 void InputRecording::stop()
 {
-	m_is_active = false;
-	if (m_file.close())
+	if (VMManager::GetState() == VMState::Paused)
 	{
-		InputRec::log("Input recording stopped");
+		closeActiveFile();
+	}
+	else
+	{
+		// Don't stop immediately, close the file after the current frame completes
+		m_recordingQueue.push([&]() {
+			closeActiveFile();
+		});
 	}
 }
 
-// TODO: Refactor this
-void InputRecording::ControllerInterrupt(u8 port, size_t fifoSize, u8 dataIn, u8 dataOut)
+void InputRecording::handleControllerDataUpdate()
 {
-	m_pad_data_available = data == s_READ_DATA_AND_VIBRATE_QUERY_FIRST_BYTE;
-}
-
-void InputRecording::querySecondByte(const u8 data)
-{
-	m_pad_data_available &= data == s_READ_DATA_AND_VIBRATE_QUERY_SECOND_BYTE;
-}
-
-void InputRecording::controllerInterrupt(u8 port, size_t fifoSize, u8& dataIn, u8& dataOut)
-{
-	// TODO - Multi-Tap Support (Qt doesn't support it yet anyway!)
-	// Keep these safe-guard checks in here, they are input recording only concerns
-	if (fifoSize == 1)
+	// TODO - multi-tap support with new file format, for now just controller 0 and 1
+	for (int i = 0; i < 2; i++)
 	{
-		queryFirstByte(dataOut);
-		return;
-	}
-	else if (fifoSize == 2)
-	{
-		querySecondByte(dataOut);
-		return;
-	}
-
-	if (!m_pad_data_available)
-	{
-		// bad data / first and second byte checks failed
-		return;
-	}
-
-	if (m_controls.isReplaying())
-	{
-		if (!m_file.readKeyBuffer(dataOut, m_frame_counter, port, fifoSize))
+		// Fetch the current frame's data
+		PadData frameData(i, 0);
+		if (m_is_active)
 		{
-			InputRec::consoleLog(fmt::format("Failed to read input data at frame {}", m_frame_counter));
-		}
-		// Update controller data state for future VirtualPad / logging usage.
-		//pads[port].padData->UpdateControllerData(bufIndex, bufVal);
-	}
-
-	// If there is data to read (previous two bytes looked correct)
-	if (bufCount >= 3 && m_pad_data_available)
-	{
-		u8& bufVal = dataOut;
-		const u16 bufIndex = fifoSize - 3;
-		if (state == InputRecordingMode::Replaying)
-		{
-			if (!m_file.writeKeyBuffer(m_frame_counter, port, fifoSize, dataOut))
+			if (m_controls.isRecording())
 			{
-				InputRec::consoleLog(fmt::format("Failed to write input data at frame {}", m_frame_counter));
+				saveControllerData(frameData, i, 0);
+			}
+			else if (m_controls.isReplaying())
+			{
+				const auto& modifiedFrameData = updateControllerData(i, 0);
+				if (modifiedFrameData) {
+					frameData = modifiedFrameData.value();
+				}
 			}
 		}
+		// Log the data we have gathered, useful for debugging our use-case
+		frameData.LogPadData();
+	}
+}
+
+void InputRecording::saveControllerData(const PadData& data, const int port, const int slot)
+{
+	// Save the frame's data to the file
+	if (!m_file.writePadData(m_frame_counter, data))
+	{
+		InputRec::consoleLog(fmt::format("Failed to write input data at [{}:{}:{}]", m_frame_counter, port, slot));
+	}
+}
+std::optional<PadData> InputRecording::updateControllerData(const int port, const int slot)
+{
+	// Get the PadData from the file
+	const auto frameData = m_file.readPadData(m_frame_counter, port, slot);
+	if (frameData)
+	{
+		// Update the g_key_status appropriately
+		frameData->OverrideActualController();
+	}
+	else
+	{
+		InputRec::consoleLog(fmt::format("Failed to read input data at [{}:{}:{}]", m_frame_counter, port, slot));
+	}
+	return frameData;
+}
+
+void InputRecording::processRecordQueue()
+{
+	while (!m_recordingQueue.empty())
+	{
+		m_recordingQueue.front()();
+		m_recordingQueue.pop();
 	}
 }
 
@@ -677,6 +693,11 @@ std::string InputRecording::resolveGameName()
 
 void InputRecording::incFrameCounter()
 {
+	if (!m_is_active)
+	{
+		return;
+	}
+
 	if (m_frame_counter >= std::numeric_limits<u64>::max())
 	{
 		// TODO - log the incredible achievment of playing for longer than 4 billion years, and end the recording
@@ -730,7 +751,9 @@ void InputRecording::handleExceededFrameCounter()
 void InputRecording::handleReset()
 {
 	if (m_initial_load_complete)
+	{
 		adjustFrameCounterOnReRecord(0);
+	}
 	m_initial_load_complete = true;
 }
 

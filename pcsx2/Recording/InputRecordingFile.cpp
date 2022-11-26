@@ -359,20 +359,23 @@ bool InputRecordingFile::openExisting(const std::string& path)
 	return true;
 }
 
-bool InputRecordingFile::readKeyBuffer(u8& result, const uint frame, const uint port, const uint bufIndex)
+std::optional<PadData> InputRecordingFile::readPadData(const uint frame, const uint port, const uint slot)
 {
 	if (m_recordingFile == nullptr)
 	{
-		return false;
+		return std::nullopt;
 	}
 
-	const size_t seek = getRecordingBlockSeekPoint(frame) + s_controllerInputBytes * port + bufIndex;
-	if (fseek(m_recordingFile, seek, SEEK_SET) != 0 || fread(&result, 1, 1, m_recordingFile) != 1)
+	std::array<u8, s_controllerInputBytes> data{};
+
+	// TODO - slot unused, use it in the new format
+	const size_t seek = getRecordingBlockSeekPoint(frame) + s_controllerInputBytes * port;
+	if (fseek(m_recordingFile, seek, SEEK_SET) != 0 || fread(&data, 1, 18, m_recordingFile) != 1)
 	{
-		return false;
+		return PadData(port, slot, data);
 	}
 
-	return true;
+	return std::nullopt;
 }
 
 void InputRecordingFile::setTotalFrames(u32 frame)
@@ -403,17 +406,36 @@ bool InputRecordingFile::writeHeader() const
 	return true;
 }
 
-bool InputRecordingFile::writeKeyBuffer(const uint frame, const uint port, const uint bufIndex, const u8 buf) const
+bool InputRecordingFile::writePadData(const uint frame, const PadData data) const
 {
 	if (m_recordingFile == nullptr)
 	{
 		return false;
 	}
 
-	const size_t seek = getRecordingBlockSeekPoint(frame) + s_controllerInputBytes * port + bufIndex;
-	
+	// TODO - use the slot in the future
+	const size_t seek = getRecordingBlockSeekPoint(frame) + s_controllerInputBytes * data.m_port;
+
+	// seek to the correct position and write data to the file
 	if (fseek(m_recordingFile, seek, SEEK_SET) != 0 ||
-		fwrite(&buf, 1, 1, m_recordingFile) != 1)
+		fwrite(&data.m_compactPressFlagsGroupOne, 1, 1, m_recordingFile) != 1 ||
+		fwrite(&data.m_compactPressFlagsGroupTwo, 1, 1, m_recordingFile) != 1 ||
+		fwrite(&std::get<0>(data.m_rightAnalog), 1, 1, m_recordingFile) != 1 ||
+		fwrite(&std::get<1>(data.m_rightAnalog), 1, 1, m_recordingFile) != 1 ||
+		fwrite(&std::get<0>(data.m_leftAnalog), 1, 1, m_recordingFile) != 1 ||
+		fwrite(&std::get<1>(data.m_leftAnalog), 1, 1, m_recordingFile) != 1 ||
+		fwrite(&std::get<1>(data.m_right), 1, 1, m_recordingFile) != 1 ||
+		fwrite(&std::get<1>(data.m_left), 1, 1, m_recordingFile) != 1 ||
+		fwrite(&std::get<1>(data.m_up), 1, 1, m_recordingFile) != 1 ||
+		fwrite(&std::get<1>(data.m_down), 1, 1, m_recordingFile) != 1 ||
+		fwrite(&std::get<1>(data.m_triangle), 1, 1, m_recordingFile) != 1 ||
+		fwrite(&std::get<1>(data.m_circle), 1, 1, m_recordingFile) != 1 ||
+		fwrite(&std::get<1>(data.m_cross), 1, 1, m_recordingFile) != 1 ||
+		fwrite(&std::get<1>(data.m_square), 1, 1, m_recordingFile) != 1 ||
+		fwrite(&std::get<1>(data.m_l1), 1, 1, m_recordingFile) != 1 ||
+		fwrite(&std::get<1>(data.m_r1), 1, 1, m_recordingFile) != 1 ||
+		fwrite(&std::get<1>(data.m_l2), 1, 1, m_recordingFile) != 1 ||
+		fwrite(&std::get<1>(data.m_r2), 1, 1, m_recordingFile) != 1)
 	{
 		return false;
 	}
@@ -425,7 +447,7 @@ bool InputRecordingFile::writeKeyBuffer(const uint frame, const uint port, const
 void InputRecordingFile::logRecordingMetadata()
 {
 	InputRec::consoleMultiLog({fmt::format("File: {}", getFilename()),
-		fmt::format("PCSX2 Version Used: {}",m_header.m_emulatorVersion),
+		fmt::format("PCSX2 Version Used: {}", m_header.m_emulatorVersion),
 		fmt::format("Recording File Version: {}", m_header.m_fileVersion),
 		fmt::format("Associated Game Name or ISO Filename: {}", m_header.m_gameName),
 		fmt::format("Author: {}", m_header.m_author),
@@ -442,32 +464,15 @@ std::vector<PadData> InputRecordingFile::bulkReadPadData(u32 frameStart, u32 fra
 		return data;
 	}
 
-	const size_t size = static_cast<size_t>(frameEnd - frameStart);
-	data.reserve(size);
-
-	std::array<u8, s_controllerInputBytes> padBytes;
-
-	const size_t seek = getRecordingBlockSeekPoint(frameStart) + s_controllerInputBytes * port;
-	const size_t skip = s_controllerInputBytes * (s_controllerPortsSupported - port - 1);
-	fseek(m_recordingFile, seek, SEEK_SET);
-	
-	for (int frame = 0; frame < size; frame++)
+	// TODO - no multi-tap support
+	for (uint64_t currFrame = frameStart; currFrame < frameEnd; currFrame++)
 	{
-		if (fread(&padBytes, 1, s_controllerInputBytes, m_recordingFile) != s_controllerInputBytes)
+		const auto padData = readPadData(currFrame, port, 0);
+		if (padData)
 		{
-			data.shrink_to_fit();
-			break;
+			data.push_back(padData.value());
 		}
-
-		PadData frameData;
-		for (int i = 0; i < padBytes.size(); i++)
-		{
-			frameData.UpdateControllerData(i, padBytes.at(i));
-		}
-		data.push_back(std::move(frameData));
-		fseek(m_recordingFile, skip, SEEK_CUR);
 	}
-
 	return data;
 }
 

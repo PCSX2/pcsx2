@@ -16,6 +16,7 @@
 #pragma once
 
 #include "PAD/Host/PAD.h"
+#include <tuple>
 
 namespace PAD
 {
@@ -49,6 +50,14 @@ namespace PAD
 
 		void Set(u32 pad, u32 index, float value);
 
+		__fi void SetRawAnalogs(const u32 pad, const std::tuple<u8, u8> left, const std::tuple<u8, u8> right)
+		{
+			m_analog[pad].lx = std::get<0>(left);
+			m_analog[pad].ly = std::get<1>(left);
+			m_analog[pad].rx = std::get<0>(right);
+			m_analog[pad].ry = std::get<1>(right);
+		}
+
 		__fi PAD::ControllerType GetType(u32 pad) { return m_type[pad]; }
 		__fi void SetType(u32 pad, PAD::ControllerType type) { m_type[pad] = type; }
 
@@ -74,6 +83,9 @@ namespace PAD
 		}
 
 		__fi u8 GetRawPressure(u32 pad, u32 index) const { return m_button_pressure[pad][index]; }
+
+		__fi std::tuple<u8, u8> GetRawLeftAnalog(u32 pad) const { return {m_analog[pad].lx, m_analog[pad].ly}; }
+		__fi std::tuple<u8, u8> GetRawRightAnalog(u32 pad) const { return {m_analog[pad].rx, m_analog[pad].ry}; }
 
 		u32 GetButtons(u32 pad);
 		u8 GetPressure(u32 pad, u32 index);

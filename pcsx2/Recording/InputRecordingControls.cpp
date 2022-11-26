@@ -225,7 +225,7 @@ void InputRecordingControls::StopCapture() const
 #include "InputRecordingControls.h"
 #include "Utilities/InputRecordingLogger.h"
 
-#include "GS/GS.h"
+#include "GS.h"
 #include "VMManager.h"
 
 void InputRecordingControls::toggleRecordMode()
@@ -246,7 +246,7 @@ void InputRecordingControls::setRecordMode(bool waitForFrameToEnd)
 	{
 		m_state = Mode::Recording;
 		InputRec::log("Record mode ON");
-		GSPresentCurrentFrame();
+		GetMTGS().PresentCurrentFrame();
 	}
 	else
 	{
@@ -263,7 +263,7 @@ void InputRecordingControls::setReplayMode(bool waitForFrameToEnd)
 	{
 		m_state = Mode::Replaying;
 		InputRec::log("Replay mode ON");
-		GSPresentCurrentFrame();
+		GetMTGS().PresentCurrentFrame();
 	}
 	else
 	{
@@ -281,10 +281,15 @@ bool InputRecordingControls::isReplaying() const
 
 void InputRecordingControls::processControlQueue()
 {
-	while (!m_controlQueue.empty())
+	if (!m_controlQueue.empty())
 	{
-		m_controlQueue.front()();
-		m_controlQueue.pop();
+
+		while (!m_controlQueue.empty())
+		{
+			m_controlQueue.front()();
+			m_controlQueue.pop();
+		}
+		GetMTGS().PresentCurrentFrame();
 	}
 }
 
