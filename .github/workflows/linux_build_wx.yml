@@ -45,7 +45,7 @@ jobs:
       CCACHE_COMPRESS: true
       CCACHE_COMPRESSLEVEL: 9
       CCACHE_MAXSIZE: 100M
-      SDL: SDL2-2.24.0
+      SDL: SDL2-2.26.0
       PATCHELF_VERSION: 0.12
 
     steps:
