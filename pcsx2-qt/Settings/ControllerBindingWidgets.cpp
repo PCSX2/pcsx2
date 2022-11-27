@@ -329,8 +329,8 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
 	// populate list view
 	for (u32 i = 0; i < cinfo->num_bindings; i++)
 	{
-		const PAD::ControllerBindingInfo& bi = cinfo->bindings[i];
-		if (bi.type == PAD::ControllerBindingType::Motor)
+		const InputBindingInfo& bi = cinfo->bindings[i];
+		if (bi.type == InputBindingInfo::Type::Motor)
 			continue;
 
 		QListWidgetItem* item = new QListWidgetItem();
@@ -356,7 +356,7 @@ ControllerMacroEditWidget::~ControllerMacroEditWidget() = default;
 QString ControllerMacroEditWidget::getSummary() const
 {
 	QString str;
-	for (const PAD::ControllerBindingInfo* bi : m_binds)
+	for (const InputBindingInfo* bi : m_binds)
 	{
 		if (!str.isEmpty())
 			str += static_cast<QChar>('/');
@@ -409,11 +409,11 @@ void ControllerMacroEditWidget::updateBinds()
 	if (!cinfo)
 		return;
 
-	std::vector<const PAD::ControllerBindingInfo*> new_binds;
+	std::vector<const InputBindingInfo*> new_binds;
 	for (u32 i = 0, bind_index = 0; i < cinfo->num_bindings; i++)
 	{
-		const PAD::ControllerBindingInfo& bi = cinfo->bindings[i];
-		if (bi.type == PAD::ControllerBindingType::Motor)
+		const InputBindingInfo& bi = cinfo->bindings[i];
+		if (bi.type == InputBindingInfo::Type::Motor)
 			continue;
 
 		const QListWidgetItem* item = m_ui.bindList->item(static_cast<int>(bind_index));
@@ -434,7 +434,7 @@ void ControllerMacroEditWidget::updateBinds()
 	m_binds = std::move(new_binds);
 
 	std::string binds_string;
-	for (const PAD::ControllerBindingInfo* bi : m_binds)
+	for (const InputBindingInfo* bi : m_binds)
 	{
 		if (!binds_string.empty())
 			binds_string.append(" & ");
@@ -490,12 +490,12 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
 
 	for (u32 i = 0; i < cinfo->num_settings; i++)
 	{
-		const PAD::ControllerSettingInfo& si = cinfo->settings[i];
+		const SettingInfo& si = cinfo->settings[i];
 		std::string key_name = si.name;
 
 		switch (si.type)
 		{
-			case PAD::ControllerSettingInfo::Type::Boolean:
+			case SettingInfo::Type::Boolean:
 			{
 				QCheckBox* cb = new QCheckBox(qApp->translate(cinfo->name, si.display_name), widget_parent);
 				cb->setObjectName(QString::fromUtf8(si.name));
@@ -506,7 +506,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
 			}
 			break;
 
-			case PAD::ControllerSettingInfo::Type::Integer:
+			case SettingInfo::Type::Integer:
 			{
 				QSpinBox* sb = new QSpinBox(widget_parent);
 				sb->setObjectName(QString::fromUtf8(si.name));
@@ -520,7 +520,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
 			}
 			break;
 
-			case PAD::ControllerSettingInfo::Type::IntegerList:
+			case SettingInfo::Type::IntegerList:
 			{
 				QComboBox* cb = new QComboBox(widget_parent);
 				cb->setObjectName(QString::fromUtf8(si.name));
@@ -533,7 +533,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
 			}
 			break;
 
-			case PAD::ControllerSettingInfo::Type::Float:
+			case SettingInfo::Type::Float:
 			{
 				QDoubleSpinBox* sb = new QDoubleSpinBox(widget_parent);
 				sb->setObjectName(QString::fromUtf8(si.name));
@@ -547,7 +547,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
 			}
 			break;
 
-			case PAD::ControllerSettingInfo::Type::String:
+			case SettingInfo::Type::String:
 			{
 				QLineEdit* le = new QLineEdit(widget_parent);
 				le->setObjectName(QString::fromUtf8(si.name));
@@ -558,7 +558,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
 			}
 			break;
 
-			case PAD::ControllerSettingInfo::Type::Path:
+			case SettingInfo::Type::Path:
 			{
 				QLineEdit* le = new QLineEdit(widget_parent);
 				le->setObjectName(QString::fromUtf8(si.name));
@@ -597,12 +597,12 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 
 	for (u32 i = 0; i < cinfo->num_settings; i++)
 	{
-		const PAD::ControllerSettingInfo& si = cinfo->settings[i];
+		const SettingInfo& si = cinfo->settings[i];
 		const QString key(QString::fromStdString(si.name));
 
 		switch (si.type)
 		{
-			case PAD::ControllerSettingInfo::Type::Boolean:
+			case SettingInfo::Type::Boolean:
 			{
 				QCheckBox* widget = findChild<QCheckBox*>(QString::fromStdString(si.name));
 				if (widget)
@@ -610,7 +610,7 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 			}
 			break;
 
-			case PAD::ControllerSettingInfo::Type::Integer:
+			case SettingInfo::Type::Integer:
 			{
 				QSpinBox* widget = findChild<QSpinBox*>(QString::fromStdString(si.name));
 				if (widget)
@@ -618,7 +618,7 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 			}
 			break;
 
-			case PAD::ControllerSettingInfo::Type::IntegerList:
+			case SettingInfo::Type::IntegerList:
 			{
 				QComboBox* widget = findChild<QComboBox*>(QString::fromStdString(si.name));
 				if (widget)
@@ -626,7 +626,7 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 			}
 			break;
 
-			case PAD::ControllerSettingInfo::Type::Float:
+			case SettingInfo::Type::Float:
 			{
 				QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QString::fromStdString(si.name));
 				if (widget)
@@ -634,7 +634,7 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 			}
 			break;
 
-			case PAD::ControllerSettingInfo::Type::String:
+			case SettingInfo::Type::String:
 			{
 				QLineEdit* widget = findChild<QLineEdit*>(QString::fromStdString(si.name));
 				if (widget)
@@ -642,7 +642,7 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 			}
 			break;
 
-			case PAD::ControllerSettingInfo::Type::Path:
+			case SettingInfo::Type::Path:
 			{
 				QLineEdit* widget = findChild<QLineEdit*>(QString::fromStdString(si.name));
 				if (widget)

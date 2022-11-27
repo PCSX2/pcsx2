@@ -25,6 +25,64 @@ class SettingsWrapper;
 
 enum class CDVD_SourceType : uint8_t;
 
+/// Generic setting information which can be reused in multiple components.
+struct SettingInfo
+{
+	enum class Type
+	{
+		Boolean,
+		Integer,
+		IntegerList,
+		Float,
+		String,
+		StringList,
+		Path,
+	};
+
+	Type type;
+	const char* name;
+	const char* display_name;
+	const char* description;
+	const char* default_value;
+	const char* min_value;
+	const char* max_value;
+	const char* step_value;
+	const char* format;
+	const char** options;
+	float multiplier;
+
+	const char* StringDefaultValue() const;
+	bool BooleanDefaultValue() const;
+	s32 IntegerDefaultValue() const;
+	s32 IntegerMinValue() const;
+	s32 IntegerMaxValue() const;
+	s32 IntegerStepValue() const;
+	float FloatDefaultValue() const;
+	float FloatMinValue() const;
+	float FloatMaxValue() const;
+	float FloatStepValue() const;
+};
+
+enum class GenericInputBinding : u8;
+
+struct InputBindingInfo
+{
+	enum class Type : u8
+	{
+		Unknown,
+		Button,
+		Axis,
+		HalfAxis,
+		Motor,
+		Macro
+	};
+
+	const char* name;
+	const char* display_name;
+	Type type;
+	GenericInputBinding generic_mapping;
+};
+
 enum GamefixId
 {
 	GamefixId_FIRST = 0,

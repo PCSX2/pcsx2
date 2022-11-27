@@ -20,6 +20,7 @@
 #include <utility>
 #include <vector>
 
+#include "Config.h"
 #include "PAD/Host/Global.h"
 #include "SaveState.h"
 
@@ -46,16 +47,6 @@ namespace PAD
 		Count
 	};
 
-	enum class ControllerBindingType : u8
-	{
-		Unknown,
-		Button,
-		Axis,
-		HalfAxis,
-		Motor,
-		Macro
-	};
-
 	enum class VibrationCapabilities : u8
 	{
 		NoVibration,
@@ -64,61 +55,16 @@ namespace PAD
 		Count
 	};
 
-	struct ControllerBindingInfo
-	{
-		const char* name;
-		const char* display_name;
-		ControllerBindingType type;
-		GenericInputBinding generic_mapping;
-	};
-
-	struct ControllerSettingInfo
-	{
-		enum class Type
-		{
-			Boolean,
-			Integer,
-			IntegerList,
-			Float,
-			String,
-			Path,
-		};
-
-		Type type;
-		const char* name;
-		const char* display_name;
-		const char* description;
-		const char* default_value;
-		const char* min_value;
-		const char* max_value;
-		const char* step_value;
-		const char* format;
-		const char** options;
-		float multiplier;
-
-		const char* StringDefaultValue() const;
-		bool BooleanDefaultValue() const;
-		s32 IntegerDefaultValue() const;
-		s32 IntegerMinValue() const;
-		s32 IntegerMaxValue() const;
-		s32 IntegerStepValue() const;
-		float FloatDefaultValue() const;
-		float FloatMinValue() const;
-		float FloatMaxValue() const;
-		float FloatStepValue() const;
-	};
-
-
 	struct ControllerInfo
 	{
 		ControllerType type;
 		const char* name;
 		const char* display_name;
-		const ControllerBindingInfo* bindings;
+		const InputBindingInfo* bindings;
 		u32 num_bindings;
-		const ControllerSettingInfo* settings;
+		const SettingInfo* settings;
 		u32 num_settings;
-		PAD::VibrationCapabilities vibration_caps;
+		VibrationCapabilities vibration_caps;
 	};
 
 	/// Total number of pad ports, across both multitaps.
