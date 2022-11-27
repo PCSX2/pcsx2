@@ -230,4 +230,35 @@ namespace Threading
 		/// Should be called by the worker thread if it restarts after dying
 		void Reset();
 	};
+
+	/// A semaphore that definitely has a fast userspace path
+	class UserspaceSemaphore
+	{
+		KernelSemaphore m_sema;
+		std::atomic<uint32_t> m_counter{0};
+
+	public:
+		UserspaceSemaphore() = default;
+		~UserspaceSemaphore() = default;
+
+		void Post()
+		{
+			if (m_counter.fetch_add(1, std::memory_order_release) < 0)
+				m_sema.Post();
+		}
+
+		void Wait()
+		{
+			if (m_counter.fetch_sub(1, std::memory_order_acquire) <= 0)
+				m_sema.Wait();
+		}
+
+		bool TryWait()
+		{
+			int32_t counter = m_counter.load(std::memory_order_relaxed);
+			while (counter > 0 && !m_counter.compare_exchange_weak(counter, counter - 1, std::memory_order_acquire, std::memory_order_relaxed))
+				;
+			return counter > 0;
+		}
+	};
 } // namespace Threading
