@@ -1150,7 +1150,7 @@ static void GetKeyboardGenericBindingMapping(std::vector<std::pair<GenericInputB
 	mapping->emplace_back(GenericInputBinding::R3, "Keyboard/4");
 }
 
-static bool GetInternalGenericBindingMapping(const std::string_view& device, GenericInputBindingMapping* mapping)
+static bool GetInternalGenericBindingMapping(const std::string_view& device, InputManager::GenericInputBindingMapping* mapping)
 {
 	if (device == "Keyboard")
 	{
@@ -1161,7 +1161,7 @@ static bool GetInternalGenericBindingMapping(const std::string_view& device, Gen
 	return false;
 }
 
-GenericInputBindingMapping InputManager::GetGenericBindingMapping(const std::string_view& device)
+InputManager::GenericInputBindingMapping InputManager::GetGenericBindingMapping(const std::string_view& device)
 {
 	GenericInputBindingMapping mapping;
 

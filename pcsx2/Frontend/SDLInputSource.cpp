@@ -89,7 +89,10 @@ static const GenericInputBinding s_sdl_generic_binding_button_mapping[] = {
 
 SDLInputSource::SDLInputSource() = default;
 
-SDLInputSource::~SDLInputSource() { pxAssert(m_controllers.empty()); }
+SDLInputSource::~SDLInputSource()
+{
+	pxAssert(m_controllers.empty());
+}
 
 bool SDLInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
@@ -207,8 +210,7 @@ std::vector<std::pair<std::string, std::string>> SDLInputSource::EnumerateDevice
 	return ret;
 }
 
-std::optional<InputBindingKey> SDLInputSource::ParseKeyString(
-	const std::string_view& device, const std::string_view& binding)
+std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_view& device, const std::string_view& binding)
 {
 	if (!StringUtil::StartsWith(device, "SDL-") || binding.empty())
 		return std::nullopt;
@@ -388,14 +390,12 @@ bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
 
 SDLInputSource::ControllerDataVector::iterator SDLInputSource::GetControllerDataForJoystickId(int id)
 {
-	return std::find_if(
-		m_controllers.begin(), m_controllers.end(), [id](const ControllerData& cd) { return cd.joystick_id == id; });
+	return std::find_if(m_controllers.begin(), m_controllers.end(), [id](const ControllerData& cd) { return cd.joystick_id == id; });
 }
 
 SDLInputSource::ControllerDataVector::iterator SDLInputSource::GetControllerDataForPlayerId(int id)
 {
-	return std::find_if(
-		m_controllers.begin(), m_controllers.end(), [id](const ControllerData& cd) { return cd.player_id == id; });
+	return std::find_if(m_controllers.begin(), m_controllers.end(), [id](const ControllerData& cd) { return cd.player_id == id; });
 }
 
 int SDLInputSource::GetFreePlayerId() const
@@ -439,8 +439,8 @@ bool SDLInputSource::OpenGameController(int index)
 		player_id = free_player_id;
 	}
 
-	Console.WriteLn("(SDLInputSource) Opened controller %d (instance id %d, player id %d): %s", index, joystick_id,
-		player_id, SDL_GameControllerName(gcontroller));
+	Console.WriteLn("(SDLInputSource) Opened controller %d (instance id %d, player id %d): %s", index, joystick_id, player_id,
+		SDL_GameControllerName(gcontroller));
 
 	ControllerData cd = {};
 	cd.player_id = player_id;
@@ -452,7 +452,7 @@ bool SDLInputSource::OpenGameController(int index)
 	const int num_buttons = SDL_JoystickNumButtons(joystick);
 	cd.joy_axis_used_in_gc.resize(num_axes, false);
 	cd.joy_button_used_in_gc.resize(num_buttons, false);
-	auto mark_bind = [&](SDL_GameControllerButtonBind bind){
+	auto mark_bind = [&](SDL_GameControllerButtonBind bind) {
 		if (bind.bindType == SDL_CONTROLLER_BINDTYPE_AXIS && bind.value.axis < num_axes)
 			cd.joy_axis_used_in_gc[bind.value.axis] = true;
 		if (bind.bindType == SDL_CONTROLLER_BINDTYPE_BUTTON && bind.value.button < num_buttons)
@@ -466,8 +466,7 @@ bool SDLInputSource::OpenGameController(int index)
 	cd.use_game_controller_rumble = (SDL_GameControllerRumble(gcontroller, 0, 0, 0) == 0);
 	if (cd.use_game_controller_rumble)
 	{
-		Console.WriteLn(
-			"(SDLInputSource) Rumble is supported on '%s' via gamecontroller", SDL_GameControllerName(gcontroller));
+		Console.WriteLn("(SDLInputSource) Rumble is supported on '%s' via gamecontroller", SDL_GameControllerName(gcontroller));
 	}
 	else
 	{
@@ -500,8 +499,7 @@ bool SDLInputSource::OpenGameController(int index)
 		}
 
 		if (cd.haptic)
-			Console.WriteLn(
-				"(SDLInputSource) Rumble is supported on '%s' via haptic", SDL_GameControllerName(gcontroller));
+			Console.WriteLn("(SDLInputSource) Rumble is supported on '%s' via haptic", SDL_GameControllerName(gcontroller));
 	}
 
 	if (!cd.haptic && !cd.use_game_controller_rumble)
@@ -555,8 +553,8 @@ bool SDLInputSource::HandleControllerButtonEvent(const SDL_ControllerButtonEvent
 
 	const InputBindingKey key(MakeGenericControllerButtonKey(InputSourceType::SDL, it->player_id, ev->button));
 	const GenericInputBinding generic_key = (ev->button < std::size(s_sdl_generic_binding_button_mapping)) ?
-	                                            s_sdl_generic_binding_button_mapping[ev->button] :
-	                                            GenericInputBinding::Unknown;
+												s_sdl_generic_binding_button_mapping[ev->button] :
+                                                GenericInputBinding::Unknown;
 	return InputManager::InvokeEvents(key, (ev->state == SDL_PRESSED) ? 1.0f : 0.0f, generic_key);
 }
 
@@ -616,7 +614,7 @@ std::vector<InputBindingKey> SDLInputSource::EnumerateMotors()
 	return ret;
 }
 
-bool SDLInputSource::GetGenericBindingMapping(const std::string_view& device, GenericInputBindingMapping* mapping)
+bool SDLInputSource::GetGenericBindingMapping(const std::string_view& device, InputManager::GenericInputBindingMapping* mapping)
 {
 	if (!StringUtil::StartsWith(device, "SDL-"))
 		return false;

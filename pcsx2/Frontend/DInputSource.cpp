@@ -84,8 +84,8 @@ bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
 		return false;
 	}
 
-	HRESULT hr = create(
-		GetModuleHandleA(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8W, reinterpret_cast<LPVOID*>(m_dinput.put()), nullptr);
+	HRESULT hr =
+		create(GetModuleHandleA(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8W, reinterpret_cast<LPVOID*>(m_dinput.put()), nullptr);
 	m_joystick_data_format = get_joystick_data_format();
 	if (FAILED(hr) || !m_joystick_data_format)
 	{
@@ -309,7 +309,7 @@ std::vector<InputBindingKey> DInputSource::EnumerateMotors()
 	return {};
 }
 
-bool DInputSource::GetGenericBindingMapping(const std::string_view& device, GenericInputBindingMapping* mapping)
+bool DInputSource::GetGenericBindingMapping(const std::string_view& device, InputManager::GenericInputBindingMapping* mapping)
 {
 	return {};
 }
@@ -391,7 +391,8 @@ std::string DInputSource::ConvertKeyToString(InputBindingKey key)
 	{
 		if (key.source_subtype == InputSubclass::ControllerAxis)
 		{
-			ret = fmt::format("DInput-{}/{}Axis{}", u32(key.source_index), key.modifier == InputModifier::Negate ? '-' : '+', u32(key.data));
+			ret =
+				fmt::format("DInput-{}/{}Axis{}", u32(key.source_index), key.modifier == InputModifier::Negate ? '-' : '+', u32(key.data));
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton && key.data >= MAX_NUM_BUTTONS)
 		{
