@@ -340,7 +340,6 @@ public:
 	std::atomic<bool> m_VsyncSignalListener;
 
 	std::mutex m_mtx_RingBufferBusy2; // Gets released on semaXGkick waiting...
-	std::mutex m_mtx_WaitGS;
 	Threading::WorkSema m_sem_event;
 	Threading::UserspaceSemaphore m_sem_OnRingReset;
 	Threading::UserspaceSemaphore m_sem_Vsync;

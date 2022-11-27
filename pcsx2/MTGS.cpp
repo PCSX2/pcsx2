@@ -617,7 +617,7 @@ void SysMtgsThread::WaitGS(bool syncRegs, bool weakWait, bool isMTVU)
 	// we don't want to access the content of the queue
 
 	SetEvent();
-	if (weakWait)
+	if (weakWait && isMTVU)
 	{
 		// On weakWait we will stop waiting on the MTGS thread if the
 		// MTGS thread has processed a vu1 xgkick packet, or is pending on
@@ -644,9 +644,10 @@ void SysMtgsThread::WaitGS(bool syncRegs, bool weakWait, bool isMTVU)
 			pxFailRel("MTGS Thread Died");
 	}
 
+	assert(!(weakWait && syncRegs) && "No synchronization for this!");
+
 	if (syncRegs)
 	{
-		std::unique_lock lock(m_mtx_WaitGS);
 		// Completely synchronize GS and MTGS register states.
 		memcpy(RingBuffer.Regs, PS2MEM_GS, sizeof(RingBuffer.Regs));
 	}
