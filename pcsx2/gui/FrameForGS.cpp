@@ -107,74 +107,9 @@ void GSPanel::InitDefaultAccelerators()
 	m_Accels->Map( FULLSCREEN_TOGGLE_ACCELERATOR_GSPANEL,		"FullscreenToggle" );
 }
 
-void GSPanel::InitRecordingAccelerators()
-{
-	// Note: these override GlobalAccels ( Pcsx2App::InitDefaultGlobalAccelerators() )
-	// For plain letters or symbols, replace e.g. WXK_F1 with e.g. wxKeyCode('q') or wxKeyCode('-')
-	// For plain letter keys with shift, use e.g. AAC( wxKeyCode('q') ).Shift() and NOT wxKeyCode('Q')
-	// For a symbol with shift (e.g. '_' which is '-' with shift) use AAC( wxKeyCode('-') ).Shift()
-
-	typedef KeyAcceleratorCode AAC;
-
-	if (!m_Accels) m_Accels = std::unique_ptr<AcceleratorDictionary>(new AcceleratorDictionary);
-
-	m_Accels->Map(AAC(WXK_SPACE), "FrameAdvance");
-	m_Accels->Map(AAC(wxKeyCode('p')).Shift(), "TogglePause");
-	m_Accels->Map(AAC(wxKeyCode('r')).Shift(), "InputRecordingModeToggle");
-	m_Accels->Map(AAC(wxKeyCode('l')).Shift(), "GoToFirstFrame");
-#if defined(__unix__)
-	// Shift+P (80) and Shift+p (112) have two completely different codes
-	// On Linux the former is sometimes fired so define bindings for both
-	m_Accels->Map(AAC(wxKeyCode('P')).Shift(), "TogglePause");
-	m_Accels->Map(AAC(wxKeyCode('R')).Shift(), "InputRecordingModeToggle");
-	m_Accels->Map(AAC(wxKeyCode('L')).Shift(), "GoToFirstFrame");
-#endif
-
-	m_Accels->Map(AAC(WXK_NUMPAD0).Shift(), "States_SaveSlot0");
-	m_Accels->Map(AAC(WXK_NUMPAD1).Shift(), "States_SaveSlot1");
-	m_Accels->Map(AAC(WXK_NUMPAD2).Shift(), "States_SaveSlot2");
-	m_Accels->Map(AAC(WXK_NUMPAD3).Shift(), "States_SaveSlot3");
-	m_Accels->Map(AAC(WXK_NUMPAD4).Shift(), "States_SaveSlot4");
-	m_Accels->Map(AAC(WXK_NUMPAD5).Shift(), "States_SaveSlot5");
-	m_Accels->Map(AAC(WXK_NUMPAD6).Shift(), "States_SaveSlot6");
-	m_Accels->Map(AAC(WXK_NUMPAD7).Shift(), "States_SaveSlot7");
-	m_Accels->Map(AAC(WXK_NUMPAD8).Shift(), "States_SaveSlot8");
-	m_Accels->Map(AAC(WXK_NUMPAD9).Shift(), "States_SaveSlot9");
-	m_Accels->Map(AAC(WXK_NUMPAD0), "States_LoadSlot0");
-	m_Accels->Map(AAC(WXK_NUMPAD1), "States_LoadSlot1");
-	m_Accels->Map(AAC(WXK_NUMPAD2), "States_LoadSlot2");
-	m_Accels->Map(AAC(WXK_NUMPAD3), "States_LoadSlot3");
-	m_Accels->Map(AAC(WXK_NUMPAD4), "States_LoadSlot4");
-	m_Accels->Map(AAC(WXK_NUMPAD5), "States_LoadSlot5");
-	m_Accels->Map(AAC(WXK_NUMPAD6), "States_LoadSlot6");
-	m_Accels->Map(AAC(WXK_NUMPAD7), "States_LoadSlot7");
-	m_Accels->Map(AAC(WXK_NUMPAD8), "States_LoadSlot8");
-	m_Accels->Map(AAC(WXK_NUMPAD9), "States_LoadSlot9");
-
-	GetMainFramePtr()->initializeRecordingMenuItem(
-		MenuId_Recording_FrameAdvance,
-		GetAssociatedKeyCode("FrameAdvance"));
-	GetMainFramePtr()->initializeRecordingMenuItem(
-		MenuId_Recording_TogglePause,
-		GetAssociatedKeyCode("TogglePause"));
-	GetMainFramePtr()->initializeRecordingMenuItem(
-		MenuId_Recording_ToggleRecordingMode,
-		GetAssociatedKeyCode("InputRecordingModeToggle"),
-		g_InputRecording.IsActive());
-
-	InputRec::consoleLog("Initialized Input Recording Key Bindings");
-}
-
 wxString GSPanel::GetAssociatedKeyCode(const char* id)
 {
 	return m_Accels->findKeycodeWithCommandId(id).toTitleizedString();
-}
-
-void GSPanel::RemoveRecordingAccelerators()
-{
-	m_Accels.reset(new AcceleratorDictionary);
-	InitDefaultAccelerators();
-	recordingConLog("Disabled Input Recording Key Bindings\n");
 }
 
 GSPanel::GSPanel( wxWindow* parent )
@@ -191,11 +126,6 @@ GSPanel::GSPanel( wxWindow* parent )
 	SetName( L"GSPanel" );
 
 	InitDefaultAccelerators();
-
-	if (g_Conf->EmuOptions.EnableRecordingTools)
-	{
-		InitRecordingAccelerators();
-	}
 
 	SetBackgroundColour(wxColour((unsigned long)0));
 	if( g_Conf->GSWindow.AlwaysHideMouse )
@@ -899,17 +829,7 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	const u64& smode2 = *(u64*)PS2GS_BASE(GS_SMODE2);
 	wxString omodef = (smode2 & 2) ? templates.OutputFrame : templates.OutputField;
 	wxString omodei = (smode2 & 1) ? templates.OutputInterlaced : templates.OutputProgressive;
-	wxString title;
-	wxString movieMode;
-	if (g_InputRecording.IsActive())
-	{
-		title = templates.RecordingTemplate;
-		title.Replace(L"${frame}", pxsFmt(L"%d", g_InputRecording.GetFrameCounter()));
-		title.Replace(L"${maxFrame}", pxsFmt(L"%d", g_InputRecording.GetInputRecordingData().GetTotalFrames()));
-		title.Replace(L"${mode}", g_InputRecording.RecordingModeTitleSegment());
-	} else {
-		title = templates.TitleTemplate;
-	}
+	wxString title = templates.TitleTemplate;
 
 	std::string gsStats;
 	GSgetTitleStats(gsStats);

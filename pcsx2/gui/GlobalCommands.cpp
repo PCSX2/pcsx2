@@ -305,10 +305,6 @@ namespace Implementations
 		if (g_Conf->GSWindow.CloseOnEsc)
 		{
 			sMainFrame.SetFocus();
-			// Disable recording controls that only make sense if the game is running
-			sMainFrame.enableRecordingMenuItem(MenuId_Recording_FrameAdvance, false);
-			sMainFrame.enableRecordingMenuItem(MenuId_Recording_TogglePause, false);
-			sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, false);
 		}
 	}
 
@@ -419,38 +415,6 @@ namespace Implementations
 	{
 		if (GSFrame* gsframe = wxGetApp().GetGsFramePtr())
 			gsframe->ShowFullScreen(!gsframe->IsFullScreen());
-	}
-	void FrameAdvance()
-	{
-		if (g_Conf->EmuOptions.EnableRecordingTools)
-		{
-			g_InputRecordingControls.FrameAdvance();
-		}
-	}
-
-	void TogglePause()
-	{
-		if (g_Conf->EmuOptions.EnableRecordingTools)
-		{
-			g_InputRecordingControls.TogglePause();
-		}
-	}
-
-	void InputRecordingModeToggle()
-	{
-		if (g_Conf->EmuOptions.EnableRecordingTools)
-		{
-			g_InputRecordingControls.RecordModeToggle();
-		}
-	}
-
-	void GoToFirstFrame()
-	{
-		if (g_Conf->EmuOptions.EnableRecordingTools && g_InputRecording.IsActive())
-		{
-			// Assumes that gui is active, as you can't access recording options without it
-			g_InputRecording.GoToFirstFrame(GetMainFramePtr());
-		}
 	}
 
 	void States_SaveSlot(int slot)
@@ -729,11 +693,6 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 			NULL,
 			false,
 		},
-
-		{"FrameAdvance", Implementations::FrameAdvance, NULL, NULL, false},
-		{"TogglePause", Implementations::TogglePause, NULL, NULL, false},
-		{"InputRecordingModeToggle", Implementations::InputRecordingModeToggle, NULL, NULL, false},
-		{"GoToFirstFrame", Implementations::GoToFirstFrame, NULL, NULL, false},
 
 		{"States_SaveSlot0", Implementations::States_SaveSlot0, NULL, NULL, false},
 		{"States_SaveSlot1", Implementations::States_SaveSlot1, NULL, NULL, false},

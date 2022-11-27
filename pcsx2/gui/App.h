@@ -30,8 +30,6 @@
 #include "RecentIsoList.h"
 #include "DriveList.h"
 
-#include "Recording/NewRecordingFrame.h"
-
 class DisassemblyDialog;
 struct HostKeyEvent;
 
@@ -481,13 +479,6 @@ public:
 	GSFrame* GetGsFramePtr() const { return (GSFrame*)wxWindow::FindWindowById(m_id_GsFrame); }
 	MainEmuFrame* GetMainFramePtr() const { return (MainEmuFrame*)wxWindow::FindWindowById(m_id_MainFrame); }
 	DisassemblyDialog* GetDisassemblyPtr() const { return (DisassemblyDialog*)wxWindow::FindWindowById(m_id_Disassembler); }
-
-#ifndef PCSX2_CORE
-	NewRecordingFrame* GetNewRecordingFramePtr() const
-	{
-		return (NewRecordingFrame*)wxWindow::FindWindowById(m_id_NewRecordingFrame);
-	}
-#endif
 
 	void enterDebugMode();
 	void leaveDebugMode();

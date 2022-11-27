@@ -450,23 +450,6 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 {
 	try
 	{
-		if (g_Conf->EmuOptions.EnableRecordingTools)
-		{
-			if (g_InputRecordingControls.IsPaused())
-			{
-				// When the GSFrame CoreThread is paused, so is the logical VSync
-				// Meaning that we have to grab the user-input through here to potentially
-				// resume emulation.
-				if (const HostKeyEvent* ev = PADkeyEvent() )
-				{
-					if( ev->key != 0 )
-					{
-						PadKeyDispatch( *ev );
-					}
-				}
-			}
-			g_InputRecordingControls.ResumeCoreThreadIfStarted();
-		}
 		(handler->*func)(event);
 	}
 	// ----------------------------------------------------------------------------
@@ -481,9 +464,6 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 		// Saved state load failed prior to the system getting corrupted (ie, file not found
 		// or some zipfile error) -- so log it and resume emulation.
 		Console.Warning( ex.FormatDiagnosticMessage() );
-		if (g_InputRecording.IsInitialLoad())
-			g_InputRecording.FailedSavestate();
-
 		CoreThread.Resume();
 	}
 	// ----------------------------------------------------------------------------
@@ -768,15 +748,6 @@ void Pcsx2App::OpenGsPanel()
 	std::optional<WindowInfo> wi = gsFrame->GetViewport()->GetWindowInfo();
 	pxAssertDev(wi.has_value(), "GS frame has a valid native window");
 	g_gs_window_info = std::move(*wi);
-
-	// Enable New & Play after the first game load of the session
-	sMainFrame.enableRecordingMenuItem(MenuId_Recording_New, !g_InputRecording.IsActive());
-	sMainFrame.enableRecordingMenuItem(MenuId_Recording_Play, true);
-
-	// Enable recording menu options as the game is now running
-	sMainFrame.enableRecordingMenuItem(MenuId_Recording_FrameAdvance, true);
-	sMainFrame.enableRecordingMenuItem(MenuId_Recording_TogglePause, true);
-	sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, g_InputRecording.IsActive());
 }
 
 
@@ -816,11 +787,6 @@ void Pcsx2App::OnGsFrameDestroyed(wxWindowID id)
 
 	m_id_GsFrame = wxID_ANY;
 	g_gs_window_info = {};
-
-	// Disable recording controls that only make sense if the game is running
-	sMainFrame.enableRecordingMenuItem(MenuId_Recording_FrameAdvance, false);
-	sMainFrame.enableRecordingMenuItem(MenuId_Recording_TogglePause, false);
-	sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, false);
 }
 
 void Pcsx2App::OnProgramLogClosed( wxWindowID id )
@@ -834,11 +800,6 @@ void Pcsx2App::OnProgramLogClosed( wxWindowID id )
 
 void Pcsx2App::OnMainFrameClosed( wxWindowID id )
 {
-	if (g_InputRecording.IsActive())
-	{
-		g_InputRecording.Stop();
-	}
-
 	// Nothing threaded depends on the mainframe (yet) -- it all passes through the main wxApp
 	// message handler.  But that might change in the future.
 	if( m_id_MainFrame != id ) return;
@@ -933,10 +894,6 @@ void Pcsx2App::SysExecute( CDVD_SourceType cdvdsrc, const wxString& elf_override
 		return;
 
 	SysExecutorThread.PostEvent( new SysExecEvent_Execute(cdvdsrc, elf_override) );
-	if (g_Conf->EmuOptions.EnableRecordingTools)
-	{
-		g_InputRecording.RecordingReset();
-	}
 }
 
 // Returns true if there is a "valid" virtual machine state from the user's perspective.  This
