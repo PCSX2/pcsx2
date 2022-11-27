@@ -26,6 +26,8 @@
 #include "common/SettingsInterface.h"
 #include "common/WindowInfo.h"
 
+#include "pcsx2/Config.h"
+
 /// Class, or source of an input event.
 enum class InputSourceType : u32
 {
@@ -143,50 +145,6 @@ DECLARE_HOTKEY_LIST(g_common_hotkeys);
 DECLARE_HOTKEY_LIST(g_gs_hotkeys);
 DECLARE_HOTKEY_LIST(g_host_hotkeys);
 
-/// Generic input bindings. These roughly match a DualShock 4 or XBox One controller.
-/// They are used for automatic binding to PS2 controller types, and for big picture mode navigation.
-enum class GenericInputBinding : u8
-{
-	Unknown,
-
-	DPadUp,
-	DPadRight,
-	DPadLeft,
-	DPadDown,
-
-	LeftStickUp,
-	LeftStickRight,
-	LeftStickDown,
-	LeftStickLeft,
-	L3,
-
-	RightStickUp,
-	RightStickRight,
-	RightStickDown,
-	RightStickLeft,
-	R3,
-
-	Triangle, // Y on XBox pads.
-	Circle, // B on XBox pads.
-	Cross, // A on XBox pads.
-	Square, // X on XBox pads.
-
-	Select, // Share on DS4, View on XBox pads.
-	Start, // Options on DS4, Menu on XBox pads.
-	System, // PS button on DS4, Guide button on XBox pads.
-
-	L1, // LB on Xbox pads.
-	L2, // Left trigger on XBox pads.
-	R1, // RB on XBox pads.
-	R2, // Right trigger on Xbox pads.
-
-	SmallMotor, // High frequency vibration.
-	LargeMotor, // Low frequency vibration.
-
-	Count,
-};
-using GenericInputBindingMapping = std::vector<std::pair<GenericInputBinding, std::string>>;
-
 /// Host mouse relative axes are X, Y, wheel horizontal, wheel vertical.
 enum class InputPointerAxis : u8
 {
@@ -255,6 +213,7 @@ namespace InputManager
 	std::vector<InputBindingKey> EnumerateMotors();
 
 	/// Retrieves bindings that match the generic bindings for the specified device.
+	using GenericInputBindingMapping = std::vector<std::pair<GenericInputBinding, std::string>>;
 	GenericInputBindingMapping GetGenericBindingMapping(const std::string_view& device);
 
 	/// Returns whether a given input source is enabled.

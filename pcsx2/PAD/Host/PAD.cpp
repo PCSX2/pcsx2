@@ -607,7 +607,7 @@ PAD::VibrationCapabilities PAD::GetControllerVibrationCapabilities(const std::st
 }
 
 static u32 TryMapGenericMapping(SettingsInterface& si, const std::string& section,
-	const GenericInputBindingMapping& mapping, GenericInputBinding generic_name,
+	const InputManager::GenericInputBindingMapping& mapping, GenericInputBinding generic_name,
 	const char* bind_name)
 {
 	// find the mapping it corresponds to

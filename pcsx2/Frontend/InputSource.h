@@ -38,8 +38,7 @@ public:
 
 	virtual void PollEvents() = 0;
 
-	virtual std::optional<InputBindingKey> ParseKeyString(
-		const std::string_view& device, const std::string_view& binding) = 0;
+	virtual std::optional<InputBindingKey> ParseKeyString(const std::string_view& device, const std::string_view& binding) = 0;
 	virtual std::string ConvertKeyToString(InputBindingKey key) = 0;
 
 	/// Enumerates available devices. Returns a pair of the prefix (e.g. SDL-0) and the device name.
@@ -50,7 +49,7 @@ public:
 
 	/// Retrieves bindings that match the generic bindings for the specified device.
 	/// Returns false if it's not one of our devices.
-	virtual bool GetGenericBindingMapping(const std::string_view& device, GenericInputBindingMapping* mapping) = 0;
+	virtual bool GetGenericBindingMapping(const std::string_view& device, InputManager::GenericInputBindingMapping* mapping) = 0;
 
 	/// Informs the source of a new vibration motor state. Changes may not take effect until the next PollEvents() call.
 	virtual void UpdateMotorState(InputBindingKey key, float intensity) = 0;

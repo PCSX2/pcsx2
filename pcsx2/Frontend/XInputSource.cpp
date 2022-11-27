@@ -56,20 +56,9 @@ const char* XInputSource::s_button_names[XInputSource::NUM_BUTTONS] = {
 	"Guide", // XINPUT_GAMEPAD_GUIDE
 };
 const u16 XInputSource::s_button_masks[XInputSource::NUM_BUTTONS] = {
-	XINPUT_GAMEPAD_DPAD_UP,
-	XINPUT_GAMEPAD_DPAD_DOWN,
-	XINPUT_GAMEPAD_DPAD_LEFT,
-	XINPUT_GAMEPAD_DPAD_RIGHT,
-	XINPUT_GAMEPAD_START,
-	XINPUT_GAMEPAD_BACK,
-	XINPUT_GAMEPAD_LEFT_THUMB,
-	XINPUT_GAMEPAD_RIGHT_THUMB,
-	XINPUT_GAMEPAD_LEFT_SHOULDER,
-	XINPUT_GAMEPAD_RIGHT_SHOULDER,
-	XINPUT_GAMEPAD_A,
-	XINPUT_GAMEPAD_B,
-	XINPUT_GAMEPAD_X,
-	XINPUT_GAMEPAD_Y,
+	XINPUT_GAMEPAD_DPAD_UP, XINPUT_GAMEPAD_DPAD_DOWN, XINPUT_GAMEPAD_DPAD_LEFT, XINPUT_GAMEPAD_DPAD_RIGHT, XINPUT_GAMEPAD_START,
+	XINPUT_GAMEPAD_BACK, XINPUT_GAMEPAD_LEFT_THUMB, XINPUT_GAMEPAD_RIGHT_THUMB, XINPUT_GAMEPAD_LEFT_SHOULDER, XINPUT_GAMEPAD_RIGHT_SHOULDER,
+	XINPUT_GAMEPAD_A, XINPUT_GAMEPAD_B, XINPUT_GAMEPAD_X, XINPUT_GAMEPAD_Y,
 	0x400, // XINPUT_GAMEPAD_GUIDE
 };
 static const GenericInputBinding s_xinput_generic_binding_button_mapping[] = {
@@ -114,18 +103,15 @@ bool XInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
 	}
 
 	// Try the hidden version of XInputGetState(), which lets us query the guide button.
-	m_xinput_get_state =
-		reinterpret_cast<decltype(m_xinput_get_state)>(GetProcAddress(m_xinput_module, reinterpret_cast<LPCSTR>(100)));
+	m_xinput_get_state = reinterpret_cast<decltype(m_xinput_get_state)>(GetProcAddress(m_xinput_module, reinterpret_cast<LPCSTR>(100)));
 	if (!m_xinput_get_state)
 		reinterpret_cast<decltype(m_xinput_get_state)>(GetProcAddress(m_xinput_module, "XInputGetState"));
-	m_xinput_set_state =
-		reinterpret_cast<decltype(m_xinput_set_state)>(GetProcAddress(m_xinput_module, "XInputSetState"));
+	m_xinput_set_state = reinterpret_cast<decltype(m_xinput_set_state)>(GetProcAddress(m_xinput_module, "XInputSetState"));
 	m_xinput_get_capabilities =
 		reinterpret_cast<decltype(m_xinput_get_capabilities)>(GetProcAddress(m_xinput_module, "XInputGetCapabilities"));
 
 	// SCP extension, only exists when the bridge xinput1_3.dll is in use
-	m_xinput_get_extended =
-		reinterpret_cast<decltype(m_xinput_get_extended)>(GetProcAddress(m_xinput_module, "XInputGetExtended"));
+	m_xinput_get_extended = reinterpret_cast<decltype(m_xinput_get_extended)>(GetProcAddress(m_xinput_module, "XInputGetExtended"));
 	if (!m_xinput_get_state || !m_xinput_set_state || !m_xinput_get_capabilities)
 	{
 		Console.Error("Failed to get XInput function pointers.");
@@ -242,15 +228,13 @@ std::vector<std::pair<std::string, std::string>> XInputSource::EnumerateDevices(
 		if (!m_controllers[i].connected)
 			continue;
 
-		ret.emplace_back(StringUtil::StdStringFromFormat("XInput-%u", i),
-			StringUtil::StdStringFromFormat("XInput Controller %u", i));
+		ret.emplace_back(StringUtil::StdStringFromFormat("XInput-%u", i), StringUtil::StdStringFromFormat("XInput Controller %u", i));
 	}
 
 	return ret;
 }
 
-std::optional<InputBindingKey> XInputSource::ParseKeyString(
-	const std::string_view& device, const std::string_view& binding)
+std::optional<InputBindingKey> XInputSource::ParseKeyString(const std::string_view& device, const std::string_view& binding)
 {
 	if (!StringUtil::StartsWith(device, "XInput-") || binding.empty())
 		return std::nullopt;
@@ -324,8 +308,7 @@ std::string XInputSource::ConvertKeyToString(InputBindingKey key)
 		if (key.source_subtype == InputSubclass::ControllerAxis && key.data < std::size(s_axis_names))
 		{
 			const char modifier = key.modifier == InputModifier::Negate ? '-' : '+';
-			ret = StringUtil::StdStringFromFormat(
-				"XInput-%u/%c%s", key.source_index, modifier, s_axis_names[key.data]);
+			ret = StringUtil::StdStringFromFormat("XInput-%u/%c%s", key.source_index, modifier, s_axis_names[key.data]);
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton && key.data < std::size(s_button_names))
 		{
@@ -360,7 +343,7 @@ std::vector<InputBindingKey> XInputSource::EnumerateMotors()
 	return ret;
 }
 
-bool XInputSource::GetGenericBindingMapping(const std::string_view& device, GenericInputBindingMapping* mapping)
+bool XInputSource::GetGenericBindingMapping(const std::string_view& device, InputManager::GenericInputBindingMapping* mapping)
 {
 	if (!StringUtil::StartsWith(device, "XInput-"))
 		return false;
@@ -414,8 +397,8 @@ void XInputSource::HandleControllerConnection(u32 index)
 	cd.last_state = {};
 	cd.last_state_scp = {};
 
-	Host::OnInputDeviceConnected(StringUtil::StdStringFromFormat("XInput-%u", index),
-		StringUtil::StdStringFromFormat("XInput Controller %u", index));
+	Host::OnInputDeviceConnected(
+		StringUtil::StdStringFromFormat("XInput-%u", index), StringUtil::StdStringFromFormat("XInput Controller %u", index));
 }
 
 void XInputSource::HandleControllerDisconnection(u32 index)
@@ -438,8 +421,7 @@ void XInputSource::CheckForStateChanges(u32 index, const XINPUT_STATE& new_state
 #define CHECK_AXIS(field, axis, min_value, max_value) \
 	if (ogp.field != ngp.field) \
 	{ \
-		InputManager::InvokeEvents( \
-			MakeGenericControllerAxisKey(InputSourceType::XInput, index, axis), \
+		InputManager::InvokeEvents(MakeGenericControllerAxisKey(InputSourceType::XInput, index, axis), \
 			static_cast<float>(ngp.field) / ((ngp.field < 0) ? min_value : max_value)); \
 	}
 
@@ -463,11 +445,10 @@ void XInputSource::CheckForStateChanges(u32 index, const XINPUT_STATE& new_state
 			if ((old_button_bits & button_mask) != (new_button_bits & button_mask))
 			{
 				const GenericInputBinding generic_key = (button < std::size(s_xinput_generic_binding_button_mapping)) ?
-					s_xinput_generic_binding_button_mapping[button] : GenericInputBinding::Unknown;
+															s_xinput_generic_binding_button_mapping[button] :
+                                                            GenericInputBinding::Unknown;
 				const float value = ((new_button_bits & button_mask) != 0) ? 1.0f : 0.0f;
-				InputManager::InvokeEvents(
-					MakeGenericControllerButtonKey(InputSourceType::XInput, index, button),
-					value, generic_key);
+				InputManager::InvokeEvents(MakeGenericControllerButtonKey(InputSourceType::XInput, index, button), value, generic_key);
 			}
 		}
 	}
@@ -487,16 +468,14 @@ void XInputSource::CheckForStateChangesSCP(u32 index, const SCP_EXTN& new_state)
 #define CHECK_AXIS(field, mult) \
 	if (ogp.field != ngp.field) \
 	{ \
-		InputManager::InvokeEvents( \
-			MakeGenericControllerAxisKey(InputSourceType::XInput, index, axis), ngp.field * mult); \
+		InputManager::InvokeEvents(MakeGenericControllerAxisKey(InputSourceType::XInput, index, axis), ngp.field* mult); \
 	} \
 	axis++;
 
 #define CHECK_BUTTON(field) \
 	if (ogp.field != ngp.field) \
 	{ \
-		InputManager::InvokeEvents( \
-			MakeGenericControllerButtonKey(InputSourceType::XInput, index, button), ngp.field); \
+		InputManager::InvokeEvents(MakeGenericControllerButtonKey(InputSourceType::XInput, index, button), ngp.field); \
 	} \
 	button++;
 
