@@ -31,6 +31,62 @@
 #include "GS/GS.h"
 #endif
 
+const char* SettingInfo::StringDefaultValue() const
+{
+	return default_value ? default_value : "";
+}
+
+bool SettingInfo::BooleanDefaultValue() const
+{
+	return default_value ? StringUtil::FromChars<bool>(default_value).value_or(false) : false;
+}
+
+s32 SettingInfo::IntegerDefaultValue() const
+{
+	return default_value ? StringUtil::FromChars<s32>(default_value).value_or(0) : 0;
+}
+
+s32 SettingInfo::IntegerMinValue() const
+{
+	static constexpr s32 fallback_value = std::numeric_limits<s32>::min();
+	return min_value ? StringUtil::FromChars<s32>(min_value).value_or(fallback_value) : fallback_value;
+}
+
+s32 SettingInfo::IntegerMaxValue() const
+{
+	static constexpr s32 fallback_value = std::numeric_limits<s32>::max();
+	return max_value ? StringUtil::FromChars<s32>(max_value).value_or(fallback_value) : fallback_value;
+}
+
+s32 SettingInfo::IntegerStepValue() const
+{
+	static constexpr s32 fallback_value = 1;
+	return step_value ? StringUtil::FromChars<s32>(step_value).value_or(fallback_value) : fallback_value;
+}
+
+float SettingInfo::FloatDefaultValue() const
+{
+	return default_value ? StringUtil::FromChars<float>(default_value).value_or(0.0f) : 0.0f;
+}
+
+float SettingInfo::FloatMinValue() const
+{
+	static constexpr float fallback_value = std::numeric_limits<float>::min();
+	return min_value ? StringUtil::FromChars<float>(min_value).value_or(fallback_value) : fallback_value;
+}
+
+float SettingInfo::FloatMaxValue() const
+{
+	static constexpr float fallback_value = std::numeric_limits<float>::max();
+	return max_value ? StringUtil::FromChars<float>(max_value).value_or(fallback_value) : fallback_value;
+}
+
+float SettingInfo::FloatStepValue() const
+{
+	static constexpr float fallback_value = 0.1f;
+	return step_value ? StringUtil::FromChars<float>(step_value).value_or(fallback_value) : fallback_value;
+}
+
 namespace EmuFolders
 {
 	std::string AppRoot;

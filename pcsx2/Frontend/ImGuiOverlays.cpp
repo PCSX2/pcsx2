@@ -505,11 +505,11 @@ void ImGuiManager::DrawInputsOverlay()
 
 		for (u32 bind = 0; bind < cinfo->num_bindings; bind++)
 		{
-			const PAD::ControllerBindingInfo& bi = cinfo->bindings[bind];
+			const InputBindingInfo& bi = cinfo->bindings[bind];
 			switch (bi.type)
 			{
-				case PAD::ControllerBindingType::Axis:
-				case PAD::ControllerBindingType::HalfAxis:
+				case InputBindingInfo::Type::Axis:
+				case InputBindingInfo::Type::HalfAxis:
 				{
 					// axes are always shown
 					const float value = static_cast<float>(g_key_status.GetRawPressure(port, bind)) * (1.0f / 255.0f);
@@ -520,7 +520,7 @@ void ImGuiManager::DrawInputsOverlay()
 				}
 				break;
 
-				case PAD::ControllerBindingType::Button:
+				case InputBindingInfo::Type::Button:
 				{
 					// buttons only shown when active
 					const float value = static_cast<float>(g_key_status.GetRawPressure(port, bind)) * (1.0f / 255.0f);
@@ -529,9 +529,9 @@ void ImGuiManager::DrawInputsOverlay()
 				}
 				break;
 
-				case PAD::ControllerBindingType::Motor:
-				case PAD::ControllerBindingType::Macro:
-				case PAD::ControllerBindingType::Unknown:
+				case InputBindingInfo::Type::Motor:
+				case InputBindingInfo::Type::Macro:
+				case InputBindingInfo::Type::Unknown:
 				default:
 					break;
 			}

@@ -122,7 +122,7 @@ private:
 	ControllerBindingWidget* m_bwidget;
 	u32 m_index;
 
-	std::vector<const PAD::ControllerBindingInfo*> m_binds;
+	std::vector<const InputBindingInfo*> m_binds;
 	u32 m_frequency = 0;
 };
 

@@ -350,10 +350,10 @@ namespace FullscreenUI
 	static void DrawClampingModeSetting(SettingsInterface* bsi, const char* title, const char* summary, bool vu);
 	static void PopulateGraphicsAdapterList();
 	static void PopulateGameListDirectoryCache(SettingsInterface* si);
-	static void BeginInputBinding(SettingsInterface* bsi, PAD::ControllerBindingType type, const std::string_view& section,
+	static void BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const std::string_view& section,
 		const std::string_view& key, const std::string_view& display_name);
 	static void DrawInputBindingWindow();
-	static void DrawInputBindingButton(SettingsInterface* bsi, PAD::ControllerBindingType type, const char* section, const char* name,
+	static void DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section, const char* name,
 		const char* display_name, bool show_type = true);
 	static void ClearInputBindingVariables();
 	static void StartAutomaticBinding(u32 port);
@@ -367,7 +367,7 @@ namespace FullscreenUI
 	static std::vector<const HotkeyInfo*> s_hotkey_list_cache;
 	static std::atomic_bool s_settings_changed{false};
 	static std::atomic_bool s_game_settings_changed{false};
-	static PAD::ControllerBindingType s_input_binding_type = PAD::ControllerBindingType::Unknown;
+	static InputBindingInfo::Type s_input_binding_type = InputBindingInfo::Type::Unknown;
 	static std::string s_input_binding_section;
 	static std::string s_input_binding_key;
 	static std::string s_input_binding_display_name;
@@ -806,7 +806,7 @@ void FullscreenUI::Render()
 	if (s_about_window_open)
 		DrawAboutWindow();
 
-	if (s_input_binding_type != PAD::ControllerBindingType::Unknown)
+	if (s_input_binding_type != InputBindingInfo::Type::Unknown)
 		DrawInputBindingWindow();
 
 	ImGuiFullscreen::EndLayout();
@@ -1199,8 +1199,8 @@ s32 FullscreenUI::GetEffectiveIntSetting(SettingsInterface* bsi, const char* sec
 	return Host::Internal::GetBaseSettingsLayer()->GetIntValue(section, key, default_value);
 }
 
-void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, PAD::ControllerBindingType type, const char* section, const char* name,
-	const char* display_name, bool show_type)
+void FullscreenUI::DrawInputBindingButton(
+	SettingsInterface* bsi, InputBindingInfo::Type type, const char* section, const char* name, const char* display_name, bool show_type)
 {
 	std::string title(fmt::format("{}/{}", section, name));
 
@@ -1218,17 +1218,17 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, PAD::Controlle
 	{
 		switch (type)
 		{
-			case PAD::ControllerBindingType::Button:
+			case InputBindingInfo::Type::Button:
 				title = fmt::format(ICON_FA_DOT_CIRCLE " {}", display_name);
 				break;
-			case PAD::ControllerBindingType::Axis:
-			case PAD::ControllerBindingType::HalfAxis:
+			case InputBindingInfo::Type::Axis:
+			case InputBindingInfo::Type::HalfAxis:
 				title = fmt::format(ICON_FA_BULLSEYE " {}", display_name);
 				break;
-			case PAD::ControllerBindingType::Motor:
+			case InputBindingInfo::Type::Motor:
 				title = fmt::format(ICON_FA_BELL " {}", display_name);
 				break;
-			case PAD::ControllerBindingType::Macro:
+			case InputBindingInfo::Type::Macro:
 				title = fmt::format(ICON_FA_PIZZA_SLICE " {}", display_name);
 				break;
 			default:
@@ -1261,17 +1261,17 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, PAD::Controlle
 
 void FullscreenUI::ClearInputBindingVariables()
 {
-	s_input_binding_type = PAD::ControllerBindingType::Unknown;
+	s_input_binding_type = InputBindingInfo::Type::Unknown;
 	s_input_binding_section = {};
 	s_input_binding_key = {};
 	s_input_binding_display_name = {};
 	s_input_binding_new_bindings = {};
 }
 
-void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, PAD::ControllerBindingType type, const std::string_view& section,
+void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const std::string_view& section,
 	const std::string_view& key, const std::string_view& display_name)
 {
-	if (s_input_binding_type != PAD::ControllerBindingType::Unknown)
+	if (s_input_binding_type != InputBindingInfo::Type::Unknown)
 	{
 		InputManager::RemoveHook();
 		ClearInputBindingVariables();
@@ -1327,7 +1327,7 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, PAD::ControllerBind
 
 void FullscreenUI::DrawInputBindingWindow()
 {
-	pxAssert(s_input_binding_type != PAD::ControllerBindingType::Unknown);
+	pxAssert(s_input_binding_type != InputBindingInfo::Type::Unknown);
 
 	const double time_remaining = INPUT_BINDING_TIMEOUT_SECONDS - s_input_binding_timer.GetTimeSeconds();
 	if (time_remaining <= 0.0)
@@ -3586,7 +3586,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 
 		for (u32 i = 0; i < ci->num_bindings; i++)
 		{
-			const PAD::ControllerBindingInfo& bi = ci->bindings[i];
+			const InputBindingInfo& bi = ci->bindings[i];
 			DrawInputBindingButton(bsi, bi.type, section, bi.name, bi.display_name, true);
 		}
 
@@ -3597,7 +3597,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 
 		for (u32 macro_index = 0; macro_index < PAD::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
 		{
-			DrawInputBindingButton(bsi, PAD::ControllerBindingType::Macro, section, fmt::format("Macro{}", macro_index + 1).c_str(),
+			DrawInputBindingButton(bsi, InputBindingInfo::Type::Macro, section, fmt::format("Macro{}", macro_index + 1).c_str(),
 				fmt::format("Macro {} Trigger", macro_index + 1).c_str());
 
 			std::string binds_string(bsi->GetStringValue(section, fmt::format("Macro{}Binds", macro_index + 1).c_str()));
@@ -3608,9 +3608,9 @@ void FullscreenUI::DrawControllerSettingsPage()
 				ImGuiFullscreen::ChoiceDialogOptions options;
 				for (u32 i = 0; i < ci->num_bindings; i++)
 				{
-					const PAD::ControllerBindingInfo& bi = ci->bindings[i];
-					if (bi.type != PAD::ControllerBindingType::Button && bi.type != PAD::ControllerBindingType::Axis &&
-						bi.type != PAD::ControllerBindingType::HalfAxis)
+					const InputBindingInfo& bi = ci->bindings[i];
+					if (bi.type != InputBindingInfo::Type::Button && bi.type != InputBindingInfo::Type::Axis &&
+						bi.type != InputBindingInfo::Type::HalfAxis)
 					{
 						continue;
 					}
@@ -3624,7 +3624,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 						std::string_view to_modify;
 						for (u32 j = 0; j < ci->num_bindings; j++)
 						{
-							const PAD::ControllerBindingInfo& bi = ci->bindings[j];
+							const InputBindingInfo& bi = ci->bindings[j];
 							if (bi.display_name == title)
 							{
 								to_modify = bi.name;
@@ -3714,22 +3714,22 @@ void FullscreenUI::DrawControllerSettingsPage()
 
 			for (u32 i = 0; i < ci->num_settings; i++)
 			{
-				const PAD::ControllerSettingInfo& si = ci->settings[i];
+				const SettingInfo& si = ci->settings[i];
 				std::string title(fmt::format(ICON_FA_COG " {}", si.display_name));
 				switch (si.type)
 				{
-					case PAD::ControllerSettingInfo::Type::Boolean:
+					case SettingInfo::Type::Boolean:
 						DrawToggleSetting(bsi, title.c_str(), si.description, section, si.name, si.BooleanDefaultValue(), true, false);
 						break;
-					case PAD::ControllerSettingInfo::Type::Integer:
+					case SettingInfo::Type::Integer:
 						DrawIntRangeSetting(bsi, title.c_str(), si.description, section, si.name, si.IntegerDefaultValue(),
 							si.IntegerMinValue(), si.IntegerMaxValue(), si.format, true);
 						break;
-					case PAD::ControllerSettingInfo::Type::IntegerList:
+					case SettingInfo::Type::IntegerList:
 						DrawIntListSetting(bsi, title.c_str(), si.description, section, si.name, si.IntegerDefaultValue(), si.options, 0,
 							si.IntegerMinValue(), true);
 						break;
-					case PAD::ControllerSettingInfo::Type::Float:
+					case SettingInfo::Type::Float:
 						DrawFloatSpinBoxSetting(bsi, title.c_str(), si.description, section, si.name, si.FloatDefaultValue(),
 							si.FloatMinValue(), si.FloatMaxValue(), si.FloatStepValue(), si.multiplier, si.format, true);
 						break;
@@ -3760,7 +3760,7 @@ void FullscreenUI::DrawHotkeySettingsPage()
 			last_category = hotkey;
 		}
 
-		DrawInputBindingButton(bsi, PAD::ControllerBindingType::Button, "Hotkeys", hotkey->name, hotkey->display_name, false);
+		DrawInputBindingButton(bsi, InputBindingInfo::Type::Button, "Hotkeys", hotkey->name, hotkey->display_name, false);
 	}
 
 	EndMenuButtons();
