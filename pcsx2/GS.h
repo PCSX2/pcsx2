@@ -342,8 +342,8 @@ public:
 	std::mutex m_mtx_RingBufferBusy2; // Gets released on semaXGkick waiting...
 	std::mutex m_mtx_WaitGS;
 	Threading::WorkSema m_sem_event;
-	Threading::KernelSemaphore m_sem_OnRingReset;
-	Threading::KernelSemaphore m_sem_Vsync;
+	Threading::UserspaceSemaphore m_sem_OnRingReset;
+	Threading::UserspaceSemaphore m_sem_Vsync;
 
 	// used to keep multiple threads from sending packets to the ringbuffer concurrently.
 	// (currently not used or implemented -- is a planned feature for a future threaded VU1)
@@ -369,7 +369,7 @@ public:
 	std::atomic_bool m_open_flag{false};
 	std::atomic_bool m_shutdown_flag{false};
 	std::atomic_bool m_run_idle_flag{false};
-	Threading::KernelSemaphore m_open_or_close_done;
+	Threading::UserspaceSemaphore m_open_or_close_done;
 
 public:
 	SysMtgsThread();
