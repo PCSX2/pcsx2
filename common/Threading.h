@@ -235,7 +235,7 @@ namespace Threading
 	class UserspaceSemaphore
 	{
 		KernelSemaphore m_sema;
-		std::atomic<uint32_t> m_counter{0};
+		std::atomic<int32_t> m_counter{0};
 
 	public:
 		UserspaceSemaphore() = default;
