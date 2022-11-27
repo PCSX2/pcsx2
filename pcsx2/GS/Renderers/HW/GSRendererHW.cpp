@@ -1763,11 +1763,13 @@ void GSRendererHW::Draw()
 		{
 			pxAssert(rt->m_texture->GetScale() == up_s);
 			rt->ResizeTexture(new_w, new_h, up_s);
+			rt->UpdateValidity(m_r);
 		}
 		if (ds)
 		{
 			pxAssert(ds->m_texture->GetScale() == up_s);
 			ds->ResizeTexture(new_w, new_h, up_s);
+			ds->UpdateValidity(m_r);
 		}
 	}
 
