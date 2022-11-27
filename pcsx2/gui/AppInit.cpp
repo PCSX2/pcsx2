@@ -104,11 +104,6 @@ void Pcsx2App::OpenMainFrame()
 	DisassemblyDialog* disassembly = new DisassemblyDialog(mainFrame);
 	m_id_Disassembler = disassembly->GetId();
 
-	NewRecordingFrame* newRecordingFrame = new NewRecordingFrame(mainFrame);
-	m_id_NewRecordingFrame = newRecordingFrame->GetId();
-	if (g_Conf->EmuOptions.EnableRecordingTools)
-		g_InputRecording.InitVirtualPadWindows(mainFrame);
-
 	if (g_Conf->EmuOptions.Debugger.ShowDebuggerOnStart)
 		disassembly->Show();
 

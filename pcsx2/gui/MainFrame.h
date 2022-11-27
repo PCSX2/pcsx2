@@ -122,11 +122,6 @@ public:
 	void VideoCaptureToggle();
 	bool IsCapturing() const noexcept { return m_capturingVideo; }
 
-	void initializeRecordingMenuItem(MenuIdentifiers menuId, wxString keyCodeStr, bool enable = true);
-	void enableRecordingMenuItem(MenuIdentifiers menuId, bool enable);
-	void StartInputRecording();
-	void StopInputRecording();
-
 protected:
 	void DoGiveHelp(const wxString& text, bool show);
 
@@ -204,16 +199,6 @@ protected:
 	void Menu_Capture_Video_IncludeAudio_Click(wxCommandEvent& event);
 	void Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent& event);
 	void Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& event);
-
-	void Menu_Recording_New_Click(wxCommandEvent& event);
-	void Menu_Recording_Play_Click(wxCommandEvent& event);
-	void Menu_Recording_Stop_Click(wxCommandEvent& event);
-	void Menu_Recording_Config_FrameAdvance(wxCommandEvent& event);
-	void ApplyFirstFrameStatus();
-	void Menu_Recording_TogglePause_Click(wxCommandEvent& event);
-	void Menu_Recording_FrameAdvance_Click(wxCommandEvent& event);
-	void Menu_Recording_ToggleRecordingMode_Click(wxCommandEvent& event);
-	void Menu_Recording_VirtualPad_Open_Click(wxCommandEvent& event);
 
 	void _DoBootCdvd();
 	bool _DoSelectIsoBrowser(wxString& dest);

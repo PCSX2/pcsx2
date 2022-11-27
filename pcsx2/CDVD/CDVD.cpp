@@ -841,10 +841,9 @@ void cdvdReset()
 
 	// If we are recording, always use the same RTC setting
 	// for games that use the RTC to seed their RNG -- this is very important to be the same everytime!
-#ifndef PCSX2_CORE
-	const bool input_recording_active = g_InputRecording.IsActive();
-#else
-	const bool input_recording_active = g_InputRecording.isActive();
+	bool input_recording_active = false;
+#ifdef PCSX2_CORE
+	input_recording_active = g_InputRecording.isActive();
 #endif
 	if (input_recording_active)
 	{

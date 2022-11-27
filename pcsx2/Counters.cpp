@@ -608,15 +608,6 @@ static __fi void frameLimit()
 
 static __fi void VSyncStart(u32 sCycle)
 {
-	if (EmuConfig.EnableRecordingTools)
-	{
-		// It is imperative that any frame locking that must happen occurs before Vsync is started
-		// Not doing so would sacrifice a frame of a savestate-based recording when loading any savestate
-#ifndef PCSX2_CORE
-		g_InputRecordingControls.HandlePausingAndLocking();
-#endif
-	}
-
 #ifdef PCSX2_CORE
 	// Update vibration at the end of a frame.
 	PAD::Update();
@@ -676,13 +667,6 @@ static __fi void GSVSync()
 
 static __fi void VSyncEnd(u32 sCycle)
 {
-#ifndef PCSX2_CORE
-	if (EmuConfig.EnableRecordingTools)
-	{
-		g_InputRecordingControls.CheckPauseStatus();
-	}
-#endif
-
 	if(EmuConfig.Trace.Enabled && EmuConfig.Trace.EE.m_EnableAll)
 		SysTrace.EE.Counters.Write( "    ================  EE COUNTER VSYNC END (frame: %d)  ================", g_FrameCount );
 

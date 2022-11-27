@@ -69,16 +69,11 @@ void MainEmuFrame::UpdateStatusBar()
 {
 	wxString temp(wxEmptyString);
 
-	if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
-		temp += "Base Savestate - " + g_InputRecording.GetInputRecordingData().GetFilename() + "_SaveState.p2s";
-	else
-	{
-		if (g_Conf->EnableFastBoot)
-			temp += "Fast Boot - ";
+	if (g_Conf->EnableFastBoot)
+		temp += "Fast Boot - ";
 
-		if (g_Conf->CdvdSource == CDVD_SourceType::Iso)
-			temp += "Load: '" + wxFileName(g_Conf->CurrentIso).GetFullName() + "' ";
-	}
+	if (g_Conf->CdvdSource == CDVD_SourceType::Iso)
+		temp += "Load: '" + wxFileName(g_Conf->CurrentIso).GetFullName() + "' ";
 
 	m_statusbar.SetStatusText(temp, 0);
 
@@ -111,10 +106,7 @@ void MainEmuFrame::UpdateCdvdSrcSelection()
 			jNO_DEFAULT
 	}
 	sMenuBar.Check(cdsrc, true);
-	if (!g_InputRecording.IsActive())
-	{
-		ApplyCDVDStatus();
-	}
+	ApplyCDVDStatus();
 	UpdateStatusBar();
 }
 
@@ -311,17 +303,6 @@ void MainEmuFrame::ConnectMenus()
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Video_IncludeAudio_Click, this, MenuId_Capture_Video_IncludeAudio);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click, this, MenuId_Capture_Screenshot_Screenshot);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click, this, MenuId_Capture_Screenshot_Screenshot_As);
-
-	// Recording
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_New_Click, this, MenuId_Recording_New);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_Play_Click, this, MenuId_Recording_Play);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_Stop_Click, this, MenuId_Recording_Stop);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_Config_FrameAdvance, this, MenuId_Recording_Config_FrameAdvance);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_TogglePause_Click, this, MenuId_Recording_TogglePause);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_FrameAdvance_Click, this, MenuId_Recording_FrameAdvance);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_ToggleRecordingMode_Click, this, MenuId_Recording_ToggleRecordingMode);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_VirtualPad_Open_Click, this, MenuId_Recording_VirtualPad_Port0);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_VirtualPad_Open_Click, this, MenuId_Recording_VirtualPad_Port1);
 }
 
 void MainEmuFrame::InitLogBoxPosition(AppConfig::ConsoleLogOptions& conf)
@@ -393,7 +374,7 @@ void MainEmuFrame::CreatePcsx2Menu()
 		_("Enabling Widescreen Patches may occasionally cause issues."), wxITEM_CHECK);
 
 	m_GameSettingsSubmenu.Append(MenuId_EnableInputRecording, _("Enable &Input Recording"),
-		_("Input Recording for controller/keyboard presses, tools for automation and playback."), wxITEM_CHECK);
+		_("Input Recording for controller/keyboard presses, tools for automation and playback."), wxITEM_NORMAL);
 
 	m_GameSettingsSubmenu.Append(MenuId_EnableHostFs, _("Enable &Host Filesystem"),
 		wxEmptyString, wxITEM_CHECK);
@@ -583,11 +564,6 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 
 	SetMenuBar(&m_menubar);
 
-	// Append the Recording options if previously enabled and setting has been picked up from ini
-	if (g_Conf->EmuOptions.EnableRecordingTools)
-	{
-		m_menubar.Append(&m_menuRecording, _("&Input Record"));
-	}
 	m_menubar.Append(&m_menuHelp, _("&Help"));
 
 	// ------------------------------------------------------------------------
@@ -813,12 +789,6 @@ void MainEmuFrame::ApplyConfigToGui(AppConfig& configToApply, int flags)
 		menubar.Check(MenuId_EnableWideScreenPatches, configToApply.EmuOptions.EnableWideScreenPatches);
 		menubar.Check(MenuId_Capture_Video_IncludeAudio, configToApply.AudioCapture.EnableAudio);
 
-		menubar.Check(MenuId_EnableInputRecording, configToApply.EmuOptions.EnableRecordingTools);
-		wxString frame_advance_label = wxString(_("Configure Frame Advance"));
-		frame_advance_label.Append(wxString::Format(" (%d)", configToApply.inputRecording.m_frame_advance_amount));
-		m_submenu_recording_settings.SetLabel(MenuId_Recording_Config_FrameAdvance, frame_advance_label);
-		g_InputRecordingControls.setFrameAdvanceAmount(configToApply.inputRecording.m_frame_advance_amount);
-
 		menubar.Check(MenuId_EnableHostFs, configToApply.EmuOptions.HostFs);
 		menubar.Check(MenuId_Debug_CreateBlockdump, configToApply.EmuOptions.CdvdDumpBlocks);
 #if defined(__POSIX__)
@@ -846,19 +816,4 @@ void MainEmuFrame::AppendShortcutToMenuOption(wxMenuItem& item, wxString keyCode
 	wxString text = item.GetItemLabel();
 	const size_t tabPos = text.rfind(L'\t');
 	item.SetItemLabel(text.Mid(0, tabPos) + L"\t" + keyCodeStr);
-}
-
-void MainEmuFrame::initializeRecordingMenuItem(MenuIdentifiers menuId, wxString keyCodeStr, bool enable)
-{
-	wxMenuItem& item = *m_menuRecording.FindChildItem(menuId);
-	wxString text = item.GetItemLabel();
-	const size_t tabPos = text.rfind(L'\t');
-	item.SetItemLabel(text.Mid(0, tabPos) + L"\t" + keyCodeStr);
-	item.Enable(enable);
-}
-
-void MainEmuFrame::enableRecordingMenuItem(MenuIdentifiers menuId, bool enable)
-{
-	wxMenuItem& item = *m_menuRecording.FindChildItem(menuId);
-	item.Enable(enable);
 }

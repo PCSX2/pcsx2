@@ -235,12 +235,8 @@ void Pcsx2App::SysApplySettings()
 
 void AppCoreThread::OnResumeReady()
 {
-	if (!g_InputRecordingControls.IsFrameAdvancing())
-	{
-		wxGetApp().SysApplySettings();
-		wxGetApp().PostMethod(AppSaveSettings);
-	}
-
+	wxGetApp().SysApplySettings();
+	wxGetApp().PostMethod(AppSaveSettings);
 	sApp.PostAppMethod(&Pcsx2App::leaveDebugMode);
 	_parent::OnResumeReady();
 }

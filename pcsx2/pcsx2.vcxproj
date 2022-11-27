@@ -171,82 +171,6 @@
       <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <!-- Generate Recording GUI Image Headers -->
-    <CustomBuild Include="Recording\VirtualPad\img\controllerFull.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="Recording\VirtualPad\img\controllerThreeQuarters.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="Recording\VirtualPad\img\controllerHalf.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="Recording\VirtualPad\img\circlePressed.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="Recording\VirtualPad\img\crossPressed.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="Recording\VirtualPad\img\downPressed.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="Recording\VirtualPad\img\l1Pressed.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="Recording\VirtualPad\img\l2Pressed.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="Recording\VirtualPad\img\l3Pressed.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="Recording\VirtualPad\img\leftPressed.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="Recording\VirtualPad\img\r1Pressed.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="Recording\VirtualPad\img\r2Pressed.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="Recording\VirtualPad\img\r3Pressed.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="Recording\VirtualPad\img\rightPressed.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="Recording\VirtualPad\img\selectPressed.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="Recording\VirtualPad\img\squarePressed.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="Recording\VirtualPad\img\startPressed.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="Recording\VirtualPad\img\trianglePressed.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="Recording\VirtualPad\img\upPressed.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CDVD\BlockdumpFileReader.cpp" />
@@ -449,13 +373,9 @@
     <ClCompile Include="ps2\pgif.cpp" />
     <ClCompile Include="Dmac.cpp" />
     <ClCompile Include="Recording\InputRecordingControls.cpp" />
-    <ClCompile Include="Recording\VirtualPad\VirtualPad.cpp" />
-    <ClCompile Include="Recording\VirtualPad\VirtualPadData.cpp" />
-    <ClCompile Include="Recording\VirtualPad\VirtualPadResources.cpp" />
     <ClCompile Include="ShiftJisToUnicode.cpp" />
     <ClCompile Include="sif2.cpp" />
     <ClCompile Include="Recording\InputRecording.cpp" />
-    <ClCompile Include="Recording\NewRecordingFrame.cpp" />
     <ClCompile Include="Recording\InputRecordingFile.cpp" />
     <ClCompile Include="Recording\PadData.cpp" />
     <ClCompile Include="USB\configuration.cpp" />
@@ -963,12 +883,8 @@
     <ClInclude Include="ps2\pgif.h" />
     <ClInclude Include="Recording\InputRecording.h" />
     <ClInclude Include="Recording\InputRecordingControls.h" />
-    <ClInclude Include="Recording\NewRecordingFrame.h" />
     <ClInclude Include="Recording\InputRecordingFile.h" />
     <ClInclude Include="Recording\PadData.h" />
-    <ClInclude Include="Recording\VirtualPad\VirtualPad.h" />
-    <ClInclude Include="Recording\VirtualPad\VirtualPadData.h" />
-    <ClInclude Include="Recording\VirtualPad\VirtualPadResources.h" />
     <ClInclude Include="Recording\Utilities\InputRecordingLogger.h" />
     <ClInclude Include="USB\configuration.h" />
     <ClInclude Include="USB\deviceproxy.h" />

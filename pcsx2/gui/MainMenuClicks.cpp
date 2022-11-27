@@ -38,10 +38,6 @@
 #include "fmt/core.h"
 #include "wx/numdlg.h"
 
-#include "Recording/InputRecording.h"
-#include "Recording/InputRecordingControls.h"
-#include "Recording/VirtualPad/VirtualPad.h"
-
 
 using namespace Dialogs;
 
@@ -165,7 +161,7 @@ void MainEmuFrame::Menu_ResetAllSettings_Click(wxCommandEvent& event)
 		ScopedCoreThreadPopup suspender;
 		if (!Msgbox::OkCancel(pxsFmt(
 								  pxE(L"This command clears %s settings and allows you to re-run the First-Time Wizard.  You will need to manually restart %s after this operation.\n\nWARNING!!  Click OK to delete *ALL* settings for %s and force-close the app, losing any current emulation progress.  Are you absolutely sure?"), WX_STR(pxGetAppName()), WX_STR(pxGetAppName()), WX_STR(pxGetAppName())),
-							  _("Reset all settings?")))
+				_("Reset all settings?")))
 		{
 			suspender.AllowResume();
 			return;
@@ -204,9 +200,6 @@ wxWindowID SwapOrReset_Iso(wxWindow* owner, IScopedCoreThread& core_control, con
 		dialog += dialog.Text(isoFilename);
 		dialog += dialog.GetCharHeight();
 		dialog += dialog.Heading(_("Do you want to swap discs or boot the new image (via system reset)?"));
-
-		if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
-			dialog += dialog.Text(_("\n(Warning: The savestate accompanying the active input recording\nmay not be compatible with the new source)"));
 
 		result = pxIssueConfirmation(dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
 		if (result == wxID_CANCEL)
@@ -264,9 +257,6 @@ wxWindowID SwapOrReset_Disc(wxWindow* owner, IScopedCoreThread& core, const wxSt
 		dialog += dialog.GetCharHeight();
 		dialog += dialog.Heading(_("Do you want to swap discs or boot the new disc (via system reset)?"));
 
-		if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
-			dialog += dialog.Text(_("\n(Warning: The savestate accompanying the active input recording\nmay not be compatible with the new source)"));
-
 		result = pxIssueConfirmation(dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
 		if (result == wxID_CANCEL)
 		{
@@ -309,13 +299,10 @@ wxWindowID SwapOrReset_CdvdSrc(wxWindow* owner, CDVD_SourceType newsrc)
 
 		wxString changeMsg;
 		changeMsg.Printf(_("You've selected to switch the CDVD source from %s to %s."),
-						 CDVD_SourceLabels[enum_cast(g_Conf->CdvdSource)], CDVD_SourceLabels[enum_cast(newsrc)]);
+			CDVD_SourceLabels[enum_cast(g_Conf->CdvdSource)], CDVD_SourceLabels[enum_cast(newsrc)]);
 
 		dialog += dialog.Heading(changeMsg + L"\n\n" +
 								 _("Do you want to swap discs or boot the new image (system reset)?"));
-
-		if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
-			dialog += dialog.Text(_("\n(Warning: The savestate accompanying the active input recording\nmay not be compatible with the new source)"));
 
 		result = pxIssueConfirmation(dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
 
@@ -334,8 +321,8 @@ wxWindowID SwapOrReset_CdvdSrc(wxWindow* owner, CDVD_SourceType newsrc)
 	if (result != wxID_RESET)
 	{
 		Console.Indent().WriteLn("(CdvdSource) HotSwapping CDVD source types from %ls to %ls.",
-								 WX_STR(wxString(CDVD_SourceLabels[enum_cast(oldsrc)])),
-								 WX_STR(wxString(CDVD_SourceLabels[enum_cast(newsrc)])));
+			WX_STR(wxString(CDVD_SourceLabels[enum_cast(oldsrc)])),
+			WX_STR(wxString(CDVD_SourceLabels[enum_cast(newsrc)])));
 		//CoreThread.ChangeCdvdSource();
 		sMainFrame.UpdateCdvdSrcSelection();
 		core.AllowResume();
@@ -401,7 +388,7 @@ bool MainEmuFrame::_DoSelectIsoBrowser(wxString& result)
 	isoFilterTypes.Add(L"*.*");
 
 	wxFileDialog ctrl(this, _("Select disc image, compressed disc image, or block-dump..."), g_Conf->Folders.RunIso.ToString(), wxEmptyString,
-					  JoinString(isoFilterTypes, L"|"), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+		JoinString(isoFilterTypes, L"|"), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
 	if (ctrl.ShowModal() != wxID_CANCEL)
 	{
@@ -418,7 +405,7 @@ bool MainEmuFrame::_DoSelectELFBrowser()
 	static const wxChar* elfFilterType = L"ELF Files (.elf)|*.elf;*.ELF";
 
 	wxFileDialog ctrl(this, _("Select ELF file..."), g_Conf->Folders.RunELF.ToString(), wxEmptyString,
-					  (wxString)elfFilterType + L"|" + _("All Files (*.*)") + L"|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+		(wxString)elfFilterType + L"|" + _("All Files (*.*)") + L"|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
 	if (ctrl.ShowModal() != wxID_CANCEL)
 	{
@@ -506,23 +493,13 @@ void MainEmuFrame::Menu_CdvdSource_Click(wxCommandEvent& event)
 	}
 
 	SwapOrReset_CdvdSrc(this, newsrc);
-	if (!g_InputRecording.IsActive())
-	{
-		ApplyCDVDStatus();
-	}
+	ApplyCDVDStatus();
 }
 
 void MainEmuFrame::Menu_BootCdvd_Click(wxCommandEvent& event)
 {
-	if (g_InputRecording.IsActive())
-	{
-		g_InputRecording.GoToFirstFrame(this);
-	}
-	else
-	{
-		g_Conf->EmuOptions.UseBOOT2Injection = g_Conf->EnableFastBoot;
-		_DoBootCdvd();
-	}
+	g_Conf->EmuOptions.UseBOOT2Injection = g_Conf->EnableFastBoot;
+	_DoBootCdvd();
 }
 
 void MainEmuFrame::Menu_FastBoot_Click(wxCommandEvent& event)
@@ -681,66 +658,8 @@ void MainEmuFrame::Menu_EnableWideScreenPatches_Click(wxCommandEvent&)
 
 void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent& event)
 {
-	bool checked = GetMenuBar()->IsChecked(MenuId_EnableInputRecording);
-	// Confirm with User
-	if (checked)
-	{
-		if (!Msgbox::OkCancel(_("Please be aware that PCSX2's input recording features are still very much a work-in-progress.\n"
-								"As a result, there may be unforeseen bugs, performance implications and instability with certain games.\n\n"
-								"These tools are provided as-is and should be enabled under your own discretion."),
-							  "Enabling Input Recording"))
-		{
-			checked = false;
-			m_GameSettingsSubmenu.FindChildItem(MenuId_EnableInputRecording)->Check(false);
-		}
-	}
-
-	// If still enabled, add the menu item, else, remove it
-	if (checked)
-	{
-		GetMenuBar()->Insert(TopLevelMenu_InputRecording, &m_menuRecording, _("&Input Record"));
-		g_InputRecording.InitVirtualPadWindows(this);
-		SysConsole.recordingConsole.Enabled = true;
-		// Enable Recording Keybindings
-		if (GSFrame* gsFrame = wxGetApp().GetGsFramePtr())
-		{
-			if (GSPanel* viewport = gsFrame->GetViewport())
-			{
-				viewport->InitRecordingAccelerators();
-			}
-		}
-	}
-	else
-	{
-		//Properly close any currently loaded recording file before disabling
-		StopInputRecording();
-		GetMenuBar()->Remove(TopLevelMenu_InputRecording);
-		// Always turn controller logs off, but never turn it on by default
-		SysConsole.controlInfo.Enabled = checked;
-		// Return Keybindings Back to Normal
-		if (GSFrame* gsFrame = wxGetApp().GetGsFramePtr())
-		{
-			if (GSPanel* viewport = gsFrame->GetViewport())
-			{
-				viewport->RemoveRecordingAccelerators();
-			}
-		}
-		SysConsole.recordingConsole.Enabled = false;
-		if (g_InputRecordingControls.IsPaused())
-			g_InputRecordingControls.Resume();
-	}
-
-	g_Conf->EmuOptions.EnableRecordingTools = checked;
-	// Update GS Title Frequency
-	if (GSFrame* gsFrame = wxGetApp().GetGsFramePtr())
-	{
-		gsFrame->UpdateTitleUpdateFreq();
-	}
-	// Enable Recording Logs
-	ConsoleLogFrame* progLog = wxGetApp().GetProgramLog();
-	progLog->UpdateLogList();
-	AppApplySettings();
-	AppSaveSettings();
+	Msgbox::Alert("Input Recording has been deprecated from the wxWidgets version.\nUse an older dev build (before v1.7.3650) or switch to the Qt version!\nOld recordings should still play correctly!");
+	return;
 }
 
 void MainEmuFrame::Menu_EnableHostFs_Click(wxCommandEvent&)
@@ -782,7 +701,7 @@ void MainEmuFrame::Menu_SaveStates_Click(wxCommandEvent& event)
 void MainEmuFrame::Menu_LoadStateFromFile_Click(wxCommandEvent& event)
 {
 	wxFileDialog loadStateDialog(this, _("Load State"), L"", L"",
-								 L"Savestate files (*.p2s)|*.p2s", wxFD_OPEN);
+		L"Savestate files (*.p2s)|*.p2s", wxFD_OPEN);
 
 	if (loadStateDialog.ShowModal() == wxID_CANCEL)
 	{
@@ -796,7 +715,7 @@ void MainEmuFrame::Menu_LoadStateFromFile_Click(wxCommandEvent& event)
 void MainEmuFrame::Menu_SaveStateToFile_Click(wxCommandEvent& event)
 {
 	wxFileDialog saveStateDialog(this, _("Save State"), L"", L"",
-								 L"Savestate files (*.p2s)|*.p2s", wxFD_OPEN);
+		L"Savestate files (*.p2s)|*.p2s", wxFD_OPEN);
 
 	if (saveStateDialog.ShowModal() == wxID_CANCEL)
 	{
@@ -825,10 +744,6 @@ protected:
 		if (CoreThread.IsOpen())
 		{
 			CoreThread.Suspend();
-			// Disable recording controls that only make sense if the game is running
-			sMainFrame.enableRecordingMenuItem(MenuId_Recording_FrameAdvance, false);
-			sMainFrame.enableRecordingMenuItem(MenuId_Recording_TogglePause, false);
-			sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, false);
 		}
 		else
 			CoreThread.Resume();
@@ -849,40 +764,11 @@ void MainEmuFrame::Menu_SuspendResume_Click(wxCommandEvent& event)
 
 void MainEmuFrame::Menu_SysShutdown_Click(wxCommandEvent& event)
 {
-	bool doShutdown = true;
-	if (!g_InputRecording.IsActive())
-	{
-		if (g_InputRecordingControls.IsPaused())
-			g_InputRecordingControls.Resume();
-	}
-	else
-	{
-		const bool initiallyPaused = g_InputRecordingControls.IsPaused();
-		if (!initiallyPaused)
-			g_InputRecordingControls.Pause();
-		wxWindowID result = wxID_CANCEL;
-		wxDialogWithHelpers dialog(this, _("Shutdown & Close Input Recording"));
-		dialog += dialog.Heading(L"\nShutting down emulation will close the active input recording file.\nProceed?");
-		result = pxIssueConfirmation(dialog, MsgButtons().Close().Cancel());
-		if (result == wxID_CLOSE)
-		{
-			StopInputRecording();
-			g_InputRecordingControls.Resume();
-		}
-		else if (!initiallyPaused)
-		{
-			g_InputRecordingControls.Resume();
-			doShutdown = false;
-		}
-	}
-	if (doShutdown)
-	{
-		if (m_capturingVideo)
-			VideoCaptureToggle();
-		UI_DisableSysShutdown();
-		Console.SetTitle("PCSX2 Program Log");
-		CoreThread.Reset();
-	}
+	if (m_capturingVideo)
+		VideoCaptureToggle();
+	UI_DisableSysShutdown();
+	Console.SetTitle("PCSX2 Program Log");
+	CoreThread.Reset();
 }
 
 void MainEmuFrame::Menu_Debug_Open_Click(wxCommandEvent& event)
@@ -1049,151 +935,3 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& e
 		CoreThread.Resume();
 }
 
-void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent& event)
-{
-	Msgbox::Alert("Input Recording has been deprecated from the wxWidgets version.\nUse an older dev build or switch to the Qt version!\nOld recordings should still play correctly!");
-	return;
-	const bool emulation_initially_paused = CoreThread.IsPaused();
-	const bool recording_initially_paused = g_InputRecordingControls.IsPaused();
-
-	if (!emulation_initially_paused && !recording_initially_paused)
-		g_InputRecordingControls.PauseImmediately();
-
-	NewRecordingFrame* newRecordingFrame = wxGetApp().GetNewRecordingFramePtr();
-	if (newRecordingFrame)
-	{
-		if (newRecordingFrame->ShowModal(CoreThread.IsOpen()) != wxID_CANCEL)
-		{
-			if (g_InputRecording.Create(newRecordingFrame->GetFile(), newRecordingFrame->GetFrom(), newRecordingFrame->GetAuthor()))
-			{
-				if (!g_InputRecording.GetInputRecordingData().FromSaveState())
-					StartInputRecording();
-				return;
-			}
-		}
-
-		if (!emulation_initially_paused && !recording_initially_paused)
-			g_InputRecordingControls.ResumeImmediately();
-	}
-}
-
-void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent& event)
-{
-	Msgbox::Alert("Input Recording has been deprecated from the wxWidgets version.\nUse an older dev build or switch to the Qt version!\nOld recordings should still play correctly!");
-	return;
-	const bool initiallyPaused = g_InputRecordingControls.IsPaused();
-
-	if (!initiallyPaused)
-		g_InputRecordingControls.PauseImmediately();
-
-	wxFileDialog openFileDialog(this, _("Select P2M2 record file."), L"", L"",
-								L"p2m2 file(*.p2m2)|*.p2m2", wxFD_OPEN);
-	if (openFileDialog.ShowModal() == wxID_CANCEL)
-	{
-		if (!initiallyPaused)
-			g_InputRecordingControls.Resume();
-		return;
-	}
-
-	StopInputRecording();
-	if (!g_InputRecording.Play(this, openFileDialog.GetPath()))
-	{
-		if (!initiallyPaused)
-			g_InputRecordingControls.Resume();
-		return;
-	}
-
-	if (!g_InputRecording.GetInputRecordingData().FromSaveState())
-		StartInputRecording();
-}
-
-void MainEmuFrame::ApplyFirstFrameStatus()
-{
-	wxMenuItem* cdvd_menu = m_menuSys.FindChildItem(MenuId_Boot_CDVD);
-
-	wxString keyCodeStr;
-	if (GSFrame* gsFrame = wxGetApp().GetGsFramePtr())
-		if (GSPanel* viewport = gsFrame->GetViewport())
-			keyCodeStr = '\t' + viewport->GetAssociatedKeyCode(("GoToFirstFrame"));
-
-	cdvd_menu->SetItemLabel(L"Restart Recording" + keyCodeStr);
-	if (g_InputRecording.GetInputRecordingData().FromSaveState())
-		cdvd_menu->SetHelp(L"Loads the savestate that accompanies the active input recording");
-	else
-		cdvd_menu->SetHelp(L"Reboots Emulation");
-
-	UpdateStatusBar();
-}
-
-void MainEmuFrame::Menu_Recording_Stop_Click(wxCommandEvent& event)
-{
-	Msgbox::Alert("Input Recording has been deprecated from the wxWidgets version.\nUse an older dev build or switch to the Qt version!\nOld recordings should still play correctly!");
-	return;
-	StopInputRecording();
-}
-
-void MainEmuFrame::Menu_Recording_Config_FrameAdvance(wxCommandEvent& event)
-{
-	Msgbox::Alert("Input Recording has been deprecated from the wxWidgets version.\nUse an older dev build or switch to the Qt version!\nOld recordings should still play correctly!");
-	return;
-	long result = wxGetNumberFromUser(_("Enter the number of frames to advance per advance"), _("Number of Frames"), _("Configure Frame Advance"), g_Conf->inputRecording.m_frame_advance_amount, 1, INT_MAX);
-	if (result != -1)
-	{
-		g_Conf->inputRecording.m_frame_advance_amount = result;
-		g_InputRecordingControls.setFrameAdvanceAmount(result);
-		wxString frame_advance_label = wxString(_("Configure Frame Advance"));
-		frame_advance_label.Append(wxString::Format(" (%ld)", result));
-		m_submenu_recording_settings.SetLabel(MenuId_Recording_Config_FrameAdvance, frame_advance_label);
-	}
-}
-
-void MainEmuFrame::StartInputRecording()
-{
-	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
-	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
-	m_menuRecording.FindChildItem(MenuId_Recording_ToggleRecordingMode)->Enable(true);
-	ApplyFirstFrameStatus();
-}
-
-void MainEmuFrame::StopInputRecording()
-{
-	if (g_InputRecording.IsActive())
-	{
-		g_InputRecording.Stop();
-		m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(true);
-		m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(false);
-		m_menuRecording.FindChildItem(MenuId_Recording_ToggleRecordingMode)->Enable(false);
-		ApplyCDVDStatus();
-	}
-}
-
-void MainEmuFrame::Menu_Recording_TogglePause_Click(wxCommandEvent& event)
-{
-	Msgbox::Alert("Input Recording has been deprecated from the wxWidgets version.\nUse an older dev build or switch to the Qt version!\nOld recordings should still play correctly!");
-	return;
-	if (g_Conf->EmuOptions.EnableRecordingTools)
-		g_InputRecordingControls.TogglePause();
-}
-
-void MainEmuFrame::Menu_Recording_FrameAdvance_Click(wxCommandEvent& event)
-{
-	Msgbox::Alert("Input Recording has been deprecated from the wxWidgets version.\nUse an older dev build or switch to the Qt version!\nOld recordings should still play correctly!");
-	return;
-	if (g_Conf->EmuOptions.EnableRecordingTools)
-		g_InputRecordingControls.FrameAdvance();
-}
-
-void MainEmuFrame::Menu_Recording_ToggleRecordingMode_Click(wxCommandEvent& event)
-{
-	Msgbox::Alert("Input Recording has been deprecated from the wxWidgets version.\nUse an older dev build or switch to the Qt version!\nOld recordings should still play correctly!");
-	return;
-	if (g_Conf->EmuOptions.EnableRecordingTools)
-		g_InputRecordingControls.RecordModeToggle();
-}
-
-void MainEmuFrame::Menu_Recording_VirtualPad_Open_Click(wxCommandEvent& event)
-{
-	Msgbox::Alert("Input Recording has been deprecated from the wxWidgets version.\nUse an older dev build or switch to the Qt version!\nOld recordings should still play correctly!");
-	return;
-	g_InputRecording.ShowVirtualPad(event.GetId() - MenuId_Recording_VirtualPad_Port0);
-}
