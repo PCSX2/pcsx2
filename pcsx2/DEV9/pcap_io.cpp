@@ -19,12 +19,10 @@
 #include <memory>
 
 #ifdef _WIN32
-#include <winsock2.h>
-#include <windows.h>
-#include <iphlpapi.h>
-//#include <ws2tcpip.h>
-//#include <comdef.h>
+#include "common/RedtapeWindows.h"
 #include "common/StringUtil.h"
+#include <WinSock2.h>
+#include <iphlpapi.h>
 #elif defined(__linux__)
 #include <sys/ioctl.h>
 #include <net/if.h>

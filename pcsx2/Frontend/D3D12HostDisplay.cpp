@@ -348,7 +348,7 @@ static std::string GetDriverVersionFromLUID(const LUID& luid)
 	std::string ret;
 
 	HKEY hKey;
-	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\DirectX"), 0, KEY_READ, &hKey) == ERROR_SUCCESS)
+	if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\DirectX", 0, KEY_READ, &hKey) == ERROR_SUCCESS)
 	{
 		DWORD max_key_len = 0, adapter_count = 0;
 		if (RegQueryInfoKey(hKey, nullptr, nullptr, nullptr, &adapter_count, &max_key_len,
@@ -358,16 +358,16 @@ static std::string GetDriverVersionFromLUID(const LUID& luid)
 			for (DWORD i = 0; i < adapter_count; ++i)
 			{
 				DWORD subKeyLength = static_cast<DWORD>(current_name.size());
-				if (RegEnumKeyEx(hKey, i, current_name.data(), &subKeyLength, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS)
+				if (RegEnumKeyExW(hKey, i, current_name.data(), &subKeyLength, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS)
 				{
 					LUID current_luid = {};
 					DWORD current_luid_size = sizeof(uint64_t);
-					if (RegGetValue(hKey, current_name.data(), _T("AdapterLuid"), RRF_RT_QWORD, nullptr, &current_luid, &current_luid_size) == ERROR_SUCCESS &&
+					if (RegGetValueW(hKey, current_name.data(), L"AdapterLuid", RRF_RT_QWORD, nullptr, &current_luid, &current_luid_size) == ERROR_SUCCESS &&
 						current_luid.HighPart == luid.HighPart && current_luid.LowPart == luid.LowPart)
 					{
 						LARGE_INTEGER driver_version = {};
 						DWORD driver_version_size = sizeof(driver_version);
-						if (RegGetValue(hKey, current_name.data(), _T("DriverVersion"), RRF_RT_QWORD, nullptr, &driver_version, &driver_version_size) == ERROR_SUCCESS)
+						if (RegGetValueW(hKey, current_name.data(), L"DriverVersion", RRF_RT_QWORD, nullptr, &driver_version, &driver_version_size) == ERROR_SUCCESS)
 						{
 							WORD nProduct = HIWORD(driver_version.HighPart);
 							WORD nVersion = LOWORD(driver_version.HighPart);

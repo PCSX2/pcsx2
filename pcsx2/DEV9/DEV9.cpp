@@ -21,8 +21,7 @@
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
-#include <Winioctl.h>
-#include <windows.h>
+#include <winioctl.h>
 #else
 #include <sys/types.h>
 #include <sys/mman.h>

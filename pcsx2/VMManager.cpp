@@ -67,6 +67,8 @@
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
+#include <objbase.h>
+#include <timeapi.h>
 #endif
 
 namespace VMManager

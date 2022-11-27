@@ -31,7 +31,7 @@
 #ifdef _WIN32
 
 #define usleep(x) Sleep(x / 1000)
-#include <windows.h>
+#include "common/RedtapeWindows.h"
 #include <windowsx.h>
 #include <winioctl.h>
 
