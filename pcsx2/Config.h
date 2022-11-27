@@ -79,7 +79,8 @@ struct InputBindingInfo
 
 	const char* name;
 	const char* display_name;
-	Type type;
+	Type bind_type;
+	u16 bind_index;
 	GenericInputBinding generic_mapping;
 };
 

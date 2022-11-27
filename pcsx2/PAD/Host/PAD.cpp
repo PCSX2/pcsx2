@@ -364,34 +364,34 @@ void PAD::Update()
 }
 
 static const InputBindingInfo s_dualshock2_binds[] = {
-	{"Up", "D-Pad Up", InputBindingInfo::Type::Button, GenericInputBinding::DPadUp},
-	{"Right", "D-Pad Right", InputBindingInfo::Type::Button, GenericInputBinding::DPadRight},
-	{"Down", "D-Pad Down", InputBindingInfo::Type::Button, GenericInputBinding::DPadDown},
-	{"Left", "D-Pad Left", InputBindingInfo::Type::Button, GenericInputBinding::DPadLeft},
-	{"Triangle", "Triangle", InputBindingInfo::Type::Button, GenericInputBinding::Triangle},
-	{"Circle", "Circle", InputBindingInfo::Type::Button, GenericInputBinding::Circle},
-	{"Cross", "Cross", InputBindingInfo::Type::Button, GenericInputBinding::Cross},
-	{"Square", "Square", InputBindingInfo::Type::Button, GenericInputBinding::Square},
-	{"Select", "Select", InputBindingInfo::Type::Button, GenericInputBinding::Select},
-	{"Start", "Start", InputBindingInfo::Type::Button, GenericInputBinding::Start},
-	{"L1", "L1 (Left Bumper)", InputBindingInfo::Type::Button, GenericInputBinding::L1},
-	{"L2", "L2 (Left Trigger)", InputBindingInfo::Type::HalfAxis, GenericInputBinding::L2},
-	{"R1", "R1 (Right Bumper)", InputBindingInfo::Type::Button, GenericInputBinding::R1},
-	{"R2", "R2 (Right Trigger)", InputBindingInfo::Type::HalfAxis, GenericInputBinding::R2},
-	{"L3", "L3 (Left Stick Button)", InputBindingInfo::Type::Button, GenericInputBinding::L3},
-	{"R3", "R3 (Right Stick Button)", InputBindingInfo::Type::Button, GenericInputBinding::R3},
-	{"Analog", "Analog Toggle", InputBindingInfo::Type::Button, GenericInputBinding::System},
-	{"Pressure", "Apply Pressure", InputBindingInfo::Type::Button, GenericInputBinding::Unknown},
-	{"LUp", "Left Stick Up", InputBindingInfo::Type::HalfAxis, GenericInputBinding::LeftStickUp},
-	{"LRight", "Left Stick Right", InputBindingInfo::Type::HalfAxis, GenericInputBinding::LeftStickRight},
-	{"LDown", "Left Stick Down", InputBindingInfo::Type::HalfAxis, GenericInputBinding::LeftStickDown},
-	{"LLeft", "Left Stick Left", InputBindingInfo::Type::HalfAxis, GenericInputBinding::LeftStickLeft},
-	{"RUp", "Right Stick Up", InputBindingInfo::Type::HalfAxis, GenericInputBinding::RightStickUp},
-	{"RRight", "Right Stick Right", InputBindingInfo::Type::HalfAxis, GenericInputBinding::RightStickRight},
-	{"RDown", "Right Stick Down", InputBindingInfo::Type::HalfAxis, GenericInputBinding::RightStickDown},
-	{"RLeft", "Right Stick Left", InputBindingInfo::Type::HalfAxis, GenericInputBinding::RightStickLeft},
-	{"LargeMotor", "Large (Low Frequency) Motor", InputBindingInfo::Type::Motor, GenericInputBinding::LargeMotor},
-	{"SmallMotor", "Small (High Frequency) Motor", InputBindingInfo::Type::Motor, GenericInputBinding::SmallMotor},
+	{"Up", "D-Pad Up", InputBindingInfo::Type::Button, PAD_UP, GenericInputBinding::DPadUp},
+	{"Right", "D-Pad Right", InputBindingInfo::Type::Button, PAD_RIGHT, GenericInputBinding::DPadRight},
+	{"Down", "D-Pad Down", InputBindingInfo::Type::Button, PAD_DOWN, GenericInputBinding::DPadDown},
+	{"Left", "D-Pad Left", InputBindingInfo::Type::Button, PAD_LEFT, GenericInputBinding::DPadLeft},
+	{"Triangle", "Triangle", InputBindingInfo::Type::Button, PAD_TRIANGLE, GenericInputBinding::Triangle},
+	{"Circle", "Circle", InputBindingInfo::Type::Button, PAD_CIRCLE, GenericInputBinding::Circle},
+	{"Cross", "Cross", InputBindingInfo::Type::Button, PAD_CROSS, GenericInputBinding::Cross},
+	{"Square", "Square", InputBindingInfo::Type::Button, PAD_SQUARE, GenericInputBinding::Square},
+	{"Select", "Select", InputBindingInfo::Type::Button, PAD_SELECT, GenericInputBinding::Select},
+	{"Start", "Start", InputBindingInfo::Type::Button, PAD_START, GenericInputBinding::Start},
+	{"L1", "L1 (Left Bumper)", InputBindingInfo::Type::Button, PAD_L1, GenericInputBinding::L1},
+	{"L2", "L2 (Left Trigger)", InputBindingInfo::Type::HalfAxis, PAD_L2, GenericInputBinding::L2},
+	{"R1", "R1 (Right Bumper)", InputBindingInfo::Type::Button, PAD_R1, GenericInputBinding::R1},
+	{"R2", "R2 (Right Trigger)", InputBindingInfo::Type::HalfAxis, PAD_R2, GenericInputBinding::R2},
+	{"L3", "L3 (Left Stick Button)", InputBindingInfo::Type::Button, PAD_L3, GenericInputBinding::L3},
+	{"R3", "R3 (Right Stick Button)", InputBindingInfo::Type::Button, PAD_R3, GenericInputBinding::R3},
+	{"Analog", "Analog Toggle", InputBindingInfo::Type::Button, PAD_ANALOG, GenericInputBinding::System},
+	{"Pressure", "Apply Pressure", InputBindingInfo::Type::Button, PAD_PRESSURE, GenericInputBinding::Unknown},
+	{"LUp", "Left Stick Up", InputBindingInfo::Type::HalfAxis, PAD_L_UP, GenericInputBinding::LeftStickUp},
+	{"LRight", "Left Stick Right", InputBindingInfo::Type::HalfAxis, PAD_L_RIGHT, GenericInputBinding::LeftStickRight},
+	{"LDown", "Left Stick Down", InputBindingInfo::Type::HalfAxis, PAD_L_DOWN, GenericInputBinding::LeftStickDown},
+	{"LLeft", "Left Stick Left", InputBindingInfo::Type::HalfAxis, PAD_L_LEFT, GenericInputBinding::LeftStickLeft},
+	{"RUp", "Right Stick Up", InputBindingInfo::Type::HalfAxis, PAD_R_UP, GenericInputBinding::RightStickUp},
+	{"RRight", "Right Stick Right", InputBindingInfo::Type::HalfAxis, PAD_R_RIGHT, GenericInputBinding::RightStickRight},
+	{"RDown", "Right Stick Down", InputBindingInfo::Type::HalfAxis, PAD_R_DOWN, GenericInputBinding::RightStickDown},
+	{"RLeft", "Right Stick Left", InputBindingInfo::Type::HalfAxis, PAD_R_LEFT, GenericInputBinding::RightStickLeft},
+	{"LargeMotor", "Large (Low Frequency) Motor", InputBindingInfo::Type::Motor, 0, GenericInputBinding::LargeMotor},
+	{"SmallMotor", "Small (High Frequency) Motor", InputBindingInfo::Type::Motor, 0, GenericInputBinding::SmallMotor},
 };
 
 static const char* s_dualshock2_invert_entries[] = {
@@ -484,7 +484,7 @@ std::vector<std::string> PAD::GetControllerBinds(const std::string_view& type)
 		for (u32 i = 0; i < info->num_bindings; i++)
 		{
 			const InputBindingInfo& bi = info->bindings[i];
-			if (bi.type == InputBindingInfo::Type::Unknown || bi.type == InputBindingInfo::Type::Motor)
+			if (bi.bind_type == InputBindingInfo::Type::Unknown || bi.bind_type == InputBindingInfo::Type::Motor)
 				continue;
 
 			ret.emplace_back(info->bindings[i].name);
