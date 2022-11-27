@@ -25,12 +25,11 @@
 #endif
 
 // We require Windows 10+.
+#ifdef _WIN32_WINNT
+#undef _WIN32_WINNT
+#endif
 #define _WIN32_WINNT 0x0A00 // Windows 10
 
-#include <windows.h>
-#include <versionhelpers.h>
-#include <shtypes.h>
-#include <timeapi.h>
-#include <tchar.h>
+#include <Windows.h>
 
 #endif

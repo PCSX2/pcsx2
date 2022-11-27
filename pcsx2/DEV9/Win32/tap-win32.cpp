@@ -21,9 +21,8 @@
 #include "fmt/core.h"
 
 #include <stdio.h>
-#include <windows.h>
-#include <winsock2.h>
-#include <ws2ipdef.h>
+#include <WinSock2.h>
+#include <WS2tcpip.h>
 #include <iphlpapi.h>
 
 #include <Netcfgx.h>

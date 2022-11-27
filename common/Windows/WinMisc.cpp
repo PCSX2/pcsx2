@@ -25,8 +25,8 @@
 #include "fmt/core.h"
 
 #include <mmsystem.h>
-
-#pragma comment(lib, "User32.lib")
+#include <timeapi.h>
+#include <VersionHelpers.h>
 
 alignas(16) static LARGE_INTEGER lfreq;
 
@@ -67,7 +67,7 @@ std::string GetOSVersionString()
 	if (IsWindows10OrGreater())
 	{
 		retval = "Microsoft ";
-		retval += IsWindowsServer() ? "Windows Server 2016" : "Windows 10";
+		retval += IsWindowsServer() ? "Windows Server 2016+" : "Windows 10+";
 		
 	}
 	else

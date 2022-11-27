@@ -19,7 +19,9 @@
 #include "common/Assertions.h"
 #include "common/emitter/tools.h"
 #include "common/RedtapeWindows.h"
+#include <mmsystem.h>
 #include <process.h>
+#include <timeapi.h>
 
 __fi void Threading::Sleep(int ms)
 {

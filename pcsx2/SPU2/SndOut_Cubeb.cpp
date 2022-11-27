@@ -15,13 +15,18 @@
 
 #include "PrecompiledHeader.h"
 
+#include "Global.h"
+#include "SndOut.h"
+
 #include "common/Console.h"
 #include "common/StringUtil.h"
 #include "common/RedtapeWindows.h"
+
 #include "cubeb/cubeb.h"
 
-#include "Global.h"
-#include "SndOut.h"
+#ifdef _WIN32
+#include <objbase.h>
+#endif
 
 #ifdef PCSX2_CORE
 
