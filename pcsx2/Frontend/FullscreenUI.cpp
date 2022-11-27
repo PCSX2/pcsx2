@@ -3587,7 +3587,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 		for (u32 i = 0; i < ci->num_bindings; i++)
 		{
 			const InputBindingInfo& bi = ci->bindings[i];
-			DrawInputBindingButton(bsi, bi.type, section, bi.name, bi.display_name, true);
+			DrawInputBindingButton(bsi, bi.bind_type, section, bi.name, bi.display_name, true);
 		}
 
 		MenuHeading((mtap_enabled[mtap_port] ?
@@ -3609,8 +3609,8 @@ void FullscreenUI::DrawControllerSettingsPage()
 				for (u32 i = 0; i < ci->num_bindings; i++)
 				{
 					const InputBindingInfo& bi = ci->bindings[i];
-					if (bi.type != InputBindingInfo::Type::Button && bi.type != InputBindingInfo::Type::Axis &&
-						bi.type != InputBindingInfo::Type::HalfAxis)
+					if (bi.bind_type != InputBindingInfo::Type::Button && bi.bind_type != InputBindingInfo::Type::Axis &&
+						bi.bind_type != InputBindingInfo::Type::HalfAxis)
 					{
 						continue;
 					}

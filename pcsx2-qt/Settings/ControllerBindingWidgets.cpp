@@ -330,7 +330,7 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
 	for (u32 i = 0; i < cinfo->num_bindings; i++)
 	{
 		const InputBindingInfo& bi = cinfo->bindings[i];
-		if (bi.type == InputBindingInfo::Type::Motor)
+		if (bi.bind_type == InputBindingInfo::Type::Motor)
 			continue;
 
 		QListWidgetItem* item = new QListWidgetItem();
@@ -413,7 +413,7 @@ void ControllerMacroEditWidget::updateBinds()
 	for (u32 i = 0, bind_index = 0; i < cinfo->num_bindings; i++)
 	{
 		const InputBindingInfo& bi = cinfo->bindings[i];
-		if (bi.type == InputBindingInfo::Type::Motor)
+		if (bi.bind_type == InputBindingInfo::Type::Motor)
 			continue;
 
 		const QListWidgetItem* item = m_ui.bindList->item(static_cast<int>(bind_index));

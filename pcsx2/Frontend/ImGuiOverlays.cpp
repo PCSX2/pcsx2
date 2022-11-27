@@ -506,7 +506,7 @@ void ImGuiManager::DrawInputsOverlay()
 		for (u32 bind = 0; bind < cinfo->num_bindings; bind++)
 		{
 			const InputBindingInfo& bi = cinfo->bindings[bind];
-			switch (bi.type)
+			switch (bi.bind_type)
 			{
 				case InputBindingInfo::Type::Axis:
 				case InputBindingInfo::Type::HalfAxis:
