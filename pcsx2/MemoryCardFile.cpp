@@ -371,7 +371,11 @@ void FileMemoryCard::Open()
 			m_chkaddr = 0x210;
 
 			if (!m_ispsx[slot] && FileSystem::FSeek64(m_file[slot], m_chkaddr, SEEK_SET) == 0)
-				std::fread(&m_chksum[slot], sizeof(m_chksum[slot]), 1, m_file[slot]);
+			{
+				const size_t read_result = std::fread(&m_chksum[slot], sizeof(m_chksum[slot]), 1, m_file[slot]);
+				if (read_result == 0)
+					Host::ReportFormattedErrorAsync("Memory Card", "Error reading memcard.\n");
+			}
 		}
 	}
 }
@@ -503,8 +507,10 @@ s32 FileMemoryCard::Save(uint slot, const u8* src, u32 adr, int size)
 		if (!Seek(mcfp, adr))
 			return 0;
 		m_currentdata.MakeRoomFor(size);
-		std::fread(m_currentdata.GetPtr(), size, 1, mcfp);
 
+		const size_t read_result = std::fread(m_currentdata.GetPtr(), size, 1, mcfp);
+		if (read_result == 0)
+			Host::ReportFormattedErrorAsync("Memory Card", "Error reading memcard.\n");
 
 		for (int i = 0; i < size; i++)
 		{
