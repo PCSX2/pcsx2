@@ -172,12 +172,27 @@ static void cdvdCreateNewNVM(std::FILE* fp)
 
 	// Write NVM ILink area with dummy data (Age of Empires 2)
 	// Also write language data defaulting to English (Guitar Hero 2)
+	// Also write PStwo region defaults
 
 	NVMLayout* nvmLayout = getNvmLayout();
-	u8 ILinkID_Data[8] = {0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86};
 
+	if (((BiosVersion >> 8) == 2) && ((BiosVersion & 0xff) != 10)) // bios >= 200, except of 0x210 for PSX2 DESR
+	{
+		u8 RegParams[12];
+		memcpy(RegParams, &PStwoRegionDefaults[BiosRegion][0], 12);
+		std::fseek(fp, *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, regparams)), SEEK_SET);
+		std::fwrite(RegParams, sizeof(RegParams), 1, fp);
+	}
+
+	u8 ILinkID_Data[8] = {0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86};
 	std::fseek(fp, *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, ilinkId)), SEEK_SET);
 	std::fwrite(ILinkID_Data, sizeof(ILinkID_Data), 1, fp);
+	if (nvmlayouts[1].biosVer <= BiosVersion)
+	{
+		u8 ILinkID_checksum[2] = {0x00, 0x18};
+		std::fseek(fp, *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, ilinkId)) + 0x08, SEEK_SET);
+		std::fwrite(ILinkID_checksum, sizeof(ILinkID_checksum), 1, fp);
+	}
 
 	u8 biosLanguage[16];
 	memcpy(biosLanguage, &biosLangDefaults[BiosRegion][0], 16);
@@ -208,14 +223,19 @@ static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 	else
 	{
 		u8 LanguageParams[16];
+		u8 RegParams[12];
 		u8 zero[16] = {0};
 		NVMLayout* nvmLayout = getNvmLayout();
 
 		if (std::fseek(fp.get(), *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, config1)) + 0x10, SEEK_SET) != 0 ||
 			std::fread(LanguageParams, 16, 1, fp.get()) != 1 ||
-			std::memcmp(LanguageParams, zero, sizeof(LanguageParams)) == 0)
+			std::memcmp(LanguageParams, zero, sizeof(LanguageParams)) == 0 ||
+			(((BiosVersion >> 8) == 2) && ((BiosVersion & 0xff) != 10) &&
+				(std::fseek(fp.get(), *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, regparams)), SEEK_SET) != 0 ||
+					std::fread(RegParams, 12, 1, fp.get()) != 1 ||
+					std::memcmp(RegParams, zero, sizeof(RegParams)) == 0)))
 		{
-			Console.Warning("Language Parameters missing, filling in defaults");
+			Console.Warning("Language or Region Parameters missing, filling in defaults");
 
 			FileSystem::FSeek64(fp.get(), 0, SEEK_SET);
 			cdvdCreateNewNVM(fp.get());
