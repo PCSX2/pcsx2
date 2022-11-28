@@ -798,10 +798,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		GSConfig.SWExtraThreadsHeight != old_config.SWExtraThreadsHeight ||
 
 		GSConfig.SaveN != old_config.SaveN ||
-		GSConfig.SaveL != old_config.SaveL ||
-
-		GSConfig.ShaderFX_Conf != old_config.ShaderFX_Conf ||
-		GSConfig.ShaderFX_GLSL != old_config.ShaderFX_GLSL)
+		GSConfig.SaveL != old_config.SaveL)
 	{
 		if (!GSreopen(false, old_config))
 			pxFailRel("Failed to do quick GS reopen");
@@ -1504,9 +1501,6 @@ void GSApp::Init()
 	m_default_configuration["ShadeBoost_Brightness"]                      = "50";
 	m_default_configuration["ShadeBoost_Contrast"]                        = "50";
 	m_default_configuration["ShadeBoost_Saturation"]                      = "50";
-	m_default_configuration["shaderfx"]                                   = "0";
-	m_default_configuration["shaderfx_conf"]                              = "shaders/GS_FX_Settings.ini";
-	m_default_configuration["shaderfx_glsl"]                              = "shaders/GS.fx";
 	m_default_configuration["SkipDuplicateFrames"]                        = "0";
 	m_default_configuration["texture_preloading"]                         = "2";
 	m_default_configuration["ThreadedPresentation"]                       = "0";
