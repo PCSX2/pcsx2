@@ -155,7 +155,6 @@ namespace GSSettingsDialog
 	{
 	public:
 		GSUIElementHolder m_ui;
-		bool m_is_vk_hw = false;
 
 		PostTab(wxWindow* parent);
 		void Load() { m_ui.Load(); }

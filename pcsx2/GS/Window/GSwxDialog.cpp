@@ -510,21 +510,6 @@ PostTab::PostTab(wxWindow* parent)
 	shade_boost_box->Add(shader_boost_grid, wxSizerFlags().Expand());
 	shader_box->Add(shade_boost_box.outer, wxSizerFlags().Expand());
 
-	// External shader
-	auto not_vk_prereq = [this] { return !m_is_vk_hw; };
-	CheckboxPrereq ext_shader_check(m_ui.addCheckBox(shader_box.inner, "Enable External Shader", "shaderfx", IDC_SHADER_FX, not_vk_prereq));
-	PaddedBoxSizer<wxStaticBoxSizer> ext_shader_box(wxVERTICAL, this, "External Shader (Home)");
-
-	auto* ext_shader_grid = new wxFlexGridSizer(2, space, space);
-	ext_shader_grid->AddGrowableCol(1);
-	auto shaderext_prereq = [ext_shader_check, this] { return !m_is_vk_hw && ext_shader_check.box->GetValue(); };
-
-	m_ui.addFilePickerAndLabel(ext_shader_grid, "GLSL fx File:", "shaderfx_glsl", -1, shaderext_prereq);
-	m_ui.addFilePickerAndLabel(ext_shader_grid, "Config File:",  "shaderfx_conf", -1, shaderext_prereq);
-
-	ext_shader_box->Add(ext_shader_grid, wxSizerFlags().Expand());
-	shader_box->Add(ext_shader_box.outer, wxSizerFlags().Expand());
-
 	// TV Shader
 	auto* tv_box = new wxFlexGridSizer(2, space, space);
 	tv_box->AddGrowableCol(1);
@@ -834,7 +819,6 @@ void Dialog::Update()
 		m_hacks_panel->m_is_native_res = !is_hw || !is_upscale;
 		m_hacks_panel->m_is_hardware = is_hw;
 		m_renderer_panel->m_is_hardware = is_hw;
-		m_post_panel->m_is_vk_hw = renderer == GSRendererType::VK;
 		m_debug_panel->m_is_ogl_hw = renderer == GSRendererType::OGL;
 		m_debug_panel->m_is_vk_hw = renderer == GSRendererType::VK;
 
