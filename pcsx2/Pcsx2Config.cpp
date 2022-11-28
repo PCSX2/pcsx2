@@ -350,9 +350,6 @@ Pcsx2Config::GSOptions::GSOptions()
 	LoadTextureReplacements = false;
 	LoadTextureReplacementsAsync = true;
 	PrecacheTextureReplacements = false;
-
-	ShaderFX_Conf = "shaders/GS_FX_Settings.ini";
-	ShaderFX_GLSL = "shaders/GS.fx";
 }
 
 bool Pcsx2Config::GSOptions::operator==(const GSOptions& right) const
@@ -433,9 +430,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(ShadeBoost_Saturation) &&
 		OpEqu(SaveN) &&
 		OpEqu(SaveL) &&
-		OpEqu(Adapter) &&
-		OpEqu(ShaderFX_Conf) &&
-		OpEqu(ShaderFX_GLSL));
+		OpEqu(Adapter));
 }
 
 bool Pcsx2Config::GSOptions::operator!=(const GSOptions& right) const
@@ -569,9 +564,6 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingBoolEx(UserHacks_TextureInsideRt, "UserHacks_TextureInsideRt");
 	GSSettingBoolEx(FXAA, "fxaa");
 	GSSettingBool(ShadeBoost);
-#ifndef PCSX2_CORE
-	GSSettingBoolEx(ShaderFX, "shaderfx");
-#endif
 	GSSettingBoolEx(DumpGSData, "dump");
 	GSSettingBoolEx(SaveRT, "save");
 	GSSettingBoolEx(SaveFrame, "savef");
@@ -633,8 +625,6 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingIntEx(SaveL, "savel");
 
 	GSSettingString(Adapter);
-	GSSettingStringEx(ShaderFX_Conf, "shaderfx_conf");
-	GSSettingStringEx(ShaderFX_GLSL, "shaderfx_glsl");
 
 #undef GSSettingInt
 #undef GSSettingIntEx

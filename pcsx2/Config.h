@@ -531,9 +531,6 @@ struct Pcsx2Config
 					UserHacks_TextureInsideRt : 1,
 					FXAA : 1,
 					ShadeBoost : 1,
-#ifndef PCSX2_CORE
-					ShaderFX : 1,
-#endif
 					DumpGSData : 1,
 					SaveRT : 1,
 					SaveFrame : 1,
@@ -616,8 +613,6 @@ struct Pcsx2Config
 		int SaveN{0};
 		int SaveL{5000};
 		std::string Adapter;
-		std::string ShaderFX_Conf;
-		std::string ShaderFX_GLSL;
 
 		GSOptions();
 
