@@ -20240,21 +20240,29 @@ SLES-54778:
   region: "PAL-E"
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes ghosting.
+    alignSprite: 1 # Fixes vertical lines.
 SLES-54779:
   name: "Harry Potter and the Order of the Phoenix"
   region: "PAL-M5"
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes ghosting.
+    alignSprite: 1 # Fixes vertical lines.
 SLES-54780:
   name: "Harry Potter and the Order of the Phoenix"
   region: "PAL-M6"
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes ghosting.
+    alignSprite: 1 # Fixes vertical lines.
 SLES-54781:
   name: "Harry Potter and the Order of the Phoenix"
   region: "PAL-M5"
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes ghosting.
+    alignSprite: 1 # Fixes vertical lines.
 SLES-54782:
   name: "Obscure 2"
   region: "PAL-M5"
@@ -33388,6 +33396,8 @@ SLPM-66886:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes ghosting.
+    alignSprite: 1 # Fixes vertical lines.
 SLPM-66887:
   name: "Harukanaru Jikuu no Kade 3 - Unmei no Meikyuu [Koei the Best]"
   region: "NTSC-J"
@@ -44371,6 +44381,8 @@ SLUS-21035:
   region: "NTSC-U"
   clampModes:
     eeClampMode: 2 # Fixes hang when the baseball hits the ground.
+  gsHWFixes:
+    texturePreloading: 1 # Performs much better and stops freezing and or stuttering.
   patches:
     2243CE1D:
       content: |-
@@ -45888,6 +45900,8 @@ SLUS-21324:
   region: "NTSC-U"
   clampModes:
     eeClampMode: 2 # Fixes hang when the baseball hits the ground.
+  gsHWFixes:
+    texturePreloading: 1 # Performs much better and stops freezing and or stuttering.
   patches:
     D592B291:
       content: |-
@@ -47327,6 +47341,8 @@ SLUS-21619:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    halfPixelOffset: 1 # Fixes ghosting.
+    alignSprite: 1 # Fixes vertical lines.
 SLUS-21620:
   name: "NCAA Football '08"
   region: "NTSC-U"
