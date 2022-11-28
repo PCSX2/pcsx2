@@ -195,16 +195,6 @@ public:
 	InterlaceConstantBuffer() { memset(this, 0, sizeof(*this)); }
 };
 
-class ExternalFXConstantBuffer
-{
-public:
-	GSVector2 xyFrame;
-	GSVector4 rcpFrame;
-	GSVector4 rcpFrameOpt;
-
-	ExternalFXConstantBuffer() { memset(this, 0, sizeof(*this)); }
-};
-
 #pragma pack(pop)
 
 enum HWBlendFlags
@@ -771,9 +761,6 @@ protected:
 	virtual void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset, int bufIdx) = 0;
 	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) {}
 	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) {}
-#ifndef PCSX2_CORE
-	virtual void DoExternalFX(GSTexture* sTex, GSTexture* dTex) {}
-#endif
 
 	/// Resolves CAS shader includes for the specified source.
 	static bool GetCASShaderSource(std::string* source);
@@ -863,10 +850,6 @@ public:
 	void FXAA();
 	void ShadeBoost();
 	void Resize(int width, int height);
-
-#ifndef PCSX2_CORE
-	void ExternalFX();
-#endif
 
 	void CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, const GSVector4& draw_rect, bool sharpen_only);
 

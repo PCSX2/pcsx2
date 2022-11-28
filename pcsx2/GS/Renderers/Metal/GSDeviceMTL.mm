@@ -618,15 +618,6 @@ void GSDeviceMTL::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float par
 	RenderCopy(sTex, m_shadeboost_pipeline, GSVector4i(0, 0, dTex->GetSize().x, dTex->GetSize().y));
 }
 
-#ifndef PCSX2_CORE
-
-void GSDeviceMTL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
-{
-	// TODO: Implement
-}
-
-#endif
-
 bool GSDeviceMTL::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants)
 { @autoreleasepool {
 	static constexpr int threadGroupWorkRegionDim = 16;
