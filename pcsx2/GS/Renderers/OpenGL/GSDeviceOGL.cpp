@@ -1432,66 +1432,6 @@ void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	StretchRect(sTex, sRect, dTex, dRect, m_fxaa.ps, true);
 }
 
-#ifndef PCSX2_CORE
-
-void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
-{
-	// Lazy compile
-	if (!m_shaderfx.ps.IsValid())
-	{
-		if (!GLLoader::found_GL_ARB_gpu_shader5) // GL4.0 extension
-		{
-			return;
-		}
-
-		std::string config_name(theApp.GetConfigS("shaderfx_conf"));
-		std::ifstream fconfig(config_name);
-		std::stringstream config;
-		config << "#extension GL_ARB_gpu_shader5 : require\n";
-		if (fconfig.good())
-			config << fconfig.rdbuf();
-		else
-			fprintf(stderr, "GS: External shader config '%s' not loaded.\n", config_name.c_str());
-
-		std::string shader_name(theApp.GetConfigS("shaderfx_glsl"));
-		std::ifstream fshader(shader_name);
-		std::stringstream shader;
-		if (!fshader.good())
-		{
-			fprintf(stderr, "GS: External shader '%s' not loaded and will be disabled!\n", shader_name.c_str());
-			return;
-		}
-		shader << fshader.rdbuf();
-
-
-		const std::string ps(GetShaderSource("ps_main", GL_FRAGMENT_SHADER, m_shader_common_header, shader.str(), config.str()));
-		if (!m_shaderfx.ps.Compile(m_convert.vs, {}, ps) || !m_shaderfx.ps.Link())
-			return;
-
-		m_shaderfx.ps.RegisterUniform("_xyFrame");
-		m_shaderfx.ps.RegisterUniform("_rcpFrame");
-		m_shaderfx.ps.RegisterUniform("_rcpFrameOpt");
-	}
-
-	GL_PUSH("DoExternalFX");
-
-	OMSetColorMaskState();
-
-	const GSVector2i s = dTex->GetSize();
-
-	const GSVector4 sRect(0, 0, 1, 1);
-	const GSVector4 dRect(0, 0, s.x, s.y);
-
-	m_shaderfx.ps.Bind();
-	m_shaderfx.ps.Uniform2f(0, (float)s.x, (float)s.y);
-	m_shaderfx.ps.Uniform4f(1, 1.0f / s.x, 1.0f / s.y, 0.0f, 0.0f);
-	m_shaderfx.ps.Uniform4f(2, 0.0f, 0.0f, 0.0f, 0.0f);
-
-	StretchRect(sTex, sRect, dTex, dRect, m_shaderfx.ps, true);
-}
-
-#endif
-
 void GSDeviceOGL::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4])
 {
 	GL_PUSH("DoShadeBoost");

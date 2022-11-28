@@ -395,11 +395,6 @@ bool GSRenderer::Merge(int field)
 	if (GSConfig.ShadeBoost)
 		g_gs_device->ShadeBoost();
 
-#ifndef PCSX2_CORE
-	if (GSConfig.ShaderFX)
-		g_gs_device->ExternalFX();
-#endif
-
 	if (GSConfig.FXAA)
 		g_gs_device->FXAA();
 

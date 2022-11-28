@@ -267,16 +267,6 @@ bool GSDevice11::Create()
 	if (!m_shadeboost.ps)
 		return false;
 
-	// External fx shader
-
-	memset(&bd, 0, sizeof(bd));
-
-	bd.ByteWidth = sizeof(ExternalFXConstantBuffer);
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-
-	m_dev->CreateBuffer(&bd, nullptr, m_shaderfx.cb.put());
-
 	//
 
 	memset(&rd, 0, sizeof(rd));
@@ -843,56 +833,6 @@ void GSDevice11::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool 
 
 	StretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[shader].get(), m_interlace.cb.get(), linear);
 }
-
-#ifndef PCSX2_CORE
-
-void GSDevice11::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
-{
-	const GSVector2i s = dTex->GetSize();
-
-	const GSVector4 sRect(0, 0, 1, 1);
-	const GSVector4 dRect(0, 0, s.x, s.y);
-
-	ExternalFXConstantBuffer cb;
-
-	if (!m_shaderfx.ps)
-	{
-		std::string config_name(theApp.GetConfigS("shaderfx_conf"));
-		std::ifstream fconfig(config_name);
-		std::stringstream shader;
-		if (fconfig.good())
-			shader << fconfig.rdbuf() << "\n";
-		else
-			fprintf(stderr, "GS: External shader config '%s' not loaded.\n", config_name.c_str());
-
-		std::string shader_name(theApp.GetConfigS("shaderfx_glsl"));
-		std::ifstream fshader(shader_name);
-		if (!fshader.good())
-		{
-			fprintf(stderr, "GS: External shader '%s' not loaded and will be disabled!\n", shader_name.c_str());
-			return;
-		}
-
-		shader << fshader.rdbuf();
-		ShaderMacro sm(m_shader_cache.GetFeatureLevel());
-		m_shaderfx.ps = m_shader_cache.GetPixelShader(m_dev.get(), shader.str(), sm.GetPtr(), "ps_main");
-		if (!m_shaderfx.ps)
-		{
-			printf("GS: Failed to compile external post-processing shader.\n");
-			return;
-		}
-	}
-
-	cb.xyFrame = GSVector2((float)s.x, (float)s.y);
-	cb.rcpFrame = GSVector4(1.0f / (float)s.x, 1.0f / (float)s.y, 0.0f, 0.0f);
-	cb.rcpFrameOpt = GSVector4::zero();
-
-	m_ctx->UpdateSubresource(m_shaderfx.cb.get(), 0, nullptr, &cb, 0, 0);
-
-	StretchRect(sTex, sRect, dTex, dRect, m_shaderfx.ps.get(), m_shaderfx.cb.get(), true);
-}
-
-#endif
 
 void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 {

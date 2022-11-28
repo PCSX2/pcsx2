@@ -395,24 +395,6 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	}
 }
 
-#ifndef PCSX2_CORE
-
-void GSDevice::ExternalFX()
-{
-	const GSVector2i s = m_current->GetSize();
-
-	if (ResizeTarget(&m_target_tmp))
-	{
-		const GSVector4 sRect(0, 0, 1, 1);
-		const GSVector4 dRect(0, 0, s.x, s.y);
-
-		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert::TRANSPARENCY_FILTER, false);
-		DoExternalFX(m_target_tmp, m_current);
-	}
-}
-
-#endif
-
 void GSDevice::FXAA()
 {
 	const GSVector2i s = m_current->GetSize();
