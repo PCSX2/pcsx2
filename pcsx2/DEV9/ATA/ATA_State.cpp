@@ -36,6 +36,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+static_assert(sizeof(off_t) >= 8, "off_t is not 64bit");
 #endif
 
 ATA::ATA()
