@@ -212,6 +212,112 @@ void ATA::IO_SparseCacheLoad()
 	// Store file pointer.
 	const s64 orgPos = FileSystem::FTell64(hddImage);
 
+	// Flush so that we know what is allocated.
+	std::fflush(hddImage);
+
+#ifdef _WIN32
+	// FlushFileBuffers is required, hddSparseBlock differs from actual file without it.
+	FlushFileBuffers(hddNativeHandle);
+	// Range to be examined (One Sparse block size).
+	FILE_ALLOCATED_RANGE_BUFFER queryRange;
+	queryRange.FileOffset.QuadPart = HddSparseStart;
+	queryRange.Length.QuadPart = hddSparseBlockSize;
+
+	// Allocated areas info.
+	FILE_ALLOCATED_RANGE_BUFFER allocRange;
+	DWORD dwRetBytes;
+	const BOOL ret = DeviceIoControl(hddNativeHandle, FSCTL_QUERY_ALLOCATED_RANGES, &queryRange, sizeof(queryRange), &allocRange, sizeof(allocRange), &dwRetBytes, nullptr);
+
+	if (ret == TRUE && dwRetBytes == 0)
+	{
+		// We are sparse.
+		memset(hddSparseBlock.get(), 0, hddSparseBlockSize);
+		hddSparseBlockValid = true;
+#if defined(PCSX2_DEBUG) || defined(PCSX2_DEVBUILD)
+
+		// Store file pointer.
+		const s64 orgPos = FileSystem::FTell64(hddImage);
+		pxAssert(orgPos != -1);
+
+		//Load into check buffer.
+		FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET);
+
+		std::unique_ptr<u8[]> temp = std::make_unique<u8[]>(hddSparseBlockSize);
+		memset(temp.get(), 0, hddSparseBlockSize);
+
+		if (FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET) != 0 ||
+			std::fread((char*)hddSparseBlock.get(), readSize, 1, hddImage) != 1)
+			pxAssert(false);
+
+		// Restore file pointer.
+		if (FileSystem::FSeek64(hddImage, orgPos, SEEK_SET) != 0)
+			pxAssert(false);
+
+		// Check if file is actully zeros.
+		if (memcmp(hddSparseBlock.get(), temp.get(), hddSparseBlockSize) != 0)
+		{
+			Console.WriteLn("DEV9: ATA: Sparse area not sparse, BlockStart: %s, BlockEnd: %s",
+				std::to_string(HddSparseStart).c_str(), std::to_string(HddSparseStart + hddSparseBlockSize).c_str());
+		}
+		else
+			Console.WriteLn("DEV9: ATA: Sparse area is sparse (Yay), BlockStart: %s, BlockEnd: %s",
+				std::to_string(HddSparseStart).c_str(), std::to_string(HddSparseStart + hddSparseBlockSize).c_str());
+
+		pxAssert(memcmp(hddSparseBlock.get(), temp.get(), hddSparseBlockSize) == 0);
+#endif
+		return;
+	}
+#elif defined(__POSIX__)
+#ifdef SEEK_HOLE
+	// Are we in a hole?
+	off_t ret = lseek(hddNativeHandle, HddSparseStart, SEEK_HOLE);
+	if (ret == (off_t)HddSparseStart)
+	{
+		// Seek to data.
+		ret = lseek(hddNativeHandle, HddSparseStart, SEEK_DATA);
+		if (ret >= (off_t)(HddSparseStart + hddSparseBlockSize))
+		{
+			// We are sparse.
+			memset(hddSparseBlock.get(), 0, hddSparseBlockSize);
+			hddSparseBlockValid = true;
+#if defined(PCSX2_DEBUG) || defined(PCSX2_DEVBUILD)
+
+			// Store file pointer.
+			const s64 orgPos = FileSystem::FTell64(hddImage);
+			pxAssert(orgPos != -1);
+
+			// Load into check buffer.
+			FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET);
+
+			std::unique_ptr<u8[]> temp = std::make_unique<u8[]>(hddSparseBlockSize);
+			memset(temp.get(), 0, hddSparseBlockSize);
+
+			if (FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET) != 0 ||
+				std::fread((char*)hddSparseBlock.get(), readSize, 1, hddImage) != 1)
+				pxAssert(false);
+
+			// Restore file pointer.
+			if (FileSystem::FSeek64(hddImage, orgPos, SEEK_SET) != 0)
+				pxAssert(false);
+
+			// Check if file is actully zeros.
+			if (memcmp(hddSparseBlock.get(), temp.get(), hddSparseBlockSize) != 0)
+			{
+				Console.WriteLn("DEV9: ATA: Sparse area not sparse, BlockStart: %s, BlockEnd: %s",
+					std::to_string(HddSparseStart).c_str(), std::to_string(HddSparseStart + hddSparseBlockSize).c_str());
+			}
+			else
+				Console.WriteLn("DEV9: ATA: Sparse area is sparse (Yay), BlockStart: %s, BlockEnd: %s",
+					std::to_string(HddSparseStart).c_str(), std::to_string(HddSparseStart + hddSparseBlockSize).c_str());
+
+			pxAssert(memcmp(hddSparseBlock.get(), temp.get(), hddSparseBlockSize) == 0);
+#endif
+			return;
+		}
+	}
+#endif
+#endif
+
 	// Load into cache.
 	if (orgPos == -1 ||
 		FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET) != 0 ||
