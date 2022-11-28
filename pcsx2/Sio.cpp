@@ -528,8 +528,7 @@ void Sio2::SetRecv1(u32 value)
 void Sio2::Pad()
 {
 	// Send PAD our current port, and get back whatever it says the first response byte should be.
-	u8 commandByte = 0x01;
-	u8 firstResponseByte = PADstartPoll(port, slot);
+	const u8 firstResponseByte = PADstartPoll(port, slot);
 	fifoOut.push_back(firstResponseByte);
 	// Some games will refuse to read ALL pads, if RECV1 is not set to the CONNECTED value when ANY pad is polled,
 	// REGARDLESS of whether that pad is truly connected or not.
@@ -538,9 +537,9 @@ void Sio2::Pad()
 	// Then for every byte in fifoIn, pass to PAD and see what it kicks back to us.
 	while (!fifoIn.empty())
 	{
-		u8 commandByte = fifoIn.front();
+		const u8 commandByte = fifoIn.front();
 		fifoIn.pop_front();
-		u8 responseByte = PADpoll(commandByte);
+		const u8 responseByte = PADpoll(commandByte);
 		fifoOut.push_back(responseByte);
 	}
 }
