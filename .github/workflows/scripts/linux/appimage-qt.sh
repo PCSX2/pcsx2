@@ -203,7 +203,7 @@ mkdir "$OUTDIR"
 mkdir -p "$OUTDIR/usr/bin" "$OUTDIR/usr/lib" "$OUTDIR/usr/lib/pulseaudio"
 
 echo "Copying binary and resources..."
-cp -a "$BINDIR/$BINARY" "$BINDIR/resources" "$BINDIR/shaders" "$OUTDIR/usr/bin"
+cp -a "$BINDIR/$BINARY" "$BINDIR/resources" "$OUTDIR/usr/bin"
 
 # Don't need old wx locales.
 rm -fr "$OUTDIR/usr/bin/resources/locale"
