@@ -62,7 +62,10 @@ IsoDirectory::IsoDirectory(SectorSource& r)
 	while (!done)
 	{
 		u8 sector[2048];
-		internalReader.readSector(sector, i);
+		// If this fails, we're not reading an iso, or it's bad.
+		if (!internalReader.readSector(sector, i))
+			break;
+
 		if (memcmp(&sector[1], "CD001", 5) == 0)
 		{
 			switch (sector[0])
