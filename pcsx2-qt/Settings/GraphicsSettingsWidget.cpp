@@ -187,7 +187,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	// HW Settings
 	//////////////////////////////////////////////////////////////////////////
 	static const char* upscale_entries[] = {
-		"Native (PS2)",
+		"Native (PS2) (Default)",
 		"1.25x Native",
 		"1.5x Native",
 		"1.75x Native",
@@ -201,7 +201,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		"5x Native (~1620p)",
 		"6x Native (~2160p/4K)",
 		"7x Native (~2520p)",
-		"8x Native (~2880p)",
+		"8x Native (~2880p/5K)",
 	nullptr};
 	static const char* upscale_values[] = {
 		"1",
