@@ -1,3 +1,5 @@
 ---
 exclude_paths:
   - '3rdparty/**'
+  - '*.md'
+  - '**/*.md'
