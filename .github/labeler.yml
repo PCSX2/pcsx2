@@ -12,7 +12,6 @@
   - 'cmake/**/*'
   - 'CMakeLists.txt'
   - '**/CMakeLists.txt'
-  - 'buildbot.xml'
   - 'build.sh'
 'Dependencies':
   - '3rdparty/*'
