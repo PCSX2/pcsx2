@@ -4037,6 +4037,8 @@ SCES-53931:
   name: "Shinobido - Way of the Ninja"
   region: "PAL-M5"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes hang going in to the gardens.
 SCES-53950:
   name: "F1 '06"
   region: "PAL-M7"
@@ -30438,6 +30440,8 @@ SLPM-66091:
   name: "Shinobido Imashime"
   region: "NTSC-J"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes hang going in to the gardens.
 SLPM-66092:
   name: "Taito Memories Gekan"
   region: "NTSC-J"
@@ -32173,6 +32177,8 @@ SLPM-66555:
 SLPM-66556:
   name: "Shinobido Imashime [Spike The Best]"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes hang going in to the gardens.
 SLPM-66557:
   name: "FIFA Street [EA Best Hits]"
   region: "NTSC-J"
