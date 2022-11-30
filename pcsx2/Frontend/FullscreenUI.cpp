@@ -2495,6 +2495,8 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 		"EmuCore/GS", "OsdShowSettings", false);
 	DrawToggleSetting(bsi, ICON_FA_GAMEPAD " Show Inputs",
 		"Shows the current controller state of the system in the bottom-left corner of the display.", "EmuCore/GS", "OsdShowInputs", false);
+	DrawToggleSetting(bsi, ICON_FA_RULER_HORIZONTAL " Show Frame Times",
+		"Shows a visual history of frame times in the upper-left corner of the display.", "EmuCore/GS", "OsdShowFrameTimes", false);
 	DrawToggleSetting(bsi, ICON_FA_EXCLAMATION_CIRCLE " Warn About Unsafe Settings",
 		"Displays warnings when settings are enabled which may break games.", "EmuCore", "WarnAboutUnsafeSettings", true);
 
