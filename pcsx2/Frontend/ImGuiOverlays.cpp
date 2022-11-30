@@ -15,14 +15,18 @@
 
 #include "PrecompiledHeader.h"
 
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <deque>
 #include <mutex>
+#include <tuple>
 #include <unordered_map>
 
+#include "gsl/span"
 #include "fmt/core.h"
 
+#include "common/Align.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 #include "imgui.h"
@@ -33,6 +37,7 @@
 #include "Frontend/ImGuiOverlays.h"
 #include "GS.h"
 #include "GS/GS.h"
+#include "GS/GSVector.h"
 #include "Host.h"
 #include "HostDisplay.h"
 #include "IconsFontAwesome5.h"
@@ -59,6 +64,32 @@ namespace ImGuiManager
 	static void DrawInputRecordingOverlay();
 #endif
 } // namespace ImGuiManager
+
+static std::tuple<float, float> GetMinMax(gsl::span<const float> values)
+{
+	GSVector4 vmin(GSVector4::load<false>(values.data()));
+	GSVector4 vmax(vmin);
+
+	const u32 count = static_cast<u32>(values.size());
+	const u32 aligned_count = Common::AlignDownPow2(count, 4);
+	u32 i = 4;
+	for (; i < aligned_count; i += 4)
+	{
+		const GSVector4 v(GSVector4::load<false>(&values[i]));
+		vmin = vmin.min(v);
+		vmax = vmax.max(v);
+	}
+
+	float min = std::min(vmin.x, std::min(vmin.y, std::min(vmin.z, vmin.w)));
+	float max = std::max(vmax.x, std::max(vmax.y, std::max(vmax.z, vmax.w)));
+	for (; i < count; i++)
+	{
+		min = std::min(min, values[i]);
+		max = std::max(max, values[i]);
+	}
+
+	return std::tie(min, max);
+}
 
 void ImGuiManager::FormatProcessorStat(std::string& text, double usage, double time)
 {
@@ -224,6 +255,69 @@ void ImGuiManager::DrawPerformanceOverlay()
 				DRAW_LINE(standard_font, is_slowmo ? ICON_FA_FORWARD : ICON_FA_FAST_FORWARD, IM_COL32(255, 255, 255, 255));
 			}
 		}
+
+#ifdef PCSX2_CORE
+		if (GSConfig.OsdShowFrameTimes)
+		{
+			const ImVec2 history_size(200.0f * scale, 50.0f * scale);
+			ImGui::SetNextWindowSize(ImVec2(history_size.x, history_size.y));
+			ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - margin - history_size.x, position_y));
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.25f));
+			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+			ImGui::PushStyleColor(ImGuiCol_PlotLines, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+			ImGui::PushFont(fixed_font);
+			if (ImGui::Begin("##frame_times", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs))
+			{
+				auto [min, max] = GetMinMax(PerformanceMetrics::GetFrameTimeHistory());
+
+				// add a little bit of space either side, so we're not constantly resizing
+				if ((max - min) < 4.0f)
+				{
+					min = min - std::fmod(min, 1.0f);
+					max = max - std::fmod(max, 1.0f) + 1.0f;
+					min = std::max(min - 2.0f, 0.0f);
+					max += 2.0f;
+				}
+
+				ImGui::PlotEx(
+					ImGuiPlotType_Lines, "##frame_times",
+					[](void*, int idx) -> float {
+						return PerformanceMetrics::GetFrameTimeHistory()[(
+							(PerformanceMetrics::GetFrameTimeHistoryPos() + idx) % PerformanceMetrics::NUM_FRAME_TIME_SAMPLES)];
+					},
+					nullptr, PerformanceMetrics::NUM_FRAME_TIME_SAMPLES, 0, nullptr, min, max, history_size);
+
+				ImDrawList* win_dl = ImGui::GetCurrentWindow()->DrawList;
+				const ImVec2 wpos(ImGui::GetCurrentWindow()->Pos);
+
+				text.clear();
+				fmt::format_to(std::back_inserter(text), "{:.1f} ms", max);
+				text_size = fixed_font->CalcTextSizeA(fixed_font->FontSize, FLT_MAX, 0.0f, text.c_str(), text.c_str() + text.length());
+				win_dl->AddText(ImVec2(wpos.x + history_size.x - text_size.x - spacing + shadow_offset, wpos.y + shadow_offset),
+					IM_COL32(0, 0, 0, 100), text.c_str(), text.c_str() + text.length());
+				win_dl->AddText(ImVec2(wpos.x + history_size.x - text_size.x - spacing, wpos.y), IM_COL32(255, 255, 255, 255), text.c_str(),
+					text.c_str() + text.length());
+
+				text.clear();
+				fmt::format_to(std::back_inserter(text), "{:.1f} ms", min);
+				text_size = fixed_font->CalcTextSizeA(fixed_font->FontSize, FLT_MAX, 0.0f, text.c_str(), text.c_str() + text.length());
+				win_dl->AddText(ImVec2(wpos.x + history_size.x - text_size.x - spacing + shadow_offset,
+									wpos.y + history_size.y - fixed_font->FontSize + shadow_offset),
+					IM_COL32(0, 0, 0, 100), text.c_str(), text.c_str() + text.length());
+				win_dl->AddText(ImVec2(wpos.x + history_size.x - text_size.x - spacing, wpos.y + history_size.y - fixed_font->FontSize),
+					IM_COL32(255, 255, 255, 255), text.c_str(), text.c_str() + text.length());
+			}
+			ImGui::End();
+			ImGui::PopFont();
+			ImGui::PopStyleVar(5);
+			ImGui::PopStyleColor(3);
+		}
+#endif
 	}
 	else if (!fsui_active)
 	{

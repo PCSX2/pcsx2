@@ -321,6 +321,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	OsdShowIndicators = true;
 	OsdShowSettings = false;
 	OsdShowInputs = false;
+	OsdShowFrameTimes = false;
 
 	HWDownloadMode = GSHardwareDownloadMode::Enabled;
 	HWSpinGPUForReadbacks = false;
@@ -544,6 +545,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingBool(OsdShowIndicators);
 	GSSettingBool(OsdShowSettings);
 	GSSettingBool(OsdShowInputs);
+	GSSettingBool(OsdShowFrameTimes);
 
 	GSSettingBool(HWSpinGPUForReadbacks);
 	GSSettingBool(HWSpinCPUForReadbacks);

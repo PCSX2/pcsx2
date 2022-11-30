@@ -605,7 +605,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 		if (Host::BeginPresentFrame(true))
 			Host::EndPresentFrame();
 		g_gs_device->RestoreAPIState();
-		PerformanceMetrics::Update(registers_written, fb_sprite_frame);
+		PerformanceMetrics::Update(registers_written, fb_sprite_frame, true);
 		return;
 	}
 
@@ -655,7 +655,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 			PerformanceMetrics::OnGPUPresent(g_host_display->GetAndResetAccumulatedGPUTime());
 	}
 	g_gs_device->RestoreAPIState();
-	PerformanceMetrics::Update(registers_written, fb_sprite_frame);
+	PerformanceMetrics::Update(registers_written, fb_sprite_frame, false);
 
 	// snapshot
 	// wx is dumb and call this from the UI thread...
