@@ -294,7 +294,12 @@ VsyncMode Host::GetEffectiveVSyncMode()
 
 bool Host::BeginPresentFrame(bool frame_skip)
 {
-	return g_host_display->BeginPresent(frame_skip);
+	if (g_host_display->BeginPresent(frame_skip))
+		return true;
+
+	// don't render imgui
+	ImGuiManager::NewFrame();
+	return false;
 }
 
 void Host::EndPresentFrame()
