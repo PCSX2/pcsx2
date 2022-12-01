@@ -22834,7 +22834,7 @@ SLKA-25081:
   name: "SD Gundam G Generation Neo"
   region: "NTSC-K"
 SLKA-25082:
-  name: "Castlevania - Lament of Innocence"
+  name: "Castlevania"
   region: "NTSC-K"
   compat: 5
   clampModes:
@@ -28120,7 +28120,7 @@ SLPM-65405:
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
 SLPM-65406:
-  name: "Castlevania - Lament of Innocence [Limited Edition]"
+  name: "Castlevania [Limited Edition]"
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes cutscene freezes.
@@ -28267,7 +28267,7 @@ SLPM-65443:
     preloadFrameData: 1 # Fixes mech shadows.
     roundSprite: 2 # Fixes font artifacts.
 SLPM-65444:
-  name: "Castlevania - Lament of Innocence"
+  name: "Castlevania"
   region: "NTSC-J"
   compat: 5
   clampModes:
@@ -31323,7 +31323,7 @@ SLPM-66324:
     - "SLPM-66316"
     - "SLPM-66442"
 SLPM-66325:
-  name: "Castlevania - Lament of Innocence [Konami Palace Selection]"
+  name: "Castlevania [Konami Palace Selection]"
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes cutscene freezes.
