@@ -60,7 +60,6 @@ private:
 
 	bool m_initial_load_complete = false;
 	bool m_is_active = false;
-	bool m_pad_data_available = false;
 	bool m_watching_for_rerecords = false;
 
 	// A consistent way to run actions at the end of the each frame (ie. stop the recording)
