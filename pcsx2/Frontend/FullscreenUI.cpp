@@ -553,17 +553,12 @@ bool FullscreenUI::Initialize()
 	if (!ImGuiManager::AddFullscreenFontsIfMissing() || !ImGuiFullscreen::Initialize("fullscreenui/placeholder.png") || !LoadResources())
 	{
 		DestroyResources();
-		ImGuiFullscreen::Shutdown();
+		ImGuiFullscreen::Shutdown(true);
 		s_tried_to_initialize = true;
 		return false;
 	}
 
 	s_initialized = true;
-	s_current_main_window = MainWindowType::None;
-	s_current_pause_submenu = PauseSubMenu::None;
-	s_pause_menu_was_open = false;
-	s_was_paused_on_quick_menu_open = false;
-	s_about_window_open = false;
 	s_hotkey_list_cache = InputManager::GetHotkeyList();
 	GetMTGS().SetRunIdle(true);
 
@@ -573,7 +568,9 @@ bool FullscreenUI::Initialize()
 	}
 	else
 	{
-		SwitchToLanding();
+		// only switch to landing if we weren't e.g. in settings
+		if (s_current_main_window == MainWindowType::None)
+			SwitchToLanding();
 	}
 
 	return true;
@@ -708,7 +705,7 @@ void FullscreenUI::OpenPauseMenu()
 		return;
 
 	GetMTGS().RunOnGSThread([]() {
-		if (!Initialize() || s_current_main_window != MainWindowType::None)
+		if (!ImGuiManager::InitializeFullscreenUI() || s_current_main_window != MainWindowType::None)
 			return;
 
 		PauseForMenuOpen();
@@ -739,23 +736,32 @@ void FullscreenUI::OpenPauseSubMenu(PauseSubMenu submenu)
 	QueueResetFocus();
 }
 
-void FullscreenUI::Shutdown()
+void FullscreenUI::Shutdown(bool clear_state)
 {
-	CancelAsyncOps();
-	CloseSaveStateSelector();
-	s_cover_image_map.clear();
-	s_game_list_sorted_entries = {};
-	s_game_list_directories_cache = {};
-	s_fullscreen_mode_list_cache = {};
-	s_graphics_adapter_list_cache = {};
+	if (clear_state)
+	{
+		CancelAsyncOps();
+		CloseSaveStateSelector();
+		s_cover_image_map.clear();
+		s_game_list_sorted_entries = {};
+		s_game_list_directories_cache = {};
+		s_fullscreen_mode_list_cache = {};
+		s_graphics_adapter_list_cache = {};
+		s_current_game_title = {};
+		s_current_game_subtitle = {};
+		s_current_game_serial = {};
+		s_current_game_path = {};
+		s_current_game_crc = 0;
+
+		s_current_main_window = MainWindowType::None;
+		s_current_pause_submenu = PauseSubMenu::None;
+		s_pause_menu_was_open = false;
+		s_was_paused_on_quick_menu_open = false;
+		s_about_window_open = false;
+	}
 	s_hotkey_list_cache = {};
-	s_current_game_title = {};
-	s_current_game_subtitle = {};
-	s_current_game_serial = {};
-	s_current_game_path = {};
-	s_current_game_crc = 0;
 	DestroyResources();
-	ImGuiFullscreen::Shutdown();
+	ImGuiFullscreen::Shutdown(clear_state);
 	s_initialized = false;
 	s_tried_to_initialize = false;
 }
@@ -5690,7 +5696,7 @@ void FullscreenUI::OpenAchievementsWindow()
 		return;
 
 	GetMTGS().RunOnGSThread([]() {
-		if (!Initialize())
+		if (!ImGuiManager::InitializeFullscreenUI())
 			return;
 
 		SwitchToAchievementsWindow();
@@ -6080,7 +6086,7 @@ void FullscreenUI::OpenLeaderboardsWindow()
 		return;
 
 	GetMTGS().RunOnGSThread([]() {
-		if (!Initialize())
+		if (!ImGuiManager::InitializeFullscreenUI())
 			return;
 
 		SwitchToLeaderboardsWindow();

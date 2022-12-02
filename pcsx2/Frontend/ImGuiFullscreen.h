@@ -112,8 +112,8 @@ namespace ImGuiFullscreen
 	void SetFonts(ImFont* standard_font, ImFont* medium_font, ImFont* large_font);
 	bool UpdateLayoutScale();
 
-	/// Shuts down, clearing all state.
-	void Shutdown();
+	/// Shuts down, optionally clearing all state (including notifications).
+	void Shutdown(bool clear_state);
 
 	/// Texture cache.
 	const std::shared_ptr<HostDisplayTexture>& GetPlaceholderTexture();

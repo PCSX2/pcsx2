@@ -85,6 +85,9 @@ static std::atomic_bool s_imgui_wants_text{false};
 
 // mapping of host key -> imgui key
 static std::unordered_map<u32, ImGuiKey> s_imgui_key_map;
+
+// need to keep track of this, so we can reinitialize on renderer switch
+static bool s_fullscreen_ui_was_initialized = false;
 #endif
 
 bool ImGuiManager::Initialize()
@@ -116,7 +119,10 @@ bool ImGuiManager::Initialize()
 	SetStyle();
 
 #ifdef PCSX2_CORE
+	const bool add_fullscreen_fonts = s_fullscreen_ui_was_initialized;
 	pxAssertRel(!FullscreenUI::IsInitialized(), "Fullscreen UI is not initialized on ImGui init");
+#else
+	const bool add_fullscreen_fonts = false;
 #endif
 
 	if (!g_host_display->CreateImGuiContext())
@@ -128,7 +134,7 @@ bool ImGuiManager::Initialize()
 		return false;
 	}
 
-	if (!AddImGuiFonts(false) || !g_host_display->UpdateImGuiFontTexture())
+	if (!AddImGuiFonts(add_fullscreen_fonts) || !g_host_display->UpdateImGuiFontTexture())
 	{
 		pxFailRel("Failed to create ImGui font text");
 		g_host_display->DestroyImGuiContext();
@@ -141,13 +147,33 @@ bool ImGuiManager::Initialize()
 	ImGui::GetIO().Fonts->ClearTexData();
 
 	NewFrame();
+
+	// reinitialize fsui if it was previously enabled
+#ifdef PCSX2_CORE
+	if (add_fullscreen_fonts)
+		InitializeFullscreenUI();
+#endif
+
 	return true;
 }
 
-void ImGuiManager::Shutdown()
+bool ImGuiManager::InitializeFullscreenUI()
 {
 #ifdef PCSX2_CORE
-	FullscreenUI::Shutdown();
+	s_fullscreen_ui_was_initialized = FullscreenUI::Initialize();
+	return s_fullscreen_ui_was_initialized;
+#else
+	return false;
+#endif
+}
+
+void ImGuiManager::Shutdown(bool clear_state)
+{
+#ifdef PCSX2_CORE
+	FullscreenUI::Shutdown(clear_state);
+	ImGuiFullscreen::SetFonts(nullptr, nullptr, nullptr);
+	if (clear_state)
+		s_fullscreen_ui_was_initialized = false;
 #endif
 
 	if (g_host_display)
@@ -159,11 +185,9 @@ void ImGuiManager::Shutdown()
 	s_fixed_font = nullptr;
 	s_medium_font = nullptr;
 	s_large_font = nullptr;
-#ifdef PCSX2_CORE
-	ImGuiFullscreen::SetFonts(nullptr, nullptr, nullptr);
-#endif
 
-	UnloadFontData();
+	if (clear_state)
+		UnloadFontData();
 }
 
 void ImGuiManager::WindowResized()

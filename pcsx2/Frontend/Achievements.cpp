@@ -19,6 +19,7 @@
 #include "Frontend/CommonHost.h"
 #include "Frontend/FullscreenUI.h"
 #include "Frontend/ImGuiFullscreen.h"
+#include "Frontend/ImGuiManager.h"
 
 #include "common/Assertions.h"
 #include "common/FileSystem.h"
@@ -427,7 +428,7 @@ std::string Achievements::GetUserAgent()
 
 void Achievements::BeginLoadingScreen(const char* text, bool* was_running_idle)
 {
-	GetMTGS().RunOnGSThread(&FullscreenUI::Initialize);
+	GetMTGS().RunOnGSThread(&ImGuiManager::InitializeFullscreenUI);
 	ImGuiFullscreen::OpenBackgroundProgressDialog("achievements_loading", text, 0, 0, 0);
 }
 
@@ -1131,7 +1132,7 @@ void Achievements::GetPatchesCallback(s32 status_code, const std::string& conten
 		return;
 
 	// ensure fullscreen UI is ready
-	GetMTGS().RunOnGSThread([]() { FullscreenUI::Initialize(); });
+	GetMTGS().RunOnGSThread(&ImGuiManager::InitializeFullscreenUI);
 
 	s_game_id = response.id;
 	s_game_title = response.title;

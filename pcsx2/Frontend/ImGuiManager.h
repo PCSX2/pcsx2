@@ -25,8 +25,11 @@ namespace ImGuiManager
 	/// Initializes ImGui, creates fonts, etc.
 	bool Initialize();
 
+	/// Initializes fullscreen UI.
+	bool InitializeFullscreenUI();
+
 	/// Frees all ImGui resources.
-	void Shutdown();
+	void Shutdown(bool clear_state);
 
 	/// Updates internal state when the window is size.
 	void WindowResized();

@@ -255,7 +255,7 @@ void Host::OnInputDeviceDisconnected(const std::string_view& identifier)
 {
 }
 
-bool Host::AcquireHostDisplay(RenderAPI api)
+bool Host::AcquireHostDisplay(RenderAPI api, bool clear_state_on_fail)
 {
 	const std::optional<WindowInfo> wi(GSRunner::GetPlatformWindowInfo());
 	if (!wi.has_value())
@@ -267,7 +267,7 @@ bool Host::AcquireHostDisplay(RenderAPI api)
 
 	if (!g_host_display->CreateDevice(wi.value()) || !g_host_display->MakeCurrent() || !g_host_display->SetupDevice() || !ImGuiManager::Initialize())
 	{
-		ReleaseHostDisplay();
+		ReleaseHostDisplay(clear_state_on_fail);
 		return false;
 	}
 
@@ -277,12 +277,9 @@ bool Host::AcquireHostDisplay(RenderAPI api)
 	return g_host_display.get();
 }
 
-void Host::ReleaseHostDisplay()
+void Host::ReleaseHostDisplay(bool clear_state)
 {
-	if (!g_host_display)
-		return;
-
-	ImGuiManager::Shutdown();
+	ImGuiManager::Shutdown(clear_state);
 	g_host_display.reset();
 }
 

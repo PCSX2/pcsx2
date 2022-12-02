@@ -203,7 +203,7 @@ bool ImGuiFullscreen::Initialize(const char* placeholder_image_path)
 	return true;
 }
 
-void ImGuiFullscreen::Shutdown()
+void ImGuiFullscreen::Shutdown(bool clear_state)
 {
 	if (s_texture_load_thread.Joinable())
 	{
@@ -223,25 +223,28 @@ void ImGuiFullscreen::Shutdown()
 
 	s_texture_cache.Clear();
 
-	s_notifications.clear();
-	s_background_progress_dialogs.clear();
-	CloseInputDialog();
-	CloseMessageDialog();
-	s_choice_dialog_open = false;
-	s_choice_dialog_checkable = false;
-	s_choice_dialog_title = {};
-	s_choice_dialog_options.clear();
-	s_choice_dialog_callback = {};
-	s_enum_choice_button_id = 0;
-	s_enum_choice_button_value = 0;
-	s_enum_choice_button_set = false;
-	s_file_selector_open = false;
-	s_file_selector_directory = false;
-	s_file_selector_title = {};
-	s_file_selector_callback = {};
-	s_file_selector_current_directory = {};
-	s_file_selector_filters.clear();
-	s_file_selector_items.clear();
+	if (clear_state)
+	{
+		s_notifications.clear();
+		s_background_progress_dialogs.clear();
+		CloseInputDialog();
+		CloseMessageDialog();
+		s_choice_dialog_open = false;
+		s_choice_dialog_checkable = false;
+		s_choice_dialog_title = {};
+		s_choice_dialog_options.clear();
+		s_choice_dialog_callback = {};
+		s_enum_choice_button_id = 0;
+		s_enum_choice_button_value = 0;
+		s_enum_choice_button_set = false;
+		s_file_selector_open = false;
+		s_file_selector_directory = false;
+		s_file_selector_title = {};
+		s_file_selector_callback = {};
+		s_file_selector_current_directory = {};
+		s_file_selector_filters.clear();
+		s_file_selector_items.clear();
+	}
 }
 
 const std::shared_ptr<HostDisplayTexture>& ImGuiFullscreen::GetPlaceholderTexture()

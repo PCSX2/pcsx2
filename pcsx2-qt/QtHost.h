@@ -70,9 +70,9 @@ public:
 	bool shouldRenderToMain() const;
 
 	/// Called back from the GS thread when the display state changes (e.g. fullscreen, render to main).
-	bool acquireHostDisplay(RenderAPI api);
+	bool acquireHostDisplay(RenderAPI api, bool clear_state_on_fail);
 	void connectDisplaySignals(DisplayWidget* widget);
-	void releaseHostDisplay();
+	void releaseHostDisplay(bool clear_state);
 	void updateDisplay();
 
 	void startBackgroundControllerPollTimer();
