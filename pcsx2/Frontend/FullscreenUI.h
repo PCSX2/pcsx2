@@ -38,7 +38,7 @@ namespace FullscreenUI
 	void OpenAchievementsWindow();
 	void OpenLeaderboardsWindow();
 
-	void Shutdown();
+	void Shutdown(bool clear_state);
 	void Render();
 	void InvalidateCoverCache();
 

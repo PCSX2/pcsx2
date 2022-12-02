@@ -117,7 +117,7 @@ bool Host::ConfirmMessage(const std::string_view& title, const std::string_view&
 	return true;
 }
 
-bool Host::AcquireHostDisplay(RenderAPI api)
+bool Host::AcquireHostDisplay(RenderAPI api, bool clear_state_on_fail)
 {
 	sApp.OpenGsPanel();
 
@@ -141,9 +141,9 @@ bool Host::AcquireHostDisplay(RenderAPI api)
 	return true;
 }
 
-void Host::ReleaseHostDisplay()
+void Host::ReleaseHostDisplay(bool clear_state_on_fail)
 {
-	ImGuiManager::Shutdown();
+	ImGuiManager::Shutdown(clear_state_on_fail);
 
 	if (g_host_display)
 		g_host_display.reset();

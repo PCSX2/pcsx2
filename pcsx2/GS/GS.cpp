@@ -132,7 +132,7 @@ void GSshutdown()
 		g_gs_device.reset();
 	}
 
-	Host::ReleaseHostDisplay();
+	Host::ReleaseHostDisplay(true);
 #endif
 
 #ifdef _WIN32
@@ -161,7 +161,7 @@ void GSclose()
 	if (g_host_display)
 		g_host_display->SetGPUTimingEnabled(false);
 
-	Host::ReleaseHostDisplay();
+	Host::ReleaseHostDisplay(true);
 }
 
 static RenderAPI GetAPIForRenderer(GSRendererType renderer)
@@ -324,13 +324,13 @@ bool GSreopen(bool recreate_display, const Pcsx2Config::GSOptions& old_config)
 
 	if (recreate_display)
 	{
-		Host::ReleaseHostDisplay();
-		if (!Host::AcquireHostDisplay(GetAPIForRenderer(GSConfig.Renderer)))
+		Host::ReleaseHostDisplay(false);
+		if (!Host::AcquireHostDisplay(GetAPIForRenderer(GSConfig.Renderer), false))
 		{
 			Console.Error("(GSreopen) Failed to reacquire host display");
 
 			// try to get the old one back
-			if (!Host::AcquireHostDisplay(GetAPIForRenderer(old_config.Renderer)))
+			if (!Host::AcquireHostDisplay(GetAPIForRenderer(old_config.Renderer), false))
 			{
 				pxFailRel("Failed to recreate old config host display");
 				return false;
@@ -350,8 +350,8 @@ bool GSreopen(bool recreate_display, const Pcsx2Config::GSOptions& old_config)
 		// try the old config
 		if (recreate_display && GSConfig.Renderer != old_config.Renderer)
 		{
-			Host::ReleaseHostDisplay();
-			if (!Host::AcquireHostDisplay(GetAPIForRenderer(old_config.Renderer)))
+			Host::ReleaseHostDisplay(false);
+			if (!Host::AcquireHostDisplay(GetAPIForRenderer(old_config.Renderer), false))
 			{
 				pxFailRel("Failed to recreate old config host display (part 2)");
 				return false;
@@ -385,7 +385,7 @@ bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* b
 	GSConfig = config;
 	GSConfig.Renderer = renderer;
 
-	if (!Host::AcquireHostDisplay(GetAPIForRenderer(renderer)))
+	if (!Host::AcquireHostDisplay(GetAPIForRenderer(renderer), true))
 	{
 		Console.Error("Failed to acquire host display");
 		return false;
@@ -393,7 +393,7 @@ bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* b
 
 	if (!DoGSOpen(renderer, basemem))
 	{
-		Host::ReleaseHostDisplay();
+		Host::ReleaseHostDisplay(true);
 		return false;
 	}
 

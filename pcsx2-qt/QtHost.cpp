@@ -866,7 +866,7 @@ void EmuThread::updateDisplay()
 	}
 }
 
-bool EmuThread::acquireHostDisplay(RenderAPI api)
+bool EmuThread::acquireHostDisplay(RenderAPI api, bool clear_state_on_fail)
 {
 	pxAssertRel(!g_host_display, "Host display does not exist on create");
 	m_is_rendering_to_main = shouldRenderToMain();
@@ -888,24 +888,24 @@ bool EmuThread::acquireHostDisplay(RenderAPI api)
 	if (!g_host_display->MakeCurrent())
 	{
 		Console.Error("Failed to make render context current");
-		releaseHostDisplay();
+		releaseHostDisplay(clear_state_on_fail);
 		return false;
 	}
 
 	if (!g_host_display->SetupDevice() || !ImGuiManager::Initialize())
 	{
 		Console.Error("Failed to initialize device/imgui");
-		releaseHostDisplay();
+		releaseHostDisplay(clear_state_on_fail);
 		return false;
 	}
 
 	Console.WriteLn(Color_StrongGreen, "%s Graphics Driver Info:", HostDisplay::RenderAPIToString(g_host_display->GetRenderAPI()));
 	Console.Indent().WriteLn(g_host_display->GetDriverInfo());
 
-	if (m_run_fullscreen_ui && !FullscreenUI::Initialize())
+	if (m_run_fullscreen_ui && !ImGuiManager::InitializeFullscreenUI())
 	{
 		Console.Error("Failed to initialize fullscreen UI");
-		releaseHostDisplay();
+		releaseHostDisplay(clear_state_on_fail);
 		m_run_fullscreen_ui = false;
 		return false;
 	}
@@ -913,22 +913,22 @@ bool EmuThread::acquireHostDisplay(RenderAPI api)
 	return true;
 }
 
-void EmuThread::releaseHostDisplay()
+void EmuThread::releaseHostDisplay(bool clear_state)
 {
-	ImGuiManager::Shutdown();
+	ImGuiManager::Shutdown(clear_state);
 
 	g_host_display.reset();
 	emit onDestroyDisplayRequested();
 }
 
-bool Host::AcquireHostDisplay(RenderAPI api)
+bool Host::AcquireHostDisplay(RenderAPI api, bool clear_state_on_fail)
 {
-	return g_emu_thread->acquireHostDisplay(api);
+	return g_emu_thread->acquireHostDisplay(api, clear_state_on_fail);
 }
 
-void Host::ReleaseHostDisplay()
+void Host::ReleaseHostDisplay(bool clear_state)
 {
-	g_emu_thread->releaseHostDisplay();
+	g_emu_thread->releaseHostDisplay(clear_state);
 }
 
 VsyncMode Host::GetEffectiveVSyncMode()
