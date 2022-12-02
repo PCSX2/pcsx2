@@ -257,6 +257,9 @@ namespace InputManager
 	/// Retrieves bindings that match the generic bindings for the specified device.
 	GenericInputBindingMapping GetGenericBindingMapping(const std::string_view& device);
 
+	/// Returns whether a given input source is enabled.
+	bool IsInputSourceEnabled(SettingsInterface& si, InputSourceType type);
+
 	/// Re-parses the config and registers all hotkey and pad bindings.
 	void ReloadBindings(SettingsInterface& si, SettingsInterface& binding_si);
 
