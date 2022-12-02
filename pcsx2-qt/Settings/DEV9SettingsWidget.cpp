@@ -784,7 +784,7 @@ void DEV9SettingsWidget::onHddCreateClicked()
 	if (!Path::IsAbsolute(hddPath))
 		hddPath = Path::Combine(EmuFolders::Settings, hddPath);
 
-	if (!FileSystem::FileExists(hddPath.c_str()))
+	if (FileSystem::FileExists(hddPath.c_str()))
 	{
 		//GHC uses UTF8 on all platforms
 		QMessageBox::StandardButton selection =
