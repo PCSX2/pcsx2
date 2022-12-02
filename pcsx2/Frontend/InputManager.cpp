@@ -112,6 +112,9 @@ namespace InputManager
 
 	static bool DoEventHook(InputBindingKey key, float value);
 	static bool PreprocessEvent(InputBindingKey key, float value, GenericInputBinding generic_key);
+
+	template <typename T>
+	static void UpdateInputSourceState(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock, InputSourceType type);
 } // namespace InputManager
 
 // ------------------------------------------------------------------------
@@ -276,7 +279,8 @@ std::string InputManager::ConvertInputBindingKeyToString(InputBindingKey key)
 		}
 		else if (key.source_subtype == InputSubclass::PointerAxis)
 		{
-			return fmt::format("Pointer-{}/{}{:c}", u32{key.source_index}, s_pointer_axis_names[key.data], key.modifier == InputModifier::Negate ? '-' : '+');
+			return fmt::format("Pointer-{}/{}{:c}", u32{key.source_index}, s_pointer_axis_names[key.data],
+				key.modifier == InputModifier::Negate ? '-' : '+');
 		}
 	}
 	else if (key.source_type < InputSourceType::Count && s_input_sources[static_cast<u32>(key.source_type)])
@@ -567,8 +571,8 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 			if (!bindings.empty())
 			{
 				// we use axes for all pad bindings to simplify things, and because they are pressure sensitive
-				AddBindings(bindings, InputAxisEventHandler{[pad_index, bind_index](
-																float value) { PAD::SetControllerState(pad_index, bind_index, value); }});
+				AddBindings(bindings,
+					InputAxisEventHandler{[pad_index, bind_index](float value) { PAD::SetControllerState(pad_index, bind_index, value); }});
 			}
 		}
 	}
@@ -1173,11 +1177,15 @@ GenericInputBindingMapping InputManager::GetGenericBindingMapping(const std::str
 	return mapping;
 }
 
-template <typename T>
-static void UpdateInputSourceState(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock, InputSourceType type)
+bool InputManager::IsInputSourceEnabled(SettingsInterface& si, InputSourceType type)
 {
-	const bool enabled =
-		si.GetBoolValue("InputSources", InputManager::InputSourceToString(type), InputManager::GetInputSourceDefaultEnabled(type));
+	return si.GetBoolValue("InputSources", InputManager::InputSourceToString(type), InputManager::GetInputSourceDefaultEnabled(type));
+}
+
+template <typename T>
+void InputManager::UpdateInputSourceState(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock, InputSourceType type)
+{
+	const bool enabled = IsInputSourceEnabled(si, type);
 	if (enabled)
 	{
 		if (s_input_sources[static_cast<u32>(type)])
@@ -1189,7 +1197,7 @@ static void UpdateInputSourceState(SettingsInterface& si, std::unique_lock<std::
 			std::unique_ptr<InputSource> source = std::make_unique<T>();
 			if (!source->Initialize(si, settings_lock))
 			{
-				Console.Error("(InputManager) Source '%s' failed to initialize.", InputManager::InputSourceToString(type));
+				Console.Error("(InputManager) Source '%s' failed to initialize.", InputSourceToString(type));
 				return;
 			}
 
