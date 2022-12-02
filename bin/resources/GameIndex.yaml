@@ -23216,9 +23216,12 @@ SLKA-25219:
   clampModes:
     vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
 SLKA-25221:
-  name: "Busin Zero - Wizardry Alternative Neo"
+  name: "Busin 0 - Wizardry Alternative Neo"
   region: "NTSC-K"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Corrects blur effects in menus.
+    roundSprite: 2 # Aligns some text/graphics when upscaling.
 SLKA-25222:
   name: "Rockman X8"
   region: "NTSC-K"
@@ -24758,7 +24761,7 @@ SLPM-62097:
   name: "Keisatsukan, The - Shinjuku 24-ji"
   region: "NTSC-J"
 SLPM-62098:
-  name: "Busin Zero - Wizardry Alternative"
+  name: "Busin - Wizardry Alternative"
   region: "NTSC-J"
 SLPM-62100:
   name: "Rez [Special Package]"
@@ -28044,6 +28047,9 @@ SLPM-65377:
 SLPM-65378:
   name: "Busin 0 - Wizardry Alternative Neo"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Corrects blur effects in menus.
+    roundSprite: 2 # Aligns some text/graphics when upscaling.
 SLPM-65379:
   name: "Baseball 2003, The - Battle Ball Park Sengen - Perfect Play Pro Yakyuu - Shuukigou"
   region: "NTSC-J"
@@ -29676,6 +29682,9 @@ SLPM-65875:
 SLPM-65876:
   name: "Busin 0 - Wizardry Alternative Neo [Atlus Best Collection]"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Corrects blur effects in menus.
+    roundSprite: 2 # Aligns some text/graphics when upscaling.
 SLPM-65878:
   name: "Galaxy Angel - Eternal Lovers"
   region: "NTSC-J"
