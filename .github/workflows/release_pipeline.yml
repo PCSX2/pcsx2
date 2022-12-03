@@ -15,7 +15,7 @@ jobs:
     with:
       jobName: "wxWidgets"
       compiler: gcc
-      cmakeflags: "-DLTO_PCSX2_CORE=ON"
+      cmakeflags: "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON"
       buildAppImage: true
     secrets: inherit
 
