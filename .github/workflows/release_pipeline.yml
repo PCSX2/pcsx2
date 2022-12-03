@@ -8,32 +8,28 @@ on:
 jobs:
   # Build Everything
   # Linux
-  build_linux_qt_sse4:
+  build_linux_qt:
     if: github.repository == 'PCSX2/pcsx2'
-    name: "Linux - AppImage SSE4"
+    name: "Linux"
     uses: ./.github/workflows/linux_build_qt.yml
     with:
       jobName: "Qt"
       compiler: clang
       cmakeflags: ""
-      simd: "SSE4"
-      buildAppImage: true
-    secrets: inherit
-
-  build_linux_qt_avx2:
-    if: github.repository == 'PCSX2/pcsx2'
-    name: "Linux - AppImage AVX2"
-    uses: ./.github/workflows/linux_build_qt.yml
-    with:
-      jobName: "Qt"
-      detail: ""
-      compiler: clang
-      cmakeflags: "-DARCH_FLAG=-march=haswell"
-      simd: "AVX2"
       buildAppImage: true
     secrets: inherit
 
   # Windows
+  build_windows_qt:
+    if: github.repository == 'PCSX2/pcsx2'
+    name: "Windows"
+    uses: ./.github/workflows/windows_build_qt.yml
+    with:
+      jobName: Qt
+      configuration: CMake
+      buildSystem: cmake
+    secrets: inherit
+
   build_qt_sse4:
     if: github.repository == 'PCSX2/pcsx2'
     name: "Windows - SSE4"
@@ -67,8 +63,8 @@ jobs:
   upload_artifacts:
     if: github.repository == 'PCSX2/pcsx2'
     needs:
-      - build_linux_qt_sse4
-      - build_linux_qt_avx2
+      - build_linux_qt
+      - build_windows_qt
       - build_qt_sse4
       - build_qt_avx2
       - build_macos_qt

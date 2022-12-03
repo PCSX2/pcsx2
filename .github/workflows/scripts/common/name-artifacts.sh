@@ -21,7 +21,7 @@ NAME=""
 
 if [ "${OS}" == "macos" ]; then
   NAME="PCSX2-${OS}-${GUI_FRAMEWORK}"
-elif [[ ("${OS}" == "windows" && "$BUILD_SYSTEM" != "cmake") || ("$OS" == "linux" && "$GUI_FRAMEWORK" == "QT") ]]; then
+elif [[ ("${OS}" == "windows" && "$BUILD_SYSTEM" != "cmake") ]]; then
   NAME="PCSX2-${OS}-${GUI_FRAMEWORK}-${ARCH}-${SIMD}"
 else
   NAME="PCSX2-${OS}-${GUI_FRAMEWORK}-${ARCH}"

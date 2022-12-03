@@ -28,10 +28,6 @@ on:
         required: false
         type: string
         default: ""
-      simd:
-        required: false
-        type: string
-        default: ""
       cheats_url:
         required: false
         type: string
@@ -63,7 +59,6 @@ jobs:
           OS: linux
           GUI_FRAMEWORK: QT
           ARCH: ${{ inputs.platform }}
-          SIMD: ${{ inputs.simd }}
           EVENT_NAME: ${{ github.event_name }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_NUM: ${{ github.event.pull_request.number }}
@@ -79,8 +74,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .ccache
-          key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} ${{ inputs.simd }} ${{ inputs.detail }} ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
-          restore-keys: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} ${{ inputs.simd }} ${{ inputs.detail }} ccache
+          key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} ${{ inputs.detail }} ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} ${{ inputs.detail }} ccache
 
       - name: Install Packages
         env:
