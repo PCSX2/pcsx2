@@ -9,25 +9,12 @@ on:
       - master
 
 jobs:
-  build_linux_qt_sse4:
+  build_linux_qt:
     name: "AppImage"
     uses: ./.github/workflows/linux_build_qt.yml
     with:
-      jobName: "Qt SSE4"
+      jobName: "Qt"
       compiler: clang
       cmakeflags: ""
-      simd: "SSE4"
-      buildAppImage: true
-    secrets: inherit
-
-  build_linux_qt_avx2:
-    name: "AppImage"
-    uses: ./.github/workflows/linux_build_qt.yml
-    with:
-      jobName: "Qt AVX2"
-      detail: ""
-      compiler: clang
-      cmakeflags: "-DARCH_FLAG=-march=haswell"
-      simd: "AVX2"
       buildAppImage: true
     secrets: inherit

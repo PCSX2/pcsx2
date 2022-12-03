@@ -49,7 +49,6 @@ jobs:
           OS: macos
           GUI_FRAMEWORK: ${{ inputs.gui }}
           ARCH: ${{ inputs.platform }}
-          SIMD: ''
           EVENT_NAME: ${{ github.event_name }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_NUM: ${{ github.event.pull_request.number }}
