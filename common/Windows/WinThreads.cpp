@@ -23,11 +23,6 @@
 #include <process.h>
 #include <timeapi.h>
 
-__fi void Threading::Sleep(int ms)
-{
-	::Sleep(ms);
-}
-
 __fi void Threading::Timeslice()
 {
 	::Sleep(0);
