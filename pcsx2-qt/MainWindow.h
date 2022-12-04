@@ -78,6 +78,12 @@ public:
 	/// Default theme name for the platform.
 	static const char* DEFAULT_THEME_NAME;
 
+	/// Default filter for opening a file.
+	static const char* OPEN_FILE_FILTER;
+
+	/// Default filter for opening a disc image.
+	static const char* DISC_IMAGE_FILTER;
+
 public:
 	MainWindow();
 	~MainWindow();
@@ -100,6 +106,9 @@ public:
 	__fi QLabel* getStatusFPSWidget() const { return m_status_fps_widget; }
 	__fi QLabel* getStatusVPSWidget() const { return m_status_vps_widget; }
 
+	/// Rescans a single file. NOTE: Happens on UI thread.
+	void rescanFile(const std::string& path);
+
 public Q_SLOTS:
 	void checkForUpdates(bool display_message);
 	void refreshGameList(bool invalidate_cache);
@@ -108,7 +117,8 @@ public Q_SLOTS:
 	void reportError(const QString& title, const QString& message);
 	bool confirmMessage(const QString& title, const QString& message);
 	void runOnUIThread(const std::function<void()>& func);
-	bool requestShutdown(bool allow_confirm = true, bool allow_save_to_state = true, bool default_save_to_state = true, bool block_until_done = false);
+	bool requestShutdown(
+		bool allow_confirm = true, bool allow_save_to_state = true, bool default_save_to_state = true, bool block_until_done = false);
 	void requestExit();
 	void checkForSettingChanges();
 	std::optional<WindowInfo> getWindowInfo();
@@ -172,7 +182,7 @@ private Q_SLOTS:
 	void onVMResumed();
 	void onVMStopped();
 
-	void onGameChanged(const QString& path, const QString& serial, const QString& name, quint32 crc);
+	void onGameChanged(const QString& path, const QString& elf_override, const QString& serial, const QString& name, quint32 crc);
 
 protected:
 	void showEvent(QShowEvent* event) override;
@@ -234,8 +244,8 @@ private:
 
 	QString getDiscDevicePath(const QString& title);
 
-	void startGameListEntry(const GameList::Entry* entry, std::optional<s32> save_slot = std::nullopt,
-		std::optional<bool> fast_boot = std::nullopt);
+	void startGameListEntry(
+		const GameList::Entry* entry, std::optional<s32> save_slot = std::nullopt, std::optional<bool> fast_boot = std::nullopt);
 	void setGameListEntryCoverImage(const GameList::Entry* entry);
 	void clearGameListEntryPlayTime(const GameList::Entry* entry);
 
@@ -267,6 +277,7 @@ private:
 	QLabel* m_status_resolution_widget = nullptr;
 
 	QString m_current_disc_path;
+	QString m_current_elf_override;
 	QString m_current_game_serial;
 	QString m_current_game_name;
 	quint32 m_current_game_crc;

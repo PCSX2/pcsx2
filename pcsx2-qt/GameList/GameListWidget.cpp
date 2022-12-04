@@ -35,6 +35,8 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 
+#include "fmt/format.h"
+
 static const char* SUPPORTED_FORMATS_STRING = QT_TRANSLATE_NOOP(GameListWidget,
 	".bin/.iso (ISO Disc Images)\n"
 	".chd (Compressed Hunks of Data)\n"
@@ -594,6 +596,19 @@ const GameList::Entry* GameListWidget::getSelectedEntry() const
 
 		return GameList::GetEntryByIndex(source_index.row());
 	}
+}
+
+void GameListWidget::rescanFile(const std::string& path)
+{
+	// We can't do this while there's a VM running, because of CDVD state... ugh.
+	if (QtHost::IsVMValid())
+	{
+		Console.Error(fmt::format("Can't re-scan ELF at '{}' because we have a VM running.", path));
+		return;
+	}
+
+	GameList::RescanPath(path);
+	m_model->refresh();
 }
 
 GameListGridListView::GameListGridListView(QWidget* parent /*= nullptr*/)

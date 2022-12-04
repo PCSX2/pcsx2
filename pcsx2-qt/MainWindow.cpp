@@ -66,7 +66,7 @@
 #endif
 
 
-static constexpr char OPEN_FILE_FILTER[] =
+const char* MainWindow::OPEN_FILE_FILTER =
 	QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.chd *.cso *.gz *.elf *.irx *.gs *.gs.xz *.gs.zst *.dump);;"
 									"Single-Track Raw Images (*.bin *.iso);;"
 									"Cue Sheets (*.cue);;"
@@ -78,14 +78,13 @@ static constexpr char OPEN_FILE_FILTER[] =
 									"GS Dumps (*.gs *.gs.xz *.gs.zst);;"
 									"Block Dumps (*.dump)");
 
-static constexpr char DISC_IMAGE_FILTER[] =
-	QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.chd *.cso *.gz *.dump);;"
-									"Single-Track Raw Images (*.bin *.iso);;"
-									"Cue Sheets (*.cue);;"
-									"MAME CHD Images (*.chd);;"
-									"CSO Images (*.cso);;"
-									"GZ Images (*.gz);;"
-									"Block Dumps (*.dump)");
+const char* MainWindow::DISC_IMAGE_FILTER = QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.chd *.cso *.gz *.dump);;"
+																			"Single-Track Raw Images (*.bin *.iso);;"
+																			"Cue Sheets (*.cue);;"
+																			"MAME CHD Images (*.chd);;"
+																			"CSO Images (*.cso);;"
+																			"GZ Images (*.gz);;"
+																			"Block Dumps (*.dump)");
 
 #ifdef __APPLE__
 const char* MainWindow::DEFAULT_THEME_NAME = "";
@@ -283,9 +282,8 @@ void MainWindow::setupAdditionalUi()
 					raAction->setChecked(checked);
 				}
 
-				connect(raAction, &QAction::triggered, this, [id = id]() {
-					Host::RunOnCPUThread([id]() { Achievements::RAIntegration::ActivateMenuItem(id); }, false);
-				});
+				connect(raAction, &QAction::triggered, this,
+					[id = id]() { Host::RunOnCPUThread([id]() { Achievements::RAIntegration::ActivateMenuItem(id); }, false); });
 			}
 		});
 		m_ui.menu_Tools->insertMenu(m_ui.menuInput_Recording->menuAction(), raMenu);
@@ -324,11 +322,12 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionDEV9Settings, &QAction::triggered, [this]() { doSettings("Network & HDD"); });
 	connect(m_ui.actionFolderSettings, &QAction::triggered, [this]() { doSettings("Folders"); });
 	connect(m_ui.actionAchievementSettings, &QAction::triggered, [this]() { doSettings("Achievements"); });
-	connect(
-		m_ui.actionControllerSettings, &QAction::triggered, [this]() { doControllerSettings(ControllerSettingsDialog::Category::GlobalSettings); });
-	connect(m_ui.actionHotkeySettings, &QAction::triggered, [this]() { doControllerSettings(ControllerSettingsDialog::Category::HotkeySettings); });
-	connect(
-		m_ui.actionAddGameDirectory, &QAction::triggered, [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
+	connect(m_ui.actionControllerSettings, &QAction::triggered,
+		[this]() { doControllerSettings(ControllerSettingsDialog::Category::GlobalSettings); });
+	connect(m_ui.actionHotkeySettings, &QAction::triggered,
+		[this]() { doControllerSettings(ControllerSettingsDialog::Category::HotkeySettings); });
+	connect(m_ui.actionAddGameDirectory, &QAction::triggered,
+		[this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
 	connect(m_ui.actionScanForNewGames, &QAction::triggered, [this]() { refreshGameList(false); });
 	connect(m_ui.actionRescanAllGames, &QAction::triggered, [this]() { refreshGameList(true); });
 	connect(m_ui.actionViewToolbar, &QAction::toggled, this, &MainWindow::onViewToolbarActionToggled);
@@ -395,8 +394,8 @@ void MainWindow::connectSignals()
 	connect(m_game_list_widget, &GameListWidget::refreshComplete, this, &MainWindow::onGameListRefreshComplete);
 	connect(m_game_list_widget, &GameListWidget::selectionChanged, this, &MainWindow::onGameListSelectionChanged, Qt::QueuedConnection);
 	connect(m_game_list_widget, &GameListWidget::entryActivated, this, &MainWindow::onGameListEntryActivated, Qt::QueuedConnection);
-	connect(
-		m_game_list_widget, &GameListWidget::entryContextMenuRequested, this, &MainWindow::onGameListEntryContextMenuRequested, Qt::QueuedConnection);
+	connect(m_game_list_widget, &GameListWidget::entryContextMenuRequested, this, &MainWindow::onGameListEntryContextMenuRequested,
+		Qt::QueuedConnection);
 	connect(m_game_list_widget, &GameListWidget::addGameDirectoryRequested, this,
 		[this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
 }
@@ -430,8 +429,8 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 		GSRendererType::OGL, GSRendererType::VK, GSRendererType::SW, GSRendererType::Null};
 	for (GSRendererType renderer : renderers)
 	{
-		connect(m_ui.menuDebugSwitchRenderer->addAction(QString::fromUtf8(Pcsx2Config::GSOptions::GetRendererName(renderer))), &QAction::triggered,
-			[renderer] { g_emu_thread->switchRenderer(renderer); });
+		connect(m_ui.menuDebugSwitchRenderer->addAction(QString::fromUtf8(Pcsx2Config::GSOptions::GetRendererName(renderer))),
+			&QAction::triggered, [renderer] { g_emu_thread->switchRenderer(renderer); });
 	}
 }
 
@@ -817,8 +816,7 @@ void MainWindow::onBlockDumpActionToggled(bool checked)
 
 	// prompt for a location to save
 	const QString new_dir(
-		QFileDialog::getExistingDirectory(this, tr("Select location to save block dump:"),
-			QString::fromStdString(old_directory)));
+		QFileDialog::getExistingDirectory(this, tr("Select location to save block dump:"), QString::fromStdString(old_directory)));
 	if (new_dir.isEmpty())
 	{
 		// disable it again
@@ -839,11 +837,12 @@ void MainWindow::onShowAdvancedSettingsToggled(bool checked)
 		QCheckBox* cb = new QCheckBox(tr("Do not show again"));
 		QMessageBox mb(this);
 		mb.setWindowTitle(tr("Show Advanced Settings"));
-		mb.setText(
-			tr("Changing advanced settings can have unpredictable effects on games, including graphical glitches, lock-ups, and even corrupted save files. "
-			   "We do not recommend changing advanced settings unless you know what you are doing, and the implications of changing each setting.\n\n"
-			   "The PCSX2 team will not provide any support for configurations that modify these settings, you are on your own.\n\n"
-			   "Are you sure you want to continue?"));
+		mb.setText(tr("Changing advanced settings can have unpredictable effects on games, including graphical glitches, lock-ups, and "
+					  "even corrupted save files. "
+					  "We do not recommend changing advanced settings unless you know what you are doing, and the implications of changing "
+					  "each setting.\n\n"
+					  "The PCSX2 team will not provide any support for configurations that modify these settings, you are on your own.\n\n"
+					  "Are you sure you want to continue?"));
 		mb.setIcon(QMessageBox::Warning);
 		mb.addButton(QMessageBox::Yes);
 		mb.addButton(QMessageBox::No);
@@ -1097,8 +1096,7 @@ bool MainWindow::shouldHideMainWindow() const
 {
 	// NOTE: We can't use isRenderingToMain() here, because this happens post-fullscreen-switch.
 	return Host::GetBoolSettingValue("UI", "HideMainWindowWhenRunning", false) ||
-		   (g_emu_thread->shouldRenderToMain() && isRenderingFullscreen()) ||
-		   QtHost::InNoGUIMode();
+		   (g_emu_thread->shouldRenderToMain() && isRenderingFullscreen()) || QtHost::InNoGUIMode();
 }
 
 void MainWindow::switchToGameListView()
@@ -1173,7 +1171,8 @@ void MainWindow::runOnUIThread(const std::function<void()>& func)
 	func();
 }
 
-bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_save_to_state /* = true */, bool default_save_to_state /* = true */, bool block_until_done /* = false */)
+bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_save_to_state /* = true */,
+	bool default_save_to_state /* = true */, bool block_until_done /* = false */)
 {
 	if (!s_vm_valid)
 		return true;
@@ -1310,8 +1309,8 @@ void MainWindow::onGameListEntryActivated()
 	// we might still be saving a resume state...
 	VMManager::WaitForSaveStateFlush();
 
-	const std::optional<bool> resume = promptForResumeState(
-		QString::fromStdString(VMManager::GetSaveStateFileName(entry->serial.c_str(), entry->crc, -1)));
+	const std::optional<bool> resume =
+		promptForResumeState(QString::fromStdString(VMManager::GetSaveStateFileName(entry->serial.c_str(), entry->crc, -1)));
 	if (!resume.has_value())
 	{
 		// cancelled
@@ -1332,9 +1331,14 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 	if (entry)
 	{
 		QAction* action = menu.addAction(tr("Properties..."));
-		action->setEnabled(!entry->serial.empty());
+		action->setEnabled(!entry->serial.empty() || entry->type == GameList::EntryType::ELF);
 		if (action->isEnabled())
-			connect(action, &QAction::triggered, [entry]() { SettingsDialog::openGamePropertiesDialog(entry, entry->serial, entry->crc); });
+		{
+			connect(action, &QAction::triggered, [entry]() {
+				SettingsDialog::openGamePropertiesDialog(
+					entry, (entry->type != GameList::EntryType::ELF) ? std::string_view(entry->serial) : std::string_view(), entry->crc);
+			});
+		}
 
 		action = menu.addAction(tr("Open Containing Directory..."));
 		connect(action, &QAction::triggered, [this, entry]() {
@@ -1348,8 +1352,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		connect(menu.addAction(tr("Exclude From List")), &QAction::triggered,
 			[this, entry]() { getSettingsDialog()->getGameListSettingsWidget()->addExcludedPath(entry->path); });
 
-		connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered,
-			[this, entry]() { clearGameListEntryPlayTime(entry); });
+		connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered, [this, entry]() { clearGameListEntryPlayTime(entry); });
 
 		menu.addSeparator();
 
@@ -1398,7 +1401,8 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 
 void MainWindow::onStartFileActionTriggered()
 {
-	const QString path(QDir::toNativeSeparators(QFileDialog::getOpenFileName(this, tr("Start File"), QString(), tr(OPEN_FILE_FILTER), nullptr)));
+	const QString path(
+		QDir::toNativeSeparators(QFileDialog::getOpenFileName(this, tr("Start File"), QString(), tr(OPEN_FILE_FILTER), nullptr)));
 	if (path.isEmpty())
 		return;
 
@@ -1423,7 +1427,8 @@ void MainWindow::onStartBIOSActionTriggered()
 void MainWindow::onChangeDiscFromFileActionTriggered()
 {
 	VMLock lock(pauseAndLockVM());
-	QString filename = QFileDialog::getOpenFileName(lock.getDialogParent(), tr("Select Disc Image"), QString(), tr(DISC_IMAGE_FILTER), nullptr);
+	QString filename =
+		QFileDialog::getOpenFileName(lock.getDialogParent(), tr("Select Disc Image"), QString(), tr(DISC_IMAGE_FILTER), nullptr);
 	if (filename.isEmpty())
 		return;
 
@@ -1455,7 +1460,9 @@ void MainWindow::onChangeDiscMenuAboutToShow()
 	// TODO: This is where we would populate the playlist if there is one.
 }
 
-void MainWindow::onChangeDiscMenuAboutToHide() {}
+void MainWindow::onChangeDiscMenuAboutToHide()
+{
+}
 
 void MainWindow::onLoadStateMenuAboutToShow()
 {
@@ -1514,13 +1521,16 @@ void MainWindow::onViewGamePropertiesActionTriggered()
 		return;
 
 	// prefer to use a game list entry, if we have one, that way the summary is populated
-	if (!m_current_disc_path.isEmpty())
+	if (!m_current_disc_path.isEmpty() || !m_current_elf_override.isEmpty())
 	{
 		auto lock = GameList::GetLock();
-		const GameList::Entry* entry = GameList::GetEntryForPath(m_current_disc_path.toUtf8().constData());
+		const GameList::Entry* entry = m_current_elf_override.isEmpty() ?
+										   GameList::GetEntryForPath(m_current_disc_path.toUtf8().constData()) :
+                                           GameList::GetEntryForPath(m_current_elf_override.toUtf8().constData());
 		if (entry)
 		{
-			SettingsDialog::openGamePropertiesDialog(entry, entry->serial, entry->crc);
+			SettingsDialog::openGamePropertiesDialog(
+				entry, m_current_elf_override.isEmpty() ? std::string_view(entry->serial) : std::string_view(), entry->crc);
 			return;
 		}
 	}
@@ -1571,11 +1581,10 @@ void MainWindow::checkForUpdates(bool display_message)
 
 			QString message;
 #ifdef _WIN32
-			message =
-				tr("<p>Sorry, you are trying to update a PCSX2 version which is not an official GitHub release. To "
-				   "prevent incompatibilities, the auto-updater is only enabled on official builds.</p>"
-				   "<p>To obtain an official build, please download from the link below:</p>"
-				   "<p><a href=\"https://pcsx2.net/downloads/\">https://pcsx2.net/downloads/</a></p>");
+			message = tr("<p>Sorry, you are trying to update a PCSX2 version which is not an official GitHub release. To "
+						 "prevent incompatibilities, the auto-updater is only enabled on official builds.</p>"
+						 "<p>To obtain an official build, please download from the link below:</p>"
+						 "<p><a href=\"https://pcsx2.net/downloads/\">https://pcsx2.net/downloads/</a></p>");
 #else
 			message = tr("Automatic updating is not supported on the current platform.");
 #endif
@@ -1646,21 +1655,18 @@ void MainWindow::onInputRecNewActionTriggered()
 
 	if (result == QDialog::Accepted)
 	{
-		Host::RunOnCPUThread([&, filePath = dlg.getFilePath(),
-								 fromSavestate = dlg.getInputRecType() == InputRecording::Type::FROM_SAVESTATE,
-								 authorName = dlg.getAuthorName()]() {
-			if (g_InputRecording.create(
-					filePath,
-					fromSavestate,
-					authorName))
-			{
-				QtHost::RunOnUIThread([&]() {
-					m_ui.actionInputRecNew->setEnabled(false);
-					m_ui.actionInputRecStop->setEnabled(true);
-					m_ui.actionReset->setEnabled(!g_InputRecording.isTypeSavestate());
-				});
-			}
-		});
+		Host::RunOnCPUThread(
+			[&, filePath = dlg.getFilePath(), fromSavestate = dlg.getInputRecType() == InputRecording::Type::FROM_SAVESTATE,
+				authorName = dlg.getAuthorName()]() {
+				if (g_InputRecording.create(filePath, fromSavestate, authorName))
+				{
+					QtHost::RunOnUIThread([&]() {
+						m_ui.actionInputRecNew->setEnabled(false);
+						m_ui.actionInputRecStop->setEnabled(true);
+						m_ui.actionReset->setEnabled(!g_InputRecording.isTypeSavestate());
+					});
+				}
+			});
 	}
 
 	if (wasRunning && !wasPaused)
@@ -1700,9 +1706,7 @@ void MainWindow::onInputRecPlayActionTriggered()
 	{
 		if (g_InputRecording.isActive())
 		{
-			Host::RunOnCPUThread([]() {
-				g_InputRecording.stop();
-			});
+			Host::RunOnCPUThread([]() { g_InputRecording.stop(); });
 			m_ui.actionInputRecStop->setEnabled(false);
 		}
 		Host::RunOnCPUThread([&, filename = fileNames.first().toStdString()]() {
@@ -1852,9 +1856,10 @@ void MainWindow::onVMStopped()
 		m_game_list_widget->refresh(false);
 }
 
-void MainWindow::onGameChanged(const QString& path, const QString& serial, const QString& name, quint32 crc)
+void MainWindow::onGameChanged(const QString& path, const QString& elf_override, const QString& serial, const QString& name, quint32 crc)
 {
 	m_current_disc_path = path;
+	m_current_elf_override = elf_override;
 	m_current_game_serial = serial;
 	m_current_game_name = name;
 	m_current_game_crc = crc;
@@ -1950,8 +1955,8 @@ void MainWindow::registerForDeviceNotifications()
 #ifdef _WIN32
 	// We use these notifications to detect when a controller is connected or disconnected.
 	DEV_BROADCAST_DEVICEINTERFACE_W filter = {sizeof(DEV_BROADCAST_DEVICEINTERFACE_W), DBT_DEVTYP_DEVICEINTERFACE};
-	m_device_notification_handle = RegisterDeviceNotificationW((HANDLE)winId(), &filter,
-		DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES);
+	m_device_notification_handle =
+		RegisterDeviceNotificationW((HANDLE)winId(), &filter, DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES);
 #endif
 }
 
@@ -2041,8 +2046,8 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 
 DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, bool surfaceless)
 {
-	DevCon.WriteLn("updateDisplay() fullscreen=%s render_to_main=%s surfaceless=%s",
-		fullscreen ? "true" : "false", render_to_main ? "true" : "false", surfaceless ? "true" : "false");
+	DevCon.WriteLn("updateDisplay() fullscreen=%s render_to_main=%s surfaceless=%s", fullscreen ? "true" : "false",
+		render_to_main ? "true" : "false", surfaceless ? "true" : "false");
 
 	QWidget* container = m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget);
 	const bool is_fullscreen = isRenderingFullscreen();
@@ -2057,7 +2062,8 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, b
 	// .. except on Wayland, where everything tends to break if you don't recreate.
 	const bool has_container = (m_display_container != nullptr);
 	const bool needs_container = DisplayContainer::isNeeded(fullscreen, render_to_main);
-	if (!is_rendering_to_main && !render_to_main && !is_exclusive_fullscreen && has_container == needs_container && !needs_container && !changing_surfaceless)
+	if (!is_rendering_to_main && !render_to_main && !is_exclusive_fullscreen && has_container == needs_container && !needs_container &&
+		!changing_surfaceless)
 	{
 		DevCon.WriteLn("Toggling to %s without recreating surface", (fullscreen ? "fullscreen" : "windowed"));
 		if (g_host_display->IsFullscreen())
@@ -2351,8 +2357,7 @@ SettingsDialog* MainWindow::getSettingsDialog()
 	if (!m_settings_dialog)
 	{
 		m_settings_dialog = new SettingsDialog(this);
-		connect(
-			m_settings_dialog->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::themeChanged, this, &MainWindow::updateTheme);
+		connect(m_settings_dialog->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::themeChanged, this, &MainWindow::updateTheme);
 	}
 
 	return m_settings_dialog;
@@ -2454,14 +2459,16 @@ void MainWindow::startGameListEntry(const GameList::Entry* entry, std::optional<
 
 void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
 {
-	const QString filename(QFileDialog::getOpenFileName(this, tr("Select Cover Image"), QString(), tr("All Cover Image Types (*.jpg *.jpeg *.png)")));
+	const QString filename(
+		QFileDialog::getOpenFileName(this, tr("Select Cover Image"), QString(), tr("All Cover Image Types (*.jpg *.jpeg *.png)")));
 	if (filename.isEmpty())
 		return;
 
 	if (!GameList::GetCoverImagePathForEntry(entry).empty())
 	{
-		if (QMessageBox::question(this, tr("Cover Already Exists"), tr("A cover image for this game already exists, do you wish to replace it?"),
-				QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+		if (QMessageBox::question(this, tr("Cover Already Exists"),
+				tr("A cover image for this game already exists, do you wish to replace it?"), QMessageBox::Yes,
+				QMessageBox::No) != QMessageBox::Yes)
 		{
 			return;
 		}
@@ -2645,10 +2652,8 @@ void MainWindow::populateLoadStateMenu(QMenu* menu, const QString& filename, con
 	if (has_any_states)
 	{
 		connect(delete_save_states_action, &QAction::triggered, this, [this, serial, crc] {
-			if (QMessageBox::warning(
-					this, tr("Delete Save States"),
-					tr("Are you sure you want to delete all save states for %1?\n\nThe saves will not be recoverable.")
-						.arg(serial),
+			if (QMessageBox::warning(this, tr("Delete Save States"),
+					tr("Are you sure you want to delete all save states for %1?\n\nThe saves will not be recoverable.").arg(serial),
 					QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
 			{
 				return;
@@ -2721,8 +2726,7 @@ void MainWindow::doStartFile(std::optional<CDVD_SourceType> source, const QStrin
 	VMManager::WaitForSaveStateFlush();
 
 	const std::optional<bool> resume(
-		promptForResumeState(
-			QString::fromStdString(VMManager::GetSaveStateFileName(params->filename.c_str(), -1))));
+		promptForResumeState(QString::fromStdString(VMManager::GetSaveStateFileName(params->filename.c_str(), -1))));
 	if (!resume.has_value())
 		return;
 	else if (resume.value())
@@ -2736,8 +2740,8 @@ void MainWindow::doDiscChange(CDVD_SourceType source, const QString& path)
 	bool reset_system = false;
 	if (!m_was_disc_change_request)
 	{
-		const int choice = QMessageBox::question(this, tr("Confirm Disc Change"), tr("Do you want to swap discs or boot the new image (via system reset)?"),
-			tr("Swap Disc"), tr("Reset"), tr("Cancel"), 0, 2);
+		const int choice = QMessageBox::question(this, tr("Confirm Disc Change"),
+			tr("Do you want to swap discs or boot the new image (via system reset)?"), tr("Swap Disc"), tr("Reset"), tr("Cancel"), 0, 2);
 		if (choice == 2)
 			return;
 		reset_system = (choice != 0);
@@ -2767,6 +2771,11 @@ MainWindow::VMLock MainWindow::pauseAndLockVM()
 	QWidget* dialog_parent = was_fullscreen ? static_cast<QWidget*>(this) : getDisplayContainer();
 
 	return VMLock(dialog_parent, was_paused, was_fullscreen);
+}
+
+void MainWindow::rescanFile(const std::string& path)
+{
+	m_game_list_widget->rescanFile(path);
 }
 
 MainWindow::VMLock::VMLock(QWidget* dialog_parent, bool was_paused, bool was_fullscreen)
