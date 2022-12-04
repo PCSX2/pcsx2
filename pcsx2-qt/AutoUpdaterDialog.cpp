@@ -49,21 +49,21 @@
 // We use tagged commit, because this gets set on nightly builds.
 #if (defined(_WIN32) || defined(__linux__)) && (defined(GIT_TAGGED_COMMIT) && GIT_TAGGED_COMMIT)
 
-#define AUTO_UPDATER_SUPPORTED 1
+	#define AUTO_UPDATER_SUPPORTED 1
 
-#if defined(_WIN32)
-#define UPDATE_PLATFORM_STR "Windows"
-#elif defined(__linux__)
-#define UPDATE_PLATFORM_STR "Linux"
-#endif
+	#if defined(_WIN32)
+		#define UPDATE_PLATFORM_STR "Windows"
+	#elif defined(__linux__)
+		#define UPDATE_PLATFORM_STR "Linux"
+	#endif
 
-#if MULTI_ISA_SHARED_COMPILATION
-// #undef UPDATE_ADDITIONAL_TAGS
-#elif _M_SSE >= 0x501
-#define UPDATE_ADDITIONAL_TAGS "AVX2"
-#else
-#define UPDATE_ADDITIONAL_TAGS "SSE4"
-#endif
+	#if MULTI_ISA_SHARED_COMPILATION
+		// #undef UPDATE_ADDITIONAL_TAGS
+	#elif _M_SSE >= 0x501
+		#define UPDATE_ADDITIONAL_TAGS "AVX2"
+	#else
+		#define UPDATE_ADDITIONAL_TAGS "SSE4"
+	#endif
 
 #endif
 
