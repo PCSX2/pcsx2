@@ -681,7 +681,9 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 		}
 		else
 		{
-			mVUregs.xgkickcycles = 0;
+			// XGKick command counts as one cycle for the transfer.
+			// Can be tested with Resident Evil: Outbreak, Kingdom Hearts, CART Fury.
+			mVUregs.xgkickcycles = 1;
 			mVUlow.kickcycles = 0;
 		}
 
