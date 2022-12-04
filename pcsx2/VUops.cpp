@@ -2721,7 +2721,9 @@ static __ri void _vuXGKICK(VURegs* VU)
 	VU->xgkicksizeremaining = 0;
 	VU->xgkickendpacket = false;
 	VU->xgkicklastcycle = VU->cycle;
-	VU->xgkickcyclecount = 0;
+	// XGKick command counts as one cycle for the transfer.
+	// Can be tested with Resident Evil: Outbreak, Kingdom Hearts, CART Fury.
+	VU->xgkickcyclecount = 1;
 	VU0.VI[REG_VPU_STAT].UL |= (1 << 12);
 	VUM_LOG("XGKICK addr %x", addr);
 }
