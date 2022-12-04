@@ -119,9 +119,6 @@ else()
 	## Use pcsx2 package to find module
 	include(FindLibc)
 
-	## Use pcsx2 package to find module
-	include(FindPulseAudio)
-
 	## Use CheckLib package to find module
 	include(CheckLib)
 
