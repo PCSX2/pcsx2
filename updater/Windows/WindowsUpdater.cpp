@@ -453,7 +453,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	const int parent_process_id = StringUtil::FromChars<int>(StringUtil::WideStringToUTF8String(argv[1])).value_or(0);
 	const std::string destination_directory = StringUtil::WideStringToUTF8String(argv[2]);
 	const std::string zip_path = StringUtil::WideStringToUTF8String(argv[3]);
-	const std::wstring program_to_launch(argv[4]);
+	std::wstring program_to_launch(argv[4]);
 	argv.reset();
 
 	if (parent_process_id <= 0 || destination_directory.empty() || zip_path.empty() || program_to_launch.empty())
@@ -493,6 +493,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		return 1;
 	}
 
+	DeleteFileW(program_to_launch.c_str()); // In case the new exe has a different name, delete the old one to prevent confusion
 	if (!updater.CommitUpdate())
 	{
 		progress.ModalError(
@@ -504,6 +505,21 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	updater.RemoveUpdateZip();
 
 	progress.ModalInformation("Update complete.");
+
+	if (GetFileAttributesW(program_to_launch.c_str()) == INVALID_FILE_ATTRIBUTES)
+	{
+		// New executable doesn't match old, try to find the real one...
+		if (std::string actual_exe = updater.FindPCSX2Exe(); !actual_exe.empty())
+		{
+			std::string full_path = destination_directory + FS_OSPATH_SEPARATOR_STR + actual_exe;
+			program_to_launch = StringUtil::UTF8StringToWideString(full_path);
+		}
+		else
+		{
+			progress.ModalError("Couldn't find PCSX2 in update package, please re-download a fresh version from GitHub.");
+			return 1;
+		}
+	}
 
 	progress.DisplayFormattedInformation("Launching '%s'...",
 		StringUtil::WideStringToUTF8String(program_to_launch).c_str());
