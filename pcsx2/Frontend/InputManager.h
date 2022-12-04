@@ -166,6 +166,7 @@ namespace InputManager
 
 	/// Maximum number of host mouse devices.
 	static constexpr u32 MAX_POINTER_DEVICES = 1;
+	static constexpr u32 MAX_POINTER_BUTTONS = 3;
 
 	/// Returns a pointer to the external input source class, if present.
 	InputSource* GetInputSourceInterface(InputSourceType type);
@@ -178,6 +179,12 @@ namespace InputManager
 
 	/// Parses an input class string.
 	std::optional<InputSourceType> ParseInputSourceString(const std::string_view& str);
+
+	/// Parses a pointer device string, i.e. tells you which pointer is specified.
+	std::optional<u32> GetIndexFromPointerBinding(const std::string_view& str);
+
+	/// Returns the device name for a pointer index (e.g. Pointer-0).
+	std::string GetPointerDeviceName(u32 pointer_index);
 
 	/// Converts a key code from a human-readable string to an identifier.
 	std::optional<u32> ConvertHostKeyboardStringToCode(const std::string_view& str);
@@ -199,10 +206,10 @@ namespace InputManager
 	std::optional<InputBindingKey> ParseInputBindingKey(const std::string_view& binding);
 
 	/// Converts a input key to a string.
-	std::string ConvertInputBindingKeyToString(InputBindingKey key);
+	std::string ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key);
 
 	/// Converts a chord of binding keys to a string.
-	std::string ConvertInputBindingKeysToString(const InputBindingKey* keys, size_t num_keys);
+	std::string ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type, const InputBindingKey* keys, size_t num_keys);
 
 	/// Returns a list of all hotkeys.
 	std::vector<const HotkeyInfo*> GetHotkeyList();
@@ -266,14 +273,20 @@ namespace InputManager
 	/// The pad vibration state will internally remain, so that when emulation is unpaused, the effect resumes.
 	void PauseVibration();
 
+	/// Reads absolute pointer position.
+	std::pair<float, float> GetPointerAbsolutePosition(u32 index);
+
 	/// Updates absolute pointer position. Can call from UI thread, use when the host only reports absolute coordinates.
 	void UpdatePointerAbsolutePosition(u32 index, float x, float y);
 
 	/// Updates relative pointer position. Can call from the UI thread, use when host supports relative coordinate reporting.
 	void UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, float d, bool raw_input = false);
 
-	/// Returns true if any bindings are present which require relative mouse movement.
-	bool HasPointerAxisBinds();
+	/// Called when a new input device is connected.
+	void OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name);
+
+	/// Called when an input device is disconnected.
+	void OnInputDeviceDisconnected(const std::string_view& identifier);
 } // namespace InputManager
 
 namespace Host
@@ -286,4 +299,7 @@ namespace Host
 
 	/// Called when an input device is disconnected.
 	void OnInputDeviceDisconnected(const std::string_view& identifier);
+
+	/// Enables relative mouse mode in the host.
+	void SetRelativeMouseMode(bool enabled);
 } // namespace Host

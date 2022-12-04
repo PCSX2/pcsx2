@@ -13,13 +13,11 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef USBEYETOYWEBCAM_H
-#define USBEYETOYWEBCAM_H
+#pragma once
 
-#include "USB/qemu-usb/vl.h"
-#include "USB/configuration.h"
+#include "USB/qemu-usb/qusb.h"
 #include "USB/deviceproxy.h"
-#include "videodeviceproxy.h"
+#include "USB/usb-eyetoy/videodev.h"
 #include <mutex>
 
 
@@ -469,37 +467,16 @@ namespace usb_eyetoy
 		0x75, 0x75, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	};
 
-	class EyeToyWebCamDevice
+	class EyeToyWebCamDevice final : public DeviceProxy
 	{
 	public:
-		virtual ~EyeToyWebCamDevice() {}
-		static USBDevice* CreateDevice(int port);
-		static const TCHAR* Name()
-		{
-			return TEXT("Webcam (EyeToy)");
-		}
-		static const char* TypeName()
-		{
-			return "webcam";
-		}
-		static std::list<std::string> ListAPIs()
-		{
-			return RegisterVideoDevice::instance().Names();
-		}
-		static const TCHAR* LongAPIName(const std::string& name)
-		{
-			auto proxy = RegisterVideoDevice::instance().Proxy(name);
-			if (proxy)
-				return proxy->Name();
-			return nullptr;
-		}
-		static int Configure(int port, const std::string& api, void* data);
-		static int Freeze(FreezeAction mode, USBDevice* dev, void* data);
-		static std::vector<std::string> SubTypes()
-		{
-			return {"Sony EyeToy", "Konami Capture Eye"};
-		}
+		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
+		const char* Name() const override;
+		const char* TypeName() const override;
+		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
+		void UpdateSettings(USBDevice* dev, SettingsInterface& si) const override;
+		std::vector<std::string> SubTypes() const override;
+		gsl::span<const SettingInfo> Settings(u32 subtype) const override;
 	};
 
 } // namespace usb_eyetoy
-#endif

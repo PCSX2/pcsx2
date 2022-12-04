@@ -40,14 +40,15 @@
 #include "GS.h"
 #include "GS/GS.h"
 #include "SPU2/spu2.h"
-#include "USB/USB.h"
 #include "PAD/Gamepad.h"
 
 #ifndef PCSX2_CORE
 #include "gui/App.h"
 #include "gui/ConsoleLogger.h"
 #include "gui/SysThreads.h"
+#include "USB/USBNull.h"
 #else
+#include "USB/USB.h"
 #include "VMManager.h"
 #endif
 
@@ -424,7 +425,7 @@ static int SysState_MTGSFreeze(FreezeAction mode, freezeData* fP)
 
 static constexpr SysState_Component SPU2{ "SPU2", SPU2freeze };
 static constexpr SysState_Component PAD_{ "PAD", PADfreeze };
-static constexpr SysState_Component USB{ "USB", USBfreeze };
+static constexpr SysState_Component USB_{ "USB", USBfreeze };
 static constexpr SysState_Component GS{ "GS", SysState_MTGSFreeze };
 
 
@@ -644,8 +645,8 @@ public:
 	virtual ~SavestateEntry_USB() = default;
 
 	const char* GetFilename() const { return "USB.bin"; }
-	void FreezeIn(zip_file_t* zf) const { return SysState_ComponentFreezeIn(zf, USB); }
-	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, USB); }
+	void FreezeIn(zip_file_t* zf) const { return SysState_ComponentFreezeIn(zf, USB_); }
+	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, USB_); }
 	bool IsRequired() const { return false; }
 };
 
@@ -726,7 +727,7 @@ static const std::unique_ptr<BaseSavestateEntry> SavestateEntries[] = {
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_VU0prog),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_VU1prog),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_SPU2),
-#ifndef PCSX2_CORE
+#ifdef PCSX2_CORE
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_USB),
 #endif
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_PAD),

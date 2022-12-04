@@ -31,7 +31,7 @@
 #include "GS.h"
 
 #include "CDVD/CDVD.h"
-#include "USB/USB.h"
+#include "USB/USBNull.h"
 #include "Elfheader.h"
 #include "Patch.h"
 #include "R5900Exceptions.h"

@@ -1301,7 +1301,7 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::T
 					// if this key is in our new binding list, it's a "release", and we're done
 					SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
 					const std::string new_binding(InputManager::ConvertInputBindingKeysToString(
-						s_input_binding_new_bindings.data(), s_input_binding_new_bindings.size()));
+						s_input_binding_type, s_input_binding_new_bindings.data(), s_input_binding_new_bindings.size()));
 					bsi->SetStringValue(s_input_binding_section.c_str(), s_input_binding_key.c_str(), new_binding.c_str());
 					SetSettingsChanged(bsi);
 					ClearInputBindingVariables();

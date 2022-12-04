@@ -38,7 +38,6 @@
 
 #include "Elfheader.h"
 #include "CDVD/CDVD.h"
-#include "USB/USB.h"
 #include "Patch.h"
 #include "GameDatabase.h"
 
@@ -119,9 +118,6 @@ void cpuReset()
 	ElfEntry = -1;
 	g_GameStarted = false;
 	g_GameLoading = false;
-
-	// Probably not the right place, but it has to be done when the ram is actually initialized
-	USBsetRAM(iopMem->Main);
 
 	// FIXME: LastELF should be reset on media changes as well as on CPU resets, in
 	// the very unlikely case that a user swaps to another media source that "looks"

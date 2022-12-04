@@ -120,6 +120,7 @@ Q_SIGNALS:
 	DisplayWidget* onUpdateDisplayRequested(bool fullscreen, bool render_to_main, bool surfaceless);
 	void onResizeDisplayRequested(qint32 width, qint32 height);
 	void onDestroyDisplayRequested();
+	void onRelativeMouseModeRequested(bool enabled);
 
 	/// Called when the VM is starting initialization, but has not been completed yet.
 	void onVMStarting();

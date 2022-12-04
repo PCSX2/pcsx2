@@ -25,15 +25,18 @@
 // Most stuff is based on Qemu 1.7 USB soundcard passthrough code.
 
 #include "PrecompiledHeader.h"
-#include "USB/qemu-usb/vl.h"
+#include "USB/qemu-usb/qusb.h"
 #include "USB/qemu-usb/desc.h"
-#include "usb-mic-singstar.h"
-#include "USB/shared/inifile_usb.h"
-#include <assert.h>
+#include "USB/qemu-usb/USBinternal.h"
+#include "USB/usb-mic/usb-mic-singstar.h"
+#include "USB/usb-mic/audiodev.h"
+#include "USB/usb-mic/audio.h"
+#include "USB/USB.h"
+#include "Host.h"
+#include "StateWrapper.h"
+#include "fmt/format.h"
 
 static FILE* file = NULL;
-
-#include "audio.h"
 
 #define BUFFER_FRAMES 200
 
@@ -58,18 +61,17 @@ namespace usb_mic
 	enum usb_audio_altset : int8_t
 	{
 		ALTSET_OFF = 0x00, /* No endpoint */
-		ALTSET_ON = 0x01,  /* Single endpoint */
+		ALTSET_ON = 0x01, /* Single endpoint */
 	};
 
-	typedef struct SINGSTARMICState
+	struct SINGSTARMICState
 	{
 		USBDevice dev;
 
 		USBDesc desc;
 		USBDescDevice desc_dev;
 
-		AudioDevice* audsrc[2];
-		AudioDeviceProxyBase* audsrcproxy;
+		std::unique_ptr<AudioDevice> audsrc[2];
 
 		struct freeze
 		{
@@ -81,13 +83,13 @@ namespace usb_mic
 			bool mute;
 			uint8_t vol[2];
 			uint32_t srate[2]; //TODO can it have different rates?
-		} f;                   //freezable
+		} f; //freezable
 
 		/* properties */
 		uint32_t debug;
 		std::vector<int16_t> buffer[2];
 		//uint8_t  fifo[2][200]; //on-chip 400byte fifo
-	} SINGSTARMICState;
+	};
 
 	static const USBDescStrings desc_strings = {
 		"",
@@ -98,203 +100,203 @@ namespace usb_mic
 
 	/* descriptor dumped from a real singstar MIC adapter */
 	static const uint8_t singstar_mic_dev_descriptor[] = {
-		/* bLength             */ 0x12,          //(18)
-		/* bDescriptorType     */ 0x01,          //(1)
+		/* bLength             */ 0x12, //(18)
+		/* bDescriptorType     */ 0x01, //(1)
 		/* bcdUSB              */ WBVAL(0x0110), //(272)
-		/* bDeviceClass        */ 0x00,          //(0)
-		/* bDeviceSubClass     */ 0x00,          //(0)
-		/* bDeviceProtocol     */ 0x00,          //(0)
-		/* bMaxPacketSize0     */ 0x08,          //(8)
+		/* bDeviceClass        */ 0x00, //(0)
+		/* bDeviceSubClass     */ 0x00, //(0)
+		/* bDeviceProtocol     */ 0x00, //(0)
+		/* bMaxPacketSize0     */ 0x08, //(8)
 		/* idVendor            */ WBVAL(0x1415), //(5141)
 		/* idProduct           */ WBVAL(0x0000), //(0)
 		/* bcdDevice           */ WBVAL(0x0001), //(1)
-		/* iManufacturer       */ 0x01,          //(1)
-		/* iProduct            */ 0x02,          //(2)
-		/* iSerialNumber       */ 0x00,          //(0) unused
-		/* bNumConfigurations  */ 0x01,          //(1)
+		/* iManufacturer       */ 0x01, //(1)
+		/* iProduct            */ 0x02, //(2)
+		/* iSerialNumber       */ 0x00, //(0) unused
+		/* bNumConfigurations  */ 0x01, //(1)
 
 	};
 
 	static const uint8_t singstar_mic_config_descriptor[] = {
 
 		/* Configuration 1 */
-		0x09,                              /* bLength */
+		0x09, /* bLength */
 		USB_CONFIGURATION_DESCRIPTOR_TYPE, /* bDescriptorType */
-		WBVAL(0x00b1),                     /* wTotalLength */
-		0x02,                              /* bNumInterfaces */
-		0x01,                              /* bConfigurationValue */
-		0x00,                              /* iConfiguration */
-		USB_CONFIG_BUS_POWERED,            /* bmAttributes */
-		USB_CONFIG_POWER_MA(90),           /* bMaxPower */
+		WBVAL(0x00b1), /* wTotalLength */
+		0x02, /* bNumInterfaces */
+		0x01, /* bConfigurationValue */
+		0x00, /* iConfiguration */
+		USB_CONFIG_BUS_POWERED, /* bmAttributes */
+		USB_CONFIG_POWER_MA(90), /* bMaxPower */
 
 		/* Interface 0, Alternate Setting 0, Audio Control */
-		USB_INTERFACE_DESC_SIZE,       /* bLength */
+		USB_INTERFACE_DESC_SIZE, /* bLength */
 		USB_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
-		0x00,                          /* bInterfaceNumber */
-		0x00,                          /* bAlternateSetting */
-		0x00,                          /* bNumEndpoints */
-		USB_CLASS_AUDIO,               /* bInterfaceClass */
-		AUDIO_SUBCLASS_AUDIOCONTROL,   /* bInterfaceSubClass */
-		AUDIO_PROTOCOL_UNDEFINED,      /* bInterfaceProtocol */
-		0x00,                          /* iInterface */
+		0x00, /* bInterfaceNumber */
+		0x00, /* bAlternateSetting */
+		0x00, /* bNumEndpoints */
+		USB_CLASS_AUDIO, /* bInterfaceClass */
+		AUDIO_SUBCLASS_AUDIOCONTROL, /* bInterfaceSubClass */
+		AUDIO_PROTOCOL_UNDEFINED, /* bInterfaceProtocol */
+		0x00, /* iInterface */
 
 		/* Audio Control Interface */
 		AUDIO_CONTROL_INTERFACE_DESC_SZ(1), /* bLength */
-		AUDIO_INTERFACE_DESCRIPTOR_TYPE,    /* bDescriptorType */
-		AUDIO_CONTROL_HEADER,               /* bDescriptorSubtype */
-		WBVAL(0x0100), /* 1.00 */           /* bcdADC */
-		WBVAL(0x0028),                      /* wTotalLength */
-		0x01,                               /* bInCollection */
-		0x01,                               /* baInterfaceNr */
+		AUDIO_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
+		AUDIO_CONTROL_HEADER, /* bDescriptorSubtype */
+		WBVAL(0x0100), /* 1.00 */ /* bcdADC */
+		WBVAL(0x0028), /* wTotalLength */
+		0x01, /* bInCollection */
+		0x01, /* baInterfaceNr */
 
 		/* Audio Input Terminal */
-		AUDIO_INPUT_TERMINAL_DESC_SIZE,           /* bLength */
-		AUDIO_INTERFACE_DESCRIPTOR_TYPE,          /* bDescriptorType */
-		AUDIO_CONTROL_INPUT_TERMINAL,             /* bDescriptorSubtype */
-		0x01,                                     /* bTerminalID */
-		WBVAL(AUDIO_TERMINAL_MICROPHONE),         /* wTerminalType */
-		0x02,                                     /* bAssocTerminal */
-		0x02,                                     /* bNrChannels */
+		AUDIO_INPUT_TERMINAL_DESC_SIZE, /* bLength */
+		AUDIO_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
+		AUDIO_CONTROL_INPUT_TERMINAL, /* bDescriptorSubtype */
+		0x01, /* bTerminalID */
+		WBVAL(AUDIO_TERMINAL_MICROPHONE), /* wTerminalType */
+		0x02, /* bAssocTerminal */
+		0x02, /* bNrChannels */
 		WBVAL(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R), /* wChannelConfig */
-		0x00,                                     /* iChannelNames */
-		0x00,                                     /* iTerminal */
+		0x00, /* iChannelNames */
+		0x00, /* iTerminal */
 
 		/* Audio Output Terminal */
-		AUDIO_OUTPUT_TERMINAL_DESC_SIZE,     /* bLength */
-		AUDIO_INTERFACE_DESCRIPTOR_TYPE,     /* bDescriptorType */
-		AUDIO_CONTROL_OUTPUT_TERMINAL,       /* bDescriptorSubtype */
-		0x02,                                /* bTerminalID */
+		AUDIO_OUTPUT_TERMINAL_DESC_SIZE, /* bLength */
+		AUDIO_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
+		AUDIO_CONTROL_OUTPUT_TERMINAL, /* bDescriptorSubtype */
+		0x02, /* bTerminalID */
 		WBVAL(AUDIO_TERMINAL_USB_STREAMING), /* wTerminalType */
-		0x01,                                /* bAssocTerminal */
-		0x03,                                /* bSourceID */
-		0x00,                                /* iTerminal */
+		0x01, /* bAssocTerminal */
+		0x03, /* bSourceID */
+		0x00, /* iTerminal */
 
 		/* Audio Feature Unit */
 		AUDIO_FEATURE_UNIT_DESC_SZ(2, 1), /* bLength */
-		AUDIO_INTERFACE_DESCRIPTOR_TYPE,  /* bDescriptorType */
-		AUDIO_CONTROL_FEATURE_UNIT,       /* bDescriptorSubtype */
-		0x03,                             /* bUnitID */
-		0x01,                             /* bSourceID */
-		0x01,                             /* bControlSize */
-		0x01,                             /* bmaControls(0) */
-		0x02,                             /* bmaControls(1) */
-		0x02,                             /* bmaControls(2) */
-		0x00,                             /* iTerminal */
+		AUDIO_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
+		AUDIO_CONTROL_FEATURE_UNIT, /* bDescriptorSubtype */
+		0x03, /* bUnitID */
+		0x01, /* bSourceID */
+		0x01, /* bControlSize */
+		0x01, /* bmaControls(0) */
+		0x02, /* bmaControls(1) */
+		0x02, /* bmaControls(2) */
+		0x00, /* iTerminal */
 
 		/* Interface 1, Alternate Setting 0, Audio Streaming - Zero Bandwith */
-		USB_INTERFACE_DESC_SIZE,       /* bLength */
+		USB_INTERFACE_DESC_SIZE, /* bLength */
 		USB_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
-		0x01,                          /* bInterfaceNumber */
-		0x00,                          /* bAlternateSetting */
-		0x00,                          /* bNumEndpoints */
-		USB_CLASS_AUDIO,               /* bInterfaceClass */
+		0x01, /* bInterfaceNumber */
+		0x00, /* bAlternateSetting */
+		0x00, /* bNumEndpoints */
+		USB_CLASS_AUDIO, /* bInterfaceClass */
 		AUDIO_SUBCLASS_AUDIOSTREAMING, /* bInterfaceSubClass */
-		AUDIO_PROTOCOL_UNDEFINED,      /* bInterfaceProtocol */
-		0x00,                          /* iInterface */
+		AUDIO_PROTOCOL_UNDEFINED, /* bInterfaceProtocol */
+		0x00, /* iInterface */
 
 		/* Interface 1, Alternate Setting 1, Audio Streaming - Operational */
-		USB_INTERFACE_DESC_SIZE,       /* bLength */
+		USB_INTERFACE_DESC_SIZE, /* bLength */
 		USB_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
-		0x01,                          /* bInterfaceNumber */
-		0x01,                          /* bAlternateSetting */
-		0x01,                          /* bNumEndpoints */
-		USB_CLASS_AUDIO,               /* bInterfaceClass */
+		0x01, /* bInterfaceNumber */
+		0x01, /* bAlternateSetting */
+		0x01, /* bNumEndpoints */
+		USB_CLASS_AUDIO, /* bInterfaceClass */
 		AUDIO_SUBCLASS_AUDIOSTREAMING, /* bInterfaceSubClass */
-		AUDIO_PROTOCOL_UNDEFINED,      /* bInterfaceProtocol */
-		0x00,                          /* iInterface */
+		AUDIO_PROTOCOL_UNDEFINED, /* bInterfaceProtocol */
+		0x00, /* iInterface */
 
 		/* Audio Streaming Interface */
 		AUDIO_STREAMING_INTERFACE_DESC_SIZE, /* bLength */
-		AUDIO_INTERFACE_DESCRIPTOR_TYPE,     /* bDescriptorType */
-		AUDIO_STREAMING_GENERAL,             /* bDescriptorSubtype */
-		0x02,                                /* bTerminalLink */
-		0x01,                                /* bDelay */
-		WBVAL(AUDIO_FORMAT_PCM),             /* wFormatTag */
+		AUDIO_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
+		AUDIO_STREAMING_GENERAL, /* bDescriptorSubtype */
+		0x02, /* bTerminalLink */
+		0x01, /* bDelay */
+		WBVAL(AUDIO_FORMAT_PCM), /* wFormatTag */
 
 		/* Audio Type I Format */
-		AUDIO_FORMAT_TYPE_I_DESC_SZ(5),  /* bLength */
+		AUDIO_FORMAT_TYPE_I_DESC_SZ(5), /* bLength */
 		AUDIO_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
-		AUDIO_STREAMING_FORMAT_TYPE,     /* bDescriptorSubtype */
-		AUDIO_FORMAT_TYPE_I,             /* bFormatType */
-		0x01,                            /* bNrChannels */
-		0x02,                            /* bSubFrameSize */
-		0x10,                            /* bBitResolution */
-		0x05,                            /* bSamFreqType */
-		B3VAL(8000),                     /* tSamFreq 1 */
-		B3VAL(11025),                    /* tSamFreq 2 */
-		B3VAL(22050),                    /* tSamFreq 3 */
-		B3VAL(44100),                    /* tSamFreq 4 */
-		B3VAL(48000),                    /* tSamFreq 5 */
+		AUDIO_STREAMING_FORMAT_TYPE, /* bDescriptorSubtype */
+		AUDIO_FORMAT_TYPE_I, /* bFormatType */
+		0x01, /* bNrChannels */
+		0x02, /* bSubFrameSize */
+		0x10, /* bBitResolution */
+		0x05, /* bSamFreqType */
+		B3VAL(8000), /* tSamFreq 1 */
+		B3VAL(11025), /* tSamFreq 2 */
+		B3VAL(22050), /* tSamFreq 3 */
+		B3VAL(44100), /* tSamFreq 4 */
+		B3VAL(48000), /* tSamFreq 5 */
 
 		/* Endpoint - Standard Descriptor */
-		AUDIO_STANDARD_ENDPOINT_DESC_SIZE,                              /* bLength */
-		USB_ENDPOINT_DESCRIPTOR_TYPE,                                   /* bDescriptorType */
-		USB_ENDPOINT_IN(1),                                             /* bEndpointAddress */
+		AUDIO_STANDARD_ENDPOINT_DESC_SIZE, /* bLength */
+		USB_ENDPOINT_DESCRIPTOR_TYPE, /* bDescriptorType */
+		USB_ENDPOINT_IN(1), /* bEndpointAddress */
 		USB_ENDPOINT_TYPE_ISOCHRONOUS | USB_ENDPOINT_SYNC_ASYNCHRONOUS, /* bmAttributes */
-		WBVAL(0x0064),                                                  /* wMaxPacketSize */
-		0x01,                                                           /* bInterval */
-		0x00,                                                           /* bRefresh */
-		0x00,                                                           /* bSynchAddress */
+		WBVAL(0x0064), /* wMaxPacketSize */
+		0x01, /* bInterval */
+		0x00, /* bRefresh */
+		0x00, /* bSynchAddress */
 
 		/* Endpoint - Audio Streaming */
 		AUDIO_STREAMING_ENDPOINT_DESC_SIZE, /* bLength */
-		AUDIO_ENDPOINT_DESCRIPTOR_TYPE,     /* bDescriptorType */
-		AUDIO_ENDPOINT_GENERAL,             /* bDescriptor */
-		0x01,                               /* bmAttributes */
-		0x00,                               /* bLockDelayUnits */
-		WBVAL(0x0000),                      /* wLockDelay */
+		AUDIO_ENDPOINT_DESCRIPTOR_TYPE, /* bDescriptorType */
+		AUDIO_ENDPOINT_GENERAL, /* bDescriptor */
+		0x01, /* bmAttributes */
+		0x00, /* bLockDelayUnits */
+		WBVAL(0x0000), /* wLockDelay */
 
 		/* Interface 1, Alternate Setting 2, Audio Streaming - ? */
-		USB_INTERFACE_DESC_SIZE,       /* bLength */
+		USB_INTERFACE_DESC_SIZE, /* bLength */
 		USB_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
-		0x01,                          /* bInterfaceNumber */
-		0x02,                          /* bAlternateSetting */
-		0x01,                          /* bNumEndpoints */
-		USB_CLASS_AUDIO,               /* bInterfaceClass */
+		0x01, /* bInterfaceNumber */
+		0x02, /* bAlternateSetting */
+		0x01, /* bNumEndpoints */
+		USB_CLASS_AUDIO, /* bInterfaceClass */
 		AUDIO_SUBCLASS_AUDIOSTREAMING, /* bInterfaceSubClass */
-		AUDIO_PROTOCOL_UNDEFINED,      /* bInterfaceProtocol */
-		0x00,                          /* iInterface */
+		AUDIO_PROTOCOL_UNDEFINED, /* bInterfaceProtocol */
+		0x00, /* iInterface */
 
 		/* Audio Streaming Interface */
 		AUDIO_STREAMING_INTERFACE_DESC_SIZE, /* bLength */
-		AUDIO_INTERFACE_DESCRIPTOR_TYPE,     /* bDescriptorType */
-		AUDIO_STREAMING_GENERAL,             /* bDescriptorSubtype */
-		0x02,                                /* bTerminalLink */
-		0x01,                                /* bDelay */
-		WBVAL(AUDIO_FORMAT_PCM),             /* wFormatTag */
+		AUDIO_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
+		AUDIO_STREAMING_GENERAL, /* bDescriptorSubtype */
+		0x02, /* bTerminalLink */
+		0x01, /* bDelay */
+		WBVAL(AUDIO_FORMAT_PCM), /* wFormatTag */
 
 		/* Audio Type I Format */
-		AUDIO_FORMAT_TYPE_I_DESC_SZ(5),  /* bLength */
+		AUDIO_FORMAT_TYPE_I_DESC_SZ(5), /* bLength */
 		AUDIO_INTERFACE_DESCRIPTOR_TYPE, /* bDescriptorType */
-		AUDIO_STREAMING_FORMAT_TYPE,     /* bDescriptorSubtype */
-		AUDIO_FORMAT_TYPE_I,             /* bFormatType */
-		0x02,                            /* bNrChannels */
-		0x02,                            /* bSubFrameSize */
-		0x10,                            /* bBitResolution */
-		0x05,                            /* bSamFreqType */
-		B3VAL(8000),                     /* tSamFreq 1 */
-		B3VAL(11025),                    /* tSamFreq 2 */
-		B3VAL(22050),                    /* tSamFreq 3 */
-		B3VAL(44100),                    /* tSamFreq 4 */
-		B3VAL(48000),                    /* tSamFreq 5 */
+		AUDIO_STREAMING_FORMAT_TYPE, /* bDescriptorSubtype */
+		AUDIO_FORMAT_TYPE_I, /* bFormatType */
+		0x02, /* bNrChannels */
+		0x02, /* bSubFrameSize */
+		0x10, /* bBitResolution */
+		0x05, /* bSamFreqType */
+		B3VAL(8000), /* tSamFreq 1 */
+		B3VAL(11025), /* tSamFreq 2 */
+		B3VAL(22050), /* tSamFreq 3 */
+		B3VAL(44100), /* tSamFreq 4 */
+		B3VAL(48000), /* tSamFreq 5 */
 
 		/* Endpoint - Standard Descriptor */
-		AUDIO_STANDARD_ENDPOINT_DESC_SIZE,                              /* bLength */
-		USB_ENDPOINT_DESCRIPTOR_TYPE,                                   /* bDescriptorType */
-		USB_ENDPOINT_IN(1),                                             /* bEndpointAddress */
+		AUDIO_STANDARD_ENDPOINT_DESC_SIZE, /* bLength */
+		USB_ENDPOINT_DESCRIPTOR_TYPE, /* bDescriptorType */
+		USB_ENDPOINT_IN(1), /* bEndpointAddress */
 		USB_ENDPOINT_TYPE_ISOCHRONOUS | USB_ENDPOINT_SYNC_ASYNCHRONOUS, /* bmAttributes */
-		WBVAL(0x00c8),                                                  /* wMaxPacketSize */
-		0x01,                                                           /* bInterval */
-		0x00,                                                           /* bRefresh */
-		0x00,                                                           /* bSynchAddress */
+		WBVAL(0x00c8), /* wMaxPacketSize */
+		0x01, /* bInterval */
+		0x00, /* bRefresh */
+		0x00, /* bSynchAddress */
 
 		/* Endpoint - Audio Streaming */
 		AUDIO_STREAMING_ENDPOINT_DESC_SIZE, /* bLength */
-		AUDIO_ENDPOINT_DESCRIPTOR_TYPE,     /* bDescriptorType */
-		AUDIO_ENDPOINT_GENERAL,             /* bDescriptor */
-		0x01,                               /* bmAttributes */
-		0x00,                               /* bLockDelayUnits */
-		WBVAL(0x0000),                      /* wLockDelay */
+		AUDIO_ENDPOINT_DESCRIPTOR_TYPE, /* bDescriptorType */
+		AUDIO_ENDPOINT_GENERAL, /* bDescriptor */
+		0x01, /* bmAttributes */
+		0x00, /* bLockDelayUnits */
+		WBVAL(0x0000), /* wLockDelay */
 
 		/* Terminator */
 		0 /* bLength */
@@ -310,14 +312,11 @@ namespace usb_mic
 /*
  * Note: we arbitrarily map the volume control range onto -inf..+8 dB
  */
-#define ATTRIB_ID(cs, attrib, idif) \
-	(((cs) << 24) | ((attrib) << 16) | (idif))
+#define ATTRIB_ID(cs, attrib, idif) (((cs) << 24) | ((attrib) << 16) | (idif))
 
 
 	//0x0300 - feature bUnitID 0x03
-	static int usb_audio_get_control(SINGSTARMICState* s, uint8_t attrib,
-									 uint16_t cscn, uint16_t idif,
-									 int length, uint8_t* data)
+	static int usb_audio_get_control(SINGSTARMICState* s, uint8_t attrib, uint16_t cscn, uint16_t idif, int length, uint8_t* data)
 	{
 		uint8_t cs = cscn >> 8;
 		uint8_t cn = cscn - 1; /* -1 for the non-present master control */
@@ -375,9 +374,7 @@ namespace usb_mic
 		return ret;
 	}
 
-	static int usb_audio_set_control(SINGSTARMICState* s, uint8_t attrib,
-									 uint16_t cscn, uint16_t idif,
-									 int length, uint8_t* data)
+	static int usb_audio_set_control(SINGSTARMICState* s, uint8_t attrib, uint16_t cscn, uint16_t idif, int length, uint8_t* data)
 	{
 		uint8_t cs = cscn >> 8;
 		uint8_t cn = cscn - 1; /* -1 for the non-present master control */
@@ -424,9 +421,7 @@ namespace usb_mic
 		return ret;
 	}
 
-	static int usb_audio_ep_control(SINGSTARMICState* s, uint8_t attrib,
-									uint16_t cscn, uint16_t ep,
-									int length, uint8_t* data)
+	static int usb_audio_ep_control(SINGSTARMICState* s, uint8_t attrib, uint16_t cscn, uint16_t ep, int length, uint8_t* data)
 	{
 		uint8_t cs = cscn >> 8;
 		uint8_t cn = cscn - 1; /* -1 for the non-present master control */
@@ -452,7 +447,6 @@ namespace usb_mic
 
 					if (s->audsrc[1])
 						s->audsrc[1]->SetResampling(s->f.srate[1]);
-
 				}
 				else if (cn < 2)
 				{
@@ -474,10 +468,9 @@ namespace usb_mic
 		return ret;
 	}
 
-	static void singstar_mic_set_interface(USBDevice* dev, int intf,
-										   int alt_old, int alt_new)
+	static void singstar_mic_set_interface(USBDevice* dev, int intf, int alt_old, int alt_new)
 	{
-		SINGSTARMICState* s = (SINGSTARMICState*)dev;
+		SINGSTARMICState* s = USB_CONTAINER_OF(dev, SINGSTARMICState, dev);
 		s->f.intf = alt_new;
 #if defined(_DEBUG)
 		/* close previous debug audio output file */
@@ -489,10 +482,9 @@ namespace usb_mic
 #endif
 	}
 
-	static void singstar_mic_handle_control(USBDevice* dev, USBPacket* p, int request, int value,
-											int index, int length, uint8_t* data)
+	static void singstar_mic_handle_control(USBDevice* dev, USBPacket* p, int request, int value, int index, int length, uint8_t* data)
 	{
-		SINGSTARMICState* s = (SINGSTARMICState*)dev;
+		SINGSTARMICState* s = USB_CONTAINER_OF(dev, SINGSTARMICState, dev);
 		int ret = 0;
 
 
@@ -511,8 +503,7 @@ namespace usb_mic
 			case ClassInterfaceRequest | AUDIO_REQUEST_GET_MIN:
 			case ClassInterfaceRequest | AUDIO_REQUEST_GET_MAX:
 			case ClassInterfaceRequest | AUDIO_REQUEST_GET_RES:
-				ret = usb_audio_get_control(s, request & 0xff, value, index,
-											length, data);
+				ret = usb_audio_get_control(s, request & 0xff, value, index, length, data);
 				if (ret < 0)
 				{
 					//if (s->debug) {
@@ -527,8 +518,7 @@ namespace usb_mic
 			case ClassInterfaceOutRequest | AUDIO_REQUEST_SET_MIN:
 			case ClassInterfaceOutRequest | AUDIO_REQUEST_SET_MAX:
 			case ClassInterfaceOutRequest | AUDIO_REQUEST_SET_RES:
-				ret = usb_audio_set_control(s, request & 0xff, value, index,
-											length, data);
+				ret = usb_audio_set_control(s, request & 0xff, value, index, length, data);
 				if (ret < 0)
 				{
 					//if (s->debug) {
@@ -546,8 +536,7 @@ namespace usb_mic
 			case ClassEndpointOutRequest | AUDIO_REQUEST_SET_MIN:
 			case ClassEndpointOutRequest | AUDIO_REQUEST_SET_MAX:
 			case ClassEndpointOutRequest | AUDIO_REQUEST_SET_RES:
-				ret = usb_audio_ep_control(s, request & 0xff, value, index,
-										   length, data);
+				ret = usb_audio_ep_control(s, request & 0xff, value, index, length, data);
 				if (ret < 0)
 					goto fail;
 				break;
@@ -567,7 +556,7 @@ namespace usb_mic
 
 	static void singstar_mic_handle_data(USBDevice* dev, USBPacket* p)
 	{
-		SINGSTARMICState* s = (SINGSTARMICState*)dev;
+		SINGSTARMICState* s = USB_CONTAINER_OF(dev, SINGSTARMICState, dev);
 		int ret = 0;
 		uint8_t devep = p->ep->nr;
 
@@ -606,10 +595,9 @@ namespace usb_mic
 					for (int i = 0; i < 2; i++)
 					{
 						frames = max_frames;
-						if (s->audsrc[i] &&
-							s->audsrc[i]->GetFrames(&frames))
+						if (s->audsrc[i] && s->audsrc[i]->GetFrames(&frames))
 						{
-							frames = MIN(max_frames, frames); //max 50 frames usually
+							frames = std::min(max_frames, frames); //max 50 frames usually
 							out_frames[i] = s->audsrc[i]->GetBuffer(s->buffer[i].data(), frames);
 						}
 					}
@@ -669,7 +657,7 @@ namespace usb_mic
 						{
 							uint32_t cn1 = s->audsrc[0]->GetChannels();
 							uint32_t cn2 = s->audsrc[1]->GetChannels();
-							uint32_t minLen = MIN(out_frames[0], out_frames[1]);
+							uint32_t minLen = std::min(out_frames[0], out_frames[1]);
 
 							src1 = s->buffer[0].data();
 							src2 = s->buffer[1].data();
@@ -721,7 +709,7 @@ namespace usb_mic
 
 	static void singstar_mic_handle_destroy(USBDevice* dev)
 	{
-		SINGSTARMICState* s = (SINGSTARMICState*)dev;
+		SINGSTARMICState* s = USB_CONTAINER_OF(dev, SINGSTARMICState, dev);
 		if (file)
 			fclose(file);
 		file = NULL;
@@ -733,81 +721,53 @@ namespace usb_mic
 			if (s->audsrc[i])
 			{
 				s->audsrc[i]->Stop();
-				delete s->audsrc[i];
-				s->audsrc[i] = NULL;
+				s->audsrc[i].reset();
 				s->buffer[i].clear();
 			}
 		}
-		s->audsrcproxy->AudioDeinit();
+
 		delete s;
 	}
 
-	static int singstar_mic_handle_open(USBDevice* dev)
+	USBDevice* SingstarDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
-		SINGSTARMICState* s = (SINGSTARMICState*)dev;
-		if (s)
-		{
-			for (int i = 0; i < 2; i++)
-				if (s->audsrc[i])
-					s->audsrc[i]->Start();
-		}
-		return 0;
+		return CreateDevice(si, port, subtype, true, SingstarDevice::TypeName());
 	}
 
-	static void singstar_mic_handle_close(USBDevice* dev)
+	USBDevice* SingstarDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype, bool dual_mic, const char* devtype) const
 	{
-		SINGSTARMICState* s = (SINGSTARMICState*)dev;
-		if (s)
+		SINGSTARMICState* s = new SINGSTARMICState();
+
+		if (dual_mic)
 		{
-			for (int i = 0; i < 2; i++)
-				if (s->audsrc[i])
-					s->audsrc[i]->Stop();
+			std::string dev0(USB::GetConfigString(si, port, devtype, "player1_device_name"));
+			std::string dev1(USB::GetConfigString(si, port, devtype, "player2_device_name"));
+			const s32 latency = USB::GetConfigInt(si, port, devtype, "input_latency", AudioDevice::DEFAULT_LATENCY);
+
+			if (!dev0.empty())
+				s->audsrc[0] = AudioDevice::CreateDevice(port, AUDIODIR_SOURCE, 1, std::move(dev0), latency);
+			if (!dev1.empty())
+				s->audsrc[1] = AudioDevice::CreateDevice(port, AUDIODIR_SOURCE, 1, std::move(dev1), latency);
 		}
-	}
-
-	//USBDevice *singstar_mic_init(int port, TSTDSTRING *devs)
-	USBDevice* SingstarDevice::CreateDevice(int port)
-	{
-		std::string api;
-#ifdef _WIN32
-		std::wstring tmp;
-		LoadSetting(nullptr, port, SingstarDevice::TypeName(), N_DEVICE_API, tmp);
-		api = wstr_to_str(tmp);
-#else
-		LoadSetting(nullptr, port, SingstarDevice::TypeName(), N_DEVICE_API, api);
-#endif
-		return SingstarDevice::CreateDevice(port, api);
-	}
-	USBDevice* SingstarDevice::CreateDevice(int port, const std::string& api)
-	{
-		SINGSTARMICState* s;
-		AudioDeviceInfo info;
-
-		s = new SINGSTARMICState();
-
-		s->audsrcproxy = RegisterAudioDevice::instance().Proxy(api);
-		if (!s->audsrcproxy)
+		else
 		{
-			Console.WriteLn("singstar: Invalid audio API: '%s'\n", api.c_str());
-			delete s;
-			return NULL;
+			std::string dev0(USB::GetConfigString(si, port, devtype, "input_device_name"));
+			const s32 latency0 = USB::GetConfigInt(si, port, devtype, "input_latency", AudioDevice::DEFAULT_LATENCY);
+			if (!dev0.empty())
+				s->audsrc[0] = AudioDevice::CreateDevice(port, AUDIODIR_SOURCE, 1, std::move(dev0), latency0);
 		}
-
-		s->audsrcproxy->AudioInit();
-
-		s->audsrc[0] = s->audsrcproxy->CreateObject(port, TypeName(), 0, AUDIODIR_SOURCE);
-		s->audsrc[1] = s->audsrcproxy->CreateObject(port, TypeName(), 1, AUDIODIR_SOURCE);
 
 		if (!s->audsrc[0] && !s->audsrc[1])
+		{
+			Host::AddOSDMessage("USB-Mic: Neither player 1 nor 2 is connected.", Host::OSD_ERROR_DURATION);
 			goto fail;
+		}
 
-		if (s->audsrc[0] && s->audsrc[1] && s->audsrc[0]->Compare(s->audsrc[1]))
+		if (s->audsrc[0] && s->audsrc[1] && s->audsrc[0]->Compare(s->audsrc[1].get()))
 		{
 			s->f.mode = MIC_MODE_SHARED;
 			// And don't capture the same source twice
-			s->audsrc[1]->Stop();
-			delete s->audsrc[1];
-			s->audsrc[1] = nullptr;
+			s->audsrc[1].reset();
 		}
 		else if (!s->audsrc[0] || !s->audsrc[1])
 			s->f.mode = MIC_MODE_SINGLE;
@@ -815,8 +775,17 @@ namespace usb_mic
 			s->f.mode = MIC_MODE_SEPARATE;
 
 		for (int i = 0; i < 2; i++)
+		{
 			if (s->audsrc[i])
+			{
 				s->buffer[i].resize(BUFFER_FRAMES * s->audsrc[i]->GetChannels());
+				if (!s->audsrc[i]->Start())
+				{
+					Host::AddOSDMessage(fmt::format("USB-Mic: Failed to start player {} audio stream.", i + 1), Host::OSD_ERROR_DURATION);
+					goto fail;
+				}
+			}
+		}
 
 		s->desc.full = &s->desc_dev;
 		s->desc.str = desc_strings;
@@ -832,8 +801,6 @@ namespace usb_mic
 		s->dev.klass.handle_data = singstar_mic_handle_data;
 		s->dev.klass.set_interface = singstar_mic_set_interface;
 		s->dev.klass.unrealize = singstar_mic_handle_destroy;
-		s->dev.klass.open = singstar_mic_handle_open;
-		s->dev.klass.close = singstar_mic_handle_close;
 		s->dev.klass.usb_desc = &s->desc;
 		s->dev.klass.product_desc = desc_strings[2];
 
@@ -845,46 +812,131 @@ namespace usb_mic
 
 		usb_desc_init(&s->dev);
 		usb_ep_init(&s->dev);
-		singstar_mic_handle_reset((USBDevice*)s);
+		singstar_mic_handle_reset(&s->dev);
 
-		return (USBDevice*)s;
+		return &s->dev;
 
 	fail:
-		singstar_mic_handle_destroy((USBDevice*)s);
-		return NULL;
+		singstar_mic_handle_destroy(&s->dev);
+		return nullptr;
 	}
 
-	int SingstarDevice::Configure(int port, const std::string& api, void* data)
+	const char* SingstarDevice::Name() const
 	{
-		auto proxy = RegisterAudioDevice::instance().Proxy(api);
-		if (proxy)
-			return proxy->Configure(port, TypeName(), data);
-		return RESULT_CANCELED;
+		return "Singstar";
 	}
 
-	int SingstarDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
+	const char* SingstarDevice::TypeName() const
 	{
-		SINGSTARMICState* s = (SINGSTARMICState*)dev;
-		if (!s)
-			return 0;
-		switch (mode)
+		return "singstar";
+	}
+
+	bool SingstarDevice::Freeze(USBDevice* dev, StateWrapper& sw) const
+	{
+		SINGSTARMICState* s = USB_CONTAINER_OF(dev, SINGSTARMICState, dev);
+		if (!sw.DoMarker("SINGSTARMICState"))
+			return false;
+
+		sw.Do(&s->f.intf);
+		sw.Do(&s->f.mode);
+		sw.Do(&s->f.altset);
+		sw.Do(&s->f.mute);
+		sw.DoPODArray(&s->f.vol, std::size(s->f.vol));
+		sw.DoPODArray(s->f.srate, std::size(s->f.srate));
+
+		if (sw.IsReading() && !sw.HasError())
 		{
-			case FreezeAction::Load:
-				s->f = *(SINGSTARMICState::freeze*)data;
-				if (s->audsrc[0])
-					s->audsrc[0]->SetResampling(s->f.srate[0]);
-				if (s->audsrc[1])
-					s->audsrc[1]->SetResampling(s->f.srate[1]);
-				return sizeof(SINGSTARMICState::freeze);
-			case FreezeAction::Save:
-				*(SINGSTARMICState::freeze*)data = s->f;
-				return sizeof(SINGSTARMICState::freeze);
-			case FreezeAction::Size:
-				return sizeof(SINGSTARMICState::freeze);
-			default:
-				break;
+			for (u32 i = 0; i < 2; i++)
+			{
+				if (s->audsrc[i])
+					s->audsrc[i]->SetResampling(s->f.srate[i]);
+			}
 		}
-		return 0;
+
+		return !sw.HasError();
 	}
 
+	void SingstarDevice::UpdateSettings(USBDevice* dev, SettingsInterface& si) const
+	{
+		// TODO: Reload devices.
+	}
+
+	gsl::span<const SettingInfo> SingstarDevice::Settings(u32 subtype) const
+	{
+		static constexpr const SettingInfo info[] = {
+			{SettingInfo::Type::StringList, "player1_device_name", "Player 1 Device", "Selects the input for the first player.", "",
+				nullptr, nullptr, nullptr, nullptr, nullptr, &AudioDevice::GetInputDeviceList},
+			{SettingInfo::Type::StringList, "player2_device_name", "Player 2 Device", "Selects the input for the second player.", "",
+				nullptr, nullptr, nullptr, nullptr, nullptr, &AudioDevice::GetInputDeviceList},
+			{SettingInfo::Type::Integer, "input_latency", "Input Latency", "Specifies the latency to the host input device.",
+				AudioDevice::DEFAULT_LATENCY_STR, "0", "1000", "1", "%dms", nullptr, nullptr, 1.0f},
+		};
+		return info;
+	}
+
+	const char* LogitechMicDevice::TypeName() const
+	{
+		return "logitech_usbmic";
+	}
+
+	const char* LogitechMicDevice::Name() const
+	{
+		return "Logitech USB Mic";
+	}
+
+	gsl::span<const SettingInfo> LogitechMicDevice::Settings(u32 subtype) const
+	{
+		static constexpr const SettingInfo info[] = {
+			{SettingInfo::Type::StringList, "input_device_name", "Input Device", "Selects the device to read audio from.", "", nullptr,
+				nullptr, nullptr, nullptr, nullptr, &AudioDevice::GetInputDeviceList},
+			{SettingInfo::Type::Integer, "input_latency", "Input Latency", "Specifies the latency to the host input device.",
+				AudioDevice::DEFAULT_LATENCY_STR, "0", "1000", "1", "%dms", nullptr, nullptr, 1.0f},
+		};
+		return info;
+	}
 } // namespace usb_mic
+
+#include "USB/usb-mic/audiodev-noop.h"
+
+std::unique_ptr<AudioDevice> AudioDevice::CreateNoopDevice(u32 port, AudioDir dir, u32 channels)
+{
+	return std::make_unique<usb_mic::audiodev_noop::NoopAudioDevice>(port, dir, channels);
+}
+
+#ifdef SPU2X_CUBEB
+#include "USB/usb-mic/audiodev-cubeb.h"
+
+std::unique_ptr<AudioDevice> AudioDevice::CreateDevice(u32 port, AudioDir dir, u32 channels, std::string devname, s32 latency)
+{
+	return std::make_unique<usb_mic::audiodev_cubeb::CubebAudioDevice>(port, dir, channels, std::move(devname), latency);
+}
+
+std::vector<std::pair<std::string, std::string>> AudioDevice::GetInputDeviceList()
+{
+	return usb_mic::audiodev_cubeb::CubebAudioDevice::GetDeviceList(true);
+}
+
+std::vector<std::pair<std::string, std::string>> AudioDevice::GetOutputDeviceList()
+{
+	return usb_mic::audiodev_cubeb::CubebAudioDevice::GetDeviceList(false);
+}
+
+#else
+
+std::unique_ptr<AudioDevice> AudioDevice::CreateDevice(u32 port, AudioDir dir, u32 channels, std::string devname, s32 latency)
+{
+	Console.Warning("Cubeb is unavailable, creating a noop audio device.");
+	return CreateNoopDevice(port, dir, channels);
+}
+
+std::vector<std::string> AudioDevice::GetInputDeviceList()
+{
+	return {};
+}
+
+std::vector<std::string> AudioDevice::GetOutputDeviceList()
+{
+	return {};
+}
+
+#endif

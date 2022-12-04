@@ -84,17 +84,15 @@ std::optional<WindowInfo> DisplayWidget::getWindowInfo()
 	return ret;
 }
 
-void DisplayWidget::updateRelativeMode(bool master_enable)
+void DisplayWidget::updateRelativeMode(bool enabled)
 {
-	bool relative_mode = master_enable && InputManager::HasPointerAxisBinds();
-
 #ifdef _WIN32
 	// prefer ClipCursor() over warping movement when we're using raw input
-	bool clip_cursor = relative_mode && false /*InputManager::IsUsingRawInput()*/;
-	if (m_relative_mouse_enabled == relative_mode && m_clip_mouse_enabled == clip_cursor)
+	bool clip_cursor = enabled && false /*InputManager::IsUsingRawInput()*/;
+	if (m_relative_mouse_enabled == enabled && m_clip_mouse_enabled == clip_cursor)
 		return;
 
-	DevCon.WriteLn("updateRelativeMode(): relative=%s, clip=%s", relative_mode ? "yes" : "no", clip_cursor ? "yes" : "no");
+	DevCon.WriteLn("updateRelativeMode(): relative=%s, clip=%s", enabled ? "yes" : "no", clip_cursor ? "yes" : "no");
 
 	if (!clip_cursor && m_clip_mouse_enabled)
 	{
@@ -102,13 +100,13 @@ void DisplayWidget::updateRelativeMode(bool master_enable)
 		ClipCursor(nullptr);
 	}
 #else
-	if (m_relative_mouse_enabled == relative_mode)
+	if (m_relative_mouse_enabled == enabled)
 		return;
 
-	DevCon.WriteLn("updateRelativeMode(): relative=%s", relative_mode ? "yes" : "no");
+	DevCon.WriteLn("updateRelativeMode(): relative=%s", enabled ? "yes" : "no");
 #endif
 
-	if (relative_mode)
+	if (enabled)
 	{
 #ifdef _WIN32
 		m_relative_mouse_enabled = !clip_cursor;
@@ -129,21 +127,22 @@ void DisplayWidget::updateRelativeMode(bool master_enable)
 
 }
 
-void DisplayWidget::updateCursor(bool master_enable)
+void DisplayWidget::updateCursor(bool hidden)
 {
-#ifdef _WIN32
-	const bool hide = master_enable && (m_should_hide_cursor || m_relative_mouse_enabled || m_clip_mouse_enabled);
-#else
-	const bool hide = master_enable && (m_should_hide_cursor || m_relative_mouse_enabled);
-#endif
-	if (m_cursor_hidden == hide)
+	if (m_cursor_hidden == hidden)
 		return;
 
-	m_cursor_hidden = hide;
-	if (hide)
+	m_cursor_hidden = hidden;
+	if (hidden)
+	{
+		DevCon.WriteLn("updateCursor(): Cursor is now hidden");
 		setCursor(Qt::BlankCursor);
+	}
 	else
+	{
+		DevCon.WriteLn("updateCursor(): Cursor is now shown");
 		unsetCursor();
+	}
 }
 
 void DisplayWidget::handleCloseEvent(QCloseEvent* event)

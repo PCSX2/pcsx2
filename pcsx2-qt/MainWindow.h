@@ -129,6 +129,7 @@ private Q_SLOTS:
 	DisplayWidget* createDisplay(bool fullscreen, bool render_to_main);
 	DisplayWidget* updateDisplay(bool fullscreen, bool render_to_main, bool surfaceless);
 	void displayResizeRequested(qint32 width, qint32 height);
+	void relativeMouseModeRequested(bool enabled);
 	void destroyDisplay();
 	void focusDisplayWidget();
 
@@ -231,6 +232,7 @@ private:
 	void restoreDisplayWindowGeometryFromConfig();
 	void createDisplayWidget(bool fullscreen, bool render_to_main, bool is_exclusive_fullscreen);
 	void destroyDisplayWidget(bool show_game_list);
+	void updateDisplayWidgetCursor();
 	void setDisplayFullscreen(const std::string& fullscreen_mode);
 
 	SettingsDialog* getSettingsDialog();
@@ -283,6 +285,7 @@ private:
 	quint32 m_current_game_crc;
 
 	bool m_display_created = false;
+	bool m_relative_mouse_mode = false;
 	bool m_save_states_invalidated = false;
 	bool m_was_paused_on_surface_loss = false;
 	bool m_was_disc_change_request = false;

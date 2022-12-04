@@ -610,7 +610,7 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 
 	m_controllers.push_back(std::move(cd));
 
-	Host::OnInputDeviceConnected(StringUtil::StdStringFromFormat("SDL-%d", player_id), name);
+	InputManager::OnInputDeviceConnected(StringUtil::StdStringFromFormat("SDL-%d", player_id), name);
 	return true;
 }
 
@@ -620,7 +620,7 @@ bool SDLInputSource::CloseDevice(int joystick_index)
 	if (it == m_controllers.end())
 		return false;
 
-	Host::OnInputDeviceDisconnected(StringUtil::StdStringFromFormat("SDL-%d", it->player_id));
+	InputManager::OnInputDeviceDisconnected(StringUtil::StdStringFromFormat("SDL-%d", it->player_id));
 
 	if (it->haptic)
 		SDL_HapticClose(it->haptic);

@@ -1486,6 +1486,11 @@ void Host::OnInputDeviceDisconnected(const std::string_view& identifier)
 	emit g_emu_thread->onInputDeviceDisconnected(identifier.empty() ? QString() : QString::fromUtf8(identifier.data(), identifier.size()));
 }
 
+void Host::SetRelativeMouseMode(bool enabled)
+{
+	emit g_emu_thread->onRelativeMouseModeRequested(enabled);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Hotkeys
 //////////////////////////////////////////////////////////////////////////

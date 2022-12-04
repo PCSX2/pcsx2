@@ -241,6 +241,39 @@
     <Filter Include="Tools\Input Recording\Utilities">
       <UniqueIdentifier>{78c9db9c-9c7c-4385-90e7-9fa71b922f60}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\USB\qemu-usb">
+      <UniqueIdentifier>{e068b724-9319-42e5-9ea7-63d80989ea1d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\readerwriterqueue">
+      <UniqueIdentifier>{f82a2be4-24a1-4dd8-9395-c53d0e1c4ddb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\shared">
+      <UniqueIdentifier>{58074375-dbbe-4137-bbe5-54478d1a97c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\usb-eyetoy">
+      <UniqueIdentifier>{b7da726d-4e91-48d4-a987-b624e87e4481}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\usb-hid">
+      <UniqueIdentifier>{48a0208f-5734-4e6c-bb4d-3c16e0333a81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\usb-printer">
+      <UniqueIdentifier>{001fa220-df32-4da7-ba7e-2a7eca5cdb78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\usb-msd">
+      <UniqueIdentifier>{20789ef3-7c0e-41ac-babd-03a9be9fe994}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\usb-mic">
+      <UniqueIdentifier>{c59653b3-87d6-4b11-b9e3-f0543117ca27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\usb-pad">
+      <UniqueIdentifier>{cab6864f-999a-4002-bd85-e1452c62efb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\usb-pad\lg">
+      <UniqueIdentifier>{72ca905b-3eaa-425a-b77a-3fe83869af72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\usb-lightgun">
+      <UniqueIdentifier>{b8542664-8208-48ad-bd47-425a316f293c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Utilities\folderdesc.txt">
@@ -1217,9 +1250,6 @@
     <ClCompile Include="SPU2\Host\Config.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
-    <ClCompile Include="USB\USBNull.cpp">
-      <Filter>System\Ps2\USB</Filter>
-    </ClCompile>
     <ClCompile Include="Frontend\HostSettings.cpp">
       <Filter>Host</Filter>
     </ClCompile>
@@ -1317,7 +1347,87 @@
     <ClCompile Include="MultitapProtocol.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
-    <ClCompile Include="StateWrapper.cpp" />
+    <ClCompile Include="USB\USB.cpp">
+      <Filter>System\Ps2\USB</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\qemu-usb\input-keymap-qcode-to-qnum.cpp">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\qemu-usb\iov.cpp">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\qemu-usb\usb-ohci.cpp">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\qemu-usb\bus.cpp">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\qemu-usb\core.cpp">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\qemu-usb\desc.cpp">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\qemu-usb\hid.cpp">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\shared\ringbuffer.cpp">
+      <Filter>System\Ps2\USB\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-eyetoy\jo_mpeg.cpp">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-eyetoy\usb-eyetoy-webcam.cpp">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-eyetoy\cam-windows.cpp">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-printer\usb-printer.cpp">
+      <Filter>System\Ps2\USB\usb-printer</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-msd\usb-msd.cpp">
+      <Filter>System\Ps2\USB\usb-msd</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-mic\usb-headset.cpp">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-mic\usb-mic-logitech.cpp">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-mic\usb-mic-singstar.cpp">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-hid\usb-hid.cpp">
+      <Filter>System\Ps2\USB\usb-hid</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-pad\usb-pad.cpp">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-pad\usb-seamic.cpp">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-pad\usb-pad-ff.cpp">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-pad\lg\lg_ff.cpp">
+      <Filter>System\Ps2\USB\usb-pad\lg</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-lightgun\guncon2.cpp">
+      <Filter>System\Ps2\USB\usb-lightgun</Filter>
+    </ClCompile>
+    <ClCompile Include="StateWrapper.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-mic\audiodev-cubeb.cpp">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\deviceproxy.cpp">
+      <Filter>System\Ps2\USB</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-pad\usb-pad-sdl-ff.cpp">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -1821,9 +1931,6 @@
     <ClInclude Include="DEV9\Win32\tap.h">
       <Filter>System\Ps2\DEV9</Filter>
     </ClInclude>
-    <ClInclude Include="USB\USB.h">
-      <Filter>System\Ps2\USB</Filter>
-    </ClInclude>
     <ClInclude Include="GS\GS.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
@@ -2193,7 +2300,99 @@
     <ClInclude Include="MultitapProtocol.h">
       <Filter>System\Ps2\Iop</Filter>
     </ClInclude>
-    <ClInclude Include="StateWrapper.h" />
+    <ClInclude Include="USB\deviceproxy.h">
+      <Filter>System\Ps2\USB</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\USB.h">
+      <Filter>System\Ps2\USB</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\qemu-usb\iov.h">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\qemu-usb\queue.h">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\qemu-usb\qusb.h">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\qemu-usb\USBinternal.h">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\qemu-usb\desc.h">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\qemu-usb\hid.h">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\qemu-usb\input-keymap.h">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\readerwriterqueue\atomicops.h">
+      <Filter>System\Ps2\USB\readerwriterqueue</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\readerwriterqueue\readerwriterqueue.h">
+      <Filter>System\Ps2\USB\readerwriterqueue</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\shared\ringbuffer.h">
+      <Filter>System\Ps2\USB\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-eyetoy\cam-windows.h">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-eyetoy\jo_mpeg.h">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-eyetoy\ov519.h">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-eyetoy\usb-eyetoy-webcam.h">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-eyetoy\videodev.h">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-printer\usb-printer.h">
+      <Filter>System\Ps2\USB\usb-printer</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-msd\usb-msd.h">
+      <Filter>System\Ps2\USB\usb-msd</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-mic\audiodev-noop.h">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-mic\usb-headset.h">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-mic\usb-mic-singstar.h">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-mic\audio.h">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-mic\audiodev.h">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-hid\usb-hid.h">
+      <Filter>System\Ps2\USB\usb-hid</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-pad\usb-pad.h">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-pad\lg\lg_ff.h">
+      <Filter>System\Ps2\USB\usb-pad\lg</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-lightgun\guncon2.h">
+      <Filter>System\Ps2\USB\usb-lightgun</Filter>
+    </ClInclude>
+    <ClInclude Include="StateWrapper.h">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-mic\audiodev-cubeb.h">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-pad\usb-pad-sdl-ff.h">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="rdebug\deci2.h">

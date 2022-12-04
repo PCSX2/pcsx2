@@ -23,7 +23,7 @@
 
 #include "common/StringUtil.h"
 #include "SPU2/spu2.h"
-#include "USB/USB.h"
+#include "USB/USBNull.h"
 #include "PAD/Gamepad.h"
 
 #include "ConsoleLogger.h"

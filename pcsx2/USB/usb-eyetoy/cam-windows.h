@@ -30,15 +30,13 @@ extern GUID CLSID_NullRenderer;
 }
 
 #pragma region qedit.h
-struct __declspec(uuid("0579154a-2b53-4994-b0d0-e773148eff85"))
-	ISampleGrabberCB : IUnknown
+struct __declspec(uuid("0579154a-2b53-4994-b0d0-e773148eff85")) ISampleGrabberCB : IUnknown
 {
 	virtual HRESULT __stdcall SampleCB(double SampleTime, struct IMediaSample* pSample) = 0;
 	virtual HRESULT __stdcall BufferCB(double SampleTime, unsigned char* pBuffer, long BufferLen) = 0;
 };
 
-struct __declspec(uuid("6b652fff-11fe-4fce-92ad-0266b5d7c78f"))
-	ISampleGrabber : IUnknown
+struct __declspec(uuid("6b652fff-11fe-4fce-92ad-0266b5d7c78f")) ISampleGrabber : IUnknown
 {
 	virtual HRESULT __stdcall SetOneShot(long OneShot) = 0;
 	virtual HRESULT __stdcall SetMediaType(struct _AMMediaType* pType) = 0;
@@ -49,8 +47,7 @@ struct __declspec(uuid("6b652fff-11fe-4fce-92ad-0266b5d7c78f"))
 	virtual HRESULT __stdcall SetCallback(struct ISampleGrabberCB* pCallback, long WhichMethodToCallback) = 0;
 };
 
-struct __declspec(uuid("c1f400a0-3f08-11d3-9f0b-006008039e37"))
-	SampleGrabber;
+struct __declspec(uuid("c1f400a0-3f08-11d3-9f0b-006008039e37")) SampleGrabber;
 
 #pragma endregion
 
@@ -71,6 +68,7 @@ namespace usb_eyetoy
 {
 	namespace windows_api
 	{
+		std::vector<std::pair<std::string, std::string>> getDevList();
 
 		typedef void (*DShowVideoCaptureCallback)(unsigned char* data, int len, int bitsperpixel);
 
@@ -80,27 +78,16 @@ namespace usb_eyetoy
 			size_t length = 0;
 		};
 
-		static const char* APINAME = "DirectShow";
-
 		class DirectShow : public VideoDevice
 		{
 		public:
-			DirectShow(int port);
+			DirectShow();
 			~DirectShow();
 			int Open(int width, int height, FrameFormat format, int mirror);
 			int Close();
 			int GetImage(uint8_t* buf, size_t len);
 			void SetMirroring(bool state);
 			int Reset() { return 0; };
-
-			static const TCHAR* Name()
-			{
-				return TEXT("DirectShow");
-			}
-			static int Configure(int port, const char* dev_type, void* data);
-
-			int Port() { return mPort; }
-			void Port(int port) { mPort = port; }
 
 		protected:
 			void SetCallback(DShowVideoCaptureCallback cb) { callbackhandler->SetCallback(cb); }
@@ -109,8 +96,6 @@ namespace usb_eyetoy
 			int InitializeDevice(std::wstring selectedDevice);
 
 		private:
-			int mPort;
-
 			wil::unique_couninitialize_call dshowCoInitialize;
 			ICaptureGraphBuilder2* pGraphBuilder;
 			IFilterGraph2* pGraph;

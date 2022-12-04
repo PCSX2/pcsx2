@@ -15,114 +15,42 @@
 
 #pragma once
 #include "SaveState.h"
-#include "USB/configuration.h"
 #include "USB/qemu-usb/hid.h"
 #include <list>
 #include <string>
 
 namespace usb_hid
 {
-
-	enum HIDType
-	{
-		HIDTYPE_KBD,
-		HIDTYPE_MOUSE,
-	};
-
-	class UsbHID
+	class HIDKbdDevice : public DeviceProxy
 	{
 	public:
-		UsbHID(int port, const char* dev_type)
-			: mPort(port)
-			, mDevType(dev_type)
-		{
-		}
-		virtual ~UsbHID() {}
-		virtual int Open() = 0;
-		virtual int Close() = 0;
-		//	virtual int TokenIn(uint8_t *buf, int len) = 0;
-		virtual int TokenOut(const uint8_t* data, int len) = 0;
-		virtual int Reset() = 0;
-
-		virtual int Port() { return mPort; }
-		virtual void Port(int port) { mPort = port; }
-		virtual void SetHIDState(HIDState* hs) { mHIDState = hs; }
-		virtual void SetHIDType(HIDType t) { mHIDType = t; }
-
-	protected:
-		int mPort;
-		HIDState* mHIDState;
-		HIDType mHIDType;
-		const char* mDevType;
+		const char* Name() const override;
+		const char* TypeName() const override;
+		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const override;
+		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
+		void SetBindingValue(USBDevice* dev, u32 bind, float value) const override;
+		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
 	};
 
-	class HIDKbdDevice
+	class HIDMouseDevice final : public DeviceProxy
 	{
 	public:
-		virtual ~HIDKbdDevice() {}
-		static USBDevice* CreateDevice(int port);
-		static const TCHAR* Name()
-		{
-			return TEXT("HID Keyboard");
-		}
-		static const char* TypeName()
-		{
-			return "hidkbd";
-		}
-		static std::list<std::string> ListAPIs();
-		static const TCHAR* LongAPIName(const std::string& name);
-		static int Configure(int port, const std::string& api, void* data);
-		static int Freeze(FreezeAction mode, USBDevice* dev, void* data);
-		static std::vector<std::string> SubTypes()
-		{
-			return {};
-		}
+		const char* Name() const override;
+		const char* TypeName() const override;
+		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const override;
+		float GetBindingValue(const USBDevice* dev, u32 bind) const override;
+		void SetBindingValue(USBDevice* dev, u32 bind, float value) const override;
+		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
+		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
 	};
 
-	class HIDMouseDevice
+	class BeatManiaDevice final : public HIDKbdDevice
 	{
 	public:
-		virtual ~HIDMouseDevice() {}
-		static USBDevice* CreateDevice(int port);
-		static const TCHAR* Name()
-		{
-			return TEXT("HID Mouse");
-		}
-		static const char* TypeName()
-		{
-			return "hidmouse";
-		}
-		static std::list<std::string> ListAPIs();
-		static const TCHAR* LongAPIName(const std::string& name);
-		static int Configure(int port, const std::string& api, void* data);
-		static int Freeze(FreezeAction mode, USBDevice* dev, void* data);
-		static std::vector<std::string> SubTypes()
-		{
-			return {};
-		}
-	};
-
-	class BeatManiaDevice
-	{
-	public:
-		virtual ~BeatManiaDevice() {}
-		static USBDevice* CreateDevice(int port);
-		static const TCHAR* Name()
-		{
-			return TEXT("BeatMania Da Da Da!! Keyboard");
-		}
-		static const char* TypeName()
-		{
-			return "beatmania";
-		}
-		static std::list<std::string> ListAPIs();
-		static const TCHAR* LongAPIName(const std::string& name);
-		static int Configure(int port, const std::string& api, void* data);
-		static int Freeze(FreezeAction mode, USBDevice* dev, void* data);
-		static std::vector<std::string> SubTypes()
-		{
-			return {};
-		}
+		const char* Name() const override;
+		const char* TypeName() const override;
+		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
+		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
 	};
 
 } // namespace usb_hid

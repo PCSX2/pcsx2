@@ -155,7 +155,7 @@ bool DInputSource::ReloadDevices()
 		{
 			const u32 index = static_cast<u32>(m_controllers.size());
 			m_controllers.push_back(std::move(cd));
-			Host::OnInputDeviceConnected(GetDeviceIdentifier(index), name);
+			InputManager::OnInputDeviceConnected(GetDeviceIdentifier(index), name);
 			changed = true;
 		}
 	}
@@ -167,7 +167,7 @@ void DInputSource::Shutdown()
 {
 	while (!m_controllers.empty())
 	{
-		Host::OnInputDeviceDisconnected(GetDeviceIdentifier(static_cast<u32>(m_controllers.size() - 1)));
+		InputManager::OnInputDeviceDisconnected(GetDeviceIdentifier(static_cast<u32>(m_controllers.size() - 1)));
 		m_controllers.pop_back();
 	}
 }
@@ -268,7 +268,7 @@ void DInputSource::PollEvents()
 
 			if (hr != DI_OK)
 			{
-				Host::OnInputDeviceDisconnected(GetDeviceIdentifier(static_cast<u32>(i)));
+				InputManager::OnInputDeviceDisconnected(GetDeviceIdentifier(static_cast<u32>(i)));
 				m_controllers.erase(m_controllers.begin() + i);
 				continue;
 			}

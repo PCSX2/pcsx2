@@ -46,6 +46,7 @@
 #ifdef PCSX2_CORE
 #include "PAD/Host/PAD.h"
 #include "PAD/Host/KeyStatus.h"
+#include "USB/USB.h"
 #include "Frontend/FullscreenUI.h"
 #include "Frontend/ImGuiManager.h"
 #include "Frontend/ImGuiFullscreen.h"
@@ -482,6 +483,12 @@ void ImGuiManager::DrawInputsOverlay()
 			num_ports++;
 	}
 
+	for (u32 port = 0; port < USB::NUM_PORTS; port++)
+	{
+		if (EmuConfig.USB.Ports[port].DeviceType >= 0 && !USB::GetDeviceBindings(port).empty())
+			num_ports++;
+	}
+
 	float current_x = margin;
 	float current_y = display_size.y - margin - ((static_cast<float>(num_ports) * (font->FontSize + spacing)) - spacing);
 
@@ -524,6 +531,59 @@ void ImGuiManager::DrawInputsOverlay()
 				{
 					// buttons only shown when active
 					const float value = static_cast<float>(g_key_status.GetRawPressure(port, bind)) * (1.0f / 255.0f);
+					if (value >= 0.5f)
+						fmt::format_to(std::back_inserter(text), " {}", bi.name);
+				}
+				break;
+
+				case InputBindingInfo::Type::Motor:
+				case InputBindingInfo::Type::Macro:
+				case InputBindingInfo::Type::Unknown:
+				default:
+					break;
+			}
+		}
+
+		dl->AddText(font, font->FontSize, ImVec2(current_x + shadow_offset, current_y + shadow_offset), shadow_color, text.c_str(),
+			text.c_str() + text.length(), 0.0f, &clip_rect);
+		dl->AddText(
+			font, font->FontSize, ImVec2(current_x, current_y), text_color, text.c_str(), text.c_str() + text.length(), 0.0f, &clip_rect);
+
+		current_y += font->FontSize + spacing;
+	}
+
+	for (u32 port = 0; port < USB::NUM_PORTS; port++)
+	{
+		if (EmuConfig.USB.Ports[port].DeviceType < 0)
+			continue;
+
+		const gsl::span<const InputBindingInfo> bindings(USB::GetDeviceBindings(port));
+		if (bindings.empty())
+			continue;
+
+		text.clear();
+		fmt::format_to(std::back_inserter(text), "USB{} |", port + 1u);
+
+		for (const InputBindingInfo& bi : bindings)
+		{
+			switch (bi.bind_type)
+			{
+				case InputBindingInfo::Type::Axis:
+				case InputBindingInfo::Type::HalfAxis:
+				{
+					// axes are always shown
+					const float value = static_cast<float>(USB::GetDeviceBindValue(port, bi.bind_index));
+					if (value >= (254.0f / 255.0f))
+						fmt::format_to(std::back_inserter(text), " {}", bi.name);
+					else if (value > (1.0f / 255.0f))
+						fmt::format_to(std::back_inserter(text), " {}: {:.2f}", bi.name, value);
+				}
+				break;
+
+				case InputBindingInfo::Type::Button:
+				{
+					// buttons only shown when active
+					const float value = static_cast<float>(USB::GetDeviceBindValue(port, bi.bind_index));
 					if (value >= 0.5f)
 						fmt::format_to(std::back_inserter(text), " {}", bi.name);
 				}

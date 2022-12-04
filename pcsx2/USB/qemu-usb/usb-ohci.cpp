@@ -29,25 +29,47 @@
 //typedef CPUReadMemoryFunc
 
 #include "PrecompiledHeader.h"
-#include "vl.h"
-#include "queue.h"
-#include "USBinternal.h"
+#include "USB/qemu-usb/qusb.h"
+#include "USB/qemu-usb/queue.h"
+#include "USB/qemu-usb/USBinternal.h"
+#include "IopMem.h"
 
 #define DMA_DIRECTION_TO_DEVICE 0
 #define DMA_DIRECTION_FROM_DEVICE 1
 #define ED_LINK_LIMIT 32
 
-int64_t last_cycle = 0;
+extern int64_t g_usb_last_cycle;
 #define MIN_IRQ_INTERVAL 64 /* hack */
 
-extern int64_t get_clock();
-extern int get_ticks_per_second();
+extern int64_t usb_get_clock();
+extern int usb_get_ticks_per_second();
 extern void usbIrq(int);
 
 //#define DEBUG_PACKET
 //#define DEBUG_OHCI
 
 static void ohci_async_cancel_device(OHCIState* ohci, USBDevice* dev);
+
+static uint64_t muldiv64(uint64_t a, uint32_t b, uint32_t c)
+{
+	union
+	{
+		uint64_t ll;
+		struct
+		{
+			uint32_t low, high;
+		} l;
+	} u, res;
+	uint64_t rl, rh;
+
+	u.ll = a;
+	rl = (uint64_t)u.l.low * (uint64_t)b;
+	rh = (uint64_t)u.l.high * (uint64_t)b;
+	rh += (rl >> 32);
+	res.l.high = rh / c;
+	res.l.low = (((rh % c) << 32) + (rl & 0xffffffff)) / c;
+	return res.ll;
+}
 
 /* Update IRQ levels */
 static inline void ohci_intr_update(OHCIState* ohci)
@@ -61,10 +83,10 @@ static inline void ohci_intr_update(OHCIState* ohci)
 	if (level)
 	{
 
-		if ((get_clock() - last_cycle) > MIN_IRQ_INTERVAL)
+		if ((usb_get_clock() - g_usb_last_cycle) > MIN_IRQ_INTERVAL)
 		{
 			usbIrq(1);
-			last_cycle = get_clock();
+			g_usb_last_cycle = usb_get_clock();
 		}
 	}
 }
@@ -334,68 +356,43 @@ void ohci_hard_reset(OHCIState* ohci)
 	ohci_roothub_reset(ohci);
 }
 
-#define le32_to_cpu(x) (x)
-#define cpu_to_le32(x) (x)
-#define le16_to_cpu(x) (x)
-#define cpu_to_le16(x) (x)
-
 /* Get an array of dwords from main memory */
-static inline int get_dwords(uint32_t addr, uint32_t* buf, int num)
+__fi static int get_dwords(uint32_t addr, uint32_t* buf, uint32_t num)
 {
-	int i;
+	if ((addr + (num * sizeof(uint32_t))) > sizeof(iopMem->Main))
+		return 0;
 
-	for (i = 0; i < num; i++, buf++, addr += sizeof(*buf))
-	{
-		if (cpu_physical_memory_rw(addr, (uint8_t*)buf, sizeof(*buf), 0))
-			return 0;
-		*buf = le32_to_cpu(*buf);
-	}
-
+	std::memcpy(buf, iopMem->Main + addr, num * sizeof(uint32_t));
 	return 1;
 }
 
 /* Get an array of words from main memory */
-static inline int get_words(uint32_t addr, uint16_t* buf, int num)
+__fi static int get_words(uint32_t addr, uint16_t* buf, uint32_t num)
 {
-	int i;
+	if ((addr + (num * sizeof(uint16_t))) > sizeof(iopMem->Main))
+		return 0;
 
-	for (i = 0; i < num; i++, buf++, addr += sizeof(*buf))
-	{
-		if (cpu_physical_memory_rw(addr, (uint8_t*)buf, sizeof(*buf), 0))
-			return 0;
-		*buf = le16_to_cpu(*buf);
-	}
-
+	std::memcpy(buf, iopMem->Main + addr, num * sizeof(uint16_t));
 	return 1;
 }
 
 /* Put an array of dwords in to main memory */
-static inline int put_dwords(uint32_t addr, uint32_t* buf, int num)
+__fi static int put_dwords(uint32_t addr, uint32_t* buf, uint32_t num)
 {
-	int i;
+	if ((addr + (num * sizeof(uint32_t))) > sizeof(iopMem->Main))
+		return 0;
 
-	for (i = 0; i < num; i++, buf++, addr += sizeof(*buf))
-	{
-		uint32_t tmp = cpu_to_le32(*buf);
-		if (cpu_physical_memory_rw(addr, (uint8_t*)&tmp, sizeof(tmp), 1))
-			return 0;
-	}
-
+	std::memcpy(iopMem->Main + addr, buf, num * sizeof(uint32_t));
 	return 1;
 }
 
 /* Put an array of dwords in to main memory */
-static inline int put_words(uint32_t addr, uint16_t* buf, int num)
+__fi static int put_words(uint32_t addr, uint16_t* buf, uint32_t num)
 {
-	int i;
+	if ((addr + (num * sizeof(uint16_t))) > sizeof(iopMem->Main))
+		return 0;
 
-	for (i = 0; i < num; i++, buf++, addr += sizeof(*buf))
-	{
-		uint16_t tmp = cpu_to_le16(*buf);
-		if (cpu_physical_memory_rw(addr, (uint8_t*)&tmp, sizeof(tmp), 1))
-			return 0;
-	}
-
+	std::memcpy(iopMem->Main + addr, buf, num * sizeof(uint16_t));
 	return 1;
 }
 
@@ -436,31 +433,35 @@ static inline int ohci_put_iso_td(OHCIState* ohci, uint32_t addr, struct ohci_is
 		   put_words(addr + 16, td->offset, 8);
 }
 
-static inline int ohci_put_hcca(OHCIState* ohci,
-								struct ohci_hcca* hcca)
-{
-	cpu_physical_memory_write(ohci->hcca + HCCA_WRITEBACK_OFFSET,
-							  (uint8_t*)hcca + HCCA_WRITEBACK_OFFSET,
-							  HCCA_WRITEBACK_SIZE);
-	return 1;
-}
-
 /* Read/Write the contents of a TD from/to main memory.  */
 static int ohci_copy_td(OHCIState* ohci, struct ohci_td* td, uint8_t* buf, uint32_t len, int write)
 {
 	uint32_t ptr, n;
 
 	ptr = td->cbp;
-	n = 0x1000 - (ptr & 0xfff);
-	if (n > len)
-		n = len;
-	if (cpu_physical_memory_rw(ptr, buf, n, write))
+	n = std::min<uint32_t>(0x1000 - (ptr & 0xfff), len);
+	if ((ptr + n) > sizeof(iopMem->Main))
 		return 1;
+
+	if (write)
+		std::memcpy(iopMem->Main + ptr, buf, len);
+	else
+		std::memcpy(buf, iopMem->Main + ptr, len);
+
 	if (n == len)
 		return 0;
 	ptr = td->be & ~0xfffu;
 	buf += n;
-	cpu_physical_memory_rw(ptr, buf, len - n, write);
+	len -= n;
+
+	if ((ptr + n) > sizeof(iopMem->Main))
+		return 1;
+
+	if (write)
+		std::memcpy(iopMem->Main + ptr, buf, len);
+	else
+		std::memcpy(buf, iopMem->Main + ptr, len);
+
 	return 0;
 }
 
@@ -471,16 +472,30 @@ static int ohci_copy_iso_td(OHCIState* ohci, uint32_t start_addr, uint32_t end_a
 	uint32_t ptr, n;
 
 	ptr = start_addr;
-	n = 0x1000 - (ptr & 0xfff);
-	if (n > len)
-		n = len;
-	if (cpu_physical_memory_rw(ptr, buf, n, write))
+	n = std::min<uint32_t>(0x1000 - (ptr & 0xfff), len);
+
+	if ((ptr + n) > sizeof(iopMem->Main))
 		return 1;
+
+	if (write)
+		std::memcpy(iopMem->Main + ptr, buf, len);
+	else
+		std::memcpy(buf, iopMem->Main + ptr, len);
+
 	if (n == len)
 		return 0;
 	ptr = end_addr & ~0xfffu;
 	buf += n;
-	cpu_physical_memory_rw(ptr, buf, len - n, write);
+	len -= n;
+
+	if ((ptr + n) > sizeof(iopMem->Main))
+		return 1;
+
+	if (write)
+		std::memcpy(iopMem->Main + ptr, buf, len);
+	else
+		std::memcpy(buf, iopMem->Main + ptr, len);
+
 	return 0;
 }
 
@@ -488,7 +503,7 @@ static void ohci_process_lists(OHCIState* ohci, int completion);
 
 static void ohci_async_complete_packet(USBPort* port, USBPacket* packet)
 {
-	OHCIState* ohci = CONTAINER_OF(packet, OHCIState, usb_packet);
+	OHCIState* ohci = USB_CONTAINER_OF(packet, OHCIState, usb_packet);
 
 	//trace_usb_ohci_async_complete();
 	ohci->async_complete = true;
@@ -733,7 +748,7 @@ static int ohci_service_iso_td(OHCIState* ohci, struct ohci_ed* ed,
 	}
 	else
 	{
-		if (ret > (ssize_t)len)
+		if (ret > static_cast<s32>(len))
 		{
 			//trace_usb_ohci_iso_td_data_overrun(ret, len);
 			OHCI_SET_BM(iso_td.offset[relative_frame_number], TD_PSW_CC,
@@ -1136,8 +1151,8 @@ static int ohci_service_ed_list(OHCIState* ohci, uint32_t head, int completion)
 /* Generate a SOF event, and set a timer for EOF */
 static void ohci_sof(OHCIState* ohci)
 {
-	ohci->sof_time = get_clock();
-	ohci->eof_timer = usb_frame_time;
+	ohci->sof_time = usb_get_clock();
+	ohci->eof_timer = g_usb_frame_time;
 	ohci_set_interrupt(ohci, OHCI_INTR_SF);
 }
 
@@ -1170,9 +1185,14 @@ static void ohci_process_lists(OHCIState* ohci, int completion)
 void ohci_frame_boundary(void* opaque)
 {
 	OHCIState* ohci = (OHCIState*)opaque;
-	struct ohci_hcca hcca;
 
-	cpu_physical_memory_read(ohci->hcca, (uint8_t*)&hcca, sizeof(hcca));
+	if (ohci->hcca + sizeof(ohci_hcca) > sizeof(iopMem->Main))
+	{
+		Console.Error("ohci->hcca pointer is out of range.");
+		return;
+	}
+
+	ohci_hcca* hcca = reinterpret_cast<ohci_hcca*>(iopMem->Main + ohci->hcca);
 
 	/* Process all the lists at the end of the frame */
 	/* if reset bit was set, don't process possibly invalid descriptors */
@@ -1183,7 +1203,7 @@ void ohci_frame_boundary(void* opaque)
 	if (ohci->ctl & OHCI_CTL_PLE)
 	{
 		const int n = ohci->frame_number & 0x1f;
-		ohci_service_ed_list(ohci, le32_to_cpu(hcca.intr[n]), 0);
+		ohci_service_ed_list(ohci, hcca->intr[n], 0);
 	}
 
 	/* Cancel all pending packets if either of the lists has been disabled.  */
@@ -1210,7 +1230,7 @@ void ohci_frame_boundary(void* opaque)
 
 	/* Increment frame number and take care of endianness. */
 	ohci->frame_number = (ohci->frame_number + 1) & 0xffff;
-	hcca.frame = cpu_to_le16(ohci->frame_number);
+	hcca->frame = ohci->frame_number;
 
 	if (ohci->done_count == 0 && !(ohci->intr_status & OHCI_INTR_WD))
 	{
@@ -1218,7 +1238,7 @@ void ohci_frame_boundary(void* opaque)
 			abort();
 		if (ohci->intr & ohci->intr_status)
 			ohci->done |= 1;
-		hcca.done = cpu_to_le32(ohci->done);
+		hcca->done = ohci->done;
 		ohci->done = 0;
 		ohci->done_count = 7;
 		ohci_set_interrupt(ohci, OHCI_INTR_WD);
@@ -1229,9 +1249,6 @@ void ohci_frame_boundary(void* opaque)
 
 	/* Do SOF stuff here */
 	ohci_sof(ohci);
-
-	/* Writeback HCCA */
-	ohci_put_hcca(ohci, &hcca);
 }
 
 /* Start sending SOF tokens across the USB bus, lists are processed in
@@ -1361,13 +1378,13 @@ static uint32_t ohci_get_frame_remaining(OHCIState* ohci)
 	/* Being in USB operational state guarnatees sof_time was
      * set already.
      */
-	tks = get_clock() - ohci->sof_time;
+	tks = usb_get_clock() - ohci->sof_time;
 
 	/* avoid muldiv if possible */
-	if (tks >= usb_frame_time)
+	if (tks >= g_usb_frame_time)
 		return (ohci->frt << 31);
 
-	tks = muldiv64(1, tks, usb_bit_time);
+	tks = muldiv64(1, tks, g_usb_bit_time);
 	fr = (uint16_t)(ohci->fi - tks);
 
 	return (ohci->frt << 31) | fr;
@@ -1717,26 +1734,26 @@ OHCIState* ohci_create(uint32_t base, int ports)
 		return NULL;
 	int i;
 
-	const int ticks_per_sec = get_ticks_per_second();
+	const int ticks_per_sec = usb_get_ticks_per_second();
 
 	memset(ohci, 0, sizeof(OHCIState));
 
 	ohci->mem_base = base;
 
-	if (usb_frame_time == 0)
+	if (g_usb_frame_time == 0)
 	{
 #if OHCI_TIME_WARP
-		usb_frame_time = ticks_per_sec;
-		usb_bit_time = muldiv64(1, ticks_per_sec, USB_HZ / 1000);
+		g_usb_frame_time = ticks_per_sec;
+		g_usb_bit_time = muldiv64(1, ticks_per_sec, USB_HZ / 1000);
 #else
-		usb_frame_time = muldiv64(1, ticks_per_sec, 1000);
+		g_usb_frame_time = muldiv64(1, ticks_per_sec, 1000);
 		if (ticks_per_sec >= USB_HZ)
 		{
-			usb_bit_time = muldiv64(1, ticks_per_sec, USB_HZ);
+			g_usb_bit_time = muldiv64(1, ticks_per_sec, USB_HZ);
 		}
 		else
 		{
-			usb_bit_time = 1;
+			g_usb_bit_time = 1;
 		}
 #endif
 	}

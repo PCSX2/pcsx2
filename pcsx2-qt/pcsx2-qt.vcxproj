@@ -361,6 +361,11 @@
     </QtUi>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Settings\USBBindingWidget_DrivingForce.ui" />
+    <None Include="Settings\USBBindingWidget_GTForce.ui" />
+    <QtUi Include="Settings\USBDeviceWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="Settings\ControllerMacroEditWidget.ui">
       <FileType>Document</FileType>
     </QtUi>

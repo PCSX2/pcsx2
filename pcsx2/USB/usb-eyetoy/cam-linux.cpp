@@ -18,7 +18,6 @@
 #include "jpgd.h"
 #include "jpge.h"
 #include "jo_mpeg.h"
-#include "USB/gtk.h"
 #include "common/Console.h"
 
 #include <stdio.h>
@@ -242,9 +241,9 @@ namespace usb_eyetoy
 			return 1;
 		}
 
-		std::vector<std::string> getDevList()
+		std::vector<std::pair<std::string, std::string>> getDevList()
 		{
-			std::vector<std::string> devList;
+			std::vector<std::pair<std::string, std::string>> devList;
 			char dev_name[64];
 			int fd;
 			struct v4l2_capability cap;
@@ -260,7 +259,7 @@ namespace usb_eyetoy
 
 				if (ioctl(fd, VIDIOC_QUERYCAP, &cap) >= 0)
 				{
-					devList.push_back((char*)cap.card);
+					devList.emplace_back((char*)cap.card, (char*)cap.card);
 				}
 
 				close(fd);
@@ -603,9 +602,8 @@ namespace usb_eyetoy
 			free(comprBuf);
 		}
 
-		V4L2::V4L2(int port)
+		V4L2::V4L2()
 		{
-			mPort = port;
 			mpeg_buffer.start = calloc(1, 640 * 480 * 2);
 		}
 
@@ -636,9 +634,7 @@ namespace usb_eyetoy
 				pthread_join(eyetoy_thread, NULL);
 				v4l_close();
 			}
-			std::string selectedDevice;
-			LoadSetting(EyeToyWebCamDevice::TypeName(), mPort, APINAME, N_DEVICE, selectedDevice);
-			if (v4l_open(selectedDevice) != 0)
+			if (v4l_open(mHostDevice.c_str()) != 0)
 				return -1;
 			pthread_create(&eyetoy_thread, NULL, &v4l_thread, NULL);
 			eyetoy_running = 1;
@@ -674,76 +670,15 @@ namespace usb_eyetoy
 		{
 			mirroring_enabled = state;
 		}
-
-		static void deviceChanged(GtkComboBox* widget, gpointer data)
-		{
-			*(int*)data = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-		}
-
-		int GtkConfigure(int port, const char* dev_type, void* data)
-		{
-			std::string selectedDevice;
-			LoadSetting(dev_type, port, APINAME, N_DEVICE, selectedDevice);
-
-			GtkWidget* dlg = gtk_dialog_new_with_buttons(
-				"V4L2 Settings", GTK_WINDOW(data), GTK_DIALOG_MODAL,
-				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				GTK_STOCK_OK, GTK_RESPONSE_OK,
-				NULL);
-			gtk_window_set_position(GTK_WINDOW(dlg), GTK_WIN_POS_CENTER);
-			gtk_window_set_resizable(GTK_WINDOW(dlg), TRUE);
-			gtk_window_set_default_size(GTK_WINDOW(dlg), 320, 75);
-
-			GtkWidget* dlg_area_box = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
-			GtkWidget* main_hbox = gtk_hbox_new(FALSE, 5);
-			gtk_container_add(GTK_CONTAINER(dlg_area_box), main_hbox);
-			GtkWidget* right_vbox = gtk_vbox_new(FALSE, 5);
-			gtk_box_pack_start(GTK_BOX(main_hbox), right_vbox, TRUE, TRUE, 5);
-
-			GtkWidget* rs_cb = new_combobox("Device:", right_vbox);
-
-			std::vector<std::string> devList = getDevList();
-			int sel_idx = 0;
-			for (uint32_t idx = 0; idx < (uint32_t)devList.size(); idx++)
-			{
-				gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rs_cb), devList.at(idx).c_str());
-				if (!selectedDevice.empty() && selectedDevice == devList.at(idx))
-				{
-					gtk_combo_box_set_active(GTK_COMBO_BOX(rs_cb), idx);
-					sel_idx = idx;
-				}
-			}
-
-			int sel_new = 0;
-			g_signal_connect(G_OBJECT(rs_cb), "changed", G_CALLBACK(deviceChanged), (gpointer)&sel_new);
-
-			gtk_widget_show_all(dlg);
-			gint result = gtk_dialog_run(GTK_DIALOG(dlg));
-
-			int ret = RESULT_OK;
-			if (result == GTK_RESPONSE_OK)
-			{
-				if (devList.size() && sel_new != sel_idx)
-				{
-					if (!SaveSetting(dev_type, port, APINAME, N_DEVICE, devList.at(sel_new)))
-					{
-						ret = RESULT_FAILED;
-					}
-				}
-			}
-			else
-			{
-				ret = RESULT_CANCELED;
-			}
-
-			gtk_widget_destroy(dlg);
-			return ret;
-		}
-
-		int V4L2::Configure(int port, const char* dev_type, void* data)
-		{
-			return GtkConfigure(port, dev_type, data);
-		};
-
 	} // namespace linux_api
+
+	std::unique_ptr<VideoDevice> VideoDevice::CreateInstance()
+	{
+		return std::make_unique<linux_api::V4L2>();
+	}
+
+	std::vector<std::pair<std::string, std::string>> VideoDevice::GetDeviceList()
+	{
+		return linux_api::getDevList();
+	}
 } // namespace usb_eyetoy

@@ -409,6 +409,7 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 	connect(thread, &EmuThread::onUpdateDisplayRequested, this, &MainWindow::updateDisplay, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onDestroyDisplayRequested, this, &MainWindow::destroyDisplay, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onResizeDisplayRequested, this, &MainWindow::displayResizeRequested);
+	connect(thread, &EmuThread::onRelativeMouseModeRequested, this, &MainWindow::relativeMouseModeRequested);
 	connect(thread, &EmuThread::onVMStarting, this, &MainWindow::onVMStarting);
 	connect(thread, &EmuThread::onVMStarted, this, &MainWindow::onVMStarted);
 	connect(thread, &EmuThread::onVMPaused, this, &MainWindow::onVMPaused);
@@ -1089,7 +1090,7 @@ bool MainWindow::isRenderingToMain() const
 
 bool MainWindow::shouldHideMouseCursor() const
 {
-	return isRenderingFullscreen() && Host::GetBoolSettingValue("UI", "HideMouseCursor", false);
+	return (isRenderingFullscreen() && Host::GetBoolSettingValue("UI", "HideMouseCursor", false)) || m_relative_mouse_mode;
 }
 
 bool MainWindow::shouldHideMainWindow() const
@@ -1250,7 +1251,7 @@ void MainWindow::requestExit()
 void MainWindow::checkForSettingChanges()
 {
 	if (m_display_widget)
-		m_display_widget->updateRelativeMode(s_vm_valid && !s_vm_paused);
+		updateDisplayWidgetCursor();
 
 	updateWindowState();
 }
@@ -1802,10 +1803,7 @@ void MainWindow::onVMPaused()
 	m_last_fps_status = m_status_verbose_widget->text();
 	m_status_verbose_widget->setText(tr("Paused"));
 	if (m_display_widget)
-	{
-		m_display_widget->updateRelativeMode(false);
-		m_display_widget->updateCursor(false);
-	}
+		updateDisplayWidgetCursor();
 }
 
 void MainWindow::onVMResumed()
@@ -1824,8 +1822,7 @@ void MainWindow::onVMResumed()
 	m_last_fps_status = QString();
 	if (m_display_widget)
 	{
-		m_display_widget->updateRelativeMode(true);
-		m_display_widget->updateCursor(true);
+		updateDisplayWidgetCursor();
 		m_display_widget->setFocus();
 	}
 }
@@ -1842,14 +1839,9 @@ void MainWindow::onVMStopped()
 	updateInputRecordingActions(false);
 
 	if (m_display_widget)
-	{
-		m_display_widget->updateRelativeMode(false);
-		m_display_widget->updateCursor(false);
-	}
+		updateDisplayWidgetCursor();
 	else
-	{
 		switchToGameListView();
-	}
 
 	// reload played time
 	if (m_game_list_widget->isShowingGameList())
@@ -2035,9 +2027,7 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 	m_ui.actionStartFullscreenUI->setEnabled(false);
 	m_ui.actionStartFullscreenUI2->setEnabled(false);
 
-	m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
-	m_display_widget->updateRelativeMode(s_vm_valid && !s_vm_paused);
-	m_display_widget->updateCursor(s_vm_valid && !s_vm_paused);
+	updateDisplayWidgetCursor();
 	m_display_widget->setFocus();
 
 	g_host_display->DoneCurrent();
@@ -2083,10 +2073,8 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, b
 			container->showNormal();
 		}
 
+		updateDisplayWidgetCursor();
 		m_display_widget->setFocus();
-		m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
-		m_display_widget->updateRelativeMode(s_vm_valid && !s_vm_paused);
-		m_display_widget->updateCursor(s_vm_valid && !s_vm_paused);
 		updateWindowState();
 
 		QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
@@ -2122,10 +2110,8 @@ DisplayWidget* MainWindow::updateDisplay(bool fullscreen, bool render_to_main, b
 	updateWindowTitle();
 	updateWindowState();
 
+	updateDisplayWidgetCursor();
 	m_display_widget->setFocus();
-	m_display_widget->setShouldHideCursor(shouldHideMouseCursor());
-	m_display_widget->updateRelativeMode(s_vm_valid && !s_vm_paused);
-	m_display_widget->updateCursor(s_vm_valid && !s_vm_paused);
 
 	return m_display_widget;
 }
@@ -2221,6 +2207,16 @@ void MainWindow::displayResizeRequested(qint32 width, qint32 height)
 	QtUtils::ResizePotentiallyFixedSizeWindow(this, width, height + extra_height);
 }
 
+void MainWindow::relativeMouseModeRequested(bool enabled)
+{
+	if (m_relative_mouse_mode == enabled)
+		return;
+
+	m_relative_mouse_mode = enabled;
+	if (s_vm_valid && !s_vm_paused)
+		updateDisplayWidgetCursor();
+}
+
 void MainWindow::destroyDisplay()
 {
 	// Now we can safely destroy the display window.
@@ -2282,6 +2278,12 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
 	}
 
 	updateDisplayRelatedActions(false, false, false);
+}
+
+void MainWindow::updateDisplayWidgetCursor()
+{
+	m_display_widget->updateRelativeMode(s_vm_valid && !s_vm_paused && m_relative_mouse_mode);
+	m_display_widget->updateCursor(s_vm_valid && !s_vm_paused && shouldHideMouseCursor());
 }
 
 void MainWindow::focusDisplayWidget()

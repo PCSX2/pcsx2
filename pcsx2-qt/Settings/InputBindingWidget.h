@@ -16,6 +16,7 @@
 #pragma once
 #include "common/Pcsx2Defs.h"
 #include "pcsx2/Frontend/InputManager.h"
+#include "pcsx2/Config.h"
 #include <QtWidgets/QPushButton>
 #include <optional>
 
@@ -30,12 +31,13 @@ class InputBindingWidget : public QPushButton
 
 public:
 	InputBindingWidget(QWidget* parent);
-	InputBindingWidget(QWidget* parent, SettingsInterface* sif, std::string section_name, std::string key_name);
+	InputBindingWidget(
+		QWidget* parent, SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name, std::string key_name);
 	~InputBindingWidget();
 
 	static bool isMouseMappingEnabled();
 
-	void initialize(SettingsInterface* sif, std::string section_name, std::string key_name);
+	void initialize(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name, std::string key_name);
 
 public Q_SLOTS:
 	void clearBinding();
@@ -69,6 +71,7 @@ protected:
 	void unhookInputManager();
 
 	SettingsInterface* m_sif = nullptr;
+	InputBindingInfo::Type m_bind_type = InputBindingInfo::Type::Unknown;
 	std::string m_section_name;
 	std::string m_key_name;
 	std::vector<std::string> m_bindings;
@@ -103,6 +106,6 @@ private:
 	std::string m_section_name;
 	std::string m_key_name;
 	std::string m_binding;
-	
+
 	ControllerSettingsDialog* m_dialog;
 };

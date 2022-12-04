@@ -30,7 +30,6 @@
 #include "PrecompiledHeader.h"
 #include <stdio.h>
 #include <math.h>
-#include <memory.h>
 
 #include "jo_mpeg.h"
 

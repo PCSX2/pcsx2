@@ -13,40 +13,20 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef USBMSD_H
-#define USBMSD_H
+#pragma once
+
 #include "USB/deviceproxy.h"
 
 namespace usb_msd
 {
-
-	static const char* APINAME = "cstdio";
-
-	class MsdDevice
+	class MsdDevice final : public DeviceProxy
 	{
 	public:
-		virtual ~MsdDevice() {}
-		static USBDevice* CreateDevice(int port);
-		static const char* TypeName();
-		static const TCHAR* Name()
-		{
-			return TEXT("Mass storage device");
-		}
-		static std::list<std::string> ListAPIs()
-		{
-			return std::list<std::string>{APINAME};
-		}
-		static const TCHAR* LongAPIName(const std::string& name)
-		{
-			return TEXT("cstdio");
-		}
-		static int Configure(int port, const std::string& api, void* data);
-		static int Freeze(FreezeAction mode, USBDevice* dev, void* data);
-		static std::vector<std::string> SubTypes()
-		{
-			return {};
-		}
+		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
+		const char* TypeName() const override;
+		const char* Name() const override;
+		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
+		void UpdateSettings(USBDevice* dev, SettingsInterface& si) const override;
+		gsl::span<const SettingInfo> Settings(u32 subtype) const override;
 	};
-
 } // namespace usb_msd
-#endif

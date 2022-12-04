@@ -14,50 +14,54 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "../qemu-usb/vl.h"
-#include "../shared/inifile_usb.h"
-#include "usb-printer.h"
-#include "gui/AppConfig.h"
-
-#ifndef O_BINARY
-	#define O_BINARY 0
-#endif
+#include "USB/qemu-usb/qusb.h"
+#include "USB/qemu-usb/USBinternal.h"
+#include "USB/usb-printer/usb-printer.h"
+#include "USB/USB.h"
+#include "common/FileSystem.h"
+#include "common/Path.h"
+#include "Config.h"
+#include "fmt/format.h"
+#include "StateWrapper.h"
+#include "Host.h"
+#include "IconsFontAwesome5.h"
 
 namespace usb_printer
 {
 	typedef struct PrinterState
 	{
-		USBDevice dev;
-		USBDesc desc;
-		USBDescDevice desc_dev;
+		USBDevice dev{};
+		USBDesc desc{};
+		USBDescDevice desc_dev{};
 
-		int selected_printer;
-		int cmd_state;
-		uint8_t last_command[65];
-		int last_command_size;
-		int print_file;
-		int width;
-		int height;
-		long stride;
-		int data_size;
-		long data_pos;
+		int selected_printer = 0;
+		int cmd_state = 0;
+		uint8_t last_command[65] = {};
+		int last_command_size = 0;
+		std::string print_filename;
+		std::FILE* print_file = nullptr;
+		int width = 0;
+		int height = 0;
+		long stride = 0;
+		int data_size = 0;
+		long data_pos = 0;
 	} PrinterState;
 
 	static void usb_printer_handle_reset(USBDevice* dev)
 	{
-		PrinterState* s = (PrinterState*)dev;
+		PrinterState* s = USB_CONTAINER_OF(dev, PrinterState, dev);
 		s->cmd_state = 0;
-		if (s->print_file > 0)
+		if (s->print_file)
 		{
-			close(s->print_file);
+			std::fclose(s->print_file);
+			s->print_file = nullptr;
 		}
-		s->print_file = -1;
 	}
 
 	static void usb_printer_handle_control(USBDevice* dev, USBPacket* p, int request, int value,
-									   int index, int length, uint8_t* data)
+		int index, int length, uint8_t* data)
 	{
-		PrinterState* s = (PrinterState*)dev;
+		PrinterState* s = USB_CONTAINER_OF(dev, PrinterState, dev);
 		int ret = 0;
 
 		ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
@@ -81,21 +85,23 @@ namespace usb_printer
 		}
 	}
 
-	void sony_open_file(PrinterState* s)
+	static void sony_open_file(PrinterState* s)
 	{
-		char filepath[1024];
 		char cur_time_str[32];
 		const time_t cur_time = time(nullptr);
 		strftime(cur_time_str, sizeof(cur_time_str), "%Y_%m_%d_%H_%M_%S", localtime(&cur_time));
-		snprintf(filepath, sizeof(filepath), "%s/print_%s.bmp",
-				g_Conf->Folders.Snapshots.ToString().ToStdString().c_str(), cur_time_str);
-		s->print_file = open(filepath, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 666);
-		if (s->print_file < 0)
+
+		s->print_filename = Path::Combine(EmuFolders::Snapshots, fmt::format("print_{}.bmp", cur_time_str));
+		s->print_file = FileSystem::OpenCFile(s->print_filename.c_str(), "wb");
+		if (!s->print_file)
 		{
-			Console.WriteLn("Printer: Sony: Cannot open: %s", filepath);
+			Host::AddIconOSDMessage("USBPrinterOpen", ICON_FA_EXCLAMATION_TRIANGLE,
+				fmt::format("Failed to open '{}' for printing.", s->print_filename), Host::OSD_ERROR_DURATION);
 			return;
 		}
-		Console.WriteLn("Printer: Sony: Saving to... %s", filepath);
+
+		Host::AddIconOSDMessage("USBPrinterOpen", ICON_FA_SAVE,
+			fmt::format("Printer saving to '{}'...", Path::GetFileName(s->print_filename)), Host::OSD_INFO_DURATION);
 
 		BMPHeader header = {0};
 		header.magic = 0x4D42;
@@ -106,23 +112,23 @@ namespace usb_printer
 		header.height = s->height;
 		header.planes = 1;
 		header.bpp = 24;
-		if (write(s->print_file, &header, sizeof(header)) == -1)
+		if (std::fwrite(&header, sizeof(header), 1, s->print_file) != 1)
 		{
 			Console.Error("Error writing header to print file");
 		}
 
 		s->stride = 3 * s->width + 3 - ((3 * s->width + 3) & 3);
 		s->data_pos = 0;
-		lseek(s->print_file, sizeof(BMPHeader) + s->stride * s->height - 1, SEEK_SET);
+		FileSystem::FSeek64(s->print_file, sizeof(BMPHeader) + s->stride * s->height - 1, SEEK_SET);
 		char zero = 0;
 
-		if (write(s->print_file, &zero, 1) == -1)
+		if (std::fwrite(&zero, 1, 1, s->print_file) != 1)
 		{
 			Console.Error("Error writing zero padding to header to print file");
 		}
 	}
 
-	void sony_write_data(PrinterState* s, int size, uint8_t* data)
+	static void sony_write_data(PrinterState* s, int size, uint8_t* data)
 	{
 		for (int i = 0; i < size; i++)
 		{
@@ -134,24 +140,42 @@ namespace usb_printer
 				Console.WriteLn("Printer: Sony: error: pos_out=0x%x", pos_out);
 				break;
 			}
-			lseek(s->print_file, sizeof(BMPHeader) + pos_out + 2 - s->data_pos % 3, SEEK_SET);
 
-			if (write(s->print_file, data + i, 1) == -1)
+			// print_file might be null if we're loading a state
+			if (s->print_file)
 			{
-				Console.Error("Error writing data to print file");
+				FileSystem::FSeek64(s->print_file, sizeof(BMPHeader) + pos_out + 2 - s->data_pos % 3, SEEK_SET);
+
+				if (std::fwrite(data + i, 1, 1, s->print_file) != 1)
+				{
+					Console.Error("Error writing data to print file");
+				}
 			}
-			s->data_pos ++;
+			s->data_pos++;
 		}
 	}
 
-	void sony_close_file(PrinterState* s)
+	static void sony_close_file(PrinterState* s)
 	{
 		Console.WriteLn("Printer: Sony: done.");
-		if (s->print_file >= 0)
+		if (s->print_file)
 		{
-			close(s->print_file);
+			std::fclose(s->print_file);
+			s->print_file = nullptr;
+			s->print_filename = {};
 		}
-		s->print_file = -1;
+	}
+
+	static void sony_cancel_file(PrinterState* s)
+	{
+		if (!s->print_file)
+			return;
+
+		Console.Warning("Removing incomplete printer file '%s'", s->print_filename.c_str());
+		std::fclose(s->print_file);
+		s->print_file = nullptr;
+		FileSystem::DeleteFilePath(s->print_filename.c_str());
+		s->print_filename = {};
 	}
 
 	static void usb_printer_handle_data_sony(USBDevice* dev, USBPacket* p)
@@ -162,47 +186,32 @@ namespace usb_printer
 			uint8_t ret[256];
 		};
 		const struct req_reply commands[] =
-		{
 			{
-				{0x1B, 0xE0, 0x00, 0x00, 0x00, 0x0E, 0x00},
-				{0x0D, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x01, 0x24, 0x38, 0x03, 0xF2, 0x02, 0x74}
-			},
-			{
-				{0x1B, 0xCF, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x2D, 0x00},
-				{0x00, 0x00, 0x00, 0x29, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-				 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-				 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
-			},
-			{
-				{0x1B, 0xCF, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00},
-				{0x00, 0x00, 0x00, 0x12, 0x02, 0x00, 0x40, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-				 0x00, 0x00, 0x0E, 0x00, 0x00, 0x07}
-			},
-			{
-				{0x1B, 0xCF, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00},
-				{0x00, 0x00, 0x00, 0x12, 0x03, 0x00, 0x20, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-				 0x00, 0x00, 0x07, 0x00, 0x00, 0x04}
-			},
-			{
-				{0x1B, 0xCF, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x0E, 0x00},
-				{0x00, 0x00, 0x00, 0x0A, 0x04, 0x00, 0x00, 0x18, 0x01, 0x01, 0x01, 0x00, 0x02, 0x00}
-			},
-			{
-				{0x1B, 0xCF, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x12, 0x00},
-				{0x00, 0x00, 0x00, 0x0E, 0x05, 0x00, 0x02, 0x74, 0x03, 0xF2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-				 0x00, 0x00}
-			},
-			{
-				{0x1B, 0x12, 0x01, 0x00, 0x00, 0x19, 0x00},
-				{0x02, 0xC0, 0x00, 0x15, 0x03, 0xF2, 0x02, 0x74, 0x03, 0xF2, 0x02, 0x74, 0x01, 0x33, 0x00, 0x00,
-				 0x15, 0x01, 0x03, 0x23, 0x30, 0x31, 0x2E, 0x30, 0x30}
-			}
-		};
+				{{0x1B, 0xE0, 0x00, 0x00, 0x00, 0x0E, 0x00},
+					{0x0D, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x01, 0x24, 0x38, 0x03, 0xF2, 0x02, 0x74}},
+				{{0x1B, 0xCF, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x2D, 0x00},
+					{0x00, 0x00, 0x00, 0x29, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+						0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+						0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
+				{{0x1B, 0xCF, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00},
+					{0x00, 0x00, 0x00, 0x12, 0x02, 0x00, 0x40, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+						0x00, 0x00, 0x0E, 0x00, 0x00, 0x07}},
+				{{0x1B, 0xCF, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00},
+					{0x00, 0x00, 0x00, 0x12, 0x03, 0x00, 0x20, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+						0x00, 0x00, 0x07, 0x00, 0x00, 0x04}},
+				{{0x1B, 0xCF, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x0E, 0x00},
+					{0x00, 0x00, 0x00, 0x0A, 0x04, 0x00, 0x00, 0x18, 0x01, 0x01, 0x01, 0x00, 0x02, 0x00}},
+				{{0x1B, 0xCF, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x12, 0x00},
+					{0x00, 0x00, 0x00, 0x0E, 0x05, 0x00, 0x02, 0x74, 0x03, 0xF2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+						0x00, 0x00}},
+				{{0x1B, 0x12, 0x01, 0x00, 0x00, 0x19, 0x00},
+					{0x02, 0xC0, 0x00, 0x15, 0x03, 0xF2, 0x02, 0x74, 0x03, 0xF2, 0x02, 0x74, 0x01, 0x33, 0x00, 0x00,
+						0x15, 0x01, 0x03, 0x23, 0x30, 0x31, 0x2E, 0x30, 0x30}}};
 		const uint8_t set_size[] = {0x00, 0x00, 0x00, 0x00, 0xa7, 0x00};
 		const uint8_t set_data[] = {0x1b, 0xea, 0x00, 0x00, 0x00, 0x00, 0x00};
 		const uint8_t print_compl[] = {0x1b, 0x0a, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-		PrinterState* s = (PrinterState*)dev;
+		PrinterState* s = USB_CONTAINER_OF(dev, PrinterState, dev);
 		//const uint8_t ep_nr = p->ep->nr;
 		//const uint8_t ep_type = p->ep->type;
 
@@ -275,19 +284,16 @@ namespace usb_printer
 
 	static void usb_printer_handle_destroy(USBDevice* dev)
 	{
-		PrinterState* s = (PrinterState*)dev;
+		PrinterState* s = USB_CONTAINER_OF(dev, PrinterState, dev);
+		sony_cancel_file(s);
 		delete s;
 	}
 
-	USBDevice* PrinterDevice::CreateDevice(int port)
+	USBDevice* PrinterDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
 		PrinterState* s = new PrinterState();
-		std::string api = *PrinterDevice::ListAPIs().begin();
-		uint32_t subtype = GetSelectedSubtype(std::make_pair(port, TypeName()));
-		if (subtype >= sizeof(sPrinters) / sizeof(sPrinters[0])) {
-			subtype = 0;
-		}
-		s->selected_printer = subtype;
+
+		s->selected_printer = std::min<u32>(subtype, std::size(sPrinters));
 
 		s->dev.speed = USB_SPEED_FULL;
 		s->desc.full = &s->desc_dev;
@@ -312,22 +318,57 @@ namespace usb_printer
 
 		usb_desc_init(&s->dev);
 		usb_ep_init(&s->dev);
-		usb_printer_handle_reset((USBDevice*)s);
-		return (USBDevice*)s;
+		usb_printer_handle_reset(&s->dev);
+		return &s->dev;
 
 	fail:
-		usb_printer_handle_destroy((USBDevice*)s);
+		usb_printer_handle_destroy(&s->dev);
 		return nullptr;
 	}
 
-	int PrinterDevice::Configure(int port, const std::string& api, void* data)
+	const char* PrinterDevice::Name() const
 	{
-		return 0;
+		return "Printer";
 	}
 
-	int PrinterDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
+	const char* PrinterDevice::TypeName() const
 	{
-		return 0;
+		return "printer";
+	}
+
+	bool PrinterDevice::Freeze(USBDevice* dev, StateWrapper& sw) const
+	{
+		PrinterState* s = USB_CONTAINER_OF(dev, PrinterState, dev);
+
+		if (!sw.DoMarker("PrinterDevice"))
+			return false;
+
+		sw.Do(&s->selected_printer);
+		sw.Do(&s->cmd_state);
+		sw.DoBytes(&s->last_command, sizeof(s->last_command));
+		sw.Do(&s->last_command_size);
+		sw.Do(&s->width);
+		sw.Do(&s->height);
+		sw.Do(&s->stride);
+		sw.Do(&s->data_size);
+		sw.Do(&s->data_pos);
+
+		// toss any file being saved when we're loading, since we'd probably
+		// end up with a corrupted file otherwise
+		if (sw.IsReading())
+			sony_cancel_file(s);
+
+		return true;
+	}
+
+	std::vector<std::string> PrinterDevice::SubTypes() const
+	{
+		std::vector<std::string> ret;
+		for (uint32_t i = 0; i < sizeof(sPrinters) / sizeof(sPrinters[0]); i++)
+		{
+			ret.push_back(sPrinters[i].commercial_name);
+		}
+		return ret;
 	}
 
 } // namespace usb_printer

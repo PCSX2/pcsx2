@@ -8,12 +8,17 @@
  */
 
 #include "PrecompiledHeader.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "USB/qemu-usb/vl.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include "USB/qemu-usb/qusb.h"
 #include "USB/qemu-usb/desc.h"
-#include "usb-msd.h"
+#include "USB/qemu-usb/USBinternal.h"
+#include "USB/usb-msd/usb-msd.h"
+#include "USB/USB.h"
+#include "common/FileSystem.h"
+#include "Host.h"
+#include "StateWrapper.h"
 
 #define le32_to_cpu(x) (x)
 #define cpu_to_le32(x) (x)
@@ -48,10 +53,10 @@ namespace usb_msd
 
 	enum USBMSDMode : int8_t
 	{
-		USB_MSDM_CBW,     /* Command Block.  */
+		USB_MSDM_CBW, /* Command Block.  */
 		USB_MSDM_DATAOUT, /* Tranfer data to device.  */
-		USB_MSDM_DATAIN,  /* Transfer data from device.  */
-		USB_MSDM_CSW      /* Command Status.  */
+		USB_MSDM_DATAIN, /* Transfer data from device.  */
+		USB_MSDM_CSW /* Command Status.  */
 	};
 
 	typedef struct ReqState
@@ -75,17 +80,18 @@ namespace usb_msd
 			uint32_t file_op_tag; // read from file or buf
 			int32_t result;
 
-			uint32_t off;      //buffer offset
+			uint32_t off; //buffer offset
 			uint8_t buf[4096]; //random length right now
 			uint8_t sense_buf[18];
 			uint8_t last_cmd;
 			ReqState req;
 
 			//TODO how to detect if image is different
-			uint32_t hash;
-		} f; //freezable
+			uint64_t mtime;
+		} f = {}; //freezable
 
-		FILE* file;
+		FILE* file = 0;
+		int64_t file_size = 0;
 		//char fn[MAX_PATH+1]; //TODO Could use with open/close,
 		//but error recovery currently can't deal with file suddenly
 		//becoming not accessible
@@ -97,8 +103,8 @@ namespace usb_msd
 	} MSDState;
 
 	static const uint8_t qemu_msd_dev_descriptor[] = {
-		0x12,       /*  u8 bLength; */
-		0x01,       /*  u8 bDescriptorType; Device */
+		0x12, /*  u8 bLength; */
+		0x01, /*  u8 bDescriptorType; Device */
 		0x10, 0x00, /*  u16 bcdUSB; v1.0 */
 
 		0x00, /*  u8  bDeviceClass; */
@@ -114,24 +120,24 @@ namespace usb_msd
 		0x01, /*  u8  iManufacturer; */
 		0x02, /*  u8  iProduct; */
 		0x03, /*  u8  iSerialNumber; */
-		0x01  /*  u8  bNumConfigurations; */
+		0x01 /*  u8  bNumConfigurations; */
 	};
 
 	static const uint8_t qemu_msd_config_descriptor[] = {
 
 		/* one configuration */
-		0x09,       /*  u8  bLength; */
-		0x02,       /*  u8  bDescriptorType; Configuration */
+		0x09, /*  u8  bLength; */
+		0x02, /*  u8  bDescriptorType; Configuration */
 		0x20, 0x00, /*  u16 wTotalLength; */
-		0x01,       /*  u8  bNumInterfaces; (1) */
-		0x01,       /*  u8  bConfigurationValue; */
-		0x00,       /*  u8  iConfiguration; */
-		0xc0,       /*  u8  bmAttributes;
+		0x01, /*  u8  bNumInterfaces; (1) */
+		0x01, /*  u8  bConfigurationValue; */
+		0x00, /*  u8  iConfiguration; */
+		0xc0, /*  u8  bmAttributes;
                  Bit 7: must be set,
                      6: Self-powered,
                      5: Remote wakeup,
                      4..0: resvd */
-		0x00,       /*  u8  MaxPower; */
+		0x00, /*  u8  MaxPower; */
 
 		/* one interface */
 		0x09, /*  u8  if_bLength; */
@@ -145,20 +151,20 @@ namespace usb_msd
 		0x00, /*  u8  if_iInterface; */
 
 		/* Bulk-In endpoint */
-		0x07,       /*  u8  ep_bLength; */
-		0x05,       /*  u8  ep_bDescriptorType; Endpoint */
-		0x81,       /*  u8  ep_bEndpointAddress; IN Endpoint 1 */
-		0x02,       /*  u8  ep_bmAttributes; Bulk */
+		0x07, /*  u8  ep_bLength; */
+		0x05, /*  u8  ep_bDescriptorType; Endpoint */
+		0x81, /*  u8  ep_bEndpointAddress; IN Endpoint 1 */
+		0x02, /*  u8  ep_bmAttributes; Bulk */
 		0x40, 0x00, /*  u16 ep_wMaxPacketSize; */
-		0x00,       /*  u8  ep_bInterval; */
+		0x00, /*  u8  ep_bInterval; */
 
 		/* Bulk-Out endpoint */
-		0x07,       /*  u8  ep_bLength; */
-		0x05,       /*  u8  ep_bDescriptorType; Endpoint */
-		0x02,       /*  u8  ep_bEndpointAddress; OUT Endpoint 2 */
-		0x02,       /*  u8  ep_bmAttributes; Bulk */
+		0x07, /*  u8  ep_bLength; */
+		0x05, /*  u8  ep_bDescriptorType; Endpoint */
+		0x02, /*  u8  ep_bEndpointAddress; OUT Endpoint 2 */
+		0x02, /*  u8  ep_bmAttributes; Bulk */
 		0x00, 0x02, /*  u16 ep_wMaxPacketSize; */
-		0x00        /*  u8  ep_bInterval; */
+		0x00 /*  u8  ep_bInterval; */
 	};
 
 	enum
@@ -381,11 +387,11 @@ namespace usb_msd
 		NO_SENSE, 0x00, 0x00};
 
 	/* LUN not ready, Manual intervention required */
-	[[maybe_unused]]const struct SCSISense sense_code_LUN_NOT_READY = {
+	[[maybe_unused]] const struct SCSISense sense_code_LUN_NOT_READY = {
 		NOT_READY, 0x04, 0x03};
 
 	/* LUN not ready, Medium not present */
-	[[maybe_unused]]const struct SCSISense sense_code_NO_MEDIUM = {
+	[[maybe_unused]] const struct SCSISense sense_code_NO_MEDIUM = {
 		NOT_READY, 0x3a, 0x00};
 
 	const struct SCSISense sense_code_UNKNOWN_ERROR = {
@@ -411,47 +417,25 @@ namespace usb_msd
 	//    .key = ILLEGAL_REQUEST, .asc = 0x4b, .ascq = 0x01
 	//};
 
-	static int64_t get_file_size(FILE* file)
-	{
-		int fd;
-
-#if defined(_WIN32)
-		struct _stat64 buf;
-		fd = _fileno(file);
-		if (_fstat64(fd, &buf) != 0)
-			return -1;
-		return buf.st_size;
-#elif defined(__GNUC__)
-		struct stat64 buf;
-		fd = fileno(file);
-		if (fstat64(fd, &buf) != 0)
-			return -1;
-		return buf.st_size;
-#else
-#error Unknown platform
-#endif
-	}
-
 	static void usb_msd_handle_reset(USBDevice* dev)
 	{
-		MSDState* s = (MSDState*)dev;
+		MSDState* s = USB_CONTAINER_OF(dev, MSDState, dev);
 
 		s->f.mode = USB_MSDM_CBW;
 	}
 
 #ifndef bswap32
-#define bswap32(x) (          \
-	(((x) >> 24) & 0xff) |    \
-	(((x) >> 8) & 0xff00) |   \
+#define bswap32(x) ( \
+	(((x) >> 24) & 0xff) | \
+	(((x) >> 8) & 0xff00) | \
 	(((x) << 8) & 0xff0000) | \
 	(((x) << 24) & 0xff000000))
 
 #define bswap16(x) ((((x) >> 8) & 0xff) | (((x) << 8) & 0xff00))
 #endif
 
-	static void set_sense(void* opaque, SCSISense sense)
+	static void set_sense(MSDState* s, SCSISense sense)
 	{
-		MSDState* s = (MSDState*)opaque;
 		memset(s->f.sense_buf, 0, sizeof(s->f.sense_buf));
 		//SENSE request
 		s->f.sense_buf[0] = 0x70 | 0x80; //0x70 - current sense, 0x80 - set Valid bit
@@ -463,8 +447,8 @@ namespace usb_msd
 		//s->f.sense_buf[5] = 0x00;
 		//s->f.sense_buf[6] = 0x00; //LSB
 		s->f.sense_buf[7] = sense.asc ? 0x0a : 0x00; //Additional sense length (10 bytes if any)
-		s->f.sense_buf[12] = sense.asc;              //Additional sense code
-		s->f.sense_buf[13] = sense.ascq;             //Additional sense code qualifier
+		s->f.sense_buf[12] = sense.asc; //Additional sense code
+		s->f.sense_buf[13] = sense.ascq; //Additional sense code qualifier
 	}
 
 	static void usb_msd_send_status(MSDState* s, USBPacket* p)
@@ -472,7 +456,7 @@ namespace usb_msd
 		size_t len;
 
 		assert(s->f.csw.sig == cpu_to_le32(0x53425355));
-		len = MIN(sizeof(s->f.csw), p->iov.size);
+		len = std::min(sizeof(s->f.csw), p->iov.size);
 		usb_packet_copy(p, &s->f.csw, len);
 		memset(&s->f.csw, 0, sizeof(s->f.csw));
 	}
@@ -604,10 +588,8 @@ namespace usb_msd
 		usb_msd_command_complete(s, s->f.result);
 	}
 
-	static void send_command(void* opaque, struct usb_msd_cbw* cbw)
+	static void send_command(MSDState* s, struct usb_msd_cbw* cbw)
 	{
-		MSDState* s = (MSDState*)opaque;
-
 		int64_t lba;
 		uint32_t xfer_len;
 		s->f.last_cmd = cbw->cmd[0];
@@ -627,29 +609,27 @@ namespace usb_msd
 				break;
 			case REQUEST_SENSE: //device shall keep old sense data
 				memcpy(s->f.buf, s->f.sense_buf,
-					   /* XXX the UFI device shall return only the number of bytes requested, as is */
-					   cbw->cmd[4] < sizeof(s->f.sense_buf) ? (size_t)cbw->cmd[4] : sizeof(s->f.sense_buf));
+					/* XXX the UFI device shall return only the number of bytes requested, as is */
+					cbw->cmd[4] < sizeof(s->f.sense_buf) ? (size_t)cbw->cmd[4] : sizeof(s->f.sense_buf));
 				break;
 			case INQUIRY:
 				memset(s->f.buf, 0, sizeof(s->f.buf));
-				s->f.buf[0] = 0;      //SCSI Peripheral Device Type: 0x0 - direct access device, 0x1f - unknown/no device
+				s->f.buf[0] = 0; //SCSI Peripheral Device Type: 0x0 - direct access device, 0x1f - unknown/no device
 				s->f.buf[1] = 1 << 7; //removable
-				s->f.buf[3] = 1;      //UFI response data format
+				s->f.buf[3] = 1; //UFI response data format
 				//inq data len can be zero
-				strncpy((char*)&s->f.buf[8], "QEMU", 8);        //8 bytes vendor
+				strncpy((char*)&s->f.buf[8], "QEMU", 8); //8 bytes vendor
 				strncpy((char*)&s->f.buf[16], "USB Drive", 16); //16 bytes product
-				strncpy((char*)&s->f.buf[32], "1.00", 4);       //4 bytes product revision
+				strncpy((char*)&s->f.buf[32], "1.00", 4); //4 bytes product revision
 				break;
 
 			case READ_CAPACITY_10:
-				int64_t fsize, lbas;
+				int64_t lbas;
 				uint32_t *last_lba, *blk_len;
 
 				memset(s->f.buf, 0, sizeof(s->f.buf));
 
-				fsize = get_file_size(s->file);
-
-				if (fsize == -1) //TODO
+				if (s->file_size == 0) //TODO
 				{
 					s->f.result = COMMAND_FAILED;
 					set_sense(s, SENSE_CODE(UNKNOWN_ERROR));
@@ -661,7 +641,7 @@ namespace usb_msd
 				//right?
 				*blk_len = LBA_BLOCK_SIZE; //descriptor is currently max 64 bytes for bulk though
 
-				lbas = fsize / LBA_BLOCK_SIZE;
+				lbas = s->file_size / LBA_BLOCK_SIZE;
 				if (lbas > 0xFFFFFFFF)
 				{
 					s->f.result = COMMAND_FAILED;
@@ -691,12 +671,11 @@ namespace usb_msd
 				if (xfer_len == 0) // nothing to do
 					break;
 
-				if (fseeko64(s->file, lba * LBA_BLOCK_SIZE, SEEK_SET))
+				if (FileSystem::FSeek64(s->file, lba * LBA_BLOCK_SIZE, SEEK_SET) != 0)
 				{
 					s->f.result = COMMAND_FAILED;
 					//TODO use errno
-					int64_t fsize = get_file_size(s->file);
-					if ((lba + xfer_len) * LBA_BLOCK_SIZE > fsize)
+					if ((lba + xfer_len) * LBA_BLOCK_SIZE > s->file_size)
 						set_sense(s, SENSE_CODE(OUT_OF_RANGE));
 					else
 						set_sense(s, SENSE_CODE(NO_SEEK_COMPLETE));
@@ -725,12 +704,11 @@ namespace usb_msd
 
 				if (xfer_len == 0) //nothing to do
 					break;
-				if (fseeko64(s->file, lba * LBA_BLOCK_SIZE, SEEK_SET))
+				if (FileSystem::FSeek64(s->file, lba * LBA_BLOCK_SIZE, SEEK_SET) != 0)
 				{
 					s->f.result = COMMAND_FAILED;
 					//TODO use errno
-					int64_t fsize = get_file_size(s->file);
-					if ((lba + xfer_len) * LBA_BLOCK_SIZE > fsize)
+					if ((lba + xfer_len) * LBA_BLOCK_SIZE > s->file_size)
 						set_sense(s, SENSE_CODE(OUT_OF_RANGE));
 					else
 						set_sense(s, SENSE_CODE(NO_SEEK_COMPLETE));
@@ -748,9 +726,9 @@ namespace usb_msd
 	}
 
 	static void usb_msd_handle_control(USBDevice* dev, USBPacket* p, int request, int value,
-									   int index, int length, uint8_t* data)
+		int index, int length, uint8_t* data)
 	{
-		MSDState* s = (MSDState*)dev;
+		MSDState* s = USB_CONTAINER_OF(dev, MSDState, dev);
 		int ret = 0;
 
 		ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
@@ -779,7 +757,7 @@ namespace usb_msd
 
 	static void usb_msd_cancel_io(USBDevice* dev, USBPacket* p)
 	{
-		MSDState* s = (MSDState*)(dev);
+		MSDState* s = USB_CONTAINER_OF(dev, MSDState, dev);
 
 		assert(s->packet == p);
 		s->packet = NULL;
@@ -792,7 +770,7 @@ namespace usb_msd
 
 	static void usb_msd_handle_data(USBDevice* dev, USBPacket* p)
 	{
-		MSDState* s = (MSDState*)dev;
+		MSDState* s = USB_CONTAINER_OF(dev, MSDState, dev);
 		struct usb_msd_cbw cbw;
 		uint8_t devep = p->ep->nr;
 
@@ -820,7 +798,7 @@ namespace usb_msd
 						if (le32_to_cpu(cbw.sig) != 0x43425355)
 						{
 							Console.Warning("usb-msd: Bad signature %08x\n",
-									le32_to_cpu(cbw.sig));
+								le32_to_cpu(cbw.sig));
 							goto fail;
 						}
 						if (cbw.lun != 0)
@@ -980,7 +958,7 @@ namespace usb_msd
 
 	static void usb_msd_handle_destroy(USBDevice* dev)
 	{
-		MSDState* s = (MSDState*)dev;
+		MSDState* s = USB_CONTAINER_OF(dev, MSDState, dev);
 		if (s && s->file)
 		{
 			fclose(s->file);
@@ -989,31 +967,23 @@ namespace usb_msd
 		delete s;
 	}
 
-	USBDevice* MsdDevice::CreateDevice(int port)
+	USBDevice* MsdDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
 		MSDState* s = new MSDState();
 
-		//CONFIGVARIANT varApi(N_DEVICE_API, CONFIG_TYPE_CHAR);
-		//LoadSetting(port, DEVICENAME, varApi);
-		std::string api = *MsdDevice::ListAPIs().begin();
-
-		TSTDSTRING var;
-
-		if (!LoadSetting(TypeName(), port, api, N_CONFIG_PATH, var))
+		std::string path(USB::GetConfigString(si, port, TypeName(), "ImagePath"));
+		if (path.empty() || !(s->file = FileSystem::OpenCFile(path.c_str(), "r+b")))
 		{
-			Console.Warning("usb-msd: Could not load settings\n");
-			delete s;
-			return NULL;
-		}
-
-		s->file = wfopen(var.c_str(), TEXT("r+b"));
-		if (!s->file)
-		{
-			Console.WriteLn("usb-msd: Could not open image file '%s'\n", var.c_str());
+			Host::AddOSDMessage(fmt::format("usb-msd: Could not open image file '{}'", path), Host::OSD_ERROR_DURATION);
 			goto fail;
 		}
 
-		s->f.hash = 0;
+		FILESYSTEM_STAT_DATA sd;
+		if (!FileSystem::StatFile(s->file, &sd))
+			goto fail;
+
+		s->file_size = sd.Size;
+		s->f.mtime = sd.ModificationTime;
 		s->f.last_cmd = -1;
 		s->dev.speed = USB_SPEED_FULL;
 
@@ -1036,53 +1006,60 @@ namespace usb_msd
 		usb_desc_init(&s->dev);
 		usb_ep_init(&s->dev);
 
-		usb_msd_handle_reset((USBDevice*)s);
-		return (USBDevice*)s;
+		usb_msd_handle_reset(&s->dev);
+		return &s->dev;
 
 	fail:
-		usb_msd_handle_destroy((USBDevice*)s);
-		return NULL;
+		usb_msd_handle_destroy(&s->dev);
+		return nullptr;
 	}
 
-	const char* MsdDevice::TypeName()
+	const char* MsdDevice::TypeName() const
 	{
-		return "msd";
+		return "Msd";
 	}
 
-	int MsdDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
+	const char* MsdDevice::Name() const
 	{
-		MSDState* s = (MSDState*)dev;
-		MSDState::freeze* tmp;
+		return "Mass Storage Device";
+	}
 
-		if (!s)
-			return 0;
-		switch (mode)
+	bool MsdDevice::Freeze(USBDevice* dev, StateWrapper& sw) const
+	{
+		MSDState* s = USB_CONTAINER_OF(dev, MSDState, dev);
+
+		// use mtime to check when the image has been changed... definitely far from ideal,
+		// but hashing the file every time we save state is kinda slow. and this isn't a
+		// heavily used feature...
+		FILESYSTEM_STAT_DATA sd;
+		if (s->file && FileSystem::StatFile(s->file, &sd))
+			s->f.mtime = static_cast<u64>(sd.ModificationTime);
+
+		const u64 old_mtime = s->f.mtime;
+		sw.DoPOD(&s->f);
+
+		// resetting port to try to avoid possible data corruption
+		if (sw.IsReading() && old_mtime != s->f.mtime)
 		{
-			case FreezeAction::Load:
-				//if (s->f.req) free (s->f.req);
-
-				tmp = (MSDState::freeze*)data;
-				s->f = *tmp;
-				//ReqState *req = (ReqState *)((char*)data + sizeof(MSDState::freeze));
-				//s->f.req = qemu_mallocz (sizeof(ReqState));
-				//*s->f.req = *req;
-
-				//TODO resetting port to try to avoid possible data corruption
-				//if (s->f.mode == USB_MSDM_DATAOUT)
-				usb_reattach(dev->port);
-				return sizeof(MSDState::freeze); // + sizeof(ReqState);
-
-			case FreezeAction::Save:
-				tmp = (MSDState::freeze*)data;
-				*tmp = s->f;
-				return sizeof(MSDState::freeze);
-
-			case FreezeAction::Size:
-				return sizeof(MSDState::freeze); // + sizeof(ReqState);
-			default:
-				break;
+			Host::AddOSDMessage("Modification time to USB mass storage image changed, reattaching.",
+				Host::OSD_ERROR_DURATION);
+			usb_reattach(dev->port);
 		}
-		return 0;
+
+		return !sw.HasError();
+	}
+
+	void MsdDevice::UpdateSettings(USBDevice* dev, SettingsInterface& si) const
+	{
+		// TODO: Handle changes to path.
+	}
+
+	gsl::span<const SettingInfo> MsdDevice::Settings(u32 subtype) const
+	{
+		static constexpr const SettingInfo settings[] = {
+			{SettingInfo::Type::Path, "ImagePath", "Image Path", "Sets the path to image which will back the virtual mass storage device."},
+		};
+		return settings;
 	}
 
 } // namespace usb_msd

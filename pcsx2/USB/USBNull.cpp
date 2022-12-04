@@ -15,19 +15,15 @@
 
 #include "PrecompiledHeader.h"
 
-#include "USB.h"
-
-u8* ram = nullptr;
+#include "USBNull.h"
 
 void USBconfigure() {}
-
-void DestroyDevices() {}
-void CreateDevices() {}
 
 s32 USBinit() { return 0; }
 void USBasync(u32 cycles) {}
 void USBshutdown() {}
 void USBclose() {}
+void USBreset() {}
 s32 USBopen(const WindowInfo& wi) { return 0; }
 s32 USBfreeze(FreezeAction mode, freezeData* data) { return 0; }
 
@@ -37,8 +33,3 @@ u32 USBread32(u32 addr) { return 0; }
 void USBwrite8(u32 addr, u8 value) {}
 void USBwrite16(u32 addr, u16 value) {}
 void USBwrite32(u32 addr, u32 value) {}
-
-void USBsetRAM(void* mem) { ram = static_cast<u8*>(mem); }
-
-FILE* usbLog = nullptr;
-s64 get_clock() { return 0; };

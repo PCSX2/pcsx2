@@ -88,7 +88,8 @@ void HotkeySettingsWidget::createButtons()
 		QLabel* label = new QLabel(qApp->translate("Hotkeys", hotkey->display_name), m_container);
 		layout->addWidget(label, target_row, 0);
 
-		InputBindingWidget* bind = new InputBindingWidget(m_container, m_dialog->getProfileSettingsInterface(), "Hotkeys", hotkey->name);
+		InputBindingWidget* bind = new InputBindingWidget(
+			m_container, m_dialog->getProfileSettingsInterface(), InputBindingInfo::Type::Button, "Hotkeys", hotkey->name);
 		bind->setMinimumWidth(300);
 		layout->addWidget(bind, target_row, 1);
 	}
