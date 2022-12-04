@@ -153,6 +153,7 @@
     <ClInclude Include="GL\StreamBuffer.h" />
     <ClInclude Include="FileSystem.h" />
     <ClInclude Include="HashCombine.h" />
+    <ClInclude Include="HeapArray.h" />
     <ClInclude Include="HeterogeneousContainers.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="LRUCache.h" />

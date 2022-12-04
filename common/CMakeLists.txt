@@ -77,6 +77,7 @@ target_sources(common PRIVATE
 	HeterogeneousContainers.h
 	Image.h
 	LRUCache.h
+	HeapArray.h
 	HTTPDownloader.h
 	MemcpyFast.h
 	MemorySettingsInterface.h
