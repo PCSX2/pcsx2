@@ -66,11 +66,6 @@ elseif("${PGO}" STREQUAL "use")
 	target_compile_options(PCSX2_FLAGS INTERFACE -fprofile-use)
 endif()
 
-if(TARGET PulseAudio::PulseAudio)
-	target_compile_definitions(PCSX2_FLAGS INTERFACE SPU2X_PULSEAUDIO)
-	target_link_libraries(PCSX2_FLAGS INTERFACE PulseAudio::PulseAudio)
-endif()
-
 if(XDG_STD)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE XDG_STD)
 endif()
@@ -519,6 +514,7 @@ set(pcsx2USBHeaders
 if(TARGET PulseAudio::PulseAudio)
 	list(APPEND pcsx2USBSources USB/usb-mic/audiodev-pulse.cpp)
 	list(APPEND pcsx2USBHeaders USB/usb-mic/audiodev-pulse.h)
+	target_link_libraries(PCSX2_FLAGS INTERFACE PulseAudio::PulseAudio)
 endif()
 
 if(PCSX2_CORE)
