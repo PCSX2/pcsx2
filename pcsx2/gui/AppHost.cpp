@@ -129,7 +129,8 @@ bool Host::AcquireHostDisplay(RenderAPI api, bool clear_state_on_fail)
 	if (!g_host_display)
 		return false;
 
-	if (!g_host_display->CreateDevice(g_gs_window_info) || !g_host_display->SetupDevice() || !ImGuiManager::Initialize())
+	if (!g_host_display->CreateDevice(g_gs_window_info, Host::GetEffectiveVSyncMode()) ||
+		!g_host_display->SetupDevice() || !ImGuiManager::Initialize())
 	{
 		g_host_display.reset();
 		return false;
@@ -149,16 +150,6 @@ void Host::ReleaseHostDisplay(bool clear_state_on_fail)
 		g_host_display.reset();
 
 	sApp.CloseGsPanel();
-}
-
-VsyncMode Host::GetEffectiveVSyncMode()
-{
-	// Force vsync off when not running at 100% speed.
-	if (EmuConfig.GS.LimitScalar != 1.0f)
-		return VsyncMode::Off;
-
-	// Otherwise use the config setting.
-	return EmuConfig.GS.VsyncEnable;
 }
 
 bool Host::BeginPresentFrame(bool frame_skip)

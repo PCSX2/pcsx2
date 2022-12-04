@@ -136,7 +136,7 @@ void D3D12HostDisplay::SetVSync(VsyncMode mode)
 	m_vsync_mode = mode;
 }
 
-bool D3D12HostDisplay::CreateDevice(const WindowInfo& wi)
+bool D3D12HostDisplay::CreateDevice(const WindowInfo& wi, VsyncMode vsync)
 {
 	ComPtr<IDXGIFactory> temp_dxgi_factory;
 	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(temp_dxgi_factory.put()));
@@ -190,7 +190,7 @@ bool D3D12HostDisplay::CreateDevice(const WindowInfo& wi)
 	}
 
 	m_window_info = wi;
-	m_vsync_mode = Host::GetEffectiveVSyncMode();
+	m_vsync_mode = vsync;
 
 	if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain(nullptr))
 		return false;

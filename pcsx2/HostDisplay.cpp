@@ -16,9 +16,15 @@
 #include "PrecompiledHeader.h"
 
 #include "HostDisplay.h"
+
+#ifdef PCSX2_CORE
+#include "VMManager.h"
+#endif
+
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/StringUtil.h"
+
 #include <cerrno>
 #include <cmath>
 #include <cstring>
@@ -128,6 +134,22 @@ std::string HostDisplay::GetFullscreenModeString(u32 width, u32 height, float re
 	return StringUtil::StdStringFromFormat("%u x %u @ %f hz", width, height, refresh_rate);
 }
 
+VsyncMode Host::GetEffectiveVSyncMode()
+{
+#ifdef PCSX2_CORE
+	const bool has_vm = VMManager::GetState() != VMState::Shutdown;
+#else
+	const bool has_vm = false;
+#endif
+
+	// Force vsync off when not running at 100% speed.
+	if (has_vm && EmuConfig.GS.LimitScalar != 1.0f)
+		return VsyncMode::Off;
+
+	// Otherwise use the config setting.
+	return EmuConfig.GS.VsyncEnable;
+}
+
 #ifdef ENABLE_OPENGL
 #include "Frontend/OpenGLHostDisplay.h"
 #endif
@@ -173,4 +195,3 @@ std::unique_ptr<HostDisplay> HostDisplay::CreateForAPI(RenderAPI api)
 			return {};
 	}
 }
-
