@@ -5160,6 +5160,8 @@ SCKA-20090:
 SCKA-20092:
   name: "K-1 World Grand Prix 2006"
   region: "NTSC-K"
+  gsHWFixes:
+    deinterlace: 9 # Game requires AdaptiveBFF deinterlacing when auto.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes random black frames from happening when in a fight session.
     MTVUSpeedHack: 0
@@ -26239,6 +26241,8 @@ SLPM-62623:
   name: "Elemental Gerad"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    deinterlace: 9 # Game requires AdaptiveBFF deinterlacing when auto.
   gameFixes:
     - XGKickHack # Fixes chocolate coloured characters.
   patches:
@@ -38261,6 +38265,8 @@ SLPS-25710:
   name: "K-1 World Grand Prix 2006"
   region: "NTSC-J"
   compat: 4
+  gsHWFixes:
+    deinterlace: 9 # Game requires AdaptiveBFF deinterlacing when auto.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes random black frames from happening when in a fight session.
     MTVUSpeedHack: 0
