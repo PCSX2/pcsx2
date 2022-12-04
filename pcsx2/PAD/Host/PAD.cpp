@@ -404,32 +404,32 @@ static const char* s_dualshock2_invert_entries[] = {
 static const SettingInfo s_dualshock2_settings[] = {
 	{SettingInfo::Type::IntegerList, "InvertL", "Invert Left Stick",
 		"Inverts the direction of the left analog stick.",
-		"0", "0", "3", nullptr, nullptr, s_dualshock2_invert_entries, 0.0f},
+		"0", "0", "3", nullptr, nullptr, s_dualshock2_invert_entries, nullptr, 0.0f},
 	{SettingInfo::Type::IntegerList, "InvertR", "Invert Right Stick",
 		"Inverts the direction of the right analog stick.",
-		"0", "0", "3", nullptr, nullptr, s_dualshock2_invert_entries, 0.0f},
+		"0", "0", "3", nullptr, nullptr, s_dualshock2_invert_entries, nullptr, 0.0f},
 	{SettingInfo::Type::Float, "Deadzone", "Analog Deadzone",
 		"Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.",
-		"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},
+		"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "AxisScale", "Analog Sensitivity",
 		"Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
 		"controllers, e.g. DualShock 4, Xbox One Controller.",
-		"1.33", "0.01", "2.00", "0.01", "%.0f%%", nullptr, 100.0f},
+		"1.33", "0.01", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "LargeMotorScale", "Large Motor Vibration Scale",
 		"Increases or decreases the intensity of low frequency vibration sent by the game.",
-		"1.00", "0.00", "2.00", "0.01", "%.0f%%", nullptr, 100.0f},
+		"1.00", "0.00", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "SmallMotorScale", "Small Motor Vibration Scale",
 		"Increases or decreases the intensity of high frequency vibration sent by the game.",
-		"1.00", "0.00", "2.00", "0.01", "%.0f%%", nullptr, 100.0f},
+		"1.00", "0.00", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "ButtonDeadzone", "Button/Trigger Deadzone",
 		"Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored.",
-		"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},
+		"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
 	/*{SettingInfo::Type::Float, "InitialPressure", "Initial Pressure",
 	"Sets the pressure when the modifier button isn't held.",
-	"1.00", "0.01", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},*/
+	"1.00", "0.01", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},*/
 	{SettingInfo::Type::Float, "PressureModifier", "Modifier Pressure",
 		"Sets the pressure when the modifier button is held.",
-		"0.50", "0.01", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},
+		"0.50", "0.01", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
 };
 
 static const PAD::ControllerInfo s_controller_info[] = {

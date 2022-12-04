@@ -558,6 +558,28 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
 			}
 			break;
 
+			case SettingInfo::Type::StringList:
+			{
+				QComboBox* cb = new QComboBox(widget_parent);
+				cb->setObjectName(QString::fromUtf8(si.name));
+				if (si.get_options)
+				{
+					std::vector<std::pair<std::string, std::string>> options(si.get_options());
+					for (const auto& [name, display_name] : options)
+						cb->addItem(QString::fromStdString(display_name), QString::fromStdString(name));
+				}
+				else if (si.options)
+				{
+					for (u32 i = 0; si.options[i] != nullptr; i++)
+						cb->addItem(qApp->translate(cinfo->name, si.options[i]));
+				}
+				SettingWidgetBinder::BindWidgetToStringSetting(sif, cb, section, std::move(key_name), si.StringDefaultValue());
+				layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.display_name), widget_parent), current_row, 0);
+				layout->addWidget(cb, current_row, 1, 1, 3);
+				current_row++;
+			}
+			break;
+
 			case SettingInfo::Type::Path:
 			{
 				QLineEdit* le = new QLineEdit(widget_parent);
