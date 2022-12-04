@@ -819,7 +819,6 @@ if(PCSX2_CORE)
 		SPU2/Host/Config.cpp
 		SPU2/Host/ConfigDebug.cpp
 		SPU2/Host/ConfigSoundTouch.cpp
-		SPU2/Host/Dialogs.cpp
 	)
 	list(APPEND pcsx2SPU2Headers
 		SPU2/Host/Config.h

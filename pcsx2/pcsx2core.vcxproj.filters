@@ -1214,9 +1214,6 @@
     <ClCompile Include="SPU2\Host\ConfigSoundTouch.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
-    <ClCompile Include="SPU2\Host\Dialogs.cpp">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClCompile>
     <ClCompile Include="SPU2\Host\Config.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>

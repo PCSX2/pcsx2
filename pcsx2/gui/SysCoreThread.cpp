@@ -111,7 +111,7 @@ void SysCoreThread::OnSuspendInThread()
 
 void SysCoreThread::Start()
 {
-	SPU2init(false);
+	SPU2init();
 	PADinit();
 	DEV9init();
 	USBinit();

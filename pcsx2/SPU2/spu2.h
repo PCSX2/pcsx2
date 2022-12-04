@@ -19,7 +19,9 @@
 #include "IopCounters.h"
 #include <mutex>
 
+#ifndef PCSX2_CORE
 extern std::recursive_mutex mtx_SPU2Status;
+#endif
 
 enum class PS2Modes
 {
@@ -27,11 +29,12 @@ enum class PS2Modes
 	PSX,
 };
 
-s32 SPU2init(bool KeepMode);
-s32 SPU2reset(PS2Modes isRunningPSXMode);
-s32 SPU2open();
+bool SPU2init();
+void SPU2reset(PS2Modes isRunningPSXMode = PS2Modes::PS2);
+bool SPU2open(PS2Modes isRunningPSXMode = PS2Modes::PS2);
 void SPU2close();
 void SPU2shutdown();
+bool SPU2IsRunningPSXMode();
 void SPU2SetOutputPaused(bool paused);
 void SPU2SetDeviceSampleRateMultiplier(double multiplier);
 void SPU2write(u32 mem, u16 value);

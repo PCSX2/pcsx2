@@ -267,11 +267,20 @@ bool VMManager::Internal::InitializeGlobals()
 		return false;
 	}
 
+	if (!SPU2init())
+	{
+		Host::ReportErrorAsync("Error", "Failed to initialize SPU2 (SPU2init()).");
+		return false;
+	}
+
 	return true;
 }
 
 void VMManager::Internal::ReleaseGlobals()
 {
+	SPU2shutdown();
+	GSshutdown();
+
 #ifdef _WIN32
 	CoUninitialize();
 #endif
@@ -954,16 +963,12 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	};
 
 	Console.WriteLn("Opening SPU2...");
-	if (SPU2init(false) != 0 || SPU2open() != 0)
+	if (!SPU2open())
 	{
 		Host::ReportErrorAsync("Startup Error", "Failed to initialize SPU2.");
-		SPU2shutdown();
 		return false;
 	}
-	ScopedGuard close_spu2 = []() {
-		SPU2close();
-		SPU2shutdown();
-	};
+	ScopedGuard close_spu2(&SPU2close);
 
 	Console.WriteLn("Opening PAD...");
 	if (PADinit() != 0 || PADopen(g_host_display->GetWindowInfo()) != 0)
@@ -1136,10 +1141,8 @@ void VMManager::Shutdown(bool save_resume_state)
 	}
 
 	USBshutdown();
-	SPU2shutdown();
 	PADshutdown();
 	DEV9shutdown();
-	GSshutdown();
 
 	s_state.store(VMState::Shutdown, std::memory_order_release);
 	Host::OnVMDestroyed();
@@ -1715,9 +1718,10 @@ void VMManager::CheckForSPU2ConfigChanges(const Pcsx2Config& old_config)
 		return;
 	}
 
+	const bool psxmode = SPU2IsRunningPSXMode();
+
 	SPU2close();
-	SPU2shutdown();
-	if (SPU2init(true) != 0 || SPU2open() != 0)
+	if (!SPU2open(psxmode ? PS2Modes::PSX : PS2Modes::PS2))
 	{
 		Console.Error("(CheckForSPU2ConfigChanges) Failed to reopen SPU2, we'll probably crash :(");
 		return;
