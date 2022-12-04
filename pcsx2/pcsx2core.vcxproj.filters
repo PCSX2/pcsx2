@@ -1317,6 +1317,7 @@
     <ClCompile Include="MultitapProtocol.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
+    <ClCompile Include="StateWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2192,6 +2193,7 @@
     <ClInclude Include="MultitapProtocol.h">
       <Filter>System\Ps2\Iop</Filter>
     </ClInclude>
+    <ClInclude Include="StateWrapper.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="rdebug\deci2.h">

@@ -335,6 +335,7 @@
     <ClCompile Include="SPU2\Windows\SndOut_XAudio2.cpp" />
     <ClCompile Include="USB\USBNull.cpp" />
     <ClCompile Include="Dump.cpp" />
+    <ClCompile Include="StateWrapper.cpp" />
     <ClCompile Include="VMManager.cpp" />
     <ClCompile Include="windows\Optimus.cpp" />
     <ClCompile Include="Pcsx2Config.cpp" />
@@ -664,6 +665,7 @@
     <ClInclude Include="PCSX2Base.h" />
     <ClInclude Include="PrecompiledHeader.h" />
     <ClInclude Include="ps2\pgif.h" />
+    <ClInclude Include="StateWrapper.h" />
     <ClInclude Include="USB\USB.h" />
     <ClInclude Include="Utilities\AsciiFile.h" />
     <ClInclude Include="Elfheader.h" />
