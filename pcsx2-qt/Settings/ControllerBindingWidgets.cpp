@@ -717,42 +717,6 @@ void ControllerBindingWidget_Base::initBindingWidgets()
 		default:
 			break;
 	}
-
-	if (QSlider* widget = findChild<QSlider*>(QStringLiteral("Deadzone")); widget)
-	{
-		const float range = static_cast<float>(widget->maximum());
-		QLabel* label = findChild<QLabel*>(QStringLiteral("DeadzoneLabel"));
-		if (label)
-		{
-			connect(widget, &QSlider::valueChanged, this, [range, label](int value) {
-				label->setText(tr("%1%").arg((static_cast<float>(value) / range) * 100.0f, 0, 'f', 0));
-			});
-		}
-
-		ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(sif, widget, config_section, "Deadzone", range,
-			PAD::DEFAULT_STICK_DEADZONE);
-	}
-
-	if (QSlider* widget = findChild<QSlider*>(QStringLiteral("AxisScale")); widget)
-	{
-		// position 1.0f at the halfway point
-		const float range = static_cast<float>(widget->maximum()) * 0.5f;
-		QLabel* label = findChild<QLabel*>(QStringLiteral("AxisScaleLabel"));
-		if (label)
-		{
-			connect(widget, &QSlider::valueChanged, this, [range, label](int value) {
-				label->setText(tr("%1%").arg((static_cast<float>(value) / range) * 100.0f, 0, 'f', 0));
-			});
-		}
-
-		ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(sif, widget, config_section, "AxisScale", range,
-			PAD::DEFAULT_STICK_SCALE);
-	}
-
-	if (QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QStringLiteral("SmallMotorScale")); widget)
-		ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, widget, config_section, "SmallMotorScale", PAD::DEFAULT_MOTOR_SCALE);
-	if (QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QStringLiteral("LargeMotorScale")); widget)
-		ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, widget, config_section, "LargeMotorScale", PAD::DEFAULT_MOTOR_SCALE);
 }
 
 ControllerBindingWidget_DualShock2::ControllerBindingWidget_DualShock2(ControllerBindingWidget* parent)
