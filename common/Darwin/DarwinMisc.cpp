@@ -19,11 +19,13 @@
 #include <cstdlib>
 #include <sys/types.h>
 #include <sys/sysctl.h>
+#include <time.h>
 #include <mach/mach_time.h>
 #include <IOKit/pwr_mgt/IOPMLib.h>
 
 #include "common/Pcsx2Types.h"
 #include "common/General.h"
+#include "common/Threading.h"
 #include "common/WindowInfo.h"
 
 // Darwin (OSX) is a bit different from Linux when requesting properties of
@@ -47,13 +49,13 @@ u64 GetPhysicalMemory()
 }
 
 static u64 tickfreq;
+static mach_timebase_info_data_t s_timebase_info;
 
 void InitCPUTicks()
 {
-	mach_timebase_info_data_t info;
-	if (mach_timebase_info(&info) != KERN_SUCCESS)
+	if (mach_timebase_info(&s_timebase_info) != KERN_SUCCESS)
 		abort();
-	tickfreq = (u64)1e9 * (u64)info.denom / (u64)info.numer;
+	tickfreq = (u64)1e9 * (u64)s_timebase_info.denom / (u64)s_timebase_info.numer;
 }
 
 // returns the performance-counter frequency: ticks per second (Hz)
@@ -110,4 +112,27 @@ bool WindowInfo::InhibitScreensaver(const WindowInfo& wi, bool inhibit)
 
 	return true;
 }
+
+void Threading::Sleep(int ms)
+{
+	usleep(1000 * ms);
+}
+
+void Threading::SleepUntil(u64 ticks)
+{
+	// This is definitely sub-optimal, but apparently clock_nanosleep() doesn't exist.
+	const s64 diff = static_cast<s64>(ticks - GetCPUTicks());
+	if (diff <= 0)
+		return;
+
+	const u64 nanos = (static_cast<u64>(diff) * static_cast<u64>(s_timebase_info.denom)) / static_cast<u64>(s_timebase_info.numer);
+	if (nanos == 0)
+		return;
+
+	struct timespec ts;
+	ts.tv_sec = nanos / 1000000000ULL;
+	ts.tv_nsec = nanos % 1000000000ULL;
+	nanosleep(&ts, nullptr);
+}
+
 #endif

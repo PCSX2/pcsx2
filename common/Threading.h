@@ -55,6 +55,9 @@ namespace Threading
 	// sleeps the current thread for the given number of milliseconds.
 	extern void Sleep(int ms);
 
+	// sleeps the current thread until the specified time point, or later.
+	extern void SleepUntil(u64 ticks);
+
 	// --------------------------------------------------------------------------------------
 	//  ThreadHandle
 	// --------------------------------------------------------------------------------------

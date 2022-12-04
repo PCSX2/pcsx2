@@ -28,6 +28,7 @@
 #include "common/Pcsx2Types.h"
 #include "common/General.h"
 #include "common/StringUtil.h"
+#include "common/Threading.h"
 #include "common/WindowInfo.h"
 
 // Returns 0 on failure (not supported by the operating system).
@@ -147,6 +148,19 @@ bool Common::PlaySoundAsync(const char* path)
 #else
 	return false;
 #endif
+}
+
+void Threading::Sleep(int ms)
+{
+	usleep(1000 * ms);
+}
+
+void Threading::SleepUntil(u64 ticks)
+{
+	struct timespec ts;
+	ts.tv_sec = static_cast<time_t>(ticks / 1000000000ULL);
+	ts.tv_nsec = static_cast<long>(ticks % 1000000000ULL);
+	clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, nullptr);
 }
 
 #endif
