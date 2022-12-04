@@ -17,6 +17,7 @@
 
 #include "common/emitter/tools.h"
 #include "common/General.h"
+#include <array>
 #include <string>
 #include <vector>
 
@@ -28,6 +29,8 @@ enum class CDVD_SourceType : uint8_t;
 /// Generic setting information which can be reused in multiple components.
 struct SettingInfo
 {
+	using GetOptionsCallback = std::vector<std::pair<std::string, std::string>>(*)();
+
 	enum class Type
 	{
 		Boolean,
@@ -48,7 +51,8 @@ struct SettingInfo
 	const char* max_value;
 	const char* step_value;
 	const char* format;
-	const char* const* options;
+	const char* const* options; // For integer lists.
+	GetOptionsCallback get_options; // For string lists.
 	float multiplier;
 
 	const char* StringDefaultValue() const;
