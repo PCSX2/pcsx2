@@ -69,6 +69,8 @@ namespace GameList
 
 	static Entry* GetMutableEntryForPath(const char* path);
 
+	static bool GetIsoSerialAndCRC(const std::string& path, s32* disc_type, std::string* serial, u32* crc);
+	static Region ParseDatabaseRegion(const std::string_view& db_region);
 	static bool GetElfListEntry(const std::string& path, GameList::Entry* entry);
 	static bool GetIsoListEntry(const std::string& path, GameList::Entry* entry);
 
@@ -85,6 +87,7 @@ namespace GameList
 	static bool WriteEntryToCache(const GameList::Entry* entry);
 	static void CloseCacheFileStream();
 	static void DeleteCacheFile();
+	static void RewriteCacheFile();
 
 	static std::string GetPlayedTimeFile();
 	static bool ParsePlayedTimeLine(char* line, std::string& serial, PlayedTimeEntry& entry);
@@ -152,8 +155,8 @@ void GameList::FillBootParametersForEntry(VMBootParameters* params, const Entry*
 	}
 	else if (entry->type == GameList::EntryType::ELF)
 	{
-		params->filename.clear();
-		params->source_type = CDVD_SourceType::NoDisc;
+		params->filename = VMManager::GetDiscOverrideFromGameSettings(entry->path);
+		params->source_type = params->filename.empty() ? CDVD_SourceType::NoDisc : CDVD_SourceType::Iso;
 		params->elf_override = entry->path;
 	}
 	else
@@ -162,6 +165,29 @@ void GameList::FillBootParametersForEntry(VMBootParameters* params, const Entry*
 		params->source_type = CDVD_SourceType::NoDisc;
 		params->elf_override.clear();
 	}
+}
+
+bool GameList::GetIsoSerialAndCRC(const std::string& path, s32* disc_type, std::string* serial, u32* crc)
+{
+	// This isn't great, we really want to make it all thread-local...
+	CDVD = &CDVDapi_Iso;
+	if (CDVD->open(path.c_str()) != 0)
+		return false;
+
+	*disc_type = DoCDVDdetectDiskType();
+	cdvdReloadElfInfo();
+
+	*serial = DiscSerial;
+	*crc = ElfCRC;
+
+	DoCDVDclose();
+
+	// TODO(Stenzek): These globals are **awful**. Clean it up.
+	DiscSerial.clear();
+	ElfCRC = 0;
+	ElfEntry = -1;
+	LastELF.clear();
+	return true;
 }
 
 bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
@@ -181,17 +207,101 @@ bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
 		return false;
 	}
 
-	const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
 	entry->path = path;
 	entry->serial.clear();
-	entry->title = Path::GetFileTitle(display_name);
+	entry->title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
 	entry->region = Region::Other;
 	entry->total_size = static_cast<u64>(file_size);
 	entry->type = EntryType::ELF;
 	entry->compatibility_rating = CompatibilityRating::Unknown;
+
+	std::string disc_path(VMManager::GetDiscOverrideFromGameSettings(path));
+	if (!disc_path.empty())
+	{
+		s32 disc_type;
+		u32 disc_crc;
+		if (GetIsoSerialAndCRC(disc_path, &disc_type, &entry->serial, &disc_crc))
+		{
+			// use serial/region/compat info from the db
+			if (const GameDatabaseSchema::GameEntry* db_entry = GameDatabase::findGame(entry->serial))
+			{
+				entry->compatibility_rating = db_entry->compat;
+				entry->region = ParseDatabaseRegion(db_entry->region);
+			}
+		}
+	}
+
 	return true;
 }
-// clang-format off
+
+GameList::Region GameList::ParseDatabaseRegion(const std::string_view& db_region)
+{
+	// clang-format off
+						////// NTSC //////
+						//////////////////
+	if (StringUtil::StartsWith(db_region, "NTSC-B"))
+		return Region::NTSC_B;
+	else if (StringUtil::StartsWith(db_region, "NTSC-C"))
+		return Region::NTSC_C;
+	else if (StringUtil::StartsWith(db_region, "NTSC-HK"))
+		return Region::NTSC_HK;
+	else if (StringUtil::StartsWith(db_region, "NTSC-J"))
+		return Region::NTSC_J;
+	else if (StringUtil::StartsWith(db_region, "NTSC-K"))
+		return Region::NTSC_K;
+	else if (StringUtil::StartsWith(db_region, "NTSC-T"))
+		return Region::NTSC_T;
+	else if (StringUtil::StartsWith(db_region, "NTSC-U"))
+		return Region::NTSC_U;
+						////// PAL //////
+						//////////////////
+	else if (StringUtil::StartsWith(db_region, "PAL-AF"))
+		return Region::PAL_AF;
+	else if (StringUtil::StartsWith(db_region, "PAL-AU"))
+		return Region::PAL_AU;
+	else if (StringUtil::StartsWith(db_region, "PAL-A"))
+		return Region::PAL_A;
+	else if (StringUtil::StartsWith(db_region, "PAL-BE"))
+		return Region::PAL_BE;
+	else if (StringUtil::StartsWith(db_region, "PAL-E"))
+		return Region::PAL_E;
+	else if (StringUtil::StartsWith(db_region, "PAL-FI"))
+		return Region::PAL_FI;
+	else if (StringUtil::StartsWith(db_region, "PAL-F"))
+		return Region::PAL_F;
+	else if (StringUtil::StartsWith(db_region, "PAL-GR"))
+		return Region::PAL_GR;
+	else if (StringUtil::StartsWith(db_region, "PAL-G"))
+		return Region::PAL_G;
+	else if (StringUtil::StartsWith(db_region, "PAL-IN"))
+		return Region::PAL_IN;
+	else if (StringUtil::StartsWith(db_region, "PAL-I"))
+		return Region::PAL_I;
+	else if (StringUtil::StartsWith(db_region, "PAL-M"))
+		return Region::PAL_M;
+	else if (StringUtil::StartsWith(db_region, "PAL-NL"))
+		return Region::PAL_NL;
+	else if (StringUtil::StartsWith(db_region, "PAL-NO"))
+		return Region::PAL_NO;
+	else if (StringUtil::StartsWith(db_region, "PAL-P"))
+		return Region::PAL_P;
+	else if (StringUtil::StartsWith(db_region, "PAL-R"))
+		return Region::PAL_R;
+	else if (StringUtil::StartsWith(db_region, "PAL-SC"))
+		return Region::PAL_SC;
+	else if (StringUtil::StartsWith(db_region, "PAL-SWI"))
+		return Region::PAL_SWI;
+	else if (StringUtil::StartsWith(db_region, "PAL-SW"))
+		return Region::PAL_SW;
+	else if (StringUtil::StartsWith(db_region, "PAL-S"))
+		return Region::PAL_S;
+	else if (StringUtil::StartsWith(db_region, "PAL-UK"))
+		return Region::PAL_UK;
+	else
+		return Region::Other;
+	// clang-format on
+}
+
 bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 {
 	FILESYSTEM_STAT_DATA sd;
@@ -203,8 +313,11 @@ bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 	if (CDVD->open(path.c_str()) != 0)
 		return false;
 
-	const s32 type = DoCDVDdetectDiskType();
-	switch (type)
+	s32 disc_type;
+	if (!GetIsoSerialAndCRC(path, &disc_type, &entry->serial, &entry->crc))
+		return false;
+
+	switch (disc_type)
 	{
 		case CDVD_TYPE_PSCD:
 		case CDVD_TYPE_PSCDDA:
@@ -219,92 +332,18 @@ bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 
 		case CDVD_TYPE_ILLEGAL:
 		default:
-			DoCDVDclose();
 			return false;
 	}
 
-	cdvdReloadElfInfo();
-
 	entry->path = path;
-	entry->serial = DiscSerial;
-	entry->crc = ElfCRC;
 	entry->total_size = sd.Size;
 	entry->compatibility_rating = CompatibilityRating::Unknown;
-
-	DoCDVDclose();
-
-	// TODO(Stenzek): These globals are **awful**. Clean it up.
-	DiscSerial.clear();
-	ElfCRC = 0;
-	ElfEntry = -1;
-	LastELF.clear();
 
 	if (const GameDatabaseSchema::GameEntry* db_entry = GameDatabase::findGame(entry->serial))
 	{
 		entry->title = std::move(db_entry->name);
 		entry->compatibility_rating = db_entry->compat;
-							////// NTSC //////
-							//////////////////
-		if (StringUtil::StartsWith(db_entry->region, "NTSC-B"))
-			entry->region = Region::NTSC_B;
-		else if (StringUtil::StartsWith(db_entry->region, "NTSC-C"))
-			entry->region = Region::NTSC_C;
-		else if (StringUtil::StartsWith(db_entry->region, "NTSC-HK"))
-			entry->region = Region::NTSC_HK;
-		else if (StringUtil::StartsWith(db_entry->region, "NTSC-J"))
-			entry->region = Region::NTSC_J;
-		else if (StringUtil::StartsWith(db_entry->region, "NTSC-K"))
-			entry->region = Region::NTSC_K;
-		else if (StringUtil::StartsWith(db_entry->region, "NTSC-T"))
-			entry->region = Region::NTSC_T;
-		else if (StringUtil::StartsWith(db_entry->region, "NTSC-U"))
-			entry->region = Region::NTSC_U;
-							////// PAL //////
-							//////////////////
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-AF"))
-			entry->region = Region::PAL_AF;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-AU"))
-			entry->region = Region::PAL_AU;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-A"))
-			entry->region = Region::PAL_A;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-BE"))
-			entry->region = Region::PAL_BE;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-E"))
-			entry->region = Region::PAL_E;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-FI"))
-			entry->region = Region::PAL_FI;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-F"))
-			entry->region = Region::PAL_F;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-GR"))
-			entry->region = Region::PAL_GR;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-G"))
-			entry->region = Region::PAL_G;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-IN"))
-			entry->region = Region::PAL_IN;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-I"))
-			entry->region = Region::PAL_I;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-M"))
-			entry->region = Region::PAL_M;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-NL"))
-			entry->region = Region::PAL_NL;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-NO"))
-			entry->region = Region::PAL_NO;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-P"))
-			entry->region = Region::PAL_P;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-R"))
-			entry->region = Region::PAL_R;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-SC"))
-			entry->region = Region::PAL_SC;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-SWI"))
-			entry->region = Region::PAL_SWI;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-SW"))
-			entry->region = Region::PAL_SW;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-S"))
-			entry->region = Region::PAL_S;
-		else if (StringUtil::StartsWith(db_entry->region, "PAL-UK"))
-			entry->region = Region::PAL_UK;
-		else
-			entry->region = Region::Other;
+		entry->region = ParseDatabaseRegion(db_entry->region);
 	}
 	else
 	{
@@ -314,7 +353,7 @@ bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 
 	return true;
 }
-// clang-format off
+
 bool GameList::PopulateEntryFromPath(const std::string& path, GameList::Entry* entry)
 {
 	if (VMManager::IsElfFileName(path.c_str()))
@@ -365,8 +404,7 @@ static bool ReadU64(std::FILE* stream, u64* dest)
 static bool WriteString(std::FILE* stream, const std::string& str)
 {
 	const u32 size = static_cast<u32>(str.size());
-	return (std::fwrite(&size, sizeof(size), 1, stream) > 0 &&
-			(size == 0 || std::fwrite(str.data(), size, 1, stream) > 0));
+	return (std::fwrite(&size, sizeof(size), 1, stream) > 0 && (size == 0 || std::fwrite(str.data(), size, 1, stream) > 0));
 }
 
 static bool WriteU8(std::FILE* stream, u8 dest)
@@ -388,10 +426,10 @@ bool GameList::LoadEntriesFromCache(std::FILE* stream)
 {
 	u32 file_signature, file_version;
 	s64 start_pos, file_size;
-	if (!ReadU32(stream, &file_signature) || !ReadU32(stream, &file_version) ||
-		file_signature != GAME_LIST_CACHE_SIGNATURE || file_version != GAME_LIST_CACHE_VERSION ||
-		(start_pos = FileSystem::FTell64(stream)) < 0 || FileSystem::FSeek64(stream, 0, SEEK_END) != 0 ||
-		(file_size = FileSystem::FTell64(stream)) < 0 || FileSystem::FSeek64(stream, start_pos, SEEK_SET) != 0)
+	if (!ReadU32(stream, &file_signature) || !ReadU32(stream, &file_version) || file_signature != GAME_LIST_CACHE_SIGNATURE ||
+		file_version != GAME_LIST_CACHE_VERSION || (start_pos = FileSystem::FTell64(stream)) < 0 ||
+		FileSystem::FSeek64(stream, 0, SEEK_END) != 0 || (file_size = FileSystem::FTell64(stream)) < 0 ||
+		FileSystem::FSeek64(stream, start_pos, SEEK_SET) != 0)
 	{
 		Console.Warning("Game list cache is corrupted");
 		return false;
@@ -407,11 +445,10 @@ bool GameList::LoadEntriesFromCache(std::FILE* stream)
 		u8 compatibility_rating;
 		u64 last_modified_time;
 
-		if (!ReadString(stream, &path) || !ReadString(stream, &ge.serial) || !ReadString(stream, &ge.title) ||
-			!ReadU8(stream, &type) || !ReadU8(stream, &region) || !ReadU64(stream, &ge.total_size) ||
-			!ReadU64(stream, &last_modified_time) || !ReadU32(stream, &ge.crc) || !ReadU8(stream, &compatibility_rating) ||
-			region >= static_cast<u8>(Region::Count) || type >= static_cast<u8>(EntryType::Count) ||
-			compatibility_rating > static_cast<u8>(CompatibilityRating::Perfect))
+		if (!ReadString(stream, &path) || !ReadString(stream, &ge.serial) || !ReadString(stream, &ge.title) || !ReadU8(stream, &type) ||
+			!ReadU8(stream, &region) || !ReadU64(stream, &ge.total_size) || !ReadU64(stream, &last_modified_time) ||
+			!ReadU32(stream, &ge.crc) || !ReadU8(stream, &compatibility_rating) || region >= static_cast<u8>(Region::Count) ||
+			type >= static_cast<u8>(EntryType::Count) || compatibility_rating > static_cast<u8>(CompatibilityRating::Perfect))
 		{
 			Console.Warning("Game list cache entry is corrupted");
 			return false;
@@ -485,8 +522,7 @@ bool GameList::OpenCacheForWriting()
 
 
 	// new cache file, write header
-	if (!WriteU32(s_cache_write_stream, GAME_LIST_CACHE_SIGNATURE) ||
-		!WriteU32(s_cache_write_stream, GAME_LIST_CACHE_VERSION))
+	if (!WriteU32(s_cache_write_stream, GAME_LIST_CACHE_SIGNATURE) || !WriteU32(s_cache_write_stream, GAME_LIST_CACHE_VERSION))
 	{
 		Console.Error("Failed to write game list cache header");
 		std::fclose(s_cache_write_stream);
@@ -541,13 +577,27 @@ void GameList::DeleteCacheFile()
 		Console.Warning("Failed to delete game list cache '%s'", cache_filename.c_str());
 }
 
+void GameList::RewriteCacheFile()
+{
+	CloseCacheFileStream();
+	DeleteCacheFile();
+
+	if (OpenCacheForWriting())
+	{
+		for (const GameList::Entry& entry : s_entries)
+			WriteEntryToCache(&entry);
+
+		CloseCacheFileStream();
+	}
+}
+
 static bool IsPathExcluded(const std::vector<std::string>& excluded_paths, const std::string& path)
 {
 	return (std::find(excluded_paths.begin(), excluded_paths.end(), path) != excluded_paths.end());
 }
 
-void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map,
-	ProgressCallback* progress)
+void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, const std::vector<std::string>& excluded_paths,
+	const PlayedTimeMap& played_time_map, ProgressCallback* progress)
 {
 	Console.WriteLn("Scanning %s%s", path, recursive ? " (recursively)" : "");
 
@@ -568,15 +618,13 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, 
 	{
 		files_scanned++;
 
-		if (progress->IsCancelled() || !GameList::IsScannableFilename(ffd.FileName) ||
-			IsPathExcluded(excluded_paths, ffd.FileName))
+		if (progress->IsCancelled() || !GameList::IsScannableFilename(ffd.FileName) || IsPathExcluded(excluded_paths, ffd.FileName))
 		{
 			continue;
 		}
 
 		std::unique_lock lock(s_mutex);
-		if (GetEntryForPath(ffd.FileName.c_str()) ||
-			AddFileFromCache(ffd.FileName, ffd.ModificationTime, played_time_map) || only_cache)
+		if (GetEntryForPath(ffd.FileName.c_str()) || AddFileFromCache(ffd.FileName, ffd.ModificationTime, played_time_map) || only_cache)
 		{
 			continue;
 		}
@@ -607,8 +655,8 @@ bool GameList::AddFileFromCache(const std::string& path, std::time_t timestamp, 
 	return true;
 }
 
-bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_lock<std::recursive_mutex>& lock,
-	const PlayedTimeMap& played_time_map)
+bool GameList::ScanFile(
+	std::string path, std::time_t timestamp, std::unique_lock<std::recursive_mutex>& lock, const PlayedTimeMap& played_time_map)
 {
 	// don't block UI while scanning
 	lock.unlock();
@@ -636,6 +684,13 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
 	}
 
 	lock.lock();
+
+	// remove if present
+	auto it = std::find_if(
+		s_entries.begin(), s_entries.end(), [&entry](const Entry& existing_entry) { return (existing_entry.path == entry.path); });
+	if (it != s_entries.end())
+		s_entries.erase(it);
+
 	s_entries.push_back(std::move(entry));
 	return true;
 }
@@ -753,6 +808,32 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
 	s_cache_map.clear();
 }
 
+bool GameList::RescanPath(const std::string& path)
+{
+	FILESYSTEM_STAT_DATA sd;
+	if (!FileSystem::StatFile(path.c_str(), &sd))
+		return false;
+
+	std::unique_lock lock(s_mutex);
+
+	const PlayedTimeMap played_time(LoadPlayedTimeMap(GetPlayedTimeFile()));
+
+	{
+		// cancel if excluded
+		const std::vector<std::string> excluded_paths(Host::GetBaseStringListSetting("GameList", "ExcludedPaths"));
+		if (std::find(excluded_paths.begin(), excluded_paths.end(), path) != excluded_paths.end())
+			return false;
+	}
+
+	// re-scan!
+	if (!ScanFile(path, sd.ModificationTime, lock, played_time))
+		return true;
+
+	// update cache.. this is far from ideal, but since everything's variable length, all we can do.
+	RewriteCacheFile();
+	return true;
+}
+
 std::string GameList::GetPlayedTimeFile()
 {
 	return Path::Combine(EmuFolders::Settings, "playtime.dat");
@@ -770,8 +851,8 @@ bool GameList::ParsePlayedTimeLine(char* line, std::string& serial, PlayedTimeEn
 	const std::string_view serial_tok(StringUtil::StripWhitespace(std::string_view(line, PLAYED_TIME_SERIAL_LENGTH)));
 	const std::string_view total_played_time_tok(
 		StringUtil::StripWhitespace(std::string_view(line + PLAYED_TIME_SERIAL_LENGTH + 1, PLAYED_TIME_LAST_TIME_LENGTH)));
-	const std::string_view last_played_time_tok(StringUtil::StripWhitespace(std::string_view(
-		line + PLAYED_TIME_SERIAL_LENGTH + 1 + PLAYED_TIME_LAST_TIME_LENGTH + 1, PLAYED_TIME_TOTAL_TIME_LENGTH)));
+	const std::string_view last_played_time_tok(StringUtil::StripWhitespace(
+		std::string_view(line + PLAYED_TIME_SERIAL_LENGTH + 1 + PLAYED_TIME_LAST_TIME_LENGTH + 1, PLAYED_TIME_TOTAL_TIME_LENGTH)));
 
 	const std::optional<u64> total_played_time(StringUtil::FromChars<u64>(total_played_time_tok));
 	const std::optional<u64> last_played_time(StringUtil::FromChars<u64>(last_played_time_tok));
@@ -789,9 +870,8 @@ bool GameList::ParsePlayedTimeLine(char* line, std::string& serial, PlayedTimeEn
 
 std::string GameList::MakePlayedTimeLine(const std::string& serial, const PlayedTimeEntry& entry)
 {
-	return fmt::format("{:<{}} {:<{}} {:<{}}\n", serial, static_cast<unsigned>(PLAYED_TIME_SERIAL_LENGTH),
-		entry.total_played_time, static_cast<unsigned>(PLAYED_TIME_TOTAL_TIME_LENGTH),
-		entry.last_played_time, static_cast<unsigned>(PLAYED_TIME_LAST_TIME_LENGTH));
+	return fmt::format("{:<{}} {:<{}} {:<{}}\n", serial, static_cast<unsigned>(PLAYED_TIME_SERIAL_LENGTH), entry.total_played_time,
+		static_cast<unsigned>(PLAYED_TIME_TOTAL_TIME_LENGTH), entry.last_played_time, static_cast<unsigned>(PLAYED_TIME_LAST_TIME_LENGTH));
 }
 
 GameList::PlayedTimeMap GameList::LoadPlayedTimeMap(const std::string& path)
@@ -837,10 +917,10 @@ GameList::PlayedTimeMap GameList::LoadPlayedTimeMap(const std::string& path)
 	return ret;
 }
 
-GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& path, const std::string& serial,
-	std::time_t last_time, std::time_t add_time)
+GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(
+	const std::string& path, const std::string& serial, std::time_t last_time, std::time_t add_time)
 {
-	const PlayedTimeEntry new_entry{ last_time, add_time };
+	const PlayedTimeEntry new_entry{last_time, add_time};
 
 	auto fp = FileSystem::OpenManagedCFile(path.c_str(), "r+b");
 
@@ -887,8 +967,7 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& path
 		line_entry.total_played_time = (last_time != 0) ? (line_entry.total_played_time + add_time) : 0;
 
 		std::string new_line(MakePlayedTimeLine(serial, line_entry));
-		if (FileSystem::FSeek64(fp.get(), line_pos, SEEK_SET) != 0 ||
-			std::fwrite(new_line.data(), new_line.length(), 1, fp.get()) != 1 ||
+		if (FileSystem::FSeek64(fp.get(), line_pos, SEEK_SET) != 0 || std::fwrite(new_line.data(), new_line.length(), 1, fp.get()) != 1 ||
 			std::fflush(fp.get()) != 0)
 		{
 			Console.Error("Failed to update '%s'.", path.c_str());
@@ -901,8 +980,7 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& path
 	{
 		// new entry.
 		std::string new_line(MakePlayedTimeLine(serial, new_entry));
-		if (FileSystem::FSeek64(fp.get(), 0, SEEK_END) != 0 ||
-			std::fwrite(new_line.data(), new_line.length(), 1, fp.get()) != 1)
+		if (FileSystem::FSeek64(fp.get(), 0, SEEK_END) != 0 || std::fwrite(new_line.data(), new_line.length(), 1, fp.get()) != 1)
 		{
 			Console.Error("Failed to write '%s'.", path.c_str());
 		}
@@ -992,7 +1070,7 @@ std::string GameList::FormatTimestamp(std::time_t timestamp)
 			ret = "Today";
 		}
 		else if ((ctime.tm_year == ttime.tm_year && ctime.tm_yday == (ttime.tm_yday + 1)) ||
-			(ctime.tm_yday == 0 && (ctime.tm_year - 1) == ttime.tm_year))
+				 (ctime.tm_yday == 0 && (ctime.tm_year - 1) == ttime.tm_year))
 		{
 			ret = "Yesterday";
 		}
@@ -1194,38 +1272,39 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
 
 		// we could actually do a few in parallel here...
 		std::string filename(Common::HTTPDownloader::URLDecode(url));
-		downloader->CreateRequest(std::move(url), [use_serial, &save_callback, entry_path = std::move(entry_path),
-			filename = std::move(filename)](s32 status_code, const std::string& content_type, Common::HTTPDownloader::Request::Data data) {
-			if (status_code != Common::HTTPDownloader::HTTP_OK || data.empty())
-				return;
+		downloader->CreateRequest(
+			std::move(url), [use_serial, &save_callback, entry_path = std::move(entry_path), filename = std::move(filename)](
+								s32 status_code, const std::string& content_type, Common::HTTPDownloader::Request::Data data) {
+				if (status_code != Common::HTTPDownloader::HTTP_OK || data.empty())
+					return;
 
-			std::unique_lock lock(s_mutex);
-			const GameList::Entry* entry = GetEntryForPath(entry_path.c_str());
-			if (!entry || !GetCoverImagePathForEntry(entry).empty())
-				return;
+				std::unique_lock lock(s_mutex);
+				const GameList::Entry* entry = GetEntryForPath(entry_path.c_str());
+				if (!entry || !GetCoverImagePathForEntry(entry).empty())
+					return;
 
-			// prefer the content type from the response for the extension
-			// otherwise, if it's missing, and the request didn't have an extension.. fall back to jpegs.
-			std::string template_filename;
-			std::string content_type_extension(Common::HTTPDownloader::GetExtensionForContentType(content_type));
+				// prefer the content type from the response for the extension
+				// otherwise, if it's missing, and the request didn't have an extension.. fall back to jpegs.
+				std::string template_filename;
+				std::string content_type_extension(Common::HTTPDownloader::GetExtensionForContentType(content_type));
 
-			// don't treat the domain name as an extension..
-			const std::string::size_type last_slash = filename.find('/');
-			const std::string::size_type last_dot = filename.find('.');
-			if (!content_type_extension.empty())
-				template_filename = fmt::format("cover.{}", content_type_extension);
-			else if (last_slash != std::string::npos && last_dot != std::string::npos && last_dot > last_slash)
-				template_filename = Path::GetFileName(filename);
-			else
-				template_filename = "cover.jpg";
+				// don't treat the domain name as an extension..
+				const std::string::size_type last_slash = filename.find('/');
+				const std::string::size_type last_dot = filename.find('.');
+				if (!content_type_extension.empty())
+					template_filename = fmt::format("cover.{}", content_type_extension);
+				else if (last_slash != std::string::npos && last_dot != std::string::npos && last_dot > last_slash)
+					template_filename = Path::GetFileName(filename);
+				else
+					template_filename = "cover.jpg";
 
-			std::string write_path(GetNewCoverImagePathForEntry(entry, template_filename.c_str(), use_serial));
-			if (write_path.empty())
-				return;
+				std::string write_path(GetNewCoverImagePathForEntry(entry, template_filename.c_str(), use_serial));
+				if (write_path.empty())
+					return;
 
-			if (FileSystem::WriteBinaryFile(write_path.c_str(), data.data(), data.size()) && save_callback)
-				save_callback(entry, std::move(write_path));
-		});
+				if (FileSystem::WriteBinaryFile(write_path.c_str(), data.data(), data.size()) && save_callback)
+					save_callback(entry, std::move(write_path));
+			});
 		downloader->WaitForAllRequests();
 		progress->IncrementProgressValue();
 	}

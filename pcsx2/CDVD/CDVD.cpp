@@ -433,6 +433,25 @@ static __fi void _reloadElfInfo(std::string elfpath)
 	// binary).
 }
 
+u32 cdvdGetElfCRC(const std::string& path)
+{
+	try
+	{
+		// Yay for write-after-read here. Isn't our ELF parser great....
+		const s64 host_size = FileSystem::GetPathFileSize(path.c_str());
+		if (host_size <= 0)
+			return 0;
+
+		std::unique_ptr<ElfObject> elfptr(std::make_unique<ElfObject>(path, static_cast<u32>(std::max<s64>(host_size, 0)), false));
+		elfptr->loadHeaders();
+		return elfptr->getCRC();
+	}
+	catch ([[maybe_unused]] Exception::FileNotFound& e)
+	{
+		return 0;
+	}
+}
+
 static std::string ExecutablePathToSerial(const std::string& path)
 {
 	// cdrom:\SCES_123.45;1
@@ -490,15 +509,16 @@ void cdvdReloadElfInfo(std::string elfoverride)
 	DevCon.WriteLn(Color_Green, "Reload ELF");
 	try
 	{
+		std::string elfpath;
+		u32 discType = GetPS2ElfName(elfpath);
+		DiscSerial = ExecutablePathToSerial(elfpath);
+
+		// Use the serial from the disc (if any), and the ELF CRC of the override.
 		if (!elfoverride.empty())
 		{
 			_reloadElfInfo(std::move(elfoverride));
 			return;
 		}
-
-		std::string elfpath;
-		u32 discType = GetPS2ElfName(elfpath);
-		DiscSerial = ExecutablePathToSerial(elfpath);
 
 		if (discType == 1)
 		{
