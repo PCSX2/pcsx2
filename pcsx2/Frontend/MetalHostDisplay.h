@@ -64,7 +64,7 @@ public:
 
 	bool HasDevice() const override;
 	bool HasSurface() const override;
-	bool CreateDevice(const WindowInfo& wi) override;
+	bool CreateDevice(const WindowInfo& wi, VsyncMode vsync) override;
 	bool SetupDevice() override;
 	bool MakeCurrent() override;
 	bool DoneCurrent() override;

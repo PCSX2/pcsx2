@@ -103,7 +103,7 @@ void MetalHostDisplay::DetachSurfaceOnMainThread()
 	m_layer = nullptr;
 }
 
-bool MetalHostDisplay::CreateDevice(const WindowInfo& wi)
+bool MetalHostDisplay::CreateDevice(const WindowInfo& wi, VsyncMode vsync)
 { @autoreleasepool {
 	m_window_info = wi;
 	pxAssertRel(!m_dev.dev, "Device already created!");
@@ -152,7 +152,7 @@ bool MetalHostDisplay::CreateDevice(const WindowInfo& wi)
 		{
 			AttachSurfaceOnMainThread();
 		});
-		SetVSync(Host::GetEffectiveVSyncMode());
+		SetVSync(vsync);
 		return true;
 	}
 	else

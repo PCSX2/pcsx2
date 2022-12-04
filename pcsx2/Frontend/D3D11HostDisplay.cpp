@@ -210,7 +210,7 @@ void D3D11HostDisplay::SetVSync(VsyncMode mode)
 	m_vsync_mode = mode;
 }
 
-bool D3D11HostDisplay::CreateDevice(const WindowInfo& wi)
+bool D3D11HostDisplay::CreateDevice(const WindowInfo& wi, VsyncMode vsync)
 {
 	UINT create_flags = 0;
 	if (EmuConfig.GS.UseDebugDevice)
@@ -314,7 +314,7 @@ bool D3D11HostDisplay::CreateDevice(const WindowInfo& wi)
 	}
 
 	m_window_info = wi;
-	m_vsync_mode = Host::GetEffectiveVSyncMode();
+	m_vsync_mode = vsync;
 
 	if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain(nullptr))
 		return false;

@@ -265,7 +265,8 @@ bool Host::AcquireHostDisplay(RenderAPI api, bool clear_state_on_fail)
 	if (!g_host_display)
 		return false;
 
-	if (!g_host_display->CreateDevice(wi.value()) || !g_host_display->MakeCurrent() || !g_host_display->SetupDevice() || !ImGuiManager::Initialize())
+	if (!g_host_display->CreateDevice(wi.value(), Host::GetEffectiveVSyncMode()) ||
+		!g_host_display->MakeCurrent() || !g_host_display->SetupDevice() || !ImGuiManager::Initialize())
 	{
 		ReleaseHostDisplay(clear_state_on_fail);
 		return false;
@@ -281,12 +282,6 @@ void Host::ReleaseHostDisplay(bool clear_state)
 {
 	ImGuiManager::Shutdown(clear_state);
 	g_host_display.reset();
-}
-
-VsyncMode Host::GetEffectiveVSyncMode()
-{
-	// Never vsync! We want to finish as quickly as possible.
-	return VsyncMode::Off;
 }
 
 bool Host::BeginPresentFrame(bool frame_skip)

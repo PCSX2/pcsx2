@@ -46,7 +46,6 @@ static void HotkeyAdjustTargetSpeed(double delta)
 	EmuConfig.Framerate.NominalScalar = std::max(min_speed, EmuConfig.GS.LimitScalar + delta);
 	VMManager::SetLimiterMode(LimiterModeType::Nominal);
 	gsUpdateFrequency(EmuConfig);
-	GetMTGS().UpdateVSyncMode();
 	Host::AddIconOSDMessage("SpeedChanged", ICON_FA_CLOCK,
 		fmt::format("Target speed set to {:.0f}%.", std::round(EmuConfig.Framerate.NominalScalar * 100.0)), Host::OSD_QUICK_DURATION);
 }

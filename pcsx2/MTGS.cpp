@@ -298,16 +298,14 @@ void SysMtgsThread::MainLoop()
 
 	while (true)
 	{
-
-		// Performance note: Both of these perform cancellation tests, but pthread_testcancel
-		// is very optimized (only 1 instruction test in most cases), so no point in trying
-		// to avoid it.
-
 #ifdef PCSX2_CORE
 		if (m_run_idle_flag.load(std::memory_order_acquire) && VMManager::GetState() != VMState::Running)
 		{
 			if (!m_sem_event.CheckForWork())
+			{
 				GSPresentCurrentFrame();
+				GSThrottlePresentation();
+			}
 		}
 		else
 		{

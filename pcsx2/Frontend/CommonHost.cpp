@@ -346,7 +346,6 @@ void CommonHost::OnVMDestroyed()
 void CommonHost::OnVMPaused()
 {
 	InputManager::PauseVibration();
-	FullscreenUI::OnVMPaused();
 
 #ifdef ENABLE_ACHIEVEMENTS
 	Achievements::OnPaused(true);
@@ -357,8 +356,6 @@ void CommonHost::OnVMPaused()
 
 void CommonHost::OnVMResumed()
 {
-	FullscreenUI::OnVMResumed();
-
 #ifdef ENABLE_ACHIEVEMENTS
 	Achievements::OnPaused(false);
 #endif

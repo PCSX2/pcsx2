@@ -72,6 +72,7 @@ int GSfreeze(FreezeAction mode, freezeData* data);
 void GSQueueSnapshot(const std::string& path, u32 gsdump_frames = 0);
 void GSStopGSDump();
 void GSPresentCurrentFrame();
+void GSThrottlePresentation();
 #ifndef PCSX2_CORE
 void GSkeyEvent(const HostKeyEvent& e);
 void GSconfigure();

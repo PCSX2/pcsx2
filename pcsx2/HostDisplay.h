@@ -84,6 +84,7 @@ public:
 	__fi s32 GetWindowWidth() const { return static_cast<s32>(m_window_info.surface_width); }
 	__fi s32 GetWindowHeight() const { return static_cast<s32>(m_window_info.surface_height); }
 	__fi float GetWindowScale() const { return m_window_info.surface_scale; }
+	__fi VsyncMode GetVsyncMode() const { return m_vsync_mode; }
 
 	/// Changes the alignment for this display (screen positioning).
 	__fi Alignment GetDisplayAlignment() const { return m_display_alignment; }
@@ -98,7 +99,7 @@ public:
 	virtual bool HasSurface() const = 0;
 
 	/// Creates the rendering/GPU device. This should be called on the thread which owns the window.
-	virtual bool CreateDevice(const WindowInfo& wi) = 0;
+	virtual bool CreateDevice(const WindowInfo& wi, VsyncMode vsync) = 0;
 
 	/// Fully initializes the rendering device. This should be called on the GS thread.
 	virtual bool SetupDevice() = 0;

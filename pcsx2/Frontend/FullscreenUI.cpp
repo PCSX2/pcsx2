@@ -623,24 +623,6 @@ void FullscreenUI::OnVMStarted()
 	});
 }
 
-void FullscreenUI::OnVMPaused()
-{
-	if (!IsInitialized())
-		return;
-
-	// Force vsync on.
-	GetMTGS().UpdateVSyncMode();
-}
-
-void FullscreenUI::OnVMResumed()
-{
-	if (!IsInitialized())
-		return;
-
-	// Restore game vsync.
-	GetMTGS().UpdateVSyncMode();
-}
-
 void FullscreenUI::OnVMDestroyed()
 {
 	if (!IsInitialized())
@@ -652,7 +634,6 @@ void FullscreenUI::OnVMDestroyed()
 
 		s_pause_menu_was_open = false;
 		SwitchToLanding();
-		GetMTGS().UpdateVSyncMode();
 	});
 }
 

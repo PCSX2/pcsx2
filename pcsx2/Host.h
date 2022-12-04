@@ -24,6 +24,7 @@
 #include <optional>
 #include <vector>
 
+#ifndef PCSX2_CORE
 struct HostKeyEvent
 {
 	enum class Type
@@ -43,6 +44,7 @@ struct HostKeyEvent
 	Type type;
 	u32 key;
 };
+#endif
 
 namespace Host
 {

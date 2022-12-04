@@ -77,6 +77,7 @@ static HRESULT s_hr = E_FAIL;
 Pcsx2Config::GSOptions GSConfig;
 
 static RenderAPI s_render_api;
+static u64 s_next_manual_present_time;
 
 int GSinit()
 {
@@ -552,6 +553,33 @@ void GSStopGSDump()
 void GSPresentCurrentFrame()
 {
 	g_gs_renderer->PresentCurrentFrame();
+}
+
+void GSThrottlePresentation()
+{
+	if (g_host_display->GetVsyncMode() != VsyncMode::Off)
+	{
+		// Let vsync take care of throttling.
+		return;
+	}
+
+	// Manually throttle presentation when vsync isn't enabled, so we don't try to render the
+	// fullscreen UI at thousands of FPS and make the gpu go brrrrrrrr.
+	const float surface_refresh_rate = g_host_display->GetWindowInfo().surface_refresh_rate;
+	const float throttle_rate = (surface_refresh_rate > 0.0f) ? surface_refresh_rate : 60.0f;
+
+	const u64 sleep_period = static_cast<u64>(static_cast<double>(GetTickFrequency()) / static_cast<double>(throttle_rate));
+	const u64 current_ts = GetCPUTicks();
+
+	// Allow it to fall behind/run ahead up to 2*period. Sleep isn't that precise, plus we need to
+	// allow time for the actual rendering.
+	const u64 max_variance = sleep_period * 2;
+	if (static_cast<u64>(std::abs(static_cast<s64>(current_ts - s_next_manual_present_time))) > max_variance)
+		s_next_manual_present_time = current_ts + sleep_period;
+	else
+		s_next_manual_present_time += sleep_period;
+
+	Threading::SleepUntil(s_next_manual_present_time);
 }
 
 #ifndef PCSX2_CORE

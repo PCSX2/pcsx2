@@ -274,10 +274,9 @@ void VulkanHostDisplay::SetVSync(VsyncMode mode)
 	m_vsync_mode = mode;
 }
 
-bool VulkanHostDisplay::CreateDevice(const WindowInfo& wi)
+bool VulkanHostDisplay::CreateDevice(const WindowInfo& wi, VsyncMode vsync)
 {
 	WindowInfo local_wi(wi);
-	const VsyncMode vsync = Host::GetEffectiveVSyncMode();
 	const bool debug_device = EmuConfig.GS.UseDebugDevice;
 	if (!Vulkan::Context::Create(EmuConfig.GS.Adapter, &local_wi, &m_swap_chain, GetPreferredPresentModeForVsyncMode(vsync),
 			EmuConfig.GS.ThreadedPresentation, debug_device, debug_device))

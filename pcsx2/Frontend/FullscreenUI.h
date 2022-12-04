@@ -30,8 +30,6 @@ namespace FullscreenUI
 	bool HasActiveWindow();
 	void CheckForConfigChanges(const Pcsx2Config& old_config);
 	void OnVMStarted();
-	void OnVMPaused();
-	void OnVMResumed();
 	void OnVMDestroyed();
 	void OnRunningGameChanged(std::string path, std::string serial, std::string title, u32 crc);
 	void OpenPauseMenu();

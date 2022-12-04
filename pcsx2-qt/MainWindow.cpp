@@ -2012,7 +2012,7 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 
 	g_emu_thread->connectDisplaySignals(m_display_widget);
 
-	if (!g_host_display->CreateDevice(wi.value()))
+	if (!g_host_display->CreateDevice(wi.value(), Host::GetEffectiveVSyncMode()))
 	{
 		QMessageBox::critical(this, tr("Error"), tr("Failed to create host display device context."));
 		destroyDisplayWidget(true);
