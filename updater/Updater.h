@@ -42,6 +42,8 @@ public:
 	void CleanupStagingDirectory();
 	void RemoveUpdateZip();
 
+	std::string FindPCSX2Exe() const;
+
 private:
 	static bool RecursiveDeleteDirectory(const char* path);
 

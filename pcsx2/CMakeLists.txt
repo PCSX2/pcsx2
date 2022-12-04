@@ -998,7 +998,7 @@ set(pcsx2IPUHeaders
 )
 
 if(DISABLE_ADVANCE_SIMD)
-	target_compile_definitions(PCSX2 PRIVATE MULTI_ISA_SHARED_COMPILATION)
+	target_compile_definitions(PCSX2 PUBLIC MULTI_ISA_SHARED_COMPILATION)
 	if(USE_GCC)
 		target_link_options(PCSX2_FLAGS INTERFACE -Wno-odr)
 	endif()

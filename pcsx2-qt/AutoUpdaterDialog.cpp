@@ -57,7 +57,9 @@
 #define UPDATE_PLATFORM_STR "Linux"
 #endif
 
-#if _M_SSE >= 0x500
+#if MULTI_ISA_SHARED_COMPILATION
+// #undef UPDATE_ADDITIONAL_TAGS
+#elif _M_SSE >= 0x501
 #define UPDATE_ADDITIONAL_TAGS "AVX2"
 #else
 #define UPDATE_ADDITIONAL_TAGS "SSE4"
@@ -208,20 +210,26 @@ void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
 				const QJsonArray platform_array(assets_object[UPDATE_PLATFORM_STR].toArray());
 				if (!platform_array.isEmpty())
 				{
-					// search for the correct file
+					QJsonObject best_asset;
+					int best_asset_score = 0;
+
+					// search for usable files
 					for (const QJsonValue& asset_value : platform_array)
 					{
 						const QJsonObject asset_object(asset_value.toObject());
 						const QJsonArray additional_tags_array(asset_object["additionalTags"].toArray());
-						bool is_matching_asset = false;
+						bool is_symbols = false;
+						bool is_avx2 = false;
+						bool is_sse4 = false;
 						bool is_qt_asset = false;
+						bool is_perfect_match = false;
 						for (const QJsonValue& additional_tag : additional_tags_array)
 						{
 							const QString additional_tag_str(additional_tag.toString());
 							if (additional_tag_str == QStringLiteral("symbols"))
 							{
 								// we're not interested in symbols downloads
-								is_matching_asset = false;
+								is_symbols = true;
 								break;
 							}
 							else if (additional_tag_str == QStringLiteral("Qt"))
@@ -229,37 +237,57 @@ void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
 								// found a qt build
 								is_qt_asset = true;
 							}
-
-							// is this the right variant?
+							else if (additional_tag_str == QStringLiteral("SSE4"))
+							{
+								is_sse4 = true;
+							}
+							else if (additional_tag_str == QStringLiteral("AVX2"))
+							{
+								is_avx2 = true;
+							}
+#ifdef UPDATE_ADDITIONAL_TAGS
 							if (additional_tag_str == QStringLiteral(UPDATE_ADDITIONAL_TAGS))
 							{
-								// yep! found the right one. but keep checking in case it's symbols.
-								is_matching_asset = true;
+								// Found the same variant as what's currently running!  But keep checking in case it's symbols.
+								is_perfect_match = true;
 							}
+#endif
 						}
 
-						if (!is_qt_asset || !is_matching_asset)
+						if (!is_qt_asset || is_symbols || (!x86caps.hasAVX2 && is_avx2))
 						{
 							// skip this asset
 							continue;
 						}
 
-						m_latest_version = data_object["version"].toString();
-						m_latest_version_timestamp = QDateTime::fromString(data_object["publishedAt"].toString(), QStringLiteral("yyyy-MM-ddThh:mm:ss.zzzZ"));
-						m_download_url = asset_object["url"].toString();
-						if (!m_latest_version.isEmpty() && !m_download_url.isEmpty())
-						{
-							found_update_info = true;
-							break;
-						}
+						int score;
+						if (is_perfect_match)
+							score = 4; // #1 choice is the one matching this binary
+						else if (is_avx2)
+							score = 3; // Prefer AVX2 over SSE4 (support test was done above)
+						else if (is_sse4)
+							score = 2; // Prefer SSE4 over one with no tags at all
 						else
+							score = 1; // Multi-ISA builds will have no tags, they'll only get picked because they're the only available build
+
+						if (score > best_asset_score)
 						{
-							reportError("missing version/download info");
+							best_asset = std::move(asset_object);
+							best_asset_score = score;
 						}
 					}
 
-					if (!found_update_info)
-						reportError("matching asset not found");
+					if (best_asset_score == 0)
+					{
+						reportError("no matching assets found");
+					}
+					else
+					{
+						m_latest_version = data_object["version"].toString();
+						m_latest_version_timestamp = QDateTime::fromString(data_object["publishedAt"].toString(), QStringLiteral("yyyy-MM-ddThh:mm:ss.zzzZ"));
+						m_download_url = best_asset["url"].toString();
+						found_update_info = true;
+					}
 				}
 				else
 				{
