@@ -131,6 +131,9 @@ void GSshutdown()
 		s_hr = E_FAIL;
 	}
 #endif
+
+	// ensure all screenshots have been saved
+	GSJoinSnapshotThreads();
 }
 
 void GSclose()
@@ -150,9 +153,6 @@ void GSclose()
 		g_host_display->SetGPUTimingEnabled(false);
 
 	Host::ReleaseHostDisplay(true);
-
-	// ensure all screenshots have been saved
-	GSJoinSnapshotThreads();
 }
 
 static RenderAPI GetAPIForRenderer(GSRendererType renderer)

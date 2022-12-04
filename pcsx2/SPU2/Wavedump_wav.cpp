@@ -134,9 +134,9 @@ bool RecordStart(const std::string* filename)
 	{
 		m_wavrecord = nullptr; // not needed, but what the heck. :)
 		if (filename)
-			SysMessage("SPU2 couldn't open file for recording: %s.\nWavfile capture disabled.", filename->c_str());
+			Console.Error("SPU2 couldn't open file for recording: %s.\nWavfile capture disabled.", filename->c_str());
 		else
-			SysMessage("SPU2 couldn't open file for recording: audio_recording.wav.\nWavfile capture disabled.");
+			Console.Error("SPU2 couldn't open file for recording: audio_recording.wav.\nWavfile capture disabled.");
 		return false;
 	}
 }

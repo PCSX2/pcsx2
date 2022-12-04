@@ -248,7 +248,6 @@
     <ClCompile Include="SPU2\Host\Config.cpp" />
     <ClCompile Include="SPU2\Host\ConfigDebug.cpp" />
     <ClCompile Include="SPU2\Host\ConfigSoundTouch.cpp" />
-    <ClCompile Include="SPU2\Host\Dialogs.cpp" />
     <ClCompile Include="SPU2\RegLog.cpp" />
     <ClCompile Include="SPU2\SndOut_Cubeb.cpp" />
     <ClCompile Include="SPU2\wavedump_wav.cpp" />

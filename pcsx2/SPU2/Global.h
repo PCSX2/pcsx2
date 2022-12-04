@@ -15,7 +15,7 @@
 
 #pragma once
 
-#define NOMINMAX
+#include "PrecompiledHeader.h"
 
 extern bool psxmode;
 
@@ -30,15 +30,6 @@ namespace soundtouch
 	class SoundTouch;
 }
 
-#include "PrecompiledHeader.h"
-
-//////////////////////////////////////////////////////////////////////////
-// Override Win32 min/max macros with the STL's type safe and macro
-// free varieties (much safer!)
-
-#undef min
-#undef max
-
 template <typename T>
 static __forceinline void Clampify(T& src, T min, T max)
 {
@@ -51,8 +42,6 @@ static __forceinline T GetClamped(T src, T min, T max)
 	return std::min(std::max(src, min), max);
 }
 
-extern void SysMessage(const char* fmt, ...);
-extern void SysMessage(const wchar_t* fmt, ...);
 
 // Uncomment to enable debug keys on numpad (0 to 5)
 //#define DEBUG_KEYS

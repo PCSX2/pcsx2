@@ -31,20 +31,18 @@
 
 using namespace Threading;
 
-std::recursive_mutex mtx_SPU2Status;
-
 static int ConsoleSampleRate = 48000;
 int SampleRate = 48000;
 
 static double DeviceSampleRateMultiplier = 1.0;
 
-static bool IsOpened = false;
-static bool IsInitialized = false;
-
 u32 lClocks = 0;
 
 #ifndef PCSX2_CORE
 #include "gui/AppCoreThread.h"
+
+static bool IsOpened = false;
+std::recursive_mutex mtx_SPU2Status;
 
 void SPU2configure()
 {
@@ -176,11 +174,10 @@ static void SPU2InternalReset(PS2Modes isRunningPSXMode)
 	}
 }
 
-s32 SPU2reset(PS2Modes isRunningPSXMode)
+void SPU2reset(PS2Modes isRunningPSXMode)
 {
 	SPU2InternalReset(isRunningPSXMode);
 	SPU2UpdateSampleRate();
-	return 0;
 }
 
 void SPU2SetDeviceSampleRateMultiplier(double multiplier)
@@ -192,27 +189,9 @@ void SPU2SetDeviceSampleRateMultiplier(double multiplier)
 	SPU2UpdateSampleRate();
 }
 
-s32 SPU2init(bool KeepMode)
+bool SPU2init()
 {
-	assert(regtable[0x400] == nullptr);
-
-	if (IsInitialized)
-		return 0;
-
-	IsInitialized = true;
-
-	ReadSettings();
-
-#ifdef SPU2_LOG
-	if (AccessLog())
-	{
-		spu2Log = OpenLog(AccessLogFileName.c_str());
-		setvbuf(spu2Log, nullptr, _IONBF, 0);
-		FileLog("SPU2init\n");
-	}
-#endif
-	srand((unsigned)time(nullptr));
-
+	pxAssert(regtable[0x400] == nullptr);
 	spu2regs = (s16*)malloc(0x010000);
 	_spu2mem = (s16*)malloc(0x200000);
 
@@ -225,10 +204,10 @@ s32 SPU2init(bool KeepMode)
 
 	pcm_cache_data = (PcmCacheEntry*)calloc(pcm_BlockCount, sizeof(PcmCacheEntry));
 
-	if ((spu2regs == nullptr) || (_spu2mem == nullptr) || (pcm_cache_data == nullptr))
+	if (!spu2regs || !_spu2mem || !pcm_cache_data)
 	{
-		SysMessage("SPU2: Error allocating Memory\n");
-		return -1;
+		Console.Error("SPU2: Error allocating Memory");
+		return false;
 	}
 
 	// Patch up a copy of regtable that directly maps "nullptrs" to SPU2 memory.
@@ -244,12 +223,8 @@ s32 SPU2init(bool KeepMode)
 		}
 	}
 
-	SPU2InternalReset((ConsoleSampleRate == 44100 && KeepMode) ? PS2Modes::PSX : PS2Modes::PS2);
-
-	DMALogOpen();
 	InitADSR();
-
-	return 0;
+	return true;
 }
 
 #if defined(_MSC_VER) && !defined(PCSX2_CORE)
@@ -292,18 +267,17 @@ static INT_PTR CALLBACK DebugProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	return TRUE;
 }
 #endif
-uptr gsWindowHandle = 0;
 
-s32 SPU2open()
+bool SPU2open(PS2Modes isRunningPSXMode)
 {
+#ifndef PCSX2_CORE
 	std::unique_lock lock(mtx_SPU2Status);
 	if (IsOpened)
-		return 0;
+		return true;
 
-	FileLog("[%10d] SPU2 Open\n", Cycles);
+#if defined(_MSC_VER) && defined(PCSX2_DEVBUILD) // Define may not be needed but not tested yet. Better make sure.
+	IsOpened = true;
 
-#if defined(_MSC_VER) && !defined(PCSX2_CORE)
-#ifdef PCSX2_DEVBUILD // Define may not be needed but not tested yet. Better make sure.
 	if (IsDevBuild && VisualDebug())
 	{
 		if (debugDialogOpen == 0)
@@ -321,8 +295,24 @@ s32 SPU2open()
 #endif
 #endif
 
-	IsOpened = true;
+	ReadSettings();
+
+#ifdef SPU2_LOG
+	if (AccessLog())
+	{
+		spu2Log = OpenLog(AccessLogFileName.c_str());
+		setvbuf(spu2Log, nullptr, _IONBF, 0);
+		FileLog("SPU2init\n");
+	}
+#endif
+
+	DMALogOpen();
+
+	FileLog("[%10d] SPU2 Open\n", Cycles);
+
 	lClocks = psxRegs.cycle;
+
+	SPU2InternalReset(isRunningPSXMode);
 
 	try
 	{
@@ -336,19 +326,22 @@ s32 SPU2open()
 	}
 	catch (std::exception& ex)
 	{
-		fprintf(stderr, "SPU2 Error: Could not initialize device, or something.\nReason: %s", ex.what());
+		Console.Error("SPU2 Error: Could not initialize device, or something.\nReason: %s", ex.what());
 		SPU2close();
-		return -1;
+		return false;
 	}
-	return 0;
+
+	return true;
 }
 
 void SPU2close()
 {
+#ifndef PCSX2_CORE
 	std::unique_lock lock(mtx_SPU2Status);
 	if (!IsOpened)
 		return;
 	IsOpened = false;
+#endif
 
 	FileLog("[%10d] SPU2 Close\n", Cycles);
 
@@ -361,10 +354,6 @@ void SPU2close()
 
 void SPU2shutdown()
 {
-	if (!IsInitialized)
-		return;
-	IsInitialized = false;
-
 	ConLog("* SPU2: Shutting down.\n");
 
 	SPU2close();
@@ -396,6 +385,11 @@ void SPU2shutdown()
 #endif
 }
 
+bool SPU2IsRunningPSXMode()
+{
+	return (ConsoleSampleRate == 44100);
+}
+
 void SPU2SetOutputPaused(bool paused)
 {
 	SndBuffer::SetPaused(paused);
@@ -408,7 +402,9 @@ static bool lState[6];
 
 void SPU2async(u32 cycles)
 {
+#ifndef PCSX2_CORE
 	DspUpdate();
+#endif
 
 	TimeUpdate(psxRegs.cycle);
 
