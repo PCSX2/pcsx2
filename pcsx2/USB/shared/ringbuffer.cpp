@@ -170,8 +170,6 @@ void RingBuffer::write(size_t bytes)
 	}
 	else
 		m_end = (m_end + bytes) % m_capacity;
-
-	mLastWrite = hrc::now();
 }
 
 void RingBuffer::read(size_t bytes)

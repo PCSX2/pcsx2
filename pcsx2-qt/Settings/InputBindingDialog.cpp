@@ -27,17 +27,17 @@
 // _BitScanForward()
 #include "pcsx2/GS/GSIntrin.h"
 
-InputBindingDialog::InputBindingDialog(SettingsInterface* sif, std::string section_name, std::string key_name,
-	std::vector<std::string> bindings, QWidget* parent)
+InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name,
+	std::string key_name, std::vector<std::string> bindings, QWidget* parent)
 	: QDialog(parent)
 	, m_sif(sif)
+	, m_bind_type(bind_type)
 	, m_section_name(std::move(section_name))
 	, m_key_name(std::move(key_name))
 	, m_bindings(std::move(bindings))
 {
 	m_ui.setupUi(this);
-	m_ui.title->setText(
-		tr("Bindings for %1 %2").arg(QString::fromStdString(m_section_name)).arg(QString::fromStdString(m_key_name)));
+	m_ui.title->setText(tr("Bindings for %1 %2").arg(QString::fromStdString(m_section_name)).arg(QString::fromStdString(m_key_name)));
 	m_ui.buttonBox->button(QDialogButtonBox::Close)->setText(tr("Close"));
 
 	connect(m_ui.addBinding, &QPushButton::clicked, this, &InputBindingDialog::onAddBindingButtonClicked);
@@ -159,8 +159,7 @@ void InputBindingDialog::startListeningForInput(u32 timeout_in_seconds)
 	m_input_listen_timer->setSingleShot(false);
 	m_input_listen_timer->start(1000);
 
-	m_input_listen_timer->connect(m_input_listen_timer, &QTimer::timeout, this,
-		&InputBindingDialog::onInputListenTimerTimeout);
+	m_input_listen_timer->connect(m_input_listen_timer, &QTimer::timeout, this, &InputBindingDialog::onInputListenTimerTimeout);
 	m_input_listen_remaining_seconds = timeout_in_seconds;
 	m_ui.status->setText(tr("Push Button/Axis... [%1]").arg(m_input_listen_remaining_seconds));
 	m_ui.addBinding->setEnabled(false);
@@ -198,8 +197,7 @@ void InputBindingDialog::addNewBinding()
 	if (m_new_bindings.empty())
 		return;
 
-	const std::string new_binding(
-		InputManager::ConvertInputBindingKeysToString(m_new_bindings.data(), m_new_bindings.size()));
+	const std::string new_binding(InputManager::ConvertInputBindingKeysToString(m_bind_type, m_new_bindings.data(), m_new_bindings.size()));
 	if (!new_binding.empty())
 	{
 		if (std::find(m_bindings.begin(), m_bindings.end(), new_binding) != m_bindings.end())
@@ -299,8 +297,7 @@ void InputBindingDialog::inputManagerHookCallback(InputBindingKey key, float val
 void InputBindingDialog::hookInputManager()
 {
 	InputManager::SetHook([this](InputBindingKey key, float value) {
-		QMetaObject::invokeMethod(this, "inputManagerHookCallback", Qt::QueuedConnection, Q_ARG(InputBindingKey, key),
-			Q_ARG(float, value));
+		QMetaObject::invokeMethod(this, "inputManagerHookCallback", Qt::QueuedConnection, Q_ARG(InputBindingKey, key), Q_ARG(float, value));
 		return InputInterceptHook::CallbackResult::StopProcessingEvent;
 	});
 }

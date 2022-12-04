@@ -13,10 +13,11 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VIDEODEV_H
-#define VIDEODEV_H
-#include "USB/qemu-usb/vl.h"
-#include "USB/configuration.h"
+#pragma once
+#include "USB/qemu-usb/qusb.h"
+#include <string>
+#include <vector>
+#include <utility>
 
 namespace usb_eyetoy
 {
@@ -43,15 +44,13 @@ namespace usb_eyetoy
 		virtual void SetMirroring(bool state) = 0;
 		virtual int Reset() = 0;
 
-		virtual int Port() { return mPort; }
-		virtual void Port(int port) { mPort = port; }
-		virtual int Type() { return mType; }
-		virtual void Type(int type) { mType = type; }
+		virtual const std::string& HostDevice() const { return mHostDevice; }
+		virtual void HostDevice(std::string dev) { mHostDevice = std::move(dev); }
+
+		static std::unique_ptr<VideoDevice> CreateInstance();
+		static std::vector<std::pair<std::string, std::string>> GetDeviceList();
 
 	protected:
-		int mPort;
-		int mType;
+		std::string mHostDevice;
 	};
-
 } // namespace usb_eyetoy
-#endif

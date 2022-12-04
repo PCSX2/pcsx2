@@ -15,14 +15,14 @@
 
 #include "PrecompiledHeader.h"
 
+#include "common/StringUtil.h"
+
 #include <jpgd/jpge.h>
 #include "videodev.h"
 #include "cam-windows.h"
 #include "usb-eyetoy-webcam.h"
 #include "jo_mpeg.h"
-
-#include "USB/Win32/Config_usb.h"
-#include "USB/Win32/resource_usb.h"
+#include "USB/USB.h"
 
 namespace usb_eyetoy
 {
@@ -59,9 +59,9 @@ namespace usb_eyetoy
 			return E_NOINTERFACE;
 		}
 
-		std::vector<std::wstring> getDevList()
+		std::vector<std::pair<std::string, std::string>> getDevList()
 		{
-			std::vector<std::wstring> devList;
+			std::vector<std::pair<std::string, std::string>> devList;
 
 			ICreateDevEnum* pCreateDevEnum = nullptr;
 			HRESULT hr = CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pCreateDevEnum));
@@ -100,7 +100,8 @@ namespace usb_eyetoy
 				}
 				if (SUCCEEDED(hr))
 				{
-					devList.push_back(var.bstrVal);
+					std::string u8name(StringUtil::WideStringToUTF8String(var.bstrVal));
+					devList.emplace_back(u8name, u8name);
 					VariantClear(&var);
 				}
 
@@ -203,7 +204,8 @@ namespace usb_eyetoy
 					goto freeVar;
 				}
 
-				hr = pGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video, sourcefilter, IID_IAMStreamConfig, (void**)&pSourceConfig);
+				hr = pGraphBuilder->FindInterface(
+					&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video, sourcefilter, IID_IAMStreamConfig, (void**)&pSourceConfig);
 				if (SUCCEEDED(hr))
 				{
 					int iCount = 0, iSize = 0;
@@ -218,17 +220,13 @@ namespace usb_eyetoy
 							VIDEO_STREAM_CONFIG_CAPS scc;
 							AM_MEDIA_TYPE* pmtConfig;
 							hr = pSourceConfig->GetStreamCaps(iFormat, &pmtConfig, (BYTE*)&scc);
-							Console.Warning("Camera: GetStreamCaps min=%dx%d max=%dx%d, fmt=%x",
-									scc.MinOutputSize.cx, scc.MinOutputSize.cy,
-									scc.MaxOutputSize.cx, scc.MaxOutputSize.cy,
-									pmtConfig->subtype);
+							Console.Warning("Camera: GetStreamCaps min=%dx%d max=%dx%d, fmt=%x", scc.MinOutputSize.cx, scc.MinOutputSize.cy,
+								scc.MaxOutputSize.cx, scc.MaxOutputSize.cy, pmtConfig->subtype);
 
 							if (SUCCEEDED(hr))
 							{
-								if ((pmtConfig->majortype == MEDIATYPE_Video) &&
-									(pmtConfig->formattype == FORMAT_VideoInfo) &&
-									(pmtConfig->cbFormat >= sizeof(VIDEOINFOHEADER)) &&
-									(pmtConfig->pbFormat != nullptr))
+								if ((pmtConfig->majortype == MEDIATYPE_Video) && (pmtConfig->formattype == FORMAT_VideoInfo) &&
+									(pmtConfig->cbFormat >= sizeof(VIDEOINFOHEADER)) && (pmtConfig->pbFormat != nullptr))
 								{
 									VIDEOINFOHEADER* pVih = (VIDEOINFOHEADER*)pmtConfig->pbFormat;
 									pVih->bmiHeader.biWidth = frame_width;
@@ -383,7 +381,8 @@ namespace usb_eyetoy
 				int comprLen = 0;
 				if (frame_format == format_mpeg)
 				{
-					comprLen = jo_write_mpeg(comprBuf, data, frame_width, frame_height, JO_BGR24, mirroring_enabled ? JO_FLIP_X : JO_NONE, JO_FLIP_Y);
+					comprLen = jo_write_mpeg(
+						comprBuf, data, frame_width, frame_height, JO_BGR24, mirroring_enabled ? JO_FLIP_X : JO_NONE, JO_FLIP_Y);
 				}
 				else if (frame_format == format_jpeg)
 				{
@@ -419,8 +418,8 @@ namespace usb_eyetoy
 							for (int y = 0; y < 8; y++)
 								for (int x = 0; x < 8; x++)
 								{
-									int srcx = 4* (8*mx + x);
-									int srcy = frame_height - 4* (8*my + y) - 1;
+									int srcx = 4 * (8 * mx + x);
+									int srcy = frame_height - 4 * (8 * my + y) - 1;
 									unsigned char* src = data + (srcy * frame_width + srcx) * bytesPerPixel;
 									if (srcy < 0)
 									{
@@ -501,9 +500,8 @@ namespace usb_eyetoy
 			free(comprBuf);
 		}
 
-		DirectShow::DirectShow(int port)
+		DirectShow::DirectShow()
 		{
-			mPort = port;
 			pGraphBuilder = nullptr;
 			pGraph = nullptr;
 			pControl = nullptr;
@@ -539,13 +537,10 @@ namespace usb_eyetoy
 				create_dummy_frame_eyetoy();
 			}
 
-			std::wstring selectedDevice;
-			LoadSetting(EyeToyWebCamDevice::TypeName(), Port(), APINAME, N_DEVICE, selectedDevice);
-
-			int ret = InitializeDevice(selectedDevice);
+			int ret = InitializeDevice(StringUtil::UTF8StringToWideString(mHostDevice));
 			if (ret < 0)
 			{
-				Console.Warning("Camera: cannot find '%ls'", selectedDevice.c_str());
+				Console.Warning("Camera: cannot find '%s'", mHostDevice.c_str());
 				return -1;
 			}
 
@@ -590,75 +585,16 @@ namespace usb_eyetoy
 			return len2;
 		};
 
-		void DirectShow::SetMirroring(bool state)
-		{
-			mirroring_enabled = state;
-		}
-
-		BOOL CALLBACK DirectShowDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
-		{
-			int port;
-
-			switch (uMsg)
-			{
-				case WM_CREATE:
-					SetWindowLongPtr(hW, GWLP_USERDATA, (LONG)lParam);
-					break;
-				case WM_INITDIALOG:
-				{
-					port = (int)lParam;
-					SetWindowLongPtr(hW, GWLP_USERDATA, (LONG)lParam);
-
-					std::wstring selectedDevice;
-					LoadSetting(EyeToyWebCamDevice::TypeName(), port, APINAME, N_DEVICE, selectedDevice);
-					SendDlgItemMessage(hW, IDC_COMBO1_USB, CB_RESETCONTENT, 0, 0);
-
-					std::vector<std::wstring> devList = getDevList();
-					for (auto i = 0; i != devList.size(); i++)
-					{
-						SendDlgItemMessageW(hW, IDC_COMBO1_USB, CB_ADDSTRING, 0, (LPARAM)devList[i].c_str());
-						if (selectedDevice == devList.at(i))
-						{
-							SendDlgItemMessage(hW, IDC_COMBO1_USB, CB_SETCURSEL, i, i);
-						}
-					}
-					return TRUE;
-				}
-				case WM_COMMAND:
-					if (HIWORD(wParam) == BN_CLICKED)
-					{
-						switch (LOWORD(wParam))
-						{
-							case IDOK:
-							{
-								INT_PTR res = RESULT_OK;
-								static wchar_t selectedDevice[500] = {0};
-								GetWindowTextW(GetDlgItem(hW, IDC_COMBO1_USB), selectedDevice, countof(selectedDevice));
-								port = (int)GetWindowLongPtr(hW, GWLP_USERDATA);
-								if (!SaveSetting<std::wstring>(EyeToyWebCamDevice::TypeName(), port, APINAME, N_DEVICE, selectedDevice))
-								{
-									res = RESULT_FAILED;
-								}
-								EndDialog(hW, res);
-								return TRUE;
-							}
-							case IDCANCEL:
-								EndDialog(hW, RESULT_CANCELED);
-								return TRUE;
-						}
-					}
-			}
-			return FALSE;
-		}
-
-		int DirectShow::Configure(int port, const char* dev_type, void* data)
-		{
-			Win32Handles handles = *(Win32Handles*)data;
-			return DialogBoxParam(handles.hInst,
-								  MAKEINTRESOURCE(IDD_DLG_EYETOY_USB),
-								  handles.hWnd,
-								  (DLGPROC)DirectShowDlgProc, port);
-		};
-
+		void DirectShow::SetMirroring(bool state) { mirroring_enabled = state; }
 	} // namespace windows_api
+
+	std::unique_ptr<VideoDevice> VideoDevice::CreateInstance()
+	{
+		return std::make_unique<windows_api::DirectShow>();
+	}
+
+	std::vector<std::pair<std::string, std::string>> VideoDevice::GetDeviceList()
+	{
+		return windows_api::getDevList();
+	}
 } // namespace usb_eyetoy

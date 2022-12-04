@@ -17,25 +17,12 @@
 // Types to shared by platforms and config. dialog.
 //
 
-#ifndef AUDIODEV_H
-#define AUDIODEV_H
+#pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
-#include <queue>
-
-#define S_AUDIO_SOURCE0 TEXT("Audio source 1")
-#define S_AUDIO_SOURCE1 TEXT("Audio source 2")
-#define S_AUDIO_SINK0 TEXT("Audio sink 1")
-#define S_AUDIO_SINK1 TEXT("Audio sink 2")
-#define N_AUDIO_SOURCE0 TEXT("audio_src_0")
-#define N_AUDIO_SOURCE1 TEXT("audio_src_1")
-#define N_AUDIO_SINK0 TEXT("audio_sink_0")
-#define N_AUDIO_SINK1 TEXT("audio_sink_1")
-#define S_BUFFER_LEN TEXT("Buffer length")
-#define N_BUFFER_LEN TEXT("buffer_len")
-#define N_BUFFER_LEN_SRC TEXT("buffer_len_src")
-#define N_BUFFER_LEN_SINK TEXT("buffer_len_sink")
+#include <utility>
 
 enum MicMode
 {
@@ -53,46 +40,28 @@ enum AudioDir
 	AUDIODIR_SINK
 };
 
-//TODO sufficient for linux too?
-struct AudioDeviceInfoA
-{
-	//int intID; //optional ID
-	std::string strID;
-	std::string strName; //gui name
-};
-
-struct AudioDeviceInfoW
-{
-	//int intID; //optional ID
-	std::wstring strID;
-	std::wstring strName; //gui name
-};
-
-#if _WIN32
-#define AudioDeviceInfo AudioDeviceInfoW
-#else
-#define AudioDeviceInfo AudioDeviceInfoA
-#endif
-
 class AudioDevice
 {
 public:
-	AudioDevice(int port, const char* dev_type, int device, AudioDir dir)
+	static constexpr s32 DEFAULT_LATENCY = 100;
+	static constexpr const char* DEFAULT_LATENCY_STR = "100";
+
+	AudioDevice(u32 port, AudioDir dir, u32 channels)
 		: mPort(port)
-		, mDevType(dev_type)
-		, mDevice(device)
 		, mAudioDir(dir)
+		, mChannels(channels)
 	{
 	}
 
 protected:
-	int mPort;
-	const char* mDevType;
-	int mDevice;
+	u32 mPort;
+	s32 mSubDevice;
 	AudioDir mAudioDir;
+	u32 mChannels;
 
 public:
-	virtual ~AudioDevice() {}
+	virtual ~AudioDevice() = default;
+
 	//get buffer, converted to 16bit int format
 	virtual uint32_t GetBuffer(int16_t* buff, uint32_t len) = 0;
 	virtual uint32_t SetBuffer(int16_t* buff, uint32_t len) = 0;
@@ -102,17 +71,16 @@ public:
 	*/
 	virtual bool GetFrames(uint32_t* size) = 0;
 	virtual void SetResampling(int samplerate) = 0;
-	virtual uint32_t GetChannels() = 0;
+	uint32_t GetChannels() { return mChannels; }
 
-	virtual void Start() {}
-	virtual void Stop() {}
+	virtual bool Start() = 0;
+	virtual void Stop() = 0;
 
 	// Compare if another instance is using the same device
-	virtual bool Compare(AudioDevice* compare) = 0;
+	virtual bool Compare(AudioDevice* compare) const = 0;
 
-	//Remember to add to your class
-	//static const wchar_t* GetName();
+	static std::unique_ptr<AudioDevice> CreateDevice(u32 port, AudioDir dir, u32 channels, std::string devname, s32 latency);
+	static std::unique_ptr<AudioDevice> CreateNoopDevice(u32 port, AudioDir dir, u32 channels);
+	static std::vector<std::pair<std::string, std::string>> GetInputDeviceList();
+	static std::vector<std::pair<std::string, std::string>> GetOutputDeviceList();
 };
-
-typedef std::vector<AudioDeviceInfo> AudioDeviceInfoList;
-#endif

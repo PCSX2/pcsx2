@@ -33,7 +33,7 @@ extern WindowInfo g_gs_window_info;
 #include "FW.h"
 #include "SPU2/spu2.h"
 #include "DEV9/DEV9.h"
-#include "USB/USB.h"
+#include "USB/USBNull.h"
 #include "MemoryCardFile.h"
 #include "PAD/Gamepad.h"
 #include "PerformanceMetrics.h"

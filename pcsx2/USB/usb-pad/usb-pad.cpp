@@ -14,14 +14,17 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "padproxy.h"
 #include "usb-pad.h"
-#include "USB/qemu-usb/desc.h"
-#include "USB/shared/inifile_usb.h"
+#include "USB/qemu-usb/USBinternal.h"
+#include "USB/USB.h"
+#include "StateWrapper.h"
+
+#ifdef SDL_BUILD
+#include "USB/usb-pad/usb-pad-sdl-ff.h"
+#endif
 
 namespace usb_pad
 {
-
 	static const USBDescStrings df_desc_strings = {
 		"",
 		"Logitech Driving Force",
@@ -38,7 +41,7 @@ namespace usb_pad
 
 	static const USBDescStrings gtf_desc_strings = {
 		"",
-		"Logitech",         //actual index @ 0x04
+		"Logitech", //actual index @ 0x04
 		"Logitech GT Force" //actual index @ 0x20
 	};
 
@@ -59,103 +62,518 @@ namespace usb_pad
 		"",
 		"KONAMI"};
 
-	static const USBDescStrings gametrak_desc_strings = {
-		"",
-		"In2Games Ltd.",
-		"Game-Trak V1.3"};
-
-	static const USBDescStrings realplay_desc_strings = {
-		"",
-		"In2Games",
-		"Real Play"};
-
-	std::list<std::string> PadDevice::ListAPIs()
+	static gsl::span<const InputBindingInfo> GetWheelBindings(PS2WheelTypes wt)
 	{
-		return RegisterPad::instance().Names();
-	}
-
-	const TCHAR* PadDevice::LongAPIName(const std::string& name)
-	{
-		auto proxy = RegisterPad::instance().Proxy(name);
-		if (proxy)
-			return proxy->Name();
-		return nullptr;
-	}
-
-	std::list<std::string> RBDrumKitDevice::ListAPIs()
-	{
-		return PadDevice::ListAPIs();
-	}
-
-	const TCHAR* RBDrumKitDevice::LongAPIName(const std::string& name)
-	{
-		return PadDevice::LongAPIName(name);
-	}
-
-	std::list<std::string> BuzzDevice::ListAPIs()
-	{
-		return PadDevice::ListAPIs();
-	}
-
-	const TCHAR* BuzzDevice::LongAPIName(const std::string& name)
-	{
-		return PadDevice::LongAPIName(name);
-	}
-
-	std::list<std::string> KeyboardmaniaDevice::ListAPIs()
-	{
-		return PadDevice::ListAPIs();
-	}
-
-	const TCHAR* KeyboardmaniaDevice::LongAPIName(const std::string& name)
-	{
-		return PadDevice::LongAPIName(name);
-	}
-
-	std::list<std::string> GametrakDevice::ListAPIs()
-	{
-		return PadDevice::ListAPIs();
-	}
-
-	const TCHAR* GametrakDevice::LongAPIName(const std::string& name)
-	{
-		return PadDevice::LongAPIName(name);
-	}
-
-	std::list<std::string> RealPlayDevice::ListAPIs()
-	{
-		return PadDevice::ListAPIs();
-	}
-
-	const TCHAR* RealPlayDevice::LongAPIName(const std::string& name)
-	{
-		return PadDevice::LongAPIName(name);
-	}
-
-#ifdef _DEBUG
-	void PrintBits(void* data, int size)
-	{
-		std::vector<unsigned char> buf(size * 8 + 1 + size);
-		unsigned char* bits = buf.data();
-		unsigned char* ptrD = (unsigned char*)data;
-		unsigned char* ptrB = bits;
-		for (int i = 0; i < size * 8; i++)
+		switch (wt)
 		{
-			*(ptrB++) = '0' + (*(ptrD + i / 8) & (1 << (i % 8)) ? 1 : 0);
-			if (i % 8 == 7)
-				*(ptrB++) = ' ';
+			case WT_GENERIC:
+			{
+				static constexpr const InputBindingInfo bindings[] = {
+					{"SteeringLeft", "Steering Left", InputBindingInfo::Type::HalfAxis, CID_STEERING_L, GenericInputBinding::LeftStickLeft},
+					{"SteeringRight", "Steering Right", InputBindingInfo::Type::HalfAxis, CID_STEERING_R, GenericInputBinding::LeftStickRight},
+					{"Throttle", "Throttle", InputBindingInfo::Type::HalfAxis, CID_THROTTLE, GenericInputBinding::R2},
+					{"Brake", "Brake", InputBindingInfo::Type::HalfAxis, CID_BRAKE, GenericInputBinding::L2},
+					{"DPadUp", "D-Pad Up", InputBindingInfo::Type::Button, CID_DPAD_UP, GenericInputBinding::DPadUp},
+					{"DPadDown", "D-Pad Down", InputBindingInfo::Type::Button, CID_DPAD_DOWN, GenericInputBinding::DPadDown},
+					{"DPadLeft", "D-Pad Left", InputBindingInfo::Type::Button, CID_DPAD_LEFT, GenericInputBinding::DPadLeft},
+					{"DPadRight", "D-Pad Right", InputBindingInfo::Type::Button, CID_DPAD_RIGHT, GenericInputBinding::DPadRight},
+					{"Cross", "Cross", InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Cross},
+					{"Square", "Square", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Square},
+					{"Circle", "Circle", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Circle},
+					{"Triangle", "Triangle", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Triangle},
+					{"L1", "L1", InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::L1},
+					{"R1", "R1", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::R1},
+					{"L2", "L2", InputBindingInfo::Type::Button, CID_BUTTON7, GenericInputBinding::Unknown}, // used L2 for brake
+					{"R2", "R2", InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::Unknown}, // used R2 for throttle
+					{"Select", "Select", InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Select},
+					{"Start", "Start", InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Start},
+					{"FFDevice", "Force Feedback", InputBindingInfo::Type::Device, 0, GenericInputBinding::Unknown},
+				};
+
+				return bindings;
+			}
+
+			case WT_DRIVING_FORCE_PRO:
+			case WT_DRIVING_FORCE_PRO_1102:
+			{
+				static constexpr const InputBindingInfo bindings[] = {
+					{"SteeringLeft", "Steering Left", InputBindingInfo::Type::HalfAxis, CID_STEERING_L, GenericInputBinding::LeftStickLeft},
+					{"SteeringRight", "Steering Right", InputBindingInfo::Type::HalfAxis, CID_STEERING_R, GenericInputBinding::LeftStickRight},
+					{"Throttle", "Throttle", InputBindingInfo::Type::HalfAxis, CID_THROTTLE, GenericInputBinding::R2},
+					{"Brake", "Brake", InputBindingInfo::Type::HalfAxis, CID_BRAKE, GenericInputBinding::L2},
+					{"DPadUp", "D-Pad Up", InputBindingInfo::Type::Button, CID_DPAD_UP, GenericInputBinding::DPadUp},
+					{"DPadDown", "D-Pad Down", InputBindingInfo::Type::Button, CID_DPAD_DOWN, GenericInputBinding::DPadDown},
+					{"DPadLeft", "D-Pad Left", InputBindingInfo::Type::Button, CID_DPAD_LEFT, GenericInputBinding::DPadLeft},
+					{"DPadRight", "D-Pad Right", InputBindingInfo::Type::Button, CID_DPAD_RIGHT, GenericInputBinding::DPadRight},
+					{"Cross", "Cross", InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Cross},
+					{"Square", "Square", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Square},
+					{"Circle", "Circle", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Circle},
+					{"Triangle", "Triangle", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Triangle},
+					{"R1", "Shift Up / R1", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::R1},
+					{"L1", "Shift Down / L1", InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::L1},
+					{"Select", "Select", InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Select},
+					{"Start", "Start", InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Start},
+					{"L2", "L2", InputBindingInfo::Type::Button, CID_BUTTON7, GenericInputBinding::Unknown}, // used L2 for brake
+					{"R2", "R2", InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::Unknown}, // used R2 for throttle
+					{"L3", "L3", InputBindingInfo::Type::Button, CID_BUTTON11, GenericInputBinding::L3},
+					{"R3", "R3", InputBindingInfo::Type::Button, CID_BUTTON10, GenericInputBinding::R3},
+					{"FFDevice", "Force Feedback", InputBindingInfo::Type::Device, 0, GenericInputBinding::Unknown},
+				};
+
+				return bindings;
+			}
+
+			case WT_GT_FORCE:
+			{
+				static constexpr const InputBindingInfo bindings[] = {
+					{"SteeringLeft", "Steering Left", InputBindingInfo::Type::HalfAxis, CID_STEERING_L, GenericInputBinding::LeftStickLeft},
+					{"SteeringRight", "Steering Right", InputBindingInfo::Type::HalfAxis, CID_STEERING_R, GenericInputBinding::LeftStickRight},
+					{"Throttle", "Throttle", InputBindingInfo::Type::HalfAxis, CID_THROTTLE, GenericInputBinding::R2},
+					{"Brake", "Brake", InputBindingInfo::Type::HalfAxis, CID_BRAKE, GenericInputBinding::L2},
+					{"MenuUp", "Menu Up", InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::DPadUp},
+					{"MenuDown", "Menu Down", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::DPadDown},
+					{"X", "X", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Square},
+					{"Y", "Y", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Triangle},
+					{"A", "A", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::Cross},
+					{"B", "B", InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::Circle},
+					{"FFDevice", "Force Feedback", InputBindingInfo::Type::Device, 0, GenericInputBinding::Unknown},
+				};
+
+				return bindings;
+			}
+
+			default:
+			{
+				return {};
+			}
 		}
-		*ptrB = '\0';
 	}
 
-#else
-#define PrintBits(...)
-#define DbgPrint(...)
-#endif //_DEBUG
-
-	uint32_t gametrak_compute_key(uint32_t* key)
+	static gsl::span<const SettingInfo> GetWheelSettings(PS2WheelTypes wt)
 	{
-		uint32_t ret = 0;
+		if (wt <= WT_GT_FORCE)
+		{
+			static constexpr const SettingInfo info[] = {
+				{SettingInfo::Type::Integer, "SteeringSmoothing", "Steering Smoothing",
+					"Smooths out changes in steering to the specified percentage per poll. Needed for using keyboards.",
+					"0", "0", "100", "1", "%d%%", nullptr, nullptr, 1.0f},
+			};
+
+			return info;
+		}
+		else
+		{
+			return {};
+		}
+	}
+
+	PadState::PadState(u32 port_, PS2WheelTypes type_)
+		: port(port_)
+		, type(type_)
+	{
+		if (type_ == WT_DRIVING_FORCE_PRO || type_ == WT_DRIVING_FORCE_PRO_1102)
+			steering_range = 0x3FFF >> 1;
+		else if (type_ == WT_SEGA_SEAMIC)
+			steering_range = 0xFF >> 1;
+		else
+			steering_range = 0x3FF >> 1;
+
+		steering_step = std::numeric_limits<u16>::max();
+
+		// steering starts in the center
+		data.last_steering = steering_range;
+		data.steering = steering_range;
+
+		// throttle/brake start unpressed
+		data.throttle = 255;
+		data.brake = 255;
+
+		Reset();
+	}
+
+	PadState::~PadState() = default;
+
+	void PadState::UpdateSettings(SettingsInterface& si, const char* devname)
+	{
+		const s32 smoothing_percent = USB::GetConfigInt(si, port, devname, "SteeringSmoothing", 0);
+		if (smoothing_percent <= 0)
+		{
+			// none, allow any amount of change
+			steering_step = std::numeric_limits<u16>::max();
+		}
+		else
+		{
+			steering_step = static_cast<u16>(std::clamp<s32>((steering_range * smoothing_percent) / 100,
+				1, std::numeric_limits<u16>::max()));
+		}
+
+		if (HasFF())
+		{
+			const std::string ffdevname(USB::GetConfigString(si, port, devname, "FFDevice"));
+			if (ffdevname != mFFdevName)
+			{
+				mFFdev.reset();
+				mFFdevName = std::move(ffdevname);
+				OpenFFDevice();
+			}
+		}
+	}
+
+	void PadState::Reset()
+	{
+		data.steering = steering_range;
+		mFFstate = {};
+	}
+
+	int PadState::TokenIn(u8* buf, int len)
+	{
+		// TODO: This is still pretty gross and needs cleaning up.
+
+		struct wheel_lohi
+		{
+			u32 lo;
+			u32 hi;
+		};
+
+		wheel_lohi* w = reinterpret_cast<wheel_lohi*>(buf);
+		std::memset(w, 0, 8);
+
+		switch (type)
+		{
+			case WT_GENERIC:
+			{
+				UpdateSteering();
+				UpdateHatSwitch();
+
+				DbgCon.WriteLn("Steering: %d Throttle: %d Brake: %d Buttons: %d",
+					data.steering, data.throttle, data.brake, data.buttons);
+
+				w->lo = data.steering & 0x3FF;
+				w->lo |= (data.buttons & 0xFFF) << 10;
+				w->lo |= 0xFF << 24;
+
+				w->hi = (data.hatswitch & 0xF);
+				w->hi |= (data.throttle & 0xFF) << 8;
+				w->hi |= (data.brake & 0xFF) << 16;
+
+				return len;
+			}
+
+			case WT_GT_FORCE:
+			{
+				UpdateSteering();
+				UpdateHatSwitch();
+
+				w->lo = data.steering & 0x3FF;
+				w->lo |= (data.buttons & 0xFFF) << 10;
+				w->lo |= 0xFF << 24;
+
+				w->hi = (data.throttle & 0xFF);
+				w->hi |= (data.brake & 0xFF) << 8;
+
+				return len;
+			}
+
+			case WT_DRIVING_FORCE_PRO:
+			{
+				UpdateSteering();
+				UpdateHatSwitch();
+
+				w->lo = data.steering & 0x3FFF;
+				w->lo |= (data.buttons & 0x3FFF) << 14;
+				w->lo |= (data.hatswitch & 0xF) << 28;
+
+				w->hi = 0x00;
+				w->hi |= data.throttle << 8;
+				w->hi |= data.brake << 16; //axis_rz
+				w->hi |= 0x11 << 24; //enables wheel and pedals?
+
+				return len;
+			}
+
+			case WT_DRIVING_FORCE_PRO_1102:
+			{
+				UpdateSteering();
+				UpdateHatSwitch();
+
+				// what's up with the bitmap?
+				// xxxxxxxx xxxxxxbb bbbbbbbb bbbbhhhh ???????? ?01zzzzz 1rrrrrr1 10001000
+				w->lo = data.steering & 0x3FFF;
+				w->lo |= (data.buttons & 0x3FFF) << 14;
+				w->lo |= (data.hatswitch & 0xF) << 28;
+
+				w->hi = 0x00;
+				//w->hi |= 0 << 9; //bit 9 must be 0
+				w->hi |= (1 | (data.throttle * 0x3F) / 0xFF) << 10; //axis_z
+				w->hi |= 1 << 16; //bit 16 must be 1
+				w->hi |= ((0x3F - (data.brake * 0x3F) / 0xFF) & 0x3F) << 17; //axis_rz
+				w->hi |= 1 << 23; //bit 23 must be 1
+				w->hi |= 0x11 << 24; //enables wheel and pedals?
+
+				return len;
+			}
+
+			case WT_ROCKBAND1_DRUMKIT:
+			{
+				UpdateHatSwitch();
+
+				w->lo = (data.buttons & 0xFFF);
+				w->lo |= (data.hatswitch & 0xF) << 16;
+
+				return len;
+			}
+
+			case WT_BUZZ_CONTROLLER:
+			{
+				// https://gist.github.com/Lewiscowles1986/eef220dac6f0549e4702393a7b9351f6
+				buf[0] = 0x7f;
+				buf[1] = 0x7f;
+				buf[2] = data.buttons & 0xff;
+				buf[3] = (data.buttons >> 8) & 0xff;
+				buf[4] = 0xf0 | ((data.buttons >> 16) & 0xf);
+
+				return 5;
+			}
+
+			case WT_SEGA_SEAMIC:
+			{
+				UpdateSteering();
+				UpdateHatSwitch();
+
+				buf[0] = data.steering & 0xFF;
+				buf[1] = data.throttle & 0xFF;
+				buf[2] = data.brake & 0xFF;
+				buf[3] = data.hatswitch & 0x0F; // 4bits?
+				buf[3] |= (data.buttons & 0x0F) << 4; // 4 bits // TODO Or does it start at buf[4]?
+				buf[4] = (data.buttons >> 4) & 0x3F; // 10 - 4 = 6 bits
+
+				return len;
+			}
+
+			case WT_KEYBOARDMANIA_CONTROLLER:
+			{
+				buf[0] = 0x3F;
+				buf[1] = data.buttons & 0xFF;
+				buf[2] = (data.buttons >> 8) & 0xFF;
+				buf[3] = (data.buttons >> 16) & 0xFF;
+				buf[4] = (data.buttons >> 24) & 0xFF;
+
+				return len;
+			}
+
+			default:
+			{
+				return len;
+			}
+		}
+	}
+
+	int PadState::TokenOut(const u8* data, int len)
+	{
+		const ff_data* ffdata = reinterpret_cast<const ff_data*>(data);
+		bool hires = (type == WT_DRIVING_FORCE_PRO || type == WT_DRIVING_FORCE_PRO_1102);
+		ParseFFData(ffdata, hires);
+		return len;
+	}
+
+	float PadState::GetBindValue(u32 bind_index) const
+	{
+		switch (bind_index)
+		{
+			case CID_STEERING_L:
+				return static_cast<float>(data.steering_left) / static_cast<float>(steering_range);
+
+			case CID_STEERING_R:
+				return static_cast<float>(data.steering_right) / static_cast<float>(steering_range);
+
+			case CID_THROTTLE:
+				return 1.0f - (static_cast<float>(data.throttle) / 255.0f);
+
+			case CID_BRAKE:
+				return 1.0f - (static_cast<float>(data.brake) / 255.0f);
+
+			case CID_DPAD_UP:
+				return static_cast<float>(data.hat_up);
+
+			case CID_DPAD_DOWN:
+				return static_cast<float>(data.hat_down);
+
+			case CID_DPAD_LEFT:
+				return static_cast<float>(data.hat_left);
+
+			case CID_DPAD_RIGHT:
+				return static_cast<float>(data.hat_right);
+
+			case CID_BUTTON0:
+			case CID_BUTTON1:
+			case CID_BUTTON2:
+			case CID_BUTTON3:
+			case CID_BUTTON5:
+			case CID_BUTTON4:
+			case CID_BUTTON7:
+			case CID_BUTTON6:
+			case CID_BUTTON8:
+			case CID_BUTTON9:
+			case CID_BUTTON10:
+			case CID_BUTTON11:
+			case CID_BUTTON12:
+			case CID_BUTTON13:
+			case CID_BUTTON14:
+			case CID_BUTTON15:
+			case CID_BUTTON16:
+			case CID_BUTTON17:
+			case CID_BUTTON18:
+			case CID_BUTTON19:
+			case CID_BUTTON20:
+			case CID_BUTTON21:
+			case CID_BUTTON22:
+			case CID_BUTTON23:
+			case CID_BUTTON24:
+			{
+				const u32 mask = (1u << (bind_index - CID_BUTTON0));
+				return ((data.buttons & mask) != 0u) ? 1.0f : 0.0f;
+			}
+
+			default:
+				return 0.0f;
+		}
+	}
+
+	void PadState::SetBindValue(u32 bind_index, float value)
+	{
+		switch (bind_index)
+		{
+			case CID_STEERING_L:
+				data.steering_left = static_cast<s16>(std::lroundf(value * static_cast<float>(steering_range)));
+				UpdateSteering();
+				break;
+
+			case CID_STEERING_R:
+				data.steering_right = static_cast<s16>(std::lroundf(value * static_cast<float>(steering_range)));
+				UpdateSteering();
+				break;
+
+			case CID_THROTTLE:
+				data.throttle = static_cast<u32>(255 - std::clamp<long>(std::lroundf(value * 255.0f), 0, 255));
+				break;
+
+			case CID_BRAKE:
+				data.brake = static_cast<u32>(255 - std::clamp<long>(std::lroundf(value * 255.0f), 0, 255));
+				break;
+
+			case CID_DPAD_UP:
+				data.hat_up = static_cast<u8>(std::clamp<long>(std::lroundf(value * 255.0f), 0, 255));
+				UpdateHatSwitch();
+				break;
+			case CID_DPAD_DOWN:
+				data.hat_down = static_cast<u8>(std::clamp<long>(std::lroundf(value * 255.0f), 0, 255));
+				UpdateHatSwitch();
+				break;
+			case CID_DPAD_LEFT:
+				data.hat_left = static_cast<u8>(std::clamp<long>(std::lroundf(value * 255.0f), 0, 255));
+				UpdateHatSwitch();
+				break;
+			case CID_DPAD_RIGHT:
+				data.hat_right = static_cast<u8>(std::clamp<long>(std::lroundf(value * 255.0f), 0, 255));
+				UpdateHatSwitch();
+				break;
+
+			case CID_BUTTON0:
+			case CID_BUTTON1:
+			case CID_BUTTON2:
+			case CID_BUTTON3:
+			case CID_BUTTON5:
+			case CID_BUTTON4:
+			case CID_BUTTON7:
+			case CID_BUTTON6:
+			case CID_BUTTON8:
+			case CID_BUTTON9:
+			case CID_BUTTON10:
+			case CID_BUTTON11:
+			case CID_BUTTON12:
+			case CID_BUTTON13:
+			case CID_BUTTON14:
+			case CID_BUTTON15:
+			case CID_BUTTON16:
+			case CID_BUTTON17:
+			case CID_BUTTON18:
+			case CID_BUTTON19:
+			case CID_BUTTON20:
+			case CID_BUTTON21:
+			case CID_BUTTON22:
+			{
+				const u32 mask = (1u << (bind_index - CID_BUTTON0));
+				if (value >= 0.5f)
+					data.buttons |= mask;
+				else
+					data.buttons &= ~mask;
+			}
+			break;
+
+			default:
+				break;
+		}
+	}
+
+	void PadState::UpdateSteering()
+	{
+		u16 value;
+		if (data.steering_left > 0)
+			value = static_cast<u16>(std::max<int>(steering_range - data.steering_left, 0));
+		else
+			value = static_cast<u16>(std::min<int>(steering_range + data.steering_right, steering_range * 2));
+
+		// TODO: Smoothing, don't jump too much
+		//data.steering = value;
+		if (value < data.steering)
+			data.steering -= std::min<u16>(data.steering - value, steering_step);
+		else if (value > data.steering)
+			data.steering += std::min<u16>(value - data.steering, steering_step);
+	}
+
+	void PadState::UpdateHatSwitch()
+	{
+		if (data.hat_up && data.hat_right)
+			data.hatswitch = 1;
+		else if (data.hat_right && data.hat_down)
+			data.hatswitch = 3;
+		else if (data.hat_down && data.hat_left)
+			data.hatswitch = 5;
+		else if (data.hat_left && data.hat_up)
+			data.hatswitch = 7;
+		else if (data.hat_up)
+			data.hatswitch = 0;
+		else if (data.hat_right)
+			data.hatswitch = 2;
+		else if (data.hat_down)
+			data.hatswitch = 4;
+		else if (data.hat_left)
+			data.hatswitch = 6;
+		else
+			data.hatswitch = 8;
+	}
+
+	bool PadState::HasFF() const
+	{
+		// only do force feedback for wheels...
+		return (type <= WT_GT_FORCE);
+	}
+
+	void PadState::OpenFFDevice()
+	{
+		if (mFFdevName.empty())
+			return;
+
+		mFFdev.reset();
+
+#ifdef SDL_BUILD
+		mFFdev = SDLFFDevice::Create(mFFdevName);
+#endif
+	}
+
+	static u32 gametrak_compute_key(u32* key)
+	{
+		u32 ret = 0;
 		ret = *key << 2 & 0xFC0000;
 		ret |= *key << 17 & 0x020000;
 		ret ^= *key << 16 & 0xFE0000;
@@ -164,70 +582,11 @@ namespace usb_pad
 		ret |= *key << 7 & 0x008080;
 		*key = ret;
 		return ret >> 16;
-	};
-
-	typedef struct PADState
-	{
-		USBDevice dev;
-		USBDesc desc;
-		USBDescDevice desc_dev;
-		Pad* pad;
-		uint8_t port;
-		struct freeze
-		{
-			int dev_subtype;
-		} f;
-		uint8_t gametrak_state;
-		uint32_t gametrak_key;
-		uint8_t realplay_state;
-	} PADState;
-
-	typedef struct u_wheel_data_t
-	{
-		union
-		{
-			generic_data_t generic_data;
-			dfp_data_t dfp_data;
-			gtforce_data_t gtf_data;
-			rb1drumkit_t rb1dk_data;
-		} u;
-	} u_wheel_data_t;
-
-	//Convert DF Pro buttons to selected wheel type
-	uint32_t convert_wt_btn(PS2WheelTypes type, uint32_t inBtn)
-	{
-		if (type == WT_GT_FORCE)
-		{
-			/***
-		R1 > SQUARE == menu down	L1 > CROSS == menu up
-		SQUARE > CIRCLE == X		TRIANG > TRIANG == Y
-		CROSS > R1 == A				CIRCLE > L1 == B
-		***/
-			switch (inBtn)
-			{
-				case PAD_L1:
-					return PAD_CROSS;
-				case PAD_R1:
-					return PAD_SQUARE;
-				case PAD_SQUARE:
-					return PAD_CIRCLE;
-				case PAD_TRIANGLE:
-					return PAD_TRIANGLE;
-				case PAD_CIRCLE:
-					return PAD_L1;
-				case PAD_CROSS:
-					return PAD_R1;
-				default:
-					return PAD_BUTTON_COUNT; //Aka invalid
-			}
-		}
-
-		return inBtn;
 	}
 
 	static void pad_handle_data(USBDevice* dev, USBPacket* p)
 	{
-		PADState* s = (PADState*)dev;
+		PadState* s = USB_CONTAINER_OF(dev, PadState, dev);
 		uint8_t data[64];
 
 		int ret = 0;
@@ -236,43 +595,12 @@ namespace usb_pad
 		switch (p->pid)
 		{
 			case USB_TOKEN_IN:
-				if (devep == 1 && s->pad)
+				if (devep == 1)
 				{
-					if (s->pad->Type() == WT_GAMETRAK_CONTROLLER)
-					{
-						if (s->gametrak_state == 0)
-						{
-							s->gametrak_state = 1;
-							const unsigned char secret[] = "Gametrak\0\0\0\0\0\0\0\0";
-							memcpy(data, secret, sizeof(secret));
-							usb_packet_copy(p, data, 16);
-							break;
-						}
-						else if (s->gametrak_state == 1)
-						{
-							s->pad->TokenIn(data, p->iov.size);
-							data[0x00] |= s->gametrak_key >> 16 & 1;
-							data[0x02] |= s->gametrak_key >> 17 & 1;
-							data[0x04] |= s->gametrak_key >> 18 & 1;
-							data[0x06] |= s->gametrak_key >> 19 & 1;
-							data[0x08] |= s->gametrak_key >> 20 & 1;
-							data[0x0A] |= s->gametrak_key >> 21 & 1;
-							usb_packet_copy(p, data, 16);
-							break;
-						}
-					}
-					else if (s->pad->Type() >= WT_REALPLAY_RACING && s->pad->Type() <= WT_REALPLAY_POOL)
-					{
-						s->pad->TokenIn(data, p->iov.size);
-						// simulate a slight move to avoid a game "protection" : controller disconnected
-						s->realplay_state = !s->realplay_state;
-						data[0] |= s->realplay_state;
-						usb_packet_copy(p, data, 19);
-						break;
-					}
-					ret = s->pad->TokenIn(data, p->iov.size);
+					ret = s->TokenIn(data, p->iov.size);
+
 					if (ret > 0)
-						usb_packet_copy(p, data, MIN(ret, (int)sizeof(data)));
+						usb_packet_copy(p, data, std::min(ret, (int)sizeof(data)));
 					else
 						p->status = ret;
 				}
@@ -282,11 +610,11 @@ namespace usb_pad
 				}
 				break;
 			case USB_TOKEN_OUT:
-				usb_packet_copy(p, data, MIN(p->iov.size, sizeof(data)));
+				usb_packet_copy(p, data, std::min(p->iov.size, sizeof(data)));
 				/*Console.Warning("usb-pad: data token out len=0x%X %X,%X,%X,%X,%X,%X,%X,%X\n",len,
 			data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7]);*/
 				//Console.Warning("usb-pad: data token out len=0x%X\n",len);
-				ret = s->pad->TokenOut(data, p->iov.size);
+				ret = s->TokenOut(data, p->iov.size);
 				break;
 			default:
 			fail:
@@ -297,19 +625,15 @@ namespace usb_pad
 
 	static void pad_handle_reset(USBDevice* dev)
 	{
-		/* XXX: do it */
-		PADState* s = (PADState*)dev;
-		s->pad->Reset();
-		return;
+		PadState* s = USB_CONTAINER_OF(dev, PadState, dev);
+		s->Reset();
 	}
 
 	static void pad_handle_control(USBDevice* dev, USBPacket* p, int request, int value,
-								   int index, int length, uint8_t* data)
+		int index, int length, uint8_t* data)
 	{
-		PADState* s = (PADState*)dev;
+		PadState* s = USB_CONTAINER_OF(dev, PadState, dev);
 		int ret = 0;
-
-		int t = s->pad->Type();
 
 		switch (request)
 		{
@@ -322,41 +646,32 @@ namespace usb_pad
 			case InterfaceRequest | USB_REQ_GET_DESCRIPTOR: //GT3
 				switch (value >> 8)
 				{
+					// TODO: Move to constructor
 					case USB_DT_REPORT:
-						if (t == WT_DRIVING_FORCE_PRO || t == WT_DRIVING_FORCE_PRO_1102)
+						if (s->type == WT_DRIVING_FORCE_PRO || s->type == WT_DRIVING_FORCE_PRO_1102)
 						{
 							ret = sizeof(pad_driving_force_pro_hid_report_descriptor);
 							memcpy(data, pad_driving_force_pro_hid_report_descriptor, ret);
 						}
-						else if (t == WT_GT_FORCE)
+						else if (s->type == WT_GT_FORCE)
 						{
 							ret = sizeof(pad_gtforce_hid_report_descriptor);
 							memcpy(data, pad_gtforce_hid_report_descriptor, ret);
 						}
-						else if (t == WT_KEYBOARDMANIA_CONTROLLER)
+						else if (s->type == WT_KEYBOARDMANIA_CONTROLLER)
 						{
 							ret = sizeof(kbm_hid_report_descriptor);
 							memcpy(data, kbm_hid_report_descriptor, ret);
 						}
-						else if (t == WT_GENERIC)
+						else if (s->type == WT_GENERIC)
 						{
 							ret = sizeof(pad_driving_force_hid_separate_report_descriptor);
 							memcpy(data, pad_driving_force_hid_separate_report_descriptor, ret);
 						}
-						else if (t == WT_BUZZ_CONTROLLER)
+						else if (s->type == WT_BUZZ_CONTROLLER)
 						{
 							ret = sizeof(buzz_hid_report_descriptor);
 							memcpy(data, buzz_hid_report_descriptor, ret);
-						}
-						else if (t == WT_GAMETRAK_CONTROLLER)
-						{
-							ret = sizeof(gametrak_hid_report_descriptor);
-							memcpy(data, gametrak_hid_report_descriptor, ret);
-						}
-						else if (t >= WT_REALPLAY_RACING && t <= WT_REALPLAY_POOL)
-						{
-							ret = sizeof(realplay_hid_report_descriptor);
-							memcpy(data, realplay_hid_report_descriptor, ret);
 						}
 						p->actual_length = ret;
 						break;
@@ -364,32 +679,9 @@ namespace usb_pad
 						goto fail;
 				}
 				break;
+
 			/* hid specific requests */
 			case SET_REPORT:
-				if (t == WT_GAMETRAK_CONTROLLER)
-				{
-					const char secret[] = "Gametrak";
-					if (length == 8 && memcmp(data, secret, 8) == 0)
-					{
-						s->gametrak_state = 0;
-						s->gametrak_key = 0;
-					}
-					else if (length == 2)
-					{
-						if (data[0] == 0x45)
-						{
-							s->gametrak_key = data[1] << 16;
-						}
-						if ((s->gametrak_key >> 16) == data[1])
-						{
-							gametrak_compute_key(&s->gametrak_key);
-						}
-						else
-						{
-							fprintf(stderr, "gametrak error : own key = %02x, recv key = %02x\n", s->gametrak_key >> 16, data[1]);
-						}
-					}
-				}
 				// no idea, Rock Band 2 keeps spamming this
 				if (length > 0)
 				{
@@ -418,324 +710,32 @@ namespace usb_pad
 
 	static void pad_handle_destroy(USBDevice* dev)
 	{
-		PADState* s = (PADState*)dev;
+		PadState* s = USB_CONTAINER_OF(dev, PadState, dev);
 		delete s;
 	}
 
-	int pad_open(USBDevice* dev)
+	static void pad_init(PadState* s)
 	{
-		PADState* s = (PADState*)dev;
-		if (s)
-			return s->pad->Open();
-		return 1;
-	}
-
-	void pad_close(USBDevice* dev)
-	{
-		PADState* s = (PADState*)dev;
-		if (s)
-			s->pad->Close();
-	}
-
-	void pad_reset_data(generic_data_t* d)
-	{
-		memset(d, 0, sizeof(generic_data_t));
-		d->axis_x = 0x3FF >> 1;
-		d->axis_y = 0xFF;
-		d->axis_z = 0xFF;
-		d->axis_rz = 0xFF;
-	}
-
-	void pad_reset_data(dfp_data_t* d)
-	{
-		memset(d, 0, sizeof(dfp_data_t));
-		d->axis_x = 0x3FFF >> 1;
-		//d->axis_y = 0xFF;
-		d->axis_z = 0x3F;
-		d->axis_rz = 0x3F;
-	}
-
-	void pad_copy_data(PS2WheelTypes type, uint8_t* buf, wheel_data_t& data)
-	{
-#if 1
-		struct wheel_data_t
-		{
-			uint32_t lo;
-			uint32_t hi;
-		};
-
-		wheel_data_t* w = (wheel_data_t*)buf;
-		memset(w, 0, 8);
-
-		switch (type)
-		{
-			case WT_GENERIC:
-				w->lo = data.steering & 0x3FF;
-				w->lo |= (data.buttons & 0xFFF) << 10;
-				w->lo |= 0xFF << 24;
-
-				w->hi = (data.hatswitch & 0xF);
-				w->hi |= (data.throttle & 0xFF) << 8;
-				w->hi |= (data.brake & 0xFF) << 16;
-
-				break;
-
-			case WT_GT_FORCE:
-
-				w->lo = data.steering & 0x3FF;
-				w->lo |= (data.buttons & 0xFFF) << 10;
-				w->lo |= 0xFF << 24;
-
-				w->hi = (data.throttle & 0xFF);
-				w->hi |= (data.brake & 0xFF) << 8;
-
-				break;
-			case WT_DRIVING_FORCE_PRO:
-
-				w->lo = data.steering & 0x3FFF;
-				w->lo |= (data.buttons & 0x3FFF) << 14;
-				w->lo |= (data.hatswitch & 0xF) << 28;
-
-				w->hi = 0x00;
-				w->hi |= data.throttle << 8;
-				w->hi |= data.brake << 16; //axis_rz
-				w->hi |= 0x11 << 24;       //enables wheel and pedals?
-
-				//PrintBits(w, sizeof(*w));
-
-				break;
-			case WT_DRIVING_FORCE_PRO_1102:
-
-				// what's up with the bitmap?
-				// xxxxxxxx xxxxxxbb bbbbbbbb bbbbhhhh ???????? ?01zzzzz 1rrrrrr1 10001000
-				w->lo = data.steering & 0x3FFF;
-				w->lo |= (data.buttons & 0x3FFF) << 14;
-				w->lo |= (data.hatswitch & 0xF) << 28;
-
-				w->hi = 0x00;
-				//w->hi |= 0 << 9; //bit 9 must be 0
-				w->hi |= (1 | (data.throttle * 0x3F) / 0xFF) << 10;          //axis_z
-				w->hi |= 1 << 16;                                            //bit 16 must be 1
-				w->hi |= ((0x3F - (data.brake * 0x3F) / 0xFF) & 0x3F) << 17; //axis_rz
-				w->hi |= 1 << 23;                                            //bit 23 must be 1
-				w->hi |= 0x11 << 24;                                         //enables wheel and pedals?
-
-				//PrintBits(w, sizeof(*w));
-
-				break;
-			case WT_ROCKBAND1_DRUMKIT:
-				w->lo = (data.buttons & 0xFFF);
-				w->lo |= (data.hatswitch & 0xF) << 16;
-				break;
-
-			case WT_BUZZ_CONTROLLER:
-				// https://gist.github.com/Lewiscowles1986/eef220dac6f0549e4702393a7b9351f6
-				buf[0] = 0x7f;
-				buf[1] = 0x7f;
-				buf[2] = data.buttons & 0xff;
-				buf[3] = (data.buttons >> 8) & 0xff;
-				buf[4] = 0xf0 | ((data.buttons >> 16) & 0xf);
-				break;
-
-			case WT_GAMETRAK_CONTROLLER:
-				memset(buf, 0, 16);
-				buf[0] = data.clutch & 0xfe;
-				buf[1] = data.clutch >> 8;
-				buf[2] = data.throttle & 0xfe;
-				buf[3] = data.throttle >> 8;
-				buf[4] = data.brake & 0xfe;
-				buf[5] = data.brake >> 8;
-				buf[6] = data.hatswitch & 0xfe;
-				buf[7] = data.hatswitch >> 8;
-				buf[8] = data.hat_horz & 0xfe;
-				buf[9] = data.hat_horz >> 8;
-				buf[10] = data.hat_vert & 0xfe;
-				buf[11] = data.hat_vert >> 8;
-				buf[12] = data.buttons;
-				break;
-
-			case WT_REALPLAY_RACING:
-			case WT_REALPLAY_SPHERE:
-			case WT_REALPLAY_GOLF:
-			case WT_REALPLAY_POOL:
-				memset(buf, 0, 19);
-				buf[0] = data.clutch & 0xfe;
-				buf[1] = data.clutch >> 8;
-				buf[2] = data.throttle & 0xff;
-				buf[3] = data.throttle >> 8;
-				buf[4] = data.brake & 0xff;
-				buf[5] = data.brake >> 8;
-				buf[14] = data.buttons;
-				break;
-
-			case WT_SEGA_SEAMIC:
-				buf[0] = data.steering & 0xFF;
-				buf[1] = data.throttle & 0xFF;
-				buf[2] = data.brake & 0xFF;
-				buf[3] = data.hatswitch & 0x0F;       // 4bits?
-				buf[3] |= (data.buttons & 0x0F) << 4; // 4 bits // TODO Or does it start at buf[4]?
-				buf[4] = (data.buttons >> 4) & 0x3F;  // 10 - 4 = 6 bits
-				break;
-
-			case WT_KEYBOARDMANIA_CONTROLLER:
-				buf[0] = 0x3F;
-				buf[1] = data.buttons & 0xFF;
-				buf[2] = (data.buttons >> 8) & 0xFF;
-				buf[3] = (data.buttons >> 16) & 0xFF;
-				buf[4] = (data.buttons >> 24) & 0xFF;
-				break;
-
-			default:
-				break;
-		}
-
-#else
-
-		u_wheel_data_t* w = (u_wheel_data_t*)buf;
-
-		//Console.Warning("usb-pad: axis x %d\n", data.axis_x);
-		switch (type)
-		{
-			case WT_GENERIC:
-				memset(&w->u.generic_data, 0xff, sizeof(generic_data_t));
-				//pad_reset_data(&w->u.generic_data);
-
-				w->u.generic_data.buttons = data.buttons;
-				w->u.generic_data.hatswitch = data.hatswitch;
-				w->u.generic_data.axis_x = data.steering;
-				w->u.generic_data.axis_y = 0xFF; //data.clutch;
-				w->u.generic_data.axis_z = data.throttle;
-				w->u.generic_data.axis_rz = data.brake;
-
-				break;
-
-			case WT_DRIVING_FORCE_PRO:
-				//memset(&w->u.dfp_data, 0, sizeof(dfp_data_t));
-				//pad_reset_data(&w->u.dfp_data);
-
-				w->u.dfp_data.buttons = data.buttons;
-				w->u.dfp_data.hatswitch = data.hatswitch;
-				w->u.dfp_data.axis_x = data.steering;
-				w->u.dfp_data.axis_z = data.throttle;
-				w->u.dfp_data.axis_rz = data.brake;
-
-				w->u.dfp_data.magic1 = 1;
-				w->u.dfp_data.magic2 = 1;
-				w->u.dfp_data.magic3 = 1;
-				w->u.dfp_data.magic4 =
-					1 << 0 | //enable pedals?
-					0 << 1 |
-					0 << 2 |
-					0 << 3 |
-					1 << 4 | //enable wheel?
-					0 << 5 |
-					0 << 6 |
-					0 << 7;
-
-				PrintBits(&w->u.dfp_data, sizeof(dfp_data_t));
-
-				break;
-
-			case WT_DRIVING_FORCE_PRO_1102:
-				//memset(&w->u.dfp_data, 0, sizeof(dfp_data_t));
-				//pad_reset_data(&w->u.dfp_data);
-
-				w->u.dfp_data.buttons = data.buttons;
-				w->u.dfp_data.hatswitch = data.hatswitch;
-				w->u.dfp_data.axis_x = data.steering;
-				w->u.dfp_data.axis_z = 1 | (data.throttle * 0x3F) / 0xFF; //TODO Always > 0 or everything stops working, wut.
-				w->u.dfp_data.axis_rz = 0x3F - (data.brake * 0x3F) / 0xFF;
-
-				w->u.dfp_data.magic1 = 1;
-				w->u.dfp_data.magic2 = 1;
-				w->u.dfp_data.magic3 = 1;
-				w->u.dfp_data.magic4 =
-					1 << 0 | //enable pedals?
-					0 << 1 |
-					0 << 2 |
-					0 << 3 |
-					1 << 4 | //enable wheel?
-					0 << 5 |
-					0 << 6 |
-					0 << 7;
-
-				PrintBits(&w->u.dfp_data, sizeof(dfp_data_t));
-
-				break;
-
-			case WT_GT_FORCE:
-				memset(&w->u.gtf_data, 0xff, sizeof(gtforce_data_t));
-
-				w->u.gtf_data.buttons = data.buttons;
-				w->u.gtf_data.axis_x = data.steering;
-				w->u.gtf_data.axis_y = 0xFF; //data.clutch;
-				w->u.gtf_data.axis_z = data.throttle;
-				w->u.gtf_data.axis_rz = data.brake;
-
-				break;
-
-			case WT_ROCKBAND1_DRUMKIT:
-				memset(&w->u.rb1dk_data, 0x0, sizeof(rb1drumkit_t));
-
-				w->u.rb1dk_data.u.buttons = data.buttons;
-				w->u.rb1dk_data.hatswitch = data.hatswitch;
-
-				break;
-
-			default:
-				break;
-		}
-
-#endif
-	}
-
-	static void pad_init(PADState* s, int port, Pad* pad)
-	{
-		s->f.dev_subtype = pad->Type();
-		s->pad = pad;
-		s->port = port;
-
 		s->dev.speed = USB_SPEED_FULL;
 		s->dev.klass.handle_attach = usb_desc_attach;
 		s->dev.klass.handle_reset = pad_handle_reset;
 		s->dev.klass.handle_control = pad_handle_control;
 		s->dev.klass.handle_data = pad_handle_data;
 		s->dev.klass.unrealize = pad_handle_destroy;
-		s->dev.klass.open = pad_open;
-		s->dev.klass.close = pad_close;
 		s->dev.klass.usb_desc = &s->desc;
 		s->dev.klass.product_desc = nullptr;
 
 		usb_desc_init(&s->dev);
 		usb_ep_init(&s->dev);
-		pad_handle_reset((USBDevice*)s);
+		pad_handle_reset(&s->dev);
 	}
 
-	USBDevice* PadDevice::CreateDevice(int port)
+	USBDevice* PadDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
-		std::string varApi;
-#ifdef _WIN32
-		std::wstring tmp;
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, tmp);
-		varApi = wstr_to_str(tmp);
-#else
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
-#endif
-		PadProxyBase* proxy = RegisterPad::instance().Proxy(varApi);
-		if (!proxy)
-		{
-			Console.WriteLn("USB: PAD: Invalid input API.\n");
-			return nullptr;
-		}
-
-		Pad* pad = proxy->CreateObject(port, TypeName());
-
-		if (!pad)
+		if (subtype >= WT_COUNT)
 			return nullptr;
 
-		pad->Type((PS2WheelTypes)GetSelectedSubtype(std::make_pair(port, TypeName())));
-		PADState* s = new PADState();
-
+		PadState* s = new PadState(port, static_cast<PS2WheelTypes>(subtype));
 		s->desc.full = &s->desc_dev;
 		s->desc.str = df_desc_strings;
 
@@ -744,7 +744,7 @@ namespace usb_pad
 		const uint8_t* config_desc = df_config_descriptor;
 		int config_desc_len = sizeof(df_config_descriptor);
 
-		switch (pad->Type())
+		switch (s->type)
 		{
 			case WT_DRIVING_FORCE_PRO:
 			{
@@ -781,72 +781,99 @@ namespace usb_pad
 		if (usb_desc_parse_config(config_desc, config_desc_len, s->desc_dev) < 0)
 			goto fail;
 
-		pad_init(s, port, pad);
+		s->UpdateSettings(si, TypeName());
+		pad_init(s);
 
-		return (USBDevice*)s;
+		return &s->dev;
 
 	fail:
-		pad_handle_destroy((USBDevice*)s);
+		pad_handle_destroy(&s->dev);
 		return nullptr;
 	}
 
-	int PadDevice::Configure(int port, const std::string& api, void* data)
+	const char* PadDevice::Name() const
 	{
-		auto proxy = RegisterPad::instance().Proxy(api);
-		if (proxy)
-			return proxy->Configure(port, TypeName(), data);
-		return RESULT_CANCELED;
+		return "Wheel Device";
 	}
 
-	int PadDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
+	const char* PadDevice::TypeName() const
 	{
-		PADState* s = (PADState*)dev;
+		return "Pad";
+	}
 
-		if (!s)
-			return 0;
-		switch (mode)
-		{
-			case FreezeAction::Load:
-				s->f = *(PADState::freeze*)data;
-				s->pad->Type((PS2WheelTypes)s->f.dev_subtype);
-				return sizeof(PADState::freeze);
-			case FreezeAction::Save:
-				*(PADState::freeze*)data = s->f;
-				return sizeof(PADState::freeze);
-			case FreezeAction::Size:
-				return sizeof(PADState::freeze);
-			default:
-				break;
-		}
-		return 0;
+	bool PadDevice::Freeze(USBDevice* dev, StateWrapper& sw) const
+	{
+		PadState* s = USB_CONTAINER_OF(dev, PadState, dev);
+
+		if (!sw.DoMarker("PadDevice"))
+			return false;
+
+		sw.Do(&s->data.last_steering);
+		sw.DoPOD(&s->mFFstate);
+		return true;
+	}
+
+	void PadDevice::UpdateSettings(USBDevice* dev, SettingsInterface& si) const
+	{
+		USB_CONTAINER_OF(dev, PadState, dev)->UpdateSettings(si, TypeName());
+	}
+
+	float PadDevice::GetBindingValue(const USBDevice* dev, u32 bind_index) const
+	{
+		const PadState* s = USB_CONTAINER_OF(dev, const PadState, dev);
+		return s->GetBindValue(bind_index);
+	}
+
+	void PadDevice::SetBindingValue(USBDevice* dev, u32 bind_index, float value) const
+	{
+		PadState* s = USB_CONTAINER_OF(dev, PadState, dev);
+		s->SetBindValue(bind_index, value);
+	}
+
+	std::vector<std::string> PadDevice::SubTypes() const
+	{
+		return {"Driving Force", "Driving Force Pro", "Driving Force Pro (rev11.02)", "GT Force"};
+	}
+
+	gsl::span<const InputBindingInfo> PadDevice::Bindings(u32 subtype) const
+	{
+		return GetWheelBindings(static_cast<PS2WheelTypes>(subtype));
+	}
+
+	gsl::span<const SettingInfo> PadDevice::Settings(u32 subtype) const
+	{
+		return GetWheelSettings(static_cast<PS2WheelTypes>(subtype));
+	}
+
+	void PadDevice::InputDeviceConnected(USBDevice* dev, const std::string_view& identifier) const
+	{
+		PadState* s = USB_CONTAINER_OF(dev, PadState, dev);
+		if (s->mFFdevName == identifier)
+			s->OpenFFDevice();
+	}
+
+	void PadDevice::InputDeviceDisconnected(USBDevice* dev, const std::string_view& identifier) const
+	{
+		PadState* s = USB_CONTAINER_OF(dev, PadState, dev);
+		if (s->mFFdevName == identifier)
+			s->mFFdev.reset();
 	}
 
 	// ---- Rock Band drum kit ----
 
-	USBDevice* RBDrumKitDevice::CreateDevice(int port)
+	const char* RBDrumKitDevice::Name() const
 	{
-		std::string varApi;
-#ifdef _WIN32
-		std::wstring tmp;
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, tmp);
-		varApi = wstr_to_str(tmp);
-#else
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
-#endif
-		PadProxyBase* proxy = RegisterPad::instance().Proxy(varApi);
-		if (!proxy)
-		{
-			Console.WriteLn("RBDK: Invalid input API.\n");
-			return nullptr;
-		}
+		return "Rock Band Drum Kit";
+	}
 
-		Pad* pad = proxy->CreateObject(port, TypeName());
+	const char* RBDrumKitDevice::TypeName() const
+	{
+		return "RBDrumKit";
+	}
 
-		if (!pad)
-			return nullptr;
-
-		pad->Type(WT_ROCKBAND1_DRUMKIT);
-		PADState* s = new PADState();
+	USBDevice* RBDrumKitDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
+	{
+		PadState* s = new PadState(port, WT_ROCKBAND1_DRUMKIT);
 
 		s->desc.full = &s->desc_dev;
 		s->desc.str = rb1_desc_strings;
@@ -856,54 +883,78 @@ namespace usb_pad
 		if (usb_desc_parse_config(rb1_config_descriptor, sizeof(rb1_config_descriptor), s->desc_dev) < 0)
 			goto fail;
 
-		pad_init(s, port, pad);
+		pad_init(s);
 
-		return (USBDevice*)s;
+		return &s->dev;
 
 	fail:
-		pad_handle_destroy((USBDevice*)s);
+		pad_handle_destroy(&s->dev);
 		return nullptr;
 	}
 
-	int RBDrumKitDevice::Configure(int port, const std::string& api, void* data)
+	std::vector<std::string> RBDrumKitDevice::SubTypes() const
 	{
-		auto proxy = RegisterPad::instance().Proxy(api);
-		if (proxy)
-			return proxy->Configure(port, TypeName(), data);
-		return RESULT_CANCELED;
+		return {};
 	}
 
-	int RBDrumKitDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
+	gsl::span<const InputBindingInfo> RBDrumKitDevice::Bindings(u32 subtype) const
 	{
-		return PadDevice::Freeze(mode, dev, data);
+		static constexpr const InputBindingInfo bindings[] = {
+			{"Blue", "Blue", InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::R1},
+			{"Green", "Green", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Triangle},
+			{"Red", "Red", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Circle},
+			{"Yellow", "Yellow", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Square},
+			{"Orange", "Orange", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::Cross},
+			{"Select", "Select", InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Select},
+			{"Start", "Start", InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Start},
+		};
+
+		return bindings;
+	}
+
+	gsl::span<const SettingInfo> RBDrumKitDevice::Settings(u32 subtype) const
+	{
+		return {};
 	}
 
 	// ---- Buzz ----
 
-	USBDevice* BuzzDevice::CreateDevice(int port)
+	const char* BuzzDevice::Name() const
 	{
-		std::string varApi;
-#ifdef _WIN32
-		std::wstring tmp;
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, tmp);
-		varApi = wstr_to_str(tmp);
-#else
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
-#endif
-		PadProxyBase* proxy = RegisterPad::instance().Proxy(varApi);
-		if (!proxy)
-		{
-			Console.WriteLn("Buzz: Invalid input API.\n");
-			return nullptr;
-		}
+		return "Buzz Controller";
+	}
 
-		Pad* pad = proxy->CreateObject(port, TypeName());
+	const char* BuzzDevice::TypeName() const
+	{
+		return "BuzzDevice";
+	}
 
-		if (!pad)
-			return nullptr;
+	std::vector<std::string> BuzzDevice::SubTypes() const
+	{
+		return {};
+	}
 
-		pad->Type(WT_BUZZ_CONTROLLER);
-		PADState* s = new PADState();
+	gsl::span<const InputBindingInfo> BuzzDevice::Bindings(u32 subtype) const
+	{
+		static constexpr const InputBindingInfo bindings[] = {
+			{"Red", "Red", InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::R1},
+			{"Yellow", "Yellow", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Triangle},
+			{"Green", "Green", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Circle},
+			{"Orange", "Orange", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Square},
+			{"Blue", "Blue", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::Cross},
+		};
+
+		return bindings;
+	}
+
+	gsl::span<const SettingInfo> BuzzDevice::Settings(u32 subtype) const
+	{
+		return {};
+	}
+
+	USBDevice* BuzzDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
+	{
+		PadState* s = new PadState(port, WT_BUZZ_CONTROLLER);
 
 		s->desc.full = &s->desc_dev;
 		s->desc.str = buzz_desc_strings;
@@ -913,54 +964,73 @@ namespace usb_pad
 		if (usb_desc_parse_config(buzz_config_descriptor, sizeof(buzz_config_descriptor), s->desc_dev) < 0)
 			goto fail;
 
-		pad_init(s, port, pad);
+		pad_init(s);
 
-		return (USBDevice*)s;
+		return &s->dev;
 
 	fail:
-		pad_handle_destroy((USBDevice*)s);
+		pad_handle_destroy(&s->dev);
 		return nullptr;
-	}
-
-	int BuzzDevice::Configure(int port, const std::string& api, void* data)
-	{
-		auto proxy = RegisterPad::instance().Proxy(api);
-		if (proxy)
-			return proxy->Configure(port, TypeName(), data);
-		return RESULT_CANCELED;
-	}
-
-	int BuzzDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
-	{
-		return PadDevice::Freeze(mode, dev, data);
 	}
 
 	// ---- Keyboardmania ----
 
-	USBDevice* KeyboardmaniaDevice::CreateDevice(int port)
+	const char* KeyboardmaniaDevice::Name() const
 	{
-		std::string varApi;
-#ifdef _WIN32
-		std::wstring tmp;
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, tmp);
-		varApi = wstr_to_str(tmp);
-#else
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
-#endif
-		PadProxyBase* proxy = RegisterPad::instance().Proxy(varApi);
-		if (!proxy)
-		{
-			Console.WriteLn("usb-pad: %s: Invalid input API.", TypeName());
-			return nullptr;
-		}
+		return "Keyboardmania";
+	}
 
-		Pad* pad = proxy->CreateObject(port, TypeName());
+	const char* KeyboardmaniaDevice::TypeName() const
+	{
+		return "Keyboardmania";
+	}
 
-		if (!pad)
-			return nullptr;
+	std::vector<std::string> KeyboardmaniaDevice::SubTypes() const
+	{
+		return {};
+	}
 
-		pad->Type(WT_KEYBOARDMANIA_CONTROLLER);
-		PADState* s = new PADState();
+	gsl::span<const InputBindingInfo> KeyboardmaniaDevice::Bindings(u32 subtype) const
+	{
+		static constexpr const InputBindingInfo bindings[] = {
+			{"C", "C", InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Unknown},
+			{"CSharp", "C#", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Unknown},
+			{"D", "D", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Unknown},
+			{"EFlat", "Eb", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Unknown},
+			{"E", "E", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::Unknown},
+			{"F", "F", InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::Unknown},
+			{"FSharp", "F#", InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::Unknown},
+			{"G", "G", InputBindingInfo::Type::Button, CID_BUTTON7, GenericInputBinding::Unknown},
+			{"AFlat", "Ab", InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Unknown},
+			{"A", "A", InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Unknown},
+			{"BFlat", "Bb", InputBindingInfo::Type::Button, CID_BUTTON10, GenericInputBinding::Unknown},
+			{"B", "B", InputBindingInfo::Type::Button, CID_BUTTON11, GenericInputBinding::Unknown},
+			{"C2", "+C", InputBindingInfo::Type::Button, CID_BUTTON12, GenericInputBinding::Unknown},
+			{"CSharp2", "+C#", InputBindingInfo::Type::Button, CID_BUTTON13, GenericInputBinding::Unknown},
+			{"D2", "+D", InputBindingInfo::Type::Button, CID_BUTTON14, GenericInputBinding::Unknown},
+			{"EFlat2", "+Eb", InputBindingInfo::Type::Button, CID_BUTTON15, GenericInputBinding::Unknown},
+			{"E2", "+E", InputBindingInfo::Type::Button, CID_BUTTON16, GenericInputBinding::Unknown},
+			{"F2", "+F", InputBindingInfo::Type::Button, CID_BUTTON17, GenericInputBinding::Unknown},
+			{"FSharp2", "+F#", InputBindingInfo::Type::Button, CID_BUTTON18, GenericInputBinding::Unknown},
+			{"G2", "+G", InputBindingInfo::Type::Button, CID_BUTTON19, GenericInputBinding::Unknown},
+			{"AFlat2", "+Ab", InputBindingInfo::Type::Button, CID_BUTTON20, GenericInputBinding::Unknown},
+			{"A2", "+A", InputBindingInfo::Type::Button, CID_BUTTON21, GenericInputBinding::Unknown},
+			{"BFlat2", "+Bb", InputBindingInfo::Type::Button, CID_BUTTON22, GenericInputBinding::Unknown},
+			{"B2", "+B", InputBindingInfo::Type::Button, CID_BUTTON23, GenericInputBinding::Unknown},
+			{"C3", "++C", InputBindingInfo::Type::Button, CID_BUTTON24, GenericInputBinding::Unknown},
+		};
+
+		return bindings;
+	}
+
+	gsl::span<const SettingInfo> KeyboardmaniaDevice::Settings(u32 subtype) const
+	{
+		return {};
+	}
+
+	USBDevice* KeyboardmaniaDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
+	{
+		PadState* s = new PadState(port, WT_KEYBOARDMANIA_CONTROLLER);
 
 		s->desc.full = &s->desc_dev;
 		s->desc.str = kbm_desc_strings;
@@ -970,178 +1040,12 @@ namespace usb_pad
 		if (usb_desc_parse_config(kbm_config_descriptor, sizeof(kbm_config_descriptor), s->desc_dev) < 0)
 			goto fail;
 
-		pad_init(s, port, pad);
+		pad_init(s);
 
-		return (USBDevice*)s;
-
-	fail:
-		pad_handle_destroy((USBDevice*)s);
-		return nullptr;
-	}
-
-	int KeyboardmaniaDevice::Configure(int port, const std::string& api, void* data)
-	{
-		auto proxy = RegisterPad::instance().Proxy(api);
-		if (proxy)
-			return proxy->Configure(port, TypeName(), data);
-		return RESULT_CANCELED;
-	}
-
-	int KeyboardmaniaDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
-	{
-		return PadDevice::Freeze(mode, dev, data);
-	}
-
-	// ---- Gametrak ----
-
-	USBDevice* GametrakDevice::CreateDevice(int port)
-	{
-		std::string varApi;
-#ifdef _WIN32
-		std::wstring tmp;
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, tmp);
-		varApi = wstr_to_str(tmp);
-#else
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
-#endif
-		PadProxyBase* proxy = RegisterPad::instance().Proxy(varApi);
-		if (!proxy)
-		{
-			Console.WriteLn("Gametrak: Invalid input API.");
-			return nullptr;
-		}
-
-		Pad* pad = proxy->CreateObject(port, TypeName());
-
-		if (!pad)
-			return nullptr;
-
-		pad->Type(WT_GAMETRAK_CONTROLLER);
-		PADState* s = new PADState();
-
-		s->desc.full = &s->desc_dev;
-		s->desc.str = gametrak_desc_strings;
-
-		if (usb_desc_parse_dev(gametrak_dev_descriptor, sizeof(gametrak_dev_descriptor), s->desc, s->desc_dev) < 0)
-			goto fail;
-		if (usb_desc_parse_config(gametrak_config_descriptor, sizeof(gametrak_config_descriptor), s->desc_dev) < 0)
-			goto fail;
-
-		s->f.dev_subtype = pad->Type();
-		s->pad = pad;
-		s->port = port;
-		s->dev.speed = USB_SPEED_FULL;
-		s->dev.klass.handle_attach = usb_desc_attach;
-		s->dev.klass.handle_reset = pad_handle_reset;
-		s->dev.klass.handle_control = pad_handle_control;
-		s->dev.klass.handle_data = pad_handle_data;
-		s->dev.klass.unrealize = pad_handle_destroy;
-		s->dev.klass.open = pad_open;
-		s->dev.klass.close = pad_close;
-		s->dev.klass.usb_desc = &s->desc;
-		s->dev.klass.product_desc = s->desc.str[2];
-
-		usb_desc_init(&s->dev);
-		usb_ep_init(&s->dev);
-		pad_handle_reset((USBDevice*)s);
-
-		return (USBDevice*)s;
+		return &s->dev;
 
 	fail:
-		pad_handle_destroy((USBDevice*)s);
+		pad_handle_destroy(&s->dev);
 		return nullptr;
 	}
-
-	int GametrakDevice::Configure(int port, const std::string& api, void* data)
-	{
-		auto proxy = RegisterPad::instance().Proxy(api);
-		if (proxy)
-			return proxy->Configure(port, TypeName(), data);
-		return RESULT_CANCELED;
-	}
-
-	int GametrakDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
-	{
-		return PadDevice::Freeze(mode, dev, data);
-	}
-
-	// ---- RealPlay ----
-
-	USBDevice* RealPlayDevice::CreateDevice(int port)
-	{
-		std::string varApi;
-#ifdef _WIN32
-		std::wstring tmp;
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, tmp);
-		varApi = wstr_to_str(tmp);
-#else
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
-#endif
-		PadProxyBase* proxy = RegisterPad::instance().Proxy(varApi);
-		if (!proxy)
-		{
-			Console.WriteLn("RealPlay: Invalid input API");
-			return nullptr;
-		}
-
-		Pad* pad = proxy->CreateObject(port, TypeName());
-
-		if (!pad)
-			return nullptr;
-
-		pad->Type((PS2WheelTypes)(WT_REALPLAY_RACING + GetSelectedSubtype(std::make_pair(port, TypeName()))));
-		PADState* s = new PADState();
-
-		s->desc.full = &s->desc_dev;
-		s->desc.str = realplay_desc_strings;
-
-		if (pad->Type() == WT_REALPLAY_RACING && usb_desc_parse_dev(realplay_racing_dev_descriptor, sizeof(realplay_racing_dev_descriptor), s->desc, s->desc_dev) < 0)
-			goto fail;
-		if (pad->Type() == WT_REALPLAY_SPHERE && usb_desc_parse_dev(realplay_sphere_dev_descriptor, sizeof(realplay_sphere_dev_descriptor), s->desc, s->desc_dev) < 0)
-			goto fail;
-		if (pad->Type() == WT_REALPLAY_GOLF && usb_desc_parse_dev(realplay_golf_dev_descriptor, sizeof(realplay_golf_dev_descriptor), s->desc, s->desc_dev) < 0)
-			goto fail;
-		if (pad->Type() == WT_REALPLAY_POOL && usb_desc_parse_dev(realplay_pool_dev_descriptor, sizeof(realplay_pool_dev_descriptor), s->desc, s->desc_dev) < 0)
-			goto fail;
-		if (usb_desc_parse_config(realplay_config_descriptor, sizeof(realplay_config_descriptor), s->desc_dev) < 0)
-			goto fail;
-
-		s->f.dev_subtype = pad->Type();
-		s->pad = pad;
-		s->port = port;
-		s->dev.speed = USB_SPEED_FULL;
-		s->dev.klass.handle_attach = usb_desc_attach;
-		s->dev.klass.handle_reset = pad_handle_reset;
-		s->dev.klass.handle_control = pad_handle_control;
-		s->dev.klass.handle_data = pad_handle_data;
-		s->dev.klass.unrealize = pad_handle_destroy;
-		s->dev.klass.open = pad_open;
-		s->dev.klass.close = pad_close;
-		s->dev.klass.usb_desc = &s->desc;
-		s->dev.klass.product_desc = s->desc.str[1];
-
-		usb_desc_init(&s->dev);
-		usb_ep_init(&s->dev);
-		pad_handle_reset((USBDevice*)s);
-
-		return (USBDevice*)s;
-
-	fail:
-		pad_handle_destroy((USBDevice*)s);
-		return nullptr;
-	}
-
-	int RealPlayDevice::Configure(int port, const std::string& api, void* data)
-	{
-		auto proxy = RegisterPad::instance().Proxy(api);
-		if (proxy)
-			return proxy->Configure(port, TypeName(), data);
-		return RESULT_CANCELED;
-	}
-
-	int RealPlayDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
-	{
-		return PadDevice::Freeze(mode, dev, data);
-	}
-
 } // namespace usb_pad

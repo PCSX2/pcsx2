@@ -25,10 +25,9 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "USB/platcompat.h"
-#include "vl.h"
-#include "iov.h"
-//#include "trace.h"
+#include "USB/qemu-usb/qusb.h"
+#include "USB/qemu-usb/iov.h"
+#include <utility>
 
 void usb_pick_speed(USBPort* port)
 {
@@ -39,9 +38,8 @@ void usb_pick_speed(USBPort* port)
 		USB_SPEED_LOW,
 	};
 	USBDevice* udev = port->dev;
-	int i;
 
-	for (i = 0; i < (int)ARRAY_SIZE(speeds); i++)
+	for (u32 i = 0; i < std::size(speeds); i++)
 	{
 		if ((udev->speedmask & (1 << speeds[i])) &&
 			(port->speedmask & (1 << speeds[i])))
@@ -568,7 +566,7 @@ void usb_cancel_packet(USBPacket* p)
 
 void usb_packet_init(USBPacket* p)
 {
-	qemu_iovec_init(&p->iov, 1);
+	qemu_iovec_init(&p->iov);
 }
 
 static const char* usb_packet_state_name(USBPacketState state)
@@ -581,7 +579,7 @@ static const char* usb_packet_state_name(USBPacketState state)
 		/*[USB_PACKET_COMPLETE]  =*/"complete",
 		/*[USB_PACKET_CANCELED]  =*/"canceled",
 	};
-	if (state < ARRAY_SIZE(name))
+	if (static_cast<u32>(state) < std::size(name))
 	{
 		return name[state];
 	}

@@ -439,90 +439,76 @@ endif()
 
 # USBNull
 set(pcsx2USBNullSources USB/USBNull.cpp)
-set(pcsx2USBNullHeaders USB/USB.h)
+set(pcsx2USBNullHeaders USB/USBNull.h)
 
 # USB sources
 set(pcsx2USBSources
 	USB/USB.cpp
 	USB/deviceproxy.cpp
-	USB/configuration.cpp
-	USB/device_init.cpp
-	USB/qemu-usb/glib.cpp
-	USB/qemu-usb/vl.cpp
-	USB/qemu-usb/iov.cpp
-	USB/qemu-usb/desc.cpp
-	USB/qemu-usb/core.cpp
 	USB/qemu-usb/bus.cpp
-	USB/qemu-usb/usb-ohci.cpp
+	USB/qemu-usb/core.cpp
+	USB/qemu-usb/desc.cpp
 	USB/qemu-usb/hid.cpp
 	USB/qemu-usb/input-keymap-qcode-to-qnum.cpp
-	USB/usb-msd/usb-msd.cpp
-	USB/usb-pad/usb-pad.cpp
-	USB/usb-pad/usb-pad-ff.cpp
-	USB/usb-pad/lg/lg_ff.cpp
-	USB/usb-pad/usb-seamic.cpp
-	USB/usb-mic/usb-mic-singstar.cpp
-	USB/usb-mic/usb-mic-logitech.cpp
-	USB/usb-mic/usb-headset.cpp
+	USB/qemu-usb/iov.cpp
+	USB/qemu-usb/usb-ohci.cpp
+	USB/shared/ringbuffer.cpp
 	USB/usb-eyetoy/jo_mpeg.cpp
 	USB/usb-eyetoy/usb-eyetoy-webcam.cpp
 	USB/usb-hid/usb-hid.cpp
-	USB/shared/shared_usb.cpp
-	USB/shared/inifile_usb.cpp
-	USB/shared/ringbuffer.cpp
+	USB/usb-lightgun/guncon2.cpp
+	USB/usb-mic/usb-headset.cpp
+	USB/usb-mic/usb-mic-logitech.cpp
+	USB/usb-mic/usb-mic-singstar.cpp
+	USB/usb-msd/usb-msd.cpp
+	USB/usb-pad/lg/lg_ff.cpp
+	USB/usb-pad/usb-pad-ff.cpp
+	USB/usb-pad/usb-pad.cpp
+	USB/usb-pad/usb-seamic.cpp
 	USB/usb-printer/usb-printer.cpp
-	)
+)
 
 # USB headers
 set(pcsx2USBHeaders
 	USB/USB.h
-	USB/proxybase.h
 	USB/deviceproxy.h
-	USB/configuration.h
-	USB/platcompat.h
-	USB/helpers.h
-	USB/readerwriterqueue/readerwriterqueue.h
-	USB/readerwriterqueue/atomicops.h
-	USB/qemu-usb/glib.h
-	USB/qemu-usb/vl.h
-	USB/qemu-usb/qusb.h
 	USB/qemu-usb/USBinternal.h
 	USB/qemu-usb/desc.h
-	USB/qemu-usb/iov.h
-	USB/qemu-usb/queue.h
 	USB/qemu-usb/hid.h
 	USB/qemu-usb/input-keymap.h
-	USB/usb-msd/usb-msd.h
-	USB/usb-pad/usb-pad.h
-	USB/usb-pad/padproxy.h
-	USB/usb-pad/lg/lg_ff.h
-	USB/usb-mic/audio.h
-	USB/usb-mic/audiodev.h
-	USB/usb-mic/audiodeviceproxy.h
-	USB/usb-mic/usb-mic-singstar.h
-	USB/usb-mic/usb-headset.h
-	USB/usb-mic/audiodev-noop.h
-	../3rdparty/jpgd/jpgd.h
-	../3rdparty/jpgd/jpge.h
-	USB/usb-eyetoy/jo_mpeg.h
-	USB/usb-eyetoy/videodeviceproxy.h
-	USB/usb-eyetoy/videodev.h
-	USB/usb-eyetoy/usb-eyetoy-webcam.h
-	USB/usb-eyetoy/ov519.h
-	USB/usb-hid/hidproxy.h
-	USB/usb-hid/usb-hid.h
-	USB/usb-hid/noop.h
-	USB/shared/shared_usb.h
-	USB/shared/inifile_usb.h
+	USB/qemu-usb/iov.h
+	USB/qemu-usb/queue.h
+	USB/qemu-usb/qusb.h
+	USB/readerwriterqueue/atomicops.h
+	USB/readerwriterqueue/readerwriterqueue.h
 	USB/shared/ringbuffer.h
+	USB/usb-eyetoy/jo_mpeg.h
+	USB/usb-eyetoy/ov519.h
+	USB/usb-eyetoy/usb-eyetoy-webcam.h
+	USB/usb-eyetoy/videodev.h
+	USB/usb-hid/usb-hid.h
+	USB/usb-lightgun/guncon2.h
+	USB/usb-mic/audio.h
+	USB/usb-mic/audiodev-noop.h
+	USB/usb-mic/audiodev.h
+	USB/usb-mic/usb-headset.h
+	USB/usb-mic/usb-mic-singstar.h
+	USB/usb-msd/usb-msd.h
+	USB/usb-pad/lg/lg_ff.h
+	USB/usb-pad/usb-pad.h
 	USB/usb-printer/usb-printer.h
-	)
+)
 
-if(TARGET PulseAudio::PulseAudio)
-	list(APPEND pcsx2USBSources USB/usb-mic/audiodev-pulse.cpp)
-	list(APPEND pcsx2USBHeaders USB/usb-mic/audiodev-pulse.h)
-	target_link_libraries(PCSX2_FLAGS INTERFACE PulseAudio::PulseAudio)
+if(CUBEB_API)
+	list(APPEND pcsx2USBSources USB/usb-mic/audiodev-cubeb.cpp)
+	list(APPEND pcsx2USBHeaders USB/usb-mic/audiodev-cubeb.h)
 endif()
+
+if(TARGET SDL2::SDL2 OR TARGET SDL2::SDL2-static)
+	list(APPEND pcsx2USBSources USB/usb-pad/usb-pad-sdl-ff.cpp)
+	list(APPEND pcsx2USBHeaders USB/usb-pad/usb-pad-sdl-ff.h)
+endif()
+
 
 if(PCSX2_CORE)
 	# Host PAD
@@ -887,36 +873,10 @@ if(WIN32)
 	)
 
 	list(APPEND pcsx2USBSources
-		USB/qemu-usb/input-keymap-win32-to-qcode.cpp
-		USB/shared/hidapi.cpp
-		USB/shared/rawinput_usb.cpp
-		USB/usb-eyetoy/api_init_win32_eyetoy.cpp
 		USB/usb-eyetoy/cam-windows.cpp
-		USB/usb-hid/api_init_win32_hid.cpp
-		USB/usb-hid/raw/rawinput.cpp
-		USB/usb-mic/api_init_win32_mic.cpp
-		USB/usb-mic/audiodev-wasapi.cpp
-		USB/usb-msd/usb-msd-win32.cpp
-		USB/usb-pad/api_init_win32_pad.cpp
-		USB/usb-pad/dx/dinput-config.cpp
-		USB/usb-pad/dx/dinput.cpp
-		USB/usb-pad/dx/usb-pad-dx.cpp
-		USB/usb-pad/raw/raw-config.cpp
-		USB/usb-pad/raw/usb-pad-raw.cpp
-		USB/Win32/Config_usb.cpp
 	)
 	list(APPEND pcsx2USBHeaders
-		USB/qemu-usb/input-keymap-win32-to-qcode.h
-		USB/shared/rawinput_usb.h
 		USB/usb-eyetoy/cam-windows.h
-		USB/usb-mic/audiodev-wasapi.h
-		USB/usb-pad/dx/dx.h
-		USB/usb-pad/dx/usb-pad-dx.h
-		USB/usb-pad/dx/versionproxy.h
-		USB/usb-pad/raw/raw-config-res.h
-		USB/usb-pad/raw/usb-pad-raw.h
-		USB/Win32/Config_usb.h
-		USB/Win32/resource_usb.h
 	)
 
 	list(APPEND pcsx2GSSources
@@ -936,39 +896,16 @@ if(WIN32)
 		GS/Renderers/DX12/GSDevice12.h
 		GS/Renderers/DX12/GSTexture12.h
 	)
-else()
+elseif(Linux)
 	list(APPEND pcsx2USBSources
-		USB/icon_buzz_24.cpp
-		USB/linux/config-gtk.cpp
-		USB/linux/config.cpp
-		USB/linux/util.cpp
-		USB/qemu-usb/input-keymap-linux-to-qcode.cpp
-		USB/usb-eyetoy/api_init_linux.cpp
 		USB/usb-eyetoy/cam-linux.cpp
-		USB/usb-hid/api_init_linux.cpp
-		USB/usb-hid/evdev/evdev-gtk.cpp
-		USB/usb-mic/api_init_linux.cpp
-		USB/usb-msd/usb-msd-gtk.cpp
-		USB/usb-pad/api_init_linux.cpp
-		USB/usb-pad/evdev/evdev-ff.cpp
-		USB/usb-pad/evdev/evdev-gtk.cpp
-		USB/usb-pad/evdev/evdev.cpp
-		USB/usb-pad/evdev/shared-gtk.cpp
 	)
 	list(APPEND pcsx2USBHeaders
-		USB/gtk.h
-		USB/icon_buzz_24.h
-		USB/linux/actualfile.h
-		USB/linux/config.h
-		USB/linux/ini.h
-		USB/linux/util.h
-		USB/qemu-usb/input-keymap-linux-to-qcode.h
 		USB/usb-eyetoy/cam-linux.h
-		USB/usb-hid/evdev/evdev.cpp
-		USB/usb-hid/evdev/evdev.h
-		USB/usb-pad/evdev/evdev-ff.h
-		USB/usb-pad/evdev/evdev.h
-		USB/usb-pad/evdev/shared.h
+	)
+else()
+	list(APPEND pcsx2USBSources
+		USB/usb-eyetoy/cam-noop.cpp
 	)
 endif()
 
@@ -1654,6 +1591,13 @@ if(Windows)
 		${pcsx2WindowsHeaders})
 endif()
 
+if(PCSX2_CORE)
+	target_sources(PCSX2 PRIVATE ${pcsx2USBSources} ${pcsx2USBHeaders})
+	target_link_libraries(PCSX2_FLAGS INTERFACE jpgd)
+else()
+	target_sources(PCSX2 PRIVATE ${pcsx2USBNullSources} ${pcsx2USBNullHeaders})
+endif()
+
 # MacOSX/BSD
 if(UNIX AND NOT Linux)
 	if(APPLE)
@@ -1664,23 +1608,7 @@ if(UNIX AND NOT Linux)
 			${pcsx2FreeBSDSources})
 	endif()
 	target_sources(PCSX2 PRIVATE
-		${pcsx2LinuxHeaders}
-		${pcsx2USBNullSources}
-		${pcsx2USBNullHeaders})
-else()
-	if(NOT PCSX2_CORE)
-		target_sources(PCSX2 PRIVATE
-			${pcsx2USBSources}
-			${pcsx2USBHeaders})
-		target_link_libraries(PCSX2_FLAGS INTERFACE
-			jpgd
-			PkgConfig::SAMPLERATE
-		)
-	else()
-		target_sources(PCSX2 PRIVATE
-			${pcsx2USBNullSources}
-			${pcsx2USBNullHeaders})
-	endif()
+		${pcsx2LinuxHeaders})
 endif()
 
 target_link_libraries(PCSX2_FLAGS INTERFACE
@@ -1872,8 +1800,6 @@ function(setup_main_executable target)
 				${PCSX2_SOURCE_DIR}/GS/GS.rc
 				${PCSX2_SOURCE_DIR}/PAD/Windows/PAD.rc
 				${PCSX2_SOURCE_DIR}/SPU2/Windows/SPU2.rc
-				${PCSX2_SOURCE_DIR}/USB/usb-pad/dx/versionproxy.rc
-				${PCSX2_SOURCE_DIR}/USB/usb-pad/raw/raw-config.rc
 			)
 		endif()
 		target_sources(${target} PRIVATE

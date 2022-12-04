@@ -14,10 +14,8 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "vl.h"
-#include "desc.h"
-#include "glib.h"
-//#include "trace.h"
+#include "USB/qemu-usb/qusb.h"
+#include "USB/qemu-usb/desc.h"
 
 /* ------------------------------------------------------------------ */
 

@@ -14,75 +14,37 @@
  */
 
 #pragma once
-#include "audiodeviceproxy.h"
+#include "audiodev.h"
+#include <cstring>
 
 namespace usb_mic
 {
 	namespace audiodev_noop
 	{
-
-		static const char* APINAME = "noop";
-
 		class NoopAudioDevice : public AudioDevice
 		{
 		public:
-			NoopAudioDevice(int port, const char* dev_type, int mic, AudioDir dir)
-				: AudioDevice(port, dev_type, mic, dir)
+			NoopAudioDevice(
+				u32 port, AudioDir dir, u32 channels)
+				: AudioDevice(port, dir, channels)
 			{
 			}
-			~NoopAudioDevice() {}
-			void Start() {}
-			void Stop() {}
-			virtual bool GetFrames(uint32_t* size)
+			~NoopAudioDevice() override {}
+			bool Start() override
 			{
 				return true;
 			}
-			virtual uint32_t GetBuffer(int16_t* outBuf, uint32_t outFrames)
+			void Stop() override {}
+			bool GetFrames(uint32_t* size) override { return true; }
+			uint32_t GetBuffer(int16_t* outBuf, uint32_t outFrames) override
 			{
+				std::memset(outBuf, 0, outFrames * sizeof(int16_t));
 				return outFrames;
 			}
-			virtual uint32_t SetBuffer(int16_t* inBuf, uint32_t inFrames)
-			{
-				return inFrames;
-			}
-			virtual void SetResampling(int samplerate) {}
-			virtual uint32_t GetChannels()
-			{
-				return 1;
-			}
+			uint32_t SetBuffer(int16_t* inBuf, uint32_t inFrames) override { return inFrames; }
+			void SetResampling(int samplerate) override {}
 
-			virtual bool Compare(AudioDevice* compare)
-			{
-				return false;
-			}
-
-			static const TCHAR* Name()
-			{
-				return TEXT("NOOP");
-			}
-
-			static bool AudioInit()
-			{
-				return true;
-			}
-
-			static void AudioDeinit()
-			{
-			}
-
-			static void AudioDevices(std::vector<AudioDeviceInfo>& devices, AudioDir)
-			{
-				AudioDeviceInfo info;
-				info.strID = TEXT("silence");
-				info.strName = TEXT("Silence");
-				devices.push_back(info);
-			}
-
-			static int Configure(int port, const char* dev_type, void* data)
-			{
-				return RESULT_OK;
-			}
+			bool Compare(AudioDevice* compare) const override { return false; }
 		};
-
 	} // namespace audiodev_noop
 } // namespace usb_mic

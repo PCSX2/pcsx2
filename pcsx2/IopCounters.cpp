@@ -24,7 +24,11 @@
 #include "Common.h"
 #include "SPU2/spu2.h"
 #include "DEV9/DEV9.h"
+#ifdef PCSX2_CORE
 #include "USB/USB.h"
+#else
+#include "USB/USBNull.h"
+#endif
 #include "IopHw.h"
 #include "IopDma.h"
 #include "CDVD/CDVD.h"

@@ -397,16 +397,15 @@ void XInputSource::HandleControllerConnection(u32 index)
 	cd.last_state = {};
 	cd.last_state_scp = {};
 
-	Host::OnInputDeviceConnected(
+	InputManager::OnInputDeviceConnected(
 		StringUtil::StdStringFromFormat("XInput-%u", index), StringUtil::StdStringFromFormat("XInput Controller %u", index));
 }
 
 void XInputSource::HandleControllerDisconnection(u32 index)
 {
 	Console.WriteLn("XInput controller %u disconnected.", index);
+	InputManager::OnInputDeviceDisconnected(StringUtil::StdStringFromFormat("XInput-%u", index));
 	m_controllers[index] = {};
-
-	Host::OnInputDeviceDisconnected(StringUtil::StdStringFromFormat("XInput-%u", index));
 }
 
 void XInputSource::CheckForStateChanges(u32 index, const XINPUT_STATE& new_state)

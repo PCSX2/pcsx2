@@ -50,6 +50,7 @@
 		<file>icons/black/svg/shut-down-line.svg</file>
 		<file>icons/black/svg/trophy-line.svg</file>
 		<file>icons/black/svg/tv-2-line.svg</file>
+		<file>icons/black/svg/usb-fill.svg</file>
 		<file>icons/black/svg/volume-up-line.svg</file>
 		<file>icons/black/svg/window-2-line.svg</file>
 		<file>icons/discord.png</file>
@@ -107,8 +108,11 @@
 		<file>icons/white/svg/shut-down-line.svg</file>
 		<file>icons/white/svg/trophy-line.svg</file>
 		<file>icons/white/svg/tv-2-line.svg</file>
+		<file>icons/white/svg/usb-fill.svg</file>
 		<file>icons/white/svg/volume-up-line.svg</file>
 		<file>icons/white/svg/window-2-line.svg</file>
+		<file>images/DrivingForce.png</file>
+		<file>images/GTForce.png</file>
 		<file>images/dualshock-2.png</file>
 	</qresource>
 </RCC>

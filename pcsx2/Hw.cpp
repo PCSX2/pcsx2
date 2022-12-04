@@ -21,6 +21,12 @@
 #include "Gif_Unit.h"
 #include "SPU2/spu2.h"
 
+#ifdef PCSX2_CORE
+#include "USB/USB.h"
+#else
+#include "USB/USBNull.h"
+#endif
+
 #include "fmt/core.h"
 
 using namespace R5900;
@@ -78,7 +84,7 @@ void hwReset()
 	vif1Reset();
 	gif_fifo.init();
 	rcntInit();
-
+	USBreset();
 }
 
 __fi uint intcInterrupt()

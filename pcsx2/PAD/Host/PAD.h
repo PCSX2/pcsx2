@@ -106,9 +106,6 @@ namespace PAD
 	/// Returns the list of binds for the specified controller type.
 	std::vector<std::string> GetControllerBinds(const std::string_view& type);
 
-	/// Returns the vibration configuration for the specified controller type.
-	VibrationCapabilities GetControllerVibrationCapabilities(const std::string_view& type);
-
 	/// Returns general information for the specified controller type.
 	const ControllerInfo* GetControllerInfo(ControllerType type);
 	const ControllerInfo* GetControllerInfo(const std::string_view& name);

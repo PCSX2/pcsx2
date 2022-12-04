@@ -273,11 +273,18 @@ bool VMManager::Internal::InitializeGlobals()
 		return false;
 	}
 
+	if (USBinit() != 0)
+	{
+		Host::ReportErrorAsync("Error", "Failed to initialize USB (USBinit())");
+		return false;
+	}
+
 	return true;
 }
 
 void VMManager::Internal::ReleaseGlobals()
 {
+	USBshutdown();
 	SPU2shutdown();
 	GSshutdown();
 
@@ -993,14 +1000,13 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	};
 
 	Console.WriteLn("Opening USB...");
-	if (USBinit() != 0 || USBopen(g_host_display->GetWindowInfo()) != 0)
+	if (!USBopen())
 	{
 		Host::ReportErrorAsync("Startup Error", "Failed to initialize USB.");
 		return false;
 	}
 	ScopedGuard close_usb = []() {
 		USBclose();
-		USBshutdown();
 	};
 
 	Console.WriteLn("Opening FW...");
@@ -1140,7 +1146,6 @@ void VMManager::Shutdown(bool save_resume_state)
 		GetMTGS().WaitForClose();
 	}
 
-	USBshutdown();
 	PADshutdown();
 	DEV9shutdown();
 
@@ -1804,6 +1809,7 @@ void VMManager::CheckForConfigChanges(const Pcsx2Config& old_config)
 		CheckForSPU2ConfigChanges(old_config);
 		CheckForDEV9ConfigChanges(old_config);
 		CheckForMemoryCardConfigChanges(old_config);
+		USB::CheckForConfigChanges(old_config);
 
 		if (EmuConfig.EnableCheats != old_config.EnableCheats ||
 			EmuConfig.EnableWideScreenPatches != old_config.EnableWideScreenPatches ||

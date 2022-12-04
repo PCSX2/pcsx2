@@ -15,12 +15,11 @@
 
 #pragma once
 
-#include <wchar.h>
+#include <cstdint>
 #include <vector>
-#include "USB/platcompat.h"
 
 /* binary representation */
-PACK(
+#pragma pack(push, 1)
 	typedef struct USBDescriptor {
 		uint8_t bLength;
 		uint8_t bDescriptorType;
@@ -124,8 +123,8 @@ PACK(
 				} u;
 			} cap;
 		} u;
-	},
-	USBDescriptor);
+	} USBDescriptor;
+#pragma pack(pop)
 
 struct USBDescID
 {

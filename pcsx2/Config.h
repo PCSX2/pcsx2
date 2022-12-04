@@ -79,7 +79,10 @@ struct InputBindingInfo
 		Axis,
 		HalfAxis,
 		Motor,
-		Macro
+		Pointer, // Receive relative mouse movement events, bind_index is offset by the axis.
+		Keyboard, // Receive host key events, bind_index is offset by the key code.
+		Device, // Used for special-purpose device selection, e.g. force feedback.
+		Macro,
 	};
 
 	const char* name;
@@ -1109,6 +1112,35 @@ struct Pcsx2Config
 		}
 	};
 
+#ifdef PCSX2_CORE
+	// ------------------------------------------------------------------------
+	struct USBOptions
+	{
+		enum : u32
+		{
+			NUM_PORTS = 2
+		};
+
+		struct Port
+		{
+			s32 DeviceType;
+			u32 DeviceSubtype;
+
+			bool operator==(const USBOptions::Port& right) const;
+			bool operator!=(const USBOptions::Port& right) const;
+		};
+
+		std::array<Port, NUM_PORTS> Ports;
+
+		USBOptions();
+		void LoadSave(SettingsWrapper& wrap);
+
+		bool operator==(const USBOptions& right) const;
+		bool operator!=(const USBOptions& right) const;
+	};
+#endif
+
+
 	// ------------------------------------------------------------------------
 	// Options struct for each memory card.
 	//
@@ -1203,6 +1235,9 @@ struct Pcsx2Config
 	FramerateOptions Framerate;
 	SPU2Options SPU2;
 	DEV9Options DEV9;
+#ifdef PCSX2_CORE
+	USBOptions USB;
+#endif
 
 	TraceLogFilters Trace;
 

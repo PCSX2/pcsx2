@@ -13,11 +13,10 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef USBPRINTER_H
-#define USBPRINTER_H
+#pragma once
 
-#include "../deviceproxy.h"
-#include "../qemu-usb/desc.h"
+#include "USB/deviceproxy.h"
+#include "USB/qemu-usb/desc.h"
 
 #define GET_DEVICE_ID   0
 #define GET_PORT_STATUS 1
@@ -121,40 +120,15 @@ namespace usb_printer
 		},
 	};
 
-	static const char* APINAME = "default";
-
-	class PrinterDevice
+	class PrinterDevice final : public DeviceProxy
 	{
 	public:
-		virtual ~PrinterDevice() {}
-		static USBDevice* CreateDevice(int port);
-		static const TCHAR* Name()
-		{
-			return TEXT("Printer");
-		}
-		static const char* TypeName()
-		{
-			return "printer";
-		}
-		static std::list<std::string> ListAPIs()
-		{
-			return std::list<std::string>{APINAME};
-		}
-		static const TCHAR* LongAPIName(const std::string& name)
-		{
-			return TEXT("Default");
-		}
-		static int Configure(int port, const std::string& api, void* data);
-		static int Freeze(FreezeAction mode, USBDevice* dev, void* data);
-		static std::vector<std::string> SubTypes()
-		{
-			std::vector<std::string> ret;
-			for (uint32_t i = 0; i < sizeof(sPrinters) / sizeof(sPrinters[0]); i++)
-			{
-				ret.push_back(sPrinters[i].commercial_name);
-			}
-			return ret;
-		}
+		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
+		const char* Name() const override;
+		const char* TypeName() const override;
+
+		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
+		std::vector<std::string> SubTypes() const override;
 	};
 
 #pragma pack(push, 1)
@@ -173,4 +147,3 @@ namespace usb_printer
 #pragma pack(pop)
 
 } // namespace usb_printer
-#endif

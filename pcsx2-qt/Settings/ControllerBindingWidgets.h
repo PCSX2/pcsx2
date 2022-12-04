@@ -19,10 +19,13 @@
 
 #include <QtWidgets/QWidget>
 
+#include "gsl/span"
+
 #include "ui_ControllerBindingWidget.h"
 #include "ui_ControllerBindingWidget_DualShock2.h"
 #include "ui_ControllerMacroWidget.h"
 #include "ui_ControllerMacroEditWidget.h"
+#include "ui_USBDeviceWidget.h"
 
 class InputBindingWidget;
 class ControllerSettingsDialog;
@@ -30,6 +33,8 @@ class ControllerCustomSettingsWidget;
 class ControllerMacroWidget;
 class ControllerMacroEditWidget;
 class ControllerBindingWidget_Base;
+
+class USBBindingWidget;
 
 class ControllerBindingWidget final : public QWidget
 {
@@ -133,16 +138,20 @@ class ControllerCustomSettingsWidget : public QWidget
 	Q_OBJECT
 
 public:
-	ControllerCustomSettingsWidget(ControllerBindingWidget* parent, QWidget* parent_widget);
+	ControllerCustomSettingsWidget(gsl::span<const SettingInfo> settings, std::string config_section, std::string config_prefix,
+		const QString& group_title, const char* translation_ctx, ControllerSettingsDialog* dialog, QWidget* parent_widget);
 	~ControllerCustomSettingsWidget();
-
-	void createSettingWidgets(ControllerBindingWidget* parent, QWidget* widget_parent, QGridLayout* layout, const PAD::ControllerInfo* cinfo);
 
 private Q_SLOTS:
 	void restoreDefaults();
 
 private:
-	ControllerBindingWidget* m_parent;
+	void createSettingWidgets(const char* translation_ctx, QWidget* widget_parent, QGridLayout* layout);
+
+	gsl::span<const SettingInfo> m_settings;
+	std::string m_config_section;
+	std::string m_config_prefix;
+	ControllerSettingsDialog* m_dialog;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -181,4 +190,72 @@ public:
 
 private:
 	Ui::ControllerBindingWidget_DualShock2 m_ui;
+};
+
+//////////////////////////////////////////////////////////////////////////
+
+class USBDeviceWidget final : public QWidget
+{
+	Q_OBJECT
+
+public:
+	USBDeviceWidget(QWidget* parent, ControllerSettingsDialog* dialog, u32 port);
+	~USBDeviceWidget();
+
+	QIcon getIcon() const;
+
+	__fi ControllerSettingsDialog* getDialog() const { return m_dialog; }
+	__fi const std::string& getConfigSection() const { return m_config_section; }
+	__fi const std::string& getDeviceType() const { return m_device_type; }
+	__fi u32 getPortNumber() const { return m_port_number; }
+
+private Q_SLOTS:
+	void onTypeChanged();
+	void onSubTypeChanged(int new_index);
+	void onAutomaticBindingClicked();
+	void onClearBindingsClicked();
+	void onBindingsClicked();
+	void onSettingsClicked();
+
+private:
+	void populateDeviceTypes();
+	void populatePages();
+	void updateHeaderToolButtons();
+	void doDeviceAutomaticBinding(const QString& device);
+
+	Ui::USBDeviceWidget m_ui;
+
+	ControllerSettingsDialog* m_dialog;
+
+	std::string m_config_section;
+	std::string m_device_type;
+	u32 m_device_subtype;
+	u32 m_port_number;
+
+	USBBindingWidget* m_bindings_widget = nullptr;
+	ControllerCustomSettingsWidget* m_settings_widget = nullptr;
+};
+
+class USBBindingWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+	USBBindingWidget(USBDeviceWidget* parent);
+	~USBBindingWidget() override;
+
+	__fi ControllerSettingsDialog* getDialog() const { return static_cast<USBDeviceWidget*>(parent())->getDialog(); }
+	__fi const std::string& getConfigSection() const { return static_cast<USBDeviceWidget*>(parent())->getConfigSection(); }
+	__fi const std::string& getDeviceType() const { return static_cast<USBDeviceWidget*>(parent())->getDeviceType(); }
+	__fi u32 getPortNumber() const { return static_cast<USBDeviceWidget*>(parent())->getPortNumber(); }
+
+	QIcon getIcon() const;
+
+	static USBBindingWidget* createInstance(const std::string& type, u32 subtype, gsl::span<const InputBindingInfo> bindings, USBDeviceWidget* parent);
+
+protected:
+	std::string getBindingKey(const char* binding_name) const;
+
+	void createWidgets(gsl::span<const InputBindingInfo> bindings);
+	void bindWidgets(gsl::span<const InputBindingInfo> bindings);
 };

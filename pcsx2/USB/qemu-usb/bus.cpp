@@ -14,8 +14,8 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "USBinternal.h"
-#include "vl.h"
+#include "USB/qemu-usb/USBinternal.h"
+#include "USB/qemu-usb/qusb.h"
 
 #define USB_DEVICE_GET_CLASS(p) (&p->klass)
 

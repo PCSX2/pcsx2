@@ -15,7 +15,8 @@
 
 #pragma once
 #include "ui_ControllerSettingsDialog.h"
-#include "Frontend/InputManager.h"
+#include "pcsx2/Frontend/InputManager.h"
+#include "pcsx2/USB/USB.h"
 #include <QtCore/QList>
 #include <QtCore/QPair>
 #include <QtCore/QString>
@@ -27,6 +28,7 @@
 class ControllerGlobalSettingsWidget;
 class ControllerBindingWidget;
 class HotkeySettingsWidget;
+class USBDeviceWidget;
 
 class SettingsInterface;
 
@@ -61,6 +63,7 @@ public:
 	__fi SettingsInterface* getProfileSettingsInterface() { return m_profile_interface.get(); }
 
 	void updateListDescription(u32 global_slot, ControllerBindingWidget* widget);
+	void updateListDescription(u32 port, USBDeviceWidget* widget);
 
 	// Helper functions for updating setting values globally or in the profile.
 	bool getBoolValue(const char* section, const char* key, bool default_value) const;
@@ -93,8 +96,6 @@ private Q_SLOTS:
 	void createWidgets();
 
 private:
-	static QIcon getIconForType(const std::string& type);
-
 	void refreshProfileList();
 	void switchProfile(const QString& name);
 
@@ -102,6 +103,7 @@ private:
 
 	ControllerGlobalSettingsWidget* m_global_settings = nullptr;
 	std::array<ControllerBindingWidget*, MAX_PORTS> m_port_bindings{};
+	std::array<USBDeviceWidget*, USB::NUM_PORTS> m_usb_bindings{};
 	HotkeySettingsWidget* m_hotkey_settings = nullptr;
 
 	QList<QPair<QString, QString>> m_device_list;

@@ -13,10 +13,9 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef USBINTERNAL_H
-#define USBINTERNAL_H
+#pragma once
 
-#include "vl.h"
+#include "USB/qemu-usb/qusb.h"
 
 /* Dump packet contents.  */
 //#define DEBUG_PACKET
@@ -28,8 +27,8 @@
 #define OHCI_MAX_PORTS 15 // status regs from 0x0c54 but usb snooping
 						  // reg is at 0x0c80, so only 11 ports?
 
-extern int64_t usb_frame_time;
-extern int64_t usb_bit_time;
+extern int64_t g_usb_frame_time;
+extern int64_t g_usb_bit_time;
 
 typedef struct OHCIPort
 {
@@ -42,7 +41,6 @@ typedef uint32_t target_phys_addr_t;
 typedef struct OHCIState
 {
 	target_phys_addr_t mem_base;
-	int mem;
 	uint32_t num_ports;
 
 	uint64_t eof_timer;
@@ -106,7 +104,7 @@ struct ohci_hcca
         const typeof(((type *) 0)->member) *__mptr = (ptr);     \
         (type *) ((char *) __mptr - offsetof(type, member));})
 */
-#define CONTAINER_OF(p, type, field) ((type*)((char*)p - ((ptrdiff_t) & ((type*)0)->field)))
+#define USB_CONTAINER_OF(p, type, field) ((type*)((char*)p - ((ptrdiff_t) & ((type*)0)->field)))
 
 #define HCCA_WRITEBACK_OFFSET 128 //offsetof(struct ohci_hcca, frame)
 #define HCCA_WRITEBACK_SIZE 8     /* frame, pad, done */
@@ -306,4 +304,3 @@ void ohci_hard_reset(OHCIState* ohci);
 void ohci_soft_reset(OHCIState* ohci);
 int ohci_bus_start(OHCIState* ohci);
 void ohci_bus_stop(OHCIState* ohci);
-#endif

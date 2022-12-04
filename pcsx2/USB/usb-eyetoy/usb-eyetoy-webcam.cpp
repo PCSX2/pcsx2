@@ -14,11 +14,12 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "videodeviceproxy.h"
+#include "videodev.h"
 #include "usb-eyetoy-webcam.h"
 #include "ov519.h"
 #include "USB/qemu-usb/desc.h"
-#include "USB/shared/inifile_usb.h"
+#include "USB/USB.h"
+#include "StateWrapper.h"
 
 namespace usb_eyetoy
 {
@@ -28,20 +29,21 @@ namespace usb_eyetoy
 		USBDesc desc;
 		USBDescDevice desc_dev;
 
-		VideoDevice* videodev;
+		u32 port;
+		u32 subtype;
+
+		std::unique_ptr<VideoDevice> videodev;
 		//	struct freeze {
-		uint8_t regs[0xFF];     //OV519
+		uint8_t regs[0xFF]; //OV519
 		uint8_t i2c_regs[0xFF]; //OV764x
 
 		int hw_camera_running;
 		int frame_step;
-		unsigned char* mpeg_frame_data;
+		std::unique_ptr<unsigned char[]> mpeg_frame_data;
 		unsigned int mpeg_frame_size;
 		unsigned int mpeg_frame_offset;
 		//	} f;
 	} EYETOYState;
-
-	static EYETOYState* static_state;
 
 	static const USBDescStrings desc_strings = {
 		"",
@@ -51,11 +53,11 @@ namespace usb_eyetoy
 
 	static void reset_controller(EYETOYState* s)
 	{
-		if (s->videodev->Type() == TYPE_EYETOY)
+		if (s->subtype == TYPE_EYETOY)
 		{
 			memcpy(s->regs, ov519_defaults, sizeof(s->regs));
 		}
-		else if (s->videodev->Type() == TYPE_OV511P)
+		else if (s->subtype == TYPE_OV511P)
 		{
 			memcpy(s->regs, ov511p_defaults, sizeof(s->regs));
 		}
@@ -63,26 +65,61 @@ namespace usb_eyetoy
 
 	static void reset_sensor(EYETOYState* s)
 	{
-		if (s->videodev->Type() == TYPE_EYETOY)
+		if (s->subtype == TYPE_EYETOY)
 		{
 			memcpy(s->i2c_regs, ov7648_defaults, sizeof(s->regs));
 		}
-		else if (s->videodev->Type() == TYPE_OV511P)
+		else if (s->subtype == TYPE_OV511P)
 		{
 			memcpy(s->i2c_regs, ov7620_defaults, sizeof(s->regs));
 		}
 	}
 
-	static void eyetoy_handle_reset(USBDevice* dev)
+	static void open_camera(EYETOYState* s)
 	{
-		reset_controller((EYETOYState*)dev);
-		reset_sensor((EYETOYState*)dev);
+		if (s->hw_camera_running && s->subtype == TYPE_EYETOY)
+		{
+			const int width = s->regs[OV519_R10_H_SIZE] << 4;
+			const int height = s->regs[OV519_R11_V_SIZE] << 3;
+			const FrameFormat format = s->regs[OV519_RA0_FORMAT] == OV519_RA0_FORMAT_JPEG ? format_jpeg : format_mpeg;
+			const int mirror = !!(s->i2c_regs[OV7610_REG_COM_A] & OV7610_REG_COM_A_MASK_MIRROR);
+			Console.WriteLn(
+				"EyeToy : eyetoy_open(); hw=%d, w=%d, h=%d, fmt=%d, mirr=%d", s->hw_camera_running, width, height, format, mirror);
+			if (s->videodev->Open(width, height, format, mirror) != 0)
+				Console.Error("(Eyetoy) Failed to open video device");
+		}
+		else if (s->hw_camera_running && s->subtype == TYPE_OV511P)
+		{
+			const int width = 320;
+			const int height = 240;
+			const FrameFormat format = format_yuv400;
+			const int mirror = 0;
+			Console.WriteLn(
+				"EyeToy : eyetoy_open(); hw=%d, w=%d, h=%d, fmt=%d, mirr=%d", s->hw_camera_running, width, height, format, mirror);
+			if (s->videodev->Open(width, height, format, mirror) != 0)
+				Console.Error("(Eyetoy) Failed to open video device");
+		}
 	}
 
-	static void webcam_handle_control_eyetoy(USBDevice* dev, USBPacket* p, int request, int value,
-									  int index, int length, uint8_t* data)
+	static void close_camera(EYETOYState* s)
 	{
-		EYETOYState* s = (EYETOYState*)dev;
+		Console.WriteLn("EyeToy : eyetoy_close(); hw=%d", s->hw_camera_running);
+		if (s->hw_camera_running)
+		{
+			s->hw_camera_running = 0;
+			s->videodev->Close();
+		}
+	}
+
+	static void eyetoy_handle_reset(USBDevice* dev)
+	{
+		reset_controller(USB_CONTAINER_OF(dev, EYETOYState, dev));
+		reset_sensor(USB_CONTAINER_OF(dev, EYETOYState, dev));
+	}
+
+	static void webcam_handle_control_eyetoy(USBDevice* dev, USBPacket* p, int request, int value, int index, int length, uint8_t* data)
+	{
+		EYETOYState* s = USB_CONTAINER_OF(dev, EYETOYState, dev);
 		int ret = 0;
 
 		ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
@@ -118,8 +155,8 @@ namespace usb_eyetoy
 						if (s->hw_camera_running && s->regs[OV519_RA0_FORMAT] != data[0])
 						{
 							Console.WriteLn("EyeToy : reinitialize the camera");
-							s->dev.klass.close(dev);
-							s->dev.klass.open(dev);
+							close_camera(s);
+							open_camera(s);
 						}
 						break;
 					case OV519_R10_H_SIZE:
@@ -129,15 +166,15 @@ namespace usb_eyetoy
 						Console.WriteLn("EyeToy : Image height : %d", data[0] << 3);
 						break;
 					case OV519_GPIO_DATA_OUT0:
+					{
+						static char led_state = -1;
+						if (led_state != data[0])
 						{
-							static char led_state = -1;
-							if (led_state != data[0])
-							{
-								led_state = data[0];
-								Console.WriteLn("EyeToy : LED : %d", !!led_state);
-							}
+							led_state = data[0];
+							Console.WriteLn("EyeToy : LED : %d", !!led_state);
 						}
-						break;
+					}
+					break;
 					case R518_I2C_CTL:
 						if (data[0] == 1) // Commit I2C write
 						{
@@ -187,10 +224,9 @@ namespace usb_eyetoy
 		}
 	}
 
-	static void webcam_handle_control_ov511p(USBDevice* dev, USBPacket* p, int request, int value,
-									  int index, int length, uint8_t* data)
+	static void webcam_handle_control_ov511p(USBDevice* dev, USBPacket* p, int request, int value, int index, int length, uint8_t* data)
 	{
-		EYETOYState* s = (EYETOYState*)dev;
+		EYETOYState* s = USB_CONTAINER_OF(dev, EYETOYState, dev);
 		int ret = 0;
 
 		ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
@@ -246,7 +282,7 @@ namespace usb_eyetoy
 
 	static void webcam_handle_data_eyetoy(USBDevice* dev, USBPacket* p)
 	{
-		EYETOYState* s = (EYETOYState*)dev;
+		EYETOYState* s = USB_CONTAINER_OF(dev, EYETOYState, dev);
 		static const int max_ep_size = 896;
 		uint8_t devep = p->ep->nr;
 
@@ -254,7 +290,7 @@ namespace usb_eyetoy
 		{
 			Console.WriteLn("EyeToy : initialization done; start the camera");
 			s->hw_camera_running = 1;
-			s->dev.klass.open(dev);
+			open_camera(s);
 		}
 
 		switch (p->pid)
@@ -267,20 +303,19 @@ namespace usb_eyetoy
 
 					if (s->frame_step == 0)
 					{
-						s->mpeg_frame_size = s->videodev->GetImage(s->mpeg_frame_data, 640 * 480 * 3);
+						s->mpeg_frame_size = s->videodev->GetImage(s->mpeg_frame_data.get(), 640 * 480 * 3);
 						if (s->mpeg_frame_size == 0)
 						{
 							p->status = USB_RET_NAK;
 							break;
 						}
 
-						uint8_t header[] = {
-							0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
+						uint8_t header[] = {0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
 						header[0x0A] = s->regs[OV519_RA0_FORMAT] == OV519_RA0_FORMAT_JPEG ? 0x03 : 0x01;
 						memcpy(data, header, sizeof(header));
 
 						int data_pk = max_ep_size - sizeof(header);
-						memcpy(data + sizeof(header), s->mpeg_frame_data, data_pk);
+						memcpy(data + sizeof(header), s->mpeg_frame_data.get(), data_pk);
 						s->mpeg_frame_offset = data_pk;
 						s->frame_step++;
 					}
@@ -289,14 +324,13 @@ namespace usb_eyetoy
 						int data_pk = s->mpeg_frame_size - s->mpeg_frame_offset;
 						if (data_pk > max_ep_size)
 							data_pk = max_ep_size;
-						memcpy(data, s->mpeg_frame_data + s->mpeg_frame_offset, data_pk);
+						memcpy(data, s->mpeg_frame_data.get() + s->mpeg_frame_offset, data_pk);
 						s->mpeg_frame_offset += data_pk;
 						s->frame_step++;
 					}
 					else
 					{
-						uint8_t footer[] = {
-							0xFF, 0xFF, 0xFF, 0x51, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
+						uint8_t footer[] = {0xFF, 0xFF, 0xFF, 0x51, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
 						footer[0x0A] = s->regs[OV519_RA0_FORMAT] == OV519_RA0_FORMAT_JPEG ? 0x03 : 0x01;
 						memcpy(data, footer, sizeof(footer));
 						s->frame_step = 0;
@@ -321,7 +355,7 @@ namespace usb_eyetoy
 
 	static void webcam_handle_data_ov511p(USBDevice* dev, USBPacket* p)
 	{
-		EYETOYState* s = (EYETOYState*)dev;
+		EYETOYState* s = USB_CONTAINER_OF(dev, EYETOYState, dev);
 		static const int max_ep_size = 960; // 961
 		uint8_t devep = p->ep->nr;
 
@@ -329,7 +363,7 @@ namespace usb_eyetoy
 		{
 			Console.WriteLn("EyeToy : initialization done; start the camera");
 			s->hw_camera_running = 1;
-			s->dev.klass.open(dev);
+			open_camera(s);
 		}
 
 		switch (p->pid)
@@ -342,7 +376,7 @@ namespace usb_eyetoy
 
 					if (s->frame_step == 0)
 					{
-						s->mpeg_frame_size = s->videodev->GetImage(s->mpeg_frame_data, 640 * 480 * 3);
+						s->mpeg_frame_size = s->videodev->GetImage(s->mpeg_frame_data.get(), 640 * 480 * 3);
 						if (s->mpeg_frame_size == 0)
 						{
 							p->status = USB_RET_NAK;
@@ -353,7 +387,7 @@ namespace usb_eyetoy
 						memcpy(data, header, sizeof(header));
 
 						int data_pk = max_ep_size - sizeof(header);
-						memcpy(data + sizeof(header), s->mpeg_frame_data, data_pk);
+						memcpy(data + sizeof(header), s->mpeg_frame_data.get(), data_pk);
 						s->mpeg_frame_offset = data_pk;
 						s->frame_step++;
 					}
@@ -362,7 +396,7 @@ namespace usb_eyetoy
 						int data_pk = s->mpeg_frame_size - s->mpeg_frame_offset;
 						if (data_pk > max_ep_size)
 							data_pk = max_ep_size;
-						memcpy(data, s->mpeg_frame_data + s->mpeg_frame_offset, data_pk);
+						memcpy(data, s->mpeg_frame_data.get() + s->mpeg_frame_offset, data_pk);
 						s->mpeg_frame_offset += data_pk;
 						s->frame_step++;
 					}
@@ -385,80 +419,28 @@ namespace usb_eyetoy
 
 	static void eyetoy_handle_destroy(USBDevice* dev)
 	{
-		EYETOYState* s = (EYETOYState*)dev;
+		EYETOYState* s = USB_CONTAINER_OF(dev, EYETOYState, dev);
+		close_camera(s);
 		delete s;
 	}
 
-	int eyetoy_open(USBDevice* dev)
+	USBDevice* EyeToyWebCamDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
-		EYETOYState* s = (EYETOYState*)dev;
-		if (s->hw_camera_running && s->videodev->Type() == TYPE_EYETOY)
-		{
-			const int width = s->regs[OV519_R10_H_SIZE] << 4;
-			const int height = s->regs[OV519_R11_V_SIZE] << 3;
-			const FrameFormat format = s->regs[OV519_RA0_FORMAT] == OV519_RA0_FORMAT_JPEG ? format_jpeg : format_mpeg;
-			const int mirror = !!(s->i2c_regs[OV7610_REG_COM_A] & OV7610_REG_COM_A_MASK_MIRROR);
-			Console.Error("EyeToy : eyetoy_open(); hw=%d, w=%d, h=%d, fmt=%d, mirr=%d", s->hw_camera_running,
-				width, height, format, mirror);
-			s->videodev->Open(width, height, format, mirror);
-		}
-		else if (s->hw_camera_running && s->videodev->Type() == TYPE_OV511P)
-		{
-			const int width = 320;
-			const int height = 240;
-			const FrameFormat format = format_yuv400;
-			const int mirror = 0;
-			Console.Error("EyeToy : eyetoy_open(); hw=%d, w=%d, h=%d, fmt=%d, mirr=%d", s->hw_camera_running,
-				width, height, format, mirror);
-			s->videodev->Open(width, height, format, mirror);
-		}
-		return 1;
-	}
-
-	void eyetoy_close(USBDevice* dev)
-	{
-		EYETOYState* s = (EYETOYState*)dev;
-		Console.Error("EyeToy : eyetoy_close(); hw=%d", s->hw_camera_running);
-		if (s->hw_camera_running)
-		{
-			s->hw_camera_running = 0;
-			s->videodev->Close();
-		}
-	}
-
-	USBDevice* EyeToyWebCamDevice::CreateDevice(int port)
-	{
-		VideoDevice* videodev = nullptr;
-		std::string varApi;
-#ifdef _WIN32
-		std::wstring tmp;
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, tmp);
-		varApi = wstr_to_str(tmp);
-#else
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
-#endif
-		VideoDeviceProxyBase* proxy = RegisterVideoDevice::instance().Proxy(varApi);
-		if (!proxy)
-		{
-			Console.WriteLn("Invalid video device API: %" SFMTs "\n", varApi.c_str());
-			return NULL;
-		}
-
-		videodev = proxy->CreateObject(port);
+		std::unique_ptr<VideoDevice> videodev(VideoDevice::CreateInstance());
 		if (!videodev)
-			return NULL;
+		{
+			Console.Error("Failed to create video device.");
+			return nullptr;
+		}
 
-		videodev->Type(GetSelectedSubtype(std::make_pair(port, TypeName())));
+		videodev->HostDevice(USB::GetConfigString(si, port, TypeName(), "device_name"));
 
-		EYETOYState* s;
-		s = new EYETOYState();
-		if (!s)
-			return NULL;
-
+		EYETOYState* s = new EYETOYState();
+		s->subtype = subtype;
 		s->desc.full = &s->desc_dev;
 		s->desc.str = desc_strings;
 
-		if (videodev->Type() == TYPE_EYETOY)
+		if (subtype == TYPE_EYETOY)
 		{
 			if (usb_desc_parse_dev(eyetoy_dev_descriptor, sizeof(eyetoy_dev_descriptor), s->desc, s->desc_dev) < 0)
 				goto fail;
@@ -467,7 +449,7 @@ namespace usb_eyetoy
 			s->dev.klass.handle_control = webcam_handle_control_eyetoy;
 			s->dev.klass.handle_data = webcam_handle_data_eyetoy;
 		}
-		else if (videodev->Type() == TYPE_OV511P)
+		else if (subtype == TYPE_OV511P)
 		{
 			if (usb_desc_parse_dev(ov511p_dev_descriptor, sizeof(ov511p_dev_descriptor), s->desc, s->desc_dev) < 0)
 				goto fail;
@@ -477,59 +459,71 @@ namespace usb_eyetoy
 			s->dev.klass.handle_data = webcam_handle_data_ov511p;
 		}
 
-		s->videodev = videodev;
+		s->videodev = std::move(videodev);
 		s->dev.speed = USB_SPEED_FULL;
 		s->dev.klass.handle_attach = usb_desc_attach;
 		s->dev.klass.handle_reset = eyetoy_handle_reset;
 		s->dev.klass.unrealize = eyetoy_handle_destroy;
-		s->dev.klass.open = eyetoy_open;
-		s->dev.klass.close = eyetoy_close;
 		s->dev.klass.usb_desc = &s->desc;
 		s->dev.klass.product_desc = s->desc.str[2];
 
 		usb_desc_init(&s->dev);
 		usb_ep_init(&s->dev);
-		eyetoy_handle_reset((USBDevice*)s);
+		eyetoy_handle_reset(&s->dev);
 
 		s->hw_camera_running = 0;
 		s->frame_step = 0;
-		s->mpeg_frame_data = (unsigned char*)calloc(1, 640 * 480 * 3);
+		s->mpeg_frame_data = std::make_unique<unsigned char[]>(640 * 480 * 3);
+		std::memset(s->mpeg_frame_data.get(), 0, 640 * 480 * 3);
 		s->mpeg_frame_offset = 0;
 
-		static_state = s;
-		return (USBDevice*)s;
+		return &s->dev;
 	fail:
-		eyetoy_handle_destroy((USBDevice*)s);
+		eyetoy_handle_destroy(&s->dev);
 		return nullptr;
 	}
 
-	int EyeToyWebCamDevice::Configure(int port, const std::string& api, void* data)
+	const char* EyeToyWebCamDevice::Name() const
 	{
-		auto proxy = RegisterVideoDevice::instance().Proxy(api);
-		if (proxy)
-			return proxy->Configure(port, TypeName(), data);
-		return RESULT_CANCELED;
+		return "Webcam (EyeToy)";
 	}
 
-	int EyeToyWebCamDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
+	const char* EyeToyWebCamDevice::TypeName() const
 	{
-		/*switch (mode)
-	{
-		case FREEZE_LOAD:
-			if (!s) return -1;
-			s->f = *(PADState::freeze *)data;
-			s->pad->Type((PS2WheelTypes)s->f.wheel_type);
-			return sizeof(PADState::freeze);
-		case FREEZE_SAVE:
-			if (!s) return -1;
-			*(PADState::freeze *)data = s->f;
-			return sizeof(PADState::freeze);
-		case FREEZE_SIZE:
-			return sizeof(PADState::freeze);
-		default:
-		break;
-	}*/
-		return 0;
+		return "webcam";
 	}
 
+	bool EyeToyWebCamDevice::Freeze(USBDevice* dev, StateWrapper& sw) const
+	{
+		EYETOYState* s = USB_CONTAINER_OF(dev, EYETOYState, dev);
+		if (!sw.DoMarker("EYETOYState"))
+			return false;
+
+		sw.DoBytes(s->regs, sizeof(s->regs));
+		sw.DoBytes(s->i2c_regs, sizeof(s->i2c_regs));
+		sw.Do(&s->frame_step);
+		sw.DoBytes(s->mpeg_frame_data.get(), 640 * 480 * 3);
+		sw.Do(&s->mpeg_frame_size);
+		sw.Do(&s->mpeg_frame_offset);
+		return !sw.HasError();
+	}
+
+	void EyeToyWebCamDevice::UpdateSettings(USBDevice* dev, SettingsInterface& si) const
+	{
+		// TODO: Update device name
+	}
+
+	std::vector<std::string> EyeToyWebCamDevice::SubTypes() const
+	{
+		return {"Sony EyeToy", "Konami Capture Eye"};
+	}
+
+	gsl::span<const SettingInfo> EyeToyWebCamDevice::Settings(u32 subtype) const
+	{
+		static constexpr const SettingInfo info[] = {
+			{SettingInfo::Type::StringList, "device_name", "Device Name", "Selects the device to capture images from.", "", nullptr,
+				nullptr, nullptr, nullptr, nullptr, &VideoDevice::GetDeviceList},
+		};
+		return info;
+	}
 } // namespace usb_eyetoy

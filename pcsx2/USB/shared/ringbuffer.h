@@ -13,17 +13,10 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RINGBUFFER_H
-#define RINGBUFFER_H
+#pragma once
+
 #include <algorithm> // for std::min
 #include <cstdint>
-#include <chrono>
-
-using hrc = std::chrono::high_resolution_clock;
-using ms = std::chrono::milliseconds;
-using us = std::chrono::microseconds;
-using ns = std::chrono::nanoseconds;
-using sec = std::chrono::seconds;
 
 class RingBuffer
 {
@@ -98,18 +91,11 @@ public:
 		return (T*)(m_data + m_end);
 	}
 
-	long long MilliSecsSinceLastWrite()
-	{
-		return std::chrono::duration_cast<ms>(hrc::now() - mLastWrite).count();
-	}
-
 private:
 	size_t m_begin;
 	size_t m_end;
 	size_t m_capacity;
 	char* m_data;
 	bool m_overrun;
-	hrc::time_point mLastWrite = hrc::time_point(ns(0));
 };
 
-#endif

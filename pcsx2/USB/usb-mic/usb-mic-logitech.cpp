@@ -17,11 +17,10 @@
 #include "usb-mic-singstar.h"
 #include "audio.h"
 #include "USB/qemu-usb/desc.h"
-#include "USB/shared/inifile_usb.h"
+#include "USB/qemu-usb/USBinternal.h"
 
 namespace usb_mic
 {
-
 	static const uint8_t logitech_mic_dev_descriptor[] = {
 		/* bLength             */ 0x12,          //(18)
 		/* bDescriptorType     */ 0x01,          //(1)
@@ -232,32 +231,21 @@ namespace usb_mic
 	};
 
 	//Minified state
-	typedef struct SINGSTARMICMINIState
+	struct SINGSTARMICMINIState
 	{
 		USBDevice dev;
 
 		USBDesc desc;
 		USBDescDevice desc_dev;
-	} SINGSTARMICMINIState;
+	};
 
-	USBDevice* LogitechMicDevice::CreateDevice(int port)
+	USBDevice* LogitechMicDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
-		std::string api;
-#ifdef _WIN32
-		std::wstring tmp;
-		if (!LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, tmp))
-			return nullptr;
-		api = wstr_to_str(tmp);
-#else
-		if (!LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, api))
-			return nullptr;
-#endif
-
-		USBDevice* dev = SingstarDevice::CreateDevice(port, api);
+		USBDevice* dev = SingstarDevice::CreateDevice(si, port, subtype, false, LogitechMicDevice::TypeName());
 		if (!dev)
 			return nullptr;
 
-		SINGSTARMICMINIState* s = (SINGSTARMICMINIState*)dev;
+		SINGSTARMICMINIState* s = USB_CONTAINER_OF(dev, SINGSTARMICMINIState, dev);
 		s->desc = {};
 		s->desc_dev = {};
 

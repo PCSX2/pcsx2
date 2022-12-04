@@ -17,7 +17,7 @@
 #include "input-keymap.h"
 
 //TODO how much does std::map kill perf if any?
-const std::map<const QKeyCode, unsigned short> qemu_input_map_qcode_to_qnum = {
+static const std::map<const QKeyCode, unsigned short> qemu_input_map_qcode_to_qnum = {
 	{Q_KEY_CODE_0, 0xb},                 /* qcode:Q_KEY_CODE_0 (0) -> linux:11 (KEY_0) -> qnum:11 */
 	{Q_KEY_CODE_1, 0x2},                 /* qcode:Q_KEY_CODE_1 (1) -> linux:2 (KEY_1) -> qnum:2 */
 	{Q_KEY_CODE_2, 0x3},                 /* qcode:Q_KEY_CODE_2 (2) -> linux:3 (KEY_2) -> qnum:3 */

@@ -23,7 +23,7 @@
 #include "SPU2/spu2.h"
 #include "SysThreads.h"
 #include "DEV9/DEV9.h"
-#include "USB/USB.h"
+#include "USB/USBNull.h"
 #include "PAD/Gamepad.h"
 
 #include "ConsoleLogger.h"

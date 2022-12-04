@@ -26,7 +26,10 @@
 #include "CDVD/CDVDcommon.h"
 #include "MemoryCardFile.h"
 
-#ifndef PCSX2_CORE
+#ifdef PCSX2_CORE
+#include "USB/USB.h"
+#else
+#include "USB/USBNull.h"
 #include "gui/AppConfig.h"
 #include "GS/GS.h"
 #endif
@@ -1077,6 +1080,62 @@ void Pcsx2Config::FramerateOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(SlomoScalar);
 }
 
+#ifdef PCSX2_CORE
+
+Pcsx2Config::USBOptions::USBOptions()
+{
+	for (u32 i = 0; i < static_cast<u32>(Ports.size()); i++)
+	{
+		Ports[i].DeviceType = -1;
+		Ports[i].DeviceSubtype = 0;
+	}
+}
+
+void Pcsx2Config::USBOptions::LoadSave(SettingsWrapper& wrap)
+{
+	for (u32 i = 0; i < static_cast<u32>(Ports.size()); i++)
+	{
+		const std::string section(USBGetConfigSection(i));
+
+		std::string device = USB::DeviceTypeIndexToName(Ports[i].DeviceType);
+		wrap.Entry(section.c_str(), "Type", device, device);
+
+		if (wrap.IsLoading())
+			Ports[i].DeviceType = USB::DeviceTypeNameToIndex(device);
+
+		const std::string subtype_key(fmt::format("{}_subtype", USB::DeviceTypeIndexToName(Ports[i].DeviceType)));
+		wrap.Entry(section.c_str(), subtype_key.c_str(), Ports[i].DeviceSubtype);
+	}
+}
+
+bool Pcsx2Config::USBOptions::Port::operator==(const USBOptions::Port& right) const
+{
+	return OpEqu(DeviceType) && OpEqu(DeviceSubtype);
+}
+
+bool Pcsx2Config::USBOptions::Port::operator!=(const USBOptions::Port& right) const
+{
+	return !this->operator==(right);
+}
+
+bool Pcsx2Config::USBOptions::operator==(const USBOptions& right) const
+{
+	for (u32 i = 0; i < static_cast<u32>(Ports.size()); i++)
+	{
+		if (!OpEqu(Ports[i]))
+			return false;
+	}
+
+	return true;
+}
+
+bool Pcsx2Config::USBOptions::operator!=(const USBOptions& right) const
+{
+	return !this->operator==(right);
+}
+
+#endif
+
 #ifdef ENABLE_ACHIEVEMENTS
 
 Pcsx2Config::AchievementsOptions::AchievementsOptions()
@@ -1197,6 +1256,9 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 
 	Debugger.LoadSave(wrap);
 	Trace.LoadSave(wrap);
+#ifdef PCSX2_CORE
+	USB.LoadSave(wrap);
+#endif
 
 #ifdef ENABLE_ACHIEVEMENTS
 	Achievements.LoadSave(wrap);

@@ -22,8 +22,9 @@
  * THE SOFTWARE.
  */
 
-#include "iov.h"
-#include "queue.h"
+#pragma once
+#include "USB/qemu-usb/iov.h"
+#include "USB/qemu-usb/queue.h"
 
 #define USB_TOKEN_SETUP 0x2d
 #define USB_TOKEN_IN 0x69  /* device -> host */
@@ -387,9 +388,6 @@ typedef struct USBDeviceClass
 	int (*alloc_streams)(USBDevice* dev, USBEndpoint** eps, int nr_eps,
 						 int streams);
 	void (*free_streams)(USBDevice* dev, USBEndpoint** eps, int nr_eps);
-
-	int (*open)(USBDevice* dev);
-	void (*close)(USBDevice* dev);
 
 	const char* product_desc;
 	const USBDesc* usb_desc;

@@ -258,6 +258,10 @@ void Host::OnInputDeviceDisconnected(const std::string_view& identifier)
 {
 }
 
+void Host::SetRelativeMouseMode(bool enabled)
+{
+}
+
 bool Host::AcquireHostDisplay(RenderAPI api, bool clear_state_on_fail)
 {
 	const std::optional<WindowInfo> wi(GSRunner::GetPlatformWindowInfo());

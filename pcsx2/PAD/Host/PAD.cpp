@@ -600,12 +600,6 @@ void PAD::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 	}
 }
 
-PAD::VibrationCapabilities PAD::GetControllerVibrationCapabilities(const std::string_view& type)
-{
-	const ControllerInfo* info = GetControllerInfo(type);
-	return info ? info->vibration_caps : VibrationCapabilities::NoVibration;
-}
-
 static u32 TryMapGenericMapping(SettingsInterface& si, const std::string& section,
 	const InputManager::GenericInputBindingMapping& mapping, GenericInputBinding generic_name,
 	const char* bind_name)

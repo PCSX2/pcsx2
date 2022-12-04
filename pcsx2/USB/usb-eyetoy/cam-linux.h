@@ -19,6 +19,7 @@ namespace usb_eyetoy
 {
 	namespace linux_api
 	{
+		std::vector<std::pair<std::string, std::string>> getDevList();
 
 		typedef struct _buffer_t
 		{
@@ -26,31 +27,16 @@ namespace usb_eyetoy
 			size_t length;
 		} buffer_t;
 
-		static const char* APINAME = "V4L2";
-
 		class V4L2 : public VideoDevice
 		{
 		public:
-			V4L2(int port);
+			V4L2();
 			~V4L2();
 			int Open(int width, int height, FrameFormat format, int mirror);
 			int Close();
 			int GetImage(uint8_t* buf, size_t len);
 			void SetMirroring(bool state);
 			int Reset() { return 0; };
-
-			static const TCHAR* Name()
-			{
-				return TEXT("V4L2");
-			}
-			static int Configure(int port, const char* dev_type, void* data);
-
-			int Port() { return mPort; }
-			void Port(int port) { mPort = port; }
-
-		private:
-			int mPort;
 		};
-
 	} // namespace linux_api
 } // namespace usb_eyetoy

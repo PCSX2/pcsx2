@@ -117,6 +117,8 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/SettingsDialog.cpp
 	Settings/SettingsDialog.h
 	Settings/SettingsDialog.ui
+	Settings/USBBindingWidget_DrivingForce.ui
+	Settings/USBBindingWidget_GTForce.ui
 	Tools/InputRecording/NewInputRecordingDlg.cpp
 	Tools/InputRecording/NewInputRecordingDlg.h
 	Tools/InputRecording/NewInputRecordingDlg.ui

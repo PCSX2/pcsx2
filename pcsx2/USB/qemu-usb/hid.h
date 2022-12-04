@@ -13,9 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef QEMU_HID_H
-#define QEMU_HID_H
-#include "vl.h"
+#pragma once
+#include <cstdint>
 
 /* include/ui/console.h */
 /* keyboard/mouse support */
@@ -343,5 +342,3 @@ void hid_pointer_activate(HIDState* hs);
 int hid_pointer_poll(HIDState* hs, uint8_t* buf, int len);
 int hid_keyboard_poll(HIDState* hs, uint8_t* buf, int len);
 int hid_keyboard_write(HIDState* hs, uint8_t* buf, int len);
-
-#endif /* QEMU_HID_H */

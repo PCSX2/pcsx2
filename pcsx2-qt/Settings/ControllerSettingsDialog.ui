@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1300</width>
+    <width>1305</width>
     <height>680</height>
    </rect>
   </property>
@@ -33,13 +33,13 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>150</width>
+       <width>170</width>
        <height>0</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>150</width>
+       <width>170</width>
        <height>16777215</height>
       </size>
      </property>
@@ -92,7 +92,8 @@
           <string>Load Profile</string>
          </property>
          <property name="icon">
-          <iconset theme="folder-open-line"/>
+          <iconset theme="folder-open-line">
+           <normaloff>.</normaloff>.</iconset>
          </property>
         </widget>
        </item>
@@ -113,7 +114,8 @@
           <string>Restore Defaults</string>
          </property>
          <property name="icon">
-          <iconset theme="restart-line"/>
+          <iconset theme="restart-line">
+           <normaloff>.</normaloff>.</iconset>
          </property>
         </widget>
        </item>

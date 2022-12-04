@@ -71,9 +71,15 @@ static std::mutex s_screenshot_threads_mutex;
 
 std::unique_ptr<GSRenderer> g_gs_renderer;
 
+// Since we read this on the EE thread, we can't put it in the renderer, because
+// we might be switching while the other thread reads it.
+static GSVector4 s_last_draw_rect;
+
+
 GSRenderer::GSRenderer()
 	: m_shader_time_start(Common::Timer::GetCurrentValue())
 {
+	s_last_draw_rect = GSVector4::zero();
 }
 
 GSRenderer::~GSRenderer() = default;
@@ -686,6 +692,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 		draw_rect = CalculateDrawDstRect(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight(),
 			src_rect, current->GetSize(), g_host_display->GetDisplayAlignment(), g_host_display->UsesLowerLeftOrigin(),
 			GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets));
+		s_last_draw_rect = draw_rect;
 
 		if (GSConfig.CASMode != GSCASMode::Disabled)
 		{
@@ -924,6 +931,7 @@ void GSRenderer::PresentCurrentFrame()
 			const GSVector4 draw_rect(CalculateDrawDstRect(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight(),
 				src_rect, current->GetSize(), g_host_display->GetDisplayAlignment(), g_host_display->UsesLowerLeftOrigin(),
 				GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets)));
+			s_last_draw_rect = draw_rect;
 
 			const u64 current_time = Common::Timer::GetCurrentValue();
 			const float shader_time = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - m_shader_time_start));
@@ -935,6 +943,23 @@ void GSRenderer::PresentCurrentFrame()
 		Host::EndPresentFrame();
 	}
 	g_gs_device->RestoreAPIState();
+}
+
+void GSTranslateWindowToDisplayCoordinates(float window_x, float window_y, float* display_x, float* display_y)
+{
+	const float draw_width = s_last_draw_rect.z - s_last_draw_rect.x;
+	const float draw_height = s_last_draw_rect.w - s_last_draw_rect.y;
+	const float rel_x = window_x - s_last_draw_rect.x;
+	const float rel_y = window_y - s_last_draw_rect.y;
+	if (rel_x < 0 || rel_x > draw_width || rel_y < 0 || rel_y > draw_height)
+	{
+		*display_x = -1.0f;
+		*display_y = -1.0f;
+		return;
+	}
+
+	*display_x = rel_x / draw_width;
+	*display_y = rel_y / draw_height;
 }
 
 #ifndef PCSX2_CORE

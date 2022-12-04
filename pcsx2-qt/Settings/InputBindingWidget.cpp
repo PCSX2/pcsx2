@@ -40,7 +40,8 @@ InputBindingWidget::InputBindingWidget(QWidget* parent)
 	connect(this, &QPushButton::clicked, this, &InputBindingWidget::onClicked);
 }
 
-InputBindingWidget::InputBindingWidget(QWidget* parent, SettingsInterface* sif, std::string section_name, std::string key_name)
+InputBindingWidget::InputBindingWidget(
+	QWidget* parent, SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name, std::string key_name)
 	: QPushButton(parent)
 {
 	setMinimumWidth(225);
@@ -48,7 +49,7 @@ InputBindingWidget::InputBindingWidget(QWidget* parent, SettingsInterface* sif, 
 
 	connect(this, &QPushButton::clicked, this, &InputBindingWidget::onClicked);
 
-	initialize(sif, std::move(section_name), std::move(key_name));
+	initialize(sif, bind_type, std::move(section_name), std::move(key_name));
 }
 
 InputBindingWidget::~InputBindingWidget()
@@ -61,9 +62,11 @@ bool InputBindingWidget::isMouseMappingEnabled()
 	return Host::GetBaseBoolSettingValue("UI", "EnableMouseMapping", false);
 }
 
-void InputBindingWidget::initialize(SettingsInterface* sif, std::string section_name, std::string key_name)
+void InputBindingWidget::initialize(
+	SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name, std::string key_name)
 {
 	m_sif = sif;
+	m_bind_type = bind_type;
 	m_section_name = std::move(section_name);
 	m_key_name = std::move(key_name);
 	reloadBinding();
@@ -223,8 +226,7 @@ void InputBindingWidget::setNewBinding()
 	if (m_new_bindings.empty())
 		return;
 
-	const std::string new_binding(
-		InputManager::ConvertInputBindingKeysToString(m_new_bindings.data(), m_new_bindings.size()));
+	std::string new_binding(InputManager::ConvertInputBindingKeysToString(m_bind_type, m_new_bindings.data(), m_new_bindings.size()));
 	if (!new_binding.empty())
 	{
 		if (m_sif)
@@ -265,9 +267,8 @@ void InputBindingWidget::clearBinding()
 
 void InputBindingWidget::reloadBinding()
 {
-	m_bindings = m_sif ?
-		m_sif->GetStringList(m_section_name.c_str(), m_key_name.c_str()) :
-		Host::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
+	m_bindings = m_sif ? m_sif->GetStringList(m_section_name.c_str(), m_key_name.c_str()) :
+                         Host::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
 	updateText();
 }
 
@@ -306,8 +307,7 @@ void InputBindingWidget::startListeningForInput(u32 timeout_in_seconds)
 	m_input_listen_timer->setSingleShot(false);
 	m_input_listen_timer->start(1000);
 
-	m_input_listen_timer->connect(m_input_listen_timer, &QTimer::timeout, this,
-		&InputBindingWidget::onInputListenTimerTimeout);
+	m_input_listen_timer->connect(m_input_listen_timer, &QTimer::timeout, this, &InputBindingWidget::onInputListenTimerTimeout);
 	m_input_listen_remaining_seconds = timeout_in_seconds;
 	setText(tr("Push Button/Axis... [%1]").arg(m_input_listen_remaining_seconds));
 
@@ -365,8 +365,7 @@ void InputBindingWidget::inputManagerHookCallback(InputBindingKey key, float val
 void InputBindingWidget::hookInputManager()
 {
 	InputManager::SetHook([this](InputBindingKey key, float value) {
-		QMetaObject::invokeMethod(this, "inputManagerHookCallback", Qt::QueuedConnection, Q_ARG(InputBindingKey, key),
-			Q_ARG(float, value));
+		QMetaObject::invokeMethod(this, "inputManagerHookCallback", Qt::QueuedConnection, Q_ARG(InputBindingKey, key), Q_ARG(float, value));
 		return InputInterceptHook::CallbackResult::StopProcessingEvent;
 	});
 }
@@ -378,7 +377,7 @@ void InputBindingWidget::unhookInputManager()
 
 void InputBindingWidget::openDialog()
 {
-	InputBindingDialog binding_dialog(m_sif, m_section_name, m_key_name, m_bindings, QtUtils::GetRootWidget(this));
+	InputBindingDialog binding_dialog(m_sif, m_bind_type, m_section_name, m_key_name, m_bindings, QtUtils::GetRootWidget(this));
 	binding_dialog.exec();
 	reloadBinding();
 }
@@ -388,7 +387,8 @@ InputVibrationBindingWidget::InputVibrationBindingWidget(QWidget* parent)
 	connect(this, &QPushButton::clicked, this, &InputVibrationBindingWidget::onClicked);
 }
 
-InputVibrationBindingWidget::InputVibrationBindingWidget(QWidget* parent, ControllerSettingsDialog* dialog, std::string section_name, std::string key_name)
+InputVibrationBindingWidget::InputVibrationBindingWidget(
+	QWidget* parent, ControllerSettingsDialog* dialog, std::string section_name, std::string key_name)
 {
 	setMinimumWidth(225);
 	setMaximumWidth(225);

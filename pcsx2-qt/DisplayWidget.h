@@ -32,15 +32,13 @@ public:
 
 	QPaintEngine* paintEngine() const override;
 
-	__fi void setShouldHideCursor(bool hide) { m_should_hide_cursor = hide; }
-
 	int scaledWindowWidth() const;
 	int scaledWindowHeight() const;
 
 	std::optional<WindowInfo> getWindowInfo();
 
-	void updateRelativeMode(bool master_enable);
-	void updateCursor(bool master_enable);
+	void updateRelativeMode(bool enabled);
+	void updateCursor(bool hidden);
 
 	void handleCloseEvent(QCloseEvent* event);
 
@@ -60,7 +58,6 @@ private:
 #ifdef _WIN32
 	bool m_clip_mouse_enabled = false;
 #endif
-	bool m_should_hide_cursor = false;
 	bool m_cursor_hidden = false;
 
 	std::vector<int> m_keys_pressed_with_modifiers;

@@ -13,196 +13,125 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef USBPAD_H
-#define USBPAD_H
+#pragma once
 
-#include "USB/qemu-usb/vl.h"
-#include "USB/configuration.h"
+#include "USB/qemu-usb/qusb.h"
+#include "USB/qemu-usb/desc.h"
 #include "USB/deviceproxy.h"
 
 namespace usb_pad
 {
-
-#define CHECK(exp)      \
-	do                  \
-	{                   \
-		if (!(exp))     \
-			goto Error; \
-	} while (0)
-#define SAFE_FREE(p)    \
-	do                  \
-	{                   \
-		if (p)          \
-		{               \
-			free(p);    \
-			(p) = NULL; \
-		}               \
-	} while (0)
-
-#define S_CONFIG_JOY TEXT("Joystick")
-#define N_JOYSTICK TEXT("joystick")
-
-	class PadDevice
+	enum ControlID
 	{
-	public:
-		virtual ~PadDevice() {}
-		static USBDevice* CreateDevice(int port);
-		static const TCHAR* Name()
-		{
-			return TEXT("Wheel device");
-		}
-		static const char* TypeName()
-		{
-			return "pad";
-		}
-		static std::list<std::string> ListAPIs();
-		static const TCHAR* LongAPIName(const std::string& name);
-		static int Configure(int port, const std::string& api, void* data);
-		static int Freeze(FreezeAction mode, USBDevice* dev, void* data);
-		static std::vector<std::string> SubTypes()
-		{
-			return {"Driving Force", "Driving Force Pro", "Driving Force Pro (rev11.02)", "GT Force"};
-		}
+		CID_STEERING_L,
+		CID_STEERING_R,
+		CID_THROTTLE,
+		CID_BRAKE,
+		CID_DPAD_UP,
+		CID_DPAD_DOWN,
+		CID_DPAD_LEFT,
+		CID_DPAD_RIGHT,
+		CID_BUTTON0, // cross
+		CID_BUTTON1, // square
+		CID_BUTTON2, // circle
+		CID_BUTTON3, // triangle
+		CID_BUTTON4, // R1
+		CID_BUTTON5, // L1
+		CID_BUTTON6, // R2
+		CID_BUTTON7, // L2
+		CID_BUTTON8, // select
+		CID_BUTTON9, // start
+		CID_BUTTON10, // R3
+		CID_BUTTON11, // L3
+		CID_BUTTON12,
+		CID_BUTTON13,
+		CID_BUTTON14,
+		CID_BUTTON15,
+		CID_BUTTON16,
+		CID_BUTTON17,
+		CID_BUTTON18,
+		CID_BUTTON19,
+		CID_BUTTON20,
+		CID_BUTTON21,
+		CID_BUTTON22,
+		CID_BUTTON23,
+		CID_BUTTON24,
+		CID_COUNT,
 	};
 
-	class RBDrumKitDevice
+	enum PS2WheelTypes
 	{
-	public:
-		virtual ~RBDrumKitDevice() {}
-		static USBDevice* CreateDevice(int port);
-		static const TCHAR* Name()
-		{
-			return TEXT("Rock Band drum kit");
-		}
-		static const char* TypeName()
-		{
-			return "rbdrumkit";
-		}
-		static std::list<std::string> ListAPIs();
-		static const TCHAR* LongAPIName(const std::string& name);
-		static int Configure(int port, const std::string& api, void* data);
-		static int Freeze(FreezeAction mode, USBDevice* dev, void* data);
-		static std::vector<std::string> SubTypes()
-		{
-			return {};
-		}
+		WT_GENERIC, // DF or any other LT wheel in non-native mode
+		WT_DRIVING_FORCE_PRO, //LPRC-11000? DF GT can be downgraded to Pro (?)
+		WT_DRIVING_FORCE_PRO_1102, //hw with buggy hid report?
+		WT_GT_FORCE, //formula gp
+		WT_ROCKBAND1_DRUMKIT,
+		WT_BUZZ_CONTROLLER,
+		WT_SEGA_SEAMIC,
+		WT_KEYBOARDMANIA_CONTROLLER,
+		WT_COUNT,
 	};
 
-	class BuzzDevice
+	class PadDevice : public DeviceProxy
 	{
 	public:
-		virtual ~BuzzDevice() {}
-		static USBDevice* CreateDevice(int port);
-		static const TCHAR* Name()
-		{
-			return TEXT("Buzz Device");
-		}
-		static const char* TypeName()
-		{
-			return "buzz_device";
-		}
-		static std::list<std::string> ListAPIs();
-		static const TCHAR* LongAPIName(const std::string& name);
-		static int Configure(int port, const std::string& api, void* data);
-		static int Freeze(FreezeAction mode, USBDevice* dev, void* data);
-		static std::vector<std::string> SubTypes()
-		{
-			return {};
-		}
+		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
+		const char* Name() const override;
+		const char* TypeName() const override;
+		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
+		void UpdateSettings(USBDevice* dev, SettingsInterface& si) const override;
+		float GetBindingValue(const USBDevice* dev, u32 bind_index) const override;
+		void SetBindingValue(USBDevice* dev, u32 bind_index, float value) const override;
+		void InputDeviceConnected(USBDevice* dev, const std::string_view& identifier) const override;
+		void InputDeviceDisconnected(USBDevice* dev, const std::string_view& identifier) const override;
+		std::vector<std::string> SubTypes() const override;
+		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const override;
+		gsl::span<const SettingInfo> Settings(u32 subtype) const override;
 	};
 
-	class GametrakDevice
+	class RBDrumKitDevice final : public PadDevice
 	{
 	public:
-		virtual ~GametrakDevice() {}
-		static USBDevice* CreateDevice(int port);
-		static const TCHAR* Name()
-		{
-			return TEXT("Gametrak Device");
-		}
-		static const char* TypeName()
-		{
-			return "gametrak_device";
-		}
-		static std::list<std::string> ListAPIs();
-		static const TCHAR* LongAPIName(const std::string& name);
-		static int Configure(int port, const std::string& api, void* data);
-		static int Freeze(FreezeAction mode, USBDevice* dev, void* data);
-		static std::vector<std::string> SubTypes()
-		{
-			return std::vector<std::string>();
-		}
-		static void Initialize();
+		const char* Name() const override;
+		const char* TypeName() const override;
+		std::vector<std::string> SubTypes() const override;
+		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const override;
+		gsl::span<const SettingInfo> Settings(u32 subtype) const override;
+		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
 	};
 
-	class RealPlayDevice
+	class BuzzDevice final : public PadDevice
 	{
 	public:
-		virtual ~RealPlayDevice() {}
-		static USBDevice* CreateDevice(int port);
-		static const TCHAR* Name()
-		{
-			return TEXT("RealPlay Device");
-		}
-		static const char* TypeName()
-		{
-			return "realplay_device";
-		}
-		static std::list<std::string> ListAPIs();
-		static const TCHAR* LongAPIName(const std::string& name);
-		static int Configure(int port, const std::string& api, void* data);
-		static int Freeze(FreezeAction mode, USBDevice* dev, void* data);
-		static std::vector<std::string> SubTypes()
-		{
-			return {"RealPlay Racing", "RealPlay Sphere", "RealPlay Golf", "RealPlay Pool"};
-		}
-		static void Initialize();
+		const char* Name() const;
+		const char* TypeName() const;
+		std::vector<std::string> SubTypes() const;
+		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const;
+		gsl::span<const SettingInfo> Settings(u32 subtype) const;
+		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const;
 	};
 
-	class SeamicDevice
+	class SeamicDevice final : public PadDevice
 	{
 	public:
-		virtual ~SeamicDevice() {}
-		static USBDevice* CreateDevice(int port);
-		static const TCHAR* Name()
-		{
-			return TEXT("Sega Seamic");
-		}
-		static const char* TypeName()
-		{
-			return "seamic";
-		}
-		static std::list<std::string> ListAPIs();
-		static const TCHAR* LongAPIName(const std::string& name);
-		static int Configure(int port, const std::string& api, void* data);
-		static int Freeze(FreezeAction mode, USBDevice* dev, void* data);
-		static std::vector<std::string> SubTypes()
-		{
-			return {};
-		}
+		const char* Name() const;
+		const char* TypeName() const;
+		std::vector<std::string> SubTypes() const;
+		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const;
+		gsl::span<const SettingInfo> Settings(u32 subtype) const;
+		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const;
+		bool Freeze(USBDevice* dev, StateWrapper& sw) const;
 	};
 
-	class KeyboardmaniaDevice
+	class KeyboardmaniaDevice final : public PadDevice
 	{
 	public:
-		virtual ~KeyboardmaniaDevice() {}
-		static USBDevice* CreateDevice(int port);
-		static const TCHAR* Name()
-		{
-			return TEXT("Keyboardmania");
-		}
-		static const char* TypeName()
-		{
-			return "keyboardmania";
-		}
-		static std::list<std::string> ListAPIs();
-		static const TCHAR* LongAPIName(const std::string& name);
-		static int Configure(int port, const std::string& api, void* data);
-		static int Freeze(FreezeAction mode, USBDevice* dev, void* data);
-		static std::vector<std::string> SubTypes()
-		{
-			return {};
-		}
+		const char* Name() const;
+		const char* TypeName() const;
+		std::vector<std::string> SubTypes() const;
+		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const;
+		gsl::span<const SettingInfo> Settings(u32 subtype) const;
+		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const;
 	};
 
 // Most likely as seen on https://github.com/matlo/GIMX
@@ -245,45 +174,7 @@ namespace usb_pad
 #define FTYPE_HIGH_RESOLUTION_AUTO_CENTER_SPRING 0x0D
 #define FTYPE_FRICTION 0x0E
 
-	enum PS2WheelTypes
-	{
-		WT_GENERIC,                // DF or any other LT wheel in non-native mode
-		WT_DRIVING_FORCE_PRO,      //LPRC-11000? DF GT can be downgraded to Pro (?)
-		WT_DRIVING_FORCE_PRO_1102, //hw with buggy hid report?
-		WT_GT_FORCE,               //formula gp
-		WT_ROCKBAND1_DRUMKIT,
-		WT_BUZZ_CONTROLLER,
-		WT_GAMETRAK_CONTROLLER,
-		WT_REALPLAY_RACING,
-		WT_REALPLAY_SPHERE,
-		WT_REALPLAY_GOLF,
-		WT_REALPLAY_POOL,
-		WT_SEGA_SEAMIC,
-		WT_KEYBOARDMANIA_CONTROLLER,
-	};
 
-	inline int range_max(PS2WheelTypes type)
-	{
-		if (type == WT_DRIVING_FORCE_PRO || type == WT_DRIVING_FORCE_PRO_1102)
-			return 0x3FFF;
-		if (type == WT_SEGA_SEAMIC)
-			return 255;
-		return 0x3FF;
-	}
-
-	// hold intermediate wheel data
-	struct wheel_data_t
-	{
-		int32_t steering;
-		uint32_t buttons;
-		uint32_t hatswitch;
-		uint32_t hat_horz;
-		uint32_t hat_vert;
-
-		int32_t clutch; //no game uses though
-		int32_t throttle;
-		int32_t brake;
-	};
 
 	struct spring
 	{
@@ -415,116 +306,60 @@ namespace usb_pad
 		virtual void DisableForce(EffectID force) = 0;
 	};
 
-	class Pad
+	struct PadState
 	{
-	public:
-		Pad(int port, const char* dev_type)
-			: mPort(port)
-			, mDevType(dev_type)
-		{
-			memset(&mFFstate, 0, sizeof(mFFstate));
-		}
-		virtual ~Pad()
-		{
-			delete mFFdev;
-			mFFdev = nullptr;
-		}
-		virtual int Open() = 0;
-		virtual int Close() = 0;
-		virtual int TokenIn(uint8_t* buf, int len) = 0;
-		virtual int TokenOut(const uint8_t* data, int len) = 0;
-		virtual int Reset() = 0;
+		PadState(u32 port_, PS2WheelTypes type_);
+		~PadState();
 
-		virtual PS2WheelTypes Type() { return mType; }
-		virtual void Type(PS2WheelTypes type) { mType = type; }
-		virtual int Port() { return mPort; }
-		virtual void Port(int port) { mPort = port; }
+		void UpdateSettings(SettingsInterface& si, const char* devname);
+
+		float GetBindValue(u32 bind) const;
+		void SetBindValue(u32 bind, float value);
+
+		void Reset();
+		int TokenIn(u8* buf, int len);
+		int TokenOut(const u8* buf, int len);
+
+		void UpdateSteering();
+		void UpdateHatSwitch();
+
+		bool HasFF() const;
+		void OpenFFDevice();
 		void ParseFFData(const ff_data* ffdata, bool isDFP);
 
-	protected:
-		PS2WheelTypes mType = PS2WheelTypes::WT_GENERIC;
-		wheel_data_t mWheelData{};
-		ff_state mFFstate;
-		FFDevice* mFFdev = nullptr;
-		int mPort;
-		const char* mDevType;
+		USBDevice dev{};
+		USBDesc desc{};
+		USBDescDevice desc_dev{};
+
+		u32 port = 0;
+		PS2WheelTypes type = WT_GENERIC;
+
+		s16 steering_range = 0;
+		u16 steering_step = 0;
+
+		struct
+		{
+			// intermediate state, resolved at query time
+			s16 steering_left;
+			s16 steering_right;
+			bool hat_left : 1;
+			bool hat_right : 1;
+			bool hat_up : 1;
+			bool hat_down : 1;
+
+			u8 hatswitch; // direction
+			u16 steering; // 0..steering_range*2
+			u16 last_steering;
+			u32 buttons; // active high
+
+			u8 throttle; // inverted, 0 = fully depressed
+			u8 brake; // inverted, 0 = fully depressed
+		} data = {};
+
+		std::string mFFdevName;
+		std::unique_ptr<FFDevice> mFFdev;
+		ff_state mFFstate{};
 	};
-
-	//L3/R3 for newer wheels
-	//enum PS2Buttons : uint32_t {
-	//	PAD_CROSS = 0, PAD_SQUARE, PAD_CIRCLE, PAD_TRIANGLE,
-	//	PAD_L1, PAD_L2, PAD_R1, PAD_R2,
-	//	PAD_SELECT, PAD_START,
-	//	PAD_L3, PAD_R3, //order
-	//	PAD_BUTTON_COUNT
-	//};
-
-	//???
-	//enum DFButtons : uint32_t {
-	//	PAD_CROSS = 0, PAD_SQUARE, PAD_CIRCLE, PAD_TRIANGLE,
-	//	PAD_R2,
-	//	PAD_L2,
-	//	PAD_R1,
-	//	PAD_L1,
-	//	PAD_SELECT, PAD_START,
-	//	PAD_BUTTON_COUNT
-	//};
-
-	//DF Pro buttons (?)
-	//Based on Tokyo Xtreme Racer Drift 2
-	//GT4 flips R1/L1 with R2/L2 with DF wheel type
-	enum PS2Buttons : uint32_t
-	{
-		PAD_CROSS = 0, //menu up - GT Force
-		PAD_SQUARE,    //menu down
-		PAD_CIRCLE,    //X
-		PAD_TRIANGLE,  //Y
-		PAD_R1,        //A? <pause> in GT4
-		PAD_L1,        //B
-		PAD_R2,
-		PAD_L2,
-		PAD_SELECT,
-		PAD_START,
-		PAD_R3,
-		PAD_L3, //order, only GT Force/Force EX?
-		PAD_SHIFT_UP,
-		PAD_SHIFT_DOWN, // DF Pro
-		PAD_BUTTON_COUNT
-	};
-
-	enum PS2Axis : uint32_t
-	{
-		PAD_AXIS_X,
-		PAD_AXIS_Y,
-		PAD_AXIS_Z,
-		PAD_AXIS_RZ,
-		PAD_AXIS_HAT, //Treat as axis for mapping purposes
-		PAD_AXIS_COUNT
-	};
-
-	enum PS2HatSwitch
-	{
-		PAD_HAT_N = 0,
-		PAD_HAT_NE,
-		PAD_HAT_E,
-		PAD_HAT_SE,
-		PAD_HAT_S,
-		PAD_HAT_SW,
-		PAD_HAT_W,
-		PAD_HAT_NW,
-		PAD_HAT_COUNT
-	};
-
-	enum Buzz
-	{
-		BUZZ_RED,
-		BUZZ_YELLOW,
-		BUZZ_GREEN,
-		BUZZ_ORANGE,
-		BUZZ_BLUE,
-	};
-
-	static const int HATS_8TO4[] = {PAD_HAT_N, PAD_HAT_E, PAD_HAT_S, PAD_HAT_W};
 
 #define PAD_VID 0x046D
 #define PAD_MOMO 0xCA03    //black MOMO
@@ -1507,464 +1342,4 @@ namespace usb_pad
 		0x81, 0x01, //   INPUT (Constant,Array,Absolute)
 		0xc0        // END_COLLECTION
 	};
-
-	//////////////
-	// GameTrak //
-	//////////////
-
-	// Product ID :
-	// 0x0982 - PlayStation 2
-	// 0x0984 - ???
-
-	[[maybe_unused]] static uint8_t gametrak_dev_descriptor[] = {
-		0x12,       // bLength
-		0x01,       // bDescriptorType (Device)
-		0x10, 0x01, // bcdUSB 1.10
-		0x00,       // bDeviceClass (Use class information in the Interface Descriptors)
-		0x00,       // bDeviceSubClass
-		0x00,       // bDeviceProtocol
-		0x08,       // bMaxPacketSize0 8
-		0xB7, 0x14, // idVendor 0x14B7
-		0x82, 0x09, // idProduct 0x0982
-		0x01, 0x00, // bcdDevice 0.01
-		0x01,       // iManufacturer (String Index)
-		0x02,       // iProduct (String Index)
-		0x00,       // iSerialNumber (String Index)
-		0x01,       // bNumConfigurations 1
-	};
-
-	static const uint8_t gametrak_config_descriptor[] = {
-		0x09,       // bLength
-		0x02,       // bDescriptorType (Configuration)
-		0x22, 0x00, // wTotalLength 34
-		0x01,       // bNumInterfaces 1
-		0x01,       // bConfigurationValue
-		0x00,       // iConfiguration (String Index)
-		0x80,       // bmAttributes
-		0x0A,       // bMaxPower 20mA
-
-		0x09,       // bLength
-		0x04,       // bDescriptorType (Interface)
-		0x00,       // bInterfaceNumber 0
-		0x00,       // bAlternateSetting
-		0x01,       // bNumEndpoints 1
-		0x03,       // bInterfaceClass
-		0x00,       // bInterfaceSubClass
-		0x00,       // bInterfaceProtocol
-		0x00,       // iInterface (String Index)
-
-		0x09,       // bLength
-		0x21,       // bDescriptorType (HID)
-		0x01, 0x01, // bcdHID 1.01
-		0x00,       // bCountryCode
-		0x01,       // bNumDescriptors
-		0x22,       // bDescriptorType[0] (HID)
-		0x7A, 0x00, // wDescriptorLength[0] 122
-
-		0x07,       // bLength
-		0x05,       // bDescriptorType (Endpoint)
-		0x81,       // bEndpointAddress (IN/D2H)
-		0x03,       // bmAttributes (Interrupt)
-		0x10, 0x00, // wMaxPacketSize 16
-		0x0A,       // bInterval 10 (unit depends on device speed)
-	};
-
-	static const uint8_t gametrak_hid_report_descriptor[] = {
-		0x05, 0x01,       // Usage Page (Generic Desktop Ctrls)
-		0x09, 0x04,       // Usage (Joystick)
-		0xA1, 0x01,       // Collection (Application)
-		0x09, 0x01,       //   Usage (Pointer)
-		0xA1, 0x00,       //   Collection (Physical)
-		0x09, 0x30,       //     Usage (X)
-		0x09, 0x31,       //     Usage (Y)
-		0x09, 0x32,       //     Usage (Z)
-		0x09, 0x33,       //     Usage (Rx)
-		0x09, 0x34,       //     Usage (Ry)
-		0x09, 0x35,       //     Usage (Rz)
-		0x16, 0x00, 0x00, //     Logical Minimum (0)
-		0x26, 0xFF, 0x0F, //     Logical Maximum (4095)
-		0x36, 0x00, 0x00, //     Physical Minimum (0)
-		0x46, 0xFF, 0x0F, //     Physical Maximum (4095)
-		0x66, 0x00, 0x00, //     Unit (None)
-		0x75, 0x10,       //     Report Size (16)
-		0x95, 0x06,       //     Report Count (6)
-		0x81, 0x02,       //     Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-		0xC0,             //   End Collection
-		0x09, 0x39,       //   Usage (Hat switch)
-		0x15, 0x01,       //   Logical Minimum (1)
-		0x25, 0x08,       //   Logical Maximum (8)
-		0x35, 0x00,       //   Physical Minimum (0)
-		0x46, 0x3B, 0x01, //   Physical Maximum (315)
-		0x65, 0x14,       //   Unit (System: English Rotation, Length: Centimeter)
-		0x75, 0x04,       //   Report Size (4)
-		0x95, 0x01,       //   Report Count (1)
-		0x81, 0x02,       //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-		0x05, 0x09,       //   Usage Page (Button)
-		0x19, 0x01,       //   Usage Minimum (0x01)
-		0x29, 0x0C,       //   Usage Maximum (0x0C)
-		0x15, 0x00,       //   Logical Minimum (0)
-		0x25, 0x01,       //   Logical Maximum (1)
-		0x75, 0x01,       //   Report Size (1)
-		0x95, 0x0C,       //   Report Count (12)
-		0x55, 0x00,       //   Unit Exponent (0)
-		0x65, 0x00,       //   Unit (None)
-		0x81, 0x02,       //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-		0x75, 0x08,       //   Report Size (8)
-		0x95, 0x02,       //   Report Count (2)
-		0x81, 0x01,       //   Input (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
-		0x05, 0x08,       //   Usage Page (LEDs)
-		0x09, 0x43,       //   Usage (Slow Blink On Time)
-		0x15, 0x00,       //   Logical Minimum (0)
-		0x26, 0xFF, 0x00, //   Logical Maximum (255)
-		0x35, 0x00,       //   Physical Minimum (0)
-		0x46, 0xFF, 0x00, //   Physical Maximum (255)
-		0x75, 0x08,       //   Report Size (8)
-		0x95, 0x01,       //   Report Count (1)
-		0x91, 0x82,       //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Volatile)
-		0x09, 0x44,       //   Usage (Slow Blink Off Time)
-		0x91, 0x82,       //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Volatile)
-		0x09, 0x45,       //   Usage (Fast Blink On Time)
-		0x91, 0x82,       //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Volatile)
-		0x09, 0x46,       //   Usage (Fast Blink Off Time)
-		0x91, 0x82,       //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Volatile)
-		0xC0,             // End Collection
-	};
-
-	//////////////
-	// RealPlay //
-	//////////////
-
-	// Product ID :
-	// Racing - 0x09B2
-	// Sphere - 0x09B3
-	// Golf - 0x09B5
-	// Pool - 0x09B6
-
-	// RealPlay Golf is dumped from a real controller.
-	// The others were force-brutted to be accepted by games - they may be inaccurate.
-
-	static const uint8_t realplay_racing_dev_descriptor[] = {
-		0x12,       // bLength
-		0x01,       // bDescriptorType (Device)
-		0x00, 0x02, // bcdUSB 2.00
-		0x00,       // bDeviceClass (Use class information in the Interface Descriptors)
-		0x00,       // bDeviceSubClass
-		0x00,       // bDeviceProtocol
-		0x40,       // bMaxPacketSize0 64
-		0xB7, 0x14, // idVendor 0x14B7
-		0xB2, 0x09, // idProduct 0x09B2
-		0x00, 0x01, // bcdDevice 2.00
-		0x01,       // iManufacturer (String Index)
-		0x02,       // iProduct (String Index)
-		0x00,       // iSerialNumber (String Index)
-		0x01,       // bNumConfigurations 1
-	};
-
-	static const uint8_t realplay_sphere_dev_descriptor[] = {
-		0x12,       // bLength
-		0x01,       // bDescriptorType (Device)
-		0x00, 0x02, // bcdUSB 2.00
-		0x00,       // bDeviceClass (Use class information in the Interface Descriptors)
-		0x00,       // bDeviceSubClass
-		0x00,       // bDeviceProtocol
-		0x40,       // bMaxPacketSize0 64
-		0xB7, 0x14, // idVendor 0x14B7
-		0xB3, 0x09, // idProduct 0x09B3
-		0x00, 0x01, // bcdDevice 2.00
-		0x01,       // iManufacturer (String Index)
-		0x02,       // iProduct (String Index)
-		0x00,       // iSerialNumber (String Index)
-		0x01,       // bNumConfigurations 1
-	};
-
-	static const uint8_t realplay_golf_dev_descriptor[] = {
-		0x12,       // bLength
-		0x01,       // bDescriptorType (Device)
-		0x00, 0x02, // bcdUSB 2.00
-		0x00,       // bDeviceClass (Use class information in the Interface Descriptors)
-		0x00,       // bDeviceSubClass
-		0x00,       // bDeviceProtocol
-		0x40,       // bMaxPacketSize0 64
-		0xB7, 0x14, // idVendor 0x14B7
-		0xB5, 0x09, // idProduct 0x09B5
-		0x00, 0x01, // bcdDevice 2.00
-		0x01,       // iManufacturer (String Index)
-		0x02,       // iProduct (String Index)
-		0x00,       // iSerialNumber (String Index)
-		0x01,       // bNumConfigurations 1
-	};
-
-	static const uint8_t realplay_pool_dev_descriptor[] = {
-		0x12,       // bLength
-		0x01,       // bDescriptorType (Device)
-		0x00, 0x02, // bcdUSB 2.00
-		0x00,       // bDeviceClass (Use class information in the Interface Descriptors)
-		0x00,       // bDeviceSubClass
-		0x00,       // bDeviceProtocol
-		0x40,       // bMaxPacketSize0 64
-		0xB7, 0x14, // idVendor 0x14B7
-		0xB6, 0x09, // idProduct 0x09B6
-		0x00, 0x01, // bcdDevice 2.00
-		0x01,       // iManufacturer (String Index)
-		0x02,       // iProduct (String Index)
-		0x00,       // iSerialNumber (String Index)
-		0x01,       // bNumConfigurations 1
-	};
-
-	static const uint8_t realplay_config_descriptor[] = {
-		0x09,       // bLength
-		0x02,       // bDescriptorType (Configuration)
-		0x29, 0x00, // wTotalLength 41
-		0x01,       // bNumInterfaces 1
-		0x01,       // bConfigurationValue
-		0x00,       // iConfiguration (String Index)
-		0x80,       // bmAttributes
-		0x32,       // bMaxPower 100mA
-
-		0x09, // bLength
-		0x04, // bDescriptorType (Interface)
-		0x00, // bInterfaceNumber 0
-		0x00, // bAlternateSetting
-		0x02, // bNumEndpoints 2
-		0x03, // bInterfaceClass
-		0x00, // bInterfaceSubClass
-		0x00, // bInterfaceProtocol
-		0x00, // iInterface (String Index)
-
-		0x09,       // bLength
-		0x21,       // bDescriptorType (HID)
-		0x11, 0x01, // bcdHID 1.11
-		0x00,       // bCountryCode
-		0x01,       // bNumDescriptors
-		0x22,       // bDescriptorType[0] (HID)
-		0x85, 0x00, // wDescriptorLength[0] 133
-
-		0x07,       // bLength
-		0x05,       // bDescriptorType (Endpoint)
-		0x02,       // bEndpointAddress (OUT/H2D)
-		0x03,       // bmAttributes (Interrupt)
-		0x40, 0x00, // wMaxPacketSize 64
-		0x0A,       // bInterval 10 (unit depends on device speed)
-
-		0x07,       // bLength
-		0x05,       // bDescriptorType (Endpoint)
-		0x81,       // bEndpointAddress (IN/D2H)
-		0x03,       // bmAttributes (Interrupt)
-		0x40, 0x00, // wMaxPacketSize 64
-		0x0A,       // bInterval 10 (unit depends on device speed)
-	};
-
-	static const uint8_t realplay_hid_report_descriptor[] = {
-		0x05, 0x01,       // Usage Page (Generic Desktop Ctrls)
-		0x09, 0x05,       // Usage (Game Pad)
-		0xA1, 0x01,       // Collection (Application)
-		0x15, 0x00,       //   Logical Minimum (0)
-		0x26, 0xFF, 0x0F, //   Logical Maximum (4095)
-		0x35, 0x00,       //   Physical Minimum (0)
-		0x46, 0xFF, 0x0F, //   Physical Maximum (4095)
-		0x09, 0x30,       //   Usage (X)
-		0x75, 0x0C,       //   Report Size (12)
-		0x95, 0x01,       //   Report Count (1)
-		0x81, 0x02,       //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-		0x75, 0x01,       //   Report Size (1)
-		0x95, 0x04,       //   Report Count (4)
-		0x81, 0x03,       //   Input (Const,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-		0x09, 0x31,       //   Usage (Y)
-		0x75, 0x0C,       //   Report Size (12)
-		0x95, 0x01,       //   Report Count (1)
-		0x81, 0x02,       //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-		0x75, 0x01,       //   Report Size (1)
-		0x95, 0x04,       //   Report Count (4)
-		0x81, 0x03,       //   Input (Const,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-		0x09, 0x32,       //   Usage (Z)
-		0x75, 0x0C,       //   Report Size (12)
-		0x95, 0x01,       //   Report Count (1)
-		0x81, 0x02,       //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-		0x75, 0x01,       //   Report Size (1)
-		0x95, 0x04,       //   Report Count (4)
-		0x81, 0x03,       //   Input (Const,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-		0x06, 0x00, 0xFF, //   Usage Page (Vendor Defined 0xFF00)
-		0x09, 0x20,       //   Usage (0x20)
-		0x09, 0x21,       //   Usage (0x21)
-		0x09, 0x22,       //   Usage (0x22)
-		0x09, 0x23,       //   Usage (0x23)
-		0x09, 0x24,       //   Usage (0x24)
-		0x09, 0x25,       //   Usage (0x25)
-		0x09, 0x26,       //   Usage (0x26)
-		0x09, 0x27,       //   Usage (0x27)
-		0x26, 0xFF, 0x00, //   Logical Maximum (255)
-		0x46, 0xFF, 0x00, //   Physical Maximum (255)
-		0x75, 0x08,       //   Report Size (8)
-		0x95, 0x08,       //   Report Count (8)
-		0x81, 0x02,       //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-		0x15, 0x00,       //   Logical Minimum (0)
-		0x25, 0x01,       //   Logical Maximum (1)
-		0x35, 0x00,       //   Physical Minimum (0)
-		0x45, 0x01,       //   Physical Maximum (1)
-		0x75, 0x01,       //   Report Size (1)
-		0x95, 0x08,       //   Report Count (8)
-		0x05, 0x09,       //   Usage Page (Button)
-		0x19, 0x01,       //   Usage Minimum (0x01)
-		0x29, 0x08,       //   Usage Maximum (0x08)
-		0x81, 0x02,       //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-		0x06, 0x00, 0xFF, //   Usage Page (Vendor Defined 0xFF00)
-		0x09, 0x28,       //   Usage (0x28)
-		0x09, 0x29,       //   Usage (0x29)
-		0x09, 0x2A,       //   Usage (0x2A)
-		0x09, 0x2B,       //   Usage (0x2B)
-		0x26, 0xFF, 0x00, //   Logical Maximum (255)
-		0x46, 0xFF, 0x00, //   Physical Maximum (255)
-		0x75, 0x08,       //   Report Size (8)
-		0x95, 0x04,       //   Report Count (4)
-		0x81, 0x02,       //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-		0xC0,             // End Collection
-	};
-
-	struct dfp_buttons_t
-	{
-		uint16_t cross : 1;
-		uint16_t square : 1;
-		uint16_t circle : 1;
-		uint16_t triangle : 1;
-		uint16_t rpaddle_R1 : 1;
-		uint16_t lpaddle_L1 : 1;
-		uint16_t R2 : 1;
-		uint16_t L2 : 1;
-		uint16_t select : 1;
-		uint16_t start : 1;
-		uint16_t R3 : 1;
-		uint16_t L3 : 1;
-		uint16_t shifter_back : 1;
-		uint16_t shifter_fwd : 1;
-		uint16_t padding : 2;
-	};
-
-	struct dfgt_buttons_t
-	{
-		uint16_t cross : 1;
-		uint16_t square : 1;
-		uint16_t circle : 1;
-		uint16_t triangle : 1;
-		uint16_t rpaddle_R1 : 1;
-		uint16_t lpaddle_L1 : 1;
-		uint16_t R2 : 1;
-		uint16_t L2 : 1;
-		uint16_t select : 1;
-		uint16_t start : 1;
-		uint16_t R3 : 1;
-		uint16_t L3 : 1;
-		uint16_t shifter_back : 1;
-		uint16_t shifter_fwd : 1;
-		uint16_t dial_center : 1;
-		uint16_t dial_cw : 1;
-
-		uint16_t dial_ccw : 1;
-		uint16_t rocker_minus : 1;
-		uint16_t horn : 1;
-		uint16_t ps_button : 1;
-		uint16_t padding : 12;
-	};
-
-	struct dfp_data_t
-	{
-		uint32_t axis_x : 14;
-		uint32_t buttons : 14;
-		uint32_t hatswitch : 4;
-
-		uint32_t pad0 : 8;
-		uint32_t magic1 : 2; //8 //constant?
-		uint32_t axis_z : 6; //10
-
-		uint32_t magic2 : 1;  //16 //constant?
-		uint32_t axis_rz : 6; //17
-
-		uint32_t magic3 : 1; //23
-
-		uint32_t magic4 : 8; //constant
-	};
-
-	struct momo2_data_t
-	{
-		uint32_t pad0 : 8; //report id probably
-		uint32_t axis_x : 10;
-		uint32_t buttons : 10;
-		uint32_t padding0 : 4; //32
-
-		uint8_t padding1;
-		uint8_t axis_z;
-		uint8_t axis_rz;
-		uint8_t padding2; //32
-	};
-
-	// DF or any LG wheel in non-native mode
-	struct generic_data_t
-	{
-		uint32_t axis_x : 10;
-		uint32_t buttons : 12;
-		uint32_t pad0 : 2;   //vendor
-		uint32_t axis_y : 8; //constant (0x7f on PC, 0xFF on console?)
-
-		uint32_t hatswitch : 4;
-		uint32_t pad1 : 4; //vendor
-		uint32_t axis_z : 8;
-		uint32_t axis_rz : 8;
-		uint32_t pad2 : 8;
-	};
-
-	// GT Force?
-	struct gtforce_data_t
-	{
-		uint32_t axis_x : 10;
-		uint32_t buttons : 6;
-		uint32_t pad0 : 8;
-		uint32_t axis_y : 8;
-
-		uint32_t axis_z : 8;
-		uint32_t axis_rz : 8;
-
-		uint32_t pad1 : 16;
-	};
-
-	struct random_data_t
-	{
-		uint32_t axis_x : 10;
-		uint32_t buttons : 10;
-		uint32_t pad1 : 12;
-
-		uint32_t axis_y : 8; //constant
-		uint32_t axis_z : 8;
-		uint32_t axis_rz : 8;
-		uint32_t pad2 : 8;
-	};
-
-	struct rb1drumkit_t
-	{
-		union u
-		{
-			uint16_t buttons;
-			struct s
-			{
-				uint16_t blue : 1;
-				uint16_t green : 1;
-				uint16_t red : 1;
-				uint16_t yellow : 1;
-				uint16_t orange : 1;
-				uint16_t something0 : 3;
-
-				uint16_t select : 1;
-				uint16_t start : 1;
-				uint16_t something1 : 6;
-			} s;
-		} u;
-
-		uint8_t hatswitch;
-	};
-
-	void pad_reset_data(generic_data_t* d);
-	void pad_reset_data(dfp_data_t* d);
-	void pad_copy_data(PS2WheelTypes type, uint8_t* buf, wheel_data_t& data);
-	//Convert DF Pro buttons to selected wheel type
-	uint32_t convert_wt_btn(PS2WheelTypes type, uint32_t inBtn);
-
 } // namespace usb_pad
-#endif

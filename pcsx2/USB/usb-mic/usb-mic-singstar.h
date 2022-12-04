@@ -13,62 +13,30 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef USBMICSINGSTAR_H
-#define USBMICSINGSTAR_H
+#pragma once
 #include "USB/deviceproxy.h"
-#include "audiodeviceproxy.h"
-
-struct USBDevice;
+#include "USB/usb-mic/audiodev.h"
 
 namespace usb_mic
 {
-	class SingstarDevice
+	class SingstarDevice : public DeviceProxy
 	{
 	public:
-		virtual ~SingstarDevice() {}
-		static USBDevice* CreateDevice(int port);
-		static USBDevice* CreateDevice(int port, const std::string& api);
-		static const TCHAR* Name()
-		{
-			return TEXT("Singstar");
-		}
-		static const char* TypeName()
-		{
-			return "singstar";
-		}
-		static std::list<std::string> ListAPIs()
-		{
-			return RegisterAudioDevice::instance().Names();
-		}
-		static const TCHAR* LongAPIName(const std::string& name)
-		{
-			auto proxy = RegisterAudioDevice::instance().Proxy(name);
-			if (proxy)
-				return proxy->Name();
-			return nullptr;
-		}
-		static int Configure(int port, const std::string& api, void* data);
-		static int Freeze(FreezeAction mode, USBDevice* dev, void* data);
-		static std::vector<std::string> SubTypes()
-		{
-			return {};
-		}
+		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype, bool dual_mic, const char* devtype) const;
+		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
+		const char* Name() const override;
+		const char* TypeName() const override;
+		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
+		void UpdateSettings(USBDevice* dev, SettingsInterface& si) const override;
+		gsl::span<const SettingInfo> Settings(u32 subtype) const override;
 	};
 
-	class LogitechMicDevice : public SingstarDevice
+	class LogitechMicDevice final : public SingstarDevice
 	{
 	public:
-		virtual ~LogitechMicDevice() {}
-		static USBDevice* CreateDevice(int port);
-		static const char* TypeName()
-		{
-			return "logitech_usbmic";
-		}
-		static const TCHAR* Name()
-		{
-			return TEXT("Logitech USB Mic");
-		}
+		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
+		const char* TypeName() const override;
+		const char* Name() const override;
+		gsl::span<const SettingInfo> Settings(u32 subtype) const override;
 	};
-
 } // namespace usb_mic
-#endif
