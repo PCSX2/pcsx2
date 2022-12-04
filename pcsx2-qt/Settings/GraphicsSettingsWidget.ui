@@ -1596,7 +1596,7 @@
          <property name="title">
           <string>Debug Options</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_6">
+         <layout class="QFormLayout" name="advancedDebugFormLayout">
           <item row="0" column="0">
            <widget class="QLabel" name="label_19">
             <property name="text">

@@ -336,12 +336,13 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	updateRendererDependentOptions();
 
 #ifndef PCSX2_DEVBUILD
-	// only allow disabling readbacks for per-game settings, it's too dangerous
-	m_ui.gsDownloadMode->setEnabled(m_dialog->isPerGameSettings());
-
-	// Remove texture offset and skipdraw range for global settings.
 	if (!m_dialog->isPerGameSettings())
 	{
+		// Only allow disabling readbacks for per-game settings, it's too dangerous.
+		m_ui.advancedDebugFormLayout->removeRow(2);
+		m_ui.gsDownloadMode = nullptr;
+
+		// Remove texture offset and skipdraw range for global settings.
 		m_ui.upscalingFixesLayout->removeRow(2);
 		m_ui.hardwareFixesLayout->removeRow(2);
 		m_ui.hardwareFixesLayout->removeRow(1);
