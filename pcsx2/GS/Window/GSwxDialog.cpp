@@ -533,7 +533,7 @@ OSDTab::OSDTab(wxWindow* parent)
 	auto* font_grid = new wxFlexGridSizer(2, space, space);
 	font_grid->AddGrowableCol(1);
 
-	m_ui.addSliderAndLabel(font_grid, "Scale:",   "OsdScale", 50, 300, 100, -1);
+	m_ui.addSliderAndLabel(font_grid, "OSD Scale:", "OsdScale", 50, 300, 100, -1);
 
 	font_box->Add(font_grid, wxSizerFlags().Expand());
 	tab_box->Add(font_box.outer, wxSizerFlags().Expand());
@@ -542,16 +542,16 @@ OSDTab::OSDTab(wxWindow* parent)
 	auto* log_grid = new wxFlexGridSizer(2, space, space);
 	log_grid->AddGrowableCol(1);
 
-	m_ui.addCheckBox(log_grid, "Show Messages",   "OsdShowMessages",   -1);
-	m_ui.addCheckBox(log_grid, "Show Speed",      "OsdShowSpeed",      -1);
-	m_ui.addCheckBox(log_grid, "Show FPS",        "OsdShowFPS",        -1);
-	m_ui.addCheckBox(log_grid, "Show CPU Usage",  "OsdShowCPU",        -1);
-	m_ui.addCheckBox(log_grid, "Show GPU Usage",  "OsdShowGPU",        -1);
-	m_ui.addCheckBox(log_grid, "Show Resolution", "OsdShowResolution", -1);
-	m_ui.addCheckBox(log_grid, "Show Statistics", "OsdShowGSStats",    -1);
-	m_ui.addCheckBox(log_grid, "Show Indicators", "OsdShowIndicators", -1);
-	m_ui.addCheckBox(log_grid, "Show Settings",   "OsdShowSettings",   -1);
-	m_ui.addCheckBox(log_grid, "Show Inputs",     "OsdShowInputs",     -1);
+	m_ui.addCheckBox(log_grid, "Show Notifications", "OsdShowMessages",   -1);
+	m_ui.addCheckBox(log_grid, "Show Speed",         "OsdShowSpeed",      -1);
+	m_ui.addCheckBox(log_grid, "Show FPS",           "OsdShowFPS",        -1);
+	m_ui.addCheckBox(log_grid, "Show CPU Usage",     "OsdShowCPU",        -1);
+	m_ui.addCheckBox(log_grid, "Show GPU Usage",     "OsdShowGPU",        -1);
+	m_ui.addCheckBox(log_grid, "Show Resolution",    "OsdShowResolution", -1);
+	m_ui.addCheckBox(log_grid, "Show Statistics",    "OsdShowGSStats",    -1);
+	m_ui.addCheckBox(log_grid, "Show Indicators",    "OsdShowIndicators", -1);
+	m_ui.addCheckBox(log_grid, "Show Settings",      "OsdShowSettings",   -1);
+	m_ui.addCheckBox(log_grid, "Show Inputs",        "OsdShowInputs",     -1);
 
 	log_box->Add(log_grid, wxSizerFlags().Expand());
 	tab_box->Add(log_box.outer, wxSizerFlags().Expand());
