@@ -127,6 +127,7 @@ target_sources(common PRIVATE
 	emitter/tools.h
 	emitter/x86emitter.h
 	emitter/x86types.h
+	Darwin/DarwinMisc.h
 )
 
 if(USE_VTUNE)

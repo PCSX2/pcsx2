@@ -15,8 +15,11 @@
 
 #if defined(__APPLE__)
 
+#include "common/Darwin/DarwinMisc.h"
+
 #include <cstring>
 #include <cstdlib>
+#include <optional>
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #include <time.h>
@@ -24,6 +27,7 @@
 #include <IOKit/pwr_mgt/IOPMLib.h>
 
 #include "common/Pcsx2Types.h"
+#include "common/Console.h"
 #include "common/General.h"
 #include "common/Threading.h"
 #include "common/WindowInfo.h"
@@ -89,6 +93,20 @@ static std::string sysctl_str(int category, int name)
 	return std::string(buf, len > 0 ? len - 1 : 0);
 }
 
+static std::optional<u32> sysctlbyname_u32(const char* name)
+{
+	u32 output;
+	size_t output_size = sizeof(output);
+	if (0 != sysctlbyname(name, &output, &output_size, nullptr, 0))
+		return std::nullopt;
+	if (output_size != sizeof(output))
+	{
+		DevCon.WriteLn("(DarwinMisc) sysctl %s gave unexpected size %zd", name, output_size);
+		return std::nullopt;
+	}
+	return output;
+}
+
 std::string GetOSVersionString()
 {
 	std::string type    = sysctl_str(CTL_KERN, KERN_OSTYPE);
@@ -133,6 +151,48 @@ void Threading::SleepUntil(u64 ticks)
 	ts.tv_sec = nanos / 1000000000ULL;
 	ts.tv_nsec = nanos % 1000000000ULL;
 	nanosleep(&ts, nullptr);
+}
+
+std::vector<DarwinMisc::CPUClass> DarwinMisc::GetCPUClasses()
+{
+	std::vector<CPUClass> out;
+
+	if (std::optional<u32> nperflevels = sysctlbyname_u32("hw.nperflevels"))
+	{
+		char name[64];
+		for (u32 i = 0; i < *nperflevels; i++)
+		{
+			snprintf(name, sizeof(name), "hw.perflevel%u.physicalcpu", i);
+			std::optional<u32> physicalcpu = sysctlbyname_u32(name);
+			snprintf(name, sizeof(name), "hw.perflevel%u.logicalcpu", i);
+			std::optional<u32> logicalcpu = sysctlbyname_u32(name);
+
+			char levelname[64];
+			size_t levelname_size = sizeof(levelname);
+			snprintf(name, sizeof(name), "hw.perflevel%u.name", i);
+			if (0 != sysctlbyname(name, levelname, &levelname_size, nullptr, 0))
+				strcpy(levelname, "???");
+
+			if (!physicalcpu.has_value() || !logicalcpu.has_value())
+			{
+				Console.Warning("(DarwinMisc) Perf level %u is missing data on %s cpus!",
+				                i, !physicalcpu.has_value() ? "physical" : "logical");
+				continue;
+			}
+
+			out.push_back({levelname, *physicalcpu, *logicalcpu});
+		}
+	}
+	else if (std::optional<u32> physcpu = sysctlbyname_u32("hw.physicalcpu"))
+	{
+		out.push_back({"Default", *physcpu, sysctlbyname_u32("hw.logicalcpu").value_or(0)});
+	}
+	else
+	{
+		Console.Warning("(DarwinMisc) Couldn't get cpu core count!");
+	}
+
+	return out;
 }
 
 #endif
