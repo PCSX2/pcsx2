@@ -26,6 +26,7 @@
 
 #include "updater/UpdaterExtractor.h"
 
+#include "common/CocoaTools.h"
 #include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
@@ -47,7 +48,7 @@
 
 // Logic to detect whether we can use the auto updater.
 // We use tagged commit, because this gets set on nightly builds.
-#if (defined(_WIN32) || defined(__linux__)) && (defined(GIT_TAGGED_COMMIT) && GIT_TAGGED_COMMIT)
+#if (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && (defined(GIT_TAGGED_COMMIT) && GIT_TAGGED_COMMIT)
 
 	#define AUTO_UPDATER_SUPPORTED 1
 
@@ -55,6 +56,8 @@
 		#define UPDATE_PLATFORM_STR "Windows"
 	#elif defined(__linux__)
 		#define UPDATE_PLATFORM_STR "Linux"
+	#elif defined(__APPLE__)
+		#define UPDATE_PLATFORM_STR "MacOS"
 	#endif
 
 	#ifdef MULTI_ISA_SHARED_COMPILATION
@@ -109,7 +112,7 @@ bool AutoUpdaterDialog::isSupported()
 
 	return true;
 #else
-	// Windows - always supported.
+	// Windows, MacOS - always supported.
 	return true;
 #endif
 #else
@@ -232,9 +235,10 @@ void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
 								is_symbols = true;
 								break;
 							}
-							else if (additional_tag_str == QStringLiteral("Qt"))
+							else if (additional_tag_str.startsWith(QStringLiteral("Qt")))
 							{
 								// found a qt build
+								// Note: The website improperly parses macOS file names, and gives them the tag "Qt.tar" instead of "Qt"
 								is_qt_asset = true;
 							}
 							else if (additional_tag_str == QStringLiteral("SSE4"))
@@ -445,7 +449,7 @@ void AutoUpdaterDialog::downloadUpdateClicked()
 			return;
 		}
 
-		if (processUpdate(data))
+		if (processUpdate(data, progress))
 			progress.done(1);
 		else
 			progress.done(-1);
@@ -511,7 +515,7 @@ void AutoUpdaterDialog::remindMeLaterClicked()
 
 #if defined(_WIN32)
 
-bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data)
+bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data, QProgressDialog&)
 {
 	const QString update_directory = QCoreApplication::applicationDirPath();
 	const QString update_zip_path = QStringLiteral("%1" FS_OSPATH_SEPARATOR_STR "%2").arg(update_directory).arg(UPDATER_ARCHIVE_NAME);
@@ -582,7 +586,7 @@ bool AutoUpdaterDialog::doUpdate(const QString& zip_path, const QString& updater
 
 #elif defined(__linux__)
 
-bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data)
+bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data, QProgressDialog&)
 {
 	const char* appimage_path = std::getenv("APPIMAGE");
 	if (!appimage_path || !FileSystem::FileExists(appimage_path))
@@ -658,9 +662,125 @@ bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data)
 	return true;
 }
 
+#elif defined(__APPLE__)
+
+static QString UpdateVersionNumberInName(QString name, QStringView new_version)
+{
+	QString current_version_string = QStringLiteral(GIT_TAG);
+	QStringView current_version = current_version_string;
+	if (!current_version.empty() && !new_version.empty() && current_version[0] == 'v' && new_version[0] == 'v')
+	{
+		current_version = current_version.mid(1);
+		new_version = new_version.mid(1);
+	}
+	if (!current_version.empty() && !new_version.empty())
+		name.replace(current_version.data(), current_version.size(), new_version.data(), new_version.size());
+	return name;
+}
+
+bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data, QProgressDialog& progress)
+{
+	std::optional<std::string> path = CocoaTools::GetNonTranslocatedBundlePath();
+	if (!path.has_value())
+	{
+		reportError("Couldn't get bundle path");
+		return false;
+	}
+
+	QFileInfo info(QString::fromStdString(*path));
+	if (!info.isBundle())
+	{
+		reportError("Application %s isn't a bundle", path->c_str());
+		return false;
+	}
+	if (info.suffix() != QStringLiteral("app"))
+	{
+		reportError("Unexpected application suffix %s on %s", info.suffix().toUtf8().constData(), path->c_str());
+		return false;
+	}
+	QString open_path;
+	{
+		QTemporaryDir temp_dir(info.path() + QStringLiteral("/PCSX2-UpdateStaging-XXXXXX"));
+		if (!temp_dir.isValid())
+		{
+			reportError("Failed to create update staging directory");
+			return false;
+		}
+
+		constexpr qsizetype chunk_size = 65536;
+		progress.setLabelText(QStringLiteral("Unpacking update..."));
+		progress.reset();
+		progress.setRange(0, static_cast<int>((update_data.size() + chunk_size - 1) / chunk_size));
+
+		QProcess untar;
+		untar.setProgram(QStringLiteral("/usr/bin/tar"));
+		untar.setArguments({QStringLiteral("xC"), temp_dir.path()});
+		untar.start();
+		for (qsizetype i = 0; i < update_data.size(); i += chunk_size)
+		{
+			progress.setValue(static_cast<int>(i / chunk_size));
+			const qsizetype amt = std::min(update_data.size() - i, chunk_size);
+			if (progress.wasCanceled() || untar.write(update_data.data() + i, amt) != amt)
+			{
+				if (!progress.wasCanceled())
+					reportError("Failed to unpack update (write stopped short)");
+				untar.closeWriteChannel();
+				if (!untar.waitForFinished(1000))
+					untar.kill();
+				return false;
+			}
+		}
+		untar.closeWriteChannel();
+		while (!untar.waitForFinished(1000))
+		{
+			if (progress.wasCanceled())
+			{
+				untar.kill();
+				return false;
+			}
+		}
+		progress.setValue(progress.maximum());
+		if (untar.exitCode() != EXIT_SUCCESS)
+		{
+			reportError("Failed to unpack update (tar exited with %u)", untar.exitCode());
+			return false;
+		}
+
+		QFileInfoList temp_dir_contents = QDir(temp_dir.path()).entryInfoList(QDir::Filter::Dirs | QDir::Filter::NoDotAndDotDot);
+		auto new_app = std::find_if(temp_dir_contents.begin(), temp_dir_contents.end(), [](const QFileInfo& file){ return file.suffix() == QStringLiteral("app"); });
+		if (new_app == temp_dir_contents.end())
+		{
+			reportError("Couldn't find application in update package");
+			return false;
+		}
+		QString new_name = UpdateVersionNumberInName(info.completeBaseName(), m_latest_version);
+		std::optional<std::string> trashed_path = CocoaTools::MoveToTrash(*path);
+		if (!trashed_path.has_value())
+		{
+			reportError("Failed to trash old application");
+			return false;
+		}
+		open_path = info.path() + QStringLiteral("/") + new_name + QStringLiteral(".app");
+		if (!QFile::rename(new_app->absoluteFilePath(), open_path))
+		{
+			QFile::rename(QString::fromStdString(*trashed_path), info.filePath());
+			reportError("Failed to move new application into place (couldn't rename '%s' to '%s')",
+			            new_app->absoluteFilePath().toUtf8().constData(), open_path.toUtf8().constData());
+			return false;
+		}
+		QDir(QString::fromStdString(*trashed_path)).removeRecursively();
+	}
+	if (!CocoaTools::LaunchApplication(open_path.toStdString()))
+	{
+		reportError("Failed to start new application");
+		return false;
+	}
+	return true;
+}
+
 #else
 
-bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data)
+bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data, QProgressDialog& progress)
 {
 	return false;
 }

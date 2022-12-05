@@ -21,6 +21,8 @@
 #include "Console.h"
 #include "General.h"
 #include "WindowInfo.h"
+#include <dlfcn.h>
+#include <mutex>
 #include <vector>
 #include <Cocoa/Cocoa.h>
 #include <QuartzCore/QuartzCore.h>
@@ -134,4 +136,66 @@ bool Common::PlaySoundAsync(const char* path)
 	NSString* nspath = [[NSString alloc] initWithUTF8String:path];
 	NSSound* sound = [[NSSound alloc] initWithContentsOfFile:nspath byReference:YES];
 	return [sound play];
+}
+
+// MARK: - Updater
+
+std::optional<std::string> CocoaTools::GetNonTranslocatedBundlePath()
+{
+	// See https://objective-see.com/blog/blog_0x15.html
+
+	NSURL* url = [NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]];
+	if (!url)
+		return std::nullopt;
+
+	if (void* handle = dlopen("/System/Library/Frameworks/Security.framework/Security", RTLD_LAZY))
+	{
+		auto IsTranslocatedURL = reinterpret_cast<Boolean(*)(CFURLRef path, bool* isTranslocated, CFErrorRef*__nullable error)>(dlsym(handle, "SecTranslocateIsTranslocatedURL"));
+		auto CreateOriginalPathForURL = reinterpret_cast<CFURLRef __nullable(*)(CFURLRef translocatedPath, CFErrorRef*__nullable error)>(dlsym(handle, "SecTranslocateCreateOriginalPathForURL"));
+		bool is_translocated = false;
+		if (IsTranslocatedURL)
+			IsTranslocatedURL((__bridge CFURLRef)url, &is_translocated, nullptr);
+		if (is_translocated)
+		{
+			if (CFURLRef actual = CreateOriginalPathForURL((__bridge CFURLRef)url, nullptr))
+				url = (__bridge_transfer NSURL*)actual;
+		}
+		dlclose(handle);
+	}
+
+	return std::string([url fileSystemRepresentation]);
+}
+
+std::optional<std::string> CocoaTools::MoveToTrash(std::string_view file)
+{
+	NSURL* url = [NSURL fileURLWithPath:[[NSString alloc] initWithBytes:file.data() length:file.size() encoding:NSUTF8StringEncoding]];
+	NSURL* new_url;
+	if (![[NSFileManager defaultManager] trashItemAtURL:url resultingItemURL:&new_url error:nil])
+		return std::nullopt;
+	return std::string([new_url fileSystemRepresentation]);
+}
+
+bool CocoaTools::LaunchApplication(std::string_view file)
+{
+	NSURL* url = [NSURL fileURLWithPath:[[NSString alloc] initWithBytes:file.data() length:file.size() encoding:NSUTF8StringEncoding]];
+	if (@available(macOS 10.15, *))
+	{
+		// replacement api is async which isn't great for us
+		std::mutex done;
+		bool output;
+		done.lock();
+		NSWorkspaceOpenConfiguration* config = [NSWorkspaceOpenConfiguration new];
+		[config setCreatesNewApplicationInstance:YES];
+		[[NSWorkspace sharedWorkspace] openApplicationAtURL:url configuration:config completionHandler:[&](NSRunningApplication*_Nullable app, NSError*_Nullable error) {
+			output = app != nullptr;
+			done.unlock();
+		}];
+		done.lock();
+		done.unlock();
+		return output;
+	}
+	else
+	{
+		return [[NSWorkspace sharedWorkspace] launchApplicationAtURL:url options:NSWorkspaceLaunchNewInstance configuration:@{} error:nil];
+	}
 }
