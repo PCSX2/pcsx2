@@ -77,6 +77,10 @@
 #include <timeapi.h>
 #endif
 
+#ifdef __APPLE__
+#include "common/Darwin/DarwinMisc.h"
+#endif
+
 #ifdef ENABLE_DISCORD_PRESENCE
 #include "discord_rpc.h"
 #endif
@@ -2377,6 +2381,43 @@ static void SetMTVUAndAffinityControlDefault(SettingsInterface& si)
 	const int extra_threads = (big_cores > 3) ? 3 : 2;
 	Console.WriteLn("  Setting Extra Software Rendering Threads to %d.", extra_threads);
 	si.SetIntValue("EmuCore/GS", "extrathreads", extra_threads);
+}
+
+#elif defined(__APPLE__)
+
+static u32 s_big_cores;
+static u32 s_small_cores;
+
+static void InitializeCPUInfo()
+{
+	s_big_cores = 0;
+	s_small_cores = 0;
+	std::vector<DarwinMisc::CPUClass> classes = DarwinMisc::GetCPUClasses();
+	for (size_t i = 0; i < classes.size(); i++) {
+		const DarwinMisc::CPUClass& cls = classes[i];
+		const bool is_big = i == 0 || i < classes.size() - 1; // Assume only one group is small
+		DevCon.WriteLn("(VMManager) Found %u physical cores and %u logical cores in perf level %u (%s), assuming %s",
+		               cls.num_physical, cls.num_logical, i, cls.name.c_str(), is_big ? "big" : "small");
+		(is_big ? s_big_cores : s_small_cores) += cls.num_physical;
+	}
+}
+
+static void SetMTVUAndAffinityControlDefault(SettingsInterface& si)
+{
+	VMManager::EnsureCPUInfoInitialized();
+
+	Console.WriteLn("Detected %u big cores", s_big_cores);
+
+	if (s_big_cores >= 3)
+	{
+		Console.WriteLn("  So enabling MTVU.");
+		si.SetBoolValue("EmuCore/Speedhacks", "vuThread", true);
+	}
+	else
+	{
+		Console.WriteLn("  So disabling MTVU.");
+		si.SetBoolValue("EmuCore/Speedhacks", "vuThread", false);
+	}
 }
 
 #else
