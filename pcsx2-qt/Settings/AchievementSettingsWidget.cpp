@@ -43,38 +43,35 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWi
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.challengeMode, "Achievements", "ChallengeMode", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.leaderboards, "Achievements", "Leaderboards", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.testMode, "Achievements", "TestMode", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.unofficialTestMode, "Achievements",
-		"UnofficialTestMode", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.soundEffects, "Achievements",
-		"SoundEffects", true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.primedIndicators, "Achievements",
-		"PrimedIndicators", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.unofficialTestMode, "Achievements", "UnofficialTestMode", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.notifications, "Achievements", "Notifications", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.soundEffects, "Achievements", "SoundEffects", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.primedIndicators, "Achievements", "PrimedIndicators", true);
 
 	dialog->registerWidgetHelp(m_ui.enable, tr("Enable Achievements"), tr("Unchecked"),
 		tr("When enabled and logged in, PCSX2 will scan for achievements on game load."));
 	dialog->registerWidgetHelp(m_ui.testMode, tr("Enable Test Mode"), tr("Unchecked"),
 		tr("When enabled, PCSX2 will assume all achievements are locked and not send any "
 		   "unlock notifications to the server."));
-	dialog->registerWidgetHelp(
-		m_ui.unofficialTestMode, tr("Test Unofficial Achievements"), tr("Unchecked"),
+	dialog->registerWidgetHelp(m_ui.unofficialTestMode, tr("Test Unofficial Achievements"), tr("Unchecked"),
 		tr("When enabled, PCSX2 will list achievements from unofficial sets. Please note that these achievements are "
 		   "not tracked by RetroAchievements, so they unlock every time."));
-	dialog->registerWidgetHelp(
-		m_ui.richPresence, tr("Enable Rich Presence"), tr("Unchecked"),
+	dialog->registerWidgetHelp(m_ui.richPresence, tr("Enable Rich Presence"), tr("Unchecked"),
 		tr("When enabled, rich presence information will be collected and sent to the server where supported."));
 	dialog->registerWidgetHelp(m_ui.challengeMode, tr("Enable Hardcore Mode"), tr("Unchecked"),
 		tr("\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions."));
 	dialog->registerWidgetHelp(m_ui.leaderboards, tr("Enable Leaderboards"), tr("Checked"),
 		tr("Enables tracking and submission of leaderboards in supported games. If leaderboards are disabled, you will still "
 		   "be able to view the leaderboard and scores, but no scores will be uploaded."));
-	dialog->registerWidgetHelp(
-		m_ui.soundEffects, tr("Enable Sound Effects"), tr("Checked"),
+	dialog->registerWidgetHelp(m_ui.notifications, tr("Show Notifications"), tr("Checked"),
+		tr("Displays popup messages on events such as achievement unlocks and leaderboard submissions."));
+	dialog->registerWidgetHelp(m_ui.soundEffects, tr("Enable Sound Effects"), tr("Checked"),
 		tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."));
-	dialog->registerWidgetHelp(
-		m_ui.primedIndicators, tr("Show Challenge Indicators"), tr("Checked"),
+	dialog->registerWidgetHelp(m_ui.primedIndicators, tr("Show Challenge Indicators"), tr("Checked"),
 		tr("Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active."));
 
 	connect(m_ui.enable, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
+	connect(m_ui.notifications, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
 	connect(m_ui.challengeMode, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
 	connect(m_ui.challengeMode, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::onChallengeModeStateChanged);
 
@@ -108,12 +105,14 @@ void AchievementSettingsWidget::updateEnableState()
 {
 	const bool enabled = m_dialog->getEffectiveBoolValue("Achievements", "Enabled", false);
 	const bool challenge = m_dialog->getEffectiveBoolValue("Achievements", "ChallengeMode", false);
+	const bool notifications = m_dialog->getEffectiveBoolValue("Achievements", "Notifications", true);
 	m_ui.testMode->setEnabled(enabled);
 	m_ui.unofficialTestMode->setEnabled(enabled);
 	m_ui.richPresence->setEnabled(enabled);
 	m_ui.challengeMode->setEnabled(enabled);
 	m_ui.leaderboards->setEnabled(enabled && challenge);
-	m_ui.soundEffects->setEnabled(enabled);
+	m_ui.notifications->setEnabled(enabled);
+	m_ui.soundEffects->setEnabled(enabled && notifications);
 	m_ui.primedIndicators->setEnabled(enabled);
 }
 
@@ -148,7 +147,8 @@ void AchievementSettingsWidget::updateLoginState()
 
 	if (logged_in)
 	{
-		const u64 login_unix_timestamp = StringUtil::FromChars<u64>(Host::GetBaseStringSettingValue("Achievements", "LoginTimestamp", "0")).value_or(0);
+		const u64 login_unix_timestamp =
+			StringUtil::FromChars<u64>(Host::GetBaseStringSettingValue("Achievements", "LoginTimestamp", "0")).value_or(0);
 		const QDateTime login_timestamp(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(login_unix_timestamp)));
 		m_ui.loginStatus->setText(tr("Username: %1\nLogin token generated on %2.")
 									  .arg(QString::fromStdString(username))
@@ -188,13 +188,11 @@ void AchievementSettingsWidget::onViewProfilePressed()
 		return;
 
 	const QByteArray encoded_username(QUrl::toPercentEncoding(QString::fromStdString(username)));
-	QtUtils::OpenURL(
-		QtUtils::GetRootWidget(this),
+	QtUtils::OpenURL(QtUtils::GetRootWidget(this),
 		QUrl(QStringLiteral("https://retroachievements.org/user/%1").arg(QString::fromUtf8(encoded_username))));
 }
 
-void AchievementSettingsWidget::onAchievementsRefreshed(quint32 id, const QString& game_info_string, quint32 total,
-	quint32 points)
+void AchievementSettingsWidget::onAchievementsRefreshed(quint32 id, const QString& game_info_string, quint32 total, quint32 points)
 {
 	m_ui.gameInfo->setText(game_info_string);
 }

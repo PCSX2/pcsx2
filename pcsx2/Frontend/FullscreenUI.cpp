@@ -6459,6 +6459,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 
 	const bool enabled = bsi->GetBoolValue("Achievements", "Enabled", false);
 	const bool challenge = bsi->GetBoolValue("Achievements", "ChallengeMode", false);
+	const bool notifications = bsi->GetBoolValue("Achievements", "Notifications", true);
 
 	DrawToggleSetting(bsi, ICON_FA_USER_FRIENDS " Rich Presence",
 		"When enabled, rich presence information will be collected and sent to the server where supported.", "Achievements", "RichPresence",
@@ -6468,9 +6469,12 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 		"Achievements", "ChallengeMode", false, enabled);
 	DrawToggleSetting(bsi, ICON_FA_LIST_OL " Leaderboards", "Enables tracking and submission of leaderboards in supported games.",
 		"Achievements", "Leaderboards", true, enabled && challenge);
+	DrawToggleSetting(bsi, ICON_FA_INBOX " Show Notifications",
+		"Displays popup messages on events such as achievement unlocks and leaderboard submissions.", "Achievements", "Notifications", true,
+		enabled);
 	DrawToggleSetting(bsi, ICON_FA_HEADPHONES " Sound Effects",
 		"Plays sound effects for events such as achievement unlocks and leaderboard submissions.", "Achievements", "SoundEffects", true,
-		enabled);
+		enabled && notifications);
 	DrawToggleSetting(bsi, ICON_FA_MAGIC " Show Challenge Indicators",
 		"Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.", "Achievements",
 		"PrimedIndicators", true, enabled);
