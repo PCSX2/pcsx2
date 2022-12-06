@@ -700,7 +700,7 @@ void GSgetStats(std::string& info)
 		{
 			info = StringUtil::StdStringFromFormat("%s HW | HC: %d MB | %d P | %d D | %d DC | %d B | %d RB | %d TC | %d TU",
 				api_name,
-				(int)std::ceil(GSRendererHW::GetInstance()->GetTextureCache()->GetHashCacheMemoryUsage() / 1048576.0f),
+				(int)std::ceil(GSRendererHW::GetInstance()->GetTextureCache()->GetTotalHashCacheMemoryUsage() / 1048576.0f),
 				(int)pm.Get(GSPerfMon::Prim),
 				(int)pm.Get(GSPerfMon::Draw),
 				(int)std::ceil(pm.Get(GSPerfMon::DrawCalls)),

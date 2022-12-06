@@ -300,6 +300,7 @@ protected:
 	SourceMap m_src;
 	std::unordered_map<HashCacheKey, HashCacheEntry, HashCacheKeyHash> m_hash_cache;
 	u64 m_hash_cache_memory_usage = 0;
+	u64 m_hash_cache_replacement_memory_usage;
 	FastList<Target*> m_dst[2];
 	FastList<TargetHeightElem> m_target_heights;
 	static u8* m_temp;
@@ -327,6 +328,8 @@ public:
 	~GSTextureCache();
 
 	__fi u64 GetHashCacheMemoryUsage() const { return m_hash_cache_memory_usage; }
+	__fi u64 GetHashCacheReplacementMemoryUsage() const { return m_hash_cache_replacement_memory_usage; }
+	__fi u64 GetTotalHashCacheMemoryUsage() const { return (m_hash_cache_memory_usage + m_hash_cache_replacement_memory_usage); }
 
 	void Read(Target* t, const GSVector4i& r);
 	void Read(Source* t, const GSVector4i& r);

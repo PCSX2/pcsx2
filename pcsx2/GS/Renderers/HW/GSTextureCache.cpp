@@ -76,6 +76,7 @@ void GSTextureCache::RemoveAll()
 		g_gs_device->Recycle(it.second.texture);
 	m_hash_cache.clear();
 	m_hash_cache_memory_usage = 0;
+	m_hash_cache_replacement_memory_usage = 0;
 
 	m_palette_map.Clear();
 	m_target_heights.clear();
@@ -1639,7 +1640,11 @@ void GSTextureCache::IncAge()
 		HashCacheEntry& e = it->second;
 		if (e.refcount == 0 && ++e.age > max_hash_cache_age)
 		{
-			m_hash_cache_memory_usage -= e.texture->GetMemUsage();
+			const u32 mem_usage = e.texture->GetMemUsage();
+			if (e.is_replacement)
+				m_hash_cache_replacement_memory_usage -= mem_usage;
+			else
+				m_hash_cache_memory_usage -= mem_usage;
 			g_gs_device->Recycle(e.texture);
 			m_hash_cache.erase(it++);
 		}
@@ -2122,7 +2127,7 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 			// found a replacement texture! insert it into the hash cache, and clear paltex (since it's not indexed)
 			paltex = false;
 			const HashCacheEntry entry{replacement_tex, 1u, 0u, true};
-			m_hash_cache_memory_usage += entry.texture->GetMemUsage();
+			m_hash_cache_replacement_memory_usage += entry.texture->GetMemUsage();
 			return &m_hash_cache.emplace(key, entry).first->second;
 		}
 		else if (
@@ -3158,7 +3163,7 @@ void GSTextureCache::InvalidateTemporarySource()
 void GSTextureCache::InjectHashCacheTexture(const HashCacheKey& key, GSTexture* tex)
 {
 	// When we insert we update memory usage. Old texture gets removed below.
-	m_hash_cache_memory_usage += tex->GetMemUsage();
+	m_hash_cache_replacement_memory_usage += tex->GetMemUsage();
 
 	auto it = m_hash_cache.find(key);
 	if (it == m_hash_cache.end())
@@ -3175,10 +3180,11 @@ void GSTextureCache::InjectHashCacheTexture(const HashCacheKey& key, GSTexture* 
 
 	// Update memory usage, swap the textures, and recycle the old one for reuse.
 	if (!it->second.is_replacement)
-	{
 		m_hash_cache_memory_usage -= it->second.texture->GetMemUsage();
-		it->second.is_replacement = true;
-	}
+	else
+		m_hash_cache_replacement_memory_usage -= it->second.texture->GetMemUsage();
+
+	it->second.is_replacement = true;
 	it->second.texture->Swap(tex);
 	g_gs_device->Recycle(tex);
 }
