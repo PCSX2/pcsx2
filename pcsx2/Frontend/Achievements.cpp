@@ -1033,37 +1033,40 @@ void Achievements::DownloadImage(std::string url, std::string cache_filename)
 
 void Achievements::DisplayAchievementSummary()
 {
-	std::string title = s_game_title;
-	if (ChallengeModeActive())
-		title += " (Hardcore Mode)";
-
-	std::string summary;
-	if (GetAchievementCount() > 0)
+	if (FullscreenUI::IsInitialized() && EmuConfig.Achievements.Notifications)
 	{
-		summary = StringUtil::StdStringFromFormat("You have earned %u of %u achievements, and %u of %u points.",
-			GetUnlockedAchiementCount(), GetAchievementCount(), GetCurrentPointsForGame(), GetMaximumPointsForGame());
-	}
-	else
-	{
-		summary = "This game has no achievements.";
-	}
-	if (GetLeaderboardCount() > 0)
-	{
-		summary.push_back('\n');
-		if (LeaderboardsActive())
-			summary.append("Leaderboard submission is enabled.");
-	}
+		std::string title = s_game_title;
+		if (ChallengeModeActive())
+			title += " (Hardcore Mode)";
 
-	ImGuiFullscreen::AddNotification(10.0f, std::move(title), std::move(summary), s_game_icon);
+		std::string summary;
+		if (GetAchievementCount() > 0)
+		{
+			summary = StringUtil::StdStringFromFormat("You have earned %u of %u achievements, and %u of %u points.",
+				GetUnlockedAchiementCount(), GetAchievementCount(), GetCurrentPointsForGame(), GetMaximumPointsForGame());
+		}
+		else
+		{
+			summary = "This game has no achievements.";
+		}
+		if (GetLeaderboardCount() > 0)
+		{
+			summary.push_back('\n');
+			if (LeaderboardsActive())
+				summary.append("Leaderboard submission is enabled.");
+		}
 
-	// Technically not going through the resource API, but since we're passing this to something else, we can't.
-	if (EmuConfig.Achievements.SoundEffects)
-		Common::PlaySoundAsync(Path::Combine(EmuFolders::Resources, INFO_SOUND_NAME).c_str());
+		ImGuiFullscreen::AddNotification(10.0f, std::move(title), std::move(summary), s_game_icon);
+
+		// Technically not going through the resource API, but since we're passing this to something else, we can't.
+		if (EmuConfig.Achievements.SoundEffects)
+			Common::PlaySoundAsync(Path::Combine(EmuFolders::Resources, INFO_SOUND_NAME).c_str());
+	}
 }
 
 void Achievements::DisplayMasteredNotification()
 {
-	if (!FullscreenUI::IsInitialized())
+	if (!FullscreenUI::IsInitialized() || !EmuConfig.Achievements.Notifications)
 		return;
 
 	std::string title(fmt::format("Mastered {}", s_game_title));
@@ -1468,8 +1471,8 @@ void Achievements::GameChanged(u32 crc)
 		// when we're booting the bios, or shutting down, this will fail
 		if (crc != 0)
 		{
-			Host::AddKeyedOSDMessage(
-				"retroachievements_disc_read_failed", "Failed to read executable from disc. Achievements disabled.", Host::OSD_CRITICAL_ERROR_DURATION);
+			Host::AddKeyedOSDMessage("retroachievements_disc_read_failed", "Failed to read executable from disc. Achievements disabled.",
+				Host::OSD_CRITICAL_ERROR_DURATION);
 		}
 
 		s_last_game_crc = 0;
@@ -1782,7 +1785,7 @@ void Achievements::SubmitLeaderboardCallback(s32 status_code, const std::string&
 		return;
 
 	const Leaderboard* lb = GetLeaderboardByID(std::exchange(s_submitting_lboard_id, 0u));
-	if (!lb)
+	if (!lb || !FullscreenUI::IsInitialized() || !EmuConfig.Achievements.Notifications)
 		return;
 
 	char submitted_score[128];
@@ -1816,24 +1819,27 @@ void Achievements::UnlockAchievement(u32 achievement_id, bool add_notification /
 
 	Console.WriteLn("Achievement %s (%u) for game %u unlocked", achievement->title.c_str(), achievement_id, s_game_id);
 
-	std::string title;
-	switch (achievement->category)
+	if (FullscreenUI::IsInitialized() && EmuConfig.Achievements.Notifications)
 	{
-		case AchievementCategory::Local:
-			title = fmt::format("{} (Local)", achievement->title);
-			break;
-		case AchievementCategory::Unofficial:
-			title = fmt::format("{} (Unofficial)", achievement->title);
-			break;
-		case AchievementCategory::Core:
-		default:
-			title = achievement->title;
-			break;
-	}
+		std::string title;
+		switch (achievement->category)
+		{
+			case AchievementCategory::Local:
+				title = fmt::format("{} (Local)", achievement->title);
+				break;
+			case AchievementCategory::Unofficial:
+				title = fmt::format("{} (Unofficial)", achievement->title);
+				break;
+			case AchievementCategory::Core:
+			default:
+				title = achievement->title;
+				break;
+		}
 
-	ImGuiFullscreen::AddNotification(15.0f, std::move(title), achievement->description, GetAchievementBadgePath(*achievement));
-	if (EmuConfig.Achievements.SoundEffects)
-		Common::PlaySoundAsync(Path::Combine(EmuFolders::Resources, UNLOCK_SOUND_NAME).c_str());
+		ImGuiFullscreen::AddNotification(15.0f, std::move(title), achievement->description, GetAchievementBadgePath(*achievement));
+		if (EmuConfig.Achievements.SoundEffects)
+			Common::PlaySoundAsync(Path::Combine(EmuFolders::Resources, UNLOCK_SOUND_NAME).c_str());
+	}
 
 	if (IsMastered())
 		DisplayMasteredNotification();
