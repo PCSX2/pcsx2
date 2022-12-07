@@ -44,7 +44,7 @@ struct RendererInfo
 };
 
 static constexpr RendererInfo s_renderer_info[] = {
-	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Automatic"),
+	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Automatic (Default)"),
 	GSRendererType::Auto,
 #ifdef _WIN32
 	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Direct3D 11"),

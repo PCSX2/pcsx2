@@ -1258,7 +1258,7 @@
              <widget class="QComboBox" name="casMode">
               <item>
                <property name="text">
-                <string>Disabled</string>
+                <string>None (Default)</string>
                </property>
               </item>
               <item>
@@ -1326,7 +1326,7 @@
            <widget class="QComboBox" name="tvShader">
             <item>
              <property name="text">
-              <string>None</string>
+              <string>None (Default)</string>
              </property>
             </item>
             <item>
