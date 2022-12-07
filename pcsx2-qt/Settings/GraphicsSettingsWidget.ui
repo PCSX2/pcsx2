@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>658</width>
-    <height>476</height>
+    <width>850</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -89,12 +89,12 @@
         <widget class="QComboBox" name="aspectRatio">
          <item>
           <property name="text">
-           <string>Fit to Window/Screen</string>
+           <string>Fit to Window / Fullscreen</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Auto Standard (4:3/3:2 Progressive)</string>
+           <string>Auto Standard (4:3 Interlaced / 3:2 Progressive)</string>
           </property>
          </item>
          <item>
@@ -125,7 +125,7 @@
          </item>
          <item>
           <property name="text">
-           <string>Auto Standard (4:3/3:2 Progressive)</string>
+           <string>Auto Standard (4:3 Interlaced / 3:2 Progressive)</string>
           </property>
          </item>
          <item>
@@ -143,7 +143,7 @@
        <item row="3" column="0">
         <widget class="QLabel" name="label_23">
          <property name="text">
-          <string>Deinterlacing:</string>
+          <string>De-interlacing:</string>
          </property>
         </widget>
        </item>
@@ -156,7 +156,7 @@
          </item>
          <item>
           <property name="text">
-           <string>None</string>
+           <string>None (Interlaced, also used by Progressive)</string>
           </property>
          </item>
          <item>
@@ -171,32 +171,32 @@
          </item>
          <item>
           <property name="text">
-           <string>Bob (Top Field First)</string>
+           <string>Bob (Top Field First, Full Frames)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Bob (Bottom Field First)</string>
+           <string>Bob (Bottom Field First, Full Frames)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Blend (Top Field First, Half FPS)</string>
+           <string>Blend (Top Field First, Merge 2 Fields)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Blend (Bottom Field First, Half FPS)</string>
+           <string>Blend (Bottom Field First, Merge 2 Fields)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Adaptive (Top Field First)</string>
+           <string>Adaptive (Top Field First, Similar to Bob + Weave)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Adaptive (Bottom Field First)</string>
+           <string>Adaptive (Bottom Field First, Similar to Bob + Weave)</string>
           </property>
          </item>
         </widget>
@@ -1772,8 +1772,8 @@
      </property>
      <property name="sizeHint" stdset="0">
       <size>
-       <width>20</width>
-       <height>40</height>
+       <width>40</width>
+       <height>60</height>
       </size>
      </property>
     </spacer>

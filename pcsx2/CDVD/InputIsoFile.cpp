@@ -250,7 +250,7 @@ bool InputIsoFile::Open(std::string srcfile, bool testOnly)
 
 	if (!detected)
 		throw Exception::BadStream()
-			.SetUserMsg("Unrecognized ISO image file format")
+			.SetUserMsg("Unrecognized ISO image file format.")
 			.SetDiagMsg("ISO mounting failed: PCSX2 is unable to identify the ISO image type.");
 
 	if (!isBlockdump && !isCompressed)

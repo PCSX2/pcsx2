@@ -397,7 +397,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Reduces texture aliasing at extreme viewing angles."));
 
 		dialog->registerWidgetHelp(m_ui.dithering, tr("Dithering"), tr("Unscaled (Default)"),
-			tr("Reduces banding between colors and improves the perceived color depth."));
+			tr("Reduces banding between colors and improves the perceived color depth.<br> "
+			   "Off: Disables any dithering.<br> "
+			   "Unscaled: Native Dithering / Lowest dithering effect does not increase size of squares when upscaling.<br> "
+			   "Scaled: Upscaling-aware / Highest dithering effect."));
 
 		dialog->registerWidgetHelp(m_ui.crcFixLevel, tr("CRC Fix Level"), tr("Automatic (Default)"),
 			tr("Control the number of Auto-CRC fixes and hacks applied to games."));
