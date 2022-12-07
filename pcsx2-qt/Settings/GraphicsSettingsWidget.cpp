@@ -158,32 +158,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	connect(m_ui.shadeBoost, QOverload<int>::of(&QCheckBox::stateChanged), this, &GraphicsSettingsWidget::onShadeBoostChanged);
 	onShadeBoostChanged();
 
-	dialog->registerWidgetHelp(m_ui.osdShowMessages, tr("Show OSD Messages"), tr("Checked"),
-		tr("Shows on-screen-display messages when events occur such as save states being "
-		   "created/loaded, screenshots being taken, etc."));
-	dialog->registerWidgetHelp(m_ui.osdShowFPS, tr("Show Game Frame Rate"), tr("Unchecked"),
-		tr("Shows the internal frame rate of the game in the top-right corner of the display."));
-	dialog->registerWidgetHelp(m_ui.osdShowSpeed, tr("Show Emulation Speed"), tr("Unchecked"),
-		tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."));
-	dialog->registerWidgetHelp(m_ui.osdShowResolution, tr("Show Resolution"), tr("Unchecked"),
-		tr("Shows the resolution of the game in the top-right corner of the display."));
-	dialog->registerWidgetHelp(m_ui.osdShowCPU, tr("Show CPU Usage"), tr("Unchecked"),
-		tr("Shows host's CPU utilization."));
-	dialog->registerWidgetHelp(m_ui.osdShowGPU, tr("Show GPU Usage"), tr("Unchecked"),
-		tr("Shows host's GPU utilization."));
-	dialog->registerWidgetHelp(m_ui.osdShowGSStats, tr("Show Statistics"), tr("Unchecked"),
-		tr("Shows counters for internal graphical utilization, useful for debugging."));
-	dialog->registerWidgetHelp(m_ui.osdShowIndicators, tr("Show Indicators"), tr("Unchecked"),
-		tr("Shows OSD icon indicators for emulation states such as Pausing, Turbo, Fast Forward, and Slow Motion."));
-	dialog->registerWidgetHelp(m_ui.warnAboutUnsafeSettings, tr("Warn About Unsafe Settings"),
-		tr("Checked"), tr("Displays warnings when settings are enabled which may break games."));
-
-    dialog->registerWidgetHelp(m_ui.shadeBoost, tr("Shade Boost"), tr("Unchecked"),
-		tr("Enables saturation, contrast, and brightness to be adjusted. Values of brightness, saturation, and contrast are at default 50."));
-	dialog->registerWidgetHelp(m_ui.fxaa, tr("FXAA"), tr("Unchecked"),
-		tr("Applies the FXAA anti-aliasing algorithm to improve the visual quality of games."));
-
-
 	//////////////////////////////////////////////////////////////////////////
 	// HW Settings
 	//////////////////////////////////////////////////////////////////////////
@@ -379,11 +353,34 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 		dialog->registerWidgetHelp(m_ui.integerScaling, tr("Integer Scaling"), tr("Unchecked"),
 			tr("Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. May result in a sharper image in some 2D games."));
+		
+		dialog->registerWidgetHelp(m_ui.aspectRatio, tr("Aspect Ratio"), tr("Auto Standard (4:3/3:2 Progressive)"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.interlacing, tr("Deinterlacing"), tr("Automatic (Default)"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.zoom, tr("Zoom"), tr("100%"),
+			tr("Zoom = 100: Fit the entire image to the window without any cropping."
+			"Above/Below 100: Zoom In/Out."
+			"0: Automatic-Zoom-In until the black-bars are gone (Aspect ratio is kept, some of the image goes out of screen)."));
+
+		dialog->registerWidgetHelp(m_ui.stretchY, tr("Stretch Height"), tr("100%"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.fullscreenModes, tr("Fullscreen Mode"), tr("Borderless Fullscreen"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.cropLeft, tr("Left"), tr("0px"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.cropTop, tr("Top"), tr("0px"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.cropRight, tr("Right"), tr("0px"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.cropBottom, tr("Bottom"), tr("0px"), tr(""));
 	}
 
 	// Rendering tab
 	{
 		// Hardware
+		dialog->registerWidgetHelp(m_ui.upscaleMultiplier, tr("Internal Resolution"), tr("Native (PS2) (Default)"), tr(""));
+
 		dialog->registerWidgetHelp(m_ui.mipmapping, tr("Mipmapping"), tr("Automatic (Default)"),
 			tr("Control the accuracy level of the mipmapping emulation."));
 
@@ -449,6 +446,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	{
 		dialog->registerWidgetHelp(m_ui.halfScreenFix, tr("Half Screen Fix"), tr("Automatic (Default)"),
 			tr("Control the half-screen fix detection on texture shuffling."));
+
+		dialog->registerWidgetHelp(m_ui.cpuSpriteRenderBW, tr("CPU Sprite Renderer Size"), tr("0 (Disabled)"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.cpuCLUTRender, tr("Software Clut Render"), tr("0 (Disabled)"), tr(""));
 
 		dialog->registerWidgetHelp(m_ui.skipDrawStart, tr("Skipdraw Range Start"), tr("0"),
 			tr("Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right."));
@@ -516,16 +517,101 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Replaces post-processing multiple paving sprites by a single fat sprite. It reduces various upscaling lines."));
 	}
 
+	// Texture Replacement tab
+	{
+		dialog->registerWidgetHelp(m_ui.dumpReplaceableTextures, tr("Dump Textures"), tr("Unchecked"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.dumpReplaceableMipmaps, tr("Dump Mipmaps"), tr("Unchecked"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.dumpTexturesWithFMVActive, tr("Dump FMV Textures"), tr("Unchecked"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.loadTextureReplacementsAsync, tr("Async Texture Loading"), tr("Checked"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.loadTextureReplacements, tr("Load Textures"), tr("Unchecked"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.precacheTextureReplacements, tr("Precache Textures"), tr("Unchecked"), tr(""));
+	}
+
+	// Post Processing tab
+	{
+		dialog->registerWidgetHelp(m_ui.casMode, tr("Contrast Adaptive Sharpening"), tr("None (Default)"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.casSharpness, tr("Sharpness"), tr("50%"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.shadeBoost, tr("Shade Boost"), tr("Unchecked"),
+			tr("Enables saturation, contrast, and brightness to be adjusted. Values of brightness, saturation, and contrast are at default 50."));
+
+		dialog->registerWidgetHelp(m_ui.fxaa, tr("FXAA"), tr("Unchecked"),
+			tr("Applies the FXAA anti-aliasing algorithm to improve the visual quality of games."));
+
+		dialog->registerWidgetHelp(m_ui.shadeBoostBrightness, tr("Brightness"), tr("50"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.shadeBoostContrast, tr("Contrast"), tr("50"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.shadeBoostSaturation, tr("Saturation"), tr("50"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.tvShader, tr("TV Shader"), tr("None (Default)"), tr(""));
+	}
+
+	// OSD tab
+	{
+		dialog->registerWidgetHelp(m_ui.osdScale, tr("OSD Scale"), tr("100%"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.osdShowMessages, tr("Show OSD Messages"), tr("Checked"),
+			tr("Shows on-screen-display messages when events occur such as save states being "
+			   "created/loaded, screenshots being taken, etc."));
+
+		dialog->registerWidgetHelp(m_ui.osdShowFPS, tr("Show Game Frame Rate"), tr("Unchecked"),
+			tr("Shows the internal frame rate of the game in the top-right corner of the display."));
+
+		dialog->registerWidgetHelp(m_ui.osdShowSpeed, tr("Show Emulation Speed"), tr("Unchecked"),
+			tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."));
+
+		dialog->registerWidgetHelp(m_ui.osdShowResolution, tr("Show Resolution"), tr("Unchecked"),
+			tr("Shows the resolution of the game in the top-right corner of the display."));
+
+		dialog->registerWidgetHelp(m_ui.osdShowCPU, tr("Show CPU Usage"), tr("Unchecked"),
+			tr("Shows host's CPU utilization."));
+
+		dialog->registerWidgetHelp(m_ui.osdShowGPU, tr("Show GPU Usage"), tr("Unchecked"),
+			tr("Shows host's GPU utilization."));
+
+		dialog->registerWidgetHelp(m_ui.osdShowGSStats, tr("Show Statistics"), tr("Unchecked"),
+			tr("Shows counters for internal graphical utilization, useful for debugging."));
+
+		dialog->registerWidgetHelp(m_ui.osdShowIndicators, tr("Show Indicators"), tr("Unchecked"),
+			tr("Shows OSD icon indicators for emulation states such as Pausing, Turbo, Fast Forward, and Slow Motion."));
+
+		dialog->registerWidgetHelp(m_ui.osdShowSettings, tr("Show Settings"), tr("Unchecked"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.osdShowInputs, tr("Show Inputs"), tr("Unchecked"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.osdShowFrameTimes, tr("Show Frame Times"), tr("Unchecked"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.warnAboutUnsafeSettings, tr("Warn About Unsafe Settings"),
+			tr("Checked"), tr("Displays warnings when settings are enabled which may break games."));
+	}
+
 	// Advanced tab
 	{
+		dialog->registerWidgetHelp(m_ui.overrideTextureBarriers, tr("Override Texture Barriers"), tr("Automatic (Default)"), tr(""));
+
 		dialog->registerWidgetHelp(m_ui.overrideGeometryShader, tr("Override Geometry Shader"), tr("Automatic (Default)"),
 			tr("Allows the GPU instead of just the CPU to transform lines into sprites. "
 			   "This reduces CPU load and bandwidth requirement, but it is heavier on the GPU."));
+
+		dialog->registerWidgetHelp(m_ui.gsDumpCompression, tr("GS Dump Compression"), tr("Zstandard (zst)"), tr(""));
 
 		dialog->registerWidgetHelp(m_ui.useBlitSwapChain, tr("Use Blit Swap Chain"), tr("Unchecked"),
 			tr("Uses a blit presentation model instead of flipping when using the Direct3D 11 "
 			   "renderer. This usually results in slower performance, but may be required for some "
 			   "streaming applications, or to uncap framerates on some systems."));
+
+		dialog->registerWidgetHelp(m_ui.useDebugDevice, tr("Use Debug Device"), tr("Unchecked"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.disableDualSource, tr("Disable Dual Source Blending"), tr("Unchecked"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.disableFramebufferFetch, tr("Disable Frame Buffer Fetch"), tr("Unchecked"), tr(""));
 
 		dialog->registerWidgetHelp(m_ui.skipPresentingDuplicateFrames, tr("Skip Presenting Duplicate Frames"), tr("Unchecked"),
 			tr("Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means "
