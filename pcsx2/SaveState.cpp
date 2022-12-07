@@ -1048,15 +1048,13 @@ static void CheckVersion(const std::string& filename, zip_t* zf)
 	if (savever > g_SaveVersion)
 		throw Exception::SaveStateLoadError(filename)
 			.SetDiagMsg(fmt::format("Savestate uses an unsupported or unknown savestate version.\n(PCSX2 ver={:x}, state ver={:x})", g_SaveVersion, savever))
-			.SetUserMsg("Cannot load this savestate. The state is an unsupported version.");
-
+			.SetUserMsg("Cannot load this savestate. The state is an unsupported version.\nOption 1: Download an older PCSX2 version from pcsx2.net and make a memcard save like on the physical PS2.\nOption 2: Delete the savestates.");
 	// check for a "minor" version incompatibility; which happens if the savestate being loaded is a newer version
 	// than the emulator recognizes.  99% chance that trying to load it will just corrupt emulation or crash.
 	if ((savever >> 16) != (g_SaveVersion >> 16))
 		throw Exception::SaveStateLoadError(filename)
 			.SetDiagMsg(fmt::format("Savestate uses an unknown savestate version.\n(PCSX2 ver={:x}, state ver={:x})", g_SaveVersion, savever))
-			.SetUserMsg("Cannot load this savestate. The state is an unsupported version.");
-}
+			.SetUserMsg("Cannot load this savestate. The state is an unsupported version.\nOption 1: Download an older PCSX2 version from pcsx2.net and make a memcard save like on the physical PS2.\nOption 2: Delete the savestates.");}
 
 static zip_int64_t CheckFileExistsInState(zip_t* zf, const char* name, bool required)
 {
