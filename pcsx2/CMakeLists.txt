@@ -6,7 +6,12 @@ add_library(PCSX2_FLAGS INTERFACE)
 if (NOT PCSX2_CORE)
 	add_executable(PCSX2)
 else()
-	add_library(PCSX2)
+	if(DISABLE_ADVANCE_SIMD OR LTO_PCSX2_CORE)
+		# Fixes issues with some compiler + linker combinations
+		add_library(PCSX2 OBJECT)
+	else()
+		add_library(PCSX2)
+	endif()
 	target_compile_definitions(PCSX2_FLAGS INTERFACE
 		"PCSX2_CORE"
 	)
