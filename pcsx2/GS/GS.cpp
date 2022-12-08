@@ -1283,7 +1283,7 @@ void GSApp::Init()
 
 	m_section = "Settings";
 
-	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::Auto), "Automatic", ""));
+	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::Auto), "Automatic", "Default"));
 #ifdef _WIN32
 	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::DX11), "Direct3D 11", ""));
 	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::DX12), "Direct3D 12", ""));
@@ -1388,14 +1388,14 @@ void GSApp::Init()
 	m_gs_acc_blend_level.push_back(GSSetting(static_cast<u32>(AccBlendLevel::Full), "Full", "Slow"));
 	m_gs_acc_blend_level.push_back(GSSetting(static_cast<u32>(AccBlendLevel::Maximum), "Maximum", "Very Slow"));
 
-	m_gs_tv_shaders.push_back(GSSetting(0, "None", ""));
+	m_gs_tv_shaders.push_back(GSSetting(0, "None", "Default"));
 	m_gs_tv_shaders.push_back(GSSetting(1, "Scanline filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(2, "Diagonal filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(3, "Triangular filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(4, "Wave filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(5, "Lottes CRT filter", ""));
 
-	m_gs_casmode.push_back(GSSetting(static_cast<u32>(GSCASMode::Disabled), "Disabled", ""));
+	m_gs_casmode.push_back(GSSetting(static_cast<u32>(GSCASMode::Disabled), "None", "Default"));
 	m_gs_casmode.push_back(GSSetting(static_cast<u32>(GSCASMode::SharpenOnly), "Sharpen Only", "Internal Resolution"));
 	m_gs_casmode.push_back(GSSetting(static_cast<u32>(GSCASMode::SharpenAndResize), "Sharpen And Resize", "Display Resolution"));
 
