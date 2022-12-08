@@ -2726,7 +2726,7 @@ void FullscreenUI::DrawClampingModeSetting(SettingsInterface* bsi, const char* t
 
 void FullscreenUI::DrawGraphicsSettingsPage()
 {
-	static constexpr const char* s_renderer_names[] = {"Automatic",
+	static constexpr const char* s_renderer_names[] = {"Automatic (Default)",
 #ifdef _WIN32
 		"Direct3D 11", "Direct3D 12",
 #endif
@@ -3002,7 +3002,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 	MenuHeading("Post-Processing");
 	{
 		static constexpr const char* s_cas_options[] = {
-			"Disabled", "Sharpen Only (Internal Resolution)", "Sharpen and Resize (Display Resolution)"};
+			"None (Default)", "Sharpen Only (Internal Resolution)", "Sharpen and Resize (Display Resolution)"};
 		const bool cas_active = (GetEffectiveIntSetting(bsi, "EmuCore/GS", "CASMode", 0) != static_cast<int>(GSCASMode::Disabled));
 
 		DrawToggleSetting(bsi, "FXAA", "Enables FXAA post-processing shader.", "EmuCore/GS", "fxaa", false);
@@ -3025,7 +3025,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			1, 100, "%d", shadeboost_active);
 
 		static constexpr const char* s_tv_shaders[] = {
-			"None", "Scanline Filter", "Diagonal Filter", "Triangular Filter", "Wave Filter", "Lottes CRT"};
+			"None (Default)", "Scanline Filter", "Diagonal Filter", "Triangular Filter", "Wave Filter", "Lottes CRT"};
 		DrawIntListSetting(
 			bsi, "TV Shaders", "Selects post-processing TV shader.", "EmuCore/GS", "TVShader", 0, s_tv_shaders, std::size(s_tv_shaders));
 	}
