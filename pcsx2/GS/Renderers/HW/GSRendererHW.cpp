@@ -1693,7 +1693,7 @@ void GSRendererHW::Draw()
 	{
 		// Constant Direct Write without texture/test/blending (aka a GS mem clear)
 		if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME // Direct write
-			&& (!PRIM->ABE || m_context->ALPHA.IsOpaque()) // No transparency
+			&& (!PRIM->ABE || IsOpaque()) // No transparency
 			&& (m_context->FRAME.FBMSK == 0) // no color mask
 			&& !m_context->TEST.ATE // no alpha test
 			&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
@@ -1701,18 +1701,32 @@ void GSRendererHW::Draw()
 			&& m_r.x == 0 && m_r.y == 0) // Likely full buffer write
 		{
 			// Likely doing a huge single page width clear, which never goes well. (Superman)
-			if ((m_r.w > 1024) && context->FRAME.FBW == 1)
+			// Burnout 3 does a 32x1024 double width clear on its reflection targets.
+			const bool clear_height_valid = (m_r.w >= 1024);
+			if (clear_height_valid && context->FRAME.FBW == 1)
 			{
-				m_r.z = GetResolution().x;
-				m_r.w = GetResolution().y;
+				m_r.w = GetFramebufferHeight();
+				m_r.z = GetFramebufferWidth();
 				context->FRAME.FBW = (m_r.z + 63) / 64;
 			}
-			if (OI_GsMemClear() && m_r.w > 1024)
+
+			// Superman does a clear to white, not black, on its depth buffer.
+			// Since we don't preload depth, OI_GsMemClear() won't work here, since we invalidate the target later
+			// on. So, instead, let the draw go through with the expanded rectangle, and copy color->depth.
+			const bool is_zero_clear = (((GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 0) ?
+												m_vertex.buff[1].RGBAQ.U32[0] :
+                                                (m_vertex.buff[1].RGBAQ.U32[0] & ~0xFF000000)) == 0);
+			if (is_zero_clear && OI_GsMemClear() && clear_height_valid)
 			{
 				m_tc->InvalidateVideoMem(context->offset.fb, m_r, false, true);
 				m_tc->InvalidateVideoMemType(GSTextureCache::RenderTarget, context->FRAME.Block());
-				m_tc->InvalidateVideoMem(context->offset.zb, m_r, false, false);
-				m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, context->ZBUF.Block());
+
+				if (m_context->ZBUF.ZMSK == 0)
+				{
+					m_tc->InvalidateVideoMem(context->offset.zb, m_r, false, false);
+					m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, context->ZBUF.Block());
+				}
+
 				return;
 			}
 		}
@@ -1831,7 +1845,7 @@ void GSRendererHW::Draw()
 	{
 		// Constant Direct Write without texture/test/blending (aka a GS mem clear)
 		if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME // Direct write
-				&& (!PRIM->ABE || m_context->ALPHA.IsOpaque()) // No transparency
+				&& (!PRIM->ABE || IsOpaque()) // No transparency
 				&& (m_context->FRAME.FBMSK == 0) // no color mask
 				&& !m_context->TEST.ATE // no alpha test
 				&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
@@ -4129,7 +4143,6 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::MetalSlug6, CRC::RegionCount, &GSRendererHW::OI_MetalSlug6));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::RozenMaidenGebetGarden, CRC::RegionCount, &GSRendererHW::OI_RozenMaidenGebetGarden));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SonicUnleashed, CRC::RegionCount, &GSRendererHW::OI_SonicUnleashed));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SuperManReturns, CRC::RegionCount, &GSRendererHW::OI_SuperManReturns));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ArTonelico2, CRC::RegionCount, &GSRendererHW::OI_ArTonelico2));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::Jak2, CRC::RegionCount, &GSRendererHW::OI_JakGames));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::Jak3, CRC::RegionCount, &GSRendererHW::OI_JakGames));
@@ -4240,7 +4253,7 @@ void GSRendererHW::OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCach
 	}
 	// Striped double clear done by Powerdrome and Snoopy Vs Red Baron, it will clear in 32 pixel stripes half done by the Z and half done by the FRAME
 	else if (rt && !ds && m_context->FRAME.FBP == m_context->ZBUF.ZBP && (m_context->FRAME.PSM & 0x30) != (m_context->ZBUF.PSM & 0x30)
-			&& (m_context->FRAME.PSM & 0xF) == (m_context->ZBUF.PSM & 0xF) && (u32)(GSVector4i(m_vt.m_max.p).z) == 0)
+			&& (m_context->FRAME.PSM & 0xF) == (m_context->ZBUF.PSM & 0xF) && m_vt.m_eq.z == 1)
 	{
 		const GSVertex* v = &m_vertex.buff[0];
 
@@ -4274,7 +4287,7 @@ bool GSRendererHW::OI_GsMemClear()
 			r.z += 32;
 		// Limit the hack to a single full buffer clear. Some games might use severals column to clear a screen
 		// but hopefully it will be enough.
-		if (r.width() < ((static_cast<int>(m_context->FRAME.FBW) - 1) * 64) || r.height() <= 128)
+		if (m_r.width() < ((static_cast<int>(m_context->FRAME.FBW) - 1) * 64) || r.height() <= 128)
 			return false;
 
 		GL_INS("OI_GsMemClear (%d,%d => %d,%d)", r.x, r.y, r.z, r.w);
@@ -4702,32 +4715,6 @@ bool GSRendererHW::OI_PointListPalette(GSTexture* rt, GSTexture* ds, GSTextureCa
 		return false;
 	}
 	return true;
-}
-
-bool GSRendererHW::OI_SuperManReturns(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	// Instead to use a fullscreen rectangle they use a 32 pixels, 4096 pixels with a FBW of 1.
-	// Technically the FB wrap/overlap on itself...
-	const GSDrawingContext* ctx = m_context;
-#ifndef NDEBUG
-	GSVertex* v = &m_vertex.buff[0];
-#endif
-
-	if (!(ctx->FRAME.FBP == ctx->ZBUF.ZBP && !PRIM->TME && !ctx->ZBUF.ZMSK && !ctx->FRAME.FBMSK && m_vt.m_eq.rgba == 0xFFFF))
-		return true;
-
-	// Please kill those crazy devs!
-	ASSERT(m_vertex.next == 2);
-	ASSERT(m_vt.m_primclass == GS_SPRITE_CLASS);
-	ASSERT((v->RGBAQ.A << 24 | v->RGBAQ.B << 16 | v->RGBAQ.G << 8 | v->RGBAQ.R) == (int)v->XYZ.Z);
-
-	// Do a direct write
-	g_gs_device->ClearRenderTarget(rt, GSVector4(m_vt.m_min.c));
-
-	m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, ctx->FRAME.Block());
-	GL_INS("OI_SuperManReturns");
-
-	return false;
 }
 
 bool GSRendererHW::OI_ArTonelico2(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)

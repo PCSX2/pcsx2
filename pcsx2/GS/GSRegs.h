@@ -536,9 +536,9 @@ REG64_(GIFReg, ALPHA)
 	u8 FIX;
 	u8 _PAD2[3];
 REG_END2
-	// opaque => output will be Cs/As
-	__forceinline bool IsOpaque() const { return ((A == B || (C == 2 && FIX == 0)) && D == 0) || (A == 0 && B == D && C == 2 && FIX == 0x80); }
-	__forceinline bool IsOpaque(int amin, int amax) const { return ((A == B || amax == 0) && D == 0) || (A == 0 && B == D && amin == 0x80 && amax == 0x80); }
+	// opaque => output will be Cs/As/zero
+	__forceinline bool IsOpaque() const { return ((A == B || (C == 2 && FIX == 0)) && D == 0) || (A == 0 && B == D && C == 2 && FIX == 0x80) || (C == 2 && D != 1 && FIX == 0x00); }
+	__forceinline bool IsOpaque(int amin, int amax) const { return ((A == B || amax == 0) && D == 0) || (A == 0 && B == D && amin == 0x80 && amax == 0x80) || (C == 2 && D != 1 && FIX == 0x00); }
 	__forceinline bool IsCd() { return (A == B) && (D == 1); }
 REG_END2
 

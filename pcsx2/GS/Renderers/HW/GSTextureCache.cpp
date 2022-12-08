@@ -713,6 +713,8 @@ void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, 
 
 	// Take that into consideration to find the extent of the target which will be sampled.
 	GSTexture* old_texture = t->m_texture;
+	const int old_width = static_cast<int>(static_cast<float>(old_texture->GetWidth()) / old_texture->GetScale().x);
+	const int old_height = static_cast<int>(static_cast<float>(old_texture->GetHeight()) / old_texture->GetScale().y);
 	const int needed_height = std::min(real_h + y_offset, GSRendererHW::MAX_FRAMEBUFFER_HEIGHT);
 	const int scaled_needed_height = std::max(static_cast<int>(static_cast<float>(needed_height) * old_texture->GetScale().y), old_texture->GetHeight());
 	const int needed_width = std::min(real_w, static_cast<int>(dispfb.TBW * 64));
@@ -737,9 +739,22 @@ void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, 
 	g_gs_device->Recycle(old_texture);
 	t->m_texture = new_texture;
 
-	const GSVector4i newrect = GSVector4i(0, 0, t->m_TEX0.TBW * 64, needed_height);
 	// We unconditionally preload the frame here, because otherwise we'll end up with blackness for one frame (when the expand happens).
-	AddDirtyRectTarget(t, newrect, t->m_TEX0.PSM, t->m_TEX0.TBW);
+	const int preload_width = t->m_TEX0.TBW * 64;
+	if (old_width < preload_width && old_height < needed_height)
+	{
+		const GSVector4i right(old_width, 0, preload_width, needed_height);
+		const GSVector4i bottom(0, old_height, old_width, needed_height);
+		AddDirtyRectTarget(t, right, t->m_TEX0.PSM, t->m_TEX0.TBW);
+		AddDirtyRectTarget(t, bottom, t->m_TEX0.PSM, t->m_TEX0.TBW);
+	}
+	else
+	{
+		const GSVector4i newrect = GSVector4i((old_height < scaled_needed_height) ? 0 : old_width,
+			(old_width < preload_width) ? 0 : old_height,
+			preload_width, needed_height);
+		AddDirtyRectTarget(t, newrect, t->m_TEX0.PSM, t->m_TEX0.TBW);
+	}
 
 	// Inject the new height back into the cache.
 	GetTargetHeight(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, static_cast<u32>(needed_height));
