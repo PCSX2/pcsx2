@@ -60,6 +60,10 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.ntscFrameRate, "EmuCore/GS", "FramerateNTSC", 59.94f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.palFrameRate, "EmuCore/GS", "FrameratePAL", 50.00f);
+	
+	dialog->registerWidgetHelp(m_ui.eeRoundingMode, tr("Rounding Mode"), tr("Chop / Zero (Default)"), tr(""));
+
+	dialog->registerWidgetHelp(m_ui.eeClampMode, tr("Clamping Mode"), tr("Normal (Default)"), tr(""));
 
 	dialog->registerWidgetHelp(m_ui.eeRecompiler, tr("Enable Recompiler"), tr("Checked"),
 		tr("Performs just - in - time binary translation of 64 - bit MIPS - IV machine code to x86."));
@@ -76,7 +80,11 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
 	dialog->registerWidgetHelp(m_ui.eeFastmem, tr("Enable Fast Memory Access"), tr("Checked"),
 		tr("Uses backpatching to avoid register flushing on every memory access."));
 
-	dialog->registerWidgetHelp(m_ui.vu0Recompiler, tr("Enable VU0 Recompiler"), tr("Checked"),
+	dialog->registerWidgetHelp(m_ui.vuRoundingMode, tr("Rounding Mode"), tr("Chop / Zero (Default)"), tr(""));
+
+	dialog->registerWidgetHelp(m_ui.vuClampMode, tr("Clamping Mode"), tr("Normal (Default)"), tr(""));
+
+	dialog->registerWidgetHelp(m_ui.vu0Recompiler, tr("Enable VU0 Recompiler (Micro Mode)"), tr("Checked"),
 		tr("Enables VU0 Recompiler."));
 
 	dialog->registerWidgetHelp(m_ui.vu1Recompiler, tr("Enable VU1 Recompiler"), tr("Checked"),
