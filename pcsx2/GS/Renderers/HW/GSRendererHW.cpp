@@ -4213,7 +4213,11 @@ void GSRendererHW::OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCach
 		// If both buffers are side by side we can expect a fast clear in on-going
 		if (half <= (base + written_pages))
 		{
-			const u32 color = v[1].RGBAQ.U32[0];
+			// Take the vertex colour, but check if the blending would make it black.
+			u32 vert_color = v[1].RGBAQ.U32[0];
+			if (PRIM->ABE && m_context->ALPHA.IsBlack())
+				vert_color &= ~0xFF000000;
+			const u32 color = vert_color;
 			const bool clear_depth = (m_context->FRAME.FBP > m_context->ZBUF.ZBP);
 
 			GL_INS("OI_DoubleHalfClear:%s: base %x half %x. w_pages %d h_pages %d fbw %d. Color %x",
@@ -4292,7 +4296,13 @@ bool GSRendererHW::OI_GsMemClear()
 
 		GL_INS("OI_GsMemClear (%d,%d => %d,%d)", r.x, r.y, r.z, r.w);
 		const int format = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
-		const u32 color = (format == 0) ? m_vertex.buff[1].RGBAQ.U32[0] : (m_vertex.buff[1].RGBAQ.U32[0] & ~0xFF000000);
+
+		// Take the vertex colour, but check if the blending would make it black.
+		u32 vert_color = m_vertex.buff[1].RGBAQ.U32[0];
+		if (PRIM->ABE && m_context->ALPHA.IsBlack())
+			vert_color &= ~0xFF000000;
+
+		const u32 color = (format == 0) ? vert_color : (vert_color & ~0xFF000000);
 
 		// FIXME: loop can likely be optimized with AVX/SSE. Pixels aren't
 		// linear but the value will be done for all pixels of a block.
