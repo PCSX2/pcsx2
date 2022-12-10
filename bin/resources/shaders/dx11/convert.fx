@@ -81,13 +81,8 @@ float ps_depth_copy(PS_INPUT input) : SV_Depth
 PS_OUTPUT ps_filter_transparency(PS_INPUT input)
 {
 	PS_OUTPUT output;
-	
 	float4 c = sample_c(input.t);
-	
-	c.a = dot(c.rgb, float3(0.299, 0.587, 0.114));
-
-	output.c = c;
-
+	output.c = float4(c.rgb, 1.0);
 	return output;
 }
 
