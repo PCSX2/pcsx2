@@ -309,12 +309,6 @@ void GSDevice::ClearCurrent()
 	m_mad = nullptr;
 	m_target_tmp = nullptr;
 	m_cas = nullptr;
-	m_temp_snapshot = nullptr;
-}
-
-void GSDevice::SetSnapshot()
-{
-	m_temp_snapshot = m_current;
 }
 
 void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)

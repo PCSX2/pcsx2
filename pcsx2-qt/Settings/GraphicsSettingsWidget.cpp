@@ -112,6 +112,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.PCRTCOverscan, "EmuCore/GS", "pcrtc_overscan", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.PCRTCAntiBlur, "EmuCore/GS", "pcrtc_antiblur", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.DisableInterlaceOffset, "EmuCore/GS", "disable_interlace_offset", false);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.screenshotSize, "EmuCore/GS", "ScreenshotSize", static_cast<int>(GSScreenshotSize::WindowResolution));
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.screenshotFormat, "EmuCore/GS", "ScreenshotFormat", static_cast<int>(GSScreenshotFormat::PNG));
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.screenshotQuality, "EmuCore/GS", "ScreenshotQuality", 50);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.stretchY, "EmuCore/GS", "StretchY", 100.0f);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cropLeft, "EmuCore/GS", "CropLeft", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cropTop, "EmuCore/GS", "CropTop", 0);
@@ -355,6 +358,13 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.aspectRatio, tr("Aspect Ratio"), tr("Auto Standard (4:3/3:2 Progressive)"), tr(""));
 
 		dialog->registerWidgetHelp(m_ui.interlacing, tr("Deinterlacing"), tr("Automatic (Default)"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.screenshotSize, tr("Screenshot Size"), tr("Screen Resolution"),
+			tr("Determines the resolution at which screenshots will be saved. Internal resolutions preserve more detail at the cost of file size."));
+		dialog->registerWidgetHelp(m_ui.screenshotFormat, tr("Screenshot Format"), tr("PNG"),
+			tr("Selects the format which will be used to save screenshots. JPEG produces smaller files, but loses detail."));
+		dialog->registerWidgetHelp(m_ui.screenshotQuality, tr("Screenshot Quality"), tr("50%"),
+			tr("Selects the quality at which screenshots will be compressed. Higher values preserve more detail for JPEG, and reduce file size for PNG."));
 
 		dialog->registerWidgetHelp(m_ui.stretchY, tr("Stretch Height"), tr("100%"), tr(""));
 
