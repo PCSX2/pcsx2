@@ -126,8 +126,7 @@ fragment float4 ps_hdr_resolve(float4 p [[position]], DirectReadTextureIn<float>
 fragment float4 ps_filter_transparency(ConvertShaderData data [[stage_in]], ConvertPSRes res)
 {
 	float4 c = res.sample(data.t);
-	c.a = dot(c.rgb, float3(0.299f, 0.587f, 0.114f));
-	return c;
+	return float4(c.rgb, 1.0);
 }
 
 fragment uint ps_convert_float32_32bits(ConvertShaderData data [[stage_in]], ConvertPSDepthRes res)

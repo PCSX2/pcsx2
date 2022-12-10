@@ -44,7 +44,7 @@ private:
 
 protected:
 	GSVector2i m_real_size{0, 0};
-	bool m_texture_shuffle;
+	bool m_texture_shuffle = false;
 
 	virtual GSTexture* GetOutput(int i, int& y_offset) = 0;
 	virtual GSTexture* GetFeedbackOutput() { return nullptr; }
@@ -66,7 +66,8 @@ public:
 	virtual void PurgePool() override;
 	virtual void PurgeTextureCache();
 
-	bool SaveSnapshotToMemory(u32 width, u32 height, std::vector<u32>* pixels);
+	bool SaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
+		u32* width, u32* height, std::vector<u32>* pixels);
 
 	void QueueSnapshot(const std::string& path, u32 gsdump_frames);
 	void StopGSDump();

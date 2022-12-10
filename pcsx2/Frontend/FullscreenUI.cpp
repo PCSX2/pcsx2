@@ -2812,6 +2812,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 	static constexpr const char* s_generic_options[] = {"Automatic (Default)", "Force Disabled", "Force Enabled"};
 	static constexpr const char* s_hw_download[] = {"Accurate (Recommended)", "Disable Readbacks (Synchronize GS Thread)",
 		"Unsynchronized (Non-Deterministic)", "Disabled (Ignore Transfers)"};
+	static constexpr const char* s_screenshot_sizes[] = {"Screen Resolution", "Internal Resolution", "Internal Resolution (Uncorrected)"};
+	static constexpr const char* s_screenshot_formats[] = {"PNG", "JPEG"};
 
 	SettingsInterface* bsi = GetEditingSettingsInterface();
 
@@ -2838,6 +2840,12 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 	DrawIntListSetting(bsi, "Deinterlacing",
 		"Selects the algorithm used to convert the PS2's interlaced output to progressive for display.", "EmuCore/GS", "deinterlace_mode",
 		static_cast<int>(GSInterlaceMode::Automatic), s_deinterlacing_options, std::size(s_deinterlacing_options));
+	DrawIntListSetting(bsi, "Screenshot Size", "Determines the resolution at which screenshots will be saved.", "EmuCore/GS",
+		"ScreenshotSize", static_cast<int>(GSScreenshotSize::WindowResolution), s_screenshot_sizes, std::size(s_screenshot_sizes));
+	DrawIntListSetting(bsi, "Screenshot Format", "Selects the format which will be used to save screenshots.", "EmuCore/GS",
+		"ScreenshotFormat", static_cast<int>(GSScreenshotFormat::PNG), s_screenshot_formats, std::size(s_screenshot_formats));
+	DrawIntRangeSetting(bsi, "Screenshot Quality", "Selects the quality at which screenshots will be compressed.", "EmuCore/GS",
+		"ScreenshotQuality", 50, 1, 100, "%d%%");
 	DrawIntRangeSetting(bsi, "Vertical Stretch", "Increases or decreases the virtual picture size vertically.", "EmuCore/GS", "StretchY",
 		100, 10, 300, "%d%%");
 	DrawIntRectSetting(bsi, "Crop", "Crops the image, while respecting aspect ratio.", "EmuCore/GS", "CropLeft", 0, "CropTop", 0,

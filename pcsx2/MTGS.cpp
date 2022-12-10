@@ -1029,11 +1029,12 @@ void SysMtgsThread::ToggleSoftwareRendering()
 	SetSoftwareRendering(GSConfig.Renderer != GSRendererType::SW);
 }
 
-bool SysMtgsThread::SaveMemorySnapshot(u32 width, u32 height, std::vector<u32>* pixels)
+bool SysMtgsThread::SaveMemorySnapshot(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
+	u32* width, u32* height, std::vector<u32>* pixels)
 {
 	bool result = false;
-	RunOnGSThread([width, height, pixels, &result]() {
-		result = GSSaveSnapshotToMemory(width, height, pixels);
+	RunOnGSThread([window_width, window_height, apply_aspect, crop_borders, width, height, pixels, &result]() {
+		result = GSSaveSnapshotToMemory(window_width, window_height, apply_aspect, crop_borders, width, height, pixels);
 	});
 	WaitGS(false, false, false);
 	return result;
