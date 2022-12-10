@@ -567,14 +567,8 @@ struct Pcsx2Config
 		GSInterlaceMode InterlaceMode{GSInterlaceMode::Automatic};
 		GSPostBilinearMode LinearPresent{ GSPostBilinearMode::BilinearSmooth };
 
-		float Zoom{100.0f};
 		float StretchY{100.0f};
-#ifndef PCSX2_CORE
-		float OffsetX{0.0f};
-		float OffsetY{0.0f};
-#else
 		int Crop[4]{};
-#endif
 
 		float OsdScale{100.0};
 
