@@ -387,13 +387,21 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 		default:
 			m_current = m_merge;
 	}
+
+	if ((GSConfig.FXAA || GSConfig.ShadeBoost) && m_current != m_merge)
+	{
+		const GSVector2i s = m_current->GetSize();
+		ResizeTexture(&m_merge, GSTexture::Type::RenderTarget, s.x, s.y, false);
+		StretchRect(m_current, GSVector4(0, 0, 1, 1), m_merge, GSVector4(0, 0, ds.x, ds.y), ShaderConvert::COPY, false);
+		m_current = m_merge;
+	}
 }
 
 void GSDevice::FXAA()
 {
 	const GSVector2i s = m_current->GetSize();
 
-	if (ResizeTarget(&m_target_tmp))
+	if (ResizeTexture(&m_target_tmp, GSTexture::Type::RenderTarget, s.x, s.y, false))
 	{
 		const GSVector4 sRect(0, 0, 1, 1);
 		const GSVector4 dRect(0, 0, s.x, s.y);
@@ -407,7 +415,7 @@ void GSDevice::ShadeBoost()
 {
 	const GSVector2i s = m_current->GetSize();
 
-	if (ResizeTarget(&m_target_tmp))
+	if (ResizeTexture(&m_target_tmp, GSTexture::Type::RenderTarget, s.x, s.y, false))
 	{
 		const GSVector4 sRect(0, 0, 1, 1);
 		const GSVector4 dRect(0, 0, s.x, s.y);
@@ -434,7 +442,7 @@ void GSDevice::Resize(int width, int height)
 		s = m_current->GetSize() * GSVector2i(++multiplier);
 	}
 
-	if (ResizeTexture(&m_target_tmp, GSTexture::Type::RenderTarget, s.x, s.y))
+	if (ResizeTexture(&m_target_tmp, GSTexture::Type::RenderTarget, s.x, s.y, false))
 	{
 		const GSVector4 sRect(0, 0, 1, 1);
 		const GSVector4 dRect(0, 0, s.x, s.y);
