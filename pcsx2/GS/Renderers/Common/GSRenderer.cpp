@@ -455,12 +455,7 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 	else if (arr > 1)
 		target_height = std::floor(f_height / arr + 0.5f);
 
-	float zoom = GSConfig.Zoom / 100.0;
-	if (zoom == 0) //auto zoom in untill black-bars are gone (while keeping the aspect ratio).
-		zoom = std::max((float)arr, (float)(1.0 / arr));
-
-	target_width *= zoom;
-	target_height *= zoom * GSConfig.StretchY / 100.0f;
+	target_height *= GSConfig.StretchY / 100.0f;
 
 	if (GSConfig.IntegerScaling)
 	{
@@ -523,12 +518,6 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 				break;
 		}
 	}
-
-#ifndef PCSX2_CORE
-	const float unit = .01f * std::min(target_x, target_y);
-	target_x += unit * GSConfig.OffsetX;
-	target_y += unit * GSConfig.OffsetY;
-#endif
 
 	GSVector4 ret(target_x, target_y, target_x + target_width, target_y + target_height);
 
