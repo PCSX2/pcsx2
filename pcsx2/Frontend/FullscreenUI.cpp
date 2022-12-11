@@ -2938,8 +2938,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 				"EmuCore/GS", "UserHacks_CPU_FB_Conversion", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, "Disable Depth Support", "Disable the support of depth buffer in the texture cache.", "EmuCore/GS",
 				"UserHacks_DisableDepthSupport", false, manual_hw_fixes);
-			DrawToggleSetting(
-				bsi, "Wrap GS Memory", "Emulates GS memory wrapping accurately.", "EmuCore/GS", "wrap_gs_mem", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, "Disable Safe Features", "This option disables multiple safe features.", "EmuCore/GS",
 				"UserHacks_Disable_Safe_Features", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, "Preload Frame", "Uploads GS data when rendering a new frame to reproduce some effects accurately.",

@@ -356,7 +356,6 @@ HacksTab::HacksTab(wxWindow* parent)
 	m_ui.addCheckBox(rend_hacks_grid, "Auto Flush",                   "UserHacks_AutoFlush",                     IDC_AUTO_FLUSH_HW,            hacks_prereq);
 	m_ui.addCheckBox(rend_hacks_grid, "Frame Buffer Conversion",      "UserHacks_CPU_FB_Conversion",             IDC_CPU_FB_CONVERSION,        hacks_prereq);
 	m_ui.addCheckBox(rend_hacks_grid, "Disable Depth Emulation",      "UserHacks_DisableDepthSupport",           IDC_TC_DEPTH,                 hacks_prereq);
-	m_ui.addCheckBox(rend_hacks_grid, "Memory Wrapping",              "wrap_gs_mem",                             IDC_MEMORY_WRAPPING,          hacks_prereq);
 	m_ui.addCheckBox(rend_hacks_grid, "Disable Safe Features",        "UserHacks_Disable_Safe_Features",         IDC_SAFE_FEATURES,            hacks_prereq);
 	m_ui.addCheckBox(rend_hacks_grid, "Preload Frame Data",           "preload_frame_with_gs_data",              IDC_PRELOAD_GS,               hacks_prereq);
 	m_ui.addCheckBox(rend_hacks_grid, "Disable Partial Invalidation", "UserHacks_DisablePartialInvalidation",    IDC_DISABLE_PARTIAL_TC_INV,   hacks_prereq);
