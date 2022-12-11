@@ -562,6 +562,7 @@ SCAJ-20020:
     eeClampMode: 3 # Characters are visible in-game.
   gsHWFixes:
     texturePreloading: 1 # Performs better with partial preload because it is slow on locations outside gameplay foremost.
+    mergeSprite: 1 # Fixes misaligned white lines.
 SCAJ-20021:
   name: "Metal Slug 3"
   region: "NTSC-Unk"
@@ -2966,7 +2967,7 @@ SCES-50602:
   name: "Monsters Inc."
   region: "PAL-Unk"
 SCES-50603:
-  name: "Monstruos, S.A. - La Isla de los Sustos"
+  name: "Monstruos, S.A. - Isla de los sustos"
   region: "PAL-S"
 SCES-50604:
   name: "Monsters, Inc - Skrämmarön"
@@ -3991,7 +3992,7 @@ SCES-53883:
   gameFixes:
     - EETimingHack # Fixes freezes.
 SCES-53884:
-  name: "Buzz! The Big Quiz"
+  name: "Buzz! El GRAN Reto"
   region: "PAL-S"
   compat: 2
   gameFixes:
@@ -14193,6 +14194,7 @@ SLES-52322:
     eeClampMode: 3 # Characters are visible in-game.
   gsHWFixes:
     texturePreloading: 1 # Performs better with partial preload because it is slow on locations outside gameplay foremost.
+    mergeSprite: 1 # Fixes misaligned white lines.
 SLES-52323:
   name: "Richard Burns Rally"
   region: "PAL-M5"
@@ -23843,6 +23845,7 @@ SLPM-55080:
     eeClampMode: 3 # Characters are visible in-game.
   gsHWFixes:
     texturePreloading: 1 # Performs better with partial preload because it is slow on locations outside gameplay foremost.
+    mergeSprite: 1 # Fixes misaligned white lines.
 SLPM-55081:
   name: "Drag-on Dragoon 2 - Fuuin no Aka, Haitoku no Kuro [Ultimate Hits]"
   region: "NTSC-J"
@@ -27688,6 +27691,7 @@ SLPM-65266:
     eeClampMode: 3 # Characters are visible in-game.
   gsHWFixes:
     texturePreloading: 1 # Performs better with partial preload because it is slow on locations outside gameplay foremost.
+    mergeSprite: 1 # Fixes misaligned white lines.
 SLPM-65267:
   name: "Kurogane no Houkou 2 - Warship Gunner"
   region: "NTSC-J"
@@ -42863,6 +42867,7 @@ SLUS-20732:
     eeClampMode: 3 # Characters are visible in-game.
   gsHWFixes:
     texturePreloading: 1 # Performs better with partial preload because it is slow on locations outside gameplay foremost.
+    mergeSprite: 1 # Fixes misaligned white lines.
 SLUS-20733:
   name: "Castlevania - Lament of Innocence"
   region: "NTSC-U"
