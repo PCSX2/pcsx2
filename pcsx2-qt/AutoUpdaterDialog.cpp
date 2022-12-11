@@ -48,7 +48,7 @@
 
 // Logic to detect whether we can use the auto updater.
 // We use tagged commit, because this gets set on nightly builds.
-#if (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && (defined(GIT_TAGGED_COMMIT) && GIT_TAGGED_COMMIT)
+#if (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && defined(GIT_TAG_LO)
 
 	#define AUTO_UPDATER_SUPPORTED 1
 
