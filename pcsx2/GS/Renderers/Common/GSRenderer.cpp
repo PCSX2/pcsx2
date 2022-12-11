@@ -135,11 +135,12 @@ bool GSRenderer::Merge(int field)
 	//
 	// NOTE: probably the technique explained in graphtip.pdf (Antialiasing by Supersampling / 4. Reading Odd/Even Scan Lines Separately with the PCRTC then Blending)
 
-	bool samesrc =
+	const bool samesrc =
 		en[0] && en[1] &&
 		m_regs->DISP[0].DISPFB.FBP == m_regs->DISP[1].DISPFB.FBP &&
 		m_regs->DISP[0].DISPFB.FBW == m_regs->DISP[1].DISPFB.FBW &&
 		GSUtil::HasCompatibleBits(m_regs->DISP[0].DISPFB.PSM, m_regs->DISP[1].DISPFB.PSM);
+	bool single_fetch = false;
 
 	GSVector2i fs(0, 0);
 	GSVector2i ds(0, 0);
@@ -155,6 +156,7 @@ bool GSRenderer::Merge(int field)
 		tex[0] = GetOutput(0, y_offset[0]);
 		tex[1] = tex[0]; // saves one texture fetch
 		y_offset[1] = y_offset[0];
+		single_fetch = true;
 	}
 	else
 	{
@@ -205,11 +207,21 @@ bool GSRenderer::Merge(int field)
 
 		if (!GSConfig.UseHardwareRenderer())
 		{
-			// Clear any frame offsets, we don't need them now.
+			// Clear any frame offsets, offset is already done in the software GetOutput.
 			fr[i].right -= fr[i].left;
 			fr[i].left = 0;
 			fr[i].bottom -= fr[i].top;
 			fr[i].top = 0;
+
+			// Put any frame offset difference back if we aren't anti-blurring on a single fetch (not offset).
+			if (!GSConfig.PCRTCAntiBlur && single_fetch)
+			{
+				fr[i].right += frame_diff.x;
+				fr[i].left += frame_diff.x;
+				fr[i].bottom += frame_diff.y;
+				fr[i].top += frame_diff.y;
+			}
+			
 		}
 
 		// If using scanmsk we have to keep the single line offset, regardless of upscale
