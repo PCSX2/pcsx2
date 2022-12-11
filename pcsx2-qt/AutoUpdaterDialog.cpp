@@ -414,6 +414,7 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
 
 void AutoUpdaterDialog::downloadUpdateClicked()
 {
+	m_display_messages = true;
 	QUrl url(m_download_url);
 	QNetworkRequest request(url);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
