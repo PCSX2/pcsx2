@@ -742,11 +742,25 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	const bool hw_fixes = (is_hardware && m_ui.enableHWFixes->checkState() == Qt::Checked);
 	const int prev_tab = m_ui.tabs->currentIndex();
 
-	m_ui.tabs->setTabVisible(1, is_hardware); // hw rendering
-	m_ui.tabs->setTabVisible(2, is_software); // sw rendering
-	m_ui.tabs->setTabVisible(3, hw_fixes); // hardware fixes
-	m_ui.tabs->setTabVisible(4, hw_fixes); // upscaling fixes
-	m_ui.tabs->setTabVisible(5, is_hardware); // texture replacement
+	// hw rendering
+	m_ui.tabs->setTabEnabled(1, is_hardware);
+	m_ui.tabs->setTabVisible(1, is_hardware);
+
+	// sw rendering
+	m_ui.tabs->setTabEnabled(2, is_software);
+	m_ui.tabs->setTabVisible(2, is_software);
+
+	// hardware fixes
+	m_ui.tabs->setTabEnabled(3, hw_fixes);
+	m_ui.tabs->setTabVisible(3, hw_fixes);
+
+	// upscaling fixes
+	m_ui.tabs->setTabEnabled(4, hw_fixes);
+	m_ui.tabs->setTabVisible(4, hw_fixes);
+
+	// texture replacement
+	m_ui.tabs->setTabEnabled(5, is_hardware);
+	m_ui.tabs->setTabVisible(5, is_hardware);
 
 	// move back to the renderer if we're on one of the now-hidden tabs
 	if (is_software && (prev_tab == 1 || (prev_tab >= 2 && prev_tab <= 5)))
