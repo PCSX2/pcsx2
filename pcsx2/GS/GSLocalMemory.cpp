@@ -62,15 +62,10 @@ GSLocalMemory::readImage GSLocalMemory::m_readImageX;
 GSLocalMemory::GSLocalMemory()
 	: m_clut(this)
 {
-	m_use_fifo_alloc = theApp.GetConfigB("UserHacks") && theApp.GetConfigB("wrap_gs_mem");
-
 	if (!GSConfig.UseHardwareRenderer())
 		m_use_fifo_alloc = true;
 
-	if (m_use_fifo_alloc)
-		m_vm8 = (u8*)fifo_alloc(m_vmsize, 4);
-	else
-		m_vm8 = nullptr;
+	m_vm8 = (u8*)fifo_alloc(m_vmsize, 4);
 
 	// Either we don't use fifo alloc or we get an error.
 	if (m_vm8 == nullptr)
