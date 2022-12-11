@@ -1565,7 +1565,6 @@ SCAJ-30010:
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
-    wrapGSMem: 1 # Fixes FMV when in progressive mode.
     autoFlush: 1 # Fixes sun going through walls.
 SCAJ-30011:
   name: "God of War II"
@@ -3253,7 +3252,6 @@ SCES-51533:
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
-    wrapGSMem: 1 # Fixes FMV when in progressive mode.
     autoFlush: 1 # Fixes sun going through walls.
 SCES-51578:
   name: "Network Access Disc [v1.03 - v6.00]"
@@ -3720,7 +3718,6 @@ SCES-53133:
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
-    wrapGSMem: 1 # Fixes FMV when in progressive mode.
     autoFlush: 1 # Fixes sun going through walls.
 SCES-53178:
   name: "SingStar Pop"
@@ -5253,7 +5250,6 @@ SCKA-30002:
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
-    wrapGSMem: 1 # Fixes FMV when in progressive mode.
     autoFlush: 1 # Fixes sun going through walls.
 SCKA-30006:
   name: "God of War 2"
@@ -7832,7 +7828,6 @@ SCUS-97399:
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
-    wrapGSMem: 1 # Fixes FMV when in progressive mode.
     autoFlush: 1 # Fixes sun going through walls.
 SCUS-97400:
   name: "EyeToy - Groove"
@@ -8122,7 +8117,6 @@ SCUS-97467:
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
-    wrapGSMem: 1 # Fixes FMV when in progressive mode.
     autoFlush: 1 # Fixes sun going through walls.
 SCUS-97468:
   name: "EyeToy - Play 2"
@@ -19418,7 +19412,6 @@ SLES-54455:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
-    wrapGSMem: 1 # Fixes FMVs missing video pieces.
     deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLES-54456:
   name: "Beverly Hills Cop"
@@ -19584,7 +19577,6 @@ SLES-54516:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
-    wrapGSMem: 1 # Fixes FMVs missing video pieces.
     deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLES-54517:
   name: "Thrillville"
@@ -19592,7 +19584,6 @@ SLES-54517:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
-    wrapGSMem: 1 # Fixes FMVs missing video pieces.
     deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLES-54518:
   name: "Clumsy Shumsy"
@@ -20320,14 +20311,12 @@ SLES-54806:
   region: "PAL-E"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
-    wrapGSMem: 1 # Fixes FMVs missing video pieces.
     deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLES-54807:
   name: "Thrillville - Off the Rails"
   region: "PAL-F"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
-    wrapGSMem: 1 # Fixes FMVs missing video pieces.
     deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLES-54809:
   name: "Charlotte's Web"
@@ -20540,7 +20529,6 @@ SLES-54887:
   region: "PAL-G"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
-    wrapGSMem: 1 # Fixes FMVs missing video pieces.
     deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLES-54888:
   name: "Pro Biker 2"
@@ -20896,14 +20884,12 @@ SLES-55010:
   region: "PAL-I"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
-    wrapGSMem: 1 # Fixes FMVs missing video pieces.
     deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLES-55011:
   name: "Thrillville - Fuera de Control"
   region: "PAL-S"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
-    wrapGSMem: 1 # Fixes FMVs missing video pieces.
     deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLES-55012:
   name: "Golden Compass, The"
@@ -30747,7 +30733,6 @@ SLPM-66167:
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
-    wrapGSMem: 1 # Fixes FMV when in progressive mode.
     autoFlush: 1 # Fixes sun going through walls.
 SLPM-66168:
   name: "Ryu Ga Gotoku"
@@ -33814,7 +33799,6 @@ SLPM-67010:
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
-    wrapGSMem: 1 # Fixes FMV when in progressive mode.
     autoFlush: 1 # Fixes sun going through walls.
 SLPM-67011:
   name: "God of War [CapKore]"
@@ -33822,7 +33806,6 @@ SLPM-67011:
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
-    wrapGSMem: 1 # Fixes FMV when in progressive mode.
     autoFlush: 1 # Fixes sun going through walls.
 SLPM-67012:
   name: "God of War [Best Price]"
@@ -33830,7 +33813,6 @@ SLPM-67012:
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     roundSprite: 1 # Fixes vertical lines and minor ghosting.
-    wrapGSMem: 1 # Fixes FMV when in progressive mode.
     autoFlush: 1 # Fixes sun going through walls.
 SLPM-67013:
   name: "God of War II - The End Begins"
@@ -46455,7 +46437,6 @@ SLUS-21413:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
-    wrapGSMem: 1 # Fixes FMVs missing video pieces.
     deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLUS-21414:
   name: "Delta Force - Black Hawk Down - Team Sabre"
@@ -47321,7 +47302,6 @@ SLUS-21611:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
-    wrapGSMem: 1 # Fixes FMVs missing video pieces.
     deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
 SLUS-21612:
   name: "Legend of the Dragon"
