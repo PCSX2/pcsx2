@@ -28,6 +28,9 @@
 #include "common/Timer.h"
 #include "fmt/core.h"
 #include <array>
+#include <deque>
+#include <thread>
+#include <mutex>
 
 #ifndef PCSX2_CORE
 #include "gui/AppCoreThread.h"
@@ -62,6 +65,9 @@ static constexpr std::array<PresentShader, 6> s_tv_shader_indices = {
 	PresentShader::COPY, PresentShader::SCANLINE,
 	PresentShader::DIAGONAL_FILTER, PresentShader::TRIANGULAR_FILTER,
 	PresentShader::COMPLEX_FILTER, PresentShader::LOTTES_FILTER};
+
+static std::deque<std::thread> s_screenshot_threads;
+static std::mutex s_screenshot_threads_mutex;
 
 std::unique_ptr<GSRenderer> g_gs_renderer;
 
@@ -570,7 +576,8 @@ static void CompressAndWriteScreenshot(std::string filename, u32 width, u32 heig
 	Host::AddIconOSDMessage(key, ICON_FA_CAMERA, fmt::format("Saving screenshot to '{}'.", Path::GetFileName(filename)), 60.0f);
 
 	// maybe std::async would be better here.. but it's definitely worth threading, large screenshots take a while to compress.
-	std::thread compress_thread([key = std::move(key), filename = std::move(filename), image = std::move(image), quality = GSConfig.ScreenshotQuality]() {
+	std::unique_lock lock(s_screenshot_threads_mutex);
+	s_screenshot_threads.emplace_back([key = std::move(key), filename = std::move(filename), image = std::move(image), quality = GSConfig.ScreenshotQuality]() {
 		if (image.SaveToFile(filename.c_str(), quality))
 		{
 			Host::AddIconOSDMessage(std::move(key), ICON_FA_CAMERA,
@@ -581,8 +588,33 @@ static void CompressAndWriteScreenshot(std::string filename, u32 width, u32 heig
 			Host::AddIconOSDMessage(std::move(key), ICON_FA_CAMERA,
 				fmt::format("Failed to save screenshot to '{}'.", Path::GetFileName(filename), Host::OSD_ERROR_DURATION));
 		}
+
+		// remove ourselves from the list, if the GS thread is waiting for us, we won't be in there
+		const auto this_id = std::this_thread::get_id();
+		std::unique_lock lock(s_screenshot_threads_mutex);
+		for (auto it = s_screenshot_threads.begin(); it != s_screenshot_threads.end(); ++it)
+		{
+			if (it->get_id() == this_id)
+			{
+				it->detach();
+				s_screenshot_threads.erase(it);
+				break;
+			}
+		}
 	});
-	compress_thread.detach();
+}
+
+void GSJoinSnapshotThreads()
+{
+	std::unique_lock lock(s_screenshot_threads_mutex);
+	while (!s_screenshot_threads.empty())
+	{
+		std::thread save_thread(std::move(s_screenshot_threads.front()));
+		s_screenshot_threads.pop_front();
+		lock.unlock();
+		save_thread.join();
+		lock.lock();
+	}
 }
 
 void GSRenderer::VSync(u32 field, bool registers_written)

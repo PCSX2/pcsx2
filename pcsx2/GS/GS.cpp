@@ -121,20 +121,7 @@ void GSinitConfig()
 
 void GSshutdown()
 {
-#ifndef PCSX2_CORE
-	if (g_gs_renderer)
-	{
-		g_gs_renderer->Destroy();
-		g_gs_renderer.reset();
-	}
-	if (g_gs_device)
-	{
-		g_gs_device->Destroy();
-		g_gs_device.reset();
-	}
-
-	Host::ReleaseHostDisplay(true);
-#endif
+	GSclose();
 
 #ifdef _WIN32
 	if (SUCCEEDED(s_hr))
@@ -163,6 +150,9 @@ void GSclose()
 		g_host_display->SetGPUTimingEnabled(false);
 
 	Host::ReleaseHostDisplay(true);
+
+	// ensure all screenshots have been saved
+	GSJoinSnapshotThreads();
 }
 
 static RenderAPI GetAPIForRenderer(GSRendererType renderer)
