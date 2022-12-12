@@ -17,17 +17,20 @@
 #include "GSClut.h"
 #include "GSLocalMemory.h"
 #include "GSGL.h"
-
-#define CLUT_ALLOC_SIZE (2 * 4096)
+#include "common/AlignedMalloc.h"
 
 GSClut::GSClut(GSLocalMemory* mem)
 	: m_mem(mem)
 {
-	u8* p = (u8*)vmalloc(CLUT_ALLOC_SIZE, false);
+	static constexpr u32 CLUT_ALLOC_SIZE = 4096 * 2;
 
-	m_clut = (u16*)&p[0];      // 1k + 1k for mirrored area simulating wrapping memory
-	m_buff32 = (u32*)&p[2048]; // 1k
-	m_buff64 = (u64*)&p[4096]; // 2k
+	// 1k + 1k for mirrored area simulating wrapping memory
+	m_clut = static_cast<u16*>(_aligned_malloc(CLUT_ALLOC_SIZE, 32));
+	if (!m_clut)
+		throw std::bad_alloc();
+
+	m_buff32 = reinterpret_cast<u32*>(reinterpret_cast<u8*>(m_clut) + 2048); // 1k
+	m_buff64 = reinterpret_cast<u64*>(reinterpret_cast<u8*>(m_clut) + 4096); // 2k
 	m_write.dirty = 1;
 	m_read.dirty = true;
 
@@ -100,7 +103,7 @@ GSClut::GSClut(GSLocalMemory* mem)
 
 GSClut::~GSClut()
 {
-	vmfree(m_clut, CLUT_ALLOC_SIZE);
+	_aligned_free(m_clut);
 }
 
 u8 GSClut::IsInvalid()

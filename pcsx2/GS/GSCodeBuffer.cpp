@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSCodeBuffer.h"
 #include "GSExtra.h"
+#include "common/General.h"
 
 GSCodeBuffer::GSCodeBuffer(size_t blocksize)
 	: m_blocksize(blocksize)
@@ -29,7 +30,7 @@ GSCodeBuffer::~GSCodeBuffer()
 {
 	for (auto buffer : m_buffers)
 	{
-		vmfree(buffer, m_blocksize);
+		HostSys::Munmap(buffer, m_blocksize);
 	}
 }
 
@@ -42,7 +43,9 @@ void* GSCodeBuffer::GetBuffer(size_t size)
 
 	if (m_ptr == NULL || m_pos + size > m_blocksize)
 	{
-		m_ptr = (u8*)vmalloc(m_blocksize, true);
+		m_ptr = (u8*)HostSys::Mmap(nullptr, m_blocksize, PageProtectionMode().All());
+		if (!m_ptr)
+			pxFailRel("Failed to allocate GS code buffer");
 
 		m_pos = 0;
 
