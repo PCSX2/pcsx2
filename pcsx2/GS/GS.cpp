@@ -14,10 +14,15 @@
  */
 
 #include "PrecompiledHeader.h"
+
 #ifndef PCSX2_CORE
-// NOTE: The include order matters - GS.h includes windows.h
+#ifdef _WIN32
+// Need to ensure we include windows.h and set _WIN32_WINNT before wx does..
+#include "common/RedtapeWindows.h"
+#endif
 #include "GS/Window/GSwxDialog.h"
 #endif
+
 #include "GS.h"
 #include "GSGL.h"
 #include "GSUtil.h"
@@ -963,25 +968,9 @@ const std::string root_hw("/tmp/GS_HW_dump32/");
 
 #ifdef _WIN32
 
-void* vmalloc(size_t size, bool code)
-{
-	void* ptr = VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, code ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE);
-	if (!ptr)
-		throw std::bad_alloc();
-	return ptr;
-}
-
-void vmfree(void* ptr, size_t size)
-{
-	VirtualFree(ptr, 0, MEM_RELEASE);
-}
-
-#ifdef PCSX2_CORE
-// Safe, placeholder-based mapping for Win10+ and Qt.
-
 static HANDLE s_fh = NULL;
 
-void* fifo_alloc(size_t size, size_t repeat)
+void* GSAllocateWrappedMemory(size_t size, size_t repeat)
 {
 	pxAssertRel(!s_fh, "Has no file mapping");
 
@@ -1030,7 +1019,7 @@ void* fifo_alloc(size_t size, size_t repeat)
 	return nullptr;
 }
 
-void fifo_free(void* ptr, size_t size, size_t repeat)
+void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
 {
 	pxAssertRel(s_fh, "Has a file mapping");
 
@@ -1046,130 +1035,14 @@ void fifo_free(void* ptr, size_t size, size_t repeat)
 
 #else
 
-// "Best effort" mapping for <Win10 and wx build.
-// This can be removed once the wx UI is dropped.
-
-static HANDLE s_fh = NULL;
-static u8* s_Next[8];
-
-void* fifo_alloc(size_t size, size_t repeat)
-{
-	ASSERT(s_fh == NULL);
-
-	if (repeat >= std::size(s_Next))
-	{
-		fprintf(stderr, "Memory mapping overflow (%zu >= %u)\n", repeat, static_cast<unsigned>(std::size(s_Next)));
-		return nullptr; // Fallback to default vmalloc
-	}
-
-	s_fh = CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, size, nullptr);
-	DWORD errorID = ::GetLastError();
-	if (s_fh == NULL)
-	{
-		fprintf(stderr, "Failed to reserve memory. WIN API ERROR:%u\n", errorID);
-		return nullptr; // Fallback to default vmalloc
-	}
-
-	int mmap_segment_failed = 0;
-	void* fifo = MapViewOfFile(s_fh, FILE_MAP_ALL_ACCESS, 0, 0, size);
-	for (size_t i = 1; i < repeat; i++)
-	{
-		void* base = (u8*)fifo + size * i;
-		s_Next[i] = (u8*)MapViewOfFileEx(s_fh, FILE_MAP_ALL_ACCESS, 0, 0, size, base);
-		errorID = ::GetLastError();
-		if (s_Next[i] != base)
-		{
-			mmap_segment_failed++;
-			if (mmap_segment_failed > 4)
-			{
-				fprintf(stderr, "Memory mapping failed after %d attempts, aborting. WIN API ERROR:%u\n", mmap_segment_failed, errorID);
-				fifo_free(fifo, size, repeat);
-				return nullptr; // Fallback to default vmalloc
-			}
-			do
-			{
-				UnmapViewOfFile(s_Next[i]);
-				s_Next[i] = 0;
-			} while (--i > 0);
-
-			fifo = MapViewOfFile(s_fh, FILE_MAP_ALL_ACCESS, 0, 0, size);
-		}
-	}
-
-	return fifo;
-}
-
-void fifo_free(void* ptr, size_t size, size_t repeat)
-{
-	ASSERT(s_fh != NULL);
-
-	if (s_fh == NULL)
-	{
-		if (ptr != NULL)
-			vmfree(ptr, size);
-		return;
-	}
-
-	UnmapViewOfFile(ptr);
-
-	for (size_t i = 1; i < std::size(s_Next); i++)
-	{
-		if (s_Next[i] != 0)
-		{
-			UnmapViewOfFile(s_Next[i]);
-			s_Next[i] = 0;
-		}
-	}
-
-	CloseHandle(s_fh);
-	s_fh = NULL;
-}
-
-#endif // PCSX2_CORE
-
-#else
-
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 
-void* vmalloc(size_t size, bool code)
-{
-	size_t mask = getpagesize() - 1;
-
-	size = (size + mask) & ~mask;
-
-	int prot = PROT_READ | PROT_WRITE;
-	int flags = MAP_PRIVATE | MAP_ANONYMOUS;
-
-	if (code)
-	{
-		prot |= PROT_EXEC;
-#if defined(_M_AMD64) && !defined(__APPLE__)
-		// macOS doesn't allow any mappings in the first 4GB of address space
-		flags |= MAP_32BIT;
-#endif
-	}
-
-	void* ptr = mmap(NULL, size, prot, flags, -1, 0);
-	if (ptr == MAP_FAILED)
-		throw std::bad_alloc();
-	return ptr;
-}
-
-void vmfree(void* ptr, size_t size)
-{
-	size_t mask = getpagesize() - 1;
-
-	size = (size + mask) & ~mask;
-
-	munmap(ptr, size);
-}
-
 static int s_shm_fd = -1;
 
-void* fifo_alloc(size_t size, size_t repeat)
+void* GSAllocateWrappedMemory(size_t size, size_t repeat)
 {
 	ASSERT(s_shm_fd == -1);
 
@@ -1201,7 +1074,7 @@ void* fifo_alloc(size_t size, size_t repeat)
 	return fifo;
 }
 
-void fifo_free(void* ptr, size_t size, size_t repeat)
+void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
 {
 	ASSERT(s_shm_fd >= 0);
 
