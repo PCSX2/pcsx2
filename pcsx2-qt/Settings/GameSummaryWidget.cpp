@@ -85,7 +85,7 @@ void GameSummaryWidget::populateDiscPath(const GameList::Entry* entry)
 	if (entry->type == GameList::EntryType::ELF)
 	{
 		std::optional<std::string> iso_path(m_dialog->getStringValue("EmuCore", "DiscPath", std::nullopt));
-		if (!iso_path->empty())
+		if (iso_path.has_value() && !iso_path->empty())
 			m_ui.discPath->setText(QString::fromStdString(iso_path.value()));
 
 		connect(m_ui.discPath, &QLineEdit::textChanged, this, &GameSummaryWidget::onDiscPathChanged);
