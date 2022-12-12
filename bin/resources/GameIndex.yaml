@@ -13250,6 +13250,9 @@ SLES-51855:
 SLES-51856:
   name: "Monster Attack"
   region: "PAL-E"
+  gsHWFixes:
+    mipmap: 2 # Improves distant textures.
+    trilinearFiltering: 1 # Smooths high frequency textures on distant ground.
 SLES-51859:
   name: "Billiards Xciting"
   region: "PAL-E"
@@ -25411,6 +25414,9 @@ SLPM-62343:
 SLPM-62344:
   name: "Simple 2000 Series Vol. 31 - The Chikyuu Boueigun"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Improves distant textures.
+    trilinearFiltering: 1 # Smooths high frequency textures on distant ground.
 SLPM-62345:
   name: "Simple 2000 Series Vol. 32 - The Sensha"
   region: "NTSC-J"
