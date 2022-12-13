@@ -1456,7 +1456,8 @@ void GSRendererHW::Draw()
 	m_texture_shuffle = false;
 	m_tex_is_fb = false;
 
-	if (PRIM->TME)
+	// Disable texture mapping if the blend is black and using alpha from vertex.
+	if (PRIM->TME && !(PRIM->ABE && m_context->ALPHA.IsBlack() && !m_context->TEX0.TCC))
 	{
 		GIFRegCLAMP MIP_CLAMP = context->CLAMP;
 		GSVector2i hash_lod_range(0, 0);
@@ -3627,7 +3628,7 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	// Blend
 
 	bool blending_alpha_pass = false;
-	if ((!IsOpaque() || (PRIM->ABE && m_context->ALPHA.IsBlack())) && rt && m_conf.colormask.wrgba != 0)
+	if ((!IsOpaque() || m_context->ALPHA.IsBlack()) && rt && (m_conf.colormask.wrgba & 0x7))
 	{
 		EmulateBlending(DATE_PRIMID, DATE_BARRIER, blending_alpha_pass);
 	}
