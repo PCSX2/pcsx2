@@ -3627,7 +3627,7 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	// Blend
 
 	bool blending_alpha_pass = false;
-	if (!IsOpaque() && rt && m_conf.colormask.wrgba != 0)
+	if ((!IsOpaque() || (PRIM->ABE && m_context->ALPHA.IsBlack())) && rt && m_conf.colormask.wrgba != 0)
 	{
 		EmulateBlending(DATE_PRIMID, DATE_BARRIER, blending_alpha_pass);
 	}
