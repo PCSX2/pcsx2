@@ -10871,11 +10871,15 @@ SLES-50771:
   name: "Blood Omen 2 - Legend of Kain"
   region: "PAL-E"
   compat: 5
+  roundModes:
+    eeRoundMode: 0 # Fixes pathing.
   gsHWFixes:
     mipmap: 1 # Fixes glitching textures.
 SLES-50772:
   name: "Blood Omen 2 - Legend of Kain"
   region: "PAL-M3"
+  roundModes:
+    eeRoundMode: 0 # Fixes pathing.
   gsHWFixes:
     mipmap: 1 # Fixes glitching textures.
 SLES-50773:
@@ -11014,6 +11018,8 @@ SLES-50814:
 SLES-50815:
   name: "Blood Omen 2 - Legend of Kain"
   region: "PAL-G"
+  roundModes:
+    eeRoundMode: 0 # Fixes pathing.
   gsHWFixes:
     mipmap: 1 # Fixes glitching textures.
 SLES-50816:
@@ -39774,6 +39780,8 @@ SLUS-20024:
   name: "Legacy of Kain - Blood Omen 2"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeRoundMode: 0 # Fixes pathing.
   gsHWFixes:
     mipmap: 1 # Fixes glitching textures.
 SLUS-20028:
