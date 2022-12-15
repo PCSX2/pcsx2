@@ -27862,6 +27862,8 @@ SLPM-65310:
 SLPM-65311:
   name: "Violet no Atelier - Gramnad no Renkinjutsushi"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Aligns text boxes.
 SLPM-65313:
   name: "First Kiss Story 1&2"
   region: "NTSC-J"
@@ -29030,6 +29032,8 @@ SLPM-65682:
 SLPM-65683:
   name: "Violet no Atelier - Gramnad no Renkinjutsushi [Gust Best Price]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Aligns text boxes.
 SLPM-65684:
   name: "Meine Liebe - Yuubinaru Kioku"
   region: "NTSC-J"
