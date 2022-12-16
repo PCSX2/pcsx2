@@ -41,6 +41,7 @@
 #include "HostDisplay.h"
 #include "IconsFontAwesome5.h"
 #include "PerformanceMetrics.h"
+#include "Recording/InputRecording.h"
 
 #ifdef PCSX2_CORE
 #include "Frontend/FullscreenUI.h"
@@ -48,7 +49,6 @@
 #include "Frontend/InputManager.h"
 #include "VMManager.h"
 #endif
-#include <pcsx2/Recording/InputRecording.h>
 
 namespace ImGuiManager
 {
@@ -540,6 +540,11 @@ void Host::AddOSDMessage(std::string message, float duration /*= 2.0f*/)
 
 void Host::AddKeyedOSDMessage(std::string key, std::string message, float duration /* = 2.0f */)
 {
+	if (!key.empty())
+		Console.WriteLn(Color_StrongGreen, fmt::format("OSD [{}]: {}", key, message));
+	else
+		Console.WriteLn(Color_StrongGreen, fmt::format("OSD: {}", message));
+
 	OSDMessage msg;
 	msg.key = std::move(key);
 	msg.text = std::move(message);
@@ -552,6 +557,11 @@ void Host::AddKeyedOSDMessage(std::string key, std::string message, float durati
 
 void Host::AddIconOSDMessage(std::string key, const char* icon, const std::string_view& message, float duration /* = 2.0f */)
 {
+	if (!key.empty())
+		Console.WriteLn(Color_StrongGreen, fmt::format("OSD [{}]: {}", key, message));
+	else
+		Console.WriteLn(Color_StrongGreen, fmt::format("OSD: {}", message));
+
 	OSDMessage msg;
 	msg.key = std::move(key);
 	msg.text = fmt::format("{}  {}", icon, message);
