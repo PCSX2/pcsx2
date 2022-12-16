@@ -687,13 +687,23 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 			src_rect, current->GetSize(), g_host_display->GetDisplayAlignment(), g_host_display->UsesLowerLeftOrigin(),
 			GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets));
 
-		if (GSConfig.CASMode != GSCASMode::Disabled && g_gs_device->Features().cas_sharpening)
+		if (GSConfig.CASMode != GSCASMode::Disabled)
 		{
-			// sharpen only if the IR is higher than the display resolution
-			const bool sharpen_only = (GSConfig.CASMode == GSCASMode::SharpenOnly ||
-									   (current->GetWidth() > g_host_display->GetWindowWidth() &&
-										   current->GetHeight() > g_host_display->GetWindowHeight()));
-			g_gs_device->CAS(current, src_rect, src_uv, draw_rect, sharpen_only);
+			static bool cas_log_once = false;
+			if (g_gs_device->Features().cas_sharpening)
+			{
+				// sharpen only if the IR is higher than the display resolution
+				const bool sharpen_only = (GSConfig.CASMode == GSCASMode::SharpenOnly ||
+										   (current->GetWidth() > g_host_display->GetWindowWidth() &&
+											   current->GetHeight() > g_host_display->GetWindowHeight()));
+				g_gs_device->CAS(current, src_rect, src_uv, draw_rect, sharpen_only);
+			}
+			else if (!cas_log_once)
+			{
+				Host::AddIconOSDMessage("CASUnsupported", ICON_FA_EXCLAMATION_TRIANGLE,
+					"CAS is not available, your graphics driver does not support the required functionality.", 10.0f);
+				cas_log_once = true;
+			}
 		}
 	}
 
