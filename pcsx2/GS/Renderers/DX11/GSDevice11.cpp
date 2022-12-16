@@ -58,6 +58,7 @@ GSDevice11::GSDevice11()
 	m_features.framebuffer_fetch = false;
 	m_features.dual_source_blend = true;
 	m_features.stencil_buffer = true;
+	m_features.clip_control = true;
 }
 
 GSDevice11::~GSDevice11()

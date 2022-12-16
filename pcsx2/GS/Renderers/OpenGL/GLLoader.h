@@ -36,9 +36,12 @@ namespace GLLoader
 	extern bool vendor_id_nvidia;
 	extern bool vendor_id_intel;
 	extern bool mesa_driver;
+	extern bool buggy_pbo;
 	extern bool in_replayer;
 
 	// GL
+  extern bool is_gles;
+	extern bool has_clip_control;
 	extern bool has_dual_source_blend;
 	extern bool found_framebuffer_fetch;
 	extern bool found_geometry_shader;

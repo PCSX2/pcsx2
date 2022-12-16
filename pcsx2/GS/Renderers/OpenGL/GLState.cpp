@@ -23,6 +23,7 @@ namespace GLState
 	GSVector4i scissor;
 
 	bool point_size = false;
+	float line_width = 1.0f;
 
 	bool blend;
 	u16 eq_RGB;

@@ -1,5 +1,14 @@
 #if defined(SHADER_MODEL) || defined(FXAA_GLSL_130) || defined(FXAA_GLSL_VK) || defined(__METAL_VERSION__)
 
+#ifndef SHADER_MODEL
+    #define SHADER_MODEL 0
+#endif
+#ifndef FXAA_HLSL_4
+    #define FXAA_HLSL_4 0
+#endif
+#ifndef FXAA_HLSL_5
+    #define FXAA_HLSL_5 0
+#endif
 #ifndef FXAA_GLSL_130
     #define FXAA_GLSL_130 0
 #endif
@@ -505,7 +514,7 @@ float4 FxaaPass(float4 FxaaColor, float2 uv0, texture2d<float> tex)
 	FxaaColor = FxaaPixelShader(uv0, tex, 1.0/PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
 
 	#elif (FXAA_GLSL_130 == 1 || FXAA_GLSL_VK == 1)
-	vec2 PixelSize = textureSize(TextureSampler, 0);
+	vec2 PixelSize = vec2(textureSize(TextureSampler, 0));
 	FxaaColor = FxaaPixelShader(uv0, TextureSampler, 1.0/PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
 	#elif defined(__METAL_VERSION__)
 	float2 PixelSize = float2(tex.get_width(), tex.get_height());

@@ -6,6 +6,7 @@
 
 #ifdef VERTEX_SHADER
 
+#if !pGL_ES
 out gl_PerVertex {
     vec4 gl_Position;
     float gl_PointSize;
@@ -13,6 +14,7 @@ out gl_PerVertex {
     float gl_ClipDistance[1];
 #endif
 };
+#endif
 
 #endif
 
@@ -20,6 +22,7 @@ out gl_PerVertex {
 
 #ifdef GEOMETRY_SHADER
 
+#if !pGL_ES
 in gl_PerVertex {
     vec4 gl_Position;
     float gl_PointSize;
@@ -35,6 +38,7 @@ out gl_PerVertex {
     float gl_ClipDistance[1];
 #endif
 };
+#endif
 
 #endif
 
