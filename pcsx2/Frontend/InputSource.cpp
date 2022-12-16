@@ -50,6 +50,16 @@ InputBindingKey InputSource::MakeGenericControllerButtonKey(
 	return key;
 }
 
+InputBindingKey InputSource::MakeGenericControllerHatKey(InputSourceType clazz, u32 controller_index, s32 hat_index, u8 hat_direction, u32 num_directions)
+{
+	InputBindingKey key = {};
+	key.source_type = clazz;
+	key.source_index = controller_index;
+	key.source_subtype = InputSubclass::ControllerHat;
+	key.data = static_cast<u32>(hat_index) * num_directions + hat_direction;
+	return key;
+}
+
 InputBindingKey InputSource::MakeGenericControllerMotorKey(InputSourceType clazz, u32 controller_index, s32 motor_index)
 {
 	InputBindingKey key = {};
