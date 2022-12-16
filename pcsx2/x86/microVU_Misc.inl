@@ -587,7 +587,7 @@ void mVUcustomSearch()
 		xVMOVUPS(ymm0, ptr[arg1reg]);
 		xVPCMP.EQD(ymm0, ymm0, ptr[arg2reg]);
 		xVPMOVMSKB(eax, ymm0);
-		xNOT(eax);
+		xXOR(eax, 0xffffffff);
 		xForwardJNZ8 exitPoint;
 
 		xVMOVUPS(ymm0, ptr[arg1reg + 0x20]);
