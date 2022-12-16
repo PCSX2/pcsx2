@@ -456,7 +456,7 @@ namespace usb_msd
 		size_t len;
 
 		assert(s->f.csw.sig == cpu_to_le32(0x53425355));
-		len = std::min(sizeof(s->f.csw), p->iov.size);
+		len = std::min<size_t>(sizeof(s->f.csw), p->buffer_size);
 		usb_packet_copy(p, &s->f.csw, len);
 		memset(&s->f.csw, 0, sizeof(s->f.csw));
 	}
@@ -518,7 +518,7 @@ namespace usb_msd
 			{
 				if (s->f.data_len)
 				{
-					int len = (p->iov.size - p->actual_length);
+					int len = (p->buffer_size - p->actual_length);
 					usb_packet_skip(p, len);
 					s->f.data_len -= len;
 				}
@@ -540,7 +540,7 @@ namespace usb_msd
 	static void usb_msd_copy_data(MSDState* s, USBPacket* p)
 	{
 		size_t len, file_ret;
-		len = p->iov.size - p->actual_length;
+		len = p->buffer_size - p->actual_length;
 		//if (len > s->scsi_len)
 		//    len = s->scsi_len;
 
@@ -562,7 +562,7 @@ namespace usb_msd
 					}
 					break;
 				case USB_MSDM_DATAIN:
-					if ((file_ret = fread(s->f.buf, 1, p->iov.size, s->file)) < p->iov.size)
+					if ((file_ret = fread(s->f.buf, 1, p->buffer_size, s->file)) < p->buffer_size)
 					{
 						s->f.result = COMMAND_FAILED;
 						set_sense(s, SENSE_CODE(UNRECOVERED_READ_ERROR));
@@ -789,7 +789,7 @@ namespace usb_msd
 				switch (s->f.mode)
 				{
 					case USB_MSDM_CBW:
-						if (p->iov.size != 31)
+						if (p->buffer_size != 31)
 						{
 							Console.Warning("usb-msd: Bad CBW size\n");
 							goto fail;
@@ -829,12 +829,12 @@ namespace usb_msd
 
 					case USB_MSDM_DATAOUT:
 						//TODO check if CBW still falls into here on write error a.k.a s->f.mode is set wrong
-						if (p->iov.size > s->f.data_len)
+						if (p->buffer_size > s->f.data_len)
 						{
 							goto fail;
 						}
 
-						if (p->iov.size == 0) //TODO send status?
+						if (p->buffer_size == 0) //TODO send status?
 							goto send_csw;
 
 						//if (s->scsi_len)
@@ -843,7 +843,7 @@ namespace usb_msd
 						}
 						if (le32_to_cpu(s->f.csw.residue))
 						{
-							int len = p->iov.size - p->actual_length;
+							int len = p->buffer_size - p->actual_length;
 							if (len)
 							{
 								usb_packet_skip(p, len);
@@ -854,7 +854,7 @@ namespace usb_msd
 								}
 							}
 						}
-						if ((size_t)p->actual_length < p->iov.size)
+						if ((size_t)p->actual_length < p->buffer_size)
 						{
 							s->packet = p;
 							p->status = USB_RET_ASYNC;
@@ -876,7 +876,7 @@ namespace usb_msd
 				switch (s->f.mode)
 				{
 					case USB_MSDM_DATAOUT:
-						if (s->f.data_len != 0 || p->iov.size < 13)
+						if (s->f.data_len != 0 || p->buffer_size < 13)
 						{
 							goto fail;
 						}
@@ -887,7 +887,7 @@ namespace usb_msd
 
 					case USB_MSDM_CSW:
 					send_csw:
-						if (p->iov.size < 13)
+						if (p->buffer_size < 13)
 						{
 							goto fail;
 						}
@@ -910,7 +910,7 @@ namespace usb_msd
 
 					case USB_MSDM_DATAIN:
 						//if (len == 13) goto send_csw;
-						if (p->iov.size > s->f.data_len)
+						if (p->buffer_size > s->f.data_len)
 						{
 							//len = s->f.data_len;
 							s->f.result = COMMAND_FAILED;
@@ -924,7 +924,7 @@ namespace usb_msd
 						}
 						if (le32_to_cpu(s->f.csw.residue))
 						{
-							int len = p->iov.size - p->actual_length;
+							int len = p->buffer_size - p->actual_length;
 							if (len)
 							{
 								usb_packet_skip(p, len);
@@ -936,7 +936,7 @@ namespace usb_msd
 							}
 						}
 
-						if ((size_t)p->actual_length < p->iov.size)
+						if ((size_t)p->actual_length < p->buffer_size)
 						{
 							s->packet = p;
 							p->status = USB_RET_ASYNC;

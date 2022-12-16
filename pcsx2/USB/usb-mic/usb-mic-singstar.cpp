@@ -571,24 +571,15 @@ namespace usb_mic
 					int outChns = s->f.intf == 1 ? 1 : 2;
 					uint32_t frames, out_frames[2] = {0}, chn;
 					int16_t *src1, *src2;
-					int16_t* dst = nullptr;
-					std::vector<int16_t> dst_alloc(0); //TODO
-					size_t len = p->iov.size;
+					int16_t* dst = (int16_t*)p->buffer_ptr;
+					size_t len = p->buffer_size;
 
 					// send only 1ms (bInterval) of samples
 					if (s->f.srate[0] == 48000 || s->f.srate[0] == 8000)
-						len = std::min(p->iov.size, outChns * sizeof(int16_t) * s->f.srate[0] / 1000);
+						len = std::min<u32>(p->buffer_size, outChns * sizeof(int16_t) * s->f.srate[0] / 1000);
 
 					//Divide 'len' bytes between 2 channels of 16 bits
 					uint32_t max_frames = len / (outChns * sizeof(uint16_t));
-
-					if (p->iov.niov == 1)
-						dst = (int16_t*)p->iov.iov[0].iov_base;
-					else
-					{
-						dst_alloc.resize(len / sizeof(int16_t));
-						dst = dst_alloc.data();
-					}
 
 					memset(dst, 0, len);
 
@@ -678,12 +669,7 @@ namespace usb_mic
 					}
 
 					ret = ret * outChns * sizeof(int16_t);
-					if (p->iov.niov > 1)
-					{
-						usb_packet_copy(p, dst_alloc.data(), ret);
-					}
-					else
-						p->actual_length = ret;
+					p->actual_length = ret;
 
 #if 0 //defined(_DEBUG) && _MSC_VER > 1800
 					if (!file)

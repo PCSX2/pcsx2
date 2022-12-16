@@ -247,7 +247,6 @@ namespace usb_pad
 		SeamicState* s = USB_CONTAINER_OF(dev, SeamicState, dev);
 		uint8_t data[64];
 
-		int ret = 0;
 		uint8_t devep = p->ep->nr;
 
 		switch (p->pid)
@@ -259,7 +258,7 @@ namespace usb_pad
 				}
 				else if (devep == 2)
 				{
-					ret = s->TokenIn(data, p->iov.size);
+					const int ret = s->TokenIn(data, p->buffer_size);
 					if (ret > 0)
 						usb_packet_copy(p, data, std::min((size_t)ret, sizeof(data)));
 					else
@@ -271,8 +270,8 @@ namespace usb_pad
 				}
 				break;
 			case USB_TOKEN_OUT:
-				usb_packet_copy(p, data, std::min(p->iov.size, sizeof(data)));
-				ret = s->TokenOut(data, p->iov.size);
+				usb_packet_copy(p, data, p->buffer_size);
+				s->TokenOut(data, p->buffer_size);
 				break;
 			default:
 			fail:

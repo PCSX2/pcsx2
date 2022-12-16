@@ -342,8 +342,8 @@ namespace usb_eyetoy
 				{
 					// get audio
 					//Console.Warning("get audio %d\n", len);
-					memset(data, 0, p->iov.size);
-					usb_packet_copy(p, data, p->iov.size);
+					memset(data, 0, p->buffer_size);
+					usb_packet_copy(p, data, p->buffer_size);
 				}
 				break;
 			case USB_TOKEN_OUT:

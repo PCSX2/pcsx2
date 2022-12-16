@@ -23,7 +23,6 @@
  */
 
 #pragma once
-#include "USB/qemu-usb/iov.h"
 #include "USB/qemu-usb/queue.h"
 
 #define USB_TOKEN_SETUP 0x2d
@@ -268,7 +267,6 @@ typedef struct USBBusOps USBBusOps;
 typedef struct USBPort USBPort;
 typedef struct USBDevice USBDevice;
 typedef struct USBPacket USBPacket;
-typedef struct USBCombinedPacket USBCombinedPacket;
 typedef struct USBEndpoint USBEndpoint;
 
 typedef struct USBDesc USBDesc;
@@ -482,7 +480,8 @@ struct USBPacket
 	uint64_t id;
 	USBEndpoint* ep;
 	unsigned int stream;
-	QEMUIOVector iov;
+	unsigned int buffer_size;
+	uint8_t* buffer_ptr;
 	uint64_t parameter; /* control transfers */
 	bool short_not_ok;
 	bool int_req;
@@ -490,22 +489,12 @@ struct USBPacket
 	int actual_length; /* Number of bytes actually transferred */
 	/* Internal use by the USB layer.  */
 	USBPacketState state;
-	USBCombinedPacket* combined;
 	QTAILQ_ENTRY(USBPacket)
 	queue;
 	QTAILQ_ENTRY(USBPacket)
 	combined_entry;
 };
 
-struct USBCombinedPacket
-{
-	USBPacket* first;
-	QTAILQ_HEAD(packets_head, USBPacket)
-	packets;
-	QEMUIOVector iov;
-};
-
-void usb_packet_init(USBPacket* p);
 void usb_packet_set_state(USBPacket* p, USBPacketState state);
 void usb_packet_check_state(USBPacket* p, USBPacketState expected);
 void usb_packet_setup(USBPacket* p, int pid,

@@ -1353,9 +1353,6 @@
     <ClCompile Include="USB\qemu-usb\input-keymap-qcode-to-qnum.cpp">
       <Filter>System\Ps2\USB\qemu-usb</Filter>
     </ClCompile>
-    <ClCompile Include="USB\qemu-usb\iov.cpp">
-      <Filter>System\Ps2\USB\qemu-usb</Filter>
-    </ClCompile>
     <ClCompile Include="USB\qemu-usb\usb-ohci.cpp">
       <Filter>System\Ps2\USB\qemu-usb</Filter>
     </ClCompile>
@@ -2305,9 +2302,6 @@
     </ClInclude>
     <ClInclude Include="USB\USB.h">
       <Filter>System\Ps2\USB</Filter>
-    </ClInclude>
-    <ClInclude Include="USB\qemu-usb\iov.h">
-      <Filter>System\Ps2\USB\qemu-usb</Filter>
     </ClInclude>
     <ClInclude Include="USB\qemu-usb\queue.h">
       <Filter>System\Ps2\USB\qemu-usb</Filter>

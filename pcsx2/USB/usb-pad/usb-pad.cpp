@@ -587,20 +587,16 @@ namespace usb_pad
 	static void pad_handle_data(USBDevice* dev, USBPacket* p)
 	{
 		PadState* s = USB_CONTAINER_OF(dev, PadState, dev);
-		uint8_t data[64];
-
-		int ret = 0;
-		uint8_t devep = p->ep->nr;
 
 		switch (p->pid)
 		{
 			case USB_TOKEN_IN:
-				if (devep == 1)
+				if (p->ep->nr == 1)
 				{
-					ret = s->TokenIn(data, p->iov.size);
+					int ret = s->TokenIn(p->buffer_ptr, p->buffer_size);
 
 					if (ret > 0)
-						usb_packet_copy(p, data, std::min(ret, (int)sizeof(data)));
+						p->actual_length += std::min<u32>(static_cast<u32>(ret), p->buffer_size);
 					else
 						p->status = ret;
 				}
@@ -610,11 +606,10 @@ namespace usb_pad
 				}
 				break;
 			case USB_TOKEN_OUT:
-				usb_packet_copy(p, data, std::min(p->iov.size, sizeof(data)));
 				/*Console.Warning("usb-pad: data token out len=0x%X %X,%X,%X,%X,%X,%X,%X,%X\n",len,
 			data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7]);*/
 				//Console.Warning("usb-pad: data token out len=0x%X\n",len);
-				ret = s->TokenOut(data, p->iov.size);
+				s->TokenOut(p->buffer_ptr, p->buffer_size);
 				break;
 			default:
 			fail:

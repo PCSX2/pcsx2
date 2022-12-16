@@ -341,7 +341,6 @@
     <ClCompile Include="USB\qemu-usb\desc.cpp" />
     <ClCompile Include="USB\qemu-usb\hid.cpp" />
     <ClCompile Include="USB\qemu-usb\input-keymap-qcode-to-qnum.cpp" />
-    <ClCompile Include="USB\qemu-usb\iov.cpp" />
     <ClCompile Include="USB\qemu-usb\usb-ohci.cpp" />
     <ClCompile Include="USB\shared\ringbuffer.cpp" />
     <ClCompile Include="USB\usb-eyetoy\cam-windows.cpp" />
@@ -695,7 +694,6 @@
     <ClInclude Include="USB\qemu-usb\desc.h" />
     <ClInclude Include="USB\qemu-usb\hid.h" />
     <ClInclude Include="USB\qemu-usb\input-keymap.h" />
-    <ClInclude Include="USB\qemu-usb\iov.h" />
     <ClInclude Include="USB\qemu-usb\queue.h" />
     <ClInclude Include="USB\qemu-usb\qusb.h" />
     <ClInclude Include="USB\qemu-usb\USBinternal.h" />

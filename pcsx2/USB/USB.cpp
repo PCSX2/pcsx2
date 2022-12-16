@@ -300,7 +300,6 @@ void USB::DoPacketState(USBPacket* p, StateWrapper& sw, const std::array<bool, 2
 
 	s32 dev_index = -1;
 	s32 ep_index = -1;
-	u32 p_iov_size = 0;
 	bool queued = false;
 	if (sw.IsWriting())
 	{
@@ -332,14 +331,12 @@ void USB::DoPacketState(USBPacket* p, StateWrapper& sw, const std::array<bool, 2
 			}
 			if (dev_index < 0 || ep_index < 0)
 				Console.Error("Failed to save USB packet from unknown endpoint");
-			else
-				p_iov_size = p->iov.size;
 		}
 	}
 
 	sw.Do(&dev_index);
 	sw.Do(&ep_index);
-	sw.Do(&p_iov_size);
+	sw.Do(&p->buffer_size);
 	sw.Do(&queued);
 
 	sw.Do(&p->pid);
@@ -354,7 +351,6 @@ void USB::DoPacketState(USBPacket* p, StateWrapper& sw, const std::array<bool, 2
 
 	if (sw.IsReading())
 	{
-		qemu_iovec_reset(&p->iov);
 		p->ep = nullptr;
 
 		if (dev_index >= 0 && ep_index >= 0 && valid_devices[static_cast<u32>(dev_index)])
@@ -362,8 +358,7 @@ void USB::DoPacketState(USBPacket* p, StateWrapper& sw, const std::array<bool, 2
 			USBDevice* dev = s_usb_device[static_cast<u32>(dev_index)];
 			pxAssert(dev);
 
-			if (p_iov_size > 0)
-				qemu_iovec_add(&p->iov, s_qemu_ohci->usb_buf, p_iov_size);
+			p->buffer_ptr = (p->buffer_size > 0) ? s_qemu_ohci->usb_buf : nullptr;
 
 			if (ep_index == 0)
 				p->ep = &dev->ep_ctl;
@@ -374,6 +369,11 @@ void USB::DoPacketState(USBPacket* p, StateWrapper& sw, const std::array<bool, 2
 
 			if (p->ep && queued)
 				QTAILQ_INSERT_TAIL(&p->ep->queue, p, queue);
+		}
+		else
+		{
+			p->buffer_ptr = nullptr;
+			p->buffer_size = 0;
 		}
 	}
 }

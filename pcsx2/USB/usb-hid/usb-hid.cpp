@@ -775,7 +775,7 @@ namespace usb_hid
 	{
 		UsbHIDState* us = USB_CONTAINER_OF(dev, UsbHIDState, dev);
 		HIDState* hs = &us->hid;
-		std::vector<uint8_t> buf(p->iov.size);
+		uint8_t buf[16];
 		size_t len = 0;
 
 		switch (p->pid)
@@ -795,13 +795,13 @@ namespace usb_hid
 					hid_set_next_idle(hs);
 					if (hs->kind == HID_MOUSE || hs->kind == HID_TABLET)
 					{
-						len = hid_pointer_poll(hs, buf.data(), p->iov.size);
+						len = hid_pointer_poll(hs, buf, p->buffer_size);
 					}
 					else if (hs->kind == HID_KEYBOARD)
 					{
-						len = hid_keyboard_poll(hs, buf.data(), p->iov.size);
+						len = hid_keyboard_poll(hs, buf, p->buffer_size);
 					}
-					usb_packet_copy(p, buf.data(), len);
+					usb_packet_copy(p, buf, len);
 				}
 				else
 				{
