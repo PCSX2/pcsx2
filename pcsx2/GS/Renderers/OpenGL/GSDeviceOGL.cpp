@@ -414,11 +414,8 @@ bool GSDeviceOGL::Create()
 		m_shadeboost.ps.SetName("Shadeboost pipe");
 	}
 
-	if (!CreateCASPrograms() && GSConfig.CASMode != GSCASMode::Disabled)
-	{
-		Host::AddIconOSDMessage("CASUnsupported", ICON_FA_EXCLAMATION_TRIANGLE,
-			"CAS is not available, your graphics driver does not supported the required functionality.", 10.0f);
-	}
+	// Image load store and GLSL 420pack is core in GL4.2, no need to check.
+	m_features.cas_sharpening = ((GLAD_GL_VERSION_4_2 && GLAD_GL_ARB_compute_shader) || GLAD_GL_ES_VERSION_3_2) && CreateCASPrograms();
 
 	// ****************************************************************
 	// rasterization configuration
@@ -1543,14 +1540,6 @@ void GSDeviceOGL::ClearSamplerCache()
 
 bool GSDeviceOGL::CreateCASPrograms()
 {
-	// Image load store and GLSL 420pack is core in GL4.2, no need to check.
-	m_features.cas_sharpening = (GLAD_GL_VERSION_4_2 && GLAD_GL_ARB_compute_shader) || GLAD_GL_ES_VERSION_3_2;
-	if (!m_features.cas_sharpening)
-	{
-		Console.Warning("Compute shaders not supported, CAS is unavailable.");
-		return false;
-	}
-
 	std::optional<std::string> cas_source(Host::ReadResourceFileToString("shaders/opengl/cas.glsl"));
 	if (!cas_source.has_value() || !GetCASShaderSource(&cas_source.value()))
 	{
