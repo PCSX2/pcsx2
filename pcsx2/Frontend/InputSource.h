@@ -63,6 +63,10 @@ public:
 	/// Creates a key for a generic controller button event.
 	static InputBindingKey MakeGenericControllerButtonKey(InputSourceType clazz, u32 controller_index, s32 button_index);
 
+	/// Creates a key for a generic controller hat event.
+	static InputBindingKey MakeGenericControllerHatKey(
+		InputSourceType clazz, u32 controller_index, s32 hat_index, u8 hat_direction, u32 num_directions);
+
 	/// Creates a key for a generic controller motor event.
 	static InputBindingKey MakeGenericControllerMotorKey(InputSourceType clazz, u32 controller_index, s32 motor_index);
 

@@ -88,6 +88,25 @@ namespace StringUtil
 
 		return value;
 	}
+	template <typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
+	inline std::optional<T> FromChars(const std::string_view& str, int base, std::string_view* endptr)
+	{
+		T value;
+
+		const char* ptr = str.data();
+		const char* end = ptr + str.length();
+		const std::from_chars_result result = std::from_chars(ptr, end, value, base);
+		if (result.ec != std::errc())
+			return std::nullopt;
+
+		if (endptr)
+		{
+			const size_t remaining_len = end - ptr - 1;
+			*endptr = (remaining_len > 0) ? std::string_view(result.ptr, remaining_len) : std::string_view();
+		}
+
+		return value;
+	}
 
 	template <typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
 	inline std::optional<T> FromChars(const std::string_view& str)
@@ -97,6 +116,25 @@ namespace StringUtil
 		const fast_float::from_chars_result result = fast_float::from_chars(str.data(), str.data() + str.length(), value);
 		if (result.ec != std::errc())
 			return std::nullopt;
+
+		return value;
+	}
+	template <typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
+	inline std::optional<T> FromChars(const std::string_view& str, std::string_view* endptr)
+	{
+		T value;
+
+		const char* ptr = str.data();
+		const char* end = ptr + str.length();
+		const fast_float::from_chars_result result = fast_float::from_chars(ptr, end, value);
+		if (result.ec != std::errc())
+			return std::nullopt;
+
+		if (endptr)
+		{
+			const size_t remaining_len = end - ptr - 1;
+			*endptr = (remaining_len > 0) ? std::string_view(result.ptr, remaining_len) : std::string_view();
+		}
 
 		return value;
 	}

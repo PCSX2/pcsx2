@@ -53,8 +53,9 @@ enum class InputSubclass : u32
 
 	ControllerButton = 0,
 	ControllerAxis = 1,
-	ControllerMotor = 2,
-	ControllerHaptic = 3,
+	ControllerHat = 2,
+	ControllerMotor = 3,
+	ControllerHaptic = 4,
 };
 
 enum class InputModifier : u32
