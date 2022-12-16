@@ -91,6 +91,7 @@ bool GSDevice11::Create()
 	m_dev = static_cast<ID3D11Device*>(g_host_display->GetDevice());
 	m_ctx = static_cast<ID3D11DeviceContext*>(g_host_display->GetContext());
 	level = m_dev->GetFeatureLevel();
+	const bool support_feature_level_11_0 = (level >= D3D_FEATURE_LEVEL_11_0);
 
 	if (!GSConfig.DisableShaderCache)
 	{
@@ -106,7 +107,7 @@ bool GSDevice11::Create()
 	}
 
 	// Set maximum texture size limit based on supported feature level.
-	if (level >= D3D_FEATURE_LEVEL_11_0)
+	if (support_feature_level_11_0)
 		m_d3d_texsize = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
 	else
 		m_d3d_texsize = D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;
@@ -342,7 +343,8 @@ bool GSDevice11::Create()
 			return false;
 	}
 
-	CreateCASShaders();
+	m_features.cas_sharpening = support_feature_level_11_0 && CreateCASShaders();
+
 	return true;
 }
 
