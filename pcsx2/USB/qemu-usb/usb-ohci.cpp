@@ -1731,12 +1731,12 @@ OHCIState* ohci_create(uint32_t base, int ports)
 {
 	OHCIState* ohci = (OHCIState*)malloc(sizeof(OHCIState));
 	if (!ohci)
-		return NULL;
+		return nullptr;
 	int i;
 
 	const int ticks_per_sec = usb_get_ticks_per_second();
 
-	memset(ohci, 0, sizeof(OHCIState));
+	std::memset(ohci, 0, sizeof(OHCIState));
 
 	ohci->mem_base = base;
 
@@ -1761,7 +1761,7 @@ OHCIState* ohci_create(uint32_t base, int ports)
 	ohci->num_ports = ports;
 	for (i = 0; i < ports; i++)
 	{
-		memset(&(ohci->rhport[i].port), 0, sizeof(USBPort));
+		std::memset(&(ohci->rhport[i].port), 0, sizeof(USBPort));
 		ohci->rhport[i].port.opaque = ohci;
 		ohci->rhport[i].port.index = i;
 		ohci->rhport[i].port.speedmask = USB_SPEED_MASK_LOW | USB_SPEED_MASK_FULL;
@@ -1769,7 +1769,5 @@ OHCIState* ohci_create(uint32_t base, int ports)
 	}
 
 	ohci_hard_reset(ohci);
-	usb_packet_init(&ohci->usb_packet);
-
 	return ohci;
 }

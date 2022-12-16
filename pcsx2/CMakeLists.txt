@@ -450,7 +450,6 @@ set(pcsx2USBSources
 	USB/qemu-usb/desc.cpp
 	USB/qemu-usb/hid.cpp
 	USB/qemu-usb/input-keymap-qcode-to-qnum.cpp
-	USB/qemu-usb/iov.cpp
 	USB/qemu-usb/usb-ohci.cpp
 	USB/shared/ringbuffer.cpp
 	USB/usb-eyetoy/jo_mpeg.cpp
@@ -476,7 +475,6 @@ set(pcsx2USBHeaders
 	USB/qemu-usb/desc.h
 	USB/qemu-usb/hid.h
 	USB/qemu-usb/input-keymap.h
-	USB/qemu-usb/iov.h
 	USB/qemu-usb/queue.h
 	USB/qemu-usb/qusb.h
 	USB/readerwriterqueue/atomicops.h

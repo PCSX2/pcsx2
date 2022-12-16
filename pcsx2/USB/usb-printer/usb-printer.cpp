@@ -218,7 +218,7 @@ namespace usb_printer
 		switch (p->pid)
 		{
 			case USB_TOKEN_OUT:
-				s->last_command_size = p->iov.size;
+				s->last_command_size = p->buffer_size;
 				usb_packet_copy(p, s->last_command, s->last_command_size);
 
 				if (s->cmd_state == 0 && s->last_command_size > 5)

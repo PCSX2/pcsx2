@@ -766,19 +766,10 @@ namespace usb_mic
 
 					uint32_t outChns = 1; //s->dev.altsetting[2] == 1 ? 2 : 1;
 					uint32_t inChns = s->audsrc->GetChannels();
-					int16_t* dst = nullptr;
-					std::vector<int16_t> dst_alloc(0); //TODO
-					size_t len = p->iov.size;
+					int16_t* dst = (int16_t*)p->buffer_ptr;
+					size_t len = p->buffer_size;
 					//Divide 'len' bytes between n channels of 16 bits
 					uint32_t maxFrames = len / (outChns * sizeof(int16_t)), frames = 0;
-
-					if (p->iov.niov == 1)
-						dst = (int16_t*)p->iov.iov[0].iov_base;
-					else
-					{
-						dst_alloc.resize(len / sizeof(int16_t));
-						dst = dst_alloc.data();
-					}
 
 					if (s->audsrc->GetFrames(&frames))
 					{
@@ -811,12 +802,7 @@ namespace usb_mic
                 fwrite(data, sizeof(short), ret * outChns, file);
 #endif
 					ret = ret * outChns * sizeof(int16_t);
-					if (p->iov.niov > 1)
-					{
-						usb_packet_copy(p, dst_alloc.data(), ret);
-					}
-					else
-						p->actual_length = ret;
+					p->actual_length = ret;
 				}
 				break;
 			case USB_TOKEN_OUT:
@@ -828,21 +814,10 @@ namespace usb_mic
 				{
 					uint32_t inChns = s->dev.altsetting[1] == 1 ? 2 : 1;
 					uint32_t outChns = s->audsink->GetChannels();
-					size_t len = p->iov.size;
+					int16_t* src = (int16_t*)p->buffer_ptr;
+					size_t len = p->buffer_size;
 					//Divide 'len' bytes between n channels of 16 bits
 					uint32_t frames = len / (inChns * sizeof(int16_t));
-					int16_t* src = nullptr;
-					std::vector<int16_t> src_alloc(0);
-
-					if (p->iov.niov == 1)
-						src = (int16_t*)p->iov.iov[0].iov_base;
-					else
-					{
-						//Copy iov data into continuous space
-						src_alloc.resize(len / sizeof(int16_t));
-						src = src_alloc.data();
-						usb_packet_copy(p, src, len);
-					}
 
 					s->out_buffer.resize(frames * outChns); //TODO move to AudioDevice for less data copying
 
