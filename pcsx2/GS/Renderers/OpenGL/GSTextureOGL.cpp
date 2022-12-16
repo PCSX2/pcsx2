@@ -42,9 +42,9 @@ namespace PboPool
 	// XXX: actually does I really need coherent and barrier???
 	// As far as I understand glTexSubImage2D is a client-server transfer so no need to make
 	// the value visible to the server
-	const GLbitfield common_flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | (GLLoader::is_gles ? GL_MAP_COHERENT_BIT : 0);
-	const GLbitfield map_flags = common_flags | (GLLoader::is_gles ? 0 : GL_MAP_FLUSH_EXPLICIT_BIT);
-	const GLbitfield create_flags = common_flags | (GLLoader::is_gles ? 0 : GL_CLIENT_STORAGE_BIT);
+	const GLbitfield common_flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT;
+	const GLbitfield map_flags = common_flags | GL_MAP_FLUSH_EXPLICIT_BIT;
+	const GLbitfield create_flags = common_flags | GL_CLIENT_STORAGE_BIT;
 
 	void Init()
 	{
@@ -54,10 +54,7 @@ namespace PboPool
 
 		glObjectLabel(GL_BUFFER, m_buffer, -1, "PBO");
 
-    if (!GLAD_GL_ARB_buffer_storage && GLAD_GL_EXT_buffer_storage)
-      glBufferStorageEXT(GL_PIXEL_UNPACK_BUFFER, m_pbo_size, NULL, create_flags);
-    else
-      glBufferStorage(GL_PIXEL_UNPACK_BUFFER, m_pbo_size, NULL, create_flags);
+		glBufferStorage(GL_PIXEL_UNPACK_BUFFER, m_pbo_size, NULL, create_flags);
 		m_map = (char*)glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, m_pbo_size, map_flags);
 		m_offset = 0;
 
@@ -90,8 +87,7 @@ namespace PboPool
 
 	void Unmap()
 	{
-		if (!GLLoader::is_gles)
-			glFlushMappedBufferRange(GL_PIXEL_UNPACK_BUFFER, m_offset, m_size);
+		glFlushMappedBufferRange(GL_PIXEL_UNPACK_BUFFER, m_offset, m_size);
 	}
 
 	uptr Offset()
@@ -294,7 +290,7 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 	if (m_type == Type::Texture)
 		m_mipmap_levels = levels;
 
-  // Create a gl object (texture isn't allocated here)
+	// Create a gl object (texture isn't allocated here)
 	glCreateTextures(GL_TEXTURE_2D, 1, &m_texture_id);
 	if (m_format == Format::UNorm8)
 	{
@@ -393,7 +389,7 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int 
 		glCompressedTextureSubImage2D(m_texture_id, layer, r.x, r.y, r.width(), r.height(), m_int_format, upload_size, data);
 		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 	}
-	else if (GLLoader::buggy_pbo || map_size >= PboPool::m_seg_size)
+	else if (map_size >= PboPool::m_seg_size)
 	{
 		glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch >> m_int_shift);
 		glTextureSubImage2D(m_texture_id, layer, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, data);
@@ -445,7 +441,7 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 	if (m_type == Type::Texture || m_type == Type::RenderTarget)
 	{
 		const u32 map_size = r.height() * row_byte;
-		if (GLLoader::buggy_pbo || map_size > PboPool::m_seg_size)
+		if (map_size > PboPool::m_seg_size)
 			return false;
 
 		GL_PUSH_("Upload Texture %d", m_texture_id); // POP is in Unmap

@@ -220,7 +220,6 @@ private:
 
 	GLuint m_fbo; // frame buffer container
 	GLuint m_fbo_read; // frame buffer container only for reading
-	GLuint m_fbo_write;	// frame buffer container only for writing
 
 	std::unique_ptr<GL::StreamBuffer> m_vertex_stream_buffer;
 	std::unique_ptr<GL::StreamBuffer> m_index_stream_buffer;

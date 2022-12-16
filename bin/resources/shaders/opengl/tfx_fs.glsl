@@ -28,7 +28,7 @@
 
 #ifdef FRAGMENT_SHADER
 
-#if !defined(BROKEN_DRIVER) && (pGL_ES || defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts)
+#if !defined(BROKEN_DRIVER) && defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts
 layout(location = 0)
 #endif
 in SHADER
@@ -55,8 +55,6 @@ in SHADER
     #undef TARGET_0_QUALIFIER
     #define TARGET_0_QUALIFIER inout
     #define LAST_FRAG_COLOR SV_Target0
-  #elif defined(GL_ARM_shader_framebuffer_fetch)
-    #define LAST_FRAG_COLOR gl_LastFragColorARM
   #endif
 #endif
 
@@ -127,7 +125,7 @@ vec4 sample_c(vec2 uv)
 
     return textureLod(TextureSampler, uv, lod);
 #else
-    return textureLod(TextureSampler, uv, 0.0f); // No lod
+    return textureLod(TextureSampler, uv, 0); // No lod
 #endif
 
 #endif
@@ -251,16 +249,10 @@ mat4 sample_4p(vec4 u)
 
 int fetch_raw_depth()
 {
-#if HAS_CLIP_CONTROL
-    float multiplier = exp2(32.0f);
-#else
-    float multiplier = exp2(24.0f);
-#endif
-
 #if PS_TEX_IS_FB == 1
-    return int(fetch_rt().r * multiplier);
+    return int(fetch_rt().r * exp2(32.0f));
 #else
-    return int(texelFetch(TextureSampler, ivec2(gl_FragCoord.xy), 0).r * multiplier);
+    return int(texelFetch(TextureSampler, ivec2(gl_FragCoord.xy), 0).r * exp2(32.0f));
 #endif
 }
 
@@ -352,21 +344,13 @@ vec4 sample_depth(vec2 st)
 #elif PS_DEPTH_FMT == 1
     // Based on ps_convert_float32_rgba8 of convert
     // Convert a GL_FLOAT32 depth texture into a RGBA color texture
-    #if HAS_CLIP_CONTROL
-      uint d = uint(fetch_c(uv).r * exp2(32.0f));
-    #else
-      uint d = uint(fetch_c(uv).r * exp2(24.0f));
-    #endif
+    uint d = uint(fetch_c(uv).r * exp2(32.0f));
     t = vec4(uvec4((d & 0xFFu), ((d >> 8) & 0xFFu), ((d >> 16) & 0xFFu), (d >> 24)));
 
 #elif PS_DEPTH_FMT == 2
     // Based on ps_convert_float16_rgb5a1 of convert
     // Convert a GL_FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
-    #if HAS_CLIP_CONTROL
-      uint d = uint(fetch_c(uv).r * exp2(32.0f));
-    #else
-      uint d = uint(fetch_c(uv).r * exp2(24.0f));
-    #endif
+    uint d = uint(fetch_c(uv).r * exp2(32.0f));
     t = vec4(uvec4((d & 0x1Fu), ((d >> 5) & 0x1Fu), ((d >> 10) & 0x1Fu), (d >> 15) & 0x01u)) * vec4(8.0f, 8.0f, 8.0f, 128.0f);
 
 #elif PS_DEPTH_FMT == 3
@@ -850,16 +834,16 @@ void ps_main()
 
     vec4 C = ps_color();
 #if (APITRACE_DEBUG & 1) == 1
-    C.r = 255.0f;
+    C.r = 255f;
 #endif
 #if (APITRACE_DEBUG & 2) == 2
-    C.g = 255.0f;
+    C.g = 255f;
 #endif
 #if (APITRACE_DEBUG & 4) == 4
-    C.b = 255.0f;
+    C.b = 255f;
 #endif
 #if (APITRACE_DEBUG & 8) == 8
-    C.a = 128.0f;
+    C.a = 128f;
 #endif
 
 #if PS_SHUFFLE

@@ -14,9 +14,9 @@ layout(location = 0) out vec4 SV_Target0;
 // Weave shader
 void ps_main0()
 {
-	int idx   = int(ZrH.x);          // buffer index passed from CPU
-	int field = idx & 1;             // current field
-	int vpos  = int(gl_FragCoord.y); // vertical position of destination texture
+	const int idx   = int(ZrH.x);          // buffer index passed from CPU
+	const int field = idx & 1;             // current field
+	const int vpos  = int(gl_FragCoord.y); // vertical position of destination texture
 
 	if ((vpos & 1) == field)
 		SV_Target0 = texture(TextureSampler, PSin_t);
@@ -54,16 +54,16 @@ void ps_main3()
 	// causing the wrong lines to be discarded, so a vertical offset (lofs) is added to the vertical
 	// position of the destination texture to force the proper field alignment
 
-	int  idx    = int(ZrH.x);                                // buffer index passed from CPU
-	int  bank   = idx >> 1;                                  // current bank
-	int  field  = idx & 1;                                   // current field
-	int  vres   = int(ZrH.z) >> 1;                           // vertical resolution of source texture
-	int  lofs   = ((((vres + 1) >> 1) << 1) - vres) & bank;  // line alignment offset for bank 1
-	int  vpos   = int(gl_FragCoord.y) + lofs;                // vertical position of destination texture
-	vec2 bofs   = vec2(0.0f, 0.5f * float(bank));            // vertical offset of the current bank relative to source texture size
-	vec2 vscale = vec2(1.0f, 2.0f);                          // scaling factor from source to destination texture
-	vec2 optr   = PSin_t - bofs;                             // used to check if the current destination line is within the current bank
-	vec2 iptr   = optr * vscale;                             // pointer to the current pixel in the source texture
+	const int  idx    = int(ZrH.x);                                // buffer index passed from CPU
+	const int  bank   = idx >> 1;                                  // current bank
+	const int  field  = idx & 1;                                   // current field
+	const int  vres   = int(ZrH.z) >> 1;                           // vertical resolution of source texture
+	const int  lofs   = ((((vres + 1) >> 1) << 1) - vres) & bank;  // line alignment offset for bank 1
+	const int  vpos   = int(gl_FragCoord.y) + lofs;                // vertical position of destination texture
+	const vec2 bofs   = vec2(0.0f, 0.5f * bank);                   // vertical offset of the current bank relative to source texture size
+	const vec2 vscale = vec2(1.0f, 2.0f);                          // scaling factor from source to destination texture
+	const vec2 optr   = PSin_t - bofs;                             // used to check if the current destination line is within the current bank
+	const vec2 iptr   = optr * vscale;                             // pointer to the current pixel in the source texture
 
 	// if the index of current destination line belongs to the current fiels we update it, otherwise
 	// we leave the old line in the destination buffer
@@ -79,15 +79,15 @@ void ps_main4()
 {
 	// we use the contents of the MAD frame buffer to reconstruct the missing lines from the current field.
 
-	int   idx          = int(ZrH.x);                         // buffer index passed from CPU
-	int   field        = idx & 1;                            // current field
-	int   vpos         = int(gl_FragCoord.y);                // vertical position of destination texture
-	float sensitivity  = ZrH.w;                              // passed from CPU, higher values mean more likely to use weave
-	vec3  motion_thr   = vec3(1.0, 1.0, 1.0) * sensitivity;  //
-	vec2  bofs         = vec2(0.0f, 0.5f);                   // position of the bank 1 relative to source texture size
-	vec2  vscale       = vec2(1.0f, 0.5f);                   // scaling factor from source to destination texture
-	vec2  lofs         = vec2(0.0f, ZrH.y) * vscale;         // distance between two adjacent lines relative to source texture size
-	vec2  iptr         = PSin_t * vscale;                    // pointer to the current pixel in the source texture
+	const int   idx          = int(ZrH.x);                         // buffer index passed from CPU
+	const int   field        = idx & 1;                            // current field
+	const int   vpos         = int(gl_FragCoord.y);                // vertical position of destination texture
+	const float sensitivity  = ZrH.w;                              // passed from CPU, higher values mean more likely to use weave
+	const vec3  motion_thr   = vec3(1.0, 1.0, 1.0) * sensitivity;  //
+	const vec2  bofs         = vec2(0.0f, 0.5f);                   // position of the bank 1 relative to source texture size
+	const vec2  vscale       = vec2(1.0f, 0.5f);                   // scaling factor from source to destination texture
+	const vec2  lofs         = vec2(0.0f, ZrH.y) * vscale;         // distance between two adjacent lines relative to source texture size
+	const vec2  iptr         = PSin_t * vscale;                    // pointer to the current pixel in the source texture
 
 	vec2 p_t0; // pointer to current pixel (missing or not) from most recent frame
 	vec2 p_t1; // pointer to current pixel (missing or not) from one frame back

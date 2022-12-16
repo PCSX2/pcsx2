@@ -65,10 +65,7 @@ public:
 		// glMapBufferRange allow to set various parameter but the call is
 		// synchronous whereas glBufferSubData could be asynchronous.
 		// TODO: investigate the extension ARB_invalidate_subdata
-		if (GLLoader::is_gles)
-			glBufferData(GL_UNIFORM_BUFFER, m_size, src, GL_DYNAMIC_DRAW);
-		else
-			glBufferSubData(GL_UNIFORM_BUFFER, 0, m_size, src);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, m_size, src);
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 		g_uniform_upload_byte += m_size;
 #endif
