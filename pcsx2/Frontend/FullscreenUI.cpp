@@ -252,6 +252,7 @@ namespace FullscreenUI
 	// Landing
 	//////////////////////////////////////////////////////////////////////////
 	static void SwitchToLanding();
+	static ImGuiFullscreen::FileSelectorFilters GetOpenFileFilters();
 	static ImGuiFullscreen::FileSelectorFilters GetDiscImageFilters();
 	static void DoStartPath(
 		const std::string& path, std::optional<s32> state_index = std::nullopt, std::optional<bool> fast_boot = std::nullopt);
@@ -877,9 +878,14 @@ void FullscreenUI::DestroyResources()
 // Utility
 //////////////////////////////////////////////////////////////////////////
 
-ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetDiscImageFilters()
+ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetOpenFileFilters()
 {
 	return {"*.bin", "*.iso", "*.cue", "*.chd", "*.cso", "*.gz", "*.elf", "*.irx", "*.gs", "*.gs.xz", "*.gs.zst", "*.dump"};
+}
+
+ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetDiscImageFilters()
+{
+	return {"*.bin", "*.iso", "*.cue", "*.chd", "*.cso", "*.gz"};
 }
 
 void FullscreenUI::DoStartPath(const std::string& path, std::optional<s32> state_index, std::optional<bool> fast_boot)
@@ -914,7 +920,7 @@ void FullscreenUI::DoStartFile()
 		CloseFileSelector();
 	};
 
-	OpenFileSelector(ICON_FA_FOLDER_OPEN " Select Disc Image", false, std::move(callback), GetDiscImageFilters());
+	OpenFileSelector(ICON_FA_FOLDER_OPEN " Select Disc Image", false, std::move(callback), GetOpenFileFilters());
 }
 
 void FullscreenUI::DoStartBIOS()
@@ -2129,16 +2135,10 @@ void FullscreenUI::SwitchToGameSettings()
 	auto lock = GameList::GetLock();
 	const GameList::Entry* entry = GameList::GetEntryForPath(s_current_game_path.c_str());
 	if (!entry)
-	{
 		entry = GameList::GetEntryBySerialAndCRC(s_current_game_serial.c_str(), s_current_game_crc);
-		if (!entry)
-		{
-			SwitchToGameSettings(s_current_game_serial.c_str(), s_current_game_crc);
-			return;
-		}
-	}
 
-	SwitchToGameSettings(entry);
+	if (entry)
+		SwitchToGameSettings(entry);
 }
 
 void FullscreenUI::SwitchToGameSettings(const std::string& path)
@@ -2151,7 +2151,7 @@ void FullscreenUI::SwitchToGameSettings(const std::string& path)
 
 void FullscreenUI::SwitchToGameSettings(const GameList::Entry* entry)
 {
-	SwitchToGameSettings(entry->serial.c_str(), entry->crc);
+	SwitchToGameSettings((entry->type != GameList::EntryType::ELF) ? std::string_view(entry->serial) : std::string_view(), entry->crc);
 	s_game_settings_entry = std::make_unique<GameList::Entry>(*entry);
 }
 
@@ -2367,6 +2367,8 @@ void FullscreenUI::DrawSettingsWindow()
 
 void FullscreenUI::DrawSummarySettingsPage()
 {
+	SettingsInterface* bsi = GetEditingSettingsInterface();
+
 	BeginMenuButtons();
 
 	MenuHeading("Details");
@@ -2379,7 +2381,7 @@ void FullscreenUI::DrawSummarySettingsPage()
 			CopyTextToClipboard("Game serial copied to clipboard.", s_game_settings_entry->serial);
 		if (MenuButton(ICON_FA_CODE " CRC", fmt::format("{:08X}", s_game_settings_entry->crc).c_str(), true))
 			CopyTextToClipboard("Game CRC copied to clipboard.", fmt::format("{:08X}", s_game_settings_entry->crc));
-		if (MenuButton(ICON_FA_COMPACT_DISC " Type", GameList::EntryTypeToString(s_game_settings_entry->type), true))
+		if (MenuButton(ICON_FA_LIST " Type", GameList::EntryTypeToString(s_game_settings_entry->type), true))
 			CopyTextToClipboard("Game type copied to clipboard.", GameList::EntryTypeToString(s_game_settings_entry->type));
 		if (MenuButton(ICON_FA_BOX " Region", GameList::RegionToString(s_game_settings_entry->region), true))
 			CopyTextToClipboard("Game region copied to clipboard.", GameList::RegionToString(s_game_settings_entry->region));
@@ -2391,6 +2393,44 @@ void FullscreenUI::DrawSummarySettingsPage()
 		}
 		if (MenuButton(ICON_FA_FOLDER_OPEN " Path", s_game_settings_entry->path.c_str(), true))
 			CopyTextToClipboard("Game path copied to clipboard.", s_game_settings_entry->path);
+
+		if (s_game_settings_entry->type == GameList::EntryType::ELF)
+		{
+			const std::string iso_path(bsi->GetStringValue("EmuCore", "DiscPath"));
+			if (MenuButton(ICON_FA_COMPACT_DISC " Disc Path", iso_path.empty() ? "No Disc" : iso_path.c_str()))
+			{
+				auto callback = [](const std::string& path) {
+					if (!path.empty())
+					{
+						{
+							auto lock = Host::GetSettingsLock();
+							if (s_game_settings_interface)
+							{
+								s_game_settings_interface->SetStringValue("EmuCore", "DiscPath", path.c_str());
+								s_game_settings_interface->Save();
+							}
+						}
+
+						if (s_game_settings_entry)
+						{
+							// re-scan the entry to update its serial.
+							if (GameList::RescanPath(s_game_settings_entry->path))
+							{
+								auto lock = GameList::GetLock();
+								const GameList::Entry* entry = GameList::GetEntryForPath(s_game_settings_entry->path.c_str());
+								if (entry)
+									*s_game_settings_entry = *entry;
+							}
+						}
+					}
+
+					QueueResetFocus();
+					CloseFileSelector();
+				};
+
+				OpenFileSelector(ICON_FA_COMPACT_DISC " Select Disc Path", false, std::move(callback), GetDiscImageFilters());
+			}
+		}
 	}
 	else
 	{
@@ -2726,7 +2766,7 @@ void FullscreenUI::DrawClampingModeSetting(SettingsInterface* bsi, const char* t
 
 void FullscreenUI::DrawGraphicsSettingsPage()
 {
-	static constexpr const char* s_renderer_names[] = {"Automatic",
+	static constexpr const char* s_renderer_names[] = {"Automatic (Default)",
 #ifdef _WIN32
 		"Direct3D 11", "Direct3D 12",
 #endif
@@ -2812,6 +2852,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 	static constexpr const char* s_generic_options[] = {"Automatic (Default)", "Force Disabled", "Force Enabled"};
 	static constexpr const char* s_hw_download[] = {"Accurate (Recommended)", "Disable Readbacks (Synchronize GS Thread)",
 		"Unsynchronized (Non-Deterministic)", "Disabled (Ignore Transfers)"};
+	static constexpr const char* s_screenshot_sizes[] = {"Screen Resolution", "Internal Resolution", "Internal Resolution (Uncorrected)"};
+	static constexpr const char* s_screenshot_formats[] = {"PNG", "JPEG"};
 
 	SettingsInterface* bsi = GetEditingSettingsInterface();
 
@@ -2838,8 +2880,12 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 	DrawIntListSetting(bsi, "Deinterlacing",
 		"Selects the algorithm used to convert the PS2's interlaced output to progressive for display.", "EmuCore/GS", "deinterlace_mode",
 		static_cast<int>(GSInterlaceMode::Automatic), s_deinterlacing_options, std::size(s_deinterlacing_options));
-	DrawIntRangeSetting(bsi, "Zoom", "Increases or decreases the virtual picture size both horizontally and vertically.", "EmuCore/GS",
-		"Zoom", 100, 10, 300, "%d%%");
+	DrawIntListSetting(bsi, "Screenshot Size", "Determines the resolution at which screenshots will be saved.", "EmuCore/GS",
+		"ScreenshotSize", static_cast<int>(GSScreenshotSize::WindowResolution), s_screenshot_sizes, std::size(s_screenshot_sizes));
+	DrawIntListSetting(bsi, "Screenshot Format", "Selects the format which will be used to save screenshots.", "EmuCore/GS",
+		"ScreenshotFormat", static_cast<int>(GSScreenshotFormat::PNG), s_screenshot_formats, std::size(s_screenshot_formats));
+	DrawIntRangeSetting(bsi, "Screenshot Quality", "Selects the quality at which screenshots will be compressed.", "EmuCore/GS",
+		"ScreenshotQuality", 50, 1, 100, "%d%%");
 	DrawIntRangeSetting(bsi, "Vertical Stretch", "Increases or decreases the virtual picture size vertically.", "EmuCore/GS", "StretchY",
 		100, 10, 300, "%d%%");
 	DrawIntRectSetting(bsi, "Crop", "Crops the image, while respecting aspect ratio.", "EmuCore/GS", "CropLeft", 0, "CropTop", 0,
@@ -2932,8 +2978,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 				"EmuCore/GS", "UserHacks_CPU_FB_Conversion", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, "Disable Depth Support", "Disable the support of depth buffer in the texture cache.", "EmuCore/GS",
 				"UserHacks_DisableDepthSupport", false, manual_hw_fixes);
-			DrawToggleSetting(
-				bsi, "Wrap GS Memory", "Emulates GS memory wrapping accurately.", "EmuCore/GS", "wrap_gs_mem", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, "Disable Safe Features", "This option disables multiple safe features.", "EmuCore/GS",
 				"UserHacks_Disable_Safe_Features", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, "Preload Frame", "Uploads GS data when rendering a new frame to reproduce some effects accurately.",
@@ -3002,7 +3046,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 	MenuHeading("Post-Processing");
 	{
 		static constexpr const char* s_cas_options[] = {
-			"Disabled", "Sharpen Only (Internal Resolution)", "Sharpen and Resize (Display Resolution)"};
+			"None (Default)", "Sharpen Only (Internal Resolution)", "Sharpen and Resize (Display Resolution)"};
 		const bool cas_active = (GetEffectiveIntSetting(bsi, "EmuCore/GS", "CASMode", 0) != static_cast<int>(GSCASMode::Disabled));
 
 		DrawToggleSetting(bsi, "FXAA", "Enables FXAA post-processing shader.", "EmuCore/GS", "fxaa", false);
@@ -3025,7 +3069,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			1, 100, "%d", shadeboost_active);
 
 		static constexpr const char* s_tv_shaders[] = {
-			"None", "Scanline Filter", "Diagonal Filter", "Triangular Filter", "Wave Filter", "Lottes CRT"};
+			"None (Default)", "Scanline Filter", "Diagonal Filter", "Triangular Filter", "Wave Filter", "Lottes CRT"};
 		DrawIntListSetting(
 			bsi, "TV Shaders", "Selects post-processing TV shader.", "EmuCore/GS", "TVShader", 0, s_tv_shaders, std::size(s_tv_shaders));
 	}

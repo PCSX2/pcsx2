@@ -17,6 +17,7 @@
 #include "GSRingHeap.h"
 #include "GS.h"
 #include "GSExtra.h"
+#include "common/AlignedMalloc.h"
 
 namespace
 {
@@ -120,7 +121,7 @@ struct GSRingHeap::Buffer
 		if (unlikely(m_amt_allocated.fetch_sub(amt, std::memory_order_release) == amt))
 		{
 			std::atomic_thread_fence(std::memory_order_acquire);
-			vmfree(this, m_size);
+			_aligned_free(this);
 		}
 	}
 
@@ -167,7 +168,7 @@ struct GSRingHeap::Buffer
 	static Buffer* make(int quadrant_shift)
 	{
 		size_t size = 4ull << quadrant_shift;
-		Buffer* buffer = reinterpret_cast<Buffer*>(vmalloc(size, false));
+		Buffer* buffer = reinterpret_cast<Buffer*>(_aligned_malloc(size, 32));
 		buffer->m_size = size;
 		buffer->m_quadrant_shift = quadrant_shift;
 		buffer->m_amt_allocated.store(1, std::memory_order_relaxed);

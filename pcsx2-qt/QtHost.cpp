@@ -74,15 +74,16 @@ EmuThread* g_emu_thread = nullptr;
 //////////////////////////////////////////////////////////////////////////
 // Local function declarations
 //////////////////////////////////////////////////////////////////////////
-namespace QtHost {
-static void PrintCommandLineVersion();
-static void PrintCommandLineHelp(const std::string_view& progname);
-static std::shared_ptr<VMBootParameters>& AutoBoot(std::shared_ptr<VMBootParameters>& autoboot);
-static bool ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VMBootParameters>& autoboot);
-static bool InitializeConfig();
-static void SaveSettings();
-static void HookSignals();
-}
+namespace QtHost
+{
+	static void PrintCommandLineVersion();
+	static void PrintCommandLineHelp(const std::string_view& progname);
+	static std::shared_ptr<VMBootParameters>& AutoBoot(std::shared_ptr<VMBootParameters>& autoboot);
+	static bool ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VMBootParameters>& autoboot);
+	static bool InitializeConfig();
+	static void SaveSettings();
+	static void HookSignals();
+} // namespace QtHost
 
 //////////////////////////////////////////////////////////////////////////
 // Local variable declarations
@@ -151,8 +152,8 @@ bool EmuThread::confirmMessage(const QString& title, const QString& message)
 	{
 		// This is definitely deadlock risky, but unlikely to happen (why would GS be confirming?).
 		bool result = false;
-		QMetaObject::invokeMethod(g_emu_thread, "confirmMessage", Qt::BlockingQueuedConnection,
-			Q_RETURN_ARG(bool, result), Q_ARG(const QString&, title), Q_ARG(const QString&, message));
+		QMetaObject::invokeMethod(g_emu_thread, "confirmMessage", Qt::BlockingQueuedConnection, Q_RETURN_ARG(bool, result),
+			Q_ARG(const QString&, title), Q_ARG(const QString&, message));
 		return result;
 	}
 
@@ -231,8 +232,7 @@ void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
 {
 	if (!isOnEmuThread())
 	{
-		QMetaObject::invokeMethod(this, "startVM", Qt::QueuedConnection,
-			Q_ARG(std::shared_ptr<VMBootParameters>, boot_params));
+		QMetaObject::invokeMethod(this, "startVM", Qt::QueuedConnection, Q_ARG(std::shared_ptr<VMBootParameters>, boot_params));
 		return;
 	}
 
@@ -460,9 +460,8 @@ void EmuThread::startBackgroundControllerPollTimer()
 	if (m_background_controller_polling_timer->isActive())
 		return;
 
-	m_background_controller_polling_timer->start(FullscreenUI::IsInitialized() ?
-													 FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL :
-                                                     BACKGROUND_CONTROLLER_POLLING_INTERVAL);
+	m_background_controller_polling_timer->start(
+		FullscreenUI::IsInitialized() ? FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL : BACKGROUND_CONTROLLER_POLLING_INTERVAL);
 }
 
 void EmuThread::stopBackgroundControllerPollTimer()
@@ -845,9 +844,7 @@ void EmuThread::queueSnapshot(quint32 gsdump_frames)
 	if (!VMManager::HasValidVM())
 		return;
 
-	GetMTGS().RunOnGSThread([gsdump_frames]() {
-		GSQueueSnapshot(std::string(), gsdump_frames);
-	});
+	GetMTGS().RunOnGSThread([gsdump_frames]() { GSQueueSnapshot(std::string(), gsdump_frames); });
 }
 
 void EmuThread::updateDisplay()
@@ -1014,10 +1011,12 @@ void Host::OnVMResumed()
 	emit g_emu_thread->onVMResumed();
 }
 
-void Host::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name, u32 game_crc)
+void Host::OnGameChanged(const std::string& disc_path, const std::string& elf_override, const std::string& game_serial,
+	const std::string& game_name, u32 game_crc)
 {
-	CommonHost::OnGameChanged(disc_path, game_serial, game_name, game_crc);
-	emit g_emu_thread->onGameChanged(QString::fromStdString(disc_path), QString::fromStdString(game_serial), QString::fromStdString(game_name), game_crc);
+	CommonHost::OnGameChanged(disc_path, elf_override, game_serial, game_name, game_crc);
+	emit g_emu_thread->onGameChanged(QString::fromStdString(disc_path), QString::fromStdString(elf_override),
+		QString::fromStdString(game_serial), QString::fromStdString(game_name), game_crc);
 }
 
 void EmuThread::updatePerformanceMetrics(bool force)
@@ -1030,12 +1029,11 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		QString gs_stat;
 		if (THREAD_VU1)
 		{
-			gs_stat =
-				QStringLiteral("%1 | EE: %2% | VU: %3% | GS: %4%")
-					.arg(gs_stat_str.c_str())
-					.arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
-					.arg(PerformanceMetrics::GetVUThreadUsage(), 0, 'f', 0)
-					.arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
+			gs_stat = QStringLiteral("%1 | EE: %2% | VU: %3% | GS: %4%")
+						  .arg(gs_stat_str.c_str())
+						  .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
+						  .arg(PerformanceMetrics::GetVUThreadUsage(), 0, 'f', 0)
+						  .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
 		}
 		else
 		{
@@ -1055,17 +1053,18 @@ void EmuThread::updatePerformanceMetrics(bool force)
 	int iwidth, iheight;
 	GSgetInternalResolution(&iwidth, &iheight);
 
-	if (iwidth != m_last_internal_width || iheight != m_last_internal_height ||
-		speed != m_last_speed || gfps != m_last_game_fps || vfps != m_last_video_fps ||
-		renderer != m_last_renderer || force)
+	if (iwidth != m_last_internal_width || iheight != m_last_internal_height || speed != m_last_speed || gfps != m_last_game_fps ||
+		vfps != m_last_video_fps || renderer != m_last_renderer || force)
 	{
 		if (iwidth == 0 && iheight == 0)
 		{
 			// if we don't have width/height yet, we're not going to have fps either.
 			// and we'll probably be <100% due to compiling. so just leave it blank for now.
 			QString blank;
-			QMetaObject::invokeMethod(g_main_window->getStatusRendererWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, blank));
-			QMetaObject::invokeMethod(g_main_window->getStatusResolutionWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, blank));
+			QMetaObject::invokeMethod(
+				g_main_window->getStatusRendererWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, blank));
+			QMetaObject::invokeMethod(
+				g_main_window->getStatusResolutionWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, blank));
 			QMetaObject::invokeMethod(g_main_window->getStatusFPSWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, blank));
 			QMetaObject::invokeMethod(g_main_window->getStatusVPSWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, blank));
 			return;
@@ -1081,9 +1080,7 @@ void EmuThread::updatePerformanceMetrics(bool force)
 			if (iwidth != m_last_internal_width || iheight != m_last_internal_height || force)
 			{
 				QMetaObject::invokeMethod(g_main_window->getStatusResolutionWidget(), "setText", Qt::QueuedConnection,
-					Q_ARG(const QString&, tr("%1x%2")
-											  .arg(iwidth)
-											  .arg(iheight)));
+					Q_ARG(const QString&, tr("%1x%2").arg(iwidth).arg(iheight)));
 				m_last_internal_width = iwidth;
 				m_last_internal_height = iheight;
 			}
@@ -1091,17 +1088,14 @@ void EmuThread::updatePerformanceMetrics(bool force)
 			if (gfps != m_last_game_fps || force)
 			{
 				QMetaObject::invokeMethod(g_main_window->getStatusFPSWidget(), "setText", Qt::QueuedConnection,
-					Q_ARG(const QString&, tr("Game: %1 FPS")
-											  .arg(gfps, 0, 'f', 0)));
+					Q_ARG(const QString&, tr("Game: %1 FPS").arg(gfps, 0, 'f', 0)));
 				m_last_game_fps = gfps;
 			}
 
 			if (speed != m_last_speed || vfps != m_last_video_fps || force)
 			{
 				QMetaObject::invokeMethod(g_main_window->getStatusVPSWidget(), "setText", Qt::QueuedConnection,
-					Q_ARG(const QString&, tr("Video: %1 FPS (%2%)")
-											  .arg(vfps, 0, 'f', 0)
-											  .arg(speed, 0, 'f', 0)));
+					Q_ARG(const QString&, tr("Video: %1 FPS (%2%)").arg(vfps, 0, 'f', 0).arg(speed, 0, 'f', 0)));
 				m_last_speed = speed;
 				m_last_video_fps = vfps;
 			}
@@ -1144,10 +1138,9 @@ void Host::OnAchievementsRefreshed()
 		achievement_count = Achievements::GetAchievementCount();
 		max_points = Achievements::GetMaximumPointsForGame();
 
-		game_info = qApp->translate("EmuThread",
-							"Game ID: %1\n"
-							"Game Title: %2\n"
-							"Achievements: %5 (%6)\n\n")
+		game_info = qApp->translate("EmuThread", "Game ID: %1\n"
+												 "Game Title: %2\n"
+												 "Achievements: %5 (%6)\n\n")
 						.arg(game_id)
 						.arg(QString::fromStdString(Achievements::GetGameTitle()))
 						.arg(achievement_count)
@@ -1183,15 +1176,13 @@ void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false 
 		return;
 	}
 
-	QMetaObject::invokeMethod(g_emu_thread, "runOnCPUThread",
-		block ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
+	QMetaObject::invokeMethod(g_emu_thread, "runOnCPUThread", block ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
 		Q_ARG(const std::function<void()>&, std::move(function)));
 }
 
 void Host::RefreshGameListAsync(bool invalidate_cache)
 {
-	QMetaObject::invokeMethod(g_main_window, "refreshGameList", Qt::QueuedConnection,
-		Q_ARG(bool, invalidate_cache));
+	QMetaObject::invokeMethod(g_main_window, "refreshGameList", Qt::QueuedConnection, Q_ARG(bool, invalidate_cache));
 }
 
 void Host::CancelGameListRefresh()
@@ -1213,9 +1204,8 @@ void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool def
 		return;
 
 	// Run it on the host thread, that way we get the confirm prompt (if enabled).
-	QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection,
-		Q_ARG(bool, allow_confirm), Q_ARG(bool, allow_save_state),
-		Q_ARG(bool, default_save_state), Q_ARG(bool, false));
+	QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection, Q_ARG(bool, allow_confirm),
+		Q_ARG(bool, allow_save_state), Q_ARG(bool, default_save_state), Q_ARG(bool, false));
 }
 
 bool Host::IsFullscreen()
@@ -1254,7 +1244,8 @@ bool QtHost::InitializeConfig()
 		// If the config file doesn't exist, assume this is a new install and don't prompt to overwrite.
 		if (FileSystem::FileExists(s_base_settings_interface->GetFileName().c_str()) &&
 			QMessageBox::question(nullptr, QStringLiteral("PCSX2"),
-				QStringLiteral("Settings failed to load, or are the incorrect version. Clicking Yes will reset all settings to defaults. Do you want to continue?")) != QMessageBox::Yes)
+				QStringLiteral("Settings failed to load, or are the incorrect version. Clicking Yes will reset all settings to defaults. "
+							   "Do you want to continue?")) != QMessageBox::Yes)
 		{
 			return false;
 		}
@@ -1339,8 +1330,7 @@ bool QtHost::ShouldShowAdvancedSettings()
 void QtHost::RunOnUIThread(const std::function<void()>& func, bool block /*= false*/)
 {
 	// main window always exists, so it's fine to attach it to that.
-	QMetaObject::invokeMethod(g_main_window, "runOnUIThread",
-		block ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
+	QMetaObject::invokeMethod(g_main_window, "runOnUIThread", block ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
 		Q_ARG(const std::function<void()>&, func));
 }
 
@@ -1369,10 +1359,8 @@ QString QtHost::GetAppNameAndVersion()
 	else if constexpr (PCSX2_isReleaseVersion)
 	{
 #define APPNAME_STRINGIZE(x) #x
-		ret = QStringLiteral("PCSX2 "
-			APPNAME_STRINGIZE(PCSX2_VersionHi) "."
-			APPNAME_STRINGIZE(PCSX2_VersionMid) "."
-			APPNAME_STRINGIZE(PCSX2_VersionLo));
+		ret = QStringLiteral(
+			"PCSX2 " APPNAME_STRINGIZE(PCSX2_VersionHi) "." APPNAME_STRINGIZE(PCSX2_VersionMid) "." APPNAME_STRINGIZE(PCSX2_VersionLo));
 #undef APPNAME_STRINGIZE
 	}
 	else
@@ -1431,14 +1419,12 @@ void Host::ReportErrorAsync(const std::string_view& title, const std::string_vie
 {
 	if (!title.empty() && !message.empty())
 	{
-		Console.Error("ReportErrorAsync: %.*s: %.*s",
-			static_cast<int>(title.size()), title.data(),
-			static_cast<int>(message.size()), message.data());
+		Console.Error(
+			"ReportErrorAsync: %.*s: %.*s", static_cast<int>(title.size()), title.data(), static_cast<int>(message.size()), message.data());
 	}
 	else if (!message.empty())
 	{
-		Console.Error("ReportErrorAsync: %.*s",
-			static_cast<int>(message.size()), message.data());
+		Console.Error("ReportErrorAsync: %.*s", static_cast<int>(message.size()), message.data());
 	}
 
 	QMetaObject::invokeMethod(g_main_window, "reportError", Qt::QueuedConnection,
@@ -1455,9 +1441,7 @@ bool Host::ConfirmMessage(const std::string_view& title, const std::string_view&
 
 void Host::OpenURL(const std::string_view& url)
 {
-	QtHost::RunOnUIThread([url = QtUtils::StringViewToQString(url)]() {
-		QtUtils::OpenURL(g_main_window, QUrl(url));
-	});
+	QtHost::RunOnUIThread([url = QtUtils::StringViewToQString(url)]() { QtUtils::OpenURL(g_main_window, QUrl(url)); });
 }
 
 bool Host::CopyTextToClipboard(const std::string_view& text)
@@ -1493,15 +1477,13 @@ std::optional<WindowInfo> Host::GetTopLevelWindowInfo()
 
 void Host::OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name)
 {
-	emit g_emu_thread->onInputDeviceConnected(
-		identifier.empty() ? QString() : QString::fromUtf8(identifier.data(), identifier.size()),
+	emit g_emu_thread->onInputDeviceConnected(identifier.empty() ? QString() : QString::fromUtf8(identifier.data(), identifier.size()),
 		device_name.empty() ? QString() : QString::fromUtf8(device_name.data(), device_name.size()));
 }
 
 void Host::OnInputDeviceDisconnected(const std::string_view& identifier)
 {
-	emit g_emu_thread->onInputDeviceDisconnected(
-		identifier.empty() ? QString() : QString::fromUtf8(identifier.data(), identifier.size()));
+	emit g_emu_thread->onInputDeviceDisconnected(identifier.empty() ? QString() : QString::fromUtf8(identifier.data(), identifier.size()));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1746,9 +1728,9 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 	// scanning the game list).
 	if (s_batch_mode && !s_start_fullscreen_ui && !autoboot)
 	{
-		QMessageBox::critical(nullptr, QStringLiteral("Error"), s_nogui_mode ?
-			QStringLiteral("Cannot use no-gui mode, because no boot filename was specified.") :
-			QStringLiteral("Cannot use batch mode, because no boot filename was specified."));
+		QMessageBox::critical(nullptr, QStringLiteral("Error"),
+			s_nogui_mode ? QStringLiteral("Cannot use no-gui mode, because no boot filename was specified.") :
+                           QStringLiteral("Cannot use batch mode, because no boot filename was specified."));
 		return false;
 	}
 

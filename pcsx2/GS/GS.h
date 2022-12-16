@@ -91,7 +91,9 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config);
 void GSSwitchRenderer(GSRendererType new_renderer);
 void GSResetAPIState();
 void GSRestoreAPIState();
-bool GSSaveSnapshotToMemory(u32 width, u32 height, std::vector<u32>* pixels);
+bool GSSaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
+	u32* width, u32* height, std::vector<u32>* pixels);
+void GSJoinSnapshotThreads();
 
 class GSApp
 {

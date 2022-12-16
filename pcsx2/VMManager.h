@@ -164,8 +164,14 @@ namespace VMManager
 	/// Returns true if the specified path is a disc/elf/etc.
 	bool IsLoadableFileName(const std::string_view& path);
 
+	/// Returns the serial to use when computing the game settings path for the current game.
+	std::string GetSerialForGameSettings();
+
 	/// Returns the path for the game settings ini file for the specified CRC.
 	std::string GetGameSettingsPath(const std::string_view& game_serial, u32 game_crc);
+
+	/// Returns the ISO override for an ELF via gamesettings.
+	std::string GetDiscOverrideFromGameSettings(const std::string& elf_path);
 
 	/// Returns the path for the input profile ini file with the specified name (may not exist).
 	std::string GetInputProfilePath(const std::string_view& name);
@@ -201,7 +207,7 @@ namespace VMManager
 		void EntryPointCompilingOnCPUThread();
 		void GameStartingOnCPUThread();
 		void VSyncOnCPUThread();
-	}
+	} // namespace Internal
 } // namespace VMManager
 
 
@@ -246,11 +252,12 @@ namespace Host
 	void OnSaveStateSaved(const std::string_view& filename);
 
 	/// Provided by the host; called when the running executable changes.
-	void OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name, u32 game_crc);
+	void OnGameChanged(const std::string& disc_path, const std::string& elf_override, const std::string& game_serial,
+		const std::string& game_name, u32 game_crc);
 
 	/// Provided by the host; called once per frame at guest vsync.
 	void CPUThreadVSync();
 
 	/// Provided by the host; called when a state is saved, and the frontend should invalidate its save state cache.
 	void InvalidateSaveStateCache();
-}
+} // namespace Host

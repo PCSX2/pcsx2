@@ -172,12 +172,27 @@ static void cdvdCreateNewNVM(std::FILE* fp)
 
 	// Write NVM ILink area with dummy data (Age of Empires 2)
 	// Also write language data defaulting to English (Guitar Hero 2)
+	// Also write PStwo region defaults
 
 	NVMLayout* nvmLayout = getNvmLayout();
-	u8 ILinkID_Data[8] = {0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86};
 
+	if (((BiosVersion >> 8) == 2) && ((BiosVersion & 0xff) != 10)) // bios >= 200, except of 0x210 for PSX2 DESR
+	{
+		u8 RegParams[12];
+		memcpy(RegParams, &PStwoRegionDefaults[BiosRegion][0], 12);
+		std::fseek(fp, *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, regparams)), SEEK_SET);
+		std::fwrite(RegParams, sizeof(RegParams), 1, fp);
+	}
+
+	u8 ILinkID_Data[8] = {0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86};
 	std::fseek(fp, *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, ilinkId)), SEEK_SET);
 	std::fwrite(ILinkID_Data, sizeof(ILinkID_Data), 1, fp);
+	if (nvmlayouts[1].biosVer <= BiosVersion)
+	{
+		u8 ILinkID_checksum[2] = {0x00, 0x18};
+		std::fseek(fp, *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, ilinkId)) + 0x08, SEEK_SET);
+		std::fwrite(ILinkID_checksum, sizeof(ILinkID_checksum), 1, fp);
+	}
 
 	u8 biosLanguage[16];
 	memcpy(biosLanguage, &biosLangDefaults[BiosRegion][0], 16);
@@ -208,14 +223,19 @@ static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 	else
 	{
 		u8 LanguageParams[16];
+		u8 RegParams[12];
 		u8 zero[16] = {0};
 		NVMLayout* nvmLayout = getNvmLayout();
 
 		if (std::fseek(fp.get(), *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, config1)) + 0x10, SEEK_SET) != 0 ||
 			std::fread(LanguageParams, 16, 1, fp.get()) != 1 ||
-			std::memcmp(LanguageParams, zero, sizeof(LanguageParams)) == 0)
+			std::memcmp(LanguageParams, zero, sizeof(LanguageParams)) == 0 ||
+			(((BiosVersion >> 8) == 2) && ((BiosVersion & 0xff) != 10) &&
+				(std::fseek(fp.get(), *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, regparams)), SEEK_SET) != 0 ||
+					std::fread(RegParams, 12, 1, fp.get()) != 1 ||
+					std::memcmp(RegParams, zero, sizeof(RegParams)) == 0)))
 		{
-			Console.Warning("Language Parameters missing, filling in defaults");
+			Console.Warning("Language or Region Parameters missing, filling in defaults");
 
 			FileSystem::FSeek64(fp.get(), 0, SEEK_SET);
 			cdvdCreateNewNVM(fp.get());
@@ -433,6 +453,25 @@ static __fi void _reloadElfInfo(std::string elfpath)
 	// binary).
 }
 
+u32 cdvdGetElfCRC(const std::string& path)
+{
+	try
+	{
+		// Yay for write-after-read here. Isn't our ELF parser great....
+		const s64 host_size = FileSystem::GetPathFileSize(path.c_str());
+		if (host_size <= 0)
+			return 0;
+
+		std::unique_ptr<ElfObject> elfptr(std::make_unique<ElfObject>(path, static_cast<u32>(std::max<s64>(host_size, 0)), false));
+		elfptr->loadHeaders();
+		return elfptr->getCRC();
+	}
+	catch ([[maybe_unused]] Exception::FileNotFound& e)
+	{
+		return 0;
+	}
+}
+
 static std::string ExecutablePathToSerial(const std::string& path)
 {
 	// cdrom:\SCES_123.45;1
@@ -490,15 +529,16 @@ void cdvdReloadElfInfo(std::string elfoverride)
 	DevCon.WriteLn(Color_Green, "Reload ELF");
 	try
 	{
+		std::string elfpath;
+		u32 discType = GetPS2ElfName(elfpath);
+		DiscSerial = ExecutablePathToSerial(elfpath);
+
+		// Use the serial from the disc (if any), and the ELF CRC of the override.
 		if (!elfoverride.empty())
 		{
 			_reloadElfInfo(std::move(elfoverride));
 			return;
 		}
-
-		std::string elfpath;
-		u32 discType = GetPS2ElfName(elfpath);
-		DiscSerial = ExecutablePathToSerial(elfpath);
 
 		if (discType == 1)
 		{

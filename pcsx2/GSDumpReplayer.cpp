@@ -284,11 +284,11 @@ void GSDumpReplayerCpuStep()
 		case GSDumpTypes::GSType::VSync:
 		{
 			s_dump_frame_number++;
-			GSDumpReplayerCpuCheckExecutionState();
 			GSDumpReplayerUpdateFrameLimit();
 			GSDumpReplayerFrameLimit();
 			GetMTGS().PostVsyncStart(false);
 			VMManager::Internal::VSyncOnCPUThread();
+			GSDumpReplayerCpuCheckExecutionState();
 		}
 		break;
 
