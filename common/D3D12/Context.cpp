@@ -209,7 +209,6 @@ bool Context::CreateDevice(IDXGIFactory* dxgi_factory, u32 adapter_index, bool e
 
 	// Create the actual device.
 	hr = s_d3d12_create_device(adapter.get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device));
-	pxAssertRel(SUCCEEDED(hr), "Create D3D12 device");
 	if (FAILED(hr))
 		return false;
 
@@ -548,7 +547,11 @@ void Context::DestroyPendingResources(CommandListResources& cmdlist)
 
 void Context::DestroyResources()
 {
-	ExecuteCommandList(WaitType::Sleep);
+	if (m_command_queue)
+	{
+		ExecuteCommandList(WaitType::Sleep);
+		WaitForGPUIdle();
+	}
 
 	m_texture_stream_buffer.Destroy(false);
 	m_descriptor_heap_manager.Free(&m_null_srv_descriptor);
