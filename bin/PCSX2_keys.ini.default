@@ -38,11 +38,6 @@ States_DefrostCurrentSlotBackup   = Shift-F3
 States_CycleSlotForward           = F2
 States_CycleSlotBackward          = Shift-F2
 
-Frameskip_Toggle                  = Shift-F4
-Framelimiter_TurboToggle          = TAB
-Framelimiter_SlomoToggle          = Shift-TAB
-Framelimiter_MasterToggle         = F4
-
 FullscreenToggle                  = Alt-ENTER
 
 # Note: toggles suspend, but can resume only if the GS window is not set to hide
@@ -61,22 +56,10 @@ Sys_RecordingToggle               = F12
 
 GSwindow_CycleAspectRatio         = F6
 
-# Whole picture zoom in/out
-GSwindow_ZoomIn                   = Ctrl-KP_ADD
-GSwindow_ZoomOut                  = Ctrl-KP_SUBTRACT
-GSwindow_ZoomToggle               = Ctrl-KP_MULTIPLY
-
 # Vertical stretch/squash
 GSwindow_ZoomInY                  = Alt-Ctrl-KP_ADD
 GSwindow_ZoomOutY                 = Alt-Ctrl-KP_SUBTRACT
 GSwindow_ZoomResetY               = Alt-Ctrl-KP_MULTIPLY
-
-# Move the whole image
-GSwindow_OffsetYminus             = Alt-Ctrl-UP
-GSwindow_OffsetYplus              = Alt-Ctrl-DOWN
-GSwindow_OffsetXminus             = Alt-Ctrl-LEFT
-GSwindow_OffsetXplus              = Alt-Ctrl-RIGHT
-GSwindow_OffsetReset              = Alt-Ctrl-KP_DIVIDE
 
 # Recording Bindings
 # Note - These are disabled if 'System > Enable Recording Tools' is disabled

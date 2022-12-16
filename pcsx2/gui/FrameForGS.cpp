@@ -82,19 +82,9 @@ void GSPanel::InitDefaultAccelerators()
 
 	m_Accels->Map( AAC( WXK_F6 ),				"GSwindow_CycleAspectRatio" );
 
-	m_Accels->Map( AAC( WXK_NUMPAD_ADD ).Cmd(),			"GSwindow_ZoomIn" );	//CTRL on Windows/linux, CMD on OSX
-	m_Accels->Map( AAC( WXK_NUMPAD_SUBTRACT ).Cmd(),	"GSwindow_ZoomOut" );
-	m_Accels->Map( AAC( WXK_NUMPAD_MULTIPLY ).Cmd(),	"GSwindow_ZoomToggle" );
-
 	m_Accels->Map( AAC( WXK_NUMPAD_ADD ).Cmd().Alt(),			"GSwindow_ZoomInY" );	//CTRL on Windows/linux, CMD on OSX
 	m_Accels->Map( AAC( WXK_NUMPAD_SUBTRACT ).Cmd().Alt(),	"GSwindow_ZoomOutY" );
 	m_Accels->Map( AAC( WXK_NUMPAD_MULTIPLY ).Cmd().Alt(),	"GSwindow_ZoomResetY" );
-
-	m_Accels->Map( AAC( WXK_UP ).Cmd().Alt(),	"GSwindow_OffsetYminus" );
-	m_Accels->Map( AAC( WXK_DOWN ).Cmd().Alt(),	"GSwindow_OffsetYplus" );
-	m_Accels->Map( AAC( WXK_LEFT ).Cmd().Alt(),	"GSwindow_OffsetXminus" );
-	m_Accels->Map( AAC( WXK_RIGHT ).Cmd().Alt(),	"GSwindow_OffsetXplus" );
-	m_Accels->Map( AAC( WXK_NUMPAD_DIVIDE ).Cmd().Alt(),	"GSwindow_OffsetReset" );
 
 	m_Accels->Map( AAC( WXK_ESCAPE ),			"Sys_SuspendResume" );
 	m_Accels->Map( AAC( WXK_F8 ),				"Sys_TakeSnapshot" ); // also shift and ctrl-shift will be added automatically
