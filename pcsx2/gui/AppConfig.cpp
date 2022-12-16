@@ -900,6 +900,8 @@ void AppConfig::GSWindowOptions::LoadSave(IniInterface& ini)
 			NULL};
 	ini.EnumEntry(L"FMVAspectRatioSwitch", g_Conf->EmuOptions.GS.FMVAspectRatioSwitch, FMVAspectRatioSwitchNames, g_Conf->EmuOptions.GS.FMVAspectRatioSwitch);
 
+	ini.Entry(wxT("Zoom"), g_Conf->EmuOptions.GS.Zoom, g_Conf->EmuOptions.GS.Zoom);
+
 	if (ini.IsLoading())
 		SanityCheck();
 }

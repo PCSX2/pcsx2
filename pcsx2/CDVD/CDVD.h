@@ -176,7 +176,6 @@ extern u8 cdvdRead(u8 key);
 extern void cdvdWrite(u8 key, u8 rt);
 
 extern void cdvdReloadElfInfo(std::string elfoverride = std::string());
-extern u32 cdvdGetElfCRC(const std::string& path);
 extern s32 cdvdCtrlTrayOpen();
 extern s32 cdvdCtrlTrayClose();
 

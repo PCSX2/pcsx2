@@ -51,6 +51,8 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel(wxWindow* parent)
 			_("Adaptive"),
 		};
 
+	m_text_Zoom = CreateNumericalTextCtrl(this, 5);
+
 	m_combo_AspectRatio = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
 										 std::size(aspect_ratio_labels), aspect_ratio_labels, wxCB_READONLY);
 
@@ -77,6 +79,14 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel(wxWindow* parent)
 												  L"Auto 4:3/3:2: Temporarily switch to a 4:3 aspect ratio while an FMV plays to correctly display a 4:3 FMV. Will use 3:2 is the resolution is 480P\n\n"
 												  L"4:3: Temporarily switch to a 4:3 aspect ratio while an FMV plays to correctly display a 4:3 FMV. \n\n"
 												  L"16:9: Temporarily switch to a 16:9 aspect ratio while an FMV plays to correctly display a widescreen 16:9 FMV."));
+
+	m_text_Zoom->SetToolTip(pxEt(L"Zoom = 100: Fit the entire image to the window without any cropping.\n"
+								 L"Above/Below 100: Zoom In/Out.\n\n"
+								 L"0: Automatic-Zoom-In until the black-bars are gone (Aspect ratio is kept, some of the image goes out of screen).\n\n"
+								 L"NOTE: Some games draw their own black-bars, which will not be removed with '0'.\n\n"
+								 L"Keyboard: \n"
+								 L"CTRL + NUMPAD-PLUS: Zoom-In, \n"
+								 L"CTRL + NUMPAD-MINUS: Zoom-Out, \nCTRL + NUMPAD-*: Toggle 100/0"));
 
 	m_combo_vsync->SetToolTip(pxEt(L"Vsync eliminates screen tearing but typically has a big performance hit. It usually only applies to fullscreen mode."));
 
@@ -106,6 +116,9 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel(wxWindow* parent)
 	s_AspectRatio += m_combo_FMVAspectRatioSwitch | pxAlignRight;
 	s_AspectRatio += Label(_("Custom Window Size:")) | pxMiddle;
 	s_AspectRatio += s_customsize | pxAlignRight;
+
+	s_AspectRatio += Label(_("Zoom:")) | pxMiddle;
+	s_AspectRatio += m_text_Zoom | pxAlignRight;
 
 	wxFlexGridSizer& s_vsync(*new wxFlexGridSizer(2, StdPadding, StdPadding));
 	s_vsync.AddGrowableCol(1);
@@ -153,6 +166,7 @@ void Panels::GSWindowSettingsPanel::ApplyConfigToGui(AppConfig& configToApply, i
 
 		m_combo_AspectRatio->SetSelection((int)gsconf.AspectRatio);
 		m_combo_FMVAspectRatioSwitch->SetSelection(enum_cast(gsconf.FMVAspectRatioSwitch));
+		m_text_Zoom->ChangeValue(wxString::FromDouble(gsconf.Zoom, 2));
 
 		m_check_DclickFullscreen->SetValue(conf.IsToggleFullscreenOnDoubleClick);
 
@@ -177,6 +191,10 @@ void Panels::GSWindowSettingsPanel::Apply()
 	gsconf.AspectRatio = (AspectRatioType)m_combo_AspectRatio->GetSelection();
 	gsconf.FMVAspectRatioSwitch = (FMVAspectRatioSwitchType)m_combo_FMVAspectRatioSwitch->GetSelection();
 	EmuConfig.CurrentAspectRatio = gsconf.AspectRatio;
+
+	double new_zoom = 0.0;
+	if (m_text_Zoom->GetValue().ToDouble(&new_zoom))
+		gsconf.Zoom = new_zoom;
 
 	gsconf.VsyncEnable = static_cast<VsyncMode>(m_combo_vsync->GetSelection());
 

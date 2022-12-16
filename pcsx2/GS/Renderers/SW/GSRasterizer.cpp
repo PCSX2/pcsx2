@@ -19,7 +19,6 @@
 #include "GSRasterizer.h"
 #include "GS/GSExtra.h"
 #include "PerformanceMetrics.h"
-#include "common/AlignedMalloc.h"
 #include "common/StringUtil.h"
 
 #ifdef PCSX2_CORE
@@ -57,10 +56,8 @@ GSRasterizer::GSRasterizer(IDrawScanline* ds, int id, int threads)
 
 	m_thread_height = compute_best_thread_height(threads);
 
-	m_edge.buff = static_cast<GSVertexSW*>(_aligned_malloc(sizeof(GSVertexSW) * 2048, 32));
+	m_edge.buff = (GSVertexSW*)vmalloc(sizeof(GSVertexSW) * 2048, false);
 	m_edge.count = 0;
-	if (!m_edge.buff)
-		throw std::bad_alloc();
 
 	int rows = (2048 >> m_thread_height) + 16;
 	m_scanline = (u8*)_aligned_malloc(rows, 64);
@@ -74,7 +71,10 @@ GSRasterizer::GSRasterizer(IDrawScanline* ds, int id, int threads)
 GSRasterizer::~GSRasterizer()
 {
 	_aligned_free(m_scanline);
-	_aligned_free(m_edge.buff);
+
+	if (m_edge.buff != NULL)
+		vmfree(m_edge.buff, sizeof(GSVertexSW) * 2048);
+
 	delete m_ds;
 }
 

@@ -64,22 +64,19 @@ static constexpr sampler MAIN_SAMPLER(coord::normalized, address::clamp_to_edge,
                              [FXAA CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-// We don't use gather4 for alpha/luminance because it would require an additional
-// pass to compute the values, which would be slower than the extra shader loads.
-
 #if (SHADER_MODEL >= 0x500)
 #define FXAA_HLSL_5 1
-#define FXAA_GATHER4_ALPHA 0
+#define FXAA_GATHER4_ALPHA 1
 
 #elif (SHADER_MODEL >= 0x400)
 #define FXAA_HLSL_4 1
 #define FXAA_GATHER4_ALPHA 0
 
 #elif (FXAA_GLSL_130 == 1 || FXAA_GLSL_VK == 1)
-#define FXAA_GATHER4_ALPHA 0
+#define FXAA_GATHER4_ALPHA 1
 
 #elif defined(__METAL_VERSION__)
-#define FXAA_GATHER4_ALPHA 0
+#define FXAA_GATHER4_ALPHA 1
 #endif
 
 #if (FXAA_HLSL_5 == 1)
@@ -538,7 +535,7 @@ void main()
 	color      = PreGammaPass(color);
 	color      = FxaaPass(color, PSin_t);
 
-	SV_Target0 = float4(color.rgb, 1.0);
+	SV_Target0 = color;
 }
 
 #elif (SHADER_MODEL >= 0x400)
@@ -551,7 +548,7 @@ PS_OUTPUT ps_main(VS_OUTPUT input)
 	color = PreGammaPass(color);
 	color = FxaaPass(color, input.t);
 
-	output.c = float4(color.rgb, 1.0);
+	output.c = color;
 	
 	return output;
 }

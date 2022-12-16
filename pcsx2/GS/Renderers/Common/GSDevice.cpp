@@ -309,6 +309,12 @@ void GSDevice::ClearCurrent()
 	m_mad = nullptr;
 	m_target_tmp = nullptr;
 	m_cas = nullptr;
+	m_temp_snapshot = nullptr;
+}
+
+void GSDevice::SetSnapshot()
+{
+	m_temp_snapshot = m_current;
 }
 
 void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
@@ -391,21 +397,26 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 
 void GSDevice::FXAA()
 {
-	// Combining FXAA+ShadeBoost can't share the same target.
-	GSTexture*& dTex = (m_current == m_target_tmp) ? m_merge : m_target_tmp;
-	if (ResizeTexture(&dTex, GSTexture::Type::RenderTarget, m_current->GetWidth(), m_current->GetHeight(), false, true))
+	const GSVector2i s = m_current->GetSize();
+
+	if (ResizeTarget(&m_target_tmp))
 	{
-		InvalidateRenderTarget(dTex);
-		DoFXAA(m_current, dTex);
-		m_current = dTex;
+		const GSVector4 sRect(0, 0, 1, 1);
+		const GSVector4 dRect(0, 0, s.x, s.y);
+
+		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert::TRANSPARENCY_FILTER, false);
+		DoFXAA(m_target_tmp, m_current);
 	}
 }
 
 void GSDevice::ShadeBoost()
 {
-	if (ResizeTexture(&m_target_tmp, GSTexture::Type::RenderTarget, m_current->GetWidth(), m_current->GetHeight(), false, true))
+	const GSVector2i s = m_current->GetSize();
+
+	if (ResizeTarget(&m_target_tmp))
 	{
-		InvalidateRenderTarget(m_target_tmp);
+		const GSVector4 sRect(0, 0, 1, 1);
+		const GSVector4 dRect(0, 0, s.x, s.y);
 
 		// predivide to avoid the divide (multiply) in the shader
 		const float params[4] = {
@@ -414,15 +425,13 @@ void GSDevice::ShadeBoost()
 			static_cast<float>(GSConfig.ShadeBoost_Saturation) * (1.0f / 50.0f),
 		};
 
-		DoShadeBoost(m_current, m_target_tmp, params);
-
-		m_current = m_target_tmp;
+		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert::COPY, false);
+		DoShadeBoost(m_target_tmp, m_current, params);
 	}
 }
 
 void GSDevice::Resize(int width, int height)
 {
-	GSTexture*& dTex = (m_current == m_target_tmp) ? m_merge : m_target_tmp;
 	GSVector2i s = m_current->GetSize();
 	int multiplier = 1;
 
@@ -431,12 +440,12 @@ void GSDevice::Resize(int width, int height)
 		s = m_current->GetSize() * GSVector2i(++multiplier);
 	}
 
-	if (ResizeTexture(&dTex, GSTexture::Type::RenderTarget, s.x, s.y, false))
+	if (ResizeTexture(&m_target_tmp, GSTexture::Type::RenderTarget, s.x, s.y))
 	{
 		const GSVector4 sRect(0, 0, 1, 1);
 		const GSVector4 dRect(0, 0, s.x, s.y);
-		StretchRect(m_current, sRect, dTex, dRect, ShaderConvert::COPY, false);
-		m_current = dTex;
+		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert::COPY, false);
+		m_current = m_target_tmp;
 	}
 }
 

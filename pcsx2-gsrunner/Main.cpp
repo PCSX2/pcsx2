@@ -77,9 +77,6 @@ static std::string s_output_prefix;
 static s32 s_loop_count = 1;
 static std::optional<bool> s_use_window;
 
-// Owned by the GS thread.
-static u32 s_dump_frame_number = 0;
-
 bool GSRunner::SetCriticalFolders()
 {
 	EmuFolders::AppRoot = Path::Canonicalize(Path::GetDirectory(FileSystem::GetProgramPath()));
@@ -289,13 +286,6 @@ void Host::ReleaseHostDisplay(bool clear_state)
 
 bool Host::BeginPresentFrame(bool frame_skip)
 {
-	// when we wrap around, don't race other files
-	GSJoinSnapshotThreads();
-
-	// queue dumping of this frame
-	std::string dump_path(fmt::format("{}_frame{}.png", s_output_prefix, s_dump_frame_number));
-	GSQueueSnapshot(dump_path);
-
 	if (g_host_display->BeginPresent(frame_skip))
 		return true;
 
@@ -346,8 +336,7 @@ void Host::OnVMResumed()
 {
 }
 
-void Host::OnGameChanged(const std::string& disc_path, const std::string& elf_override, const std::string& game_serial,
-	const std::string& game_name, u32 game_crc)
+void Host::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name, u32 game_crc)
 {
 }
 
@@ -668,8 +657,15 @@ int main(int argc, char* argv[])
 
 void Host::CPUThreadVSync()
 {
-	// update GS thread copy of frame number
-	GetMTGS().RunOnGSThread([frame_number = GSDumpReplayer::GetFrameNumber()]() { s_dump_frame_number = frame_number; });
+	if (!s_output_prefix.empty())
+	{
+		// wait for the previous frame to complete (and thus dump)
+		GetMTGS().WaitGS(false, false, false);
+
+		// queue dumping of this frame
+		std::string dump_path(fmt::format("{}_frame{}.png", s_output_prefix, GSDumpReplayer::GetFrameNumber()));
+		GetMTGS().RunOnGSThread([dump_path = std::move(dump_path)]() { GSQueueSnapshot(dump_path); });
+	}
 
 	// process any window messages (but we shouldn't really have any)
 	GSRunner::PumpPlatformMessages();

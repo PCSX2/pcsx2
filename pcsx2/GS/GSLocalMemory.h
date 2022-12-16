@@ -487,6 +487,9 @@ public:
 
 	GSClut m_clut;
 
+protected:
+	bool m_use_fifo_alloc;
+
 public:
 	static constexpr GSSwizzleInfo swizzle32   {swizzleTables32};
 	static constexpr GSSwizzleInfo swizzle32Z  {swizzleTables32Z};

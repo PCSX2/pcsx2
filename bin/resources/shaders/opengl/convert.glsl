@@ -274,7 +274,10 @@ void ps_convert_rgba_8i()
 void ps_filter_transparency()
 {
     vec4 c = sample_c();
-    SV_Target0 = vec4(c.rgb, 1.0);
+
+    c.a = dot(c.rgb, vec3(0.299, 0.587, 0.114));
+
+    SV_Target0 = c;
 }
 #endif
 

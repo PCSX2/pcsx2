@@ -95,26 +95,6 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 	updateTimestretchSequenceLengthLabel();
 	updateTimestretchSeekwindowLengthLabel();
 	updateTimestretchOverlapLabel();
-
-	dialog->registerWidgetHelp(m_ui.interpolation, tr("Interpolation"), tr("Gaussian (PS2-like / great sound)"), tr(""));
-
-	dialog->registerWidgetHelp(m_ui.syncMode, tr("Synchronization"), tr("TimeStretch (Recommended)"), tr(""));
-
-	dialog->registerWidgetHelp(m_ui.expansionMode, tr("Expansion"), tr("Stereo (None, Default)"), tr(""));
-
-	dialog->registerWidgetHelp(m_ui.outputModule, tr("Output Module"), tr("Cubeb (Cross-platform)"), tr(""));
-
-	dialog->registerWidgetHelp(m_ui.backend, tr("Output Backend"), tr("Default"), tr(""));
-
-	dialog->registerWidgetHelp(m_ui.latency, tr("Latency"), tr("100 ms"), tr(""));
-
-	dialog->registerWidgetHelp(m_ui.sequenceLength, tr("Sequence Length"), tr("30 ms"), tr(""));
-
-	dialog->registerWidgetHelp(m_ui.seekWindowSize, tr("Seekwindow Size"), tr("20 ms"), tr(""));
-
-	dialog->registerWidgetHelp(m_ui.overlap, tr("Overlap"), tr("20 ms"), tr(""));
-
-	dialog->registerWidgetHelp(m_ui.volume, tr("Volume"), tr("100%"), tr(""));
 }
 
 AudioSettingsWidget::~AudioSettingsWidget() = default;
@@ -142,7 +122,7 @@ void AudioSettingsWidget::outputModuleChanged()
 	}
 
 	m_ui.backend->setEnabled(backend_names != nullptr);
-	m_ui.backend->addItem(tr("Default"));
+	m_ui.backend->addItem(tr("(Default)"));
 	if (!backend_names || backend_name.empty())
 		m_ui.backend->setCurrentIndex(0);
 

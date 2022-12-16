@@ -469,22 +469,6 @@ void SettingsDialog::setStringSettingValue(const char* section, const char* key,
 	}
 }
 
-void SettingsDialog::removeSettingValue(const char* section, const char* key)
-{
-	if (m_sif)
-	{
-		m_sif->DeleteValue(section, key);
-		m_sif->Save();
-		g_emu_thread->reloadGameSettings();
-	}
-	else
-	{
-		Host::RemoveBaseSettingValue(section, key);
-		Host::CommitBaseSettingChanges();
-		g_emu_thread->applySettings();
-	}
-}
-
 void SettingsDialog::openGamePropertiesDialog(const GameList::Entry* game, const std::string_view& serial, u32 crc)
 {
 	// check for an existing dialog with this crc

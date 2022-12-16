@@ -381,11 +381,17 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(InterlaceMode) &&
 		OpEqu(LinearPresent) &&
 
+		OpEqu(Zoom) &&
 		OpEqu(StretchY) &&
+#ifndef PCSX2_CORE
+		OpEqu(OffsetX) &&
+		OpEqu(OffsetY) &&
+#else
 		OpEqu(Crop[0]) &&
 		OpEqu(Crop[1]) &&
 		OpEqu(Crop[2]) &&
 		OpEqu(Crop[3]) &&
+#endif
 
 		OpEqu(OsdScale) &&
 
@@ -425,11 +431,6 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(ShadeBoost_Saturation) &&
 		OpEqu(SaveN) &&
 		OpEqu(SaveL) &&
-
-		OpEqu(ScreenshotSize) &&
-		OpEqu(ScreenshotFormat) &&
-		OpEqu(ScreenshotQuality) &&
-
 		OpEqu(Adapter));
 }
 
@@ -473,9 +474,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(SyncToHostRefreshRate);
 	SettingsWrapEnumEx(AspectRatio, "AspectRatio", AspectRatioNames);
 	SettingsWrapEnumEx(FMVAspectRatioSwitch, "FMVAspectRatioSwitch", FMVAspectRatioSwitchNames);
-	SettingsWrapIntEnumEx(ScreenshotSize, "ScreenshotSize");
-	SettingsWrapIntEnumEx(ScreenshotFormat, "ScreenshotFormat");
-	SettingsWrapEntry(ScreenshotQuality);
+	SettingsWrapEntry(Zoom);
 	SettingsWrapEntry(StretchY);
 	SettingsWrapEntryEx(Crop[0], "CropLeft");
 	SettingsWrapEntryEx(Crop[1], "CropTop");
@@ -553,6 +552,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingBoolEx(GPUPaletteConversion, "paltex");
 	GSSettingBoolEx(AutoFlushSW, "autoflush_sw");
 	GSSettingBoolEx(PreloadFrameWithGSData, "preload_frame_with_gs_data");
+	GSSettingBoolEx(WrapGSMem, "wrap_gs_mem");
 	GSSettingBoolEx(Mipmap, "mipmap");
 	GSSettingBoolEx(ManualUserHacks, "UserHacks");
 	GSSettingBoolEx(UserHacks_AlignSpriteX, "UserHacks_align_sprite_X");

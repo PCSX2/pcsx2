@@ -90,7 +90,6 @@ public:
 	void setIntSettingValue(const char* section, const char* key, std::optional<int> value);
 	void setFloatSettingValue(const char* section, const char* key, std::optional<float> value);
 	void setStringSettingValue(const char* section, const char* key, std::optional<const char*> value);
-	void removeSettingValue(const char* section, const char* key);
 
 Q_SIGNALS:
 	void settingsResetToDefaults();

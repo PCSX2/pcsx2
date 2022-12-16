@@ -161,6 +161,44 @@ namespace Implementations
 		Host::AddKeyedFormattedOSDMessage("AspectRatio", 2.0f, "Aspect ratio: %s", arts);
 	}
 
+	// NOTE: The settings below are super janky and race the GS thread when updating.
+	// But because they don't go through the proper settings update procedure, it's necessary to avoid reopening GS.
+	void SetOffset(float x, float y)
+	{
+		g_Conf->EmuOptions.GS.OffsetX = x;
+		g_Conf->EmuOptions.GS.OffsetY = y;
+		EmuConfig.GS.OffsetX = x;
+		EmuConfig.GS.OffsetY = y;
+		GSConfig.OffsetX = x;
+		GSConfig.OffsetY = y;
+		Host::AddKeyedFormattedOSDMessage("WindowOffset", 2.0f, "Offset: x=%f, y=%f", x, y);
+	}
+
+	void GSwindow_OffsetYplus()
+	{
+		SetOffset(EmuConfig.GS.OffsetX, EmuConfig.GS.OffsetY + 1);
+	}
+
+	void GSwindow_OffsetYminus()
+	{
+		SetOffset(EmuConfig.GS.OffsetX, EmuConfig.GS.OffsetY - 1);
+	}
+
+	void GSwindow_OffsetXplus()
+	{
+		SetOffset(EmuConfig.GS.OffsetX + 1, EmuConfig.GS.OffsetY);
+	}
+
+	void GSwindow_OffsetXminus()
+	{
+		SetOffset(EmuConfig.GS.OffsetX - 1, EmuConfig.GS.OffsetY);
+	}
+
+	void GSwindow_OffsetReset()
+	{
+		SetOffset(0, 0);
+	}
+
 	void SetZoomY(float zoom)
 	{
 		if (zoom <= 0)
@@ -183,6 +221,49 @@ namespace Implementations
 	{
 		SetZoomY(100);
 	}
+
+	void SetZoom(float zoom)
+	{
+		if (zoom < 0)
+			return;
+		g_Conf->EmuOptions.GS.Zoom = zoom;
+		EmuConfig.GS.Zoom = zoom;
+		GSConfig.Zoom = zoom;
+
+		if (zoom == 0)
+			Host::AddKeyedOSDMessage("WindowZoom", "Zoom: 0 (auto, no black bars)");
+		else
+			Host::AddKeyedFormattedOSDMessage("WindowZoom", 2.0f, "Zoom: %f", zoom);
+	}
+
+
+	void GSwindow_ZoomIn()
+	{
+		float z = EmuConfig.GS.Zoom;
+		if (z == 0)
+			z = 100;
+		z++;
+		SetZoom(z);
+	}
+	void GSwindow_ZoomOut()
+	{
+		float z = EmuConfig.GS.Zoom;
+		if (z == 0)
+			z = 100;
+		z--;
+		SetZoom(z);
+	}
+	void GSwindow_ZoomToggle()
+	{
+		float z = EmuConfig.GS.Zoom;
+		if (z == 100)
+			z = 0;
+		else
+			z = 100;
+
+		SetZoom(z);
+	}
+
 
 	void Sys_Suspend()
 	{
@@ -531,9 +612,39 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 			true,
 		},
 
+		{
+			"GSwindow_ZoomIn",
+			Implementations::GSwindow_ZoomIn,
+			NULL,
+			NULL,
+			false,
+		},
+
+		{
+			"GSwindow_ZoomOut",
+			Implementations::GSwindow_ZoomOut,
+			NULL,
+			NULL,
+			false,
+		},
+
+		{
+			"GSwindow_ZoomToggle",
+			Implementations::GSwindow_ZoomToggle,
+			NULL,
+			NULL,
+			false,
+		},
+
 		{"GSwindow_ZoomInY", Implementations::GSwindow_ZoomInY, NULL, NULL, false},
 		{"GSwindow_ZoomOutY", Implementations::GSwindow_ZoomOutY, NULL, NULL, false},
 		{"GSwindow_ZoomResetY", Implementations::GSwindow_ZoomResetY, NULL, NULL, false},
+
+		{"GSwindow_OffsetYminus", Implementations::GSwindow_OffsetYminus, NULL, NULL, false},
+		{"GSwindow_OffsetYplus", Implementations::GSwindow_OffsetYplus, NULL, NULL, false},
+		{"GSwindow_OffsetXminus", Implementations::GSwindow_OffsetXminus, NULL, NULL, false},
+		{"GSwindow_OffsetXplus", Implementations::GSwindow_OffsetXplus, NULL, NULL, false},
+		{"GSwindow_OffsetReset", Implementations::GSwindow_OffsetReset, NULL, NULL, false},
 
 		{
 			"Sys_SuspendResume",

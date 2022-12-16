@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>861</width>
-    <height>501</height>
+    <width>850</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -201,36 +201,30 @@
          </item>
         </widget>
        </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_18">
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_21">
          <property name="text">
-          <string>Bilinear Filtering:</string>
+          <string>Zoom:</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
-        <widget class="QComboBox" name="bilinearFiltering">
-         <item>
-          <property name="text">
-           <string>None</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Bilinear (Smooth)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Bilinear (Sharp)</string>
-          </property>
-         </item>
+       <item row="5" column="1">
+        <widget class="QSpinBox" name="zoom">
+         <property name="suffix">
+          <string>%</string>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>300</number>
+         </property>
         </widget>
        </item>
        <item row="6" column="0">
         <widget class="QLabel" name="label_24">
          <property name="text">
-          <string>Vertical Stretch:</string>
+          <string>Stretch Height:</string>
          </property>
         </widget>
        </item>
@@ -389,69 +383,31 @@
          </item>
         </layout>
        </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_21">
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_18">
          <property name="text">
-          <string>Screenshot Size:</string>
+          <string>Bilinear Filtering:</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0,0">
+       <item row="4" column="1">
+        <widget class="QComboBox" name="bilinearFiltering">
          <item>
-          <widget class="QComboBox" name="screenshotSize">
-           <item>
-            <property name="text">
-             <string>Screen Resolution</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Internal Resolution</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Internal Resolution (Aspect Uncorrected)</string>
-            </property>
-           </item>
-          </widget>
+          <property name="text">
+           <string>None</string>
+          </property>
          </item>
          <item>
-          <widget class="QComboBox" name="screenshotFormat">
-           <item>
-            <property name="text">
-             <string>PNG</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>JPEG</string>
-            </property>
-           </item>
-          </widget>
+          <property name="text">
+           <string>Bilinear (Smooth)</string>
+          </property>
          </item>
          <item>
-          <widget class="QLabel" name="label_44">
-           <property name="text">
-            <string>Quality:</string>
-           </property>
-          </widget>
+          <property name="text">
+           <string>Bilinear (Sharp)</string>
+          </property>
          </item>
-         <item>
-          <widget class="QSpinBox" name="screenshotQuality">
-           <property name="suffix">
-            <string>%</string>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>100</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -968,10 +924,24 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="memoryWrapping">
+           <property name="text">
+            <string>Memory Wrapping</string>
+           </property>
+          </widget>
+         </item>
          <item row="2" column="0">
           <widget class="QCheckBox" name="disableSafeFeatures">
            <property name="text">
             <string>Disable Safe Features</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QCheckBox" name="preloadFrameData">
+           <property name="text">
+            <string>Preload Frame Data</string>
            </property>
           </widget>
          </item>
@@ -982,14 +952,7 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QCheckBox" name="preloadFrameData">
-           <property name="text">
-            <string>Preload Frame Data</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
+         <item row="3" column="1">
           <widget class="QCheckBox" name="textureInsideRt">
            <property name="text">
             <string>Texture Inside RT</string>
@@ -1295,7 +1258,7 @@
              <widget class="QComboBox" name="casMode">
               <item>
                <property name="text">
-                <string>None (Default)</string>
+                <string>Disabled</string>
                </property>
               </item>
               <item>
@@ -1363,7 +1326,7 @@
            <widget class="QComboBox" name="tvShader">
             <item>
              <property name="text">
-              <string>None (Default)</string>
+              <string>None</string>
              </property>
             </item>
             <item>

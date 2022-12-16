@@ -14,15 +14,10 @@
  */
 
 #include "PrecompiledHeader.h"
-
 #ifndef PCSX2_CORE
-#ifdef _WIN32
-// Need to ensure we include windows.h and set _WIN32_WINNT before wx does..
-#include "common/RedtapeWindows.h"
-#endif
+// NOTE: The include order matters - GS.h includes windows.h
 #include "GS/Window/GSwxDialog.h"
 #endif
-
 #include "GS.h"
 #include "GSGL.h"
 #include "GSUtil.h"
@@ -121,7 +116,20 @@ void GSinitConfig()
 
 void GSshutdown()
 {
-	GSclose();
+#ifndef PCSX2_CORE
+	if (g_gs_renderer)
+	{
+		g_gs_renderer->Destroy();
+		g_gs_renderer.reset();
+	}
+	if (g_gs_device)
+	{
+		g_gs_device->Destroy();
+		g_gs_device.reset();
+	}
+
+	Host::ReleaseHostDisplay(true);
+#endif
 
 #ifdef _WIN32
 	if (SUCCEEDED(s_hr))
@@ -150,9 +158,6 @@ void GSclose()
 		g_host_display->SetGPUTimingEnabled(false);
 
 	Host::ReleaseHostDisplay(true);
-
-	// ensure all screenshots have been saved
-	GSJoinSnapshotThreads();
 }
 
 static RenderAPI GetAPIForRenderer(GSRendererType renderer)
@@ -914,14 +919,12 @@ void GSRestoreAPIState()
 	g_gs_device->RestoreAPIState();
 }
 
-bool GSSaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
-	u32* width, u32* height, std::vector<u32>* pixels)
+bool GSSaveSnapshotToMemory(u32 width, u32 height, std::vector<u32>* pixels)
 {
 	if (!g_gs_renderer)
 		return false;
 
-	return g_gs_renderer->SaveSnapshotToMemory(window_width, window_height, apply_aspect, crop_borders,
-		width, height, pixels);
+	return g_gs_renderer->SaveSnapshotToMemory(width, height, pixels);
 }
 
 std::string format(const char* fmt, ...)
@@ -958,9 +961,25 @@ const std::string root_hw("/tmp/GS_HW_dump32/");
 
 #ifdef _WIN32
 
+void* vmalloc(size_t size, bool code)
+{
+	void* ptr = VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, code ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE);
+	if (!ptr)
+		throw std::bad_alloc();
+	return ptr;
+}
+
+void vmfree(void* ptr, size_t size)
+{
+	VirtualFree(ptr, 0, MEM_RELEASE);
+}
+
+#ifdef PCSX2_CORE
+// Safe, placeholder-based mapping for Win10+ and Qt.
+
 static HANDLE s_fh = NULL;
 
-void* GSAllocateWrappedMemory(size_t size, size_t repeat)
+void* fifo_alloc(size_t size, size_t repeat)
 {
 	pxAssertRel(!s_fh, "Has no file mapping");
 
@@ -1009,7 +1028,7 @@ void* GSAllocateWrappedMemory(size_t size, size_t repeat)
 	return nullptr;
 }
 
-void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
+void fifo_free(void* ptr, size_t size, size_t repeat)
 {
 	pxAssertRel(s_fh, "Has a file mapping");
 
@@ -1025,14 +1044,130 @@ void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
 
 #else
 
+// "Best effort" mapping for <Win10 and wx build.
+// This can be removed once the wx UI is dropped.
+
+static HANDLE s_fh = NULL;
+static u8* s_Next[8];
+
+void* fifo_alloc(size_t size, size_t repeat)
+{
+	ASSERT(s_fh == NULL);
+
+	if (repeat >= std::size(s_Next))
+	{
+		fprintf(stderr, "Memory mapping overflow (%zu >= %u)\n", repeat, static_cast<unsigned>(std::size(s_Next)));
+		return nullptr; // Fallback to default vmalloc
+	}
+
+	s_fh = CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, size, nullptr);
+	DWORD errorID = ::GetLastError();
+	if (s_fh == NULL)
+	{
+		fprintf(stderr, "Failed to reserve memory. WIN API ERROR:%u\n", errorID);
+		return nullptr; // Fallback to default vmalloc
+	}
+
+	int mmap_segment_failed = 0;
+	void* fifo = MapViewOfFile(s_fh, FILE_MAP_ALL_ACCESS, 0, 0, size);
+	for (size_t i = 1; i < repeat; i++)
+	{
+		void* base = (u8*)fifo + size * i;
+		s_Next[i] = (u8*)MapViewOfFileEx(s_fh, FILE_MAP_ALL_ACCESS, 0, 0, size, base);
+		errorID = ::GetLastError();
+		if (s_Next[i] != base)
+		{
+			mmap_segment_failed++;
+			if (mmap_segment_failed > 4)
+			{
+				fprintf(stderr, "Memory mapping failed after %d attempts, aborting. WIN API ERROR:%u\n", mmap_segment_failed, errorID);
+				fifo_free(fifo, size, repeat);
+				return nullptr; // Fallback to default vmalloc
+			}
+			do
+			{
+				UnmapViewOfFile(s_Next[i]);
+				s_Next[i] = 0;
+			} while (--i > 0);
+
+			fifo = MapViewOfFile(s_fh, FILE_MAP_ALL_ACCESS, 0, 0, size);
+		}
+	}
+
+	return fifo;
+}
+
+void fifo_free(void* ptr, size_t size, size_t repeat)
+{
+	ASSERT(s_fh != NULL);
+
+	if (s_fh == NULL)
+	{
+		if (ptr != NULL)
+			vmfree(ptr, size);
+		return;
+	}
+
+	UnmapViewOfFile(ptr);
+
+	for (size_t i = 1; i < std::size(s_Next); i++)
+	{
+		if (s_Next[i] != 0)
+		{
+			UnmapViewOfFile(s_Next[i]);
+			s_Next[i] = 0;
+		}
+	}
+
+	CloseHandle(s_fh);
+	s_fh = NULL;
+}
+
+#endif // PCSX2_CORE
+
+#else
+
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 
+void* vmalloc(size_t size, bool code)
+{
+	size_t mask = getpagesize() - 1;
+
+	size = (size + mask) & ~mask;
+
+	int prot = PROT_READ | PROT_WRITE;
+	int flags = MAP_PRIVATE | MAP_ANONYMOUS;
+
+	if (code)
+	{
+		prot |= PROT_EXEC;
+#if defined(_M_AMD64) && !defined(__APPLE__)
+		// macOS doesn't allow any mappings in the first 4GB of address space
+		flags |= MAP_32BIT;
+#endif
+	}
+
+	void* ptr = mmap(NULL, size, prot, flags, -1, 0);
+	if (ptr == MAP_FAILED)
+		throw std::bad_alloc();
+	return ptr;
+}
+
+void vmfree(void* ptr, size_t size)
+{
+	size_t mask = getpagesize() - 1;
+
+	size = (size + mask) & ~mask;
+
+	munmap(ptr, size);
+}
+
 static int s_shm_fd = -1;
 
-void* GSAllocateWrappedMemory(size_t size, size_t repeat)
+void* fifo_alloc(size_t size, size_t repeat)
 {
 	ASSERT(s_shm_fd == -1);
 
@@ -1064,7 +1199,7 @@ void* GSAllocateWrappedMemory(size_t size, size_t repeat)
 	return fifo;
 }
 
-void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
+void fifo_free(void* ptr, size_t size, size_t repeat)
 {
 	ASSERT(s_shm_fd >= 0);
 
@@ -1176,7 +1311,7 @@ void GSApp::Init()
 
 	m_section = "Settings";
 
-	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::Auto), "Automatic", "Default"));
+	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::Auto), "Automatic", ""));
 #ifdef _WIN32
 	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::DX11), "Direct3D 11", ""));
 	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::DX12), "Direct3D 12", ""));
@@ -1281,14 +1416,14 @@ void GSApp::Init()
 	m_gs_acc_blend_level.push_back(GSSetting(static_cast<u32>(AccBlendLevel::Full), "Full", "Slow"));
 	m_gs_acc_blend_level.push_back(GSSetting(static_cast<u32>(AccBlendLevel::Maximum), "Maximum", "Very Slow"));
 
-	m_gs_tv_shaders.push_back(GSSetting(0, "None", "Default"));
+	m_gs_tv_shaders.push_back(GSSetting(0, "None", ""));
 	m_gs_tv_shaders.push_back(GSSetting(1, "Scanline filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(2, "Diagonal filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(3, "Triangular filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(4, "Wave filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(5, "Lottes CRT filter", ""));
 
-	m_gs_casmode.push_back(GSSetting(static_cast<u32>(GSCASMode::Disabled), "None", "Default"));
+	m_gs_casmode.push_back(GSSetting(static_cast<u32>(GSCASMode::Disabled), "Disabled", ""));
 	m_gs_casmode.push_back(GSSetting(static_cast<u32>(GSCASMode::SharpenOnly), "Sharpen Only", "Internal Resolution"));
 	m_gs_casmode.push_back(GSSetting(static_cast<u32>(GSCASMode::SharpenAndResize), "Sharpen And Resize", "Display Resolution"));
 
@@ -1419,6 +1554,7 @@ void GSApp::Init()
 	m_default_configuration["UserHacks_TCOffsetY"]                        = "0";
 	m_default_configuration["UserHacks_TextureInsideRt"]                  = "0";
 	m_default_configuration["UserHacks_WildHack"]                         = "0";
+	m_default_configuration["wrap_gs_mem"]                                = "0";
 	m_default_configuration["vsync"]                                      = "0";
 	// clang-format on
 }
@@ -1579,6 +1715,16 @@ static void HotkeyAdjustUpscaleMultiplier(s32 delta)
 	GetMTGS().ApplySettings();
 }
 
+static void HotkeyAdjustZoom(double delta)
+{
+	const double new_zoom = std::clamp(EmuConfig.GS.Zoom + delta, 1.0, 200.0);
+	Host::AddKeyedFormattedOSDMessage("ZoomChanged", Host::OSD_QUICK_DURATION, "Zoom set to %.1f%%.", new_zoom);
+	EmuConfig.GS.Zoom = new_zoom;
+
+	// no need to go through the full settings update for this
+	GetMTGS().RunOnGSThread([new_zoom]() { GSConfig.Zoom = new_zoom; });
+}
+
 BEGIN_HOTKEY_LIST(g_gs_hotkeys)
 	{"Screenshot", "Graphics", "Save Screenshot", [](s32 pressed) {
 		if (!pressed)
@@ -1663,6 +1809,14 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys)
 		 EmuConfig.GS.InterlaceMode = new_mode;
 
 		 GetMTGS().RunOnGSThread([new_mode]() { GSConfig.InterlaceMode = new_mode; });
+	 }},
+	{"ZoomIn", "Graphics", "Zoom In", [](s32 pressed) {
+		 if (!pressed)
+			 HotkeyAdjustZoom(1.0);
+	 }},
+	{"ZoomOut", "Graphics", "Zoom Out", [](s32 pressed) {
+		 if (!pressed)
+			 HotkeyAdjustZoom(-1.0);
 	 }},
 	{"ToggleTextureDumping", "Graphics", "Toggle Texture Dumping", [](s32 pressed) {
 		 if (!pressed)

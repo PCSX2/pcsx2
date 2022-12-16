@@ -35,15 +35,10 @@ public:
 	~GameSummaryWidget();
 
 private:
-	void populateInputProfiles();
-	void populateDetails(const GameList::Entry* entry);
-	void populateDiscPath(const GameList::Entry* entry);
+	void populateUi(const GameList::Entry* entry);
 
 	void onInputProfileChanged(int index);
-	void onDiscPathChanged(const QString& value);
-	void onDiscPathBrowseClicked();
 
 	Ui::GameSummaryWidget m_ui;
 	SettingsDialog* m_dialog;
-	std::string m_entry_path;
 };

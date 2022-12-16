@@ -770,7 +770,6 @@ void GSDevice12::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float para
 	const GSVector4i dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
 	EndRenderPass();
 	OMSetRenderTargets(dTex, nullptr, dRect);
-	SetUtilityRootSignature();
 	SetUtilityTexture(sTex, m_point_sampler_cpu);
 	BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS);
@@ -788,7 +787,6 @@ void GSDevice12::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	const GSVector4i dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
 	EndRenderPass();
 	OMSetRenderTargets(dTex, nullptr, dRect);
-	SetUtilityRootSignature();
 	SetUtilityTexture(sTex, m_linear_sampler_cpu);
 	BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS);

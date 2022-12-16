@@ -434,19 +434,3 @@ void Updater::RemoveUpdateZip()
 	if (!FileSystem::DeleteFilePath(m_zip_path.c_str()))
 		m_progress->DisplayFormattedError("Failed to remove update zip '%s'", m_zip_path.c_str());
 }
-
-std::string Updater::FindPCSX2Exe() const
-{
-	for (const FileToUpdate& file : m_update_paths)
-	{
-		const std::string& name = file.destination_filename;
-		if (name.find(FS_OSPATH_SEPARATOR_CHARACTER) != name.npos)
-			continue; // Main exe is expected to be at the top level
-		if (!StringUtil::StartsWithNoCase(name, "pcsx2"))
-			continue;
-		if (!StringUtil::EndsWithNoCase(name, "exe"))
-			continue;
-		return name;
-	}
-	return {};
-}

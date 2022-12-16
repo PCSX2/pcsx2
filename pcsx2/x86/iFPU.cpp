@@ -1288,7 +1288,7 @@ void recMADDtemp(int info, int regd)
 					FPU_ADD(regd, t0reg);
 				}
 			}
-			else if ((info & PROCESS_EE_ACC) && regd == EEREC_ACC)
+			else if (regd == EEREC_ACC)
 			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(EEREC_T); fpuFloat2(t0reg); }
@@ -1374,7 +1374,7 @@ void recMADDtemp(int info, int regd)
 			}
 			break;
 		default:
-			if ((info & PROCESS_EE_ACC) && regd == EEREC_ACC)
+			if (regd == EEREC_ACC)
 			{
 				const int t1reg = _allocTempXMMreg(XMMT_FPS);
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
@@ -1492,7 +1492,7 @@ void recMSUBtemp(int info, int regd)
 				FPU_SUB(t0reg, regd);
 				xMOVSS(xRegisterSSE(regd), xRegisterSSE(t0reg));
 			}
-			else if ((info & PROCESS_EE_ACC) && regd == EEREC_ACC)
+			else if (regd == EEREC_ACC)
 			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(EEREC_S); fpuFloat2(t0reg); }
@@ -1528,7 +1528,7 @@ void recMSUBtemp(int info, int regd)
 				FPU_SUB(t0reg, regd);
 				xMOVSS(xRegisterSSE(regd), xRegisterSSE(t0reg));
 			}
-			else if ((info & PROCESS_EE_ACC) && regd == EEREC_ACC)
+			else if (regd == EEREC_ACC)
 			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(EEREC_T); fpuFloat2(t0reg); }
@@ -1575,7 +1575,7 @@ void recMSUBtemp(int info, int regd)
 				FPU_SUB(t0reg, regd);
 				xMOVSS(xRegisterSSE(regd), xRegisterSSE(t0reg));
 			}
-			else if ((info & PROCESS_EE_ACC) && regd == EEREC_ACC)
+			else if (regd == EEREC_ACC)
 			{
 				xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(t0reg); fpuFloat2(EEREC_T); }
@@ -1598,7 +1598,7 @@ void recMSUBtemp(int info, int regd)
 			}
 			break;
 		default:
-			if ((info & PROCESS_EE_ACC) && regd == EEREC_ACC)
+			if (regd == EEREC_ACC)
 			{
 				const int t1reg = _allocTempXMMreg(XMMT_FPS);
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);

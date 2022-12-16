@@ -122,9 +122,6 @@ namespace GameList
 	/// If only_cache is set, no new files will be scanned, only those present in the cache.
 	void Refresh(bool invalidate_cache, bool only_cache = false, ProgressCallback* progress = nullptr);
 
-	/// Re-scans a single entry in the game list.
-	bool RescanPath(const std::string& path);
-
 	/// Add played time for the specified serial.
 	void AddPlayedTimeForSerial(const std::string& serial, std::time_t last_time, std::time_t add_time);
 	void ClearPlayedTimeForSerial(const std::string& serial);

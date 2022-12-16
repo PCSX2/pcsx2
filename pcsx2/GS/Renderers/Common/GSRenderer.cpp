@@ -20,17 +20,12 @@
 #include "HostDisplay.h"
 #include "PerformanceMetrics.h"
 #include "pcsx2/Config.h"
-#include "IconsFontAwesome5.h"
 #include "common/FileSystem.h"
-#include "common/Image.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 #include "fmt/core.h"
 #include <array>
-#include <deque>
-#include <thread>
-#include <mutex>
 
 #ifndef PCSX2_CORE
 #include "gui/AppCoreThread.h"
@@ -65,9 +60,6 @@ static constexpr std::array<PresentShader, 6> s_tv_shader_indices = {
 	PresentShader::COPY, PresentShader::SCANLINE,
 	PresentShader::DIAGONAL_FILTER, PresentShader::TRIANGULAR_FILTER,
 	PresentShader::COMPLEX_FILTER, PresentShader::LOTTES_FILTER};
-
-static std::deque<std::thread> s_screenshot_threads;
-static std::mutex s_screenshot_threads_mutex;
 
 std::unique_ptr<GSRenderer> g_gs_renderer;
 
@@ -141,12 +133,11 @@ bool GSRenderer::Merge(int field)
 	//
 	// NOTE: probably the technique explained in graphtip.pdf (Antialiasing by Supersampling / 4. Reading Odd/Even Scan Lines Separately with the PCRTC then Blending)
 
-	const bool samesrc =
+	bool samesrc =
 		en[0] && en[1] &&
 		m_regs->DISP[0].DISPFB.FBP == m_regs->DISP[1].DISPFB.FBP &&
 		m_regs->DISP[0].DISPFB.FBW == m_regs->DISP[1].DISPFB.FBW &&
 		GSUtil::HasCompatibleBits(m_regs->DISP[0].DISPFB.PSM, m_regs->DISP[1].DISPFB.PSM);
-	bool single_fetch = false;
 
 	GSVector2i fs(0, 0);
 	GSVector2i ds(0, 0);
@@ -162,7 +153,6 @@ bool GSRenderer::Merge(int field)
 		tex[0] = GetOutput(0, y_offset[0]);
 		tex[1] = tex[0]; // saves one texture fetch
 		y_offset[1] = y_offset[0];
-		single_fetch = true;
 	}
 	else
 	{
@@ -213,21 +203,11 @@ bool GSRenderer::Merge(int field)
 
 		if (!GSConfig.UseHardwareRenderer())
 		{
-			// Clear any frame offsets, offset is already done in the software GetOutput.
+			// Clear any frame offsets, we don't need them now.
 			fr[i].right -= fr[i].left;
 			fr[i].left = 0;
 			fr[i].bottom -= fr[i].top;
 			fr[i].top = 0;
-
-			// Put any frame offset difference back if we aren't anti-blurring on a single fetch (not offset).
-			if (!GSConfig.PCRTCAntiBlur && single_fetch)
-			{
-				fr[i].right += frame_diff.x;
-				fr[i].left += frame_diff.x;
-				fr[i].bottom += frame_diff.y;
-				fr[i].top += frame_diff.y;
-			}
-			
 		}
 
 		// If using scanmsk we have to keep the single line offset, regardless of upscale
@@ -418,6 +398,8 @@ bool GSRenderer::Merge(int field)
 	if (GSConfig.FXAA)
 		g_gs_device->FXAA();
 
+	g_gs_device->SetSnapshot();
+
 	// Sharpens biinear at lower resolutions, almost nearest but with more uniform pixels.
 	if (GSConfig.LinearPresent == GSPostBilinearMode::BilinearSharp && (g_host_display->GetWindowWidth() > fs.x || g_host_display->GetWindowHeight() > fs.y))
 	{
@@ -473,7 +455,12 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 	else if (arr > 1)
 		target_height = std::floor(f_height / arr + 0.5f);
 
-	target_height *= GSConfig.StretchY / 100.0f;
+	float zoom = GSConfig.Zoom / 100.0;
+	if (zoom == 0) //auto zoom in untill black-bars are gone (while keeping the aspect ratio).
+		zoom = std::max((float)arr, (float)(1.0 / arr));
+
+	target_width *= zoom;
+	target_height *= zoom * GSConfig.StretchY / 100.0f;
 
 	if (GSConfig.IntegerScaling)
 	{
@@ -537,6 +524,12 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 		}
 	}
 
+#ifndef PCSX2_CORE
+	const float unit = .01f * std::min(target_x, target_y);
+	target_x += unit * GSConfig.OffsetX;
+	target_y += unit * GSConfig.OffsetY;
+#endif
+
 	GSVector4 ret(target_x, target_y, target_x + target_width, target_y + target_height);
 
 	if (flip_y)
@@ -551,6 +544,9 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 
 static GSVector4i CalculateDrawSrcRect(const GSTexture* src)
 {
+#ifndef PCSX2_CORE
+	return GSVector4i(0, 0, src->GetWidth(), src->GetHeight());
+#else
 	const float upscale = GSConfig.UpscaleMultiplier;
 	const GSVector2i size(src->GetSize());
 	const int left = static_cast<int>(static_cast<float>(GSConfig.Crop[0]) * upscale);
@@ -558,63 +554,7 @@ static GSVector4i CalculateDrawSrcRect(const GSTexture* src)
 	const int right =  size.x - static_cast<int>(static_cast<float>(GSConfig.Crop[2]) * upscale);
 	const int bottom = size.y - static_cast<int>(static_cast<float>(GSConfig.Crop[3]) * upscale);
 	return GSVector4i(left, top, right, bottom);
-}
-
-static const char* GetScreenshotSuffix()
-{
-	static constexpr const char* suffixes[static_cast<u8>(GSScreenshotFormat::Count)] = {
-		"png", "jpg"};
-	return suffixes[static_cast<u8>(GSConfig.ScreenshotFormat)];
-}
-
-static void CompressAndWriteScreenshot(std::string filename, u32 width, u32 height, std::vector<u32> pixels)
-{
-	Common::RGBA8Image image;
-	image.SetPixels(width, height, std::move(pixels));
-
-	std::string key(fmt::format("GSScreenshot_{}", filename));
-	Host::AddIconOSDMessage(key, ICON_FA_CAMERA, fmt::format("Saving screenshot to '{}'.", Path::GetFileName(filename)), 60.0f);
-
-	// maybe std::async would be better here.. but it's definitely worth threading, large screenshots take a while to compress.
-	std::unique_lock lock(s_screenshot_threads_mutex);
-	s_screenshot_threads.emplace_back([key = std::move(key), filename = std::move(filename), image = std::move(image), quality = GSConfig.ScreenshotQuality]() {
-		if (image.SaveToFile(filename.c_str(), quality))
-		{
-			Host::AddIconOSDMessage(std::move(key), ICON_FA_CAMERA,
-				fmt::format("Saved screenshot to '{}'.", Path::GetFileName(filename)), Host::OSD_INFO_DURATION);
-		}
-		else
-		{
-			Host::AddIconOSDMessage(std::move(key), ICON_FA_CAMERA,
-				fmt::format("Failed to save screenshot to '{}'.", Path::GetFileName(filename), Host::OSD_ERROR_DURATION));
-		}
-
-		// remove ourselves from the list, if the GS thread is waiting for us, we won't be in there
-		const auto this_id = std::this_thread::get_id();
-		std::unique_lock lock(s_screenshot_threads_mutex);
-		for (auto it = s_screenshot_threads.begin(); it != s_screenshot_threads.end(); ++it)
-		{
-			if (it->get_id() == this_id)
-			{
-				it->detach();
-				s_screenshot_threads.erase(it);
-				break;
-			}
-		}
-	});
-}
-
-void GSJoinSnapshotThreads()
-{
-	std::unique_lock lock(s_screenshot_threads_mutex);
-	while (!s_screenshot_threads.empty())
-	{
-		std::thread save_thread(std::move(s_screenshot_threads.front()));
-		s_screenshot_threads.pop_front();
-		lock.unlock();
-		save_thread.join();
-		lock.lock();
-	}
+#endif
 }
 
 void GSRenderer::VSync(u32 field, bool registers_written)
@@ -725,9 +665,6 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 
 	if (!m_snapshot.empty())
 	{
-		u32 screenshot_width, screenshot_height;
-		std::vector<u32> screenshot_pixels;
-
 		if (!m_dump && m_dump_frames > 0)
 		{
 			freezeData fd = {0, nullptr};
@@ -738,14 +675,14 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 			// keep the screenshot relatively small so we don't bloat the dump
 			static constexpr u32 DUMP_SCREENSHOT_WIDTH = 640;
 			static constexpr u32 DUMP_SCREENSHOT_HEIGHT = 480;
-			SaveSnapshotToMemory(DUMP_SCREENSHOT_WIDTH, DUMP_SCREENSHOT_HEIGHT, true, false,
-				&screenshot_width, &screenshot_height, &screenshot_pixels);
+			std::vector<u32> screenshot_pixels;
+			SaveSnapshotToMemory(DUMP_SCREENSHOT_WIDTH, DUMP_SCREENSHOT_HEIGHT, &screenshot_pixels);
 
 			std::string_view compression_str;
 			if (GSConfig.GSDumpCompression == GSDumpCompressionMethod::Uncompressed)
 			{
 				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpUncompressed(m_snapshot, GetDumpSerial(), m_crc,
-					screenshot_width, screenshot_height,
+					DUMP_SCREENSHOT_WIDTH, DUMP_SCREENSHOT_HEIGHT,
 					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
 					fd, m_regs));
 				compression_str = "with no compression";
@@ -753,7 +690,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 			else if (GSConfig.GSDumpCompression == GSDumpCompressionMethod::LZMA)
 			{
 				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpXz(m_snapshot, GetDumpSerial(), m_crc,
-					screenshot_width, screenshot_height,
+					DUMP_SCREENSHOT_WIDTH, DUMP_SCREENSHOT_HEIGHT,
 					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
 					fd, m_regs));
 				compression_str = "with LZMA compression";
@@ -761,7 +698,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 			else
 			{
 				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpZst(m_snapshot, GetDumpSerial(), m_crc,
-					screenshot_width, screenshot_height,
+					DUMP_SCREENSHOT_WIDTH, DUMP_SCREENSHOT_HEIGHT,
 					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
 					fd, m_regs));
 				compression_str = "with Zstandard compression";
@@ -774,21 +711,18 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 				Path::GetFileName(m_dump->GetPath())), Host::OSD_INFO_DURATION);
 		}
 
-		const bool internal_resolution = (GSConfig.ScreenshotSize >= GSScreenshotSize::InternalResolution);
-		const bool aspect_correct = (GSConfig.ScreenshotSize != GSScreenshotSize::InternalResolutionUncorrected);
-
-		if (g_gs_device->GetCurrent() && SaveSnapshotToMemory(
-			internal_resolution ? 0 : g_host_display->GetWindowWidth(),
-			internal_resolution ? 0 : g_host_display->GetWindowHeight(),
-			aspect_correct, true,
-			&screenshot_width, &screenshot_height, &screenshot_pixels))
+		if (GSTexture* t = g_gs_device->GetSnapshot())
 		{
-			CompressAndWriteScreenshot(fmt::format("{}.{}", m_snapshot, GetScreenshotSuffix()),
-				screenshot_width, screenshot_height, std::move(screenshot_pixels));
-		}
-		else
-		{
-			Host::AddIconOSDMessage("GSScreenshot", ICON_FA_CAMERA, "Failed to render/download screenshot.", Host::OSD_ERROR_DURATION);
+			const std::string path(m_snapshot + ".png");
+			if (t->Save(path))
+			{
+				Host::AddKeyedOSDMessage("GSScreenshot",
+					fmt::format("Screenshot saved to '{}'.", Path::GetFileName(path)), Host::OSD_INFO_DURATION);
+			}
+			else
+			{
+				Host::AddFormattedOSDMessage(Host::OSD_ERROR_DURATION, "Failed to save screenshot to '%s'.", path.c_str());
+			}
 		}
 
 		m_snapshot = {};
@@ -1022,69 +956,42 @@ void GSRenderer::PurgeTextureCache()
 {
 }
 
-bool GSRenderer::SaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
-	u32* width, u32* height, std::vector<u32>* pixels)
+bool GSRenderer::SaveSnapshotToMemory(u32 width, u32 height, std::vector<u32>* pixels)
 {
 	GSTexture* const current = g_gs_device->GetCurrent();
 	if (!current)
-	{
-		*width = 0;
-		*height = 0;
-		pixels->clear();
 		return false;
-	}
 
 	const GSVector4i src_rect(CalculateDrawSrcRect(current));
 	const GSVector4 src_uv(GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy());
-
-	const bool is_progressive = (GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets));
-	GSVector4 draw_rect;
-	if (window_width == 0 || window_height == 0)
+	GSVector4 draw_rect(CalculateDrawDstRect(width, height, src_rect, current->GetSize(),
+		HostDisplay::Alignment::LeftOrTop, false, GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets)));
+	u32 draw_width = static_cast<u32>(draw_rect.z - draw_rect.x);
+	u32 draw_height = static_cast<u32>(draw_rect.w - draw_rect.y);
+	if (draw_width > width)
 	{
-		if (apply_aspect)
-		{
-			// use internal resolution of the texture
-			const float aspect = GetCurrentAspectRatioFloat(is_progressive);
-			const int tex_width = current->GetWidth();
-			const int tex_height = current->GetHeight();
-
-			// expand to the larger dimension
-			const float tex_aspect = static_cast<float>(tex_width) / static_cast<float>(tex_height);
-			if (tex_aspect >= aspect)
-				draw_rect = GSVector4(0.0f, 0.0f, static_cast<float>(tex_width), static_cast<float>(tex_width) / aspect);
-			else
-				draw_rect = GSVector4(0.0f, 0.0f, static_cast<float>(tex_height) * aspect, static_cast<float>(tex_height));
-		}
-		else
-		{
-			// uncorrected aspect is only available at internal resolution
-			draw_rect = GSVector4(0.0f, 0.0f, static_cast<float>(current->GetWidth()), static_cast<float>(current->GetHeight()));
-		}
+		draw_width = width;
+		draw_rect.left = 0;
+		draw_rect.right = width;
 	}
-	else
+	if (draw_height > height)
 	{
-		draw_rect = CalculateDrawDstRect(window_width, window_height, src_rect, current->GetSize(),
-			HostDisplay::Alignment::LeftOrTop, false, is_progressive);
+		draw_height = height;
+		draw_rect.top = 0;
+		draw_rect.bottom = height;
 	}
-	const u32 draw_width = static_cast<u32>(draw_rect.z - draw_rect.x);
-	const u32 draw_height = static_cast<u32>(draw_rect.w - draw_rect.y);
-	const u32 image_width = crop_borders ? draw_width : std::max(draw_width, window_width);
-	const u32 image_height = crop_borders ? draw_height : std::max(draw_height, window_height);
 
 	GSTexture::GSMap map;
 	const bool result = g_gs_device->DownloadTextureConvert(
 		current, src_uv,
 		GSVector2i(draw_width, draw_height), GSTexture::Format::Color,
-		ShaderConvert::TRANSPARENCY_FILTER, map, true);
+		ShaderConvert::COPY, map, true);
 	if (result)
 	{
-		const u32 pad_x = (image_width - draw_width) / 2;
-		const u32 pad_y = (image_height - draw_height) / 2;
-		pixels->clear();
-		pixels->resize(image_width * image_height, 0);
-		*width = image_width;
-		*height = image_height;
-		StringUtil::StrideMemCpy(pixels->data() + pad_y * image_width + pad_x, image_width * sizeof(u32),
+		const u32 pad_x = (width - draw_width) / 2;
+		const u32 pad_y = (height - draw_height) / 2;
+		pixels->resize(width * height, 0);
+		StringUtil::StrideMemCpy(pixels->data() + pad_y * width + pad_x, width * sizeof(u32),
 			map.bits, map.pitch, draw_width * sizeof(u32), draw_height);
 
 		g_gs_device->DownloadTextureComplete();

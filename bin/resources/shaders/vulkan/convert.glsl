@@ -52,7 +52,10 @@ void ps_depth_copy()
 void ps_filter_transparency()
 {
 	vec4 c = sample_c(v_tex);
-	o_col0 = vec4(c.rgb, 1.0);
+
+	c.a = dot(c.rgb, vec3(0.299, 0.587, 0.114));
+
+	o_col0 = c;
 }
 #endif
 

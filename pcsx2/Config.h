@@ -204,20 +204,6 @@ enum class TexturePreloadingLevel : u8
 	Full,
 };
 
-enum class GSScreenshotSize : u8
-{
-	WindowResolution,
-	InternalResolution,
-	InternalResolutionUncorrected,
-};
-
-enum class GSScreenshotFormat : u8
-{
-	PNG,
-	JPEG,
-	Count,
-};
-
 enum class GSDumpCompressionMethod : u8
 {
 	Uncompressed,
@@ -581,8 +567,14 @@ struct Pcsx2Config
 		GSInterlaceMode InterlaceMode{GSInterlaceMode::Automatic};
 		GSPostBilinearMode LinearPresent{ GSPostBilinearMode::BilinearSmooth };
 
+		float Zoom{100.0f};
 		float StretchY{100.0f};
+#ifndef PCSX2_CORE
+		float OffsetX{0.0f};
+		float OffsetY{0.0f};
+#else
 		int Crop[4]{};
+#endif
 
 		float OsdScale{100.0};
 
@@ -620,14 +612,8 @@ struct Pcsx2Config
 		int ShadeBoost_Brightness{50};
 		int ShadeBoost_Contrast{50};
 		int ShadeBoost_Saturation{50};
-
 		int SaveN{0};
 		int SaveL{5000};
-
-		GSScreenshotSize ScreenshotSize{GSScreenshotSize::WindowResolution};
-		GSScreenshotFormat ScreenshotFormat{GSScreenshotFormat::PNG};
-		int ScreenshotQuality{50};
-
 		std::string Adapter;
 
 		GSOptions();

@@ -62,9 +62,22 @@ GSLocalMemory::readImage GSLocalMemory::m_readImageX;
 GSLocalMemory::GSLocalMemory()
 	: m_clut(this)
 {
-	m_vm8 = (u8*)GSAllocateWrappedMemory(m_vmsize, 4);
-	if (!m_vm8)
-		throw std::bad_alloc();
+	m_use_fifo_alloc = theApp.GetConfigB("UserHacks") && theApp.GetConfigB("wrap_gs_mem");
+
+	if (!GSConfig.UseHardwareRenderer())
+		m_use_fifo_alloc = true;
+
+	if (m_use_fifo_alloc)
+		m_vm8 = (u8*)fifo_alloc(m_vmsize, 4);
+	else
+		m_vm8 = nullptr;
+
+	// Either we don't use fifo alloc or we get an error.
+	if (m_vm8 == nullptr)
+	{
+		m_vm8 = (u8*)vmalloc(m_vmsize * 4, false);
+		m_use_fifo_alloc = false;
+	}
 
 	memset(m_vm8, 0, m_vmsize);
 
@@ -247,8 +260,10 @@ GSLocalMemory::GSLocalMemory()
 
 GSLocalMemory::~GSLocalMemory()
 {
-	if (m_vm8)
-		GSFreeWrappedMemory(m_vm8, m_vmsize, 4);
+	if (m_use_fifo_alloc)
+		fifo_free(m_vm8, m_vmsize, 4);
+	else
+		vmfree(m_vm8, m_vmsize * 4);
 
 	for (auto& i : m_pomap)
 		_aligned_free(i.second);

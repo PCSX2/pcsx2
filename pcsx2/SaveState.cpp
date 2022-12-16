@@ -775,17 +775,16 @@ std::unique_ptr<SaveStateScreenshotData> SaveState_SaveScreenshot()
 	static constexpr u32 SCREENSHOT_WIDTH = 640;
 	static constexpr u32 SCREENSHOT_HEIGHT = 480;
 
-	u32 width, height;
-	std::vector<u32> pixels;
-	if (!GetMTGS().SaveMemorySnapshot(SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT, true, false, &width, &height, &pixels))
+	std::vector<u32> pixels(SCREENSHOT_WIDTH * SCREENSHOT_HEIGHT);
+	if (!GetMTGS().SaveMemorySnapshot(SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT, &pixels))
 	{
 		// saving failed for some reason, device lost?
 		return nullptr;
 	}
 
 	std::unique_ptr<SaveStateScreenshotData> data = std::make_unique<SaveStateScreenshotData>();
-	data->width = width;
-	data->height = height;
+	data->width = SCREENSHOT_WIDTH;
+	data->height = SCREENSHOT_HEIGHT;
 	data->pixels = std::move(pixels);
 	return data;
 }

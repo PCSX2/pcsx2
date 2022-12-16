@@ -10,7 +10,7 @@
     <height>562</height>
    </rect>
   </property>
-  <layout class="QFormLayout" name="detailsFormLayout">
+  <layout class="QFormLayout" name="formLayout">
    <property name="fieldGrowthPolicy">
     <enum>QFormLayout::ExpandingFieldsGrow</enum>
    </property>
@@ -353,12 +353,18 @@
      </item>
     </widget>
    </item>
-   <item row="7" column="0">
-    <widget class="QLabel" name="label_6">
-     <property name="text">
-      <string>Input Profile:</string>
+   <item row="8" column="1">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
      </property>
-    </widget>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
    <item row="7" column="1">
     <widget class="QComboBox" name="inputProfile">
@@ -375,46 +381,12 @@
      </item>
     </widget>
    </item>
-   <item row="8" column="0">
-    <widget class="QLabel" name="label_8">
+   <item row="7" column="0">
+    <widget class="QLabel" name="label_6">
      <property name="text">
-      <string>Disc Path:</string>
+      <string>Input Profile:</string>
      </property>
     </widget>
-   </item>
-   <item row="8" column="1">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QLineEdit" name="discPath"/>
-     </item>
-     <item>
-      <widget class="QPushButton" name="discPathBrowse">
-       <property name="text">
-        <string>Browse...</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="discPathClear">
-       <property name="text">
-        <string>Clear</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="9" column="1">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>

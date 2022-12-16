@@ -154,6 +154,9 @@ const char* dialog_message(int ID, bool* updateText)
 				"It can help Xenosaga games.\n\n"
 				"Disables accurate GS Memory Clearing to be done on the CPU, and let only the GPU handle it.\n"
 				"It can help Kingdom Hearts games.");
+		case IDC_MEMORY_WRAPPING:
+			return cvtString("Emulates GS memory wrapping accurately. This fixes issues where part of the image is cut-off by block shaped sections such as the FMVs in Wallace & Gromit: The Curse of the Were-Rabbit and Thrillville.\n\n"
+				"Note: This hack can have a small impact on performance.");
 		case IDC_MERGE_PP_SPRITE:
 			return cvtString("Replaces post-processing multiple paving sprites by a single fat sprite.\n"
 				"It reduces various upscaling lines.\n\n"
