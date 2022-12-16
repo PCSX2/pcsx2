@@ -42645,6 +42645,8 @@ SLUS-20682:
   name: "K-1 World Grand Prix"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes black vertical lines.
 SLUS-20683:
   name: "Lupin the 3rd - Treasure of the Sorcerer King"
   region: "NTSC-U"
