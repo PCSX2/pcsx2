@@ -1854,7 +1854,7 @@ void GSDevice12::ExecuteCommandList(bool wait_for_completion, const char* reason
 
 void GSDevice12::ExecuteCommandListAndRestartRenderPass(bool wait_for_completion, const char* reason)
 {
-	Console.Warning("Vulkan: Executing command buffer due to '%s'", reason);
+	Console.Warning("D3D12: Executing command buffer due to '%s'", reason);
 
 	const bool was_in_render_pass = m_in_render_pass;
 	EndRenderPass();
