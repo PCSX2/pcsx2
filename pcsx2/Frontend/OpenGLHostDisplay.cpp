@@ -392,7 +392,7 @@ void OpenGLHostDisplay::DestroyTimestampQueries()
 	if (m_timestamp_query_started)
 	{
 		const auto EndQuery = gles ? glEndQueryEXT : glEndQuery;
-		EndQuery(m_timestamp_queries[m_write_timestamp_query]);
+		EndQuery(GL_TIME_ELAPSED);
 	}
 
 	DeleteQueries(static_cast<u32>(m_timestamp_queries.size()), m_timestamp_queries.data());
