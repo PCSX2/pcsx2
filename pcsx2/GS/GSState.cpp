@@ -285,6 +285,14 @@ void GSState::ResetHandlers()
 	m_fpGIFRegHandlers[GIF_A_D_REG_LABEL] = &GSState::GIFRegHandlerNull;
 }
 
+void GSState::ResetPCRTC()
+{
+	PCRTCDisplays.SetVideoMode(GetVideoMode());
+	PCRTCDisplays.EnableDisplays(m_regs->PMODE, m_regs->SMODE2, isReallyInterlaced());
+	PCRTCDisplays.SetRects(0, m_regs->DISP[0].DISPLAY, m_regs->DISP[0].DISPFB);
+	PCRTCDisplays.SetRects(1, m_regs->DISP[1].DISPLAY, m_regs->DISP[1].DISPFB);
+}
+
 void GSState::UpdateSettings(const Pcsx2Config::GSOptions& old_config)
 {
 	m_mipmap = GSConfig.Mipmap;
@@ -338,264 +346,6 @@ GSVideoMode GSState::GetVideoMode()
 	}
 
 	__assume(0); // unreachable
-}
-
-bool GSState::IsAnalogue()
-{
-	return GetVideoMode() == GSVideoMode::NTSC || GetVideoMode() == GSVideoMode::PAL || GetVideoMode() == GSVideoMode::HDTV_1080I;
-}
-
-GSVector4i GSState::GetFrameMagnifiedRect(int i)
-{
-	GSVector4i rectangle = { 0, 0, 0, 0 };
-
-	if (!IsEnabled(i))
-		return rectangle;
-
-	const int videomode = static_cast<int>(GetVideoMode()) - 1;
-	const auto& DISP = m_regs->DISP[i].DISPLAY;
-	const bool ignore_offset = !GSConfig.PCRTCOffsets;
-
-	const u32 DW = DISP.DW + 1;
-	const u32 DH = DISP.DH + 1;
-;
-	// The number of sub pixels to draw are given in DH and DW, the MAGH/V relates to the size of the original square in the FB
-	// but the size it's drawn to uses the default size of the display mode (for PAL/NTSC this is a MAGH of 3)
-	// so for example a game will have a DW of 2559 and a MAGH of 4 to make it 512 (from the FB), but because it's drawing 2560 subpixels
-	// it will cover the entire 640 wide of the screen (2560 / (3+1)).
-	int width;
-	int height;
-	if (ignore_offset)
-	{
-		width = (DW / (DISP.MAGH + 1));
-		height = (DH / (DISP.MAGV + 1));
-	}
-	else
-	{
-		width = (DW / (VideoModeDividers[videomode].x + 1));
-		height = (DH / (VideoModeDividers[videomode].y + 1));
-	}
-
-	int res_multi = 1;
-
-	if (isinterlaced() && m_regs->SMODE2.FFMD && height > 1)
-		res_multi = 2;
-
-	// Set up the display rectangle based on the values obtained from DISPLAY registers
-	rectangle.right = width;
-	rectangle.bottom = height / res_multi;
-
-	return rectangle;
-}
-
-int GSState::GetDisplayHMagnification()
-{
-	// Pick one of the DISPLAY's and hope that they are both the same. Favour DISPLAY[1]
-	for (int i = 1; i >= 0; i--)
-	{
-		if (IsEnabled(i))
-			return m_regs->DISP[i].DISPLAY.MAGH + 1;
-	}
-
-	// If neither DISPLAY is enabled, fallback to resolution offset (should never happen)
-	const int videomode = static_cast<int>(GetVideoMode()) - 1;
-	return VideoModeDividers[videomode].x + 1;
-}
-
-GSVector4i GSState::GetDisplayRect(int i)
-{
-	GSVector4i rectangle = { 0, 0, 0, 0 };
-
-	if (i == -1)
-	{
-		return GetDisplayRect(0).runion(GetDisplayRect(1));
-	}
-
-	if (!IsEnabled(i))
-		return rectangle;
-
-	const auto& DISP = m_regs->DISP[i].DISPLAY;
-
-	const u32 DW = DISP.DW + 1;
-	const u32 DH = DISP.DH + 1;
-	const u32 MAGH = DISP.MAGH + 1;
-	const u32 MAGV = DISP.MAGV + 1;
-
-	const GSVector2i magnification(MAGH, MAGV);
-
-	const int width = DW / magnification.x;
-	const int height = DH / magnification.y;
-
-	const GSVector2i offsets = GetResolutionOffset(i);
-
-	// Set up the display rectangle based on the values obtained from DISPLAY registers
-	rectangle.left = offsets.x;
-	rectangle.top = offsets.y;
-
-	rectangle.right = rectangle.left + width;
-	rectangle.bottom = rectangle.top + height;
-
-	return rectangle;
-}
-
-GSVector2i GSState::GetResolutionOffset(int i)
-{
-	GSVector2i offset = { 0, 0 };
-
-	if (!IsEnabled(i))
-		return offset;
-
-	const int videomode = static_cast<int>(GetVideoMode()) - 1;
-	const auto& DISP = m_regs->DISP[i].DISPLAY;
-
-	const auto& SMODE2 = m_regs->SMODE2;
-	const int res_multi = (SMODE2.INT + 1);
-	const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
-
-	offset.x = (static_cast<int>(DISP.DX) - offsets.z) / (VideoModeDividers[videomode].x + 1);
-	offset.y = (static_cast<int>(DISP.DY) - (offsets.w * ((IsAnalogue() && res_multi) ? res_multi : 1))) / (VideoModeDividers[videomode].y + 1);
-
-	return offset;
-}
-
-GSVector2i GSState::GetResolution()
-{
-	const int videomode = static_cast<int>(GetVideoMode()) - 1;
-	const bool ignore_offset = !GSConfig.PCRTCOffsets;
-
-	const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
-
-	GSVector2i resolution(offsets.x, offsets.y);
-
-	// The resolution of the framebuffer is double when in FRAME mode and interlaced.
-	// Also we need a special check because no-interlace patches like to render in the original height, but in non-interlaced mode
-	// which means it would normally go off the bottom of the screen. Advantages of emulation, i guess... Limited to Ignore Offsets + Deinterlacing = Off.
-	if ((isinterlaced() && !m_regs->SMODE2.FFMD) || (GSConfig.InterlaceMode == GSInterlaceMode::Off && !GSConfig.PCRTCOffsets && !isinterlaced()))
-		resolution.y *= 2;
-
-	if (ignore_offset)
-	{
-		// Ideally we'd just cut the width at the resolution, but of course we have to hack the hack...
-		// Some games (Mortal Kombat Armageddon) render the image at 834 pixels then shrink it to 624 pixels
-		// which does fit, but when we ignore offsets we go on framebuffer size and some other games
-		// such as Johnny Mosleys Mad Trix and Transformers render too much but design it to go off the screen.
-		int magnified_width = (VideoModeDividers[videomode].z + 1) / GetDisplayHMagnification();
-
-		// When viewing overscan allow up to the overscan size
-		if (GSConfig.PCRTCOverscan)
-			magnified_width = std::max(magnified_width, offsets.x);
-
-		GSVector4i total_rect = GetDisplayRect(0).runion(GetDisplayRect(1));
-		total_rect.z = total_rect.z - total_rect.x;
-		total_rect.w = total_rect.w - total_rect.y;
-		total_rect.z = std::min(total_rect.z, magnified_width);
-		total_rect.w = std::min(total_rect.w, resolution.y);
-		resolution.x = total_rect.z;
-		resolution.y = total_rect.w;
-	}
-
-	return resolution;
-}
-
-GSVector4i GSState::GetFrameRect(int i, bool ignore_off)
-{
-	// If no specific context is requested then pass the merged rectangle as return value
-	if (i == -1)
-		return GetFrameRect(0, ignore_off).runion(GetFrameRect(1, ignore_off));
-
-	GSVector4i rectangle = { 0, 0, 0, 0 };
-
-	if (!IsEnabled(i))
-		return rectangle;
-
-	const auto& DISP = m_regs->DISP[i].DISPLAY;
-
-	const u32 DW = DISP.DW + 1;
-	const u32 DH = DISP.DH + 1;
-	const GSVector2i magnification(DISP.MAGH+1, DISP.MAGV + 1);
-
-	const u32 DBX = m_regs->DISP[i].DISPFB.DBX;
-	int DBY = m_regs->DISP[i].DISPFB.DBY;
-
-
-	const int w = DW / magnification.x;
-	const int h = DH / magnification.y;
-
-	// If the combined height overflows 2048, it's likely adding a bit of extra data before the picture for offsetting the interlace
-	// only game known to do this is NASCAR '08
-	if (!ignore_off && (DBY + h) >= 2048)
-		DBY = DBY - 2048;
-
-	rectangle.left = (ignore_off) ? 0 : DBX;
-	rectangle.top = (ignore_off) ? 0 : DBY;
-
-	rectangle.right = rectangle.left + w;
-	rectangle.bottom = rectangle.top + h;
-
-	if (isinterlaced() && m_regs->SMODE2.FFMD && h > 1)
-	{
-		rectangle.bottom += 1;
-		rectangle.bottom >>= 1;
-	}
-
-	return rectangle;
-}
-
-int GSState::GetFramebufferHeight()
-{
-	// Framebuffer height is 11 bits max
-	constexpr int height_limit = (1 << 11);
-
-	const GSVector4i disp1_rect = GetFrameRect(0, true);
-	const GSVector4i disp2_rect = GetFrameRect(1, true);
-	const GSVector4i combined = disp1_rect.runion(disp2_rect);
-
-	// DBY isn't an offset to the frame memory but rather an offset to read output circuit inside
-	// the frame memory, hence the top offset should also be calculated for the total height of the
-	// frame memory. Also we need to wrap the value only when we're dealing with values with range of the
-	// frame memory (offset + read output circuit height, IOW bottom of merged_output)
-	const int max_height = std::max(disp1_rect.height(), disp2_rect.height());
-	const int frame_memory_height = std::max(max_height, combined.bottom % height_limit);
-
-	if (frame_memory_height > 1024)
-		GL_PERF("Massive framebuffer height detected! (height:%d)", frame_memory_height);
-
-	return frame_memory_height;
-}
-
-int GSState::GetFramebufferBitDepth()
-{
-	if (IsEnabled(0))
-		return GSLocalMemory::m_psm[m_regs->DISP[0].DISPFB.PSM].bpp;
-	else if (IsEnabled(1))
-		return GSLocalMemory::m_psm[m_regs->DISP[1].DISPFB.PSM].bpp;
-
-	return 32;
-}
-
-int GSState::GetFramebufferWidth()
-{
-	const GSVector4i disp1_rect = GetFrameRect(0, true);
-	const GSVector4i disp2_rect = GetFrameRect(1, true);
-
-	const int max_width = std::max(disp1_rect.width(), disp2_rect.width());
-
-	return max_width;
-}
-
-bool GSState::IsEnabled(int i)
-{
-	ASSERT(i >= 0 && i < 2);
-
-	const auto& DISP = m_regs->DISP[i].DISPLAY;
-
-	const bool disp1_enabled = m_regs->PMODE.EN1;
-	const bool disp2_enabled = m_regs->PMODE.EN2;
-
-	if ((i == 0 && disp1_enabled) || (i == 1 && disp2_enabled))
-		return DISP.DW && DISP.DH;
-
-	return false;
 }
 
 float GSState::GetTvRefreshRate()
@@ -2774,6 +2524,8 @@ int GSState::Defrost(const freezeData* fd)
 	UpdateScissor();
 
 	g_perfmon.SetFrame(5000);
+
+	ResetPCRTC();
 
 	return 0;
 }

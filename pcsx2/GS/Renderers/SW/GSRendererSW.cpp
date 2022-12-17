@@ -82,22 +82,6 @@ void GSRendererSW::VSync(u32 field, bool registers_written)
 {
 	Sync(0); // IncAge might delete a cached texture in use
 
-	if (0) if (LOG)
-	{
-		fprintf(s_fp, "%llu\n", g_perfmon.GetFrame());
-
-		GSVector4i dr = GetDisplayRect();
-		GSVector4i fr = GetFrameRect();
-
-		fprintf(s_fp, "dr %d %d %d %d, fr %d %d %d %d\n",
-			dr.x, dr.y, dr.z, dr.w,
-			fr.x, fr.y, fr.z, fr.w);
-
-		m_regs->Dump(s_fp);
-
-		fflush(s_fp);
-	}
-
 	/*
 	int draw[8], sum = 0;
 
@@ -127,27 +111,20 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 {
 	Sync(1);
 
-	const GSRegDISPFB& DISPFB = m_regs->DISP[i].DISPFB;
+	int index = i >= 0 ? i : 1;
+	GSPCRTCRegs::PCRTCDisplay& curFramebuffer = PCRTCDisplays.PCRTCDisplays[index];
+	GSVector2i framebufferSize = PCRTCDisplays.GetFramebufferSize(i);
+	GSVector4i framebufferRect = PCRTCDisplays.GetFramebufferRect(i);
+	int w = curFramebuffer.FBW * 64;
+	int h = framebufferSize.y;
 
-	int w = DISPFB.FBW * 64;
-
-	const int videomode = static_cast<int>(GetVideoMode()) - 1;
-	const int display_offset = GetResolutionOffset(i).y;
-	const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
-	const int display_height = offsets.y * ((isinterlaced() && !m_regs->SMODE2.FFMD) ? 2 : 1);
-	int h = std::min(GetFramebufferHeight(), display_height);
-
-	// If there is a negative vertical offset on the picture, we need to read more.
-	if (display_offset < 0)
+	if (g_gs_device->ResizeTarget(&m_texture[index], w, h))
 	{
-		h += -display_offset;
-	}
-
-	if (g_gs_device->ResizeTarget(&m_texture[i], w, h))
-	{
+		const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[curFramebuffer.PSM];
 		constexpr int pitch = 1024 * 4;
-		const int off_x = DISPFB.DBX & 0x7ff;
-		const int off_y = DISPFB.DBY & 0x7ff;
+		// Should really be framebufferOffsets rather than framebufferRect but this might be compensated with anti-blur in some games.
+		const int off_x = (framebufferRect.x & 0x7ff) & ~(psm.bs.x-1);
+		const int off_y = (framebufferRect.y & 0x7ff) & ~(psm.bs.y-1);
 		const GSVector4i out_r(0, 0, w, h);
 		GSVector4i r(off_x, off_y, w + off_x, h + off_y);
 		GSVector4i rh(off_x, off_y, w + off_x, (h + off_y) & 0x7FF);
@@ -155,6 +132,7 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 		bool h_wrap = false;
 		bool w_wrap = false;
 
+		PCRTCDisplays.RemoveFramebufferOffset(i);
 		// Need to read it in 2 parts, since you can't do a split rect.
 		if (r.bottom >= 2048)
 		{
@@ -172,50 +150,51 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 			w_wrap = true;
 		}
 
-		const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[DISPFB.PSM];
-
 		// Display doesn't use texa, and instead uses the equivalent of this
 		GIFRegTEXA texa = {};
 		texa.AEM = 0;
-		texa.TA0 = (DISPFB.PSM == PSM_PSMCT24 || DISPFB.PSM == PSM_PSGPU24) ? 0x80 : 0;
+		texa.TA0 = (curFramebuffer.PSM == PSM_PSMCT24 || curFramebuffer.PSM == PSM_PSGPU24) ? 0x80 : 0;
 		texa.TA1 = 0x80;
 
 		// Top left rect
-		psm.rtx(m_mem, m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), r.ralign<Align_Outside>(psm.bs), m_output, pitch, texa);
+		psm.rtx(m_mem, m_mem.GetOffset(curFramebuffer.Block(), curFramebuffer.FBW, curFramebuffer.PSM), r.ralign<Align_Outside>(psm.bs), m_output, pitch, texa);
+
+		// Top left rect
+		psm.rtx(m_mem, m_mem.GetOffset(curFramebuffer.Block(), curFramebuffer.FBW, curFramebuffer.PSM), r.ralign<Align_Outside>(psm.bs), m_output, pitch, texa);
 
 		int top = (h_wrap) ? ((r.bottom - r.top) * pitch) : 0;
-		int left = (w_wrap) ? (r.right - r.left) * (GSLocalMemory::m_psm[DISPFB.PSM].bpp / 8) : 0;
+		int left = (w_wrap) ? (r.right - r.left) * (GSLocalMemory::m_psm[curFramebuffer.PSM].bpp / 8) : 0;
 
 		// The following only happen if the DBX/DBY wrap around at 2048.
 
 		// Top right rect
 		if (w_wrap)
-			psm.rtx(m_mem, m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), rw.ralign<Align_Outside>(psm.bs), &m_output[left], pitch, texa);
+			psm.rtx(m_mem, m_mem.GetOffset(curFramebuffer.Block(), curFramebuffer.FBW, curFramebuffer.PSM), rw.ralign<Align_Outside>(psm.bs), &m_output[left], pitch, texa);
 
 		// Bottom left rect
 		if (h_wrap)
-			psm.rtx(m_mem, m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), rh.ralign<Align_Outside>(psm.bs), &m_output[top], pitch, texa);
+			psm.rtx(m_mem, m_mem.GetOffset(curFramebuffer.Block(), curFramebuffer.FBW, curFramebuffer.PSM), rh.ralign<Align_Outside>(psm.bs), &m_output[top], pitch, texa);
 
 		// Bottom right rect
 		if (h_wrap && w_wrap)
 		{
 			// Needs also rw with the start/end height of rh, fills in the bottom right rect which will be missing if both overflow.
 			const GSVector4i rwh(rw.left, rh.top, rw.right, rh.bottom);
-			psm.rtx(m_mem, m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), rwh.ralign<Align_Outside>(psm.bs), &m_output[top + left], pitch, texa);
+			psm.rtx(m_mem, m_mem.GetOffset(curFramebuffer.Block(), curFramebuffer.FBW, curFramebuffer.PSM), rwh.ralign<Align_Outside>(psm.bs), &m_output[top + left], pitch, texa);
 		}
 
-		m_texture[i]->Update(out_r, m_output, pitch);
+		m_texture[index]->Update(out_r, m_output, pitch);
 
 		if (GSConfig.DumpGSData)
 		{
 			if (GSConfig.SaveFrame && s_n >= GSConfig.SaveN)
 			{
-				m_texture[i]->Save(GetDrawDumpPath("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, (int)DISPFB.Block(), psm_str(DISPFB.PSM)));
+				m_texture[i]->Save(GetDrawDumpPath("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, (int)curFramebuffer.Block(), psm_str(curFramebuffer.PSM)));
 			}
 		}
 	}
 
-	return m_texture[i];
+	return m_texture[index];
 }
 
 GSTexture* GSRendererSW::GetFeedbackOutput()
@@ -490,18 +469,18 @@ void GSRendererSW::Draw()
 			{
 				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
 				s = GetDrawDumpPath("%05d_f%lld_rt0_%05x_32bits.bmp", s_n, frame, m_context->FRAME.Block());
-				m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, 0, GetFrameRect().width(), 512);
+				m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, 0, PCRTCDisplays.GetFramebufferRect(-1).width(), 512);
 			}
 
 			s = GetDrawDumpPath("%05d_f%lld_rt0_%05x_%s.bmp", s_n, frame, m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
-			m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, GetFrameRect().width(), 512);
+			m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, PCRTCDisplays.GetFramebufferRect(-1).width(), 512);
 		}
 
 		if (GSConfig.SaveDepth && s_n >= GSConfig.SaveN)
 		{
 			s = GetDrawDumpPath("%05d_f%lld_rz0_%05x_%s.bmp", s_n, frame, m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
 
-			m_mem.SaveBMP(s, m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM, GetFrameRect().width(), 512);
+			m_mem.SaveBMP(s, m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM, PCRTCDisplays.GetFramebufferRect(-1).width(), 512);
 		}
 
 		Queue(data);
@@ -514,18 +493,18 @@ void GSRendererSW::Draw()
 			{
 				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
 				s = GetDrawDumpPath("%05d_f%lld_rt1_%05x_32bits.bmp", s_n, frame, m_context->FRAME.Block());
-				m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, 0, GetFrameRect().width(), 512);
+				m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, 0, PCRTCDisplays.GetFramebufferRect(-1).width(), 512);
 			}
 
 			s = GetDrawDumpPath("%05d_f%lld_rt1_%05x_%s.bmp", s_n, frame, m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
-			m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, GetFrameRect().width(), 512);
+			m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, PCRTCDisplays.GetFramebufferRect(-1).width(), 512);
 		}
 
 		if (GSConfig.SaveDepth && s_n >= GSConfig.SaveN)
 		{
 			s = GetDrawDumpPath("%05d_f%lld_rz1_%05x_%s.bmp", s_n, frame, m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
 
-			m_mem.SaveBMP(s, m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM, GetFrameRect().width(), 512);
+			m_mem.SaveBMP(s, m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM, PCRTCDisplays.GetFramebufferRect(-1).width(), 512);
 		}
 
 		if (GSConfig.SaveL > 0 && (s_n - GSConfig.SaveN) > GSConfig.SaveL)
@@ -613,14 +592,14 @@ void GSRendererSW::Sync(int reason)
 		{
 			s = GetDrawDumpPath("%05d_f%lld_rt1_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
 
-			m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, GetFrameRect().width(), 512);
+			m_mem.SaveBMP(s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, PCRTCDisplays.GetFramebufferRect(-1).width(), 512);
 		}
 
 		if (GSConfig.SaveDepth)
 		{
 			s = GetDrawDumpPath("%05d_f%lld_zb1_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
 
-			m_mem.SaveBMP(s, m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM, GetFrameRect().width(), 512);
+			m_mem.SaveBMP(s, m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM, PCRTCDisplays.GetFramebufferRect(-1).width(), 512);
 		}
 	}
 
