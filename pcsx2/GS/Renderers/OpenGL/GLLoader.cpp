@@ -95,7 +95,6 @@ namespace Emulate_DSA
 	// Replace function pointer to emulate DSA behavior
 	void Init()
 	{
-		Console.Warning("DSA is not supported. Expect slower performance");
 		glBindTextureUnit = BindTextureUnit;
 		glCreateTextures = CreateTexture;
 		glTextureStorage2D = TextureStorage;
@@ -193,7 +192,7 @@ namespace GLLoader
 		{
 			glScissorIndexed = ReplaceGL::ScissorIndexed;
 			glViewportIndexedf = ReplaceGL::ViewportIndexedf;
-			Console.Warning("GL_ARB_viewport_array is not supported! Function pointer will be replaced");
+			Console.Warning("GL_ARB_viewport_array is not supported! Function pointer will be replaced.");
 		}
 
 		if (!GLAD_GL_ARB_texture_barrier)
