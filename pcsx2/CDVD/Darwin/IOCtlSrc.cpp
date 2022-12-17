@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2022  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -17,13 +17,16 @@
 #include "CDVD/CDVDdiscReader.h"
 #include "CDVD/CDVD.h"
 
-#include <linux/cdrom.h>
+#ifdef __APPLE__
+#include <IOKit/storage/IOCDMediaBSDClient.h>
+#include <IOKit/storage/IODVDMediaBSDClient.h>
+#endif
+
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
 #include <cerrno>
-#include <climits>
 #include <cstring>
 
 IOCtlSrc::IOCtlSrc(decltype(m_filename) filename)
@@ -63,8 +66,8 @@ bool IOCtlSrc::Reopen()
 
 void IOCtlSrc::SetSpindleSpeed(bool restore_defaults) const
 {
-	// TODO: CD seems easy enough (CDROM_SELECT_SPEED ioctl), but I'm not sure
-	// about DVD.
+	// TODO: Seems it's actually able to set it (DKIOCCDSETSPEED) but I don't have
+	// physical drives right now to test
 }
 
 u32 IOCtlSrc::GetSectorCount() const
@@ -105,58 +108,68 @@ bool IOCtlSrc::ReadSectors2048(u32 sector, u32 count, u8* buffer) const
 
 bool IOCtlSrc::ReadSectors2352(u32 sector, u32 count, u8* buffer) const
 {
-	union
+#ifdef __APPLE__
+	dk_cd_read_t desc;
+	memset(&desc, 0, sizeof(dk_cd_read_t));
+	desc.sectorArea = kCDSectorAreaUser;
+	desc.sectorType = kCDSectorTypeCDDA;
+	for (u32 i = 0; i < count; ++i)
 	{
-		cdrom_msf msf;
-		char buffer[CD_FRAMESIZE_RAW];
-	} data;
-
-	for (u32 n = 0; n < count; ++n)
-	{
-		u32 lba = sector + n;
-		lba_to_msf(lba, &data.msf.cdmsf_min0, &data.msf.cdmsf_sec0, &data.msf.cdmsf_frame0);
-		if (ioctl(m_device, CDROMREADRAW, &data) == -1)
+		desc.offset = (sector + i) * 2352ULL;
+		desc.buffer = buffer + i * 2352;
+		desc.bufferLength = 2352;
+		if (ioctl(m_device, DKIOCCDREAD, &desc) == -1)
 		{
 			fprintf(stderr, " * CDVD CDROMREADRAW sector %u failed: %s\n",
-					lba, strerror(errno));
+					sector + i, strerror(errno));
 			return false;
 		}
-		memcpy(buffer, data.buffer, CD_FRAMESIZE_RAW);
-		buffer += CD_FRAMESIZE_RAW;
 	}
-
 	return true;
+#else
+	return false;
+#endif
 }
 
 bool IOCtlSrc::ReadDVDInfo()
 {
-	dvd_struct dvdrs;
-	dvdrs.type = DVD_STRUCT_PHYSICAL;
-	dvdrs.physical.layer_num = 0;
+#ifdef __APPLE__
+	dk_dvd_read_structure_t dvdrs;
+	memset(&dvdrs, 0, sizeof(dk_dvd_read_structure_t));
+	dvdrs.format = kDVDStructureFormatPhysicalFormatInfo;
+	dvdrs.layer = 0;
 
-	int ret = ioctl(m_device, DVD_READ_STRUCT, &dvdrs);
+	DVDPhysicalFormatInfo layer0;
+	dvdrs.buffer = &layer0;
+	dvdrs.bufferLength = sizeof(DVDPhysicalFormatInfo);
+
+	int ret = ioctl(m_device, DKIOCDVDREADSTRUCTURE, &dvdrs);
 	if (ret == -1)
+	{
 		return false;
+	}
 
-	u32 start_sector = dvdrs.physical.layer[0].start_sector;
-	u32 end_sector = dvdrs.physical.layer[0].end_sector;
-
-	if (dvdrs.physical.layer[0].nlayers == 0)
+	u32 start_sector = *(u32*)layer0.startingPhysicalSectorNumberOfDataArea;
+	u32 end_sector = *(u32*)layer0.endPhysicalSectorNumberOfDataArea;
+	if (layer0.numberOfLayers == 0)
 	{
 		// Single layer
 		m_media_type = 0;
 		m_layer_break = 0;
 		m_sectors = end_sector - start_sector + 1;
 	}
-	else if (dvdrs.physical.layer[0].track_path == 0)
+	else if (layer0.trackPath == 0)
 	{
 		// Dual layer, Parallel Track Path
-		dvdrs.physical.layer_num = 1;
-		ret = ioctl(m_device, DVD_READ_STRUCT, &dvdrs);
+		DVDPhysicalFormatInfo layer1;
+		dvdrs.layer = 1;
+		dvdrs.buffer = &layer1;
+		dvdrs.bufferLength = sizeof(DVDPhysicalFormatInfo);
+		ret = ioctl(m_device, DKIOCDVDREADSTRUCTURE, &dvdrs);
 		if (ret == -1)
 			return false;
-		u32 layer1_start_sector = dvdrs.physical.layer[1].start_sector;
-		u32 layer1_end_sector = dvdrs.physical.layer[1].end_sector;
+		u32 layer1_start_sector = *(u32*)layer1.startingPhysicalSectorNumberOfDataArea;
+		u32 layer1_end_sector = *(u32*)layer1.endPhysicalSectorNumberOfDataArea;
 
 		m_media_type = 1;
 		m_layer_break = end_sector - start_sector;
@@ -165,62 +178,74 @@ bool IOCtlSrc::ReadDVDInfo()
 	else
 	{
 		// Dual layer, Opposite Track Path
-		u32 end_sector_layer0 = dvdrs.physical.layer[0].end_sector_l0;
+		u32 end_sector_layer0 = *(u32*)layer0.endSectorNumberInLayerZero;
 		m_media_type = 2;
 		m_layer_break = end_sector_layer0 - start_sector;
 		m_sectors = end_sector_layer0 - start_sector + 1 + end_sector - (~end_sector_layer0 & 0xFFFFFFU) + 1;
 	}
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 bool IOCtlSrc::ReadCDInfo()
 {
-	cdrom_tochdr header;
+#ifdef __APPLE__
+	u8* buffer = (u8*)malloc(2048);
+	dk_cd_read_toc_t cdrt;
+	memset(&cdrt, 0, sizeof(dk_cd_read_toc_t));
+	cdrt.format = kCDTOCFormatTOC;
+	cdrt.formatAsTime = 1;
+	cdrt.address.track = 0;
+	cdrt.buffer = buffer;
+	cdrt.bufferLength = 2048;
+	memset(buffer, 0, 2048);
 
-	if (ioctl(m_device, CDROMREADTOCHDR, &header) == -1)
-		return false;
-
-	cdrom_tocentry entry{};
-	entry.cdte_format = CDROM_LBA;
-
-	m_toc.clear();
-	for (u8 n = header.cdth_trk0; n <= header.cdth_trk1; ++n)
+	if (ioctl(m_device, DKIOCCDREADTOC, &cdrt) == -1)
 	{
-		entry.cdte_track = n;
-		if (ioctl(m_device, CDROMREADTOCENTRY, &entry) != -1)
-			m_toc.push_back({static_cast<u32>(entry.cdte_addr.lba), entry.cdte_track,
-							 entry.cdte_adr, entry.cdte_ctrl});
+		fprintf(stderr, "%s\n", strerror(errno));
+		return false;
 	}
 
-	// TODO: Do I need a fallback if this doesn't work?
-	entry.cdte_track = 0xAA;
-	if (ioctl(m_device, CDROMREADTOCENTRY, &entry) == -1)
-		return false;
+	CDTOC* toc = (CDTOC*)buffer;
 
-	m_sectors = entry.cdte_addr.lba;
+	u32 desc_count = CDTOCGetDescriptorCount(toc);
+
+	for (u32 i = 0; i < desc_count; ++i)
+	{
+		CDTOCDescriptor desc = toc->descriptors[i];
+		if (desc.point < 0xa0 && desc.adr == 1)
+		{
+			u32 lba = CDConvertMSFToLBA(desc.p);
+			m_toc.push_back({lba, desc.point, desc.adr, desc.control});
+			m_sectors = lba;
+		}
+	}
+
 	m_media_type = -1;
 
+	free(buffer);
 	return true;
+#else
+	return false;
+#endif
 }
 
 bool IOCtlSrc::DiscReady()
 {
+#ifdef __APPLE__
 	if (m_device == -1)
 		return false;
 
-	// CDSL_CURRENT must be used - 0 will cause the drive tray to close.
-	if (ioctl(m_device, CDROM_DRIVE_STATUS, CDSL_CURRENT) == CDS_DISC_OK)
+	if (!m_sectors)
 	{
-		if (!m_sectors)
-			Reopen();
-	}
-	else
-	{
-		m_sectors = 0;
-		m_layer_break = 0;
-		m_media_type = 0;
+		Reopen();
 	}
 
 	return !!m_sectors;
+#else
+	return false;
+#endif
 }
