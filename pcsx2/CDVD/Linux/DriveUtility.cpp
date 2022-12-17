@@ -16,18 +16,14 @@
 #include "PrecompiledHeader.h"
 #include "CDVD/CDVDdiscReader.h"
 
-#ifdef __linux__
 #include <libudev.h>
 #include <linux/cdrom.h>
-#endif
-
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
 std::vector<std::string> GetOpticalDriveList()
 {
-#ifdef __linux__
 	udev* udev_context = udev_new();
 	if (!udev_context)
 		return {};
@@ -56,16 +52,12 @@ std::vector<std::string> GetOpticalDriveList()
 	udev_unref(udev_context);
 
 	return drives;
-#else
-	return {};
-#endif
 }
 
 void GetValidDrive(std::string& drive)
 {
 	if (!drive.empty())
 	{
-#ifdef __linux__
 		int fd = open(drive.c_str(), O_RDONLY | O_NONBLOCK);
 		if (fd != -1)
 		{
@@ -77,9 +69,6 @@ void GetValidDrive(std::string& drive)
 		{
 			drive.clear();
 		}
-#else
-		drive.clear();
-#endif
 	}
 	if (drive.empty())
 	{
