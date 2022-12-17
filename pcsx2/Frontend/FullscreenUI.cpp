@@ -57,6 +57,8 @@
 #include <array>
 #include <bitset>
 #include <thread>
+#include <utility>
+#include <vector>
 
 #ifdef ENABLE_ACHIEVEMENTS
 #include "Frontend/Achievements.h"
@@ -372,6 +374,7 @@ namespace FullscreenUI
 	static std::string s_input_binding_key;
 	static std::string s_input_binding_display_name;
 	static std::vector<InputBindingKey> s_input_binding_new_bindings;
+	static std::vector<std::pair<InputBindingKey, std::pair<float, float>>> s_input_binding_value_ranges;
 	static Common::Timer s_input_binding_timer;
 
 	//////////////////////////////////////////////////////////////////////////
@@ -1266,6 +1269,7 @@ void FullscreenUI::ClearInputBindingVariables()
 	s_input_binding_key = {};
 	s_input_binding_display_name = {};
 	s_input_binding_new_bindings = {};
+	s_input_binding_value_ranges = {};
 }
 
 void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const std::string_view& section,
@@ -1282,23 +1286,47 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::T
 	s_input_binding_key = key;
 	s_input_binding_display_name = display_name;
 	s_input_binding_new_bindings = {};
+	s_input_binding_value_ranges = {};
 	s_input_binding_timer.Reset();
 
 	const bool game_settings = IsEditingGameSettings(bsi);
 
 	InputManager::SetHook([game_settings](InputBindingKey key, float value) -> InputInterceptHook::CallbackResult {
+		if (s_input_binding_type == InputBindingInfo::Type::Unknown)
+			return InputInterceptHook::CallbackResult::StopProcessingEvent;
+
 		// holding the settings lock here will protect the input binding list
 		auto lock = Host::GetSettingsLock();
 
-		const float abs_value = std::abs(value);
-
-		for (InputBindingKey other_key : s_input_binding_new_bindings)
+		float initial_value = value;
+		float min_value = value;
+		auto it = std::find_if(s_input_binding_value_ranges.begin(), s_input_binding_value_ranges.end(),
+			[key](const auto& it) { return it.first.bits == key.bits; });
+		if (it != s_input_binding_value_ranges.end())
 		{
+			initial_value = it->second.first;
+			min_value = it->second.second = std::min(it->second.second, value);
+		}
+		else
+		{
+			s_input_binding_value_ranges.emplace_back(key, std::make_pair(initial_value, min_value));
+		}
+
+		const float abs_value = std::abs(value);
+		const bool reverse_threshold = (key.source_subtype == InputSubclass::ControllerAxis && initial_value > 0.5f);
+
+		for (InputBindingKey& other_key : s_input_binding_new_bindings)
+		{
+			// if this key is in our new binding list, it's a "release", and we're done
 			if (other_key.MaskDirection() == key.MaskDirection())
 			{
-				if (abs_value < 0.5f)
+				// for pedals, we wait for it to go back to near its starting point to commit the binding
+				if ((reverse_threshold ? ((initial_value - value) <= 0.25f) : (abs_value < 0.5f)))
 				{
-					// if this key is in our new binding list, it's a "release", and we're done
+					// did we go the full range?
+					if (reverse_threshold && initial_value > 0.5f && min_value <= -0.5f)
+						other_key.modifier = InputModifier::FullAxis;
+
 					SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
 					const std::string new_binding(InputManager::ConvertInputBindingKeysToString(
 						s_input_binding_type, s_input_binding_new_bindings.data(), s_input_binding_new_bindings.size()));
@@ -1314,10 +1342,11 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::T
 		}
 
 		// new binding, add it to the list, but wait for a decent distance first, and then wait for release
-		if (abs_value >= 0.5f)
+		if ((reverse_threshold ? (abs_value < 0.5f) : (abs_value >= 0.5f)))
 		{
 			InputBindingKey key_to_add = key;
-			key_to_add.modifier = (value < 0.0f) ? InputModifier::Negate : InputModifier::None;
+			key_to_add.modifier = (value < 0.0f && !reverse_threshold) ? InputModifier::Negate : InputModifier::None;
+			key_to_add.invert = reverse_threshold;
 			s_input_binding_new_bindings.push_back(key_to_add);
 		}
 

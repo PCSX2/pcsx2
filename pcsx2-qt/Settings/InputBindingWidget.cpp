@@ -300,6 +300,7 @@ void InputBindingWidget::onInputListenTimerTimeout()
 
 void InputBindingWidget::startListeningForInput(u32 timeout_in_seconds)
 {
+	m_value_ranges.clear();
 	m_new_bindings.clear();
 	m_mouse_mapping_enabled = isMouseMappingEnabled();
 	m_input_listen_start_position = QCursor::pos();
@@ -334,14 +335,36 @@ void InputBindingWidget::stopListeningForInput()
 
 void InputBindingWidget::inputManagerHookCallback(InputBindingKey key, float value)
 {
-	const float abs_value = std::abs(value);
+	if (!isListeningForInput())
+		return;
 
-	for (InputBindingKey other_key : m_new_bindings)
+	float initial_value = value;
+	float min_value = value;
+	auto it = std::find_if(m_value_ranges.begin(), m_value_ranges.end(), [key](const auto& it) { return it.first.bits == key.bits; });
+	if (it != m_value_ranges.end())
+	{
+		initial_value = it->second.first;
+		min_value = it->second.second = std::min(it->second.second, value);
+	}
+	else
+	{
+		m_value_ranges.emplace_back(key, std::make_pair(initial_value, min_value));
+	}
+
+	const float abs_value = std::abs(value);
+	const bool reverse_threshold = (key.source_subtype == InputSubclass::ControllerAxis && initial_value > 0.5f);
+
+	for (InputBindingKey& other_key : m_new_bindings)
 	{
 		if (other_key.MaskDirection() == key.MaskDirection())
 		{
-			if (abs_value < 0.5f)
+			// for pedals, we wait for it to go back to near its starting point to commit the binding
+			if ((reverse_threshold ? ((initial_value - value) <= 0.25f) : (abs_value < 0.5f)))
 			{
+				// did we go the full range?
+				if (reverse_threshold && initial_value > 0.5f && min_value <= -0.5f)
+					other_key.modifier = InputModifier::FullAxis;
+
 				// if this key is in our new binding list, it's a "release", and we're done
 				setNewBinding();
 				stopListeningForInput();
@@ -353,11 +376,13 @@ void InputBindingWidget::inputManagerHookCallback(InputBindingKey key, float val
 		}
 	}
 
+
 	// new binding, add it to the list, but wait for a decent distance first, and then wait for release
-	if (abs_value >= 0.5f)
+	if ((reverse_threshold ? (abs_value < 0.5f) : (abs_value >= 0.5f)))
 	{
 		InputBindingKey key_to_add = key;
-		key_to_add.modifier = value < 0.0f ? InputModifier::Negate : InputModifier::None;
+		key_to_add.modifier = (value < 0.0f && !reverse_threshold) ? InputModifier::Negate : InputModifier::None;
+		key_to_add.invert = reverse_threshold;
 		m_new_bindings.push_back(key_to_add);
 	}
 }

@@ -20,6 +20,7 @@
 #include <QtWidgets/QDialog>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 class SettingsInterface;
@@ -68,6 +69,7 @@ protected:
 	std::string m_key_name;
 	std::vector<std::string> m_bindings;
 	std::vector<InputBindingKey> m_new_bindings;
+	std::vector<std::pair<InputBindingKey, std::pair<float, float>>> m_value_ranges;
 
 	QTimer* m_input_listen_timer = nullptr;
 	u32 m_input_listen_remaining_seconds = 0;

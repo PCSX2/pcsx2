@@ -834,6 +834,9 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
 					break;
 			}
 
+			// handle inverting, needed for some wheels.
+			value_to_pass = binding->keys[i].invert ? (1.0f - value_to_pass) : value_to_pass;
+
 			// axes are fired regardless of a state change, unless they're zero
 			// (but going from not-zero to zero will still fire, because of the full state)
 			// for buttons, we can use the state of the last chord key, because it'll be 1 on press,
