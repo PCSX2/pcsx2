@@ -605,7 +605,7 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		{
 			static_cast<GSTexture12*>(sTex[1])->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 			OMSetRenderTargets(dTex, nullptr, darea);
-			SetUtilityTexture(sTex[1], m_linear_sampler_cpu);
+			SetUtilityTexture(sTex[1], m_point_sampler_cpu);
 			BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
 				D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 				D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, c);
@@ -625,7 +625,7 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		EndRenderPass();
 		OMSetRenderTargets(sTex[2], nullptr, fbarea);
 		if (dcleared)
-			SetUtilityTexture(dTex, m_linear_sampler_cpu);
+			SetUtilityTexture(dTex, m_point_sampler_cpu);
 
 		// sTex[2] can be sTex[0], in which case it might be cleared (e.g. Xenosaga).
 		BeginRenderPassForStretchRect(static_cast<GSTexture12*>(sTex[2]), fbarea, GSVector4i(dRect[2]));
@@ -663,7 +663,7 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	{
 		// 1st output is enabled. It must be blended
 		SetUtilityRootSignature();
-		SetUtilityTexture(sTex[0], m_linear_sampler_cpu);
+		SetUtilityTexture(sTex[0], m_point_sampler_cpu);
 		SetPipeline(m_merge[PMODE.MMOD].get());
 		DrawStretchRect(sRect[0], dRect[0], dTex->GetSize());
 	}
@@ -673,7 +673,7 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		EndRenderPass();
 		SetUtilityRootSignature();
 		SetPipeline(m_convert[static_cast<int>(ShaderConvert::YUV)].get());
-		SetUtilityTexture(dTex, m_linear_sampler_cpu);
+		SetUtilityTexture(dTex, m_point_sampler_cpu);
 		OMSetRenderTargets(sTex[2], nullptr, fbarea);
 		BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE);
 		DrawStretchRect(full_r, dRect[2], dsize);

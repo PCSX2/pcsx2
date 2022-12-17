@@ -232,6 +232,7 @@ static bool DoGSOpen(GSRendererType renderer, u8* basemem)
 		}
 
 		g_gs_renderer->SetRegsMem(basemem);
+		g_gs_renderer->ResetPCRTC();
 	}
 	else
 	{
