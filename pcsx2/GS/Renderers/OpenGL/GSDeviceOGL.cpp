@@ -477,13 +477,14 @@ bool GSDeviceOGL::Create()
 	// ****************************************************************
 	if (!GLLoader::buggy_pbo)
 	{
-		// Mesa seems to use it to compute the row length. In our case, we are
-		// tightly packed so don't bother with this parameter and set it to the
-		// minimum alignment (1 byte)
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
 		s_texture_upload_buffer = GL::StreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, TEXTURE_UPLOAD_BUFFER_SIZE);
-		if (!s_texture_upload_buffer)
+		if (s_texture_upload_buffer)
+		{
+			// Don't keep it bound, we'll re-bind when we need it.
+			// Otherwise non-PBO texture uploads break. Yay for global state.
+			s_texture_upload_buffer->Unbind();
+		}
+		else
 		{
 			Console.Error("Failed to create texture upload buffer. Using slow path.");
 			GLLoader::buggy_pbo = true;
@@ -569,6 +570,7 @@ void GSDeviceOGL::ResetAPIState()
 	// clear out DSB
 	glBlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
 	glDisable(GL_BLEND);
+	glActiveTexture(GL_TEXTURE0);
 }
 
 void GSDeviceOGL::RestoreAPIState()
