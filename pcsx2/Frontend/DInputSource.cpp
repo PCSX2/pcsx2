@@ -339,13 +339,28 @@ std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_vi
 
 	if (StringUtil::StartsWith(binding, "+Axis") || StringUtil::StartsWith(binding, "-Axis"))
 	{
-		const std::optional<u32> axis_index = StringUtil::FromChars<u32>(binding.substr(5));
+		std::string_view end;
+		const std::optional<u32> axis_index = StringUtil::FromChars<u32>(binding.substr(5), 10, &end);
 		if (!axis_index.has_value())
 			return std::nullopt;
 
 		key.source_subtype = InputSubclass::ControllerAxis;
 		key.data = axis_index.value();
 		key.modifier = (binding[0] == '-') ? InputModifier::Negate : InputModifier::None;
+		key.invert = (end == "~");
+		return key;
+	}
+	else if (StringUtil::StartsWith(binding, "FullAxis"))
+	{
+		std::string_view end;
+		const std::optional<u32> axis_index = StringUtil::FromChars<u32>(binding.substr(8), 10, &end);
+		if (!axis_index.has_value())
+			return std::nullopt;
+
+		key.source_subtype = InputSubclass::ControllerAxis;
+		key.data = axis_index.value();
+		key.modifier = InputModifier::FullAxis;
+		key.invert = (end == "~");
 		return key;
 	}
 	else if (StringUtil::StartsWith(binding, "Hat"))
@@ -391,8 +406,8 @@ std::string DInputSource::ConvertKeyToString(InputBindingKey key)
 	{
 		if (key.source_subtype == InputSubclass::ControllerAxis)
 		{
-			ret =
-				fmt::format("DInput-{}/{}Axis{}", u32(key.source_index), key.modifier == InputModifier::Negate ? '-' : '+', u32(key.data));
+			const char* modifier = (key.modifier == InputModifier::FullAxis ? "Full" : (key.modifier == InputModifier::Negate ? "-" : "+"));
+			ret = fmt::format("DInput-{}/{}Axis{}{}", u32(key.source_index), modifier, u32(key.data), key.invert ? "~" : "");
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton && key.data >= MAX_NUM_BUTTONS)
 		{

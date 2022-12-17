@@ -265,11 +265,13 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 
 		if (StringUtil::StartsWith(axis_name, "Axis"))
 		{
-			if (auto value = StringUtil::FromChars<u32>(axis_name.substr(4)))
+			std::string_view end;
+			if (auto value = StringUtil::FromChars<u32>(axis_name.substr(4), 10, &end))
 			{
 				key.source_subtype = InputSubclass::ControllerAxis;
 				key.data = *value;
 				key.modifier = (binding[0] == '-') ? InputModifier::Negate : InputModifier::None;
+				key.invert = (end == "~");
 				return key;
 			}
 		}
@@ -348,17 +350,11 @@ std::string SDLInputSource::ConvertKeyToString(InputBindingKey key)
 	{
 		if (key.source_subtype == InputSubclass::ControllerAxis)
 		{
-			const char* modifier = key.modifier == InputModifier::Negate ? "-" : "+";
+			const char* modifier = (key.modifier == InputModifier::FullAxis ? "Full" : (key.modifier == InputModifier::Negate ? "-" : "+"));
 			if (key.data < std::size(s_sdl_axis_names))
-			{
 				ret = StringUtil::StdStringFromFormat("SDL-%u/%s%s", key.source_index, modifier, s_sdl_axis_names[key.data]);
-			}
 			else
-			{
-				if (key.modifier == InputModifier::FullAxis)
-					modifier = "Full";
-				ret = StringUtil::StdStringFromFormat("SDL-%u/%sAxis%u", key.source_index, modifier, key.data);
-			}
+				ret = StringUtil::StdStringFromFormat("SDL-%u/%sAxis%u%s", key.source_index, modifier, key.data, key.invert ? "~" : "");
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton)
 		{
@@ -685,7 +681,7 @@ bool SDLInputSource::HandleJoystickButtonEvent(const SDL_JoyButtonEvent* ev)
 	if (ev->button < it->joy_button_used_in_gc.size() && it->joy_button_used_in_gc[ev->button])
 		return false; // Will get handled by GC event
 	const u32 button = ev->button + std::size(s_sdl_button_names); // Ensure we don't conflict with GC buttons
-	const InputBindingKey key(MakeGenericControllerAxisKey(InputSourceType::SDL, it->player_id, button));
+	const InputBindingKey key(MakeGenericControllerButtonKey(InputSourceType::SDL, it->player_id, button));
 	InputManager::InvokeEvents(key, (ev->state == SDL_PRESSED) ? 1.0f : 0.0f);
 	return true;
 }
@@ -797,7 +793,7 @@ bool SDLInputSource::GetGenericBindingMapping(const std::string_view& device, In
 	}
 	else
 	{
-		// joysticks, which we haven't implemented yet anyway.
+		// joysticks have arbitrary axis numbers, so automapping isn't going to work here.
 		return false;
 	}
 }
