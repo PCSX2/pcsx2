@@ -256,6 +256,8 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int 
 
 		glTextureSubImage2D(m_texture_id, layer, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type,
 			reinterpret_cast<void*>(static_cast<uintptr_t>(map.buffer_offset)));
+
+		sb->Unbind();
 	}
 
 	m_needs_mipmaps_generated = true;
@@ -315,6 +317,8 @@ void GSTextureOGL::Unmap()
 
 		glTextureSubImage2D(m_texture_id, m_layer, m_r_x, m_r_y, m_r_w, m_r_h, m_int_format, m_int_type,
 			reinterpret_cast<void*>(static_cast<uintptr_t>(m_map_offset)));
+
+		sb->Unbind();
 
 		m_needs_mipmaps_generated = true;
 

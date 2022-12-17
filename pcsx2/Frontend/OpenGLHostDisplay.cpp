@@ -85,6 +85,9 @@ std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, 
 	// clear error
 	glGetError();
 
+	// don't worry, I'm planning on removing this eventually - we'll use GSTexture instead.
+	glActiveTexture(GL_TEXTURE7);
+
 	GLuint id;
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_2D, id);
@@ -99,6 +102,8 @@ std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
+
+	glActiveTexture(GL_TEXTURE0);
 
 	GLenum error = glGetError();
 	if (error != GL_NO_ERROR)
@@ -115,30 +120,15 @@ void OpenGLHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y,
 {
 	OpenGLHostDisplayTexture* tex = static_cast<OpenGLHostDisplayTexture*>(texture);
 
-	GLint alignment;
-	if (texture_data_stride & 1)
-		alignment = 1;
-	else if (texture_data_stride & 2)
-		alignment = 2;
-	else
-		alignment = 4;
+	glActiveTexture(GL_TEXTURE7);
 
-	GLint old_texture_binding = 0, old_alignment = 0, old_row_length = 0;
-	glGetIntegerv(GL_TEXTURE_BINDING_2D, &old_texture_binding);
-	glBindTexture(GL_TEXTURE_2D, tex->GetGLID());
-
-	glGetIntegerv(GL_UNPACK_ALIGNMENT, &old_alignment);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
-
-	glGetIntegerv(GL_UNPACK_ROW_LENGTH, &old_row_length);
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, texture_data_stride / sizeof(u32));
 
 	glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_RGBA8, GL_UNSIGNED_BYTE, texture_data);
 
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, old_row_length);
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
-	glPixelStorei(GL_UNPACK_ALIGNMENT, old_alignment);
-	glBindTexture(GL_TEXTURE_2D, old_texture_binding);
+	glActiveTexture(GL_TEXTURE0);
 }
 
 void OpenGLHostDisplay::SetVSync(VsyncMode mode)
@@ -216,6 +206,9 @@ bool OpenGLHostDisplay::CreateDevice(const WindowInfo& wi, VsyncMode vsync)
 
 bool OpenGLHostDisplay::SetupDevice()
 {
+	// We do use 8-bit formats, and higher alignment for 32-bit formats won't hurt anything.
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
 	SetSwapInterval();
 	GL::Program::ResetLastProgram();
 	return true;
@@ -363,11 +356,8 @@ bool OpenGLHostDisplay::BeginPresent(bool frame_skip)
 
 void OpenGLHostDisplay::EndPresent()
 {
-	// clear out pipeline bindings, since imgui doesn't use them
-	glBindProgramPipeline(0);
 	glDisable(GL_SCISSOR_TEST);
 	glDisable(GL_STENCIL_TEST);
-	glActiveTexture(GL_TEXTURE0);
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
