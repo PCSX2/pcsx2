@@ -327,6 +327,8 @@ namespace usb_pad
 		void OpenFFDevice();
 		void ParseFFData(const ff_data* ffdata, bool isDFP);
 
+		s16 ApplySteeringAxisDeadzone(float value);
+
 		USBDevice dev{};
 		USBDesc desc{};
 		USBDescDevice desc_dev{};
@@ -336,6 +338,7 @@ namespace usb_pad
 
 		s16 steering_range = 0;
 		u16 steering_step = 0;
+		s32 steering_deadzone = 0;
 
 		struct
 		{
