@@ -157,6 +157,9 @@ namespace usb_pad
 				{SettingInfo::Type::Integer, "SteeringSmoothing", "Steering Smoothing",
 					"Smooths out changes in steering to the specified percentage per poll. Needed for using keyboards.",
 					"0", "0", "100", "1", "%d%%", nullptr, nullptr, 1.0f},
+				{SettingInfo::Type::Integer, "SteeringDeadzone", "Steering Deadzone",
+					"Steering axis deadzone for pads or non self centering wheels.",
+					"0", "0", "100", "1", "%d%%", nullptr, nullptr, 1.0f},
 			};
 
 			return info;
@@ -206,6 +209,8 @@ namespace usb_pad
 			steering_step = static_cast<u16>(std::clamp<s32>((steering_range * smoothing_percent) / 100,
 				1, std::numeric_limits<u16>::max()));
 		}
+
+		steering_deadzone = (steering_range * USB::GetConfigInt(si, port, devname, "SteeringDeadzone", 0)) / 100;
 
 		if (HasFF())
 		{
@@ -439,17 +444,25 @@ namespace usb_pad
 		}
 	}
 
+	s16 PadState::ApplySteeringAxisDeadzone(float value)
+	{
+		const s16 raw_steering = static_cast<s16>(std::lroundf(value * static_cast<float>(steering_range)));
+		const s16 deadzone_offset = static_cast<s16>(std::lroundf(value * static_cast<float>(steering_deadzone)));
+
+		return std::max((raw_steering - steering_deadzone + deadzone_offset ), 0);
+	}
+
 	void PadState::SetBindValue(u32 bind_index, float value)
 	{
 		switch (bind_index)
 		{
 			case CID_STEERING_L:
-				data.steering_left = static_cast<s16>(std::lroundf(value * static_cast<float>(steering_range)));
+				data.steering_left = ApplySteeringAxisDeadzone(value);
 				UpdateSteering();
 				break;
 
 			case CID_STEERING_R:
-				data.steering_right = static_cast<s16>(std::lroundf(value * static_cast<float>(steering_range)));
+				data.steering_right = ApplySteeringAxisDeadzone(value);
 				UpdateSteering();
 				break;
 
