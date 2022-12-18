@@ -205,6 +205,9 @@
     <ClCompile Include="MemorySettingsInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DynamicLibrary.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlignedMalloc.h">
@@ -484,6 +487,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HeapArray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DynamicLibrary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
