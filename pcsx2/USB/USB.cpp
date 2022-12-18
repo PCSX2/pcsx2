@@ -74,7 +74,7 @@ OHCIPort& USB::GetOHCIPort(u32 port)
 bool USB::CreateDevice(u32 port)
 {
 	const Pcsx2Config::USBOptions::Port& portcfg = EmuConfig.USB.Ports[port];
-	const DeviceProxy* proxy = RegisterDevice::instance().Device(portcfg.DeviceType);
+	const DeviceProxy* proxy = (portcfg.DeviceType != DEVTYPE_NONE) ? RegisterDevice::instance().Device(portcfg.DeviceType) : nullptr;
 	if (!proxy)
 		return true;
 
@@ -561,7 +561,7 @@ s32 USB::DeviceTypeNameToIndex(const std::string_view& device)
 const char* USB::DeviceTypeIndexToName(s32 device)
 {
 	RegisterDevice& rd = RegisterDevice::instance();
-	const DeviceProxy* proxy = rd.Device(device);
+	const DeviceProxy* proxy = (device != DEVTYPE_NONE) ? rd.Device(device) : nullptr;
 	return proxy ? proxy->TypeName() : "None";
 }
 
