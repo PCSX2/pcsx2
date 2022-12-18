@@ -15,6 +15,7 @@ target_sources(common PRIVATE
 	SafeArray.inl
 	Console.cpp
 	CrashHandler.cpp
+	DynamicLibrary.cpp
 	EventSource.cpp
 	Exceptions.cpp
 	FastJmp.cpp
@@ -66,6 +67,7 @@ target_sources(common PRIVATE
 	boost_spsc_queue.hpp
 	Console.h
 	CrashHandler.h
+	DynamicLibrary.h
 	Easing.h
 	EnumOps.h
 	EventSource.h
