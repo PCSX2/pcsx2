@@ -1634,7 +1634,6 @@ endif()
 
 if(WIN32)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
-		baseclasses
 		WIL::WIL
 		D3D12MemAlloc
 		setupapi.lib
