@@ -47,6 +47,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\d3d12memalloc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\zstd\zstd\lib</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\rapidyaml\rapidyaml\ext\c4core\src\c4\ext\fast_float\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\ffmpeg\include</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
@@ -384,7 +385,6 @@
     <ClCompile Include="GS\GSAlignedClass.cpp" />
     <ClCompile Include="GS\GSBlock.cpp" />
     <ClCompile Include="GS\GSCapture.cpp" />
-    <ClCompile Include="GS\Window\GSCaptureDlg.cpp" />
     <ClCompile Include="GS\GSClut.cpp" />
     <ClCompile Include="GS\GSCodeBuffer.cpp" />
     <ClCompile Include="GS\GSCrc.cpp" />
@@ -392,7 +392,6 @@
     <ClCompile Include="GS\Renderers\DX11\GSDevice11.cpp" />
     <ClCompile Include="GS\Renderers\Null\GSDeviceNull.cpp" />
     <ClCompile Include="GS\Renderers\OpenGL\GSDeviceOGL.cpp" />
-    <ClCompile Include="GS\Window\GSDialog.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSDirtyRect.cpp" />
     <ClCompile Include="GS\GSDrawingContext.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSDrawScanline.cpp" />
@@ -780,7 +779,6 @@
     <ClInclude Include="GS\GSAlignedClass.h" />
     <ClInclude Include="GS\GSBlock.h" />
     <ClInclude Include="GS\GSCapture.h" />
-    <ClInclude Include="GS\Window\GSCaptureDlg.h" />
     <ClInclude Include="GS\GSClut.h" />
     <ClInclude Include="GS\GSCodeBuffer.h" />
     <ClInclude Include="GS\GSCrc.h" />
@@ -788,7 +786,6 @@
     <ClInclude Include="GS\Renderers\DX11\GSDevice11.h" />
     <ClInclude Include="GS\Renderers\Null\GSDeviceNull.h" />
     <ClInclude Include="GS\Renderers\OpenGL\GSDeviceOGL.h" />
-    <ClInclude Include="GS\Window\GSDialog.h" />
     <ClInclude Include="GS\Renderers\Common\GSDirtyRect.h" />
     <ClInclude Include="GS\GSDrawingContext.h" />
     <ClInclude Include="GS\GSDrawingEnvironment.h" />

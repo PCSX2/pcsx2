@@ -70,16 +70,17 @@ void GSgifTransfer2(u8* mem, u32 size);
 void GSgifTransfer3(u8* mem, u32 size);
 void GSvsync(u32 field, bool registers_written);
 int GSfreeze(FreezeAction mode, freezeData* data);
+std::string GSGetBaseSnapshotFilename();
 void GSQueueSnapshot(const std::string& path, u32 gsdump_frames = 0);
 void GSStopGSDump();
+bool GSBeginCapture(std::string filename);
+void GSEndCapture();
 void GSPresentCurrentFrame();
 void GSThrottlePresentation();
 #ifndef PCSX2_CORE
 void GSkeyEvent(const HostKeyEvent& e);
 void GSconfigure();
 int GStest();
-bool GSsetupRecording(std::string& filename);
-void GSendRecording();
 #endif
 void GSsetGameCRC(u32 crc, int options);
 

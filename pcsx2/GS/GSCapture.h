@@ -14,44 +14,20 @@
  */
 
 #pragma once
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "GSVector.h"
-#include "GSPng.h"
 
-#ifdef _WIN32
-#include "Window/GSCaptureDlg.h"
-#include <wil/com.h>
-#endif
-
-class GSCapture
+namespace GSCapture
 {
-	std::recursive_mutex m_lock;
-	bool m_capturing;
-	GSVector2i m_size;
-	std::string m_out_dir;
-	int m_threads;
-
-#ifdef _WIN32
-
-	wil::com_ptr_failfast<IGraphBuilder> m_graph;
-	wil::com_ptr_failfast<IBaseFilter> m_src;
-
-#elif defined(__unix__)
-
-	u64 m_frame;
-	std::vector<std::unique_ptr<GSPng::Worker>> m_workers;
-	int m_compression_level;
-
-#endif
-
-public:
-	GSCapture();
-	virtual ~GSCapture();
-
-	bool BeginCapture(float fps, GSVector2i recommendedResolution, float aspect, std::string& filename);
+	bool BeginCapture(float fps, GSVector2i recommendedResolution, float aspect, std::string filename);
 	bool DeliverFrame(const void* bits, int pitch, bool rgba);
 	bool EndCapture();
 
-	bool IsCapturing() { return m_capturing; }
-	GSVector2i GetSize() { return m_size; }
-};
+	bool IsCapturing();
+	GSVector2i GetSize();
+
+	std::vector<std::pair<std::string, std::string>> GetVideoCodecList(const char* container);
+}; // namespace GSCapture

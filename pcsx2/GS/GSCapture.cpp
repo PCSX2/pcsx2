@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
+ *  Copyright (C) 2002-2022 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -18,604 +18,539 @@
 #include "GSPng.h"
 #include "GSUtil.h"
 #include "GSExtra.h"
+#include "Host.h"
+#include "IconsFontAwesome5.h"
+#include "common/Assertions.h"
+#include "common/Align.h"
+#include "common/DynamicLibrary.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 
-#ifdef _WIN32
-
-static void __stdcall ClosePinInfo(_Inout_ PIN_INFO* info) WI_NOEXCEPT
-{
-	if (info->pFilter)
-	{
-		info->pFilter->Release();
-	}
+extern "C" {
+#include "libavcodec/avcodec.h"
+#include "libavcodec/version.h"
+#include "libavformat/avformat.h"
+#include "libavformat/version.h"
+#include "libavutil/version.h"
+#include "libswscale/swscale.h"
+#include "libswscale/version.h"
 }
 
-static void __stdcall CloseFilterInfo(_Inout_ FILTER_INFO* info) WI_NOEXCEPT
+#include <mutex>
+
+// Compatibility with both ffmpeg 4.x and 5.x.
+#if (LIBAVFORMAT_VERSION_MAJOR < 59)
+#define ff_const59
+#else
+#define ff_const59 const
+#endif
+
+#define VISIT_AVCODEC_IMPORTS(X) \
+	X(avcodec_find_encoder_by_name) \
+	X(avcodec_find_encoder) \
+	X(avcodec_alloc_context3) \
+	X(avcodec_open2) \
+	X(avcodec_free_context) \
+	X(avcodec_send_frame) \
+	X(avcodec_receive_packet) \
+	X(avcodec_parameters_from_context) \
+	X(av_codec_iterate) \
+	X(av_packet_alloc) \
+	X(av_packet_free) \
+	X(av_packet_rescale_ts)
+
+#define VISIT_AVFORMAT_IMPORTS(X) \
+	X(avformat_alloc_output_context2) \
+	X(avformat_new_stream) \
+	X(avformat_write_header) \
+	X(av_guess_format) \
+	X(av_interleaved_write_frame) \
+	X(av_write_trailer) \
+	X(avformat_free_context) \
+	X(avformat_query_codec) \
+	X(avio_open) \
+	X(avio_closep)
+
+#define VISIT_AVUTIL_IMPORTS(X) \
+	X(av_frame_alloc) \
+	X(av_frame_get_buffer) \
+	X(av_frame_free) \
+	X(av_strerror) \
+	X(av_reduce)
+
+#define VISIT_SWSCALE_IMPORTS(X) \
+	X(sws_getCachedContext) \
+	X(sws_scale) \
+	X(sws_freeContext)
+
+namespace GSCapture
 {
-	if (info->pGraph)
-	{
-		info->pGraph->Release();
-	}
-}
+	static void LogAVError(int errnum, const char* format, ...);
+	static bool LoadFFmpeg(bool report_errors);
+	static void UnloadFFmpeg(std::unique_lock<std::mutex>& lock);
+	static void UnloadFFmpeg();
+	static void ReceivePackets();
+} // namespace GSCapture
 
-using unique_pin_info = wil::unique_struct<PIN_INFO, decltype(&::ClosePinInfo), ::ClosePinInfo>;
-using unique_filter_info = wil::unique_struct<FILTER_INFO, decltype(&::CloseFilterInfo), ::CloseFilterInfo>;
+static std::recursive_mutex s_lock;
+static GSVector2i s_size{};
+static std::string s_filename;
+static bool s_capturing = false;
 
-template<typename Func>
-static void EnumFilters(IGraphBuilder* filterGraph, Func&& f)
+static AVFormatContext* s_format_context = nullptr;
+static AVCodecContext* s_codec_context = nullptr;
+static AVStream* s_video_stream = nullptr;
+static AVFrame* s_converted_frame = nullptr; // YUV
+static AVPacket* s_video_packet = nullptr;
+static s64 s_next_pts = 0;
+static SwsContext* s_sws_context = nullptr;
+
+#define DECLARE_IMPORT(X) static decltype(X)* wrap_##X;
+VISIT_AVCODEC_IMPORTS(DECLARE_IMPORT);
+VISIT_AVFORMAT_IMPORTS(DECLARE_IMPORT);
+VISIT_AVUTIL_IMPORTS(DECLARE_IMPORT);
+VISIT_SWSCALE_IMPORTS(DECLARE_IMPORT);
+#undef DECLARE_IMPORT
+
+// We could refcount this, but really, may as well just load it and pay the cost once.
+// Not like we need to save a few megabytes of memory...
+static Common::DynamicLibrary s_avcodec_library;
+static Common::DynamicLibrary s_avformat_library;
+static Common::DynamicLibrary s_avutil_library;
+static Common::DynamicLibrary s_swscale_library;
+static bool s_library_loaded = false;
+static std::mutex s_load_mutex;
+
+bool GSCapture::LoadFFmpeg(bool report_errors)
 {
-	wil::com_ptr_nothrow<IEnumFilters> enumFilters;
-	if (SUCCEEDED(filterGraph->EnumFilters(enumFilters.put())))
-	{
-		wil::com_ptr_nothrow<IBaseFilter> baseFilter;
-		while (enumFilters->Next(1, baseFilter.put(), nullptr) == S_OK)
-		{
-			std::forward<Func>(f)(baseFilter.get());
-		}
-	}
-}
+	std::unique_lock lock(s_load_mutex);
+	if (s_library_loaded)
+		return true;
 
-template<typename Func>
-static void EnumPins(IBaseFilter* baseFilter, Func&& f)
-{
-	wil::com_ptr_nothrow<IEnumPins> enumPins;
-	if (SUCCEEDED(baseFilter->EnumPins(enumPins.put())))
-	{
-		wil::com_ptr_nothrow<IPin> pin;
-		while (enumPins->Next(1, pin.put(), nullptr) == S_OK)
-		{
-			if (!std::forward<Func>(f)(pin.get()))
-			{
-				break;
-			}
-		}
-	}
-}
-
-//
-// GSSource
-//
-interface __declspec(uuid("59C193BB-C520-41F3-BC1D-E245B80A86FA"))
-IGSSource : public IUnknown
-{
-	STDMETHOD(DeliverNewSegment)() PURE;
-	STDMETHOD(DeliverFrame)(const void* bits, int pitch, bool rgba) PURE;
-	STDMETHOD(DeliverEOS)() PURE;
-};
-
-class __declspec(uuid("F8BB6F4F-0965-4ED4-BA74-C6A01E6E6C77"))
-GSSource : public CBaseFilter, private CCritSec, public IGSSource
-{
-	GSVector2i m_size;
-	REFERENCE_TIME m_atpf;
-	REFERENCE_TIME m_now;
-
-	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void** ppv)
-	{
-		return riid == __uuidof(IGSSource)
-			? GetInterface((IGSSource*)this, ppv)
-			: __super::NonDelegatingQueryInterface(riid, ppv);
-	}
-
-	class GSSourceOutputPin : public CBaseOutputPin
-	{
-		GSVector2i m_size;
-		std::vector<CMediaType> m_mts;
-
-	public:
-		GSSourceOutputPin(const GSVector2i& size, REFERENCE_TIME atpf, CBaseFilter* pFilter, CCritSec* pLock, HRESULT& hr, int colorspace)
-			: CBaseOutputPin("GSSourceOutputPin", pFilter, pLock, &hr, L"Output")
-			, m_size(size)
-		{
-			CMediaType mt;
-			mt.majortype = MEDIATYPE_Video;
-			mt.formattype = FORMAT_VideoInfo;
-
-			VIDEOINFOHEADER vih;
-			memset(&vih, 0, sizeof(vih));
-			vih.AvgTimePerFrame = atpf;
-			vih.bmiHeader.biSize = sizeof(vih.bmiHeader);
-			vih.bmiHeader.biWidth = m_size.x;
-			vih.bmiHeader.biHeight = m_size.y;
-
-			// YUY2
-
-			mt.subtype = MEDIASUBTYPE_YUY2;
-			mt.lSampleSize = m_size.x * m_size.y * 2;
-
-			vih.bmiHeader.biCompression = '2YUY';
-			vih.bmiHeader.biPlanes = 1;
-			vih.bmiHeader.biBitCount = 16;
-			vih.bmiHeader.biSizeImage = m_size.x * m_size.y * 2;
-			mt.SetFormat((u8*)&vih, sizeof(vih));
-
-			m_mts.push_back(mt);
-
-			// RGB32
-
-			mt.subtype = MEDIASUBTYPE_RGB32;
-			mt.lSampleSize = m_size.x * m_size.y * 4;
-
-			vih.bmiHeader.biCompression = BI_RGB;
-			vih.bmiHeader.biPlanes = 1;
-			vih.bmiHeader.biBitCount = 32;
-			vih.bmiHeader.biSizeImage = m_size.x * m_size.y * 4;
-			mt.SetFormat((u8*)&vih, sizeof(vih));
-
-			if (colorspace == 1)
-				m_mts.insert(m_mts.begin(), mt);
-			else
-				m_mts.push_back(mt);
-		}
-
-		HRESULT GSSourceOutputPin::DecideBufferSize(IMemAllocator* pAlloc, ALLOCATOR_PROPERTIES* pProperties)
-		{
-			ASSERT(pAlloc && pProperties);
-
-			HRESULT hr;
-
-			pProperties->cBuffers = 1;
-			pProperties->cbBuffer = m_mt.lSampleSize;
-
-			ALLOCATOR_PROPERTIES Actual;
-
-			if (FAILED(hr = pAlloc->SetProperties(pProperties, &Actual)))
-			{
-				return hr;
-			}
-
-			if (Actual.cbBuffer < pProperties->cbBuffer)
-			{
-				return E_FAIL;
-			}
-
-			ASSERT(Actual.cBuffers == pProperties->cBuffers);
-
-			return S_OK;
-		}
-
-		HRESULT CheckMediaType(const CMediaType* pmt)
-		{
-			for (const auto& mt : m_mts)
-			{
-				if (mt.majortype == pmt->majortype && mt.subtype == pmt->subtype)
-				{
-					return S_OK;
-				}
-			}
-
-			return E_FAIL;
-		}
-
-		HRESULT GetMediaType(int i, CMediaType* pmt)
-		{
-			CheckPointer(pmt, E_POINTER);
-
-			if (i < 0)
-				return E_INVALIDARG;
-			if (i > 1)
-				return VFW_S_NO_MORE_ITEMS;
-
-			*pmt = m_mts[i];
-
-			return S_OK;
-		}
-
-		STDMETHODIMP Notify(IBaseFilter* pSender, Quality q)
-		{
-			return E_NOTIMPL;
-		}
-
-		const CMediaType& CurrentMediaType()
-		{
-			return m_mt;
-		}
+	const auto open_dynlib = [](Common::DynamicLibrary& lib, const char* name, int major_version) {
+		std::string full_name(Common::DynamicLibrary::GetVersionedFilename(name, major_version));
+		return lib.Open(full_name.c_str());
 	};
 
-	GSSourceOutputPin* m_output;
+	bool result = true;
 
-public:
-	GSSource(int w, int h, float fps, IUnknown* pUnk, HRESULT& hr, int colorspace)
-		: CBaseFilter("GSSource", pUnk, this, __uuidof(this), &hr)
-		, m_output(NULL)
-		, m_size(w, h)
-		, m_atpf((REFERENCE_TIME)(10000000.0f / fps))
-		, m_now(0)
+	result = result && open_dynlib(s_avutil_library, "avutil", LIBAVUTIL_VERSION_MAJOR);
+	result = result && open_dynlib(s_avcodec_library, "avcodec", LIBAVCODEC_VERSION_MAJOR);
+	result = result && open_dynlib(s_avformat_library, "avformat", LIBAVFORMAT_VERSION_MAJOR);
+	result = result && open_dynlib(s_swscale_library, "swscale", LIBSWSCALE_VERSION_MAJOR);
+
+#define RESOLVE_IMPORT(X) result = result && s_avcodec_library.GetSymbol(#X, &wrap_##X);
+	VISIT_AVCODEC_IMPORTS(RESOLVE_IMPORT);
+#undef RESOLVE_IMPORT
+
+#define RESOLVE_IMPORT(X) result = result && s_avformat_library.GetSymbol(#X, &wrap_##X);
+	VISIT_AVFORMAT_IMPORTS(RESOLVE_IMPORT);
+#undef RESOLVE_IMPORT
+
+#define RESOLVE_IMPORT(X) result = result && s_avutil_library.GetSymbol(#X, &wrap_##X);
+	VISIT_AVUTIL_IMPORTS(RESOLVE_IMPORT);
+#undef RESOLVE_IMPORT
+
+#define RESOLVE_IMPORT(X) result = result && s_swscale_library.GetSymbol(#X, &wrap_##X);
+	VISIT_SWSCALE_IMPORTS(RESOLVE_IMPORT);
+#undef RESOLVE_IMPORT
+
+	if (result)
 	{
-		m_output = new GSSourceOutputPin(m_size, m_atpf, this, this, hr, colorspace);
+		s_library_loaded = true;
+		return true;
 	}
 
-	virtual ~GSSource()
+	UnloadFFmpeg(lock);
+	lock.unlock();
+
+	if (report_errors)
 	{
-		delete m_output;
+		Host::ReportErrorAsync("Failed to load FFmpeg",
+			fmt::format(
+				"You may be missing one or more files, or are using the incorrect version. This build of PCSX2 requires:\n"
+				"  libavcodec: {}\n"
+				"  libavformat: {}\n"
+				"  libavutil: {}\n"
+				"  libswscale: {}",
+				LIBAVCODEC_VERSION_MAJOR, LIBAVFORMAT_VERSION_MAJOR, LIBAVUTIL_VERSION_MAJOR, LIBSWSCALE_VERSION_MAJOR));
 	}
 
-	DECLARE_IUNKNOWN;
-
-	int GetPinCount()
-	{
-		return 1;
-	}
-
-	CBasePin* GetPin(int n)
-	{
-		return n == 0 ? m_output : NULL;
-	}
-
-	// IGSSource
-
-	STDMETHODIMP DeliverNewSegment()
-	{
-		m_now = 0;
-
-		return m_output->DeliverNewSegment(0, _I64_MAX, 1.0);
-	}
-
-	STDMETHODIMP DeliverFrame(const void* bits, int pitch, bool rgba)
-	{
-		if (!m_output || !m_output->IsConnected())
-		{
-			return E_UNEXPECTED;
-		}
-
-		wil::com_ptr_nothrow<IMediaSample> sample;
-
-		if (FAILED(m_output->GetDeliveryBuffer(sample.put(), NULL, NULL, 0)))
-		{
-			return E_FAIL;
-		}
-
-		REFERENCE_TIME start = m_now;
-		REFERENCE_TIME stop = m_now + m_atpf;
-
-		sample->SetTime(&start, &stop);
-		sample->SetSyncPoint(TRUE);
-
-		const CMediaType& mt = m_output->CurrentMediaType();
-
-		u8* src = (u8*)bits;
-		u8* dst = NULL;
-
-		sample->GetPointer(&dst);
-
-		int w = m_size.x;
-		int h = m_size.y;
-		int srcpitch = pitch;
-
-		if (mt.subtype == MEDIASUBTYPE_YUY2)
-		{
-			int dstpitch = ((VIDEOINFOHEADER*)mt.Format())->bmiHeader.biWidth * 2;
-
-			GSVector4 ys(0.257f, 0.504f, 0.098f, 0.0f);
-			GSVector4 us(-0.148f / 2, -0.291f / 2, 0.439f / 2, 0.0f);
-			GSVector4 vs(0.439f / 2, -0.368f / 2, -0.071f / 2, 0.0f);
-
-			if (!rgba)
-			{
-				ys = ys.zyxw();
-				us = us.zyxw();
-				vs = vs.zyxw();
-			}
-
-			const GSVector4 offset(16, 128, 16, 128);
-
-			for (int j = 0; j < h; j++, dst += dstpitch, src += srcpitch)
-			{
-				u32* s = (u32*)src;
-				u16* d = (u16*)dst;
-
-				for (int i = 0; i < w; i += 2)
-				{
-					GSVector4 c0 = GSVector4::rgba32(s[i + 0]);
-					GSVector4 c1 = GSVector4::rgba32(s[i + 1]);
-					GSVector4 c2 = c0 + c1;
-
-					GSVector4 lo = (c0 * ys).hadd(c2 * us);
-					GSVector4 hi = (c1 * ys).hadd(c2 * vs);
-
-					GSVector4 c = lo.hadd(hi) + offset;
-
-					*((u32*)&d[i]) = GSVector4i(c).rgba32();
-				}
-			}
-		}
-		else if (mt.subtype == MEDIASUBTYPE_RGB32)
-		{
-			int dstpitch = ((VIDEOINFOHEADER*)mt.Format())->bmiHeader.biWidth * 4;
-
-			dst += dstpitch * (h - 1);
-			dstpitch = -dstpitch;
-
-			for (int j = 0; j < h; j++, dst += dstpitch, src += srcpitch)
-			{
-				if (rgba)
-				{
-					GSVector4i* s = (GSVector4i*)src;
-					GSVector4i* d = (GSVector4i*)dst;
-
-					GSVector4i mask(2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15);
-
-					for (int i = 0, w4 = w >> 2; i < w4; i++)
-					{
-						d[i] = s[i].shuffle8(mask);
-					}
-				}
-				else
-				{
-					memcpy(dst, src, w * 4);
-				}
-			}
-		}
-		else
-		{
-			return E_FAIL;
-		}
-
-		if (FAILED(m_output->Deliver(sample.get())))
-		{
-			return E_FAIL;
-		}
-
-		m_now = stop;
-
-		return S_OK;
-	}
-
-	STDMETHODIMP DeliverEOS()
-	{
-		return m_output->DeliverEndOfStream();
-	}
-};
-
-static wil::com_ptr_nothrow<IPin> GetFirstPin(IBaseFilter* pBF, PIN_DIRECTION dir)
-{
-	wil::com_ptr_nothrow<IPin> result;
-	if (pBF)
-	{
-		EnumPins(pBF, [&](IPin* pin)
-		{
-			PIN_DIRECTION dir2;
-			pin->QueryDirection(&dir2);
-			if (dir == dir2)
-			{
-				result = pin;
-				return false;
-			}
-			return true;
-		});
-	}
-
-	return result;
+	return false;
 }
 
-#endif
-
-//
-// GSCapture
-//
-
-GSCapture::GSCapture()
-	: m_capturing(false)
-	, m_out_dir("/tmp/GS_Capture") // FIXME Later add an option
-#if defined(__unix__)
-	, m_frame(0)
-#endif
+void GSCapture::UnloadFFmpeg(std::unique_lock<std::mutex>& lock)
 {
+#define CLEAR_IMPORT(X) wrap_##X = nullptr;
+	VISIT_AVCODEC_IMPORTS(CLEAR_IMPORT);
+	VISIT_AVFORMAT_IMPORTS(CLEAR_IMPORT);
+	VISIT_AVUTIL_IMPORTS(CLEAR_IMPORT);
+	VISIT_SWSCALE_IMPORTS(CLEAR_IMPORT);
+#undef CLEAR_IMPORT
+
+	s_swscale_library.Close();
+	s_avutil_library.Close();
+	s_avformat_library.Close();
+	s_avcodec_library.Close();
 }
 
-GSCapture::~GSCapture()
+void GSCapture::UnloadFFmpeg()
 {
-	EndCapture();
+	std::unique_lock lock(s_load_mutex);
+	if (!s_library_loaded)
+		return;
+
+	s_library_loaded = false;
+	UnloadFFmpeg(lock);
 }
 
-bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float aspect, std::string& filename)
+void GSCapture::LogAVError(int errnum, const char* format, ...)
 {
-	printf("Recommended resolution: %d x %d, DAR for muxing: %.4f\n", recommendedResolution.x, recommendedResolution.y, aspect);
-	std::lock_guard<std::recursive_mutex> lock(m_lock);
+	va_list ap;
+	va_start(ap, format);
+	std::string msg(StringUtil::StdStringFromFormatV(format, ap));
+	va_end(ap);
+
+	char errbuf[128];
+	wrap_av_strerror(errnum, errbuf, sizeof(errbuf));
+
+	Host::AddIconOSDMessage("GSCaptureError", ICON_FA_CAMERA, fmt::format("{}{} ({})", msg, errbuf, errnum), Host::OSD_ERROR_DURATION);
+}
+
+bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float aspect, std::string filename)
+{
+	Console.WriteLn("Recommended resolution: %d x %d, DAR for muxing: %.4f", recommendedResolution.x, recommendedResolution.y, aspect);
+	if (filename.empty() || !LoadFFmpeg(true))
+		return false;
+
+	std::lock_guard<std::recursive_mutex> lock(s_lock);
 
 	ASSERT(fps != 0);
 
 	EndCapture();
 
-	// reload settings because they may have changed
-	m_out_dir = theApp.GetConfigS("capture_out_dir");
-	m_threads = theApp.GetConfigI("capture_threads");
-#if defined(__unix__)
-	m_compression_level = theApp.GetConfigI("png_compression_level");
-#endif
+	s_size = GSVector2i(Common::AlignUpPow2(recommendedResolution.x, 8), Common::AlignUpPow2(recommendedResolution.y, 8));
+	s_filename = std::move(filename);
 
-#ifdef _WIN32
-
-	GSCaptureDlg dlg;
-
-	if (IDOK != dlg.DoModal())
-		return false;
-
+	ff_const59 AVOutputFormat* output_format = wrap_av_guess_format(nullptr, s_filename.c_str(), nullptr);
+	if (!output_format)
 	{
-		const int start = dlg.m_filename.length() - 4;
-		if (start > 0)
-		{
-			std::wstring test = dlg.m_filename.substr(start);
-			std::transform(test.begin(), test.end(), test.begin(), (char(_cdecl*)(int))tolower);
-			if (test.compare(L".avi") != 0)
-				dlg.m_filename += L".avi";
-		}
-		else
-			dlg.m_filename += L".avi";
+		Console.Error(fmt::format("Failed to get output format for '{}'", s_filename));
+		EndCapture();
+		return false;
+	}
 
-		FILE* test = _wfopen(dlg.m_filename.c_str(), L"w");
-		if (test)
-			fclose(test);
-		else
+	// find the codec id
+	const AVCodec* codec = nullptr;
+	if (!GSConfig.VideoCaptureCodec.empty())
+	{
+		codec = wrap_avcodec_find_encoder_by_name(GSConfig.VideoCaptureCodec.c_str());
+		if (!codec)
 		{
-			dlg.InvalidFile();
-			return false;
+			Host::AddIconOSDMessage("GSCaptureCodecNotFound", ICON_FA_CAMERA,
+				fmt::format("Video codec {} not found, using default.", GSConfig.VideoCaptureCodec),
+				Host::OSD_ERROR_DURATION);
 		}
 	}
-
-	m_size.x = (dlg.m_width + 7) & ~7;
-	m_size.y = (dlg.m_height + 7) & ~7;
-	//
-
-	auto graph = wil::CoCreateInstanceNoThrow<IGraphBuilder>(CLSID_FilterGraph);
-	if (!graph)
+	if (!codec)
+		codec = wrap_avcodec_find_encoder(output_format->video_codec);
+	if (!codec)
 	{
-		return false;
-	}
-	auto cgb = wil::CoCreateInstanceNoThrow<ICaptureGraphBuilder2>(CLSID_CaptureGraphBuilder2);
-	if (!cgb)
-	{
+		Host::AddIconOSDMessage("GSCaptureError", ICON_FA_CAMERA, "Failed to find encoder.", Host::OSD_ERROR_DURATION);
+		EndCapture();
 		return false;
 	}
 
-	wil::com_ptr_nothrow<IBaseFilter> mux;
-	if (FAILED(cgb->SetFiltergraph(graph.get()))
-	 || FAILED(cgb->SetOutputFileName(&MEDIASUBTYPE_Avi, std::wstring(dlg.m_filename.begin(), dlg.m_filename.end()).c_str(), mux.put(), nullptr)))
+	int res = wrap_avformat_alloc_output_context2(&s_format_context, output_format, nullptr, s_filename.c_str());
+	if (res < 0)
 	{
+		LogAVError(res, "avformat_alloc_output_context2() failed: ");
+		EndCapture();
 		return false;
 	}
 
-	HRESULT source_hr = S_OK;
-	// WARNING: This increases the reference count! Right now it's fine, since GSSource inherits from CUnknown that
-	// starts the reference count from 0. Should this ever change and GSSource ends up with a refcount of 1 after constructing,
-	// change this to `.attach(new GSSource(...))`.
-	wil::com_ptr_nothrow<IBaseFilter> src = new GSSource(m_size.x, m_size.y, fps, NULL, source_hr, dlg.m_colorspace);
-
-	if (dlg.m_enc == 0)
+	s_codec_context = wrap_avcodec_alloc_context3(codec);
+	if (!s_codec_context)
 	{
-		if (FAILED(graph->AddFilter(src.get(), L"Source")))
-			return false;
-		if (FAILED(graph->ConnectDirect(GetFirstPin(src.get(), PINDIR_OUTPUT).get(), GetFirstPin(mux.get(), PINDIR_INPUT).get(), nullptr)))
-			return false;
+		Host::AddIconOSDMessage("GSCaptureError", ICON_FA_CAMERA, "Failed to allocate codec context.", Host::OSD_ERROR_DURATION);
+		EndCapture();
+		return false;
+	}
+
+	s_codec_context->codec_type = AVMEDIA_TYPE_VIDEO;
+	s_codec_context->bit_rate = GSConfig.VideoCaptureBitrate * 1000;
+	s_codec_context->width = s_size.x;
+	s_codec_context->height = s_size.y;
+	wrap_av_reduce(&s_codec_context->time_base.num, &s_codec_context->time_base.den,
+		10000, static_cast<s64>(static_cast<double>(fps) * 10000.0), std::numeric_limits<s32>::max());
+
+	// Default to YUV 4:2:0 if the codec doesn't specify a pixel format.
+	if (!codec->pix_fmts)
+	{
+		s_codec_context->pix_fmt = AV_PIX_FMT_YUV420P;
 	}
 	else
 	{
-		if (FAILED(graph->AddFilter(src.get(), L"Source")) || FAILED(graph->AddFilter(dlg.m_enc.get(), L"Encoder")))
+		// Prefer YUV420 given the choice, but otherwise fall back to whatever it supports.
+		s_codec_context->pix_fmt = codec->pix_fmts[0];
+		for (u32 i = 0; codec->pix_fmts[i] != AV_PIX_FMT_NONE; i++)
 		{
-			return false;
-		}
-
-		if (FAILED(graph->ConnectDirect(GetFirstPin(src.get(), PINDIR_OUTPUT).get(), GetFirstPin(dlg.m_enc.get(), PINDIR_INPUT).get(), nullptr))
-		 || FAILED(graph->ConnectDirect(GetFirstPin(dlg.m_enc.get(), PINDIR_OUTPUT).get(), GetFirstPin(mux.get(), PINDIR_INPUT).get(), nullptr)))
-		{
-			return false;
+			if (codec->pix_fmts[i] == AV_PIX_FMT_YUV420P)
+			{
+				s_codec_context->pix_fmt = codec->pix_fmts[i];
+				break;
+			}
 		}
 	}
 
-	EnumFilters(graph.get(), [](IBaseFilter* baseFilter)
+	if (output_format->flags & AVFMT_GLOBALHEADER)
+		s_codec_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+
+	res = wrap_avcodec_open2(s_codec_context, codec, nullptr);
+	if (res < 0)
 	{
-		unique_filter_info filter;
-		baseFilter->QueryFilterInfo(&filter);
-		printf("Filter [%p]: %ls\n", baseFilter, filter.achName);
-
-		EnumPins(baseFilter, [](IPin* pin)
-		{
-			wil::com_ptr_nothrow<IPin> pinTo;
-			pin->ConnectedTo(pinTo.put());
-
-			unique_pin_info pi;
-			pin->QueryPinInfo(&pi);
-			printf("- Pin [%p - %p]: %ls (%s)\n", pin, pinTo.get(), pi.achName, pi.dir ? "out" : "in");
-			return true;
-		});
-	});
-
-	// Moving forward, we want failfast semantics so "commit" these interfaces by persisting them in the class
-	m_graph = std::move(graph);
-	m_src = std::move(src);
-
-	m_graph.query<IMediaControl>()->Run();
-	m_src.query<IGSSource>()->DeliverNewSegment();
-
-	m_capturing = true;
-	filename = StringUtil::WideStringToUTF8String(dlg.m_filename.erase(dlg.m_filename.length() - 3, 3) + L"wav");
-	return true;
-#elif defined(__unix__)
-	// Note I think it doesn't support multiple depth creation
-	GSmkdir(m_out_dir.c_str());
-
-	// Really cheap recording
-	m_frame = 0;
-	// Add option !!!
-	m_size.x = theApp.GetConfigI("CaptureWidth");
-	m_size.y = theApp.GetConfigI("CaptureHeight");
-
-	for (int i = 0; i < m_threads; i++)
-	{
-		m_workers.push_back(std::unique_ptr<GSPng::Worker>(new GSPng::Worker({}, &GSPng::Process, {})));
+		LogAVError(res, "avcodec_open2() failed: ");
+		EndCapture();
+		return false;
 	}
 
-	m_capturing = true;
-	filename = m_out_dir + "/audio_recording.wav";
+	s_converted_frame = wrap_av_frame_alloc();
+	if (!s_converted_frame)
+	{
+		Console.Error("Failed to allocate frame");
+		EndCapture();
+		return false;
+	}
+
+	s_converted_frame->format = s_codec_context->pix_fmt;
+	s_converted_frame->width = s_codec_context->width;
+	s_converted_frame->height = s_codec_context->height;
+	res = wrap_av_frame_get_buffer(s_converted_frame, 0);
+	if (res < 0)
+	{
+		LogAVError(res, "av_frame_get_buffer() for converted frame failed: ");
+		EndCapture();
+		return false;
+	}
+
+	s_video_stream = wrap_avformat_new_stream(s_format_context, codec);
+	if (!s_video_stream)
+	{
+		Console.Error("avformat_new_stream() failed");
+		EndCapture();
+		return false;
+	}
+
+	res = wrap_avcodec_parameters_from_context(s_video_stream->codecpar, s_codec_context);
+	if (res < 0)
+	{
+		LogAVError(res, "avcodec_parameters_from_context() failed: ");
+		EndCapture();
+		return false;
+	}
+
+	s_video_stream->time_base = s_codec_context->time_base;
+	res = wrap_avio_open(&s_format_context->pb, s_filename.c_str(), AVIO_FLAG_WRITE);
+	if (res < 0)
+	{
+		LogAVError(res, "avio_open() failed: ");
+		EndCapture();
+		return false;
+	}
+
+	res = wrap_avformat_write_header(s_format_context, nullptr);
+	if (res < 0)
+	{
+		LogAVError(res, "avformat_write_header() failed: ");
+		EndCapture();
+		return false;
+	}
+
+	s_video_packet = wrap_av_packet_alloc();
+	if (!s_video_packet)
+	{
+		Console.Error("av_packet_alloc() failed");
+		EndCapture();
+		return false;
+	}
+
+	Host::AddIconOSDMessage("GSCapture", ICON_FA_CAMERA,
+		fmt::format("Starting capturing video to '{}'.", Path::GetFileName(s_filename)),
+		Host::OSD_INFO_DURATION);
+
+	s_next_pts = 0;
+	s_capturing = true;
 	return true;
-#else
-	// FIXME: MACOS
-	return false;
-#endif
 }
 
 bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 {
-	std::lock_guard<std::recursive_mutex> lock(m_lock);
+	std::lock_guard<std::recursive_mutex> lock(s_lock);
+	pxAssert(bits && pitch > 0);
 
-	if (bits == NULL || pitch == 0)
+	const AVPixelFormat source_format = rgba ? AV_PIX_FMT_RGBA : AV_PIX_FMT_BGRA;
+	const int source_width = s_size.x;
+	const int source_height = s_size.y;
+
+	s_sws_context = wrap_sws_getCachedContext(s_sws_context, source_width, source_height, source_format,
+		s_converted_frame->width, s_converted_frame->height, s_codec_context->pix_fmt, SWS_BICUBIC,
+		nullptr, nullptr, nullptr);
+	if (!s_sws_context)
 	{
-		ASSERT(0);
-
+		Console.Error("sws_getCachedContext() failed");
 		return false;
 	}
 
-#ifdef _WIN32
+	wrap_sws_scale(s_sws_context, reinterpret_cast<const u8**>(&bits), &pitch, 0, source_height,
+		s_converted_frame->data, s_converted_frame->linesize);
 
-	if (m_src)
+	s_converted_frame->pts = s_next_pts++;
+
+	int res = wrap_avcodec_send_frame(s_codec_context, s_converted_frame);
+	if (res < 0)
 	{
-		m_src.query<IGSSource>()->DeliverFrame(bits, pitch, rgba);
-
-		return true;
+		LogAVError(res, "avcodec_send_frame() failed: ");
+		return false;
 	}
 
-#elif defined(__unix__)
+	ReceivePackets();
+	return true;
+}
 
-	std::string out_file = m_out_dir + StringUtil::StdStringFromFormat("/frame.%010d.png", m_frame);
-	//GSPng::Save(GSPng::RGB_PNG, out_file, (u8*)bits, m_size.x, m_size.y, pitch, m_compression_level);
-	m_workers[m_frame % m_threads]->Push(std::make_shared<GSPng::Transaction>(GSPng::RGB_PNG, out_file, static_cast<const u8*>(bits), m_size.x, m_size.y, pitch, m_compression_level));
+void GSCapture::ReceivePackets()
+{
+	for (;;)
+	{
+		int res = wrap_avcodec_receive_packet(s_codec_context, s_video_packet);
+		if (res == AVERROR(EAGAIN) || res == AVERROR_EOF)
+		{
+			// no more data available
+			break;
+		}
+		else if (res < 0)
+		{
+			LogAVError(res, "avcodec_receive_packet() failed: ");
+			s_capturing = false;
+			EndCapture();
+			break;
+		}
 
-	m_frame++;
+		s_video_packet->stream_index = s_video_stream->index;
 
-#endif
+		// in case the frame rate changed...
+		wrap_av_packet_rescale_ts(s_video_packet, s_codec_context->time_base, s_video_stream->time_base);
 
-	return false;
+		res = wrap_av_interleaved_write_frame(s_format_context, s_video_packet);
+		if (res < 0)
+		{
+			LogAVError(res, "av_interleaved_write_frame() failed: ");
+			s_capturing = false;
+			EndCapture();
+			break;
+		}
+	}
 }
 
 bool GSCapture::EndCapture()
 {
-	if (!m_capturing)
-		return false;
+	std::lock_guard<std::recursive_mutex> lock(s_lock);
+	int res;
 
-	std::lock_guard<std::recursive_mutex> lock(m_lock);
+	bool was_capturing = s_capturing;
 
-#ifdef _WIN32
-
-	if (m_src)
+	if (was_capturing)
 	{
-		m_src.query<IGSSource>()->DeliverEOS();
-		m_src.reset();
+		Host::AddIconOSDMessage("GSCapture", ICON_FA_CAMERA,
+			fmt::format("Stopped capturing video to '{}'.", Path::GetFileName(s_filename)),
+			Host::OSD_INFO_DURATION);
+
+		s_capturing = false;
+		s_filename = {};
+
+		// end of stream
+		res = wrap_avcodec_send_frame(s_codec_context, nullptr);
+		if (res < 0)
+			LogAVError(res, "avcodec_send_frame() for EOS failed: ");
+		else
+			ReceivePackets();
+
+		// end of file!
+		res = wrap_av_write_trailer(s_format_context);
+		if (res < 0)
+			LogAVError(res, "av_write_trailer() failed: ");
 	}
 
-	if (m_graph)
+	if (s_format_context)
 	{
-		m_graph.query<IMediaControl>()->Stop();
-		m_graph.reset();;
+		res = wrap_avio_closep(&s_format_context->pb);
+		if (res < 0)
+			LogAVError(res, "avio_closep() failed: ");
 	}
 
-#elif defined(__unix__)
-	m_workers.clear();
+	if (s_sws_context)
+	{
+		wrap_sws_freeContext(s_sws_context);
+		s_sws_context = nullptr;
+	}
+	if (s_video_packet)
+		wrap_av_packet_free(&s_video_packet);
+	if (s_converted_frame)
+		wrap_av_frame_free(&s_converted_frame);
+	if (s_codec_context)
+		wrap_avcodec_free_context(&s_codec_context);
+	s_video_stream = nullptr;
+	if (s_format_context)
+	{
+		wrap_avformat_free_context(s_format_context);
+		s_format_context = nullptr;
+	}
 
-	m_frame = 0;
-
-#endif
-
-	m_capturing = false;
+	if (was_capturing)
+		UnloadFFmpeg();
 
 	return true;
+}
+
+bool GSCapture::IsCapturing()
+{
+	return s_capturing;
+}
+
+GSVector2i GSCapture::GetSize()
+{
+	return s_size;
+}
+
+std::vector<std::pair<std::string, std::string>> GSCapture::GetVideoCodecList(const char* container)
+{
+	std::vector<std::pair<std::string, std::string>> ret;
+
+	if (!LoadFFmpeg(false))
+		return ret;
+
+	const AVOutputFormat* output_format = wrap_av_guess_format(nullptr, fmt::format("video.{}", container ? container : "mp4").c_str(), nullptr);
+	if (!output_format)
+	{
+		Console.Error("(GetVideoCodecList) av_guess_format() failed");
+		return ret;
+	}
+
+	void* iter = nullptr;
+	const AVCodec* codec;
+	while ((codec = wrap_av_codec_iterate(&iter)) != nullptr)
+	{
+		// only get audio codecs
+		if (codec->type != AVMEDIA_TYPE_VIDEO || !wrap_avcodec_find_encoder(codec->id) || !wrap_avcodec_find_encoder_by_name(codec->name))
+			continue;
+
+		if (!wrap_avformat_query_codec(output_format, codec->id, FF_COMPLIANCE_NORMAL))
+			continue;
+
+		if (std::find_if(ret.begin(), ret.end(), [codec](const auto& it) { return it.first == codec->name; }) != ret.end())
+			continue;
+
+		ret.emplace_back(codec->name, codec->long_name ? codec->long_name : codec->name);
+	}
+
+	return ret;
 }

@@ -1629,11 +1629,135 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QGroupBox" name="groupBox_2">
+        <widget class="QGroupBox" name="advancedOptions">
          <property name="title">
-          <string>Debug Options</string>
+          <string>Advanced Options</string>
          </property>
-         <layout class="QFormLayout" name="advancedDebugFormLayout">
+         <layout class="QFormLayout" name="advancedOptionsFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_42">
+            <property name="text">
+             <string>Hardware Download Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="gsDownloadMode">
+            <item>
+             <property name="text">
+              <string>Accurate (Recommended)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Disable Readbacks (Synchronize GS Thread)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Unsynchronized (Non-Deterministic)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Disabled (Ignore Transfers)</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_34">
+            <property name="text">
+             <string>GS Dump Compression:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="gsDumpCompression">
+            <item>
+             <property name="text">
+              <string>Uncompressed</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>LZMA (xz)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Zstandard (zst)</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <layout class="QGridLayout" name="gridLayout_9">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="useBlitSwapChain">
+              <property name="text">
+               <string>Use Blit Swap Chain</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="skipPresentingDuplicateFrames">
+              <property name="text">
+               <string>Skip Presenting Duplicate Frames</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_45">
+            <property name="text">
+             <string>Video Capture Codec:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,0,0,0">
+            <item>
+             <widget class="QComboBox" name="videoCaptureCodec"/>
+            </item>
+            <item>
+             <widget class="QComboBox" name="videoCaptureContainer"/>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_46">
+              <property name="text">
+               <string>Bitrate:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="videoCaptureBitrate">
+              <property name="suffix">
+               <string> kbps</string>
+              </property>
+              <property name="minimum">
+               <number>100</number>
+              </property>
+              <property name="maximum">
+               <number>100000</number>
+              </property>
+              <property name="singleStep">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="debuggingOptions">
+         <property name="title">
+          <string>Debugging Options</string>
+         </property>
+         <layout class="QFormLayout" name="debuggingOptionsFormLayout">
           <item row="0" column="0">
            <widget class="QLabel" name="label_19">
             <property name="text">
@@ -1686,101 +1810,30 @@
             </item>
            </widget>
           </item>
-          <item row="5" column="0" colspan="2">
+          <item row="3" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_7">
-            <item row="2" column="0">
-             <widget class="QCheckBox" name="skipPresentingDuplicateFrames">
-              <property name="text">
-               <string>Skip Presenting Duplicate Frames</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="useBlitSwapChain">
-              <property name="text">
-               <string>Use Blit Swap Chain</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="disableFramebufferFetch">
-              <property name="text">
-               <string>Disable Framebuffer Fetch</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
+            <item row="1" column="0">
              <widget class="QCheckBox" name="useDebugDevice">
               <property name="text">
                <string>Use Debug Device</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
+            <item row="0" column="0">
              <widget class="QCheckBox" name="disableDualSource">
               <property name="text">
                <string>Disable Dual Source Blending</string>
               </property>
              </widget>
             </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="disableFramebufferFetch">
+              <property name="text">
+               <string>Disable Framebuffer Fetch</string>
+              </property>
+             </widget>
+            </item>
            </layout>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_34">
-            <property name="text">
-             <string>GS Dump Compression:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QComboBox" name="gsDumpCompression">
-            <item>
-             <property name="text">
-              <string>Uncompressed</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>LZMA (xz)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Zstandard (zst)</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_42">
-            <property name="text">
-             <string>Hardware Download Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QComboBox" name="gsDownloadMode">
-            <item>
-             <property name="text">
-              <string>Accurate (Recommended)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Disable Readbacks (Synchronize GS Thread)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Unsynchronized (Non-Deterministic)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Disabled (Ignore Transfers)</string>
-             </property>
-            </item>
-           </widget>
           </item>
          </layout>
         </widget>

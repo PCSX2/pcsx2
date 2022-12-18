@@ -16,8 +16,8 @@
 #pragma once
 
 #include "GS/GSState.h"
-#include "GS/GSCapture.h"
 #include <memory>
+#include <string>
 
 #ifndef PCSX2_CORE
 #include <mutex>
@@ -33,7 +33,6 @@ private:
 	u64 m_shader_time_start = 0;
 
 #ifndef PCSX2_CORE
-	GSCapture m_capture;
 	std::mutex m_snapshot_mutex;
 	bool m_shift_key = false;
 	bool m_control_key = false;
@@ -73,9 +72,9 @@ public:
 	void StopGSDump();
 	void PresentCurrentFrame();
 
-#ifndef PCSX2_CORE
-	bool BeginCapture(std::string& filename);
+	bool BeginCapture(std::string filename);
 	void EndCapture();
+#ifndef PCSX2_CORE
 	void KeyEvent(const HostKeyEvent& e);
 #endif
 };

@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSRenderer.h"
+#include "GS/GSCapture.h"
 #include "GS/GSGL.h"
 #include "Host.h"
 #include "HostDisplay.h"
@@ -95,6 +96,7 @@ void GSRenderer::Reset(bool hardware_reset)
 
 void GSRenderer::Destroy()
 {
+	GSCapture::EndCapture();
 }
 
 bool GSRenderer::Merge(int field)
@@ -824,13 +826,12 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 		}
 	}
 
-#ifndef PCSX2_CORE
 	// capture
-	if (m_capture.IsCapturing())
+	if (GSCapture::IsCapturing())
 	{
 		if (GSTexture* current = g_gs_device->GetCurrent())
 		{
-			GSVector2i size = m_capture.GetSize();
+			GSVector2i size = GSCapture::GetSize();
 
 			bool res;
 			GSTexture::GSMap m;
@@ -841,12 +842,11 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 
 			if (res)
 			{
-				m_capture.DeliverFrame(m.bits, m.pitch, !g_gs_device->IsRBSwapped());
+				GSCapture::DeliverFrame(m.bits, m.pitch, !g_gs_device->IsRBSwapped());
 				g_gs_device->DownloadTextureComplete();
 			}
 		}
 	}
-#endif
 }
 
 void GSRenderer::QueueSnapshot(const std::string& path, u32 gsdump_frames)
@@ -861,55 +861,60 @@ void GSRenderer::QueueSnapshot(const std::string& path, u32 gsdump_frames)
 	}
 	else
 	{
-		m_snapshot = "";
-
-		// append the game serial and title
-		if (std::string name(GetDumpName()); !name.empty())
-		{
-			Path::SanitizeFileName(&name);
-			if (name.length() > 219)
-				name.resize(219);
-			m_snapshot += name;
-		}
-		if (std::string serial(GetDumpSerial()); !serial.empty())
-		{
-			Path::SanitizeFileName(&serial);
-			m_snapshot += '_';
-			m_snapshot += serial;
-		}
-
-		time_t cur_time = time(nullptr);
-		char local_time[16];
-
-		if (strftime(local_time, sizeof(local_time), "%Y%m%d%H%M%S", localtime(&cur_time)))
-		{
-			static time_t prev_snap;
-			// The variable 'n' is used for labelling the screenshots when multiple screenshots are taken in
-			// a single second, we'll start using this variable for naming when a second screenshot request is detected
-			// at the same time as the first one. Hence, we're initially setting this counter to 2 to imply that
-			// the captured image is the 2nd image captured at this specific time.
-			static int n = 2;
-
-			m_snapshot += '_';
-
-			if (cur_time == prev_snap)
-				m_snapshot += fmt::format("{0}_({1})", local_time, n++);
-			else
-			{
-				n = 2;
-				m_snapshot += fmt::format("{}", local_time);
-			}
-			prev_snap = cur_time;
-		}
-
-		// prepend snapshots directory
-		m_snapshot = Path::Combine(EmuFolders::Snapshots, m_snapshot);
+		m_snapshot = GSGetBaseSnapshotFilename();
 	}
 
 	// this is really gross, but wx we get the snapshot request after shift...
 #ifdef PCSX2_CORE
 	m_dump_frames = gsdump_frames;
 #endif
+}
+
+std::string GSGetBaseSnapshotFilename()
+{
+	std::string filename;
+
+	// append the game serial and title
+	if (std::string name(GetDumpName()); !name.empty())
+	{
+		Path::SanitizeFileName(&name);
+		if (name.length() > 219)
+			name.resize(219);
+		filename += name;
+	}
+	if (std::string serial(GetDumpSerial()); !serial.empty())
+	{
+		Path::SanitizeFileName(&serial);
+		filename += '_';
+		filename += serial;
+	}
+
+	time_t cur_time = time(nullptr);
+	char local_time[16];
+
+	if (strftime(local_time, sizeof(local_time), "%Y%m%d%H%M%S", localtime(&cur_time)))
+	{
+		static time_t prev_snap;
+		// The variable 'n' is used for labelling the screenshots when multiple screenshots are taken in
+		// a single second, we'll start using this variable for naming when a second screenshot request is detected
+		// at the same time as the first one. Hence, we're initially setting this counter to 2 to imply that
+		// the captured image is the 2nd image captured at this specific time.
+		static int n = 2;
+
+		filename += '_';
+
+		if (cur_time == prev_snap)
+			filename += fmt::format("{0}_({1})", local_time, n++);
+		else
+		{
+			n = 2;
+			filename += fmt::format("{}", local_time);
+		}
+		prev_snap = cur_time;
+	}
+
+	// prepend snapshots directory
+	return Path::Combine(EmuFolders::Snapshots, filename);
 }
 
 void GSRenderer::StopGSDump()
@@ -962,17 +967,19 @@ void GSTranslateWindowToDisplayCoordinates(float window_x, float window_y, float
 	*display_y = rel_y / draw_height;
 }
 
-#ifndef PCSX2_CORE
-
-bool GSRenderer::BeginCapture(std::string& filename)
+bool GSRenderer::BeginCapture(std::string filename)
 {
-	return m_capture.BeginCapture(GetTvRefreshRate(), GetInternalResolution(), GetCurrentAspectRatioFloat(GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets)), filename);
+	return GSCapture::BeginCapture(GetTvRefreshRate(), GetInternalResolution(),
+		GetCurrentAspectRatioFloat(GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets)),
+		std::move(filename));
 }
 
 void GSRenderer::EndCapture()
 {
-	m_capture.EndCapture();
+	GSCapture::EndCapture();
 }
+
+#ifndef PCSX2_CORE
 
 void GSRenderer::KeyEvent(const HostKeyEvent& e)
 {

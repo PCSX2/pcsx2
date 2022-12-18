@@ -847,6 +847,36 @@ void EmuThread::queueSnapshot(quint32 gsdump_frames)
 	GetMTGS().RunOnGSThread([gsdump_frames]() { GSQueueSnapshot(std::string(), gsdump_frames); });
 }
 
+void EmuThread::beginCapture(const QString& path)
+{
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, "beginCapture", Qt::QueuedConnection, Q_ARG(const QString&, path));
+		return;
+	}
+
+	if (!VMManager::HasValidVM())
+		return;
+
+	GetMTGS().RunOnGSThread([path = path.toStdString()]() {
+		GSBeginCapture(std::move(path));
+	});
+}
+
+void EmuThread::endCapture()
+{
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, "endCapture", Qt::QueuedConnection);
+		return;
+	}
+
+	if (!VMManager::HasValidVM())
+		return;
+
+	GetMTGS().RunOnGSThread(&GSEndCapture);
+}
+
 void EmuThread::updateDisplay()
 {
 	pxAssertRel(!isOnEmuThread(), "Not on emu thread");

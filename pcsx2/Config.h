@@ -598,11 +598,15 @@ struct Pcsx2Config
 	{
 		static const char* AspectRatioNames[];
 		static const char* FMVAspectRatioSwitchNames[];
+		static const char* VideoCaptureContainers[];
 
 		static const char* GetRendererName(GSRendererType type);
 
 		static constexpr float DEFAULT_FRAME_RATE_NTSC = 59.94f;
 		static constexpr float DEFAULT_FRAME_RATE_PAL = 50.00f;
+
+		static constexpr u32 DEFAULT_VIDEO_CAPTURE_BITRATE = 6000;
+		static const char* DEFAULT_VIDEO_CAPTURE_CONTAINER;
 
 		union
 		{
@@ -737,6 +741,10 @@ struct Pcsx2Config
 		GSScreenshotSize ScreenshotSize{GSScreenshotSize::WindowResolution};
 		GSScreenshotFormat ScreenshotFormat{GSScreenshotFormat::PNG};
 		int ScreenshotQuality{50};
+
+		std::string VideoCaptureContainer{DEFAULT_VIDEO_CAPTURE_CONTAINER};
+		std::string VideoCaptureCodec;
+		int VideoCaptureBitrate{DEFAULT_VIDEO_CAPTURE_BITRATE};
 
 		std::string Adapter;
 

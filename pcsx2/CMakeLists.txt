@@ -757,8 +757,6 @@ set(pcsx2GSHeaders
 	GS/Renderers/SW/GSTextureCacheSW.h
 	GS/Renderers/SW/GSTextureSW.h
 	GS/Renderers/SW/GSVertexSW.h
-	GS/Window/GSCaptureDlg.h
-	GS/Window/GSDialog.h
 	GS/Window/GSSetting.h
 	)
 
@@ -884,8 +882,6 @@ if(WIN32)
 		GS/Renderers/DX11/GSTextureFX11.cpp
 		GS/Renderers/DX12/GSDevice12.cpp
 		GS/Renderers/DX12/GSTexture12.cpp
-		GS/Window/GSCaptureDlg.cpp
-		GS/Window/GSDialog.cpp
 	)
 	list(APPEND pcsx2GSHeaders
 		GS/Renderers/DX11/D3D.h
@@ -1704,6 +1700,7 @@ target_include_directories(PCSX2_FLAGS INTERFACE
 	${CMAKE_BINARY_DIR}/common/include/
 	"${CMAKE_SOURCE_DIR}/3rdparty/jpgd/"
 	"${CMAKE_SOURCE_DIR}/3rdparty/xbyak/"
+	"${FFMPEG_INCLUDE_DIRS}"
 )
 
 if(COMMAND target_precompile_headers)

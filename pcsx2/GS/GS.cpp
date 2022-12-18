@@ -24,6 +24,7 @@
 #endif
 
 #include "GS.h"
+#include "GSCapture.h"
 #include "GSGL.h"
 #include "GSUtil.h"
 #include "GSExtra.h"
@@ -545,6 +546,20 @@ void GSStopGSDump()
 		g_gs_renderer->StopGSDump();
 }
 
+bool GSBeginCapture(std::string filename)
+{
+	if (g_gs_renderer)
+		return g_gs_renderer->BeginCapture(std::move(filename));
+	else
+		return false;
+}
+
+void GSEndCapture()
+{
+	if (g_gs_renderer)
+		g_gs_renderer->EndCapture();
+}		
+
 void GSPresentCurrentFrame()
 {
 	g_gs_renderer->PresentCurrentFrame();
@@ -613,6 +628,8 @@ void GSconfigure()
 	}
 }
 
+#endif
+
 int GStest()
 {
 	if (!GSUtil::CheckSSE())
@@ -620,52 +637,6 @@ int GStest()
 
 	return 0;
 }
-
-static void pt(const char* str)
-{
-	struct tm* current;
-	time_t now;
-
-	time(&now);
-	current = localtime(&now);
-
-	printf("%02i:%02i:%02i%s", current->tm_hour, current->tm_min, current->tm_sec, str);
-}
-
-bool GSsetupRecording(std::string& filename)
-{
-	if (g_gs_renderer == NULL)
-	{
-		printf("GS: no s_gs for recording\n");
-		return false;
-	}
-#if defined(__unix__) || defined(__APPLE__)
-	if (!theApp.GetConfigB("capture_enabled"))
-	{
-		printf("GS: Recording is disabled\n");
-		return false;
-	}
-#endif
-	printf("GS: Recording start command\n");
-	if (g_gs_renderer->BeginCapture(filename))
-	{
-		pt(" - Capture started\n");
-		return true;
-	}
-	else
-	{
-		pt(" - Capture cancelled\n");
-		return false;
-	}
-}
-
-void GSendRecording()
-{
-	printf("GS: Recording end command\n");
-	g_gs_renderer->EndCapture();
-	pt(" - Capture ended\n");
-}
-#endif
 
 void GSsetGameCRC(u32 crc, int options)
 {
@@ -1588,6 +1559,21 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys)
 			});
 		}
 	}},
+	{"ToggleVideoCapture", "Graphics", "Toggle Video Capture", [](s32 pressed) {
+		 if (!pressed)
+		 {
+			 GetMTGS().RunOnGSThread([]() {
+				 if (GSCapture::IsCapturing())
+				 {
+					 g_gs_renderer->EndCapture();
+					 return;
+				 }
+
+				 std::string filename(fmt::format("{}.{}", GSGetBaseSnapshotFilename(), GSConfig.VideoCaptureContainer));
+				 g_gs_renderer->BeginCapture(std::move(filename));
+			 });
+		 }
+	 }},
 	{"GSDumpSingleFrame", "Graphics", "Save Single Frame GS Dump", [](s32 pressed) {
 		if (!pressed)
 		{

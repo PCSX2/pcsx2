@@ -188,6 +188,7 @@
     <addaction name="actionToggleSoftwareRendering"/>
     <addaction name="actionReloadPatches"/>
     <addaction name="menuInput_Recording"/>
+    <addaction name="actionToolsVideoCapture"/>
     <addaction name="separator"/>
     <addaction name="actionEnableSystemConsole"/>
     <addaction name="actionEnableFileLogging"/>
@@ -880,6 +881,14 @@
   <action name="actionInputRecOpenViewer">
    <property name="text">
     <string>Recording Viewer</string>
+   </property>
+  </action>
+  <action name="actionToolsVideoCapture">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Video Capture</string>
    </property>
   </action>
  </widget>
