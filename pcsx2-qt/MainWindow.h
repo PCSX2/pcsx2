@@ -169,6 +169,7 @@ private Q_SLOTS:
 	void onSaveGSDumpActionTriggered();
 	void onBlockDumpActionToggled(bool checked);
 	void onShowAdvancedSettingsToggled(bool checked);
+	void onToolsVideoCaptureToggled(bool checked);
 
 	// Input Recording
 	void onInputRecNewActionTriggered();

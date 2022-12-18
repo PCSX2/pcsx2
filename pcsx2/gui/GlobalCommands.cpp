@@ -278,50 +278,6 @@ namespace Implementations
 #endif
 	}
 
-	void Sys_RecordingToggle()
-	{
-		ScopedCoreThreadPause paused_core;
-		paused_core.AllowResume();
-
-		if (wxGetApp().HasGUI())
-		{
-			sMainFrame.VideoCaptureToggle();
-			return;
-		}
-
-		GetMTGS().WaitGS(); // make sure GS is in sync with the audio stream when we start.
-		g_Pcsx2Recording = !g_Pcsx2Recording;
-		if (g_Pcsx2Recording)
-		{
-			// start recording
-
-			// make the recording setup dialog[s] pseudo-modal also for the main PCSX2 window
-			// (the GS dialog is already properly modal for the GS window)
-			if (GetMainFramePtr() && GetMainFramePtr()->IsEnabled())
-				GetMainFramePtr()->Disable();
-
-			// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens.
-			std::string filename;
-			if (GSsetupRecording(filename))
-			{
-				if (g_Conf->AudioCapture.EnableAudio && !SPU2setupRecording(&filename))
-				{
-					GSendRecording();
-					g_Pcsx2Recording = false;
-				}
-			}
-			else // recording dialog canceled by the user. align our state
-				g_Pcsx2Recording = false;
-		}
-		else
-		{
-			// stop recording
-			GSendRecording();
-			if (g_Conf->AudioCapture.EnableAudio)
-				SPU2endRecording();
-		}
-	}
-
 	void Cpu_DumpRegisters()
 	{
 #ifdef PCSX2_DEVBUILD
@@ -562,14 +518,6 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 		{
 			"Sys_LoggingToggle",
 			Implementations::Sys_LoggingToggle,
-			NULL,
-			NULL,
-			false,
-		},
-
-		{
-			"Sys_RecordingToggle",
-			Implementations::Sys_RecordingToggle,
 			NULL,
 			NULL,
 			false,

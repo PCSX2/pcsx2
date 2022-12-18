@@ -32,6 +32,7 @@
 #include "pcsx2/CDVD/CDVDdiscReader.h"
 #include "pcsx2/Frontend/GameList.h"
 #include "pcsx2/Frontend/LogSink.h"
+#include "pcsx2/GS/GS.h"
 #include "pcsx2/GSDumpReplayer.h"
 #include "pcsx2/HostDisplay.h"
 #include "pcsx2/HostSettings.h"
@@ -380,6 +381,7 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionSaveBlockDump, &QAction::toggled, this, &MainWindow::onBlockDumpActionToggled);
 	connect(m_ui.actionShowAdvancedSettings, &QAction::toggled, this, &MainWindow::onShowAdvancedSettingsToggled);
 	connect(m_ui.actionSaveGSDump, &QAction::triggered, this, &MainWindow::onSaveGSDumpActionTriggered);
+	connect(m_ui.actionToolsVideoCapture, &QAction::toggled, this, &MainWindow::onToolsVideoCaptureToggled);
 
 	// Input Recording
 	connect(m_ui.actionInputRecNew, &QAction::triggered, this, &MainWindow::onInputRecNewActionTriggered);
@@ -874,6 +876,33 @@ void MainWindow::onShowAdvancedSettingsToggled(bool checked)
 		recreateSettings();
 }
 
+void MainWindow::onToolsVideoCaptureToggled(bool checked)
+{
+	if (!s_vm_valid)
+		return;
+
+	if (!checked)
+	{
+		g_emu_thread->endCapture();
+		return;
+	}
+
+	const QString container(QString::fromStdString(
+		Host::GetStringSettingValue("EmuCore/GS", "VideoCaptureContainer", Pcsx2Config::GSOptions::DEFAULT_VIDEO_CAPTURE_CONTAINER)));
+	const QString filter(tr("%1 Files (*.%2)").arg(container.toUpper()).arg(container));
+
+	QString path(QStringLiteral("%1.%2").arg(QString::fromStdString(GSGetBaseSnapshotFilename())).arg(container));
+	path = QFileDialog::getSaveFileName(this, tr("Video Capture"), path, filter);
+	if (path.isEmpty())
+	{
+		QSignalBlocker sb(m_ui.actionToolsVideoCapture);
+		m_ui.actionToolsVideoCapture->setChecked(false);
+		return;
+	}
+
+	g_emu_thread->beginCapture(path);
+}
+
 void MainWindow::saveStateToConfig()
 {
 	if (!isVisible())
@@ -948,6 +977,10 @@ void MainWindow::updateEmulationActions(bool starting, bool running)
 	m_ui.menuSaveState->setEnabled(running);
 
 	m_ui.actionViewGameProperties->setEnabled(running);
+
+	m_ui.actionToolsVideoCapture->setEnabled(running);
+	if (!running && m_ui.actionToolsVideoCapture->isChecked())
+		m_ui.actionToolsVideoCapture->setChecked(false);
 
 	m_game_list_widget->setDisabled(starting && !running);
 

@@ -112,6 +112,8 @@ public Q_SLOTS:
 	void enumerateVibrationMotors();
 	void runOnCPUThread(const std::function<void()>& func);
 	void queueSnapshot(quint32 gsdump_frames);
+	void beginCapture(const QString& path);
+	void endCapture();
 
 Q_SIGNALS:
 	bool messageConfirmed(const QString& title, const QString& message);

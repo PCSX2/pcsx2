@@ -23,6 +23,7 @@
 
 #include "pcsx2/HostSettings.h"
 #include "pcsx2/GS/GS.h"
+#include "pcsx2/GS/GSCapture.h"
 #include "pcsx2/GS/GSUtil.h"
 
 #ifdef ENABLE_VULKAN
@@ -314,7 +315,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	if (!m_dialog->isPerGameSettings())
 	{
 		// Only allow disabling readbacks for per-game settings, it's too dangerous.
-		m_ui.advancedDebugFormLayout->removeRow(2);
+		m_ui.advancedOptionsFormLayout->removeRow(0);
 		m_ui.gsDownloadMode = nullptr;
 
 		// Remove texture offset and skipdraw range for global settings.
@@ -326,6 +327,23 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		m_ui.textureOffsetY = nullptr;
 	}
 #endif
+
+	// Capture settings
+	{
+		for (const char** container = Pcsx2Config::GSOptions::VideoCaptureContainers; *container; container++)
+		{
+			const QString name(QString::fromUtf8(*container));
+			m_ui.videoCaptureContainer->addItem(name.toUpper(), name);
+		}
+
+		SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.videoCaptureContainer, "EmuCore/GS", "VideoCaptureContainer");
+		connect(m_ui.videoCaptureContainer, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onVideoCaptureContainerChanged);
+
+		SettingWidgetBinder::BindWidgetToIntSetting(
+			sif, m_ui.videoCaptureBitrate, "EmuCore/GS", "VideoCaptureBitrate", Pcsx2Config::GSOptions::DEFAULT_VIDEO_CAPTURE_BITRATE);
+
+		onVideoCaptureContainerChanged();
+	}
 
 	// Display tab
 	{
@@ -703,6 +721,26 @@ void GraphicsSettingsWidget::onShadeBoostChanged()
 	m_ui.shadeBoostBrightness->setEnabled(enabled);
 	m_ui.shadeBoostContrast->setEnabled(enabled);
 	m_ui.shadeBoostSaturation->setEnabled(enabled);
+}
+
+void GraphicsSettingsWidget::onVideoCaptureContainerChanged()
+{
+	const std::string container(
+		m_dialog->getEffectiveStringValue("EmuCore/GS", "VideoCaptureContainer", Pcsx2Config::GSOptions::DEFAULT_VIDEO_CAPTURE_CONTAINER));
+
+	m_ui.videoCaptureCodec->disconnect();
+	m_ui.videoCaptureCodec->clear();
+	const std::vector<std::pair<std::string, std::string>> vcapture_formats(GSCapture::GetVideoCodecList(container.c_str()));
+	m_ui.videoCaptureCodec->addItem(tr("Default"), QString());
+	for (const auto& [format, name] : vcapture_formats)
+	{
+		const QString qformat(QString::fromStdString(format));
+		const QString qname(QString::fromStdString(name));
+		m_ui.videoCaptureCodec->addItem(QStringLiteral("%1 [%2]").arg(qformat).arg(qname), qformat);
+	}
+
+	SettingWidgetBinder::BindWidgetToStringSetting(
+		m_dialog->getSettingsInterface(), m_ui.videoCaptureCodec, "EmuCore/GS", "VideoCaptureCodec");
 }
 
 void GraphicsSettingsWidget::onGpuPaletteConversionChanged(int state)

@@ -337,6 +337,13 @@ const char* Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames[] = {
 	"16:9",
 	nullptr};
 
+const char* Pcsx2Config::GSOptions::VideoCaptureContainers[] = {
+	"mp4",
+	"mkv",
+	"avi",
+	nullptr};
+const char* Pcsx2Config::GSOptions::DEFAULT_VIDEO_CAPTURE_CONTAINER = "mp4";
+
 const char* Pcsx2Config::GSOptions::GetRendererName(GSRendererType type)
 {
 	switch (type)
@@ -488,6 +495,10 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(ScreenshotSize) &&
 		OpEqu(ScreenshotFormat) &&
 		OpEqu(ScreenshotQuality) &&
+
+		OpEqu(VideoCaptureContainer) &&
+		OpEqu(VideoCaptureCodec) &&
+		OpEqu(VideoCaptureBitrate) &&
 
 		OpEqu(Adapter));
 }
@@ -684,6 +695,10 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingInt(ShadeBoost_Saturation);
 	GSSettingIntEx(SaveN, "saven");
 	GSSettingIntEx(SaveL, "savel");
+
+	GSSettingStringEx(VideoCaptureContainer, "VideoCaptureContainer");
+	GSSettingStringEx(VideoCaptureCodec, "VideoCaptureCodec");
+	GSSettingIntEx(VideoCaptureBitrate, "VideoCaptureBitrate");
 
 	GSSettingString(Adapter);
 

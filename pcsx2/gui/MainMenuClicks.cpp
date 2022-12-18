@@ -857,53 +857,6 @@ void MainEmuFrame::Menu_Capture_Video_IncludeAudio_Click(wxCommandEvent& event)
 
 void MainEmuFrame::VideoCaptureToggle()
 {
-	GetMTGS().WaitGS(); // make sure GS is in sync with the audio stream when we start.
-	m_capturingVideo = !m_capturingVideo;
-	if (m_capturingVideo)
-	{
-		// start recording
-
-		// make the recording setup dialog[s] pseudo-modal also for the main PCSX2 window
-		// (the GS dialog is already properly modal for the GS window)
-		bool needsMainFrameEnable = false;
-		if (IsEnabled())
-		{
-			needsMainFrameEnable = true;
-			Disable();
-		}
-
-		// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens
-		std::string filename;
-		if (GSsetupRecording(filename))
-		{
-			if (!g_Conf->AudioCapture.EnableAudio || SPU2setupRecording(&filename))
-			{
-				m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, false);
-				m_submenuVideoCapture.Enable(MenuId_Capture_Video_Stop, true);
-				m_submenuVideoCapture.Enable(MenuId_Capture_Video_IncludeAudio, false);
-			}
-			else
-			{
-				GSendRecording();
-				m_capturingVideo = false;
-			}
-		}
-		else // recording dialog canceled by the user. align our state
-			m_capturingVideo = false;
-
-		if (needsMainFrameEnable)
-			Enable();
-	}
-	else
-	{
-		// stop recording
-		GSendRecording();
-		if (g_Conf->AudioCapture.EnableAudio)
-			SPU2endRecording();
-		m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, true);
-		m_submenuVideoCapture.Enable(MenuId_Capture_Video_Stop, false);
-		m_submenuVideoCapture.Enable(MenuId_Capture_Video_IncludeAudio, true);
-	}
 }
 
 void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent& event)

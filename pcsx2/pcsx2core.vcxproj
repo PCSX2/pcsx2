@@ -53,6 +53,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\rcheevos\rcheevos\include;$(SolutionDir)3rdparty\rainterface</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\discord-rpc\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\zydis\include;$(SolutionDir)3rdparty\zydis\dependencies\zycore\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\ffmpeg\include</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
@@ -282,7 +283,6 @@
     <ClCompile Include="GS\GSAlignedClass.cpp" />
     <ClCompile Include="GS\GSBlock.cpp" />
     <ClCompile Include="GS\GSCapture.cpp" />
-    <ClCompile Include="GS\Window\GSCaptureDlg.cpp" />
     <ClCompile Include="GS\GSClut.cpp" />
     <ClCompile Include="GS\GSCodeBuffer.cpp" />
     <ClCompile Include="GS\GSCrc.cpp" />
@@ -626,7 +626,6 @@
     <ClInclude Include="GS\GSAlignedClass.h" />
     <ClInclude Include="GS\GSBlock.h" />
     <ClInclude Include="GS\GSCapture.h" />
-    <ClInclude Include="GS\Window\GSCaptureDlg.h" />
     <ClInclude Include="GS\GSClut.h" />
     <ClInclude Include="GS\GSCodeBuffer.h" />
     <ClInclude Include="GS\GSCrc.h" />
