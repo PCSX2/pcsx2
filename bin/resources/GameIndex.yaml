@@ -12779,6 +12779,9 @@ SLES-51646:
   name: "Energy Airforce"
   region: "PAL-M4"
   compat: 5
+SLES-51647:
+  name: "Energy Airforce"
+  region: "PAL-I"
 SLES-51649:
   name: "Judge Dredd vs. Judge Death"
   region: "PAL-M4"
@@ -14185,6 +14188,9 @@ SLES-52309:
   name: "R - Racing"
   region: "PAL-M5"
   compat: 5
+SLES-52310:
+  name: "Energy Airforce"
+  region: "PAL-E"
 SLES-52312:
   name: "World Championship Rugby"
   region: "PAL-E-F"
@@ -22617,6 +22623,9 @@ SLKA-15043:
 SLKA-15044:
   name: "Super Puzzle Bobble 2"
   region: "NTSC-K"
+SLKA-25002:
+  name: "Energy Airforce"
+  region: "NTSC-K"
 SLKA-25004:
   name: "007 - Nightfire"
   region: "NTSC-K"
@@ -24308,6 +24317,9 @@ SLPM-60149:
     mergeSprite: 1 # Fixes vertical lines.
 SLPM-60172:
   name: "Itadaki Street 3 - Okuman Chouja ni Shiteageru"
+  region: "NTSC-J"
+SLPM-60183:
+  name: "Energy Airforce [Trial]"
   region: "NTSC-J"
 SLPM-60207:
   name: "Rockman X7"
