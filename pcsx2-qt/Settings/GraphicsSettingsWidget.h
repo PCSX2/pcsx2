@@ -39,7 +39,6 @@ private Q_SLOTS:
 	void onSWTextureFilteringChange();
 	void onRendererChanged(int index);
 	void onAdapterChanged(int index);
-	void onIntegerScalingChanged();
 	void onTrilinearFilteringChanged();
 	void onGpuPaletteConversionChanged(int state);
 	void onFullscreenModeChanged(int index);

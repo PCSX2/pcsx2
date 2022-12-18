@@ -120,9 +120,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	dialog->registerWidgetHelp(m_ui.noInterlacingPatches, tr("Enable No-Interlacing Patches"), tr("Unchecked"),
 		tr("Automatically loads and applies no-interlacing patches on game start. Can cause issues."));
 
-	connect(m_ui.integerScaling, &QCheckBox::stateChanged, this, &GraphicsSettingsWidget::onIntegerScalingChanged);
-	onIntegerScalingChanged();
-
 	connect(m_ui.fullscreenModes, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GraphicsSettingsWidget::onFullscreenModeChanged);
 
 	//////////////////////////////////////////////////////////////////////////
@@ -692,11 +689,6 @@ void GraphicsSettingsWidget::onFullscreenModeChanged(int index)
 		m_dialog->setStringSettingValue("EmuCore/GS", "FullscreenMode", std::nullopt);
 
 	g_emu_thread->applySettings();
-}
-
-void GraphicsSettingsWidget::onIntegerScalingChanged()
-{
-	m_ui.bilinearFiltering->setEnabled(!m_ui.integerScaling->isChecked());
 }
 
 void GraphicsSettingsWidget::onTrilinearFilteringChanged()
