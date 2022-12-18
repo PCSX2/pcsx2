@@ -932,11 +932,29 @@ namespace usb_pad
 	gsl::span<const InputBindingInfo> BuzzDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo bindings[] = {
-			{"Red", "Red", InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::R1},
-			{"Yellow", "Yellow", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Triangle},
-			{"Green", "Green", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Circle},
-			{"Orange", "Orange", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Square},
-			{"Blue", "Blue", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::Cross},
+			{"Red1", "Player 1 Red", InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Circle},
+			{"Blue1", "Player 1 Blue", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::R1},
+			{"Orange1", "Player 1 Orange", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Cross},
+			{"Green1", "Player 1 Green", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Triangle},
+			{"Yellow1", "Player 1 Yellow", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Square},
+
+			{"Red2", "Player 2 Red", InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::Unknown},
+			{"Blue2", "Player 2 Blue", InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Unknown},
+			{"Orange2", "Player 2 Orange", InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Unknown},
+			{"Green2", "Player 2 Green", InputBindingInfo::Type::Button, CID_BUTTON7, GenericInputBinding::Unknown},
+			{"Yellow2", "Player 2 Yellow", InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::Unknown},
+
+			{"Red3", "Player 3 Red", InputBindingInfo::Type::Button, CID_BUTTON10, GenericInputBinding::Unknown},
+			{"Blue3", "Player 3 Blue", InputBindingInfo::Type::Button, CID_BUTTON14, GenericInputBinding::Unknown},
+			{"Orange3", "Player 3 Orange", InputBindingInfo::Type::Button, CID_BUTTON13, GenericInputBinding::Unknown},
+			{"Green3", "Player 3 Green", InputBindingInfo::Type::Button, CID_BUTTON12, GenericInputBinding::Unknown},
+			{"Yellow3", "Player 3 Yellow", InputBindingInfo::Type::Button, CID_BUTTON11, GenericInputBinding::Unknown},
+
+			{"Red4", "Player 4 Red", InputBindingInfo::Type::Button, CID_BUTTON15, GenericInputBinding::Unknown},
+			{"Blue4", "Player 4 Blue", InputBindingInfo::Type::Button, CID_BUTTON19, GenericInputBinding::Unknown},
+			{"Orange4", "Player 4 Orange", InputBindingInfo::Type::Button, CID_BUTTON18, GenericInputBinding::Unknown},
+			{"Green4", "Player 4 Green", InputBindingInfo::Type::Button, CID_BUTTON17, GenericInputBinding::Unknown},
+			{"Yellow4", "Player 4 Yellow", InputBindingInfo::Type::Button, CID_BUTTON16, GenericInputBinding::Unknown},
 		};
 
 		return bindings;
