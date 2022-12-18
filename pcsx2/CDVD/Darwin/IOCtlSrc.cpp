@@ -99,10 +99,10 @@ bool IOCtlSrc::ReadSectors2048(u32 sector, u32 count, u8* buffer) const
 
 	if (bytes_read == -1)
 		fprintf(stderr, " * CDVD read sectors %u-%u failed: %s\n",
-				sector, sector + count - 1, strerror(errno));
+			sector, sector + count - 1, strerror(errno));
 	else
 		fprintf(stderr, " * CDVD read sectors %u-%u: %zd bytes read, %zd bytes expected\n",
-				sector, sector + count - 1, bytes_read, bytes_to_read);
+			sector, sector + count - 1, bytes_read, bytes_to_read);
 	return false;
 }
 
@@ -111,8 +111,8 @@ bool IOCtlSrc::ReadSectors2352(u32 sector, u32 count, u8* buffer) const
 #ifdef __APPLE__
 	dk_cd_read_t desc;
 	memset(&desc, 0, sizeof(dk_cd_read_t));
-	desc.sectorArea = kCDSectorAreaUser;
-	desc.sectorType = kCDSectorTypeCDDA;
+	desc.sectorArea = kCDSectorAreaSync | kCDSectorAreaHeader | kCDSectorAreaSubHeader | kCDSectorAreaUser | kCDSectorAreaAuxiliary;
+	desc.sectorType = kCDSectorTypeUnknown;
 	for (u32 i = 0; i < count; ++i)
 	{
 		desc.offset = (sector + i) * 2352ULL;
@@ -120,8 +120,8 @@ bool IOCtlSrc::ReadSectors2352(u32 sector, u32 count, u8* buffer) const
 		desc.bufferLength = 2352;
 		if (ioctl(m_device, DKIOCCDREAD, &desc) == -1)
 		{
-			fprintf(stderr, " * CDVD CDROMREADRAW sector %u failed: %s\n",
-					sector + i, strerror(errno));
+			fprintf(stderr, " * CDVD DKIOCCDREAD sector %u failed: %s\n",
+				sector + i, strerror(errno));
 			return false;
 		}
 	}
@@ -220,7 +220,10 @@ bool IOCtlSrc::ReadCDInfo()
 		{
 			u32 lba = CDConvertMSFToLBA(desc.p);
 			m_toc.push_back({lba, desc.point, desc.adr, desc.control});
-			m_sectors = lba;
+		}
+		else if (desc.point == 0xa2) // lead out, use to get total sector count
+		{
+			m_sectors = CDConvertMSFToLBA(desc.p);
 		}
 	}
 
