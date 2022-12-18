@@ -3413,6 +3413,8 @@ SCES-52033:
   name: "Syphon Filter - The Omega Strain"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes lights going through walls.
   gameFixes:
     - EETimingHack # Fixes random hangs.
   patches:
@@ -4861,6 +4863,8 @@ SCKA-20030:
 SCKA-20032:
   name: "Syphon Filter - The Omega Virus"
   region: "NTSC-K"
+  gsHWFixes:
+    autoFlush: 1 # Fixes lights going through walls.
   gameFixes:
     - EETimingHack # Fixes random hangs.
   patches:
@@ -7468,6 +7472,8 @@ SCUS-97264:
   name: "Syphon Filter - The Omega Strain"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes lights going through walls.
   gameFixes:
     - EETimingHack # Fixes random hangs.
   patches:
@@ -7780,6 +7786,8 @@ SCUS-97374:
 SCUS-97377:
   name: "Syphon Filter - The Omega Strain [Regular Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    autoFlush: 1 # Fixes lights going through walls.
 SCUS-97378:
   name: "EyeToy and EyeToy Play [Demo]"
   region: "NTSC-U"
@@ -8413,6 +8421,8 @@ SCUS-97519:
 SCUS-97520:
   name: "Syphon Filter - The Omega Strain [Greatest Hits]"
   region: "NTSC-U"
+  gsHWFixes:
+    autoFlush: 1 # Fixes lights going through walls.
 SCUS-97523:
   name: "EyeToy - Operation Spy!"
   region: "NTSC-U"
@@ -49686,6 +49696,8 @@ TCES-52004:
 TCES-52033:
   name: "Syphon Filter - The Omega Strain Beta Trial Code"
   region: "PAL-E"
+  gsHWFixes:
+    autoFlush: 1 # Fixes lights going through walls.
   gameFixes:
     - EETimingHack # Fixes random hangs.
 TCES-52042:
