@@ -66,8 +66,17 @@ bool IOCtlSrc::Reopen()
 
 void IOCtlSrc::SetSpindleSpeed(bool restore_defaults) const
 {
-	// TODO: Seems it's actually able to set it (DKIOCCDSETSPEED) but I don't have
-	// physical drives right now to test
+	u16 speed = restore_defaults ? 0xFFFF : m_media_type >= 0 ? 5540 :
+																3600;
+	int ioctl_code = m_media_type >= 0 ? DKIOCDVDSETSPEED : DKIOCCDSETSPEED;
+	if (ioctl(m_device, ioctl_code, &speed) == -1)
+	{
+		fprintf(stderr, " * CDVD: Failed to set spindle speed: %s\n", strerror(errno));
+	}
+	else if (!restore_defaults)
+	{
+		printf(" * CDVD: Spindle speed set to %d\n", speed);
+	}
 }
 
 u32 IOCtlSrc::GetSectorCount() const
