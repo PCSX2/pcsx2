@@ -24,6 +24,8 @@
 
 #pragma once
 #include "USB/qemu-usb/queue.h"
+#include <cstdint>
+#include <cstddef>
 
 #define USB_TOKEN_SETUP 0x2d
 #define USB_TOKEN_IN 0x69  /* device -> host */
