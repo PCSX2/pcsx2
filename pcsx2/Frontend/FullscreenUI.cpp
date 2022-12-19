@@ -45,6 +45,7 @@
 #include "PAD/Host/PAD.h"
 #include "ps2/BiosTools.h"
 #include "Sio.h"
+#include "USB/USB.h"
 #include "VMManager.h"
 
 #include "svnrev.h"
@@ -344,11 +345,17 @@ namespace FullscreenUI
 	static void DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		const char* default_value, const char* const* options, const char* const* option_values, size_t option_count, bool enabled = true,
 		float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+	static void DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
+		const char* default_value, SettingInfo::GetOptionsCallback options_callback, bool enabled = true,
+		float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
 	static void DrawFloatListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		float default_value, const char* const* options, const float* option_values, size_t option_count, bool enabled = true,
 		float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
 	static void DrawFolderSetting(SettingsInterface* bsi, const char* title, const char* section, const char* key,
 		const std::string& runtime_var, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
+		ImFont* summary_font = g_medium_font);
+	static void DrawPathSetting(SettingsInterface* bsi, const char* title, const char* section, const char* key, const char* default_value,
+		bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
 		ImFont* summary_font = g_medium_font);
 	static void DrawClampingModeSetting(SettingsInterface* bsi, const char* title, const char* summary, bool vu);
 	static void PopulateGraphicsAdapterList();
@@ -360,6 +367,7 @@ namespace FullscreenUI
 		const char* display_name, bool show_type = true);
 	static void ClearInputBindingVariables();
 	static void StartAutomaticBinding(u32 port);
+	static void DrawSettingInfoSetting(SettingsInterface* bsi, const char* section, const char* key, const SettingInfo& si);
 
 	static SettingsPage s_settings_page = SettingsPage::Interface;
 	static std::unique_ptr<INISettingsInterface> s_game_settings_interface;
@@ -2043,6 +2051,49 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* tit
 	}
 }
 
+void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
+	const char* key, const char* default_value, SettingInfo::GetOptionsCallback option_callback, bool enabled, float height, ImFont* font,
+	ImFont* summary_font)
+{
+	const bool game_settings = IsEditingGameSettings(bsi);
+	const std::optional<std::string> value(
+		bsi->GetOptionalStringValue(section, key, game_settings ? std::nullopt : std::optional<const char*>(default_value)));
+
+	if (MenuButtonWithValue(title, summary, value.has_value() ? value->c_str() : "Use Global Setting", enabled, height, font, summary_font))
+	{
+		std::vector<std::pair<std::string, std::string>> raw_options(option_callback());
+		ImGuiFullscreen::ChoiceDialogOptions cd_options;
+		cd_options.reserve(raw_options.size() + 1);
+		if (game_settings)
+			cd_options.emplace_back("Use Global Setting", !value.has_value());
+		for (size_t i = 0; i < raw_options.size(); i++)
+			cd_options.emplace_back(raw_options[i].second, (value.has_value() && value.value() == raw_options[i].first));
+		OpenChoiceDialog(title, false, std::move(cd_options),
+			[game_settings, section, key, raw_options = std::move(raw_options)](s32 index, const std::string& title, bool checked) {
+				if (index >= 0)
+				{
+					auto lock = Host::GetSettingsLock();
+					SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+					if (game_settings)
+					{
+						if (index == 0)
+							bsi->DeleteValue(section, key);
+						else
+							bsi->SetStringValue(section, key, raw_options[index - 1].first.c_str());
+					}
+					else
+					{
+						bsi->SetStringValue(section, key, raw_options[index].first.c_str());
+					}
+
+					SetSettingsChanged(bsi);
+				}
+
+				CloseChoiceDialog();
+			});
+	}
+}
+
 void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
 	const char* key, float default_value, const char* const* options, const float* option_values, size_t option_count, bool enabled,
 	float height, ImFont* font, ImFont* summary_font)
@@ -2132,6 +2183,41 @@ void FullscreenUI::DrawFolderSetting(SettingsInterface* bsi, const char* title, 
 	}
 }
 
+void FullscreenUI::DrawPathSetting(SettingsInterface* bsi, const char* title, const char* section, const char* key,
+	const char* default_value, bool enabled /* = true */, float height /* = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT */,
+	ImFont* font /* = g_large_font */, ImFont* summary_font /* = g_medium_font */)
+{
+	const bool game_settings = IsEditingGameSettings(bsi);
+	const std::optional<std::string> value(
+		bsi->GetOptionalStringValue(section, key, game_settings ? std::nullopt : std::optional<const char*>(default_value)));
+
+	if (MenuButton(title, value.has_value() ? value->c_str() : "Use Global Setting"))
+	{
+		auto callback = [game_settings = IsEditingGameSettings(bsi), section = std::string(section), key = std::string(key)](
+							const std::string& dir) {
+			if (dir.empty())
+				return;
+
+			auto lock = Host::GetSettingsLock();
+			SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+			std::string relative_path(Path::MakeRelative(dir, EmuFolders::DataRoot));
+			bsi->SetStringValue(section.c_str(), key.c_str(), relative_path.c_str());
+			SetSettingsChanged(bsi);
+
+			Host::RunOnCPUThread(&Host::Internal::UpdateEmuFolders);
+			s_cover_image_map.clear();
+
+			CloseFileSelector();
+		};
+
+		std::string initial_path;
+		if (value.has_value())
+			initial_path = Path::GetDirectory(value.value());
+
+		OpenFileSelector(title, false, std::move(callback), { "*" }, std::move(initial_path));
+	}
+}
+
 void FullscreenUI::StartAutomaticBinding(u32 port)
 {
 	// messy because the enumeration has to happen on the input thread
@@ -2176,6 +2262,49 @@ void FullscreenUI::StartAutomaticBinding(u32 port)
 				});
 		});
 	});
+}
+
+void FullscreenUI::DrawSettingInfoSetting(SettingsInterface* bsi, const char* section, const char* key, const SettingInfo& si)
+{
+	std::string title(fmt::format(ICON_FA_COG " {}", si.display_name));
+	switch (si.type)
+	{
+		case SettingInfo::Type::Boolean:
+			DrawToggleSetting(bsi, title.c_str(), si.description, section, key, si.BooleanDefaultValue(), true, false);
+			break;
+
+		case SettingInfo::Type::Integer:
+			DrawIntRangeSetting(bsi, title.c_str(), si.description, section, key, si.IntegerDefaultValue(), si.IntegerMinValue(),
+				si.IntegerMaxValue(), si.format, true);
+			break;
+
+		case SettingInfo::Type::IntegerList:
+			DrawIntListSetting(
+				bsi, title.c_str(), si.description, section, key, si.IntegerDefaultValue(), si.options, 0, si.IntegerMinValue(), true);
+			break;
+
+		case SettingInfo::Type::Float:
+			DrawFloatSpinBoxSetting(bsi, title.c_str(), si.description, section, key, si.FloatDefaultValue(), si.FloatMinValue(),
+				si.FloatMaxValue(), si.FloatStepValue(), si.multiplier, si.format, true);
+			break;
+
+		case SettingInfo::Type::StringList:
+		{
+			if (si.get_options)
+				DrawStringListSetting(bsi, title.c_str(), si.description, section, key, si.StringDefaultValue(), si.get_options, true);
+			else
+				DrawStringListSetting(
+					bsi, title.c_str(), si.description, section, key, si.StringDefaultValue(), si.options, si.options, 0, true);
+		}
+		break;
+
+		case SettingInfo::Type::Path:
+			DrawPathSetting(bsi, title.c_str(), section, key, si.StringDefaultValue(), true);
+			break;
+
+		default:
+			break;
+	}
 }
 
 void FullscreenUI::SwitchToSettings()
@@ -3618,6 +3747,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 		if (is_mtap_port && !mtap_enabled[mtap_port])
 			continue;
 
+		ImGui::PushID(global_slot);
 		MenuHeading(
 			(mtap_enabled[mtap_port] ? fmt::format(ICON_FA_PLUG " Controller Port {}{}", mtap_port + 1, mtap_slot_names[mtap_slot]) :
                                        fmt::format(ICON_FA_PLUG " Controller Port {}", mtap_port + 1))
@@ -3626,7 +3756,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 		const char* section = sections[global_slot];
 		const std::string type(bsi->GetStringValue(section, "Type", PAD::GetDefaultPadType(global_slot)));
 		const PAD::ControllerInfo* ci = PAD::GetControllerInfo(type);
-		if (MenuButton(fmt::format(ICON_FA_GAMEPAD " Controller Type##type{}", global_slot).c_str(), ci ? ci->display_name : "Unknown"))
+		if (MenuButton(ICON_FA_GAMEPAD " Controller Type", ci ? ci->display_name : "Unknown"))
 		{
 			std::vector<std::pair<std::string, std::string>> raw_options(PAD::GetControllerTypeNames());
 			ImGuiFullscreen::ChoiceDialogOptions options;
@@ -3650,7 +3780,10 @@ void FullscreenUI::DrawControllerSettingsPage()
 		}
 
 		if (!ci || ci->num_bindings == 0)
+		{
+			ImGui::PopID();
 			continue;
+		}
 
 		if (MenuButton(ICON_FA_MAGIC " Automatic Mapping", "Attempts to map the selected port to a chosen controller."))
 			StartAutomaticBinding(global_slot);
@@ -3666,13 +3799,20 @@ void FullscreenUI::DrawControllerSettingsPage()
                          fmt::format(ICON_FA_MICROCHIP " Controller Port {} Macros", mtap_port + 1))
 						.c_str());
 
+		static bool macro_button_expanded[PAD::NUM_CONTROLLER_PORTS][PAD::NUM_MACRO_BUTTONS_PER_CONTROLLER] = {};
+
 		for (u32 macro_index = 0; macro_index < PAD::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
 		{
-			DrawInputBindingButton(bsi, InputBindingInfo::Type::Macro, section, fmt::format("Macro{}", macro_index + 1).c_str(),
-				fmt::format("Macro {} Trigger", macro_index + 1).c_str());
+			bool& expanded = macro_button_expanded[global_slot][macro_index];
+			expanded ^= MenuHeadingButton(fmt::format(ICON_FA_MICROCHIP " Macro Button {}", macro_index + 1).c_str(),
+				macro_button_expanded[global_slot][macro_index] ? ICON_FA_CHEVRON_UP : ICON_FA_CHEVRON_DOWN);
+			if (!expanded)
+				continue;
+
+			DrawInputBindingButton(bsi, InputBindingInfo::Type::Macro, section, fmt::format("Macro{}", macro_index + 1).c_str(), "Trigger");
 
 			std::string binds_string(bsi->GetStringValue(section, fmt::format("Macro{}Binds", macro_index + 1).c_str()));
-			if (MenuButton(fmt::format(ICON_FA_KEYBOARD " Macro {} Buttons", macro_index + 1).c_str(),
+			if (MenuButton(fmt::format(ICON_FA_KEYBOARD " Buttons", macro_index + 1).c_str(),
 					binds_string.empty() ? "No Buttons Selected" : binds_string.c_str()))
 			{
 				std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
@@ -3735,12 +3875,11 @@ void FullscreenUI::DrawControllerSettingsPage()
 			}
 
 			const std::string freq_key(fmt::format("Macro{}Frequency", macro_index + 1));
-			const std::string freq_title(fmt::format(ICON_FA_LIGHTBULB " Macro {} Frequency", macro_index + 1));
 			s32 frequency = bsi->GetIntValue(section, freq_key.c_str(), 0);
 			const std::string freq_summary((frequency == 0) ? std::string("Macro will not auto-toggle.") :
                                                               fmt::format("Macro will toggle every {} frames.", frequency));
-			if (MenuButton(freq_title.c_str(), freq_summary.c_str()))
-				ImGui::OpenPopup(freq_title.c_str());
+			if (MenuButton(ICON_FA_LIGHTBULB " Frequency", freq_summary.c_str()))
+				ImGui::OpenPopup(freq_key.c_str());
 
 			ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
 			ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
@@ -3753,7 +3892,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 				LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING, ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
 
 			if (ImGui::BeginPopupModal(
-					freq_title.c_str(), nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+					freq_key.c_str(), nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
 			{
 				ImGui::SetNextItemWidth(LayoutScale(450.0f));
 				if (ImGui::SliderInt("##value", &frequency, 0, 60, "Toggle every %d frames", ImGuiSliderFlags_NoInput))
@@ -3786,29 +3925,101 @@ void FullscreenUI::DrawControllerSettingsPage()
 			for (u32 i = 0; i < ci->num_settings; i++)
 			{
 				const SettingInfo& si = ci->settings[i];
-				std::string title(fmt::format(ICON_FA_COG " {}", si.display_name));
-				switch (si.type)
-				{
-					case SettingInfo::Type::Boolean:
-						DrawToggleSetting(bsi, title.c_str(), si.description, section, si.name, si.BooleanDefaultValue(), true, false);
-						break;
-					case SettingInfo::Type::Integer:
-						DrawIntRangeSetting(bsi, title.c_str(), si.description, section, si.name, si.IntegerDefaultValue(),
-							si.IntegerMinValue(), si.IntegerMaxValue(), si.format, true);
-						break;
-					case SettingInfo::Type::IntegerList:
-						DrawIntListSetting(bsi, title.c_str(), si.description, section, si.name, si.IntegerDefaultValue(), si.options, 0,
-							si.IntegerMinValue(), true);
-						break;
-					case SettingInfo::Type::Float:
-						DrawFloatSpinBoxSetting(bsi, title.c_str(), si.description, section, si.name, si.FloatDefaultValue(),
-							si.FloatMinValue(), si.FloatMaxValue(), si.FloatStepValue(), si.multiplier, si.format, true);
-						break;
-					default:
-						break;
-				}
+				DrawSettingInfoSetting(bsi, section, si.name, si);
 			}
 		}
+
+		ImGui::PopID();
+	}
+
+	static constexpr const char* usb_sections[USB::NUM_PORTS] = {"USB1", "USB2"};
+	for (u32 port = 0; port < USB::NUM_PORTS; port++)
+	{
+		ImGui::PushID(port);
+		MenuHeading(fmt::format(ICON_FA_PLUG " USB Port {}", port + 1).c_str());
+
+		const std::string type(USB::GetConfigDevice(*bsi, port));
+		if (MenuButton(ICON_FA_GAMEPAD " Device Type", USB::GetDeviceName(type)))
+		{
+			std::vector<std::pair<std::string, std::string>> raw_options(USB::GetDeviceTypes());
+			ImGuiFullscreen::ChoiceDialogOptions options;
+			options.reserve(raw_options.size());
+			for (auto& it : raw_options)
+			{
+				options.emplace_back(std::move(it.second), type == it.first);
+			}
+			OpenChoiceDialog(fmt::format("Port {} Device", port + 1).c_str(), false, std::move(options),
+				[game_settings = IsEditingGameSettings(bsi), raw_options = std::move(raw_options), port](
+					s32 index, const std::string& title, bool checked) {
+					if (index < 0)
+						return;
+
+					auto lock = Host::GetSettingsLock();
+					SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+					USB::SetConfigDevice(*bsi, port, raw_options[static_cast<u32>(index)].first.c_str());
+					SetSettingsChanged(bsi);
+					CloseChoiceDialog();
+				});
+		}
+
+		if (type.empty() || type == "None")
+		{
+			ImGui::PopID();
+			continue;
+		}
+
+		const u32 subtype = USB::GetConfigSubType(*bsi, port, type);
+		const gsl::span<const char*> subtypes(USB::GetDeviceSubtypes(type));
+		if (!subtypes.empty())
+		{
+			const char* subtype_name = USB::GetDeviceSubtypeName(type, subtype);
+			if (MenuButton(ICON_FA_COG " Device Subtype", subtype_name))
+			{
+				ImGuiFullscreen::ChoiceDialogOptions options;
+				options.reserve(subtypes.size());
+				for (u32 i = 0; i < subtypes.size(); i++)
+					options.emplace_back(subtypes[i], i == subtype);
+
+				OpenChoiceDialog(fmt::format("Port {} Subtype", port + 1).c_str(), false, std::move(options),
+					[game_settings = IsEditingGameSettings(bsi), port, type](s32 index, const std::string& title, bool checked) {
+						if (index < 0)
+							return;
+
+						auto lock = Host::GetSettingsLock();
+						SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+						USB::SetConfigSubType(*bsi, port, type.c_str(), static_cast<u32>(index));
+						SetSettingsChanged(bsi);
+						CloseChoiceDialog();
+					});
+			}
+		}
+
+		const gsl::span<const InputBindingInfo> bindings(USB::GetDeviceBindings(type, subtype));
+		if (!bindings.empty())
+		{
+			MenuHeading(fmt::format(ICON_FA_KEYBOARD " {} Bindings", USB::GetDeviceName(type)).c_str());
+
+			if (MenuButton(ICON_FA_FOLDER_MINUS " Clear Bindings", "Clears all bindings for this USB controller."))
+			{
+				USB::ClearPortBindings(*bsi, port);
+				SetSettingsChanged(bsi);
+			}
+
+			const std::string section(USB::GetConfigSection(port));
+			for (const InputBindingInfo& bi : bindings)
+				DrawInputBindingButton(bsi, bi.bind_type, section.c_str(), USB::GetConfigSubKey(type, bi.name).c_str(), bi.display_name);
+		}
+
+		const gsl::span<const SettingInfo> settings(USB::GetDeviceSettings(type, subtype));
+		if (!settings.empty())
+		{
+			MenuHeading(fmt::format(ICON_FA_SLIDERS_H " {} Settings", USB::GetDeviceName(type)).c_str());
+
+			const std::string section(USB::GetConfigSection(port));
+			for (const SettingInfo& si : settings)
+				DrawSettingInfoSetting(bsi, section.c_str(), USB::GetConfigSubKey(type, si.name).c_str(), si);
+		}
+		ImGui::PopID();
 	}
 
 	EndMenuButtons();
