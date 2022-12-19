@@ -121,14 +121,14 @@ PAPX-90222:
   name: "Jak x Daxter - Kyuu Sekai no Isan [Demo, Taikenban]"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
 PAPX-90223:
   name: "Jak x Daxter - Kyuu Sekai no Isan [Demo, Taikenban]"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
 PAPX-90231:
@@ -163,7 +163,7 @@ PAPX-90516:
   name: "Jak and Daxter II [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1 # Fixes broken textures.
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
@@ -424,7 +424,7 @@ SCAJ-10008:
   name: "Taiko no Tatsujin - Atsumare! Matsuri da!! Yondaime"
   region: "NTSC-Unk"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SCAJ-10009:
   name: "Psikyo Shooting Collection Vol.1 - Strikers 1-2"
@@ -439,31 +439,31 @@ SCAJ-10011:
   name: "Taiko no Tatsujin - Go! Go! Godaime"
   region: "NTSC-Unk"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SCAJ-10012:
   name: "Taiko Drum Master"
   region: "NTSC-Unk"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SCAJ-10013:
   name: "Taiko no Tatsujin - Tobikkiri! Anime Special"
   region: "NTSC-Unk"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SCAJ-10014:
   name: "Taiko no Tatsujin - Wai Wai Happy! Rokudaime"
   region: "NTSC-Unk"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SCAJ-10015:
   name: "Taiko no Tatsujin - Doka! to Oomori Nanadaime"
   region: "NTSC-Unk"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SCAJ-20001:
   name: "Ratchet & Clank"
@@ -750,7 +750,7 @@ SCAJ-20070:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
-    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
+    roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
 SCAJ-20072:
   name: "Ghost in the Shell - Stand Alone Complex"
   region: "NTSC-Unk"
@@ -761,7 +761,7 @@ SCAJ-20073:
   name: "Jak and Daxter II"
   region: "NTSC-Unk"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1 # Fixes broken textures.
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
@@ -1019,6 +1019,7 @@ SCAJ-20123:
     textureInsideRT: 1
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
     roundSprite: 1 # Fixes font artifacts.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
   memcardFilters:
     - "SCAJ-20123"
     - "SCPS-15091"
@@ -1250,7 +1251,7 @@ SCAJ-20162:
   region: "NTSC-Unk"
   gsHWFixes:
     autoFlush: 1 # Fix glow effects from lamps.
-    roundSprite: 1 # Fix minimap and field menu.
+    roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
 SCAJ-20163:
@@ -1372,6 +1373,7 @@ SCAJ-20183:
   gsHWFixes:
     roundSprite: 1 # Fixes font sizes.
     cpuFramebufferConversion: 1 # Fixes sepia-tone flashback sequences.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCAJ-20184:
   name: "Seiken Densetsu 4"
   region: "NTSC-Unk"
@@ -1493,6 +1495,7 @@ SCAJ-30002:
   region: "NTSC-J"
   gsHWFixes:
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCAJ-30003:
   name: "Siren"
   region: "NTSC-Unk"
@@ -1767,7 +1770,7 @@ SCED-50614:
   name: "Jak and Daxter - The Precursor Legacy [Demo]"
   region: "PAL-Unk"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCED-50622:
@@ -1878,6 +1881,9 @@ SCED-51140:
 SCED-51147:
   name: "Official PlayStation 2 Magazine Demo 24"
   region: "PAL-M5"
+SCED-51148:
+  name: "PlayStation Experience [Demo]"
+  region: "PAL-E"
 SCED-51185:
   name: "Official PlayStation 2 Magazine Demo 24" # German
   region: "PAL-E-G"
@@ -2023,11 +2029,14 @@ SCED-51700:
   name: "Jak II - Renegade [Demo]"
   region: "PAL-M5"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1 # Fixes broken textures.
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
+SCED-51899:
+  name: "PlayStation Experience [Demo]"
+  region: "PAL-E"
 SCED-51922:
   name: "Ghosthunter [Demo]"
   region: "PAL-G"
@@ -2036,6 +2045,12 @@ SCED-51922:
 SCED-51935:
   name: "Official PlayStation 2 Magazine Demo 38" # German
   region: "PAL-E-G"
+SCED-51936:
+  name: "Official PlayStation 2 Magazine Demo 12/2003" # German
+  region: "PAL-E-G"
+SCED-51938:
+  name: "PlayStation Experience [Demo]"
+  region: "PAL-E"
 SCED-51940:
   name: "Bonus Demo 5"
   region: "PAL-M5"
@@ -2312,7 +2327,7 @@ SCED-52952:
   name: "Jak 3 [Demo]"
   region: "PAL-M5"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -2474,7 +2489,7 @@ SCED-53622:
   name: "24 - The Game [Demo]"
   region: "PAL-M9"
   clampModes:
-    vuClampMode: 2 # Fixes minimap HUD.
+    vuClampMode: 2 # Fixes mini-map HUD.
   gsHWFixes:
     autoFlush: 1 # Fixes pause menu backgrounds.
     roundSprite: 1 # Corrects proportions of fonts and pause-screen lines, adjusts display closer to software.
@@ -2836,7 +2851,7 @@ SCES-50361:
   region: "PAL-M6"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCES-50408:
@@ -2985,7 +3000,7 @@ SCES-50614:
   name: "Jak and Daxter - The Precursor Legacy"
   region: "PAL-Unk"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCES-50759:
@@ -3044,7 +3059,7 @@ SCES-50887:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    deinterlace: 9 # Game requires Adaptive BFF deinterlacing when auto.
+    deinterlace: 9 # Game requires Adaptive BFF de-interlacing when auto.
 SCES-50888:
   name: "Pac-Man World 2"
   region: "PAL-M5"
@@ -3185,7 +3200,7 @@ SCES-51164:
   name: "Mark of Kri, The"
   region: "PAL-M5"
   gsHWFixes:
-    deinterlace: 4 # Game requires bob deinterlacing when auto.
+    deinterlace: 4 # Game requires bob de-interlacing when auto.
 SCES-51176:
   name: "Disney's Treasure Planet"
   region: "PAL-M4"
@@ -3220,7 +3235,7 @@ SCES-51248:
   clampModes:
     vuClampMode: 3 # Fixes minor SPS on characters.
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     preloadFrameData: 1 # Fixes bad textures on Jake.
     halfPixelOffset: 1 # Fixes double image.
     cpuCLUTRender: 1 # Fixes Jake going black in Smellovision.
@@ -3291,7 +3306,7 @@ SCES-51608:
   region: "PAL-M7"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1 # Fixes broken textures.
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
@@ -3590,7 +3605,7 @@ SCES-52460:
   region: "PAL-M7"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -3786,7 +3801,7 @@ SCES-53286:
   name: "Jak X - Combat Racing"
   region: "PAL-M7"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
@@ -3856,7 +3871,7 @@ SCES-53358:
   name: "24 - The Game"
   region: "PAL-M9"
   clampModes:
-    vuClampMode: 2 # Fixes minimap HUD.
+    vuClampMode: 2 # Fixes mini-map HUD.
   gsHWFixes:
     autoFlush: 1 # Fixes pause menu backgrounds.
     roundSprite: 1 # Corrects proportions of fonts and pause-screen lines, adjusts display closer to software.
@@ -4239,7 +4254,7 @@ SCES-54552:
   region: "PAL-M5"
   gsHWFixes:
     autoFlush: 1 # Fix glow effects from lamps.
-    roundSprite: 1 # Fix minimap and field menu.
+    roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
   patches:
@@ -4570,7 +4585,7 @@ SCES-55510:
   name: "Jak and Daxter - The Lost Frontier"
   region: "PAL-M12"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
 SCES-55513:
   name: "SingStar Polskie Hity"
   region: "PAL-PL"
@@ -4751,7 +4766,7 @@ SCKA-20010:
   name: "Jak II"
   region: "NTSC-K"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1 # Fixes broken textures.
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
@@ -4914,7 +4929,7 @@ SCKA-20040:
   name: "Jak 3"
   region: "NTSC-K"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -5166,7 +5181,7 @@ SCKA-20092:
   name: "K-1 World Grand Prix 2006"
   region: "NTSC-K"
   gsHWFixes:
-    deinterlace: 9 # Game requires AdaptiveBFF deinterlacing when auto.
+    deinterlace: 9 # Game requires AdaptiveBFF de-interlacing when auto.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes random black frames from happening when in a fight session.
     MTVUSpeedHack: 0
@@ -5510,7 +5525,7 @@ SCPS-15021:
   name: "Jak x Daxter - Kyuusekai no Isan"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCPS-15022:
@@ -5521,11 +5536,13 @@ SCPS-15023:
   region: "NTSC-J"
   gsHWFixes:
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCPS-15024:
   name: "Wild ARMs - Advanced 3rd"
   region: "NTSC-J"
   gsHWFixes:
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCPS-15025:
   name: "Saru Get You 2"
   region: "NTSC-J"
@@ -5679,7 +5696,7 @@ SCPS-15057:
   name: "Jak and Daxter II"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -5853,6 +5870,8 @@ SCPS-15091:
   gsHWFixes:
     textureInsideRT: 1
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    roundSprite: 1 # Fixes font artifacts.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
   memcardFilters:
     - "SCAJ-20123"
     - "SCPS-15091"
@@ -5870,6 +5889,8 @@ SCPS-15092:
   gsHWFixes:
     textureInsideRT: 1
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    roundSprite: 1 # Fixes font artifacts.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
   memcardFilters:
     - "SCAJ-20123"
     - "SCPS-15091"
@@ -5949,7 +5970,7 @@ SCPS-15102:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 1 # Fix glow effects from lamps.
-    roundSprite: 1 # Fix minimap and field menu.
+    roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
 SCPS-15103:
@@ -6020,7 +6041,9 @@ SCPS-15118:
   name: "Wild ARMs - The Vth Vanguard"
   region: "NTSC-J"
   gsHWFixes:
+    roundSprite: 1 # Fixes font sizes.
     cpuFramebufferConversion: 1 # Fixes sepia-tone flashback sequences.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCPS-15119:
   name: "Bleach - Blade Battlers 2nd"
   region: "NTSC-J"
@@ -6062,6 +6085,7 @@ SCPS-17002:
   region: "NTSC-J"
   gsHWFixes:
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCPS-17008:
   name: "Nike - Gran Turismo [Limited Edition - 8 inch]"
   region: "NTSC-J"
@@ -6079,7 +6103,7 @@ SCPS-17013:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 1 # Fix glow effects from lamps.
-    roundSprite: 1 # Fix minimap and field menu.
+    roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
   patches:
@@ -6157,6 +6181,7 @@ SCPS-19205:
   region: "NTSC-J"
   gsHWFixes:
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCPS-19206:
   name: "Ape Escape 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -6176,7 +6201,7 @@ SCPS-19210:
   name: "Jak x Daxter - Kyuusekai no Isan [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCPS-19211:
@@ -6318,7 +6343,10 @@ SCPS-19313:
   name: "Wild ARMs - The 4th Detonator [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
+    textureInsideRT: 1
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    roundSprite: 1 # Fixes font artifacts.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
   memcardFilters:
     - "SCAJ-20123"
     - "SCPS-15091"
@@ -6392,7 +6420,10 @@ SCPS-19322:
   name: "Wild ARMs - The 4th Detonator [PlayStation 2 The Best - Reprint]"
   region: "NTSC-J"
   gsHWFixes:
+    textureInsideRT: 1
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    roundSprite: 1 # Fixes font artifacts.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
   memcardFilters:
     - "SCAJ-20123"
     - "SCPS-15091"
@@ -6408,7 +6439,10 @@ SCPS-19323:
   name: "Wild ARMs - The 4th Detonator [PlayStation 2 The Best - Reprint]"
   region: "NTSC-J"
   gsHWFixes:
+    textureInsideRT: 1
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    roundSprite: 1 # Fixes font artifacts.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
   memcardFilters:
     - "SCAJ-20123"
     - "SCPS-15091"
@@ -6482,7 +6516,7 @@ SCPS-51006:
   name: "Alpine Racer 3"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 9 # Game requires Adaptive BFF deinterlacing when auto.
+    deinterlace: 9 # Game requires Adaptive BFF de-interlacing when auto.
 SCPS-51008:
   name: "Wave Rally"
   region: "NTSC-J"
@@ -6542,7 +6576,7 @@ SCPS-55004:
   name: "Jak x Daxter - Kyuusekai no Isan"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCPS-55005:
@@ -6553,6 +6587,7 @@ SCPS-55006:
   region: "NTSC-J"
   gsHWFixes:
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCPS-55007:
   name: "Gran Turismo 3 - A-Spec"
   region: "NTSC-J"
@@ -6608,7 +6643,7 @@ SCPS-55019:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
-    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
+    roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
 SCPS-55020:
   name: "Kengo 2"
   region: "NTSC-J"
@@ -6789,7 +6824,7 @@ SCPS-56003:
   name: "Jak and Daxter - The Precursor Legacy"
   region: "NTSC-K"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCPS-56004:
@@ -6961,7 +6996,7 @@ SCUS-97124:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCUS-97125:
@@ -7020,7 +7055,7 @@ SCUS-97140:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    deinterlace: 4 # Game requires bob deinterlacing when auto.
+    deinterlace: 4 # Game requires bob de-interlacing when auto.
   patches:
     DBD09DD4:
       content: |-
@@ -7145,14 +7180,14 @@ SCUS-97170:
   name: "Jak and Daxter - The Precursor Legacy [Cingular Wireless Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCUS-97171:
   name: "Jak and Daxter - The Precursor Legacy [PS Underground Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCUS-97172:
@@ -7248,13 +7283,14 @@ SCUS-97201:
   name: "Mark of Kri, The"
   region: "NTSC-U"
   gsHWFixes:
-    deinterlace: 4 # Game requires bob deinterlacing when auto.
+    deinterlace: 4 # Game requires bob de-interlacing when auto.
 SCUS-97203:
   name: "Wild ARMs 3"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCUS-97204:
   name: "NCAA Final Four 2003"
   region: "NTSC-U"
@@ -7330,7 +7366,7 @@ SCUS-97222:
   name: "Mark of Kri [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    deinterlace: 4 # Game requires bob deinterlacing when auto.
+    deinterlace: 4 # Game requires bob de-interlacing when auto.
 SCUS-97223:
   name: "NFL GameDay 2003 [Demo]"
   region: "NTSC-U"
@@ -7339,6 +7375,7 @@ SCUS-97224:
   region: "NTSC-U"
   gsHWFixes:
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCUS-97225:
   name: "Primal [Demo]"
   region: "NTSC-U"
@@ -7488,7 +7525,7 @@ SCUS-97265:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1 # Fixes broken textures.
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
@@ -7526,7 +7563,7 @@ SCUS-97273:
   name: "Jak II [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1 # Fixes broken textures.
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
@@ -7535,7 +7572,7 @@ SCUS-97274:
   name: "Jak II [Video Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
 SCUS-97275:
   name: "SOCOM II - U.S. Navy SEALs"
   region: "NTSC-U"
@@ -7655,7 +7692,7 @@ SCUS-97330:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -7778,7 +7815,7 @@ SCUS-97374:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1 # Fixes broken textures.
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
@@ -7900,7 +7937,7 @@ SCUS-97412:
   name: "Jak 3 [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -7969,7 +8006,7 @@ SCUS-97429:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
@@ -8025,7 +8062,7 @@ SCUS-97440:
   name: "Jak and Daxter Trilogy [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -8239,7 +8276,7 @@ SCUS-97486:
   name: "Jak X - Combat Racing [Regular Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
@@ -8258,7 +8295,7 @@ SCUS-97488:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
@@ -8273,7 +8310,7 @@ SCUS-97490:
   compat: 5
   gsHWFixes:
     autoFlush: 1 # Fix glow effects from lamps.
-    roundSprite: 1 # Fix minimap and field menu.
+    roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
   patches:
@@ -8347,7 +8384,7 @@ SCUS-97509:
   name: "Jak II [Greatest Hits]"
   region: "NTSC-U"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1 # Fixes broken textures.
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
@@ -8391,7 +8428,7 @@ SCUS-97516:
   name: "Jak 3 [Greatest Hits]"
   region: "NTSC-U"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
     autoFlush: 1
@@ -8505,7 +8542,7 @@ SCUS-97555:
   name: "Jak and Daxter Complete Trilogy [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     mipmap: 1
     textureInsideRT: 1
 SCUS-97556:
@@ -8519,7 +8556,7 @@ SCUS-97558:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
 SCUS-97560:
   name: "SOCOM - U.S. Navy SEALs - Combined Assault [Demo]"
   region: "NTSC-U"
@@ -8543,7 +8580,7 @@ SCUS-97572:
   region: "NTSC-U"
   gsHWFixes:
     autoFlush: 1 # Fix glow effects from lamps.
-    roundSprite: 1 # Fix minimap and field menu.
+    roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
 SCUS-97579:
@@ -9003,7 +9040,7 @@ SLED-50117:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLED-50286:
   name: "Red Faction [Demo]"
   region: "PAL-E"
@@ -10170,21 +10207,21 @@ SLES-50383:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLES-50384:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-I"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLES-50385:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-S"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLES-50386:
   name: "Crash Bandicoot - The Wrath of Cortex"
   region: "PAL-M6"
@@ -12206,6 +12243,7 @@ SLES-51307:
   region: "PAL-E"
   gsHWFixes:
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SLES-51308:
   name: "Reel Fishing 3"
   region: "PAL-E"
@@ -14685,7 +14723,7 @@ SLES-52534:
   gsHWFixes:
     wildArmsHack: 1 # Fixes blurriness.
     roundSprite: 2 # Reduces misalignment bloom effects.
-#    deinterlace: 6 # Game requires blend tff deinterlacing when auto for 'fixing' shimmer on character models and more flickering or half weaved, though the game suffers from the field order.
+#    deinterlace: 6 # Game requires blend tff de-interlacing when auto for 'fixing' shimmer on character models and more flickering or half weaved, though the game suffers from the field order.
 SLES-52535:
   name: "Rumble Roses"
   region: "PAL-M5"
@@ -15825,7 +15863,7 @@ SLES-52988:
   gsHWFixes:
     autoFlush: 1 # Fixes bloom.
     roundSprite: 1 # Fixes misalliged bloom.
-    deinterlace: 6 # Game requires blend tff deinterlacing when auto for 'fixing' subtitles flickering or half weaved.
+    deinterlace: 6 # Game requires blend tff de-interlacing when auto for 'fixing' subtitles flickering or half weaved.
   memcardFilters: # Reads Command Mission save for bonus boss.
     - "SLES-52988"
     - "SLES-52832"
@@ -17156,7 +17194,6 @@ SLES-53539:
     default:
       content: |-
         author=atomic83github
-        // Found with the help of the dev-9 plugin and the PS4 emu.
         // This is a game bug trigger by a timing issue.
         // The game have an internal crash reporting system
         // which rely on a debug server connected to the console.
@@ -17183,7 +17220,6 @@ SLES-53540:
     default:
       content: |-
         author=atomic83github
-        // Found with the help of the dev-9 plugin and the PS4 emu.
         // This is a game bug trigger by a timing issue.
         // The game have an internal crash reporting system
         // which rely on a debug server connected to the console.
@@ -17429,7 +17465,7 @@ SLES-53621:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    deinterlace: 4 # Game requires bob deinterlacing when auto.
+    deinterlace: 4 # Game requires bob de-interlacing when auto.
     halfPixelOffset: 1 # Fixes misalignment/bloom when upscaling.
 SLES-53623:
   name: "SpongeBob SquarePants - Battle for Bikini Bottom"
@@ -18958,6 +18994,8 @@ SLES-54239:
   gsHWFixes:
     textureInsideRT: 1
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    roundSprite: 1 # Fixes font artifacts.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SLES-54240:
   name: "FIFA '07"
   region: "PAL-E"
@@ -19436,7 +19474,7 @@ SLES-54455:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
-    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
+    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLES-54456:
   name: "Beverly Hills Cop"
   region: "PAL-M11"
@@ -19601,14 +19639,14 @@ SLES-54516:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
-    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
+    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLES-54517:
   name: "Thrillville"
   region: "PAL-M3"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
-    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
+    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLES-54518:
   name: "Clumsy Shumsy"
   region: "PAL-E"
@@ -20335,13 +20373,13 @@ SLES-54806:
   region: "PAL-E"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
-    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
+    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLES-54807:
   name: "Thrillville - Off the Rails"
   region: "PAL-F"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
-    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
+    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLES-54809:
   name: "Charlotte's Web"
   region: "PAL-A"
@@ -20553,7 +20591,7 @@ SLES-54887:
   region: "PAL-G"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
-    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
+    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLES-54888:
   name: "Pro Biker 2"
   region: "PAL-E"
@@ -20774,6 +20812,8 @@ SLES-54972:
   region: "PAL-M3"
   gsHWFixes:
     cpuFramebufferConversion: 1 # Fixes sepia-tone flashback sequences.
+    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SLES-54973:
   name: "Avventure di Lupin III, Le - Lupin la Morte, Zenigata l'Amore"
   region: "PAL-I"
@@ -20908,13 +20948,13 @@ SLES-55010:
   region: "PAL-I"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
-    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
+    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLES-55011:
   name: "Thrillville - Fuera de Control"
   region: "PAL-S"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
-    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
+    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLES-55012:
   name: "Golden Compass, The"
   region: "PAL-M5"
@@ -21253,7 +21293,7 @@ SLES-55169:
   region: "PAL-M5"
   gsHWFixes:
     cpuFramebufferConversion: 1 # Fixes black with rainbow screen.
-    gpuPaletteConversion: 2 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLES-55170:
   name: "Margot's Word Brain"
   region: "PAL-M5"
@@ -22103,7 +22143,7 @@ SLES-55579:
   clampModes:
     vuClampMode: 0
   gsHWFixes:
-    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the FMVs.
+    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the FMVs.
 SLES-55581:
   name: "FIFA 10"
   region: "PAL-M5"
@@ -22290,7 +22330,7 @@ SLES-82009:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLES-82010:
   name: "Metal Gear Solid 2, Document of"
@@ -22354,7 +22394,7 @@ SLES-82028:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
-    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
+    roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
 SLES-82029:
   name: "Star Ocean 3 - Till the End of Time [Disc 2 of 2]"
   region: "PAL-E"
@@ -22363,7 +22403,7 @@ SLES-82029:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
-    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
+    roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
   memcardFilters:
     - "SLES-82028"
 SLES-82030:
@@ -23724,7 +23764,7 @@ SLKA-35001:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLKA-35003:
   name: "Sakura Taisen - Atsuki Chishioni"
@@ -26272,7 +26312,7 @@ SLPM-62623:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    deinterlace: 9 # Game requires AdaptiveBFF deinterlacing when auto.
+    deinterlace: 9 # Game requires AdaptiveBFF de-interlacing when auto.
   gameFixes:
     - XGKickHack # Fixes chocolate coloured characters.
   patches:
@@ -27094,7 +27134,7 @@ SLPM-65077:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering.
   memcardFilters:
     - "SLPM-65078"
     - "SLPM-65077"
@@ -27104,7 +27144,7 @@ SLPM-65078:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering.
   memcardFilters:
     - "SLPM-65078"
     - "SLPM-65077"
@@ -27463,7 +27503,7 @@ SLPM-65209:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
-    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
+    roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
   patches:
     BEC32D49:
       content: |-
@@ -27880,7 +27920,7 @@ SLPM-65310:
   name: "Mark of Kri, The"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 4 # Game requires bob deinterlacing when auto.
+    deinterlace: 4 # Game requires bob de-interlacing when auto.
 SLPM-65311:
   name: "Violet no Atelier - Gramnad no Renkinjutsushi"
   region: "NTSC-J"
@@ -28285,7 +28325,7 @@ SLPM-65438:
     - VuAddSubHack # Fixes ELF decryption.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
-    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
+    roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
 SLPM-65439:
   name: "Star Ocean 3 [Director's Cut] [Disc 2 of 2]"
   region: "NTSC-J"
@@ -28294,7 +28334,7 @@ SLPM-65439:
     - VuAddSubHack # Fixes ELF decryption.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
-    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
+    roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
   memcardFilters:
     - "SLPM-65438"
 SLPM-65441:
@@ -28723,7 +28763,7 @@ SLPM-65575:
   gsHWFixes:
     wildArmsHack: 1 # Fixes blurriness.
     roundSprite: 2 # Reduces misalignment bloom effects.
-#    deinterlace: 6 # Game requires blend tff deinterlacing when auto for 'fixing' shimmer on character models and more flickering or half weaved, though the game suffers from the field order.
+#    deinterlace: 6 # Game requires blend tff de-interlacing when auto for 'fixing' shimmer on character models and more flickering or half weaved, though the game suffers from the field order.
 SLPM-65576:
   name: "Tantei Jinguuji Saburou - Kind of Blue"
   region: "NTSC-J"
@@ -31377,7 +31417,7 @@ SLPM-66327:
   name: "Wallace & Gromit - The Curse of the Were-Rabbit"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 4 # Game requires bob deinterlacing when auto.
+    deinterlace: 4 # Game requires bob de-interlacing when auto.
     halfPixelOffset: 1 # Fixes misalignment/bloom when upscaling.
 SLPM-66328:
   name: "Call of Duty 2 - Big Red One"
@@ -31959,7 +31999,7 @@ SLPM-66478:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
-    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
+    roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
 SLPM-66479:
   name: "Star Ocean 3 - Till the End of Time [Ultimate Hits] [Disc 2 of 2]"
   region: "NTSC-J"
@@ -31968,7 +32008,7 @@ SLPM-66479:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
-    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
+    roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
   memcardFilters:
     - "SLPM-66478"
 SLPM-66480:
@@ -32069,7 +32109,7 @@ SLPM-66503:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLPM-66504:
   name: "Onimusha 2 [Mega Hits]"
   region: "NTSC-J"
@@ -33166,7 +33206,7 @@ SLPM-66792:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLPM-66794:
   name: "Metal Gear Solid 3 - Snake Eater [20th Anniversary Edition]"
   region: "NTSC-J"
@@ -33803,7 +33843,7 @@ SLPM-67002:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLPM-67003:
   name: "Sakura Taisen - Atsuki Chishioni"
@@ -33827,7 +33867,7 @@ SLPM-67008:
   name: "Metal Gear Solid 2 - Substance [Konami Dendou Collection]"
   region: "NTSC-J"
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLPM-67009:
   name: "Sakura Taisen V - Saraba Itoshiki Hito Yo"
@@ -33922,7 +33962,7 @@ SLPM-67515:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLPM-67518:
   name: "Onimusha 2 Samurai's Destiny"
   region: "NTSC-K"
@@ -34876,7 +34916,7 @@ SLPS-20181:
   name: "Alpine Racer 3"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 9 # Game requires Adaptive BFF deinterlacing when auto.
+    deinterlace: 9 # Game requires Adaptive BFF de-interlacing when auto.
 SLPS-20183:
   name: "Motto Golful Golf"
   region: "NTSC-J"
@@ -35323,13 +35363,13 @@ SLPS-20382:
   name: "Taiko no Tatsujin - Atsumare! Matsuri da!! Yondaime [with Tatacon]"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20383:
   name: "Taiko no Tatsujin - Atsumare! Matsuri da!! Yondaime"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20384:
   name: "Hayarigami - Keishichou Kaii Jiken File"
@@ -35371,13 +35411,13 @@ SLPS-20399:
   name: "Taiko no Tatsujin - Go! Go! Godaime [with Tatacon]"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20400:
   name: "Taiko no Tatsujin - Go! Go! Godaime"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20401:
   name: "Tecmo Hit Parade"
@@ -35418,14 +35458,14 @@ SLPS-20413:
   name: "Taiko no Tatsujin - Taiko Drum Master [with Tatacon]"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20414:
   name: "Taiko no Tatsujin - Taiko Drum Master"
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20416:
   name: "Inyou Taisenki - Byakko Enbu [with EyeToy]"
@@ -35454,13 +35494,13 @@ SLPS-20424:
   name: "Taiko no Tatsujin - Tobikkiri! Anime Special [with Tatacon]"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20425:
   name: "Taiko no Tatsujin - Tobikkiri! Anime Special"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20426:
   name: "Dreamworks Madagascar"
@@ -35522,13 +35562,13 @@ SLPS-20450:
   name: "Taiko no Tatsujin - Wai Wai Happy! Rokudaime [with Tatacon]"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20451:
   name: "Taiko no Tatsujin - Wai Wai Happy! Rokudaime"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20452:
   name: "Simple 2000 Series Ultimate Vol. 30 - Kourin! Zokusha Goddo!"
@@ -35649,13 +35689,13 @@ SLPS-20485:
   name: "Taiko no Tatsujin - Doka! to Oomori Nanadaime [with Tatacon]"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20486:
   name: "Taiko no Tatsujin - Doka! to Oomori Nanadaime"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20487:
   name: "Pachi-Slot King! Kagaku Ninja-Tai Gatchaman"
@@ -38295,7 +38335,7 @@ SLPS-25710:
   region: "NTSC-J"
   compat: 4
   gsHWFixes:
-    deinterlace: 9 # Game requires AdaptiveBFF deinterlacing when auto.
+    deinterlace: 9 # Game requires AdaptiveBFF de-interlacing when auto.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes random black frames from happening when in a fight session.
     MTVUSpeedHack: 0
@@ -39178,7 +39218,7 @@ SLPS-73107:
   name: "Taiko no Tatsujin - Go! Go! Godaime [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-73108:
   name: "Phantom Brave [PlayStation 2 The Best]"
@@ -39578,6 +39618,9 @@ SLPS-73269:
     eeRoundMode: 1 # Fixes camera issue.
   gameFixes:
     - FpuNegDivHack # Fixes target loss issue.
+SLPS-73270:
+  name: "Super Robot Taisen Z [PlayStation 2 The Best]"
+  region: "NTSC-J"
 SLPS-73401:
   name: "Victorious Boxers - Championship Edition [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -40206,7 +40249,7 @@ SLUS-20144:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLUS-20145:
   name: "Ring of Red"
   region: "NTSC-U"
@@ -41704,7 +41747,7 @@ SLUS-20475:
   name: "Dual Hearts"
   region: "NTSC-U"
   gsHWFixes:
-    deinterlace: 6 # Game requires blend tff deinterlacing when auto.
+    deinterlace: 6 # Game requires blend tff de-interlacing when auto.
   compat: 5
 SLUS-20476:
   name: "NBA 2K3 - Sega Sports"
@@ -41764,7 +41807,7 @@ SLUS-20488:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
-    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
+    roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
 SLUS-20489:
   name: "Whirl Tour"
   region: "NTSC-U"
@@ -42051,7 +42094,7 @@ SLUS-20554:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLUS-20555:
   name: "Reel Fishing 3"
@@ -43239,7 +43282,7 @@ SLUS-20800:
   name: "Taiko Drum Master"
   region: "NTSC-U"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff deinterlacing when auto.
+    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLUS-20801:
   name: "Midway Arcade Treasures"
@@ -43657,7 +43700,7 @@ SLUS-20891:
     - VuAddSubHack
   gsHWFixes:
     halfPixelOffset: 2 # Fixes bloom and ghosting in certain areas.
-    roundSprite: 1 # Fixes door transition vertical lines and minimap artifacts.
+    roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
   memcardFilters:
     - "SLUS-20488"
 SLUS-20892:
@@ -43906,6 +43949,7 @@ SLUS-20937:
   compat: 5
   gsHWFixes:
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SLUS-20938:
   name: "Dynasty Warriors 4 - Empires"
   region: "NTSC-U"
@@ -43961,7 +44005,7 @@ SLUS-20948:
   gsHWFixes:
     wildArmsHack: 1 # Fixes blurriness.
     roundSprite: 2 # Reduces misalignment bloom effects.
-#    deinterlace: 6 # Game requires blend tff deinterlacing when auto for 'fixing' shimmer on character models and more flickering or half weaved, though the game suffers from the field order.
+#    deinterlace: 6 # Game requires blend tff de-interlacing when auto for 'fixing' shimmer on character models and more flickering or half weaved, though the game suffers from the field order.
 SLUS-20949:
   name: "Street Fighter Anniversary Collection"
   region: "NTSC-U"
@@ -44015,7 +44059,7 @@ SLUS-20960:
   gsHWFixes:
     autoFlush: 1 # Fixes bloom.
     roundSprite: 1 # Fixes misalliged bloom.
-    deinterlace: 6 # Game requires blend tff deinterlacing when auto for 'fixing' subtitles flickering or half weaved.
+    deinterlace: 6 # Game requires blend tff de-interlacing when auto for 'fixing' subtitles flickering or half weaved.
   memcardFilters:
     - "SLUS-20960"
     - "SLUS-20903"
@@ -45656,7 +45700,7 @@ SLUS-21268:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    vuClampMode: 2 # Fixes minimap HUD.
+    vuClampMode: 2 # Fixes mini-map HUD.
   gsHWFixes:
     autoFlush: 1 # Fixes pause menu backgrounds.
     roundSprite: 1 # Corrects proportions of fonts and pause-screen lines, adjusts display closer to software.
@@ -45786,6 +45830,7 @@ SLUS-21292:
     textureInsideRT: 1
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
     roundSprite: 1 # Fixes font artifacts.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
   memcardFilters: # Allows import of Alter Code F clear data.
     - "SLUS-21292"
     - "SLUS-20937"
@@ -45888,7 +45933,7 @@ SLUS-21312:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    deinterlace: 4 # Game requires bob deinterlacing when auto.
+    deinterlace: 4 # Game requires bob de-interlacing when auto.
     halfPixelOffset: 1 # Fixes misalignment/bloom when upscaling.
 SLUS-21313:
   name: "Friends - The One with all the Trivia"
@@ -46481,7 +46526,7 @@ SLUS-21413:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
-    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
+    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLUS-21414:
   name: "Delta Force - Black Hawk Down - Team Sabre"
   region: "NTSC-U"
@@ -47346,7 +47391,7 @@ SLUS-21611:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
-    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the whole game.
+    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLUS-21612:
   name: "Legend of the Dragon"
   region: "NTSC-U"
@@ -47374,7 +47419,9 @@ SLUS-21615:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    roundSprite: 1 # Fixes font sizes.
     cpuFramebufferConversion: 1 # Fixes sepia-tone flashback sequences.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SLUS-21616:
   name: "Tony Hawk's Proving Ground"
   region: "NTSC-U"
@@ -48376,7 +48423,7 @@ SLUS-21838:
   compat: 5
   gsHWFixes:
     cpuFramebufferConversion: 1 # Fixes black with rainbow screen.
-    gpuPaletteConversion: 2 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLUS-21839:
   name: "Ski and Shoot"
   region: "NTSC-U"
@@ -48656,7 +48703,7 @@ SLUS-21902:
   clampModes:
     vuClampMode: 0
   gsHWFixes:
-    deinterlace: 8 # Game requires adaptive (or blend) tff deinterlacing instead of auto for the FMVs.
+    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the FMVs.
 SLUS-21904:
   name: "Teenage Mutant Ninja Turtles - Smash-Up"
   region: "NTSC-U"
@@ -49051,7 +49098,7 @@ SLUS-29003:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro stuttering.
+    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLUS-29004:
   name: "Unison & Dead or Alive 2 Hardcore [Demo]"
   region: "NTSC-U"
@@ -49737,7 +49784,7 @@ TCES-53286:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fix line in the sky.
+    roundSprite: 1 # Fix lines in the sky.
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
