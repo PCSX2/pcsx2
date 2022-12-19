@@ -1095,7 +1095,7 @@ void Pcsx2Config::USBOptions::LoadSave(SettingsWrapper& wrap)
 {
 	for (u32 i = 0; i < static_cast<u32>(Ports.size()); i++)
 	{
-		const std::string section(USBGetConfigSection(i));
+		const std::string section(USB::GetConfigSection(i));
 
 		std::string device = USB::DeviceTypeIndexToName(Ports[i].DeviceType);
 		wrap.Entry(section.c_str(), "Type", device, device);
@@ -1103,8 +1103,11 @@ void Pcsx2Config::USBOptions::LoadSave(SettingsWrapper& wrap)
 		if (wrap.IsLoading())
 			Ports[i].DeviceType = USB::DeviceTypeNameToIndex(device);
 
-		const std::string subtype_key(fmt::format("{}_subtype", USB::DeviceTypeIndexToName(Ports[i].DeviceType)));
-		wrap.Entry(section.c_str(), subtype_key.c_str(), Ports[i].DeviceSubtype);
+		if (Ports[i].DeviceType >= 0)
+		{
+			const std::string subtype_key(fmt::format("{}_subtype", USB::DeviceTypeIndexToName(Ports[i].DeviceType)));
+			wrap.Entry(section.c_str(), subtype_key.c_str(), Ports[i].DeviceSubtype);
+		}
 	}
 }
 

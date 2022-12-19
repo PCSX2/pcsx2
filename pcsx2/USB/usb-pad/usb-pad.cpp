@@ -838,9 +838,10 @@ namespace usb_pad
 		s->SetBindValue(bind_index, value);
 	}
 
-	std::vector<std::string> PadDevice::SubTypes() const
+	gsl::span<const char*> PadDevice::SubTypes() const
 	{
-		return {"Driving Force", "Driving Force Pro", "Driving Force Pro (rev11.02)", "GT Force"};
+		static const char* subtypes[] = {"Driving Force", "Driving Force Pro", "Driving Force Pro (rev11.02)", "GT Force"};
+		return subtypes;
 	}
 
 	gsl::span<const InputBindingInfo> PadDevice::Bindings(u32 subtype) const
@@ -900,7 +901,7 @@ namespace usb_pad
 		return nullptr;
 	}
 
-	std::vector<std::string> RBDrumKitDevice::SubTypes() const
+	gsl::span<const char*> RBDrumKitDevice::SubTypes() const
 	{
 		return {};
 	}
@@ -937,7 +938,7 @@ namespace usb_pad
 		return "BuzzDevice";
 	}
 
-	std::vector<std::string> BuzzDevice::SubTypes() const
+	gsl::span<const char*> BuzzDevice::SubTypes() const
 	{
 		return {};
 	}
@@ -1011,7 +1012,7 @@ namespace usb_pad
 		return "Keyboardmania";
 	}
 
-	std::vector<std::string> KeyboardmaniaDevice::SubTypes() const
+	gsl::span<const char*> KeyboardmaniaDevice::SubTypes() const
 	{
 		return {};
 	}

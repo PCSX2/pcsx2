@@ -352,7 +352,7 @@ namespace usb_pad
 		return "seamic";
 	}
 
-	std::vector<std::string> SeamicDevice::SubTypes() const
+	gsl::span<const char*> SeamicDevice::SubTypes() const
 	{
 		return {};
 	}

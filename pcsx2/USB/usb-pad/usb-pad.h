@@ -84,7 +84,7 @@ namespace usb_pad
 		void SetBindingValue(USBDevice* dev, u32 bind_index, float value) const override;
 		void InputDeviceConnected(USBDevice* dev, const std::string_view& identifier) const override;
 		void InputDeviceDisconnected(USBDevice* dev, const std::string_view& identifier) const override;
-		std::vector<std::string> SubTypes() const override;
+		gsl::span<const char*> SubTypes() const override;
 		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const override;
 		gsl::span<const SettingInfo> Settings(u32 subtype) const override;
 	};
@@ -94,7 +94,7 @@ namespace usb_pad
 	public:
 		const char* Name() const override;
 		const char* TypeName() const override;
-		std::vector<std::string> SubTypes() const override;
+		gsl::span<const char*> SubTypes() const override;
 		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const override;
 		gsl::span<const SettingInfo> Settings(u32 subtype) const override;
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
@@ -105,7 +105,7 @@ namespace usb_pad
 	public:
 		const char* Name() const;
 		const char* TypeName() const;
-		std::vector<std::string> SubTypes() const;
+		gsl::span<const char*> SubTypes() const;
 		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const;
 		gsl::span<const SettingInfo> Settings(u32 subtype) const;
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const;
@@ -116,7 +116,7 @@ namespace usb_pad
 	public:
 		const char* Name() const;
 		const char* TypeName() const;
-		std::vector<std::string> SubTypes() const;
+		gsl::span<const char*> SubTypes() const;
 		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const;
 		gsl::span<const SettingInfo> Settings(u32 subtype) const;
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const;
@@ -128,7 +128,7 @@ namespace usb_pad
 	public:
 		const char* Name() const;
 		const char* TypeName() const;
-		std::vector<std::string> SubTypes() const;
+		gsl::span<const char*> SubTypes() const;
 		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const;
 		gsl::span<const SettingInfo> Settings(u32 subtype) const;
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const;

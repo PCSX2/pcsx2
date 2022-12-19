@@ -40,7 +40,8 @@ namespace USB
 
 	std::vector<std::pair<std::string, std::string>> GetDeviceTypes();
 	const char* GetDeviceName(const std::string_view& device);
-	std::vector<std::string> GetDeviceSubtypes(const std::string_view& device);
+	const char* GetDeviceSubtypeName(const std::string_view& device, u32 subtype);
+	gsl::span<const char*> GetDeviceSubtypes(const std::string_view& device);
 	gsl::span<const InputBindingInfo> GetDeviceBindings(const std::string_view& device, u32 subtype);
 	gsl::span<const SettingInfo> GetDeviceSettings(const std::string_view& device, u32 subtype);
 
@@ -54,11 +55,14 @@ namespace USB
 	/// Called when an input device is disconnected.
 	void InputDeviceDisconnected(const std::string_view& identifier);
 
+	std::string GetConfigSection(int port);
 	std::string GetConfigDevice(const SettingsInterface& si, u32 port);
+	void SetConfigDevice(SettingsInterface& si, u32 port, const char* devname);
 	u32 GetConfigSubType(const SettingsInterface& si, u32 port, const std::string_view& devname);
+	void SetConfigSubType(SettingsInterface& si, u32 port, const std::string_view& devname, u32 subtype);
 
 	/// Returns the configuration key for the specified bind and device type.
-	std::string GetConfigBindKey(const std::string_view& device, const std::string_view& bind_name);
+	std::string GetConfigSubKey(const std::string_view& device, const std::string_view& bind_name);
 
 	/// Performs automatic controller mapping with the provided list of generic mappings.
 	bool MapDevice(SettingsInterface& si, u32 port, const std::vector<std::pair<GenericInputBinding, std::string>>& mapping);
@@ -81,8 +85,6 @@ namespace USB
 	/// Reads a device-specific configuration string.
 	std::string GetConfigString(SettingsInterface& si, u32 port, const char* devname, const char* key, const char* default_value = "");
 } // namespace USB
-
-std::string USBGetConfigSection(int port);
 
 struct WindowInfo;
 

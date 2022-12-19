@@ -875,7 +875,6 @@ QIcon USBDeviceWidget::getIcon() const
 
 void USBDeviceWidget::populateDeviceTypes()
 {
-	m_ui.deviceType->addItem(qApp->translate("USB", USB::GetDeviceName("None")), QStringLiteral("None"));
 	for (const auto& [name, display_name] : USB::GetDeviceTypes())
 		m_ui.deviceType->addItem(QString::fromStdString(display_name), QString::fromStdString(name));
 }
@@ -888,8 +887,8 @@ void USBDeviceWidget::populatePages()
 	{
 		QSignalBlocker sb(m_ui.deviceSubtype);
 		m_ui.deviceSubtype->clear();
-		for (const std::string& subtype : USB::GetDeviceSubtypes(m_device_type))
-			m_ui.deviceSubtype->addItem(qApp->translate("USB", subtype.c_str()));
+		for (const char* subtype : USB::GetDeviceSubtypes(m_device_type))
+			m_ui.deviceSubtype->addItem(qApp->translate("USB", subtype));
 		m_ui.deviceSubtype->setCurrentIndex(m_device_subtype);
 		m_ui.deviceSubtype->setVisible(m_ui.deviceSubtype->count() > 0);
 	}
@@ -1085,7 +1084,7 @@ QIcon USBBindingWidget::getIcon() const
 
 std::string USBBindingWidget::getBindingKey(const char* binding_name) const
 {
-	return USB::GetConfigBindKey(getDeviceType(), binding_name);
+	return USB::GetConfigSubKey(getDeviceType(), binding_name);
 }
 
 void USBBindingWidget::createWidgets(gsl::span<const InputBindingInfo> bindings)

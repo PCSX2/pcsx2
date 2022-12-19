@@ -60,7 +60,7 @@ public:
 
 	virtual const char* Name() const = 0;
 	virtual const char* TypeName() const = 0;
-	virtual std::vector<std::string> SubTypes() const;
+	virtual gsl::span<const char*> SubTypes() const;
 	virtual gsl::span<const InputBindingInfo> Bindings(u32 subtype) const;
 	virtual gsl::span<const SettingInfo> Settings(u32 subtype) const;
 
