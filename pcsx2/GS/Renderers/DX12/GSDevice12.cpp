@@ -2019,7 +2019,7 @@ void GSDevice12::SetUtilityTexture(GSTexture* dtex, const D3D12::DescriptorHandl
 		}
 	}
 
-	if (m_utility_sampler_gpu != sampler)
+	if (m_utility_sampler_cpu != sampler)
 	{
 		m_utility_sampler_cpu = sampler;
 		m_dirty_flags |= DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE;
