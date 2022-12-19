@@ -475,7 +475,7 @@ namespace usb_eyetoy
 		const char* TypeName() const override;
 		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
 		void UpdateSettings(USBDevice* dev, SettingsInterface& si) const override;
-		std::vector<std::string> SubTypes() const override;
+		gsl::span<const char*> SubTypes() const override;
 		gsl::span<const SettingInfo> Settings(u32 subtype) const override;
 	};
 

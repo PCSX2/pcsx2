@@ -701,11 +701,11 @@ void InputManager::AddUSBBindings(SettingsInterface& si, u32 port)
 	if (device.empty() || device == "None")
 		return;
 
-	const std::string section(USBGetConfigSection(port));
+	const std::string section(USB::GetConfigSection(port));
 	const u32 subtype = USB::GetConfigSubType(si, port, device);
 	for (const InputBindingInfo& bi : USB::GetDeviceBindings(device, subtype))
 	{
-		const std::string bind_name(USB::GetConfigBindKey(device, bi.name));
+		const std::string bind_name(USB::GetConfigSubKey(device, bi.name));
 
 		switch (bi.bind_type)
 		{

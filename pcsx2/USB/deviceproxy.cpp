@@ -28,7 +28,7 @@ RegisterDevice* RegisterDevice::registerDevice = nullptr;
 
 DeviceProxy::~DeviceProxy() = default;
 
-std::vector<std::string> DeviceProxy::SubTypes() const
+gsl::span<const char*> DeviceProxy::SubTypes() const
 {
 	return {};
 }

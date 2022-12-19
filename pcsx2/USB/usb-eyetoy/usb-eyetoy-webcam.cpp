@@ -513,9 +513,10 @@ namespace usb_eyetoy
 		// TODO: Update device name
 	}
 
-	std::vector<std::string> EyeToyWebCamDevice::SubTypes() const
+	gsl::span<const char*> EyeToyWebCamDevice::SubTypes() const
 	{
-		return {"Sony EyeToy", "Konami Capture Eye"};
+		static const char* subtypes[] = {"Sony EyeToy", "Konami Capture Eye"};
+		return subtypes;
 	}
 
 	gsl::span<const SettingInfo> EyeToyWebCamDevice::Settings(u32 subtype) const

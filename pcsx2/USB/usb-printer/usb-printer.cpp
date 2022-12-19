@@ -361,14 +361,9 @@ namespace usb_printer
 		return true;
 	}
 
-	std::vector<std::string> PrinterDevice::SubTypes() const
+	gsl::span<const char*> PrinterDevice::SubTypes() const
 	{
-		std::vector<std::string> ret;
-		for (uint32_t i = 0; i < sizeof(sPrinters) / sizeof(sPrinters[0]); i++)
-		{
-			ret.push_back(sPrinters[i].commercial_name);
-		}
-		return ret;
+		return sPrinterNames;
 	}
 
 } // namespace usb_printer
