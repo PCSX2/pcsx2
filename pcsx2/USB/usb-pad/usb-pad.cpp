@@ -62,6 +62,25 @@ namespace usb_pad
 		"",
 		"KONAMI"};
 
+	static int MapSteeringCurveExponentOptionToExponent(const std::string& option)
+	{
+		int exponent = 0;
+		if (option == "Low")
+		{
+			exponent = 1;
+		}
+		else if (option == "Medium")
+		{
+			exponent = 2;
+		}
+		else if (option == "High")
+		{
+			exponent = 3;
+		}
+
+		return exponent;
+	}
+
 	static gsl::span<const InputBindingInfo> GetWheelBindings(PS2WheelTypes wt)
 	{
 		switch (wt)
@@ -153,6 +172,7 @@ namespace usb_pad
 	{
 		if (wt <= WT_GT_FORCE)
 		{
+			static constexpr const char* SteeringCurveExponentOptions[] = {"Off", "Low", "Medium", "High", nullptr};
 			static constexpr const SettingInfo info[] = {
 				{SettingInfo::Type::Integer, "SteeringSmoothing", "Steering Smoothing",
 					"Smooths out changes in steering to the specified percentage per poll. Needed for using keyboards.",
@@ -160,6 +180,9 @@ namespace usb_pad
 				{SettingInfo::Type::Integer, "SteeringDeadzone", "Steering Deadzone",
 					"Steering axis deadzone for pads or non self centering wheels.",
 					"0", "0", "100", "1", "%d%%", nullptr, nullptr, 1.0f},
+				{SettingInfo::Type::StringList, "SteeringCurveExponent", "Steering Damping",
+					"Applies power curve filter to steering axis values. Dampens small inputs.",
+					"Off", nullptr, nullptr, nullptr, nullptr, SteeringCurveExponentOptions}
 			};
 
 			return info;
@@ -211,6 +234,7 @@ namespace usb_pad
 		}
 
 		steering_deadzone = (steering_range * USB::GetConfigInt(si, port, devname, "SteeringDeadzone", 0)) / 100;
+		steering_curve_exponent = MapSteeringCurveExponentOptionToExponent(USB::GetConfigString(si, port, devname, "SteeringCurveExponent", "Off"));
 
 		if (HasFF())
 		{
@@ -444,12 +468,20 @@ namespace usb_pad
 		}
 	}
 
-	s16 PadState::ApplySteeringAxisDeadzone(float value)
+	s16 PadState::ApplySteeringAxisModifiers(float value)
 	{
 		const s16 raw_steering = static_cast<s16>(std::lroundf(value * static_cast<float>(steering_range)));
 		const s16 deadzone_offset = static_cast<s16>(std::lroundf(value * static_cast<float>(steering_deadzone)));
-
-		return std::max((raw_steering - steering_deadzone + deadzone_offset ), 0);
+		const s16 deadzone_modified_steering = std::max((raw_steering - steering_deadzone + deadzone_offset), 0);
+		
+		if (steering_curve_exponent)
+		{
+			return std::pow(deadzone_modified_steering, steering_curve_exponent + 1) / std::pow(steering_range, steering_curve_exponent);
+		}
+		else
+		{
+			return deadzone_modified_steering;
+		}
 	}
 
 	void PadState::SetBindValue(u32 bind_index, float value)
@@ -457,12 +489,12 @@ namespace usb_pad
 		switch (bind_index)
 		{
 			case CID_STEERING_L:
-				data.steering_left = ApplySteeringAxisDeadzone(value);
+				data.steering_left = ApplySteeringAxisModifiers(value);
 				UpdateSteering();
 				break;
 
 			case CID_STEERING_R:
-				data.steering_right = ApplySteeringAxisDeadzone(value);
+				data.steering_right = ApplySteeringAxisModifiers(value);
 				UpdateSteering();
 				break;
 
