@@ -15,6 +15,7 @@
 
 #pragma once
 #include "USB/qemu-usb/qusb.h"
+#include <memory>
 #include <string>
 #include <vector>
 #include <utility>
