@@ -16,6 +16,7 @@
 #pragma once
 #include "common/HeapArray.h"
 #include "common/Pcsx2Defs.h"
+#include <array>
 #include <cstring>
 #include <deque>
 #include <string>
