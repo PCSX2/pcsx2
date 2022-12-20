@@ -123,6 +123,9 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
+	// make sure the game list isn't refreshing, because it's on a separate thread
+	cancelGameListRefresh();
+
 	// we compare here, since recreate destroys the window later
 	if (g_main_window == this)
 		g_main_window = nullptr;
