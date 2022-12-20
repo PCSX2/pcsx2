@@ -67,7 +67,8 @@ namespace usb_lightgun
 	static constexpr const GameConfig s_game_config[] = {
 		{"SLUS-20485", 90.25, 92.5, 390, 132, 640, 240}, // Dino Stalker (U)
 		{"SLUS-20389", 89.25, 93.5, 422, 141, 640, 240}, // Endgame (U)
-		{"SLES-52620", 90.5, 114.75, 390, 146, 640, 256}, // Guncom 2 (E)
+		{"SLES-50936", 112.00, 100, 320, 120, 512, 256}, // Endgame (E) gcon needs usb port 2
+		{"SLES-52620", 89.5, 112.30, 390, 147, 640, 256}, // Guncom 2 (E)
 		{"SLES-51289", 84.5, 89.0, 456, 164, 640, 256}, // Gunfighter 2 - Jesse James (E)
 		{"SLPS-25165", 90.25, 98.0, 390, 138, 640, 240}, // Gunvari Collection (J) (480i)
 		// {"SLPS-25165", 86.75, 96.0, 454, 164, 640, 256}, // Gunvari Collection (J) (480p)
@@ -83,8 +84,8 @@ namespace usb_lightgun
 		{"SLUS-20927", 90.25, 99.0, 390, 153, 640, 240}, // Time Crisis - Crisis Zone (U) (480i)
 		// {"SLUS-20927", 94.5, 104.75, 423, 407, 768, 768}, // Time Crisis - Crisis Zone (U) (480p)
 		{"SLUS-20221", 97.5, 104.75, 423, 407, 768, 768}, // Vampire Night (U)
-		{"SCES-50411", 90.25, 102.75, 421, 138, 640, 256}, // Vampire Night (E)
-		{"SLES-51229", 88.75, 100.0, 454, 164, 640, 256}, // Virtua Cop - Elite Edition (E,J) (480i)
+		{"SCES-50411", 89.80, 99.90, 421, 138, 640, 256}, // Vampire Night (E)
+		{"SLES-51229", 110.15, 100.0, 433, 159, 512, 256}, // Virtua Cop - Elite Edition (E,J) (480i)
 		// {"SLES-51229", 85.75, 92.0, 456, 164, 640, 256}, // Virtua Cop - Elite Edition (E,J) (480p)
 	};
 
