@@ -65,9 +65,12 @@ namespace usb_lightgun
 	};
 
 	static constexpr const GameConfig s_game_config[] = {
+		{"SLES-50930", 90.25, 94.5, 390, 132, 640, 256}, // Dino Stalker (E, English)
+		{"SLES-51095", 90.25, 94.5, 390, 132, 640, 256}, // Dino Stalker (E, French)
+		{"SLES-51096", 90.25, 94.5, 390, 132, 640, 256}, // Dino Stalker (E, German)
 		{"SLUS-20485", 90.25, 92.5, 390, 132, 640, 240}, // Dino Stalker (U)
 		{"SLUS-20389", 89.25, 93.5, 422, 141, 640, 240}, // Endgame (U)
-		{"SLES-50936", 112.00, 100, 320, 120, 512, 256}, // Endgame (E) gcon needs usb port 2
+		{"SLES-50936", 112.00, 100, 320, 120, 512, 256}, // Endgame (E) (Guncon2 needs to be connected to USB port 2)
 		{"SLES-52620", 89.5, 112.30, 390, 147, 640, 256}, // Guncom 2 (E)
 		{"SLES-51289", 84.5, 89.0, 456, 164, 640, 256}, // Gunfighter 2 - Jesse James (E)
 		{"SLPS-25165", 90.25, 98.0, 390, 138, 640, 240}, // Gunvari Collection (J) (480i)
@@ -75,16 +78,18 @@ namespace usb_lightgun
 		{"SCES-50889", 90.25, 94.5, 390, 169, 640, 256}, // Ninja Assault (E)
 		{"SLUS-20492", 90.25, 92.5, 390, 132, 640, 240}, // Ninja Assault (U)
 		{"SLES-50650", 84.75, 96.0, 454, 164, 640, 240}, // Resident Evil Survivor 2 (E)
-		{"SLES-51448", 90.25, 93.5, 420, 132, 640, 240}, // Resident Evil - Dead Aim (U)
+		{"SLES-51448", 90.25, 95.0, 420, 132, 640, 240}, // Resident Evil - Dead Aim (E)
+		{"SLUS-20669", 90.25, 93.5, 420, 132, 640, 240}, // Resident Evil - Dead Aim (U)
 		{"SLUS-20619", 90.25, 91.75, 453, 154, 640, 256}, // Starsky & Hutch (U)
 		{"SCES-50300", 90.25, 102.75, 390, 138, 640, 256}, // Time Crisis II (E)
 		{"SLUS-20219", 90.25, 97.5, 390, 154, 640, 240}, // Time Crisis 2 (U)
 		{"SCES-51844", 90.25, 102.75, 390, 138, 640, 256}, // Time Crisis 3 (E)
 		{"SLUS-20645", 90.25, 97.5, 390, 154, 640, 240}, // Time Crisis 3 (U)
+		{"SCES-52530", 90.25, 99.0, 390, 153, 640, 256}, // Crisis Zone (E)
 		{"SLUS-20927", 90.25, 99.0, 390, 153, 640, 240}, // Time Crisis - Crisis Zone (U) (480i)
 		// {"SLUS-20927", 94.5, 104.75, 423, 407, 768, 768}, // Time Crisis - Crisis Zone (U) (480p)
-		{"SLUS-20221", 97.5, 104.75, 423, 407, 768, 768}, // Vampire Night (U)
 		{"SCES-50411", 89.80, 99.90, 421, 138, 640, 256}, // Vampire Night (E)
+		{"SLUS-20221", 89.80, 102.50, 422, 124, 640, 228}, // Vampire Night (U)
 		{"SLES-51229", 110.15, 100.0, 433, 159, 512, 256}, // Virtua Cop - Elite Edition (E,J) (480i)
 		// {"SLES-51229", 85.75, 92.0, 456, 164, 640, 256}, // Virtua Cop - Elite Edition (E,J) (480p)
 	};
