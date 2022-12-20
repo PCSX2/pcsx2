@@ -636,7 +636,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 				else if (si.options)
 				{
 					for (u32 i = 0; si.options[i] != nullptr; i++)
-						cb->addItem(qApp->translate(translation_ctx, si.options[i]));
+						cb->addItem(qApp->translate(translation_ctx, si.options[i]), QString::fromUtf8(si.options[i]));
 				}
 				SettingWidgetBinder::BindWidgetToStringSetting(sif, cb, m_config_section, std::move(key_name), si.StringDefaultValue());
 				layout->addWidget(new QLabel(qApp->translate(translation_ctx, si.display_name), widget_parent), current_row, 0);
