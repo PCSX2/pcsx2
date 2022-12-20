@@ -71,11 +71,11 @@ void IOCtlSrc::SetSpindleSpeed(bool restore_defaults) const
 	int ioctl_code = m_media_type >= 0 ? DKIOCDVDSETSPEED : DKIOCCDSETSPEED;
 	if (ioctl(m_device, ioctl_code, &speed) == -1)
 	{
-		fprintf(stderr, " * CDVD: Failed to set spindle speed: %s\n", strerror(errno));
+		DevCon.Warning("CDVD: Failed to set spindle speed: %s", strerror(errno));
 	}
 	else if (!restore_defaults)
 	{
-		printf(" * CDVD: Spindle speed set to %d\n", speed);
+		DevCon.WriteLn("CDVD: Spindle speed set to %d", speed);
 	}
 }
 
@@ -107,10 +107,10 @@ bool IOCtlSrc::ReadSectors2048(u32 sector, u32 count, u8* buffer) const
 		return true;
 
 	if (bytes_read == -1)
-		fprintf(stderr, " * CDVD read sectors %u-%u failed: %s\n",
+		DevCon.Warning("CDVD: read sectors %u-%u failed: %s",
 			sector, sector + count - 1, strerror(errno));
 	else
-		fprintf(stderr, " * CDVD read sectors %u-%u: %zd bytes read, %zd bytes expected\n",
+		DevCon.Warning("CDVD: read sectors %u-%u: %zd bytes read, %zd bytes expected",
 			sector, sector + count - 1, bytes_read, bytes_to_read);
 	return false;
 }
@@ -129,7 +129,7 @@ bool IOCtlSrc::ReadSectors2352(u32 sector, u32 count, u8* buffer) const
 		desc.bufferLength = 2352;
 		if (ioctl(m_device, DKIOCCDREAD, &desc) == -1)
 		{
-			fprintf(stderr, " * CDVD DKIOCCDREAD sector %u failed: %s\n",
+			DevCon.Warning("CDVD: DKIOCCDREAD sector %u failed: %s",
 				sector + i, strerror(errno));
 			return false;
 		}
@@ -214,7 +214,7 @@ bool IOCtlSrc::ReadCDInfo()
 
 	if (ioctl(m_device, DKIOCCDREADTOC, &cdrt) == -1)
 	{
-		fprintf(stderr, "%s\n", strerror(errno));
+		DevCon.Warning("CDVD: DKIOCCDREADTOC failed: %s\n", strerror(errno));
 		return false;
 	}
 
