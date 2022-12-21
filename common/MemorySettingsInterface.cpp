@@ -32,7 +32,7 @@ void MemorySettingsInterface::Clear()
 
 bool MemorySettingsInterface::GetIntValue(const char* section, const char* key, s32* value) const
 {
-	const auto sit = m_sections.find(section);
+	const auto sit = UnorderedStringMapFind(m_sections, section);
 	if (sit == m_sections.end())
 		return false;
 
@@ -50,11 +50,11 @@ bool MemorySettingsInterface::GetIntValue(const char* section, const char* key, 
 
 bool MemorySettingsInterface::GetUIntValue(const char* section, const char* key, u32* value) const
 {
-	const auto sit = m_sections.find(section);
+	const auto sit = UnorderedStringMapFind(m_sections, section);
 	if (sit == m_sections.end())
 		return false;
 
-	const auto iter = sit->second.find(key);
+	const auto iter = UnorderedStringMultiMapFind(sit->second, key);
 	if (iter == sit->second.end())
 		return false;
 
@@ -68,11 +68,11 @@ bool MemorySettingsInterface::GetUIntValue(const char* section, const char* key,
 
 bool MemorySettingsInterface::GetFloatValue(const char* section, const char* key, float* value) const
 {
-	const auto sit = m_sections.find(section);
+	const auto sit = UnorderedStringMapFind(m_sections, section);
 	if (sit == m_sections.end())
 		return false;
 
-	const auto iter = sit->second.find(key);
+	const auto iter = UnorderedStringMultiMapFind(sit->second, key);
 	if (iter == sit->second.end())
 		return false;
 
@@ -86,11 +86,11 @@ bool MemorySettingsInterface::GetFloatValue(const char* section, const char* key
 
 bool MemorySettingsInterface::GetDoubleValue(const char* section, const char* key, double* value) const
 {
-	const auto sit = m_sections.find(section);
+	const auto sit = UnorderedStringMapFind(m_sections, section);
 	if (sit == m_sections.end())
 		return false;
 
-	const auto iter = sit->second.find(key);
+	const auto iter = UnorderedStringMultiMapFind(sit->second, key);
 	if (iter == sit->second.end())
 		return false;
 
@@ -104,11 +104,11 @@ bool MemorySettingsInterface::GetDoubleValue(const char* section, const char* ke
 
 bool MemorySettingsInterface::GetBoolValue(const char* section, const char* key, bool* value) const
 {
-	const auto sit = m_sections.find(section);
+	const auto sit = UnorderedStringMapFind(m_sections, section);
 	if (sit == m_sections.end())
 		return false;
 
-	const auto iter = sit->second.find(key);
+	const auto iter = UnorderedStringMultiMapFind(sit->second, key);
 	if (iter == sit->second.end())
 		return false;
 
@@ -122,11 +122,11 @@ bool MemorySettingsInterface::GetBoolValue(const char* section, const char* key,
 
 bool MemorySettingsInterface::GetStringValue(const char* section, const char* key, std::string* value) const
 {
-	const auto sit = m_sections.find(section);
+	const auto sit = UnorderedStringMapFind(m_sections, section);
 	if (sit == m_sections.end())
 		return false;
 
-	const auto iter = sit->second.find(key);
+	const auto iter = UnorderedStringMultiMapFind(sit->second, key);
 	if (iter == sit->second.end())
 		return false;
 
@@ -164,13 +164,33 @@ void MemorySettingsInterface::SetStringValue(const char* section, const char* ke
 	SetValue(section, key, value);
 }
 
+std::vector<std::pair<std::string, std::string>> MemorySettingsInterface::GetKeyValueList(const char* section) const
+{
+	std::vector<std::pair<std::string, std::string>> output;
+	auto sit = UnorderedStringMapFind(m_sections, section);
+	if (sit != m_sections.end())
+	{
+		for (const auto& it : sit->second)
+			output.emplace_back(it.first, it.second);
+	}
+	return output;
+}
+
+void MemorySettingsInterface::SetKeyValueList(const char* section, const std::vector<std::pair<std::string, std::string>>& items)
+{
+	auto sit = UnorderedStringMapFind(m_sections, section);
+	sit->second.clear();
+	for (const auto& [key, value] : items)
+		sit->second.emplace(key, value);
+}
+
 void MemorySettingsInterface::SetValue(const char* section, const char* key, std::string value)
 {
-	auto sit = m_sections.find(section);
+	auto sit = UnorderedStringMapFind(m_sections, section);
 	if (sit == m_sections.end())
 		sit = m_sections.emplace(std::make_pair(std::string(section), KeyMap())).first;
 
-	const auto range = sit->second.equal_range(key);
+	const auto range = UnorderedStringMultiMapEqualRange(sit->second, key);
 	if (range.first == sit->second.end())
 	{
 		sit->second.emplace(std::string(key), std::move(value));
@@ -193,10 +213,10 @@ std::vector<std::string> MemorySettingsInterface::GetStringList(const char* sect
 {
 	std::vector<std::string> ret;
 
-	const auto sit = m_sections.find(section);
+	const auto sit = UnorderedStringMapFind(m_sections, section);
 	if (sit != m_sections.end())
 	{
-		const auto range = sit->second.equal_range(key);
+		const auto range = UnorderedStringMultiMapEqualRange(sit->second, key);
 		for (auto iter = range.first; iter != range.second; ++iter)
 			ret.emplace_back(iter->second);
 	}
@@ -206,11 +226,11 @@ std::vector<std::string> MemorySettingsInterface::GetStringList(const char* sect
 
 void MemorySettingsInterface::SetStringList(const char* section, const char* key, const std::vector<std::string>& items)
 {
-	auto sit = m_sections.find(section);
+	auto sit = UnorderedStringMapFind(m_sections, section);
 	if (sit == m_sections.end())
 		sit = m_sections.emplace(std::make_pair(std::string(section), KeyMap())).first;
 
-	const auto range = sit->second.equal_range(key);
+	const auto range = UnorderedStringMultiMapEqualRange(sit->second, key);
 	for (auto iter = range.first; iter != range.second;)
 		sit->second.erase(iter++);
 
@@ -221,11 +241,11 @@ void MemorySettingsInterface::SetStringList(const char* section, const char* key
 
 bool MemorySettingsInterface::RemoveFromStringList(const char* section, const char* key, const char* item)
 {
-	auto sit = m_sections.find(section);
+	auto sit = UnorderedStringMapFind(m_sections, section);
 	if (sit == m_sections.end())
 		sit = m_sections.emplace(std::make_pair(std::string(section), KeyMap())).first;
 
-	const auto range = sit->second.equal_range(key);
+	const auto range = UnorderedStringMultiMapEqualRange(sit->second, key);
 	bool result = false;
 	for (auto iter = range.first; iter != range.second;)
 	{
@@ -245,11 +265,11 @@ bool MemorySettingsInterface::RemoveFromStringList(const char* section, const ch
 
 bool MemorySettingsInterface::AddToStringList(const char* section, const char* key, const char* item)
 {
-	auto sit = m_sections.find(section);
+	auto sit = UnorderedStringMapFind(m_sections, section);
 	if (sit == m_sections.end())
 		sit = m_sections.emplace(std::make_pair(std::string(section), KeyMap())).first;
 
-	const auto range = sit->second.equal_range(key);
+	const auto range = UnorderedStringMultiMapEqualRange(sit->second, key);
 	for (auto iter = range.first; iter != range.second; ++iter)
 	{
 		if (iter->second == item)
@@ -262,7 +282,7 @@ bool MemorySettingsInterface::AddToStringList(const char* section, const char* k
 
 bool MemorySettingsInterface::ContainsValue(const char* section, const char* key) const
 {
-	const auto sit = m_sections.find(section);
+	const auto sit = UnorderedStringMapFind(m_sections, section);
 	if (sit == m_sections.end())
 		return false;
 
@@ -271,18 +291,18 @@ bool MemorySettingsInterface::ContainsValue(const char* section, const char* key
 
 void MemorySettingsInterface::DeleteValue(const char* section, const char* key)
 {
-	auto sit = m_sections.find(section);
+	auto sit = UnorderedStringMapFind(m_sections, section);
 	if (sit == m_sections.end())
 		return;
 
-	const auto range = sit->second.equal_range(key);
+	const auto range = UnorderedStringMultiMapEqualRange(sit->second, key);
 	for (auto iter = range.first; iter != range.second;)
 		sit->second.erase(iter++);
 }
 
 void MemorySettingsInterface::ClearSection(const char* section)
 {
-	auto sit = m_sections.find(section);
+	auto sit = UnorderedStringMapFind(m_sections, section);
 	if (sit == m_sections.end())
 		return;
 
