@@ -156,7 +156,6 @@ for ARG in "$@"; do
         --lto               ) flags="$flags -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE" ;;
         --pgo-optimize      ) flags="$flags -DUSE_PGO_OPTIMIZE=TRUE" ;;
         --pgo-generate      ) flags="$flags -DUSE_PGO_GENERATE=TRUE" ;;
-        --no-portaudio      ) flags="$flags -DPORTAUDIO_API=FALSE" ;;
         --no-simd           ) flags="$flags -DDISABLE_ADVANCE_SIMD=TRUE" ;;
         --no-trans          ) flags="$flags -DNO_TRANSLATION=TRUE" ;;
         --vtune             ) flags="$flags -DUSE_VTUNE=TRUE" ;;
@@ -173,9 +172,6 @@ for ARG in "$@"; do
             echo
             echo "--clean           : Do a clean build. (Remove anything in the build directory)"
             echo "--no-simd         : Only allow sse2."
-            echo
-            echo "** Distribution Compatibilities **"
-            echo "--no-portaudio    : Skip portaudio for SPU2."
             echo
             echo "** Expert Developer option **"
             echo "--gtk2            : use GTK 2 instead of GTK 3."
