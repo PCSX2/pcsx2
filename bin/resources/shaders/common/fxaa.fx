@@ -68,10 +68,12 @@ static constexpr sampler MAIN_SAMPLER(coord::normalized, address::clamp_to_edge,
 // pass to compute the values, which would be slower than the extra shader loads.
 
 #if (SHADER_MODEL >= 0x500)
+#undef FXAA_HLSL_5
 #define FXAA_HLSL_5 1
 #define FXAA_GATHER4_ALPHA 0
 
 #elif (SHADER_MODEL >= 0x400)
+#undef FXAA_HLSL_4
 #define FXAA_HLSL_4 1
 #define FXAA_GATHER4_ALPHA 0
 
