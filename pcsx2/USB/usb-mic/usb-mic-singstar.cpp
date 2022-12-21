@@ -915,12 +915,12 @@ std::unique_ptr<AudioDevice> AudioDevice::CreateDevice(u32 port, AudioDir dir, u
 	return CreateNoopDevice(port, dir, channels);
 }
 
-std::vector<std::string> AudioDevice::GetInputDeviceList()
+std::vector<std::pair<std::string, std::string>> AudioDevice::GetInputDeviceList()
 {
 	return {};
 }
 
-std::vector<std::string> AudioDevice::GetOutputDeviceList()
+std::vector<std::pair<std::string, std::string>> AudioDevice::GetOutputDeviceList()
 {
 	return {};
 }
