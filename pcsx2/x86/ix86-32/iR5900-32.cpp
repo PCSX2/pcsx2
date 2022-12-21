@@ -1835,6 +1835,16 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 		bool check_branch_delay = false;
 		switch (_Opcode_)
 		{
+			case 0:
+				switch (_Funct_)
+				{
+					case 8: // jr
+					case 9: // jalr
+						check_branch_delay = true;
+						break;
+				}
+				break;
+
 			case 1:
 				switch (_Rt_)
 				{
@@ -1847,6 +1857,7 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 					case 0x12:
 					case 0x13:
 						check_branch_delay = true;
+						break;
 				}
 				break;
 
@@ -1861,6 +1872,7 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 			case 0x16:
 			case 0x17:
 				check_branch_delay = true;
+				break;
 		}
 		// Check for branch in delay slot, new code by FlatOut.
 		// Gregory tested this in 2017 using the ps2autotests suite and remarked "So far we return 1 (even with this PR), and the HW 2.
