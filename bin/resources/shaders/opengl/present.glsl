@@ -54,6 +54,11 @@ vec4 sample_c()
 	return texture(TextureSampler, PSin_t);
 }
 
+vec4 sample_c(vec2 uv)
+{
+	return texture(TextureSampler, uv);
+}
+
 vec4 ps_crt(uint i)
 {
 	vec4 mask[4] = vec4[4](
@@ -382,6 +387,46 @@ void ps_filter_lottes()
 	SV_Target0 = LottesCRTPass();
 }
 
+#endif
+
+#ifdef ps_4x_rgss
+void ps_4x_rgss()
+{
+	vec2 dxy = vec2(dFdx(PSin_t.x), dFdy(PSin_t.y));
+	vec3 color = vec3(0);
+
+	float s = 1.0/8.0;
+	float l = 3.0/8.0;
+
+	color += sample_c(PSin_t + vec2( s, l) * dxy).rgb;
+	color += sample_c(PSin_t + vec2( l,-s) * dxy).rgb;
+	color += sample_c(PSin_t + vec2(-s,-l) * dxy).rgb;
+	color += sample_c(PSin_t + vec2(-l, s) * dxy).rgb;
+
+	SV_Target0 = vec4(color * 0.25,1);
+}
+#endif
+
+#ifdef ps_automagical_supersampling
+void ps_automagical_supersampling()
+{
+	vec2 ratio = (u_source_size / u_target_size) * 0.5;
+	vec2 steps = floor(ratio);
+	vec3 col = sample_c(PSin_t).rgb;
+	float div = 1;
+
+	for (float y = 0; y < steps.y; y++)
+	{
+		for (float x = 0; x < steps.x; x++)
+		{
+			vec2 offset = vec2(x,y) - ratio * 0.5;
+			col += sample_c(PSin_t + offset * u_rcp_source_resolution * 2.0).rgb;
+			div++;
+		}
+	}
+
+	SV_Target0 = vec4(col / div, 1);
+}
 #endif
 
 #endif

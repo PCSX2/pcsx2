@@ -328,3 +328,40 @@ fragment float4 ps_filter_lottes(ConvertShaderData data [[stage_in]], ConvertPSR
 {
 	return LottesCRTPass(res, uniform).Run(data.p);
 }
+
+fragment float4 ps_4x_rgss(ConvertShaderData data [[stage_in]], ConvertPSRes res)
+{
+	float2 dxy = float2(dfdx(data.t.x), dfdy(data.t.y));
+	float3 color = 0;
+
+	float s = 1.0/8.0;
+	float l = 3.0/8.0;
+
+	color += res.sample(data.t + float2( s, l) * dxy).rgb;
+	color += res.sample(data.t + float2( l,-s) * dxy).rgb;
+	color += res.sample(data.t + float2(-s,-l) * dxy).rgb;
+	color += res.sample(data.t + float2(-l, s) * dxy).rgb;
+
+	return float4(color * 0.25,1);
+}
+
+fragment float4 ps_automagical_supersampling(ConvertShaderData data [[stage_in]], ConvertPSRes res,
+	constant GSMTLPresentPSUniform& cb [[buffer(GSMTLBufferIndexUniforms)]])
+{
+	float2 ratio = (cb.source_size / cb.target_size) * 0.5;
+	float2 steps = floor(ratio);
+	float3 col = res.sample(data.t).rgb;
+	float div = 1;
+
+	for (float y = 0; y < steps.y; y++)
+	{
+		for (float x = 0; x < steps.x; x++)
+		{
+			float2 offset = float2(x,y) - ratio * 0.5;
+			col += res.sample(data.t + offset * cb.rcp_source_resolution * 2.0).rgb;
+			div++;
+		}
+	}
+
+	return float4(col / div, 1);
+}

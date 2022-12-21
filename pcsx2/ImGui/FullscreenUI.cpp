@@ -3349,7 +3349,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			1, 100, "%d", shadeboost_active);
 
 		static constexpr const char* s_tv_shaders[] = {
-			"None (Default)", "Scanline Filter", "Diagonal Filter", "Triangular Filter", "Wave Filter", "Lottes CRT"};
+			"None (Default)", "Scanline Filter", "Diagonal Filter", "Triangular Filter", "Wave Filter", "Lottes CRT", "4xRGSS", "NxAGSS"};
 		DrawIntListSetting(
 			bsi, "TV Shaders", "Selects post-processing TV shader.", "EmuCore/GS", "TVShader", 0, s_tv_shaders, std::size(s_tv_shaders));
 	}

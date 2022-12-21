@@ -395,4 +395,46 @@ PS_OUTPUT ps_filter_lottes(PS_INPUT input)
 	return output;
 }
 
+PS_OUTPUT ps_4x_rgss(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	float2 dxy = float2(ddx(input.t.x), ddy(input.t.y));
+	float3 color = 0;
+
+	float s = 1.0/8.0;
+	float l = 3.0/8.0;
+
+	color += sample_c(input.t + float2( s, l) * dxy).rgb;
+	color += sample_c(input.t + float2( l,-s) * dxy).rgb;
+	color += sample_c(input.t + float2(-s,-l) * dxy).rgb;
+	color += sample_c(input.t + float2(-l, s) * dxy).rgb;
+
+	output.c = float4(color * 0.25,1);
+	return output;
+}
+
+PS_OUTPUT ps_automagical_supersampling(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	float2 ratio = (u_source_size / u_target_size) * 0.5;
+	float2 steps = floor(ratio);
+	float3 col = sample_c(input.t).rgb;
+	float div = 1;
+
+	for (float y = 0; y < steps.y; y++)
+	{
+		for (float x = 0; x < steps.x; x++)
+		{
+			float2 offset = float2(x,y) - ratio * 0.5;
+			col += sample_c(input.t + offset * u_rcp_source_resolution * 2.0).rgb;
+			div++;
+		}
+	}
+
+	output.c = float4(col / div, 1);
+	return output;
+}
+
 #endif

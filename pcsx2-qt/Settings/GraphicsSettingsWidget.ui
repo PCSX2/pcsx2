@@ -1479,6 +1479,16 @@
               <string extracomment="Lottes = Timothy Lottes, the creator of the shader filter. Leave as-is. CRT= Cathode Ray Tube, an old type of television technology.">Lottes CRT</string>
              </property>
             </item>
+            <item>
+             <property name="text">
+              <string>4xRGSS downsampling (4x Rotated Grid SuperSampling)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>NxAGSS downsampling (Nx Automatic Grid SuperSampling)</string>
+             </property>
+            </item>
            </widget>
           </item>
           <item row="1" column="0">
