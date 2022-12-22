@@ -753,6 +753,10 @@ const GameDatabaseSchema::GameEntry* GameDatabase::findGame(const std::string_vi
 	GameDatabase::ensureLoaded();
 
 	std::string serialLower = StringUtil::toLower(serial);
+
+	if (serialLower.empty())
+		return nullptr;
+
 	Console.WriteLn(fmt::format("[GameDB] Searching for '{}' in GameDB", serialLower));
 	const auto gameEntry = s_game_db.find(serialLower);
 	if (gameEntry != s_game_db.end())
