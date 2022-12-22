@@ -3114,7 +3114,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	else if (config.require_one_barrier && !m_features.texture_barrier)
 	{
 		// requires a copy of the RT
-		draw_rt_clone = static_cast<GSTextureVK*>(CreateTexture(rtsize.x, rtsize.y, 1, GSTexture::Format::Color, false));
+		draw_rt_clone = static_cast<GSTextureVK*>(CreateTexture(rtsize.x, rtsize.y, 1, GSTexture::Format::Color, true));
 		if (draw_rt_clone)
 		{
 			EndRenderPass();

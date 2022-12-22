@@ -1868,7 +1868,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	else if (config.require_one_barrier && !m_features.texture_barrier)
 	{
 		// Requires a copy of the RT
-		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, GSTexture::Format::Color, false);
+		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, GSTexture::Format::Color, true);
 		GL_PUSH("Copy RT to temp texture for fbmask {%d,%d %dx%d}",
 			config.drawarea.left, config.drawarea.top,
 			config.drawarea.width(), config.drawarea.height());

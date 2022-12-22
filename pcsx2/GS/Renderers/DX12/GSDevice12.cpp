@@ -2626,7 +2626,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	else if (config.require_one_barrier)
 	{
 		// requires a copy of the RT
-		draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, GSTexture::Format::Color, false));
+		draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, GSTexture::Format::Color, true));
 		if (draw_rt_clone)
 		{
 			EndRenderPass();
