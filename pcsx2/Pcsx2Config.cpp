@@ -1198,7 +1198,7 @@ Pcsx2Config::Pcsx2Config()
 	BackupSavestate = true;
 	SavestateZstdCompression = true;
 
-#ifdef __WXMSW__
+#ifdef _WIN32
 	McdCompressNTFS = true;
 #endif
 
@@ -1289,7 +1289,7 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	Framerate.LoadSave(wrap);
 	LoadSaveMemcards(wrap);
 
-#ifdef __WXMSW__
+#ifdef _WIN32
 	SettingsWrapEntry(McdCompressNTFS);
 #endif
 #endif
@@ -1408,7 +1408,7 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 	MultitapPort1_Enabled = cfg.MultitapPort1_Enabled;
 	ConsoleToStdio = cfg.ConsoleToStdio;
 	HostFs = cfg.HostFs;
-#ifdef __WXMSW__
+#ifdef _WIN32
 	McdCompressNTFS = cfg.McdCompressNTFS;
 #endif
 
