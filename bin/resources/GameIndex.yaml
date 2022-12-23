@@ -337,6 +337,9 @@ PBPX-95601:
 PCPX-96303:
   name: "6-gatsu Hatsubai Title Promotion Disc (Aconcagua - Boku no Natsuyasumi - TVDJ)"
   region: "NTSC-J"
+PCPX-96306:
+  name: "Bikkuri Mouse"
+  region: "NTSC-J"
 PCPX-96311:
   name: "Gran Turismo 3 Trial Disk Volume 1"
   region: "NTSC-J"
@@ -36122,6 +36125,8 @@ SLPS-25088:
 SLPS-25094:
   name: "Reveal Fantasia"
   region: "NTSC-J"
+  gameFixes:
+    - InstantDMAHack # Fixes NULL GIFChain hang.
 SLPS-25095:
   name: "Uchuu Senkan Yamato - Iscandar he no Tsuioku"
   region: "NTSC-J"
@@ -36480,6 +36485,8 @@ SLPS-25200:
 SLPS-25201:
   name: "Reveal Fantasia"
   region: "NTSC-J"
+  gameFixes:
+    - InstantDMAHack # Fixes NULL GIFChain hang.
 SLPS-25202:
   name: "dot hack - Quarantine Part 4"
   region: "NTSC-J"
