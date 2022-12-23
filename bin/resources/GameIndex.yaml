@@ -42025,6 +42025,8 @@ SLUS-20535:
   name: "NASCAR Thunder 2003"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fix horizontal and vertical lines when racing.
 SLUS-20536:
   name: "NBA Live 2003"
   region: "NTSC-U"
