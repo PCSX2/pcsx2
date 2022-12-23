@@ -310,7 +310,7 @@ std::vector<std::pair<std::string, std::string>> INISettingsInterface::GetKeyVal
 	{
 		for (Entry& key : keys)
 		{
-			if (!m_ini.GetAllValues(section, key.pItem, values)) [[unlikely]]
+			if (!m_ini.GetAllValues(section, key.pItem, values)) // [[unlikely]]
 			{
 				Console.Error("Got no values for a key returned from GetAllKeys!");
 				continue;
