@@ -118,8 +118,6 @@ std::unique_ptr<HostDisplayTexture> OpenGLHostDisplay::CreateTexture(u32 width, 
 
 void OpenGLHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* texture_data, u32 texture_data_stride)
 {
-	OpenGLHostDisplayTexture* tex = static_cast<OpenGLHostDisplayTexture*>(texture);
-
 	glActiveTexture(GL_TEXTURE7);
 
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, texture_data_stride / sizeof(u32));
