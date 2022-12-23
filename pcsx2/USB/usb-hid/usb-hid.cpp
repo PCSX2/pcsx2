@@ -632,7 +632,7 @@ namespace usb_hid
 		{Q_KEY_CODE_SHIFT_R, "Shift_r"},
 		{Q_KEY_CODE_SLASH, "Slash"},
 		{Q_KEY_CODE_SLEEP, "Sleep"},
-		{Q_KEY_CODE_SPC, "Spc"},
+		{Q_KEY_CODE_SPC, "Space"},
 		{Q_KEY_CODE_STOP, "Stop"},
 		{Q_KEY_CODE_SYSRQ, "Sysrq"},
 		{Q_KEY_CODE_T, "T"},
