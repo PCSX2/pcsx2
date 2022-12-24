@@ -18,12 +18,6 @@
 set -u
 
 # Function declarations
-find_freetype()
-{
-    if [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/include/x86_64-linux-gnu/freetype2/ft2build.h" ]; then
-        export GTKMM_BASEPATH=/usr/include/x86_64-linux-gnu/freetype2
-    fi
-}
 
 set_make()
 {
@@ -155,7 +149,6 @@ for ARG in "$@"; do
         --pgo-optimize      ) flags="$flags -DUSE_PGO_OPTIMIZE=TRUE" ;;
         --pgo-generate      ) flags="$flags -DUSE_PGO_GENERATE=TRUE" ;;
         --no-simd           ) flags="$flags -DDISABLE_ADVANCE_SIMD=TRUE" ;;
-        --no-trans          ) flags="$flags -DNO_TRANSLATION=TRUE" ;;
         --vtune             ) flags="$flags -DUSE_VTUNE=TRUE" ;;
         -D*                 ) flags="$flags $ARG" ;;
 
@@ -172,7 +165,6 @@ for ARG in "$@"; do
             echo "--no-simd         : Only allow sse2."
             echo
             echo "** Expert Developer option **"
-            echo "--no-trans        : Don't regenerate mo files when building."
             echo "--strip           : Strip binaries to save a small amount of space."
             echo "--clang           : Build with Clang/llvm."
             echo "--use-system      : Only use system libs."
@@ -199,9 +191,6 @@ if [ "$cleanBuild" -eq 1 ]; then
     # allow to keep build as a symlink (for example to a ramdisk)
     rm -fr "$build"/*
 fi
-
-# Workaround for Debian. Cmake failed to find freetype include path
-find_freetype
 
 echo "Building pcsx2 with $flags" | tee "$log"
 
