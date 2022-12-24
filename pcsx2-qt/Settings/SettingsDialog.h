@@ -41,6 +41,7 @@ class FolderSettingsWidget;
 class DEV9SettingsWidget;
 class AchievementSettingsWidget;
 class AdvancedSettingsWidget;
+class DebugSettingsWidget;
 
 class SettingsDialog final : public QDialog
 {
@@ -128,6 +129,7 @@ private:
 	DEV9SettingsWidget* m_dev9_settings = nullptr;
 	AchievementSettingsWidget* m_achievement_settings = nullptr;
 	AdvancedSettingsWidget* m_advanced_settings = nullptr;
+	DebugSettingsWidget* m_debug_settings = nullptr;
 
 	std::array<QString, MAX_SETTINGS_WIDGETS> m_category_help_text;
 

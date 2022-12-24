@@ -41,6 +41,7 @@
 #include "HotkeySettingsWidget.h"
 #include "InterfaceSettingsWidget.h"
 #include "MemoryCardSettingsWidget.h"
+#include "DebugSettingsWidget.h"
 
 #ifdef ENABLE_ACHIEVEMENTS
 #include "AchievementSettingsWidget.h"
@@ -89,72 +90,80 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 
 	addWidget(m_interface_settings = new InterfaceSettingsWidget(this, m_ui.settingsContainer), tr("Interface"),
 		QStringLiteral("settings-3-line"),
-		tr("<strong>Interface Settings</strong><hr>These options control how the software looks and behaves.<br><br>Mouse over an option for "
-		   "additional information."));
+		tr("<strong>Interface Settings</strong><hr>These options control how the software looks and behaves.<br><br>Mouse over an option "
+		   "for additional information."));
 
 	// We don't include game list/bios settings in per-game settings.
 	if (!isPerGameSettings())
 	{
 		addWidget(m_game_list_settings = new GameListSettingsWidget(this, m_ui.settingsContainer), tr("Game List"),
 			QStringLiteral("folder-settings-line"),
-			tr("<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by PCSX2 to populate the game "
-			   "list. Search directories can be added, removed, and switched to recursive/non-recursive."));
+			tr("<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by PCSX2 to populate "
+			   "the game list. Search directories can be added, removed, and switched to recursive/non-recursive."));
 		addWidget(m_bios_settings = new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"), QStringLiteral("hard-drive-2-line"),
 			tr("<strong>BIOS Settings</strong><hr>Configure your BIOS here.<br><br>Mouse over an option for additional information."));
 	}
 
 	// Common to both per-game and global settings.
-	addWidget(m_emulation_settings = new EmulationSettingsWidget(this, m_ui.settingsContainer), tr("Emulation"), QStringLiteral("dashboard-line"),
-		tr("<strong>Emulation Settings</strong><hr>These options determine the configuration of frame pacing and game settings.<br><br>Mouse over an option for additional information."));
+	addWidget(m_emulation_settings = new EmulationSettingsWidget(this, m_ui.settingsContainer), tr("Emulation"),
+		QStringLiteral("dashboard-line"),
+		tr("<strong>Emulation Settings</strong><hr>These options determine the configuration of frame pacing and game "
+		   "settings.<br><br>Mouse over an option for additional information."));
 
 	// Only show the game fixes for per-game settings, there's really no reason to be setting them globally.
 	if (show_advanced_settings && isPerGameSettings())
 	{
 		addWidget(m_game_fix_settings_widget = new GameFixSettingsWidget(this, m_ui.settingsContainer), tr("Game Fix"),
-			QStringLiteral("close-line"), tr("<strong>Game Fix Settings</strong><hr>Gamefixes can work around incorrect emulation in some titles<br>however they can also cause problems in games if used incorrectly.<br>It is best to leave them all disabled unless advised otherwise."));
+			QStringLiteral("close-line"),
+			tr("<strong>Game Fix Settings</strong><hr>Gamefixes can work around incorrect emulation in some titles<br>however they can "
+			   "also cause problems in games if used incorrectly.<br>It is best to leave them all disabled unless advised otherwise."));
 	}
 
 	addWidget(m_graphics_settings = new GraphicsSettingsWidget(this, m_ui.settingsContainer), tr("Graphics"), QStringLiteral("brush-line"),
-		tr("<strong>Graphics Settings</strong><hr>These options determine the configuration of the graphical output.<br><br>Mouse over an option for additional information."));
+		tr("<strong>Graphics Settings</strong><hr>These options determine the configuration of the graphical output.<br><br>Mouse over an "
+		   "option for additional information."));
 	addWidget(m_audio_settings = new AudioSettingsWidget(this, m_ui.settingsContainer), tr("Audio"), QStringLiteral("volume-up-line"),
-		tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console.<br><br>Mouse over an option for additional information."));
+		tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console.<br><br>Mouse over an option for "
+		   "additional information."));
 
 	// for now, memory cards aren't settable per-game
 	if (!isPerGameSettings())
 	{
 		addWidget(m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
-			QStringLiteral("sd-card-line"), tr("<strong>Memory Card Settings</strong><hr>Create and configure Memory Cards here.<br><br>Mouse over an option for additional information."));
+			QStringLiteral("sd-card-line"),
+			tr("<strong>Memory Card Settings</strong><hr>Create and configure Memory Cards here.<br><br>Mouse over an option for "
+			   "additional information."));
 	}
 
 	addWidget(m_dev9_settings = new DEV9SettingsWidget(this, m_ui.settingsContainer), tr("Network & HDD"), QStringLiteral("dashboard-line"),
-		tr("<strong>Network & HDD Settings</strong><hr>These options control the network connectivity and internal HDD storage of the console.<br><br>"
-		   "Mouse over an option for additional information."));
+		tr("<strong>Network & HDD Settings</strong><hr>These options control the network connectivity and internal HDD storage of the "
+		   "console.<br><br>Mouse over an option for additional information."));
 
 	if (!isPerGameSettings())
 	{
-		addWidget(m_folder_settings = new FolderSettingsWidget(this, m_ui.settingsContainer), tr("Folders"), QStringLiteral("folder-open-line"),
+		addWidget(m_folder_settings = new FolderSettingsWidget(this, m_ui.settingsContainer), tr("Folders"),
+			QStringLiteral("folder-open-line"),
 			tr("<strong>Folder Settings</strong><hr>These options control where PCSX2 will save runtime data files."));
 	}
 
 	{
 		QString title = tr("Achievements");
 		QString icon_text(QStringLiteral("trophy-line"));
-		QString help_text = tr(
-			"<strong>Achievements Settings</strong><hr>"
-			"These options control the RetroAchievements implementation in PCSX2, allowing you to earn achievements in your games.");
+		QString help_text =
+			tr("<strong>Achievements Settings</strong><hr>"
+			   "These options control the RetroAchievements implementation in PCSX2, allowing you to earn achievements in your games.");
 #ifdef ENABLE_ACHIEVEMENTS
 		if (Achievements::IsUsingRAIntegration())
 		{
 			QLabel* placeholder_label =
-				new QLabel(tr("RAIntegration is being used, built-in RetroAchievements support is disabled."),
-					m_ui.settingsContainer);
+				new QLabel(tr("RAIntegration is being used, built-in RetroAchievements support is disabled."), m_ui.settingsContainer);
 			placeholder_label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 			addWidget(placeholder_label, std::move(title), std::move(icon_text), std::move(help_text));
 		}
 		else
 		{
-			addWidget((m_achievement_settings = new AchievementSettingsWidget(this, m_ui.settingsContainer)),
-				std::move(title), std::move(icon_text), std::move(help_text));
+			addWidget((m_achievement_settings = new AchievementSettingsWidget(this, m_ui.settingsContainer)), std::move(title),
+				std::move(icon_text), std::move(help_text));
 		}
 #else
 		QLabel* placeholder_label =
@@ -167,7 +176,14 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	if (show_advanced_settings)
 	{
 		addWidget(m_advanced_settings = new AdvancedSettingsWidget(this, m_ui.settingsContainer), tr("Advanced"),
-			QStringLiteral("artboard-2-line"), tr("<strong>Advanced Settings</strong><hr>These are advanced options to determine the configuration of the simulated console.<br><br>Mouse over an option for additional information."));
+			QStringLiteral("artboard-2-line"),
+			tr("<strong>Advanced Settings</strong><hr>These are advanced options to determine the configuration of the simulated "
+			   "console.<br><br>Mouse over an option for additional information."));
+		addWidget(m_debug_settings = new DebugSettingsWidget(this, m_ui.settingsContainer), tr("Debug"),
+			QStringLiteral("folder-download-line"),
+			tr("<strong>Debug Settings</strong><hr>These are options which can be used to log internal information about the application. "
+			   "<strong>Do not modify unless you know what you are doing</strong>, it will cause significant slowdown, and can waste large "
+			   "amounts of disk space."));
 	}
 
 	m_ui.settingsCategory->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -386,7 +402,8 @@ std::optional<float> SettingsDialog::getFloatValue(const char* section, const ch
 	return value;
 }
 
-std::optional<std::string> SettingsDialog::getStringValue(const char* section, const char* key, std::optional<const char*> default_value) const
+std::optional<std::string> SettingsDialog::getStringValue(
+	const char* section, const char* key, std::optional<const char*> default_value) const
 {
 	std::optional<std::string> value;
 	if (m_sif)

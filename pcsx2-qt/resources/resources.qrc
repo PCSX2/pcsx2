@@ -25,6 +25,7 @@
 		<file>icons/black/svg/flashlight-line.svg</file>
 		<file>icons/black/svg/flask-line.svg</file>
 		<file>icons/black/svg/folder-add-line.svg</file>
+		<file>icons/black/svg/folder-download-line.svg</file>
 		<file>icons/black/svg/folder-open-line.svg</file>
 		<file>icons/black/svg/folder-reduce-line.svg</file>
 		<file>icons/black/svg/folder-settings-line.svg</file>
@@ -83,6 +84,7 @@
 		<file>icons/white/svg/flashlight-line.svg</file>
 		<file>icons/white/svg/flask-line.svg</file>
 		<file>icons/white/svg/folder-add-line.svg</file>
+		<file>icons/white/svg/folder-download-line.svg</file>
 		<file>icons/white/svg/folder-open-line.svg</file>
 		<file>icons/white/svg/folder-reduce-line.svg</file>
 		<file>icons/white/svg/folder-settings-line.svg</file>
@@ -112,7 +114,7 @@
 		<file>icons/white/svg/volume-up-line.svg</file>
 		<file>icons/white/svg/window-2-line.svg</file>
 		<file>images/DrivingForce.png</file>
-		<file>images/GTForce.png</file>
 		<file>images/dualshock-2.png</file>
+		<file>images/GTForce.png</file>
 	</qresource>
 </RCC>
