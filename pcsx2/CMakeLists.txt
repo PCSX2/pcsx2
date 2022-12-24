@@ -1373,11 +1373,11 @@ function(setup_main_executable target)
 
 		set_target_properties(${target} PROPERTIES
 			MACOSX_BUNDLE true
-			MACOSX_BUNDLE_INFO_PLIST "${PCSX2_SOURCE_DIR}/gui/Resources/Info.plist.in"
+			MACOSX_BUNDLE_INFO_PLIST "${PCSX2_SOURCE_DIR}/Resources/Info.plist.in"
 			OUTPUT_NAME PCSX2
 		)
 
-		pcsx2_resource(${target} ${PCSX2_SOURCE_DIR}/gui/Resources/PCSX2.icns ${PCSX2_SOURCE_DIR}/gui/Resources)
+		pcsx2_resource(${target} ${PCSX2_SOURCE_DIR}/Resources/PCSX2.icns ${PCSX2_SOURCE_DIR}/Resources)
 
 		# If they say to skip postprocess bundle, leave the target in but make it so they have
 		# to manually run it
