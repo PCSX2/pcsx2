@@ -25,14 +25,7 @@
 #include "HostDisplay.h"
 #include "CDVD/CDVDcommon.h"
 #include "MemoryCardFile.h"
-
-#ifdef PCSX2_CORE
 #include "USB/USB.h"
-#else
-#include "USB/USBNull.h"
-#include "gui/AppConfig.h"
-#include "GS/GS.h"
-#endif
 
 const char* SettingInfo::StringDefaultValue() const
 {
@@ -542,8 +535,6 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(FramerateNTSC);
 	SettingsWrapEntry(FrameratePAL);
 
-#ifdef PCSX2_CORE
-	// These are loaded from GSWindow in wx.
 	SettingsWrapBitBool(SyncToHostRefreshRate);
 	SettingsWrapEnumEx(AspectRatio, "AspectRatio", AspectRatioNames);
 	SettingsWrapEnumEx(FMVAspectRatioSwitch, "FMVAspectRatioSwitch", FMVAspectRatioSwitchNames);
@@ -555,20 +546,6 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntryEx(Crop[1], "CropTop");
 	SettingsWrapEntryEx(Crop[2], "CropRight");
 	SettingsWrapEntryEx(Crop[3], "CropBottom");
-#endif
-
-#ifndef PCSX2_CORE
-	if (wrap.IsLoading())
-		ReloadIniSettings();
-#else
-	LoadSaveIniSettings(wrap);
-#endif
-}
-
-#ifdef PCSX2_CORE
-void Pcsx2Config::GSOptions::LoadSaveIniSettings(SettingsWrapper& wrap)
-{
-	SettingsWrapSection("EmuCore/GS");
 
 #define GSSettingInt(var) SettingsWrapBitfield(var)
 #define GSSettingIntEx(var, name) SettingsWrapBitfieldEx(var, name)
@@ -579,22 +556,6 @@ void Pcsx2Config::GSOptions::LoadSaveIniSettings(SettingsWrapper& wrap)
 #define GSSettingIntEnumEx(var, name) SettingsWrapIntEnumEx(var, name)
 #define GSSettingString(var) SettingsWrapEntry(var)
 #define GSSettingStringEx(var, name) SettingsWrapEntryEx(var, name)
-#else
-void Pcsx2Config::GSOptions::ReloadIniSettings()
-{
-	// ensure theApp is loaded.
-	GSinitConfig();
-
-#define GSSettingInt(var) var = theApp.GetConfigI(#var)
-#define GSSettingIntEx(var, name) var = theApp.GetConfigI(name)
-#define GSSettingBool(var) var = theApp.GetConfigB(#var)
-#define GSSettingBoolEx(var, name) var = theApp.GetConfigB(name)
-#define GSSettingFloat(var) var = static_cast<float>(theApp.GetConfigI(#var))
-#define GSSettingFloatEx(var, name) var = static_cast<float>(theApp.GetConfigI(name))
-#define GSSettingIntEnumEx(var, name) var = static_cast<decltype(var)>(theApp.GetConfigI(name))
-#define GSSettingString(var) var = theApp.GetConfigS(#var)
-#define GSSettingStringEx(var, name) var = theApp.GetConfigS(name)
-#endif
 
 	// Unfortunately, because code in the GS still reads the setting by key instead of
 	// using these variables, we need to use the old names. Maybe post 2.0 we can change this.
@@ -723,7 +684,6 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 #undef GSSettingString
 #undef GSSettingStringEx
 
-#ifdef PCSX2_CORE
 	// Sanity check: don't dump a bunch of crap in the current working directory.
 	const std::string& dump_dir = UseHardwareRenderer() ? HWDumpDirectory : SWDumpDirectory;
 	if (DumpGSData && dump_dir.empty())
@@ -731,7 +691,6 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 		Console.Error("Draw dumping is enabled but directory is unconfigured, please set one.");
 		DumpGSData = false;
 	}
-#endif
 }
 
 void Pcsx2Config::GSOptions::MaskUserHacks()
@@ -879,7 +838,6 @@ void Pcsx2Config::DEV9Options::LoadSave(SettingsWrapper& wrap)
 		SettingsWrapEnumEx(ModeDNS2, "ModeDNS2", DnsModeNames);
 	}
 
-#ifdef PCSX2_CORE
 	if (wrap.IsLoading())
 		EthHosts.clear();
 
@@ -918,7 +876,6 @@ void Pcsx2Config::DEV9Options::LoadSave(SettingsWrapper& wrap)
 				Console.WriteLn("DEV9: Host entry %i: url %s mapped to %s", i, entry.Url.c_str(), addrStr.c_str());
 		}
 	}
-#endif
 
 	{
 		SettingsWrapSection("DEV9/Hdd");
@@ -1116,8 +1073,6 @@ void Pcsx2Config::FramerateOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(SlomoScalar);
 }
 
-#ifdef PCSX2_CORE
-
 Pcsx2Config::USBOptions::USBOptions()
 {
 	for (u32 i = 0; i < static_cast<u32>(Ports.size()); i++)
@@ -1173,8 +1128,6 @@ bool Pcsx2Config::USBOptions::operator!=(const USBOptions& right) const
 	return !this->operator==(right);
 }
 
-#endif
-
 #ifdef ENABLE_ACHIEVEMENTS
 
 Pcsx2Config::AchievementsOptions::AchievementsOptions()
@@ -1215,10 +1168,8 @@ Pcsx2Config::Pcsx2Config()
 	McdFolderAutoManage = true;
 	EnablePatches = true;
 	EnableRecordingTools = true;
-#ifdef PCSX2_CORE
 	EnableGameFixes = true;
 	InhibitScreensaver = true;
-#endif
 	BackupSavestate = true;
 	SavestateZstdCompression = true;
 
@@ -1259,12 +1210,10 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(EnableWideScreenPatches);
 	SettingsWrapBitBool(EnableNoInterlacingPatches);
 	SettingsWrapBitBool(EnableRecordingTools);
-#ifdef PCSX2_CORE
 	SettingsWrapBitBool(EnableGameFixes);
 	SettingsWrapBitBool(SaveStateOnShutdown);
 	SettingsWrapBitBool(EnableDiscordPresence);
 	SettingsWrapBitBool(InhibitScreensaver);
-#endif
 	SettingsWrapBitBool(ConsoleToStdio);
 	SettingsWrapBitBool(HostFs);
 
@@ -1272,11 +1221,6 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(SavestateZstdCompression);
 	SettingsWrapBitBool(McdEnableEjection);
 	SettingsWrapBitBool(McdFolderAutoManage);
-#ifndef PCSX2_CORE
-	// We put mtap in the Pad section for Qt to make it easier to manually edit input profiles.
-	SettingsWrapBitBool(MultitapPort0_Enabled);
-	SettingsWrapBitBool(MultitapPort1_Enabled);
-#endif
 
 	SettingsWrapBitBool(WarnAboutUnsafeSettings);
 
@@ -1285,19 +1229,14 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	Speedhacks.LoadSave(wrap);
 	Cpu.LoadSave(wrap);
 	GS.LoadSave(wrap);
-#ifdef PCSX2_CORE
-	// SPU2 is in a separate ini in wx.
 	SPU2.LoadSave(wrap);
-#endif
 	DEV9.LoadSave(wrap);
 	Gamefixes.LoadSave(wrap);
 	Profiler.LoadSave(wrap);
 
 	Debugger.LoadSave(wrap);
 	Trace.LoadSave(wrap);
-#ifdef PCSX2_CORE
 	USB.LoadSave(wrap);
-#endif
 
 #ifdef ENABLE_ACHIEVEMENTS
 	Achievements.LoadSave(wrap);
@@ -1306,7 +1245,6 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(GzipIsoIndexTemplate);
 
 	// For now, this in the derived config for backwards ini compatibility.
-#ifdef PCSX2_CORE
 	SettingsWrapEntryEx(CurrentBlockdump, "BlockDumpSaveDirectory");
 
 	BaseFilenames.LoadSave(wrap);
@@ -1315,7 +1253,6 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 
 #ifdef _WIN32
 	SettingsWrapEntry(McdCompressNTFS);
-#endif
 #endif
 
 	if (wrap.IsLoading())

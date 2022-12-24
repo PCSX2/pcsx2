@@ -22,45 +22,18 @@
 #include "PerformanceMetrics.h"
 #include "pcsx2/Config.h"
 #include "IconsFontAwesome5.h"
+#include "VMManager.h"
 #include "common/FileSystem.h"
 #include "common/Image.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 #include "fmt/core.h"
+#include <algorithm>
 #include <array>
 #include <deque>
 #include <thread>
 #include <mutex>
-
-#ifndef PCSX2_CORE
-#include "gui/AppCoreThread.h"
-#if defined(__unix__)
-#include <X11/keysym.h>
-#elif defined(__APPLE__)
-#include <Carbon/Carbon.h>
-#endif
-
-static std::string GetDumpName()
-{
-	return StringUtil::wxStringToUTF8String(GameInfo::gameName);
-}
-static std::string GetDumpSerial()
-{
-	return StringUtil::wxStringToUTF8String(GameInfo::gameSerial);
-}
-#else
-#include "VMManager.h"
-
-static std::string GetDumpName()
-{
-	return VMManager::GetGameName();
-}
-static std::string GetDumpSerial()
-{
-	return VMManager::GetGameSerial();
-}
-#endif
 
 static constexpr std::array<PresentShader, 6> s_tv_shader_indices = {
 	PresentShader::COPY, PresentShader::SCANLINE,
@@ -737,11 +710,6 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 	PerformanceMetrics::Update(registers_written, fb_sprite_frame, false);
 
 	// snapshot
-	// wx is dumb and call this from the UI thread...
-#ifndef PCSX2_CORE
-	std::unique_lock snapshot_lock(m_snapshot_mutex);
-#endif
-
 	if (!m_snapshot.empty())
 	{
 		u32 screenshot_width, screenshot_height;
@@ -763,7 +731,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 			std::string_view compression_str;
 			if (GSConfig.GSDumpCompression == GSDumpCompressionMethod::Uncompressed)
 			{
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpUncompressed(m_snapshot, GetDumpSerial(), m_crc,
+				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpUncompressed(m_snapshot, VMManager::GetGameSerial(), m_crc,
 					screenshot_width, screenshot_height,
 					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
 					fd, m_regs));
@@ -771,7 +739,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 			}
 			else if (GSConfig.GSDumpCompression == GSDumpCompressionMethod::LZMA)
 			{
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpXz(m_snapshot, GetDumpSerial(), m_crc,
+				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpXz(m_snapshot, VMManager::GetGameSerial(), m_crc,
 					screenshot_width, screenshot_height,
 					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
 					fd, m_regs));
@@ -779,7 +747,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 			}
 			else
 			{
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpZst(m_snapshot, GetDumpSerial(), m_crc,
+				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpZst(m_snapshot, VMManager::GetGameSerial(), m_crc,
 					screenshot_width, screenshot_height,
 					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
 					fd, m_regs));
@@ -865,9 +833,7 @@ void GSRenderer::QueueSnapshot(const std::string& path, u32 gsdump_frames)
 	}
 
 	// this is really gross, but wx we get the snapshot request after shift...
-#ifdef PCSX2_CORE
 	m_dump_frames = gsdump_frames;
-#endif
 }
 
 std::string GSGetBaseSnapshotFilename()
@@ -875,14 +841,14 @@ std::string GSGetBaseSnapshotFilename()
 	std::string filename;
 
 	// append the game serial and title
-	if (std::string name(GetDumpName()); !name.empty())
+	if (std::string name(VMManager::GetGameName()); !name.empty())
 	{
 		Path::SanitizeFileName(&name);
 		if (name.length() > 219)
 			name.resize(219);
 		filename += name;
 	}
-	if (std::string serial(GetDumpSerial()); !serial.empty())
+	if (std::string serial(VMManager::GetGameSerial()); !serial.empty())
 	{
 		Path::SanitizeFileName(&serial);
 		filename += '_';
@@ -978,82 +944,6 @@ void GSRenderer::EndCapture()
 {
 	GSCapture::EndCapture();
 }
-
-#ifndef PCSX2_CORE
-
-void GSRenderer::KeyEvent(const HostKeyEvent& e)
-{
-#ifdef _WIN32
-	m_shift_key = !!(::GetAsyncKeyState(VK_SHIFT) & 0x8000);
-	m_control_key = !!(::GetAsyncKeyState(VK_CONTROL) & 0x8000);
-#elif defined(__APPLE__)
-	m_shift_key = CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, kVK_Shift)
-	           || CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, kVK_RightShift);
-	m_control_key = CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, kVK_Control)
-	             || CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, kVK_RightControl)
-	             || CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, kVK_Command)
-	             || CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, kVK_RightCommand);
-#else
-	switch (e.key)
-	{
-		case XK_Shift_L:
-		case XK_Shift_R:
-			m_shift_key = (e.type == HostKeyEvent::Type::KeyPressed);
-			return;
-		case XK_Control_L:
-		case XK_Control_R:
-			m_control_key = (e.type == HostKeyEvent::Type::KeyReleased);
-			return;
-	}
-#endif
-
-	if (m_dump_frames == 0)
-	{
-		// start dumping
-		if (m_shift_key)
-			m_dump_frames = m_control_key ? std::numeric_limits<u32>::max() : 1;
-	}
-	else
-	{
-		// stop dumping
-		if (m_dump && !m_control_key)
-			m_dump_frames = 0;
-	}
-
-	if (e.type == HostKeyEvent::Type::KeyPressed)
-	{
-
-		int step = m_shift_key ? -1 : 1;
-
-#if defined(__unix__)
-#define VK_F5 XK_F5
-#define VK_DELETE XK_Delete
-#define VK_NEXT XK_Next
-#elif defined(__APPLE__)
-#define VK_F5 kVK_F5
-#define VK_DELETE kVK_ForwardDelete
-#define VK_NEXT kVK_PageDown
-#endif
-
-		// NOTE: These are all BROKEN! They mess with GS thread state from the UI thread.
-
-		switch (e.key)
-		{
-			case VK_F5:
-				GSConfig.InterlaceMode = static_cast<GSInterlaceMode>((static_cast<int>(GSConfig.InterlaceMode) + static_cast<int>(GSInterlaceMode::Count) + step) % static_cast<int>(GSInterlaceMode::Count));
-				theApp.SetConfig("deinterlace_mode", static_cast<int>(GSConfig.InterlaceMode));
-				printf("GS: Set deinterlace mode to %d (%s).\n", static_cast<int>(GSConfig.InterlaceMode), theApp.m_gs_deinterlace.at(static_cast<int>(GSConfig.InterlaceMode)).name.c_str());
-				return;
-			case VK_NEXT: // As requested by Prafull, to be removed later
-				char dither_msg[3][16] = {"disabled", "auto", "auto unscaled"};
-				GSConfig.Dithering = (GSConfig.Dithering + 1) % 3;
-				printf("GS: Dithering is now %s.\n", dither_msg[GSConfig.Dithering]);
-				return;
-		}
-	}
-}
-
-#endif // PCSX2_CORE
 
 void GSRenderer::PurgePool()
 {

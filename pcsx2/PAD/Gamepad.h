@@ -31,12 +31,3 @@ void PADconfigure();
 s32 PADfreeze(FreezeAction mode, freezeData* data);
 s32 PADsetSlot(u8 port, u8 slot);
 
-#ifndef PCSX2_CORE
-
-HostKeyEvent* PADkeyEvent();
-
-#if defined(__unix__) || defined(__APPLE__)
-void PADWriteEvent(HostKeyEvent& evt);
-#endif
-
-#endif

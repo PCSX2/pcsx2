@@ -17,12 +17,6 @@
 
 #include <stdio.h>
 #include <string>
-#ifndef EXTERN
-#define EXTERN extern
-#endif
-#define DEV9defs
-//#define WINVER 0x0600
-//#define _WIN32_WINNT 0x0500
 
 #include "net.h"
 #include "PacketReader/IP/IP_Address.h"
@@ -53,23 +47,6 @@ bool rx_fifo_can_rx();
 
 #define HDD_MIN_GB 40
 #define HDD_MAX_GB 120
-
-#ifndef PCSX2_CORE
-struct ConfigHost
-{
-	std::string Url;
-	std::string Desc;
-	u8 Address[4];
-	bool Enabled;
-};
-
-struct ConfigDEV9
-{
-	std::vector<ConfigHost> EthHosts;
-};
-
-EXTERN ConfigDEV9 config;
-#endif
 
 typedef struct
 {
@@ -121,7 +98,7 @@ typedef struct
 #define EEPROM_ADDR5 8
 #define EEPROM_TDATA 9 //ready to send/receive data
 
-EXTERN dev9Struct dev9;
+extern dev9Struct dev9;
 
 #define dev9_rxfifo_write(x) (dev9.rxfifo[dev9.rxfifo_wr_ptr++] = x)
 
@@ -132,7 +109,7 @@ EXTERN dev9Struct dev9;
 #define dev9Ru16(mem) (*(u16*)&dev9.dev9R[(mem)&0xffff])
 #define dev9Ru32(mem) (*(u32*)&dev9.dev9R[(mem)&0xffff])
 
-EXTERN int ThreadRun;
+extern int ThreadRun;
 
 #define DEV9_R_REV 0x1f80146e
 
@@ -696,7 +673,6 @@ static flash_info_t devices[] = {
 #define FLASH_REGSIZE 0x20
 
 extern void dev9Irq(int cycles);
-extern void DEV9configure();
 
 void FLASHinit();
 s32 DEV9init();

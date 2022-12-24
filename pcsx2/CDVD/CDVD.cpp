@@ -41,11 +41,7 @@
 #include "Recording/InputRecording.h"
 #endif
 
-#ifndef PCSX2_CORE
-#include "gui/SysThreads.h"
-#else
 #include "VMManager.h"
-#endif
 
 // This typically reflects the Sony-assigned serial code for the Disc, if one exists.
 //  (examples:  SLUS-2113, etc).
@@ -557,7 +553,6 @@ void cdvdReloadElfInfo(std::string elfoverride)
 	}
 	catch ([[maybe_unused]] Exception::FileNotFound& e)
 	{
-#ifdef PCSX2_CORE
 		Console.Error("Failed to load ELF info");
 		LastELF.clear();
 		DiscSerial.clear();
@@ -565,10 +560,6 @@ void cdvdReloadElfInfo(std::string elfoverride)
 		ElfEntry = 0;
 		ElfTextRange = {};
 		return;
-#else
-		pxFail("Not in my back yard!");
-		Cpu->ThrowException(e);
-#endif
 	}
 }
 
@@ -881,11 +872,7 @@ void cdvdReset()
 
 	// If we are recording, always use the same RTC setting
 	// for games that use the RTC to seed their RNG -- this is very important to be the same everytime!
-	bool input_recording_active = false;
-#ifdef PCSX2_CORE
-	input_recording_active = g_InputRecording.isActive();
-#endif
-	if (input_recording_active)
+	if (g_InputRecording.isActive())
 	{
 		Console.WriteLn("Input Recording Active - Using Constant RTC of 04-03-2020 (DD-MM-YYYY)");
 		// Why not just 0 everything? Some games apparently require the date to be valid in terms of when
@@ -2458,11 +2445,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 
 			case 0x0F: // sceCdPowerOff (0:1)- Call74 from Xcdvdman
 				Console.WriteLn(Color_StrongBlack, "sceCdPowerOff called. Resetting VM.");
-#ifndef PCSX2_CORE
-				GetCoreThread().Reset();
-#else
 				VMManager::Reset();
-#endif
 				break;
 
 			case 0x12: // sceCdReadILinkId (0:9)

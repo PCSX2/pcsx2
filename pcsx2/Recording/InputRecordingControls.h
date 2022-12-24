@@ -15,8 +15,6 @@
 
 #pragma once
 
-#ifdef PCSX2_CORE
-
 #include <queue>
 
 // TODO:
@@ -45,4 +43,3 @@ private:
 	std::queue<std::function<void()>> m_controlQueue;
 };
 
-#endif

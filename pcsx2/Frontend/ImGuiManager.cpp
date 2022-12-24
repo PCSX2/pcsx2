@@ -26,15 +26,15 @@
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 #include "imgui.h"
-
-#ifdef PCSX2_CORE
 #include "imgui_internal.h"
-#endif
 
 #include "Config.h"
 #include "Counters.h"
+#include "Frontend/FullscreenUI.h"
+#include "Frontend/ImGuiFullscreen.h"
 #include "Frontend/ImGuiManager.h"
 #include "Frontend/ImGuiOverlays.h"
+#include "Frontend/InputManager.h"
 #include "GS.h"
 #include "GS/GS.h"
 #include "Host.h"
@@ -42,13 +42,7 @@
 #include "IconsFontAwesome5.h"
 #include "PerformanceMetrics.h"
 #include "Recording/InputRecording.h"
-
-#ifdef PCSX2_CORE
-#include "Frontend/FullscreenUI.h"
-#include "Frontend/ImGuiFullscreen.h"
-#include "Frontend/InputManager.h"
 #include "VMManager.h"
-#endif
 
 namespace ImGuiManager
 {
@@ -77,7 +71,6 @@ static std::vector<u8> s_icon_font_data;
 
 static Common::Timer s_last_render_time;
 
-#ifdef PCSX2_CORE
 // cached copies of WantCaptureKeyboard/Mouse, used to know when to dispatch events
 static std::atomic_bool s_imgui_wants_keyboard{false};
 static std::atomic_bool s_imgui_wants_mouse{false};
@@ -88,7 +81,6 @@ static std::unordered_map<u32, ImGuiKey> s_imgui_key_map;
 
 // need to keep track of this, so we can reinitialize on renderer switch
 static bool s_fullscreen_ui_was_initialized = false;
-#endif
 
 bool ImGuiManager::Initialize()
 {
@@ -104,12 +96,10 @@ bool ImGuiManager::Initialize()
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.IniFilename = nullptr;
-#ifdef PCSX2_CORE
 	io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
 	io.BackendUsingLegacyKeyArrays = 0;
 	io.BackendUsingLegacyNavInputArray = 0;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
-#endif
 
 	io.DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
 	io.DisplaySize.x = static_cast<float>(g_host_display->GetWindowWidth());
@@ -118,12 +108,8 @@ bool ImGuiManager::Initialize()
 	SetKeyMap();
 	SetStyle();
 
-#ifdef PCSX2_CORE
 	const bool add_fullscreen_fonts = s_fullscreen_ui_was_initialized;
 	pxAssertRel(!FullscreenUI::IsInitialized(), "Fullscreen UI is not initialized on ImGui init");
-#else
-	const bool add_fullscreen_fonts = false;
-#endif
 
 	if (!g_host_display->CreateImGuiContext())
 	{
@@ -149,32 +135,24 @@ bool ImGuiManager::Initialize()
 	NewFrame();
 
 	// reinitialize fsui if it was previously enabled
-#ifdef PCSX2_CORE
 	if (add_fullscreen_fonts)
 		InitializeFullscreenUI();
-#endif
 
 	return true;
 }
 
 bool ImGuiManager::InitializeFullscreenUI()
 {
-#ifdef PCSX2_CORE
 	s_fullscreen_ui_was_initialized = FullscreenUI::Initialize();
 	return s_fullscreen_ui_was_initialized;
-#else
-	return false;
-#endif
 }
 
 void ImGuiManager::Shutdown(bool clear_state)
 {
-#ifdef PCSX2_CORE
 	FullscreenUI::Shutdown(clear_state);
 	ImGuiFullscreen::SetFonts(nullptr, nullptr, nullptr);
 	if (clear_state)
 		s_fullscreen_ui_was_initialized = false;
-#endif
 
 	if (g_host_display)
 		g_host_display->DestroyImGuiContext();
@@ -209,13 +187,8 @@ void ImGuiManager::UpdateScale()
 	const float window_scale = g_host_display ? g_host_display->GetWindowScale() : 1.0f;
 	const float scale = std::max(window_scale * (EmuConfig.GS.OsdScale / 100.0f), 1.0f);
 
-#ifdef PCSX2_CORE
 	if (scale == s_global_scale && (!HasFullscreenFonts() || !ImGuiFullscreen::UpdateLayoutScale()))
 		return;
-#else
-	if (scale == s_global_scale)
-		return;
-#endif
 
 	// This is assumed to be called mid-frame.
 	ImGui::EndFrame();
@@ -239,7 +212,6 @@ void ImGuiManager::NewFrame()
 
 	ImGui::NewFrame();
 
-#ifdef PCSX2_CORE
 	// Disable nav input on the implicit (Debug##Default) window. Otherwise we end up requesting keyboard
 	// focus when there's nothing there. We use GetCurrentWindowRead() because otherwise it'll make it visible.
 	ImGui::GetCurrentWindowRead()->Flags |= ImGuiWindowFlags_NoNavInputs;
@@ -255,7 +227,6 @@ void ImGuiManager::NewFrame()
 		else
 			Host::EndTextInput();
 	}
-#endif
 }
 
 void ImGuiManager::SetStyle()
@@ -319,7 +290,6 @@ void ImGuiManager::SetStyle()
 
 void ImGuiManager::SetKeyMap()
 {
-#ifdef PCSX2_CORE
 	struct KeyMapping
 	{
 		int index;
@@ -361,7 +331,6 @@ void ImGuiManager::SetKeyMap()
 		if (map.has_value())
 			s_imgui_key_map[map.value()] = km.index;
 	}
-#endif
 }
 
 bool ImGuiManager::LoadFontData()
@@ -471,7 +440,6 @@ bool ImGuiManager::AddImGuiFonts(bool fullscreen_fonts)
 	if (!s_fixed_font)
 		return false;
 
-#ifdef PCSX2_CORE
 	if (fullscreen_fonts)
 	{
 		const float medium_font_size = std::ceil(ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE));
@@ -491,7 +459,6 @@ bool ImGuiManager::AddImGuiFonts(bool fullscreen_fonts)
 	}
 
 	ImGuiFullscreen::SetFonts(s_standard_font, s_medium_font, s_large_font);
-#endif
 
 	return io.Fonts->Build();
 }
@@ -703,13 +670,9 @@ void ImGuiManager::RenderOSD()
 	// acquire for IO.MousePos.
 	std::atomic_thread_fence(std::memory_order_acquire);
 
-#ifdef PCSX2_CORE
 	// Don't draw OSD when we're just running big picture.
 	if (VMManager::HasValidVM())
 		RenderOverlays();
-#else
-	RenderOverlays();
-#endif
 
 	AcquirePendingOSDMessages();
 	DrawOSDMessages();
@@ -741,8 +704,6 @@ ImFont* ImGuiManager::GetLargeFont()
 	AddFullscreenFontsIfMissing();
 	return s_large_font;
 }
-
-#ifdef PCSX2_CORE
 
 bool ImGuiManager::WantsTextInput()
 {
@@ -853,5 +814,3 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
 
 	return true;
 }
-
-#endif // PCSX2_CORE

@@ -23,9 +23,6 @@
 #include "GS/GSAlignedClass.h"
 #include "GS/GSExtra.h"
 #include <array>
-#ifdef _WIN32
-#include <dxgi.h>
-#endif
 
 class HostDisplay;
 
@@ -899,32 +896,6 @@ public:
 		GSHWDrawConfig::ColorMaskSelector* cms,
 		GSHWDrawConfig::BlendState* bs,
 		GSHWDrawConfig::DepthStencilSelector* dss);
-};
-
-struct GSAdapter
-{
-	u32 vendor;
-	u32 device;
-	u32 subsys;
-	u32 rev;
-
-	operator std::string() const;
-	bool operator==(const GSAdapter&) const;
-	bool operator==(const std::string& s) const
-	{
-		return (std::string)*this == s;
-	}
-	bool operator==(const char* s) const
-	{
-		return (std::string)*this == s;
-	}
-
-#ifdef _WIN32
-	GSAdapter(const DXGI_ADAPTER_DESC1& desc_dxgi);
-#endif
-#ifdef __linux__
-	// TODO
-#endif
 };
 
 template <>

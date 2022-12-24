@@ -18,6 +18,10 @@
 #include "GSScanlineEnvironment.h"
 #include "GS/GSUtil.h"
 #include "GS/MultiISA.h"
+
+#ifdef _WIN32
+#include "common/RedtapeWindows.h"
+#endif
 #include <xbyak/xbyak.h>
 
 MULTI_ISA_UNSHARED_START

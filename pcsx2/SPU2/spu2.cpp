@@ -17,16 +17,7 @@
 #include "Global.h"
 #include "spu2.h"
 #include "Dma.h"
-#ifndef PCSX2_CORE
-#if defined(_WIN32)
-#include "Windows/Dialogs.h"
-#else // BSD, Macos
-#include "Linux/Dialogs.h"
-#include "Linux/Config.h"
-#endif
-#else
 #include "Host/Dialogs.h"
-#endif
 #include "R3000A.h"
 
 using namespace Threading;
@@ -37,22 +28,6 @@ int SampleRate = 48000;
 static double DeviceSampleRateMultiplier = 1.0;
 
 u32 lClocks = 0;
-
-#ifndef PCSX2_CORE
-#include "gui/AppCoreThread.h"
-
-static bool IsOpened = false;
-std::recursive_mutex mtx_SPU2Status;
-
-void SPU2configure()
-{
-	ScopedCoreThreadPause paused_core(SystemsMask::System_SPU2);
-
-	configure();
-	paused_core.AllowResume();
-}
-
-#endif
 
 // --------------------------------------------------------------------------------------
 //  DMA 4/7 Callbacks from Core Emulator
@@ -227,74 +202,9 @@ bool SPU2init()
 	return true;
 }
 
-#if defined(_MSC_VER) && !defined(PCSX2_CORE)
-// Bit ugly to have this here instead of in RealttimeDebugger.cpp, but meh :p
-extern bool debugDialogOpen;
-extern HWND hDebugDialog;
-
-static INT_PTR CALLBACK DebugProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	int wmId;
-
-	switch (uMsg)
-	{
-		case WM_PAINT:
-			return FALSE;
-		case WM_INITDIALOG:
-		{
-			debugDialogOpen = true;
-		}
-		break;
-
-		case WM_COMMAND:
-			wmId = LOWORD(wParam);
-			// Parse the menu selections:
-			switch (wmId)
-			{
-				case IDOK:
-				case IDCANCEL:
-					debugDialogOpen = false;
-					EndDialog(hWnd, 0);
-					break;
-				default:
-					return FALSE;
-			}
-			break;
-
-		default:
-			return FALSE;
-	}
-	return TRUE;
-}
-#endif
 
 bool SPU2open(PS2Modes isRunningPSXMode)
 {
-#ifndef PCSX2_CORE
-	std::unique_lock lock(mtx_SPU2Status);
-	if (IsOpened)
-		return true;
-
-#if defined(_MSC_VER) && defined(PCSX2_DEVBUILD) // Define may not be needed but not tested yet. Better make sure.
-	IsOpened = true;
-
-	if (IsDevBuild && VisualDebug())
-	{
-		if (debugDialogOpen == 0)
-		{
-			hDebugDialog = CreateDialogParam(nullptr, MAKEINTRESOURCE(IDD_DEBUG), 0, DebugProc, 0);
-			ShowWindow(hDebugDialog, SW_SHOWNORMAL);
-			debugDialogOpen = 1;
-		}
-	}
-	else if (debugDialogOpen)
-	{
-		DestroyWindow(hDebugDialog);
-		debugDialogOpen = 0;
-	}
-#endif
-#endif
-
 	ReadSettings();
 
 #ifdef SPU2_LOG
@@ -318,10 +228,6 @@ bool SPU2open(PS2Modes isRunningPSXMode)
 	{
 		SampleRate = static_cast<int>(std::round(static_cast<double>(ConsoleSampleRate) * DeviceSampleRateMultiplier));
 		SPU2InitSndBuffer();
-
-#if defined(_WIN32) && !defined(PCSX2_CORE)
-		DspLoadLibrary(dspPlugin, dspPluginModule);
-#endif
 		WaveDump::Open();
 	}
 	catch (std::exception& ex)
@@ -336,18 +242,7 @@ bool SPU2open(PS2Modes isRunningPSXMode)
 
 void SPU2close()
 {
-#ifndef PCSX2_CORE
-	std::unique_lock lock(mtx_SPU2Status);
-	if (!IsOpened)
-		return;
-	IsOpened = false;
-#endif
-
 	FileLog("[%10d] SPU2 Close\n", Cycles);
-
-#if defined(_WIN32) && !defined(PCSX2_CORE)
-	DspCloseLibrary();
-#endif
 
 	SndBuffer::Cleanup();
 }
@@ -402,10 +297,6 @@ static bool lState[6];
 
 void SPU2async(u32 cycles)
 {
-#ifndef PCSX2_CORE
-	DspUpdate();
-#endif
-
 	TimeUpdate(psxRegs.cycle);
 
 #ifdef DEBUG_KEYS

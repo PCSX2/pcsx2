@@ -26,8 +26,6 @@ void SaveStateBase::InputRecordingFreeze()
 	Freeze(g_FrameCount);
 }
 
-#ifdef PCSX2_CORE
-
 #include "InputRecording.h"
 
 #include "InputRecordingControls.h"
@@ -394,5 +392,3 @@ void InputRecording::initializeState()
 	m_frame_counter = 0;
 	m_watching_for_rerecords = false;
 }
-
-#endif

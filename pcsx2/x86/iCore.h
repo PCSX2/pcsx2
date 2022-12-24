@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _PCSX2_CORE_RECOMPILER_
-#define _PCSX2_CORE_RECOMPILER_
+#pragma once
 
 #include "common/emitter/x86emitter.h"
 #include "VUmicro.h"
@@ -324,4 +323,3 @@ int _allocIfUsedFPUtoXMM(int fpureg, int mode);
 // no freeing, used when callee won't destroy xmm regs
 #define FLUSH_NODESTROY (FLUSH_CONSTANT_REGS | FLUSH_FLUSH_XMM | FLUSH_ALL_X86)
 
-#endif

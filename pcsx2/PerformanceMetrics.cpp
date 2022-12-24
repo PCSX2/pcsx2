@@ -26,10 +26,7 @@
 
 #include "GS.h"
 #include "MTVU.h"
-
-#ifdef PCSX2_CORE
 #include "VMManager.h"
-#endif
 
 static const float UPDATE_INTERVAL = 0.5f;
 
@@ -227,9 +224,7 @@ void PerformanceMetrics::Update(bool gs_register_write, bool fb_blit, bool is_sk
 	s_unskipped_frames_since_last_update = 0;
 	s_presents_since_last_update = 0;
 
-#ifdef PCSX2_CORE
 	Host::OnPerformanceMetricsUpdated();
-#endif
 }
 
 void PerformanceMetrics::OnGPUPresent(float gpu_time)

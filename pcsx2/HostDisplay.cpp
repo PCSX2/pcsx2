@@ -16,10 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "HostDisplay.h"
-
-#ifdef PCSX2_CORE
 #include "VMManager.h"
-#endif
 
 #include "common/Assertions.h"
 #include "common/Console.h"
@@ -136,11 +133,7 @@ std::string HostDisplay::GetFullscreenModeString(u32 width, u32 height, float re
 
 VsyncMode Host::GetEffectiveVSyncMode()
 {
-#ifdef PCSX2_CORE
 	const bool has_vm = VMManager::GetState() != VMState::Shutdown;
-#else
-	const bool has_vm = false;
-#endif
 
 	// Force vsync off when not running at 100% speed.
 	if (has_vm && EmuConfig.GS.LimitScalar != 1.0f)

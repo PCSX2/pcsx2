@@ -21,9 +21,6 @@
 
 #include "ATA.h"
 #include "DEV9/DEV9.h"
-#ifndef PCSX2_CORE
-#include "HddCreateWx.h"
-#endif
 
 #if _WIN32
 #include "pathcch.h"
@@ -61,19 +58,7 @@ int ATA::Open(const std::string& hddPath)
 
 	//Open File
 	if (!FileSystem::FileExists(hddPath.c_str()))
-	{
-#ifndef PCSX2_CORE
-		HddCreateWx hddCreator;
-		hddCreator.filePath = hddPath;
-		hddCreator.neededSize = ((u64)EmuConfig.DEV9.HddSizeSectors) * 512;
-		hddCreator.Start();
-
-		if (hddCreator.errored)
-			return -1;
-#else
 		return -1;
-#endif
-	}
 
 	hddImage = FileSystem::OpenCFile(hddPath.c_str(), "r+b");
 	const s64 size = hddImage ? FileSystem::FSize64(hddImage) : -1;

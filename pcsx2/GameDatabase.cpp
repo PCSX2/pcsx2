@@ -671,7 +671,6 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 	// fixup skipdraw range just in case the db has a bad range (but the linter should catch this)
 	config.SkipDrawEnd = std::max(config.SkipDrawStart, config.SkipDrawEnd);
 
-#ifdef PCSX2_CORE
 	if (!disabled_fixes.empty())
 	{
 		Host::AddKeyedOSDMessage("HWFixesWarning",
@@ -683,7 +682,6 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 	{
 		Host::RemoveKeyedOSDMessage("HWFixesWarning");
 	}
-#endif
 
 	return num_applied_fixes;
 }

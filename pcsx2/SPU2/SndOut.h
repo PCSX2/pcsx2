@@ -675,10 +675,3 @@ extern bool WavRecordEnabled;
 extern bool RecordStart(const std::string* filename);
 extern void RecordStop();
 extern void RecordWrite(const StereoOut16& sample);
-
-#ifndef PCSX2_CORE
-extern s32 DspLoadLibrary(wchar_t* fileName, int modNum);
-extern void DspCloseLibrary();
-extern int DspProcess(s16* buffer, int samples);
-extern void DspUpdate(); // to let the Dsp process window messages
-#endif

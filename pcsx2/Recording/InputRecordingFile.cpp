@@ -13,8 +13,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef PCSX2_CORE
-
 #include "PrecompiledHeader.h"
 
 #include "InputRecordingFile.h"
@@ -290,5 +288,3 @@ bool InputRecordingFile::verifyRecordingFileHeader()
 	}
 	return true;
 }
-
-#endif

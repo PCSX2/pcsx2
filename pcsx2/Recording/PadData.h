@@ -15,8 +15,6 @@
 
 #pragma once
 
-#ifdef PCSX2_CORE
-
 class PadData
 {
 public:
@@ -68,4 +66,3 @@ public:
 	void LogPadData() const;
 };
 
-#endif

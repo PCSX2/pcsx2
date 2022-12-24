@@ -89,10 +89,6 @@ public:
 	SaveStateBase( VmStateBuffer* memblock );
 	virtual ~SaveStateBase() { }
 
-#ifndef PCSX2_CORE
-	static std::string GetSavestateFolder(int slot, bool isSavingOrLoading = false);
-#endif
-
 	// Gets the version of savestate that this object is acting on.
 	// The version refers to the low 16 bits only (high 16 bits classifies Pcsx2 build types)
 	u32 GetVersion() const

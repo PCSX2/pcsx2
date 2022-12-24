@@ -30,10 +30,6 @@
 
 #include "common/StringUtil.h"
 
-#ifndef PCSX2_CORE
-#include "gui/SysThreads.h"
-#endif
-
 R5900DebugInterface r5900Debug;
 R3000DebugInterface r3000Debug;
 
@@ -174,44 +170,23 @@ private:
 
 bool DebugInterface::isAlive()
 {
-#ifndef PCSX2_CORE
-	return GetCoreThread().IsOpen() && g_FrameCount > 0;
-#else
 	return VMManager::HasValidVM() && g_FrameCount > 0;
-#endif
 }
 
 bool DebugInterface::isCpuPaused()
 {
-#ifndef PCSX2_CORE
-	return GetCoreThread().IsPaused();
-#else
 	return VMManager::GetState() == VMState::Paused;
-#endif
 }
 
 void DebugInterface::pauseCpu()
 {
-#ifndef PCSX2_CORE
-	SysCoreThread& core = GetCoreThread();
-	if (!core.IsPaused())
-		core.Pause({}, true);
-#else
 	VMManager::SetPaused(true);
-#endif
 }
 
 void DebugInterface::resumeCpu()
 {
-#ifndef PCSX2_CORE
-	SysCoreThread& core = GetCoreThread();
-	if (core.IsPaused())
-		core.Resume();
-#else
 	VMManager::SetPaused(false);
-#endif
 }
-
 
 char* DebugInterface::stringFromPointer(u32 p)
 {

@@ -123,19 +123,6 @@ public:
 };
 
 // --------------------------------------------------------------------------------------
-//  SysAllocVM
-// --------------------------------------------------------------------------------------
-class SysAllocVM
-{
-public:
-	SysAllocVM();
-	virtual ~SysAllocVM();
-
-protected:
-	void CleanupMess() noexcept;
-};
-
-// --------------------------------------------------------------------------------------
 //  SysCpuProviderPack
 // --------------------------------------------------------------------------------------
 class SysCpuProviderPack
@@ -158,40 +145,6 @@ extern std::string SysGetBiosDiscID();
 extern std::string SysGetDiscID();
 
 extern SysMainMemory& GetVmMemory();
-
-// special macro which disables inlining on functions that require their own function stackframe.
-// This is due to how Win32 handles structured exception handling.  Linux uses signals instead
-// of SEH, and so these functions can be inlined.
-#ifdef _WIN32
-#	define __unique_stackframe __noinline
-#else
-#	define __unique_stackframe
-#endif
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// Different types of message boxes that the emulator can employ from the friendly confines
-// of it's blissful unawareness of whatever GUI it runs under. :)  All message boxes exhibit
-// blocking behavior -- they prompt the user for action and only return after the user has
-// responded to the prompt.
-//
-
-#ifndef PCSX2_CORE
-#include <wx/string.h>
-
-namespace Msgbox
-{
-	extern bool	Alert( const wxString& text, const wxString& caption="PCSX2 Message", int icon=wxICON_EXCLAMATION );
-	extern bool	OkCancel( const wxString& text, const wxString& caption="PCSX2 Message", int icon=0 );
-	extern bool	YesNo( const wxString& text, const wxString& caption="PCSX2 Message", int icon=wxICON_QUESTION );
-
-	extern int	Assertion( const wxString& text, const wxString& stacktrace );
-}
-#endif
-
-#ifdef _WIN32
-extern void CheckIsUserOnHighPerfPowerPlan();
-#endif
 
 extern void SetCPUState(SSE_MXCSR sseMXCSR, SSE_MXCSR sseVUMXCSR);
 extern SSE_MXCSR g_sseVUMXCSR, g_sseMXCSR;

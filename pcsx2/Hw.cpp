@@ -20,12 +20,7 @@
 #include "newVif.h"
 #include "Gif_Unit.h"
 #include "SPU2/spu2.h"
-
-#ifdef PCSX2_CORE
 #include "USB/USB.h"
-#else
-#include "USB/USBNull.h"
-#endif
 
 #include "fmt/core.h"
 

@@ -21,13 +21,12 @@
 #include "common/StringUtil.h"
 
 #ifdef _WIN32
+#include "common/RedtapeWindows.h"
+#include <d3dcommon.h>
+#include <dxgi.h>
 #include <VersionHelpers.h>
-#include "svnrev.h"
 #include "Renderers/DX11/D3D.h"
 #include <wil/com.h>
-#else
-#define SVN_REV 0
-#define SVN_MODS 0
 #endif
 
 static class GSUtilMaps
@@ -144,34 +143,6 @@ bool GSUtil::HasSharedBits(u32 sbp, u32 spsm, u32 dbp, u32 dpsm)
 bool GSUtil::HasCompatibleBits(u32 spsm, u32 dpsm)
 {
 	return (s_maps.CompatibleBitsField[spsm][dpsm >> 5] & (1 << (dpsm & 0x1f))) != 0;
-}
-
-bool GSUtil::CheckSSE()
-{
-	struct ISA
-	{
-		ProcessorFeatures::VectorISA isa;
-		const char* name;
-	};
-
-	ISA checks[] = {
-		{ProcessorFeatures::VectorISA::SSE4, "SSE 4.1"},
-#if _M_SSE >= 0x500
-		{ProcessorFeatures::VectorISA::AVX, "AVX"},
-#endif
-#if _M_SSE >= 0x501
-		{ProcessorFeatures::VectorISA::AVX2, "AVX2"},
-#endif
-	};
-	for (const ISA& check : checks)
-	{
-		if (g_cpu.vectorISA < check.isa)
-		{
-			Console.Error("This CPU does not support %s", check.name);
-			return false;
-		}
-	}
-	return true;
 }
 
 CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)

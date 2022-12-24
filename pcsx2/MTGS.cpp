@@ -29,12 +29,7 @@
 #include "Host.h"
 #include "HostDisplay.h"
 #include "IconsFontAwesome5.h"
-
-#ifndef PCSX2_CORE
-#include "gui/Dialogs/ModalPopups.h"
-#else
 #include "VMManager.h"
-#endif
 
 // Uncomment this to enable profiling of the GS RingBufferCopy function.
 //#define PCSX2_GSRING_SAMPLING_STATS
@@ -298,7 +293,6 @@ void SysMtgsThread::MainLoop()
 
 	while (true)
 	{
-#ifdef PCSX2_CORE
 		if (m_run_idle_flag.load(std::memory_order_acquire) && VMManager::GetState() != VMState::Running)
 		{
 			if (!m_sem_event.CheckForWork())
@@ -313,11 +307,6 @@ void SysMtgsThread::MainLoop()
 			m_sem_event.WaitForWork();
 			mtvu_lock.lock();
 		}
-#else
-		mtvu_lock.unlock();
-		m_sem_event.WaitForWork();
-		mtvu_lock.lock();
-#endif
 
 		if (!m_open_flag.load(std::memory_order_acquire))
 			break;
@@ -592,10 +581,6 @@ void SysMtgsThread::MainLoop()
 
 void SysMtgsThread::CloseGS()
 {
-#ifndef PCSX2_CORE
-	if (GSDump::isRunning)
-		return;
-#endif
 	GSclose();
 }
 
@@ -890,11 +875,6 @@ bool SysMtgsThread::WaitForOpen()
 	if (!result)
 		Console.Error("GS failed to open.");
 
-#ifndef PCSX2_CORE
-	if (!result) // EE thread will continue running and explode everything if we don't throw an exception
-		throw Exception::RuntimeError(std::runtime_error("GS failed to open."));
-#endif
-
 	return result;
 }
 
@@ -953,11 +933,9 @@ void SysMtgsThread::ResizeDisplayWindow(int width, int height, float scale)
 		Host::ResizeHostDisplay(width, height, scale);
 		GSRestoreAPIState();
 
-#ifdef PCSX2_CORE
 		// If we're paused, re-present the current frame at the new window size.
 		if (VMManager::GetState() == VMState::Paused)
 			GSPresentCurrentFrame();
-#endif
 	});
 }
 
@@ -969,11 +947,9 @@ void SysMtgsThread::UpdateDisplayWindow()
 		Host::UpdateHostDisplay();
 		GSRestoreAPIState();
 
-#ifdef PCSX2_CORE
 		// If we're paused, re-present the current frame at the new window size.
 		if (VMManager::GetState() == VMState::Paused)
 			GSPresentCurrentFrame();
-#endif
 	});
 }
 

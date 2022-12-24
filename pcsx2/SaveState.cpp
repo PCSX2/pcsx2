@@ -41,16 +41,8 @@
 #include "GS/GS.h"
 #include "SPU2/spu2.h"
 #include "PAD/Gamepad.h"
-
-#ifndef PCSX2_CORE
-#include "gui/App.h"
-#include "gui/ConsoleLogger.h"
-#include "gui/SysThreads.h"
-#include "USB/USBNull.h"
-#else
 #include "USB/USB.h"
 #include "VMManager.h"
-#endif
 
 #ifdef ENABLE_ACHIEVEMENTS
 #include "Frontend/Achievements.h"
@@ -79,9 +71,6 @@ static void PreLoadPrep()
 	mmap_ResetBlockTracking();
 
 	SysClearExecutionCache();
-#ifndef PCSX2_CORE
-	PatchesVerboseReset();
-#endif
 }
 
 static void PostLoadPrep()
@@ -107,55 +96,6 @@ static void PostLoadPrep()
 // --------------------------------------------------------------------------------------
 //  SaveStateBase  (implementations)
 // --------------------------------------------------------------------------------------
-#ifndef PCSX2_CORE
-std::string SaveStateBase::GetSavestateFolder(int slot, bool isSavingOrLoading)
-{
-	std::string CRCvalue(StringUtil::StdStringFromFormat("%08X", ElfCRC));
-	std::string serialName;
-
-	if (g_GameStarted || g_GameLoading)
-	{
-		if (DiscSerial.empty())
-		{
-			// Running homebrew/standalone ELF, return only the ELF name.
-			// can't use FileSystem here because it's DOS paths
-			const std::string::size_type pos = std::min(DiscSerial.rfind('/'), DiscSerial.rfind('\\'));
-			if (pos != std::string::npos)
-				serialName = DiscSerial.substr(pos + 1);
-			else
-				serialName = DiscSerial;
-		}
-		else
-		{
-			// Running a normal retail game
-			// Folder format is "SLXX-XXXX - (00000000)"
-			serialName = DiscSerial;
-		}
-	}
-	else
-	{
-		// Still inside the BIOS/not running a game (why would anyone want to do this?)
-		serialName = StringUtil::StdStringFromFormat("BIOS (%s v%u.%u)", BiosZone.c_str(), (BiosVersion >> 8), BiosVersion & 0xff);
-		CRCvalue = "None";
-	}
-
-	const std::string dir(StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s - (%s)",
-		g_Conf->Folders.Savestates.ToUTF8().data(), serialName.c_str(), CRCvalue.c_str()));
-
-	if (isSavingOrLoading)
-	{
-		if (!FileSystem::DirectoryExists(dir.c_str()))
-		{
-			// sstates should exist, no need to create it
-			FileSystem::CreateDirectoryPath(dir.c_str(), false);
-		}
-	}
-
-	return Path::Combine(dir, StringUtil::StdStringFromFormat("%s (%s).%02d.p2s",
-		serialName.c_str(), CRCvalue.c_str(), slot));
-}
-#endif
-
 SaveStateBase::SaveStateBase( SafeArray<u8>& memblock )
 {
 	Init( &memblock );
@@ -237,9 +177,7 @@ SaveStateBase& SaveStateBase::FreezeBios()
 
 SaveStateBase& SaveStateBase::FreezeInternals()
 {
-#ifdef PCSX2_CORE
 	const u32 previousCRC = ElfCRC;
-#endif
 
 	// Print this until the MTVU problem in gifPathFreeze is taken care of (rama)
 	if (THREAD_VU1) Console.Warning("MTVU speedhack is enabled, saved states may not be stable");
@@ -264,7 +202,6 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	{
 		DiscSerial = localDiscSerial;
 
-#ifdef PCSX2_CORE
 		if (ElfCRC != previousCRC)
 		{
 			// HACK: LastELF isn't in the save state... Load it before we go too far into restoring state.
@@ -275,7 +212,6 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 			else
 				cdvdReloadElfInfo();
 		}
-#endif
 	}
 
 
@@ -412,14 +348,8 @@ struct SysState_Component
 
 static int SysState_MTGSFreeze(FreezeAction mode, freezeData* fP)
 {
-#ifndef PCSX2_CORE
-	ScopedCoreThreadPause paused_core;
-#endif
 	MTGS_FreezeData sstate = { fP, 0 };
 	GetMTGS().Freeze(mode, sstate);
-#ifndef PCSX2_CORE
-	paused_core.AllowResume();
-#endif
 	return sstate.retval;
 }
 
@@ -727,9 +657,7 @@ static const std::unique_ptr<BaseSavestateEntry> SavestateEntries[] = {
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_VU0prog),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_VU1prog),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_SPU2),
-#ifdef PCSX2_CORE
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_USB),
-#endif
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_PAD),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_GS),
 #ifdef ENABLE_ACHIEVEMENTS
@@ -739,13 +667,6 @@ static const std::unique_ptr<BaseSavestateEntry> SavestateEntries[] = {
 
 std::unique_ptr<ArchiveEntryList> SaveState_DownloadState()
 {
-#ifndef PCSX2_CORE
-	if (!GetCoreThread().HasActiveMachine())
-		throw Exception::RuntimeError()
-			.SetDiagMsg("SysExecEvent_DownloadState: Cannot freeze/download an invalid VM state!")
-			.SetUserMsg("There is no active virtual machine state to download or save.");
-#endif
-
 	std::unique_ptr<ArchiveEntryList> destlist = std::make_unique<ArchiveEntryList>(new VmStateBuffer("Zippable Savestate"));
 
 	memSavingState saveme(destlist->GetBuffer());

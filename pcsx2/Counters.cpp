@@ -33,15 +33,9 @@
 #include "Sio.h"
 #include "HostDisplay.h"
 #include "SPU2/spu2.h"
-
-#ifndef PCSX2_CORE
-#include "gui/App.h"
-#include "Recording/InputRecordingControls.h"
-#else
 #include "PAD/Host/PAD.h"
 #include "Recording/InputRecording.h"
 #include "VMManager.h"
-#endif
 
 using namespace Threading;
 
@@ -548,15 +542,9 @@ static __fi void frameLimitUpdateCore()
 {
 	DoFMVSwitch();
 
-#ifndef PCSX2_CORE
-	GetCoreThread().VsyncInThread();
-	if (GetCoreThread().HasPendingStateChangeRequest())
-		Cpu->ExitExecution();
-#else
 	VMManager::Internal::VSyncOnCPUThread();
 	if (VMManager::Internal::IsExecutionInterrupted())
 		Cpu->ExitExecution();
-#endif
 }
 
 // Framelimiter - Measures the delta time between calls and stalls until a
@@ -608,10 +596,8 @@ static __fi void frameLimit()
 
 static __fi void VSyncStart(u32 sCycle)
 {
-#ifdef PCSX2_CORE
 	// Update vibration at the end of a frame.
 	PAD::Update();
-#endif
 
 	frameLimit(); // limit FPS
 	gsPostVsyncStart(); // MUST be after framelimit; doing so before causes funk with frame times!

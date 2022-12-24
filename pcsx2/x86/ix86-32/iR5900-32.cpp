@@ -29,12 +29,7 @@
 #include "vtlb.h"
 #include "Dump.h"
 
-#ifndef PCSX2_CORE
-#include "gui/SysThreads.h"
-#include <pthread.h>
-#else
 #include "VMManager.h"
-#endif
 #include "GS.h"
 #include "CDVD/CDVD.h"
 #include "Elfheader.h"
@@ -71,9 +66,6 @@ static std::atomic<bool> eeRecNeedsReset(false);
 static bool eeCpuExecuting = false;
 static bool eeRecExitRequested = false;
 static bool g_resetEeScalingStats = false;
-#ifndef PCSX2_CORE
-static int g_patchesNeedRedo = 0;
-#endif
 
 #define PC_GETBLOCK(x) PC_GETBLOCK_(x, recLUT)
 
@@ -663,9 +655,6 @@ static void recResetRaw()
 
 	g_branch = 0;
 	g_resetEeScalingStats = true;
-#ifndef PCSX2_CORE
-	g_patchesNeedRedo = 1;
-#endif
 }
 
 static void recShutdown()
@@ -741,9 +730,6 @@ static void recExecute()
 	// setjmp will save the register context and will return 0
 	// A call to longjmp will restore the context (included the eip/rip)
 	// but will return the longjmp 2nd parameter (here 1)
-#ifndef PCSX2_CORE
-	int oldstate;
-#endif
 	if (!fastjmp_set(&m_SetJmp_StateCheck))
 	{
 		eeCpuExecuting = true;
@@ -753,18 +739,9 @@ static void recExecute()
 		// in Linux, which cannot have a C++ exception cross the recompiler.  Hence the changing
 		// of the cancelstate here!
 
-#ifndef PCSX2_CORE
-		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
-#endif
 		EnterRecompiledCode();
 
 		// Generally unreachable code here ...
-	}
-	else
-	{
-#ifndef PCSX2_CORE
-		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldstate);
-#endif
 	}
 
 	eeCpuExecuting = false;
@@ -1615,11 +1592,7 @@ void dynarecCheckBreakpoint()
 		return;
 
 	CBreakPoints::SetBreakpointTriggered(true);
-#ifndef PCSX2_CORE
-	GetCoreThread().PauseSelfDebug();
-#else
 	VMManager::SetPaused(true);
-#endif
 	recExitExecution();
 }
 
@@ -1630,11 +1603,7 @@ void dynarecMemcheck()
 		return;
 
 	CBreakPoints::SetBreakpointTriggered(true);
-#ifndef PCSX2_CORE
-	GetCoreThread().PauseSelfDebug();
-#else
 	VMManager::SetPaused(true);
-#endif
 	recExitExecution();
 }
 
@@ -2232,17 +2201,6 @@ bool skipMPEG_By_Pattern(u32 sPC)
 	return 0;
 }
 
-#ifndef PCSX2_CORE
-// defined at AppCoreThread.cpp but unclean and should not be public. We're the only
-// consumers of it, so it's declared only here.
-void LoadAllPatchesAndStuff(const Pcsx2Config&);
-static void doPlace0Patches()
-{
-	LoadAllPatchesAndStuff(EmuConfig);
-	ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
-}
-#endif
-
 static void recRecompile(const u32 startpc)
 {
 	u32 i = 0;
@@ -2305,16 +2263,6 @@ static void recRecompile(const u32 startpc)
 			else // There might be other types of EELOAD, because these models' BIOSs have not been examined: 18000, 3500x, 3700x, 5500x, and 7900x. However, all BIOS versions have been examined except for v1.01 and v1.10.
 				Console.WriteLn("recRecompile: Could not enable launch arguments for fast boot mode; unidentified BIOS version! Please report this to the PCSX2 developers.");
 		}
-
-#ifndef PCSX2_CORE
-		// On fast/full boot this will have a crc of 0x0. But when the game/elf itself is
-		// recompiled (below - ElfEntry && g_GameLoading), then the crc would be from the elf.
-		// g_patchesNeedRedo is set on rec reset, and this is the only consumer.
-		// Also makes sure that patches from the previous elf/game are not applied on boot.
-		if (g_patchesNeedRedo)
-			doPlace0Patches();
-		g_patchesNeedRedo = 0;
-#endif
 	}
 
 	if (g_eeloadExec && HWADDR(startpc) == HWADDR(g_eeloadExec))
@@ -2325,14 +2273,7 @@ static void recRecompile(const u32 startpc)
 	{
 		Console.WriteLn("Elf entry point @ 0x%08x about to get recompiled. Load patches first.", startpc);
 		xFastCall((void*)eeGameStarting);
-
-#ifndef PCSX2_CORE
-		// Apply patch as soon as possible. Normally it is done in
-		// eeGameStarting but first block is already compiled.
-		doPlace0Patches();
-#else
 		VMManager::Internal::EntryPointCompilingOnCPUThread();
-#endif
 	}
 
 	g_branch = 0;

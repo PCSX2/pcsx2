@@ -7,9 +7,6 @@ if(DISABLE_ADVANCE_SIMD OR LTO_PCSX2_CORE)
 else()
 	add_library(PCSX2)
 endif()
-target_compile_definitions(PCSX2_FLAGS INTERFACE
-	"PCSX2_CORE"
-)
 target_link_libraries(PCSX2 PRIVATE PCSX2_FLAGS)
 
 target_compile_features(PCSX2_FLAGS INTERFACE cxx_std_17)

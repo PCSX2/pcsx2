@@ -22,10 +22,6 @@
 #include "Elfheader.h"
 #include "DebugTools/SymbolMap.h"
 
-#ifndef PCSX2_CORE
-#include "gui/AppCoreThread.h"
-#endif
-
 u32 ElfCRC;
 u32 ElfEntry;
 std::pair<u32,u32> ElfTextRange;
@@ -369,9 +365,6 @@ int GetPS2ElfName( std::string& name )
 			{
 				Console.WriteLn( Color_Blue, "(SYSTEM.CNF) Software version = %.*s",
 					static_cast<int>(value.size()), value.data());
-#ifndef PCSX2_CORE
-				GameInfo::gameVersion = StringUtil::UTF8StringToWxString(value);
-#endif
 			}
 		}
 

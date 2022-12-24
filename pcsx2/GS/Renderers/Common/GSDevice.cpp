@@ -563,34 +563,6 @@ void GSDevice::CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, con
 	src_uv = GSVector4(0.0f, 0.0f, 1.0f, 1.0f);
 }
 
-GSAdapter::operator std::string() const
-{
-	char buf[sizeof "12345678:12345678:12345678:12345678"];
-	sprintf(buf, "%.4X:%.4X:%.8X:%.2X", vendor, device, subsys, rev);
-	return buf;
-}
-
-bool GSAdapter::operator==(const GSAdapter& desc_dxgi) const
-{
-	return vendor == desc_dxgi.vendor
-		&& device == desc_dxgi.device
-		&& subsys == desc_dxgi.subsys
-		&& rev == desc_dxgi.rev;
-}
-
-#ifdef _WIN32
-GSAdapter::GSAdapter(const DXGI_ADAPTER_DESC1& desc_dxgi)
-	: vendor(desc_dxgi.VendorId)
-	, device(desc_dxgi.DeviceId)
-	, subsys(desc_dxgi.SubSysId)
-	, rev(desc_dxgi.Revision)
-{
-}
-#endif
-#ifdef __linux__
-// TODO
-#endif
-
 // clang-format off
 
 const std::array<u8, 16> GSDevice::m_replaceDualSrcBlendMap =
