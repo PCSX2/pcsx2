@@ -149,8 +149,6 @@ for ARG in "$@"; do
         --prof              ) flags="$flags -DCMAKE_BUILD_TYPE=RelWithDebInfo"; build="$root/build_prof";;
         --strip             ) flags="$flags -DCMAKE_BUILD_STRIP=TRUE" ;;
         --asan              ) flags="$flags -DUSE_ASAN=TRUE" ;;
-        --gtk2              ) flags="$flags -DGTK2_API=TRUE" ;;
-        --qt6               ) flags="$flags -DQT_BUILD=TRUE" ;;
         --use-system        ) flags="$flags -DUSE_SYSTEM_LIBS=ON" ;;
         --use-bundled       ) flags="$flags -DUSE_SYSTEM_LIBS=OFF" ;;
         --lto               ) flags="$flags -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE" ;;
@@ -174,8 +172,6 @@ for ARG in "$@"; do
             echo "--no-simd         : Only allow sse2."
             echo
             echo "** Expert Developer option **"
-            echo "--gtk2            : use GTK 2 instead of GTK 3."
-            echo "--qt6             : Experimental qt 6 ui."
             echo "--no-trans        : Don't regenerate mo files when building."
             echo "--strip           : Strip binaries to save a small amount of space."
             echo "--clang           : Build with Clang/llvm."
