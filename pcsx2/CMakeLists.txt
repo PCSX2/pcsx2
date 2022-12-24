@@ -1029,8 +1029,7 @@ set(pcsx2WindowsSources
 
 # Windows headers
 set(pcsx2WindowsHeaders
-	windows/resource.h
-	windows/Win32.h)
+	windows/resource.h)
 
 # x86 sources
 set(pcsx2x86Sources
