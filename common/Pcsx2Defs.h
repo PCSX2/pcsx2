@@ -31,6 +31,7 @@
 
 #include "Pcsx2Types.h"
 #include <cstddef>
+#include <cassert>
 
 #include "common/emitter/x86_intrin.h"
 
