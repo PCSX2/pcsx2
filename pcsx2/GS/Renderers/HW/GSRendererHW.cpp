@@ -270,7 +270,7 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 		{
 			if (GSConfig.SaveFrame && s_n >= GSConfig.SaveN)
 			{
-				t->Save(s_dump_root + StringUtil::StdStringFromFormat("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, (int)TEX0.TBP0, psm_str(TEX0.PSM)));
+				t->Save(GetDrawDumpPath("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, (int)TEX0.TBP0, psm_str(TEX0.PSM)));
 			}
 		}
 #endif
@@ -299,7 +299,7 @@ GSTexture* GSRendererHW::GetFeedbackOutput()
 
 #ifdef ENABLE_OGL_DEBUG
 	if (GSConfig.DumpGSData && GSConfig.SaveFrame && s_n >= GSConfig.SaveN)
-		t->Save(s_dump_root + StringUtil::StdStringFromFormat("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), 3, (int)TEX0.TBP0, psm_str(TEX0.PSM)));
+		t->Save(GetDrawDumpPath("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), 3, (int)TEX0.TBP0, psm_str(TEX0.PSM)));
 #endif
 
 	return t;
