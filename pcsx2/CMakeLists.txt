@@ -1625,6 +1625,7 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 if(PCSX2_CORE)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		simpleini
+		demangler
 	)
 else()
 	target_link_libraries(PCSX2_FLAGS INTERFACE

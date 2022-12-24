@@ -1581,8 +1581,8 @@ void psxRecompileNextInstruction(bool delayslot, bool swapped_delayslot)
 	if (!delayslot)
 	{
 		// Broken on x64
-		//	psxEncodeBreakpoint();
-	//	psxEncodeMemcheck();
+		psxEncodeBreakpoint();
+		psxEncodeMemcheck();
 	}
 	else
 	{

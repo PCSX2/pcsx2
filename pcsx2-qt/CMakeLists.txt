@@ -122,6 +122,24 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/SettingsDialog.ui
 	Settings/USBBindingWidget_DrivingForce.ui
 	Settings/USBBindingWidget_GTForce.ui
+	Debugger/CpuWidget.cpp
+	Debugger/CpuWidget.h
+	Debugger/CpuWidget.ui
+	Debugger/DebuggerWindow.cpp
+	Debugger/DebuggerWindow.h
+	Debugger/DebuggerWindow.ui
+	Debugger/DisassemblyWidget.cpp
+	Debugger/DisassemblyWidget.h
+	Debugger/DisassemblyWidget.ui
+	Debugger/MemoryViewWidget.cpp
+	Debugger/MemoryViewWidget.h
+	Debugger/MemoryViewWidget.ui
+	Debugger/RegisterWidget.cpp
+	Debugger/RegisterWidget.h
+	Debugger/RegisterWidget.ui
+	Debugger/BreakpointDialog.cpp
+	Debugger/BreakpointDialog.h
+	Debugger/BreakpointDialog.ui
 	Tools/InputRecording/NewInputRecordingDlg.cpp
 	Tools/InputRecording/NewInputRecordingDlg.h
 	Tools/InputRecording/NewInputRecordingDlg.ui

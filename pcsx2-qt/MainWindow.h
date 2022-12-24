@@ -25,6 +25,7 @@
 #include "Tools/InputRecording/InputRecordingViewer.h"
 #include "Settings/ControllerSettingsDialog.h"
 #include "Settings/SettingsDialog.h"
+#include "Debugger/DebuggerWindow.h"
 #include "ui_MainWindow.h"
 
 class QProgressBar;
@@ -242,6 +243,9 @@ private:
 	InputRecordingViewer* getInputRecordingViewer();
 	void updateInputRecordingActions(bool started);
 
+	DebuggerWindow* getDebuggerWindow();
+	void openDebugger();
+
 	ControllerSettingsDialog* getControllerSettingsDialog();
 	void doControllerSettings(ControllerSettingsDialog::Category category = ControllerSettingsDialog::Category::Count);
 
@@ -271,6 +275,8 @@ private:
 	InputRecordingViewer* m_input_recording_viewer = nullptr;
 	ControllerSettingsDialog* m_controller_settings_dialog = nullptr;
 	AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
+
+	DebuggerWindow* m_debugger_window = nullptr;
 
 	QProgressBar* m_status_progress_widget = nullptr;
 	QLabel* m_status_verbose_widget = nullptr;
