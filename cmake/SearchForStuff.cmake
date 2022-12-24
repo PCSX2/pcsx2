@@ -171,15 +171,6 @@ endif()
 add_subdirectory(3rdparty/lzma EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/libchdr EXCLUDE_FROM_ALL)
 
-if(USE_NATIVE_TOOLS)
-	add_subdirectory(tools/bin2cpp EXCLUDE_FROM_ALL)
-	set(BIN2CPP bin2cpp)
-	set(BIN2CPPDEP bin2cpp)
-else()
-	set(BIN2CPP perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl)
-	set(BIN2CPPDEP ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl)
-endif()
-
 # rapidyaml includes fast_float as a submodule, saves us pulling it in directly.
 # Normally, we'd just pull in the cmake project, and link to it, but... it seems to enable
 # permissive mode, which breaks other parts of PCSX2. So, we'll just create a target here
