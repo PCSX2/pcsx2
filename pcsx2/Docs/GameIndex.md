@@ -159,7 +159,6 @@ The clamp modes are also numerically based.
 *   disableDepthSupport         [`0` or `1`]   {Off or On}                          Default: Off (`0`)
 *   disablePartialInvalidation  [`0` or `1`]   {Off or On}                          Default: Off (`0`)
 *   cpuFramebufferConversion    [`0` or `1`]   {Off or On}                          Default: Off (`0`)
-*   wrapGSMem                   [`0` or `1`]   {Off or On}                          Default: Off (`0`)
 *   preloadFrameData            [`0` or `1`]   {Off or On}                          Default: Off (`0`)
 *   textureInsideRT             [`0` or `1`]   {Off or On}                          Default: Off (`0`)
 *   halfBottomOverride          [`0` or `1`]   {Force-Disabled or Force-Enabled}    Default: Automatic (No value, looks up GameDB)
