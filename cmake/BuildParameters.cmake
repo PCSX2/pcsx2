@@ -25,13 +25,6 @@ optional_system_library(libzip)
 optional_system_library(SDL2)
 option(LTO_PCSX2_CORE "Enable LTO/IPO/LTCG on the subset of pcsx2 that benefits most from it but not anything else")
 
-if(WIN32)
-	set(DEFAULT_NATIVE_TOOLS ON)
-else()
-	set(DEFAULT_NATIVE_TOOLS OFF)
-endif()
-option(USE_NATIVE_TOOLS "Uses c++ tools instead of ones written in scripting languages.  OFF requires perl, ON may fail if cross compiling" ${DEFAULT_NATIVE_TOOLS})
-
 if(DISABLE_BUILD_DATE OR openSUSE)
 	message(STATUS "Disabling the inclusion of the binary compile date.")
 	list(APPEND PCSX2_DEFS DISABLE_BUILD_DATE)
