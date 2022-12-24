@@ -56,9 +56,3 @@ if(ACTUALLY_ENABLE_TESTS)
 	add_subdirectory(tests/ctest)
 endif()
 
-#-------------------------------------------------------------------------------
-
-if(NOT WIN32 AND NOT DISABLE_PCSX2_WRAPPER)
-	# special case to avoid having linux files in windows
-	INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2-linux.sh"          DESTINATION "${CMAKE_SOURCE_DIR}/bin")
-endif()
