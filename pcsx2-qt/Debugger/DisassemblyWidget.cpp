@@ -50,36 +50,36 @@ void DisassemblyWidget::CreateCustomContextMenu()
 	m_contextMenu = new QMenu(this);
 
 	QAction* action = 0;
-	m_contextMenu->addAction(action = new QAction("Copy Address", this));
+	m_contextMenu->addAction(action = new QAction(tr("Copy Address"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextCopyAddress);
-	m_contextMenu->addAction(action = new QAction("Copy Instruction Hex", this));
+	m_contextMenu->addAction(action = new QAction(tr("Copy Instruction Hex"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextCopyInstructionHex);
-	m_contextMenu->addAction(action = new QAction("Copy Instruction Text", this));
+	m_contextMenu->addAction(action = new QAction(tr("Copy Instruction Text"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextCopyInstructionText);
 	// TODO: Disassemble to file. Do people use that?
 	m_contextMenu->addSeparator();
-	m_contextMenu->addAction(action = new QAction("Assemble new Instruction(s)", this));
+	m_contextMenu->addAction(action = new QAction(tr("Assemble new Instruction(s)"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextAssembleInstruction);
 	m_contextMenu->addSeparator();
-	m_contextMenu->addAction(action = new QAction("Run to Cursor", this));
+	m_contextMenu->addAction(action = new QAction(tr("Run to Cursor"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextRunToCursor);
-	m_contextMenu->addAction(action = new QAction("Jump to Cursor", this));
+	m_contextMenu->addAction(action = new QAction(tr("Jump to Cursor"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextJumpToCursor);
-	m_contextMenu->addAction(action = new QAction("Toggle Breakpoint", this));
+	m_contextMenu->addAction(action = new QAction(tr("Toggle Breakpoint"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextToggleBreakpoint);
-	m_contextMenu->addAction(action = new QAction("Follow Branch", this));
+	m_contextMenu->addAction(action = new QAction(tr("Follow Branch"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextFollowBranch);
 	m_contextMenu->addSeparator();
-	m_contextMenu->addAction(action = new QAction("Go to Address", this));
+	m_contextMenu->addAction(action = new QAction(tr("Go to Address"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextGoToAddress);
-	m_contextMenu->addAction(action = new QAction("Go to in Memory View", this));
+	m_contextMenu->addAction(action = new QAction(tr("Go to in Memory View"), this));
 	connect(action, &QAction::triggered, this, [this]() { gotoInMemory(m_selectedAddressStart); });
 	m_contextMenu->addSeparator();
-	m_contextMenu->addAction(action = new QAction("Add Function", this));
+	m_contextMenu->addAction(action = new QAction(tr("Add Function"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextAddFunction);
-	m_contextMenu->addAction(action = new QAction("Rename Function", this));
+	m_contextMenu->addAction(action = new QAction(tr("Rename Function"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextRenameFunction);
-	m_contextMenu->addAction(action = new QAction("Remove Function", this));
+	m_contextMenu->addAction(action = new QAction(tr("Remove Function"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextRemoveFunction);
 }
 
@@ -102,14 +102,14 @@ void DisassemblyWidget::contextAssembleInstruction()
 {
 	if (!m_cpu->isCpuPaused())
 	{
-		QMessageBox::warning(this, "Assemble Error", "Unable to change assembly while core is running");
+		QMessageBox::warning(this, tr("Assemble Error"), tr("Unable to change assembly while core is running"));
 		return;
 	}
 
 	DisassemblyLineInfo line;
 	bool ok;
 	m_disassemblyManager.getLine(m_selectedAddressStart, false, line);
-	QString instruction = QInputDialog::getText(this, "Assemble Instruction", "",
+	QString instruction = QInputDialog::getText(this, tr("Assemble Instruction"), "",
 		QLineEdit::Normal, QString("%1 %2").arg(line.name.c_str()).arg(line.params.c_str()), &ok);
 
 	if (!ok)
@@ -121,7 +121,7 @@ void DisassemblyWidget::contextAssembleInstruction()
 
 	if (!valid)
 	{
-		QMessageBox::warning(this, "Assemble Error", QString::fromStdString(errorText));
+		QMessageBox::warning(this, tr("Assemble Error"), QString::fromStdString(errorText));
 		return;
 	}
 	else
@@ -182,7 +182,7 @@ void DisassemblyWidget::contextFollowBranch()
 void DisassemblyWidget::contextGoToAddress()
 {
 	bool ok;
-	const QString targetString = QInputDialog::getText(this, "Go to address", "",
+	const QString targetString = QInputDialog::getText(this, tr("Go to address"), "",
 		QLineEdit::Normal, "", &ok);
 
 	if (!ok)
@@ -192,7 +192,7 @@ void DisassemblyWidget::contextGoToAddress()
 
 	if (!ok)
 	{
-		QMessageBox::warning(this, "Go to address error", "Invalid address");
+		QMessageBox::warning(this, tr("Go to address error"), tr("Invalid address"));
 		return;
 	}
 
@@ -210,7 +210,7 @@ void DisassemblyWidget::contextAddFunction()
 	{
 		if (curFuncAddr == curAddress) // There is already a function here
 		{
-			QMessageBox::warning(this, "Add Function Error", "A function entry point already exists here. Consider renaming instead.");
+			QMessageBox::warning(this, tr("Add Function Error"), tr("A function entry point already exists here. Consider renaming instead."));
 		}
 		else
 		{
@@ -218,8 +218,8 @@ void DisassemblyWidget::contextAddFunction()
 			u32 newSize = curAddress - curFuncAddr;
 
 			bool ok;
-			QString funcName = QInputDialog::getText(this, "Add Function",
-				QString("Function will be (0x%1) instructions long.\nEnter function name").arg(prevSize - newSize, 0, 16), QLineEdit::Normal, "", &ok);
+			QString funcName = QInputDialog::getText(this, tr("Add Function"),
+				tr("Function will be (0x%1) instructions long.\nEnter function name").arg(prevSize - newSize, 0, 16), QLineEdit::Normal, "", &ok);
 			if (!ok)
 				return;
 
@@ -234,7 +234,7 @@ void DisassemblyWidget::contextAddFunction()
 	{
 		bool ok;
 		QString funcName = QInputDialog::getText(this, "Add Function",
-			QString("Function will be (0x%1) instructions long.\nEnter function name").arg(m_selectedAddressEnd + 4 - m_selectedAddressStart, 0, 16), QLineEdit::Normal, "", &ok);
+			tr("Function will be (0x%1) instructions long.\nEnter function name").arg(m_selectedAddressEnd + 4 - m_selectedAddressStart, 0, 16), QLineEdit::Normal, "", &ok);
 		if (!ok)
 			return;
 
@@ -270,13 +270,13 @@ void DisassemblyWidget::contextRenameFunction()
 	if (curFuncAddress != SymbolMap::INVALID_ADDRESS)
 	{
 		bool ok;
-		QString funcName = QInputDialog::getText(this, "Rename Function", "Function name", QLineEdit::Normal, m_cpu->GetSymbolMap().GetLabelString(curFuncAddress).c_str(), &ok);
+		QString funcName = QInputDialog::getText(this, tr("Rename Function"), tr("Function name"), QLineEdit::Normal, m_cpu->GetSymbolMap().GetLabelString(curFuncAddress).c_str(), &ok);
 		if (!ok)
 			return;
 
 		if (funcName.isEmpty())
 		{
-			QMessageBox::warning(this, "Rename Function Error", "Function name cannot be nothing.");
+			QMessageBox::warning(this, tr("Rename Function Error"), tr("Function name cannot be nothing."));
 		}
 		else
 		{
@@ -288,7 +288,7 @@ void DisassemblyWidget::contextRenameFunction()
 	}
 	else
 	{
-		QMessageBox::warning(this, "Rename Function Error", "No function / symbol is currently selected.");
+		QMessageBox::warning(this, tr("Rename Function Error"), tr("No function / symbol is currently selected."));
 	}
 }
 
@@ -592,7 +592,7 @@ inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFon
 	DisassemblyLineInfo line;
 
 	if (!m_cpu->isValidAddress(address))
-		return QString("%1 NOT VALID ADDRESS").arg(address, 8, 16, QChar('0')).toUpper();
+		return tr("%1 NOT VALID ADDRESS").arg(address, 8, 16, QChar('0')).toUpper();
 	// Todo? support non symbol view?
 	m_disassemblyManager.getLine(address, true, line);
 

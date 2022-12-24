@@ -235,30 +235,30 @@ void RegisterWidget::customMenuRequested(QPoint pos)
 
 	if (categoryIndex == EECAT_FPR)
 	{
-		m_contextMenu->addAction(action = new QAction(m_showFPRFloat ? "View as hex" : "View as float"));
+		m_contextMenu->addAction(action = new QAction(m_showFPRFloat ? tr("View as hex") : tr("View as float")));
 		connect(action, &QAction::triggered, this, [this]() { m_showFPRFloat = !m_showFPRFloat; });
 		m_contextMenu->addSeparator();
 	}
 
 	if (categoryIndex == EECAT_VU0F)
 	{
-		m_contextMenu->addAction(action = new QAction(m_showVU0FFloat ? "View as hex" : "View as float"));
+		m_contextMenu->addAction(action = new QAction(m_showVU0FFloat ? tr("View as hex") : tr("View as float")));
 		connect(action, &QAction::triggered, this, [this]() { m_showVU0FFloat = !m_showVU0FFloat; });
 		m_contextMenu->addSeparator();
 	}
 
 	if (m_cpu->getRegisterSize(categoryIndex) == 128)
 	{
-		m_contextMenu->addAction(action = new QAction("Copy Top Half", this));
+		m_contextMenu->addAction(action = new QAction(tr("Copy Top Half"), this));
 		connect(action, &QAction::triggered, this, &RegisterWidget::contextCopyTop);
-		m_contextMenu->addAction(action = new QAction("Copy Bottom Half", this));
+		m_contextMenu->addAction(action = new QAction(tr("Copy Bottom Half"), this));
 		connect(action, &QAction::triggered, this, &RegisterWidget::contextCopyBottom);
-		m_contextMenu->addAction(action = new QAction("Copy Segment", this));
+		m_contextMenu->addAction(action = new QAction(tr("Copy Segment"), this));
 		connect(action, &QAction::triggered, this, &RegisterWidget::contextCopySegment);
 	}
 	else
 	{
-		m_contextMenu->addAction(action = new QAction("Copy Value", this));
+		m_contextMenu->addAction(action = new QAction(tr("Copy Value"), this));
 		connect(action, &QAction::triggered, this, &RegisterWidget::contextCopyValue);
 	}
 
@@ -266,25 +266,25 @@ void RegisterWidget::customMenuRequested(QPoint pos)
 
 	if (m_cpu->getRegisterSize(categoryIndex) == 128)
 	{
-		m_contextMenu->addAction(action = new QAction("Change Top Half", this));
+		m_contextMenu->addAction(action = new QAction(tr("Change Top Half"), this));
 		connect(action, &QAction::triggered, this, &RegisterWidget::contextChangeTop);
-		m_contextMenu->addAction(action = new QAction("Change Bottom Half", this));
+		m_contextMenu->addAction(action = new QAction(tr("Change Bottom Half"), this));
 		connect(action, &QAction::triggered, this, &RegisterWidget::contextChangeBottom);
-		m_contextMenu->addAction(action = new QAction("Change Segment", this));
+		m_contextMenu->addAction(action = new QAction(tr("Change Segment"), this));
 		connect(action, &QAction::triggered, this, &RegisterWidget::contextChangeSegment);
 	}
 	else
 	{
-		m_contextMenu->addAction(action = new QAction("Change Value", this));
+		m_contextMenu->addAction(action = new QAction(tr("Change Value"), this));
 		connect(action, &QAction::triggered, this, &RegisterWidget::contextChangeValue);
 	}
 
 	m_contextMenu->addSeparator();
 
-	m_contextMenu->addAction(action = new QAction("Go to in Disassembly", this));
+	m_contextMenu->addAction(action = new QAction(tr("Go to in Disassembly"), this));
 	connect(action, &QAction::triggered, this, &RegisterWidget::contextGotoDisasm);
 
-	m_contextMenu->addAction(action = new QAction("Go to in Memory", this));
+	m_contextMenu->addAction(action = new QAction(tr("Go to in Memory"), this));
 	connect(action, &QAction::triggered, this, &RegisterWidget::contextGotoMemory);
 
 	m_contextMenu->popup(this->mapToGlobal(pos));
@@ -339,7 +339,7 @@ bool RegisterWidget::contextFetchNewValue(u64& out, u64 currentValue, bool segme
 	else
 		existingValue = existingValue.arg(bit_cast<float>((u32)currentValue));
 
-	QString input = QInputDialog::getText(this, QString("Change %1").arg(m_cpu->getRegisterName(categoryIndex, m_selectedRow)), "",
+	QString input = QInputDialog::getText(this, tr("Change %1").arg(m_cpu->getRegisterName(categoryIndex, m_selectedRow)), "",
 		QLineEdit::Normal, existingValue, &ok);
 
 	if (!ok)
@@ -350,7 +350,7 @@ bool RegisterWidget::contextFetchNewValue(u64& out, u64 currentValue, bool segme
 		out = input.toULongLong(&ok, 16);
 		if (!ok)
 		{
-			QMessageBox::warning(this, "Invalid register value", "Invalid hexadecimal register value.");
+			QMessageBox::warning(this, tr("Invalid register value"), tr("Invalid hexadecimal register value."));
 			return false;
 		}
 	}
@@ -359,7 +359,7 @@ bool RegisterWidget::contextFetchNewValue(u64& out, u64 currentValue, bool segme
 		out = bit_cast<u32>(input.toFloat(&ok));
 		if (!ok)
 		{
-			QMessageBox::warning(this, "Invalid register value", "Invalid floating-point register value.");
+			QMessageBox::warning(this, tr("Invalid register value"), tr("Invalid floating-point register value."));
 			return false;
 		}
 	}
@@ -428,7 +428,7 @@ void RegisterWidget::contextGotoDisasm()
 	if (m_cpu->isValidAddress(addr))
 		gotoInDisasm(addr);
 	else
-		QMessageBox::warning(this, "Invalid target address", "This register holds an invalid address.");
+		QMessageBox::warning(this, tr("Invalid target address"), ("This register holds an invalid address."));
 }
 
 void RegisterWidget::contextGotoMemory()

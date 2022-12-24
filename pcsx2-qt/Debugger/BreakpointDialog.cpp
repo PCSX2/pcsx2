@@ -115,7 +115,7 @@ void BreakpointDialog::accept()
 	u64 address;
 	if (!m_cpu->initExpression(m_ui.txtAddress->text().toLocal8Bit(), expression) || !m_cpu->parseExpression(expression, address))
 	{
-		QMessageBox::warning(this, "Error", "Invalid address \"" + m_ui.txtAddress->text() + "\"");
+		QMessageBox::warning(this, tr("Error"), tr("Invalid address \"%1\"").arg(m_ui.txtAddress->text()));
 		return;
 	}
 
@@ -124,7 +124,7 @@ void BreakpointDialog::accept()
 	{
 		if (!m_cpu->initExpression(m_ui.txtSize->text().toLocal8Bit(), expression) || !m_cpu->parseExpression(expression, size) || !size)
 		{
-			QMessageBox::warning(this, "Error", "Invalid size \"" + m_ui.txtSize->text() + "\"");
+			QMessageBox::warning(this, tr("Error"), tr("Invalid size \"%1\"").arg(m_ui.txtSize->text()));
 			return;
 		}
 
@@ -184,7 +184,7 @@ void BreakpointDialog::accept()
 			expression.clear();
 			if (!m_cpu->initExpression(strData.constData(), expression))
 			{
-				QMessageBox::warning(this, "Error", "Invalid condition \"" + strData + "\"");
+				QMessageBox::warning(this, tr("Error"), tr("Invalid condition \"%1\"").arg(strData));
 				return;
 			}
 
