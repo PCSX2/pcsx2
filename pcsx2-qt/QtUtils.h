@@ -86,4 +86,11 @@ namespace QtUtils
 
 	/// Returns the common window info structure for a Qt widget.
 	std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget);
+
+	/// Converts a value to a QString of said value with a proper fixed width
+	template <typename T>
+	QString FilledQStringFromValue(T val, u32 base)
+	{
+		return QString("%1").arg(QString::number(val, base), sizeof(val) * 2, '0').toUpper();
+	};
 } // namespace QtUtils

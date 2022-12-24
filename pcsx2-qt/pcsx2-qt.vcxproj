@@ -43,10 +43,11 @@
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\glad\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\simpleini\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\lzma\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\demangler\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\rapidyaml\rapidyaml\ext\c4core\src\c4\ext\fast_float\include;%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)pcsx2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <!-- Needed for moc pch -->
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ProjectDir)\Settings;$(ProjectDir)\GameList;$(ProjectDir)\Tools\InputRecording</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ProjectDir)\Settings;$(ProjectDir)\GameList;$(ProjectDir)\Tools\InputRecording;$(ProjectDir)\Debugger</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
@@ -125,6 +126,9 @@
     <ProjectReference Include="..\3rdparty\zydis\zydis.vcxproj">
       <Project>{67d0160c-0fe4-44b9-ac2e-82bbcf4104df}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\3rdparty\demangler\demangler.vcxproj">
+      <Project>{1e3d706c-1d95-4e1b-bdf2-ca3d0007df7f}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest" />
@@ -137,6 +141,12 @@
     <ClCompile Include="Settings\MemoryCardConvertWorker.cpp" />
     <ClCompile Include="Tools\InputRecording\InputRecordingViewer.cpp" />
     <ClCompile Include="Tools\InputRecording\NewInputRecordingDlg.cpp" />
+    <ClCompile Include="Debugger\CpuWidget.cpp" />
+    <ClCompile Include="Debugger\DebuggerWindow.cpp" />
+    <ClCompile Include="Debugger\DisassemblyWidget.cpp" />
+    <ClCompile Include="Debugger\MemoryViewWidget.cpp" />
+    <ClCompile Include="Debugger\RegisterWidget.cpp" />
+    <ClCompile Include="Debugger\BreakpointDialog.cpp" />
     <ClCompile Include="Settings\BIOSSettingsWidget.cpp" />
     <ClCompile Include="Settings\ControllerBindingWidgets.cpp" />
     <ClCompile Include="Settings\ControllerGlobalSettingsWidget.cpp" />
@@ -211,6 +221,12 @@
     <QtMoc Include="Tools\InputRecording\NewInputRecordingDlg.h" />
     <QtMoc Include="Tools\InputRecording\InputRecordingViewer.h" />
     <ClInclude Include="QtUtils.h" />
+    <QtMoc Include="Debugger\CpuWidget.h" />
+    <QtMoc Include="Debugger\DebuggerWindow.h" />
+    <QtMoc Include="Debugger\DisassemblyWidget.h" />
+    <QtMoc Include="Debugger\MemoryViewWidget.h" />
+    <QtMoc Include="Debugger\RegisterWidget.h" />
+    <QtMoc Include="Debugger\BreakpointDialog.h" />
     <QtMoc Include="Settings\ControllerBindingWidgets.h" />
     <QtMoc Include="Settings\ControllerGlobalSettingsWidget.h" />
     <ClInclude Include="Settings\MemoryCardConvertWorker.h" />
@@ -255,6 +271,12 @@
     <ClCompile Include="$(IntDir)Settings\moc_AchievementLoginDialog.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_AchievementSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_DebugSettingsWidget.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\moc_DebuggerWindow.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\moc_CpuWidget.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\moc_DisassemblyWidget.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\moc_RegisterWidget.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\moc_MemoryViewWidget.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\moc_BreakpointDialog.cpp" />
     <ClCompile Include="$(IntDir)GameList\moc_GameListModel.cpp" />
     <ClCompile Include="$(IntDir)GameList\moc_GameListRefreshThread.cpp" />
     <ClCompile Include="$(IntDir)GameList\moc_GameListWidget.cpp" />
@@ -357,6 +379,24 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Tools\InputRecording\InputRecordingViewer.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Debugger\DebuggerWindow.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Debugger\DisassemblyWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Debugger\CpuWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Debugger\RegisterWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Debugger\MemoryViewWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Debugger\BreakpointDialog.ui">
       <FileType>Document</FileType>
     </QtUi>
   </ItemGroup>

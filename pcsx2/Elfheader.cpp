@@ -301,6 +301,7 @@ void ElfObject::loadSectionHeaders()
 		eS = (Elf32_Sym*)data.GetPtr(secthead[i_st].sh_offset);
 		Console.WriteLn("found %d symbols", secthead[i_st].sh_size / sizeof(Elf32_Sym));
 
+		R5900SymbolMap.Clear();
 		for(uint i = 1; i < (secthead[i_st].sh_size / sizeof(Elf32_Sym)); i++) {
 			if ((eS[i].st_value != 0) && (ELF32_ST_TYPE(eS[i].st_info) == 2))
 			{

@@ -426,6 +426,7 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 	connect(m_ui.actionPause, &QAction::toggled, thread, &EmuThread::setVMPaused);
 	connect(m_ui.actionFullscreen, &QAction::triggered, thread, &EmuThread::toggleFullscreen);
 	connect(m_ui.actionToggleSoftwareRendering, &QAction::triggered, thread, &EmuThread::toggleSoftwareRendering);
+	connect(m_ui.actionDebugger, &QAction::triggered, this, &MainWindow::openDebugger);
 	connect(m_ui.actionReloadPatches, &QAction::triggered, thread, &EmuThread::reloadPatches);
 
 	static constexpr GSRendererType renderers[] = {
@@ -2412,6 +2413,20 @@ void MainWindow::doSettings(const char* category /* = nullptr */)
 
 	if (category)
 		dlg->setCategory(category);
+}
+
+DebuggerWindow* MainWindow::getDebuggerWindow()
+{
+	if (!m_debugger_window)
+		m_debugger_window = new DebuggerWindow(this);
+
+	return m_debugger_window;
+}
+
+void MainWindow::openDebugger()
+{
+	DebuggerWindow* dwnd = getDebuggerWindow();
+	dwnd->isVisible() ? dwnd->hide() : dwnd->show();
 }
 
 ControllerSettingsDialog* MainWindow::getControllerSettingsDialog()

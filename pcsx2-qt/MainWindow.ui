@@ -127,6 +127,8 @@
     </widget>
     <addaction name="menuDebugSwitchRenderer"/>
     <addaction name="separator"/>
+    <addaction name="actionDebugger"/>
+    <addaction name="separator"/>
     <addaction name="actionEnableLogTimestamps"/>
     <addaction name="separator"/>
     <addaction name="actionEnableEEConsoleLogging"/>
@@ -718,6 +720,11 @@
   <action name="actionToggleSoftwareRendering">
    <property name="text">
     <string>Toggle Software Rendering</string>
+   </property>
+  </action>
+  <action name="actionDebugger">
+   <property name="text">
+    <string>Open Debugger</string>
    </property>
   </action>
   <action name="actionReloadPatches">

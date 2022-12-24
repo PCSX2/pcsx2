@@ -254,6 +254,9 @@ if(QT_BUILD)
 		add_subdirectory(3rdparty/rapidjson EXCLUDE_FROM_ALL)
 		add_subdirectory(3rdparty/discord-rpc EXCLUDE_FROM_ALL)
 	endif()
+
+	# Demangler for the debugger
+	add_subdirectory(3rdparty/demangler EXCLUDE_FROM_ALL)
 endif()
 
 if(NOT WIN32 AND QT_BUILD)

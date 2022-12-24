@@ -150,6 +150,13 @@ public:
 	static void SetBreakpointTriggered(bool b) { breakpointTriggered_ = b; };
 	static bool GetBreakpointTriggered() { return breakpointTriggered_; };
 
+	static bool GetCorePaused() { return corePaused; };
+	static void SetCorePaused(bool b) { corePaused = b; };
+
+	// This will have to do until a full fledged debugger host interface is made
+	static void SetUpdateHandler(std::function<void()> f) {cb_bpUpdated_ = f; };
+	static std::function<void()> GetUpdateHandler() { return cb_bpUpdated_; };
+
 private:
 	static size_t FindBreakpoint(BreakPointCpu cpu, u32 addr, bool matchTemp = false, bool temp = false);
 	// Finds exactly, not using a range check.
@@ -162,6 +169,9 @@ private:
 	static u64 breakSkipFirstTicksIop_;
 
 	static bool breakpointTriggered_;
+	static bool corePaused;
+
+	static std::function<void()> cb_bpUpdated_;
 
 	static std::vector<MemCheck> memChecks_;
 	static std::vector<MemCheck *> cleanupMemChecks_;

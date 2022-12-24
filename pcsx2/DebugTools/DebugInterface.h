@@ -53,9 +53,13 @@ public:
 	};
 
 	virtual u32 read8(u32 address) = 0;
+	virtual u32 read8(u32 address, bool& valid) = 0;
 	virtual u32 read16(u32 address) = 0;
+	virtual u32 read16(u32 address, bool& valid) = 0;
 	virtual u32 read32(u32 address) = 0;
+	virtual u32 read32(u32 address, bool& valid) = 0;
 	virtual u64 read64(u32 address) = 0;
+	virtual u64 read64(u32 address, bool& valid) = 0;
 	virtual u128 read128(u32 address) = 0;
 	virtual void write8(u32 address, u8 value) = 0;
 	virtual void write32(u32 address, u32 value) = 0;
@@ -94,9 +98,13 @@ class R5900DebugInterface : public DebugInterface
 {
 public:
 	u32 read8(u32 address) override;
+	u32 read8(u32 address, bool& valid) override;
 	u32 read16(u32 address) override;
+	u32 read16(u32 address, bool& valid) override;
 	u32 read32(u32 address) override;
+	u32 read32(u32 address, bool& valid) override;
 	u64 read64(u32 address) override;
+	u64 read64(u32 address, bool& valid) override;
 	u128 read128(u32 address) override;
 	void write8(u32 address, u8 value) override;
 	void write32(u32 address, u32 value) override;
@@ -128,9 +136,13 @@ class R3000DebugInterface : public DebugInterface
 {
 public:
 	u32 read8(u32 address) override;
+	u32 read8(u32 address, bool& valid) override;
 	u32 read16(u32 address) override;
+	u32 read16(u32 address, bool& valid) override;
 	u32 read32(u32 address) override;
+	u32 read32(u32 address, bool& valid) override;
 	u64 read64(u32 address) override;
+	u64 read64(u32 address, bool& valid) override;
 	u128 read128(u32 address) override;
 	void write8(u32 address, u8 value) override;
 	void write32(u32 address, u32 value) override;
