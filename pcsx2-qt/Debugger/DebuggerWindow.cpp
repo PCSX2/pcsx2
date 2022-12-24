@@ -36,10 +36,10 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 	this->setStyleSheet("font: 8pt 'Monospace'");
 #endif
 
-	m_actionRunPause = new QAction("Run", this);
-	m_actionStepInto = new QAction("Step Into", this);
-	m_actionStepOver = new QAction("Step Over", this);
-	m_actionStepOut = new QAction("Step Out", this);
+	m_actionRunPause = new QAction(tr("Run"), this);
+	m_actionStepInto = new QAction(tr("Step Into"), this);
+	m_actionStepOver = new QAction(tr("Step Over"), this);
+	m_actionStepOut = new QAction(tr("Step Out"), this);
 
 	m_ui.menubar->addAction(m_actionRunPause);
 	m_ui.menubar->addAction(m_actionStepInto);
@@ -73,7 +73,7 @@ void DebuggerWindow::onVMStateChanged()
 	if (!QtHost::IsVMPaused())
 	{
 		nextStatePaused = true;
-		m_actionRunPause->setText("Pause");
+		m_actionRunPause->setText(tr("Pause"));
 		m_actionStepInto->setEnabled(false);
 		m_actionStepOver->setEnabled(false);
 		m_actionStepOut->setEnabled(false);
@@ -81,7 +81,7 @@ void DebuggerWindow::onVMStateChanged()
 	else
 	{
 		nextStatePaused = false;
-		m_actionRunPause->setText("Run");
+		m_actionRunPause->setText(tr("Run"));
 		m_actionStepInto->setEnabled(true);
 		m_actionStepOver->setEnabled(true);
 		m_actionStepOut->setEnabled(true);

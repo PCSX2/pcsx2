@@ -253,7 +253,7 @@ void CpuWidget::updateBreakpoints()
 
 		// Type (R/O)
 		QTableWidgetItem* typeItem = new QTableWidgetItem();
-		typeItem->setText("Execute");
+		typeItem->setText(tr("Execute"));
 		typeItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
 		m_ui.breakpointList->setItem(iter, 0, typeItem);
 
@@ -309,9 +309,9 @@ void CpuWidget::updateBreakpoints()
 		// Type (R/O)
 		QTableWidgetItem* typeItem = new QTableWidgetItem();
 		QString type("");
-		type += memcheck.cond & MEMCHECK_READ ? "Read" : "";
+		type += memcheck.cond & MEMCHECK_READ ? tr("Read") : "";
 		type += ((memcheck.cond & MEMCHECK_BOTH) == MEMCHECK_BOTH) ? ", " : " ";
-		type += memcheck.cond & MEMCHECK_WRITE ? memcheck.cond & MEMCHECK_WRITE_ONCHANGE ? "Write(C)" : "Write" : "";
+		type += memcheck.cond & MEMCHECK_WRITE ? memcheck.cond & MEMCHECK_WRITE_ONCHANGE ? tr("Write(C)") : tr("Write") : "";
 		typeItem->setText(type);
 		typeItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
 		m_ui.breakpointList->setItem(iter, 0, typeItem);
@@ -378,7 +378,7 @@ void CpuWidget::onBPListContextMenu(QPoint pos)
 
 	m_bplistContextMenu = new QMenu(m_ui.breakpointList);
 
-	QAction* newAction = new QAction("New", m_ui.breakpointList);
+	QAction* newAction = new QAction(tr("New"), m_ui.breakpointList);
 	connect(newAction, &QAction::triggered, this, &CpuWidget::contextBPListNew);
 	m_bplistContextMenu->addAction(newAction);
 
@@ -386,7 +386,7 @@ void CpuWidget::onBPListContextMenu(QPoint pos)
 
 	if (selModel->hasSelection())
 	{
-		QAction* editAction = new QAction("Edit", m_ui.breakpointList);
+		QAction* editAction = new QAction(tr("Edit"), m_ui.breakpointList);
 		connect(editAction, &QAction::triggered, this, &CpuWidget::contextBPListEdit);
 		m_bplistContextMenu->addAction(editAction);
 
@@ -394,12 +394,12 @@ void CpuWidget::onBPListContextMenu(QPoint pos)
 		// Shouldn't be trivial to support cross column copy
 		if (selModel->selectedIndexes().count() == 1)
 		{
-			QAction* copyAction = new QAction("Copy", m_ui.breakpointList);
+			QAction* copyAction = new QAction(tr("Copy"), m_ui.breakpointList);
 			connect(copyAction, &QAction::triggered, this, &CpuWidget::contextBPListCopy);
 			m_bplistContextMenu->addAction(copyAction);
 		}
 
-		QAction* deleteAction = new QAction("Delete", m_ui.breakpointList);
+		QAction* deleteAction = new QAction(tr("Delete"), m_ui.breakpointList);
 		connect(deleteAction, &QAction::triggered, this, &CpuWidget::contextBPListDelete);
 		m_bplistContextMenu->addAction(deleteAction);
 	}
@@ -417,7 +417,7 @@ void CpuWidget::onBPListItemChange(QTableWidgetItem* item)
 		u32 val = item->text().toUInt(&ok, 16);
 		if (!ok)
 		{
-			QMessageBox::warning(this, "Error", "Invalid size \"" + item->text() + "\"");
+			QMessageBox::warning(this, tr("Error"), tr("Invalid size \"%1\"").arg(item->text()));
 			item->setText(QString::number((mc->end - mc->start), 16));
 			return;
 		}
@@ -451,7 +451,7 @@ void CpuWidget::onBPListItemChange(QTableWidgetItem* item)
 
 			if (!m_cpu.initExpression(item->text().toLocal8Bit().constData(), expression))
 			{
-				QMessageBox::warning(this, "Error", "Invalid condition \"" + item->text() + "\"");
+				QMessageBox::warning(this, tr("Error"), tr("Invalid condition \"%1\"").arg(item->text()));
 				item->setText(QString::fromLocal8Bit(&bp->cond.expressionString[0]));
 				return;
 			}
@@ -620,25 +620,25 @@ void CpuWidget::updateThreads()
 		switch (thread.data.status)
 		{
 			case THS_BAD:
-				statusString = "Bad";
+				statusString = tr("Bad");
 				break;
 			case THS_RUN:
-				statusString = "Running";
+				statusString = tr("Running");
 				break;
 			case THS_READY:
-				statusString = "Ready";
+				statusString = tr("Ready");
 				break;
 			case THS_WAIT:
-				statusString = "Waiting";
+				statusString = tr("Waiting");
 				break;
 			case THS_SUSPEND:
-				statusString = "Suspended";
+				statusString = tr("Suspended");
 				break;
 			case THS_WAIT_SUSPEND:
-				statusString = "Waiting/Suspended";
+				statusString = tr("Waiting/Suspended");
 				break;
 			case THS_DORMANT:
-				statusString = "Dormant";
+				statusString = tr("Dormant");
 				break;
 		}
 
@@ -651,13 +651,13 @@ void CpuWidget::updateThreads()
 		switch (thread.data.waitType)
 		{
 			case WAIT_NONE:
-				waitTypeString = "None";
+				waitTypeString = tr("None");
 				break;
 			case WAIT_WAKEUP_REQ:
-				waitTypeString = "Wakeup request";
+				waitTypeString = tr("Wakeup request");
 				break;
 			case WAIT_SEMA:
-				waitTypeString = "Semaphore";
+				waitTypeString = tr("Semaphore");
 				break;
 		}
 
@@ -674,7 +674,7 @@ void CpuWidget::onThreadListContextMenu(QPoint pos)
 	{
 		m_threadlistContextMenu = new QMenu(m_ui.threadList);
 
-		QAction* copyAction = new QAction("Copy", m_ui.threadList);
+		QAction* copyAction = new QAction(tr("Copy"), m_ui.threadList);
 		connect(copyAction, &QAction::triggered, [this] {
 			const auto& items = m_ui.threadList->selectedItems();
 			if (!items.size())
@@ -710,7 +710,7 @@ void CpuWidget::onFuncListContextMenu(QPoint pos)
 	else
 		m_funclistContextMenu->clear();
 
-	QAction* demangleAction = new QAction("Demangle Symbols", m_ui.listFunctions);
+	QAction* demangleAction = new QAction(tr("Demangle Symbols"), m_ui.listFunctions);
 	demangleAction->setCheckable(true);
 	demangleAction->setChecked(m_demangleFunctions);
 
@@ -721,7 +721,7 @@ void CpuWidget::onFuncListContextMenu(QPoint pos)
 
 	m_funclistContextMenu->addAction(demangleAction);
 
-	QAction* copyName = new QAction("Copy Function Name", m_ui.listFunctions);
+	QAction* copyName = new QAction(tr("Copy Function Name"), m_ui.listFunctions);
 	connect(copyName, &QAction::triggered, [this] {
 		// We only store the address in the widget item
 		// Resolve the function name by fetching the symbolmap and filtering the address
@@ -732,7 +732,7 @@ void CpuWidget::onFuncListContextMenu(QPoint pos)
 	});
 	m_funclistContextMenu->addAction(copyName);
 
-	QAction* copyAddress = new QAction("Copy Function Address", m_ui.listFunctions);
+	QAction* copyAddress = new QAction(tr("Copy Function Address"), m_ui.listFunctions);
 	connect(copyAddress, &QAction::triggered, [this] {
 		const QString addressString = FilledQStringFromValue(m_ui.listFunctions->selectedItems().first()->data(256).toUInt(), 16);
 		QApplication::clipboard()->setText(addressString);
@@ -742,14 +742,14 @@ void CpuWidget::onFuncListContextMenu(QPoint pos)
 
 	m_funclistContextMenu->addSeparator();
 
-	QAction* gotoDisasm = new QAction("Go to in Disassembly", m_ui.listFunctions);
+	QAction* gotoDisasm = new QAction(tr("Go to in Disassembly"), m_ui.listFunctions);
 	connect(gotoDisasm, &QAction::triggered, [this] {
 		m_ui.disassemblyWidget->gotoAddress(m_ui.listFunctions->selectedItems().first()->data(256).toUInt());
 	});
 
 	m_funclistContextMenu->addAction(gotoDisasm);
 
-	QAction* gotoMemory = new QAction("Go to in Memory View", m_ui.listFunctions);
+	QAction* gotoMemory = new QAction(tr("Go to in Memory View"), m_ui.listFunctions);
 	connect(gotoMemory, &QAction::triggered, [this] {
 		m_ui.memoryviewWidget->gotoAddress(m_ui.listFunctions->selectedItems().first()->data(256).toUInt());
 	});
@@ -816,7 +816,7 @@ void CpuWidget::onStackListContextMenu(QPoint pos)
 	{
 		m_stacklistContextMenu = new QMenu(m_ui.stackframeList);
 
-		QAction* copyAction = new QAction("Copy", m_ui.stackframeList);
+		QAction* copyAction = new QAction(tr("Copy"), m_ui.stackframeList);
 		connect(copyAction, &QAction::triggered, [this] {
 			const auto& items = m_ui.stackframeList->selectedItems();
 			if (!items.size())
@@ -959,7 +959,7 @@ void CpuWidget::onSearchButtonClicked()
 
 	if (!ok)
 	{
-		QMessageBox::critical(this, "Debugger", "Invalid start address");
+		QMessageBox::critical(this, tr("Debugger"), tr("Invalid start address"));
 		return;
 	}
 
@@ -967,13 +967,13 @@ void CpuWidget::onSearchButtonClicked()
 
 	if (!ok)
 	{
-		QMessageBox::critical(this, "Debugger", "Invalid end address");
+		QMessageBox::critical(this, tr("Debugger"), tr("Invalid end address"));
 		return;
 	}
 
 	if (searchStart >= searchEnd)
 	{
-		QMessageBox::critical(this, "Debugger", "Start address can't be equal to or greater than the end address");
+		QMessageBox::critical(this, tr("Debugger"), tr("Start address can't be equal to or greater than the end address"));
 		return;
 	}
 
@@ -990,7 +990,7 @@ void CpuWidget::onSearchButtonClicked()
 
 	if (!ok)
 	{
-		QMessageBox::critical(this, "Debugger", "Invalid search value");
+		QMessageBox::critical(this, tr("Debugger"), tr("Invalid search value"));
 		return;
 	}
 

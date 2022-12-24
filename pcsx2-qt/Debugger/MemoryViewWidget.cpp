@@ -354,48 +354,48 @@ void MemoryViewWidget::customMenuRequested(QPoint pos)
 	{
 		m_contextMenu = new QMenu(this);
 
-		QAction* action = new QAction("Go to in disassembly");
+		QAction* action = new QAction(tr("Go to in disassembly"));
 		m_contextMenu->addAction(action);
 		connect(action, &QAction::triggered, this, [this]() { emit gotoInDisasm(m_table.selectedAddress); });
 
-		action = new QAction("Go to address");
+		action = new QAction(tr("Go to address"));
 		m_contextMenu->addAction(action);
 		connect(action, &QAction::triggered, this, [this]() { contextGoToAddress(); });
 
 		m_contextMenu->addSeparator();
 
 		// View Types
-		m_actionBYTE = new QAction("Show as 1 byte");
+		m_actionBYTE = new QAction(tr("Show as 1 byte"));
 		m_actionBYTE->setCheckable(true);
 		m_contextMenu->addAction(m_actionBYTE);
 		connect(m_actionBYTE, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::BYTE); });
 
-		m_actionBYTEHW = new QAction("Show as 2 bytes");
+		m_actionBYTEHW = new QAction(tr("Show as 2 bytes"));
 		m_actionBYTEHW->setCheckable(true);
 		m_contextMenu->addAction(m_actionBYTEHW);
 		connect(m_actionBYTEHW, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::BYTEHW); });
 
-		m_actionWORD = new QAction("Show as 4 bytes");
+		m_actionWORD = new QAction(tr("Show as 4 bytes"));
 		m_actionWORD->setCheckable(true);
 		m_contextMenu->addAction(m_actionWORD);
 		connect(m_actionWORD, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::WORD); });
 
-		m_actionDWORD = new QAction("Show as 8 bytes");
+		m_actionDWORD = new QAction(tr("Show as 8 bytes"));
 		m_actionDWORD->setCheckable(true);
 		m_contextMenu->addAction(m_actionDWORD);
 		connect(m_actionDWORD, &QAction::triggered, this, [this]() { m_table.SetViewType(MemoryViewType::DWORD); });
 
 		m_contextMenu->addSeparator();
 
-		action = new QAction("Copy Byte");
+		action = new QAction(tr("Copy Byte"));
 		m_contextMenu->addAction(action);
 		connect(action, &QAction::triggered, this, [this]() { contextCopyByte(); });
 
-		action = new QAction("Copy Segment");
+		action = new QAction(tr("Copy Segment"));
 		m_contextMenu->addAction(action);
 		connect(action, &QAction::triggered, this, [this]() { contextCopySegment(); });
 
-		action = new QAction("Copy Character");
+		action = new QAction(tr("Copy Character"));
 		m_contextMenu->addAction(action);
 		connect(action, &QAction::triggered, this, [this]() { contextCopyCharacter(); });
 	}
@@ -429,7 +429,7 @@ void MemoryViewWidget::contextCopyCharacter()
 void MemoryViewWidget::contextGoToAddress()
 {
 	bool ok;
-	QString targetString = QInputDialog::getText(this, "Go to address", "",
+	QString targetString = QInputDialog::getText(this, tr("Go to address"), "",
 		QLineEdit::Normal, "", &ok);
 
 	if (!ok)
