@@ -16,13 +16,16 @@
 #pragma once
 
 #include "common/WindowInfo.h"
-#include "Window/GSSetting.h"
 #include "SaveState.h"
 #include "pcsx2/Config.h"
 #include "pcsx2/GS/config.h"
 #include "gsl/span"
 
 #include <map>
+
+#ifndef PCSX2_CORE
+#include "Window/GSSetting.h"
+#endif
 
 #ifdef None
 	// X11 seems to like to define this, not fun
@@ -101,6 +104,8 @@ bool GSSaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspe
 	u32* width, u32* height, std::vector<u32>* pixels);
 void GSJoinSnapshotThreads();
 
+#ifndef PCSX2_CORE
+
 class GSApp
 {
 	std::string m_section;
@@ -157,14 +162,13 @@ public:
 	std::vector<GSSetting> m_gs_dump_compression;
 };
 
+extern GSApp theApp;
+
+#endif
+
 struct GSError
 {
 };
 struct GSRecoverableError : GSError
 {
 };
-struct GSErrorGlVertexArrayTooSmall : GSError
-{
-};
-
-extern GSApp theApp;

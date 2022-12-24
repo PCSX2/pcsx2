@@ -111,6 +111,7 @@ int GSinit()
 
 void GSinitConfig()
 {
+#ifndef PCSX2_CORE
 	static bool config_inited = false;
 	if (config_inited)
 		return;
@@ -118,6 +119,7 @@ void GSinitConfig()
 	config_inited = true;
 	theApp.SetConfigDir();
 	theApp.Init();
+#endif
 }
 
 void GSshutdown()
@@ -258,8 +260,7 @@ static bool DoGSOpen(GSRendererType renderer, u8* basemem)
 		}
 		else
 		{
-			const int threads = theApp.GetConfigI("extrathreads");
-			g_gs_renderer = std::unique_ptr<GSRenderer>(MULTI_ISA_SELECT(makeGSRendererSW)(threads));
+			g_gs_renderer = std::unique_ptr<GSRenderer>(MULTI_ISA_SELECT(makeGSRendererSW)(GSConfig.SWExtraThreads));
 		}
 	}
 	catch (std::exception& ex)
@@ -720,9 +721,12 @@ void GSgetStats(std::string& info)
 
 void GSgetTitleStats(std::string& info)
 {
+	static constexpr const char* deinterlace_modes[] = {
+		"Automatic", "None", "Weave tff", "Weave bff", "Bob tff", "Bob bff", "Blend tff", "Blend bff", "Adaptive tff", "Adaptive bff"};
+
 	const char* api_name = HostDisplay::RenderAPIToString(s_render_api);
 	const char* hw_sw_name = (GSConfig.Renderer == GSRendererType::Null) ? " Null" : (GSConfig.UseHardwareRenderer() ? " HW" : " SW");
-	const char* deinterlace_mode = theApp.m_gs_deinterlace[static_cast<int>(GSConfig.InterlaceMode)].name.c_str();
+	const char* deinterlace_mode = deinterlace_modes[static_cast<int>(GSConfig.InterlaceMode)];
 
 #ifndef PCSX2_CORE
 	int iwidth, iheight;
@@ -775,19 +779,10 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 
 	// Options which aren't using the global struct yet, so we need to recreate all GS objects.
 	if (
-		GSConfig.DumpGSData != old_config.DumpGSData ||
-		GSConfig.SaveRT != old_config.SaveRT ||
-		GSConfig.SaveFrame != old_config.SaveFrame ||
-		GSConfig.SaveTexture != old_config.SaveTexture ||
-		GSConfig.SaveDepth != old_config.SaveDepth ||
-
 		GSConfig.UpscaleMultiplier != old_config.UpscaleMultiplier ||
 		GSConfig.CRCHack != old_config.CRCHack ||
 		GSConfig.SWExtraThreads != old_config.SWExtraThreads ||
-		GSConfig.SWExtraThreadsHeight != old_config.SWExtraThreadsHeight ||
-
-		GSConfig.SaveN != old_config.SaveN ||
-		GSConfig.SaveL != old_config.SaveL)
+		GSConfig.SWExtraThreadsHeight != old_config.SWExtraThreadsHeight)
 	{
 		if (!GSreopen(false, old_config))
 			pxFailRel("Failed to do quick GS reopen");
@@ -1050,12 +1045,10 @@ void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
 
 #endif
 
+#ifndef PCSX2_CORE
+
 size_t GSApp::GetIniString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName)
 {
-#ifdef PCSX2_CORE
-	std::string ret(Host::GetStringSettingValue("EmuCore/GS", lpKeyName, lpDefault));
-	return StringUtil::Strlcpy(lpReturnedString, ret, nSize);
-#else
 	BuildConfigurationMap(lpFileName);
 
 	std::string key(lpKeyName);
@@ -1070,12 +1063,10 @@ size_t GSApp::GetIniString(const char* lpAppName, const char* lpKeyName, const c
 		strcpy(lpReturnedString, value.c_str());
 
 	return 0;
-#endif
 }
 
 bool GSApp::WriteIniString(const char* lpAppName, const char* lpKeyName, const char* pString, const char* lpFileName)
 {
-#ifndef PCSX2_CORE
 	BuildConfigurationMap(lpFileName);
 
 	std::string key(lpKeyName);
@@ -1104,12 +1095,10 @@ bool GSApp::WriteIniString(const char* lpAppName, const char* lpKeyName, const c
 			fprintf(f, "%s = %s\n", entry.first.c_str(), entry.second.c_str());
 	}
 	fclose(f);
-#endif
 
 	return false;
 }
 
-#ifndef PCSX2_CORE
 int GSApp::GetIniInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName)
 {
 	BuildConfigurationMap(lpFileName);
@@ -1124,7 +1113,6 @@ int GSApp::GetIniInt(const char* lpAppName, const char* lpKeyName, int nDefault,
 	else
 		return atoi(value.c_str());
 }
-#endif
 
 GSApp theApp;
 
@@ -1394,7 +1382,6 @@ void GSApp::Init()
 	// clang-format on
 }
 
-#ifndef PCSX2_CORE
 void GSApp::ReloadConfig()
 {
 	if (m_configuration_map.empty())
@@ -1453,7 +1440,6 @@ void GSApp::BuildConfigurationMap(const char* lpFileName)
 		m_configuration_map[key] = value;
 	}
 }
-#endif
 
 void GSApp::SetConfigDir()
 {
@@ -1492,40 +1478,18 @@ int GSApp::GetConfigI(const char* entry)
 
 	if (def != m_default_configuration.end())
 	{
-#ifndef PCSX2_CORE
 		return GetIniInt(m_section.c_str(), entry, std::stoi(def->second), m_ini.c_str());
-#else
-		return Host::GetIntSettingValue("EmuCore/GS", entry, std::stoi(def->second));
-#endif
 	}
 	else
 	{
 		fprintf(stderr, "Option %s doesn't have a default value\n", entry);
-#ifndef PCSX2_CORE
 		return GetIniInt(m_section.c_str(), entry, 0, m_ini.c_str());
-#else
-		return Host::GetIntSettingValue("EmuCore/GS", entry, 0);
-#endif
 	}
 }
 
 bool GSApp::GetConfigB(const char* entry)
 {
-#ifndef PCSX2_CORE
 	return !!GetConfigI(entry);
-#else
-	auto def = m_default_configuration.find(entry);
-
-	if (def != m_default_configuration.end())
-	{
-		return Host::GetBoolSettingValue("EmuCore/GS", entry, StringUtil::FromChars<bool>(def->second).value_or(false));
-	}
-	else
-	{
-		fprintf(stderr, "Option %s doesn't have a default value\n", entry);
-		return Host::GetBoolSettingValue("EmuCore/GS", entry, false);
-	}
-#endif
 }
 
 void GSApp::SetConfig(const char* entry, int value)
@@ -1536,6 +1500,8 @@ void GSApp::SetConfig(const char* entry, int value)
 
 	SetConfig(entry, buff);
 }
+
+#endif // PCSX2_CORE
 
 #ifdef PCSX2_CORE
 

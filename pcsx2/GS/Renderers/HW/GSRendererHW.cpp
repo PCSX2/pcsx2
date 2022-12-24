@@ -37,7 +37,7 @@ GSRendererHW::GSRendererHW()
 	m_mipmap = (GSConfig.HWMipmap >= HWMipmapLevel::Basic);
 	SetTCOffset();
 
-	m_dump_root = root_hw;
+	s_dump_root = root_hw;
 	GSTextureReplacements::Initialize(m_tc);
 
 	// Hope nothing requires too many draw calls.
@@ -267,11 +267,11 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 		}
 
 #ifdef ENABLE_OGL_DEBUG
-		if (s_dump)
+		if (GSConfig.DumpGSData)
 		{
-			if (s_savef && s_n >= s_saven)
+			if (GSConfig.SaveFrame && s_n >= GSConfig.SaveN)
 			{
-				t->Save(m_dump_root + StringUtil::StdStringFromFormat("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, (int)TEX0.TBP0, psm_str(TEX0.PSM)));
+				t->Save(s_dump_root + StringUtil::StdStringFromFormat("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, (int)TEX0.TBP0, psm_str(TEX0.PSM)));
 			}
 		}
 #endif
@@ -299,8 +299,8 @@ GSTexture* GSRendererHW::GetFeedbackOutput()
 	GSTexture* t = rt->m_texture;
 
 #ifdef ENABLE_OGL_DEBUG
-	if (s_dump && s_savef && s_n >= s_saven)
-		t->Save(m_dump_root + StringUtil::StdStringFromFormat("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), 3, (int)TEX0.TBP0, psm_str(TEX0.PSM)));
+	if (GSConfig.DumpGSData && GSConfig.SaveFrame && s_n >= GSConfig.SaveN)
+		t->Save(s_dump_root + StringUtil::StdStringFromFormat("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), 3, (int)TEX0.TBP0, psm_str(TEX0.PSM)));
 #endif
 
 	return t;
@@ -1278,19 +1278,19 @@ void GSRendererHW::RoundSpriteOffset()
 
 void GSRendererHW::Draw()
 {
-	if (s_dump && (s_n >= s_saven))
+	if (GSConfig.DumpGSData && (s_n >= GSConfig.SaveN))
 	{
 		std::string s;
 
 		// Dump Register state
 		s = StringUtil::StdStringFromFormat("%05d_context.txt", s_n);
 
-		m_env.Dump(m_dump_root + s);
-		m_context->Dump(m_dump_root + s);
+		m_env.Dump(s_dump_root + s);
+		m_context->Dump(s_dump_root + s);
 
 		// Dump vertices
 		s = StringUtil::StdStringFromFormat("%05d_vertex.txt", s_n);
-		DumpVertices(m_dump_root + s);
+		DumpVertices(s_dump_root + s);
 	}
 
 	if (IsBadFrame())
@@ -1778,13 +1778,13 @@ void GSRendererHW::Draw()
 		m_src->m_texture = *m_src->m_from_target;
 	}
 
-	if (s_dump)
+	if (GSConfig.DumpGSData)
 	{
 		const u64 frame = g_perfmon.GetFrame();
 
 		std::string s;
 
-		if (s_savet && s_n >= s_saven && m_src)
+		if (GSConfig.SaveTexture && s_n >= GSConfig.SaveN && m_src)
 		{
 			s = StringUtil::StdStringFromFormat("%05d_f%lld_itex_%05x_%s_%d%d_%02x_%02x_%02x_%02x.dds",
 				s_n, frame, (int)context->TEX0.TBP0, psm_str(context->TEX0.PSM),
@@ -1792,30 +1792,30 @@ void GSRendererHW::Draw()
 				(int)context->CLAMP.MINU, (int)context->CLAMP.MAXU,
 				(int)context->CLAMP.MINV, (int)context->CLAMP.MAXV);
 
-			m_src->m_texture->Save(m_dump_root + s);
+			m_src->m_texture->Save(s_dump_root + s);
 
 			if (m_src->m_palette)
 			{
 				s = StringUtil::StdStringFromFormat("%05d_f%lld_itpx_%05x_%s.dds", s_n, frame, context->TEX0.CBP, psm_str(context->TEX0.CPSM));
 
-				m_src->m_palette->Save(m_dump_root + s);
+				m_src->m_palette->Save(s_dump_root + s);
 			}
 		}
 
-		if (rt && s_save && s_n >= s_saven)
+		if (rt && GSConfig.SaveRT && s_n >= GSConfig.SaveN)
 		{
 			s = StringUtil::StdStringFromFormat("%05d_f%lld_rt0_%05x_%s.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
 
 			if (rt->m_texture)
-				rt->m_texture->Save(m_dump_root + s);
+				rt->m_texture->Save(s_dump_root + s);
 		}
 
-		if (ds && s_savez && s_n >= s_saven)
+		if (ds && GSConfig.SaveDepth && s_n >= GSConfig.SaveN)
 		{
 			s = StringUtil::StdStringFromFormat("%05d_f%lld_rz0_%05x_%s.bmp", s_n, frame, context->ZBUF.Block(), psm_str(context->ZBUF.PSM));
 
 			if (ds->m_texture)
-				ds->m_texture->Save(m_dump_root + s);
+				ds->m_texture->Save(s_dump_root + s);
 		}
 	}
 
@@ -1939,31 +1939,31 @@ void GSRendererHW::Draw()
 		(this->*m_hacks.m_oo)();
 	}
 
-	if (s_dump)
+	if (GSConfig.DumpGSData)
 	{
 		const u64 frame = g_perfmon.GetFrame();
 
 		std::string s;
 
-		if (s_save && s_n >= s_saven)
+		if (GSConfig.SaveRT && s_n >= GSConfig.SaveN)
 		{
 			s = StringUtil::StdStringFromFormat("%05d_f%lld_rt1_%05x_%s.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
 
 			if (rt)
-				rt->m_texture->Save(m_dump_root + s);
+				rt->m_texture->Save(s_dump_root + s);
 		}
 
-		if (s_savez && s_n >= s_saven)
+		if (GSConfig.SaveDepth && s_n >= GSConfig.SaveN)
 		{
 			s = StringUtil::StdStringFromFormat("%05d_f%lld_rz1_%05x_%s.bmp", s_n, frame, context->ZBUF.Block(), psm_str(context->ZBUF.PSM));
 
 			if (ds)
-				rt->m_texture->Save(m_dump_root + s);
+				rt->m_texture->Save(s_dump_root + s);
 		}
 
-		if (s_savel > 0 && (s_n - s_saven) > s_savel)
+		if (GSConfig.SaveL > 0 && (s_n - GSConfig.SaveN) > GSConfig.SaveL)
 		{
-			s_dump = 0;
+			GSConfig.DumpGSData = 0;
 		}
 	}
 

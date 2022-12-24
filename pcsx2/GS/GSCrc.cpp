@@ -19,6 +19,10 @@
 #include "GS.h"
 #include "common/StringUtil.h"
 
+#ifdef PCSX2_CORE
+#include "HostSettings.h"
+#endif
+
 const CRC::Game CRC::m_games[] =
 {
 	// Note: IDs 0x7ACF7E03, 0x7D4EA48F, 0x37C53760 - shouldn't be added as it's from the multiloaders when packing games.
@@ -337,7 +341,11 @@ const CRC::Game& CRC::Lookup(u32 crc)
 	printf("GS Lookup CRC:%08X\n", crc);
 	if (m_map.empty())
 	{
+#ifndef PCSX2_CORE
 		std::string exclusions = theApp.GetConfigS("CrcHacksExclusions");
+#else
+		std::string exclusions = Host::GetStringSettingValue("EmuCore/GS", "CrcHacksExclusions");
+#endif
 		if (exclusions.length() != 0)
 			printf("GS: CrcHacksExclusions: %s\n", exclusions.c_str());
 		int crcDups = 0;

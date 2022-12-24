@@ -692,7 +692,6 @@ set(pcsx2GSSources
 	GS/Renderers/SW/GSNewCodeGenerator.cpp
 	GS/Renderers/SW/GSTextureCacheSW.cpp
 	GS/Renderers/SW/GSTextureSW.cpp
-	GS/Window/GSSetting.cpp
 	)
 
 # GS headers
@@ -757,7 +756,6 @@ set(pcsx2GSHeaders
 	GS/Renderers/SW/GSTextureCacheSW.h
 	GS/Renderers/SW/GSTextureSW.h
 	GS/Renderers/SW/GSVertexSW.h
-	GS/Window/GSSetting.h
 	)
 
 if(USE_OPENGL)
@@ -815,9 +813,11 @@ if(PCSX2_CORE)
 	endif()
 else()
 	list(APPEND pcsx2GSSources
+		GS/Window/GSSetting.cpp
 		GS/Window/GSwxDialog.cpp
 	)
 	list(APPEND pcsx2GSHeaders
+		GS/Window/GSSetting.h
 		GS/Window/GSwxDialog.h
 	)
 	if(WIN32)

@@ -38,7 +38,7 @@ static int compute_best_thread_height(int threads)
 	// - but not too small to keep the threading overhead low
 	// - ideal value between 3 and 5, or log2(64 / number of threads)
 
-	int th = theApp.GetConfigI("extrathreads_height");
+	int th = GSConfig.SWExtraThreadsHeight;
 
 	if (th > 0 && th < 9)
 		return th;

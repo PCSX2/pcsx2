@@ -410,8 +410,7 @@ bool GSTextureOGL::Save(const std::string& fn)
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	}
 
-	int compression = theApp.GetConfigI("png_compression_level");
-	return GSPng::Save(fmt, fn, image.get(), m_size.x, m_size.y, pitch, compression);
+	return GSPng::Save(fmt, fn, image.get(), m_size.x, m_size.y, pitch, GSConfig.PNGCompressionLevel);
 }
 
 void GSTextureOGL::Swap(GSTexture* tex)
