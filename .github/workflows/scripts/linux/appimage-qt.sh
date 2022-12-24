@@ -280,7 +280,7 @@ Plugins = ../lib/plugins
 EOF
 
 echo "Copy desktop/icon..."
-cp "$PCSX2DIR/pcsx2/gui/Resources/AppIcon64.png" "$OUTDIR/PCSX2.png"
+cp "$PCSX2DIR/pcsx2/Resources/AppIcon64.png" "$OUTDIR/PCSX2.png"
 cp "$SCRIPTDIR/pcsx2-qt.desktop" "$OUTDIR/PCSX2.desktop"
 cp "$SCRIPTDIR/AppRun-qt" "$OUTDIR/AppRun"
 
