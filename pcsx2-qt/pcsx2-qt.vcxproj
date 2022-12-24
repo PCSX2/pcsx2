@@ -132,6 +132,7 @@
   <ItemGroup>
     <ClCompile Include="EarlyHardwareCheck.cpp" />
     <ClCompile Include="QtProgressCallback.cpp" />
+    <ClCompile Include="Settings\DebugSettingsWidget.cpp" />
     <ClCompile Include="Settings\FolderSettingsWidget.cpp" />
     <ClCompile Include="Settings\MemoryCardConvertWorker.cpp" />
     <ClCompile Include="Tools\InputRecording\InputRecordingViewer.cpp" />
@@ -198,6 +199,7 @@
     <QtMoc Include="QtProgressCallback.h" />
     <ClInclude Include="Settings\ControllerSettingWidgetBinder.h" />
     <QtMoc Include="Settings\FolderSettingsWidget.h" />
+    <QtMoc Include="Settings\DebugSettingsWidget.h" />
     <ClInclude Include="Settings\HddCreateQt.h" />
     <QtMoc Include="Settings\GameSummaryWidget.h" />
     <QtMoc Include="Settings\CreateMemoryCardDialog.h" />
@@ -252,6 +254,7 @@
     <ClCompile Include="$(IntDir)Settings\moc_GameSummaryWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_AchievementLoginDialog.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_AchievementSettingsWidget.cpp" />
+    <ClCompile Include="$(IntDir)Settings\moc_DebugSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)GameList\moc_GameListModel.cpp" />
     <ClCompile Include="$(IntDir)GameList\moc_GameListRefreshThread.cpp" />
     <ClCompile Include="$(IntDir)GameList\moc_GameListWidget.cpp" />
@@ -358,6 +361,9 @@
     </QtUi>
   </ItemGroup>
   <ItemGroup>
+    <QtUi Include="Settings\DebugSettingsWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <None Include="Settings\USBBindingWidget_DrivingForce.ui" />
     <None Include="Settings\USBBindingWidget_GTForce.ui" />
     <QtUi Include="Settings\USBDeviceWidget.ui">
