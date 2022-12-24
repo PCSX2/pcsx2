@@ -58,27 +58,7 @@ endif()
 
 #-------------------------------------------------------------------------------
 
-# Install some files to ease package creation
-if(PACKAGE_MODE)
-	# set categories depending on system/distribution in pcsx2.desktop
-	if(openSUSE)
-		set(PCSX2_MENU_CATEGORIES "System;Emulator;")
-	else()
-		set(PCSX2_MENU_CATEGORIES "Game;Emulator;")
-	endif()
-	configure_file("${CMAKE_SOURCE_DIR}/linux_various/PCSX2.desktop.in" "${CMAKE_BINARY_DIR}/linux_various/PCSX2.desktop" @ONLY)
-
-	INSTALL(FILES "${CMAKE_BINARY_DIR}/linux_various/PCSX2.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
-	INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2.xpm"     DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/pixmaps")
-	INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2_FAQ.pdf"      DESTINATION "${CMAKE_INSTALL_DOCDIR}")
-	# INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/Configuration_Guide.pdf"   DESTINATION "${CMAKE_INSTALL_DOCDIR}")
-	INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2.1"            DESTINATION "${CMAKE_INSTALL_MANDIR}/man1")
-	if(NOT DISABLE_PCSX2_WRAPPER)
-		INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2-linux.sh"          DESTINATION "${CMAKE_INSTALL_BINDIR}")
-	endif()
-elseif(NOT WIN32)
-	if(NOT DISABLE_PCSX2_WRAPPER)
-		# special case to avoid having linux files in windows
-		INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2-linux.sh"          DESTINATION "${CMAKE_SOURCE_DIR}/bin")
-	endif()
+if(NOT WIN32 AND NOT DISABLE_PCSX2_WRAPPER)
+	# special case to avoid having linux files in windows
+	INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2-linux.sh"          DESTINATION "${CMAKE_SOURCE_DIR}/bin")
 endif()
