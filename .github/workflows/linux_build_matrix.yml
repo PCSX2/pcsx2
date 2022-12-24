@@ -9,47 +9,6 @@ on:
       - master
 
 jobs:
-  build_gcc_lto:
-    name: "GCC"
-    uses: ./.github/workflows/linux_build_wx.yml
-    with:
-      jobName: "with LTO"
-      compiler: gcc
-      cmakeflags: "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON"
-      buildAppImage: true
-    secrets: inherit
-
-  # (PCH conflicts with ccache, fixed by https://gitlab.kitware.com/cmake/cmake/-/merge_requests/4400)
-  build_gcc_nopch:
-    name: "GCC"
-    uses: ./.github/workflows/linux_build_wx.yml
-    with:
-      jobName: "No PCH"
-      compiler: gcc
-      cmakeflags: "-DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON"
-      detail: " nopch"
-    secrets: inherit
-
-  build_gcc_nopch_avx2:
-    name: "GCC"
-    uses: ./.github/workflows/linux_build_wx.yml
-    with:
-      jobName: "AVX2 and No PCH"
-      compiler: gcc
-      cmakeflags: "-DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON -DARCH_FLAG=-march=haswell"
-      detail: " avx2 nopch"
-    secrets: inherit
-
-  build_clang_nopch:
-    name: "Clang"
-    uses: ./.github/workflows/linux_build_wx.yml
-    with:
-      jobName: "No PCH"
-      compiler: clang
-      cmakeflags: ""
-      detail: " nopch"
-    secrets: inherit
-
   build_linux_qt_sse4:
     name: "AppImage"
     uses: ./.github/workflows/linux_build_qt.yml

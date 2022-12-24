@@ -102,10 +102,8 @@ jobs:
 
       - name: Generate CMake Files
         run: |
-          QT_BUILD=$([ "${{ inputs.gui }}" == "Qt" ] && echo "ON" || echo "OFF")
           cmake -DCMAKE_PREFIX_PATH="$HOME/deps" \
                 -DCMAKE_BUILD_TYPE=Release \
-                -DQT_BUILD="$QT_BUILD" \
                 -DUSE_OPENGL=OFF \
                 -DDISABLE_ADVANCE_SIMD=ON \
                 -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \

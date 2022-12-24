@@ -8,17 +8,6 @@ on:
 jobs:
   # Build Everything
   # Linux
-  build_gcc_lto:
-    if: github.repository == 'PCSX2/pcsx2'
-    name: "Linux - AppImage"
-    uses: ./.github/workflows/linux_build_wx.yml
-    with:
-      jobName: "wxWidgets"
-      compiler: gcc
-      cmakeflags: "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON"
-      buildAppImage: true
-    secrets: inherit
-
   build_linux_qt_sse4:
     if: github.repository == 'PCSX2/pcsx2'
     name: "Linux - AppImage SSE4"
@@ -45,25 +34,6 @@ jobs:
     secrets: inherit
 
   # Windows
-  build_wx_sse4:
-    if: github.repository == 'PCSX2/pcsx2'
-    name: "Windows - SSE4"
-    uses: ./.github/workflows/windows_build_wx.yml
-    with:
-      jobName: wxWidgets
-      configuration: Release
-      simd: "SSE4"
-    secrets: inherit
-
-  build_wx_avx2:
-    if: github.repository == 'PCSX2/pcsx2'
-    name: "Windows - AVX2"
-    uses: ./.github/workflows/windows_build_wx.yml
-    with:
-      jobName: wxWidgets
-      configuration: Release AVX2
-    secrets: inherit
-
   build_qt_sse4:
     if: github.repository == 'PCSX2/pcsx2'
     name: "Windows - SSE4"
@@ -84,15 +54,6 @@ jobs:
     secrets: inherit
 
   # MacOS
-  build_macos_wx:
-    if: github.repository == 'PCSX2/pcsx2'
-    name: "MacOS"
-    uses: ./.github/workflows/macos_build.yml
-    with:
-      jobName: "wxWidgets"
-      gui: "wxWidgets"
-    secrets: inherit
-
   build_macos_qt:
     if: github.repository == 'PCSX2/pcsx2'
     name: "MacOS"
@@ -106,14 +67,10 @@ jobs:
   upload_artifacts:
     if: github.repository == 'PCSX2/pcsx2'
     needs:
-      - build_gcc_lto
       - build_linux_qt_sse4
       - build_linux_qt_avx2
-      - build_wx_sse4
-      - build_wx_avx2
       - build_qt_sse4
       - build_qt_avx2
-      - build_macos_wx
       - build_macos_qt
     name: "Upload Artifacts"
     runs-on: ubuntu-latest

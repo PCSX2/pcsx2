@@ -23,10 +23,7 @@ for dir_name in os.listdir(scan_dir):
   elif "sse4" in dir_name.lower():
     asset_name += "-SSE4"
 
-  if "wxwidgets" in dir_name.lower():
-    asset_name += "-wxWidgets"
-  else:
-    asset_name += "-Qt"
+  asset_name += "-Qt"
 
   if "symbols" in dir_name.lower():
     asset_name += "-symbols"
