@@ -748,6 +748,8 @@ struct Pcsx2Config
 		int VideoCaptureBitrate{DEFAULT_VIDEO_CAPTURE_BITRATE};
 
 		std::string Adapter;
+		std::string HWDumpDirectory;
+		std::string SWDumpDirectory;
 
 		GSOptions();
 

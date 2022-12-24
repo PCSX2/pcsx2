@@ -17,6 +17,7 @@
 #include "GSState.h"
 #include "GSGL.h"
 #include "GSUtil.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 
 #include <algorithm> // clamp
@@ -25,7 +26,6 @@
 #include <iomanip> // Dump Verticles
 
 int GSState::s_n = 0;
-std::string GSState::s_dump_root;
 
 static __fi bool IsAutoFlushEnabled()
 {
@@ -56,14 +56,6 @@ GSState::GSState()
 	m_mipmap = GSConfig.Mipmap;
 
 	s_n = 0;
-	s_dump_root = "";
-#if defined(__unix__)
-	if (GSConfig.DumpGSData)
-	{
-		GSmkdir(root_hw.c_str());
-		GSmkdir(root_sw.c_str());
-	}
-#endif
 
 	m_crc_hack_level = GSConfig.CRCHack;
 	if (m_crc_hack_level == CRCHackLevel::Automatic)
@@ -139,6 +131,21 @@ GSState::~GSState()
 		_aligned_free(m_vertex.buff);
 	if (m_index.buff)
 		_aligned_free(m_index.buff);
+}
+
+std::string GSState::GetDrawDumpPath(const char* format, ...)
+{
+	std::va_list ap;
+	va_start(ap, format);
+#ifdef PCSX2_CORE
+	const std::string& base = GSConfig.UseHardwareRenderer() ? GSConfig.HWDumpDirectory : GSConfig.SWDumpDirectory;
+#else
+	// Buzz off wx
+	const char* base = GSConfig.UseHardwareRenderer() ? "C:\\temp2" : "C:\\temp1";
+#endif
+	std::string ret(Path::Combine(base, StringUtil::StdStringFromFormatV(format, ap)));
+	va_end(ap);
+	return ret;
 }
 
 void GSState::Reset(bool hardware_reset)
@@ -2081,10 +2088,10 @@ void GSState::Read(u8* mem, int len)
 
 	if (GSConfig.DumpGSData && GSConfig.SaveRT && s_n >= GSConfig.SaveN)
 	{
-		std::string s = s_dump_root + StringUtil::StdStringFromFormat(
+		const std::string s(GetDrawDumpPath(
 			"%05d_read_%05x_%d_%d_%d_%d_%d_%d.bmp",
 			s_n, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, (int)m_env.BITBLTBUF.SPSM,
-			r.left, r.top, r.right, r.bottom);
+			r.left, r.top, r.right, r.bottom));
 
 		m_mem.SaveBMP(s, m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM, r.right, r.bottom);
 	}

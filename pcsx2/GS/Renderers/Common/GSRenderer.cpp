@@ -631,7 +631,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 
 	if (GSConfig.DumpGSData && s_n >= GSConfig.SaveN)
 	{
-		m_regs->Dump(root_sw + StringUtil::StdStringFromFormat("%05d_f%lld_gs_reg.txt", s_n, g_perfmon.GetFrame()));
+		m_regs->Dump(GetDrawDumpPath("vsync_%05d_f%lld_gs_reg.txt", s_n, g_perfmon.GetFrame()));
 	}
 
 	const int fb_sprite_blits = g_perfmon.GetDisplayFramebufferSpriteBlits();

@@ -501,7 +501,10 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(VideoCaptureCodec) &&
 		OpEqu(VideoCaptureBitrate) &&
 
-		OpEqu(Adapter));
+		OpEqu(Adapter) &&
+		
+		OpEqu(HWDumpDirectory) &&
+		OpEqu(SWDumpDirectory));
 }
 
 bool Pcsx2Config::GSOptions::operator!=(const GSOptions& right) const
@@ -703,6 +706,12 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingIntEx(VideoCaptureBitrate, "VideoCaptureBitrate");
 
 	GSSettingString(Adapter);
+	GSSettingString(HWDumpDirectory);
+	if (!HWDumpDirectory.empty() && !Path::IsAbsolute(HWDumpDirectory))
+		HWDumpDirectory = Path::Combine(EmuFolders::DataRoot, HWDumpDirectory);
+	GSSettingString(SWDumpDirectory);
+	if (!SWDumpDirectory.empty() && !Path::IsAbsolute(SWDumpDirectory))
+		SWDumpDirectory = Path::Combine(EmuFolders::DataRoot, SWDumpDirectory);
 
 #undef GSSettingInt
 #undef GSSettingIntEx
@@ -713,6 +722,16 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 #undef GSSettingIntEnumEx
 #undef GSSettingString
 #undef GSSettingStringEx
+
+#ifdef PCSX2_CORE
+	// Sanity check: don't dump a bunch of crap in the current working directory.
+	const std::string& dump_dir = UseHardwareRenderer() ? HWDumpDirectory : SWDumpDirectory;
+	if (DumpGSData && dump_dir.empty())
+	{
+		Console.Error("Draw dumping is enabled but directory is unconfigured, please set one.");
+		DumpGSData = false;
+	}
+#endif
 }
 
 void Pcsx2Config::GSOptions::MaskUserHacks()

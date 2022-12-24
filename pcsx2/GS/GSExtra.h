@@ -114,10 +114,6 @@ static constexpr int MAXIMUM_TEXTURE_MIPMAP_LEVELS = 7;
 // The maximum number of duplicate frames we can skip presenting for.
 static constexpr u32 MAX_SKIPPED_DUPLICATE_FRAMES = 3;
 
-// Helper path to dump texture
-extern const std::string root_sw;
-extern const std::string root_hw;
-
 extern void* GSAllocateWrappedMemory(size_t size, size_t repeat);
 extern void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat);
 

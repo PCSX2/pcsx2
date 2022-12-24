@@ -241,7 +241,6 @@ public:
 	int m_backed_up_ctx;
 
 	static int s_n;
-	static std::string s_dump_root;
 
 	static constexpr u32 STATE_VERSION = 8;
 
@@ -334,6 +333,9 @@ public:
 public:
 	GSState();
 	virtual ~GSState();
+
+	/// Returns the appropriate directory for draw dumping.
+	static std::string GetDrawDumpPath(const char* format, ...);
 
 	void ResetHandlers();
 
