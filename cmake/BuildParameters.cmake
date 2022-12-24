@@ -51,26 +51,14 @@ option(USE_VULKAN "Enable Vulkan GS renderer" ON)
 #-------------------------------------------------------------------------------
 # Path and lib option
 #-------------------------------------------------------------------------------
-option(PACKAGE_MODE "Use this option to ease packaging of PCSX2 (developer/distribution option)")
-option(DISABLE_PCSX2_WRAPPER "Disable including the PCSX2-linux.sh file")
 option(DISABLE_SETCAP "Do not set files capabilities")
 option(XDG_STD "Use XDG standard path instead of the standard PCSX2 path")
 option(CUBEB_API "Build Cubeb support on SPU2" ON)
-option(GTK2_API "Use GTK2 api (legacy)")
 option(QT_BUILD "Build Qt frontend instead of wx" ON)
 
 if(UNIX AND NOT APPLE)
 	option(X11_API "Enable X11 support" ON)
 	option(WAYLAND_API "Enable Wayland support" OFF)
-endif()
-
-if(PACKAGE_MODE)
-	file(RELATIVE_PATH relative_datadir ${CMAKE_INSTALL_FULL_BINDIR} ${CMAKE_INSTALL_FULL_DATADIR}/PCSX2)
-	file(RELATIVE_PATH relative_docdir ${CMAKE_INSTALL_FULL_BINDIR} ${CMAKE_INSTALL_FULL_DOCDIR})
-	# Compile all source codes with those defines
-	list(APPEND PCSX2_DEFS
-		PCSX2_APP_DATADIR="${relative_datadir}"
-		PCSX2_APP_DOCDIR="${relative_docdir}")
 endif()
 
 if(APPLE)
