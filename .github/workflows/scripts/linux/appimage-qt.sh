@@ -205,9 +205,6 @@ mkdir -p "$OUTDIR/usr/bin" "$OUTDIR/usr/lib" "$OUTDIR/usr/lib/pulseaudio"
 echo "Copying binary and resources..."
 cp -a "$BINDIR/$BINARY" "$BINDIR/resources" "$OUTDIR/usr/bin"
 
-# Don't need old wx locales.
-rm -fr "$OUTDIR/usr/bin/resources/locale"
-
 # Patch RPATH so the binary goes hunting for shared libraries in the AppDir instead of system.
 echo "Patching RPATH in ${BINARY}..."
 patchelf --set-rpath '$ORIGIN/../lib' "$OUTDIR/usr/bin/$BINARY"

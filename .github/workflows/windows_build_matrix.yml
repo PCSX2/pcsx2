@@ -19,25 +19,6 @@ jobs:
       - name: Verify VS Project Files
         run: .github\workflows\scripts\windows\validate-vs-filters.ps1
 
-  build_wx_sse4:
-    needs: lint_vs_proj_files
-    name: "SSE4"
-    uses: ./.github/workflows/windows_build_wx.yml
-    with:
-      jobName: wxWidgets
-      configuration: Release
-      simd: "SSE4"
-    secrets: inherit
-
-  build_wx_avx2:
-    needs: lint_vs_proj_files
-    name: "AVX2"
-    uses: ./.github/workflows/windows_build_wx.yml
-    with:
-      jobName: wxWidgets
-      configuration: Release AVX2
-    secrets: inherit
-
   build_qt_sse4:
     needs: lint_vs_proj_files
     name: "SSE4"
@@ -55,16 +36,6 @@ jobs:
     with:
       jobName: Qt
       configuration: Release AVX2
-    secrets: inherit
-
-  # CMAKE
-  build_wx_sse4_cmake:
-    name: "CMake SSE4"
-    uses: ./.github/workflows/windows_build_wx.yml
-    with:
-      jobName: wxWidgets
-      configuration: CMake
-      buildSystem: cmake
     secrets: inherit
 
   build_qt_sse4_cmake:
