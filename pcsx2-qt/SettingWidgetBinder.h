@@ -974,15 +974,15 @@ namespace SettingWidgetBinder
 
 	template <typename WidgetType>
 	static void BindWidgetToFolderSetting(SettingsInterface* sif, WidgetType* widget, QAbstractButton* browse_button, QAbstractButton* open_button,
-		QAbstractButton* reset_button, std::string section, std::string key, std::string default_value)
+		QAbstractButton* reset_button, std::string section, std::string key, std::string default_value, bool use_relative = true)
 	{
 		using Accessor = SettingAccessor<WidgetType>;
 
 		std::string current_path(Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value.c_str()));
 		if (current_path.empty())
 			current_path = default_value;
-		else if (!Path::IsAbsolute(current_path))
-			current_path = Path::Combine(EmuFolders::DataRoot, current_path);
+		else if (use_relative && !Path::IsAbsolute(current_path))
+			current_path = Path::Canonicalize(Path::Combine(EmuFolders::DataRoot, current_path));
 
 		const QString value(QString::fromStdString(current_path));
 		Accessor::setStringValue(widget, value);
@@ -998,12 +998,19 @@ namespace SettingWidgetBinder
 			return;
 		}
 
-		Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key)]() {
+		Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key), use_relative]() {
 			const std::string new_value(Accessor::getStringValue(widget).toStdString());
 			if (!new_value.empty())
 			{
-				std::string relative_path(Path::MakeRelative(new_value, EmuFolders::DataRoot));
-				Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), relative_path.c_str());
+				if (use_relative)
+				{
+					const std::string relative_path(Path::MakeRelative(new_value, EmuFolders::DataRoot));
+					Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), relative_path.c_str());
+				}
+				else
+				{
+					Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), new_value.c_str());
+				}
 			}
 			else
 			{
