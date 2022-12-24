@@ -38294,6 +38294,9 @@ SLPS-25691:
   name: "Captain Tsubasa"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes extreme ghosting.
+    wildArmsHack: 1 # Aligns vertical blurring.
 SLPS-25693:
   name: "Shinseiki GPX - Road to the Infinity 3"
   region: "NTSC-J"
