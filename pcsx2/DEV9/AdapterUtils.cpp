@@ -334,8 +334,11 @@ std::vector<IP_Address> AdapterUtils::GetGateways(ifaddrs* adapter)
 		{
 			std::vector<std::string_view> split = StringUtil::SplitString(line, '\t', true);
 			std::string gatewayIPHex{split[2]};
-			int addressValue = std::stoi(gatewayIPHex, 0, 16);
-			//Skip device routes without valid NextHop IP address
+			// stoi assumes hex values are unsigned, but tries to store it in a signed int,
+			// this results in a std::out_of_range exception for addresses ending in a number > 128.
+			// We don't have a stoui for (unsigned int), so instead use stoul for (unsigned long).
+			u32 addressValue = static_cast<u32>(std::stoul(gatewayIPHex, 0, 16));
+			// Skip device routes without valid NextHop IP address.
 			if (addressValue != 0)
 			{
 				IP_Address gwIP = *(IP_Address*)&addressValue;
