@@ -17,10 +17,6 @@
 
 #include "GS.h"
 #include "GSRegs.h"
-#ifdef _WIN32
-#include <d3dcommon.h>
-#include <dxgi.h>
-#endif
 
 class GSUtil
 {
@@ -37,7 +33,6 @@ public:
 	static bool HasSharedBits(u32 sbp, u32 spsm, u32 dbp, u32 dpsm);
 	static bool HasCompatibleBits(u32 spsm, u32 dpsm);
 
-	static bool CheckSSE();
 	static CRCHackLevel GetRecommendedCRCHackLevel(GSRendererType type);
 	static GSRendererType GetPreferredRenderer();
 };

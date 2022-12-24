@@ -15,11 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "DEV9/DEV9.h"
-#ifdef PCSX2_CORE
 #include "USB/USB.h"
-#else
-#include "USB/USBNull.h"
-#endif
 #include "IopHw.h"
 #include "IopDma.h"
 #include "Common.h"

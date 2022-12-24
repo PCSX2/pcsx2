@@ -24,28 +24,6 @@
 #include <optional>
 #include <vector>
 
-#ifndef PCSX2_CORE
-struct HostKeyEvent
-{
-	enum class Type
-	{
-		NoEvent,
-		KeyPressed,
-		KeyReleased,
-		MousePressed,
-		MouseReleased,
-		MouseWheelDown,
-		MouseWheelUp,
-		MouseMove,
-		FocusGained,
-		FocustLost,
-	};
-
-	Type type;
-	u32 key;
-};
-#endif
-
 namespace Host
 {
 	/// Typical durations for OSD messages.

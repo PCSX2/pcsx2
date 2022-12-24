@@ -137,12 +137,7 @@ std::string GSState::GetDrawDumpPath(const char* format, ...)
 {
 	std::va_list ap;
 	va_start(ap, format);
-#ifdef PCSX2_CORE
 	const std::string& base = GSConfig.UseHardwareRenderer() ? GSConfig.HWDumpDirectory : GSConfig.SWDumpDirectory;
-#else
-	// Buzz off wx
-	const char* base = GSConfig.UseHardwareRenderer() ? "C:\\temp2" : "C:\\temp1";
-#endif
 	std::string ret(Path::Combine(base, StringUtil::StdStringFromFormatV(format, ap)));
 	va_end(ap);
 	return ret;

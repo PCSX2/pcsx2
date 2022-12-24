@@ -17,11 +17,8 @@
 #include "GSCrc.h"
 #include "GSExtra.h"
 #include "GS.h"
-#include "common/StringUtil.h"
-
-#ifdef PCSX2_CORE
 #include "HostSettings.h"
-#endif
+#include "common/StringUtil.h"
 
 const CRC::Game CRC::m_games[] =
 {
@@ -341,11 +338,7 @@ const CRC::Game& CRC::Lookup(u32 crc)
 	printf("GS Lookup CRC:%08X\n", crc);
 	if (m_map.empty())
 	{
-#ifndef PCSX2_CORE
-		std::string exclusions = theApp.GetConfigS("CrcHacksExclusions");
-#else
 		std::string exclusions = Host::GetStringSettingValue("EmuCore/GS", "CrcHacksExclusions");
-#endif
 		if (exclusions.length() != 0)
 			printf("GS: CrcHacksExclusions: %s\n", exclusions.c_str());
 		int crcDups = 0;

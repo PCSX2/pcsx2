@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "common/RedtapeWindows.h"
+
 #include <dxgi1_3.h>
 #include <vector>
 #include <string>

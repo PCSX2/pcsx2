@@ -15,8 +15,6 @@
 
 #pragma once
 
-#ifdef PCSX2_CORE
-
 #include <queue>
 
 #include "Recording/InputRecordingFile.h"
@@ -80,5 +78,3 @@ private:
 };
 
 extern InputRecording g_InputRecording;
-
-#endif

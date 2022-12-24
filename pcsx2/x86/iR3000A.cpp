@@ -28,15 +28,12 @@
 #include "IopBios.h"
 #include "IopHw.h"
 #include "Common.h"
+#include "VMManager.h"
 
 #include <time.h>
 
 #ifndef _WIN32
 #include <sys/types.h>
-#endif
-
-#ifdef PCSX2_CORE
-#include "VMManager.h"
 #endif
 
 #include "iCore.h"
@@ -48,10 +45,6 @@
 #include "common/Path.h"
 #include "common/Perf.h"
 #include "DebugTools/Breakpoints.h"
-
-#ifndef PCSX2_CORE
-#include "gui/SysThreads.h"
-#endif
 
 #include "fmt/core.h"
 
@@ -1420,11 +1413,7 @@ static bool psxDynarecCheckBreakpoint()
 		return false;
 
 	CBreakPoints::SetBreakpointTriggered(true);
-#ifndef PCSX2_CORE
-	GetCoreThread().PauseSelfDebug();
-#else
 	VMManager::SetPaused(true);
-#endif
 
 	// Exit the EE too.
 	Cpu->ExitExecution();
@@ -1438,11 +1427,7 @@ static bool psxDynarecMemcheck()
 		return false;
 
 	CBreakPoints::SetBreakpointTriggered(true);
-#ifndef PCSX2_CORE
-	GetCoreThread().PauseSelfDebug();
-#else
 	VMManager::SetPaused(true);
-#endif
 
 	// Exit the EE too.
 	Cpu->ExitExecution();

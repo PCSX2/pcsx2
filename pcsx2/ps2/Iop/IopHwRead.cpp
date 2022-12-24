@@ -22,11 +22,7 @@
 #include "FW.h"
 #include "SPU2/spu2.h"
 #include "DEV9/DEV9.h"
-#ifdef PCSX2_CORE
 #include "USB/USB.h"
-#else
-#include "USB/USBNull.h"
-#endif
 #include "IopCounters.h"
 #include "IopDma.h"
 

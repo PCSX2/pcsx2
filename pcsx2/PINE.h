@@ -18,7 +18,7 @@
 
 #pragma once
 
-#ifndef PCSX2_CORE
+#ifdef PCSX2_LEFTOVER_FROM_WX
 
 // PINE uses a concept of "slot" to be able to communicate with multiple
 // emulators at the same time, each slot should be unique to each emulator to

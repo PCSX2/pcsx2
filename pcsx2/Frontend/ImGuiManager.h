@@ -66,7 +66,6 @@ namespace ImGuiManager
 	/// This font is allocated on demand.
 	ImFont* GetLargeFont();
 
-#ifdef PCSX2_CORE
 	/// Returns true if imgui wants to intercept text input.
 	bool WantsTextInput();
 
@@ -90,7 +89,6 @@ namespace ImGuiManager
 
 	/// Called on the CPU thread when any input event fires. Allows imgui to take over controller navigation.
 	bool ProcessGenericInputEvent(GenericInputBinding key, float value);
-#endif
 } // namespace ImGuiManager
 
 namespace Host

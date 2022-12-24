@@ -33,8 +33,11 @@
 
 #include "Config.h"
 #include "Counters.h"
+#include "Frontend/FullscreenUI.h"
 #include "Frontend/ImGuiManager.h"
+#include "Frontend/ImGuiFullscreen.h"
 #include "Frontend/ImGuiOverlays.h"
+#include "Frontend/InputManager.h"
 #include "GS.h"
 #include "GS/GS.h"
 #include "GS/GSVector.h"
@@ -42,28 +45,20 @@
 #include "HostDisplay.h"
 #include "IconsFontAwesome5.h"
 #include "PerformanceMetrics.h"
-
-#ifdef PCSX2_CORE
 #include "PAD/Host/PAD.h"
 #include "PAD/Host/KeyStatus.h"
 #include "USB/USB.h"
-#include "Frontend/FullscreenUI.h"
-#include "Frontend/ImGuiManager.h"
-#include "Frontend/ImGuiFullscreen.h"
-#include "Frontend/InputManager.h"
+
 #include "VMManager.h"
 #include "pcsx2/Recording/InputRecording.h"
-#endif
 
 namespace ImGuiManager
 {
 	static void FormatProcessorStat(std::string& text, double usage, double time);
 	static void DrawPerformanceOverlay();
-#ifdef PCSX2_CORE
 	static void DrawSettingsOverlay();
 	static void DrawInputsOverlay();
 	static void DrawInputRecordingOverlay();
-#endif
 } // namespace ImGuiManager
 
 static std::tuple<float, float> GetMinMax(gsl::span<const float> values)
@@ -132,13 +127,8 @@ void ImGuiManager::DrawPerformanceOverlay()
 		position_y += text_size.y + spacing; \
 	} while (0)
 
-#ifdef PCSX2_CORE
 	const bool paused = (VMManager::GetState() == VMState::Paused);
 	const bool fsui_active = FullscreenUI::HasActiveWindow();
-#else
-	const bool paused = false;
-	const bool fsui_active = false;
-#endif
 
 	if (!paused)
 	{
@@ -257,7 +247,6 @@ void ImGuiManager::DrawPerformanceOverlay()
 			}
 		}
 
-#ifdef PCSX2_CORE
 		if (GSConfig.OsdShowFrameTimes)
 		{
 			const ImVec2 history_size(200.0f * scale, 50.0f * scale);
@@ -318,7 +307,6 @@ void ImGuiManager::DrawPerformanceOverlay()
 			ImGui::PopStyleVar(5);
 			ImGui::PopStyleColor(3);
 		}
-#endif
 	}
 	else if (!fsui_active)
 	{
@@ -330,8 +318,6 @@ void ImGuiManager::DrawPerformanceOverlay()
 
 #undef DRAW_LINE
 }
-
-#ifdef PCSX2_CORE
 
 void ImGuiManager::DrawSettingsOverlay()
 {
@@ -606,9 +592,6 @@ void ImGuiManager::DrawInputsOverlay()
 	}
 }
 
-#endif
-
-#ifdef PCSX2_CORE
 void ImGuiManager::DrawInputRecordingOverlay()
 {
 	const float scale = ImGuiManager::GetGlobalScale();
@@ -657,14 +640,11 @@ void ImGuiManager::DrawInputRecordingOverlay()
 
 #undef DRAW_LINE
 }
-#endif
 
 void ImGuiManager::RenderOverlays()
 {
 	DrawPerformanceOverlay();
-#ifdef PCSX2_CORE
 	DrawInputRecordingOverlay();
 	DrawSettingsOverlay();
 	DrawInputsOverlay();
-#endif
 }

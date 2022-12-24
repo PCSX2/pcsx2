@@ -16,8 +16,7 @@
 #pragma once
 
 #ifdef _WIN32
-#	include <Windows.h>
-#	undef Yield
+# include "common/RedtapeWindows.h"
 #elif defined(__linux__)
 #	include <libaio.h>
 #elif defined(__POSIX__)

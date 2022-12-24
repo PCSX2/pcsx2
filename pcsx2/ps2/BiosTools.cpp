@@ -303,11 +303,6 @@ bool LoadBIOS()
 	ChecksumIt(BiosChecksum, eeMem->ROM);
 	BiosPath = std::move(path);
 
-#ifndef PCSX2_CORE
-	Console.SetTitle(StringUtil::StdStringFromFormat("Running BIOS (%s v%u.%u)",
-		BiosZone.c_str(), BiosVersion >> 8, BiosVersion & 0xff).c_str());
-#endif
-
 	//injectIRX("host.irx");	//not fully tested; still buggy
 
 	LoadExtraRom("rom1", eeMem->ROM1);

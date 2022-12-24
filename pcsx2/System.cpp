@@ -32,11 +32,9 @@
 
 #include "common/emitter/x86_intrin.h"
 
-#ifdef PCSX2_CORE
 #include "GSDumpReplayer.h"
 
 extern R5900cpu GSDumpReplayerCpu;
-#endif
 
 SSE_MXCSR g_sseMXCSR   = {DEFAULT_sseMXCSR};
 SSE_MXCSR g_sseVUMXCSR = {DEFAULT_sseVUMXCSR};
@@ -220,10 +218,6 @@ void SysLogMachineCaps()
 	Console.Indent().WriteLn("%s", features.c_str());
 
 	Console.Newline();
-
-#if defined(_WIN32) && !defined(PCSX2_CORE)
-	CheckIsUserOnHighPerfPowerPlan();
-#endif
 }
 
 namespace HostMemoryMap {
@@ -395,10 +389,8 @@ void SysCpuProviderPack::ApplyConfig() const
 	if( EmuConfig.Cpu.Recompiler.EnableVU1 )
 		CpuVU1 = &CpuMicroVU1;
 
-#ifdef PCSX2_CORE
 	if (GSDumpReplayer::IsReplayingDump())
 		Cpu = &GSDumpReplayerCpu;
-#endif
 }
 
 // Resets all PS2 cpu execution caches, which does not affect that actual PS2 state/condition.
@@ -408,11 +400,6 @@ void SysCpuProviderPack::ApplyConfig() const
 // Use this method to reset the recs when important global pointers like the MTGS are re-assigned.
 void SysClearExecutionCache()
 {
-	// Done by VMManager in Qt.
-#ifndef PCSX2_CORE
-	GetCpuProviders().ApplyConfig();
-#endif
-
 	Cpu->Reset();
 	psxCpu->Reset();
 

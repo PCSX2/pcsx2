@@ -19,12 +19,6 @@
 #include <memory>
 #include <string>
 
-#ifndef PCSX2_CORE
-#include <mutex>
-#endif
-
-struct HostKeyEvent;
-
 class GSRenderer : public GSState
 {
 private:
@@ -32,11 +26,6 @@ private:
 
 	u64 m_shader_time_start = 0;
 
-#ifndef PCSX2_CORE
-	std::mutex m_snapshot_mutex;
-	bool m_shift_key = false;
-	bool m_control_key = false;
-#endif
 	std::string m_snapshot;
 	u32 m_dump_frames = 0;
 	u32 m_skipped_duplicate_frames = 0;
@@ -74,9 +63,6 @@ public:
 
 	bool BeginCapture(std::string filename);
 	void EndCapture();
-#ifndef PCSX2_CORE
-	void KeyEvent(const HostKeyEvent& e);
-#endif
 };
 
 extern std::unique_ptr<GSRenderer> g_gs_renderer;

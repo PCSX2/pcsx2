@@ -19,6 +19,10 @@
 #include "GS/Renderers/Common/GSFunctionMap.h"
 #include "GS/GSUtil.h"
 #include "GS/MultiISA.h"
+
+#ifdef _WIN32
+#include "common/RedtapeWindows.h"
+#endif
 #include <xbyak/xbyak.h>
 
 #if defined(_M_AMD64) || defined(_WIN64)

@@ -21,10 +21,7 @@
 #include "PerformanceMetrics.h"
 #include "common/AlignedMalloc.h"
 #include "common/StringUtil.h"
-
-#ifdef PCSX2_CORE
 #include "VMManager.h"
-#endif
 
 #define ENABLE_DRAW_STATS 0
 
@@ -1185,7 +1182,6 @@ void GSRasterizerList::OnWorkerStartup(int i)
 
 	Threading::ThreadHandle handle(Threading::ThreadHandle::GetForCallingThread());
 
-#ifdef PCSX2_CORE
 	if (EmuConfig.Cpu.AffinityControlMode != 0)
 	{
 		const std::vector<u32>& procs = VMManager::GetSortedProcessorList();
@@ -1198,7 +1194,6 @@ void GSRasterizerList::OnWorkerStartup(int i)
 			handle.SetAffinity(affinity);
 		}
 	}
-#endif
 
 	PerformanceMetrics::SetGSSWThread(i, std::move(handle));
 }

@@ -27,12 +27,7 @@
 #include "IconsFontAwesome5.h"
 #include "GS/GSLocalMemory.h"
 #include "GS/Renderers/HW/GSTextureReplacements.h"
-
-#ifndef PCSX2_CORE
-#include "gui/AppCoreThread.h"
-#else
 #include "VMManager.h"
-#endif
 
 #include <cinttypes>
 #include <cstring>
@@ -115,7 +110,6 @@ namespace GSTextureReplacements
 	static std::optional<TextureName> ParseReplacementName(const std::string& filename);
 	static std::string GetGameTextureDirectory();
 	static std::string GetDumpFilename(const TextureName& name, u32 level);
-	static std::string GetGameSerial();
 	static std::optional<ReplacementTexture> LoadReplacementTexture(const TextureName& name, const std::string& filename, bool only_base_image);
 	static void QueueAsyncReplacementTextureLoad(const TextureName& name, const std::string& filename, bool mipmap);
 	static void PrecacheReplacementTextures();
@@ -255,19 +249,10 @@ std::string GSTextureReplacements::GetDumpFilename(const TextureName& name, u32 
 	return ret;
 }
 
-std::string GSTextureReplacements::GetGameSerial()
-{
-#ifndef PCSX2_CORE
-	return StringUtil::wxStringToUTF8String(GameInfo::gameSerial);
-#else
-	return VMManager::GetGameSerial();
-#endif
-}
-
 void GSTextureReplacements::Initialize(GSTextureCache* tc)
 {
 	s_tc = tc;
-	s_current_serial = GetGameSerial();
+	s_current_serial = VMManager::GetGameSerial();
 
 	if (GSConfig.DumpReplaceableTextures || GSConfig.LoadTextureReplacements)
 		StartWorkerThread();
@@ -280,7 +265,7 @@ void GSTextureReplacements::GameChanged()
 	if (!s_tc)
 		return;
 
-	std::string new_serial(GetGameSerial());
+	std::string new_serial(VMManager::GetGameSerial());
 	if (s_current_serial == new_serial)
 		return;
 

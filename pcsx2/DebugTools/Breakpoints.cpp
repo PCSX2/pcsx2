@@ -399,12 +399,6 @@ const std::vector<BreakPoint> CBreakPoints::GetBreakpoints()
 	return breakPoints_;
 }
 
-// including them earlier causes some ambiguities
-#ifndef PCSX2_CORE
-#include "gui/App.h"
-#include "gui/Debugger/DisassemblyDialog.h"
-#endif
-
 void CBreakPoints::Update(BreakPointCpu cpu, u32 addr)
 {
 	bool resume = false;
@@ -423,12 +417,6 @@ void CBreakPoints::Update(BreakPointCpu cpu, u32 addr)
 	if (resume)
 		r5900Debug.resumeCpu();
 
-#ifndef PCSX2_CORE
-	auto disassembly_window = wxGetApp().GetDisassemblyPtr();
-	if (disassembly_window) // make sure that valid pointer is recieved to prevent potential NULL dereference.
-		disassembly_window->update();
-#else
 	if(cb_bpUpdated_)
 		cb_bpUpdated_();
-#endif
 }

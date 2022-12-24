@@ -15,8 +15,6 @@
 
 #pragma once
 
-#ifdef PCSX2_CORE
-
 #include "System.h"
 #include "PadData.h"
 
@@ -108,5 +106,3 @@ private:
 	size_t getRecordingBlockSeekPoint(const u32 frame) const noexcept;
 	bool verifyRecordingFileHeader();
 };
-
-#endif

@@ -28,19 +28,7 @@
 #include <objbase.h>
 #endif
 
-#ifdef PCSX2_CORE
-
 #include "HostSettings.h"
-
-#else
-
-#include "gui/StringHelpers.h"
-
-extern bool CfgReadBool(const wchar_t* Section, const wchar_t* Name, bool Default);
-extern int CfgReadInt(const wchar_t* Section, const wchar_t* Name, int Default);
-extern void CfgReadStr(const wchar_t* Section, const wchar_t* Name, wxString& Data, const wchar_t* Default);
-
-#endif
 
 class Cubeb : public SndOutModule
 {
@@ -375,19 +363,9 @@ public:
 
 	void ReadSettings()
 	{
-#ifndef PCSX2_CORE
-		m_SuggestedLatencyMinimal = CfgReadBool(L"Cubeb", L"MinimalSuggestedLatency", false);
-		m_SuggestedLatencyMS = std::clamp(CfgReadInt(L"Cubeb", L"ManualSuggestedLatencyMS", MINIMUM_LATENCY_MS), MINIMUM_LATENCY_MS, MAXIMUM_LATENCY_MS);
-
-		// TODO: Once the config stuff gets merged, drop the wxString here.
-		wxString backend;
-		CfgReadStr(L"SPU2/Output", L"BackendName", backend, L"");
-		m_Backend = StringUtil::wxStringToUTF8String(backend);
-#else
 		m_SuggestedLatencyMinimal = Host::GetBoolSettingValue("Cubeb", "MinimalSuggestedLatency", false);
 		m_SuggestedLatencyMS = std::clamp(Host::GetIntSettingValue("Cubeb", "ManualSuggestedLatencyMS", MINIMUM_LATENCY_MS), MINIMUM_LATENCY_MS, MAXIMUM_LATENCY_MS);
 		m_Backend = Host::GetStringSettingValue("SPU2/Output", "BackendName", "");
-#endif
 	}
 };
 

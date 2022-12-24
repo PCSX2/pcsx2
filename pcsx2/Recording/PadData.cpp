@@ -13,8 +13,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef PCSX2_CORE
-
 #include "PrecompiledHeader.h"
 
 #include "DebugTools/Debug.h"
@@ -178,5 +176,3 @@ void PadData::LogPadData() const
 	const std::string finalLog = fmt::format("[PAD {}:{}:{}]\n\t[Buttons]: {}\n\t[Analogs]: {}\n", m_ext_port, m_port, m_slot, pressedButtons, analogs);
 	controlLog(finalLog);
 }
-
-#endif

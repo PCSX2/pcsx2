@@ -34,19 +34,15 @@
 #include <string.h>
 #include <errno.h>
 #include <stdarg.h>
-#define EXTERN
 #include "DEV9.h"
-#undef EXTERN
 #include "Config.h"
-#include "DEV9Config.h"
 #include "smap.h"
-
 
 #ifdef _WIN32
 #pragma warning(disable : 4244)
-
-HINSTANCE hInst = NULL;
 #endif
+
+dev9Struct dev9;
 
 //#define HDD_48BIT
 
@@ -200,9 +196,6 @@ void DEV9shutdown()
 s32 DEV9open()
 {
 	DevCon.WriteLn("DEV9: DEV9open");
-#ifndef PCSX2_CORE
-	LoadDnsHosts();
-#endif
 	DevCon.WriteLn("DEV9: open r+: %s", EmuConfig.DEV9.HddFile.c_str());
 
 	std::string hddPath(GetHDDPath());

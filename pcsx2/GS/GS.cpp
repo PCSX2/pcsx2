@@ -15,14 +15,6 @@
 
 #include "PrecompiledHeader.h"
 
-#ifndef PCSX2_CORE
-#ifdef _WIN32
-// Need to ensure we include windows.h and set _WIN32_WINNT before wx does..
-#include "common/RedtapeWindows.h"
-#endif
-#include "GS/Window/GSwxDialog.h"
-#endif
-
 #include "GS.h"
 #include "GSCapture.h"
 #include "GSGL.h"
@@ -43,12 +35,10 @@
 #include "pcsx2/Counters.h"
 #include "pcsx2/Host.h"
 #include "pcsx2/HostDisplay.h"
-#include "pcsx2/GS.h"
-#ifdef PCSX2_CORE
 #include "pcsx2/HostSettings.h"
 #include "pcsx2/Frontend/FullscreenUI.h"
 #include "pcsx2/Frontend/InputManager.h"
-#endif
+#include "pcsx2/GS.h"
 
 #ifdef ENABLE_OPENGL
 #include "Renderers/OpenGL/GSDeviceOGL.h"
@@ -87,17 +77,6 @@ static u64 s_next_manual_present_time;
 
 int GSinit()
 {
-	if (!GSUtil::CheckSSE())
-	{
-		return -1;
-	}
-
-	// Vector instructions must be avoided when initialising GS since PCSX2
-	// can crash if the CPU does not support the instruction set.
-	// Initialise it here instead - it's not ideal since we have to strip the
-	// const type qualifier from all the affected variables.
-	GSinitConfig();
-
 	GSVertexSW::InitStatic();
 
 	GSUtil::Init();
@@ -107,19 +86,6 @@ int GSinit()
 #endif
 
 	return 0;
-}
-
-void GSinitConfig()
-{
-#ifndef PCSX2_CORE
-	static bool config_inited = false;
-	if (config_inited)
-		return;
-
-	config_inited = true;
-	theApp.SetConfigDir();
-	theApp.Init();
-#endif
 }
 
 void GSshutdown()
@@ -593,52 +559,6 @@ void GSThrottlePresentation()
 	Threading::SleepUntil(s_next_manual_present_time);
 }
 
-#ifndef PCSX2_CORE
-
-void GSkeyEvent(const HostKeyEvent& e)
-{
-	try
-	{
-		if (g_gs_renderer)
-			g_gs_renderer->KeyEvent(e);
-	}
-	catch (GSRecoverableError)
-	{
-	}
-}
-
-void GSconfigure()
-{
-	try
-	{
-		if (!GSUtil::CheckSSE())
-			return;
-
-		theApp.SetConfigDir();
-		theApp.Init();
-
-		if (RunwxDialog())
-		{
-			theApp.ReloadConfig();
-			// Force a reload of the gs state
-			//theApp.SetCurrentRendererType(GSRendererType::Undefined);
-		}
-	}
-	catch (GSRecoverableError)
-	{
-	}
-}
-
-#endif
-
-int GStest()
-{
-	if (!GSUtil::CheckSSE())
-		return -1;
-
-	return 0;
-}
-
 void GSsetGameCRC(u32 crc, int options)
 {
 	g_gs_renderer->SetGameCRC(crc, options);
@@ -728,16 +648,9 @@ void GSgetTitleStats(std::string& info)
 	const char* hw_sw_name = (GSConfig.Renderer == GSRendererType::Null) ? " Null" : (GSConfig.UseHardwareRenderer() ? " HW" : " SW");
 	const char* deinterlace_mode = deinterlace_modes[static_cast<int>(GSConfig.InterlaceMode)];
 
-#ifndef PCSX2_CORE
-	int iwidth, iheight;
-	GSgetInternalResolution(&iwidth, &iheight);
-
-	info = StringUtil::StdStringFromFormat("%s%s | %s | %dx%d", api_name, hw_sw_name, deinterlace_mode,  iwidth, iheight);
-#else
 	const char* interlace_mode = ReportInterlaceMode();
 	const char* video_mode = ReportVideoMode();
 	info = StringUtil::StdStringFromFormat("%s%s | %s | %s | %s", api_name, hw_sw_name, video_mode, interlace_mode, deinterlace_mode);
-#endif
 }
 
 void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
@@ -890,24 +803,6 @@ bool GSSaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspe
 		width, height, pixels);
 }
 
-std::string format(const char* fmt, ...)
-{
-	va_list args;
-
-	va_start(args, fmt);
-	int size = vsnprintf(nullptr, 0, fmt, args) + 1;
-	va_end(args);
-
-	assert(size > 0);
-	std::vector<char> buffer(std::max(1, size));
-
-	va_start(args, fmt);
-	vsnprintf(buffer.data(), size, fmt, args);
-	va_end(args);
-
-	return {buffer.data()};
-}
-
 #ifdef _WIN32
 
 static HANDLE s_fh = NULL;
@@ -1030,466 +925,6 @@ void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
 }
 
 #endif
-
-#ifndef PCSX2_CORE
-
-size_t GSApp::GetIniString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName)
-{
-	BuildConfigurationMap(lpFileName);
-
-	std::string key(lpKeyName);
-	std::string value = m_configuration_map[key];
-	if (value.empty())
-	{
-		// save the value for futur call
-		m_configuration_map[key] = std::string(lpDefault);
-		strcpy(lpReturnedString, lpDefault);
-	}
-	else
-		strcpy(lpReturnedString, value.c_str());
-
-	return 0;
-}
-
-bool GSApp::WriteIniString(const char* lpAppName, const char* lpKeyName, const char* pString, const char* lpFileName)
-{
-	BuildConfigurationMap(lpFileName);
-
-	std::string key(lpKeyName);
-	std::string value(pString);
-	m_configuration_map[key] = value;
-
-	// Save config to a file
-	FILE* f = FileSystem::OpenCFile(lpFileName, "w");
-
-	if (f == NULL)
-		return false; // FIXME print a nice message
-
-		// Maintain compatibility with GSDumpGUI/old Windows ini.
-#ifdef _WIN32
-	fprintf(f, "[Settings]\n");
-#endif
-
-	for (const auto& entry : m_configuration_map)
-	{
-		// Do not save the inifile key which is not an option
-		if (entry.first.compare("inifile") == 0)
-			continue;
-
-		// Only keep option that have a default value (allow to purge old option of the GS.ini)
-		if (!entry.second.empty() && m_default_configuration.find(entry.first) != m_default_configuration.end())
-			fprintf(f, "%s = %s\n", entry.first.c_str(), entry.second.c_str());
-	}
-	fclose(f);
-
-	return false;
-}
-
-int GSApp::GetIniInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName)
-{
-	BuildConfigurationMap(lpFileName);
-
-	std::string value = m_configuration_map[std::string(lpKeyName)];
-	if (value.empty())
-	{
-		// save the value for futur call
-		SetConfig(lpKeyName, nDefault);
-		return nDefault;
-	}
-	else
-		return atoi(value.c_str());
-}
-
-GSApp theApp;
-
-GSApp::GSApp()
-{
-	// Empty constructor causes an illegal instruction exception on an SSE4.2 machine on Windows.
-	// Non-empty doesn't, but raises a SIGILL signal when compiled against GCC 6.1.1.
-	// So here's a compromise.
-#ifdef _WIN32
-	Init();
-#endif
-}
-
-void GSApp::Init()
-{
-	static bool is_initialised = false;
-	if (is_initialised)
-		return;
-	is_initialised = true;
-
-	m_section = "Settings";
-
-	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::Auto), "Automatic", "Default"));
-#ifdef _WIN32
-	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::DX11), "Direct3D 11", ""));
-	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::DX12), "Direct3D 12", ""));
-#endif
-#ifdef __APPLE__
-	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::Metal), "Metal", ""));
-#endif
-#ifdef ENABLE_OPENGL
-	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::OGL), "OpenGL", ""));
-#endif
-#ifdef ENABLE_VULKAN
-	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::VK), "Vulkan", ""));
-#endif
-	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::SW), "Software", ""));
-
-	// The null renderer goes last, it has use for benchmarking purposes in a release build
-	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::Null), "Null", ""));
-
-	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::Automatic), "Automatic", "Default"));
-	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::Off), "None", ""));
-	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::WeaveTFF), "Weave tff", "saw-tooth"));
-	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::WeaveBFF), "Weave bff", "saw-tooth"));
-	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::BobTFF), "Bob tff", "use adaptive or blend if shaking"));
-	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::BobBFF), "Bob bff", "use adaptive or blend if shaking"));
-	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::BlendTFF), "Blend tff", "slight blur, 1/2 fps"));
-	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::BlendBFF), "Blend bff", "slight blur, 1/2 fps"));
-	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::AdaptiveTFF), "Adaptive tff", "minor artifacts"));
-	m_gs_deinterlace.push_back(GSSetting(static_cast<u32>(GSInterlaceMode::AdaptiveBFF), "Adaptive bff", "minor artifacts"));
-
-	m_gs_upscale_multiplier.push_back(GSSetting(1, "Native", "PS2"));
-	m_gs_upscale_multiplier.push_back(GSSetting(2, "2x Native", "~720p"));
-	m_gs_upscale_multiplier.push_back(GSSetting(3, "3x Native", "~1080p"));
-	m_gs_upscale_multiplier.push_back(GSSetting(4, "4x Native", "~1440p 2K"));
-	m_gs_upscale_multiplier.push_back(GSSetting(5, "5x Native", "~1620p"));
-	m_gs_upscale_multiplier.push_back(GSSetting(6, "6x Native", "~2160p 4K"));
-	m_gs_upscale_multiplier.push_back(GSSetting(7, "7x Native", "~2520p"));
-	m_gs_upscale_multiplier.push_back(GSSetting(8, "8x Native", "~2880p"));
-
-	m_gs_max_anisotropy.push_back(GSSetting(0, "Off", "Default"));
-	m_gs_max_anisotropy.push_back(GSSetting(2, "2x", ""));
-	m_gs_max_anisotropy.push_back(GSSetting(4, "4x", ""));
-	m_gs_max_anisotropy.push_back(GSSetting(8, "8x", ""));
-	m_gs_max_anisotropy.push_back(GSSetting(16, "16x", ""));
-
-	m_gs_dithering.push_back(GSSetting(0, "Off", ""));
-	m_gs_dithering.push_back(GSSetting(2, "Unscaled", "Default"));
-	m_gs_dithering.push_back(GSSetting(1, "Scaled", ""));
-
-	m_gs_bifilter.push_back(GSSetting(static_cast<u32>(BiFiltering::Nearest), "Nearest", ""));
-	m_gs_bifilter.push_back(GSSetting(static_cast<u32>(BiFiltering::Forced_But_Sprite), "Bilinear", "Forced excluding sprite"));
-	m_gs_bifilter.push_back(GSSetting(static_cast<u32>(BiFiltering::Forced), "Bilinear", "Forced"));
-	m_gs_bifilter.push_back(GSSetting(static_cast<u32>(BiFiltering::PS2), "Bilinear", "PS2"));
-
-	m_gs_trifilter.push_back(GSSetting(static_cast<u32>(TriFiltering::Automatic), "Automatic", "Default"));
-	m_gs_trifilter.push_back(GSSetting(static_cast<u32>(TriFiltering::Off), "None", ""));
-	m_gs_trifilter.push_back(GSSetting(static_cast<u32>(TriFiltering::PS2), "Trilinear", ""));
-	m_gs_trifilter.push_back(GSSetting(static_cast<u32>(TriFiltering::Forced), "Trilinear", "Ultra/Slow"));
-
-	m_gs_texture_preloading.push_back(GSSetting(static_cast<u32>(TexturePreloadingLevel::Off), "None", ""));
-	m_gs_texture_preloading.push_back(GSSetting(static_cast<u32>(TexturePreloadingLevel::Partial), "Partial", ""));
-	m_gs_texture_preloading.push_back(GSSetting(static_cast<u32>(TexturePreloadingLevel::Full), "Full", "Hash Cache"));
-
-	m_gs_tex_display_list.push_back(GSSetting(static_cast<u32>(GSPostBilinearMode::Off), "None", ""));
-	m_gs_tex_display_list.push_back(GSSetting(static_cast<u32>(GSPostBilinearMode::BilinearSmooth), "Bilinear (Smooth)", ""));
-	m_gs_tex_display_list.push_back(GSSetting(static_cast<u32>(GSPostBilinearMode::BilinearSharp), "Bilinear (Sharp)", ""));
-
-	m_gs_generic_list.push_back(GSSetting(-1, "Automatic", "Default"));
-	m_gs_generic_list.push_back(GSSetting(0, "Force-Disabled", ""));
-	m_gs_generic_list.push_back(GSSetting(1, "Force-Enabled", ""));
-
-	m_gs_hack.push_back(GSSetting(0, "Off", "Default"));
-	m_gs_hack.push_back(GSSetting(1, "Half", ""));
-	m_gs_hack.push_back(GSSetting(2, "Full", ""));
-
-	m_gs_offset_hack.push_back(GSSetting(0, "Off", "Default"));
-	m_gs_offset_hack.push_back(GSSetting(1, "Normal", "Vertex"));
-	m_gs_offset_hack.push_back(GSSetting(2, "Special", "Texture"));
-	m_gs_offset_hack.push_back(GSSetting(3, "Special", "Texture - aggressive"));
-
-	m_gs_hw_mipmapping = {
-		GSSetting(HWMipmapLevel::Automatic, "Automatic", "Default"),
-		GSSetting(HWMipmapLevel::Off, "Off", ""),
-		GSSetting(HWMipmapLevel::Basic, "Basic", "Fast"),
-		GSSetting(HWMipmapLevel::Full, "Full", "Slow"),
-	};
-
-	m_gs_crc_level = {
-		GSSetting(CRCHackLevel::Automatic, "Automatic", "Default"),
-		GSSetting(CRCHackLevel::Off, "None", "Debug"),
-		GSSetting(CRCHackLevel::Minimum, "Minimum", "Debug"),
-#ifdef _DEBUG
-		GSSetting(CRCHackLevel::Partial, "Partial", "OpenGL"),
-		GSSetting(CRCHackLevel::Full, "Full", "Direct3D"),
-#endif
-		GSSetting(CRCHackLevel::Aggressive, "Aggressive", ""),
-	};
-
-	m_gs_acc_blend_level.push_back(GSSetting(static_cast<u32>(AccBlendLevel::Minimum), "Minimum", ""));
-	m_gs_acc_blend_level.push_back(GSSetting(static_cast<u32>(AccBlendLevel::Basic), "Basic", "Recommended"));
-	m_gs_acc_blend_level.push_back(GSSetting(static_cast<u32>(AccBlendLevel::Medium), "Medium", ""));
-	m_gs_acc_blend_level.push_back(GSSetting(static_cast<u32>(AccBlendLevel::High), "High", ""));
-	m_gs_acc_blend_level.push_back(GSSetting(static_cast<u32>(AccBlendLevel::Full), "Full", "Slow"));
-	m_gs_acc_blend_level.push_back(GSSetting(static_cast<u32>(AccBlendLevel::Maximum), "Maximum", "Very Slow"));
-
-	m_gs_tv_shaders.push_back(GSSetting(0, "None", "Default"));
-	m_gs_tv_shaders.push_back(GSSetting(1, "Scanline filter", ""));
-	m_gs_tv_shaders.push_back(GSSetting(2, "Diagonal filter", ""));
-	m_gs_tv_shaders.push_back(GSSetting(3, "Triangular filter", ""));
-	m_gs_tv_shaders.push_back(GSSetting(4, "Wave filter", ""));
-	m_gs_tv_shaders.push_back(GSSetting(5, "Lottes CRT filter", ""));
-
-	m_gs_casmode.push_back(GSSetting(static_cast<u32>(GSCASMode::Disabled), "None", "Default"));
-	m_gs_casmode.push_back(GSSetting(static_cast<u32>(GSCASMode::SharpenOnly), "Sharpen Only", "Internal Resolution"));
-	m_gs_casmode.push_back(GSSetting(static_cast<u32>(GSCASMode::SharpenAndResize), "Sharpen And Resize", "Display Resolution"));
-
-	m_gs_hw_download_mode.push_back(GSSetting(static_cast<u32>(GSHardwareDownloadMode::Enabled), "Accurate", "Recommended"));
-	m_gs_hw_download_mode.push_back(GSSetting(static_cast<u32>(GSHardwareDownloadMode::NoReadbacks), "Disable Readbacks", "Synchronize GS Thread"));
-	m_gs_hw_download_mode.push_back(GSSetting(static_cast<u32>(GSHardwareDownloadMode::Unsynchronized), "Unsynchronized", "Non-Deterministic"));
-	m_gs_hw_download_mode.push_back(GSSetting(static_cast<u32>(GSHardwareDownloadMode::Disabled), "Disabled", "Ignore Transfers"));
-
-	m_gs_dump_compression.push_back(GSSetting(static_cast<u32>(GSDumpCompressionMethod::Uncompressed), "Uncompressed", ""));
-	m_gs_dump_compression.push_back(GSSetting(static_cast<u32>(GSDumpCompressionMethod::LZMA), "LZMA (xz)", ""));
-	m_gs_dump_compression.push_back(GSSetting(static_cast<u32>(GSDumpCompressionMethod::Zstandard), "Zstandard (zst)", ""));
-
-	// clang-format off
-	// Avoid to clutter the ini file with useless options
-#if defined(ENABLE_VULKAN) || defined(_WIN32)
-	m_default_configuration["Adapter"]                                    = "";
-#endif
-#ifdef _WIN32
-	// Per OS option.
-	m_default_configuration["CaptureFileName"]                            = "";
-	m_default_configuration["CaptureVideoCodecDisplayName"]               = "";
-#else
-	m_default_configuration["linux_replay"]                               = "1";
-#endif
-	m_default_configuration["accurate_blending_unit"]                     = std::to_string(static_cast<u8>(AccBlendLevel::Basic));
-	m_default_configuration["AspectRatio"]                                = "1";
-	m_default_configuration["autoflush_sw"]                               = "1";
-	m_default_configuration["capture_enabled"]                            = "0";
-	m_default_configuration["capture_out_dir"]                            = "/tmp/GS_Capture";
-	m_default_configuration["capture_threads"]                            = "4";
-	m_default_configuration["CaptureHeight"]                              = "480";
-	m_default_configuration["CaptureWidth"]                               = "640";
-	m_default_configuration["crc_hack_level"]                             = std::to_string(static_cast<s8>(CRCHackLevel::Automatic));
-	m_default_configuration["CrcHacksExclusions"]                         = "";
-	m_default_configuration["disable_shader_cache"]                       = "0";
-	m_default_configuration["DisableDualSourceBlend"]                     = "0";
-	m_default_configuration["DisableFramebufferFetch"]                    = "0";
-	m_default_configuration["dithering_ps2"]                              = "2";
-	m_default_configuration["dump"]                                       = "0";
-	m_default_configuration["DumpReplaceableTextures"]                    = "0";
-	m_default_configuration["DumpReplaceableMipmaps"]                     = "0";
-	m_default_configuration["DumpTexturesWithFMVActive"]                  = "0";
-	m_default_configuration["DumpDirectTextures"]                         = "1";
-	m_default_configuration["DumpPaletteTextures"]                        = "1";
-	m_default_configuration["extrathreads"]                               = "2";
-	m_default_configuration["extrathreads_height"]                        = "4";
-	m_default_configuration["filter"]                                     = std::to_string(static_cast<u8>(BiFiltering::PS2));
-	m_default_configuration["FullscreenMode"]                             = "";
-	m_default_configuration["fxaa"]                                       = "0";
-	m_default_configuration["HWDownloadMode"]                             = std::to_string(static_cast<u8>(GSHardwareDownloadMode::Enabled));
-	m_default_configuration["GSDumpCompression"]                          = std::to_string(static_cast<u8>(GSDumpCompressionMethod::Zstandard));
-	m_default_configuration["HWSpinGPUForReadbacks"]                      = "0";
-	m_default_configuration["HWSpinCPUForReadbacks"]                      = "0";
-	m_default_configuration["pcrtc_antiblur"]                             = "1";
-	m_default_configuration["disable_interlace_offset"]                   = "0";
-	m_default_configuration["pcrtc_offsets"]                              = "0";
-	m_default_configuration["pcrtc_overscan"]                             = "0";
-	m_default_configuration["IntegerScaling"]                             = "0";
-	m_default_configuration["deinterlace_mode"]                           = std::to_string(static_cast<s8>(GSInterlaceMode::Automatic));
-	m_default_configuration["linear_present_mode"]                        = std::to_string(static_cast<s8>(GSPostBilinearMode::BilinearSmooth));
-	m_default_configuration["LoadTextureReplacements"]                    = "0";
-	m_default_configuration["LoadTextureReplacementsAsync"]               = "1";
-	m_default_configuration["MaxAnisotropy"]                              = "0";
-	m_default_configuration["mipmap"]                                     = "1";
-	m_default_configuration["mipmap_hw"]                                  = std::to_string(static_cast<int>(HWMipmapLevel::Automatic));
-	m_default_configuration["OsdShowMessages"]                            = "1";
-	m_default_configuration["OsdShowSpeed"]                               = "0";
-	m_default_configuration["OsdShowFPS"]                                 = "0";
-	m_default_configuration["OsdShowCPU"]                                 = "0";
-	m_default_configuration["OsdShowGPU"]                                 = "0";
-	m_default_configuration["OsdShowResolution"]                          = "0";
-	m_default_configuration["OsdShowGSStats"]                             = "0";
-	m_default_configuration["OsdShowIndicators"]                          = "1";
-	m_default_configuration["OsdShowSettings"]                            = "0";
-	m_default_configuration["OsdShowInputs"]                              = "0";
-	m_default_configuration["OsdShowFrameTimes"]                          = "0";
-	m_default_configuration["OsdScale"]                                   = "100";
-	m_default_configuration["override_GL_ARB_copy_image"]                 = "-1";
-	m_default_configuration["override_GL_ARB_clip_control"]               = "-1";
-	m_default_configuration["override_GL_ARB_direct_state_access"]        = "-1";
-	m_default_configuration["override_GL_ARB_draw_buffers_blend"]         = "-1";
-	m_default_configuration["override_GL_ARB_gpu_shader5"]                = "-1";
-	m_default_configuration["override_GL_ARB_texture_barrier"]            = "-1";
-	m_default_configuration["OverrideTextureBarriers"]                    = "-1";
-	m_default_configuration["OverrideGeometryShaders"]                    = "-1";
-	m_default_configuration["paltex"]                                     = "0";
-	m_default_configuration["png_compression_level"]                      = std::to_string(Z_BEST_SPEED);
-	m_default_configuration["PointListPalette"]                           = "0";
-	m_default_configuration["PrecacheTextureReplacements"]                = "0";
-	m_default_configuration["preload_frame_with_gs_data"]                 = "0";
-	m_default_configuration["Renderer"]                                   = std::to_string(static_cast<int>(GSRendererType::Auto));
-	m_default_configuration["save"]                                       = "0";
-	m_default_configuration["savef"]                                      = "0";
-	m_default_configuration["savel"]                                      = "5000";
-	m_default_configuration["saven"]                                      = "0";
-	m_default_configuration["savet"]                                      = "0";
-	m_default_configuration["savez"]                                      = "0";
-	m_default_configuration["ShadeBoost"]                                 = "0";
-	m_default_configuration["ShadeBoost_Brightness"]                      = "50";
-	m_default_configuration["ShadeBoost_Contrast"]                        = "50";
-	m_default_configuration["ShadeBoost_Saturation"]                      = "50";
-	m_default_configuration["SkipDuplicateFrames"]                        = "0";
-	m_default_configuration["texture_preloading"]                         = "2";
-	m_default_configuration["ThreadedPresentation"]                       = "0";
-	m_default_configuration["TriFilter"]                                  = std::to_string(static_cast<s8>(TriFiltering::Automatic));
-	m_default_configuration["TVShader"]                                   = "0";
-	m_default_configuration["CASMode"]                                    = std::to_string(static_cast<u8>(GSCASMode::Disabled));
-	m_default_configuration["CASSharpness"]                               = "50";
-	m_default_configuration["upscale_multiplier"]                         = "1";
-	m_default_configuration["UseBlitSwapChain"]                           = "0";
-	m_default_configuration["UseDebugDevice"]                             = "0";
-	m_default_configuration["UserHacks"]                                  = "0";
-	m_default_configuration["UserHacks_align_sprite_X"]                   = "0";
-	m_default_configuration["UserHacks_AutoFlush"]                        = "0";
-	m_default_configuration["UserHacks_DisableDepthSupport"]              = "0";
-	m_default_configuration["UserHacks_Disable_Safe_Features"]            = "0";
-	m_default_configuration["UserHacks_DisablePartialInvalidation"]       = "0";
-	m_default_configuration["UserHacks_CPUSpriteRenderBW"]                = "0";
-	m_default_configuration["UserHacks_CPUCLUTRender"]                    = "0";
-	m_default_configuration["UserHacks_CPU_FB_Conversion"]                = "0";
-	m_default_configuration["UserHacks_Half_Bottom_Override"]             = "-1";
-	m_default_configuration["UserHacks_HalfPixelOffset"]                  = "0";
-	m_default_configuration["UserHacks_merge_pp_sprite"]                  = "0";
-	m_default_configuration["UserHacks_round_sprite_offset"]              = "0";
-	m_default_configuration["UserHacks_SkipDraw_Start"]                   = "0";
-	m_default_configuration["UserHacks_SkipDraw_End"]                     = "0";
-	m_default_configuration["UserHacks_TCOffsetX"]                        = "0";
-	m_default_configuration["UserHacks_TCOffsetY"]                        = "0";
-	m_default_configuration["UserHacks_TextureInsideRt"]                  = "0";
-	m_default_configuration["UserHacks_WildHack"]                         = "0";
-	m_default_configuration["vsync"]                                      = "0";
-	// clang-format on
-}
-
-void GSApp::ReloadConfig()
-{
-	if (m_configuration_map.empty())
-		return;
-
-	auto file = m_configuration_map.find("inifile");
-	if (file == m_configuration_map.end())
-		return;
-
-	// A map was built so reload it
-	std::string filename = file->second;
-	m_configuration_map.clear();
-	BuildConfigurationMap(filename.c_str());
-}
-
-void GSApp::BuildConfigurationMap(const char* lpFileName)
-{
-	// Check if the map was already built
-	std::string inifile_value(lpFileName);
-	if (inifile_value.compare(m_configuration_map["inifile"]) == 0)
-		return;
-	m_configuration_map["inifile"] = inifile_value;
-
-	// Load config from file
-#ifdef _WIN32
-	std::ifstream file(StringUtil::UTF8StringToWideString(lpFileName));
-#else
-	std::ifstream file(lpFileName);
-#endif
-	if (!file.is_open())
-		return;
-
-	std::string line;
-	while (std::getline(file, line))
-	{
-		const auto separator = line.find('=');
-		if (separator == std::string::npos)
-			continue;
-
-		std::string key = line.substr(0, separator);
-		// Trim trailing whitespace
-		key.erase(key.find_last_not_of(" \r\t") + 1);
-
-		if (key.empty())
-			continue;
-
-		// Only keep options that have a default value so older, no longer used
-		// ini options can be purged.
-		if (m_default_configuration.find(key) == m_default_configuration.end())
-			continue;
-
-		std::string value = line.substr(separator + 1);
-		// Trim leading whitespace
-		value.erase(0, value.find_first_not_of(" \r\t"));
-
-		m_configuration_map[key] = value;
-	}
-}
-
-void GSApp::SetConfigDir()
-{
-	// we need to initialize the ini folder later at runtime than at theApp init, as
-	// core settings aren't populated yet, thus we do populate it if needed either when
-	// opening GS settings or init -- govanify
-	m_ini = Path::Combine(EmuFolders::Settings, "GS.ini");
-}
-
-std::string GSApp::GetConfigS(const char* entry)
-{
-	char buff[4096] = {0};
-	auto def = m_default_configuration.find(entry);
-
-	if (def != m_default_configuration.end())
-	{
-		GetIniString(m_section.c_str(), entry, def->second.c_str(), buff, std::size(buff), m_ini.c_str());
-	}
-	else
-	{
-		fprintf(stderr, "Option %s doesn't have a default value\n", entry);
-		GetIniString(m_section.c_str(), entry, "", buff, std::size(buff), m_ini.c_str());
-	}
-
-	return {buff};
-}
-
-void GSApp::SetConfig(const char* entry, const char* value)
-{
-	WriteIniString(m_section.c_str(), entry, value, m_ini.c_str());
-}
-
-int GSApp::GetConfigI(const char* entry)
-{
-	auto def = m_default_configuration.find(entry);
-
-	if (def != m_default_configuration.end())
-	{
-		return GetIniInt(m_section.c_str(), entry, std::stoi(def->second), m_ini.c_str());
-	}
-	else
-	{
-		fprintf(stderr, "Option %s doesn't have a default value\n", entry);
-		return GetIniInt(m_section.c_str(), entry, 0, m_ini.c_str());
-	}
-}
-
-bool GSApp::GetConfigB(const char* entry)
-{
-	return !!GetConfigI(entry);
-}
-
-void GSApp::SetConfig(const char* entry, int value)
-{
-	char buff[32] = {0};
-
-	sprintf(buff, "%d", value);
-
-	SetConfig(entry, buff);
-}
-
-#endif // PCSX2_CORE
-
-#ifdef PCSX2_CORE
 
 static void HotkeyAdjustUpscaleMultiplier(s32 delta)
 {
@@ -1639,5 +1074,3 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys)
 		 }
 	 }},
 END_HOTKEY_LIST()
-
-#endif

@@ -74,10 +74,7 @@ void gsUpdateFrequency(Pcsx2Config& config)
 		config.GS.LimitScalar = 0.0f;
 	}
 
-#ifdef PCSX2_CORE
 	GetMTGS().UpdateVSyncMode();
-#endif
-
 	UpdateVSyncRate();
 }
 

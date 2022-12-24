@@ -428,9 +428,7 @@ bool DoCDVDopen()
 	cdvdTD td;
 	CDVD->getTD(0, &td);
 
-#ifdef PCSX2_CORE
 	Host::AddKeyedOSDMessage("BlockDumpCreate", fmt::format("Saving CDVD block dump to '{}'.", temp), Host::OSD_INFO_DURATION);
-#endif
 
 	blockDumpFile.Create(std::move(temp), 2);
 
@@ -463,11 +461,7 @@ void DoCDVDclose()
 {
 	CheckNullCDVD();
 
-#ifdef PCSX2_CORE
-	// This was commented out, presumably because pausing/resuming in wx reopens CDVD.
-	// This is a non-issue in Qt, so we'll leave it behind the ifdef.
 	blockDumpFile.Close();
-#endif
 
 	if (CDVD->close != NULL)
 		CDVD->close();

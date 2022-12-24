@@ -19,11 +19,7 @@
 
 #include "R5900OpcodeTables.h"
 #include "R5900Exceptions.h"
-#ifndef PCSX2_CORE
-#include "gui/SysThreads.h"
-#else
 #include "VMManager.h"
-#endif
 
 #include "Elfheader.h"
 
@@ -58,11 +54,7 @@ void intBreakpoint(bool memcheck)
 	}
 
 	CBreakPoints::SetBreakpointTriggered(true);
-#ifndef PCSX2_CORE
-	GetCoreThread().PauseSelfDebug();
-#else
 	VMManager::SetPaused(true);
-#endif
 	throw Exception::ExitCpuExecute();
 }
 

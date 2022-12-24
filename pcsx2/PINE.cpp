@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
-#ifndef PCSX2_CORE
+#ifdef PCSX2_LEFTOVER_FROM_WX
 
 #include <stdio.h>
 #include <stdlib.h>

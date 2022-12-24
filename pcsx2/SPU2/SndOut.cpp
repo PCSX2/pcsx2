@@ -452,43 +452,6 @@ void SndBuffer::Write(const StereoOut32& Sample)
 		// Play silence
 		std::fill_n(sndTempBuffer, SndOutPacketSize, StereoOut32{});
 	}
-#if defined(_WIN32) && !defined(PCSX2_CORE)
-	if (dspPluginEnabled)
-	{
-		// Convert in, send to winamp DSP, and convert out.
-
-		int ei = m_dsp_progress;
-		for (int i = 0; i < SndOutPacketSize; ++i, ++ei)
-		{
-			sndTempBuffer16[ei] = sndTempBuffer[i].DownSample();
-		}
-		m_dsp_progress += DspProcess((s16*)sndTempBuffer16 + m_dsp_progress, SndOutPacketSize);
-
-		// Some ugly code to ensure full packet handling:
-		ei = 0;
-		while (m_dsp_progress >= SndOutPacketSize)
-		{
-			for (int i = 0; i < SndOutPacketSize; ++i, ++ei)
-			{
-				sndTempBuffer[i] = sndTempBuffer16[ei].UpSample();
-			}
-
-			if (SynchMode == 0) // TimeStrech on
-				timeStretchWrite();
-			else
-				_WriteSamples(sndTempBuffer, SndOutPacketSize);
-
-			m_dsp_progress -= SndOutPacketSize;
-		}
-
-		// copy any leftovers to the front of the dsp buffer.
-		if (m_dsp_progress > 0)
-		{
-			memcpy(sndTempBuffer16, &sndTempBuffer16[ei],
-				   sizeof(sndTempBuffer16[0]) * m_dsp_progress);
-		}
-	}
-#endif
 	else
 	{
 		if (SynchMode == 0) // TimeStrech on

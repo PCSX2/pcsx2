@@ -13,8 +13,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef PCSX2_CORE
-
 #include "PrecompiledHeader.h"
 
 #include "DebugTools/Debug.h"
@@ -111,5 +109,3 @@ bool InputRecordingControls::isRecording() const
 //		}
 //	}*/
 //}
-
-#endif
