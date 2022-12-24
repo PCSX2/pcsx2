@@ -1328,54 +1328,6 @@ bool Pcsx2Config::operator==(const Pcsx2Config& right) const
 	return equal;
 }
 
-void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
-{
-	Cpu = cfg.Cpu;
-	GS = cfg.GS;
-	DEV9 = cfg.DEV9;
-	Speedhacks = cfg.Speedhacks;
-	Gamefixes = cfg.Gamefixes;
-	Profiler = cfg.Profiler;
-	Debugger = cfg.Debugger;
-	Trace = cfg.Trace;
-	BaseFilenames = cfg.BaseFilenames;
-	Framerate = cfg.Framerate;
-
-	for (u32 i = 0; i < sizeof(Mcd) / sizeof(Mcd[0]); i++)
-	{
-		// Type will be File here, even if it's a folder, so we preserve the old value.
-		// When the memory card is re-opened, it should redetect anyway.
-		Mcd[i].Enabled = cfg.Mcd[i].Enabled;
-		Mcd[i].Filename = cfg.Mcd[i].Filename;
-	}
-
-	GzipIsoIndexTemplate = cfg.GzipIsoIndexTemplate;
-
-	CdvdVerboseReads = cfg.CdvdVerboseReads;
-	CdvdDumpBlocks = cfg.CdvdDumpBlocks;
-	CdvdShareWrite = cfg.CdvdShareWrite;
-	EnablePatches = cfg.EnablePatches;
-	EnableCheats = cfg.EnableCheats;
-	EnablePINE = cfg.EnablePINE;
-	EnableWideScreenPatches = cfg.EnableWideScreenPatches;
-	EnableNoInterlacingPatches = cfg.EnableNoInterlacingPatches;
-	EnableRecordingTools = cfg.EnableRecordingTools;
-	UseBOOT2Injection = cfg.UseBOOT2Injection;
-	BackupSavestate = cfg.BackupSavestate;
-	SavestateZstdCompression = cfg.SavestateZstdCompression;
-	McdEnableEjection = cfg.McdEnableEjection;
-	McdFolderAutoManage = cfg.McdFolderAutoManage;
-	MultitapPort0_Enabled = cfg.MultitapPort0_Enabled;
-	MultitapPort1_Enabled = cfg.MultitapPort1_Enabled;
-	ConsoleToStdio = cfg.ConsoleToStdio;
-	HostFs = cfg.HostFs;
-#ifdef _WIN32
-	McdCompressNTFS = cfg.McdCompressNTFS;
-#endif
-
-	LimiterMode = cfg.LimiterMode;
-}
-
 void Pcsx2Config::CopyRuntimeConfig(Pcsx2Config& cfg)
 {
 	GS.LimitScalar = cfg.GS.LimitScalar;
