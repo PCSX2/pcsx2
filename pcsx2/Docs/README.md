@@ -22,4 +22,5 @@ We thank everybody for their contributions to the project, but we would like to 
 
     - noigeaR
     - xTVaser
-    - And 1 anonymous donator!
+    - jrdnhnz
+    - Dormant-Hero
