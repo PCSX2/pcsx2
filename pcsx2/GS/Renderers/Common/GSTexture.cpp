@@ -58,7 +58,7 @@ bool GSTexture::Save(const std::string& fn)
 		return false;
 	}
 
-	const int compression = theApp.GetConfigI("png_compression_level");
+	const int compression = GSConfig.PNGCompressionLevel;
 	bool success = GSPng::Save(format, fn, map.bits, m_size.x, m_size.y, map.pitch, compression);
 
 	g_gs_device->DownloadTextureComplete();

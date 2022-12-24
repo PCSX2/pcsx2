@@ -25,6 +25,7 @@
 #include <iomanip> // Dump Verticles
 
 int GSState::s_n = 0;
+std::string GSState::s_dump_root;
 
 static __fi bool IsAutoFlushEnabled()
 {
@@ -55,16 +56,9 @@ GSState::GSState()
 	m_mipmap = GSConfig.Mipmap;
 
 	s_n = 0;
-	s_dump = theApp.GetConfigB("dump");
-	s_save = theApp.GetConfigB("save");
-	s_savet = theApp.GetConfigB("savet");
-	s_savez = theApp.GetConfigB("savez");
-	s_savef = theApp.GetConfigB("savef");
-	s_saven = theApp.GetConfigI("saven");
-	s_savel = theApp.GetConfigI("savel");
-	m_dump_root = "";
+	s_dump_root = "";
 #if defined(__unix__)
-	if (s_dump)
+	if (GSConfig.DumpGSData)
 	{
 		GSmkdir(root_hw.c_str());
 		GSmkdir(root_sw.c_str());
@@ -2085,9 +2079,9 @@ void GSState::Read(u8* mem, int len)
 
 	m_mem.ReadImageX(m_tr.x, m_tr.y, mem, len, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);
 
-	if (s_dump && s_save && s_n >= s_saven)
+	if (GSConfig.DumpGSData && GSConfig.SaveRT && s_n >= GSConfig.SaveN)
 	{
-		std::string s = m_dump_root + StringUtil::StdStringFromFormat(
+		std::string s = s_dump_root + StringUtil::StdStringFromFormat(
 			"%05d_read_%05x_%d_%d_%d_%d_%d_%d.bmp",
 			s_n, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, (int)m_env.BITBLTBUF.SPSM,
 			r.left, r.top, r.right, r.bottom);

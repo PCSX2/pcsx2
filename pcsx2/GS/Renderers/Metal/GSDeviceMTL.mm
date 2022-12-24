@@ -89,7 +89,6 @@ GSDeviceMTL::GSDeviceMTL()
 	, m_dev(nil)
 {
 	m_backref->second = this;
-	m_mipmap = theApp.GetConfigI("mipmap");
 }
 
 GSDeviceMTL::~GSDeviceMTL()
@@ -783,7 +782,6 @@ bool GSDeviceMTL::Create()
 
 		// Init samplers
 		MTLSamplerDescriptor* sdesc = [[MTLSamplerDescriptor new] autorelease];
-		const int anisotropy = theApp.GetConfigI("MaxAnisotropy");
 		for (size_t i = 0; i < std::size(m_sampler_hw); i++)
 		{
 			GSHWDrawConfig::SamplerSelector sel;
@@ -826,7 +824,7 @@ bool GSDeviceMTL::Create()
 			sdesc.tAddressMode = sel.tav ? MTLSamplerAddressModeRepeat : MTLSamplerAddressModeClampToEdge;
 			sdesc.rAddressMode = MTLSamplerAddressModeClampToEdge;
 
-			sdesc.maxAnisotropy = anisotropy && sel.aniso ? anisotropy : 1;
+			sdesc.maxAnisotropy = GSConfig.MaxAnisotropy && sel.aniso ? GSConfig.MaxAnisotropy : 1;
 			sdesc.lodMaxClamp = sel.lodclamp ? 0.25f : FLT_MAX;
 
 			[sdesc setLabel:[NSString stringWithFormat:@"%s%s %s%s", taudesc, tavdesc, magname, minname]];

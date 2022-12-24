@@ -489,6 +489,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(ShadeBoost_Brightness) &&
 		OpEqu(ShadeBoost_Contrast) &&
 		OpEqu(ShadeBoost_Saturation) &&
+		OpEqu(PNGCompressionLevel) &&
 		OpEqu(SaveN) &&
 		OpEqu(SaveL) &&
 
@@ -693,6 +694,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingInt(ShadeBoost_Brightness);
 	GSSettingInt(ShadeBoost_Contrast);
 	GSSettingInt(ShadeBoost_Saturation);
+	GSSettingIntEx(PNGCompressionLevel, "png_compression_level");
 	GSSettingIntEx(SaveN, "saven");
 	GSSettingIntEx(SaveL, "savel");
 

@@ -212,9 +212,6 @@ public:
 
 	using PSSelector = GSHWDrawConfig::PSSelector;
 
-	// MARK: Configuration
-	int m_mipmap;
-
 	// MARK: Permanent resources
 	std::shared_ptr<std::pair<std::mutex, GSDeviceMTL*>> m_backref;
 	GSMTLDevice m_dev;

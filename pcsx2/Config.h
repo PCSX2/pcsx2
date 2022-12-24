@@ -734,6 +734,7 @@ struct Pcsx2Config
 		int ShadeBoost_Brightness{50};
 		int ShadeBoost_Contrast{50};
 		int ShadeBoost_Saturation{50};
+		int PNGCompressionLevel{1};
 
 		int SaveN{0};
 		int SaveL{5000};

@@ -179,8 +179,7 @@ bool GSTexture11::Save(const std::string& fn)
 		return false;
 	}
 
-	int compression = theApp.GetConfigI("png_compression_level");
-	bool success = GSPng::Save(format, fn, static_cast<u8*>(sm.pData), desc.Width, desc.Height, sm.RowPitch, compression);
+	bool success = GSPng::Save(format, fn, static_cast<u8*>(sm.pData), desc.Width, desc.Height, sm.RowPitch, GSConfig.PNGCompressionLevel);
 
 	GSDevice11::GetInstance()->GetD3DContext()->Unmap(res.get(), 0);
 

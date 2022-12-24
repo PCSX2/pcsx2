@@ -235,7 +235,7 @@ bool PNGLoader(const std::string& filename, GSTextureReplacements::ReplacementTe
 
 bool GSTextureReplacements::SavePNGImage(const std::string& filename, u32 width, u32 height, const u8* buffer, u32 pitch)
 {
-	const int compression = theApp.GetConfigI("png_compression_level");
+	const int compression = GSConfig.PNGCompressionLevel;
 
 	png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 	if (!png_ptr)

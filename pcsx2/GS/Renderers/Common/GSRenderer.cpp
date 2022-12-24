@@ -629,7 +629,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 {
 	Flush(GSFlushReason::VSYNC);
 
-	if (s_dump && s_n >= s_saven)
+	if (GSConfig.DumpGSData && s_n >= GSConfig.SaveN)
 	{
 		m_regs->Dump(root_sw + StringUtil::StdStringFromFormat("%05d_f%lld_gs_reg.txt", s_n, g_perfmon.GetFrame()));
 	}

@@ -97,7 +97,7 @@ bool GSDeviceOGL::Create()
 	if (!GLLoader::check_gl_requirements())
 		return false;
 
-	if (!theApp.GetConfigB("disable_shader_cache"))
+	if (!GSConfig.DisableShaderCache)
 	{
 		if (!m_shader_cache.Open(false, EmuFolders::Cache, SHADER_CACHE_VERSION))
 			Console.Warning("Shader cache failed to open.");

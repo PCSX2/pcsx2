@@ -91,7 +91,7 @@ bool GSTextureSW::Save(const std::string& fn)
 #else
 	GSPng::Format fmt = GSPng::RGB_PNG;
 #endif
-	int compression = theApp.GetConfigI("png_compression_level");
+	int compression = GSConfig.PNGCompressionLevel;
 	return GSPng::Save(fmt, fn, static_cast<u8*>(m_data), m_size.x, m_size.y, m_pitch, compression);
 }
 
