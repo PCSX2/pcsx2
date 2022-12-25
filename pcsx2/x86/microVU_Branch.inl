@@ -343,10 +343,12 @@ void normJumpCompile(mV, microFlagCycles& mFC, bool isEvilJump)
 
 void normBranch(mV, microFlagCycles& mFC)
 {
-
 	// E-bit or T-Bit or D-Bit Branch
 	if (mVUup.dBit && doDBitHandling)
 	{
+		// Flush register cache early to avoid double flush on both paths
+		mVU.regAlloc->flushAll(false);
+
 		u32 tempPC = iPC;
 		if (mVU.index && THREAD_VU1)
 			xTEST(ptr32[&vu1Thread.vuFBRST], (isVU1 ? 0x400 : 0x4));
@@ -365,6 +367,9 @@ void normBranch(mV, microFlagCycles& mFC)
 	}
 	if (mVUup.tBit)
 	{
+		// Flush register cache early to avoid double flush on both paths
+		mVU.regAlloc->flushAll(false);
+
 		u32 tempPC = iPC;
 		if (mVU.index && THREAD_VU1)
 			xTEST(ptr32[&vu1Thread.vuFBRST], (isVU1 ? 0x800 : 0x8));
@@ -584,6 +589,9 @@ void normJump(mV, microFlagCycles& mFC)
 	}
 	if (mVUup.dBit && doDBitHandling)
 	{
+		// Flush register cache early to avoid double flush on both paths
+		mVU.regAlloc->flushAll(false);
+
 		if (THREAD_VU1)
 			xTEST(ptr32[&vu1Thread.vuFBRST], (isVU1 ? 0x400 : 0x4));
 		else
@@ -602,6 +610,9 @@ void normJump(mV, microFlagCycles& mFC)
 	}
 	if (mVUup.tBit)
 	{
+		// Flush register cache early to avoid double flush on both paths
+		mVU.regAlloc->flushAll(false);
+
 		if (mVU.index && THREAD_VU1)
 			xTEST(ptr32[&vu1Thread.vuFBRST], (isVU1 ? 0x800 : 0x8));
 		else
