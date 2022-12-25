@@ -252,6 +252,7 @@ struct microVU
 	u8* startFunctXG; // Function Ptr to the recompiler dispatcher (xgkick resume)
 	u8* exitFunctXG;  // Function Ptr to the recompiler dispatcher (xgkick exit)
 	u8* waitMTVU;     // Ptr to function to save registers/sync VU1 thread
+	u8* copyPLState;  // Ptr to function to copy pipeline state into microVU
 	u8* resumePtrXG;  // Ptr to recompiled code position to resume xgkick
 	u32 code;         // Contains the current Instruction
 	u32 divFlag;      // 1 instance of I/D flags

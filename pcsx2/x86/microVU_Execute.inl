@@ -125,6 +125,7 @@ void mVUdispatcherCD(mV)
 
 void mvuGenerateWaitMTVU(mV)
 {
+	xAlignCallTarget();
 	mVU.waitMTVU = x86Ptr;
 
 	int num_xmms = 0, num_gprs = 0;
@@ -190,6 +191,58 @@ void mvuGenerateWaitMTVU(mV)
 			continue;
 
 		xPOP(xRegister64(i));
+	}
+
+	xRET();
+
+	pxAssertDev(xGetPtr() < (mVU.dispCache + mVUdispCacheSize),
+		"microVU: Dispatcher generation exceeded reserved cache area!");
+}
+
+void mvuGenerateCopyPipelineState(mV)
+{
+	xAlignCallTarget();
+	mVU.copyPLState = x86Ptr;
+
+	if (x86caps.hasAVX2)
+	{
+		xVMOVAPS(ymm0, ptr[rax]);
+		xVMOVAPS(ymm1, ptr[rax + 32u]);
+		xVMOVAPS(ymm2, ptr[rax + 64u]);
+		xVMOVAPS(ymm3, ptr[rax + 96u]);
+		xVMOVAPS(ymm4, ptr[rax + 128u]);
+
+		xVMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState)], ymm0);
+		xVMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 32u], ymm1);
+		xVMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 64u], ymm2);
+		xVMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 96u], ymm3);
+		xVMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 128u], ymm4);
+
+		xVZEROUPPER();
+	}
+	else
+	{
+		xMOVAPS(xmm0, ptr[rax]);
+		xMOVAPS(xmm1, ptr[rax + 16u]);
+		xMOVAPS(xmm2, ptr[rax + 32u]);
+		xMOVAPS(xmm3, ptr[rax + 48u]);
+		xMOVAPS(xmm4, ptr[rax + 64u]);
+		xMOVAPS(xmm5, ptr[rax + 80u]);
+		xMOVAPS(xmm6, ptr[rax + 96u]);
+		xMOVAPS(xmm7, ptr[rax + 112u]);
+		xMOVAPS(xmm8, ptr[rax + 128u]);
+		xMOVAPS(xmm9, ptr[rax + 144u]);
+
+		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState)], xmm0);
+		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 16u], xmm1);
+		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 32u], xmm2);
+		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 48u], xmm3);
+		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 64u], xmm4);
+		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 80u], xmm5);
+		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 96u], xmm6);
+		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 112u], xmm7);
+		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 128u], xmm8);
+		xMOVUPS(ptr[reinterpret_cast<u8*>(&mVU.prog.lpState) + 144u], xmm9);
 	}
 
 	xRET();

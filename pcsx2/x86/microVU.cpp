@@ -90,6 +90,7 @@ void mVUreset(microVU& mVU, bool resetReserve)
 	mVUdispatcherAB(mVU);
 	mVUdispatcherCD(mVU);
 	mvuGenerateWaitMTVU(mVU);
+	mvuGenerateCopyPipelineState(mVU);
 	mVUemitSearch();
 
 	mVU.regs().nextBlockCycles = 0;
