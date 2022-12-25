@@ -1077,14 +1077,17 @@ mVUop(mVU_ILW)
 	pass2
 	{
 		void* ptr = mVU.regs().Mem + offsetSS;
-
-		mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
-		if (_Imm11_ != 0)
-			xADD(gprT1, _Imm11_);
-		mVUaddrFix(mVU, gprT1q);
+		std::optional<xAddressVoid> optaddr(mVUoptimizeConstantAddr(mVU, _Is_, _Imm11_, offsetSS));
+		if (!optaddr.has_value())
+		{
+			mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
+			if (_Imm11_ != 0)
+				xADD(gprT1, _Imm11_);
+			mVUaddrFix(mVU, gprT1q);
+		}
 
 		const xRegister32& regT = mVU.regAlloc->allocGPR(-1, _It_, mVUlow.backupVI);
-		xMOVZX(regT, ptr16[xComplexAddress(gprT2q, ptr, gprT1q)]);
+		xMOVZX(regT, ptr16[optaddr.has_value() ? optaddr.value() : xComplexAddress(gprT2q, ptr, gprT1q)]);
 		mVU.regAlloc->clearNeeded(regT);
 		mVU.profiler.EmitOp(opILW);
 	}
@@ -1128,40 +1131,6 @@ mVUop(mVU_ILWR)
 // ISW/ISWR
 //------------------------------------------------------------------
 
-static void writeBackISW(microVU& mVU, void* base_ptr, xAddressReg reg, const xRegister32& val)
-{
-	if (!reg.IsEmpty() && (sptr)base_ptr != (s32)(sptr)base_ptr)
-	{
-		int register_offset = -1;
-		auto writeBackAt = [&](int offset) {
-			if (register_offset == -1)
-			{
-				xLEA(gprT2q, ptr[(void*)((sptr)base_ptr + offset)]);
-				register_offset = offset;
-			}
-			xMOV(ptr32[gprT2q + reg + (offset - register_offset)], val);
-		};
-		if (_X) writeBackAt(0);
-		if (_Y) writeBackAt(4);
-		if (_Z) writeBackAt(8);
-		if (_W) writeBackAt(12);
-	}
-	else if (reg.IsEmpty())
-	{
-		if (_X) xMOV(ptr32[(void*)((uptr)base_ptr     )], val);
-		if (_Y) xMOV(ptr32[(void*)((uptr)base_ptr +  4)], val);
-		if (_Z) xMOV(ptr32[(void*)((uptr)base_ptr +  8)], val);
-		if (_W) xMOV(ptr32[(void*)((uptr)base_ptr + 12)], val);
-	}
-	else
-	{
-		if (_X) xMOV(ptr32[base_ptr+reg     ], val);
-		if (_Y) xMOV(ptr32[base_ptr+reg +  4], val);
-		if (_Z) xMOV(ptr32[base_ptr+reg +  8], val);
-		if (_W) xMOV(ptr32[base_ptr+reg + 12], val);
-	}
-}
-
 mVUop(mVU_ISW)
 {
 	pass1
@@ -1172,16 +1141,22 @@ mVUop(mVU_ISW)
 	}
 	pass2
 	{
-		void* ptr = mVU.regs().Mem;
-
-		mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
-		if (_Imm11_ != 0)
-			xADD(gprT1, _Imm11_);
-		mVUaddrFix(mVU, gprT1q);
+		std::optional<xAddressVoid> optaddr(mVUoptimizeConstantAddr(mVU, _Is_, _Imm11_, 0));
+		if (!optaddr.has_value())
+		{
+			mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
+			if (_Imm11_ != 0)
+				xADD(gprT1, _Imm11_);
+			mVUaddrFix(mVU, gprT1q);
+		}
 
 		// If regT is dirty, the high bits might not be zero.
 		const xRegister32& regT = mVU.regAlloc->allocGPR(_It_, -1, false, true);
-		writeBackISW(mVU, ptr, gprT1q, regT);
+		const xAddressVoid ptr(optaddr.has_value() ? optaddr.value() : xComplexAddress(gprT2q, mVU.regs().Mem, gprT1q));
+		if (_X) xMOV(ptr32[ptr], regT);
+		if (_Y) xMOV(ptr32[ptr + 4], regT);
+		if (_Z) xMOV(ptr32[ptr + 8], regT);
+		if (_W) xMOV(ptr32[ptr + 12], regT);
 		mVU.regAlloc->clearNeeded(regT);
 		mVU.profiler.EmitOp(opISW);
 	}
@@ -1198,7 +1173,7 @@ mVUop(mVU_ISWR)
 	}
 	pass2
 	{
-		void* ptr = mVU.regs().Mem;
+		void* base = mVU.regs().Mem;
 		xAddressReg is = xEmptyReg;
 		if (_Is_)
 		{
@@ -1207,7 +1182,36 @@ mVUop(mVU_ISWR)
 			is = gprT1q;
 		}
 		const xRegister32& regT = mVU.regAlloc->allocGPR(_It_, -1, false, true);
-		writeBackISW(mVU, ptr, is, regT);
+		if (!is.IsEmpty() && (sptr)base != (s32)(sptr)base)
+		{
+			int register_offset = -1;
+			auto writeBackAt = [&](int offset) {
+				if (register_offset == -1)
+				{
+					xLEA(gprT2q, ptr[(void*)((sptr)base + offset)]);
+					register_offset = offset;
+				}
+				xMOV(ptr32[gprT2q + is + (offset - register_offset)], regT);
+			};
+			if (_X) writeBackAt(0);
+			if (_Y) writeBackAt(4);
+			if (_Z) writeBackAt(8);
+			if (_W) writeBackAt(12);
+		}
+		else if (is.IsEmpty())
+		{
+			if (_X) xMOV(ptr32[(void*)((uptr)base)], regT);
+			if (_Y) xMOV(ptr32[(void*)((uptr)base + 4)], regT);
+			if (_Z) xMOV(ptr32[(void*)((uptr)base + 8)], regT);
+			if (_W) xMOV(ptr32[(void*)((uptr)base + 12)], regT);
+		}
+		else
+		{
+			if (_X) xMOV(ptr32[base + is], regT);
+			if (_Y) xMOV(ptr32[base + is + 4], regT);
+			if (_Z) xMOV(ptr32[base + is + 8], regT);
+			if (_W) xMOV(ptr32[base + is + 12], regT);
+		}
 		mVU.regAlloc->clearNeeded(regT);
 
 		mVU.profiler.EmitOp(opISWR);
@@ -1224,14 +1228,17 @@ mVUop(mVU_LQ)
 	pass1 { mVUanalyzeLQ(mVU, _Ft_, _Is_, false); }
 	pass2
 	{
-		void* ptr = mVU.regs().Mem;
-		mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
-		if (_Imm11_ != 0)
-			xADD(gprT1, _Imm11_);
-		mVUaddrFix(mVU, gprT1q);
+		const std::optional<xAddressVoid> optaddr(mVUoptimizeConstantAddr(mVU, _Is_, _Imm11_, 0));
+		if (!optaddr.has_value())
+		{
+			mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
+			if (_Imm11_ != 0)
+				xADD(gprT1, _Imm11_);
+			mVUaddrFix(mVU, gprT1q);
+		}
 
 		const xmm& Ft = mVU.regAlloc->allocReg(-1, _Ft_, _X_Y_Z_W);
-		mVUloadReg(Ft, xComplexAddress(gprT2q, ptr, gprT1q), _X_Y_Z_W);
+		mVUloadReg(Ft, optaddr.has_value() ? optaddr.value() : xComplexAddress(gprT2q, mVU.regs().Mem, gprT1q), _X_Y_Z_W);
 		mVU.regAlloc->clearNeeded(Ft);
 		mVU.profiler.EmitOp(opLQ);
 	}
@@ -1315,15 +1322,17 @@ mVUop(mVU_SQ)
 	pass1 { mVUanalyzeSQ(mVU, _Fs_, _It_, false); }
 	pass2
 	{
-		void* ptr = mVU.regs().Mem;
-
-		mVU.regAlloc->moveVIToGPR(gprT1, _It_);
-		if (_Imm11_ != 0)
-			xADD(gprT1, _Imm11_);
-		mVUaddrFix(mVU, gprT1q);
+		const std::optional<xAddressVoid> optptr(mVUoptimizeConstantAddr(mVU, _It_, _Imm11_, 0));
+		if (!optptr.has_value())
+		{
+			mVU.regAlloc->moveVIToGPR(gprT1, _It_);
+			if (_Imm11_ != 0)
+				xADD(gprT1, _Imm11_);
+			mVUaddrFix(mVU, gprT1q);
+		}
 
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, _XYZW_PS ? -1 : 0, _X_Y_Z_W);
-		mVUsaveReg(Fs, xComplexAddress(gprT2q, ptr, gprT1q), _X_Y_Z_W, 1);
+		mVUsaveReg(Fs, optptr.has_value() ? optptr.value() : xComplexAddress(gprT2q, mVU.regs().Mem, gprT1q), _X_Y_Z_W, 1);
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.profiler.EmitOp(opSQ);
 	}
