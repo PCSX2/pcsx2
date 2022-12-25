@@ -1322,7 +1322,7 @@ mVUop(mVU_SQ)
 			xADD(gprT1, _Imm11_);
 		mVUaddrFix(mVU, gprT1q);
 
-		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, _X_Y_Z_W);
+		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, _XYZW_PS ? -1 : 0, _X_Y_Z_W);
 		mVUsaveReg(Fs, xComplexAddress(gprT2q, ptr, gprT1q), _X_Y_Z_W, 1);
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.profiler.EmitOp(opSQ);
@@ -1341,7 +1341,7 @@ mVUop(mVU_SQD)
 		{
 			const xRegister32& regT = mVU.regAlloc->allocGPR(_It_, _It_, mVUlow.backupVI);
 			xDEC(regT);
-			xMOVSX(gprT1, xRegister16(regT)); // TODO: Confirm
+			xMOVZX(gprT1, xRegister16(regT));
 			mVU.regAlloc->clearNeeded(regT);
 			mVUaddrFix(mVU, gprT1q);
 			it = gprT1q;
@@ -1350,7 +1350,7 @@ mVUop(mVU_SQD)
 		{
 			ptr = (void*)((sptr)ptr + (0xffff & (mVU.microMemSize - 8)));
 		}
-		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, _X_Y_Z_W);
+		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, _XYZW_PS ? -1 : 0, _X_Y_Z_W);
 		if (it.IsEmpty())
 			mVUsaveReg(Fs, xAddressVoid(ptr), _X_Y_Z_W, 1);
 		else
@@ -1370,12 +1370,12 @@ mVUop(mVU_SQI)
 		if (_It_)
 		{
 			const xRegister32& regT = mVU.regAlloc->allocGPR(_It_, _It_, mVUlow.backupVI);
-			xMOVSX(gprT1, xRegister16(regT)); // TODO: Confirm
+			xMOVZX(gprT1, xRegister16(regT));
 			xINC(regT);
 			mVU.regAlloc->clearNeeded(regT);
 			mVUaddrFix(mVU, gprT1q);
 		}
-		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, _X_Y_Z_W);
+		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, _XYZW_PS ? -1 : 0, _X_Y_Z_W);
 		if (_It_)
 			mVUsaveReg(Fs, xComplexAddress(gprT2q, ptr, gprT1q), _X_Y_Z_W, 1);
 		else
