@@ -144,7 +144,7 @@ public:
 protected:
     virtual void ReleaseThis() { delete this; }
 private:
-    D3D12MA_ATOMIC_UINT32 m_RefCount = 1;
+    D3D12MA_ATOMIC_UINT32 m_RefCount{1};
 };
 } // namespace D3D12MA
 

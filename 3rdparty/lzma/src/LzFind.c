@@ -506,7 +506,7 @@ void MatchFinder_Init(CMatchFinder *p)
 
 
 
-#ifdef MY_CPU_X86_OR_AMD64
+#if defined(MY_CPU_X86_OR_AMD64) && (!defined(_MSC_VER) || !defined(__clang__))
   #if defined(__clang__) && (__clang_major__ >= 8) \
     || defined(__GNUC__) && (__GNUC__ >= 8) \
     || defined(__INTEL_COMPILER) && (__INTEL_COMPILER >= 1900)
