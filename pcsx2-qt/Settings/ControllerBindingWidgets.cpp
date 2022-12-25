@@ -503,6 +503,8 @@ static std::tuple<QString, QString> getPrefixAndSuffixForIntFormat(const QString
 	return std::tie(prefix, suffix);
 }
 
+#if 0
+// Unused until we handle multiplier below.
 static std::tuple<QString, QString, int> getPrefixAndSuffixForFloatFormat(const QString& format)
 {
 	QString prefix, suffix;
@@ -530,6 +532,7 @@ static std::tuple<QString, QString, int> getPrefixAndSuffixForFloatFormat(const 
 
 	return std::tie(prefix, suffix, decimals);
 }
+#endif
 
 void ControllerCustomSettingsWidget::createSettingWidgets(const char* translation_ctx, QWidget* widget_parent, QGridLayout* layout)
 {

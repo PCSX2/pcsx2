@@ -247,9 +247,9 @@ void MemoryViewTable::KeyPress(int key, QChar keychar)
 		{
 			case Qt::Key::Key_Backspace:
 			case Qt::Key::Key_Escape:
-				Host::RunOnCPUThread([this, address = selectedAddress, cpu = m_cpu, key] {
+				Host::RunOnCPUThread([this, address = selectedAddress, cpu = m_cpu] {
 					cpu->write8(address, 0);
-					QtHost::RunOnUIThread([this, key] { UpdateSelectedAddress(selectedAddress - 1); parent->update(); });
+					QtHost::RunOnUIThread([this] { UpdateSelectedAddress(selectedAddress - 1); parent->update(); });
 				});
 				break;
 			case Qt::Key::Key_Right:
@@ -268,7 +268,7 @@ void MemoryViewTable::KeyPress(int key, QChar keychar)
 		{
 			InsertIntoSelectedHexView(((u8)QString(QChar(key)).toInt(nullptr, 16)));
 			// Increment to the next nibble or byte
-			if (selectedNibbleHI = !selectedNibbleHI)
+			if ((selectedNibbleHI = !selectedNibbleHI))
 				UpdateSelectedAddress(selectedAddress + 1);
 		}
 
@@ -282,7 +282,7 @@ void MemoryViewTable::KeyPress(int key, QChar keychar)
 					UpdateSelectedAddress(selectedAddress - 1);
 				break;
 			case Qt::Key::Key_Right:
-				if (selectedNibbleHI = !selectedNibbleHI)
+				if ((selectedNibbleHI = !selectedNibbleHI))
 					UpdateSelectedAddress(selectedAddress + 1);
 				break;
 			case Qt::Key::Key_Left:

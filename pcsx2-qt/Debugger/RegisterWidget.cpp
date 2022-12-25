@@ -183,7 +183,7 @@ void RegisterWidget::paintEvent(QPaintEvent* event)
 void RegisterWidget::mousePressEvent(QMouseEvent* event)
 {
 	const int categoryIndex = ui.registerTabs->currentIndex();
-	m_selectedRow = ((event->y() - m_renderStart.y()) / m_rowHeight) + m_rowStart;
+	m_selectedRow = static_cast<int>(((event->position().y() - m_renderStart.y()) / m_rowHeight)) + m_rowStart;
 
 	// For 128 bit types, support selecting segments
 	if (m_cpu->getRegisterSize(categoryIndex) == 128)
@@ -194,7 +194,7 @@ void RegisterWidget::mousePressEvent(QMouseEvent* event)
 
 		for (int i = 0; i < 4; i++)
 		{
-			if (inRange(m_fieldStartX[i], m_fieldStartX[i] + m_fieldWidth, event->x()))
+			if (inRange(m_fieldStartX[i], m_fieldStartX[i] + m_fieldWidth, event->position().x()))
 			{
 				m_selected128Field = i;
 			}
