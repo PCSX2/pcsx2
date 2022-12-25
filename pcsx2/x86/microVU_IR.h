@@ -324,7 +324,7 @@ public:
 				if (pxmmregs[i].reg >= 0)
 				{
 					MVURALOG("Preserving VF reg %d in host reg %d across instruction\n", pxmmregs[i].reg, i);
-					pxAssert(pxmmregs[i].reg != 255);
+					pxAssert(pxmmregs[i].reg >= 0);
 					pxmmregs[i].needed = false;
 					xmmMap[i].isNeeded = false;
 					xmmMap[i].VFreg = pxmmregs[i].reg;

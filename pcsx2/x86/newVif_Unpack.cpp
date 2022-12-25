@@ -32,7 +32,7 @@ alignas(16) nVifCall nVifUpk[(2 * 2 * 16) * 4];
 // This is used by the interpreted SSE unpacks only.  Recompiled SSE unpacks
 // and the interpreted C unpacks use the vif.MaskRow/MaskCol members directly.
 //  [MaskNumber][CycleNumber][Vector]
-alignas(16) u32 nVifMask[3][4][4] = {0};
+alignas(16) u32 nVifMask[3][4][4] = {};
 
 // Number of bytes of data in the source stream needed for each vector.
 // [equivalent to ((32 >> VL) * (VN+1)) / 8]

@@ -49,12 +49,6 @@ REC_FUNC_DEL(MOVN, _Rd_);
 
 #else
 
-static void xCopy64(u64* dst, u64* src)
-{
-	xMOV(rax, ptr64[src]);
-	xMOV(ptr64[dst], rax);
-}
-
 /*********************************************************
 * Load higher 16 bits of the first word in GPR with imm  *
 * Format:  OP rt, immediate                              *
