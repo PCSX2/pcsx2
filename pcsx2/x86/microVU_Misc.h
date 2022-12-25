@@ -154,13 +154,10 @@ static const char branchSTR[16][8] = {
 
 #define gprT1  eax // eax - Temp Reg
 #define gprT2  ecx // ecx - Temp Reg
-#define gprT3  edx // edx - Temp Reg
 #define gprT1q rax // eax - Temp Reg
 #define gprT2q rcx // ecx - Temp Reg
-#define gprT3q rdx // edx - Temp Reg
 #define gprT1b ax  // Low 16-bit of gprT1 (eax)
 #define gprT2b cx  // Low 16-bit of gprT2 (ecx)
-#define gprT3b dx  // Low 16-bit of gprT3 (edx)
 
 #define gprF0  ebx // Status Flag 0
 #define gprF1 r12d // Status Flag 1

@@ -14,6 +14,7 @@
  */
 
 #pragma once
+#include <bitset>
 
 //------------------------------------------------------------------
 // Micro VU - Reg Loading/Saving/Shuffling/Unpacking/Merging...
@@ -149,14 +150,57 @@ __fi void mVUbackupRegs(microVU& mVU, bool toMemory = false, bool onlyNeeded = f
 {
 	if (toMemory)
 	{
-		for (int i = 0; i < mVU.regAlloc->getXmmCount(); i++)
+		int num_xmms = 0, num_gprs = 0;
+
+		for (int i = 0; i < static_cast<int>(iREGCNT_GPR); i++)
 		{
+			if (!xRegister32::IsCallerSaved(i) || i == rsp.GetId())
+				continue;
+
+			if (!onlyNeeded || mVU.regAlloc->checkCachedGPR(i))
+			{
+				num_gprs++;
+				xPUSH(xRegister64(i));
+			}
+		}
+
+		std::bitset<iREGCNT_XMM> save_xmms;
+		for (int i = 0; i < static_cast<int>(iREGCNT_XMM); i++)
+		{
+			if (!xRegisterSSE::IsCallerSaved(i))
+				continue;
+
 			if (!onlyNeeded || mVU.regAlloc->checkCachedReg(i) || xmmPQ.Id == i)
-				xMOVAPS(ptr128[&mVU.xmmBackup[i][0]], xmm(i));
+			{
+				save_xmms[i] = true;
+				num_xmms++;
+			}
+		}
+
+		// we need 16 byte alignment on the stack
+#ifdef _WIN32
+		const int stack_size = (num_xmms * sizeof(u128)) + ((num_gprs & 1) * sizeof(u64)) + 32;
+		int stack_offset = 32;
+#else
+		const int stack_size = (num_xmms * sizeof(u128)) + ((num_gprs & 1) * sizeof(u64));
+		int stack_offset = 0;
+#endif
+		if (stack_size > 0)
+		{
+			xSUB(rsp, stack_size);
+			for (int i = 0; i < static_cast<int>(iREGCNT_XMM); i++)
+			{
+				if (save_xmms[i])
+				{
+					xMOVAPS(ptr128[rsp + stack_offset], xRegisterSSE(i));
+					stack_offset += sizeof(u128);
+				}
+			}
 		}
 	}
 	else
 	{
+		// TODO(Stenzek): get rid of xmmbackup
 		mVU.regAlloc->flushAll(); // Flush Regalloc
 		xMOVAPS(ptr128[&mVU.xmmBackup[xmmPQ.Id][0]], xmmPQ);
 	}
@@ -167,47 +211,64 @@ __fi void mVUrestoreRegs(microVU& mVU, bool fromMemory = false, bool onlyNeeded 
 {
 	if (fromMemory)
 	{
-		for (int i = 0; i < mVU.regAlloc->getXmmCount(); i++)
+		int num_xmms = 0, num_gprs = 0;
+
+		std::bitset<iREGCNT_GPR> save_gprs;
+		for (int i = 0; i < static_cast<int>(iREGCNT_GPR); i++)
 		{
+			if (!xRegister32::IsCallerSaved(i) || i == rsp.GetId())
+				continue;
+
+			if (!onlyNeeded || mVU.regAlloc->checkCachedGPR(i))
+			{
+				save_gprs[i] = true;
+				num_gprs++;
+			}
+		}
+
+		std::bitset<iREGCNT_XMM> save_xmms;
+		for (int i = 0; i < static_cast<int>(iREGCNT_XMM); i++)
+		{
+			if (!xRegisterSSE::IsCallerSaved(i))
+				continue;
+
 			if (!onlyNeeded || mVU.regAlloc->checkCachedReg(i) || xmmPQ.Id == i)
-				xMOVAPS(xmm(i), ptr128[&mVU.xmmBackup[i][0]]);
+			{
+				save_xmms[i] = true;
+				num_xmms++;
+			}
+		}
+
+#ifdef _WIN32
+		const int stack_extra = 32;
+#else
+		const int stack_extra = 0;
+#endif
+		const int stack_size = (num_xmms * sizeof(u128)) + ((num_gprs & 1) * sizeof(u64)) + stack_extra;
+		if (num_xmms > 0)
+		{
+			int stack_offset = (num_xmms - 1) * sizeof(u128) + stack_extra;
+			for (int i = static_cast<int>(iREGCNT_XMM - 1); i >= 0; i--)
+			{
+				if (!save_xmms[i])
+					continue;
+
+				xMOVAPS(xRegisterSSE(i), ptr128[rsp + stack_offset]);
+				stack_offset -= sizeof(u128);
+			}
+		}
+		if (stack_size > 0)
+			xADD(rsp, stack_size);
+
+		for (int i = static_cast<int>(iREGCNT_GPR - 1); i >= 0; i--)
+		{
+			if (save_gprs[i])
+				xPOP(xRegister64(i));
 		}
 	}
 	else
+	{
 		xMOVAPS(xmmPQ, ptr128[&mVU.xmmBackup[xmmPQ.Id][0]]);
-}
-
-class mVUScopedXMMBackup
-{
-	microVU& mVU;
-	bool fromMemory;
-
-public:
-	mVUScopedXMMBackup(microVU& mVU, bool fromMemory)
-		: mVU(mVU) , fromMemory(fromMemory)
-	{
-		mVUbackupRegs(mVU, fromMemory);
-	}
-	~mVUScopedXMMBackup()
-	{
-		mVUrestoreRegs(mVU, fromMemory);
-	}
-};
-
-_mVUt void mVUprintRegs()
-{
-	microVU& mVU = mVUx;
-	for (int i = 0; i < mVU.regAlloc->getXmmCount(); i++)
-	{
-		Console.WriteLn("xmm%d = [0x%08x,0x%08x,0x%08x,0x%08x]", i,
-			mVU.xmmBackup[i][0], mVU.xmmBackup[i][1],
-			mVU.xmmBackup[i][2], mVU.xmmBackup[i][3]);
-	}
-	for (int i = 0; i < mVU.regAlloc->getXmmCount(); i++)
-	{
-		Console.WriteLn("xmm%d = [%f,%f,%f,%f]", i,
-			(float&)mVU.xmmBackup[i][0], (float&)mVU.xmmBackup[i][1],
-			(float&)mVU.xmmBackup[i][2], (float&)mVU.xmmBackup[i][3]);
 	}
 }
 
@@ -259,17 +320,15 @@ __fi void mVUaddrFix(mV, const xAddressReg& gprReg)
 		jmpA.SetTarget();
 			if (THREAD_VU1)
 			{
-				{
-					mVUScopedXMMBackup mVUSave(mVU, true);
-					xScopedSavedRegisters save{gprT1q, gprT2q, gprT3q};
+#if 0
 					if (IsDevBuild && !isCOP2) // Lets see which games do this!
 					{
-						xMOV(arg1regd, mVU.prog.cur->idx); // Note: Kernel does it via COP2 to initialize VU1!
-						xMOV(arg2regd, xPC);               // So we don't spam console, we'll only check micro-mode...
+						xMOV(gprT1, mVU.prog.cur->idx); // Note: Kernel does it via COP2 to initialize VU1!
+						xMOV(gprT2, xPC);               // So we don't spam console, we'll only check micro-mode...
 						xFastCall((void*)mVUwarningRegAccess, arg1regd, arg2regd);
 					}
-					xFastCall((void*)mVUwaitMTVU);
-				}
+#endif
+				xFastCall((void*)mVU.waitMTVU);
 			}
 			xAND(xRegister32(gprReg.Id), 0x3f); // ToDo: theres a potential problem if VU0 overrides VU1's VF0/VI0 regs!
 			xADD(gprReg, (u128*)VU1.VF - (u128*)VU0.Mem);

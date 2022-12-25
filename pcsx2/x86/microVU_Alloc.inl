@@ -116,32 +116,10 @@ __fi void mVUallocCFLAGb(mV, const x32& reg, int fInstance)
 // VI Reg Allocators
 //------------------------------------------------------------------
 
-__ri void mVUallocVIa(mV, const x32& GPRreg, int _reg_, bool signext = false)
+void microRegAlloc::writeVIBackup(const xRegisterInt& reg)
 {
-	if (!_reg_)
-		xXOR(GPRreg, GPRreg);
-	else if (signext)
-		xMOVSX(GPRreg, ptr16[&mVU.regs().VI[_reg_].SL]);
-	else
-		xMOVZX(GPRreg, ptr16[&mVU.regs().VI[_reg_].UL]);
-}
-
-__ri void mVUallocVIb(mV, const x32& GPRreg, int _reg_)
-{
-	if (mVUlow.backupVI) // Backs up reg to memory (used when VI is modified b4 a branch)
-	{
-		xMOVZX(gprT3, ptr16[&mVU.regs().VI[_reg_].UL]);
-		xMOV  (ptr32[&mVU.VIbackup], gprT3);
-	}
-
-	if (_reg_ == 0)
-	{
-		return;
-	}
-	else if (_reg_ < 16)
-	{
-		xMOV(ptr16[&mVU.regs().VI[_reg_].UL], xRegister16(GPRreg.Id));
-	}
+	microVU& mVU = index ? microVU1 : microVU0;
+	xMOV(ptr32[&mVU.VIbackup], xRegister32(reg));
 }
 
 //------------------------------------------------------------------

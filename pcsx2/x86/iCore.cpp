@@ -144,7 +144,7 @@ int _getFreeXMMreg(u32 maxreg)
 
 				case XMMTYPE_VFREG:
 				{
-					if (COP2INST_USEDTEST(xmmregs[i].reg))
+					if (EEINST_VFUSEDTEST(xmmregs[i].reg))
 						continue;
 				}
 				break;
@@ -873,6 +873,16 @@ int _allocIfUsedGPRtoX86(int gprreg, int mode)
 		return x86reg;
 
 	return EEINST_USEDTEST(gprreg) ? _allocX86reg(X86TYPE_GPR, gprreg, mode) : -1;
+}
+
+int _allocIfUsedVItoX86(int vireg, int mode)
+{
+	const int x86reg = _checkX86reg(X86TYPE_VIREG, vireg, mode);
+	if (x86reg >= 0)
+		return x86reg;
+
+	// Prefer not to stop on COP2 reserved registers here.
+	return EEINST_VIUSEDTEST(vireg) ? _allocX86reg(X86TYPE_VIREG, vireg, mode | MODE_COP2) : -1;
 }
 
 int _allocIfUsedGPRtoXMM(int gprreg, int mode)

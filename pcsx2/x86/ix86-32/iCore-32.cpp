@@ -55,6 +55,9 @@ int _getFreeX86reg(int mode)
 		if ((mode & MODE_CALLEESAVED) && xRegister32::IsCallerSaved(reg))
 			continue;
 
+		if ((mode & MODE_COP2) && mVUIsReservedCOP2(reg))
+			continue;
+
 		if (x86regs[reg].inuse == 0)
 		{
 			g_x86checknext = (reg + 1) % iREGCNT_GPR;
@@ -68,6 +71,9 @@ int _getFreeX86reg(int mode)
 			continue;
 
 		if ((mode & MODE_CALLEESAVED) && xRegister32::IsCallerSaved(i))
+			continue;
+
+		if ((mode & MODE_COP2) && mVUIsReservedCOP2(i))
 			continue;
 
 		// should have checked inuse in the previous loop.
@@ -373,6 +379,13 @@ int _allocX86reg(int type, int reg, int mode)
 			}
 			break;
 
+			case X86TYPE_VIREG:
+			{
+				RALOG("Loading guest VI reg %d to GPR %d", reg, regnum);
+				xMOVZX(xRegister32(regnum), ptr16[&VU0.VI[reg].US[0]]);
+			}
+			break;
+
 			default:
 				abort();
 				break;
@@ -536,8 +549,7 @@ void _freeX86regWithoutWriteback(int x86reg)
 	if (x86regs[x86reg].type == X86TYPE_VIREG)
 	{
 		RALOG("Freeing VI reg %d in host GPR %d\n", x86regs[x86reg].reg, x86reg);
-		//mVUFreeCOP2GPR(x86reg);
-		abort();
+		mVUFreeCOP2GPR(x86reg);
 	}
 	else if (x86regs[x86reg].inuse && x86regs[x86reg].type == X86TYPE_GPR)
 	{

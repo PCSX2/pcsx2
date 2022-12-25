@@ -30,6 +30,7 @@
 #define MODE_READ        1
 #define MODE_WRITE       2
 #define MODE_CALLEESAVED  0x20 // can't flush reg to mem
+#define MODE_COP2 0x40 // don't allow using reserved VU registers
 
 #define PROCESS_EE_XMM 0x02
 
@@ -118,6 +119,9 @@ void _flushConstRegs();
 void _flushConstReg(int reg);
 void _validateRegs();
 void _writebackX86Reg(int x86reg);
+
+void mVUFreeCOP2GPR(int hostreg);
+bool mVUIsReservedCOP2(int hostreg);
 
 ////////////////////////////////////////////////////////////////////////////////
 //   XMM (128-bit) Register Allocation Tools
@@ -247,9 +251,15 @@ static __fi bool EEINST_XMMUSEDTEST(u32 reg)
 }
 
 /// Returns true if the specified VF register is used later in the block.
-static __fi bool COP2INST_USEDTEST(u32 reg)
+static __fi bool EEINST_VFUSEDTEST(u32 reg)
 {
 	return (g_pCurInstInfo->vfregs[reg] & (EEINST_USED | EEINST_LASTUSE)) == EEINST_USED;
+}
+
+/// Returns true if the specified VI register is used later in the block.
+static __fi bool EEINST_VIUSEDTEST(u32 reg)
+{
+	return (g_pCurInstInfo->viregs[reg] & (EEINST_USED | EEINST_LASTUSE)) == EEINST_USED;
 }
 
 /// Returns true if the value should be computed/written back.
@@ -297,6 +307,7 @@ extern u16 g_xmmAllocCounter;
 
 // allocates only if later insts use this register
 int _allocIfUsedGPRtoX86(int gprreg, int mode);
+int _allocIfUsedVItoX86(int vireg, int mode);
 int _allocIfUsedGPRtoXMM(int gprreg, int mode);
 int _allocIfUsedFPUtoXMM(int fpureg, int mode);
 

@@ -37,13 +37,6 @@ void setupMacroOp(int mode, const char* opName)
 	// Set up reg allocation
 	microVU0.regAlloc->reset(true);
 
-	if (mode & 0x110) // X86 regs are modified, or flags modified
-	{
-		_freeX86reg(eax);
-		_freeX86reg(ecx);
-		_freeX86reg(edx);
-	}
-
 	if (mode & 0x03) // Q will be read/written
 		_freeXMMreg(xmmPQ.Id);
 
@@ -125,6 +118,17 @@ void endMacroOp(int mode)
 void mVUFreeCOP2XMMreg(int hostreg)
 {
 	microVU0.regAlloc->clearRegCOP2(hostreg);
+}
+
+void mVUFreeCOP2GPR(int hostreg)
+{
+	microVU0.regAlloc->clearGPRCOP2(hostreg);
+}
+
+bool mVUIsReservedCOP2(int hostreg)
+{
+	// gprF1 through 3 is not correctly used in COP2 mode.
+	return (hostreg == gprT1.GetId() || hostreg == gprT2.GetId() || hostreg == gprF0.GetId());
 }
 
 #define REC_COP2_mVU0(f, opName, mode) \
@@ -429,11 +433,22 @@ static void recCFC2()
 	const int regt = _allocX86reg(X86TYPE_GPR, _Rt_, MODE_WRITE);
 	pxAssert(!GPR_IS_CONST1(_Rt_));
 
-	// FixMe: Should R-Reg have upper 9 bits 0?
-	if (_Rd_ >= REG_STATUS_FLAG)
+	if (_Rd_ == 0) // why would you read vi00?
+	{
+		xXOR(xRegister32(regt), xRegister32(regt));
+	}
+	else if (_Rd_ >= REG_STATUS_FLAG) // FixMe: Should R-Reg have upper 9 bits 0?
+	{
 		xMOVSX(xRegister64(regt), ptr32[&vu0Regs.VI[_Rd_].UL]);
+	}
 	else
-		xMOV(xRegister64(regt), ptr32[&vu0Regs.VI[_Rd_].UL]);
+	{
+		const int vireg = _allocIfUsedVItoX86(_Rd_, MODE_READ);
+		if (vireg >= 0)
+			xMOVZX(xRegister32(regt), xRegister16(vireg));
+		else
+			xMOVZX(xRegister32(regt), ptr16[&vu0Regs.VI[_Rd_].UL]);
+	}
 }
 
 static void recCTC2()
@@ -532,9 +547,62 @@ static void recCTC2()
 						_freeXMMregWithoutWriteback(xmmreg);
 				}
 
-				// Need to expand this out, because we want to write as 16 bits.
-				_eeMoveGPRtoR(eax, _Rt_);
-				xMOV(ptr16[&vu0Regs.VI[_Rd_].US[0]], ax);
+				// Little bit nasty, but optimal codegen.
+				const int gprreg = _allocIfUsedGPRtoX86(_Rt_, MODE_READ);
+				const int vireg = _allocIfUsedVItoX86(_Rd_, MODE_WRITE);
+				if (vireg >= 0)
+				{
+					if (gprreg >= 0)
+					{
+						xMOVZX(xRegister32(vireg), xRegister16(gprreg));
+					}
+					else
+					{
+						// it could be in an xmm..
+						const int gprxmmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
+						if (gprxmmreg >= 0)
+						{
+							xMOVD(xRegister32(vireg), xRegisterSSE(gprxmmreg));
+							xMOVZX(xRegister32(vireg), xRegister16(vireg));
+						}
+						else if (GPR_IS_CONST1(_Rt_))
+						{
+							if (_Rt_ != 0)
+								xMOV(xRegister32(vireg), (g_cpuConstRegs[_Rt_].UL[0] & 0xFFFFu));
+							else
+								xXOR(xRegister32(vireg), xRegister32(vireg));
+						}
+						else
+						{
+							xMOVZX(xRegister32(vireg), ptr16[&cpuRegs.GPR.r[_Rt_].US[0]]);
+						}
+					}
+				}
+				else
+				{
+					if (gprreg >= 0)
+					{
+						xMOV(ptr16[&vu0Regs.VI[_Rd_].US[0]], xRegister16(gprreg));
+					}
+					else
+					{
+						const int gprxmmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
+						if (gprxmmreg >= 0)
+						{
+							xMOVD(eax, xRegisterSSE(gprxmmreg));
+							xMOV(ptr16[&vu0Regs.VI[_Rd_].US[0]], ax);
+						}
+						else if (GPR_IS_CONST1(_Rt_))
+						{
+							xMOV(ptr16[&vu0Regs.VI[_Rd_].US[0]], (g_cpuConstRegs[_Rt_].UL[0] & 0xFFFFu));
+						}
+						else
+						{
+							_eeMoveGPRtoR(eax, _Rt_);
+							xMOV(ptr16[&vu0Regs.VI[_Rd_].US[0]], ax);
+						}
+					}
+				}
 			}
 			else
 			{
@@ -562,7 +630,7 @@ static void recQMFC2()
 			mVUFinishVU0();
 	}
 
-	const bool vf_used = COP2INST_USEDTEST(_Rd_);
+	const bool vf_used = EEINST_VFUSEDTEST(_Rd_);
 	const int ftreg = _allocVFtoXMMreg(_Rd_, MODE_READ);
 	_deleteEEreg128(_Rt_);
 
@@ -607,7 +675,7 @@ static void recQMTC2()
 	if (_Rt_)
 	{
 		// if we have to flush to memory anyway (has a constant or is x86), force load.
-		[[maybe_unused]] const bool vf_used = COP2INST_USEDTEST(_Rd_);
+		[[maybe_unused]] const bool vf_used = EEINST_VFUSEDTEST(_Rd_);
 		const bool can_rename = EEINST_RENAMETEST(_Rt_);
 		const int rtreg = (GPR_IS_DIRTY_CONST(_Rt_) || _hasX86reg(X86TYPE_GPR, _Rt_, MODE_WRITE)) ?
 							  _allocGPRtoXMMreg(_Rt_, MODE_READ) :
