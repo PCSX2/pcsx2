@@ -17,13 +17,13 @@
 #include "SPU2/Global.h"
 #include "common/Console.h"
 #include "common/RedtapeWindows.h"
+#include "common/RedtapeWilCom.h"
 
 #include <memory>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 
-#include <wil/com.h>
 #include <wil/resource.h>
 #include <wil/win32_helpers.h>
 #include <xaudio2.h>

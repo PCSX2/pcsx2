@@ -1093,6 +1093,8 @@ static __forceinline void SetLoWord(u32& src, u16 value)
 	((u16*)&src)[0] = value;
 }
 
+// Not used
+#if 0
 static __forceinline u16 GetHiWord(u32& src)
 {
 	return ((u16*)&src)[1];
@@ -1102,6 +1104,7 @@ static __forceinline u16 GetLoWord(u32& src)
 {
 	return ((u16*)&src)[0];
 }
+#endif
 
 template <int CoreIdx, int VoiceIdx, int param>
 static void RegWrite_VoiceParams(u16 value)
