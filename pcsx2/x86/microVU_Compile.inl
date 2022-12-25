@@ -604,6 +604,96 @@ void mVUSaveFlags(microVU& mVU, microFlagCycles& mFC, microFlagCycles& mFCBackup
 	memcpy(&mFCBackup, &mFC, sizeof(microFlagCycles));
 	mVUsetFlags(mVU, mFCBackup); // Sets Up Flag instances
 }
+
+static void mvuPreloadRegisters(microVU& mVU, u32 endCount)
+{
+	static constexpr const int REQUIRED_FREE_XMMS = 3; // some space for temps
+	static constexpr const int REQUIRED_FREE_GPRS = 1; // some space for temps
+
+	u32 vfs_loaded = 0;
+	u32 vis_loaded = 0;
+
+	for (int reg = 0; reg < mVU.regAlloc->getXmmCount(); reg++)
+	{
+		const int vf = mVU.regAlloc->getRegVF(reg);
+		if (vf >= 0)
+			vfs_loaded |= (1u << vf);
+	}
+
+	for (int reg = 0; reg < mVU.regAlloc->getGPRCount(); reg++)
+	{
+		const int vi = mVU.regAlloc->getRegVI(reg);
+		if (vi >= 0)
+			vis_loaded |= (1u << vi);
+	}
+
+	const u32 orig_pc = iPC;
+	const u32 orig_code = mVU.code;
+	int free_regs = mVU.regAlloc->getFreeXmmCount();
+	int free_gprs = mVU.regAlloc->getFreeGPRCount();
+
+	auto preloadVF = [&mVU, &vfs_loaded, &free_regs](u8 reg)
+	{
+		if (free_regs <= REQUIRED_FREE_XMMS || reg == 0 || (vfs_loaded & (1u << reg)) != 0)
+			return;
+
+		mVU.regAlloc->clearNeeded(mVU.regAlloc->allocReg(reg));
+		vfs_loaded |= (1u << reg);
+		free_regs--;
+	};
+
+	auto preloadVI = [&mVU, &vis_loaded, &free_gprs](u8 reg)
+	{
+		if (free_gprs <= REQUIRED_FREE_GPRS || reg == 0 || (vis_loaded & (1u << reg)) != 0)
+			return;
+
+		mVU.regAlloc->clearNeeded(mVU.regAlloc->allocGPR(reg));
+		vis_loaded |= (1u << reg);
+		free_gprs--;
+	};
+
+	auto canPreload = [&free_regs, &free_gprs]() {
+		return (free_regs >= REQUIRED_FREE_XMMS || free_gprs >= REQUIRED_FREE_GPRS);
+	};
+
+	for (u32 x = 0; x < endCount && canPreload(); x++)
+	{
+		incPC(1);
+
+		const microOp* info = &mVUinfo;
+		if (info->doXGKICK)
+			break;
+
+		for (u32 i = 0; i < 2; i++)
+		{
+			preloadVF(info->uOp.VF_read[i].reg);
+			preloadVF(info->lOp.VF_read[i].reg);
+			if (info->lOp.VI_read[i].used)
+				preloadVI(info->lOp.VI_read[i].reg);
+		}
+
+		const microVFreg& uvfr = info->uOp.VF_write;
+		if (uvfr.reg != 0 && (!uvfr.x || !uvfr.y || !uvfr.z || !uvfr.w))
+		{
+			// not writing entire vector
+			preloadVF(uvfr.reg);
+		}
+
+		const microVFreg& lvfr = info->lOp.VF_write;
+		if (lvfr.reg != 0 && (!lvfr.x || !lvfr.y || !lvfr.z || !lvfr.w))
+		{
+			// not writing entire vector
+			preloadVF(lvfr.reg);
+		}
+
+		if (info->lOp.branch)
+			break;
+	}
+
+	iPC = orig_pc;
+	mVU.code = orig_code;
+}
+
 void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 {
 	microFlagCycles mFC;
@@ -768,6 +858,8 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 	setCode();
 	mVUbranch = 0;
 	u32 x = 0;
+
+	mvuPreloadRegisters(mVU, endCount);
 
 	for (; x < endCount; x++)
 	{

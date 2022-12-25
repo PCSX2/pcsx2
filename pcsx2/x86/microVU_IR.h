@@ -433,9 +433,68 @@ public:
 	{
 		return xmmTotal + 1;
 	}
+
+	int getFreeXmmCount()
+	{
+		int count = 0;
+
+		for (int i = 0; i < xmmTotal; i++)
+		{
+			if (!xmmMap[i].isNeeded && (xmmMap[i].VFreg < 0))
+				count++;
+		}
+
+		return count;
+	}
+
+	bool hasRegVF(int vfreg)
+	{
+		for (int i = 0; i < xmmTotal; i++)
+		{
+			if (xmmMap[i].VFreg == vfreg)
+				return true;
+		}
+
+		return false;
+	}
+
+	int getRegVF(int i)
+	{
+		return (i < xmmTotal) ? xmmMap[i].VFreg : -1;
+	}
+
 	int getGPRCount()
 	{
 		return gprTotal;
+	}
+
+	int getFreeGPRCount()
+	{
+		int count = 0;
+
+		for (int i = 0; i < gprTotal; i++)
+		{
+			if (!gprMap[i].usable && (gprMap[i].VIreg < 0))
+				count++;
+		}
+
+		return count;
+	}
+
+	bool hasRegVI(int vireg)
+	{
+		for (int i = 0; i < gprTotal; i++)
+		{
+			if (gprMap[i].VIreg == vireg)
+				return true;
+		}
+
+		return false;
+	}
+
+	int getRegVI(int i)
+	{
+		return (i < gprTotal) ? gprMap[i].VIreg : -1;
 	}
 
 	// Flushes all allocated registers (i.e. writes-back to memory all modified registers).
