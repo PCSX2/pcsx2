@@ -13,5 +13,17 @@
       <Configuration>Release AVX2</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug Clang AVX2|x64">
+      <Configuration>Debug Clang AVX2</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Devel Clang AVX2|x64">
+      <Configuration>Devel Clang AVX2</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release Clang AVX2|x64">
+      <Configuration>Release Clang AVX2</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
 </Project>
