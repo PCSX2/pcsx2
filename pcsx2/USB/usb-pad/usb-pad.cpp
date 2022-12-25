@@ -616,19 +616,6 @@ namespace usb_pad
 #endif
 	}
 
-	static u32 gametrak_compute_key(u32* key)
-	{
-		u32 ret = 0;
-		ret = *key << 2 & 0xFC0000;
-		ret |= *key << 17 & 0x020000;
-		ret ^= *key << 16 & 0xFE0000;
-		ret |= *key & 0x010000;
-		ret |= *key >> 9 & 0x007F7F;
-		ret |= *key << 7 & 0x008080;
-		*key = ret;
-		return ret >> 16;
-	}
-
 	static void pad_handle_data(USBDevice* dev, USBPacket* p)
 	{
 		PadState* s = USB_CONTAINER_OF(dev, PadState, dev);

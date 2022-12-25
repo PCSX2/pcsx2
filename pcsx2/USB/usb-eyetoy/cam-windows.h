@@ -14,14 +14,13 @@
  */
 
 #include "videodev.h"
+#include "common/RedtapeWindows.h"
+#include "common/RedtapeWilCom.h"
+
+#include <dshow.h>
 #include <mutex>
 
 #pragma comment(lib, "strmiids")
-
-#include <windows.h>
-#include <dshow.h>
-
-#include <wil/com.h>
 
 extern "C" {
 extern GUID IID_ISampleGrabberCB;

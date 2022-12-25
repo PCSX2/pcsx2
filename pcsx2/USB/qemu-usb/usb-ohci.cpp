@@ -110,7 +110,9 @@ static void ohci_die(OHCIState* ohci)
 	//             PCI_STATUS_DETECTED_PARITY);
 }
 
+#if 0
 /* Attach or detach a device on a root hub port.  */
+// Unused
 static void ohci_attach2(USBPort* port1, USBDevice* dev)
 {
 	OHCIState* s = (OHCIState*)port1->opaque;
@@ -162,6 +164,7 @@ static void ohci_attach2(USBPort* port1, USBDevice* dev)
 	if (old_state != port->ctrl)
 		ohci_set_interrupt(s, OHCI_INTR_RHSC);
 }
+#endif
 
 /* Attach or detach a device on a root hub port.  */
 static void ohci_attach(USBPort* port1)

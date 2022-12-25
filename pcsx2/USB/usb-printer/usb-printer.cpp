@@ -20,6 +20,7 @@
 #include "USB/USB.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
+#include "common/StringUtil.h"
 #include "Config.h"
 #include "fmt/format.h"
 #include "StateWrapper.h"
@@ -73,7 +74,7 @@ namespace usb_printer
 		switch (request)
 		{
 			case ClassInterfaceRequest | GET_DEVICE_ID:
-				ret = 2 + sprintf((char*)data + 2, sPrinters[s->selected_printer].device_id);
+				ret = 2 + StringUtil::Strlcpy((char*)data + 2, sPrinters[s->selected_printer].device_id, length - 2);
 				data[0] = ret >> 8;
 				data[1] = ret & 0xff;
 				p->actual_length = ret;
