@@ -189,7 +189,6 @@ namespace Achievements
 	RAPI_STRUCT_NAME(rc_api_submit_lboard_entry_request_t);
 	RAPI_STRUCT_NAME(rc_api_fetch_leaderboard_info_request_t);
 
-	RAPI_STRUCT_NAME(rc_api_response_t);
 	RAPI_STRUCT_NAME(rc_api_login_response_t);
 	RAPI_STRUCT_NAME(rc_api_resolve_hash_response_t);
 	RAPI_STRUCT_NAME(rc_api_fetch_game_data_response_t);
@@ -201,6 +200,7 @@ namespace Achievements
 	RAPI_STRUCT_NAME(rc_api_fetch_leaderboard_info_response_t);
 
 	// Unused for now.
+	// RAPI_STRUCT_NAME(rc_api_response_t);
 	// RAPI_STRUCT_NAME(rc_api_fetch_achievement_info_response_t);
 	// RAPI_STRUCT_NAME(rc_api_fetch_games_list_response_t);
 

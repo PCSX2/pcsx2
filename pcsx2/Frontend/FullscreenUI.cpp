@@ -330,9 +330,12 @@ namespace FullscreenUI
 	static void DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		int default_value, int min_value, int max_value, int step_value, const char* format = "%d", bool enabled = true,
 		float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+#if 0
+	// Unused as of now
 	static void DrawFloatRangeSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		float default_value, float min_value, float max_value, const char* format = "%f", float multiplier = 1.0f, bool enabled = true,
 		float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+#endif
 	static void DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
 		const char* key, float default_value, float min_value, float max_value, float step_value, float multiplier,
 		const char* format = "%f", bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
@@ -434,8 +437,6 @@ namespace FullscreenUI
 	static HostDisplayTexture* GetTextureForGameListEntryType(GameList::EntryType type);
 	static HostDisplayTexture* GetGameListCover(const GameList::Entry* entry);
 	static HostDisplayTexture* GetCoverForCurrentGame();
-	static std::string GetNotificationImageForGame(const GameList::Entry* entry);
-	static std::string GetNotificationImageForGame(const std::string& game_path);
 
 	// Lazily populated cover images.
 	static std::unordered_map<std::string, std::string> s_cover_image_map;
@@ -1654,6 +1655,8 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
 	ImGui::PopFont();
 }
 
+#if 0
+// Unused as of now
 void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
 	const char* key, float default_value, float min_value, float max_value, const char* format, float multiplier, bool enabled,
 	float height, ImFont* font, ImFont* summary_font)
@@ -1710,6 +1713,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
 	ImGui::PopStyleVar(4);
 	ImGui::PopFont();
 }
+#endif
 
 void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
 	const char* key, float default_value, float min_value, float max_value, float step_value, float multiplier, const char* format,
@@ -3932,7 +3936,6 @@ void FullscreenUI::DrawControllerSettingsPage()
 		ImGui::PopID();
 	}
 
-	static constexpr const char* usb_sections[USB::NUM_PORTS] = {"USB1", "USB2"};
 	for (u32 port = 0; port < USB::NUM_PORTS; port++)
 	{
 		ImGui::PushID(port);
@@ -4680,7 +4683,6 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 			(static_cast<float>(ImGui::GetWindowWidth()) - (item_width_with_spacing * static_cast<float>(grid_count_x))) * 0.5f;
 
 		u32 grid_x = 0;
-		u32 grid_y = 0;
 		ImGui::SetCursorPos(ImVec2(start_x, 0.0f));
 		for (u32 i = 0; i < s_save_state_selector_slots.size(); i++)
 		{
@@ -4869,7 +4871,6 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 			if (grid_x == grid_count_x)
 			{
 				grid_x = 0;
-				grid_y++;
 				ImGui::SetCursorPosX(start_x);
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_spacing);
 			}
@@ -5388,7 +5389,6 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 	std::string draw_title;
 
 	u32 grid_x = 0;
-	u32 grid_y = 0;
 	ImGui::SetCursorPos(ImVec2(start_x, 0.0f));
 	for (const GameList::Entry* entry : s_game_list_sorted_entries)
 	{
@@ -5451,7 +5451,6 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 		if (grid_x == grid_count_x)
 		{
 			grid_x = 0;
-			grid_y++;
 			ImGui::SetCursorPosX(start_x);
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_spacing);
 		}
@@ -5784,23 +5783,6 @@ HostDisplayTexture* FullscreenUI::GetCoverForCurrentGame()
 		return s_fallback_disc_texture.get();
 
 	return GetGameListCover(entry);
-}
-
-std::string FullscreenUI::GetNotificationImageForGame(const GameList::Entry* entry)
-{
-	std::string ret;
-
-	if (entry)
-		ret = GameList::GetCoverImagePathForEntry(entry);
-
-	return ret;
-}
-
-std::string FullscreenUI::GetNotificationImageForGame(const std::string& game_path)
-{
-	auto lock = GameList::GetLock();
-	const GameList::Entry* entry = GameList::GetEntryForPath(game_path.c_str());
-	return entry ? GetNotificationImageForGame(entry) : std::string();
 }
 
 //////////////////////////////////////////////////////////////////////////

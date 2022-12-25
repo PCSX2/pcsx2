@@ -16,13 +16,13 @@
 #pragma once
 #define DIRECTINPUT_VERSION 0x0800
 #include "common/RedtapeWindows.h"
+#include "common/RedtapeWilCom.h"
 #include "Frontend/InputSource.h"
 #include <array>
 #include <dinput.h>
 #include <functional>
 #include <mutex>
 #include <vector>
-#include <wil/com.h>
 
 class DInputSource final : public InputSource
 {

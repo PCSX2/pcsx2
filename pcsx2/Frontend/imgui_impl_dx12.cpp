@@ -117,7 +117,6 @@ static void ImGui_ImplDX12_SetupRenderState(ImDrawData* draw_data, ID3D12Graphic
 
     // Bind shader and vertex buffers
     unsigned int stride = sizeof(ImDrawVert);
-    unsigned int offset = 0;
     D3D12_VERTEX_BUFFER_VIEW vbv;
     memset(&vbv, 0, sizeof(D3D12_VERTEX_BUFFER_VIEW));
     vbv.BufferLocation = bd->VertexStreamBuffer.GetCurrentGPUPointer();

@@ -63,34 +63,6 @@ private:
 	bool m_dynamic;
 };
 
-static wil::com_ptr_nothrow<ID3D11VertexShader> CreateVertexShader(ID3D11Device* device, const void* bytecode,
-	size_t bytecode_length)
-{
-	wil::com_ptr_nothrow<ID3D11VertexShader> shader;
-	const HRESULT hr = device->CreateVertexShader(bytecode, bytecode_length, nullptr, shader.put());
-	if (FAILED(hr))
-	{
-		Console.Error("Failed to create vertex shader: 0x%08X", hr);
-		return {};
-	}
-
-	return shader;
-}
-
-static wil::com_ptr_nothrow<ID3D11PixelShader> CreatePixelShader(ID3D11Device* device, const void* bytecode,
-	size_t bytecode_length)
-{
-	wil::com_ptr_nothrow<ID3D11PixelShader> shader;
-	const HRESULT hr = device->CreatePixelShader(bytecode, bytecode_length, nullptr, shader.put());
-	if (FAILED(hr))
-	{
-		Console.Error("Failed to create pixel shader: 0x%08X", hr);
-		return {};
-	}
-
-	return shader;
-}
-
 D3D11HostDisplay::D3D11HostDisplay() = default;
 
 D3D11HostDisplay::~D3D11HostDisplay()
