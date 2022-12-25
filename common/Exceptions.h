@@ -20,9 +20,6 @@
 #include "common/Assertions.h"
 #include "common/Pcsx2Defs.h"
 
-// Because wxTrap isn't available on Linux builds of wxWidgets (non-Debug, typically)
-void pxTrap();
-
 namespace Exception
 {
 	class BaseException;

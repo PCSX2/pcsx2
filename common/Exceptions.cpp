@@ -31,18 +31,6 @@
 #include <signal.h>
 #endif
 
-// Because wxTrap isn't available on Linux builds of wxWidgets (non-Debug, typically)
-void pxTrap()
-{
-#if defined(_WIN32)
-	__debugbreak();
-#elif defined(__UNIX__)
-	raise(SIGTRAP);
-#else
-	abort();
-#endif
-}
-
 static std::mutex s_assertion_failed_mutex;
 
 static inline void FreezeThreads(void** handle)
