@@ -686,7 +686,7 @@ void GSDrawScanlineCodeGenerator2::Init()
 	mov(rax, _rip_global(fzbc));
 	lea(t0, ptr[rax + rbx * 2]);
 
-	if (m_sel.prim != GS_SPRITE_CLASS && (m_sel.fwrite && m_sel.fge || m_sel.zb) || m_sel.fb && (m_sel.edge || m_sel.tfx != TFX_NONE || m_sel.iip))
+	if ((m_sel.prim != GS_SPRITE_CLASS && ((m_sel.fwrite && m_sel.fge) || m_sel.zb)) || (m_sel.fb && (m_sel.edge || m_sel.tfx != TFX_NONE || m_sel.iip)))
 	{
 		// a1 = &m_local.d[skip] // note a1 was (skip << 4)
 		lea(rax, _rip_local(d));
@@ -705,7 +705,7 @@ void GSDrawScanlineCodeGenerator2::Init()
 
 	if (m_sel.prim != GS_SPRITE_CLASS)
 	{
-		if (m_sel.fwrite && m_sel.fge || m_sel.zb)
+		if ((m_sel.fwrite && m_sel.fge) || m_sel.zb)
 		{
 			if (m_sel.fwrite && m_sel.fge)
 			{
@@ -2450,7 +2450,7 @@ void GSDrawScanlineCodeGenerator2::ReadFrame()
 /// Destroys: xym0, xym1
 void GSDrawScanlineCodeGenerator2::TestDestAlpha()
 {
-	if (!m_sel.date || m_sel.fpsm != 0 && m_sel.fpsm != 2)
+	if (!m_sel.date || (m_sel.fpsm != 0 && m_sel.fpsm != 2))
 	{
 		return;
 	}
@@ -2599,7 +2599,7 @@ void GSDrawScanlineCodeGenerator2::AlphaBlend()
 	const XYm& tmp1 = _test;
 	const XYm& tmp2 = xym4;
 
-	if ((m_sel.aba != m_sel.abb) && (m_sel.aba == 1 || m_sel.abb == 1 || m_sel.abc == 1) || m_sel.abd == 1)
+	if (((m_sel.aba != m_sel.abb) && (m_sel.aba == 1 || m_sel.abb == 1 || m_sel.abc == 1)) || m_sel.abd == 1)
 	{
 		switch (m_sel.fpsm)
 		{
@@ -2648,7 +2648,7 @@ void GSDrawScanlineCodeGenerator2::AlphaBlend()
 	// xym0, xym1 = dst rb, ga
 	// tmp1, tmp2 = free
 
-	if (m_sel.pabe || (m_sel.aba != m_sel.abb) && (m_sel.abb == 0 || m_sel.abd == 0))
+	if (m_sel.pabe || ((m_sel.aba != m_sel.abb) && (m_sel.abb == 0 || m_sel.abd == 0)))
 	{
 		movdqa(tmp2, _rb);
 	}

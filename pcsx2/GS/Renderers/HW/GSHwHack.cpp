@@ -306,7 +306,7 @@ bool GSC_TombRaiderUnderWorld(const GSFrameInfo& fi, int& skip) noexcept
 {
 	if (skip == 0)
 	{
-		if (fi.TME && fi.FBP == 0x01000 && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32 && (fi.TBP0 == 0x2B60 /*|| fi.TBP0 == 0x2EFF || fi.TBP0 ==0x2F00 || fi.TBP0 == 0x3020*/ || fi.TBP0 >= 0x2C01 && fi.TBP0 != 0x3029 && fi.TBP0 != 0x302d))
+		if (fi.TME && fi.FBP == 0x01000 && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32 && (fi.TBP0 == 0x2B60 /*|| fi.TBP0 == 0x2EFF || fi.TBP0 ==0x2F00 || fi.TBP0 == 0x3020*/ || (fi.TBP0 >= 0x2C01 && fi.TBP0 != 0x3029 && fi.TBP0 != 0x302d)))
 		{
 			skip = 1; // Garbage TC
 		}

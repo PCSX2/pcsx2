@@ -141,7 +141,7 @@ int GSRasterizer::GetPixels(bool reset)
 
 void GSRasterizer::Draw(GSRasterizerData* data)
 {
-	if (data->vertex != NULL && data->vertex_count == 0 || data->index != NULL && data->index_count == 0)
+	if ((data->vertex != NULL && data->vertex_count == 0) || (data->index != NULL && data->index_count == 0))
 		return;
 
 	m_pixels.actual = 0;
@@ -275,7 +275,7 @@ void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const u
 
 			GSVector4i p(v.p);
 
-			if (!scissor_test || m_scissor.left <= p.x && p.x < m_scissor.right && m_scissor.top <= p.y && p.y < m_scissor.bottom)
+			if (!scissor_test || (m_scissor.left <= p.x && p.x < m_scissor.right && m_scissor.top <= p.y && p.y < m_scissor.bottom))
 			{
 				if (IsOneOfMyScanlines(p.y))
 				{
@@ -296,7 +296,7 @@ void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const u
 
 			GSVector4i p(v.p);
 
-			if (!scissor_test || m_scissor.left <= p.x && p.x < m_scissor.right && m_scissor.top <= p.y && p.y < m_scissor.bottom)
+			if (!scissor_test || (m_scissor.left <= p.x && p.x < m_scissor.right && m_scissor.top <= p.y && p.y < m_scissor.bottom))
 			{
 				if (IsOneOfMyScanlines(p.y))
 				{

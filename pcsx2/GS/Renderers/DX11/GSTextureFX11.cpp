@@ -14,9 +14,9 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSDevice11.h"
-#include "GS/resource.h"
+#include "GS/Renderers/DX11/GSDevice11.h"
 #include "GS/GSTables.h"
+#include "common/StringUtil.h"
 
 bool GSDevice11::CreateTextureFX()
 {

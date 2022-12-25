@@ -507,10 +507,19 @@ void GSDevice::SetHWDrawConfigForAlphaPass(GSHWDrawConfig::PSSelector* ps,
 	}
 }
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
+#endif
+
 // Kinda grotty, but better than copy/pasting the relevant bits in..
 #define A_CPU 1
 #include "bin/resources/shaders/common/ffx_a.h"
 #include "bin/resources/shaders/common/ffx_cas.h"
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 bool GSDevice::GetCASShaderSource(std::string* source)
 {

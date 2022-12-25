@@ -23,12 +23,12 @@ class GSTextureNull final : public GSTexture
 	{
 		Type type;
 		Format format;
-		int w, h;
+		int w, h, levels;
 	} m_desc;
 
 public:
 	GSTextureNull();
-	GSTextureNull(Type type, int w, int h, Format format);
+	GSTextureNull(Type type, int w, int h, int levels, Format format);
 
 	Type GetType() const { return m_desc.type; }
 	Format GetFormat() const { return m_desc.format; }

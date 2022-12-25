@@ -3171,7 +3171,7 @@ void GSTextureCache::InjectHashCacheTexture(const HashCacheKey& key, GSTexture* 
 		// We must've got evicted before we finished loading. No matter, add it in there anyway;
 		// if it's not used again, it'll get tossed out later.
 		const HashCacheEntry entry{tex, 1u, 0u, true};
-		m_hash_cache.emplace(key, entry).first->second;
+		m_hash_cache.emplace(key, entry);
 		return;
 	}
 

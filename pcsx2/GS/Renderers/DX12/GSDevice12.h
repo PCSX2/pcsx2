@@ -15,9 +15,9 @@
 
 #pragma once
 
-#include "GSTexture12.h"
 #include "GS/GSVector.h"
 #include "GS/Renderers/Common/GSDevice.h"
+#include "GS/Renderers/DX12/GSTexture12.h"
 #include "common/D3D12/ShaderCache.h"
 #include "common/D3D12/StreamBuffer.h"
 #include "common/HashCombine.h"
@@ -266,7 +266,7 @@ public:
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red,
 		bool green, bool blue, bool alpha) override;
 	void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-		PresentShader shader, float shaderTime, bool linear);
+		PresentShader shader, float shaderTime, bool linear) override;
 
 	void BeginRenderPassForStretchRect(GSTexture12* dTex, const GSVector4i& dtex_rc, const GSVector4i& dst_rc);
 	void DoStretchRect(GSTexture12* sTex, const GSVector4& sRect, GSTexture12* dTex, const GSVector4& dRect,

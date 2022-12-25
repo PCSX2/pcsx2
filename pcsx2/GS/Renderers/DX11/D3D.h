@@ -16,11 +16,11 @@
 #pragma once
 
 #include "common/RedtapeWindows.h"
+#include "common/RedtapeWilCom.h"
 
 #include <dxgi1_3.h>
 #include <vector>
 #include <string>
-#include <wil/com.h>
 
 namespace D3D
 {
