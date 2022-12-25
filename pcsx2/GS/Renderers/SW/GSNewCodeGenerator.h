@@ -15,6 +15,14 @@
 
 #pragma once
 
+#if defined(_MSC_VER) && defined(__clang__)
+#define and and_
+#define or or_
+#define xor xor_
+#define not not_
+#define XBYAK_NO_OP_NAMES
+#endif
+
 #include "xbyak/xbyak.h"
 #include "xbyak/xbyak_util.h"
 #include "GS/MultiISA.h"
@@ -191,7 +199,7 @@ public:
 		ACTUAL_FORWARD_##category(name, a, b, c, d) \
 	}
 
-#ifdef __GNUC__
+#if defined(__GNUC__) || (defined(_MSC_VER) && defined(__clang__))
 	#define FORWARD_(argcount, ...) FORWARD##argcount(__VA_ARGS__)
 	// Gets the macro evaluator to evaluate in the right order
 	#define FORWARD(...) FORWARD_(__VA_ARGS__)
@@ -219,7 +227,7 @@ public:
 #define ADD_ONE_2 3
 #define ADD_ONE_3 4
 
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(_MSC_VER) && defined(__clang__)
 	#define SFORWARD(argcount, name, ...) FORWARD(argcount, SSE, name, __VA_ARGS__)
 	#define AFORWARD_(argcount, name, arg1, ...) \
 		SFORWARD(argcount, name, arg1, __VA_ARGS__) \

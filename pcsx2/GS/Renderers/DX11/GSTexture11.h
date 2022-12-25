@@ -15,9 +15,10 @@
 
 #pragma once
 
-#include "GS.h"
+#include "GS/GS.h"
 #include "GS/Renderers/Common/GSTexture.h"
-#include <wil/com.h>
+#include "common/RedtapeWindows.h"
+#include "common/RedtapeWilCom.h"
 #include <d3d11.h>
 
 class GSTexture11 final : public GSTexture

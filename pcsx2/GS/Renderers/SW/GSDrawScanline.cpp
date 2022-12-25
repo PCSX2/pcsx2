@@ -1277,7 +1277,7 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 			{
 				VectorI rbs = rb, gas = ga, rbd, gad, a, mask;
 
-				if (sel.aba != sel.abb && (sel.aba == 1 || sel.abb == 1 || sel.abc == 1) || sel.abd == 1)
+				if ((sel.aba != sel.abb && (sel.aba == 1 || sel.abb == 1 || sel.abc == 1)) || sel.abd == 1)
 				{
 					switch (sel.fpsm)
 					{

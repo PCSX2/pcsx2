@@ -505,6 +505,8 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 		case GSTexture::Type::RWTexture:
 			desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
 			break;
+		default:
+			break;
 	}
 
 	GSTexture11* t = nullptr;

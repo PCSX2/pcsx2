@@ -101,7 +101,7 @@ void GSSetupPrimCodeGenerator2::Generate()
 	// Technically we just need the delta < 2GB
 	m_rip = (size_t)&m_local < 0x80000000 && (size_t)getCurr() < 0x80000000;
 
-	bool needs_shift = (m_en.z || m_en.f) && m_sel.prim != GS_SPRITE_CLASS || m_en.t || m_en.c && m_sel.iip;
+	bool needs_shift = ((m_en.z || m_en.f) && m_sel.prim != GS_SPRITE_CLASS) || m_en.t || (m_en.c && m_sel.iip);
 	many_regs = isYmm && !m_sel.notest && needs_shift;
 
 #ifdef _WIN64

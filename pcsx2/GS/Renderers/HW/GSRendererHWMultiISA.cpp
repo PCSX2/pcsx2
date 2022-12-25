@@ -150,7 +150,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw)
 	}
 
 	const bool fwrite = (fm & fm_mask) != fm_mask;
-	const bool ftest = gd.sel.atst != ATST_ALWAYS || context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24;
+	const bool ftest = gd.sel.atst != ATST_ALWAYS || (context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24);
 
 	const bool zwrite = zm != 0xffffffff;
 	const bool ztest = context->TEST.ZTE && context->TEST.ZTST > ZTST_ALWAYS;
@@ -340,10 +340,10 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw)
 		const u32 masked_fm = fm & fm_mask;
 		if (gd.sel.date
 			|| gd.sel.aba == 1 || gd.sel.abb == 1 || gd.sel.abc == 1 || gd.sel.abd == 1
-			|| gd.sel.atst != ATST_ALWAYS && gd.sel.afail == AFAIL_RGB_ONLY
-			|| gd.sel.fpsm == 0 && masked_fm != 0 && masked_fm != fm_mask
-			|| gd.sel.fpsm == 1 && masked_fm != 0 && masked_fm != fm_mask
-			|| gd.sel.fpsm == 2 && masked_fm != 0 && masked_fm != fm_mask)
+			|| (gd.sel.atst != ATST_ALWAYS && gd.sel.afail == AFAIL_RGB_ONLY)
+			|| (gd.sel.fpsm == 0 && masked_fm != 0 && masked_fm != fm_mask)
+			|| (gd.sel.fpsm == 1 && masked_fm != 0 && masked_fm != fm_mask)
+			|| (gd.sel.fpsm == 2 && masked_fm != 0 && masked_fm != fm_mask))
 		{
 			gd.sel.rfb = 1;
 		}

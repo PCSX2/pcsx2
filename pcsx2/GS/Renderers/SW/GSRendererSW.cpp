@@ -1025,7 +1025,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	}
 
 	bool fwrite = (fm & fm_mask) != fm_mask;
-	bool ftest = gd.sel.atst != ATST_ALWAYS || context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24;
+	bool ftest = gd.sel.atst != ATST_ALWAYS || (context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24);
 
 	bool zwrite = zm != 0xffffffff;
 	bool ztest = context->TEST.ZTE && context->TEST.ZTST > ZTST_ALWAYS;
@@ -1166,8 +1166,6 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 				GSVector4 tmin = m_vt.m_min.t;
 				GSVector4 tmax = m_vt.m_max.t;
 
-				static int s_counter = 0;
-
 				for (int i = 1, j = std::min<int>((int)context->TEX1.MXL, 6); i <= j; i++)
 				{
 					const GIFRegTEX0& MIP_TEX0 = GetTex0Layer(i);
@@ -1192,8 +1190,6 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 					data->SetSource(t, r, i);
 				}
-
-				s_counter++;
 
 				m_vt.m_min.t = tmin;
 				m_vt.m_max.t = tmax;
@@ -1331,10 +1327,10 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 		const u32 masked_fm = fm & fm_mask;
 		if (gd.sel.date
 		 || gd.sel.aba == 1 || gd.sel.abb == 1 || gd.sel.abc == 1 || gd.sel.abd == 1
-		 || gd.sel.atst != ATST_ALWAYS && gd.sel.afail == AFAIL_RGB_ONLY
-		 || gd.sel.fpsm == 0 && masked_fm != 0 && masked_fm != fm_mask
-		 || gd.sel.fpsm == 1 && masked_fm != 0 && masked_fm != fm_mask
-		 || gd.sel.fpsm == 2 && masked_fm != 0 && masked_fm != fm_mask)
+		 || (gd.sel.atst != ATST_ALWAYS && gd.sel.afail == AFAIL_RGB_ONLY)
+		 || (gd.sel.fpsm == 0 && masked_fm != 0 && masked_fm != fm_mask)
+		 || (gd.sel.fpsm == 1 && masked_fm != 0 && masked_fm != fm_mask)
+		 || (gd.sel.fpsm == 2 && masked_fm != 0 && masked_fm != fm_mask))
 		{
 			gd.sel.rfb = 1;
 		}
