@@ -459,16 +459,6 @@ void mVUdebugPrintBlocks(microVU& mVU, bool isEndPC)
 	}
 }
 
-// Saves Pipeline State for resuming from early exits
-__fi void mVUsavePipelineState(microVU& mVU)
-{
-	u32* lpS = (u32*)&mVU.prog.lpState;
-	for (size_t i = 0; i < (sizeof(microRegInfo) - 4) / 4; i++, lpS++)
-	{
-		xMOV(ptr32[lpS], lpS[0]);
-	}
-}
-
 // Test cycles to see if we need to exit-early...
 void mVUtestCycles(microVU& mVU, microFlagCycles& mFC)
 {
@@ -483,11 +473,28 @@ void mVUtestCycles(microVU& mVU, microFlagCycles& mFC)
 	xCMP(eax, 0);
 	xForwardJGE32 skip;
 
-	mVUsavePipelineState(mVU);
+	u8* writeback = x86Ptr;
+	xLoadFarAddr(rax, x86Ptr);
+	xFastCall((void*)mVU.copyPLState);
+
 	if (EmuConfig.Gamefixes.VUSyncHack || EmuConfig.Gamefixes.FullVU0SyncHack)
 		xMOV(ptr32[&mVU.regs().nextBlockCycles], mVUcycles);
-
 	mVUendProgram(mVU, &mFC, 0);
+
+	{
+		xAlignPtr(SSE_ALIGN_N);
+
+		u8* curx86Ptr = x86Ptr;
+		x86SetPtr(writeback);
+		xLoadFarAddr(rax, curx86Ptr);
+		x86SetPtr(curx86Ptr);
+
+		static_assert((sizeof(microRegInfo) % 4) == 0);
+		const u32* lpPtr = reinterpret_cast<const u32*>(&mVU.prog.lpState);
+		const u32* lpEnd = lpPtr + (sizeof(microRegInfo) / 4);
+		while (lpPtr != lpEnd)
+			xWrite32(*(lpPtr++));
+	}
 
 	skip.SetTarget();
 
