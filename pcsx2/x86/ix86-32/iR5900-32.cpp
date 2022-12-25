@@ -27,7 +27,6 @@
 #include "System/RecTypes.h"
 
 #include "vtlb.h"
-#include "Dump.h"
 
 #include "VMManager.h"
 #include "GS.h"
@@ -118,12 +117,6 @@ static u32 s_saveHasConstReg = 0, s_saveFlushedConstReg = 0;
 static EEINST* s_psaveInstInfo = NULL;
 
 static u32 s_savenBlockCycles = 0;
-
-#ifdef PCSX2_DEBUG
-static u32 dumplog = 0;
-#else
-#define dumplog 0
-#endif
 
 static void iBranchTest(u32 newpc = 0xffffffff);
 static void ClearRecLUT(BASEBLOCK* base, int count);
@@ -2048,12 +2041,6 @@ static void PreBlockCheck(u32 blockpc)
 }
 #endif
 
-#ifdef PCSX2_DEBUG
-// Array of cpuRegs.pc block addresses to dump.  USeful for selectively dumping potential
-// problem blocks, and seeing what the MIPS code equates to.
-static u32 s_recblocks[] = {0};
-#endif
-
 // Called when a block under manual protection fails it's pre-execution integrity check.
 // (meaning the actual code area has been modified -- ie dynamic modules being loaded or,
 //  less likely, self-modifying code)
@@ -2190,11 +2177,6 @@ static void recRecompile(const u32 startpc)
 {
 	u32 i = 0;
 	u32 willbranch3 = 0;
-
-#ifdef PCSX2_DEBUG
-	if (dumplog & 4)
-		iDumpRegisters(startpc, 0);
-#endif
 
 	pxAssert(startpc);
 
@@ -2548,20 +2530,6 @@ StartRecomp:
 			COP2FlagHackPass().Run(startpc, s_nEndBlock, s_pInstCache + 1);
 	}
 
-#ifdef PCSX2_DEBUG
-	// dump code
-	for (u32 recblock : s_recblocks)
-	{
-		if (startpc == recblock)
-		{
-			iDumpBlock(startpc, recPtr);
-		}
-	}
-
-	if (dumplog & 1)
-		iDumpBlock(startpc, recPtr);
-#endif
-
 #ifdef DUMP_BLOCKS
 	ZydisDecoder disas_decoder;
 	ZydisDecoderInit(&disas_decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_ADDRESS_WIDTH_64);
@@ -2625,11 +2593,6 @@ StartRecomp:
 #endif
 		}
 	}
-
-#ifdef PCSX2_DEBUG
-	if (dumplog & 1)
-		iDumpBlock(startpc, recPtr);
-#endif
 
 	pxAssert((pc - startpc) >> 2 <= 0xffff);
 	s_pCurBlockEx->size = (pc - startpc) >> 2;

@@ -389,9 +389,6 @@
     <ClCompile Include="ShiftJisToUnicode.cpp">
       <Filter>Misc</Filter>
     </ClCompile>
-    <ClCompile Include="Dump.cpp">
-      <Filter>System</Filter>
-    </ClCompile>
     <ClCompile Include="Pcsx2Config.cpp">
       <Filter>System</Filter>
     </ClCompile>
@@ -1443,9 +1440,6 @@
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="Config.h">
-      <Filter>System\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="Dump.h">
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="SaveState.h">
