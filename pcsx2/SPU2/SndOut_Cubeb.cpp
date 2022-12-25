@@ -41,6 +41,7 @@ private:
 	class SampleReader
 	{
 	public:
+		virtual ~SampleReader() = default;
 		virtual void ReadSamples(void* outputBuffer, long frames) = 0;
 	};
 
