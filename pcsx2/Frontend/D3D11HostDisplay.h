@@ -16,6 +16,7 @@
 #pragma once
 #include "HostDisplay.h"
 #include "common/RedtapeWindows.h"
+#include "common/RedtapeWilCom.h"
 #include "common/WindowInfo.h"
 #include <array>
 #include <d3d11.h>
@@ -24,7 +25,6 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include <wil/com.h>
 
 class D3D11HostDisplay final : public HostDisplay
 {

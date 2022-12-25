@@ -67,8 +67,6 @@ namespace GameList
 
 	static bool IsScannableFilename(const std::string_view& path);
 
-	static Entry* GetMutableEntryForPath(const char* path);
-
 	static bool GetIsoSerialAndCRC(const std::string& path, s32* disc_type, std::string* serial, u32* crc);
 	static Region ParseDatabaseRegion(const std::string_view& db_region);
 	static bool GetElfListEntry(const std::string& path, GameList::Entry* entry);
@@ -733,18 +731,6 @@ const GameList::Entry* GameList::GetEntryBySerialAndCRC(const std::string_view& 
 	for (const Entry& entry : s_entries)
 	{
 		if (entry.crc == crc && StringUtil::compareNoCase(entry.serial, serial))
-			return &entry;
-	}
-
-	return nullptr;
-}
-
-GameList::Entry* GameList::GetMutableEntryForPath(const char* path)
-{
-	const size_t path_length = std::strlen(path);
-	for (Entry& entry : s_entries)
-	{
-		if (entry.path.size() == path_length && StringUtil::Strcasecmp(entry.path.c_str(), path) == 0)
 			return &entry;
 	}
 
