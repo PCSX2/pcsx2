@@ -490,6 +490,9 @@ bool USB::DoState(StateWrapper& sw)
 
 void USBasync(u32 cycles)
 {
+	if (!s_usb_device[0] && !s_usb_device[1])
+		return;
+
 	s_usb_remaining += cycles;
 	s_usb_clocks += s_usb_remaining;
 	if (s_qemu_ohci->eof_timer > 0)
