@@ -23,14 +23,6 @@
   - '**/*.md'
   - '*.pdf'
   - '**/*.pdf'
-'GUI/WX':
-  - 'pcsx2/gui/*'
-  - 'pcsx2/gui/**/*'
-  - 'pcsx2/SPU2/wx/*'
-  - 'pcsx2/SPU2/wx/**/*'
-  - 'pcsx2/PAD/Linux/wx_dialog/*'
-  - 'pcsx2/PAD/Linux/wx_dialog/**/*'
-  - 'pcsx2/GS/Window/GSwxDialog.h'
 'GUI/Qt':
   - 'pcsx2-qt/*'
   - 'pcsx2-qt/**/*'
