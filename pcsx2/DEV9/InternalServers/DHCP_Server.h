@@ -41,9 +41,9 @@ namespace InternalServers
 	private:
 		std::function<void()> callback;
 
-		PacketReader::IP::IP_Address dns1{0};
-		PacketReader::IP::IP_Address dns2{0};
-		PacketReader::IP::IP_Address netmask{0};
+		PacketReader::IP::IP_Address dns1{};
+		PacketReader::IP::IP_Address dns2{};
+		PacketReader::IP::IP_Address netmask{};
 
 		SimpleQueue<PacketReader::IP::UDP::UDP_Packet*> recvBuff;
 
@@ -53,9 +53,9 @@ namespace InternalServers
 		DHCP_Server(std::function<void()> receivedcallback);
 
 #ifdef _WIN32
-		void Init(PIP_ADAPTER_ADDRESSES adapter, PacketReader::IP::IP_Address ipOverride = {0}, PacketReader::IP::IP_Address subnetOverride = {0}, PacketReader::IP::IP_Address gatewayOvveride = {0});
+		void Init(PIP_ADAPTER_ADDRESSES adapter, PacketReader::IP::IP_Address ipOverride = {}, PacketReader::IP::IP_Address subnetOverride = {}, PacketReader::IP::IP_Address gatewayOvveride = {});
 #elif defined(__POSIX__)
-		void Init(ifaddrs* adapter, PacketReader::IP::IP_Address ipOverride = {0}, PacketReader::IP::IP_Address subnetOverride = {0}, PacketReader::IP::IP_Address gatewayOvveride = {0});
+		void Init(ifaddrs* adapter, PacketReader::IP::IP_Address ipOverride = {}, PacketReader::IP::IP_Address subnetOverride = {}, PacketReader::IP::IP_Address gatewayOvveride = {});
 #endif
 
 		PacketReader::IP::UDP::UDP_Packet* Recv();

@@ -810,7 +810,7 @@ namespace Sessions
 								NetLib::ReadUInt16(payload->data, &offset, &ps2Port); //dst
 						}
 
-						ConnectionKey Key{0};
+						ConnectionKey Key{};
 						Key.ip = srvIP;
 						Key.protocol = prot;
 						Key.ps2Port = ps2Port;
@@ -828,7 +828,7 @@ namespace Sessions
 						}
 
 						//Is from Fixed Port?
-						Key.ip = {0};
+						Key.ip = {};
 						Key.srvPort = 0;
 						connections->TryGetValue(Key, &s);
 						if (s != nullptr)

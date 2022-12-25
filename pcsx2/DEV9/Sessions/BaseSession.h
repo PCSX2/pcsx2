@@ -27,7 +27,7 @@ namespace Sessions
 
 	struct ConnectionKey
 	{
-		PacketReader::IP::IP_Address ip{0};
+		PacketReader::IP::IP_Address ip{};
 		u8 protocol = 0;
 		u16 ps2Port = 0;
 		u16 srvPort = 0;

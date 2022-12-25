@@ -57,11 +57,11 @@ namespace InternalServers
 	void DHCP_Server::Init(ifaddrs* adapter, IP_Address ipOverride, IP_Address subnetOverride, IP_Address gatewayOverride)
 #endif
 	{
-		netmask = {0};
-		gateway = {0};
-		dns1 = {0};
-		dns2 = {0};
-		broadcastIP = {0};
+		netmask = {};
+		gateway = {};
+		dns1 = {};
+		dns2 = {};
+		broadcastIP = {};
 
 		if (ipOverride.integer != 0)
 			ps2IP = ipOverride;
@@ -88,7 +88,7 @@ namespace InternalServers
 				dns1 = *(IP_Address*)EmuConfig.DEV9.DNS1;
 				break;
 			case Pcsx2Config::DEV9Options::DnsMode::Internal:
-				dns1 = {192, 0, 2, 1};
+				dns1 = {{{192, 0, 2, 1}}};
 				break;
 			default:
 				break;
@@ -100,7 +100,7 @@ namespace InternalServers
 				dns2 = *(IP_Address*)EmuConfig.DEV9.DNS2;
 				break;
 			case Pcsx2Config::DEV9Options::DnsMode::Internal:
-				dns2 = {192, 0, 2, 1};
+				dns2 = {{{192, 0, 2, 1}}};
 				break;
 			default:
 				break;
@@ -188,7 +188,7 @@ namespace InternalServers
 			//no value for DNS1, but we have a value for DNS2
 			//set DNS1 to DNS2 and zero DNS2
 			dns1 = dns2;
-			dns2 = {0, 0, 0, 0};
+			dns2 = {};
 		}
 	}
 

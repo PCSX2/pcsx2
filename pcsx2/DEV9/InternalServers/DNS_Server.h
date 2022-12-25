@@ -68,7 +68,7 @@ namespace InternalServers
 
 		std::function<void()> callback;
 
-		PacketReader::IP::IP_Address localhostIP{127, 0, 0, 1};
+		PacketReader::IP::IP_Address localhostIP{{{127, 0, 0, 1}}};
 		std::unordered_map<std::string, PacketReader::IP::IP_Address> hosts;
 		std::atomic<int> outstandingQueries{0};
 		SimpleQueue<PacketReader::IP::UDP::UDP_Packet*> dnsQueue;

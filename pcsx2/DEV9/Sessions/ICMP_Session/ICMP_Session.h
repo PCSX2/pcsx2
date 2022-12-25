@@ -67,7 +67,7 @@ namespace Sessions
 #endif
 
 			//Return buffers
-			PingResult result{0};
+			PingResult result{};
 			int icmpResponseBufferLen{0};
 			std::unique_ptr<u8[]> icmpResponseBuffer;
 
