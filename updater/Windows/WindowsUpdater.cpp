@@ -21,6 +21,7 @@
 #include "common/StringUtil.h"
 #include "common/ProgressCallback.h"
 #include "common/RedtapeWindows.h"
+#include "common/RedtapeWilCom.h"
 
 #include <CommCtrl.h>
 #include <shellapi.h>
@@ -28,7 +29,6 @@
 
 #include <thread>
 
-#include <wil/com.h>
 #include <wil/resource.h>
 #include <wil/win32_helpers.h>
 

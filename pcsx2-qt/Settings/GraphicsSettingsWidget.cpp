@@ -45,30 +45,22 @@ struct RendererInfo
 };
 
 static constexpr RendererInfo s_renderer_info[] = {
-	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Automatic (Default)"),
-	GSRendererType::Auto,
+	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Automatic (Default)"), GSRendererType::Auto},
 #ifdef _WIN32
-	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Direct3D 11"),
-	GSRendererType::DX11,
-	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Direct3D 12"),
-	GSRendererType::DX12,
+	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Direct3D 11"), GSRendererType::DX11},
+	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Direct3D 12"), GSRendererType::DX12},
 #endif
 #ifdef ENABLE_OPENGL
-	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "OpenGL"),
-	GSRendererType::OGL,
+	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "OpenGL"), GSRendererType::OGL},
 #endif
 #ifdef ENABLE_VULKAN
-	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Vulkan"),
-	GSRendererType::VK,
+	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Vulkan"), GSRendererType::VK},
 #endif
 #ifdef __APPLE__
-	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Metal"),
-	GSRendererType::Metal,
+	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Metal"), GSRendererType::Metal},
 #endif
-	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Software"),
-	GSRendererType::SW,
-	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Null"),
-	GSRendererType::Null,
+	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Software"), GSRendererType::SW},
+	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Null"), GSRendererType::Null},
 };
 
 static const char* s_anisotropic_filtering_entries[] = {QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Off (Default)"),
