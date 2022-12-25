@@ -841,11 +841,22 @@ mVUop(mVU_IADD)
 	pass1 { mVUanalyzeIALU1(mVU, _Id_, _Is_, _It_); }
 	pass2
 	{
-		const xRegister32& regT = mVU.regAlloc->allocGPR(_It_, -1);
-		const xRegister32& regS = mVU.regAlloc->allocGPR(_Is_, _Id_, mVUlow.backupVI);
-		xADD(regS, regT);
-		mVU.regAlloc->clearNeeded(regS);
-		mVU.regAlloc->clearNeeded(regT);
+		if (_Is_ == 0 || _It_ == 0)
+		{
+			const xRegister32& regS = mVU.regAlloc->allocGPR(_Is_ ? _Is_ : _It_, -1);
+			const xRegister32& regD = mVU.regAlloc->allocGPR(-1, _Id_, mVUlow.backupVI);
+			xMOV(regD, regS);
+			mVU.regAlloc->clearNeeded(regD);
+			mVU.regAlloc->clearNeeded(regS);
+		}
+		else
+		{
+			const xRegister32& regT = mVU.regAlloc->allocGPR(_It_, -1);
+			const xRegister32& regS = mVU.regAlloc->allocGPR(_Is_, _Id_, mVUlow.backupVI);
+			xADD(regS, regT);
+			mVU.regAlloc->clearNeeded(regS);
+			mVU.regAlloc->clearNeeded(regT);
+		}
 		mVU.profiler.EmitOp(opIADD);
 	}
 	pass3 { mVUlog("IADD vi%02d, vi%02d, vi%02d", _Fd_, _Fs_, _Ft_); }
@@ -856,10 +867,22 @@ mVUop(mVU_IADDI)
 	pass1 { mVUanalyzeIADDI(mVU, _Is_, _It_, _Imm5_); }
 	pass2
 	{
-		const xRegister32& regS = mVU.regAlloc->allocGPR(_Is_, _It_, mVUlow.backupVI);
-		if (_Imm5_ != 0)
-			xADD(regS, _Imm5_);
-		mVU.regAlloc->clearNeeded(regS);
+		if (_Is_ == 0)
+		{
+			const xRegister32& regT = mVU.regAlloc->allocGPR(-1, _It_, mVUlow.backupVI);
+			if (_Imm5_ != 0)
+				xMOV(regT, _Imm5_);
+			else
+				xXOR(regT, regT);
+			mVU.regAlloc->clearNeeded(regT);
+		}
+		else
+		{
+			const xRegister32& regS = mVU.regAlloc->allocGPR(_Is_, _It_, mVUlow.backupVI);
+			if (_Imm5_ != 0)
+				xADD(regS, _Imm5_);
+			mVU.regAlloc->clearNeeded(regS);
+		}
 		mVU.profiler.EmitOp(opIADDI);
 	}
 	pass3 { mVUlog("IADDI vi%02d, vi%02d, %d", _Ft_, _Fs_, _Imm5_); }
@@ -870,10 +893,22 @@ mVUop(mVU_IADDIU)
 	pass1 { mVUanalyzeIADDI(mVU, _Is_, _It_, _Imm15_); }
 	pass2
 	{
-		const xRegister32& regS = mVU.regAlloc->allocGPR(_Is_, _It_, mVUlow.backupVI);
-		if (_Imm15_ != 0)
-			xADD(regS, _Imm15_);
-		mVU.regAlloc->clearNeeded(regS);
+		if (_Is_ == 0)
+		{
+			const xRegister32& regT = mVU.regAlloc->allocGPR(-1, _It_, mVUlow.backupVI);
+			if (_Imm15_ != 0)
+				xMOV(regT, _Imm15_);
+			else
+				xXOR(regT, regT);
+			mVU.regAlloc->clearNeeded(regT);
+		}
+		else
+		{
+			const xRegister32& regS = mVU.regAlloc->allocGPR(_Is_, _It_, mVUlow.backupVI);
+			if (_Imm15_ != 0)
+				xADD(regS, _Imm15_);
+			mVU.regAlloc->clearNeeded(regS);
+		}
 		mVU.profiler.EmitOp(opIADDIU);
 	}
 	pass3 { mVUlog("IADDIU vi%02d, vi%02d, %d", _Ft_, _Fs_, _Imm15_); }
