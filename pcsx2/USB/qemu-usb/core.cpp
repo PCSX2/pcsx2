@@ -562,7 +562,8 @@ void usb_cancel_packet(USBPacket* p)
 	}
 }
 
-
+#if 0
+// Unused
 static const char* usb_packet_state_name(USBPacketState state)
 {
 	static const char* name[] = {
@@ -579,6 +580,7 @@ static const char* usb_packet_state_name(USBPacketState state)
 	}
 	return "INVALID";
 }
+#endif
 
 void usb_packet_check_state(USBPacket* p, USBPacketState expected)
 {

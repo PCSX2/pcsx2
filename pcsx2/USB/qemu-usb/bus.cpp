@@ -19,6 +19,8 @@
 
 #define USB_DEVICE_GET_CLASS(p) (&p->klass)
 
+#if 0
+// Unused
 static void usb_device_realize(USBDevice* dev /*, Error **errp*/)
 {
 	USBDeviceClass* klass = USB_DEVICE_GET_CLASS(dev);
@@ -28,6 +30,7 @@ static void usb_device_realize(USBDevice* dev /*, Error **errp*/)
 		klass->realize(dev /*, errp*/);
 	}
 }
+#endif
 
 USBDevice* usb_device_find_device(USBDevice* dev, uint8_t addr)
 {
@@ -39,6 +42,8 @@ USBDevice* usb_device_find_device(USBDevice* dev, uint8_t addr)
 	return NULL;
 }
 
+#if 0
+// Unused
 static void usb_device_unrealize(USBDevice* dev /*, Error **errp*/)
 {
 	USBDeviceClass* klass = USB_DEVICE_GET_CLASS(dev);
@@ -48,6 +53,7 @@ static void usb_device_unrealize(USBDevice* dev /*, Error **errp*/)
 		klass->unrealize(dev /*, errp*/);
 	}
 }
+#endif
 
 void usb_device_cancel_packet(USBDevice* dev, USBPacket* p)
 {

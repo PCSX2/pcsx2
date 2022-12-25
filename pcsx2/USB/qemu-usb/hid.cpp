@@ -298,6 +298,8 @@ bool hid_has_events(HIDState* hs)
 	return hs->n > 0 || hs->idle_pending;
 }
 
+#if 0
+// Unused
 static void hid_idle_timer(void* opaque)
 {
 	HIDState* hs = (HIDState*)opaque;
@@ -305,6 +307,7 @@ static void hid_idle_timer(void* opaque)
 	hs->idle_pending = true;
 	hs->event(hs);
 }
+#endif
 
 static void hid_del_idle_timer(HIDState* hs)
 {
@@ -760,6 +763,7 @@ int hid_keyboard_poll(HIDState* hs, uint8_t* buf, int len)
 
 int hid_keyboard_write(HIDState* hs, uint8_t* buf, int len)
 {
+#if 0
 	if (len > 0)
 	{
 		int ledstate = 0;
@@ -783,6 +787,7 @@ int hid_keyboard_write(HIDState* hs, uint8_t* buf, int len)
 		}
 		//kbd_put_ledstate(ledstate);
 	}
+#endif
 	return 0;
 }
 

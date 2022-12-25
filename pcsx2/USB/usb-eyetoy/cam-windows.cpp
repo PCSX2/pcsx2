@@ -24,6 +24,11 @@
 #include "jo_mpeg.h"
 #include "USB/USB.h"
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmicrosoft-goto"
+#endif
+
 namespace usb_eyetoy
 {
 	namespace windows_api
@@ -598,3 +603,7 @@ namespace usb_eyetoy
 		return windows_api::getDevList();
 	}
 } // namespace usb_eyetoy
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif

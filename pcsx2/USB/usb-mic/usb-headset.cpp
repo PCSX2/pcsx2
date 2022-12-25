@@ -886,29 +886,6 @@ namespace usb_mic
 		delete s;
 	}
 
-	static int headset_handle_open(USBDevice* dev)
-	{
-		HeadsetState* s = USB_CONTAINER_OF(dev, HeadsetState, dev);
-		if (s)
-		{
-
-		}
-		return 0;
-	}
-
-	static void headset_handle_close(USBDevice* dev)
-	{
-		HeadsetState* s = USB_CONTAINER_OF(dev, HeadsetState, dev);
-		if (s)
-		{
-			if (s->audsrc)
-				s->audsrc->Stop();
-
-			if (s->audsink)
-				s->audsink->Stop();
-		}
-	}
-
 	USBDevice* HeadsetDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
 		HeadsetState* s = new HeadsetState();
