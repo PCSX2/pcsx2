@@ -18740,9 +18740,17 @@ SLES-54158:
 SLES-54159:
   name: "Eragon"
   region: "PAL-M5"
+  gsHWFixes:
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
+    halfPixelOffset: 2 # Fixes post processing misalignment.
 SLES-54160:
   name: "Eragon"
   region: "PAL-R"
+  gsHWFixes:
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
+    halfPixelOffset: 2 # Fixes post processing misalignment.
 SLES-54161:
   name: "Super Dragon Ball Z"
   region: "PAL-E"
@@ -46011,6 +46019,10 @@ SLUS-21322:
   compat: 5
   clampModes:
     vuClampMode: 3 # Fixes SPS and spawn issues.
+  gsHWFixes:
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
+    halfPixelOffset: 2 # Fixes post processing misalignment.
 SLUS-21323:
   name: "Rampage - Total Destruction"
   region: "NTSC-U"
