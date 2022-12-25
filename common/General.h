@@ -119,8 +119,6 @@ static __fi PageProtectionMode PageAccess_Any()
 // --------------------------------------------------------------------------------------
 //  HostSys
 // --------------------------------------------------------------------------------------
-// (this namespace name sucks, and is a throw-back to an older attempt to make things cross
-// platform prior to wxWidgets .. it should prolly be removed -- air)
 namespace HostSys
 {
 	// Maps a block of memory for use as a recompiled code buffer.

@@ -178,7 +178,7 @@ IsoFileDescriptor IsoDirectory::FindFile(const std::string_view& filePath) const
 	if (filePath.empty())
 		throw Exception::FileNotFound();
 
-	// wxWidgets DOS-style parser should work fine for ISO 9660 path names.  Only practical difference
+	// DOS-style parser should work fine for ISO 9660 path names.  Only practical difference
 	// is case sensitivity, and that won't matter for path splitting.
 	std::vector<std::string_view> parts(Path::SplitWindowsPath(filePath));
 	IsoFileDescriptor info;
