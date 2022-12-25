@@ -12,9 +12,6 @@ distributions, or are easily obtainable.  Using the PCSX2 versions included here
 optional in such cases, however using the distro-provided packages is not recommended.
 (using PCSX2 included versions may help resolve versioning issues).
 
-Note that wxWidgets includes *only* MSW projects and files.  Linux and Mac platforms
-are assumed to have wx already available in your distributions.
-
 Modifications:
 
 Most of these libs in /3rdparty have been tailored slightly from the original
