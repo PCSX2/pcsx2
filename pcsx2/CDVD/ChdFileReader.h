@@ -15,8 +15,9 @@
 
 #pragma once
 #include "ThreadedFileReader.h"
-#include "libchdr/chd.h"
 #include <vector>
+
+typedef struct _chd_file chd_file;
 
 class ChdFileReader : public ThreadedFileReader
 {

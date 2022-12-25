@@ -131,10 +131,13 @@ uint sectorSeekReadDelay = 0x800;           // for calculated seek delays
 
 static void AddIrqQueue(u8 irq, u32 ecycle);
 
+#if 0
+// Unused
 static __fi int GetCDSpeed()
 {
 	return 1 + ((cdr.Mode >> 7) & 0x1);
 }
+#endif
 
 static __fi void StartReading(u32 type)
 {

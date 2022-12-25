@@ -126,7 +126,7 @@ static std::string ApplyTemplate(const std::string& name, const std::string& bas
 	std::string::size_type first = trimmedTemplate.find(INDEX_TEMPLATE_KEY);
 	if (first == std::string::npos    // not found
 		|| first != trimmedTemplate.rfind(INDEX_TEMPLATE_KEY) // more than one instance
-		|| !canEndWithKey && first == trimmedTemplate.length() - std::strlen(INDEX_TEMPLATE_KEY))
+		|| (!canEndWithKey && first == trimmedTemplate.length() - std::strlen(INDEX_TEMPLATE_KEY)))
 	{
 		Console.Error("Invalid %s template '%s'.\n"
 					  "Template must contain exactly one '%s' and must not end with it. Aborting.",
