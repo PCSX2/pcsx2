@@ -15,6 +15,7 @@
 
 #pragma once
 #include <bitset>
+#include <optional>
 
 //------------------------------------------------------------------
 // Micro VU - Reg Loading/Saving/Shuffling/Unpacking/Merging...
@@ -334,6 +335,26 @@ __fi void mVUaddrFix(mV, const xAddressReg& gprReg)
 			xADD(gprReg, (u128*)VU1.VF - (u128*)VU0.Mem);
 		jmpB.SetTarget();
 		xSHL(gprReg, 4); // multiply by 16 (shift left by 4)
+	}
+}
+
+__fi std::optional<xAddressVoid> mVUoptimizeConstantAddr(mV, u32 srcreg, s32 offset, s32 offsetSS_)
+{
+	// if we had const prop for VIs, we could do that here..
+	if (srcreg != 0)
+		return std::nullopt;
+
+	const s32 addr = 0 + offset;
+	if (isVU1)
+	{
+		return ptr[mVU.regs().Mem + ((addr & 0x3FFu) << 4) + offsetSS_];
+	}
+	else
+	{
+		if (addr & 0x400)
+			return std::nullopt;
+
+		return ptr[mVU.regs().Mem + ((addr & 0xFFu) << 4) + offsetSS_];
 	}
 }
 
