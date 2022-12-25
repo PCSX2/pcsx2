@@ -391,18 +391,6 @@ void vtlb_dynarec_init()
 	Perf::any.map((uptr)m_IndirectDispatchers, __pagesize, "TLB Dispatcher");
 }
 
-static void vtlb_SetWriteback(u32* writeback)
-{
-	uptr val = (uptr)xGetPtr();
-	if (wordsize == 8)
-	{
-		pxAssertMsg(*((u8*)writeback - 2) == 0x8d, "Expected codegen to be an LEA");
-		val -= ((uptr)writeback + 4);
-	}
-	pxAssertMsg((sptr)val == (s32)val, "Writeback too far away!");
-	*writeback = val;
-}
-
 //////////////////////////////////////////////////////////////////////////////////////////
 //                            Dynarec Load Implementations
 // ------------------------------------------------------------------------

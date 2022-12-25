@@ -176,14 +176,10 @@ void _flushConstRegs()
 	}
 }
 
-static const char* GetModeString(int mode)
-{
-	return ((mode & MODE_READ)) ? ((mode & MODE_WRITE) ? "readwrite" : "read") : "write";
-}
-
 void _validateRegs()
 {
 #ifdef PCSX2_DEVBUILD
+#define MODE_STRING(x) ((((x) & MODE_READ)) ? (((x)&MODE_WRITE) ? "readwrite" : "read") : "write")
 	// check that no two registers are in write mode in both fprs and gprs
 	for (s8 guestreg = 0; guestreg < 32; guestreg++)
 	{
@@ -216,6 +212,7 @@ void _validateRegs()
 		if (fprmode & MODE_WRITE)
 			pxAssertMsg(gprmode == 0, "when writing to the fpr, gpr is invalid");
 	}
+#undef MODE_STRING
 #endif
 }
 

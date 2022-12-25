@@ -1611,33 +1611,10 @@ void psxRecompileNextInstruction(bool delayslot, bool swapped_delayslot)
 #endif
 }
 
+#ifdef TRACE_BLOCKS
 static void PreBlockCheck(u32 blockpc)
 {
 #if 0
-	extern void iDumpPsxRegisters(u32 startpc, u32 temp);
-
-	static u32 lastrec = 0;
-
-	//*(int*)PSXM(0x27990) = 1; // enables cdvd bios output for scph10000
-
-	if ((psxdump & 2) && lastrec != blockpc)
-	{
-		static int curcount = 0;
-		constexpr int skip = 0;
-
-		curcount++;
-
-		if (curcount > skip)
-		{
-			iDumpPsxRegisters(blockpc, 1);
-			curcount = 0;
-		}
-
-		lastrec = blockpc;
-	}
-#endif
-#ifdef TRACE_BLOCKS
-#if 1
 	static FILE* fp = nullptr;
 	static bool fp_opened = false;
 	if (!fp_opened && psxRegs.cycle >= 0)
@@ -1666,8 +1643,8 @@ static void PreBlockCheck(u32 blockpc)
 	if (psxRegs.cycle == 0)
 		__debugbreak();
 #endif
-#endif
 }
+#endif
 
 static void iopRecRecompile(const u32 startpc)
 {
@@ -1775,7 +1752,7 @@ static void iopRecRecompile(const u32 startpc)
 
 			case 2: // J
 			case 3: // JAL
-				s_branchTo = _InstrucTarget_ << 2 | (i + 4) & 0xf0000000;
+				s_branchTo = (_InstrucTarget_ << 2) | ((i + 4) & 0xf0000000);
 				s_nEndBlock = i + 8;
 				goto StartRecomp;
 

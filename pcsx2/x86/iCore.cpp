@@ -291,13 +291,10 @@ int _allocFPtoXMMreg(int fpreg, int mode)
 	return xmmreg;
 }
 
-static const char* GetModeString(int mode)
-{
-	return ((mode & MODE_READ)) ? ((mode & MODE_WRITE) ? "readwrite" : "read") : "write";
-}
-
 int _allocGPRtoXMMreg(int gprreg, int mode)
 {
+#define MODE_STRING(x) ((((x) & MODE_READ)) ? (((x)&MODE_WRITE) ? "readwrite" : "read") : "write")
+
 	// is this already in a gpr?
 	const int hostx86reg = _checkX86reg(X86TYPE_GPR, gprreg, MODE_READ);
 
@@ -409,6 +406,7 @@ int _allocGPRtoXMMreg(int gprreg, int mode)
 	}
 
 	return xmmreg;
+#undef MODE_STRING
 }
 
 // Same code as _allocFPtoXMMreg but for the FPU ACC register
