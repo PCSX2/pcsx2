@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "common/RedtapeWindows.h"
+#include "common/RedtapeWilCom.h"
 #include "common/StringUtil.h"
 
 #include "fmt/core.h"
@@ -391,7 +392,6 @@ bool TAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, 
 	std::vector<NET_IFINDEX> potentialBridges;
 	std::vector<NET_IFINDEX> searchList;
 	searchList.push_back(pAdapterInfo->IfIndex);
-	int checkCount = 1;
 
 	PMIB_IFSTACK_TABLE table;
 	GetIfStackTable(&table);

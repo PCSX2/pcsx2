@@ -44,7 +44,7 @@ namespace PacketReader::IP::UDP::DHCP
 	class DHCPopSubnet : public BaseOption
 	{
 	public:
-		IP_Address subnetMask{0};
+		IP_Address subnetMask{};
 
 		DHCPopSubnet(IP_Address mask);
 		DHCPopSubnet(u8* data, int offset); //Offset will include Kind and Len
@@ -139,7 +139,7 @@ namespace PacketReader::IP::UDP::DHCP
 	class DHCPopBCIP : public BaseOption //The IP to send broadcasts to
 	{
 	public:
-		IP_Address broadcastIP{0};
+		IP_Address broadcastIP{};
 
 		DHCPopBCIP(IP_Address data);
 		DHCPopBCIP(u8* data, int offset); //Offset will include Kind and Len
@@ -191,7 +191,7 @@ namespace PacketReader::IP::UDP::DHCP
 	class DHCPopREQIP : public BaseOption //The IP to send broadcasts to
 	{
 	public:
-		IP_Address requestedIP{0};
+		IP_Address requestedIP{};
 
 		DHCPopREQIP(IP_Address data);
 		DHCPopREQIP(u8* data, int offset); //Offset will include Kind and Len
@@ -247,7 +247,7 @@ namespace PacketReader::IP::UDP::DHCP
 	class DHCPopSERVIP : public BaseOption //DHCP server ip
 	{
 	public:
-		IP_Address serverIP{0};
+		IP_Address serverIP{};
 
 		DHCPopSERVIP(IP_Address data);
 		DHCPopSERVIP(u8* data, int offset); //Offset will include Kind and Len

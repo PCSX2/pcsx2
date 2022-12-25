@@ -31,11 +31,11 @@ namespace PacketReader::IP::UDP::DHCP
 		u32 transactionID; //xid
 		u16 seconds;
 		u16 flags;
-		IP_Address clientIP{0};
-		IP_Address yourIP{0};
-		IP_Address serverIP{0};
-		IP_Address gatewayIP{0};
-		u8 clientHardwareAddress[16]{0}; //always 16 bytes, regardless of HardwareAddressLength
+		IP_Address clientIP{};
+		IP_Address yourIP{};
+		IP_Address serverIP{};
+		IP_Address gatewayIP{};
+		u8 clientHardwareAddress[16]{}; //always 16 bytes, regardless of HardwareAddressLength
 		//192 bytes of padding
 		u32 magicCookie;
 		//Assumes ownership of ptrs assigned to it

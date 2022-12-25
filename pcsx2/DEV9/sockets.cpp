@@ -186,7 +186,7 @@ SocketAdapter::SocketAdapter()
 	else
 	{
 		foundAdapter = AdapterUtils::GetWin32AdapterAuto(&adapter, &buffer);
-		adapterIP = {0};
+		adapterIP = {};
 
 		if (!foundAdapter)
 		{
@@ -234,8 +234,8 @@ SocketAdapter::SocketAdapter()
 	//For DHCP, we need to override some settings
 	//DNS settings as per direct adapters
 
-	const IP_Address ps2IP{internalIP.bytes[0], internalIP.bytes[1], internalIP.bytes[2], 100};
-	const IP_Address subnet{255, 255, 255, 0};
+	const IP_Address ps2IP{{{internalIP.bytes[0], internalIP.bytes[1], internalIP.bytes[2], 100}}};
+	const IP_Address subnet{{{255, 255, 255, 0}}};
 	const IP_Address gateway = internalIP;
 
 	InitInternalServer(&adapter, true, ps2IP, subnet, gateway);
@@ -450,8 +450,8 @@ void SocketAdapter::reloadSettings()
 		foundAdapter = AdapterUtils::GetIfAdapterAuto(&adapter, &buffer);
 #endif
 
-	const IP_Address ps2IP = {internalIP.bytes[0], internalIP.bytes[1], internalIP.bytes[2], 100};
-	const IP_Address subnet{255, 255, 255, 0};
+	const IP_Address ps2IP = {{{internalIP.bytes[0], internalIP.bytes[1], internalIP.bytes[2], 100}}};
+	const IP_Address subnet{{{255, 255, 255, 0}}};
 	const IP_Address gateway = internalIP;
 
 	if (foundAdapter)
@@ -477,7 +477,7 @@ bool SocketAdapter::SendIP(IP_Packet* ipPkt)
 	}
 	//Do Checksum in sub functions
 
-	ConnectionKey Key{0};
+	ConnectionKey Key{};
 	Key.ip = ipPkt->destinationIP;
 	Key.protocol = ipPkt->protocol;
 
@@ -574,7 +574,7 @@ bool SocketAdapter::SendUDP(ConnectionKey Key, IP_Packet* ipPkt)
 
 		if (udp.sourcePort == udp.destinationPort || //Used for LAN games that assume the destination port
 			ipPkt->destinationIP == dhcpServer.broadcastIP || //Broadcast packets
-			ipPkt->destinationIP == IP_Address{255, 255, 255, 255} || //Limited Broadcast packets
+			ipPkt->destinationIP == IP_Address{{{255, 255, 255, 255}}} || //Limited Broadcast packets
 			(ipPkt->destinationIP.bytes[0] & 0xF0) == 0xE0) //Multicast address start with 0b1110
 		{
 			UDP_FixedPort* fPort = nullptr;
@@ -586,7 +586,7 @@ bool SocketAdapter::SendUDP(ConnectionKey Key, IP_Packet* ipPkt)
 			}
 			else
 			{
-				ConnectionKey fKey{0};
+				ConnectionKey fKey{};
 				fKey.protocol = (u8)IP_Type::UDP;
 				fKey.ps2Port = udp.sourcePort;
 				fKey.srvPort = 0;
@@ -596,7 +596,7 @@ bool SocketAdapter::SendUDP(ConnectionKey Key, IP_Packet* ipPkt)
 				fPort = new UDP_FixedPort(fKey, adapterIP, udp.sourcePort);
 				fPort->AddConnectionClosedHandler([&](BaseSession* session) { HandleFixedPortClosed(session); });
 
-				fPort->destIP = {0, 0, 0, 0};
+				fPort->destIP = {};
 				fPort->sourceIP = dhcpServer.ps2IP;
 
 				connections.Add(fKey, fPort);
@@ -605,7 +605,7 @@ bool SocketAdapter::SendUDP(ConnectionKey Key, IP_Packet* ipPkt)
 
 			Console.WriteLn("DEV9: Socket: Creating New UDP Connection from FixedPort %d", udp.destinationPort);
 			s = fPort->NewClientSession(Key,
-				ipPkt->destinationIP == dhcpServer.broadcastIP || ipPkt->destinationIP == IP_Address{255, 255, 255, 255},
+				ipPkt->destinationIP == dhcpServer.broadcastIP || ipPkt->destinationIP == IP_Address{{{255, 255, 255, 255}}},
 				(ipPkt->destinationIP.bytes[0] & 0xF0) == 0xE0);
 		}
 		else

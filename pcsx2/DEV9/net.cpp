@@ -177,7 +177,7 @@ using namespace PacketReader;
 using namespace PacketReader::IP;
 using namespace PacketReader::IP::UDP;
 
-const IP_Address NetAdapter::internalIP{192, 0, 2, 1};
+const IP_Address NetAdapter::internalIP{{{192, 0, 2, 1}}};
 const u8 NetAdapter::broadcastMAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 const u8 NetAdapter::internalMAC[6] = {0x76, 0x6D, 0xF4, 0x63, 0x30, 0x31};
 
@@ -344,7 +344,7 @@ bool NetAdapter::InternalServerRecv(NetPacket* pkt)
 	if (ippay != nullptr)
 	{
 		IP_Packet* ippkt = new IP_Packet(ippay);
-		ippkt->destinationIP = {255, 255, 255, 255};
+		ippkt->destinationIP = {{{255, 255, 255, 255}}};
 		ippkt->sourceIP = internalIP;
 		EthernetFrame frame(ippkt);
 		memcpy(frame.sourceMAC, internalMAC, 6);

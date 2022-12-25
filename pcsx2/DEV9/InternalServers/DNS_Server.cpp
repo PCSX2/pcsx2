@@ -58,7 +58,7 @@ namespace InternalServers
 		//See https://en.cppreference.com/w/cpp/container#Thread_safety
 		//Different elements in the same container can be modified concurrently by different threads
 		for (size_t i = 0; i < dnsQuestions.size(); i++)
-			answers[dnsQuestions[i]] = {0};
+			answers[dnsQuestions[i]] = {};
 	}
 
 	int DNS_Server::DNS_State::AddAnswer(const std::string& answer, IP_Address address)
@@ -101,7 +101,7 @@ namespace InternalServers
 	void DNS_Server::Init(ifaddrs* adapter)
 #endif
 	{
-		localhostIP = {127, 0, 0, 1};
+		localhostIP = {{{127, 0, 0, 1}}};
 
 		//Find IPv4 Address
 		std::optional<IP_Address> adapterIP = AdapterUtils::GetAdapterIP(adapter);
@@ -220,7 +220,7 @@ namespace InternalServers
 			if (ans.integer != 0)
 			{
 				//TODO, might not be effective on pcap
-				const IP_Address local{127, 0, 0, 1};
+				const IP_Address local{{{127, 0, 0, 1}}};
 				if (ans == local)
 					ans = localhostIP;
 

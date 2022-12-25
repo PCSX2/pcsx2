@@ -55,8 +55,8 @@ namespace PacketReader::IP
 		u16 checksum;
 
 	public:
-		IP_Address sourceIP{0};
-		IP_Address destinationIP{0};
+		IP_Address sourceIP{};
+		IP_Address destinationIP{};
 		std::vector<IPOption*> options;
 
 	private:
