@@ -66,7 +66,6 @@ using namespace x86Emitter;
 extern void psxBREAK();
 
 u32 g_psxMaxRecMem = 0;
-u32 s_psxrecblocks[] = {0};
 
 uptr psxRecLUT[0x10000];
 u32 psxhwLUT[0x10000];
@@ -110,8 +109,6 @@ extern void (*rpsxBSC[64])();
 void rpsxpropBSC(EEINST* prev, EEINST* pinst);
 
 static void iopClearRecLUT(BASEBLOCK* base, int count);
-
-static u32 psxdump = 0;
 
 #define PSX_GETBLOCK(x) PC_GETBLOCK_(x, psxRecLUT)
 
@@ -291,96 +288,6 @@ static void _DynGen_Dispatchers()
 
 ////////////////////////////////////////////////////
 using namespace R3000A;
-
-static void iIopDumpBlock(int startpc, u8* ptr)
-{
-	u32 i, j;
-	EEINST* pcur;
-	u8 used[34];
-	int numused, count;
-
-	Console.WriteLn("dump1 %x:%x, %x", startpc, psxpc, psxRegs.cycle);
-	FileSystem::CreateDirectoryPath(EmuFolders::Logs.c_str(), false);
-
-	std::string filename(Path::Combine(EmuFolders::Logs, fmt::format("psxdump{:.8X}.txt", startpc)));
-	std::FILE* f = FileSystem::OpenCFile(filename.c_str(), "w");
-	if (!f)
-		return;
-
-	std::fprintf(f, "Dump PSX register data: 0x%p\n\n", &psxRegs);
-
-	for (i = startpc; i < s_nEndBlock; i += 4)
-	{
-		std::fprintf(f, "%s\n", disR3000AF(iopMemRead32(i), i));
-	}
-
-	// write the instruction info
-	std::fprintf(f, "\n\nlive0 - %x, lastuse - %x used - %x\n", EEINST_LIVE, EEINST_LASTUSE, EEINST_USED);
-
-	memzero(used);
-	numused = 0;
-	for (i = 0; i < std::size(s_pInstCache->regs); ++i)
-	{
-		if (s_pInstCache->regs[i] & EEINST_USED)
-		{
-			used[i] = 1;
-			numused++;
-		}
-	}
-
-	std::fprintf(f, "       ");
-	for (i = 0; i < std::size(s_pInstCache->regs); ++i)
-	{
-		if (used[i])
-			std::fprintf(f, "%2d ", i);
-	}
-	std::fprintf(f, "\n");
-
-	std::fprintf(f, "       ");
-	for (i = 0; i < std::size(s_pInstCache->regs); ++i)
-	{
-		if (used[i])
-			std::fprintf(f, "%s ", disRNameGPR[i]);
-	}
-	std::fprintf(f, "\n");
-
-	pcur = s_pInstCache + 1;
-	for (i = 0; i < (s_nEndBlock - startpc) / 4; ++i, ++pcur)
-	{
-		std::fprintf(f, "%2d: %2.2x ", i + 1, pcur->info);
-
-		count = 1;
-		for (j = 0; j < std::size(s_pInstCache->regs); j++)
-		{
-			if (used[j])
-			{
-				std::fprintf(f, "%2.2x%s", pcur->regs[j], ((count % 8) && count < numused) ? "_" : " ");
-				++count;
-			}
-		}
-		std::fprintf(f, "\n");
-	}
-	std::fclose(f);
-
-#ifdef __linux__
-	// dump the asm
-	{
-		f = std::fopen("mydump1", "wb");
-		if (!f)
-			return;
-
-		std::fwrite(ptr, (uptr)x86Ptr - (uptr)ptr, 1, f);
-		std::fclose(f);
-	}
-
-	int status = std::system(fmt::format("objdump -D -b binary -mi386 -M intel --no-show-raw-insn {} >> {}; rm {}",
-		"mydump1", filename.c_str(), "mydump1")
-								 .c_str());
-
-	if (!WIFEXITED(status))
-		Console.Error("IOP dump didn't terminate normally");
-#endif
-}
 
 void _psxFlushConstReg(int reg)
 {
@@ -1661,12 +1568,6 @@ static void iopRecRecompile(const u32 startpc)
 		}
 	}
 
-	if (IsDebugBuild && (psxdump & 4))
-	{
-		extern void iDumpPsxRegisters(u32 startpc, u32 temp);
-		iDumpPsxRegisters(startpc, 0);
-	}
-
 	pxAssert(startpc);
 
 	// if recPtr reached the mem limit reset whole mem
@@ -1818,29 +1719,11 @@ StartRecomp:
 		}
 	}
 
-	// dump code
-	if (IsDebugBuild)
-	{
-		for (u32 recblock : s_psxrecblocks)
-		{
-			if (startpc == recblock)
-			{
-				iIopDumpBlock(startpc, recPtr);
-			}
-		}
-
-		if ((psxdump & 1))
-			iIopDumpBlock(startpc, recPtr);
-	}
-
 	g_pCurInstInfo = s_pInstCache;
 	while (!psxbranch && psxpc < s_nEndBlock)
 	{
 		psxRecompileNextInstruction(false, false);
 	}
-
-	if (IsDebugBuild && (psxdump & 1))
-		iIopDumpBlock(startpc, recPtr);
 
 	pxAssert((psxpc - startpc) >> 2 <= 0xffff);
 	s_pCurBlockEx->size = (psxpc - startpc) >> 2;

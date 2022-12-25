@@ -331,7 +331,6 @@
     <ClCompile Include="GS\GSXXH.cpp" />
     <ClCompile Include="GS\MultiISA.cpp" />
     <ClCompile Include="SPU2\Windows\SndOut_XAudio2.cpp" />
-    <ClCompile Include="Dump.cpp" />
     <ClCompile Include="StateWrapper.cpp" />
     <ClCompile Include="USB\deviceproxy.cpp" />
     <ClCompile Include="USB\qemu-usb\bus.cpp" />
@@ -721,7 +720,6 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="Config.h" />
-    <ClInclude Include="Dump.h" />
     <ClInclude Include="SaveState.h" />
     <ClInclude Include="SingleRegisterTypes.h" />
     <ClInclude Include="System.h" />
