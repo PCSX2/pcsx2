@@ -89,6 +89,7 @@ void mVUreset(microVU& mVU, bool resetReserve)
 	x86SetPtr(mVU.dispCache);
 	mVUdispatcherAB(mVU);
 	mVUdispatcherCD(mVU);
+	mvuGenerateWaitMTVU(mVU);
 	mVUemitSearch();
 
 	mVU.regs().nextBlockCycles = 0;

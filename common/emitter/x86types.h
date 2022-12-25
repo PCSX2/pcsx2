@@ -34,6 +34,12 @@ extern thread_local XMMSSEType g_xmmtypes[iREGCNT_XMM];
 
 namespace x86Emitter
 {
+	// Win32 requires 32 bytes of shadow stack in the caller's frame.
+#ifdef _WIN32
+	static constexpr int SHADOW_STACK_SIZE = 32;
+#else
+	static constexpr int SHADOW_STACK_SIZE = 0;
+#endif
 
 	extern void xWrite8(u8 val);
 	extern void xWrite16(u16 val);
@@ -401,6 +407,8 @@ namespace x86Emitter
 			pxAssertDev(other.canMapIDTo(4), "Mapping h registers to higher registers can produce unexpected values");
 		}
 
+		static const inline xRegister32& GetInstance(uint id);
+
 		bool operator==(const xRegister32& src) const { return this->Id == src.Id; }
 		bool operator!=(const xRegister32& src) const { return this->Id != src.Id; }
 	};
@@ -420,6 +428,8 @@ namespace x86Emitter
 		{
 			pxAssertDev(other.canMapIDTo(8), "Mapping h registers to higher registers can produce unexpected values");
 		}
+
+		static const inline xRegister64& GetInstance(uint id);
 
 		bool operator==(const xRegister64& src) const { return this->Id == src.Id; }
 		bool operator!=(const xRegister64& src) const { return this->Id != src.Id; }
@@ -662,6 +672,34 @@ extern const xRegister32
 		// rax, rdi, rsi, rdx, rcx, r8, r9, r10, r11 are scratch registers.
 		return (id <= 2 || id == 6 || id == 7 || (id >= 8 && id <= 11));
 #endif
+	}
+
+	const xRegister32& xRegister32::GetInstance(uint id)
+	{
+		static const xRegister32* const m_tbl_x86Regs[] =
+		{
+				&eax, &ecx, &edx, &ebx,
+				&esp, &ebp, &esi, &edi,
+				&r8d, &r9d, &r10d, &r11d,
+				&r12d, &r13d, &r14d, &r15d,
+		};
+
+		pxAssert(id < iREGCNT_GPR);
+		return *m_tbl_x86Regs[id];
+	}
+
+	const xRegister64& xRegister64::GetInstance(uint id)
+	{
+		static const xRegister64* const m_tbl_x86Regs[] =
+		{
+				&rax, &rcx, &rdx, &rbx,
+				&rsp, &rbp, &rsi, &rdi,
+				&r8, &r9, &r10, &r11,
+				&r12, &r13, &r14, &r15
+		};
+
+		pxAssert(id < iREGCNT_GPR);
+		return *m_tbl_x86Regs[id];
 	}
 
 	bool xRegisterSSE::IsCallerSaved(uint id)

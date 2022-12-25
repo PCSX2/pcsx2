@@ -123,6 +123,81 @@ void mVUdispatcherCD(mV)
 		"microVU: Dispatcher generation exceeded reserved cache area!");
 }
 
+void mvuGenerateWaitMTVU(mV)
+{
+	mVU.waitMTVU = x86Ptr;
+
+	int num_xmms = 0, num_gprs = 0;
+
+	for (int i = 0; i < static_cast<int>(iREGCNT_GPR); i++)
+	{
+		if (!xRegister32::IsCallerSaved(i) || i == rsp.GetId())
+			continue;
+
+		// no need to save temps
+		if (i == gprT1.GetId() || i == gprT2.GetId())
+			continue;
+
+		xPUSH(xRegister64(i));
+		num_gprs++;
+	}
+
+	for (int i = 0; i < static_cast<int>(iREGCNT_XMM); i++)
+	{
+		if (!xRegisterSSE::IsCallerSaved(i))
+			continue;
+
+		num_xmms++;
+	}
+
+	// We need 16 byte alignment on the stack.
+	// Since the stack is unaligned at entry to this function, we add 8 when it's even, not odd.
+	const int stack_size = (num_xmms * sizeof(u128)) + ((~num_gprs & 1) * sizeof(u64)) + SHADOW_STACK_SIZE;
+	int stack_offset = SHADOW_STACK_SIZE;
+
+	if (stack_size > 0)
+	{
+		xSUB(rsp, stack_size);
+		for (int i = 0; i < static_cast<int>(iREGCNT_XMM); i++)
+		{
+			if (!xRegisterSSE::IsCallerSaved(i))
+				continue;
+
+			xMOVAPS(ptr128[rsp + stack_offset], xRegisterSSE(i));
+			stack_offset += sizeof(u128);
+		}
+	}
+
+	xFastCall((void*)mVUwaitMTVU);
+
+	stack_offset = (num_xmms - 1) * sizeof(u128) + SHADOW_STACK_SIZE;
+	for (int i = static_cast<int>(iREGCNT_XMM - 1); i >= 0; i--)
+	{
+		if (!xRegisterSSE::IsCallerSaved(i))
+			continue;
+
+		xMOVAPS(xRegisterSSE(i), ptr128[rsp + stack_offset]);
+		stack_offset -= sizeof(u128);
+	}
+	xADD(rsp, stack_size);
+
+	for (int i = static_cast<int>(iREGCNT_GPR - 1); i >= 0; i--)
+	{
+		if (!xRegister32::IsCallerSaved(i) || i == rsp.GetId())
+			continue;
+
+		if (i == gprT1.GetId() || i == gprT2.GetId())
+			continue;
+
+		xPOP(xRegister64(i));
+	}
+
+	xRET();
+
+	pxAssertDev(xGetPtr() < (mVU.dispCache + mVUdispCacheSize),
+		"microVU: Dispatcher generation exceeded reserved cache area!");
+}
+
 //------------------------------------------------------------------
 // Execution Functions
 //------------------------------------------------------------------

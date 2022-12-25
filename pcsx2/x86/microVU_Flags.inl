@@ -313,13 +313,15 @@ __fi void mVUsetupFlags(mV, microFlagCycles& mFC)
 		}
 		else
 		{
+			const xRegister32& temp3 = mVU.regAlloc->allocGPR();
 			xMOV(gprT1, getFlagReg(bStatus[0]));
 			xMOV(gprT2, getFlagReg(bStatus[1]));
-			xMOV(gprT3, getFlagReg(bStatus[2]));
+			xMOV(temp3, getFlagReg(bStatus[2]));
 			xMOV(gprF3, getFlagReg(bStatus[3]));
 			xMOV(gprF0, gprT1);
 			xMOV(gprF1, gprT2);
-			xMOV(gprF2, gprT3);
+			xMOV(gprF2, temp3);
+			mVU.regAlloc->clearNeeded(temp3);
 		}
 	}
 
