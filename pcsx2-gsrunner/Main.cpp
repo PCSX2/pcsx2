@@ -15,6 +15,7 @@
 
 #include <chrono>
 #include <csignal>
+#include <cstdlib>
 #include <condition_variable>
 #include <mutex>
 #include <thread>
@@ -59,7 +60,6 @@
 namespace GSRunner
 {
 	static bool InitializeConfig();
-	static bool SetCriticalFolders();
 
 	static bool CreatePlatformWindow();
 	static void DestroyPlatformWindow();
@@ -79,26 +79,6 @@ static std::optional<bool> s_use_window;
 
 // Owned by the GS thread.
 static u32 s_dump_frame_number = 0;
-
-bool GSRunner::SetCriticalFolders()
-{
-	EmuFolders::AppRoot = Path::Canonicalize(Path::GetDirectory(FileSystem::GetProgramPath()));
-	EmuFolders::Resources = Path::Combine(EmuFolders::AppRoot, "resources");
-	EmuFolders::DataRoot = EmuFolders::AppRoot;
-
-	// allow SetDataDirectory() to change settings directory (if we want to split config later on)
-	if (EmuFolders::Settings.empty())
-		EmuFolders::Settings = Path::Combine(EmuFolders::DataRoot, "inis");
-
-	// the resources directory should exist, bail out if not
-	if (!FileSystem::DirectoryExists(EmuFolders::Resources.c_str()))
-	{
-		Console.Error("Resources directory is missing, your installation is incomplete.");
-		return false;
-	}
-
-	return true;
-}
 
 bool GSRunner::InitializeConfig()
 {
@@ -629,24 +609,24 @@ int main(int argc, char* argv[])
 	if (!GSRunner::InitializeConfig())
 	{
 		Console.Error("Failed to initialize config.");
-		return false;
+		return EXIT_FAILURE;
 	}
 
 	VMBootParameters params;
 	if (!ParseCommandLineArgs(argc, argv, params))
-		return false;
+		return EXIT_FAILURE;
 
 	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle::GetForCallingThread());
 	if (!VMManager::Internal::InitializeGlobals() || !VMManager::Internal::InitializeMemory())
 	{
 		Console.Error("Failed to allocate globals/memory.");
-		return false;
+		return EXIT_FAILURE;
 	}
 
 	if (s_use_window.value_or(false) && !GSRunner::CreatePlatformWindow())
 	{
 		Console.Error("Failed to create window.");
-		return false;
+		return EXIT_FAILURE;
 	}
 
 	// apply new settings (e.g. pick up renderer change)
