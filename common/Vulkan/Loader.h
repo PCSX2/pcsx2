@@ -99,6 +99,7 @@
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wnullability-completeness"
+#pragma clang diagnostic ignored "-Wunused-variable"
 #endif
 
 #define VMA_STATIC_VULKAN_FUNCTIONS 1

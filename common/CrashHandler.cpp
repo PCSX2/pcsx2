@@ -114,7 +114,7 @@ static void WriteMinidumpAndCallstack(PEXCEPTION_POINTERS exi)
 	{
 		char line[1024];
 		DWORD written;
-		std::snprintf(line, std::size(line), "Exception 0x%08X at 0x%p\n", exi->ExceptionRecord->ExceptionCode,
+		std::snprintf(line, std::size(line), "Exception 0x%08X at 0x%p\n", static_cast<unsigned>(exi->ExceptionRecord->ExceptionCode),
 			exi->ExceptionRecord->ExceptionAddress);
 		WriteFile(hFile, line, static_cast<DWORD>(std::strlen(line)), &written, nullptr);
 	}

@@ -20,17 +20,17 @@
 
 static void* GetProcAddressCallback(const char* name)
 {
-	void* addr = wglGetProcAddress(name);
+	void* addr = reinterpret_cast<void*>(wglGetProcAddress(name));
 	if (addr)
 		return addr;
 
 	// try opengl32.dll
-	return ::GetProcAddress(GetModuleHandleA("opengl32.dll"), name);
+	return reinterpret_cast<void*>(::GetProcAddress(GetModuleHandleA("opengl32.dll"), name));
 }
 
 static bool ReloadWGL(HDC dc)
 {
-	if (!gladLoadWGLLoader([](const char* name) -> void* { return wglGetProcAddress(name); }, dc))
+	if (!gladLoadWGLLoader([](const char* name) -> void* { return reinterpret_cast<void*>(wglGetProcAddress(name)); }, dc))
 	{
 		Console.Error("Loading GLAD WGL functions failed");
 		return false;
@@ -208,7 +208,7 @@ namespace GL
 		if (!hDC)
 		{
 			Console.Error("GetDC() failed: 0x%08X", GetLastError());
-			return false;
+			return {};
 		}
 
 		if (!m_pixel_format.has_value())
@@ -218,7 +218,7 @@ namespace GL
 			{
 				Console.Error("ChoosePixelFormat() failed: 0x%08X", GetLastError());
 				::ReleaseDC(hwnd, hDC);
-				return false;
+				return {};
 			}
 
 			m_pixel_format = pf;
@@ -397,7 +397,7 @@ namespace GL
 			}
 
 			// re-init glad-wgl
-			if (!gladLoadWGLLoader([](const char* name) -> void* { return wglGetProcAddress(name); }, m_dc))
+			if (!gladLoadWGLLoader([](const char* name) -> void* { return reinterpret_cast<void*>(wglGetProcAddress(name)); }, m_dc))
 			{
 				Console.Error("Loading GLAD WGL functions failed");
 				return false;

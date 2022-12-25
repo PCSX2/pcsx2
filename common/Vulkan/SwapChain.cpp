@@ -44,6 +44,8 @@ namespace Vulkan
 		DestroySurface();
 	}
 
+#if 0
+	// Unused for now, can be used for nogui
 	static VkSurfaceKHR CreateDisplaySurface(VkInstance instance, VkPhysicalDevice physical_device, WindowInfo* wi)
 	{
 		Console.WriteLn("Trying to create a VK_KHR_display surface of %ux%u", wi->surface_width, wi->surface_height);
@@ -253,6 +255,7 @@ namespace Vulkan
 
 		return result;
 	}
+#endif
 
 	VkSurfaceKHR SwapChain::CreateVulkanSurface(VkInstance instance, VkPhysicalDevice physical_device, WindowInfo* wi)
 	{
