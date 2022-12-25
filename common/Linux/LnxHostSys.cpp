@@ -95,13 +95,6 @@ static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void* ctx)
 
 	std::fprintf(stderr, "Unhandled page fault @ 0x%08x", siginfo->si_addr);
 	pxFailRel("Unhandled page fault");
-
-	// Bad mojo!  Completely invalid address.
-	// Instigate a trap if we're in a debugger, and if not then do a SIGKILL.
-
-	pxTrap();
-	if (!IsDebugBuild)
-		raise(SIGKILL);
 }
 
 void _platform_InstallSignalHandler()
