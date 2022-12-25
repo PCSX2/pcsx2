@@ -49,7 +49,7 @@ CreateMemoryCardDialog::CreateMemoryCardDialog(QWidget* parent /* = nullptr */)
 	connect(m_ui.buttonBox->button(QDialogButtonBox::Cancel), &QPushButton::clicked, this, &CreateMemoryCardDialog::close);
 	connect(m_ui.buttonBox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this, &CreateMemoryCardDialog::restoreDefaults);
 
-#ifdef _WIN32
+#ifndef _WIN32
 	m_ui.ntfsCompression->setEnabled(false);
 #endif
 
