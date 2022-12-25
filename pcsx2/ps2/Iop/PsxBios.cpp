@@ -67,7 +67,7 @@ bool psxBiosCall()
     // TODO: Tracing
     // TODO (maybe, psx is hardly a priority): HLE framework
 
-    switch ((psxRegs.pc & 0x1FFFFFFFU) << 4 & 0xf00 | psxRegs.GPR.n.t1 & 0xff) {
+    switch (((psxRegs.pc << 4) & 0xf00) | (psxRegs.GPR.n.t1 & 0xff)) {
         case 0xa03:
         case 0xb35:
             // write(fd, data, size)

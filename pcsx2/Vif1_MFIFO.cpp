@@ -113,7 +113,7 @@ static __fi bool mfifoVIF1rbTransfer()
 static __fi void mfifo_VIF1chain()
 {
 	/* Is QWC = 0? if so there is nothing to transfer */
-	if ((vif1ch.qwc == 0))
+	if (vif1ch.qwc == 0)
 	{
 		vif1.inprogress &= ~1;
 		return;

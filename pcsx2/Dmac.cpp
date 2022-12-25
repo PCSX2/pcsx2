@@ -305,7 +305,7 @@ __fi u32 dmacRead32( u32 mem )
 		if (++counter == 8)
 			counter = 2;
 		// Set OPH and APATH from counter, cycling paths and alternating OPH
-		return gifRegs.stat._u32 & ~(7 << 9) | (counter & 1 ? counter << 9 : 0);
+		return gifRegs.stat._u32 & (~(7 << 9) | (counter & 1 ? counter << 9 : 0));
 	}
 
 	return psHu32(mem);

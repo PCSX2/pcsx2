@@ -132,41 +132,41 @@ void MemoryCardProtocol::GetSpecs()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
-	u8 checksum = 0x00;
+	//u8 checksum = 0x00;
 	McdSizeInfo info;
 	mcd->GetSizeInfo(info);
 	fifoOut.push_back(0x2b);
 	
 	const u8 sectorSizeLSB = (info.SectorSize & 0xff);
-	checksum ^= sectorSizeLSB;
+	//checksum ^= sectorSizeLSB;
 	fifoOut.push_back(sectorSizeLSB);
 
 	const u8 sectorSizeMSB = (info.SectorSize >> 8);
-	checksum ^= sectorSizeMSB;
+	//checksum ^= sectorSizeMSB;
 	fifoOut.push_back(sectorSizeMSB);
 
 	const u8 eraseBlockSizeLSB = (info.EraseBlockSizeInSectors & 0xff);
-	checksum ^= eraseBlockSizeLSB;
+	//checksum ^= eraseBlockSizeLSB;
 	fifoOut.push_back(eraseBlockSizeLSB);
 
 	const u8 eraseBlockSizeMSB = (info.EraseBlockSizeInSectors >> 8);
-	checksum ^= eraseBlockSizeMSB;
+	//checksum ^= eraseBlockSizeMSB;
 	fifoOut.push_back(eraseBlockSizeMSB);
 
 	const u8 sectorCountLSB = (info.McdSizeInSectors & 0xff);
-	checksum ^= sectorCountLSB;
+	//checksum ^= sectorCountLSB;
 	fifoOut.push_back(sectorCountLSB);
 
 	const u8 sectorCount2nd = (info.McdSizeInSectors >> 8);
-	checksum ^= sectorCount2nd;
+	//checksum ^= sectorCount2nd;
 	fifoOut.push_back(sectorCount2nd);
 
 	const u8 sectorCount3rd = (info.McdSizeInSectors >> 16);
-	checksum ^= sectorCount3rd;
+	//checksum ^= sectorCount3rd;
 	fifoOut.push_back(sectorCount3rd);
 
 	const u8 sectorCountMSB = (info.McdSizeInSectors >> 24);
-	checksum ^= sectorCountMSB;
+	//checksum ^= sectorCountMSB;
 	fifoOut.push_back(sectorCountMSB);
 	
 	fifoOut.push_back(info.Xor);

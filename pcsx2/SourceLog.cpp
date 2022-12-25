@@ -133,8 +133,8 @@ SysConsoleLogPack::SysConsoleLogPack()
 // --------------------------------------------------------------------------------------
 static const SysTraceLogDescriptor
 	TLD_SIF = {
-		"SIF", "SIF (EE <-> IOP)",
-		"",
+		{"SIF", "SIF (EE <-> IOP)",
+		""},
 		"SIF"};
 
 // ----------------------------
@@ -143,45 +143,45 @@ static const SysTraceLogDescriptor
 
 static const SysTraceLogDescriptor
 	TLD_EE_Bios = {
-		"Bios", "Bios",
-		"SYSCALL and DECI2 activity.",
+		{"Bios", "Bios",
+		"SYSCALL and DECI2 activity."},
 		"EE"},
 
-	TLD_EE_Memory = {"Memory", "Memory", "Direct memory accesses to unknown or unmapped EE memory space.", "eMem"},
+	TLD_EE_Memory = {{"Memory", "Memory", "Direct memory accesses to unknown or unmapped EE memory space."}, "eMem"},
 
-	TLD_EE_R5900 = {"R5900", "R5900 Core", "Disasm of executing core instructions (excluding COPs and CACHE).", "eDis"},
+	TLD_EE_R5900 = {{"R5900", "R5900 Core", "Disasm of executing core instructions (excluding COPs and CACHE)."}, "eDis"},
 
-	TLD_EE_COP0 = {"COP0", "COP0", "Disasm of COP0 instructions (MMU, cpu and dma status, etc).", "eDis"},
+	TLD_EE_COP0 = {{"COP0", "COP0", "Disasm of COP0 instructions (MMU, cpu and dma status, etc)."}, "eDis"},
 
-	TLD_EE_COP1 = {"FPU", "COP1/FPU", "Disasm of the EE's floating point unit (FPU) only.", "eDis"},
+	TLD_EE_COP1 = {{"FPU", "COP1/FPU", "Disasm of the EE's floating point unit (FPU) only."}, "eDis"},
 
-	TLD_EE_COP2 = {"VUmacro", "COP2/VUmacro", "Disasm of the EE's VU0macro co-processor instructions.", "eDis"},
+	TLD_EE_COP2 = {{"VUmacro", "COP2/VUmacro", "Disasm of the EE's VU0macro co-processor instructions."}, "eDis"},
 
-	TLD_EE_Cache = {"Cache", "Cache", "Execution of EE cache instructions.", "eDis"},
+	TLD_EE_Cache = {{"Cache", "Cache", "Execution of EE cache instructions."}, "eDis"},
 
-	TLD_EE_KnownHw = {"HwRegs", "Hardware Regs", "All known hardware register accesses (very slow!); not including sub filter options below.", "eReg"},
+	TLD_EE_KnownHw = {{"HwRegs", "Hardware Regs", "All known hardware register accesses (very slow!); not including sub filter options below."}, "eReg"},
 
-	TLD_EE_UnknownHw = {"UnknownRegs", "Unknown Regs", "Logs only unknown, unmapped, or unimplemented register accesses.", "eReg"},
+	TLD_EE_UnknownHw = {{"UnknownRegs", "Unknown Regs", "Logs only unknown, unmapped, or unimplemented register accesses."}, "eReg"},
 
-	TLD_EE_DMAhw = {"DmaRegs", "DMA Regs", "Logs only DMA-related registers.", "eReg"},
+	TLD_EE_DMAhw = {{"DmaRegs", "DMA Regs", "Logs only DMA-related registers."}, "eReg"},
 
-	TLD_EE_IPU = {"IPU", "IPU", "IPU activity: hardware registers, decoding operations, DMA status, etc.", "IPU"},
+	TLD_EE_IPU = {{"IPU", "IPU", "IPU activity: hardware registers, decoding operations, DMA status, etc."}, "IPU"},
 
-	TLD_EE_GIFtag = {"GIFtags", "GIFtags", "All GIFtag parse activity; path index, tag type, etc.", "GIF"},
+	TLD_EE_GIFtag = {{"GIFtags", "GIFtags", "All GIFtag parse activity; path index, tag type, etc."}, "GIF"},
 
-	TLD_EE_VIFcode = {"VIFcodes", "VIFcodes", "All VIFcode processing; command, tag style, interrupts.", "VIF"},
+	TLD_EE_VIFcode = {{"VIFcodes", "VIFcodes", "All VIFcode processing; command, tag style, interrupts."}, "VIF"},
 
-	TLD_EE_MSKPATH3 = {"MSKPATH3", "MSKPATH3", "All processing involved in Path3 Masking.", "MSKPATH3"},
+	TLD_EE_MSKPATH3 = {{"MSKPATH3", "MSKPATH3", "All processing involved in Path3 Masking."}, "MSKPATH3"},
 
-	TLD_EE_SPR = {"MFIFO", "Scratchpad MFIFO", "Scratchpad's MFIFO activity.", "SPR"},
+	TLD_EE_SPR = {{"MFIFO", "Scratchpad MFIFO", "Scratchpad's MFIFO activity."}, "SPR"},
 
-	TLD_EE_DMAC = {"DmaCtrl", "DMA Controller", "Actual data transfer logs, bus right arbitration, stalls, etc.", "eDmaC"},
+	TLD_EE_DMAC = {{"DmaCtrl", "DMA Controller", "Actual data transfer logs, bus right arbitration, stalls, etc."}, "eDmaC"},
 
-	TLD_EE_Counters = {"Counters", "Counters", "Tracks all EE counters events and some counter register activity.", "eCnt"},
+	TLD_EE_Counters = {{"Counters", "Counters", "Tracks all EE counters events and some counter register activity."}, "eCnt"},
 
-	TLD_EE_VIF = {"VIF", "VIF", "Dumps various VIF and VIFcode processing data.", "VIF"},
+	TLD_EE_VIF = {{"VIF", "VIF", "Dumps various VIF and VIFcode processing data."}, "VIF"},
 
-	TLD_EE_GIF = {"GIF", "GIF", "Dumps various GIF and GIFtag parsing data.", "GIF"};
+	TLD_EE_GIF = {{"GIF", "GIF", "Dumps various GIF and GIFtag parsing data."}, "GIF"};
 
 // ----------------------------------
 //   IOP - Input / Output Processor
@@ -189,33 +189,33 @@ static const SysTraceLogDescriptor
 
 static const SysTraceLogDescriptor
 	TLD_IOP_Bios = {
-		"Bios", "Bios",
-		"SYSCALL and IRX activity.",
+		{"Bios", "Bios",
+		"SYSCALL and IRX activity."},
 		"IOP"},
 
-	TLD_IOP_Memory = {"Memory", "Memory", "Direct memory accesses to unknown or unmapped IOP memory space.", "iMem"},
+	TLD_IOP_Memory = {{"Memory", "Memory", "Direct memory accesses to unknown or unmapped IOP memory space."}, "iMem"},
 
-	TLD_IOP_R3000A = {"R3000A", "R3000A Core", "Disasm of executing core instructions (excluding COPs and CACHE).", "iDis"},
+	TLD_IOP_R3000A = {{"R3000A", "R3000A Core", "Disasm of executing core instructions (excluding COPs and CACHE)."}, "iDis"},
 
-	TLD_IOP_COP2 = {"COP2/GPU", "COP2", "Disasm of the IOP's GPU co-processor instructions.", "iDis"},
+	TLD_IOP_COP2 = {{"COP2/GPU", "COP2", "Disasm of the IOP's GPU co-processor instructions."}, "iDis"},
 
-	TLD_IOP_KnownHw = {"HwRegs", "Hardware Regs", "All known hardware register accesses, not including the sub-filters below.", "iReg"},
+	TLD_IOP_KnownHw = {{"HwRegs", "Hardware Regs", "All known hardware register accesses, not including the sub-filters below."}, "iReg"},
 
-	TLD_IOP_UnknownHw = {"UnknownRegs", "Unknown Regs", "Logs only unknown, unmapped, or unimplemented register accesses.", "iReg"},
+	TLD_IOP_UnknownHw = {{"UnknownRegs", "Unknown Regs", "Logs only unknown, unmapped, or unimplemented register accesses."}, "iReg"},
 
-	TLD_IOP_DMAhw = {"DmaRegs", "DMA Regs", "Logs only DMA-related registers.", "iReg"},
+	TLD_IOP_DMAhw = {{"DmaRegs", "DMA Regs", "Logs only DMA-related registers."}, "iReg"},
 
-	TLD_IOP_Memcards = {"Memorycards", "Memorycards", "Memorycard reads, writes, erases, terminators, and other processing.", "Mcd"},
+	TLD_IOP_Memcards = {{"Memorycards", "Memorycards", "Memorycard reads, writes, erases, terminators, and other processing."}, "Mcd"},
 
-	TLD_IOP_PAD = {"Pad", "Pad", "Gamepad activity on the SIO.", "Pad"},
+	TLD_IOP_PAD = {{"Pad", "Pad", "Gamepad activity on the SIO."}, "Pad"},
 
-	TLD_IOP_DMAC = {"DmaCrl", "DMA Controller", "Actual DMA event processing and data transfer logs.", "iDmaC"},
+	TLD_IOP_DMAC = {{"DmaCrl", "DMA Controller", "Actual DMA event processing and data transfer logs."}, "iDmaC"},
 
-	TLD_IOP_Counters = {"Counters", "Counters", "Tracks all IOP counters events and some counter register activity.", "iCnt"},
+	TLD_IOP_Counters = {{"Counters", "Counters", "Tracks all IOP counters events and some counter register activity."}, "iCnt"},
 
-	TLD_IOP_CDVD = {"CDVD", "CDVD", "Detailed logging of CDVD hardware.", "CDVD"},
+	TLD_IOP_CDVD = {{"CDVD", "CDVD", "Detailed logging of CDVD hardware."}, "CDVD"},
 
-	TLD_IOP_MDEC = {"MDEC", "MDEC", "Detailed logging of the Motion (FMV) Decoder hardware unit.", "MDEC"};
+	TLD_IOP_MDEC = {{"MDEC", "MDEC", "Detailed logging of the Motion (FMV) Decoder hardware unit."}, "MDEC"};
 
 SysTraceLogPack::SysTraceLogPack()
 	: SIF(&TLD_SIF)

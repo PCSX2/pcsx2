@@ -1304,10 +1304,6 @@ void vtlb_Core_Free()
 	s_fastmem_area.reset();
 }
 
-static std::string GetHostVmErrorMsg()
-{
-	return "Your system is too low on virtual resources for PCSX2 to run. This can be caused by having a small or disabled swapfile, or by other programs that are hogging resources.";
-}
 // --------------------------------------------------------------------------------------
 //  VtlbMemoryReserve  (implementations)
 // --------------------------------------------------------------------------------------

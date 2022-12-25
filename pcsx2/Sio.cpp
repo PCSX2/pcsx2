@@ -44,14 +44,6 @@ Sio2 sio2;
 _mcd mcds[2][4];
 _mcd *mcd;
 
-// Currently only check if pad wants mtap to be active.
-// Could lets PCSX2 have its own options, if anyone ever
-// wants to add support for using the extra memcard slots.
-static bool IsMtapPresent( uint port )
-{
-	return EmuConfig.MultitapEnabled( port );
-}
-
 // ============================================================================
 // SIO0
 // ============================================================================
@@ -177,7 +169,7 @@ void Sio0::SetTxData(u8 value)
 	stat |= SIO0_STAT::TX_READY | SIO0_STAT::TX_EMPTY;
 	stat |= (SIO0_STAT::RX_FIFO_NOT_EMPTY);
 
-	if (!ctrl & SIO0_CTRL::TX_ENABLE)
+	if (!(ctrl & SIO0_CTRL::TX_ENABLE))
 	{
 		Console.Warning("%s(%02X) CTRL in illegal state, exiting instantly", __FUNCTION__, value);
 		return;

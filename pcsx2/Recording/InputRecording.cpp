@@ -251,7 +251,7 @@ void InputRecording::incFrameCounter()
 		return;
 	}
 
-	if (m_frame_counter >= std::numeric_limits<u64>::max())
+	if (m_frame_counter == std::numeric_limits<u32>::max())
 	{
 		// TODO - log the incredible achievment of playing for longer than 4 billion years, and end the recording
 		stop();
