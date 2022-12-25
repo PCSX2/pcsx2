@@ -13,6 +13,18 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug Clang|x64">
+      <Configuration>Debug Clang</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Devel Clang|x64">
+      <Configuration>Devel Clang</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release Clang|x64">
+      <Configuration>Release Clang</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
 
   <!-- This better belongs in BaseProperies.props, but it needs to be set before the default props file is imported. -->

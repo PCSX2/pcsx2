@@ -10,7 +10,8 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+    <PlatformToolset Condition="!$(Configuration.Contains(Clang))">$(DefaultPlatformToolset)</PlatformToolset>
+    <PlatformToolset Condition="$(Configuration.Contains(Clang))">ClangCL</PlatformToolset>
     <WholeProgramOptimization Condition="$(Configuration.Contains(Release))">true</WholeProgramOptimization>
     <UseDebugLibraries Condition="$(Configuration.Contains(Debug))">true</UseDebugLibraries>
     <UseDebugLibraries Condition="!$(Configuration.Contains(Debug))">false</UseDebugLibraries>
@@ -59,8 +60,10 @@
       <PreprocessorDefinitions Condition="'$(CI)'=='true'">PCSX2_CI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <!-- MSVC automatically adds __AVX__ and __AVX2__ appropriately -->
       <PreprocessorDefinitions>__SSE4_1__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <EnableEnhancedInstructionSet Condition="!$(Configuration.Contains(AVX2))">NotSet</EnableEnhancedInstructionSet>
-      <EnableEnhancedInstructionSet Condition="$(Configuration.Contains(AVX2))">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="!$(Configuration.Contains(AVX2)) Or $(Configuration.Contains(Clang))">NotSet</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="$(Configuration.Contains(AVX2)) And !$(Configuration.Contains(Clang))">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And !$(Configuration.Contains(AVX2))"> -march=nehalem %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And $(Configuration.Contains(AVX2))"> -march=haswell %(AdditionalOptions)</AdditionalOptions>
       <MinimalRebuild>false</MinimalRebuild>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
       <!-- SH 2/3 flashlight, explicitly set here don't change -->
