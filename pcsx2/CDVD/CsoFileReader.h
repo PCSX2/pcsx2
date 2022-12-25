@@ -26,6 +26,7 @@
 
 #include "ThreadedFileReader.h"
 #include "ChunksCache.h"
+#include <zlib.h>
 
 struct CsoHeader;
 typedef struct z_stream_s z_stream;
