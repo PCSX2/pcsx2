@@ -478,11 +478,6 @@ static void intReserve()
 	// fixme : detect cpu for use the optimize asm code
 }
 
-static void intAlloc()
-{
-	// Nothing to do!
-}
-
 static void intReset()
 {
 	cpuRegs.branch = 0;

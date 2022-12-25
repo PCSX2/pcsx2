@@ -342,7 +342,7 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 
 			mcase(HW_IREG):
 				psxHu(addr) &= val;
-				if ((val == 0xffffffff) ) {
+				if (val == 0xffffffff) {
 					psxHu32(addr) |= 1 << 2;
 					psxHu32(addr) |= 1 << 3;
 				}

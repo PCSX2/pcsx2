@@ -403,6 +403,8 @@ static __fi tDMA_TAG* ReadTag()
 	return ptag;
 }
 
+#if 0
+// Not used
 static __fi tDMA_TAG* ReadTag2()
 {
 	tDMA_TAG* ptag = dmaGetAddr(gifch.tadr, false); // Set memory pointer to TADR
@@ -413,6 +415,7 @@ static __fi tDMA_TAG* ReadTag2()
 	gif.gspath3done = hwDmacSrcChainWithStack(gifch, ptag->ID);
 	return ptag;
 }
+#endif
 
 void GIFdma()
 {
