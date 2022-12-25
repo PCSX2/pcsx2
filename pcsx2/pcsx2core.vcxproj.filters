@@ -2114,9 +2114,6 @@
     <ClInclude Include="GS\GSCapture.h">
       <Filter>System\Ps2\GS\Window</Filter>
     </ClInclude>
-    <ClInclude Include="GS\resource.h">
-      <Filter>System\Ps2\GS</Filter>
-    </ClInclude>
     <ClInclude Include="GS\Renderers\DX11\D3D.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClInclude>

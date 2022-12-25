@@ -677,7 +677,6 @@
     <ClInclude Include="GS\Renderers\Common\GSVertexTrace.h" />
     <ClInclude Include="GS\GSXXH.h" />
     <ClInclude Include="GS\MultiISA.h" />
-    <ClInclude Include="GS\resource.h" />
     <ClInclude Include="IPU\IPUdma.h" />
     <ClInclude Include="Mdec.h" />
     <ClInclude Include="Patch.h" />
