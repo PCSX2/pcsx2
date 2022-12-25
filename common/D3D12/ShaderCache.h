@@ -18,13 +18,13 @@
 #include "common/Pcsx2Defs.h"
 #include "common/HashCombine.h"
 #include "common/RedtapeWindows.h"
+#include "common/RedtapeWilCom.h"
 
 #include <cstdio>
 #include <d3d12.h>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
-#include <wil/com.h>
 
 namespace D3D12
 {

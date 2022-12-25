@@ -14,11 +14,13 @@
  */
 
 #pragma once
+
 #include "common/RedtapeWindows.h"
+#include "common/RedtapeWilCom.h"
+
 #include <d3d11.h>
 #include <string_view>
 #include <type_traits>
-#include <wil/com.h>
 
 namespace D3D11::ShaderCompiler
 {

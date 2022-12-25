@@ -17,11 +17,11 @@
 
 #include "common/Pcsx2Defs.h"
 #include "common/RedtapeWindows.h"
+#include "common/RedtapeWilCom.h"
 
 #include <d3d12.h>
 #include <deque>
 #include <utility>
-#include <wil/com.h>
 
 namespace D3D12MA
 {

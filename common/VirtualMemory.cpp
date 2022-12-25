@@ -187,7 +187,7 @@ static bool VMMMarkPagesAsInUse(std::atomic<bool>* begin, std::atomic<bool>* end
 	for (auto current = begin; current < end; current++)
 	{
 		bool expected = false;
-		if (!current->compare_exchange_strong(expected, true), std::memory_order_relaxed)
+		if (!current->compare_exchange_strong(expected, true, std::memory_order_relaxed))
 		{
 			// This was already allocated!  Undo the things we've set until this point
 			while (--current >= begin)

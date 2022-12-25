@@ -91,6 +91,7 @@ target_sources(common PRIVATE
 	PrecompiledHeader.h
 	ProgressCallback.h
 	ReadbackSpinManager.h
+	RedtapeWilCom.h
 	RedtapeWindows.h
 	SafeArray.h
 	ScopedGuard.h

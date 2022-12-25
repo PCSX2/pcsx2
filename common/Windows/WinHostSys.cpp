@@ -286,8 +286,6 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
 	pxAssert(Common::IsAlignedPow2(map_offset, __pagesize));
 	pxAssert(Common::IsAlignedPow2(map_size, __pagesize));
 
-	const size_t page = map_offset / __pagesize;
-
 	// unmap the specified range
 	if (!UnmapViewOfFile2(GetCurrentProcess(), map_base, MEM_PRESERVE_PLACEHOLDER))
 	{

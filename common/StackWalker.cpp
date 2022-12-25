@@ -566,6 +566,8 @@ private:
           case 8: //SymVirtual:
             szSymType = "Virtual";
             break;
+          default:
+            break;
         }
       }
       LPCSTR pdbName = Module.LoadedImageName;
@@ -1199,9 +1201,12 @@ void StackWalker::OnSymInit(LPCSTR szSearchPath, DWORD symOptions, LPCSTR szUser
   OSVERSIONINFOEXA ver;
   ZeroMemory(&ver, sizeof(OSVERSIONINFOEXA));
   ver.dwOSVersionInfoSize = sizeof(ver);
-#if _MSC_VER >= 1900
+#if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(push)
 #pragma warning(disable : 4996)
+#elif defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
   if (GetVersionExA((OSVERSIONINFOA*)&ver) != FALSE)
   {
@@ -1211,8 +1216,10 @@ void StackWalker::OnSymInit(LPCSTR szSearchPath, DWORD symOptions, LPCSTR szUser
     buffer[STACKWALK_MAX_NAMELEN - 1] = 0;
     OnOutput(buffer);
   }
-#if _MSC_VER >= 1900
+#if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(pop)
+#elif defined(__clang__)
+#pragma clang diagnostic pop
 #endif
 }
 
