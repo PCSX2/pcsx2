@@ -186,13 +186,13 @@ PBGP-0065:
   gsHWFixes:
     roundSprite: 2 # Reduces sprite artifacts like in the menu.
 PBPX-95201:
-  name: "HDD Utility Disc [Version 1.00]"
+  name: "Utility Disc [Version 1.00]"
   region: "NTSC-J"
 PBPX-95202:
-  name: "HDD Utility Disc [Version 1.01]"
+  name: "Utility Disc [Version 1.01]"
   region: "NTSC-J"
 PBPX-95203:
-  name: "HDD Utility Disc [Version 1.01]"
+  name: "Utility Disc [Version 1.01]"
   region: "NTSC-J"
 PBPX-95204:
   name: "PlayStation 2 - Demo Disc 2000"
@@ -216,10 +216,10 @@ PBPX-95210:
   name: "DVD Player Version 2.10"
   region: "NTSC-U"
 PBPX-95211:
-  name: "HDD Utility Disc"
+  name: "HDD Utility Disc Version 1.00"
   region: "NTSC-U"
 PBPX-95216:
-  name: "HDD Utility Disc [Beta]"
+  name: "HDD Utility Disc Version 1.00 [Beta]"
   region: "NTSC-U"
 PBPX-95218:
   name: "DVD Player Version 2.12"
@@ -7862,7 +7862,7 @@ SCUS-97394:
   name: "Welcome to the World of Online Gaming for Your PlayStation 2 [Demo]"
   region: "NTSC-U"
 SCUS-97395:
-  name: "HDD Utility Disc Ver.1.10"
+  name: "HDD Utility Disc Version 1.10"
   region: "NTSC-U"
 SCUS-97396:
   name: "World Tour Soccer 2005 [Demo]"
