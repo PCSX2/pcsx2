@@ -437,6 +437,19 @@ static void recCFC2()
 	{
 		xXOR(xRegister32(regt), xRegister32(regt));
 	}
+	else if (_Rd_ == REG_I)
+	{
+		const int xmmreg = _checkXMMreg(XMMTYPE_VFREG, 33, MODE_READ);
+		if (xmmreg >= 0)
+		{
+			xMOVD(xRegister32(regt), xRegisterSSE(xmmreg));
+			xMOVSX(xRegister64(regt), xRegister32(regt));
+		}
+		else
+		{
+			xMOVSX(xRegister64(regt), ptr32[&vu0Regs.VI[_Rd_].UL]);
+		}
+	}
 	else if (_Rd_ >= REG_STATUS_FLAG) // FixMe: Should R-Reg have upper 9 bits 0?
 	{
 		xMOVSX(xRegister64(regt), ptr32[&vu0Regs.VI[_Rd_].UL]);
@@ -539,14 +552,6 @@ static void recCTC2()
 			// sVU's COP2 has a comment that "Donald Duck" needs this too...
 			if (_Rd_ < REG_STATUS_FLAG)
 			{
-				// I isn't invalidated correctly yet, ideally we would move this to the XMM directly.
-				if (_Rd_ == REG_I)
-				{
-					const int xmmreg = _checkXMMreg(XMMTYPE_VFREG, 33, 0);
-					if (xmmreg >= 0)
-						_freeXMMregWithoutWriteback(xmmreg);
-				}
-
 				// Little bit nasty, but optimal codegen.
 				const int gprreg = _allocIfUsedGPRtoX86(_Rt_, MODE_READ);
 				const int vireg = _allocIfUsedVItoX86(_Rd_, MODE_WRITE);
@@ -606,7 +611,36 @@ static void recCTC2()
 			}
 			else
 			{
-				_eeMoveGPRtoM((uptr)&vu0Regs.VI[_Rd_].UL, _Rt_);
+				// Move I direct to FPR if used.
+				if (_Rd_ == REG_I)
+				{
+					const int xmmreg = _allocVFtoXMMreg(33, MODE_WRITE);
+					if (_Rt_ == 0)
+					{
+						xPXOR(xRegisterSSE(xmmreg), xRegisterSSE(xmmreg));
+					}
+					else
+					{
+						const int xmmgpr = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
+						if (xmmgpr >= 0)
+						{
+							xPSHUF.D(xRegisterSSE(xmmreg), xRegisterSSE(xmmgpr), 0);
+						}
+						else
+						{
+							const int gprreg = _allocX86reg(X86TYPE_GPR, _Rt_, MODE_READ);
+							if (gprreg >= 0)
+								xMOVDZX(xRegisterSSE(xmmreg), xRegister32(gprreg));
+							else
+								xMOVSSZX(xRegisterSSE(xmmreg), ptr32[&cpuRegs.GPR.r[_Rt_].SD[0]]);
+							xSHUF.PS(xRegisterSSE(xmmreg), xRegisterSSE(xmmreg), 0);
+						}
+					}
+				}
+				else
+				{
+					_eeMoveGPRtoM((uptr)&vu0Regs.VI[_Rd_].UL, _Rt_);
+				}
 			}
 			break;
 	}
