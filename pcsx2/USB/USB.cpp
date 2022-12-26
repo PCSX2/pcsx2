@@ -383,15 +383,15 @@ bool USB::DoState(StateWrapper& sw)
 {
 	std::array<bool, 2> valid_devices = {};
 
-	if (!sw.DoMarker("USB") || !USB::DoOHCIState(sw))
-	{
-		Console.Error("USB state is invalid, resetting.");
-		USBreset();
-		return false;
-	}
-
 	if (sw.IsReading())
 	{
+		if (!sw.DoMarker("USB") || !USB::DoOHCIState(sw))
+		{
+			Console.Error("USB state is invalid, resetting.");
+			USBreset();
+			return true;
+		}
+
 		for (u32 port = 0; port < USB::NUM_PORTS; port++)
 		{
 			s32 state_devtype;
@@ -444,6 +444,9 @@ bool USB::DoState(StateWrapper& sw)
 	}
 	else
 	{
+		if (!sw.DoMarker("USB") || !USB::DoOHCIState(sw))
+			return false;
+
 		for (u32 port = 0; port < USB::NUM_PORTS; port++)
 		{
 			s32 state_devtype = EmuConfig.USB.Ports[port].DeviceType;
