@@ -618,7 +618,9 @@ bool GSC_YakuzaGames(const GSFrameInfo& fi, int& skip) noexcept
 		{
 			// Don't enable hack on native res if crc is below aggressive.
 			// Upscaling issues, removes glow/blur effect which fixes ghosting.
-			skip = 3;
+			// Skip 3 removes most of the post effect which doesn't upscale well, but causes a depth effect to completely mess up.
+			// Skip 9 removes both the depth and blur effect, which seems to work okay.
+			skip = 9;
 		}
 	}
 
