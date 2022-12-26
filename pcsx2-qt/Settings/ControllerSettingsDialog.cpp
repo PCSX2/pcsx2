@@ -82,7 +82,7 @@ void ControllerSettingsDialog::setCategory(Category category)
 			break;
 
 		case Category::HotkeySettings:
-			m_ui.settingsCategory->setCurrentRow(3);
+			m_ui.settingsCategory->setCurrentRow(5);
 			break;
 
 		default:
