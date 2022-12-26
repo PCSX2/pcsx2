@@ -41,7 +41,7 @@ namespace USB
 	static void DestroyDevice(u32 port);
 	static void UpdateDevice(u32 port);
 
-	static void DoOHCIState(StateWrapper& sw);
+	static bool DoOHCIState(StateWrapper& sw);
 	static void DoEndpointState(USBEndpoint* ep, StateWrapper& sw);
 	static void DoDeviceState(USBDevice* dev, StateWrapper& sw);
 	static void DoPacketState(USBPacket* p, StateWrapper& sw, const std::array<bool, 2>& valid_devices);
@@ -199,10 +199,10 @@ void USBwrite32(u32 addr, u32 value)
 	ohci_mem_write(s_qemu_ohci, addr, value);
 }
 
-void USB::DoOHCIState(StateWrapper& sw)
+bool USB::DoOHCIState(StateWrapper& sw)
 {
 	if (!sw.DoMarker("USBOHCI"))
-		return;
+		return false;
 
 	sw.Do(&g_usb_last_cycle);
 	sw.Do(&s_usb_clocks);
@@ -243,6 +243,7 @@ void USB::DoOHCIState(StateWrapper& sw)
 	sw.DoArray(s_qemu_ohci->usb_buf, sizeof(s_qemu_ohci->usb_buf));
 	sw.Do(&s_qemu_ohci->async_td);
 	sw.Do(&s_qemu_ohci->async_complete);
+	return true;
 }
 
 void USB::DoDeviceState(USBDevice* dev, StateWrapper& sw)
@@ -378,24 +379,19 @@ void USB::DoPacketState(USBPacket* p, StateWrapper& sw, const std::array<bool, 2
 	}
 }
 
-s32 USBfreeze(FreezeAction mode, freezeData* data)
+bool USB::DoState(StateWrapper& sw)
 {
 	std::array<bool, 2> valid_devices = {};
 
-	if (mode == FreezeAction::Load)
+	if (!sw.DoMarker("USB") || !USB::DoOHCIState(sw))
 	{
-		StateWrapper::ReadOnlyMemoryStream swstream(data->data, data->size);
-		StateWrapper sw(&swstream, StateWrapper::Mode::Read, g_SaveVersion);
+		Console.Error("USB state is invalid, resetting.");
+		USBreset();
+		return false;
+	}
 
-		if (!sw.DoMarker("USB"))
-		{
-			Console.Error("USB state is invalid, resetting.");
-			USBreset();
-			return 0;
-		}
-
-		USB::DoOHCIState(sw);
-
+	if (sw.IsReading())
+	{
 		for (u32 port = 0; port < USB::NUM_PORTS; port++)
 		{
 			s32 state_devtype;
@@ -443,21 +439,11 @@ s32 USBfreeze(FreezeAction mode, freezeData* data)
 		{
 			Console.WriteLn("Failed to read USB packet, resetting all devices.");
 			USBreset();
-			return 0;
+			return true;
 		}
 	}
-	else if (mode == FreezeAction::Save)
+	else
 	{
-		std::memset(data->data, 0, data->size);
-
-		StateWrapper::MemoryStream swstream(data->data, data->size);
-		StateWrapper sw(&swstream, StateWrapper::Mode::Write, g_SaveVersion);
-
-		if (!sw.DoMarker("USB"))
-			return -1;
-
-		USB::DoOHCIState(sw);
-
 		for (u32 port = 0; port < USB::NUM_PORTS; port++)
 		{
 			s32 state_devtype = EmuConfig.USB.Ports[port].DeviceType;
@@ -465,12 +451,12 @@ s32 USBfreeze(FreezeAction mode, freezeData* data)
 			sw.Do(&state_devtype);
 			sw.Do(&state_devsubtype);
 
-			const u32 size_pos = swstream.GetPosition();
+			const u32 size_pos = sw.GetStream()->GetPosition();
 			u32 state_size = 0;
 			sw.Do(&state_size);
 
 			if (sw.HasError())
-				return -1;
+				return false;
 
 			if (!s_usb_device[port])
 			{
@@ -478,33 +464,28 @@ s32 USBfreeze(FreezeAction mode, freezeData* data)
 				continue;
 			}
 
-			const u32 start_pos = swstream.GetPosition();
+			const u32 start_pos = sw.GetStream()->GetPosition();
 			USB::DoDeviceState(s_usb_device[port], sw);
 			if (!s_usb_device_proxy[port]->Freeze(s_usb_device[port], sw) || sw.HasError())
 			{
 				Console.Error("Failed to serialize USB port %u.", port);
-				return -1;
+				return false;
 			}
 
-			const u32 end_pos = swstream.GetPosition();
+			const u32 end_pos = sw.GetStream()->GetPosition();
 			state_size = end_pos - start_pos;
-			if (!swstream.SeekAbsolute(size_pos) || (sw.Do(&state_size), sw.HasError()) || !swstream.SeekAbsolute(end_pos))
-				return -1;
+			if (!sw.GetStream()->SeekAbsolute(size_pos) || (sw.Do(&state_size), sw.HasError()) || !sw.GetStream()->SeekAbsolute(end_pos))
+				return false;
 
 			valid_devices[port] = true;
 		}
 
 		USB::DoPacketState(&s_qemu_ohci->usb_packet, sw, valid_devices);
 		if (sw.HasError())
-			return -1;
-	}
-	else if (mode == FreezeAction::Size)
-	{
-		// I don't like this, but until we move everything over to state wrapper, it'll have to do.
-		data->size = 0x10000;
+			return false;
 	}
 
-	return 0;
+	return true;
 }
 
 void USBasync(u32 cycles)

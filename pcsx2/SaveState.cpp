@@ -40,6 +40,7 @@
 #include "GS.h"
 #include "GS/GS.h"
 #include "SPU2/spu2.h"
+#include "StateWrapper.h"
 #include "PAD/Gamepad.h"
 #include "USB/USB.h"
 #include "VMManager.h"
@@ -355,7 +356,6 @@ static int SysState_MTGSFreeze(FreezeAction mode, freezeData* fP)
 
 static constexpr SysState_Component SPU2{ "SPU2", SPU2freeze };
 static constexpr SysState_Component PAD_{ "PAD", PADfreeze };
-static constexpr SysState_Component USB_{ "USB", USBfreeze };
 static constexpr SysState_Component GS{ "GS", SysState_MTGSFreeze };
 
 
@@ -402,6 +402,43 @@ static void SysState_ComponentFreezeOut(SaveStateBase& writer, SysState_Componen
 		writer.CommitBlock(size);
 	}
 	return;
+}
+
+static void SysState_ComponentFreezeInNew(zip_file_t* zf, const char* name, bool(*do_state_func)(StateWrapper&))
+{
+	// TODO: We could decompress on the fly here for a little bit more speed.
+	std::vector<u8> data;
+	if (zf)
+	{
+		std::optional<std::vector<u8>> optdata(ReadBinaryFileInZip(zf));
+		if (optdata.has_value())
+			data = std::move(optdata.value());
+	}
+
+	StateWrapper::ReadOnlyMemoryStream stream(data.empty() ? nullptr : data.data(), data.size());
+	StateWrapper sw(&stream, StateWrapper::Mode::Read, g_SaveVersion);
+
+	// TODO: Get rid of the bloody exceptions.
+	if (!do_state_func(sw))
+		throw std::runtime_error(fmt::format(" * {}: Error loading state!", name));
+}
+
+static void SysState_ComponentFreezeOutNew(SaveStateBase& writer, const char* name, u32 reserve, bool (*do_state_func)(StateWrapper&))
+{
+	StateWrapper::VectorMemoryStream stream(reserve);
+	StateWrapper sw(&stream, StateWrapper::Mode::Write, g_SaveVersion);
+
+	// TODO: Get rid of the bloody exceptions.
+	if (!do_state_func(sw))
+		throw std::runtime_error(fmt::format(" * {}: Error saving state!", name));
+
+	const int size = static_cast<int>(stream.GetBuffer().size());
+	if (size > 0)
+	{
+		writer.PrepBlock(size);
+		std::memcpy(writer.GetBlockPtr(), stream.GetBuffer().data(), size);
+		writer.CommitBlock(size);
+	}
 }
 
 // --------------------------------------------------------------------------------------
@@ -575,8 +612,8 @@ public:
 	virtual ~SavestateEntry_USB() = default;
 
 	const char* GetFilename() const { return "USB.bin"; }
-	void FreezeIn(zip_file_t* zf) const { return SysState_ComponentFreezeIn(zf, USB_); }
-	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, USB_); }
+	void FreezeIn(zip_file_t* zf) const { return SysState_ComponentFreezeInNew(zf, "USB", &USB::DoState); }
+	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOutNew(writer, "USB", 16 * 1024, &USB::DoState); }
 	bool IsRequired() const { return false; }
 };
 
