@@ -510,6 +510,7 @@ void GSDevice::SetHWDrawConfigForAlphaPass(GSHWDrawConfig::PSSelector* ps,
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-function"
+#pragma clang diagnostic ignored "-Wignored-qualifiers"
 #endif
 
 // Kinda grotty, but better than copy/pasting the relevant bits in..
