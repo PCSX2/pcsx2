@@ -24,9 +24,9 @@
 #include "gsl/span"
 
 #include "Config.h"
-#include "SaveState.h"
 
 class SettingsInterface;
+class StateWrapper;
 
 namespace USB
 {
@@ -84,6 +84,9 @@ namespace USB
 
 	/// Reads a device-specific configuration string.
 	std::string GetConfigString(SettingsInterface& si, u32 port, const char* devname, const char* key, const char* default_value = "");
+
+	/// Handles loading/saving save state.
+	bool DoState(StateWrapper& sw);
 } // namespace USB
 
 struct WindowInfo;
@@ -96,7 +99,6 @@ void USBshutdown();
 void USBclose();
 bool USBopen();
 void USBreset();
-s32 USBfreeze(FreezeAction mode, freezeData* data);
 
 u8 USBread8(u32 addr);
 u16 USBread16(u32 addr);

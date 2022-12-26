@@ -85,6 +85,8 @@ public:
 		VectorMemoryStream();
 		VectorMemoryStream(u32 reserve);
 
+		const std::vector<u8>& GetBuffer() const { return m_buf; }
+
 		u32 Read(void* buf, u32 count) override;
 		u32 Write(const void* buf, u32 count) override;
 		u32 GetPosition() override;
