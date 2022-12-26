@@ -65,7 +65,7 @@ std::string DInputSource::GetDeviceIdentifier(u32 index)
 	return fmt::format("DInput-{}", index);
 }
 
-static constexpr std::array<const char*, DInputSource::NUM_HAT_DIRECTIONS> s_hat_directions = {{"Up", "Right", "Down", "Left"}};
+static constexpr std::array<const char*, DInputSource::NUM_HAT_DIRECTIONS> s_hat_directions = {{"Up", "Down", "Left", "Right"}};
 
 bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
