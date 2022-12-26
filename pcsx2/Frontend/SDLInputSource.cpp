@@ -336,7 +336,7 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 			if (auto value = StringUtil::FromChars<u32>(binding.substr(6)))
 			{
 				key.source_subtype = InputSubclass::ControllerButton;
-				key.data = *value;
+				key.data = *value + std::size(s_sdl_button_names);
 				return key;
 			}
 		}
@@ -374,7 +374,7 @@ std::string SDLInputSource::ConvertKeyToString(InputBindingKey key)
 			if (key.data < std::size(s_sdl_button_names))
 				ret = StringUtil::StdStringFromFormat("SDL-%u/%s", key.source_index, s_sdl_button_names[key.data]);
 			else
-				ret = StringUtil::StdStringFromFormat("SDL-%u/Button%u", key.source_index, key.data);
+				ret = StringUtil::StdStringFromFormat("SDL-%u/Button%u", key.source_index, key.data - std::size(s_sdl_button_names));
 		}
 		else if (key.source_subtype == InputSubclass::ControllerHat)
 		{
