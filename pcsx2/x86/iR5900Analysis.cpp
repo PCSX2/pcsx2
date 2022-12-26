@@ -367,7 +367,6 @@ void COP2MicroFinishPass::Run(u32 start, u32 end, EEINST* inst_cache)
 // Otherwise the last use flag won't get set.
 /////////////////////////////////////////////////////////////////////
 
-// Preserve XMM flag from later reads, some instructions can operate in XMM.
 #define recBackpropSetGPRRead(reg) \
 	do \
 	{ \
@@ -376,7 +375,7 @@ void COP2MicroFinishPass::Run(u32 start, u32 end, EEINST* inst_cache)
 			if (!(pinst->regs[reg] & EEINST_USED)) \
 				pinst->regs[reg] |= EEINST_LASTUSE; \
 			prev->regs[reg] = (EEINST_LIVE | EEINST_USED); \
-			pinst->regs[reg] = EEINST_USED; \
+			pinst->regs[reg] = (pinst->regs[reg] & ~EEINST_XMM) | EEINST_USED; \
 			_recFillRegister(*pinst, XMMTYPE_GPRREG, reg, 0); \
 		} \
 	} while (0)
@@ -970,6 +969,7 @@ void recBackpropCOP2(u32 code, EEINST* prev, EEINST* pinst)
 	const u32 funct = (code & 0x3F);
 
 	constexpr u32 VF_ACC = 32;
+	constexpr u32 VF_I = 33;
 
 	switch (fmt)
 	{
@@ -1069,24 +1069,34 @@ void recBackpropCOP2(u32 code, EEINST* prev, EEINST* pinst)
 				case 30: // VMULi
 				case 31: // VMINIi
 				case 34: // VADDi
-				case 35: // VMADDi
 				case 38: // VSUBi
+					recBackpropSetVFWrite(fd);
+					recBackpropSetVFRead(fs);
+					recBackpropSetVFRead(VF_I);
+					break;
+
+				case 35: // VMADDi
 				case 39: // VMSUBi
 					recBackpropSetVFWrite(fd);
 					recBackpropSetVFRead(fs);
-					// recBackpropSetVIRead(REG_I);
-					recBackpropSetVFRead(fd);
+					recBackpropSetVFRead(VF_ACC);
+					recBackpropSetVFRead(VF_I);
 					break;
 
 				case 28: // VMULq
 				case 32: // VADDq
-				case 33: // VMADDq
-				case 37: // VMSUBq
 				case 36: // VSUBq
 					recBackpropSetVFWrite(fd);
 					recBackpropSetVFRead(fs);
 					// recBackpropSetVIRead(REG_Q);
-					recBackpropSetVFRead(fd);
+					break;
+
+				case 33: // VMADDq
+				case 37: // VMSUBq
+					recBackpropSetVFWrite(fd);
+					recBackpropSetVFRead(fs);
+					// recBackpropSetVIRead(REG_Q);
+					recBackpropSetVFRead(VF_ACC);
 					break;
 
 				case 48: // VIADD
@@ -1182,7 +1192,7 @@ void recBackpropCOP2(u32 code, EEINST* prev, EEINST* pinst)
 						case 38: // VSUBAi
 							recBackpropSetVFWrite(VF_ACC);
 							recBackpropSetVFRead(fs);
-							// recBackpropSetVIRead(REG_I);
+							recBackpropSetVFRead(VF_I);
 							recBackpropSetVFRead(VF_ACC);
 							break;
 
@@ -1190,7 +1200,7 @@ void recBackpropCOP2(u32 code, EEINST* prev, EEINST* pinst)
 						case 39: // VMSUBAi
 							recBackpropSetVFWrite(VF_ACC);
 							recBackpropSetVFRead(fs);
-							// recBackpropSetVIRead(REG_I);
+							recBackpropSetVFRead(VF_I);
 							recBackpropSetVFRead(VF_ACC);
 							break;
 

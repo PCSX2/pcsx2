@@ -217,7 +217,7 @@ struct EEINST
 	u16 info; // extra info, if 1 inst is COP1, 2 inst is COP2. Also uses EEINST_XMM
 	u8 regs[34]; // includes HI/LO (HI=32, LO=33)
 	u8 fpuregs[33]; // ACC=32
-	u8 vfregs[33]; // ACC=32
+	u8 vfregs[34]; // ACC=32, I=33
 	u8 viregs[16];
 
 	// uses XMMTYPE_ flags; if type == XMMTYPE_TEMP, not used
