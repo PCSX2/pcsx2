@@ -44,8 +44,6 @@ void SPU2endRecording();
 void SPU2async(u32 cycles);
 s32 SPU2freeze(FreezeAction mode, freezeData* data);
 
-void SPU2setSettingsDir(const char* dir);
-void SPU2setLogDir(const char* dir);
 void SPU2readDMA4Mem(u16* pMem, u32 size);
 void SPU2writeDMA4Mem(u16* pMem, u32 size);
 void SPU2interruptDMA4();
