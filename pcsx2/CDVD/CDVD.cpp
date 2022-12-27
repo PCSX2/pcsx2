@@ -870,6 +870,7 @@ void cdvdReset()
 	cdvd.Action = cdvdAction_None;
 	cdvd.ReadTime = cdvdBlockReadTime(MODE_DVDROM);
 
+#ifndef DISABLE_RECORDING
 	// If we are recording, always use the same RTC setting
 	// for games that use the RTC to seed their RNG -- this is very important to be the same everytime!
 	if (g_InputRecording.isActive())
@@ -886,6 +887,7 @@ void cdvdReset()
 	}
 	else
 	{
+#endif
 		// CDVD internally uses GMT+9.  If you think the time's wrong, you're wrong.
 		// Set up your time zone and winter/summer in the BIOS.  No PS2 BIOS I know of features automatic DST.
 		const std::time_t utc_time = std::time(nullptr);
@@ -902,7 +904,9 @@ void cdvdReset()
 		cdvd.RTC.day = (u8)curtime.tm_mday;
 		cdvd.RTC.month = (u8)curtime.tm_mon + 1; // WX returns Jan as "0"
 		cdvd.RTC.year = (u8)(curtime.tm_year - 100); // offset from 2000
+#ifndef DISABLE_RECORDING
 	}
+#endif
 
 	g_GameStarted = false;
 	g_GameLoading = false;
