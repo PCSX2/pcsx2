@@ -3301,6 +3301,14 @@ SCES-51607:
   gsHWFixes:
     mipmap: 1
     autoFlush: 1
+  dynaPatches:
+    - pattern:
+        - { offset: 0x0, value: 0x0280202d }
+        - { offset: 0x4, value: 0x3c0140d0 }
+        - { offset: 0x8, value: 0x44810800 }
+        - { offset: 0x10, value: 0x46000836 }
+      replacement:
+        - { offset: 0x4, value: 0x3c013f80 }
   memcardFilters: # Reads Ratchet 1 data.
     - "SCES-51607"
     - "SCES-50916"
