@@ -2,11 +2,8 @@
 
 set -e
 
-if [ "$GUI" == "Qt" ]; then
-	export MACOSX_DEPLOYMENT_TARGET=10.14
-else
-	export MACOSX_DEPLOYMENT_TARGET=10.13
-fi
+export MACOSX_DEPLOYMENT_TARGET=10.14
+
 INSTALLDIR="$HOME/deps"
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
 SDL=SDL2-2.26.0
@@ -29,7 +26,6 @@ cat > SHASUMS <<EOF
 505e70834d35383537b6491e7ae8641f1a4bed1876dbfe361201fc80868d88ca  libpng-$PNG.tar.xz
 4077d6a6a75aeb01884f708919d25934c93305e49f7e3f36db9129320e6f4f3d  jpegsrc.v$JPG.tar.gz
 6900996607258496ce126924a19fe9d598af9d892cf3f33d1e4daaa9b42ae0b1  $SOUNDTOUCH.tar.gz
-4980e86c6494adcd527a41fc0a4e436777ba41d1893717d7b7176c59c2061c25  wxWidgets-$WXWIDGETS.tar.bz2
 0a64421d9c2469c2c48490a032ab91d547017c9cc171f3f8070bc31888f24e03  qtbase-everywhere-src-$QT.tar.xz
 7b19f418e6f7b8e23344082dd04440aacf5da23c5a73980ba22ae4eba4f87df7  qtsvg-everywhere-src-$QT.tar.xz
 c412750f2aa3beb93fce5f30517c607f55daaeb7d0407af206a8adf917e126c1  qttools-everywhere-src-$QT.tar.xz
@@ -41,7 +37,6 @@ curl -L \
 	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$PNG/libpng-$PNG.tar.xz" \
 	-O "https://www.ijg.org/files/jpegsrc.v$JPG.tar.gz" \
 	-O "https://www.surina.net/soundtouch/$SOUNDTOUCH.tar.gz" \
-	-O "https://github.com/wxWidgets/wxWidgets/releases/download/v$WXWIDGETS/wxWidgets-$WXWIDGETS.tar.bz2" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
@@ -81,15 +76,6 @@ make -C build "-j$NPROCS"
 make -C build install
 cd ..
 
-if [ "$GUI" == "wxWidgets" ]; then
-	echo "Installing wx..."
-	tar xf "wxWidgets-$WXWIDGETS.tar.bz2"
-	cd "wxWidgets-$WXWIDGETS"
-	./configure --prefix "$INSTALLDIR" --with-macosx-version-min="$MACOSX_DEPLOYMENT_TARGET" --enable-clipboard --enable-dnd --enable-std_string --with-cocoa --with-libiconv --with-libjpeg --with-libpng --with-zlib --without-libtiff --without-regex
-	make "-j$NPROCS"
-	make install
-	cd ..
-fi
 
 if [ "$GUI" == "Qt" ]; then
 	echo "Installing Qt Base..."
