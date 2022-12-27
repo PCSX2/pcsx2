@@ -61,12 +61,12 @@ body:
       options:
       - Windows 11
       - Windows 10 (64bit)
-      - Windows 8.1 (64bit)
-      - Linux (64bit) - Specify Distro Below
-      - macOS (Monteray)
-      - macOS (BigSur)
-      - macOS (Catalina)
-      - macOS (Mojave)
+      - Linux (64bit) - Specify distro below
+      - macOS 13 (Ventura)
+      - macOS 12 (Monterey)
+      - macOS 11 (Big Sur)
+      - macOS 10.15 (Catalina)
+      - macOS 10.14 (Mojave)
     validations:
       required: true
   - type: input
