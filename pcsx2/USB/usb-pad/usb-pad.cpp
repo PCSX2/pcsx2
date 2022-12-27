@@ -90,8 +90,8 @@ namespace usb_pad
 				static constexpr const InputBindingInfo bindings[] = {
 					{"SteeringLeft", "Steering Left", InputBindingInfo::Type::HalfAxis, CID_STEERING_L, GenericInputBinding::LeftStickLeft},
 					{"SteeringRight", "Steering Right", InputBindingInfo::Type::HalfAxis, CID_STEERING_R, GenericInputBinding::LeftStickRight},
-					{"Throttle", "Throttle", InputBindingInfo::Type::HalfAxis, CID_THROTTLE, GenericInputBinding::R2},
-					{"Brake", "Brake", InputBindingInfo::Type::HalfAxis, CID_BRAKE, GenericInputBinding::L2},
+					{"Throttle", "Throttle", InputBindingInfo::Type::HalfAxis, CID_THROTTLE, GenericInputBinding::L2},
+					{"Brake", "Brake", InputBindingInfo::Type::HalfAxis, CID_BRAKE, GenericInputBinding::R2},
 					{"DPadUp", "D-Pad Up", InputBindingInfo::Type::Button, CID_DPAD_UP, GenericInputBinding::DPadUp},
 					{"DPadDown", "D-Pad Down", InputBindingInfo::Type::Button, CID_DPAD_DOWN, GenericInputBinding::DPadDown},
 					{"DPadLeft", "D-Pad Left", InputBindingInfo::Type::Button, CID_DPAD_LEFT, GenericInputBinding::DPadLeft},
@@ -102,8 +102,8 @@ namespace usb_pad
 					{"Triangle", "Triangle", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Triangle},
 					{"L1", "L1", InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::L1},
 					{"R1", "R1", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::R1},
-					{"L2", "L2", InputBindingInfo::Type::Button, CID_BUTTON7, GenericInputBinding::Unknown}, // used L2 for brake
-					{"R2", "R2", InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::Unknown}, // used R2 for throttle
+					{"L2", "L2", InputBindingInfo::Type::Button, CID_BUTTON7, GenericInputBinding::Unknown}, // used L2 for Throttle
+					{"R2", "R2", InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::Unknown}, // used R2 for Brake
 					{"Select", "Select", InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Select},
 					{"Start", "Start", InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Start},
 					{"FFDevice", "Force Feedback", InputBindingInfo::Type::Device, 0, GenericInputBinding::Unknown},
