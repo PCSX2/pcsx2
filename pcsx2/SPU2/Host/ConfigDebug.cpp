@@ -51,14 +51,6 @@ std::string CoresDumpFileName;
 std::string MemDumpFileName;
 std::string RegDumpFileName;
 
-void CfgSetSettingsDir(const char* dir)
-{
-}
-
-void CfgSetLogDir(const char* dir)
-{
-}
-
 FILE* OpenBinaryLog(const char* logfile)
 {
 	return FileSystem::OpenCFile(Path::Combine(EmuFolders::Logs, logfile).c_str(), "wb");

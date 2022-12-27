@@ -92,5 +92,3 @@ namespace SoundtouchCfg
 //////
 
 extern void ReadSettings();
-extern void WriteSettings();
-extern void configure();

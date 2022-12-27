@@ -22,6 +22,3 @@ namespace DebugConfig
 {
 	extern void ReadSettings();
 } // namespace DebugConfig
-
-extern void CfgSetSettingsDir(const char* dir);
-extern void CfgSetLogDir(const char* dir);

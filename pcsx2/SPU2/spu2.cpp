@@ -34,16 +34,6 @@ u32 lClocks = 0;
 // --------------------------------------------------------------------------------------
 
 
-void SPU2setSettingsDir(const char* dir)
-{
-	CfgSetSettingsDir(dir);
-}
-
-void SPU2setLogDir(const char* dir)
-{
-	CfgSetLogDir(dir);
-}
-
 void SPU2readDMA4Mem(u16* pMem, u32 size) // size now in 16bit units
 {
 	TimeUpdate(psxRegs.cycle);
