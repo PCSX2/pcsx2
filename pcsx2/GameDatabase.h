@@ -16,6 +16,7 @@
 #pragma once
 
 #include "Config.h"
+#include "Patch.h"
 #include <optional>
 #include <string>
 #include <string_view>
@@ -102,6 +103,7 @@ namespace GameDatabaseSchema
 		std::vector<std::pair<GSHWFixId, s32>> gsHWFixes;
 		std::vector<std::string> memcardFilters;
 		std::unordered_map<u32, std::string> patches;
+		std::vector<DynamicPatch> dynaPatches;
 
 		// Returns the list of memory card serials as a `/` delimited string
 		std::string memcardFiltersAsString() const;

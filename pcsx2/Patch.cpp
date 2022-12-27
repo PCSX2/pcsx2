@@ -33,8 +33,10 @@
 // the only consumer, so it's not made public via Patch.h
 // Applies a single patch line to emulation memory regardless of its "place" value.
 extern void _ApplyPatch(IniPatch* p);
+extern void _ApplyDynaPatch(const DynamicPatch& patch, u32 address);
 
 static std::vector<IniPatch> Patch;
+static std::vector<DynamicPatch> DynaPatch;
 
 struct PatchTextTable
 {
@@ -139,6 +141,7 @@ int LoadPatchesFromString(const std::string& patches)
 void ForgetLoadedPatches()
 {
 	Patch.clear();
+	DynaPatch.clear();
 }
 
 // This routine loads patches from a zip file
@@ -284,5 +287,20 @@ void ApplyLoadedPatches(patch_place_type place)
 	{
 		if (i.placetopatch == place)
 			_ApplyPatch(&i);
+	}
+}
+
+void ApplyDynamicPatches(u32 pc)
+{
+	for (const auto& dynpatch : DynaPatch)
+	{
+		_ApplyDynaPatch(dynpatch, pc);
+	}
+}
+
+void LoadDynamicPatches(const std::vector<DynamicPatch>& patches)
+{
+	for (const DynamicPatch& it : patches){
+		DynaPatch.push_back(it);
 	}
 }

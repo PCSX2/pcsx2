@@ -257,6 +257,48 @@
             }
           },
           "additionalProperties": false
+        },
+        "dynaPatches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "pattern": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "offset": {
+                      "type": "integer"
+                    },
+                    "value": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": ["offset", "value"]
+                },
+                "minItems": 1
+              },
+              "replacement": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "offset": {
+                      "type": "integer"
+                    },
+                    "value": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": ["offset", "value"]
+                },
+                "minItems": 1
+              }
+            },
+            "required": ["pattern", "replacement"]
+          },
+          "minItems": 1
         }
       },
       "required": ["name", "region"],

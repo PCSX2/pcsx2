@@ -36,6 +36,7 @@
 #include "DEV9/DEV9.h"
 #include "Elfheader.h"
 #include "FW.h"
+#include "GameDatabase.h"
 #include "GS.h"
 #include "GSDumpReplayer.h"
 #include "HostDisplay.h"
@@ -564,6 +565,8 @@ void VMManager::LoadPatches(const std::string& serial, u32 crc, bool show_messag
 			PatchesCon->WriteLn(Color_Green, "(GameDB) Patches Loaded: %d", patch_count);
 			fmt::format_to(std::back_inserter(message), "{} game patches", patch_count);
 		}
+
+		LoadDynamicPatches(game->dynaPatches);
 	}
 
 	// regular cheat patches

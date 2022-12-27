@@ -34,12 +34,12 @@
 // - The 0 cheats - cheats are enabled but nothing found/loaded from the "cheats" folder.
 // - The 6 widescreen patches are 6 pnach-style patch lines loaded either from cheats_ws folder or from cheats_ws.zip
 
-
 #include "common/Pcsx2Defs.h"
 #include "SysForwardDefs.h"
-#include "GameDatabase.h"
 #include <string>
 #include <string_view>
+
+struct IConsoleWriter;
 
 enum patch_cpu_type {
 	NO_CPU,
@@ -97,6 +97,18 @@ struct IniPatch
 	u64 data;
 };
 
+struct DynamicPatchEntry
+{
+	u32 offset;
+	u32 value;
+};
+
+struct DynamicPatch
+{
+	std::vector<DynamicPatchEntry> pattern;
+	std::vector<DynamicPatchEntry> replacement;
+};
+
 namespace PatchFunc
 {
 	PATCHTABLEFUNC author;
@@ -111,6 +123,10 @@ namespace PatchFunc
 extern int  LoadPatchesFromString(const std::string& patches);
 extern int  LoadPatchesFromDir(const std::string& crc, const std::string& folder, const char* friendly_name, bool show_error_when_missing);
 extern int  LoadPatchesFromZip(const std::string& crc, const u8* zip_data, size_t zip_data_size);
+
+// Functions for Dynamic EE patching.
+extern void LoadDynamicPatches(const std::vector<DynamicPatch>& patches);
+extern void ApplyDynamicPatches(u32 pc);
 
 // Patches the emulation memory by applying all the loaded patches with a specific place value.
 // Note: unless you know better, there's no need to check whether or not different patch sources
