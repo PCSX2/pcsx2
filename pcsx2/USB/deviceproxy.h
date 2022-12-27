@@ -113,16 +113,10 @@ public:
 		return nullptr;
 	}
 
-	DeviceProxy* Device(int index)
+	DeviceProxy* Device(s32 index)
 	{
-		if (index < 0)
-			return nullptr; // Don't try to go backwards at the beginning of an iterator and crash and burn when pcsx2 is run for the first time.
-
-		auto it = registerDeviceMap.begin();
-		std::advance(it, index);
-		if (it != registerDeviceMap.end())
-			return it->second.get();
-		return nullptr;
+		const auto it = registerDeviceMap.find(static_cast<DeviceType>(index));
+		return (it != registerDeviceMap.end()) ? it->second.get() : nullptr;
 	}
 
 	DeviceType Index(const std::string_view& name)
