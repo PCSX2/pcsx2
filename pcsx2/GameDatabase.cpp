@@ -17,7 +17,6 @@
 
 #include "GameDatabase.h"
 #include "Host.h"
-#include "Patch.h"
 #include "vtlb.h"
 
 #include "common/FileSystem.h"
@@ -262,6 +261,35 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 			if (n.has_child("content"))
 				n["content"] >> patch;
 			gameEntry.patches.emplace(crc.value(), std::move(patch));
+		}
+	}
+
+	if (node.has_child("dynaPatches") && node["dynaPatches"].has_children())
+	{
+		for (const ryml::NodeRef& n : node["dynaPatches"].children())
+		{
+			DynamicPatch patch;
+
+			if (n.has_child("pattern") && n["pattern"].has_children())
+			{
+				for (const ryml::NodeRef& db_pattern : n["pattern"].children())
+				{
+					DynamicPatchEntry entry;
+					db_pattern["offset"] >> entry.offset;
+					db_pattern["value"] >> entry.value;
+
+					patch.pattern.push_back(entry);
+				}
+				for (const ryml::NodeRef& db_replacement : n["replacement"].children())
+				{
+					DynamicPatchEntry entry;
+					db_replacement["offset"] >> entry.offset;
+					db_replacement["value"] >> entry.value;
+
+					patch.replacement.push_back(entry);
+				}
+			}
+			gameEntry.dynaPatches.push_back(patch);
 		}
 	}
 

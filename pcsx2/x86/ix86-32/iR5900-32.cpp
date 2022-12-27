@@ -1709,6 +1709,9 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 	u32 i;
 	int count;
 
+	if (EmuConfig.EnablePatches)
+		ApplyDynamicPatches(pc);
+
 	// add breakpoint
 	if (!delayslot)
 	{

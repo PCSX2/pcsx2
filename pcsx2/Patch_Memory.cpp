@@ -590,6 +590,22 @@ void _ApplyPatch(IniPatch *p)
 	}
 }
 
+void _ApplyDynaPatch(const DynamicPatch& patch, u32 address)
+{
+	for (const auto& pattern : patch.pattern)
+	{
+		if (*static_cast<u32*>(PSM(address + pattern.offset)) != pattern.value)
+			return;
+	}
+
+	PatchesCon->WriteLn("Applying Dynamic Patch to address 0x%08X", address);
+	// If everything passes, apply the patch.
+	for (const auto& replacement : patch.replacement)
+	{
+		memWrite32(address + replacement.offset, replacement.value);
+	}
+}
+
 u64 SwapEndian(u64 InputNum, u8 BitLength)
 {
 	if (BitLength == 64) // DOUBLE_LE_T
