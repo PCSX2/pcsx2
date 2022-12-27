@@ -545,6 +545,13 @@ void DisassemblyWidget::keyPressEvent(QKeyEvent* event)
 				m_visibleStart -= 4;
 		}
 		break;
+		case Qt::Key_PageUp:
+		{
+			m_selectedAddressStart -= m_visibleRows * 4;
+			m_selectedAddressEnd = m_selectedAddressStart;
+			m_visibleStart -= m_visibleRows * 4;
+		}
+		break;
 		case Qt::Key_Down:
 		{
 			m_selectedAddressEnd += 4;
@@ -555,8 +562,16 @@ void DisassemblyWidget::keyPressEvent(QKeyEvent* event)
 			// size the window so part of a row is visible and we don't want to have half a row selected and cut off!
 			if (m_visibleStart + ((m_visibleRows - 1) * 4) < m_selectedAddressEnd)
 				m_visibleStart += 4;
+
+			break;
 		}
-		break;
+		case Qt::Key_PageDown:
+		{
+			m_selectedAddressStart += m_visibleRows * 4;
+			m_selectedAddressEnd = m_selectedAddressStart;
+			m_visibleStart += m_visibleRows * 4;
+			break;
+		}
 		case Qt::Key_G:
 			contextGoToAddress();
 			break;
@@ -582,8 +597,6 @@ void DisassemblyWidget::keyPressEvent(QKeyEvent* event)
 
 void DisassemblyWidget::customMenuRequested(QPoint pos)
 {
-	// m_selectedAddressStart will be properly set as the mouse click handler is called _before_ us
-	// yay :)
 	m_contextMenu->popup(this->mapToGlobal(pos));
 }
 
@@ -633,7 +646,7 @@ QColor DisassemblyWidget::GetAddressFunctionColor(u32 address)
 	std::array<QColor, 6> colors;
 	const QColor base = this->palette().alternateBase().color();
 
-	auto Y = (base.redF() * 0.33) + (0.5 * base.greenF()) + (0.16 * base.blueF());
+	const auto Y = (base.redF() * 0.33) + (0.5 * base.greenF()) + (0.16 * base.blueF());
 
 	if (Y > 0.5)
 	{
@@ -658,7 +671,7 @@ QColor DisassemblyWidget::GetAddressFunctionColor(u32 address)
 		};
 	}
 
-	auto funNum = m_cpu->GetSymbolMap().GetFunctionNum(address);
+	const auto funNum = m_cpu->GetSymbolMap().GetFunctionNum(address);
 	if (funNum == -1)
 		return this->palette().text().color();
 
