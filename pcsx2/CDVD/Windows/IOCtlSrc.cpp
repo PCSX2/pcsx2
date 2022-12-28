@@ -36,8 +36,6 @@
 IOCtlSrc::IOCtlSrc(std::string filename)
 	: m_filename(std::move(filename))
 {
-	if (!Reopen())
-		throw std::runtime_error(" * CDVD: Error opening source.\n");
 }
 
 IOCtlSrc::~IOCtlSrc()

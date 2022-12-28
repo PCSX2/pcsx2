@@ -40,43 +40,37 @@
 #include <mutex>
 #include <optional>
 
-static ryml::Tree parseYamlStr(const std::string& str)
-{
-	ryml::Callbacks rymlCallbacks = ryml::get_callbacks();
-	rymlCallbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void*) {
-		throw std::runtime_error(fmt::format("[YAML] Parsing error at {}:{} (bufpos={}): {}",
-			loc.line, loc.col, loc.offset, msg));
-	};
-	ryml::set_callbacks(rymlCallbacks);
-	c4::set_error_callback([](const char* msg, size_t msg_size) {
-		throw std::runtime_error(fmt::format("[YAML] Internal Parsing error: {}",
-			msg));
-	});
-	ryml::Tree tree = ryml::parse_in_arena(c4::to_csubstr(str));
-
-	ryml::reset_callbacks();
-	return tree;
-}
-
 // A helper function to parse the YAML file
 static std::optional<ryml::Tree> loadYamlFile(const char* filePath)
 {
-	try
+	std::optional<std::string> buffer = FileSystem::ReadFileToString(filePath);
+	if (!buffer.has_value())
+		return std::nullopt;
+
+	static u32 errorCount;
+	errorCount = 0;
+
+	ryml::Callbacks rymlCallbacks = ryml::get_callbacks();
+	rymlCallbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void* userdata) {
+		Console.Error(fmt::format("[YAML] Parsing error at {}:{} (bufpos={}): {}",
+			loc.line, loc.col, loc.offset, std::string_view(msg, msg_len)));
+		errorCount++;
+	};
+	ryml::set_callbacks(rymlCallbacks);
+	c4::set_error_callback([](const char* msg, size_t msg_size) {
+		Console.Error(fmt::format("[YAML] Internal Parsing error: {}", std::string_view(msg, msg_size)));
+		errorCount++;
+	});
+
+	ryml::Tree tree = ryml::parse_in_arena(c4::to_csubstr(buffer.value()));
+	ryml::reset_callbacks();
+	if (errorCount > 0)
 	{
-		std::optional<std::string> buffer = FileSystem::ReadFileToString(filePath);
-		if (!buffer.has_value())
-		{
-			return std::nullopt;
-		}
-		ryml::Tree tree = parseYamlStr(buffer.value());
-		return std::make_optional(tree);
-	}
-	catch (const std::exception& e)
-	{
-		Console.Error(fmt::format("[MemoryCard] Error occured when parsing folder memory card at path '{}': {}", filePath, e.what()));
-		ryml::reset_callbacks();
+		Console.Error(fmt::format("[MemoryCard] Error occured when parsing folder memory card at path '{}'.", filePath));
 		return std::nullopt;
 	}
+
+	return tree;
 }
 
 /// A helper function to write a YAML file

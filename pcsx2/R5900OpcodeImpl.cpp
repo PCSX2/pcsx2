@@ -1178,9 +1178,6 @@ void PREF()
 
 static void trap(u16 code=0)
 {
-	// unimplemented?
-	// throw R5900Exception::Trap(code);
-
 	cpuRegs.pc -= 4;
 	Console.Warning("Trap exception at 0x%08x", cpuRegs.pc);
 	cpuException(0x34, cpuRegs.branch);

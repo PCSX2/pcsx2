@@ -156,14 +156,7 @@ bool StartKeepAliveThread()
 	if (s_keepalive_is_open == false)
 	{
 		s_keepalive_is_open = true;
-		try
-		{
-			s_keepalive_thread = std::thread(keepAliveThread);
-		}
-		catch (std::system_error&)
-		{
-			s_keepalive_is_open = false;
-		}
+		s_keepalive_thread = std::thread(keepAliveThread);
 	}
 
 	return s_keepalive_is_open;
@@ -190,21 +183,15 @@ s32 CALLBACK DISCopen(const char* pTitle)
 		return -1;
 
 	// open device file
-	try
-	{
-		src = std::unique_ptr<IOCtlSrc>(new IOCtlSrc(drive));
-	}
-	catch (std::runtime_error&)
-	{
-		return -1;
-	}
-
-	//setup threading manager
-	if (!cdvdStartThread())
+	src = std::make_unique<IOCtlSrc>(std::move(drive));
+	if (!src->Reopen())
 	{
 		src.reset();
 		return -1;
 	}
+
+	//setup threading manager
+	cdvdStartThread();
 	StartKeepAliveThread();
 
 	return cdvdRefreshData();
@@ -312,16 +299,10 @@ s32 CALLBACK DISCgetTD(u8 Track, cdvdTD* Buffer)
 	{
 		if (src == nullptr)
 			return -1;
-		try
-		{
-			Buffer->lsn = src->GetSectorCount();
-			Buffer->type = 0;
-			return 0;
-		}
-		catch (...)
-		{
-			return -1;
-		}
+
+		Buffer->lsn = src->GetSectorCount();
+		Buffer->type = 0;
+		return 0;
 	}
 
 	if (Track < strack)

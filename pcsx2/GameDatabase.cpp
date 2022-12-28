@@ -908,50 +908,45 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 void GameDatabase::initDatabase()
 {
 	ryml::Callbacks rymlCallbacks = ryml::get_callbacks();
-	rymlCallbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void*) {
-		throw std::runtime_error(fmt::format("[YAML] Parsing error at {}:{} (bufpos={}): {}",
-			loc.line, loc.col, loc.offset, msg));
+	rymlCallbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void* userdata) {
+		Console.Error(fmt::format("[GameDB YAML] Parsing error at {}:{} (bufpos={}): {}",
+			loc.line, loc.col, loc.offset, std::string_view(msg, msg_len)));
 	};
 	ryml::set_callbacks(rymlCallbacks);
 	c4::set_error_callback([](const char* msg, size_t msg_size) {
-		throw std::runtime_error(fmt::format("[YAML] Internal Parsing error: {}",
-			msg));
+		Console.Error(fmt::format("[GameDB YAML] Internal Parsing error: {}", std::string_view(msg, msg_size)));
 	});
-	try
+
+	auto buf = Host::ReadResourceFileToString(GAMEDB_YAML_FILE_NAME);
+	if (!buf.has_value())
 	{
-		auto buf = Host::ReadResourceFileToString(GAMEDB_YAML_FILE_NAME);
-		if (!buf.has_value())
+		Console.Error("[GameDB] Unable to open GameDB file, file does not exist.");
+		return;
+	}
+
+	ryml::Tree tree = ryml::parse_in_arena(c4::to_csubstr(buf.value()));
+	ryml::NodeRef root = tree.rootref();
+
+	for (const ryml::NodeRef& n : root.children())
+	{
+		auto serial = StringUtil::toLower(std::string(n.key().str, n.key().len));
+
+		// Serials and CRCs must be inserted as lower-case, as that is how they are retrieved
+		// this is because the application may pass a lowercase CRC or serial along
+		//
+		// However, YAML's keys are as expected case-sensitive, so we have to explicitly do our own duplicate checking
+		if (s_game_db.count(serial) == 1)
 		{
-			Console.Error("[GameDB] Unable to open GameDB file, file does not exist.");
-			return;
+			Console.Error(fmt::format("[GameDB] Duplicate serial '{}' found in GameDB. Skipping, Serials are case-insensitive!", serial));
+			continue;
 		}
 
-		ryml::Tree tree = ryml::parse_in_arena(c4::to_csubstr(buf.value()));
-		ryml::NodeRef root = tree.rootref();
-
-		for (const auto& n : root.children())
+		if (n.is_map())
 		{
-			auto serial = StringUtil::toLower(std::string(n.key().str, n.key().len));
-
-			// Serials and CRCs must be inserted as lower-case, as that is how they are retrieved
-			// this is because the application may pass a lowercase CRC or serial along
-			//
-			// However, YAML's keys are as expected case-sensitive, so we have to explicitly do our own duplicate checking
-			if (s_game_db.count(serial) == 1)
-			{
-				Console.Error(fmt::format("[GameDB] Duplicate serial '{}' found in GameDB. Skipping, Serials are case-insensitive!", serial));
-				continue;
-			}
-			if (n.is_map())
-			{
-				parseAndInsert(serial, n);
-			}
+			parseAndInsert(serial, n);
 		}
 	}
-	catch (const std::exception& e)
-	{
-		Console.Error(fmt::format("[GameDB] Error occured when initializing GameDB: {}", e.what()));
-	}
+
 	ryml::reset_callbacks();
 }
 
