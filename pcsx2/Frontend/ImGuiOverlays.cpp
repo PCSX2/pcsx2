@@ -345,7 +345,7 @@ void ImGuiManager::DrawSettingsOverlay()
 		APPEND("MTVU ");
 
 	APPEND("EER={} EEC={} VUR={} VUC={} VQS={} ", static_cast<unsigned>(EmuConfig.Cpu.sseMXCSR.GetRoundMode()),
-		EmuConfig.Cpu.Recompiler.GetEEClampMode(), static_cast<unsigned>(EmuConfig.Cpu.sseVUMXCSR.GetRoundMode()),
+		EmuConfig.Cpu.Recompiler.GetEEClampMode(), static_cast<unsigned>(EmuConfig.Cpu.sseVU0MXCSR.GetRoundMode()),
 		EmuConfig.Cpu.Recompiler.GetVUClampMode(), EmuConfig.GS.VsyncQueueSize);
 
 	if (EmuConfig.EnableCheats || EmuConfig.EnableWideScreenPatches || EmuConfig.EnableNoInterlacingPatches)

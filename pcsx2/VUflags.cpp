@@ -49,7 +49,7 @@ static __ri u32 VU_MAC_UPDATE( int shift, VURegs * VU, float f )
 			return s;
 		case 255:
 			VU->macflag = (VU->macflag&~(0x0101<<shift)) | (0x1000<<shift);
-			if (CHECK_VU_OVERFLOW)
+			if (CHECK_VU_OVERFLOW((VU == &VU1) ? 1 : 0))
 				return s | 0x7f7fffff; /* max allowed */
 			else
 				return v;

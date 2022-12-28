@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>628</width>
-    <height>375</height>
+    <width>809</width>
+    <height>647</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -36,8 +36,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>609</width>
-        <height>569</height>
+        <width>807</width>
+        <height>645</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -176,47 +176,15 @@
           <string>Vector Units (VU)</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_3">
-          <item row="2" column="0" colspan="2">
-           <layout class="QGridLayout" name="gridLayout_6">
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="vu0Recompiler">
-              <property name="text">
-               <string>Enable VU0 Recompiler (Micro Mode)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="vu1Recompiler">
-              <property name="text">
-               <string>Enable VU1 Recompiler</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="vuFlagHack">
-              <property name="text">
-               <string>mVU Flag Hack</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_5">
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_3">
             <property name="text">
-             <string>Clamping Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_6">
-            <property name="text">
-             <string>Rounding Mode:</string>
+             <string>VU1 Rounding Mode:</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="vuRoundingMode">
+           <widget class="QComboBox" name="vu0RoundingMode">
             <item>
              <property name="text">
               <string>Nearest</string>
@@ -239,8 +207,102 @@
             </item>
            </widget>
           </item>
+          <item row="4" column="0" colspan="2">
+           <layout class="QGridLayout" name="gridLayout_6">
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="vuFlagHack">
+              <property name="text">
+               <string>mVU Flag Hack</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="vu1Recompiler">
+              <property name="text">
+               <string>Enable VU1 Recompiler</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="vu0Recompiler">
+              <property name="text">
+               <string>Enable VU0 Recompiler (Micro Mode)</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
           <item row="1" column="1">
-           <widget class="QComboBox" name="vuClampMode">
+           <widget class="QComboBox" name="vu0ClampMode">
+            <item>
+             <property name="text">
+              <string>None</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Normal (Default)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Extra</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Extra + Preserve Sign</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>VU0 Clamping Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>VU0 Rounding Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>VU1 Clamping Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="vu1RoundingMode">
+            <item>
+             <property name="text">
+              <string>Nearest</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Negative</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Positive</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Chop / Zero (Default)</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QComboBox" name="vu1ClampMode">
             <item>
              <property name="text">
               <string>None</string>

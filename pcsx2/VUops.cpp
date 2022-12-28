@@ -459,7 +459,7 @@ static float vuDouble(u32 f)
 			return *(float*)&f;
 			break;
 		case 0x7f800000:
-			if (CHECK_VU_OVERFLOW)
+			if (CHECK_VU_OVERFLOW(0))
 			{
 				u32 d = (f & 0x80000000) | 0x7f7fffff;
 				return *(float*)&d;

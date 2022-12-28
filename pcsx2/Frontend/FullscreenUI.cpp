@@ -360,7 +360,7 @@ namespace FullscreenUI
 	static void DrawPathSetting(SettingsInterface* bsi, const char* title, const char* section, const char* key, const char* default_value,
 		bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
 		ImFont* summary_font = g_medium_font);
-	static void DrawClampingModeSetting(SettingsInterface* bsi, const char* title, const char* summary, bool vu);
+	static void DrawClampingModeSetting(SettingsInterface* bsi, const char* title, const char* summary, int vunum);
 	static void PopulateGraphicsAdapterList();
 	static void PopulateGameListDirectoryCache(SettingsInterface* si);
 	static void BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const std::string_view& section,
@@ -1177,7 +1177,7 @@ SettingsInterface* FullscreenUI::GetEditingSettingsInterface(bool game_settings)
 bool FullscreenUI::ShouldShowAdvancedSettings(SettingsInterface* bsi)
 {
 	return IsEditingGameSettings(bsi) ? Host::GetBaseBoolSettingValue("UI", "ShowAdvancedSettings", false) :
-                                        bsi->GetBoolValue("UI", "ShowAdvancedSettings", false);
+										bsi->GetBoolValue("UI", "ShowAdvancedSettings", false);
 }
 
 void FullscreenUI::SetSettingsChanged(SettingsInterface* bsi)
@@ -1446,7 +1446,7 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, const char* title,
 	const int index = value.has_value() ? (value.value() - option_offset) : std::numeric_limits<int>::min();
 	const char* value_text = (value.has_value()) ?
 								 ((index < 0 || static_cast<size_t>(index) >= option_count) ? "Unknown" : options[index]) :
-                                 "Use Global Setting";
+								 "Use Global Setting";
 
 	if (MenuButtonWithValue(title, summary, value_text, enabled, height, font, summary_font))
 	{
@@ -1907,8 +1907,8 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
 			ImVec2 button_pos(ImGui::GetCursorPos());
 
 			// Align value text in middle.
-			ImGui::SetCursorPosY(
-				ImGui::GetCursorPosY() + ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - g_large_font->FontSize) * 0.5f);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() +
+								 ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - g_large_font->FontSize) * 0.5f);
 			ImGui::TextUnformatted(labels[i]);
 			ImGui::SameLine(midpoint);
 			ImGui::SetNextItemWidth(end);
@@ -2218,7 +2218,7 @@ void FullscreenUI::DrawPathSetting(SettingsInterface* bsi, const char* title, co
 		if (value.has_value())
 			initial_path = Path::GetDirectory(value.value());
 
-		OpenFileSelector(title, false, std::move(callback), { "*" }, std::move(initial_path));
+		OpenFileSelector(title, false, std::move(callback), {"*"}, std::move(initial_path));
 	}
 }
 
@@ -2259,7 +2259,7 @@ void FullscreenUI::StartAutomaticBinding(u32 port)
 						// and the toast needs to happen on the UI thread.
 						GetMTGS().RunOnGSThread([result, name = std::move(name)]() {
 							ShowToast({}, result ? fmt::format("Automatic mapping completed for {}.", name) :
-                                                   fmt::format("Automatic mapping failed for {}.", name));
+												   fmt::format("Automatic mapping failed for {}.", name));
 						});
 					});
 					CloseChoiceDialog();
@@ -2442,7 +2442,7 @@ void FullscreenUI::DrawSettingsWindow()
 		const bool game_settings = IsEditingGameSettings(bsi);
 
 		const u32 count = game_settings ? (ShouldShowAdvancedSettings(bsi) ? std::size(per_game_pages) : (std::size(per_game_pages) - 1)) :
-                                          std::size(global_pages);
+										  std::size(global_pages);
 		const char* const* icons = game_settings ? per_game_icons : global_icons;
 		const SettingsPage* pages = game_settings ? per_game_pages : global_pages;
 		u32 index = 0;
@@ -2903,17 +2903,19 @@ void FullscreenUI::DrawEmulationSettingsPage()
 	EndMenuButtons();
 }
 
-void FullscreenUI::DrawClampingModeSetting(SettingsInterface* bsi, const char* title, const char* summary, bool vu)
+void FullscreenUI::DrawClampingModeSetting(SettingsInterface* bsi, const char* title, const char* summary, int vunum)
 {
 	// This is so messy... maybe we should just make the mode an int in the settings too...
 	const bool base = IsEditingGameSettings(bsi) ? 1 : 0;
 	std::optional<bool> default_false = IsEditingGameSettings(bsi) ? std::nullopt : std::optional<bool>(false);
 	std::optional<bool> default_true = IsEditingGameSettings(bsi) ? std::nullopt : std::optional<bool>(true);
 
-	std::optional<bool> third = bsi->GetOptionalBoolValue("EmuCore/CPU/Recompiler", vu ? "vuSignOverflow" : "fpuFullMode", default_false);
-	std::optional<bool> second =
-		bsi->GetOptionalBoolValue("EmuCore/CPU/Recompiler", vu ? "vuExtraOverflow" : "fpuExtraOverflow", default_false);
-	std::optional<bool> first = bsi->GetOptionalBoolValue("EmuCore/CPU/Recompiler", vu ? "vuOverflow" : "fpuOverflow", default_true);
+	std::optional<bool> third = bsi->GetOptionalBoolValue(
+		"EmuCore/CPU/Recompiler", (vunum >= 0 ? ((vunum == 0) ? "vu0SignOverflow" : "vu1SignOverflow") : "fpuFullMode"), default_false);
+	std::optional<bool> second = bsi->GetOptionalBoolValue("EmuCore/CPU/Recompiler",
+		(vunum >= 0 ? ((vunum == 0) ? "vu0ExtraOverflow" : "vu1ExtraOverflow") : "fpuExtraOverflow"), default_false);
+	std::optional<bool> first = bsi->GetOptionalBoolValue(
+		"EmuCore/CPU/Recompiler", (vunum >= 0 ? ((vunum == 0) ? "vu0Overflow" : "vu1Overflow") : "fpuOverflow"), default_true);
 
 	int index;
 	if (third.has_value() && third.value())
@@ -2931,7 +2933,7 @@ void FullscreenUI::DrawClampingModeSetting(SettingsInterface* bsi, const char* t
 		"Use Global Setting", "None", "Normal (Default)", "Extra + Preserve Sign", "Full"};
 	static constexpr const char* vu_clamping_mode_settings[] = {
 		"Use Global Setting", "None", "Normal (Default)", "Extra", "Extra + Preserve Sign"};
-	const char* const* options = vu ? vu_clamping_mode_settings : ee_clamping_mode_settings;
+	const char* const* options = (vunum >= 0) ? vu_clamping_mode_settings : ee_clamping_mode_settings;
 	const int setting_offset = IsEditingGameSettings(bsi) ? 0 : 1;
 
 	if (MenuButtonWithValue(title, summary, options[index + setting_offset]))
@@ -2941,7 +2943,7 @@ void FullscreenUI::DrawClampingModeSetting(SettingsInterface* bsi, const char* t
 		for (int i = setting_offset; i < static_cast<int>(std::size(ee_clamping_mode_settings)); i++)
 			cd_options.emplace_back(options[i], (i == (index + setting_offset)));
 		OpenChoiceDialog(title, false, std::move(cd_options),
-			[game_settings = IsEditingGameSettings(bsi), vu](s32 index, const std::string& title, bool checked) {
+			[game_settings = IsEditingGameSettings(bsi), vunum](s32 index, const std::string& title, bool checked) {
 				if (index >= 0)
 				{
 					auto lock = Host::GetSettingsLock();
@@ -2957,9 +2959,12 @@ void FullscreenUI::DrawClampingModeSetting(SettingsInterface* bsi, const char* t
 					}
 
 					SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-					bsi->SetOptionalBoolValue("EmuCore/CPU/Recompiler", vu ? "vuSignOverflow" : "fpuFullMode", third);
-					bsi->SetOptionalBoolValue("EmuCore/CPU/Recompiler", vu ? "vuExtraOverflow" : "fpuExtraOverflow", second);
-					bsi->SetOptionalBoolValue("EmuCore/CPU/Recompiler", vu ? "vuOverflow" : "fpuOverflow", first);
+					bsi->SetOptionalBoolValue("EmuCore/CPU/Recompiler",
+						(vunum >= 0 ? ((vunum == 0) ? "vu0SignOverflow" : "vu1SignOverflow") : "fpuFullMode"), third);
+					bsi->SetOptionalBoolValue("EmuCore/CPU/Recompiler",
+						(vunum >= 0 ? ((vunum == 0) ? "vu0ExtraOverflow" : "vu1ExtraOverflow") : "fpuExtraOverflow"), second);
+					bsi->SetOptionalBoolValue(
+						"EmuCore/CPU/Recompiler", (vunum >= 0 ? ((vunum == 0) ? "vu0Overflow" : "vu1Overflow") : "fpuOverflow"), first);
 					SetSettingsChanged(bsi);
 				}
 
@@ -3754,7 +3759,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 		ImGui::PushID(global_slot);
 		MenuHeading(
 			(mtap_enabled[mtap_port] ? fmt::format(ICON_FA_PLUG " Controller Port {}{}", mtap_port + 1, mtap_slot_names[mtap_slot]) :
-                                       fmt::format(ICON_FA_PLUG " Controller Port {}", mtap_port + 1))
+									   fmt::format(ICON_FA_PLUG " Controller Port {}", mtap_port + 1))
 				.c_str());
 
 		const char* section = sections[global_slot];
@@ -3800,7 +3805,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 
 		MenuHeading((mtap_enabled[mtap_port] ?
 						 fmt::format(ICON_FA_MICROCHIP " Controller Port {}{} Macros", mtap_port + 1, mtap_slot_names[mtap_slot]) :
-                         fmt::format(ICON_FA_MICROCHIP " Controller Port {} Macros", mtap_port + 1))
+						 fmt::format(ICON_FA_MICROCHIP " Controller Port {} Macros", mtap_port + 1))
 						.c_str());
 
 		static bool macro_button_expanded[PAD::NUM_CONTROLLER_PORTS][PAD::NUM_MACRO_BUTTONS_PER_CONTROLLER] = {};
@@ -3881,7 +3886,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 			const std::string freq_key(fmt::format("Macro{}Frequency", macro_index + 1));
 			s32 frequency = bsi->GetIntValue(section, freq_key.c_str(), 0);
 			const std::string freq_summary((frequency == 0) ? std::string("Macro will not auto-toggle.") :
-                                                              fmt::format("Macro will toggle every {} frames.", frequency));
+															  fmt::format("Macro will toggle every {} frames.", frequency));
 			if (MenuButton(ICON_FA_LIGHTBULB " Frequency", freq_summary.c_str()))
 				ImGui::OpenPopup(freq_key.c_str());
 
@@ -3923,7 +3928,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 		{
 			MenuHeading((mtap_enabled[mtap_port] ?
 							 fmt::format(ICON_FA_SLIDERS_H " Controller Port {}{} Settings", mtap_port + 1, mtap_slot_names[mtap_slot]) :
-                             fmt::format(ICON_FA_SLIDERS_H " Controller Port {} Settings", mtap_port + 1))
+							 fmt::format(ICON_FA_SLIDERS_H " Controller Port {} Settings", mtap_port + 1))
 							.c_str());
 
 			for (u32 i = 0; i < ci->num_settings; i++)
@@ -4128,7 +4133,7 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 			"Determines how the results of floating-point operations are rounded. Some games need specific settings.", "EmuCore/CPU",
 			"FPU.Roundmode", 3, ee_rounding_mode_settings, std::size(ee_rounding_mode_settings));
 		DrawClampingModeSetting(bsi, "Clamping Mode##ee_clamping_mode",
-			"Determines how out-of-range floating point numbers are handled. Some games need specific settings.", false);
+			"Determines how out-of-range floating point numbers are handled. Some games need specific settings.", -1);
 
 		DrawToggleSetting(bsi, "Enable EE Recompiler",
 			"Performs just-in-time binary translation of 64-bit MIPS-IV machine code to native code.", "EmuCore/CPU/Recompiler", "EnableEE",
@@ -4143,11 +4148,16 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 			"EmuCore/CPU/Recompiler", "EnableFastmem", true);
 
 		MenuHeading("Vector Units");
-		DrawIntListSetting(bsi, "Rounding Mode##vu_rounding_mode",
+		DrawIntListSetting(bsi, "VU0 Rounding Mode##vu_rounding_mode",
 			"Determines how the results of floating-point operations are rounded. Some games need specific settings.", "EmuCore/CPU",
-			"VU.Roundmode", 3, ee_rounding_mode_settings, std::size(ee_rounding_mode_settings));
-		DrawClampingModeSetting(bsi, "Clamping Mode##vu_clamping_mode",
-			"Determines how out-of-range floating point numbers are handled. Some games need specific settings.", true);
+			"VU0.Roundmode", 3, ee_rounding_mode_settings, std::size(ee_rounding_mode_settings));
+		DrawClampingModeSetting(bsi, "VU0 Clamping Mode##vu_clamping_mode",
+			"Determines how out-of-range floating point numbers are handled. Some games need specific settings.", 0);
+		DrawIntListSetting(bsi, "VU1 Rounding Mode##vu_rounding_mode",
+			"Determines how the results of floating-point operations are rounded. Some games need specific settings.", "EmuCore/CPU",
+			"VU1.Roundmode", 3, ee_rounding_mode_settings, std::size(ee_rounding_mode_settings));
+		DrawClampingModeSetting(bsi, "VU1 Clamping Mode##vu_clamping_mode",
+			"Determines how out-of-range floating point numbers are handled. Some games need specific settings.", 1);
 		DrawToggleSetting(bsi, "Enable VU0 Recompiler (Micro Mode)",
 			"New Vector Unit recompiler with much improved compatibility. Recommended.", "EmuCore/CPU/Recompiler", "EnableVU0", true);
 		DrawToggleSetting(bsi, "Enable VU1 Recompiler", "New Vector Unit recompiler with much improved compatibility. Recommended.",
@@ -4246,7 +4256,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, s_current_game_title.c_str()));
 		const ImVec2 path_size(path_string.empty() ?
 								   ImVec2(0.0f, 0.0f) :
-                                   g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f,
+								   g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f,
 									   path_string.data(), path_string.data() + path_string.length()));
 		const ImVec2 subtitle_size(g_medium_font->CalcTextSizeA(
 			g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f, s_current_game_subtitle.c_str()));
@@ -4415,7 +4425,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 				}
 
 				if (ActiveButton(GSConfig.UseHardwareRenderer() ? (ICON_FA_PAINT_BRUSH " Switch To Software Renderer") :
-                                                                  (ICON_FA_PAINT_BRUSH " Switch To Hardware Renderer"),
+																  (ICON_FA_PAINT_BRUSH " Switch To Hardware Renderer"),
 						false))
 				{
 					ClosePauseMenu();
@@ -5061,7 +5071,7 @@ void FullscreenUI::PopulateGameListEntryList()
 					if (lhs->total_played_time != rhs->total_played_time)
 					{
 						return reverse ? (lhs->total_played_time > rhs->total_played_time) :
-                                         (lhs->total_played_time < rhs->total_played_time);
+										 (lhs->total_played_time < rhs->total_played_time);
 					}
 				}
 				break;
@@ -5258,7 +5268,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
 			ImGui::SetCursorPos(LayoutScale(ImVec2(128.0f, 20.0f)) + image_rect.Min);
 			ImGui::Image(selected_entry ? GetGameListCover(selected_entry)->GetHandle() :
-                                          GetTextureForGameListEntryType(GameList::EntryType::Count)->GetHandle(),
+										  GetTextureForGameListEntryType(GameList::EntryType::Count)->GetHandle(),
 				image_rect.GetSize());
 		}
 
@@ -5566,7 +5576,7 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
 			ImGuiFullscreen::ChoiceDialogOptions options = {
 				{ICON_FA_FOLDER_OPEN " Open in File Browser", false},
 				{it.second ? (ICON_FA_FOLDER_MINUS " Disable Subdirectory Scanning") :
-                             (ICON_FA_FOLDER_PLUS " Enable Subdirectory Scanning"),
+							 (ICON_FA_FOLDER_PLUS " Enable Subdirectory Scanning"),
 					false},
 				{ICON_FA_TIMES " Remove From List", false},
 				{ICON_FA_WINDOW_CLOSE " Close Menu", false},

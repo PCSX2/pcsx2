@@ -30,9 +30,9 @@ public:
 	~AdvancedSettingsWidget();
 
 private:
-	int getGlobalClampingModeIndex(bool vu) const;
-	int getClampingModeIndex(bool vu) const;
-	void setClampingMode(bool vu, int index);
+	int getGlobalClampingModeIndex(int vunum) const;
+	int getClampingModeIndex(int vunum) const;
+	void setClampingMode(int vunum, int index);
 
 	SettingsDialog* m_dialog;
 

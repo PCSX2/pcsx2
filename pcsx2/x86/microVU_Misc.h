@@ -239,7 +239,7 @@ typedef u32 (*mVUCall)(void*, void*);
 #define Rmem         &mVU.regs().VI[REG_R].UL
 #define aWrap(x, m)  ((x > m) ? 0 : x)
 #define shuffleSS(x) ((x == 1) ? (0x27) : ((x == 2) ? (0xc6) : ((x == 4) ? (0xe1) : (0xe4))))
-#define clampE       CHECK_VU_EXTRA_OVERFLOW
+#define clampE       CHECK_VU_EXTRA_OVERFLOW(mVU.index)
 #define varPrint(x)  DevCon.WriteLn(#x " = %d", (int)x)
 #define islowerOP    ((iPC & 1) == 0)
 

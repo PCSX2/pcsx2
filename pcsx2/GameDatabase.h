@@ -95,9 +95,11 @@ namespace GameDatabaseSchema
 		std::string region;
 		Compatibility compat = Compatibility::Unknown;
 		RoundMode eeRoundMode = RoundMode::Undefined;
-		RoundMode vuRoundMode = RoundMode::Undefined;
+		RoundMode vu0RoundMode = RoundMode::Undefined;
+		RoundMode vu1RoundMode = RoundMode::Undefined;
 		ClampMode eeClampMode = ClampMode::Undefined;
-		ClampMode vuClampMode = ClampMode::Undefined;
+		ClampMode vu0ClampMode = ClampMode::Undefined;
+		ClampMode vu1ClampMode = ClampMode::Undefined;
 		std::vector<GamefixId> gameFixes;
 		std::vector<std::pair<SpeedhackId, int>> speedHacks;
 		std::vector<std::pair<GSHWFixId, s32>> gsHWFixes;

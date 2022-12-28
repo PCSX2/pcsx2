@@ -37,16 +37,18 @@
 extern R5900cpu GSDumpReplayerCpu;
 
 SSE_MXCSR g_sseMXCSR   = {DEFAULT_sseMXCSR};
-SSE_MXCSR g_sseVUMXCSR = {DEFAULT_sseVUMXCSR};
+SSE_MXCSR g_sseVU0MXCSR = {DEFAULT_sseVUMXCSR};
+SSE_MXCSR g_sseVU1MXCSR = {DEFAULT_sseVUMXCSR};
 
 // SetCPUState -- for assignment of SSE roundmodes and clampmodes.
 //
-void SetCPUState(SSE_MXCSR sseMXCSR, SSE_MXCSR sseVUMXCSR)
+void SetCPUState(SSE_MXCSR sseMXCSR, SSE_MXCSR sseVU0MXCSR, SSE_MXCSR sseVU1MXCSR)
 {
 	//Msgbox::Alert("SetCPUState: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
 
 	g_sseMXCSR   = sseMXCSR.ApplyReserveMask();
-	g_sseVUMXCSR = sseVUMXCSR.ApplyReserveMask();
+	g_sseVU0MXCSR = sseVU0MXCSR.ApplyReserveMask();
+	g_sseVU1MXCSR = sseVU1MXCSR.ApplyReserveMask();
 
 	_mm_setcsr(g_sseMXCSR.bitmask);
 }

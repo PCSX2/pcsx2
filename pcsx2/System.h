@@ -146,5 +146,5 @@ extern std::string SysGetDiscID();
 
 extern SysMainMemory& GetVmMemory();
 
-extern void SetCPUState(SSE_MXCSR sseMXCSR, SSE_MXCSR sseVUMXCSR);
-extern SSE_MXCSR g_sseVUMXCSR, g_sseMXCSR;
+extern void SetCPUState(SSE_MXCSR sseMXCSR, SSE_MXCSR sseVU0MXCSR, SSE_MXCSR sseVU1MXCSR);
+extern SSE_MXCSR g_sseVU0MXCSR, g_sseVU1MXCSR, g_sseMXCSR;

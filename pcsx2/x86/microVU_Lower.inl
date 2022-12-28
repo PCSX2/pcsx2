@@ -101,7 +101,7 @@ mVUop(mVU_SQRT)
 		xMOV(ptr32[&mVU.divFlag], 0); // Clear I/D flags
 		testNeg(mVU, Ft, gprT1); // Check for negative sqrt
 
-		if (CHECK_VU_OVERFLOW) // Clamp infinities (only need to do positive clamp since xmmFt is positive)
+		if (CHECK_VU_OVERFLOW(mVU.index)) // Clamp infinities (only need to do positive clamp since xmmFt is positive)
 			xMIN.SS(Ft, ptr32[mVUglob.maxvals]);
 		xSQRT.SS(Ft, Ft);
 		writeQreg(Ft, mVUinfo.writeQ);

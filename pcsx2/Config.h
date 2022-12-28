@@ -510,10 +510,16 @@ struct Pcsx2Config
 			EnableVU1 : 1;
 
 		bool
-			vuOverflow : 1,
-			vuExtraOverflow : 1,
-			vuSignOverflow : 1,
-			vuUnderflow : 1;
+			vu0Overflow : 1,
+			vu0ExtraOverflow : 1,
+			vu0SignOverflow : 1,
+			vu0Underflow : 1;
+
+		bool
+			vu1Overflow : 1,
+			vu1ExtraOverflow : 1,
+			vu1SignOverflow : 1,
+			vu1Underflow : 1;
 
 		bool
 			fpuOverflow : 1,
@@ -555,14 +561,7 @@ struct Pcsx2Config
 
 		u32 GetVUClampMode() const
 		{
-			return vuSignOverflow ? 3 : (vuExtraOverflow ? 2 : (vuOverflow ? 1 : 0));
-		}
-
-		void SetVUClampMode(u32 value)
-		{
-			vuOverflow = (value >= 1);
-			vuExtraOverflow = (value >= 2);
-			vuSignOverflow = (value >= 3);
+			return vu0SignOverflow ? 3 : (vu0ExtraOverflow ? 2 : (vu0Overflow ? 1 : 0));
 		}
 	};
 
@@ -572,7 +571,8 @@ struct Pcsx2Config
 		RecompilerOptions Recompiler;
 
 		SSE_MXCSR sseMXCSR;
-		SSE_MXCSR sseVUMXCSR;
+		SSE_MXCSR sseVU0MXCSR;
+		SSE_MXCSR sseVU1MXCSR;
 
 		u32 AffinityControlMode;
 
@@ -584,7 +584,7 @@ struct Pcsx2Config
 
 		bool operator==(const CpuOptions& right) const
 		{
-			return OpEqu(sseMXCSR) && OpEqu(sseVUMXCSR) && OpEqu(AffinityControlMode) && OpEqu(Recompiler);
+			return OpEqu(sseMXCSR) && OpEqu(sseVU0MXCSR) && OpEqu(sseVU1MXCSR) && OpEqu(AffinityControlMode) && OpEqu(Recompiler);
 		}
 
 		bool operator!=(const CpuOptions& right) const
@@ -1327,10 +1327,10 @@ namespace EmuFolders
 #define CHECK_FULLVU0SYNCHACK (EmuConfig.Gamefixes.FullVU0SyncHack)
 
 //------------ Advanced Options!!! ---------------
-#define CHECK_VU_OVERFLOW (EmuConfig.Cpu.Recompiler.vuOverflow)
-#define CHECK_VU_EXTRA_OVERFLOW (EmuConfig.Cpu.Recompiler.vuExtraOverflow) // If enabled, Operands are clamped before being used in the VU recs
-#define CHECK_VU_SIGN_OVERFLOW (EmuConfig.Cpu.Recompiler.vuSignOverflow)
-#define CHECK_VU_UNDERFLOW (EmuConfig.Cpu.Recompiler.vuUnderflow)
+#define CHECK_VU_OVERFLOW(vunum) (((vunum) == 0) ? EmuConfig.Cpu.Recompiler.vu0Overflow : EmuConfig.Cpu.Recompiler.vu1Overflow)
+#define CHECK_VU_EXTRA_OVERFLOW(vunum) (((vunum) == 0) ? EmuConfig.Cpu.Recompiler.vu0ExtraOverflow : EmuConfig.Cpu.Recompiler.vu1ExtraOverflow) // If enabled, Operands are clamped before being used in the VU recs
+#define CHECK_VU_SIGN_OVERFLOW(vunum) (((vunum) == 0) ? EmuConfig.Cpu.Recompiler.vu0SignOverflow : EmuConfig.Cpu.Recompiler.vu1SignOverflow)
+#define CHECK_VU_UNDERFLOW(vunum) (((vunum) == 0) ? EmuConfig.Cpu.Recompiler.vu0Underflow : EmuConfig.Cpu.Recompiler.vu1Underflow)
 
 #define CHECK_FPU_OVERFLOW (EmuConfig.Cpu.Recompiler.fpuOverflow)
 #define CHECK_FPU_EXTRA_OVERFLOW (EmuConfig.Cpu.Recompiler.fpuExtraOverflow) // If enabled, Operands are checked for infinities before being used in the FPU recs
