@@ -833,9 +833,6 @@
     <ClCompile Include="FW.cpp">
       <Filter>System\Ps2\Iop\FW</Filter>
     </ClCompile>
-    <ClCompile Include="SPU2\Dma.cpp">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClCompile>
     <ClCompile Include="SPU2\spu2.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
@@ -849,9 +846,6 @@
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
     <ClCompile Include="SPU2\ADSR.cpp">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClCompile>
-    <ClCompile Include="SPU2\Debug.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
     <ClCompile Include="SPU2\DplIIdecoder.cpp">
@@ -1232,15 +1226,6 @@
     <ClCompile Include="Frontend\XInputSource.cpp">
       <Filter>Host</Filter>
     </ClCompile>
-    <ClCompile Include="SPU2\Host\ConfigDebug.cpp">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClCompile>
-    <ClCompile Include="SPU2\Host\ConfigSoundTouch.cpp">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClCompile>
-    <ClCompile Include="SPU2\Host\Config.cpp">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClCompile>
     <ClCompile Include="Frontend\HostSettings.cpp">
       <Filter>Host</Filter>
     </ClCompile>
@@ -1255,9 +1240,6 @@
     </ClCompile>
     <ClCompile Include="PAD\Host\StateManagement.cpp">
       <Filter>System\Ps2\PAD</Filter>
-    </ClCompile>
-    <ClCompile Include="SPU2\Windows\SndOut_XAudio2.cpp">
-      <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
     <ClCompile Include="windows\Optimus.cpp">
       <Filter>Host</Filter>
@@ -1415,6 +1397,24 @@
     </ClCompile>
     <ClCompile Include="USB\usb-pad\usb-pad-sdl-ff.cpp">
       <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\Config.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\ConfigDebug.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\ConfigSoundTouch.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\Debug.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\Dma.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\SndOut_XAudio2.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1785,9 +1785,6 @@
       <Filter>System\Ps2\SPU2</Filter>
     </ClInclude>
     <ClInclude Include="SPU2\defs.h">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClInclude>
-    <ClInclude Include="SPU2\Dma.h">
       <Filter>System\Ps2\SPU2</Filter>
     </ClInclude>
     <ClInclude Include="SPU2\Global.h">
@@ -2172,12 +2169,6 @@
     <ClInclude Include="Frontend\XInputSource.h">
       <Filter>Host</Filter>
     </ClInclude>
-    <ClInclude Include="SPU2\Host\Config.h">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClInclude>
-    <ClInclude Include="SPU2\Host\Dialogs.h">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClInclude>
     <ClInclude Include="HostSettings.h">
       <Filter>Host</Filter>
     </ClInclude>
@@ -2362,6 +2353,12 @@
     </ClInclude>
     <ClInclude Include="USB\usb-pad\usb-pad-sdl-ff.h">
       <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClInclude>
+    <ClInclude Include="SPU2\Debug.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="SPU2\Dma.h">
+      <Filter>System\Ps2\SPU2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

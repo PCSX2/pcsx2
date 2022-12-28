@@ -14,13 +14,10 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "Global.h"
-#include "spu2.h"
-#include "Dma.h"
-#include "Host/Dialogs.h"
+#include "SPU2/Global.h"
+#include "SPU2/spu2.h"
+#include "SPU2/Dma.h"
 #include "R3000A.h"
-
-using namespace Threading;
 
 static int ConsoleSampleRate = 48000;
 int SampleRate = 48000;

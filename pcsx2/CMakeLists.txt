@@ -277,6 +277,9 @@ set(pcsx2CDVDHeaders
 # SPU2 sources
 set(pcsx2SPU2Sources
 	SPU2/ADSR.cpp
+	SPU2/Config.cpp
+	SPU2/ConfigDebug.cpp
+	SPU2/ConfigSoundTouch.cpp
 	SPU2/Debug.cpp
 	SPU2/DplIIdecoder.cpp
 	SPU2/Dma.cpp
@@ -291,13 +294,7 @@ set(pcsx2SPU2Sources
 	SPU2/spu2sys.cpp
 	SPU2/Timestretcher.cpp
 	SPU2/Wavedump_wav.cpp
-	)
-
-if(CUBEB_API)
-	list(APPEND pcsx2SPU2Sources SPU2/SndOut_Cubeb.cpp)
-	target_compile_definitions(PCSX2_FLAGS INTERFACE "SPU2X_CUBEB")
-	target_link_libraries(PCSX2_FLAGS INTERFACE cubeb)
-endif()
+)
 
 # SPU2 headers
 set(pcsx2SPU2Headers
@@ -312,8 +309,19 @@ set(pcsx2SPU2Headers
 	SPU2/regs.h
 	SPU2/SndOut.h
 	SPU2/spdif.h
-	SPU2/WavFile.h
 )
+
+if(CUBEB_API)
+	list(APPEND pcsx2SPU2Sources SPU2/SndOut_Cubeb.cpp)
+	target_compile_definitions(PCSX2_FLAGS INTERFACE "SPU2X_CUBEB")
+	target_link_libraries(PCSX2_FLAGS INTERFACE cubeb)
+endif()
+
+if(WIN32)
+	list(APPEND pcsx2SPU2Sources
+		SPU2/SndOut_XAudio2.cpp
+	)
+endif()
 
 # DEV9 sources
 set(pcsx2DEV9Sources
@@ -636,26 +644,7 @@ set(pcsx2GSMetalShaders
 	GS/Renderers/Metal/fxaa.metal
 )
 
-list(APPEND pcsx2SPU2Headers
-	SPU2/Host/Config.cpp
-	SPU2/Host/ConfigDebug.cpp
-	SPU2/Host/ConfigSoundTouch.cpp
-)
-list(APPEND pcsx2SPU2Headers
-	SPU2/Host/Config.h
-	SPU2/Host/Dialogs.h
-)
-if(NOT WIN32)
-	list(APPEND pcsx2SPU2Headers
-		SPU2/WavFile.cpp
-	)
-endif()
-
 if(WIN32)
-	list(APPEND pcsx2SPU2Sources
-		SPU2/Windows/SndOut_XAudio2.cpp
-	)
-
 	list(APPEND pcsx2DEV9Sources
 		DEV9/Win32/pcap_io_win32.cpp
 		DEV9/Win32/tap-win32.cpp

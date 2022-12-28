@@ -16,7 +16,6 @@
 #include "PrecompiledHeader.h"
 
 #include "SPU2/Global.h"
-#include "SPU2/Host/Dialogs.h"
 #include "SPU2/Config.h"
 #include "SoundTouch.h"
 #include "HostSettings.h"

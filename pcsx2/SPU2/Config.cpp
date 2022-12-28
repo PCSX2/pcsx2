@@ -20,8 +20,7 @@
 #include <cmath>
 
 #include "SPU2/Global.h"
-#include "SPU2/Host/Config.h"
-#include "SPU2/Host/Dialogs.h"
+#include "SPU2/Config.h"
 #include "HostSettings.h"
 
 int AutoDMAPlayRate[2] = {0, 0};
