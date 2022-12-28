@@ -64,11 +64,12 @@ class IOCtlSrc
 
 	bool ReadDVDInfo();
 	bool ReadCDInfo();
-	bool Reopen();
 
 public:
 	IOCtlSrc(std::string filename);
 	~IOCtlSrc();
+
+	bool Reopen();
 
 	u32 GetSectorCount() const;
 	const std::vector<toc_entry>& ReadTOC() const;
@@ -90,7 +91,7 @@ extern bool weAreInNewDiskCB;
 
 extern void (*newDiscCB)();
 
-bool cdvdStartThread();
+void cdvdStartThread();
 void cdvdStopThread();
 void cdvdRequestSector(u32 sector, s32 mode);
 u8* cdvdGetSector(u32 sector, s32 mode);
