@@ -19,7 +19,6 @@
 #include "Memory.h"
 #include "R3000A.h"
 
-#include "R5900Exceptions.h"
 #include "R5900OpcodeTables.h"
 #include "iR5900.h"
 #include "iR5900Analysis.h"
@@ -685,8 +684,6 @@ void recStep()
 }
 
 static fastjmp_buf m_SetJmp_StateCheck;
-static std::unique_ptr<BaseR5900Exception> m_cpuException;
-static std::unique_ptr<BaseException> m_Exception;
 
 static void recExitExecution()
 {
@@ -708,6 +705,11 @@ static void recSafeExitExecution()
 		recExitExecution();
 }
 
+static void recCancelInstruction()
+{
+	pxFailRel("recCancelInstruction() called, this should never happen!");
+}
+
 static void recExecute()
 {
 	// Reset before we try to execute any code, if there's one pending.
@@ -716,9 +718,6 @@ static void recExecute()
 	eeRecIsReset = false;
 	if (eeRecNeedsReset)
 		recResetRaw();
-
-	m_cpuException = nullptr;
-	m_Exception = nullptr;
 
 	// setjmp will save the register context and will return 0
 	// A call to longjmp will restore the context (included the eip/rip)
@@ -738,11 +737,6 @@ static void recExecute()
 	}
 
 	eeCpuExecuting = false;
-
-	if (m_cpuException)
-		m_cpuException->Rethrow();
-	if (m_Exception)
-		m_Exception->Rethrow();
 
 	// FIXME Warning thread unsafe
 	Perf::dump();
@@ -2688,25 +2682,6 @@ StartRecomp:
 	s_pCurBlockEx = NULL;
 }
 
-// The only *safe* way to throw exceptions from the context of recompiled code.
-// The exception is cached and the recompiler is exited safely using either an
-// SEH unwind (MSW) or setjmp/longjmp (GCC).
-static void recThrowException(const BaseR5900Exception& ex)
-{
-	if (!eeCpuExecuting)
-		ex.Rethrow();
-	m_cpuException = std::unique_ptr<BaseR5900Exception>(ex.Clone());
-	recExitExecution();
-}
-
-static void recThrowException(const BaseException& ex)
-{
-	if (!eeCpuExecuting)
-		ex.Rethrow();
-	m_Exception = std::unique_ptr<BaseException>(ex.Clone());
-	recExitExecution();
-}
-
 R5900cpu recCpu = {
 	recReserve,
 	recShutdown,
@@ -2716,6 +2691,5 @@ R5900cpu recCpu = {
 	recExecute,
 
 	recSafeExitExecution,
-	recThrowException,
-	recThrowException,
+	recCancelInstruction,
 	recClear};

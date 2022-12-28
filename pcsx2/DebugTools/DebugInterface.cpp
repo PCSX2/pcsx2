@@ -247,28 +247,24 @@ char* DebugInterface::stringFromPointer(u32 p)
 	if (!isValidAddress(p))
 		return NULL;
 
-	try
+	// This is going to blow up if it hits a TLB miss..
+	// Hopefully the checks in isValidAddress() are sufficient.
+	for (u32 i = 0; i < BUFFER_LEN; i++)
 	{
-		for (u32 i = 0; i < BUFFER_LEN; i++)
-		{
-			char c = read8(p + i);
-			buf[i] = c;
+		char c = read8(p + i);
+		buf[i] = c;
 
-			if (c == 0)
-			{
-				return i > 0 ? buf : NULL;
-			}
-			else if (c < 0x20 || c >= 0x7f)
-			{
-				// non printable character
-				return NULL;
-			}
+		if (c == 0)
+		{
+			return i > 0 ? buf : NULL;
+		}
+		else if (c < 0x20 || c >= 0x7f)
+		{
+			// non printable character
+			return NULL;
 		}
 	}
-	catch (Exception::Ps2Generic&)
-	{
-		return NULL;
-	}
+
 	buf[BUFFER_LEN - 1] = 0;
 	buf[BUFFER_LEN - 2] = '~';
 	return buf;

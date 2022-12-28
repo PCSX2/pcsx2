@@ -15,15 +15,15 @@
 
 
 #include "PrecompiledHeader.h"
+
 #include "Common.h"
-
 #include "R5900OpcodeTables.h"
-#include "R5900Exceptions.h"
 #include "VMManager.h"
-
 #include "Elfheader.h"
 
 #include "DebugTools/Breakpoints.h"
+
+#include "common/FastJmp.h"
 
 #include <float.h>
 
@@ -35,6 +35,7 @@ static int branch2 = 0;
 static u32 cpuBlockCycles = 0;		// 3 bit fixed point version of cycle count
 static std::string disOut;
 static bool intExitExecution = false;
+static fastjmp_buf intJmpBuf;
 
 static void intEventTest();
 
@@ -490,82 +491,8 @@ static void intEventTest()
 	if (intExitExecution)
 	{
 		intExitExecution = false;
-		throw Exception::ExitCpuExecute();
+		fastjmp_jmp(&intJmpBuf, 1);
 	}
-}
-
-static void intExecute()
-{
-	bool instruction_was_cancelled;
-	enum ExecuteState {
-		RESET,
-		GAME_LOADING,
-		GAME_RUNNING
-	};
-	ExecuteState state = RESET;
-	do {
-		instruction_was_cancelled = false;
-		try {
-			// The execution was splited in three parts so it is easier to
-			// resume it after a cancelled instruction.
-			switch (state) {
-				case RESET:
-					do
-						execI();
-					while (cpuRegs.pc != (g_eeloadMain ? g_eeloadMain : EELOAD_START));
-					if (cpuRegs.pc == EELOAD_START)
-					{
-						// The EELOAD _start function is the same across all BIOS versions afaik
-						u32 mainjump = memRead32(EELOAD_START + 0x9c);
-						if (mainjump >> 26 == 3) // JAL
-							g_eeloadMain = ((EELOAD_START + 0xa0) & 0xf0000000U) | (mainjump << 2 & 0x0fffffffU);
-					}
-					else if (cpuRegs.pc == g_eeloadMain)
-					{
-						eeloadHook();
-						if (g_SkipBiosHack)
-						{
-							// See comments on this code in iR5900-32.cpp's recRecompile()
-							u32 typeAexecjump = memRead32(EELOAD_START + 0x470);
-							u32 typeBexecjump = memRead32(EELOAD_START + 0x5B0);
-							u32 typeCexecjump = memRead32(EELOAD_START + 0x618);
-							u32 typeDexecjump = memRead32(EELOAD_START + 0x600);
-							if ((typeBexecjump >> 26 == 3) || (typeCexecjump >> 26 == 3) || (typeDexecjump >> 26 == 3)) // JAL to 0x822B8
-								g_eeloadExec = EELOAD_START + 0x2B8;
-							else if (typeAexecjump >> 26 == 3) // JAL to 0x82170
-								g_eeloadExec = EELOAD_START + 0x170;
-							else
-								Console.WriteLn("intExecute: Could not enable launch arguments for fast boot mode; unidentified BIOS version! Please report this to the PCSX2 developers.");
-						}
-					}
-					else if (cpuRegs.pc == g_eeloadExec)
-						eeloadHook2();
-
-					if (g_GameLoading)
-						state = GAME_LOADING;
-					else
-						break;
-
-				case GAME_LOADING:
-					if (ElfEntry != 0xFFFFFFFF) {
-						do
-							execI();
-						while (cpuRegs.pc != ElfEntry);
-						eeGameStarting();
-					}
-					state = GAME_RUNNING;
-
-				case GAME_RUNNING:
-					while (true)
-						execI();
-			}
-		}
-		catch( Exception::ExitCpuExecute& ) { }
-		catch( Exception::CancelInstruction& ) { instruction_was_cancelled = true; }
-
-		// For example a tlb miss will throw an exception. Cpu must be resumed
-		// to execute the handler
-	} while (instruction_was_cancelled);
 }
 
 static void intSafeExitExecution()
@@ -575,7 +502,101 @@ static void intSafeExitExecution()
 	if (eeEventTestIsActive)
 		intExitExecution = true;
 	else
-		throw Exception::ExitCpuExecute();
+		fastjmp_jmp(&intJmpBuf, 1);
+}
+
+static void intCancelInstruction()
+{
+	// See execute function.
+	fastjmp_jmp(&intJmpBuf, 0);
+}
+
+static void intExecute()
+{
+	enum ExecuteState {
+		RESET,
+		GAME_LOADING,
+		GAME_RUNNING
+	};
+	ExecuteState state = RESET;
+
+	// This will come back as zero the first time it runs, or on instruction cancel.
+	// It will come back as nonzero when we exit execution.
+	if (fastjmp_set(&intJmpBuf) != 0)
+		return;
+
+	// I hope this doesn't cause issues with the optimizer... infinite loop with a constant expression.
+	for (;;)
+	{
+		// The execution was splited in three parts so it is easier to
+		// resume it after a cancelled instruction.
+		switch (state) {
+		case RESET:
+			{
+				do
+				{
+					execI();
+				} while (cpuRegs.pc != (g_eeloadMain ? g_eeloadMain : EELOAD_START));
+
+				if (cpuRegs.pc == EELOAD_START)
+				{
+					// The EELOAD _start function is the same across all BIOS versions afaik
+					u32 mainjump = memRead32(EELOAD_START + 0x9c);
+					if (mainjump >> 26 == 3) // JAL
+						g_eeloadMain = ((EELOAD_START + 0xa0) & 0xf0000000U) | (mainjump << 2 & 0x0fffffffU);
+				}
+				else if (cpuRegs.pc == g_eeloadMain)
+				{
+					eeloadHook();
+					if (g_SkipBiosHack)
+					{
+						// See comments on this code in iR5900-32.cpp's recRecompile()
+						u32 typeAexecjump = memRead32(EELOAD_START + 0x470);
+						u32 typeBexecjump = memRead32(EELOAD_START + 0x5B0);
+						u32 typeCexecjump = memRead32(EELOAD_START + 0x618);
+						u32 typeDexecjump = memRead32(EELOAD_START + 0x600);
+						if ((typeBexecjump >> 26 == 3) || (typeCexecjump >> 26 == 3) || (typeDexecjump >> 26 == 3)) // JAL to 0x822B8
+							g_eeloadExec = EELOAD_START + 0x2B8;
+						else if (typeAexecjump >> 26 == 3) // JAL to 0x82170
+							g_eeloadExec = EELOAD_START + 0x170;
+						else
+							Console.WriteLn("intExecute: Could not enable launch arguments for fast boot mode; unidentified BIOS version! Please report this to the PCSX2 developers.");
+					}
+				}
+				else if (cpuRegs.pc == g_eeloadExec)
+				{
+					eeloadHook2();
+				}
+
+				if (!g_GameLoading)
+					break;
+
+				state = GAME_LOADING;
+				[[fallthrough]];
+			}
+
+		case GAME_LOADING:
+			{
+				if (ElfEntry != 0xFFFFFFFF)
+				{
+					do
+					{
+						execI();
+					} while (cpuRegs.pc != ElfEntry);
+					eeGameStarting();
+				}
+				state = GAME_RUNNING;
+				[[fallthrough]];
+			}
+
+		case GAME_RUNNING:
+			{
+				while (true)
+					execI();
+			}
+			break;
+		}
+	}
 }
 
 static void intStep()
@@ -590,18 +611,6 @@ static void intClear(u32 Addr, u32 Size)
 static void intShutdown() {
 }
 
-static void intThrowException( const BaseR5900Exception& ex )
-{
-	// No tricks needed; C++ stack unwnding should suffice for MSW and GCC alike.
-	ex.Rethrow();
-}
-
-static void intThrowException( const BaseException& ex )
-{
-	// No tricks needed; C++ stack unwnding should suffice for MSW and GCC alike.
-	ex.Rethrow();
-}
-
 R5900cpu intCpu =
 {
 	intReserve,
@@ -612,7 +621,7 @@ R5900cpu intCpu =
 	intExecute,
 
 	intSafeExitExecution,
-	intThrowException,
-	intThrowException,
+	intCancelInstruction,
+
 	intClear
 };

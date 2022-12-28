@@ -34,9 +34,9 @@
 #include "vtlb.h"
 #include "COP0.h"
 #include "Cache.h"
-#include "R5900Exceptions.h"
 #include "IopMem.h"
 #include "Host.h"
+#include "VMManager.h"
 
 #include "common/Align.h"
 #include "common/MemsetFast.inl"
@@ -462,17 +462,23 @@ static __ri void vtlb_Miss(u32 addr, u32 mode)
 			cpuTlbMissR(addr, cpuRegs.branch);
 
 		// Exception handled. Current instruction need to be stopped
-		throw Exception::CancelInstruction();
+		Cpu->CancelInstruction();
+		return;
 	}
 
-	if (IsDevBuild)
-		Cpu->ThrowCpuException(R5900Exception::TLBMiss(addr, !!mode));
-	else
+	const std::string message(fmt::format("TLB Miss, addr=0x{:x} [{}]", addr, mode ? "store" : "load"));
+	if constexpr (IsDevBuild)
 	{
-		static int spamStop = 0;
-		if (spamStop++ < 50)
-			Console.Error(R5900Exception::TLBMiss(addr, !!mode).FormatMessage());
+		// Pause, let the user try to figure out what went wrong in the debugger.
+		Host::ReportErrorAsync("R5900 Exception", message);
+		VMManager::SetPaused(true);
+		Cpu->ExitExecution();
+		return;
 	}
+
+	static int spamStop = 0;
+	if (spamStop++ < 50)
+		Console.Error(message);
 }
 
 // BusError exception: more serious than a TLB miss.  If properly emulated the PS2 kernel
@@ -480,16 +486,17 @@ static __ri void vtlb_Miss(u32 addr, u32 mode)
 // time of the exception.
 static __ri void vtlb_BusError(u32 addr, u32 mode)
 {
-	// The exception terminate the program on linux which is very annoying
-	// Just disable it for the moment
-#ifdef __linux__
-	if (0)
-#else
-	if (IsDevBuild)
-#endif
-		Cpu->ThrowCpuException(R5900Exception::BusError(addr, !!mode));
-	else
-		Console.Error(R5900Exception::TLBMiss(addr, !!mode).FormatMessage());
+	const std::string message(fmt::format("Bus Error, addr=0x{:x} [{}]", addr, mode ? "store" : "load"));
+	if constexpr (IsDevBuild)
+	{
+		// Pause, let the user try to figure out what went wrong in the debugger.
+		Host::ReportErrorAsync("R5900 Exception", message);
+		VMManager::SetPaused(true);
+		Cpu->ExitExecution();
+		return;
+	}
+
+	Console.Error(message);
 }
 
 // clang-format off
