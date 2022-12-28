@@ -26,11 +26,6 @@
 
 using namespace D3D12;
 
-// Somehow NOMINMAX isn't getting set for CMake builds...
-#ifdef min
-#undef min
-#endif
-
 Texture::Texture() = default;
 
 Texture::Texture(ID3D12Resource* resource, D3D12_RESOURCE_STATES state)
@@ -349,7 +344,7 @@ ID3D12GraphicsCommandList* Texture::BeginStreamUpdate(ID3D12GraphicsCommandList*
 		}
 
 		// cmdlist change
-		return g_d3d12_context->GetInitCommandList();
+		cmdlist = g_d3d12_context->GetInitCommandList();
 	}
 
 	*out_data = g_d3d12_context->GetTextureStreamBuffer().GetCurrentHostPointer();
