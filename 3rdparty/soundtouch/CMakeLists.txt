@@ -33,6 +33,8 @@ add_library(pcsx2-soundtouch
 
 target_include_directories(pcsx2-soundtouch PUBLIC soundtouch)
 target_compile_definitions(pcsx2-soundtouch PUBLIC SOUNDTOUCH_FLOAT_SAMPLES ST_NO_EXCEPTION_HANDLING)
+set_property(TARGET pcsx2-soundtouch PROPERTY CXX_STANDARD 17)
+set_property(TARGET pcsx2-soundtouch PROPERTY CXX_STANDARD_REQUIRED ON)
 
 if(NOT "${CMAKE_BUILD_TYPE}" MATCHES "Debug")
 	if(MSVC)

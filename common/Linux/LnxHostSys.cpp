@@ -28,7 +28,6 @@
 #include "common/Align.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
-#include "common/Exceptions.h"
 #include "common/General.h"
 
 // Apple uses the MAP_ANON define instead of MAP_ANONYMOUS, but they mean

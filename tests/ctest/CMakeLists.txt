@@ -17,5 +17,6 @@ macro(add_pcsx2_test target)
 	add_test(NAME ${target} COMMAND ${target})
 endmacro()
 
+add_subdirectory(gtest)
 add_subdirectory(common)
 add_subdirectory(core)

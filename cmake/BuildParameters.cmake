@@ -144,8 +144,20 @@ if(MSVC AND NOT USE_CLANG_CL)
 		"/Zo"
 		"/utf-8"
 	)
-elseif(NOT MSVC)
+endif()
+
+if(MSVC)
+	# Disable RTTI
+	string(REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+
+	# Disable Exceptions
+	string(REPLACE "/EHsc" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+else()
 	add_compile_options(-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse)
+	add_compile_options(
+		"$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>"
+		"$<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>"
+	)
 endif()
 
 set(CONFIG_REL_NO_DEB $<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>>)
@@ -156,8 +168,9 @@ if(WIN32)
 		$<$<CONFIG:Debug>:_ITERATOR_DEBUG_LEVEL=2>
 		$<$<CONFIG:Devel>:_ITERATOR_DEBUG_LEVEL=1>
 		$<${CONFIG_ANY_REL}:_ITERATOR_DEBUG_LEVEL=0>
+		_HAS_EXCEPTIONS=0
 	)
-	list(APPEND PCSX2_DEFS TIXML_USE_STL _SCL_SECURE_NO_WARNINGS _UNICODE UNICODE)
+	list(APPEND PCSX2_DEFS _SCL_SECURE_NO_WARNINGS _UNICODE UNICODE)
 endif()
 
 # Enable debug information in release builds for Linux.

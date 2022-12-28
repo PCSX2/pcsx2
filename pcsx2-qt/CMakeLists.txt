@@ -197,6 +197,9 @@ target_link_libraries(pcsx2-qt PRIVATE
 	Qt6::Network
 )
 
+# Our Qt builds may have exceptions on, so force them off.
+target_compile_definitions(pcsx2-qt PRIVATE QT_NO_EXCEPTIONS)
+
 if(WIN32)
 	set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${CMAKE_SOURCE_DIR}/bin/translations")
 	qt_add_lrelease(pcsx2-qt TS_FILES ${TS_FILES})
