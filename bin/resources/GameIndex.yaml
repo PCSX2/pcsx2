@@ -22697,6 +22697,8 @@ SLKA-15032:
 SLKA-15033:
   name: "Princess Maker 2"
   region: "NTSC-K"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black screen.
 SLKA-15043:
   name: "Super Puzzle Bobble Collection Vol 1"
   region: "NTSC-K"
@@ -26567,6 +26569,8 @@ SLPM-62700:
 SLPM-62701:
   name: "Princess Maker 2 [Best Hit Selection]"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black screen.
 SLPM-62702:
   name: "Momotaro Densetsu 15"
   region: "NTSC-J"
@@ -35425,6 +35429,8 @@ SLPS-20392:
 SLPS-20393:
   name: "Princess Maker 2"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black screen.
 SLPS-20394:
   name: "Suki na Mono wa Sukida Rashouganai + White Flower + Sukisyo!"
   region: "NTSC-J"
