@@ -73,14 +73,11 @@ static void CheckNullCDVD()
 static int CheckDiskTypeFS(int baseType)
 {
 	IsoFSCDVD isofs;
-	try
+	IsoDirectory rootdir(isofs);
+	if (rootdir.OpenRootDirectory())
 	{
-		IsoDirectory rootdir(isofs);
-
-		try
+		if (IsoFile file(isofs); file.open(rootdir, "SYSTEM.CNF;1"))
 		{
-			IsoFile file(rootdir, "SYSTEM.CNF;1");
-
 			const int size = file.getLength();
 			const std::unique_ptr<char[]> buffer = std::make_unique<char[]>(size + 1);
 			file.read(buffer.get(), size);
@@ -97,40 +94,16 @@ static int CheckDiskTypeFS(int baseType)
 
 			return (baseType == CDVD_TYPE_DETCTCD) ? CDVD_TYPE_PS2CD : CDVD_TYPE_PS2DVD;
 		}
-		catch (Exception::FileNotFound&)
-		{
-		}
 
 		// PS2 Linux disc 2, doesn't have a System.CNF or a normal ELF
-		try
-		{
-			IsoFile file(rootdir, "P2L_0100.02;1");
+		if (rootdir.Exists("P2L_0100.02;1"))
 			return CDVD_TYPE_PS2DVD;
-		}
-		catch (Exception::FileNotFound&)
-		{
-		}
 
-		try
-		{
-			IsoFile file(rootdir, "PSX.EXE;1");
+		if (rootdir.Exists("PSX.EXE;1"))
 			return CDVD_TYPE_PSCD;
-		}
-		catch (Exception::FileNotFound&)
-		{
-		}
 
-		try
-		{
-			IsoFile file(rootdir, "VIDEO_TS/VIDEO_TS.IFO;1");
+		if (rootdir.Exists("VIDEO_TS/VIDEO_TS.IFO;1"))
 			return CDVD_TYPE_DVDV;
-		}
-		catch (Exception::FileNotFound&)
-		{
-		}
-	}
-	catch (Exception::FileNotFound&)
-	{
 	}
 
 #ifdef PCSX2_DEVBUILD

@@ -589,7 +589,12 @@ std::string VMManager::GetGameSettingsPath(const std::string_view& game_serial, 
 std::string VMManager::GetDiscOverrideFromGameSettings(const std::string& elf_path)
 {
 	std::string iso_path;
-	if (const u32 crc = cdvdGetElfCRC(elf_path); crc != 0)
+	ElfObject elfo;
+	if (!elfo.OpenFile(elf_path, false, nullptr))
+		return iso_path;
+
+	const u32 crc = elfo.GetCRC();
+	if (crc != 0)
 	{
 		INISettingsInterface si(GetGameSettingsPath(std::string_view(), crc));
 		if (si.Load())
@@ -941,29 +946,23 @@ void VMManager::HandleELFChange(bool verbose_patches_if_changed)
 
 void VMManager::UpdateELFInfo(std::string elf_path)
 {
-	try
+	Error error;
+	ElfObject elfo;
+	if (!cdvdLoadElf(&elfo, elf_path, false, &error))
 	{
-		std::unique_ptr<ElfObject> elfptr = cdvdLoadElf(elf_path, false);
-		elfptr->loadHeaders();
-		s_current_crc = elfptr->getCRC();
-		s_elf_entry_point = elfptr->getEntryPoint();
-		s_elf_text_range = elfptr->getTextRange();
-		s_elf_path = std::move(elf_path);
+		Console.Error(fmt::format("Failed to read ELF being loaded: {}: {}", elf_path, error.GetDescription()));
+		s_elf_path = {};
+		s_elf_text_range = {};
+		s_elf_entry_point = 0xFFFFFFFFu;
+		s_current_crc = 0;
 		return;
 	}
-	catch ([[maybe_unused]] Exception::FileNotFound& e)
-	{
-	}
-	catch (Exception::BadStream& ex)
-	{
-		Console.Error(ex.FormatDiagnosticMessage());
-	}
 
-	Console.Error(fmt::format("Failed to read ELF being loaded: {}", elf_path));
-	s_elf_path = {};
-	s_elf_text_range = {};
-	s_elf_entry_point = 0xFFFFFFFFu;
-	s_current_crc = 0;
+	elfo.LoadHeaders();
+	s_current_crc = elfo.GetCRC();
+	s_elf_entry_point = elfo.GetEntryPoint();
+	s_elf_text_range = elfo.GetTextRange();
+	s_elf_path = std::move(elf_path);
 }
 
 void VMManager::ClearELFInfo()

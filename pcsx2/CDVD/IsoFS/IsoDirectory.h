@@ -16,8 +16,11 @@
 #pragma once
 
 #include "common/Pcsx2Defs.h"
+#include <optional>
 #include <string_view>
 #include <vector>
+
+class Error;
 
 enum IsoFS_Type
 {
@@ -25,17 +28,19 @@ enum IsoFS_Type
 	FStype_Joliet = 2,
 };
 
-class IsoDirectory
+class IsoDirectory final
 {
 public:
 	SectorSource& internalReader;
 	std::vector<IsoFileDescriptor> files;
-	IsoFS_Type m_fstype;
+	IsoFS_Type m_fstype = FStype_ISO9660;
 
 public:
 	IsoDirectory(SectorSource& r);
-	IsoDirectory(SectorSource& r, const IsoFileDescriptor& directoryEntry);
-	virtual ~IsoDirectory() = default;
+	~IsoDirectory();
+
+	bool OpenRootDirectory(Error* error = nullptr);
+	bool Open(const IsoFileDescriptor& directoryEntry, Error* error = nullptr);
 
 	std::string FStype_ToString() const;
 	SectorSource& GetReader() const { return internalReader; }
@@ -46,12 +51,10 @@ public:
 
 	u32 GetFileSize(const std::string_view& filePath) const;
 
-	IsoFileDescriptor FindFile(const std::string_view& filePath) const;
+	std::optional<IsoFileDescriptor> FindFile(const std::string_view& filePath) const;
 
 protected:
-	const IsoFileDescriptor& GetEntry(const std::string_view& fileName) const;
-	const IsoFileDescriptor& GetEntry(int index) const;
+	const IsoFileDescriptor& GetEntry(size_t index) const;
 
-	void Init(const IsoFileDescriptor& directoryEntry);
 	int GetIndexOf(const std::string_view& fileName) const;
 };

@@ -17,7 +17,7 @@
 
 class IsoFile;
 class IsoDirectory;
-struct ISoFileDescriptor;
+struct IsoFileDescriptor;
 
 #include "SectorSource.h"
 #include "IsoFileDescriptor.h"

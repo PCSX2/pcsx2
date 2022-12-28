@@ -19,7 +19,7 @@
 
 #include "SectorSource.h"
 
-class IsoFSCDVD : public SectorSource
+class IsoFSCDVD final : public SectorSource
 {
 public:
 	IsoFSCDVD();
