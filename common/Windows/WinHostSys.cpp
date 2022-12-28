@@ -17,59 +17,77 @@
 
 #include "common/Align.h"
 #include "common/RedtapeWindows.h"
-#include "common/PageFaultSource.h"
 #include "common/Console.h"
+#include "common/General.h"
 #include "common/Exceptions.h"
 #include "common/StringUtil.h"
 #include "common/AlignedMalloc.h"
-#include "fmt/core.h"
+#include "common/Assertions.h"
 
+#include "fmt/core.h"
 #include "fmt/format.h"
 
-static long DoSysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
-{
-	if (eps->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION)
-		return EXCEPTION_CONTINUE_SEARCH;
+#include <mutex>
 
-#if defined(_M_AMD64)
-	void* const exception_pc = reinterpret_cast<void*>(eps->ContextRecord->Rip);
-#else
-	void* const exception_pc = nullptr;
-#endif
-
-	// Note: This exception can be accessed by the EE or MTVU thread
-	// Source_PageFault is a global variable with its own state information
-	// so for now we lock this exception code unless someone can fix this better...
-	std::unique_lock lock(PageFault_Mutex);
-	Source_PageFault->Dispatch(PageFaultInfo((uptr)exception_pc, (uptr)eps->ExceptionRecord->ExceptionInformation[1]));
-	return Source_PageFault->WasHandled() ? EXCEPTION_CONTINUE_EXECUTION : EXCEPTION_CONTINUE_SEARCH;
-}
+static std::recursive_mutex s_exception_handler_mutex;
+static PageFaultHandler s_exception_handler_callback;
+static void* s_exception_handler_handle;
+static bool s_in_exception_handler;
 
 long __stdcall SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 {
-	// Prevent recursive exception filtering by catching the exception from the filter here.
-	// In the event that the filter causes an access violation (happened during shutdown
-	// because Source_PageFault was deallocated), this will allow the debugger to catch the
-	// exception.
-	// TODO: find a reliable way to debug the filter itself, I've come up with a few ways that
-	// work but I don't fully understand why some do and some don't.
-	__try
-	{
-		return DoSysPageFaultExceptionFilter(eps);
-	}
-	__except (GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
-	{
+	// Executing the handler concurrently from multiple threads wouldn't go down well.
+	std::unique_lock lock(s_exception_handler_mutex);
+
+	// Prevent recursive exception filtering.
+	if (s_in_exception_handler)
 		return EXCEPTION_CONTINUE_SEARCH;
+
+	// Only interested in page faults.
+	if (eps->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION)
+		return EXCEPTION_CONTINUE_SEARCH;
+
+	void* const exception_pc = reinterpret_cast<void*>(eps->ContextRecord->Rip);
+
+	const PageFaultInfo pfi{(uptr)exception_pc, (uptr)eps->ExceptionRecord->ExceptionInformation[1]};
+
+	s_in_exception_handler = true;
+
+	const bool handled = s_exception_handler_callback(pfi);
+
+	s_in_exception_handler = false;
+	
+	return handled ? EXCEPTION_CONTINUE_EXECUTION : EXCEPTION_CONTINUE_SEARCH;
+}
+
+bool HostSys::InstallPageFaultHandler(PageFaultHandler handler)
+{
+	std::unique_lock lock(s_exception_handler_mutex);
+	pxAssertRel(!s_exception_handler_callback, "A page fault handler is already registered.");
+	if (!s_exception_handler_handle)
+	{
+		s_exception_handler_handle = AddVectoredExceptionHandler(TRUE, SysPageFaultExceptionFilter);
+		if (!s_exception_handler_handle)
+			return false;
+	}
+
+	s_exception_handler_callback = handler;
+	return true;
+}
+
+void HostSys::RemovePageFaultHandler(PageFaultHandler handler)
+{
+	std::unique_lock lock(s_exception_handler_mutex);
+	pxAssertRel(!s_exception_handler_callback || s_exception_handler_callback == handler,
+		"Not removing the same handler previously registered.");
+	s_exception_handler_callback = nullptr;
+
+	if (s_exception_handler_handle)
+	{
+		RemoveVectoredExceptionHandler(s_exception_handler_handle);
+		s_exception_handler_handle = {};
 	}
 }
-
-void _platform_InstallSignalHandler()
-{
-#ifdef _WIN64 // We don't handle SEH properly on Win64 so use a vectored exception handler instead
-	AddVectoredExceptionHandler(true, SysPageFaultExceptionFilter);
-#endif
-}
-
 
 static DWORD ConvertToWinApi(const PageProtectionMode& mode)
 {

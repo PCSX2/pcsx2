@@ -13,61 +13,17 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
+
+#include "VirtualMemory.h"
+
 #include "common/Align.h"
-#include "common/PageFaultSource.h"
-#include "common/EventSource.inl"
-#include "common/MemsetFast.inl"
 #include "common/Console.h"
+#include "common/Perf.h"
 
 #include "fmt/core.h"
 
 #include <cinttypes>
-
-template class EventSource<IEventListener_PageFault>;
-
-SrcType_PageFault* Source_PageFault = NULL;
-std::mutex PageFault_Mutex;
-
-void pxInstallSignalHandler()
-{
-	if (!Source_PageFault)
-	{
-		Source_PageFault = new SrcType_PageFault();
-	}
-
-	_platform_InstallSignalHandler();
-
-	// NOP on Win32 systems -- we use __try{} __except{} instead.
-}
-
-// --------------------------------------------------------------------------------------
-//  EventListener_PageFault  (implementations)
-// --------------------------------------------------------------------------------------
-EventListener_PageFault::EventListener_PageFault()
-{
-	pxAssert(Source_PageFault);
-	Source_PageFault->Add(*this);
-}
-
-EventListener_PageFault::~EventListener_PageFault()
-{
-	if (Source_PageFault)
-		Source_PageFault->Remove(*this);
-}
-
-void SrcType_PageFault::Dispatch(const PageFaultInfo& params)
-{
-	m_handled = false;
-	_parent::Dispatch(params);
-}
-
-void SrcType_PageFault::_DispatchRaw(ListenerIterator iter, const ListenerIterator& iend, const PageFaultInfo& evt)
-{
-	do
-	{
-		(*iter)->DispatchEvent(evt, m_handled);
-	} while ((++iter != iend) && !m_handled);
-}
 
 // --------------------------------------------------------------------------------------
 //  VirtualMemoryManager  (implementations)
@@ -335,23 +291,75 @@ void VirtualMemoryReserve::Release()
 }
 
 // --------------------------------------------------------------------------------------
-//  PageProtectionMode  (implementations)
+//  RecompiledCodeReserve  (implementations)
 // --------------------------------------------------------------------------------------
-std::string PageProtectionMode::ToString() const
+
+// Constructor!
+// Parameters:
+//   name - a nice long name that accurately describes the contents of this reserve.
+RecompiledCodeReserve::RecompiledCodeReserve(std::string name)
+	: VirtualMemoryReserve(std::move(name))
 {
-	std::string modeStr;
+}
 
-	if (m_read)
-		modeStr += "Read";
-	if (m_write)
-		modeStr += "Write";
-	if (m_exec)
-		modeStr += "Exec";
+RecompiledCodeReserve::~RecompiledCodeReserve()
+{
+	Release();
+}
 
-	if (modeStr.empty())
-		return "NoAccess";
-	if (modeStr.length() <= 5)
-		modeStr += "Only";
+void RecompiledCodeReserve::_registerProfiler()
+{
+	if (m_profiler_name.empty() || !IsOk())
+		return;
 
-	return modeStr;
+	Perf::any.map((uptr)m_baseptr, m_size, m_profiler_name.c_str());
+}
+
+void RecompiledCodeReserve::Assign(VirtualMemoryManagerPtr allocator, size_t offset, size_t size)
+{
+	// Anything passed to the memory allocator must be page aligned.
+	size = Common::PageAlign(size);
+
+	// Since the memory has already been allocated as part of the main memory map, this should never fail.
+	u8* base = allocator->Alloc(offset, size);
+	if (!base)
+	{
+		Console.WriteLn("(RecompiledCodeReserve) Failed to allocate %zu bytes for %s at offset %zu", size, m_name.c_str(), offset);
+		pxFailRel("RecompiledCodeReserve allocation failed.");
+	}
+
+	VirtualMemoryReserve::Assign(std::move(allocator), base, size);
+	_registerProfiler();
+}
+
+void RecompiledCodeReserve::Reset()
+{
+	if (IsDevBuild && m_baseptr)
+	{
+		// Clear the recompiled code block to 0xcc (INT3) -- this helps disasm tools show
+		// the assembly dump more cleanly.  We don't clear the block on Release builds since
+		// it can add a noticeable amount of overhead to large block recompilations.
+
+		std::memset(m_baseptr, 0xCC, m_size);
+	}
+}
+
+void RecompiledCodeReserve::AllowModification()
+{
+	HostSys::MemProtect(m_baseptr, m_size, PageAccess_Any());
+}
+
+void RecompiledCodeReserve::ForbidModification()
+{
+	HostSys::MemProtect(m_baseptr, m_size, PageProtectionMode().Read().Execute());
+}
+
+// Sets the abbreviated name used by the profiler.  Name should be under 10 characters long.
+// After a name has been set, a profiler source will be automatically registered and cleared
+// in accordance with changes in the reserve area.
+RecompiledCodeReserve& RecompiledCodeReserve::SetProfilerName(std::string name)
+{
+	m_profiler_name = std::move(name);
+	_registerProfiler();
+	return *this;
 }

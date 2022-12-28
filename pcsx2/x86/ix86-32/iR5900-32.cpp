@@ -24,8 +24,7 @@
 #include "iR5900.h"
 #include "iR5900Analysis.h"
 #include "BaseblockEx.h"
-#include "System.h"
-
+#include "VirtualMemory.h"
 #include "vtlb.h"
 
 #include "VMManager.h"

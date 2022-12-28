@@ -47,7 +47,6 @@ BIOS
 #include "SPU2/spu2.h"
 
 #include "common/AlignedMalloc.h"
-#include "common/PageFaultSource.h"
 
 #include "GSDumpReplayer.h"
 
@@ -668,14 +667,6 @@ void memClearPageAddr(u32 vaddr)
 ///////////////////////////////////////////////////////////////////////////
 // PS2 Memory Init / Reset / Shutdown
 
-class mmap_PageFaultHandler : public EventListener_PageFault
-{
-public:
-	void OnPageFaultEvent( const PageFaultInfo& info, bool& handled );
-};
-
-static mmap_PageFaultHandler* mmap_faultHandler = NULL;
-
 EEVM_MemoryAllocMess* eeMem = NULL;
 alignas(__pagesize) u8 eeHw[Ps2MemSize::Hardware];
 
@@ -726,12 +717,6 @@ void eeMemoryReserve::Assign(VirtualMemoryManagerPtr allocator)
 {
 	_parent::Assign(std::move(allocator), HostMemoryMap::EEmemOffset, sizeof(*eeMem));
 	eeMem = reinterpret_cast<EEVM_MemoryAllocMess*>(GetPtr());
-
-	if (!mmap_faultHandler)
-	{
-		pxAssert(Source_PageFault);
-		mmap_faultHandler = new mmap_PageFaultHandler();
-	}
 }
 
 
@@ -865,166 +850,6 @@ void eeMemoryReserve::Reset()
 
 void eeMemoryReserve::Release()
 {
-	safe_delete(mmap_faultHandler);
 	eeMem = nullptr;
 	_parent::Release();
-}
-
-// ===========================================================================================
-//  Memory Protection and Block Checking, vtlb Style!
-// ===========================================================================================
-// For the first time code is recompiled (executed), the PS2 ram page for that code is
-// protected using Virtual Memory (mprotect).  If the game modifies its own code then this
-// protection causes an *exception* to be raised (signal in Linux), which is handled by
-// unprotecting the page and switching the recompiled block to "manual" protection.
-//
-// Manual protection uses a simple brute-force memcmp of the recompiled code to the code
-// currently in RAM for *each time* the block is executed.  Fool-proof, but slow, which
-// is why we default to using the exception-based protection scheme described above.
-//
-// Why manual blocks?  Because many games contain code and data in the same 4k page, so
-// we *cannot* automatically recompile and reprotect pages, lest we end up recompiling and
-// reprotecting them constantly (Which would be very slow).  As a counter, the R5900 side
-// of the block checking code does try to periodically re-protect blocks [going from manual
-// back to protected], so that blocks which underwent a single invalidation don't need to
-// incur a permanent performance penalty.
-//
-// Page Granularity:
-// Fortunately for us MIPS and x86 use the same page granularity for TLB and memory
-// protection, so we can use a 1:1 correspondence when protecting pages.  Page granularity
-// is 4096 (4k), which is why you'll see a lot of 0xfff's, >><< 12's, and 0x1000's in the
-// code below.
-//
-
-struct vtlb_PageProtectionInfo
-{
-	// Ram De-mapping -- used to convert fully translated/mapped offsets (which reside with
-	// in the eeMem->Main block) back into their originating ps2 physical ram address.
-	// Values are assigned when pages are marked for protection.  since pages are automatically
-	// cleared and reset when TLB-remapped, stale values in this table (due to on-the-fly TLB
-	// changes) will be re-assigned the next time the page is accessed.
-	u32 ReverseRamMap;
-
-	vtlb_ProtectionMode Mode;
-};
-
-alignas(16) static vtlb_PageProtectionInfo m_PageProtectInfo[Ps2MemSize::MainRam >> __pageshift];
-
-
-// returns:
-//  ProtMode_NotRequired - unchecked block (resides in ROM, thus is integrity is constant)
-//  Or the current mode
-//
-vtlb_ProtectionMode mmap_GetRamPageInfo( u32 paddr )
-{
-	pxAssert( eeMem );
-
-	paddr &= ~0xfff;
-
-	uptr ptr = (uptr)PSM( paddr );
-	uptr rampage = ptr - (uptr)eeMem->Main;
-
-	if (!ptr || rampage >= Ps2MemSize::MainRam)
-		return ProtMode_NotRequired; //not in ram, no tracking done ...
-
-	rampage >>= __pageshift;
-
-	return m_PageProtectInfo[rampage].Mode;
-}
-
-// paddr - physically mapped PS2 address
-void mmap_MarkCountedRamPage( u32 paddr )
-{
-	pxAssert( eeMem );
-
-	paddr &= ~__pagemask;
-
-	uptr ptr = (uptr)PSM( paddr );
-	int rampage = (ptr - (uptr)eeMem->Main) >> __pageshift;
-
-	// Important: Update the ReverseRamMap here because TLB changes could alter the paddr
-	// mapping into eeMem->Main.
-
-	m_PageProtectInfo[rampage].ReverseRamMap = paddr;
-
-	if( m_PageProtectInfo[rampage].Mode == ProtMode_Write )
-		return;		// skip town if we're already protected.
-
-	eeRecPerfLog.Write( (m_PageProtectInfo[rampage].Mode == ProtMode_Manual) ?
-		"Re-protecting page @ 0x%05x" : "Protected page @ 0x%05x",
-		paddr>>__pageshift
-	);
-
-	m_PageProtectInfo[rampage].Mode = ProtMode_Write;
-	HostSys::MemProtect( &eeMem->Main[rampage<<__pageshift], __pagesize, PageAccess_ReadOnly() );
-	vtlb_UpdateFastmemProtection(rampage << __pageshift, __pagesize, PageAccess_ReadOnly());
-}
-
-// offset - offset of address relative to psM.
-// All recompiled blocks belonging to the page are cleared, and any new blocks recompiled
-// from code residing in this page will use manual protection.
-static __fi void mmap_ClearCpuBlock( uint offset )
-{
-	pxAssert( eeMem );
-
-	int rampage = offset >> __pageshift;
-
-	// Assertion: This function should never be run on a block that's already under
-	// manual protection.  Indicates a logic error in the recompiler or protection code.
-	pxAssertMsg( m_PageProtectInfo[rampage].Mode != ProtMode_Manual,
-		"Attempted to clear a block that is already under manual protection." );
-
-	HostSys::MemProtect( &eeMem->Main[rampage<<__pageshift], __pagesize, PageAccess_ReadWrite() );
-	vtlb_UpdateFastmemProtection(rampage << __pageshift, __pagesize, PageAccess_ReadWrite());
-	m_PageProtectInfo[rampage].Mode = ProtMode_Manual;
-	Cpu->Clear( m_PageProtectInfo[rampage].ReverseRamMap, __pagesize );
-}
-
-void mmap_PageFaultHandler::OnPageFaultEvent( const PageFaultInfo& info, bool& handled )
-{
-	pxAssert( eeMem );
-
-	u32 vaddr;
-	if (CHECK_FASTMEM && vtlb_GetGuestAddress(info.addr, &vaddr))
-	{
-		// this was inside the fastmem area. check if it's a code page
-		// fprintf(stderr, "Fault on fastmem %p vaddr %08X\n", info.addr, vaddr);
-
-		uptr ptr = (uptr)PSM(vaddr);
-		uptr offset = (ptr - (uptr)eeMem->Main);
-		if (ptr && m_PageProtectInfo[offset >> __pageshift].Mode == ProtMode_Write)
-		{
-			// fprintf(stderr, "Not backpatching code write at %08X\n", vaddr);
-			mmap_ClearCpuBlock(offset);
-			handled = true;
-		}
-		else
-		{
-			// fprintf(stderr, "Trying backpatching vaddr %08X\n", vaddr);
-			if (vtlb_BackpatchLoadStore(info.pc, info.addr))
-				handled = true;
-		}
-	}
-	else
-	{
-		// get bad virtual address
-		uptr offset = info.addr - (uptr)eeMem->Main;
-		if (offset >= Ps2MemSize::MainRam)
-			return;
-
-		mmap_ClearCpuBlock(offset);
-		handled = true;
-	}
-}
-
-// Clears all block tracking statuses, manual protection flags, and write protection.
-// This does not clear any recompiler blocks.  It is assumed (and necessary) for the caller
-// to ensure the EErec is also reset in conjunction with calling this function.
-//  (this function is called by default from the eerecReset).
-void mmap_ResetBlockTracking()
-{
-	//DbgCon.WriteLn( "vtlb/mmap: Block Tracking reset..." );
-	memzero( m_PageProtectInfo );
-	if (eeMem) HostSys::MemProtect( eeMem->Main, Ps2MemSize::MainRam, PageAccess_ReadWrite() );
-	vtlb_UpdateFastmemProtection(0, Ps2MemSize::MainRam, PageAccess_ReadWrite());
 }

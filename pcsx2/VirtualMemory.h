@@ -13,122 +13,14 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// [TODO] Rename this file to VirtualMemory.h !!
-
 #pragma once
 
-// =====================================================================================================
-//  Cross-Platform Memory Protection (Used by VTLB, Recompilers and Texture caches)
-// =====================================================================================================
-// Win32 platforms use the SEH model: __try {}  __except {}
-// Linux platforms use the POSIX Signals model: sigaction()
-// [TODO] OS-X (Darwin) platforms should use the Mach exception model (not implemented)
-
-#include "EventSource.h"
-#include "General.h"
-#include "Assertions.h"
+#include "common/General.h"
+#include "common/Assertions.h"
 #include <atomic>
 #include <memory>
 #include <mutex>
 #include <string>
-
-struct PageFaultInfo
-{
-	uptr pc;
-	uptr addr;
-
-	PageFaultInfo(uptr pc_, uptr address)
-	{
-		pc = pc_;
-		addr = address;
-	}
-};
-
-// --------------------------------------------------------------------------------------
-//  IEventListener_PageFault
-// --------------------------------------------------------------------------------------
-class IEventListener_PageFault : public IEventDispatcher<PageFaultInfo>
-{
-public:
-	typedef PageFaultInfo EvtParams;
-
-public:
-	virtual ~IEventListener_PageFault() = default;
-
-	virtual void DispatchEvent(const PageFaultInfo& evtinfo, bool& handled)
-	{
-		OnPageFaultEvent(evtinfo, handled);
-	}
-
-	virtual void DispatchEvent(const PageFaultInfo& evtinfo)
-	{
-		pxFailRel("Don't call me, damnit.  Use DispatchException instead.");
-	}
-
-	virtual void OnPageFaultEvent(const PageFaultInfo& evtinfo, bool& handled) {}
-};
-
-// --------------------------------------------------------------------------------------
-//  EventListener_PageFault / EventListenerHelper_PageFault
-// --------------------------------------------------------------------------------------
-class EventListener_PageFault : public IEventListener_PageFault
-{
-public:
-	EventListener_PageFault();
-	virtual ~EventListener_PageFault();
-};
-
-template <typename TypeToDispatchTo>
-class EventListenerHelper_PageFault : public EventListener_PageFault
-{
-public:
-	TypeToDispatchTo* Owner;
-
-public:
-	EventListenerHelper_PageFault(TypeToDispatchTo& dispatchTo)
-	{
-		Owner = &dispatchTo;
-	}
-
-	EventListenerHelper_PageFault(TypeToDispatchTo* dispatchTo)
-	{
-		Owner = dispatchTo;
-	}
-
-	virtual ~EventListenerHelper_PageFault() = default;
-
-protected:
-	virtual void OnPageFaultEvent(const PageFaultInfo& info, bool& handled)
-	{
-		Owner->OnPageFaultEvent(info, handled);
-	}
-};
-
-// --------------------------------------------------------------------------------------
-//  SrcType_PageFault
-// --------------------------------------------------------------------------------------
-class SrcType_PageFault : public EventSource<IEventListener_PageFault>
-{
-protected:
-	typedef EventSource<IEventListener_PageFault> _parent;
-
-protected:
-	bool m_handled;
-
-public:
-	SrcType_PageFault()
-		: m_handled(false)
-	{
-	}
-	virtual ~SrcType_PageFault() = default;
-
-	bool WasHandled() const { return m_handled; }
-	virtual void Dispatch(const PageFaultInfo& params);
-
-protected:
-	virtual void _DispatchRaw(ListenerIterator iter, const ListenerIterator& iend, const PageFaultInfo& evt);
-};
-
 
 // --------------------------------------------------------------------------------------
 //  VirtualMemoryManager: Manages the allocation of PCSX2 VM
@@ -252,26 +144,34 @@ public:
 	}
 };
 
-#ifdef __POSIX__
+// --------------------------------------------------------------------------------------
+//  RecompiledCodeReserve
+// --------------------------------------------------------------------------------------
+// A recompiled code reserve is a simple sequential-growth block of memory which is auto-
+// cleared to INT 3 (0xcc) as needed.
+//
+class RecompiledCodeReserve : public VirtualMemoryReserve
+{
+	typedef VirtualMemoryReserve _parent;
 
-#define PCSX2_PAGEFAULT_PROTECT
-#define PCSX2_PAGEFAULT_EXCEPT
+protected:
+	std::string m_profiler_name;
 
-#elif defined(_WIN32)
+public:
+	RecompiledCodeReserve(std::string name);
+	~RecompiledCodeReserve();
 
-struct _EXCEPTION_POINTERS;
-extern long __stdcall SysPageFaultExceptionFilter(struct _EXCEPTION_POINTERS* eps);
+	void Assign(VirtualMemoryManagerPtr allocator, size_t offset, size_t size);
+	void Reset();
 
-#define PCSX2_PAGEFAULT_PROTECT __try
-#define PCSX2_PAGEFAULT_EXCEPT \
-	__except (SysPageFaultExceptionFilter(GetExceptionInformation())) {}
+	RecompiledCodeReserve& SetProfilerName(std::string name);
 
-#else
-#error PCSX2 - Unsupported operating system platform.
-#endif
+	void ForbidModification();
+	void AllowModification();
 
-extern void pxInstallSignalHandler();
-extern void _platform_InstallSignalHandler();
+	operator u8*() { return m_baseptr; }
+	operator const u8*() const { return m_baseptr; }
 
-extern SrcType_PageFault* Source_PageFault;
-extern std::mutex PageFault_Mutex;
+protected:
+	void _registerProfiler();
+};

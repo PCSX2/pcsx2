@@ -1385,6 +1385,9 @@
     <ClCompile Include="GSDumpReplayer.cpp">
       <Filter>Tools</Filter>
     </ClCompile>
+    <ClCompile Include="VirtualMemory.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -1418,9 +1421,6 @@
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="System.h">
-      <Filter>System\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="System\SysThreads.h">
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="Counters.h">
@@ -2317,6 +2317,9 @@
     </ClInclude>
     <ClInclude Include="GS.h">
       <Filter>System\Ps2\GS\GIF</Filter>
+    </ClInclude>
+    <ClInclude Include="VirtualMemory.h">
+      <Filter>System</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

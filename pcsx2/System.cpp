@@ -27,12 +27,17 @@
 #include "common/Perf.h"
 #include "common/StringUtil.h"
 #include "CDVD/CDVD.h"
+#include "GS/Renderers/Common/GSFunctionMap.h"
 
 #include "common/emitter/x86_intrin.h"
 
 #include "GSDumpReplayer.h"
 
+#include "svnrev.h"
+
 extern R5900cpu GSDumpReplayerCpu;
+
+Pcsx2Config EmuConfig;
 
 SSE_MXCSR g_sseMXCSR = {DEFAULT_sseMXCSR};
 SSE_MXCSR g_sseVU0MXCSR = {DEFAULT_sseVUMXCSR};
@@ -50,121 +55,6 @@ void SetCPUState(SSE_MXCSR sseMXCSR, SSE_MXCSR sseVU0MXCSR, SSE_MXCSR sseVU1MXCS
 
 	_mm_setcsr(g_sseMXCSR.bitmask);
 }
-
-// --------------------------------------------------------------------------------------
-//  RecompiledCodeReserve  (implementations)
-// --------------------------------------------------------------------------------------
-
-// Constructor!
-// Parameters:
-//   name - a nice long name that accurately describes the contents of this reserve.
-RecompiledCodeReserve::RecompiledCodeReserve(std::string name)
-	: VirtualMemoryReserve(std::move(name))
-{
-}
-
-RecompiledCodeReserve::~RecompiledCodeReserve()
-{
-	Release();
-}
-
-void RecompiledCodeReserve::_registerProfiler()
-{
-	if (m_profiler_name.empty() || !IsOk())
-		return;
-
-	Perf::any.map((uptr)m_baseptr, m_size, m_profiler_name.c_str());
-}
-
-void RecompiledCodeReserve::Assign(VirtualMemoryManagerPtr allocator, size_t offset, size_t size)
-{
-	// Anything passed to the memory allocator must be page aligned.
-	size = Common::PageAlign(size);
-
-	// Since the memory has already been allocated as part of the main memory map, this should never fail.
-	u8* base = allocator->Alloc(offset, size);
-	if (!base)
-	{
-		Console.WriteLn("(RecompiledCodeReserve) Failed to allocate %zu bytes for %s at offset %zu", size, m_name.c_str(), offset);
-		pxFailRel("RecompiledCodeReserve allocation failed.");
-	}
-
-	VirtualMemoryReserve::Assign(std::move(allocator), base, size);
-	_registerProfiler();
-}
-
-void RecompiledCodeReserve::Reset()
-{
-	if (IsDevBuild && m_baseptr)
-	{
-		// Clear the recompiled code block to 0xcc (INT3) -- this helps disasm tools show
-		// the assembly dump more cleanly.  We don't clear the block on Release builds since
-		// it can add a noticeable amount of overhead to large block recompilations.
-
-		std::memset(m_baseptr, 0xCC, m_size);
-	}
-}
-
-void RecompiledCodeReserve::AllowModification()
-{
-	// Apple Silicon enforces write protection in hardware.
-#if !defined(__APPLE__) || !defined(_M_ARM64)
-	HostSys::MemProtect(m_baseptr, m_size, PageAccess_Any());
-#endif
-}
-
-void RecompiledCodeReserve::ForbidModification()
-{
-	// Apple Silicon enforces write protection in hardware.
-#if !defined(__APPLE__) || !defined(_M_ARM64)
-	HostSys::MemProtect(m_baseptr, m_size, PageProtectionMode().Read().Execute());
-#endif
-}
-
-// Sets the abbreviated name used by the profiler.  Name should be under 10 characters long.
-// After a name has been set, a profiler source will be automatically registered and cleared
-// in accordance with changes in the reserve area.
-RecompiledCodeReserve& RecompiledCodeReserve::SetProfilerName(std::string name)
-{
-	m_profiler_name = std::move(name);
-	_registerProfiler();
-	return *this;
-}
-
-GSCodeReserve::GSCodeReserve()
-	: RecompiledCodeReserve("GS Software Renderer")
-{
-}
-
-GSCodeReserve::~GSCodeReserve() = default;
-
-void GSCodeReserve::Assign(VirtualMemoryManagerPtr allocator)
-{
-	RecompiledCodeReserve::Assign(std::move(allocator), HostMemoryMap::SWrecOffset, HostMemoryMap::SWrecSize);
-}
-
-void GSCodeReserve::Reset()
-{
-	RecompiledCodeReserve::Reset();
-	m_memory_used = 0;
-}
-
-u8* GSCodeReserve::Reserve(size_t size)
-{
-	pxAssert((m_memory_used + size) <= m_size);
-	return m_baseptr + m_memory_used;
-}
-
-void GSCodeReserve::Commit(size_t size)
-{
-	pxAssert((m_memory_used + size) <= m_size);
-	m_memory_used += size;
-}
-
-#include "svnrev.h"
-
-Pcsx2Config EmuConfig;
-
 
 // This function should be called once during program execution.
 void SysLogMachineCaps()
@@ -322,7 +212,6 @@ SysMainMemory::~SysMainMemory()
 bool SysMainMemory::Allocate()
 {
 	DevCon.WriteLn(Color_StrongBlue, "Allocating host memory for virtual systems...");
-	pxInstallSignalHandler();
 
 	ConsoleIndentScope indent(1);
 
@@ -363,8 +252,6 @@ void SysMainMemory::Release()
 	m_ee.Release();
 	m_iop.Release();
 	m_vu.Release();
-
-	safe_delete(Source_PageFault);
 }
 
 
@@ -388,12 +275,12 @@ SysCpuProviderPack::SysCpuProviderPack()
 		dVifReserve(1);
 	}
 
-	GetVmMemory().GSCode().Assign(GetVmMemory().CodeMemory());
+	GSCodeReserve::GetInstance().Assign(GetVmMemory().CodeMemory());
 }
 
 SysCpuProviderPack::~SysCpuProviderPack()
 {
-	GetVmMemory().GSCode().Release();
+	GSCodeReserve::GetInstance().Release();
 
 	if (newVifDynaRec)
 	{

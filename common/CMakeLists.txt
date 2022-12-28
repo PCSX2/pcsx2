@@ -10,7 +10,6 @@ add_library(common)
 # x86emitter sources
 target_sources(common PRIVATE
 	AlignedMalloc.cpp
-	VirtualMemory.cpp
 	EventSource.inl
 	SafeArray.inl
 	Console.cpp
@@ -20,6 +19,7 @@ target_sources(common PRIVATE
 	Exceptions.cpp
 	FastJmp.cpp
 	FileSystem.cpp
+	General.cpp
 	Image.cpp
 	HTTPDownloader.cpp
 	MemorySettingsInterface.cpp
@@ -88,7 +88,6 @@ target_sources(common PRIVATE
 	MD5Digest.h
 	MRCHelpers.h
 	Path.h
-	PageFaultSource.h
 	PrecompiledHeader.h
 	ProgressCallback.h
 	ReadbackSpinManager.h

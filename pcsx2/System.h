@@ -19,11 +19,11 @@
 
 #include "common/Exceptions.h"
 #include "common/SafeArray.h"
-#include "common/Threading.h"		// to use threading stuff, include the Threading namespace in your file.
-
-#include "vtlb.h"
+#include "common/Threading.h"
 
 #include "Config.h"
+#include "VirtualMemory.h"
+#include "vtlb.h"
 
 typedef SafeArray<u8> VmStateBuffer;
 
@@ -92,61 +92,6 @@ namespace HostMemoryMap
 }
 
 // --------------------------------------------------------------------------------------
-//  RecompiledCodeReserve
-// --------------------------------------------------------------------------------------
-// A recompiled code reserve is a simple sequential-growth block of memory which is auto-
-// cleared to INT 3 (0xcc) as needed.
-//
-class RecompiledCodeReserve : public VirtualMemoryReserve
-{
-	typedef VirtualMemoryReserve _parent;
-
-protected:
-	std::string m_profiler_name;
-
-public:
-	RecompiledCodeReserve(std::string name);
-	~RecompiledCodeReserve();
-
-	void Assign(VirtualMemoryManagerPtr allocator, size_t offset, size_t size);
-	void Reset();
-
-	RecompiledCodeReserve& SetProfilerName(std::string name);
-
-	void ForbidModification();
-	void AllowModification();
-
-	operator u8*() { return m_baseptr; }
-	operator const u8*() const { return m_baseptr; }
-
-protected:
-	void _registerProfiler();
-};
-
-// --------------------------------------------------------------------------------------
-//  GSCodeReserve
-// --------------------------------------------------------------------------------------
-// Stores code buffers for the GS software JIT.
-class GSCodeReserve : public RecompiledCodeReserve
-{
-public:
-	GSCodeReserve();
-	~GSCodeReserve();
-
-	size_t GetMemoryUsed() const { return m_memory_used; }
-
-	void Assign(VirtualMemoryManagerPtr allocator);
-	void Reset();
-
-	u8* Reserve(size_t size);
-	void Commit(size_t size);
-
-private:
-	size_t m_memory_used = 0;
-};
-
-
-// --------------------------------------------------------------------------------------
 //  SysMainMemory
 // --------------------------------------------------------------------------------------
 // This class provides the main memory for the virtual machines.
@@ -162,8 +107,6 @@ protected:
 	iopMemoryReserve m_iop;
 	vuMemoryReserve m_vu;
 
-	GSCodeReserve m_gs_code;
-
 public:
 	SysMainMemory();
 	~SysMainMemory();
@@ -176,8 +119,6 @@ public:
 	const eeMemoryReserve& EEMemory() const { return m_ee; }
 	const iopMemoryReserve& IOPMemory() const { return m_iop; }
 	const vuMemoryReserve& VUMemory() const { return m_vu; }
-
-	GSCodeReserve& GSCode() { return m_gs_code; }
 
 	bool Allocate();
 	void Reset();

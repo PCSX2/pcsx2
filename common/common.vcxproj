@@ -70,6 +70,7 @@
     <ClCompile Include="FastJmp.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="General.cpp" />
     <ClCompile Include="GL\Context.cpp" />
     <ClCompile Include="GL\ContextWGL.cpp" />
     <ClCompile Include="GL\Program.cpp" />
@@ -90,7 +91,6 @@
     <ClCompile Include="StringUtil.cpp" />
     <ClCompile Include="SettingsWrapper.cpp" />
     <ClCompile Include="Timer.cpp" />
-    <ClCompile Include="VirtualMemory.cpp" />
     <ClCompile Include="Vulkan\vk_mem_alloc.cpp" />
     <ClCompile Include="Vulkan\Builders.cpp" />
     <ClCompile Include="Vulkan\Context.cpp" />

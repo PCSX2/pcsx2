@@ -17,7 +17,7 @@
 
 #include "GS/GSExtra.h"
 #include "GS/Renderers/SW/GSScanlineEnvironment.h"
-#include "System.h"
+#include "VirtualMemory.h"
 #include "common/emitter/tools.h"
 
 template <class KEY, class VALUE>
@@ -142,6 +142,31 @@ public:
 	}
 };
 
+// --------------------------------------------------------------------------------------
+//  GSCodeReserve
+// --------------------------------------------------------------------------------------
+// Stores code buffers for the GS software JIT.
+//
+class GSCodeReserve : public RecompiledCodeReserve
+{
+public:
+	GSCodeReserve();
+	~GSCodeReserve();
+
+	static GSCodeReserve& GetInstance();
+
+	size_t GetMemoryUsed() const { return m_memory_used; }
+
+	void Assign(VirtualMemoryManagerPtr allocator);
+	void Reset();
+
+	u8* Reserve(size_t size);
+	void Commit(size_t size);
+
+private:
+	size_t m_memory_used = 0;
+};
+
 template <class CG, class KEY, class VALUE>
 class GSCodeGeneratorFunctionMap : public GSFunctionMap<KEY, VALUE>
 {
@@ -175,7 +200,7 @@ public:
 		}
 		else
 		{
-			u8* code_ptr = GetVmMemory().GSCode().Reserve(MAX_SIZE);
+			u8* code_ptr = GSCodeReserve::GetInstance().Reserve(MAX_SIZE);
 			CG cg(key, code_ptr, MAX_SIZE);
 			ASSERT(cg.getSize() < MAX_SIZE);
 
@@ -185,7 +210,7 @@ public:
 			sel.Print();
 #endif
 
-			GetVmMemory().GSCode().Commit(cg.getSize());
+			GSCodeReserve::GetInstance().Commit(cg.getSize());
 
 			ret = (VALUE)cg.getCode();
 

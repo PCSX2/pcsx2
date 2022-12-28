@@ -30,7 +30,7 @@ using namespace x86Emitter;
 #include "Gif_Unit.h"
 #include "iR5900.h"
 #include "R5900OpcodeTables.h"
-#include "System.h"
+#include "VirtualMemory.h"
 #include "common/emitter/x86emitter.h"
 #include "microVU_Misc.h"
 #include "microVU_IR.h"

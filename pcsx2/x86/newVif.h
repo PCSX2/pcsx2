@@ -17,9 +17,9 @@
 
 #include "Vif.h"
 #include "VU.h"
+#include "VirtualMemory.h"
 
 #include "common/emitter/x86emitter.h"
-#include "System.h"
 
 using namespace x86Emitter;
 

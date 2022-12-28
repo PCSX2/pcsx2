@@ -116,6 +116,14 @@ static __fi PageProtectionMode PageAccess_Any()
 	return PageProtectionMode().All();
 }
 
+struct PageFaultInfo
+{
+	uptr pc;
+	uptr addr;
+};
+
+using PageFaultHandler = bool(*)(const PageFaultInfo& info);
+
 // --------------------------------------------------------------------------------------
 //  HostSys
 // --------------------------------------------------------------------------------------
@@ -141,6 +149,12 @@ namespace HostSys
 	extern void DestroySharedMemory(void* ptr);
 	extern void* MapSharedMemory(void* handle, size_t offset, void* baseaddr, size_t size, const PageProtectionMode& mode);
 	extern void UnmapSharedMemory(void* baseaddr, size_t size);
+
+	/// Installs the specified page fault handler. Only one handler can be active at once.
+	bool InstallPageFaultHandler(PageFaultHandler handler);
+
+	/// Removes the page fault handler. handler is only specified to check against the active callback.
+	void RemovePageFaultHandler(PageFaultHandler handler);
 }
 
 class SharedMemoryMappingArea
