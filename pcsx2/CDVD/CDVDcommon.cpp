@@ -430,9 +430,7 @@ bool DoCDVDopen()
 
 	Host::AddKeyedOSDMessage("BlockDumpCreate", fmt::format("Saving CDVD block dump to '{}'.", temp), Host::OSD_INFO_DURATION);
 
-	blockDumpFile.Create(std::move(temp), 2);
-
-	if (blockDumpFile.IsOpened())
+	if (blockDumpFile.Create(std::move(temp), 2))
 	{
 		int blockofs = 0;
 		uint blocksize = CD_FRAMESIZE_RAW;
