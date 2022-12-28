@@ -179,10 +179,7 @@ static void recMTHILO(bool hi, bool upper)
 	}
 	else
 	{
-		// try rename rs -> {hi,lo}
-		const int gprs = _checkX86reg(X86TYPE_GPR, _Rs_, MODE_READ);
-		if (gprs >= 0 && !upper && _eeTryRenameReg(reg, _Rs_, gprs, -1, 0) >= 0)
-			return;
+		int gprs = _allocIfUsedGPRtoX86(_Rs_, MODE_READ);
 
 		if (xmmhilo >= 0)
 		{
@@ -192,8 +189,9 @@ static void recMTHILO(bool hi, bool upper)
 			}
 			else if (GPR_IS_CONST1(_Rs_))
 			{
-				_eeMoveGPRtoR(rax, _Rs_);
-				xPINSR.Q(xRegisterSSE(xmmhilo), rax, static_cast<u8>(upper));
+				// force it into a register, since we need to load the constant anyway
+				gprs = _allocX86reg(X86TYPE_GPR, _Rs_, MODE_READ);
+				xPINSR.Q(xRegisterSSE(xmmhilo), xRegister64(gprs), static_cast<u8>(upper));
 			}
 			else
 			{
@@ -202,11 +200,21 @@ static void recMTHILO(bool hi, bool upper)
 		}
 		else
 		{
+			// try rename rs -> {hi,lo}
+			if (gprs >= 0 && !upper && _eeTryRenameReg(reg, _Rs_, gprs, -1, 0) >= 0)
+				return;
+
 			const int gprreg = upper ? -1 : _allocIfUsedGPRtoX86(reg, MODE_WRITE);
 			if (gprreg >= 0)
+			{
 				_eeMoveGPRtoR(xRegister64(gprreg), _Rs_);
+			}
 			else
-				_eeMoveGPRtoM((uptr)(hi ? &cpuRegs.HI.UD[static_cast<u8>(upper)] : &cpuRegs.LO.UD[static_cast<u8>(upper)]), _Rs_);
+			{
+				// force into a register, since we need to load it to write anyway
+				gprs = _allocX86reg(X86TYPE_GPR, _Rs_, MODE_READ);
+				xMOV(ptr64[hi ? &cpuRegs.HI.UD[static_cast<u8>(upper)] : &cpuRegs.LO.UD[static_cast<u8>(upper)]], xRegister64(gprs));
+			}
 		}
 	}
 }
