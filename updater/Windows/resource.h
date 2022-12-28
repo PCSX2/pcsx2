@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by duckstation-qt.rc
+// Used by updater.rc
 //
 #define IDI_ICON1                       102
 
