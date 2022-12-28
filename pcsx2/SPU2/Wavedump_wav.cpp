@@ -14,24 +14,21 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "Global.h"
-#ifdef __POSIX__
-#include "WavFile.h"
-#else
-#include "soundtouch/source/SoundStretch/WavFile.h"
+
+#include "SPU2/Global.h"
+#include "pcsx2/Config.h"
+#include "fmt/format.h"
+
+#include "common/Path.h"
 #include "common/StringUtil.h"
-#endif
+#include "common/WAVWriter.h"
 
+#include <memory>
 #include <mutex>
-
-static WavOutFile* _new_WavOutFile(const char* destfile)
-{
-	return new WavOutFile(destfile, SampleRate, 16, 2);
-}
 
 namespace WaveDump
 {
-	static WavOutFile* m_CoreWav[2][CoreSrc_Count];
+	static std::unique_ptr<Common::WAVWriter> m_CoreWav[2][CoreSrc_Count];
 
 	static const char* m_tbl_CoreOutputTypeNames[CoreSrc_Count] =
 		{
@@ -49,29 +46,18 @@ namespace WaveDump
 		if (!WaveLog())
 			return;
 
-		char wavfilename[256];
-
 		for (uint cidx = 0; cidx < 2; cidx++)
 		{
 			for (int srcidx = 0; srcidx < CoreSrc_Count; srcidx++)
 			{
-				safe_delete(m_CoreWav[cidx][srcidx]);
-#ifdef __POSIX__
-				sprintf(wavfilename, "logs/spu2x-Core%ud-%s.wav",
-						cidx, m_tbl_CoreOutputTypeNames[srcidx]);
-#else
-				sprintf(wavfilename, "logs\\spu2x-Core%ud-%s.wav",
-						cidx, m_tbl_CoreOutputTypeNames[srcidx]);
-#endif
-
-				try
+				m_CoreWav[cidx][srcidx].reset();
+				
+				std::string wavfilename(Path::Combine(EmuFolders::Logs, fmt::format("spu2x-Core{}d-{}.wav", cidx, m_tbl_CoreOutputTypeNames[srcidx])));
+				m_CoreWav[cidx][srcidx] = std::make_unique<Common::WAVWriter>();
+				if (!m_CoreWav[cidx][srcidx]->Open(wavfilename.c_str(), SampleRate, 2))
 				{
-					m_CoreWav[cidx][srcidx] = _new_WavOutFile(wavfilename);
-				}
-				catch (std::runtime_error& ex)
-				{
-					printf("SPU2 > %s.\n\tWave Log for this core source disabled.", ex.what());
-					m_CoreWav[cidx][srcidx] = nullptr;
+					Console.Error(fmt::format("Failed to open '{}'. Wave Log for this core source disabled.", wavfilename));
+					m_CoreWav[cidx][srcidx].reset();
 				}
 			}
 		}
@@ -84,9 +70,7 @@ namespace WaveDump
 		for (uint cidx = 0; cidx < 2; cidx++)
 		{
 			for (int srcidx = 0; srcidx < CoreSrc_Count; srcidx++)
-			{
-				safe_delete(m_CoreWav[cidx][srcidx]);
-			}
+				m_CoreWav[cidx][srcidx].reset();
 		}
 	}
 
@@ -95,7 +79,7 @@ namespace WaveDump
 		if (!IsDevBuild)
 			return;
 		if (m_CoreWav[coreidx][src] != nullptr)
-			m_CoreWav[coreidx][src]->write((s16*)&sample, 2);
+			m_CoreWav[coreidx][src]->WriteFrames(reinterpret_cast<const s16*>(&sample), 1);
 	}
 
 	void WriteCore(uint coreidx, CoreSourceType src, s16 left, s16 right)
@@ -104,54 +88,39 @@ namespace WaveDump
 	}
 } // namespace WaveDump
 
-#include "common/Threading.h"
-
-using namespace Threading;
-
 bool WavRecordEnabled = false;
 
-static WavOutFile* m_wavrecord = nullptr;
+static std::unique_ptr<Common::WAVWriter> m_wavrecord;
 static std::mutex WavRecordMutex;
 
 bool RecordStart(const std::string* filename)
 {
-	try
+	std::unique_lock lock(WavRecordMutex);
+	m_wavrecord.reset();
+	m_wavrecord = std::make_unique<Common::WAVWriter>();
+	if (!m_wavrecord->Open(m_wavrecord ? filename->c_str() : "audio_recording.wav", SampleRate, 2))
 	{
-		std::unique_lock lock(WavRecordMutex);
-		safe_delete(m_wavrecord);
-		if (filename)
-#ifdef _WIN32
-			m_wavrecord = new WavOutFile(_wfopen(StringUtil::UTF8StringToWideString(*filename).c_str(), L"wb"), SampleRate, 16, 2);
-#else
-			m_wavrecord = new WavOutFile(filename->c_str(), SampleRate, 16, 2);
-#endif
-		else
-			m_wavrecord = new WavOutFile("audio_recording.wav", SampleRate, 16, 2);
-		WavRecordEnabled = true;
-		return true;
-	}
-	catch (std::runtime_error&)
-	{
-		m_wavrecord = nullptr; // not needed, but what the heck. :)
-		if (filename)
-			Console.Error("SPU2 couldn't open file for recording: %s.\nWavfile capture disabled.", filename->c_str());
-		else
-			Console.Error("SPU2 couldn't open file for recording: audio_recording.wav.\nWavfile capture disabled.");
+		Console.Error("SPU2 couldn't open file for recording: %s.\nWavfile capture disabled.", filename ? filename->c_str() : "audio_recording.wav");
+		m_wavrecord.reset();
+		WavRecordEnabled = false;
 		return false;
 	}
+
+	WavRecordEnabled = true;
+	return true;
 }
 
 void RecordStop()
 {
-	WavRecordEnabled = false;
 	std::unique_lock lock(WavRecordMutex);
-	safe_delete(m_wavrecord);
+	WavRecordEnabled = false;
+	m_wavrecord.reset();
 }
 
 void RecordWrite(const StereoOut16& sample)
 {
 	std::unique_lock lock(WavRecordMutex);
-	if (m_wavrecord == nullptr)
+	if (!m_wavrecord)
 		return;
-	m_wavrecord->write((s16*)&sample, 2);
+	m_wavrecord->WriteFrames(reinterpret_cast<const s16*>(&sample), 2);
 }

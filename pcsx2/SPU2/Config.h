@@ -17,9 +17,11 @@
 
 #include "Global.h"
 #include <string>
-#ifdef _WIN32
-#include <soundtouch\soundtouch\SoundTouch.h>
-#endif
+
+namespace soundtouch
+{
+	class SoundTouch;
+}
 
 extern bool DebugEnabled;
 
@@ -66,6 +68,7 @@ extern std::string MemDumpFileName;
 extern std::string RegDumpFileName;
 
 extern int Interpolation;
+
 extern int numSpeakers;
 extern float FinalVolume; // Global / pre-scale
 extern bool AdvancedVolumeControl;
@@ -80,15 +83,43 @@ extern float VolumeAdjustLFEdb;
 
 extern int dplLevel;
 
+extern int AutoDMAPlayRate[2];
+
 extern u32 OutputModule;
 extern int SndOutLatencyMS;
 extern int SynchMode;
 
+#ifdef PCSX2_DEVBUILD
+const int LATENCY_MAX = 3000;
+#else
+const int LATENCY_MAX = 750;
+#endif
+
+const int LATENCY_MIN = 3;
+const int LATENCY_MIN_TIMESTRETCH = 15;
+
 namespace SoundtouchCfg
 {
-	extern void ApplySettings(soundtouch::SoundTouch& sndtouch);
-}
+	extern const int SequenceLen_Min;
+	extern const int SequenceLen_Max;
 
-//////
+	extern const int SeekWindow_Min;
+	extern const int SeekWindow_Max;
+
+	extern const int Overlap_Min;
+	extern const int Overlap_Max;
+
+	extern int SequenceLenMS;
+	extern int SeekWindowMS;
+	extern int OverlapMS;
+
+	extern void ReadSettings();
+	extern void ApplySettings(soundtouch::SoundTouch& sndtouch);
+}; // namespace SoundtouchCfg
+
+namespace DebugConfig
+{
+	extern void ReadSettings();
+} // namespace DebugConfig
 
 extern void ReadSettings();
