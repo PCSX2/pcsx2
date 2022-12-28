@@ -98,6 +98,7 @@
     <ClCompile Include="Vulkan\SwapChain.cpp" />
     <ClCompile Include="Vulkan\Texture.cpp" />
     <ClCompile Include="Vulkan\Util.cpp" />
+    <ClCompile Include="WAVWriter.cpp" />
     <ClCompile Include="WindowInfo.cpp" />
     <ClCompile Include="Perf.cpp" />
     <ClCompile Include="PrecompiledHeader.cpp">
@@ -196,6 +197,7 @@
     <ClInclude Include="Vulkan\SwapChain.h" />
     <ClInclude Include="Vulkan\Texture.h" />
     <ClInclude Include="Vulkan\Util.h" />
+    <ClInclude Include="WAVWriter.h" />
     <ClInclude Include="WindowInfo.h" />
     <ClInclude Include="Threading.h" />
     <ClInclude Include="emitter\implement\avx.h" />

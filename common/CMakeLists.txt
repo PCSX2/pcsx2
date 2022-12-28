@@ -34,6 +34,7 @@ target_sources(common PRIVATE
 	StringUtil.cpp
 	Timer.cpp
 	ThreadPool.cpp
+	WAVWriter.cpp
 	WindowInfo.cpp
 	emitter/avx.cpp
 	emitter/bmi.cpp
@@ -102,6 +103,7 @@ target_sources(common PRIVATE
 	Threading.h
 	ThreadPool.h
 	TraceLog.h
+	WAVWriter.h
 	WindowInfo.h
 	emitter/cpudetect_internal.h
 	emitter/implement/dwshift.h
