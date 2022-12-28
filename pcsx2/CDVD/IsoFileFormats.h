@@ -130,7 +130,7 @@ public:
 		return m_filename;
 	}
 
-	void Create(std::string filename, int mode);
+	bool Create(std::string filename, int mode);
 	void Close();
 
 	void WriteHeader(int blockofs, uint blocksize, uint blocks);

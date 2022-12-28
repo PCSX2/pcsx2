@@ -51,15 +51,8 @@ s32 CALLBACK ISOopen(const char* pTitle)
 		return -1;
 	}
 
-	try
-	{
-		iso.Open(pTitle);
-	}
-	catch (BaseException& ex)
-	{
-		Console.Error(ex.FormatDiagnosticMessage());
+	if (!iso.Open(pTitle))
 		return -1;
-	}
 
 	switch (iso.GetType())
 	{

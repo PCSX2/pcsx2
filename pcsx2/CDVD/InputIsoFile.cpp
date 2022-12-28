@@ -15,14 +15,15 @@
 
 
 #include "PrecompiledHeader.h"
-#include "IsoFileFormats.h"
+
+#include "CDVD/IsoFileFormats.h"
+#include "Config.h"
+#include "Host.h"
+
 #include "common/Assertions.h"
 #include "common/Exceptions.h"
-#include "Config.h"
 
-#include "fmt/core.h"
-
-#include <errno.h>
+#include "fmt/format.h"
 
 static const char* nameFromType(int type)
 {
@@ -246,12 +247,17 @@ bool InputIsoFile::Open(std::string srcfile, bool testOnly)
 	bool detected = Detect();
 
 	if (testOnly)
+	{
+		Close();
 		return detected;
+	}
 
 	if (!detected)
-		throw Exception::BadStream()
-			.SetUserMsg("Unrecognized ISO image file format.")
-			.SetDiagMsg("ISO mounting failed: PCSX2 is unable to identify the ISO image type.");
+	{
+		Host::ReportErrorAsync("Unrecognized ISO image file format", "ISO mounting failed: PCSX2 is unable to identify the ISO image type.");
+		Close();
+		return false;
+	}
 
 	if (!isBlockdump && !isCompressed)
 	{
