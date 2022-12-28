@@ -23,11 +23,11 @@
 #include "iR3000A.h"
 #include "R3000A.h"
 #include "BaseblockEx.h"
-#include "System.h"
 #include "R5900OpcodeTables.h"
 #include "IopBios.h"
 #include "IopHw.h"
 #include "Common.h"
+#include "VirtualMemory.h"
 #include "VMManager.h"
 
 #include <time.h>

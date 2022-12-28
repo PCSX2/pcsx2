@@ -107,18 +107,6 @@ extern void memBindConditionalHandlers();
 
 extern void memMapVUmicro();
 
-enum vtlb_ProtectionMode
-{
-	ProtMode_None = 0,		// page is 'unaccounted' -- neither protected nor unprotected
-	ProtMode_Write,			// page is under write protection (exception handler)
-	ProtMode_Manual,		// page is under manual protection (self-checked at execution)
-	ProtMode_NotRequired	// page doesn't require any protection
-};
-
-extern vtlb_ProtectionMode mmap_GetRamPageInfo( u32 paddr );
-extern void mmap_MarkCountedRamPage( u32 paddr );
-extern void mmap_ResetBlockTracking();
-
 #define memRead8 vtlb_memRead<mem8_t>
 #define memRead16 vtlb_memRead<mem16_t>
 #define memRead32 vtlb_memRead<mem32_t>

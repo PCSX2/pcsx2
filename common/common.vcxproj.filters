@@ -67,9 +67,6 @@
     <ClCompile Include="emitter\simd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VirtualMemory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="emitter\WinCpuDetect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -211,6 +208,7 @@
     <ClCompile Include="WAVWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="General.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlignedMalloc.h">

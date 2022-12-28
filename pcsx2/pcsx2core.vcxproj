@@ -352,6 +352,7 @@
     <ClCompile Include="USB\usb-pad\usb-seamic.cpp" />
     <ClCompile Include="USB\usb-printer\usb-printer.cpp" />
     <ClCompile Include="USB\USB.cpp" />
+    <ClCompile Include="VirtualMemory.cpp" />
     <ClCompile Include="VMManager.cpp" />
     <ClCompile Include="windows\Optimus.cpp" />
     <ClCompile Include="Pcsx2Config.cpp" />
@@ -711,7 +712,6 @@
     <ClInclude Include="SaveState.h" />
     <ClInclude Include="SingleRegisterTypes.h" />
     <ClInclude Include="System.h" />
-    <ClInclude Include="System\SysThreads.h" />
     <ClInclude Include="Counters.h" />
     <ClInclude Include="Dmac.h" />
     <ClInclude Include="Hardware.h" />
@@ -719,6 +719,7 @@
     <ClInclude Include="ps2\HwInternal.h" />
     <ClInclude Include="Cache.h" />
     <ClInclude Include="Memory.h" />
+    <ClInclude Include="VirtualMemory.h" />
     <ClInclude Include="VMManager.h" />
     <ClInclude Include="vtlb.h" />
     <ClInclude Include="MTVU.h" />

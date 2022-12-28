@@ -21,13 +21,15 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <mutex>
+
 #include "fmt/core.h"
 
 #include "common/Align.h"
-#include "common/PageFaultSource.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/Exceptions.h"
+#include "common/General.h"
 
 // Apple uses the MAP_ANON define instead of MAP_ANONYMOUS, but they mean
 // the same thing.
@@ -44,34 +46,57 @@
 #include <ucontext.h>
 #endif
 
-extern void SignalExit(int sig);
+static std::recursive_mutex s_exception_handler_mutex;
+static PageFaultHandler s_exception_handler_callback;
+static bool s_in_exception_handler;
 
-static const uptr m_pagemask = getpagesize() - 1;
-
-#if defined(__APPLE__)
+#ifdef __APPLE__
 static struct sigaction s_old_sigbus_action;
 #else
 static struct sigaction s_old_sigsegv_action;
 #endif
 
+static void CallExistingSignalHandler(int signal, siginfo_t* siginfo, void* ctx)
+{
+#ifdef __APPLE__
+	const struct sigaction& sa = s_old_sigbus_action;
+#else
+	const struct sigaction& sa = s_old_sigsegv_action;
+#endif
+
+	if (sa.sa_flags & SA_SIGINFO)
+	{
+		sa.sa_sigaction(signal, siginfo, ctx);
+	}
+	else if (sa.sa_handler == SIG_DFL)
+	{
+		// Re-raising the signal would just queue it, and since we'd restore the handler back to us,
+		// we'd end up right back here again. So just abort, because that's probably what it'd do anyway.
+		abort();
+	}
+	else if (sa.sa_handler != SIG_IGN)
+	{
+		sa.sa_handler(signal);
+	}
+}
+
 // Linux implementation of SIGSEGV handler.  Bind it using sigaction().
 static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void* ctx)
 {
-	// [TODO] : Add a thread ID filter to the Linux Signal handler here.
-	// Rationale: On windows, the __try/__except model allows per-thread specific behavior
-	// for page fault handling.  On linux, there is a single signal handler for the whole
-	// process, but the handler is executed by the thread that caused the exception.
+	// Executing the handler concurrently from multiple threads wouldn't go down well.
+	std::unique_lock lock(s_exception_handler_mutex);
 
+	// Prevent recursive exception filtering.
+	if (s_in_exception_handler)
+	{
+		CallExistingSignalHandler(signal, siginfo, ctx);
+		return;
+	}
 
-	// Stdio Usage note: SIGSEGV handling is a synchronous in-thread signal.  It is done
-	// from the context of the current thread and stackframe.  So long as the thread is not
-	// the main/ui thread, use of the px assertion system should be safe.  Use of stdio should
-	// be safe even on the main thread.
-	//  (in other words, stdio limitations only really apply to process-level asynchronous
-	//   signals)
-
-	// Note: Use of stdio functions isn't safe here.  Avoid console logs,
-	// assertions, file logs, or just about anything else useful.
+	// Note: Use of stdio functions isn't safe here.  Avoid console logs, assertions, file logs,
+	// or just about anything else useful. However, that's really only a concern if the signal
+	// occurred within those functions. The logging which we do only happens when the exception
+	// occurred within JIT code.
 
 #if defined(__APPLE__) && defined(__x86_64__)
 	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__rip);
@@ -81,35 +106,62 @@ static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void* ctx)
 	void* const exception_pc = nullptr;
 #endif
 
-	// Note: This signal can be accessed by the EE or MTVU thread
-	// Source_PageFault is a global variable with its own state information
-	// so for now we lock this exception code unless someone can fix this better...
-	std::unique_lock lock(PageFault_Mutex);
+	const PageFaultInfo pfi{(uptr)exception_pc, (uptr)siginfo->si_addr & ~__pagemask};
 
-	Source_PageFault->Dispatch(PageFaultInfo((uptr)exception_pc, (uptr)siginfo->si_addr & ~m_pagemask));
+	s_in_exception_handler = true;
 
-	// resumes execution right where we left off (re-executes instruction that
-	// caused the SIGSEGV).
-	if (Source_PageFault->WasHandled())
+	const bool handled = s_exception_handler_callback(pfi);
+
+	s_in_exception_handler = false;
+
+	// Resumes execution right where we left off (re-executes instruction that caused the SIGSEGV).
+	if (handled)
 		return;
 
-	std::fprintf(stderr, "Unhandled page fault @ 0x%08x", siginfo->si_addr);
-	pxFailRel("Unhandled page fault");
+	// Call old signal handler, which will likely dump core.
+	CallExistingSignalHandler(signal, siginfo, ctx);
 }
 
-void _platform_InstallSignalHandler()
+bool HostSys::InstallPageFaultHandler(PageFaultHandler handler)
 {
-	Console.WriteLn("Installing POSIX SIGSEGV handler...");
-	struct sigaction sa;
+	std::unique_lock lock(s_exception_handler_mutex);
+	pxAssertRel(!s_exception_handler_callback, "A page fault handler is already registered.");
+	if (!s_exception_handler_callback)
+	{
+		struct sigaction sa;
 
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = SA_SIGINFO;
-	sa.sa_sigaction = SysPageFaultSignalFilter;
-#if defined(__APPLE__)
-	// MacOS uses SIGBUS for memory permission violations
-	sigaction(SIGBUS, &sa, &s_old_sigbus_action);
+		sigemptyset(&sa.sa_mask);
+		sa.sa_flags = SA_SIGINFO;
+		sa.sa_sigaction = SysPageFaultSignalFilter;
+#ifdef __APPLE__
+		// MacOS uses SIGBUS for memory permission violations
+		if (sigaction(SIGBUS, &sa, &s_old_sigbus_action) != 0)
+			return false;
 #else
-	sigaction(SIGSEGV, &sa, &s_old_sigsegv_action);
+		if (sigaction(SIGSEGV, &sa, &s_old_sigsegv_action) != 0)
+			return false;
+#endif
+	}
+
+	s_exception_handler_callback = handler;
+	return true;
+}
+
+void HostSys::RemovePageFaultHandler(PageFaultHandler handler)
+{
+	std::unique_lock lock(s_exception_handler_mutex);
+	pxAssertRel(!s_exception_handler_callback || s_exception_handler_callback == handler,
+		"Not removing the same handler previously registered.");
+	if (!s_exception_handler_callback)
+		return;
+
+	s_exception_handler_callback = nullptr;
+
+	struct sigaction sa;
+#ifdef __APPLE__
+	sigaction(SIGBUS, &s_old_sigbus_action, &sa);
+#else
+	sigaction(SIGSEGV, &s_old_sigsegv_action, &sa);
 #endif
 }
 

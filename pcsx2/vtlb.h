@@ -17,8 +17,7 @@
 
 #include "MemoryTypes.h"
 #include "SingleRegisterTypes.h"
-
-#include "common/PageFaultSource.h"
+#include "VirtualMemory.h"
 
 static const uptr VTLB_AllocUpperBounds = _1gb * 2;
 
@@ -51,7 +50,7 @@ template<> struct vtlbMemFP<128,  true> { typedef vtlbMemW128FP fn; static const
 
 typedef u32 vtlbHandler;
 
-extern void vtlb_Core_Alloc();
+extern bool vtlb_Core_Alloc();
 extern void vtlb_Core_Free();
 extern void vtlb_Alloc_Ppmap();
 extern void vtlb_Init();
@@ -288,6 +287,18 @@ namespace vtlb_private
 		return (typename FP::fn *)assumeHandlerGetRaw(FP::Index, Write);
 	}
 }
+
+enum vtlb_ProtectionMode
+{
+	ProtMode_None = 0, // page is 'unaccounted' -- neither protected nor unprotected
+	ProtMode_Write, // page is under write protection (exception handler)
+	ProtMode_Manual, // page is under manual protection (self-checked at execution)
+	ProtMode_NotRequired // page doesn't require any protection
+};
+
+extern vtlb_ProtectionMode mmap_GetRamPageInfo(u32 paddr);
+extern void mmap_MarkCountedRamPage(u32 paddr);
+extern void mmap_ResetBlockTracking();
 
 // --------------------------------------------------------------------------------------
 //  Goemon game fix

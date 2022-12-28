@@ -14,4 +14,42 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSFunctionMap.h"
+#include "GS/Renderers/Common/GSFunctionMap.h"
+#include "System.h"
+
+static GSCodeReserve s_instance;
+
+GSCodeReserve::GSCodeReserve()
+	: RecompiledCodeReserve("GS Software Renderer")
+{
+}
+
+GSCodeReserve::~GSCodeReserve() = default;
+
+GSCodeReserve& GSCodeReserve::GetInstance()
+{
+	return s_instance;
+}
+
+void GSCodeReserve::Assign(VirtualMemoryManagerPtr allocator)
+{
+	RecompiledCodeReserve::Assign(std::move(allocator), HostMemoryMap::SWrecOffset, HostMemoryMap::SWrecSize);
+}
+
+void GSCodeReserve::Reset()
+{
+	RecompiledCodeReserve::Reset();
+	m_memory_used = 0;
+}
+
+u8* GSCodeReserve::Reserve(size_t size)
+{
+	pxAssert((m_memory_used + size) <= m_size);
+	return m_baseptr + m_memory_used;
+}
+
+void GSCodeReserve::Commit(size_t size)
+{
+	pxAssert((m_memory_used + size) <= m_size);
+	m_memory_used += size;
+}
