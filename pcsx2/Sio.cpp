@@ -822,13 +822,17 @@ void sioSetGameSerial( const std::string& serial ) {
 	}
 }
 
-void SaveStateBase::sio2Freeze()
+bool SaveStateBase::sio2Freeze()
 {
-	FreezeTag("sio2");
+	if (!FreezeTag("sio2"))
+		return false;
 
 	Freeze(sio2);
 	FreezeDeque(fifoIn);
 	FreezeDeque(fifoOut);
+
+	if (!IsOkay())
+		return false;
 
 	// CRCs for memory cards.
 	// If the memory card hasn't changed when loading state, we can safely skip ejecting it.
@@ -842,6 +846,8 @@ void SaveStateBase::sio2Freeze()
 		}
 	}
 	Freeze(mcdCrcs);
+	if (!IsOkay())
+		return false;
 
 	if (IsLoading())
 	{
@@ -859,12 +865,17 @@ void SaveStateBase::sio2Freeze()
 			}
 		}
 	}
+
+	return true;
 }
 
-void SaveStateBase::sioFreeze()
+bool SaveStateBase::sioFreeze()
 {
-	FreezeTag("sio0");
+	if (!FreezeTag("sio0"))
+		return false;
+
 	Freeze(sio0);
+	return IsOkay();
 }
 
 std::tuple<u32, u32> sioConvertPadToPortAndSlot(u32 index)
