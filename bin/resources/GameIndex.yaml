@@ -13911,27 +13911,37 @@ SLES-52132:
   region: "PAL-E"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+  roundModes:
+    vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
 SLES-52133:
   name: "Hitman - Contracts"
   region: "PAL-F"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+  roundModes:
+    vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
 SLES-52134:
   name: "Hitman - Contracts"
   region: "PAL-I"
   compat: 4
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+  roundModes:
+    vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
 SLES-52135:
   name: "Hitman - Contracts"
   region: "PAL-G"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+  roundModes:
+    vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
 SLES-52136:
   name: "Hitman - Contracts"
   region: "PAL-S"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+  roundModes:
+    vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
 SLES-52143:
   name: "Carmen Sandiego - The Secret of the Stolen Drums"
   region: "PAL-M4"
@@ -23301,6 +23311,8 @@ SLKA-25218:
   region: "NTSC-K"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+  roundModes:
+    vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
 SLKA-25219:
   name: "Monster Hunter G"
   region: "NTSC-K"
@@ -37246,6 +37258,8 @@ SLPS-25406:
   region: "NTSC-J"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+  roundModes:
+    vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
 SLPS-25407:
   name: "King of Fighters 2003, The"
   region: "NTSC-J"
@@ -43701,6 +43715,8 @@ SLUS-20882:
   compat: 4
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+  roundModes:
+    vu1RoundMode: 0 # Fixes missing light cones curtains and certain effects.
 SLUS-20883:
   name: "Tom Clancy's Rainbow Six 3"
   region: "NTSC-U"
