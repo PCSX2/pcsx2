@@ -91,20 +91,26 @@ void recSYNC()
 
 void recMFSA()
 {
-	int mmreg;
 	if (!_Rd_)
 		return;
 
-	// TODO(Stenzek): Make these less rubbish
-	mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_WRITE);
-	if (mmreg >= 0)
+	// zero-extended
+	if (const int mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_WRITE); mmreg >= 0)
 	{
-		xMOVL.PS(xRegisterSSE(mmreg), ptr[&cpuRegs.sa]);
+		// have to zero out bits 63:32
+		const int temp = _allocTempXMMreg(XMMT_INT);
+		xMOVSSZX(xRegisterSSE(temp), ptr32[&cpuRegs.sa]);
+		xBLEND.PD(xRegisterSSE(temp), xRegisterSSE(temp), 1);
+		_freeXMMreg(temp);
+	}
+	else if (const int gprreg = _allocIfUsedGPRtoX86(_Rd_, MODE_WRITE); gprreg >= 0)
+	{
+		xMOV(xRegister32(gprreg), ptr32[&cpuRegs.sa]);
 	}
 	else
 	{
-		xMOV(rax, ptr32[&cpuRegs.sa]);
 		_deleteEEreg(_Rd_, 0);
+		xMOV(eax, ptr32[&cpuRegs.sa]);
 		xMOV(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
 	}
 }
