@@ -57,9 +57,11 @@ static void MTVU_Unpack(void* data, VIFregisters& vifRegs)
 }
 
 // Called on Saving/Loading states...
-void SaveStateBase::mtvuFreeze()
+bool SaveStateBase::mtvuFreeze()
 {
-	FreezeTag("MTVU");
+	if (!FreezeTag("MTVU"))
+		return false;
+
 	pxAssert(vu1Thread.IsDone());
 	if (!IsSaving())
 	{
@@ -88,6 +90,7 @@ void SaveStateBase::mtvuFreeze()
 	vu1Thread.gsLabel.store(gsLabel);
 
 	Freeze(vu1Thread.vuCycleIdx);
+	return IsOkay();
 }
 
 VU_Thread::VU_Thread()

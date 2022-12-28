@@ -195,7 +195,7 @@ void Gif_FinishIRQ()
 	}
 }
 
-void SaveStateBase::gifPathFreeze(u32 path)
+bool SaveStateBase::gifPathFreeze(u32 path)
 {
 
 	Gif_Path& gifPath = gifUnit.gifPath[path];
@@ -220,14 +220,18 @@ void SaveStateBase::gifPathFreeze(u32 path)
 		gifPath.readAmount = 0;
 		gifPath.gsPack.readAmount = 0;
 	}
+
+	return IsOkay();
 }
 
-void SaveStateBase::gifFreeze()
+bool SaveStateBase::gifFreeze()
 {
 	bool mtvuMode = THREAD_VU1;
 	pxAssert(vu1Thread.IsDone());
 	MTGS::WaitGS();
-	FreezeTag("Gif Unit");
+	if (!FreezeTag("Gif Unit"))
+		return false;
+
 	Freeze(mtvuMode);
 	Freeze(gifUnit.stat);
 	Freeze(gifUnit.gsSIGNAL);
@@ -244,4 +248,6 @@ void SaveStateBase::gifFreeze()
 			// ToDo: gifUnit.SwitchMTVU(mtvuMode);
 		}
 	}
+
+	return true;
 }

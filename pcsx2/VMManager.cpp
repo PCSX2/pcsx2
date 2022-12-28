@@ -52,6 +52,7 @@
 #include "ps2/BiosTools.h"
 
 #include "common/Console.h"
+#include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/ScopedGuard.h"
 #include "common/SettingsWrapper.h"
@@ -1427,7 +1428,7 @@ void VMManager::Reset()
 		s_state.store(VMState::Running, std::memory_order_release);
 }
 
-void SaveStateBase::vmFreeze()
+bool SaveStateBase::vmFreeze()
 {
 	const u32 prev_crc = s_current_crc;
 	const std::string prev_elf = s_elf_path;
@@ -1458,6 +1459,8 @@ void SaveStateBase::vmFreeze()
 		if (s_current_crc != prev_crc || s_elf_path != prev_elf || s_elf_executed != prev_elf_executed)
 			VMManager::HandleELFChange(true);
 	}
+
+	return IsOkay();
 }
 
 std::string VMManager::GetSaveStateFileName(const char* game_serial, u32 game_crc, s32 slot)
@@ -1506,24 +1509,23 @@ bool VMManager::DoLoadState(const char* filename)
 	if (GSDumpReplayer::IsReplayingDump())
 		return false;
 
-	try
+	Host::OnSaveStateLoading(filename);
+
+	Error error;
+	if (!SaveState_UnzipFromDisk(filename, &error))
 	{
-		Host::OnSaveStateLoading(filename);
-		SaveState_UnzipFromDisk(filename);
-		Host::OnSaveStateLoaded(filename, true);
-		if (g_InputRecording.isActive())
-		{
-			g_InputRecording.handleLoadingSavestate();
-			MTGS::PresentCurrentFrame();
-		}
-		return true;
-	}
-	catch (Exception::BaseException& e)
-	{
-		Host::ReportErrorAsync("Failed to load save state", e.UserMsg());
-		Host::OnSaveStateLoaded(filename, false);
+		Host::ReportErrorAsync("Failed to load save state", error.GetDescription());
 		return false;
 	}
+
+	Host::OnSaveStateLoaded(filename, true);
+	if (g_InputRecording.isActive())
+	{
+		g_InputRecording.handleLoadingSavestate();
+		MTGS::PresentCurrentFrame();
+	}
+
+	return true;
 }
 
 bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip_on_thread, bool backup_old_state)
@@ -1532,47 +1534,46 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 		return false;
 
 	std::string osd_key(fmt::format("SaveStateSlot{}", slot_for_message));
+	Error error;
 
-	try
-	{
-		std::unique_ptr<ArchiveEntryList> elist(SaveState_DownloadState());
-		std::unique_ptr<SaveStateScreenshotData> screenshot(SaveState_SaveScreenshot());
-
-		if (FileSystem::FileExists(filename) && backup_old_state)
-		{
-			const std::string backup_filename(fmt::format("{}.backup", filename));
-			Console.WriteLn(fmt::format("Creating save state backup {}...", backup_filename));
-			if (!FileSystem::RenamePath(filename, backup_filename.c_str()))
-			{
-				Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
-					fmt::format(
-						TRANSLATE_SV("VMManager", "Failed to back up old save state {}."), Path::GetFileName(filename)),
-					Host::OSD_ERROR_DURATION);
-			}
-		}
-
-		if (zip_on_thread)
-		{
-			// lock order here is important; the thread could exit before we resume here.
-			std::unique_lock lock(s_save_state_threads_mutex);
-			s_save_state_threads.emplace_back(&VMManager::ZipSaveStateOnThread, std::move(elist), std::move(screenshot),
-				std::move(osd_key), std::string(filename), slot_for_message);
-		}
-		else
-		{
-			ZipSaveState(std::move(elist), std::move(screenshot), std::move(osd_key), filename, slot_for_message);
-		}
-
-		Host::OnSaveStateSaved(filename);
-		return true;
-	}
-	catch (Exception::BaseException& e)
+	std::unique_ptr<ArchiveEntryList> elist = SaveState_DownloadState(&error);
+	if (!elist)
 	{
 		Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
-			fmt::format(TRANSLATE_SV("VMManager", "Failed to save save state: {}."), e.DiagMsg()),
+			fmt::format(TRANSLATE_SV("VMManager", "Failed to save save state: {}."), error.GetDescription()),
 			Host::OSD_ERROR_DURATION);
 		return false;
 	}
+
+	std::unique_ptr<SaveStateScreenshotData> screenshot = SaveState_SaveScreenshot();
+
+	if (FileSystem::FileExists(filename) && backup_old_state)
+	{
+		const std::string backup_filename(fmt::format("{}.backup", filename));
+		Console.WriteLn(fmt::format("Creating save state backup {}...", backup_filename));
+		if (!FileSystem::RenamePath(filename, backup_filename.c_str()))
+		{
+			Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
+				fmt::format(
+					TRANSLATE_SV("VMManager", "Failed to back up old save state {}."), Path::GetFileName(filename)),
+				Host::OSD_ERROR_DURATION);
+		}
+	}
+
+	if (zip_on_thread)
+	{
+		// lock order here is important; the thread could exit before we resume here.
+		std::unique_lock lock(s_save_state_threads_mutex);
+		s_save_state_threads.emplace_back(&VMManager::ZipSaveStateOnThread, std::move(elist), std::move(screenshot),
+			std::move(osd_key), std::string(filename), slot_for_message);
+	}
+	else
+	{
+		ZipSaveState(std::move(elist), std::move(screenshot), std::move(osd_key), filename, slot_for_message);
+	}
+
+	Host::OnSaveStateSaved(filename);
+	return true;
 }
 
 void VMManager::ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,

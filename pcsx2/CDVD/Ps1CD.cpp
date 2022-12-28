@@ -1114,8 +1114,11 @@ void cdrReset()
 	cdReadTime = (PSXCLK / 1757) * BIAS;
 }
 
-void SaveStateBase::cdrFreeze()
+bool SaveStateBase::cdrFreeze()
 {
-	FreezeTag("cdrom");
+	if (!FreezeTag("cdrom"))
+		return false;
+
 	Freeze(cdr);
+	return IsOkay();
 }
