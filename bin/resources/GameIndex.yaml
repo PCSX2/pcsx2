@@ -1847,6 +1847,8 @@ SCED-50750:
 SCED-50781:
   name: "Destruction Derby Arenas [Beta]"
   region: "PAL-M5"
+  roundModes:
+    vu1RoundMode: 0 # Fixes tyre textures.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects shadow position.
 SCED-50825:
@@ -3026,6 +3028,8 @@ SCES-50781:
   name: "Destruction Derby Arenas [Beta, Promo, & Full Retail]"
   region: "PAL-M6"
   compat: 5
+  roundModes:
+    vu1RoundMode: 0 # Fixes tyre textures.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects shadow position.
 SCES-50791:
@@ -3425,6 +3429,8 @@ SCES-51977:
 SCES-51979:
   name: "Destruction Derby Arenas"
   region: "PAL-M6"
+  roundModes:
+    vu1RoundMode: 0 # Fixes tyre textures.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects shadow position.
 SCES-52004:
@@ -43556,6 +43562,8 @@ SLUS-20855:
   name: "Destruction Derby Arenas"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    vu1RoundMode: 0 # Fixes tyre textures.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects shadow position.
 SLUS-20856:
