@@ -41,7 +41,7 @@
 #include "GS/GS.h"
 #include "SPU2/spu2.h"
 #include "StateWrapper.h"
-#include "PAD/Gamepad.h"
+#include "PAD/Host/PAD.h"
 #include "USB/USB.h"
 #include "VMManager.h"
 
