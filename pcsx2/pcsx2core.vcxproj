@@ -583,7 +583,6 @@
     <ClInclude Include="IopGte.h" />
     <ClInclude Include="MemoryCardProtocol.h" />
     <ClInclude Include="MultitapProtocol.h" />
-    <ClInclude Include="PAD\Gamepad.h" />
     <ClInclude Include="PAD\Host\Global.h" />
     <ClInclude Include="PAD\Host\KeyStatus.h" />
     <ClInclude Include="PAD\Host\PAD.h" />
