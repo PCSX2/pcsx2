@@ -36,11 +36,7 @@
 #include "GS.h" // for gsVideoMode
 #include "Elfheader.h"
 #include "ps2/BiosTools.h"
-
-#ifndef DISABLE_RECORDING
 #include "Recording/InputRecording.h"
-#endif
-
 #include "VMManager.h"
 
 // This typically reflects the Sony-assigned serial code for the Disc, if one exists.

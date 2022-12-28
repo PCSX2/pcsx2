@@ -322,11 +322,8 @@ struct SysConsoleLogPack
 	ConsoleLogFromVM<Color_Cyan>		eeConsole;
 	ConsoleLogFromVM<Color_Yellow>		iopConsole;
 	ConsoleLogFromVM<Color_Cyan>		deci2;
-
-#ifndef DISABLE_RECORDING
 	ConsoleLogFromVM<Color_StrongMagenta>	recordingConsole;
 	ConsoleLogFromVM<Color_Red>				controlInfo;
-#endif
 
 	SysConsoleLogPack();
 };
@@ -391,8 +388,5 @@ extern void __Log( const char* fmt, ... );
 #define iopConLog		SysConsole.iopConsole.IsActive()	&& SysConsole.iopConsole.Write
 #define sysConLog		SysConsole.sysoutConsole.IsActive()	&& SysConsole.sysoutConsole.Write
 #define pgifConLog		SysConsole.pgifLog.IsActive()		&& SysConsole.pgifLog.Write
-
-#ifndef DISABLE_RECORDING
-#	define recordingConLog	SysConsole.recordingConsole.IsActive()	&& SysConsole.recordingConsole.Write
-#	define controlLog		SysConsole.controlInfo.IsActive()		&& SysConsole.controlInfo.Write
-#endif
+#define recordingConLog	SysConsole.recordingConsole.IsActive()	&& SysConsole.recordingConsole.Write
+#define controlLog		SysConsole.controlInfo.IsActive()		&& SysConsole.controlInfo.Write

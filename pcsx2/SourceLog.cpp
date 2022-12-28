@@ -121,10 +121,8 @@ SysConsoleLogPack::SysConsoleLogPack()
 	, eeConsole(&TLD_eeConsole)
 	, iopConsole(&TLD_iopConsole)
 	, deci2(&TLD_deci2)
-#ifndef DISABLE_RECORDING
 	, recordingConsole(&TLD_recordingConsole)
 	, controlInfo(&TLD_controlInfo)
-#endif
 {
 }
 
