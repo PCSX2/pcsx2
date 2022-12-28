@@ -1,7 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include "resource.h"
-#include "SysForwardDefs.h"
+#include "../SysForwardDefs.h"
 #include "svnrev.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
@@ -98,6 +97,15 @@ BEGIN
 END
 
 #endif    // English (United States) resources
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON2               ICON                    "AppIcon.ico"
 /////////////////////////////////////////////////////////////////////////////
 
 

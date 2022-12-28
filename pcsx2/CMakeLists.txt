@@ -1014,10 +1014,6 @@ set(pcsx2WindowsSources
 	windows/Optimus.cpp
 )
 
-# Windows headers
-set(pcsx2WindowsHeaders
-	windows/resource.h)
-
 # x86 sources
 set(pcsx2x86Sources
 	x86/BaseblockEx.cpp
@@ -1156,7 +1152,7 @@ endif()
 if(Windows)
 	target_sources(PCSX2 PRIVATE
 		${pcsx2WindowsSources}
-		${pcsx2WindowsHeaders})
+	)
 endif()
 
 target_sources(PCSX2 PRIVATE ${pcsx2USBSources} ${pcsx2USBHeaders})
@@ -1303,9 +1299,8 @@ function(setup_main_executable target)
 
 	if(WIN32)
 		target_sources(${target} PRIVATE
-			${PCSX2_SOURCE_DIR}/PCSX2.rc
-			${PCSX2_SOURCE_DIR}/windows/wxResources.rc
 			${PCSX2_SOURCE_DIR}/windows/PCSX2.manifest
+			${PCSX2_SOURCE_DIR}/windows/PCSX2.rc
 		)
 		set_target_properties(${target} PROPERTIES WIN32_EXECUTABLE TRUE)
 		if(MSVC)
