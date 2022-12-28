@@ -559,14 +559,17 @@ void VMManager::LoadPatches(const std::string& serial, u32 crc, bool show_messag
 	if (EmuConfig.EnablePatches)
 	{
 		const GameDatabaseSchema::GameEntry* game = GameDatabase::findGame(serial);
-		const std::string* patches = game ? game->findPatch(crc) : nullptr;
-		if (patches && (patch_count = LoadPatchesFromString(*patches)) > 0)
+		if (game)
 		{
-			PatchesCon->WriteLn(Color_Green, "(GameDB) Patches Loaded: %d", patch_count);
-			fmt::format_to(std::back_inserter(message), "{} game patches", patch_count);
-		}
+			const std::string* patches = game->findPatch(crc);
+			if (patches && (patch_count = LoadPatchesFromString(*patches)) > 0)
+			{
+				PatchesCon->WriteLn(Color_Green, "(GameDB) Patches Loaded: %d", patch_count);
+				fmt::format_to(std::back_inserter(message), "{} game patches", patch_count);
+			}
 
-		LoadDynamicPatches(game->dynaPatches);
+			LoadDynamicPatches(game->dynaPatches);
+		}
 	}
 
 	// regular cheat patches
