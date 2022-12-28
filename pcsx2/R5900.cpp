@@ -25,7 +25,6 @@
 #include "VUmicro.h"
 #include "COP0.h"
 #include "MTVU.h"
-#include "R5900Exceptions.h"
 #include "VMManager.h"
 
 #include "Hardware.h"

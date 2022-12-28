@@ -744,7 +744,6 @@
     <ClInclude Include="SPR.h" />
     <ClInclude Include="Gif.h" />
     <ClInclude Include="R5900.h" />
-    <ClInclude Include="R5900Exceptions.h" />
     <ClInclude Include="R5900OpcodeTables.h" />
     <ClInclude Include="COP0.h" />
     <ClInclude Include="x86\iCOP0.h" />

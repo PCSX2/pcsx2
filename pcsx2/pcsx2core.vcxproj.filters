@@ -1504,9 +1504,6 @@
     <ClInclude Include="R5900.h">
       <Filter>System\Ps2\EmotionEngine\EE</Filter>
     </ClInclude>
-    <ClInclude Include="R5900Exceptions.h">
-      <Filter>System\Ps2\EmotionEngine\EE</Filter>
-    </ClInclude>
     <ClInclude Include="R5900OpcodeTables.h">
       <Filter>System\Ps2\EmotionEngine\EE</Filter>
     </ClInclude>

@@ -202,7 +202,6 @@ set(pcsx2Headers
 	PerformanceMetrics.h
 	PrecompiledHeader.h
 	R3000A.h
-	R5900Exceptions.h
 	R5900.h
 	R5900OpcodeTables.h
 	SaveState.h

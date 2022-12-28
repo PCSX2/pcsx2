@@ -46,9 +46,8 @@ static void GSDumpReplayerCpuShutdown();
 static void GSDumpReplayerCpuReset();
 static void GSDumpReplayerCpuStep();
 static void GSDumpReplayerCpuExecute();
-static void GSDumpReplayerCpuCheckExecutionState();
-static void GSDumpReplayerCpuThrowException(const BaseException& ex);
-static void GSDumpReplayerCpuThrowCpuException(const BaseR5900Exception& ex);
+static void GSDumpReplayerExitExecution();
+static void GSDumpReplayerCancelInstruction();
 static void GSDumpReplayerCpuClear(u32 addr, u32 size);
 
 static std::unique_ptr<GSDumpFile> s_dump_file;
@@ -66,9 +65,8 @@ R5900cpu GSDumpReplayerCpu = {
 	GSDumpReplayerCpuReset,
 	GSDumpReplayerCpuStep,
 	GSDumpReplayerCpuExecute,
-	GSDumpReplayerCpuCheckExecutionState,
-	GSDumpReplayerCpuThrowException,
-	GSDumpReplayerCpuThrowCpuException,
+	GSDumpReplayerExitExecution,
+	GSDumpReplayerCancelInstruction,
 	GSDumpReplayerCpuClear};
 
 static InterpVU0 gsDumpVU0;
@@ -288,7 +286,7 @@ void GSDumpReplayerCpuStep()
 			GSDumpReplayerFrameLimit();
 			GetMTGS().PostVsyncStart(false);
 			VMManager::Internal::VSyncOnCPUThread();
-			GSDumpReplayerCpuCheckExecutionState();
+			GSDumpReplayerExitExecution();
 		}
 		break;
 
@@ -321,17 +319,12 @@ void GSDumpReplayerCpuExecute()
 	}
 }
 
-void GSDumpReplayerCpuCheckExecutionState()
+void GSDumpReplayerExitExecution()
 {
-	if (VMManager::Internal::IsExecutionInterrupted())
-		s_dump_running = false;
+	s_dump_running = false;
 }
 
-void GSDumpReplayerCpuThrowException(const BaseException& ex)
-{
-}
-
-void GSDumpReplayerCpuThrowCpuException(const BaseR5900Exception& ex)
+void GSDumpReplayerCancelInstruction()
 {
 }
 

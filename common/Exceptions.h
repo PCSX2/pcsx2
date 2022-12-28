@@ -74,33 +74,6 @@ namespace Exception
 		virtual BaseException* Clone() const = 0;
 	};
 
-	// --------------------------------------------------------------------------------------
-	//  Ps2Generic Exception
-	// --------------------------------------------------------------------------------------
-	// This class is used as a base exception for things tossed by PS2 cpus (EE, IOP, etc).
-	//
-	// Implementation note: does not derive from BaseException, so that we can use different
-	// catch block hierarchies to handle them (if needed).
-	//
-	// Translation Note: Currently these exceptions are never translated.  English/diagnostic
-	// format only. :)
-	//
-	class Ps2Generic
-	{
-	protected:
-		std::string m_message; // a "detailed" message of what disastrous thing has occurred!
-
-	public:
-		virtual ~Ps2Generic() = default;
-
-		virtual u32 GetPc() const = 0;
-		virtual bool IsDelaySlot() const = 0;
-		virtual std::string& Message() { return m_message; }
-
-		virtual void Rethrow() const = 0;
-		virtual Ps2Generic* Clone() const = 0;
-	};
-
 // Some helper macros for defining the standard constructors of internationalized constructors
 // Parameters:
 //  classname - Yeah, the name of this class being defined. :)
