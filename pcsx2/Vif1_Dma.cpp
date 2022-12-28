@@ -229,6 +229,10 @@ __fi void vif1SetupTransfer()
 
 __fi void vif1VUFinish()
 {
+	// Sync up VU1 so we don't errantly wait.
+	while (!THREAD_VU1 && (static_cast<int>(cpuRegs.cycle) - static_cast<int>(VU1.cycle)) > 0 && (VU0.VI[REG_VPU_STAT].UL & 0x100))
+		CpuVU1->ExecuteBlock();
+
 	if (VU0.VI[REG_VPU_STAT].UL & 0x500)
 	{
 		vu1Thread.Get_MTVUChanges();
