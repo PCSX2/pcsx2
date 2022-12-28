@@ -21,27 +21,31 @@
 #include "common/Pcsx2Defs.h"
 #include <string_view>
 
-class IsoFile
+class Error;
+
+class IsoFile final
 {
 public:
 	static const int sectorLength = 2048;
 
 protected:
 	SectorSource& internalReader;
-	IsoFileDescriptor fileEntry;
+	IsoFileDescriptor fileEntry = {};
 
-	u32 currentOffset;
-	u32 maxOffset;
+	u32 currentOffset = 0;
+	u32 maxOffset = 0;
 
-	int currentSectorNumber;
+	int currentSectorNumber = 0;
+	int sectorOffset = 0;
 	u8 currentSector[sectorLength];
-	int sectorOffset;
 
 public:
-	IsoFile(const IsoDirectory& dir, const std::string_view& filename);
-	IsoFile(SectorSource& reader, const std::string_view& filename);
+	IsoFile(SectorSource& reader);
 	IsoFile(SectorSource& reader, const IsoFileDescriptor& fileEntry);
-	virtual ~IsoFile() = default;
+	~IsoFile();
+
+	bool open(const IsoDirectory& dir, const std::string_view& filename, Error* error = nullptr);
+	bool open(const std::string_view& filename, Error* error = nullptr);
 
 	u32 seek(u32 absoffset);
 	u32 seek(s64 offset, int mode);

@@ -16,26 +16,19 @@
 
 #include "PrecompiledHeader.h"
 #include "common/Assertions.h"
-#include "common/Exceptions.h"
+#include "common/Error.h"
 
 #include "IsoFS.h"
 #include "IsoFile.h"
 
 #include <cstdio>
 
-IsoFile::IsoFile(SectorSource& reader, const std::string_view& filename)
+IsoFile::IsoFile(SectorSource& reader)
 	: internalReader(reader)
-	, fileEntry(IsoDirectory(reader).FindFile(filename))
 {
-	Init();
 }
 
-IsoFile::IsoFile(const IsoDirectory& dir, const std::string_view& filename)
-	: internalReader(dir.GetReader())
-	, fileEntry(dir.FindFile(filename))
-{
-	Init();
-}
+IsoFile::~IsoFile() = default;
 
 IsoFile::IsoFile(SectorSource& reader, const IsoFileDescriptor& fileEntry)
 	: internalReader(reader)
@@ -51,10 +44,33 @@ void IsoFile::Init()
 	currentSectorNumber = fileEntry.lba;
 	currentOffset = 0;
 	sectorOffset = 0;
-	maxOffset = std::max<u32>(0, fileEntry.size);
+	maxOffset = fileEntry.size;
 
 	if (maxOffset > 0)
 		internalReader.readSector(currentSector, currentSectorNumber);
+}
+
+bool IsoFile::open(const IsoDirectory& dir, const std::string_view& filename, Error* error /*= nullptr*/)
+{
+	const std::optional<IsoFileDescriptor> fd(dir.FindFile(filename));
+	if (!fd.has_value())
+	{
+		Error::SetString(error, fmt::format("Failed to find file '{}'", filename));
+		return false;
+	}
+
+	fileEntry = std::move(fd.value());
+	Init();
+	return true;
+}
+
+bool IsoFile::open(const std::string_view& filename, Error* error /*= nullptr*/)
+{
+	IsoDirectory dir(internalReader);
+	if (!dir.OpenRootDirectory(error))
+		return false;
+
+	return open(dir, filename, error);
 }
 
 u32 IsoFile::seek(u32 absoffset)
@@ -142,7 +158,7 @@ void IsoFile::makeDataAvailable()
 u8 IsoFile::readByte()
 {
 	if (currentOffset >= maxOffset)
-		throw Exception::EndOfStream();
+		return 0;
 
 	makeDataAvailable();
 

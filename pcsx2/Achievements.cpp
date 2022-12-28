@@ -1357,42 +1357,40 @@ std::string_view Achievements::GetELFNameForHash(const std::string& elf_path)
 
 std::optional<std::vector<u8>> Achievements::ReadELFFromCurrentDisc(const std::string& elf_path)
 {
-	// This CDVD stuff is super nasty and full of exceptions..
 	std::optional<std::vector<u8>> ret;
-	try
+
+	// ELF suffix hack. Taken from CDVD::loadElf
+	// MLB2k6 has an elf whose suffix is actually ;2
+	std::string filepath(elf_path);
+	const std::string::size_type semi_pos = filepath.rfind(';');
+	if (semi_pos != std::string::npos && std::string_view(filepath).substr(semi_pos) != ";1")
 	{
-		// ELF suffix hack. Taken from CDVD::loadElf
-		// MLB2k6 has an elf whose suffix is actually ;2
-		std::string filepath(elf_path);
-		const std::string::size_type semi_pos = filepath.rfind(';');
-		if (semi_pos != std::string::npos && std::string_view(filepath).substr(semi_pos) != ";1")
-		{
-			Console.Warning("(Achievements) Non-conforming version suffix (%s) detected and replaced.", elf_path.c_str());
-			filepath.erase(semi_pos);
-			filepath += ";1";
-		}
-
-		IsoFSCDVD isofs;
-		IsoFile file(isofs, filepath);
-		const u32 size = file.getLength();
-
-		ret = std::vector<u8>();
-		ret->resize(size);
-
-		if (size > 0)
-		{
-			const s32 bytes_read = file.read(ret->data(), static_cast<s32>(size));
-			if (bytes_read != static_cast<s32>(size))
-			{
-				Console.Error("(Achievements) Only read %d of %u bytes of ELF '%s'", bytes_read, size, elf_path.c_str());
-				ret.reset();
-			}
-		}
+		Console.Warning(fmt::format("(Achievements) Non-conforming version suffix ({}) detected and replaced.", elf_path));
+		filepath.erase(semi_pos);
+		filepath += ";1";
 	}
-	catch (...)
+
+	IsoFSCDVD isofs;
+	IsoFile file(isofs);
+	Error error;
+	if (!file.open(filepath, &error))
 	{
-		Console.Error("(Achievements) Caught exception while trying to read ELF '%s'.", elf_path.c_str());
-		ret.reset();
+		Console.Error(fmt::format("(Achievements) Failed to open ELF '{}' on disc: {}", elf_path, error.GetDescription()));
+		return ret;
+	}
+
+	const u32 size = file.getLength();
+	ret = std::vector<u8>();
+	ret->resize(size);
+
+	if (size > 0)
+	{
+		const s32 bytes_read = file.read(ret->data(), static_cast<s32>(size));
+		if (bytes_read != static_cast<s32>(size))
+		{
+			Console.Error(fmt::format("(Achievements) Only read {} of {} bytes of ELF '{}'", bytes_read, size, elf_path));
+			ret.reset();
+		}
 	}
 
 	return ret;

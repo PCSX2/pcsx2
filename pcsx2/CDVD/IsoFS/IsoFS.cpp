@@ -20,7 +20,7 @@
 #include "IsoFile.h"
 
 #include "common/Assertions.h"
-#include "common/Exceptions.h"
+#include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
@@ -51,6 +51,12 @@ std::string IsoDirectory::FStype_ToString() const
 // Used to load the Root directory from an image
 IsoDirectory::IsoDirectory(SectorSource& r)
 	: internalReader(r)
+{
+}
+
+IsoDirectory::~IsoDirectory() = default;
+
+bool IsoDirectory::OpenRootDirectory(Error* error /* = nullptr */)
 {
 	IsoFileDescriptor rootDirEntry;
 	bool isValid = false;
@@ -107,22 +113,17 @@ IsoDirectory::IsoDirectory(SectorSource& r)
 	}
 
 	if (!isValid)
-		throw Exception::FileNotFound("IsoFileSystem") // FIXME: Should report the name of the ISO here...
-			.SetDiagMsg("IsoFS could not find the root directory on the ISO image.");
+	{
+		Error::SetString(error, "IsoFS could not find the root directory on the ISO image.");
+		return false;
+	}
 
 	DevCon.WriteLn("(IsoFS) Filesystem is %s", FStype_ToString().c_str());
-	Init(rootDirEntry);
+	return Open(rootDirEntry);
 }
 
 // Used to load a specific directory from a file descriptor
-IsoDirectory::IsoDirectory(SectorSource& r, const IsoFileDescriptor& directoryEntry)
-	: internalReader(r)
-{
-	m_fstype = FStype_ISO9660;
-	Init(directoryEntry);
-}
-
-void IsoDirectory::Init(const IsoFileDescriptor& directoryEntry)
+bool IsoDirectory::Open(const IsoFileDescriptor& directoryEntry, Error* error /* = nullptr */)
 {
 	// parse directory sector
 	IsoFile dataStream(internalReader, directoryEntry);
@@ -163,9 +164,10 @@ void IsoDirectory::Init(const IsoFileDescriptor& directoryEntry)
 	}
 
 	b[0] = 0;
+	return true;
 }
 
-const IsoFileDescriptor& IsoDirectory::GetEntry(int index) const
+const IsoFileDescriptor& IsoDirectory::GetEntry(size_t index) const
 {
 	return files[index];
 }
@@ -178,25 +180,19 @@ int IsoDirectory::GetIndexOf(const std::string_view& fileName) const
 			return i;
 	}
 
-	throw Exception::FileNotFound(std::string(fileName));
+	return -1;
 }
 
-const IsoFileDescriptor& IsoDirectory::GetEntry(const std::string_view& fileName) const
-{
-	return GetEntry(GetIndexOf(fileName));
-}
-
-IsoFileDescriptor IsoDirectory::FindFile(const std::string_view& filePath) const
+std::optional<IsoFileDescriptor> IsoDirectory::FindFile(const std::string_view& filePath) const
 {
 	if (filePath.empty())
-		throw Exception::FileNotFound();
+		return std::nullopt;
 
 	// DOS-style parser should work fine for ISO 9660 path names.  Only practical difference
 	// is case sensitivity, and that won't matter for path splitting.
 	std::vector<std::string_view> parts(Path::SplitWindowsPath(filePath));
-	IsoFileDescriptor info;
 	const IsoDirectory* dir = this;
-	std::unique_ptr<IsoDirectory> deleteme;
+	IsoDirectory subdir(internalReader);
 
 	// walk through path ("." and ".." entries are in the directories themselves, so even if the
 	// path included . and/or .., it still works)
@@ -206,35 +202,67 @@ IsoFileDescriptor IsoDirectory::FindFile(const std::string_view& filePath) const
 
 	for (size_t index = has_device ? 1 : 0; index < (parts.size() - 1); index++)
 	{
-		info = dir->GetEntry(parts[index]);
-		if (info.IsFile())
-			throw Exception::FileNotFound(std::string(filePath));
+		const int subdir_index = GetIndexOf(parts[index]);
+		if (subdir_index < 0)
+			return std::nullopt;
 
-		deleteme.reset(new IsoDirectory(internalReader, info));
-		dir = deleteme.get();
+		const IsoFileDescriptor& subdir_entry = GetEntry(static_cast<size_t>(index));
+		if (subdir_entry.IsFile() || !subdir.Open(subdir_entry, nullptr))
+			return std::nullopt;
+
+		dir = &subdir;
 	}
 
-	info = dir->GetEntry(parts.back());
-	return info;
+	const int file_index = dir->GetIndexOf(parts.back());
+	if (file_index < 0)
+		return std::nullopt;
+
+	return GetEntry(static_cast<size_t>(file_index));
+}
+
+bool IsoDirectory::Exists(const std::string_view& filePath) const
+{
+	if (filePath.empty())
+		return false;
+
+	const std::optional<IsoFileDescriptor> fd(FindFile(filePath));
+	return fd.has_value();
 }
 
 bool IsoDirectory::IsFile(const std::string_view& filePath) const
 {
 	if (filePath.empty())
 		return false;
-	return (FindFile(filePath).flags & 2) != 2;
+
+	const std::optional<IsoFileDescriptor> fd(FindFile(filePath));
+	if (fd.has_value())
+		return false;
+
+	return ((fd->flags & 2) != 2);
 }
 
 bool IsoDirectory::IsDir(const std::string_view& filePath) const
 {
 	if (filePath.empty())
 		return false;
-	return (FindFile(filePath).flags & 2) == 2;
+
+	const std::optional<IsoFileDescriptor> fd(FindFile(filePath));
+	if (fd.has_value())
+		return false;
+
+	return ((fd->flags & 2) == 2);
 }
 
 u32 IsoDirectory::GetFileSize(const std::string_view& filePath) const
 {
-	return FindFile(filePath).size;
+	if (filePath.empty())
+		return 0;
+
+	const std::optional<IsoFileDescriptor> fd(FindFile(filePath));
+	if (fd.has_value())
+		return 0;
+
+	return fd->size;
 }
 
 IsoFileDescriptor::IsoFileDescriptor()
