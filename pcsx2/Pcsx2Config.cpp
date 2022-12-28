@@ -210,10 +210,14 @@ Pcsx2Config::RecompilerOptions::RecompilerOptions()
 	EnableFastmem = true;
 
 	// vu and fpu clamping default to standard overflow.
-	vuOverflow = true;
-	//vuExtraOverflow = false;
-	//vuSignOverflow = false;
-	//vuUnderflow = false;
+	vu0Overflow = true;
+	//vu0ExtraOverflow = false;
+	//vu0SignOverflow = false;
+	//vu0Underflow = false;
+	vu1Overflow = true;
+	//vu1ExtraOverflow = false;
+	//vu1SignOverflow = false;
+	//vu1Underflow = false;
 
 	fpuOverflow = true;
 	//fpuExtraOverflow = false;
@@ -240,18 +244,34 @@ void Pcsx2Config::RecompilerOptions::ApplySanityCheck()
 
 	bool vuIsOk = true;
 
-	if (vuExtraOverflow)
-		vuIsOk = vuIsOk && vuOverflow;
-	if (vuSignOverflow)
-		vuIsOk = vuIsOk && vuExtraOverflow;
+	if (vu0ExtraOverflow)
+		vuIsOk = vuIsOk && vu0Overflow;
+	if (vu0SignOverflow)
+		vuIsOk = vuIsOk && vu0ExtraOverflow;
 
 	if (!vuIsOk)
 	{
 		// Values are wonky; assume the defaults.
-		vuOverflow = RecompilerOptions().vuOverflow;
-		vuExtraOverflow = RecompilerOptions().vuExtraOverflow;
-		vuSignOverflow = RecompilerOptions().vuSignOverflow;
-		vuUnderflow = RecompilerOptions().vuUnderflow;
+		vu0Overflow = RecompilerOptions().vu0Overflow;
+		vu0ExtraOverflow = RecompilerOptions().vu0ExtraOverflow;
+		vu0SignOverflow = RecompilerOptions().vu0SignOverflow;
+		vu0Underflow = RecompilerOptions().vu0Underflow;
+	}
+
+	vuIsOk = true;
+
+	if (vu1ExtraOverflow)
+		vuIsOk = vuIsOk && vu1Overflow;
+	if (vu1SignOverflow)
+		vuIsOk = vuIsOk && vu1ExtraOverflow;
+
+	if (!vuIsOk)
+	{
+		// Values are wonky; assume the defaults.
+		vu1Overflow = RecompilerOptions().vu1Overflow;
+		vu1ExtraOverflow = RecompilerOptions().vu1ExtraOverflow;
+		vu1SignOverflow = RecompilerOptions().vu1SignOverflow;
+		vu1Underflow = RecompilerOptions().vu1Underflow;
 	}
 }
 
@@ -266,10 +286,14 @@ void Pcsx2Config::RecompilerOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(EnableVU1);
 	SettingsWrapBitBool(EnableFastmem);
 
-	SettingsWrapBitBool(vuOverflow);
-	SettingsWrapBitBool(vuExtraOverflow);
-	SettingsWrapBitBool(vuSignOverflow);
-	SettingsWrapBitBool(vuUnderflow);
+	SettingsWrapBitBool(vu0Overflow);
+	SettingsWrapBitBool(vu0ExtraOverflow);
+	SettingsWrapBitBool(vu0SignOverflow);
+	SettingsWrapBitBool(vu0Underflow);
+	SettingsWrapBitBool(vu1Overflow);
+	SettingsWrapBitBool(vu1ExtraOverflow);
+	SettingsWrapBitBool(vu1SignOverflow);
+	SettingsWrapBitBool(vu1Underflow);
 
 	SettingsWrapBitBool(fpuOverflow);
 	SettingsWrapBitBool(fpuExtraOverflow);
@@ -287,14 +311,16 @@ bool Pcsx2Config::CpuOptions::CpusChanged(const CpuOptions& right) const
 Pcsx2Config::CpuOptions::CpuOptions()
 {
 	sseMXCSR.bitmask = DEFAULT_sseMXCSR;
-	sseVUMXCSR.bitmask = DEFAULT_sseVUMXCSR;
+	sseVU0MXCSR.bitmask = DEFAULT_sseVUMXCSR;
+	sseVU1MXCSR.bitmask = DEFAULT_sseVUMXCSR;
 	AffinityControlMode = 0;
 }
 
 void Pcsx2Config::CpuOptions::ApplySanityCheck()
 {
 	sseMXCSR.ClearExceptionFlags().DisableExceptions();
-	sseVUMXCSR.ClearExceptionFlags().DisableExceptions();
+	sseVU0MXCSR.ClearExceptionFlags().DisableExceptions();
+	sseVU1MXCSR.ClearExceptionFlags().DisableExceptions();
 	AffinityControlMode = std::min<u32>(AffinityControlMode, 6);
 
 	Recompiler.ApplySanityCheck();
@@ -309,9 +335,12 @@ void Pcsx2Config::CpuOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitfieldEx(sseMXCSR.RoundingControl, "FPU.Roundmode");
 	SettingsWrapEntry(AffinityControlMode);
 
-	SettingsWrapBitBoolEx(sseVUMXCSR.DenormalsAreZero, "VU.DenormalsAreZero");
-	SettingsWrapBitBoolEx(sseVUMXCSR.FlushToZero, "VU.FlushToZero");
-	SettingsWrapBitfieldEx(sseVUMXCSR.RoundingControl, "VU.Roundmode");
+	SettingsWrapBitBoolEx(sseVU0MXCSR.DenormalsAreZero, "VU0.DenormalsAreZero");
+	SettingsWrapBitBoolEx(sseVU0MXCSR.FlushToZero, "VU0.FlushToZero");
+	SettingsWrapBitfieldEx(sseVU0MXCSR.RoundingControl, "VU0.Roundmode");
+	SettingsWrapBitBoolEx(sseVU1MXCSR.DenormalsAreZero, "VU1.DenormalsAreZero");
+	SettingsWrapBitBoolEx(sseVU1MXCSR.FlushToZero, "VU1.FlushToZero");
+	SettingsWrapBitfieldEx(sseVU1MXCSR.RoundingControl, "VU1.Roundmode");
 
 	Recompiler.LoadSave(wrap);
 }

@@ -36,6 +36,16 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 3
+            },
+            "vu0RoundMode": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "vu1RoundMode": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
             }
           },
           "additionalProperties": false
@@ -51,6 +61,18 @@
               "maximum": 3
             },
             "vuClampMode": {
+              "type": "integer",
+              "description": "0 (Disables), 1 (Normally), 2 (Extra), 3 (Extra+Preserve Sign)",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "vu0ClampMode": {
+              "type": "integer",
+              "description": "0 (Disables), 1 (Normally), 2 (Extra), 3 (Extra+Preserve Sign)",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "vu1ClampMode": {
               "type": "integer",
               "description": "0 (Disables), 1 (Normally), 2 (Extra), 3 (Extra+Preserve Sign)",
               "minimum": 0,

@@ -32,7 +32,7 @@ void mVUdispatcherAB(mV)
 		else        xFastCall((void*)mVUexecuteVU1, arg1reg, arg2reg);
 
 		// Load VU's MXCSR state
-		xLDMXCSR(g_sseVUMXCSR);
+		xLDMXCSR(isVU0 ? g_sseVU0MXCSR : g_sseVU1MXCSR);
 
 		// Load Regs
 		xMOVAPS (xmmT1, ptr128[&mVU.regs().VI[REG_P].UL]);
@@ -94,7 +94,7 @@ void mVUdispatcherCD(mV)
 		xScopedStackFrame frame(false, true);
 
 		// Load VU's MXCSR state
-		xLDMXCSR(g_sseVUMXCSR);
+		xLDMXCSR(isVU0 ? g_sseVU0MXCSR : g_sseVU1MXCSR);
 
 		mVUrestoreRegs(mVU);
 		xMOV(gprF0, ptr32[&mVU.regs().micro_statusflags[0]]);

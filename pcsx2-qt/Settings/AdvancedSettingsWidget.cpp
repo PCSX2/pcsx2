@@ -25,7 +25,8 @@
 #include "SettingsDialog.h"
 
 AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* parent)
-	: QWidget(parent), m_dialog(dialog)
+	: QWidget(parent)
+	, m_dialog(dialog)
 {
 	SettingsInterface* sif = dialog->getSettingsInterface();
 
@@ -42,16 +43,20 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vuFlagHack, "EmuCore/Speedhacks", "vuFlagHack", true);
 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.eeRoundingMode, "EmuCore/CPU", "FPU.Roundmode", 3);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.vuRoundingMode, "EmuCore/CPU", "VU.Roundmode", 3);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.vu0RoundingMode, "EmuCore/CPU", "VU0.Roundmode", 3);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.vu1RoundingMode, "EmuCore/CPU", "VU1.Roundmode", 3);
 	if (m_dialog->isPerGameSettings())
 	{
-		m_ui.eeClampMode->insertItem(0, tr("Use Global Setting [%1]").arg(m_ui.eeClampMode->itemText(getGlobalClampingModeIndex(false))));
-		m_ui.vuClampMode->insertItem(0, tr("Use Global Setting [%1]").arg(m_ui.vuClampMode->itemText(getGlobalClampingModeIndex(true))));
+		m_ui.eeClampMode->insertItem(0, tr("Use Global Setting [%1]").arg(m_ui.eeClampMode->itemText(getGlobalClampingModeIndex(-1))));
+		m_ui.vu0ClampMode->insertItem(0, tr("Use Global Setting [%1]").arg(m_ui.vu0ClampMode->itemText(getGlobalClampingModeIndex(0))));
+		m_ui.vu1ClampMode->insertItem(0, tr("Use Global Setting [%1]").arg(m_ui.vu1ClampMode->itemText(getGlobalClampingModeIndex(1))));
 	}
-	m_ui.eeClampMode->setCurrentIndex(getClampingModeIndex(false));
-	m_ui.vuClampMode->setCurrentIndex(getClampingModeIndex(true));
-	connect(m_ui.eeClampMode, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) { setClampingMode(false, index); });
-	connect(m_ui.vuClampMode, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) { setClampingMode(true, index); });
+	m_ui.eeClampMode->setCurrentIndex(getClampingModeIndex(-1));
+	m_ui.vu0ClampMode->setCurrentIndex(getClampingModeIndex(0));
+	m_ui.vu1ClampMode->setCurrentIndex(getClampingModeIndex(1));
+	connect(m_ui.eeClampMode, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) { setClampingMode(-1, index); });
+	connect(m_ui.vu0ClampMode, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) { setClampingMode(0, index); });
+	connect(m_ui.vu1ClampMode, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) { setClampingMode(1, index); });
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.iopRecompiler, "EmuCore/CPU/Recompiler", "EnableIOP", true);
 
@@ -60,7 +65,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.ntscFrameRate, "EmuCore/GS", "FramerateNTSC", 59.94f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.palFrameRate, "EmuCore/GS", "FrameratePAL", 50.00f);
-	
+
 	dialog->registerWidgetHelp(m_ui.eeRoundingMode, tr("Rounding Mode"), tr("Chop / Zero (Default)"), tr(""));
 
 	dialog->registerWidgetHelp(m_ui.eeClampMode, tr("Clamping Mode"), tr("Normal (Default)"), tr(""));
@@ -71,8 +76,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
 	dialog->registerWidgetHelp(m_ui.eeWaitLoopDetection, tr("Wait Loop Detection"), tr("Checked"),
 		tr("Moderate speedup for some games, with no known side effects."));
 
-	dialog->registerWidgetHelp(m_ui.eeCache, tr("Enable Cache (Slow)"), tr("Unchecked"),
-		tr("Interpreter only, provided for diagnostic."));
+	dialog->registerWidgetHelp(m_ui.eeCache, tr("Enable Cache (Slow)"), tr("Unchecked"), tr("Interpreter only, provided for diagnostic."));
 
 	dialog->registerWidgetHelp(m_ui.eeINTCSpinDetection, tr("INTC Spin Detection"), tr("Checked"),
 		tr("Huge speedup for some games, with almost no compatibility side effects."));
@@ -80,18 +84,18 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
 	dialog->registerWidgetHelp(m_ui.eeFastmem, tr("Enable Fast Memory Access"), tr("Checked"),
 		tr("Uses backpatching to avoid register flushing on every memory access."));
 
-	dialog->registerWidgetHelp(m_ui.vuRoundingMode, tr("Rounding Mode"), tr("Chop / Zero (Default)"), tr(""));
+	dialog->registerWidgetHelp(m_ui.vu0RoundingMode, tr("Rounding Mode"), tr("Chop / Zero (Default)"), tr(""));
+	dialog->registerWidgetHelp(m_ui.vu1RoundingMode, tr("Rounding Mode"), tr("Chop / Zero (Default)"), tr(""));
 
-	dialog->registerWidgetHelp(m_ui.vuClampMode, tr("Clamping Mode"), tr("Normal (Default)"), tr(""));
+	dialog->registerWidgetHelp(m_ui.vu0ClampMode, tr("Clamping Mode"), tr("Normal (Default)"), tr(""));
+	dialog->registerWidgetHelp(m_ui.vu1ClampMode, tr("Clamping Mode"), tr("Normal (Default)"), tr(""));
 
-	dialog->registerWidgetHelp(m_ui.vu0Recompiler, tr("Enable VU0 Recompiler (Micro Mode)"), tr("Checked"),
-		tr("Enables VU0 Recompiler."));
+	dialog->registerWidgetHelp(m_ui.vu0Recompiler, tr("Enable VU0 Recompiler (Micro Mode)"), tr("Checked"), tr("Enables VU0 Recompiler."));
 
-	dialog->registerWidgetHelp(m_ui.vu1Recompiler, tr("Enable VU1 Recompiler"), tr("Checked"),
-		tr("Enables VU1 Recompiler."));
+	dialog->registerWidgetHelp(m_ui.vu1Recompiler, tr("Enable VU1 Recompiler"), tr("Checked"), tr("Enables VU1 Recompiler."));
 
-	dialog->registerWidgetHelp(m_ui.vuFlagHack, tr("mVU Flag Hack"), tr("Checked"),
-		tr("Good speedup and high compatibility, may cause graphical errors."));
+	dialog->registerWidgetHelp(
+		m_ui.vuFlagHack, tr("mVU Flag Hack"), tr("Checked"), tr("Good speedup and high compatibility, may cause graphical errors."));
 
 	dialog->registerWidgetHelp(m_ui.iopRecompiler, tr("Enable Recompiler"), tr("Checked"),
 		tr("Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86."));
@@ -105,30 +109,36 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
 
-int AdvancedSettingsWidget::getGlobalClampingModeIndex(bool vu) const
+int AdvancedSettingsWidget::getGlobalClampingModeIndex(int vunum) const
 {
-	if (Host::GetBaseBoolSettingValue("EmuCore/CPU/Recompiler", vu ? "vuSignOverflow" : "fpuFullMode", false))
+	if (Host::GetBaseBoolSettingValue(
+			"EmuCore/CPU/Recompiler", (vunum >= 0 ? ((vunum == 0) ? "vu0SignOverflow" : "vu1SignOverflow") : "fpuFullMode"), false))
 		return 3;
 
-	if (Host::GetBaseBoolSettingValue("EmuCore/CPU/Recompiler", vu ? "vuExtraOverflow" : "fpuExtraOverflow", false))
+	if (Host::GetBaseBoolSettingValue(
+			"EmuCore/CPU/Recompiler", (vunum >= 0 ? ((vunum == 0) ? "vu0ExtraOverflow" : "vu1ExtraOverflow") : "fpuExtraOverflow"), false))
 		return 2;
 
-	if (Host::GetBaseBoolSettingValue("EmuCore/CPU/Recompiler", vu ? "vuOverflow" : "fpuOverflow", true))
+	if (Host::GetBaseBoolSettingValue(
+			"EmuCore/CPU/Recompiler", (vunum >= 0 ? ((vunum == 0) ? "vu0Overflow" : "vu1Overflow") : "fpuOverflow"), true))
 		return 1;
 
 	return 0;
 }
 
-int AdvancedSettingsWidget::getClampingModeIndex(bool vu) const
+int AdvancedSettingsWidget::getClampingModeIndex(int vunum) const
 {
 	// This is so messy... maybe we should just make the mode an int in the settings too...
 	const bool base = m_dialog->isPerGameSettings() ? 1 : 0;
 	std::optional<bool> default_false = m_dialog->isPerGameSettings() ? std::nullopt : std::optional<bool>(false);
 	std::optional<bool> default_true = m_dialog->isPerGameSettings() ? std::nullopt : std::optional<bool>(true);
 
-	std::optional<bool> third = m_dialog->getBoolValue("EmuCore/CPU/Recompiler", vu ? "vuSignOverflow" : "fpuFullMode", default_false);
-	std::optional<bool> second = m_dialog->getBoolValue("EmuCore/CPU/Recompiler", vu ? "vuExtraOverflow" : "fpuExtraOverflow", default_false);
-	std::optional<bool> first = m_dialog->getBoolValue("EmuCore/CPU/Recompiler", vu ? "vuOverflow" : "fpuOverflow", default_true);
+	std::optional<bool> third = m_dialog->getBoolValue(
+		"EmuCore/CPU/Recompiler", (vunum >= 0 ? ((vunum == 0) ? "vu0SignOverflow" : "vu1SignOverflow") : "fpuFullMode"), default_false);
+	std::optional<bool> second = m_dialog->getBoolValue("EmuCore/CPU/Recompiler",
+		(vunum >= 0 ? ((vunum == 0) ? "vu0ExtraOverflow" : "vu1ExtraOverflow") : "fpuExtraOverflow"), default_false);
+	std::optional<bool> first = m_dialog->getBoolValue(
+		"EmuCore/CPU/Recompiler", (vunum >= 0 ? ((vunum == 0) ? "vu0Overflow" : "vu1Overflow") : "fpuOverflow"), default_true);
 
 	if (third.has_value() && third.value())
 		return base + 3;
@@ -142,7 +152,7 @@ int AdvancedSettingsWidget::getClampingModeIndex(bool vu) const
 		return 0; // no per game override
 }
 
-void AdvancedSettingsWidget::setClampingMode(bool vu, int index)
+void AdvancedSettingsWidget::setClampingMode(int vunum, int index)
 {
 	std::optional<bool> first, second, third;
 
@@ -154,7 +164,10 @@ void AdvancedSettingsWidget::setClampingMode(bool vu, int index)
 		first = (index >= (base + 1));
 	}
 
-	m_dialog->setBoolSettingValue("EmuCore/CPU/Recompiler", vu ? "vuSignOverflow" : "fpuFullMode", third);
-	m_dialog->setBoolSettingValue("EmuCore/CPU/Recompiler", vu ? "vuExtraOverflow" : "fpuExtraOverflow", second);
-	m_dialog->setBoolSettingValue("EmuCore/CPU/Recompiler", vu ? "vuOverflow" : "fpuOverflow", first);
+	m_dialog->setBoolSettingValue(
+		"EmuCore/CPU/Recompiler", (vunum >= 0 ? ((vunum == 0) ? "vu0SignOverflow" : "vu1SignOverflow") : "fpuFullMode"), third);
+	m_dialog->setBoolSettingValue(
+		"EmuCore/CPU/Recompiler", (vunum >= 0 ? ((vunum == 0) ? "vu0ExtraOverflow" : "vu1ExtraOverflow") : "fpuExtraOverflow"), second);
+	m_dialog->setBoolSettingValue(
+		"EmuCore/CPU/Recompiler", (vunum >= 0 ? ((vunum == 0) ? "vu0Overflow" : "vu1Overflow") : "fpuOverflow"), first);
 }
