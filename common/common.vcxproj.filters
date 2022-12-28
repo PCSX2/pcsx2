@@ -232,9 +232,6 @@
     <ClInclude Include="emitter\implement\dwshift.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EventSource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Exceptions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -530,9 +527,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="EventSource.inl">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="Vulkan\EntryPoints.inl">
       <Filter>Source Files\Vulkan</Filter>
     </None>

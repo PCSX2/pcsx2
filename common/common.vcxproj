@@ -130,7 +130,6 @@
     <ClCompile Include="emitter\WinCpuDetect.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="EventSource.inl" />
     <MASM Include="FastJmp.asm" />
     <None Include="Vulkan\EntryPoints.inl" />
   </ItemGroup>
@@ -178,7 +177,6 @@
     <ClInclude Include="SettingsWrapper.h" />
     <ClInclude Include="Assertions.h" />
     <ClInclude Include="Console.h" />
-    <ClInclude Include="EventSource.h" />
     <ClInclude Include="Exceptions.h" />
     <ClInclude Include="General.h" />
     <ClInclude Include="MathUtils.h" />
