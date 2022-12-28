@@ -17,7 +17,6 @@
 
 #include "SysForwardDefs.h"
 
-#include "common/Exceptions.h"
 #include "common/SafeArray.h"
 #include "common/Threading.h"
 
