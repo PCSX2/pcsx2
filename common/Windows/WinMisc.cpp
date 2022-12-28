@@ -17,7 +17,6 @@
 
 #include "common/Pcsx2Defs.h"
 #include "common/RedtapeWindows.h"
-#include "common/Exceptions.h"
 #include "common/StringUtil.h"
 #include "common/Threading.h"
 #include "common/General.h"

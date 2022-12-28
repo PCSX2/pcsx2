@@ -10,12 +10,12 @@ add_library(common)
 # x86emitter sources
 target_sources(common PRIVATE
 	AlignedMalloc.cpp
+	Assertions.cpp
 	SafeArray.inl
 	Console.cpp
 	CrashHandler.cpp
 	DynamicLibrary.cpp
 	Error.cpp
-	Exceptions.cpp
 	FastJmp.cpp
 	FileSystem.cpp
 	General.cpp
@@ -72,7 +72,6 @@ target_sources(common PRIVATE
 	Easing.h
 	EnumOps.h
 	Error.h
-	Exceptions.h
 	FastJmp.h
 	FileSystem.h
 	General.h

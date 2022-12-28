@@ -13,9 +13,6 @@
     <ClCompile Include="emitter\cpudetect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Exceptions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="emitter\fpu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -142,6 +139,9 @@
     <ClCompile Include="Error.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Assertions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlignedMalloc.h">
@@ -160,9 +160,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="emitter\implement\dwshift.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Exceptions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="General.h">

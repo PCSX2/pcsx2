@@ -24,7 +24,8 @@
 #include "IsoFileFormats.h"
 #include "AsyncFileReader.h"
 #include "CDVD/CDVD.h"
-#include "common/Exceptions.h"
+
+#include "common/Assertions.h"
 
 #include <cstring>
 #include <array>

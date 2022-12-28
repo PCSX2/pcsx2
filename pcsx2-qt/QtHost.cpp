@@ -47,7 +47,6 @@
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/CrashHandler.h"
-#include "common/Exceptions.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/SettingsWrapper.h"
