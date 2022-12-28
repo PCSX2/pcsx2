@@ -18630,6 +18630,9 @@ SLES-54120:
 SLES-54122:
   name: "Robin Hood 2 - The Siege"
   region: "PAL-E"
+  gameFixes:
+    - GIFFIFOHack # Partially fixes PATH3 Masking timing, not enough on its own.
+    - EETimingHack # Massages the timing slightly further to make it work okay.
 SLES-54123:
   name: "Marvel - Ultimate Alliance"
   region: "PAL-E-I"
