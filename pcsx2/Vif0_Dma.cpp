@@ -136,6 +136,10 @@ __fi void vif0SetupTransfer()
 
 __fi void vif0VUFinish()
 {
+	// Sync up VU0 so we don't errantly wait.
+	while ((static_cast<int>(cpuRegs.cycle) - static_cast<int>(VU0.cycle)) > 0 && (VU0.VI[REG_VPU_STAT].UL & 0x1))
+		CpuVU0->ExecuteBlock();
+
 	if (VU0.VI[REG_VPU_STAT].UL & 0x5)
 	{
 		CPU_INT(VIF_VU0_FINISH, 128);
