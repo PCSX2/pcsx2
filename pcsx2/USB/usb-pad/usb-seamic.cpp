@@ -386,7 +386,7 @@ namespace usb_pad
 			{SettingInfo::Type::StringList, "input_device_name", "Input Device", "Selects the device to read audio from.", "", nullptr,
 				nullptr, nullptr, nullptr, nullptr, &AudioDevice::GetInputDeviceList},
 			{SettingInfo::Type::Integer, "input_latency", "Input Latency", "Specifies the latency to the host input device.",
-				AudioDevice::DEFAULT_LATENCY_STR, "0", "1000", "1", "%dms", nullptr, nullptr, 1.0f},
+				AudioDevice::DEFAULT_LATENCY_STR, "1", "1000", "1", "%dms", nullptr, nullptr, 1.0f},
 		};
 		return info;
 	}
