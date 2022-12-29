@@ -1000,9 +1000,9 @@ namespace usb_mic
 				nullptr, nullptr, nullptr, nullptr, &AudioDevice::GetInputDeviceList},
 			{SettingInfo::Type::StringList, "output_device_name", "Output Device", "Selects the device to output audio to.", "", nullptr,
 				nullptr, nullptr, nullptr, nullptr, &AudioDevice::GetOutputDeviceList},
-			{SettingInfo::Type::Integer, "input_latency", "Input Latency", "Specifies the latency to the host input device.", AudioDevice::DEFAULT_LATENCY_STR, "0",
+			{SettingInfo::Type::Integer, "input_latency", "Input Latency", "Specifies the latency to the host input device.", AudioDevice::DEFAULT_LATENCY_STR, "1",
 				"1000", "1", "%dms", nullptr, nullptr, 1.0f},
-			{SettingInfo::Type::Integer, "output_latency", "Output Latency", "Specifies the latency to the host output device.", AudioDevice::DEFAULT_LATENCY_STR, "0",
+			{SettingInfo::Type::Integer, "output_latency", "Output Latency", "Specifies the latency to the host output device.", AudioDevice::DEFAULT_LATENCY_STR, "1",
 				"1000", "1", "%dms", nullptr, nullptr, 1.0f},
 		};
 		return info;
