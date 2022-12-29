@@ -482,7 +482,10 @@ void mVUtestCycles(microVU& mVU, microFlagCycles& mFC)
 	mVUendProgram(mVU, &mFC, 0);
 
 	{
-		xAlignPtr(SSE_ALIGN_N);
+		if(x86caps.hasAVX2)
+			xAlignPtr(32);
+		else
+			xAlignPtr(16);
 
 		u8* curx86Ptr = x86Ptr;
 		x86SetPtr(writeback);
