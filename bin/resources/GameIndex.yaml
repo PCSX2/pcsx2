@@ -666,6 +666,8 @@ SCAJ-20046:
 SCAJ-20047:
   name: "Time Crisis 3"
   region: "NTSC-Unk"
+  gsHWFixes:
+    texturePreloading: 0 # Performs much better with no preload.
 SCAJ-20048:
   name: "R - Racing Evolution"
   region: "NTSC-J"
@@ -697,6 +699,8 @@ SCAJ-20059:
 SCAJ-20060:
   name: "Time Crisis 3"
   region: "NTSC-Unk"
+  gsHWFixes:
+    texturePreloading: 0 # Performs much better with no preload.
 SCAJ-20061:
   name: "Seven Samurai 20XX"
   region: "NTSC-Unk"
@@ -3411,6 +3415,8 @@ SCES-51725:
 SCES-51844:
   name: "Time Crisis 3"
   region: "PAL-M5"
+  gsHWFixes:
+    texturePreloading: 0 # Performs much better with no preload.
 SCES-51895:
   name: "EyeToy - Groove"
   region: "PAL-M11"
@@ -4819,6 +4825,8 @@ SCKA-20015:
   name: "Time Crisis 3"
   region: "NTSC-K"
   compat: 5
+  gsHWFixes:
+    texturePreloading: 0 # Performs much better with no preload.
 SCKA-20016:
   name: "Soul Calibur II"
   region: "NTSC-K"
@@ -4921,6 +4929,8 @@ SCKA-20033:
 SCKA-20034:
   name: "Time Crisis 3 [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
+  gsHWFixes:
+    texturePreloading: 0 # Performs much better with no preload.
 SCKA-20035:
   name: "Hot Shots Golf 3 [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
@@ -36807,9 +36817,13 @@ SLPS-25288:
 SLPS-25289:
   name: "Time Crisis 3 [with G-Con 2]"
   region: "NTSC-J"
+  gsHWFixes:
+    texturePreloading: 0 # Performs much better with no preload.
 SLPS-25290:
   name: "Time Crisis 3"
   region: "NTSC-J"
+  gsHWFixes:
+    texturePreloading: 0 # Performs much better with no preload.
 SLPS-25291:
   name: "Baldur's Gate - Dark Alliance [PCCW The Best]"
   region: "NTSC-J"
@@ -42620,6 +42634,8 @@ SLUS-20645:
   name: "Time Crisis 3 [with Guncon]"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    texturePreloading: 0 # Performs much better with no preload.
 SLUS-20646:
   name: "Mark Davis Pro Bass Challenge"
   region: "NTSC-U"
