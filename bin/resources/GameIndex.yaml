@@ -2511,6 +2511,15 @@ SCED-53679:
 SCED-53684:
   name: "SingStar '80s [Demo]"
   region: "PAL-E"
+SCED-53802:
+  name: "Sly 3 - Honour Among Thieves [Demo]"
+  region: "PAL-M5"
+  roundModes:
+    vuRoundMode: 0 # Fixes game engine issue with bombs and ladders.
+  clampModes:
+    vu0ClampMode: 3 # Fixes bugged camera.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes chromatic effect.
 SCED-53854:
   name: "Official PS2 Magazine French Christmas Special" # French
   region: "PAL-F"
@@ -3908,7 +3917,7 @@ SCES-53409:
   roundModes:
     vuRoundMode: 0 # Fixes game engine issue with bombs and ladders.
   clampModes:
-    vuClampMode: 2 # Fixes bugged camera.
+    vu0ClampMode: 3 # Fixes bugged camera.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes chromatic effect.
 SCES-53422:
@@ -5081,7 +5090,7 @@ SCKA-20063:
   roundModes:
     vuRoundMode: 0 # Fixes game engine issue with bombs and ladders.
   clampModes:
-    vuClampMode: 2 # Fixes bugged camera.
+    vu0ClampMode: 3 # Fixes bugged camera.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes chromatic effect.
 SCKA-20064:
@@ -8156,7 +8165,7 @@ SCUS-97464:
   roundModes:
     vuRoundMode: 0 # Fixes game engine issue with bombs and ladders.
   clampModes:
-    vuClampMode: 2 # Fixes bugged camera.
+    vu0ClampMode: 3 # Fixes bugged camera.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes chromatic effect.
 SCUS-97465:
@@ -8276,7 +8285,7 @@ SCUS-97484:
   roundModes:
     vuRoundMode: 0 # Fixes game engine issue with bombs and ladders.
   clampModes:
-    vuClampMode: 2 # Fixes bugged camera.
+    vu0ClampMode: 3 # Fixes bugged camera.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes chromatic effect.
 SCUS-97485:
@@ -8486,7 +8495,7 @@ SCUS-97527:
   roundModes:
     vuRoundMode: 0 # Fixes game engine issue with bombs and ladders.
   clampModes:
-    vuClampMode: 2 # Fixes bugged camera.
+    vu0ClampMode: 3 # Fixes bugged camera.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes chromatic effect.
 SCUS-97528:
