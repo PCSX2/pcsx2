@@ -31,14 +31,6 @@
 	#error PCSX2 requires compiling for at least SSE 4.1
 #endif
 
-// Require 32 bit alignment for vectors for AVX2.
-#if _M_SSE >= 0x501
-	#define SSE_ALIGN_N 32
-#else
-	#define SSE_ALIGN_N 16
-#endif
-#define SSE_ALIGN alignas(SSE_ALIGN_N)
-
 // Starting with AVX, processors have fast unaligned loads
 // Reduce code duplication by not compiling multiple versions
 #if _M_SSE >= 0x500
