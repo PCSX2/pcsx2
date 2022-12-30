@@ -326,7 +326,9 @@ __fi void mVUaddrFix(mV, const xAddressReg& gprReg)
 					{
 						xMOV(gprT1, mVU.prog.cur->idx); // Note: Kernel does it via COP2 to initialize VU1!
 						xMOV(gprT2, xPC);               // So we don't spam console, we'll only check micro-mode...
+						mVUbackupRegs(mVU, true, false);
 						xFastCall((void*)mVUwarningRegAccess, arg1regd, arg2regd);
+						mVUrestoreRegs(mVU, true, false);
 					}
 #endif
 				xFastCall((void*)mVU.waitMTVU);

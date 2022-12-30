@@ -135,8 +135,9 @@ void mvuGenerateWaitMTVU(mV)
 		if (!xRegister32::IsCallerSaved(i) || i == rsp.GetId())
 			continue;
 
-		// no need to save temps
-		if (i == gprT1.GetId() || i == gprT2.GetId())
+		// T1 often contains the address we're loading when waiting for VU1.
+		// T2 isn't used until afterwards, so don't bother saving it.
+		if (i == gprT2.GetId())
 			continue;
 
 		xPUSH(xRegister64(i));
@@ -187,7 +188,7 @@ void mvuGenerateWaitMTVU(mV)
 		if (!xRegister32::IsCallerSaved(i) || i == rsp.GetId())
 			continue;
 
-		if (i == gprT1.GetId() || i == gprT2.GetId())
+		if (i == gprT2.GetId())
 			continue;
 
 		xPOP(xRegister64(i));
