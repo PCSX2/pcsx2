@@ -19,20 +19,40 @@
 #include "IopCounters.h"
 #include <mutex>
 
-enum class PS2Modes
-{
-	PS2,
-	PSX,
-};
+struct Pcsx2Config;
 
-bool SPU2init();
-void SPU2reset(PS2Modes isRunningPSXMode = PS2Modes::PS2);
-bool SPU2open(PS2Modes isRunningPSXMode = PS2Modes::PS2);
-void SPU2close();
-void SPU2shutdown();
-bool SPU2IsRunningPSXMode();
-void SPU2SetOutputPaused(bool paused);
-void SPU2SetDeviceSampleRateMultiplier(double multiplier);
+namespace SPU2
+{
+/// Initialization/cleanup, call at process startup/shutdown.
+bool Initialize();
+void Shutdown();
+
+/// Open/close, call at VM startup/shutdown.
+bool Open();
+void Close();
+
+/// Reset, rebooting VM or going into PSX mode.
+void Reset(bool psxmode);
+
+/// Identifies any configuration changes and applies them.
+void CheckForConfigChanges(const Pcsx2Config& old_config);
+
+/// Directly updates the output volume without going through the configuration.
+void SetOutputVolume(s32 volume);
+
+/// Pauses/resumes the output stream.
+void SetOutputPaused(bool paused);
+
+/// Clears output buffers in no-sync mode, prevents long delays after fast forwarding.
+void OnTargetSpeedChanged();
+
+/// Adjusts the premultiplier on the output sample rate. Used for syncing to host refresh rate.
+void SetDeviceSampleRateMultiplier(double multiplier);
+
+/// Returns true if we're currently running in PSX mode.
+bool IsRunningPSXMode();
+} // namespace SPU2
+
 void SPU2write(u32 mem, u16 value);
 u16 SPU2read(u32 mem);
 

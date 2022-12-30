@@ -19,6 +19,7 @@
 #define TADR (Index == 0 ? HW_DMA4_TADR : HW_DMA7_TADR)
 
 extern void DMALogOpen();
+extern void ADMAOutLogWrite(void* lpData, u32 ulSize);
 extern void DMA4LogWrite(void* lpData, u32 ulSize);
 extern void DMA7LogWrite(void* lpData, u32 ulSize);
 extern void DMALogClose();

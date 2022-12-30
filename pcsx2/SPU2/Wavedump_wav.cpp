@@ -43,7 +43,7 @@ namespace WaveDump
 	{
 		if (!IsDevBuild)
 			return;
-		if (!WaveLog())
+		if (!SPU2::WaveLog())
 			return;
 
 		for (uint cidx = 0; cidx < 2; cidx++)

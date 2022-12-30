@@ -19,12 +19,25 @@
 #include "SPU2/Dma.h"
 #include "R3000A.h"
 
-static int ConsoleSampleRate = 48000;
+namespace SPU2
+{
+static int GetConsoleSampleRate();
+static void InitSndBuffer();
+static void UpdateSampleRate();
+static void InternalReset(bool psxmode);
+}
+
+static double s_device_sample_rate_multiplier = 1.0;
+static bool s_psxmode = false;
+
 int SampleRate = 48000;
 
-static double DeviceSampleRateMultiplier = 1.0;
-
 u32 lClocks = 0;
+
+int SPU2::GetConsoleSampleRate()
+{
+	return s_psxmode ? 44100 : 48000;
+}
 
 // --------------------------------------------------------------------------------------
 //  DMA 4/7 Callbacks from Core Emulator
@@ -35,7 +48,7 @@ void SPU2readDMA4Mem(u16* pMem, u32 size) // size now in 16bit units
 {
 	TimeUpdate(psxRegs.cycle);
 
-	FileLog("[%10d] SPU2 readDMA4Mem size %x\n", Cycles, size << 1);
+	SPU2::FileLog("[%10d] SPU2 readDMA4Mem size %x\n", Cycles, size << 1);
 	Cores[0].DoDMAread(pMem, size);
 }
 
@@ -43,14 +56,14 @@ void SPU2writeDMA4Mem(u16* pMem, u32 size) // size now in 16bit units
 {
 	TimeUpdate(psxRegs.cycle);
 
-	FileLog("[%10d] SPU2 writeDMA4Mem size %x at address %x\n", Cycles, size << 1, Cores[0].TSA);
+	SPU2::FileLog("[%10d] SPU2 writeDMA4Mem size %x at address %x\n", Cycles, size << 1, Cores[0].TSA);
 
 	Cores[0].DoDMAwrite(pMem, size);
 }
 
 void SPU2interruptDMA4()
 {
-	FileLog("[%10d] SPU2 interruptDMA4\n", Cycles);
+	SPU2::FileLog("[%10d] SPU2 interruptDMA4\n", Cycles);
 	if (Cores[0].DmaMode)
 		Cores[0].Regs.STATX |= 0x80;
 	Cores[0].Regs.STATX &= ~0x400;
@@ -59,7 +72,7 @@ void SPU2interruptDMA4()
 
 void SPU2interruptDMA7()
 {
-	FileLog("[%10d] SPU2 interruptDMA7\n", Cycles);
+	SPU2::FileLog("[%10d] SPU2 interruptDMA7\n", Cycles);
 	if (Cores[1].DmaMode)
 		Cores[1].Regs.STATX |= 0x80;
 	Cores[1].Regs.STATX &= ~0x400;
@@ -70,7 +83,7 @@ void SPU2readDMA7Mem(u16* pMem, u32 size)
 {
 	TimeUpdate(psxRegs.cycle);
 
-	FileLog("[%10d] SPU2 readDMA7Mem size %x\n", Cycles, size << 1);
+	SPU2::FileLog("[%10d] SPU2 readDMA7Mem size %x\n", Cycles, size << 1);
 	Cores[1].DoDMAread(pMem, size);
 }
 
@@ -78,51 +91,49 @@ void SPU2writeDMA7Mem(u16* pMem, u32 size)
 {
 	TimeUpdate(psxRegs.cycle);
 
-	FileLog("[%10d] SPU2 writeDMA7Mem size %x at address %x\n", Cycles, size << 1, Cores[1].TSA);
+	SPU2::FileLog("[%10d] SPU2 writeDMA7Mem size %x at address %x\n", Cycles, size << 1, Cores[1].TSA);
 
 	Cores[1].DoDMAwrite(pMem, size);
 }
 
-static void SPU2InitSndBuffer()
+void SPU2::InitSndBuffer()
 {
 	Console.WriteLn("Initializing SndBuffer at sample rate of %u...", SampleRate);
-	if (SndBuffer::Init())
+	if (SndBuffer::Init(EmuConfig.SPU2.OutputModule.c_str()))
 		return;
 
-	if (SampleRate != ConsoleSampleRate)
+	if (SampleRate != GetConsoleSampleRate())
 	{
-		// TODO: Resample on our side...
+		// It'll get stretched instead..
 		const int original_sample_rate = SampleRate;
 		Console.Error("Failed to init SPU2 at adjusted sample rate %u, trying console rate.", SampleRate);
-		SampleRate = ConsoleSampleRate;
-		if (SndBuffer::Init())
+		SampleRate = GetConsoleSampleRate();
+		if (SndBuffer::Init(EmuConfig.SPU2.OutputModule.c_str()))
 			return;
 
 		SampleRate = original_sample_rate;
 	}
 
 	// just use nullout
-	OutputModule = FindOutputModuleById(NullOut->GetIdent());
-	if (!SndBuffer::Init())
+	if (!SndBuffer::Init("nullout"))
 		pxFailRel("Failed to initialize nullout.");
 }
 
-static void SPU2UpdateSampleRate()
+void SPU2::UpdateSampleRate()
 {
-	const int new_sample_rate = static_cast<int>(std::round(static_cast<double>(ConsoleSampleRate) * DeviceSampleRateMultiplier));
+	const int new_sample_rate = static_cast<int>(std::round(static_cast<double>(GetConsoleSampleRate()) * s_device_sample_rate_multiplier));
 	if (SampleRate == new_sample_rate)
 		return;
 
 	SndBuffer::Cleanup();
 	SampleRate = new_sample_rate;
-	SPU2InitSndBuffer();
+	InitSndBuffer();
 }
 
-static void SPU2InternalReset(PS2Modes isRunningPSXMode)
+void SPU2::InternalReset(bool psxmode)
 {
-	ConsoleSampleRate = (isRunningPSXMode == PS2Modes::PSX) ? 44100 : 48000;
-
-	if (isRunningPSXMode == PS2Modes::PS2)
+	s_psxmode = psxmode;
+	if (!s_psxmode)
 	{
 		memset(spu2regs, 0, 0x010000);
 		memset(_spu2mem, 0, 0x200000);
@@ -136,22 +147,28 @@ static void SPU2InternalReset(PS2Modes isRunningPSXMode)
 	}
 }
 
-void SPU2reset(PS2Modes isRunningPSXMode)
+void SPU2::Reset(bool psxmode)
 {
-	SPU2InternalReset(isRunningPSXMode);
-	SPU2UpdateSampleRate();
+	InternalReset(psxmode);
+	UpdateSampleRate();
 }
 
-void SPU2SetDeviceSampleRateMultiplier(double multiplier)
+void SPU2::OnTargetSpeedChanged()
 {
-	if (DeviceSampleRateMultiplier == multiplier)
+	if (EmuConfig.SPU2.SynchMode != Pcsx2Config::SPU2Options::SynchronizationMode::TimeStretch)
+		SndBuffer::ResetBuffers();
+}
+
+void SPU2::SetDeviceSampleRateMultiplier(double multiplier)
+{
+	if (s_device_sample_rate_multiplier == multiplier)
 		return;
 
-	DeviceSampleRateMultiplier = multiplier;
-	SPU2UpdateSampleRate();
+	s_device_sample_rate_multiplier = multiplier;
+	UpdateSampleRate();
 }
 
-bool SPU2init()
+bool SPU2::Initialize()
 {
 	pxAssert(regtable[0x400] == nullptr);
 	spu2regs = (s16*)malloc(0x010000);
@@ -190,17 +207,11 @@ bool SPU2init()
 }
 
 
-bool SPU2open(PS2Modes isRunningPSXMode)
+bool SPU2::Open()
 {
-	ReadSettings();
-
-#ifdef SPU2_LOG
-	if (AccessLog())
-	{
-		spu2Log = OpenLog(AccessLogFileName.c_str());
-		setvbuf(spu2Log, nullptr, _IONBF, 0);
-		FileLog("SPU2init\n");
-	}
+#ifdef PCSX2_DEVBUILD
+	if (SPU2::AccessLog())
+		SPU2::OpenFileLog();
 #endif
 
 	DMALogOpen();
@@ -209,131 +220,45 @@ bool SPU2open(PS2Modes isRunningPSXMode)
 
 	lClocks = psxRegs.cycle;
 
-	SPU2InternalReset(isRunningPSXMode);
+	InternalReset(false);
 
-	try
-	{
-		SampleRate = static_cast<int>(std::round(static_cast<double>(ConsoleSampleRate) * DeviceSampleRateMultiplier));
-		SPU2InitSndBuffer();
-		WaveDump::Open();
-	}
-	catch (std::exception& ex)
-	{
-		Console.Error("SPU2 Error: Could not initialize device, or something.\nReason: %s", ex.what());
-		SPU2close();
-		return false;
-	}
+	SampleRate = static_cast<int>(std::round(static_cast<double>(GetConsoleSampleRate()) * s_device_sample_rate_multiplier));
+	InitSndBuffer();
+	WaveDump::Open();
 
 	return true;
 }
 
-void SPU2close()
+void SPU2::Close()
 {
 	FileLog("[%10d] SPU2 Close\n", Cycles);
 
 	SndBuffer::Cleanup();
-}
 
-void SPU2shutdown()
-{
-	ConLog("* SPU2: Shutting down.\n");
-
-	SPU2close();
-
-	DoFullDump();
-#ifdef STREAM_DUMP
-	fclose(il0);
-	fclose(il1);
-#endif
-#ifdef EFFECTS_DUMP
-	fclose(el0);
-	fclose(el1);
-#endif
 	WaveDump::Close();
-
 	DMALogClose();
 
+#ifdef PCSX2_DEVBUILD
+	DoFullDump();
+	CloseFileLog();
+#endif
+}
+
+void SPU2::Shutdown()
+{
 	safe_free(spu2regs);
 	safe_free(_spu2mem);
 	safe_free(pcm_cache_data);
-
-
-#ifdef SPU2_LOG
-	if (!AccessLog())
-		return;
-	FileLog("[%10d] SPU2shutdown\n", Cycles);
-	if (spu2Log)
-		fclose(spu2Log);
-#endif
 }
 
-bool SPU2IsRunningPSXMode()
+bool SPU2::IsRunningPSXMode()
 {
-	return (ConsoleSampleRate == 44100);
+	return s_psxmode;
 }
-
-void SPU2SetOutputPaused(bool paused)
-{
-	SndBuffer::SetPaused(paused);
-}
-
-#ifdef DEBUG_KEYS
-static u32 lastTicks;
-static bool lState[6];
-#endif
 
 void SPU2async(u32 cycles)
 {
 	TimeUpdate(psxRegs.cycle);
-
-#ifdef DEBUG_KEYS
-	u32 curTicks = GetTickCount();
-	if ((curTicks - lastTicks) >= 50)
-	{
-		int oldI = Interpolation;
-		bool cState[6];
-		for (int i = 0; i < 6; i++)
-		{
-			cState[i] = !!(GetAsyncKeyState(VK_NUMPAD0 + i) & 0x8000);
-
-			if ((cState[i] && !lState[i]) && i != 5)
-				Interpolation = i;
-
-			lState[i] = cState[i];
-		}
-
-		if (Interpolation != oldI)
-		{
-			printf("Interpolation set to %d", Interpolation);
-			switch (Interpolation)
-			{
-				case 0:
-					printf(" - Nearest.\n");
-					break;
-				case 1:
-					printf(" - Linear.\n");
-					break;
-				case 2:
-					printf(" - Cubic.\n");
-					break;
-				case 3:
-					printf(" - Hermite.\n");
-					break;
-				case 4:
-					printf(" - Catmull-Rom.\n");
-					break;
-				case 5:
-					printf(" - Gaussian.\n");
-					break;
-				default:
-					printf(" (unknown).\n");
-					break;
-			}
-		}
-
-		lastTicks = curTicks;
-	}
-#endif
 }
 
 u16 SPU2read(u32 rmem)
@@ -370,7 +295,8 @@ u16 SPU2read(u32 rmem)
 		else if (mem >= 0x800)
 		{
 			ret = spu2Ru16(mem);
-			ConLog("* SPU2: Read from reg>=0x800: %x value %x\n", mem, ret);
+			if (SPU2::MsgToConsole())
+				SPU2::ConLog("* SPU2: Read from reg>=0x800: %x value %x\n", mem, ret);
 		}
 		else
 		{
@@ -449,4 +375,44 @@ s32 SPU2freeze(FreezeAction mode, freezeData* data)
 
 	// technically unreachable, but kills a warning:
 	return 0;
+}
+
+void SPU2::CheckForConfigChanges(const Pcsx2Config& old_config)
+{
+	if (EmuConfig.SPU2 == old_config.SPU2)
+		return;
+
+	const Pcsx2Config::SPU2Options& opts = EmuConfig.SPU2;
+	const Pcsx2Config::SPU2Options& oldopts = old_config.SPU2;
+
+	// No need to reinit for volume change.
+	if (opts.FinalVolume != oldopts.FinalVolume)
+		SetOutputVolume(opts.FinalVolume);
+
+	// Wipe buffer out when changing sync mode, so e.g. TS->none doesn't have a huge delay.
+	if (opts.SynchMode != oldopts.SynchMode)
+		SndBuffer::ResetBuffers();
+	
+	// Things which require re-initialzing the output.
+	if (opts.Latency != oldopts.Latency ||
+		opts.SpeakerConfiguration != oldopts.SpeakerConfiguration ||
+		opts.DplDecodingLevel != oldopts.DplDecodingLevel ||
+		opts.SequenceLenMS != oldopts.SequenceLenMS ||
+		opts.SeekWindowMS != oldopts.SeekWindowMS ||
+		opts.OverlapMS != oldopts.OverlapMS)
+	{
+		SndBuffer::Cleanup();
+		InitSndBuffer();
+	}
+
+#ifdef PCSX2_DEVBUILD
+	// AccessLog controls file output.
+	if (opts.AccessLog != oldopts.AccessLog)
+	{
+		if (AccessLog())
+			OpenFileLog();
+		else
+			CloseFileLog();
+	}
+#endif
 }

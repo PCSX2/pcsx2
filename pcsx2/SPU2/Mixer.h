@@ -15,9 +15,10 @@
 
 #pragma once
 
-// Implemented in Config.cpp
-extern float VolumeAdjustFL;
-extern float VolumeAdjustFR;
+namespace SPU2
+{
+extern float FinalVolume;
+}
 
 struct StereoOut32
 {
@@ -73,56 +74,6 @@ struct StereoOut32
 	{
 		this->Left = src.Left << 2;
 		this->Right = src.Right << 2;
-	}
-
-	void AdjustFrom(const StereoOut32& src)
-	{
-		ResampleFrom(src);
-
-		Left = (s32)(Left * VolumeAdjustFL);
-		Right = (s32)(Right * VolumeAdjustFR);
-	}
-};
-
-struct FrequencyResponseFilter
-{
-	static FrequencyResponseFilter Empty;
-
-	StereoOut32 History_One_In;
-	StereoOut32 History_One_Out;
-	StereoOut32 History_Two_In;
-	StereoOut32 History_Two_Out;
-
-	s32 lx1;
-	s32 lx2;
-	s32 ly1;
-	s32 ly2;
-
-	float la0, la1, la2, lb1, lb2;
-	float ha0, ha1, ha2, hb1, hb2;
-
-	FrequencyResponseFilter()
-		: History_One_In(0, 0)
-		, History_One_Out(0, 0)
-		, History_Two_In(0, 0)
-		, History_Two_Out(0, 0)
-		, lx1(0)
-		, lx2(0)
-		, ly1(0)
-		, ly2(0)
-
-		, la0(1.00320890889339290000f)
-		, la1(-1.97516434134506300000f)
-		, la2(0.97243484967313087000f)
-		, lb1(-1.97525280404731810000f)
-		, lb2(0.97555529586426892000f)
-
-		, ha0(1.52690772687271160000f)
-		, ha1(-1.62653918974914990000f) //-1.72 = "common equilizer curve" --____--
-		, ha2(0.57997976029249387000f)
-		, hb1(-0.80955590379048203000f)
-		, hb2(0.28990420120653748000f)
-	{
 	}
 };
 

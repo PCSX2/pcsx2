@@ -794,27 +794,49 @@ struct Pcsx2Config
 			NoSync,
 		};
 
+		static constexpr s32 MAX_VOLUME = 200;
+		
+		static constexpr s32 MIN_LATENCY = 3;
+		static constexpr s32 MIN_LATENCY_TIMESTRETCH = 15;
+		static constexpr s32 MAX_LATENCY = 750;
+
+		static constexpr s32 MIN_SEQUENCE_LEN = 20;
+		static constexpr s32 MAX_SEQUENCE_LEN = 100;
+		static constexpr s32 MIN_SEEKWINDOW = 10;
+		static constexpr s32 MAX_SEEKWINDOW = 30;
+		static constexpr s32 MIN_OVERLAP = 5;
+		static constexpr s32 MAX_OVERLAP = 15;
+
 		BITFIELD32()
 		bool
-			AdvancedVolumeControl : 1;
+			DebugEnabled : 1,
+			MsgToConsole : 1,
+			MsgKeyOnOff : 1,
+			MsgVoiceOff : 1,
+			MsgDMA : 1,
+			MsgAutoDMA : 1,
+			MsgOverruns : 1,
+			MsgCache : 1,
+			AccessLog : 1,
+			DMALog : 1,
+			WaveLog : 1,
+			CoresDump : 1,
+			MemDump : 1,
+			RegDump : 1,
+			VisualDebugEnabled : 1;
 		BITFIELD_END
 
 		InterpolationMode Interpolation = InterpolationMode::Gaussian;
 		SynchronizationMode SynchMode = SynchronizationMode::TimeStretch;
 
 		s32 FinalVolume = 100;
-		s32 Latency{100};
-		s32 SpeakerConfiguration{0};
-		s32 DplDecodingLevel{0};
+		s32 Latency = 100;
+		s32 SpeakerConfiguration = 0;
+		s32 DplDecodingLevel = 0;
 
-		float VolumeAdjustC{ 0.0f };
-		float VolumeAdjustFL{ 0.0f };
-		float VolumeAdjustFR{ 0.0f };
-		float VolumeAdjustBL{ 0.0f };
-		float VolumeAdjustBR{ 0.0f };
-		float VolumeAdjustSL{ 0.0f };
-		float VolumeAdjustSR{ 0.0f };
-		float VolumeAdjustLFE{ 0.0f };
+		s32 SequenceLenMS = 30;
+		s32 SeekWindowMS = 20;
+		s32 OverlapMS = 10;
 
 		std::string OutputModule;
 		std::string BackendName;
@@ -835,14 +857,9 @@ struct Pcsx2Config
 				OpEqu(SpeakerConfiguration) &&
 				OpEqu(DplDecodingLevel) &&
 
-				OpEqu(VolumeAdjustC) &&
-				OpEqu(VolumeAdjustFL) &&
-				OpEqu(VolumeAdjustFR) &&
-				OpEqu(VolumeAdjustBL) &&
-				OpEqu(VolumeAdjustBR) &&
-				OpEqu(VolumeAdjustSL) &&
-				OpEqu(VolumeAdjustSR) &&
-				OpEqu(VolumeAdjustLFE) &&
+				OpEqu(SequenceLenMS) &&
+				OpEqu(SeekWindowMS) &&
+				OpEqu(OverlapMS) &&
 
 				OpEqu(OutputModule) &&
 				OpEqu(BackendName);
@@ -1295,6 +1312,9 @@ namespace EmuFolders
 	void SetDefaults(SettingsInterface& si);
 	void LoadConfig(SettingsInterface& si);
 	bool EnsureFoldersExist();
+
+	/// Opens the specified log file for writing.
+	std::FILE* OpenLogFile(const std::string_view& name, const char* mode);
 } // namespace EmuFolders
 
 /////////////////////////////////////////////////////////////////////////////////////////

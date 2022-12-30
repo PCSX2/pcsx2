@@ -71,7 +71,10 @@ public:
 
 	void Update();
 	void RegSet(u16 src); // used to set the volume from a register source (16 bit signed)
+
+#ifdef PCSX2_DEVBUILD
 	void DebugDump(FILE* dump, const char* title, const char* nameLR);
+#endif
 };
 
 struct V_VolumeSlideLR
@@ -95,7 +98,9 @@ public:
 		Right.Update();
 	}
 
+#ifdef PCSX2_DEVBUILD
 	void DebugDump(FILE* dump, const char* title);
+#endif
 };
 
 struct V_ADSR

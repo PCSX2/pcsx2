@@ -349,7 +349,7 @@ static double AdjustToHostRefreshRate(double vertical_frequency, double frame_li
 {
 	if (!EmuConfig.GS.SyncToHostRefreshRate || EmuConfig.GS.LimitScalar != 1.0f)
 	{
-		SPU2SetDeviceSampleRateMultiplier(1.0);
+		SPU2::SetDeviceSampleRateMultiplier(1.0);
 		s_use_vsync_for_timing = false;
 		return frame_limit;
 	}
@@ -358,7 +358,7 @@ static double AdjustToHostRefreshRate(double vertical_frequency, double frame_li
 	if (!g_host_display->GetHostRefreshRate(&host_refresh_rate))
 	{
 		Console.Warning("Cannot sync to host refresh since the query failed.");
-		SPU2SetDeviceSampleRateMultiplier(1.0);
+		SPU2::SetDeviceSampleRateMultiplier(1.0);
 		s_use_vsync_for_timing = false;
 		return frame_limit;
 	}
@@ -374,7 +374,7 @@ static double AdjustToHostRefreshRate(double vertical_frequency, double frame_li
 		return frame_limit;
 
 	frame_limit *= ratio;
-	SPU2SetDeviceSampleRateMultiplier(ratio);
+	SPU2::SetDeviceSampleRateMultiplier(ratio);
 	return frame_limit;
 }
 
