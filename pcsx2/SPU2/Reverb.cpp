@@ -107,7 +107,7 @@ s32 __forceinline V_Core::ReverbDownsample(bool right)
 	out += RevbDownBuf[right][((RevbSampleBufPos - NUM_TAPS) + 19) & 63] * filter_coefs[19];
 
 	out >>= 15;
-	Clampify(out, (s32)INT16_MIN, (s32)INT16_MAX);
+	out = std::clamp<s32>(out, INT16_MIN, INT16_MAX);
 
 	return out;
 }
@@ -136,9 +136,9 @@ StereoOut32 __forceinline V_Core::ReverbUpsample(bool phase)
 	}
 
 	ls >>= 14;
-	Clampify(ls, (s32)INT16_MIN, (s32)INT16_MAX);
+	ls = std::clamp<s32>(ls, INT16_MIN, INT16_MAX);
 	rs >>= 14;
-	Clampify(rs, (s32)INT16_MIN, (s32)INT16_MAX);
+	rs = std::clamp<s32>(rs, INT16_MIN, INT16_MAX);
 
 	return StereoOut32(ls, rs);
 }

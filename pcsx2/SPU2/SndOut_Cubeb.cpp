@@ -15,8 +15,9 @@
 
 #include "PrecompiledHeader.h"
 
-#include "Global.h"
-#include "SndOut.h"
+#include "SPU2/Global.h"
+#include "SPU2/SndOut.h"
+#include "Host.h"
 
 #include "common/Console.h"
 #include "common/StringUtil.h"
@@ -150,7 +151,7 @@ public:
 		m_COMInitializedByUs = SUCCEEDED(hr);
 		if (FAILED(hr) && hr != RPC_E_CHANGED_MODE)
 		{
-			Console.Error("(Cubeb) Failed to initialize COM");
+			Host::ReportErrorAsync("Cubeb Error", "Failed to initialize COM");
 			return false;
 		}
 #endif
@@ -162,11 +163,11 @@ public:
 		int rv = cubeb_init(&m_context, "PCSX2", m_Backend.empty() ? nullptr : m_Backend.c_str());
 		if (rv != CUBEB_OK)
 		{
-			Console.Error("(Cubeb) Could not initialize cubeb context: %d", rv);
+			Host::ReportFormattedErrorAsync("Cubeb Error", "Could not initialize cubeb context: %d", rv);
 			return false;
 		}
 
-		switch (numSpeakers) // speakers = (numSpeakers + 1) *2; ?
+		switch (EmuConfig.SPU2.SpeakerConfiguration) // speakers = (numSpeakers + 1) *2; ?
 		{
 			case 0:
 				channels = 2;
@@ -213,7 +214,7 @@ public:
 
 			case 6:
 			case 7:
-				switch (dplLevel)
+				switch (EmuConfig.SPU2.DplDecodingLevel)
 				{
 					case 0:
 						Console.WriteLn("(Cubeb) 5.1 speaker expansion enabled.");

@@ -43,10 +43,10 @@ u32 Cycles;
 
 int PlayMode;
 
-bool has_to_call_irq[2] = { false, false };
-bool has_to_call_irq_dma[2] = { false, false };
+static bool has_to_call_irq[2] = { false, false };
+static bool has_to_call_irq_dma[2] = { false, false };
 
-bool psxmode = false;
+static bool psxmode = false;
 
 void SetIrqCall(int core)
 {
@@ -90,8 +90,8 @@ __forceinline void spu2M_Write(u32 addr, s16 value)
 		const int cacheIdx = addr / pcm_WordsPerBlock;
 		pcm_cache_data[cacheIdx].Validated = false;
 
-		if (MsgToConsole() && MsgCache())
-			ConLog("* SPU2: PcmCache Block Clear at 0x%x (cacheIdx=0x%x)\n", addr, cacheIdx);
+		if (SPU2::MsgToConsole() && SPU2::MsgCache())
+			SPU2::ConLog("* SPU2: PcmCache Block Clear at 0x%x (cacheIdx=0x%x)\n", addr, cacheIdx);
 	}
 	*GetMemPtr(addr) = value;
 }
@@ -126,7 +126,9 @@ V_Core::~V_Core() throw()
 
 void V_Core::Init(int index)
 {
-	ConLog("* SPU2: Init SPU2 core %d \n", index);
+	if (SPU2::MsgToConsole())
+		SPU2::ConLog("* SPU2: Init SPU2 core %d \n", index);
+
 	//memset(this, 0, sizeof(V_Core));
 	// Explicitly initializing variables instead.
 	Mute = false;
@@ -229,36 +231,36 @@ void V_Core::Init(int index)
 
 void V_Core::AnalyzeReverbPreset()
 {
-	ConLog("Reverb Parameter Update for Core %d:\n", Index);
-	ConLog("----------------------------------------------------------\n");
+	SPU2::ConLog("Reverb Parameter Update for Core %d:\n", Index);
+	SPU2::ConLog("----------------------------------------------------------\n");
 
-	ConLog("    IN_COEF_L, IN_COEF_R        0x%08x, 0x%08x\n", Revb.IN_COEF_L, Revb.IN_COEF_R);
-	ConLog("    APF1_SIZE, APF2_SIZE          0x%08x, 0x%08x\n", Revb.APF1_SIZE, Revb.APF2_SIZE);
-	ConLog("    APF1_VOL, APF2_VOL              0x%08x, 0x%08x\n", Revb.APF1_VOL, Revb.APF2_VOL);
+	SPU2::ConLog("    IN_COEF_L, IN_COEF_R        0x%08x, 0x%08x\n", Revb.IN_COEF_L, Revb.IN_COEF_R);
+	SPU2::ConLog("    APF1_SIZE, APF2_SIZE          0x%08x, 0x%08x\n", Revb.APF1_SIZE, Revb.APF2_SIZE);
+	SPU2::ConLog("    APF1_VOL, APF2_VOL              0x%08x, 0x%08x\n", Revb.APF1_VOL, Revb.APF2_VOL);
 
-	ConLog("    COMB1_VOL                  0x%08x\n", Revb.COMB1_VOL);
-	ConLog("    COMB2_VOL                  0x%08x\n", Revb.COMB2_VOL);
-	ConLog("    COMB3_VOL                  0x%08x\n", Revb.COMB3_VOL);
-	ConLog("    COMB4_VOL                  0x%08x\n", Revb.COMB4_VOL);
+	SPU2::ConLog("    COMB1_VOL                  0x%08x\n", Revb.COMB1_VOL);
+	SPU2::ConLog("    COMB2_VOL                  0x%08x\n", Revb.COMB2_VOL);
+	SPU2::ConLog("    COMB3_VOL                  0x%08x\n", Revb.COMB3_VOL);
+	SPU2::ConLog("    COMB4_VOL                  0x%08x\n", Revb.COMB4_VOL);
 
-	ConLog("    COMB1_L_SRC, COMB1_R_SRC      0x%08x, 0x%08x\n", Revb.COMB1_L_SRC, Revb.COMB1_R_SRC);
-	ConLog("    COMB2_L_SRC, COMB2_R_SRC      0x%08x, 0x%08x\n", Revb.COMB2_L_SRC, Revb.COMB2_R_SRC);
-	ConLog("    COMB3_L_SRC, COMB3_R_SRC      0x%08x, 0x%08x\n", Revb.COMB3_L_SRC, Revb.COMB3_R_SRC);
-	ConLog("    COMB4_L_SRC, COMB4_R_SRC      0x%08x, 0x%08x\n", Revb.COMB4_L_SRC, Revb.COMB4_R_SRC);
+	SPU2::ConLog("    COMB1_L_SRC, COMB1_R_SRC      0x%08x, 0x%08x\n", Revb.COMB1_L_SRC, Revb.COMB1_R_SRC);
+	SPU2::ConLog("    COMB2_L_SRC, COMB2_R_SRC      0x%08x, 0x%08x\n", Revb.COMB2_L_SRC, Revb.COMB2_R_SRC);
+	SPU2::ConLog("    COMB3_L_SRC, COMB3_R_SRC      0x%08x, 0x%08x\n", Revb.COMB3_L_SRC, Revb.COMB3_R_SRC);
+	SPU2::ConLog("    COMB4_L_SRC, COMB4_R_SRC      0x%08x, 0x%08x\n", Revb.COMB4_L_SRC, Revb.COMB4_R_SRC);
 
-	ConLog("    SAME_L_SRC, SAME_R_SRC      0x%08x, 0x%08x\n", Revb.SAME_L_SRC, Revb.SAME_R_SRC);
-	ConLog("    DIFF_L_SRC, DIFF_R_SRC      0x%08x, 0x%08x\n", Revb.DIFF_L_SRC, Revb.DIFF_R_SRC);
-	ConLog("    SAME_L_DST, SAME_R_DST    0x%08x, 0x%08x\n", Revb.SAME_L_DST, Revb.SAME_R_DST);
-	ConLog("    DIFF_L_DST, DIFF_R_DST    0x%08x, 0x%08x\n", Revb.DIFF_L_DST, Revb.DIFF_R_DST);
-	ConLog("    IIR_VOL, WALL_VOL         0x%08x, 0x%08x\n", Revb.IIR_VOL, Revb.WALL_VOL);
+	SPU2::ConLog("    SAME_L_SRC, SAME_R_SRC      0x%08x, 0x%08x\n", Revb.SAME_L_SRC, Revb.SAME_R_SRC);
+	SPU2::ConLog("    DIFF_L_SRC, DIFF_R_SRC      0x%08x, 0x%08x\n", Revb.DIFF_L_SRC, Revb.DIFF_R_SRC);
+	SPU2::ConLog("    SAME_L_DST, SAME_R_DST    0x%08x, 0x%08x\n", Revb.SAME_L_DST, Revb.SAME_R_DST);
+	SPU2::ConLog("    DIFF_L_DST, DIFF_R_DST    0x%08x, 0x%08x\n", Revb.DIFF_L_DST, Revb.DIFF_R_DST);
+	SPU2::ConLog("    IIR_VOL, WALL_VOL         0x%08x, 0x%08x\n", Revb.IIR_VOL, Revb.WALL_VOL);
 
-	ConLog("    APF1_L_DST                 0x%08x\n", Revb.APF1_L_DST);
-	ConLog("    APF1_R_DST                 0x%08x\n", Revb.APF1_R_DST);
-	ConLog("    APF2_L_DST                 0x%08x\n", Revb.APF2_L_DST);
-	ConLog("    APF2_R_DST                 0x%08x\n", Revb.APF2_R_DST);
+	SPU2::ConLog("    APF1_L_DST                 0x%08x\n", Revb.APF1_L_DST);
+	SPU2::ConLog("    APF1_R_DST                 0x%08x\n", Revb.APF1_R_DST);
+	SPU2::ConLog("    APF2_L_DST                 0x%08x\n", Revb.APF2_L_DST);
+	SPU2::ConLog("    APF2_R_DST                 0x%08x\n", Revb.APF2_R_DST);
 
-	ConLog("    EffectsBufferSize           0x%x\n", EffectsBufferSize);
-	ConLog("----------------------------------------------------------\n");
+	SPU2::ConLog("    EffectsBufferSize           0x%x\n", EffectsBufferSize);
+	SPU2::ConLog("----------------------------------------------------------\n");
 }
 s32 V_Core::EffectsBufferIndexer(s32 offset) const
 {
@@ -288,7 +290,7 @@ void V_Core::UpdateEffectsBufferSize()
 		return;
 
 	// debug: shows reverb parameters in console
-	if (MsgToConsole())
+	if (SPU2::MsgToConsole())
 		AnalyzeReverbPreset();
 
 	// Rebuild buffer indexers.
@@ -396,13 +398,13 @@ __forceinline void TimeUpdate(u32 cClocks)
 
 	if (dClocks > (u32)(TickInterval * SanityInterval))
 	{
-		if (MsgToConsole())
-			ConLog(" * SPU2 > TimeUpdate Sanity Check (Tick Delta: %d) (PS2 Ticks: %d)\n", dClocks / TickInterval, cClocks / TickInterval);
+		if (SPU2::MsgToConsole())
+			SPU2::ConLog(" * SPU2 > TimeUpdate Sanity Check (Tick Delta: %d) (PS2 Ticks: %d)\n", dClocks / TickInterval, cClocks / TickInterval);
 		dClocks = TickInterval * SanityInterval;
 		lClocks = cClocks - dClocks;
 	}
 
-	if (SynchMode == 1) // AsyncMix on
+	if (EmuConfig.SPU2.SynchMode == Pcsx2Config::SPU2Options::SynchronizationMode::ASync)
 		SndBuffer::UpdateTempoChangeAsyncMixing();
 	else
 		TickInterval = 768; // Reset to default, in case the user hotswitched from async to something else.
@@ -552,10 +554,10 @@ __forceinline void UpdateSpdifMode()
 {
 	int OPM = PlayMode;
 
-	if (Spdif.Out & 0x4) // use 24/32bit PCM data streaming
+	if (Spdif.Out & 0x4 && SPU2::MsgToConsole()) // use 24/32bit PCM data streaming
 	{
 		PlayMode = 8;
-		ConLog("* SPU2: WARNING: Possibly CDDA mode set!\n");
+		SPU2::ConLog("* SPU2: WARNING: Possibly CDDA mode set!\n");
 		return;
 	}
 
@@ -573,9 +575,9 @@ __forceinline void UpdateSpdifMode()
 			PlayMode = 1;
 		}
 	}
-	if (OPM != PlayMode)
+	if (OPM != PlayMode && SPU2::MsgToConsole())
 	{
-		ConLog("* SPU2: Play Mode Set to %s (%d).\n",
+		SPU2::ConLog("* SPU2: Play Mode Set to %s (%d).\n",
 			   (PlayMode == 0) ? "Normal" : ((PlayMode == 1) ? "PCM Clone" : ((PlayMode == 2) ? "PCM Bypass" : "BitStream Bypass")), PlayMode);
 	}
 }
@@ -628,8 +630,8 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 					thisvol.Mode = (value & 0xF000) >> 12;
 					thisvol.Increment = (value & 0x7F);
 					// We're not sure slides work 100%
-					if (IsDevBuild)
-						ConLog("* SPU2: Voice uses Slides in Mode = %x, Increment = %x\n", thisvol.Mode, thisvol.Increment);
+					if (SPU2::MsgToConsole())
+						SPU2::ConLog("* SPU2: Voice uses Slides in Mode = %x, Increment = %x\n", thisvol.Mode, thisvol.Increment);
 				}
 				else
 				{
@@ -665,7 +667,8 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 			case 0xc: // Voice 0..23 ADSR Current Volume
 				// not commonly set by games
 				Voices[voice].ADSR.Value = value * 0x10001U;
-				ConLog("voice %x ADSR.Value write: %x\n", voice, Voices[voice].ADSR.Value);
+				if (SPU2::MsgToConsole())
+					SPU2::ConLog("voice %x ADSR.Value write: %x\n", voice, Voices[voice].ADSR.Value);
 				break;
 			case 0xe:
 				Voices[voice].LoopStartA = map_spu1to2(value);
@@ -713,27 +716,27 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 
 			case 0x1d90: //         Channel FM (pitch lfo) mode (0-15)
 				SPU2_FastWrite(REG_S_PMON, value);
-				if (value != 0)
-					ConLog("SPU2 warning: wants to set Pitch Modulation reg1 to %x \n", value);
+				if (value != 0 && SPU2::MsgToConsole())
+					SPU2::ConLog("SPU2 warning: wants to set Pitch Modulation reg1 to %x \n", value);
 				break;
 
 			case 0x1d92: //         Channel FM (pitch lfo) mode (16-23)
 				SPU2_FastWrite(REG_S_PMON + 2, value);
-				if (value != 0)
-					ConLog("SPU2 warning: wants to set Pitch Modulation reg2 to %x \n", value);
+				if (value != 0 && SPU2::MsgToConsole())
+					SPU2::ConLog("SPU2 warning: wants to set Pitch Modulation reg2 to %x \n", value);
 				break;
 
 
 			case 0x1d94: //         Channel Noise mode (0-15)
 				SPU2_FastWrite(REG_S_NON, value);
-				if (value != 0)
-					ConLog("SPU2 warning: wants to set Channel Noise mode reg1 to %x\n", value);
+				if (value != 0 && SPU2::MsgToConsole())
+					SPU2::ConLog("SPU2 warning: wants to set Channel Noise mode reg1 to %x\n", value);
 				break;
 
 			case 0x1d96: //         Channel Noise mode (16-23)
 				SPU2_FastWrite(REG_S_NON + 2, value);
-				if (value != 0)
-					ConLog("SPU2 warning: wants to set Channel Noise mode reg2 to %x\n", value);
+				if (value != 0 && SPU2::MsgToConsole())
+					SPU2::ConLog("SPU2 warning: wants to set Channel Noise mode reg2 to %x\n", value);
 				break;
 
 			case 0x1d98: //         1F801D98h - Voice 0..23 Reverb mode aka Echo On (EON) (R/W)
@@ -762,12 +765,14 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 			//break;
 			case 0x1d9c: // Voice 0..15 ON/OFF (status) (ENDX) (R) // writeable but hw overrides it shortly after
 				//Regs.ENDX &= 0xff0000;
-				ConLog("SPU2 warning: wants to set ENDX reg1 to %x \n", value);
+				if (SPU2::MsgToConsole())
+					SPU2::ConLog("SPU2 warning: wants to set ENDX reg1 to %x \n", value);
 				break;
 
 			case 0x1d9e: //         // Voice 15..23 ON/OFF (status) (ENDX) (R) // writeable but hw overrides it shortly after
 				//Regs.ENDX &= 0xffff;
-				ConLog("SPU2 warning: wants to set ENDX reg2 to %x \n", value);
+				if (SPU2::MsgToConsole())
+					SPU2::ConLog("SPU2 warning: wants to set ENDX reg2 to %x \n", value);
 				break;
 
 			case 0x1da2: //         Reverb work area start
@@ -786,7 +791,8 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 
 			case 0x1da6:
 				TSA = map_spu1to2(value);
-				ConLog("SPU2 Setting TSA to %x \n", TSA);
+				if (SPU2::MsgToConsole())
+					SPU2::ConLog("SPU2 Setting TSA to %x \n", TSA);
 				break;
 
 			case 0x1da8: // Spu Write to Memory
@@ -806,7 +812,8 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 				break;
 
 			case 0x1dac: // 1F801DACh - Sound RAM Data Transfer Control (should be 0004h)
-				ConLog("SPU Sound RAM Data Transfer Control (should be 4) : value = %x \n", value);
+				if (SPU2::MsgToConsole())
+					SPU2::ConLog("SPU Sound RAM Data Transfer Control (should be 4) : value = %x \n", value);
 				psxSoundDataTransferControl = value;
 				break;
 
@@ -932,7 +939,7 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 		}
 
 	if (show)
-		FileLog("[%10d] (!) SPU write mem %08x value %04x\n", Cycles, mem, value);
+		SPU2::FileLog("[%10d] (!) SPU write mem %08x value %04x\n", Cycles, mem, value);
 
 	spu2Ru16(mem) = value;
 }
@@ -1078,7 +1085,7 @@ u16 V_Core::ReadRegPS1(u32 mem)
 		}
 
 	if (show)
-		FileLog("[%10d] (!) SPU read mem %08x value %04x\n", Cycles, mem, value);
+		SPU2::FileLog("[%10d] (!) SPU read mem %08x value %04x\n", Cycles, mem, value);
 	return value;
 }
 
@@ -1127,8 +1134,8 @@ static void RegWrite_VoiceParams(u16 value)
 				thisvol.Mode = (value & 0xF000) >> 12;
 				thisvol.Increment = (value & 0x7F);
 				// We're not sure slides work 100%
-				if (IsDevBuild)
-					ConLog("* SPU2: Voice uses Slides in Mode = %x, Increment = %x\n", thisvol.Mode, thisvol.Increment);
+				if (SPU2::MsgToConsole())
+					SPU2::ConLog("* SPU2: Voice uses Slides in Mode = %x, Increment = %x\n", thisvol.Mode, thisvol.Increment);
 			}
 			else
 			{
@@ -1323,14 +1330,14 @@ static void RegWrite_Core(u16 value)
 
 			if (value & 0x000E)
 			{
-				if (MsgToConsole())
-					ConLog("* SPU2: Core %d ATTR unknown bits SET! value=%04x\n", core, value);
+				if (SPU2::MsgToConsole())
+					SPU2::ConLog("* SPU2: Core %d ATTR unknown bits SET! value=%04x\n", core, value);
 			}
 
 			if (thiscore.AttrBit0 != bit0)
 			{
-				if (MsgToConsole())
-					ConLog("* SPU2: ATTR bit 0 set to %d\n", thiscore.AttrBit0);
+				if (SPU2::MsgToConsole())
+					SPU2::ConLog("* SPU2: ATTR bit 0 set to %d\n", thiscore.AttrBit0);
 			}
 			if (thiscore.IRQEnable != irqe)
 			{
@@ -1513,11 +1520,13 @@ static void RegWrite_Core(u16 value)
 			break;
 
 		case REG_S_ADMAS:
-			if (MsgToConsole())
-				ConLog("* SPU2: Core %d AutoDMAControl set to %d (at cycle %d)\n", core, value, Cycles);
+			if (SPU2::MsgToConsole())
+			{
+				SPU2::ConLog("* SPU2: Core %d AutoDMAControl set to %d (at cycle %d)\n", core, value, Cycles);
 
-			if (psxmode)
-				ConLog("* SPU2: Writing to REG_S_ADMAS while in PSX mode! value: %x", value);
+				if (psxmode)
+					SPU2::ConLog("* SPU2: Writing to REG_S_ADMAS while in PSX mode! value: %x", value);
+			}
 			// hack for ps1driver which writes -1 (and never turns the adma off after psxlogo).
 			// adma isn't available in psx mode either
 			if (value == 32767)
@@ -1966,7 +1975,8 @@ void StartVoices(int core, u32 value)
 	if (value == 0)
 		return;
 
-	ConLog("KeyOn Write %x\n", value);
+	if (SPU2::MsgToConsole())
+		SPU2::ConLog("KeyOn Write %x\n", value);
 
 	Cores[core].KeyOn |= value;
 	Cores[core].Regs.ENDX &= ~value;
@@ -1978,7 +1988,8 @@ void StartVoices(int core, u32 value)
 
 		if ((Cycles - Cores[core].Voices[vc].PlayCycle) < 2)
 		{
-			ConLog("Attempt to start voice %d on core %d in less than 2T since last KeyOn\n", vc, core);
+			if (SPU2::MsgToConsole())
+				SPU2::ConLog("Attempt to start voice %d on core %d in less than 2T since last KeyOn\n", vc, core);
 			continue;
 		}
 
@@ -1986,11 +1997,11 @@ void StartVoices(int core, u32 value)
 
 		if (IsDevBuild)
 		{
-			if (MsgKeyOnOff())
+			if (SPU2::MsgKeyOnOff())
 			{
 				V_Voice& thisvc(Cores[core].Voices[vc]);
 
-				ConLog("* SPU2: KeyOn: C%dV%02d: SSA: %8x; M: %s%s%s%s; H: %04x; P: %04x V: %04x/%04x; ADSR: %04x%04x\n",
+				SPU2::ConLog("* SPU2: KeyOn: C%dV%02d: SSA: %8x; M: %s%s%s%s; H: %04x; P: %04x V: %04x/%04x; ADSR: %04x%04x\n",
 					   core, vc, thisvc.StartA,
 					   (Cores[core].VoiceGates[vc].DryL) ? "+" : "-", (Cores[core].VoiceGates[vc].DryR) ? "+" : "-",
 					   (Cores[core].VoiceGates[vc].WetL) ? "+" : "-", (Cores[core].VoiceGates[vc].WetR) ? "+" : "-",
@@ -2008,7 +2019,8 @@ void StopVoices(int core, u32 value)
 	if (value == 0)
 		return;
 
-	ConLog("KeyOff Write %x\n", value);
+	if (SPU2::MsgToConsole())
+		SPU2::ConLog("KeyOff Write %x\n", value);
 
 	for (u8 vc = 0; vc < V_Core::NumVoices; vc++)
 	{
@@ -2017,12 +2029,13 @@ void StopVoices(int core, u32 value)
 
 		if (Cycles - Cores[core].Voices[vc].PlayCycle < 2)
 		{
-			ConLog("Attempt to stop voice %d on core %d in less than 2T since KeyOn\n", vc, core);
+			if (SPU2::MsgToConsole())
+				SPU2::ConLog("Attempt to stop voice %d on core %d in less than 2T since KeyOn\n", vc, core);
 			continue;
 		}
 
 		Cores[core].Voices[vc].ADSR.Releasing = true;
-		if (MsgKeyOnOff())
-			ConLog("* SPU2: KeyOff: Core %d; Voice %d.\n", core, vc);
+		if (SPU2::MsgKeyOnOff())
+			SPU2::ConLog("* SPU2: KeyOff: Core %d; Voice %d.\n", core, vc);
 	}
 }

@@ -354,7 +354,7 @@ static int SysState_MTGSFreeze(FreezeAction mode, freezeData* fP)
 	return sstate.retval;
 }
 
-static constexpr SysState_Component SPU2{ "SPU2", SPU2freeze };
+static constexpr SysState_Component SPU2_{ "SPU2", SPU2freeze };
 static constexpr SysState_Component PAD_{ "PAD", PADfreeze };
 static constexpr SysState_Component GS{ "GS", SysState_MTGSFreeze };
 
@@ -601,8 +601,8 @@ public:
 	virtual ~SavestateEntry_SPU2() = default;
 
 	const char* GetFilename() const { return "SPU2.bin"; }
-	void FreezeIn(zip_file_t* zf) const { return SysState_ComponentFreezeIn(zf, SPU2); }
-	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, SPU2); }
+	void FreezeIn(zip_file_t* zf) const { return SysState_ComponentFreezeIn(zf, SPU2_); }
+	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, SPU2_); }
 	bool IsRequired() const { return true; }
 };
 

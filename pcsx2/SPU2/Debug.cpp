@@ -14,65 +14,68 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "Global.h"
+
+#include "SPU2/Global.h"
+#include "Config.h"
+
 #include "common/FileSystem.h"
 
 #include <cstdarg>
 
-int crazy_debug = 0;
+#ifdef PCSX2_DEVBUILD
 
-char s[4096];
+static FILE* spu2Log = nullptr;
 
-FILE* spu2Log = nullptr;
-
-void FileLog(const char* fmt, ...)
+void SPU2::OpenFileLog()
 {
-#ifdef SPU2_LOG
-	va_list list;
-
-	if (!AccessLog())
+	if (spu2Log)
 		return;
+
+	spu2Log = EmuFolders::OpenLogFile("SPU2Log.txt", "w");
+	setvbuf(spu2Log, nullptr, _IONBF, 0);
+}
+
+void SPU2::CloseFileLog()
+{
 	if (!spu2Log)
 		return;
 
-	va_start(list, fmt);
-	vsprintf(s, fmt, list);
-	va_end(list);
+	std::fclose(spu2Log);
+	spu2Log = nullptr;
+}
 
-	fputs(s, spu2Log);
-	fflush(spu2Log);
+void SPU2::FileLog(const char* fmt, ...)
+{
+	if (!spu2Log)
+		return;
 
-#if 0
-	if(crazy_debug)
-	{
-		fputs(s,stderr);
-		fflush(stderr);
-	}
-#endif
-#endif
+	std::va_list ap;
+	va_start(ap, fmt);
+	std::vfprintf(spu2Log, fmt, ap);
+	std::fflush(spu2Log);
+	va_end(ap);
 }
 
 //Note to developer on the usage of ConLog:
 //  while ConLog doesn't print anything if messages to console are disabled at the GUI,
 //    it's still better to outright not call it on tight loop scenarios, by testing MsgToConsole() (which is inline and very quick).
 //    Else, there's some (small) overhead in calling and returning from ConLog.
-void ConLog(const char* fmt, ...)
+void SPU2::ConLog(const char* fmt, ...)
 {
-	if (!MsgToConsole())
+	if (!SPU2::MsgToConsole())
 		return;
 
-	va_list list;
-	va_start(list, fmt);
-	vsprintf(s, fmt, list);
-	va_end(list);
-
-	fputs(s, stderr);
-	fflush(stderr);
+	std::va_list ap;
+	va_start(ap, fmt);
+	Console.FormatV(fmt, ap);
+	va_end(ap);
 
 	if (spu2Log)
 	{
-		fputs(s, spu2Log);
-		fflush(spu2Log);
+		va_start(ap, fmt);
+		std::vfprintf(spu2Log, fmt, ap);
+		std::fflush(spu2Log);
+		va_end(ap);
 	}
 }
 
@@ -97,24 +100,22 @@ void V_VolumeLR::DebugDump(FILE* dump, const char* title)
 	fprintf(dump, "Volume for %s (%s Channel):\t%x\n", title, "Right", Right);
 }
 
-void DoFullDump()
+void SPU2::DoFullDump()
 {
-#ifdef _MSC_VER
-#ifdef SPU2_LOG
 	FILE* dump;
 
-	if (MemDump())
+	if (SPU2::MemDump())
 	{
-		dump = FileSystem::OpenCFile(MemDumpFileName.c_str(), "wb");
+		dump = EmuFolders::OpenLogFile("SPU2mem.dat", "wb");
 		if (dump)
 		{
 			fwrite(_spu2mem, 0x200000, 1, dump);
 			fclose(dump);
 		}
 	}
-	if (RegDump())
+	if (SPU2::RegDump())
 	{
-		dump = FileSystem::OpenCFile(RegDumpFileName.c_str(), "wb");
+		dump = EmuFolders::OpenLogFile("SPU2regs.dat", "wb");
 		if (dump)
 		{
 			fwrite(spu2regs, 0x2000, 1, dump);
@@ -122,9 +123,9 @@ void DoFullDump()
 		}
 	}
 
-	if (!CoresDump())
+	if (!SPU2::CoresDump())
 		return;
-	dump = FileSystem::OpenCFile(CoresDumpFileName.c_str(), "wt");
+	dump = EmuFolders::OpenLogFile("SPU2Cores.txt", "wt");
 	if (dump)
 	{
 		for (u8 c = 0; c < 2; c++)
@@ -217,7 +218,7 @@ void DoFullDump()
 		fclose(dump);
 	}
 
-	dump = fopen("logs/effects.txt", "wt");
+	dump = EmuFolders::OpenLogFile("SPU2effects.txt", "wt");
 	if (dump)
 	{
 		for (u8 c = 0; c < 2; c++)
@@ -264,6 +265,6 @@ void DoFullDump()
 		}
 		fclose(dump);
 	}
-#endif
-#endif
 }
+
+#endif

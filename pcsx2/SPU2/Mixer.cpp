@@ -14,12 +14,11 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "Global.h"
 #include "common/Assertions.h"
 
-void ADMAOutLogWrite(void* lpData, u32 ulSize);
-
-#include "interpolate_table.h"
+#include "SPU2/Global.h"
+#include "SPU2/spu2.h"
+#include "SPU2/interpolate_table.h"
 
 static const s32 tbl_XA_Factor[16][2] =
 	{
@@ -29,6 +28,7 @@ static const s32 tbl_XA_Factor[16][2] =
 		{98, -55},
 		{122, -60}};
 
+float SPU2::FinalVolume = 1.0f;
 
 // Performs a 64-bit multiplication between two values and returns the
 // high 32 bits as a result (discarding the fractional 32 bits).
@@ -51,7 +51,7 @@ static __forceinline s32 MulShr32(s32 srcval, s32 mulval)
 __forceinline s32 clamp_mix(s32 x, u8 bitshift)
 {
 	assert(bitshift <= 15);
-	return GetClamped(x, -(0x8000 << bitshift), 0x7fff << bitshift);
+	return std::clamp(x, -(0x8000 << bitshift), 0x7fff << bitshift);
 }
 
 #if _MSC_VER
@@ -70,8 +70,8 @@ __forceinline
 	// modules or sound drivers could (will :p) overshoot with that. So giving it a small safety.
 
 	return StereoOut32(
-		GetClamped(sample.Left, -(0x7f00 << bitshift), 0x7f00 << bitshift),
-		GetClamped(sample.Right, -(0x7f00 << bitshift), 0x7f00 << bitshift));
+		std::clamp(sample.Left, -(0x7f00 << bitshift), 0x7f00 << bitshift),
+		std::clamp(sample.Right, -(0x7f00 << bitshift), 0x7f00 << bitshift));
 }
 
 static void __forceinline XA_decode_block(s16* buffer, const s16* block, s32& prev1, s32& prev2)
@@ -79,8 +79,8 @@ static void __forceinline XA_decode_block(s16* buffer, const s16* block, s32& pr
 	const s32 header = *block;
 	const s32 shift = (header & 0xF) + 16;
 	const int id = header >> 4 & 0xF;
-	if (id > 4 && MsgToConsole())
-		ConLog("* SPU2: Unknown ADPCM coefficients table id %d\n", id);
+	if (id > 4 && SPU2::MsgToConsole())
+		SPU2::ConLog("* SPU2: Unknown ADPCM coefficients table id %d\n", id);
 	const s32 pred1 = tbl_XA_Factor[id][0];
 	const s32 pred2 = tbl_XA_Factor[id][1];
 
@@ -92,13 +92,13 @@ static void __forceinline XA_decode_block(s16* buffer, const s16* block, s32& pr
 		s32 data = ((*blockbytes) << 28) & 0xF0000000;
 		s32 pcm = (data >> shift) + (((pred1 * prev1) + (pred2 * prev2) + 32) >> 6);
 
-		Clampify(pcm, -0x8000, 0x7fff);
+		pcm = std::clamp<s32>(pcm, -0x8000, 0x7fff);
 		*(buffer++) = pcm;
 
 		data = ((*blockbytes) << 24) & 0xF0000000;
 		s32 pcm2 = (data >> shift) + (((pred1 * pcm) + (pred2 * prev1) + 32) >> 6);
 
-		Clampify(pcm2, -0x8000, 0x7fff);
+		pcm2 = std::clamp<s32>(pcm2, -0x8000, 0x7fff);
 		*(buffer++) = pcm2;
 
 		prev2 = pcm;
@@ -159,11 +159,15 @@ static __forceinline s32 GetNextDataBuffered(V_Core& thiscore, uint voiceidx)
 				if (vc.LoopCycle < vc.PlayCycle)
 				{
 					vc.LoopStartA = vc.PendingLoopStartA;
-					ConLog("Core %d Voice %d Loop Written by HW within 4T of Key On, Now Applying\n", thiscore.Index, voiceidx);
+					if (SPU2::MsgToConsole())
+						SPU2::ConLog("Core %d Voice %d Loop Written by HW within 4T of Key On, Now Applying\n", thiscore.Index, voiceidx);
 					vc.LoopMode = 1;
 				}
 				else
-					ConLog("Loop point from waveform set within 4T's, ignoring HW write\n");
+				{
+					if (SPU2::MsgToConsole())
+						SPU2::ConLog("Loop point from waveform set within 4T's, ignoring HW write\n");
+				}
 
 				vc.PendingLoopStart = false;
 			}
@@ -182,8 +186,8 @@ static __forceinline s32 GetNextDataBuffered(V_Core& thiscore, uint voiceidx)
 
 					if (IsDevBuild)
 					{
-						if (MsgVoiceOff())
-							ConLog("* SPU2: Voice Off by EndPoint: %d \n", voiceidx);
+						if (SPU2::MsgVoiceOff())
+							SPU2::ConLog("* SPU2: Voice Off by EndPoint: %d \n", voiceidx);
 					}
 				}
 			}
@@ -327,7 +331,7 @@ static void __forceinline UpdatePitch(uint coreidx, uint voiceidx)
 	if ((vc.Modulated == 0) || (voiceidx == 0))
 		pitch = vc.Pitch;
 	else
-		pitch = GetClamped((vc.Pitch * (32768 + Cores[coreidx].Voices[voiceidx - 1].OutX)) >> 15, 0, 0x3fff);
+		pitch = std::clamp((vc.Pitch * (32768 + Cores[coreidx].Voices[voiceidx - 1].OutX)) >> 15, 0, 0x3fff);
 
 	pitch = std::min(pitch, 0x3FFF);
 	vc.SP += pitch;
@@ -348,8 +352,8 @@ static __forceinline void CalculateADSR(V_Core& thiscore, uint voiceidx)
 	{
 		if (IsDevBuild)
 		{
-			if (MsgVoiceOff())
-				ConLog("* SPU2: Voice Off by ADSR: %d \n", voiceidx);
+			if (SPU2::MsgVoiceOff())
+				SPU2::ConLog("* SPU2: Voice Off by ADSR: %d \n", voiceidx);
 		}
 		vc.Stop();
 	}
@@ -588,24 +592,24 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 			// Optimization : Forceinline'd Templated Dispatch Table.  Any halfwit compiler will
 			// turn this into a clever jump dispatch table (no call/rets, no compares, uber-efficient!)
 
-			switch (Interpolation)
+			switch (EmuConfig.SPU2.Interpolation)
 			{
-				case 0:
+				case Pcsx2Config::SPU2Options::InterpolationMode::Nearest:
 					Value = GetVoiceValues<0>(thiscore, voiceidx);
 					break;
-				case 1:
+				case Pcsx2Config::SPU2Options::InterpolationMode::Linear:
 					Value = GetVoiceValues<1>(thiscore, voiceidx);
 					break;
-				case 2:
+				case Pcsx2Config::SPU2Options::InterpolationMode::Cubic:
 					Value = GetVoiceValues<2>(thiscore, voiceidx);
 					break;
-				case 3:
+				case Pcsx2Config::SPU2Options::InterpolationMode::Hermite:
 					Value = GetVoiceValues<3>(thiscore, voiceidx);
 					break;
-				case 4:
+				case Pcsx2Config::SPU2Options::InterpolationMode::CatmullRom:
 					Value = GetVoiceValues<4>(thiscore, voiceidx);
 					break;
-				case 5:
+				case Pcsx2Config::SPU2Options::InterpolationMode::Gaussian:
 					Value = GetVoiceValues<5>(thiscore, voiceidx);
 					break;
 
@@ -813,8 +817,8 @@ __forceinline
 	}
 
 	// Configurable output volume
-	Out.Left *= FinalVolume;
-	Out.Right *= FinalVolume;
+	Out.Left *= SPU2::FinalVolume;
+	Out.Right *= SPU2::FinalVolume;
 
 	// Final Clamp!
 	// Like any good audio system, the PS2 pumps the volume and incurs some distortion in its
@@ -842,15 +846,22 @@ __forceinline
 		if (p_cachestat_counter > (48000 * 10))
 		{
 			p_cachestat_counter = 0;
-			if (MsgCache())
-				ConLog(" * SPU2 > CacheStats > Hits: %d  Misses: %d  Ignores: %d\n",
+			if (SPU2::MsgCache())
+			{
+				SPU2::ConLog(" * SPU2 > CacheStats > Hits: %d  Misses: %d  Ignores: %d\n",
 					   g_counter_cache_hits,
 					   g_counter_cache_misses,
 					   g_counter_cache_ignores);
+			}
 
 			g_counter_cache_hits =
 				g_counter_cache_misses =
 					g_counter_cache_ignores = 0;
 		}
 	}
+}
+
+void SPU2::SetOutputVolume(s32 volume)
+{
+	FinalVolume = static_cast<float>(std::clamp<s32>(volume, 0, Pcsx2Config::SPU2Options::MAX_VOLUME)) / 100.0f;
 }

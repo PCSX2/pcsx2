@@ -777,19 +777,48 @@ Pcsx2Config::SPU2Options::SPU2Options()
 void Pcsx2Config::SPU2Options::LoadSave(SettingsWrapper& wrap)
 {
 	{
+		SettingsWrapSection("SPU2/Debug");
+
+		SettingsWrapBitBoolEx(DebugEnabled, "Global_Enable");
+		SettingsWrapBitBoolEx(MsgToConsole, "Show_Messages");
+		SettingsWrapBitBoolEx(MsgKeyOnOff, "Show_Messages_Key_On_Off");
+		SettingsWrapBitBoolEx(MsgVoiceOff, "Show_Messages_Voice_Off");
+		SettingsWrapBitBoolEx(MsgDMA, "Show_Messages_DMA_Transfer");
+		SettingsWrapBitBoolEx(MsgAutoDMA, "Show_Messages_AutoDMA");
+		SettingsWrapBitBoolEx(MsgOverruns, "Show_Messages_Overruns");
+		SettingsWrapBitBoolEx(MsgCache, "Show_Messages_CacheStats");
+
+		SettingsWrapBitBoolEx(AccessLog, "Log_Register_Access");
+		SettingsWrapBitBoolEx(DMALog, "Log_DMA_Transfers");
+		SettingsWrapBitBoolEx(WaveLog, "Log_WAVE_Output");
+
+		SettingsWrapBitBoolEx(CoresDump, "Dump_Info");
+		SettingsWrapBitBoolEx(MemDump, "Dump_Memory");
+		SettingsWrapBitBoolEx(RegDump, "Dump_Regs");
+
+		// If the global switch is off, save runtime checks.
+		if (wrap.IsLoading() && !DebugEnabled)
+		{
+			MsgToConsole = false;
+			MsgKeyOnOff = false;
+			MsgVoiceOff = false;
+			MsgDMA = false;
+			MsgAutoDMA = false;
+			MsgOverruns = false;
+			MsgCache = false;
+			AccessLog = false;
+			DMALog = false;
+			WaveLog = false;
+			CoresDump = false;
+			MemDump = false;
+			RegDump = false;
+		}
+	}
+	{
 		SettingsWrapSection("SPU2/Mixing");
 
 		Interpolation = static_cast<InterpolationMode>(wrap.EntryBitfield(CURRENT_SETTINGS_SECTION, "Interpolation", static_cast<int>(Interpolation), static_cast<int>(Interpolation)));
 		SettingsWrapEntry(FinalVolume);
-
-		SettingsWrapEntry(VolumeAdjustC);
-		SettingsWrapEntry(VolumeAdjustFL);
-		SettingsWrapEntry(VolumeAdjustFR);
-		SettingsWrapEntry(VolumeAdjustBL);
-		SettingsWrapEntry(VolumeAdjustBR);
-		SettingsWrapEntry(VolumeAdjustSL);
-		SettingsWrapEntry(VolumeAdjustSR);
-		SettingsWrapEntry(VolumeAdjustLFE);
 	}
 
 	{
@@ -802,6 +831,8 @@ void Pcsx2Config::SPU2Options::LoadSave(SettingsWrapper& wrap)
 		SettingsWrapEntry(SpeakerConfiguration);
 		SettingsWrapEntry(DplDecodingLevel);
 	}
+
+	// clampy clamp
 }
 
 const char* Pcsx2Config::DEV9Options::NetApiNames[] = {
@@ -1444,4 +1475,13 @@ bool EmuFolders::EnsureFoldersExist()
 	result = FileSystem::CreateDirectoryPath(Textures.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(InputProfiles.c_str(), false) && result;
 	return result;
+}
+
+std::FILE* EmuFolders::OpenLogFile(const std::string_view& name, const char* mode)
+{
+	if (name.empty())
+		return nullptr;
+
+	const std::string path(Path::Combine(Logs, name));
+	return FileSystem::OpenCFile(path.c_str(), mode);
 }

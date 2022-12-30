@@ -866,9 +866,6 @@
     <ClCompile Include="SPU2\SndOut.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
-    <ClCompile Include="SPU2\Timestretcher.cpp">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClCompile>
     <ClCompile Include="SPU2\Wavedump_wav.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
@@ -1398,15 +1395,6 @@
     <ClCompile Include="USB\usb-pad\usb-pad-sdl-ff.cpp">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClCompile>
-    <ClCompile Include="SPU2\Config.cpp">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClCompile>
-    <ClCompile Include="SPU2\ConfigDebug.cpp">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClCompile>
-    <ClCompile Include="SPU2\ConfigSoundTouch.cpp">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClCompile>
     <ClCompile Include="SPU2\Debug.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
@@ -1779,9 +1767,6 @@
       <Filter>System\Ps2\SPU2</Filter>
     </ClInclude>
     <ClInclude Include="SPU2\interpolate_table.h">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClInclude>
-    <ClInclude Include="SPU2\Config.h">
       <Filter>System\Ps2\SPU2</Filter>
     </ClInclude>
     <ClInclude Include="SPU2\defs.h">

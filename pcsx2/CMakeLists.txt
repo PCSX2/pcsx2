@@ -277,9 +277,6 @@ set(pcsx2CDVDHeaders
 # SPU2 sources
 set(pcsx2SPU2Sources
 	SPU2/ADSR.cpp
-	SPU2/Config.cpp
-	SPU2/ConfigDebug.cpp
-	SPU2/ConfigSoundTouch.cpp
 	SPU2/Debug.cpp
 	SPU2/DplIIdecoder.cpp
 	SPU2/Dma.cpp
@@ -292,13 +289,11 @@ set(pcsx2SPU2Sources
 	SPU2/SndOut.cpp
 	SPU2/spu2freeze.cpp
 	SPU2/spu2sys.cpp
-	SPU2/Timestretcher.cpp
 	SPU2/Wavedump_wav.cpp
 )
 
 # SPU2 headers
 set(pcsx2SPU2Headers
-	SPU2/Config.h
 	SPU2/Debug.h
 	SPU2/defs.h
 	SPU2/Dma.h
