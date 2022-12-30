@@ -19,6 +19,8 @@
 #include <algorithm>
 
 #include "pcsx2/SPU2/Global.h"
+#include "pcsx2/SPU2/spu2.h"
+#include "pcsx2/VMManager.h"
 
 #include "AudioSettingsWidget.h"
 #include "QtHost.h"
@@ -37,22 +39,17 @@ static constexpr s32 DEFAULT_SOUNDTOUCH_SEQUENCE_LENGTH = 30;
 static constexpr s32 DEFAULT_SOUNDTOUCH_SEEK_WINDOW = 20;
 static constexpr s32 DEFAULT_SOUNDTOUCH_OVERLAP = 10;
 
-static const char* s_output_module_entries[] = {
-	QT_TRANSLATE_NOOP("AudioSettingsWidget", "No Sound (Emulate SPU2 only)"),
+static const char* s_output_module_entries[] = {QT_TRANSLATE_NOOP("AudioSettingsWidget", "No Sound (Emulate SPU2 only)"),
 	QT_TRANSLATE_NOOP("AudioSettingsWidget", "Cubeb (Cross-platform)"),
 #ifdef _WIN32
 	QT_TRANSLATE_NOOP("AudioSettingsWidget", "XAudio2"),
 #endif
-	nullptr
-};
-static const char* s_output_module_values[] = {
-	"nullout",
-	"cubeb",
+	nullptr};
+static const char* s_output_module_values[] = {"nullout", "cubeb",
 #ifdef _WIN32
 	"xaudio2",
 #endif
-	nullptr
-};
+	nullptr};
 
 AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	: QWidget(parent)
@@ -69,17 +66,19 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 	connect(m_ui.expansionMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &AudioSettingsWidget::expansionModeChanged);
 	expansionModeChanged();
 
-	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.outputModule, "SPU2/Output", "OutputModule", s_output_module_entries, s_output_module_values, DEFAULT_OUTPUT_MODULE);
+	SettingWidgetBinder::BindWidgetToEnumSetting(
+		sif, m_ui.outputModule, "SPU2/Output", "OutputModule", s_output_module_entries, s_output_module_values, DEFAULT_OUTPUT_MODULE);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.latency, "SPU2/Output", "Latency", DEFAULT_OUTPUT_LATENCY);
 	connect(m_ui.outputModule, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::outputModuleChanged);
 	connect(m_ui.backend, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::outputBackendChanged);
 	connect(m_ui.latency, &QSlider::valueChanged, this, &AudioSettingsWidget::updateLatencyLabel);
 	outputModuleChanged();
 
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.volume, "SPU2/Mixing", "FinalVolume", DEFAULT_VOLUME);
-	connect(m_ui.volume, &QSlider::valueChanged, this, &AudioSettingsWidget::updateVolumeLabel);
+	m_ui.volume->setValue(m_dialog->getEffectiveIntValue("SPU2/Mixing", "FinalVolume", DEFAULT_VOLUME));
+	connect(m_ui.volume, &QSlider::valueChanged, this, &AudioSettingsWidget::volumeChanged);
 
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.sequenceLength, "Soundtouch", "SequenceLengthMS", DEFAULT_SOUNDTOUCH_SEQUENCE_LENGTH);
+	SettingWidgetBinder::BindWidgetToIntSetting(
+		sif, m_ui.sequenceLength, "Soundtouch", "SequenceLengthMS", DEFAULT_SOUNDTOUCH_SEQUENCE_LENGTH);
 	connect(m_ui.sequenceLength, &QSlider::valueChanged, this, &AudioSettingsWidget::updateTimestretchSequenceLengthLabel);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.seekWindowSize, "Soundtouch", "SeekWindowMS", DEFAULT_SOUNDTOUCH_SEEK_WINDOW);
 	connect(m_ui.seekWindowSize, &QSlider::valueChanged, this, &AudioSettingsWidget::updateTimestretchSeekwindowLengthLabel);
@@ -90,7 +89,7 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 	m_ui.label_3b->setVisible(false);
 	m_ui.dplLevel->setVisible(false);
 
-	updateVolumeLabel();
+	volumeChanged(m_ui.volume->value());
 	updateLatencyLabel();
 	updateTimestretchSequenceLengthLabel();
 	updateTimestretchSeekwindowLengthLabel();
@@ -178,9 +177,33 @@ void AudioSettingsWidget::outputBackendChanged()
 		m_dialog->setStringSettingValue("SPU2/Output", "BackendName", m_ui.backend->currentText().toUtf8().constData());
 }
 
-void AudioSettingsWidget::updateVolumeLabel()
+void AudioSettingsWidget::volumeChanged(int value)
 {
-	m_ui.volumeLabel->setText(tr("%1%").arg(m_ui.volume->value()));
+	m_ui.volumeLabel->setText(tr("%1%").arg(value, 3));
+
+	// Nasty, but needed so we don't do a full settings apply and lag while dragging.
+	if (SettingsInterface* sif = m_dialog->getSettingsInterface())
+	{
+		sif->SetIntValue("SPU2/Mixing", "FinalVolume", value);
+		sif->Save();
+	}
+	else
+	{
+		Host::SetBaseIntSettingValue("SPU2/Mixing", "FinalVolume", value);
+		Host::CommitBaseSettingChanges();
+	}
+
+	// Push through to emu thread since we're not applying.
+	if (QtHost::IsVMValid())
+	{
+		Host::RunOnCPUThread([value]() {
+			if (!VMManager::HasValidVM())
+				return;
+
+			EmuConfig.SPU2.FinalVolume = value;
+			SPU2::SetOutputVolume(value);
+		});
+	}
 }
 
 void AudioSettingsWidget::updateLatencyLabel()
