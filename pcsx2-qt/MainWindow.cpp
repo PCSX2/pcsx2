@@ -1295,7 +1295,12 @@ void MainWindow::checkForSettingChanges()
 
 std::optional<WindowInfo> MainWindow::getWindowInfo()
 {
-	return QtUtils::GetWindowInfoForWidget(this);
+	if (isRenderingToMain())
+		return QtUtils::GetWindowInfoForWidget(this);
+	else if (QWidget* widget = getDisplayContainer())
+		return QtUtils::GetWindowInfoForWidget(widget);
+	else
+		return std::nullopt;
 }
 
 void Host::InvalidateSaveStateCache()
