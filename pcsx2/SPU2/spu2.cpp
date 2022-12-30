@@ -395,6 +395,8 @@ void SPU2::CheckForConfigChanges(const Pcsx2Config& old_config)
 	
 	// Things which require re-initialzing the output.
 	if (opts.Latency != oldopts.Latency ||
+		opts.OutputLatency != oldopts.OutputLatency ||
+		opts.OutputLatencyMinimal != oldopts.OutputLatencyMinimal ||
 		opts.SpeakerConfiguration != oldopts.SpeakerConfiguration ||
 		opts.DplDecodingLevel != oldopts.DplDecodingLevel ||
 		opts.SequenceLenMS != oldopts.SequenceLenMS ||

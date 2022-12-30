@@ -33,7 +33,8 @@ static constexpr s32 DEFAULT_SYNCHRONIZATION_MODE = 0;
 static constexpr s32 DEFAULT_EXPANSION_MODE = 0;
 static constexpr s32 DEFAULT_DPL_DECODING_LEVEL = 0;
 static const char* DEFAULT_OUTPUT_MODULE = "cubeb";
-static constexpr s32 DEFAULT_OUTPUT_LATENCY = 100;
+static constexpr s32 DEFAULT_TARGET_LATENCY = 100;
+static constexpr s32 DEFAULT_OUTPUT_LATENCY = 20;
 static constexpr s32 DEFAULT_VOLUME = 100;
 static constexpr s32 DEFAULT_SOUNDTOUCH_SEQUENCE_LENGTH = 30;
 static constexpr s32 DEFAULT_SOUNDTOUCH_SEEK_WINDOW = 20;
@@ -63,15 +64,21 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.syncMode, "SPU2/Output", "SynchMode", DEFAULT_SYNCHRONIZATION_MODE);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.expansionMode, "SPU2/Output", "SpeakerConfiguration", DEFAULT_EXPANSION_MODE);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.dplLevel, "SPU2/Output", "DplDecodingLevel", DEFAULT_DPL_DECODING_LEVEL);
+	connect(m_ui.syncMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &AudioSettingsWidget::updateTargetLatencyRange);
 	connect(m_ui.expansionMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &AudioSettingsWidget::expansionModeChanged);
+	updateTargetLatencyRange();
 	expansionModeChanged();
 
 	SettingWidgetBinder::BindWidgetToEnumSetting(
 		sif, m_ui.outputModule, "SPU2/Output", "OutputModule", s_output_module_entries, s_output_module_values, DEFAULT_OUTPUT_MODULE);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.latency, "SPU2/Output", "Latency", DEFAULT_OUTPUT_LATENCY);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.targetLatency, "SPU2/Output", "Latency", DEFAULT_TARGET_LATENCY);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.outputLatency, "SPU2/Output", "OutputLatency", DEFAULT_OUTPUT_LATENCY);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.outputLatencyMinimal, "SPU2/Output", "OutputLatencyMinimal", false);
 	connect(m_ui.outputModule, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::outputModuleChanged);
 	connect(m_ui.backend, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::outputBackendChanged);
-	connect(m_ui.latency, &QSlider::valueChanged, this, &AudioSettingsWidget::updateLatencyLabel);
+	connect(m_ui.targetLatency, &QSlider::valueChanged, this, &AudioSettingsWidget::updateLatencyLabels);
+	connect(m_ui.outputLatency, &QSlider::valueChanged, this, &AudioSettingsWidget::updateLatencyLabels);
+	connect(m_ui.outputLatencyMinimal, &QCheckBox::stateChanged, this, &AudioSettingsWidget::updateLatencyLabels);
 	outputModuleChanged();
 
 	m_ui.volume->setValue(m_dialog->getEffectiveIntValue("SPU2/Mixing", "FinalVolume", DEFAULT_VOLUME));
@@ -90,7 +97,8 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 	m_ui.dplLevel->setVisible(false);
 
 	volumeChanged(m_ui.volume->value());
-	updateLatencyLabel();
+	onMinimalOutputLatencyStateChanged();
+	updateLatencyLabels();
 	updateTimestretchSequenceLengthLabel();
 	updateTimestretchSeekwindowLengthLabel();
 	updateTimestretchOverlapLabel();
@@ -105,7 +113,12 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 
 	dialog->registerWidgetHelp(m_ui.backend, tr("Output Backend"), tr("Default"), tr(""));
 
-	dialog->registerWidgetHelp(m_ui.latency, tr("Latency"), tr("100 ms"), tr(""));
+	dialog->registerWidgetHelp(m_ui.targetLatency, tr("Target Latency"), tr("100 ms"),
+		tr("Determines the buffer size which the time stretcher will try to keep filled. It effectively selects the average latency, as "
+		   "audio will be stretched/shrunk to keep the buffer size within check."));
+	dialog->registerWidgetHelp(m_ui.outputLatency, tr("Output Latency"), tr("20 ms"),
+		tr("Determines the latency from the buffer to the host audio output. This can be set lower than the target latency to reduce audio "
+		   "delay."));
 
 	dialog->registerWidgetHelp(m_ui.sequenceLength, tr("Sequence Length"), tr("30 ms"), tr(""));
 
@@ -206,9 +219,42 @@ void AudioSettingsWidget::volumeChanged(int value)
 	}
 }
 
-void AudioSettingsWidget::updateLatencyLabel()
+void AudioSettingsWidget::updateTargetLatencyRange()
 {
-	m_ui.latencyLabel->setText(tr("%1 ms (avg)").arg(m_ui.latency->value()));
+	const Pcsx2Config::SPU2Options::SynchronizationMode sync_mode = static_cast<Pcsx2Config::SPU2Options::SynchronizationMode>(
+		m_dialog->getIntValue("SPU2/Output", "SynchMode", DEFAULT_SYNCHRONIZATION_MODE).value_or(DEFAULT_SYNCHRONIZATION_MODE));
+
+	m_ui.targetLatency->setMinimum((sync_mode == Pcsx2Config::SPU2Options::SynchronizationMode::TimeStretch) ?
+									   Pcsx2Config::SPU2Options::MIN_LATENCY_TIMESTRETCH :
+									   Pcsx2Config::SPU2Options::MIN_LATENCY);
+	m_ui.targetLatency->setMaximum(Pcsx2Config::SPU2Options::MAX_LATENCY);
+}
+
+void AudioSettingsWidget::updateLatencyLabels()
+{
+	const bool minimal_output = m_dialog->getEffectiveBoolValue("SPU2/Output", "OutputLatencyMinimal", false);
+
+	m_ui.targetLatencyLabel->setText(tr("%1 ms").arg(m_ui.targetLatency->value()));
+	m_ui.outputLatencyLabel->setText(minimal_output ? tr("N/A") : tr("%1 ms").arg(m_ui.outputLatency->value()));
+
+	const u32 output_latency_ms = minimal_output ? 0 : static_cast<u32>(m_ui.outputLatency->value());
+	const u32 buffer_ms = static_cast<u32>(m_ui.targetLatency->value());
+	if (output_latency_ms > 0)
+	{
+		m_ui.latencySummary->setText(tr("Average Latency: %1 ms (%2 ms buffer + %3 ms output)")
+										 .arg(buffer_ms + output_latency_ms)
+										 .arg(buffer_ms)
+										 .arg(output_latency_ms));
+	}
+	else
+	{
+		m_ui.latencySummary->setText(tr("Average Latency: %1 ms (plus minimum output)").arg(buffer_ms));
+	}
+}
+
+void AudioSettingsWidget::onMinimalOutputLatencyStateChanged()
+{
+	m_ui.outputLatency->setEnabled(!m_dialog->getEffectiveBoolValue("SPU2/Output", "OutputLatencyMinimal", false));
 }
 
 void AudioSettingsWidget::updateTimestretchSequenceLengthLabel()
