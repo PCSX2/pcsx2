@@ -74,6 +74,11 @@ public:
 	{
 		return nullptr;
 	}
+
+	std::vector<SndOutDeviceInfo> GetOutputDeviceList(const char* driver) const override
+	{
+		return {};
+	}
 };
 }
 
@@ -113,15 +118,25 @@ static SndOutModule* FindOutputModule(const char* name)
 
 const char* const* GetOutputModuleBackends(const char* omodid)
 {
-	for (SndOutModule* mod : mods)
-	{
-		if (mod && std::strcmp(mod->GetIdent(), omodid) == 0)
-		{
-			return mod->GetBackendNames();
-		}
-	}
+	if (SndOutModule* mod = FindOutputModule(omodid))
+		return mod->GetBackendNames();
 
 	return nullptr;
+}
+
+SndOutDeviceInfo::SndOutDeviceInfo(std::string name_, std::string display_name_, u32 minimum_latency_)
+	: name(std::move(name_)), display_name(std::move(display_name_)), minimum_latency_frames(minimum_latency_)
+{
+}
+
+SndOutDeviceInfo::~SndOutDeviceInfo() = default;
+
+std::vector<SndOutDeviceInfo> GetOutputDeviceList(const char* omodid, const char* driver)
+{
+	std::vector<SndOutDeviceInfo> ret;
+	if (SndOutModule* mod = FindOutputModule(omodid))
+		ret = mod->GetOutputDeviceList(driver);
+	return ret;
 }
 
 StereoOut32* SndBuffer::m_buffer;

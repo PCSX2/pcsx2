@@ -826,6 +826,7 @@ void Pcsx2Config::SPU2Options::LoadSave(SettingsWrapper& wrap)
 
 		SettingsWrapEntry(OutputModule);
 		SettingsWrapEntry(BackendName);
+		SettingsWrapEntry(DeviceName);
 		SettingsWrapEntry(Latency);
 		SettingsWrapEntry(OutputLatency);
 		SettingsWrapBitBool(OutputLatencyMinimal);

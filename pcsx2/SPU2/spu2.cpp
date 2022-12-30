@@ -21,11 +21,11 @@
 
 namespace SPU2
 {
-static int GetConsoleSampleRate();
-static void InitSndBuffer();
-static void UpdateSampleRate();
-static void InternalReset(bool psxmode);
-}
+	static int GetConsoleSampleRate();
+	static void InitSndBuffer();
+	static void UpdateSampleRate();
+	static void InternalReset(bool psxmode);
+} // namespace SPU2
 
 static double s_device_sample_rate_multiplier = 1.0;
 static bool s_psxmode = false;
@@ -392,11 +392,14 @@ void SPU2::CheckForConfigChanges(const Pcsx2Config& old_config)
 	// Wipe buffer out when changing sync mode, so e.g. TS->none doesn't have a huge delay.
 	if (opts.SynchMode != oldopts.SynchMode)
 		SndBuffer::ResetBuffers();
-	
+
 	// Things which require re-initialzing the output.
 	if (opts.Latency != oldopts.Latency ||
 		opts.OutputLatency != oldopts.OutputLatency ||
 		opts.OutputLatencyMinimal != oldopts.OutputLatencyMinimal ||
+		opts.OutputModule != oldopts.OutputModule ||
+		opts.BackendName != oldopts.BackendName ||
+		opts.DeviceName != oldopts.DeviceName ||
 		opts.SpeakerConfiguration != oldopts.SpeakerConfiguration ||
 		opts.DplDecodingLevel != oldopts.DplDecodingLevel ||
 		opts.SequenceLenMS != oldopts.SequenceLenMS ||

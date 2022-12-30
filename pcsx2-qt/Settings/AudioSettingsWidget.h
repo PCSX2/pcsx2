@@ -33,6 +33,7 @@ private Q_SLOTS:
 	void expansionModeChanged();
 	void outputModuleChanged();
 	void outputBackendChanged();
+	void updateDevices();
 	void volumeChanged(int value);
 	void updateTargetLatencyRange();
 	void updateLatencyLabels();
@@ -45,4 +46,5 @@ private Q_SLOTS:
 private:
 	SettingsDialog* m_dialog;
 	Ui::AudioSettingsWidget m_ui;
+	u32 m_output_device_latency = 0;
 };

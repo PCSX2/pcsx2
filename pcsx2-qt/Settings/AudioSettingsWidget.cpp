@@ -79,6 +79,7 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 	connect(m_ui.targetLatency, &QSlider::valueChanged, this, &AudioSettingsWidget::updateLatencyLabels);
 	connect(m_ui.outputLatency, &QSlider::valueChanged, this, &AudioSettingsWidget::updateLatencyLabels);
 	connect(m_ui.outputLatencyMinimal, &QCheckBox::stateChanged, this, &AudioSettingsWidget::updateLatencyLabels);
+	connect(m_ui.outputLatencyMinimal, &QCheckBox::stateChanged, this, &AudioSettingsWidget::onMinimalOutputLatencyStateChanged);
 	outputModuleChanged();
 
 	m_ui.volume->setValue(m_dialog->getEffectiveIntValue("SPU2/Mixing", "FinalVolume", DEFAULT_VOLUME));
@@ -168,6 +169,8 @@ void AudioSettingsWidget::outputModuleChanged()
 				m_ui.backend->setCurrentIndex(index);
 		}
 	}
+
+	updateDevices();
 }
 
 void AudioSettingsWidget::outputBackendChanged()
@@ -188,6 +191,40 @@ void AudioSettingsWidget::outputBackendChanged()
 		m_dialog->setStringSettingValue("SPU2/Output", "BackendName", "");
 	else
 		m_dialog->setStringSettingValue("SPU2/Output", "BackendName", m_ui.backend->currentText().toUtf8().constData());
+
+	updateDevices();
+}
+
+void AudioSettingsWidget::updateDevices()
+{
+	const std::string module_name(m_dialog->getEffectiveStringValue("SPU2/Output", "OutputModule", DEFAULT_OUTPUT_MODULE));
+	const std::string backend_name(m_dialog->getEffectiveStringValue("SPU2/Output", "BackendName", ""));
+
+	m_ui.outputDevice->disconnect();
+	m_ui.outputDevice->clear();
+	m_output_device_latency = 0;
+
+	std::vector<SndOutDeviceInfo> devices(GetOutputDeviceList(module_name.c_str(), backend_name.c_str()));
+	if (devices.empty())
+	{
+		m_ui.outputDevice->addItem(tr("Default"));
+		m_ui.outputDevice->setEnabled(false);
+	}
+	else
+	{
+		const std::string current_device(m_dialog->getEffectiveStringValue("SPU2/Output", "DeviceName", ""));
+
+		m_ui.outputDevice->setEnabled(true);
+		for (const SndOutDeviceInfo& devi : devices)
+		{
+			m_ui.outputDevice->addItem(QString::fromStdString(devi.display_name), QString::fromStdString(devi.name));
+			if (devi.name == current_device)
+				m_output_device_latency = devi.minimum_latency_frames;
+		}
+
+		SettingWidgetBinder::BindWidgetToStringSetting(
+			m_dialog->getSettingsInterface(), m_ui.outputDevice, "SPU2/Output", "DeviceName", std::move(devices.front().name));
+	}
 }
 
 void AudioSettingsWidget::volumeChanged(int value)
@@ -237,7 +274,8 @@ void AudioSettingsWidget::updateLatencyLabels()
 	m_ui.targetLatencyLabel->setText(tr("%1 ms").arg(m_ui.targetLatency->value()));
 	m_ui.outputLatencyLabel->setText(minimal_output ? tr("N/A") : tr("%1 ms").arg(m_ui.outputLatency->value()));
 
-	const u32 output_latency_ms = minimal_output ? 0 : static_cast<u32>(m_ui.outputLatency->value());
+	const u32 output_latency_ms =
+		minimal_output ? (((m_output_device_latency * 1000u) + 47999u) / 48000u) : static_cast<u32>(m_ui.outputLatency->value());
 	const u32 buffer_ms = static_cast<u32>(m_ui.targetLatency->value());
 	if (output_latency_ms > 0)
 	{
@@ -248,7 +286,7 @@ void AudioSettingsWidget::updateLatencyLabels()
 	}
 	else
 	{
-		m_ui.latencySummary->setText(tr("Average Latency: %1 ms (plus minimum output)").arg(buffer_ms));
+		m_ui.latencySummary->setText(tr("Average Latency: %1 ms (minimum output latency unknown)").arg(buffer_ms));
 	}
 }
 
