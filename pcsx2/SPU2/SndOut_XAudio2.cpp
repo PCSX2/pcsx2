@@ -369,6 +369,10 @@ public:
 		return nullptr;
 	}
 
+	std::vector<SndOutDeviceInfo> GetOutputDeviceList(const char* driver) const override
+	{
+		return {};
+	}
 } static XA2;
 
 SndOutModule* XAudio2Out = &XA2;

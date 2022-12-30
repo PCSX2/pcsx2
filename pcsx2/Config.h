@@ -842,6 +842,7 @@ struct Pcsx2Config
 
 		std::string OutputModule;
 		std::string BackendName;
+		std::string DeviceName;
 
 		SPU2Options();
 
@@ -865,7 +866,8 @@ struct Pcsx2Config
 				OpEqu(OverlapMS) &&
 
 				OpEqu(OutputModule) &&
-				OpEqu(BackendName);
+				OpEqu(BackendName) &&
+				OpEqu(DeviceName);
 		}
 
 		bool operator!=(const SPU2Options& right) const

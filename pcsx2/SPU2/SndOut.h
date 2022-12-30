@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <vector>
+
 // Number of stereo samples per SndOut block.
 // All drivers must work in units of this size when communicating with
 // SndOut.
@@ -35,6 +37,18 @@ extern int SampleRate;
 // Returns a null-terminated list of backends for the specified module.
 // nullptr is returned if the specified module does not have multiple backends.
 extern const char* const* GetOutputModuleBackends(const char* omodid);
+
+// Returns a list of output devices and their associated minimum latency.
+struct SndOutDeviceInfo
+{
+	std::string name;
+	std::string display_name;
+	u32 minimum_latency_frames;
+
+	SndOutDeviceInfo(std::string name_, std::string display_name_, u32 minimum_latency_);
+	~SndOutDeviceInfo();
+};
+std::vector<SndOutDeviceInfo> GetOutputDeviceList(const char* omodid, const char* driver);
 
 struct Stereo51Out16DplII;
 struct Stereo51Out32DplII;
@@ -459,6 +473,9 @@ public:
 
 	// Returns a null-terminated list of backends, or nullptr.
 	virtual const char* const* GetBackendNames() const = 0;
+
+	// Returns a list of output devices and their associated minimum latency.
+	virtual std::vector<SndOutDeviceInfo> GetOutputDeviceList(const char* driver) const = 0;
 
 	virtual bool Init() = 0;
 	virtual void Close() = 0;

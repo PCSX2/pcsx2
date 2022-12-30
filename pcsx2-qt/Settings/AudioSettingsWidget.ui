@@ -448,14 +448,14 @@
       <item row="0" column="1">
        <widget class="QComboBox" name="outputModule"/>
       </item>
-      <item row="2" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="label_5">
         <property name="text">
          <string>Output Latency:</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="3" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QSlider" name="outputLatency">
@@ -505,7 +505,7 @@
       <item row="1" column="1">
        <widget class="QComboBox" name="backend"/>
       </item>
-      <item row="3" column="1">
+      <item row="4" column="1">
        <widget class="QLabel" name="latencySummary">
         <property name="text">
          <string>Maximum Latency:</string>
@@ -514,6 +514,16 @@
          <set>Qt::AlignCenter</set>
         </property>
        </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_11">
+        <property name="text">
+         <string>Output Device:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="outputDevice"/>
       </item>
      </layout>
     </widget>

@@ -18,10 +18,12 @@
 #include "SPU2/Global.h"
 #include "SPU2/SndOut.h"
 #include "Host.h"
+#include "IconsFontAwesome5.h"
 
 #include "common/Console.h"
 #include "common/StringUtil.h"
 #include "common/RedtapeWindows.h"
+#include "common/ScopedGuard.h"
 
 #include "cubeb/cubeb.h"
 
@@ -273,10 +275,44 @@ public:
 			}
 		}
 
+		cubeb_devid selected_device = nullptr;
+		const std::string& selected_device_name = EmuConfig.SPU2.DeviceName;
+		cubeb_device_collection devices;
+		bool devices_valid = false;
+		if (!selected_device_name.empty())
+		{
+			rv = cubeb_enumerate_devices(m_context, CUBEB_DEVICE_TYPE_OUTPUT, &devices);
+			devices_valid = (rv == CUBEB_OK);
+			if (rv == CUBEB_OK)
+			{
+				for (size_t i = 0; i < devices.count; i++)
+				{
+					const cubeb_device_info& di = devices.device[i];
+					if (di.device_id && selected_device_name == di.device_id)
+					{
+						Console.WriteLn("Using output device '%s' (%s).", di.device_id, di.friendly_name ? di.friendly_name : di.device_id);
+						selected_device = di.devid;
+						break;
+					}
+				}
+
+				if (!selected_device)
+				{
+					Host::AddIconOSDMessage("CubebDeviceNotFound", ICON_FA_VOLUME_MUTE,
+						fmt::format("Requested audio output device '{}' not found, using default.", selected_device_name),
+						Host::OSD_WARNING_DURATION);
+				}
+			}
+			else
+			{
+				Console.Error("cubeb_enumerate_devices() returned %d, using default device.", rv);
+			}
+		}
+
 		char stream_name[32];
 		std::snprintf(stream_name, sizeof(stream_name), "%p", this);
 
-		rv = cubeb_stream_init(m_context, &stream, stream_name, nullptr, nullptr, nullptr, &params,
+		rv = cubeb_stream_init(m_context, &stream, stream_name, nullptr, nullptr, selected_device, &params,
 			latency_frames, &Cubeb::DataCallback, &Cubeb::StateCallback, this);
 		if (rv != CUBEB_OK)
 		{
@@ -352,6 +388,55 @@ public:
 	const char* const* GetBackendNames() const override
 	{
 		return cubeb_get_backend_names();
+	}
+
+	std::vector<SndOutDeviceInfo> GetOutputDeviceList(const char* driver) const override
+	{
+		std::vector<SndOutDeviceInfo> ret;
+		ret.emplace_back(std::string(), "Default", 0u);
+
+		cubeb* context;
+		int rv = cubeb_init(&context, "PCSX2", (driver && *driver) ? driver : nullptr);
+		if (rv != CUBEB_OK)
+		{
+			Console.Error("(GetOutputDeviceList) cubeb_init() failed: %d", rv);
+			return ret;
+		}
+
+		ScopedGuard context_cleanup([context]() { cubeb_destroy(context); });
+
+		cubeb_device_collection devices;
+		rv = cubeb_enumerate_devices(context, CUBEB_DEVICE_TYPE_OUTPUT, &devices);
+		if (rv != CUBEB_OK)
+		{
+			Console.Error("(GetOutputDeviceList) cubeb_enumerate_devices() failed: %d", rv);
+			return ret;
+		}
+
+		ScopedGuard devices_cleanup([context, &devices]() { cubeb_device_collection_destroy(context, &devices); });
+
+		// we need stream parameters to query latency
+		cubeb_stream_params params = {};
+		params.format = CUBEB_SAMPLE_S16LE;
+		params.rate = SampleRate;
+		params.channels = 2;
+		params.layout = CUBEB_LAYOUT_UNDEFINED;
+		params.prefs = CUBEB_STREAM_PREF_NONE;
+
+		u32 min_latency = 0;
+		cubeb_get_min_latency(context, &params, &min_latency);
+		ret[0].minimum_latency_frames = min_latency;
+
+		for (size_t i = 0; i < devices.count; i++)
+		{
+			const cubeb_device_info& di = devices.device[i];
+			if (!di.device_id)
+				continue;
+
+			ret.emplace_back(di.device_id, di.friendly_name ? di.friendly_name : di.device_id, min_latency);
+		}
+
+		return ret;
 	}
 };
 
