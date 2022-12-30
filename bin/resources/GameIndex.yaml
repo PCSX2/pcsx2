@@ -15502,25 +15502,46 @@ SLES-52812:
   name: "Disney-Pixar's The Incredibles"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes offset post processing.
+    cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLES-52813:
   name: "Incredibles, The"
   region: "PAL-NL-F"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes offset post processing.
+    cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLES-52814:
   name: "Incredibles, The"
   region: "PAL-I"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes offset post processing.
+    cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLES-52815:
   name: "Disney-Pixar's The Incredibles"
   region: "PAL-G"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes offset post processing.
+    cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLES-52816:
   name: "Increíbles, Los"
   region: "PAL-S"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes offset post processing.
+    cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLES-52820:
   name: "Incredibles, The"
   region: "PAL-M4"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes offset post processing.
+    cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLES-52821:
   name: "Incredibles, The"
   region: "PAL-P"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes offset post processing.
+    cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLES-52822:
   name: "Prince of Persia - Warrior Within"
   region: "PAL-M6"
@@ -23363,6 +23384,12 @@ SLKA-25225:
   name: "Dororo"
   region: "NTSC-K"
   compat: 5
+SLKA-25226:
+  name: "Incredibles, The"
+  region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes offset post processing.
+    cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLKA-25227:
   name: "Neo Contra"
   region: "NTSC-K"
@@ -29443,6 +29470,9 @@ SLPM-65758:
 SLPM-65759:
   name: "Mr. Incredible"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes offset post processing.
+    cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLPM-65760:
   name: "Grand Theft Auto III [Capcom The Best]"
   region: "NTSC-J"
@@ -43863,6 +43893,9 @@ SLUS-20905:
   name: "Incredibles, The"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes offset post processing.
+    cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLUS-20906:
   name: "Fight Night 2004"
   region: "NTSC-U"
