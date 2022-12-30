@@ -25,6 +25,7 @@
 #include "HostDisplay.h"
 #include "IconsFontAwesome5.h"
 #include "Recording/InputRecording.h"
+#include "SPU2/spu2.h"
 #include "VMManager.h"
 
 #ifdef ENABLE_ACHIEVEMENTS
@@ -47,6 +48,27 @@ static void HotkeyAdjustTargetSpeed(double delta)
 	VMManager::SetLimiterMode(LimiterModeType::Nominal);
 	Host::AddIconOSDMessage("SpeedChanged", ICON_FA_CLOCK,
 		fmt::format("Target speed set to {:.0f}%.", std::round(EmuConfig.Framerate.NominalScalar * 100.0)), Host::OSD_QUICK_DURATION);
+}
+
+static void HotkeyAdjustVolume(s32 fixed, s32 delta)
+{
+	if (!VMManager::HasValidVM())
+		return;
+
+	const s32 current_vol = SPU2::GetOutputVolume();
+	const s32 new_volume = std::clamp((fixed >= 0) ? fixed : (current_vol + delta), 0, Pcsx2Config::SPU2Options::MAX_VOLUME);
+	if (current_vol != new_volume)
+		SPU2::SetOutputVolume(new_volume);
+
+	if (new_volume == 0)
+	{
+		Host::AddIconOSDMessage("VolumeChanged", ICON_FA_VOLUME_MUTE, "Volume: Muted");
+	}
+	else
+	{
+		Host::AddIconOSDMessage(
+			"VolumeChanged", (current_vol < new_volume) ? ICON_FA_VOLUME_UP : ICON_FA_VOLUME_DOWN, fmt::format("Volume: {}%", new_volume));
+	}
 }
 
 static constexpr s32 CYCLE_SAVE_STATE_SLOTS = 10;
@@ -170,7 +192,7 @@ DEFINE_HOTKEY("HoldTurbo", "System", "Turbo / Fast Forward (Hold)", [](s32 press
 	{
 		s_limiter_mode_prior_to_hold_interaction = VMManager::GetLimiterMode();
 		VMManager::SetLimiterMode((s_limiter_mode_prior_to_hold_interaction.value() != LimiterModeType::Turbo) ? LimiterModeType::Turbo :
-                                                                                                                 LimiterModeType::Nominal);
+																												 LimiterModeType::Nominal);
 	}
 	else if (pressed >= 0 && s_limiter_mode_prior_to_hold_interaction.has_value())
 	{
@@ -179,12 +201,24 @@ DEFINE_HOTKEY("HoldTurbo", "System", "Turbo / Fast Forward (Hold)", [](s32 press
 	}
 })
 DEFINE_HOTKEY("IncreaseSpeed", "System", "Increase Target Speed", [](s32 pressed) {
-	if (!pressed)
+	if (!pressed && VMManager::HasValidVM())
 		HotkeyAdjustTargetSpeed(0.1);
 })
 DEFINE_HOTKEY("DecreaseSpeed", "System", "Decrease Target Speed", [](s32 pressed) {
-	if (!pressed)
+	if (!pressed && VMManager::HasValidVM())
 		HotkeyAdjustTargetSpeed(-0.1);
+})
+DEFINE_HOTKEY("IncreaseVolume", "System", "Increase Volume", [](s32 pressed) {
+	if (!pressed && VMManager::HasValidVM())
+		HotkeyAdjustVolume(-1, 5);
+})
+DEFINE_HOTKEY("DecreaseVolume", "System", "Decrease Volume", [](s32 pressed) {
+	if (!pressed && VMManager::HasValidVM())
+		HotkeyAdjustVolume(-1, -5);
+})
+DEFINE_HOTKEY("Mute", "System", "Toggle Mute", [](s32 pressed) {
+	if (!pressed && VMManager::HasValidVM())
+		HotkeyAdjustVolume((SPU2::GetOutputVolume() == 0) ? EmuConfig.SPU2.FinalVolume : 0, 0);
 })
 DEFINE_HOTKEY("FrameAdvance", "System", "Frame Advance", [](s32 pressed) {
 	if (!pressed && VMManager::HasValidVM())

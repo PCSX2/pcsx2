@@ -861,6 +861,11 @@ __forceinline
 	}
 }
 
+s32 SPU2::GetOutputVolume()
+{
+	return static_cast<s32>(std::round(FinalVolume * 100.0f));
+}
+
 void SPU2::SetOutputVolume(s32 volume)
 {
 	FinalVolume = static_cast<float>(std::clamp<s32>(volume, 0, Pcsx2Config::SPU2Options::MAX_VOLUME)) / 100.0f;
