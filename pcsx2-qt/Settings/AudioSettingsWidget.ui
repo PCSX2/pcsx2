@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>752</width>
-    <height>448</height>
+    <width>754</width>
+    <height>464</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,208 +26,6 @@
    <property name="bottomMargin">
     <number>0</number>
    </property>
-   <item row="0" column="0">
-    <widget class="QGroupBox" name="groupBox_2">
-     <property name="title">
-      <string>Mixing Settings</string>
-     </property>
-     <layout class="QFormLayout" name="formLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Interpolation:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="interpolation">
-        <item>
-         <property name="text">
-          <string>Nearest (Fastest / worst quality)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Linear (Simple / okay sound)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Cubic (Fake highs / okay sound)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Hermite (Better highs / okay sound)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Catmull-Rom (PS2-like / good sound)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Gaussian (PS2-like / great sound)</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Synchronization:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="syncMode">
-        <item>
-         <property name="text">
-          <string>TimeStretch (Recommended)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Async Mix (Breaks some games!)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>None (Audio can skip.)</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Expansion:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QComboBox" name="expansionMode">
-        <item>
-         <property name="text">
-          <string>Stereo (None, Default)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Quadrafonic</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Surround 5.1</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Surround 7.1</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_3b">
-        <property name="text">
-         <string>ProLogic Level:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QComboBox" name="dplLevel">
-        <item>
-         <property name="text">
-          <string>None (Default)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>ProLogic Decoding (basic)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>ProLogic II Decoding (gigaherz)</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QGroupBox" name="groupBox_3">
-     <property name="title">
-      <string>Output Settings</string>
-     </property>
-     <layout class="QFormLayout" name="formLayout_2">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Output Module:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="outputModule"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Latency:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QSlider" name="latency">
-          <property name="minimum">
-           <number>15</number>
-          </property>
-          <property name="maximum">
-           <number>200</number>
-          </property>
-          <property name="value">
-           <number>100</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="tickPosition">
-           <enum>QSlider::TicksBelow</enum>
-          </property>
-          <property name="tickInterval">
-           <number>200</number>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="latencyLabel">
-          <property name="text">
-           <string>100 ms (avg)</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>Output Backend:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="backend"/>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item row="2" column="0">
     <widget class="QGroupBox" name="groupBox_4">
      <property name="title">
@@ -378,19 +176,6 @@
      </layout>
     </widget>
    </item>
-   <item row="3" column="0">
-    <spacer name="verticalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
    <item row="0" column="1" rowspan="4">
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
@@ -401,6 +186,18 @@
        <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="0">
          <widget class="QSlider" name="volume">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="maximum">
            <number>200</number>
           </property>
@@ -417,8 +214,17 @@
         </item>
         <item row="1" column="0">
          <widget class="QLabel" name="volumeLabel">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="text">
            <string>100%</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -439,6 +245,278 @@
       </spacer>
      </item>
     </layout>
+   </item>
+   <item row="3" column="0">
+    <spacer name="verticalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="0" column="0">
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Mixing Settings</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Interpolation:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="interpolation">
+        <item>
+         <property name="text">
+          <string>Nearest (Fastest / worst quality)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Linear (Simple / okay sound)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Cubic (Fake highs / okay sound)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Hermite (Better highs / okay sound)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Catmull-Rom (PS2-like / good sound)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Gaussian (PS2-like / great sound)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Synchronization:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="syncMode">
+        <item>
+         <property name="text">
+          <string>TimeStretch (Recommended)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Async Mix (Breaks some games!)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>None (Audio can skip.)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Expansion:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="expansionMode">
+        <item>
+         <property name="text">
+          <string>Stereo (None, Default)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Quadrafonic</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Surround 5.1</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Surround 7.1</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_3b">
+        <property name="text">
+         <string>ProLogic Level:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QComboBox" name="dplLevel">
+        <item>
+         <property name="text">
+          <string>None (Default)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>ProLogic Decoding (basic)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>ProLogic II Decoding (gigaherz)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Target Latency:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <item>
+         <widget class="QSlider" name="targetLatency">
+          <property name="minimum">
+           <number>15</number>
+          </property>
+          <property name="maximum">
+           <number>200</number>
+          </property>
+          <property name="value">
+           <number>100</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::TicksBelow</enum>
+          </property>
+          <property name="tickInterval">
+           <number>200</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="targetLatencyLabel">
+          <property name="text">
+           <string>100 ms</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Output Settings</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout_2">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Output Module:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="outputModule"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Output Latency:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QSlider" name="outputLatency">
+          <property name="minimum">
+           <number>10</number>
+          </property>
+          <property name="maximum">
+           <number>200</number>
+          </property>
+          <property name="value">
+           <number>100</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::TicksBelow</enum>
+          </property>
+          <property name="tickInterval">
+           <number>200</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="outputLatencyLabel">
+          <property name="text">
+           <string>100 ms</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="outputLatencyMinimal">
+          <property name="text">
+           <string>Minimal</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>Output Backend:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="backend"/>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLabel" name="latencySummary">
+        <property name="text">
+         <string>Maximum Latency:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
   </layout>
  </widget>

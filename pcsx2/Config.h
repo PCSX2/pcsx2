@@ -808,6 +808,7 @@ struct Pcsx2Config
 		static constexpr s32 MAX_OVERLAP = 15;
 
 		BITFIELD32()
+		bool OutputLatencyMinimal : 1;
 		bool
 			DebugEnabled : 1,
 			MsgToConsole : 1,
@@ -831,6 +832,7 @@ struct Pcsx2Config
 
 		s32 FinalVolume = 100;
 		s32 Latency = 100;
+		s32 OutputLatency = 20;
 		s32 SpeakerConfiguration = 0;
 		s32 DplDecodingLevel = 0;
 
@@ -854,6 +856,7 @@ struct Pcsx2Config
 
 				OpEqu(FinalVolume) &&
 				OpEqu(Latency) &&
+				OpEqu(OutputLatency) &&
 				OpEqu(SpeakerConfiguration) &&
 				OpEqu(DplDecodingLevel) &&
 

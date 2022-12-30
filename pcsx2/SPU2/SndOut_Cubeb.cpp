@@ -34,9 +34,6 @@
 class Cubeb : public SndOutModule
 {
 private:
-	static constexpr int MINIMUM_LATENCY_MS = 20;
-	static constexpr int MAXIMUM_LATENCY_MS = 200;
-
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// Stuff necessary for speaker expansion
 	class SampleReader
@@ -115,9 +112,6 @@ private:
 #ifdef _WIN32
 	bool m_COMInitializedByUs = false;
 #endif
-	bool m_SuggestedLatencyMinimal = false;
-	int m_SuggestedLatencyMS = 20;
-	std::string m_Backend;
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// Instance vars
@@ -142,10 +136,6 @@ public:
 
 	bool Init() override
 	{
-		ReadSettings();
-
-		// TODO(Stenzek): Migrate the errors to Host::ReportErrorAsync() once more Qt stuff is merged.
-
 #ifdef _WIN32
 		HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 		m_COMInitializedByUs = SUCCEEDED(hr);
@@ -160,7 +150,8 @@ public:
 		cubeb_set_log_callback(CUBEB_LOG_NORMAL, LogCallback);
 #endif
 
-		int rv = cubeb_init(&m_context, "PCSX2", m_Backend.empty() ? nullptr : m_Backend.c_str());
+		const std::string backend(Host::GetStringSettingValue("SPU2/Output", "BackendName", ""));
+		int rv = cubeb_init(&m_context, "PCSX2", backend.empty() ? nullptr : backend.c_str());
 		if (rv != CUBEB_OK)
 		{
 			Host::ReportFormattedErrorAsync("Cubeb Error", "Could not initialize cubeb context: %d", rv);
@@ -248,13 +239,13 @@ public:
 		params.layout = layout;
 		params.prefs = CUBEB_STREAM_PREF_NONE;
 
-		const u32 requested_latency_frames = static_cast<u32>((m_SuggestedLatencyMS * static_cast<u32>(SampleRate)) / 1000u);
+		const u32 requested_latency_frames = static_cast<u32>((EmuConfig.SPU2.OutputLatency * SampleRate) / 1000u);
 		u32 latency_frames = 0;
 		rv = cubeb_get_min_latency(m_context, &params, &latency_frames);
 		if (rv == CUBEB_ERROR_NOT_SUPPORTED)
 		{
 			Console.WriteLn("(Cubeb) Cubeb backend does not support latency queries, using latency of %d ms (%u frames).",
-				m_SuggestedLatencyMS, requested_latency_frames);
+				EmuConfig.SPU2.OutputLatency, requested_latency_frames);
 			latency_frames = requested_latency_frames;
 		}
 		else
@@ -268,7 +259,7 @@ public:
 
 			const float minimum_latency_ms = static_cast<float>(latency_frames * 1000u) / static_cast<float>(SampleRate);
 			Console.WriteLn("(Cubeb) Minimum latency: %.2f ms (%u audio frames)", minimum_latency_ms, latency_frames);
-			if (!m_SuggestedLatencyMinimal)
+			if (!EmuConfig.SPU2.OutputLatencyMinimal)
 			{
 				if (latency_frames > requested_latency_frames)
 				{
@@ -361,13 +352,6 @@ public:
 	const char* const* GetBackendNames() const override
 	{
 		return cubeb_get_backend_names();
-	}
-
-	void ReadSettings()
-	{
-		m_SuggestedLatencyMinimal = Host::GetBoolSettingValue("Cubeb", "MinimalSuggestedLatency", false);
-		m_SuggestedLatencyMS = std::clamp(Host::GetIntSettingValue("Cubeb", "ManualSuggestedLatencyMS", MINIMUM_LATENCY_MS), MINIMUM_LATENCY_MS, MAXIMUM_LATENCY_MS);
-		m_Backend = Host::GetStringSettingValue("SPU2/Output", "BackendName", "");
 	}
 };
 

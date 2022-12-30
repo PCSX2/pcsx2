@@ -34,7 +34,9 @@ private Q_SLOTS:
 	void outputModuleChanged();
 	void outputBackendChanged();
 	void volumeChanged(int value);
-	void updateLatencyLabel();
+	void updateTargetLatencyRange();
+	void updateLatencyLabels();
+	void onMinimalOutputLatencyStateChanged();
 	void updateTimestretchSequenceLengthLabel();
 	void updateTimestretchSeekwindowLengthLabel();
 	void updateTimestretchOverlapLabel();
