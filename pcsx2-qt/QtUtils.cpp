@@ -40,6 +40,8 @@
 #include <array>
 #include <map>
 
+#include "common/Console.h"
+
 #if defined(_WIN32)
 #include "common/RedtapeWindows.h"
 #elif !defined(APPLE)
@@ -222,6 +224,12 @@ namespace QtUtils
 
 	std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget)
 	{
+		if (!widget->isVisible())
+		{
+			Console.WriteLn("Returning null window info for widget because it is not visible.");
+			return std::nullopt;
+		}
+
 		WindowInfo wi;
 
 		// Windows and Apple are easy here since there's no display connection.
@@ -248,7 +256,7 @@ namespace QtUtils
 		}
 		else
 		{
-			qCritical() << "Unknown PNI platform " << platform_name;
+			Console.WriteLn("Unknown PNI platform '%s'.", platform_name.toUtf8().constData());
 			return std::nullopt;
 		}
 #endif
