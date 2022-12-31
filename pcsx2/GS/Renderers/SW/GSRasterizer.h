@@ -15,13 +15,14 @@
 
 #pragma once
 
-#include "GSVertexSW.h"
+#include "GS/Renderers/SW/GSVertexSW.h"
 #include "GS/Renderers/Common/GSFunctionMap.h"
 #include "GS/GSAlignedClass.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSThread_CXX11.h"
 #include "GS/GSRingHeap.h"
 #include "GS/MultiISA.h"
+#include "GS/config.h"
 
 MULTI_ISA_UNSHARED_START
 

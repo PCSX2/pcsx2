@@ -16,10 +16,11 @@
 #pragma once
 
 #include "GS/GSState.h"
-#include "GSRasterizer.h"
-#include "GSScanlineEnvironment.h"
-#include "GSSetupPrimCodeGenerator.h"
-#include "GSDrawScanlineCodeGenerator.h"
+#include "GS/Renderers/SW/GSRasterizer.h"
+#include "GS/Renderers/SW/GSScanlineEnvironment.h"
+#include "GS/Renderers/SW/GSSetupPrimCodeGenerator.h"
+#include "GS/Renderers/SW/GSDrawScanlineCodeGenerator.h"
+#include "GS/config.h"
 
 MULTI_ISA_UNSHARED_START
 
