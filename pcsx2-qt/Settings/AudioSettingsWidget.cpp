@@ -112,7 +112,7 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 
 	dialog->registerWidgetHelp(m_ui.seekWindowSize, tr("Seekwindow Size"), tr("20 ms"), tr(""));
 
-	dialog->registerWidgetHelp(m_ui.overlap, tr("Overlap"), tr("20 ms"), tr(""));
+	dialog->registerWidgetHelp(m_ui.overlap, tr("Overlap"), tr("10 ms"), tr(""));
 
 	dialog->registerWidgetHelp(m_ui.volume, tr("Volume"), tr("100%"), tr(""));
 }
