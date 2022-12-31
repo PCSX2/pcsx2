@@ -3068,6 +3068,7 @@ SCES-50878:
   compat: 5
   gsHWFixes:
     alignSprite: 1
+    texturePreloading: 1 # Performs much better with partial preload.
 SCES-50885:
   name: "Ape Escape 2"
   region: "PAL-E"
@@ -6668,6 +6669,7 @@ SCPS-55017:
   compat: 3
   gsHWFixes:
     alignSprite: 1
+    texturePreloading: 1 # Performs much better with partial preload.
 SCPS-55018:
   name: "Kingdom of Scribbling"
   region: "NTSC-J"
@@ -6875,6 +6877,7 @@ SCPS-56006:
   compat: 5
   gsHWFixes:
     alignSprite: 1
+    texturePreloading: 1 # Performs much better with partial preload.
 SCPS-56008:
   name: "Fatal Frame"
   region: "NTSC-K"
@@ -36266,6 +36269,7 @@ SLPS-25100:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs much better with partial preload.
 SLPS-25102:
   name: "Project Arms"
   region: "NTSC-J"
@@ -39422,6 +39426,7 @@ SLPS-73209:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs much better with partial preload.
 SLPS-73210:
   name: "Katamari Damacy [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -41195,6 +41200,7 @@ SLUS-20328:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs much better with partial preload.
 SLUS-20329:
   name: "Pro Race Driver"
   region: "NTSC-U"
@@ -49107,6 +49113,7 @@ SLUS-28012:
   region: "NTSC-U"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs much better with partial preload.
 SLUS-28013:
   name: "Dual Hearts [Trade Demo]"
   region: "NTSC-U"
@@ -49352,6 +49359,7 @@ SLUS-29034:
   region: "NTSC-U"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs much better with partial preload.
 SLUS-29035:
   name: "Eidos Demo Disc"
   region: "NTSC-U"
