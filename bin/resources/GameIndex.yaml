@@ -25774,6 +25774,9 @@ SLPM-62418:
   name: "Hudson Selection Vol.3 - PC Genjin"
   region: "NTSC-J"
   compat: 5
+SLPM-62421:
+  name: "Ishikura Noboru Kudan no Igo Kouza - Joukyuu-hen Mezase, Jitsuryoku Shodan!"
+  region: "NTSC-J"
 SLPM-62422:
   name: "Hudson Selection Vol.4 - Takahashi Meijin no Bouken Jima"
   region: "NTSC-J"
