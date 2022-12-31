@@ -19,7 +19,6 @@
 #pragma once
 
 #include "common/Pcsx2Defs.h"
-#include "GS/config.h"
 
 #if defined(__AVX2__)
 	#define _M_SSE 0x501

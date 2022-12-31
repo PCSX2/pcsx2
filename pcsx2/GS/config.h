@@ -16,9 +16,7 @@
 #pragma once
 
 //#define ENABLE_VTUNE
-//#define ENABLE_ACCURATE_BUFFER_EMULATION
+
 #define ENABLE_JIT_RASTERIZER
 
 //#define DISABLE_HW_TEXTURE_CACHE // Slow but fixes a lot of bugs
-
-//#define DISABLE_PERF_MON // Burn cycle for nothing in release mode
