@@ -730,10 +730,28 @@ namespace usb_mic
 			std::string dev1(USB::GetConfigString(si, port, devtype, "player2_device_name"));
 			const s32 latency = USB::GetConfigInt(si, port, devtype, "input_latency", AudioDevice::DEFAULT_LATENCY);
 
-			if (!dev0.empty())
-				s->audsrc[0] = AudioDevice::CreateDevice(port, AUDIODIR_SOURCE, 1, std::move(dev0), latency);
-			if (!dev1.empty())
-				s->audsrc[1] = AudioDevice::CreateDevice(port, AUDIODIR_SOURCE, 1, std::move(dev1), latency);
+			if (!dev0.empty() && dev0 == dev1)
+			{
+				// Try to open a single device with two channels. This might not work if it's only a mono mic.
+				Console.WriteLn("USB-Mic: Trying to open stereo single source dual mic: '%s'", dev0.c_str());
+				s->audsrc[0] = AudioDevice::CreateDevice(port, AUDIODIR_SOURCE, 2, dev0, latency);
+				if (!s->audsrc[0])
+				{
+					Console.Error("USB-Mic: Failed to get stereo source, mic '%s' might only be mono", dev0.c_str());
+					s->audsrc[0] = AudioDevice::CreateDevice(port, AUDIODIR_SOURCE, 1, std::move(dev0), latency);
+				}
+
+				s->f.mode = MIC_MODE_SHARED;
+			}
+			else
+			{
+				if (!dev0.empty())
+					s->audsrc[0] = AudioDevice::CreateDevice(port, AUDIODIR_SOURCE, 1, std::move(dev0), latency);
+				if (!dev1.empty())
+					s->audsrc[1] = AudioDevice::CreateDevice(port, AUDIODIR_SOURCE, 1, std::move(dev1), latency);
+
+				s->f.mode = (s->audsrc[0] && s->audsrc[1]) ? MIC_MODE_SEPARATE : MIC_MODE_SINGLE;
+			}
 		}
 		else
 		{
@@ -741,6 +759,8 @@ namespace usb_mic
 			const s32 latency0 = USB::GetConfigInt(si, port, devtype, "input_latency", AudioDevice::DEFAULT_LATENCY);
 			if (!dev0.empty())
 				s->audsrc[0] = AudioDevice::CreateDevice(port, AUDIODIR_SOURCE, 1, std::move(dev0), latency0);
+
+			s->f.mode = MIC_MODE_SINGLE;
 		}
 
 		if (!s->audsrc[0] && !s->audsrc[1])
@@ -749,16 +769,10 @@ namespace usb_mic
 			goto fail;
 		}
 
-		if (s->audsrc[0] && s->audsrc[1] && s->audsrc[0]->Compare(s->audsrc[1].get()))
-		{
-			s->f.mode = MIC_MODE_SHARED;
-			// And don't capture the same source twice
-			s->audsrc[1].reset();
-		}
-		else if (!s->audsrc[0] || !s->audsrc[1])
-			s->f.mode = MIC_MODE_SINGLE;
-		else
-			s->f.mode = MIC_MODE_SEPARATE;
+		Console.WriteLn("USB-Mic Mode: %s",
+			(s->f.mode == MIC_MODE_SHARED ? "shared" : (s->f.mode == MIC_MODE_SEPARATE ? "separate" : "single")));
+		Console.WriteLn("USB-Mic Source 0: %s", s->audsrc[0] ? "opened" : "not opened");
+		Console.WriteLn("USB-Mic Source 1: %s", s->audsrc[1] ? "opened" : "not opened");
 
 		for (int i = 0; i < 2; i++)
 		{

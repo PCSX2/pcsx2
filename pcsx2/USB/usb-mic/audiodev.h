@@ -76,9 +76,6 @@ public:
 	virtual bool Start() = 0;
 	virtual void Stop() = 0;
 
-	// Compare if another instance is using the same device
-	virtual bool Compare(AudioDevice* compare) const = 0;
-
 	static std::unique_ptr<AudioDevice> CreateDevice(u32 port, AudioDir dir, u32 channels, std::string devname, s32 latency);
 	static std::unique_ptr<AudioDevice> CreateNoopDevice(u32 port, AudioDir dir, u32 channels);
 	static std::vector<std::pair<std::string, std::string>> GetInputDeviceList();
