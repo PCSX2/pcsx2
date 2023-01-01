@@ -20,11 +20,13 @@
 
 #include <QtCore/QtCore>
 #include <QtGui/QAction>
+#include <QtGui/QFont>
 #include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QSlider>
@@ -101,7 +103,10 @@ namespace SettingWidgetBinder
 		static void setStringValue(QLineEdit* widget, const QString& value) { widget->setText(value); }
 		static void makeNullableString(QLineEdit* widget, const QString& globalValue) { widget->setEnabled(false); }
 		static std::optional<QString> getNullableStringValue(const QLineEdit* widget) { return getStringValue(widget); }
-		static void setNullableStringValue(QLineEdit* widget, std::optional<QString> value) { setStringValue(widget, value.value_or(QString())); }
+		static void setNullableStringValue(QLineEdit* widget, std::optional<QString> value)
+		{
+			setStringValue(widget, value.value_or(QString()));
+		}
 
 		template <typename F>
 		static void connectValueChanged(QLineEdit* widget, F func)
@@ -120,15 +125,16 @@ namespace SettingWidgetBinder
 		static void makeNullableBool(QComboBox* widget, bool globalValue)
 		{
 			widget->insertItem(0, globalValue ? qApp->translate("SettingsDialog", "Use Global Setting [Enabled]") :
-                                                qApp->translate("SettingsDialog", "Use Global Setting [Disabled]"));
+												qApp->translate("SettingsDialog", "Use Global Setting [Disabled]"));
 		}
 
 		static int getIntValue(const QComboBox* widget) { return widget->currentIndex(); }
 		static void setIntValue(QComboBox* widget, int value) { widget->setCurrentIndex(value); }
 		static void makeNullableInt(QComboBox* widget, int globalValue)
 		{
-			widget->insertItem(0, qApp->translate("SettingsDialog", "Use Global Setting [%1]")
-									  .arg((globalValue >= 0 && globalValue < widget->count()) ? widget->itemText(globalValue) : QString()));
+			widget->insertItem(
+				0, qApp->translate("SettingsDialog", "Use Global Setting [%1]")
+					   .arg((globalValue >= 0 && globalValue < widget->count()) ? widget->itemText(globalValue) : QString()));
 		}
 		static std::optional<int> getNullableIntValue(const QComboBox* widget)
 		{
@@ -143,10 +149,10 @@ namespace SettingWidgetBinder
 		static void setFloatValue(QComboBox* widget, float value) { widget->setCurrentIndex(static_cast<int>(value)); }
 		static void makeNullableFloat(QComboBox* widget, float globalValue)
 		{
-			widget->insertItem(0,
-				qApp->translate("SettingsDialog", "Use Global Setting [%1]")
-					.arg((globalValue >= 0.0f && static_cast<int>(globalValue) < widget->count()) ? widget->itemText(static_cast<int>(globalValue)) :
-                                                                                                    QString()));
+			widget->insertItem(0, qApp->translate("SettingsDialog", "Use Global Setting [%1]")
+									  .arg((globalValue >= 0.0f && static_cast<int>(globalValue) < widget->count()) ?
+											   widget->itemText(static_cast<int>(globalValue)) :
+											   QString()));
 		}
 		static std::optional<float> getNullableFloatValue(const QComboBox* widget)
 		{
@@ -176,7 +182,10 @@ namespace SettingWidgetBinder
 
 			widget->setCurrentText(value);
 		}
-		static void makeNullableString(QComboBox* widget, const QString& globalValue) { makeNullableInt(widget, widget->findData(globalValue)); }
+		static void makeNullableString(QComboBox* widget, const QString& globalValue)
+		{
+			makeNullableInt(widget, widget->findData(globalValue));
+		}
 		static std::optional<QString> getNullableStringValue(const QComboBox* widget)
 		{
 			return isNullValue(widget) ? std::nullopt : std::optional<QString>(getStringValue(widget));
@@ -239,7 +248,7 @@ namespace SettingWidgetBinder
 		{
 			return (widget->checkState() == Qt::PartiallyChecked) ?
 					   std::nullopt :
-                       std::optional<QString>(widget->isChecked() ? QStringLiteral("1") : QStringLiteral("0"));
+					   std::optional<QString>(widget->isChecked() ? QStringLiteral("1") : QStringLiteral("0"));
 		}
 		static void setNullableStringValue(QCheckBox* widget, std::optional<QString> value)
 		{
@@ -278,7 +287,10 @@ namespace SettingWidgetBinder
 		static void setStringValue(QSlider* widget, const QString& value) { widget->setValue(value.toInt()); }
 		static void makeNullableString(QSlider* widget, const QString& globalValue) { widget->setEnabled(false); }
 		static std::optional<QString> getNullableStringValue(const QSlider* widget) { return getStringValue(widget); }
-		static void setNullableStringValue(QSlider* widget, std::optional<QString> value) { setStringValue(widget, value.value_or(QString())); }
+		static void setNullableStringValue(QSlider* widget, std::optional<QString> value)
+		{
+			setStringValue(widget, value.value_or(QString()));
+		}
 
 		template <typename F>
 		static void connectValueChanged(QSlider* widget, F func)
@@ -568,7 +580,10 @@ namespace SettingWidgetBinder
 		static void setStringValue(QAction* widget, const QString& value) { widget->setChecked(value.toInt() != 0); }
 		static void makeNullableString(QAction* widget, const QString& globalValue) { widget->setEnabled(false); }
 		static std::optional<QString> getNullableStringValue(const QAction* widget) { return getStringValue(widget); }
-		static void setNullableStringValue(QAction* widget, std::optional<QString> value) { setStringValue(widget, value.value_or(QString())); }
+		static void setNullableStringValue(QAction* widget, std::optional<QString> value)
+		{
+			setStringValue(widget, value.value_or(QString()));
+		}
 
 		template <typename F>
 		static void connectValueChanged(QAction* widget, F func)
@@ -580,7 +595,8 @@ namespace SettingWidgetBinder
 	/// Binds a widget's value to a setting, updating it when the value changes.
 
 	template <typename WidgetType>
-	static void BindWidgetToBoolSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, bool default_value)
+	static void BindWidgetToBoolSetting(
+		SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, bool default_value)
 	{
 		using Accessor = SettingAccessor<WidgetType>;
 
@@ -661,7 +677,8 @@ namespace SettingWidgetBinder
 	}
 
 	template <typename WidgetType>
-	static void BindWidgetToFloatSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, float default_value)
+	static void BindWidgetToFloatSetting(
+		SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, float default_value)
 	{
 		using Accessor = SettingAccessor<WidgetType>;
 
@@ -788,7 +805,8 @@ namespace SettingWidgetBinder
 
 	template <typename WidgetType, typename DataType>
 	static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
-		std::optional<DataType> (*from_string_function)(const char* str), const char* (*to_string_function)(DataType value), DataType default_value)
+		std::optional<DataType> (*from_string_function)(const char* str), const char* (*to_string_function)(DataType value),
+		DataType default_value)
 	{
 		using Accessor = SettingAccessor<WidgetType>;
 		using UnderlyingType = std::underlying_type_t<DataType>;
@@ -798,7 +816,8 @@ namespace SettingWidgetBinder
 
 		if (sif)
 		{
-			Accessor::makeNullableInt(widget, typed_value.has_value() ? static_cast<int>(static_cast<UnderlyingType>(typed_value.value())) : 0);
+			Accessor::makeNullableInt(
+				widget, typed_value.has_value() ? static_cast<int>(static_cast<UnderlyingType>(typed_value.value())) : 0);
 
 			std::string sif_value;
 			if (sif->GetStringValue(section.c_str(), key.c_str(), &sif_value))
@@ -909,8 +928,8 @@ namespace SettingWidgetBinder
 	}
 
 	template <typename WidgetType>
-	static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, const char** enum_names,
-		const char** enum_values, const char* default_value)
+	static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
+		const char** enum_names, const char** enum_values, const char* default_value)
 	{
 		using Accessor = SettingAccessor<WidgetType>;
 
@@ -973,8 +992,9 @@ namespace SettingWidgetBinder
 	}
 
 	template <typename WidgetType>
-	static void BindWidgetToFolderSetting(SettingsInterface* sif, WidgetType* widget, QAbstractButton* browse_button, QAbstractButton* open_button,
-		QAbstractButton* reset_button, std::string section, std::string key, std::string default_value, bool use_relative = true)
+	static void BindWidgetToFolderSetting(SettingsInterface* sif, WidgetType* widget, QAbstractButton* browse_button,
+		QAbstractButton* open_button, QAbstractButton* reset_button, std::string section, std::string key, std::string default_value,
+		bool use_relative = true)
 	{
 		using Accessor = SettingAccessor<WidgetType>;
 
@@ -1042,8 +1062,76 @@ namespace SettingWidgetBinder
 		}
 		if (reset_button)
 		{
-			QObject::connect(reset_button, &QAbstractButton::clicked, reset_button,
-				[widget, default_value = std::move(default_value)]() { Accessor::setStringValue(widget, QString::fromStdString(default_value)); });
+			QObject::connect(reset_button, &QAbstractButton::clicked, reset_button, [widget, default_value = std::move(default_value)]() {
+				Accessor::setStringValue(widget, QString::fromStdString(default_value));
+			});
+		}
+	}
+
+	static void BindSliderToIntSetting(SettingsInterface* sif, QSlider* slider, QLabel* label, const QString& label_suffix,
+		std::string section, std::string key, s32 default_value)
+	{
+		const s32 global_value = Host::GetBaseIntSettingValue(section.c_str(), key.c_str(), default_value);
+
+		if (sif)
+		{
+			const QFont orig_font(label->font());
+			QFont bold_font(orig_font);
+			bold_font.setBold(true);
+
+			const s32 current_value = sif->GetOptionalIntValue(section.c_str(), key.c_str()).value_or(global_value);
+			slider->setValue(current_value);
+
+			label->setText(QStringLiteral("%1%2").arg(current_value).arg(label_suffix));
+			if (current_value == global_value)
+				label->setFont(orig_font);
+			else
+				label->setFont(bold_font);
+
+			slider->setContextMenuPolicy(Qt::CustomContextMenu);
+			slider->connect(slider, &QSpinBox::customContextMenuRequested, slider,
+				[sif, slider, label, label_suffix, orig_font = std::move(orig_font), section, key, default_value](const QPoint& pt) {
+					QMenu menu(slider);
+					slider->connect(menu.addAction(qApp->translate("SettingWidgetBinder", "Reset")), &QAction::triggered, slider,
+						[sif, slider, label, label_suffix, orig_font, section, key, default_value]() {
+							const s32 global_value = Host::GetBaseIntSettingValue(section.c_str(), key.c_str(), default_value);
+							label->setText(QStringLiteral("%1%2").arg(global_value).arg(label_suffix));
+							label->setFont(orig_font);
+
+							if (sif->ContainsValue(section.c_str(), key.c_str()))
+							{
+								sif->DeleteValue(section.c_str(), key.c_str());
+								sif->Save();
+								g_emu_thread->reloadGameSettings();
+							}
+						});
+					menu.exec(slider->mapToGlobal(pt));
+				});
+
+			slider->connect(slider, &QSlider::valueChanged, slider,
+				[sif, label, label_suffix, section = std::move(section), key = std::move(key), default_value,
+					orig_font = std::move(orig_font), bold_font = std::move(bold_font)](int value) {
+					label->setText(QStringLiteral("%1%2").arg(value).arg(label_suffix));
+
+					if (label->font() != bold_font)
+						label->setFont(bold_font);
+					sif->SetIntValue(section.c_str(), key.c_str(), value);
+					sif->Save();
+					g_emu_thread->reloadGameSettings();
+				});
+		}
+		else
+		{
+			slider->setValue(global_value);
+			label->setText(QStringLiteral("%1%2").arg(global_value).arg(label_suffix));
+
+			slider->connect(slider, &QSlider::valueChanged, slider,
+				[sif, label, label_suffix, section = std::move(section), key = std::move(key), default_value](int value) {
+					label->setText(QStringLiteral("%1%2").arg(value).arg(label_suffix));
+					Host::SetBaseIntSettingValue(section.c_str(), key.c_str(), value);
+					Host::CommitBaseSettingChanges();
+					g_emu_thread->applySettings();
+				});
 		}
 	}
 } // namespace SettingWidgetBinder
