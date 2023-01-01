@@ -684,8 +684,10 @@ StereoOut32 V_Core::Mix(const VoiceMixSet& inVoices, const StereoOut32& Input, c
 
 	// Write mixed results to logfile (if enabled)
 
+#ifdef PCSX2_DEVBUILD
 	WaveDump::WriteCore(Index, CoreSrc_DryVoiceMix, Voices.Dry);
 	WaveDump::WriteCore(Index, CoreSrc_WetVoiceMix, Voices.Wet);
+#endif
 
 	// Mix in the Input data
 
@@ -739,11 +741,15 @@ StereoOut32 V_Core::Mix(const VoiceMixSet& inVoices, const StereoOut32& Input, c
 	TW.Left += Ext.Left & WetGate.ExtL;
 	TW.Right += Ext.Right & WetGate.ExtR;
 
+#ifdef PCSX2_DEVBUILD
 	WaveDump::WriteCore(Index, CoreSrc_PreReverb, TW);
+#endif
 
 	StereoOut32 RV = DoReverb(TW);
 
+#ifdef PCSX2_DEVBUILD
 	WaveDump::WriteCore(Index, CoreSrc_PostReverb, RV);
+#endif
 
 	// Mix Dry + Wet
 	// (master volume is applied later to the result of both outputs added together).
@@ -773,8 +779,10 @@ __forceinline
 			// CDDA is on Core 1:
 			(PlayMode & 8) ? StereoOut32::Empty : ApplyVolume(Cores[1].ReadInput(), Cores[1].InpVol)};
 
+#ifdef PCSX2_DEVBUILD
 	WaveDump::WriteCore(0, CoreSrc_Input, InputData[0]);
 	WaveDump::WriteCore(1, CoreSrc_Input, InputData[1]);
+#endif
 
 	// Todo: Replace me with memzero initializer!
 	VoiceMixSet VoiceData[2] = {VoiceMixSet::Empty, VoiceMixSet::Empty}; // mixed voice data for each core.
@@ -794,7 +802,9 @@ __forceinline
 	spu2M_WriteFast(0x800 + OutPos, Ext.Left);
 	spu2M_WriteFast(0xA00 + OutPos, Ext.Right);
 
+#ifdef PCSX2_DEVBUILD
 	WaveDump::WriteCore(0, CoreSrc_External, Ext);
+#endif
 
 	Ext = ApplyVolume(Ext, Cores[1].ExtVol);
 	StereoOut32 Out(Cores[1].Mix(VoiceData[1], InputData[1], Ext));

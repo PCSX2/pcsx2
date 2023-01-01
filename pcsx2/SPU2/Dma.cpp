@@ -21,7 +21,7 @@
 #include "IopHw.h"
 #include "Config.h"
 
-extern u8 callirq;
+#ifdef PCSX2_DEVBUILD
 
 static FILE* DMA4LogFile = nullptr;
 static FILE* DMA7LogFile = nullptr;
@@ -89,6 +89,8 @@ void DMALogClose()
 	safe_fclose(ADMAOutLogFile);
 }
 
+#endif
+
 void V_Core::LogAutoDMA(FILE* fp)
 {
 	if (!SPU2::DMALog() || !fp || !DMAPtr)
@@ -109,7 +111,9 @@ void V_Core::AutoDMAReadBuffer(int mode) //mode: 0= split stereo; 1 = do not spl
 	int size = std::min(InputDataLeft, (u32)0x200);
 	if (!leftbuffer)
 		size = std::min(size, 0x100);
+#ifdef PCSX2_DEVBUILD
 	LogAutoDMA(Index ? ADMA7LogFile : ADMA4LogFile);
+#endif
 	//ConLog("Refilling ADMA buffer at %x OutPos %x with %x\n", spos, OutPos, size);
 	// HACKFIX!! DMAPtr can be invalid after a savestate load, so the savestate just forces it
 	// to nullptr and we ignore it here.  (used to work in old VM editions of PCSX2 with fixed
@@ -246,10 +250,12 @@ void V_Core::FinishDMAwrite()
 
 	DMAICounter = ReadSize;
 
+#ifdef PCSX2_DEVBUILD
 	if (Index == 0)
 		DMA4LogWrite(DMAPtr, ReadSize << 1);
 	else
 		DMA7LogWrite(DMAPtr, ReadSize << 1);
+#endif
 
 	u32 buff1end = ActiveTSA + std::min(ReadSize, (u32)0x100 + std::abs(DMAICounter / 4));
 	u32 start = ActiveTSA;

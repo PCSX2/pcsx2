@@ -74,11 +74,8 @@ void SPU2interruptDMA7();
 void SPU2readDMA7Mem(u16* pMem, u32 size);
 void SPU2writeDMA7Mem(u16* pMem, u32 size);
 
-extern u8 callirq;
-
 extern u32 lClocks;
 
-extern void SPU2writeLog(const char* action, u32 rmem, u16 value);
 extern void TimeUpdate(u32 cClocks);
 extern void SPU2_FastWrite(u32 rmem, u16 value);
 

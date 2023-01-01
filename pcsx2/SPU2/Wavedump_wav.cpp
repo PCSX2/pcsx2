@@ -26,6 +26,8 @@
 #include <memory>
 #include <mutex>
 
+#ifdef PCSX2_DEVBUILD
+
 namespace WaveDump
 {
 	static std::unique_ptr<Common::WAVWriter> m_CoreWav[2][CoreSrc_Count];
@@ -87,6 +89,8 @@ namespace WaveDump
 		WriteCore(coreidx, src, StereoOut16(left, right));
 	}
 } // namespace WaveDump
+
+#endif // PCSX2_DEVBUILD
 
 bool WavRecordEnabled = false;
 

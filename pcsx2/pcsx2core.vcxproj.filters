@@ -854,9 +854,6 @@
     <ClCompile Include="SPU2\ReadInput.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
-    <ClCompile Include="SPU2\RegLog.cpp">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClCompile>
     <ClCompile Include="SPU2\RegTable.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>

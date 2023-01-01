@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "SPU2/Global.h"
+#include "SPU2/Debug.h"
 #include "SPU2/spu2.h"
 #include "SPU2/Dma.h"
 #include "R3000A.h"
@@ -214,9 +215,11 @@ bool SPU2::Open()
 		SPU2::OpenFileLog();
 #endif
 
+#ifdef PCSX2_DEVBUILD
 	DMALogOpen();
 
 	FileLog("[%10d] SPU2 Open\n", Cycles);
+#endif
 
 	lClocks = psxRegs.cycle;
 
@@ -224,7 +227,9 @@ bool SPU2::Open()
 
 	SampleRate = static_cast<int>(std::round(static_cast<double>(GetConsoleSampleRate()) * s_device_sample_rate_multiplier));
 	InitSndBuffer();
+#ifdef PCSX2_DEVBUILD
 	WaveDump::Open();
+#endif
 
 	return true;
 }
@@ -235,10 +240,10 @@ void SPU2::Close()
 
 	SndBuffer::Cleanup();
 
+#ifdef PCSX2_DEVBUILD
 	WaveDump::Close();
 	DMALogClose();
 
-#ifdef PCSX2_DEVBUILD
 	DoFullDump();
 	CloseFileLog();
 #endif
@@ -301,8 +306,10 @@ u16 SPU2read(u32 rmem)
 		else
 		{
 			ret = *(regtable[(mem >> 1)]);
+#ifdef PCSX2_DEVBUILD
 			//FileLog("[%10d] SPU2 read mem %x (core %d, register %x): %x\n",Cycles, mem, core, (omem & 0x7ff), ret);
-			SPU2writeLog("read", rmem, ret);
+			SPU2::WriteRegLog("read", rmem, ret);
+#endif
 		}
 	}
 
@@ -321,7 +328,9 @@ void SPU2write(u32 rmem, u16 value)
 		Cores[0].WriteRegPS1(rmem, value);
 	else
 	{
-		SPU2writeLog("write", rmem, value);
+#ifdef PCSX2_DEVBUILD
+		SPU2::WriteRegLog("write", rmem, value);
+#endif
 		SPU2_FastWrite(rmem, value);
 	}
 }
