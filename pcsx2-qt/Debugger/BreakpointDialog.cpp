@@ -197,8 +197,10 @@ void BreakpointDialog::accept()
 		}
 		else
 		{
-			Host::RunOnCPUThread([this, address] { CBreakPoints::ChangeBreakPointRemoveCond(m_cpu->getCpuType(), address); }, true);
+			Host::RunOnCPUThread([this, address] { CBreakPoints::ChangeBreakPointRemoveCond(m_cpu->getCpuType(), address); });
 		}
+
+		Host::RunOnCPUThread([this, address] { CBreakPoints::ChangeBreakPoint(m_cpu->getCpuType(), address, m_ui.chkEnable->isChecked()); });
 		m_bp->addr = address;
 	}
 
