@@ -484,6 +484,7 @@ void SaveStateBase::vuJITFreeze()
 void DumpVUState(u32 n, u32 pc)
 {
 	const VURegs& r = vuRegs[n];
+	const microVU& mVU = (n == 0) ? microVU0 : microVU1;
 	static FILE* fp = nullptr;
 	static bool fp_opened = false;
 	static u32 counter = 0;
@@ -509,7 +510,7 @@ void DumpVUState(u32 n, u32 pc)
 	if (fp)
 	{
 		const microVU& m = (n == 0) ? microVU0 : microVU1;
-		fprintf(fp, "%08d VU%u SPC:%04X xPC:%04X", counter, n, r.start_pc, pc);
+		fprintf(fp, "%08d VU%u SPC:%04X xPC:%04X BRANCH:%04X VIBACKUP:%04X", counter, n, r.start_pc, pc, mVU.branch, mVU.VIbackup);
 #if 1
 		//fprintf(fp, " MEM:%08X", crc32(0, (Bytef*)r.Mem, (n == 0) ? VU0_MEMSIZE : VU1_MEMSIZE));
 		fprintf(fp, " MAC %08X %08X %08X %08X [%08X %08X %08X %08X]", r.micro_macflags[3], r.micro_macflags[2], r.micro_macflags[1], r.micro_macflags[0], m.macFlag[3], m.macFlag[2], m.macFlag[1], m.macFlag[0]);

@@ -1081,6 +1081,16 @@ public:
 		const xRegister32& gprX = xRegister32::GetInstance(x);
 		writeBackReg(gprX, true);
 
+		// Special case: we need to back up the destination register, but it might not have already
+		// been cached. If so, we need to load the old value from state and back it up. Otherwise,
+		// it's going to get lost when we eventually write this register back.
+		if (backup && viLoadReg >= 0 && viWriteReg > 0 && viLoadReg != viWriteReg)
+		{
+			xMOVZX(gprX, ptr16[&getVI(viWriteReg)]);
+			writeVIBackup(gprX);
+			backup = false;
+		}
+
 		if (viLoadReg > 0)
 			xMOVZX(gprX, ptr16[&getVI(viLoadReg)]);
 		else if (viLoadReg == 0)
