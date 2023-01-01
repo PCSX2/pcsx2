@@ -151,6 +151,9 @@ void DisassemblyWidget::contextJumpToCursor()
 
 void DisassemblyWidget::contextToggleBreakpoint()
 {
+	if (!m_cpu->isAlive())
+		return;
+
 	if (CBreakPoints::IsAddressBreakPoint(m_cpu->getCpuType(), m_selectedAddressStart))
 	{
 		Host::RunOnCPUThread([&] { CBreakPoints::RemoveBreakPoint(m_cpu->getCpuType(), m_selectedAddressStart); });
@@ -504,6 +507,9 @@ void DisassemblyWidget::mousePressEvent(QMouseEvent* event)
 
 void DisassemblyWidget::mouseDoubleClickEvent(QMouseEvent* event)
 {
+	if (!m_cpu->isAlive())
+		return;
+
 	const u32 selectedAddress = (event->y() / m_rowHeight * 4) + m_visibleStart;
 	if (CBreakPoints::IsAddressBreakPoint(m_cpu->getCpuType(), selectedAddress))
 	{
@@ -597,6 +603,9 @@ void DisassemblyWidget::keyPressEvent(QKeyEvent* event)
 
 void DisassemblyWidget::customMenuRequested(QPoint pos)
 {
+	if (!m_cpu->isAlive())
+		return;
+
 	m_contextMenu->popup(this->mapToGlobal(pos));
 }
 

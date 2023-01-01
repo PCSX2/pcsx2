@@ -219,6 +219,9 @@ void RegisterWidget::wheelEvent(QWheelEvent* event)
 
 void RegisterWidget::customMenuRequested(QPoint pos)
 {
+	if (!m_cpu->isAlive())
+		return;
+
 	if (m_selectedRow > m_rowEnd) // Unsigned underflow; selectedRow will be > m_rowEnd (technically negative)
 		return;
 
