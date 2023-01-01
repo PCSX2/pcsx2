@@ -92,7 +92,7 @@
 struct _x86regs
 {
 	u8 inuse;
-	u8 reg; // value of 0 - not used
+	s8 reg; // value of 0 - not used; value of -1 is unassigned.
 	u8 mode;
 	u8 needed;
 	u8 type; // X86TYPE_
