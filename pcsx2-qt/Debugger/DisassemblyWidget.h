@@ -55,6 +55,7 @@ public slots:
 	void contextCopyInstructionHex();
 	void contextCopyInstructionText();
 	void contextAssembleInstruction();
+	void contextNoopInstruction();
 	void contextRunToCursor();
 	void contextJumpToCursor();
 	void contextToggleBreakpoint();
