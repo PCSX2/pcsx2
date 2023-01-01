@@ -10,7 +10,6 @@ SDL=SDL2-2.26.0
 PNG=1.6.37
 JPG=9e
 SOUNDTOUCH=soundtouch-2.3.1
-WXWIDGETS=3.1.6
 QT=6.3.1
 
 mkdir deps-build
@@ -77,27 +76,26 @@ make -C build install
 cd ..
 
 
-if [ "$GUI" == "Qt" ]; then
-	echo "Installing Qt Base..."
-	tar xf "qtbase-everywhere-src-$QT.tar.xz"
-	cd "qtbase-everywhere-src-$QT"
-	cmake -B build -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release -DFEATURE_optimize_size=ON -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF
-	make -C build "-j$NPROCS"
-	make -C build install
-	cd ..
-	echo "Installing Qt SVG..."
-	tar xf "qtsvg-everywhere-src-$QT.tar.xz"
-	cd "qtsvg-everywhere-src-$QT"
-	cmake -B build -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=MinSizeRel
-	make -C build "-j$NPROCS"
-	make -C build install
-	cd ..
-	echo "Installing Qt Tools..."
-	tar xf "qttools-everywhere-src-$QT.tar.xz"
-	cd "qttools-everywhere-src-$QT"
-	# Linguist relies on a library in the Designer target, which takes 5-7 minutes to build on the CI
-	# Avoid it by not building Linguist, since we only need the tools that come with it
-	patch -u src/linguist/CMakeLists.txt <<EOF
+echo "Installing Qt Base..."
+tar xf "qtbase-everywhere-src-$QT.tar.xz"
+cd "qtbase-everywhere-src-$QT"
+cmake -B build -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release -DFEATURE_optimize_size=ON -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF
+make -C build "-j$NPROCS"
+make -C build install
+cd ..
+echo "Installing Qt SVG..."
+tar xf "qtsvg-everywhere-src-$QT.tar.xz"
+cd "qtsvg-everywhere-src-$QT"
+cmake -B build -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=MinSizeRel
+make -C build "-j$NPROCS"
+make -C build install
+cd ..
+echo "Installing Qt Tools..."
+tar xf "qttools-everywhere-src-$QT.tar.xz"
+cd "qttools-everywhere-src-$QT"
+# Linguist relies on a library in the Designer target, which takes 5-7 minutes to build on the CI
+# Avoid it by not building Linguist, since we only need the tools that come with it
+patch -u src/linguist/CMakeLists.txt <<EOF
 --- src/linguist/CMakeLists.txt
 +++ src/linguist/CMakeLists.txt
 @@ -14,7 +14,7 @@
@@ -109,18 +107,17 @@ if [ "$GUI" == "Qt" ]; then
      add_subdirectory(linguist)
  endif()
 EOF
-	cmake -B build -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release -DFEATURE_assistant=OFF -DFEATURE_clang=OFF -DFEATURE_designer=OFF -DFEATURE_kmap2qmap=OFF -DFEATURE_pixeltool=OFF -DFEATURE_pkg_config=OFF -DFEATURE_qev=OFF -DFEATURE_qtattributionsscanner=OFF -DFEATURE_qtdiag=OFF -DFEATURE_qtplugininfo=OFF
-	make -C build "-j$NPROCS"
-	make -C build install
-	cd ..
-	echo "Installing Qt Translations..."
-	tar xf "qttranslations-everywhere-src-$QT.tar.xz"
-	cd "qttranslations-everywhere-src-$QT"
-	cmake -B build -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release
-	make -C build "-j$NPROCS"
-	make -C build install
-	cd ..
-fi
+cmake -B build -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release -DFEATURE_assistant=OFF -DFEATURE_clang=OFF -DFEATURE_designer=OFF -DFEATURE_kmap2qmap=OFF -DFEATURE_pixeltool=OFF -DFEATURE_pkg_config=OFF -DFEATURE_qev=OFF -DFEATURE_qtattributionsscanner=OFF -DFEATURE_qtdiag=OFF -DFEATURE_qtplugininfo=OFF
+make -C build "-j$NPROCS"
+make -C build install
+cd ..
+echo "Installing Qt Translations..."
+tar xf "qttranslations-everywhere-src-$QT.tar.xz"
+cd "qttranslations-everywhere-src-$QT"
+cmake -B build -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release
+make -C build "-j$NPROCS"
+make -C build install
+cd ..
 
 echo "Cleaning up..."
 cd ..
