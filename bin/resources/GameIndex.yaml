@@ -278,7 +278,7 @@ PBPX-95506:
         // 7ACF7E03
         comment=You must enable the EETimingHack when playing the WRC demo to avoids random hangs.
         comment=You must change the EE Clamping mode to Full when playing the Klonoa 2 demo to avoids misplaced objects.
-        comment=You must change the VU Clamping mode to extra when playing the Klonoa 2 demo to fixes reflections issues.
+        comment=You must change the VU0 Clamping mode to extra + sign when playing the Klonoa 2 demo to fixes reflections issues.
 PBPX-95509:
   name: "Linux Release 1.0 Runtime Environment [Disc 1]"
   region: "PAL-E"
@@ -724,7 +724,7 @@ SCAJ-20066:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-  memcardFilters: #vuClampMode = 2  Text in GT mode works.
+  memcardFilters:
     - "SCAJ-20066"
     - "SCAJ-30006"
     - "SCAJ-30007"
@@ -737,6 +737,7 @@ SCAJ-20066:
     - "SCPS-55007"
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
+  # vuClampMode = 2  Text in GT mode works.
 SCAJ-20067:
   name: "GunGrave O.D."
   region: "NTSC-Unk"
@@ -813,9 +814,9 @@ SCAJ-20079:
   name: "Katamari Damacy"
   region: "NTSC-Unk"
   roundModes:
-    vuRoundMode: 0 # Fixes SPS.
+    vu1RoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3 # Fixes SPS.
+    vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
     mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
 SCAJ-20080:
@@ -1089,9 +1090,9 @@ SCAJ-20135:
   name: "Minna Daisuki Katamari Damacy"
   region: "NTSC-Unk"
   roundModes:
-    vuRoundMode: 0 # Fixes SPS.
+    vu1RoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3 # Fixes SPS.
+    vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
     mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
   memcardFilters:
@@ -2005,9 +2006,9 @@ SCED-51568:
   name: "Official PlayStation 2 Magazine Demo 33" # German
   region: "PAL-E-G"
   roundModes:
-    vuRoundMode: 0 # Fixes SPS (Primal).
+    vu1RoundMode: 1 # Fixes SPS (Primal).
   clampModes:
-    vuClampMode: 2 # Fixes other SPS (Primal).
+    vu1ClampMode: 0 # Fix other SPS (Primal).
 SCED-51569:
   name: "Official PlayStation 2 Magazine Demo 34" # German
   region: "PAL-E-G"
@@ -2856,7 +2857,7 @@ SCES-50354:
   compat: 5
   clampModes:
     eeClampMode: 3 # Objects appear in wrong places without it.
-    vuClampMode: 2 # Fixes water reflection.
+    vu0ClampMode: 3 # Fixes water reflection and object glow.
   gameFixes:
     - EETimingHack # Fixes flickering graphics.
   gsHWFixes:
@@ -3205,10 +3206,10 @@ SCES-51135:
   region: "PAL-M5"
   compat: 5
   roundModes:
-    vuRoundMode: 1 # Fixes SPS.
+    vu1RoundMode: 1 # Fixes SPS.
     eeRoundMode: 0 # Fixes textures on the doors.
   clampModes:
-    vuClampMode: 0 # Fix other SPS.
+    vu1ClampMode: 0 # Fix other SPS.
 SCES-51159:
   name: "Getaway, The"
   region: "PAL-M5"
@@ -3385,10 +3386,10 @@ SCES-51685:
   name: "Primal"
   region: "PAL-E-R"
   roundModes:
-    vuRoundMode: 1 # Fixes SPS.
+    vu1RoundMode: 1 # Fixes SPS.
     eeRoundMode: 0 # Fixes textures on the doors.
   clampModes:
-    vuClampMode: 0 # Fix other SPS.
+    vu1ClampMode: 0 # Fix other SPS.
 SCES-51706:
   name: "Amplitude"
   region: "PAL-M5"
@@ -3612,12 +3613,13 @@ SCES-52438:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-  memcardFilters: #vuClampMode = 2  Text in GT mode works.
+  memcardFilters:
     - "SCES-51719"
     - "SCES-52438"
     - "SCES-50294"
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
+  # vuClampMode = 2  Text in GT mode works.
 SCES-52456:
   name: "Ratchet & Clank 3"
   region: "PAL-M5"
@@ -4877,9 +4879,9 @@ SCKA-20025:
   name: "Katamari Damacy"
   region: "NTSC-K"
   roundModes:
-    vuRoundMode: 0 # Fixes SPS.
+    vu1RoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3 # Fixes SPS.
+    vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
     mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
 SCKA-20026:
@@ -5014,9 +5016,9 @@ SCKA-20051:
   name: "Minna Daisuki Katamari Damacy"
   region: "NTSC-K"
   roundModes:
-    vuRoundMode: 0 # Fixes SPS.
+    vu1RoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3 # Fixes SPS.
+    vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
     mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
   memcardFilters:
@@ -5449,7 +5451,7 @@ SCPS-11025:
   region: "NTSC-J"
   compat: 5
   clampModes:
-    vuClampMode: 3
+    vuClampMode: 3 # Fixes SPS and bad textures.
 SCPS-11026:
   name: "Gacharoku"
   region: "NTSC-J"
@@ -5688,10 +5690,10 @@ SCPS-15052:
   name: "Saints Seinaru Mamono"
   region: "NTSC-J"
   roundModes:
-    vuRoundMode: 1 # Fixes SPS.
+    vu1RoundMode: 1 # Fixes SPS.
     eeRoundMode: 0 # Fixes textures on the doors.
   clampModes:
-    vuClampMode: 0 # Fix other SPS.
+    vu1ClampMode: 0 # Fix other SPS.
 SCPS-15053:
   name: "Siren"
   region: "NTSC-J"
@@ -5706,7 +5708,7 @@ SCPS-15055:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-  memcardFilters: #vuClampMode = 2  Text in GT mode works.
+  memcardFilters:
     - "SCAJ-20066"
     - "SCAJ-30006"
     - "SCAJ-30007"
@@ -5719,6 +5721,7 @@ SCPS-15055:
     - "SCPS-55007"
   # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
+  # vuClampMode = 2  Text in GT mode works.
 SCPS-15056:
   name: "Ratchet & Clank 2"
   region: "NTSC-J"
@@ -6587,7 +6590,7 @@ SCPS-51016:
   name: "Space Fishermen"
   region: "NTSC-J"
   clampModes:
-    vuClampMode: 3
+    vuClampMode: 3 # Fixes SPS and bad textures.
 SCPS-55001:
   name: "ICO"
   region: "NTSC-J"
@@ -6922,7 +6925,7 @@ SCUS-21295:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SCUS-21494:
   name: "Need for Speed - Carbon Collector's Edition"
   region: "NTSC-U"
@@ -7120,10 +7123,10 @@ SCUS-97142:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 1 # Fixes SPS.
+    vu1RoundMode: 1 # Fixes SPS.
     eeRoundMode: 0 # Fixes textures on the doors.
   clampModes:
-    vuClampMode: 0 # Fix other SPS.
+    vu1ClampMode: 0 # Fix other SPS.
 SCUS-97144:
   name: "PlayStation Underground 5.1"
   region: "NTSC-U"
@@ -7419,10 +7422,10 @@ SCUS-97225:
   name: "Primal [Demo]"
   region: "NTSC-U"
   roundModes:
-    vuRoundMode: 1 # Fixes SPS.
+    vu1RoundMode: 1 # Fixes SPS.
     eeRoundMode: 0 # Fixes textures on the doors.
   clampModes:
-    vuClampMode: 0 # Fix other SPS.
+    vu1ClampMode: 0 # Fix other SPS.
 SCUS-97226:
   name: "NCAA GameBreaker 2003 [Demo]"
   region: "NTSC-U"
@@ -8674,7 +8677,7 @@ SCUS-97610:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 1 # Fixes the display of scores and text ingame.
+    vu1RoundMode: 1 # Fixes the display of scores and text ingame.
 SCUS-97611:
   name: "SingStar Amped"
   region: "NTSC-U"
@@ -9133,7 +9136,7 @@ SLED-51211:
   name: "Burnout 2 - Point of Impact [Demo]"
   region: "PAL-Unk"
   roundModes:
-    vuRoundMode: 1 # Bright lights in cars.
+    vu1RoundMode: 1 # Bright lights in cars.
 SLED-51212:
   name: "V-Rally 3"
   region: "PAL-E"
@@ -10730,8 +10733,7 @@ SLES-50653:
   region: "PAL-M3"
   compat: 5
   roundModes:
-    eeRoundMode: 1
-    vuRoundMode: 3
+    eeRoundMode: 1 # Fixes disappearing characters.
   patches:
     default:
       content: |-
@@ -11152,7 +11154,7 @@ SLES-50831:
   roundModes:
     vuRoundMode: 0
   clampModes:
-    vuClampMode: 3
+    vu0ClampMode: 3 # Fixes randomly invalid textures.
     eeClampMode: 2 # Fixes missing/grey texture or geometry ingame.
 SLES-50832:
   name: "Star Wars - Bounty Hunter"
@@ -11161,7 +11163,7 @@ SLES-50832:
   roundModes:
     vuRoundMode: 0
   clampModes:
-    vuClampMode: 3
+    vu0ClampMode: 3 # Fixes randomly invalid textures.
     eeClampMode: 2 # Fixes missing/grey texture or geometry ingame.
 SLES-50833:
   name: "Star Wars - Bounty Hunter"
@@ -11170,7 +11172,7 @@ SLES-50833:
   roundModes:
     vuRoundMode: 0
   clampModes:
-    vuClampMode: 3
+    vu0ClampMode: 3 # Fixes randomly invalid textures.
     eeClampMode: 2 # Fixes missing/grey texture or geometry ingame.
 SLES-50834:
   name: "Star Wars - Bounty Hunter"
@@ -11179,7 +11181,7 @@ SLES-50834:
   roundModes:
     vuRoundMode: 0
   clampModes:
-    vuClampMode: 3
+    vu0ClampMode: 3 # Fixes randomly invalid textures.
     eeClampMode: 2 # Fixes missing/grey texture or geometry ingame.
 SLES-50835:
   name: "Star Wars - Bounty Hunter"
@@ -11188,7 +11190,7 @@ SLES-50835:
   roundModes:
     vuRoundMode: 0
   clampModes:
-    vuClampMode: 3
+    vu0ClampMode: 3 # Fixes randomly invalid textures.
     eeClampMode: 2 # Fixes missing/grey texture or geometry ingame.
 SLES-50836:
   name: "Indiana Jones and The Emperor's Tomb"
@@ -11598,7 +11600,7 @@ SLES-51044:
   region: "PAL-M5"
   compat: 5
   roundModes:
-    vuRoundMode: 1 # Bright lights in cars.
+    vu1RoundMode: 1 # Bright lights in cars.
 SLES-51045:
   name: "Legends of Wrestling II"
   region: "PAL-E"
@@ -11803,17 +11805,17 @@ SLES-51130:
   region: "PAL-E"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-51131:
   name: "Tony Hawk's Pro Skater 4"
   region: "PAL-F"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-51132:
   name: "Tony Hawk's Pro Skater 4"
   region: "PAL-G"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-51133:
   name: "Red Faction II"
   region: "PAL-M3"
@@ -11855,7 +11857,7 @@ SLES-51151:
   name: "NHL 2003"
   region: "PAL-M6"
   clampModes:
-    vuClampMode: 2
+    vuClampMode: 2 # Fixes missing geometry.
 SLES-51153:
   name: "LEGO Island - Extreme Stunts"
   region: "PAL-M8"
@@ -13041,12 +13043,12 @@ SLES-51720:
   name: "Disney's Extreme Skate Adventure"
   region: "PAL-E"
   roundModes:
-    vuRoundMode: 0
+    vu1RoundMode: 0 # Fixes invalid VU size spam and likely SPS.
 SLES-51721:
   name: "Disney's Extreme Skate Adventure"
   region: "PAL-M4"
   roundModes:
-    vuRoundMode: 0
+    vu1RoundMode: 0 # Fixes invalid VU size spam and likely SPS.
 SLES-51723:
   name: "Hobbit, The"
   region: "PAL-M5"
@@ -13084,7 +13086,7 @@ SLES-51752:
   name: "Tony Hawks Underground"
   region: "PAL-Unk"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-51753:
   name: "True Crime - Streets of L.A."
   region: "PAL-E"
@@ -13315,7 +13317,7 @@ SLES-51848:
   region: "PAL-E"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-51850:
   name: "Basketball Xciting"
   region: "PAL-E"
@@ -13323,23 +13325,23 @@ SLES-51851:
   name: "Tony Hawk's Underground"
   region: "PAL-F"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-51852:
   name: "Tony Hawk's Underground"
   region: "PAL-G"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-51853:
   name: "Tony Hawk's Underground"
   region: "PAL-F"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-51854:
   name: "Tony Hawk's Underground"
   region: "PAL-S"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-51855:
   name: "Tank Elite"
   region: "PAL-E"
@@ -14252,12 +14254,12 @@ SLES-52289:
   name: "MTX Mototrax"
   region: "PAL-E"
   roundModes:
-    vuRoundMode: 0 # Fixes glitchy graphics ingame.
+    vu1RoundMode: 0 # Fixes glitchy graphics ingame.
 SLES-52290:
   name: "MTX Mototrax"
   region: "PAL-F"
   roundModes:
-    vuRoundMode: 0 # Fixes glitchy graphics ingame.
+    vu1RoundMode: 0 # Fixes glitchy graphics ingame.
 SLES-52291:
   name: "Countryside Bears"
   region: "PAL-M3"
@@ -14702,9 +14704,9 @@ SLES-52510:
   region: "PAL-M3"
   compat: 6
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Reduces FPU calculation errors.
   clampModes:
-    eeClampMode: 2
+    eeClampMode: 2 # Reduces FPU calculation errors.
 SLES-52511:
   name: "Headhunter - Redemption"
   region: "PAL-E"
@@ -14731,7 +14733,7 @@ SLES-52518:
   region: "PAL-E"
   compat: 5
   clampModes:
-    eeClampMode: 3
+    eeClampMode: 3 # Fixes missing textures.
 SLES-52519:
   name: "Pink Pong"
   region: "PAL-E"
@@ -15034,12 +15036,12 @@ SLES-52621:
   name: "Tony Hawk's Underground 2"
   region: "PAL-E"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-52622:
   name: "Tony Hawk's Underground 2"
   region: "PAL-M4"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-52624:
   name: "X-Men Legends"
   region: "PAL-E"
@@ -15060,7 +15062,7 @@ SLES-52631:
   region: "PAL-M5"
   compat: 5
   clampModes:
-    eeClampMode: 3
+    eeClampMode: 3 # Fixes menu options freaking out.
 SLES-52636:
   name: "Colin McRae Rally 2005"
   region: "PAL-M5"
@@ -15888,7 +15890,7 @@ SLES-52968:
   region: "PAL-E"
   compat: 5
   roundModes:
-    vuRoundMode: 1 # Bright lights in cars.
+    vu1RoundMode: 1 # Bright lights in cars.
 SLES-52973:
   name: "Ski Racing 2005"
   region: "PAL-M5"
@@ -16122,7 +16124,7 @@ SLES-53038:
   region: "PAL-M5"
   compat: 5
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Fixes inability to enter door in Mission 18.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
     roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
@@ -16278,9 +16280,9 @@ SLES-53099:
   name: "Pilot Down - Behind Enemy Lines"
   region: "PAL-M5"
   gameFixes:
-    - DMABusyHack # Game has weird DMA handling, this allows required DMA's to finish.
+    - InstantDMAHack # Game has weird DMA handling (possible cache things?).
   roundModes:
-    vuRoundMode: 0
+    vu1RoundMode: 0 # Fixes shadow rendering.
 SLES-53100:
   name: "Scooby-Doo! Unmasked"
   region: "PAL-M4"
@@ -16326,8 +16328,8 @@ SLES-53125:
   name: "Enthusia - Professional Racing"
   region: "PAL-M5"
   clampModes:
-    eeClampMode: 3
-    vuClampMode: 3
+    eeClampMode: 3 # Corrects crazy car AI and prevents crash.
+    vuClampMode: 3 # Stops freezing at race start.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLES-53127:
@@ -16703,7 +16705,7 @@ SLES-53350:
   region: "PAL-M5"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Prevents only backgrounds from appearing in Sonic R's multiplayer modes.
+    vu1RoundMode: 0 # Prevents only backgrounds from appearing in Sonic R's multiplayer modes.
   gsHWFixes:
     cpuCLUTRender: 2 # Fixes CLUT colour in Sonic Fighters.
   memcardFilters: # Vectorman unlocks by having a Mega Collection or Heroes save.
@@ -16856,8 +16858,8 @@ SLES-53402:
   region: "PAL-E"
   compat: 5
   roundModes:
-    eeRoundMode: 2 # Positive rounding fixes white models.
-    vuRoundMode: 2 # Positive rounding fixes white models.
+    eeRoundMode: 2 # Positive rounding fixes distant white models.
+    vu1RoundMode: 2 # Positive rounding fixes close white models.
 SLES-53403:
   name: "Demolition Girl"
   region: "PAL-E"
@@ -17175,7 +17177,7 @@ SLES-53523:
   name: "Gun"
   region: "PAL-M4"
   roundModes:
-    vuRoundMode: 0 # Fixes textures and crashes.
+    vu1RoundMode: 0 # Fixes textures and crashes.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes bloom misalignment.
     wildArmsHack: 1 # Fixes bloom misalignment.
@@ -17244,12 +17246,12 @@ SLES-53534:
   region: "PAL-E"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-53535:
   name: "Tony Hawk's American Wasteland"
   region: "PAL-M4"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-53536:
   name: "London Racer - Police Madness"
   region: "PAL-M3"
@@ -17608,7 +17610,7 @@ SLES-53647:
   name: "Gun"
   region: "PAL-G"
   roundModes:
-    vuRoundMode: 0 # Fixes textures and crashes.
+    vu1RoundMode: 0 # Fixes textures and crashes.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes bloom misalignment.
     wildArmsHack: 1 # Fixes bloom misalignment.
@@ -18108,9 +18110,9 @@ SLES-53828:
   name: "We Love Katamari"
   region: "PAL-M4"
   roundModes:
-    vuRoundMode: 0 # Fixes SPS.
+    vu1RoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3 # Fixes SPS.
+    vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
     mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
 SLES-53829:
@@ -18189,7 +18191,7 @@ SLES-53867:
   name: "Ski Alpin 2006"
   region: "PAL-E-G"
   clampModes:
-    vuClampMode: 2
+    vuClampMode: 2 # Fixes SPS.
 SLES-53869:
   name: "Crazy Frog Racer"
   region: "PAL-M5"
@@ -18636,6 +18638,8 @@ SLES-54092:
 SLES-54093:
   name: "Guitar Hero"
   region: "PAL-M5"
+  roundModes:
+    vu1RoundMode: 1 # Fixes cut-off numbers and restores missing whitespace inside combo meter.
 SLES-54095:
   name: "Dynasty Warriors 5 - Empires"
   region: "PAL-E"
@@ -18723,7 +18727,7 @@ SLES-54132:
   region: "PAL-M5"
   compat: 5
   roundModes:
-    vuRoundMode: 2 # Fixes cut-off numbers and restores missing whitespace inside combo meter.
+    vu1RoundMode: 1 # Fixes cut-off numbers and restores missing whitespace inside combo meter.
 SLES-54135:
   name: "Grand Theft Auto - Liberty City Stories"
   region: "PAL-M5"
@@ -18844,7 +18848,7 @@ SLES-54166:
   name: "Call of Duty 3"
   region: "PAL-E"
   clampModes:
-    eeClampMode: 3
+    eeClampMode: 3 # Fixes crash going ingame.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
     halfPixelOffset: 2 # Fixes fog misplacement.
@@ -18852,7 +18856,7 @@ SLES-54167:
   name: "Call of Duty 3"
   region: "PAL-M3"
   clampModes:
-    eeClampMode: 3
+    eeClampMode: 3 # Fixes crash going ingame.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
     halfPixelOffset: 2 # Fixes fog misplacement.
@@ -18860,7 +18864,7 @@ SLES-54168:
   name: "Call of Duty 3"
   region: "PAL-G"
   clampModes:
-    eeClampMode: 3
+    eeClampMode: 3 # Fixes crash going ingame.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
     halfPixelOffset: 2 # Fixes fog misplacement.
@@ -18933,7 +18937,7 @@ SLES-54186:
   name: "Devil May Cry 3 - Dante's Awakening [Special Edition]"
   region: "PAL-M5"
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Fixes inability to enter door in Mission 18.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
     roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
@@ -19156,7 +19160,7 @@ SLES-54308:
   region: "PAL-M3"
   compat: 5
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Fixes enemies not moving (especially Chapter 7 boss).
 SLES-54309:
   name: "Strawberry Shortcake - The Sweet Dreams Game"
   region: "PAL-M6"
@@ -19415,13 +19419,13 @@ SLES-54389:
   region: "PAL-E"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-54390:
   name: "Tony Hawk's Project 8"
   region: "PAL-M4"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-54393:
   name: "Pippa Funnell - Take the Reins"
   region: "PAL-M3"
@@ -19520,7 +19524,7 @@ SLES-54442:
   region: "PAL-M5"
   compat: 5
   roundModes:
-    vuRoundMode: 2 # Fixes cut-off numbers and restores missing whitespace inside combo meter.
+    vu1RoundMode: 0 # Massages the Z on the score meter for hardware mode, software doesn't really need this.
 SLES-54443:
   name: "Made Man"
   region: "PAL-M5"
@@ -19586,7 +19590,7 @@ SLES-54463:
   name: "Sprint Cars - Road to Knoxville"
   region: "PAL-A"
   clampModes:
-    vuClampMode: 3
+    vuClampMode: 3 # Fixes flickering textures on cars.
   patches:
     DFBAE612:
       content: |-
@@ -20195,7 +20199,7 @@ SLES-54714:
   name: "Tony Hawk's Downhill Jam"
   region: "PAL-E"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
     wildArmsHack: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
@@ -20203,7 +20207,7 @@ SLES-54715:
   name: "Tony Hawk's Downhill Jam"
   region: "PAL-M4"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
     wildArmsHack: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
@@ -20362,14 +20366,14 @@ SLES-54770:
   name: "DreamWorks Shrek the Third"
   region: "PAL-E"
   roundModes:
-    vuRoundMode: 0 # Fixes black zones.
+    vu1RoundMode: 0 # Fixes black zones.
   clampModes:
     eeClampMode: 3 # Fixes objects spawning.
 SLES-54771:
   name: "DreamWorks Shrek the Third"
   region: "PAL-M5"
   roundModes:
-    vuRoundMode: 0 # Fixes black zones.
+    vu1RoundMode: 0 # Fixes black zones.
   clampModes:
     eeClampMode: 3 # Fixes objects spawning.
 SLES-54772:
@@ -20378,7 +20382,7 @@ SLES-54772:
 SLES-54774:
   name: "DreamWorks Shrek the Third"
   roundModes:
-    vuRoundMode: 0 # Fixes black zones.
+    vu1RoundMode: 0 # Fixes black zones.
   region: "PAL-M5"
   clampModes:
     eeClampMode: 3 # Fixes objects spawning.
@@ -20581,12 +20585,12 @@ SLES-54859:
   region: "PAL-E"
   compat: 5
   roundModes:
-    vuRoundMode: 2 # Fixes cut-off numbers and restores missing whitespace inside combo meter.
+    vu1RoundMode: 0 # Massages the Z on the score meter for hardware mode, software doesn't really need this.
 SLES-54860:
   name: "Guitar Hero - Rocks The 80's"
   region: "PAL-M4"
   roundModes:
-    vuRoundMode: 2 # Fixes cut-off numbers and restores missing whitespace inside combo meter.
+    vu1RoundMode: 0 # Massages the Z on the score meter for hardware mode, software doesn't really need this.
 SLES-54861:
   name: "Thomas & Friends - A Day at the Races"
   region: "PAL-M5"
@@ -20693,6 +20697,8 @@ SLES-54891:
 SLES-54892:
   name: "Phantasy Star Universe - Ambition of the Illuminus"
   region: "PAL-M3"
+  roundModes:
+    eeRoundMode: 0 # Fixes enemies not moving.
 SLES-54893:
   name: "NHL 08"
   region: "PAL-M5"
@@ -20876,18 +20882,18 @@ SLES-54962:
   name: "Guitar Hero III - Legends of Rock"
   region: "PAL-E"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-54963:
   name: "Tony Hawk's Proving Ground"
   region: "PAL-E"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-54964:
   name: "Tony Hawk's Proving Ground"
   region: "PAL-M4"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-54971:
   name: "Hot Wheels - Beat That!"
   region: "PAL-M4"
@@ -20907,7 +20913,7 @@ SLES-54974:
   name: "Guitar Hero III - Legends of Rock"
   region: "PAL-M4"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-54975:
   name: "George Of The Jungle"
   region: "PAL-E"
@@ -21254,7 +21260,7 @@ SLES-55109:
   name: "Spiderwick Chronicles, The"
   region: "PAL-E"
   roundModes:
-    vuRoundMode: 0 # Fixes invisible wall collision in bedroom.
+    vu0RoundMode: 0 # Fixes invisible wall collision in bedroom.
 SLES-55110:
   name: "Odin Sphere"
   region: "PAL-M5"
@@ -21426,7 +21432,7 @@ SLES-55191:
   name: "Guitar Hero - Aerosmith"
   region: "PAL-E"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Fixes VU size spam and potential graphical issues with GH3 engine.
 SLES-55192:
   name: "Steam Express"
   region: "PAL-M5"
@@ -21465,7 +21471,7 @@ SLES-55200:
   name: "Guitar Hero - Aerosmith"
   region: "PAL-M4"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Fixes VU size spam and potential graphical issues with GH3 engine.
 SLES-55201:
   name: "Riding Star"
   region: "PAL-M4"
@@ -21813,7 +21819,7 @@ SLES-55355:
   speedHacks:
     InstantVU1SpeedHack: 0 # Corrects note board position.
   roundModes:
-    vuRoundMode: 0 # Fixes graphical issues ingame.
+    vu1RoundMode: 0 # Fixes graphical issues ingame.
 SLES-55356:
   name: "Bratz - Girlz Really Rock"
   region: "PAL-M3"
@@ -22041,7 +22047,7 @@ SLES-55472:
   name: "Guitar Hero - Metalica"
   region: "PAL-M5"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLES-55474:
   name: "Shin Megami Tensei - Persona 4"
   region: "PAL-E"
@@ -22130,6 +22136,8 @@ SLES-55517:
 SLES-55518:
   name: "Guitar Hero - Van Halen"
   region: "PAL-A"
+  roundModes:
+    vu1RoundMode: 0 # Fixes VU size spam and potential graphical issues with GH3 engine.
 SLES-55520:
   name: "Transformers - Revenge of the Fallen"
   region: "PAL-M5"
@@ -22168,7 +22176,7 @@ SLES-55533:
   name: "Guitar Hero 5"
   region: "PAL-M5"
   roundModes:
-    vuRoundMode: 0 # Fixes SPS and VU size spam.
+    vu1RoundMode: 0 # Fixes SPS and VU size spam.
 SLES-55536:
   name: "Disney-Pixar Cars - Race-O-Rama"
   region: "PAL-M5"
@@ -22181,6 +22189,8 @@ SLES-55542:
 SLES-55544:
   name: "Guitar Hero - Greatest Hits"
   region: "PAL-M5"
+  roundModes:
+    vu1RoundMode: 0 # Fixes VU size spam and potential graphical issues with GH3 engine.
 SLES-55545:
   name: "WWE SmackDown vs. Raw 2010"
   region: "PAL-M5"
@@ -22227,9 +22237,9 @@ SLES-55579:
   region: "PAL-M7"
   compat: 5
   roundModes:
-    eeRoundMode: 1
+    eeRoundMode: 1 # Fixes black textures in conjunction with VU0 clamping set to none.
   clampModes:
-    vuClampMode: 0
+    vu0ClampMode: 0 # Fixes black textures and SPS.
   gsHWFixes:
     deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the FMVs.
 SLES-55581:
@@ -22856,7 +22866,7 @@ SLKA-25039:
   name: "Burnout 2 - Point of Impact"
   region: "NTSC-K"
   roundModes:
-    vuRoundMode: 1 # Bright lights in cars.
+    vu1RoundMode: 1 # Bright lights in cars.
 SLKA-25041:
   name: "Armored Core 3 Silent Line"
   region: "NTSC-K"
@@ -23353,6 +23363,8 @@ SLKA-25215:
 SLKA-25216: #serial used on printed labels only, internal serial is always SLPM-67508
   name: "Gitaroo-Man [BigHit Series]"
   region: "NTSC-K"
+  roundModes:
+    eeRoundMode: 1 # Fixes disappearing characters.
 SLKA-25217:
   name: "Shining Tears"
   region: "NTSC-K"
@@ -23402,9 +23414,9 @@ SLKA-25227:
   name: "Neo Contra"
   region: "NTSC-K"
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Reduces FPU calculation errors.
   clampModes:
-    eeClampMode: 2
+    eeClampMode: 2 # Reduces FPU calculation errors.
 SLKA-25232:
   name: "Naruto Narutimett Hero International"
   region: "NTSC-K"
@@ -23462,7 +23474,7 @@ SLKA-25254:
   region: "NTSC-K"
   compat: 5
   clampModes:
-    eeClampMode: 3
+    eeClampMode: 3 # Fixes menu options freaking out.
 SLKA-25255:
   name: "Mobile Suit Gundam - Seed - Never Ending Tomorrow"
   region: "NTSC-K"
@@ -23495,7 +23507,7 @@ SLKA-25265:
   name: "Devil May Cry 3"
   region: "NTSC-K"
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Fixes inability to enter door in Mission 18.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
     roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
@@ -23745,7 +23757,7 @@ SLKA-25363:
   name: "Guitar Hero III - Legends of Rock"
   region: "NTSC-K"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLKA-25364:
   name: "Mobile Suit Gundam - Climax U.C."
   region: "NTSC-K"
@@ -24057,7 +24069,7 @@ SLPM-55108:
   region: "NTSC-J"
   compat: 5
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Fixes bow porjectile trajectories.
 SLPM-55110:
   name: "Mercenaries 2 - World in Flames"
   region: "NTSC-J"
@@ -24444,7 +24456,7 @@ SLPM-60138:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Objects appear in wrong places without it.
-    vuClampMode: 2 # Fixes water reflection.
+    vu0ClampMode: 3 # Fixes water reflection and object glow.
   gameFixes:
     - EETimingHack # Fixes flickering graphics.
   gsHWFixes:
@@ -24486,9 +24498,9 @@ SLPM-60239:
   name: "Katamari Damacy [Trial]"
   region: "NTSC-J"
   roundModes:
-    vuRoundMode: 0 # Fixes SPS.
+    vu1RoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3 # Fixes SPS.
+    vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
     mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay problems.
 SLPM-60243:
@@ -24510,7 +24522,7 @@ SLPM-60251:
   name: "Devil May Cry 3 [Trial Version]"
   region: "NTSC-J"
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Fixes inability to enter door in Mission 18.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
     roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
@@ -24850,6 +24862,8 @@ SLPM-62060:
 SLPM-62062:
   name: "Gitaroo Man One"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 1 # Fixes disappearing characters.
 SLPM-62063:
   name: "Gradius III & IV [Konami The Best]"
   region: "NTSC-J"
@@ -25973,8 +25987,8 @@ SLPM-62483:
   name: "Simple 2000 Series Vol. 48 - The Taxi - Untenshu ha Kimi da"
   region: "NTSC-J"
   roundModes:
-    eeRoundMode: 2
-    vuRoundMode: 2
+    eeRoundMode: 2 # Positive rounding fixes distant white models.
+    vu1RoundMode: 2 # Positive rounding fixes close white models.
 SLPM-62484:
   name: "Simple 2000 Series Vol. 50 - The Daibijin"
   region: "NTSC-J"
@@ -26985,8 +26999,7 @@ SLPM-65012:
   region: "NTSC-J"
   compat: 5
   roundModes:
-    eeRoundMode: 1
-    vuRoundMode: 3
+    eeRoundMode: 1 # Fixes disappearing characters.
   memcardFilters:
     - "SLPM-65012"
     - "SLPM-62062" #Gitaroo Man One bonus save data
@@ -27463,6 +27476,8 @@ SLPM-65158:
 SLPM-65160: #serial used on printed labels only, internal serial is always SLPM-65012
   name: "Gitaroo Man [Koei Summer Chance 2002]"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 1 # Fixes disappearing characters.
 SLPM-65161:
   name: "Aero Dancing 4"
   region: "NTSC-J"
@@ -28368,7 +28383,7 @@ SLPM-65419:
   name: "Tony Hawk's Pro Skater 2003"
   region: "NTSC-J"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLPM-65420:
   name: "Dabitsuku 3 - Let's Become a Derby Owner"
   region: "NTSC-J"
@@ -29453,9 +29468,9 @@ SLPM-65752:
   name: "Neo Contra"
   region: "NTSC-J"
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Reduces FPU calculation errors.
   clampModes:
-    eeClampMode: 2
+    eeClampMode: 2 # Reduces FPU calculation errors.
 SLPM-65753:
   name: "Kessen [Koei Collection Series]"
   region: "NTSC-J"
@@ -29881,7 +29896,7 @@ SLPM-65880:
   region: "NTSC-J"
   compat: 5
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Fixes inability to enter door in Mission 18.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
     roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
@@ -30042,10 +30057,10 @@ SLPM-65925:
   name: "Kono Haretasora no Shita de"
   region: "NTSC-J"
 SLPM-65926:
-  name: "Y's IV - Mask of the Sun - A New Theory"
+  name: "Ys IV - Mask of the Sun - A New Theory"
   region: "NTSC-J"
   clampModes:
-    eeClampMode: 3
+    eeClampMode: 3 # Fixes camera going off screen.
 SLPM-65927:
   name: "Forgotten Realms - Demon Stone"
   region: "NTSC-J"
@@ -30289,9 +30304,9 @@ SLPM-65990:
   name: "Neo Contra [Konami Palace Selection]"
   region: "NTSC-J"
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Reduces FPU calculation errors.
   clampModes:
-    eeClampMode: 2
+    eeClampMode: 2 # Reduces FPU calculation errors.
 SLPM-65991:
   name: "Anubis - Zone of the Enders Special Edition [Konami Dendou Collection]"
   region: "NTSC-J"
@@ -30437,7 +30452,7 @@ SLPM-66031:
   name: "Phantasy Star Universe"
   region: "NTSC-J"
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Fixes enemies not moving (especially Chapter 7 boss).
 SLPM-66032:
   name: "Silent Hill 4 [Konami The Best]"
   region: "NTSC-J"
@@ -30574,7 +30589,7 @@ SLPM-66074:
   region: "NTSC-J"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Prevents only backgrounds from appearing in Sonic R's multiplayer modes.
+    vu1RoundMode: 0 # Prevents only backgrounds from appearing in Sonic R's multiplayer modes.
   gsHWFixes:
     cpuCLUTRender: 2 # Fixes CLUT colour in Sonic Fighters.
   memcardFilters:
@@ -30891,7 +30906,7 @@ SLPM-66160:
   region: "NTSC-J"
   compat: 5
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Fixes inability to enter door in Mission 18.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
     roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
@@ -31270,8 +31285,8 @@ SLPM-66257:
   name: "Enthusia - Professional Racing"
   region: "NTSC-J"
   clampModes:
-    eeClampMode: 3
-    vuClampMode: 3
+    eeClampMode: 3 # Corrects crazy car AI and prevents crash.
+    vuClampMode: 3 # Stops freezing at race start.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPM-66258:
@@ -32799,7 +32814,7 @@ SLPM-66663:
   name: "Phantasy Star Universe - Ambition of the Illuminus"
   region: "NTSC-J"
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Fixes enemies not moving.
 SLPM-66664:
   name: "Full House Kiss 2 [CapKore]"
   region: "NTSC-J"
@@ -33291,7 +33306,7 @@ SLPM-66783:
   name: "Idol Janshi Suchie-Pai 4 [Limited Edition]"
   region: "NTSC-J"
 SLPM-66784:
-  name: "Idol Janshi Suchie-Pai III Remix "
+  name: "Idol Janshi Suchie-Pai III Remix"
   region: "NTSC-J"
 SLPM-66785:
   name: "Idol Janshi Suchie-Pai 4"
@@ -34054,8 +34069,7 @@ SLPM-67508:
   region: "NTSC-K"
   compat: 5
   roundModes:
-    eeRoundMode: 1
-    vuRoundMode: 3
+    eeRoundMode: 1 # Fixes disappearing characters.
   patches:
     default:
       content: |-
@@ -34404,7 +34418,7 @@ SLPM-74242:
   name: "Devil May Cry 3 [Special Edition] [PlayStation 2 The Best]"
   region: "NTSC-J"
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Fixes inability to enter door in Mission 18.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
     roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
@@ -34424,7 +34438,7 @@ SLPM-74244:
   name: "Phantasy Star Universe [PlayStation 2 The Best]"
   region: "NTSC-J"
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Fixes enemies not moving (especially Chapter 7 boss).
 SLPM-74245:
   name: "Monster Hunter 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -36036,7 +36050,7 @@ SLPS-25033:
   compat: 5
   clampModes:
     eeClampMode: 3 # Objects appear in wrong places without it.
-    vuClampMode: 2 # Fixes water reflection.
+    vu0ClampMode: 3 # Fixes water reflection and object glow.
   gameFixes:
     - EETimingHack # Fixes flickering graphics.
   gsHWFixes:
@@ -37109,7 +37123,7 @@ SLPS-25351:
   name: "Burnout 2 - Point of Impact"
   region: "NTSC-J"
   roundModes:
-    vuRoundMode: 1 # Bright lights in cars.
+    vu1RoundMode: 1 # Bright lights in cars.
 SLPS-25352:
   name: "Espgaluda"
   region: "NTSC-J"
@@ -37142,9 +37156,9 @@ SLPS-25360:
   region: "NTSC-J"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Fixes SPS.
+    vu1RoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3 # Fixes SPS.
+    vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
     mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
 SLPS-25361:
@@ -37574,9 +37588,9 @@ SLPS-25467:
   region: "NTSC-J"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Fixes SPS.
+    vu1RoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3 # Fixes SPS.
+    vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
     mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
   memcardFilters:
@@ -38733,7 +38747,7 @@ SLPS-25784:
   name: "Another Century's Episode 3 - The Final"
   region: "NTSC-J"
   clampModes:
-    vuClampMode: 3
+    vuClampMode: 3 # Was used to fix game crash, but not sure it's required anymore.
 SLPS-25786:
   name: "Hisshou Pachinko-Pachislot Kouryaku Series Vol.10 - CR Shinseiki Evangelion - Kiseki no kachi Ha"
   region: "NTSC-J"
@@ -38920,7 +38934,7 @@ SLPS-25840:
   name: "Guitar Hero III - Legends of Rock [with Guitar]"
   region: "NTSC-J"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLPS-25841:
   name: "Tales of Destiny [Director's Cut] [Premium Box]"
   region: "NTSC-J"
@@ -39069,11 +39083,15 @@ SLPS-25884:
   name: "Grimgrimoire [The Best Price]"
   region: "NTSC-J"
 SLPS-25885:
-  name: " Guitar Hero - Aerosmith on Tour [with Guitar]"
+  name: "Guitar Hero - Aerosmith on Tour [with Guitar]"
   region: "NTSC-J"
+  roundModes:
+    vu1RoundMode: 0 # Fixes VU size spam and potential graphical issues with GH3 engine.
 SLPS-25886:
-  name: " Guitar Hero - Aerosmith on Tour"
+  name: "Guitar Hero - Aerosmith on Tour"
   region: "NTSC-J"
+  roundModes:
+    vu1RoundMode: 0 # Fixes VU size spam and potential graphical issues with GH3 engine.
 SLPS-25887:
   name: "Super Robot Taisen Z"
   region: "NTSC-J"
@@ -39095,12 +39113,12 @@ SLPS-25889:
   name: "Guitar Hero - Aerosmith"
   region: "NTSC-J"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Fixes VU size spam and potential graphical issues with GH3 engine.
 SLPS-25890:
   name: "Guitar Hero III - Legends of Rock [with Guitar]"
   region: "NTSC-J"
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLPS-25892:
   name: "Nogizaka Haruka no Himitsu - Cosplay Hajimemashita"
   region: "NTSC-J"
@@ -39431,9 +39449,9 @@ SLPS-73210:
   name: "Katamari Damacy [PlayStation 2 The Best]"
   region: "NTSC-J"
   roundModes:
-    vuRoundMode: 0 # Fixes SPS.
+    vu1RoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3 # Fixes SPS.
+    vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
     mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
 SLPS-73211:
@@ -39628,18 +39646,18 @@ SLPS-73240:
   name: "Katamari Damacy [PlayStation 2 The Best]"
   region: "NTSC-J"
   roundModes:
-    vuRoundMode: 0 # Fixes SPS.
+    vu1RoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3 # Fixes SPS.
+    vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
     mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
 SLPS-73241:
   name: "Minna Daisuki Katamari Damacy [PlayStation 2 The Best]"
   region: "NTSC-J"
   roundModes:
-    vuRoundMode: 0 # Fixes SPS.
+    vu1RoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3 # Fixes SPS.
+    vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
     mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
   memcardFilters:
@@ -39780,7 +39798,7 @@ SLPS-73404:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Objects appear in wrong places without it.
-    vuClampMode: 2 # Fixes water reflection.
+    vu0ClampMode: 3 # Fixes water reflection and object glow.
   gameFixes:
     - EETimingHack # Fixes flickering graphics.
   gsHWFixes:
@@ -40429,7 +40447,7 @@ SLUS-20151:
   compat: 5
   clampModes:
     eeClampMode: 3 # Objects appear in wrong places without it.
-    vuClampMode: 2 # Fixes water reflection.
+    vu0ClampMode: 3 # Fixes water reflection and object glow.
   gameFixes:
     - EETimingHack # Fixes flickering graphics.
   gsHWFixes:
@@ -40603,8 +40621,8 @@ SLUS-20197:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    eeRoundMode: 2 # Fixes Gauntlet Golf
-    vuRoundMode: 2 # Fixes game board jittering
+    eeRoundMode: 2 # Fixes game board jittering.
+    vu0RoundMode: 2 # Fixes Gauntlet Golf drawbridges not operating.
 SLUS-20198:
   name: "FireBlade"
   region: "NTSC-U"
@@ -41049,8 +41067,7 @@ SLUS-20294:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    eeRoundMode: 1
-    vuRoundMode: 3
+    eeRoundMode: 1 # Fixes disappearing characters.
   patches:
     default:
       content: |-
@@ -41513,7 +41530,7 @@ SLUS-20399:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Fixes glitchy graphics ingame.
+    vu1RoundMode: 0 # Fixes glitchy graphics ingame.
   gsHWFixes:
     roundSprite: 2 # Fixes sprite ghosting.
 SLUS-20400:
@@ -41618,7 +41635,7 @@ SLUS-20420:
   roundModes:
     vuRoundMode: 0
   clampModes:
-    vuClampMode: 3
+    vu0ClampMode: 3 # Fixes randomly invalid textures.
     eeClampMode: 2 # Fixes missing/grey texture or geometry ingame.
 SLUS-20421:
   name: "Battlestar Galactica"
@@ -41994,7 +42011,7 @@ SLUS-20497:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 1 # Bright lights in cars.
+    vu1RoundMode: 1 # Bright lights in cars.
 SLUS-20498:
   name: "Auto Modellista"
   region: "NTSC-U"
@@ -42017,7 +42034,7 @@ SLUS-20504:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLUS-20505:
   name: "Mace Griffin - Bounty Hunter"
   region: "NTSC-U"
@@ -42135,7 +42152,7 @@ SLUS-20531:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    vuClampMode: 2
+    vuClampMode: 2 # Fixes missing geometry.
 SLUS-20532:
   name: "Disney Golf"
   region: "NTSC-U"
@@ -42517,7 +42534,7 @@ SLUS-20607:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0
+    vu1RoundMode: 0 # Fixes invalid VU size spam and likely SPS.
 SLUS-20608:
   name: "Mobile Light Force 2"
   region: "NTSC-U"
@@ -43087,7 +43104,7 @@ SLUS-20731:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLUS-20732:
   name: "Drakengard"
   region: "NTSC-U"
@@ -44222,9 +44239,9 @@ SLUS-20961:
   region: "NTSC-U"
   compat: 6
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Reduces FPU calculation errors.
   clampModes:
-    eeClampMode: 2
+    eeClampMode: 2 # Reduces FPU calculation errors.
 SLUS-20962:
   name: "Castle of Shikigami 2"
   region: "NTSC-U"
@@ -44238,7 +44255,7 @@ SLUS-20964:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Fixes inability to enter door in Mission 18.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
     roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
@@ -44247,7 +44264,7 @@ SLUS-20965:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLUS-20966:
   name: "State of Emergency 2"
   region: "NTSC-U"
@@ -44257,8 +44274,8 @@ SLUS-20967:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    eeClampMode: 3
-    vuClampMode: 3
+    eeClampMode: 3 # Corrects crazy car AI and prevents crash.
+    vuClampMode: 3 # Stops freezing at race start.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLUS-20968:
@@ -44807,7 +44824,7 @@ SLUS-21067:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    eeClampMode: 3
+    eeClampMode: 3 # Fixes menu options freaking out.
 SLUS-21068:
   name: "Vietcong - Purple Haze"
   region: "NTSC-U"
@@ -45140,7 +45157,7 @@ SLUS-21139:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Fixes textures and crashes.
+    vu1RoundMode: 0 # Fixes textures and crashes.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes bloom misalignment.
     wildArmsHack: 1 # Fixes bloom misalignment.
@@ -45406,7 +45423,7 @@ SLUS-21194:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Fixes enemies not moving (especially Chapter 7 boss).
 SLUS-21195:
   name: "Breeders' Cup - World Thoroughbred Championships"
   region: "NTSC-U"
@@ -45484,7 +45501,7 @@ SLUS-21208:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
 SLUS-21209:
   name: "Urban Reign"
   region: "NTSC-U"
@@ -45563,7 +45580,7 @@ SLUS-21224:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 2 # Fixes cut-off numbers and restores missing whitespace inside combo meter.
+    vu1RoundMode: 1 # Fixes cut-off numbers and restores missing whitespace inside combo meter.
 SLUS-21225:
   name: "Bratz - Rock Angelz"
   region: "NTSC-U"
@@ -45598,9 +45615,9 @@ SLUS-21230:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Fixes SPS.
+    vu1RoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3 # Fixes SPS.
+    vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
     mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
   memcardFilters: # Allows import of constellations from Katamari Damacy.
@@ -46002,7 +46019,7 @@ SLUS-21295:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
   memcardFilters: # Game saves use the normal edition serial.
     - "SLUS-21208"
 SLUS-21296:
@@ -46391,7 +46408,7 @@ SLUS-21361:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Fixes inability to enter door in Mission 18.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
     roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
@@ -46506,7 +46523,7 @@ SLUS-21380:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    vuClampMode: 3
+    vuClampMode: 3 # Fixes bad textures and missing geometry.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes fog line.
   patches:
@@ -46525,7 +46542,7 @@ SLUS-21381:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    vuClampMode: 2
+    vuClampMode: 2 # Fixes SPS.
 SLUS-21382:
   name: "Franklin the Turtle - A Birthday Surprise"
   region: "NTSC-U"
@@ -46721,7 +46738,7 @@ SLUS-21418:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    vuClampMode: 3
+    vuClampMode: 3 # Fixes flickering textures on cars.
   patches:
     A08C4057:
       content: |-
@@ -46785,7 +46802,7 @@ SLUS-21426:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    eeClampMode: 3
+    eeClampMode: 3 # Fixes crash going ingame.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
     halfPixelOffset: 2 # Fixes fog misplacement.
@@ -46869,7 +46886,7 @@ SLUS-21444:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0
+    vu1RoundMode: 0 # Fixes invalid VU size spam and likely SPS.
 SLUS-21445:
   name: "Ar tonelico - Melody of Elemia"
   region: "NTSC-U"
@@ -46885,7 +46902,7 @@ SLUS-21447:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 2 # Fixes cut-off numbers and restores missing whitespace inside combo meter.
+    vu1RoundMode: 0 # Massages the Z on the score meter for hardware mode, software doesn't really need this.
 SLUS-21448:
   name: "Rule of Rose"
   region: "NTSC-U"
@@ -46922,7 +46939,7 @@ SLUS-21454:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Fixes black zones.
+    vu1RoundMode: 0 # Fixes black zones.
   clampModes:
     eeClampMode: 3 # Fixes objects spawning.
 SLUS-21455:
@@ -46934,7 +46951,7 @@ SLUS-21456:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
     wildArmsHack: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
@@ -47410,7 +47427,7 @@ SLUS-21586:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 2 # Fixes cut-off numbers and restores missing whitespace inside combo meter.
+    vu1RoundMode: 0 # Massages the Z on the score meter for hardware mode, software doesn't really need this.
 SLUS-21587:
   name: "Made Man - Confessions of the Family Blood"
   region: "NTSC-U"
@@ -47486,7 +47503,7 @@ SLUS-21601:
   name: "Sprint Cars 2 - Showdown at Eldora"
   region: "NTSC-U"
   clampModes:
-    vuClampMode: 3
+    vuClampMode: 3 # Fixes flickering textures on cars.
   patches:
     75D13A19:
       content: |-
@@ -47590,7 +47607,7 @@ SLUS-21616:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0
+    vu1RoundMode: 0 # Fixes SPS and VU size spam.
 SLUS-21617:
   name: "Spiderman 3"
   region: "NTSC-U"
@@ -47667,7 +47684,7 @@ SLUS-21631:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Fixes enemies not moving.
 SLUS-21632:
   name: "NHL 2K8"
   region: "NTSC-U"
@@ -47842,7 +47859,7 @@ SLUS-21672:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
     textureInsideRT: 1 # Crowd textures.
 SLUS-21673:
@@ -48042,7 +48059,7 @@ SLUS-21716:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Fixes invisible wall collision in bedroom.
+    vu0RoundMode: 0 # Fixes invisible wall collision in bedroom.
 SLUS-21717:
   name: "Dora the Explorer - Dora Saves the Mermaids"
   region: "NTSC-U"
@@ -48167,7 +48184,7 @@ SLUS-21740:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Fixes VU size spam and potential graphical issues with GH3 engine.
 SLUS-21741:
   name: "Sea Monsters - A Prehistoric Adventure"
   region: "NTSC-U"
@@ -48366,7 +48383,7 @@ SLUS-21781:
   speedHacks:
     InstantVU1SpeedHack: 0 # Corrects note board position.
   roundModes:
-    vuRoundMode: 0 # Fixes graphical issues ingame.
+    vu1RoundMode: 0 # Fixes graphical issues ingame.
 SLUS-21782:
   name: "Shin Megami Tensei - Persona 4"
   region: "NTSC-U"
@@ -48609,7 +48626,7 @@ SLUS-21843:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Crashes without.
+    vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes bad colours during play.
 SLUS-21844:
@@ -48697,15 +48714,19 @@ SLUS-21865:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    vuRoundMode: 0 # Fixes SPS and VU size spam.
+    vu1RoundMode: 0 # Fixes SPS and VU size spam.
 SLUS-21866:
   name: "Guitar Hero - Smash Hits"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    vu1RoundMode: 0 # Fixes VU size spam and potential graphical issues with GH3 engine.
 SLUS-21867:
   name: "Guitar Hero - Van Halen"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    vu1RoundMode: 0 # Fixes VU size spam and potential graphical issues with GH3 engine.
 SLUS-21868:
   name: "Nobunaga's Ambition - Iron Triangle"
   region: "NTSC-U"
@@ -48864,9 +48885,9 @@ SLUS-21902:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    eeRoundMode: 1
+    eeRoundMode: 1 # Fixes black textures in conjunction with VU0 clamping set to none.
   clampModes:
-    vuClampMode: 0
+    vu0ClampMode: 0 # Fixes black textures and SPS.
   gsHWFixes:
     deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the FMVs.
 SLUS-21904:
@@ -48948,6 +48969,8 @@ SLUS-21923:
 SLUS-21924:
   name: "Guitar Hero - Van Halen"
   region: "NTSC-U"
+  roundModes:
+    vu1RoundMode: 0 # Fixes VU size spam and potential graphical issues with GH3 engine.
 SLUS-21926:
   name: "Ni Hao, Kai-Lan - Super Game Day"
   region: "NTSC-U"
@@ -49086,7 +49109,7 @@ SLUS-28004:
   region: "NTSC-U"
   clampModes:
     eeClampMode: 3 # Objects appear in wrong places without it.
-    vuClampMode: 2 # Fixes water reflection.
+    vu0ClampMode: 3 # Fixes water reflection and object glow.
   gameFixes:
     - EETimingHack # Fixes flickering graphics.
   gsHWFixes:
@@ -49856,6 +49879,8 @@ SLUS-29197:
 SLUS-29198:
   name: "Guitar Hero II [Demo]"
   region: "NTSC-U"
+  roundModes:
+    vu1RoundMode: 0 # Massages the Z on the score meter for hardware mode, software doesn't really need this.
 SLUS-29199:
   name: "dot hack - G.U. Vol.1 - Rebirth [Demo]"
   region: "NTSC-U"
