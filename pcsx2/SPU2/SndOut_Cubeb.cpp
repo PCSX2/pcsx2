@@ -278,11 +278,9 @@ public:
 		cubeb_devid selected_device = nullptr;
 		const std::string& selected_device_name = EmuConfig.SPU2.DeviceName;
 		cubeb_device_collection devices;
-		bool devices_valid = false;
 		if (!selected_device_name.empty())
 		{
 			rv = cubeb_enumerate_devices(m_context, CUBEB_DEVICE_TYPE_OUTPUT, &devices);
-			devices_valid = (rv == CUBEB_OK);
 			if (rv == CUBEB_OK)
 			{
 				for (size_t i = 0; i < devices.count; i++)
