@@ -18,6 +18,15 @@
 //------------------------------------------------------------------
 // Dispatcher Functions
 //------------------------------------------------------------------
+static bool mvuNeedsFPCRUpdate(mV)
+{
+	// always update on the vu1 thread
+	if (isVU1 && THREAD_VU1)
+		return true;
+
+	// otherwise only emit when it's different to the EE
+	return g_sseMXCSR.bitmask != (isVU0 ? g_sseVU0MXCSR.bitmask : g_sseVU1MXCSR.bitmask);
+}
 
 // Generates the code for entering/exit recompiled blocks
 void mVUdispatcherAB(mV)
@@ -32,7 +41,8 @@ void mVUdispatcherAB(mV)
 		else        xFastCall((void*)mVUexecuteVU1, arg1reg, arg2reg);
 
 		// Load VU's MXCSR state
-		xLDMXCSR(isVU0 ? g_sseVU0MXCSR : g_sseVU1MXCSR);
+		if (mvuNeedsFPCRUpdate(mVU))
+			xLDMXCSR(isVU0 ? g_sseVU0MXCSR : g_sseVU1MXCSR);
 
 		// Load Regs
 		xMOVAPS (xmmT1, ptr128[&mVU.regs().VI[REG_P].UL]);
@@ -71,7 +81,8 @@ void mVUdispatcherAB(mV)
 		mVU.exitFunct = x86Ptr;
 
 		// Load EE's MXCSR state
-		xLDMXCSR(g_sseMXCSR);
+		if (mvuNeedsFPCRUpdate(mVU))
+			xLDMXCSR(g_sseMXCSR);
 
 		// = The first two DWORD or smaller arguments are passed in ECX and EDX registers;
 		//              all other arguments are passed right to left.
@@ -94,7 +105,8 @@ void mVUdispatcherCD(mV)
 		xScopedStackFrame frame(false, true);
 
 		// Load VU's MXCSR state
-		xLDMXCSR(isVU0 ? g_sseVU0MXCSR : g_sseVU1MXCSR);
+		if (mvuNeedsFPCRUpdate(mVU))
+			xLDMXCSR(isVU0 ? g_sseVU0MXCSR : g_sseVU1MXCSR);
 
 		mVUrestoreRegs(mVU);
 		xMOV(gprF0, ptr32[&mVU.regs().micro_statusflags[0]]);
@@ -114,7 +126,8 @@ void mVUdispatcherCD(mV)
 		xMOV(ptr32[&mVU.regs().micro_statusflags[3]], gprF3);
 
 		// Load EE's MXCSR state
-		xLDMXCSR(g_sseMXCSR);
+		if (mvuNeedsFPCRUpdate(mVU))
+			xLDMXCSR(g_sseMXCSR);
 	}
 
 	xRET();
