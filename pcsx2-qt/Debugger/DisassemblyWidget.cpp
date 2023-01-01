@@ -60,6 +60,8 @@ void DisassemblyWidget::CreateCustomContextMenu()
 	m_contextMenu->addSeparator();
 	m_contextMenu->addAction(action = new QAction(tr("Assemble new Instruction(s)"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextAssembleInstruction);
+	m_contextMenu->addAction(action = new QAction(tr("NOP Instruction(s)"), this));
+	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextNoopInstruction);
 	m_contextMenu->addSeparator();
 	m_contextMenu->addAction(action = new QAction(tr("Run to Cursor"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextRunToCursor);
@@ -134,6 +136,17 @@ void DisassemblyWidget::contextAssembleInstruction()
 			QtHost::RunOnUIThread([this] { VMUpdate(); });
 		});
 	}
+}
+
+void DisassemblyWidget::contextNoopInstruction()
+{
+	Host::RunOnCPUThread([this, start = m_selectedAddressStart, end = m_selectedAddressEnd, cpu = m_cpu] {
+		for (u32 i = start; i <= end; i += 4)
+		{
+			cpu->write32(i, 0x00);
+		}
+		QtHost::RunOnUIThread([this] { VMUpdate(); });
+	});
 }
 
 void DisassemblyWidget::contextRunToCursor()
