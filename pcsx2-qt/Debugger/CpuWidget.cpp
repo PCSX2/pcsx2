@@ -373,6 +373,9 @@ void CpuWidget::fixBPListColumnSize()
 
 void CpuWidget::onBPListContextMenu(QPoint pos)
 {
+	if (!m_cpu.isAlive())
+		return;
+
 	if (m_bplistContextMenu)
 		delete m_bplistContextMenu;
 
@@ -951,6 +954,9 @@ std::vector<u32> startWorker(DebugInterface* cpu, int type, u32 start, u32 end, 
 
 void CpuWidget::onSearchButtonClicked()
 {
+	if (!m_cpu.isAlive())
+		return;
+
 	const int searchType = m_ui.cmbSearchType->currentIndex();
 	const bool searchHex = m_ui.chkSearchHex->isChecked();
 
