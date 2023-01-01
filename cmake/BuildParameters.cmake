@@ -103,10 +103,6 @@ if(CMAKE_CONFIGURATION_TYPES)
 	list(INSERT CMAKE_CONFIGURATION_TYPES 0 Devel)
 endif()
 mark_as_advanced(CMAKE_C_FLAGS_DEVEL CMAKE_CXX_FLAGS_DEVEL CMAKE_LINKER_FLAGS_DEVEL CMAKE_SHARED_LINKER_FLAGS_DEVEL CMAKE_EXE_LINKER_FLAGS_DEVEL)
-# AVX2 doesn't play well with gdb
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-	SET(DISABLE_ADVANCE_SIMD ON)
-endif()
 
 # Initially strip was disabled on release build but it is not stackstrace friendly!
 # It only cost several MB so disbable it by default
