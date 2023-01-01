@@ -5187,15 +5187,11 @@ SCKA-20081:
 SCKA-20086:
   name: "Shin Onimusha - Dawn of Dreams [Disc 1 of 2]"
   region: "NTSC-K"
-  gameFixes:
-    - SoftwareRendererFMVHack # Wrong white textures in FMV.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
 SCKA-20087:
   name: "Shin Onimusha - Dawn of Dreams [Disc 2 of 2]"
   region: "NTSC-K"
-  gameFixes:
-    - SoftwareRendererFMVHack # Wrong white textures in FMV.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
   memcardFilters:
@@ -22557,16 +22553,12 @@ SLES-82038:
   name: "Onimusha - Dawn of Dreams [Disc 1 of 2]"
   region: "PAL-M5"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Wrong white textures in FMV.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
 SLES-82039:
   name: "Onimusha - Dawn of Dreams [Disc 2 of 2]"
   region: "PAL-M5"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Wrong white textures in FMV.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
   memcardFilters:
@@ -31332,16 +31324,12 @@ SLPM-66275:
   name: "Shin Onimusha - Dawn of Dreams [Disc 1 of 2]"
   region: "NTSC-J"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Wrong white textures in FMV.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
 SLPM-66276:
   name: "Shin Onimusha - Dawn of Dreams [Disc 2 of 2]"
   region: "NTSC-J"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Wrong white textures in FMV.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
   memcardFilters:
@@ -34365,8 +34353,6 @@ SLPM-74232:
 SLPM-74233:
   name: "Shin Onimusha - Dawn of Dreams [PlayStation 2 The Best][Disc 2]"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Wrong white textures in FMV.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
   memcardFilters:
@@ -34463,15 +34449,11 @@ SLPM-74250:
 SLPM-74251:
   name: "Shin Onimusha - Dawn of Dreams [PlayStation 2 the Best - Reprint Disc 1]"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Wrong white textures in FMV.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
 SLPM-74252:
   name: "Shin Onimusha - Dawn of Dreams [PlayStation 2 the Best - Reprint Disc 2]"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Wrong white textures in FMV.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
   memcardFilters:
@@ -45337,8 +45319,6 @@ SLUS-21180:
   name: "Onimusha - Dawn of Dreams [Disc 1 of 2]"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Wrong white textures in FMV.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
 SLUS-21181:
@@ -46399,8 +46379,6 @@ SLUS-21362:
   name: "Onimusha - Dawn of Dreams [Disc 2 of 2]"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Wrong white textures in FMV.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
   memcardFilters:
