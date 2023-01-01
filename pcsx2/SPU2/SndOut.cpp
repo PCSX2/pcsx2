@@ -447,8 +447,10 @@ void SPU2::SetOutputPaused(bool paused)
 
 void SndBuffer::Write(const StereoOut32& Sample)
 {
+#ifdef PCSX2_DEVBUILD
 	// Log final output to wavefile.
 	WaveDump::WriteCore(1, CoreSrc_External, Sample.DownSample());
+#endif
 
 	if (WavRecordEnabled)
 		RecordWrite(Sample.DownSample());

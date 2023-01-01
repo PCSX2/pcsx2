@@ -48,6 +48,8 @@ namespace SPU2
 
 	extern void DoFullDump();
 
+	extern void WriteRegLog(const char* action, u32 rmem, u16 value);
+
 #else
 	__fi static constexpr bool MsgToConsole() { return false; }
 
@@ -71,6 +73,8 @@ namespace SPU2
 	__fi static void ConLog(const char* fmt, ...) {}
 #endif
 } // namespace SPU2
+
+#ifdef PCSX2_DEVBUILD
 
 namespace WaveDump
 {
@@ -110,3 +114,5 @@ using WaveDump::CoreSrc_Input;
 using WaveDump::CoreSrc_PostReverb;
 using WaveDump::CoreSrc_PreReverb;
 using WaveDump::CoreSrc_WetVoiceMix;
+
+#endif

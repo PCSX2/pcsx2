@@ -283,7 +283,6 @@ set(pcsx2SPU2Sources
 	SPU2/Mixer.cpp
 	SPU2/spu2.cpp
 	SPU2/ReadInput.cpp
-	SPU2/RegLog.cpp
 	SPU2/RegTable.cpp
 	SPU2/Reverb.cpp
 	SPU2/SndOut.cpp
