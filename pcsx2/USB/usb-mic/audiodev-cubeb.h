@@ -42,7 +42,6 @@ namespace usb_mic
 			void SetResampling(int samplerate) override;
 			bool Start() override;
 			void Stop() override;
-			bool Compare(AudioDevice* compare) const override;
 
 		protected:
 			void ResetBuffers();
