@@ -71,8 +71,10 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 
 	SettingWidgetBinder::BindWidgetToEnumSetting(
 		sif, m_ui.outputModule, "SPU2/Output", "OutputModule", s_output_module_entries, s_output_module_values, DEFAULT_OUTPUT_MODULE);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.targetLatency, "SPU2/Output", "Latency", DEFAULT_TARGET_LATENCY);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.outputLatency, "SPU2/Output", "OutputLatency", DEFAULT_OUTPUT_LATENCY);
+	SettingWidgetBinder::BindSliderToIntSetting(
+		sif, m_ui.targetLatency, m_ui.targetLatencyLabel, tr(" ms"), "SPU2/Output", "Latency", DEFAULT_TARGET_LATENCY);
+	SettingWidgetBinder::BindSliderToIntSetting(
+		sif, m_ui.outputLatency, m_ui.outputLatencyLabel, tr(" ms"), "SPU2/Output", "OutputLatency", DEFAULT_OUTPUT_LATENCY);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.outputLatencyMinimal, "SPU2/Output", "OutputLatencyMinimal", false);
 	connect(m_ui.outputModule, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::outputModuleChanged);
 	connect(m_ui.backend, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::outputBackendChanged);
@@ -83,26 +85,30 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 	outputModuleChanged();
 
 	m_ui.volume->setValue(m_dialog->getEffectiveIntValue("SPU2/Mixing", "FinalVolume", DEFAULT_VOLUME));
+	m_ui.volume->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(m_ui.volume, &QSlider::valueChanged, this, &AudioSettingsWidget::volumeChanged);
+	connect(m_ui.volume, &QSlider::customContextMenuRequested, this, &AudioSettingsWidget::volumeContextMenuRequested);
+	updateVolumeLabel();
+	if (sif && sif->ContainsValue("SPU2/Mixing", "FinalVolume"))
+	{
+		QFont bold_font(m_ui.volume->font());
+		bold_font.setBold(true);
+		m_ui.volumeLabel->setFont(bold_font);
+	}
 
-	SettingWidgetBinder::BindWidgetToIntSetting(
-		sif, m_ui.sequenceLength, "Soundtouch", "SequenceLengthMS", DEFAULT_SOUNDTOUCH_SEQUENCE_LENGTH);
-	connect(m_ui.sequenceLength, &QSlider::valueChanged, this, &AudioSettingsWidget::updateTimestretchSequenceLengthLabel);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.seekWindowSize, "Soundtouch", "SeekWindowMS", DEFAULT_SOUNDTOUCH_SEEK_WINDOW);
-	connect(m_ui.seekWindowSize, &QSlider::valueChanged, this, &AudioSettingsWidget::updateTimestretchSeekwindowLengthLabel);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.overlap, "Soundtouch", "OverlapMS", DEFAULT_SOUNDTOUCH_OVERLAP);
-	connect(m_ui.overlap, &QSlider::valueChanged, this, &AudioSettingsWidget::updateTimestretchOverlapLabel);
+	SettingWidgetBinder::BindSliderToIntSetting(sif, m_ui.sequenceLength, m_ui.sequenceLengthLabel, tr(" ms"), "Soundtouch",
+		"SequenceLengthMS", DEFAULT_SOUNDTOUCH_SEQUENCE_LENGTH);
+	SettingWidgetBinder::BindSliderToIntSetting(
+		sif, m_ui.seekWindowSize, m_ui.seekWindowSizeLabel, tr(" ms"), "Soundtouch", "SeekWindowMS", DEFAULT_SOUNDTOUCH_SEEK_WINDOW);
+	SettingWidgetBinder::BindSliderToIntSetting(
+		sif, m_ui.overlap, m_ui.overlapLabel, tr(" ms"), "Soundtouch", "OverlapMS", DEFAULT_SOUNDTOUCH_OVERLAP);
 	connect(m_ui.resetTimestretchDefaults, &QPushButton::clicked, this, &AudioSettingsWidget::resetTimestretchDefaults);
 
 	m_ui.label_3b->setVisible(false);
 	m_ui.dplLevel->setVisible(false);
 
-	volumeChanged(m_ui.volume->value());
 	onMinimalOutputLatencyStateChanged();
 	updateLatencyLabels();
-	updateTimestretchSequenceLengthLabel();
-	updateTimestretchSeekwindowLengthLabel();
-	updateTimestretchOverlapLabel();
 
 	dialog->registerWidgetHelp(m_ui.interpolation, tr("Interpolation"), tr("Gaussian (PS2-like / great sound)"), tr(""));
 
@@ -127,7 +133,8 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 
 	dialog->registerWidgetHelp(m_ui.overlap, tr("Overlap"), tr("10 ms"), tr(""));
 
-	dialog->registerWidgetHelp(m_ui.volume, tr("Volume"), tr("100%"), tr(""));
+	dialog->registerWidgetHelp(m_ui.volume, tr("Volume"), tr("100%"),
+		tr("Pre-applies a volume modifier to the game's audio output before forwarding it to your computer."));
 }
 
 AudioSettingsWidget::~AudioSettingsWidget() = default;
@@ -229,11 +236,16 @@ void AudioSettingsWidget::updateDevices()
 
 void AudioSettingsWidget::volumeChanged(int value)
 {
-	m_ui.volumeLabel->setText(tr("%1%").arg(value, 3));
-
 	// Nasty, but needed so we don't do a full settings apply and lag while dragging.
 	if (SettingsInterface* sif = m_dialog->getSettingsInterface())
 	{
+		if (!m_ui.volumeLabel->font().bold())
+		{
+			QFont bold_font(m_ui.volumeLabel->font());
+			bold_font.setBold(true);
+			m_ui.volumeLabel->setFont(bold_font);
+		}
+
 		sif->SetIntValue("SPU2/Mixing", "FinalVolume", value);
 		sif->Save();
 	}
@@ -254,6 +266,42 @@ void AudioSettingsWidget::volumeChanged(int value)
 			SPU2::SetOutputVolume(value);
 		});
 	}
+
+	updateVolumeLabel();
+}
+
+void AudioSettingsWidget::volumeContextMenuRequested(const QPoint& pt)
+{
+	QMenu menu(m_ui.volume);
+	m_ui.volume->connect(menu.addAction(qApp->translate("SettingWidgetBinder", "Reset")), &QAction::triggered, this, [this]() {
+		const s32 global_value = Host::GetBaseIntSettingValue("SPU2/Mixing", "FinalVolume", DEFAULT_VOLUME);
+		{
+			QSignalBlocker sb(m_ui.volumeLabel);
+			m_ui.volume->setValue(global_value);
+			updateVolumeLabel();
+		}
+
+		if (m_ui.volumeLabel->font().bold())
+		{
+			QFont orig_font(m_ui.volumeLabel->font());
+			orig_font.setBold(false);
+			m_ui.volumeLabel->setFont(orig_font);
+		}
+
+		SettingsInterface* sif = m_dialog->getSettingsInterface();
+		if (sif->ContainsValue("SPU2/Mixing", "FinalVolume"))
+		{
+			sif->DeleteValue("SPU2/Mixing", "FinalVolume");
+			sif->Save();
+			g_emu_thread->reloadGameSettings();
+		}
+	});
+	menu.exec(m_ui.volume->mapToGlobal(pt));
+}
+
+void AudioSettingsWidget::updateVolumeLabel()
+{
+	m_ui.volumeLabel->setText(tr("%1%").arg(m_ui.volume->value()));
 }
 
 void AudioSettingsWidget::updateTargetLatencyRange()
@@ -271,7 +319,6 @@ void AudioSettingsWidget::updateLatencyLabels()
 {
 	const bool minimal_output = m_dialog->getEffectiveBoolValue("SPU2/Output", "OutputLatencyMinimal", false);
 
-	m_ui.targetLatencyLabel->setText(tr("%1 ms").arg(m_ui.targetLatency->value()));
 	m_ui.outputLatencyLabel->setText(minimal_output ? tr("N/A") : tr("%1 ms").arg(m_ui.outputLatency->value()));
 
 	const u32 output_latency_ms =
@@ -293,21 +340,6 @@ void AudioSettingsWidget::updateLatencyLabels()
 void AudioSettingsWidget::onMinimalOutputLatencyStateChanged()
 {
 	m_ui.outputLatency->setEnabled(!m_dialog->getEffectiveBoolValue("SPU2/Output", "OutputLatencyMinimal", false));
-}
-
-void AudioSettingsWidget::updateTimestretchSequenceLengthLabel()
-{
-	m_ui.sequenceLengthLabel->setText(tr("%1 ms").arg(m_ui.sequenceLength->value()));
-}
-
-void AudioSettingsWidget::updateTimestretchSeekwindowLengthLabel()
-{
-	m_ui.seekWindowSizeLabel->setText(tr("%1 ms").arg(m_ui.seekWindowSize->value()));
-}
-
-void AudioSettingsWidget::updateTimestretchOverlapLabel()
-{
-	m_ui.overlapLabel->setText(tr("%1 ms").arg(m_ui.overlap->value()));
 }
 
 void AudioSettingsWidget::resetTimestretchDefaults()
