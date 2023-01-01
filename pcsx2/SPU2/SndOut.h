@@ -488,6 +488,13 @@ public:
 	virtual int GetEmptySampleCount() = 0;
 };
 
+#ifdef _WIN32
+extern SndOutModule* XAudio2Out;
+#endif
+#if defined(SPU2X_CUBEB)
+extern SndOutModule* CubebOut;
+#endif
+
 // =====================================================================================================
 
 extern bool WavRecordEnabled;

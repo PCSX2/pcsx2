@@ -85,13 +85,6 @@ public:
 static NullOutModule s_NullOut;
 static SndOutModule* NullOut = &s_NullOut;
 
-#ifdef _WIN32
-extern SndOutModule* XAudio2Out;
-#endif
-#if defined(SPU2X_CUBEB)
-extern SndOutModule* CubebOut;
-#endif
-
 static SndOutModule* mods[] =
 	{
 		NullOut,
