@@ -35,8 +35,8 @@ else()
 
 	# Use bundled ffmpeg v4.x.x headers if we can't locate it in the system.
 	# We'll try to load it dynamically at runtime.
-	find_package(FFMPEG)
-	if(NOT FFMPEG_VERSION)
+	find_package(FFMPEG COMPONENTS avcodec avformat avutil swresample swscale)
+	if(NOT FFMPEG_FOUND)
 		message(WARNING "FFmpeg not found, using bundled headers.")
 		set(FFMPEG_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/3rdparty/ffmpeg/include")
 	endif()
