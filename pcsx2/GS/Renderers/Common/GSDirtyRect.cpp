@@ -30,7 +30,7 @@ GSDirtyRect::GSDirtyRect(GSVector4i& r, u32 psm, u32 bw) :
 {
 }
 
-GSVector4i GSDirtyRect::GetDirtyRect(GIFRegTEX0& TEX0)
+GSVector4i GSDirtyRect::GetDirtyRect(GIFRegTEX0& TEX0) const
 {
 	GSVector4i _r;
 
@@ -55,7 +55,7 @@ GSVector4i GSDirtyRect::GetDirtyRect(GIFRegTEX0& TEX0)
 
 //
 
-GSVector4i GSDirtyRectList::GetDirtyRect(GIFRegTEX0& TEX0, const GSVector2i& size)
+GSVector4i GSDirtyRectList::GetDirtyRect(GIFRegTEX0& TEX0, const GSVector2i& size) const
 {
 	if (!empty())
 	{
