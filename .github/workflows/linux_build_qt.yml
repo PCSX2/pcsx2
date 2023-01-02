@@ -122,8 +122,7 @@ jobs:
         env:
           NAME: ${{ steps.artifact-metadata.outputs.artifact-name }}
         run: |
-                ninja -C build install
-                .github/workflows/scripts/linux/appimage-qt.sh "$(realpath .)" "$HOME/deps" "$NAME"
+                .github/workflows/scripts/linux/appimage-qt.sh "$(realpath .)" "$(realpath ./build)" "$HOME/deps" "$NAME"
                 mkdir -p "$GITHUB_WORKSPACE"/ci-artifacts/
                 mv "${NAME}.AppImage" "$GITHUB_WORKSPACE"/ci-artifacts/
 

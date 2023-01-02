@@ -13,12 +13,6 @@ target_compile_features(PCSX2_FLAGS INTERFACE cxx_std_17)
 target_compile_definitions(PCSX2_FLAGS INTERFACE "${PCSX2_DEFS}")
 target_compile_options(PCSX2_FLAGS INTERFACE "${PCSX2_WARNINGS}")
 
-if (openSUSE)
-	# openSUSE don't install wx in a standard library system
-	# path. Let's bypass the dynamic linker and hardcode the path.
-	set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
-endif()
-
 # Check that people use the good file
 if(NOT TOP_CMAKE_WAS_SOURCED)
 	message(FATAL_ERROR "
@@ -39,7 +33,6 @@ else()
 		-Wno-parentheses
 		-Wno-missing-braces
 		-Wno-unknown-pragmas
-		-DWX_PRECOMP
 	)
 endif()
 
@@ -54,8 +47,8 @@ elseif("${PGO}" STREQUAL "use")
 	target_compile_options(PCSX2_FLAGS INTERFACE -fprofile-use)
 endif()
 
-if(XDG_STD)
-	target_compile_definitions(PCSX2_FLAGS INTERFACE XDG_STD)
+if(USE_LEGACY_USER_DIRECTORY)
+	target_compile_definitions(PCSX2_FLAGS INTERFACE USE_LEGACY_USER_DIRECTORY)
 endif()
 
 if(TARGET SDL2::SDL2 OR TARGET SDL2::SDL2-static)
@@ -1297,6 +1290,7 @@ function(setup_main_executable target)
 			${PCSX2_SOURCE_DIR}/windows/PCSX2.rc
 		)
 		set_target_properties(${target} PROPERTIES WIN32_EXECUTABLE TRUE)
+		install(TARGETS ${target} DESTINATION ${CMAKE_SOURCE_DIR}/bin)
 		if(MSVC)
 			install(FILES $<TARGET_PDB_FILE:${target}> DESTINATION ${CMAKE_SOURCE_DIR}/bin)
 		endif()
@@ -1368,11 +1362,17 @@ function(setup_main_executable target)
 		)
 		add_dependencies(pcsx2-postprocess-bundle ${target})
 	endif()
-endfunction()
 
-if(NOT DISABLE_SETCAP AND NOT WIN32)
-	install(CODE "execute_process(COMMAND /bin/bash -c \"echo 'Enabling networking capability on Linux...';set -x; [ -f '${CMAKE_SOURCE_DIR}/bin/pcsx2' ] && sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' '${CMAKE_SOURCE_DIR}/bin/pcsx2'; set +x\")")
-endif()
+	if(ENABLE_SETCAP AND UNIX AND NOT APPLE)
+		message(WARNING "Networking capabilities enabled, building will require temporary root elevation.")
+		add_custom_target(
+			pcsx2-enable-setcap
+			ALL
+			DEPENDS ${target}
+			COMMAND bash -c "set +x\; echo 'Elevating to enable networking capability on $<TARGET_FILE:${target}>...'\; sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' '$<TARGET_FILE:${target}>'"
+		)
+	endif()
+endfunction()
 
 source_groups_from_vcxproj_filters(pcsx2core.vcxproj.filters)
 

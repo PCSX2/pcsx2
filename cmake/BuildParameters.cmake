@@ -1,14 +1,3 @@
-### Select the build type
-# Use Release/Devel/Debug      : -DCMAKE_BUILD_TYPE=Release|Devel|Debug
-# Enable/disable the stripping : -DCMAKE_BUILD_STRIP=TRUE|FALSE
-# generation .po based on src  : -DCMAKE_BUILD_PO=TRUE|FALSE
-
-### GCC optimization options
-# control C flags             : -DUSER_CMAKE_C_FLAGS="cflags"
-# control C++ flags           : -DUSER_CMAKE_CXX_FLAGS="cxxflags"
-# control link flags          : -DUSER_CMAKE_LD_FLAGS="ldflags"
-#-------------------------------------------------------------------------------
-
 # Extra preprocessor definitions that will be added to all pcsx2 builds
 set(PCSX2_DEFS "")
 
@@ -24,12 +13,6 @@ optional_system_library(zstd)
 optional_system_library(libzip)
 optional_system_library(SDL2)
 option(LTO_PCSX2_CORE "Enable LTO/IPO/LTCG on the subset of pcsx2 that benefits most from it but not anything else")
-
-if(DISABLE_BUILD_DATE OR openSUSE)
-	message(STATUS "Disabling the inclusion of the binary compile date.")
-	list(APPEND PCSX2_DEFS DISABLE_BUILD_DATE)
-endif()
-
 option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
 option(USE_ACHIEVEMENTS "Build with RetroAchievements support" ON)
 option(USE_DISCORD_PRESENCE "Enable support for Discord Rich Presence" ON)
@@ -37,21 +20,20 @@ option(USE_DISCORD_PRESENCE "Enable support for Discord Rich Presence" ON)
 #-------------------------------------------------------------------------------
 # Graphical option
 #-------------------------------------------------------------------------------
-option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option)")
 option(USE_OPENGL "Enable OpenGL GS renderer" ON)
 option(USE_VULKAN "Enable Vulkan GS renderer" ON)
 
 #-------------------------------------------------------------------------------
 # Path and lib option
 #-------------------------------------------------------------------------------
-option(DISABLE_SETCAP "Do not set files capabilities")
-option(XDG_STD "Use XDG standard path instead of the standard PCSX2 path")
 option(CUBEB_API "Build Cubeb support on SPU2" ON)
-option(QT_BUILD "Build Qt frontend instead of wx" ON)
+option(QT_BUILD "Build Qt frontend" ON)
 
 if(UNIX AND NOT APPLE)
+	option(ENABLE_SETCAP "Enable networking capability for DEV9" OFF)
+	option(USE_LEGACY_USER_DIRECTORY "Use legacy home/PCSX2 user directory instead of XDG standard" OFF)
 	option(X11_API "Enable X11 support" ON)
-	option(WAYLAND_API "Enable Wayland support" OFF)
+	option(WAYLAND_API "Enable Wayland support" ON)
 endif()
 
 if(APPLE)
@@ -103,12 +85,6 @@ if(CMAKE_CONFIGURATION_TYPES)
 	list(INSERT CMAKE_CONFIGURATION_TYPES 0 Devel)
 endif()
 mark_as_advanced(CMAKE_C_FLAGS_DEVEL CMAKE_CXX_FLAGS_DEVEL CMAKE_LINKER_FLAGS_DEVEL CMAKE_SHARED_LINKER_FLAGS_DEVEL CMAKE_EXE_LINKER_FLAGS_DEVEL)
-
-# Initially strip was disabled on release build but it is not stackstrace friendly!
-# It only cost several MB so disbable it by default
-option(CMAKE_BUILD_STRIP "Srip binaries to save a couple of MB (developer option)")
-
-option(CMAKE_BUILD_PO "Build po files (modifies git-tracked files)" OFF)
 
 #-------------------------------------------------------------------------------
 # Select the architecture
@@ -289,18 +265,9 @@ endif()
 
 set(PCSX2_WARNINGS ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING})
 
-if(CMAKE_BUILD_STRIP)
-	add_link_options(-s)
-endif()
-
-if(QT_BUILD)
-	# We want the core PCSX2 library.
-	set(PCSX2_CORE TRUE)
-endif()
-
-# Enable special stuff for CI builds
-if("$ENV{CI}" STREQUAL "true")
-	list(APPEND PCSX2_DEFS PCSX2_CI)
+if(DISABLE_BUILD_DATE)
+	message(STATUS "Disabling the inclusion of the binary compile date.")
+	list(APPEND PCSX2_DEFS DISABLE_BUILD_DATE)
 endif()
 
 #-------------------------------------------------------------------------------
