@@ -763,6 +763,23 @@ void GSDeviceVK::BlitRect(GSTexture* sTex, const GSVector4i& sRect, u32 sLevel, 
 		&ib, linear ? VK_FILTER_LINEAR : VK_FILTER_NEAREST);
 }
 
+void GSDeviceVK::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
+{
+	struct Uniforms
+	{
+		float scaleX, scaleY;
+		u32 offsetX, offsetY, dOffset;
+	};
+
+	const Uniforms uniforms = {sTex->GetScale().x, sTex->GetScale().y, offsetX, offsetY, dOffset};
+	SetUtilityPushConstants(&uniforms, sizeof(uniforms));
+
+	const GSVector4 dRect(0, 0, dSize, 1);
+	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
+	DoStretchRect(static_cast<GSTextureVK*>(sTex), GSVector4::zero(), static_cast<GSTextureVK*>(dTex), dRect,
+		m_convert[static_cast<int>(shader)], false);
+}
+
 void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect,
 	const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
 {
