@@ -224,12 +224,6 @@ namespace QtUtils
 
 	std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget)
 	{
-		if (!widget->isVisible())
-		{
-			Console.WriteLn("Returning null window info for widget because it is not visible.");
-			return std::nullopt;
-		}
-
 		WindowInfo wi;
 
 		// Windows and Apple are easy here since there's no display connection.
@@ -244,6 +238,13 @@ namespace QtUtils
 		const QString platform_name = QGuiApplication::platformName();
 		if (platform_name == QStringLiteral("xcb"))
 		{
+			// Can't get a handle for an unmapped window in X, it doesn't like it.
+			if (!widget->isVisible())
+			{
+				Console.WriteLn("Returning null window info for widget because it is not visible.");
+				return std::nullopt;
+			}
+
 			wi.type = WindowInfo::Type::X11;
 			wi.display_connection = pni->nativeResourceForWindow("display", widget->windowHandle());
 			wi.window_handle = reinterpret_cast<void*>(widget->winId());
