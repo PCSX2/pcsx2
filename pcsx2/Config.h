@@ -350,6 +350,13 @@ enum class GSCASMode : u8
 	SharpenAndResize,
 };
 
+enum class GSGPUTargetCLUTMode : u8
+{
+	Disabled,
+	Enabled,
+	InsideTarget,
+};
+
 // Template function for casting enumerations to their underlying type
 template <typename Enumeration>
 typename std::underlying_type<Enumeration>::type enum_cast(Enumeration E)
@@ -727,6 +734,7 @@ struct Pcsx2Config
 		int UserHacks_TCOffsetY{0};
 		int UserHacks_CPUSpriteRenderBW{0};
 		int UserHacks_CPUCLUTRender{ 0 };
+		GSGPUTargetCLUTMode UserHacks_GPUTargetCLUTMode{GSGPUTargetCLUTMode::Disabled};
 		TriFiltering TriFilter{TriFiltering::Automatic};
 		int OverrideTextureBarriers{-1};
 		int OverrideGeometryShaders{-1};

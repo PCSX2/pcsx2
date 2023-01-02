@@ -773,6 +773,24 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	PSSetShaderResources(nullptr, nullptr);
 }
 
+void GSDevice11::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
+{
+	// match merge cb
+	struct Uniforms
+	{
+		float scaleX, scaleY;
+		float pad1[2];
+		u32 offsetX, offsetY, dOffset;
+		u32 pad2;
+	};
+	const Uniforms cb = {sTex->GetScale().x, sTex->GetScale().y, 0.0f, 0.0f, offsetX, offsetY, dOffset};
+	m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);
+
+	const GSVector4 dRect(0, 0, dSize, 1);
+	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
+	StretchRect(sTex, GSVector4::zero(), dTex, dRect, m_convert.ps[static_cast<int>(shader)].get(), m_merge.cb.get(), nullptr, false);
+}
+
 void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
 {
 	const GSVector4 full_r(0.0f, 0.0f, 1.0f, 1.0f);

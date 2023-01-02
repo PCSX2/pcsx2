@@ -46,6 +46,8 @@ const char* shaderName(ShaderConvert value)
 		case ShaderConvert::RGB5A1_TO_FLOAT16_BILN: return "ps_convert_rgb5a1_float16_biln";
 		case ShaderConvert::DEPTH_COPY:             return "ps_depth_copy";
 		case ShaderConvert::RGBA_TO_8I:             return "ps_convert_rgba_8i";
+		case ShaderConvert::CLUT_4:                 return "ps_convert_clut_4";
+		case ShaderConvert::CLUT_8:                 return "ps_convert_clut_8";
 		case ShaderConvert::YUV:                    return "ps_yuv";
 			// clang-format on
 		default:

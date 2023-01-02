@@ -521,6 +521,24 @@ void GSDevice12::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 		m_present[static_cast<int>(shader)].get(), linear);
 }
 
+void GSDevice12::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
+{
+	struct Uniforms
+	{
+		float scaleX, scaleY;
+		float pad1[2];
+		u32 offsetX, offsetY, dOffset;
+		u32 pad2;
+	};
+	const Uniforms cb = {sTex->GetScale().x, sTex->GetScale().y, 0.0f, 0.0f, offsetX, offsetY, dOffset};
+	SetUtilityPushConstants(&cb, sizeof(cb));
+
+	const GSVector4 dRect(0, 0, dSize, 1);
+	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
+	DoStretchRect(static_cast<GSTexture12*>(sTex), GSVector4::zero(), static_cast<GSTexture12*>(dTex), dRect,
+		m_convert[static_cast<int>(shader)].get(), false);
+}
+
 void GSDevice12::BeginRenderPassForStretchRect(GSTexture12* dTex, const GSVector4i& dtex_rc, const GSVector4i& dst_rc)
 {
 	const bool is_whole_target = dst_rc.eq(dtex_rc);

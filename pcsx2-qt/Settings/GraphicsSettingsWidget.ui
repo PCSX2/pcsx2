@@ -920,14 +920,14 @@
          </item>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item row="4" column="0">
         <widget class="QLabel" name="label_12">
          <property name="text">
           <string>Skipdraw Range:</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="4" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
           <widget class="QSpinBox" name="skipDrawStart">
@@ -945,7 +945,7 @@
          </item>
         </layout>
        </item>
-       <item row="4" column="0" colspan="2">
+       <item row="5" column="0" colspan="2">
         <layout class="QGridLayout" name="gridLayout">
          <item row="0" column="0">
           <widget class="QCheckBox" name="hwAutoFlush">
@@ -1028,6 +1028,32 @@
          <property name="text">
           <string>Software CLUT Render:</string>
          </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_47">
+         <property name="text">
+          <string>GPU Target CLUT:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QComboBox" name="gpuTargetCLUTMode">
+         <item>
+          <property name="text">
+           <string>Disabled (Default)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Enabled (Exact Match)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Enabled (Check Inside Target)</string>
+          </property>
+         </item>
         </widget>
        </item>
       </layout>

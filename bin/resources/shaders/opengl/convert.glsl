@@ -314,6 +314,41 @@ void ps_hdr_resolve()
 }
 #endif
 
+#ifdef ps_convert_clut_4
+uniform uvec3 offset;
+uniform vec2 scale;
+
+void ps_convert_clut_4()
+{
+	// CLUT4 is easy, just two rows of 8x8.
+	uint index = uint(gl_FragCoord.x) + offset.z;
+	uvec2 pos = uvec2(index % 8u, index / 8u);
+
+	ivec2 final = ivec2(floor(vec2(offset.xy + pos) * scale));
+	SV_Target0 = texelFetch(TextureSampler, final, 0);
+}
+#endif
+
+#ifdef ps_convert_clut_8
+uniform uvec3 offset;
+uniform vec2 scale;
+
+void ps_convert_clut_8()
+{
+	uint index = min(uint(gl_FragCoord.x) + offset.z, 240u);
+
+	// CLUT is arranged into 8 groups of 16x2, with the top-right and bottom-left quadrants swapped.
+	// This can probably be done better..
+	uint subgroup = (index / 8u) % 4u;
+	uvec2 pos;
+	pos.x = (index % 8u) + ((subgroup >= 2u) ? 8u : 0u);
+	pos.y = ((index / 32u) * 2u) + (subgroup % 2u);
+
+	ivec2 final = ivec2(floor(vec2(offset.xy + pos) * scale));
+	SV_Target0 = texelFetch(TextureSampler, final, 0);
+}
+#endif
+
 #ifdef ps_yuv
 uniform ivec2 EMOD;
 

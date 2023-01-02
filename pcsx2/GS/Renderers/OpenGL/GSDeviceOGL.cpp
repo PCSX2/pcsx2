@@ -295,7 +295,14 @@ bool GSDeviceOGL::Create()
 			m_convert.ps[i].SetFormattedName("Convert pipe %s", name);
 
 			if (static_cast<ShaderConvert>(i) == ShaderConvert::YUV)
+			{
 				m_convert.ps[i].RegisterUniform("EMOD");
+			}
+			else if (static_cast<ShaderConvert>(i) == ShaderConvert::CLUT_4 || static_cast<ShaderConvert>(i) == ShaderConvert::CLUT_8)
+			{
+				m_convert.ps[i].RegisterUniform("offset");
+				m_convert.ps[i].RegisterUniform("scale");
+			}
 		}
 
 		const PSSamplerSelector point;
@@ -1274,6 +1281,30 @@ void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// Only flipping the backbuffer is transparent (I hope)...
 	const GSVector4 flip_sr(sRect.xwzy());
 	DrawStretchRect(flip_sr, dRect, ds);
+
+	EndScene();
+}
+
+void GSDeviceOGL::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
+{
+	BeginScene();
+
+	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
+	GL::Program& prog = m_convert.ps[static_cast<int>(shader)];
+	prog.Bind();
+	prog.Uniform3ui(0, offsetX, offsetY, dOffset);
+	prog.Uniform2f(1, sTex->GetScale().x, sTex->GetScale().y);
+
+	OMSetDepthStencilState(m_convert.dss);
+	OMSetBlendState(false);
+	OMSetColorMaskState();
+	OMSetRenderTargets(dTex, nullptr);
+
+	PSSetShaderResource(0, sTex);
+	PSSetSamplerState(m_convert.pt);
+
+	const GSVector4 dRect(0, 0, dSize, 1);
+	DrawStretchRect(GSVector4::zero(), dRect, dTex->GetSize());
 
 	EndScene();
 }

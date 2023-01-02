@@ -505,6 +505,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(UserHacks_TCOffsetY) &&
 		OpEqu(UserHacks_CPUSpriteRenderBW) &&
 		OpEqu(UserHacks_CPUCLUTRender) &&
+		OpEqu(UserHacks_GPUTargetCLUTMode) &&
 		OpEqu(OverrideTextureBarriers) &&
 		OpEqu(OverrideGeometryShaders) &&
 
@@ -681,6 +682,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	GSSettingIntEx(UserHacks_TCOffsetY, "UserHacks_TCOffsetY");
 	GSSettingIntEx(UserHacks_CPUSpriteRenderBW, "UserHacks_CPUSpriteRenderBW");
 	GSSettingIntEx(UserHacks_CPUCLUTRender, "UserHacks_CPUCLUTRender");
+	GSSettingIntEnumEx(UserHacks_GPUTargetCLUTMode, "UserHacks_GPUTargetCLUTMode");
 	GSSettingIntEnumEx(TriFilter, "TriFilter");
 	GSSettingIntEx(OverrideTextureBarriers, "OverrideTextureBarriers");
 	GSSettingIntEx(OverrideGeometryShaders, "OverrideGeometryShaders");
@@ -746,6 +748,7 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 	UserHacks_TCOffsetY = 0;
 	UserHacks_CPUSpriteRenderBW = 0;
 	UserHacks_CPUCLUTRender = 0;
+	UserHacks_GPUTargetCLUTMode = GSGPUTargetCLUTMode::Disabled;
 	SkipDrawStart = 0;
 	SkipDrawEnd = 0;
 }

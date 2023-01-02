@@ -308,7 +308,7 @@ protected:
 	std::unordered_map<SurfaceOffsetKey, SurfaceOffset, SurfaceOffsetKeyHash, SurfaceOffsetKeyEqual> m_surface_offset_cache;
 	Source* m_temporary_source = nullptr; // invalidated after the draw
 
-	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false, int x_offset = 0, int y_offset = 0, const GSVector2i* lod = nullptr, const GSVector4i* src_range = nullptr);
+	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t, bool half_right, int x_offset, int y_offset, const GSVector2i* lod, const GSVector4i* src_range, GSTexture* gpu_clut);
 	Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type, const bool clear);
 
 	/// Expands a target when the block pointer for a display framebuffer is within another target, but the read offset
@@ -337,10 +337,12 @@ public:
 	void RemovePartial();
 	void AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw);
 
+	GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, const GSVector2i& size);
+
 	Source* LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, const GSVector2i* lod);
 	Source* LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette = false);
 
-	Target* LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask = 0, const bool is_frame = false, const int real_w = 0, const int real_h = 0);
+	Target* LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask = 0, const bool is_frame = false, const int real_w = 0, const int real_h = 0, bool preload = GSConfig.PreloadFrameWithGSData);
 	Target* LookupDisplayTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, const int real_w, const int real_h);
 
 	/// Looks up a target in the cache, and only returns it if the BP/BW/PSM match exactly.
@@ -367,6 +369,7 @@ public:
 	void PrintMemoryUsage();
 
 	void AttachPaletteToSource(Source* s, u16 pal, bool need_gs_texture);
+	void AttachPaletteToSource(Source* s, GSTexture* gpu_clut);
 	SurfaceOffset ComputeSurfaceOffset(const GSOffset& off, const GSVector4i& r, const Target* t);
 	SurfaceOffset ComputeSurfaceOffset(const uint32_t bp, const uint32_t bw, const uint32_t psm, const GSVector4i& r, const Target* t);
 	SurfaceOffset ComputeSurfaceOffset(const SurfaceOffsetKey& sok);
