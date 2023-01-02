@@ -256,9 +256,6 @@ public:
 	bool DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map) override;
 	void DownloadTextureComplete() override;
 
-	GSTexture* DrawForReadback(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, int ps_shader = 0);
-	bool ReadbackTexture(GSTexture* src, const GSVector4i& rect, u32 level, GSTexture::GSMap* dst);
-
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) override;
 
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
