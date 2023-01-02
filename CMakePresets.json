@@ -19,9 +19,9 @@
             "description": "Base clang preset. Only for inheriting from.",
             "hidden": true,
             "inherits": "defaults",
-            "environment": {
-                "CC": "clang",
-                "CXX": "clang++"
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++"
             }
         },
         {
@@ -42,7 +42,7 @@
             }
         },
         {
-            "name": "dev",
+            "name": "devel",
             "displayName": "Devel",
             "description": "Developer build using make.",
             "inherits": "defaults",
@@ -72,7 +72,7 @@
             }
         },
         {
-            "name": "dev-ninja",
+            "name": "devel-ninja",
             "displayName": "Devel Ninja",
             "description": "Developer build using ninja.",
             "inherits": "defaults",
