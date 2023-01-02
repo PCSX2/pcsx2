@@ -1,0 +1,125 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 19,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "defaults",
+            "displayName": "Defaults",
+            "description": "Base preset. Only for inheriting from.",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build"
+        },
+        {
+            "name": "clang",
+            "displayName": "Clang",
+            "description": "Base clang preset. Only for inheriting from.",
+            "hidden": true,
+            "inherits": "defaults",
+            "environment": {
+                "CC": "clang",
+                "CXX": "clang++"
+            }
+        },
+        {
+            "name": "ninja-multi",
+            "displayName": "Ninja Multi Config",
+            "description": "Generate multiple ninja build files.",
+            "inherits": "defaults",
+            "generator": "Ninja Multi-Config"
+        },
+        {
+            "name": "debug",
+            "displayName": "Debug",
+            "description": "Debug build with make.",
+            "inherits": "defaults",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "dev",
+            "displayName": "Devel",
+            "description": "Developer build using make.",
+            "inherits": "defaults",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Devel"
+            }
+        },
+        {
+            "name": "release",
+            "displayName": "Release",
+            "description": "Release build using make.",
+            "inherits": "defaults",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "debug-ninja",
+            "displayName": "Debug Ninja",
+            "description": "Debug build using ninja.",
+            "inherits": "defaults",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "dev-ninja",
+            "displayName": "Devel Ninja",
+            "description": "Developer build using ninja.",
+            "inherits": "defaults",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Devel"
+            }
+        },
+        {
+            "name": "release-ninja",
+            "displayName": "Release Ninja",
+            "description": "Release build using ninja.",
+            "inherits": "defaults",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "clang-debug",
+            "displayName": "Clang Debug",
+            "description": "Debug build using ninja and clang.",
+            "generator": "Ninja",
+            "inherits": "clang",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "clang-devel",
+            "displayName": "Clang Devel",
+            "description": "Developer build using ninja & clang.",
+            "generator": "Ninja",
+            "inherits": "clang",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Devel"
+            }
+        },
+        {
+            "name": "clang-release",
+            "displayName": "Clang Release",
+            "description": "Release build using ninja & clang.",
+            "generator": "Ninja",
+            "inherits": "clang",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ]
+}
