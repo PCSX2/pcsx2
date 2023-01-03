@@ -61,6 +61,9 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 
 	m_ui.cpuTabs->addTab(m_cpuWidget_r5900, "R5900");
 	m_ui.cpuTabs->addTab(m_cpuWidget_r3000, "R3000");
+
+	CBreakPoints::SetUpdateHandler(std::bind(&DebuggerWindow::onBreakpointsChanged, this));
+
 	return;
 }
 
@@ -120,4 +123,10 @@ void DebuggerWindow::onStepOut()
 {
 	CpuWidget* currentCpu = static_cast<CpuWidget*>(m_ui.cpuTabs->currentWidget());
 	currentCpu->onStepOut();
+}
+
+void DebuggerWindow::onBreakpointsChanged()
+{
+	m_cpuWidget_r5900->reloadCPUWidgets();
+	m_cpuWidget_r3000->reloadCPUWidgets();
 }

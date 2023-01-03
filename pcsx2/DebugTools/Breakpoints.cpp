@@ -27,7 +27,7 @@ u64 CBreakPoints::breakSkipFirstTicksEE_ = 0;
 u32 CBreakPoints::breakSkipFirstAtIop_ = 0;
 u64 CBreakPoints::breakSkipFirstTicksIop_ = 0;
 std::vector<MemCheck> CBreakPoints::memChecks_;
-std::vector<MemCheck *> CBreakPoints::cleanupMemChecks_;
+std::vector<MemCheck*> CBreakPoints::cleanupMemChecks_;
 bool CBreakPoints::breakpointTriggered_ = false;
 bool CBreakPoints::corePaused = false;
 std::function<void()> CBreakPoints::cb_bpUpdated_;
@@ -171,8 +171,10 @@ bool CBreakPoints::IsAddressBreakPoint(BreakPointCpu cpu, u32 addr)
 bool CBreakPoints::IsAddressBreakPoint(BreakPointCpu cpu, u32 addr, bool* enabled)
 {
 	size_t bp = FindBreakpoint(cpu, addr);
-	if (bp == INVALID_BREAKPOINT) return false;
-	if (enabled != NULL) *enabled = breakPoints_[bp].enabled;
+	if (bp == INVALID_BREAKPOINT)
+		return false;
+	if (enabled != NULL)
+		*enabled = breakPoints_[bp].enabled;
 	return true;
 }
 
@@ -244,7 +246,7 @@ void CBreakPoints::ClearTemporaryBreakPoints()
 	if (breakPoints_.empty())
 		return;
 
-	for (int i = (int)breakPoints_.size()-1; i >= 0; --i)
+	for (int i = (int)breakPoints_.size() - 1; i >= 0; --i)
 	{
 		if (breakPoints_[i].temporary)
 		{
@@ -254,7 +256,7 @@ void CBreakPoints::ClearTemporaryBreakPoints()
 	}
 }
 
-void CBreakPoints::ChangeBreakPointAddCond(BreakPointCpu cpu, u32 addr, const BreakPointCond &cond)
+void CBreakPoints::ChangeBreakPointAddCond(BreakPointCpu cpu, u32 addr, const BreakPointCond& cond)
 {
 	size_t bp = FindBreakpoint(cpu, addr, true, false);
 	if (bp != INVALID_BREAKPOINT)
@@ -275,7 +277,7 @@ void CBreakPoints::ChangeBreakPointRemoveCond(BreakPointCpu cpu, u32 addr)
 	}
 }
 
-BreakPointCond *CBreakPoints::GetBreakPointCondition(BreakPointCpu cpu, u32 addr)
+BreakPointCond* CBreakPoints::GetBreakPointCondition(BreakPointCpu cpu, u32 addr)
 {
 	size_t bp = FindBreakpoint(cpu, addr, true, true);
 	//temp breakpoints are unconditional
@@ -389,14 +391,35 @@ const std::vector<MemCheck> CBreakPoints::GetMemCheckRanges()
 	return ranges;
 }
 
-const std::vector<MemCheck> CBreakPoints::GetMemChecks()
+const std::vector<MemCheck> CBreakPoints::GetMemChecks(BreakPointCpu cpu)
 {
-	return memChecks_;
+	std::vector<MemCheck> memChecks;
+	std::copy_if(memChecks_.begin(), memChecks_.end(), std::back_inserter(memChecks), [cpu](MemCheck& mc) { return mc.cpu == cpu; });
+	return memChecks;
 }
 
-const std::vector<BreakPoint> CBreakPoints::GetBreakpoints()
+const std::vector<BreakPoint> CBreakPoints::GetBreakpoints(BreakPointCpu cpu, bool includeTemp)
 {
-	return breakPoints_;
+	std::vector<BreakPoint> breakPoints;
+
+	std::copy_if(breakPoints_.begin(), breakPoints_.end(), std::back_inserter(breakPoints), [cpu, includeTemp](BreakPoint& bp) {
+		if (bp.cpu == cpu)
+		{
+			if (includeTemp)
+				return true;
+			else
+				return bp.temporary == false;
+		}
+		else
+		{
+			return false;
+		}
+	});
+
+	if (includeTemp)
+		return breakPoints_;
+
+	return breakPoints;
 }
 
 void CBreakPoints::Update(BreakPointCpu cpu, u32 addr)
@@ -409,14 +432,11 @@ void CBreakPoints::Update(BreakPointCpu cpu, u32 addr)
 		resume = true;
 	}
 
-//	if (addr != 0)
-//		Cpu->Clear(addr-4,8);
-//	else
-		SysClearExecutionCache();
+	SysClearExecutionCache();
 
 	if (resume)
 		r5900Debug.resumeCpu();
 
-	if(cb_bpUpdated_)
+	if (cb_bpUpdated_)
 		cb_bpUpdated_();
 }

@@ -19,6 +19,8 @@
 
 #include "DebugTools/Breakpoints.h"
 
+#include "Models/BreakpointModel.h"
+
 #include <QtWidgets/QDialog>
 
 class BreakpointDialog final : public QDialog
@@ -26,28 +28,26 @@ class BreakpointDialog final : public QDialog
 	Q_OBJECT
 
 public:
-	BreakpointDialog(QWidget* parent, DebugInterface* cpu);
-	BreakpointDialog(QWidget* parent, DebugInterface* cpu, BreakPoint* bp);
-	BreakpointDialog(QWidget* parent, DebugInterface* cpu, MemCheck* mc);
+	BreakpointDialog(QWidget* parent, DebugInterface* cpu, BreakpointModel& model);
+	BreakpointDialog(QWidget* parent, DebugInterface* cpu, BreakpointModel& model, BreakpointMemcheck bpmc, int rowIndex);
 	~BreakpointDialog();
-
 
 public slots:
 	void onRdoButtonToggled();
 	void accept() override;
 
 private:
-	enum class BPDIALOG_PURPOSE
+	enum class PURPOSE
 	{
 		CREATE,
-		EDIT_BP,
-		EDIT_MC
+		EDIT
 	};
 
 	Ui::BreakpointDialog m_ui;
 	DebugInterface* m_cpu;
 
-	const BPDIALOG_PURPOSE m_purpose;
-	BreakPoint* m_bp = nullptr;
-	MemCheck* m_mc = nullptr;
+	const PURPOSE m_purpose;
+	BreakpointModel& m_bpModel;
+	BreakpointMemcheck m_bp_mc;
+	int m_rowIndex;
 };

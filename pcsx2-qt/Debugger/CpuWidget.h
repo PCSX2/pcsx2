@@ -22,6 +22,8 @@
 #include "DebugTools/BiosDebugData.h"
 #include "DebugTools/MipsStackWalk.h"
 
+#include "Models/BreakpointModel.h"
+
 #include "QtHost.h"
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QTableWidget>
@@ -39,7 +41,6 @@ public:
 	~CpuWidget();
 
 public slots:
-	void resizeEvent(QResizeEvent* event);
 	void paintEvent(QPaintEvent* event);
 
 	void onStepInto();
@@ -49,10 +50,9 @@ public slots:
 	void onVMPaused();
 
 	void updateBreakpoints();
-	void fixBPListColumnSize();
 
+	void onBPListDoubleClicked(const QModelIndex& index);
 	void onBPListContextMenu(QPoint pos);
-	void onBPListItemChange(QTableWidgetItem* item);
 
 	void contextBPListCopy();
 	void contextBPListDelete();
@@ -82,7 +82,6 @@ public slots:
 		updateBreakpoints();
 		updateThreads();
 		updateStackFrames();
-		updateFunctionList();
 
 		m_ui.registerWidget->update();
 		m_ui.disassemblyWidget->update();
@@ -103,15 +102,8 @@ private:
 
 	DebugInterface& m_cpu;
 
-	// Poor mans variant
-	// Allows us to map row index to breakpoint / memcheck objects
-	struct BreakpointObject
-	{
-		std::shared_ptr<BreakPoint> bp;
-		std::shared_ptr<MemCheck> mc;
-	};
+	BreakpointModel m_bpModel;
 
-	std::vector<BreakpointObject> m_bplistObjects;
 	std::vector<EEThread> m_threadlistObjects;
 	EEThread m_activeThread;
 	std::vector<StackFrame> m_stacklistObjects;
