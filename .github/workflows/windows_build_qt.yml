@@ -105,6 +105,13 @@ jobs:
             msbuild "PCSX2_qt.sln" /m /v:m /p:Configuration="${{ inputs.configuration }}" /p:Platform="${{ inputs.platform }}"
           )
 
+      - name: Run Tests
+        if: inputs.configuration == 'CMake'
+        shell: cmd
+        run: |
+          call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          cmake --build build --config Release --target unittests
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:

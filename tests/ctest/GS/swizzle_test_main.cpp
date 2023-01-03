@@ -14,13 +14,53 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSBlock.h"
-#include "GSClut.h"
-#include "MultiISA.h"
+#include "pcsx2/GS/GSBlock.h"
+#include "pcsx2/GS/GSClut.h"
+#include "pcsx2/GS/MultiISA.h"
 #include <gtest/gtest.h>
 #include <string.h>
 
-using namespace CURRENT_ISA;
+#ifdef MULTI_ISA_UNSHARED_COMPILATION
+
+enum class TestISA
+{
+	isa_sse4,
+	isa_avx,
+	isa_avx2,
+	isa_native,
+};
+
+static bool CheckCapabilities(TestISA required_caps)
+{
+	x86caps.Identify();
+	if (required_caps == TestISA::isa_avx && !x86caps.hasAVX)
+		return false;
+	if (required_caps == TestISA::isa_avx2 && !x86caps.hasAVX2)
+		return false;
+
+	return true;
+}
+
+#define MULTI_ISA_STRINGIZE_(x) #x
+#define MULTI_ISA_STRINGIZE(x) MULTI_ISA_STRINGIZE_(x)
+
+#define MULTI_ISA_CONCAT_(a, b) a##b
+#define MULTI_ISA_CONCAT(a, b) MULTI_ISA_CONCAT_(a, b)
+
+#define MULTI_ISA_TEST(group, name) TEST(MULTI_ISA_CONCAT(MULTI_ISA_CONCAT(MULTI_ISA_UNSHARED_COMPILATION, _), group), name)
+#define SKIP_IF_UNSUPPORTED() \
+	if (!CheckCapabilities(TestISA::MULTI_ISA_UNSHARED_COMPILATION)) { \
+		GTEST_SKIP() << "Host CPU does not support " MULTI_ISA_STRINGIZE(MULTI_ISA_UNSHARED_COMPILATION); \
+	}
+
+#else
+
+#define MULTI_ISA_TEST(group, name) TEST(group, name)
+#define SKIP_IF_UNSUPPORTED()
+
+#endif
+
+MULTI_ISA_UNSHARED_START
 
 static void swizzle(const u8* table, u8* dst, const u8* src, int bpp, bool deswizzle)
 {
@@ -272,8 +312,10 @@ static void assertEqual(const TestData& expected, const TestData& actual, const 
 	EXPECT_STREQ(estr.c_str(), astr.c_str()) << "Unexpected " << name;
 }
 
-TEST(ReadTest, Read32)
+MULTI_ISA_TEST(ReadTest, Read32)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzle(&columnTable32[0][0], data, 32, true);
@@ -282,8 +324,10 @@ TEST(ReadTest, Read32)
 	});
 }
 
-TEST(WriteTest, Write32)
+MULTI_ISA_TEST(WriteTest, Write32)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzle(&columnTable32[0][0], data, 32, false);
@@ -292,8 +336,10 @@ TEST(WriteTest, Write32)
 	});
 }
 
-TEST(ReadTest, Read16)
+MULTI_ISA_TEST(ReadTest, Read16)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzle(&columnTable16[0][0], data, 16, true);
@@ -302,8 +348,10 @@ TEST(ReadTest, Read16)
 	});
 }
 
-TEST(ReadAndExpandTest, Read16)
+MULTI_ISA_TEST(ReadAndExpandTest, Read16)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		GIFRegTEXA texa = {0};
@@ -316,8 +364,10 @@ TEST(ReadAndExpandTest, Read16)
 	});
 }
 
-TEST(ReadAndExpandTest, Read16AEM)
+MULTI_ISA_TEST(ReadAndExpandTest, Read16AEM)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		// Actually test AEM
@@ -335,8 +385,10 @@ TEST(ReadAndExpandTest, Read16AEM)
 	});
 }
 
-TEST(WriteTest, Write16)
+MULTI_ISA_TEST(WriteTest, Write16)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzle(&columnTable16[0][0], data, 16, false);
@@ -345,8 +397,10 @@ TEST(WriteTest, Write16)
 	});
 }
 
-TEST(ReadTest, Read8)
+MULTI_ISA_TEST(ReadTest, Read8)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzle(&columnTable8[0][0], data, 8, true);
@@ -355,8 +409,10 @@ TEST(ReadTest, Read8)
 	});
 }
 
-TEST(ReadAndExpandTest, Read8)
+MULTI_ISA_TEST(ReadAndExpandTest, Read8)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzle(&columnTable8[0][0], data, 8, true);
@@ -366,8 +422,10 @@ TEST(ReadAndExpandTest, Read8)
 	});
 }
 
-TEST(WriteTest, Write8)
+MULTI_ISA_TEST(WriteTest, Write8)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzle(&columnTable8[0][0], data, 8, false);
@@ -376,8 +434,10 @@ TEST(WriteTest, Write8)
 	});
 }
 
-TEST(ReadTest, Read8H)
+MULTI_ISA_TEST(ReadTest, Read8H)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzle(&columnTable32[0][0], data, 32, true);
@@ -387,8 +447,10 @@ TEST(ReadTest, Read8H)
 	});
 }
 
-TEST(ReadAndExpandTest, Read8H)
+MULTI_ISA_TEST(ReadAndExpandTest, Read8H)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzle(&columnTable32[0][0], data, 32, true);
@@ -398,8 +460,10 @@ TEST(ReadAndExpandTest, Read8H)
 	});
 }
 
-TEST(WriteTest, Write8H)
+MULTI_ISA_TEST(WriteTest, Write8H)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzleH(&columnTable32[0][0], data, 8, 24);
@@ -408,8 +472,10 @@ TEST(WriteTest, Write8H)
 	});
 }
 
-TEST(ReadTest, Read4)
+MULTI_ISA_TEST(ReadTest, Read4)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzle4(&columnTable4[0][0], data, true);
@@ -418,8 +484,10 @@ TEST(ReadTest, Read4)
 	});
 }
 
-TEST(ReadTest, Read4P)
+MULTI_ISA_TEST(ReadTest, Read4P)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzle4(&columnTable4[0][0], data, true);
@@ -429,8 +497,10 @@ TEST(ReadTest, Read4P)
 	});
 }
 
-TEST(ReadAndExpandTest, Read4)
+MULTI_ISA_TEST(ReadAndExpandTest, Read4)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzle4(&columnTable4[0][0], data, true);
@@ -440,8 +510,10 @@ TEST(ReadAndExpandTest, Read4)
 	});
 }
 
-TEST(WriteTest, Write4)
+MULTI_ISA_TEST(WriteTest, Write4)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzle4(&columnTable4[0][0], data, false);
@@ -450,8 +522,10 @@ TEST(WriteTest, Write4)
 	});
 }
 
-TEST(ReadTest, Read4HH)
+MULTI_ISA_TEST(ReadTest, Read4HH)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzle(&columnTable32[0][0], data, 32, true);
@@ -461,8 +535,10 @@ TEST(ReadTest, Read4HH)
 	});
 }
 
-TEST(ReadAndExpandTest, Read4HH)
+MULTI_ISA_TEST(ReadAndExpandTest, Read4HH)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzle(&columnTable32[0][0], data, 32, true);
@@ -472,8 +548,10 @@ TEST(ReadAndExpandTest, Read4HH)
 	});
 }
 
-TEST(WriteTest, Write4HH)
+MULTI_ISA_TEST(WriteTest, Write4HH)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzleH(&columnTable32[0][0], data, 4, 28);
@@ -482,8 +560,10 @@ TEST(WriteTest, Write4HH)
 	});
 }
 
-TEST(ReadTest, Read4HL)
+MULTI_ISA_TEST(ReadTest, Read4HL)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzle(&columnTable32[0][0], data, 32, true);
@@ -493,8 +573,10 @@ TEST(ReadTest, Read4HL)
 	});
 }
 
-TEST(ReadAndExpandTest, Read4HL)
+MULTI_ISA_TEST(ReadAndExpandTest, Read4HL)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzle(&columnTable32[0][0], data, 32, true);
@@ -504,8 +586,10 @@ TEST(ReadAndExpandTest, Read4HL)
 	});
 }
 
-TEST(WriteTest, Write4HL)
+MULTI_ISA_TEST(WriteTest, Write4HL)
 {
+	SKIP_IF_UNSUPPORTED();
+
 	runTest([](TestData data)
 	{
 		TestData expected = swizzleH(&columnTable32[0][0], data, 4, 24);
@@ -513,3 +597,5 @@ TEST(WriteTest, Write4HL)
 		assertEqual(expected, data, "Write4HL", 8, 8, 32);
 	});
 }
+
+MULTI_ISA_UNSHARED_END
