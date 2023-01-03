@@ -682,7 +682,7 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	// ps
 
 	PSSetShaderResources(sTex, nullptr);
-	PSSetSamplerState(linear ? m_convert.ln.get() : m_convert.pt.get(), nullptr);
+	PSSetSamplerState(linear ? m_convert.ln.get() : m_convert.pt.get());
 	PSSetShader(ps, ps_cb);
 
 	//
@@ -759,7 +759,7 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	// ps
 
 	PSSetShaderResources(sTex, nullptr);
-	PSSetSamplerState(linear ? m_convert.ln.get() : m_convert.pt.get(), nullptr);
+	PSSetSamplerState(linear ? m_convert.ln.get() : m_convert.pt.get());
 	PSSetShader(m_present.ps[static_cast<u32>(shader)].get(), m_present.ps_cb.get());
 
 	//
@@ -958,7 +958,7 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 
 	// ps
 	PSSetShaderResources(rt, nullptr);
-	PSSetSamplerState(m_convert.pt.get(), nullptr);
+	PSSetSamplerState(m_convert.pt.get());
 	PSSetShader(m_convert.ps[static_cast<int>(datm ? ShaderConvert::DATM_1 : ShaderConvert::DATM_0)].get(), nullptr);
 
 	//
@@ -1184,10 +1184,9 @@ void GSDevice11::PSSetShaderResource(int i, GSTexture* sr)
 	m_state.ps_sr_views[i] = sr ? static_cast<ID3D11ShaderResourceView*>(*static_cast<GSTexture11*>(sr)) : nullptr;
 }
 
-void GSDevice11::PSSetSamplerState(ID3D11SamplerState* ss0, ID3D11SamplerState* ss1)
+void GSDevice11::PSSetSamplerState(ID3D11SamplerState* ss0)
 {
 	m_state.ps_ss[0] = ss0;
-	m_state.ps_ss[1] = ss1;
 }
 
 void GSDevice11::PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb)

@@ -112,7 +112,7 @@ public:
 		NUM_TFX_TEXTURES = 2,
 		NUM_TFX_RT_TEXTURES = 2,
 		NUM_TOTAL_TFX_TEXTURES = NUM_TFX_TEXTURES + NUM_TFX_RT_TEXTURES,
-		NUM_TFX_SAMPLERS = 2,
+		NUM_TFX_SAMPLERS = 1,
 		NUM_UTILITY_TEXTURES = 1,
 		NUM_UTILITY_SAMPLERS = 1,
 		CONVERT_PUSH_CONSTANTS_SIZE = 96,
@@ -279,7 +279,7 @@ public:
 	void IASetIndexBuffer(const void* index, size_t count);
 
 	void PSSetShaderResource(int i, GSTexture* sr, bool check_state);
-	void PSSetSampler(u32 index, GSHWDrawConfig::SamplerSelector sel);
+	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
 
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor);
 
@@ -404,8 +404,8 @@ private:
 
 	std::array<D3D12_GPU_VIRTUAL_ADDRESS, NUM_TFX_CONSTANT_BUFFERS> m_tfx_constant_buffers{};
 	std::array<D3D12::DescriptorHandle, NUM_TOTAL_TFX_TEXTURES> m_tfx_textures{};
-	std::array<D3D12::DescriptorHandle, NUM_TFX_SAMPLERS> m_tfx_samplers{};
-	std::array<u32, NUM_TFX_SAMPLERS> m_tfx_sampler_sel{};
+	D3D12::DescriptorHandle m_tfx_sampler;
+	u32 m_tfx_sampler_sel = 0;
 	D3D12::DescriptorHandle m_tfx_textures_handle_gpu;
 	D3D12::DescriptorHandle m_tfx_samplers_handle_gpu;
 	D3D12::DescriptorHandle m_tfx_rt_textures_handle_gpu;

@@ -72,9 +72,9 @@ public:
 	{
 		NUM_TFX_DESCRIPTOR_SETS = 3,
 		NUM_TFX_DYNAMIC_OFFSETS = 2,
-		NUM_TFX_SAMPLERS = 2,
+		NUM_TFX_DRAW_TEXTURES = 2,
 		NUM_TFX_RT_TEXTURES = 2,
-		NUM_TFX_TEXTURES = NUM_TFX_SAMPLERS + NUM_TFX_RT_TEXTURES,
+		NUM_TFX_TEXTURES = NUM_TFX_DRAW_TEXTURES + NUM_TFX_RT_TEXTURES,
 		NUM_CONVERT_TEXTURES = 1,
 		NUM_CONVERT_SAMPLERS = 1,
 		CONVERT_PUSH_CONSTANTS_SIZE = 96,
@@ -260,7 +260,7 @@ public:
 	void IASetIndexBuffer(const void* index, size_t count);
 
 	void PSSetShaderResource(int i, GSTexture* sr, bool check_state);
-	void PSSetSampler(u32 index, GSHWDrawConfig::SamplerSelector sel);
+	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
 
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor, bool feedback_loop);
 
@@ -372,8 +372,8 @@ private:
 	u8 m_blend_constant_color = 0;
 
 	std::array<VkImageView, NUM_TFX_TEXTURES> m_tfx_textures{};
-	std::array<VkSampler, NUM_TFX_SAMPLERS> m_tfx_samplers{};
-	std::array<u32, NUM_TFX_SAMPLERS> m_tfx_sampler_sel{};
+	VkSampler m_tfx_sampler = VK_NULL_HANDLE;
+	u32 m_tfx_sampler_sel = 0;
 	std::array<VkDescriptorSet, NUM_TFX_DESCRIPTOR_SETS> m_tfx_descriptor_sets{};
 	std::array<u32, NUM_TFX_DYNAMIC_OFFSETS> m_tfx_dynamic_offsets{};
 

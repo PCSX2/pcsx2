@@ -1084,9 +1084,7 @@ void GSDeviceVK::ClearSamplerCache()
 	m_point_sampler = GetSampler(GSHWDrawConfig::SamplerSelector::Point());
 	m_linear_sampler = GetSampler(GSHWDrawConfig::SamplerSelector::Linear());
 	m_utility_sampler = m_point_sampler;
-
-	for (u32 i = 0; i < std::size(m_tfx_samplers); i++)
-		m_tfx_samplers[i] = GetSampler(m_tfx_sampler_sel[i]);
+	m_tfx_sampler = m_point_sampler;
 }
 
 static void AddMacro(std::stringstream& ss, const char* name, const char* value)
@@ -1236,8 +1234,8 @@ bool GSDeviceVK::CreatePipelineLayouts()
 	if ((m_tfx_ubo_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
 	Vulkan::Util::SetObjectName(dev, m_tfx_ubo_ds_layout, "TFX UBO descriptor layout");
-	for (u32 i = 0; i < NUM_TFX_SAMPLERS; i++)
-		dslb.AddBinding(i, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	dslb.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	dslb.AddBinding(1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	if ((m_tfx_sampler_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
 	Vulkan::Util::SetObjectName(dev, m_tfx_sampler_ds_layout, "TFX sampler descriptor layout");
@@ -2308,11 +2306,8 @@ void GSDeviceVK::InitializeState()
 	if (m_linear_sampler)
 		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_point_sampler, "Linear sampler");
 
-	for (u32 i = 0; i < NUM_TFX_SAMPLERS; i++)
-	{
-		m_tfx_sampler_sel[i] = GSHWDrawConfig::SamplerSelector::Point().key;
-		m_tfx_samplers[i] = m_point_sampler;
-	}
+	m_tfx_sampler_sel = GSHWDrawConfig::SamplerSelector::Point().key;
+	m_tfx_sampler = m_point_sampler;
 
 	InvalidateCachedState();
 }
@@ -2463,13 +2458,13 @@ void GSDeviceVK::PSSetShaderResource(int i, GSTexture* sr, bool check_state)
 	m_dirty_flags |= (i < 2) ? DIRTY_FLAG_TFX_SAMPLERS_DS : DIRTY_FLAG_TFX_RT_TEXTURE_DS;
 }
 
-void GSDeviceVK::PSSetSampler(u32 index, GSHWDrawConfig::SamplerSelector sel)
+void GSDeviceVK::PSSetSampler(GSHWDrawConfig::SamplerSelector sel)
 {
-	if (m_tfx_sampler_sel[index] == sel.key)
+	if (m_tfx_sampler_sel == sel.key)
 		return;
 
-	m_tfx_sampler_sel[index] = sel.key;
-	m_tfx_samplers[index] = GetSampler(sel);
+	m_tfx_sampler_sel = sel.key;
+	m_tfx_sampler = GetSampler(sel);
 	m_dirty_flags |= DIRTY_FLAG_TFX_SAMPLERS_DS;
 }
 
@@ -2739,8 +2734,8 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			return ApplyTFXState(true);
 		}
 
-		dsub.AddCombinedImageSamplerDescriptorWrites(
-			ds, 0, m_tfx_textures.data(), m_tfx_samplers.data(), NUM_TFX_SAMPLERS);
+		dsub.AddCombinedImageSamplerDescriptorWrite(ds, 0, m_tfx_textures[0], m_tfx_sampler);
+		dsub.AddImageDescriptorWrite(ds, 1, m_tfx_textures[1]);
 		dsub.Update(dev);
 
 		m_tfx_descriptor_sets[1] = ds;
@@ -2764,10 +2759,10 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 		}
 
 		if (m_features.texture_barrier)
-			dsub.AddInputAttachmentDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_SAMPLERS]);
+			dsub.AddInputAttachmentDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_DRAW_TEXTURES]);
 		else
-			dsub.AddImageDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_SAMPLERS]);
-		dsub.AddImageDescriptorWrite(ds, 1, m_tfx_textures[NUM_TFX_SAMPLERS + 1]);
+			dsub.AddImageDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_DRAW_TEXTURES]);
+		dsub.AddImageDescriptorWrite(ds, 1, m_tfx_textures[NUM_TFX_DRAW_TEXTURES + 1]);
 		dsub.Update(dev);
 
 		m_tfx_descriptor_sets[2] = ds;
@@ -3028,7 +3023,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	if (config.tex)
 	{
 		PSSetShaderResource(0, config.tex, config.tex != config.rt);
-		PSSetSampler(0, config.sampler);
+		PSSetSampler(config.sampler);
 	}
 	if (config.pal)
 		PSSetShaderResource(1, config.pal, true);

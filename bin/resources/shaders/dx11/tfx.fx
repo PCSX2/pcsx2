@@ -130,7 +130,6 @@ Texture2D<float4> Palette : register(t1);
 Texture2D<float4> RtTexture : register(t2);
 Texture2D<float> PrimMinTexture : register(t3);
 SamplerState TextureSampler : register(s0);
-SamplerState PaletteSampler : register(s1);
 
 #ifdef DX12
 cbuffer cb0 : register(b0)
@@ -207,9 +206,14 @@ float4 sample_c(float2 uv, float uv_w)
 #endif
 }
 
-float4 sample_p(float u)
+float4 sample_p(uint u)
 {
-	return Palette.Sample(PaletteSampler, u);
+	return Palette.Load(int3(int(u), 0, 0));
+}
+
+float4 sample_p_norm(float u)
+{
+	return sample_p(uint(u * 255.5f));
 }
 
 float4 clamp_wrap_uv(float4 uv)
@@ -278,7 +282,7 @@ float4x4 sample_4c(float4 uv, float uv_w)
 	return c;
 }
 
-float4 sample_4_index(float4 uv, float uv_w)
+uint4 sample_4_index(float4 uv, float uv_w)
 {
 	float4 c;
 
@@ -288,25 +292,26 @@ float4 sample_4_index(float4 uv, float uv_w)
 	c.w = sample_c(uv.zw, uv_w).a;
 
 	// Denormalize value
-	uint4 i = uint4(c * 255.0f + 0.5f);
+	uint4 i = uint4(c * 255.5f);
 
 	if (PS_PAL_FMT == 1)
 	{
 		// 4HL
-		c = float4(i & 0xFu) / 255.0f;
+		return i & 0xFu;
 	}
 	else if (PS_PAL_FMT == 2)
 	{
 		// 4HH
-		c = float4(i >> 4u) / 255.0f;
+		return i >> 4u;
 	}
-
-	// Most of texture will hit this code so keep normalized float value
-	// 8 bits
-	return c * 255./256 + 0.5/256;
+	else
+	{
+		// 8
+		return i;
+	}
 }
 
-float4x4 sample_4p(float4 u)
+float4x4 sample_4p(uint4 u)
 {
 	float4x4 c;
 
@@ -468,7 +473,7 @@ float4 fetch_red(int2 xy)
 		rt = fetch_raw_color(xy);
 	}
 
-	return sample_p(rt.r) * 255.0f;
+	return sample_p_norm(rt.r) * 255.0f;
 }
 
 float4 fetch_green(int2 xy)
@@ -485,7 +490,7 @@ float4 fetch_green(int2 xy)
 		rt = fetch_raw_color(xy);
 	}
 
-	return sample_p(rt.g) * 255.0f;
+	return sample_p_norm(rt.g) * 255.0f;
 }
 
 float4 fetch_blue(int2 xy)
@@ -502,19 +507,19 @@ float4 fetch_blue(int2 xy)
 		rt = fetch_raw_color(xy);
 	}
 
-	return sample_p(rt.b) * 255.0f;
+	return sample_p_norm(rt.b) * 255.0f;
 }
 
 float4 fetch_alpha(int2 xy)
 {
 	float4 rt = fetch_raw_color(xy);
-	return sample_p(rt.a) * 255.0f;
+	return sample_p_norm(rt.a) * 255.0f;
 }
 
 float4 fetch_rgb(int2 xy)
 {
 	float4 rt = fetch_raw_color(xy);
-	float4 c = float4(sample_p(rt.r).r, sample_p(rt.g).g, sample_p(rt.b).b, 1.0);
+	float4 c = float4(sample_p_norm(rt.r).r, sample_p_norm(rt.g).g, sample_p_norm(rt.b).b, 1.0);
 	return c * 255.0f;
 }
 

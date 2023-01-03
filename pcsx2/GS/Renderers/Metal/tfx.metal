@@ -283,8 +283,6 @@ vertex MainVSOut vs_main_expand(
 
 // MARK: - Fragment functions
 
-constexpr sampler palette_sampler(filter::nearest, address::clamp_to_edge);
-
 struct PSMain
 {
 	texture2d<float> tex;
@@ -349,9 +347,14 @@ struct PSMain
 		}
 	}
 
-	float4 sample_p(float idx)
+	float4 sample_p(uint idx)
 	{
-		return palette.sample(palette_sampler, float2(idx, 0));
+		return palette.read(uint2(idx, 0));
+	}
+
+	float4 sample_p_norm(float u)
+	{
+		return sample_p(uint(u * 255.5f));
 	}
 
 	float4 clamp_wrap_uv(float4 uv)
@@ -415,7 +418,7 @@ struct PSMain
 		};
 	}
 
-	float4 sample_4_index(float4 uv)
+	uint4 sample_4_index(float4 uv)
 	{
 		float4 c;
 
@@ -432,15 +435,14 @@ struct PSMain
 		uint4 i = uint4(c * 255.5f); // Denormalize value
 
 		if (PS_PAL_FMT == 1)
-			return float4(i & 0xF) / 255.f;
+			return i & 0xF;
 		if (PS_PAL_FMT == 2)
-			return float4(i >> 4) / 255.f;
+			return i >> 4;
 
-		// Most textures will hit this code so keep normalized float value
-		return c;
+		return i;
 	}
 
-	float4x4 sample_4p(float4 u)
+	float4x4 sample_4p(uint4 u)
 	{
 		return {
 			sample_p(u.x),
@@ -559,30 +561,30 @@ struct PSMain
 	float4 fetch_red()
 	{
 		float rt = PS_TEX_IS_DEPTH ? float(fetch_raw_depth() & 0xFF) / 255.f : fetch_raw_color().r;
-		return sample_p(rt) * 255.f;
+		return sample_p_norm(rt) * 255.f;
 	}
 
 	float4 fetch_green()
 	{
 		float rt = PS_TEX_IS_DEPTH ? float((fetch_raw_depth() >> 8) & 0xFF) / 255.f : fetch_raw_color().g;
-		return sample_p(rt) * 255.f;
+		return sample_p_norm(rt) * 255.f;
 	}
 
 	float4 fetch_blue()
 	{
 		float rt = PS_TEX_IS_DEPTH ? float((fetch_raw_depth() >> 16) & 0xFF) / 255.f : fetch_raw_color().b;
-		return sample_p(rt) * 255.f;
+		return sample_p_norm(rt) * 255.f;
 	}
 
 	float4 fetch_alpha()
 	{
-		return sample_p(fetch_raw_color().a) * 255.f;
+		return sample_p_norm(fetch_raw_color().a) * 255.f;
 	}
 
 	float4 fetch_rgb()
 	{
 		float4 rt = fetch_raw_color();
-		return float4(sample_p(rt.r).r, sample_p(rt.g).g, sample_p(rt.b).b, 1) * 255.f;
+		return float4(sample_p_norm(rt.r).r, sample_p_norm(rt.g).g, sample_p_norm(rt.b).b, 1) * 255.f;
 	}
 
 	float4 fetch_gXbY()
