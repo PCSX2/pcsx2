@@ -9005,6 +9005,10 @@ SLAJ-25087:
 SLAJ-25088:
   name: "FIFA Soccer 2007"
   region: "NTSC-Unk"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLAJ-25091:
   name: "Need for Speed - Carbon [Collector's Edition]"
   region: "NTSC-J"
@@ -14556,9 +14560,11 @@ SLES-52450:
   region: "PAL-M3"
   compat: 5
 SLES-52451:
-  name: "Conan - The Dark Axe"
+  name: "Conan"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth line.
 SLES-52457:
   name: "Shrek 2"
   region: "PAL-SW"
@@ -17205,18 +17211,38 @@ SLES-53528:
 SLES-53529:
   name: "FIFA '06"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-53530:
   name: "FIFA '06"
   region: "PAL-I"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-53531:
   name: "FIFA '06"
   region: "PAL-F-G"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-53532:
   name: "FIFA '06"
   region: "PAL-P-S"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-53533:
   name: "FIFA '06"
   region: "PAL-M8"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-53534:
   name: "Tony Hawk's American Wasteland"
   region: "PAL-E"
@@ -19061,21 +19087,45 @@ SLES-54240:
   name: "FIFA '07"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-54241:
   name: "FIFA '07"
   region: "PAL-M3"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-54243:
   name: "FIFA '07"
   region: "PAL-P-S"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-54244:
   name: "FIFA '07"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-54245:
   name: "NHL '07"
   region: "PAL-M6"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-54246:
   name: "FIFA '07"
   region: "PAL-R"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-54248:
   name: "Madden NFL '07"
   region: "PAL-E"
@@ -20590,18 +20640,38 @@ SLES-54867:
 SLES-54870:
   name: "FIFA '08"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-54871:
   name: "FIFA '08"
   region: "PAL-F-G-I"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-54872:
   name: "FIFA '08"
   region: "PAL-P-S"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-54873:
   name: "FIFA '08"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-54874:
   name: "FIFA '08"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-54875:
   name: "Warriors Orochi"
   region: "PAL-E"
@@ -21558,19 +21628,39 @@ SLES-55242:
 SLES-55243:
   name: "FIFA 09"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-55244:
   name: "FIFA 09"
   region: "PAL-F-G"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-55245:
   name: "FIFA 09"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-55246:
   name: "FIFA 09"
   region: "PAL-M4"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-55247:
   name: "FIFA 09"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-55248:
   name: "Harry Potter and the Half-Blood Prince"
   region: "PAL-M6"
@@ -22221,19 +22311,39 @@ SLES-55579:
 SLES-55581:
   name: "FIFA 10"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-55582:
   name: "FIFA 10"
   region: "PAL-F-G"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-55583:
   name: "FIFA 10"
   region: "PAL-M4"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-55584:
   name: "FIFA 10"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-55585:
   name: "FIFA 10"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-55587:
   name: "Pro Evolution Soccer 2010"
   region: "PAL-M5"
@@ -23782,6 +23892,10 @@ SLKA-25390:
 SLKA-25396:
   name: "FIFA '07"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLKA-25397:
   name: "Dragon Ball Z Sparking NEO"
   region: "NTSC-K"
@@ -45901,6 +46015,10 @@ SLUS-21279:
 SLUS-21280:
   name: "FIFA '06"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLUS-21281:
   name: "Marvel Nemesis - Rise of the Imperfects"
   region: "NTSC-U"
@@ -46789,6 +46907,10 @@ SLUS-21432:
 SLUS-21433:
   name: "FIFA Soccer '07"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLUS-21434:
   name: "Superman Returns - The Video Game"
   region: "NTSC-U"
@@ -47726,6 +47848,10 @@ SLUS-21648:
   name: "FIFA Soccer '08"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLUS-21649:
   name: "NBA Live '08"
   region: "NTSC-U"
@@ -48316,6 +48442,10 @@ SLUS-21776:
   name: "FIFA 2009"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLUS-21777:
   name: "NBA Live '09"
   region: "NTSC-U"
@@ -48855,6 +48985,10 @@ SLUS-21904:
 SLUS-21905:
   name: "FIFA Soccer 10"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLUS-21906:
   name: "Cabela's Outdoor Adventures 2010"
   region: "NTSC-U"
@@ -49713,6 +49847,10 @@ SLUS-29159:
 SLUS-29160:
   name: "FIFA '06 [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLUS-29161:
   name: "SSX On Tour [Demo]"
   region: "NTSC-U"
@@ -49823,6 +49961,10 @@ SLUS-29193:
 SLUS-29194:
   name: "FIFA '07 [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Reduces blurriness.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
 SLUS-29195:
   name: "Yakuza [Demo]"
   region: "NTSC-U"
