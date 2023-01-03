@@ -46,24 +46,6 @@ bool GSDevice11::CreateTextureFX()
 	if (FAILED(hr))
 		return false;
 
-	D3D11_SAMPLER_DESC sd;
-
-	memset(&sd, 0, sizeof(sd));
-
-	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	sd.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-	sd.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-	sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-	sd.MinLOD = -FLT_MAX;
-	sd.MaxLOD = FLT_MAX;
-	sd.MaxAnisotropy = 1;
-	sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
-
-	hr = m_dev->CreateSamplerState(&sd, m_palette_ss.put());
-
-	if (FAILED(hr))
-		return false;
-
 	// create layout
 
 	VSSelector sel;
@@ -212,7 +194,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		m_ctx->UpdateSubresource(m_ps_cb.get(), 0, NULL, cb, 0, 0);
 	}
 
-	wil::com_ptr_nothrow<ID3D11SamplerState> ss0, ss1;
+	wil::com_ptr_nothrow<ID3D11SamplerState> ss0;
 
 	if (sel.tfx != 4)
 	{
@@ -267,14 +249,9 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 
 			m_ps_ss[ssel.key] = ss0;
 		}
-
-		if (sel.pal_fmt)
-		{
-			ss1 = m_palette_ss;
-		}
 	}
 
-	PSSetSamplerState(ss0.get(), ss1.get());
+	PSSetSamplerState(ss0.get());
 
 	PSSetShader(i->second.get(), m_ps_cb.get());
 }

@@ -133,9 +133,14 @@ vec4 sample_c(vec2 uv)
 #endif
 }
 
-vec4 sample_p(float idx)
+vec4 sample_p(uint idx)
 {
-    return texture(PaletteSampler, vec2(idx, 0.0f));
+	return texelFetch(PaletteSampler, ivec2(int(idx), 0), 0);
+}
+
+vec4 sample_p_norm(float u)
+{
+	return sample_p(uint(u * 255.5f));
 }
 
 vec4 clamp_wrap_uv(vec4 uv)
@@ -202,7 +207,7 @@ mat4 sample_4c(vec4 uv)
     return c;
 }
 
-vec4 sample_4_index(vec4 uv)
+uvec4 sample_4_index(vec4 uv)
 {
     vec4 c;
 
@@ -218,26 +223,22 @@ vec4 sample_4_index(vec4 uv)
     c.z = sample_c(uv.xw).a;
     c.w = sample_c(uv.zw).a;
 
-    uvec4 i = uvec4(c * 255.0f + 0.5f); // Denormalize value
+    uvec4 i = uvec4(c * 255.5f); // Denormalize value
 
 #if PS_PAL_FMT == 1
     // 4HL
-    return vec4(i & 0xFu) / 255.0f;
-
+    return i & 0xFu
 #elif PS_PAL_FMT == 2
     // 4HH
-    return vec4(i >> 4u) / 255.0f;
-
+    return i >> 4u;
 #else
-    // Most of texture will hit this code so keep normalized float value
-
-    // 8 bits
-    return c;
+    // 8
+    return i;
 #endif
 
 }
 
-mat4 sample_4p(vec4 u)
+mat4 sample_4p(uvec4 u)
 {
     mat4 c;
 
@@ -398,7 +399,7 @@ vec4 fetch_red()
 #else
     vec4 rt = fetch_raw_color();
 #endif
-    return sample_p(rt.r) * 255.0f;
+    return sample_p_norm(rt.r) * 255.0f;
 }
 
 vec4 fetch_green()
@@ -409,7 +410,7 @@ vec4 fetch_green()
 #else
     vec4 rt = fetch_raw_color();
 #endif
-    return sample_p(rt.g) * 255.0f;
+    return sample_p_norm(rt.g) * 255.0f;
 }
 
 vec4 fetch_blue()
@@ -420,19 +421,19 @@ vec4 fetch_blue()
 #else
     vec4 rt = fetch_raw_color();
 #endif
-    return sample_p(rt.b) * 255.0f;
+    return sample_p_norm(rt.b) * 255.0f;
 }
 
 vec4 fetch_alpha()
 {
     vec4 rt = fetch_raw_color();
-    return sample_p(rt.a) * 255.0f;
+    return sample_p_norm(rt.a) * 255.0f;
 }
 
 vec4 fetch_rgb()
 {
     vec4 rt = fetch_raw_color();
-    vec4 c = vec4(sample_p(rt.r).r, sample_p(rt.g).g, sample_p(rt.b).b, 1.0f);
+    vec4 c = vec4(sample_p_norm(rt.r).r, sample_p_norm(rt.g).g, sample_p_norm(rt.b).b, 1.0f);
     return c * 255.0f;
 }
 

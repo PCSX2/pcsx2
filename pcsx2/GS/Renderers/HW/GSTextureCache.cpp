@@ -3244,7 +3244,7 @@ void GSTextureCache::Palette::InitializeTexture()
 		// sampling such texture are always normalized by 255.
 		// This is because indexes are stored as normalized values of an RGBA texture (e.g. index 15 will be read as (15/255),
 		// and therefore will read texel 15/255 * texture size).
-		m_tex_palette = g_gs_device->CreateTexture(256, 1, 1, GSTexture::Format::Color);
+		m_tex_palette = g_gs_device->CreateTexture(m_pal, 1, 1, GSTexture::Format::Color);
 		m_tex_palette->Update(GSVector4i(0, 0, m_pal, 1), m_clut, m_pal * sizeof(m_clut[0]));
 	}
 }
