@@ -30,15 +30,11 @@
 **/x64/Debug*
 **/x64/Devel*
 
-**/bin/PCSX2-linux.sh
-
 _ReSharper.*
 pcsx2.snapshot_*
 svnrev.h
 
-/build
-/build_dev
-/build_dbg
+/build*
 /obj-*
 *.obj
 
@@ -47,8 +43,6 @@ Thumbs.db
 
 Debug.txt
 install_log.txt
-padLog.txt
-GS_opengl_debug.txt
 bad_shader_*
 
 Debug
@@ -74,10 +68,7 @@ oprofile_data/
 /bin/**/*.ilk
 /bin/**/*.lib
 /bin/**/*.pdb
-/bin/pcsx2
-/bin/PCSX2-linux.sh
-/bin/*ReplayLoader
-/bin/GS*.txt
+/bin/pcsx2*
 /bin/qt.conf
 /bin/bios
 /bin/cache

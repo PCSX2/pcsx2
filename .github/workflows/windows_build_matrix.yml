@@ -46,3 +46,22 @@ jobs:
       configuration: CMake
       buildSystem: cmake
     secrets: inherit
+
+  build_qt_clang_sse4:
+    needs: lint_vs_proj_files
+    name: "SSE4"
+    uses: ./.github/workflows/windows_build_qt.yml
+    with:
+      jobName: Qt Clang
+      configuration: Release Clang
+      simd: "SSE4"
+    secrets: inherit
+
+  build_qt_clang_avx2:
+    needs: lint_vs_proj_files
+    name: "AVX2"
+    uses: ./.github/workflows/windows_build_qt.yml
+    with:
+      jobName: Qt Clang
+      configuration: Release Clang AVX2
+    secrets: inherit

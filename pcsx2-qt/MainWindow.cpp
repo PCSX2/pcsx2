@@ -1364,7 +1364,7 @@ void MainWindow::checkForSettingChanges()
 
 std::optional<WindowInfo> MainWindow::getWindowInfo()
 {
-	if (isRenderingToMain())
+	if (!m_display_widget || isRenderingToMain())
 		return QtUtils::GetWindowInfoForWidget(this);
 	else if (QWidget* widget = getDisplayContainer())
 		return QtUtils::GetWindowInfoForWidget(widget);

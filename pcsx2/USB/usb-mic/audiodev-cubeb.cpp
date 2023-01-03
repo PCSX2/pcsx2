@@ -249,17 +249,6 @@ namespace usb_mic
 			ResetBuffers();
 		}
 
-		bool CubebAudioDevice::Compare(AudioDevice* compare) const
-		{
-			if (compare)
-			{
-				CubebAudioDevice* src = static_cast<CubebAudioDevice*>(compare);
-				if (src && mDeviceName == src->mDeviceName)
-					return true;
-			}
-			return false;
-		}
-
 		void CubebAudioDevice::ResetBuffers()
 		{
 			// TODO: Do we want to make the buffer size adjustable? Currently 100ms max.

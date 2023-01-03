@@ -174,7 +174,7 @@ void CommonHost::SetDataDirectory()
 		const char* home_dir = getenv("HOME");
 		if (home_dir)
 		{
-#ifndef XDG_STD
+#ifdef USE_LEGACY_USER_DIRECTORY
 			EmuFolders::DataRoot = Path::Combine(home_dir, "PCSX2");
 #else
 			// ~/.config should exist, but just in case it doesn't and this is a fresh profile..

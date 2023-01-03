@@ -25,16 +25,15 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-if [ "$#" -ne 3 ]; then
-    echo "Syntax: $0 <path to PCSX2 directory> <deps prefix> <output name>"
+if [ "$#" -ne 4 ]; then
+    echo "Syntax: $0 <path to pcsx2 directory> <path to build directory> <deps prefix> <output name>"
     exit 1
 fi
 
 PCSX2DIR=$1
-DEPSDIR=$2
-NAME=$3
-
-BINDIR="$PCSX2DIR/bin"
+BUILDDIR=$2
+DEPSDIR=$3
+NAME=$4
 
 BINARY=pcsx2-qt
 APPDIRNAME=PCSX2.AppDir
@@ -199,11 +198,10 @@ OUTDIR=$(realpath "./$APPDIRNAME")
 SCRIPTDIR=$(dirname "${BASH_SOURCE[0]}")
 rm -fr "$OUTDIR"
 mkdir "$OUTDIR"
-
-mkdir -p "$OUTDIR/usr/bin" "$OUTDIR/usr/lib" "$OUTDIR/usr/lib/pulseaudio"
+mkdir "$OUTDIR/usr"
 
 echo "Copying binary and resources..."
-cp -a "$BINDIR/$BINARY" "$BINDIR/resources" "$OUTDIR/usr/bin"
+cp -a "$BUILDDIR/bin" "$OUTDIR/usr"
 
 # Patch RPATH so the binary goes hunting for shared libraries in the AppDir instead of system.
 echo "Patching RPATH in ${BINARY}..."
@@ -214,6 +212,7 @@ patchelf --set-rpath '$ORIGIN/../lib' "$OUTDIR/usr/bin/$BINARY"
 
 # Libraries we pull in from the system.
 echo "Copying system libraries..."
+mkdir -p "$OUTDIR/usr/lib" "$OUTDIR/usr/lib/pulseaudio"
 for lib in "${SYSLIBS[@]}"; do
 	blib=$(basename "$lib")
 	if [ -f "/lib/x86_64-linux-gnu/$lib" ]; then

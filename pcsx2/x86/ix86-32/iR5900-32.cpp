@@ -756,15 +756,7 @@ void R5900::Dynarec::OpcodeImpl::recSYSCALL()
 	EE::Profiler.EmitOp(eeOpcode::SYSCALL);
 
 	recCall(R5900::Interpreter::OpcodeImpl::SYSCALL);
-
-	xCMP(ptr32[&cpuRegs.pc], pc);
-	j8Ptr[0] = JE8(0);
-	xADD(ptr32[&cpuRegs.cycle], scaleblockcycles());
-	// Note: technically the address is 0x8000_0180 (or 0x180)
-	// (if CPU is booted)
-	xJMP((void*)DispatcherReg);
-	x86SetJ8(j8Ptr[0]);
-	//g_branch = 2;
+	g_branch = 2; // Indirect branch with event check.
 }
 
 ////////////////////////////////////////////////////
@@ -773,13 +765,7 @@ void R5900::Dynarec::OpcodeImpl::recBREAK()
 	EE::Profiler.EmitOp(eeOpcode::BREAK);
 
 	recCall(R5900::Interpreter::OpcodeImpl::BREAK);
-
-	xCMP(ptr32[&cpuRegs.pc], pc);
-	j8Ptr[0] = JE8(0);
-	xADD(ptr32[&cpuRegs.cycle], scaleblockcycles());
-	xJMP((void*)DispatcherEvent);
-	x86SetJ8(j8Ptr[0]);
-	//g_branch = 2;
+	g_branch = 2; // Indirect branch with event check.
 }
 
 // Size is in dwords (4 bytes)
@@ -2332,6 +2318,11 @@ static void recRecompile(const u32 startpc)
 				if (_Funct_ == 8 || _Funct_ == 9) // JR, JALR
 				{
 					s_nEndBlock = i + 8;
+					goto StartRecomp;
+				}
+				else if (_Funct_ == 12 || _Funct_ == 13) // SYSCALL, BREAK
+				{
+					s_nEndBlock = i + 4; // No delay slot.
 					goto StartRecomp;
 				}
 				break;

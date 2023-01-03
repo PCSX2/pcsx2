@@ -234,6 +234,8 @@ void CpuWidget::onVMPaused()
 
 void CpuWidget::updateBreakpoints()
 {
+	m_ui.breakpointList->blockSignals(true);
+
 	m_ui.breakpointList->setRowCount(0);
 	m_bplistObjects.clear();
 
@@ -355,6 +357,8 @@ void CpuWidget::updateBreakpoints()
 
 		iter++;
 	}
+
+	m_ui.breakpointList->blockSignals(false);
 }
 
 void CpuWidget::fixBPListColumnSize()
@@ -373,6 +377,9 @@ void CpuWidget::fixBPListColumnSize()
 
 void CpuWidget::onBPListContextMenu(QPoint pos)
 {
+	if (!m_cpu.isAlive())
+		return;
+
 	if (m_bplistContextMenu)
 		delete m_bplistContextMenu;
 
@@ -464,6 +471,21 @@ void CpuWidget::onBPListItemChange(QTableWidgetItem* item)
 			});
 			updateBreakpoints();
 		}
+	}
+	else if (item->column() == 6)
+	{
+		auto bpmc = m_bplistObjects.at(item->row());
+
+		Host::RunOnCPUThread([this, bpmc, checked = item->checkState()] {
+			if (bpmc.bp)
+			{
+				CBreakPoints::ChangeBreakPoint(m_cpu.getCpuType(), bpmc.bp->addr, checked);
+			}
+			else
+			{
+				CBreakPoints::ChangeMemCheck(m_cpu.getCpuType(), bpmc.mc->start, bpmc.mc->end, bpmc.mc->cond, MemCheckResult(bpmc.mc->result ^ MEMCHECK_BREAK));
+			}
+		});
 	}
 }
 
@@ -951,6 +973,9 @@ std::vector<u32> startWorker(DebugInterface* cpu, int type, u32 start, u32 end, 
 
 void CpuWidget::onSearchButtonClicked()
 {
+	if (!m_cpu.isAlive())
+		return;
+
 	const int searchType = m_ui.cmbSearchType->currentIndex();
 	const bool searchHex = m_ui.chkSearchHex->isChecked();
 

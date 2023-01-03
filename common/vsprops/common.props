@@ -12,7 +12,9 @@
     <BuildString />
     <BuildString Condition="$(Configuration.Contains(Debug))">-dbg</BuildString>
     <BuildString Condition="$(Configuration.Contains(Devel))">-dev</BuildString>
-    <EXEString>$(ProjectName)$(ArchString)$(SSEString)$(BuildString)</EXEString>
+    <ToolkitString />
+    <ToolkitString Condition="$(Configuration.Contains(Clang))">-clang</ToolkitString>
+    <EXEString>$(ProjectName)$(ArchString)$(SSEString)$(ToolkitString)$(BuildString)</EXEString>
   </PropertyGroup>
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30128.1</_ProjectFileVersion>
