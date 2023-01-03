@@ -3458,6 +3458,8 @@ SCES-52033:
   compat: 5
   gsHWFixes:
     autoFlush: 1 # Fixes lights going through walls.
+    preloadFrameData: 1 # Fixes light flicker.
+    halfPixelOffset: 2 # Corrects light position.
   gameFixes:
     - EETimingHack # Fixes random hangs.
   patches:
@@ -4909,6 +4911,8 @@ SCKA-20032:
   region: "NTSC-K"
   gsHWFixes:
     autoFlush: 1 # Fixes lights going through walls.
+    preloadFrameData: 1 # Fixes light flicker.
+    halfPixelOffset: 2 # Corrects light position.
   gameFixes:
     - EETimingHack # Fixes random hangs.
   patches:
@@ -7533,6 +7537,8 @@ SCUS-97264:
   compat: 5
   gsHWFixes:
     autoFlush: 1 # Fixes lights going through walls.
+    preloadFrameData: 1 # Fixes light flicker.
+    halfPixelOffset: 2 # Corrects light position.
   gameFixes:
     - EETimingHack # Fixes random hangs.
   patches:
@@ -7847,6 +7853,8 @@ SCUS-97377:
   region: "NTSC-U"
   gsHWFixes:
     autoFlush: 1 # Fixes lights going through walls.
+    preloadFrameData: 1 # Fixes light flicker.
+    halfPixelOffset: 2 # Corrects light position.
 SCUS-97378:
   name: "EyeToy and EyeToy Play [Demo]"
   region: "NTSC-U"
@@ -8478,6 +8486,8 @@ SCUS-97520:
   region: "NTSC-U"
   gsHWFixes:
     autoFlush: 1 # Fixes lights going through walls.
+    preloadFrameData: 1 # Fixes light flicker.
+    halfPixelOffset: 2 # Corrects light position.
 SCUS-97523:
   name: "EyeToy - Operation Spy!"
   region: "NTSC-U"
@@ -50037,6 +50047,8 @@ TCES-52033:
   region: "PAL-E"
   gsHWFixes:
     autoFlush: 1 # Fixes lights going through walls.
+    preloadFrameData: 1 # Fixes light flicker.
+    halfPixelOffset: 2 # Corrects light position.
   gameFixes:
     - EETimingHack # Fixes random hangs.
 TCES-52042:
