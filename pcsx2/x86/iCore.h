@@ -98,7 +98,7 @@ enum x86type : u8
 struct _x86regs
 {
 	u8 inuse;
-	s8 reg; // value of 0 - not used; value of -1 is unassigned.
+	s8 reg;
 	u8 mode;
 	u8 needed;
 	u8 type; // X86TYPE_
