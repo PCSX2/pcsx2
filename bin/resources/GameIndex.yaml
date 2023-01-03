@@ -19841,6 +19841,8 @@ SLES-54549:
 SLES-54550:
   name: "White Van Racer"
   region: "PAL-E"
+  gameFixes:
+    - InstantDMAHack # Fixes DMA timeout errors.
 SLES-54551:
   name: "Premier Manager 2006-2007"
   region: "PAL-G"

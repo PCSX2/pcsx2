@@ -1208,7 +1208,7 @@ static void RegWrite_VoiceAddr(u16 value)
 		case 2:
 			{
 				u32* LoopReg;
-				if ((Cycles - thisvoice.PlayCycle) < 4)
+				if ((Cycles - thisvoice.PlayCycle) < 4 && (int)(thisvoice.LoopCycle - thisvoice.PlayCycle) < 0)
 				{
 					LoopReg = &thisvoice.PendingLoopStartA;
 					thisvoice.PendingLoopStart = true;
@@ -1226,7 +1226,7 @@ static void RegWrite_VoiceAddr(u16 value)
 		case 3:
 			{
 				u32* LoopReg;
-				if ((Cycles - thisvoice.PlayCycle) < 4)
+				if ((Cycles - thisvoice.PlayCycle) < 4 && (int)(thisvoice.LoopCycle - thisvoice.PlayCycle) < 0)
 				{
 					LoopReg = &thisvoice.PendingLoopStartA;
 					thisvoice.PendingLoopStart = true;
