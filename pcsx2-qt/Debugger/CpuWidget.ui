@@ -322,7 +322,7 @@
         <enum>QTabWidget::South</enum>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="tab_memory">
         <property name="sizePolicy">
@@ -403,7 +403,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QTableWidget" name="breakpointList">
+          <widget class="QTableView" name="breakpointList">
            <property name="contextMenuPolicy">
             <enum>Qt::CustomContextMenu</enum>
            </property>
@@ -413,59 +413,6 @@
            <property name="gridStyle">
             <enum>Qt::NoPen</enum>
            </property>
-           <property name="rowCount">
-            <number>0</number>
-           </property>
-           <attribute name="horizontalHeaderCascadingSectionResizes">
-            <bool>false</bool>
-           </attribute>
-           <attribute name="horizontalHeaderDefaultSectionSize">
-            <number>75</number>
-           </attribute>
-           <attribute name="horizontalHeaderStretchLastSection">
-            <bool>false</bool>
-           </attribute>
-           <attribute name="verticalHeaderVisible">
-            <bool>false</bool>
-           </attribute>
-           <attribute name="verticalHeaderCascadingSectionResizes">
-            <bool>false</bool>
-           </attribute>
-           <column>
-            <property name="text">
-             <string>Type</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Offset</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Size / Label</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Opcode</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Condition</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Hits</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Enabled</string>
-            </property>
-           </column>
           </widget>
          </item>
         </layout>

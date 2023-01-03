@@ -22,6 +22,9 @@
     <Filter Include="Debugger">
       <UniqueIdentifier>{ddb40cc4-9996-4ade-b647-eb549063553c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Debugger\Models">
+      <UniqueIdentifier>{f4084ca0-d9d5-4584-b9d2-063db9f67de2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\pcsx2\PCSX2.rc">
@@ -274,6 +277,9 @@
     <ClCompile Include="Debugger\BreakpointDialog.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
+    <ClCompile Include="Debugger\Models\BreakpointModel.cpp">
+      <Filter>Debugger\Models</Filter>
+    </ClCompile>
     <ClCompile Include="$(IntDir)Debugger\moc_CpuWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
@@ -290,6 +296,9 @@
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)Debugger\moc_BreakpointDialog.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\Models\moc_BreakpointModel.cpp">
       <Filter>moc</Filter>
     </ClCompile>
   </ItemGroup>
@@ -428,6 +437,9 @@
     </QtMoc>
     <QtMoc Include="Debugger\BreakpointDialog.h">
       <Filter>Debugger</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Models\BreakpointModel.h">
+      <Filter>Debugger\Models</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>

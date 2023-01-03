@@ -134,6 +134,8 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/BreakpointDialog.cpp
 	Debugger/BreakpointDialog.h
 	Debugger/BreakpointDialog.ui
+	Debugger/Models/BreakpointModel.cpp
+	Debugger/Models/BreakpointModel.h
 	Tools/InputRecording/NewInputRecordingDlg.cpp
 	Tools/InputRecording/NewInputRecordingDlg.h
 	Tools/InputRecording/NewInputRecordingDlg.ui

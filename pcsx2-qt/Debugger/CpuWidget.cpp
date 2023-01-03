@@ -19,6 +19,7 @@
 
 #include "DisassemblyWidget.h"
 #include "BreakpointDialog.h"
+#include "Models/BreakpointModel.h"
 
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/Breakpoints.h"
@@ -27,7 +28,6 @@
 #include "common/BitCast.h"
 
 #include "QtUtils.h"
-#include <QtWidgets/QHeaderView>
 #include <QtGui/QClipboard>
 #include <QtWidgets/QMessageBox>
 #include <QtConcurrent/QtConcurrent>
@@ -40,6 +40,7 @@ using namespace MipsStackWalk;
 
 CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	: m_cpu(cpu)
+	, m_bpModel(cpu)
 {
 	m_ui.setupUi(this);
 
@@ -55,9 +56,10 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	connect(m_ui.registerWidget, &RegisterWidget::VMUpdate, this, &CpuWidget::reloadCPUWidgets);
 	connect(m_ui.disassemblyWidget, &DisassemblyWidget::VMUpdate, this, &CpuWidget::reloadCPUWidgets);
 
-	connect(m_ui.tabWidget, &QTabWidget::currentChanged, [this] { fixBPListColumnSize(); });
-	connect(m_ui.breakpointList, &QTableWidget::customContextMenuRequested, this, &CpuWidget::onBPListContextMenu);
-	connect(m_ui.breakpointList, &QTableWidget::itemChanged, this, &CpuWidget::onBPListItemChange);
+	connect(m_ui.breakpointList, &QTableView::customContextMenuRequested, this, &CpuWidget::onBPListContextMenu);
+	connect(m_ui.breakpointList, &QTableView::doubleClicked, this, &CpuWidget::onBPListDoubleClicked);
+
+	m_ui.breakpointList->setModel(&m_bpModel);
 
 	connect(m_ui.threadList, &QTableWidget::customContextMenuRequested, this, &CpuWidget::onThreadListContextMenu);
 	connect(m_ui.threadList, &QTableWidget::cellDoubleClicked, this, &CpuWidget::onThreadListDoubleClick);
@@ -86,9 +88,6 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	m_ui.registerWidget->SetCpu(&cpu);
 	m_ui.memoryviewWidget->SetCpu(&cpu);
 
-	if (m_cpu.getCpuType() == BREAKPOINT_EE)
-		CBreakPoints::SetUpdateHandler(std::bind(&CpuWidget::reloadCPUWidgets, this));
-
 	this->repaint();
 }
 
@@ -99,11 +98,6 @@ void CpuWidget::paintEvent(QPaintEvent* event)
 	m_ui.registerWidget->update();
 	m_ui.disassemblyWidget->update();
 	m_ui.memoryviewWidget->update();
-}
-
-void CpuWidget::resizeEvent(QResizeEvent* event)
-{
-	fixBPListColumnSize();
 }
 
 // The cpu shouldn't be alive when these are called
@@ -234,145 +228,18 @@ void CpuWidget::onVMPaused()
 
 void CpuWidget::updateBreakpoints()
 {
-	m_ui.breakpointList->blockSignals(true);
-
-	m_ui.breakpointList->setRowCount(0);
-	m_bplistObjects.clear();
-
-	int iter = 0;
-	for (const auto& breakpoint : CBreakPoints::GetBreakpoints())
-	{
-		if (breakpoint.cpu != m_cpu.getCpuType())
-			continue;
-
-		if (breakpoint.temporary)
-			continue;
-
-		m_ui.breakpointList->insertRow(iter);
-		BreakpointObject obj;
-		obj.bp = std::make_shared<BreakPoint>(breakpoint);
-		m_bplistObjects.push_back(obj);
-
-		// Type (R/O)
-		QTableWidgetItem* typeItem = new QTableWidgetItem();
-		typeItem->setText(tr("Execute"));
-		typeItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 0, typeItem);
-
-		// Offset (R/O), possibly allow changing offset???
-		QTableWidgetItem* offsetItem = new QTableWidgetItem();
-		offsetItem->setText(FilledQStringFromValue(breakpoint.addr, 16));
-		offsetItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 1, offsetItem);
-
-		// Size & Label (R/O)
-		QTableWidgetItem* sizeLabelItem = new QTableWidgetItem();
-		sizeLabelItem->setText(m_cpu.GetSymbolMap().GetLabelString(breakpoint.addr).c_str());
-		sizeLabelItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 2, sizeLabelItem);
-
-		// Opcode (R/O)
-		QTableWidgetItem* opcodeItem = new QTableWidgetItem();
-		opcodeItem->setText(m_ui.disassemblyWidget->GetLineDisasm(breakpoint.addr));
-		opcodeItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 3, opcodeItem);
-
-		// Condition (R/W)
-		QTableWidgetItem* conditionItem = new QTableWidgetItem();
-		conditionItem->setText(breakpoint.hasCond ? QString::fromLocal8Bit(breakpoint.cond.expressionString) : "");
-		conditionItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEditable);
-		m_ui.breakpointList->setItem(iter, 4, conditionItem);
-
-		// Hits (R/O) (Disabled for execute bp)
-		QTableWidgetItem* hitsItem = new QTableWidgetItem();
-		hitsItem->setText("N/A");
-		hitsItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 5, hitsItem);
-
-		// Enabled (R/W)
-		QTableWidgetItem* enabledItem = new QTableWidgetItem();
-		enabledItem->setCheckState(breakpoint.enabled ? Qt::Checked : Qt::Unchecked);
-		enabledItem->setFlags(Qt::ItemFlag::ItemIsUserCheckable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.breakpointList->setItem(iter, 6, enabledItem);
-
-		iter++;
-	}
-
-	for (const auto& memcheck : CBreakPoints::GetMemChecks())
-	{
-		if (memcheck.cpu != m_cpu.getCpuType())
-			continue;
-
-		m_ui.breakpointList->insertRow(iter);
-		BreakpointObject obj;
-		obj.mc = std::make_shared<MemCheck>(memcheck);
-		m_bplistObjects.push_back(obj);
-
-		// Type (R/O)
-		QTableWidgetItem* typeItem = new QTableWidgetItem();
-		QString type("");
-		type += (memcheck.cond & MEMCHECK_READ) ? tr("Read") : "";
-		type += ((memcheck.cond & MEMCHECK_BOTH) == MEMCHECK_BOTH) ? ", " : " ";
-		type += (memcheck.cond & MEMCHECK_WRITE) ? (memcheck.cond & MEMCHECK_WRITE_ONCHANGE) ? tr("Write(C)") : tr("Write") : "";
-		typeItem->setText(type);
-		typeItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 0, typeItem);
-
-		// Offset (R/O), possibly allow changing offset?
-		QTableWidgetItem* offsetItem = new QTableWidgetItem();
-		offsetItem->setText(FilledQStringFromValue(memcheck.start, 16));
-		offsetItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 1, offsetItem);
-
-		// Size & Label (R/O)
-		QTableWidgetItem* sizeLabelItem = new QTableWidgetItem();
-		sizeLabelItem->setText(QString::number(memcheck.end - memcheck.start, 16));
-		sizeLabelItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEditable);
-		m_ui.breakpointList->setItem(iter, 2, sizeLabelItem);
-
-		// Opcode (R/O)
-		QTableWidgetItem* opcodeItem = new QTableWidgetItem();
-		opcodeItem->setText(m_ui.disassemblyWidget->GetLineDisasm(memcheck.start));
-		opcodeItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 3, opcodeItem);
-
-		// Condition (R/W) (Disabled for memchecks)
-		QTableWidgetItem* conditionItem = new QTableWidgetItem();
-		conditionItem->setText("N/A");
-		conditionItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 4, conditionItem);
-
-
-		// Hits (R/O)
-		QTableWidgetItem* hitsItem = new QTableWidgetItem();
-		hitsItem->setText(QString::number(memcheck.numHits));
-		hitsItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 5, hitsItem);
-
-		// Enabled (R/W)
-		QTableWidgetItem* enabledItem = new QTableWidgetItem();
-		enabledItem->setCheckState((memcheck.result & MEMCHECK_BREAK) ? Qt::Checked : Qt::Unchecked);
-		enabledItem->setFlags(Qt::ItemFlag::ItemIsUserCheckable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.breakpointList->setItem(iter, 6, enabledItem);
-
-		iter++;
-	}
-
-	m_ui.breakpointList->blockSignals(false);
+	m_bpModel.refreshData();
 }
 
-void CpuWidget::fixBPListColumnSize()
+void CpuWidget::onBPListDoubleClicked(const QModelIndex& index)
 {
-	m_ui.breakpointList->horizontalHeader()->resizeSection(0, 90);
-	m_ui.breakpointList->horizontalHeader()->resizeSection(1, 65);
-	m_ui.breakpointList->horizontalHeader()->resizeSection(5, 40);
-	m_ui.breakpointList->horizontalHeader()->resizeSection(6, 60);
-
-	constexpr int currentWidthTotal = 90 + 65 + 40 + 60;
-	const int sectionWidth = (m_ui.breakpointList->width() - currentWidthTotal) / 3.0f;
-	m_ui.breakpointList->horizontalHeader()->resizeSection(2, sectionWidth);
-	m_ui.breakpointList->horizontalHeader()->resizeSection(3, sectionWidth);
-	m_ui.breakpointList->horizontalHeader()->resizeSection(4, sectionWidth);
+	if (index.isValid())
+	{
+		if (index.column() == BreakpointModel::OFFSET)
+		{
+			m_ui.disassemblyWidget->gotoAddress(m_bpModel.data(index).toString().toUInt(nullptr, 16));
+		}
+	}
 }
 
 void CpuWidget::onBPListContextMenu(QPoint pos)
@@ -397,8 +264,6 @@ void CpuWidget::onBPListContextMenu(QPoint pos)
 		connect(editAction, &QAction::triggered, this, &CpuWidget::contextBPListEdit);
 		m_bplistContextMenu->addAction(editAction);
 
-		// Only copy when one column is selected
-		// Shouldn't be trivial to support cross column copy
 		if (selModel->selectedIndexes().count() == 1)
 		{
 			QAction* copyAction = new QAction(tr("Copy"), m_ui.breakpointList);
@@ -414,81 +279,6 @@ void CpuWidget::onBPListContextMenu(QPoint pos)
 	m_bplistContextMenu->popup(m_ui.breakpointList->mapToGlobal(pos));
 }
 
-void CpuWidget::onBPListItemChange(QTableWidgetItem* item)
-{
-	if (item->column() == 2 && m_bplistObjects.at(item->row()).mc) // Size / Label column. Size is editable for memchecks
-	{
-		const auto& mc = m_bplistObjects.at(item->row()).mc;
-
-		bool ok;
-		u32 val = item->text().toUInt(&ok, 16);
-		if (!ok)
-		{
-			QMessageBox::warning(this, tr("Error"), tr("Invalid size \"%1\"").arg(item->text()));
-			item->setText(QString::number((mc->end - mc->start), 16));
-			return;
-		}
-
-		if (val == (mc->end - mc->start))
-		{
-			return;
-		}
-		Host::RunOnCPUThread([this, val, mc] {
-			CBreakPoints::RemoveMemCheck(m_cpu.getCpuType(), mc->start, mc->end);
-
-			CBreakPoints::AddMemCheck(m_cpu.getCpuType(), mc->start, mc->start + val, mc->cond, mc->result);
-		});
-		updateBreakpoints();
-	}
-	else if (item->column() == 4 && m_bplistObjects.at(item->row()).bp) // Condition column. Only editable for breakpoints
-	{
-		const auto& bp = m_bplistObjects.at(item->row()).bp;
-
-		if (item->text().isEmpty() && bp->hasCond)
-		{
-			Host::RunOnCPUThread([this, bp] {
-				CBreakPoints::ChangeBreakPointRemoveCond(m_cpu.getCpuType(), bp->addr);
-			});
-
-			updateBreakpoints();
-		}
-		else if (item->text() != QString::fromLocal8Bit(&bp->cond.expressionString[0]))
-		{
-			PostfixExpression expression;
-
-			if (!m_cpu.initExpression(item->text().toLocal8Bit().constData(), expression))
-			{
-				QMessageBox::warning(this, tr("Error"), tr("Invalid condition \"%1\"").arg(item->text()));
-				item->setText(QString::fromLocal8Bit(&bp->cond.expressionString[0]));
-				return;
-			}
-			BreakPointCond cond;
-			cond.debug = &m_cpu;
-			cond.expression = expression;
-			strcpy(&cond.expressionString[0], item->text().toLocal8Bit().constData());
-			Host::RunOnCPUThread([this, bp, cond] {
-				CBreakPoints::ChangeBreakPointAddCond(m_cpu.getCpuType(), bp->addr, cond);
-			});
-			updateBreakpoints();
-		}
-	}
-	else if (item->column() == 6)
-	{
-		auto bpmc = m_bplistObjects.at(item->row());
-
-		Host::RunOnCPUThread([this, bpmc, checked = item->checkState()] {
-			if (bpmc.bp)
-			{
-				CBreakPoints::ChangeBreakPoint(m_cpu.getCpuType(), bpmc.bp->addr, checked);
-			}
-			else
-			{
-				CBreakPoints::ChangeMemCheck(m_cpu.getCpuType(), bpmc.mc->start, bpmc.mc->end, bpmc.mc->cond, MemCheckResult(bpmc.mc->result ^ MEMCHECK_BREAK));
-			}
-		});
-	}
-}
-
 void CpuWidget::contextBPListCopy()
 {
 	const QItemSelectionModel* selModel = m_ui.breakpointList->selectionModel();
@@ -496,7 +286,7 @@ void CpuWidget::contextBPListCopy()
 	if (!selModel->hasSelection())
 		return;
 
-	QGuiApplication::clipboard()->setText(m_ui.breakpointList->selectedItems().first()->text());
+	QGuiApplication::clipboard()->setText(m_bpModel.data(selModel->currentIndex()).toString());
 }
 
 void CpuWidget::contextBPListDelete()
@@ -506,34 +296,21 @@ void CpuWidget::contextBPListDelete()
 	if (!selModel->hasSelection())
 		return;
 
-	int last_row = -1;
-	for (auto& index : selModel->selectedIndexes())
+	QModelIndexList rows = selModel->selectedIndexes();
+
+	std::sort(rows.begin(), rows.end(), [](const QModelIndex& a, const QModelIndex& b) {
+		return a.row() > b.row();
+	});
+
+	for (const QModelIndex& index : rows)
 	{
-		if (index.row() == last_row) // If the next index is in the same row, don't delete that breakpoint twice!
-			continue;
-		auto& bpObject = m_bplistObjects.at(index.row());
-
-		Host::RunOnCPUThread([&] {
-			if (bpObject.bp)
-			{
-				CBreakPoints::RemoveBreakPoint(m_cpu.getCpuType(), bpObject.bp->addr);
-			}
-			else
-			{
-				CBreakPoints::RemoveMemCheck(m_cpu.getCpuType(), bpObject.mc->start, bpObject.mc->end);
-			}
-		});
-
-		last_row = index.row();
+		m_bpModel.removeRows(index.row(), 1);
 	}
-	updateBreakpoints();
 }
 
 void CpuWidget::contextBPListNew()
 {
-	BreakpointDialog* bpDialog = new BreakpointDialog(this, &m_cpu);
-	connect(bpDialog, &BreakpointDialog::accepted, this, &CpuWidget::updateBreakpoints);
-
+	BreakpointDialog* bpDialog = new BreakpointDialog(this, &m_cpu, m_bpModel);
 	bpDialog->show();
 }
 
@@ -544,20 +321,11 @@ void CpuWidget::contextBPListEdit()
 	if (!selModel->hasSelection())
 		return;
 
-	auto& bpObject = m_bplistObjects.at(selModel->selectedIndexes().first().row());
+	const int selectedRow = selModel->selectedIndexes().first().row();
 
-	BreakpointDialog* bpDialog;
+	auto bpObject = m_bpModel.at(selectedRow);
 
-	if (bpObject.bp)
-	{
-		bpDialog = new BreakpointDialog(this, &m_cpu, bpObject.bp.get());
-	}
-	else
-	{
-		bpDialog = new BreakpointDialog(this, &m_cpu, bpObject.mc.get());
-	}
-
-	connect(bpDialog, &BreakpointDialog::accepted, this, &CpuWidget::updateBreakpoints);
+	BreakpointDialog* bpDialog = new BreakpointDialog(this, &m_cpu, m_bpModel, bpObject, selectedRow);
 	bpDialog->show();
 }
 
@@ -565,6 +333,8 @@ void CpuWidget::updateFunctionList(bool whenEmpty)
 {
 	if (!m_cpu.isAlive())
 		return;
+
+	m_bpModel.refreshData();
 
 	if (whenEmpty && m_ui.listFunctions->count())
 		return;
