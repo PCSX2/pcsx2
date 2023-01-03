@@ -303,7 +303,7 @@ layout(push_constant) uniform cb10
 
 void ps_convert_clut_8()
 {
-	uint index = min(uint(gl_FragCoord.x) + doffset, 240u);
+	uint index = min(uint(gl_FragCoord.x) + doffset, 255u);
 
 	// CLUT is arranged into 8 groups of 16x2, with the top-right and bottom-left quadrants swapped.
 	// This can probably be done better..

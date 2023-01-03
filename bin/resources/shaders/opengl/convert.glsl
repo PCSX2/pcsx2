@@ -335,7 +335,7 @@ uniform vec2 scale;
 
 void ps_convert_clut_8()
 {
-	uint index = min(uint(gl_FragCoord.x) + offset.z, 240u);
+	uint index = min(uint(gl_FragCoord.x) + offset.z, 255u);
 
 	// CLUT is arranged into 8 groups of 16x2, with the top-right and bottom-left quadrants swapped.
 	// This can probably be done better..

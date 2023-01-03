@@ -312,7 +312,7 @@ PS_OUTPUT ps_convert_clut_8(PS_INPUT input)
 {
 	float2 scale = BGColor.xy;
 	uint2 offset = uint2(uint(EMODA), uint(EMODC));
-	uint index = min(uint(input.p.x) + uint(DOFFSET), 240u);
+	uint index = min(uint(input.p.x) + uint(DOFFSET), 255u);
 
 	// CLUT is arranged into 8 groups of 16x2, with the top-right and bottom-left quadrants swapped.
 	// This can probably be done better..

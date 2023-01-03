@@ -221,6 +221,11 @@
               "minimum": 1,
               "maximum": 2
             },
+            "gpuTargetCLUT": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
             "gpuPaletteConversion": {
               "type": "integer",
               "minimum": 0,
