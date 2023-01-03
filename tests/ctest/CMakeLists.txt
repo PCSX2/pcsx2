@@ -1,60 +1,19 @@
-option(ENABLE_UNSUPPORTED_TESTS "Include tests that require instructions not supported by this computer" OFF)
+add_library(unittests-stub-host STATIC
+	StubHost.cpp
+)
+target_link_libraries(unittests-stub-host PUBLIC
+	PCSX2_FLAGS
+	PCSX2
+	common
+)
 
-set(avxdetect_code "
-	#ifdef __GNUC__
-		#include <cpuid.h>
-		void cpuid(int result[4], int leaf, int subleaf) {
-			__cpuid_count(leaf, subleaf, result[0], result[1], result[2], result[3]);
-		}
-	#else
-		#include <intrin.h>
-		#define cpuid __cpuidex
-	#endif
-	int test(int leaf, int subleaf, int reg, int bit) {
-		int res[4];
-		cpuid(res, 0, 0);
-		if (res[0] < leaf) { return 0; }
-		cpuid(res, leaf, subleaf);
-		return !!(res[reg] & (1 << bit));
-	}
-	int main() {
-		if (test(7, 0, 1,  5) /* AVX2  */) return 51;
-		if (test(1, 0, 2, 28) /* AVX   */) return 50;
-		if (test(1, 0, 2, 19) /* SSE41 */) return 41;
-		return 0;
-	}
-")
-
-if(ENABLE_UNSUPPORTED_TESTS)
-	set(native_vector_isa 99)
-else()
-	set(cc_backup ${CMAKE_CROSSCOMPILING})
-	set(CMAKE_CROSSCOMPILING 0)
-	file(WRITE "${CMAKE_BINARY_DIR}/avxdetect.c" "${avxdetect_code}")
-
-	try_run(
-		native_vector_isa
-		compile_result_unused
-		"${CMAKE_BINARY_DIR}"
-		"${CMAKE_BINARY_DIR}/avxdetect.c"
+if(APPLE)
+	# For some reason this doesn't get pulled in implicitly...
+	target_link_libraries(unittests-stub-host PUBLIC
+		"-framework Foundation"
+		"-framework Cocoa"
 	)
-
-	set(CMAKE_CROSSCOMPILING ${cc_backup})
 endif()
-if (MSVC)
-	set(compile_options_avx  /arch:AVX)
-	set(compile_options_avx2 /arch:AVX2)
-	set(definitions_sse4 __SSE4_1__)
-	set(definitions_avx  __SSE4_1__)
-	set(definitions_avx2 __SSE4_1__)
-else()
-	set(compile_options_sse4 -msse4.1)
-	set(compile_options_avx  -mavx)
-	set(compile_options_avx2 -mavx2 -mbmi -mbmi2)
-endif()
-set(isa_number_sse4 41)
-set(isa_number_avx  50)
-set(isa_number_avx2 51)
 
 enable_testing()
 add_custom_target(unittests)
@@ -62,8 +21,66 @@ add_custom_command(TARGET unittests POST_BUILD COMMAND ${CMAKE_CTEST_COMMAND})
 
 macro(add_pcsx2_test target)
 	add_executable(${target} EXCLUDE_FROM_ALL ${ARGN})
-	target_link_libraries(${target} PRIVATE gtest_main common)
-	target_compile_definitions(${target} PRIVATE "PCSX2_CORE")
+	target_link_libraries(${target} PRIVATE gtest_main unittests-stub-host)
+	add_dependencies(unittests ${target})
+	add_test(NAME ${target} COMMAND ${target})
+endmacro()
+
+macro(add_pcsx2_multi_isa_test target)
+	if(DISABLE_ADVANCE_SIMD)
+		# CMake pukes if there's no sources for an executable..
+		add_executable(${target} EXCLUDE_FROM_ALL "../StubHost.cpp")
+		target_link_libraries(${target} PUBLIC
+			PCSX2_FLAGS
+			PCSX2
+			common
+			gtest
+			gtest_main
+		)
+		if(APPLE)
+			target_link_libraries(${target} PUBLIC
+				"-framework Foundation"
+				"-framework Cocoa"
+			)
+		endif()
+		if(WIN32)
+			set(compile_options_avx2 /arch:AVX2)
+			set(compile_options_avx  /arch:AVX)
+		elseif(USE_GCC)
+			# GCC can't inline into multi-isa functions if we use march and mtune, but can if we use feature flags
+			set(compile_options_avx2 -msse4.1 -mavx -mavx2 -mbmi -mbmi2 -mfma)
+			set(compile_options_avx  -msse4.1 -mavx)
+			set(compile_options_sse4 -msse4.1)
+		else()
+			set(compile_options_avx2 -march=haswell -mtune=haswell)
+			set(compile_options_avx  -march=sandybridge -mtune=sandybridge)
+			set(compile_options_sse4 -msse4.1 -mtune=nehalem)
+		endif()
+		# ODR violation time!
+		# Everything would be fine if we only defined things in cpp files, but C++ tends to like inline functions (STL anyone?)
+		# Each ISA will bring with it its own copies of these inline header functions, and the linker gets to choose whichever one it wants!  Not fun if the linker chooses the avx2 version and uses it with everything
+		# Thankfully, most linkers don't choose at random.  When presented with a bunch of .o files, most linkers seem to choose the first implementation they see, so make sure you order these from oldest to newest
+		# Note: ld64 (macOS's linker) does not act the same way when presented with .a files, unless linked with `-force_load` (cmake WHOLE_ARCHIVE).
+		set(is_first_isa "1")
+		foreach(isa "sse4" "avx" "avx2")
+			add_library(${target}-${isa} STATIC ${ARGN})
+			target_link_libraries(${target}-${isa} PRIVATE PCSX2_FLAGS gtest)
+			target_compile_definitions(${target}-${isa} PRIVATE MULTI_ISA_UNSHARED_COMPILATION=isa_${isa} MULTI_ISA_IS_FIRST=${is_first_isa} ${pcsx2_defs_${isa}})
+			target_compile_options(${target}-${isa} PRIVATE ${compile_options_${isa}})
+			if (${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.24)
+				target_link_libraries(${target} PRIVATE $<LINK_LIBRARY:WHOLE_ARCHIVE,${target}-${isa}>)
+			elseif(APPLE)
+				message(FATAL_ERROR "MacOS builds with DISABLE_ADVANCE_SIMD=ON require CMake 3.24")
+			else()
+				target_link_libraries(${target} PRIVATE ${target}-${isa})
+			endif()
+			set(is_first_isa "0")
+		endforeach()
+	else()
+		add_executable(${target} EXCLUDE_FROM_ALL ${ARGN})
+	endif()
+
+	target_link_libraries(${target} PRIVATE gtest_main unittests-stub-host)
 	add_dependencies(unittests ${target})
 	add_test(NAME ${target} COMMAND ${target})
 endmacro()

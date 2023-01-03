@@ -131,6 +131,7 @@ jobs:
           done
 
       - name: Run Tests
+        if: inputs.gui == 'Qt'
         working-directory: build
         run: make -j$(getconf _NPROCESSORS_ONLN) unittests
 
