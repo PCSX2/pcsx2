@@ -280,6 +280,9 @@
     <ClCompile Include="Debugger\Models\BreakpointModel.cpp">
       <Filter>Debugger\Models</Filter>
     </ClCompile>
+    <ClCompile Include="Debugger\Models\ThreadModel.cpp">
+      <Filter>Debugger\Models</Filter>
+    </ClCompile>
     <ClCompile Include="$(IntDir)Debugger\moc_CpuWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
@@ -299,6 +302,9 @@
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)Debugger\Models\moc_BreakpointModel.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\Models\moc_ThreadModel.cpp">
       <Filter>moc</Filter>
     </ClCompile>
   </ItemGroup>
@@ -439,6 +445,9 @@
       <Filter>Debugger</Filter>
     </QtMoc>
     <QtMoc Include="Debugger\Models\BreakpointModel.h">
+      <Filter>Debugger\Models</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Models\ThreadModel.h">
       <Filter>Debugger\Models</Filter>
     </QtMoc>
   </ItemGroup>

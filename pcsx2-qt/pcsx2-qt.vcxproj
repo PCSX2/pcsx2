@@ -149,6 +149,7 @@
     <ClCompile Include="Debugger\RegisterWidget.cpp" />
     <ClCompile Include="Debugger\BreakpointDialog.cpp" />
     <ClCompile Include="Debugger\Models\BreakpointModel.cpp" />
+    <ClCompile Include="Debugger\Models\ThreadModel.cpp" />
     <ClCompile Include="Settings\BIOSSettingsWidget.cpp" />
     <ClCompile Include="Settings\ControllerBindingWidgets.cpp" />
     <ClCompile Include="Settings\ControllerGlobalSettingsWidget.cpp" />
@@ -230,6 +231,7 @@
     <QtMoc Include="Debugger\RegisterWidget.h" />
     <QtMoc Include="Debugger\BreakpointDialog.h" />
     <QtMoc Include="Debugger\Models\BreakpointModel.h" />
+    <QtMoc Include="Debugger\Models\ThreadModel.h" />
     <QtMoc Include="Settings\ControllerBindingWidgets.h" />
     <QtMoc Include="Settings\ControllerGlobalSettingsWidget.h" />
     <ClInclude Include="Settings\MemoryCardConvertWorker.h" />
@@ -281,6 +283,7 @@
     <ClCompile Include="$(IntDir)Debugger\moc_MemoryViewWidget.cpp" />
     <ClCompile Include="$(IntDir)Debugger\moc_BreakpointDialog.cpp" />
     <ClCompile Include="$(IntDir)Debugger\Models\moc_BreakpointModel.cpp" />
+    <ClCompile Include="$(IntDir)Debugger\Models\moc_ThreadModel.cpp" />
     <ClCompile Include="$(IntDir)GameList\moc_GameListModel.cpp" />
     <ClCompile Include="$(IntDir)GameList\moc_GameListRefreshThread.cpp" />
     <ClCompile Include="$(IntDir)GameList\moc_GameListWidget.cpp" />
