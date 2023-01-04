@@ -29,16 +29,6 @@
             }
         },
         {
-            "name": "lto",
-            "displayName": "Default Profile using clang/ninja & lto.",
-            "description": "Release lto build using ninja & clang.",
-            "inherits": "clang-base",
-            "cacheVariables": {
-                "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "ON",
-                "CMAKE_BUILD_TYPE": "Release"
-            }
-        },
-        {
             "name": "ninja-multi",
             "displayName": "Ninja Multi Config",
             "description": "Generate multiple ninja build files.",
@@ -126,9 +116,10 @@
         {
             "name": "clang-release",
             "displayName": "Clang Release",
-            "description": "Release build using ninja & clang.",
+            "description": "Release lto build using ninja & clang.",
             "inherits": "clang-base",
             "cacheVariables": {
+                "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "ON",
                 "CMAKE_BUILD_TYPE": "Release"
             }
         }
