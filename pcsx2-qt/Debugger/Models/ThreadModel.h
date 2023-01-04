@@ -16,44 +16,51 @@
 #pragma once
 
 #include <QtCore/QAbstractTableModel>
+
 #include "DebugTools/DebugInterface.h"
-#include "DebugTools/Breakpoints.h"
+#include "DebugTools/BiosDebugData.h"
 
-using BreakpointMemcheck = std::variant<BreakPoint, MemCheck>;
+#include <map>
 
-class BreakpointModel : public QAbstractTableModel
+class ThreadModel : public QAbstractTableModel
 {
 	Q_OBJECT
 
 public:
-	enum BreakpointColumns : int
+	enum ThreadColumns : int
 	{
-		TYPE = 0,
-		OFFSET,
-		SIZE_LABEL,
-		OPCODE,
-		CONDITION,
-		HITS,
-		ENABLED,
+		ID = 0,
+		PC,
+		ENTRY,
+		PRIORITY,
+		STATE,
+		WAIT_TYPE,
 		COLUMN_COUNT
 	};
 
-	explicit BreakpointModel(DebugInterface& cpu, QObject* parent = nullptr);
+	explicit ThreadModel(DebugInterface& cpu, QObject* parent = nullptr);
 
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 	QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 	QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
-	Qt::ItemFlags flags(const QModelIndex& index) const override;
-	bool setData(const QModelIndex& index, const QVariant& value, int role) override;
-	bool removeRows(int row, int count, const QModelIndex& index = QModelIndex()) override;
-	bool insertRows(int row, int count, std::vector<BreakpointMemcheck> breakpoints, const QModelIndex& index = QModelIndex());
-
-	BreakpointMemcheck at(int row) const { return m_breakpoints.at(row); };
 
 	void refreshData();
 
 private:
+	const std::map<int, QString> ThreadStateStrings{
+		{THS_BAD, tr("BAD")},
+		{THS_RUN, tr("RUN")},
+		{THS_READY, tr("READY")},
+		{THS_WAIT, tr("WAIT")},
+		{THS_SUSPEND, tr("SUSPEND")},
+		{THS_WAIT_SUSPEND, tr("WAIT SUSPEND")},
+		{THS_DORMANT, tr("DORMANT")}};
+
+	const std::map<int, QString> ThreadWaitStrings{
+		{WAIT_NONE, tr("NONE")},
+		{WAIT_WAKEUP_REQ, tr("WAKEUP REQUEST")},
+		{WAIT_SEMA, tr("SEMAPHORE")}};
+
 	DebugInterface& m_cpu;
-	std::vector<BreakpointMemcheck> m_breakpoints;
 };

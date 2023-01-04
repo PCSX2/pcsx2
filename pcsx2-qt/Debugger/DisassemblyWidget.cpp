@@ -734,4 +734,5 @@ void DisassemblyWidget::gotoAddress(u32 address)
 	m_selectedAddressEnd = destAddress;
 
 	this->repaint();
+	this->setFocus();
 }

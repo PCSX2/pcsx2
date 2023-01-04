@@ -23,6 +23,7 @@
 #include "DebugTools/MipsStackWalk.h"
 
 #include "Models/BreakpointModel.h"
+#include "Models/ThreadModel.h"
 
 #include "QtHost.h"
 #include <QtWidgets/QWidget>
@@ -50,7 +51,6 @@ public slots:
 	void onVMPaused();
 
 	void updateBreakpoints();
-
 	void onBPListDoubleClicked(const QModelIndex& index);
 	void onBPListContextMenu(QPoint pos);
 
@@ -60,8 +60,8 @@ public slots:
 	void contextBPListEdit();
 
 	void updateThreads();
+	void onThreadListDoubleClick(const QModelIndex& index);
 	void onThreadListContextMenu(QPoint pos);
-	void onThreadListDoubleClick(int row, int column);
 
 	void updateStackFrames();
 	void onStackListContextMenu(QPoint pos);
@@ -93,8 +93,6 @@ public slots:
 private:
 	std::vector<QTableWidget*> m_registerTableViews;
 
-	QMenu* m_bplistContextMenu = 0;
-	QMenu* m_threadlistContextMenu = 0;
 	QMenu* m_stacklistContextMenu = 0;
 	QMenu* m_funclistContextMenu = 0;
 
@@ -103,6 +101,7 @@ private:
 	DebugInterface& m_cpu;
 
 	BreakpointModel m_bpModel;
+	ThreadModel m_threadModel;
 
 	std::vector<EEThread> m_threadlistObjects;
 	EEThread m_activeThread;

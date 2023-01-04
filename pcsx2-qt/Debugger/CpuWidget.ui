@@ -322,7 +322,7 @@
         <enum>QTabWidget::South</enum>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="tab_memory">
         <property name="sizePolicy">
@@ -438,7 +438,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QTableWidget" name="threadList">
+          <widget class="QTableView" name="threadList">
            <property name="contextMenuPolicy">
             <enum>Qt::CustomContextMenu</enum>
            </property>
@@ -451,48 +451,6 @@
            <property name="cornerButtonEnabled">
             <bool>false</bool>
            </property>
-           <property name="rowCount">
-            <number>0</number>
-           </property>
-           <property name="columnCount">
-            <number>6</number>
-           </property>
-           <attribute name="horizontalHeaderStretchLastSection">
-            <bool>true</bool>
-           </attribute>
-           <attribute name="verticalHeaderVisible">
-            <bool>false</bool>
-           </attribute>
-           <column>
-            <property name="text">
-             <string>ID</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>PC</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Entry Point</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Priority</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>State</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Wait Type</string>
-            </property>
-           </column>
           </widget>
          </item>
         </layout>

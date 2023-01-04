@@ -20,6 +20,7 @@
 #include "DisassemblyWidget.h"
 #include "BreakpointDialog.h"
 #include "Models/BreakpointModel.h"
+#include "Models/ThreadModel.h"
 
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/Breakpoints.h"
@@ -41,6 +42,7 @@ using namespace MipsStackWalk;
 CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	: m_cpu(cpu)
 	, m_bpModel(cpu)
+	, m_threadModel(cpu)
 {
 	m_ui.setupUi(this);
 
@@ -59,13 +61,14 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	connect(m_ui.breakpointList, &QTableView::customContextMenuRequested, this, &CpuWidget::onBPListContextMenu);
 	connect(m_ui.breakpointList, &QTableView::doubleClicked, this, &CpuWidget::onBPListDoubleClicked);
 
+	m_ui.breakpointList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	m_ui.breakpointList->setModel(&m_bpModel);
 
-	connect(m_ui.threadList, &QTableWidget::customContextMenuRequested, this, &CpuWidget::onThreadListContextMenu);
-	connect(m_ui.threadList, &QTableWidget::cellDoubleClicked, this, &CpuWidget::onThreadListDoubleClick);
+	connect(m_ui.threadList, &QTableView::customContextMenuRequested, this, &CpuWidget::onThreadListContextMenu);
+	connect(m_ui.threadList, &QTableView::doubleClicked, this, &CpuWidget::onThreadListDoubleClick);
 
-	connect(m_ui.threadList, &QTableWidget::customContextMenuRequested, this, &CpuWidget::onThreadListContextMenu);
-	connect(m_ui.threadList, &QTableWidget::cellDoubleClicked, this, &CpuWidget::onThreadListDoubleClick);
+	m_ui.threadList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	m_ui.threadList->setModel(&m_threadModel);
 
 	connect(m_ui.stackframeList, &QTableWidget::customContextMenuRequested, this, &CpuWidget::onStackListContextMenu);
 	connect(m_ui.stackframeList, &QTableWidget::cellDoubleClicked, this, &CpuWidget::onStackListDoubleClick);
@@ -247,14 +250,11 @@ void CpuWidget::onBPListContextMenu(QPoint pos)
 	if (!m_cpu.isAlive())
 		return;
 
-	if (m_bplistContextMenu)
-		delete m_bplistContextMenu;
-
-	m_bplistContextMenu = new QMenu(m_ui.breakpointList);
+	QMenu* contextMenu = new QMenu(tr("Breakpoint List Context Menu"), m_ui.breakpointList);
 
 	QAction* newAction = new QAction(tr("New"), m_ui.breakpointList);
 	connect(newAction, &QAction::triggered, this, &CpuWidget::contextBPListNew);
-	m_bplistContextMenu->addAction(newAction);
+	contextMenu->addAction(newAction);
 
 	const QItemSelectionModel* selModel = m_ui.breakpointList->selectionModel();
 
@@ -262,21 +262,21 @@ void CpuWidget::onBPListContextMenu(QPoint pos)
 	{
 		QAction* editAction = new QAction(tr("Edit"), m_ui.breakpointList);
 		connect(editAction, &QAction::triggered, this, &CpuWidget::contextBPListEdit);
-		m_bplistContextMenu->addAction(editAction);
+		contextMenu->addAction(editAction);
 
 		if (selModel->selectedIndexes().count() == 1)
 		{
 			QAction* copyAction = new QAction(tr("Copy"), m_ui.breakpointList);
 			connect(copyAction, &QAction::triggered, this, &CpuWidget::contextBPListCopy);
-			m_bplistContextMenu->addAction(copyAction);
+			contextMenu->addAction(copyAction);
 		}
 
 		QAction* deleteAction = new QAction(tr("Delete"), m_ui.breakpointList);
 		connect(deleteAction, &QAction::triggered, this, &CpuWidget::contextBPListDelete);
-		m_bplistContextMenu->addAction(deleteAction);
+		contextMenu->addAction(deleteAction);
 	}
 
-	m_bplistContextMenu->popup(m_ui.breakpointList->mapToGlobal(pos));
+	contextMenu->popup(m_ui.breakpointList->mapToGlobal(pos));
 }
 
 void CpuWidget::contextBPListCopy()
@@ -334,8 +334,6 @@ void CpuWidget::updateFunctionList(bool whenEmpty)
 	if (!m_cpu.isAlive())
 		return;
 
-	m_bpModel.refreshData();
-
 	if (whenEmpty && m_ui.listFunctions->count())
 		return;
 
@@ -371,127 +369,41 @@ void CpuWidget::updateFunctionList(bool whenEmpty)
 
 void CpuWidget::updateThreads()
 {
-	m_ui.threadList->setRowCount(0);
-
-	if (m_cpu.getCpuType() == BREAKPOINT_EE)
-		m_threadlistObjects = getEEThreads();
-
-	for (size_t i = 0; i < m_threadlistObjects.size(); i++)
-	{
-		m_ui.threadList->insertRow(i);
-
-		const auto& thread = m_threadlistObjects[i];
-
-		if (thread.data.status == THS_RUN)
-			m_activeThread = thread;
-
-		QTableWidgetItem* idItem = new QTableWidgetItem();
-		idItem->setText(QString::number(thread.tid));
-		idItem->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.threadList->setItem(i, 0, idItem);
-
-		QTableWidgetItem* pcItem = new QTableWidgetItem();
-		if (thread.data.status == THS_RUN)
-			pcItem->setText(FilledQStringFromValue(m_cpu.getPC(), 16));
-		else
-			pcItem->setText(FilledQStringFromValue(thread.data.entry, 16));
-		pcItem->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.threadList->setItem(i, 1, pcItem);
-
-		QTableWidgetItem* entryItem = new QTableWidgetItem();
-		entryItem->setText(FilledQStringFromValue(thread.data.entry_init, 16));
-		entryItem->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.threadList->setItem(i, 2, entryItem);
-
-		QTableWidgetItem* priorityItem = new QTableWidgetItem();
-		priorityItem->setText(QString::number(thread.data.currentPriority));
-		priorityItem->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.threadList->setItem(i, 3, priorityItem);
-
-		QString statusString;
-		switch (thread.data.status)
-		{
-			case THS_BAD:
-				statusString = tr("Bad");
-				break;
-			case THS_RUN:
-				statusString = tr("Running");
-				break;
-			case THS_READY:
-				statusString = tr("Ready");
-				break;
-			case THS_WAIT:
-				statusString = tr("Waiting");
-				break;
-			case THS_SUSPEND:
-				statusString = tr("Suspended");
-				break;
-			case THS_WAIT_SUSPEND:
-				statusString = tr("Waiting/Suspended");
-				break;
-			case THS_DORMANT:
-				statusString = tr("Dormant");
-				break;
-		}
-
-		QTableWidgetItem* statusItem = new QTableWidgetItem();
-		statusItem->setText(statusString);
-		statusItem->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.threadList->setItem(i, 4, statusItem);
-
-		QString waitTypeString;
-		switch (thread.data.waitType)
-		{
-			case WAIT_NONE:
-				waitTypeString = tr("None");
-				break;
-			case WAIT_WAKEUP_REQ:
-				waitTypeString = tr("Wakeup request");
-				break;
-			case WAIT_SEMA:
-				waitTypeString = tr("Semaphore");
-				break;
-		}
-
-		QTableWidgetItem* waitItem = new QTableWidgetItem();
-		waitItem->setText(waitTypeString);
-		waitItem->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.threadList->setItem(i, 5, waitItem);
-	}
+	m_threadModel.refreshData();
 }
 
 void CpuWidget::onThreadListContextMenu(QPoint pos)
 {
-	if (!m_threadlistContextMenu)
-	{
-		m_threadlistContextMenu = new QMenu(m_ui.threadList);
+	if (!m_ui.threadList->selectionModel()->hasSelection())
+		return;
 
-		QAction* copyAction = new QAction(tr("Copy"), m_ui.threadList);
-		connect(copyAction, &QAction::triggered, [this] {
-			const auto& items = m_ui.threadList->selectedItems();
-			if (!items.size())
-				return;
-			QApplication::clipboard()->setText(items.first()->text());
-		});
-		m_threadlistContextMenu->addAction(copyAction);
-	}
+	QMenu* contextMenu = new QMenu(tr("Thread List Context Menu"), m_ui.threadList);
 
-	m_threadlistContextMenu->exec(m_ui.threadList->mapToGlobal(pos));
+	QAction* actionCopy = new QAction(tr("Copy"), m_ui.threadList);
+	connect(actionCopy, &QAction::triggered, [this]() {
+		const auto* selModel = m_ui.threadList->selectionModel();
+
+		if (!selModel->hasSelection())
+			return;
+
+		QGuiApplication::clipboard()->setText(m_ui.threadList->model()->data(selModel->currentIndex()).toString());
+	});
+	contextMenu->addAction(actionCopy);
+
+	contextMenu->popup(m_ui.threadList->mapToGlobal(pos));
 }
 
-void CpuWidget::onThreadListDoubleClick(int row, int column)
+void CpuWidget::onThreadListDoubleClick(const QModelIndex& index)
 {
-	const auto& entry = m_threadlistObjects.at(row);
-	if (column == 1) // PC
+	switch (index.column())
 	{
-		if (entry.data.status == THS_RUN)
-			m_ui.disassemblyWidget->gotoAddress(m_cpu.getPC());
-		else
-			m_ui.disassemblyWidget->gotoAddress(entry.data.entry);
-	}
-	else if (column == 2) // Entry Point
-	{
-		m_ui.disassemblyWidget->gotoAddress(entry.data.entry_init);
+		case ThreadModel::ThreadColumns::ENTRY:
+			m_ui.memoryviewWidget->gotoAddress(m_ui.threadList->model()->data(index, Qt::UserRole).toUInt());
+			m_ui.tabWidget->setCurrentWidget(m_ui.tab_memory);
+			break;
+		default: // Default to PC
+			m_ui.disassemblyWidget->gotoAddress(m_ui.threadList->model()->data(m_ui.threadList->model()->index(index.row(), ThreadModel::ThreadColumns::PC), Qt::UserRole).toUInt());
+			break;
 	}
 }
 
