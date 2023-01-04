@@ -965,7 +965,7 @@ namespace usb_hid
 		sw.DoPODArray(s->hid.kbd.keycodes, std::size(s->hid.kbd.keycodes));
 		sw.Do(&s->hid.kbd.modifiers);
 		sw.Do(&s->hid.kbd.leds);
-		sw.DoPODArray(&s->hid.kbd.key, std::size(s->hid.kbd.key));
+		sw.DoPODArray(s->hid.kbd.key, std::size(s->hid.kbd.key));
 		sw.Do(&s->hid.kbd.keys);
 
 		sw.Do(&s->hid.head);
