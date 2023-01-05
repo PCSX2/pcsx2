@@ -736,6 +736,11 @@ void VMManager::UpdateRunningGame(bool resetting, bool game_starting)
 			AutoEject::ClearAll();
 	}
 
+	Console.WriteLn(Color_StrongGreen, "Game Changed:");
+	Console.WriteLn(Color_StrongGreen, fmt::format("  Name: {}", s_game_name));
+	Console.WriteLn(Color_StrongGreen, fmt::format("  Serial: {}", s_game_serial));
+	Console.WriteLn(Color_StrongGreen, fmt::format("  CRC: {:08X}", s_game_crc));
+
 	UpdateGameSettingsLayer();
 	ApplySettings();
 
