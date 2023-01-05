@@ -75,7 +75,6 @@ namespace usb_mic
 
 		struct freeze
 		{
-			int port;
 			int intf;
 			MicMode mode;
 
