@@ -353,7 +353,7 @@ bool GSHwHack::GSC_BlackAndBurnoutSky(GSRendererHW& r, const GSFrameInfo& fi, in
 		// the clouds on top of the sky at each frame.
 		// Burnout 3 PAL 50Hz: 0x3ba0 => 0x1e80.
 		GL_INS("OO_BurnoutGames - Readback clouds renderered from TEX0.TBP0 = 0x%04x (TEX0.CBP = 0x%04x) to FBP = 0x%04x", TEX0.TBP0, TEX0.CBP, FRAME.Block());
-		r.SwPrimRender(r);
+		r.SwPrimRender(r, true);
 		skip = 1;
 	}
 
