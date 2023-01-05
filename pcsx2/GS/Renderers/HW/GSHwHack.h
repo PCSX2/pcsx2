@@ -55,6 +55,7 @@ public:
 	static bool GSC_RedDeadRevolver(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_ShinOnimusha(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_XenosagaE3(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
+	static bool GSC_Barnyard(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 
 	static bool OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	static bool OI_BigMuthaTruckers(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
