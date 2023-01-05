@@ -30,7 +30,7 @@
 class D3D12HostDisplayTexture : public HostDisplayTexture
 {
 public:
-	D3D12HostDisplayTexture(D3D12::Texture texture)
+	explicit D3D12HostDisplayTexture(D3D12::Texture texture)
 		: m_texture(std::move(texture))
 	{
 	}
