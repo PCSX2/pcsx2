@@ -311,9 +311,9 @@ void CpuWidget::updateBreakpoints()
 		// Type (R/O)
 		QTableWidgetItem* typeItem = new QTableWidgetItem();
 		QString type("");
-		type += memcheck.cond & MEMCHECK_READ ? tr("Read") : "";
+		type += (memcheck.cond & MEMCHECK_READ) ? tr("Read") : "";
 		type += ((memcheck.cond & MEMCHECK_BOTH) == MEMCHECK_BOTH) ? ", " : " ";
-		type += memcheck.cond & MEMCHECK_WRITE ? memcheck.cond & MEMCHECK_WRITE_ONCHANGE ? tr("Write(C)") : tr("Write") : "";
+		type += (memcheck.cond & MEMCHECK_WRITE) ? (memcheck.cond & MEMCHECK_WRITE_ONCHANGE) ? tr("Write(C)") : tr("Write") : "";
 		typeItem->setText(type);
 		typeItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
 		m_ui.breakpointList->setItem(iter, 0, typeItem);
