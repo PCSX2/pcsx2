@@ -145,33 +145,6 @@ static std::string ApplyTemplate(const std::string& name, const std::string& bas
 	return trimmedTemplate;
 }
 
-/*
-static void TestTemplate(const wxDirName &base, const wxString &fname, bool canEndWithKey)
-{
-	const char *ins[] = {
-		"$(f).pindex.tmp",                    // same folder as the original file
-		"	$(f).pindex.tmp ",                // same folder as the original file (trimmed silently)
-		"cache/$(f).pindex",                  // relative to base
-		"../$(f).pindex",                     // relative to base
-		"%appdata%/pcsx2/cache/$(f).pindex",  // c:/Users/<user>/AppData/Roaming/pcsx2/cache/ ...
-		"c:\\pcsx2-cache/$(f).pindex",        // absolute
-		"~/.cache/$(f).pindex",	              // TODO: check if this works on *nix. It should...
-		                                      //       (on windows ~ isn't recognized as special)
-		"cache/$(f)/$(f).index",              // invalid: appears twice
-		"hello",                              // invalid: doesn't contain $(f)
-		"hello$(f)",                          // invalid, can't end with $(f)
-		NULL
-	};
-
-	for (int i = 0; ins[i]; i++) {
-		wxString tem(wxString::From8BitData(ins[i]));
-		Console.WriteLn(Color_Green, L"test: '%s' -> '%s'",
-		                WX_STR(tem),
-		                WX_STR(ApplyTemplate(L"test", base, tem, fname, canEndWithKey)));
-	}
-}
-*/
-
 static std::string iso2indexname(const std::string& isoname)
 {
 	const std::string& appRoot = EmuFolders::DataRoot;
