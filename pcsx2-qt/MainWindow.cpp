@@ -600,6 +600,7 @@ else if (theme == "darkfusion")
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 
 		const QColor black(25, 25, 25);
+		const QColor darkteal(0, 77, 77);
 		const QColor teal(0, 128, 128);
 		const QColor tameTeal(160, 190, 185);
 		const QColor grayBlue(160, 180, 190);
@@ -612,16 +613,16 @@ else if (theme == "darkfusion")
 		standardPalette.setColor(QPalette::ToolTipBase, tameTeal);
 		standardPalette.setColor(QPalette::ToolTipText, grayBlue);
 		standardPalette.setColor(QPalette::Text, black);
-		standardPalette.setColor(QPalette::Button, tameTeal.darker());
-		standardPalette.setColor(QPalette::ButtonText, Qt::white);
-		standardPalette.setColor(QPalette::Link, black);
+		standardPalette.setColor(QPalette::Button, tameTeal);
+		standardPalette.setColor(QPalette::ButtonText, black);
+		standardPalette.setColor(QPalette::Link, black.lighter());
 		standardPalette.setColor(QPalette::Highlight, teal);
-		standardPalette.setColor(QPalette::HighlightedText, Qt::white);
+		standardPalette.setColor(QPalette::HighlightedText, grayBlue.lighter());
 
-		standardPalette.setColor(QPalette::Active, QPalette::Button, tameTeal.darker());
-		standardPalette.setColor(QPalette::Disabled, QPalette::ButtonText, Qt::white);
-		standardPalette.setColor(QPalette::Disabled, QPalette::WindowText, Qt::white);
-		standardPalette.setColor(QPalette::Disabled, QPalette::Text, Qt::white);
+		standardPalette.setColor(QPalette::Active, QPalette::Button, tameTeal);
+		standardPalette.setColor(QPalette::Disabled, QPalette::ButtonText, darkteal);
+		standardPalette.setColor(QPalette::Disabled, QPalette::WindowText, darkteal.lighter());
+		standardPalette.setColor(QPalette::Disabled, QPalette::Text, darkteal.lighter());
 		standardPalette.setColor(QPalette::Disabled, QPalette::Light, tameTeal);
 
 		qApp->setPalette(standardPalette);
@@ -636,6 +637,7 @@ else if (theme == "darkfusion")
 
 		const QColor gray(150, 150, 150);
 		const QColor black(25, 25, 25);
+		const QColor redpinkish(200, 75, 132);
 		const QColor pink(255, 174, 201);
 		const QColor brightPink(255, 230, 255);
 		const QColor congoPink(255, 127, 121);
@@ -656,9 +658,9 @@ else if (theme == "darkfusion")
 		standardPalette.setColor(QPalette::HighlightedText, black);
 
 		standardPalette.setColor(QPalette::Active, QPalette::Button, pink);
-		standardPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
-		standardPalette.setColor(QPalette::Disabled, QPalette::WindowText, congoPink);
-		standardPalette.setColor(QPalette::Disabled, QPalette::Text, blue);
+		standardPalette.setColor(QPalette::Disabled, QPalette::ButtonText, redpinkish);
+		standardPalette.setColor(QPalette::Disabled, QPalette::WindowText, redpinkish);
+		standardPalette.setColor(QPalette::Disabled, QPalette::Text, redpinkish);
 		standardPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
 
 		qApp->setPalette(standardPalette);
@@ -671,29 +673,30 @@ else if (theme == "darkfusion")
 		// Alternative light theme.
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 
-		const QColor black(25, 25, 25);
+		const QColor blackish(35, 35, 35);
 		const QColor darkBlue(73, 97, 177);
+		const QColor blue2(80, 120, 200);
 		const QColor blue(106, 156, 255);
 		const QColor lightBlue(130, 155, 241);
 
 		QPalette standardPalette;
-		standardPalette.setColor(QPalette::Window, lightBlue);
-		standardPalette.setColor(QPalette::WindowText, black);
-		standardPalette.setColor(QPalette::Base, darkBlue);
-		standardPalette.setColor(QPalette::AlternateBase, lightBlue);
-		standardPalette.setColor(QPalette::ToolTipBase, lightBlue);
+		standardPalette.setColor(QPalette::Window, blue2.lighter());
+		standardPalette.setColor(QPalette::WindowText, blackish);
+		standardPalette.setColor(QPalette::Base, lightBlue);
+		standardPalette.setColor(QPalette::AlternateBase, blue2.lighter());
+		standardPalette.setColor(QPalette::ToolTipBase, blue2);
 		standardPalette.setColor(QPalette::ToolTipText, Qt::white);
-		standardPalette.setColor(QPalette::Text, Qt::white);
-		standardPalette.setColor(QPalette::Button, blue.darker());
-		standardPalette.setColor(QPalette::ButtonText, Qt::white);
+		standardPalette.setColor(QPalette::Text, blackish);
+		standardPalette.setColor(QPalette::Button, blue);
+		standardPalette.setColor(QPalette::ButtonText, blackish);
 		standardPalette.setColor(QPalette::Link, darkBlue);
 		standardPalette.setColor(QPalette::Highlight, Qt::white);
-		standardPalette.setColor(QPalette::HighlightedText, black);
+		standardPalette.setColor(QPalette::HighlightedText, blackish);
 
-		standardPalette.setColor(QPalette::Active, QPalette::Button, blue.darker());
+		standardPalette.setColor(QPalette::Active, QPalette::Button, blue);
 		standardPalette.setColor(QPalette::Disabled, QPalette::ButtonText, darkBlue);
 		standardPalette.setColor(QPalette::Disabled, QPalette::WindowText, darkBlue);
-		standardPalette.setColor(QPalette::Disabled, QPalette::Text, black);
+		standardPalette.setColor(QPalette::Disabled, QPalette::Text, darkBlue);
 		standardPalette.setColor(QPalette::Disabled, QPalette::Light, darkBlue);
 
 		qApp->setPalette(standardPalette);
