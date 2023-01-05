@@ -90,8 +90,6 @@ oprofile_data/
 /ipch
 
 !/3rdparty/libjpeg/change.log
-/3rdparty/**/include/wx/setup.h
-/3rdparty/**/wx/msw/rcdefs.h
 /pcsx2/gui/Resources/*.h
 !/pcsx2/gui/Resources/EmbeddedImage.h
 /tools/bin
