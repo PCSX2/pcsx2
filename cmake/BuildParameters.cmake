@@ -201,23 +201,18 @@ endif()
 # Note: future GCC (aka GCC 5.1.1) has less false positive so warning could maybe put back
 # -Wno-unused-function: warn for function not used in release build
 # -Wno-unused-value: lots of warning for this kind of statements "0 && ...". There are used to disable some parts of code in release/dev build.
-# -Wno-overloaded-virtual: Gives a fair number of warnings under clang over in the wxwidget gui section of the code.
-# -Wno-deprecated-declarations: The USB plugins dialogs are written in straight gtk 2, which gives a million deprecated warnings. Suppress them until we can deal with them.
 # -Wno-format*: Yeah, these need to be taken care of, but...
 # -Wno-stringop-truncation: Who comes up with these compiler warnings, anyways?
 # -Wno-stringop-overflow: Probably the same people as this one...
+# -Wno-maybe-uninitialized: Lots of gcc warnings like "‘test.GSVector8i::<anonymous>.GSVector8i::<unnamed union>::m’ may be used uninitialized" if this is removed.
 
 if (MSVC)
 	set(DEFAULT_WARNINGS)
 else()
-	set(DEFAULT_WARNINGS -Wall -Wextra -Wno-attributes -Wno-unused-function -Wno-unused-parameter -Wno-missing-field-initializers -Wno-deprecated-declarations -Wno-format -Wno-format-security -Wno-overloaded-virtual)
+	set(DEFAULT_WARNINGS -Wall -Wextra -Wno-maybe-uninitialized -Wno-attributes -Wno-unused-function -Wno-unused-parameter -Wno-missing-field-initializers -Wno-format -Wno-format-security)
 	if (NOT USE_ICC)
 		list(APPEND DEFAULT_WARNINGS -Wno-unused-value)
 	endif()
-endif()
-
-if (USE_CLANG)
-	list(APPEND DEFAULT_WARNINGS -Wno-overloaded-virtual)
 endif()
 
 if (USE_GCC)

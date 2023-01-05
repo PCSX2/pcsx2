@@ -487,7 +487,7 @@ void DisassemblyWidget::paintEvent(QPaintEvent* event)
 
 void DisassemblyWidget::mousePressEvent(QMouseEvent* event)
 {
-	const u32 selectedAddress = (event->y() / m_rowHeight * 4) + m_visibleStart;
+	const u32 selectedAddress = (event->position().y() / m_rowHeight * 4) + m_visibleStart;
 	if (event->buttons() & Qt::LeftButton)
 	{
 		if (event->modifiers() & Qt::ShiftModifier)
@@ -523,7 +523,7 @@ void DisassemblyWidget::mouseDoubleClickEvent(QMouseEvent* event)
 	if (!m_cpu->isAlive())
 		return;
 
-	const u32 selectedAddress = (event->y() / m_rowHeight * 4) + m_visibleStart;
+	const u32 selectedAddress = (event->position().y() / m_rowHeight * 4) + m_visibleStart;
 	if (CBreakPoints::IsAddressBreakPoint(m_cpu->getCpuType(), selectedAddress))
 	{
 		Host::RunOnCPUThread([&] { CBreakPoints::RemoveBreakPoint(m_cpu->getCpuType(), selectedAddress); });
