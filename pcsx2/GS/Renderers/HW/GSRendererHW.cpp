@@ -1399,7 +1399,7 @@ void GSRendererHW::Draw()
 	const bool single_page = (delta_p.x <= 64.0f) && (delta_p.y <= 64.0f);
 
 	// We trigger the sw prim render here super early, to avoid creating superfluous render targets.
-	if (CanUseSwPrimRender(no_rt, no_ds, draw_sprite_tex) && SwPrimRender(*this))
+	if (CanUseSwPrimRender(no_rt, no_ds, draw_sprite_tex) && SwPrimRender(*this, true))
 	{
 		GL_CACHE("Possible texture decompression, drawn with SwPrimRender()");
 		return;
@@ -1412,7 +1412,7 @@ void GSRendererHW::Draw()
 		m_mem.m_clut.ClearDrawInvalidity();
 		if (result)
 		{
-			if (SwPrimRender(*this))
+			if (SwPrimRender(*this, true))
 			{
 				GL_CACHE("Possible clut draw, drawn with SwPrimRender()");
 				return;

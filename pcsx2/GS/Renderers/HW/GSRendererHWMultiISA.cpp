@@ -21,7 +21,7 @@
 class CURRENT_ISA::GSRendererHWFunctions
 {
 public:
-	static bool SwPrimRender(GSRendererHW& hw);
+	static bool SwPrimRender(GSRendererHW& hw, bool invalidate_tc);
 
 	static void Populate(GSRendererHW& renderer)
 	{
@@ -36,7 +36,7 @@ void CURRENT_ISA::GSRendererHWPopulateFunctions(GSRendererHW& renderer)
 	GSRendererHWFunctions::Populate(renderer);
 }
 
-bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw)
+bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 {
 	GSVertexTrace& vt = hw.m_vt;
 	const GIFRegPRIM* PRIM = hw.PRIM;
@@ -63,7 +63,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw)
 	// Skip per pixel division if q is constant.
 	// Optimize the division by 1 with a nop. It also means that GS_SPRITE_CLASS must be processed when !vt.m_eq.q.
 	// If you have both GS_SPRITE_CLASS && vt.m_eq.q, it will depends on the first part of the 'OR'.
-	const u32 q_div = ((vt.m_eq.q && vt.m_min.t.z != 1.0f) || (!vt.m_eq.q && vt.m_primclass == GS_SPRITE_CLASS));
+	const u32 q_div = !hw.IsMipMapActive() && ((vt.m_eq.q && vt.m_min.t.z != 1.0f) || (!vt.m_eq.q && vt.m_primclass == GS_SPRITE_CLASS));
 	GSVertexSW::s_cvb[vt.m_primclass][PRIM->TME][PRIM->FST][q_div](context, data.vertex, hw.m_vertex.buff, hw.m_vertex.next);
 
 	GSVector4i scissor = GSVector4i(context->scissor.in);
@@ -195,20 +195,120 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw)
 				gd.sel.tfx = TFX_DECAL;
 			}
 
-			GIFRegTEX0 TEX0 = context->GetSizeFixedTEX0(vt.m_min.t.xyxy(vt.m_max.t), vt.IsLinear(), false);
+			bool mipmap = hw.IsMipMapActive();
+
+			GIFRegTEX0 TEX0 = context->GetSizeFixedTEX0(vt.m_min.t.xyxy(vt.m_max.t), vt.IsLinear(), mipmap);
 
 			const GSVector4i r = hw.GetTextureMinMax(TEX0, context->CLAMP, gd.sel.ltf).coverage;
 
-			if (!hw.m_sw_texture)
-				hw.m_sw_texture = std::make_unique<GSTextureCacheSW::Texture>(0, TEX0, env.TEXA);
+			if (!hw.m_sw_texture[0])
+				hw.m_sw_texture[0] = std::make_unique<GSTextureCacheSW::Texture>(0, TEX0, env.TEXA);
 			else
-				hw.m_sw_texture->Reset(0, TEX0, env.TEXA);
+				hw.m_sw_texture[0]->Reset(0, TEX0, env.TEXA);
 
-			hw.m_sw_texture->Update(r);
-			gd.tex[0] = hw.m_sw_texture->m_buff;
+			hw.m_sw_texture[0]->Update(r);
+			gd.tex[0] = hw.m_sw_texture[0]->m_buff;
 
-			gd.sel.tw = hw.m_sw_texture->m_tw - 3;
+			gd.sel.tw = hw.m_sw_texture[0]->m_tw - 3;
 
+			if (mipmap)
+			{
+				// TEX1.MMIN
+				// 000 p
+				// 001 l
+				// 010 p round
+				// 011 p tri
+				// 100 l round
+				// 101 l tri
+
+				if (vt.m_lod.x > 0)
+				{
+					gd.sel.ltf = context->TEX1.MMIN >> 2;
+				}
+				else
+				{
+					// TODO: isbilinear(mmag) != isbilinear(mmin) && vt.m_lod.x <= 0 && vt.m_lod.y > 0
+				}
+
+				gd.sel.mmin = (context->TEX1.MMIN & 1) + 1; // 1: round, 2: tri
+				gd.sel.lcm = context->TEX1.LCM;
+
+				int mxl = std::min<int>((int)context->TEX1.MXL, 6) << 16;
+				int k = context->TEX1.K << 12;
+
+				if ((int)vt.m_lod.x >= (int)context->TEX1.MXL)
+				{
+					k = (int)vt.m_lod.x << 16; // set lod to max level
+
+					gd.sel.lcm = 1; // lod is constant
+					gd.sel.mmin = 1; // tri-linear is meaningless
+				}
+
+				if (gd.sel.mmin == 2)
+				{
+					mxl--; // don't sample beyond the last level (TODO: add a dummy level instead?)
+				}
+
+				if (gd.sel.fst)
+				{
+					pxAssert(gd.sel.lcm == 1);
+					//pxAssert(((vt.m_min.t.uph(vt.m_max.t) == GSVector4::zero()).mask() & 3) == 3); // ratchet and clank (menu)
+
+					gd.sel.lcm = 1;
+				}
+
+				if (gd.sel.lcm)
+				{
+					int lod = std::max<int>(std::min<int>(k, mxl), 0);
+
+					if (gd.sel.mmin == 1)
+					{
+						lod = (lod + 0x8000) & 0xffff0000; // rounding
+					}
+
+					gd.lod.i = GSVector4i(lod >> 16);
+					gd.lod.f = GSVector4i(lod & 0xffff).xxxxl().xxzz();
+
+					// TODO: lot to optimize when lod is constant
+				}
+				else
+				{
+					gd.mxl = GSVector4((float)mxl);
+					gd.l = GSVector4((float)(-(0x10000 << context->TEX1.L)));
+					gd.k = GSVector4((float)k);
+				}
+
+				GIFRegCLAMP MIP_CLAMP = context->CLAMP;
+
+				GSVector4 tmin = vt.m_min.t;
+				GSVector4 tmax = vt.m_max.t;
+
+				for (int i = 1, j = std::min<int>((int)context->TEX1.MXL, 6); i <= j; i++)
+				{
+					const GIFRegTEX0& MIP_TEX0 = hw.GetTex0Layer(i);
+
+					MIP_CLAMP.MINU >>= 1;
+					MIP_CLAMP.MINV >>= 1;
+					MIP_CLAMP.MAXU >>= 1;
+					MIP_CLAMP.MAXV >>= 1;
+
+					vt.m_min.t *= 0.5f;
+					vt.m_max.t *= 0.5f;
+
+					if (!hw.m_sw_texture[i])
+						hw.m_sw_texture[i] = std::make_unique<GSTextureCacheSW::Texture>(gd.sel.tw + 3, MIP_TEX0, env.TEXA);
+					else
+						hw.m_sw_texture[i]->Reset(gd.sel.tw + 3, MIP_TEX0, env.TEXA);
+
+					GSVector4i r = hw.GetTextureMinMax(MIP_TEX0, MIP_CLAMP, gd.sel.ltf).coverage;
+					hw.m_sw_texture[i]->Update(r);
+					gd.tex[i] = hw.m_sw_texture[i]->m_buff;
+				}
+
+				vt.m_min.t = tmin;
+				vt.m_max.t = tmax;
+			}
+			else
 			{
 				// skip per pixel division if q is constant. Sprite uses flat
 				// q, so it's always constant by primitive.
@@ -224,11 +324,9 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw)
 					const GSVector4 half(0x8000, 0x8000);
 
 					GSVertexSW* RESTRICT v = data.vertex;
-
 					for (int i = 0, j = data.vertex_count; i < j; i++)
 					{
 						const GSVector4 t = v[i].t;
-
 						v[i].t = (t - half).xyzw(t);
 					}
 				}
@@ -450,12 +548,13 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw)
 		}
 	}
 
-
 	if (!hw.m_sw_rasterizer)
 		hw.m_sw_rasterizer = std::make_unique<GSRasterizer>(new GSDrawScanline(), 0, 1);
 
 	static_cast<GSRasterizer*>(hw.m_sw_rasterizer.get())->Draw(&data);
 
-	hw.m_tc->InvalidateVideoMem(context->offset.fb, bbox);
+	if (invalidate_tc)
+		hw.m_tc->InvalidateVideoMem(context->offset.fb, bbox);
+
 	return true;
 }

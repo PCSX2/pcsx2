@@ -69,7 +69,7 @@ private:
 	bool PossibleCLUTDraw();
 	bool PossibleCLUTDrawAggressive();
 	bool CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_tex);
-	bool (*SwPrimRender)(GSRendererHW&);
+	bool (*SwPrimRender)(GSRendererHW&, bool invalidate_tc);
 
 	template <bool linear>
 	void RoundSpriteOffset();
@@ -111,7 +111,7 @@ private:
 
 	// software sprite renderer state
 	std::vector<GSVertexSW> m_sw_vertex_buffer;
-	std::unique_ptr<GSTextureCacheSW::Texture> m_sw_texture;
+	std::unique_ptr<GSTextureCacheSW::Texture> m_sw_texture[7 + 1];
 	std::unique_ptr<GSVirtualAlignedClass<32>> m_sw_rasterizer;
 
 public:
