@@ -112,7 +112,6 @@ void ImGuiManager::DrawPerformanceOverlay()
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 	std::string text;
 	ImVec2 text_size;
-	bool first = true;
 
 	text.reserve(128);
 
@@ -132,6 +131,7 @@ void ImGuiManager::DrawPerformanceOverlay()
 
 	if (!paused)
 	{
+		bool first = true;
 		const float speed = PerformanceMetrics::GetSpeed();
 		if (GSConfig.OsdShowFPS)
 		{
