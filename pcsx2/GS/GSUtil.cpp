@@ -145,11 +145,8 @@ bool GSUtil::HasCompatibleBits(u32 spsm, u32 dpsm)
 	return (s_maps.CompatibleBitsField[spsm][dpsm >> 5] & (1 << (dpsm & 0x1f))) != 0;
 }
 
-CRCHackLevel GSUtil::GetEffectiveCRCHackLevel(GSRendererType type, CRCHackLevel level)
+CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)
 {
-	if (level != CRCHackLevel::Automatic)
-		return level;
-
 	return (type == GSRendererType::DX11 || type == GSRendererType::DX12) ? CRCHackLevel::Full : CRCHackLevel::Partial;
 }
 

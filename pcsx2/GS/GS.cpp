@@ -331,7 +331,7 @@ bool GSreopen(bool recreate_display, const Pcsx2Config::GSOptions& old_config)
 		return false;
 	}
 
-	g_gs_renderer->SetGameCRC(gamecrc, GSUtil::GetEffectiveCRCHackLevel(GSConfig.Renderer, GSConfig.CRCHack));
+	g_gs_renderer->SetGameCRC(gamecrc);
 	return true;
 }
 
@@ -560,7 +560,7 @@ void GSThrottlePresentation()
 
 void GSsetGameCRC(u32 crc)
 {
-	g_gs_renderer->SetGameCRC(crc, GSUtil::GetEffectiveCRCHackLevel(GSConfig.Renderer, GSConfig.CRCHack));
+	g_gs_renderer->SetGameCRC(crc);
 }
 
 GSVideoMode GSgetDisplayMode()
@@ -692,7 +692,6 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	// Options which aren't using the global struct yet, so we need to recreate all GS objects.
 	if (
 		GSConfig.UpscaleMultiplier != old_config.UpscaleMultiplier ||
-		GSConfig.CRCHack != old_config.CRCHack ||
 		GSConfig.SWExtraThreads != old_config.SWExtraThreads ||
 		GSConfig.SWExtraThreadsHeight != old_config.SWExtraThreadsHeight)
 	{
@@ -706,9 +705,12 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	// For example, flushing the texture cache when mipmap settings change.
 
 	if (GSConfig.CRCHack != old_config.CRCHack ||
-		GSConfig.PointListPalette != old_config.PointListPalette)
+		GSConfig.UpscaleMultiplier != old_config.UpscaleMultiplier ||
+		GSConfig.GetSkipCountFunctionId != old_config.GetSkipCountFunctionId ||
+		GSConfig.BeforeDrawFunctionId != old_config.BeforeDrawFunctionId ||
+		GSConfig.AfterDrawFunctionId != old_config.BeforeDrawFunctionId)
 	{
-		g_gs_renderer->SetGameCRC(g_gs_renderer->GetGameCRC(), GSUtil::GetEffectiveCRCHackLevel(GSConfig.Renderer, GSConfig.CRCHack));
+		g_gs_renderer->UpdateCRCHacks();
 	}
 
 	// renderer-specific options (e.g. auto flush, TC offset)

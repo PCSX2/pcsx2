@@ -22,6 +22,8 @@
 #include "gsl/span"
 
 #include <map>
+#include <string>
+#include <string_view>
 
 // ST_WRITE is defined in libc, avoid this
 enum stateType
@@ -45,6 +47,11 @@ enum class GSVideoMode : u8
 extern Pcsx2Config::GSOptions GSConfig;
 
 class HostDisplay;
+
+// Returns the ID for the specified function, otherwise -1.
+s16 GSLookupGetSkipCountFunctionId(const std::string_view& name);
+s16 GSLookupBeforeDrawFunctionId(const std::string_view& name);
+s16 GSLookupAfterDrawFunctionId(const std::string_view& name);
 
 int GSinit();
 void GSshutdown();

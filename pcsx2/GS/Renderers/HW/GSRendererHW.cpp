@@ -159,11 +159,9 @@ bool GSRendererHW::IsPossibleTextureShuffle(GSTextureCache::Target* dst, const G
 		GSLocalMemory::m_psm[m_context->FRAME.PSM].bpp == 16);
 }
 
-void GSRendererHW::SetGameCRC(u32 crc, CRCHackLevel level)
+void GSRendererHW::SetGameCRC(u32 crc)
 {
-	GSRenderer::SetGameCRC(crc, level);
-
-	SetupCrcHack(level);
+	GSRenderer::SetGameCRC(crc);
 
 	GSTextureReplacements::GameChanged();
 }
@@ -4367,58 +4365,5 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 	}
 
 	// Nothing to see keep going
-	return true;
-}
-
-bool GSRendererHW::OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	const size_t n_vertices = r.m_vertex.next;
-	const int w = r.m_r.width();
-	const int h = r.m_r.height();
-	const bool is_copy = !r.PRIM->ABE || (
-		r.m_context->ALPHA.A == r.m_context->ALPHA.B // (A - B) == 0 in blending equation, makes C value irrelevant.
-		&& r.m_context->ALPHA.D == 0 // Copy source RGB(A) color into frame buffer.
-	);
-	if (r.m_vt.m_primclass == GS_POINT_CLASS && w <= 64 // Small draws.
-		&& h <= 64 // Small draws.
-		&& n_vertices <= 256 // Small draws.
-		&& is_copy // Copy (no blending).
-		&& !r.PRIM->TME // No texturing please.
-		&& r.m_context->FRAME.PSM == PSM_PSMCT32 // Only 32-bit pixel format (CLUT format).
-		&& !r.PRIM->FGE // No FOG.
-		&& !r.PRIM->AA1 // No antialiasing.
-		&& !r.PRIM->FIX // Normal fragment value control.
-		&& !r.m_env.DTHE.DTHE // No dithering.
-		&& !r.m_context->TEST.ATE // No alpha test.
-		&& !r.m_context->TEST.DATE // No destination alpha test.
-		&& (!r.m_context->DepthRead() && !r.m_context->DepthWrite()) // No depth handling.
-		&& !r.m_context->TEX0.CSM // No CLUT usage.
-		&& !r.m_env.PABE.PABE // No PABE.
-		&& r.m_context->FBA.FBA == 0 // No Alpha Correction.
-		&& r.m_context->FRAME.FBMSK == 0 // No frame buffer masking.
-	)
-	{
-		const u32 FBP = r.m_context->FRAME.Block();
-		const u32 FBW = r.m_context->FRAME.FBW;
-		GL_INS("PointListPalette - m_r = <%d, %d => %d, %d>, n_vertices = %zu, FBP = 0x%x, FBW = %u", r.m_r.x, r.m_r.y, r.m_r.z, r.m_r.w, n_vertices, FBP, FBW);
-		const GSVertex* RESTRICT v = r.m_vertex.buff;
-		const int ox(r.m_context->XYOFFSET.OFX);
-		const int oy(r.m_context->XYOFFSET.OFY);
-		for (size_t i = 0; i < n_vertices; ++i)
-		{
-			const GSVertex& vi = v[i];
-			const GIFRegXYZ& xyz = vi.XYZ;
-			const int x = (int(xyz.X) - ox) / 16;
-			const int y = (int(xyz.Y) - oy) / 16;
-			if (x < r.m_r.x || x > r.m_r.z)
-				continue;
-			if (y < r.m_r.y || y > r.m_r.w)
-				continue;
-			const u32 c = vi.RGBAQ.U32[0];
-			r.m_mem.WritePixel32(x, y, c, FBP, FBW);
-		}
-		r.m_tc->InvalidateVideoMem(r.m_context->offset.fb, r.m_r);
-		return false;
-	}
 	return true;
 }

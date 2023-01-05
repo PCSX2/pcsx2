@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "GameDatabase.h"
+#include "GS/GS.h"
 #include "Host.h"
 #include "vtlb.h"
 
@@ -240,12 +241,30 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 		{
 			const std::string_view id_name(n.key().data(), n.key().size());
 			std::optional<GameDatabaseSchema::GSHWFixId> id = GameDatabaseSchema::parseHWFixName(id_name);
-			std::optional<s32> value = n.has_val() ? StringUtil::FromChars<s32>(std::string_view(n.val().data(), n.val().size())) : 1;
+			std::optional<s32> value;
+			if (id.has_value() && (id.value() == GameDatabaseSchema::GSHWFixId::GetSkipCount || id.value() == GameDatabaseSchema::GSHWFixId::BeforeDraw || id.value() == GameDatabaseSchema::GSHWFixId::AfterDraw))
+			{
+				const std::string_view str_value(n.has_val() ? std::string_view(n.val().data(), n.val().size()) : std::string_view());
+				if (id.value() == GameDatabaseSchema::GSHWFixId::GetSkipCount)
+					value = GSLookupGetSkipCountFunctionId(str_value);
+				else if (id.value() == GameDatabaseSchema::GSHWFixId::BeforeDraw)
+					value = GSLookupBeforeDrawFunctionId(str_value);
+				else if (id.value() == GameDatabaseSchema::GSHWFixId::AfterDraw)
+					value = GSLookupAfterDrawFunctionId(str_value);
+
+				if (value.value_or(-1) < 0)
+				{
+					Console.Error(fmt::format("[GameDB] Invalid GS HW Fix Value for '{}' in '{}': '{}'", id_name, serial, str_value));
+					continue;
+				}
+			}
+			else
+			{
+				value = n.has_val() ? StringUtil::FromChars<s32>(std::string_view(n.val().data(), n.val().size())) : 1;
+			}
 			if (!id.has_value() || !value.has_value())
 			{
-				Console.Error("[GameDB] Invalid GS HW Fix: '%.*s' specified for serial '%.*s'. Dropping!",
-					static_cast<int>(id_name.size()), id_name.data(),
-					static_cast<int>(serial.size()), serial.data());
+				Console.Error(fmt::format("[GameDB] Invalid GS HW Fix: '{}' specified for serial '{}'. Dropping!", id_name, serial));
 				continue;
 			}
 
@@ -333,7 +352,6 @@ static const char* s_gs_hw_fix_names[] = {
 	"alignSprite",
 	"mergeSprite",
 	"wildArmsHack",
-	"pointListPalette",
 	"mipmap",
 	"trilinearFiltering",
 	"skipDrawStart",
@@ -346,6 +364,9 @@ static const char* s_gs_hw_fix_names[] = {
 	"cpuSpriteRenderBW",
 	"cpuCLUTRender",
 	"gpuPaletteConversion",
+	"getSkipCount",
+	"beforeDraw",
+	"afterDraw"
 };
 static_assert(std::size(s_gs_hw_fix_names) == static_cast<u32>(GameDatabaseSchema::GSHWFixId::Count), "HW fix name lookup is correct size");
 
@@ -372,8 +393,10 @@ bool GameDatabaseSchema::isUserHackHWFix(GSHWFixId id)
 		case GSHWFixId::Deinterlace:
 		case GSHWFixId::Mipmap:
 		case GSHWFixId::TexturePreloading:
-		case GSHWFixId::PointListPalette:
 		case GSHWFixId::TrilinearFiltering:
+		case GSHWFixId::GetSkipCount:
+		case GSHWFixId::BeforeDraw:
+		case GSHWFixId::AfterDraw:
 			return false;
 		default:
 			return true;
@@ -552,9 +575,6 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::WildArmsHack:
 			return (config.UpscaleMultiplier <= 1.0f || static_cast<int>(config.UserHacks_WildHack) == value);
 
-		case GSHWFixId::PointListPalette:
-			return (static_cast<int>(config.PointListPalette) == value);
-
 		case GSHWFixId::Mipmap:
 			return (config.HWMipmap == HWMipmapLevel::Automatic || static_cast<int>(config.HWMipmap) == value);
 
@@ -590,6 +610,15 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 
 		case GSHWFixId::GPUPaletteConversion:
 			return (config.GPUPaletteConversion == ((value > 1) ? (config.TexturePreloading == TexturePreloadingLevel::Full) : (value != 0)));
+
+		case GSHWFixId::GetSkipCount:
+			return (static_cast<int>(config.GetSkipCountFunctionId) == value);
+
+		case GSHWFixId::BeforeDraw:
+			return (static_cast<int>(config.BeforeDrawFunctionId) == value);
+
+		case GSHWFixId::AfterDraw:
+			return (static_cast<int>(config.AfterDrawFunctionId) == value);
 
 		default:
 			return false;
@@ -658,10 +687,6 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 
 			case GSHWFixId::WildArmsHack:
 				config.UserHacks_WildHack = (value > 0);
-				break;
-
-			case GSHWFixId::PointListPalette:
-				config.PointListPalette = (value > 0);
 				break;
 
 			case GSHWFixId::Mipmap:
@@ -744,6 +769,18 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 					config.GPUPaletteConversion = (value != 0);
 			}
 			break;
+
+			case GSHWFixId::GetSkipCount:
+				config.GetSkipCountFunctionId = static_cast<s16>(value);
+				break;
+
+			case GSHWFixId::BeforeDraw:
+				config.BeforeDrawFunctionId = static_cast<s16>(value);
+				break;
+
+			case GSHWFixId::AfterDraw:
+				config.AfterDrawFunctionId = static_cast<s16>(value);
+				break;
 
 			default:
 				break;

@@ -2751,10 +2751,15 @@ int GSState::Defrost(const freezeData* fd)
 	return 0;
 }
 
-void GSState::SetGameCRC(u32 crc, CRCHackLevel level)
+void GSState::SetGameCRC(u32 crc)
 {
 	m_crc = crc;
-	m_game = CRC::Lookup((level != CRCHackLevel::Off) ? crc : 0);
+	UpdateCRCHacks();
+}
+
+void GSState::UpdateCRCHacks()
+{
+	m_game = CRC::Lookup((GSConfig.CRCHack != CRCHackLevel::Off) ? m_crc : 0);
 }
 
 //
