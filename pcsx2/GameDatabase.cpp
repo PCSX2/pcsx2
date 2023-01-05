@@ -242,15 +242,13 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 			const std::string_view id_name(n.key().data(), n.key().size());
 			std::optional<GameDatabaseSchema::GSHWFixId> id = GameDatabaseSchema::parseHWFixName(id_name);
 			std::optional<s32> value;
-			if (id.has_value() && (id.value() == GameDatabaseSchema::GSHWFixId::GetSkipCount || id.value() == GameDatabaseSchema::GSHWFixId::BeforeDraw || id.value() == GameDatabaseSchema::GSHWFixId::AfterDraw))
+			if (id.has_value() && (id.value() == GameDatabaseSchema::GSHWFixId::GetSkipCount || id.value() == GameDatabaseSchema::GSHWFixId::BeforeDraw))
 			{
 				const std::string_view str_value(n.has_val() ? std::string_view(n.val().data(), n.val().size()) : std::string_view());
 				if (id.value() == GameDatabaseSchema::GSHWFixId::GetSkipCount)
 					value = GSLookupGetSkipCountFunctionId(str_value);
 				else if (id.value() == GameDatabaseSchema::GSHWFixId::BeforeDraw)
 					value = GSLookupBeforeDrawFunctionId(str_value);
-				else if (id.value() == GameDatabaseSchema::GSHWFixId::AfterDraw)
-					value = GSLookupAfterDrawFunctionId(str_value);
 
 				if (value.value_or(-1) < 0)
 				{
@@ -366,7 +364,6 @@ static const char* s_gs_hw_fix_names[] = {
 	"gpuPaletteConversion",
 	"getSkipCount",
 	"beforeDraw",
-	"afterDraw"
 };
 static_assert(std::size(s_gs_hw_fix_names) == static_cast<u32>(GameDatabaseSchema::GSHWFixId::Count), "HW fix name lookup is correct size");
 
@@ -396,7 +393,6 @@ bool GameDatabaseSchema::isUserHackHWFix(GSHWFixId id)
 		case GSHWFixId::TrilinearFiltering:
 		case GSHWFixId::GetSkipCount:
 		case GSHWFixId::BeforeDraw:
-		case GSHWFixId::AfterDraw:
 			return false;
 		default:
 			return true;
@@ -617,9 +613,6 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::BeforeDraw:
 			return (static_cast<int>(config.BeforeDrawFunctionId) == value);
 
-		case GSHWFixId::AfterDraw:
-			return (static_cast<int>(config.AfterDrawFunctionId) == value);
-
 		default:
 			return false;
 	}
@@ -776,10 +769,6 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 
 			case GSHWFixId::BeforeDraw:
 				config.BeforeDrawFunctionId = static_cast<s16>(value);
-				break;
-
-			case GSHWFixId::AfterDraw:
-				config.AfterDrawFunctionId = static_cast<s16>(value);
 				break;
 
 			default:

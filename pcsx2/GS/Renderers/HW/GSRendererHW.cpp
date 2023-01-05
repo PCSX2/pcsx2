@@ -1943,9 +1943,6 @@ void GSRendererHW::Draw()
 
 	//
 
-	if (m_oo)
-		m_oo(*this);
-
 	if (GSConfig.DumpGSData)
 	{
 		const u64 frame = g_perfmon.GetFrame();

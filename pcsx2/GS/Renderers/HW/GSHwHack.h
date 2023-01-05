@@ -33,6 +33,7 @@ public:
 	static bool GSC_TombRaiderLegend(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_TombRaiderUnderWorld(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_BurnoutGames(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
+	static bool GSC_BlackAndBurnoutSky(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_MidnightClub3(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_TalesOfLegendia(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_Kunoichi(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
@@ -67,8 +68,6 @@ public:
 	static bool OI_JakGames(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	static bool OI_BurnoutGames(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 
-	static void OO_BurnoutGames(GSRendererHW& r);
-
 	template <typename F>
 	struct Entry
 	{
@@ -79,5 +78,4 @@ public:
 
 	static const Entry<GSRendererHW::GSC_Ptr> s_get_skip_count_functions[];
 	static const Entry<GSRendererHW::OI_Ptr> s_before_draw_functions[];
-	static const Entry<GSRendererHW::OO_Ptr> s_after_draw_functions[];
 };
