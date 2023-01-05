@@ -273,11 +273,13 @@ __fi void mVUrestoreRegs(microVU& mVU, bool fromMemory = false, bool onlyNeeded 
 	}
 }
 
+#if 0
 // Gets called by mVUaddrFix at execution-time
 static void mVUwarningRegAccess(u32 prog, u32 pc)
 {
 	Console.Error("microVU0 Warning: Accessing VU1 Regs! [%04x] [%x]", pc, prog);
 }
+#endif
 
 static void mVUTBit()
 {
