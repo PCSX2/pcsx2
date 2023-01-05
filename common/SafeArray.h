@@ -17,13 +17,6 @@
 
 #include "common/Pcsx2Defs.h"
 
-// pxUSE_SECURE_MALLOC - enables bounds checking on scoped malloc allocations.
-
-#ifndef pxUSE_SECURE_MALLOC
-#define pxUSE_SECURE_MALLOC 0
-#endif
-
-
 // Microsoft Windows only macro, useful for freeing out COM objects:
 #define safe_release(ptr) \
 	((void)((((ptr) != NULL) && ((ptr)->Release(), !!0)), (ptr) = NULL))
