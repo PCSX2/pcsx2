@@ -55,6 +55,7 @@ public:
 	static bool GSC_ShinOnimusha(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_XenosagaE3(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 
+	static bool OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	static bool OI_BigMuthaTruckers(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	static bool OI_DBZBTGames(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	static bool OI_FFXII(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
@@ -71,18 +72,12 @@ public:
 	template <typename F>
 	struct Entry
 	{
-		CRC::Title game;
-		CRC::Region region;
-		CRCHackLevel level;
+		const char* name;
 		F ptr;
-
-		__fi bool Test(CRC::Title title_, CRC::Region region_, CRCHackLevel level_) const
-		{
-			return (game == title_ && (region == CRC::RegionCount || region == region_) && level_ >= level);
-		}
+		CRCHackLevel level;
 	};
 
-	static const Entry<GSRendererHW::GSC_Ptr> s_gsc_functions[];
-	static const Entry<GSRendererHW::OI_Ptr> s_oi_functions[];
-	static const Entry<GSRendererHW::OO_Ptr> s_oo_functions[];
+	static const Entry<GSRendererHW::GSC_Ptr> s_get_skip_count_functions[];
+	static const Entry<GSRendererHW::OI_Ptr> s_before_draw_functions[];
+	static const Entry<GSRendererHW::OO_Ptr> s_after_draw_functions[];
 };

@@ -20,97 +20,29 @@
 class CRC
 {
 public:
-	enum Title : u16
+	enum Title : u32
 	{
 		NoTitle,
-		AceCombat4,
-		ArTonelico2,
-		BigMuthaTruckers,
-		Black,
-		BurnoutGames,
-		CrashBandicootWoC,
-		DBZBT2,
-		DBZBT3,
-		DeathByDegreesTekkenNinaWilliams,
-		FFX,
 		FFX2,
-		FFXII,
-		FightingBeautyWulong,
 		GetawayGames,
-		GiTS,
-		GodHand,
 		HauntingGround,
 		ICO,
-		Jak2,
-		Jak3,
-		JakX,
-		KnightsOfTheTemple2,
 		KOF2002,
-		Kunoichi,
-		Lamune,
-		Manhunt2,
-		MetalSlug6,
-		MidnightClub3,
-		Okami,
-		Oneechanbara2Special,
 		PolyphonyDigitalGames,
-		RedDeadRevolver,
-		RozenMaidenGebetGarden,
-		SacredBlaze,
-		SakuraTaisen,
-		SakuraWarsSoLongMyLove,
-		SFEX3,
-		ShinOnimusha,
-		Simple2000Vol114,
 		SMTNocturne,
-		SonicUnleashed,
-		Spartan,
-		SteambotChronicles,
-		SuperManReturns,
 		SVCChaos,
-		TalesOfAbyss,
-		TalesOfLegendia,
-		TalesofSymphonia,
 		Tekken5,
-		TombRaiderAnniversary,
-		TombRaiderLegend,
-		TombRaiderUnderworld,
-		UltramanFightingEvolution,
-		UrbanReign,
-		XenosagaE3,
-		YakuzaGames,
-		ZettaiZetsumeiToshi2,
 		TitleCount,
-	};
-
-	enum Region : u8
-	{
-		NoRegion,
-		US,
-		EU,
-		JP,
-		RU,
-		FR,
-		DE,
-		IT,
-		ES,
-		CH,
-		ASIA,
-		KO,
-		RegionCount,
 	};
 
 	struct Game
 	{
 		u32 crc;
 		Title title;
-		Region region;
-		u32 flags;
 	};
 
 private:
 	static const Game m_games[];
-	static std::map<u32, const Game*> m_map;
 
 public:
 	static const Game& Lookup(u32 crc);

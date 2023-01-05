@@ -419,7 +419,6 @@ Pcsx2Config::GSOptions::GSOptions()
 	PreloadFrameWithGSData = false;
 	WrapGSMem = false;
 	Mipmap = true;
-	PointListPalette = false;
 
 	ManualUserHacks = false;
 	UserHacks_AlignSpriteX = false;
@@ -494,6 +493,9 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(SWExtraThreadsHeight) &&
 		OpEqu(TriFilter) &&
 		OpEqu(TVShader) &&
+		OpEqu(GetSkipCountFunctionId) &&
+		OpEqu(BeforeDrawFunctionId) &&
+		OpEqu(AfterDrawFunctionId) &&
 		OpEqu(SkipDrawEnd) &&
 		OpEqu(SkipDrawStart) &&
 

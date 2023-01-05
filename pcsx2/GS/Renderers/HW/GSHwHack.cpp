@@ -780,6 +780,59 @@ bool GSHwHack::GSC_XenosagaE3(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSHwHack::OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+{
+	const size_t n_vertices = r.m_vertex.next;
+	const int w = r.m_r.width();
+	const int h = r.m_r.height();
+	const bool is_copy = !r.PRIM->ABE || (
+		r.m_context->ALPHA.A == r.m_context->ALPHA.B // (A - B) == 0 in blending equation, makes C value irrelevant.
+		&& r.m_context->ALPHA.D == 0 // Copy source RGB(A) color into frame buffer.
+	);
+	if (r.m_vt.m_primclass == GS_POINT_CLASS && w <= 64 // Small draws.
+		&& h <= 64 // Small draws.
+		&& n_vertices <= 256 // Small draws.
+		&& is_copy // Copy (no blending).
+		&& !r.PRIM->TME // No texturing please.
+		&& r.m_context->FRAME.PSM == PSM_PSMCT32 // Only 32-bit pixel format (CLUT format).
+		&& !r.PRIM->FGE // No FOG.
+		&& !r.PRIM->AA1 // No antialiasing.
+		&& !r.PRIM->FIX // Normal fragment value control.
+		&& !r.m_env.DTHE.DTHE // No dithering.
+		&& !r.m_context->TEST.ATE // No alpha test.
+		&& !r.m_context->TEST.DATE // No destination alpha test.
+		&& (!r.m_context->DepthRead() && !r.m_context->DepthWrite()) // No depth handling.
+		&& !r.m_context->TEX0.CSM // No CLUT usage.
+		&& !r.m_env.PABE.PABE // No PABE.
+		&& r.m_context->FBA.FBA == 0 // No Alpha Correction.
+		&& r.m_context->FRAME.FBMSK == 0 // No frame buffer masking.
+	)
+	{
+		const u32 FBP = r.m_context->FRAME.Block();
+		const u32 FBW = r.m_context->FRAME.FBW;
+		GL_INS("PointListPalette - m_r = <%d, %d => %d, %d>, n_vertices = %zu, FBP = 0x%x, FBW = %u", r.m_r.x, r.m_r.y, r.m_r.z, r.m_r.w, n_vertices, FBP, FBW);
+		const GSVertex* RESTRICT v = r.m_vertex.buff;
+		const int ox(r.m_context->XYOFFSET.OFX);
+		const int oy(r.m_context->XYOFFSET.OFY);
+		for (size_t i = 0; i < n_vertices; ++i)
+		{
+			const GSVertex& vi = v[i];
+			const GIFRegXYZ& xyz = vi.XYZ;
+			const int x = (int(xyz.X) - ox) / 16;
+			const int y = (int(xyz.Y) - oy) / 16;
+			if (x < r.m_r.x || x > r.m_r.z)
+				continue;
+			if (y < r.m_r.y || y > r.m_r.w)
+				continue;
+			const u32 c = vi.RGBAQ.U32[0];
+			r.m_mem.WritePixel32(x, y, c, FBP, FBW);
+		}
+		r.m_tc->InvalidateVideoMem(r.m_context->offset.fb, r.m_r);
+		return false;
+	}
+	return true;
+}
+
 bool GSHwHack::OI_BigMuthaTruckers(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
 	// Rendering pattern:
@@ -1085,7 +1138,7 @@ bool GSHwHack::OI_JakGames(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSText
 
 bool GSHwHack::OI_BurnoutGames(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
-	if (!r.OI_PointListPalette(r, rt, ds, t))
+	if (!OI_PointListPalette(r, rt, ds, t))
 		return false; // Render point list palette.
 
 	if (t && t->m_from_target) // Avoid slow framebuffer readback
@@ -1127,130 +1180,152 @@ void GSHwHack::OO_BurnoutGames(GSRendererHW& r)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_gsc_functions[] = {
-	{CRC::GodHand, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_GodHand},
-	{CRC::KnightsOfTheTemple2, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_KnightsOfTheTemple2},
-	{CRC::Kunoichi, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_Kunoichi},
-	{CRC::Manhunt2, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_Manhunt2},
-	{CRC::MidnightClub3, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_MidnightClub3},
-	{CRC::SacredBlaze, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_SacredBlaze},
-	{CRC::SakuraTaisen, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_SakuraTaisen},
-	{CRC::SakuraWarsSoLongMyLove, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_SakuraWarsSoLongMyLove},
-	{CRC::Simple2000Vol114, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_Simple2000Vol114},
-	{CRC::SFEX3, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_SFEX3},
-	{CRC::TalesOfLegendia, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_TalesOfLegendia},
-	{CRC::TalesofSymphonia, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_TalesofSymphonia},
-	{CRC::TombRaiderAnniversary, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_TombRaiderAnniversary},
-	{CRC::TombRaiderLegend, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_TombRaiderLegend},
-	{CRC::TombRaiderUnderworld, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_TombRaiderUnderWorld},
-	{CRC::UrbanReign, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_UrbanReign},
-	{CRC::ZettaiZetsumeiToshi2, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_ZettaiZetsumeiToshi2},
+#define CRC_F(name, level) { #name, &GSHwHack::name, level }
+
+const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_functions[] = {
+	CRC_F(GSC_GodHand, CRCHackLevel::Partial),
+	CRC_F(GSC_KnightsOfTheTemple2, CRCHackLevel::Partial),
+	CRC_F(GSC_Kunoichi, CRCHackLevel::Partial),
+	CRC_F(GSC_Manhunt2, CRCHackLevel::Partial),
+	CRC_F(GSC_MidnightClub3, CRCHackLevel::Partial),
+	CRC_F(GSC_SacredBlaze, CRCHackLevel::Partial),
+	CRC_F(GSC_SakuraTaisen, CRCHackLevel::Partial),
+	CRC_F(GSC_SakuraWarsSoLongMyLove, CRCHackLevel::Partial),
+	CRC_F(GSC_Simple2000Vol114, CRCHackLevel::Partial),
+	CRC_F(GSC_SFEX3, CRCHackLevel::Partial),
+	CRC_F(GSC_TalesOfLegendia, CRCHackLevel::Partial),
+	CRC_F(GSC_TalesofSymphonia, CRCHackLevel::Partial),
+	CRC_F(GSC_TombRaiderAnniversary, CRCHackLevel::Partial),
+	CRC_F(GSC_TombRaiderLegend, CRCHackLevel::Partial),
+	CRC_F(GSC_TombRaiderUnderWorld, CRCHackLevel::Partial),
+	CRC_F(GSC_UrbanReign, CRCHackLevel::Partial),
+	CRC_F(GSC_ZettaiZetsumeiToshi2, CRCHackLevel::Partial),
 
 	// Channel Effect
-	{CRC::CrashBandicootWoC, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_CrashBandicootWoC},
-	{CRC::GiTS, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_GiTS},
-	{CRC::Spartan, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_Spartan},
-	{CRC::SteambotChronicles, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_SteambotChronicles},
+	CRC_F(GSC_CrashBandicootWoC, CRCHackLevel::Partial),
+	CRC_F(GSC_GiTS, CRCHackLevel::Partial),
+	CRC_F(GSC_Spartan, CRCHackLevel::Partial),
+	CRC_F(GSC_SteambotChronicles, CRCHackLevel::Partial),
 
 	// Depth Issue
-	{CRC::BurnoutGames, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_BurnoutGames},
+	CRC_F(GSC_BurnoutGames, CRCHackLevel::Partial),
 
 	// Half Screen bottom issue
-	{CRC::Tekken5, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_Tekken5},
+	CRC_F(GSC_Tekken5, CRCHackLevel::Partial),
 
 	// Texture shuffle
-	{CRC::BigMuthaTruckers, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_BigMuthaTruckers},
-	{CRC::DeathByDegreesTekkenNinaWilliams, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_DeathByDegreesTekkenNinaWilliams}, // + Upscaling issues
+	CRC_F(GSC_BigMuthaTruckers, CRCHackLevel::Partial),
+	CRC_F(GSC_DeathByDegreesTekkenNinaWilliams, CRCHackLevel::Partial), // + Upscaling issues
 
 	// Upscaling hacks
-	{CRC::FightingBeautyWulong, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_FightingBeautyWulong},
-	{CRC::Oneechanbara2Special, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_Oneechanbara2Special},
-	{CRC::UltramanFightingEvolution, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_UltramanFightingEvolution},
-	{CRC::YakuzaGames, CRC::RegionCount, CRCHackLevel::Partial, &GSHwHack::GSC_YakuzaGames},
+	CRC_F(GSC_FightingBeautyWulong, CRCHackLevel::Partial),
+	CRC_F(GSC_Oneechanbara2Special, CRCHackLevel::Partial),
+	CRC_F(GSC_UltramanFightingEvolution, CRCHackLevel::Partial),
+	CRC_F(GSC_YakuzaGames, CRCHackLevel::Partial),
 
 	// Accurate Blending
-	{CRC::GetawayGames, CRC::RegionCount, CRCHackLevel::Full, &GSHwHack::GSC_GetawayGames}, // Blending High
+	CRC_F(GSC_GetawayGames, CRCHackLevel::Full), // Blending High
 
-	{CRC::AceCombat4, CRC::RegionCount, CRCHackLevel::Aggressive, &GSHwHack::GSC_AceCombat4},
-	{CRC::FFX2, CRC::RegionCount, CRCHackLevel::Aggressive, &GSHwHack::GSC_FFXGames},
-	{CRC::FFX, CRC::RegionCount, CRCHackLevel::Aggressive, &GSHwHack::GSC_FFXGames},
-	{CRC::FFXII, CRC::RegionCount, CRCHackLevel::Aggressive, &GSHwHack::GSC_FFXGames},
-	{CRC::RedDeadRevolver, CRC::RegionCount, CRCHackLevel::Aggressive, &GSHwHack::GSC_RedDeadRevolver},
-	{CRC::ShinOnimusha, CRC::RegionCount, CRCHackLevel::Aggressive, &GSHwHack::GSC_ShinOnimusha},
-	{CRC::XenosagaE3, CRC::RegionCount, CRCHackLevel::Aggressive, &GSHwHack::GSC_XenosagaE3},
+	CRC_F(GSC_AceCombat4, CRCHackLevel::Aggressive),
+	CRC_F(GSC_FFXGames, CRCHackLevel::Aggressive),
+	CRC_F(GSC_FFXGames, CRCHackLevel::Aggressive),
+	CRC_F(GSC_FFXGames, CRCHackLevel::Aggressive),
+	CRC_F(GSC_RedDeadRevolver, CRCHackLevel::Aggressive),
+	CRC_F(GSC_ShinOnimusha, CRCHackLevel::Aggressive),
+	CRC_F(GSC_XenosagaE3, CRCHackLevel::Aggressive),
 
 	// Upscaling issues
-	{CRC::Okami, CRC::RegionCount, CRCHackLevel::Aggressive, &GSHwHack::GSC_Okami},
+	CRC_F(GSC_Okami, CRCHackLevel::Aggressive),
 };
 
-const GSHwHack::Entry<GSRendererHW::OI_Ptr> GSHwHack::s_oi_functions[] = {
-	{CRC::BigMuthaTruckers, CRC::RegionCount, CRCHackLevel::Minimum, &GSHwHack::OI_BigMuthaTruckers},
-	{CRC::DBZBT2, CRC::RegionCount, CRCHackLevel::Minimum, &GSHwHack::OI_DBZBTGames},
-	{CRC::DBZBT3, CRC::RegionCount, CRCHackLevel::Minimum, &GSHwHack::OI_DBZBTGames},
-	{CRC::FFXII, CRC::EU, CRCHackLevel::Minimum, &GSHwHack::OI_FFXII},
-	{CRC::FFX, CRC::RegionCount, CRCHackLevel::Minimum, &GSHwHack::OI_FFX},
-	{CRC::MetalSlug6, CRC::RegionCount, CRCHackLevel::Minimum, &GSHwHack::OI_MetalSlug6},
-	{CRC::RozenMaidenGebetGarden, CRC::RegionCount, CRCHackLevel::Minimum, &GSHwHack::OI_RozenMaidenGebetGarden},
-	{CRC::SonicUnleashed, CRC::RegionCount, CRCHackLevel::Minimum, &GSHwHack::OI_SonicUnleashed},
-	{CRC::ArTonelico2, CRC::RegionCount, CRCHackLevel::Minimum, &GSHwHack::OI_ArTonelico2},
-	{CRC::Jak2, CRC::RegionCount, CRCHackLevel::Minimum, &GSHwHack::OI_JakGames},
-	{CRC::Jak3, CRC::RegionCount, CRCHackLevel::Minimum, &GSHwHack::OI_JakGames},
-	{CRC::JakX, CRC::RegionCount, CRCHackLevel::Minimum, &GSHwHack::OI_JakGames},
-	{CRC::BurnoutGames, CRC::RegionCount, CRCHackLevel::Minimum, &GSHwHack::OI_BurnoutGames},
-	{CRC::Black, CRC::RegionCount, CRCHackLevel::Minimum, &GSHwHack::OI_BurnoutGames}};
-
-const GSHwHack::Entry<GSRendererHW::OO_Ptr> GSHwHack::s_oo_functions[] = {
-	{CRC::BurnoutGames, CRC::RegionCount, CRCHackLevel::Minimum, &GSHwHack::OO_BurnoutGames},
+const GSHwHack::Entry<GSRendererHW::OI_Ptr> GSHwHack::s_before_draw_functions[] = {
+	CRC_F(OI_PointListPalette, CRCHackLevel::Minimum),
+	CRC_F(OI_BigMuthaTruckers, CRCHackLevel::Minimum),
+	CRC_F(OI_DBZBTGames, CRCHackLevel::Minimum),
+	CRC_F(OI_FFXII, CRCHackLevel::Minimum),
+	CRC_F(OI_FFX, CRCHackLevel::Minimum),
+	CRC_F(OI_MetalSlug6, CRCHackLevel::Minimum),
+	CRC_F(OI_RozenMaidenGebetGarden, CRCHackLevel::Minimum),
+	CRC_F(OI_SonicUnleashed, CRCHackLevel::Minimum),
+	CRC_F(OI_ArTonelico2, CRCHackLevel::Minimum),
+	CRC_F(OI_JakGames, CRCHackLevel::Minimum),
+	CRC_F(OI_BurnoutGames, CRCHackLevel::Minimum),
 };
 
-void GSRendererHW::SetupCrcHack(CRCHackLevel level)
+const GSHwHack::Entry<GSRendererHW::OO_Ptr> GSHwHack::s_after_draw_functions[] = {
+	CRC_F(OO_BurnoutGames, CRCHackLevel::Minimum),
+};
+
+#undef CRC_F
+
+s16 GSLookupGetSkipCountFunctionId(const std::string_view& name)
 {
+	for (u32 i = 0; i < std::size(GSHwHack::s_get_skip_count_functions); i++)
+	{
+		if (name == GSHwHack::s_get_skip_count_functions[i].name)
+			return static_cast<s16>(i);
+	}
+
+	return -1;
+}
+
+s16 GSLookupBeforeDrawFunctionId(const std::string_view& name)
+{
+	for (u32 i = 0; i < std::size(GSHwHack::s_before_draw_functions); i++)
+	{
+		if (name == GSHwHack::s_before_draw_functions[i].name)
+			return static_cast<s16>(i);
+	}
+
+	return -1;
+}
+
+s16 GSLookupAfterDrawFunctionId(const std::string_view& name)
+{
+	for (u32 i = 0; i < std::size(GSHwHack::s_after_draw_functions); i++)
+	{
+		if (name == GSHwHack::s_after_draw_functions[i].name)
+			return static_cast<s16>(i);
+	}
+
+	return -1;
+}
+
+void GSRendererHW::UpdateCRCHacks()
+{
+	GSRenderer::UpdateCRCHacks();
+
+	const CRCHackLevel real_level = (GSConfig.CRCHack == CRCHackLevel::Automatic) ?
+		GSUtil::GetRecommendedCRCHackLevel(GSConfig.Renderer) : GSConfig.CRCHack;
+
 	s_nativeres = m_nativeres;
-	s_crc_hack_level = level;
+	s_crc_hack_level = real_level;
 
 	m_gsc = nullptr;
-	if (level != CRCHackLevel::Off)
-	{
-		for (const auto& entry : GSHwHack::s_gsc_functions)
-		{
-			if (entry.Test(m_game.title, m_game.region, level))
-			{
-				m_gsc = entry.ptr;
-				break;
-			}
-		}
-	}
-
 	m_oi = nullptr;
-	if (level != CRCHackLevel::Off)
-	{
-		for (const auto& entry : GSHwHack::s_oi_functions)
-		{
-			if (entry.Test(m_game.title, m_game.region, level))
-			{
-				m_oi = entry.ptr;
-				break;
-			}
-		}
-	}
-	if (GSConfig.PointListPalette)
-	{
-		if (m_oi)
-			Console.Warning("Overriding m_oi with PointListPalette");
-
-		m_oi = &GSRendererHW::OI_PointListPalette;
-	}
-
 	m_oo = nullptr;
-	if (level != CRCHackLevel::Off)
+
+	if (real_level != CRCHackLevel::Off)
 	{
-		for (const auto& entry : GSHwHack::s_oo_functions)
+		if (GSConfig.GetSkipCountFunctionId >= 0 &&
+			static_cast<size_t>(GSConfig.GetSkipCountFunctionId) < std::size(GSHwHack::s_get_skip_count_functions) &&
+			real_level >= GSHwHack::s_get_skip_count_functions[GSConfig.GetSkipCountFunctionId].level)
 		{
-			if (entry.Test(m_game.title, m_game.region, level))
-			{
-				m_oo = entry.ptr;
-				break;
-			}
+			m_gsc = GSHwHack::s_get_skip_count_functions[GSConfig.GetSkipCountFunctionId].ptr;
+		}
+
+		if (GSConfig.BeforeDrawFunctionId >= 0 &&
+			static_cast<size_t>(GSConfig.BeforeDrawFunctionId) < std::size(GSHwHack::s_before_draw_functions) &&
+			real_level >= GSHwHack::s_before_draw_functions[GSConfig.BeforeDrawFunctionId].level)
+		{
+			m_oi = GSHwHack::s_before_draw_functions[GSConfig.BeforeDrawFunctionId].ptr;
+		}
+
+		if (GSConfig.AfterDrawFunctionId >= 0 &&
+			static_cast<size_t>(GSConfig.AfterDrawFunctionId) < std::size(GSHwHack::s_after_draw_functions) &&
+			real_level >= GSHwHack::s_after_draw_functions[GSConfig.AfterDrawFunctionId].level)
+		{
+			m_oo = GSHwHack::s_after_draw_functions[GSConfig.AfterDrawFunctionId].ptr;
 		}
 	}
 }

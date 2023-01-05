@@ -60,7 +60,6 @@ private:
 	bool OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Source* t, const GSVector4i& r_draw);
 	bool OI_GsMemClear(); // always on
 	void OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCache::Target*& ds); // always on
-	static bool OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 
 	u16 Interpolate_UV(float alpha, int t0, int t1);
 	float alpha0(int L, int X0, int X1);
@@ -95,8 +94,6 @@ private:
 
 	// CRC Hacks
 	bool IsBadFrame();
-	void SetupCrcHack(CRCHackLevel level);
-
 	GSC_Ptr m_gsc = nullptr;
 	OI_Ptr m_oi = nullptr;
 	OO_Ptr m_oo = nullptr;
@@ -128,7 +125,9 @@ public:
 
 	void Destroy() override;
 
-	void SetGameCRC(u32 crc, CRCHackLevel level) override;
+	void SetGameCRC(u32 crc) override;
+	void UpdateCRCHacks() override;
+
 	bool CanUpscale() override;
 	float GetUpscaleMultiplier() override;
 	void Lines2Sprites();

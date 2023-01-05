@@ -365,7 +365,8 @@ public:
 	int Defrost(const freezeData* fd);
 
 	u32 GetGameCRC() const { return m_crc; }
-	virtual void SetGameCRC(u32 crc, CRCHackLevel level);
+	virtual void SetGameCRC(u32 crc);
+	virtual void UpdateCRCHacks();
 
 	u8* GetRegsMem() const { return reinterpret_cast<u8*>(m_regs); }
 	void SetRegsMem(u8* basemem) { m_regs = reinterpret_cast<GSPrivRegSet*>(basemem); }
