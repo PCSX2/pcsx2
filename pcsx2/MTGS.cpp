@@ -276,7 +276,7 @@ bool SysMtgsThread::TryOpenGS()
 	if (!GSopen(EmuConfig.GS, EmuConfig.GS.Renderer, RingBuffer.Regs))
 		return false;
 
-	GSsetGameCRC(ElfCRC, 0);
+	GSsetGameCRC(ElfCRC);
 	return true;
 }
 
@@ -511,7 +511,7 @@ void SysMtgsThread::MainLoop()
 						break;
 
 						case GS_RINGTYPE_CRC:
-							GSsetGameCRC(tag.data[0], 0);
+							GSsetGameCRC(tag.data[0]);
 							break;
 
 						case GS_RINGTYPE_INIT_AND_READ_FIFO:

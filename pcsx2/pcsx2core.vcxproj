@@ -555,6 +555,7 @@
     <ClInclude Include="Frontend\imgui_impl_dx12.h" />
     <ClInclude Include="Frontend\imgui_impl_opengl3.h" />
     <ClInclude Include="Frontend\imgui_impl_vulkan.h" />
+    <ClInclude Include="GS\Renderers\HW\GSHwHack.h" />
     <ClInclude Include="INISettingsInterface.h" />
     <ClInclude Include="Frontend\InputManager.h" />
     <ClInclude Include="Frontend\InputSource.h" />

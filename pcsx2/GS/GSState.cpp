@@ -39,16 +39,12 @@ static __fi bool IsFirstProvokingVertex()
 
 GSState::GSState()
 	: m_version(STATE_VERSION)
-	, m_gsc(NULL)
-	, m_skip(0)
-	, m_skip_offset(0)
 	, m_q(1.0f)
 	, m_scanmask_used(0)
 	, tex_flushed(true)
 	, m_vt(this, IsFirstProvokingVertex())
 	, m_regs(NULL)
 	, m_crc(0)
-	, m_options(0)
 {
 	// m_nativeres seems to be a hack. Unfortunately it impacts draw call number which make debug painful in the replayer.
 	// Let's keep it disabled to ease debug.
@@ -56,10 +52,6 @@ GSState::GSState()
 	m_mipmap = GSConfig.Mipmap;
 
 	s_n = 0;
-
-	m_crc_hack_level = GSConfig.CRCHack;
-	if (m_crc_hack_level == CRCHackLevel::Automatic)
-		m_crc_hack_level = GSUtil::GetRecommendedCRCHackLevel(GSConfig.Renderer);
 
 	memset(&m_v, 0, sizeof(m_v));
 	memset(&m_vertex, 0, sizeof(m_vertex));
@@ -2759,12 +2751,10 @@ int GSState::Defrost(const freezeData* fd)
 	return 0;
 }
 
-void GSState::SetGameCRC(u32 crc, int options)
+void GSState::SetGameCRC(u32 crc, CRCHackLevel level)
 {
 	m_crc = crc;
-	m_options = options;
-	m_game = CRC::Lookup(m_crc_hack_level != CRCHackLevel::Off ? crc : 0);
-	SetupCrcHack();
+	m_game = CRC::Lookup((level != CRCHackLevel::Off) ? crc : 0);
 }
 
 //

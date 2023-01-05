@@ -33,7 +33,7 @@ public:
 	static bool HasSharedBits(u32 sbp, u32 spsm, u32 dbp, u32 dpsm);
 	static bool HasCompatibleBits(u32 spsm, u32 dpsm);
 
-	static CRCHackLevel GetRecommendedCRCHackLevel(GSRendererType type);
+	static CRCHackLevel GetEffectiveCRCHackLevel(GSRendererType type, CRCHackLevel level);
 	static GSRendererType GetPreferredRenderer();
 };
 

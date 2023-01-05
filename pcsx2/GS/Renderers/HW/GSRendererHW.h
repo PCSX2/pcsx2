@@ -26,103 +26,41 @@ class GSRendererHW;
 MULTI_ISA_DEF(class GSRendererHWFunctions;)
 MULTI_ISA_DEF(void GSRendererHWPopulateFunctions(GSRendererHW& renderer);)
 
+class GSHwHack;
+
+struct GSFrameInfo
+{
+	u32 FBP;
+	u32 FPSM;
+	u32 FBMSK;
+	u32 ZBP;
+	u32 ZMSK;
+	u32 ZTST;
+	u32 TME;
+	u32 TBP0;
+	u32 TPSM;
+};
+
 class GSRendererHW : public GSRenderer
 {
 	MULTI_ISA_FRIEND(GSRendererHWFunctions);
+	friend GSHwHack;
+
 public:
 	static constexpr int MAX_FRAMEBUFFER_HEIGHT = 1280;
 
 private:
 	static constexpr float SSR_UV_TOLERANCE = 1.0f;
 
-#pragma region hacks
-
-	typedef bool (GSRendererHW::*OI_Ptr)(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-	typedef void (GSRendererHW::*OO_Ptr)();
-	typedef bool (GSRendererHW::*CU_Ptr)();
+	using GSC_Ptr = bool(*)(GSRendererHW& r, const GSFrameInfo& fi, int& skip);	// GSC - Get Skip Count
+	using OI_Ptr = bool(*)(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t); // OI - Before draw
+	using OO_Ptr = void(*)(GSRendererHW& r); // OO - After draw
 
 	// Require special argument
 	bool OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Source* t, const GSVector4i& r_draw);
 	bool OI_GsMemClear(); // always on
 	void OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCache::Target*& ds); // always on
-
-	bool OI_BigMuthaTruckers(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-	bool OI_DBZBTGames(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-	bool OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-	bool OI_FFX(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-	bool OI_MetalSlug6(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-	bool OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-	bool OI_SonicUnleashed(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-	bool OI_PointListPalette(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-	bool OI_ArTonelico2(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-	bool OI_JakGames(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-	bool OI_BurnoutGames(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-
-	void OO_BurnoutGames();
-
-	class Hacks
-	{
-		template <class T>
-		class HackEntry
-		{
-		public:
-			CRC::Title title;
-			CRC::Region region;
-			T func;
-
-			HackEntry(CRC::Title t, CRC::Region r, T f)
-			{
-				title = t;
-				region = r;
-				func = f;
-			}
-		};
-
-		template <class T>
-		class FunctionMap : public GSFunctionMap<u32, T>
-		{
-			std::list<HackEntry<T>>& m_tbl;
-
-			T GetDefaultFunction(u32 key)
-			{
-				CRC::Title title = (CRC::Title)(key & 0xffffff);
-				CRC::Region region = (CRC::Region)(key >> 24);
-
-				for (const auto& entry : m_tbl)
-				{
-					if (entry.title == title && (entry.region == CRC::RegionCount || entry.region == region))
-					{
-						return entry.func;
-					}
-				}
-
-				return NULL;
-			}
-
-		public:
-			FunctionMap(std::list<HackEntry<T>>& tbl)
-				: m_tbl(tbl)
-			{
-			}
-		};
-
-		std::list<HackEntry<OI_Ptr>> m_oi_list;
-		std::list<HackEntry<OO_Ptr>> m_oo_list;
-
-		FunctionMap<OI_Ptr> m_oi_map;
-		FunctionMap<OO_Ptr> m_oo_map;
-
-	public:
-		OI_Ptr m_oi;
-		OO_Ptr m_oo;
-
-		Hacks();
-
-		void SetGameCRC(const CRC::Game& game);
-
-	} m_hacks;
-
-#pragma endregion
+	static bool OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 
 	u16 Interpolate_UV(float alpha, int t0, int t1);
 	float alpha0(int L, int X0, int X1);
@@ -155,6 +93,16 @@ private:
 	GSVector4i m_r;
 	GSTextureCache::Source* m_src;
 
+	// CRC Hacks
+	bool IsBadFrame();
+	void SetupCrcHack(CRCHackLevel level);
+
+	GSC_Ptr m_gsc = nullptr;
+	OI_Ptr m_oi = nullptr;
+	OO_Ptr m_oo = nullptr;
+	int m_skip = 0;
+	int m_skip_offset = 0;
+
 	bool m_reset;
 	bool m_tex_is_fb;
 	bool m_channel_shuffle;
@@ -180,7 +128,7 @@ public:
 
 	void Destroy() override;
 
-	void SetGameCRC(u32 crc, int options) override;
+	void SetGameCRC(u32 crc, CRCHackLevel level) override;
 	bool CanUpscale() override;
 	float GetUpscaleMultiplier() override;
 	void Lines2Sprites();

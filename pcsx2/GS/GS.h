@@ -69,7 +69,7 @@ bool GSBeginCapture(std::string filename);
 void GSEndCapture();
 void GSPresentCurrentFrame();
 void GSThrottlePresentation();
-void GSsetGameCRC(u32 crc, int options);
+void GSsetGameCRC(u32 crc);
 
 GSVideoMode GSgetDisplayMode();
 void GSgetInternalResolution(int* width, int* height);
