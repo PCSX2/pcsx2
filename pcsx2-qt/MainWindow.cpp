@@ -521,7 +521,7 @@ void MainWindow::setStyleFromSettings()
 		qApp->setStyleSheet(QString());
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 	}
-else if (theme == "darkfusion")
+	else if (theme == "darkfusion")
 	{
 		// adapted from https://gist.github.com/QuantumCD/6245215
 		qApp->setStyle(QStyleFactory::create("Fusion"));
@@ -742,7 +742,7 @@ else if (theme == "darkfusion")
 		// Custom palette by RedDevilus, Blue as main color and Purple as complimentary.
 		// Alternative dark theme.
 		qApp->setStyle(QStyleFactory::create("Fusion"));
-		
+
 		const QColor blackishblue(50, 25, 70);
 		const QColor darkerPurple(90, 30, 105);
 		const QColor nauticalPurple(110, 30, 125);
@@ -1640,7 +1640,7 @@ void MainWindow::onViewGamePropertiesActionTriggered()
 		auto lock = GameList::GetLock();
 		const GameList::Entry* entry = m_current_elf_override.isEmpty() ?
 										   GameList::GetEntryForPath(m_current_disc_path.toUtf8().constData()) :
-                                           GameList::GetEntryForPath(m_current_elf_override.toUtf8().constData());
+										   GameList::GetEntryForPath(m_current_elf_override.toUtf8().constData());
 		if (entry)
 		{
 			SettingsDialog::openGamePropertiesDialog(
@@ -2869,11 +2869,17 @@ void MainWindow::doDiscChange(CDVD_SourceType source, const QString& path)
 	bool reset_system = false;
 	if (!m_was_disc_change_request)
 	{
-		const int choice = QMessageBox::question(this, tr("Confirm Disc Change"),
-			tr("Do you want to swap discs or boot the new image (via system reset)?"), tr("Swap Disc"), tr("Reset"), tr("Cancel"), 0, 2);
-		if (choice == 2)
+		QMessageBox message(QMessageBox::Question, tr("Confirm Disc Change"),
+			tr("Do you want to swap discs or boot the new image (via system reset)?"));
+		message.addButton(tr("Swap Disc"), QMessageBox::ActionRole);
+		QPushButton* reset_button = message.addButton(tr("Reset"), QMessageBox::ActionRole);
+		QPushButton* cancel_button = message.addButton(QMessageBox::Cancel);
+		message.setDefaultButton(cancel_button);
+		message.exec();
+
+		if (message.clickedButton() == cancel_button)
 			return;
-		reset_system = (choice != 0);
+		reset_system = (message.clickedButton() == reset_button);
 	}
 
 	switchToEmulationView();
