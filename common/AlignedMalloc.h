@@ -27,12 +27,6 @@
 #include <malloc.h>
 #endif
 
-// pxUSE_SECURE_MALLOC - enables bounds checking on scoped malloc allocations.
-
-#ifndef pxUSE_SECURE_MALLOC
-#define pxUSE_SECURE_MALLOC 0
-#endif
-
 // Implementation note: all known implementations of _aligned_free check the pointer for
 // NULL status (our implementation under GCC, and microsoft's under MSVC), so no need to
 // do it here.
@@ -148,25 +142,16 @@ public:
 
 	T* GetPtr(uint idx = 0) const
 	{
-#if pxUSE_SECURE_MALLOC
-		IndexBoundsAssumeDev("ScopedAlloc", idx, m_size);
-#endif
 		return &m_buffer[idx];
 	}
 
 	T& operator[](uint idx)
 	{
-#if pxUSE_SECURE_MALLOC
-		IndexBoundsAssumeDev("ScopedAlloc", idx, m_size);
-#endif
 		return m_buffer[idx];
 	}
 
 	const T& operator[](uint idx) const
 	{
-#if pxUSE_SECURE_MALLOC
-		IndexBoundsAssumeDev("ScopedAlloc", idx, m_size);
-#endif
 		return m_buffer[idx];
 	}
 };
