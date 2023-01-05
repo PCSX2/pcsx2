@@ -1209,6 +1209,43 @@ bool GSHwHack::OI_BurnoutGames(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GS
 	return false;
 }
 
+bool GSHwHack::GSC_Battlefield2(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
+{
+	if (skip == 0)
+	{
+		if (fi.ZBP >= fi.FBP && fi.FBP >= 0x2000 && fi.ZBP >= 0x2700 && ((fi.ZBP - fi.FBP) == 0x700))
+		{
+			skip = 7;
+
+			GIFRegTEX0 TEX0 = {};
+			TEX0.TBP0 = fi.FBP;
+			TEX0.TBW = 8;
+			GSTextureCache::Target* dst = r.m_tc->LookupTarget(TEX0, GSRendererHW::GetInstance()->GetTargetSize(), GSTextureCache::DepthStencil, true);
+			if (dst)
+			{
+				g_gs_device->ClearDepth(dst->m_texture);
+			}
+		}
+	}
+
+	return true;
+}
+
+bool GSHwHack::OI_Battlefield2(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+{
+	if (!RPRIM->TME || RCONTEXT->FRAME.Block() > 0xD00 || RCONTEXT->TEX0.TBP0 > 0x1D00)
+		return true;
+
+	if (rt && t && RCONTEXT->FRAME.Block() == 0 && RCONTEXT->TEX0.TBP0 == 0x1000)
+	{
+		const GSVector4i rc(0, 0, std::min(rt->GetWidth(), t->m_texture->GetWidth()), std::min(rt->GetHeight(), t->m_texture->GetHeight()));
+		g_gs_device->CopyRect(t->m_texture, rt, rc, 0, 0);
+	}
+
+	r.m_tc->InvalidateTemporarySource();
+	return false;
+}
+
 #undef RCONTEXT
 #undef RPRIM
 
@@ -1240,6 +1277,7 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_ZettaiZetsumeiToshi2, CRCHackLevel::Partial),
 	CRC_F(GSC_BlackAndBurnoutSky, CRCHackLevel::Partial),
 	CRC_F(GSC_Barnyard, CRCHackLevel::Partial),
+	CRC_F(GSC_Battlefield2, CRCHackLevel::Partial),
 
 	// Channel Effect
 	CRC_F(GSC_CrashBandicootWoC, CRCHackLevel::Partial),
@@ -1290,6 +1328,7 @@ const GSHwHack::Entry<GSRendererHW::OI_Ptr> GSHwHack::s_before_draw_functions[] 
 	CRC_F(OI_ArTonelico2, CRCHackLevel::Minimum),
 	CRC_F(OI_JakGames, CRCHackLevel::Minimum),
 	CRC_F(OI_BurnoutGames, CRCHackLevel::Minimum),
+	CRC_F(OI_Battlefield2, CRCHackLevel::Minimum),
 };
 
 #undef CRC_F
