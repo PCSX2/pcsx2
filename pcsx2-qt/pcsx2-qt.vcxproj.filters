@@ -27,9 +27,6 @@
     <ResourceCompile Include="..\pcsx2\PCSX2.rc">
       <Filter>Resources</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="..\pcsx2\windows\wxResources.rc">
-      <Filter>Resources</Filter>
-    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PrecompiledHeader.cpp" />
