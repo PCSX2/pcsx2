@@ -57,7 +57,7 @@ private:
 			return state.SamplesPlayed & (m_BufferSize - 1);
 		}
 
-		BaseStreamingVoice(uint numChannels)
+		explicit BaseStreamingVoice(uint numChannels)
 			: m_nBuffers(2)
 			, m_nChannels(numChannels)
 			, m_BufferSize(SndOutPacketSize * m_nChannels * PacketsPerBuffer)
