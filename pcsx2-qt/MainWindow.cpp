@@ -743,7 +743,6 @@ else if (theme == "darkfusion")
 		const QColor blackishblue(50, 25, 70);
 		const QColor darkerPurple(90, 30, 105);
 		const QColor nauticalPurple(110, 30, 125);
-		const QColor brightPurple(120, 30, 150);
 
 		QPalette darkPalette;
 		darkPalette.setColor(QPalette::Window, blackishblue);
