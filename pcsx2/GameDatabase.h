@@ -86,7 +86,6 @@ namespace GameDatabaseSchema
 		GPUPaletteConversion,
 		GetSkipCount,
 		BeforeDraw,
-		AfterDraw,
 
 		Count
 	};

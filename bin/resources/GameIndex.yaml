@@ -8984,7 +8984,6 @@ SLAJ-25053:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLAJ-25055:
   name: "Def Jam - Fight for N.Y."
   region: "NTSC-Unk"
@@ -9023,7 +9022,6 @@ SLAJ-25066:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
   memcardFilters:
     - "SLAJ-25066"
     - "SLPM-66108"
@@ -9092,8 +9090,8 @@ SLAJ-25078:
     roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
+    getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLAJ-25079:
   name: "Shin Sangoku Musou 4 - Empires"
   region: "NTSC-Unk"
@@ -9146,7 +9144,6 @@ SLAJ-25094:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLAJ-25095:
   name: "Medal of Honor - Vanguard"
   region: "NTSC-Unk"
@@ -9311,7 +9308,6 @@ SLED-52597:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLED-52852:
   name: "Forgotten Realms - Demon Stone [Demo]"
   region: "PAL-E"
@@ -9378,7 +9374,6 @@ SLED-53512:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLED-53537:
   name: "187 - Ride or Die [Demo]"
   region: "PAL-E"
@@ -9426,8 +9421,8 @@ SLED-53937:
     roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
+    getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLED-53951:
   name: "Honda Demo [Demo]"
   region: "PAL-E"
@@ -15067,7 +15062,6 @@ SLES-52584:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLES-52585:
   name: "Burnout 3 - Takedown"
   region: "PAL-F-G-I"
@@ -15082,7 +15076,6 @@ SLES-52585:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLES-52587:
   name: "Army Men - Sarge's War"
   region: "PAL-M5"
@@ -17265,7 +17258,6 @@ SLES-53506:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
   memcardFilters:
     - "SLES-53506"
     - "SLES-53507"
@@ -17287,7 +17279,6 @@ SLES-53507:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
   memcardFilters:
     - "SLES-53506"
     - "SLES-53507"
@@ -18394,8 +18385,8 @@ SLES-53886:
     roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
+    getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
   patches:
     ADDFF505:
       content: |-
@@ -18732,8 +18723,8 @@ SLES-54030:
     roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
+    getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
   patches:
     CAA04879:
       content: |-
@@ -20202,7 +20193,6 @@ SLES-54627:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLES-54628:
   name: "Skate Attack [Promo]"
   region: "PAL-E"
@@ -20377,7 +20367,6 @@ SLES-54681:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLES-54683:
   name: "Medal of Honor - Vanguard"
   region: "PAL-M9"
@@ -23620,7 +23609,6 @@ SLKA-25206:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLKA-25207:
   name: "Sakura Taisen V - Episode 0 - Samurai Girl of Wild"
   region: "NTSC-K"
@@ -23914,7 +23902,6 @@ SLKA-25304:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLKA-25307:
   name: "Dragon Ball Z Sparking"
   region: "NTSC-K"
@@ -24229,7 +24216,6 @@ SLPM-55004:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLPM-55005:
   name: "Mana Khemia 2 - Ochita Gakuen to Renkinjutsushi Tachi"
   region: "NTSC-J"
@@ -24271,7 +24257,6 @@ SLPM-55036:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLPM-55039:
   name: "Soukoku no Kusabi - Hiiro no Kakera 3 [Limited Edition]"
   region: "NTSC-J"
@@ -24850,7 +24835,6 @@ SLPM-60246:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLPM-60251:
   name: "Devil May Cry 3 [Trial Version]"
   region: "NTSC-J"
@@ -29701,7 +29685,6 @@ SLPM-65719:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLPM-65720:
   name: "Shin Sangoku Musou 2 Mushoden [Koei the Best]"
   region: "NTSC-J"
@@ -30532,7 +30515,6 @@ SLPM-65958:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLPM-65959:
   name: "Standard Daisenryaku - Ushinawareta Shouri"
   region: "NTSC-J"
@@ -31086,7 +31068,6 @@ SLPM-66108:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
   memcardFilters:
     - "SLAJ-25066"
     - "SLPM-66108"
@@ -32028,8 +32009,8 @@ SLPM-66354:
     roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
+    getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
   patches:
     B3A9F9ED:
       content: |-
@@ -33148,7 +33129,6 @@ SLPM-66652:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
   memcardFilters:
     - "SLAJ-25066"
     - "SLPM-66108"
@@ -33482,8 +33462,8 @@ SLPM-66731:
     roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
+    getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLPM-66732:
   name: "Iinazuke [Limited Edition]"
   region: "NTSC-J"
@@ -33533,7 +33513,6 @@ SLPM-66739:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLPM-66740:
   name: "Sentou Kokka Kai - Legend [DX Pack]"
   region: "NTSC-J"
@@ -34254,8 +34233,8 @@ SLPM-66961:
     roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
+    getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLPM-66962:
   name: "Burnout 3 - Takedown [EA-SY! 1980]"
   region: "NTSC-J"
@@ -34270,7 +34249,6 @@ SLPM-66962:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLPM-66963:
   name: "Medal of Honor - Frontline [EA-SY! 1980]"
   region: "NTSC-J"
@@ -45229,7 +45207,6 @@ SLUS-21050:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLUS-21051:
   name: "FIFA 2005"
   region: "NTSC-U"
@@ -46204,7 +46181,6 @@ SLUS-21242:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
   memcardFilters: # Reads Burnout 3 and NFL 06 saves for unlockables.
     - "SLUS-21242"
     - "SLUS-21050"
@@ -47003,8 +46979,8 @@ SLUS-21376:
     roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
+    getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
   patches:
     5C891FF1:
       content: |-
@@ -47998,7 +47974,6 @@ SLUS-21596:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLUS-21597:
   name: "Medal of Honor - Vanguard"
   region: "NTSC-U"
@@ -50166,7 +50141,6 @@ SLUS-29113:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLUS-29116:
   name: "WWE SmackDown! vs. RAW [Public Beta Vol.1.0]"
   region: "NTSC-U"
@@ -50282,7 +50256,6 @@ SLUS-29153:
     cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLUS-29154:
   name: "NHL '06 [Demo]"
   region: "NTSC-U"
@@ -50384,8 +50357,8 @@ SLUS-29180:
     roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
+    getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
-    afterDraw: "OO_BurnoutGames"
 SLUS-29183:
   name: "Fight Night - Round 3 [Demo]"
   region: "NTSC-U"

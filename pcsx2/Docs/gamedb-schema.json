@@ -231,9 +231,6 @@
             },
             "beforeDraw": {
               "type": "string"
-            },
-            "afterDraw": {
-              "type": "string"
             }
           },
           "additionalProperties": false

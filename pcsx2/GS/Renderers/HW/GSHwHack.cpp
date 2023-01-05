@@ -335,6 +335,28 @@ bool GSHwHack::GSC_BurnoutGames(GSRendererHW& r, const GSFrameInfo& fi, int& ski
 		}
 	}
 
+	return GSC_BlackAndBurnoutSky(r, fi, skip);
+}
+
+bool GSHwHack::GSC_BlackAndBurnoutSky(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
+{
+	if (skip != 0)
+		return true;
+
+	const GIFRegTEX0& TEX0 = RCONTEXT->TEX0;
+	const GIFRegALPHA& ALPHA = RCONTEXT->ALPHA;
+	const GIFRegFRAME& FRAME = RCONTEXT->FRAME;
+	if (RPRIM->PRIM == GS_SPRITE && !RPRIM->IIP && RPRIM->TME && !RPRIM->FGE && RPRIM->ABE && !RPRIM->AA1 && !RPRIM->FST && !RPRIM->FIX && TEX0.TBW == 16 && TEX0.TW == 10 && TEX0.TCC && !TEX0.TFX && TEX0.PSM == PSM_PSMT8 && TEX0.CPSM == PSM_PSMCT32 && !TEX0.CSM && TEX0.TH == 8 && ALPHA.A == ALPHA.B && ALPHA.D == 0 && FRAME.FBW == 16 && FRAME.PSM == PSM_PSMCT32)
+	{
+		// Readback clouds being rendered during level loading.
+		// Later the alpha channel from the 32 bit frame buffer is used as an 8 bit indexed texture to draw
+		// the clouds on top of the sky at each frame.
+		// Burnout 3 PAL 50Hz: 0x3ba0 => 0x1e80.
+		GL_INS("OO_BurnoutGames - Readback clouds renderered from TEX0.TBP0 = 0x%04x (TEX0.CBP = 0x%04x) to FBP = 0x%04x", TEX0.TBP0, TEX0.CBP, FRAME.Block());
+		r.SwPrimRender(r);
+		skip = 1;
+	}
+
 	return true;
 }
 
@@ -1153,24 +1175,6 @@ bool GSHwHack::OI_BurnoutGames(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GS
 	return false;
 }
 
-// OO (others output?) hacks: invalidate extra local memory after the draw call
-
-void GSHwHack::OO_BurnoutGames(GSRendererHW& r)
-{
-	const GIFRegTEX0& TEX0 = RCONTEXT->TEX0;
-	const GIFRegALPHA& ALPHA = RCONTEXT->ALPHA;
-	const GIFRegFRAME& FRAME = RCONTEXT->FRAME;
-	if (RPRIM->PRIM == GS_SPRITE && !RPRIM->IIP && RPRIM->TME && !RPRIM->FGE && RPRIM->ABE && !RPRIM->AA1 && !RPRIM->FST && !RPRIM->FIX && TEX0.TBW == 16 && TEX0.TW == 10 && TEX0.TCC && !TEX0.TFX && TEX0.PSM == PSM_PSMT8 && TEX0.CPSM == PSM_PSMCT32 && !TEX0.CSM && TEX0.TH == 8 && ALPHA.A == ALPHA.B && ALPHA.D == 0 && FRAME.FBW == 16 && FRAME.PSM == PSM_PSMCT32)
-	{
-		// Readback clouds being rendered during level loading.
-		// Later the alpha channel from the 32 bit frame buffer is used as an 8 bit indexed texture to draw
-		// the clouds on top of the sky at each frame.
-		// Burnout 3 PAL 50Hz: 0x3ba0 => 0x1e80.
-		GL_INS("OO_BurnoutGames - Readback clouds renderered from TEX0.TBP0 = 0x%04x (TEX0.CBP = 0x%04x) to FBP = 0x%04x", TEX0.TBP0, TEX0.CBP, FRAME.Block());
-		r.m_tc->InvalidateLocalMem(RCONTEXT->offset.fb, r.m_r);
-	}
-}
-
 #undef RCONTEXT
 #undef RPRIM
 
@@ -1200,6 +1204,7 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_TombRaiderUnderWorld, CRCHackLevel::Partial),
 	CRC_F(GSC_UrbanReign, CRCHackLevel::Partial),
 	CRC_F(GSC_ZettaiZetsumeiToshi2, CRCHackLevel::Partial),
+	CRC_F(GSC_BlackAndBurnoutSky, CRCHackLevel::Partial),
 
 	// Channel Effect
 	CRC_F(GSC_CrashBandicootWoC, CRCHackLevel::Partial),
@@ -1252,10 +1257,6 @@ const GSHwHack::Entry<GSRendererHW::OI_Ptr> GSHwHack::s_before_draw_functions[] 
 	CRC_F(OI_BurnoutGames, CRCHackLevel::Minimum),
 };
 
-const GSHwHack::Entry<GSRendererHW::OO_Ptr> GSHwHack::s_after_draw_functions[] = {
-	CRC_F(OO_BurnoutGames, CRCHackLevel::Minimum),
-};
-
 #undef CRC_F
 
 s16 GSLookupGetSkipCountFunctionId(const std::string_view& name)
@@ -1280,17 +1281,6 @@ s16 GSLookupBeforeDrawFunctionId(const std::string_view& name)
 	return -1;
 }
 
-s16 GSLookupAfterDrawFunctionId(const std::string_view& name)
-{
-	for (u32 i = 0; i < std::size(GSHwHack::s_after_draw_functions); i++)
-	{
-		if (name == GSHwHack::s_after_draw_functions[i].name)
-			return static_cast<s16>(i);
-	}
-
-	return -1;
-}
-
 void GSRendererHW::UpdateCRCHacks()
 {
 	GSRenderer::UpdateCRCHacks();
@@ -1303,7 +1293,6 @@ void GSRendererHW::UpdateCRCHacks()
 
 	m_gsc = nullptr;
 	m_oi = nullptr;
-	m_oo = nullptr;
 
 	if (real_level != CRCHackLevel::Off)
 	{
@@ -1319,13 +1308,6 @@ void GSRendererHW::UpdateCRCHacks()
 			real_level >= GSHwHack::s_before_draw_functions[GSConfig.BeforeDrawFunctionId].level)
 		{
 			m_oi = GSHwHack::s_before_draw_functions[GSConfig.BeforeDrawFunctionId].ptr;
-		}
-
-		if (GSConfig.AfterDrawFunctionId >= 0 &&
-			static_cast<size_t>(GSConfig.AfterDrawFunctionId) < std::size(GSHwHack::s_after_draw_functions) &&
-			real_level >= GSHwHack::s_after_draw_functions[GSConfig.AfterDrawFunctionId].level)
-		{
-			m_oo = GSHwHack::s_after_draw_functions[GSConfig.AfterDrawFunctionId].ptr;
 		}
 	}
 }

@@ -54,7 +54,6 @@ private:
 
 	using GSC_Ptr = bool(*)(GSRendererHW& r, const GSFrameInfo& fi, int& skip);	// GSC - Get Skip Count
 	using OI_Ptr = bool(*)(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t); // OI - Before draw
-	using OO_Ptr = void(*)(GSRendererHW& r); // OO - After draw
 
 	// Require special argument
 	bool OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Source* t, const GSVector4i& r_draw);
@@ -96,7 +95,6 @@ private:
 	bool IsBadFrame();
 	GSC_Ptr m_gsc = nullptr;
 	OI_Ptr m_oi = nullptr;
-	OO_Ptr m_oo = nullptr;
 	int m_skip = 0;
 	int m_skip_offset = 0;
 
