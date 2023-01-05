@@ -18004,12 +18004,20 @@ SLES-53729:
   name: "Battlefield 2 - Modern Combat"
   region: "PAL-M4"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Post-processing.
+    halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Spikes all over the place otherwise.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
+    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLES-53730:
   name: "Battlefield 2 - Modern Combat"
   region: "PAL-M3"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Post-processing.
+    halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Spikes all over the place otherwise.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
+    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLES-53734:
   name: "50 Cent - Bulletproof"
   region: "PAL-E"
@@ -31447,7 +31455,11 @@ SLPM-66206:
   name: "Battlefield 2 - Modern Combat"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Post-processing.
+    halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Spikes all over the place otherwise.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
+    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLPM-66207:
   name: "Dororo [Sega the Best 2800]"
   region: "NTSC-J"
@@ -33126,7 +33138,11 @@ SLPM-66651:
   name: "Battlefield 2 - Modern Combat [EA Best Hits]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Post-processing.
+    halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Spikes all over the place otherwise.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
+    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLPM-66652:
   name: "Burnout Revenge [EA Best Hits]"
   region: "NTSC-J"
@@ -45062,7 +45078,11 @@ SLUS-21026:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Post-processing.
+    halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Spikes all over the place otherwise.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
+    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-21027:
   name: "Lord of the Rings, The - The Third Age"
   region: "NTSC-U"
@@ -50163,7 +50183,11 @@ SLUS-29117:
   name: "Battlefield 2 - Modern Combat [Public Beta Vol.1.0]"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Post-processing.
+    halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Spikes all over the place otherwise.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
+    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-29118:
   name: "Need for Speed - Underground 2 [Demo]"
   region: "NTSC-U"
@@ -50256,7 +50280,11 @@ SLUS-29152:
   name: "Battlefield 2 - Modern Combat [Regular Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Post-processing.
+    halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Spikes all over the place otherwise.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
+    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-29153:
   name: "Burnout Revenge [Demo]"
   region: "NTSC-U"
@@ -50342,7 +50370,11 @@ SLUS-29172:
   name: "Battlefield 2 - Modern Combat [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Post-processing.
+    halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Spikes all over the place otherwise.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
+    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-29173:
   name: "Sims 2, The [Demo]"
   region: "NTSC-U"
