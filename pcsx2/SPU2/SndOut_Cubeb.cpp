@@ -53,7 +53,7 @@ private:
 	public:
 		ConvertedSampleReader() = delete;
 
-		ConvertedSampleReader(u64* pWritten)
+		explicit ConvertedSampleReader(u64* pWritten)
 			: written(pWritten)
 		{
 		}
