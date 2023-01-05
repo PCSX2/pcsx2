@@ -20,7 +20,7 @@
 class CRC
 {
 public:
-	enum Title
+	enum Title : u16
 	{
 		NoTitle,
 		AceCombat4,
@@ -83,7 +83,7 @@ public:
 		TitleCount,
 	};
 
-	enum Region
+	enum Region : u8
 	{
 		NoRegion,
 		US,
