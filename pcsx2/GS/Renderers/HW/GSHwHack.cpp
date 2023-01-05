@@ -802,6 +802,40 @@ bool GSHwHack::GSC_XenosagaE3(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSHwHack::GSC_Barnyard(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
+{
+	GSDrawingContext* context = r.m_context;
+
+	// Whoever wrote this was kinda nuts. They draw a stipple/dither pattern to a framebuffer, then reuse that as
+	// the depth buffer. Textures are then drawn repeatedly on top of one another, each with a slight offset.
+	// Depth testing is enabled, and that determines which pixels make it into the final texture. Kinda like an
+	// attempt at anti-aliasing or adding more detail to the textures?
+
+	// The size of these textures varies quite a bit. 16-bit, 24-bit and 32-bit formats are all used.
+	// The ones we need to take care of here, are the textures which use mipmaps. Those get drawn recursively, mip
+	// levels are then drawn to the right of the base texture. And we can't handle that in the texture cache. So
+	// we'll limit to 16/32-bit, going up to 320 wide. Some font textures are 1024x1024, we don't really want to
+	// be rasterizing that on the CPU.
+
+	// Catch the mipmap draws.
+	if ((context->FRAME.PSM == PSM_PSMCT16S || context->FRAME.PSM == PSM_PSMCT32) && context->FRAME.FBW <= 5)
+	{
+		r.SwPrimRender(r, true);
+		skip = 1;
+		return true;
+	}
+
+	// This is the giant dither-like depth buffer. We need this on the CPU *and* the GPU for textures which are
+	// rendered on both.
+	if (context->FRAME.FBW == 8 && r.m_index.tail == 32 && r.PRIM->TME && context->TEX0.TBW == 1)
+	{
+		r.SwPrimRender(r, false);
+		return false;
+	}
+
+	return false;
+}
+
 bool GSHwHack::OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
 	const size_t n_vertices = r.m_vertex.next;
@@ -1205,6 +1239,7 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_UrbanReign, CRCHackLevel::Partial),
 	CRC_F(GSC_ZettaiZetsumeiToshi2, CRCHackLevel::Partial),
 	CRC_F(GSC_BlackAndBurnoutSky, CRCHackLevel::Partial),
+	CRC_F(GSC_Barnyard, CRCHackLevel::Partial),
 
 	// Channel Effect
 	CRC_F(GSC_CrashBandicootWoC, CRCHackLevel::Partial),

@@ -5302,7 +5302,10 @@ SCKA-20096:
   name: "Barnyard"
   region: "NTSC-K"
   gsHWFixes:
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
+    halfPixelOffset: 2 # Fix text and post blur.
+    mipmap: 2 # Base mip level isn't always used.
+    autoFlush: 1 # Needed for recursive mipmap rendering.
+    getSkipCount: "GSC_Barnyard" # Render mipmaps on the CPU.
 SCKA-20098:
   name: "Nickelodeon SpongeBob SquarePants - Creature from the Krusty Krab"
   region: "NTSC-K"
@@ -19573,17 +19576,26 @@ SLES-54376:
   name: "Barnyard"
   region: "PAL-E"
   gsHWFixes:
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
+    halfPixelOffset: 2 # Fix text and post blur.
+    mipmap: 2 # Base mip level isn't always used.
+    autoFlush: 1 # Needed for recursive mipmap rendering.
+    getSkipCount: "GSC_Barnyard" # Render mipmaps on the CPU.
 SLES-54377:
   name: "Barnyard"
   region: "PAL-G"
   gsHWFixes:
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
+    halfPixelOffset: 2 # Fix text and post blur.
+    mipmap: 2 # Base mip level isn't always used.
+    autoFlush: 1 # Needed for recursive mipmap rendering.
+    getSkipCount: "GSC_Barnyard" # Render mipmaps on the CPU.
 SLES-54378:
   name: "Barnyard"
   region: "PAL-M4"
   gsHWFixes:
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
+    halfPixelOffset: 2 # Fix text and post blur.
+    mipmap: 2 # Base mip level isn't always used.
+    autoFlush: 1 # Needed for recursive mipmap rendering.
+    getSkipCount: "GSC_Barnyard" # Render mipmaps on the CPU.
 SLES-54379:
   name: "NFL Street 3"
   region: "PAL-E"
@@ -46400,7 +46412,10 @@ SLUS-21277:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
+    halfPixelOffset: 2 # Fix text and post blur.
+    mipmap: 2 # Base mip level isn't always used.
+    autoFlush: 1 # Needed for recursive mipmap rendering.
+    getSkipCount: "GSC_Barnyard" # Render mipmaps on the CPU.
 SLUS-21278:
   name: "SSX on Tour"
   region: "NTSC-U"
