@@ -1154,7 +1154,6 @@ SCAJ-20143:
   name: "Armored Core - Last Raven"
   region: "NTSC-Unk"
   gsHWFixes:
-    preloadFrameData: 1 # Fixes black screen while in a mech.
     roundSprite: 2 # Fixes HUD artifacts.
 SCAJ-20144:
   name: "Zhuo Hou La 3"
@@ -18321,7 +18320,6 @@ SLES-53820:
   name: "Armored Core - Last Raven"
   region: "PAL-E"
   gsHWFixes:
-    preloadFrameData: 1 # Fixes black screen while in a mech.
     roundSprite: 2 # Fixes HUD artifacts.
 SLES-53821:
   name: "Radio Helicopter II"
@@ -38123,7 +38121,6 @@ SLPS-25462:
   name: "Armored Core - Last Raven"
   region: "NTSC-J"
   gsHWFixes:
-    preloadFrameData: 1 # Fixes black screen while in a mech.
     roundSprite: 2 # Fixes HUD artifacts.
   memcardFilters:
     - SLPS-25338
@@ -40288,7 +40285,6 @@ SLPS-73247:
   name: "Armored Core - Last Raven [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    preloadFrameData: 1 # Fixes black screen while in a mech.
     roundSprite: 2 # Fixes HUD artifacts.
   memcardFilters:
     - SLPS-25338
@@ -46933,7 +46929,6 @@ SLUS-21338:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    preloadFrameData: 1 # Fixes black screen while in a mech.
     roundSprite: 2 # Fixes HUD artifacts.
 SLUS-21339:
   name: "Puzzle Collection - Crosswords & More!"
