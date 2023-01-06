@@ -690,6 +690,7 @@ namespace Vulkan
 			vkDestroyFramebuffer(g_vulkan_context->GetDevice(), it.framebuffer, nullptr);
 		}
 		m_images.clear();
+		m_image_acquire_result.reset();
 	}
 
 	void SwapChain::DestroySwapChain()
@@ -705,6 +706,9 @@ namespace Vulkan
 
 	VkResult SwapChain::AcquireNextImage()
 	{
+		if (m_image_acquire_result.has_value())
+			return m_image_acquire_result.value();
+
 		if (!m_swap_chain)
 			return VK_ERROR_SURFACE_LOST_KHR;
 
@@ -723,7 +727,13 @@ namespace Vulkan
 			}
 		}
 
+		m_image_acquire_result = res;
 		return res;
+	}
+
+	void SwapChain::ReleaseCurrentImage()
+	{
+		m_image_acquire_result.reset();
 	}
 
 	bool SwapChain::ResizeSwapChain(u32 new_width, u32 new_height, float new_scale)

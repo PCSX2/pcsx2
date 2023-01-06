@@ -353,6 +353,8 @@ bool VulkanHostDisplay::BeginPresent(bool frame_skip)
 	VkResult res = m_swap_chain->AcquireNextImage();
 	if (res != VK_SUCCESS)
 	{
+		m_swap_chain->ReleaseCurrentImage();
+
 		if (res == VK_SUBOPTIMAL_KHR || res == VK_ERROR_OUT_OF_DATE_KHR)
 		{
 			ResizeWindow(0, 0, m_window_info.surface_scale);

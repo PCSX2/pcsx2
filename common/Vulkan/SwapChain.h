@@ -20,6 +20,7 @@
 #include "common/Vulkan/Texture.h"
 #include "common/Vulkan/Loader.h"
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace Vulkan
@@ -74,6 +75,7 @@ namespace Vulkan
 		__fi VkSemaphore GetRenderingFinishedSemaphore() const { return m_images[m_current_image].rendering_finished_semaphore; }
 		__fi const VkSemaphore* GetRenderingFinishedSemaphorePtr() const { return &m_images[m_current_image].rendering_finished_semaphore; }
 		VkResult AcquireNextImage();
+		void ReleaseCurrentImage();
 
 		bool RecreateSurface(const WindowInfo& new_wi);
 		bool ResizeSwapChain(u32 new_width = 0, u32 new_height = 0, float new_scale = 1.0f);
@@ -122,5 +124,6 @@ namespace Vulkan
 		VkSwapchainKHR m_swap_chain = VK_NULL_HANDLE;
 		std::vector<SwapChainImage> m_images;
 		u32 m_current_image = 0;
+		std::optional<VkResult> m_image_acquire_result;
 	};
 } // namespace Vulkan
