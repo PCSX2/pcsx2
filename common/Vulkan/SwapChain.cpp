@@ -38,7 +38,6 @@ namespace Vulkan
 
 	SwapChain::~SwapChain()
 	{
-		DestroySemaphores();
 		DestroySwapChainImages();
 		DestroySwapChain();
 		DestroySurface();
@@ -416,7 +415,7 @@ namespace Vulkan
 		VkPresentModeKHR preferred_present_mode)
 	{
 		std::unique_ptr<SwapChain> swap_chain = std::make_unique<SwapChain>(wi, surface, preferred_present_mode);
-		if (!swap_chain->CreateSwapChain() || !swap_chain->SetupSwapChainImages() || !swap_chain->CreateSemaphores())
+		if (!swap_chain->CreateSwapChain() || !swap_chain->SetupSwapChainImages())
 			return nullptr;
 
 		return swap_chain;
@@ -638,6 +637,7 @@ namespace Vulkan
 		}
 
 		m_images.reserve(image_count);
+		m_current_image = (image_count - 1);
 		for (u32 i = 0; i < image_count; i++)
 		{
 			SwapChainImage image;
@@ -650,9 +650,29 @@ namespace Vulkan
 				return false;
 			}
 
+			const VkSemaphoreCreateInfo semaphore_info = {VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, nullptr, 0};
+			res = vkCreateSemaphore(g_vulkan_context->GetDevice(), &semaphore_info, nullptr, &image.available_semaphore);
+			if (res != VK_SUCCESS)
+			{
+				LOG_VULKAN_ERROR(res, "vkCreateSemaphore failed: ");
+				return false;
+			}
+
+			res = vkCreateSemaphore(g_vulkan_context->GetDevice(), &semaphore_info, nullptr, &image.rendering_finished_semaphore);
+			if (res != VK_SUCCESS)
+			{
+				LOG_VULKAN_ERROR(res, "vkCreateSemaphore failed: ");
+				vkDestroySemaphore(g_vulkan_context->GetDevice(), image.available_semaphore, nullptr);
+				return false;
+			}
+
 			image.framebuffer = image.texture.CreateFramebuffer(m_load_render_pass);
 			if (image.framebuffer == VK_NULL_HANDLE)
+			{
+				vkDestroySemaphore(g_vulkan_context->GetDevice(), image.rendering_finished_semaphore, nullptr);
+				vkDestroySemaphore(g_vulkan_context->GetDevice(), image.available_semaphore, nullptr);
 				return false;
+			}
 
 			m_images.emplace_back(std::move(image));
 		}
@@ -665,6 +685,8 @@ namespace Vulkan
 		for (auto& it : m_images)
 		{
 			// Images themselves are cleaned up by the swap chain object
+			vkDestroySemaphore(g_vulkan_context->GetDevice(), it.rendering_finished_semaphore, nullptr);
+			vkDestroySemaphore(g_vulkan_context->GetDevice(), it.available_semaphore, nullptr);
 			vkDestroyFramebuffer(g_vulkan_context->GetDevice(), it.framebuffer, nullptr);
 		}
 		m_images.clear();
@@ -686,14 +708,27 @@ namespace Vulkan
 		if (!m_swap_chain)
 			return VK_ERROR_SURFACE_LOST_KHR;
 
-		return vkAcquireNextImageKHR(g_vulkan_context->GetDevice(), m_swap_chain, UINT64_MAX,
-			m_image_available_semaphore, VK_NULL_HANDLE, &m_current_image);
+		// Unfortunately we can't query the image before providing the semaphore.
+		// So, let's hope we get it correct.
+		const u32 expected_image = (m_current_image + 1) % static_cast<u32>(m_images.size());
+		const VkResult res = vkAcquireNextImageKHR(g_vulkan_context->GetDevice(), m_swap_chain, UINT64_MAX,
+			m_images[expected_image].available_semaphore, VK_NULL_HANDLE, &m_current_image);
+		if (res == VK_SUCCESS)
+		{
+			// Did we get the correct image? If not, we'll just swap the semaphore handles so it lines up.
+			if (m_current_image != expected_image)
+			{
+				std::swap(m_images[expected_image].available_semaphore, m_images[m_current_image].available_semaphore);
+				DevCon.WriteLn("Predicted wrong image (expected %u, got %u), swapped semaphores", expected_image, m_current_image);
+			}
+		}
+
+		return res;
 	}
 
 	bool SwapChain::ResizeSwapChain(u32 new_width, u32 new_height, float new_scale)
 	{
 		DestroySwapChainImages();
-		DestroySemaphores();
 
 		if (new_width != 0 && new_height != 0)
 		{
@@ -703,9 +738,8 @@ namespace Vulkan
 
 		m_window_info.surface_scale = new_scale;
 
-		if (!CreateSwapChain() || !SetupSwapChainImages() || !CreateSemaphores())
+		if (!CreateSwapChain() || !SetupSwapChainImages())
 		{
-			DestroySemaphores();
 			DestroySwapChainImages();
 			DestroySwapChain();
 			return false;
@@ -717,11 +751,9 @@ namespace Vulkan
 	bool SwapChain::RecreateSwapChain()
 	{
 		DestroySwapChainImages();
-		DestroySemaphores();
 
-		if (!CreateSwapChain() || !SetupSwapChainImages() || !CreateSemaphores())
+		if (!CreateSwapChain() || !SetupSwapChainImages())
 		{
-			DestroySemaphores();
 			DestroySwapChainImages();
 			DestroySwapChain();
 			return false;
@@ -746,7 +778,6 @@ namespace Vulkan
 		DestroySwapChainImages();
 		DestroySwapChain();
 		DestroySurface();
-		DestroySemaphores();
 
 		// Re-create the surface with the new native handle
 		m_window_info = new_wi;
@@ -771,8 +802,14 @@ namespace Vulkan
 		}
 
 		// Finally re-create the swap chain
-		if (!CreateSwapChain() || !SetupSwapChainImages() || !CreateSemaphores())
+		if (!CreateSwapChain())
 			return false;
+		if (!SetupSwapChainImages())
+		{
+			DestroySwapChain();
+			DestroySurface();
+			return false;
+		}
 
 		return true;
 	}
@@ -784,43 +821,5 @@ namespace Vulkan
 
 		DestroyVulkanSurface(g_vulkan_context->GetVulkanInstance(), &m_window_info, m_surface);
 		m_surface = VK_NULL_HANDLE;
-	}
-
-	bool SwapChain::CreateSemaphores()
-	{
-		// Create two semaphores, one that is triggered when the swapchain buffer is ready, another after
-		// submit and before present
-		VkSemaphoreCreateInfo semaphore_info = {
-			VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, // VkStructureType          sType
-			nullptr, // const void*              pNext
-			0 // VkSemaphoreCreateFlags   flags
-		};
-
-		VkResult res;
-		if ((res = vkCreateSemaphore(g_vulkan_context->GetDevice(), &semaphore_info, nullptr,
-				 &m_image_available_semaphore)) != VK_SUCCESS ||
-			(res = vkCreateSemaphore(g_vulkan_context->GetDevice(), &semaphore_info, nullptr,
-				 &m_rendering_finished_semaphore)) != VK_SUCCESS)
-		{
-			LOG_VULKAN_ERROR(res, "vkCreateSemaphore failed: ");
-			return false;
-		}
-
-		return true;
-	}
-
-	void SwapChain::DestroySemaphores()
-	{
-		if (m_image_available_semaphore != VK_NULL_HANDLE)
-		{
-			vkDestroySemaphore(g_vulkan_context->GetDevice(), m_image_available_semaphore, nullptr);
-			m_image_available_semaphore = VK_NULL_HANDLE;
-		}
-
-		if (m_rendering_finished_semaphore != VK_NULL_HANDLE)
-		{
-			vkDestroySemaphore(g_vulkan_context->GetDevice(), m_rendering_finished_semaphore, nullptr);
-			m_rendering_finished_semaphore = VK_NULL_HANDLE;
-		}
 	}
 } // namespace Vulkan
