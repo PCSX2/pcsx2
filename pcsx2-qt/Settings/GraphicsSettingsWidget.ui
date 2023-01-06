@@ -1693,6 +1693,13 @@
           </item>
           <item row="3" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_9">
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="skipPresentingDuplicateFrames">
+              <property name="text">
+               <string>Skip Presenting Duplicate Frames</string>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="0">
              <widget class="QCheckBox" name="useBlitSwapChain">
               <property name="text">
@@ -1700,10 +1707,10 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="skipPresentingDuplicateFrames">
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="threadedPresentation">
               <property name="text">
-               <string>Skip Presenting Duplicate Frames</string>
+               <string>Threaded Presentation</string>
               </property>
              </widget>
             </item>

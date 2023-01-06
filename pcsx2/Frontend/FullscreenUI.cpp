@@ -3289,6 +3289,9 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 	DrawToggleSetting(bsi, "Skip Presenting Duplicate Frames",
 		"Skips displaying frames that don't change in 25/30fps games. Can improve speed but increase input lag/make frame pacing worse.",
 		"EmuCore/GS", "SkipDuplicateFrames", false);
+	DrawToggleSetting(bsi, "Threaded Presentation",
+		"Presents frames on a worker thread, instead of on the GS thread. Can improve frame times on some systems, at the cost of "
+		"potentially worse frame pacing.", "EmuCore/GS", "ThreadedPresentation", false);
 	DrawIntListSetting(bsi, "Override Texture Barriers", "Forces texture barrier functionality to the specified value.", "EmuCore/GS",
 		"OverrideTextureBarriers", -1, s_generic_options, std::size(s_generic_options), -1);
 	DrawIntListSetting(bsi, "Override Geometry Shaders", "Forces geometry shader functionality to the specified value.", "EmuCore/GS",
