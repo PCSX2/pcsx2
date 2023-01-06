@@ -5335,6 +5335,10 @@ SCKA-20109:
 SCKA-20114:
   name: "Obscure II - The Aftermath"
   region: "NTSC-K"
+  gameFixes:
+    - EETimingHack # For stripes on FMVs and crashes on scenes.
+  clampModes:
+    vuClampMode: 3 # Fixes Lock picking pin.
 SCKA-20117:
   name: "Super Robot Taisen OG - Original Generations Gaiden"
   region: "NTSC-K"
@@ -20662,6 +20666,8 @@ SLES-54782:
   compat: 5
   gameFixes:
     - EETimingHack # For stripes on FMVs and crashes on scenes.
+  clampModes:
+    vuClampMode: 3 # Fixes Lock picking pin.
 SLES-54784:
   name: "Xyanide - Resurrection"
   region: "PAL-M5"
@@ -48573,6 +48579,8 @@ SLUS-21709:
   compat: 5
   gameFixes:
     - EETimingHack # For stripes on FMVs and crashes on scenes.
+  clampModes:
+    vuClampMode: 3 # Fixes Lock picking pin.
 SLUS-21710:
   name: "PopCap Hits! Volume 1"
   region: "NTSC-U"
