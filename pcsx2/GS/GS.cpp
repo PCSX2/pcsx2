@@ -682,7 +682,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 			GSConfig.UseDebugDevice != old_config.UseDebugDevice ||
 			GSConfig.UseBlitSwapChain != old_config.UseBlitSwapChain ||
 			GSConfig.DisableShaderCache != old_config.DisableShaderCache ||
-			GSConfig.ThreadedPresentation != old_config.ThreadedPresentation
+			GSConfig.DisableThreadedPresentation != old_config.DisableThreadedPresentation
 		);
 		if (!GSreopen(do_full_restart, old_config))
 			pxFailRel("Failed to do full GS reopen");
