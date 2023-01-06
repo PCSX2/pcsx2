@@ -1268,6 +1268,8 @@ namespace Vulkan
 			1, present_swap_chain->GetSwapChainPtr(), present_swap_chain->GetCurrentImageIndexPtr(),
 			nullptr};
 
+		present_swap_chain->ReleaseCurrentImage();
+
 		VkResult res = vkQueuePresentKHR(m_present_queue, &present_info);
 		if (res != VK_SUCCESS)
 		{
@@ -1276,7 +1278,13 @@ namespace Vulkan
 				LOG_VULKAN_ERROR(res, "vkQueuePresentKHR failed: ");
 
 			m_last_present_failed.store(true);
+			return;
 		}
+
+		// Grab the next image as soon as possible, that way we spend less time blocked on the next
+		// submission. Don't care if it fails, we'll deal with that at the presentation call site.
+		// Credit to dxvk for the idea.
+		present_swap_chain->AcquireNextImage();
 	}
 
 	void Context::WaitForPresentComplete()
