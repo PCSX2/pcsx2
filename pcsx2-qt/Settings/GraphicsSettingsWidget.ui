@@ -58,7 +58,7 @@
    <item>
     <widget class="QTabWidget" name="tabs">
      <property name="currentIndex">
-      <number>0</number>
+      <number>8</number>
      </property>
      <property name="documentMode">
       <bool>true</bool>
@@ -1710,7 +1710,7 @@
             <item row="1" column="0">
              <widget class="QCheckBox" name="threadedPresentation">
               <property name="text">
-               <string>Threaded Presentation</string>
+               <string>Disable Threaded Presentation</string>
               </property>
              </widget>
             </item>
