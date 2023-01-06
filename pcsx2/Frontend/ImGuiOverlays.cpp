@@ -197,8 +197,8 @@ void ImGuiManager::DrawPerformanceOverlay()
 		if (GSConfig.OsdShowCPU)
 		{
 			text.clear();
-			fmt::format_to(std::back_inserter(text), "{:.2f}ms ({:.2f}ms worst)", PerformanceMetrics::GetAverageFrameTime(),
-				PerformanceMetrics::GetWorstFrameTime());
+			fmt::format_to(std::back_inserter(text), "{:.2f}ms | {:.2f}ms | {:.2f}ms", PerformanceMetrics::GetMinimumFrameTime(),
+				PerformanceMetrics::GetAverageFrameTime(), PerformanceMetrics::GetMaximumFrameTime());
 			DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 
 			text.clear();
