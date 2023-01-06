@@ -193,9 +193,7 @@ namespace Vulkan
 		// queued and executed. Do not wait for this fence before the buffer is executed.
 		u64 GetCurrentFenceCounter() const { return m_frame_resources[m_current_frame].fence_counter; }
 
-		void SubmitCommandBuffer(VkSemaphore wait_semaphore = VK_NULL_HANDLE,
-			VkSemaphore signal_semaphore = VK_NULL_HANDLE, VkSwapchainKHR present_swap_chain = VK_NULL_HANDLE,
-			uint32_t present_image_index = 0xFFFFFFFF, bool submit_on_thread = false);
+		void SubmitCommandBuffer(SwapChain* present_swap_chain = nullptr, bool submit_on_thread = false);
 		void MoveToNextCommandBuffer();
 
 		enum class WaitType
@@ -283,8 +281,8 @@ namespace Vulkan
 		void ScanForCommandBufferCompletion();
 		void WaitForCommandBufferCompletion(u32 index);
 
-		void DoSubmitCommandBuffer(u32 index, VkSemaphore wait_semaphore, VkSemaphore signal_semaphore, u32 spin_cycles);
-		void DoPresent(VkSemaphore wait_semaphore, VkSwapchainKHR present_swap_chain, uint32_t present_image_index);
+		void DoSubmitCommandBuffer(u32 index, SwapChain* present_swap_chain, u32 spin_cycles);
+		void DoPresent(SwapChain* present_swap_chain);
 		void WaitForPresentComplete(std::unique_lock<std::mutex>& lock);
 		void PresentThread();
 		void StartPresentThread();
@@ -384,11 +382,8 @@ namespace Vulkan
 
 		struct QueuedPresent
 		{
-			VkSemaphore wait_semaphore;
-			VkSemaphore signal_semaphore;
-			VkSwapchainKHR present_swap_chain;
+			SwapChain* swap_chain;
 			u32 command_buffer_index;
-			u32 present_image_index;
 			u32 spin_cycles;
 		};
 
