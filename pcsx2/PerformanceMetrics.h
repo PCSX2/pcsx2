@@ -54,7 +54,8 @@ namespace PerformanceMetrics
 	float GetInternalFPS();
 	float GetSpeed();
 	float GetAverageFrameTime();
-	float GetWorstFrameTime();
+	float GetMinimumFrameTime();
+	float GetMaximumFrameTime();
 
 	double GetCPUThreadUsage();
 	double GetCPUThreadAverageTime();
