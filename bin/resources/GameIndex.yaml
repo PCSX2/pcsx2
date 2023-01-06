@@ -13211,6 +13211,8 @@ SLES-51755:
 SLES-51756:
   name: "Batman - Rise of Sin Tzu"
   region: "PAL-M5"
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Fixes hang on final boss.
 SLES-51757:
   name: "Dancing Stage Fever"
   region: "PAL-M5"
@@ -43486,6 +43488,8 @@ SLUS-20709:
   name: "Batman - Rise of Sin-Tzu"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Fixes hang on final boss.
 SLUS-20710:
   name: "Onimusha - Blade Warriors"
   region: "NTSC-U"
