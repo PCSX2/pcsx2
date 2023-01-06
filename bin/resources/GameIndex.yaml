@@ -18007,6 +18007,8 @@ SLES-53729:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
+    textureInsideRT: 1 # Fixes light shinging through objects.
+    cpuCLUTRender: 1 # Fixes light shining through objects.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLES-53730:
@@ -18016,6 +18018,8 @@ SLES-53730:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
+    textureInsideRT: 1 # Fixes light shinging through objects.
+    cpuCLUTRender: 1 # Fixes light shining through objects.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLES-53734:
@@ -31458,6 +31462,8 @@ SLPM-66206:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
+    textureInsideRT: 1 # Fixes light shinging through objects.
+    cpuCLUTRender: 1 # Fixes light shining through objects.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLPM-66207:
@@ -33141,6 +33147,8 @@ SLPM-66651:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
+    textureInsideRT: 1 # Fixes light shinging through objects.
+    cpuCLUTRender: 1 # Fixes light shining through objects.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLPM-66652:
@@ -45081,6 +45089,8 @@ SLUS-21026:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
+    textureInsideRT: 1 # Fixes light shinging through objects.
+    cpuCLUTRender: 1 # Fixes light shining through objects.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-21027:
@@ -50186,6 +50196,8 @@ SLUS-29117:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
+    textureInsideRT: 1 # Fixes light shinging through objects.
+    cpuCLUTRender: 1 # Fixes light shining through objects.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-29118:
@@ -50283,6 +50295,8 @@ SLUS-29152:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
+    textureInsideRT: 1 # Fixes light shinging through objects.
+    cpuCLUTRender: 1 # Fixes light shining through objects.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-29153:
@@ -50373,6 +50387,8 @@ SLUS-29172:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
+    textureInsideRT: 1 # Fixes light shinging through objects.
+    cpuCLUTRender: 1 # Fixes light shining through objects.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-29173:
