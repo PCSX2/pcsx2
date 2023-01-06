@@ -4620,6 +4620,9 @@ SCES-55386:
 SCES-55387:
   name: "Buzz! Deutschlands Superquiz"
   region: "PAL-G"
+SCES-55388:
+  name: "Buzz! Brain of Spain-Portugal"
+  region: "PAL-M2"
 SCES-55401:
   name: "SingStar Zingt met Disney"
   region: "PAL-NL"
@@ -13910,7 +13913,7 @@ SLES-52038:
   region: "PAL-G"
 SLES-52039:
   name: "Terminator 3 - Rise Of The Machines"
-  region: "PAL-IS"
+  region: "PAL-S"
 SLES-52041:
   name: "Detonator"
   region: "PAL-E"
