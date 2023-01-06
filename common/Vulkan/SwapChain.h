@@ -67,8 +67,8 @@ namespace Vulkan
 		__fi VkFramebuffer GetCurrentFramebuffer() const { return m_images[m_current_image].framebuffer; }
 		__fi VkRenderPass GetLoadRenderPass() const { return m_load_render_pass; }
 		__fi VkRenderPass GetClearRenderPass() const { return m_clear_render_pass; }
-		__fi VkSemaphore GetImageAvailableSemaphore() const { return m_image_available_semaphore; }
-		__fi VkSemaphore GetRenderingFinishedSemaphore() const { return m_rendering_finished_semaphore; }
+		__fi VkSemaphore GetImageAvailableSemaphore() const { return m_images[m_current_image].available_semaphore; }
+		__fi VkSemaphore GetRenderingFinishedSemaphore() const { return m_images[m_current_image].rendering_finished_semaphore; }
 		VkResult AcquireNextImage();
 
 		bool RecreateSurface(const WindowInfo& new_wi);
@@ -96,14 +96,13 @@ namespace Vulkan
 
 		void DestroySurface();
 
-		bool CreateSemaphores();
-		void DestroySemaphores();
-
 		struct SwapChainImage
 		{
 			VkImage image;
 			Texture texture;
 			VkFramebuffer framebuffer;
+			VkSemaphore available_semaphore;
+			VkSemaphore rendering_finished_semaphore;
 		};
 
 		WindowInfo m_window_info;
@@ -115,9 +114,6 @@ namespace Vulkan
 
 		VkRenderPass m_load_render_pass = VK_NULL_HANDLE;
 		VkRenderPass m_clear_render_pass = VK_NULL_HANDLE;
-
-		VkSemaphore m_image_available_semaphore = VK_NULL_HANDLE;
-		VkSemaphore m_rendering_finished_semaphore = VK_NULL_HANDLE;
 
 		VkSwapchainKHR m_swap_chain = VK_NULL_HANDLE;
 		std::vector<SwapChainImage> m_images;
