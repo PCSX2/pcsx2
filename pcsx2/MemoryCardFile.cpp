@@ -248,15 +248,7 @@ bool FileMcd_IsMultitapSlot(uint slot)
 {
 	return (slot > 1);
 }
-/*
-wxFileName FileMcd_GetSimpleName(uint slot)
-{
-	if( FileMcd_IsMultitapSlot(slot) )
-		return g_Conf->Folders.MemoryCards + wxsFormat( L"Mcd-Multitap%u-Slot%02u.ps2", FileMcd_GetMtapPort(slot)+1, FileMcd_GetMtapSlot(slot)+1 );
-	else
-		return g_Conf->Folders.MemoryCards + wxsFormat( L"Mcd%03u.ps2", slot+1 );
-}
-*/
+
 std::string FileMcd_GetDefaultName(uint slot)
 {
 	if (FileMcd_IsMultitapSlot(slot))

@@ -403,7 +403,7 @@ protected:
 	// call by passing:
 	// - currentCluster: the root directory cluster as indicated in the superblock
 	// - searchCluster: the cluster that is being accessed, relative to alloc_offset in the superblock
-	// - fileName: wxFileName of the root directory of the memory card folder in the host file system (filename part doesn't matter)
+	// - fileName: FileName of the root directory of the memory card folder in the host file system (filename part doesn't matter)
 	// - originalDirCount: the point in fileName where to insert the found folder path, usually fileName->GetDirCount()
 	// - outClusterNumber: the cluster's sequential number of the file will be written to this pointer,
 	//                     which can be used to calculate the in-file offset of the address being accessed
