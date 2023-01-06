@@ -411,8 +411,7 @@ void VulkanHostDisplay::EndPresent()
 	vkCmdEndRenderPass(g_vulkan_context->GetCurrentCommandBuffer());
 	m_swap_chain->GetCurrentTexture().TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
-	g_vulkan_context->SubmitCommandBuffer(m_swap_chain->GetImageAvailableSemaphore(), m_swap_chain->GetRenderingFinishedSemaphore(),
-		m_swap_chain->GetSwapChain(), m_swap_chain->GetCurrentImageIndex(), !m_swap_chain->IsPresentModeSynchronizing());
+	g_vulkan_context->SubmitCommandBuffer(m_swap_chain.get(), !m_swap_chain->IsPresentModeSynchronizing());
 	g_vulkan_context->MoveToNextCommandBuffer();
 }
 

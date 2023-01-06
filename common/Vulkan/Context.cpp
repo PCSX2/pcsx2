@@ -1129,9 +1129,7 @@ namespace Vulkan
 		m_completed_fence_counter = now_completed_counter;
 	}
 
-	void Context::SubmitCommandBuffer(VkSemaphore wait_semaphore /* = VK_NULL_HANDLE */,
-		VkSemaphore signal_semaphore /* = VK_NULL_HANDLE */, VkSwapchainKHR present_swap_chain /* = VK_NULL_HANDLE */,
-		uint32_t present_image_index /* = 0xFFFFFFFF */, bool submit_on_thread /* = false */)
+	void Context::SubmitCommandBuffer(SwapChain* present_swap_chain /* = nullptr */, bool submit_on_thread /* = false */)
 	{
 		FrameResources& resources = m_frame_resources[m_current_frame];
 
@@ -1204,23 +1202,20 @@ namespace Vulkan
 
 		if (!submit_on_thread || !m_present_thread.joinable())
 		{
-			DoSubmitCommandBuffer(m_current_frame, wait_semaphore, signal_semaphore, spin_cycles);
-			if (present_swap_chain != VK_NULL_HANDLE)
-				DoPresent(signal_semaphore, present_swap_chain, present_image_index);
+			DoSubmitCommandBuffer(m_current_frame, present_swap_chain, spin_cycles);
+			if (present_swap_chain)
+				DoPresent(present_swap_chain);
 			return;
 		}
 
 		m_queued_present.command_buffer_index = m_current_frame;
-		m_queued_present.present_swap_chain = present_swap_chain;
-		m_queued_present.present_image_index = present_image_index;
-		m_queued_present.wait_semaphore = wait_semaphore;
-		m_queued_present.signal_semaphore = signal_semaphore;
+		m_queued_present.swap_chain = present_swap_chain;
 		m_queued_present.spin_cycles = spin_cycles;
 		m_present_done.store(false);
 		m_present_queued_cv.notify_one();
 	}
 
-	void Context::DoSubmitCommandBuffer(u32 index, VkSemaphore wait_semaphore, VkSemaphore signal_semaphore, u32 spin_cycles)
+	void Context::DoSubmitCommandBuffer(u32 index, SwapChain* present_swap_chain, u32 spin_cycles)
 	{
 		FrameResources& resources = m_frame_resources[index];
 
@@ -1230,24 +1225,24 @@ namespace Vulkan
 		submit_info.commandBufferCount = resources.init_buffer_used ? 2u : 1u;
 		submit_info.pCommandBuffers = resources.init_buffer_used ? resources.command_buffers.data() : &resources.command_buffers[1];
 
-		if (wait_semaphore != VK_NULL_HANDLE)
+		if (present_swap_chain)
 		{
-			submit_info.pWaitSemaphores = &wait_semaphore;
+			submit_info.pWaitSemaphores = present_swap_chain->GetImageAvailableSemaphorePtr();
 			submit_info.waitSemaphoreCount = 1;
 			submit_info.pWaitDstStageMask = &wait_bits;
-		}
 
-		if (signal_semaphore != VK_NULL_HANDLE && spin_cycles != 0)
-		{
-			semas[0] = signal_semaphore;
-			semas[1] = m_spin_resources[index].semaphore;
-			submit_info.signalSemaphoreCount = 2;
-			submit_info.pSignalSemaphores = semas;
-		}
-		else if (signal_semaphore != VK_NULL_HANDLE)
-		{
-			submit_info.signalSemaphoreCount = 1;
-			submit_info.pSignalSemaphores = &signal_semaphore;
+			if (spin_cycles != 0)
+			{
+				semas[0] = present_swap_chain->GetRenderingFinishedSemaphore();
+				semas[1] = m_spin_resources[index].semaphore;
+				submit_info.signalSemaphoreCount = 2;
+				submit_info.pSignalSemaphores = semas;
+			}
+			else
+			{
+				submit_info.pSignalSemaphores = present_swap_chain->GetRenderingFinishedSemaphorePtr();
+				submit_info.signalSemaphoreCount = 1;
+			}
 		}
 		else if (spin_cycles != 0)
 		{
@@ -1266,12 +1261,12 @@ namespace Vulkan
 			SubmitSpinCommand(index, spin_cycles);
 	}
 
-	void Context::DoPresent(VkSemaphore wait_semaphore, VkSwapchainKHR present_swap_chain, uint32_t present_image_index)
+	void Context::DoPresent(SwapChain* present_swap_chain)
 	{
-		// Should have a signal semaphore.
-		pxAssert(wait_semaphore != VK_NULL_HANDLE);
-		VkPresentInfoKHR present_info = {VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, nullptr, 1, &wait_semaphore, 1,
-			&present_swap_chain, &present_image_index, nullptr};
+		const VkPresentInfoKHR present_info = {VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, nullptr,
+			1, present_swap_chain->GetRenderingFinishedSemaphorePtr(),
+			1, present_swap_chain->GetSwapChainPtr(), present_swap_chain->GetCurrentImageIndexPtr(),
+			nullptr};
 
 		VkResult res = vkQueuePresentKHR(m_present_queue, &present_info);
 		if (res != VK_SUCCESS)
@@ -1311,10 +1306,9 @@ namespace Vulkan
 			if (m_present_done.load())
 				continue;
 
-			DoSubmitCommandBuffer(m_queued_present.command_buffer_index, m_queued_present.wait_semaphore,
-				m_queued_present.signal_semaphore, m_queued_present.spin_cycles);
-			DoPresent(m_queued_present.signal_semaphore, m_queued_present.present_swap_chain,
-				m_queued_present.present_image_index);
+			DoSubmitCommandBuffer(m_queued_present.command_buffer_index, m_queued_present.swap_chain, m_queued_present.spin_cycles);
+			if (m_queued_present.swap_chain)
+				DoPresent(m_queued_present.swap_chain);
 			m_present_done.store(true);
 			m_present_done_cv.notify_one();
 		}
