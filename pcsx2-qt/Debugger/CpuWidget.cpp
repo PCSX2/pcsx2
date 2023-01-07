@@ -43,6 +43,7 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	: m_cpu(cpu)
 	, m_bpModel(cpu)
 	, m_threadModel(cpu)
+	, m_stackModel(cpu)
 {
 	m_ui.setupUi(this);
 
@@ -70,8 +71,11 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	m_ui.threadList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	m_ui.threadList->setModel(&m_threadModel);
 
-	connect(m_ui.stackframeList, &QTableWidget::customContextMenuRequested, this, &CpuWidget::onStackListContextMenu);
-	connect(m_ui.stackframeList, &QTableWidget::cellDoubleClicked, this, &CpuWidget::onStackListDoubleClick);
+	connect(m_ui.stackList, &QTableView::customContextMenuRequested, this, &CpuWidget::onStackListContextMenu);
+	connect(m_ui.stackList, &QTableView::doubleClicked, this, &CpuWidget::onStackListDoubleClick);
+
+	m_ui.stackList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	m_ui.stackList->setModel(&m_stackModel);
 
 	connect(m_ui.tabWidgetRegFunc, &QTabWidget::currentChanged, [this](int i) {if(i == 1){updateFunctionList(true);} });
 	connect(m_ui.listFunctions, &QListWidget::customContextMenuRequested, this, &CpuWidget::onFuncListContextMenu);
@@ -471,72 +475,46 @@ void CpuWidget::onFuncListDoubleClick(QListWidgetItem* item)
 
 void CpuWidget::updateStackFrames()
 {
-	m_ui.stackframeList->setRowCount(0);
-
-	m_stacklistObjects = MipsStackWalk::Walk(&m_cpu, m_cpu.getPC(), m_cpu.getRegister(0, 31), m_cpu.getRegister(0, 29),
-		m_activeThread.data.entry_init, m_activeThread.data.stack);
-
-	for (size_t i = 0; i < m_stacklistObjects.size(); i++)
-	{
-		m_ui.stackframeList->insertRow(i);
-
-		const auto& stackFrame = m_stacklistObjects.at(i);
-
-		QTableWidgetItem* entryItem = new QTableWidgetItem();
-		entryItem->setText(FilledQStringFromValue(stackFrame.entry, 16));
-		entryItem->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.stackframeList->setItem(i, 0, entryItem);
-
-		QTableWidgetItem* entryName = new QTableWidgetItem();
-		entryName->setText(m_cpu.GetSymbolMap().GetLabelString(stackFrame.entry).c_str());
-		entryName->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.stackframeList->setItem(i, 1, entryName);
-
-		QTableWidgetItem* entryPC = new QTableWidgetItem();
-		entryPC->setText(FilledQStringFromValue(stackFrame.pc, 16));
-		entryPC->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.stackframeList->setItem(i, 2, entryPC);
-
-		QTableWidgetItem* entryOpcode = new QTableWidgetItem();
-		entryOpcode->setText(m_ui.disassemblyWidget->GetLineDisasm(stackFrame.pc));
-		entryOpcode->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.stackframeList->setItem(i, 3, entryOpcode);
-
-		QTableWidgetItem* entrySP = new QTableWidgetItem();
-		entrySP->setText(FilledQStringFromValue(stackFrame.sp, 16));
-		entrySP->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.stackframeList->setItem(i, 4, entrySP);
-
-		QTableWidgetItem* entryStackSize = new QTableWidgetItem();
-		entryStackSize->setText(QString::number(stackFrame.stackSize));
-		entryStackSize->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.stackframeList->setItem(i, 5, entryStackSize);
-	}
+	m_stackModel.refreshData();
 }
 
 void CpuWidget::onStackListContextMenu(QPoint pos)
 {
-	if (!m_stacklistContextMenu)
-	{
-		m_stacklistContextMenu = new QMenu(m_ui.stackframeList);
+	if (!m_ui.stackList->selectionModel()->hasSelection())
+		return;
 
-		QAction* copyAction = new QAction(tr("Copy"), m_ui.stackframeList);
-		connect(copyAction, &QAction::triggered, [this] {
-			const auto& items = m_ui.stackframeList->selectedItems();
-			if (!items.size())
-				return;
-			QApplication::clipboard()->setText(items.first()->text());
-		});
-		m_stacklistContextMenu->addAction(copyAction);
-	}
+	QMenu* contextMenu = new QMenu(tr("Stack List Context Menu"), m_ui.stackList);
 
-	m_stacklistContextMenu->exec(m_ui.stackframeList->mapToGlobal(pos));
+	QAction* actionCopy = new QAction(tr("Copy"), m_ui.stackList);
+	connect(actionCopy, &QAction::triggered, [this]() {
+		const auto* selModel = m_ui.stackList->selectionModel();
+
+		if (!selModel->hasSelection())
+			return;
+
+		QGuiApplication::clipboard()->setText(m_ui.stackList->model()->data(selModel->currentIndex()).toString());
+	});
+	contextMenu->addAction(actionCopy);
+
+	contextMenu->popup(m_ui.stackList->mapToGlobal(pos));
 }
 
-void CpuWidget::onStackListDoubleClick(int row, int column)
+void CpuWidget::onStackListDoubleClick(const QModelIndex& index)
 {
-	const auto& entry = m_stacklistObjects.at(row);
-	m_ui.disassemblyWidget->gotoAddress(entry.pc);
+	switch (index.column())
+	{
+		case StackModel::StackModel::ENTRY:
+		case StackModel::StackModel::ENTRY_LABEL:
+			m_ui.disassemblyWidget->gotoAddress(m_ui.stackList->model()->data(m_ui.stackList->model()->index(index.row(), StackModel::StackColumns::ENTRY), Qt::UserRole).toUInt());
+			break;
+		case StackModel::StackModel::SP:
+			m_ui.memoryviewWidget->gotoAddress(m_ui.stackList->model()->data(index, Qt::UserRole).toUInt());
+			m_ui.tabWidget->setCurrentWidget(m_ui.tab_memory);
+			break;
+		default: // Default to PC
+			m_ui.disassemblyWidget->gotoAddress(m_ui.stackList->model()->data(m_ui.stackList->model()->index(index.row(), StackModel::StackColumns::PC), Qt::UserRole).toUInt());
+			break;
+	}
 }
 
 template <typename T>

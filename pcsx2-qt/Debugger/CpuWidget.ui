@@ -457,7 +457,7 @@
        </widget>
        <widget class="QWidget" name="tab_callstack">
         <attribute name="title">
-         <string>Call Stack</string>
+         <string>Active Call Stack</string>
         </attribute>
         <layout class="QHBoxLayout" name="horizontalLayout_8">
          <property name="spacing">
@@ -476,7 +476,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QTableWidget" name="stackframeList">
+          <widget class="QTableView" name="stackList">
            <property name="contextMenuPolicy">
             <enum>Qt::CustomContextMenu</enum>
            </property>
@@ -495,48 +495,6 @@
            <property name="cornerButtonEnabled">
             <bool>false</bool>
            </property>
-           <property name="rowCount">
-            <number>0</number>
-           </property>
-           <property name="columnCount">
-            <number>6</number>
-           </property>
-           <attribute name="horizontalHeaderStretchLastSection">
-            <bool>true</bool>
-           </attribute>
-           <attribute name="verticalHeaderVisible">
-            <bool>false</bool>
-           </attribute>
-           <column>
-            <property name="text">
-             <string>Entry</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Name</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>PC</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Opcode</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>SP</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Frame Size</string>
-            </property>
-           </column>
           </widget>
          </item>
         </layout>

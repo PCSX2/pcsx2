@@ -283,6 +283,9 @@
     <ClCompile Include="Debugger\Models\ThreadModel.cpp">
       <Filter>Debugger\Models</Filter>
     </ClCompile>
+    <ClCompile Include="Debugger\Models\StackModel.cpp">
+      <Filter>Debugger\Models</Filter>
+    </ClCompile>
     <ClCompile Include="$(IntDir)Debugger\moc_CpuWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
@@ -305,6 +308,9 @@
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)Debugger\Models\moc_ThreadModel.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\Models\moc_StackModel.cpp">
       <Filter>moc</Filter>
     </ClCompile>
   </ItemGroup>
@@ -448,6 +454,9 @@
       <Filter>Debugger\Models</Filter>
     </QtMoc>
     <QtMoc Include="Debugger\Models\ThreadModel.h">
+      <Filter>Debugger\Models</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Models\StackModel.h">
       <Filter>Debugger\Models</Filter>
     </QtMoc>
   </ItemGroup>

@@ -138,6 +138,8 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/Models/BreakpointModel.h
 	Debugger/Models/ThreadModel.cpp
 	Debugger/Models/ThreadModel.h
+	Debugger/Models/StackModel.cpp
+	Debugger/Models/StackModel.h
 	Tools/InputRecording/NewInputRecordingDlg.cpp
 	Tools/InputRecording/NewInputRecordingDlg.h
 	Tools/InputRecording/NewInputRecordingDlg.ui
