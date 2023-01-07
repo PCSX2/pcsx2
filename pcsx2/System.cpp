@@ -203,16 +203,8 @@ void SysLogMachineCaps()
 
 	std::string features;
 
-	if( x86caps.hasStreamingSIMD2Extensions )		features += "SSE2 ";
-	if( x86caps.hasStreamingSIMD3Extensions )		features += "SSE3 ";
-	if( x86caps.hasSupplementalStreamingSIMD3Extensions ) features += "SSSE3 ";
-	if( x86caps.hasStreamingSIMD4Extensions )		features += "SSE4.1 ";
-	if( x86caps.hasStreamingSIMD4Extensions2 )		features += "SSE4.2 ";
-	if( x86caps.hasAVX )							features += "AVX ";
-	if( x86caps.hasAVX2 )							features += "AVX2 ";
-	if( x86caps.hasFMA)								features += "FMA ";
-
-	if( x86caps.hasStreamingSIMD4ExtensionsA )		features += "SSE4a ";
+	if( x86caps.hasAVX)							    features += "AVX ";
+	if( x86caps.hasAVX2)							features += "AVX2 ";
 
 	StringUtil::StripWhitespace(&features);
 
