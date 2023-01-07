@@ -28,10 +28,7 @@ ThreadModel::ThreadModel(DebugInterface& cpu, QObject* parent)
 int ThreadModel::rowCount(const QModelIndex&) const
 {
 	if (m_cpu.getCpuType() == BREAKPOINT_EE)
-	{
-		Console.Warning("%d", getEEThreads().size());
 		return getEEThreads().size();
-	}
 	else
 		return 0;
 }

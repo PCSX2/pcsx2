@@ -24,6 +24,7 @@
 
 #include "Models/BreakpointModel.h"
 #include "Models/ThreadModel.h"
+#include "Models/StackModel.h"
 
 #include "QtHost.h"
 #include <QtWidgets/QWidget>
@@ -65,7 +66,7 @@ public slots:
 
 	void updateStackFrames();
 	void onStackListContextMenu(QPoint pos);
-	void onStackListDoubleClick(int row, int column);
+	void onStackListDoubleClick(const QModelIndex& index);
 
 	void updateFunctionList(bool whenEmpty = false);
 	void onFuncListContextMenu(QPoint pos);
@@ -102,9 +103,9 @@ private:
 
 	BreakpointModel m_bpModel;
 	ThreadModel m_threadModel;
+	StackModel m_stackModel;
 
 	std::vector<EEThread> m_threadlistObjects;
-	EEThread m_activeThread;
 	std::vector<StackFrame> m_stacklistObjects;
 
 	bool m_demangleFunctions = true;

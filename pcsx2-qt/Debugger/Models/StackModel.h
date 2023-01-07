@@ -18,27 +18,25 @@
 #include <QtCore/QAbstractTableModel>
 
 #include "DebugTools/DebugInterface.h"
-#include "DebugTools/BiosDebugData.h"
+#include "DebugTools/MipsStackWalk.h"
 
-#include <map>
-
-class ThreadModel : public QAbstractTableModel
+class StackModel : public QAbstractTableModel
 {
 	Q_OBJECT
 
 public:
-	enum ThreadColumns : int
+	enum StackColumns : int
 	{
-		ID = 0,
+		ENTRY = 0,
+		ENTRY_LABEL,
 		PC,
-		ENTRY,
-		PRIORITY,
-		STATE,
-		WAIT_TYPE,
+		PC_OPCODE,
+		SP,
+		SIZE,
 		COLUMN_COUNT
 	};
 
-	explicit ThreadModel(DebugInterface& cpu, QObject* parent = nullptr);
+	explicit StackModel(DebugInterface& cpu, QObject* parent = nullptr);
 
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -48,19 +46,6 @@ public:
 	void refreshData();
 
 private:
-	const std::map<int, QString> ThreadStateStrings{
-		{THS_BAD, tr("BAD")},
-		{THS_RUN, tr("RUN")},
-		{THS_READY, tr("READY")},
-		{THS_WAIT, tr("WAIT")},
-		{THS_SUSPEND, tr("SUSPEND")},
-		{THS_WAIT_SUSPEND, tr("WAIT SUSPEND")},
-		{THS_DORMANT, tr("DORMANT")}};
-
-	const std::map<int, QString> ThreadWaitStrings{
-		{WAIT_NONE, tr("NONE")},
-		{WAIT_WAKEUP_REQ, tr("WAKEUP REQUEST")},
-		{WAIT_SEMA, tr("SEMAPHORE")}};
-
 	DebugInterface& m_cpu;
+	std::vector<MipsStackWalk::StackFrame> m_stackFrames;
 };
