@@ -209,14 +209,14 @@ endif()
 if (MSVC)
 	set(DEFAULT_WARNINGS)
 else()
-	set(DEFAULT_WARNINGS -Wall -Wextra -Wno-maybe-uninitialized -Wno-attributes -Wno-unused-function -Wno-unused-parameter -Wno-missing-field-initializers -Wno-format -Wno-format-security)
+	set(DEFAULT_WARNINGS -Wall -Wextra -Wno-attributes -Wno-unused-function -Wno-unused-parameter -Wno-missing-field-initializers -Wno-format -Wno-format-security)
 	if (NOT USE_ICC)
 		list(APPEND DEFAULT_WARNINGS -Wno-unused-value)
 	endif()
 endif()
 
 if (USE_GCC)
-	list(APPEND DEFAULT_WARNINGS -Wno-stringop-truncation -Wno-stringop-overflow)
+	list(APPEND DEFAULT_WARNINGS -Wno-stringop-truncation -Wno-stringop-overflow -Wno-maybe-uninitialized )
 endif()
 
 
