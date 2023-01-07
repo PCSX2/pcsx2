@@ -231,6 +231,7 @@ bool SPU2::Open()
 	WaveDump::Open();
 #endif
 
+	SetOutputVolume(EmuConfig.SPU2.FinalVolume);
 	return true;
 }
 
