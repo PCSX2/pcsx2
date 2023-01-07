@@ -61,38 +61,44 @@
 #define PROCESS_CONSTT 2
 
 // XMM caching helpers
-#define XMMINFO_READLO 0x001
-#define XMMINFO_READHI 0x002
-#define XMMINFO_WRITELO 0x004
-#define XMMINFO_WRITEHI 0x008
-#define XMMINFO_WRITED 0x010
-#define XMMINFO_READD 0x020
-#define XMMINFO_READS 0x040
-#define XMMINFO_READT 0x080
-#define XMMINFO_READACC 0x200
-#define XMMINFO_WRITEACC 0x400
-#define XMMINFO_WRITET 0x800
+enum xmminfo : u16 
+{
+	XMMINFO_READLO = 0x001,
+	XMMINFO_READHI = 0x002,
+	XMMINFO_WRITELO = 0x004,
+	XMMINFO_WRITEHI = 0x008,
+	XMMINFO_WRITED = 0x010,
+	XMMINFO_READD = 0x020,
+	XMMINFO_READS = 0x040,
+	XMMINFO_READT = 0x080,
+	XMMINFO_READACC = 0x200,
+	XMMINFO_WRITEACC = 0x400,
+	XMMINFO_WRITET = 0x800,
 
-#define XMMINFO_64BITOP 0x1000
-#define XMMINFO_FORCEREGS 0x2000
-#define XMMINFO_FORCEREGT 0x4000
-#define XMMINFO_NORENAME 0x8000 // disables renaming of Rs to Rt in Rt = Rs op imm
+	XMMINFO_64BITOP = 0x1000,
+	XMMINFO_FORCEREGS = 0x2000,
+	XMMINFO_FORCEREGT = 0x4000,
+	XMMINFO_NORENAME = 0x8000 // disables renaming of Rs to Rt in Rt = Rs op imm
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 //   X86 (32-bit) Register Allocation Tools
 
-#define X86TYPE_TEMP 0
-#define X86TYPE_GPR 1
-#define X86TYPE_FPRC 2
-#define X86TYPE_VIREG 3
-#define X86TYPE_PCWRITEBACK 4
-#define X86TYPE_PSX 5
-#define X86TYPE_PSX_PCWRITEBACK 6
+enum x86type : u8 
+{
+	X86TYPE_TEMP = 0,
+	X86TYPE_GPR = 1,
+	X86TYPE_FPRC = 2,
+	X86TYPE_VIREG = 3,
+	X86TYPE_PCWRITEBACK = 4,
+	X86TYPE_PSX = 5,
+	X86TYPE_PSX_PCWRITEBACK = 6
+};
 
 struct _x86regs
 {
 	u8 inuse;
-	u8 reg; // value of 0 - not used
+	s8 reg;
 	u8 mode;
 	u8 needed;
 	u8 type; // X86TYPE_

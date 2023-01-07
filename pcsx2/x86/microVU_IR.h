@@ -15,6 +15,7 @@
 
 #pragma once
 #include "microVU.h"
+#include <array>
 
 union regInfo
 {
@@ -244,8 +245,8 @@ protected:
 	static const int xmmTotal = iREGCNT_XMM - 1; // PQ register is reserved
 	static const int gprTotal = iREGCNT_GPR;
 
-	microMapXMM xmmMap[xmmTotal];
-	microMapGPR gprMap[gprTotal];
+	std::array<microMapXMM, xmmTotal> xmmMap;
+	std::array<microMapGPR, gprTotal> gprMap;
 
 	int         counter; // Current allocation count
 	int         index;   // VU0 or VU1
@@ -356,7 +357,7 @@ public:
 		index = _index;
 
 		// mark gpr registers as usable
-		std::memset(gprMap, 0, sizeof(gprMap));
+		gprMap.fill({0, 0, false, false, false, false});
 		for (int i = 0; i < gprTotal; i++)
 		{
 			if (i == gprT1.GetId() || i == gprT2.GetId() ||
@@ -561,11 +562,7 @@ public:
 			}
 
 			// needed gets cleared in iCore.
-			clear.VFreg = -1;
-			clear.count = 0;
-			clear.xyzw = 0;
-			clear.isNeeded = 0;
-			clear.isZero = 0;
+			clear = {-1, 0, 0, false, false};
 		}
 
 		for (int i = 0; i < gprTotal; i++)
@@ -633,11 +630,7 @@ public:
 			pxmmregs[regId].inuse = false;
 		}
 
-		clear.VFreg    = -1;
-		clear.count    =  0;
-		clear.xyzw     =  0;
-		clear.isNeeded =  0;
-		clear.isZero   =  0;
+		clear = {-1, 0, 0, false, false};
 	}
 
 	void clearRegVF(int VFreg)
@@ -783,7 +776,7 @@ public:
 	// To load a temp reg use the default param values, vfLoadReg = -1 and vfWriteReg = -1.
 	// To load a full reg which won't be modified and you want cached, specify vfLoadReg >= 0 and vfWriteReg = -1
 	// To load a reg which you don't want written back or cached, specify vfLoadReg >= 0 and vfWriteReg = 0
-	const xmm& allocReg(int vfLoadReg = -1, int vfWriteReg = -1, int xyzw = 0, bool cloneWrite = 1)
+	const xmm& allocReg(int vfLoadReg = -1, int vfWriteReg = -1, int xyzw = 0, bool cloneWrite = true)
 	{
 		//DevCon.WriteLn("vfLoadReg = %02d, vfWriteReg = %02d, xyzw = %x, clone = %d",vfLoadReg,vfWriteReg,xyzw,(int)cloneWrite);
 		counter++;
