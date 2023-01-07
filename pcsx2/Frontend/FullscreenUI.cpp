@@ -3362,9 +3362,6 @@ void FullscreenUI::DrawAudioSettingsPage()
 		"SPU2/Mixing", "FinalVolume", 100, 0, 200, "%d%%");
 
 	MenuHeading("Mixing Settings");
-	DrawIntListSetting(bsi, ICON_FA_MUSIC " Interpolation Mode", "Determines how ADPCM samples are interpolated to the target pitch.",
-		"SPU2/Mixing", "Interpolation", static_cast<int>(Pcsx2Config::SPU2Options::InterpolationMode::Gaussian), interpolation_modes,
-		std::size(interpolation_modes));
 	DrawIntListSetting(bsi, ICON_FA_RULER " Synchronization Mode", "Changes when SPU samples are generated relative to system emulation.",
 		"SPU2/Output", "SynchMode", static_cast<int>(Pcsx2Config::SPU2Options::SynchronizationMode::TimeStretch), synchronization_modes,
 		std::size(synchronization_modes));
