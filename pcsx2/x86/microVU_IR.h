@@ -598,7 +598,7 @@ public:
 
 	bool checkVFClamp(int regId)
 	{
-		if ((xmmMap[regId].VFreg == 33 && !EmuConfig.Gamefixes.IbitHack) || xmmMap[regId].isZero)
+		if (regId != xmmPQ.Id && ((xmmMap[regId].VFreg == 33 && !EmuConfig.Gamefixes.IbitHack) || xmmMap[regId].isZero))
 			return false;
 		else
 			return true;
