@@ -118,7 +118,6 @@
     <ClCompile Include="emitter\avx.cpp" />
     <ClCompile Include="emitter\bmi.cpp" />
     <ClCompile Include="emitter\cpudetect.cpp" />
-    <ClCompile Include="emitter\fpu.cpp" />
     <ClCompile Include="emitter\groups.cpp" />
     <ClCompile Include="emitter\jmp.cpp" />
     <ClCompile Include="emitter\legacy.cpp" />

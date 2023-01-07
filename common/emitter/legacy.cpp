@@ -29,30 +29,6 @@
 #include "common/Console.h"
 #include <cassert>
 
-emitterT void ModRM(uint mod, uint reg, uint rm)
-{
-	// Note: Following assertions are for legacy support only.
-	// The new emitter performs these sanity checks during operand construction, so these
-	// assertions can probably be removed once all legacy emitter code has been removed.
-	pxAssert(mod < 4);
-	pxAssert(reg < 8);
-	pxAssert(rm < 8);
-	xWrite8((mod << 6) | (reg << 3) | rm);
-}
-
-emitterT void SibSB(uint ss, uint index, uint base)
-{
-	// Note: Following asserts are for legacy support only.
-	// The new emitter performs these sanity checks during operand construction, so these
-	// assertions can probably be removed once all legacy emitter code has been removed.
-	pxAssert(ss < 4);
-	pxAssert(index < 8);
-	pxAssert(base < 8);
-	xWrite8((ss << 6) | (index << 3) | base);
-}
-
-using namespace x86Emitter;
-
 //////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 // From here on are instructions that have NOT been implemented in the new emitter.
@@ -176,17 +152,6 @@ emitterT u32* JMP32(uptr to)
 	return (u32*)(x86Ptr - 4);
 }
 
-/* jp rel8 */
-emitterT u8* JP8(u8 to)
-{
-	return J8Rel(0x7A, to);
-}
-
-/* jnp rel8 */
-emitterT u8* JNP8(u8 to)
-{
-	return J8Rel(0x7B, to);
-}
 
 /* je rel8 */
 emitterT u8* JE8(u8 to)
@@ -200,11 +165,7 @@ emitterT u8* JZ8(u8 to)
 	return J8Rel(0x74, to);
 }
 
-/* js rel8 */
-emitterT u8* JS8(u8 to)
-{
-	return J8Rel(0x78, to);
-}
+
 
 /* jns rel8 */
 emitterT u8* JNS8(u8 to)
@@ -228,12 +189,6 @@ emitterT u8* JGE8(u8 to)
 emitterT u8* JL8(u8 to)
 {
 	return J8Rel(0x7C, to);
-}
-
-/* ja rel8 */
-emitterT u8* JA8(u8 to)
-{
-	return J8Rel(0x77, to);
 }
 
 emitterT u8* JAE8(u8 to)
@@ -295,17 +250,6 @@ emitterT u8* JNLE8(u8 to)
 	return J8Rel(0x7F, to);
 }
 
-/* jo rel8 */
-emitterT u8* JO8(u8 to)
-{
-	return J8Rel(0x70, to);
-}
-
-/* jno rel8 */
-emitterT u8* JNO8(u8 to)
-{
-	return J8Rel(0x71, to);
-}
 // jb rel32
 emitterT u32* JB32(u32 to)
 {
@@ -324,17 +268,6 @@ emitterT u32* JZ32(u32 to)
 	return J32Rel(0x84, to);
 }
 
-/* js rel32 */
-emitterT u32* JS32(u32 to)
-{
-	return J32Rel(0x88, to);
-}
-
-/* jns rel32 */
-emitterT u32* JNS32(u32 to)
-{
-	return J32Rel(0x89, to);
-}
 
 /* jg rel32 */
 emitterT u32* JG32(u32 to)
@@ -360,17 +293,6 @@ emitterT u32* JLE32(u32 to)
 	return J32Rel(0x8E, to);
 }
 
-/* ja rel32 */
-emitterT u32* JA32(u32 to)
-{
-	return J32Rel(0x87, to);
-}
-
-/* jae rel32 */
-emitterT u32* JAE32(u32 to)
-{
-	return J32Rel(0x83, to);
-}
 
 /* jne rel32 */
 emitterT u32* JNE32(u32 to)
@@ -384,38 +306,6 @@ emitterT u32* JNZ32(u32 to)
 	return J32Rel(0x85, to);
 }
 
-/* jng rel32 */
-emitterT u32* JNG32(u32 to)
-{
-	return J32Rel(0x8E, to);
-}
 
-/* jnge rel32 */
-emitterT u32* JNGE32(u32 to)
-{
-	return J32Rel(0x8C, to);
-}
 
-/* jnl rel32 */
-emitterT u32* JNL32(u32 to)
-{
-	return J32Rel(0x8D, to);
-}
 
-/* jnle rel32 */
-emitterT u32* JNLE32(u32 to)
-{
-	return J32Rel(0x8F, to);
-}
-
-/* jo rel32 */
-emitterT u32* JO32(u32 to)
-{
-	return J32Rel(0x80, to);
-}
-
-/* jno rel32 */
-emitterT u32* JNO32(u32 to)
-{
-	return J32Rel(0x81, to);
-}

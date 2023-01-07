@@ -39,7 +39,6 @@ target_sources(common PRIVATE
 	emitter/avx.cpp
 	emitter/bmi.cpp
 	emitter/cpudetect.cpp
-	emitter/fpu.cpp
 	emitter/groups.cpp
 	emitter/jmp.cpp
 	emitter/legacy.cpp
