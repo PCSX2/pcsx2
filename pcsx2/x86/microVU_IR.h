@@ -881,7 +881,7 @@ public:
 		{
 			if (x86regs[regId].inuse && x86regs[regId].type == X86TYPE_VIREG)
 			{
-				pxAssert(x86regs[regId].reg == static_cast<u8>(clear.VIreg));
+				pxAssert(x86regs[regId].reg == clear.VIreg);
 				_freeX86regWithoutWriteback(regId);
 			}
 		}
