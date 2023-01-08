@@ -1692,7 +1692,7 @@ void GSRendererHW::Draw()
 	{
 		// Constant Direct Write without texture/test/blending (aka a GS mem clear)
 		if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME // Direct write
-			&& (!PRIM->ABE || IsOpaque()) // No transparency
+			&& (!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsCdOutput()) // No transparency
 			&& (m_context->FRAME.FBMSK == 0) // no color mask
 			&& !m_context->TEST.ATE // no alpha test
 			&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
@@ -1844,7 +1844,7 @@ void GSRendererHW::Draw()
 	{
 		// Constant Direct Write without texture/test/blending (aka a GS mem clear)
 		if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME // Direct write
-				&& (!PRIM->ABE || IsOpaque()) // No transparency
+				&& (!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsCdOutput()) // No transparency
 				&& (m_context->FRAME.FBMSK == 0) // no color mask
 				&& !m_context->TEST.ATE // no alpha test
 				&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
