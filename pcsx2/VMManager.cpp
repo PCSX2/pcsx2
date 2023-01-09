@@ -2120,14 +2120,18 @@ static void SetMTVUAndAffinityControlDefault(SettingsInterface& si)
 
 	if (big_cores >= 3)
 	{
-		Console.WriteLn("  So enabling MTVU.");
+		Console.WriteLn("  Enabling MTVU.");
 		si.SetBoolValue("EmuCore/Speedhacks", "vuThread", true);
 	}
 	else
 	{
-		Console.WriteLn("  So disabling MTVU.");
+		Console.WriteLn("  Disabling MTVU.");
 		si.SetBoolValue("EmuCore/Speedhacks", "vuThread", false);
 	}
+
+	const int extra_threads = (big_cores > 3) ? 3 : 2;
+	Console.WriteLn("  Setting Extra Software Rendering Threads to %d.", extra_threads);
+	si.SetIntValue("EmuCore/GS", "extrathreads", extra_threads);
 }
 
 #else
