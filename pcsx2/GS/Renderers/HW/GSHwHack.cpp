@@ -802,23 +802,24 @@ bool GSHwHack::GSC_XenosagaE3(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSHwHack::GSC_Barnyard(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
+bool GSHwHack::GSC_BlueTongueGames(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
 {
 	GSDrawingContext* context = r.m_context;
 
 	// Whoever wrote this was kinda nuts. They draw a stipple/dither pattern to a framebuffer, then reuse that as
 	// the depth buffer. Textures are then drawn repeatedly on top of one another, each with a slight offset.
 	// Depth testing is enabled, and that determines which pixels make it into the final texture. Kinda like an
-	// attempt at anti-aliasing or adding more detail to the textures?
+	// attempt at anti-aliasing or adding more detail to the textures? Or, a way to get more colours..
 
 	// The size of these textures varies quite a bit. 16-bit, 24-bit and 32-bit formats are all used.
 	// The ones we need to take care of here, are the textures which use mipmaps. Those get drawn recursively, mip
 	// levels are then drawn to the right of the base texture. And we can't handle that in the texture cache. So
-	// we'll limit to 16/32-bit, going up to 320 wide. Some font textures are 1024x1024, we don't really want to
-	// be rasterizing that on the CPU.
+	// we'll limit to 16/24/32-bit, going up to 320 wide. Some font textures are 1024x1024, we don't really want
+	// to be rasterizing that on the CPU.
 
-	// Catch the mipmap draws.
-	if ((context->FRAME.PSM == PSM_PSMCT16S || context->FRAME.PSM == PSM_PSMCT32) && context->FRAME.FBW <= 5)
+	// Catch the mipmap draws. Barnyard only uses 16/32-bit, Jurassic Park uses 24-bit.
+	// Also used for Nicktoons Unite, same engine it appears.
+	if ((context->FRAME.PSM == PSM_PSMCT16S || context->FRAME.PSM <= PSM_PSMCT24) && context->FRAME.FBW <= 5)
 	{
 		r.SwPrimRender(r, true);
 		skip = 1;
@@ -1276,7 +1277,7 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_UrbanReign, CRCHackLevel::Partial),
 	CRC_F(GSC_ZettaiZetsumeiToshi2, CRCHackLevel::Partial),
 	CRC_F(GSC_BlackAndBurnoutSky, CRCHackLevel::Partial),
-	CRC_F(GSC_Barnyard, CRCHackLevel::Partial),
+	CRC_F(GSC_BlueTongueGames, CRCHackLevel::Partial),
 	CRC_F(GSC_Battlefield2, CRCHackLevel::Partial),
 
 	// Channel Effect

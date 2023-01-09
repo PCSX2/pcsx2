@@ -5308,7 +5308,7 @@ SCKA-20096:
     halfPixelOffset: 2 # Fix text and post blur.
     mipmap: 2 # Base mip level isn't always used.
     autoFlush: 1 # Needed for recursive mipmap rendering.
-    getSkipCount: "GSC_Barnyard" # Render mipmaps on the CPU.
+    getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SCKA-20098:
   name: "Nickelodeon SpongeBob SquarePants - Creature from the Krusty Krab"
   region: "NTSC-K"
@@ -12484,9 +12484,11 @@ SLES-51354:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes glows.
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
+    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
     textureInsideRT: 1 # Fixes rainbow lighting for some areas.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLES-51355:
   name: "Big Mutha Truckers"
   region: "PAL-M5"
@@ -17729,9 +17731,11 @@ SLES-53634:
   name: "Nicktoons Unite!"
   region: "PAL-A"
   gsHWFixes:
-    autoFlush: 1 # Fixes glows.
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
-    textureInsideRT: 1 # Fixes rainbow lighting for lamps, computer and other areas.
+    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
+    textureInsideRT: 1 # Fixes rainbow lighting for some areas.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLES-53635:
   name: "NASCAR '06 - Total Team Control"
   region: "PAL-E"
@@ -19600,7 +19604,7 @@ SLES-54376:
     halfPixelOffset: 2 # Fix text and post blur.
     mipmap: 2 # Base mip level isn't always used.
     autoFlush: 1 # Needed for recursive mipmap rendering.
-    getSkipCount: "GSC_Barnyard" # Render mipmaps on the CPU.
+    getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SLES-54377:
   name: "Barnyard"
   region: "PAL-G"
@@ -19608,7 +19612,7 @@ SLES-54377:
     halfPixelOffset: 2 # Fix text and post blur.
     mipmap: 2 # Base mip level isn't always used.
     autoFlush: 1 # Needed for recursive mipmap rendering.
-    getSkipCount: "GSC_Barnyard" # Render mipmaps on the CPU.
+    getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SLES-54378:
   name: "Barnyard"
   region: "PAL-M4"
@@ -19616,7 +19620,7 @@ SLES-54378:
     halfPixelOffset: 2 # Fix text and post blur.
     mipmap: 2 # Base mip level isn't always used.
     autoFlush: 1 # Needed for recursive mipmap rendering.
-    getSkipCount: "GSC_Barnyard" # Render mipmaps on the CPU.
+    getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SLES-54379:
   name: "NFL Street 3"
   region: "PAL-E"
@@ -25967,6 +25971,12 @@ SLPM-62345:
 SLPM-62346:
   name: "Keiei Simulation - Jurassic Park [Konami the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
+    textureInsideRT: 1 # Fixes rainbow lighting for some areas.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLPM-62348:
   name: "Mechsmith, The - Rum"
   region: "NTSC-J"
@@ -26443,9 +26453,11 @@ SLPM-62512:
   name: "Keiei Simulation - Jurassic Park [Konami The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes glows.
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
+    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
     textureInsideRT: 1 # Fixes rainbow lighting for some areas.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLPM-62513:
   name: "Harry Potter and the Chamber of Secrets [EA Best Hits]"
   region: "NTSC-J"
@@ -41933,9 +41945,11 @@ SLUS-20380:
   name: "Jurassic Park - Operation Genesis"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1 # Fixes glows.
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
+    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
     textureInsideRT: 1 # Fixes rainbow lighting for some areas.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLUS-20381:
   name: "MX SuperFly"
   region: "NTSC-U"
@@ -46462,7 +46476,7 @@ SLUS-21277:
     halfPixelOffset: 2 # Fix text and post blur.
     mipmap: 2 # Base mip level isn't always used.
     autoFlush: 1 # Needed for recursive mipmap rendering.
-    getSkipCount: "GSC_Barnyard" # Render mipmaps on the CPU.
+    getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SLUS-21278:
   name: "SSX on Tour"
   region: "NTSC-U"
@@ -46493,9 +46507,11 @@ SLUS-21284:
   name: "Nicktoons Unite!"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1 # Fixes glows.
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
-    textureInsideRT: 1 # Fixes rainbow lighting for lamps, computer and other areas.
+    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
+    textureInsideRT: 1 # Fixes rainbow lighting for some areas.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLUS-21285:
   name: "Ultimate Spider-Man [Limited Edition]"
   region: "NTSC-U"
