@@ -43,7 +43,7 @@ namespace GameDatabaseSchema
 
 namespace GameDatabase
 {
-	static void parseAndInsert(const std::string_view& serial, const c4::yml::NodeRef& node);
+	static void parseAndInsert(const std::string_view& serial, const c4::yml::ConstNodeRef& node);
 	static void initDatabase();
 } // namespace GameDatabase
 
@@ -99,7 +99,7 @@ const char* GameDatabaseSchema::GameEntry::compatAsString() const
 	}
 }
 
-void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml::NodeRef& node)
+void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml::ConstNodeRef& node)
 {
 	GameDatabaseSchema::GameEntry gameEntry;
 	if (node.has_child("name"))
@@ -176,7 +176,7 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 	// Validate game fixes, invalid ones will be dropped!
 	if (node.has_child("gameFixes") && node["gameFixes"].has_children())
 	{
-		for (const ryml::NodeRef& n : node["gameFixes"].children())
+		for (const ryml::ConstNodeRef& n : node["gameFixes"].cchildren())
 		{
 			bool fixValidated = false;
 			auto fix = std::string(n.val().str, n.val().len);
@@ -207,7 +207,7 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 	// Validate speed hacks, invalid ones will be dropped!
 	if (node.has_child("speedHacks") && node["speedHacks"].has_children())
 	{
-		for (const ryml::NodeRef& n : node["speedHacks"].children())
+		for (const ryml::ConstNodeRef& n : node["speedHacks"].cchildren())
 		{
 			bool speedHackValidated = false;
 			auto speedHack = std::string(n.key().str, n.key().len);
@@ -237,7 +237,7 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 
 	if (node.has_child("gsHWFixes"))
 	{
-		for (const ryml::NodeRef& n : node["gsHWFixes"].children())
+		for (const ryml::ConstNodeRef& n : node["gsHWFixes"].cchildren())
 		{
 			const std::string_view id_name(n.key().data(), n.key().size());
 			std::optional<GameDatabaseSchema::GSHWFixId> id = GameDatabaseSchema::parseHWFixName(id_name);
@@ -274,7 +274,7 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 	// - currently they are used as a '\n' delimited string in the app
 	if (node.has_child("memcardFilters") && node["memcardFilters"].has_children())
 	{
-		for (const ryml::NodeRef& n : node["memcardFilters"].children())
+		for (const ryml::ConstNodeRef& n : node["memcardFilters"].cchildren())
 		{
 			auto memcardFilter = std::string(n.val().str, n.val().len);
 			gameEntry.memcardFilters.emplace_back(std::move(memcardFilter));
@@ -284,7 +284,7 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 	// Game Patches
 	if (node.has_child("patches") && node["patches"].has_children())
 	{
-		for (const ryml::NodeRef& n : node["patches"].children())
+		for (const ryml::ConstNodeRef& n : node["patches"].cchildren())
 		{
 			// use a crc of 0 for default patches
 			const std::string_view crc_str(n.key().str, n.key().len);
@@ -309,13 +309,13 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 
 	if (node.has_child("dynaPatches") && node["dynaPatches"].has_children())
 	{
-		for (const ryml::NodeRef& n : node["dynaPatches"].children())
+		for (const ryml::ConstNodeRef& n : node["dynaPatches"].cchildren())
 		{
 			DynamicPatch patch;
 
 			if (n.has_child("pattern") && n["pattern"].has_children())
 			{
-				for (const ryml::NodeRef& db_pattern : n["pattern"].children())
+				for (const ryml::ConstNodeRef& db_pattern : n["pattern"].cchildren())
 				{
 					DynamicPatchEntry entry;
 					db_pattern["offset"] >> entry.offset;
@@ -323,7 +323,7 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 
 					patch.pattern.push_back(entry);
 				}
-				for (const ryml::NodeRef& db_replacement : n["replacement"].children())
+				for (const ryml::ConstNodeRef& db_replacement : n["replacement"].cchildren())
 				{
 					DynamicPatchEntry entry;
 					db_replacement["offset"] >> entry.offset;
@@ -821,7 +821,7 @@ void GameDatabase::initDatabase()
 		ryml::Tree tree = ryml::parse_in_arena(c4::to_csubstr(buf.value()));
 		ryml::NodeRef root = tree.rootref();
 
-		for (const ryml::NodeRef& n : root.children())
+		for (const ryml::ConstNodeRef& n : root.cchildren())
 		{
 			auto serial = StringUtil::toLower(std::string(n.key().str, n.key().len));
 
