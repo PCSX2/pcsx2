@@ -210,8 +210,12 @@ void ToPS2FPU_Full(int reg, bool flags, int absreg, bool acc, bool addsub)
 	u32* end2 = JMP32(0);
 
 	x86SetJ8(to_overflow);
-	xCVTSD2SS(xRegisterSSE(reg), xRegisterSSE(reg));
-	xOR.PS(xRegisterSSE(reg), ptr[&s_const.pos]); //clamp
+
+	// Move sign bit to bottom 32bit
+	xSHUF.PS(xRegisterSSE(reg), xRegisterSSE(reg), 0x55);
+	// Saturate value for PS FLT_MAX
+	xOR.PS(xRegisterSSE(reg), ptr[&s_const.pos]);
+
 	if (flags && FPU_FLAGS_OVERFLOW)
 		xOR(ptr32[&fpuRegs.fprc[31]], (FPUflagO | FPUflagSO));
 	if (flags && FPU_FLAGS_OVERFLOW && acc)
