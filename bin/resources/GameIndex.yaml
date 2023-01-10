@@ -19757,6 +19757,8 @@ SLES-54440:
 SLES-54441:
   name: "Hawk Kawasaki Racing"
   region: "PAL-E"
+  gameFixes:
+    - XGKickHack # Fixes bad geometry.
 SLES-54442:
   name: "Guitar Hero II"
   region: "PAL-M5"
@@ -20010,6 +20012,8 @@ SLES-54537:
 SLES-54540:
   name: "Hawk Superbike Racing"
   region: "PAL-M6"
+  gameFixes:
+    - XGKickHack # Fixes bad geometry.
 SLES-54541:
   name: "Xena - Warrior Princess"
   region: "PAL-M6"
