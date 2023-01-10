@@ -3308,14 +3308,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 
 void FullscreenUI::DrawAudioSettingsPage()
 {
-	static constexpr const char* interpolation_modes[] = {
-		"Nearest (Fastest / worst quality)",
-		"Linear (Simple / okay sound)",
-		"Cubic (Fake highs / okay sound)",
-		"Hermite (Better highs / okay sound)",
-		"Catmull-Rom (PS2-like / good sound)",
-		"Gaussian (PS2-like / great sound)",
-	};
 	static constexpr const char* synchronization_modes[] = {
 		"TimeStretch (Recommended)",
 		"Async Mix (Breaks some games!)",
