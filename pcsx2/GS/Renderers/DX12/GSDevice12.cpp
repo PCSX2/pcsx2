@@ -318,8 +318,8 @@ GSTexture* GSDevice12::CreateSurface(GSTexture::Type type, int width, int height
 {
 	pxAssert(type != GSTexture::Type::Offscreen);
 
-	const u32 clamped_width = static_cast<u32>(std::clamp<int>(1, width, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION));
-	const u32 clamped_height = static_cast<u32>(std::clamp<int>(1, height, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION));
+	const u32 clamped_width = static_cast<u32>(std::clamp<int>(width, 1, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION));
+	const u32 clamped_height = static_cast<u32>(std::clamp<int>(height, 1, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION));
 
 	DXGI_FORMAT d3d_format, srv_format, rtv_format, dsv_format;
 	LookupNativeFormat(format, &d3d_format, &srv_format, &rtv_format, &dsv_format);

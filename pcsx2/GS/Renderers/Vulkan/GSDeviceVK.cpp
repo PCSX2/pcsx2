@@ -404,8 +404,8 @@ GSTexture* GSDeviceVK::CreateSurface(GSTexture::Type type, int width, int height
 {
 	pxAssert(type != GSTexture::Type::Offscreen);
 
-	const u32 clamped_width = static_cast<u32>(std::clamp<int>(1, width, g_vulkan_context->GetMaxImageDimension2D()));
-	const u32 clamped_height = static_cast<u32>(std::clamp<int>(1, height, g_vulkan_context->GetMaxImageDimension2D()));
+	const u32 clamped_width = static_cast<u32>(std::clamp<int>(width, 1, g_vulkan_context->GetMaxImageDimension2D()));
+	const u32 clamped_height = static_cast<u32>(std::clamp<int>(height, 1, g_vulkan_context->GetMaxImageDimension2D()));
 
 	std::unique_ptr<GSTexture> tex(GSTextureVK::Create(type, clamped_width, clamped_height, levels, format, LookupNativeFormat(format)));
 	if (!tex)
@@ -1818,7 +1818,7 @@ bool GSDeviceVK::CompileCASPipelines()
 	dslb.AddBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
 	if ((m_cas_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
-	Vulkan::Util::SetObjectName(dev, m_cas_pipeline_layout, "CAS descriptor layout");
+	Vulkan::Util::SetObjectName(dev, m_cas_ds_layout, "CAS descriptor layout");
 
 	plb.AddPushConstants(VK_SHADER_STAGE_COMPUTE_BIT, 0, NUM_CAS_CONSTANTS * sizeof(u32));
 	plb.AddDescriptorSet(m_cas_ds_layout);
