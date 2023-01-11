@@ -19992,7 +19992,9 @@ SLES-54521:
   name: "Nickelodeon SpongeBob and Friends - Battle for Volcano Island"
   region: "PAL-M5"
   gsHWFixes:
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
+    mipmap: 2 # Better characters and environment.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLES-54527:
   name: "Flushed Away"
   region: "PAL-M5"
@@ -47575,7 +47577,9 @@ SLUS-21469:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
+    mipmap: 2 # Better characters and environment.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
+    getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SLUS-21470:
   name: "Bratz - Forever Diamondz"
   region: "NTSC-U"
