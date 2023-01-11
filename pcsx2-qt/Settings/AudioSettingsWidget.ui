@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>754</width>
-    <height>464</height>
+    <height>485</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -49,6 +49,9 @@
           <property name="maximum">
            <number>100</number>
           </property>
+          <property name="value">
+           <number>30</number>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -63,7 +66,7 @@
         <item>
          <widget class="QLabel" name="sequenceLengthLabel">
           <property name="text">
-           <string>100</string>
+           <string>30</string>
           </property>
          </widget>
         </item>
@@ -86,6 +89,9 @@
           <property name="maximum">
            <number>30</number>
           </property>
+          <property name="value">
+           <number>20</number>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -100,7 +106,7 @@
         <item>
          <widget class="QLabel" name="seekWindowSizeLabel">
           <property name="text">
-           <string>100</string>
+           <string>20</string>
           </property>
          </widget>
         </item>
@@ -123,6 +129,9 @@
           <property name="maximum">
            <number>15</number>
           </property>
+          <property name="value">
+           <number>10</number>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -137,7 +146,7 @@
         <item>
          <widget class="QLabel" name="overlapLabel">
           <property name="text">
-           <string>100</string>
+           <string>10</string>
           </property>
          </widget>
         </item>
@@ -200,6 +209,9 @@
           </property>
           <property name="maximum">
            <number>200</number>
+          </property>
+          <property name="value">
+           <number>100</number>
           </property>
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -366,7 +378,7 @@
            <number>200</number>
           </property>
           <property name="value">
-           <number>100</number>
+           <number>60</number>
           </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -382,7 +394,7 @@
         <item>
          <widget class="QLabel" name="targetLatencyLabel">
           <property name="text">
-           <string>100 ms</string>
+           <string>60 ms</string>
           </property>
          </widget>
         </item>
@@ -425,7 +437,7 @@
            <number>200</number>
           </property>
           <property name="value">
-           <number>100</number>
+           <number>20</number>
           </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -441,7 +453,7 @@
         <item>
          <widget class="QLabel" name="outputLatencyLabel">
           <property name="text">
-           <string>100 ms</string>
+           <string>20 ms</string>
           </property>
          </widget>
         </item>

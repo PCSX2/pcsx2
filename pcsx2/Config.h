@@ -821,7 +821,7 @@ struct Pcsx2Config
 		SynchronizationMode SynchMode = SynchronizationMode::TimeStretch;
 
 		s32 FinalVolume = 100;
-		s32 Latency = 100;
+		s32 Latency = 60;
 		s32 OutputLatency = 20;
 		s32 SpeakerConfiguration = 0;
 		s32 DplDecodingLevel = 0;
