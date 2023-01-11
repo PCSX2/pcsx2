@@ -792,15 +792,19 @@ void GSTextureCache::ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVect
 	
 	if (dst)
 	{
-		const GSVector2i rect_scaled = GSVector2i(r.z * g_gs_renderer->GetUpscaleMultiplier(), r.w * g_gs_renderer->GetUpscaleMultiplier());
+		// Round up to the nearest even height, like the draw target allocator.
+		const s32 aligned_height = Common::AlignUpPow2(r.w, 2);
+		const GSVector2i rect_scaled = GSVector2i(r.z * g_gs_renderer->GetUpscaleMultiplier(), aligned_height * g_gs_renderer->GetUpscaleMultiplier());
 		const int upsc_width = std::max(rect_scaled.x, dst->m_texture->GetWidth());
 		const int upsc_height = std::max(rect_scaled.y, dst->m_texture->GetHeight());
 		if (dst->m_texture->GetWidth() < upsc_width || dst->m_texture->GetHeight() < upsc_height)
 		{
-			if (dst->ResizeTexture(upsc_width, upsc_height))
+			// We don't recycle here, because most of the time when this happens it's strange-sized textures
+			// which are being expanded one-line-at-a-time.
+			if (dst->ResizeTexture(upsc_width, upsc_height, false))
 			{
 				AddDirtyRectTarget(dst, r, TEX0.PSM, TEX0.TBW);
-				GetTargetHeight(TEX0.TBP0, TEX0.TBW, TEX0.PSM, r.w);
+				GetTargetHeight(TEX0.TBP0, TEX0.TBW, TEX0.PSM, aligned_height);
 				dst->UpdateValidity(r);
 			}
 		}
