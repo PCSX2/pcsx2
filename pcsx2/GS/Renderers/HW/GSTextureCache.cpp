@@ -781,7 +781,7 @@ void GSTextureCache::ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVect
 	{
 		Target* t = *i;
 
-		if (TEX0.TBP0 == t->m_TEX0.TBP0 && t->Overlaps(TEX0.TBP0, TEX0.TBW, TEX0.PSM, r))
+		if (TEX0.TBP0 == t->m_TEX0.TBP0 && TEX0.PSM == t->m_TEX0.PSM && t->Overlaps(TEX0.TBP0, TEX0.TBW, TEX0.PSM, r))
 		{
 			list.MoveFront(i.Index());
 
