@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -33,7 +33,7 @@ static constexpr s32 DEFAULT_SYNCHRONIZATION_MODE = 0;
 static constexpr s32 DEFAULT_EXPANSION_MODE = 0;
 static constexpr s32 DEFAULT_DPL_DECODING_LEVEL = 0;
 static const char* DEFAULT_OUTPUT_MODULE = "cubeb";
-static constexpr s32 DEFAULT_TARGET_LATENCY = 100;
+static constexpr s32 DEFAULT_TARGET_LATENCY = 60;
 static constexpr s32 DEFAULT_OUTPUT_LATENCY = 20;
 static constexpr s32 DEFAULT_VOLUME = 100;
 static constexpr s32 DEFAULT_SOUNDTOUCH_SEQUENCE_LENGTH = 30;
@@ -117,7 +117,7 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 
 	dialog->registerWidgetHelp(m_ui.backend, tr("Output Backend"), tr("Default"), tr(""));
 
-	dialog->registerWidgetHelp(m_ui.targetLatency, tr("Target Latency"), tr("100 ms"),
+	dialog->registerWidgetHelp(m_ui.targetLatency, tr("Target Latency"), tr("60 ms"),
 		tr("Determines the buffer size which the time stretcher will try to keep filled. It effectively selects the average latency, as "
 		   "audio will be stretched/shrunk to keep the buffer size within check."));
 	dialog->registerWidgetHelp(m_ui.outputLatency, tr("Output Latency"), tr("20 ms"),
