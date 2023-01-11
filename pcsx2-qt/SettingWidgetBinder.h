@@ -1068,7 +1068,7 @@ namespace SettingWidgetBinder
 		}
 	}
 
-	static void BindSliderToIntSetting(SettingsInterface* sif, QSlider* slider, QLabel* label, const QString& label_suffix,
+	[[maybe_unused]] static void BindSliderToIntSetting(SettingsInterface* sif, QSlider* slider, QLabel* label, const QString& label_suffix,
 		std::string section, std::string key, s32 default_value)
 	{
 		const s32 global_value = Host::GetBaseIntSettingValue(section.c_str(), key.c_str(), default_value);
