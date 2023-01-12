@@ -79,7 +79,7 @@ QVariant ThreadModel::data(const QModelIndex& index, int role) const
 	}
 	else if (role == Qt::UserRole)
 	{
-		const auto& thread = getEEThreads().at(index.row());
+		const auto thread = getEEThreads().at(index.row());
 
 		switch (index.column())
 		{

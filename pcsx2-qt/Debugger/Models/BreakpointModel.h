@@ -47,7 +47,7 @@ public:
 	Qt::ItemFlags flags(const QModelIndex& index) const override;
 	bool setData(const QModelIndex& index, const QVariant& value, int role) override;
 	bool removeRows(int row, int count, const QModelIndex& index = QModelIndex()) override;
-	bool insertRows(int row, int count, std::vector<BreakpointMemcheck> breakpoints, const QModelIndex& index = QModelIndex());
+	bool insertBreakpointRows(int row, int count, std::vector<BreakpointMemcheck> breakpoints, const QModelIndex& index = QModelIndex());
 
 	BreakpointMemcheck at(int row) const { return m_breakpoints.at(row); };
 
