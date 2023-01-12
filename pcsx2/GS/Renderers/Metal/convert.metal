@@ -282,6 +282,35 @@ fragment float4 ps_convert_rgba_8i(ConvertShaderData data [[stage_in]], DirectRe
 	return float4(sel1);
 }
 
+fragment float4 ps_convert_clut_4(ConvertShaderData data [[stage_in]],
+	texture2d<float> texture [[texture(GSMTLTextureIndexNonHW)]],
+	constant GSMTLCLUTConvertPSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
+{
+	// CLUT4 is easy, just two rows of 8x8.
+	uint index = uint(data.p.x) + uniform.doffset;
+	uint2 pos = uint2(index % 8, index / 8);
+
+	uint2 final = uint2(float2(uniform.offset + pos) * uniform.scale);
+	return texture.read(final);
+}
+
+fragment float4 ps_convert_clut_8(ConvertShaderData data [[stage_in]],
+	texture2d<float> texture [[texture(GSMTLTextureIndexNonHW)]],
+	constant GSMTLCLUTConvertPSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
+{
+	uint index = min(uint(data.p.x) + uniform.doffset, 255u);
+
+	// CLUT is arranged into 8 groups of 16x2, with the top-right and bottom-left quadrants swapped.
+	// This can probably be done better..
+	uint subgroup = (index / 8) % 4;
+	uint2 pos;
+	pos.x = (index % 8) + ((subgroup >= 2) ? 8 :0u);
+	pos.y = ((index / 32u) * 2u) + (subgroup % 2u);
+
+	uint2 final = uint2(float2(uniform.offset + pos) * uniform.scale);
+	return texture.read(final);
+}
+
 fragment float4 ps_yuv(ConvertShaderData data [[stage_in]], ConvertPSRes res,
 	constant GSMTLConvertPSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
 {
