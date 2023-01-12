@@ -19777,10 +19777,14 @@ SLES-54442:
 SLES-54443:
   name: "Made Man"
   region: "PAL-M5"
+  clampModes:
+    vu1ClampMode: 3 # Fixes Textures flicker when shooting.
 SLES-54444:
   name: "Made Man"
   region: "PAL-E"
   compat: 5
+  clampModes:
+    vu1ClampMode: 3 # Fixes Textures flicker when shooting.
 SLES-54447:
   name: "Pro Evolution Soccer 6"
   region: "PAL-I"
@@ -48015,6 +48019,8 @@ SLUS-21587:
   name: "Made Man - Confessions of the Family Blood"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vu1ClampMode: 3 # Fixes Textures flicker when shooting.
 SLUS-21588:
   name: "Avatar - The Last Airbender - The Burning Earth"
   region: "NTSC-U"
