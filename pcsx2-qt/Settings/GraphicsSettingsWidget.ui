@@ -1623,6 +1623,143 @@
        </item>
       </layout>
      </widget>
+     <widget class="QGroupBox" name="recordingTab">
+      <attribute name="title">
+       <string>Recording</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_6">
+       <item>
+        <widget class="QGroupBox" name="videoDumpDirectory">
+         <property name="title">
+          <string>Video Dumping Directory</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_8">
+            <item>
+             <widget class="QLineEdit" name="videoDumpingDirectory">
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="videoDumpingDirectoryBrowse">
+              <property name="text">
+               <string>Browse...</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="videoDumpingDirectoryOpen">
+              <property name="text">
+               <string>Open...</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="videoDumpingDirectoryReset">
+              <property name="text">
+               <string>Reset</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="videoCaptureOptions">
+         <property name="title">
+          <string>Capture Options</string>
+         </property>
+         <layout class="QFormLayout" name="videoCaptureFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="videoCaptureCodecLabel">
+            <property name="text">
+             <string>Video Codec:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="videoCaptureCodec"/>
+          </item>
+          <item row="1" column="0">
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="0,0,0,0">
+            <item>
+             <widget class="QLabel" name="videoCaptureContainerLabel">
+              <property name="text">
+               <string>Container:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="videoCaptureContainer"/>
+            </item>
+            <item>
+             <widget class="QLabel" name="videoCaptureBitrateLabel">
+              <property name="text">
+               <string>Bitrate:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="videoCaptureBitrate">
+              <property name="suffix">
+               <string> kbps</string>
+              </property>
+              <property name="minimum">
+               <number>100</number>
+              </property>
+              <property name="maximum">
+               <number>100000</number>
+              </property>
+              <property name="singleStep">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="enableVideoCaptureArguments">
+            <property name="text">
+             <string>Enable Extra Arguments</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="videoCaptureArguments"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_6">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
      <widget class="QGroupBox" name="advancedTab">
       <attribute name="title">
        <string>Advanced</string>
@@ -1711,46 +1848,6 @@
              <widget class="QCheckBox" name="threadedPresentation">
               <property name="text">
                <string>Disable Threaded Presentation</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_45">
-            <property name="text">
-             <string>Video Capture Codec:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,0,0,0">
-            <item>
-             <widget class="QComboBox" name="videoCaptureCodec"/>
-            </item>
-            <item>
-             <widget class="QComboBox" name="videoCaptureContainer"/>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_46">
-              <property name="text">
-               <string>Bitrate:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="videoCaptureBitrate">
-              <property name="suffix">
-               <string> kbps</string>
-              </property>
-              <property name="minimum">
-               <number>100</number>
-              </property>
-              <property name="maximum">
-               <number>100000</number>
-              </property>
-              <property name="singleStep">
-               <number>100</number>
               </property>
              </widget>
             </item>

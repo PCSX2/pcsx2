@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -103,6 +103,7 @@ namespace EmuFolders
 	std::string GameSettings;
 	std::string Textures;
 	std::string InputProfiles;
+	std::string Videos;
 } // namespace EmuFolders
 
 void TraceLogFilters::LoadSave(SettingsWrapper& wrap)
@@ -438,6 +439,8 @@ Pcsx2Config::GSOptions::GSOptions()
 	LoadTextureReplacements = false;
 	LoadTextureReplacementsAsync = true;
 	PrecacheTextureReplacements = false;
+
+	EnableVideoCaptureParameters = false;
 }
 
 bool Pcsx2Config::GSOptions::operator==(const GSOptions& right) const
@@ -523,6 +526,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(VideoCaptureContainer) &&
 		OpEqu(VideoCaptureCodec) &&
 		OpEqu(VideoCaptureBitrate) &&
+		OpEqu(VideoCaptureParameters) &&
 
 		OpEqu(Adapter) &&
 		
@@ -644,6 +648,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	GSSettingBool(LoadTextureReplacements);
 	GSSettingBool(LoadTextureReplacementsAsync);
 	GSSettingBool(PrecacheTextureReplacements);
+	GSSettingBool(EnableVideoCaptureParameters);
 
 	GSSettingIntEnumEx(LinearPresent, "linear_present_mode");
 	GSSettingIntEnumEx(InterlaceMode, "deinterlace_mode");
@@ -695,6 +700,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	GSSettingStringEx(VideoCaptureContainer, "VideoCaptureContainer");
 	GSSettingStringEx(VideoCaptureCodec, "VideoCaptureCodec");
 	GSSettingIntEx(VideoCaptureBitrate, "VideoCaptureBitrate");
+	GSSettingStringEx(VideoCaptureParameters, "VideoCaptureParameters");
 
 	GSSettingString(Adapter);
 	GSSettingString(HWDumpDirectory);
@@ -1420,6 +1426,7 @@ void EmuFolders::SetDefaults(SettingsInterface& si)
 	si.SetStringValue("Folders", "Cache", "cache");
 	si.SetStringValue("Folders", "Textures", "textures");
 	si.SetStringValue("Folders", "InputProfiles", "inputprofiles");
+	si.SetStringValue("Folders", "Videos", "videos");
 }
 
 static std::string LoadPathFromSettings(SettingsInterface& si, const std::string& root, const char* name, const char* def)
@@ -1445,6 +1452,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
 	Cache = LoadPathFromSettings(si, DataRoot, "Cache", "cache");
 	Textures = LoadPathFromSettings(si, DataRoot, "Textures", "textures");
 	InputProfiles = LoadPathFromSettings(si, DataRoot, "InputProfiles", "inputprofiles");
+	Videos = LoadPathFromSettings(si, DataRoot, "Videos", "videos");
 
 	Console.WriteLn("BIOS Directory: %s", Bios.c_str());
 	Console.WriteLn("Snapshots Directory: %s", Snapshots.c_str());
@@ -1459,6 +1467,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
 	Console.WriteLn("Cache Directory: %s", Cache.c_str());
 	Console.WriteLn("Textures Directory: %s", Textures.c_str());
 	Console.WriteLn("Input Profile Directory: %s", InputProfiles.c_str());
+	Console.WriteLn("Video Dumping Directory: %s", Videos.c_str());
 }
 
 bool EmuFolders::EnsureFoldersExist()
@@ -1477,6 +1486,7 @@ bool EmuFolders::EnsureFoldersExist()
 	result = FileSystem::CreateDirectoryPath(Cache.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(Textures.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(InputProfiles.c_str(), false) && result;
+	result = FileSystem::CreateDirectoryPath(Videos.c_str(), false) && result;
 	return result;
 }
 

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -672,7 +672,8 @@ struct Pcsx2Config
 					DumpPaletteTextures : 1,
 					LoadTextureReplacements : 1,
 					LoadTextureReplacementsAsync : 1,
-					PrecacheTextureReplacements : 1;
+					PrecacheTextureReplacements : 1,
+					EnableVideoCaptureParameters : 1;
 			};
 		};
 
@@ -747,6 +748,7 @@ struct Pcsx2Config
 		std::string VideoCaptureContainer{DEFAULT_VIDEO_CAPTURE_CONTAINER};
 		std::string VideoCaptureCodec;
 		int VideoCaptureBitrate{DEFAULT_VIDEO_CAPTURE_BITRATE};
+		std::string VideoCaptureParameters;
 
 		std::string Adapter;
 		std::string HWDumpDirectory;
@@ -1301,6 +1303,7 @@ namespace EmuFolders
 	extern std::string GameSettings;
 	extern std::string Textures;
 	extern std::string InputProfiles;
+	extern std::string Videos;
 
 	// Assumes that AppRoot and DataRoot have been initialized.
 	void SetDefaults(SettingsInterface& si);

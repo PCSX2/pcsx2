@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -224,6 +224,7 @@ void Host::Internal::UpdateEmuFolders()
 	const std::string old_cheats_ni_directory(EmuFolders::CheatsNI);
 	const std::string old_memcards_directory(EmuFolders::MemoryCards);
 	const std::string old_textures_directory(EmuFolders::Textures);
+	const std::string old_videos_directory(EmuFolders::Videos);
 
 	EmuFolders::LoadConfig(*GetBaseSettingsLayer());
 	EmuFolders::EnsureFoldersExist();
@@ -250,5 +251,12 @@ void Host::Internal::UpdateEmuFolders()
 					GSTextureReplacements::ReloadReplacementMap();
 			});
 		}
+
+		if (EmuFolders::Videos != old_videos_directory)
+		{
+			if (VMManager::HasValidVM())
+				GetMTGS().RunOnGSThread(&GSEndCapture);
+		}
+
 	}
 }
