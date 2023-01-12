@@ -242,6 +242,7 @@ public:
 	MRCOwned<id<MTLRenderPipelineState>> m_merge_pipeline[4];
 	MRCOwned<id<MTLRenderPipelineState>> m_interlace_pipeline[NUM_INTERLACE_SHADERS];
 	MRCOwned<id<MTLRenderPipelineState>> m_datm_pipeline[2];
+	MRCOwned<id<MTLRenderPipelineState>> m_clut_pipeline[2];
 	MRCOwned<id<MTLRenderPipelineState>> m_stencil_clear_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_primid_init_pipeline[2][2];
 	MRCOwned<id<MTLRenderPipelineState>> m_hdr_init_pipeline;
@@ -371,6 +372,7 @@ public:
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true) override;
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha) override;
 	void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear) override;
+	void UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) override;
 
 	void FlushClears(GSTexture* tex);
 

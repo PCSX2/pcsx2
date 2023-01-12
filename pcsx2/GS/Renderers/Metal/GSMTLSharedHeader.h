@@ -64,6 +64,13 @@ struct GSMTLCASPSUniform
 	vector_int2 srcOffset;
 };
 
+struct GSMTLCLUTConvertPSUniform
+{
+	vector_float2 scale;
+	vector_uint2 offset;
+	uint doffset;
+};
+
 struct GSMTLMainVertex
 {
 	vector_float2 st;
