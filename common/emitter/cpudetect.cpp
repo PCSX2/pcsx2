@@ -170,12 +170,6 @@ void x86capabilities::CountCores()
 {
 	Identify();
 
-	s32 regs[4];
-	u32 cmds;
-
-	cpuid(regs, 0x80000000);
-	cmds = regs[0];
-
 	// This will assign values into LogicalCores and PhysicalCores
 	CountLogicalCores();
 }

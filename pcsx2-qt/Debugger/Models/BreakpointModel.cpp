@@ -306,9 +306,9 @@ bool BreakpointModel::removeRows(int row, int count, const QModelIndex& index)
 	return true;
 }
 
-bool BreakpointModel::insertRows(int row, int count, std::vector<BreakpointMemcheck> breakpoints, const QModelIndex& index)
+bool BreakpointModel::insertBreakpointRows(int row, int count, std::vector<BreakpointMemcheck> breakpoints, const QModelIndex& index)
 {
-	if (breakpoints.size() != count)
+	if (breakpoints.size() != static_cast<size_t>(count))
 		return false;
 
 	beginInsertRows(index, row, row + count);

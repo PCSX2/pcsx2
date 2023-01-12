@@ -28,7 +28,6 @@
 #include "SettingWidgetBinder.h"
 #include "SettingsDialog.h"
 
-static constexpr s32 DEFAULT_INTERPOLATION_MODE = 5;
 static constexpr s32 DEFAULT_SYNCHRONIZATION_MODE = 0;
 static constexpr s32 DEFAULT_EXPANSION_MODE = 0;
 static constexpr s32 DEFAULT_DPL_DECODING_LEVEL = 0;

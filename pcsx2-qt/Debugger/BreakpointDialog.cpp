@@ -177,7 +177,7 @@ void BreakpointDialog::accept()
 		m_bpModel.removeRows(m_rowIndex, 1);
 	}
 
-	m_bpModel.insertRows(0, 1, {m_bp_mc});
+	m_bpModel.insertBreakpointRows(0, 1, {m_bp_mc});
 
 	QDialog::accept();
 }
