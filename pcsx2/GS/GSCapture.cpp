@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022 PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -31,6 +31,7 @@ extern "C" {
 #include "libavcodec/version.h"
 #include "libavformat/avformat.h"
 #include "libavformat/version.h"
+#include "libavutil/dict.h"
 #include "libavutil/version.h"
 #include "libswscale/swscale.h"
 #include "libswscale/version.h"
@@ -76,7 +77,11 @@ extern "C" {
 	X(av_frame_get_buffer) \
 	X(av_frame_free) \
 	X(av_strerror) \
-	X(av_reduce)
+	X(av_reduce) \
+	X(av_dict_get_string) \
+	X(av_dict_parse_string) \
+	X(av_dict_set) \
+	X(av_dict_free)
 
 #define VISIT_SWSCALE_IMPORTS(X) \
 	X(sws_getCachedContext) \
@@ -104,6 +109,7 @@ static AVFrame* s_converted_frame = nullptr; // YUV
 static AVPacket* s_video_packet = nullptr;
 static s64 s_next_pts = 0;
 static SwsContext* s_sws_context = nullptr;
+static AVDictionary* s_codec_arguments = nullptr;
 
 #define DECLARE_IMPORT(X) static decltype(X)* wrap_##X;
 VISIT_AVCODEC_IMPORTS(DECLARE_IMPORT);
@@ -303,10 +309,22 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 		}
 	}
 
+	s_codec_arguments = nullptr;
+	if (GSConfig.EnableVideoCaptureParameters)
+	{
+		res = wrap_av_dict_parse_string(&s_codec_arguments, GSConfig.VideoCaptureParameters.c_str(), "=", ":", 0);
+		if (res < 0)
+		{
+			LogAVError(res, "av_dict_parse_string() failed: ");
+			EndCapture();
+			return false;
+		}
+	}
+
 	if (output_format->flags & AVFMT_GLOBALHEADER)
 		s_codec_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
-	res = wrap_avcodec_open2(s_codec_context, codec, nullptr);
+	res = wrap_avcodec_open2(s_codec_context, codec, &s_codec_arguments);
 	if (res < 0)
 	{
 		LogAVError(res, "avcodec_open2() failed: ");
@@ -406,7 +424,7 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 
 	s_converted_frame->pts = s_next_pts++;
 
-	int res = wrap_avcodec_send_frame(s_codec_context, s_converted_frame);
+	const int res = wrap_avcodec_send_frame(s_codec_context, s_converted_frame);
 	if (res < 0)
 	{
 		LogAVError(res, "avcodec_send_frame() failed: ");
@@ -456,7 +474,7 @@ bool GSCapture::EndCapture()
 	std::lock_guard<std::recursive_mutex> lock(s_lock);
 	int res;
 
-	bool was_capturing = s_capturing;
+	const bool was_capturing = s_capturing;
 
 	if (was_capturing)
 	{
@@ -503,6 +521,11 @@ bool GSCapture::EndCapture()
 	{
 		wrap_avformat_free_context(s_format_context);
 		s_format_context = nullptr;
+	}
+	if (s_codec_arguments)
+	{
+		wrap_av_dict_free(&s_codec_arguments);
+		s_codec_arguments = nullptr;
 	}
 
 	if (was_capturing)

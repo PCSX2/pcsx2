@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -966,7 +966,7 @@ void MainWindow::onToolsVideoCaptureToggled(bool checked)
 		Host::GetStringSettingValue("EmuCore/GS", "VideoCaptureContainer", Pcsx2Config::GSOptions::DEFAULT_VIDEO_CAPTURE_CONTAINER)));
 	const QString filter(tr("%1 Files (*.%2)").arg(container.toUpper()).arg(container));
 
-	QString path(QStringLiteral("%1.%2").arg(QString::fromStdString(GSGetBaseSnapshotFilename())).arg(container));
+	QString path(QStringLiteral("%1.%2").arg(QString::fromStdString(GSGetBaseVideoFilename())).arg(container));
 	path = QFileDialog::getSaveFileName(this, tr("Video Capture"), path, filter);
 	if (path.isEmpty())
 	{

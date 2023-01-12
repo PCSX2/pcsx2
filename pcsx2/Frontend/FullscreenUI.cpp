@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -4065,6 +4065,7 @@ void FullscreenUI::DrawFoldersSettingsPage()
 	DrawFolderSetting(bsi, ICON_FA_TV " Widescreen Cheats Directory", "Folders", "CheatsWS", EmuFolders::CheatsWS);
 	DrawFolderSetting(bsi, ICON_FA_MAGIC " No-Interlace Cheats Directory", "Folders", "CheatsNI", EmuFolders::CheatsNI);
 	DrawFolderSetting(bsi, ICON_FA_SLIDERS_H "Texture Replacements Directory", "Folders", "Textures", EmuFolders::Textures);
+	DrawFolderSetting(bsi, ICON_FA_SLIDERS_H "Video Dumping Directory", "Folders", "Videos", EmuFolders::Videos);
 
 	EndMenuButtons();
 }

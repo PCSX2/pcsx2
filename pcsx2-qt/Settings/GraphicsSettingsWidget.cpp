@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -321,13 +321,21 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			m_ui.videoCaptureContainer->addItem(name.toUpper(), name);
 		}
 
+		SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.videoDumpingDirectory, m_ui.videoDumpingDirectoryBrowse, m_ui.videoDumpingDirectoryOpen, m_ui.videoDumpingDirectoryReset,
+			"Folders", "Videos", Path::Combine(EmuFolders::DataRoot, "videos"));
+
 		SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.videoCaptureContainer, "EmuCore/GS", "VideoCaptureContainer");
 		connect(m_ui.videoCaptureContainer, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onVideoCaptureContainerChanged);
 
 		SettingWidgetBinder::BindWidgetToIntSetting(
 			sif, m_ui.videoCaptureBitrate, "EmuCore/GS", "VideoCaptureBitrate", Pcsx2Config::GSOptions::DEFAULT_VIDEO_CAPTURE_BITRATE);
 
+		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableVideoCaptureArguments, "EmuCore/GS", "EnableVideoCaptureParameters", false);
+		SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.videoCaptureArguments, "EmuCore/GS", "VideoCaptureParameters");
+		connect(m_ui.enableVideoCaptureArguments, &QCheckBox::stateChanged, this, &GraphicsSettingsWidget::onEnableVideoCaptureArgumentsChanged);
+
 		onVideoCaptureContainerChanged();
+		onEnableVideoCaptureArgumentsChanged();
 	}
 
 	// Display tab
@@ -417,8 +425,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Control the number of Auto-CRC fixes and hacks applied to games."));
 
 		dialog->registerWidgetHelp(m_ui.blending, tr("Blending Accuracy"), tr("Basic (Recommended)"),
-			tr("Control the accuracy level of the GS blending unit emulation. "
-			   "The higher the setting, the more blending is emulated in the shader accurately, and the higher the speed penalty will be. "
+			tr("Control the accuracy level of the GS blending unit emulation.<br> "
+			   "The higher the setting, the more blending is emulated in the shader accurately, and the higher the speed penalty will be.<br> "
 			   "Do note that Direct3D's blending is reduced in capability compared to OpenGL/Vulkan"));
 
 		dialog->registerWidgetHelp(m_ui.texturePreloading, tr("Texture Preloading"), tr("Full (Hash Cache)"),
@@ -605,6 +613,16 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		   tr("Checked"), tr("Displays warnings when settings are enabled which may break games."));
 	}
 
+	// Recording tab
+	{
+		dialog->registerWidgetHelp(m_ui.enableVideoCaptureArguments, tr("Enable Extra Arguments"), tr("Unchecked"), tr(""));
+
+		dialog->registerWidgetHelp(m_ui.videoCaptureArguments, tr("Extra Arguments"), tr("Leave It Blank"), 
+			tr("Parameters passed to selected video codec.<br> "
+			   "You must use '=' to separate key from value and ':' to separate two pairs from each other.<br> "
+			   "For example: \"crf = 21 : preset = veryfast\""));
+	}
+
 	// Advanced tab
 	{
 		dialog->registerWidgetHelp(m_ui.overrideTextureBarriers, tr("Override Texture Barriers"), tr("Automatic (Default)"), tr(""));
@@ -739,6 +757,12 @@ void GraphicsSettingsWidget::onVideoCaptureContainerChanged()
 
 	SettingWidgetBinder::BindWidgetToStringSetting(
 		m_dialog->getSettingsInterface(), m_ui.videoCaptureCodec, "EmuCore/GS", "VideoCaptureCodec");
+}
+
+void GraphicsSettingsWidget::onEnableVideoCaptureArgumentsChanged()
+{
+	const bool enabled = m_dialog->getEffectiveBoolValue("EmuCore/GS", "EnableVideoCaptureParameters", false);
+	m_ui.videoCaptureArguments->setEnabled(enabled);
 }
 
 void GraphicsSettingsWidget::onGpuPaletteConversionChanged(int state)

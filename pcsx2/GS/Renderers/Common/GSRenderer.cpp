@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -799,7 +799,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 	{
 		if (GSTexture* current = g_gs_device->GetCurrent())
 		{
-			GSVector2i size = GSCapture::GetSize();
+			const GSVector2i size = GSCapture::GetSize();
 
 			bool res;
 			GSTexture::GSMap m;
@@ -836,7 +836,7 @@ void GSRenderer::QueueSnapshot(const std::string& path, u32 gsdump_frames)
 	m_dump_frames = gsdump_frames;
 }
 
-std::string GSGetBaseSnapshotFilename()
+static std::string GSGetBaseFilename()
 {
 	std::string filename;
 
@@ -855,7 +855,7 @@ std::string GSGetBaseSnapshotFilename()
 		filename += serial;
 	}
 
-	time_t cur_time = time(nullptr);
+	const time_t cur_time = time(nullptr);
 	char local_time[16];
 
 	if (strftime(local_time, sizeof(local_time), "%Y%m%d%H%M%S", localtime(&cur_time)))
@@ -879,8 +879,19 @@ std::string GSGetBaseSnapshotFilename()
 		prev_snap = cur_time;
 	}
 
+	return filename;
+}
+
+std::string GSGetBaseSnapshotFilename()
+{
 	// prepend snapshots directory
-	return Path::Combine(EmuFolders::Snapshots, filename);
+	return Path::Combine(EmuFolders::Snapshots, GSGetBaseFilename());
+}
+
+std::string GSGetBaseVideoFilename()
+{
+	// prepend video directory
+	return Path::Combine(EmuFolders::Videos, GSGetBaseFilename());
 }
 
 void GSRenderer::StopGSDump()
