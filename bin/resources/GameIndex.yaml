@@ -21123,6 +21123,8 @@ SLES-54946:
   region: "PAL-M5"
   gameFixes:
     - VUSyncHack # Fixes SPS.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes post bloom alignment.
 SLES-54947:
   name: "Dogz"
   region: "PAL-M6"
@@ -48747,6 +48749,8 @@ SLUS-21733:
   region: "NTSC-U"
   gameFixes:
     - VUSyncHack # Fixes SPS.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes post bloom alignment.
 SLUS-21734:
   name: "Falling Stars"
   region: "NTSC-U"
