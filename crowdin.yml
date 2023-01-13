@@ -1,0 +1,3 @@
+files:
+  - source: pcsx2-qt/Translations/pcsx2-qt_en.ts
+    translation: '/pcsx2-qt/Translations/pcsx2-qt_%two_letters_code%.ts'
