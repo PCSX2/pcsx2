@@ -227,11 +227,6 @@ elseif(NOT MSVC)
 	set(AGGRESSIVE_WARNING -Wstrict-aliasing -Wstrict-overflow=1)
 endif()
 
-if (USE_CLANG)
-	# -Wno-deprecated-register: glib issue...
-	list(APPEND DEFAULT_WARNINGS -Wno-deprecated-register -Wno-c++14-extensions)
-endif()
-
 if (USE_PGO_GENERATE OR USE_PGO_OPTIMIZE)
 	add_compile_options("-fprofile-dir=${CMAKE_SOURCE_DIR}/profile")
 endif()
