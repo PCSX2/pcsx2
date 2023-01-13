@@ -112,11 +112,14 @@ void BreakpointDialog::accept()
 			return;
 		}
 
+		bp->addr = address;
+
 		bp->enabled = m_ui.chkEnable->isChecked();
 
 		if (!m_ui.txtCondition->text().isEmpty())
 		{
 			bp->hasCond = true;
+			bp->cond.debug = m_cpu;
 
 			if (!m_cpu->initExpression(m_ui.txtCondition->text().toLocal8Bit().constData(), expr))
 			{

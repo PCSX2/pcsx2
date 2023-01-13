@@ -18,6 +18,7 @@
 #include "DebugInterface.h"
 #include "Memory.h"
 #include "R5900.h"
+#include "R5900OpcodeTables.h"
 #include "Debug.h"
 #include "VU.h"
 #include "GS.h" // Required for gsNonMirroredRead()
@@ -39,14 +40,19 @@ R3000DebugInterface r3000Debug;
 
 enum ReferenceIndexType
 {
-	REF_INDEX_PC = 32,
-	REF_INDEX_HI = 33,
-	REF_INDEX_LO = 34,
-	REF_INDEX_FPU = 0x1000,
-	REF_INDEX_FPU_INT = 0x2000,
-	REF_INDEX_VFPU = 0x4000,
-	REF_INDEX_VFPU_INT = 0x8000,
+	REF_INDEX_PC       = 32,
+	REF_INDEX_HI       = 33,
+	REF_INDEX_LO       = 34,
+	REF_INDEX_OPTARGET = 0x800,
+	REF_INDEX_OPSTORE  = 0x1000,
+	REF_INDEX_OPLOAD   = 0x2000,
+	REF_INDEX_IS_OPSL  = REF_INDEX_OPTARGET | REF_INDEX_OPSTORE | REF_INDEX_OPLOAD,
+	REF_INDEX_FPU      = 0x4000,
+	REF_INDEX_FPU_INT  = 0x8000,
+	REF_INDEX_VFPU     = 0x10000,
+	REF_INDEX_VFPU_INT = 0x20000,
 	REF_INDEX_IS_FLOAT = REF_INDEX_FPU | REF_INDEX_VFPU,
+
 };
 
 
@@ -88,6 +94,23 @@ public:
 			return true;
 		}
 
+		if (strcasecmp(str, "target") == 0)
+		{
+			referenceIndex = REF_INDEX_OPTARGET;
+			return true;
+		}
+
+		if (strcasecmp(str, "load") == 0)
+		{
+			referenceIndex = REF_INDEX_OPLOAD;
+			return true;
+		}
+
+		if (strcasecmp(str, "store") == 0)
+		{
+			referenceIndex = REF_INDEX_OPSTORE;
+			return true;
+		}
 		return false;
 	}
 
@@ -109,6 +132,32 @@ public:
 			return cpu->getHI()._u64[0];
 		if (referenceIndex == REF_INDEX_LO)
 			return cpu->getLO()._u64[0];
+		if (referenceIndex & REF_INDEX_IS_OPSL)
+		{
+			const u32 OP = memRead32(cpu->getPC());
+			const R5900::OPCODE& opcode = R5900::GetInstruction(OP);
+			if (opcode.flags & IS_MEMORY)
+			{
+				// Fetch the address in the base register 
+				u32 target = cpuRegs.GPR.r[(OP >> 21) & 0x1F].UD[0];
+				// Add the offset (lower 16 bits)
+				target += static_cast<u16>(OP);
+
+				if (referenceIndex & REF_INDEX_OPTARGET)
+				{
+					return target;
+				}
+				else if (referenceIndex & REF_INDEX_OPLOAD)
+				{
+					return (opcode.flags & IS_LOAD) ? target : 0;
+				}
+				else if (referenceIndex & REF_INDEX_OPSTORE)
+				{
+					return (opcode.flags & IS_STORE) ? target : 0;
+				}
+			}
+			return 0;
+		}
 		return -1;
 	}
 
