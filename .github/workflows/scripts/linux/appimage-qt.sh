@@ -25,6 +25,9 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
+SCRIPTDIR=$(dirname "${BASH_SOURCE[0]}")
+source "$SCRIPTDIR/functions.sh"
+
 if [ "$#" -ne 4 ]; then
     echo "Syntax: $0 <path to pcsx2 directory> <path to build directory> <deps prefix> <output name>"
     exit 1
@@ -190,7 +193,7 @@ declare -a QTPLUGINS=(
 set -e
 
 if [ ! -f appimagetool-x86_64.AppImage ]; then
-	wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+	retry_command wget -O appimagetool-x86_64.AppImage https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
 	chmod +x appimagetool-x86_64.AppImage
 fi
 
