@@ -35568,6 +35568,9 @@ SLPS-20199:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes black void when upscaling.
+SLPS-20200:
+  name: "Final Fantasy XI [Disc 2 of 2]"
+  region: "NTSC-J"
 SLPS-20202:
   name: "Coloball 2002"
   region: "NTSC-J"
