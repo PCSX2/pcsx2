@@ -35,8 +35,11 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableMouseMapping, "UI", "EnableMouseMapping", false);
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.multitapPort1, "Pad", "MultitapPort1", false);
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.multitapPort2, "Pad", "MultitapPort2", false);
-	ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerXScale, "Pad", "PointerXScale", 8.0f);
-	ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerYScale, "Pad", "PointerYScale", 8.0f);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerXSpeed, "Pad", "PointerXSpeed", 40.0f);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerYSpeed, "Pad", "PointerYSpeed", 40.0f);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerXDeadZone, "Pad", "PointerXDeadZone", 20.0f);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerYDeadZone, "Pad", "PointerYDeadZone", 20.0f);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerInertia, "Pad", "PointerInertia", 10.0f);
 
 #ifdef _WIN32
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableXInputSource, "InputSources", "XInput", false);
@@ -70,10 +73,18 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 	for (QCheckBox* cb : {m_ui.multitapPort1, m_ui.multitapPort2})
 		connect(cb, &QCheckBox::stateChanged, this, [this]() { emit bindingSetupChanged(); });
 
-	connect(m_ui.pointerXScale, &QSlider::valueChanged, this, [this](int value) { m_ui.pointerXScaleLabel->setText(QStringLiteral("%1").arg(value)); });
-	connect(m_ui.pointerYScale, &QSlider::valueChanged, this, [this](int value) { m_ui.pointerYScaleLabel->setText(QStringLiteral("%1").arg(value)); });
-	m_ui.pointerXScaleLabel->setText(QStringLiteral("%1").arg(m_ui.pointerXScale->value()));
-	m_ui.pointerYScaleLabel->setText(QStringLiteral("%1").arg(m_ui.pointerYScale->value()));
+	connect(m_ui.pointerXSpeed, &QSlider::valueChanged, this, [this](int value) { m_ui.pointerXSpeedVal->setText(QStringLiteral("%1").arg(value)); });
+	connect(m_ui.pointerYSpeed, &QSlider::valueChanged, this, [this](int value) { m_ui.pointerYSpeedVal->setText(QStringLiteral("%1").arg(value)); });
+	connect(m_ui.pointerXDeadZone, &QSlider::valueChanged, this, [this](int value) { m_ui.pointerXDeadZoneVal->setText(QStringLiteral("%1").arg(value)); });
+	connect(m_ui.pointerYDeadZone, &QSlider::valueChanged, this, [this](int value) { m_ui.pointerYDeadZoneVal->setText(QStringLiteral("%1").arg(value)); });
+	connect(m_ui.pointerInertia, &QSlider::valueChanged, this, [this](int value) { m_ui.pointerInertiaVal->setText(QStringLiteral("%1").arg(value)); });
+
+	m_ui.pointerXSpeedVal->setText(QStringLiteral("%1").arg(m_ui.pointerXSpeed->value()));
+	m_ui.pointerYSpeedVal->setText(QStringLiteral("%1").arg(m_ui.pointerYSpeed->value()));
+	m_ui.pointerXDeadZoneVal->setText(QStringLiteral("%1").arg(m_ui.pointerXDeadZone->value()));
+	m_ui.pointerYDeadZoneVal->setText(QStringLiteral("%1").arg(m_ui.pointerYDeadZone->value()));
+	m_ui.pointerInertiaVal->setText(QStringLiteral("%1").arg(m_ui.pointerInertia->value()));
+
 
 	updateSDLOptionsEnabled();
 }
