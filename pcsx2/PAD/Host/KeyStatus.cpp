@@ -118,8 +118,8 @@ void KeyStatus::Set(u32 pad, u32 index, float value)
 			}
 			else
 			{
-				pos_x = m_analog[pad].invert_lx ? MERGE_F(pad, PAD_R_LEFT, PAD_R_RIGHT) : MERGE_F(pad, PAD_R_RIGHT, PAD_R_LEFT);
-				pos_y = m_analog[pad].invert_ly ? MERGE_F(pad, PAD_R_UP, PAD_R_DOWN) : MERGE_F(pad, PAD_R_DOWN, PAD_R_UP);
+				pos_x = m_analog[pad].invert_rx ? MERGE_F(pad, PAD_R_LEFT, PAD_R_RIGHT) : MERGE_F(pad, PAD_R_RIGHT, PAD_R_LEFT);
+				pos_y = m_analog[pad].invert_ry ? MERGE_F(pad, PAD_R_UP, PAD_R_DOWN) : MERGE_F(pad, PAD_R_DOWN, PAD_R_UP);
 			}
 
 			// No point checking if we're at dead center (usually keyboard with no buttons pressed).
