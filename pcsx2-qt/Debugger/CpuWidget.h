@@ -105,8 +105,5 @@ private:
 	ThreadModel m_threadModel;
 	StackModel m_stackModel;
 
-	std::vector<EEThread> m_threadlistObjects;
-	std::vector<StackFrame> m_stacklistObjects;
-
 	bool m_demangleFunctions = true;
 };
