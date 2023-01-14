@@ -159,9 +159,9 @@ struct PointerAxisState
 static std::array<std::array<float, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES> s_host_pointer_positions;
 static std::array<std::array<PointerAxisState, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES>
 	s_pointer_state;
-static std::array<float, static_cast<u8>(InputPointerAxis::Count)> s_pointer_axis_speed;
-static std::array<float, static_cast<u8>(InputPointerAxis::Count)> s_pointer_axis_dead_zone;
-static std::array<float, static_cast<u8>(InputPointerAxis::Count)> s_pointer_axis_range;
+static std::array<float, 2> s_pointer_axis_speed;
+static std::array<float, 2> s_pointer_axis_dead_zone;
+static std::array<float, 2> s_pointer_axis_range;
 static float s_pointer_inertia;
 
 using PointerMoveCallback = std::function<void(InputBindingKey key, float value)>;
@@ -940,55 +940,33 @@ void InputManager::GenerateRelativeMouseEvents()
 
 	for (u32 device = 0; device < MAX_POINTER_DEVICES; device++)
 	{
-		u32 axis = 0;
+		float delta = 0.0f;
+		float value = 0.0f;
 
-		for (; axis < 2; axis++)
+		for (u32 axis = 0; axis < static_cast<u32>(static_cast<u8>(InputPointerAxis::Count)); axis++)
 		{
-			PointerAxisState& state = s_pointer_state[device][axis];
-			const float delta = static_cast<float>(state.delta.exchange(0, std::memory_order_acquire)) / 65536.0f;
-			const float unclamped_value = delta * s_pointer_axis_speed[axis];
-
 			const InputBindingKey key(MakePointerAxisKey(device, static_cast<InputPointerAxis>(axis)));
 
-			pos[axis] += unclamped_value;
-			float value = std::clamp(pos[axis], -1.0f, 1.0f);
-			float effective_value = value * s_pointer_axis_range[axis];
-
-			if (value > 0.0f)
-				value = effective_value + s_pointer_axis_dead_zone[axis];
-			else if (value < 0.0f)
-				value = effective_value - s_pointer_axis_dead_zone[axis];
-
-			if (value != state.last_value)
-			{
-				state.last_value = value;
-				ProcessEvent(key, value, false);
-			}
-
-			pos[axis] -= effective_value;
-			pos[axis] *= s_pointer_inertia;
-
-			if (delta != 0.0f)
-			{
-				for (const std::pair<u32, PointerMoveCallback>& pmc : s_pointer_move_callbacks)
-				{
-					if (pmc.first == device)
-						pmc.second(key, delta);
-				}
-			}
-		}
-
-		for (; axis < static_cast<u32>(static_cast<u8>(InputPointerAxis::Count)); axis++)
-		{
 			PointerAxisState& state = s_pointer_state[device][axis];
-			const float delta = static_cast<float>(state.delta.exchange(0, std::memory_order_acquire)) / 65536.0f;
-			const float unclamped_value = delta;
+			delta = static_cast<float>(state.delta.exchange(0, std::memory_order_acquire)) / 65536.0f;
 
-			const InputBindingKey key(MakePointerAxisKey(device, static_cast<InputPointerAxis>(axis)));
-			if (axis >= static_cast<u32>(InputPointerAxis::WheelX) && ImGuiManager::ProcessPointerAxisEvent(key, unclamped_value))
-				continue;
+			if (axis < 2)
+			{
+				pos[axis] += delta * s_pointer_axis_speed[axis];
+				value      = std::clamp(pos[axis], -1.0f, 1.0f);
+				pos[axis] -= value;
+				pos[axis] *= s_pointer_inertia;
 
-			float value = std::clamp(unclamped_value, -1.0f, 1.0f);
+				value *= s_pointer_axis_range[axis];
+				if (value > 0.0f)
+					value += s_pointer_axis_dead_zone[axis];
+				else if (value < 0.0f)
+					value -= s_pointer_axis_dead_zone[axis];
+			}
+			else
+			{
+				value = std::clamp(delta, -1.0f, 1.0f);
+			}
 
 			if (value != state.last_value)
 			{
