@@ -160,11 +160,11 @@ void CpuWidget::onStepOut()
 	// Allow the cpu to skip this pc if it is a breakpoint
 	CBreakPoints::SetSkipFirst(m_cpu.getCpuType(), m_cpu.getPC());
 
-	if (m_stacklistObjects.size() < 2)
+	if (m_stackModel.rowCount() < 2)
 		return;
 
 	Host::RunOnCPUThread([&] {
-		CBreakPoints::AddBreakPoint(m_cpu.getCpuType(), m_stacklistObjects.at(1).pc, true);
+		CBreakPoints::AddBreakPoint(m_cpu.getCpuType(), m_stackModel.data(m_stackModel.index(1, StackModel::PC), Qt::UserRole).toUInt(), true);
 		m_cpu.resumeCpu();
 	});
 
