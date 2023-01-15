@@ -551,16 +551,6 @@ float SndBuffer::GetStatusPct()
 
 int targetIPS = 750;
 
-//Dynamic tuning changes the values of the base algorithm parameters (derived from targetIPS) to adapt, in real time, to
-//  different number of invocations/sec (mostly affects number of iterations to average).
-//  Dynamic tuning can have a slight negative effect on the behavior of the algorithm, so it's preferred to have it off.
-//Currently it looks like it's around 750/sec on all systems when playing at 100% speed (50/60fps),
-//  and proportional to that speed otherwise.
-//If changes are made to SPU2 which affects this number (but it's still the same on all systems), then just change targetIPS.
-//If we find out that some systems are very different, we can turn on dynamic tuning by uncommenting the next line.
-//#define NEWSTRETCHER_USE_DYNAMIC_TUNING
-
-
 //Additional performance note: since MAX_STRETCH_AVERAGE_LEN = 128 (or any power of 2), the '%' below
 //could be replaced with a faster '&'. The compiler is highly likely to do it since all the values are unsigned.
 #define AVERAGING_BUFFER_SIZE 256U
@@ -632,29 +622,6 @@ void SndBuffer::UpdateTempoChangeSoundTouch2()
 
 	const int data = _GetApproximateDataInBuffer();
 	const float bufferFullness = static_cast<float>(data); ///(float)m_size;
-
-#ifdef NEWSTRETCHER_USE_DYNAMIC_TUNING
-	{ //test current iterations/sec every 0.5s, and change algo params accordingly if different than previous IPS more than 30%
-		static long iters = 0;
-		static wxDateTime last = wxDateTime::UNow();
-		wxDateTime unow = wxDateTime::UNow();
-		wxTimeSpan delta = unow.Subtract(last);
-		if (delta.GetMilliseconds() > 500)
-		{
-			int pot_targetIPS = 1000.0 / delta.GetMilliseconds().ToDouble() * iters;
-			if (!IsInRange(pot_targetIPS, int((float)targetIPS / 1.3f), int((float)targetIPS * 1.3f)))
-			{
-				if (SPU2::MsgOverruns())
-					SPU2::ConLog("Stretcher: setting iters/sec from %d to %d\n", targetIPS, pot_targetIPS);
-				targetIPS = pot_targetIPS;
-				AVERAGING_WINDOW = std::clamp((int)(50.0f * (float)targetIPS / 750.0f), 3, (int)AVERAGING_BUFFER_SIZE);
-			}
-			last = unow;
-			iters = 0;
-		}
-		iters++;
-	}
-#endif
 
 	//Algorithm params: (threshold params (hysteresis), etc)
 	constexpr float hys_ok_factor = 1.04f;
