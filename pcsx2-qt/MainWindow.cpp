@@ -1489,6 +1489,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 			{
 				// TODO: Hook this up once it's implemented.
 				action = menu.addAction(tr("Boot and Debug"));
+				connect(action, &QAction::triggered, [this, entry]() { DebugInterface::setPauseOnEntry(true); startGameListEntry(entry); getDebuggerWindow()->show(); });
 			}
 
 			menu.addSeparator();

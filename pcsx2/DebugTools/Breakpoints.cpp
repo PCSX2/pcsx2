@@ -19,6 +19,7 @@
 #include "MIPSAnalyst.h"
 #include <cstdio>
 #include "R5900.h"
+#include "R3000A.h"
 #include "System.h"
 
 std::vector<BreakPoint> CBreakPoints::breakPoints_;
@@ -432,7 +433,15 @@ void CBreakPoints::Update(BreakPointCpu cpu, u32 addr)
 		resume = true;
 	}
 
-	SysClearExecutionCache();
+	if (cpu & BREAKPOINT_EE)
+	{
+		Cpu->Reset();
+	}
+
+	if (cpu & BREAKPOINT_IOP)
+	{
+		psxCpu->Reset();
+	}
 
 	if (resume)
 		r5900Debug.resumeCpu();
