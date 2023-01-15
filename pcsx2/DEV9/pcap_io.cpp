@@ -30,6 +30,9 @@
 #include "DEV9.h"
 #include "AdapterUtils.h"
 #include "net.h"
+#include "PacketReader/EthernetFrame.h"
+#include "PacketReader/EthernetFrameEditor.h"
+#include "PacketReader/ARP/ARP_PacketEditor.h"
 #ifndef PCAP_NETMASK_UNKNOWN
 #define PCAP_NETMASK_UNKNOWN 0xffffffff
 #endif
@@ -39,6 +42,7 @@
 #endif
 
 using namespace PacketReader;
+using namespace PacketReader::ARP;
 using namespace PacketReader::IP;
 
 #ifdef _WIN32
@@ -157,6 +161,7 @@ bool PCAPAdapter::recv(NetPacket* pkt)
 		pxAssert(header->len == header->caplen);
 
 		memcpy(pkt->buffer, pkt_data, header->len);
+		pkt->size = (int)header->len;
 
 		if (!switched)
 			SetMACBridgedRecv(pkt);
@@ -376,43 +381,41 @@ bool PCAPAdapter::SetMACSwitchedFilter(MAC_Address mac)
 
 void PCAPAdapter::SetMACBridgedRecv(NetPacket* pkt)
 {
-	ethernet_header* eth = (ethernet_header*)pkt->buffer;
-	if (eth->protocol == 0x0008) // IP
+	EthernetFrameEditor frame(pkt);
+	if (frame.GetProtocol() == (u16)EtherType::IPv4) // IP
 	{
 		// Compare DEST IP in IP with the PS2's IP, if they match, change DEST MAC to ps2MAC.
-		const ip_header* iph = ((ip_header*)(pkt->buffer + sizeof(ethernet_header)));
-
-		if (*(IP_Address*)&iph->dst == ps2IP)
-			eth->dst = *(mac_address*)&ps2MAC;
+		PayloadPtr* payload = frame.GetPayload();
+		IP_Packet ippkt(payload->data, payload->GetLength());
+		if (ippkt.destinationIP == ps2IP)
+			frame.SetDestinationMAC(ps2MAC);
 	}
-
-	if (eth->protocol == 0x0608) // ARP
+	if (frame.GetProtocol() == (u16)EtherType::ARP) // ARP
 	{
 		// Compare DEST IP in ARP with the PS2's IP, if they match, DEST MAC to ps2MAC on both ARP and ETH Packet headers.
-		arp_packet* aph = ((arp_packet*)(pkt->buffer + sizeof(ethernet_header)));
-
-		if (*(IP_Address*)&aph->p_dst == ps2IP)
+		ARP_PacketEditor arpPkt(frame.GetPayload());
+		if (*(IP_Address*)arpPkt.TargetProtocolAddress() == ps2IP)
 		{
-			eth->dst = *(mac_address*)&ps2MAC;
-			((arp_packet*)(pkt->buffer + sizeof(ethernet_header)))->h_dst = *(mac_address*)&ps2MAC;
+			frame.SetDestinationMAC(ps2MAC);
+			*(MAC_Address*)arpPkt.TargetHardwareAddress() = ps2MAC;
 		}
 	}
 }
 
 void PCAPAdapter::SetMACBridgedSend(NetPacket* pkt)
 {
-	ethernet_header* eth = (ethernet_header*)pkt->buffer;
-	if (eth->protocol == 0x0008) // IP
+	EthernetFrameEditor frame(pkt);
+	if (frame.GetProtocol() == (u16)EtherType::IPv4) // IP
 	{
-		const ip_address ps2_ip = ((ip_header*)((u8*)pkt->buffer + sizeof(ethernet_header)))->src;
-		ps2IP = *(IP_Address*)&ps2_ip;
+		PayloadPtr* payload = frame.GetPayload();
+		IP_Packet ippkt(payload->data, payload->GetLength());
+		ps2IP = ippkt.sourceIP;
 	}
-	if (eth->protocol == 0x0608) // ARP
+	if (frame.GetProtocol() == (u16)EtherType::ARP) // ARP
 	{
-		const ip_address ps2_ip = ((arp_packet*)((u8*)pkt->buffer + sizeof(ethernet_header)))->p_src;
-		ps2IP = *(IP_Address*)&ps2_ip;
-
-		((arp_packet*)(pkt->buffer + sizeof(ethernet_header)))->h_src = *(mac_address*)&hostMAC;
+		ARP_PacketEditor arpPkt(frame.GetPayload());
+		ps2IP = *(IP_Address*)arpPkt.SenderProtocolAddress();
+		*(MAC_Address*)arpPkt.SenderHardwareAddress() = hostMAC;
 	}
-	eth->src = *(mac_address*)&hostMAC;
+	frame.SetSourceMAC(hostMAC);
 }

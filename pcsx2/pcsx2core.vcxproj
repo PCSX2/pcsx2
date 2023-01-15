@@ -166,6 +166,8 @@
     <ClCompile Include="DEV9\InternalServers\DNS_Logger.cpp" />
     <ClCompile Include="DEV9\InternalServers\DNS_Server.cpp" />
     <ClCompile Include="DEV9\PacketReader\ARP\ARP_Packet.cpp" />
+    <ClCompile Include="DEV9\PacketReader\ARP\ARP_PacketEditor.cpp" />
+    <ClCompile Include="DEV9\PacketReader\EthernetFrameEditor.cpp" />
     <ClCompile Include="DEV9\PacketReader\EthernetFrame.cpp" />
     <ClCompile Include="DEV9\PacketReader\IP\ICMP\ICMP_Packet.cpp" />
     <ClCompile Include="DEV9\PacketReader\IP\TCP\TCP_Options.cpp" />
@@ -510,6 +512,8 @@
     <ClInclude Include="DEV9\InternalServers\DNS_Server.h" />
     <ClInclude Include="DEV9\net.h" />
     <ClInclude Include="DEV9\PacketReader\ARP\ARP_Packet.h" />
+    <ClInclude Include="DEV9\PacketReader\ARP\ARP_PacketEditor.h" />
+    <ClInclude Include="DEV9\PacketReader\EthernetFrameEditor.h" />
     <ClInclude Include="DEV9\PacketReader\EthernetFrame.h" />
     <ClInclude Include="DEV9\PacketReader\MAC_Address.h" />
     <ClInclude Include="DEV9\PacketReader\IP\ICMP\ICMP_Packet.h" />
