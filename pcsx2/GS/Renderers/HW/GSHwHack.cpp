@@ -324,15 +324,14 @@ bool GSHwHack::GSC_TombRaiderUnderWorld(GSRendererHW& r, const GSFrameInfo& fi, 
 
 bool GSHwHack::GSC_BurnoutGames(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
 {
-	if (skip == 0)
+	// We don't check if we already have a skip here, because it gets confused when auto flush is on.
+	if (fi.TME && (fi.FBP == 0x01dc0 || fi.FBP == 0x01c00 || fi.FBP == 0x01f00 || fi.FBP == 0x01d40 || fi.FBP == 0x02200 || fi.FBP == 0x02000) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x01dc0 || fi.TBP0 == 0x01c00 || fi.TBP0 == 0x01f00 || fi.TBP0 == 0x01d40 || fi.TBP0 == 0x02200 || fi.TBP0 == 0x02000) && fi.TPSM == PSM_PSMCT32)
 	{
-		if (fi.TME && (fi.FBP == 0x01dc0 || fi.FBP == 0x01c00 || fi.FBP == 0x01f00 || fi.FBP == 0x01d40 || fi.FBP == 0x02200 || fi.FBP == 0x02000) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x01dc0 || fi.TBP0 == 0x01c00 || fi.TBP0 == 0x01f00 || fi.TBP0 == 0x01d40 || fi.TBP0 == 0x02200 || fi.TBP0 == 0x02000) && fi.TPSM == PSM_PSMCT32)
-		{
-			// 0x01dc0 01c00(MP) ntsc, 0x01f00 0x01d40(MP) ntsc progressive, 0x02200(MP) pal.
-			// Yellow stripes.
-			// Multiplayer tested only on Takedown.
-			skip = GSConfig.UserHacks_AutoFlush ? 2 : 4;
-		}
+		// 0x01dc0 01c00(MP) ntsc, 0x01f00 0x01d40(MP) ntsc progressive, 0x02200(MP) pal.
+		// Yellow stripes.
+		// Multiplayer tested only on Takedown.
+		skip = 3;
+		return true;
 	}
 
 	return GSC_BlackAndBurnoutSky(r, fi, skip);
