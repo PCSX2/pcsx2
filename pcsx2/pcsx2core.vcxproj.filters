@@ -908,6 +908,9 @@
     <ClCompile Include="DEV9\PacketReader\ARP\ARP_Packet.cpp">
       <Filter>System\Ps2\DEV9\PacketReader\ARP</Filter>
     </ClCompile>
+    <ClCompile Include="DEV9\PacketReader\ARP\ARP_PacketEditor.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\ARP</Filter>
+    </ClCompile>
     <ClCompile Include="DEV9\PacketReader\IP\ICMP\ICMP_Packet.cpp">
       <Filter>System\Ps2\DEV9\PacketReader\IP\ICMP</Filter>
     </ClCompile>
@@ -939,6 +942,9 @@
       <Filter>System\Ps2\DEV9\PacketReader\IP</Filter>
     </ClCompile>
     <ClCompile Include="DEV9\PacketReader\EthernetFrame.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\PacketReader\EthernetFrameEditor.cpp">
       <Filter>System\Ps2\DEV9\PacketReader</Filter>
     </ClCompile>
     <ClCompile Include="DEV9\pcap_io.cpp">
@@ -1780,6 +1786,9 @@
     <ClInclude Include="DEV9\PacketReader\ARP\ARP_Packet.h">
       <Filter>System\Ps2\DEV9\PacketReader\ARP</Filter>
     </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\ARP\ARP_PacketEditor.h">
+      <Filter>System\Ps2\DEV9\PacketReader\ARP</Filter>
+    </ClInclude>
     <ClInclude Include="DEV9\PacketReader\IP\ICMP\ICMP_Packet.h">
       <Filter>System\Ps2\DEV9\PacketReader\IP\ICMP</Filter>
     </ClInclude>
@@ -1820,6 +1829,9 @@
       <Filter>System\Ps2\DEV9\PacketReader\IP</Filter>
     </ClInclude>
     <ClInclude Include="DEV9\PacketReader\EthernetFrame.h">
+      <Filter>System\Ps2\DEV9\PacketReader</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\EthernetFrameEditor.h">
       <Filter>System\Ps2\DEV9\PacketReader</Filter>
     </ClInclude>
     <ClInclude Include="DEV9\PacketReader\MAC_Address.h">

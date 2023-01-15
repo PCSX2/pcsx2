@@ -329,6 +329,7 @@ set(pcsx2DEV9Sources
 	DEV9/InternalServers/DNS_Logger.cpp
 	DEV9/InternalServers/DNS_Server.cpp
 	DEV9/PacketReader/ARP/ARP_Packet.cpp
+	DEV9/PacketReader/ARP/ARP_PacketEditor.cpp
 	DEV9/PacketReader/IP/ICMP/ICMP_Packet.cpp
 	DEV9/PacketReader/IP/TCP/TCP_Options.cpp
 	DEV9/PacketReader/IP/TCP/TCP_Packet.cpp
@@ -340,6 +341,7 @@ set(pcsx2DEV9Sources
 	DEV9/PacketReader/IP/IP_Options.cpp
 	DEV9/PacketReader/IP/IP_Packet.cpp
 	DEV9/PacketReader/EthernetFrame.cpp
+	DEV9/PacketReader/EthernetFrameEditor.cpp
 	DEV9/Sessions/BaseSession.cpp
 	DEV9/Sessions/ICMP_Session/ICMP_Session.cpp
 	DEV9/Sessions/TCP_Session/TCP_Session.cpp
@@ -366,6 +368,7 @@ set(pcsx2DEV9Headers
 	DEV9/InternalServers/DNS_Server.h
 	DEV9/net.h
 	DEV9/PacketReader/ARP/ARP_Packet.h
+	DEV9/PacketReader/ARP/ARP_PacketEditor.h
 	DEV9/PacketReader/IP/ICMP/ICMP_Packet.h
 	DEV9/PacketReader/IP/TCP/TCP_Options.h
 	DEV9/PacketReader/IP/TCP/TCP_Packet.h
@@ -380,6 +383,7 @@ set(pcsx2DEV9Headers
 	DEV9/PacketReader/IP/IP_Packet.h
 	DEV9/PacketReader/IP/IP_Payload.h
 	DEV9/PacketReader/EthernetFrame.h
+	DEV9/PacketReader/EthernetFrameEditor.h
 	DEV9/PacketReader/MAC_Address.h
 	DEV9/PacketReader/NetLib.h
 	DEV9/PacketReader/Payload.h
