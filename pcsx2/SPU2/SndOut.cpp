@@ -347,31 +347,30 @@ void SndBuffer::_WriteSamples(StereoOut32* bData, int nSamples)
 
 		s32 comp = 0;
 
-		if( SynchMode == 0 ) // TimeStrech on
+		if (EmuConfig.SPU2.SynchMode == Pcsx2Config::SPU2Options::SynchronizationMode::TimeStretch) // TimeStrech on
 		{
 			comp = timeStretchOverrun();
 		}
 		else
 		{
 			// Toss half the buffer plus whatever's being written anew:
-			comp = GetAlignedBufferSize( (m_size + nSamples ) / 16 );
-			if( comp > (m_size-SndOutPacketSize) ) comp = m_size-SndOutPacketSize;
+			comp = GetAlignedBufferSize((m_size + nSamples) / 16);
+			if (comp > (m_size - SndOutPacketSize))
+				comp = m_size - SndOutPacketSize;
 		}
 
 		_DropSamples_Internal(comp);
 
-		if( MsgOverruns() )
-			ConLog(" * SPU2 > Overrun Compensation (%d packets tossed)\n", comp / SndOutPacketSize );
-		lastPct = 0.0;		// normalize the timestretcher
+		if (SPU2::MsgOverruns())
+			SPU2::ConLog(" * SPU2 > Overrun Compensation (%d packets tossed)\n", comp / SndOutPacketSize);
+		lastPct = 0.0; // normalize the timestretcher
+		_WriteSamples_Safe(bData, nSamples);
 #else
 		if (SPU2::MsgOverruns())
 			SPU2::ConLog(" * SPU2 > Overrun! 1 packet tossed)\n");
 		lastPct = 0.0; // normalize the timestretcher
-		return;
 #endif
 	}
-
-	_WriteSamples_Safe(bData, nSamples);
 }
 
 bool SndBuffer::Init(const char* modname)
