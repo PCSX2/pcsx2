@@ -50,11 +50,27 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QCheckBox" name="enableSDLEnhancedMode">
-        <property name="text">
-         <string>DualShock 4 / DualSense Enhanced Mode</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QCheckBox" name="enableSDLEnhancedMode">
+          <property name="text">
+           <string>DualShock 4 / DualSense Enhanced Mode</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="ledSettings">
+          <property name="toolTip">
+           <string>Controller LED Settings</string>
+          </property>
+          <property name="icon">
+           <iconset theme="lightbulb-line">
+            <normaloff>.</normaloff>.
+           </iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
