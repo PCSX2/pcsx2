@@ -71,8 +71,7 @@ bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
 	}
 
 	PFNDIRECTINPUT8CREATE create = reinterpret_cast<PFNDIRECTINPUT8CREATE>(GetProcAddress(m_dinput_module.get(), "DirectInput8Create"));
-	PFNGETDFDIJOYSTICK get_joystick_data_format = reinterpret_cast<PFNGETDFDIJOYSTICK>(GetProcAddress(m_dinput_module.get(), "GetdfDIJoystick"));
-	if (!create || !get_joystick_data_format)
+	if (!create)
 	{
 		Console.Error("Failed to get DInput function pointers.");
 		return false;
@@ -80,8 +79,7 @@ bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
 
 	HRESULT hr =
 		create(GetModuleHandleA(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8W, reinterpret_cast<LPVOID*>(m_dinput.put()), nullptr);
-	m_joystick_data_format = get_joystick_data_format();
-	if (FAILED(hr) || !m_joystick_data_format)
+	if (FAILED(hr))
 	{
 		Console.Error("DirectInput8Create() failed: %08X", hr);
 		return false;
@@ -182,7 +180,7 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
 		Console.Warning("Failed to set exclusive mode for '%s'", name.c_str());
 	}
 
-	hr = cd.device->SetDataFormat(m_joystick_data_format);
+	hr = cd.device->SetDataFormat(&c_dfDIJoystick2);
 	if (FAILED(hr))
 	{
 		Console.Error("Failed to set data format for '%s'", name.c_str());
@@ -207,9 +205,9 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
 
 	cd.num_buttons = caps.dwButtons;
 
-	static constexpr const u32 axis_offsets[] = {offsetof(DIJOYSTATE, lX), offsetof(DIJOYSTATE, lY), offsetof(DIJOYSTATE, lZ),
-		offsetof(DIJOYSTATE, lRz), offsetof(DIJOYSTATE, lRx), offsetof(DIJOYSTATE, lRy), offsetof(DIJOYSTATE, rglSlider[0]),
-		offsetof(DIJOYSTATE, rglSlider[1])};
+	static constexpr const u32 axis_offsets[] = {offsetof(DIJOYSTATE2, lX), offsetof(DIJOYSTATE2, lY), offsetof(DIJOYSTATE2, lZ),
+		offsetof(DIJOYSTATE2, lRz), offsetof(DIJOYSTATE2, lRx), offsetof(DIJOYSTATE2, lRy), offsetof(DIJOYSTATE2, rglSlider[0]),
+		offsetof(DIJOYSTATE2, rglSlider[1])};
 	for (const u32 offset : axis_offsets)
 	{
 		// ask for 16 bits of axis range
@@ -253,7 +251,7 @@ void DInputSource::PollEvents()
 		if (cd.needs_poll)
 			cd.device->Poll();
 
-		DIJOYSTATE js;
+		DIJOYSTATE2 js;
 		HRESULT hr = cd.device->GetDeviceState(sizeof(js), &js);
 		if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED)
 		{
@@ -419,10 +417,10 @@ std::string DInputSource::ConvertKeyToString(InputBindingKey key)
 	return ret;
 }
 
-void DInputSource::CheckForStateChanges(size_t index, const DIJOYSTATE& new_state)
+void DInputSource::CheckForStateChanges(size_t index, const DIJOYSTATE2& new_state)
 {
 	ControllerData& cd = m_controllers[index];
-	DIJOYSTATE& last_state = cd.last_state;
+	DIJOYSTATE2& last_state = cd.last_state;
 
 	for (size_t i = 0; i < cd.axis_offsets.size(); i++)
 	{
