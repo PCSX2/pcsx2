@@ -364,13 +364,17 @@ void SndBuffer::_WriteSamples(StereoOut32* bData, int nSamples)
 		if (SPU2::MsgOverruns())
 			SPU2::ConLog(" * SPU2 > Overrun Compensation (%d packets tossed)\n", comp / SndOutPacketSize);
 		lastPct = 0.0; // normalize the timestretcher
-		_WriteSamples_Safe(bData, nSamples);
 #else
 		if (SPU2::MsgOverruns())
 			SPU2::ConLog(" * SPU2 > Overrun! 1 packet tossed)\n");
 		lastPct = 0.0; // normalize the timestretcher
+
+		// Toss the packet because we overran the buffer.
+		return;
 #endif
 	}
+
+	_WriteSamples_Safe(bData, nSamples);
 }
 
 bool SndBuffer::Init(const char* modname)
