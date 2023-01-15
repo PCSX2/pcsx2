@@ -27,9 +27,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\pcsx2\PCSX2.rc">
-      <Filter>Resources</Filter>
-    </ResourceCompile>
+    <ResourceCompile Include="..\pcsx2\windows\PCSX2.rc" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PrecompiledHeader.cpp" />
@@ -313,6 +311,10 @@
     <ClCompile Include="$(IntDir)Debugger\Models\moc_StackModel.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="ColorPickerButton.cpp" />
+    <ClCompile Include="$(IntDir)moc_ColorPickerButton.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest">
@@ -459,6 +461,7 @@
     <QtMoc Include="Debugger\Models\StackModel.h">
       <Filter>Debugger\Models</Filter>
     </QtMoc>
+    <QtMoc Include="ColorPickerButton.h" />
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">
@@ -576,6 +579,9 @@
     </QtUi>
     <QtUi Include="Debugger\BreakpointDialog.ui">
       <Filter>Debugger</Filter>
+    </QtUi>
+    <QtUi Include="Settings\ControllerLEDSettingsDialog.ui">
+      <Filter>Settings</Filter>
     </QtUi>
   </ItemGroup>
   <ItemGroup>

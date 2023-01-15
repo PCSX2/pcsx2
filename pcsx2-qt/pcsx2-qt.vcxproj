@@ -46,6 +46,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\lzma\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\demangler\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\rapidyaml\rapidyaml\ext\c4core\src\c4\ext\fast_float\include;%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\sdl2\include;$(SolutionDir)3rdparty\sdl2\SDL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)pcsx2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <!-- Needed for moc pch -->
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ProjectDir)\Settings;$(ProjectDir)\GameList;$(ProjectDir)\Tools\InputRecording;$(ProjectDir)\Debugger;$(ProjectDir)\Debugger\Models</AdditionalIncludeDirectories>
@@ -135,6 +136,7 @@
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ColorPickerButton.cpp" />
     <ClCompile Include="EarlyHardwareCheck.cpp" />
     <ClCompile Include="QtProgressCallback.cpp" />
     <ClCompile Include="Settings\DebugSettingsWidget.cpp" />
@@ -211,6 +213,7 @@
     <QtMoc Include="Settings\DEV9SettingsWidget.h" />
     <QtMoc Include="Settings\DEV9UiCommon.h" />
     <QtMoc Include="QtProgressCallback.h" />
+    <QtMoc Include="ColorPickerButton.h" />
     <ClInclude Include="Settings\ControllerSettingWidgetBinder.h" />
     <QtMoc Include="Settings\FolderSettingsWidget.h" />
     <QtMoc Include="Settings\DebugSettingsWidget.h" />
@@ -292,6 +295,7 @@
     <ClCompile Include="$(IntDir)GameList\moc_GameListWidget.cpp" />
     <ClCompile Include="$(IntDir)moc_AboutDialog.cpp" />
     <ClCompile Include="$(IntDir)moc_AutoUpdaterDialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_ColorPickerButton.cpp" />
     <ClCompile Include="$(IntDir)moc_CoverDownloadDialog.cpp" />
     <ClCompile Include="$(IntDir)moc_DisplayWidget.cpp" />
     <ClCompile Include="$(IntDir)moc_MainWindow.cpp" />
@@ -412,6 +416,9 @@
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="Settings\DebugSettingsWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Settings\ControllerLEDSettingsDialog.ui">
       <FileType>Document</FileType>
     </QtUi>
     <None Include="Settings\USBBindingWidget_DrivingForce.ui" />
