@@ -16,6 +16,7 @@
 #pragma once
 #include "pcap.h"
 #include "net.h"
+#include "PacketReader/MAC_Address.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -173,6 +174,16 @@ void unload_pcap();
 
 class PCAPAdapter : public NetAdapter
 {
+private:
+	pcap_t* hpcap = nullptr;
+	pcap_dumper_t* hpcap_dumper = nullptr;
+
+	bool switched;
+	bool blocking;
+
+	PacketReader::IP::IP_Address ps2IP{};
+	PacketReader::MAC_Address hostMAC;
+
 public:
 	PCAPAdapter();
 	virtual bool blocks();
@@ -185,4 +196,12 @@ public:
 	virtual ~PCAPAdapter();
 	static std::vector<AdapterEntry> GetAdapters();
 	static AdapterOptions GetAdapterOptions();
+
+private:
+	bool InitPCAP(const std::string& adapter, bool promiscuous);
+	void InitPCAPDumper();
+	bool SetMACSwitchedFilter(PacketReader::MAC_Address mac);
+
+	void SetMACBridgedRecv(NetPacket* pkt);
+	void SetMACBridgedSend(NetPacket* pkt);
 };
