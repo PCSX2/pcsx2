@@ -19,6 +19,7 @@
 enum Syscall : u8
 {
 	SetGsCrt = 2,
+	ExecPS2 = 7,
 	SetVTLBRefillHandler = 13,
 	StartThread = 34,
 	ChangeThreadPriority = 41,

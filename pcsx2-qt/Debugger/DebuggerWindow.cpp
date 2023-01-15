@@ -88,16 +88,18 @@ void DebuggerWindow::onVMStateChanged()
 		m_actionStepInto->setEnabled(true);
 		m_actionStepOver->setEnabled(true);
 		m_actionStepOut->setEnabled(true);
-		CBreakPoints::ClearTemporaryBreakPoints();
-
-		if (CBreakPoints::GetBreakpointTriggered())
-		{
-			CBreakPoints::SetBreakpointTriggered(false);
-			// Our current PC is on a breakpoint.
-			// When we run the core again, we want to skip this breakpoint and run
-			CBreakPoints::SetSkipFirst(BREAKPOINT_EE, r5900Debug.getPC());
-			CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, r3000Debug.getPC());
-		}
+		Host::RunOnCPUThread([] {
+			if (CBreakPoints::GetBreakpointTriggered())
+			{
+				CBreakPoints::ClearTemporaryBreakPoints();
+				CBreakPoints::SetBreakpointTriggered(false);
+				// Our current PC is on a breakpoint.
+				// When we run the core again, we want to skip this breakpoint and run
+				CBreakPoints::SetSkipFirst(BREAKPOINT_EE, r5900Debug.getPC());
+				CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, r3000Debug.getPC());
+			}
+		});
+		
 	}
 	return;
 }
