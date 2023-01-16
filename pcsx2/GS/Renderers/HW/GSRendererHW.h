@@ -138,7 +138,6 @@ public:
 	void Lines2Sprites();
 	bool VerifyIndices();
 	template <GSHWDrawConfig::VSExpand Expand> void ExpandIndices();
-	void EmulateAtst(GSVector4& FogColor_AREF, u8& atst, const bool pass_2);
 	void ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba);
 	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
 	GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);

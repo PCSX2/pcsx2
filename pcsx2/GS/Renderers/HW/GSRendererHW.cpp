@@ -242,16 +242,16 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 	const int videomode = static_cast<int>(GetVideoMode()) - 1;
 	const GSVector4i offsets = VideoModeOffsets[videomode];
 
-	const int fb_width = std::min<int>(std::min<int>(GetFramebufferWidth(), DISPFB.FBW * 64) + (int)DISPFB.DBX, 2048);
+	const int fb_width = std::min<int>(std::min<int>(GetFramebufferWidth(), DISPFB.FBW * 64) + static_cast<int>(DISPFB.DBX), 2048);
 	const int display_height = offsets.y * ((isinterlaced() && !m_regs->SMODE2.FFMD) ? 2 : 1);
 	const int display_offset = GetResolutionOffset(i).y;
-	int fb_height = (std::min<int>(GetFramebufferHeight(), display_height) + (int)DISPFB.DBY) % 2048;
+	int fb_height = (std::min<int>(GetFramebufferHeight(), display_height) + static_cast<int>(DISPFB.DBY)) % 2048;
 	// If there is a negative vertical offset on the picture, we need to read more.
 	if (display_offset < 0)
 	{
 		fb_height += -display_offset;
 	}
-	// TRACE(_T("[%d] GetOutput %d %05x (%d)\n"), (int)m_perfmon.GetFrame(), i, (int)TEX0.TBP0, (int)TEX0.PSM);
+	// TRACE(_T("[%d] GetOutput %d %05x (%d)\n"), static_cast<int>(g_perfmon.GetFrame()), i, static_cast<int>(TEX0.TBP0), static_cast<int>(TEX0.PSM));
 
 	GSTexture* t = nullptr;
 
@@ -273,7 +273,7 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 		{
 			if (GSConfig.SaveFrame && s_n >= GSConfig.SaveN)
 			{
-				t->Save(GetDrawDumpPath("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, (int)TEX0.TBP0, psm_str(TEX0.PSM)));
+				t->Save(GetDrawDumpPath("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), i, static_cast<int>(TEX0.TBP0), psm_str(TEX0.PSM)));
 			}
 		}
 #endif
@@ -302,7 +302,7 @@ GSTexture* GSRendererHW::GetFeedbackOutput()
 
 #ifdef ENABLE_OGL_DEBUG
 	if (GSConfig.DumpGSData && GSConfig.SaveFrame && s_n >= GSConfig.SaveN)
-		t->Save(GetDrawDumpPath("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), 3, (int)TEX0.TBP0, psm_str(TEX0.PSM)));
+		t->Save(GetDrawDumpPath("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, g_perfmon.GetFrame(), 3, static_cast<int>(TEX0.TBP0), psm_str(TEX0.PSM)));
 #endif
 
 	return t;
@@ -325,7 +325,7 @@ void GSRendererHW::Lines2Sprites()
 	{
 		const size_t count = m_vertex.next;
 
-		int i = (int)count * 2 - 4;
+		int i = static_cast<int>(count) * 2 - 4;
 		GSVertex* s = &m_vertex.buff[count - 2];
 		GSVertex* q = &m_vertex.buff[count * 2 - 4];
 		u32* RESTRICT index = &m_index.buff[count * 3 - 6];
@@ -419,7 +419,7 @@ void GSRendererHW::ExpandIndices()
 				constexpr GSVector4i low0 = GSVector4i::cxpr(0, 1, 2, 1);
 				constexpr GSVector4i low1 = GSVector4i::cxpr(2, 3, 0, 1);
 				constexpr GSVector4i low2 = GSVector4i::cxpr(2, 1, 2, 3);
-				GSVector4i in = read->sll32(2);
+				const GSVector4i in = read->sll32(2);
 				write[0] = in.xxxx() | low0;
 				write[1] = in.xxyy() | low1;
 				write[2] = in.yyyy() | low2;
@@ -433,7 +433,7 @@ void GSRendererHW::ExpandIndices()
 				constexpr GSVector4i low0 = GSVector4i::cxpr(0, 1, 2, 1);
 				constexpr GSVector4i low1 = GSVector4i::cxpr(2, 3, 0, 1);
 				constexpr GSVector4i low2 = GSVector4i::cxpr(2, 1, 2, 3);
-				GSVector4i in = read->sll32(2);
+				const GSVector4i in = read->sll32(2);
 				write[0] = in.xxyx() | low0;
 				write[1] = in.yyzz() | low1;
 				write[2] = in.wzww() | low2;
@@ -442,59 +442,13 @@ void GSRendererHW::ExpandIndices()
 			case GSHWDrawConfig::VSExpand::Sprite:
 			{
 				constexpr GSVector4i low = GSVector4i::cxpr(0, 1, 0, 1);
-				GSVector4i in = read->sll32(1);
+				const GSVector4i in = read->sll32(1);
 				write[0] = in.xxyx() | low;
 				write[1] = in.yyzz() | low;
 				write[2] = in.wzww() | low;
 				break;
 			}
 		}
-	}
-}
-
-void GSRendererHW::EmulateAtst(GSVector4& FogColor_AREF, u8& ps_atst, const bool pass_2)
-{
-	static const u32 inverted_atst[] = {ATST_ALWAYS, ATST_NEVER, ATST_GEQUAL, ATST_GREATER, ATST_NOTEQUAL, ATST_LESS, ATST_LEQUAL, ATST_EQUAL};
-
-	if (!m_context->TEST.ATE)
-		return;
-
-	// Check for pass 2, otherwise do pass 1.
-	const int atst = pass_2 ? inverted_atst[m_context->TEST.ATST] : m_context->TEST.ATST;
-
-	switch (atst)
-	{
-		case ATST_LESS:
-			FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
-			ps_atst = 1;
-			break;
-		case ATST_LEQUAL:
-			FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
-			ps_atst = 1;
-			break;
-		case ATST_GEQUAL:
-			// Maybe a -1 trick multiplication factor could be used to merge with ATST_LEQUAL case
-			FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
-			ps_atst = 2;
-			break;
-		case ATST_GREATER:
-			// Maybe a -1 trick multiplication factor could be used to merge with ATST_LESS case
-			FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
-			ps_atst = 2;
-			break;
-		case ATST_EQUAL:
-			FogColor_AREF.a = (float)m_context->TEST.AREF;
-			ps_atst = 3;
-			break;
-		case ATST_NOTEQUAL:
-			FogColor_AREF.a = (float)m_context->TEST.AREF;
-			ps_atst = 4;
-			break;
-		case ATST_NEVER: // Draw won't be done so no need to implement it in shader
-		case ATST_ALWAYS:
-		default:
-			ps_atst = 0;
-			break;
 	}
 }
 
@@ -510,8 +464,8 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 	write_ba = (pos > 112 && pos < 136);
 
 	// Read texture is 8 to 16 pixels (same as above)
-	const float tw = (float)(1u << m_context->TEX0.TW);
-	int tex_pos = (PRIM->FST) ? v[0].U : (int)(tw * v[0].ST.S);
+	const float tw = static_cast<float>(1u << m_context->TEX0.TW);
+	int tex_pos = (PRIM->FST) ? v[0].U : static_cast<int>(tw * v[0].ST.S);
 	tex_pos &= 0xFF;
 	read_ba = (tex_pos > 112 && tex_pos < 144);
 
@@ -557,7 +511,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 				int YCord = 0;
 
 				if (!PRIM->FST)
-					YCord = (int)((1 << m_context->TEX0.TH) * (v[i].ST.T / v[i].RGBAQ.Q));
+					YCord = static_cast<int>((1 << m_context->TEX0.TH) * (v[i].ST.T / v[i].RGBAQ.Q));
 				else
 					YCord = (v[i].V >> 4);
 
@@ -596,10 +550,10 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 				GSVector4i tmp(v[i].XYZ.Y, v[i].V, v[i + 1].XYZ.Y, v[i + 1].V);
 				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
 
-				v[i].XYZ.Y = (u16)tmp.x;
-				v[i].V = (u16)tmp.y;
-				v[i + 1].XYZ.Y = (u16)tmp.z;
-				v[i + 1].V = (u16)tmp.w;
+				v[i].XYZ.Y = static_cast<u16>(tmp.x);
+				v[i].V = static_cast<u16>(tmp.y);
+				v[i + 1].XYZ.Y = static_cast<u16>(tmp.z);
+				v[i + 1].V = static_cast<u16>(tmp.w);
 			}
 		}
 	}
@@ -629,9 +583,9 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
 
 				//fprintf(stderr, "Before %d, After %d\n", v[i + 1].XYZ.Y, tmp.y);
-				v[i].XYZ.Y = (u16)tmp.x;
+				v[i].XYZ.Y = static_cast<u16>(tmp.x);
 				v[i].ST.T /= 2.0f;
-				v[i + 1].XYZ.Y = (u16)tmp.y;
+				v[i + 1].XYZ.Y = static_cast<u16>(tmp.y);
 				v[i + 1].ST.T /= 2.0f;
 			}
 		}
@@ -719,8 +673,8 @@ GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Sou
 	}
 	else if (m_vt.m_eq.q)
 	{
-		const float tw = (float)(1 << m_context->TEX0.TW);
-		const float th = (float)(1 << m_context->TEX0.TH);
+		const float tw = static_cast<float>(1 << m_context->TEX0.TW);
+		const float th = static_cast<float>(1 << m_context->TEX0.TH);
 		const float q = v[0].RGBAQ.Q;
 
 		// Tales of Abyss
@@ -861,14 +815,14 @@ void GSRendererHW::ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector
 
 void GSRendererHW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool eewrite)
 {
-	// printf("[%d] InvalidateVideoMem %d,%d - %d,%d %05x (%d)\n", (int)m_perfmon.GetFrame(), r.left, r.top, r.right, r.bottom, (int)BITBLTBUF.DBP, (int)BITBLTBUF.DPSM);
+	// printf("[%d] InvalidateVideoMem %d,%d - %d,%d %05x (%d)\n", static_cast<int>(g_perfmon.GetFrame()), r.left, r.top, r.right, r.bottom, static_cast<int>(BITBLTBUF.DBP), static_cast<int>(BITBLTBUF.DPSM));
 
 	m_tc->InvalidateVideoMem(m_mem.GetOffset(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM), r, eewrite);
 }
 
 void GSRendererHW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut)
 {
-	// printf("[%d] InvalidateLocalMem %d,%d - %d,%d %05x (%d)\n", (int)m_perfmon.GetFrame(), r.left, r.top, r.right, r.bottom, (int)BITBLTBUF.SBP, (int)BITBLTBUF.SPSM);
+	// printf("[%d] InvalidateLocalMem %d,%d - %d,%d %05x (%d)\n", static_cast<int>(g_perfmon.GetFrame()), r.left, r.top, r.right, r.bottom, static_cast<int>(BITBLTBUF.SBP), static_cast<int>(BITBLTBUF.SPSM));
 
 	if (clut)
 		return; // FIXME
@@ -899,19 +853,19 @@ void GSRendererHW::Move()
 u16 GSRendererHW::Interpolate_UV(float alpha, int t0, int t1)
 {
 	const float t = (1.0f - alpha) * t0 + alpha * t1;
-	return (u16)t & ~0xF; // cheap rounding
+	return static_cast<u16>(t) & ~0xF; // cheap rounding
 }
 
 float GSRendererHW::alpha0(int L, int X0, int X1)
 {
 	const int x = (X0 + 15) & ~0xF; // Round up
-	return float(x - X0) / (float)L;
+	return static_cast<float>(x - X0) / static_cast<float>(L);
 }
 
 float GSRendererHW::alpha1(int L, int X0, int X1)
 {
 	const int x = (X1 - 1) & ~0xF; // Round down. Note -1 because right pixel isn't included in primitive so 0x100 must return 0.
-	return float(x - X0) / (float)L;
+	return static_cast<float>(x - X0) / static_cast<float>(L);
 }
 
 void GSRendererHW::SwSpriteRender()
@@ -1341,7 +1295,7 @@ void GSRendererHW::Draw()
 	// So if it doesn't meet the condition, always fail, if it does, always pass (turn off the test).
 	if (IsCoverageAlpha() && context->TEST.ATE && context->TEST.ATST > 1)
 	{
-		const float aref = (float)context->TEST.AREF;
+		const float aref = static_cast<float>(context->TEST.AREF);
 		const int old_ATST = context->TEST.ATST;
 		context->TEST.ATST = 0;
 
@@ -1485,9 +1439,9 @@ void GSRendererHW::Draw()
 
 			int k = (m_context->TEX1.K + 8) >> 4;
 			int lcm = m_context->TEX1.LCM;
-			const int mxl = std::min<int>((int)m_context->TEX1.MXL, 6);
+			const int mxl = std::min<int>(static_cast<int>(m_context->TEX1.MXL), 6);
 
-			if ((int)m_vt.m_lod.x >= mxl)
+			if (static_cast<int>(m_vt.m_lod.x) >= mxl)
 			{
 				k = mxl; // set lod to max level
 				lcm = 1; // constant lod
@@ -1512,25 +1466,25 @@ void GSRendererHW::Draw()
 				if (interpolation == 2)
 				{
 					// Mipmap Linear. Both layers are sampled, only take the big one
-					m_lod.x = std::max<int>((int)floor(m_vt.m_lod.x), 0);
+					m_lod.x = std::max<int>(static_cast<int>(floor(m_vt.m_lod.x)), 0);
 				}
 				else
 				{
 					// On GS lod is a fixed float number 7:4 (4 bit for the frac part)
 #if 0
-					m_lod.x = std::max<int>((int)round(m_vt.m_lod.x + 0.0625), 0);
+					m_lod.x = std::max<int>(static_cast<int>(round(m_vt.m_lod.x + 0.0625)), 0);
 #else
 					// Same as above with a bigger margin on rounding
 					// The goal is to avoid 1 undrawn pixels around the edge which trigger the load of the big
 					// layer.
 					if (ceil(m_vt.m_lod.x) < m_vt.m_lod.y)
-						m_lod.x = std::max<int>((int)round(m_vt.m_lod.x + 0.0625 + 0.01), 0);
+						m_lod.x = std::max<int>(static_cast<int>(round(m_vt.m_lod.x + 0.0625 + 0.01)), 0);
 					else
-						m_lod.x = std::max<int>((int)round(m_vt.m_lod.x + 0.0625), 0);
+						m_lod.x = std::max<int>(static_cast<int>(round(m_vt.m_lod.x + 0.0625)), 0);
 #endif
 				}
 
-				m_lod.y = std::max<int>((int)ceil(m_vt.m_lod.y), 0);
+				m_lod.y = std::max<int>(static_cast<int>(ceil(m_vt.m_lod.y)), 0);
 			}
 
 			m_lod.x = std::min<int>(m_lod.x, mxl);
@@ -1593,7 +1547,7 @@ void GSRendererHW::Draw()
 		// If m_src is from a target that isn't the same size as the texture, texture sample edge modes won't work quite the same way
 		// If the game actually tries to access stuff outside of the rendered target, it was going to get garbage anyways so whatever
 		// But the game could issue reads that wrap to valid areas, so move wrapping to the shader if wrapping is used
-		GSVector4i unscaled_size = GSVector4i(GSVector4(m_src->m_texture->GetSize()) / GSVector4(m_src->m_texture->GetScale()));
+		const GSVector4i unscaled_size = GSVector4i(GSVector4(m_src->m_texture->GetSize()) / GSVector4(m_src->m_texture->GetScale()));
 		if (m_context->CLAMP.WMS == CLAMP_REPEAT && (tmm.uses_boundary & TextureMinMaxResult::USES_BOUNDARY_U) && unscaled_size.x != tw)
 		{
 			// Our shader-emulated region repeat doesn't upscale :(
@@ -1781,8 +1735,8 @@ void GSRendererHW::Draw()
 	{
 		// We still need to make sure the dimensions of the targets match.
 		const GSVector2 up_s(GetTextureScaleFactor());
-		int new_w = std::max(t_size.x, std::max(rt ? rt->m_texture->GetWidth() : 0, ds ? ds->m_texture->GetWidth() : 0));
-		int new_h = std::max(t_size.y, std::max(rt ? rt->m_texture->GetHeight() : 0, ds ? ds->m_texture->GetHeight() : 0));
+		const int new_w = std::max(t_size.x, std::max(rt ? rt->m_texture->GetWidth() : 0, ds ? ds->m_texture->GetWidth() : 0));
+		const int new_h = std::max(t_size.y, std::max(rt ? rt->m_texture->GetHeight() : 0, ds ? ds->m_texture->GetHeight() : 0));
 
 		if (rt)
 		{
@@ -1813,10 +1767,10 @@ void GSRendererHW::Draw()
 		if (GSConfig.SaveTexture && s_n >= GSConfig.SaveN && m_src)
 		{
 			s = GetDrawDumpPath("%05d_f%lld_itex_%05x_%s_%d%d_%02x_%02x_%02x_%02x.dds",
-				s_n, frame, (int)context->TEX0.TBP0, psm_str(context->TEX0.PSM),
-				(int)context->CLAMP.WMS, (int)context->CLAMP.WMT,
-				(int)context->CLAMP.MINU, (int)context->CLAMP.MAXU,
-				(int)context->CLAMP.MINV, (int)context->CLAMP.MAXV);
+				s_n, frame, static_cast<int>(context->TEX0.TBP0), psm_str(context->TEX0.PSM),
+				static_cast<int>(context->CLAMP.WMS), static_cast<int>(context->CLAMP.WMT),
+				static_cast<int>(context->CLAMP.MINU), static_cast<int>(context->CLAMP.MAXU),
+				static_cast<int>(context->CLAMP.MINV), static_cast<int>(context->CLAMP.MAXV));
 
 			m_src->m_texture->Save(s);
 
@@ -2186,7 +2140,7 @@ void GSRendererHW::EmulateZbuffer()
 	// On the real GS we appear to do clamping on the max z value the format allows.
 	// Clamping is done after rasterization.
 	const u32 max_z = 0xFFFFFFFF >> (GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt * 8);
-	const bool clamp_z = (u32)(GSVector4i(m_vt.m_max.p).z) > max_z;
+	const bool clamp_z = static_cast<u32>(GSVector4i(m_vt.m_max.p).z) > max_z;
 
 	m_conf.cb_vs.max_depth = GSVector2i(0xFFFFFFFF);
 	//ps_cb.MaxDepth = GSVector4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -2537,10 +2491,10 @@ void GSRendererHW::EmulateChannelShuffle(const GSTextureCache::Source* tex)
 		// the rendered size of the framebuffer
 
 		GSVertex* s = &m_vertex.buff[0];
-		s[0].XYZ.X = (u16)(m_context->XYOFFSET.OFX + 0);
-		s[1].XYZ.X = (u16)(m_context->XYOFFSET.OFX + 16384);
-		s[0].XYZ.Y = (u16)(m_context->XYOFFSET.OFY + 0);
-		s[1].XYZ.Y = (u16)(m_context->XYOFFSET.OFY + 16384);
+		s[0].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + 0);
+		s[1].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + 16384);
+		s[0].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + 0);
+		s[1].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + 16384);
 
 		m_vertex.head = m_vertex.tail = m_vertex.next = 2;
 		m_index.tail = 2;
@@ -2657,7 +2611,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 	else
 		blend_ad_alpha_masked = false;
 
-	u8 blend_index = u8(((m_conf.ps.blend_a * 3 + m_conf.ps.blend_b) * 3 + m_conf.ps.blend_c) * 3 + m_conf.ps.blend_d);
+	u8 blend_index = static_cast<u8>(((m_conf.ps.blend_a * 3 + m_conf.ps.blend_b) * 3 + m_conf.ps.blend_c) * 3 + m_conf.ps.blend_d);
 	const HWBlend blend_preliminary = GSDevice::GetBlend(blend_index, false);
 	const int blend_flag = blend_preliminary.flags;
 
@@ -3317,8 +3271,8 @@ void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	const int w = tex->m_texture->GetWidth();
 	const int h = tex->m_texture->GetHeight();
 
-	const int tw = (int)(1 << m_context->TEX0.TW);
-	const int th = (int)(1 << m_context->TEX0.TH);
+	const int tw = static_cast<int>(1 << m_context->TEX0.TW);
+	const int th = static_cast<int>(1 << m_context->TEX0.TH);
 	const int miptw = 1 << tex->m_TEX0.TW;
 	const int mipth = 1 << tex->m_TEX0.TH;
 
@@ -3338,10 +3292,10 @@ void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	else if (trilinear_manual)
 	{
 		// Reuse uv_min_max for mipmap parameter to avoid an extension of the UBO
-		m_conf.cb_ps.MinMax.x = (float)m_context->TEX1.K / 16.0f;
-		m_conf.cb_ps.MinMax.y = float(1 << m_context->TEX1.L);
-		m_conf.cb_ps.MinMax.z = float(m_lod.x); // Offset because first layer is m_lod, dunno if we can do better
-		m_conf.cb_ps.MinMax.w = float(m_lod.y);
+		m_conf.cb_ps.MinMax.x = static_cast<float>(m_context->TEX1.K) / 16.0f;
+		m_conf.cb_ps.MinMax.y = static_cast<float>(1 << m_context->TEX1.L);
+		m_conf.cb_ps.MinMax.z = static_cast<float>(m_lod.x); // Offset because first layer is m_lod, dunno if we can do better
+		m_conf.cb_ps.MinMax.w = static_cast<float>(m_lod.y);
 	}
 	else if (trilinear_auto)
 	{
@@ -3359,8 +3313,8 @@ void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	{
 		m_conf.ps.invalid_tex0 = 1;
 		// Use invalid size to denormalize ST coordinate
-		m_conf.cb_ps.WH.x = (float)(1 << m_context->stack.TEX0.TW);
-		m_conf.cb_ps.WH.y = (float)(1 << m_context->stack.TEX0.TH);
+		m_conf.cb_ps.WH.x = static_cast<float>(1 << m_context->stack.TEX0.TW);
+		m_conf.cb_ps.WH.y = static_cast<float>(1 << m_context->stack.TEX0.TH);
 
 		// We can't handle m_target with invalid_tex0 atm due to upscaling
 		ASSERT(!tex->m_target);
@@ -3447,32 +3401,32 @@ void GSRendererHW::EmulateATST(float& AREF, GSHWDrawConfig::PSSelector& ps, bool
 
 	// Check for pass 2, otherwise do pass 1.
 	const int atst = pass_2 ? inverted_atst[m_context->TEST.ATST] : m_context->TEST.ATST;
-
+	const float aref = static_cast<float>(m_context->TEST.AREF);
 
 	switch (atst)
 	{
 		case ATST_LESS:
-			AREF = static_cast<float>(m_context->TEST.AREF) - 0.1f;
+			AREF = aref - 0.1f;
 			ps.atst = 1;
 			break;
 		case ATST_LEQUAL:
-			AREF = static_cast<float>(m_context->TEST.AREF) - 0.1f + 1.0f;
+			AREF = aref - 0.1f + 1.0f;
 			ps.atst = 1;
 			break;
 		case ATST_GEQUAL:
-			AREF = static_cast<float>(m_context->TEST.AREF) - 0.1f;
+			AREF = aref - 0.1f;
 			ps.atst = 2;
 			break;
 		case ATST_GREATER:
-			AREF = static_cast<float>(m_context->TEST.AREF) - 0.1f + 1.0f;
+			AREF = aref - 0.1f + 1.0f;
 			ps.atst = 2;
 			break;
 		case ATST_EQUAL:
-			AREF = static_cast<float>(m_context->TEST.AREF);
+			AREF = aref;
 			ps.atst = 3;
 			break;
 		case ATST_NOTEQUAL:
-			AREF = static_cast<float>(m_context->TEST.AREF);
+			AREF = aref;
 			ps.atst = 4;
 			break;
 		case ATST_NEVER: // Draw won't be done so no need to implement it in shader
@@ -3681,8 +3635,8 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	const GSVector2 rtscale(m_conf.ds ? m_conf.ds->GetScale() : m_conf.rt->GetScale());
 	const float sx = 2.0f * rtscale.x / (rtsize.x << 4);
 	const float sy = 2.0f * rtscale.y / (rtsize.y << 4);
-	const float ox = (float)(int)m_context->XYOFFSET.OFX;
-	const float oy = (float)(int)m_context->XYOFFSET.OFY;
+	const float ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
+	const float oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
 	float ox2 = -1.0f / rtsize.x;
 	float oy2 = -1.0f / rtsize.y;
 
@@ -3764,8 +3718,8 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		const bool commutative_depth = (m_conf.depth.ztst == ZTST_GEQUAL && m_vt.m_eq.z) || (m_conf.depth.ztst == ZTST_ALWAYS);
 		const bool commutative_alpha = (m_context->ALPHA.C != 1); // when either Alpha Src or a constant
 
-		ate_RGBA_then_Z = (m_context->TEST.AFAIL == AFAIL_FB_ONLY) & commutative_depth;
-		ate_RGB_then_ZA = (m_context->TEST.AFAIL == AFAIL_RGB_ONLY) & commutative_depth & commutative_alpha;
+		ate_RGBA_then_Z = (m_context->TEST.AFAIL == AFAIL_FB_ONLY) && commutative_depth;
+		ate_RGB_then_ZA = (m_context->TEST.AFAIL == AFAIL_RGB_ONLY) && commutative_depth && commutative_alpha;
 	}
 
 	if (ate_RGBA_then_Z)
@@ -4082,7 +4036,7 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 			}
 		}
 
-		GIFRegBITBLTBUF BITBLTBUF;
+		GIFRegBITBLTBUF BITBLTBUF = {};
 		BITBLTBUF.SBP = m_context->TEX0.TBP0;
 		BITBLTBUF.SBW = m_context->TEX0.TBW;
 		BITBLTBUF.SPSM = m_context->TEX0.PSM;
@@ -4366,8 +4320,8 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 		// Bottom of Texture (half height frame, will be the copy of Top texture after the draw)
 		// -----------------------------------------------------------------
 
-		const int tw = (int)(1 << m_context->TEX0.TW);
-		const int th = (int)(1 << m_context->TEX0.TH);
+		const int tw = static_cast<int>(1 << m_context->TEX0.TW);
+		const int th = static_cast<int>(1 << m_context->TEX0.TH);
 
 		// Compute the Bottom of texture rectangle
 		ASSERT(m_context->TEX0.TBP0 > m_context->FRAME.Block());
