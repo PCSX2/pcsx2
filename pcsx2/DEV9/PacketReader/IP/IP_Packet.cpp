@@ -107,9 +107,9 @@ namespace PacketReader::IP
 		NetLib::ReadUInt16(buffer, &offset, &checksum);
 
 		//Bits 96-127
-		NetLib::ReadByteArray(buffer, &offset, 4, (u8*)&sourceIP);
+		NetLib::ReadIPAddress(buffer, &offset, &sourceIP);
 		//Bits 128-159
-		NetLib::ReadByteArray(buffer, &offset, 4, (u8*)&destinationIP);
+		NetLib::ReadIPAddress(buffer, &offset, &destinationIP);
 
 		//Bits 160+
 		if (headerLength > 20) //IP options (if any)
@@ -194,8 +194,8 @@ namespace PacketReader::IP
 		NetLib::WriteByte08(buffer, offset, protocol);
 		NetLib::WriteUInt16(buffer, offset, checksum); //header csum
 
-		NetLib::WriteByteArray(buffer, offset, 4, (u8*)&sourceIP);
-		NetLib::WriteByteArray(buffer, offset, 4, (u8*)&destinationIP);
+		NetLib::WriteIPAddress(buffer, offset, sourceIP);
+		NetLib::WriteIPAddress(buffer, offset, destinationIP);
 
 		//options
 		for (size_t i = 0; i < options.size(); i++)
@@ -243,8 +243,8 @@ namespace PacketReader::IP
 		NetLib::WriteByte08(headerSegment, &counter, protocol);
 		NetLib::WriteUInt16(headerSegment, &counter, 0); //header csum
 
-		NetLib::WriteByteArray(headerSegment, &counter, 4, (u8*)&sourceIP);
-		NetLib::WriteByteArray(headerSegment, &counter, 4, (u8*)&destinationIP);
+		NetLib::WriteIPAddress(headerSegment, &counter, sourceIP);
+		NetLib::WriteIPAddress(headerSegment, &counter, destinationIP);
 
 		//options
 		for (size_t i = 0; i < options.size(); i++)
@@ -276,8 +276,8 @@ namespace PacketReader::IP
 		NetLib::WriteByte08(headerSegment, &counter, protocol);
 		NetLib::WriteUInt16(headerSegment, &counter, checksum); //header csum
 
-		NetLib::WriteByteArray(headerSegment, &counter, 4, (u8*)&sourceIP);
-		NetLib::WriteByteArray(headerSegment, &counter, 4, (u8*)&destinationIP);
+		NetLib::WriteIPAddress(headerSegment, &counter, sourceIP);
+		NetLib::WriteIPAddress(headerSegment, &counter, destinationIP);
 
 		//options
 		for (size_t i = 0; i < options.size(); i++)

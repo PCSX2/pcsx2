@@ -27,13 +27,13 @@ namespace PacketReader::IP::UDP::DHCP
 	DHCPopSubnet::DHCPopSubnet(u8* data, int offset)
 	{
 		offset += 2;
-		NetLib::ReadByteArray(data, &offset, 4, (u8*)&subnetMask);
+		NetLib::ReadIPAddress(data, &offset, &subnetMask);
 	}
 	void DHCPopSubnet::WriteBytes(u8* buffer, int* offset)
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
-		NetLib::WriteByteArray(buffer, offset, 4, (u8*)&subnetMask);
+		NetLib::WriteIPAddress(buffer, offset, subnetMask);
 	}
 
 	DHCPopRouter::DHCPopRouter(const std::vector<IP_Address>& routerIPs)
@@ -137,14 +137,14 @@ namespace PacketReader::IP::UDP::DHCP
 	DHCPopBCIP::DHCPopBCIP(u8* data, int offset)
 	{
 		offset += 2;
-		NetLib::ReadByteArray(data, &offset, 4, (u8*)&broadcastIP);
+		NetLib::ReadIPAddress(data, &offset, &broadcastIP);
 	}
 	void DHCPopBCIP::WriteBytes(u8* buffer, int* offset)
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
 
-		NetLib::WriteByteArray(buffer, offset, 4, (u8*)&broadcastIP);
+		NetLib::WriteIPAddress(buffer, offset, broadcastIP);
 	}
 
 	bool DHCPopNBIOSType::GetHNode()
@@ -228,14 +228,14 @@ namespace PacketReader::IP::UDP::DHCP
 	DHCPopREQIP::DHCPopREQIP(u8* data, int offset)
 	{
 		offset += 2;
-		NetLib::ReadByteArray(data, &offset, 4, (u8*)&requestedIP);
+		NetLib::ReadIPAddress(data, &offset, &requestedIP);
 	}
 	void DHCPopREQIP::WriteBytes(u8* buffer, int* offset)
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
 
-		NetLib::WriteByteArray(buffer, offset, 4, (u8*)&requestedIP);
+		NetLib::WriteIPAddress(buffer, offset, requestedIP);
 	}
 
 	DHCPopIPLT::DHCPopIPLT(u32 LeaseTime)
@@ -279,14 +279,14 @@ namespace PacketReader::IP::UDP::DHCP
 	DHCPopSERVIP::DHCPopSERVIP(u8* data, int offset)
 	{
 		offset += 2;
-		NetLib::ReadByteArray(data, &offset, 4, (u8*)&serverIP);
+		NetLib::ReadIPAddress(data, &offset, &serverIP);
 	}
 	void DHCPopSERVIP::WriteBytes(u8* buffer, int* offset)
 	{
 		NetLib::WriteByte08(buffer, offset, GetCode());
 		NetLib::WriteByte08(buffer, offset, GetLength() - 2);
 
-		NetLib::WriteByteArray(buffer, offset, 4, (u8*)&serverIP);
+		NetLib::WriteIPAddress(buffer, offset, serverIP);
 	}
 
 	DHCPopREQLIST::DHCPopREQLIST(const std::vector<u8>& requestList)
