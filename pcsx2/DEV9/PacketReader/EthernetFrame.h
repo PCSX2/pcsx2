@@ -16,6 +16,7 @@
 #pragma once
 
 #include "DEV9/net.h"
+#include "MAC_Address.h"
 #include "Payload.h"
 
 namespace PacketReader
@@ -34,8 +35,8 @@ namespace PacketReader
 	class EthernetFrame
 	{
 	public:
-		u8 destinationMAC[6] = {0};
-		u8 sourceMAC[6] = {0};
+		MAC_Address destinationMAC{};
+		MAC_Address sourceMAC{};
 
 		u16 protocol = 0;
 		int headerLength = 14;

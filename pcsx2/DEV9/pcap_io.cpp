@@ -39,6 +39,7 @@
 #include "DEV9.h"
 #include "AdapterUtils.h"
 #include "net.h"
+#include "DEV9/PacketReader/MAC_Address.h"
 #ifndef PCAP_NETMASK_UNKNOWN
 #define PCAP_NETMASK_UNKNOWN 0xffffffff
 #endif
@@ -293,13 +294,13 @@ PCAPAdapter::PCAPAdapter()
 	mac_address newMAC;
 
 	GetMACAddress(EmuConfig.DEV9.EthDevice, &hostMAC);
-	memcpy(&newMAC, ps2MAC, 6);
+	memcpy(&newMAC, &ps2MAC, 6);
 
 	//Lets take the hosts last 2 bytes to make it unique on Xlink
 	newMAC.bytes[5] = hostMAC.bytes[4];
 	newMAC.bytes[4] = hostMAC.bytes[5];
 
-	SetMACAddress((u8*)&newMAC);
+	SetMACAddress((PacketReader::MAC_Address*)&newMAC);
 	host_mac = hostMAC;
 	ps2_mac = newMAC; //Needed outside of this class
 

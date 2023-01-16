@@ -178,8 +178,8 @@ using namespace PacketReader::IP;
 using namespace PacketReader::IP::UDP;
 
 const IP_Address NetAdapter::internalIP{{{192, 0, 2, 1}}};
-const u8 NetAdapter::broadcastMAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-const u8 NetAdapter::internalMAC[6] = {0x76, 0x6D, 0xF4, 0x63, 0x30, 0x31};
+const MAC_Address NetAdapter::broadcastMAC{{{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}}};
+const MAC_Address NetAdapter::internalMAC{{{0x76, 0x6D, 0xF4, 0x63, 0x30, 0x31}}};
 
 NetAdapter::NetAdapter()
 {
@@ -268,15 +268,14 @@ void NetAdapter::InspectRecv(NetPacket* pkt)
 	}
 }
 
-void NetAdapter::SetMACAddress(u8* mac)
+void NetAdapter::SetMACAddress(MAC_Address* mac)
 {
 	if (mac == nullptr)
-		memcpy(ps2MAC, defaultMAC, 6);
+		ps2MAC = defaultMAC;
 	else
-		memcpy(ps2MAC, mac, 6);
+		ps2MAC = *mac;
 
-	for (int i = 0; i < 3; i++)
-		dev9.eeprom[i] = ((u16*)ps2MAC)[i];
+	*(MAC_Address*)&dev9.eeprom[0] = ps2MAC;
 
 	//The checksum seems to be all the values of the mac added up in 16bit chunks
 	dev9.eeprom[3] = (dev9.eeprom[0] + dev9.eeprom[1] + dev9.eeprom[2]) & 0xffff;
@@ -284,13 +283,13 @@ void NetAdapter::SetMACAddress(u8* mac)
 
 bool NetAdapter::VerifyPkt(NetPacket* pkt, int read_size)
 {
-	if ((memcmp(pkt->buffer, ps2MAC, 6) != 0) && (memcmp(pkt->buffer, &broadcastMAC, 6) != 0))
+	if ((*(MAC_Address*)&pkt->buffer[0] != ps2MAC) && (*(MAC_Address*)&pkt->buffer[0] != broadcastMAC))
 	{
 		//ignore strange packets
 		return false;
 	}
 
-	if (memcmp(pkt->buffer + 6, ps2MAC, 6) == 0)
+	if (*(MAC_Address*)&pkt->buffer[6] == ps2MAC)
 	{
 		//avoid pcap looping packets
 		return false;
@@ -347,8 +346,8 @@ bool NetAdapter::InternalServerRecv(NetPacket* pkt)
 		ippkt->destinationIP = {{{255, 255, 255, 255}}};
 		ippkt->sourceIP = internalIP;
 		EthernetFrame frame(ippkt);
-		memcpy(frame.sourceMAC, internalMAC, 6);
-		memcpy(frame.destinationMAC, ps2MAC, 6);
+		frame.sourceMAC = internalMAC;
+		frame.destinationMAC = ps2MAC;
 		frame.protocol = (u16)EtherType::IPv4;
 		frame.WritePacket(pkt);
 		return true;
@@ -361,8 +360,8 @@ bool NetAdapter::InternalServerRecv(NetPacket* pkt)
 		ippkt->destinationIP = ps2IP;
 		ippkt->sourceIP = internalIP;
 		EthernetFrame frame(ippkt);
-		memcpy(frame.sourceMAC, internalMAC, 6);
-		memcpy(frame.destinationMAC, ps2MAC, 6);
+		frame.sourceMAC = internalMAC;
+		frame.destinationMAC = ps2MAC;
 		frame.protocol = (u16)EtherType::IPv4;
 		frame.WritePacket(pkt);
 		InspectRecv(pkt);

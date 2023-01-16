@@ -37,6 +37,8 @@
 #include <wil/com.h>
 #include <wil/resource.h>
 
+#include "DEV9/PacketReader/MAC_Address.h"
+
 //=============
 // TAP IOCTLs
 //=============
@@ -206,7 +208,7 @@ AdapterOptions TAPAdapter::GetAdapterOptions()
 	return AdapterOptions::None;
 }
 
-static int TAPGetMACAddress(HANDLE handle, u8* addr)
+static int TAPGetMACAddress(HANDLE handle, PacketReader::MAC_Address* addr)
 {
 	DWORD len = 0;
 
@@ -551,17 +553,17 @@ TAPAdapter::TAPAdapter()
 
 	cancel = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-	u8 hostMAC[6];
-	u8 newMAC[6];
+	PacketReader::MAC_Address hostMAC;
+	PacketReader::MAC_Address newMAC;
 
-	TAPGetMACAddress(htap, hostMAC);
-	memcpy(newMAC, ps2MAC, 6);
+	TAPGetMACAddress(htap, &hostMAC);
+	newMAC = ps2MAC;
 
 	//Lets take the hosts last 2 bytes to make it unique on Xlink
-	newMAC[5] = hostMAC[4];
-	newMAC[4] = hostMAC[5];
+	newMAC.bytes[5] = hostMAC.bytes[4];
+	newMAC.bytes[4] = hostMAC.bytes[5];
 
-	SetMACAddress(newMAC);
+	SetMACAddress(&newMAC);
 
 	IP_ADAPTER_ADDRESSES adapter;
 	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
