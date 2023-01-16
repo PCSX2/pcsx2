@@ -177,7 +177,6 @@
     <ClCompile Include="DEV9\PacketReader\IP\UDP\UDP_Packet.cpp" />
     <ClCompile Include="DEV9\PacketReader\IP\IP_Options.cpp" />
     <ClCompile Include="DEV9\PacketReader\IP\IP_Packet.cpp" />
-    <ClCompile Include="DEV9\PacketReader\NetLib.cpp" />
     <ClCompile Include="DEV9\pcap_io.cpp" />
     <ClCompile Include="DEV9\Sessions\ICMP_Session\ICMP_Session.cpp" />
     <ClCompile Include="DEV9\Sessions\TCP_Session\TCP_Session.cpp" />
