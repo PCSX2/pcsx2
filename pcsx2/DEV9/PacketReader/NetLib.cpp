@@ -23,6 +23,8 @@
 #include <arpa/inet.h>
 #endif
 
+using namespace PacketReader::IP;
+
 namespace PacketReader::NetLib
 {
 	void WriteByte08(u8* data, int* index, u8 value)
@@ -42,6 +44,11 @@ namespace PacketReader::NetLib
 	}
 
 	//Special
+	void WriteIPAddress(u8* data, int* index, IP_Address value)
+	{
+		*(IP_Address*)&data[*index] = value;
+		*index += sizeof(IP_Address);
+	}
 	void WriteByteArray(u8* data, int* index, int length, u8* value)
 	{
 		memcpy(&data[*index], value, length);
@@ -67,6 +74,11 @@ namespace PacketReader::NetLib
 	}
 
 	//Special
+	void ReadIPAddress(u8* data, int* index, IP_Address* value)
+	{
+		*value = *(IP_Address*)&data[*index];
+		*index += sizeof(IP_Address);
+	}
 	void ReadByteArray(u8* data, int* index, int length, u8* value)
 	{
 		memcpy(value, &data[*index], length);
