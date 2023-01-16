@@ -20701,6 +20701,8 @@ SLES-54793:
   name: "WWE SmackDown vs. Raw 2008"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
 SLES-54795:
   name: "Falling Stars"
   region: "PAL-M6"
@@ -20921,6 +20923,8 @@ SLES-54878:
 SLES-54879:
   name: "WWE SmackDown vs. Raw 2008"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
 SLES-54880:
   name: "NBA 2K8"
   region: "PAL-M5"
@@ -21921,10 +21925,14 @@ SLES-55249:
 SLES-55250:
   name: "WWE SmackDown vs. Raw 2009"
   region: "PAL-A"
+  gsHWFixes:
+    halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
 SLES-55251:
   name: "WWE SmackDown vs. Raw 2009"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
 SLES-55252:
   name: "NHL 2K9"
   region: "PAL-M5"
@@ -24104,6 +24112,8 @@ SLKA-25364:
 SLKA-25365:
   name: "WWE Smack Down Vs RAW 2008"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
 SLKA-25366:
   name: "Naruto - Uzumaki Chronicles 2"
   region: "NTSC-K"
@@ -33976,6 +33986,8 @@ SLPM-66862:
 SLPM-66863:
   name: "WWE SmackDown vs. RAW 2008"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
 SLPM-66864:
   name: "Umisho"
   region: "NTSC-J"
@@ -48327,6 +48339,8 @@ SLUS-21645:
   name: "WWE SmackDown! vs. Raw 2008"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
 SLUS-21646:
   name: "Tiger Woods PGA Tour 08"
   region: "NTSC-U"
@@ -49100,6 +49114,8 @@ SLUS-21810:
   name: "WWE SmackDown vs. Raw 2009"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
 SLUS-21811:
   name: "MotoGP 08"
   region: "NTSC-U"
