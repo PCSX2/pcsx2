@@ -94,9 +94,6 @@
     <Filter Include="System\Ps2\IPU">
       <UniqueIdentifier>{4dab2d06-69e0-4f3e-b6d3-45e5e85af940}</UniqueIdentifier>
     </Filter>
-    <Filter Include="System\Ps2\IPU\mpeg2lib">
-      <UniqueIdentifier>{67e51016-d1db-44d2-910d-349d2833f798}</UniqueIdentifier>
-    </Filter>
     <Filter Include="System\Ps2\GS">
       <UniqueIdentifier>{5602cc18-9d1c-49c8-9509-7e4cf9ecd91b}</UniqueIdentifier>
     </Filter>
@@ -652,12 +649,6 @@
     </ClCompile>
     <ClCompile Include="IPU\yuv2rgb.cpp">
       <Filter>System\Ps2\IPU</Filter>
-    </ClCompile>
-    <ClCompile Include="IPU\mpeg2lib\Idct.cpp">
-      <Filter>System\Ps2\IPU\mpeg2lib</Filter>
-    </ClCompile>
-    <ClCompile Include="IPU\mpeg2lib\Mpeg.cpp">
-      <Filter>System\Ps2\IPU\mpeg2lib</Filter>
     </ClCompile>
     <ClCompile Include="GS.cpp">
       <Filter>System\Ps2\GS\GIF</Filter>
@@ -1619,12 +1610,6 @@
     <ClInclude Include="IPU\yuv2rgb.h">
       <Filter>System\Ps2\IPU</Filter>
     </ClInclude>
-    <ClInclude Include="IPU\mpeg2lib\Mpeg.h">
-      <Filter>System\Ps2\IPU\mpeg2lib</Filter>
-    </ClInclude>
-    <ClInclude Include="IPU\mpeg2lib\Vlc.h">
-      <Filter>System\Ps2\IPU\mpeg2lib</Filter>
-    </ClInclude>
     <ClInclude Include="DebugTools\Debug.h">
       <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
@@ -2344,6 +2329,9 @@
     </ClInclude>
     <ClInclude Include="GS\Renderers\HW\GSHwHack.h">
       <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="IPU\mpeg2_vlc.h">
+      <Filter>System\Ps2\IPU</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

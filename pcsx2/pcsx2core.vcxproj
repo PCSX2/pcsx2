@@ -450,8 +450,6 @@
     <ClCompile Include="Ipu\IPU_Fifo.cpp" />
     <ClCompile Include="Ipu\IPU_MultiISA.cpp" />
     <ClCompile Include="Ipu\yuv2rgb.cpp" />
-    <ClCompile Include="Ipu\mpeg2lib\Idct.cpp" />
-    <ClCompile Include="Ipu\mpeg2lib\Mpeg.cpp" />
     <ClCompile Include="GS.cpp" />
     <ClCompile Include="MTGS.cpp" />
     <ClCompile Include="DebugTools\DisR3000A.cpp" />
@@ -579,6 +577,7 @@
     <ClInclude Include="HostDisplay.h" />
     <ClInclude Include="HostSettings.h" />
     <ClInclude Include="IopGte.h" />
+    <ClInclude Include="IPU\mpeg2_vlc.h" />
     <ClInclude Include="MemoryCardProtocol.h" />
     <ClInclude Include="MultitapProtocol.h" />
     <ClInclude Include="PAD\Host\Global.h" />
@@ -782,8 +781,6 @@
     <ClInclude Include="Ipu\IPU_Fifo.h" />
     <ClInclude Include="Ipu\IPU_MultiISA.h" />
     <ClInclude Include="Ipu\yuv2rgb.h" />
-    <ClInclude Include="Ipu\mpeg2lib\Mpeg.h" />
-    <ClInclude Include="Ipu\mpeg2lib\Vlc.h" />
     <ClInclude Include="GS.h" />
     <ClInclude Include="DebugTools\Debug.h" />
     <ClInclude Include="DebugTools\DisASM.h" />
