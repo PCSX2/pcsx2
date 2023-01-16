@@ -687,8 +687,6 @@ set(pcsx2IPUSources
 set(pcsx2IPUSourcesUnshared
 	IPU/IPU_MultiISA.cpp
 	IPU/IPUdither.cpp
-	IPU/mpeg2lib/Idct.cpp
-	IPU/mpeg2lib/Mpeg.cpp
 	IPU/yuv2rgb.cpp
 )
 
@@ -698,8 +696,7 @@ set(pcsx2IPUHeaders
 	IPU/IPU_Fifo.h
 	IPU/IPU_MultiISA.h
 	IPU/IPUdma.h
-	IPU/mpeg2lib/Mpeg.h
-	IPU/mpeg2lib/Vlc.h
+	IPU/mpeg2_vlc.h
 	IPU/yuv2rgb.h
 )
 
