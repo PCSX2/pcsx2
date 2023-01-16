@@ -512,6 +512,7 @@
     <ClInclude Include="DEV9\net.h" />
     <ClInclude Include="DEV9\PacketReader\ARP\ARP_Packet.h" />
     <ClInclude Include="DEV9\PacketReader\EthernetFrame.h" />
+    <ClInclude Include="DEV9\PacketReader\MAC_Address.h" />
     <ClInclude Include="DEV9\PacketReader\IP\ICMP\ICMP_Packet.h" />
     <ClInclude Include="DEV9\PacketReader\IP\TCP\TCP_Options.h" />
     <ClInclude Include="DEV9\PacketReader\IP\TCP\TCP_Packet.h" />

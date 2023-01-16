@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "DEV9/PacketReader/MAC_Address.h"
 #include "DEV9/PacketReader/IP/IP_Address.h"
 
 namespace PacketReader::NetLib
@@ -23,6 +24,7 @@ namespace PacketReader::NetLib
 	void WriteUInt16(u8* data, int* index, u16 value);
 	void WriteUInt32(u8* data, int* index, u32 value);
 
+	void WriteMACAddress(u8* data, int* index, PacketReader::MAC_Address value);
 	void WriteIPAddress(u8* data, int* index, PacketReader::IP::IP_Address value);
 	void WriteByteArray(u8* data, int* index, int length, u8* value);
 
@@ -30,6 +32,7 @@ namespace PacketReader::NetLib
 	void ReadUInt16(u8* data, int* index, u16* value);
 	void ReadUInt32(u8* data, int* index, u32* value);
 
+	void ReadMACAddress(u8* data, int* index, PacketReader::MAC_Address* value);
 	void ReadIPAddress(u8* data, int* index, PacketReader::IP::IP_Address* value);
 	void ReadByteArray(u8* data, int* index, int length, u8* value);
 } // namespace PacketReader::NetLib

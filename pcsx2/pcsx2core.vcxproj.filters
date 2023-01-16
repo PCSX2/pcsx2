@@ -1834,6 +1834,9 @@
     <ClInclude Include="DEV9\PacketReader\EthernetFrame.h">
       <Filter>System\Ps2\DEV9\PacketReader</Filter>
     </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\MAC_Address.h">
+      <Filter>System\Ps2\DEV9\PacketReader</Filter>
+    </ClInclude>
     <ClInclude Include="DEV9\PacketReader\NetLib.h">
       <Filter>System\Ps2\DEV9\PacketReader</Filter>
     </ClInclude>
