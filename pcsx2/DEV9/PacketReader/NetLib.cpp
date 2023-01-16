@@ -23,6 +23,7 @@
 #include <arpa/inet.h>
 #endif
 
+using namespace PacketReader;
 using namespace PacketReader::IP;
 
 namespace PacketReader::NetLib
@@ -44,6 +45,11 @@ namespace PacketReader::NetLib
 	}
 
 	//Special
+	void WriteMACAddress(u8* data, int* index, MAC_Address value)
+	{
+		*(MAC_Address*)&data[*index] = value;
+		*index += sizeof(MAC_Address);
+	}
 	void WriteIPAddress(u8* data, int* index, IP_Address value)
 	{
 		*(IP_Address*)&data[*index] = value;
@@ -74,6 +80,11 @@ namespace PacketReader::NetLib
 	}
 
 	//Special
+	void ReadMACAddress(u8* data, int* index, MAC_Address* value)
+	{
+		*value = *(MAC_Address*)&data[*index];
+		*index += sizeof(MAC_Address);
+	}
 	void ReadIPAddress(u8* data, int* index, IP_Address* value)
 	{
 		*value = *(IP_Address*)&data[*index];

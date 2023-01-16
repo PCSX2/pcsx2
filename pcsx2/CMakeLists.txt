@@ -380,6 +380,7 @@ set(pcsx2DEV9Headers
 	DEV9/PacketReader/IP/IP_Packet.h
 	DEV9/PacketReader/IP/IP_Payload.h
 	DEV9/PacketReader/EthernetFrame.h
+	DEV9/PacketReader/MAC_Address.h
 	DEV9/PacketReader/NetLib.h
 	DEV9/PacketReader/Payload.h
 	DEV9/pcap_io.h
