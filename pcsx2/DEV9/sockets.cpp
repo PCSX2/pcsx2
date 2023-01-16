@@ -243,34 +243,34 @@ SocketAdapter::SocketAdapter()
 	freeifaddrs(buffer);
 #endif
 
-	u8 hostMAC[6];
-	u8 newMAC[6];
+	MAC_Address hostMAC;
+	MAC_Address newMAC;
 
 #ifdef _WIN32
-	memcpy(hostMAC, adapter.PhysicalAddress, 6);
+	hostMAC = *(MAC_Address*)adapter.PhysicalAddress;
 #elif defined(__linux__)
 	struct ifreq ifr;
 	int fd = socket(AF_INET, SOCK_DGRAM, 0);
 	strcpy(ifr.ifr_name, adapter.ifa_name);
 	if (0 == ioctl(fd, SIOCGIFHWADDR, &ifr))
-		memcpy(hostMAC, ifr.ifr_hwaddr.sa_data, 6);
+		hostMAC = *(MAC_Address*)ifr.ifr_hwaddr.sa_data;
 	else
 	{
-		memcpy(hostMAC, ps2MAC, 6);
+		hostMAC = ps2MAC;
 		Console.Error("Could not get MAC address for adapter: %s", adapter.ifa_name);
 	}
 	::close(fd);
 #else
-	memcpy(hostMAC, ps2MAC, 6);
+	hostMAC = ps2MAC;
 	Console.Error("Could not get MAC address for adapter, OS not supported");
 #endif
-	memcpy(newMAC, ps2MAC, 6);
+	newMAC = ps2MAC;
 
 	//Lets take the hosts last 2 bytes to make it unique on Xlink
-	newMAC[5] = hostMAC[4];
-	newMAC[4] = hostMAC[5];
+	newMAC.bytes[5] = hostMAC.bytes[4];
+	newMAC.bytes[4] = hostMAC.bytes[5];
 
-	SetMACAddress(newMAC);
+	SetMACAddress(&newMAC);
 
 #ifdef _WIN32
 	/* Use the MAKEWORD(lowbyte, highbyte) macro declared in Windef.h */
@@ -326,8 +326,8 @@ bool SocketAdapter::recv(NetPacket* pkt)
 				ipPkt->sourceIP = session->destIP;
 
 				EthernetFrame frame(ipPkt);
-				memcpy(frame.sourceMAC, internalMAC, 6);
-				memcpy(frame.destinationMAC, ps2MAC, 6);
+				frame.sourceMAC = internalMAC;
+				frame.destinationMAC = ps2MAC;
 				frame.protocol = (u16)EtherType::IPv4;
 
 				frame.WritePacket(pkt);
@@ -384,17 +384,17 @@ bool SocketAdapter::send(NetPacket* pkt)
 					//it's trying to resolve the virtual gateway's mac addr
 					{
 						ARP_Packet* arpRet = new ARP_Packet(6, 4);
-						memcpy(arpRet->targetHardwareAddress.get(), arpPkt.senderHardwareAddress.get(), 6);
-						memcpy(arpRet->senderHardwareAddress.get(), internalMAC, 6);
-						memcpy(arpRet->targetProtocolAddress.get(), arpPkt.senderProtocolAddress.get(), 4);
-						memcpy(arpRet->senderProtocolAddress.get(), arpPkt.targetProtocolAddress.get(), 4);
+						*(MAC_Address*)arpRet->targetHardwareAddress.get() = *(MAC_Address*)arpPkt.senderHardwareAddress.get();
+						*(MAC_Address*)arpRet->senderHardwareAddress.get() = internalMAC;
+						*(IP_Address*)arpRet->targetProtocolAddress.get() = *(IP_Address*)arpPkt.senderProtocolAddress.get();
+						*(IP_Address*)arpRet->senderProtocolAddress.get() = *(IP_Address*)arpPkt.targetProtocolAddress.get();
 						arpRet->op = 2,
 						arpRet->protocol = arpPkt.protocol;
 						arpRet->hardwareType = arpPkt.hardwareType;
 
 						EthernetFrame* retARP = new EthernetFrame(arpRet);
-						memcpy(retARP->destinationMAC, ps2MAC, 6);
-						memcpy(retARP->sourceMAC, internalMAC, 6);
+						retARP->destinationMAC = ps2MAC;
+						retARP->sourceMAC = internalMAC;
 						retARP->protocol = (u16)EtherType::ARP;
 
 						vRecBuffer.Enqueue(retARP);

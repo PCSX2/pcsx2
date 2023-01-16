@@ -27,8 +27,8 @@ namespace PacketReader
 	EthernetFrame::EthernetFrame(NetPacket* pkt)
 	{
 		int offset = 0;
-		NetLib::ReadByteArray((u8*)pkt->buffer, &offset, 6, destinationMAC);
-		NetLib::ReadByteArray((u8*)pkt->buffer, &offset, 6, sourceMAC);
+		NetLib::ReadMACAddress((u8*)pkt->buffer, &offset, &destinationMAC);
+		NetLib::ReadMACAddress((u8*)pkt->buffer, &offset, &sourceMAC);
 
 		headerLength = 14; //(6+6+2)
 
@@ -51,8 +51,8 @@ namespace PacketReader
 		int counter = 0;
 
 		pkt->size = headerLength + payload->GetLength();
-		NetLib::WriteByteArray((u8*)pkt->buffer, &counter, 6, destinationMAC);
-		NetLib::WriteByteArray((u8*)pkt->buffer, &counter, 6, sourceMAC);
+		NetLib::WriteMACAddress((u8*)pkt->buffer, &counter, destinationMAC);
+		NetLib::WriteMACAddress((u8*)pkt->buffer, &counter, sourceMAC);
 		//
 		NetLib::WriteUInt16((u8*)pkt->buffer, &counter, protocol);
 		//
