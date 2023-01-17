@@ -162,7 +162,7 @@ SocketAdapter::SocketAdapter()
 
 #ifdef _WIN32
 	IP_ADAPTER_ADDRESSES adapter;
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
+	AdapterUtils::AdapterBuffer buffer;
 
 	if (strcmp(EmuConfig.DEV9.EthDevice.c_str(), "Auto") != 0)
 	{
@@ -196,7 +196,7 @@ SocketAdapter::SocketAdapter()
 	}
 #elif defined(__POSIX__)
 	ifaddrs adapter;
-	ifaddrs* buffer;
+	AdapterUtils::AdapterBuffer buffer;
 
 	if (strcmp(EmuConfig.DEV9.EthDevice.c_str(), "Auto") != 0)
 	{
@@ -214,7 +214,6 @@ SocketAdapter::SocketAdapter()
 		else
 		{
 			Console.Error("DEV9: Socket: Failed To Get Adapter IP");
-			freeifaddrs(buffer);
 			return;
 		}
 	}
@@ -239,9 +238,6 @@ SocketAdapter::SocketAdapter()
 	const IP_Address gateway = internalIP;
 
 	InitInternalServer(&adapter, true, ps2IP, subnet, gateway);
-#ifdef __POSIX__
-	freeifaddrs(buffer);
-#endif
 
 	u8 hostMAC[6];
 	u8 newMAC[6];
@@ -433,7 +429,7 @@ void SocketAdapter::reloadSettings()
 	bool foundAdapter = false;
 #ifdef _WIN32
 	IP_ADAPTER_ADDRESSES adapter;
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
+	AdapterUtils::AdapterBuffer buffer;
 
 	if (strcmp(EmuConfig.DEV9.EthDevice.c_str(), "Auto") != 0)
 		foundAdapter = AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer);
@@ -442,7 +438,7 @@ void SocketAdapter::reloadSettings()
 
 #elif defined(__POSIX__)
 	ifaddrs adapter;
-	ifaddrs* buffer;
+	AdapterUtils::AdapterBuffer buffer;
 
 	if (strcmp(EmuConfig.DEV9.EthDevice.c_str(), "Auto") != 0)
 		foundAdapter = AdapterUtils::GetIfAdapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer);
@@ -455,12 +451,7 @@ void SocketAdapter::reloadSettings()
 	const IP_Address gateway = internalIP;
 
 	if (foundAdapter)
-	{
 		ReloadInternalServer(&adapter, true, ps2IP, subnet, gateway);
-#ifdef __POSIX__
-		freeifaddrs(buffer);
-#endif
-	}
 	else
 	{
 		pxAssert(false);

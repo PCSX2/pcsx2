@@ -311,7 +311,7 @@ PCAPAdapter::PCAPAdapter()
 
 #ifdef _WIN32
 	IP_ADAPTER_ADDRESSES adapter;
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
+	AdapterUtils::AdapterBuffer buffer;
 	if (AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
 		InitInternalServer(&adapter);
 	else
@@ -319,14 +319,12 @@ PCAPAdapter::PCAPAdapter()
 		Console.Error("DEV9: Failed to get adapter information");
 		InitInternalServer(nullptr);
 	}
+
 #elif defined(__POSIX__)
 	ifaddrs adapter;
-	ifaddrs* buffer;
+	AdapterUtils::AdapterBuffer buffer;
 	if (AdapterUtils::GetIfAdapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
-	{
 		InitInternalServer(&adapter);
-		freeifaddrs(buffer);
-	}
 	else
 	{
 		Console.Error("DEV9: Failed to get adapter information");
@@ -383,19 +381,16 @@ void PCAPAdapter::reloadSettings()
 {
 #ifdef _WIN32
 	IP_ADAPTER_ADDRESSES adapter;
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
+	AdapterUtils::AdapterBuffer buffer;
 	if (AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
 		ReloadInternalServer(&adapter);
 	else
 		ReloadInternalServer(nullptr);
 #elif defined(__POSIX__)
 	ifaddrs adapter;
-	ifaddrs* buffer;
+	AdapterUtils::AdapterBuffer buffer;
 	if (AdapterUtils::GetIfAdapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
-	{
 		ReloadInternalServer(&adapter);
-		freeifaddrs(buffer);
-	}
 	else
 		ReloadInternalServer(nullptr);
 #endif
