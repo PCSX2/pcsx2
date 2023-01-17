@@ -107,12 +107,6 @@ private:
 	Vulkan::StreamBuffer m_vertex_uniform_stream_buffer;
 	Vulkan::StreamBuffer m_fragment_uniform_stream_buffer;
 
-	VmaAllocation m_readback_staging_allocation = VK_NULL_HANDLE;
-	VkBuffer m_readback_staging_buffer = VK_NULL_HANDLE;
-	void* m_readback_staging_buffer_map = nullptr;
-	u32 m_readback_staging_buffer_size = 0;
-	bool m_warned_slow_spin = false;
-
 	VkSampler m_point_sampler = VK_NULL_HANDLE;
 	VkSampler m_linear_sampler = VK_NULL_HANDLE;
 
@@ -192,9 +186,6 @@ private:
 	bool CompilePostProcessingPipelines();
 	bool CompileCASPipelines();
 
-	bool CheckStagingBufferSize(u32 required_size);
-	void DestroyStagingBuffer();
-
 	void DestroyResources();
 
 public:
@@ -231,8 +222,7 @@ public:
 	void ClearDepth(GSTexture* t) override;
 	void ClearStencil(GSTexture* t, u8 c) override;
 
-	bool DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map) override;
-	void DownloadTextureComplete() override;
+	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) override;
 
@@ -286,6 +276,7 @@ public:
 	void ExecuteCommandBuffer(bool wait_for_completion);
 	void ExecuteCommandBuffer(bool wait_for_completion, const char* reason, ...);
 	void ExecuteCommandBufferAndRestartRenderPass(bool wait_for_completion, const char* reason);
+	void ExecuteCommandBufferForReadback();
 
 	/// Set dirty flags on everything to force re-bind at next draw time.
 	void InvalidateCachedState();
@@ -355,6 +346,7 @@ private:
 	// Which bindings/state has to be updated before the next draw.
 	u32 m_dirty_flags = 0;
 	bool m_current_framebuffer_has_feedback_loop = false;
+	bool m_warned_slow_spin = false;
 
 	// input assembly
 	VkBuffer m_vertex_buffer = VK_NULL_HANDLE;

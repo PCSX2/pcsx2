@@ -14,9 +14,11 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSTexture.h"
-#include "GSDevice.h"
+#include "GS/Renderers/Common/GSTexture.h"
+#include "GS/Renderers/Common/GSDevice.h"
 #include "GS/GSPng.h"
+#include "common/Align.h"
+#include "common/StringUtil.h"
 #include <bitset>
 
 GSTexture::GSTexture()
@@ -51,19 +53,16 @@ bool GSTexture::Save(const std::string& fn)
 			return false;
 	}
 
-	GSMap map;
-	if (!g_gs_device->DownloadTexture(this, GSVector4i(0, 0, m_size.x, m_size.y), map))
+	const GSVector4i rc(0, 0, m_size.x, m_size.y);
+	std::unique_ptr<GSDownloadTexture> dl(g_gs_device->CreateDownloadTexture(m_size.x, m_size.y, m_format));
+	if (!dl || (dl->CopyFromTexture(rc, this, rc, 0), dl->Flush(), !dl->Map(rc)))
 	{
 		Console.Error("(GSTexture) DownloadTexture() failed.");
 		return false;
 	}
 
 	const int compression = GSConfig.PNGCompressionLevel;
-	bool success = GSPng::Save(format, fn, map.bits, m_size.x, m_size.y, map.pitch, compression);
-
-	g_gs_device->DownloadTextureComplete();
-
-	return success;
+	return GSPng::Save(format, fn, dl->GetMapPointer(), m_size.x, m_size.y, dl->GetMapPitch(), compression, g_gs_device->IsRBSwapped());
 }
 
 void GSTexture::Swap(GSTexture* tex)
@@ -81,6 +80,11 @@ void GSTexture::Swap(GSTexture* tex)
 
 u32 GSTexture::GetCompressedBytesPerBlock() const
 {
+	return GetCompressedBytesPerBlock(m_format);
+}
+
+u32 GSTexture::GetCompressedBytesPerBlock(Format format)
+{
 	static constexpr u32 bytes_per_block[] = {
 		1, // Invalid
 		4, // Color/RGBA8
@@ -96,12 +100,17 @@ u32 GSTexture::GetCompressedBytesPerBlock() const
 		16, // BC4 - 16 pixels in 128 bits
 	};
 
-	return bytes_per_block[static_cast<u32>(m_format)];
+	return bytes_per_block[static_cast<u32>(format)];
 }
 
 u32 GSTexture::GetCompressedBlockSize() const
 {
-	if (m_format >= Format::BC1 && m_format <= Format::BC7)
+	return GetCompressedBlockSize(m_format);
+}
+
+u32 GSTexture::GetCompressedBlockSize(Format format)
+{
+	if (format >= Format::BC1 && format <= Format::BC7)
 		return 4;
 	else
 		return 1;
@@ -109,14 +118,24 @@ u32 GSTexture::GetCompressedBlockSize() const
 
 u32 GSTexture::CalcUploadRowLengthFromPitch(u32 pitch) const
 {
-	const u32 block_size = GetCompressedBlockSize();
-	const u32 bytes_per_block = GetCompressedBytesPerBlock();
+	return CalcUploadRowLengthFromPitch(m_format, pitch);
+}
+
+u32 GSTexture::CalcUploadRowLengthFromPitch(Format format, u32 pitch)
+{
+	const u32 block_size = GetCompressedBlockSize(format);
+	const u32 bytes_per_block = GetCompressedBytesPerBlock(format);
 	return ((pitch + (bytes_per_block - 1)) / bytes_per_block) * block_size;
 }
 
 u32 GSTexture::CalcUploadSize(u32 height, u32 pitch) const
 {
-	const u32 block_size = GetCompressedBlockSize();
+	return CalcUploadSize(m_format, height, pitch);
+}
+
+u32 GSTexture::CalcUploadSize(Format format, u32 height, u32 pitch)
+{
+	const u32 block_size = GetCompressedBlockSize(format);
 	return pitch * ((static_cast<u32>(height) + (block_size - 1)) / block_size);
 }
 
@@ -127,4 +146,70 @@ void GSTexture::GenerateMipmapsIfNeeded()
 
 	m_needs_mipmaps_generated = false;
 	GenerateMipmap();
+}
+
+GSDownloadTexture::GSDownloadTexture(u32 width, u32 height, GSTexture::Format format)
+	: m_width(width)
+	, m_height(height)
+	, m_format(format)
+{
+}
+
+GSDownloadTexture::~GSDownloadTexture() = default;
+
+u32 GSDownloadTexture::GetBufferSize(u32 width, u32 height, GSTexture::Format format, u32 pitch_align /* = 1 */)
+{
+	const u32 block_size = GSTexture::GetCompressedBlockSize(format);
+	const u32 bytes_per_block = GSTexture::GetCompressedBytesPerBlock(format);
+	const u32 bw = (width + (block_size - 1)) / block_size;
+	const u32 bh = (height + (block_size - 1)) / block_size;
+
+	pxAssert(Common::IsPow2(pitch_align));
+	const u32 pitch = Common::AlignUpPow2(bw * bytes_per_block, pitch_align);
+	return (pitch * bh);
+}
+
+u32 GSDownloadTexture::GetTransferPitch(u32 width, u32 pitch_align) const
+{
+	const u32 block_size = GSTexture::GetCompressedBlockSize(m_format);
+	const u32 bytes_per_block = GSTexture::GetCompressedBytesPerBlock(m_format);
+	const u32 bw = (width + (block_size - 1)) / block_size;
+
+	pxAssert(Common::IsPow2(pitch_align));
+	return Common::AlignUpPow2(bw * bytes_per_block, pitch_align);
+}
+
+void GSDownloadTexture::GetTransferSize(const GSVector4i& rc, u32* copy_offset, u32* copy_size, u32* copy_rows) const
+{
+	const u32 block_size = GSTexture::GetCompressedBlockSize(m_format);
+	const u32 bytes_per_block = GSTexture::GetCompressedBytesPerBlock(m_format);
+	const u32 tw = static_cast<u32>(rc.width());
+	const u32 tb = ((tw + (block_size - 1)) / block_size);
+
+	*copy_offset = (((static_cast<u32>(rc.y) + (block_size - 1)) / block_size) * m_current_pitch) +
+				   ((static_cast<u32>(rc.x) + (block_size - 1)) / block_size) * bytes_per_block;
+	*copy_size = tb * bytes_per_block;
+	*copy_rows = ((static_cast<u32>(rc.height()) + (block_size - 1)) / block_size);
+}
+
+bool GSDownloadTexture::ReadTexels(const GSVector4i& rc, void* out_ptr, u32 out_stride)
+{
+	if (m_needs_flush)
+		Flush();
+
+	if (!Map(rc))
+		return false;
+
+	const u32 block_size = GSTexture::GetCompressedBlockSize(m_format);
+	const u32 bytes_per_block = GSTexture::GetCompressedBytesPerBlock(m_format);
+	const u32 tw = static_cast<u32>(rc.width());
+	const u32 tb = ((tw + (block_size - 1)) / block_size);
+
+	const u32 copy_offset = (((static_cast<u32>(rc.y) + (block_size - 1)) / block_size) * m_current_pitch) +
+							((static_cast<u32>(rc.x) + (block_size - 1)) / block_size) * bytes_per_block;
+	const u32 copy_size = tb * bytes_per_block;
+	const u32 copy_rows = ((static_cast<u32>(rc.height()) + (block_size - 1)) / block_size);
+
+	StringUtil::StrideMemCpy(out_ptr, out_stride, m_map_pointer + copy_offset, m_current_pitch, copy_size, copy_rows);
+	return true;
 }

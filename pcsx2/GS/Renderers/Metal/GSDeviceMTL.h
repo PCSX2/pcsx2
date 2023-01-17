@@ -332,10 +332,16 @@ public:
 	id<MTLBlitCommandEncoder> GetVertexUploadEncoder();
 	/// Get the render command buffer, creating a new one if it doesn't exist
 	id<MTLCommandBuffer> GetRenderCmdBuf();
+	/// Get the render command buffer, will not create a new one if it doesn't exist.
+	id<MTLCommandBuffer> GetRenderCmdBufWithoutCreate();
+	/// Get the spin fence if spinning is enabled.
+	id<MTLFence> GetSpinFence();
 	/// Called by command buffers when they finish
 	void DrawCommandBufferFinished(u64 draw, id<MTLCommandBuffer> buffer);
 	/// Flush pending operations from all encoders to the GPU
 	void FlushEncoders();
+	/// Flush pending operations and spins the GPU for a download.
+	void FlushEncodersForReadback();
 	/// End current render pass without flushing
 	void EndRenderPass();
 	/// Begin a new render pass (may reuse existing)
@@ -362,7 +368,7 @@ public:
 	void ClearDepth(GSTexture* t) override;
 	void ClearStencil(GSTexture* t, u8 c) override;
 
-	bool DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map) override;
+	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) override;
 	void DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, id<MTLRenderPipelineState> pipeline, bool linear, LoadAction load_action, void* frag_uniform, size_t frag_uniform_len);
@@ -411,5 +417,20 @@ public:
 	void RenderImGui(ImDrawData* data);
 	u32 FrameNo() const { return m_frame; }
 };
+
+static constexpr bool IsCommandBufferCompleted(MTLCommandBufferStatus status)
+{
+	switch (status)
+	{
+		case MTLCommandBufferStatusNotEnqueued:
+		case MTLCommandBufferStatusEnqueued:
+		case MTLCommandBufferStatusCommitted:
+		case MTLCommandBufferStatusScheduled:
+			return false;
+		case MTLCommandBufferStatusCompleted:
+		case MTLCommandBufferStatusError:
+			return true;
+	}
+}
 
 #endif // __APPLE__

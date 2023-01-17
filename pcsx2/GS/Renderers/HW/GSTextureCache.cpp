@@ -767,6 +767,26 @@ void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, 
 	GetTargetHeight(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, static_cast<u32>(needed_height));
 }
 
+bool GSTextureCache::PrepareDownloadTexture(u32 width, u32 height, GSTexture::Format format, std::unique_ptr<GSDownloadTexture>* tex)
+{
+	GSDownloadTexture* ctex = tex->get();
+	if (ctex && ctex->GetWidth() >= width && ctex->GetHeight() >= height)
+		return true;
+
+	// In the case of oddly sized texture reads, we'll keep the larger dimension.
+	const u32 new_width = ctex ? std::max(ctex->GetWidth(), width) : width;
+	const u32 new_height = ctex ? std::max(ctex->GetHeight(), height) : height;
+	tex->reset();
+	*tex = g_gs_device->CreateDownloadTexture(new_width, new_height, format);
+	if (!tex)
+	{
+		Console.WriteLn("Failed to create %ux%u download texture", new_width, new_height);
+		return false;
+	}
+
+	return true;
+}
+
 // Expands targets where the write from the EE overlaps the edge of a render target and uses the same base pointer.
 void GSTextureCache::ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)
 {
@@ -2333,30 +2353,35 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 
 	GSTexture::Format fmt;
 	ShaderConvert ps_shader;
+	std::unique_ptr<GSDownloadTexture>* dltex;
 	switch (TEX0.PSM)
 	{
 		case PSM_PSMCT32:
 		case PSM_PSMCT24:
 			fmt = GSTexture::Format::Color;
 			ps_shader = ShaderConvert::COPY;
+			dltex = &m_color_download_texture;
 			break;
 
 		case PSM_PSMCT16:
 		case PSM_PSMCT16S:
 			fmt = GSTexture::Format::UInt16;
 			ps_shader = ShaderConvert::RGBA8_TO_16_BITS;
+			dltex = &m_uint16_download_texture;
 			break;
 
 		case PSM_PSMZ32:
 		case PSM_PSMZ24:
 			fmt = GSTexture::Format::UInt32;
 			ps_shader = ShaderConvert::FLOAT32_TO_32_BITS;
+			dltex = &m_uint32_download_texture;
 			break;
 
 		case PSM_PSMZ16:
 		case PSM_PSMZ16S:
 			fmt = GSTexture::Format::UInt16;
 			ps_shader = ShaderConvert::FLOAT32_TO_16_BITS;
+			dltex = &m_uint16_download_texture;
 			break;
 
 		default:
@@ -2366,58 +2391,85 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 	// Yes lots of logging, but I'm not confident with this code
 	GL_PUSH("Texture Cache Read. Format(0x%x)", TEX0.PSM);
 
-	GL_PERF("TC: Read Back Target: %d (0x%x)[fmt: 0x%x]. Size %dx%d",
-	        t->m_texture->GetID(), TEX0.TBP0, TEX0.PSM, r.width(), r.height());
+	GL_PERF("TC: Read Back Target: %d (0x%x)[fmt: 0x%x]. Size %dx%d", t->m_texture->GetID(), TEX0.TBP0, TEX0.PSM, r.width(), r.height());
 
-	const GSVector4 src = GSVector4(r) * GSVector4(t->m_texture->GetScale()).xyxy() / GSVector4(t->m_texture->GetSize()).xyxy();
+	const GSVector4 src(GSVector4(r) * GSVector4(t->m_texture->GetScale()).xyxy() / GSVector4(t->m_texture->GetSize()).xyxy());
+	const GSVector4i drc(0, 0, r.width(), r.height());
+	const bool direct_read = (t->m_texture->GetScale() == GSVector2(1, 1) && ps_shader == ShaderConvert::COPY);
 
-	bool res;
-	GSTexture::GSMap m;
+	if (!PrepareDownloadTexture(drc.z, drc.w, fmt, dltex))
+		return;
 
-	if (t->m_texture->GetScale() == GSVector2(1, 1) && ps_shader == ShaderConvert::COPY)
-		res = g_gs_device->DownloadTexture(t->m_texture, r, m);
-	else
-		res = g_gs_device->DownloadTextureConvert(t->m_texture, src, GSVector2i(r.width(), r.height()), fmt, ps_shader, m, false);
-
-	if (res)
+	if (direct_read)
 	{
-		const GSOffset off = g_gs_renderer->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
-
-		switch (TEX0.PSM)
-		{
-			case PSM_PSMCT32:
-			case PSM_PSMZ32:
-				g_gs_renderer->m_mem.WritePixel32(m.bits, m.pitch, off, r);
-				break;
-			case PSM_PSMCT24:
-			case PSM_PSMZ24:
-				g_gs_renderer->m_mem.WritePixel24(m.bits, m.pitch, off, r);
-				break;
-			case PSM_PSMCT16:
-			case PSM_PSMCT16S:
-			case PSM_PSMZ16:
-			case PSM_PSMZ16S:
-				g_gs_renderer->m_mem.WritePixel16(m.bits, m.pitch, off, r);
-				break;
-
-			default:
-				ASSERT(0);
-		}
-
-		g_gs_device->DownloadTextureComplete();
+		dltex->get()->CopyFromTexture(drc, t->m_texture, r, 0, true);
 	}
+	else
+	{
+		GSTexture* tmp = g_gs_device->CreateRenderTarget(drc.z, drc.w, fmt, false);
+		if (tmp)
+		{
+			g_gs_device->StretchRect(t->m_texture, src, tmp, GSVector4(drc), ps_shader, false);
+			dltex->get()->CopyFromTexture(drc, tmp, drc, 0, true);
+			g_gs_device->Recycle(tmp);
+		}
+		else
+		{
+			Console.Error("Failed to allocate temporary %dx%d target for read.", drc.z, drc.w);
+			return;
+		}
+	}
+
+	dltex->get()->Flush();
+	if (!dltex->get()->Map(drc))
+		return;
+
+	// Why does WritePixelNN() not take a const pointer?
+	const GSOffset off = g_gs_renderer->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
+	u8* bits = const_cast<u8*>(dltex->get()->GetMapPointer());
+	const u32 pitch = dltex->get()->GetMapPitch();
+
+	switch (TEX0.PSM)
+	{
+		case PSM_PSMCT32:
+		case PSM_PSMZ32:
+			g_gs_renderer->m_mem.WritePixel32(bits, pitch, off, r);
+			break;
+		case PSM_PSMCT24:
+		case PSM_PSMZ24:
+			g_gs_renderer->m_mem.WritePixel24(bits, pitch, off, r);
+			break;
+		case PSM_PSMCT16:
+		case PSM_PSMCT16S:
+		case PSM_PSMZ16:
+		case PSM_PSMZ16S:
+			g_gs_renderer->m_mem.WritePixel16(bits, pitch, off, r);
+			break;
+
+		default:
+			Console.Error("Unknown PSM %u on Read", TEX0.PSM);
+			break;
+	}
+
+	dltex->get()->Unmap();
 }
 
 void GSTextureCache::Read(Source* t, const GSVector4i& r)
 {
-	const GIFRegTEX0& TEX0 = t->m_TEX0;
+	const GSVector4i drc(0, 0, r.width(), r.height());
 
-	GSTexture::GSMap m;
-	if (g_gs_device->DownloadTexture(t->m_texture, r, m))
+	if (!PrepareDownloadTexture(drc.z, drc.w, GSTexture::Format::Color, &m_color_download_texture))
+		return;
+
+	m_color_download_texture->CopyFromTexture(drc, t->m_texture, r, 0, true);
+	m_color_download_texture->Flush();
+
+	if (m_color_download_texture->Map(drc))
 	{
-		GSOffset off = g_gs_renderer->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
-		g_gs_renderer->m_mem.WritePixel32(m.bits, m.pitch, off, r);
-		g_gs_device->DownloadTextureComplete();
+		GSOffset off = g_gs_renderer->m_mem.GetOffset(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM);
+		g_gs_renderer->m_mem.WritePixel32(
+			const_cast<u8*>(m_color_download_texture->GetMapPointer()), m_color_download_texture->GetMapPitch(), off, r);
+		m_color_download_texture->Unmap();
 	}
 }
 

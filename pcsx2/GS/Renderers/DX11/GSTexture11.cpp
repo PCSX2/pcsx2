@@ -33,6 +33,30 @@ GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, const D3
 	m_mipmap_levels = static_cast<int>(desc.MipLevels);
 }
 
+DXGI_FORMAT GSTexture11::GetDXGIFormat(Format format)
+{
+	// clang-format off
+	switch (format)
+	{
+	case GSTexture::Format::Color:        return DXGI_FORMAT_R8G8B8A8_UNORM;
+	case GSTexture::Format::HDRColor:     return DXGI_FORMAT_R16G16B16A16_UNORM;
+	case GSTexture::Format::DepthStencil: return DXGI_FORMAT_R32G8X24_TYPELESS;
+	case GSTexture::Format::UNorm8:       return DXGI_FORMAT_A8_UNORM;
+	case GSTexture::Format::UInt16:       return DXGI_FORMAT_R16_UINT;
+	case GSTexture::Format::UInt32:       return DXGI_FORMAT_R32_UINT;
+	case GSTexture::Format::PrimID:       return DXGI_FORMAT_R32_FLOAT;
+	case GSTexture::Format::BC1:          return DXGI_FORMAT_BC1_UNORM;
+	case GSTexture::Format::BC2:          return DXGI_FORMAT_BC2_UNORM;
+	case GSTexture::Format::BC3:          return DXGI_FORMAT_BC3_UNORM;
+	case GSTexture::Format::BC7:          return DXGI_FORMAT_BC7_UNORM;
+	case GSTexture::Format::Invalid:
+	default:
+		ASSERT(0);
+		return DXGI_FORMAT_UNKNOWN;
+	}
+	// clang-format on
+}
+
 void* GSTexture11::GetNativeHandle() const
 {
 	return static_cast<ID3D11ShaderResourceView*>(*const_cast<GSTexture11*>(this));
@@ -272,4 +296,107 @@ GSTexture11::operator ID3D11UnorderedAccessView*()
 bool GSTexture11::Equal(GSTexture11* tex)
 {
 	return tex && m_texture == tex->m_texture;
+}
+
+GSDownloadTexture11::GSDownloadTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> tex, u32 width, u32 height, GSTexture::Format format)
+	: GSDownloadTexture(width, height, format)
+	, m_texture(std::move(tex))
+{
+}
+
+GSDownloadTexture11::~GSDownloadTexture11()
+{
+	if (IsMapped())
+		GSDownloadTexture11::Unmap();
+}
+
+std::unique_ptr<GSDownloadTexture11> GSDownloadTexture11::Create(u32 width, u32 height, GSTexture::Format format)
+{
+	D3D11_TEXTURE2D_DESC desc = {};
+	desc.Width = width;
+	desc.Height = height;
+	desc.Format = GSTexture11::GetDXGIFormat(format);
+	desc.MipLevels = 1;
+	desc.ArraySize = 1;
+	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Quality = 0;
+	desc.Usage = D3D11_USAGE_STAGING;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+
+	wil::com_ptr_nothrow<ID3D11Texture2D> tex;
+	HRESULT hr = GSDevice11::GetInstance()->GetD3DDevice()->CreateTexture2D(&desc, nullptr, tex.put());
+	if (FAILED(hr))
+	{
+		Console.Error("GSDownloadTexture11: CreateTexture2D() failed: %08X", hr);
+		return {};
+	}
+
+	return std::unique_ptr<GSDownloadTexture11>(new GSDownloadTexture11(std::move(tex), width, height, format));
+}
+
+void GSDownloadTexture11::CopyFromTexture(
+	const GSVector4i& drc, GSTexture* stex, const GSVector4i& src, u32 src_level, bool use_transfer_pitch)
+{
+	pxAssert(stex->GetFormat() == m_format);
+	pxAssert(drc.width() == src.width() && drc.height() == src.height());
+	pxAssert(src.z <= stex->GetWidth() && src.w <= stex->GetHeight());
+	pxAssert(static_cast<u32>(drc.z) <= m_width && static_cast<u32>(drc.w) <= m_height);
+	pxAssert(src_level < static_cast<u32>(stex->GetMipmapLevels()));
+	g_perfmon.Put(GSPerfMon::Readbacks, 1);
+
+	if (IsMapped())
+		Unmap();
+
+	// depth textures need to copy the whole thing..
+	if (m_format == GSTexture::Format::DepthStencil)
+	{
+		GSDevice11::GetInstance()->GetD3DContext()->CopySubresourceRegion(
+			m_texture.get(), 0, 0, 0, 0, *static_cast<GSTexture11*>(stex), src_level, nullptr);
+	}
+	else
+	{
+		const CD3D11_BOX sbox(src.left, src.top, 0, src.right, src.bottom, 1);
+		GSDevice11::GetInstance()->GetD3DContext()->CopySubresourceRegion(
+			m_texture.get(), 0, drc.x, drc.y, 0, *static_cast<GSTexture11*>(stex), src_level, &sbox);
+	}
+
+	m_needs_flush = true;
+}
+
+bool GSDownloadTexture11::Map(const GSVector4i& rc)
+{
+	if (IsMapped())
+		return true;
+
+	D3D11_MAPPED_SUBRESOURCE sr;
+	HRESULT hr = GSDevice11::GetInstance()->GetD3DContext()->Map(m_texture.get(), 0, D3D11_MAP_READ, 0, &sr);
+	if (FAILED(hr))
+	{
+		Console.Error("GSDownloadTexture11: Map() failed: %08X", hr);
+		return false;
+	}
+
+	m_map_pointer = static_cast<u8*>(sr.pData);
+	m_current_pitch = sr.RowPitch;
+	return true;
+}
+
+void GSDownloadTexture11::Unmap()
+{
+	if (!IsMapped())
+		return;
+
+	GSDevice11::GetInstance()->GetD3DContext()->Unmap(m_texture.get(), 0);
+	m_map_pointer = nullptr;
+}
+
+void GSDownloadTexture11::Flush()
+{
+	if (!m_needs_flush)
+		return;
+
+	if (IsMapped())
+		Unmap();
+
+	// Handled when mapped.
 }

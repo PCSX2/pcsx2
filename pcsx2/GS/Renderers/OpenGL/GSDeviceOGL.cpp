@@ -79,7 +79,7 @@ GSDeviceOGL::~GSDeviceOGL()
 GSTexture* GSDeviceOGL::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 {
 	GL_PUSH("Create surface");
-	return new GSTextureOGL(type, width, height, levels, format, m_fbo_read);
+	return new GSTextureOGL(type, width, height, levels, format);
 }
 
 bool GSDeviceOGL::Create()
@@ -790,6 +790,11 @@ void GSDeviceOGL::ClearStencil(GSTexture* t, u8 c)
 	glClearBufferiv(GL_STENCIL, 0, &color);
 }
 
+std::unique_ptr<GSDownloadTexture> GSDeviceOGL::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
+{
+	return GSDownloadTextureOGL::Create(width, height, format);
+}
+
 GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 {
 	GL_PUSH("Create Sampler");
@@ -1080,17 +1085,6 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 	src += m_shader_common_header;
 	src += m_shader_tfx_fs;
 	return src;
-}
-
-bool GSDeviceOGL::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map)
-{
-	ASSERT(src);
-	g_perfmon.Put(GSPerfMon::Readbacks, 1);
-
-	GSTextureOGL* srcgl = static_cast<GSTextureOGL*>(src);
-
-	out_map = srcgl->Read(rect, m_download_buffer);
-	return true;
 }
 
 // Copy a sub part of texture (same as below but force a conversion)

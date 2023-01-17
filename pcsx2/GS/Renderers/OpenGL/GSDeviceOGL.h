@@ -274,8 +274,6 @@ private:
 	GSHWDrawConfig::VSConstantBuffer m_vs_cb_cache;
 	GSHWDrawConfig::PSConstantBuffer m_ps_cb_cache;
 
-	AlignedBuffer<u8, 32> m_download_buffer;
-
 	GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) final;
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) final;
@@ -296,10 +294,15 @@ public:
 	GSDeviceOGL();
 	virtual ~GSDeviceOGL();
 
+	__fi static GSDeviceOGL* GetInstance() { return static_cast<GSDeviceOGL*>(g_gs_device.get()); }
+
 	// Used by OpenGL, so the same calling convention is required.
 	static void APIENTRY DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar* gl_message, const void* userParam);
 
 	static GL::StreamBuffer* GetTextureUploadBuffer();
+
+	__fi u32 GetFBORead() const { return m_fbo_read; }
+	__fi u32 GetFBOWrite() const { return m_fbo_write; }
 
 	bool Create() override;
 
@@ -316,9 +319,9 @@ public:
 	void ClearDepth(GSTexture* t) final;
 	void ClearStencil(GSTexture* t, u8 c) final;
 
-	GSTexture* InitPrimDateTexture(GSTexture* rt, const GSVector4i& area, bool datm);
+	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
-	bool DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map) final;
+	GSTexture* InitPrimDateTexture(GSTexture* rt, const GSVector4i& area, bool datm);
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) final;
 

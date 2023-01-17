@@ -107,7 +107,7 @@ namespace GSPng
 		return success;
 	}
 
-	bool Save(GSPng::Format fmt, const std::string& file, u8* image, int w, int h, int pitch, int compression, bool rb_swapped)
+	bool Save(GSPng::Format fmt, const std::string& file, const u8* image, int w, int h, int pitch, int compression, bool rb_swapped)
 	{
 		std::string root = file;
 		root.replace(file.length() - 4, 4, "");
