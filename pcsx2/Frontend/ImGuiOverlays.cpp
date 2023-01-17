@@ -40,6 +40,7 @@
 #include "Frontend/InputManager.h"
 #include "GS.h"
 #include "GS/GS.h"
+#include "GS/GSCapture.h"
 #include "GS/GSVector.h"
 #include "Host.h"
 #include "HostDisplay.h"
@@ -226,6 +227,13 @@ void ImGuiManager::DrawPerformanceOverlay()
 			{
 				text = "VU: ";
 				FormatProcessorStat(text, PerformanceMetrics::GetVUThreadUsage(), PerformanceMetrics::GetVUThreadAverageTime());
+				DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
+			}
+
+			if (GSCapture::IsCapturing())
+			{
+				text = "CAP: ";
+				FormatProcessorStat(text, PerformanceMetrics::GetCaptureThreadUsage(), PerformanceMetrics::GetCaptureThreadAverageTime());
 				DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 			}
 		}
