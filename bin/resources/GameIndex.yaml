@@ -12245,27 +12245,37 @@ SLES-51252:
   name: "Lord of the Rings, The - The Two Towers"
   region: "PAL-M3"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLES-51253:
   name: "Seigneur des Anneaux - Les Deux Tours"
   region: "PAL-F"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLES-51254:
   name: "Herr der Ringe, Der - Die Zwei Türme"
   region: "PAL-G"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLES-51255:
   name: "Signore Degli Anelli, Il - Le Due Torri"
   region: "PAL-I"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLES-51256:
   name: "Señor de Los Anillos, El - Las Dos Torres"
   region: "PAL-S"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLES-51257:
@@ -28067,6 +28077,8 @@ SLPM-65211:
 SLPM-65212:
   name: "Lord of the Rings, The - The Two Towers"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fixes white shiny weapons.
 SLPM-65213:
@@ -34449,6 +34461,8 @@ SLPM-67004:
 SLPM-67005:
   name: "Lord of the Rings, The - The Two Towers [EA Best Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLPM-67006:
@@ -34636,6 +34650,8 @@ SLPM-67545:
 SLPM-67546:
   name: "Lord of the Rings - The Two Towers"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLPM-67550:
@@ -39830,12 +39846,16 @@ SLPS-29002:
 SLPS-29003:
   name: "Lord of the Rings - The Two Towers [Collector's Box]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLPS-29004:
   name: "Lord of the Rings, The - The Two Towers"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLPS-29005:
@@ -42928,6 +42948,8 @@ SLUS-20578:
   name: "Lord of the Rings, The - The Two Towers"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLUS-20579:
