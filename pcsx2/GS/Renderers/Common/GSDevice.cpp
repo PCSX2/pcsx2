@@ -180,6 +180,11 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 	return t;
 }
 
+std::unique_ptr<GSDownloadTexture> GSDevice::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
+{
+	return {};
+}
+
 void GSDevice::PrintMemoryUsage()
 {
 #ifdef ENABLE_OGL_DEBUG
@@ -259,34 +264,12 @@ GSTexture* GSDevice::CreateTexture(int w, int h, int mipmap_levels, GSTexture::F
 	return FetchSurface(GSTexture::Type::Texture, w, h, levels, format, false, prefer_reuse);
 }
 
-GSTexture* GSDevice::CreateOffscreen(int w, int h, GSTexture::Format format)
-{
-	return FetchSurface(GSTexture::Type::Offscreen, w, h, 1, format, false, true);
-}
-
 GSTexture::Format GSDevice::GetDefaultTextureFormat(GSTexture::Type type)
 {
 	if (type == GSTexture::Type::DepthStencil)
 		return GSTexture::Format::DepthStencil;
 	else
 		return GSTexture::Format::Color;
-}
-
-bool GSDevice::DownloadTextureConvert(GSTexture* src, const GSVector4& sRect, const GSVector2i& dSize, GSTexture::Format format, ShaderConvert ps_shader, GSTexture::GSMap& out_map, const bool linear)
-{
-	ASSERT(src);
-	ASSERT(format == GSTexture::Format::Color || format == GSTexture::Format::UInt16 || format == GSTexture::Format::UInt32);
-
-	GSTexture* dst = CreateRenderTarget(dSize.x, dSize.y, format);
-	if (!dst)
-		return false;
-
-	GSVector4i dRect(0, 0, dSize.x, dSize.y);
-	StretchRect(src, sRect, dst, GSVector4(dRect), ps_shader, linear);
-
-	bool ret = DownloadTexture(dst, dRect, out_map);
-	Recycle(dst);
-	return ret;
 }
 
 void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)

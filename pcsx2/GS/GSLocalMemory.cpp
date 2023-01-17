@@ -14,9 +14,10 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSLocalMemory.h"
-#include "GS.h"
-#include "GSExtra.h"
+#include "GS/GS.h"
+#include "GS/GSLocalMemory.h"
+#include "GS/GSExtra.h"
+#include "GS/GSPng.h"
 #include <unordered_set>
 
 template <typename Fn>
@@ -556,12 +557,11 @@ void GSLocalMemory::SaveBMP(const std::string& fn, u32 bp, u32 bw, u32 psm, int 
 		}
 	}
 
-	GSTextureSW t(GSTexture::Type::Offscreen, w, h);
-
-	if (t.Update(GSVector4i(0, 0, w, h), bits, pitch))
-	{
-		t.Save(fn);
-	}
+#ifdef PCSX2_DEVBUILD
+	GSPng::Save(GSPng::RGB_A_PNG, fn, static_cast<u8*>(bits), w, h, pitch, GSConfig.PNGCompressionLevel, false);
+#else
+	GSPng::Save(GSPng::RGB_PNG, fn, static_cast<u8*>(bits), w, h, pitch, GSConfig.PNGCompressionLevel, false);
+#endif
 
 	_aligned_free(bits);
 }

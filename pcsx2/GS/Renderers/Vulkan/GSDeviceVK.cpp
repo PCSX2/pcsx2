@@ -402,8 +402,6 @@ VkFormat GSDeviceVK::LookupNativeFormat(GSTexture::Format format) const
 
 GSTexture* GSDeviceVK::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 {
-	pxAssert(type != GSTexture::Type::Offscreen);
-
 	const u32 clamped_width = static_cast<u32>(std::clamp<int>(width, 1, g_vulkan_context->GetMaxImageDimension2D()));
 	const u32 clamped_height = static_cast<u32>(std::clamp<int>(height, 1, g_vulkan_context->GetMaxImageDimension2D()));
 
@@ -419,87 +417,10 @@ GSTexture* GSDeviceVK::CreateSurface(GSTexture::Type type, int width, int height
 	return tex.release();
 }
 
-bool GSDeviceVK::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map)
+std::unique_ptr<GSDownloadTexture> GSDeviceVK::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
 {
-	const u32 width = rect.width();
-	const u32 height = rect.height();
-	const u32 pitch = width * Vulkan::Util::GetTexelSize(static_cast<GSTextureVK*>(src)->GetNativeFormat());
-	const u32 size = pitch * height;
-	const u32 level = 0;
-	if (!CheckStagingBufferSize(size))
-	{
-		Console.Error("Can't read back %ux%u", width, height);
-		return false;
-	}
-
-	g_perfmon.Put(GSPerfMon::Readbacks, 1);
-	EndRenderPass();
-	{
-		const VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
-		GL_INS("ReadbackTexture: {%d,%d} %ux%u", rect.left, rect.top, width, height);
-
-		GSTextureVK* vkSrc = static_cast<GSTextureVK*>(src);
-		VkImageLayout old_layout = vkSrc->GetTexture().GetLayout();
-		if (old_layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-			vkSrc->GetTexture().TransitionSubresourcesToLayout(
-				cmdbuf, level, 1, 0, 1, old_layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-
-		VkBufferImageCopy image_copy = {};
-		const VkImageAspectFlags aspect = Vulkan::Util::IsDepthFormat(static_cast<VkFormat>(vkSrc->GetFormat())) ?
-                                              VK_IMAGE_ASPECT_DEPTH_BIT :
-                                              VK_IMAGE_ASPECT_COLOR_BIT;
-		image_copy.bufferOffset = 0;
-		image_copy.bufferRowLength = width;
-		image_copy.bufferImageHeight = 0;
-		image_copy.imageSubresource = {aspect, level, 0u, 1u};
-		image_copy.imageOffset = {rect.left, rect.top, 0};
-		image_copy.imageExtent = {width, height, 1u};
-
-		// invalidate gpu cache
-		// TODO: Needed?
-		Vulkan::Util::BufferMemoryBarrier(cmdbuf, m_readback_staging_buffer, 0, VK_ACCESS_TRANSFER_WRITE_BIT, 0, size,
-			VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-
-		// do the copy
-		vkCmdCopyImageToBuffer(cmdbuf, vkSrc->GetTexture().GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			m_readback_staging_buffer, 1, &image_copy);
-
-		// flush gpu cache
-		Vulkan::Util::BufferMemoryBarrier(cmdbuf, m_readback_staging_buffer, VK_ACCESS_TRANSFER_WRITE_BIT,
-			VK_ACCESS_HOST_READ_BIT, 0, size, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_HOST_BIT);
-
-		if (old_layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-		{
-			vkSrc->GetTexture().TransitionSubresourcesToLayout(
-				cmdbuf, level, 1, 0, 1, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, old_layout);
-		}
-	}
-
-	ExecuteCommandBuffer(true);
-	if (GSConfig.HWSpinGPUForReadbacks)
-	{
-		g_vulkan_context->NotifyOfReadback();
-		if (!g_vulkan_context->GetOptionalExtensions().vk_ext_calibrated_timestamps && !m_warned_slow_spin)
-		{
-			m_warned_slow_spin = true;
-			Host::AddKeyedOSDMessage("GSDeviceVK_NoCalibratedTimestamps",
-				"Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.",
-				Host::OSD_WARNING_DURATION);
-		}
-	}
-
-	// invalidate cpu cache before reading
-	VkResult res = vmaInvalidateAllocation(g_vulkan_context->GetAllocator(), m_readback_staging_allocation, 0, size);
-	if (res != VK_SUCCESS)
-		LOG_VULKAN_ERROR(res, "vmaInvalidateAllocation() failed, readback may be incorrect: ");
-
-	out_map.bits = reinterpret_cast<u8*>(m_readback_staging_buffer_map);
-	out_map.pitch = pitch;
-
-	return true;
+	return GSDownloadTextureVK::Create(width, height, format);
 }
-
-void GSDeviceVK::DownloadTextureComplete() {}
 
 void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 {
@@ -1919,50 +1840,6 @@ bool GSDeviceVK::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, cons
 	return true;
 }
 
-bool GSDeviceVK::CheckStagingBufferSize(u32 required_size)
-{
-	if (m_readback_staging_buffer_size >= required_size)
-		return true;
-
-	DestroyStagingBuffer();
-
-	const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0u, required_size,
-		VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_SHARING_MODE_EXCLUSIVE, 0u, nullptr};
-
-	VmaAllocationCreateInfo aci = {};
-	aci.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
-	aci.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-	aci.preferredFlags = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
-
-	VmaAllocationInfo ai = {};
-	VkResult res = vmaCreateBuffer(
-		g_vulkan_context->GetAllocator(), &bci, &aci, &m_readback_staging_buffer, &m_readback_staging_allocation, &ai);
-	if (res != VK_SUCCESS)
-	{
-		LOG_VULKAN_ERROR(res, "vmaCreateBuffer() failed: ");
-		return false;
-	}
-
-	m_readback_staging_buffer_map = ai.pMappedData;
-	m_readback_staging_buffer_size = required_size;
-	return true;
-}
-
-void GSDeviceVK::DestroyStagingBuffer()
-{
-	// unmapped as part of the buffer destroy
-	m_readback_staging_buffer_map = nullptr;
-	m_readback_staging_buffer_size = 0;
-
-	if (m_readback_staging_buffer != VK_NULL_HANDLE)
-	{
-		vmaDestroyBuffer(g_vulkan_context->GetAllocator(), m_readback_staging_buffer, m_readback_staging_allocation);
-		m_readback_staging_buffer = VK_NULL_HANDLE;
-		m_readback_staging_allocation = VK_NULL_HANDLE;
-		m_readback_staging_buffer_size = 0;
-	}
-}
-
 void GSDeviceVK::DestroyResources()
 {
 	g_vulkan_context->ExecuteCommandBuffer(Vulkan::Context::WaitType::Sleep);
@@ -2024,8 +1901,6 @@ void GSDeviceVK::DestroyResources()
 	m_utility_depth_render_pass_discard = VK_NULL_HANDLE;
 	m_date_setup_render_pass = VK_NULL_HANDLE;
 	m_swap_chain_render_pass = VK_NULL_HANDLE;
-
-	DestroyStagingBuffer();
 
 	m_fragment_uniform_stream_buffer.Destroy(false);
 	m_vertex_uniform_stream_buffer.Destroy(false);
@@ -2393,6 +2268,22 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartRenderPass(bool wait_for_completi
 
 		// restart render pass
 		BeginRenderPass(render_pass, render_pass_area);
+	}
+}
+
+void GSDeviceVK::ExecuteCommandBufferForReadback()
+{
+	ExecuteCommandBuffer(true);
+	if (GSConfig.HWSpinGPUForReadbacks)
+	{
+		g_vulkan_context->NotifyOfReadback();
+		if (!g_vulkan_context->GetOptionalExtensions().vk_ext_calibrated_timestamps && !m_warned_slow_spin)
+		{
+			m_warned_slow_spin = true;
+			Host::AddKeyedOSDMessage("GSDeviceVK_NoCalibratedTimestamps",
+				"Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.",
+				Host::OSD_WARNING_DURATION);
+		}
 	}
 }
 

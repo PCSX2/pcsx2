@@ -146,11 +146,6 @@ private:
 	D3D12::StreamBuffer m_vertex_constant_buffer;
 	D3D12::StreamBuffer m_pixel_constant_buffer;
 
-	ComPtr<D3D12MA::Allocation> m_readback_staging_allocation;
-	ComPtr<ID3D12Resource> m_readback_staging_buffer;
-	void* m_readback_staging_buffer_map = nullptr;
-	u32 m_readback_staging_buffer_size = 0;
-
 	D3D12::DescriptorHandle m_point_sampler_cpu;
 	D3D12::DescriptorHandle m_linear_sampler_cpu;
 
@@ -220,11 +215,6 @@ private:
 	bool CompilePostProcessingPipelines();
 	bool CompileCASPipelines();
 
-	bool CheckStagingBufferSize(u32 required_size);
-	bool MapStagingBuffer(u32 size_to_read);
-	void UnmapStagingBuffer();
-	void DestroyStagingBuffer();
-
 	void DestroyResources();
 
 public:
@@ -253,8 +243,7 @@ public:
 	void ClearDepth(GSTexture* t) override;
 	void ClearStencil(GSTexture* t, u8 c) override;
 
-	bool DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map) override;
-	void DownloadTextureComplete() override;
+	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) override;
 
@@ -296,6 +285,7 @@ public:
 	void ExecuteCommandList(bool wait_for_completion);
 	void ExecuteCommandList(bool wait_for_completion, const char* reason, ...);
 	void ExecuteCommandListAndRestartRenderPass(bool wait_for_completion, const char* reason);
+	void ExecuteCommandListForReadback();
 
 	/// Set dirty flags on everything to force re-bind at next draw time.
 	void InvalidateCachedState();

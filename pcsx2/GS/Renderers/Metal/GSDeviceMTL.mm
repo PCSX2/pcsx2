@@ -31,21 +31,6 @@ static constexpr simd::float2 ToSimd(const GSVector2& vec)
 	return simd::make_float2(vec.x, vec.y);
 }
 
-static constexpr bool IsCommandBufferCompleted(MTLCommandBufferStatus status)
-{
-	switch (status)
-	{
-		case MTLCommandBufferStatusNotEnqueued:
-		case MTLCommandBufferStatusEnqueued:
-		case MTLCommandBufferStatusCommitted:
-		case MTLCommandBufferStatusScheduled:
-			return false;
-		case MTLCommandBufferStatusCompleted:
-		case MTLCommandBufferStatusError:
-			return true;
-	}
-}
-
 GSDevice* MakeGSDeviceMTL()
 {
 	return new GSDeviceMTL();
@@ -241,6 +226,16 @@ id<MTLCommandBuffer> GSDeviceMTL::GetRenderCmdBuf()
 	return m_current_render_cmdbuf;
 }
 
+id<MTLCommandBuffer> GSDeviceMTL::GetRenderCmdBufWithoutCreate()
+{
+	return m_current_render_cmdbuf;
+}
+
+id<MTLFence> GSDeviceMTL::GetSpinFence()
+{
+	return m_spin_timer ? m_spin_fence : nil;
+}
+
 void GSDeviceMTL::DrawCommandBufferFinished(u64 draw, id<MTLCommandBuffer> buffer)
 {
 	// We can do the update non-atomically because we only ever update under the lock
@@ -349,6 +344,19 @@ void GSDeviceMTL::FlushEncoders()
 				dev->m_spin_manager.SpinCompleted(spin_cycles, static_cast<u32>(begin), static_cast<u32>(end));
 		}];
 		[spinCmdBuf commit];
+	}
+}
+
+void GSDeviceMTL::FlushEncodersForReadback()
+{
+	FlushEncoders();
+	if (@available(macOS 10.15, iOS 10.3, *))
+	{
+		if (GSConfig.HWSpinGPUForReadbacks)
+		{
+			m_spin_manager.ReadbackRequested();
+			m_spin_timer = 30;
+		}
 	}
 }
 
@@ -497,9 +505,6 @@ GSTexture* GSDeviceMTL::CreateSurface(GSTexture::Type type, int width, int heigh
 	{
 		case GSTexture::Type::Texture:
 			[desc setUsage:MTLTextureUsageShaderRead];
-			break;
-		case GSTexture::Type::Offscreen:
-			[desc setUsage:MTLTextureUsageRenderTarget];
 			break;
 		case GSTexture::Type::RenderTarget:
 			if (m_dev.features.slow_color_compression)
@@ -1081,57 +1086,10 @@ void GSDeviceMTL::ClearStencil(GSTexture* t, uint8 c)
 	static_cast<GSTextureMTL*>(t)->RequestStencilClear(c);
 }
 
-bool GSDeviceMTL::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map)
-{ @autoreleasepool {
-	ASSERT(src);
-	EndRenderPass();
-	GSTextureMTL* msrc = static_cast<GSTextureMTL*>(src);
-	out_map.pitch = msrc->GetCompressedBytesPerBlock() * rect.width();
-	size_t size = out_map.pitch * rect.height();
-	if ([m_texture_download_buf length] < size)
-		m_texture_download_buf = MRCTransfer([m_dev.dev newBufferWithLength:size options:MTLResourceStorageModeShared]);
-	pxAssertRel(m_texture_download_buf, "Failed to allocate download buffer (out of memory?)");
-
-	MRCOwned<id<MTLCommandBuffer>> cmdbuf = MRCRetain(GetRenderCmdBuf());
-	[cmdbuf pushDebugGroup:@"DownloadTexture"];
-	id<MTLBlitCommandEncoder> encoder = [cmdbuf blitCommandEncoder];
-	[encoder copyFromTexture:msrc->GetTexture()
-	             sourceSlice:0
-	             sourceLevel:0
-	            sourceOrigin:MTLOriginMake(rect.x, rect.y, 0)
-	              sourceSize:MTLSizeMake(rect.width(), rect.height(), 1)
-	                toBuffer:m_texture_download_buf
-	       destinationOffset:0
-	  destinationBytesPerRow:out_map.pitch
-	destinationBytesPerImage:size];
-	if (m_spin_timer)
-		[encoder updateFence:m_spin_fence];
-	[encoder endEncoding];
-	[cmdbuf popDebugGroup];
-
-	FlushEncoders();
-	if (@available(macOS 10.15, iOS 10.3, *))
-	{
-		if (GSConfig.HWSpinGPUForReadbacks)
-		{
-			m_spin_manager.ReadbackRequested();
-			m_spin_timer = 30;
-		}
-	}
-	if (GSConfig.HWSpinCPUForReadbacks)
-	{
-		while (!IsCommandBufferCompleted([cmdbuf status]))
-			ShortSpin();
-	}
-	else
-	{
-		[cmdbuf waitUntilCompleted];
-	}
-
-	out_map.bits = static_cast<u8*>([m_texture_download_buf contents]);
-	g_perfmon.Put(GSPerfMon::Readbacks, 1);
-	return true;
-}}
+std::unique_ptr<GSDownloadTexture> GSDeviceMTL::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
+{
+	return GSDownloadTextureMTL::Create(this, width, height, format);
+}
 
 void GSDeviceMTL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 { @autoreleasepool {

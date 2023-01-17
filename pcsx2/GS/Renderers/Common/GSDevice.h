@@ -813,19 +813,9 @@ public:
 	GSTexture* CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear = true);
 	GSTexture* CreateDepthStencil(int w, int h, GSTexture::Format format, bool clear = true);
 	GSTexture* CreateTexture(int w, int h, int mipmap_levels, GSTexture::Format format, bool prefer_reuse = false);
-	GSTexture* CreateOffscreen(int w, int h, GSTexture::Format format);
 	GSTexture::Format GetDefaultTextureFormat(GSTexture::Type type);
 
-	/// Download the region `rect` of `src` into `out_map`
-	/// `out_map` will be valid a call to `DownloadTextureComplete`
-	virtual bool DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map) { return false; }
-
-	/// Scale the region `sRect` of `src` to the size `dSize` using `ps_shader` and store the result in `out_map`
-	/// `out_map` will be valid a call to `DownloadTextureComplete`
-	virtual bool DownloadTextureConvert(GSTexture* src, const GSVector4& sRect, const GSVector2i& dSize, GSTexture::Format format, ShaderConvert ps_shader, GSTexture::GSMap& out_map, bool linear);
-
-	/// Must be called to free resources after calling `DownloadTexture` or `DownloadTextureConvert`
-	virtual void DownloadTextureComplete() {}
+	virtual std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format);
 
 	virtual void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) {}
 	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true) {}
