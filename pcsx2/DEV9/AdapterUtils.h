@@ -35,7 +35,7 @@ namespace AdapterUtils
 	bool GetWin32AdapterAuto(PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer);
 
 	std::optional<PacketReader::IP::IP_Address> GetAdapterIP(PIP_ADAPTER_ADDRESSES adapter);
-	//Mask
+	// Mask.
 	std::vector<PacketReader::IP::IP_Address> GetGateways(PIP_ADAPTER_ADDRESSES adapter);
 	std::vector<PacketReader::IP::IP_Address> GetDNS(PIP_ADAPTER_ADDRESSES adapter);
 #elif defined(__POSIX__)
@@ -43,7 +43,7 @@ namespace AdapterUtils
 	bool GetIfAdapterAuto(ifaddrs* adapter, ifaddrs** buffer);
 
 	std::optional<PacketReader::IP::IP_Address> GetAdapterIP(ifaddrs* adapter);
-	//Mask
+	// Mask.
 	std::vector<PacketReader::IP::IP_Address> GetGateways(ifaddrs* adapter);
 	std::vector<PacketReader::IP::IP_Address> GetDNS(ifaddrs* adapter);
 #endif
