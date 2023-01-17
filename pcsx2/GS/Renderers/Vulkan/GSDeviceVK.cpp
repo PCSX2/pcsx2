@@ -404,8 +404,8 @@ GSTexture* GSDeviceVK::CreateSurface(GSTexture::Type type, int width, int height
 {
 	pxAssert(type != GSTexture::Type::Offscreen);
 
-	const u32 clamped_width = static_cast<u32>(std::clamp<int>(1, width, g_vulkan_context->GetMaxImageDimension2D()));
-	const u32 clamped_height = static_cast<u32>(std::clamp<int>(1, height, g_vulkan_context->GetMaxImageDimension2D()));
+	const u32 clamped_width = static_cast<u32>(std::clamp<int>(width, 1, g_vulkan_context->GetMaxImageDimension2D()));
+	const u32 clamped_height = static_cast<u32>(std::clamp<int>(height, 1, g_vulkan_context->GetMaxImageDimension2D()));
 
 	std::unique_ptr<GSTexture> tex(GSTextureVK::Create(type, clamped_width, clamped_height, levels, format, LookupNativeFormat(format)));
 	if (!tex)
@@ -763,6 +763,23 @@ void GSDeviceVK::BlitRect(GSTexture* sTex, const GSVector4i& sRect, u32 sLevel, 
 		&ib, linear ? VK_FILTER_LINEAR : VK_FILTER_NEAREST);
 }
 
+void GSDeviceVK::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
+{
+	struct Uniforms
+	{
+		float scaleX, scaleY;
+		u32 offsetX, offsetY, dOffset;
+	};
+
+	const Uniforms uniforms = {sTex->GetScale().x, sTex->GetScale().y, offsetX, offsetY, dOffset};
+	SetUtilityPushConstants(&uniforms, sizeof(uniforms));
+
+	const GSVector4 dRect(0, 0, dSize, 1);
+	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
+	DoStretchRect(static_cast<GSTextureVK*>(sTex), GSVector4::zero(), static_cast<GSTextureVK*>(dTex), dRect,
+		m_convert[static_cast<int>(shader)], false);
+}
+
 void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect,
 	const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
 {
@@ -1084,9 +1101,7 @@ void GSDeviceVK::ClearSamplerCache()
 	m_point_sampler = GetSampler(GSHWDrawConfig::SamplerSelector::Point());
 	m_linear_sampler = GetSampler(GSHWDrawConfig::SamplerSelector::Linear());
 	m_utility_sampler = m_point_sampler;
-
-	for (u32 i = 0; i < std::size(m_tfx_samplers); i++)
-		m_tfx_samplers[i] = GetSampler(m_tfx_sampler_sel[i]);
+	m_tfx_sampler = m_point_sampler;
 }
 
 static void AddMacro(std::stringstream& ss, const char* name, const char* value)
@@ -1236,8 +1251,8 @@ bool GSDeviceVK::CreatePipelineLayouts()
 	if ((m_tfx_ubo_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
 	Vulkan::Util::SetObjectName(dev, m_tfx_ubo_ds_layout, "TFX UBO descriptor layout");
-	for (u32 i = 0; i < NUM_TFX_SAMPLERS; i++)
-		dslb.AddBinding(i, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	dslb.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	dslb.AddBinding(1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	if ((m_tfx_sampler_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
 	Vulkan::Util::SetObjectName(dev, m_tfx_sampler_ds_layout, "TFX sampler descriptor layout");
@@ -1803,7 +1818,7 @@ bool GSDeviceVK::CompileCASPipelines()
 	dslb.AddBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
 	if ((m_cas_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
-	Vulkan::Util::SetObjectName(dev, m_cas_pipeline_layout, "CAS descriptor layout");
+	Vulkan::Util::SetObjectName(dev, m_cas_ds_layout, "CAS descriptor layout");
 
 	plb.AddPushConstants(VK_SHADER_STAGE_COMPUTE_BIT, 0, NUM_CAS_CONSTANTS * sizeof(u32));
 	plb.AddDescriptorSet(m_cas_ds_layout);
@@ -2308,11 +2323,8 @@ void GSDeviceVK::InitializeState()
 	if (m_linear_sampler)
 		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_point_sampler, "Linear sampler");
 
-	for (u32 i = 0; i < NUM_TFX_SAMPLERS; i++)
-	{
-		m_tfx_sampler_sel[i] = GSHWDrawConfig::SamplerSelector::Point().key;
-		m_tfx_samplers[i] = m_point_sampler;
-	}
+	m_tfx_sampler_sel = GSHWDrawConfig::SamplerSelector::Point().key;
+	m_tfx_sampler = m_point_sampler;
 
 	InvalidateCachedState();
 }
@@ -2463,13 +2475,13 @@ void GSDeviceVK::PSSetShaderResource(int i, GSTexture* sr, bool check_state)
 	m_dirty_flags |= (i < 2) ? DIRTY_FLAG_TFX_SAMPLERS_DS : DIRTY_FLAG_TFX_RT_TEXTURE_DS;
 }
 
-void GSDeviceVK::PSSetSampler(u32 index, GSHWDrawConfig::SamplerSelector sel)
+void GSDeviceVK::PSSetSampler(GSHWDrawConfig::SamplerSelector sel)
 {
-	if (m_tfx_sampler_sel[index] == sel.key)
+	if (m_tfx_sampler_sel == sel.key)
 		return;
 
-	m_tfx_sampler_sel[index] = sel.key;
-	m_tfx_samplers[index] = GetSampler(sel);
+	m_tfx_sampler_sel = sel.key;
+	m_tfx_sampler = GetSampler(sel);
 	m_dirty_flags |= DIRTY_FLAG_TFX_SAMPLERS_DS;
 }
 
@@ -2739,8 +2751,8 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			return ApplyTFXState(true);
 		}
 
-		dsub.AddCombinedImageSamplerDescriptorWrites(
-			ds, 0, m_tfx_textures.data(), m_tfx_samplers.data(), NUM_TFX_SAMPLERS);
+		dsub.AddCombinedImageSamplerDescriptorWrite(ds, 0, m_tfx_textures[0], m_tfx_sampler);
+		dsub.AddImageDescriptorWrite(ds, 1, m_tfx_textures[1]);
 		dsub.Update(dev);
 
 		m_tfx_descriptor_sets[1] = ds;
@@ -2764,10 +2776,10 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 		}
 
 		if (m_features.texture_barrier)
-			dsub.AddInputAttachmentDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_SAMPLERS]);
+			dsub.AddInputAttachmentDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_DRAW_TEXTURES]);
 		else
-			dsub.AddImageDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_SAMPLERS]);
-		dsub.AddImageDescriptorWrite(ds, 1, m_tfx_textures[NUM_TFX_SAMPLERS + 1]);
+			dsub.AddImageDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_DRAW_TEXTURES]);
+		dsub.AddImageDescriptorWrite(ds, 1, m_tfx_textures[NUM_TFX_DRAW_TEXTURES + 1]);
 		dsub.Update(dev);
 
 		m_tfx_descriptor_sets[2] = ds;
@@ -3028,7 +3040,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	if (config.tex)
 	{
 		PSSetShaderResource(0, config.tex, config.tex != config.rt);
-		PSSetSampler(0, config.sampler);
+		PSSetSampler(config.sampler);
 	}
 	if (config.pal)
 		PSSetShaderResource(1, config.pal, true);

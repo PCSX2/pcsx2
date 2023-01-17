@@ -1,5 +1,8 @@
 #!/bin/bash
 
+SCRIPTDIR=$(dirname "${BASH_SOURCE[0]}")
+source "$SCRIPTDIR/functions.sh"
+
 set -e
 
 # Packages - Build and Qt
@@ -57,18 +60,18 @@ declare -a PCSX2_PACKAGES=(
 )
 
 if [ "${COMPILER}" = "gcc" ]; then
-  BUILD_PACKAGES+=("g++-10")
+	BUILD_PACKAGES+=("g++-10")
 else
-  BUILD_PACKAGES+=("llvm-12" "lld-12" "clang-12")
+	BUILD_PACKAGES+=("llvm-12" "lld-12" "clang-12")
 fi
 
-sudo apt-get -qq update
+retry_command sudo apt-get -qq update && break
 
 # Install packages needed for building
 echo "Will install the following packages for building - ${BUILD_PACKAGES[*]}"
-sudo apt-get -y install "${BUILD_PACKAGES[@]}"
+retry_command sudo apt-get -y install "${BUILD_PACKAGES[@]}"
 
 # Install packages needed by pcsx2
 PCSX2_PACKAGES=("${PCSX2_PACKAGES[@]}")
 echo "Will install the following packages for pcsx2 - ${PCSX2_PACKAGES[*]}"
-sudo apt-get -y install "${PCSX2_PACKAGES[@]}"
+retry_command sudo apt-get -y install "${PCSX2_PACKAGES[@]}"

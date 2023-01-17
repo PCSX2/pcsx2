@@ -33,6 +33,7 @@ public slots:
 	void onStepInto();
 	void onStepOver();
 	void onStepOut();
+	void onBreakpointsChanged();
 
 private:
 	Ui::DebuggerWindow m_ui;

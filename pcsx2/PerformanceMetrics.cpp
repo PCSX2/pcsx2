@@ -33,10 +33,12 @@ static const float UPDATE_INTERVAL = 0.5f;
 static float s_vertical_frequency = 0.0f;
 static float s_fps = 0.0f;
 static float s_internal_fps = 0.0f;
-static float s_worst_frame_time = 0.0f;
+static float s_minimum_frame_time = 0.0f;
+static float s_minimum_frame_time_accumulator = 0.0f;
 static float s_average_frame_time = 0.0f;
 static float s_average_frame_time_accumulator = 0.0f;
-static float s_worst_frame_time_accumulator = 0.0f;
+static float s_maximum_frame_time = 0.0f;
+static float s_maximum_frame_time_accumulator = 0.0f;
 static u32 s_frames_since_last_update = 0;
 static u32 s_unskipped_frames_since_last_update = 0;
 static Common::Timer s_last_update_time;
@@ -86,8 +88,9 @@ void PerformanceMetrics::Clear()
 
 	s_fps = 0.0f;
 	s_internal_fps = 0.0f;
-	s_worst_frame_time = 0.0f;
+	s_minimum_frame_time = 0.0f;
 	s_average_frame_time = 0.0f;
+	s_maximum_frame_time = 0.0f;
 	s_internal_fps_method = PerformanceMetrics::InternalFPSMethod::None;
 
 	s_cpu_thread_usage = 0.0f;
@@ -112,8 +115,9 @@ void PerformanceMetrics::Reset()
 	s_unskipped_frames_since_last_update = 0;
 	s_gs_framebuffer_blits_since_last_update = 0;
 	s_gs_privileged_register_writes_since_last_update = 0;
+	s_minimum_frame_time_accumulator = 0.0f;
 	s_average_frame_time_accumulator = 0.0f;
-	s_worst_frame_time_accumulator = 0.0f;
+	s_maximum_frame_time_accumulator = 0.0f;
 
 	s_accumulated_gpu_time = 0.0f;
 	s_presents_since_last_update = 0;
@@ -135,8 +139,9 @@ void PerformanceMetrics::Update(bool gs_register_write, bool fb_blit, bool is_sk
 	if (!is_skipping_present)
 	{
 		const float frame_time = s_last_frame_time.GetTimeMillisecondsAndReset();
+		s_minimum_frame_time_accumulator = (s_minimum_frame_time_accumulator == 0.0f) ? frame_time : std::min(s_minimum_frame_time_accumulator, frame_time);
 		s_average_frame_time_accumulator += frame_time;
-		s_worst_frame_time_accumulator = std::max(s_worst_frame_time_accumulator, frame_time);
+		s_maximum_frame_time_accumulator = std::max(s_maximum_frame_time_accumulator, frame_time);
 		s_frame_time_history[s_frame_time_history_pos] = frame_time;
 		s_frame_time_history_pos = (s_frame_time_history_pos + 1) % NUM_FRAME_TIME_SAMPLES;
 		s_unskipped_frames_since_last_update++;
@@ -154,10 +159,9 @@ void PerformanceMetrics::Update(bool gs_register_write, bool fb_blit, bool is_sk
 		return;
 
 	s_last_update_time.ResetTo(now_ticks);
-	s_worst_frame_time = s_worst_frame_time_accumulator;
-	s_worst_frame_time_accumulator = 0.0f;
-	s_average_frame_time = s_average_frame_time_accumulator / static_cast<float>(s_unskipped_frames_since_last_update);
-	s_average_frame_time_accumulator = 0.0f;
+	s_minimum_frame_time = std::exchange(s_minimum_frame_time_accumulator, 0.0f);
+	s_average_frame_time = std::exchange(s_average_frame_time_accumulator, 0.0f) / static_cast<float>(s_unskipped_frames_since_last_update);
+	s_maximum_frame_time = std::exchange(s_maximum_frame_time_accumulator, 0.0f);
 	s_fps = static_cast<float>(s_frames_since_last_update) / time;
 	s_average_gpu_time = s_accumulated_gpu_time / static_cast<float>(s_unskipped_frames_since_last_update);
 	s_gpu_usage = s_accumulated_gpu_time / (time * 10.0f);
@@ -291,9 +295,14 @@ float PerformanceMetrics::GetAverageFrameTime()
 	return s_average_frame_time;
 }
 
-float PerformanceMetrics::GetWorstFrameTime()
+float PerformanceMetrics::GetMinimumFrameTime()
 {
-	return s_worst_frame_time;
+	return s_minimum_frame_time;
+}
+
+float PerformanceMetrics::GetMaximumFrameTime()
+{
+	return s_maximum_frame_time;
 }
 
 double PerformanceMetrics::GetCPUThreadUsage()

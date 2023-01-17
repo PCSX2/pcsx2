@@ -3513,6 +3513,9 @@ SCES-52033:
         // Cop2 problems.
         patch=0,EE,003953F8,word,48438000
         patch=0,EE,003735FC,word,4B06521B
+        author=YukiXXL
+        // Speed Correction (25 FPS)
+        patch=1,EE,00175E1C,extended,00000019
 SCES-52042:
   name: "Formula One 2004"
   region: "PAL-M6"
@@ -4620,6 +4623,9 @@ SCES-55386:
 SCES-55387:
   name: "Buzz! Deutschlands Superquiz"
   region: "PAL-G"
+SCES-55388:
+  name: "Buzz! Brain of Spain-Portugal"
+  region: "PAL-M2"
 SCES-55401:
   name: "SingStar Zingt met Disney"
   region: "PAL-NL"
@@ -5305,7 +5311,7 @@ SCKA-20096:
     halfPixelOffset: 2 # Fix text and post blur.
     mipmap: 2 # Base mip level isn't always used.
     autoFlush: 1 # Needed for recursive mipmap rendering.
-    getSkipCount: "GSC_Barnyard" # Render mipmaps on the CPU.
+    getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SCKA-20098:
   name: "Nickelodeon SpongeBob SquarePants - Creature from the Krusty Krab"
   region: "NTSC-K"
@@ -5335,6 +5341,10 @@ SCKA-20109:
 SCKA-20114:
   name: "Obscure II - The Aftermath"
   region: "NTSC-K"
+  gameFixes:
+    - EETimingHack # For stripes on FMVs and crashes on scenes.
+  clampModes:
+    vuClampMode: 3 # Fixes Lock picking pin.
 SCKA-20117:
   name: "Super Robot Taisen OG - Original Generations Gaiden"
   region: "NTSC-K"
@@ -8981,10 +8991,9 @@ SLAJ-25053:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLAJ-25055:
@@ -9019,10 +9028,9 @@ SLAJ-25066:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
   memcardFilters:
@@ -9054,7 +9062,8 @@ SLAJ-25075:
   region: "NTSC-Unk"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    cpuCLUTRender: 1 # Final colour adjustment LUT.
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
   memcardFilters:
     - "SLAJ-25075"
     - "SLPM-66232"
@@ -9141,10 +9150,9 @@ SLAJ-25094:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLAJ-25095:
@@ -9305,10 +9313,9 @@ SLED-52597:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLED-52852:
@@ -9371,10 +9378,9 @@ SLED-53512:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLED-53537:
@@ -11061,7 +11067,7 @@ SLES-50770:
   name: "Mad Maestro!"
   region: "PAL-M4"
 SLES-50771:
-  name: "Blood Omen 2 - Legend of Kain"
+  name: "Blood Omen 2 - The Legacy of Kain"
   region: "PAL-E"
   compat: 5
   roundModes:
@@ -11069,7 +11075,7 @@ SLES-50771:
   gsHWFixes:
     mipmap: 1 # Fixes glitching textures.
 SLES-50772:
-  name: "Blood Omen 2 - Legend of Kain"
+  name: "Blood Omen 2 - The Legacy of Kain"
   region: "PAL-M3"
   roundModes:
     eeRoundMode: 0 # Fixes pathing.
@@ -11209,7 +11215,7 @@ SLES-50814:
   region: "PAL-G"
   compat: 5
 SLES-50815:
-  name: "Blood Omen 2 - Legend of Kain"
+  name: "Blood Omen 2 - The Legacy of Kain"
   region: "PAL-G"
   roundModes:
     eeRoundMode: 0 # Fixes pathing.
@@ -12242,27 +12248,37 @@ SLES-51252:
   name: "Lord of the Rings, The - The Two Towers"
   region: "PAL-M3"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLES-51253:
   name: "Seigneur des Anneaux - Les Deux Tours"
   region: "PAL-F"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLES-51254:
   name: "Herr der Ringe, Der - Die Zwei Türme"
   region: "PAL-G"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLES-51255:
   name: "Signore Degli Anelli, Il - Le Due Torri"
   region: "PAL-I"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLES-51256:
   name: "Señor de Los Anillos, El - Las Dos Torres"
   region: "PAL-S"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLES-51257:
@@ -12477,9 +12493,11 @@ SLES-51354:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes glows.
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
+    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
     textureInsideRT: 1 # Fixes rainbow lighting for some areas.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLES-51355:
   name: "Big Mutha Truckers"
   region: "PAL-M5"
@@ -13211,6 +13229,8 @@ SLES-51755:
 SLES-51756:
   name: "Batman - Rise of Sin Tzu"
   region: "PAL-M5"
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Fixes hang on final boss.
 SLES-51757:
   name: "Dancing Stage Fever"
   region: "PAL-M5"
@@ -13904,7 +13924,7 @@ SLES-52038:
   region: "PAL-G"
 SLES-52039:
   name: "Terminator 3 - Rise Of The Machines"
-  region: "PAL-IS"
+  region: "PAL-S"
 SLES-52041:
   name: "Detonator"
   region: "PAL-E"
@@ -15059,10 +15079,9 @@ SLES-52584:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLES-52585:
@@ -15073,10 +15092,9 @@ SLES-52585:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLES-52587:
@@ -16651,6 +16669,8 @@ SLES-53224:
 SLES-53225:
   name: "Dreamworks Madagascar"
   region: "PAL-E"
+  roundModes:
+    vu1RoundMode: 0 # Fixes graphical issues.
   gsHWFixes:
     roundSprite: 2 # Improves bloom alignment and clarity.
     halfPixelOffset: 2 # Improves bloom alignment and clarity.
@@ -16658,12 +16678,16 @@ SLES-53226:
   name: "Dreamworks Madagascar"
   region: "PAL-F-G"
   compat: 5
+  roundModes:
+    vu1RoundMode: 0 # Fixes graphical issues.
   gsHWFixes:
     roundSprite: 2 # Improves bloom alignment and clarity.
     halfPixelOffset: 2 # Improves bloom alignment and clarity.
 SLES-53227:
   name: "Dreamworks Madagascar"
   region: "PAL-M3"
+  roundModes:
+    vu1RoundMode: 0 # Fixes graphical issues.
   gsHWFixes:
     roundSprite: 2 # Improves bloom alignment and clarity.
     halfPixelOffset: 2 # Improves bloom alignment and clarity.
@@ -16693,12 +16717,16 @@ SLES-53238:
 SLES-53242:
   name: "Dreamworks Madagascar"
   region: "PAL-P"
+  roundModes:
+    vu1RoundMode: 0 # Fixes graphical issues.
   gsHWFixes:
     roundSprite: 2 # Improves bloom alignment and clarity.
     halfPixelOffset: 2 # Improves bloom alignment and clarity.
 SLES-53246:
   name: "Madagascar"
   region: "PAL-S"
+  roundModes:
+    vu1RoundMode: 0 # Fixes graphical issues.
   gsHWFixes:
     roundSprite: 2 # Improves bloom alignment and clarity.
     halfPixelOffset: 2 # Improves bloom alignment and clarity.
@@ -16904,6 +16932,8 @@ SLES-53371:
 SLES-53373:
   name: "Dreamworks Madagascar"
   region: "PAL-NL"
+  roundModes:
+    vu1RoundMode: 0 # Fixes graphical issues.
   gsHWFixes:
     roundSprite: 2 # Improves bloom alignment and clarity.
     halfPixelOffset: 2 # Improves bloom alignment and clarity.
@@ -17255,10 +17285,9 @@ SLES-53506:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
   memcardFilters:
@@ -17276,10 +17305,9 @@ SLES-53507:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
   memcardFilters:
@@ -17510,7 +17538,8 @@ SLES-53557:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    cpuCLUTRender: 1 # Final colour adjustment LUT.
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
   memcardFilters: # Reads Underground 2 save for extra money.
     - "SLES-53557"
     - "SLES-53558"
@@ -17522,7 +17551,8 @@ SLES-53558:
   region: "PAL-M8"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    cpuCLUTRender: 1 # Final colour adjustment LUT.
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
   memcardFilters:
     - "SLES-53557"
     - "SLES-53558"
@@ -17534,7 +17564,8 @@ SLES-53559:
   region: "PAL-M3"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    cpuCLUTRender: 1 # Final colour adjustment LUT.
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
   memcardFilters:
     - "SLES-53557"
     - "SLES-53558"
@@ -17720,9 +17751,11 @@ SLES-53634:
   name: "Nicktoons Unite!"
   region: "PAL-A"
   gsHWFixes:
-    autoFlush: 1 # Fixes glows.
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
-    textureInsideRT: 1 # Fixes rainbow lighting for lamps, computer and other areas.
+    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
+    textureInsideRT: 1 # Fixes rainbow lighting for some areas.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLES-53635:
   name: "NASCAR '06 - Total Team Control"
   region: "PAL-E"
@@ -18007,6 +18040,8 @@ SLES-53729:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
+    textureInsideRT: 1 # Fixes light shinging through objects.
+    cpuCLUTRender: 1 # Fixes light shining through objects.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLES-53730:
@@ -18016,6 +18051,8 @@ SLES-53730:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
+    textureInsideRT: 1 # Fixes light shinging through objects.
+    cpuCLUTRender: 1 # Fixes light shining through objects.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLES-53734:
@@ -18326,7 +18363,8 @@ SLES-53857:
   region: "PAL-M3"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    cpuCLUTRender: 1 # Final colour adjustment LUT.
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
   memcardFilters:
     - "SLES-53557"
     - "SLES-53558"
@@ -19587,7 +19625,7 @@ SLES-54376:
     halfPixelOffset: 2 # Fix text and post blur.
     mipmap: 2 # Base mip level isn't always used.
     autoFlush: 1 # Needed for recursive mipmap rendering.
-    getSkipCount: "GSC_Barnyard" # Render mipmaps on the CPU.
+    getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SLES-54377:
   name: "Barnyard"
   region: "PAL-G"
@@ -19595,7 +19633,7 @@ SLES-54377:
     halfPixelOffset: 2 # Fix text and post blur.
     mipmap: 2 # Base mip level isn't always used.
     autoFlush: 1 # Needed for recursive mipmap rendering.
-    getSkipCount: "GSC_Barnyard" # Render mipmaps on the CPU.
+    getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SLES-54378:
   name: "Barnyard"
   region: "PAL-M4"
@@ -19603,7 +19641,7 @@ SLES-54378:
     halfPixelOffset: 2 # Fix text and post blur.
     mipmap: 2 # Base mip level isn't always used.
     autoFlush: 1 # Needed for recursive mipmap rendering.
-    getSkipCount: "GSC_Barnyard" # Render mipmaps on the CPU.
+    getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SLES-54379:
   name: "NFL Street 3"
   region: "PAL-E"
@@ -19744,6 +19782,8 @@ SLES-54440:
 SLES-54441:
   name: "Hawk Kawasaki Racing"
   region: "PAL-E"
+  gameFixes:
+    - XGKickHack # Fixes bad geometry.
 SLES-54442:
   name: "Guitar Hero II"
   region: "PAL-M5"
@@ -19753,10 +19793,14 @@ SLES-54442:
 SLES-54443:
   name: "Made Man"
   region: "PAL-M5"
+  clampModes:
+    vu1ClampMode: 3 # Fixes Textures flicker when shooting.
 SLES-54444:
   name: "Made Man"
   region: "PAL-E"
   compat: 5
+  clampModes:
+    vu1ClampMode: 3 # Fixes Textures flicker when shooting.
 SLES-54447:
   name: "Pro Evolution Soccer 6"
   region: "PAL-I"
@@ -19973,7 +20017,9 @@ SLES-54521:
   name: "Nickelodeon SpongeBob and Friends - Battle for Volcano Island"
   region: "PAL-M5"
   gsHWFixes:
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
+    mipmap: 2 # Better characters and environment.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLES-54527:
   name: "Flushed Away"
   region: "PAL-M5"
@@ -19997,6 +20043,8 @@ SLES-54537:
 SLES-54540:
   name: "Hawk Superbike Racing"
   region: "PAL-M6"
+  gameFixes:
+    - XGKickHack # Fixes bad geometry.
 SLES-54541:
   name: "Xena - Warrior Princess"
   region: "PAL-M6"
@@ -20207,10 +20255,9 @@ SLES-54627:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLES-54628:
@@ -20381,10 +20428,9 @@ SLES-54681:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLES-54683:
@@ -20656,6 +20702,8 @@ SLES-54782:
   compat: 5
   gameFixes:
     - EETimingHack # For stripes on FMVs and crashes on scenes.
+  clampModes:
+    vuClampMode: 3 # Fixes Lock picking pin.
 SLES-54784:
   name: "Xyanide - Resurrection"
   region: "PAL-M5"
@@ -20678,6 +20726,8 @@ SLES-54793:
   name: "WWE SmackDown vs. Raw 2008"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
 SLES-54795:
   name: "Falling Stars"
   region: "PAL-M6"
@@ -20898,6 +20948,8 @@ SLES-54878:
 SLES-54879:
   name: "WWE SmackDown vs. Raw 2008"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
 SLES-54880:
   name: "NBA 2K8"
   region: "PAL-M5"
@@ -21089,6 +21141,8 @@ SLES-54946:
   region: "PAL-M5"
   gameFixes:
     - VUSyncHack # Fixes SPS.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes post bloom alignment.
 SLES-54947:
   name: "Dogz"
   region: "PAL-M6"
@@ -21896,10 +21950,14 @@ SLES-55249:
 SLES-55250:
   name: "WWE SmackDown vs. Raw 2009"
   region: "PAL-A"
+  gsHWFixes:
+    halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
 SLES-55251:
   name: "WWE SmackDown vs. Raw 2009"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
 SLES-55252:
   name: "NHL 2K9"
   region: "PAL-M5"
@@ -23623,10 +23681,9 @@ SLKA-25206:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLKA-25207:
@@ -23916,10 +23973,9 @@ SLKA-25304:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLKA-25307:
@@ -24014,7 +24070,8 @@ SLKA-25334:
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    cpuCLUTRender: 1 # Final colour adjustment LUT.
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
 SLKA-25335:
   name: "Shadow the Hedgehog"
   region: "NTSC-K"
@@ -24080,6 +24137,8 @@ SLKA-25364:
 SLKA-25365:
   name: "WWE Smack Down Vs RAW 2008"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
 SLKA-25366:
   name: "Naruto - Uzumaki Chronicles 2"
   region: "NTSC-K"
@@ -24230,10 +24289,9 @@ SLPM-55004:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLPM-55005:
@@ -24271,10 +24329,9 @@ SLPM-55036:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLPM-55039:
@@ -24849,10 +24906,9 @@ SLPM-60246:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLPM-60251:
@@ -25948,6 +26004,12 @@ SLPM-62345:
 SLPM-62346:
   name: "Keiei Simulation - Jurassic Park [Konami the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
+    textureInsideRT: 1 # Fixes rainbow lighting for some areas.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLPM-62348:
   name: "Mechsmith, The - Rum"
   region: "NTSC-J"
@@ -26424,9 +26486,11 @@ SLPM-62512:
   name: "Keiei Simulation - Jurassic Park [Konami The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes glows.
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
+    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
     textureInsideRT: 1 # Fixes rainbow lighting for some areas.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLPM-62513:
   name: "Harry Potter and the Chamber of Secrets [EA Best Hits]"
   region: "NTSC-J"
@@ -28016,6 +28080,8 @@ SLPM-65211:
 SLPM-65212:
   name: "Lord of the Rings, The - The Two Towers"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fixes white shiny weapons.
 SLPM-65213:
@@ -29699,10 +29765,9 @@ SLPM-65719:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLPM-65720:
@@ -30529,10 +30594,9 @@ SLPM-65958:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLPM-65959:
@@ -31082,10 +31146,9 @@ SLPM-66108:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
   memcardFilters:
@@ -31458,6 +31521,8 @@ SLPM-66206:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
+    textureInsideRT: 1 # Fixes light shinging through objects.
+    cpuCLUTRender: 1 # Fixes light shining through objects.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLPM-66207:
@@ -31572,7 +31637,8 @@ SLPM-66232:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    cpuCLUTRender: 1 # Final colour adjustment LUT.
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
   memcardFilters:
     - "SLAJ-25075"
     - "SLPM-66232"
@@ -32803,7 +32869,8 @@ SLPM-66562:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    cpuCLUTRender: 1 # Final colour adjustment LUT.
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
   memcardFilters:
     - "SLAJ-25075"
     - "SLPM-66232"
@@ -33141,6 +33208,8 @@ SLPM-66651:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
+    textureInsideRT: 1 # Fixes light shinging through objects.
+    cpuCLUTRender: 1 # Fixes light shining through objects.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLPM-66652:
@@ -33151,10 +33220,9 @@ SLPM-66652:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
   memcardFilters:
@@ -33535,10 +33603,9 @@ SLPM-66739:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLPM-66740:
@@ -33946,6 +34013,8 @@ SLPM-66862:
 SLPM-66863:
   name: "WWE SmackDown vs. RAW 2008"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
 SLPM-66864:
   name: "Umisho"
   region: "NTSC-J"
@@ -34271,10 +34340,9 @@ SLPM-66962:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLPM-66963:
@@ -34396,6 +34464,8 @@ SLPM-67004:
 SLPM-67005:
   name: "Lord of the Rings, The - The Two Towers [EA Best Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLPM-67006:
@@ -34583,6 +34653,8 @@ SLPM-67545:
 SLPM-67546:
   name: "Lord of the Rings - The Two Towers"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLPM-67550:
@@ -35517,6 +35589,9 @@ SLPS-20199:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes black void when upscaling.
+SLPS-20200:
+  name: "Final Fantasy XI [Disc 2 of 2]"
+  region: "NTSC-J"
 SLPS-20202:
   name: "Coloball 2002"
   region: "NTSC-J"
@@ -36058,6 +36133,8 @@ SLPS-20425:
 SLPS-20426:
   name: "Dreamworks Madagascar"
   region: "NTSC-J"
+  roundModes:
+    vu1RoundMode: 0 # Fixes graphical issues.
   gsHWFixes:
     roundSprite: 2 # Improves bloom alignment and clarity.
     halfPixelOffset: 2 # Improves bloom alignment and clarity.
@@ -39772,12 +39849,16 @@ SLPS-29002:
 SLPS-29003:
   name: "Lord of the Rings - The Two Towers [Collector's Box]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLPS-29004:
   name: "Lord of the Rings, The - The Two Towers"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLPS-29005:
@@ -40470,7 +40551,7 @@ SLUS-20021:
   region: "NTSC-U"
   compat: 5
 SLUS-20024:
-  name: "Legacy of Kain - Blood Omen 2"
+  name: "Blood Omen 2 - The Legacy of Kain"
   region: "NTSC-U"
   compat: 5
   roundModes:
@@ -41910,9 +41991,11 @@ SLUS-20380:
   name: "Jurassic Park - Operation Genesis"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1 # Fixes glows.
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
+    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
     textureInsideRT: 1 # Fixes rainbow lighting for some areas.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLUS-20381:
   name: "MX SuperFly"
   region: "NTSC-U"
@@ -42868,6 +42951,8 @@ SLUS-20578:
   name: "Lord of the Rings, The - The Two Towers"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLUS-20579:
@@ -43478,6 +43563,8 @@ SLUS-20709:
   name: "Batman - Rise of Sin-Tzu"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Fixes hang on final boss.
 SLUS-20710:
   name: "Onimusha - Blade Warriors"
   region: "NTSC-U"
@@ -45030,6 +45117,8 @@ SLUS-21015:
   name: "Dreamworks Madagascar"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    vu1RoundMode: 0 # Fixes graphical issues.
   gsHWFixes:
     roundSprite: 2 # Improves bloom alignment and clarity.
     halfPixelOffset: 2 # Improves bloom alignment and clarity.
@@ -45081,6 +45170,8 @@ SLUS-21026:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
+    textureInsideRT: 1 # Fixes light shinging through objects.
+    cpuCLUTRender: 1 # Fixes light shining through objects.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-21027:
@@ -45233,10 +45324,9 @@ SLUS-21050:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLUS-21051:
@@ -46207,10 +46297,9 @@ SLUS-21242:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
   memcardFilters: # Reads Burnout 3 and NFL 06 saves for unlockables.
@@ -46363,7 +46452,8 @@ SLUS-21267:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    cpuCLUTRender: 1 # Final colour adjustment LUT.
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
   memcardFilters:
     - "SLUS-21267"
     - "SLUS-21351"
@@ -46435,7 +46525,7 @@ SLUS-21277:
     halfPixelOffset: 2 # Fix text and post blur.
     mipmap: 2 # Base mip level isn't always used.
     autoFlush: 1 # Needed for recursive mipmap rendering.
-    getSkipCount: "GSC_Barnyard" # Render mipmaps on the CPU.
+    getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SLUS-21278:
   name: "SSX on Tour"
   region: "NTSC-U"
@@ -46466,9 +46556,11 @@ SLUS-21284:
   name: "Nicktoons Unite!"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1 # Fixes glows.
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
-    textureInsideRT: 1 # Fixes rainbow lighting for lamps, computer and other areas.
+    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
+    textureInsideRT: 1 # Fixes rainbow lighting for some areas.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLUS-21285:
   name: "Ultimate Spider-Man [Limited Edition]"
   region: "NTSC-U"
@@ -46855,7 +46947,8 @@ SLUS-21351:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    cpuCLUTRender: 1 # Final colour adjustment LUT.
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
   memcardFilters:
     - "SLUS-21267"
     - "SLUS-21351"
@@ -47532,7 +47625,9 @@ SLUS-21469:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
+    mipmap: 2 # Better characters and environment.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
+    getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SLUS-21470:
   name: "Bratz - Forever Diamondz"
   region: "NTSC-U"
@@ -47958,6 +48053,8 @@ SLUS-21587:
   name: "Made Man - Confessions of the Family Blood"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vu1ClampMode: 3 # Fixes Textures flicker when shooting.
 SLUS-21588:
   name: "Avatar - The Last Airbender - The Burning Earth"
   region: "NTSC-U"
@@ -48003,10 +48100,9 @@ SLUS-21596:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLUS-21597:
@@ -48284,6 +48380,8 @@ SLUS-21645:
   name: "WWE SmackDown! vs. Raw 2008"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
 SLUS-21646:
   name: "Tiger Woods PGA Tour 08"
   region: "NTSC-U"
@@ -48559,6 +48657,8 @@ SLUS-21709:
   compat: 5
   gameFixes:
     - EETimingHack # For stripes on FMVs and crashes on scenes.
+  clampModes:
+    vuClampMode: 3 # Fixes Lock picking pin.
 SLUS-21710:
   name: "PopCap Hits! Volume 1"
   region: "NTSC-U"
@@ -48682,6 +48782,8 @@ SLUS-21733:
   region: "NTSC-U"
   gameFixes:
     - VUSyncHack # Fixes SPS.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes post bloom alignment.
 SLUS-21734:
   name: "Falling Stars"
   region: "NTSC-U"
@@ -49053,6 +49155,8 @@ SLUS-21810:
   name: "WWE SmackDown vs. Raw 2009"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
 SLUS-21811:
   name: "MotoGP 08"
   region: "NTSC-U"
@@ -50170,10 +50274,9 @@ SLUS-29113:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLUS-29116:
@@ -50186,6 +50289,8 @@ SLUS-29117:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
+    textureInsideRT: 1 # Fixes light shinging through objects.
+    cpuCLUTRender: 1 # Fixes light shining through objects.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-29118:
@@ -50283,6 +50388,8 @@ SLUS-29152:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
+    textureInsideRT: 1 # Fixes light shinging through objects.
+    cpuCLUTRender: 1 # Fixes light shining through objects.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-29153:
@@ -50293,10 +50400,9 @@ SLUS-29153:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
     autoFlush: 1 # Fixes blur and obscures sun behind objects.
-    preloadFrameData: 1 # Makes sun appear.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLUS-29154:
@@ -50307,7 +50413,8 @@ SLUS-29155:
   region: "NTSC-U"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    cpuCLUTRender: 1 # Fixes sun penetrating bridges (along with HPO special).
+    cpuCLUTRender: 1 # Final colour adjustment LUT.
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
 SLUS-29156:
   name: "Marvel Nemesis - Rise of the Imperfects [Demo]"
   region: "NTSC-U"
@@ -50373,6 +50480,8 @@ SLUS-29172:
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
+    textureInsideRT: 1 # Fixes light shinging through objects.
+    cpuCLUTRender: 1 # Fixes light shining through objects.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-29173:

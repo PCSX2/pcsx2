@@ -26,6 +26,11 @@
 #ifdef __APPLE__
 #include "GSMTLSharedHeader.h"
 
+static constexpr simd::float2 ToSimd(const GSVector2& vec)
+{
+	return simd::make_float2(vec.x, vec.y);
+}
+
 static constexpr bool IsCommandBufferCompleted(MTLCommandBufferStatus status)
 {
 	switch (status)
@@ -918,6 +923,8 @@ bool GSDeviceMTL::Create()
 		m_hdr_resolve_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_hdr_resolve"), @"HDR Resolve");
 		m_fxaa_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_fxaa"), @"fxaa");
 		m_shadeboost_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_shadeboost"), @"shadeboost");
+		m_clut_pipeline[0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_convert_clut_4"), @"4-bit CLUT Update");
+		m_clut_pipeline[1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_convert_clut_8"), @"8-bit CLUT Update");
 		pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::HDRColor);
 		m_hdr_init_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_hdr_init"), @"HDR Init");
 		pdesc.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
@@ -954,6 +961,8 @@ bool GSDeviceMTL::Create()
 				case ShaderConvert::Count:
 				case ShaderConvert::DATM_0:
 				case ShaderConvert::DATM_1:
+				case ShaderConvert::CLUT_4:
+				case ShaderConvert::CLUT_8:
 				case ShaderConvert::HDR_INIT:
 				case ShaderConvert::HDR_RESOLVE:
 					continue;
@@ -1297,6 +1306,18 @@ void GSDeviceMTL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 		DrawStretchRect(sRect, dRect, ds);
 	}
 }}
+
+void GSDeviceMTL::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
+{
+	GSMTLCLUTConvertPSUniform uniform = { ToSimd(sTex->GetScale()), {offsetX, offsetY}, dOffset };
+
+	const bool is_clut4 = dSize == 16;
+	const GSVector4i dRect(0, 0, dSize, 1);
+
+	BeginRenderPass(@"CLUT Update", dTex, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare);
+	[m_current_render.encoder setFragmentBytes:&uniform length:sizeof(uniform) atIndex:GSMTLBufferIndexUniforms];
+	RenderCopy(sTex, m_clut_pipeline[!is_clut4], dRect);
+}
 
 void GSDeviceMTL::FlushClears(GSTexture* tex)
 {

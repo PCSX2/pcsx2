@@ -500,4 +500,5 @@ void MemoryViewWidget::gotoAddress(u32 address)
 	m_table.UpdateStartAddress(address & ~0xF);
 	m_table.selectedAddress = address;
 	this->repaint();
+	this->setFocus();
 }

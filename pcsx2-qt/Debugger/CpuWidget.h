@@ -22,6 +22,10 @@
 #include "DebugTools/BiosDebugData.h"
 #include "DebugTools/MipsStackWalk.h"
 
+#include "Models/BreakpointModel.h"
+#include "Models/ThreadModel.h"
+#include "Models/StackModel.h"
+
 #include "QtHost.h"
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QTableWidget>
@@ -39,7 +43,6 @@ public:
 	~CpuWidget();
 
 public slots:
-	void resizeEvent(QResizeEvent* event);
 	void paintEvent(QPaintEvent* event);
 
 	void onStepInto();
@@ -49,10 +52,8 @@ public slots:
 	void onVMPaused();
 
 	void updateBreakpoints();
-	void fixBPListColumnSize();
-
+	void onBPListDoubleClicked(const QModelIndex& index);
 	void onBPListContextMenu(QPoint pos);
-	void onBPListItemChange(QTableWidgetItem* item);
 
 	void contextBPListCopy();
 	void contextBPListDelete();
@@ -60,12 +61,12 @@ public slots:
 	void contextBPListEdit();
 
 	void updateThreads();
+	void onThreadListDoubleClick(const QModelIndex& index);
 	void onThreadListContextMenu(QPoint pos);
-	void onThreadListDoubleClick(int row, int column);
 
 	void updateStackFrames();
 	void onStackListContextMenu(QPoint pos);
-	void onStackListDoubleClick(int row, int column);
+	void onStackListDoubleClick(const QModelIndex& index);
 
 	void updateFunctionList(bool whenEmpty = false);
 	void onFuncListContextMenu(QPoint pos);
@@ -82,7 +83,6 @@ public slots:
 		updateBreakpoints();
 		updateThreads();
 		updateStackFrames();
-		updateFunctionList();
 
 		m_ui.registerWidget->update();
 		m_ui.disassemblyWidget->update();
@@ -94,8 +94,6 @@ public slots:
 private:
 	std::vector<QTableWidget*> m_registerTableViews;
 
-	QMenu* m_bplistContextMenu = 0;
-	QMenu* m_threadlistContextMenu = 0;
 	QMenu* m_stacklistContextMenu = 0;
 	QMenu* m_funclistContextMenu = 0;
 
@@ -103,18 +101,9 @@ private:
 
 	DebugInterface& m_cpu;
 
-	// Poor mans variant
-	// Allows us to map row index to breakpoint / memcheck objects
-	struct BreakpointObject
-	{
-		std::shared_ptr<BreakPoint> bp;
-		std::shared_ptr<MemCheck> mc;
-	};
-
-	std::vector<BreakpointObject> m_bplistObjects;
-	std::vector<EEThread> m_threadlistObjects;
-	EEThread m_activeThread;
-	std::vector<StackFrame> m_stacklistObjects;
+	BreakpointModel m_bpModel;
+	ThreadModel m_threadModel;
+	StackModel m_stackModel;
 
 	bool m_demangleFunctions = true;
 };

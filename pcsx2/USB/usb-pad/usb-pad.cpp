@@ -458,6 +458,13 @@ namespace usb_pad
 			case CID_BUTTON22:
 			case CID_BUTTON23:
 			case CID_BUTTON24:
+			case CID_BUTTON25:
+			case CID_BUTTON26:
+			case CID_BUTTON27:
+			case CID_BUTTON28:
+			case CID_BUTTON29:
+			case CID_BUTTON30:
+			case CID_BUTTON31:
 			{
 				const u32 mask = (1u << (bind_index - CID_BUTTON0));
 				return ((data.buttons & mask) != 0u) ? 1.0f : 0.0f;
@@ -546,6 +553,15 @@ namespace usb_pad
 			case CID_BUTTON20:
 			case CID_BUTTON21:
 			case CID_BUTTON22:
+			case CID_BUTTON23:
+			case CID_BUTTON24:
+			case CID_BUTTON25:
+			case CID_BUTTON26:
+			case CID_BUTTON27:
+			case CID_BUTTON28:
+			case CID_BUTTON29:
+			case CID_BUTTON30:
+			case CID_BUTTON31:
 			{
 				const u32 mask = (1u << (bind_index - CID_BUTTON0));
 				if (value >= 0.5f)
@@ -1039,31 +1055,35 @@ namespace usb_pad
 	gsl::span<const InputBindingInfo> KeyboardmaniaDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo bindings[] = {
-			{"C", "C", InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Unknown},
-			{"CSharp", "C#", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Unknown},
-			{"D", "D", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Unknown},
-			{"EFlat", "Eb", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Unknown},
-			{"E", "E", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::Unknown},
-			{"F", "F", InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::Unknown},
-			{"FSharp", "F#", InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::Unknown},
-			{"G", "G", InputBindingInfo::Type::Button, CID_BUTTON7, GenericInputBinding::Unknown},
-			{"AFlat", "Ab", InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Unknown},
-			{"A", "A", InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Unknown},
-			{"BFlat", "Bb", InputBindingInfo::Type::Button, CID_BUTTON10, GenericInputBinding::Unknown},
-			{"B", "B", InputBindingInfo::Type::Button, CID_BUTTON11, GenericInputBinding::Unknown},
-			{"C2", "+C", InputBindingInfo::Type::Button, CID_BUTTON12, GenericInputBinding::Unknown},
-			{"CSharp2", "+C#", InputBindingInfo::Type::Button, CID_BUTTON13, GenericInputBinding::Unknown},
-			{"D2", "+D", InputBindingInfo::Type::Button, CID_BUTTON14, GenericInputBinding::Unknown},
-			{"EFlat2", "+Eb", InputBindingInfo::Type::Button, CID_BUTTON15, GenericInputBinding::Unknown},
-			{"E2", "+E", InputBindingInfo::Type::Button, CID_BUTTON16, GenericInputBinding::Unknown},
-			{"F2", "+F", InputBindingInfo::Type::Button, CID_BUTTON17, GenericInputBinding::Unknown},
-			{"FSharp2", "+F#", InputBindingInfo::Type::Button, CID_BUTTON18, GenericInputBinding::Unknown},
-			{"G2", "+G", InputBindingInfo::Type::Button, CID_BUTTON19, GenericInputBinding::Unknown},
-			{"AFlat2", "+Ab", InputBindingInfo::Type::Button, CID_BUTTON20, GenericInputBinding::Unknown},
-			{"A2", "+A", InputBindingInfo::Type::Button, CID_BUTTON21, GenericInputBinding::Unknown},
-			{"BFlat2", "+Bb", InputBindingInfo::Type::Button, CID_BUTTON22, GenericInputBinding::Unknown},
-			{"B2", "+B", InputBindingInfo::Type::Button, CID_BUTTON23, GenericInputBinding::Unknown},
-			{"C3", "++C", InputBindingInfo::Type::Button, CID_BUTTON24, GenericInputBinding::Unknown},
+			{"C1", "C 1", InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Unknown},
+			{"CSharp1", "C# 1", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Unknown},
+			{"D1", "D 1", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Unknown},
+			{"DSharp1", "D# 1", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Unknown},
+			{"E1", "E 1", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::Unknown},
+			{"F1", "F 1", InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::Unknown},
+			{"FSharp1", "F# 1", InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::Unknown},
+			{"G1", "G 1", InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Unknown},
+			{"GSharp1", "G# 1", InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Unknown},
+			{"A1", "A 1", InputBindingInfo::Type::Button, CID_BUTTON10, GenericInputBinding::Unknown},
+			{"ASharp1", "A# 1", InputBindingInfo::Type::Button, CID_BUTTON11, GenericInputBinding::Unknown},
+			{"B1", "B 1", InputBindingInfo::Type::Button, CID_BUTTON12, GenericInputBinding::Unknown},
+			{"C2", "C 2", InputBindingInfo::Type::Button, CID_BUTTON13, GenericInputBinding::Unknown},
+			{"CSharp2", "C# 2", InputBindingInfo::Type::Button, CID_BUTTON16, GenericInputBinding::Unknown},
+			{"D2", "D 2", InputBindingInfo::Type::Button, CID_BUTTON17, GenericInputBinding::Unknown},
+			{"DSharp2", "D# 2", InputBindingInfo::Type::Button, CID_BUTTON18, GenericInputBinding::Unknown},
+			{"E2", "E 2", InputBindingInfo::Type::Button, CID_BUTTON19, GenericInputBinding::Unknown},
+			{"F2", "F 2", InputBindingInfo::Type::Button, CID_BUTTON20, GenericInputBinding::Unknown},
+			{"FSharp2", "F# 2", InputBindingInfo::Type::Button, CID_BUTTON21, GenericInputBinding::Unknown},
+			{"G2", "G 2", InputBindingInfo::Type::Button, CID_BUTTON24, GenericInputBinding::Unknown},
+			{"GSharp2", "G# 2", InputBindingInfo::Type::Button, CID_BUTTON25, GenericInputBinding::Unknown},
+			{"A2", "A 2", InputBindingInfo::Type::Button, CID_BUTTON26, GenericInputBinding::Unknown},
+			{"ASharp2", "A# 2", InputBindingInfo::Type::Button, CID_BUTTON27, GenericInputBinding::Unknown},
+			{"B2", "B 2", InputBindingInfo::Type::Button, CID_BUTTON28, GenericInputBinding::Unknown},
+
+			{"Start", "Start", InputBindingInfo::Type::Button, CID_BUTTON22, GenericInputBinding::Unknown},
+			{"Select", "Select", InputBindingInfo::Type::Button, CID_BUTTON14, GenericInputBinding::Unknown},
+			{"WheelUp", "Wheel Up", InputBindingInfo::Type::Button, CID_BUTTON29, GenericInputBinding::Unknown},
+			{"WheelDown", "Wheel Down", InputBindingInfo::Type::Button, CID_BUTTON30, GenericInputBinding::Unknown},
 		};
 
 		return bindings;

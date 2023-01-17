@@ -403,7 +403,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QTableWidget" name="breakpointList">
+          <widget class="QTableView" name="breakpointList">
            <property name="contextMenuPolicy">
             <enum>Qt::CustomContextMenu</enum>
            </property>
@@ -413,59 +413,6 @@
            <property name="gridStyle">
             <enum>Qt::NoPen</enum>
            </property>
-           <property name="rowCount">
-            <number>0</number>
-           </property>
-           <attribute name="horizontalHeaderCascadingSectionResizes">
-            <bool>false</bool>
-           </attribute>
-           <attribute name="horizontalHeaderDefaultSectionSize">
-            <number>75</number>
-           </attribute>
-           <attribute name="horizontalHeaderStretchLastSection">
-            <bool>false</bool>
-           </attribute>
-           <attribute name="verticalHeaderVisible">
-            <bool>false</bool>
-           </attribute>
-           <attribute name="verticalHeaderCascadingSectionResizes">
-            <bool>false</bool>
-           </attribute>
-           <column>
-            <property name="text">
-             <string>Type</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Offset</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Size / Label</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Opcode</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Condition</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Hits</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Enabled</string>
-            </property>
-           </column>
           </widget>
          </item>
         </layout>
@@ -491,7 +438,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QTableWidget" name="threadList">
+          <widget class="QTableView" name="threadList">
            <property name="contextMenuPolicy">
             <enum>Qt::CustomContextMenu</enum>
            </property>
@@ -504,55 +451,13 @@
            <property name="cornerButtonEnabled">
             <bool>false</bool>
            </property>
-           <property name="rowCount">
-            <number>0</number>
-           </property>
-           <property name="columnCount">
-            <number>6</number>
-           </property>
-           <attribute name="horizontalHeaderStretchLastSection">
-            <bool>true</bool>
-           </attribute>
-           <attribute name="verticalHeaderVisible">
-            <bool>false</bool>
-           </attribute>
-           <column>
-            <property name="text">
-             <string>ID</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>PC</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Entry Point</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Priority</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>State</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Wait Type</string>
-            </property>
-           </column>
           </widget>
          </item>
         </layout>
        </widget>
        <widget class="QWidget" name="tab_callstack">
         <attribute name="title">
-         <string>Call Stack</string>
+         <string>Active Call Stack</string>
         </attribute>
         <layout class="QHBoxLayout" name="horizontalLayout_8">
          <property name="spacing">
@@ -571,7 +476,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QTableWidget" name="stackframeList">
+          <widget class="QTableView" name="stackList">
            <property name="contextMenuPolicy">
             <enum>Qt::CustomContextMenu</enum>
            </property>
@@ -590,48 +495,6 @@
            <property name="cornerButtonEnabled">
             <bool>false</bool>
            </property>
-           <property name="rowCount">
-            <number>0</number>
-           </property>
-           <property name="columnCount">
-            <number>6</number>
-           </property>
-           <attribute name="horizontalHeaderStretchLastSection">
-            <bool>true</bool>
-           </attribute>
-           <attribute name="verticalHeaderVisible">
-            <bool>false</bool>
-           </attribute>
-           <column>
-            <property name="text">
-             <string>Entry</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Name</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>PC</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Opcode</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>SP</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Frame Size</string>
-            </property>
-           </column>
           </widget>
          </item>
         </layout>

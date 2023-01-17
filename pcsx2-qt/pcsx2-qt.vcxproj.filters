@@ -22,11 +22,12 @@
     <Filter Include="Debugger">
       <UniqueIdentifier>{ddb40cc4-9996-4ade-b647-eb549063553c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Debugger\Models">
+      <UniqueIdentifier>{f4084ca0-d9d5-4584-b9d2-063db9f67de2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\pcsx2\PCSX2.rc">
-      <Filter>Resources</Filter>
-    </ResourceCompile>
+    <ResourceCompile Include="..\pcsx2\windows\PCSX2.rc" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PrecompiledHeader.cpp" />
@@ -274,6 +275,15 @@
     <ClCompile Include="Debugger\BreakpointDialog.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
+    <ClCompile Include="Debugger\Models\BreakpointModel.cpp">
+      <Filter>Debugger\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Models\ThreadModel.cpp">
+      <Filter>Debugger\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Models\StackModel.cpp">
+      <Filter>Debugger\Models</Filter>
+    </ClCompile>
     <ClCompile Include="$(IntDir)Debugger\moc_CpuWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
@@ -290,6 +300,19 @@
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)Debugger\moc_BreakpointDialog.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\Models\moc_BreakpointModel.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\Models\moc_ThreadModel.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\Models\moc_StackModel.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="ColorPickerButton.cpp" />
+    <ClCompile Include="$(IntDir)moc_ColorPickerButton.cpp">
       <Filter>moc</Filter>
     </ClCompile>
   </ItemGroup>
@@ -429,6 +452,16 @@
     <QtMoc Include="Debugger\BreakpointDialog.h">
       <Filter>Debugger</Filter>
     </QtMoc>
+    <QtMoc Include="Debugger\Models\BreakpointModel.h">
+      <Filter>Debugger\Models</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Models\ThreadModel.h">
+      <Filter>Debugger\Models</Filter>
+    </QtMoc>
+    <QtMoc Include="Debugger\Models\StackModel.h">
+      <Filter>Debugger\Models</Filter>
+    </QtMoc>
+    <QtMoc Include="ColorPickerButton.h" />
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">
@@ -546,6 +579,9 @@
     </QtUi>
     <QtUi Include="Debugger\BreakpointDialog.ui">
       <Filter>Debugger</Filter>
+    </QtUi>
+    <QtUi Include="Settings\ControllerLEDSettingsDialog.ui">
+      <Filter>Settings</Filter>
     </QtUi>
   </ItemGroup>
   <ItemGroup>

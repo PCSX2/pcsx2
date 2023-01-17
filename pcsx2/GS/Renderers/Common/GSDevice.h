@@ -49,6 +49,8 @@ enum class ShaderConvert
 	RGB5A1_TO_FLOAT16_BILN,
 	DEPTH_COPY,
 	RGBA_TO_8I,
+	CLUT_4,
+	CLUT_8,
 	YUV,
 	Count
 };
@@ -833,6 +835,9 @@ public:
 
 	/// Performs a screen blit for display. If dTex is null, it assumes you are writing to the system framebuffer/swap chain.
 	virtual void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear) {}
+
+	/// Updates a GPU CLUT texture from a source texture.
+	virtual void UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) {}
 
 	virtual void RenderHW(GSHWDrawConfig& config) {}
 

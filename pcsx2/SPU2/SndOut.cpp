@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -32,8 +32,8 @@ StereoOut32::StereoOut32(const StereoOut16& src)
 }
 
 StereoOut32::StereoOut32(const StereoOutFloat& src)
-	: Left((s32)(src.Left * 2147483647.0f))
-	, Right((s32)(src.Right * 2147483647.0f))
+	: Left(static_cast<s32>(src.Left * 2147483647.0f))
+	, Right(static_cast<s32>(src.Right * 2147483647.0f))
 {
 }
 
@@ -221,8 +221,8 @@ void SndBuffer::_WriteSamples_Safe(StereoOut32* bData, int nSamples)
 	// WARNING: This code assumes there's only ONE writing process.
 	if ((m_size - m_wpos) < nSamples)
 	{
-		int b1 = m_size - m_wpos;
-		int b2 = nSamples - b1;
+		const int b1 = m_size - m_wpos;
+		const int b2 = nSamples - b1;
 
 		_WriteSamples_Internal(bData, b1);
 		_WriteSamples_Internal(bData + b1, b2);
@@ -238,8 +238,8 @@ void SndBuffer::_ReadSamples_Safe(StereoOut32* bData, int nSamples)
 	// WARNING: This code assumes there's only ONE reading process.
 	if ((m_size - m_rpos) < nSamples)
 	{
-		int b1 = m_size - m_rpos;
-		int b2 = nSamples - b1;
+		const int b1 = m_size - m_rpos;
+		const int b2 = nSamples - b1;
 
 		_ReadSamples_Internal(bData, b1);
 		_ReadSamples_Internal(bData + b1, b2);
@@ -270,7 +270,7 @@ void SndBuffer::ReadSamples(T* bData, int nSamples)
 	//  This will cause one brief hiccup that can never exceed the user's
 	//  set buffer length in duration.
 
-	int quietSamples;
+	int quietSamples = 0;
 	if (CheckUnderrunStatus(nSamples, quietSamples))
 	{
 		pxAssume(nSamples <= SndOutPacketSize);
@@ -286,7 +286,7 @@ void SndBuffer::ReadSamples(T* bData, int nSamples)
 			bData[i].ResampleFrom(m_buffer[i + m_rpos]);
 
 		// Second part
-		int b2 = nSamples - b1;
+		const int b2 = nSamples - b1;
 		for (int i = 0; i < b2; i++)
 			bData[i + b1].ResampleFrom(m_buffer[i]);
 	
@@ -336,7 +336,7 @@ void SndBuffer::_WriteSamples(StereoOut32* bData, int nSamples)
 	//  The older portion of the buffer is discarded rather than incoming data,
 	//  so that the overall audio synchronization is better.
 
-	int free = m_size - _GetApproximateDataInBuffer(); // -1, but the <= handles that
+	const int free = m_size - _GetApproximateDataInBuffer(); // -1, but the <= handles that
 	if (free <= nSamples)
 	{
 // Disabled since the lock-free queue can't handle changing the read end from the write thread
@@ -345,28 +345,31 @@ void SndBuffer::_WriteSamples(StereoOut32* bData, int nSamples)
 		// Dump samples from the read portion of the buffer instead of dropping
 		// the newly written stuff.
 
-		s32 comp;
+		s32 comp = 0;
 
-		if( SynchMode == 0 ) // TimeStrech on
+		if (EmuConfig.SPU2.SynchMode == Pcsx2Config::SPU2Options::SynchronizationMode::TimeStretch) // TimeStrech on
 		{
 			comp = timeStretchOverrun();
 		}
 		else
 		{
 			// Toss half the buffer plus whatever's being written anew:
-			comp = GetAlignedBufferSize( (m_size + nSamples ) / 16 );
-			if( comp > (m_size-SndOutPacketSize) ) comp = m_size-SndOutPacketSize;
+			comp = GetAlignedBufferSize((m_size + nSamples) / 16);
+			if (comp > (m_size - SndOutPacketSize))
+				comp = m_size - SndOutPacketSize;
 		}
 
 		_DropSamples_Internal(comp);
 
-		if( MsgOverruns() )
-			ConLog(" * SPU2 > Overrun Compensation (%d packets tossed)\n", comp / SndOutPacketSize );
-		lastPct = 0.0;		// normalize the timestretcher
+		if (SPU2::MsgOverruns())
+			SPU2::ConLog(" * SPU2 > Overrun Compensation (%d packets tossed)\n", comp / SndOutPacketSize);
+		lastPct = 0.0; // normalize the timestretcher
 #else
 		if (SPU2::MsgOverruns())
 			SPU2::ConLog(" * SPU2 > Overrun! 1 packet tossed)\n");
 		lastPct = 0.0; // normalize the timestretcher
+
+		// Toss the packet because we overran the buffer.
 		return;
 #endif
 	}
@@ -513,12 +516,12 @@ float SndBuffer::GetStatusPct()
 	// Get the buffer status of the output driver too, so that we can
 	// obtain a more accurate overall buffer status.
 
-	int drvempty = s_output_module->GetEmptySampleCount(); // / 2;
+	const int drvempty = s_output_module->GetEmptySampleCount(); // / 2;
 
 	//ConLog( "Data %d >>> driver: %d   predict: %d\n", m_data, drvempty, m_predictData );
 
-	int data = _GetApproximateDataInBuffer();
-	float result = (float)(data + m_predictData - drvempty) - (m_size / 16);
+	const int data = _GetApproximateDataInBuffer();
+	float result = static_cast<float>(data + m_predictData - drvempty) - (m_size / 16);
 	result /= (m_size / 16);
 	return result;
 }
@@ -551,16 +554,6 @@ float SndBuffer::GetStatusPct()
 
 int targetIPS = 750;
 
-//Dynamic tuning changes the values of the base algorithm parameters (derived from targetIPS) to adapt, in real time, to
-//  different number of invocations/sec (mostly affects number of iterations to average).
-//  Dynamic tuning can have a slight negative effect on the behavior of the algorithm, so it's preferred to have it off.
-//Currently it looks like it's around 750/sec on all systems when playing at 100% speed (50/60fps),
-//  and proportional to that speed otherwise.
-//If changes are made to SPU2 which affects this number (but it's still the same on all systems), then just change targetIPS.
-//If we find out that some systems are very different, we can turn on dynamic tuning by uncommenting the next line.
-//#define NEWSTRETCHER_USE_DYNAMIC_TUNING
-
-
 //Additional performance note: since MAX_STRETCH_AVERAGE_LEN = 128 (or any power of 2), the '%' below
 //could be replaced with a faster '&'. The compiler is highly likely to do it since all the values are unsigned.
 #define AVERAGING_BUFFER_SIZE 256U
@@ -584,8 +577,8 @@ static float addToAvg(float val)
 	avg_fullness[nextAvgPos] = val;
 	nextAvgPos = (nextAvgPos + 1U) % AVERAGING_BUFFER_SIZE;
 
-	unsigned int actualWindow = std::min(available, AVERAGING_WINDOW);
-	unsigned int first = (nextAvgPos - actualWindow + AVERAGING_BUFFER_SIZE) % AVERAGING_BUFFER_SIZE;
+	const unsigned int actualWindow = std::min(available, AVERAGING_WINDOW);
+	const unsigned int first = (nextAvgPos - actualWindow + AVERAGING_BUFFER_SIZE) % AVERAGING_BUFFER_SIZE;
 
 	// Possible optimization: if we know that actualWindow hasn't changed since
 	// last invocation, we could calculate the running average in O(1) instead of O(N)
@@ -613,9 +606,9 @@ static bool IsInRange(const T& val, const T& min, const T& max)
 void SndBuffer::UpdateTempoChangeSoundTouch2()
 {
 
-	long targetSamplesReservoir = 48 * EmuConfig.SPU2.Latency; //48000*SndOutLatencyMS/1000
+	const long targetSamplesReservoir = 48 * EmuConfig.SPU2.Latency; //48000*SndOutLatencyMS/1000
 	//base aim at buffer filled %
-	float baseTargetFullness = (double)targetSamplesReservoir; ///(double)m_size;//0.05;
+	float baseTargetFullness = static_cast<double>(targetSamplesReservoir); ///(double)m_size;//0.05;
 
 	//state vars
 	static bool inside_hysteresis;      //=false;
@@ -630,40 +623,17 @@ void SndBuffer::UpdateTempoChangeSoundTouch2()
 		dynamicTargetFullness = baseTargetFullness;
 	}
 
-	int data = _GetApproximateDataInBuffer();
-	float bufferFullness = (float)data; ///(float)m_size;
-
-#ifdef NEWSTRETCHER_USE_DYNAMIC_TUNING
-	{ //test current iterations/sec every 0.5s, and change algo params accordingly if different than previous IPS more than 30%
-		static long iters = 0;
-		static wxDateTime last = wxDateTime::UNow();
-		wxDateTime unow = wxDateTime::UNow();
-		wxTimeSpan delta = unow.Subtract(last);
-		if (delta.GetMilliseconds() > 500)
-		{
-			int pot_targetIPS = 1000.0 / delta.GetMilliseconds().ToDouble() * iters;
-			if (!IsInRange(pot_targetIPS, int((float)targetIPS / 1.3f), int((float)targetIPS * 1.3f)))
-			{
-				if (SPU2::MsgOverruns())
-					SPU2::ConLog("Stretcher: setting iters/sec from %d to %d\n", targetIPS, pot_targetIPS);
-				targetIPS = pot_targetIPS;
-				AVERAGING_WINDOW = std::clamp((int)(50.0f * (float)targetIPS / 750.0f), 3, (int)AVERAGING_BUFFER_SIZE);
-			}
-			last = unow;
-			iters = 0;
-		}
-		iters++;
-	}
-#endif
+	const int data = _GetApproximateDataInBuffer();
+	const float bufferFullness = static_cast<float>(data); ///(float)m_size;
 
 	//Algorithm params: (threshold params (hysteresis), etc)
-	const float hys_ok_factor = 1.04f;
-	const float hys_bad_factor = 1.2f;
-	int hys_min_ok_count = std::clamp((int)(50.0 * (float)targetIPS / 750.0), 2, 100); //consecutive iterations within hys_ok before going to 1:1 mode
-	int compensationDivider = std::clamp((int)(100.0 * (float)targetIPS / 750), 15, 150);
+	constexpr float hys_ok_factor = 1.04f;
+	constexpr float hys_bad_factor = 1.2f;
+	const int hys_min_ok_count = std::clamp((int)(50.0 * (float)targetIPS / 750.0), 2, 100); //consecutive iterations within hys_ok before going to 1:1 mode
+	const int compensationDivider = std::clamp((int)(100.0 * (float)targetIPS / 750), 15, 150);
 
 	float tempoAdjust = bufferFullness / dynamicTargetFullness;
-	float avgerage = addToAvg(tempoAdjust);
+	const float avgerage = addToAvg(tempoAdjust);
 	tempoAdjust = avgerage;
 
 	// Dampen the adjustment to avoid overshoots (this means the average will compensate to the other side).
@@ -733,8 +703,8 @@ void SndBuffer::UpdateTempoChangeSoundTouch2()
 
 void SndBuffer::UpdateTempoChangeSoundTouch()
 {
-	float statusPct = GetStatusPct();
-	float pctChange = statusPct - lastPct;
+	const float statusPct = GetStatusPct();
+	const float pctChange = statusPct - lastPct;
 
 	float tempoChange;
 	float emergencyAdj = 0;
@@ -783,8 +753,8 @@ void SndBuffer::UpdateTempoChangeSoundTouch()
 
 	// Prediction based on the buffer fill status:
 
-	const float statusWeight = 2.99f;
-	const float statusRange = 0.068f;
+	constexpr float statusWeight = 2.99f;
+	constexpr float statusRange = 0.068f;
 
 	// "non-emergency" deadzone:  In this area stretching will be strongly discouraged.
 	// Note: due tot he nature of timestretch latency, it's always a wee bit harder to
@@ -830,7 +800,7 @@ void SndBuffer::UpdateTempoChangeSoundTouch()
 	// is usually better/safer)
 	if (newTempo < 0.970f || newTempo > 1.045f)
 	{
-		cTempo = (float)newcee;
+		cTempo = static_cast<float>(newcee);
 
 		if (newTempo < 0.10f)
 			newTempo = 0.10f;
@@ -842,7 +812,7 @@ void SndBuffer::UpdateTempoChangeSoundTouch()
 		else if (cTempo > 7.5f)
 			cTempo = 7.5f;
 
-		pSoundTouch->setTempo(eTempo = (float)newTempo);
+		pSoundTouch->setTempo(eTempo = static_cast<float>(newTempo));
 
 		/*ConLog("* SPU2: [Nominal %d%%] [Emergency: %d%%] (baseTempo: %d%% ) (newTempo: %d%%) (buffer: %d%%)\n",
 			//(relation < 0.0) ? "Normalize" : "",
@@ -875,7 +845,7 @@ void SndBuffer::UpdateTempoChangeSoundTouch()
 extern uint TickInterval;
 void SndBuffer::UpdateTempoChangeAsyncMixing()
 {
-	float statusPct = GetStatusPct();
+	const float statusPct = GetStatusPct();
 
 	lastPct = statusPct;
 	if (statusPct < -0.1f)

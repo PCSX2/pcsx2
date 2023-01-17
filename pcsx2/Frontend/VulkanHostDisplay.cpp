@@ -279,7 +279,7 @@ bool VulkanHostDisplay::CreateDevice(const WindowInfo& wi, VsyncMode vsync)
 	WindowInfo local_wi(wi);
 	const bool debug_device = EmuConfig.GS.UseDebugDevice;
 	if (!Vulkan::Context::Create(EmuConfig.GS.Adapter, &local_wi, &m_swap_chain, GetPreferredPresentModeForVsyncMode(vsync),
-			EmuConfig.GS.ThreadedPresentation, debug_device, debug_device))
+			!EmuConfig.GS.DisableThreadedPresentation, debug_device, debug_device))
 	{
 		Console.Error("Failed to create Vulkan context");
 		m_window_info = {};
@@ -353,6 +353,8 @@ bool VulkanHostDisplay::BeginPresent(bool frame_skip)
 	VkResult res = m_swap_chain->AcquireNextImage();
 	if (res != VK_SUCCESS)
 	{
+		m_swap_chain->ReleaseCurrentImage();
+
 		if (res == VK_SUBOPTIMAL_KHR || res == VK_ERROR_OUT_OF_DATE_KHR)
 		{
 			ResizeWindow(0, 0, m_window_info.surface_scale);
@@ -411,8 +413,7 @@ void VulkanHostDisplay::EndPresent()
 	vkCmdEndRenderPass(g_vulkan_context->GetCurrentCommandBuffer());
 	m_swap_chain->GetCurrentTexture().TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
-	g_vulkan_context->SubmitCommandBuffer(m_swap_chain->GetImageAvailableSemaphore(), m_swap_chain->GetRenderingFinishedSemaphore(),
-		m_swap_chain->GetSwapChain(), m_swap_chain->GetCurrentImageIndex(), !m_swap_chain->IsPresentModeSynchronizing());
+	g_vulkan_context->SubmitCommandBuffer(m_swap_chain.get(), !m_swap_chain->IsPresentModeSynchronizing());
 	g_vulkan_context->MoveToNextCommandBuffer();
 }
 

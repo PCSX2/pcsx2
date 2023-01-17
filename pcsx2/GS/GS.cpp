@@ -682,7 +682,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 			GSConfig.UseDebugDevice != old_config.UseDebugDevice ||
 			GSConfig.UseBlitSwapChain != old_config.UseBlitSwapChain ||
 			GSConfig.DisableShaderCache != old_config.DisableShaderCache ||
-			GSConfig.ThreadedPresentation != old_config.ThreadedPresentation
+			GSConfig.DisableThreadedPresentation != old_config.DisableThreadedPresentation
 		);
 		if (!GSreopen(do_full_restart, old_config))
 			pxFailRel("Failed to do full GS reopen");
@@ -728,7 +728,8 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		GSConfig.UserHacks_DisablePartialInvalidation != old_config.UserHacks_DisablePartialInvalidation ||
 		GSConfig.UserHacks_TextureInsideRt != old_config.UserHacks_TextureInsideRt ||
 		GSConfig.UserHacks_CPUSpriteRenderBW != old_config.UserHacks_CPUSpriteRenderBW ||
-		GSConfig.UserHacks_CPUCLUTRender != old_config.UserHacks_CPUCLUTRender)
+		GSConfig.UserHacks_CPUCLUTRender != old_config.UserHacks_CPUCLUTRender ||
+		GSConfig.UserHacks_GPUTargetCLUTMode != old_config.UserHacks_GPUTargetCLUTMode)
 	{
 		g_gs_renderer->PurgeTextureCache();
 		g_gs_renderer->PurgePool();

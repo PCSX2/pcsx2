@@ -20,6 +20,7 @@
 #include "common/Vulkan/Texture.h"
 #include "common/Vulkan/Loader.h"
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace Vulkan
@@ -55,11 +56,13 @@ namespace Vulkan
 		__fi VkFormat GetTextureFormat() const { return m_surface_format.format; }
 		__fi VkPresentModeKHR GetPreferredPresentMode() const { return m_preferred_present_mode; }
 		__fi VkSwapchainKHR GetSwapChain() const { return m_swap_chain; }
+		__fi const VkSwapchainKHR* GetSwapChainPtr() const { return &m_swap_chain; }
 		__fi const WindowInfo& GetWindowInfo() const { return m_window_info; }
 		__fi u32 GetWidth() const { return m_window_info.surface_width; }
 		__fi u32 GetHeight() const { return m_window_info.surface_height; }
 		__fi float GetScale() const { return m_window_info.surface_scale; }
 		__fi u32 GetCurrentImageIndex() const { return m_current_image; }
+		__fi const u32* GetCurrentImageIndexPtr() const { return &m_current_image; }
 		__fi u32 GetImageCount() const { return static_cast<u32>(m_images.size()); }
 		__fi VkImage GetCurrentImage() const { return m_images[m_current_image].image; }
 		__fi const Texture& GetCurrentTexture() const { return m_images[m_current_image].texture; }
@@ -67,9 +70,12 @@ namespace Vulkan
 		__fi VkFramebuffer GetCurrentFramebuffer() const { return m_images[m_current_image].framebuffer; }
 		__fi VkRenderPass GetLoadRenderPass() const { return m_load_render_pass; }
 		__fi VkRenderPass GetClearRenderPass() const { return m_clear_render_pass; }
-		__fi VkSemaphore GetImageAvailableSemaphore() const { return m_image_available_semaphore; }
-		__fi VkSemaphore GetRenderingFinishedSemaphore() const { return m_rendering_finished_semaphore; }
+		__fi VkSemaphore GetImageAvailableSemaphore() const { return m_semaphores[m_current_semaphore].available_semaphore; }
+		__fi const VkSemaphore* GetImageAvailableSemaphorePtr() const { return &m_semaphores[m_current_semaphore].available_semaphore; }
+		__fi VkSemaphore GetRenderingFinishedSemaphore() const { return m_semaphores[m_current_semaphore].rendering_finished_semaphore; }
+		__fi const VkSemaphore* GetRenderingFinishedSemaphorePtr() const { return &m_semaphores[m_current_semaphore].rendering_finished_semaphore; }
 		VkResult AcquireNextImage();
+		void ReleaseCurrentImage();
 
 		bool RecreateSurface(const WindowInfo& new_wi);
 		bool ResizeSwapChain(u32 new_width = 0, u32 new_height = 0, float new_scale = 1.0f);
@@ -96,14 +102,17 @@ namespace Vulkan
 
 		void DestroySurface();
 
-		bool CreateSemaphores();
-		void DestroySemaphores();
-
 		struct SwapChainImage
 		{
 			VkImage image;
 			Texture texture;
 			VkFramebuffer framebuffer;
+		};
+
+		struct ImageSemaphores
+		{
+			VkSemaphore available_semaphore;
+			VkSemaphore rendering_finished_semaphore;
 		};
 
 		WindowInfo m_window_info;
@@ -116,11 +125,11 @@ namespace Vulkan
 		VkRenderPass m_load_render_pass = VK_NULL_HANDLE;
 		VkRenderPass m_clear_render_pass = VK_NULL_HANDLE;
 
-		VkSemaphore m_image_available_semaphore = VK_NULL_HANDLE;
-		VkSemaphore m_rendering_finished_semaphore = VK_NULL_HANDLE;
-
 		VkSwapchainKHR m_swap_chain = VK_NULL_HANDLE;
 		std::vector<SwapChainImage> m_images;
+		std::vector<ImageSemaphores> m_semaphores;
 		u32 m_current_image = 0;
+		u32 m_current_semaphore = 0;
+		std::optional<VkResult> m_image_acquire_result;
 	};
 } // namespace Vulkan

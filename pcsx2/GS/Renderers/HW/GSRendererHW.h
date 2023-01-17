@@ -66,8 +66,15 @@ private:
 	void SwSpriteRender();
 	bool CanUseSwSpriteRender();
 
-	bool PossibleCLUTDraw();
-	bool PossibleCLUTDrawAggressive();
+	enum class CLUTDrawTestResult
+	{
+		NotCLUTDraw,
+		CLUTDrawOnCPU,
+		CLUTDrawOnGPU,
+	};
+
+	CLUTDrawTestResult PossibleCLUTDraw();
+	CLUTDrawTestResult PossibleCLUTDrawAggressive();
 	bool CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_tex);
 	bool (*SwPrimRender)(GSRendererHW&, bool invalidate_tc);
 
@@ -131,7 +138,6 @@ public:
 	void Lines2Sprites();
 	bool VerifyIndices();
 	template <GSHWDrawConfig::VSExpand Expand> void ExpandIndices();
-	void EmulateAtst(GSVector4& FogColor_AREF, u8& atst, const bool pass_2);
 	void ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba);
 	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
 	GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
@@ -153,6 +159,7 @@ public:
 	void Draw() override;
 
 	void PurgeTextureCache() override;
+	GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, const GSVector2i& size) override;
 
 	// Called by the texture cache to know if current texture is useful
 	bool UpdateTexIsFB(GSTextureCache::Target* src, const GIFRegTEX0& TEX0);

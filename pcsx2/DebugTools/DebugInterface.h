@@ -92,6 +92,12 @@ public:
 	void pauseCpu();
 	void resumeCpu();
 	char* stringFromPointer(u32 p);
+
+	static void setPauseOnEntry(bool pauseOnEntry) { m_pause_on_entry = pauseOnEntry; };
+	static bool getPauseOnEntry() { return m_pause_on_entry; }
+
+private:
+	static bool m_pause_on_entry;
 };
 
 class R5900DebugInterface : public DebugInterface
