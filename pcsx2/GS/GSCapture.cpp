@@ -14,10 +14,12 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSCapture.h"
-#include "GSPng.h"
-#include "GSUtil.h"
-#include "GSExtra.h"
+#include "GS/GSCapture.h"
+#include "GS/GSPng.h"
+#include "GS/GSUtil.h"
+#include "GS/GSExtra.h"
+#include "GS/Renderers/Common/GSDevice.h"
+#include "GS/Renderers/Common/GSTexture.h"
 #include "Host.h"
 #include "IconsFontAwesome5.h"
 #include "common/Assertions.h"
@@ -90,26 +92,40 @@ extern "C" {
 
 namespace GSCapture
 {
+	static constexpr u32 NUM_FRAMES_IN_FLIGHT = 3;
+
+	struct PendingFrame
+	{
+		std::unique_ptr<GSDownloadTexture> tex;
+		s64 pts;
+		bool pending;
+	};
+
 	static void LogAVError(int errnum, const char* format, ...);
 	static bool LoadFFmpeg(bool report_errors);
 	static void UnloadFFmpeg(std::unique_lock<std::mutex>& lock);
 	static void UnloadFFmpeg();
-	static void ReceivePackets();
+	static bool ProcessInFlightFrame(PendingFrame& pf);
+	static void ProcessAllInFlightFrames();
+	static bool ReceivePackets();
+
+	static std::recursive_mutex s_lock;
+	static GSVector2i s_size{};
+	static std::string s_filename;
+	static bool s_capturing = false;
+
+	static AVFormatContext* s_format_context = nullptr;
+	static AVCodecContext* s_codec_context = nullptr;
+	static AVStream* s_video_stream = nullptr;
+	static AVFrame* s_converted_frame = nullptr; // YUV
+	static AVPacket* s_video_packet = nullptr;
+	static SwsContext* s_sws_context = nullptr;
+	static AVDictionary* s_codec_arguments = nullptr;
+	static s64 s_next_pts = 0;
+
+	static std::array<PendingFrame, NUM_FRAMES_IN_FLIGHT> s_pending_frames = {};
+	u32 s_pending_frame_pos = 0;
 } // namespace GSCapture
-
-static std::recursive_mutex s_lock;
-static GSVector2i s_size{};
-static std::string s_filename;
-static bool s_capturing = false;
-
-static AVFormatContext* s_format_context = nullptr;
-static AVCodecContext* s_codec_context = nullptr;
-static AVStream* s_video_stream = nullptr;
-static AVFrame* s_converted_frame = nullptr; // YUV
-static AVPacket* s_video_packet = nullptr;
-static s64 s_next_pts = 0;
-static SwsContext* s_sws_context = nullptr;
-static AVDictionary* s_codec_arguments = nullptr;
 
 #define DECLARE_IMPORT(X) static decltype(X)* wrap_##X;
 VISIT_AVCODEC_IMPORTS(DECLARE_IMPORT);
@@ -401,14 +417,52 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	return true;
 }
 
-bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
+bool GSCapture::DeliverFrame(GSTexture* stex)
 {
 	std::lock_guard<std::recursive_mutex> lock(s_lock);
-	pxAssert(bits && pitch > 0);
 
-	const AVPixelFormat source_format = rgba ? AV_PIX_FMT_RGBA : AV_PIX_FMT_BGRA;
-	const int source_width = s_size.x;
-	const int source_height = s_size.y;
+	s_pending_frame_pos = (s_pending_frame_pos + 1) % NUM_FRAMES_IN_FLIGHT;
+	PendingFrame& pf = s_pending_frames[s_pending_frame_pos];
+	if (pf.pending)
+		ProcessInFlightFrame(pf);
+
+	if (!pf.tex || pf.tex->GetWidth() != stex->GetWidth() || pf.tex->GetHeight() != stex->GetHeight())
+	{
+		pf.tex.reset();
+		pf.tex = g_gs_device->CreateDownloadTexture(stex->GetWidth(), stex->GetHeight(), stex->GetFormat());
+		if (!pf.tex)
+		{
+			Console.Error("GSCapture: Failed to create %x%d download texture", stex->GetWidth(), stex->GetHeight());
+			return false;
+		}
+	}
+
+	const GSVector4i rc(0, 0, stex->GetWidth(), stex->GetHeight());
+	pf.tex->CopyFromTexture(rc, stex, rc, 0);
+	pf.pts = s_next_pts++;
+	pf.pending = true;
+	return true;
+}
+
+bool GSCapture::ProcessInFlightFrame(PendingFrame& pf)
+{
+	pf.pending = false;
+
+	if (pf.tex->NeedsFlush())
+		pf.tex->Flush();
+
+	const GSVector4i rc(0, 0, s_size.x, s_size.y);
+	if (!pf.tex->Map(rc))
+	{
+		Console.Error("GSCapture: Failed to map previously flushed frame.");
+		return false;
+	}
+
+	const AVPixelFormat source_format = g_gs_device->IsRBSwapped() ? AV_PIX_FMT_BGRA : AV_PIX_FMT_RGBA;
+	const u8* source_ptr = pf.tex->GetMapPointer();
+	const int source_width = static_cast<int>(pf.tex->GetWidth());
+	const int source_height = static_cast<int>(pf.tex->GetHeight());
+	const int source_pitch = static_cast<int>(pf.tex->GetMapPitch());
 
 	s_sws_context = wrap_sws_getCachedContext(s_sws_context, source_width, source_height, source_format,
 		s_converted_frame->width, s_converted_frame->height, s_codec_context->pix_fmt, SWS_BICUBIC,
@@ -419,10 +473,10 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 		return false;
 	}
 
-	wrap_sws_scale(s_sws_context, reinterpret_cast<const u8**>(&bits), &pitch, 0, source_height,
+	wrap_sws_scale(s_sws_context, reinterpret_cast<const u8**>(&source_ptr), &source_pitch, 0, source_height,
 		s_converted_frame->data, s_converted_frame->linesize);
 
-	s_converted_frame->pts = s_next_pts++;
+	s_converted_frame->pts = pf.pts;
 
 	const int res = wrap_avcodec_send_frame(s_codec_context, s_converted_frame);
 	if (res < 0)
@@ -431,11 +485,21 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 		return false;
 	}
 
-	ReceivePackets();
-	return true;
+	return ReceivePackets();
 }
 
-void GSCapture::ReceivePackets()
+void GSCapture::ProcessAllInFlightFrames()
+{
+	for (u32 i = 0; i < NUM_FRAMES_IN_FLIGHT; i++)
+	{
+		PendingFrame& pf = s_pending_frames[s_pending_frame_pos];
+		s_pending_frame_pos = (s_pending_frame_pos + 1) % NUM_FRAMES_IN_FLIGHT;
+		if (pf.pending)
+			ProcessInFlightFrame(pf);
+	}
+}
+
+bool GSCapture::ReceivePackets()
 {
 	for (;;)
 	{
@@ -448,9 +512,7 @@ void GSCapture::ReceivePackets()
 		else if (res < 0)
 		{
 			LogAVError(res, "avcodec_receive_packet() failed: ");
-			s_capturing = false;
-			EndCapture();
-			break;
+			return false;
 		}
 
 		s_video_packet->stream_index = s_video_stream->index;
@@ -462,11 +524,11 @@ void GSCapture::ReceivePackets()
 		if (res < 0)
 		{
 			LogAVError(res, "av_interleaved_write_frame() failed: ");
-			s_capturing = false;
-			EndCapture();
-			break;
+			return false;
 		}
 	}
+
+	return true;
 }
 
 bool GSCapture::EndCapture()
@@ -482,7 +544,11 @@ bool GSCapture::EndCapture()
 			fmt::format("Stopped capturing video to '{}'.", Path::GetFileName(s_filename)),
 			Host::OSD_INFO_DURATION);
 
+		ProcessAllInFlightFrames();
+
 		s_capturing = false;
+		s_pending_frames = {};
+		s_pending_frame_pos = 0;
 		s_filename = {};
 
 		// end of stream

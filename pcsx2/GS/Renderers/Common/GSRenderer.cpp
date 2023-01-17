@@ -801,33 +801,20 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 		{
 			const GSVector2i size(GSCapture::GetSize());
 
-			std::unique_ptr<GSDownloadTexture> dl(g_gs_device->CreateDownloadTexture(size.x, size.y, GSTexture::Format::Color));
-			if (dl)
+			// TODO: Maybe avoid this copy in the future? We can use swscale to fix it up on the dumping thread..
+			if (current->GetSize() != size)
 			{
-				const GSVector4i rc(0, 0, size.x, size.y);
-				bool okay = false;
-				if (size == current->GetSize())
+				GSTexture* temp = g_gs_device->CreateRenderTarget(size.x, size.y, GSTexture::Format::Color, false);
+				if (temp)
 				{
-					dl->CopyFromTexture(rc, current, rc, 0);
-					okay = true;
+					g_gs_device->StretchRect(current, temp, GSVector4(0, 0, size.x, size.y));
+					GSCapture::DeliverFrame(temp);
+					g_gs_device->Recycle(temp);
 				}
-				else
-				{
-					GSTexture* rt = g_gs_device->CreateRenderTarget(size.x, size.y, GSTexture::Format::Color);
-					if (rt)
-					{
-						g_gs_device->StretchRect(current, rt, GSVector4(rc), ShaderConvert::COPY);
-						dl->CopyFromTexture(rc, rt, rc, 0);
-						g_gs_device->Recycle(rt);
-						okay = true;
-					}
-				}
-				if (okay)
-				{
-					dl->Flush();
-					if (dl->Map(rc))
-						GSCapture::DeliverFrame(dl->GetMapPointer(), dl->GetMapPitch(), !g_gs_device->IsRBSwapped());
-				}
+			}
+			else
+			{
+				GSCapture::DeliverFrame(current);
 			}
 		}
 	}
