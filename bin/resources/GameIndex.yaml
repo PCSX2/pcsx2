@@ -3470,7 +3470,7 @@ SCES-52033:
         patch=0,EE,003953F8,word,48438000
         patch=0,EE,003735FC,word,4B06521B
         author=YukiXXL
-        //Speed Correction (25 FPS)
+        // Speed Correction (25 FPS)
         patch=1,EE,00175E1C,extended,24020019
 SCES-52042:
   name: "Formula One 2004"
