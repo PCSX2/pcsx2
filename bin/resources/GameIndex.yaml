@@ -16656,6 +16656,8 @@ SLES-53224:
 SLES-53225:
   name: "Dreamworks Madagascar"
   region: "PAL-E"
+  roundModes:
+    vu1RoundMode: 0 # Fixes graphical issues.
   gsHWFixes:
     roundSprite: 2 # Improves bloom alignment and clarity.
     halfPixelOffset: 2 # Improves bloom alignment and clarity.
@@ -16663,12 +16665,16 @@ SLES-53226:
   name: "Dreamworks Madagascar"
   region: "PAL-F-G"
   compat: 5
+  roundModes:
+    vu1RoundMode: 0 # Fixes graphical issues.
   gsHWFixes:
     roundSprite: 2 # Improves bloom alignment and clarity.
     halfPixelOffset: 2 # Improves bloom alignment and clarity.
 SLES-53227:
   name: "Dreamworks Madagascar"
   region: "PAL-M3"
+  roundModes:
+    vu1RoundMode: 0 # Fixes graphical issues.
   gsHWFixes:
     roundSprite: 2 # Improves bloom alignment and clarity.
     halfPixelOffset: 2 # Improves bloom alignment and clarity.
@@ -16698,12 +16704,16 @@ SLES-53238:
 SLES-53242:
   name: "Dreamworks Madagascar"
   region: "PAL-P"
+  roundModes:
+    vu1RoundMode: 0 # Fixes graphical issues.
   gsHWFixes:
     roundSprite: 2 # Improves bloom alignment and clarity.
     halfPixelOffset: 2 # Improves bloom alignment and clarity.
 SLES-53246:
   name: "Madagascar"
   region: "PAL-S"
+  roundModes:
+    vu1RoundMode: 0 # Fixes graphical issues.
   gsHWFixes:
     roundSprite: 2 # Improves bloom alignment and clarity.
     halfPixelOffset: 2 # Improves bloom alignment and clarity.
@@ -16909,6 +16919,8 @@ SLES-53371:
 SLES-53373:
   name: "Dreamworks Madagascar"
   region: "PAL-NL"
+  roundModes:
+    vu1RoundMode: 0 # Fixes graphical issues.
   gsHWFixes:
     roundSprite: 2 # Improves bloom alignment and clarity.
     halfPixelOffset: 2 # Improves bloom alignment and clarity.
@@ -36102,6 +36114,8 @@ SLPS-20425:
 SLPS-20426:
   name: "Dreamworks Madagascar"
   region: "NTSC-J"
+  roundModes:
+    vu1RoundMode: 0 # Fixes graphical issues.
   gsHWFixes:
     roundSprite: 2 # Improves bloom alignment and clarity.
     halfPixelOffset: 2 # Improves bloom alignment and clarity.
@@ -45078,6 +45092,8 @@ SLUS-21015:
   name: "Dreamworks Madagascar"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    vu1RoundMode: 0 # Fixes graphical issues.
   gsHWFixes:
     roundSprite: 2 # Improves bloom alignment and clarity.
     halfPixelOffset: 2 # Improves bloom alignment and clarity.
