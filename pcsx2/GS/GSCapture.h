@@ -20,10 +20,13 @@
 
 #include "GSVector.h"
 
+class GSTexture;
+class GSDownloadTexture;
+
 namespace GSCapture
 {
 	bool BeginCapture(float fps, GSVector2i recommendedResolution, float aspect, std::string filename);
-	bool DeliverFrame(const void* bits, int pitch, bool rgba);
+	bool DeliverFrame(GSTexture* stex);
 	bool EndCapture();
 
 	bool IsCapturing();
