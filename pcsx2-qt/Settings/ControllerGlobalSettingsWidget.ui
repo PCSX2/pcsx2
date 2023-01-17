@@ -96,6 +96,12 @@
               <layout class="QHBoxLayout" name="horizontalLayout">
                <item>
                 <widget class="QCheckBox" name="enableSDLEnhancedMode">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="text">
                   <string>DualShock 4 / DualSense Enhanced Mode</string>
                  </property>
