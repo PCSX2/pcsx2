@@ -20,6 +20,11 @@
 
 #include "GSVector.h"
 
+namespace Threading
+{
+class ThreadHandle;
+}
+
 class GSTexture;
 class GSDownloadTexture;
 
@@ -27,9 +32,10 @@ namespace GSCapture
 {
 	bool BeginCapture(float fps, GSVector2i recommendedResolution, float aspect, std::string filename);
 	bool DeliverFrame(GSTexture* stex);
-	bool EndCapture();
+	void EndCapture();
 
 	bool IsCapturing();
+	const Threading::ThreadHandle& GetEncoderThreadHandle();
 	GSVector2i GetSize();
 
 	std::vector<std::pair<std::string, std::string>> GetVideoCodecList(const char* container);

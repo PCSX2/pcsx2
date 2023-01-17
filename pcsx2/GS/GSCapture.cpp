@@ -27,6 +27,10 @@
 #include "common/DynamicLibrary.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
+#include "common/Threading.h"
+
+#include <condition_variable>
+#include <mutex>
 
 extern "C" {
 #include "libavcodec/avcodec.h"
@@ -93,26 +97,40 @@ extern "C" {
 namespace GSCapture
 {
 	static constexpr u32 NUM_FRAMES_IN_FLIGHT = 3;
+	static constexpr u32 MAX_PENDING_FRAMES = NUM_FRAMES_IN_FLIGHT * 2;
 
 	struct PendingFrame
 	{
+		enum class State
+		{
+			Unused,
+			NeedsMap,
+			NeedsEncoding
+		};
+
 		std::unique_ptr<GSDownloadTexture> tex;
 		s64 pts;
-		bool pending;
+		State state;
 	};
 
 	static void LogAVError(int errnum, const char* format, ...);
 	static bool LoadFFmpeg(bool report_errors);
 	static void UnloadFFmpeg(std::unique_lock<std::mutex>& lock);
 	static void UnloadFFmpeg();
-	static bool ProcessInFlightFrame(PendingFrame& pf);
-	static void ProcessAllInFlightFrames();
+	static void ProcessFramePendingMap(std::unique_lock<std::mutex>& lock);
+	static void ProcessAllInFlightFrames(std::unique_lock<std::mutex>& lock);
+	static void EncoderThreadEntryPoint();
+	static void StartEncoderThread();
+	static void StopEncoderThread(std::unique_lock<std::mutex>& lock);
+	static bool SendFrame(const PendingFrame& pf);
 	static bool ReceivePackets();
+	static void InternalEndCapture(std::unique_lock<std::mutex>& lock);
 
-	static std::recursive_mutex s_lock;
+	static std::mutex s_lock;
 	static GSVector2i s_size{};
 	static std::string s_filename;
 	static bool s_capturing = false;
+	static bool s_encoding_error = false;
 
 	static AVFormatContext* s_format_context = nullptr;
 	static AVCodecContext* s_codec_context = nullptr;
@@ -123,8 +141,15 @@ namespace GSCapture
 	static AVDictionary* s_codec_arguments = nullptr;
 	static s64 s_next_pts = 0;
 
-	static std::array<PendingFrame, NUM_FRAMES_IN_FLIGHT> s_pending_frames = {};
-	u32 s_pending_frame_pos = 0;
+	static Threading::Thread s_encoder_thread;
+	static std::condition_variable s_frame_ready_cv;
+	static std::condition_variable s_frame_encoded_cv;
+	static std::array<PendingFrame, MAX_PENDING_FRAMES> s_pending_frames = {};
+	static u32 s_pending_frames_pos = 0;
+	static u32 s_frames_pending_map = 0;
+	static u32 s_frames_map_consume_pos = 0;
+	static u32 s_frames_pending_encode = 0;
+	static u32 s_frames_encode_consume_pos = 0;
 } // namespace GSCapture
 
 #define DECLARE_IMPORT(X) static decltype(X)* wrap_##X;
@@ -245,11 +270,11 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	if (filename.empty() || !LoadFFmpeg(true))
 		return false;
 
-	std::lock_guard<std::recursive_mutex> lock(s_lock);
+	std::unique_lock<std::mutex> lock(s_lock);
 
 	ASSERT(fps != 0);
 
-	EndCapture();
+	InternalEndCapture(lock);
 
 	s_size = GSVector2i(Common::AlignUpPow2(recommendedResolution.x, 8), Common::AlignUpPow2(recommendedResolution.y, 8));
 	s_filename = std::move(filename);
@@ -258,7 +283,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	if (!output_format)
 	{
 		Console.Error(fmt::format("Failed to get output format for '{}'", s_filename));
-		EndCapture();
+		InternalEndCapture(lock);
 		return false;
 	}
 
@@ -279,7 +304,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	if (!codec)
 	{
 		Host::AddIconOSDMessage("GSCaptureError", ICON_FA_CAMERA, "Failed to find encoder.", Host::OSD_ERROR_DURATION);
-		EndCapture();
+		InternalEndCapture(lock);
 		return false;
 	}
 
@@ -287,7 +312,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	if (res < 0)
 	{
 		LogAVError(res, "avformat_alloc_output_context2() failed: ");
-		EndCapture();
+		InternalEndCapture(lock);
 		return false;
 	}
 
@@ -295,7 +320,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	if (!s_codec_context)
 	{
 		Host::AddIconOSDMessage("GSCaptureError", ICON_FA_CAMERA, "Failed to allocate codec context.", Host::OSD_ERROR_DURATION);
-		EndCapture();
+		InternalEndCapture(lock);
 		return false;
 	}
 
@@ -344,7 +369,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	if (res < 0)
 	{
 		LogAVError(res, "avcodec_open2() failed: ");
-		EndCapture();
+		InternalEndCapture(lock);
 		return false;
 	}
 
@@ -352,7 +377,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	if (!s_converted_frame)
 	{
 		Console.Error("Failed to allocate frame");
-		EndCapture();
+		InternalEndCapture(lock);
 		return false;
 	}
 
@@ -363,7 +388,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	if (res < 0)
 	{
 		LogAVError(res, "av_frame_get_buffer() for converted frame failed: ");
-		EndCapture();
+		InternalEndCapture(lock);
 		return false;
 	}
 
@@ -371,7 +396,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	if (!s_video_stream)
 	{
 		Console.Error("avformat_new_stream() failed");
-		EndCapture();
+		InternalEndCapture(lock);
 		return false;
 	}
 
@@ -379,7 +404,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	if (res < 0)
 	{
 		LogAVError(res, "avcodec_parameters_from_context() failed: ");
-		EndCapture();
+		InternalEndCapture(lock);
 		return false;
 	}
 
@@ -388,7 +413,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	if (res < 0)
 	{
 		LogAVError(res, "avio_open() failed: ");
-		EndCapture();
+		InternalEndCapture(lock);
 		return false;
 	}
 
@@ -396,7 +421,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	if (res < 0)
 	{
 		LogAVError(res, "avformat_write_header() failed: ");
-		EndCapture();
+		InternalEndCapture(lock);
 		return false;
 	}
 
@@ -404,7 +429,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	if (!s_video_packet)
 	{
 		Console.Error("av_packet_alloc() failed");
-		EndCapture();
+		InternalEndCapture(lock);
 		return false;
 	}
 
@@ -414,17 +439,34 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 
 	s_next_pts = 0;
 	s_capturing = true;
+	StartEncoderThread();
 	return true;
 }
 
 bool GSCapture::DeliverFrame(GSTexture* stex)
 {
-	std::lock_guard<std::recursive_mutex> lock(s_lock);
+	std::unique_lock<std::mutex> lock(s_lock);
 
-	s_pending_frame_pos = (s_pending_frame_pos + 1) % NUM_FRAMES_IN_FLIGHT;
-	PendingFrame& pf = s_pending_frames[s_pending_frame_pos];
-	if (pf.pending)
-		ProcessInFlightFrame(pf);
+	// If the encoder thread reported an error, stop the capture.
+	if (s_encoding_error)
+	{
+		InternalEndCapture(lock);
+		return false;
+	}
+
+	if (s_frames_pending_map >= NUM_FRAMES_IN_FLIGHT)
+		ProcessFramePendingMap(lock);
+
+	PendingFrame& pf = s_pending_frames[s_pending_frames_pos];
+
+	// It shouldn't be pending map, but the encode thread might be lagging.
+	pxAssert(pf.state != PendingFrame::State::NeedsMap);
+	if (pf.state == PendingFrame::State::NeedsEncoding)
+	{
+		s_frame_encoded_cv.wait(lock, [&pf]() {
+			return pf.state == PendingFrame::State::Unused;
+		});
+	}
 
 	if (!pf.tex || pf.tex->GetWidth() != stex->GetWidth() || pf.tex->GetHeight() != stex->GetHeight())
 	{
@@ -440,24 +482,102 @@ bool GSCapture::DeliverFrame(GSTexture* stex)
 	const GSVector4i rc(0, 0, stex->GetWidth(), stex->GetHeight());
 	pf.tex->CopyFromTexture(rc, stex, rc, 0);
 	pf.pts = s_next_pts++;
-	pf.pending = true;
+	pf.state = PendingFrame::State::NeedsMap;
+
+	s_pending_frames_pos = (s_pending_frames_pos + 1) % MAX_PENDING_FRAMES;
+	s_frames_pending_map++;
 	return true;
 }
 
-bool GSCapture::ProcessInFlightFrame(PendingFrame& pf)
+void GSCapture::ProcessFramePendingMap(std::unique_lock<std::mutex>& lock)
 {
-	pf.pending = false;
+	pxAssert(s_frames_pending_map > 0);
+
+	PendingFrame& pf = s_pending_frames[s_frames_map_consume_pos];
+	pxAssert(pf.state == PendingFrame::State::NeedsMap);
+
+	// Flushing is potentially expensive, so we leave it unlocked in case the encode thread
+	// needs to pick up another thread while we're waiting.
+	lock.unlock();
 
 	if (pf.tex->NeedsFlush())
 		pf.tex->Flush();
 
-	const GSVector4i rc(0, 0, s_size.x, s_size.y);
-	if (!pf.tex->Map(rc))
-	{
-		Console.Error("GSCapture: Failed to map previously flushed frame.");
-		return false;
-	}
+	// Even if the map failed, we need to kick it to the encode thread anyway, because
+	// otherwise our queue indices will get desynchronized.
+	if (!pf.tex->Map(GSVector4i(0, 0, s_size.x, s_size.y)))
+		Console.Warning("GSCapture: Failed to map previously flushed frame.");
 
+	lock.lock();
+
+	// Kick to encoder thread!
+	pf.state = PendingFrame::State::NeedsEncoding;
+	s_frames_map_consume_pos = (s_frames_map_consume_pos + 1) % MAX_PENDING_FRAMES;
+	s_frames_pending_map--;
+	s_frames_pending_encode++;
+	s_frame_ready_cv.notify_one();
+}
+
+void GSCapture::EncoderThreadEntryPoint()
+{
+	std::unique_lock<std::mutex> lock(s_lock);
+
+	for (;;)
+	{
+		s_frame_ready_cv.wait(lock, []() { return (s_frames_pending_encode > 0 || !s_capturing); });
+		if (!s_capturing)
+			break;
+
+		PendingFrame& pf = s_pending_frames[s_frames_encode_consume_pos];
+		pxAssert(pf.state == PendingFrame::State::NeedsEncoding);
+
+		lock.unlock();
+
+		// If the frame failed to map, this will be false, and we'll just skip it.
+		bool okay = false;
+		if (!s_encoding_error && pf.tex->IsMapped())
+			okay = SendFrame(pf);
+
+		lock.lock();
+
+		// If we had an encoding error, tell the GS thread to shut down the capture (later).
+		if (!okay)
+			s_encoding_error = true;
+
+		// Done with this frame! Wait for the next.
+		pf.state = PendingFrame::State::Unused;
+		s_frames_encode_consume_pos = (s_frames_encode_consume_pos + 1) % MAX_PENDING_FRAMES;
+		s_frames_pending_encode--;
+		s_frame_encoded_cv.notify_one();
+	}
+}
+
+void GSCapture::StartEncoderThread()
+{
+	Console.WriteLn("GSCapture: Starting encoder thread.");
+	pxAssert(s_capturing && !s_encoder_thread.Joinable());
+	s_encoder_thread.Start(EncoderThreadEntryPoint);
+}
+
+void GSCapture::StopEncoderThread(std::unique_lock<std::mutex>& lock)
+{
+	// Thread will exit when s_capturing is false.
+	pxAssert(!s_capturing);
+
+	if (s_encoder_thread.Joinable())
+	{
+		Console.WriteLn("GSCapture: Stopping encoder thread.");
+
+		// Might be sleeping, so wake it before joining.
+		s_frame_ready_cv.notify_one();
+		lock.unlock();
+		s_encoder_thread.Join();
+		lock.lock();
+	}
+}
+
+bool GSCapture::SendFrame(const PendingFrame& pf)
+{
 	const AVPixelFormat source_format = g_gs_device->IsRBSwapped() ? AV_PIX_FMT_BGRA : AV_PIX_FMT_RGBA;
 	const u8* source_ptr = pf.tex->GetMapPointer();
 	const int source_width = static_cast<int>(pf.tex->GetWidth());
@@ -488,14 +608,14 @@ bool GSCapture::ProcessInFlightFrame(PendingFrame& pf)
 	return ReceivePackets();
 }
 
-void GSCapture::ProcessAllInFlightFrames()
+void GSCapture::ProcessAllInFlightFrames(std::unique_lock<std::mutex>& lock)
 {
-	for (u32 i = 0; i < NUM_FRAMES_IN_FLIGHT; i++)
+	while (s_frames_pending_map > 0)
+		ProcessFramePendingMap(lock);
+
+	while (s_frames_pending_encode > 0)
 	{
-		PendingFrame& pf = s_pending_frames[s_pending_frame_pos];
-		s_pending_frame_pos = (s_pending_frame_pos + 1) % NUM_FRAMES_IN_FLIGHT;
-		if (pf.pending)
-			ProcessInFlightFrame(pf);
+		s_frame_encoded_cv.wait(lock, []() { return (s_frames_pending_encode == 0 || s_encoding_error); });
 	}
 }
 
@@ -531,25 +651,40 @@ bool GSCapture::ReceivePackets()
 	return true;
 }
 
-bool GSCapture::EndCapture()
+void GSCapture::InternalEndCapture(std::unique_lock<std::mutex>& lock)
 {
-	std::lock_guard<std::recursive_mutex> lock(s_lock);
 	int res;
 
 	const bool was_capturing = s_capturing;
 
 	if (was_capturing)
 	{
-		Host::AddIconOSDMessage("GSCapture", ICON_FA_CAMERA,
-			fmt::format("Stopped capturing video to '{}'.", Path::GetFileName(s_filename)),
-			Host::OSD_INFO_DURATION);
-
-		ProcessAllInFlightFrames();
+		if (!s_encoding_error)
+		{
+			ProcessAllInFlightFrames(lock);
+			Host::AddIconOSDMessage("GSCapture", ICON_FA_CAMERA,
+				fmt::format("Stopped capturing video to '{}'.", Path::GetFileName(s_filename)),
+				Host::OSD_INFO_DURATION);
+		}
+		else
+		{
+			Host::AddIconOSDMessage("GSCapture", ICON_FA_CAMERA,
+				fmt::format("Video capture aborted due to encoding error in '{}'.", Path::GetFileName(s_filename)),
+				Host::OSD_INFO_DURATION);
+		}
 
 		s_capturing = false;
+		StopEncoderThread(lock);
+
 		s_pending_frames = {};
-		s_pending_frame_pos = 0;
+		s_pending_frames_pos = 0;
+		s_frames_pending_map = 0;
+		s_frames_map_consume_pos = 0;
+		s_frames_pending_encode = 0;
+		s_frames_encode_consume_pos = 0;
+
 		s_filename = {};
+		s_encoding_error = false;
 
 		// end of stream
 		res = wrap_avcodec_send_frame(s_codec_context, nullptr);
@@ -596,13 +731,22 @@ bool GSCapture::EndCapture()
 
 	if (was_capturing)
 		UnloadFFmpeg();
+}
 
-	return true;
+void GSCapture::EndCapture()
+{
+	std::unique_lock<std::mutex> lock(s_lock);
+	InternalEndCapture(lock);
 }
 
 bool GSCapture::IsCapturing()
 {
 	return s_capturing;
+}
+
+const Threading::ThreadHandle& GSCapture::GetEncoderThreadHandle()
+{
+	return s_encoder_thread;
 }
 
 GSVector2i GSCapture::GetSize()
