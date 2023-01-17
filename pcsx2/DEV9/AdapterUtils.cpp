@@ -42,7 +42,7 @@
 using namespace PacketReader::IP;
 
 #ifdef _WIN32
-bool AdapterUtils::GetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer)
+bool AdapterUtils::GetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, AdapterBuffer* buffer)
 {
 	int neededSize = 128;
 	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> adapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
@@ -91,7 +91,7 @@ bool AdapterUtils::GetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSE
 
 	return false;
 }
-bool AdapterUtils::GetWin32AdapterAuto(PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer)
+bool AdapterUtils::GetWin32AdapterAuto(PIP_ADAPTER_ADDRESSES adapter, AdapterBuffer* buffer)
 {
 	int neededSize = 128;
 	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> adapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
@@ -168,16 +168,18 @@ bool AdapterUtils::GetWin32AdapterAuto(PIP_ADAPTER_ADDRESSES adapter, std::uniqu
 	return false;
 }
 #elif defined(__POSIX__)
-bool AdapterUtils::GetIfAdapter(const std::string& name, ifaddrs* adapter, ifaddrs** buffer)
+bool AdapterUtils::GetIfAdapter(const std::string& name, ifaddrs* adapter, AdapterBuffer* buffer)
 {
-	ifaddrs* adapterInfo;
+	ifaddrs* ifa;
 	ifaddrs* pAdapter;
 
-	int error = getifaddrs(&adapterInfo);
+	int error = getifaddrs(&ifa);
 	if (error)
 		return false;
 
-	pAdapter = adapterInfo;
+	std::unique_ptr<ifaddrs, IfAdaptersDeleter> adapterInfo(ifa, IfAdaptersDeleter());
+
+	pAdapter = adapterInfo.get();
 
 	do
 	{
@@ -190,23 +192,24 @@ bool AdapterUtils::GetIfAdapter(const std::string& name, ifaddrs* adapter, ifadd
 	if (pAdapter != nullptr)
 	{
 		*adapter = *pAdapter;
-		*buffer = adapterInfo;
+		buffer->swap(adapterInfo);
 		return true;
 	}
 
-	freeifaddrs(adapterInfo);
 	return false;
 }
-bool AdapterUtils::GetIfAdapterAuto(ifaddrs* adapter, ifaddrs** buffer)
+bool AdapterUtils::GetIfAdapterAuto(ifaddrs* adapter, AdapterBuffer* buffer)
 {
-	ifaddrs* adapterInfo;
+	ifaddrs* ifa;
 	ifaddrs* pAdapter;
 
-	int error = getifaddrs(&adapterInfo);
+	int error = getifaddrs(&ifa);
 	if (error)
 		return false;
 
-	pAdapter = adapterInfo;
+	std::unique_ptr<ifaddrs, IfAdaptersDeleter> adapterInfo(ifa, IfAdaptersDeleter());
+
+	pAdapter = adapterInfo.get();
 
 	do
 	{
@@ -229,7 +232,7 @@ bool AdapterUtils::GetIfAdapterAuto(ifaddrs* adapter, ifaddrs** buffer)
 			if (hasIPv4 && hasGateway)
 			{
 				*adapter = *pAdapter;
-				*buffer = adapterInfo;
+				buffer->swap(adapterInfo);
 				return true;
 			}
 		}
@@ -237,7 +240,6 @@ bool AdapterUtils::GetIfAdapterAuto(ifaddrs* adapter, ifaddrs** buffer)
 		pAdapter = pAdapter->ifa_next;
 	} while (pAdapter);
 
-	freeifaddrs(adapterInfo);
 	return false;
 }
 #endif
