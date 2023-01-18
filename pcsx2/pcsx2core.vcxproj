@@ -685,8 +685,6 @@
     <ClInclude Include="USB\qemu-usb\queue.h" />
     <ClInclude Include="USB\qemu-usb\qusb.h" />
     <ClInclude Include="USB\qemu-usb\USBinternal.h" />
-    <ClInclude Include="USB\readerwriterqueue\atomicops.h" />
-    <ClInclude Include="USB\readerwriterqueue\readerwriterqueue.h" />
     <ClInclude Include="USB\shared\ringbuffer.h" />
     <ClInclude Include="USB\usb-eyetoy\cam-windows.h" />
     <ClInclude Include="USB\usb-eyetoy\jo_mpeg.h" />

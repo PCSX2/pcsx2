@@ -241,9 +241,6 @@
     <Filter Include="System\Ps2\USB\qemu-usb">
       <UniqueIdentifier>{e068b724-9319-42e5-9ea7-63d80989ea1d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="System\Ps2\USB\readerwriterqueue">
-      <UniqueIdentifier>{f82a2be4-24a1-4dd8-9395-c53d0e1c4ddb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="System\Ps2\USB\shared">
       <UniqueIdentifier>{58074375-dbbe-4137-bbe5-54478d1a97c7}</UniqueIdentifier>
     </Filter>
@@ -2254,12 +2251,6 @@
     </ClInclude>
     <ClInclude Include="USB\qemu-usb\input-keymap.h">
       <Filter>System\Ps2\USB\qemu-usb</Filter>
-    </ClInclude>
-    <ClInclude Include="USB\readerwriterqueue\atomicops.h">
-      <Filter>System\Ps2\USB\readerwriterqueue</Filter>
-    </ClInclude>
-    <ClInclude Include="USB\readerwriterqueue\readerwriterqueue.h">
-      <Filter>System\Ps2\USB\readerwriterqueue</Filter>
     </ClInclude>
     <ClInclude Include="USB\shared\ringbuffer.h">
       <Filter>System\Ps2\USB\shared</Filter>
