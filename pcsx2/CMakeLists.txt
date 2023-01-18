@@ -431,8 +431,6 @@ set(pcsx2USBHeaders
 	USB/qemu-usb/input-keymap.h
 	USB/qemu-usb/queue.h
 	USB/qemu-usb/qusb.h
-	USB/readerwriterqueue/atomicops.h
-	USB/readerwriterqueue/readerwriterqueue.h
 	USB/shared/ringbuffer.h
 	USB/usb-eyetoy/jo_mpeg.h
 	USB/usb-eyetoy/ov519.h
