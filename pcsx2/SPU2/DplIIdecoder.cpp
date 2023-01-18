@@ -42,19 +42,19 @@ static float LMax = 0, RMax = 0;
 static float AccL = 0;
 static float AccR = 0;
 
-const float Scale = 4294967296.0f; // tweak this value to change the overall output volume
+constexpr float Scale = 4294967296.0f; // tweak this value to change the overall output volume
 
-const float GainL = 0.80f * Scale;
-const float GainR = 0.80f * Scale;
+constexpr float GainL = 0.80f * Scale;
+constexpr float GainR = 0.80f * Scale;
 
-const float GainC = 0.75f * Scale;
+constexpr float GainC = 0.75f * Scale;
 
-const float GainSL = 0.90f * Scale;
-const float GainSR = 0.90f * Scale;
+constexpr float GainSL = 0.90f * Scale;
+constexpr float GainSR = 0.90f * Scale;
 
-const float GainLFE = 0.90f * Scale;
+constexpr float GainLFE = 0.90f * Scale;
 
-const float AddCLR = 0.20f * Scale; // Stereo expansion
+constexpr float AddCLR = 0.20f * Scale; // Stereo expansion
 
 extern void ResetDplIIDecoder()
 {
@@ -66,10 +66,10 @@ extern void ResetDplIIDecoder()
 	AccR = 0;
 }
 
-void ProcessDplIISample32(const StereoOut32& src, Stereo51Out32DplII* s)
+void ProcessDplIISample32(const StereoOut16& src, Stereo51Out32DplII* s)
 {
-	float IL = src.Left / (float)(1 << (SndOutVolumeShift + 16));
-	float IR = src.Right / (float)(1 << (SndOutVolumeShift + 16));
+	float IL = src.Left / (float)(1 << 16);
+	float IR = src.Right / (float)(1 << 16);
 
 	// Calculate center channel and LFE
 	float C = (IL + IR) * 0.5f;
@@ -121,7 +121,7 @@ void ProcessDplIISample32(const StereoOut32& src, Stereo51Out32DplII* s)
 	s->RightBack = (s32)(SR * GainSR);
 }
 
-void ProcessDplIISample16(const StereoOut32& src, Stereo51Out16DplII* s)
+void ProcessDplIISample16(const StereoOut16& src, Stereo51Out16DplII* s)
 {
 	Stereo51Out32DplII ss;
 	ProcessDplIISample32(src, &ss);
@@ -134,10 +134,10 @@ void ProcessDplIISample16(const StereoOut32& src, Stereo51Out16DplII* s)
 	s->RightBack = ss.RightBack >> 16;
 }
 
-void ProcessDplSample32(const StereoOut32& src, Stereo51Out32Dpl* s)
+void ProcessDplSample32(const StereoOut16& src, Stereo51Out32Dpl* s)
 {
-	float ValL = src.Left / (float)(1 << (SndOutVolumeShift + 16));
-	float ValR = src.Right / (float)(1 << (SndOutVolumeShift + 16));
+	float ValL = src.Left / (float)(1 << 16);
+	float ValR = src.Right / (float)(1 << 16);
 
 	float C = (ValL + ValR) * 0.5f; //+15.8
 	float S = (ValL - ValR) * 0.5f;
@@ -157,7 +157,7 @@ void ProcessDplSample32(const StereoOut32& src, Stereo51Out32Dpl* s)
 	s->RightBack = (s32)(S * GainSR);
 }
 
-void ProcessDplSample16(const StereoOut32& src, Stereo51Out16Dpl* s)
+void ProcessDplSample16(const StereoOut16& src, Stereo51Out16Dpl* s)
 {
 	Stereo51Out32Dpl ss;
 	ProcessDplSample32(src, &ss);
