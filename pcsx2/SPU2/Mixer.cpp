@@ -46,30 +46,14 @@ static __forceinline s32 MulShr32(s32 srcval, s32 mulval)
 	return (s64)srcval * mulval >> 32;
 }
 
-__forceinline s32 clamp_mix(s32 x, u8 bitshift)
+__forceinline s32 clamp_mix(s32 x)
 {
-	assert(bitshift <= 15);
-	return std::clamp(x, -(0x8000 << bitshift), 0x7fff << bitshift);
+	return std::clamp(x, -0x8000, 0x7fff);
 }
 
-#if _MSC_VER
-__forceinline
-// Without the keyword static, gcc compilation fails on the inlining...
-// Unfortunately the function is also used in Reverb.cpp. In order to keep the code
-// clean we just disable it.
-// We will need link-time code generation / Whole Program optimization to do a clean
-// inline. Gcc 4.5 has the experimental options -flto, -fwhopr and -fwhole-program to
-// do it but it still experimental...
-#endif
-	StereoOut32
-	clamp_mix(const StereoOut32& sample, u8 bitshift)
+__forceinline StereoOut32 clamp_mix(StereoOut32 sample)
 {
-	// We should clampify between -0x8000 and 0x7fff, however some audio output
-	// modules or sound drivers could (will :p) overshoot with that. So giving it a small safety.
-
-	return StereoOut32(
-		std::clamp(sample.Left, -(0x7f00 << bitshift), 0x7f00 << bitshift),
-		std::clamp(sample.Right, -(0x7f00 << bitshift), 0x7f00 << bitshift));
+	return StereoOut32(clamp_mix(sample.Left), clamp_mix(sample.Right));
 }
 
 static void __forceinline XA_decode_block(s16* buffer, const s16* block, s32& prev1, s32& prev2)
