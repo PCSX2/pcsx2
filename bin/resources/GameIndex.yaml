@@ -10063,6 +10063,8 @@ SLES-50247:
   compat: 5
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flickering fmvs.
 SLES-50248:
   name: "MDK 2 - Armageddon"
   region: "PAL-M5"
@@ -34540,6 +34542,8 @@ SLPM-67507:
   region: "NTSC-K"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flickering fmvs.
 SLPM-67508:
   name: "Gitaroo Man"
   region: "NTSC-K"
@@ -40546,6 +40550,8 @@ SLUS-20018:
   compat: 5
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flickering fmvs.
 SLUS-20021:
   name: "Kengo - Master of Bushido"
   region: "NTSC-U"
