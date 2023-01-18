@@ -25,6 +25,10 @@
 
 const StereoOut32 StereoOut32::Empty(0, 0);
 
+//Uncomment the next line to use the old time stretcher
+//#define SPU2X_USE_OLD_STRETCHER
+//#define SPU2X_HANDLE_STRETCH_OVERRUNS
+
 namespace
 {
 	class NullOutModule final : public SndOutModule
@@ -146,21 +150,19 @@ namespace SndBuffer
 	static void soundtouchCleanup();
 	static void timeStretchWrite();
 	static void timeStretchUnderrun();
+#ifdef SPU2X_HANDLE_STRETCH_OVERRUNS
 	static s32 timeStretchOverrun();
+#endif
 
 	static void PredictDataWrite(int samples);
 	static float GetStatusPct();
 	static void UpdateTempoChangeSoundTouch();
-	static void UpdateTempoChangeSoundTouch2();
 
 	static void _WriteSamples(StereoOut16* bData, int nSamples);
-
 	static void _WriteSamples_Safe(StereoOut16* bData, int nSamples);
-	static void _ReadSamples_Safe(StereoOut16* bData, int nSamples);
 
 	static void _WriteSamples_Internal(StereoOut16* bData, int nSamples);
 	static void _DropSamples_Internal(int nSamples);
-	static void _ReadSamples_Internal(StereoOut16* bData, int nSamples);
 
 	static int _GetApproximateDataInBuffer();
 } // namespace SndBuffer
@@ -241,14 +243,6 @@ void SndBuffer::_DropSamples_Internal(int nSamples)
 	m_rpos = (m_rpos + nSamples) % s_output_buffer_size;
 }
 
-void SndBuffer::_ReadSamples_Internal(StereoOut16* bData, int nSamples)
-{
-	// WARNING: This assumes the read will NOT wrap around,
-	// and also assumes there's enough data in the buffer.
-	std::memcpy(bData, s_output_buffer.get() + m_rpos, nSamples * sizeof(StereoOut16));
-	_DropSamples_Internal(nSamples);
-}
-
 void SndBuffer::_WriteSamples_Safe(StereoOut16* bData, int nSamples)
 {
 	// WARNING: This code assumes there's only ONE writing process.
@@ -263,23 +257,6 @@ void SndBuffer::_WriteSamples_Safe(StereoOut16* bData, int nSamples)
 	else
 	{
 		_WriteSamples_Internal(bData, nSamples);
-	}
-}
-
-void SndBuffer::_ReadSamples_Safe(StereoOut16* bData, int nSamples)
-{
-	// WARNING: This code assumes there's only ONE reading process.
-	if ((s_output_buffer_size - m_rpos) < nSamples)
-	{
-		const int b1 = s_output_buffer_size - m_rpos;
-		const int b2 = nSamples - b1;
-
-		_ReadSamples_Internal(bData, b1);
-		_ReadSamples_Internal(bData + b1, b2);
-	}
-	else
-	{
-		_ReadSamples_Internal(bData, nSamples);
 	}
 }
 
@@ -384,7 +361,7 @@ void SndBuffer::_WriteSamples(StereoOut16* bData, int nSamples)
 	if (free <= nSamples)
 	{
 // Disabled since the lock-free queue can't handle changing the read end from the write thread
-#if 0
+#ifdef SPU2X_HANDLE_STRETCH_OVERRUNS
 		// Buffer overrun!
 		// Dump samples from the read portion of the buffer instead of dropping
 		// the newly written stuff.
@@ -522,9 +499,6 @@ void SndBuffer::Write(StereoOut16 Sample)
 // Time Stretching
 //////////////////////////////////////////////////////////////////////////
 
-//Uncomment the next line to use the old time stretcher
-//#define SPU2X_USE_OLD_STRETCHER
-
 static std::unique_ptr<soundtouch::SoundTouch> pSoundTouch = nullptr;
 
 void SndBuffer::PredictDataWrite(int samples)
@@ -629,9 +603,9 @@ static bool IsInRange(const T& val, const T& min, const T& max)
 }
 
 //actual stretch algorithm implementation
-void SndBuffer::UpdateTempoChangeSoundTouch2()
+void SndBuffer::UpdateTempoChangeSoundTouch()
 {
-
+#ifndef SPU2X_USE_OLD_STRETCHER
 	const long targetSamplesReservoir = 48 * EmuConfig.SPU2.Latency; //48000*SndOutLatencyMS/1000
 	//base aim at buffer filled %
 	float baseTargetFullness = static_cast<double>(targetSamplesReservoir); ///(double)m_size;//0.05;
@@ -723,12 +697,8 @@ void SndBuffer::UpdateTempoChangeSoundTouch2()
 	if (gRequestStretcherReset >= STRETCHER_RESET_THRESHOLD)
 		gRequestStretcherReset = 0;
 
-	return;
-}
+#else
 
-
-void SndBuffer::UpdateTempoChangeSoundTouch()
-{
 	const float statusPct = GetStatusPct();
 	const float pctChange = statusPct - s_last_pct;
 
@@ -866,6 +836,7 @@ void SndBuffer::UpdateTempoChangeSoundTouch()
 				pSoundTouch->setTempo(s_eTempo = s_cTempo);
 		}
 	}
+#endif // SPU2X_USE_OLD_STRETCHER
 }
 
 extern uint TickInterval;
@@ -907,6 +878,8 @@ void SndBuffer::timeStretchUnderrun()
 	//pSoundTouch->setTempoChange(-30); // temporary (until stretcher is called) slow down
 }
 
+#ifdef SPU2X_HANDLE_STRETCH_OVERRUNS
+
 s32 SndBuffer::timeStretchOverrun()
 {
 	// If we overran it means the timestretcher failed.  We need to speed
@@ -923,6 +896,8 @@ s32 SndBuffer::timeStretchOverrun()
 	gRequestStretcherReset++;
 	return SndOutPacketSize * 2;
 }
+
+#endif
 
 static constexpr float S16_TO_FLOAT = 1.0f / 32767.0f;
 static constexpr float FLOAT_TO_S16 = 32767.0f;
@@ -1002,11 +977,7 @@ void SndBuffer::timeStretchWrite()
 		_WriteSamples(s_staging_buffer.get(), tempProgress);
 	}
 
-#ifdef SPU2X_USE_OLD_STRETCHER
 	UpdateTempoChangeSoundTouch();
-#else
-	UpdateTempoChangeSoundTouch2();
-#endif
 }
 
 void SndBuffer::soundtouchInit()
