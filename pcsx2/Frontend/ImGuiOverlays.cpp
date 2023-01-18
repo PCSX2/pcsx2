@@ -517,8 +517,10 @@ void ImGuiManager::DrawInputsOverlay()
 				{
 					// buttons only shown when active
 					const float value = static_cast<float>(g_key_status.GetRawPressure(port, bind)) * (1.0f / 255.0f);
-					if (value >= 0.5f)
+					if (value == 1.0f)
 						fmt::format_to(std::back_inserter(text), " {}", bi.name);
+					else if (value > 0.0f)
+						fmt::format_to(std::back_inserter(text), " {}: {:.2f}", bi.name, value);
 				}
 				break;
 
