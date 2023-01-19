@@ -251,36 +251,34 @@ PCAPAdapter::PCAPAdapter()
 		return;
 #endif
 
-	bool foundAdapter = false;
-
-#ifdef _WIN32
-	IP_ADAPTER_ADDRESSES adapter;
+	AdapterUtils::Adapter adapter;
 	AdapterUtils::AdapterBuffer buffer;
-	foundAdapter = AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer);
-#elif defined(__POSIX__)
-	ifaddrs adapter;
-	AdapterUtils::AdapterBuffer buffer;
-	foundAdapter = AdapterUtils::GetIfAdapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer);
-#endif
-
-	std::optional<PacketReader::MAC_Address> adMAC = AdapterUtils::GetAdapterMAC(&adapter);
-	if (adMAC.has_value())
+	if (AdapterUtils::GetAdapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
 	{
-		mac_address hostMAC = *(mac_address*)&adMAC.value();
-		mac_address newMAC;
-		memcpy(&newMAC, &ps2MAC, 6);
+		std::optional<PacketReader::MAC_Address> adMAC = AdapterUtils::GetAdapterMAC(&adapter);
+		if (adMAC.has_value())
+		{
+			mac_address hostMAC = *(mac_address*)&adMAC.value();
+			mac_address newMAC;
+			memcpy(&newMAC, &ps2MAC, 6);
 
-		//Lets take the hosts last 2 bytes to make it unique on Xlink
-		newMAC.bytes[5] = hostMAC.bytes[4];
-		newMAC.bytes[4] = hostMAC.bytes[5];
+			//Lets take the hosts last 2 bytes to make it unique on Xlink
+			newMAC.bytes[5] = hostMAC.bytes[4];
+			newMAC.bytes[4] = hostMAC.bytes[5];
 
-		SetMACAddress((PacketReader::MAC_Address*)&newMAC);
-		host_mac = hostMAC;
-		ps2_mac = newMAC; //Needed outside of this class
+			SetMACAddress((PacketReader::MAC_Address*)&newMAC);
+			host_mac = hostMAC;
+			ps2_mac = newMAC; //Needed outside of this class
+		}
+		else
+		{
+			Console.Error("DEV9: Failed to get MAC address for adapter");
+			return;
+		}
 	}
 	else
 	{
-		Console.Error("DEV9: Failed to get MAC address for adapter");
+		Console.Error("DEV9: Failed to get adapter information");
 		return;
 	}
 
@@ -289,14 +287,8 @@ PCAPAdapter::PCAPAdapter()
 		Console.Error("DEV9: Can't open Device '%s'", EmuConfig.DEV9.EthDevice.c_str());
 		return;
 	}
-	
-	if (foundAdapter)
-		InitInternalServer(&adapter);
-	else
-	{
-		Console.Error("DEV9: Failed to get adapter information");
-		InitInternalServer(nullptr);
-	}
+
+	InitInternalServer(&adapter);
 }
 AdapterOptions PCAPAdapter::GetAdapterOptions()
 {
@@ -345,21 +337,12 @@ bool PCAPAdapter::send(NetPacket* pkt)
 
 void PCAPAdapter::reloadSettings()
 {
-#ifdef _WIN32
-	IP_ADAPTER_ADDRESSES adapter;
+	AdapterUtils::Adapter adapter;
 	AdapterUtils::AdapterBuffer buffer;
-	if (AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
+	if (AdapterUtils::GetAdapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
 		ReloadInternalServer(&adapter);
 	else
 		ReloadInternalServer(nullptr);
-#elif defined(__POSIX__)
-	ifaddrs adapter;
-	AdapterUtils::AdapterBuffer buffer;
-	if (AdapterUtils::GetIfAdapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
-		ReloadInternalServer(&adapter);
-	else
-		ReloadInternalServer(nullptr);
-#endif
 }
 
 PCAPAdapter::~PCAPAdapter()
@@ -401,7 +384,7 @@ std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
 		IP_ADAPTER_ADDRESSES adapterInfo;
 		std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
 
-		if (AdapterUtils::GetWin32Adapter(entry.guid, &adapterInfo, &buffer))
+		if (AdapterUtils::GetAdapter(entry.guid, &adapterInfo, &buffer))
 			entry.name = StringUtil::WideStringToUTF8String(std::wstring(adapterInfo.FriendlyName));
 		else
 		{
