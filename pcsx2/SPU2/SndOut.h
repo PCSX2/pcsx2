@@ -43,6 +43,8 @@ struct SndOutDeviceInfo
 };
 std::vector<SndOutDeviceInfo> GetOutputDeviceList(const char* omodid, const char* driver);
 
+struct StereoOut16;
+
 struct Stereo51Out16DplII;
 struct Stereo51Out32DplII;
 
@@ -54,6 +56,52 @@ extern void ProcessDplIISample16(const StereoOut16& src, Stereo51Out16DplII* s);
 extern void ProcessDplIISample32(const StereoOut16& src, Stereo51Out32DplII* s);
 extern void ProcessDplSample16(const StereoOut16& src, Stereo51Out16Dpl* s);
 extern void ProcessDplSample32(const StereoOut16& src, Stereo51Out32Dpl* s);
+
+struct StereoOut32
+{
+	static const StereoOut32 Empty;
+
+	s32 Left;
+	s32 Right;
+
+	StereoOut32()
+		: Left(0)
+		, Right(0)
+	{
+	}
+
+	StereoOut32(s32 left, s32 right)
+		: Left(left)
+		, Right(right)
+	{
+	}
+
+	StereoOut32 operator*(const int& factor) const
+	{
+		return StereoOut32(
+			Left * factor,
+			Right * factor);
+	}
+
+	StereoOut32& operator*=(const int& factor)
+	{
+		Left *= factor;
+		Right *= factor;
+		return *this;
+	}
+
+	StereoOut32 operator+(const StereoOut32& right) const
+	{
+		return StereoOut32(
+			Left + right.Left,
+			Right + right.Right);
+	}
+
+	StereoOut32 operator/(int src) const
+	{
+		return StereoOut32(Left / src, Right / src);
+	}
+};
 
 struct StereoOut16
 {
