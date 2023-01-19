@@ -795,7 +795,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 	}
 
 	// capture
-	if (GSCapture::IsCapturing())
+	if (GSCapture::IsCapturingVideo())
 	{
 		if (GSTexture* current = g_gs_device->GetCurrent())
 		{
@@ -808,13 +808,13 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 				if (temp)
 				{
 					g_gs_device->StretchRect(current, temp, GSVector4(0, 0, size.x, size.y));
-					GSCapture::DeliverFrame(temp);
+					GSCapture::DeliverVideoFrame(temp);
 					g_gs_device->Recycle(temp);
 				}
 			}
 			else
 			{
-				GSCapture::DeliverFrame(current);
+				GSCapture::DeliverVideoFrame(current);
 			}
 		}
 	}
@@ -949,7 +949,11 @@ void GSTranslateWindowToDisplayCoordinates(float window_x, float window_y, float
 
 bool GSRenderer::BeginCapture(std::string filename)
 {
-	return GSCapture::BeginCapture(GetTvRefreshRate(), GetInternalResolution(),
+	const GSVector2i capture_resolution(GSConfig.VideoCaptureAutoResolution ?
+											GetInternalResolution() :
+											GSVector2i(GSConfig.VideoCaptureWidth, GSConfig.VideoCaptureHeight));
+
+	return GSCapture::BeginCapture(GetTvRefreshRate(), capture_resolution,
 		GetCurrentAspectRatioFloat(GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets)),
 		std::move(filename));
 }

@@ -949,16 +949,20 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys)
 	{"ToggleVideoCapture", "Graphics", "Toggle Video Capture", [](s32 pressed) {
 		 if (!pressed)
 		 {
-			 GetMTGS().RunOnGSThread([]() {
-				 if (GSCapture::IsCapturing())
-				 {
-					 g_gs_renderer->EndCapture();
-					 return;
-				 }
+			 if (GSCapture::IsCapturing())
+			 {
+				 GetMTGS().RunOnGSThread([]() { g_gs_renderer->EndCapture(); });
+				 GetMTGS().WaitGS(false, false, false);
+				 return;
+			 }
 
-				 std::string filename(fmt::format("{}.{}", GSGetBaseVideoFilename(), GSConfig.VideoCaptureContainer));
+			 GetMTGS().RunOnGSThread([]() {
+				 std::string filename(fmt::format("{}.{}", GSGetBaseVideoFilename(), GSConfig.CaptureContainer));
 				 g_gs_renderer->BeginCapture(std::move(filename));
 			 });
+
+			 // Sync GS thread. We want to start adding audio at the same time as video.
+			 GetMTGS().WaitGS(false, false, false);
 		 }
 	 }},
 	{"GSDumpSingleFrame", "Graphics", "Save Single Frame GS Dump", [](s32 pressed) {

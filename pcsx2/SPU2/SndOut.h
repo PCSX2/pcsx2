@@ -354,10 +354,3 @@ extern SndOutModule* XAudio2Out;
 extern SndOutModule* CubebOut;
 #endif
 
-// =====================================================================================================
-
-extern bool WavRecordEnabled;
-
-extern bool RecordStart(const std::string* filename);
-extern void RecordStop();
-extern void RecordWrite(const StereoOut16& sample);

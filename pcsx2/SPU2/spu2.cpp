@@ -18,11 +18,12 @@
 #include "SPU2/Debug.h"
 #include "SPU2/spu2.h"
 #include "SPU2/Dma.h"
+#include "GS.h"
+#include "GS/GSCapture.h"
 #include "R3000A.h"
 
 namespace SPU2
 {
-	static int GetConsoleSampleRate();
 	static void InitSndBuffer();
 	static void UpdateSampleRate();
 	static void InternalReset(bool psxmode);
@@ -35,7 +36,7 @@ int SampleRate = 48000;
 
 u32 lClocks = 0;
 
-int SPU2::GetConsoleSampleRate()
+s32 SPU2::GetConsoleSampleRate()
 {
 	return s_psxmode ? 44100 : 48000;
 }
@@ -129,6 +130,13 @@ void SPU2::UpdateSampleRate()
 	SndBuffer::Cleanup();
 	SampleRate = new_sample_rate;
 	InitSndBuffer();
+
+	// Can't be capturing when the sample rate changes.
+	if (IsAudioCaptureActive())
+	{
+		GetMTGS().RunOnGSThread(&GSEndCapture);
+		GetMTGS().WaitGS(false, false, false);
+	}
 }
 
 void SPU2::InternalReset(bool psxmode)
@@ -334,18 +342,6 @@ void SPU2write(u32 rmem, u16 value)
 #endif
 		SPU2_FastWrite(rmem, value);
 	}
-}
-
-// returns a non zero value if successful
-bool SPU2setupRecording(const std::string* filename)
-{
-	return RecordStart(filename);
-}
-
-void SPU2endRecording()
-{
-	if (WavRecordEnabled)
-		RecordStop();
 }
 
 s32 SPU2freeze(FreezeAction mode, freezeData* data)

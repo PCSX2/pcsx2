@@ -963,7 +963,7 @@ void MainWindow::onToolsVideoCaptureToggled(bool checked)
 	}
 
 	const QString container(QString::fromStdString(
-		Host::GetStringSettingValue("EmuCore/GS", "VideoCaptureContainer", Pcsx2Config::GSOptions::DEFAULT_VIDEO_CAPTURE_CONTAINER)));
+		Host::GetStringSettingValue("EmuCore/GS", "CaptureContainer", Pcsx2Config::GSOptions::DEFAULT_CAPTURE_CONTAINER)));
 	const QString filter(tr("%1 Files (*.%2)").arg(container.toUpper()).arg(container));
 
 	QString path(QStringLiteral("%1.%2").arg(QString::fromStdString(GSGetBaseVideoFilename())).arg(container));
