@@ -23,14 +23,9 @@
 #include "common/StringUtil.h"
 #include <WinSock2.h>
 #include <iphlpapi.h>
-#elif defined(__linux__)
-#include <sys/ioctl.h>
-#include <net/if.h>
-#include <unistd.h>
 #elif defined(__POSIX__)
 #include <sys/types.h>
 #include <ifaddrs.h>
-#include <unistd.h>
 #endif
 
 #include <stdio.h>
@@ -63,40 +58,6 @@ char namebuff[256];
 ip_address ps2_ip;
 mac_address ps2_mac;
 mac_address host_mac;
-
-// Fetches the MAC address and prints it
-int GetMACAddress(const std::string& adapter, mac_address* addr)
-{
-	int retval = 0;
-#ifdef _WIN32
-	IP_ADAPTER_ADDRESSES adapterInfo;
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
-
-	if (AdapterUtils::GetWin32Adapter(adapter, &adapterInfo, &buffer))
-	{
-		memcpy(addr, adapterInfo.PhysicalAddress, 6);
-		retval = 1;
-	}
-
-#elif defined(__linux__)
-	struct ifreq ifr;
-	int fd = socket(AF_INET, SOCK_DGRAM, 0);
-	strcpy(ifr.ifr_name, adapter.c_str());
-	if (0 == ioctl(fd, SIOCGIFHWADDR, &ifr))
-	{
-		retval = 1;
-		memcpy(addr, ifr.ifr_hwaddr.sa_data, 6);
-	}
-	else
-	{
-		Console.Error("Could not get MAC address for adapter: %s", adapter.c_str());
-	}
-	close(fd);
-#else
-	Console.Error("Could not get MAC address for adapter, OS not supported");
-#endif
-	return retval;
-}
 
 int pcap_io_init(const std::string& adapter, bool switched, mac_address virtual_mac)
 {
@@ -290,48 +251,52 @@ PCAPAdapter::PCAPAdapter()
 		return;
 #endif
 
-	mac_address hostMAC;
-	mac_address newMAC;
-
-	GetMACAddress(EmuConfig.DEV9.EthDevice, &hostMAC);
-	memcpy(&newMAC, &ps2MAC, 6);
-
-	//Lets take the hosts last 2 bytes to make it unique on Xlink
-	newMAC.bytes[5] = hostMAC.bytes[4];
-	newMAC.bytes[4] = hostMAC.bytes[5];
-
-	SetMACAddress((PacketReader::MAC_Address*)&newMAC);
-	host_mac = hostMAC;
-	ps2_mac = newMAC; //Needed outside of this class
-
-	if (pcap_io_init(EmuConfig.DEV9.EthDevice, EmuConfig.DEV9.EthApi == Pcsx2Config::DEV9Options::NetApi::PCAP_Switched, newMAC) == -1)
-	{
-		Console.Error("DEV9: Can't open Device '%s'", EmuConfig.DEV9.EthDevice.c_str());
-		return;
-	}
+	bool foundAdapter = false;
 
 #ifdef _WIN32
 	IP_ADAPTER_ADDRESSES adapter;
 	AdapterUtils::AdapterBuffer buffer;
-	if (AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
-		InitInternalServer(&adapter);
-	else
-	{
-		Console.Error("DEV9: Failed to get adapter information");
-		InitInternalServer(nullptr);
-	}
-
+	foundAdapter = AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer);
 #elif defined(__POSIX__)
 	ifaddrs adapter;
 	AdapterUtils::AdapterBuffer buffer;
-	if (AdapterUtils::GetIfAdapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
+	foundAdapter = AdapterUtils::GetIfAdapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer);
+#endif
+
+	std::optional<PacketReader::MAC_Address> adMAC = AdapterUtils::GetAdapterMAC(&adapter);
+	if (adMAC.has_value())
+	{
+		mac_address hostMAC = *(mac_address*)&adMAC.value();
+		mac_address newMAC;
+		memcpy(&newMAC, &ps2MAC, 6);
+
+		//Lets take the hosts last 2 bytes to make it unique on Xlink
+		newMAC.bytes[5] = hostMAC.bytes[4];
+		newMAC.bytes[4] = hostMAC.bytes[5];
+
+		SetMACAddress((PacketReader::MAC_Address*)&newMAC);
+		host_mac = hostMAC;
+		ps2_mac = newMAC; //Needed outside of this class
+	}
+	else
+	{
+		Console.Error("DEV9: Failed to get MAC address for adapter");
+		return;
+	}
+
+	if (pcap_io_init(EmuConfig.DEV9.EthDevice, EmuConfig.DEV9.EthApi == Pcsx2Config::DEV9Options::NetApi::PCAP_Switched, ps2_mac) == -1)
+	{
+		Console.Error("DEV9: Can't open Device '%s'", EmuConfig.DEV9.EthDevice.c_str());
+		return;
+	}
+	
+	if (foundAdapter)
 		InitInternalServer(&adapter);
 	else
 	{
 		Console.Error("DEV9: Failed to get adapter information");
 		InitInternalServer(nullptr);
 	}
-#endif
 }
 AdapterOptions PCAPAdapter::GetAdapterOptions()
 {
