@@ -15,21 +15,24 @@
 
 #include "PrecompiledHeader.h"
 
-#include <algorithm>
 #ifdef __POSIX__
 #include <vector>
 #include <fstream>
 #include <net/if.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
 #include "common/StringUtil.h"
 
+#ifdef __linux__
+#include <unistd.h>
+#include <sys/ioctl.h>
+#endif
+
 #if defined(__FreeBSD__) || (__APPLE__)
 #include <sys/param.h>
 #include <sys/sysctl.h>
-#include <sys/socket.h>
-#include <net/if.h>
 #include <net/route.h>
 
 #include "common/Assertions.h"
@@ -39,6 +42,7 @@
 
 #include "AdapterUtils.h"
 
+using namespace PacketReader;
 using namespace PacketReader::IP;
 
 #ifdef _WIN32
@@ -242,6 +246,40 @@ bool AdapterUtils::GetIfAdapterAuto(ifaddrs* adapter, AdapterBuffer* buffer)
 
 	return false;
 }
+#endif
+
+// AdapterMAC.
+#ifdef _WIN32
+std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(PIP_ADAPTER_ADDRESSES adapter)
+{
+	if (adapter != nullptr && adapter->PhysicalAddressLength == 6)
+		return *(MAC_Address*)adapter->PhysicalAddress;
+
+	return std::nullopt;
+}
+#elif defined(__POSIX__)
+#ifdef __linux__
+std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(ifaddrs* adapter)
+{
+	struct ifreq ifr;
+	strcpy(ifr.ifr_name, adapter->ifa_name);
+
+	int fd = socket(AF_INET, SOCK_DGRAM, 0);
+	int ret = ioctl(fd, SIOCGIFHWADDR, &ifr);
+	close(fd);
+
+	if (ret == 0)
+		return *(MAC_Address*)ifr.ifr_hwaddr.sa_data;
+
+	return std::nullopt;
+}
+#else
+std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(ifaddrs* adapter)
+{
+	Console.Error("DEV9: Unsupported OS, can't get MAC address");
+	return std::nullopt;
+}
+#endif
 #endif
 
 // AdapterIP.

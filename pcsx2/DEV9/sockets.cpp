@@ -27,10 +27,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <net/if.h>
-#include <unistd.h>
-#ifdef __linux__
-#include <sys/ioctl.h>
-#endif
 #endif
 
 #include "sockets.h"
@@ -239,34 +235,20 @@ SocketAdapter::SocketAdapter()
 
 	InitInternalServer(&adapter, true, ps2IP, subnet, gateway);
 
-	MAC_Address hostMAC;
-	MAC_Address newMAC;
-
-#ifdef _WIN32
-	hostMAC = *(MAC_Address*)adapter.PhysicalAddress;
-#elif defined(__linux__)
-	struct ifreq ifr;
-	int fd = socket(AF_INET, SOCK_DGRAM, 0);
-	strcpy(ifr.ifr_name, adapter.ifa_name);
-	if (0 == ioctl(fd, SIOCGIFHWADDR, &ifr))
-		hostMAC = *(MAC_Address*)ifr.ifr_hwaddr.sa_data;
-	else
+	std::optional<MAC_Address> adMAC = AdapterUtils::GetAdapterMAC(&adapter);
+	if (adMAC.has_value())
 	{
-		hostMAC = ps2MAC;
-		Console.Error("Could not get MAC address for adapter: %s", adapter.ifa_name);
+		MAC_Address hostMAC = adMAC.value();
+		MAC_Address newMAC = ps2MAC;
+
+		//Lets take the hosts last 2 bytes to make it unique on Xlink
+		newMAC.bytes[5] = hostMAC.bytes[4];
+		newMAC.bytes[4] = hostMAC.bytes[5];
+
+		SetMACAddress(&newMAC);
 	}
-	::close(fd);
-#else
-	hostMAC = ps2MAC;
-	Console.Error("Could not get MAC address for adapter, OS not supported");
-#endif
-	newMAC = ps2MAC;
-
-	//Lets take the hosts last 2 bytes to make it unique on Xlink
-	newMAC.bytes[5] = hostMAC.bytes[4];
-	newMAC.bytes[4] = hostMAC.bytes[5];
-
-	SetMACAddress(&newMAC);
+	else
+		Console.Error("DEV9: Socket: Failed to get MAC address for adapter");
 
 #ifdef _WIN32
 	/* Use the MAKEWORD(lowbyte, highbyte) macro declared in Windef.h */

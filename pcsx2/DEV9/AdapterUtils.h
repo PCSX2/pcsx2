@@ -26,6 +26,7 @@
 #include <string>
 #include <optional>
 
+#include "DEV9/PacketReader/MAC_Address.h"
 #include "DEV9/PacketReader/IP/IP_Address.h"
 
 namespace AdapterUtils
@@ -35,6 +36,7 @@ namespace AdapterUtils
 	bool GetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, AdapterBuffer* buffer);
 	bool GetWin32AdapterAuto(PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer);
 
+	std::optional<PacketReader::MAC_Address> GetAdapterMAC(PIP_ADAPTER_ADDRESSES adapter);
 	std::optional<PacketReader::IP::IP_Address> GetAdapterIP(PIP_ADAPTER_ADDRESSES adapter);
 	// Mask.
 	std::vector<PacketReader::IP::IP_Address> GetGateways(PIP_ADAPTER_ADDRESSES adapter);
@@ -48,6 +50,7 @@ namespace AdapterUtils
 	bool GetIfAdapter(const std::string& name, ifaddrs* adapter, AdapterBuffer* buffer);
 	bool GetIfAdapterAuto(ifaddrs* adapter, AdapterBuffer* buffer);
 
+	std::optional<PacketReader::MAC_Address> GetAdapterMAC(ifaddrs* adapter);
 	std::optional<PacketReader::IP::IP_Address> GetAdapterIP(ifaddrs* adapter);
 	// Mask.
 	std::vector<PacketReader::IP::IP_Address> GetGateways(ifaddrs* adapter);
