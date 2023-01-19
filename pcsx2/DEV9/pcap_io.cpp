@@ -23,13 +23,9 @@
 #include "common/StringUtil.h"
 #include <WinSock2.h>
 #include <iphlpapi.h>
-#elif defined(__POSIX__)
-#include <sys/types.h>
-#include <ifaddrs.h>
 #endif
 
 #include <stdio.h>
-#include <stdarg.h>
 #include "pcap_io.h"
 #include "DEV9.h"
 #include "AdapterUtils.h"
