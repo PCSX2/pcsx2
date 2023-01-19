@@ -534,14 +534,14 @@ uvec4 sample_4_index(vec4 uv)
 	c.w = sample_c(uv.zw).a;
 
 	// Denormalize value
-	uvec4 i = uvec4(c * 255.0f + 0.5f);
+	uvec4 i = uvec4(c * 255.5f);
 
 	#if PS_PAL_FMT == 1
 		// 4HL
-		c = i & 0xFu;
+		return i & 0xFu;
 	#elif PS_PAL_FMT == 2
 		// 4HH
-		c = i >> 4u;
+		return i >> 4u;
 	#else
 		// 8
 		return i;
