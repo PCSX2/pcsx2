@@ -605,15 +605,18 @@ struct Pcsx2Config
 	{
 		static const char* AspectRatioNames[];
 		static const char* FMVAspectRatioSwitchNames[];
-		static const char* VideoCaptureContainers[];
+		static const char* CaptureContainers[];
 
 		static const char* GetRendererName(GSRendererType type);
 
 		static constexpr float DEFAULT_FRAME_RATE_NTSC = 59.94f;
 		static constexpr float DEFAULT_FRAME_RATE_PAL = 50.00f;
 
-		static constexpr u32 DEFAULT_VIDEO_CAPTURE_BITRATE = 6000;
-		static const char* DEFAULT_VIDEO_CAPTURE_CONTAINER;
+		static constexpr int DEFAULT_VIDEO_CAPTURE_BITRATE = 6000;
+		static constexpr int DEFAULT_VIDEO_CAPTURE_WIDTH = 640;
+		static constexpr int DEFAULT_VIDEO_CAPTURE_HEIGHT = 480;
+		static constexpr int DEFAULT_AUDIO_CAPTURE_BITRATE = 160;
+		static const char* DEFAULT_CAPTURE_CONTAINER;
 
 		union
 		{
@@ -680,7 +683,11 @@ struct Pcsx2Config
 					LoadTextureReplacements : 1,
 					LoadTextureReplacementsAsync : 1,
 					PrecacheTextureReplacements : 1,
-					EnableVideoCaptureParameters : 1;
+					EnableVideoCapture : 1,
+					EnableVideoCaptureParameters : 1,
+					VideoCaptureAutoResolution : 1,
+					EnableAudioCapture : 1,
+					EnableAudioCaptureParameters : 1;
 			};
 		};
 
@@ -753,10 +760,15 @@ struct Pcsx2Config
 		GSScreenshotFormat ScreenshotFormat{GSScreenshotFormat::PNG};
 		int ScreenshotQuality{50};
 
-		std::string VideoCaptureContainer{DEFAULT_VIDEO_CAPTURE_CONTAINER};
+		std::string CaptureContainer{DEFAULT_CAPTURE_CONTAINER};
 		std::string VideoCaptureCodec;
-		int VideoCaptureBitrate{DEFAULT_VIDEO_CAPTURE_BITRATE};
 		std::string VideoCaptureParameters;
+		std::string AudioCaptureCodec;
+		std::string AudioCaptureParameters;
+		int VideoCaptureBitrate{DEFAULT_VIDEO_CAPTURE_BITRATE};
+		int VideoCaptureWidth{DEFAULT_VIDEO_CAPTURE_WIDTH};
+		int VideoCaptureHeight{DEFAULT_VIDEO_CAPTURE_HEIGHT};
+		int AudioCaptureBitrate{DEFAULT_AUDIO_CAPTURE_BITRATE};
 
 		std::string Adapter;
 		std::string HWDumpDirectory;

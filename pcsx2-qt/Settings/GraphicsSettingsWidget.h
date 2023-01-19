@@ -43,8 +43,12 @@ private Q_SLOTS:
 	void onGpuPaletteConversionChanged(int state);
 	void onFullscreenModeChanged(int index);
 	void onShadeBoostChanged();
-	void onVideoCaptureContainerChanged();
+	void onCaptureContainerChanged();
+	void onEnableVideoCaptureChanged();
 	void onEnableVideoCaptureArgumentsChanged();
+	void onVideoCaptureAutoResolutionChanged();
+	void onEnableAudioCaptureChanged();
+	void onEnableAudioCaptureArgumentsChanged();
 
 private:
 	GSRendererType getEffectiveRenderer() const;

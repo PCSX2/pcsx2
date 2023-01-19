@@ -31,12 +31,18 @@ class GSDownloadTexture;
 namespace GSCapture
 {
 	bool BeginCapture(float fps, GSVector2i recommendedResolution, float aspect, std::string filename);
-	bool DeliverFrame(GSTexture* stex);
+	bool DeliverVideoFrame(GSTexture* stex);
+	void DeliverAudioPacket(const s16* frames); // SndOutPacketSize
 	void EndCapture();
 
 	bool IsCapturing();
+	bool IsCapturingVideo();
+	bool IsCapturingAudio();
 	const Threading::ThreadHandle& GetEncoderThreadHandle();
 	GSVector2i GetSize();
 
-	std::vector<std::pair<std::string, std::string>> GetVideoCodecList(const char* container);
+	using CodecName = std::pair<std::string, std::string>; // shortname,longname
+	using CodecList = std::vector<CodecName>;
+	CodecList GetVideoCodecList(const char* container);
+	CodecList GetAudioCodecList(const char* container);
 }; // namespace GSCapture

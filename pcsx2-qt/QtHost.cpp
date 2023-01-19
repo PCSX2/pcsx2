@@ -861,6 +861,10 @@ void EmuThread::beginCapture(const QString& path)
 	GetMTGS().RunOnGSThread([path = path.toStdString()]() {
 		GSBeginCapture(std::move(path));
 	});
+
+	// Sync GS thread. We want to start adding audio at the same time as video.
+	// TODO: This could be up to 64 frames behind... use the pts to adjust it.
+	GetMTGS().WaitGS(false, false, false);
 }
 
 void EmuThread::endCapture()

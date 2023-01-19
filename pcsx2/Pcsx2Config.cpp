@@ -360,12 +360,14 @@ const char* Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames[] = {
 	"16:9",
 	nullptr};
 
-const char* Pcsx2Config::GSOptions::VideoCaptureContainers[] = {
+const char* Pcsx2Config::GSOptions::CaptureContainers[] = {
 	"mp4",
 	"mkv",
 	"avi",
+	"wav",
+	"mp3",
 	nullptr};
-const char* Pcsx2Config::GSOptions::DEFAULT_VIDEO_CAPTURE_CONTAINER = "mp4";
+const char* Pcsx2Config::GSOptions::DEFAULT_CAPTURE_CONTAINER = "mp4";
 
 const char* Pcsx2Config::GSOptions::GetRendererName(GSRendererType type)
 {
@@ -440,7 +442,10 @@ Pcsx2Config::GSOptions::GSOptions()
 	LoadTextureReplacementsAsync = true;
 	PrecacheTextureReplacements = false;
 
+	EnableVideoCapture = true;
 	EnableVideoCaptureParameters = false;
+	EnableAudioCapture = true;
+	EnableAudioCaptureParameters = false;
 }
 
 bool Pcsx2Config::GSOptions::operator==(const GSOptions& right) const
@@ -524,10 +529,15 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(ScreenshotFormat) &&
 		OpEqu(ScreenshotQuality) &&
 
-		OpEqu(VideoCaptureContainer) &&
+		OpEqu(CaptureContainer) &&
 		OpEqu(VideoCaptureCodec) &&
-		OpEqu(VideoCaptureBitrate) &&
 		OpEqu(VideoCaptureParameters) &&
+		OpEqu(AudioCaptureCodec) &&
+		OpEqu(AudioCaptureParameters) &&
+		OpEqu(VideoCaptureBitrate) &&
+		OpEqu(VideoCaptureWidth) &&
+		OpEqu(VideoCaptureHeight) &&
+		OpEqu(AudioCaptureBitrate) &&
 
 		OpEqu(Adapter) &&
 		
@@ -649,7 +659,11 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	GSSettingBool(LoadTextureReplacements);
 	GSSettingBool(LoadTextureReplacementsAsync);
 	GSSettingBool(PrecacheTextureReplacements);
+	GSSettingBool(EnableVideoCapture);
 	GSSettingBool(EnableVideoCaptureParameters);
+	GSSettingBool(VideoCaptureAutoResolution);
+	GSSettingBool(EnableAudioCapture);
+	GSSettingBool(EnableAudioCaptureParameters);
 
 	GSSettingIntEnumEx(LinearPresent, "linear_present_mode");
 	GSSettingIntEnumEx(InterlaceMode, "deinterlace_mode");
@@ -699,10 +713,15 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	GSSettingIntEx(SaveN, "saven");
 	GSSettingIntEx(SaveL, "savel");
 
-	GSSettingStringEx(VideoCaptureContainer, "VideoCaptureContainer");
+	GSSettingStringEx(CaptureContainer, "CaptureContainer");
 	GSSettingStringEx(VideoCaptureCodec, "VideoCaptureCodec");
-	GSSettingIntEx(VideoCaptureBitrate, "VideoCaptureBitrate");
 	GSSettingStringEx(VideoCaptureParameters, "VideoCaptureParameters");
+	GSSettingStringEx(AudioCaptureCodec, "AudioCaptureCodec");
+	GSSettingStringEx(AudioCaptureParameters, "AudioCaptureParameters");
+	GSSettingIntEx(VideoCaptureBitrate, "VideoCaptureBitrate");
+	GSSettingIntEx(VideoCaptureWidth, "VideoCaptureWidth");
+	GSSettingIntEx(VideoCaptureHeight, "VideoCaptureHeight");
+	GSSettingIntEx(AudioCaptureBitrate, "AudioCaptureBitrate");
 
 	GSSettingString(Adapter);
 	GSSettingString(HWDumpDirectory);

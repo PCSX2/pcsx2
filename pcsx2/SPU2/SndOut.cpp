@@ -17,6 +17,8 @@
 
 #include "SPU2/Global.h"
 #include "SPU2/spu2.h"
+#include "GS/GSCapture.h"
+#include "GS/GSVector.h"
 
 #include "common/Assertions.h"
 #include "common/Timer.h"
@@ -24,6 +26,8 @@
 #include "SoundTouch.h"
 
 const StereoOut32 StereoOut32::Empty(0, 0);
+
+static bool s_audio_capture_active = false;
 
 //Uncomment the next line to use the old time stretcher
 //#define SPU2X_USE_OLD_STRETCHER
@@ -463,6 +467,16 @@ void SPU2::SetOutputPaused(bool paused)
 	s_output_module->SetPaused(paused);
 }
 
+void SPU2::SetAudioCaptureActive(bool active)
+{
+	s_audio_capture_active = active;
+}
+
+bool SPU2::IsAudioCaptureActive()
+{
+	return s_audio_capture_active;
+}
+
 void SndBuffer::Write(StereoOut16 Sample)
 {
 #ifdef PCSX2_DEVBUILD
@@ -470,15 +484,16 @@ void SndBuffer::Write(StereoOut16 Sample)
 	WaveDump::WriteCore(1, CoreSrc_External, Sample);
 #endif
 
-	if (WavRecordEnabled)
-		RecordWrite(Sample);
-
 	s_staging_buffer[s_staging_progress++] = Sample;
 
 	// If we haven't accumulated a full packet yet, do nothing more:
 	if (s_staging_progress < SndOutPacketSize)
 		return;
 	s_staging_progress = 0;
+
+	// We want to capture audio *before* time stretching.
+	if (s_audio_capture_active)
+		GSCapture::DeliverAudioPacket(reinterpret_cast<const s16*>(s_staging_buffer.get()));
 
 	//Don't play anything directly after loading a savestate, avoids static killing your speakers.
 	if (s_ss_freeze > 0)
