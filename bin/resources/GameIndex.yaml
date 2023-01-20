@@ -2902,6 +2902,8 @@ SCES-50408:
   name: "PaRappa the Rapper 2"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    mipmap: 1 # Fixes missing floor texture
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes noodles.
     MTVUSpeedHack: 0
@@ -5615,6 +5617,8 @@ SCPS-15016:
 SCPS-15017:
   name: "PaRappa the Rapper 2"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 1 # Fixes missing floor texture
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes noodles.
     MTVUSpeedHack: 0
@@ -6271,6 +6275,8 @@ SCPS-19153:
 SCPS-19201:
   name: "PaRappa the Rapper 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 1 # Fixes missing floor texture
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes noodles.
     MTVUSpeedHack: 0
@@ -7281,6 +7287,8 @@ SCUS-97167:
   name: "PaRappa the Rapper 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 1 # Fixes missing floor texture
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes noodles.
     MTVUSpeedHack: 0
