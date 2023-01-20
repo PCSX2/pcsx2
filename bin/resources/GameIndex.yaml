@@ -50677,8 +50677,8 @@ TCES-52033:
       content: |-
         author=YukiXXL
         // Speed Correction (25 FPS)
-        patch=1,EE,00175848,extended,00000019
         patch=1,EE,00175a7c,extended,00000019
+        patch=1,EE,00175848,extended,00000019
 TCES-52042:
   name: "Formula One 04 Beta Trial Code"
   region: "PAL-E"
