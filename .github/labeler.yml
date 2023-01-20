@@ -102,12 +102,9 @@
 'Memory Card':
   - 'pcsx2/gui/MemoryCard*'
   - 'pcsx2/gui/**/MemoryCard*'
-'PAD: Linux/Mac':
-  - 'pcsx2/PAD/Linux/*'
-  - 'pcsx2/PAD/Linux/**/*'
-'PAD: Windows':
-  - 'pcsx2/PAD/Windows/*'
-  - 'pcsx2/PAD/Windows/**/*'
+'PAD':
+  - 'pcsx2/PAD/*'
+  - 'pcsx2/PAD/**/*'
 'SPU2':
   - 'pcsx2/SPU2/*'
   - 'pcsx2/SPU2/**/*'
