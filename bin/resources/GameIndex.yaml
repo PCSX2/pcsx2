@@ -48401,6 +48401,8 @@ SLUS-21642:
 SLUS-21643:
   name: "Bratz - The Movie"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 3 # Removes ghosting of bloom and shadows.
 SLUS-21644:
   name: "Nickelodeon SpongeBob's Atlantis SquarePantis"
   region: "NTSC-U"
