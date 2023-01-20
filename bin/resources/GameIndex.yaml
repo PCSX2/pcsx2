@@ -2186,6 +2186,12 @@ SCED-52162:
 SCED-52163:
   name: "Official PlayStation 2 Magazine Demo 48"
   region: "PAL-M5"
+  patches:
+    E1D1987F:
+      content: |-
+        author=YukiXXL
+        // Speed Correction (25 FPS)
+        patch=1,EE,00173f60,extended,00000019
 SCED-52164:
   name: "Official PlayStation 2 Magazine Demo 49"
   region: "PAL-M5"
@@ -2269,6 +2275,12 @@ SCED-52578:
 SCED-52619:
   name: "Official PlayStation 2 Magazine Demo 48"
   region: "PAL-M5"
+  patches:
+    90C0E5F1:
+      content: |-
+        author=YukiXXL
+        // Speed Correction (25 FPS)
+        patch=1,EE,00173f60,extended,00000019
 SCED-52681:
   name: "Gran Turismo 4 BMW 1 Series Virtual Drive [Demo]"
   region: "PAL-M11"
@@ -2716,6 +2728,12 @@ SCED-54414:
 SCED-54415:
   name: "Official PlayStation 2 Magazine Demo 90"
   region: "PAL-M5"
+  patches:
+    EDCD7FA9:
+      content: |-
+        author=YukiXXL
+        // Speed Correction (25 FPS)
+        patch=1,EE,00173f60,extended,00000019
 SCED-54416:
   name: "Official PlayStation 2 Magazine Demo 91"
   region: "PAL-M5"
@@ -50672,6 +50690,13 @@ TCES-52033:
     halfPixelOffset: 2 # Corrects light position.
   gameFixes:
     - EETimingHack # Fixes random hangs.
+  patches:
+    0DDA2728:
+      content: |-
+        author=YukiXXL
+        // Speed Correction (25 FPS)
+        patch=1,EE,00175848,extended,00000019
+        patch=1,EE,00175a7c,extended,00000019
 TCES-52042:
   name: "Formula One 04 Beta Trial Code"
   region: "PAL-E"
