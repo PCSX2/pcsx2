@@ -3118,8 +3118,6 @@ SCES-50887:
   name: "Alpine Racer 3"
   region: "PAL-M5"
   compat: 5
-  gsHWFixes:
-    deinterlace: 9 # Game requires Adaptive BFF de-interlacing when auto.
 SCES-50888:
   name: "Pac-Man World 2"
   region: "PAL-M5"
@@ -6632,8 +6630,6 @@ SCPS-51005:
 SCPS-51006:
   name: "Alpine Racer 3"
   region: "NTSC-J"
-  gsHWFixes:
-    deinterlace: 9 # Game requires Adaptive BFF de-interlacing when auto.
 SCPS-51008:
   name: "Wave Rally"
   region: "NTSC-J"
@@ -35567,8 +35563,6 @@ SLPS-20178:
 SLPS-20181:
   name: "Alpine Racer 3"
   region: "NTSC-J"
-  gsHWFixes:
-    deinterlace: 9 # Game requires Adaptive BFF de-interlacing when auto.
 SLPS-20183:
   name: "Motto Golful Golf"
   region: "NTSC-J"
