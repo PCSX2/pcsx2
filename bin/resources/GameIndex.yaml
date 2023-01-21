@@ -11913,6 +11913,8 @@ SLES-51117:
   region: "PAL-M5"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    autoFlush: 1 # Fixes the sun flare.
+    halfPixelOffset: 2 # Fixes the sun flare.
 SLES-51118:
   name: "Wizardry - Tales of the Forsaken Land"
   region: "PAL-E"
@@ -42618,6 +42620,8 @@ SLUS-20502:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    autoFlush: 1 # Fixes the sun flare.
+    halfPixelOffset: 2 # Fixes the sun flare.
 SLUS-20504:
   name: "Tony Hawk's Pro Skater 4"
   region: "NTSC-U"
