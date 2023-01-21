@@ -19698,6 +19698,8 @@ SLES-54385:
 SLES-54388:
   name: "Kim Possible - What's the Switch"
   region: "PAL-M3"
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Fixes extreme EE and VU usage.
 SLES-54389:
   name: "Tony Hawk's Project 8"
   region: "PAL-E"
@@ -47498,6 +47500,8 @@ SLUS-21436:
 SLUS-21437:
   name: "Disney's Kim Possible - What's the Switch"
   region: "NTSC-U"
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Fixes extreme EE and VU usage.
 SLUS-21438:
   name: "Cartoon Network Racing"
   region: "NTSC-U"
