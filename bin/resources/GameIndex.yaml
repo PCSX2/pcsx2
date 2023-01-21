@@ -25205,6 +25205,8 @@ SLPM-62026:
 SLPM-62027:
   name: "Snowboard Heaven"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes fmv.
 SLPM-62028:
   name: "Greatest Striker"
   region: "NTSC-J"
@@ -25797,6 +25799,8 @@ SLPM-62262:
 SLPM-62263:
   name: "Snowboard Heaven"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes fmv.
 SLPM-62264:
   name: "Shin Contra"
   region: "NTSC-J"
