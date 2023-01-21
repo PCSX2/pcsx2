@@ -1235,7 +1235,6 @@
     <ClCompile Include="x86\iR5900Analysis.cpp">
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
     </ClCompile>
-    <ClCompile Include="GSDumpReplayer.cpp" />
     <ClCompile Include="GS\Renderers\DX12\GSTexture12.cpp">
       <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
     </ClCompile>
@@ -1388,6 +1387,9 @@
     </ClCompile>
     <ClCompile Include="SPU2\SndOut_XAudio2.cpp">
       <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="GSDumpReplayer.cpp">
+      <Filter>Tools</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1967,9 +1969,6 @@
     <ClInclude Include="GS\Renderers\Common\GSFastList.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
-    <ClInclude Include="GS.h">
-      <Filter>System\Ps2\GS\GIF</Filter>
-    </ClInclude>
     <ClInclude Include="GS\Renderers\DX11\GSDevice11.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClInclude>
@@ -2157,7 +2156,6 @@
     <ClInclude Include="x86\iR5900Analysis.h">
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
     </ClInclude>
-    <ClInclude Include="GSDumpReplayer.h" />
     <ClInclude Include="GS\Renderers\DX12\GSTexture12.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
     </ClInclude>
@@ -2209,7 +2207,6 @@
     <ClInclude Include="Frontend\Achievements.h">
       <Filter>Host</Filter>
     </ClInclude>
-    <ClInclude Include="Achievements.h" />
     <ClInclude Include="ShaderCacheVersion.h">
       <Filter>System\Include</Filter>
     </ClInclude>
@@ -2323,6 +2320,15 @@
     </ClInclude>
     <ClInclude Include="IPU\mpeg2_vlc.h">
       <Filter>System\Ps2\IPU</Filter>
+    </ClInclude>
+    <ClInclude Include="Achievements.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="GSDumpReplayer.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="GS.h">
+      <Filter>System\Ps2\GS\GIF</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
