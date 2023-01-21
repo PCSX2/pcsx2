@@ -4349,6 +4349,7 @@ bool GSRendererHW::IsConstantDirectWriteMemClear()
 	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME // Direct write
 		&& (!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsCdOutput()) // No transparency
 		&& (m_context->FRAME.FBMSK == 0) // no color mask
+		&& !(m_env.SCANMSK.MSK & 2)
 		&& !m_context->TEST.ATE // no alpha test
 		&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
 		&& (m_vt.m_eq.rgba == 0xFFFF) // constant color write
