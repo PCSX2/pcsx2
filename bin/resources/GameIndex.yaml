@@ -4981,6 +4981,10 @@ SCKA-20032:
         // Cop2 problems.
         patch=1,EE,00398898,word,48438000 //4b06521b
         patch=1,EE,0039889c,word,4b06521b //48438000
+        author=1UP
+        // DNAS Bypass
+        patch=1,EE,20384D30,word,03E00008
+        patch=1,EE,20384D34,word,00000000
 SCKA-20033:
   name: "Smash Court Professional Tournament 2 [Limited Edition]"
   region: "NTSC-K"
