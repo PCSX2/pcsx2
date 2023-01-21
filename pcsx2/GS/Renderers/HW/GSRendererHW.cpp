@@ -1661,14 +1661,7 @@ void GSRendererHW::Draw()
 
 	if (!GSConfig.UserHacks_DisableSafeFeatures)
 	{
-		// Constant Direct Write without texture/test/blending (aka a GS mem clear)
-		if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME // Direct write
-			&& (!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsCdOutput()) // No transparency
-			&& (m_context->FRAME.FBMSK == 0) // no color mask
-			&& !m_context->TEST.ATE // no alpha test
-			&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
-			&& (m_vt.m_eq.rgba == 0xFFFF) // constant color write
-			&& m_r.x == 0 && m_r.y == 0) // Likely full buffer write
+		if (IsConstantDirectWriteMemClear())
 		{
 			// Likely doing a huge single page width clear, which never goes well. (Superman)
 			// Burnout 3 does a 32x1024 double width clear on its reflection targets.
@@ -1813,17 +1806,8 @@ void GSRendererHW::Draw()
 
 	if (!GSConfig.UserHacks_DisableSafeFeatures)
 	{
-		// Constant Direct Write without texture/test/blending (aka a GS mem clear)
-		if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME // Direct write
-				&& (!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsCdOutput()) // No transparency
-				&& (m_context->FRAME.FBMSK == 0) // no color mask
-				&& !m_context->TEST.ATE // no alpha test
-				&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
-				&& (m_vt.m_eq.rgba == 0xFFFF) // constant color write
-				&& m_r.x == 0 && m_r.y == 0) // Likely full buffer write
-		{
+		if (IsConstantDirectWriteMemClear())
 			OI_DoubleHalfClear(rt, ds);
-		}
 	}
 
 	// A couple of hack to avoid upscaling issue. So far it seems to impacts mostly sprite
@@ -4357,4 +4341,19 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 
 	// Nothing to see keep going
 	return true;
+}
+
+bool GSRendererHW::IsConstantDirectWriteMemClear()
+{
+	// Constant Direct Write without texture/test/blending (aka a GS mem clear)
+	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME // Direct write
+		&& (!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsCdOutput()) // No transparency
+		&& (m_context->FRAME.FBMSK == 0) // no color mask
+		&& !m_context->TEST.ATE // no alpha test
+		&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
+		&& (m_vt.m_eq.rgba == 0xFFFF) // constant color write
+		&& m_r.x == 0 && m_r.y == 0) // Likely full buffer write
+		return true;
+
+	return false;
 }
