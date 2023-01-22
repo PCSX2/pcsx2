@@ -141,7 +141,7 @@ bool GSDeviceOGL::Create()
 		m_features.line_expand = false;
 	}
 
-	Console.WriteLn("Using %s for point expansion and %s for line expansion.",
+	DevCon.WriteLn("Using %s for point expansion and %s for line expansion.",
 		m_features.point_expand ? "hardware" : "geometry shaders", m_features.line_expand ? "hardware" : "geometry shaders");
 
 	{
@@ -994,9 +994,7 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view& entry, GLenum typ
 
 std::string GSDeviceOGL::GetVSSource(VSSelector sel)
 {
-#ifdef PCSX2_DEVBUILD
-	Console.WriteLn("Compiling new vertex shader with selector 0x%" PRIX64, sel.key);
-#endif
+	DevCon.WriteLn("Compiling new vertex shader with selector 0x%" PRIX64, sel.key);
 
 	std::string macro = fmt::format("#define VS_INT_FST {}\n", static_cast<u32>(sel.int_fst))
 		+ fmt::format("#define VS_IIP {}\n", static_cast<u32>(sel.iip))
@@ -1012,9 +1010,7 @@ std::string GSDeviceOGL::GetVSSource(VSSelector sel)
 
 std::string GSDeviceOGL::GetGSSource(GSSelector sel)
 {
-#ifdef PCSX2_DEVBUILD
-	Console.WriteLn("Compiling new geometry shader with selector 0x%" PRIX64, sel.key);
-#endif
+	DevCon.WriteLn("Compiling new geometry shader with selector 0x%" PRIX64, sel.key);
 
 	std::string macro = fmt::format("#define GS_POINT {}\n", static_cast<u32>(sel.point))
 		+ fmt::format("#define GS_LINE {}\n", static_cast<u32>(sel.line))
@@ -1028,9 +1024,7 @@ std::string GSDeviceOGL::GetGSSource(GSSelector sel)
 
 std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 {
-#ifdef PCSX2_DEVBUILD
-	Console.WriteLn("Compiling new pixel shader with selector 0x%" PRIX64 "%08X", sel.key_hi, sel.key_lo);
-#endif
+	DevCon.WriteLn("Compiling new pixel shader with selector 0x%" PRIX64 "%08X", sel.key_hi, sel.key_lo);
 
 	std::string macro = fmt::format("#define PS_FST {}\n", sel.fst)
 		+ fmt::format("#define PS_WMS {}\n", sel.wms)

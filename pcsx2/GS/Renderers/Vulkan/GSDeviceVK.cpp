@@ -270,7 +270,7 @@ bool GSDeviceVK::CheckFeatures()
 		(features.largePoints && limits.pointSizeRange[0] <= f_upscale && limits.pointSizeRange[1] >= f_upscale);
 	m_features.line_expand =
 		(features.wideLines && limits.lineWidthRange[0] <= f_upscale && limits.lineWidthRange[1] >= f_upscale);
-	Console.WriteLn("Using %s for point expansion and %s for line expansion.",
+	DevCon.WriteLn("Using %s for point expansion and %s for line expansion.",
 		m_features.point_expand ? "hardware" : "geometry shaders",
 		m_features.line_expand ? "hardware" : "geometry shaders");
 
