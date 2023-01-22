@@ -9053,6 +9053,8 @@ SLAJ-25066:
 SLAJ-25068:
   name: "Shin Sangoku Musou 4 - Mushoden"
   region: "NTSC-Unk"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun luminosity.
 SLAJ-25072:
   name: "Matrix, The - Path of Neo"
   region: "NTSC-Unk"
@@ -18396,12 +18398,18 @@ SLES-53857:
 SLES-53860:
   name: "Dynasty Warriors 5 - Xtreme Legends"
   region: "PAL-E"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun luminosity.
 SLES-53861:
   name: "Dynasty Warriors 5 - Xtreme Legends"
   region: "PAL-F"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun luminosity.
 SLES-53862:
   name: "Dynasty Warriors 5 - Xtreme Legends"
   region: "PAL-G"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun luminosity.
 SLES-53863:
   name: "Pool Paradise - International Edition"
   region: "PAL-M5"
@@ -24079,6 +24087,8 @@ SLKA-25328:
 SLKA-25329:
   name: "Shin Sangoku Musou 4 - Mushoden"
   region: "NTSC-K"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun luminosity.
 SLKA-25331:
   name: "Marc Ecko's Getting Up - Contents Under Pressure"
   region: "NTSC-K"
@@ -31135,6 +31145,8 @@ SLPM-66100:
 SLPM-66101:
   name: "Shin Sangoku Musou 4 - Mushoden"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun luminosity.
 SLPM-66102:
   name: "Zwei!! [Taito the Best]"
   region: "NTSC-J"
@@ -34988,6 +35000,8 @@ SLPM-74249:
 SLPM-74250:
   name: "Shin Sangoku Musou 4 Mushoden [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun luminosity.
 SLPM-74251:
   name: "Shin Onimusha - Dawn of Dreams [PlayStation 2 the Best - Reprint Disc 1]"
   region: "NTSC-J"
@@ -46674,6 +46688,8 @@ SLUS-21299:
   name: "Dynasty Warriors 5 - Xtreme Legends"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun luminosity.
 SLUS-21300:
   name: "Over the Hedge"
   region: "NTSC-U"
