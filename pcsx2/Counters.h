@@ -62,8 +62,6 @@ struct EECNT_MODE
 	u32 OverflowReached:1;
 };
 
-// fixme: Cycle and sCycleT members are unused.
-//	      But they can't be removed without making a new savestate version.
 struct Counter
 {
 	u32 count;

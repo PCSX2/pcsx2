@@ -32,6 +32,8 @@
   - '**/GameIndex.*'
 'Installer | Package':
   - 'build.sh'
+'Translations':
+  - 'pcsx2-qt/Translations/*'
 
 # Tools / Features
 'Debugger':
