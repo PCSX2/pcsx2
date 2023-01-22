@@ -150,12 +150,14 @@ bool PCAPAdapter::recv(NetPacket* pkt)
 	pcap_pkthdr* header;
 	const u_char* pkt_data;
 
-	if (pcap_next_ex(hpcap, &header, &pkt_data) > 0)
+	// pcap bridged will pick up packets not intended for us, returning false on those packets will incur a 1ms wait.
+	// This delays getting packets we need, so instead loop untill a valid packet, or no packet, is returned from pcap_next_ex.
+	while (pcap_next_ex(hpcap, &header, &pkt_data) > 0)
 	{
 		if (header->len > sizeof(pkt->buffer))
 		{
 			Console.Error("DEV9: Dropped jumbo frame of size: %u", header->len);
-			return false;
+			continue;
 		}
 
 		pxAssert(header->len == header->caplen);
@@ -168,17 +170,16 @@ bool PCAPAdapter::recv(NetPacket* pkt)
 
 		if (hpcap_dumper)
 			pcap_dump((u_char*)hpcap_dumper, header, pkt_data);
-	}
-	else
-		return false;
 
-	if (VerifyPkt(pkt, header->len))
-	{
-		InspectRecv(pkt);
-		return true;
+		if (VerifyPkt(pkt, header->len))
+		{
+			InspectRecv(pkt);
+			return true;
+		}
+		// continue.
 	}
-	else
-		return false;
+
+	return false;
 }
 //sends the packet .rv :true success
 bool PCAPAdapter::send(NetPacket* pkt)
