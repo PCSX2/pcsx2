@@ -1237,9 +1237,16 @@ void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool def
 	if (!VMManager::HasValidVM())
 		return;
 
-	// Run it on the host thread, that way we get the confirm prompt (if enabled).
-	QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection, Q_ARG(bool, allow_confirm),
-		Q_ARG(bool, allow_save_state), Q_ARG(bool, default_save_state), Q_ARG(bool, false));
+	if (allow_confirm)
+	{
+		// Run it on the host thread, that way we get the confirm prompt (if enabled).
+		QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection, Q_ARG(bool, allow_confirm),
+			Q_ARG(bool, allow_save_state), Q_ARG(bool, default_save_state), Q_ARG(bool, false));
+	}
+	else
+	{
+		g_emu_thread->shutdownVM(allow_save_state && default_save_state);
+	}
 }
 
 bool Host::IsFullscreen()

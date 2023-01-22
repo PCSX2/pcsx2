@@ -37,7 +37,7 @@
 #include "Elfheader.h"
 #include "ps2/BiosTools.h"
 #include "Recording/InputRecording.h"
-#include "VMManager.h"
+#include "Host.h"
 
 // This typically reflects the Sony-assigned serial code for the Disc, if one exists.
 //  (examples:  SLUS-2113, etc).
@@ -2440,8 +2440,8 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 
 
 			case 0x0F: // sceCdPowerOff (0:1)- Call74 from Xcdvdman
-				Console.WriteLn(Color_StrongBlack, "sceCdPowerOff called. Resetting VM.");
-				VMManager::Reset();
+				Console.WriteLn(Color_StrongBlack, "sceCdPowerOff called. Shutting down VM.");
+				Host::RequestVMShutdown(false, false, false);
 				break;
 
 			case 0x12: // sceCdReadILinkId (0:9)
