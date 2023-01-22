@@ -15856,20 +15856,20 @@ SLES-52895:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes bloom misalignment when upscaling
-    cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling
+    halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
+    cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLES-52896:
   name: "Spongebob SquarePants - The Movie"
   region: "PAL-F-G"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes bloom misalignment when upscaling
-    cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling
+    halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
+    cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLES-52897:
   name: "Spongebob SquarePants - The Movie"
   region: "PAL-I"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes bloom misalignment when upscaling
-    cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling
+    halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
+    cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLES-52898:
   name: "King of Fighters - Maximum Impact"
   region: "PAL-E-JP"
@@ -16100,8 +16100,8 @@ SLES-52985:
   name: "Spongebob SquarePants - The Movie"
   region: "PAL-G"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes bloom misalignment
-    cpuCLUTRender: 1 # Fixes duplicated bloom
+    halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
+    cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLES-52986:
   name: "Bob Esponja La Película"
   region: "PAL-S"
@@ -44549,8 +44549,8 @@ SLUS-20904:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes bloom misalignment when upscaling
-    cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling
+    halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
+    cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLUS-20905:
   name: "Incredibles, The"
   region: "NTSC-U"
