@@ -1522,8 +1522,50 @@ void GSRendererHW::Draw()
 			m_tc->LookupSource(TEX0, env.TEXA, tmm.coverage, (GSConfig.HWMipmap >= HWMipmapLevel::Basic ||
 				GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr);
 
-		const int tw = 1 << TEX0.TW;
-		const int th = 1 << TEX0.TH;
+		// Hypothesis: texture shuffle is used as a postprocessing effect so texture will be an old target.
+		// Initially code also tested the RT but it gives too much false-positive
+		//
+		// Both input and output are 16 bits and texture was initially 32 bits!
+		m_texture_shuffle = (GSLocalMemory::m_psm[context->FRAME.PSM].bpp == 16) && (tex_psm.bpp == 16)
+			&& draw_sprite_tex && m_src->m_32_bits_fmt;
+
+		// Okami mustn't call this code
+		if (m_texture_shuffle && m_vertex.next < 3 && PRIM->FST && ((m_context->FRAME.FBMSK & fm_mask) == 0))
+		{
+			// Avious dubious call to m_texture_shuffle on 16 bits games
+			// The pattern is severals column of 8 pixels. A single sprite
+			// smell fishy but a big sprite is wrong.
+
+			// Shadow of Memories/Destiny shouldn't call this code.
+			// Causes shadow flickering.
+			const GSVertex* v = &m_vertex.buff[0];
+			m_texture_shuffle = ((v[1].U - v[0].U) < 256) ||
+				// Tomb Raider Angel of Darkness relies on this behavior to produce a fog effect.
+				// In this case, the address of the framebuffer and texture are the same.
+				// The game will take RG => BA and then the BA => RG of next pixels.
+				// However, only RG => BA needs to be emulated because RG isn't used.
+				m_context->FRAME.Block() == m_context->TEX0.TBP0 ||
+				// DMC3, Onimusha 3 rely on this behavior.
+				// They do fullscreen rectangle with scissor, then shift by 8 pixels, not done with recursion.
+				// So we check if it's a TS effect by checking the scissor.
+				((m_context->SCISSOR.SCAX1 - m_context->SCISSOR.SCAX0) < 32);
+
+			GL_INS("WARNING: Possible misdetection of effect, texture shuffle is %s", m_texture_shuffle ? "Enabled" : "Disabled");
+		}
+
+		// Texture shuffle is not yet supported with strange clamp mode
+		ASSERT(!m_texture_shuffle || (context->stack.CLAMP.WMS < 3 && context->stack.WMT < 3));
+
+		if (m_src->m_target && m_context->TEX0.PSM == PSM_PSMT8 && single_page && draw_sprite_tex)
+		{
+			GL_INS("Channel shuffle effect detected (2nd shot)");
+			m_channel_shuffle = true;
+		}
+		else
+		{
+			m_channel_shuffle = false;
+		}
+
 #if 0
 		// FIXME: We currently crop off the rightmost and bottommost pixel when upscaling clamps,
 		// until the issue is properly solved we should keep this disabled as it breaks many games when upscaling.
@@ -1543,12 +1585,14 @@ void GSRendererHW::Draw()
 		else if ((m_context->CLAMP.WMT & 2) && !(tmm.uses_boundary & TextureMinMaxResult::USES_BOUNDARY_V))
 			m_context->CLAMP.WMT = CLAMP_CLAMP;
 #endif
-
+		const int tw = 1 << TEX0.TW;
+		const int th = 1 << TEX0.TH;
+		const bool is_shuffle = m_channel_shuffle || m_texture_shuffle;
 		// If m_src is from a target that isn't the same size as the texture, texture sample edge modes won't work quite the same way
 		// If the game actually tries to access stuff outside of the rendered target, it was going to get garbage anyways so whatever
 		// But the game could issue reads that wrap to valid areas, so move wrapping to the shader if wrapping is used
 		const GSVector4i unscaled_size = GSVector4i(GSVector4(m_src->m_texture->GetSize()) / GSVector4(m_src->m_texture->GetScale()));
-		if (m_context->CLAMP.WMS == CLAMP_REPEAT && (tmm.uses_boundary & TextureMinMaxResult::USES_BOUNDARY_U) && unscaled_size.x != tw)
+		if (!is_shuffle && m_context->CLAMP.WMS == CLAMP_REPEAT && (tmm.uses_boundary & TextureMinMaxResult::USES_BOUNDARY_U) && unscaled_size.x != tw)
 		{
 			// Our shader-emulated region repeat doesn't upscale :(
 			// Try to avoid it if possible
@@ -1565,7 +1609,7 @@ void GSRendererHW::Draw()
 				m_context->CLAMP.MAXU = 0;
 			}
 		}
-		if (m_context->CLAMP.WMT == CLAMP_REPEAT && (tmm.uses_boundary & TextureMinMaxResult::USES_BOUNDARY_V) && unscaled_size.y != th)
+		if (!is_shuffle && m_context->CLAMP.WMT == CLAMP_REPEAT && (tmm.uses_boundary & TextureMinMaxResult::USES_BOUNDARY_V) && unscaled_size.y != th)
 		{
 			if (unscaled_size.y < th && m_vt.m_min.t.y > -(th - unscaled_size.y) && m_vt.m_max.t.y < th)
 			{
@@ -1609,50 +1653,6 @@ void GSRendererHW::Draw()
 			m_src->m_texture->ClearMipmapGenerationFlag();
 			m_vt.m_min.t = tmin;
 			m_vt.m_max.t = tmax;
-		}
-
-		// Hypothesis: texture shuffle is used as a postprocessing effect so texture will be an old target.
-		// Initially code also tested the RT but it gives too much false-positive
-		//
-		// Both input and output are 16 bits and texture was initially 32 bits!
-		m_texture_shuffle = (GSLocalMemory::m_psm[context->FRAME.PSM].bpp == 16) && (tex_psm.bpp == 16)
-			&& draw_sprite_tex && m_src->m_32_bits_fmt;
-
-		// Okami mustn't call this code
-		if (m_texture_shuffle && m_vertex.next < 3 && PRIM->FST && ((m_context->FRAME.FBMSK & fm_mask) == 0))
-		{
-			// Avious dubious call to m_texture_shuffle on 16 bits games
-			// The pattern is severals column of 8 pixels. A single sprite
-			// smell fishy but a big sprite is wrong.
-
-			// Shadow of Memories/Destiny shouldn't call this code.
-			// Causes shadow flickering.
-			const GSVertex* v = &m_vertex.buff[0];
-			m_texture_shuffle = ((v[1].U - v[0].U) < 256) ||
-				// Tomb Raider Angel of Darkness relies on this behavior to produce a fog effect.
-				// In this case, the address of the framebuffer and texture are the same.
-				// The game will take RG => BA and then the BA => RG of next pixels.
-				// However, only RG => BA needs to be emulated because RG isn't used.
-				m_context->FRAME.Block() == m_context->TEX0.TBP0 ||
-				// DMC3, Onimusha 3 rely on this behavior.
-				// They do fullscreen rectangle with scissor, then shift by 8 pixels, not done with recursion.
-				// So we check if it's a TS effect by checking the scissor.
-				((m_context->SCISSOR.SCAX1 - m_context->SCISSOR.SCAX0) < 32);
-
-			GL_INS("WARNING: Possible misdetection of effect, texture shuffle is %s", m_texture_shuffle ? "Enabled" : "Disabled");
-		}
-
-		// Texture shuffle is not yet supported with strange clamp mode
-		ASSERT(!m_texture_shuffle || (context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3));
-
-		if (m_src->m_target && m_context->TEX0.PSM == PSM_PSMT8 && single_page && draw_sprite_tex)
-		{
-			GL_INS("Channel shuffle effect detected (2nd shot)");
-			m_channel_shuffle = true;
-		}
-		else
-		{
-			m_channel_shuffle = false;
 		}
 	}
 
