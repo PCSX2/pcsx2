@@ -2188,6 +2188,17 @@ SCED-52163:
 SCED-52164:
   name: "Official PlayStation 2 Magazine Demo 49"
   region: "PAL-M5"
+  // Pal Speed fix for Syphon Filter.
+  dynaPatches:
+    - pattern:
+        - { offset: 0x0, value: 0x0080802d }
+        - { offset: 0x78, value: 0x24020032 }
+        - { offset: 0x1E8, value: 0x10000007 }
+        - { offset: 0x338, value: 0x3c05004a }
+        - { offset: 0x390, value: 0x2a820003 }
+        - { offset: 0x4FC, value: 0xac23c6e0 }
+      replacement:
+        - { offset: 0x78, value: 0x24020019 }
 SCED-52165:
   name: "Official PlayStation 2 Magazine Demo 50" # United Kingdom
   region: "PAL-E"
@@ -2268,6 +2279,17 @@ SCED-52578:
 SCED-52619:
   name: "Official PlayStation 2 Magazine Demo 48"
   region: "PAL-M5"
+  // Pal Speed fix for Syphon Filter.
+  dynaPatches:
+    - pattern:
+        - { offset: 0x0, value: 0x0080802d }
+        - { offset: 0x78, value: 0x24020032 }
+        - { offset: 0x1E8, value: 0x10000007 }
+        - { offset: 0x338, value: 0x3c05004a }
+        - { offset: 0x390, value: 0x2a820003 }
+        - { offset: 0x4FC, value: 0xac23c6e0 }
+      replacement:
+        - { offset: 0x78, value: 0x24020019 }
 SCED-52681:
   name: "Gran Turismo 4 BMW 1 Series Virtual Drive [Demo]"
   region: "PAL-M11"
@@ -2715,6 +2737,17 @@ SCED-54414:
 SCED-54415:
   name: "Official PlayStation 2 Magazine Demo 90"
   region: "PAL-M5"
+  // Pal Speed fix for Syphon Filter.
+  dynaPatches:
+    - pattern:
+        - { offset: 0x0, value: 0x0080802d }
+        - { offset: 0x78, value: 0x24020032 }
+        - { offset: 0x1E8, value: 0x10000007 }
+        - { offset: 0x338, value: 0x3c05004a }
+        - { offset: 0x390, value: 0x2a820003 }
+        - { offset: 0x4FC, value: 0xac23c6e0 }
+      replacement:
+        - { offset: 0x78, value: 0x24020019 }
 SCED-54416:
   name: "Official PlayStation 2 Magazine Demo 91"
   region: "PAL-M5"
