@@ -2737,7 +2737,7 @@ bool GSDeviceVK::ApplyUtilityState(bool already_execed)
 			}
 
 			ExecuteCommandBufferAndRestartRenderPass(false, "Ran out of utility descriptors");
-			return ApplyTFXState(true);
+			return ApplyUtilityState(true);
 		}
 
 		Vulkan::DescriptorSetUpdateBuilder dsub;
