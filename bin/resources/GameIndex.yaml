@@ -2185,8 +2185,8 @@ SCED-52162:
 SCED-52163:
   name: "Official PlayStation 2 Magazine Demo 48"
   region: "PAL-M5"
-  dynaPatches: # Pal Speed fix for syphon filter.
-    - pattern:
+  dynaPatches:
+    - pattern: # Pal Speed fix for syphon filter.
         - { offset: 0x0, value: 0x0080802d }
         - { offset: 0x78, value: 0x24020032 }
         - { offset: 0x1E8, value: 0x10000007 }
@@ -2278,8 +2278,8 @@ SCED-52578:
 SCED-52619:
   name: "Official PlayStation 2 Magazine Demo 48"
   region: "PAL-M5"
-  dynaPatches: # Pal Speed fix for syphon filter.
-    - pattern:
+  dynaPatches:
+    - pattern: # Pal Speed fix for syphon filter.
         - { offset: 0x0, value: 0x0080802d }
         - { offset: 0x78, value: 0x24020032 }
         - { offset: 0x1E8, value: 0x10000007 }
@@ -2735,8 +2735,8 @@ SCED-54414:
 SCED-54415:
   name: "Official PlayStation 2 Magazine Demo 90"
   region: "PAL-M5"
-  dynaPatches: # Pal Speed fix for syphon filter.
-    - pattern:
+  dynaPatches:
+    - pattern: # Pal Speed fix for syphon filter.
         - { offset: 0x0, value: 0x0080802d }
         - { offset: 0x78, value: 0x24020032 }
         - { offset: 0x1E8, value: 0x10000007 }
