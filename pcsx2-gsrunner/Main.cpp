@@ -644,6 +644,7 @@ int main(int argc, char* argv[])
 
 	InputManager::CloseSources();
 	VMManager::Internal::ReleaseMemory();
+	VMManager::Internal::ReleaseGlobals();
 	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle());
 	GSRunner::DestroyPlatformWindow();
 
