@@ -157,7 +157,6 @@ PAPX-90512:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-  # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 PAPX-90516:
   name: "Jak and Daxter II [Trial]"
@@ -309,7 +308,6 @@ PBPX-95524:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-  # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 PBPX-95601:
@@ -333,7 +331,6 @@ PBPX-95601:
     - "SCPS-19304"
     - "SCPS-15009"
     - "SCPS-55007"
-  # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 PCPX-96303:
   name: "6-gatsu Hatsubai Title Promotion Disc (Aconcagua - Boku no Natsuyasumi - TVDJ)"
@@ -385,7 +382,6 @@ PCPX-96649:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-  # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 PCPX-96660:
   name: "Tourist Trophy [Demo]"
@@ -739,7 +735,6 @@ SCAJ-20066:
     - "SCPS-19304"
     - "SCPS-15009"
     - "SCPS-55007"
-  # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 SCAJ-20067:
@@ -1555,7 +1550,6 @@ SCAJ-30006:
     - "SCPS-19304"
     - "SCPS-15009"
     - "SCPS-55007"
-  # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 SCAJ-30007:
   name: "Gran Turismo 4"
@@ -1567,7 +1561,6 @@ SCAJ-30007:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-  # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 SCAJ-30008:
   name: "Gran Turismo 4 [PlayStation 2 The Best]"
@@ -3446,7 +3439,6 @@ SCES-51719:
     - "SCES-51719"
     - "SCES-52438"
     - "SCES-50294"
-  # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 SCES-51725:
   name: "Everquest Online Adventures"
@@ -3660,7 +3652,6 @@ SCES-52438:
     - "SCES-51719"
     - "SCES-52438"
     - "SCES-50294"
-  # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 SCES-52456:
@@ -4920,7 +4911,6 @@ SCKA-20022:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-  # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 SCKA-20023:
@@ -5371,7 +5361,6 @@ SCKA-30001:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-  # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 SCKA-30002:
   name: "God of War"
@@ -5793,7 +5782,6 @@ SCPS-15055:
     - "SCPS-19304"
     - "SCPS-15009"
     - "SCPS-55007"
-  # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 SCPS-15056:
@@ -6193,7 +6181,6 @@ SCPS-17001:
     - "SCPS-19304"
     - "SCPS-15009"
     - "SCPS-55007"
-  # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 SCPS-17002:
   name: "Wild ARMs - Alter Code F"
@@ -6371,7 +6358,6 @@ SCPS-19252:
     - "SCPS-19304"
     - "SCPS-15009"
     - "SCPS-55007"
-  # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 SCPS-19253:
   name: "Wild ARMs - Alter Code F [PlayStation 2 The Best - Reprint]"
@@ -6409,7 +6395,6 @@ SCPS-19304:
     - "SCPS-19304"
     - "SCPS-15009"
     - "SCPS-55007"
-  # Comments from old GameIndex.dbf for this Game.
   # vuClampMode = 2  Text in GT mode works.
   # eeClampMode = 3  Text in races works.
 SCPS-19305:
@@ -7805,7 +7790,6 @@ SCUS-97328:
     - "SCUS-97102"
     - "SCUS-97219"
     - "SCUS-97512"
-  # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 SCUS-97329:
   name: "Downhill Domination [Demo]"
@@ -8178,7 +8162,6 @@ SCUS-97436:
     - "SCUS-97102"
     - "SCUS-97219"
     - "SCUS-97512"
-  # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 SCUS-97437:
   name: "ATV Offroad Fury 3 [Demo]"
@@ -8380,7 +8363,6 @@ SCUS-97483:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-  # Comments from old GameIndex.dbf for this Game.
   # eeClampMode = 3  Text in races works.
 SCUS-97484:
   name: "Sly 3 - Honor Among Thieves [E3 Demo]"
@@ -11104,7 +11086,7 @@ SLES-50776:
   name: "Slam Tennis"
   region: "PAL-M5"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Fixes tennis net & signage.
 SLES-50777:
   name: "Battle Engine Aquila"
   region: "PAL-M5"
@@ -11510,7 +11492,6 @@ SLES-50905:
   region: "PAL-E"
   clampModes:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
-  # Comments from old GameIndex.dbf for this Game.
   #  Save import option was removed from PAL release.
 SLES-50906:
   name: "Master Rally"
@@ -12093,7 +12074,7 @@ SLES-51197:
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Improves field textures.
 SLES-51198:
   name: "NBA Live 2003"
   region: "PAL-M5"
@@ -13787,14 +13768,14 @@ SLES-51963:
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Improves field textures.
 SLES-51964:
   name: "FIFA 2004"
   region: "PAL-P-S"
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Improves field textures.
 SLES-51966:
   name: "Bombastic"
   region: "PAL-E"
@@ -15014,35 +14995,35 @@ SLES-52559:
   gameFixes:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Improves field textures.
 SLES-52560:
   name: "FIFA 2005"
   region: "PAL-G"
   gameFixes:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Improves field textures.
 SLES-52561:
   name: "FIFA 2005"
   region: "PAL-P-S"
   gameFixes:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Improves field textures.
 SLES-52562:
   name: "FIFA 2005"
   region: "PAL-I"
   gameFixes:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Improves field textures.
 SLES-52563:
   name: "FIFA Football 2005"
   region: "PAL-M6"
   gameFixes:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Improves field textures.
 SLES-52567:
   name: "Catwoman"
   region: "PAL-M7"
@@ -19870,8 +19851,6 @@ SLES-54453:
 SLES-54454:
   name: "Disgaea 2 - Cursed Memories"
   region: "PAL-E"
-  # Comments from old GameIndex.dbf for this Game.
-  #  Voices can be switched between Japanese and English via Options menu.
 SLES-54455:
   name: "Thrillville"
   region: "PAL-E"
@@ -37114,7 +37093,7 @@ SLPS-25179:
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 1 # Improves field textures.
 SLPS-25181:
   name: "Gunvari Collection & Time Crisis"
   region: "NTSC-J"
