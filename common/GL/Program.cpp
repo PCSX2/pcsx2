@@ -60,7 +60,10 @@ namespace GL
 		GLint info_log_length = 0;
 		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &info_log_length);
 
-		if (status == GL_FALSE || info_log_length > 0)
+		// Log will create a new line when there are no warnings so let's set a minimum log length of 1.
+		constexpr int info_log_min_length = 1;
+
+		if (status == GL_FALSE || info_log_length > info_log_min_length)
 		{
 			std::string info_log;
 			info_log.resize(info_log_length + 1);
