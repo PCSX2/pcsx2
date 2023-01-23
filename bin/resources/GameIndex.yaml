@@ -14130,6 +14130,9 @@ SLES-52149:
   name: "Tom Clancy's Splinter Cell - Pandora Tomorrow"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes missing loading screens.
+    mergeSprite: 1 # Fixes misaligned bloom on light sources.
 SLES-52150:
   name: "Legacy of Kain - Defiance"
   region: "PAL-M5"
@@ -23655,6 +23658,9 @@ SLKA-25176:
 SLKA-25180:
   name: "Tom Clancy's Splinter Cell - Pandora Tomorrow"
   region: "NTSC-K"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes missing loading screens.
+    mergeSprite: 1 # Fixes misaligned bloom on light sources.
 SLKA-25181:
   name: "Energy Airforce Aim Strike"
   region: "NTSC-K"
@@ -30162,6 +30168,9 @@ SLPM-65813:
 SLPM-65815:
   name: "Tom Clancy's Splinter Cell - Pandora Tomorrow"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes missing loading screens.
+    mergeSprite: 1 # Fixes misaligned bloom on light sources.
 SLPM-65816:
   name: "Shin Bakusou Dekotora Densetsu"
   region: "NTSC-J"
@@ -44849,6 +44858,9 @@ SLUS-20958:
   name: "Tom Clancy's Splinter Cell - Pandora Tomorrow"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes missing loading screens.
+    mergeSprite: 1 # Fixes misaligned bloom on light sources.
 SLUS-20959:
   name: "Dukes of Hazzard, The - Return of the General Lee"
   region: "NTSC-U"
@@ -50875,6 +50887,9 @@ TCPS-10184:
 TLES-52149:
   name: "Splinter Cell - Pandora Tomorrow Beta Trial Code"
   region: "PAL-E"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes missing loading screens.
+    mergeSprite: 1 # Fixes misaligned bloom on light sources.
 TLES-52339:
   name: "Crash 'N' Burn Beta Trial Code"
   region: "PAL-E"
