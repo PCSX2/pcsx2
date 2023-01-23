@@ -1554,7 +1554,7 @@ void GSRendererHW::Draw()
 		}
 
 		// Texture shuffle is not yet supported with strange clamp mode
-		ASSERT(!m_texture_shuffle || (context->stack.CLAMP.WMS < 3 && context->stack.WMT < 3));
+		ASSERT(!m_texture_shuffle || (context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3));
 
 		if (m_src->m_target && m_context->TEX0.PSM == PSM_PSMT8 && single_page && draw_sprite_tex)
 		{
