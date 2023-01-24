@@ -1059,9 +1059,18 @@ void SaveState_UnzipFromDisk(const std::string& filename)
 	if (!zf)
 	{
 		Console.Error("Failed to open zip file '%s' for save state load: %s", filename.c_str(), zip_error_strerror(&ze));
-		throw Exception::SaveStateLoadError(filename)
-			.SetDiagMsg("Savestate file is not a valid gzip archive.")
-			.SetUserMsg("This savestate cannot be loaded because it is not a valid gzip archive.  It may have been created by an older unsupported version of PCSX2, or it may be corrupted.");
+		if (zip_error_code_zip(&ze) == ZIP_ER_NOENT)
+		{
+			throw Exception::SaveStateLoadError(filename)
+				.SetDiagMsg("Savestate file does not exist.")
+				.SetUserMsg("This savestate cannot be loaded because the file does not exist.");
+		}
+		else
+		{
+			throw Exception::SaveStateLoadError(filename)
+				.SetDiagMsg("Savestate file is not a valid gzip archive.")
+				.SetUserMsg("This savestate cannot be loaded because it is not a valid gzip archive. It may have been created by an older unsupported version of PCSX2, or it may be corrupted.");
+		}
 	}
 
 	// look for version and screenshot information in the zip stream:
