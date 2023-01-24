@@ -40,6 +40,8 @@
 #include "pcsx2/Frontend/InputManager.h"
 #include "pcsx2/GS.h"
 
+#include "fmt/format.h"
+
 #ifdef ENABLE_OPENGL
 #include "Renderers/OpenGL/GSDeviceOGL.h"
 #endif
@@ -588,14 +590,12 @@ void GSgetInternalResolution(int* width, int* height)
 void GSgetStats(std::string& info)
 {
 	GSPerfMon& pm = g_perfmon;
-
 	const char* api_name = HostDisplay::RenderAPIToString(s_render_api);
-
 	if (GSConfig.Renderer == GSRendererType::SW)
 	{
 		const double fps = GetVerticalFrequency();
 		const double fillrate = pm.Get(GSPerfMon::Fillrate);
-		info = StringUtil::StdStringFromFormat("%s SW | %d S | %d P | %d D | %.2f U | %.2f D | %.2f mpps",
+		fmt::format_to(std::back_inserter(info), "{} SW | {} S | {} P | {} D | {:.2f} U | {:.2f} D | {:.2f} mpps",
 			api_name,
 			(int)pm.Get(GSPerfMon::SyncPoint),
 			(int)pm.Get(GSPerfMon::Prim),
@@ -606,35 +606,49 @@ void GSgetStats(std::string& info)
 	}
 	else if (GSConfig.Renderer == GSRendererType::Null)
 	{
-		info = StringUtil::StdStringFromFormat("%s Null", api_name);
+		fmt::format_to(std::back_inserter(info), "{} Null", api_name);
 	}
 	else
 	{
-		if (GSConfig.TexturePreloading == TexturePreloadingLevel::Full)
-		{
-			info = StringUtil::StdStringFromFormat("%s HW | HC: %d MB | %d P | %d D | %d DC | %d B | %d RB | %d TC | %d TU",
-				api_name,
-				(int)std::ceil(GSRendererHW::GetInstance()->GetTextureCache()->GetTotalHashCacheMemoryUsage() / 1048576.0f),
-				(int)pm.Get(GSPerfMon::Prim),
-				(int)pm.Get(GSPerfMon::Draw),
-				(int)std::ceil(pm.Get(GSPerfMon::DrawCalls)),
-				(int)std::ceil(pm.Get(GSPerfMon::Barriers)),
-				(int)std::ceil(pm.Get(GSPerfMon::Readbacks)),
-				(int)std::ceil(pm.Get(GSPerfMon::TextureCopies)),
-				(int)std::ceil(pm.Get(GSPerfMon::TextureUploads)));
-		}
-		else
-		{
-			info = StringUtil::StdStringFromFormat("%s HW | %d P | %d D | %d DC | %d B | %d RB | %d TC | %d TU",
-				api_name,
-				(int)pm.Get(GSPerfMon::Prim),
-				(int)pm.Get(GSPerfMon::Draw),
-				(int)std::ceil(pm.Get(GSPerfMon::DrawCalls)),
-				(int)std::ceil(pm.Get(GSPerfMon::Barriers)),
-				(int)std::ceil(pm.Get(GSPerfMon::Readbacks)),
-				(int)std::ceil(pm.Get(GSPerfMon::TextureCopies)),
-				(int)std::ceil(pm.Get(GSPerfMon::TextureUploads)));
-		}
+		fmt::format_to(std::back_inserter(info), "{} HW | {} P | {} D | {} DC | {} B | {} RB | {} TC | {} TU",
+			api_name,
+			(int)pm.Get(GSPerfMon::Prim),
+			(int)pm.Get(GSPerfMon::Draw),
+			(int)std::ceil(pm.Get(GSPerfMon::DrawCalls)),
+			(int)std::ceil(pm.Get(GSPerfMon::Barriers)),
+			(int)std::ceil(pm.Get(GSPerfMon::Readbacks)),
+			(int)std::ceil(pm.Get(GSPerfMon::TextureCopies)),
+			(int)std::ceil(pm.Get(GSPerfMon::TextureUploads)));
+	}
+}
+
+void GSgetMemoryStats(std::string& info)
+{
+	if (GSConfig.Renderer == GSRendererType::SW || GSConfig.Renderer == GSRendererType::Null)
+		return;
+
+	const u64 targets = GSRendererHW::GetInstance()->GetTextureCache()->GetTargetMemoryUsage();
+	const u64 sources = GSRendererHW::GetInstance()->GetTextureCache()->GetSourceMemoryUsage();
+	const u64 hashcache = GSRendererHW::GetInstance()->GetTextureCache()->GetHashCacheMemoryUsage();
+	const u64 pool = g_gs_device->GetPoolMemoryUsage();
+	const u64 total = targets + sources + hashcache + pool;
+
+	if (GSConfig.TexturePreloading == TexturePreloadingLevel::Full)
+	{
+		fmt::format_to(std::back_inserter(info), "VRAM: {} MB | T: {} MB | S: {} MB | H: {} MB | P: {} MB",
+			(int)std::ceil(total / 1048576.0f),
+			(int)std::ceil(targets / 1048576.0f),
+			(int)std::ceil(sources / 1048576.0f),
+			(int)std::ceil(hashcache / 1048576.0f),
+			(int)std::ceil(pool / 1048576.0f));
+	}
+	else
+	{
+		fmt::format_to(std::back_inserter(info), "VRAM: {} MB | T: {} MB | S: {} MB | P: {} MB",
+			(int)std::ceil(total / 1048576.0f),
+			(int)std::ceil(targets / 1048576.0f),
+			(int)std::ceil(sources / 1048576.0f),
+			(int)std::ceil(pool / 1048576.0f));
 	}
 }
 

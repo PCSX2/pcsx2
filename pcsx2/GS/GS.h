@@ -81,6 +81,7 @@ void GSsetGameCRC(u32 crc);
 GSVideoMode GSgetDisplayMode();
 void GSgetInternalResolution(int* width, int* height);
 void GSgetStats(std::string& info);
+void GSgetMemoryStats(std::string& info);
 void GSgetTitleStats(std::string& info);
 
 /// Converts window position to normalized display coordinates (0..1). A value less than 0 or greater than 1 is

@@ -180,9 +180,14 @@ void ImGuiManager::DrawPerformanceOverlay()
 
 		if (GSConfig.OsdShowGSStats)
 		{
-			std::string gs_stats;
-			GSgetStats(gs_stats);
-			DRAW_LINE(fixed_font, gs_stats.c_str(), IM_COL32(255, 255, 255, 255));
+			text.clear();
+			GSgetStats(text);
+			DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
+
+			text.clear();
+			GSgetMemoryStats(text);
+			if (!text.empty())
+				DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 		}
 
 		if (GSConfig.OsdShowResolution)

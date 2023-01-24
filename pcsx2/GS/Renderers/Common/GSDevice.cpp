@@ -126,6 +126,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 		{
 			if (!prefer_new_texture || t->last_frame_used != m_frame)
 			{
+				m_pool_memory_usage -= t->GetMemUsage();
 				m_pool.erase(i);
 				break;
 			}
@@ -143,6 +144,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 		if (m_pool.size() >= MAX_POOLED_TEXTURES && fallback != m_pool.end())
 		{
 			t = *fallback;
+			m_pool_memory_usage -= t->GetMemUsage();
 			m_pool.erase(fallback);
 		}
 		else
@@ -185,19 +187,6 @@ std::unique_ptr<GSDownloadTexture> GSDevice::CreateDownloadTexture(u32 width, u3
 	return {};
 }
 
-void GSDevice::PrintMemoryUsage()
-{
-#ifdef ENABLE_OGL_DEBUG
-	u32 pool = 0;
-	for (auto t : m_pool)
-	{
-		if (t)
-			pool += t->GetMemUsage();
-	}
-	GL_PERF("MEM: Surface Pool %dMB", pool >> 20u);
-#endif
-}
-
 void GSDevice::EndScene()
 {
 	m_vertex.start += m_vertex.count;
@@ -208,20 +197,22 @@ void GSDevice::EndScene()
 
 void GSDevice::Recycle(GSTexture* t)
 {
-	if (t)
+	if (!t)
+		return;
+
+	t->last_frame_used = m_frame;
+
+	m_pool.push_front(t);
+	m_pool_memory_usage += t->GetMemUsage();
+
+	//printf("%d\n",m_pool.size());
+
+	while (m_pool.size() > MAX_POOLED_TEXTURES)
 	{
-		t->last_frame_used = m_frame;
+		m_pool_memory_usage -= m_pool.back()->GetMemUsage();
+		delete m_pool.back();
 
-		m_pool.push_front(t);
-
-		//printf("%d\n",m_pool.size());
-
-		while (m_pool.size() > MAX_POOLED_TEXTURES)
-		{
-			delete m_pool.back();
-
-			m_pool.pop_back();
-		}
+		m_pool.pop_back();
 	}
 }
 
@@ -231,6 +222,7 @@ void GSDevice::AgePool()
 
 	while (m_pool.size() > 40 && m_frame - m_pool.back()->last_frame_used > 10)
 	{
+		m_pool_memory_usage -= m_pool.back()->GetMemUsage();
 		delete m_pool.back();
 
 		m_pool.pop_back();
@@ -242,6 +234,7 @@ void GSDevice::PurgePool()
 	for (auto t : m_pool)
 		delete t;
 	m_pool.clear();
+	m_pool_memory_usage = 0;
 }
 
 void GSDevice::ClearSamplerCache()
