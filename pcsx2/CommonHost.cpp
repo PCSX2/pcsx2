@@ -31,6 +31,7 @@
 #include "PerformanceMetrics.h"
 #include "Sio.h"
 #include "VMManager.h"
+#include "PINE.h"
 
 #include "common/Assertions.h"
 #include "common/CrashHandler.h"
@@ -76,6 +77,8 @@ static u64 s_session_start_time = 0;
 static std::string s_session_serial;
 
 static bool s_screensaver_inhibited = false;
+
+static PINEServer s_pine_server;
 
 #ifdef ENABLE_DISCORD_PRESENCE
 static bool s_discord_presence_active = false;
@@ -272,6 +275,8 @@ void CommonHost::CPUThreadInitialize()
 	if (EmuConfig.EnableDiscordPresence)
 		InitializeDiscordPresence();
 #endif
+
+	ReloadPINE();
 }
 
 void CommonHost::CPUThreadShutdown()
@@ -283,6 +288,8 @@ void CommonHost::CPUThreadShutdown()
 #ifdef ENABLE_ACHIEVEMENTS
 	Achievements::Shutdown();
 #endif
+
+	s_pine_server.Deinitialize();
 
 	InputManager::CloseSources();
 	VMManager::WaitForSaveStateFlush();
@@ -379,6 +386,8 @@ void CommonHost::OnGameChanged(const std::string& disc_path, const std::string& 
 #ifdef ENABLE_DISCORD_PRESENCE
 	UpdateDiscordPresence(GetRichPresenceString());
 #endif
+
+	ReloadPINE();
 }
 
 void CommonHost::CPUThreadVSync()
@@ -540,3 +549,19 @@ std::string CommonHost::GetRichPresenceString()
 }
 
 #endif
+
+void CommonHost::ReloadPINE()
+{
+	if (EmuConfig.EnablePINE && (s_pine_server.m_slot != EmuConfig.PINESlot || s_pine_server.m_end))
+	{
+		if (!s_pine_server.m_end)
+		{
+			s_pine_server.Deinitialize();
+		}
+		s_pine_server.Initialize(EmuConfig.PINESlot);
+	}
+	else if ((!EmuConfig.EnablePINE && !s_pine_server.m_end))
+	{
+		s_pine_server.Deinitialize();
+	}
+}
