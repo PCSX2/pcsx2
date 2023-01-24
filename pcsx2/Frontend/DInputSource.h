@@ -24,6 +24,8 @@
 #include <mutex>
 #include <vector>
 
+#include <wil/resource.h>
+
 class DInputSource final : public InputSource
 {
 public:
@@ -83,10 +85,11 @@ private:
 
 	void CheckForStateChanges(size_t index, const DIJOYSTATE& new_state);
 
-	ControllerDataArray m_controllers;
-
-	HMODULE m_dinput_module{};
+	// Those must go first in the class so they are destroyed last
+	wil::unique_hmodule m_dinput_module;
 	wil::com_ptr_nothrow<IDirectInput8W> m_dinput;
 	LPCDIDATAFORMAT m_joystick_data_format{};
-	HWND m_toplevel_window = NULL;
+	HWND m_toplevel_window = nullptr;
+
+	ControllerDataArray m_controllers;
 };

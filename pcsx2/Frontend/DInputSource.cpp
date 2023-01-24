@@ -32,13 +32,7 @@ using PFNGETDFDIJOYSTICK = LPCDIDATAFORMAT(WINAPI*)();
 
 DInputSource::DInputSource() = default;
 
-DInputSource::~DInputSource()
-{
-	m_controllers.clear();
-	m_dinput.reset();
-	if (m_dinput_module)
-		FreeLibrary(m_dinput_module);
-}
+DInputSource::~DInputSource() = default;
 
 std::array<bool, DInputSource::NUM_HAT_DIRECTIONS> DInputSource::GetHatButtons(DWORD hat)
 {
@@ -69,15 +63,15 @@ static constexpr std::array<const char*, DInputSource::NUM_HAT_DIRECTIONS> s_hat
 
 bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
-	m_dinput_module = LoadLibraryW(L"dinput8");
+	m_dinput_module.reset(LoadLibraryW(L"dinput8"));
 	if (!m_dinput_module)
 	{
 		Console.Error("Failed to load DInput module.");
 		return false;
 	}
 
-	PFNDIRECTINPUT8CREATE create = reinterpret_cast<PFNDIRECTINPUT8CREATE>(GetProcAddress(m_dinput_module, "DirectInput8Create"));
-	PFNGETDFDIJOYSTICK get_joystick_data_format = reinterpret_cast<PFNGETDFDIJOYSTICK>(GetProcAddress(m_dinput_module, "GetdfDIJoystick"));
+	PFNDIRECTINPUT8CREATE create = reinterpret_cast<PFNDIRECTINPUT8CREATE>(GetProcAddress(m_dinput_module.get(), "DirectInput8Create"));
+	PFNGETDFDIJOYSTICK get_joystick_data_format = reinterpret_cast<PFNGETDFDIJOYSTICK>(GetProcAddress(m_dinput_module.get(), "GetdfDIJoystick"));
 	if (!create || !get_joystick_data_format)
 	{
 		Console.Error("Failed to get DInput function pointers.");
