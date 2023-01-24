@@ -27,6 +27,7 @@ u32 ElfEntry;
 std::pair<u32,u32> ElfTextRange;
 std::string LastELF;
 bool isPSXElf;
+std::string ElfVersion;
 
 // All of ElfObjects functions.
 ElfObject::ElfObject(std::string srcfile, IsoFile& isofile, bool isPSXElf)
@@ -365,6 +366,7 @@ int GetPS2ElfName( std::string& name )
 			{
 				Console.WriteLn( Color_Blue, "(SYSTEM.CNF) Software version = %.*s",
 					static_cast<int>(value.size()), value.data());
+				ElfVersion = value;
 			}
 		}
 

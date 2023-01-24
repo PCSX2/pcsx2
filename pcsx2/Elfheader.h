@@ -163,3 +163,4 @@ extern u32 ElfEntry;
 extern std::pair<u32,u32> ElfTextRange;
 extern std::string LastELF;
 extern bool isPSXElf;
+extern std::string ElfVersion;

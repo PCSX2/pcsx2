@@ -1293,6 +1293,8 @@ struct Pcsx2Config
 	McdOptions Mcd[8];
 	std::string GzipIsoIndexTemplate; // for quick-access index with gzipped ISO
 
+	int PINESlot;
+
 	// Set at runtime, not loaded from config.
 	std::string CurrentBlockdump;
 	std::string CurrentIRX;

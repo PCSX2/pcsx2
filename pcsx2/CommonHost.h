@@ -85,6 +85,9 @@ namespace CommonHost
 	void UpdateDiscordPresence(const std::string& rich_presence);
 #endif
 
+	/// Reloads PINE IPC Server if needed. Does nothing if it's already running on the correct port.
+	void ReloadPINE();
+
 	namespace Internal
 	{
 		/// Resets any state for hotkey-related VMs, called on VM startup.
