@@ -258,7 +258,4 @@ namespace Host
 
 	/// Provided by the host; called once per frame at guest vsync.
 	void CPUThreadVSync();
-
-	/// Provided by the host; called when a state is saved, and the frontend should invalidate its save state cache.
-	void InvalidateSaveStateCache();
 } // namespace Host

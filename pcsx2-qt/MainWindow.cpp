@@ -157,7 +157,7 @@ void MainWindow::initialize()
 	restoreStateFromConfig();
 	switchToGameListView();
 	updateWindowTitle();
-	updateSaveStateMenus(QString(), QString(), 0);
+	updateSaveStateMenusEnableState(false);
 
 #ifdef _WIN32
 	registerForDeviceNotifications();
@@ -1259,11 +1259,6 @@ void MainWindow::cancelGameListRefresh()
 	m_game_list_widget->cancelRefresh();
 }
 
-void MainWindow::invalidateSaveStateCache()
-{
-	m_save_states_invalidated = true;
-}
-
 void MainWindow::reportError(const QString& title, const QString& message)
 {
 	QMessageBox::critical(this, title, message);
@@ -1372,11 +1367,6 @@ std::optional<WindowInfo> MainWindow::getWindowInfo()
 		return QtUtils::GetWindowInfoForWidget(widget);
 	else
 		return std::nullopt;
-}
-
-void Host::InvalidateSaveStateCache()
-{
-	QMetaObject::invokeMethod(g_main_window, &MainWindow::invalidateSaveStateCache, Qt::QueuedConnection);
 }
 
 void MainWindow::onGameListRefreshProgress(const QString& status, int current, int total)
@@ -1581,14 +1571,14 @@ void MainWindow::onChangeDiscMenuAboutToHide()
 
 void MainWindow::onLoadStateMenuAboutToShow()
 {
-	if (m_save_states_invalidated)
-		updateSaveStateMenus(m_current_disc_path, m_current_game_serial, m_current_game_crc);
+	updateSaveStateMenusEnableState(!m_current_game_serial.isEmpty());
+	populateLoadStateMenu(m_ui.menuLoadState, m_current_disc_path, m_current_game_serial, m_current_game_crc);
 }
 
 void MainWindow::onSaveStateMenuAboutToShow()
 {
-	if (m_save_states_invalidated)
-		updateSaveStateMenus(m_current_disc_path, m_current_game_serial, m_current_game_crc);
+	updateSaveStateMenusEnableState(!m_current_game_serial.isEmpty());
+	populateSaveStateMenu(m_ui.menuSaveState, m_current_game_serial, m_current_game_crc);
 }
 
 void MainWindow::onViewToolbarActionToggled(bool checked)
@@ -1889,7 +1879,7 @@ void MainWindow::onVMStarting()
 	updateWindowTitle();
 
 	// prevent loading state until we're fully initialized
-	updateSaveStateMenus(QString(), QString(), 0);
+	updateSaveStateMenusEnableState(false);
 }
 
 void MainWindow::onVMStarted()
@@ -1969,7 +1959,7 @@ void MainWindow::onGameChanged(const QString& path, const QString& elf_override,
 	m_current_game_name = name;
 	m_current_game_crc = crc;
 	updateWindowTitle();
-	updateSaveStateMenus(path, serial, crc);
+	updateSaveStateMenusEnableState(!serial.isEmpty());
 }
 
 void MainWindow::showEvent(QShowEvent* event)
@@ -2722,6 +2712,8 @@ static QString formatTimestampForSaveStateMenu(time_t timestamp)
 
 void MainWindow::populateLoadStateMenu(QMenu* menu, const QString& filename, const QString& serial, quint32 crc)
 {
+	menu->clear();
+
 	if (serial.isEmpty())
 		return;
 
@@ -2796,6 +2788,8 @@ void MainWindow::populateLoadStateMenu(QMenu* menu, const QString& filename, con
 
 void MainWindow::populateSaveStateMenu(QMenu* menu, const QString& serial, quint32 crc)
 {
+	menu->clear();
+
 	if (serial.isEmpty())
 		return;
 
@@ -2825,21 +2819,14 @@ void MainWindow::populateSaveStateMenu(QMenu* menu, const QString& serial, quint
 	}
 }
 
-void MainWindow::updateSaveStateMenus(const QString& filename, const QString& serial, quint32 crc)
+void MainWindow::updateSaveStateMenusEnableState(bool enable)
 {
-	const bool load_enabled = !serial.isEmpty();
-	const bool save_enabled = !serial.isEmpty() && s_vm_valid;
-	m_ui.menuLoadState->clear();
+	const bool load_enabled = enable;
+	const bool save_enabled = enable && s_vm_valid;
 	m_ui.menuLoadState->setEnabled(load_enabled);
 	m_ui.actionLoadState->setEnabled(load_enabled);
-	m_ui.menuSaveState->clear();
 	m_ui.menuSaveState->setEnabled(save_enabled);
 	m_ui.actionSaveState->setEnabled(save_enabled);
-	m_save_states_invalidated = false;
-	if (load_enabled)
-		populateLoadStateMenu(m_ui.menuLoadState, filename, serial, crc);
-	if (save_enabled)
-		populateSaveStateMenu(m_ui.menuSaveState, serial, crc);
 }
 
 void MainWindow::doStartFile(std::optional<CDVD_SourceType> source, const QString& path)

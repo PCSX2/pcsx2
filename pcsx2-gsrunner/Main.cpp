@@ -351,10 +351,6 @@ void Host::OnSaveStateSaved(const std::string_view& filename)
 {
 }
 
-void Host::InvalidateSaveStateCache()
-{
-}
-
 void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false */)
 {
 	pxFailRel("Not implemented");
