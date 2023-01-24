@@ -2186,15 +2186,16 @@ SCED-52163:
   name: "Official PlayStation 2 Magazine Demo 48"
   region: "PAL-M5"
   dynaPatches:
-    - pattern: # Pal Speed fix for syphon filter.
-        - { offset: 0x0, value: 0x0080802d }
-        - { offset: 0x78, value: 0x24020032 }
-        - { offset: 0x1E8, value: 0x10000007 }
-        - { offset: 0x338, value: 0x3c05004a }
-        - { offset: 0x390, value: 0x2a820003 }
-        - { offset: 0x4FC, value: 0xac23c6e0 }
+    - pattern: # Pal Speed fix for Syphon Filter, the game also needs eetiminghack to bypass black screen.
+        - { offset: 0x0, value: 0x1040000A }
+        - { offset: 0x1C, value: 0x24020032 }
+        - { offset: 0xC4, value: 0x46800860 }
+        - { offset: 0x124, value: 0x00408026 }
+        - { offset: 0x1BC, value: 0x1260002D }
+        - { offset: 0x234, value: 0x24030006 }
+        - { offset: 0x518, value: 0x9023C430 }
       replacement:
-        - { offset: 0x78, value: 0x24020019 }
+        - { offset: 0x1C, value: 0x24020019 }
 SCED-52164:
   name: "Official PlayStation 2 Magazine Demo 49"
   region: "PAL-M5"
@@ -2279,15 +2280,16 @@ SCED-52619:
   name: "Official PlayStation 2 Magazine Demo 48"
   region: "PAL-M5"
   dynaPatches:
-    - pattern: # Pal Speed fix for syphon filter.
-        - { offset: 0x0, value: 0x0080802d }
-        - { offset: 0x78, value: 0x24020032 }
-        - { offset: 0x1E8, value: 0x10000007 }
-        - { offset: 0x338, value: 0x3c05004a }
-        - { offset: 0x390, value: 0x2a820003 }
-        - { offset: 0x4FC, value: 0xac23c6e0 }
+    - pattern: # Pal Speed fix for Syphon Filter, the game also needs eetiminghack to bypass black screen.
+        - { offset: 0x0, value: 0x1040000A }
+        - { offset: 0x1C, value: 0x24020032 }
+        - { offset: 0xC4, value: 0x46800860 }
+        - { offset: 0x124, value: 0x00408026 }
+        - { offset: 0x1BC, value: 0x1260002D }
+        - { offset: 0x234, value: 0x24030006 }
+        - { offset: 0x518, value: 0x9023C430 }
       replacement:
-        - { offset: 0x78, value: 0x24020019 }
+        - { offset: 0x1C, value: 0x24020019 }
 SCED-52681:
   name: "Gran Turismo 4 BMW 1 Series Virtual Drive [Demo]"
   region: "PAL-M11"
@@ -2736,15 +2738,16 @@ SCED-54415:
   name: "Official PlayStation 2 Magazine Demo 90"
   region: "PAL-M5"
   dynaPatches:
-    - pattern: # Pal Speed fix for syphon filter.
-        - { offset: 0x0, value: 0x0080802d }
-        - { offset: 0x78, value: 0x24020032 }
-        - { offset: 0x1E8, value: 0x10000007 }
-        - { offset: 0x338, value: 0x3c05004a }
-        - { offset: 0x390, value: 0x2a820003 }
-        - { offset: 0x4FC, value: 0xac23c6e0 }
+    - pattern: # Pal Speed fix for Syphon Filter, the game also needs eetiminghack to bypass black screen.
+        - { offset: 0x0, value: 0x1040000A }
+        - { offset: 0x1C, value: 0x24020032 }
+        - { offset: 0xC4, value: 0x46800860 }
+        - { offset: 0x124, value: 0x00408026 }
+        - { offset: 0x1BC, value: 0x1260002D }
+        - { offset: 0x234, value: 0x24030006 }
+        - { offset: 0x518, value: 0x9023C430 }
       replacement:
-        - { offset: 0x78, value: 0x24020019 }
+        - { offset: 0x1C, value: 0x24020019 }
 SCED-54416:
   name: "Official PlayStation 2 Magazine Demo 91"
   region: "PAL-M5"
