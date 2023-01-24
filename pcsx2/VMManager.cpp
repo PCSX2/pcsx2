@@ -1339,8 +1339,6 @@ void VMManager::ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,
 	}
 
 	DevCon.WriteLn("Zipping save state to '%s' took %.2f ms", filename, timer.GetTimeMilliseconds());
-
-	Host::InvalidateSaveStateCache();
 }
 
 void VMManager::ZipSaveStateOnThread(std::unique_ptr<ArchiveEntryList> elist, std::unique_ptr<SaveStateScreenshotData> screenshot,
