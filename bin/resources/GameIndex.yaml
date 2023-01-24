@@ -2186,7 +2186,7 @@ SCED-52163:
   name: "Official PlayStation 2 Magazine Demo 48"
   region: "PAL-M5"
   dynaPatches:
-    - pattern: # Pal Speed fix for Syphon Filter, the game also needs eetiminghack to bypass black screen.
+    - pattern: # Pal Speed fix for Syphon Filter, the patch changes the video fps from 50 to 25, the game also needs eetiminghack to bypass black screen.
         - { offset: 0x0, value: 0x1040000A }
         - { offset: 0x1C, value: 0x24020032 }
         - { offset: 0xC4, value: 0x46800860 }
@@ -2280,7 +2280,7 @@ SCED-52619:
   name: "Official PlayStation 2 Magazine Demo 48"
   region: "PAL-M5"
   dynaPatches:
-    - pattern: # Pal Speed fix for Syphon Filter, the game also needs eetiminghack to bypass black screen.
+    - pattern: # Pal Speed fix for Syphon Filter, the patch changes the video fps from 50 to 25, the game also needs eetiminghack to bypass black screen.
         - { offset: 0x0, value: 0x1040000A }
         - { offset: 0x1C, value: 0x24020032 }
         - { offset: 0xC4, value: 0x46800860 }
@@ -2738,7 +2738,7 @@ SCED-54415:
   name: "Official PlayStation 2 Magazine Demo 90"
   region: "PAL-M5"
   dynaPatches:
-    - pattern: # Pal Speed fix for Syphon Filter, the game also needs eetiminghack to bypass black screen.
+    - pattern: # Pal Speed fix for Syphon Filter, the patch changes the video fps from 50 to 25, the game also needs eetiminghack to bypass black screen.
         - { offset: 0x0, value: 0x1040000A }
         - { offset: 0x1C, value: 0x24020032 }
         - { offset: 0xC4, value: 0x46800860 }
