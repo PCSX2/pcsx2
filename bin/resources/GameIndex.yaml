@@ -1765,6 +1765,9 @@ SCED-50381:
 SCED-50404:
   name: "Official PlayStation 2 Magazine Demo 10" # German
   region: "PAL-E-G"
+SCED-50450:
+  name: "Le Monde des Bleus 2002 [Demo]"
+  region: "PAL-F"
 SCED-50460:
   name: "Official PlayStation 2 Magazine Demo 11" # German
   region: "PAL-E-G"
@@ -9372,6 +9375,11 @@ SLED-53109:
   region: "PAL-M5"
   speedHacks:
     InstantVU1SpeedHack: 0 # Significantly improves game speed.
+SLED-53330:
+  name: "Enthusia - Professional Racing [Demo]"
+  region: "PAL"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLED-53445:
   name: "Incredible Hulk, The - Ultimate Destruction [Demo]"
   region: "PAL-M3"
