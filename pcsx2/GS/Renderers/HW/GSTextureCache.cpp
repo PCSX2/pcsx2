@@ -24,14 +24,14 @@
 #include "common/Align.h"
 #include "common/HashCombine.h"
 
-u8* GSTextureCache::m_temp;
+static u8* s_unswizzle_buffer;
 
 GSTextureCache::GSTextureCache()
 {
 	// In theory 4MB is enough but 9MB is safer for overflow (8MB
 	// isn't enough in custom resolution)
 	// Test: onimusha 3 PAL 60Hz
-	m_temp = (u8*)_aligned_malloc(9 * 1024 * 1024, 32);
+	s_unswizzle_buffer = (u8*)_aligned_malloc(9 * 1024 * 1024, 32);
 
 	m_surface_offset_cache.reserve(S_SURFACE_OFFSET_CACHE_MAX_SIZE);
 }
@@ -44,7 +44,7 @@ GSTextureCache::~GSTextureCache()
 
 	m_surface_offset_cache.clear();
 
-	_aligned_free(m_temp);
+	_aligned_free(s_unswizzle_buffer);
 }
 
 void GSTextureCache::RemovePartial()
@@ -74,12 +74,16 @@ void GSTextureCache::RemoveAll()
 
 	for (auto it : m_hash_cache)
 		g_gs_device->Recycle(it.second.texture);
+
 	m_hash_cache.clear();
 	m_hash_cache_memory_usage = 0;
 	m_hash_cache_replacement_memory_usage = 0;
 
 	m_palette_map.Clear();
 	m_target_heights.clear();
+
+	m_source_memory_usage = 0;
+	m_target_memory_usage = 0;
 }
 
 void GSTextureCache::AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw)
@@ -589,6 +593,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 			GSTexture* tex = type == RenderTarget ? g_gs_device->CreateRenderTarget(new_size.x, new_size.y, GSTexture::Format::Color, clear) :
 				g_gs_device->CreateDepthStencil(new_size.x, new_size.y, GSTexture::Format::DepthStencil, clear);
 			g_gs_device->StretchRect(dst->m_texture, sRect, tex, dRect, (type == RenderTarget) ? ShaderConvert::COPY : ShaderConvert::DEPTH_COPY, false);
+			m_target_memory_usage = (m_target_memory_usage - dst->m_texture->GetMemUsage()) + tex->GetMemUsage();
 			g_gs_device->Recycle(dst->m_texture);
 			tex->SetScale(new_s);
 			dst->m_texture = tex;
@@ -743,6 +748,7 @@ void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, 
 
 	// Fill the new texture with the old data, and discard the old texture.
 	g_gs_device->StretchRect(old_texture, new_texture, GSVector4(old_texture->GetSize()).zwxy(), ShaderConvert::COPY, false);
+	m_target_memory_usage = (m_target_memory_usage - old_texture->GetMemUsage()) + new_texture->GetMemUsage();
 	g_gs_device->Recycle(old_texture);
 	t->m_texture = new_texture;
 
@@ -1790,6 +1796,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		GSTexture* dTex = outside_target ?
 			g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::Color, true) :
 			g_gs_device->CreateTexture(w, h, tlevels, GSTexture::Format::Color, true);
+		m_source_memory_usage += dTex->GetMemUsage();
 
 		// copy the rt in
 		const GSVector4i area(GSVector4i(x, y, x + w, y + h).rintersect(GSVector4i(sTex->GetSize()).zwxy()));
@@ -2023,7 +2030,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			GSTexture* dTex = use_texture ?
 				g_gs_device->CreateTexture(w, h, 1, GSTexture::Format::Color, true) :
 				g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::Color, false);
-			src->m_texture = dTex;
+			dTex->SetScale(scale);
+			m_source_memory_usage += dTex->GetMemUsage();
 
 			if (use_texture)
 			{
@@ -2038,10 +2046,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 				g_gs_device->StretchRect(sTex, sRectF, dTex, GSVector4(destX, destY, w, h), shader, false);
 			}
 
-			if (src->m_texture)
-				src->m_texture->SetScale(scale);
-			else
-				ASSERT(0);
+			src->m_texture = dTex;
 		}
 
 		// GH: by default (m_paltex == 0) GS converts texture to the 32 bit format
@@ -2088,6 +2093,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		else if (paltex)
 		{
 			src->m_texture = g_gs_device->CreateTexture(tw, th, tlevels, GSTexture::Format::UNorm8);
+			m_source_memory_usage += src->m_texture->GetMemUsage();
 			if (gpu_clut)
 				AttachPaletteToSource(src, gpu_clut);
 			else
@@ -2096,6 +2102,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		else
 		{
 			src->m_texture = g_gs_device->CreateTexture(tw, th, tlevels, GSTexture::Format::Color);
+			m_source_memory_usage += src->m_texture->GetMemUsage();
 			if (gpu_clut)
 				AttachPaletteToSource(src, gpu_clut);
 			else if (psm.pal > 0)
@@ -2273,6 +2280,7 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int
 	}
 
 	t->m_texture->SetScale(static_cast<GSRendererHW*>(g_gs_renderer.get())->GetTextureScaleFactor());
+	m_target_memory_usage += t->m_texture->GetMemUsage();
 
 	m_dst[type].push_front(t);
 
@@ -2473,38 +2481,6 @@ void GSTextureCache::Read(Source* t, const GSVector4i& r)
 	}
 }
 
-void GSTextureCache::PrintMemoryUsage()
-{
-#ifdef ENABLE_OGL_DEBUG
-	u32 tex = 0;
-	u32 tex_rt = 0;
-	u32 rt = 0;
-	u32 dss = 0;
-	for (auto s : m_src.m_surfaces)
-	{
-		if (s && !s->m_shared_texture)
-		{
-			if (s->m_target)
-				tex_rt += s->m_texture->GetMemUsage();
-			else
-				tex += s->m_texture->GetMemUsage();
-		}
-	}
-	for (auto t : m_dst[RenderTarget])
-	{
-		if (t)
-			rt += t->m_texture->GetMemUsage();
-	}
-	for (auto t : m_dst[DepthStencil])
-	{
-		if (t)
-			dss += t->m_texture->GetMemUsage();
-	}
-
-	GL_PERF("MEM: RO Tex %dMB. RW Tex %dMB. Target %dMB. Depth %dMB", tex >> 20u, tex_rt >> 20u, rt >> 20u, dss >> 20u);
-#endif
-}
-
 // GSTextureCache::Surface
 
 GSTextureCache::Surface::Surface()
@@ -2518,13 +2494,7 @@ GSTextureCache::Surface::Surface()
 	m_TEX0.TBP0 = GSTextureCache::MAX_BP;
 }
 
-GSTextureCache::Surface::~Surface()
-{
-	// Shared textures are pointers copy. Therefore no allocation
-	// to recycle.
-	if (!m_shared_texture && !m_from_hash_cache && m_texture)
-		g_gs_device->Recycle(m_texture);
-}
+GSTextureCache::Surface::~Surface() = default;
 
 void GSTextureCache::Surface::UpdateAge()
 {
@@ -2545,62 +2515,6 @@ bool GSTextureCache::Surface::Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i
 	const u32 start_block = GSLocalMemory::m_psm[psm].info.bn(rect.x, rect.y, bp, bw);
 	const bool overlap = GSTextureCache::CheckOverlap(m_TEX0.TBP0, m_end_block, start_block, end_block);
 	return overlap;
-}
-
-bool GSTextureCache::Surface::ResizeTexture(int new_width, int new_height, bool recycle_old)
-{
-	return ResizeTexture(new_width, new_height, m_texture->GetScale(), recycle_old);
-}
-
-bool GSTextureCache::Surface::ResizeTexture(int new_width, int new_height, GSVector2 new_scale, bool recycle_old)
-{
-	const int width = m_texture->GetWidth();
-	const int height = m_texture->GetHeight();
-	if (width == new_width && height == new_height)
-		return true;
-
-	// These exceptions *really* need to get lost. This gets called outside of draws, which just crashes
-	// when it tries to propogate the exception back.
-	const bool clear = (new_width > width || new_height > height);
-	GSTexture* tex = nullptr;
-	try
-	{
-		tex = m_texture->IsDepthStencil() ?
-				g_gs_device->CreateDepthStencil(new_width, new_height, m_texture->GetFormat(), clear) :
-				g_gs_device->CreateRenderTarget(new_width, new_height, m_texture->GetFormat(), clear);
-	}
-	catch (const std::bad_alloc&)
-	{
-	}
-
-	if (!tex)
-	{
-		Console.Error("(ResizeTexture) Failed to allocate %dx%d texture from %dx%d texture", new_width, new_height, width, height);
-		return false;
-	}
-
-	tex->SetScale(new_scale);
-
-	const GSVector4i rc(0, 0, std::min(width, new_width), std::min(height, new_height));
-	if (tex->IsDepthStencil())
-	{
-		// Can't do partial copies in DirectX for depth textures, and it's probably not ideal in other
-		// APIs either. So use a fullscreen quad setting depth instead.
-		g_gs_device->StretchRect(m_texture, tex, GSVector4(rc), ShaderConvert::DEPTH_COPY, false);
-	}
-	else
-	{
-		// Fast memcpy()-like path for color targets.
-		g_gs_device->CopyRect(m_texture, tex, rc, 0, 0);
-	}
-
-	if (recycle_old)
-		g_gs_device->Recycle(m_texture);
-	else
-		delete m_texture;
-
-	m_texture = tex;
-	return true;
 }
 
 // GSTextureCache::Source
@@ -2649,6 +2563,14 @@ GSTextureCache::Source::Source(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, b
 GSTextureCache::Source::~Source()
 {
 	_aligned_free(m_write.rect);
+
+	// Shared textures are pointers copy. Therefore no allocation
+	// to recycle.
+	if (!m_shared_texture && !m_from_hash_cache && m_texture)
+	{
+		GSRendererHW::GetInstance()->GetTextureCache()->m_source_memory_usage -= m_texture->GetMemUsage();
+		g_gs_device->Recycle(m_texture);
+	}
 }
 
 void GSTextureCache::Source::Update(const GSVector4i& rect, int level)
@@ -2825,7 +2747,7 @@ void GSTextureCache::Source::Flush(u32 count, int layer)
 		rtx = psm.rtxP;
 	}
 
-	u8* buff = m_temp;
+	u8* buff = s_unswizzle_buffer;
 
 	for (u32 i = 0; i < count; i++)
 	{
@@ -2903,6 +2825,17 @@ GSTextureCache::Target::Target(const GIFRegTEX0& TEX0, const bool depth_supporte
 	m_dirty_alpha = GSLocalMemory::m_psm[TEX0.PSM].trbpp != 24;
 }
 
+GSTextureCache::Target::~Target()
+{
+	// Targets should never be shared.
+	pxAssert(!m_shared_texture);
+	if (m_texture)
+	{
+		GSRendererHW::GetInstance()->GetTextureCache()->m_target_memory_usage -= m_texture->GetMemUsage();
+		g_gs_device->Recycle(m_texture);
+	}
+}
+
 void GSTextureCache::Target::Update(bool reset_age)
 {
 	if(reset_age)
@@ -2969,9 +2902,9 @@ void GSTextureCache::Target::Update(bool reset_age)
 	{
 		int pitch = ((w + 3) & ~3) * 4;
 
-		g_gs_renderer->m_mem.ReadTexture(off, r, m_temp, pitch, TEXA);
+		g_gs_renderer->m_mem.ReadTexture(off, r, s_unswizzle_buffer, pitch, TEXA);
 
-		t->Update(r.rsize(), m_temp, pitch);
+		t->Update(r.rsize(), s_unswizzle_buffer, pitch);
 	}
 
 	// m_renderer->m_perfmon.Put(GSPerfMon::Unswizzle, w * h * 4);
@@ -3027,6 +2960,66 @@ void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
 	m_end_block = GSLocalMemory::m_psm[m_TEX0.PSM].info.bn(m_valid.z - 1, m_valid.w - 1, m_TEX0.TBP0, m_TEX0.TBW); // Valid only for color formats
 
 	// GL_CACHE("UpdateValidity (0x%x->0x%x) from R:%d,%d Valid: %d,%d", m_TEX0.TBP0, m_end_block, rect.z, rect.w, m_valid.z, m_valid.w);
+}
+
+
+bool GSTextureCache::Target::ResizeTexture(int new_width, int new_height, bool recycle_old)
+{
+	return ResizeTexture(new_width, new_height, m_texture->GetScale(), recycle_old);
+}
+
+bool GSTextureCache::Target::ResizeTexture(int new_width, int new_height, GSVector2 new_scale, bool recycle_old)
+{
+	const int width = m_texture->GetWidth();
+	const int height = m_texture->GetHeight();
+	if (width == new_width && height == new_height)
+		return true;
+
+	// These exceptions *really* need to get lost. This gets called outside of draws, which just crashes
+	// when it tries to propogate the exception back.
+	const bool clear = (new_width > width || new_height > height);
+	GSTexture* tex = nullptr;
+	try
+	{
+		tex = m_texture->IsDepthStencil() ?
+				g_gs_device->CreateDepthStencil(new_width, new_height, m_texture->GetFormat(), clear) :
+				g_gs_device->CreateRenderTarget(new_width, new_height, m_texture->GetFormat(), clear);
+	}
+	catch (const std::bad_alloc&)
+	{
+	}
+
+	if (!tex)
+	{
+		Console.Error("(ResizeTexture) Failed to allocate %dx%d texture from %dx%d texture", new_width, new_height, width, height);
+		return false;
+	}
+
+	tex->SetScale(new_scale);
+
+	const GSVector4i rc(0, 0, std::min(width, new_width), std::min(height, new_height));
+	if (tex->IsDepthStencil())
+	{
+		// Can't do partial copies in DirectX for depth textures, and it's probably not ideal in other
+		// APIs either. So use a fullscreen quad setting depth instead.
+		g_gs_device->StretchRect(m_texture, tex, GSVector4(rc), ShaderConvert::DEPTH_COPY, false);
+	}
+	else
+	{
+		// Fast memcpy()-like path for color targets.
+		g_gs_device->CopyRect(m_texture, tex, rc, 0, 0);
+	}
+
+	GSTextureCache* tc = GSRendererHW::GetInstance()->GetTextureCache();
+	tc->m_target_memory_usage = (tc->m_target_memory_usage - m_texture->GetMemUsage()) + tex->GetMemUsage();
+
+	if (recycle_old)
+		g_gs_device->Recycle(m_texture);
+	else
+		delete m_texture;
+
+	m_texture = tex;
+	return true;
 }
 
 // GSTextureCache::SourceMap
@@ -3360,7 +3353,12 @@ GSTextureCache::Palette::Palette(u16 pal, bool need_gs_texture)
 
 GSTextureCache::Palette::~Palette()
 {
-	g_gs_device->Recycle(m_tex_palette);
+	if (m_tex_palette)
+	{
+		GSRendererHW::GetInstance()->GetTextureCache()->m_source_memory_usage -= m_tex_palette->GetMemUsage();
+		g_gs_device->Recycle(m_tex_palette);
+	}
+
 	_aligned_free(m_clut);
 }
 
@@ -3385,6 +3383,7 @@ void GSTextureCache::Palette::InitializeTexture()
 		// and therefore will read texel 15/255 * texture size).
 		m_tex_palette = g_gs_device->CreateTexture(m_pal, 1, 1, GSTexture::Format::Color);
 		m_tex_palette->Update(GSVector4i(0, 0, m_pal, 1), m_clut, m_pal * sizeof(m_clut[0]));
+		GSRendererHW::GetInstance()->GetTextureCache()->m_source_memory_usage += m_tex_palette->GetMemUsage();
 	}
 }
 
@@ -3625,7 +3624,7 @@ GSTextureCache::HashType GSTextureCache::HashTexture(const GIFRegTEX0& TEX0, con
 {
 	BlockHashState hash_st;
 	BlockHashReset(hash_st);
-	HashTextureLevel(TEX0, TEXA, hash_st, m_temp);
+	HashTextureLevel(TEX0, TEXA, hash_st, s_unswizzle_buffer);
 	return FinishBlockHash(hash_st);
 }
 
@@ -3662,7 +3661,7 @@ void GSTextureCache::PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TE
 		// Align pitch to 32 bytes for AVX2 if we're going through the temp buffer path.
 		pitch = Common::AlignUpPow2(pitch, 32);
 
-		u8* buff = m_temp;
+		u8* buff = s_unswizzle_buffer;
 		rtx(mem, off, block_rect, buff, pitch, TEXA);
 		tex->Update(rect, buff, pitch, level);
 	}
@@ -3689,7 +3688,7 @@ GSTextureCache::HashCacheKey GSTextureCache::HashCacheKey::Create(const GIFRegTE
 	BlockHashReset(hash_st);
 
 	// base level is always hashed
-	HashTextureLevel(TEX0, TEXA, hash_st, m_temp);
+	HashTextureLevel(TEX0, TEXA, hash_st, s_unswizzle_buffer);
 
 	if (lod)
 	{
@@ -3699,7 +3698,7 @@ GSTextureCache::HashCacheKey GSTextureCache::HashCacheKey::Create(const GIFRegTE
 		for (int i = 1; i < nmips; i++)
 		{
 			const GIFRegTEX0 MIP_TEX0{g_gs_renderer->GetTex0Layer(basemip + i)};
-			HashTextureLevel(MIP_TEX0, TEXA, hash_st, m_temp);
+			HashTextureLevel(MIP_TEX0, TEXA, hash_st, s_unswizzle_buffer);
 		}
 	}
 

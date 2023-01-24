@@ -222,9 +222,6 @@ void GSRendererHW::VSync(u32 field, bool registers_written)
 		GSConfig.TexturePreloading = TexturePreloadingLevel::Partial;
 	}
 
-	m_tc->PrintMemoryUsage();
-	g_gs_device->PrintMemoryUsage();
-
 	m_skip = 0;
 	m_skip_offset = 0;
 }

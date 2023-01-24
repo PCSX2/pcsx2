@@ -724,6 +724,7 @@ public:
 
 private:
 	FastList<GSTexture*> m_pool;
+	u64 m_pool_memory_usage = 0;
 	static const std::array<HWBlend, 3*3*3*3> m_blendMap;
 	static const std::array<u8, 16> m_replaceDualSrcBlendMap;
 
@@ -772,6 +773,7 @@ public:
 	virtual ~GSDevice();
 
 	__fi unsigned int GetFrameNumber() const { return m_frame; }
+	__fi u64 GetPoolMemoryUsage() const { return m_pool_memory_usage; }
 
 	void Recycle(GSTexture* t);
 
@@ -854,8 +856,6 @@ public:
 	void PurgePool();
 
 	virtual void ClearSamplerCache();
-
-	virtual void PrintMemoryUsage();
 
 	__fi static constexpr bool IsDualSourceBlendFactor(u8 factor)
 	{
