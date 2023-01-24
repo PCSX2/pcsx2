@@ -112,7 +112,7 @@ public:
 		NUM_TFX_TEXTURES = 2,
 		NUM_TFX_RT_TEXTURES = 2,
 		NUM_TOTAL_TFX_TEXTURES = NUM_TFX_TEXTURES + NUM_TFX_RT_TEXTURES,
-		NUM_TFX_SAMPLERS = 2,
+		NUM_TFX_SAMPLERS = 1,
 		NUM_UTILITY_TEXTURES = 1,
 		NUM_UTILITY_SAMPLERS = 1,
 		CONVERT_PUSH_CONSTANTS_SIZE = 96,
@@ -145,11 +145,6 @@ private:
 	D3D12::StreamBuffer m_index_stream_buffer;
 	D3D12::StreamBuffer m_vertex_constant_buffer;
 	D3D12::StreamBuffer m_pixel_constant_buffer;
-
-	ComPtr<D3D12MA::Allocation> m_readback_staging_allocation;
-	ComPtr<ID3D12Resource> m_readback_staging_buffer;
-	void* m_readback_staging_buffer_map = nullptr;
-	u32 m_readback_staging_buffer_size = 0;
 
 	D3D12::DescriptorHandle m_point_sampler_cpu;
 	D3D12::DescriptorHandle m_linear_sampler_cpu;
@@ -220,11 +215,6 @@ private:
 	bool CompilePostProcessingPipelines();
 	bool CompileCASPipelines();
 
-	bool CheckStagingBufferSize(u32 required_size);
-	bool MapStagingBuffer(u32 size_to_read);
-	void UnmapStagingBuffer();
-	void DestroyStagingBuffer();
-
 	void DestroyResources();
 
 public:
@@ -253,8 +243,7 @@ public:
 	void ClearDepth(GSTexture* t) override;
 	void ClearStencil(GSTexture* t, u8 c) override;
 
-	bool DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map) override;
-	void DownloadTextureComplete() override;
+	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) override;
 
@@ -264,6 +253,7 @@ public:
 		bool green, bool blue, bool alpha) override;
 	void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 		PresentShader shader, float shaderTime, bool linear) override;
+	void UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) override;
 
 	void BeginRenderPassForStretchRect(GSTexture12* dTex, const GSVector4i& dtex_rc, const GSVector4i& dst_rc);
 	void DoStretchRect(GSTexture12* sTex, const GSVector4& sRect, GSTexture12* dTex, const GSVector4& dRect,
@@ -279,7 +269,7 @@ public:
 	void IASetIndexBuffer(const void* index, size_t count);
 
 	void PSSetShaderResource(int i, GSTexture* sr, bool check_state);
-	void PSSetSampler(u32 index, GSHWDrawConfig::SamplerSelector sel);
+	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
 
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor);
 
@@ -295,6 +285,7 @@ public:
 	void ExecuteCommandList(bool wait_for_completion);
 	void ExecuteCommandList(bool wait_for_completion, const char* reason, ...);
 	void ExecuteCommandListAndRestartRenderPass(bool wait_for_completion, const char* reason);
+	void ExecuteCommandListForReadback();
 
 	/// Set dirty flags on everything to force re-bind at next draw time.
 	void InvalidateCachedState();
@@ -404,8 +395,8 @@ private:
 
 	std::array<D3D12_GPU_VIRTUAL_ADDRESS, NUM_TFX_CONSTANT_BUFFERS> m_tfx_constant_buffers{};
 	std::array<D3D12::DescriptorHandle, NUM_TOTAL_TFX_TEXTURES> m_tfx_textures{};
-	std::array<D3D12::DescriptorHandle, NUM_TFX_SAMPLERS> m_tfx_samplers{};
-	std::array<u32, NUM_TFX_SAMPLERS> m_tfx_sampler_sel{};
+	D3D12::DescriptorHandle m_tfx_sampler;
+	u32 m_tfx_sampler_sel = 0;
 	D3D12::DescriptorHandle m_tfx_textures_handle_gpu;
 	D3D12::DescriptorHandle m_tfx_samplers_handle_gpu;
 	D3D12::DescriptorHandle m_tfx_rt_textures_handle_gpu;

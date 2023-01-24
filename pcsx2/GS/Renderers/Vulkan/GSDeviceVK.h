@@ -72,9 +72,9 @@ public:
 	{
 		NUM_TFX_DESCRIPTOR_SETS = 3,
 		NUM_TFX_DYNAMIC_OFFSETS = 2,
-		NUM_TFX_SAMPLERS = 2,
+		NUM_TFX_DRAW_TEXTURES = 2,
 		NUM_TFX_RT_TEXTURES = 2,
-		NUM_TFX_TEXTURES = NUM_TFX_SAMPLERS + NUM_TFX_RT_TEXTURES,
+		NUM_TFX_TEXTURES = NUM_TFX_DRAW_TEXTURES + NUM_TFX_RT_TEXTURES,
 		NUM_CONVERT_TEXTURES = 1,
 		NUM_CONVERT_SAMPLERS = 1,
 		CONVERT_PUSH_CONSTANTS_SIZE = 96,
@@ -106,12 +106,6 @@ private:
 	Vulkan::StreamBuffer m_index_stream_buffer;
 	Vulkan::StreamBuffer m_vertex_uniform_stream_buffer;
 	Vulkan::StreamBuffer m_fragment_uniform_stream_buffer;
-
-	VmaAllocation m_readback_staging_allocation = VK_NULL_HANDLE;
-	VkBuffer m_readback_staging_buffer = VK_NULL_HANDLE;
-	void* m_readback_staging_buffer_map = nullptr;
-	u32 m_readback_staging_buffer_size = 0;
-	bool m_warned_slow_spin = false;
 
 	VkSampler m_point_sampler = VK_NULL_HANDLE;
 	VkSampler m_linear_sampler = VK_NULL_HANDLE;
@@ -192,9 +186,6 @@ private:
 	bool CompilePostProcessingPipelines();
 	bool CompileCASPipelines();
 
-	bool CheckStagingBufferSize(u32 required_size);
-	void DestroyStagingBuffer();
-
 	void DestroyResources();
 
 public:
@@ -231,8 +222,7 @@ public:
 	void ClearDepth(GSTexture* t) override;
 	void ClearStencil(GSTexture* t, u8 c) override;
 
-	bool DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map) override;
-	void DownloadTextureComplete() override;
+	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) override;
 
@@ -251,6 +241,8 @@ public:
 	void BlitRect(GSTexture* sTex, const GSVector4i& sRect, u32 sLevel, GSTexture* dTex, const GSVector4i& dRect,
 		u32 dLevel, bool linear);
 
+	void UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) override;
+
 	void SetupDATE(GSTexture* rt, GSTexture* ds, bool datm, const GSVector4i& bbox);
 	GSTextureVK* SetupPrimitiveTrackingDATE(GSHWDrawConfig& config);
 
@@ -260,7 +252,7 @@ public:
 	void IASetIndexBuffer(const void* index, size_t count);
 
 	void PSSetShaderResource(int i, GSTexture* sr, bool check_state);
-	void PSSetSampler(u32 index, GSHWDrawConfig::SamplerSelector sel);
+	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
 
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor, bool feedback_loop);
 
@@ -284,6 +276,7 @@ public:
 	void ExecuteCommandBuffer(bool wait_for_completion);
 	void ExecuteCommandBuffer(bool wait_for_completion, const char* reason, ...);
 	void ExecuteCommandBufferAndRestartRenderPass(bool wait_for_completion, const char* reason);
+	void ExecuteCommandBufferForReadback();
 
 	/// Set dirty flags on everything to force re-bind at next draw time.
 	void InvalidateCachedState();
@@ -353,6 +346,7 @@ private:
 	// Which bindings/state has to be updated before the next draw.
 	u32 m_dirty_flags = 0;
 	bool m_current_framebuffer_has_feedback_loop = false;
+	bool m_warned_slow_spin = false;
 
 	// input assembly
 	VkBuffer m_vertex_buffer = VK_NULL_HANDLE;
@@ -372,8 +366,8 @@ private:
 	u8 m_blend_constant_color = 0;
 
 	std::array<VkImageView, NUM_TFX_TEXTURES> m_tfx_textures{};
-	std::array<VkSampler, NUM_TFX_SAMPLERS> m_tfx_samplers{};
-	std::array<u32, NUM_TFX_SAMPLERS> m_tfx_sampler_sel{};
+	VkSampler m_tfx_sampler = VK_NULL_HANDLE;
+	u32 m_tfx_sampler_sel = 0;
 	std::array<VkDescriptorSet, NUM_TFX_DESCRIPTOR_SETS> m_tfx_descriptor_sets{};
 	std::array<u32, NUM_TFX_DYNAMIC_OFFSETS> m_tfx_dynamic_offsets{};
 

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -795,23 +795,26 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 	}
 
 	// capture
-	if (GSCapture::IsCapturing())
+	if (GSCapture::IsCapturingVideo())
 	{
 		if (GSTexture* current = g_gs_device->GetCurrent())
 		{
-			GSVector2i size = GSCapture::GetSize();
+			const GSVector2i size(GSCapture::GetSize());
 
-			bool res;
-			GSTexture::GSMap m;
-			if (size == current->GetSize())
-				res = g_gs_device->DownloadTexture(current, GSVector4i(0, 0, size.x, size.y), m);
-			else
-				res = g_gs_device->DownloadTextureConvert(current, GSVector4(0, 0, 1, 1), size, GSTexture::Format::Color, ShaderConvert::COPY, m, true);
-
-			if (res)
+			// TODO: Maybe avoid this copy in the future? We can use swscale to fix it up on the dumping thread..
+			if (current->GetSize() != size)
 			{
-				GSCapture::DeliverFrame(m.bits, m.pitch, !g_gs_device->IsRBSwapped());
-				g_gs_device->DownloadTextureComplete();
+				GSTexture* temp = g_gs_device->CreateRenderTarget(size.x, size.y, GSTexture::Format::Color, false);
+				if (temp)
+				{
+					g_gs_device->StretchRect(current, temp, GSVector4(0, 0, size.x, size.y));
+					GSCapture::DeliverVideoFrame(temp);
+					g_gs_device->Recycle(temp);
+				}
+			}
+			else
+			{
+				GSCapture::DeliverVideoFrame(current);
 			}
 		}
 	}
@@ -836,7 +839,7 @@ void GSRenderer::QueueSnapshot(const std::string& path, u32 gsdump_frames)
 	m_dump_frames = gsdump_frames;
 }
 
-std::string GSGetBaseSnapshotFilename()
+static std::string GSGetBaseFilename()
 {
 	std::string filename;
 
@@ -855,7 +858,7 @@ std::string GSGetBaseSnapshotFilename()
 		filename += serial;
 	}
 
-	time_t cur_time = time(nullptr);
+	const time_t cur_time = time(nullptr);
 	char local_time[16];
 
 	if (strftime(local_time, sizeof(local_time), "%Y%m%d%H%M%S", localtime(&cur_time)))
@@ -879,8 +882,19 @@ std::string GSGetBaseSnapshotFilename()
 		prev_snap = cur_time;
 	}
 
+	return filename;
+}
+
+std::string GSGetBaseSnapshotFilename()
+{
 	// prepend snapshots directory
-	return Path::Combine(EmuFolders::Snapshots, filename);
+	return Path::Combine(EmuFolders::Snapshots, GSGetBaseFilename());
+}
+
+std::string GSGetBaseVideoFilename()
+{
+	// prepend video directory
+	return Path::Combine(EmuFolders::Videos, GSGetBaseFilename());
 }
 
 void GSRenderer::StopGSDump()
@@ -935,7 +949,11 @@ void GSTranslateWindowToDisplayCoordinates(float window_x, float window_y, float
 
 bool GSRenderer::BeginCapture(std::string filename)
 {
-	return GSCapture::BeginCapture(GetTvRefreshRate(), GetInternalResolution(),
+	const GSVector2i capture_resolution(GSConfig.VideoCaptureAutoResolution ?
+											GetInternalResolution() :
+											GSVector2i(GSConfig.VideoCaptureWidth, GSConfig.VideoCaptureHeight));
+
+	return GSCapture::BeginCapture(GetTvRefreshRate(), capture_resolution,
 		GetCurrentAspectRatioFloat(GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets)),
 		std::move(filename));
 }
@@ -952,6 +970,11 @@ void GSRenderer::PurgePool()
 
 void GSRenderer::PurgeTextureCache()
 {
+}
+
+GSTexture* GSRenderer::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, const GSVector2i& size)
+{
+	return nullptr;
 }
 
 bool GSRenderer::SaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
@@ -1003,24 +1026,39 @@ bool GSRenderer::SaveSnapshotToMemory(u32 window_width, u32 window_height, bool 
 	const u32 image_width = crop_borders ? draw_width : std::max(draw_width, window_width);
 	const u32 image_height = crop_borders ? draw_height : std::max(draw_height, window_height);
 
-	GSTexture::GSMap map;
-	const bool result = g_gs_device->DownloadTextureConvert(
-		current, src_uv,
-		GSVector2i(draw_width, draw_height), GSTexture::Format::Color,
-		ShaderConvert::TRANSPARENCY_FILTER, map, true);
-	if (result)
+	// We're not expecting screenshots to be fast, so just allocate a download texture on demand.
+	GSTexture* rt = g_gs_device->CreateRenderTarget(draw_width, draw_height, GSTexture::Format::Color, false);
+	if (rt)
 	{
-		const u32 pad_x = (image_width - draw_width) / 2;
-		const u32 pad_y = (image_height - draw_height) / 2;
-		pixels->clear();
-		pixels->resize(image_width * image_height, 0);
-		*width = image_width;
-		*height = image_height;
-		StringUtil::StrideMemCpy(pixels->data() + pad_y * image_width + pad_x, image_width * sizeof(u32),
-			map.bits, map.pitch, draw_width * sizeof(u32), draw_height);
+		std::unique_ptr<GSDownloadTexture> dl(g_gs_device->CreateDownloadTexture(draw_width, draw_height, GSTexture::Format::Color));
+		if (dl)
+		{
+			const GSVector4i rc(0, 0, draw_width, draw_height);
+			g_gs_device->StretchRect(current, src_uv, rt, GSVector4(rc), ShaderConvert::TRANSPARENCY_FILTER);
+			dl->CopyFromTexture(rc, rt, rc, 0);
+			dl->Flush();
 
-		g_gs_device->DownloadTextureComplete();
+			if (dl->Map(rc))
+			{
+				const u32 pad_x = (image_width - draw_width) / 2;
+				const u32 pad_y = (image_height - draw_height) / 2;
+				pixels->clear();
+				pixels->resize(image_width * image_height, 0);
+				*width = image_width;
+				*height = image_height;
+				StringUtil::StrideMemCpy(pixels->data() + pad_y * image_width + pad_x, image_width * sizeof(u32), dl->GetMapPointer(),
+					dl->GetMapPitch(), draw_width * sizeof(u32), draw_height);
+
+				g_gs_device->Recycle(rt);
+				return true;
+			}
+		}
+
+		g_gs_device->Recycle(rt);
 	}
 
-	return result;
+	*width = 0;
+	*height = 0;
+	pixels->clear();
+	return false;
 }

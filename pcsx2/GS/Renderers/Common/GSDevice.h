@@ -49,6 +49,8 @@ enum class ShaderConvert
 	RGB5A1_TO_FLOAT16_BILN,
 	DEPTH_COPY,
 	RGBA_TO_8I,
+	CLUT_4,
+	CLUT_8,
 	YUV,
 	Count
 };
@@ -722,6 +724,7 @@ public:
 
 private:
 	FastList<GSTexture*> m_pool;
+	u64 m_pool_memory_usage = 0;
 	static const std::array<HWBlend, 3*3*3*3> m_blendMap;
 	static const std::array<u8, 16> m_replaceDualSrcBlendMap;
 
@@ -770,6 +773,7 @@ public:
 	virtual ~GSDevice();
 
 	__fi unsigned int GetFrameNumber() const { return m_frame; }
+	__fi u64 GetPoolMemoryUsage() const { return m_pool_memory_usage; }
 
 	void Recycle(GSTexture* t);
 
@@ -811,19 +815,9 @@ public:
 	GSTexture* CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear = true);
 	GSTexture* CreateDepthStencil(int w, int h, GSTexture::Format format, bool clear = true);
 	GSTexture* CreateTexture(int w, int h, int mipmap_levels, GSTexture::Format format, bool prefer_reuse = false);
-	GSTexture* CreateOffscreen(int w, int h, GSTexture::Format format);
 	GSTexture::Format GetDefaultTextureFormat(GSTexture::Type type);
 
-	/// Download the region `rect` of `src` into `out_map`
-	/// `out_map` will be valid a call to `DownloadTextureComplete`
-	virtual bool DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map) { return false; }
-
-	/// Scale the region `sRect` of `src` to the size `dSize` using `ps_shader` and store the result in `out_map`
-	/// `out_map` will be valid a call to `DownloadTextureComplete`
-	virtual bool DownloadTextureConvert(GSTexture* src, const GSVector4& sRect, const GSVector2i& dSize, GSTexture::Format format, ShaderConvert ps_shader, GSTexture::GSMap& out_map, bool linear);
-
-	/// Must be called to free resources after calling `DownloadTexture` or `DownloadTextureConvert`
-	virtual void DownloadTextureComplete() {}
+	virtual std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format);
 
 	virtual void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) {}
 	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true) {}
@@ -833,6 +827,9 @@ public:
 
 	/// Performs a screen blit for display. If dTex is null, it assumes you are writing to the system framebuffer/swap chain.
 	virtual void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear) {}
+
+	/// Updates a GPU CLUT texture from a source texture.
+	virtual void UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) {}
 
 	virtual void RenderHW(GSHWDrawConfig& config) {}
 
@@ -859,8 +856,6 @@ public:
 	void PurgePool();
 
 	virtual void ClearSamplerCache();
-
-	virtual void PrintMemoryUsage();
 
 	__fi static constexpr bool IsDualSourceBlendFactor(u8 factor)
 	{

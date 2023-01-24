@@ -36,7 +36,7 @@
 
 extern R5900cpu GSDumpReplayerCpu;
 
-SSE_MXCSR g_sseMXCSR   = {DEFAULT_sseMXCSR};
+SSE_MXCSR g_sseMXCSR = {DEFAULT_sseMXCSR};
 SSE_MXCSR g_sseVU0MXCSR = {DEFAULT_sseVUMXCSR};
 SSE_MXCSR g_sseVU1MXCSR = {DEFAULT_sseVUMXCSR};
 
@@ -46,7 +46,7 @@ void SetCPUState(SSE_MXCSR sseMXCSR, SSE_MXCSR sseVU0MXCSR, SSE_MXCSR sseVU1MXCS
 {
 	//Msgbox::Alert("SetCPUState: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
 
-	g_sseMXCSR   = sseMXCSR.ApplyReserveMask();
+	g_sseMXCSR = sseMXCSR.ApplyReserveMask();
 	g_sseVU0MXCSR = sseVU0MXCSR.ApplyReserveMask();
 	g_sseVU1MXCSR = sseVU1MXCSR.ApplyReserveMask();
 
@@ -141,7 +141,7 @@ Pcsx2Config EmuConfig;
 // This function should be called once during program execution.
 void SysLogMachineCaps()
 {
-	if ( !PCSX2_isReleaseVersion )
+	if (!PCSX2_isReleaseVersion)
 	{
 		if (GIT_TAGGED_COMMIT) // Nightly builds
 		{
@@ -149,7 +149,9 @@ void SysLogMachineCaps()
 			// - there is no need to include the commit - that is associated with the tag,
 			// - git is implied and the tag is timestamped
 			Console.WriteLn(Color_StrongGreen, "PCSX2 Nightly - %s Compiled on %s", GIT_TAG, __DATE__);
-		} else {
+		}
+		else
+		{
 			Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld"
 #ifndef DISABLE_BUILD_DATE
 											   "- compiled on " __DATE__
@@ -159,27 +161,28 @@ void SysLogMachineCaps()
 				SVN_REV);
 		}
 	}
-	else { // shorter release version string
+	else
+	{ // shorter release version string
 		Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld"
 #ifndef DISABLE_BUILD_DATE
-			"- compiled on " __DATE__
+										   "- compiled on " __DATE__
 #endif
-			, PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
-			SVN_REV );
+			,
+			PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
+			SVN_REV);
 	}
 
-	Console.WriteLn( "Savestate version: 0x%x", g_SaveVersion);
+	Console.WriteLn("Savestate version: 0x%x", g_SaveVersion);
 	Console.Newline();
 
-	Console.WriteLn( Color_StrongBlack, "Host Machine Init:" );
+	Console.WriteLn(Color_StrongBlack, "Host Machine Init:");
 
 	Console.Indent().WriteLn(
 		"Operating System =  %s\n"
 		"Physical RAM     =  %u MB",
 
 		GetOSVersionString().c_str(),
-		(u32)(GetPhysicalMemory() / _1mb)
-	);
+		(u32)(GetPhysicalMemory() / _1mb));
 
 	u32 speed = x86caps.CalculateMHz();
 
@@ -190,39 +193,31 @@ void SysLogMachineCaps()
 		"x86PType         =  %s\n"
 		"x86Flags         =  %08x %08x\n"
 		"x86EFlags        =  %08x",
-			x86caps.FamilyName,
-			x86caps.VendorName, x86caps.StepID,
-			speed / 1000, speed % 1000,
-			x86caps.LogicalCores, (x86caps.LogicalCores==1) ? L"" : L"s",
-			x86caps.GetTypeName(),
-			x86caps.Flags, x86caps.Flags2,
-			x86caps.EFlags
-	);
+		x86caps.FamilyName,
+		x86caps.VendorName, x86caps.StepID,
+		speed / 1000, speed % 1000,
+		x86caps.LogicalCores, (x86caps.LogicalCores == 1) ? L"" : L"s",
+		x86caps.GetTypeName(),
+		x86caps.Flags, x86caps.Flags2,
+		x86caps.EFlags);
 
 	Console.Newline();
 
 	std::string features;
 
-	if( x86caps.hasStreamingSIMD2Extensions )		features += "SSE2 ";
-	if( x86caps.hasStreamingSIMD3Extensions )		features += "SSE3 ";
-	if( x86caps.hasSupplementalStreamingSIMD3Extensions ) features += "SSSE3 ";
-	if( x86caps.hasStreamingSIMD4Extensions )		features += "SSE4.1 ";
-	if( x86caps.hasStreamingSIMD4Extensions2 )		features += "SSE4.2 ";
-	if( x86caps.hasAVX )							features += "AVX ";
-	if( x86caps.hasAVX2 )							features += "AVX2 ";
-	if( x86caps.hasFMA)								features += "FMA ";
-
-	if( x86caps.hasStreamingSIMD4ExtensionsA )		features += "SSE4a ";
+	if (x86caps.hasAVX)  features += "AVX ";
+	if (x86caps.hasAVX2) features += "AVX2 ";
 
 	StringUtil::StripWhitespace(&features);
 
-	Console.WriteLn(Color_StrongBlack,	"x86 Features Detected:");
+	Console.WriteLn(Color_StrongBlack, "x86 Features Detected:");
 	Console.Indent().WriteLn("%s", features.c_str());
 
 	Console.Newline();
 }
 
-namespace HostMemoryMap {
+namespace HostMemoryMap
+{
 	// For debuggers
 	extern "C" {
 #ifdef _WIN32
@@ -231,7 +226,7 @@ namespace HostMemoryMap {
 	__attribute__((visibility("default"), used)) uptr EEmem, IOPmem, VUmem, EErec, IOPrec, VIF0rec, VIF1rec, mVU0rec, mVU1rec, bumpAllocator;
 #endif
 	}
-}
+} // namespace HostMemoryMap
 
 /// Attempts to find a spot near static variables for the main memory
 static VirtualMemoryManagerPtr makeMemoryManager(const char* name, const char* file_mapping_name, size_t size, size_t offset_from_base)
@@ -245,21 +240,25 @@ static VirtualMemoryManagerPtr makeMemoryManager(const char* name, const char* f
 	// We'll hope that the code generated for the PCSX2 executable stays under 512mb (which is likely)
 	// On x86-64, code can reach 8*2^28 from its address [-6*2^28, 4*2^28] is the region that allows for code in the 640mb allocation to reach 512mb of code that either starts at codeBase or 256mb before it.
 	// We start high and count down because on macOS code starts at the beginning of useable address space, so starting as far ahead as possible reduces address variations due to code size.  Not sure about other platforms.  Obviously this only actually affects what shows up in a debugger and won't affect performance or correctness of anything.
-	for (int offset = 4; offset >= -6; offset--) {
+	for (int offset = 4; offset >= -6; offset--)
+	{
 		uptr base = codeBase + (offset << 28) + offset_from_base;
-		if ((sptr)base < 0 || (sptr)(base + size - 1) < 0) {
+		if ((sptr)base < 0 || (sptr)(base + size - 1) < 0)
+		{
 			// VTLB will throw a fit if we try to put EE main memory here
 			continue;
 		}
 		auto mgr = std::make_shared<VirtualMemoryManager>(name, file_mapping_name, base, size, /*upper_bounds=*/0, /*strict=*/true);
-		if (mgr->IsOk()) {
+		if (mgr->IsOk())
+		{
 			return mgr;
 		}
 	}
 
 	// If the above failed and it's x86-64, recompiled code is going to break!
 	// If it's i386 anything can reach anything so it doesn't matter
-	if (sizeof(void*) == 8) {
+	if (sizeof(void*) == 8)
+	{
 		pxAssertRel(0, "Failed to find a good place for the memory allocation, recompilers may fail");
 	}
 	return std::make_shared<VirtualMemoryManager>(name, file_mapping_name, 0, size);
@@ -275,11 +274,11 @@ SysMainMemory::SysMainMemory()
 {
 	uptr main_base = (uptr)MainMemory()->GetBase();
 	uptr code_base = (uptr)MainMemory()->GetBase();
-	HostMemoryMap::EEmem   = main_base + HostMemoryMap::EEmemOffset;
-	HostMemoryMap::IOPmem  = main_base + HostMemoryMap::IOPmemOffset;
-	HostMemoryMap::VUmem   = main_base + HostMemoryMap::VUmemOffset;
-	HostMemoryMap::EErec   = code_base + HostMemoryMap::EErecOffset;
-	HostMemoryMap::IOPrec  = code_base + HostMemoryMap::IOPrecOffset;
+	HostMemoryMap::EEmem = main_base + HostMemoryMap::EEmemOffset;
+	HostMemoryMap::IOPmem = main_base + HostMemoryMap::IOPmemOffset;
+	HostMemoryMap::VUmem = main_base + HostMemoryMap::VUmemOffset;
+	HostMemoryMap::EErec = code_base + HostMemoryMap::EErecOffset;
+	HostMemoryMap::IOPrec = code_base + HostMemoryMap::IOPrecOffset;
 	HostMemoryMap::VIF0rec = code_base + HostMemoryMap::VIF0recOffset;
 	HostMemoryMap::VIF1rec = code_base + HostMemoryMap::VIF1recOffset;
 	HostMemoryMap::mVU0rec = code_base + HostMemoryMap::mVU0recOffset;
@@ -308,7 +307,7 @@ bool SysMainMemory::Allocate()
 
 void SysMainMemory::Reset()
 {
-	DevCon.WriteLn( Color_StrongBlue, "Resetting host memory for virtual systems..." );
+	DevCon.WriteLn(Color_StrongBlue, "Resetting host memory for virtual systems...");
 	ConsoleIndentScope indent(1);
 
 	m_ee.Reset();
@@ -320,12 +319,12 @@ void SysMainMemory::Reset()
 
 void SysMainMemory::Release()
 {
-	Console.WriteLn( Color_Blue, "Releasing host memory for virtual systems..." );
+	Console.WriteLn(Color_Blue, "Releasing host memory for virtual systems...");
 	ConsoleIndentScope indent(1);
 
 	hwShutdown();
 
-	vtlb_Core_Free();		// Just to be sure... (calling order could result in it getting missed during Decommit).
+	vtlb_Core_Free(); // Just to be sure... (calling order could result in it getting missed during Decommit).
 
 	releaseNewVif(0);
 	releaseNewVif(1);
@@ -343,7 +342,7 @@ void SysMainMemory::Release()
 // --------------------------------------------------------------------------------------
 SysCpuProviderPack::SysCpuProviderPack()
 {
-	Console.WriteLn( Color_StrongBlue, "Reserving memory for recompilers..." );
+	Console.WriteLn(Color_StrongBlue, "Reserving memory for recompilers...");
 	ConsoleIndentScope indent(1);
 
 	recCpu.Reserve();
@@ -379,16 +378,16 @@ BaseVUmicroCPU* CpuVU1 = nullptr;
 
 void SysCpuProviderPack::ApplyConfig() const
 {
-	Cpu		= CHECK_EEREC	? &recCpu : &intCpu;
-	psxCpu	= CHECK_IOPREC	? &psxRec : &psxInt;
+	Cpu = CHECK_EEREC ? &recCpu : &intCpu;
+	psxCpu = CHECK_IOPREC ? &psxRec : &psxInt;
 
 	CpuVU0 = &CpuIntVU0;
 	CpuVU1 = &CpuIntVU1;
 
-	if( EmuConfig.Cpu.Recompiler.EnableVU0 )
+	if (EmuConfig.Cpu.Recompiler.EnableVU0)
 		CpuVU0 = &CpuMicroVU0;
 
-	if( EmuConfig.Cpu.Recompiler.EnableVU1 )
+	if (EmuConfig.Cpu.Recompiler.EnableVU1)
 		CpuVU1 = &CpuMicroVU1;
 
 	if (GSDumpReplayer::IsReplayingDump())
@@ -438,9 +437,10 @@ std::string SysGetBiosDiscID()
 // homebrew or some other serial-less item.
 std::string SysGetDiscID()
 {
-	if( !DiscSerial.empty() ) return DiscSerial;
+	if (!DiscSerial.empty())
+		return DiscSerial;
 
-	if( !ElfCRC )
+	if (!ElfCRC)
 	{
 		// system is currently running the BIOS
 		return SysGetBiosDiscID();

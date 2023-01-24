@@ -98,6 +98,18 @@ static constexpr const char* s_sdl_hat_direction_names[] = {
 	// clang-format on
 };
 
+static constexpr const char* s_sdl_default_led_colors[] = {
+	"0000ff", // SDL-0
+	"ff0000", // SDL-1
+	"00ff00", // SDL-2
+	"ffff00", // SDL-3
+};
+
+static void SetControllerRGBLED(SDL_GameController* gc, u32 color)
+{
+	SDL_GameControllerSetLED(gc, (color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff);
+}
+
 SDLInputSource::SDLInputSource() = default;
 
 SDLInputSource::~SDLInputSource()
@@ -159,6 +171,39 @@ void SDLInputSource::LoadSettings(SettingsInterface& si)
 {
 	m_controller_enhanced_mode = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
 	m_sdl_hints = si.GetKeyValueList("SDLHints");
+
+  for (u32 i = 0; i < MAX_LED_COLORS; i++)
+  {
+    const u32 color = GetRGBForPlayerId(si, i);
+    if (m_led_colors[i] == color)
+      continue;
+
+    m_led_colors[i] = color;
+
+    const auto it = GetControllerDataForPlayerId(i);
+    if (it == m_controllers.end() || !it->game_controller || !SDL_GameControllerHasLED(it->game_controller))
+      continue;
+
+    SetControllerRGBLED(it->game_controller, color);
+  }
+}
+
+u32 SDLInputSource::GetRGBForPlayerId(SettingsInterface& si, u32 player_id)
+{
+  return ParseRGBForPlayerId(
+    si.GetStringValue("SDLExtra", fmt::format("Player{}LED", player_id).c_str(), s_sdl_default_led_colors[player_id]),
+    player_id);
+}
+
+u32 SDLInputSource::ParseRGBForPlayerId(const std::string_view& str, u32 player_id)
+{
+  if (player_id >= MAX_LED_COLORS)
+    return 0;
+
+  const u32 default_color = StringUtil::FromChars<u32>(s_sdl_default_led_colors[player_id], 16).value_or(0);
+  const u32 color = StringUtil::FromChars<u32>(str, 16).value_or(default_color);
+
+  return color;
 }
 
 void SDLInputSource::SetHints()
@@ -617,6 +662,11 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 	if (!cd.haptic && !cd.use_game_controller_rumble)
 		Console.Warning("(SDLInputSource) Rumble is not supported on '%s'", name);
 
+	if (player_id >= 0 && static_cast<u32>(player_id) < MAX_LED_COLORS && gcontroller && SDL_GameControllerHasLED(gcontroller))
+	{
+		SetControllerRGBLED(gcontroller, m_led_colors[player_id]);
+	}
+
 	m_controllers.push_back(std::move(cd));
 
 	InputManager::OnInputDeviceConnected(StringUtil::StdStringFromFormat("SDL-%d", player_id), name);
@@ -668,7 +718,7 @@ bool SDLInputSource::HandleControllerButtonEvent(const SDL_ControllerButtonEvent
 	const InputBindingKey key(MakeGenericControllerButtonKey(InputSourceType::SDL, it->player_id, ev->button));
 	const GenericInputBinding generic_key = (ev->button < std::size(s_sdl_generic_binding_button_mapping)) ?
 												s_sdl_generic_binding_button_mapping[ev->button] :
-                                                GenericInputBinding::Unknown;
+												GenericInputBinding::Unknown;
 	InputManager::InvokeEvents(key, (ev->state == SDL_PRESSED) ? 1.0f : 0.0f, generic_key);
 	return true;
 }

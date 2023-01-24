@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -350,6 +350,13 @@ enum class GSCASMode : u8
 	SharpenAndResize,
 };
 
+enum class GSGPUTargetCLUTMode : u8
+{
+	Disabled,
+	Enabled,
+	InsideTarget,
+};
+
 // Template function for casting enumerations to their underlying type
 template <typename Enumeration>
 typename std::underlying_type<Enumeration>::type enum_cast(Enumeration E)
@@ -598,15 +605,18 @@ struct Pcsx2Config
 	{
 		static const char* AspectRatioNames[];
 		static const char* FMVAspectRatioSwitchNames[];
-		static const char* VideoCaptureContainers[];
+		static const char* CaptureContainers[];
 
 		static const char* GetRendererName(GSRendererType type);
 
 		static constexpr float DEFAULT_FRAME_RATE_NTSC = 59.94f;
 		static constexpr float DEFAULT_FRAME_RATE_PAL = 50.00f;
 
-		static constexpr u32 DEFAULT_VIDEO_CAPTURE_BITRATE = 6000;
-		static const char* DEFAULT_VIDEO_CAPTURE_CONTAINER;
+		static constexpr int DEFAULT_VIDEO_CAPTURE_BITRATE = 6000;
+		static constexpr int DEFAULT_VIDEO_CAPTURE_WIDTH = 640;
+		static constexpr int DEFAULT_VIDEO_CAPTURE_HEIGHT = 480;
+		static constexpr int DEFAULT_AUDIO_CAPTURE_BITRATE = 160;
+		static const char* DEFAULT_CAPTURE_CONTAINER;
 
 		union
 		{
@@ -672,7 +682,12 @@ struct Pcsx2Config
 					DumpPaletteTextures : 1,
 					LoadTextureReplacements : 1,
 					LoadTextureReplacementsAsync : 1,
-					PrecacheTextureReplacements : 1;
+					PrecacheTextureReplacements : 1,
+					EnableVideoCapture : 1,
+					EnableVideoCaptureParameters : 1,
+					VideoCaptureAutoResolution : 1,
+					EnableAudioCapture : 1,
+					EnableAudioCaptureParameters : 1;
 			};
 		};
 
@@ -727,6 +742,7 @@ struct Pcsx2Config
 		int UserHacks_TCOffsetY{0};
 		int UserHacks_CPUSpriteRenderBW{0};
 		int UserHacks_CPUCLUTRender{ 0 };
+		GSGPUTargetCLUTMode UserHacks_GPUTargetCLUTMode{GSGPUTargetCLUTMode::Disabled};
 		TriFiltering TriFilter{TriFiltering::Automatic};
 		int OverrideTextureBarriers{-1};
 		int OverrideGeometryShaders{-1};
@@ -744,9 +760,15 @@ struct Pcsx2Config
 		GSScreenshotFormat ScreenshotFormat{GSScreenshotFormat::PNG};
 		int ScreenshotQuality{50};
 
-		std::string VideoCaptureContainer{DEFAULT_VIDEO_CAPTURE_CONTAINER};
+		std::string CaptureContainer{DEFAULT_CAPTURE_CONTAINER};
 		std::string VideoCaptureCodec;
+		std::string VideoCaptureParameters;
+		std::string AudioCaptureCodec;
+		std::string AudioCaptureParameters;
 		int VideoCaptureBitrate{DEFAULT_VIDEO_CAPTURE_BITRATE};
+		int VideoCaptureWidth{DEFAULT_VIDEO_CAPTURE_WIDTH};
+		int VideoCaptureHeight{DEFAULT_VIDEO_CAPTURE_HEIGHT};
+		int AudioCaptureBitrate{DEFAULT_AUDIO_CAPTURE_BITRATE};
 
 		std::string Adapter;
 		std::string HWDumpDirectory;
@@ -821,7 +843,7 @@ struct Pcsx2Config
 		SynchronizationMode SynchMode = SynchronizationMode::TimeStretch;
 
 		s32 FinalVolume = 100;
-		s32 Latency = 100;
+		s32 Latency = 60;
 		s32 OutputLatency = 20;
 		s32 SpeakerConfiguration = 0;
 		s32 DplDecodingLevel = 0;
@@ -1301,6 +1323,7 @@ namespace EmuFolders
 	extern std::string GameSettings;
 	extern std::string Textures;
 	extern std::string InputProfiles;
+	extern std::string Videos;
 
 	// Assumes that AppRoot and DataRoot have been initialized.
 	void SetDefaults(SettingsInterface& si);

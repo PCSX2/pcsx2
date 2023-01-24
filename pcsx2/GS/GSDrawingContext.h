@@ -14,10 +14,9 @@
  */
 
 #pragma once
-#ifdef __clang__
-// Ignore format for this file, as it spams a lot of warnings about u64 and %llu.
-#pragma clang diagnostic ignored "-Wformat"
-#endif
+
+// Clang note: 64bit bitfields are cast to 32bit here, since in VS it uses the format specified (64bit == 64bit), but in clang it converts to uint32_t.
+// Since we're only using 64bit for bitfield alignment mess, we can just cast it to 32bit for everything.
 
 #include "GSLocalMemory.h"
 
@@ -194,22 +193,24 @@ public:
 		        , XYOFFSET.OFX, XYOFFSET.OFY);
 
 		fprintf(fp, "MIPTBP1\n"
-		            "\tBP1:0x%llx\n"
-		            "\tBW1:%llu\n"
-		            "\tBP2:0x%llx\n"
-		            "\tBW2:%llu\n"
-		            "\tBP3:0x%llx\n"
-		            "\tBW3:%llu\n\n"
-		        , MIPTBP1.TBP1, MIPTBP1.TBW1, MIPTBP1.TBP2, MIPTBP1.TBW2, MIPTBP1.TBP3, MIPTBP1.TBW3);
+		            "\tBP1:0x%x\n"
+		            "\tBW1:%u\n"
+		            "\tBP2:0x%x\n"
+		            "\tBW2:%u\n"
+		            "\tBP3:0x%x\n"
+		            "\tBW3:%u\n\n"
+		        , static_cast<uint32_t>(MIPTBP1.TBP1), static_cast<uint32_t>(MIPTBP1.TBW1), static_cast<uint32_t>(MIPTBP1.TBP2)
+		        , static_cast<uint32_t>(MIPTBP1.TBW2), static_cast<uint32_t>(MIPTBP1.TBP3), static_cast<uint32_t>(MIPTBP1.TBW3));
 
 		fprintf(fp, "MIPTBP2\n"
-		            "\tBP4:0x%llx\n"
-		            "\tBW4:%llu\n"
-		            "\tBP5:0x%llx\n"
-		            "\tBW5:%llu\n"
-		            "\tBP6:0x%llx\n"
-		            "\tBW6:%llu\n\n"
-		        , MIPTBP2.TBP4, MIPTBP2.TBW4, MIPTBP2.TBP5, MIPTBP2.TBW5, MIPTBP2.TBP6, MIPTBP2.TBW6);
+		            "\tBP4:0x%x\n"
+		            "\tBW4:%u\n"
+		            "\tBP5:0x%x\n"
+		            "\tBW5:%u\n"
+		            "\tBP6:0x%x\n"
+		            "\tBW6:%u\n\n"
+		        , static_cast<uint32_t>(MIPTBP2.TBP4), static_cast<uint32_t>(MIPTBP2.TBW4), static_cast<uint32_t>(MIPTBP2.TBP5)
+		        , static_cast<uint32_t>(MIPTBP2.TBW5), static_cast<uint32_t>(MIPTBP2.TBP6), static_cast<uint32_t>(MIPTBP2.TBW6));
 
 		fprintf(fp, "TEX0\n"
 		            "\tTBP0:0x%x\n"
@@ -223,8 +224,8 @@ public:
 		            "\tCSM:%u\n"
 		            "\tCSA:%u\n"
 		            "\tCLD:%u\n"
-		            "\tTH:%llu\n\n"
-		        , TEX0.TBP0, TEX0.TBW, TEX0.PSM, TEX0.TW, TEX0.TCC, TEX0.TFX, TEX0.CBP, TEX0.CPSM, TEX0.CSM, TEX0.CSA, TEX0.CLD, TEX0.TH);
+		            "\tTH:%u\n"
+		        , TEX0.TBP0, TEX0.TBW, TEX0.PSM, TEX0.TW, TEX0.TCC, TEX0.TFX, TEX0.CBP, TEX0.CPSM, TEX0.CSM, TEX0.CSA, TEX0.CLD, static_cast<uint32_t>(TEX0.TH));
 
 		fprintf(fp, "TEX1\n"
 		            "\tLCM:%u\n"
@@ -242,8 +243,8 @@ public:
 		            "\tMINU:%u\n"
 		            "\tMAXU:%u\n"
 		            "\tMAXV:%u\n"
-		            "\tMINV:%llu\n\n"
-		        , CLAMP.WMS, CLAMP.WMT, CLAMP.MINU, CLAMP.MAXU, CLAMP.MAXV, CLAMP.MINV);
+		            "\tMINV:%u\n\n"
+		        , CLAMP.WMS, CLAMP.WMT, CLAMP.MINU, CLAMP.MAXU, CLAMP.MAXV, static_cast<uint32_t>(CLAMP.MINV));
 
 		// TODO mimmap? (yes I'm lazy)
 		fprintf(fp, "SCISSOR\n"

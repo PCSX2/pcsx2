@@ -14,9 +14,11 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSClut.h"
-#include "GSLocalMemory.h"
-#include "GSGL.h"
+#include "GS/GSClut.h"
+#include "GS/GSLocalMemory.h"
+#include "GS/GSGL.h"
+#include "GS/Renderers/Common/GSDevice.h"
+#include "GS/Renderers/Common/GSRenderer.h"
 #include "common/AlignedMalloc.h"
 
 GSClut::GSClut(GSLocalMemory* mem)
@@ -103,6 +105,11 @@ GSClut::GSClut(GSLocalMemory* mem)
 
 GSClut::~GSClut()
 {
+	if (m_gpu_clut4)
+		delete m_gpu_clut4;
+	if (m_gpu_clut8)
+		delete m_gpu_clut8;
+
 	_aligned_free(m_clut);
 }
 
@@ -379,6 +386,52 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 					Expand16(clut, m_buff32, 16, TEXA);
 					ExpandCLUT64_T32_I8(m_buff32, (u64*)m_buff64); // sw renderer does not need m_buff64 anymore
 					break;
+			}
+		}
+
+		m_current_gpu_clut = nullptr;
+		if (GSConfig.UserHacks_GPUTargetCLUTMode != GSGPUTargetCLUTMode::Disabled)
+		{
+			const bool is_4bit = (TEX0.PSM == PSM_PSMT4 || TEX0.PSM == PSM_PSMT4HL || TEX0.PSM == PSM_PSMT4HH);
+
+			u32 CBW;
+			GSVector2i offset;
+			GSVector2i size;
+			if (!TEX0.CSM)
+			{
+				CBW = 0; // don't care
+				offset = {};
+				size.x = is_4bit ? 8 : 16;
+				size.y = is_4bit ? 2 : 16;
+			}
+			else
+			{
+				CBW = m_write.TEXCLUT.CBW;
+				offset.x = m_write.TEXCLUT.COU;
+				offset.y = m_write.TEXCLUT.COV;
+				size.x = is_4bit ? 16 : 256;
+				size.y = 1;
+			}
+
+			GSTexture* src = g_gs_renderer->LookupPaletteSource(TEX0.CBP, TEX0.CPSM, CBW, offset, size);
+			if (src)
+			{
+				GSTexture* dst = is_4bit ? m_gpu_clut4 : m_gpu_clut8;
+				u32 dst_size = is_4bit ? 16 : 256;
+				const u32 dOffset = (TEX0.CSA & ((TEX0.CPSM == PSM_PSMCT16 || TEX0.CPSM == PSM_PSMCT16S) ? 15u : 31u)) << 4;
+				if (!dst)
+				{
+					// allocate texture lazily
+					dst = g_gs_device->CreateRenderTarget(dst_size, 1, GSTexture::Format::Color, false);
+					is_4bit ? (m_gpu_clut4 = dst) : (m_gpu_clut8 = dst);
+				}
+				if (dst)
+				{
+					GL_PUSH("Update GPU CLUT [CBP=%04X, CPSM=%s, CBW=%u, CSA=%u, Offset=(%d,%d)]",
+						TEX0.CBP, psm_str(TEX0.CPSM), CBW, TEX0.CSA, offset.x, offset.y);
+					g_gs_device->UpdateCLUTTexture(src, offset.x, offset.y, dst, dOffset, dst_size);
+					m_current_gpu_clut = dst;
+				}
 			}
 		}
 	}

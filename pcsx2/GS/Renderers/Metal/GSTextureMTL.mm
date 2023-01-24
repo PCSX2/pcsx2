@@ -14,9 +14,10 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSTextureMTL.h"
-#include "GSDeviceMTL.h"
+#include "GS/Renderers/Metal/GSTextureMTL.h"
+#include "GS/Renderers/Metal/GSDeviceMTL.h"
 #include "GS/GSPerfMon.h"
+#include "common/Console.h"
 
 #ifdef __APPLE__
 
@@ -205,6 +206,121 @@ void GSTextureMTL::Swap(GSTexture* other)
 	SWAP(m_clear_depth);
 	SWAP(m_clear_stencil);
 #undef SWAP
+}
+
+GSDownloadTextureMTL::GSDownloadTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLBuffer>> buffer,
+	u32 width, u32 height, GSTexture::Format format)
+	: GSDownloadTexture(width, height, format)
+	, m_dev(dev)
+	, m_buffer(std::move(buffer))
+{
+	m_map_pointer = static_cast<const u8*>([m_buffer contents]);
+}
+
+GSDownloadTextureMTL::~GSDownloadTextureMTL() = default;
+
+std::unique_ptr<GSDownloadTextureMTL> GSDownloadTextureMTL::Create(GSDeviceMTL* dev, u32 width, u32 height, GSTexture::Format format)
+{
+	const u32 buffer_size = GetBufferSize(width, height, format, PITCH_ALIGNMENT);
+
+	MRCOwned<id<MTLBuffer>> buffer = MRCTransfer([dev->m_dev.dev newBufferWithLength:buffer_size options:MTLResourceStorageModeShared]);
+	if (!buffer)
+	{
+		Console.Error("Failed to allocate %u byte download texture buffer (out of memory?)", buffer_size);
+		return {};
+	}
+
+	return std::unique_ptr<GSDownloadTextureMTL>(new GSDownloadTextureMTL(dev, buffer, width, height, format));
+}
+
+void GSDownloadTextureMTL::CopyFromTexture(
+	const GSVector4i& drc, GSTexture* stex, const GSVector4i& src, u32 src_level, bool use_transfer_pitch)
+{ @autoreleasepool {
+	GSTextureMTL* const mtlTex = static_cast<GSTextureMTL*>(stex);
+
+	pxAssert(mtlTex->GetFormat() == m_format);
+	pxAssert(drc.width() == src.width() && drc.height() == src.height());
+	pxAssert(src.z <= mtlTex->GetWidth() && src.w <= mtlTex->GetHeight());
+	pxAssert(static_cast<u32>(drc.z) <= m_width && static_cast<u32>(drc.w) <= m_height);
+	pxAssert(src_level < static_cast<u32>(mtlTex->GetMipmapLevels()));
+	pxAssert((drc.left == 0 && drc.top == 0) || !use_transfer_pitch);
+
+	u32 copy_offset, copy_size, copy_rows;
+	m_current_pitch =
+		GetTransferPitch(use_transfer_pitch ? static_cast<u32>(drc.width()) : m_width, PITCH_ALIGNMENT);
+	GetTransferSize(drc, &copy_offset, &copy_size, &copy_rows);
+
+	m_dev->EndRenderPass();
+	mtlTex->FlushClears();
+	g_perfmon.Put(GSPerfMon::Readbacks, 1);
+
+	m_copy_cmdbuffer = MRCRetain(m_dev->GetRenderCmdBuf());
+
+	[m_copy_cmdbuffer pushDebugGroup:@"GSDownloadTextureMTL::CopyFromTexture"];
+	id<MTLBlitCommandEncoder> encoder = [m_copy_cmdbuffer blitCommandEncoder];
+	[encoder copyFromTexture:mtlTex->GetTexture()
+	             sourceSlice:0
+	             sourceLevel:src_level
+	            sourceOrigin:MTLOriginMake(src.x, src.y, 0)
+	              sourceSize:MTLSizeMake(src.width(), src.height(), 1)
+	                toBuffer:m_buffer
+	       destinationOffset:copy_offset
+	  destinationBytesPerRow:m_current_pitch
+	destinationBytesPerImage:m_current_pitch * copy_rows];
+
+	if (id<MTLFence> fence = m_dev->GetSpinFence())
+		[encoder updateFence:fence];
+
+	[encoder endEncoding];
+	[m_copy_cmdbuffer popDebugGroup];
+
+	m_needs_flush = true;
+}}
+
+bool GSDownloadTextureMTL::Map(const GSVector4i& read_rc)
+{
+	// Always mapped.
+	return true;
+}
+
+void GSDownloadTextureMTL::Unmap()
+{
+	// Always mapped.
+}
+
+void GSDownloadTextureMTL::Flush()
+{
+	if (!m_needs_flush)
+		return;
+
+	m_needs_flush = false;
+
+	// If it's the same buffer currently being encoded, we need to kick it (and spin).
+	if (m_copy_cmdbuffer == m_dev->GetRenderCmdBufWithoutCreate())
+		m_dev->FlushEncodersForReadback();
+
+	if (IsCommandBufferCompleted([m_copy_cmdbuffer status]))
+	{
+		// Asynchronous readback which already completed.
+		m_copy_cmdbuffer = nil;
+		return;
+	}
+
+	// Asynchrous readback, but the GPU isn't done yet.
+	if (GSConfig.HWSpinCPUForReadbacks)
+	{
+		do
+		{
+			ShortSpin();
+		}
+		while (!IsCommandBufferCompleted([m_copy_cmdbuffer status]));
+	}
+	else
+	{
+		[m_copy_cmdbuffer waitUntilCompleted];
+	}
+
+	m_copy_cmdbuffer = nil;
 }
 
 #endif

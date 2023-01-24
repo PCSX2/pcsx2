@@ -270,7 +270,7 @@ bool GSDeviceVK::CheckFeatures()
 		(features.largePoints && limits.pointSizeRange[0] <= f_upscale && limits.pointSizeRange[1] >= f_upscale);
 	m_features.line_expand =
 		(features.wideLines && limits.lineWidthRange[0] <= f_upscale && limits.lineWidthRange[1] >= f_upscale);
-	Console.WriteLn("Using %s for point expansion and %s for line expansion.",
+	DevCon.WriteLn("Using %s for point expansion and %s for line expansion.",
 		m_features.point_expand ? "hardware" : "geometry shaders",
 		m_features.line_expand ? "hardware" : "geometry shaders");
 
@@ -402,10 +402,8 @@ VkFormat GSDeviceVK::LookupNativeFormat(GSTexture::Format format) const
 
 GSTexture* GSDeviceVK::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 {
-	pxAssert(type != GSTexture::Type::Offscreen);
-
-	const u32 clamped_width = static_cast<u32>(std::clamp<int>(1, width, g_vulkan_context->GetMaxImageDimension2D()));
-	const u32 clamped_height = static_cast<u32>(std::clamp<int>(1, height, g_vulkan_context->GetMaxImageDimension2D()));
+	const u32 clamped_width = static_cast<u32>(std::clamp<int>(width, 1, g_vulkan_context->GetMaxImageDimension2D()));
+	const u32 clamped_height = static_cast<u32>(std::clamp<int>(height, 1, g_vulkan_context->GetMaxImageDimension2D()));
 
 	std::unique_ptr<GSTexture> tex(GSTextureVK::Create(type, clamped_width, clamped_height, levels, format, LookupNativeFormat(format)));
 	if (!tex)
@@ -419,87 +417,10 @@ GSTexture* GSDeviceVK::CreateSurface(GSTexture::Type type, int width, int height
 	return tex.release();
 }
 
-bool GSDeviceVK::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map)
+std::unique_ptr<GSDownloadTexture> GSDeviceVK::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
 {
-	const u32 width = rect.width();
-	const u32 height = rect.height();
-	const u32 pitch = width * Vulkan::Util::GetTexelSize(static_cast<GSTextureVK*>(src)->GetNativeFormat());
-	const u32 size = pitch * height;
-	const u32 level = 0;
-	if (!CheckStagingBufferSize(size))
-	{
-		Console.Error("Can't read back %ux%u", width, height);
-		return false;
-	}
-
-	g_perfmon.Put(GSPerfMon::Readbacks, 1);
-	EndRenderPass();
-	{
-		const VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
-		GL_INS("ReadbackTexture: {%d,%d} %ux%u", rect.left, rect.top, width, height);
-
-		GSTextureVK* vkSrc = static_cast<GSTextureVK*>(src);
-		VkImageLayout old_layout = vkSrc->GetTexture().GetLayout();
-		if (old_layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-			vkSrc->GetTexture().TransitionSubresourcesToLayout(
-				cmdbuf, level, 1, 0, 1, old_layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-
-		VkBufferImageCopy image_copy = {};
-		const VkImageAspectFlags aspect = Vulkan::Util::IsDepthFormat(static_cast<VkFormat>(vkSrc->GetFormat())) ?
-                                              VK_IMAGE_ASPECT_DEPTH_BIT :
-                                              VK_IMAGE_ASPECT_COLOR_BIT;
-		image_copy.bufferOffset = 0;
-		image_copy.bufferRowLength = width;
-		image_copy.bufferImageHeight = 0;
-		image_copy.imageSubresource = {aspect, level, 0u, 1u};
-		image_copy.imageOffset = {rect.left, rect.top, 0};
-		image_copy.imageExtent = {width, height, 1u};
-
-		// invalidate gpu cache
-		// TODO: Needed?
-		Vulkan::Util::BufferMemoryBarrier(cmdbuf, m_readback_staging_buffer, 0, VK_ACCESS_TRANSFER_WRITE_BIT, 0, size,
-			VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-
-		// do the copy
-		vkCmdCopyImageToBuffer(cmdbuf, vkSrc->GetTexture().GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			m_readback_staging_buffer, 1, &image_copy);
-
-		// flush gpu cache
-		Vulkan::Util::BufferMemoryBarrier(cmdbuf, m_readback_staging_buffer, VK_ACCESS_TRANSFER_WRITE_BIT,
-			VK_ACCESS_HOST_READ_BIT, 0, size, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_HOST_BIT);
-
-		if (old_layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-		{
-			vkSrc->GetTexture().TransitionSubresourcesToLayout(
-				cmdbuf, level, 1, 0, 1, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, old_layout);
-		}
-	}
-
-	ExecuteCommandBuffer(true);
-	if (GSConfig.HWSpinGPUForReadbacks)
-	{
-		g_vulkan_context->NotifyOfReadback();
-		if (!g_vulkan_context->GetOptionalExtensions().vk_ext_calibrated_timestamps && !m_warned_slow_spin)
-		{
-			m_warned_slow_spin = true;
-			Host::AddKeyedOSDMessage("GSDeviceVK_NoCalibratedTimestamps",
-				"Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.",
-				Host::OSD_WARNING_DURATION);
-		}
-	}
-
-	// invalidate cpu cache before reading
-	VkResult res = vmaInvalidateAllocation(g_vulkan_context->GetAllocator(), m_readback_staging_allocation, 0, size);
-	if (res != VK_SUCCESS)
-		LOG_VULKAN_ERROR(res, "vmaInvalidateAllocation() failed, readback may be incorrect: ");
-
-	out_map.bits = reinterpret_cast<u8*>(m_readback_staging_buffer_map);
-	out_map.pitch = pitch;
-
-	return true;
+	return GSDownloadTextureVK::Create(width, height, format);
 }
-
-void GSDeviceVK::DownloadTextureComplete() {}
 
 void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 {
@@ -761,6 +682,23 @@ void GSDeviceVK::BlitRect(GSTexture* sTex, const GSVector4i& sRect, u32 sLevel, 
 	vkCmdBlitImage(g_vulkan_context->GetCurrentCommandBuffer(), sTexVK->GetTexture().GetImage(),
 		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dTexVK->GetTexture().GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
 		&ib, linear ? VK_FILTER_LINEAR : VK_FILTER_NEAREST);
+}
+
+void GSDeviceVK::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
+{
+	struct Uniforms
+	{
+		float scaleX, scaleY;
+		u32 offsetX, offsetY, dOffset;
+	};
+
+	const Uniforms uniforms = {sTex->GetScale().x, sTex->GetScale().y, offsetX, offsetY, dOffset};
+	SetUtilityPushConstants(&uniforms, sizeof(uniforms));
+
+	const GSVector4 dRect(0, 0, dSize, 1);
+	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
+	DoStretchRect(static_cast<GSTextureVK*>(sTex), GSVector4::zero(), static_cast<GSTextureVK*>(dTex), dRect,
+		m_convert[static_cast<int>(shader)], false);
 }
 
 void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect,
@@ -1084,9 +1022,7 @@ void GSDeviceVK::ClearSamplerCache()
 	m_point_sampler = GetSampler(GSHWDrawConfig::SamplerSelector::Point());
 	m_linear_sampler = GetSampler(GSHWDrawConfig::SamplerSelector::Linear());
 	m_utility_sampler = m_point_sampler;
-
-	for (u32 i = 0; i < std::size(m_tfx_samplers); i++)
-		m_tfx_samplers[i] = GetSampler(m_tfx_sampler_sel[i]);
+	m_tfx_sampler = m_point_sampler;
 }
 
 static void AddMacro(std::stringstream& ss, const char* name, const char* value)
@@ -1236,8 +1172,8 @@ bool GSDeviceVK::CreatePipelineLayouts()
 	if ((m_tfx_ubo_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
 	Vulkan::Util::SetObjectName(dev, m_tfx_ubo_ds_layout, "TFX UBO descriptor layout");
-	for (u32 i = 0; i < NUM_TFX_SAMPLERS; i++)
-		dslb.AddBinding(i, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	dslb.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	dslb.AddBinding(1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	if ((m_tfx_sampler_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
 	Vulkan::Util::SetObjectName(dev, m_tfx_sampler_ds_layout, "TFX sampler descriptor layout");
@@ -1803,7 +1739,7 @@ bool GSDeviceVK::CompileCASPipelines()
 	dslb.AddBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
 	if ((m_cas_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
-	Vulkan::Util::SetObjectName(dev, m_cas_pipeline_layout, "CAS descriptor layout");
+	Vulkan::Util::SetObjectName(dev, m_cas_ds_layout, "CAS descriptor layout");
 
 	plb.AddPushConstants(VK_SHADER_STAGE_COMPUTE_BIT, 0, NUM_CAS_CONSTANTS * sizeof(u32));
 	plb.AddDescriptorSet(m_cas_ds_layout);
@@ -1904,50 +1840,6 @@ bool GSDeviceVK::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, cons
 	return true;
 }
 
-bool GSDeviceVK::CheckStagingBufferSize(u32 required_size)
-{
-	if (m_readback_staging_buffer_size >= required_size)
-		return true;
-
-	DestroyStagingBuffer();
-
-	const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0u, required_size,
-		VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_SHARING_MODE_EXCLUSIVE, 0u, nullptr};
-
-	VmaAllocationCreateInfo aci = {};
-	aci.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
-	aci.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-	aci.preferredFlags = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
-
-	VmaAllocationInfo ai = {};
-	VkResult res = vmaCreateBuffer(
-		g_vulkan_context->GetAllocator(), &bci, &aci, &m_readback_staging_buffer, &m_readback_staging_allocation, &ai);
-	if (res != VK_SUCCESS)
-	{
-		LOG_VULKAN_ERROR(res, "vmaCreateBuffer() failed: ");
-		return false;
-	}
-
-	m_readback_staging_buffer_map = ai.pMappedData;
-	m_readback_staging_buffer_size = required_size;
-	return true;
-}
-
-void GSDeviceVK::DestroyStagingBuffer()
-{
-	// unmapped as part of the buffer destroy
-	m_readback_staging_buffer_map = nullptr;
-	m_readback_staging_buffer_size = 0;
-
-	if (m_readback_staging_buffer != VK_NULL_HANDLE)
-	{
-		vmaDestroyBuffer(g_vulkan_context->GetAllocator(), m_readback_staging_buffer, m_readback_staging_allocation);
-		m_readback_staging_buffer = VK_NULL_HANDLE;
-		m_readback_staging_allocation = VK_NULL_HANDLE;
-		m_readback_staging_buffer_size = 0;
-	}
-}
-
 void GSDeviceVK::DestroyResources()
 {
 	g_vulkan_context->ExecuteCommandBuffer(Vulkan::Context::WaitType::Sleep);
@@ -2009,8 +1901,6 @@ void GSDeviceVK::DestroyResources()
 	m_utility_depth_render_pass_discard = VK_NULL_HANDLE;
 	m_date_setup_render_pass = VK_NULL_HANDLE;
 	m_swap_chain_render_pass = VK_NULL_HANDLE;
-
-	DestroyStagingBuffer();
 
 	m_fragment_uniform_stream_buffer.Destroy(false);
 	m_vertex_uniform_stream_buffer.Destroy(false);
@@ -2308,11 +2198,8 @@ void GSDeviceVK::InitializeState()
 	if (m_linear_sampler)
 		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_point_sampler, "Linear sampler");
 
-	for (u32 i = 0; i < NUM_TFX_SAMPLERS; i++)
-	{
-		m_tfx_sampler_sel[i] = GSHWDrawConfig::SamplerSelector::Point().key;
-		m_tfx_samplers[i] = m_point_sampler;
-	}
+	m_tfx_sampler_sel = GSHWDrawConfig::SamplerSelector::Point().key;
+	m_tfx_sampler = m_point_sampler;
 
 	InvalidateCachedState();
 }
@@ -2381,6 +2268,22 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartRenderPass(bool wait_for_completi
 
 		// restart render pass
 		BeginRenderPass(render_pass, render_pass_area);
+	}
+}
+
+void GSDeviceVK::ExecuteCommandBufferForReadback()
+{
+	ExecuteCommandBuffer(true);
+	if (GSConfig.HWSpinGPUForReadbacks)
+	{
+		g_vulkan_context->NotifyOfReadback();
+		if (!g_vulkan_context->GetOptionalExtensions().vk_ext_calibrated_timestamps && !m_warned_slow_spin)
+		{
+			m_warned_slow_spin = true;
+			Host::AddKeyedOSDMessage("GSDeviceVK_NoCalibratedTimestamps",
+				"Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.",
+				Host::OSD_WARNING_DURATION);
+		}
 	}
 }
 
@@ -2463,13 +2366,13 @@ void GSDeviceVK::PSSetShaderResource(int i, GSTexture* sr, bool check_state)
 	m_dirty_flags |= (i < 2) ? DIRTY_FLAG_TFX_SAMPLERS_DS : DIRTY_FLAG_TFX_RT_TEXTURE_DS;
 }
 
-void GSDeviceVK::PSSetSampler(u32 index, GSHWDrawConfig::SamplerSelector sel)
+void GSDeviceVK::PSSetSampler(GSHWDrawConfig::SamplerSelector sel)
 {
-	if (m_tfx_sampler_sel[index] == sel.key)
+	if (m_tfx_sampler_sel == sel.key)
 		return;
 
-	m_tfx_sampler_sel[index] = sel.key;
-	m_tfx_samplers[index] = GetSampler(sel);
+	m_tfx_sampler_sel = sel.key;
+	m_tfx_sampler = GetSampler(sel);
 	m_dirty_flags |= DIRTY_FLAG_TFX_SAMPLERS_DS;
 }
 
@@ -2739,8 +2642,8 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			return ApplyTFXState(true);
 		}
 
-		dsub.AddCombinedImageSamplerDescriptorWrites(
-			ds, 0, m_tfx_textures.data(), m_tfx_samplers.data(), NUM_TFX_SAMPLERS);
+		dsub.AddCombinedImageSamplerDescriptorWrite(ds, 0, m_tfx_textures[0], m_tfx_sampler);
+		dsub.AddImageDescriptorWrite(ds, 1, m_tfx_textures[1]);
 		dsub.Update(dev);
 
 		m_tfx_descriptor_sets[1] = ds;
@@ -2764,10 +2667,10 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 		}
 
 		if (m_features.texture_barrier)
-			dsub.AddInputAttachmentDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_SAMPLERS]);
+			dsub.AddInputAttachmentDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_DRAW_TEXTURES]);
 		else
-			dsub.AddImageDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_SAMPLERS]);
-		dsub.AddImageDescriptorWrite(ds, 1, m_tfx_textures[NUM_TFX_SAMPLERS + 1]);
+			dsub.AddImageDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_DRAW_TEXTURES]);
+		dsub.AddImageDescriptorWrite(ds, 1, m_tfx_textures[NUM_TFX_DRAW_TEXTURES + 1]);
 		dsub.Update(dev);
 
 		m_tfx_descriptor_sets[2] = ds;
@@ -2834,7 +2737,7 @@ bool GSDeviceVK::ApplyUtilityState(bool already_execed)
 			}
 
 			ExecuteCommandBufferAndRestartRenderPass(false, "Ran out of utility descriptors");
-			return ApplyTFXState(true);
+			return ApplyUtilityState(true);
 		}
 
 		Vulkan::DescriptorSetUpdateBuilder dsub;
@@ -3028,7 +2931,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	if (config.tex)
 	{
 		PSSetShaderResource(0, config.tex, config.tex != config.rt);
-		PSSetSampler(0, config.sampler);
+		PSSetSampler(config.sampler);
 	}
 	if (config.pal)
 		PSSetShaderResource(1, config.pal, true);

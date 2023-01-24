@@ -166,7 +166,7 @@ bool InputBindingWidget::eventFilter(QObject* watched, QEvent* event)
 		// if we've moved more than a decent distance from the center of the widget, bind it.
 		// this is so we don't accidentally bind to the mouse if you bump it while reaching for your pad.
 		static constexpr const s32 THRESHOLD = 50;
-		const QPoint diff(static_cast<QMouseEvent*>(event)->globalPos() - m_input_listen_start_position);
+		const QPoint diff(static_cast<QMouseEvent*>(event)->globalPosition().toPoint() - m_input_listen_start_position);
 		bool has_one = false;
 
 		if (std::abs(diff.x()) >= THRESHOLD)

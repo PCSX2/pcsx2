@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -103,6 +103,7 @@ namespace EmuFolders
 	std::string GameSettings;
 	std::string Textures;
 	std::string InputProfiles;
+	std::string Videos;
 } // namespace EmuFolders
 
 void TraceLogFilters::LoadSave(SettingsWrapper& wrap)
@@ -359,12 +360,14 @@ const char* Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames[] = {
 	"16:9",
 	nullptr};
 
-const char* Pcsx2Config::GSOptions::VideoCaptureContainers[] = {
+const char* Pcsx2Config::GSOptions::CaptureContainers[] = {
 	"mp4",
 	"mkv",
 	"avi",
+	"wav",
+	"mp3",
 	nullptr};
-const char* Pcsx2Config::GSOptions::DEFAULT_VIDEO_CAPTURE_CONTAINER = "mp4";
+const char* Pcsx2Config::GSOptions::DEFAULT_CAPTURE_CONTAINER = "mp4";
 
 const char* Pcsx2Config::GSOptions::GetRendererName(GSRendererType type)
 {
@@ -438,6 +441,11 @@ Pcsx2Config::GSOptions::GSOptions()
 	LoadTextureReplacements = false;
 	LoadTextureReplacementsAsync = true;
 	PrecacheTextureReplacements = false;
+
+	EnableVideoCapture = true;
+	EnableVideoCaptureParameters = false;
+	EnableAudioCapture = true;
+	EnableAudioCaptureParameters = false;
 }
 
 bool Pcsx2Config::GSOptions::operator==(const GSOptions& right) const
@@ -505,6 +513,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(UserHacks_TCOffsetY) &&
 		OpEqu(UserHacks_CPUSpriteRenderBW) &&
 		OpEqu(UserHacks_CPUCLUTRender) &&
+		OpEqu(UserHacks_GPUTargetCLUTMode) &&
 		OpEqu(OverrideTextureBarriers) &&
 		OpEqu(OverrideGeometryShaders) &&
 
@@ -520,9 +529,15 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(ScreenshotFormat) &&
 		OpEqu(ScreenshotQuality) &&
 
-		OpEqu(VideoCaptureContainer) &&
+		OpEqu(CaptureContainer) &&
 		OpEqu(VideoCaptureCodec) &&
+		OpEqu(VideoCaptureParameters) &&
+		OpEqu(AudioCaptureCodec) &&
+		OpEqu(AudioCaptureParameters) &&
 		OpEqu(VideoCaptureBitrate) &&
+		OpEqu(VideoCaptureWidth) &&
+		OpEqu(VideoCaptureHeight) &&
+		OpEqu(AudioCaptureBitrate) &&
 
 		OpEqu(Adapter) &&
 		
@@ -644,6 +659,11 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	GSSettingBool(LoadTextureReplacements);
 	GSSettingBool(LoadTextureReplacementsAsync);
 	GSSettingBool(PrecacheTextureReplacements);
+	GSSettingBool(EnableVideoCapture);
+	GSSettingBool(EnableVideoCaptureParameters);
+	GSSettingBool(VideoCaptureAutoResolution);
+	GSSettingBool(EnableAudioCapture);
+	GSSettingBool(EnableAudioCaptureParameters);
 
 	GSSettingIntEnumEx(LinearPresent, "linear_present_mode");
 	GSSettingIntEnumEx(InterlaceMode, "deinterlace_mode");
@@ -681,6 +701,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	GSSettingIntEx(UserHacks_TCOffsetY, "UserHacks_TCOffsetY");
 	GSSettingIntEx(UserHacks_CPUSpriteRenderBW, "UserHacks_CPUSpriteRenderBW");
 	GSSettingIntEx(UserHacks_CPUCLUTRender, "UserHacks_CPUCLUTRender");
+	GSSettingIntEnumEx(UserHacks_GPUTargetCLUTMode, "UserHacks_GPUTargetCLUTMode");
 	GSSettingIntEnumEx(TriFilter, "TriFilter");
 	GSSettingIntEx(OverrideTextureBarriers, "OverrideTextureBarriers");
 	GSSettingIntEx(OverrideGeometryShaders, "OverrideGeometryShaders");
@@ -692,9 +713,15 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	GSSettingIntEx(SaveN, "saven");
 	GSSettingIntEx(SaveL, "savel");
 
-	GSSettingStringEx(VideoCaptureContainer, "VideoCaptureContainer");
+	GSSettingStringEx(CaptureContainer, "CaptureContainer");
 	GSSettingStringEx(VideoCaptureCodec, "VideoCaptureCodec");
+	GSSettingStringEx(VideoCaptureParameters, "VideoCaptureParameters");
+	GSSettingStringEx(AudioCaptureCodec, "AudioCaptureCodec");
+	GSSettingStringEx(AudioCaptureParameters, "AudioCaptureParameters");
 	GSSettingIntEx(VideoCaptureBitrate, "VideoCaptureBitrate");
+	GSSettingIntEx(VideoCaptureWidth, "VideoCaptureWidth");
+	GSSettingIntEx(VideoCaptureHeight, "VideoCaptureHeight");
+	GSSettingIntEx(AudioCaptureBitrate, "AudioCaptureBitrate");
 
 	GSSettingString(Adapter);
 	GSSettingString(HWDumpDirectory);
@@ -746,6 +773,7 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 	UserHacks_TCOffsetY = 0;
 	UserHacks_CPUSpriteRenderBW = 0;
 	UserHacks_CPUCLUTRender = 0;
+	UserHacks_GPUTargetCLUTMode = GSGPUTargetCLUTMode::Disabled;
 	SkipDrawStart = 0;
 	SkipDrawEnd = 0;
 }
@@ -1420,6 +1448,7 @@ void EmuFolders::SetDefaults(SettingsInterface& si)
 	si.SetStringValue("Folders", "Cache", "cache");
 	si.SetStringValue("Folders", "Textures", "textures");
 	si.SetStringValue("Folders", "InputProfiles", "inputprofiles");
+	si.SetStringValue("Folders", "Videos", "videos");
 }
 
 static std::string LoadPathFromSettings(SettingsInterface& si, const std::string& root, const char* name, const char* def)
@@ -1445,6 +1474,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
 	Cache = LoadPathFromSettings(si, DataRoot, "Cache", "cache");
 	Textures = LoadPathFromSettings(si, DataRoot, "Textures", "textures");
 	InputProfiles = LoadPathFromSettings(si, DataRoot, "InputProfiles", "inputprofiles");
+	Videos = LoadPathFromSettings(si, DataRoot, "Videos", "videos");
 
 	Console.WriteLn("BIOS Directory: %s", Bios.c_str());
 	Console.WriteLn("Snapshots Directory: %s", Snapshots.c_str());
@@ -1459,6 +1489,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
 	Console.WriteLn("Cache Directory: %s", Cache.c_str());
 	Console.WriteLn("Textures Directory: %s", Textures.c_str());
 	Console.WriteLn("Input Profile Directory: %s", InputProfiles.c_str());
+	Console.WriteLn("Video Dumping Directory: %s", Videos.c_str());
 }
 
 bool EmuFolders::EnsureFoldersExist()
@@ -1477,6 +1508,7 @@ bool EmuFolders::EnsureFoldersExist()
 	result = FileSystem::CreateDirectoryPath(Cache.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(Textures.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(InputProfiles.c_str(), false) && result;
+	result = FileSystem::CreateDirectoryPath(Videos.c_str(), false) && result;
 	return result;
 }
 

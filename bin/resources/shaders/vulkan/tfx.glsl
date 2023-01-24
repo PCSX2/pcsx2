@@ -390,7 +390,7 @@ layout(location = 0) out vec4 o_col0;
 #endif
 
 layout(set = 1, binding = 0) uniform sampler2D Texture;
-layout(set = 1, binding = 1) uniform sampler2D Palette;
+layout(set = 1, binding = 1) uniform texture2D Palette;
 
 #if PS_FEEDBACK_LOOP_IS_NEEDED
 	#ifndef DISABLE_TEXTURE_BARRIER
@@ -443,9 +443,14 @@ vec4 sample_c(vec2 uv)
 #endif
 }
 
-vec4 sample_p(float u)
+vec4 sample_p(uint idx)
 {
-	return texture(Palette, vec2(u, 0.0f));
+	return texelFetch(Palette, ivec2(int(idx), 0), 0);
+}
+
+vec4 sample_p_norm(float u)
+{
+	return sample_p(uint(u * 255.5f));
 }
 
 vec4 clamp_wrap_uv(vec4 uv)
@@ -519,7 +524,7 @@ mat4 sample_4c(vec4 uv)
 	return c;
 }
 
-vec4 sample_4_index(vec4 uv)
+uvec4 sample_4_index(vec4 uv)
 {
 	vec4 c;
 
@@ -529,22 +534,21 @@ vec4 sample_4_index(vec4 uv)
 	c.w = sample_c(uv.zw).a;
 
 	// Denormalize value
-	uvec4 i = uvec4(c * 255.0f + 0.5f);
+	uvec4 i = uvec4(c * 255.5f);
 
 	#if PS_PAL_FMT == 1
 		// 4HL
-		c = vec4(i & 0xFu) / 255.0f;
+		return i & 0xFu;
 	#elif PS_PAL_FMT == 2
 		// 4HH
-		c = vec4(i >> 4u) / 255.0f;
+		return i >> 4u;
+	#else
+		// 8
+		return i;
 	#endif
-
-	// Most of texture will hit this code so keep normalized float value
-	// 8 bits
-	return c * 255./256 + 0.5/256;
 }
 
-mat4 sample_4p(vec4 u)
+mat4 sample_4p(uvec4 u)
 {
 	mat4 c;
 
@@ -709,7 +713,7 @@ vec4 fetch_red(ivec2 xy)
 		rt = fetch_raw_color(xy);
 	#endif
 
-	return sample_p(rt.r) * 255.0f;
+	return sample_p_norm(rt.r) * 255.0f;
 }
 
 vec4 fetch_green(ivec2 xy)
@@ -723,7 +727,7 @@ vec4 fetch_green(ivec2 xy)
 		rt = fetch_raw_color(xy);
 	#endif
 
-	return sample_p(rt.g) * 255.0f;
+	return sample_p_norm(rt.g) * 255.0f;
 }
 
 vec4 fetch_blue(ivec2 xy)
@@ -737,19 +741,19 @@ vec4 fetch_blue(ivec2 xy)
 		rt = fetch_raw_color(xy);
 	#endif
 
-	return sample_p(rt.b) * 255.0f;
+	return sample_p_norm(rt.b) * 255.0f;
 }
 
 vec4 fetch_alpha(ivec2 xy)
 {
 	vec4 rt = fetch_raw_color(xy);
-	return sample_p(rt.a) * 255.0f;
+	return sample_p_norm(rt.a) * 255.0f;
 }
 
 vec4 fetch_rgb(ivec2 xy)
 {
 	vec4 rt = fetch_raw_color(xy);
-	vec4 c = vec4(sample_p(rt.r).r, sample_p(rt.g).g, sample_p(rt.b).b, 1.0);
+	vec4 c = vec4(sample_p_norm(rt.r).r, sample_p_norm(rt.g).g, sample_p_norm(rt.b).b, 1.0);
 	return c * 255.0f;
 }
 

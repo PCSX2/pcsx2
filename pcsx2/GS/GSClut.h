@@ -21,6 +21,7 @@
 #include "GSAlignedClass.h"
 
 class GSLocalMemory;
+class GSTexture;
 
 class alignas(32) GSClut final : public GSAlignedClass<32>
 {
@@ -54,6 +55,10 @@ class alignas(32) GSClut final : public GSAlignedClass<32>
 		bool IsDirty(const GIFRegTEX0& TEX0);
 		bool IsDirty(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA);
 	} m_read;
+
+	GSTexture* m_gpu_clut4 = nullptr;
+	GSTexture* m_gpu_clut8 = nullptr;
+	GSTexture* m_current_gpu_clut = nullptr;
 
 	typedef void (GSClut::*writeCLUT)(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 
@@ -100,6 +105,8 @@ private:
 public:
 	GSClut(GSLocalMemory* mem);
 	~GSClut();
+
+	__fi GSTexture* GetGPUTexture() const { return m_current_gpu_clut; }
 
 	bool InvalidateRange(u32 start_block, u32 end_block, bool is_draw = false);
 	u8 IsInvalid();

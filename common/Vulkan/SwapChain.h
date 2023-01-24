@@ -70,10 +70,10 @@ namespace Vulkan
 		__fi VkFramebuffer GetCurrentFramebuffer() const { return m_images[m_current_image].framebuffer; }
 		__fi VkRenderPass GetLoadRenderPass() const { return m_load_render_pass; }
 		__fi VkRenderPass GetClearRenderPass() const { return m_clear_render_pass; }
-		__fi VkSemaphore GetImageAvailableSemaphore() const { return m_images[m_current_image].available_semaphore; }
-		__fi const VkSemaphore* GetImageAvailableSemaphorePtr() const { return &m_images[m_current_image].available_semaphore; }
-		__fi VkSemaphore GetRenderingFinishedSemaphore() const { return m_images[m_current_image].rendering_finished_semaphore; }
-		__fi const VkSemaphore* GetRenderingFinishedSemaphorePtr() const { return &m_images[m_current_image].rendering_finished_semaphore; }
+		__fi VkSemaphore GetImageAvailableSemaphore() const { return m_semaphores[m_current_semaphore].available_semaphore; }
+		__fi const VkSemaphore* GetImageAvailableSemaphorePtr() const { return &m_semaphores[m_current_semaphore].available_semaphore; }
+		__fi VkSemaphore GetRenderingFinishedSemaphore() const { return m_semaphores[m_current_semaphore].rendering_finished_semaphore; }
+		__fi const VkSemaphore* GetRenderingFinishedSemaphorePtr() const { return &m_semaphores[m_current_semaphore].rendering_finished_semaphore; }
 		VkResult AcquireNextImage();
 		void ReleaseCurrentImage();
 
@@ -107,6 +107,10 @@ namespace Vulkan
 			VkImage image;
 			Texture texture;
 			VkFramebuffer framebuffer;
+		};
+
+		struct ImageSemaphores
+		{
 			VkSemaphore available_semaphore;
 			VkSemaphore rendering_finished_semaphore;
 		};
@@ -123,7 +127,9 @@ namespace Vulkan
 
 		VkSwapchainKHR m_swap_chain = VK_NULL_HANDLE;
 		std::vector<SwapChainImage> m_images;
+		std::vector<ImageSemaphores> m_semaphores;
 		u32 m_current_image = 0;
+		u32 m_current_semaphore = 0;
 		std::optional<VkResult> m_image_acquire_result;
 	};
 } // namespace Vulkan

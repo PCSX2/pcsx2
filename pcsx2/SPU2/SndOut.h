@@ -20,14 +20,7 @@
 // Number of stereo samples per SndOut block.
 // All drivers must work in units of this size when communicating with
 // SndOut.
-static const int SndOutPacketSize = 64;
-
-// Overall master volume shift; this is meant to be a precision value and does not affect
-// actual output volumes.  It converts SPU2 16 bit volumes to 32-bit volumes, and likewise
-// downsamples 32 bit samples to 16 bit sound driver output (this way timestretching and
-// DSP effects get better precision results)
-static const int SndOutVolumeShift = 12;
-static const int SndOutVolumeShift32 = 16 - SndOutVolumeShift; // shift up, not down
+static constexpr int SndOutPacketSize = 64;
 
 // Samplerate of the SPU2. For accurate playback we need to match this
 // exactly.  Trying to scale samplerates and maintain SPU2's Ts timing accuracy
@@ -50,6 +43,8 @@ struct SndOutDeviceInfo
 };
 std::vector<SndOutDeviceInfo> GetOutputDeviceList(const char* omodid, const char* driver);
 
+struct StereoOut16;
+
 struct Stereo51Out16DplII;
 struct Stereo51Out32DplII;
 
@@ -57,70 +52,92 @@ struct Stereo51Out16Dpl; // similar to DplII but without rear balancing
 struct Stereo51Out32Dpl;
 
 extern void ResetDplIIDecoder();
-extern void ProcessDplIISample16(const StereoOut32& src, Stereo51Out16DplII* s);
-extern void ProcessDplIISample32(const StereoOut32& src, Stereo51Out32DplII* s);
-extern void ProcessDplSample16(const StereoOut32& src, Stereo51Out16Dpl* s);
-extern void ProcessDplSample32(const StereoOut32& src, Stereo51Out32Dpl* s);
+extern void ProcessDplIISample16(const StereoOut16& src, Stereo51Out16DplII* s);
+extern void ProcessDplIISample32(const StereoOut16& src, Stereo51Out32DplII* s);
+extern void ProcessDplSample16(const StereoOut16& src, Stereo51Out16Dpl* s);
+extern void ProcessDplSample32(const StereoOut16& src, Stereo51Out32Dpl* s);
+
+struct StereoOut32
+{
+	static const StereoOut32 Empty;
+
+	s32 Left;
+	s32 Right;
+
+	StereoOut32()
+		: Left(0)
+		, Right(0)
+	{
+	}
+
+	StereoOut32(s32 left, s32 right)
+		: Left(left)
+		, Right(right)
+	{
+	}
+
+	StereoOut32 operator*(const int& factor) const
+	{
+		return StereoOut32(
+			Left * factor,
+			Right * factor);
+	}
+
+	StereoOut32& operator*=(const int& factor)
+	{
+		Left *= factor;
+		Right *= factor;
+		return *this;
+	}
+
+	StereoOut32 operator+(const StereoOut32& right) const
+	{
+		return StereoOut32(
+			Left + right.Left,
+			Right + right.Right);
+	}
+
+	StereoOut32 operator/(int src) const
+	{
+		return StereoOut32(Left / src, Right / src);
+	}
+};
 
 struct StereoOut16
 {
 	s16 Left;
 	s16 Right;
 
-	StereoOut16()
+	__fi StereoOut16()
 		: Left(0)
 		, Right(0)
 	{
 	}
 
-	StereoOut16(const StereoOut32& src)
+	__fi StereoOut16(const StereoOut32& src)
 		: Left((s16)src.Left)
 		, Right((s16)src.Right)
 	{
 	}
 
-	StereoOut16(s16 left, s16 right)
+	__fi StereoOut16(s16 left, s16 right)
 		: Left(left)
 		, Right(right)
 	{
 	}
 
-	StereoOut32 UpSample() const;
-
-	void ResampleFrom(const StereoOut32& src)
+	__fi StereoOut16 ApplyVolume(float volume)
 	{
-		// Use StereoOut32's built in conversion
-		*this = src.DownSample();
-	}
-};
-
-struct StereoOutFloat
-{
-	float Left;
-	float Right;
-
-	StereoOutFloat()
-		: Left(0)
-		, Right(0)
-	{
+		return StereoOut16(
+			static_cast<s16>(std::clamp(static_cast<float>(Left) * volume, -32768.0f, 32767.0f)),
+			static_cast<s16>(std::clamp(static_cast<float>(Right) * volume, -32768.0f, 32767.0f))
+		);
 	}
 
-	explicit StereoOutFloat(const StereoOut32& src)
-		: Left(src.Left / 2147483647.0f)
-		, Right(src.Right / 2147483647.0f)
+	__fi void SetFrom(const StereoOut16& src)
 	{
-	}
-
-	explicit StereoOutFloat(s32 left, s32 right)
-		: Left(left / 2147483647.0f)
-		, Right(right / 2147483647.0f)
-	{
-	}
-
-	StereoOutFloat(float left, float right)
-		: Left(left)
-		, Right(right)
-	{
+		Left = src.Left;
+		Right = src.Right;
 	}
 };
 
@@ -130,11 +147,11 @@ struct Stereo21Out16
 	s16 Right;
 	s16 LFE;
 
-	void ResampleFrom(const StereoOut32& src)
+	__fi void SetFrom(const StereoOut16& src)
 	{
-		Left = src.Left >> SndOutVolumeShift;
-		Right = src.Right >> SndOutVolumeShift;
-		LFE = (src.Left + src.Right) >> (SndOutVolumeShift + 1);
+		Left = src.Left;
+		Right = src.Right;
+		LFE = (src.Left + src.Right) >> 1;
 	}
 };
 
@@ -145,28 +162,12 @@ struct Stereo40Out16
 	s16 LeftBack;
 	s16 RightBack;
 
-	void ResampleFrom(const StereoOut32& src)
+	__fi void SetFrom(const StereoOut16& src)
 	{
-		Left = src.Left >> SndOutVolumeShift;
-		Right = src.Right >> SndOutVolumeShift;
-		LeftBack = src.Left >> SndOutVolumeShift;
-		RightBack = src.Right >> SndOutVolumeShift;
-	}
-};
-
-struct Stereo40Out32
-{
-	s32 Left;
-	s32 Right;
-	s32 LeftBack;
-	s32 RightBack;
-
-	void ResampleFrom(const StereoOut32& src)
-	{
-		Left = src.Left << SndOutVolumeShift32;
-		Right = src.Right << SndOutVolumeShift32;
-		LeftBack = src.Left << SndOutVolumeShift32;
-		RightBack = src.Right << SndOutVolumeShift32;
+		Left = src.Left;
+		Right = src.Right;
+		LeftBack = src.Left;
+		RightBack = src.Right;
 	}
 };
 
@@ -178,13 +179,13 @@ struct Stereo41Out16
 	s16 LeftBack;
 	s16 RightBack;
 
-	void ResampleFrom(const StereoOut32& src)
+	__fi void SetFrom(const StereoOut16& src)
 	{
-		Left = src.Left >> SndOutVolumeShift;
-		Right = src.Right >> SndOutVolumeShift;
-		LFE = (src.Left + src.Right) >> (SndOutVolumeShift + 1);
-		LeftBack = src.Left >> SndOutVolumeShift;
-		RightBack = src.Right >> SndOutVolumeShift;
+		Left = src.Left;
+		Right = src.Right;
+		LFE = (src.Left + src.Right) >> 1;
+		LeftBack = src.Left;
+		RightBack = src.Right;
 	}
 };
 
@@ -202,14 +203,14 @@ struct Stereo51Out16
 	// systems do to their own low pass / crossover.  Manual lowpass is wasted effort
 	// and can't match solid state results anyway.
 
-	void ResampleFrom(const StereoOut32& src)
+	__fi void SetFrom(const StereoOut16& src)
 	{
-		Left = src.Left >> SndOutVolumeShift;
-		Right = src.Right >> SndOutVolumeShift;
-		Center = (src.Left + src.Right) >> (SndOutVolumeShift + 1);
+		Left = src.Left;
+		Right = src.Right;
+		Center = (src.Left + src.Right) >> 1;
 		LFE = Center;
-		LeftBack = src.Left >> SndOutVolumeShift;
-		RightBack = src.Right >> SndOutVolumeShift;
+		LeftBack = src.Left >> 1;
+		RightBack = src.Right >> 1;
 	}
 };
 
@@ -222,7 +223,7 @@ struct Stereo51Out16DplII
 	s16 LeftBack;
 	s16 RightBack;
 
-	void ResampleFrom(const StereoOut32& src)
+	__fi void SetFrom(const StereoOut16& src)
 	{
 		ProcessDplIISample16(src, this);
 	}
@@ -237,7 +238,7 @@ struct Stereo51Out32DplII
 	s32 LeftBack;
 	s32 RightBack;
 
-	void ResampleFrom(const StereoOut32& src)
+	__fi void SetFrom(const StereoOut32& src)
 	{
 		ProcessDplIISample32(src, this);
 	}
@@ -252,7 +253,7 @@ struct Stereo51Out16Dpl
 	s16 LeftBack;
 	s16 RightBack;
 
-	void ResampleFrom(const StereoOut32& src)
+	__fi void SetFrom(const StereoOut16& src)
 	{
 		ProcessDplSample16(src, this);
 	}
@@ -267,7 +268,7 @@ struct Stereo51Out32Dpl
 	s32 LeftBack;
 	s32 RightBack;
 
-	void ResampleFrom(const StereoOut32& src)
+	__fi void SetFrom(const StereoOut32& src)
 	{
 		ProcessDplSample32(src, this);
 	}
@@ -284,178 +285,36 @@ struct Stereo71Out16
 	s16 LeftSide;
 	s16 RightSide;
 
-	void ResampleFrom(const StereoOut32& src)
+	__fi void SetFrom(const StereoOut16& src)
 	{
-		Left = src.Left >> SndOutVolumeShift;
-		Right = src.Right >> SndOutVolumeShift;
-		Center = (src.Left + src.Right) >> (SndOutVolumeShift + 1);
+		Left = src.Left;
+		Right = src.Right;
+		Center = (src.Left + src.Right) >> 1;
 		LFE = Center;
-		LeftBack = src.Left >> SndOutVolumeShift;
-		RightBack = src.Right >> SndOutVolumeShift;
+		LeftBack = src.Left;
+		RightBack = src.Right;
 
-		LeftSide = src.Left >> (SndOutVolumeShift + 1);
-		RightSide = src.Right >> (SndOutVolumeShift + 1);
+		LeftSide = src.Left >> 1;
+		RightSide = src.Right >> 1;
 	}
 };
 
-struct Stereo71Out32
+namespace SndBuffer
 {
-	s32 Left;
-	s32 Right;
-	s32 Center;
-	s32 LFE;
-	s32 LeftBack;
-	s32 RightBack;
-	s32 LeftSide;
-	s32 RightSide;
-
-	void ResampleFrom(const StereoOut32& src)
-	{
-		Left = src.Left << SndOutVolumeShift32;
-		Right = src.Right << SndOutVolumeShift32;
-		Center = (src.Left + src.Right) << (SndOutVolumeShift32 - 1);
-		LFE = Center;
-		LeftBack = src.Left << SndOutVolumeShift32;
-		RightBack = src.Right << SndOutVolumeShift32;
-
-		LeftSide = src.Left << (SndOutVolumeShift32 - 1);
-		RightSide = src.Right << (SndOutVolumeShift32 - 1);
-	}
-};
-
-struct Stereo20Out32
-{
-	s32 Left;
-	s32 Right;
-
-	void ResampleFrom(const StereoOut32& src)
-	{
-		Left = src.Left << SndOutVolumeShift32;
-		Right = src.Right << SndOutVolumeShift32;
-	}
-};
-
-struct Stereo21Out32
-{
-	s32 Left;
-	s32 Right;
-	s32 LFE;
-
-	void ResampleFrom(const StereoOut32& src)
-	{
-		Left = src.Left << SndOutVolumeShift32;
-		Right = src.Right << SndOutVolumeShift32;
-		LFE = (src.Left + src.Right) << (SndOutVolumeShift32 - 1);
-	}
-};
-
-struct Stereo41Out32
-{
-	s32 Left;
-	s32 Right;
-	s32 LFE;
-	s32 LeftBack;
-	s32 RightBack;
-
-	void ResampleFrom(const StereoOut32& src)
-	{
-		Left = src.Left << SndOutVolumeShift32;
-		Right = src.Right << SndOutVolumeShift32;
-		LFE = (src.Left + src.Right) << (SndOutVolumeShift32 - 1);
-
-		LeftBack = src.Left << SndOutVolumeShift32;
-		RightBack = src.Right << SndOutVolumeShift32;
-	}
-};
-
-struct Stereo51Out32
-{
-	s32 Left;
-	s32 Right;
-	s32 Center;
-	s32 LFE;
-	s32 LeftBack;
-	s32 RightBack;
-
-	void ResampleFrom(const StereoOut32& src)
-	{
-		Left = src.Left << SndOutVolumeShift32;
-		Right = src.Right << SndOutVolumeShift32;
-		Center = (src.Left + src.Right) << (SndOutVolumeShift32 - 1);
-		LFE = Center;
-		LeftBack = src.Left << SndOutVolumeShift32;
-		RightBack = src.Right << SndOutVolumeShift32;
-	}
-};
-
-// Developer Note: This is a static class only (all static members).
-class SndBuffer
-{
-private:
-	static bool m_underrun_freeze;
-	static s32 m_predictData;
-	static float lastPct;
-
-	static StereoOut32* sndTempBuffer;
-	static StereoOut16* sndTempBuffer16;
-
-	static int sndTempProgress;
-	static int m_dsp_progress;
-
-	static int m_timestretch_progress;
-	static int m_timestretch_writepos;
-
-	static StereoOut32* m_buffer;
-	static s32 m_size;
-
-	alignas(4) static volatile s32 m_rpos;
-	alignas(4) static volatile s32 m_wpos;
-
-	static float lastEmergencyAdj;
-	static float cTempo;
-	static float eTempo;
-	static int ssFreeze;
-
-	static bool CheckUnderrunStatus(int& nSamples, int& quietSampleCount);
-
-	static void soundtouchInit();
-	static void soundtouchClearContents();
-	static void soundtouchCleanup();
-	static void timeStretchWrite();
-	static void timeStretchUnderrun();
-	static s32 timeStretchOverrun();
-
-	static void PredictDataWrite(int samples);
-	static float GetStatusPct();
-	static void UpdateTempoChangeSoundTouch();
-	static void UpdateTempoChangeSoundTouch2();
-
-	static void _WriteSamples(StereoOut32* bData, int nSamples);
-
-	static void _WriteSamples_Safe(StereoOut32* bData, int nSamples);
-	static void _ReadSamples_Safe(StereoOut32* bData, int nSamples);
-
-	static void _WriteSamples_Internal(StereoOut32* bData, int nSamples);
-	static void _DropSamples_Internal(int nSamples);
-	static void _ReadSamples_Internal(StereoOut32* bData, int nSamples);
-
-	static int _GetApproximateDataInBuffer();
-
-public:
-	static void UpdateTempoChangeAsyncMixing();
-	static bool Init(const char* modname);
-	static void Cleanup();
-	static void Write(const StereoOut32& Sample);
-	static void ClearContents();
-	static void ResetBuffers();
+	void UpdateTempoChangeAsyncMixing();
+	bool Init(const char* modname);
+	void Cleanup();
+	void Write(StereoOut16 Sample);
+	void ClearContents();
+	void ResetBuffers();
 
 	// Note: When using with 32 bit output buffers, the user of this function is responsible
 	// for shifting the values to where they need to be manually.  The fixed point depth of
 	// the sample output is determined by the SndOutVolumeShift, which is the number of bits
 	// to shift right to get a 16 bit result.
 	template <typename T>
-	static void ReadSamples(T* bData, int nSamples = SndOutPacketSize);
-};
+	void ReadSamples(T* bData, int nSamples = SndOutPacketSize);
+}
 
 class SndOutModule
 {
@@ -495,10 +354,3 @@ extern SndOutModule* XAudio2Out;
 extern SndOutModule* CubebOut;
 #endif
 
-// =====================================================================================================
-
-extern bool WavRecordEnabled;
-
-extern bool RecordStart(const std::string* filename);
-extern void RecordStop();
-extern void RecordWrite(const StereoOut16& sample);

@@ -46,6 +46,8 @@ const char* shaderName(ShaderConvert value)
 		case ShaderConvert::RGB5A1_TO_FLOAT16_BILN: return "ps_convert_rgb5a1_float16_biln";
 		case ShaderConvert::DEPTH_COPY:             return "ps_depth_copy";
 		case ShaderConvert::RGBA_TO_8I:             return "ps_convert_rgba_8i";
+		case ShaderConvert::CLUT_4:                 return "ps_convert_clut_4";
+		case ShaderConvert::CLUT_8:                 return "ps_convert_clut_8";
 		case ShaderConvert::YUV:                    return "ps_yuv";
 			// clang-format on
 		default:
@@ -124,6 +126,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 		{
 			if (!prefer_new_texture || t->last_frame_used != m_frame)
 			{
+				m_pool_memory_usage -= t->GetMemUsage();
 				m_pool.erase(i);
 				break;
 			}
@@ -141,6 +144,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 		if (m_pool.size() >= MAX_POOLED_TEXTURES && fallback != m_pool.end())
 		{
 			t = *fallback;
+			m_pool_memory_usage -= t->GetMemUsage();
 			m_pool.erase(fallback);
 		}
 		else
@@ -178,17 +182,9 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 	return t;
 }
 
-void GSDevice::PrintMemoryUsage()
+std::unique_ptr<GSDownloadTexture> GSDevice::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
 {
-#ifdef ENABLE_OGL_DEBUG
-	u32 pool = 0;
-	for (auto t : m_pool)
-	{
-		if (t)
-			pool += t->GetMemUsage();
-	}
-	GL_PERF("MEM: Surface Pool %dMB", pool >> 20u);
-#endif
+	return {};
 }
 
 void GSDevice::EndScene()
@@ -201,20 +197,22 @@ void GSDevice::EndScene()
 
 void GSDevice::Recycle(GSTexture* t)
 {
-	if (t)
+	if (!t)
+		return;
+
+	t->last_frame_used = m_frame;
+
+	m_pool.push_front(t);
+	m_pool_memory_usage += t->GetMemUsage();
+
+	//printf("%d\n",m_pool.size());
+
+	while (m_pool.size() > MAX_POOLED_TEXTURES)
 	{
-		t->last_frame_used = m_frame;
+		m_pool_memory_usage -= m_pool.back()->GetMemUsage();
+		delete m_pool.back();
 
-		m_pool.push_front(t);
-
-		//printf("%d\n",m_pool.size());
-
-		while (m_pool.size() > MAX_POOLED_TEXTURES)
-		{
-			delete m_pool.back();
-
-			m_pool.pop_back();
-		}
+		m_pool.pop_back();
 	}
 }
 
@@ -224,6 +222,7 @@ void GSDevice::AgePool()
 
 	while (m_pool.size() > 40 && m_frame - m_pool.back()->last_frame_used > 10)
 	{
+		m_pool_memory_usage -= m_pool.back()->GetMemUsage();
 		delete m_pool.back();
 
 		m_pool.pop_back();
@@ -235,6 +234,7 @@ void GSDevice::PurgePool()
 	for (auto t : m_pool)
 		delete t;
 	m_pool.clear();
+	m_pool_memory_usage = 0;
 }
 
 void GSDevice::ClearSamplerCache()
@@ -257,34 +257,12 @@ GSTexture* GSDevice::CreateTexture(int w, int h, int mipmap_levels, GSTexture::F
 	return FetchSurface(GSTexture::Type::Texture, w, h, levels, format, false, prefer_reuse);
 }
 
-GSTexture* GSDevice::CreateOffscreen(int w, int h, GSTexture::Format format)
-{
-	return FetchSurface(GSTexture::Type::Offscreen, w, h, 1, format, false, true);
-}
-
 GSTexture::Format GSDevice::GetDefaultTextureFormat(GSTexture::Type type)
 {
 	if (type == GSTexture::Type::DepthStencil)
 		return GSTexture::Format::DepthStencil;
 	else
 		return GSTexture::Format::Color;
-}
-
-bool GSDevice::DownloadTextureConvert(GSTexture* src, const GSVector4& sRect, const GSVector2i& dSize, GSTexture::Format format, ShaderConvert ps_shader, GSTexture::GSMap& out_map, const bool linear)
-{
-	ASSERT(src);
-	ASSERT(format == GSTexture::Format::Color || format == GSTexture::Format::UInt16 || format == GSTexture::Format::UInt32);
-
-	GSTexture* dst = CreateRenderTarget(dSize.x, dSize.y, format);
-	if (!dst)
-		return false;
-
-	GSVector4i dRect(0, 0, dSize.x, dSize.y);
-	StretchRect(src, sRect, dst, GSVector4(dRect), ps_shader, linear);
-
-	bool ret = DownloadTexture(dst, dRect, out_map);
-	Recycle(dst);
-	return ret;
 }
 
 void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)

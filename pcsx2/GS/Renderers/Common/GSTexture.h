@@ -32,7 +32,6 @@ public:
 		RenderTarget = 1,
 		DepthStencil,
 		Texture,
-		Offscreen,
 		RWTexture,
 	};
 
@@ -96,6 +95,11 @@ public:
 	Format GetFormat() const { return m_format; }
 	bool IsCompressedFormat() const { return IsCompressedFormat(m_format); }
 
+	static u32 GetCompressedBytesPerBlock(Format format);
+	static u32 GetCompressedBlockSize(Format format);
+	static u32 CalcUploadRowLengthFromPitch(Format format, u32 pitch);
+	static u32 CalcUploadSize(Format format, u32 height, u32 pitch);
+
 	u32 GetCompressedBytesPerBlock() const;
 	u32 GetCompressedBlockSize() const;
 	u32 CalcUploadRowLengthFromPitch(u32 pitch) const;
@@ -131,4 +135,66 @@ public:
 
 	// Helper routines for formats/types
 	static bool IsCompressedFormat(Format format) { return (format >= Format::BC1 && format <= Format::BC7); }
+};
+
+class GSDownloadTexture
+{
+public:
+	GSDownloadTexture(u32 width, u32 height, GSTexture::Format format);
+	virtual ~GSDownloadTexture();
+
+	/// Basically, this has dimensions only because of DX11.
+	__fi u32 GetWidth() const { return m_width; }
+	__fi u32 GetHeight() const { return m_height; }
+	__fi GSTexture::Format GetFormat() const { return m_format; }
+	__fi bool NeedsFlush() const { return m_needs_flush; }
+	__fi bool IsMapped() const { return (m_map_pointer != nullptr); }
+	__fi const u8* GetMapPointer() const { return m_map_pointer; }
+	__fi u32 GetMapPitch() const { return m_current_pitch; }
+
+	/// Calculates the pitch of a transfer.
+	u32 GetTransferPitch(u32 width, u32 pitch_align) const;
+
+	/// Calculates the size of the data you should transfer.
+	void GetTransferSize(const GSVector4i& rc, u32* copy_offset, u32* copy_size, u32* copy_rows) const;
+
+	/// Queues a copy from the specified texture to this buffer.
+	/// Does not complete immediately, you should flush before accessing the buffer.
+	/// use_transfer_pitch should be true if there's only a single texture being copied to this buffer before
+	/// it will be used. This allows the image to be packed tighter together, and buffer reuse.
+	virtual void CopyFromTexture(
+		const GSVector4i& drc, GSTexture* stex, const GSVector4i& src, u32 src_level, bool use_transfer_pitch = true) = 0;
+
+	/// Maps the texture into the CPU address space, enabling it to read the contents.
+	/// The Map call may not perform synchronization. If the contents of the staging texture
+	/// has been updated by a CopyFromTexture() call, you must call Flush() first.
+	/// If persistent mapping is supported in the backend, this may be a no-op.
+	virtual bool Map(const GSVector4i& read_rc) = 0;
+
+	/// Unmaps the CPU-readable copy of the texture. May be a no-op on backends which
+	/// support persistent-mapped buffers.
+	virtual void Unmap() = 0;
+
+	/// Flushes pending writes from the CPU to the GPU, and reads from the GPU to the CPU.
+	/// This may cause a command buffer submit depending on if one has occurred between the last
+	/// call to CopyFromTexture() and the Flush() call.
+	virtual void Flush() = 0;
+
+	/// Reads the specified rectangle from the staging texture to out_ptr, with the specified stride
+	/// (length in bytes of each row). CopyFromTexture() must be called first. The contents of any
+	/// texels outside of the rectangle used for CopyFromTexture is undefined.
+	bool ReadTexels(const GSVector4i& rc, void* out_ptr, u32 out_stride);
+
+	/// Returns what the size of the specified texture would be, in bytes.
+	static u32 GetBufferSize(u32 width, u32 height, GSTexture::Format format, u32 pitch_align = 1);
+
+protected:
+	u32 m_width;
+	u32 m_height;
+	GSTexture::Format m_format;
+
+	const u8* m_map_pointer = nullptr;
+	u32 m_current_pitch = 0;
+
+	bool m_needs_flush = false;
 };

@@ -11,6 +11,8 @@ target_sources(pcsx2-qt PRIVATE
 	AutoUpdaterDialog.cpp
 	AutoUpdaterDialog.h
 	AutoUpdaterDialog.ui
+	ColorPickerButton.cpp
+	ColorPickerButton.h
 	CoverDownloadDialog.cpp
 	CoverDownloadDialog.h
 	CoverDownloadDialog.ui
@@ -50,6 +52,7 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/ControllerBindingWidget_DualShock2.ui
 	Settings/ControllerBindingWidgets.cpp
 	Settings/ControllerBindingWidgets.h
+	Settings/ControllerLEDSettingsDialog.ui
 	Settings/ControllerGlobalSettingsWidget.cpp
 	Settings/ControllerGlobalSettingsWidget.h
 	Settings/ControllerGlobalSettingsWidget.ui
@@ -134,6 +137,12 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/BreakpointDialog.cpp
 	Debugger/BreakpointDialog.h
 	Debugger/BreakpointDialog.ui
+	Debugger/Models/BreakpointModel.cpp
+	Debugger/Models/BreakpointModel.h
+	Debugger/Models/ThreadModel.cpp
+	Debugger/Models/ThreadModel.h
+	Debugger/Models/StackModel.cpp
+	Debugger/Models/StackModel.h
 	Tools/InputRecording/NewInputRecordingDlg.cpp
 	Tools/InputRecording/NewInputRecordingDlg.h
 	Tools/InputRecording/NewInputRecordingDlg.ui

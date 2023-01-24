@@ -16,12 +16,10 @@
 #include "PrecompiledHeader.h"
 #include "Common.h"
 
-#include "IPU.h"
-#include "IPUdma.h"
-#include "yuv2rgb.h"
-#include "mpeg2lib/Mpeg.h"
-
-#include "GS/MultiISA.h"
+#include "IPU/IPU.h"
+#include "IPU/IPUdma.h"
+#include "IPU/yuv2rgb.h"
+#include "IPU/IPU_MultiISA.h"
 
 MULTI_ISA_UNSHARED_START
 

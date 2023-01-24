@@ -23,7 +23,8 @@ cbuffer cb0 : register(b0)
 	float4 BGColor;
 	int EMODA;
 	int EMODC;
-	int cb0_pad[2];
+	int DOFFSET;
+	int cb0_pad;
 };
 
 static const float3x3 rgb2yuv =
@@ -288,6 +289,41 @@ PS_OUTPUT ps_convert_rgba_8i(PS_INPUT input)
 	float2 sel0 = (pos.y & 2u) == 0u ? pixel.rb : pixel.ga;
 	float  sel1 = (pos.x & 8u) == 0u ? sel0.x : sel0.y;
 	output.c = (float4)(sel1); // Divide by something here?
+	return output;
+}
+
+PS_OUTPUT ps_convert_clut_4(PS_INPUT input)
+{
+	// Borrowing the YUV constant buffer.
+	float2 scale = BGColor.xy;
+	uint2 offset = uint2(uint(EMODA), uint(EMODC)) + uint(DOFFSET);
+
+	// CLUT4 is easy, just two rows of 8x8.
+	uint index = uint(input.p.x);
+	uint2 pos = uint2(index % 8u, index / 8u);
+
+	int2 final = int2(floor(float2(offset + pos) * scale));
+	PS_OUTPUT output;
+	output.c = Texture.Load(int3(final, 0), 0);
+	return output;
+}
+
+PS_OUTPUT ps_convert_clut_8(PS_INPUT input)
+{
+	float2 scale = BGColor.xy;
+	uint2 offset = uint2(uint(EMODA), uint(EMODC));
+	uint index = min(uint(input.p.x) + uint(DOFFSET), 255u);
+
+	// CLUT is arranged into 8 groups of 16x2, with the top-right and bottom-left quadrants swapped.
+	// This can probably be done better..
+	uint subgroup = (index / 8u) % 4u;
+	uint2 pos;
+	pos.x = (index % 8u) + ((subgroup >= 2u) ? 8u : 0u);
+	pos.y = ((index / 32u) * 2u) + (subgroup % 2u);
+
+	int2 final = int2(floor(float2(offset + pos) * scale));
+	PS_OUTPUT output;
+	output.c = Texture.Load(int3(final, 0), 0);
 	return output;
 }
 

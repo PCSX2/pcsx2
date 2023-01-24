@@ -177,7 +177,6 @@
     <ClCompile Include="DEV9\PacketReader\IP\UDP\UDP_Packet.cpp" />
     <ClCompile Include="DEV9\PacketReader\IP\IP_Options.cpp" />
     <ClCompile Include="DEV9\PacketReader\IP\IP_Packet.cpp" />
-    <ClCompile Include="DEV9\PacketReader\NetLib.cpp" />
     <ClCompile Include="DEV9\pcap_io.cpp" />
     <ClCompile Include="DEV9\Sessions\ICMP_Session\ICMP_Session.cpp" />
     <ClCompile Include="DEV9\Sessions\TCP_Session\TCP_Session.cpp" />
@@ -450,8 +449,6 @@
     <ClCompile Include="Ipu\IPU_Fifo.cpp" />
     <ClCompile Include="Ipu\IPU_MultiISA.cpp" />
     <ClCompile Include="Ipu\yuv2rgb.cpp" />
-    <ClCompile Include="Ipu\mpeg2lib\Idct.cpp" />
-    <ClCompile Include="Ipu\mpeg2lib\Mpeg.cpp" />
     <ClCompile Include="GS.cpp" />
     <ClCompile Include="MTGS.cpp" />
     <ClCompile Include="DebugTools\DisR3000A.cpp" />
@@ -514,6 +511,7 @@
     <ClInclude Include="DEV9\net.h" />
     <ClInclude Include="DEV9\PacketReader\ARP\ARP_Packet.h" />
     <ClInclude Include="DEV9\PacketReader\EthernetFrame.h" />
+    <ClInclude Include="DEV9\PacketReader\MAC_Address.h" />
     <ClInclude Include="DEV9\PacketReader\IP\ICMP\ICMP_Packet.h" />
     <ClInclude Include="DEV9\PacketReader\IP\TCP\TCP_Options.h" />
     <ClInclude Include="DEV9\PacketReader\IP\TCP\TCP_Packet.h" />
@@ -579,6 +577,7 @@
     <ClInclude Include="HostDisplay.h" />
     <ClInclude Include="HostSettings.h" />
     <ClInclude Include="IopGte.h" />
+    <ClInclude Include="IPU\mpeg2_vlc.h" />
     <ClInclude Include="MemoryCardProtocol.h" />
     <ClInclude Include="MultitapProtocol.h" />
     <ClInclude Include="PAD\Host\Global.h" />
@@ -686,8 +685,6 @@
     <ClInclude Include="USB\qemu-usb\queue.h" />
     <ClInclude Include="USB\qemu-usb\qusb.h" />
     <ClInclude Include="USB\qemu-usb\USBinternal.h" />
-    <ClInclude Include="USB\readerwriterqueue\atomicops.h" />
-    <ClInclude Include="USB\readerwriterqueue\readerwriterqueue.h" />
     <ClInclude Include="USB\shared\ringbuffer.h" />
     <ClInclude Include="USB\usb-eyetoy\cam-windows.h" />
     <ClInclude Include="USB\usb-eyetoy\jo_mpeg.h" />
@@ -782,8 +779,6 @@
     <ClInclude Include="Ipu\IPU_Fifo.h" />
     <ClInclude Include="Ipu\IPU_MultiISA.h" />
     <ClInclude Include="Ipu\yuv2rgb.h" />
-    <ClInclude Include="Ipu\mpeg2lib\Mpeg.h" />
-    <ClInclude Include="Ipu\mpeg2lib\Vlc.h" />
     <ClInclude Include="GS.h" />
     <ClInclude Include="DebugTools\Debug.h" />
     <ClInclude Include="DebugTools\DisASM.h" />

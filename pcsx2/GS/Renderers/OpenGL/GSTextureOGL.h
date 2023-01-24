@@ -17,7 +17,6 @@
 
 #include "GS/Renderers/Common/GSTexture.h"
 #include "GS/Renderers/OpenGL/GLLoader.h"
-#include "common/AlignedMalloc.h"
 
 class GSTextureOGL final : public GSTexture
 {
@@ -41,8 +40,12 @@ private:
 	u32 m_int_shift = 0;
 
 public:
-	explicit GSTextureOGL(Type type, int width, int height, int levels, Format format, GLuint fbo_read);
-	virtual ~GSTextureOGL();
+	explicit GSTextureOGL(Type type, int width, int height, int levels, Format format);
+	~GSTextureOGL() override;
+
+	__fi GLenum GetIntFormat() const { return m_int_format; }
+	__fi GLenum GetIntType() const { return m_int_type; }
+	__fi u32 GetIntShift() const { return m_int_shift; }
 
 	void* GetNativeHandle() const override;
 
@@ -70,4 +73,30 @@ public:
 
 	void Clear(const void* data);
 	void Clear(const void* data, const GSVector4i& area);
+};
+
+class GSDownloadTextureOGL final : public GSDownloadTexture
+{
+public:
+	~GSDownloadTextureOGL() override;
+
+	static std::unique_ptr<GSDownloadTextureOGL> Create(u32 width, u32 height, GSTexture::Format format);
+
+	void CopyFromTexture(const GSVector4i& drc, GSTexture* stex, const GSVector4i& src, u32 src_level, bool use_transfer_pitch) override;
+
+	bool Map(const GSVector4i& read_rc) override;
+	void Unmap() override;
+
+	void Flush() override;
+
+private:
+	GSDownloadTextureOGL(u32 width, u32 height, GSTexture::Format format);
+
+	GLuint m_buffer_id = 0;
+	u32 m_buffer_size = 0;
+
+	GLsync m_sync = {};
+
+	// used when buffer storage is not available
+	u8* m_cpu_buffer = nullptr;
 };

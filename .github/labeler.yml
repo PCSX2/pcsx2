@@ -64,21 +64,31 @@
 'GS':
   - 'pcsx2/GS/*'
   - 'pcsx2/GS/**/*'
+  - 'bin/resources/shaders/*'
+  - 'bin/resources/shaders/**/*'
 'GS: Direct3D 11':
   - 'pcsx2/GS/Renderers/DX11/*'
   - 'pcsx2/GS/Renderers/DX11/**/*'
+  - 'bin/resources/shaders/dx11/*'
+  - 'bin/resources/shaders/dx11/**/*'
 'GS: Direct3D 12':
   - 'pcsx2/GS/Renderers/DX12/*'
   - 'pcsx2/GS/Renderers/DX12/**/*'
+  - 'bin/resources/shaders/dx11/*'
+  - 'bin/resources/shaders/dx11/**/*'
 'GS: Hardware':
   - 'pcsx2/GS/Renderers/HW/*'
   - 'pcsx2/GS/Renderers/HW/**/*'
 'GS: OpenGL':
   - 'pcsx2/GS/Renderers/OpenGL/*'
   - 'pcsx2/GS/Renderers/OpenGL/**/*'
+  - 'bin/resources/shaders/opengl/*'
+  - 'bin/resources/shaders/opengl/**/*'
 'GS: Vulkan':
   - 'pcsx2/GS/Renderers/Vulkan/*'
   - 'pcsx2/GS/Renderers/Vulkan/**/*'
+  - 'bin/resources/shaders/vulkan/*'
+  - 'bin/resources/shaders/vulkan/**/*'
 'GS: Metal':
   - 'pcsx2/GS/Renderers/Metal/*'
   - 'pcsx2/GS/Renderers/Metal/**/*'
@@ -102,12 +112,9 @@
 'Memory Card':
   - 'pcsx2/gui/MemoryCard*'
   - 'pcsx2/gui/**/MemoryCard*'
-'PAD: Linux/Mac':
-  - 'pcsx2/PAD/Linux/*'
-  - 'pcsx2/PAD/Linux/**/*'
-'PAD: Windows':
-  - 'pcsx2/PAD/Windows/*'
-  - 'pcsx2/PAD/Windows/**/*'
+'PAD':
+  - 'pcsx2/PAD/*'
+  - 'pcsx2/PAD/**/*'
 'SPU2':
   - 'pcsx2/SPU2/*'
   - 'pcsx2/SPU2/**/*'

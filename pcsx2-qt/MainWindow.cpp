@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -521,7 +521,7 @@ void MainWindow::setStyleFromSettings()
 		qApp->setStyleSheet(QString());
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 	}
-else if (theme == "darkfusion")
+	else if (theme == "darkfusion")
 	{
 		// adapted from https://gist.github.com/QuantumCD/6245215
 		qApp->setStyle(QStyleFactory::create("Fusion"));
@@ -742,7 +742,7 @@ else if (theme == "darkfusion")
 		// Custom palette by RedDevilus, Blue as main color and Purple as complimentary.
 		// Alternative dark theme.
 		qApp->setStyle(QStyleFactory::create("Fusion"));
-		
+
 		const QColor blackishblue(50, 25, 70);
 		const QColor darkerPurple(90, 30, 105);
 		const QColor nauticalPurple(110, 30, 125);
@@ -963,10 +963,10 @@ void MainWindow::onToolsVideoCaptureToggled(bool checked)
 	}
 
 	const QString container(QString::fromStdString(
-		Host::GetStringSettingValue("EmuCore/GS", "VideoCaptureContainer", Pcsx2Config::GSOptions::DEFAULT_VIDEO_CAPTURE_CONTAINER)));
+		Host::GetStringSettingValue("EmuCore/GS", "CaptureContainer", Pcsx2Config::GSOptions::DEFAULT_CAPTURE_CONTAINER)));
 	const QString filter(tr("%1 Files (*.%2)").arg(container.toUpper()).arg(container));
 
-	QString path(QStringLiteral("%1.%2").arg(QString::fromStdString(GSGetBaseSnapshotFilename())).arg(container));
+	QString path(QStringLiteral("%1.%2").arg(QString::fromStdString(GSGetBaseVideoFilename())).arg(container));
 	path = QFileDialog::getSaveFileName(this, tr("Video Capture"), path, filter);
 	if (path.isEmpty())
 	{
@@ -1489,6 +1489,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 			{
 				// TODO: Hook this up once it's implemented.
 				action = menu.addAction(tr("Boot and Debug"));
+				connect(action, &QAction::triggered, [this, entry]() { DebugInterface::setPauseOnEntry(true); startGameListEntry(entry); getDebuggerWindow()->show(); });
 			}
 
 			menu.addSeparator();
@@ -1640,7 +1641,7 @@ void MainWindow::onViewGamePropertiesActionTriggered()
 		auto lock = GameList::GetLock();
 		const GameList::Entry* entry = m_current_elf_override.isEmpty() ?
 										   GameList::GetEntryForPath(m_current_disc_path.toUtf8().constData()) :
-                                           GameList::GetEntryForPath(m_current_elf_override.toUtf8().constData());
+										   GameList::GetEntryForPath(m_current_elf_override.toUtf8().constData());
 		if (entry)
 		{
 			SettingsDialog::openGamePropertiesDialog(
@@ -2869,11 +2870,17 @@ void MainWindow::doDiscChange(CDVD_SourceType source, const QString& path)
 	bool reset_system = false;
 	if (!m_was_disc_change_request)
 	{
-		const int choice = QMessageBox::question(this, tr("Confirm Disc Change"),
-			tr("Do you want to swap discs or boot the new image (via system reset)?"), tr("Swap Disc"), tr("Reset"), tr("Cancel"), 0, 2);
-		if (choice == 2)
+		QMessageBox message(QMessageBox::Question, tr("Confirm Disc Change"),
+			tr("Do you want to swap discs or boot the new image (via system reset)?"));
+		message.addButton(tr("Swap Disc"), QMessageBox::ActionRole);
+		QPushButton* reset_button = message.addButton(tr("Reset"), QMessageBox::ActionRole);
+		QPushButton* cancel_button = message.addButton(QMessageBox::Cancel);
+		message.setDefaultButton(cancel_button);
+		message.exec();
+
+		if (message.clickedButton() == cancel_button)
 			return;
-		reset_system = (choice != 0);
+		reset_system = (message.clickedButton() == reset_button);
 	}
 
 	switchToEmulationView();

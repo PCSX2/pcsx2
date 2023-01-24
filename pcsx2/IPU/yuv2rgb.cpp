@@ -20,9 +20,9 @@
 #include "PrecompiledHeader.h"
 
 #include "Common.h"
-#include "IPU.h"
-#include "yuv2rgb.h"
-#include "mpeg2lib/Mpeg.h"
+#include "IPU/IPU.h"
+#include "IPU/IPU_MultiISA.h"
+#include "IPU/yuv2rgb.h"
 
 // The IPU's colour space conversion conforms to ITU-R Recommendation BT.601 if anyone wants to make a
 // faster or "more accurate" implementation, but this is the precise documented integer method used by

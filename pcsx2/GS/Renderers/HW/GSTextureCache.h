@@ -92,9 +92,6 @@ public:
 		void UpdateAge();
 		bool Inside(u32 bp, u32 bw, u32 psm, const GSVector4i& rect);
 		bool Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i& rect);
-
-		bool ResizeTexture(int new_width, int new_height, bool recycle_old = true);
-		bool ResizeTexture(int new_width, int new_height, GSVector2 new_scale, bool recycle_old = true);
 	};
 
 	struct PaletteKey
@@ -200,6 +197,7 @@ public:
 
 	public:
 		Target(const GIFRegTEX0& TEX0, const bool depth_supported, const int type);
+		~Target();
 
 		void UpdateValidity(const GSVector4i& rect);
 
@@ -207,6 +205,9 @@ public:
 
 		/// Updates the target, if the dirty area intersects with the specified rectangle.
 		void UpdateIfDirtyIntersects(const GSVector4i& rc);
+
+		bool ResizeTexture(int new_width, int new_height, bool recycle_old = true);
+		bool ResizeTexture(int new_width, int new_height, GSVector2 new_scale, bool recycle_old = true);
 	};
 
 	class PaletteMap
@@ -298,22 +299,33 @@ public:
 protected:
 	PaletteMap m_palette_map;
 	SourceMap m_src;
+	u64 m_source_memory_usage = 0;
 	std::unordered_map<HashCacheKey, HashCacheEntry, HashCacheKeyHash> m_hash_cache;
 	u64 m_hash_cache_memory_usage = 0;
-	u64 m_hash_cache_replacement_memory_usage;
+	u64 m_hash_cache_replacement_memory_usage = 0;
+
 	FastList<Target*> m_dst[2];
 	FastList<TargetHeightElem> m_target_heights;
-	static u8* m_temp;
+	u64 m_target_memory_usage = 0;
+
 	constexpr static size_t S_SURFACE_OFFSET_CACHE_MAX_SIZE = std::numeric_limits<u16>::max();
 	std::unordered_map<SurfaceOffsetKey, SurfaceOffset, SurfaceOffsetKeyHash, SurfaceOffsetKeyEqual> m_surface_offset_cache;
+
 	Source* m_temporary_source = nullptr; // invalidated after the draw
 
-	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false, int x_offset = 0, int y_offset = 0, const GSVector2i* lod = nullptr, const GSVector4i* src_range = nullptr);
+	std::unique_ptr<GSDownloadTexture> m_color_download_texture;
+	std::unique_ptr<GSDownloadTexture> m_uint16_download_texture;
+	std::unique_ptr<GSDownloadTexture> m_uint32_download_texture;
+
+	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t, bool half_right, int x_offset, int y_offset, const GSVector2i* lod, const GSVector4i* src_range, GSTexture* gpu_clut);
 	Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type, const bool clear);
 
 	/// Expands a target when the block pointer for a display framebuffer is within another target, but the read offset
 	/// plus the height is larger than the current size of the target.
 	void ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, int real_w, int real_h);
+
+	/// Resizes the download texture if needed.
+	bool PrepareDownloadTexture(u32 width, u32 height, GSTexture::Format format, std::unique_ptr<GSDownloadTexture>* tex);
 
 	HashCacheEntry* LookupHashCache(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool& paltex, const u32* clut, const GSVector2i* lod);
 
@@ -330,6 +342,8 @@ public:
 	__fi u64 GetHashCacheMemoryUsage() const { return m_hash_cache_memory_usage; }
 	__fi u64 GetHashCacheReplacementMemoryUsage() const { return m_hash_cache_replacement_memory_usage; }
 	__fi u64 GetTotalHashCacheMemoryUsage() const { return (m_hash_cache_memory_usage + m_hash_cache_replacement_memory_usage); }
+	__fi u64 GetSourceMemoryUsage() const { return m_source_memory_usage; }
+	__fi u64 GetTargetMemoryUsage() const { return m_target_memory_usage; }
 
 	void Read(Target* t, const GSVector4i& r);
 	void Read(Source* t, const GSVector4i& r);
@@ -337,10 +351,12 @@ public:
 	void RemovePartial();
 	void AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw);
 
+	GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, const GSVector2i& size);
+
 	Source* LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, const GSVector2i* lod);
 	Source* LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette = false);
 
-	Target* LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask = 0, const bool is_frame = false, const int real_w = 0, const int real_h = 0);
+	Target* LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask = 0, const bool is_frame = false, const int real_w = 0, const int real_h = 0, bool preload = GSConfig.PreloadFrameWithGSData);
 	Target* LookupDisplayTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, const int real_w, const int real_h);
 
 	/// Looks up a target in the cache, and only returns it if the BP/BW/PSM match exactly.
@@ -364,9 +380,8 @@ public:
 		return (type == DepthStencil) ? "Depth" : "Color";
 	}
 
-	void PrintMemoryUsage();
-
 	void AttachPaletteToSource(Source* s, u16 pal, bool need_gs_texture);
+	void AttachPaletteToSource(Source* s, GSTexture* gpu_clut);
 	SurfaceOffset ComputeSurfaceOffset(const GSOffset& off, const GSVector4i& r, const Target* t);
 	SurfaceOffset ComputeSurfaceOffset(const uint32_t bp, const uint32_t bw, const uint32_t psm, const GSVector4i& r, const Target* t);
 	SurfaceOffset ComputeSurfaceOffset(const SurfaceOffsetKey& sok);

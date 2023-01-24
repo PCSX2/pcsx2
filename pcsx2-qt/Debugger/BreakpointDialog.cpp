@@ -23,10 +23,11 @@
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QMessageBox>
 
-BreakpointDialog::BreakpointDialog(QWidget* parent, DebugInterface* cpu)
+BreakpointDialog::BreakpointDialog(QWidget* parent, DebugInterface* cpu, BreakpointModel& model)
 	: QDialog(parent)
 	, m_cpu(cpu)
-	, m_purpose(BPDIALOG_PURPOSE::CREATE)
+	, m_purpose(PURPOSE::CREATE)
+	, m_bpModel(model)
 {
 	m_ui.setupUi(this);
 
@@ -37,43 +38,42 @@ BreakpointDialog::BreakpointDialog(QWidget* parent, DebugInterface* cpu)
 	connect(m_ui.rdoMemory, &QRadioButton::toggled, this, &BreakpointDialog::onRdoButtonToggled);
 }
 
-BreakpointDialog::BreakpointDialog(QWidget* parent, DebugInterface* cpu, BreakPoint* bp)
+BreakpointDialog::BreakpointDialog(QWidget* parent, DebugInterface* cpu, BreakpointModel& model, BreakpointMemcheck bp_mc, int rowIndex)
 	: QDialog(parent)
 	, m_cpu(cpu)
-	, m_purpose(BPDIALOG_PURPOSE::EDIT_BP)
-	, m_bp(bp)
+	, m_purpose(PURPOSE::EDIT)
+	, m_bpModel(model)
+	, m_bp_mc(bp_mc)
+	, m_rowIndex(rowIndex)
 {
 	m_ui.setupUi(this);
 
-	m_ui.txtAddress->setText(QtUtils::FilledQStringFromValue(m_bp->addr, 16));
-	if (m_bp->hasCond)
-		m_ui.txtCondition->setText(QString::fromLocal8Bit(&m_bp->cond.expressionString[0]));
-	m_ui.chkEnable->setChecked(m_bp->enabled);
-
 	connect(m_ui.rdoExecute, &QRadioButton::toggled, this, &BreakpointDialog::onRdoButtonToggled);
 	connect(m_ui.rdoMemory, &QRadioButton::toggled, this, &BreakpointDialog::onRdoButtonToggled);
-	m_ui.rdoExecute->toggle();
-}
 
-BreakpointDialog::BreakpointDialog(QWidget* parent, DebugInterface* cpu, MemCheck* mc)
-	: QDialog(parent)
-	, m_cpu(cpu)
-	, m_purpose(BPDIALOG_PURPOSE::EDIT_MC)
-	, m_mc(mc)
-{
-	m_ui.setupUi(this);
+	if (const auto* bp = std::get_if<BreakPoint>(&bp_mc))
+	{
+		m_ui.rdoExecute->setChecked(true);
+		m_ui.chkEnable->setChecked(bp->enabled);
+		m_ui.txtAddress->setText(QtUtils::FilledQStringFromValue(bp->addr, 16));
 
-	m_ui.txtAddress->setText(QtUtils::FilledQStringFromValue(m_mc->start, 16));
-	m_ui.txtSize->setText(QString::number(m_mc->end - m_mc->start, 16).toUpper());
-	m_ui.chkLog->setChecked(m_mc->result & MEMCHECK_LOG);
-	m_ui.chkEnable->setChecked(m_mc->result & MEMCHECK_BREAK);
-	m_ui.chkChange->setChecked(m_mc->cond & MEMCHECK_WRITE_ONCHANGE);
-	m_ui.chkRead->setChecked(m_mc->cond & MEMCHECK_READ);
-	m_ui.chkWrite->setChecked(m_mc->cond & MEMCHECK_WRITE);
+		if (bp->hasCond)
+			m_ui.txtCondition->setText(QString::fromLocal8Bit(bp->cond.expressionString));
+	}
+	else if (const auto* mc = std::get_if<MemCheck>(&bp_mc))
+	{
+		m_ui.rdoMemory->setChecked(true);
 
-	connect(m_ui.rdoExecute, &QRadioButton::toggled, this, &BreakpointDialog::onRdoButtonToggled);
-	connect(m_ui.rdoMemory, &QRadioButton::toggled, this, &BreakpointDialog::onRdoButtonToggled);
-	m_ui.rdoMemory->toggle();
+		m_ui.txtAddress->setText(QtUtils::FilledQStringFromValue(mc->start, 16));
+		m_ui.txtSize->setText(QtUtils::FilledQStringFromValue(mc->end - mc->start, 16));
+
+		m_ui.chkRead->setChecked(mc->cond & MEMCHECK_READ);
+		m_ui.chkWrite->setChecked(mc->cond & MEMCHECK_WRITE);
+		m_ui.chkChange->setChecked(mc->cond & MEMCHECK_WRITE_ONCHANGE);
+
+		m_ui.chkEnable->setChecked(mc->result & MEMCHECK_BREAK);
+		m_ui.chkLog->setChecked(mc->result & MEMCHECK_LOG);
+	}
 }
 
 BreakpointDialog::~BreakpointDialog()
@@ -90,48 +90,70 @@ void BreakpointDialog::onRdoButtonToggled()
 	m_ui.chkLog->setEnabled(!isExecute);
 }
 
-// When we are creating a breakpoint, use m_bp or m_mc only as a place to store information for the new breakpoint
-// When we are modifying a breakpoint, m_bp or m_mc is a pointer to the breakpoint we are updating
 void BreakpointDialog::accept()
 {
-	if (m_purpose == BPDIALOG_PURPOSE::CREATE)
+	if (m_purpose == PURPOSE::CREATE)
 	{
 		if (m_ui.rdoExecute->isChecked())
-		{
-			m_bp = new BreakPoint;
-			m_bp->cpu = m_cpu->getCpuType();
-			m_bp->cond.debug = m_cpu;
-		}
-		else
-		{
-			m_mc = new MemCheck;
-			m_mc->cpu = m_cpu->getCpuType();
-		}
+			m_bp_mc = BreakPoint();
+		else if (m_ui.rdoMemory->isChecked())
+			m_bp_mc = MemCheck();
 	}
 
-	PostfixExpression expression;
-
-	// Validate the address
-	u64 address;
-	if (!m_cpu->initExpression(m_ui.txtAddress->text().toLocal8Bit(), expression) || !m_cpu->parseExpression(expression, address))
+	if (auto* bp = std::get_if<BreakPoint>(&m_bp_mc))
 	{
-		QMessageBox::warning(this, tr("Error"), tr("Invalid address \"%1\"").arg(m_ui.txtAddress->text()));
-		return;
+		PostfixExpression expr;
+
+		u64 address;
+		if (!m_cpu->initExpression(m_ui.txtAddress->text().toLocal8Bit().constData(), expr) ||
+			!m_cpu->parseExpression(expr, address))
+		{
+			QMessageBox::warning(this, tr("Error"), tr("Invalid address \"%1\"").arg(m_ui.txtAddress->text()));
+			return;
+		}
+
+		bp->addr = address;
+
+		bp->enabled = m_ui.chkEnable->isChecked();
+
+		if (!m_ui.txtCondition->text().isEmpty())
+		{
+			bp->hasCond = true;
+			bp->cond.debug = m_cpu;
+
+			if (!m_cpu->initExpression(m_ui.txtCondition->text().toLocal8Bit().constData(), expr))
+			{
+				QMessageBox::warning(this, tr("Error"), tr("Invalid condition \"%1\"").arg(getExpressionError()));
+				return;
+			}
+
+			bp->cond.expression = expr;
+			strncpy(&bp->cond.expressionString[0], m_ui.txtCondition->text().toLocal8Bit().constData(),
+				sizeof(bp->cond.expressionString));
+		}
 	}
-
-	u64 size;
-	if (m_ui.rdoMemory->isChecked())
+	if (auto* mc = std::get_if<MemCheck>(&m_bp_mc))
 	{
-		if (!m_cpu->initExpression(m_ui.txtSize->text().toLocal8Bit(), expression) || !m_cpu->parseExpression(expression, size) || !size)
+		PostfixExpression expr;
+
+		u64 startAddress;
+		if (!m_cpu->initExpression(m_ui.txtAddress->text().toLocal8Bit().constData(), expr) ||
+			!m_cpu->parseExpression(expr, startAddress))
+		{
+			QMessageBox::warning(this, tr("Error"), tr("Invalid address \"%1\"").arg(m_ui.txtAddress->text()));
+			return;
+		}
+
+		u64 size;
+		if (!m_cpu->initExpression(m_ui.txtSize->text().toLocal8Bit(), expr) ||
+			!m_cpu->parseExpression(expr, size) || !size)
 		{
 			QMessageBox::warning(this, tr("Error"), tr("Invalid size \"%1\"").arg(m_ui.txtSize->text()));
 			return;
 		}
 
-		m_mc->start = address;
-		const bool changedSize = m_mc->end != (m_mc->start + size);
-		const u32 prevEnd = m_mc->end;
-		m_mc->end = m_mc->start + size;
+		mc->start = startAddress;
+		mc->end = startAddress + size;
 
 		int condition = 0;
 		if (m_ui.chkRead->isChecked())
@@ -141,68 +163,24 @@ void BreakpointDialog::accept()
 		if (m_ui.chkChange->isChecked())
 			condition |= MEMCHECK_WRITE_ONCHANGE;
 
+		mc->cond = static_cast<MemCheckCondition>(condition);
+
 		int result = 0;
 		if (m_ui.chkEnable->isChecked())
 			result |= MEMCHECK_BREAK;
 		if (m_ui.chkLog->isChecked())
 			result |= MEMCHECK_LOG;
 
-		if (m_purpose == BPDIALOG_PURPOSE::CREATE)
-		{
-			Host::RunOnCPUThread([this, condition, result] {
-				CBreakPoints::AddMemCheck(m_cpu->getCpuType(), m_mc->start, m_mc->end, (MemCheckCondition)condition, (MemCheckResult)result);
-				delete m_mc;
-			});
-		}
-		else
-		{
-			Host::RunOnCPUThread([this, mc = *m_mc, condition, result, prevEnd, changedSize] {
-				if (changedSize)
-				{
-					CBreakPoints::RemoveMemCheck(m_cpu->getCpuType(), mc.start, prevEnd);
-					CBreakPoints::AddMemCheck(m_cpu->getCpuType(), mc.start, mc.end, static_cast<MemCheckCondition>(condition), static_cast<MemCheckResult>(result));
-				}
-				else
-				{
-					CBreakPoints::ChangeMemCheck(m_cpu->getCpuType(), mc.start, mc.end, static_cast<MemCheckCondition>(condition), static_cast<MemCheckResult>(result));
-				}
-			});
-		}
+		mc->result = static_cast<MemCheckResult>(result);
 	}
-	else
+
+
+	if (m_purpose == PURPOSE::EDIT)
 	{
-		if (m_purpose == BPDIALOG_PURPOSE::CREATE)
-			Host::RunOnCPUThread([this, address] {
-				CBreakPoints::AddBreakPoint(m_cpu->getCpuType(), address);
-			});
-
-		// Validate the condition
-		// TODO: Expression management in the core should be updated to make this prettier
-		if (!m_ui.txtCondition->text().isEmpty())
-		{
-			auto strData = m_ui.txtCondition->text().toLocal8Bit();
-			expression.clear();
-			if (!m_cpu->initExpression(strData.constData(), expression))
-			{
-				QMessageBox::warning(this, tr("Error"), tr("Invalid condition \"%1\"").arg(strData));
-				return;
-			}
-
-			m_bp->cond.expression = expression;
-			strncpy(&m_bp->cond.expressionString[0], strData.constData(), sizeof(m_bp->cond.expressionString));
-
-			Host::RunOnCPUThread([this, address] {
-				CBreakPoints::ChangeBreakPointAddCond(m_cpu->getCpuType(), address, m_bp->cond);
-			});
-		}
-		else
-		{
-			Host::RunOnCPUThread([this, address] { CBreakPoints::ChangeBreakPointRemoveCond(m_cpu->getCpuType(), address); });
-		}
-
-		Host::RunOnCPUThread([this, address] { CBreakPoints::ChangeBreakPoint(m_cpu->getCpuType(), address, m_ui.chkEnable->isChecked()); });
-		m_bp->addr = address;
+		m_bpModel.removeRows(m_rowIndex, 1);
 	}
+
+	m_bpModel.insertBreakpointRows(0, 1, {m_bp_mc});
 
 	QDialog::accept();
 }

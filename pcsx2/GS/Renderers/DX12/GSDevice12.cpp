@@ -316,10 +316,8 @@ void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_f
 
 GSTexture* GSDevice12::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 {
-	pxAssert(type != GSTexture::Type::Offscreen);
-
-	const u32 clamped_width = static_cast<u32>(std::clamp<int>(1, width, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION));
-	const u32 clamped_height = static_cast<u32>(std::clamp<int>(1, height, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION));
+	const u32 clamped_width = static_cast<u32>(std::clamp<int>(width, 1, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION));
+	const u32 clamped_height = static_cast<u32>(std::clamp<int>(height, 1, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION));
 
 	DXGI_FORMAT d3d_format, srv_format, rtv_format, dsv_format;
 	LookupNativeFormat(format, &d3d_format, &srv_format, &rtv_format, &dsv_format);
@@ -336,69 +334,9 @@ GSTexture* GSDevice12::CreateSurface(GSTexture::Type type, int width, int height
 	return tex.release();
 }
 
-bool GSDevice12::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map)
+std::unique_ptr<GSDownloadTexture> GSDevice12::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
 {
-	const u32 width = rect.width();
-	const u32 height = rect.height();
-	const u32 pitch = Common::AlignUpPow2(width * D3D12::GetTexelSize(static_cast<GSTexture12*>(src)->GetNativeFormat()), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
-	const u32 size = pitch * height;
-	constexpr u32 level = 0;
-	if (!CheckStagingBufferSize(size))
-	{
-		Console.Error("Can't read back %ux%u", width, height);
-		return false;
-	}
-
-	g_perfmon.Put(GSPerfMon::Readbacks, 1);
-	EndRenderPass();
-	UnmapStagingBuffer();
-
-	{
-		ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
-		GSTexture12* dsrc = static_cast<GSTexture12*>(src);
-		GL_INS("ReadbackTexture: {%d,%d} %ux%u", rect.left, rect.top, width, height);
-
-		D3D12_TEXTURE_COPY_LOCATION srcloc;
-		srcloc.pResource = dsrc->GetResource();
-		srcloc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-		srcloc.SubresourceIndex = level;
-
-		D3D12_TEXTURE_COPY_LOCATION dstloc;
-		dstloc.pResource = m_readback_staging_buffer.get();
-		dstloc.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-		dstloc.PlacedFootprint.Offset = 0;
-		dstloc.PlacedFootprint.Footprint.Format = dsrc->GetNativeFormat();
-		dstloc.PlacedFootprint.Footprint.Width = width;
-		dstloc.PlacedFootprint.Footprint.Height = height;
-		dstloc.PlacedFootprint.Footprint.Depth = 1;
-		dstloc.PlacedFootprint.Footprint.RowPitch = pitch;
-
-		const D3D12_RESOURCE_STATES old_layout = dsrc->GetResourceState();
-		if (old_layout != D3D12_RESOURCE_STATE_COPY_SOURCE)
-			dsrc->GetTexture().TransitionSubresourceToState(cmdlist, level, old_layout, D3D12_RESOURCE_STATE_COPY_SOURCE);
-
-		const D3D12_BOX srcbox{static_cast<UINT>(rect.left), static_cast<UINT>(rect.top), 0u,
-			static_cast<UINT>(rect.right), static_cast<UINT>(rect.bottom), 1u};
-		cmdlist->CopyTextureRegion(&dstloc, 0, 0, 0, &srcloc, &srcbox);
-
-		if (old_layout != D3D12_RESOURCE_STATE_COPY_SOURCE)
-			dsrc->GetTexture().TransitionSubresourceToState(cmdlist, level, D3D12_RESOURCE_STATE_COPY_SOURCE, old_layout);
-	}
-
-	// exec and wait
-	ExecuteCommandList(true);
-
-	if (!MapStagingBuffer(size))
-		return false;
-
-	out_map.bits = reinterpret_cast<u8*>(m_readback_staging_buffer_map);
-	out_map.pitch = pitch;
-	return true;
-}
-
-void GSDevice12::DownloadTextureComplete()
-{
-	UnmapStagingBuffer();
+	return GSDownloadTexture12::Create(width, height, format);
 }
 
 void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
@@ -519,6 +457,24 @@ void GSDevice12::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, static_cast<GSTexture12*>(dTex), dRect,
 		m_present[static_cast<int>(shader)].get(), linear);
+}
+
+void GSDevice12::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
+{
+	struct Uniforms
+	{
+		float scaleX, scaleY;
+		float pad1[2];
+		u32 offsetX, offsetY, dOffset;
+		u32 pad2;
+	};
+	const Uniforms cb = {sTex->GetScale().x, sTex->GetScale().y, {0.0f, 0.0f}, offsetX, offsetY, dOffset};
+	SetUtilityPushConstants(&cb, sizeof(cb));
+
+	const GSVector4 dRect(0, 0, dSize, 1);
+	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
+	DoStretchRect(static_cast<GSTexture12*>(sTex), GSVector4::zero(), static_cast<GSTexture12*>(dTex), dRect,
+		m_convert[static_cast<int>(shader)].get(), false);
 }
 
 void GSDevice12::BeginRenderPassForStretchRect(GSTexture12* dTex, const GSVector4i& dtex_rc, const GSVector4i& dst_rc)
@@ -1143,7 +1099,7 @@ bool GSDevice12::CreateRootSignatures()
 	rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
 	rsb.AddCBVParameter(1, D3D12_SHADER_VISIBILITY_PIXEL);
 	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_PIXEL);
-	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 2, D3D12_SHADER_VISIBILITY_PIXEL);
+	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, NUM_TFX_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
 	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 2, D3D12_SHADER_VISIBILITY_PIXEL);
 	if (!(m_tfx_root_signature = rsb.Create()))
 		return false;
@@ -1471,68 +1427,6 @@ bool GSDevice12::CompilePostProcessingPipelines()
 	return true;
 }
 
-bool GSDevice12::CheckStagingBufferSize(u32 required_size)
-{
-	if (m_readback_staging_buffer_size >= required_size)
-		return true;
-
-	DestroyStagingBuffer();
-
-	D3D12MA::ALLOCATION_DESC allocation_desc = {};
-	allocation_desc.HeapType = D3D12_HEAP_TYPE_READBACK;
-
-	const D3D12_RESOURCE_DESC resource_desc = {
-		D3D12_RESOURCE_DIMENSION_BUFFER, 0, required_size, 1, 1, 1, DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-		D3D12_RESOURCE_FLAG_NONE};
-
-	HRESULT hr = g_d3d12_context->GetAllocator()->CreateResource(&allocation_desc, &resource_desc,
-		D3D12_RESOURCE_STATE_COPY_DEST, nullptr, m_readback_staging_allocation.put(), IID_PPV_ARGS(m_readback_staging_buffer.put()));
-	if (FAILED(hr))
-	{
-		Console.Error("(GSDevice12::CheckStagingBufferSize) CreateResource() failed with HRESULT %08X", hr);
-		return false;
-	}
-
-	m_readback_staging_buffer_size = required_size;
-	return true;
-}
-
-bool GSDevice12::MapStagingBuffer(u32 size_to_read)
-{
-	if (m_readback_staging_buffer_map)
-		return true;
-
-	const D3D12_RANGE range = {0, size_to_read};
-	const HRESULT hr = m_readback_staging_buffer->Map(0, &range, &m_readback_staging_buffer_map);
-	if (FAILED(hr))
-	{
-		Console.Error("(GSDevice12::MapStagingBuffer) Map() failed with HRESULT %08X", hr);
-		return false;
-	}
-
-	return true;
-}
-
-void GSDevice12::UnmapStagingBuffer()
-{
-	if (!m_readback_staging_buffer_map)
-		return;
-
-	const D3D12_RANGE write_range = {};
-	m_readback_staging_buffer->Unmap(0, &write_range);
-	m_readback_staging_buffer_map = nullptr;
-}
-
-void GSDevice12::DestroyStagingBuffer()
-{
-	UnmapStagingBuffer();
-
-	// safe to immediately destroy, since the GPU doesn't write to it without a copy+exec.
-	m_readback_staging_buffer_size = 0;
-	m_readback_staging_allocation.reset();
-	m_readback_staging_buffer.reset();
-}
-
 void GSDevice12::DestroyResources()
 {
 	g_d3d12_context->ExecuteCommandList(D3D12::Context::WaitType::Sleep);
@@ -1562,8 +1456,6 @@ void GSDevice12::DestroyResources()
 	g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetSamplerHeapManager(), &m_linear_sampler_cpu);
 	g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetSamplerHeapManager(), &m_point_sampler_cpu);
 	g_d3d12_context->InvalidateSamplerGroups();
-
-	DestroyStagingBuffer();
 
 	m_pixel_constant_buffer.Destroy(false);
 	m_vertex_constant_buffer.Destroy(false);
@@ -1806,8 +1698,7 @@ void GSDevice12::InitializeState()
 {
 	for (u32 i = 0; i < NUM_TOTAL_TFX_TEXTURES; i++)
 		m_tfx_textures[i] = m_null_texture.GetSRVDescriptor();
-	for (u32 i = 0; i < NUM_TFX_SAMPLERS; i++)
-		m_tfx_sampler_sel[i] = GSHWDrawConfig::SamplerSelector::Point().key;
+	m_tfx_sampler_sel = GSHWDrawConfig::SamplerSelector::Point().key;
 
 	InvalidateCachedState();
 }
@@ -1816,9 +1707,7 @@ void GSDevice12::InitializeSamplers()
 {
 	bool result = GetSampler(&m_point_sampler_cpu, GSHWDrawConfig::SamplerSelector::Point());
 	result = result && GetSampler(&m_linear_sampler_cpu, GSHWDrawConfig::SamplerSelector::Linear());
-
-	for (u32 i = 0; i < NUM_TFX_SAMPLERS; i++)
-		result = result && GetSampler(&m_tfx_samplers[i], m_tfx_sampler_sel[i]);
+	result = result && GetSampler(&m_tfx_sampler, m_tfx_sampler_sel);
 
 	if (!result)
 		pxFailRel("Failed to initialize samplers");
@@ -1874,6 +1763,11 @@ void GSDevice12::ExecuteCommandListAndRestartRenderPass(bool wait_for_completion
 			m_current_depth_target ? D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
 			m_current_depth_target ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS);
 	}
+}
+
+void GSDevice12::ExecuteCommandListForReadback()
+{
+	ExecuteCommandList(true);
 }
 
 void GSDevice12::InvalidateCachedState()
@@ -1970,13 +1864,13 @@ void GSDevice12::PSSetShaderResource(int i, GSTexture* sr, bool check_state)
 	m_dirty_flags |= (i < 2) ? DIRTY_FLAG_TFX_TEXTURES : DIRTY_FLAG_TFX_RT_TEXTURES;
 }
 
-void GSDevice12::PSSetSampler(u32 index, GSHWDrawConfig::SamplerSelector sel)
+void GSDevice12::PSSetSampler(GSHWDrawConfig::SamplerSelector sel)
 {
-	if (m_tfx_sampler_sel[index] == sel.key)
+	if (m_tfx_sampler_sel == sel.key)
 		return;
 
-	GetSampler(&m_tfx_samplers[index], sel);
-	m_tfx_sampler_sel[index] = sel.key;
+	GetSampler(&m_tfx_sampler, sel);
+	m_tfx_sampler_sel = sel.key;
 	m_dirty_flags |= DIRTY_FLAG_TFX_SAMPLERS;
 }
 
@@ -2330,7 +2224,7 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 
 	if (flags & DIRTY_FLAG_TFX_SAMPLERS)
 	{
-		if (!g_d3d12_context->GetSamplerAllocator().LookupGroup(&m_tfx_samplers_handle_gpu, m_tfx_samplers.data()))
+		if (!g_d3d12_context->GetSamplerAllocator().LookupSingle(&m_tfx_samplers_handle_gpu, m_tfx_sampler))
 		{
 			ExecuteCommandListAndRestartRenderPass(false, "Ran out of sampler groups");
 			return ApplyTFXState(true);
@@ -2555,7 +2449,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	if (config.tex)
 	{
 		PSSetShaderResource(0, config.tex, config.tex != config.rt);
-		PSSetSampler(0, config.sampler);
+		PSSetSampler(config.sampler);
 	}
 	if (config.pal)
 		PSSetShaderResource(1, config.pal, true);

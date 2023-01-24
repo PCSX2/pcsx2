@@ -47,7 +47,7 @@ namespace GSPng
 		~Transaction();
 	};
 
-	bool Save(GSPng::Format fmt, const std::string& file, u8* image, int w, int h, int pitch, int compression, bool rb_swapped = false);
+	bool Save(GSPng::Format fmt, const std::string& file, const u8* image, int w, int h, int pitch, int compression, bool rb_swapped = false);
 
 	void Process(std::shared_ptr<Transaction>& item);
 

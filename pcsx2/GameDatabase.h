@@ -83,6 +83,7 @@ namespace GameDatabaseSchema
 		Deinterlace,
 		CPUSpriteRenderBW,
 		CPUCLUTRender,
+		GPUTargetCLUT,
 		GPUPaletteConversion,
 		GetSkipCount,
 		BeforeDraw,

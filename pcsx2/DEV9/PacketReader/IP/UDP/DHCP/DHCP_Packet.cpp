@@ -36,16 +36,16 @@ namespace PacketReader::IP::UDP::DHCP
 		NetLib::ReadUInt16(buffer, &offset, &flags);
 
 		//Bits 96-127 //Bytes 12-15
-		NetLib::ReadByteArray(buffer, &offset, 4, (u8*)&clientIP);
+		NetLib::ReadIPAddress(buffer, &offset, &clientIP);
 
 		//Bits 128-159 //Bytes 16-19
-		NetLib::ReadByteArray(buffer, &offset, 4, (u8*)&yourIP);
+		NetLib::ReadIPAddress(buffer, &offset, &yourIP);
 
 		//Bits 160-191 //Bytes 20-23
-		NetLib::ReadByteArray(buffer, &offset, 4, (u8*)&serverIP);
+		NetLib::ReadIPAddress(buffer, &offset, &serverIP);
 
 		//Bits 192-223 //Bytes 24-27
-		NetLib::ReadByteArray(buffer, &offset, 4, (u8*)&gatewayIP);
+		NetLib::ReadIPAddress(buffer, &offset, &gatewayIP);
 
 		//Bits 192+ //Bytes 28-43
 		NetLib::ReadByteArray(buffer, &offset, 16, clientHardwareAddress);
@@ -194,10 +194,10 @@ namespace PacketReader::IP::UDP::DHCP
 		NetLib::WriteUInt16(buffer, offset, seconds);
 		NetLib::WriteUInt16(buffer, offset, flags);
 
-		NetLib::WriteByteArray(buffer, offset, 4, (u8*)&clientIP);
-		NetLib::WriteByteArray(buffer, offset, 4, (u8*)&yourIP);
-		NetLib::WriteByteArray(buffer, offset, 4, (u8*)&serverIP);
-		NetLib::WriteByteArray(buffer, offset, 4, (u8*)&gatewayIP);
+		NetLib::WriteIPAddress(buffer, offset, clientIP);
+		NetLib::WriteIPAddress(buffer, offset, yourIP);
+		NetLib::WriteIPAddress(buffer, offset, serverIP);
+		NetLib::WriteIPAddress(buffer, offset, gatewayIP);
 
 		NetLib::WriteByteArray(buffer, offset, 16, clientHardwareAddress);
 		//empty bytes

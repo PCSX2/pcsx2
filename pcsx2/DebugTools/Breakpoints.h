@@ -141,8 +141,13 @@ public:
 	// Includes uncached addresses.
 	static const std::vector<MemCheck> GetMemCheckRanges();
 
-	static const std::vector<MemCheck> GetMemChecks();
-	static const std::vector<BreakPoint> GetBreakpoints();
+	static const std::vector<MemCheck> GetMemChecks(BreakPointCpu cpu);
+	static const std::vector<BreakPoint> GetBreakpoints(BreakPointCpu cpu, bool includeTemp);
+	// Returns count of all non-temporary breakpoints
+	static size_t GetNumBreakpoints()
+	{ 
+		return std::count_if(breakPoints_.begin(), breakPoints_.end(), [](BreakPoint& bp) { return !bp.temporary; });
+	}
 	static size_t GetNumMemchecks() { return memChecks_.size(); }
 
 	static void Update(BreakPointCpu cpu = BREAKPOINT_IOP_AND_EE, u32 addr = 0);

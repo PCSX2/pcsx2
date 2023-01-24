@@ -78,4 +78,29 @@ public:
 	id<MTLTexture> GetTexture() { return m_texture; }
 };
 
+class GSDownloadTextureMTL final : public GSDownloadTexture
+{
+public:
+	~GSDownloadTextureMTL() override;
+
+	static std::unique_ptr<GSDownloadTextureMTL> Create(GSDeviceMTL* dev, u32 width, u32 height, GSTexture::Format format);
+
+	void CopyFromTexture(const GSVector4i& drc, GSTexture* stex, const GSVector4i& src, u32 src_level, bool use_transfer_pitch) override;
+
+	bool Map(const GSVector4i& read_rc) override;
+	void Unmap() override;
+
+	void Flush() override;
+
+private:
+	// TODO: Is there an optimal transfer pitch alignment for Metal?
+	static constexpr u32 PITCH_ALIGNMENT = 32;
+
+	GSDownloadTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLBuffer>> buffer, u32 width, u32 height, GSTexture::Format format);
+
+	GSDeviceMTL* m_dev;
+	MRCOwned<id<MTLBuffer>> m_buffer;
+	MRCOwned<id<MTLCommandBuffer>> m_copy_cmdbuffer = nil;
+};
+
 #endif

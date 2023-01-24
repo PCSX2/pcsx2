@@ -94,9 +94,6 @@
     <Filter Include="System\Ps2\IPU">
       <UniqueIdentifier>{4dab2d06-69e0-4f3e-b6d3-45e5e85af940}</UniqueIdentifier>
     </Filter>
-    <Filter Include="System\Ps2\IPU\mpeg2lib">
-      <UniqueIdentifier>{67e51016-d1db-44d2-910d-349d2833f798}</UniqueIdentifier>
-    </Filter>
     <Filter Include="System\Ps2\GS">
       <UniqueIdentifier>{5602cc18-9d1c-49c8-9509-7e4cf9ecd91b}</UniqueIdentifier>
     </Filter>
@@ -243,9 +240,6 @@
     </Filter>
     <Filter Include="System\Ps2\USB\qemu-usb">
       <UniqueIdentifier>{e068b724-9319-42e5-9ea7-63d80989ea1d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="System\Ps2\USB\readerwriterqueue">
-      <UniqueIdentifier>{f82a2be4-24a1-4dd8-9395-c53d0e1c4ddb}</UniqueIdentifier>
     </Filter>
     <Filter Include="System\Ps2\USB\shared">
       <UniqueIdentifier>{58074375-dbbe-4137-bbe5-54478d1a97c7}</UniqueIdentifier>
@@ -653,12 +647,6 @@
     <ClCompile Include="IPU\yuv2rgb.cpp">
       <Filter>System\Ps2\IPU</Filter>
     </ClCompile>
-    <ClCompile Include="IPU\mpeg2lib\Idct.cpp">
-      <Filter>System\Ps2\IPU\mpeg2lib</Filter>
-    </ClCompile>
-    <ClCompile Include="IPU\mpeg2lib\Mpeg.cpp">
-      <Filter>System\Ps2\IPU\mpeg2lib</Filter>
-    </ClCompile>
     <ClCompile Include="GS.cpp">
       <Filter>System\Ps2\GS\GIF</Filter>
     </ClCompile>
@@ -953,9 +941,6 @@
     <ClCompile Include="DEV9\PacketReader\EthernetFrame.cpp">
       <Filter>System\Ps2\DEV9\PacketReader</Filter>
     </ClCompile>
-    <ClCompile Include="DEV9\PacketReader\NetLib.cpp">
-      <Filter>System\Ps2\DEV9\PacketReader</Filter>
-    </ClCompile>
     <ClCompile Include="DEV9\pcap_io.cpp">
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
@@ -1247,7 +1232,6 @@
     <ClCompile Include="x86\iR5900Analysis.cpp">
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
     </ClCompile>
-    <ClCompile Include="GSDumpReplayer.cpp" />
     <ClCompile Include="GS\Renderers\DX12\GSTexture12.cpp">
       <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
     </ClCompile>
@@ -1400,6 +1384,9 @@
     </ClCompile>
     <ClCompile Include="SPU2\SndOut_XAudio2.cpp">
       <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="GSDumpReplayer.cpp">
+      <Filter>Tools</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1618,12 +1605,6 @@
     </ClInclude>
     <ClInclude Include="IPU\yuv2rgb.h">
       <Filter>System\Ps2\IPU</Filter>
-    </ClInclude>
-    <ClInclude Include="IPU\mpeg2lib\Mpeg.h">
-      <Filter>System\Ps2\IPU\mpeg2lib</Filter>
-    </ClInclude>
-    <ClInclude Include="IPU\mpeg2lib\Vlc.h">
-      <Filter>System\Ps2\IPU\mpeg2lib</Filter>
     </ClInclude>
     <ClInclude Include="DebugTools\Debug.h">
       <Filter>System\Ps2\Debug</Filter>
@@ -1850,6 +1831,9 @@
     <ClInclude Include="DEV9\PacketReader\EthernetFrame.h">
       <Filter>System\Ps2\DEV9\PacketReader</Filter>
     </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\MAC_Address.h">
+      <Filter>System\Ps2\DEV9\PacketReader</Filter>
+    </ClInclude>
     <ClInclude Include="DEV9\PacketReader\NetLib.h">
       <Filter>System\Ps2\DEV9\PacketReader</Filter>
     </ClInclude>
@@ -1984,9 +1968,6 @@
     </ClInclude>
     <ClInclude Include="GS\Renderers\Common\GSFastList.h">
       <Filter>System\Ps2\GS</Filter>
-    </ClInclude>
-    <ClInclude Include="GS.h">
-      <Filter>System\Ps2\GS\GIF</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\DX11\GSDevice11.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
@@ -2175,7 +2156,6 @@
     <ClInclude Include="x86\iR5900Analysis.h">
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
     </ClInclude>
-    <ClInclude Include="GSDumpReplayer.h" />
     <ClInclude Include="GS\Renderers\DX12\GSTexture12.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
     </ClInclude>
@@ -2227,7 +2207,6 @@
     <ClInclude Include="Frontend\Achievements.h">
       <Filter>Host</Filter>
     </ClInclude>
-    <ClInclude Include="Achievements.h" />
     <ClInclude Include="ShaderCacheVersion.h">
       <Filter>System\Include</Filter>
     </ClInclude>
@@ -2269,12 +2248,6 @@
     </ClInclude>
     <ClInclude Include="USB\qemu-usb\input-keymap.h">
       <Filter>System\Ps2\USB\qemu-usb</Filter>
-    </ClInclude>
-    <ClInclude Include="USB\readerwriterqueue\atomicops.h">
-      <Filter>System\Ps2\USB\readerwriterqueue</Filter>
-    </ClInclude>
-    <ClInclude Include="USB\readerwriterqueue\readerwriterqueue.h">
-      <Filter>System\Ps2\USB\readerwriterqueue</Filter>
     </ClInclude>
     <ClInclude Include="USB\shared\ringbuffer.h">
       <Filter>System\Ps2\USB\shared</Filter>
@@ -2344,6 +2317,18 @@
     </ClInclude>
     <ClInclude Include="GS\Renderers\HW\GSHwHack.h">
       <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="IPU\mpeg2_vlc.h">
+      <Filter>System\Ps2\IPU</Filter>
+    </ClInclude>
+    <ClInclude Include="Achievements.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="GSDumpReplayer.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="GS.h">
+      <Filter>System\Ps2\GS\GIF</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

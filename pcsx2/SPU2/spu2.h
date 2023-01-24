@@ -54,15 +54,17 @@ void SetDeviceSampleRateMultiplier(double multiplier);
 
 /// Returns true if we're currently running in PSX mode.
 bool IsRunningPSXMode();
+
+/// Returns the current sample rate the SPU2 is operating at.
+s32 GetConsoleSampleRate();
+
+/// Tells SPU2 to forward audio packets to GSCapture.
+void SetAudioCaptureActive(bool active);
+bool IsAudioCaptureActive();
 } // namespace SPU2
 
 void SPU2write(u32 mem, u16 value);
 u16 SPU2read(u32 mem);
-
-// extended funcs
-// returns true if successful
-bool SPU2setupRecording(const std::string* filename);
-void SPU2endRecording();
 
 void SPU2async(u32 cycles);
 s32 SPU2freeze(FreezeAction mode, freezeData* data);

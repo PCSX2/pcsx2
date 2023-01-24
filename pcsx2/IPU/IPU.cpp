@@ -19,7 +19,6 @@
 #include "IPU.h"
 #include "IPU_MultiISA.h"
 #include "IPUdma.h"
-#include "mpeg2lib/Mpeg.h"
 
 #include <limits.h>
 #include "Config.h"
@@ -46,9 +45,46 @@ int coded_block_pattern = 0;
 
 alignas(16) u8 g_ipu_indx4[16*16/2];
 
+alignas(16) const int non_linear_quantizer_scale[32] =
+{
+	0,  1,  2,  3,  4,  5,	6,	7,
+	8, 10, 12, 14, 16, 18,  20,  22,
+	24, 28, 32, 36, 40, 44,  48,  52,
+	56, 64, 72, 80, 88, 96, 104, 112
+};
+
 uint eecount_on_last_vdec = 0;
 bool FMVstarted = false;
 bool EnableFMV = false;
+
+// Also defined in IPU_MultiISA.cpp, but IPU.cpp is not unshared.
+// whenever reading fractions of bytes. The low bits always come from the next byte
+// while the high bits come from the current byte
+__ri static u8 getBits32(u8* address, bool advance)
+{
+	if (!g_BP.FillBuffer(32))
+		return 0;
+
+	const u8* readpos = &g_BP.internal_qwc->_u8[g_BP.BP / 8];
+
+	if (uint shift = (g_BP.BP & 7))
+	{
+		u32 mask = (0xff >> shift);
+		mask = mask | (mask << 8) | (mask << 16) | (mask << 24);
+
+		*(u32*)address = ((~mask & *(u32*)(readpos + 1)) >> (8 - shift)) | (((mask) & *(u32*)readpos) << shift);
+	}
+	else
+	{
+		// Bit position-aligned -- no masking/shifting necessary
+		*(u32*)address = *(u32*)readpos;
+	}
+
+	if (advance)
+		g_BP.Advance(32);
+
+	return 1;
+}
 
 void tIPU_cmd::clear()
 {
@@ -89,7 +125,6 @@ void ReportIPU()
 	Console.WriteLn("thresh = 0x%x.", g_ipu_thresh);
 	Console.WriteLn("coded_block_pattern = 0x%x.", coded_block_pattern);
 	Console.WriteLn("g_decoder = 0x%x.", &decoder);
-	Console.WriteLn("mpeg2_scan = 0x%x.", &mpeg2_scan);
 	Console.WriteLn(ipu_cmd.desc());
 	Console.Newline();
 }
@@ -346,7 +381,6 @@ __fi bool ipuWrite64(u32 mem, u64 value)
 	return true;
 }
 
-
 //////////////////////////////////////////////////////
 // IPU Commands (exec on worker thread only)
 
@@ -414,130 +448,6 @@ static void ipuSETTH(u32 val)
 	g_ipu_thresh[0] = (val & 0x1ff);
 	g_ipu_thresh[1] = ((val >> 16) & 0x1ff);
 	IPU_LOG("SETTH (Set threshold value)command %x.", val&0x1ff01ff);
-}
-
-// --------------------------------------------------------------------------------------
-//  Buffer reader
-// --------------------------------------------------------------------------------------
-
-__ri u32 UBITS(uint bits)
-{
-	uint readpos8 = g_BP.BP/8;
-
-	uint result = BigEndian(*(u32*)( (u8*)g_BP.internal_qwc + readpos8 ));
-	uint bp7 = (g_BP.BP & 7);
-	result <<= bp7;
-	result >>= (32 - bits);
-
-	return result;
-}
-
-__ri s32 SBITS(uint bits)
-{
-	// Read an unaligned 32 bit value and then shift the bits up and then back down.
-
-	uint readpos8 = g_BP.BP/8;
-
-	int result = BigEndian(*(s32*)( (s8*)g_BP.internal_qwc + readpos8 ));
-	uint bp7 = (g_BP.BP & 7);
-	result <<= bp7;
-	result >>= (32 - bits);
-
-	return result;
-}
-
-// whenever reading fractions of bytes. The low bits always come from the next byte
-// while the high bits come from the current byte
-u8 getBits64(u8 *address, bool advance)
-{
-	if (!g_BP.FillBuffer(64)) return 0;
-
-	const u8* readpos = &g_BP.internal_qwc[0]._u8[g_BP.BP/8];
-
-	if (uint shift = (g_BP.BP & 7))
-	{
-		u64 mask = (0xff >> shift);
-		mask = mask | (mask << 8) | (mask << 16) | (mask << 24) | (mask << 32) | (mask << 40) | (mask << 48) | (mask << 56);
-
-		*(u64*)address = ((~mask & *(u64*)(readpos + 1)) >> (8 - shift)) | (((mask) & *(u64*)readpos) << shift);
-	}
-	else
-	{
-		*(u64*)address = *(u64*)readpos;
-	}
-
-	if (advance) g_BP.Advance(64);
-
-	return 1;
-}
-
-// whenever reading fractions of bytes. The low bits always come from the next byte
-// while the high bits come from the current byte
-__fi u8 getBits32(u8 *address, bool advance)
-{
-	if (!g_BP.FillBuffer(32)) return 0;
-
-	const u8* readpos = &g_BP.internal_qwc->_u8[g_BP.BP/8];
-
-	if(uint shift = (g_BP.BP & 7))
-	{
-		u32 mask = (0xff >> shift);
-		mask = mask | (mask << 8) | (mask << 16) | (mask << 24);
-
-		*(u32*)address = ((~mask & *(u32*)(readpos + 1)) >> (8 - shift)) | (((mask) & *(u32*)readpos) << shift);
-	}
-	else
-	{
-		// Bit position-aligned -- no masking/shifting necessary
-		*(u32*)address = *(u32*)readpos;
-	}
-
-	if (advance) g_BP.Advance(32);
-
-	return 1;
-}
-
-__fi u8 getBits16(u8 *address, bool advance)
-{
-	if (!g_BP.FillBuffer(16)) return 0;
-
-	const u8* readpos = &g_BP.internal_qwc[0]._u8[g_BP.BP/8];
-
-	if (uint shift = (g_BP.BP & 7))
-	{
-		uint mask = (0xff >> shift);
-		mask = mask | (mask << 8);
-		*(u16*)address = ((~mask & *(u16*)(readpos + 1)) >> (8 - shift)) | (((mask) & *(u16*)readpos) << shift);
-	}
-	else
-	{
-		*(u16*)address = *(u16*)readpos;
-	}
-
-	if (advance) g_BP.Advance(16);
-
-	return 1;
-}
-
-u8 getBits8(u8 *address, bool advance)
-{
-	if (!g_BP.FillBuffer(8)) return 0;
-
-	const u8* readpos = &g_BP.internal_qwc[0]._u8[g_BP.BP/8];
-
-	if (uint shift = (g_BP.BP & 7))
-	{
-		uint mask = (0xff >> shift);
-		*(u8*)address = (((~mask) & readpos[1]) >> (8 - shift)) | (((mask) & *readpos) << shift);
-	}
-	else
-	{
-		*(u8*)address = *(u8*)readpos;
-	}
-
-	if (advance) g_BP.Advance(8);
-
-	return 1;
 }
 
 // --------------------------------------------------------------------------------------

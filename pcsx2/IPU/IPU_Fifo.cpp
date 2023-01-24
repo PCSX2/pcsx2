@@ -15,9 +15,9 @@
 
 #include "PrecompiledHeader.h"
 #include "Common.h"
-#include "IPU.h"
+#include "IPU/IPU.h"
 #include "IPU/IPUdma.h"
-#include "mpeg2lib/Mpeg.h"
+#include "IPU/IPU_MultiISA.h"
 
 alignas(16) IPU_Fifo ipu_fifo;
 

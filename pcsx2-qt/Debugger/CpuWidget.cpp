@@ -19,6 +19,8 @@
 
 #include "DisassemblyWidget.h"
 #include "BreakpointDialog.h"
+#include "Models/BreakpointModel.h"
+#include "Models/ThreadModel.h"
 
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/Breakpoints.h"
@@ -27,7 +29,6 @@
 #include "common/BitCast.h"
 
 #include "QtUtils.h"
-#include <QtWidgets/QHeaderView>
 #include <QtGui/QClipboard>
 #include <QtWidgets/QMessageBox>
 #include <QtConcurrent/QtConcurrent>
@@ -40,6 +41,9 @@ using namespace MipsStackWalk;
 
 CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	: m_cpu(cpu)
+	, m_bpModel(cpu)
+	, m_threadModel(cpu)
+	, m_stackModel(cpu)
 {
 	m_ui.setupUi(this);
 
@@ -55,18 +59,23 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	connect(m_ui.registerWidget, &RegisterWidget::VMUpdate, this, &CpuWidget::reloadCPUWidgets);
 	connect(m_ui.disassemblyWidget, &DisassemblyWidget::VMUpdate, this, &CpuWidget::reloadCPUWidgets);
 
-	connect(m_ui.tabWidget, &QTabWidget::currentChanged, [this] { fixBPListColumnSize(); });
-	connect(m_ui.breakpointList, &QTableWidget::customContextMenuRequested, this, &CpuWidget::onBPListContextMenu);
-	connect(m_ui.breakpointList, &QTableWidget::itemChanged, this, &CpuWidget::onBPListItemChange);
+	connect(m_ui.breakpointList, &QTableView::customContextMenuRequested, this, &CpuWidget::onBPListContextMenu);
+	connect(m_ui.breakpointList, &QTableView::doubleClicked, this, &CpuWidget::onBPListDoubleClicked);
 
-	connect(m_ui.threadList, &QTableWidget::customContextMenuRequested, this, &CpuWidget::onThreadListContextMenu);
-	connect(m_ui.threadList, &QTableWidget::cellDoubleClicked, this, &CpuWidget::onThreadListDoubleClick);
+	m_ui.breakpointList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	m_ui.breakpointList->setModel(&m_bpModel);
 
-	connect(m_ui.threadList, &QTableWidget::customContextMenuRequested, this, &CpuWidget::onThreadListContextMenu);
-	connect(m_ui.threadList, &QTableWidget::cellDoubleClicked, this, &CpuWidget::onThreadListDoubleClick);
+	connect(m_ui.threadList, &QTableView::customContextMenuRequested, this, &CpuWidget::onThreadListContextMenu);
+	connect(m_ui.threadList, &QTableView::doubleClicked, this, &CpuWidget::onThreadListDoubleClick);
 
-	connect(m_ui.stackframeList, &QTableWidget::customContextMenuRequested, this, &CpuWidget::onStackListContextMenu);
-	connect(m_ui.stackframeList, &QTableWidget::cellDoubleClicked, this, &CpuWidget::onStackListDoubleClick);
+	m_ui.threadList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	m_ui.threadList->setModel(&m_threadModel);
+
+	connect(m_ui.stackList, &QTableView::customContextMenuRequested, this, &CpuWidget::onStackListContextMenu);
+	connect(m_ui.stackList, &QTableView::doubleClicked, this, &CpuWidget::onStackListDoubleClick);
+
+	m_ui.stackList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	m_ui.stackList->setModel(&m_stackModel);
 
 	connect(m_ui.tabWidgetRegFunc, &QTabWidget::currentChanged, [this](int i) {if(i == 1){updateFunctionList(true);} });
 	connect(m_ui.listFunctions, &QListWidget::customContextMenuRequested, this, &CpuWidget::onFuncListContextMenu);
@@ -86,9 +95,6 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	m_ui.registerWidget->SetCpu(&cpu);
 	m_ui.memoryviewWidget->SetCpu(&cpu);
 
-	if (m_cpu.getCpuType() == BREAKPOINT_EE)
-		CBreakPoints::SetUpdateHandler(std::bind(&CpuWidget::reloadCPUWidgets, this));
-
 	this->repaint();
 }
 
@@ -99,11 +105,6 @@ void CpuWidget::paintEvent(QPaintEvent* event)
 	m_ui.registerWidget->update();
 	m_ui.disassemblyWidget->update();
 	m_ui.memoryviewWidget->update();
-}
-
-void CpuWidget::resizeEvent(QResizeEvent* event)
-{
-	fixBPListColumnSize();
 }
 
 // The cpu shouldn't be alive when these are called
@@ -159,11 +160,11 @@ void CpuWidget::onStepOut()
 	// Allow the cpu to skip this pc if it is a breakpoint
 	CBreakPoints::SetSkipFirst(m_cpu.getCpuType(), m_cpu.getPC());
 
-	if (m_stacklistObjects.size() < 2)
+	if (m_stackModel.rowCount() < 2)
 		return;
 
 	Host::RunOnCPUThread([&] {
-		CBreakPoints::AddBreakPoint(m_cpu.getCpuType(), m_stacklistObjects.at(1).pc, true);
+		CBreakPoints::AddBreakPoint(m_cpu.getCpuType(), m_stackModel.data(m_stackModel.index(1, StackModel::PC), Qt::UserRole).toUInt(), true);
 		m_cpu.resumeCpu();
 	});
 
@@ -234,145 +235,18 @@ void CpuWidget::onVMPaused()
 
 void CpuWidget::updateBreakpoints()
 {
-	m_ui.breakpointList->blockSignals(true);
-
-	m_ui.breakpointList->setRowCount(0);
-	m_bplistObjects.clear();
-
-	int iter = 0;
-	for (const auto& breakpoint : CBreakPoints::GetBreakpoints())
-	{
-		if (breakpoint.cpu != m_cpu.getCpuType())
-			continue;
-
-		if (breakpoint.temporary)
-			continue;
-
-		m_ui.breakpointList->insertRow(iter);
-		BreakpointObject obj;
-		obj.bp = std::make_shared<BreakPoint>(breakpoint);
-		m_bplistObjects.push_back(obj);
-
-		// Type (R/O)
-		QTableWidgetItem* typeItem = new QTableWidgetItem();
-		typeItem->setText(tr("Execute"));
-		typeItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 0, typeItem);
-
-		// Offset (R/O), possibly allow changing offset???
-		QTableWidgetItem* offsetItem = new QTableWidgetItem();
-		offsetItem->setText(FilledQStringFromValue(breakpoint.addr, 16));
-		offsetItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 1, offsetItem);
-
-		// Size & Label (R/O)
-		QTableWidgetItem* sizeLabelItem = new QTableWidgetItem();
-		sizeLabelItem->setText(m_cpu.GetSymbolMap().GetLabelString(breakpoint.addr).c_str());
-		sizeLabelItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 2, sizeLabelItem);
-
-		// Opcode (R/O)
-		QTableWidgetItem* opcodeItem = new QTableWidgetItem();
-		opcodeItem->setText(m_ui.disassemblyWidget->GetLineDisasm(breakpoint.addr));
-		opcodeItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 3, opcodeItem);
-
-		// Condition (R/W)
-		QTableWidgetItem* conditionItem = new QTableWidgetItem();
-		conditionItem->setText(breakpoint.hasCond ? QString::fromLocal8Bit(breakpoint.cond.expressionString) : "");
-		conditionItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEditable);
-		m_ui.breakpointList->setItem(iter, 4, conditionItem);
-
-		// Hits (R/O) (Disabled for execute bp)
-		QTableWidgetItem* hitsItem = new QTableWidgetItem();
-		hitsItem->setText("N/A");
-		hitsItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 5, hitsItem);
-
-		// Enabled (R/W)
-		QTableWidgetItem* enabledItem = new QTableWidgetItem();
-		enabledItem->setCheckState(breakpoint.enabled ? Qt::Checked : Qt::Unchecked);
-		enabledItem->setFlags(Qt::ItemFlag::ItemIsUserCheckable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.breakpointList->setItem(iter, 6, enabledItem);
-
-		iter++;
-	}
-
-	for (const auto& memcheck : CBreakPoints::GetMemChecks())
-	{
-		if (memcheck.cpu != m_cpu.getCpuType())
-			continue;
-
-		m_ui.breakpointList->insertRow(iter);
-		BreakpointObject obj;
-		obj.mc = std::make_shared<MemCheck>(memcheck);
-		m_bplistObjects.push_back(obj);
-
-		// Type (R/O)
-		QTableWidgetItem* typeItem = new QTableWidgetItem();
-		QString type("");
-		type += (memcheck.cond & MEMCHECK_READ) ? tr("Read") : "";
-		type += ((memcheck.cond & MEMCHECK_BOTH) == MEMCHECK_BOTH) ? ", " : " ";
-		type += (memcheck.cond & MEMCHECK_WRITE) ? (memcheck.cond & MEMCHECK_WRITE_ONCHANGE) ? tr("Write(C)") : tr("Write") : "";
-		typeItem->setText(type);
-		typeItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 0, typeItem);
-
-		// Offset (R/O), possibly allow changing offset?
-		QTableWidgetItem* offsetItem = new QTableWidgetItem();
-		offsetItem->setText(FilledQStringFromValue(memcheck.start, 16));
-		offsetItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 1, offsetItem);
-
-		// Size & Label (R/O)
-		QTableWidgetItem* sizeLabelItem = new QTableWidgetItem();
-		sizeLabelItem->setText(QString::number(memcheck.end - memcheck.start, 16));
-		sizeLabelItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEditable);
-		m_ui.breakpointList->setItem(iter, 2, sizeLabelItem);
-
-		// Opcode (R/O)
-		QTableWidgetItem* opcodeItem = new QTableWidgetItem();
-		opcodeItem->setText(m_ui.disassemblyWidget->GetLineDisasm(memcheck.start));
-		opcodeItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 3, opcodeItem);
-
-		// Condition (R/W) (Disabled for memchecks)
-		QTableWidgetItem* conditionItem = new QTableWidgetItem();
-		conditionItem->setText("N/A");
-		conditionItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 4, conditionItem);
-
-
-		// Hits (R/O)
-		QTableWidgetItem* hitsItem = new QTableWidgetItem();
-		hitsItem->setText(QString::number(memcheck.numHits));
-		hitsItem->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
-		m_ui.breakpointList->setItem(iter, 5, hitsItem);
-
-		// Enabled (R/W)
-		QTableWidgetItem* enabledItem = new QTableWidgetItem();
-		enabledItem->setCheckState((memcheck.result & MEMCHECK_BREAK) ? Qt::Checked : Qt::Unchecked);
-		enabledItem->setFlags(Qt::ItemFlag::ItemIsUserCheckable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.breakpointList->setItem(iter, 6, enabledItem);
-
-		iter++;
-	}
-
-	m_ui.breakpointList->blockSignals(false);
+	m_bpModel.refreshData();
 }
 
-void CpuWidget::fixBPListColumnSize()
+void CpuWidget::onBPListDoubleClicked(const QModelIndex& index)
 {
-	m_ui.breakpointList->horizontalHeader()->resizeSection(0, 90);
-	m_ui.breakpointList->horizontalHeader()->resizeSection(1, 65);
-	m_ui.breakpointList->horizontalHeader()->resizeSection(5, 40);
-	m_ui.breakpointList->horizontalHeader()->resizeSection(6, 60);
-
-	constexpr int currentWidthTotal = 90 + 65 + 40 + 60;
-	const int sectionWidth = (m_ui.breakpointList->width() - currentWidthTotal) / 3.0f;
-	m_ui.breakpointList->horizontalHeader()->resizeSection(2, sectionWidth);
-	m_ui.breakpointList->horizontalHeader()->resizeSection(3, sectionWidth);
-	m_ui.breakpointList->horizontalHeader()->resizeSection(4, sectionWidth);
+	if (index.isValid())
+	{
+		if (index.column() == BreakpointModel::OFFSET)
+		{
+			m_ui.disassemblyWidget->gotoAddress(m_bpModel.data(index, Qt::UserRole).toUInt());
+		}
+	}
 }
 
 void CpuWidget::onBPListContextMenu(QPoint pos)
@@ -380,14 +254,11 @@ void CpuWidget::onBPListContextMenu(QPoint pos)
 	if (!m_cpu.isAlive())
 		return;
 
-	if (m_bplistContextMenu)
-		delete m_bplistContextMenu;
-
-	m_bplistContextMenu = new QMenu(m_ui.breakpointList);
+	QMenu* contextMenu = new QMenu(tr("Breakpoint List Context Menu"), m_ui.breakpointList);
 
 	QAction* newAction = new QAction(tr("New"), m_ui.breakpointList);
 	connect(newAction, &QAction::triggered, this, &CpuWidget::contextBPListNew);
-	m_bplistContextMenu->addAction(newAction);
+	contextMenu->addAction(newAction);
 
 	const QItemSelectionModel* selModel = m_ui.breakpointList->selectionModel();
 
@@ -395,98 +266,21 @@ void CpuWidget::onBPListContextMenu(QPoint pos)
 	{
 		QAction* editAction = new QAction(tr("Edit"), m_ui.breakpointList);
 		connect(editAction, &QAction::triggered, this, &CpuWidget::contextBPListEdit);
-		m_bplistContextMenu->addAction(editAction);
+		contextMenu->addAction(editAction);
 
-		// Only copy when one column is selected
-		// Shouldn't be trivial to support cross column copy
 		if (selModel->selectedIndexes().count() == 1)
 		{
 			QAction* copyAction = new QAction(tr("Copy"), m_ui.breakpointList);
 			connect(copyAction, &QAction::triggered, this, &CpuWidget::contextBPListCopy);
-			m_bplistContextMenu->addAction(copyAction);
+			contextMenu->addAction(copyAction);
 		}
 
 		QAction* deleteAction = new QAction(tr("Delete"), m_ui.breakpointList);
 		connect(deleteAction, &QAction::triggered, this, &CpuWidget::contextBPListDelete);
-		m_bplistContextMenu->addAction(deleteAction);
+		contextMenu->addAction(deleteAction);
 	}
 
-	m_bplistContextMenu->popup(m_ui.breakpointList->mapToGlobal(pos));
-}
-
-void CpuWidget::onBPListItemChange(QTableWidgetItem* item)
-{
-	if (item->column() == 2 && m_bplistObjects.at(item->row()).mc) // Size / Label column. Size is editable for memchecks
-	{
-		const auto& mc = m_bplistObjects.at(item->row()).mc;
-
-		bool ok;
-		u32 val = item->text().toUInt(&ok, 16);
-		if (!ok)
-		{
-			QMessageBox::warning(this, tr("Error"), tr("Invalid size \"%1\"").arg(item->text()));
-			item->setText(QString::number((mc->end - mc->start), 16));
-			return;
-		}
-
-		if (val == (mc->end - mc->start))
-		{
-			return;
-		}
-		Host::RunOnCPUThread([this, val, mc] {
-			CBreakPoints::RemoveMemCheck(m_cpu.getCpuType(), mc->start, mc->end);
-
-			CBreakPoints::AddMemCheck(m_cpu.getCpuType(), mc->start, mc->start + val, mc->cond, mc->result);
-		});
-		updateBreakpoints();
-	}
-	else if (item->column() == 4 && m_bplistObjects.at(item->row()).bp) // Condition column. Only editable for breakpoints
-	{
-		const auto& bp = m_bplistObjects.at(item->row()).bp;
-
-		if (item->text().isEmpty() && bp->hasCond)
-		{
-			Host::RunOnCPUThread([this, bp] {
-				CBreakPoints::ChangeBreakPointRemoveCond(m_cpu.getCpuType(), bp->addr);
-			});
-
-			updateBreakpoints();
-		}
-		else if (item->text() != QString::fromLocal8Bit(&bp->cond.expressionString[0]))
-		{
-			PostfixExpression expression;
-
-			if (!m_cpu.initExpression(item->text().toLocal8Bit().constData(), expression))
-			{
-				QMessageBox::warning(this, tr("Error"), tr("Invalid condition \"%1\"").arg(item->text()));
-				item->setText(QString::fromLocal8Bit(&bp->cond.expressionString[0]));
-				return;
-			}
-			BreakPointCond cond;
-			cond.debug = &m_cpu;
-			cond.expression = expression;
-			strcpy(&cond.expressionString[0], item->text().toLocal8Bit().constData());
-			Host::RunOnCPUThread([this, bp, cond] {
-				CBreakPoints::ChangeBreakPointAddCond(m_cpu.getCpuType(), bp->addr, cond);
-			});
-			updateBreakpoints();
-		}
-	}
-	else if (item->column() == 6)
-	{
-		auto bpmc = m_bplistObjects.at(item->row());
-
-		Host::RunOnCPUThread([this, bpmc, checked = item->checkState()] {
-			if (bpmc.bp)
-			{
-				CBreakPoints::ChangeBreakPoint(m_cpu.getCpuType(), bpmc.bp->addr, checked);
-			}
-			else
-			{
-				CBreakPoints::ChangeMemCheck(m_cpu.getCpuType(), bpmc.mc->start, bpmc.mc->end, bpmc.mc->cond, MemCheckResult(bpmc.mc->result ^ MEMCHECK_BREAK));
-			}
-		});
-	}
+	contextMenu->popup(m_ui.breakpointList->mapToGlobal(pos));
 }
 
 void CpuWidget::contextBPListCopy()
@@ -496,7 +290,7 @@ void CpuWidget::contextBPListCopy()
 	if (!selModel->hasSelection())
 		return;
 
-	QGuiApplication::clipboard()->setText(m_ui.breakpointList->selectedItems().first()->text());
+	QGuiApplication::clipboard()->setText(m_bpModel.data(selModel->currentIndex()).toString());
 }
 
 void CpuWidget::contextBPListDelete()
@@ -506,34 +300,21 @@ void CpuWidget::contextBPListDelete()
 	if (!selModel->hasSelection())
 		return;
 
-	int last_row = -1;
-	for (auto& index : selModel->selectedIndexes())
+	QModelIndexList rows = selModel->selectedIndexes();
+
+	std::sort(rows.begin(), rows.end(), [](const QModelIndex& a, const QModelIndex& b) {
+		return a.row() > b.row();
+	});
+
+	for (const QModelIndex& index : rows)
 	{
-		if (index.row() == last_row) // If the next index is in the same row, don't delete that breakpoint twice!
-			continue;
-		auto& bpObject = m_bplistObjects.at(index.row());
-
-		Host::RunOnCPUThread([&] {
-			if (bpObject.bp)
-			{
-				CBreakPoints::RemoveBreakPoint(m_cpu.getCpuType(), bpObject.bp->addr);
-			}
-			else
-			{
-				CBreakPoints::RemoveMemCheck(m_cpu.getCpuType(), bpObject.mc->start, bpObject.mc->end);
-			}
-		});
-
-		last_row = index.row();
+		m_bpModel.removeRows(index.row(), 1);
 	}
-	updateBreakpoints();
 }
 
 void CpuWidget::contextBPListNew()
 {
-	BreakpointDialog* bpDialog = new BreakpointDialog(this, &m_cpu);
-	connect(bpDialog, &BreakpointDialog::accepted, this, &CpuWidget::updateBreakpoints);
-
+	BreakpointDialog* bpDialog = new BreakpointDialog(this, &m_cpu, m_bpModel);
 	bpDialog->show();
 }
 
@@ -544,20 +325,11 @@ void CpuWidget::contextBPListEdit()
 	if (!selModel->hasSelection())
 		return;
 
-	auto& bpObject = m_bplistObjects.at(selModel->selectedIndexes().first().row());
+	const int selectedRow = selModel->selectedIndexes().first().row();
 
-	BreakpointDialog* bpDialog;
+	auto bpObject = m_bpModel.at(selectedRow);
 
-	if (bpObject.bp)
-	{
-		bpDialog = new BreakpointDialog(this, &m_cpu, bpObject.bp.get());
-	}
-	else
-	{
-		bpDialog = new BreakpointDialog(this, &m_cpu, bpObject.mc.get());
-	}
-
-	connect(bpDialog, &BreakpointDialog::accepted, this, &CpuWidget::updateBreakpoints);
+	BreakpointDialog* bpDialog = new BreakpointDialog(this, &m_cpu, m_bpModel, bpObject, selectedRow);
 	bpDialog->show();
 }
 
@@ -601,127 +373,41 @@ void CpuWidget::updateFunctionList(bool whenEmpty)
 
 void CpuWidget::updateThreads()
 {
-	m_ui.threadList->setRowCount(0);
-
-	if (m_cpu.getCpuType() == BREAKPOINT_EE)
-		m_threadlistObjects = getEEThreads();
-
-	for (size_t i = 0; i < m_threadlistObjects.size(); i++)
-	{
-		m_ui.threadList->insertRow(i);
-
-		const auto& thread = m_threadlistObjects[i];
-
-		if (thread.data.status == THS_RUN)
-			m_activeThread = thread;
-
-		QTableWidgetItem* idItem = new QTableWidgetItem();
-		idItem->setText(QString::number(thread.tid));
-		idItem->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.threadList->setItem(i, 0, idItem);
-
-		QTableWidgetItem* pcItem = new QTableWidgetItem();
-		if (thread.data.status == THS_RUN)
-			pcItem->setText(FilledQStringFromValue(m_cpu.getPC(), 16));
-		else
-			pcItem->setText(FilledQStringFromValue(thread.data.entry, 16));
-		pcItem->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.threadList->setItem(i, 1, pcItem);
-
-		QTableWidgetItem* entryItem = new QTableWidgetItem();
-		entryItem->setText(FilledQStringFromValue(thread.data.entry_init, 16));
-		entryItem->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.threadList->setItem(i, 2, entryItem);
-
-		QTableWidgetItem* priorityItem = new QTableWidgetItem();
-		priorityItem->setText(QString::number(thread.data.currentPriority));
-		priorityItem->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.threadList->setItem(i, 3, priorityItem);
-
-		QString statusString;
-		switch (thread.data.status)
-		{
-			case THS_BAD:
-				statusString = tr("Bad");
-				break;
-			case THS_RUN:
-				statusString = tr("Running");
-				break;
-			case THS_READY:
-				statusString = tr("Ready");
-				break;
-			case THS_WAIT:
-				statusString = tr("Waiting");
-				break;
-			case THS_SUSPEND:
-				statusString = tr("Suspended");
-				break;
-			case THS_WAIT_SUSPEND:
-				statusString = tr("Waiting/Suspended");
-				break;
-			case THS_DORMANT:
-				statusString = tr("Dormant");
-				break;
-		}
-
-		QTableWidgetItem* statusItem = new QTableWidgetItem();
-		statusItem->setText(statusString);
-		statusItem->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.threadList->setItem(i, 4, statusItem);
-
-		QString waitTypeString;
-		switch (thread.data.waitType)
-		{
-			case WAIT_NONE:
-				waitTypeString = tr("None");
-				break;
-			case WAIT_WAKEUP_REQ:
-				waitTypeString = tr("Wakeup request");
-				break;
-			case WAIT_SEMA:
-				waitTypeString = tr("Semaphore");
-				break;
-		}
-
-		QTableWidgetItem* waitItem = new QTableWidgetItem();
-		waitItem->setText(waitTypeString);
-		waitItem->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.threadList->setItem(i, 5, waitItem);
-	}
+	m_threadModel.refreshData();
 }
 
 void CpuWidget::onThreadListContextMenu(QPoint pos)
 {
-	if (!m_threadlistContextMenu)
-	{
-		m_threadlistContextMenu = new QMenu(m_ui.threadList);
+	if (!m_ui.threadList->selectionModel()->hasSelection())
+		return;
 
-		QAction* copyAction = new QAction(tr("Copy"), m_ui.threadList);
-		connect(copyAction, &QAction::triggered, [this] {
-			const auto& items = m_ui.threadList->selectedItems();
-			if (!items.size())
-				return;
-			QApplication::clipboard()->setText(items.first()->text());
-		});
-		m_threadlistContextMenu->addAction(copyAction);
-	}
+	QMenu* contextMenu = new QMenu(tr("Thread List Context Menu"), m_ui.threadList);
 
-	m_threadlistContextMenu->exec(m_ui.threadList->mapToGlobal(pos));
+	QAction* actionCopy = new QAction(tr("Copy"), m_ui.threadList);
+	connect(actionCopy, &QAction::triggered, [this]() {
+		const auto* selModel = m_ui.threadList->selectionModel();
+
+		if (!selModel->hasSelection())
+			return;
+
+		QGuiApplication::clipboard()->setText(m_ui.threadList->model()->data(selModel->currentIndex()).toString());
+	});
+	contextMenu->addAction(actionCopy);
+
+	contextMenu->popup(m_ui.threadList->mapToGlobal(pos));
 }
 
-void CpuWidget::onThreadListDoubleClick(int row, int column)
+void CpuWidget::onThreadListDoubleClick(const QModelIndex& index)
 {
-	const auto& entry = m_threadlistObjects.at(row);
-	if (column == 1) // PC
+	switch (index.column())
 	{
-		if (entry.data.status == THS_RUN)
-			m_ui.disassemblyWidget->gotoAddress(m_cpu.getPC());
-		else
-			m_ui.disassemblyWidget->gotoAddress(entry.data.entry);
-	}
-	else if (column == 2) // Entry Point
-	{
-		m_ui.disassemblyWidget->gotoAddress(entry.data.entry_init);
+		case ThreadModel::ThreadColumns::ENTRY:
+			m_ui.memoryviewWidget->gotoAddress(m_ui.threadList->model()->data(index, Qt::UserRole).toUInt());
+			m_ui.tabWidget->setCurrentWidget(m_ui.tab_memory);
+			break;
+		default: // Default to PC
+			m_ui.disassemblyWidget->gotoAddress(m_ui.threadList->model()->data(m_ui.threadList->model()->index(index.row(), ThreadModel::ThreadColumns::PC), Qt::UserRole).toUInt());
+			break;
 	}
 }
 
@@ -789,72 +475,46 @@ void CpuWidget::onFuncListDoubleClick(QListWidgetItem* item)
 
 void CpuWidget::updateStackFrames()
 {
-	m_ui.stackframeList->setRowCount(0);
-
-	m_stacklistObjects = MipsStackWalk::Walk(&m_cpu, m_cpu.getPC(), m_cpu.getRegister(0, 31), m_cpu.getRegister(0, 29),
-		m_activeThread.data.entry_init, m_activeThread.data.stack);
-
-	for (size_t i = 0; i < m_stacklistObjects.size(); i++)
-	{
-		m_ui.stackframeList->insertRow(i);
-
-		const auto& stackFrame = m_stacklistObjects.at(i);
-
-		QTableWidgetItem* entryItem = new QTableWidgetItem();
-		entryItem->setText(FilledQStringFromValue(stackFrame.entry, 16));
-		entryItem->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.stackframeList->setItem(i, 0, entryItem);
-
-		QTableWidgetItem* entryName = new QTableWidgetItem();
-		entryName->setText(m_cpu.GetSymbolMap().GetLabelString(stackFrame.entry).c_str());
-		entryName->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.stackframeList->setItem(i, 1, entryName);
-
-		QTableWidgetItem* entryPC = new QTableWidgetItem();
-		entryPC->setText(FilledQStringFromValue(stackFrame.pc, 16));
-		entryPC->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.stackframeList->setItem(i, 2, entryPC);
-
-		QTableWidgetItem* entryOpcode = new QTableWidgetItem();
-		entryOpcode->setText(m_ui.disassemblyWidget->GetLineDisasm(stackFrame.pc));
-		entryOpcode->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.stackframeList->setItem(i, 3, entryOpcode);
-
-		QTableWidgetItem* entrySP = new QTableWidgetItem();
-		entrySP->setText(FilledQStringFromValue(stackFrame.sp, 16));
-		entrySP->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.stackframeList->setItem(i, 4, entrySP);
-
-		QTableWidgetItem* entryStackSize = new QTableWidgetItem();
-		entryStackSize->setText(QString::number(stackFrame.stackSize));
-		entryStackSize->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
-		m_ui.stackframeList->setItem(i, 5, entryStackSize);
-	}
+	m_stackModel.refreshData();
 }
 
 void CpuWidget::onStackListContextMenu(QPoint pos)
 {
-	if (!m_stacklistContextMenu)
-	{
-		m_stacklistContextMenu = new QMenu(m_ui.stackframeList);
+	if (!m_ui.stackList->selectionModel()->hasSelection())
+		return;
 
-		QAction* copyAction = new QAction(tr("Copy"), m_ui.stackframeList);
-		connect(copyAction, &QAction::triggered, [this] {
-			const auto& items = m_ui.stackframeList->selectedItems();
-			if (!items.size())
-				return;
-			QApplication::clipboard()->setText(items.first()->text());
-		});
-		m_stacklistContextMenu->addAction(copyAction);
-	}
+	QMenu* contextMenu = new QMenu(tr("Stack List Context Menu"), m_ui.stackList);
 
-	m_stacklistContextMenu->exec(m_ui.stackframeList->mapToGlobal(pos));
+	QAction* actionCopy = new QAction(tr("Copy"), m_ui.stackList);
+	connect(actionCopy, &QAction::triggered, [this]() {
+		const auto* selModel = m_ui.stackList->selectionModel();
+
+		if (!selModel->hasSelection())
+			return;
+
+		QGuiApplication::clipboard()->setText(m_ui.stackList->model()->data(selModel->currentIndex()).toString());
+	});
+	contextMenu->addAction(actionCopy);
+
+	contextMenu->popup(m_ui.stackList->mapToGlobal(pos));
 }
 
-void CpuWidget::onStackListDoubleClick(int row, int column)
+void CpuWidget::onStackListDoubleClick(const QModelIndex& index)
 {
-	const auto& entry = m_stacklistObjects.at(row);
-	m_ui.disassemblyWidget->gotoAddress(entry.pc);
+	switch (index.column())
+	{
+		case StackModel::StackModel::ENTRY:
+		case StackModel::StackModel::ENTRY_LABEL:
+			m_ui.disassemblyWidget->gotoAddress(m_ui.stackList->model()->data(m_ui.stackList->model()->index(index.row(), StackModel::StackColumns::ENTRY), Qt::UserRole).toUInt());
+			break;
+		case StackModel::StackModel::SP:
+			m_ui.memoryviewWidget->gotoAddress(m_ui.stackList->model()->data(index, Qt::UserRole).toUInt());
+			m_ui.tabWidget->setCurrentWidget(m_ui.tab_memory);
+			break;
+		default: // Default to PC
+			m_ui.disassemblyWidget->gotoAddress(m_ui.stackList->model()->data(m_ui.stackList->model()->index(index.row(), StackModel::StackColumns::PC), Qt::UserRole).toUInt());
+			break;
+	}
 }
 
 template <typename T>

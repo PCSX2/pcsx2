@@ -1068,7 +1068,7 @@ namespace SettingWidgetBinder
 		}
 	}
 
-	static void BindSliderToIntSetting(SettingsInterface* sif, QSlider* slider, QLabel* label, const QString& label_suffix,
+	[[maybe_unused]] static void BindSliderToIntSetting(SettingsInterface* sif, QSlider* slider, QLabel* label, const QString& label_suffix,
 		std::string section, std::string key, s32 default_value)
 	{
 		const s32 global_value = Host::GetBaseIntSettingValue(section.c_str(), key.c_str(), default_value);
@@ -1093,7 +1093,7 @@ namespace SettingWidgetBinder
 				[sif, slider, label, label_suffix, orig_font = std::move(orig_font), section, key, default_value](const QPoint& pt) {
 					QMenu menu(slider);
 					slider->connect(menu.addAction(qApp->translate("SettingWidgetBinder", "Reset")), &QAction::triggered, slider,
-						[sif, slider, label, label_suffix, orig_font, section, key, default_value]() {
+						[sif, label, label_suffix, orig_font, section, key, default_value]() {
 							const s32 global_value = Host::GetBaseIntSettingValue(section.c_str(), key.c_str(), default_value);
 							label->setText(QStringLiteral("%1%2").arg(global_value).arg(label_suffix));
 							label->setFont(orig_font);
@@ -1109,7 +1109,7 @@ namespace SettingWidgetBinder
 				});
 
 			slider->connect(slider, &QSlider::valueChanged, slider,
-				[sif, label, label_suffix, section = std::move(section), key = std::move(key), default_value,
+				[sif, label, label_suffix, section = std::move(section), key = std::move(key),
 					orig_font = std::move(orig_font), bold_font = std::move(bold_font)](int value) {
 					label->setText(QStringLiteral("%1%2").arg(value).arg(label_suffix));
 
@@ -1126,7 +1126,7 @@ namespace SettingWidgetBinder
 			label->setText(QStringLiteral("%1%2").arg(global_value).arg(label_suffix));
 
 			slider->connect(slider, &QSlider::valueChanged, slider,
-				[sif, label, label_suffix, section = std::move(section), key = std::move(key), default_value](int value) {
+				[label, label_suffix, section = std::move(section), key = std::move(key)](int value) {
 					label->setText(QStringLiteral("%1%2").arg(value).arg(label_suffix));
 					Host::SetBaseIntSettingValue(section.c_str(), key.c_str(), value);
 					Host::CommitBaseSettingChanges();

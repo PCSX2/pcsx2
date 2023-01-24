@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -17,70 +17,53 @@
 
 #include "SPU2/Global.h"
 #include "SPU2/spu2.h"
+#include "GS/GSCapture.h"
+#include "GS/GSVector.h"
 
 #include "common/Assertions.h"
 #include "common/Timer.h"
 
 #include "SoundTouch.h"
 
-StereoOut32 StereoOut32::Empty(0, 0);
+const StereoOut32 StereoOut32::Empty(0, 0);
 
-StereoOut32::StereoOut32(const StereoOut16& src)
-	: Left(src.Left)
-	, Right(src.Right)
+static bool s_audio_capture_active = false;
+
+//Uncomment the next line to use the old time stretcher
+//#define SPU2X_USE_OLD_STRETCHER
+//#define SPU2X_HANDLE_STRETCH_OVERRUNS
+
+namespace
 {
-}
-
-StereoOut32::StereoOut32(const StereoOutFloat& src)
-	: Left((s32)(src.Left * 2147483647.0f))
-	, Right((s32)(src.Right * 2147483647.0f))
-{
-}
-
-StereoOut16 StereoOut32::DownSample() const
-{
-	return StereoOut16(
-		Left >> SndOutVolumeShift,
-		Right >> SndOutVolumeShift);
-}
-
-StereoOut32 StereoOut16::UpSample() const
-{
-	return StereoOut32(
-		Left << SndOutVolumeShift,
-		Right << SndOutVolumeShift);
-}
-
-namespace {
-class NullOutModule final : public SndOutModule
-{
-public:
-	bool Init() override { return true; }
-	void Close() override {}
-	void SetPaused(bool paused) override {}
-	int GetEmptySampleCount() override { return 0; }
-
-	const char* GetIdent() const override
+	class NullOutModule final : public SndOutModule
 	{
-		return "nullout";
-	}
+	public:
+		bool Init() override { return true; }
+		void Close() override {}
+		void SetPaused(bool paused) override {}
+		int GetEmptySampleCount() override { return 0; }
 
-	const char* GetLongName() const override
-	{
-		return "No Sound (Emulate SPU2 only)";
-	}
+		const char* GetIdent() const override
+		{
+			return "nullout";
+		}
 
-	const char* const* GetBackendNames() const override
-	{
-		return nullptr;
-	}
+		const char* GetLongName() const override
+		{
+			return "No Sound (Emulate SPU2 only)";
+		}
 
-	std::vector<SndOutDeviceInfo> GetOutputDeviceList(const char* driver) const override
-	{
-		return {};
-	}
-};
-}
+		const char* const* GetBackendNames() const override
+		{
+			return nullptr;
+		}
+
+		std::vector<SndOutDeviceInfo> GetOutputDeviceList(const char* driver) const override
+		{
+			return {};
+		}
+	};
+} // namespace
 
 static NullOutModule s_NullOut;
 static SndOutModule* NullOut = &s_NullOut;
@@ -118,7 +101,9 @@ const char* const* GetOutputModuleBackends(const char* omodid)
 }
 
 SndOutDeviceInfo::SndOutDeviceInfo(std::string name_, std::string display_name_, u32 minimum_latency_)
-	: name(std::move(name_)), display_name(std::move(display_name_)), minimum_latency_frames(minimum_latency_)
+	: name(std::move(name_))
+	, display_name(std::move(display_name_))
+	, minimum_latency_frames(minimum_latency_)
 {
 }
 
@@ -132,19 +117,73 @@ std::vector<SndOutDeviceInfo> GetOutputDeviceList(const char* omodid, const char
 	return ret;
 }
 
-StereoOut32* SndBuffer::m_buffer;
-s32 SndBuffer::m_size;
-alignas(4) volatile s32 SndBuffer::m_rpos;
-alignas(4) volatile s32 SndBuffer::m_wpos;
+namespace SndBuffer
+{
+	static float s_final_volume = 1.0f;
 
-bool SndBuffer::m_underrun_freeze;
-StereoOut32* SndBuffer::sndTempBuffer = nullptr;
-StereoOut16* SndBuffer::sndTempBuffer16 = nullptr;
-int SndBuffer::sndTempProgress = 0;
+	static bool s_underrun_freeze = 0;
 
-int GetAlignedBufferSize(int comp)
+	// data prediction amount, used to "commit" data that hasn't
+	// finished timestretch processing.
+	static s32 s_predict_data = 0;
+
+	// records last buffer status (fill %, range -100 to 100, with 0 being 50% full)
+	static float s_last_pct = 0;
+
+	static float s_last_emergency_adj = 0.0f;
+	static float s_cTempo = 1.0f;
+	static float s_eTempo = 1.0f;
+	static int s_ss_freeze = 0;
+
+	static std::unique_ptr<StereoOut16[]> s_staging_buffer;
+	static std::unique_ptr<float[]> s_float_buffer;
+
+	static int s_staging_progress = 0;
+
+	static std::unique_ptr<StereoOut16[]> s_output_buffer;
+	static s32 s_output_buffer_size = 0;
+
+	// TODO: Replace these with proper atomics.
+	alignas(4) static volatile s32 m_rpos = 0;
+	alignas(4) static volatile s32 m_wpos = 0;
+
+	static bool CheckUnderrunStatus(int& nSamples, int& quietSampleCount);
+
+	static void soundtouchInit();
+	static void soundtouchClearContents();
+	static void soundtouchCleanup();
+	static void timeStretchWrite();
+	static void timeStretchUnderrun();
+#ifdef SPU2X_HANDLE_STRETCH_OVERRUNS
+	static s32 timeStretchOverrun();
+#endif
+
+	static void PredictDataWrite(int samples);
+	static float GetStatusPct();
+	static void UpdateTempoChangeSoundTouch();
+
+	static void _WriteSamples(StereoOut16* bData, int nSamples);
+	static void _WriteSamples_Safe(StereoOut16* bData, int nSamples);
+
+	static void _WriteSamples_Internal(StereoOut16* bData, int nSamples);
+	static void _DropSamples_Internal(int nSamples);
+
+	static int _GetApproximateDataInBuffer();
+} // namespace SndBuffer
+
+static int GetAlignedBufferSize(int comp)
 {
 	return (comp + SndOutPacketSize - 1) & ~(SndOutPacketSize - 1);
+}
+
+s32 SPU2::GetOutputVolume()
+{
+	return static_cast<s32>(std::round(SndBuffer::s_final_volume * 100.0f));
+}
+
+void SPU2::SetOutputVolume(s32 volume)
+{
+	SndBuffer::s_final_volume = static_cast<float>(std::clamp<s32>(volume, 0, Pcsx2Config::SPU2Options::MAX_VOLUME)) / 100.0f;
 }
 
 // Returns TRUE if there is data to be output, or false if no data
@@ -154,9 +193,9 @@ bool SndBuffer::CheckUnderrunStatus(int& nSamples, int& quietSampleCount)
 	quietSampleCount = 0;
 
 	int data = _GetApproximateDataInBuffer();
-	if (m_underrun_freeze)
+	if (s_underrun_freeze)
 	{
-		int toFill = m_size / ((EmuConfig.SPU2.SynchMode == Pcsx2Config::SPU2Options::SynchronizationMode::NoSync) ? 32 : 400); // TimeStretch and Async off?
+		int toFill = s_output_buffer_size / ((EmuConfig.SPU2.SynchMode == Pcsx2Config::SPU2Options::SynchronizationMode::NoSync) ? 32 : 400); // TimeStretch and Async off?
 		toFill = GetAlignedBufferSize(toFill);
 
 		// toFill is now aligned to a SndOutPacket
@@ -168,16 +207,16 @@ bool SndBuffer::CheckUnderrunStatus(int& nSamples, int& quietSampleCount)
 			return false;
 		}
 
-		m_underrun_freeze = false;
+		s_underrun_freeze = false;
 		if (SPU2::MsgOverruns())
 			SPU2::ConLog(" * SPU2 > Underrun compensation (%d packets buffered)\n", toFill / SndOutPacketSize);
-		lastPct = 0.0; // normalize timestretcher
+		s_last_pct = 0.0; // normalize timestretcher
 	}
 	else if (data < nSamples)
 	{
 		quietSampleCount = nSamples - data;
 		nSamples = data;
-		m_underrun_freeze = true;
+		s_underrun_freeze = true;
 
 		if (EmuConfig.SPU2.SynchMode == Pcsx2Config::SPU2Options::SynchronizationMode::TimeStretch) // TimeStrech on
 			timeStretchUnderrun();
@@ -191,38 +230,30 @@ bool SndBuffer::CheckUnderrunStatus(int& nSamples, int& quietSampleCount)
 int SndBuffer::_GetApproximateDataInBuffer()
 {
 	// WARNING: not necessarily 100% up to date by the time it's used, but it will have to do.
-	return (m_wpos + m_size - m_rpos) % m_size;
+	return (m_wpos + s_output_buffer_size - m_rpos) % s_output_buffer_size;
 }
 
-void SndBuffer::_WriteSamples_Internal(StereoOut32* bData, int nSamples)
+void SndBuffer::_WriteSamples_Internal(StereoOut16* bData, int nSamples)
 {
 	// WARNING: This assumes the write will NOT wrap around,
 	// and also assumes there's enough free space in the buffer.
 
-	memcpy(m_buffer + m_wpos, bData, nSamples * sizeof(StereoOut32));
-	m_wpos = (m_wpos + nSamples) % m_size;
+	std::memcpy(s_output_buffer.get() + m_wpos, bData, nSamples * sizeof(StereoOut16));
+	m_wpos = (m_wpos + nSamples) % s_output_buffer_size;
 }
 
 void SndBuffer::_DropSamples_Internal(int nSamples)
 {
-	m_rpos = (m_rpos + nSamples) % m_size;
+	m_rpos = (m_rpos + nSamples) % s_output_buffer_size;
 }
 
-void SndBuffer::_ReadSamples_Internal(StereoOut32* bData, int nSamples)
-{
-	// WARNING: This assumes the read will NOT wrap around,
-	// and also assumes there's enough data in the buffer.
-	memcpy(bData, m_buffer + m_rpos, nSamples * sizeof(StereoOut32));
-	_DropSamples_Internal(nSamples);
-}
-
-void SndBuffer::_WriteSamples_Safe(StereoOut32* bData, int nSamples)
+void SndBuffer::_WriteSamples_Safe(StereoOut16* bData, int nSamples)
 {
 	// WARNING: This code assumes there's only ONE writing process.
-	if ((m_size - m_wpos) < nSamples)
+	if ((s_output_buffer_size - m_wpos) < nSamples)
 	{
-		int b1 = m_size - m_wpos;
-		int b2 = nSamples - b1;
+		const int b1 = s_output_buffer_size - m_wpos;
+		const int b2 = nSamples - b1;
 
 		_WriteSamples_Internal(bData, b1);
 		_WriteSamples_Internal(bData + b1, b2);
@@ -233,21 +264,13 @@ void SndBuffer::_WriteSamples_Safe(StereoOut32* bData, int nSamples)
 	}
 }
 
-void SndBuffer::_ReadSamples_Safe(StereoOut32* bData, int nSamples)
+static __fi StereoOut16 ApplyVolume(StereoOut16 frame, float volume)
 {
-	// WARNING: This code assumes there's only ONE reading process.
-	if ((m_size - m_rpos) < nSamples)
-	{
-		int b1 = m_size - m_rpos;
-		int b2 = nSamples - b1;
-
-		_ReadSamples_Internal(bData, b1);
-		_ReadSamples_Internal(bData + b1, b2);
-	}
-	else
-	{
-		_ReadSamples_Internal(bData, nSamples);
-	}
+	// TODO: This could be done with SSE/NEON, but we'd only be processing half our vector width.
+	// It happens on the audio thread anyway, so no biggie, but someone might want to do it at some point.
+	return StereoOut16(
+		static_cast<s16>(std::clamp(static_cast<float>(frame.Left) * volume, -32768.0f, 32767.0f)),
+		static_cast<s16>(std::clamp(static_cast<float>(frame.Right) * volume, -32768.0f, 32767.0f)));
 }
 
 // Note: When using with 32 bit output buffers, the user of this function is responsible
@@ -270,26 +293,40 @@ void SndBuffer::ReadSamples(T* bData, int nSamples)
 	//  This will cause one brief hiccup that can never exceed the user's
 	//  set buffer length in duration.
 
-	int quietSamples;
+	int quietSamples = 0;
 	if (CheckUnderrunStatus(nSamples, quietSamples))
 	{
 		pxAssume(nSamples <= SndOutPacketSize);
 
 		// WARNING: This code assumes there's only ONE reading process.
-		int b1 = m_size - m_rpos;
+		int b1 = s_output_buffer_size - m_rpos;
 
 		if (b1 > nSamples)
 			b1 = nSamples;
 
-		// First part
-		for (int i = 0; i < b1; i++)
-			bData[i].ResampleFrom(m_buffer[i + m_rpos]);
+		const int b2 = nSamples - b1;
 
-		// Second part
-		int b2 = nSamples - b1;
-		for (int i = 0; i < b2; i++)
-			bData[i + b1].ResampleFrom(m_buffer[i]);
-	
+		if (std::is_same_v<T, StereoOut16> && s_final_volume == 1.0f)
+		{
+			// First part
+			if (b1 > 0)
+				std::memcpy(bData, &s_output_buffer[m_rpos], sizeof(StereoOut16) * b1);
+
+			// Second part
+			if (b2 > 0)
+				std::memcpy(bData + b1, s_output_buffer.get(), sizeof(StereoOut16) * b2);
+		}
+		else
+		{
+			// First part
+			for (int i = 0; i < b1; i++)
+				bData[i].SetFrom(ApplyVolume(s_output_buffer[i + m_rpos], s_final_volume));
+
+			// Second part
+			for (int i = 0; i < b2; i++)
+				bData[i + b1].SetFrom(ApplyVolume(s_output_buffer[i], s_final_volume));
+		}
+
 		_DropSamples_Internal(nSamples);
 	}
 
@@ -301,9 +338,6 @@ void SndBuffer::ReadSamples(T* bData, int nSamples)
 }
 
 template void SndBuffer::ReadSamples(StereoOut16*, int);
-template void SndBuffer::ReadSamples(StereoOut32*, int);
-
-//template void SndBuffer::ReadSamples(StereoOutFloat*);
 template void SndBuffer::ReadSamples(Stereo21Out16*, int);
 template void SndBuffer::ReadSamples(Stereo40Out16*, int);
 template void SndBuffer::ReadSamples(Stereo41Out16*, int);
@@ -312,18 +346,9 @@ template void SndBuffer::ReadSamples(Stereo51Out16Dpl*, int);
 template void SndBuffer::ReadSamples(Stereo51Out16DplII*, int);
 template void SndBuffer::ReadSamples(Stereo71Out16*, int);
 
-template void SndBuffer::ReadSamples(Stereo20Out32*, int);
-template void SndBuffer::ReadSamples(Stereo21Out32*, int);
-template void SndBuffer::ReadSamples(Stereo40Out32*, int);
-template void SndBuffer::ReadSamples(Stereo41Out32*, int);
-template void SndBuffer::ReadSamples(Stereo51Out32*, int);
-template void SndBuffer::ReadSamples(Stereo51Out32Dpl*, int);
-template void SndBuffer::ReadSamples(Stereo51Out32DplII*, int);
-template void SndBuffer::ReadSamples(Stereo71Out32*, int);
-
-void SndBuffer::_WriteSamples(StereoOut32* bData, int nSamples)
+void SndBuffer::_WriteSamples(StereoOut16* bData, int nSamples)
 {
-	m_predictData = 0;
+	s_predict_data = 0;
 
 	// Problem:
 	//  If the SPU2 gets out of sync with the SndOut device, the writepos of the
@@ -336,37 +361,40 @@ void SndBuffer::_WriteSamples(StereoOut32* bData, int nSamples)
 	//  The older portion of the buffer is discarded rather than incoming data,
 	//  so that the overall audio synchronization is better.
 
-	int free = m_size - _GetApproximateDataInBuffer(); // -1, but the <= handles that
+	const int free = s_output_buffer_size - _GetApproximateDataInBuffer(); // -1, but the <= handles that
 	if (free <= nSamples)
 	{
 // Disabled since the lock-free queue can't handle changing the read end from the write thread
-#if 0
+#ifdef SPU2X_HANDLE_STRETCH_OVERRUNS
 		// Buffer overrun!
 		// Dump samples from the read portion of the buffer instead of dropping
 		// the newly written stuff.
 
-		s32 comp;
+		s32 comp = 0;
 
-		if( SynchMode == 0 ) // TimeStrech on
+		if (EmuConfig.SPU2.SynchMode == Pcsx2Config::SPU2Options::SynchronizationMode::TimeStretch) // TimeStrech on
 		{
 			comp = timeStretchOverrun();
 		}
 		else
 		{
 			// Toss half the buffer plus whatever's being written anew:
-			comp = GetAlignedBufferSize( (m_size + nSamples ) / 16 );
-			if( comp > (m_size-SndOutPacketSize) ) comp = m_size-SndOutPacketSize;
+			comp = GetAlignedBufferSize((m_size + nSamples) / 16);
+			if (comp > (m_size - SndOutPacketSize))
+				comp = m_size - SndOutPacketSize;
 		}
 
 		_DropSamples_Internal(comp);
 
-		if( MsgOverruns() )
-			ConLog(" * SPU2 > Overrun Compensation (%d packets tossed)\n", comp / SndOutPacketSize );
-		lastPct = 0.0;		// normalize the timestretcher
+		if (SPU2::MsgOverruns())
+			SPU2::ConLog(" * SPU2 > Overrun Compensation (%d packets tossed)\n", comp / SndOutPacketSize);
+		lastPct = 0.0; // normalize the timestretcher
 #else
 		if (SPU2::MsgOverruns())
 			SPU2::ConLog(" * SPU2 > Overrun! 1 packet tossed)\n");
-		lastPct = 0.0; // normalize the timestretcher
+		s_last_pct = 0.0; // normalize the timestretcher
+
+		// Toss the packet because we overran the buffer.
 		return;
 #endif
 	}
@@ -388,13 +416,13 @@ bool SndBuffer::Init(const char* modname)
 	m_wpos = 0;
 
 	const float latencyMS = EmuConfig.SPU2.Latency * 16;
-	m_size = GetAlignedBufferSize((int)(latencyMS * SampleRate / 1000.0f));
-	m_buffer = new StereoOut32[m_size];
-	m_underrun_freeze = false;
+	s_output_buffer_size = GetAlignedBufferSize((int)(latencyMS * SampleRate / 1000.0f));
+	s_output_buffer = std::make_unique<StereoOut16[]>(s_output_buffer_size);
+	s_underrun_freeze = false;
 
-	sndTempBuffer = new StereoOut32[SndOutPacketSize];
-	sndTempBuffer16 = new StereoOut16[SndOutPacketSize * 2]; // in case of leftovers.
-	sndTempProgress = 0;
+	s_staging_buffer = std::make_unique<StereoOut16[]>(SndOutPacketSize);
+	s_float_buffer = std::make_unique<float[]>(SndOutPacketSize * 2);
+	s_staging_progress = 0;
 
 	soundtouchInit(); // initializes the timestretching
 
@@ -418,20 +446,14 @@ void SndBuffer::Cleanup()
 
 	soundtouchCleanup();
 
-	safe_delete_array(m_buffer);
-	safe_delete_array(sndTempBuffer);
-	safe_delete_array(sndTempBuffer16);
+	s_output_buffer.reset();
+	s_staging_buffer.reset();
 }
-
-int SndBuffer::m_dsp_progress = 0;
-
-int SndBuffer::m_timestretch_progress = 0;
-int SndBuffer::ssFreeze = 0;
 
 void SndBuffer::ClearContents()
 {
-	SndBuffer::soundtouchClearContents();
-	SndBuffer::ssFreeze = 256; //Delays sound output for about 1 second.
+	soundtouchClearContents();
+	s_ss_freeze = 256; //Delays sound output for about 1 second.
 }
 
 void SndBuffer::ResetBuffers()
@@ -445,36 +467,46 @@ void SPU2::SetOutputPaused(bool paused)
 	s_output_module->SetPaused(paused);
 }
 
-void SndBuffer::Write(const StereoOut32& Sample)
+void SPU2::SetAudioCaptureActive(bool active)
+{
+	s_audio_capture_active = active;
+}
+
+bool SPU2::IsAudioCaptureActive()
+{
+	return s_audio_capture_active;
+}
+
+void SndBuffer::Write(StereoOut16 Sample)
 {
 #ifdef PCSX2_DEVBUILD
 	// Log final output to wavefile.
-	WaveDump::WriteCore(1, CoreSrc_External, Sample.DownSample());
+	WaveDump::WriteCore(1, CoreSrc_External, Sample);
 #endif
 
-	if (WavRecordEnabled)
-		RecordWrite(Sample.DownSample());
-
-	sndTempBuffer[sndTempProgress++] = Sample;
+	s_staging_buffer[s_staging_progress++] = Sample;
 
 	// If we haven't accumulated a full packet yet, do nothing more:
-	if (sndTempProgress < SndOutPacketSize)
+	if (s_staging_progress < SndOutPacketSize)
 		return;
-	sndTempProgress = 0;
+	s_staging_progress = 0;
+
+	// We want to capture audio *before* time stretching.
+	if (s_audio_capture_active)
+		GSCapture::DeliverAudioPacket(reinterpret_cast<const s16*>(s_staging_buffer.get()));
 
 	//Don't play anything directly after loading a savestate, avoids static killing your speakers.
-	if (ssFreeze > 0)
+	if (s_ss_freeze > 0)
 	{
-		ssFreeze--;
-		// Play silence
-		std::fill_n(sndTempBuffer, SndOutPacketSize, StereoOut32{});
+		s_ss_freeze--;
+		std::memset(s_staging_buffer.get(), 0, sizeof(StereoOut16) * SndOutPacketSize);
 	}
 	else
 	{
-		if (EmuConfig.SPU2.SynchMode == Pcsx2Config::SPU2Options::SynchronizationMode::TimeStretch) // TimeStrech on
+		if (EmuConfig.SPU2.SynchMode == Pcsx2Config::SPU2Options::SynchronizationMode::TimeStretch)
 			timeStretchWrite();
 		else
-			_WriteSamples(sndTempBuffer, SndOutPacketSize);
+			_WriteSamples(s_staging_buffer.get(), SndOutPacketSize);
 	}
 }
 
@@ -482,25 +514,11 @@ void SndBuffer::Write(const StereoOut32& Sample)
 // Time Stretching
 //////////////////////////////////////////////////////////////////////////
 
-//Uncomment the next line to use the old time stretcher
-//#define SPU2X_USE_OLD_STRETCHER
-
 static std::unique_ptr<soundtouch::SoundTouch> pSoundTouch = nullptr;
-
-// data prediction amount, used to "commit" data that hasn't
-// finished timestretch processing.
-s32 SndBuffer::m_predictData;
-
-// records last buffer status (fill %, range -100 to 100, with 0 being 50% full)
-float SndBuffer::lastPct;
-float SndBuffer::lastEmergencyAdj;
-
-float SndBuffer::cTempo = 1;
-float SndBuffer::eTempo = 1;
 
 void SndBuffer::PredictDataWrite(int samples)
 {
-	m_predictData += samples;
+	s_predict_data += samples;
 }
 
 // Calculate the buffer status percentage.
@@ -513,13 +531,13 @@ float SndBuffer::GetStatusPct()
 	// Get the buffer status of the output driver too, so that we can
 	// obtain a more accurate overall buffer status.
 
-	int drvempty = s_output_module->GetEmptySampleCount(); // / 2;
+	const int drvempty = s_output_module->GetEmptySampleCount(); // / 2;
 
 	//ConLog( "Data %d >>> driver: %d   predict: %d\n", m_data, drvempty, m_predictData );
 
-	int data = _GetApproximateDataInBuffer();
-	float result = (float)(data + m_predictData - drvempty) - (m_size / 16);
-	result /= (m_size / 16);
+	const int data = _GetApproximateDataInBuffer();
+	float result = static_cast<float>(data + s_predict_data - drvempty) - (s_output_buffer_size / 16);
+	result /= (s_output_buffer_size / 16);
 	return result;
 }
 
@@ -551,16 +569,6 @@ float SndBuffer::GetStatusPct()
 
 int targetIPS = 750;
 
-//Dynamic tuning changes the values of the base algorithm parameters (derived from targetIPS) to adapt, in real time, to
-//  different number of invocations/sec (mostly affects number of iterations to average).
-//  Dynamic tuning can have a slight negative effect on the behavior of the algorithm, so it's preferred to have it off.
-//Currently it looks like it's around 750/sec on all systems when playing at 100% speed (50/60fps),
-//  and proportional to that speed otherwise.
-//If changes are made to SPU2 which affects this number (but it's still the same on all systems), then just change targetIPS.
-//If we find out that some systems are very different, we can turn on dynamic tuning by uncommenting the next line.
-//#define NEWSTRETCHER_USE_DYNAMIC_TUNING
-
-
 //Additional performance note: since MAX_STRETCH_AVERAGE_LEN = 128 (or any power of 2), the '%' below
 //could be replaced with a faster '&'. The compiler is highly likely to do it since all the values are unsigned.
 #define AVERAGING_BUFFER_SIZE 256U
@@ -584,8 +592,8 @@ static float addToAvg(float val)
 	avg_fullness[nextAvgPos] = val;
 	nextAvgPos = (nextAvgPos + 1U) % AVERAGING_BUFFER_SIZE;
 
-	unsigned int actualWindow = std::min(available, AVERAGING_WINDOW);
-	unsigned int first = (nextAvgPos - actualWindow + AVERAGING_BUFFER_SIZE) % AVERAGING_BUFFER_SIZE;
+	const unsigned int actualWindow = std::min(available, AVERAGING_WINDOW);
+	const unsigned int first = (nextAvgPos - actualWindow + AVERAGING_BUFFER_SIZE) % AVERAGING_BUFFER_SIZE;
 
 	// Possible optimization: if we know that actualWindow hasn't changed since
 	// last invocation, we could calculate the running average in O(1) instead of O(N)
@@ -610,16 +618,16 @@ static bool IsInRange(const T& val, const T& min, const T& max)
 }
 
 //actual stretch algorithm implementation
-void SndBuffer::UpdateTempoChangeSoundTouch2()
+void SndBuffer::UpdateTempoChangeSoundTouch()
 {
-
-	long targetSamplesReservoir = 48 * EmuConfig.SPU2.Latency; //48000*SndOutLatencyMS/1000
+#ifndef SPU2X_USE_OLD_STRETCHER
+	const long targetSamplesReservoir = 48 * EmuConfig.SPU2.Latency; //48000*SndOutLatencyMS/1000
 	//base aim at buffer filled %
-	float baseTargetFullness = (double)targetSamplesReservoir; ///(double)m_size;//0.05;
+	float baseTargetFullness = static_cast<double>(targetSamplesReservoir); ///(double)m_size;//0.05;
 
 	//state vars
-	static bool inside_hysteresis;      //=false;
-	static int hys_ok_count;            //=0;
+	static bool inside_hysteresis; //=false;
+	static int hys_ok_count; //=0;
 	static float dynamicTargetFullness; //=baseTargetFullness;
 	if (gRequestStretcherReset >= STRETCHER_RESET_THRESHOLD)
 	{
@@ -630,40 +638,17 @@ void SndBuffer::UpdateTempoChangeSoundTouch2()
 		dynamicTargetFullness = baseTargetFullness;
 	}
 
-	int data = _GetApproximateDataInBuffer();
-	float bufferFullness = (float)data; ///(float)m_size;
-
-#ifdef NEWSTRETCHER_USE_DYNAMIC_TUNING
-	{ //test current iterations/sec every 0.5s, and change algo params accordingly if different than previous IPS more than 30%
-		static long iters = 0;
-		static wxDateTime last = wxDateTime::UNow();
-		wxDateTime unow = wxDateTime::UNow();
-		wxTimeSpan delta = unow.Subtract(last);
-		if (delta.GetMilliseconds() > 500)
-		{
-			int pot_targetIPS = 1000.0 / delta.GetMilliseconds().ToDouble() * iters;
-			if (!IsInRange(pot_targetIPS, int((float)targetIPS / 1.3f), int((float)targetIPS * 1.3f)))
-			{
-				if (SPU2::MsgOverruns())
-					SPU2::ConLog("Stretcher: setting iters/sec from %d to %d\n", targetIPS, pot_targetIPS);
-				targetIPS = pot_targetIPS;
-				AVERAGING_WINDOW = std::clamp((int)(50.0f * (float)targetIPS / 750.0f), 3, (int)AVERAGING_BUFFER_SIZE);
-			}
-			last = unow;
-			iters = 0;
-		}
-		iters++;
-	}
-#endif
+	const int data = _GetApproximateDataInBuffer();
+	const float bufferFullness = static_cast<float>(data); ///(float)m_size;
 
 	//Algorithm params: (threshold params (hysteresis), etc)
-	const float hys_ok_factor = 1.04f;
-	const float hys_bad_factor = 1.2f;
-	int hys_min_ok_count = std::clamp((int)(50.0 * (float)targetIPS / 750.0), 2, 100); //consecutive iterations within hys_ok before going to 1:1 mode
-	int compensationDivider = std::clamp((int)(100.0 * (float)targetIPS / 750), 15, 150);
+	constexpr float hys_ok_factor = 1.04f;
+	constexpr float hys_bad_factor = 1.2f;
+	const int hys_min_ok_count = std::clamp((int)(50.0 * (float)targetIPS / 750.0), 2, 100); //consecutive iterations within hys_ok before going to 1:1 mode
+	const int compensationDivider = std::clamp((int)(100.0 * (float)targetIPS / 750), 15, 150);
 
 	float tempoAdjust = bufferFullness / dynamicTargetFullness;
-	float avgerage = addToAvg(tempoAdjust);
+	const float avgerage = addToAvg(tempoAdjust);
 	tempoAdjust = avgerage;
 
 	// Dampen the adjustment to avoid overshoots (this means the average will compensate to the other side).
@@ -716,7 +701,7 @@ void SndBuffer::UpdateTempoChangeSoundTouch2()
 		if (Common::Timer::ConvertValueToSeconds(now - last) > 1.0f)
 		{ //report buffers state and tempo adjust every second
 			SPU2::ConLog("buffers: %4d ms (%3.0f%%), tempo: %f, comp: %2.3f, iters: %d, (N-IPS:%d -> avg:%d, minokc:%d, div:%d) reset:%d\n",
-				   (int)(data / 48), (double)(100.0 * bufferFullness / baseTargetFullness), (double)tempoAdjust, (double)(dynamicTargetFullness / baseTargetFullness), iters, (int)targetIPS, AVERAGING_WINDOW, hys_min_ok_count, compensationDivider, gRequestStretcherReset);
+				(int)(data / 48), (double)(100.0 * bufferFullness / baseTargetFullness), (double)tempoAdjust, (double)(dynamicTargetFullness / baseTargetFullness), iters, (int)targetIPS, AVERAGING_WINDOW, hys_min_ok_count, compensationDivider, gRequestStretcherReset);
 			last = now;
 			iters = 0;
 		}
@@ -727,18 +712,14 @@ void SndBuffer::UpdateTempoChangeSoundTouch2()
 	if (gRequestStretcherReset >= STRETCHER_RESET_THRESHOLD)
 		gRequestStretcherReset = 0;
 
-	return;
-}
+#else
 
-
-void SndBuffer::UpdateTempoChangeSoundTouch()
-{
-	float statusPct = GetStatusPct();
-	float pctChange = statusPct - lastPct;
+	const float statusPct = GetStatusPct();
+	const float pctChange = statusPct - s_last_pct;
 
 	float tempoChange;
 	float emergencyAdj = 0;
-	float newcee = cTempo; // workspace var. for cTempo
+	float newcee = s_cTempo; // workspace var. for cTempo
 
 	// IMPORTANT!
 	// If you plan to tweak these values, make sure you're using a release build
@@ -783,18 +764,18 @@ void SndBuffer::UpdateTempoChangeSoundTouch()
 
 	// Prediction based on the buffer fill status:
 
-	const float statusWeight = 2.99f;
-	const float statusRange = 0.068f;
+	constexpr float statusWeight = 2.99f;
+	constexpr float statusRange = 0.068f;
 
 	// "non-emergency" deadzone:  In this area stretching will be strongly discouraged.
 	// Note: due tot he nature of timestretch latency, it's always a wee bit harder to
 	// cope with low fps (underruns) than it is high fps (overruns).  So to help out a
 	// little, the low-end portions of this check are less forgiving than the high-sides.
 
-	if (cTempo < 0.965f || cTempo > 1.060f ||
+	if (s_cTempo < 0.965f || s_cTempo > 1.060f ||
 		pctChange < -0.38f || pctChange > 0.54f ||
 		statusPct < -0.42f || statusPct > 0.70f ||
-		eTempo < 0.89f || eTempo > 1.19f)
+		s_eTempo < 0.89f || s_eTempo > 1.19f)
 	{
 		//printf("Emergency stretch: cTempo = %f eTempo = %f pctChange = %f statusPct = %f\n",cTempo,eTempo,pctChange,statusPct);
 		emergencyAdj = (pow(statusPct * statusWeight, 3.0f) * statusRange);
@@ -804,10 +785,10 @@ void SndBuffer::UpdateTempoChangeSoundTouch()
 	// It helps make the system 'feel' a little smarter by  giving it at least
 	// one packet worth of history to help work off of:
 
-	emergencyAdj = (emergencyAdj * 0.75f) + (lastEmergencyAdj * 0.25f);
+	emergencyAdj = (emergencyAdj * 0.75f) + (s_last_emergency_adj * 0.25f);
 
-	lastEmergencyAdj = emergencyAdj;
-	lastPct = statusPct;
+	s_last_emergency_adj = emergencyAdj;
+	s_last_pct = statusPct;
 
 	// Accumulate a fraction of the tempo change into the tempo itself.
 	// This helps the system run "smarter" to games that run consistently
@@ -822,7 +803,7 @@ void SndBuffer::UpdateTempoChangeSoundTouch()
 	// to the current tempo.  (otherwise tempos rate of change at the extremes would
 	// be too drastic)
 
-	float newTempo = newcee + (emergencyAdj * cTempo);
+	float newTempo = newcee + (emergencyAdj * s_cTempo);
 
 	// ... and as a final optimization, only stretch if the new tempo is outside
 	// a nominal threshold.  Keep this threshold check small, because it could
@@ -830,19 +811,19 @@ void SndBuffer::UpdateTempoChangeSoundTouch()
 	// is usually better/safer)
 	if (newTempo < 0.970f || newTempo > 1.045f)
 	{
-		cTempo = (float)newcee;
+		s_cTempo = static_cast<float>(newcee);
 
 		if (newTempo < 0.10f)
 			newTempo = 0.10f;
 		else if (newTempo > 10.0f)
 			newTempo = 10.0f;
 
-		if (cTempo < 0.15f)
-			cTempo = 0.15f;
-		else if (cTempo > 7.5f)
-			cTempo = 7.5f;
+		if (s_cTempo < 0.15f)
+			s_cTempo = 0.15f;
+		else if (s_cTempo > 7.5f)
+			s_cTempo = 7.5f;
 
-		pSoundTouch->setTempo(eTempo = (float)newTempo);
+		pSoundTouch->setTempo(s_eTempo = static_cast<float>(newTempo));
 
 		/*ConLog("* SPU2: [Nominal %d%%] [Emergency: %d%%] (baseTempo: %d%% ) (newTempo: %d%%) (buffer: %d%%)\n",
 			//(relation < 0.0) ? "Normalize" : "",
@@ -858,26 +839,27 @@ void SndBuffer::UpdateTempoChangeSoundTouch()
 		// Nominal operation -- turn off stretching.
 		// note: eTempo 'slides' toward 1.0 for smoother audio and better
 		// protection against spikes.
-		if (cTempo != 1.0f)
+		if (s_cTempo != 1.0f)
 		{
-			cTempo = 1.0f;
-			eTempo = (1.0f + eTempo) * 0.5f;
-			pSoundTouch->setTempo(eTempo);
+			s_cTempo = 1.0f;
+			s_eTempo = (1.0f + s_eTempo) * 0.5f;
+			pSoundTouch->setTempo(s_eTempo);
 		}
 		else
 		{
-			if (eTempo != cTempo)
-				pSoundTouch->setTempo(eTempo = cTempo);
+			if (s_eTempo != s_cTempo)
+				pSoundTouch->setTempo(s_eTempo = s_cTempo);
 		}
 	}
+#endif // SPU2X_USE_OLD_STRETCHER
 }
 
 extern uint TickInterval;
 void SndBuffer::UpdateTempoChangeAsyncMixing()
 {
-	float statusPct = GetStatusPct();
+	const float statusPct = GetStatusPct();
 
-	lastPct = statusPct;
+	s_last_pct = statusPct;
 	if (statusPct < -0.1f)
 	{
 		TickInterval -= 4;
@@ -903,22 +885,24 @@ void SndBuffer::timeStretchUnderrun()
 	gRequestStretcherReset++;
 	// timeStretcher failed it's job.  We need to slow down the audio some.
 
-	cTempo -= (cTempo * 0.12f);
-	eTempo -= (eTempo * 0.30f);
-	if (eTempo < 0.1f)
-		eTempo = 0.1f;
+	s_cTempo -= (s_cTempo * 0.12f);
+	s_eTempo -= (s_eTempo * 0.30f);
+	if (s_eTempo < 0.1f)
+		s_eTempo = 0.1f;
 	//	pSoundTouch->setTempo( eTempo );
 	//pSoundTouch->setTempoChange(-30); // temporary (until stretcher is called) slow down
 }
+
+#ifdef SPU2X_HANDLE_STRETCH_OVERRUNS
 
 s32 SndBuffer::timeStretchOverrun()
 {
 	// If we overran it means the timestretcher failed.  We need to speed
 	// up audio playback.
-	cTempo += cTempo * 0.12f;
-	eTempo += eTempo * 0.40f;
-	if (eTempo > 7.5f)
-		eTempo = 7.5f;
+	s_cTempo += s_cTempo * 0.12f;
+	s_eTempo += s_eTempo * 0.40f;
+	if (s_eTempo > 7.5f)
+		s_eTempo = 7.5f;
 	//pSoundTouch->setTempo( eTempo );
 	//pSoundTouch->setTempoChange(30);// temporary (until stretcher is called) speed up
 
@@ -928,24 +912,60 @@ s32 SndBuffer::timeStretchOverrun()
 	return SndOutPacketSize * 2;
 }
 
-static void CvtPacketToFloat(StereoOut32* srcdest)
+#endif
+
+static constexpr float S16_TO_FLOAT = 1.0f / 32767.0f;
+static constexpr float FLOAT_TO_S16 = 32767.0f;
+
+static void ConvertPacketToFloat(const StereoOut16* src, float* dst)
 {
-	StereoOutFloat* dest = (StereoOutFloat*)srcdest;
-	const StereoOut32* src = (StereoOut32*)srcdest;
-	for (uint i = 0; i < SndOutPacketSize; ++i, ++dest, ++src)
-		*dest = (StereoOutFloat)*src;
+	static_assert((SndOutPacketSize % 4) == 0);
+	constexpr u32 iterations = SndOutPacketSize / 4;
+
+	const __m128 S16_TO_FLOAT_V = _mm_set1_ps(S16_TO_FLOAT);
+
+	for (u32 i = 0; i < iterations; i++)
+	{
+		const __m128i sv = _mm_load_si128(reinterpret_cast<const __m128i*>(src));
+		src += 4;
+
+		__m128i iv1 = _mm_unpacklo_epi16(sv, sv); // [0, 0, 1, 1, 2, 2, 3, 3]
+		__m128i iv2 = _mm_unpackhi_epi16(sv, sv); // [4, 4, 5, 5, 6, 6, 7, 7]
+		iv1 = _mm_srai_epi32(iv1, 16); // [0, 1, 2, 3]
+		iv2 = _mm_srai_epi32(iv2, 16); // [4, 5, 6, 7]
+		__m128 fv1 = _mm_cvtepi32_ps(iv1); // [f0, f1, f2, f3]
+		__m128 fv2 = _mm_cvtepi32_ps(iv2); // [f4, f5, f6, f7]
+		fv1 = _mm_mul_ps(fv1, S16_TO_FLOAT_V);
+		fv2 = _mm_mul_ps(fv2, S16_TO_FLOAT_V);
+
+		_mm_store_ps(dst + 0, fv1);
+		_mm_store_ps(dst + 4, fv2);
+		dst += 8;
+	}
 }
 
-// Parameter note: Size should always be a multiple of 128, thanks!
-static void CvtPacketToInt(StereoOut32* srcdest, uint size)
+static void ConvertPacketToInt(StereoOut16* dst, const float* src, uint size)
 {
-	//pxAssume( (size & 127) == 0 );
+	static_assert((SndOutPacketSize % 4) == 0);
+	constexpr u32 iterations = SndOutPacketSize / 4;
 
-	const StereoOutFloat* src = (StereoOutFloat*)srcdest;
-	StereoOut32* dest = srcdest;
+	const __m128 FLOAT_TO_S16_V = _mm_set1_ps(FLOAT_TO_S16);
 
-	for (uint i = 0; i < size; ++i, ++dest, ++src)
-		*dest = (StereoOut32)*src;
+	for (u32 i = 0; i < iterations; i++)
+	{
+		__m128 fv1 = _mm_load_ps(src + 0);
+		__m128 fv2 = _mm_load_ps(src + 4);
+		src += 8;
+
+		fv1 = _mm_mul_ps(fv1, FLOAT_TO_S16_V);
+		fv2 = _mm_mul_ps(fv2, FLOAT_TO_S16_V);
+		__m128i iv1 = _mm_cvtps_epi32(fv1);
+		__m128i iv2 = _mm_cvtps_epi32(fv2);
+
+		__m128i iv = _mm_packs_epi32(iv1, iv2);
+		_mm_store_si128(reinterpret_cast<__m128i*>(dst), iv);
+		dst += 4;
+	}
 }
 
 void SndBuffer::timeStretchWrite()
@@ -956,27 +976,23 @@ void SndBuffer::timeStretchWrite()
 	// suddenly we'll get several chunks back at once.  Thus we use
 	// data prediction to make the timestretcher more responsive.
 
-	PredictDataWrite((int)(SndOutPacketSize / eTempo));
-	CvtPacketToFloat(sndTempBuffer);
+	PredictDataWrite((int)(SndOutPacketSize / s_eTempo));
+	ConvertPacketToFloat(s_staging_buffer.get(), s_float_buffer.get());
 
-	pSoundTouch->putSamples((float*)sndTempBuffer, SndOutPacketSize);
+	pSoundTouch->putSamples(s_float_buffer.get(), SndOutPacketSize);
 
 	int tempProgress;
-	while (tempProgress = pSoundTouch->receiveSamples((float*)sndTempBuffer, SndOutPacketSize),
-		   tempProgress != 0)
+	while (tempProgress = pSoundTouch->receiveSamples(s_float_buffer.get(), SndOutPacketSize),
+		tempProgress != 0)
 	{
 		// Hint: It's assumed that pSoundTouch will return chunks of 128 bytes (it always does as
 		// long as the SSE optimizations are enabled), which means we can do our own SSE opts here.
 
-		CvtPacketToInt(sndTempBuffer, tempProgress);
-		_WriteSamples(sndTempBuffer, tempProgress);
+		ConvertPacketToInt(s_staging_buffer.get(), s_float_buffer.get(), tempProgress);
+		_WriteSamples(s_staging_buffer.get(), tempProgress);
 	}
 
-#ifdef SPU2X_USE_OLD_STRETCHER
 	UpdateTempoChangeSoundTouch();
-#else
-	UpdateTempoChangeSoundTouch2();
-#endif
 }
 
 void SndBuffer::soundtouchInit()
@@ -996,12 +1012,12 @@ void SndBuffer::soundtouchInit()
 
 	// some timestretch management vars:
 
-	cTempo = 1.0;
-	eTempo = 1.0;
-	lastPct = 0;
-	lastEmergencyAdj = 0;
+	s_cTempo = 1.0;
+	s_eTempo = 1.0;
+	s_last_pct = 0;
+	s_last_emergency_adj = 0;
 
-	m_predictData = 0;
+	s_predict_data = 0;
 }
 
 // reset timestretch management vars, and delay updates a bit:
@@ -1013,12 +1029,12 @@ void SndBuffer::soundtouchClearContents()
 	pSoundTouch->clear();
 	pSoundTouch->setTempo(1);
 
-	cTempo = 1.0;
-	eTempo = 1.0;
-	lastPct = 0;
-	lastEmergencyAdj = 0;
+	s_cTempo = 1.0;
+	s_eTempo = 1.0;
+	s_last_pct = 0;
+	s_last_emergency_adj = 0;
 
-	m_predictData = 0;
+	s_predict_data = 0;
 }
 
 void SndBuffer::soundtouchCleanup()

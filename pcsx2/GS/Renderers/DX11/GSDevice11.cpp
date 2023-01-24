@@ -453,33 +453,12 @@ void GSDevice11::ClearStencil(GSTexture* t, u8 c)
 
 GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 {
-	D3D11_TEXTURE2D_DESC desc;
-
-	memset(&desc, 0, sizeof(desc));
-
-	DXGI_FORMAT dxformat;
-	switch (format)
-	{
-		case GSTexture::Format::Color:        dxformat = DXGI_FORMAT_R8G8B8A8_UNORM;     break;
-		case GSTexture::Format::HDRColor:     dxformat = DXGI_FORMAT_R16G16B16A16_UNORM; break;
-		case GSTexture::Format::DepthStencil: dxformat = DXGI_FORMAT_R32G8X24_TYPELESS;  break;
-		case GSTexture::Format::UNorm8:       dxformat = DXGI_FORMAT_A8_UNORM;           break;
-		case GSTexture::Format::UInt16:       dxformat = DXGI_FORMAT_R16_UINT;           break;
-		case GSTexture::Format::UInt32:       dxformat = DXGI_FORMAT_R32_UINT;           break;
-		case GSTexture::Format::PrimID:       dxformat = DXGI_FORMAT_R32_FLOAT;          break;
-		case GSTexture::Format::BC1:          dxformat = DXGI_FORMAT_BC1_UNORM;          break;
-		case GSTexture::Format::BC2:          dxformat = DXGI_FORMAT_BC2_UNORM;          break;
-		case GSTexture::Format::BC3:          dxformat = DXGI_FORMAT_BC3_UNORM;          break;
-		case GSTexture::Format::BC7:          dxformat = DXGI_FORMAT_BC7_UNORM;          break;
-		case GSTexture::Format::Invalid:
-			ASSERT(0);
-			dxformat = DXGI_FORMAT_UNKNOWN;
-	}
+	D3D11_TEXTURE2D_DESC desc = {};
 
 	// Texture limit for D3D10/11 min 1, max 8192 D3D10, max 16384 D3D11.
 	desc.Width = std::clamp(width, 1, m_d3d_texsize);
 	desc.Height = std::clamp(height, 1, m_d3d_texsize);
-	desc.Format = dxformat;
+	desc.Format = GSTexture11::GetDXGIFormat(format);
 	desc.MipLevels = levels;
 	desc.ArraySize = 1;
 	desc.SampleDesc.Count = 1;
@@ -497,10 +476,6 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 		case GSTexture::Type::Texture:
 			desc.BindFlags = (levels > 1 && !GSTexture::IsCompressedFormat(format)) ? (D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE) : D3D11_BIND_SHADER_RESOURCE;
 			desc.MiscFlags = (levels > 1 && !GSTexture::IsCompressedFormat(format)) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
-			break;
-		case GSTexture::Type::Offscreen:
-			desc.Usage = D3D11_USAGE_STAGING;
-			desc.CPUAccessFlags |= D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
 			break;
 		case GSTexture::Type::RWTexture:
 			desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
@@ -527,26 +502,9 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 	return t;
 }
 
-bool GSDevice11::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map)
+std::unique_ptr<GSDownloadTexture> GSDevice11::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
 {
-	ASSERT(src);
-	ASSERT(!m_download_tex);
-	g_perfmon.Put(GSPerfMon::Readbacks, 1);
-
-	m_download_tex.reset(static_cast<GSTexture11*>(CreateOffscreen(rect.width(), rect.height(), src->GetFormat())));
-	if (!m_download_tex)
-		return false;
-	CopyRect(src, m_download_tex.get(), rect, 0, 0);
-	return m_download_tex->Map(out_map);
-}
-
-void GSDevice11::DownloadTextureComplete()
-{
-	if (m_download_tex)
-	{
-		m_download_tex->Unmap();
-		Recycle(m_download_tex.release());
-	}
+	return GSDownloadTexture11::Create(width, height, format);
 }
 
 void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
@@ -682,7 +640,7 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	// ps
 
 	PSSetShaderResources(sTex, nullptr);
-	PSSetSamplerState(linear ? m_convert.ln.get() : m_convert.pt.get(), nullptr);
+	PSSetSamplerState(linear ? m_convert.ln.get() : m_convert.pt.get());
 	PSSetShader(ps, ps_cb);
 
 	//
@@ -759,7 +717,7 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	// ps
 
 	PSSetShaderResources(sTex, nullptr);
-	PSSetSamplerState(linear ? m_convert.ln.get() : m_convert.pt.get(), nullptr);
+	PSSetSamplerState(linear ? m_convert.ln.get() : m_convert.pt.get());
 	PSSetShader(m_present.ps[static_cast<u32>(shader)].get(), m_present.ps_cb.get());
 
 	//
@@ -771,6 +729,24 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	EndScene();
 
 	PSSetShaderResources(nullptr, nullptr);
+}
+
+void GSDevice11::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
+{
+	// match merge cb
+	struct Uniforms
+	{
+		float scaleX, scaleY;
+		float pad1[2];
+		u32 offsetX, offsetY, dOffset;
+		u32 pad2;
+	};
+	const Uniforms cb = {sTex->GetScale().x, sTex->GetScale().y, {0.0f, 0.0f}, offsetX, offsetY, dOffset};
+	m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);
+
+	const GSVector4 dRect(0, 0, dSize, 1);
+	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
+	StretchRect(sTex, GSVector4::zero(), dTex, dRect, m_convert.ps[static_cast<int>(shader)].get(), m_merge.cb.get(), nullptr, false);
 }
 
 void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
@@ -958,7 +934,7 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 
 	// ps
 	PSSetShaderResources(rt, nullptr);
-	PSSetSamplerState(m_convert.pt.get(), nullptr);
+	PSSetSamplerState(m_convert.pt.get());
 	PSSetShader(m_convert.ps[static_cast<int>(datm ? ShaderConvert::DATM_1 : ShaderConvert::DATM_0)].get(), nullptr);
 
 	//
@@ -1184,10 +1160,9 @@ void GSDevice11::PSSetShaderResource(int i, GSTexture* sr)
 	m_state.ps_sr_views[i] = sr ? static_cast<ID3D11ShaderResourceView*>(*static_cast<GSTexture11*>(sr)) : nullptr;
 }
 
-void GSDevice11::PSSetSamplerState(ID3D11SamplerState* ss0, ID3D11SamplerState* ss1)
+void GSDevice11::PSSetSamplerState(ID3D11SamplerState* ss0)
 {
 	m_state.ps_ss[0] = ss0;
-	m_state.ps_ss[1] = ss1;
 }
 
 void GSDevice11::PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb)

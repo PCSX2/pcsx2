@@ -293,7 +293,6 @@ extern bool EnableFMV;
 
 alignas(16) extern tIPU_cmd ipu_cmd;
 extern uint eecount_on_last_vdec;
-extern int coded_block_pattern;
 extern bool CommandExecuteQueued;
 
 extern void ipuReset();
@@ -306,9 +305,4 @@ extern bool ipuWrite64(u32 mem,u64 value);
 extern void IPUCMD_WRITE(u32 val);
 extern void ipuSoftReset();
 extern void IPUProcessInterrupt();
-
-extern u8 getBits64(u8 *address, bool advance);
-extern u8 getBits32(u8 *address, bool advance);
-extern u8 getBits16(u8 *address, bool advance);
-extern u8 getBits8(u8 *address, bool advance);
 

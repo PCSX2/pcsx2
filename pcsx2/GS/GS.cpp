@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022 PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -39,6 +39,8 @@
 #include "pcsx2/Frontend/FullscreenUI.h"
 #include "pcsx2/Frontend/InputManager.h"
 #include "pcsx2/GS.h"
+
+#include "fmt/format.h"
 
 #ifdef ENABLE_OPENGL
 #include "Renderers/OpenGL/GSDeviceOGL.h"
@@ -588,14 +590,12 @@ void GSgetInternalResolution(int* width, int* height)
 void GSgetStats(std::string& info)
 {
 	GSPerfMon& pm = g_perfmon;
-
 	const char* api_name = HostDisplay::RenderAPIToString(s_render_api);
-
 	if (GSConfig.Renderer == GSRendererType::SW)
 	{
 		const double fps = GetVerticalFrequency();
 		const double fillrate = pm.Get(GSPerfMon::Fillrate);
-		info = StringUtil::StdStringFromFormat("%s SW | %d S | %d P | %d D | %.2f U | %.2f D | %.2f mpps",
+		fmt::format_to(std::back_inserter(info), "{} SW | {} S | {} P | {} D | {:.2f} U | {:.2f} D | {:.2f} mpps",
 			api_name,
 			(int)pm.Get(GSPerfMon::SyncPoint),
 			(int)pm.Get(GSPerfMon::Prim),
@@ -606,35 +606,49 @@ void GSgetStats(std::string& info)
 	}
 	else if (GSConfig.Renderer == GSRendererType::Null)
 	{
-		info = StringUtil::StdStringFromFormat("%s Null", api_name);
+		fmt::format_to(std::back_inserter(info), "{} Null", api_name);
 	}
 	else
 	{
-		if (GSConfig.TexturePreloading == TexturePreloadingLevel::Full)
-		{
-			info = StringUtil::StdStringFromFormat("%s HW | HC: %d MB | %d P | %d D | %d DC | %d B | %d RB | %d TC | %d TU",
-				api_name,
-				(int)std::ceil(GSRendererHW::GetInstance()->GetTextureCache()->GetTotalHashCacheMemoryUsage() / 1048576.0f),
-				(int)pm.Get(GSPerfMon::Prim),
-				(int)pm.Get(GSPerfMon::Draw),
-				(int)std::ceil(pm.Get(GSPerfMon::DrawCalls)),
-				(int)std::ceil(pm.Get(GSPerfMon::Barriers)),
-				(int)std::ceil(pm.Get(GSPerfMon::Readbacks)),
-				(int)std::ceil(pm.Get(GSPerfMon::TextureCopies)),
-				(int)std::ceil(pm.Get(GSPerfMon::TextureUploads)));
-		}
-		else
-		{
-			info = StringUtil::StdStringFromFormat("%s HW | %d P | %d D | %d DC | %d B | %d RB | %d TC | %d TU",
-				api_name,
-				(int)pm.Get(GSPerfMon::Prim),
-				(int)pm.Get(GSPerfMon::Draw),
-				(int)std::ceil(pm.Get(GSPerfMon::DrawCalls)),
-				(int)std::ceil(pm.Get(GSPerfMon::Barriers)),
-				(int)std::ceil(pm.Get(GSPerfMon::Readbacks)),
-				(int)std::ceil(pm.Get(GSPerfMon::TextureCopies)),
-				(int)std::ceil(pm.Get(GSPerfMon::TextureUploads)));
-		}
+		fmt::format_to(std::back_inserter(info), "{} HW | {} P | {} D | {} DC | {} B | {} RB | {} TC | {} TU",
+			api_name,
+			(int)pm.Get(GSPerfMon::Prim),
+			(int)pm.Get(GSPerfMon::Draw),
+			(int)std::ceil(pm.Get(GSPerfMon::DrawCalls)),
+			(int)std::ceil(pm.Get(GSPerfMon::Barriers)),
+			(int)std::ceil(pm.Get(GSPerfMon::Readbacks)),
+			(int)std::ceil(pm.Get(GSPerfMon::TextureCopies)),
+			(int)std::ceil(pm.Get(GSPerfMon::TextureUploads)));
+	}
+}
+
+void GSgetMemoryStats(std::string& info)
+{
+	if (GSConfig.Renderer == GSRendererType::SW || GSConfig.Renderer == GSRendererType::Null)
+		return;
+
+	const u64 targets = GSRendererHW::GetInstance()->GetTextureCache()->GetTargetMemoryUsage();
+	const u64 sources = GSRendererHW::GetInstance()->GetTextureCache()->GetSourceMemoryUsage();
+	const u64 hashcache = GSRendererHW::GetInstance()->GetTextureCache()->GetHashCacheMemoryUsage();
+	const u64 pool = g_gs_device->GetPoolMemoryUsage();
+	const u64 total = targets + sources + hashcache + pool;
+
+	if (GSConfig.TexturePreloading == TexturePreloadingLevel::Full)
+	{
+		fmt::format_to(std::back_inserter(info), "VRAM: {} MB | T: {} MB | S: {} MB | H: {} MB | P: {} MB",
+			(int)std::ceil(total / 1048576.0f),
+			(int)std::ceil(targets / 1048576.0f),
+			(int)std::ceil(sources / 1048576.0f),
+			(int)std::ceil(hashcache / 1048576.0f),
+			(int)std::ceil(pool / 1048576.0f));
+	}
+	else
+	{
+		fmt::format_to(std::back_inserter(info), "VRAM: {} MB | T: {} MB | S: {} MB | P: {} MB",
+			(int)std::ceil(total / 1048576.0f),
+			(int)std::ceil(targets / 1048576.0f),
+			(int)std::ceil(sources / 1048576.0f),
+			(int)std::ceil(pool / 1048576.0f));
 	}
 }
 
@@ -728,7 +742,8 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		GSConfig.UserHacks_DisablePartialInvalidation != old_config.UserHacks_DisablePartialInvalidation ||
 		GSConfig.UserHacks_TextureInsideRt != old_config.UserHacks_TextureInsideRt ||
 		GSConfig.UserHacks_CPUSpriteRenderBW != old_config.UserHacks_CPUSpriteRenderBW ||
-		GSConfig.UserHacks_CPUCLUTRender != old_config.UserHacks_CPUCLUTRender)
+		GSConfig.UserHacks_CPUCLUTRender != old_config.UserHacks_CPUCLUTRender ||
+		GSConfig.UserHacks_GPUTargetCLUTMode != old_config.UserHacks_GPUTargetCLUTMode)
 	{
 		g_gs_renderer->PurgeTextureCache();
 		g_gs_renderer->PurgePool();
@@ -948,16 +963,20 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys)
 	{"ToggleVideoCapture", "Graphics", "Toggle Video Capture", [](s32 pressed) {
 		 if (!pressed)
 		 {
-			 GetMTGS().RunOnGSThread([]() {
-				 if (GSCapture::IsCapturing())
-				 {
-					 g_gs_renderer->EndCapture();
-					 return;
-				 }
+			 if (GSCapture::IsCapturing())
+			 {
+				 GetMTGS().RunOnGSThread([]() { g_gs_renderer->EndCapture(); });
+				 GetMTGS().WaitGS(false, false, false);
+				 return;
+			 }
 
-				 std::string filename(fmt::format("{}.{}", GSGetBaseSnapshotFilename(), GSConfig.VideoCaptureContainer));
+			 GetMTGS().RunOnGSThread([]() {
+				 std::string filename(fmt::format("{}.{}", GSGetBaseVideoFilename(), GSConfig.CaptureContainer));
 				 g_gs_renderer->BeginCapture(std::move(filename));
 			 });
+
+			 // Sync GS thread. We want to start adding audio at the same time as video.
+			 GetMTGS().WaitGS(false, false, false);
 		 }
 	 }},
 	{"GSDumpSingleFrame", "Graphics", "Save Single Frame GS Dump", [](s32 pressed) {

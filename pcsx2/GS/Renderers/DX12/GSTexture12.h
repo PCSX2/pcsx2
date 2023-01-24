@@ -90,3 +90,27 @@ private:
 	GSVector4i m_map_area = GSVector4i::zero();
 	u32 m_map_level = UINT32_MAX;
 };
+
+class GSDownloadTexture12 final : public GSDownloadTexture
+{
+public:
+	~GSDownloadTexture12() override;
+
+	static std::unique_ptr<GSDownloadTexture12> Create(u32 width, u32 height, GSTexture::Format format);
+
+	void CopyFromTexture(const GSVector4i& drc, GSTexture* stex, const GSVector4i& src, u32 src_level, bool use_transfer_pitch) override;
+
+	bool Map(const GSVector4i& read_rc) override;
+	void Unmap() override;
+
+	void Flush() override;
+
+private:
+	GSDownloadTexture12(u32 width, u32 height, GSTexture::Format format);
+
+	wil::com_ptr_nothrow<D3D12MA::Allocation> m_allocation;
+	wil::com_ptr_nothrow<ID3D12Resource> m_buffer;
+
+	u64 m_copy_fence_value = 0;
+	u32 m_buffer_size = 0;
+};

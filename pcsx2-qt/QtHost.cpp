@@ -861,6 +861,10 @@ void EmuThread::beginCapture(const QString& path)
 	GetMTGS().RunOnGSThread([path = path.toStdString()]() {
 		GSBeginCapture(std::move(path));
 	});
+
+	// Sync GS thread. We want to start adding audio at the same time as video.
+	// TODO: This could be up to 64 frames behind... use the pts to adjust it.
+	GetMTGS().WaitGS(false, false, false);
 }
 
 void EmuThread::endCapture()
@@ -1233,9 +1237,16 @@ void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool def
 	if (!VMManager::HasValidVM())
 		return;
 
-	// Run it on the host thread, that way we get the confirm prompt (if enabled).
-	QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection, Q_ARG(bool, allow_confirm),
-		Q_ARG(bool, allow_save_state), Q_ARG(bool, default_save_state), Q_ARG(bool, false));
+	if (allow_confirm)
+	{
+		// Run it on the host thread, that way we get the confirm prompt (if enabled).
+		QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection, Q_ARG(bool, allow_confirm),
+			Q_ARG(bool, allow_save_state), Q_ARG(bool, default_save_state), Q_ARG(bool, false));
+	}
+	else
+	{
+		g_emu_thread->shutdownVM(allow_save_state && default_save_state);
+	}
 }
 
 bool Host::IsFullscreen()
@@ -1812,8 +1823,6 @@ int main(int argc, char* argv[])
 {
 	CrashHandler::Install();
 
-	QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-	QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 	QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 	RegisterTypes();
 

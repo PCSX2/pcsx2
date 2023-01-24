@@ -263,8 +263,8 @@ namespace PacketReader::IP::TCP
 		u8* headerSegment = new u8[pHeaderLen];
 		int counter = 0;
 
-		NetLib::WriteByteArray(headerSegment, &counter, 4, (u8*)&srcIP);
-		NetLib::WriteByteArray(headerSegment, &counter, 4, (u8*)&dstIP);
+		NetLib::WriteIPAddress(headerSegment, &counter, srcIP);
+		NetLib::WriteIPAddress(headerSegment, &counter, dstIP);
 		NetLib::WriteByte08(headerSegment, &counter, 0);
 		NetLib::WriteByte08(headerSegment, &counter, (u8)protocol);
 		NetLib::WriteUInt16(headerSegment, &counter, GetLength());
@@ -291,8 +291,8 @@ namespace PacketReader::IP::TCP
 		u8* headerSegment = new u8[pHeaderLen];
 		int counter = 0;
 
-		NetLib::WriteByteArray(headerSegment, &counter, 4, (u8*)&srcIP);
-		NetLib::WriteByteArray(headerSegment, &counter, 4, (u8*)&dstIP);
+		NetLib::WriteIPAddress(headerSegment, &counter, srcIP);
+		NetLib::WriteIPAddress(headerSegment, &counter, dstIP);
 		NetLib::WriteByte08(headerSegment, &counter, 0);
 		NetLib::WriteByte08(headerSegment, &counter, (u8)protocol);
 		NetLib::WriteUInt16(headerSegment, &counter, GetLength());

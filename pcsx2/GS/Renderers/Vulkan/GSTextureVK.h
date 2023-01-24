@@ -97,3 +97,29 @@ private:
 	// list of color textures this depth texture is linked to or vice versa
 	std::vector<std::tuple<GSTextureVK*, VkFramebuffer, bool>> m_framebuffers;
 };
+
+class GSDownloadTextureVK final : public GSDownloadTexture
+{
+public:
+	~GSDownloadTextureVK() override;
+
+	static std::unique_ptr<GSDownloadTextureVK> Create(u32 width, u32 height, GSTexture::Format format);
+
+	void CopyFromTexture(const GSVector4i& drc, GSTexture* stex, const GSVector4i& src, u32 src_level, bool use_transfer_pitch) override;
+
+	bool Map(const GSVector4i& read_rc) override;
+	void Unmap() override;
+
+	void Flush() override;
+
+private:
+	GSDownloadTextureVK(u32 width, u32 height, GSTexture::Format format);
+
+	VmaAllocation m_allocation = VK_NULL_HANDLE;
+	VkBuffer m_buffer = VK_NULL_HANDLE;
+
+	u64 m_copy_fence_counter = 0;
+	u32 m_buffer_size = 0;
+
+	bool m_needs_cache_invalidate = false;
+};

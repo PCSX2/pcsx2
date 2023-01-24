@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -100,9 +100,12 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 	dialog->registerWidgetHelp(m_ui.eeCycleRate, tr("Cycle Rate"), tr("100% (Normal Speed)"),
 		tr("Higher values may increase internal framerate in games, but will increase CPU requirements substantially. "
 		   "Lower values will reduce the CPU load allowing lightweight games to run full speed on weaker CPUs."));
-	dialog->registerWidgetHelp(m_ui.eeCycleSkipping, tr("Cycle Skip"), tr("None"),
+	dialog->registerWidgetHelp(m_ui.eeCycleSkipping, tr("Cycle Skip"), tr("Disabled"),
 		tr("Makes the emulated Emotion Engine skip cycles. "
 		   "Helps a small subset of games like SOTC. Most of the time it's harmful to performance."));
+	dialog->registerWidgetHelp(m_ui.affinityControl, tr("Affinity Control"), tr("Disabled"),
+		tr("Sets the priority for specific threads in a specific order ignoring the system scheduler. "
+		   "May help CPUs with big (P) and little (E) cores (e.g. Intel 12th or newer generation CPUs from Intel or other vendors such as AMD)"));
 	dialog->registerWidgetHelp(m_ui.MTVU, tr("MTVU (Multi-threaded VU1)"), tr("Checked"),
 		tr("Generally a speedup on CPUs with 3 or more threads. "
 		   "Safe for most games, but a few are incompatible and may hang."));

@@ -79,7 +79,7 @@ GSDeviceOGL::~GSDeviceOGL()
 GSTexture* GSDeviceOGL::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 {
 	GL_PUSH("Create surface");
-	return new GSTextureOGL(type, width, height, levels, format, m_fbo_read);
+	return new GSTextureOGL(type, width, height, levels, format);
 }
 
 bool GSDeviceOGL::Create()
@@ -141,7 +141,7 @@ bool GSDeviceOGL::Create()
 		m_features.line_expand = false;
 	}
 
-	Console.WriteLn("Using %s for point expansion and %s for line expansion.",
+	DevCon.WriteLn("Using %s for point expansion and %s for line expansion.",
 		m_features.point_expand ? "hardware" : "geometry shaders", m_features.line_expand ? "hardware" : "geometry shaders");
 
 	{
@@ -295,7 +295,14 @@ bool GSDeviceOGL::Create()
 			m_convert.ps[i].SetFormattedName("Convert pipe %s", name);
 
 			if (static_cast<ShaderConvert>(i) == ShaderConvert::YUV)
+			{
 				m_convert.ps[i].RegisterUniform("EMOD");
+			}
+			else if (static_cast<ShaderConvert>(i) == ShaderConvert::CLUT_4 || static_cast<ShaderConvert>(i) == ShaderConvert::CLUT_8)
+			{
+				m_convert.ps[i].RegisterUniform("offset");
+				m_convert.ps[i].RegisterUniform("scale");
+			}
 		}
 
 		const PSSamplerSelector point;
@@ -783,6 +790,11 @@ void GSDeviceOGL::ClearStencil(GSTexture* t, u8 c)
 	glClearBufferiv(GL_STENCIL, 0, &color);
 }
 
+std::unique_ptr<GSDownloadTexture> GSDeviceOGL::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
+{
+	return GSDownloadTextureOGL::Create(width, height, format);
+}
+
 GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 {
 	GL_PUSH("Create Sampler");
@@ -982,9 +994,7 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view& entry, GLenum typ
 
 std::string GSDeviceOGL::GetVSSource(VSSelector sel)
 {
-#ifdef PCSX2_DEVBUILD
-	Console.WriteLn("Compiling new vertex shader with selector 0x%" PRIX64, sel.key);
-#endif
+	DevCon.WriteLn("Compiling new vertex shader with selector 0x%" PRIX64, sel.key);
 
 	std::string macro = fmt::format("#define VS_INT_FST {}\n", static_cast<u32>(sel.int_fst))
 		+ fmt::format("#define VS_IIP {}\n", static_cast<u32>(sel.iip))
@@ -1000,9 +1010,7 @@ std::string GSDeviceOGL::GetVSSource(VSSelector sel)
 
 std::string GSDeviceOGL::GetGSSource(GSSelector sel)
 {
-#ifdef PCSX2_DEVBUILD
-	Console.WriteLn("Compiling new geometry shader with selector 0x%" PRIX64, sel.key);
-#endif
+	DevCon.WriteLn("Compiling new geometry shader with selector 0x%" PRIX64, sel.key);
 
 	std::string macro = fmt::format("#define GS_POINT {}\n", static_cast<u32>(sel.point))
 		+ fmt::format("#define GS_LINE {}\n", static_cast<u32>(sel.line))
@@ -1016,9 +1024,7 @@ std::string GSDeviceOGL::GetGSSource(GSSelector sel)
 
 std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 {
-#ifdef PCSX2_DEVBUILD
-	Console.WriteLn("Compiling new pixel shader with selector 0x%" PRIX64 "%08X", sel.key_hi, sel.key_lo);
-#endif
+	DevCon.WriteLn("Compiling new pixel shader with selector 0x%" PRIX64 "%08X", sel.key_hi, sel.key_lo);
 
 	std::string macro = fmt::format("#define PS_FST {}\n", sel.fst)
 		+ fmt::format("#define PS_WMS {}\n", sel.wms)
@@ -1073,17 +1079,6 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 	src += m_shader_common_header;
 	src += m_shader_tfx_fs;
 	return src;
-}
-
-bool GSDeviceOGL::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map)
-{
-	ASSERT(src);
-	g_perfmon.Put(GSPerfMon::Readbacks, 1);
-
-	GSTextureOGL* srcgl = static_cast<GSTextureOGL*>(src);
-
-	out_map = srcgl->Read(rect, m_download_buffer);
-	return true;
 }
 
 // Copy a sub part of texture (same as below but force a conversion)
@@ -1274,6 +1269,30 @@ void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// Only flipping the backbuffer is transparent (I hope)...
 	const GSVector4 flip_sr(sRect.xwzy());
 	DrawStretchRect(flip_sr, dRect, ds);
+
+	EndScene();
+}
+
+void GSDeviceOGL::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
+{
+	BeginScene();
+
+	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
+	GL::Program& prog = m_convert.ps[static_cast<int>(shader)];
+	prog.Bind();
+	prog.Uniform3ui(0, offsetX, offsetY, dOffset);
+	prog.Uniform2f(1, sTex->GetScale().x, sTex->GetScale().y);
+
+	OMSetDepthStencilState(m_convert.dss);
+	OMSetBlendState(false);
+	OMSetColorMaskState();
+	OMSetRenderTargets(dTex, nullptr);
+
+	PSSetShaderResource(0, sTex);
+	PSSetSamplerState(m_convert.pt);
+
+	const GSVector4 dRect(0, 0, dSize, 1);
+	DrawStretchRect(GSVector4::zero(), dRect, dTex->GetSize());
 
 	EndScene();
 }

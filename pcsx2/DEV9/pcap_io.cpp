@@ -39,6 +39,7 @@
 #include "DEV9.h"
 #include "AdapterUtils.h"
 #include "net.h"
+#include "DEV9/PacketReader/MAC_Address.h"
 #ifndef PCAP_NETMASK_UNKNOWN
 #define PCAP_NETMASK_UNKNOWN 0xffffffff
 #endif
@@ -293,13 +294,13 @@ PCAPAdapter::PCAPAdapter()
 	mac_address newMAC;
 
 	GetMACAddress(EmuConfig.DEV9.EthDevice, &hostMAC);
-	memcpy(&newMAC, ps2MAC, 6);
+	memcpy(&newMAC, &ps2MAC, 6);
 
 	//Lets take the hosts last 2 bytes to make it unique on Xlink
 	newMAC.bytes[5] = hostMAC.bytes[4];
 	newMAC.bytes[4] = hostMAC.bytes[5];
 
-	SetMACAddress((u8*)&newMAC);
+	SetMACAddress((PacketReader::MAC_Address*)&newMAC);
 	host_mac = hostMAC;
 	ps2_mac = newMAC; //Needed outside of this class
 
@@ -311,7 +312,7 @@ PCAPAdapter::PCAPAdapter()
 
 #ifdef _WIN32
 	IP_ADAPTER_ADDRESSES adapter;
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
+	AdapterUtils::AdapterBuffer buffer;
 	if (AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
 		InitInternalServer(&adapter);
 	else
@@ -319,14 +320,12 @@ PCAPAdapter::PCAPAdapter()
 		Console.Error("DEV9: Failed to get adapter information");
 		InitInternalServer(nullptr);
 	}
+
 #elif defined(__POSIX__)
 	ifaddrs adapter;
-	ifaddrs* buffer;
+	AdapterUtils::AdapterBuffer buffer;
 	if (AdapterUtils::GetIfAdapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
-	{
 		InitInternalServer(&adapter);
-		freeifaddrs(buffer);
-	}
 	else
 	{
 		Console.Error("DEV9: Failed to get adapter information");
@@ -383,19 +382,16 @@ void PCAPAdapter::reloadSettings()
 {
 #ifdef _WIN32
 	IP_ADAPTER_ADDRESSES adapter;
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
+	AdapterUtils::AdapterBuffer buffer;
 	if (AdapterUtils::GetWin32Adapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
 		ReloadInternalServer(&adapter);
 	else
 		ReloadInternalServer(nullptr);
 #elif defined(__POSIX__)
 	ifaddrs adapter;
-	ifaddrs* buffer;
+	AdapterUtils::AdapterBuffer buffer;
 	if (AdapterUtils::GetIfAdapter(EmuConfig.DEV9.EthDevice, &adapter, &buffer))
-	{
 		ReloadInternalServer(&adapter);
-		freeifaddrs(buffer);
-	}
 	else
 		ReloadInternalServer(nullptr);
 #endif

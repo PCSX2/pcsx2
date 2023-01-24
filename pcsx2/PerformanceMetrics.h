@@ -63,6 +63,8 @@ namespace PerformanceMetrics
 	float GetGSThreadAverageTime();
 	float GetVUThreadUsage();
 	float GetVUThreadAverageTime();
+	float GetCaptureThreadUsage();
+	float GetCaptureThreadAverageTime();
 
 	u32 GetGSSWThreadCount();
 	double GetGSSWThreadUsage(u32 index);
