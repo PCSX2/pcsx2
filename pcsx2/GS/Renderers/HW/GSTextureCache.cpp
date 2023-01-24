@@ -810,7 +810,12 @@ void GSTextureCache::ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVect
 		}
 	}
 	
-	if (dst)
+	if (!dst)
+		return;
+
+	// Only expand the target when the FBW matches. Otherwise, games like GT4 will end up with the main render target
+	// being 2000+ due to unrelated EE writes.
+	if (TEX0.TBW == dst->m_TEX0.TBW)
 	{
 		// Round up to the nearest even height, like the draw target allocator.
 		const s32 aligned_height = Common::AlignUpPow2(r.w, 2);
@@ -828,6 +833,14 @@ void GSTextureCache::ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVect
 				dst->UpdateValidity(r);
 			}
 		}
+	}
+	else
+	{
+		const GSVector4i clamped_r(
+			r.rintersect(GSVector4i(0, 0, static_cast<int>(dst->m_texture->GetWidth() / dst->m_texture->GetScale().x),
+				static_cast<int>(dst->m_texture->GetHeight() / dst->m_texture->GetScale().y))));
+		AddDirtyRectTarget(dst, clamped_r, TEX0.PSM, TEX0.TBW);
+		dst->UpdateValidity(clamped_r);
 	}
 }
 // Goal: Depth And Target at the same address is not possible. On GS it is
