@@ -75,7 +75,7 @@ class GSDrawScanlineCodeGenerator2 : public GSNewCodeGenerator
 	/// Note: a2 and t3 are only available on x86-64
 	/// Outside of Init, usable registers are a0, t0, t1, t2, t3[x64], rax, rbx, rdx, r10+
 	const AddressReg a0, a1, a2, a3, t0, t1, t2, t3;
-	const AddressReg _g_const, _m_local, _m_local__gd, _m_local__gd__vm, _m_local__gd__clut;
+	const AddressReg _m_local, _m_local__gd, _m_local__gd__vm, _m_local__gd__clut;
 	// If use_lod, m_local.gd->tex, else m_local.gd->tex[0]
 	const AddressReg _m_local__gd__tex;
 	/// Available on both x86 and x64, not always valid
@@ -88,8 +88,6 @@ public:
 	void Generate();
 
 private:
-	/// Loads the given address into the given register if needed, and returns something that can be used in a `ptr[]`
-	AddressReg loadAddress(AddressReg reg, const void* addr);
 	/// Broadcast 128 bits of floats from memory to the whole register, whatever size that register might be
 	void broadcastf128(const XYm& reg, const Xbyak::Address& mem);
 	/// Broadcast 128 bits of integers from memory to the whole register, whatever size that register might be
