@@ -37,7 +37,6 @@ public:
 	typedef void (*DrawScanlinePtr)(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
 
 protected:
-	GSScanlineGlobalData m_global = {};
 	GSScanlineLocalData m_local = {};
 
 	SetupPrimPtr m_sp = nullptr;
@@ -69,11 +68,11 @@ public:
 	GSDrawScanline();
 	virtual ~GSDrawScanline() = default;
 
-	__forceinline GSScanlineGlobalData& GetGlobalData() { return m_global; }
 	__forceinline GSScanlineLocalData& GetLocalData() { return m_local; }
+	static __forceinline const GSScanlineGlobalData& GlobalFromLocal(const GSScanlineLocalData& local) { return *local.gd; }
 
 	__forceinline bool HasEdge() const { return m_de != nullptr; }
-	__forceinline bool IsSolidRect() const { return m_global.sel.IsSolidRect(); }
+	__forceinline bool IsSolidRect() const { return m_local.gd->sel.IsSolidRect(); }
 
 	// IDrawScanline
 

@@ -28,16 +28,14 @@ GSDrawScanline::GSDrawScanline()
 	: m_sp_map("GSSetupPrim", &m_local)
 	, m_ds_map("GSDrawScanline", &m_local)
 {
-	memset(&m_local, 0, sizeof(m_local));
-
-	m_local.gd = &m_global;
 }
 
 void GSDrawScanline::BeginDraw(const GSRasterizerData* data)
 {
-	memcpy(&m_global, &((const SharedData*)data)->global, sizeof(m_global));
+	const GSScanlineGlobalData& global = ((const SharedData*)data)->global;
+	m_local.gd = &global;
 
-	if (m_global.sel.mmin && m_global.sel.lcm)
+	if (global.sel.mmin && global.sel.lcm)
 	{
 #if defined(__GNUC__) && _M_SSE >= 0x501
 		// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80286
@@ -49,10 +47,10 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData* data)
 		// Generated code keep the integer in an XMM register but bit [64:32] aren't cleared.
 		// So the srl16 shift will be huge and v will be 0.
 		//
-		int lod_x = m_global.lod.i.x0;
-		GSVector4i v = m_global.t.minmax.srl16(lod_x);
+		int lod_x = global.lod.i.x0;
+		GSVector4i v = global.t.minmax.srl16(lod_x);
 #else
-		GSVector4i v = m_global.t.minmax.srl16(m_global.lod.i.extract32<0>()); //.x);
+		GSVector4i v = global.t.minmax.srl16(global.lod.i.extract32<0>()); //.x);
 #endif
 
 		v = v.upl16(v);
@@ -61,13 +59,13 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData* data)
 		m_local.temp.uv_minmax[1] = v.uph32(v);
 	}
 
-	m_ds = m_ds_map[m_global.sel];
+	m_ds = m_ds_map[global.sel];
 
-	if (m_global.sel.aa1)
+	if (global.sel.aa1)
 	{
 		GSScanlineSelector sel;
 
-		sel.key = m_global.sel.key;
+		sel.key = global.sel.key;
 		sel.zwrite = 0;
 		sel.edge = 1;
 
@@ -84,17 +82,17 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData* data)
 
 	sel.key = 0;
 
-	sel.iip = m_global.sel.iip;
-	sel.tfx = m_global.sel.tfx;
-	sel.tcc = m_global.sel.tcc;
-	sel.fst = m_global.sel.fst;
-	sel.fge = m_global.sel.fge;
-	sel.prim = m_global.sel.prim;
-	sel.fb = m_global.sel.fb;
-	sel.zb = m_global.sel.zb;
-	sel.zoverflow = m_global.sel.zoverflow;
-	sel.zequal = m_global.sel.zequal;
-	sel.notest = m_global.sel.notest;
+	sel.iip = global.sel.iip;
+	sel.tfx = global.sel.tfx;
+	sel.tcc = global.sel.tcc;
+	sel.fst = global.sel.fst;
+	sel.fge = global.sel.fge;
+	sel.prim = global.sel.prim;
+	sel.fb = global.sel.fb;
+	sel.zb = global.sel.zb;
+	sel.zoverflow = global.sel.zoverflow;
+	sel.zequal = global.sel.zequal;
+	sel.notest = global.sel.notest;
 
 	m_sp = m_sp_map[sel];
 }
@@ -116,7 +114,7 @@ typedef GSVector4  VectorF;
 
 void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local)
 {
-	const GSScanlineGlobalData& global = *local.gd;
+	const GSScanlineGlobalData& global = GlobalFromLocal(local);
 	GSScanlineSelector sel = global.sel;
 
 	bool has_z = sel.zb != 0;
@@ -300,7 +298,7 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, cons
 
 void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
 {
-	const GSScanlineGlobalData& global = *local.gd;
+	const GSScanlineGlobalData& global = GlobalFromLocal(local);
 
 	GSScanlineSelector sel = global.sel;
 	constexpr int vlen = sizeof(VectorF) / sizeof(float);
@@ -1706,6 +1704,7 @@ void GSDrawScanline::WritePixel(const T& src, int addr, int i, u32 psm, const GS
 
 void GSDrawScanline::DrawRect(const GSVector4i& r, const GSVertexSW& v)
 {
+	const GSScanlineGlobalData& global = *m_local.gd;
 	ASSERT(r.y >= 0);
 	ASSERT(r.w >= 0);
 
@@ -1714,63 +1713,63 @@ void GSDrawScanline::DrawRect(const GSVector4i& r, const GSVertexSW& v)
 	u32 m;
 
 #if _M_SSE >= 0x501
-	m = m_global.zm;
+	m = global.zm;
 #else
-	m = m_global.zm.U32[0];
+	m = global.zm.U32[0];
 #endif
 
 	if (m != 0xffffffff)
 	{
 		u32 z = v.t.U32[3]; // (u32)v.p.z;
 
-		if (m_global.sel.zpsm != 2)
+		if (global.sel.zpsm != 2)
 		{
 			if (m == 0)
 			{
-				DrawRectT<u32, false>(m_global.zbo, r, z, m);
+				DrawRectT<u32, false>(global.zbo, r, z, m);
 			}
 			else
 			{
-				DrawRectT<u32, true>(m_global.zbo, r, z, m);
+				DrawRectT<u32, true>(global.zbo, r, z, m);
 			}
 		}
 		else
 		{
 			if ((m & 0xffff) == 0)
 			{
-				DrawRectT<u16, false>(m_global.zbo, r, z, m);
+				DrawRectT<u16, false>(global.zbo, r, z, m);
 			}
 			else
 			{
-				DrawRectT<u16, true>(m_global.zbo, r, z, m);
+				DrawRectT<u16, true>(global.zbo, r, z, m);
 			}
 		}
 	}
 
 #if _M_SSE >= 0x501
-	m = m_global.fm;
+	m = global.fm;
 #else
-	m = m_global.fm.U32[0];
+	m = global.fm.U32[0];
 #endif
 
 	if (m != 0xffffffff)
 	{
 		u32 c = (GSVector4i(v.c) >> 7).rgba32();
 
-		if (m_global.sel.fba)
+		if (global.sel.fba)
 		{
 			c |= 0x80000000;
 		}
 
-		if (m_global.sel.fpsm != 2)
+		if (global.sel.fpsm != 2)
 		{
 			if (m == 0)
 			{
-				DrawRectT<u32, false>(m_global.fbo, r, c, m);
+				DrawRectT<u32, false>(global.fbo, r, c, m);
 			}
 			else
 			{
-				DrawRectT<u32, true>(m_global.fbo, r, c, m);
+				DrawRectT<u32, true>(global.fbo, r, c, m);
 			}
 		}
 		else
@@ -1779,11 +1778,11 @@ void GSDrawScanline::DrawRect(const GSVector4i& r, const GSVertexSW& v)
 
 			if ((m & 0xffff) == 0)
 			{
-				DrawRectT<u16, false>(m_global.fbo, r, c, m);
+				DrawRectT<u16, false>(global.fbo, r, c, m);
 			}
 			else
 			{
-				DrawRectT<u16, true>(m_global.fbo, r, c, m);
+				DrawRectT<u16, true>(global.fbo, r, c, m);
 			}
 		}
 	}
@@ -1848,7 +1847,7 @@ void GSDrawScanline::FillRect(const GSOffset& off, const GSVector4i& r, u32 c, u
 	if (r.x >= r.z)
 		return;
 
-	T* vm = (T*)m_global.vm;
+	T* vm = (T*)GlobalFromLocal(m_local).vm;
 
 	for (int y = r.y; y < r.w; y++)
 	{
@@ -1870,7 +1869,7 @@ void GSDrawScanline::FillBlock(const GSOffset& off, const GSVector4i& r, const G
 	if (r.x >= r.z)
 		return;
 
-	T* vm = (T*)m_global.vm;
+	T* vm = (T*)GlobalFromLocal(m_local).vm;
 
 	for (int y = r.y; y < r.w; y += 8)
 	{
@@ -1898,7 +1897,7 @@ void GSDrawScanline::FillBlock(const GSOffset& off, const GSVector4i& r, const G
 	if (r.x >= r.z)
 		return;
 
-	T* vm = (T*)m_global.vm;
+	T* vm = (T*)GlobalFromLocal(m_local).vm;
 
 	for (int y = r.y; y < r.w; y += 8)
 	{
