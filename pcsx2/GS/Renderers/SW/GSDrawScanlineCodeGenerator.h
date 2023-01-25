@@ -39,7 +39,6 @@ class GSDrawScanlineCodeGenerator : public Xbyak::CodeGenerator
 
 	GSScanlineSelector m_sel;
 	GSScanlineLocalData& m_local;
-	bool m_rip;
 
 public:
 	GSDrawScanlineCodeGenerator(void* param, u64 key, void* code, size_t maxsize);

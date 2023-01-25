@@ -114,8 +114,9 @@ typedef GSVector4  VectorF;
 #define LOCAL_STEP local.d4
 #endif
 
-void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local, const GSScanlineGlobalData& global)
+void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local)
 {
+	const GSScanlineGlobalData& global = *local.gd;
 	GSScanlineSelector sel = global.sel;
 
 	bool has_z = sel.zb != 0;
@@ -297,8 +298,10 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, cons
 	}
 }
 
-void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local, const GSScanlineGlobalData& global)
+void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
 {
+	const GSScanlineGlobalData& global = *local.gd;
+
 	GSScanlineSelector sel = global.sel;
 	constexpr int vlen = sizeof(VectorF) / sizeof(float);
 
@@ -1575,13 +1578,13 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 #ifndef ENABLE_JIT_RASTERIZER
 void GSDrawScanline::SetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local)
 {
-	CSetupPrim(vertex, index, dscan, local, *local.gd);
+	CSetupPrim(vertex, index, dscan, local);
 }
-void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexSW& scan)
+void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
 {
-	CDrawScanline(pixels, left, top, scan, m_local, m_global);
+	CDrawScanline(pixels, left, top, scan, local);
 }
-void GSDrawScanline::DrawEdge(int pixels, int left, int top, const GSVertexSW& scan)
+void GSDrawScanline::DrawEdge(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
 {
 	u32 zwrite = m_global.sel.zwrite;
 	u32 edge = m_global.sel.edge;
@@ -1589,7 +1592,7 @@ void GSDrawScanline::DrawEdge(int pixels, int left, int top, const GSVertexSW& s
 	m_global.sel.zwrite = 0;
 	m_global.sel.edge = 1;
 
-	CDrawScanline(pixels, left, top, scan, m_local, m_global);
+	CDrawScanline(pixels, left, top, scan, local);
 
 	m_global.sel.zwrite = zwrite;
 	m_global.sel.edge = edge;

@@ -1140,7 +1140,7 @@ void GSRasterizer::DrawScanline(int pixels, int left, int top, const GSVertexSW&
 
 	ASSERT(m_pixels.actual <= m_pixels.total);
 
-	m_ds->DrawScanline(pixels, left, top, scan);
+	m_ds->DrawScanline(pixels, left, top, scan, m_ds->GetLocalData());
 }
 
 void GSRasterizer::DrawEdge(int pixels, int left, int top, const GSVertexSW& scan)
@@ -1151,7 +1151,7 @@ void GSRasterizer::DrawEdge(int pixels, int left, int top, const GSVertexSW& sca
 
 	ASSERT(m_pixels.actual <= m_pixels.total);
 
-	m_ds->DrawEdge(pixels, left, top, scan);
+	m_ds->DrawEdge(pixels, left, top, scan, m_ds->GetLocalData());
 }
 
 void GSRasterizer::Sync()
