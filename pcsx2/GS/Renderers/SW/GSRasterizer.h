@@ -99,6 +99,8 @@ protected:
 	struct { int sum, actual, total; } m_pixels;
 	int m_primcount;
 
+	GSScanlineLocalData m_local = {};
+
 	typedef void (GSRasterizer::*DrawPrimPtr)(const GSVertexSW* v, int count);
 
 	template <bool scissor_test>

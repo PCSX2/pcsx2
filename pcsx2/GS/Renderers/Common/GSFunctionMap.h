@@ -146,7 +146,6 @@ template <class CG, class KEY, class VALUE>
 class GSCodeGeneratorFunctionMap : public GSFunctionMap<KEY, VALUE>
 {
 	std::string m_name;
-	void* m_param;
 	std::unordered_map<u64, VALUE> m_cgmap;
 	GSCodeBuffer m_cb;
 	size_t m_total_code_size;
@@ -154,9 +153,8 @@ class GSCodeGeneratorFunctionMap : public GSFunctionMap<KEY, VALUE>
 	enum { MAX_SIZE = 8192 };
 
 public:
-	GSCodeGeneratorFunctionMap(const char* name, void* param)
+	GSCodeGeneratorFunctionMap(const char* name)
 		: m_name(name)
-		, m_param(param)
 		, m_total_code_size(0)
 	{
 	}
@@ -182,7 +180,7 @@ public:
 		{
 			void* code_ptr = m_cb.GetBuffer(MAX_SIZE);
 
-			CG* cg = new CG(m_param, key, code_ptr, MAX_SIZE);
+			CG* cg = new CG(key, code_ptr, MAX_SIZE);
 			ASSERT(cg->getSize() < MAX_SIZE);
 
 #if 0

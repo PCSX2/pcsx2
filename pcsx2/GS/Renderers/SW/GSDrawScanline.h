@@ -37,8 +37,6 @@ public:
 	typedef void (*DrawScanlinePtr)(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
 
 protected:
-	GSScanlineLocalData m_local = {};
-
 	SetupPrimPtr m_sp = nullptr;
 	DrawScanlinePtr m_ds = nullptr;
 	DrawScanlinePtr m_de = nullptr;
@@ -47,20 +45,20 @@ protected:
 	GSCodeGeneratorFunctionMap<GSDrawScanlineCodeGenerator, u64, DrawScanlinePtr> m_ds_map;
 
 	template <class T, bool masked>
-	void DrawRectT(const GSOffset& off, const GSVector4i& r, u32 c, u32 m);
+	static void DrawRectT(const GSOffset& off, const GSVector4i& r, u32 c, u32 m, GSScanlineLocalData& local);
 
 	template <class T, bool masked>
-	__forceinline void FillRect(const GSOffset& off, const GSVector4i& r, u32 c, u32 m);
+	static __forceinline void FillRect(const GSOffset& off, const GSVector4i& r, u32 c, u32 m, GSScanlineLocalData& local);
 
 #if _M_SSE >= 0x501
 
 	template <class T, bool masked>
-	__forceinline void FillBlock(const GSOffset& off, const GSVector4i& r, const GSVector8i& c, const GSVector8i& m);
+	static __forceinline void FillBlock(const GSOffset& off, const GSVector4i& r, const GSVector8i& c, const GSVector8i& m, GSScanlineLocalData& local);
 
 #else
 
 	template <class T, bool masked>
-	__forceinline void FillBlock(const GSOffset& off, const GSVector4i& r, const GSVector4i& c, const GSVector4i& m);
+	static __forceinline void FillBlock(const GSOffset& off, const GSVector4i& r, const GSVector4i& c, const GSVector4i& m, GSScanlineLocalData& local);
 
 #endif
 
@@ -68,15 +66,11 @@ public:
 	GSDrawScanline();
 	virtual ~GSDrawScanline() = default;
 
-	__forceinline GSScanlineLocalData& GetLocalData() { return m_local; }
-	static __forceinline const GSScanlineGlobalData& GlobalFromLocal(const GSScanlineLocalData& local) { return *local.gd; }
-
 	__forceinline bool HasEdge() const { return m_de != nullptr; }
-	__forceinline bool IsSolidRect() const { return m_local.gd->sel.IsSolidRect(); }
 
 	// IDrawScanline
 
-	void BeginDraw(const GSRasterizerData* data);
+	void BeginDraw(const GSRasterizerData* data, GSScanlineLocalData& local);
 	void EndDraw(u64 frame, u64 ticks, int actual, int total, int prims);
 
 	static void CSetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local);
@@ -100,7 +94,7 @@ public:
 #endif
 
 	// Not currently jitted.
-	void DrawRect(const GSVector4i& r, const GSVertexSW& v);
+	void DrawRect(const GSVector4i& r, const GSVertexSW& v, GSScanlineLocalData& local);
 
 	void PrintStats()
 	{

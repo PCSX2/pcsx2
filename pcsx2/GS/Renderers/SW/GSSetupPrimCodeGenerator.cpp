@@ -19,10 +19,8 @@
 
 MULTI_ISA_UNSHARED_IMPL;
 
-GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(void* param, u64 key, void* code, size_t maxsize)
+GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(u64 key, void* code, size_t maxsize)
 	: Xbyak::CodeGenerator(maxsize, code)
-	, m_local(*(GSScanlineLocalData*)param)
-	, m_rip(false)
 {
 	m_sel.key = key;
 
@@ -31,5 +29,5 @@ GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(void* param, u64 key, void* c
 	m_en.t = m_sel.fb && m_sel.tfx != TFX_NONE ? 1 : 0;
 	m_en.c = m_sel.fb && !(m_sel.tfx == TFX_DECAL && m_sel.tcc) ? 1 : 0;
 
-	GSSetupPrimCodeGenerator2(this, g_cpu, param, key).Generate();
+	GSSetupPrimCodeGenerator2(this, g_cpu, key).Generate();
 }

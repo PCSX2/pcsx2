@@ -152,7 +152,7 @@ void GSRasterizer::Draw(GSRasterizerData* data)
 	if constexpr (ENABLE_DRAW_STATS)
 		data->start = __rdtsc();
 
-	m_ds->BeginDraw(data);
+	m_ds->BeginDraw(data, m_local);
 
 	const GSVertexSW* vertex = data->vertex;
 	const GSVertexSW* vertex_end = data->vertex + data->vertex_count;
@@ -280,7 +280,7 @@ void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const u
 			{
 				if (IsOneOfMyScanlines(p.y))
 				{
-					m_ds->SetupPrim(vertex, index, GSVertexSW::zero(), m_ds->GetLocalData());
+					m_ds->SetupPrim(vertex, index, GSVertexSW::zero(), m_local);
 
 					DrawScanline(1, p.x, p.y, v);
 				}
@@ -301,7 +301,7 @@ void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const u
 			{
 				if (IsOneOfMyScanlines(p.y))
 				{
-					m_ds->SetupPrim(vertex, tmp_index, GSVertexSW::zero(), m_ds->GetLocalData());
+					m_ds->SetupPrim(vertex, tmp_index, GSVertexSW::zero(), m_local);
 
 					DrawScanline(1, p.x, p.y, v);
 				}
@@ -369,7 +369,7 @@ void GSRasterizer::DrawLine(const GSVertexSW* vertex, const u32* index)
 
 					scan += dscan * (l - scan.p).xxxx();
 
-					m_ds->SetupPrim(vertex, index, dscan, m_ds->GetLocalData());
+					m_ds->SetupPrim(vertex, index, dscan, m_local);
 
 					DrawScanline(pixels, left, p.y, scan);
 				}
@@ -814,11 +814,12 @@ void GSRasterizer::DrawSprite(const GSVertexSW* vertex, const u32* index)
 
 	GSVertexSW scan = v[0];
 
-	if ((m_scanmsk_value & 2) == 0 && m_ds->IsSolidRect())
+	// TODO: Double check IsSolidRect() works.
+	if ((m_scanmsk_value & 2) == 0 && m_local.gd->sel.IsSolidRect())
 	{
 		if (m_threads == 1)
 		{
-			m_ds->DrawRect(r, scan);
+			m_ds->DrawRect(r, scan, m_local);
 
 			int pixels = r.width() * r.height();
 
@@ -835,7 +836,7 @@ void GSRasterizer::DrawSprite(const GSVertexSW* vertex, const u32* index)
 				r.top = top;
 				r.bottom = std::min<int>((top + (1 << m_thread_height)) & ~((1 << m_thread_height) - 1), bottom);
 
-				m_ds->DrawRect(r, scan);
+				m_ds->DrawRect(r, scan, m_local);
 
 				int pixels = r.width() * r.height();
 
@@ -864,7 +865,7 @@ void GSRasterizer::DrawSprite(const GSVertexSW* vertex, const u32* index)
 
 	scan.t = (scan.t + dt * prestep).xyzw(scan.t);
 
-	m_ds->SetupPrim(vertex, index, dscan, m_ds->GetLocalData());
+	m_ds->SetupPrim(vertex, index, dscan, m_local);
 
 	while (1)
 	{
@@ -1093,7 +1094,7 @@ void GSRasterizer::Flush(const GSVertexSW* vertex, const u32* index, const GSVer
 
 	if (count > 0)
 	{
-		m_ds->SetupPrim(vertex, index, dscan, m_ds->GetLocalData());
+		m_ds->SetupPrim(vertex, index, dscan, m_local);
 
 		const GSVertexSW* RESTRICT e = m_edge.buff;
 		const GSVertexSW* RESTRICT ee = e + count;
@@ -1140,7 +1141,7 @@ void GSRasterizer::DrawScanline(int pixels, int left, int top, const GSVertexSW&
 
 	ASSERT(m_pixels.actual <= m_pixels.total);
 
-	m_ds->DrawScanline(pixels, left, top, scan, m_ds->GetLocalData());
+	m_ds->DrawScanline(pixels, left, top, scan, m_local);
 }
 
 void GSRasterizer::DrawEdge(int pixels, int left, int top, const GSVertexSW& scan)
@@ -1151,7 +1152,7 @@ void GSRasterizer::DrawEdge(int pixels, int left, int top, const GSVertexSW& sca
 
 	ASSERT(m_pixels.actual <= m_pixels.total);
 
-	m_ds->DrawEdge(pixels, left, top, scan, m_ds->GetLocalData());
+	m_ds->DrawEdge(pixels, left, top, scan, m_local);
 }
 
 void GSRasterizer::Sync()

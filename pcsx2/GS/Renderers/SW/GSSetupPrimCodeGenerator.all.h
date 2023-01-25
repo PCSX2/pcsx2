@@ -46,7 +46,6 @@ class GSSetupPrimCodeGenerator2 : public GSNewCodeGenerator
 	constexpr static int dsize = isXmm ? 4 : 8;
 
 	GSScanlineSelector m_sel;
-	GSScanlineLocalData& m_local;
 	bool many_regs;
 
 	struct {u32 z:1, f:1, t:1, c:1;} m_en;
@@ -55,7 +54,7 @@ class GSSetupPrimCodeGenerator2 : public GSNewCodeGenerator
 	const AddressReg _64_vertex, _index, _dscan, _m_local, t1;
 
 public:
-	GSSetupPrimCodeGenerator2(Xbyak::CodeGenerator* base, const ProcessorFeatures& cpu, void* param, u64 key);
+	GSSetupPrimCodeGenerator2(Xbyak::CodeGenerator* base, const ProcessorFeatures& cpu, u64 key);
 	void Generate();
 
 private:

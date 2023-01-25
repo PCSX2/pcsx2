@@ -70,9 +70,8 @@ using namespace Xbyak;
 	#define _rip_local_d_p(x) _rip_local_d(x)
 #endif
 
-GSDrawScanlineCodeGenerator2::GSDrawScanlineCodeGenerator2(Xbyak::CodeGenerator* base, const ProcessorFeatures& cpu, void* param, u64 key)
+GSDrawScanlineCodeGenerator2::GSDrawScanlineCodeGenerator2(Xbyak::CodeGenerator* base, const ProcessorFeatures& cpu, u64 key)
 	: _parent(base, cpu)
-	, m_local(*(GSScanlineLocalData*)param)
 #ifdef _WIN32
 	, a0(rcx), a1(rdx)
 	, a2(r8) , a3(r9)
