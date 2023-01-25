@@ -209,6 +209,7 @@ Pcsx2Config::RecompilerOptions::RecompilerOptions()
 	EnableVU0 = true;
 	EnableVU1 = true;
 	EnableFastmem = true;
+	PauseOnTLBMiss = false;
 
 	// vu and fpu clamping default to standard overflow.
 	vu0Overflow = true;
@@ -286,6 +287,7 @@ void Pcsx2Config::RecompilerOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(EnableVU0);
 	SettingsWrapBitBool(EnableVU1);
 	SettingsWrapBitBool(EnableFastmem);
+	SettingsWrapBitBool(PauseOnTLBMiss);
 
 	SettingsWrapBitBool(vu0Overflow);
 	SettingsWrapBitBool(vu0ExtraOverflow);

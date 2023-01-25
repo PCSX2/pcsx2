@@ -37,6 +37,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeINTCSpinDetection, "EmuCore/Speedhacks", "IntcStat", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeWaitLoopDetection, "EmuCore/Speedhacks", "WaitLoop", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeFastmem, "EmuCore/CPU/Recompiler", "EnableFastmem", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnTLBMiss, "EmuCore/CPU/Recompiler", "PauseOnTLBMiss", false);
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu0Recompiler, "EmuCore/CPU/Recompiler", "EnableVU0", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu1Recompiler, "EmuCore/CPU/Recompiler", "EnableVU1", true);
@@ -83,6 +84,11 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 	dialog->registerWidgetHelp(m_ui.eeFastmem, tr("Enable Fast Memory Access"), tr("Checked"),
 		tr("Uses backpatching to avoid register flushing on every memory access."));
+
+	dialog->registerWidgetHelp(m_ui.pauseOnTLBMiss, tr("Pause On TLB Miss"), tr("Unchecked"),
+		tr("Pauses the virtual machine when a TLB miss occurs, instead of ignoring it and continuing. Note the the VM will pause after the "
+		   "end of the block, not on the instruction which caused the exception. Refer to the console to see the address where the invalid "
+		   "access occurred."));
 
 	dialog->registerWidgetHelp(m_ui.vu0RoundingMode, tr("Rounding Mode"), tr("Chop / Zero (Default)"), tr(""));
 	dialog->registerWidgetHelp(m_ui.vu1RoundingMode, tr("Rounding Mode"), tr("Chop / Zero (Default)"), tr(""));
