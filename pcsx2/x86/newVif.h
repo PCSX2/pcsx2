@@ -19,7 +19,7 @@
 #include "VU.h"
 
 #include "common/emitter/x86emitter.h"
-#include "System/RecTypes.h"
+#include "System.h"
 
 using namespace x86Emitter;
 

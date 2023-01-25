@@ -494,7 +494,6 @@ set(pcsx2GSSources
 	GS/GSAlignedClass.cpp
 	GS/GSCapture.cpp
 	GS/GSClut.cpp
-	GS/GSCodeBuffer.cpp
 	GS/GSCrc.cpp
 	GS/GSDrawingContext.cpp
 	GS/GSDump.cpp
@@ -534,7 +533,6 @@ set(pcsx2GSHeaders
 	GS/GSBlock.h
 	GS/GSCapture.h
 	GS/GSClut.h
-	GS/GSCodeBuffer.h
 	GS/GSCrc.h
 	GS/GSDrawingContext.h
 	GS/GSDrawingEnvironment.h
@@ -985,10 +983,6 @@ set(pcsx2RecordingHeaders
 	${rec_src}/Utilities/InputRecordingLogger.h
 )
 
-# System headers
-set(pcsx2SystemHeaders
-	System/RecTypes.h)
-
 # Windows sources
 set(pcsx2WindowsSources
 	CDVD/Windows/DriveUtility.cpp
@@ -1114,7 +1108,6 @@ target_sources(PCSX2 PRIVATE
 	${pcsx2FrontendHeaders}
 	${pcsx2ps2Sources}
 	${pcsx2ps2Headers}
-	${pcsx2SystemHeaders}
 )
 
 # platform sources

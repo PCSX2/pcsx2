@@ -14,8 +14,11 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSDrawScanline.h"
-#include "GSTextureCacheSW.h"
+#include "GS/Renderers/SW/GSDrawScanline.h"
+#include "GS/Renderers/SW/GSTextureCacheSW.h"
+#include "GS/Renderers/SW/GSScanlineEnvironment.h"
+#include "GS/Renderers/SW/GSRasterizer.h"
+#include "GS/config.h"
 
 #if MULTI_ISA_COMPILE_ONCE
 // Lack of a better home
@@ -33,13 +36,21 @@ GSDrawScanline::GSDrawScanline()
 	: m_sp_map("GSSetupPrim")
 	, m_ds_map("GSDrawScanline")
 {
+	GetVmMemory().GSCode().AllowModification();
+	GetVmMemory().GSCode().Reset();
 }
 
-GSDrawScanline::~GSDrawScanline() = default;
+GSDrawScanline::~GSDrawScanline()
+{
+	if (const size_t used = GetVmMemory().GSCode().GetMemoryUsed(); used > 0)
+		DevCon.WriteLn("SW JIT generated %zu bytes of code", used);
+
+	GetVmMemory().GSCode().ForbidModification();
+}
 
 void GSDrawScanline::BeginDraw(const GSRasterizerData& data, GSScanlineLocalData& local)
 {
-	const GSScanlineGlobalData& global = static_cast<const SharedData&>(data).global;
+	const GSScanlineGlobalData& global = data.global;
 	local.gd = &global;
 
 	if (global.sel.mmin && global.sel.lcm)
@@ -67,12 +78,22 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData& data, GSScanlineLocalData
 	}
 }
 
-void GSDrawScanline::SetupDraw(GSRasterizerData& data)
+void GSDrawScanline::ResetCodeCache()
 {
+	Console.Warning("GS Software JIT cache overflow, resetting.");
+	m_sp_map.Clear();
+	m_ds_map.Clear();
+	GetVmMemory().GSCode().Reset();
+}
+
+bool GSDrawScanline::SetupDraw(GSRasterizerData& data)
+{
+	const GSScanlineGlobalData& global = data.global;
+
 #ifdef ENABLE_JIT_RASTERIZER
-	SharedData& sdata = static_cast<SharedData&>(data);
-	const GSScanlineGlobalData& global = sdata.global;
-	sdata.ds = m_ds_map[global.sel];
+	data.draw_scanline = m_ds_map[global.sel];
+	if (!unlikely(data.draw_scanline))
+		return false;
 
 	if (global.sel.aa1)
 	{
@@ -82,11 +103,13 @@ void GSDrawScanline::SetupDraw(GSRasterizerData& data)
 		sel.zwrite = 0;
 		sel.edge = 1;
 
-		sdata.de = m_ds_map[sel];
+		data.draw_edge = m_ds_map[sel];
+		if (unlikely(!data.draw_edge))
+			return false;
 	}
 	else
 	{
-		sdata.de = nullptr;
+		data.draw_edge = nullptr;
 	}
 
 	// doesn't need all bits => less functions generated
@@ -107,13 +130,23 @@ void GSDrawScanline::SetupDraw(GSRasterizerData& data)
 	sel.zequal = global.sel.zequal;
 	sel.notest = global.sel.notest;
 
-	sdata.sp = m_sp_map[sel];
+	return (data.setup_prim = m_sp_map[sel]) != nullptr;
+#else
+	data.setup_prim = &GSDrawScanline::CSetupPrim;
+	data.draw_scanline = &GSDrawScanline::CDrawScanline;
+	data.draw_edge = global.sel.aa1 ? &GSDrawScanline::CDrawEdge : nullptr;
+	return true;
 #endif
 }
 
 void GSDrawScanline::UpdateDrawStats(u64 frame, u64 ticks, int actual, int total, int prims)
 {
 	m_ds_map.UpdateStats(frame, ticks, actual, total, prims);
+}
+
+void GSDrawScanline::PrintStats()
+{
+	m_ds_map.PrintStats();
 }
 
 #if _M_SSE >= 0x501
@@ -307,6 +340,111 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, cons
 			local.c.rb = c.xxxx();
 			local.c.ga = c.zzzz();
 		}
+	}
+}
+
+template <class T>
+__ri static bool TestAlpha(T& test, T& fm, T& zm, const T& ga, const GSScanlineGlobalData& global)
+{
+	GSScanlineSelector sel = global.sel;
+
+	switch (sel.afail)
+	{
+		case AFAIL_FB_ONLY:
+			if (!sel.zwrite)
+				return true;
+			break;
+
+		case AFAIL_ZB_ONLY:
+			if (!sel.fwrite)
+				return true;
+			break;
+
+		case AFAIL_RGB_ONLY:
+			if (!sel.zwrite && sel.fpsm == 1)
+				return true;
+			break;
+	}
+
+	T t;
+
+	switch (sel.atst)
+	{
+		case ATST_NEVER:
+			t = GSVector4i::xffffffff();
+			break;
+
+		case ATST_ALWAYS:
+			return true;
+
+		case ATST_LESS:
+		case ATST_LEQUAL:
+			t = (ga >> 16) > T(global.aref);
+			break;
+
+		case ATST_EQUAL:
+			t = (ga >> 16) != T(global.aref);
+			break;
+
+		case ATST_GEQUAL:
+		case ATST_GREATER:
+			t = (ga >> 16) < T(global.aref);
+			break;
+
+		case ATST_NOTEQUAL:
+			t = (ga >> 16) == T(global.aref);
+			break;
+
+		default:
+			__assume(0);
+	}
+
+	switch (sel.afail)
+	{
+		case AFAIL_KEEP:
+			test |= t;
+			if (test.alltrue())
+				return false;
+			break;
+
+		case AFAIL_FB_ONLY:
+			zm |= t;
+			break;
+
+		case AFAIL_ZB_ONLY:
+			fm |= t;
+			break;
+
+		case AFAIL_RGB_ONLY:
+			zm |= t;
+			fm |= t & T::xff000000(); // fpsm 16 bit => & 0xffff8000?
+			break;
+
+		default:
+			__assume(0);
+	}
+
+	return true;
+}
+
+static const int s_offsets[] = {0, 2, 8, 10, 16, 18, 24, 26}; // columnTable16[0]
+
+template <class T>
+__ri static void WritePixel(const T& src, int addr, int i, u32 psm, const GSScanlineGlobalData& global)
+{
+	u8* dst = (u8*)global.vm + addr * 2 + s_offsets[i] * 2;
+
+	switch (psm)
+	{
+		case 0:
+			*(u32*)dst = src.U32[i];
+			break;
+		case 1:
+			*(u32*)dst = (src.U32[i] & 0xffffff) | (*(u32*)dst & 0xff000000);
+			break;
+		case 2:
+			*(u16*)dst = src.U16[i * 2];
+			break;
 	}
 }
 
@@ -1587,108 +1725,150 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 	}
 }
 
-template <class T>
-bool GSDrawScanline::TestAlpha(T& test, T& fm, T& zm, const T& ga, const GSScanlineGlobalData& global)
+void GSDrawScanline::CDrawEdge(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
 {
-	GSScanlineSelector sel = global.sel;
+	// This sucks. But so does not jitting!
+	const GSScanlineGlobalData* old_gd = local.gd;
+	GSScanlineGlobalData gd;
+	std::memcpy(&gd, &local.gd, sizeof(gd));
+	gd.sel.zwrite = 0;
+	gd.sel.edge = 1;
+	local.gd = &gd;
 
-	switch (sel.afail)
-	{
-		case AFAIL_FB_ONLY:
-			if (!sel.zwrite)
-				return true;
-			break;
+	CDrawScanline(pixels, left, top, scan, local);
 
-		case AFAIL_ZB_ONLY:
-			if (!sel.fwrite)
-				return true;
-			break;
-
-		case AFAIL_RGB_ONLY:
-			if (!sel.zwrite && sel.fpsm == 1)
-				return true;
-			break;
-	}
-
-	T t;
-
-	switch (sel.atst)
-	{
-		case ATST_NEVER:
-			t = GSVector4i::xffffffff();
-			break;
-
-		case ATST_ALWAYS:
-			return true;
-
-		case ATST_LESS:
-		case ATST_LEQUAL:
-			t = (ga >> 16) > T(global.aref);
-			break;
-
-		case ATST_EQUAL:
-			t = (ga >> 16) != T(global.aref);
-			break;
-
-		case ATST_GEQUAL:
-		case ATST_GREATER:
-			t = (ga >> 16) < T(global.aref);
-			break;
-
-		case ATST_NOTEQUAL:
-			t = (ga >> 16) == T(global.aref);
-			break;
-
-		default:
-			__assume(0);
-	}
-
-	switch (sel.afail)
-	{
-		case AFAIL_KEEP:
-			test |= t;
-			if (test.alltrue())
-				return false;
-			break;
-
-		case AFAIL_FB_ONLY:
-			zm |= t;
-			break;
-
-		case AFAIL_ZB_ONLY:
-			fm |= t;
-			break;
-
-		case AFAIL_RGB_ONLY:
-			zm |= t;
-			fm |= t & T::xff000000(); // fpsm 16 bit => & 0xffff8000?
-			break;
-
-		default:
-			__assume(0);
-	}
-
-	return true;
+	local.gd = old_gd;
 }
 
-static const int s_offsets[] = {0, 2, 8, 10, 16, 18, 24, 26}; // columnTable16[0]
-
-template <class T>
-void GSDrawScanline::WritePixel(const T& src, int addr, int i, u32 psm, const GSScanlineGlobalData& global)
+template <class T, bool masked>
+__ri static void FillRect(const GSOffset& off, const GSVector4i& r, u32 c, u32 m, GSScanlineLocalData& local)
 {
-	u8* dst = (u8*)global.vm + addr * 2 + s_offsets[i] * 2;
+	if (r.x >= r.z)
+		return;
 
-	switch (psm)
+	T* vm = (T*)GlobalFromLocal(local).vm;
+
+	for (int y = r.y; y < r.w; y++)
 	{
-		case 0:
-			*(u32*)dst = src.U32[i];
-			break;
-		case 1:
-			*(u32*)dst = (src.U32[i] & 0xffffff) | (*(u32*)dst & 0xff000000);
-			break;
-		case 2:
-			*(u16*)dst = src.U16[i * 2];
-			break;
+		auto pa = off.paMulti(vm, 0, y);
+
+		for (int x = r.x; x < r.z; x++)
+		{
+			T& d = *pa.value(x);
+			d = (T)(!masked ? c : (c | (d & m)));
+		}
+	}
+}
+
+#if _M_SSE >= 0x501
+
+template <class T, bool masked>
+__ri static void FillBlock(const GSOffset& off, const GSVector4i& r, const GSVector8i& c, const GSVector8i& m, GSScanlineLocalData& local)
+{
+	if (r.x >= r.z)
+		return;
+
+	T* vm = (T*)GlobalFromLocal(local).vm;
+
+	for (int y = r.y; y < r.w; y += 8)
+	{
+		for (int x = r.x; x < r.z; x += 8 * 4 / sizeof(T))
+		{
+			GSVector8i* RESTRICT p = (GSVector8i*)&vm[off.pa(x, y)];
+
+			p[0] = !masked ? c : (c | (p[0] & m));
+			p[1] = !masked ? c : (c | (p[1] & m));
+			p[2] = !masked ? c : (c | (p[2] & m));
+			p[3] = !masked ? c : (c | (p[3] & m));
+			p[4] = !masked ? c : (c | (p[4] & m));
+			p[5] = !masked ? c : (c | (p[5] & m));
+			p[6] = !masked ? c : (c | (p[6] & m));
+			p[7] = !masked ? c : (c | (p[7] & m));
+		}
+	}
+}
+
+#else
+
+template <class T, bool masked>
+__ri static void FillBlock(const GSOffset& off, const GSVector4i& r, const GSVector4i& c, const GSVector4i& m, GSScanlineLocalData& local)
+{
+	if (r.x >= r.z)
+		return;
+
+	T* vm = (T*)GlobalFromLocal(local).vm;
+
+	for (int y = r.y; y < r.w; y += 8)
+	{
+		auto pa = off.paMulti(vm, 0, y);
+
+		for (int x = r.x; x < r.z; x += 8 * 4 / sizeof(T))
+		{
+			GSVector4i* RESTRICT p = (GSVector4i*)pa.value(x);
+
+			for (int i = 0; i < 16; i += 4)
+			{
+				p[i + 0] = !masked ? c : (c | (p[i + 0] & m));
+				p[i + 1] = !masked ? c : (c | (p[i + 1] & m));
+				p[i + 2] = !masked ? c : (c | (p[i + 2] & m));
+				p[i + 3] = !masked ? c : (c | (p[i + 3] & m));
+			}
+		}
+	}
+}
+
+#endif
+
+template <class T, bool masked>
+__ri static void DrawRectT(const GSOffset& off, const GSVector4i& r, u32 c, u32 m, GSScanlineLocalData& local)
+{
+	if (m == 0xffffffff)
+		return;
+
+#if _M_SSE >= 0x501
+
+	GSVector8i color((int)c);
+	GSVector8i mask((int)m);
+
+#else
+
+	GSVector4i color((int)c);
+	GSVector4i mask((int)m);
+
+#endif
+
+	if (sizeof(T) == sizeof(u16))
+	{
+		color = color.xxzzlh();
+		mask = mask.xxzzlh();
+		c = (c & 0xffff) | (c << 16);
+		m = (m & 0xffff) | (m << 16);
+	}
+
+	color = color.andnot(mask);
+	c = c & (~m);
+
+	if (masked)
+		ASSERT(mask.U32[0] != 0);
+
+	GSVector4i br = r.ralign<Align_Inside>(GSVector2i(8 * 4 / sizeof(T), 8));
+
+	if (!br.rempty())
+	{
+		FillRect<T, masked>(off, GSVector4i(r.x, r.y, r.z, br.y), c, m, local);
+		FillRect<T, masked>(off, GSVector4i(r.x, br.w, r.z, r.w), c, m, local);
+
+		if (r.x < br.x || br.z < r.z)
+		{
+			FillRect<T, masked>(off, GSVector4i(r.x, br.y, br.x, br.w), c, m, local);
+			FillRect<T, masked>(off, GSVector4i(br.z, br.y, r.z, br.w), c, m, local);
+		}
+
+		FillBlock<T, masked>(off, br, color, mask, local);
+	}
+	else
+	{
+		FillRect<T, masked>(off, r, c, m, local);
 	}
 }
 
@@ -1777,135 +1957,3 @@ void GSDrawScanline::DrawRect(const GSVector4i& r, const GSVertexSW& v, GSScanli
 		}
 	}
 }
-
-template <class T, bool masked>
-void GSDrawScanline::DrawRectT(const GSOffset& off, const GSVector4i& r, u32 c, u32 m, GSScanlineLocalData& local)
-{
-	if (m == 0xffffffff)
-		return;
-
-#if _M_SSE >= 0x501
-
-	GSVector8i color((int)c);
-	GSVector8i mask((int)m);
-
-#else
-
-	GSVector4i color((int)c);
-	GSVector4i mask((int)m);
-
-#endif
-
-	if (sizeof(T) == sizeof(u16))
-	{
-		color = color.xxzzlh();
-		mask = mask.xxzzlh();
-		c = (c & 0xffff) | (c << 16);
-		m = (m & 0xffff) | (m << 16);
-	}
-
-	color = color.andnot(mask);
-	c = c & (~m);
-
-	if (masked)
-		ASSERT(mask.U32[0] != 0);
-
-	GSVector4i br = r.ralign<Align_Inside>(GSVector2i(8 * 4 / sizeof(T), 8));
-
-	if (!br.rempty())
-	{
-		FillRect<T, masked>(off, GSVector4i(r.x, r.y, r.z, br.y), c, m, local);
-		FillRect<T, masked>(off, GSVector4i(r.x, br.w, r.z, r.w), c, m, local);
-
-		if (r.x < br.x || br.z < r.z)
-		{
-			FillRect<T, masked>(off, GSVector4i(r.x, br.y, br.x, br.w), c, m, local);
-			FillRect<T, masked>(off, GSVector4i(br.z, br.y, r.z, br.w), c, m, local);
-		}
-
-		FillBlock<T, masked>(off, br, color, mask, local);
-	}
-	else
-	{
-		FillRect<T, masked>(off, r, c, m, local);
-	}
-}
-
-template <class T, bool masked>
-void GSDrawScanline::FillRect(const GSOffset& off, const GSVector4i& r, u32 c, u32 m, GSScanlineLocalData& local)
-{
-	if (r.x >= r.z)
-		return;
-
-	T* vm = (T*)GlobalFromLocal(local).vm;
-
-	for (int y = r.y; y < r.w; y++)
-	{
-		auto pa = off.paMulti(vm, 0, y);
-
-		for (int x = r.x; x < r.z; x++)
-		{
-			T& d = *pa.value(x);
-			d = (T)(!masked ? c : (c | (d & m)));
-		}
-	}
-}
-
-#if _M_SSE >= 0x501
-
-template <class T, bool masked>
-void GSDrawScanline::FillBlock(const GSOffset& off, const GSVector4i& r, const GSVector8i& c, const GSVector8i& m, GSScanlineLocalData& local)
-{
-	if (r.x >= r.z)
-		return;
-
-	T* vm = (T*)GlobalFromLocal(local).vm;
-
-	for (int y = r.y; y < r.w; y += 8)
-	{
-		for (int x = r.x; x < r.z; x += 8 * 4 / sizeof(T))
-		{
-			GSVector8i* RESTRICT p = (GSVector8i*)&vm[off.pa(x, y)];
-
-			p[0] = !masked ? c : (c | (p[0] & m));
-			p[1] = !masked ? c : (c | (p[1] & m));
-			p[2] = !masked ? c : (c | (p[2] & m));
-			p[3] = !masked ? c : (c | (p[3] & m));
-			p[4] = !masked ? c : (c | (p[4] & m));
-			p[5] = !masked ? c : (c | (p[5] & m));
-			p[6] = !masked ? c : (c | (p[6] & m));
-			p[7] = !masked ? c : (c | (p[7] & m));
-		}
-	}
-}
-
-#else
-
-template <class T, bool masked>
-void GSDrawScanline::FillBlock(const GSOffset& off, const GSVector4i& r, const GSVector4i& c, const GSVector4i& m, GSScanlineLocalData& local)
-{
-	if (r.x >= r.z)
-		return;
-
-	T* vm = (T*)GlobalFromLocal(local).vm;
-
-	for (int y = r.y; y < r.w; y += 8)
-	{
-		auto pa = off.paMulti(vm, 0, y);
-
-		for (int x = r.x; x < r.z; x += 8 * 4 / sizeof(T))
-		{
-			GSVector4i* RESTRICT p = (GSVector4i*)pa.value(x);
-
-			for (int i = 0; i < 16; i += 4)
-			{
-				p[i + 0] = !masked ? c : (c | (p[i + 0] & m));
-				p[i + 1] = !masked ? c : (c | (p[i + 1] & m));
-				p[i + 2] = !masked ? c : (c | (p[i + 2] & m));
-				p[i + 3] = !masked ? c : (c | (p[i + 3] & m));
-			}
-		}
-	}
-}
-
-#endif

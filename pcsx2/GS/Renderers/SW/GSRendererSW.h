@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include "GSTextureCacheSW.h"
-#include "GSDrawScanline.h"
+#include "GS/Renderers/SW/GSTextureCacheSW.h"
+#include "GS/Renderers/SW/GSRasterizer.h"
 #include "GS/GSRingHeap.h"
 #include "GS/MultiISA.h"
 
@@ -25,7 +25,7 @@ MULTI_ISA_UNSHARED_START
 class GSRendererSW final : public GSRenderer
 {
 public:
-	class SharedData : public GSDrawScanline::SharedData
+	class SharedData : public GSRasterizerData
 	{
 		struct alignas(16) TextureLevel
 		{

@@ -16,7 +16,7 @@
 #include "GSRendererHW.h"
 
 #include "GS/Renderers/SW/GSTextureCacheSW.h"
-#include "GS/Renderers/SW/GSDrawScanline.h"
+#include "GS/Renderers/SW/GSRasterizer.h"
 
 class CURRENT_ISA::GSRendererHWFunctions
 {
@@ -44,7 +44,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 	const GSDrawingEnvironment& env = hw.m_env;
 	const GS_PRIM_CLASS primclass = vt.m_primclass;
 
-	GSDrawScanline::SharedData data;
+	GSRasterizerData data;
 	GSScanlineGlobalData& gd = data.global;
 
 	u32 clut_storage[256];
@@ -549,13 +549,9 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 	}
 
 	if (!hw.m_sw_rasterizer)
-	{
-		hw.m_sw_draw_scanline = std::make_unique<GSDrawScanline>();
-		hw.m_sw_rasterizer = std::make_unique<GSRasterizer>(static_cast<GSDrawScanline*>(hw.m_sw_draw_scanline.get()), 0, 1);
-	}
+		hw.m_sw_rasterizer = std::make_unique<GSSingleRasterizer>();
 
-	static_cast<GSDrawScanline*>(hw.m_sw_draw_scanline.get())->SetupDraw(data);
-	static_cast<GSRasterizer*>(hw.m_sw_rasterizer.get())->Draw(data);
+	static_cast<GSSingleRasterizer*>(hw.m_sw_rasterizer.get())->Draw(data);
 
 	if (invalidate_tc)
 		hw.m_tc->InvalidateVideoMem(context->offset.fb, bbox);
