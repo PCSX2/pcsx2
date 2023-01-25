@@ -26,6 +26,8 @@
 
 MULTI_ISA_UNSHARED_START
 
+class GSDrawScanline;
+
 class alignas(32) GSRasterizerData : public GSAlignedClass<32>
 {
 	static int s_counter;
@@ -69,54 +71,6 @@ public:
 	}
 };
 
-class IDrawScanline : public GSAlignedClass<32>
-{
-public:
-	IDrawScanline()
-		: m_sp(NULL)
-		, m_ds(NULL)
-		, m_de(NULL)
-		, m_dr(NULL)
-	{
-	}
-	virtual ~IDrawScanline() {}
-
-	typedef void (*SetupPrimPtr)(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan);
-	typedef void (*DrawScanlinePtr)(int pixels, int left, int top, const GSVertexSW& scan);
-	typedef void (IDrawScanline::*DrawRectPtr)(const GSVector4i& r, const GSVertexSW& v); // TODO: jit
-
-protected:
-	SetupPrimPtr m_sp;
-	DrawScanlinePtr m_ds;
-	DrawScanlinePtr m_de;
-	DrawRectPtr m_dr;
-
-public:
-	virtual void BeginDraw(const GSRasterizerData* data) = 0;
-	virtual void EndDraw(u64 frame, u64 ticks, int actual, int total, int prims) = 0;
-
-#ifdef ENABLE_JIT_RASTERIZER
-
-	__forceinline void SetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan) { m_sp(vertex, index, dscan); }
-	__forceinline void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan) { m_ds(pixels, left, top, scan); }
-	__forceinline void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan) { m_de(pixels, left, top, scan); }
-	__forceinline void DrawRect(const GSVector4i& r, const GSVertexSW& v) { (this->*m_dr)(r, v); }
-
-#else
-
-	virtual void SetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan) = 0;
-	virtual void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan) = 0;
-	virtual void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan) = 0;
-	virtual void DrawRect(const GSVector4i& r, const GSVertexSW& v) = 0;
-
-#endif
-
-	virtual void PrintStats() = 0;
-
-	__forceinline bool HasEdge() const { return m_de != NULL; }
-	__forceinline bool IsSolidRect() const { return m_dr != NULL; }
-};
-
 class IRasterizer : public GSVirtualAlignedClass<32>
 {
 public:
@@ -129,10 +83,10 @@ public:
 	virtual void PrintStats() = 0;
 };
 
-class alignas(32) GSRasterizer : public IRasterizer
+class alignas(32) GSRasterizer final : public IRasterizer
 {
 protected:
-	IDrawScanline* m_ds;
+	GSDrawScanline* m_ds;
 	int m_id;
 	int m_threads;
 	int m_thread_height;
@@ -168,8 +122,8 @@ protected:
 	__forceinline void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan);
 
 public:
-	GSRasterizer(IDrawScanline* ds, int id, int threads);
-	virtual ~GSRasterizer();
+	GSRasterizer(GSDrawScanline* ds, int id, int threads);
+	~GSRasterizer() override;
 
 	__forceinline bool IsOneOfMyScanlines(int top) const;
 	__forceinline bool IsOneOfMyScanlines(int top, int bottom) const;
@@ -179,14 +133,14 @@ public:
 
 	// IRasterizer
 
-	void Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& data);
-	void Sync() {}
-	bool IsSynced() const { return true; }
-	int GetPixels(bool reset);
-	void PrintStats() { m_ds->PrintStats(); }
+	void Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& data) override;
+	void Sync() override;
+	bool IsSynced() const override;
+	int GetPixels(bool reset) override;
+	void PrintStats() override;
 };
 
-class GSRasterizerList : public IRasterizer
+class GSRasterizerList final : public IRasterizer
 {
 protected:
 	using GSWorker = GSJobQueue<GSRingHeap::SharedPtr<GSRasterizerData>, 65536>;
@@ -203,40 +157,17 @@ protected:
 	static void OnWorkerShutdown(int i);
 
 public:
-	virtual ~GSRasterizerList();
+	~GSRasterizerList() override;
 
-	template <class DS>
-	static std::unique_ptr<IRasterizer> Create(int threads)
-	{
-		threads = std::max<int>(threads, 0);
-
-		if (threads == 0)
-		{
-			return std::make_unique<GSRasterizer>(new DS(), 0, 1);
-		}
-
-		std::unique_ptr<GSRasterizerList> rl(new GSRasterizerList(threads));
-
-		for (int i = 0; i < threads; i++)
-		{
-			rl->m_r.push_back(std::unique_ptr<GSRasterizer>(new GSRasterizer(new DS(), i, threads)));
-			auto& r = *rl->m_r[i];
-			rl->m_workers.push_back(std::unique_ptr<GSWorker>(new GSWorker(
-				[i]() { GSRasterizerList::OnWorkerStartup(i); },
-				[&r](GSRingHeap::SharedPtr<GSRasterizerData>& item) { r.Draw(item.get()); },
-				[i]() { GSRasterizerList::OnWorkerShutdown(i); })));
-		}
-
-		return rl;
-	}
+	static std::unique_ptr<IRasterizer> Create(int threads);
 
 	// IRasterizer
 
-	void Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& data);
-	void Sync();
-	bool IsSynced() const;
-	int GetPixels(bool reset);
-	void PrintStats() {}
+	void Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& data) override;
+	void Sync() override;
+	bool IsSynced() const override;
+	int GetPixels(bool reset) override;
+	void PrintStats() override;
 };
 
 MULTI_ISA_UNSHARED_END
