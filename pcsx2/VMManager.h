@@ -35,6 +35,7 @@ enum class VMState
 	Initializing,
 	Running,
 	Paused,
+	Resetting,
 	Stopping,
 };
 
