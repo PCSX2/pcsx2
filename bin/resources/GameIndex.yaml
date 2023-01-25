@@ -42482,6 +42482,10 @@ SLUS-20467:
         // Fix ingame SPS by interchanging vclipw.xyz vf5, vf5w with cfc2.
         patch=1,EE,001d90e0,word,48489000
         patch=1,EE,001d90e4,word,4bc529ff
+        author=Agrippa
+        // Force English - else the game crashes with French or Spanish set
+        // in the BIOS configuration - a gamebug, not an emulator bug.
+        patch=1,EE,0020520C,word,24020001 // 0C0882C8
   gameFixes:
     - SoftwareRendererFMVHack # Fixes garbage pixels.
   gsHWFixes:
