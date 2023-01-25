@@ -22,7 +22,6 @@
 #include "GS/GSThread_CXX11.h"
 #include "GS/GSRingHeap.h"
 #include "GS/MultiISA.h"
-#include "GS/config.h"
 
 MULTI_ISA_UNSHARED_START
 

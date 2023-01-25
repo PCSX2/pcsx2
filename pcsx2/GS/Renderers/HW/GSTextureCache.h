@@ -22,6 +22,10 @@
 #include "GS/Renderers/Common/GSDirtyRect.h"
 #include <unordered_set>
 
+// Only for debugging. Reads back every target to local memory after drawing, effectively
+// disabling caching between draws.
+//#define DISABLE_HW_TEXTURE_CACHE
+
 class GSTextureCache
 {
 public:
