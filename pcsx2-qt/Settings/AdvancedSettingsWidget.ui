@@ -165,6 +165,13 @@
               </property>
              </widget>
             </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="pauseOnTLBMiss">
+              <property name="text">
+               <string>Pause On TLB Miss</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
          </layout>
