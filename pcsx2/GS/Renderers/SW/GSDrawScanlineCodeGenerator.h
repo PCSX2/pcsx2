@@ -38,10 +38,9 @@ class GSDrawScanlineCodeGenerator : public Xbyak::CodeGenerator
 	void operator=(const GSDrawScanlineCodeGenerator&);
 
 	GSScanlineSelector m_sel;
-	GSScanlineLocalData& m_local;
 
 public:
-	GSDrawScanlineCodeGenerator(void* param, u64 key, void* code, size_t maxsize);
+	GSDrawScanlineCodeGenerator(u64 key, void* code, size_t maxsize);
 };
 
 MULTI_ISA_UNSHARED_END

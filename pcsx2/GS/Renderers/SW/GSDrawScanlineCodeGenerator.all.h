@@ -69,7 +69,6 @@ class GSDrawScanlineCodeGenerator2 : public GSNewCodeGenerator
 	constexpr static int _top = _64_top;
 
 	GSScanlineSelector m_sel;
-	GSScanlineLocalData& m_local;
 	bool use_lod;
 
 	const XYm xym0{0}, xym1{1}, xym2{2}, xym3{3}, xym4{4}, xym5{5}, xym6{6}, xym7{7}, xym8{8}, xym9{9}, xym10{10}, xym11{11}, xym12{12}, xym13{13}, xym14{14}, xym15{15};
@@ -85,7 +84,7 @@ class GSDrawScanlineCodeGenerator2 : public GSNewCodeGenerator
 	const XYm _z, _f, _s, _t, _q, _f_rb, _f_ga;
 
 public:
-	GSDrawScanlineCodeGenerator2(Xbyak::CodeGenerator* base, const ProcessorFeatures& cpu, void* param, u64 key);
+	GSDrawScanlineCodeGenerator2(Xbyak::CodeGenerator* base, const ProcessorFeatures& cpu, u64 key);
 	void Generate();
 
 private:
