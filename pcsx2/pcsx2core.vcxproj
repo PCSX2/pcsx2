@@ -280,7 +280,6 @@
     <ClCompile Include="GS\GSBlock.cpp" />
     <ClCompile Include="GS\GSCapture.cpp" />
     <ClCompile Include="GS\GSClut.cpp" />
-    <ClCompile Include="GS\GSCodeBuffer.cpp" />
     <ClCompile Include="GS\GSCrc.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSDevice.cpp" />
     <ClCompile Include="GS\Renderers\DX11\GSDevice11.cpp" />
@@ -618,7 +617,6 @@
     <ClInclude Include="GS\GSBlock.h" />
     <ClInclude Include="GS\GSCapture.h" />
     <ClInclude Include="GS\GSClut.h" />
-    <ClInclude Include="GS\GSCodeBuffer.h" />
     <ClInclude Include="GS\GSCrc.h" />
     <ClInclude Include="GS\Renderers\Common\GSDevice.h" />
     <ClInclude Include="GS\Renderers\DX11\GSDevice11.h" />
@@ -715,7 +713,6 @@
     <ClInclude Include="SingleRegisterTypes.h" />
     <ClInclude Include="System.h" />
     <ClInclude Include="System\SysThreads.h" />
-    <ClInclude Include="System\RecTypes.h" />
     <ClInclude Include="Counters.h" />
     <ClInclude Include="Dmac.h" />
     <ClInclude Include="Hardware.h" />

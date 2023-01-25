@@ -22,8 +22,6 @@
 
 #include "Elfheader.h"
 
-#include "System/RecTypes.h"
-
 #include "common/Align.h"
 #include "common/MemsetFast.inl"
 #include "common/Perf.h"
@@ -133,6 +131,36 @@ RecompiledCodeReserve& RecompiledCodeReserve::SetProfilerName(std::string name)
 	return *this;
 }
 
+GSCodeReserve::GSCodeReserve()
+	: RecompiledCodeReserve("GS Software Renderer")
+{
+}
+
+GSCodeReserve::~GSCodeReserve() = default;
+
+void GSCodeReserve::Assign(VirtualMemoryManagerPtr allocator)
+{
+	RecompiledCodeReserve::Assign(std::move(allocator), HostMemoryMap::SWrecOffset, HostMemoryMap::SWrecSize);
+}
+
+void GSCodeReserve::Reset()
+{
+	RecompiledCodeReserve::Reset();
+	m_memory_used = 0;
+}
+
+u8* GSCodeReserve::Reserve(size_t size)
+{
+	pxAssert((m_memory_used + size) <= m_size);
+	return m_baseptr + m_memory_used;
+}
+
+void GSCodeReserve::Commit(size_t size)
+{
+	pxAssert((m_memory_used + size) <= m_size);
+	m_memory_used += size;
+}
+
 #include "svnrev.h"
 
 Pcsx2Config EmuConfig;
@@ -221,9 +249,9 @@ namespace HostMemoryMap
 	// For debuggers
 	extern "C" {
 #ifdef _WIN32
-	_declspec(dllexport) uptr EEmem, IOPmem, VUmem, EErec, IOPrec, VIF0rec, VIF1rec, mVU0rec, mVU1rec, bumpAllocator;
+	_declspec(dllexport) uptr EEmem, IOPmem, VUmem, EErec, IOPrec, VIF0rec, VIF1rec, mVU0rec, mVU1rec, SWjit, bumpAllocator;
 #else
-	__attribute__((visibility("default"), used)) uptr EEmem, IOPmem, VUmem, EErec, IOPrec, VIF0rec, VIF1rec, mVU0rec, mVU1rec, bumpAllocator;
+	__attribute__((visibility("default"), used)) uptr EEmem, IOPmem, VUmem, EErec, IOPrec, VIF0rec, VIF1rec, mVU0rec, mVU1rec, SWjit, bumpAllocator;
 #endif
 	}
 } // namespace HostMemoryMap
@@ -301,7 +329,9 @@ bool SysMainMemory::Allocate()
 	m_ee.Assign(MainMemory());
 	m_iop.Assign(MainMemory());
 	m_vu.Assign(MainMemory());
+
 	vtlb_Core_Alloc();
+
 	return true;
 }
 
@@ -315,6 +345,7 @@ void SysMainMemory::Reset()
 	m_vu.Reset();
 
 	// Note: newVif is reset as part of other VIF structures.
+	// Software is reset on the GS thread.
 }
 
 void SysMainMemory::Release()
@@ -356,10 +387,14 @@ SysCpuProviderPack::SysCpuProviderPack()
 		dVifReserve(0);
 		dVifReserve(1);
 	}
+
+	GetVmMemory().GSCode().Assign(GetVmMemory().CodeMemory());
 }
 
 SysCpuProviderPack::~SysCpuProviderPack()
 {
+	GetVmMemory().GSCode().Release();
+
 	if (newVifDynaRec)
 	{
 		dVifRelease(1);

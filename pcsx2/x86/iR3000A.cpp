@@ -23,7 +23,7 @@
 #include "iR3000A.h"
 #include "R3000A.h"
 #include "BaseblockEx.h"
-#include "System/RecTypes.h"
+#include "System.h"
 #include "R5900OpcodeTables.h"
 #include "IopBios.h"
 #include "IopHw.h"

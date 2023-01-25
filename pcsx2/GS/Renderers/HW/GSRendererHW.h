@@ -120,7 +120,6 @@ private:
 	// software sprite renderer state
 	std::vector<GSVertexSW> m_sw_vertex_buffer;
 	std::unique_ptr<GSTextureCacheSW::Texture> m_sw_texture[7 + 1];
-	std::unique_ptr<GSVirtualAlignedClass<32>> m_sw_draw_scanline;
 	std::unique_ptr<GSVirtualAlignedClass<32>> m_sw_rasterizer;
 
 public:

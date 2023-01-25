@@ -15,9 +15,9 @@
 
 #pragma once
 
-#include "GS/GSCodeBuffer.h"
 #include "GS/GSExtra.h"
 #include "GS/Renderers/SW/GSScanlineEnvironment.h"
+#include "System.h"
 #include "common/emitter/tools.h"
 
 template <class KEY, class VALUE>
@@ -147,28 +147,25 @@ class GSCodeGeneratorFunctionMap : public GSFunctionMap<KEY, VALUE>
 {
 	std::string m_name;
 	std::unordered_map<u64, VALUE> m_cgmap;
-	GSCodeBuffer m_cb;
-	size_t m_total_code_size;
 
 	enum { MAX_SIZE = 8192 };
 
 public:
-	GSCodeGeneratorFunctionMap(const char* name)
+	GSCodeGeneratorFunctionMap(std::string name)
 		: m_name(name)
-		, m_total_code_size(0)
 	{
 	}
 
-	~GSCodeGeneratorFunctionMap()
+	~GSCodeGeneratorFunctionMap() = default;
+
+	void Clear()
 	{
-#ifdef _DEBUG
-		fprintf(stderr, "%s generated %zu bytes of instruction\n", m_name.c_str(), m_total_code_size);
-#endif
+		m_cgmap.clear();
 	}
 
 	VALUE GetDefaultFunction(KEY key)
 	{
-		VALUE ret = NULL;
+		VALUE ret = nullptr;
 
 		auto i = m_cgmap.find(key);
 
@@ -178,22 +175,19 @@ public:
 		}
 		else
 		{
-			void* code_ptr = m_cb.GetBuffer(MAX_SIZE);
-
-			CG* cg = new CG(key, code_ptr, MAX_SIZE);
-			ASSERT(cg->getSize() < MAX_SIZE);
+			u8* code_ptr = GetVmMemory().GSCode().Reserve(MAX_SIZE);
+			CG cg(key, code_ptr, MAX_SIZE);
+			ASSERT(cg.getSize() < MAX_SIZE);
 
 #if 0
-			fprintf(stderr, "%s Location:%p Size:%zu Key:%llx\n", m_name.c_str(), code_ptr, cg->getSize(), (u64)key);
+			fprintf(stderr, "%s Location:%p Size:%zu Key:%llx\n", m_name.c_str(), code_ptr, cg.getSize(), (u64)key);
 			GSScanlineSelector sel(key);
 			sel.Print();
 #endif
 
-			m_total_code_size += cg->getSize();
+			GetVmMemory().GSCode().Commit(cg.getSize());
 
-			m_cb.ReleaseBuffer(cg->getSize());
-
-			ret = (VALUE)cg->getCode();
+			ret = (VALUE)cg.getCode();
 
 			m_cgmap[key] = ret;
 
@@ -211,8 +205,8 @@ public:
 
 				ml.method_id = iJIT_GetNewMethodID();
 				ml.method_name = (char*)name.c_str();
-				ml.method_load_address = (void*)cg->getCode();
-				ml.method_size = (unsigned int)cg->getSize();
+				ml.method_load_address = (void*)cg.getCode();
+				ml.method_size = (unsigned int)cg.getSize();
 
 				iJIT_NotifyEvent(iJVM_EVENT_TYPE_METHOD_LOAD_FINISHED, &ml);
 /*
@@ -224,7 +218,7 @@ public:
 					fputc(0xBB, fp); fputc(0x6F, fp); fputc(0x00, fp); fputc(0x00, fp); fputc(0x00, fp);
 					fputc(0x64, fp); fputc(0x67, fp); fputc(0x90, fp);
 
-					fwrite(cg->getCode(), cg->getSize(), 1, fp);
+					fwrite(cg.getCode(), cg.getSize(), 1, fp);
 
 					fputc(0xBB, fp); fputc(0xDE, fp); fputc(0x00, fp); fputc(0x00, fp); fputc(0x00, fp);
 					fputc(0x64, fp); fputc(0x67, fp); fputc(0x90, fp);
@@ -236,8 +230,6 @@ public:
 			}
 
 #endif
-
-			delete cg;
 		}
 
 		return ret;

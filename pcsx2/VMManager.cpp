@@ -310,8 +310,8 @@ void VMManager::Internal::ReleaseMemory()
 	std::vector<u8>().swap(s_no_interlacing_cheats_data);
 	s_no_interlacing_cheats_loaded = false;
 
-	s_vm_memory.reset();
 	s_cpu_provider_pack.reset();
+	s_vm_memory.reset();
 }
 
 SysMainMemory& GetVmMemory()

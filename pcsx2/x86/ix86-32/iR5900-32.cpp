@@ -24,7 +24,7 @@
 #include "iR5900.h"
 #include "iR5900Analysis.h"
 #include "BaseblockEx.h"
-#include "System/RecTypes.h"
+#include "System.h"
 
 #include "vtlb.h"
 

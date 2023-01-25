@@ -28,7 +28,6 @@
 typedef SafeArray<u8> VmStateBuffer;
 
 class BaseVUmicroCPU;
-class RecompiledCodeReserve;
 
 // This is a table of default virtual map addresses for ps2vm components.  These locations
 // are provided and used to assist in debugging and possibly hacking; as it makes it possible
@@ -64,7 +63,7 @@ namespace HostMemoryMap
 	//////////////////////////////////////////////////////////////////////////
 	// Code
 	//////////////////////////////////////////////////////////////////////////
-	static const u32 CodeSize = 0x0F100000; // 241 mb
+	static const u32 CodeSize = 0x13100000; // 305 mb
 
 	// EE recompiler code cache area (64mb)
 	static const u32 EErecOffset   = 0x00000000;
@@ -86,7 +85,66 @@ namespace HostMemoryMap
 
 	// SSE-optimized VIF unpack functions (1mb)
 	static const u32 VIFUnpackRecOffset = 0x0F000000;
+
+	// Software Renderer JIT buffer (64mb)
+	static const u32 SWrecOffset = 0x0F100000;
+	static const u32 SWrecSize = 0x04000000;
 }
+
+// --------------------------------------------------------------------------------------
+//  RecompiledCodeReserve
+// --------------------------------------------------------------------------------------
+// A recompiled code reserve is a simple sequential-growth block of memory which is auto-
+// cleared to INT 3 (0xcc) as needed.
+//
+class RecompiledCodeReserve : public VirtualMemoryReserve
+{
+	typedef VirtualMemoryReserve _parent;
+
+protected:
+	std::string m_profiler_name;
+
+public:
+	RecompiledCodeReserve(std::string name);
+	~RecompiledCodeReserve();
+
+	void Assign(VirtualMemoryManagerPtr allocator, size_t offset, size_t size);
+	void Reset();
+
+	RecompiledCodeReserve& SetProfilerName(std::string name);
+
+	void ForbidModification();
+	void AllowModification();
+
+	operator u8*() { return m_baseptr; }
+	operator const u8*() const { return m_baseptr; }
+
+protected:
+	void _registerProfiler();
+};
+
+// --------------------------------------------------------------------------------------
+//  GSCodeReserve
+// --------------------------------------------------------------------------------------
+// Stores code buffers for the GS software JIT.
+class GSCodeReserve : public RecompiledCodeReserve
+{
+public:
+	GSCodeReserve();
+	~GSCodeReserve();
+
+	size_t GetMemoryUsed() const { return m_memory_used; }
+
+	void Assign(VirtualMemoryManagerPtr allocator);
+	void Reset();
+
+	u8* Reserve(size_t size);
+	void Commit(size_t size);
+
+private:
+	size_t m_memory_used = 0;
+};
+
 
 // --------------------------------------------------------------------------------------
 //  SysMainMemory
@@ -104,6 +162,8 @@ protected:
 	iopMemoryReserve m_iop;
 	vuMemoryReserve m_vu;
 
+	GSCodeReserve m_gs_code;
+
 public:
 	SysMainMemory();
 	~SysMainMemory();
@@ -116,6 +176,8 @@ public:
 	const eeMemoryReserve& EEMemory() const { return m_ee; }
 	const iopMemoryReserve& IOPMemory() const { return m_iop; }
 	const vuMemoryReserve& VUMemory() const { return m_vu; }
+
+	GSCodeReserve& GSCode() { return m_gs_code; }
 
 	bool Allocate();
 	void Reset();

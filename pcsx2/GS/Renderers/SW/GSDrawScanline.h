@@ -16,136 +16,53 @@
 #pragma once
 
 #include "GS/GSState.h"
-#include "GS/Renderers/SW/GSRasterizer.h"
-#include "GS/Renderers/SW/GSScanlineEnvironment.h"
 #include "GS/Renderers/SW/GSSetupPrimCodeGenerator.h"
 #include "GS/Renderers/SW/GSDrawScanlineCodeGenerator.h"
-#include "GS/config.h"
 
-#include <cstring>
+struct GSScanlineLocalData;
 
 MULTI_ISA_UNSHARED_START
 
+class GSRasterizerData;
+
+class GSSetupPrimCodeGenerator;
+class GSDrawScanlineCodeGenerator;
+
 class GSDrawScanline : public GSVirtualAlignedClass<32>
 {
-public:
-	using SetupPrimPtr = void(*)(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local);
-	using DrawScanlinePtr = void(*)(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
-
-	class SharedData : public GSRasterizerData
-	{
-	public:
-		GSScanlineGlobalData global;
-
-#ifdef ENABLE_JIT_RASTERIZER
-		SetupPrimPtr sp;
-		DrawScanlinePtr ds;
-		DrawScanlinePtr de;
-#endif
-	};
-
-protected:
-	GSCodeGeneratorFunctionMap<GSSetupPrimCodeGenerator, u64, SetupPrimPtr> m_sp_map;
-	GSCodeGeneratorFunctionMap<GSDrawScanlineCodeGenerator, u64, DrawScanlinePtr> m_ds_map;
-
-	template <class T, bool masked>
-	static void DrawRectT(const GSOffset& off, const GSVector4i& r, u32 c, u32 m, GSScanlineLocalData& local);
-
-	template <class T, bool masked>
-	static __forceinline void FillRect(const GSOffset& off, const GSVector4i& r, u32 c, u32 m, GSScanlineLocalData& local);
-
-#if _M_SSE >= 0x501
-
-	template <class T, bool masked>
-	static __forceinline void FillBlock(const GSOffset& off, const GSVector4i& r, const GSVector8i& c, const GSVector8i& m, GSScanlineLocalData& local);
-
-#else
-
-	template <class T, bool masked>
-	static __forceinline void FillBlock(const GSOffset& off, const GSVector4i& r, const GSVector4i& c, const GSVector4i& m, GSScanlineLocalData& local);
-
-#endif
+	friend GSSetupPrimCodeGenerator;
+	friend GSDrawScanlineCodeGenerator;
 
 public:
 	GSDrawScanline();
 	~GSDrawScanline() override;
 
-	void SetupDraw(GSRasterizerData& data);
-	void UpdateDrawStats(u64 frame, u64 ticks, int actual, int total, int prims);
+	/// Function pointer types which we call back into.
+	using SetupPrimPtr = void(*)(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local);
+	using DrawScanlinePtr = void(*)(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
 
+	/// Flushes the code cache, forcing everything to be recompiled.
+	void ResetCodeCache();
+
+	/// Populates function pointers. If this returns false, we ran out of code space.
+	bool SetupDraw(GSRasterizerData& data);
+
+	/// Draw pre-calculations, computed per-thread.
 	static void BeginDraw(const GSRasterizerData& data, GSScanlineLocalData& local);
+
+	/// Not currently jitted.
+	static void DrawRect(const GSVector4i& r, const GSVertexSW& v, GSScanlineLocalData& local);
+
+	void UpdateDrawStats(u64 frame, u64 ticks, int actual, int total, int prims);
+	void PrintStats();
+
+private:
+	GSCodeGeneratorFunctionMap<GSSetupPrimCodeGenerator, u64, SetupPrimPtr> m_sp_map;
+	GSCodeGeneratorFunctionMap<GSDrawScanlineCodeGenerator, u64, DrawScanlinePtr> m_ds_map;
 
 	static void CSetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local);
 	static void CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
-
-	template<class T> static bool TestAlpha(T& test, T& fm, T& zm, const T& ga, const GSScanlineGlobalData& global);
-	template<class T> static void WritePixel(const T& src, int addr, int i, u32 psm, const GSScanlineGlobalData& global);
-
-#ifdef ENABLE_JIT_RASTERIZER
-
-	__forceinline static void SetupPrim(const GSRasterizerData& data, const GSVertexSW* vertex, const u32* index,
-		const GSVertexSW& dscan, GSScanlineLocalData& local)
-	{
-		static_cast<const SharedData&>(data).sp(vertex, index, dscan, local);
-	}
-	__forceinline static void DrawScanline(
-		const GSRasterizerData& data, int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
-	{
-		static_cast<const SharedData&>(data).ds(pixels, left, top, scan, local);
-	}
-	__forceinline static void DrawEdge(
-		const GSRasterizerData& data, int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
-	{
-		static_cast<const SharedData&>(data).de(pixels, left, top, scan, local);
-	}
-
-	__forceinline static bool HasEdge(const GSRasterizerData& data)
-	{
-		return static_cast<const SharedData&>(data).de != nullptr;
-	}
-
-#else
-
-	__forceinline static void SetupPrim(const GSRasterizerData& data, const GSVertexSW* vertex, const u32* index,
-		const GSVertexSW& dscan, GSScanlineLocalData& local)
-	{
-		CSetupPrim(vertex, index, dscan, local);
-	}
-	__forceinline static void DrawScanline(
-		const GSRasterizerData& data, int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
-	{
-		CDrawScanline(pixels, left, top, scan, local);
-	}
-	__forceinline static void DrawEdge(
-		const GSRasterizerData& data, int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
-	{
-		// This sucks. But so does not jitting!
-		const GSScanlineGlobalData* old_gd = local.gd;
-		GSScanlineGlobalData gd;
-		std::memcpy(&gd, &local.gd, sizeof(gd));
-		gd.sel.zwrite = 0;
-		gd.sel.edge = 1;
-		local.gd = &gd;
-
-		CDrawScanline(pixels, left, top, scan, local);
-
-		local.gd = old_gd;
-	}
-
-	__forceinline static bool HasEdge(const SharedData& data)
-	{
-		return static_cast<const SharedData&>(data).global.sel.aa1;
-	}
-
-#endif
-
-	// Not currently jitted.
-	void DrawRect(const GSVector4i& r, const GSVertexSW& v, GSScanlineLocalData& local);
-
-	void PrintStats()
-	{
-		m_ds_map.PrintStats();
-	}
+	static void CDrawEdge(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
 };
 
 MULTI_ISA_UNSHARED_END

@@ -16,7 +16,7 @@
 #pragma once
 
 #include "GS/Renderers/SW/GSVertexSW.h"
-#include "GS/Renderers/Common/GSFunctionMap.h"
+#include "GS/Renderers/SW/GSDrawScanline.h"
 #include "GS/GSAlignedClass.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSThread_CXX11.h"
@@ -46,6 +46,12 @@ public:
 	int pixels;
 	int counter;
 	u8 scanmsk_value;
+
+	GSScanlineGlobalData global;
+
+	GSDrawScanline::SetupPrimPtr setup_prim;
+	GSDrawScanline::DrawScanlinePtr draw_scanline;
+	GSDrawScanline::DrawScanlinePtr draw_edge;
 
 	GSRasterizerData()
 		: scissor(GSVector4i::zero())
@@ -87,30 +93,33 @@ protected:
 	struct { int sum, actual, total; } m_pixels;
 	int m_primcount;
 
+	// For the current draw.
 	GSScanlineLocalData m_local = {};
+	GSDrawScanline::SetupPrimPtr m_setup_prim = nullptr;
+	GSDrawScanline::DrawScanlinePtr m_draw_scanline = nullptr;
+	GSDrawScanline::DrawScanlinePtr m_draw_edge = nullptr;
 
-	// TODO: Make data pointer a class member?
-	// Or, at the very least, pull the function pointers out.
+	__forceinline bool HasEdge() const { return (m_draw_edge != nullptr); }
 
 	template <bool scissor_test>
-	void DrawPoint(const GSRasterizerData& data, const GSVertexSW* vertex, const u32* index);
-	void DrawLine(const GSRasterizerData& data, const GSVertexSW* vertex, const u32* index);
-	void DrawTriangle(const GSRasterizerData& data, const GSVertexSW* vertex, const u32* index);
-	void DrawSprite(const GSRasterizerData& data, const GSVertexSW* vertex, const u32* index);
+	void DrawPoint(const GSVertexSW* vertex, int vertex_count, const u32* index, int index_count);
+	void DrawLine(const GSVertexSW* vertex, const u32* index);
+	void DrawTriangle(const GSVertexSW* vertex, const u32* index);
+	void DrawSprite(const GSVertexSW* vertex, const u32* index);
 
 #if _M_SSE >= 0x501
-	__forceinline void DrawTriangleSection(const GSRasterizerData& data, int top, int bottom, GSVertexSW2& RESTRICT edge, const GSVertexSW2& RESTRICT dedge, const GSVertexSW2& RESTRICT dscan, const GSVector4& RESTRICT p0);
+	__forceinline void DrawTriangleSection(int top, int bottom, GSVertexSW2& RESTRICT edge, const GSVertexSW2& RESTRICT dedge, const GSVertexSW2& RESTRICT dscan, const GSVector4& RESTRICT p0);
 #else
-	__forceinline void DrawTriangleSection(const GSRasterizerData& data, int top, int bottom, GSVertexSW& RESTRICT edge, const GSVertexSW& RESTRICT dedge, const GSVertexSW& RESTRICT dscan, const GSVector4& RESTRICT p0);
+	__forceinline void DrawTriangleSection(int top, int bottom, GSVertexSW& RESTRICT edge, const GSVertexSW& RESTRICT dedge, const GSVertexSW& RESTRICT dscan, const GSVector4& RESTRICT p0);
 #endif
 
-	void DrawEdge(const GSRasterizerData& data, const GSVertexSW& v0, const GSVertexSW& v1, const GSVertexSW& dv, int orientation, int side);
+	void DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GSVertexSW& dv, int orientation, int side);
 
 	__forceinline void AddScanline(GSVertexSW* e, int pixels, int left, int top, const GSVertexSW& scan);
-	__forceinline void Flush(const GSRasterizerData& data, const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, bool edge = false);
+	__forceinline void Flush(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, bool edge = false);
 
-	__forceinline void DrawScanline(const GSRasterizerData& data, int pixels, int left, int top, const GSVertexSW& scan);
-	__forceinline void DrawEdge(const GSRasterizerData& data, int pixels, int left, int top, const GSVertexSW& scan);
+	__forceinline void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan);
+	__forceinline void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan);
 
 public:
 	GSRasterizer(GSDrawScanline* ds, int id, int threads);
@@ -148,10 +157,11 @@ public:
 	int GetPixels(bool reset = true) override;
 	void PrintStats() override;
 
+	void Draw(GSRasterizerData& data);
+
 private:
-	// TODO: Get rid of indirection here
-	std::unique_ptr<GSDrawScanline> m_ds;
-	std::unique_ptr<GSRasterizer> m_r;
+	GSDrawScanline m_ds;
+	GSRasterizer m_r;
 };
 
 class GSRasterizerList final : public IRasterizer
@@ -159,7 +169,7 @@ class GSRasterizerList final : public IRasterizer
 protected:
 	using GSWorker = GSJobQueue<GSRingHeap::SharedPtr<GSRasterizerData>, 65536>;
 
-	std::unique_ptr<GSDrawScanline> m_ds;
+	GSDrawScanline m_ds;
 
 	// Worker threads depend on the rasterizers, so don't change the order.
 	std::vector<std::unique_ptr<GSRasterizer>> m_r;

@@ -91,8 +91,7 @@ GSDrawScanlineCodeGenerator::GSDrawScanlineCodeGenerator(u64 key, void* code, si
 
 	if (shouldUseCDrawScanline(key))
 	{
-		mov(rax, reinterpret_cast<size_t>(GSDrawScanline::CDrawScanline)); // TODO: Get rid of once we move to memory map
-		jmp(rax);
+		jmp(reinterpret_cast<const void*>(&GSDrawScanline::CDrawScanline));
 		return;
 	}
 
