@@ -528,7 +528,6 @@ set(pcsx2GSSources
 
 # GS headers
 set(pcsx2GSHeaders
-	GS/config.h
 	GS/GSAlignedClass.h
 	GS/GSBlock.h
 	GS/GSCapture.h

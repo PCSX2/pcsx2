@@ -1942,9 +1942,6 @@
     <ClInclude Include="GS\MultiISA.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
-    <ClInclude Include="GS\config.h">
-      <Filter>System\Ps2\GS</Filter>
-    </ClInclude>
     <ClInclude Include="GS\GSPng.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
