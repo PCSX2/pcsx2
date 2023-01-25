@@ -34,7 +34,7 @@ public:
 	};
 
 	typedef void (*SetupPrimPtr)(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local);
-	typedef void (*DrawScanlinePtr)(int pixels, int left, int top, const GSVertexSW& scan);
+	typedef void (*DrawScanlinePtr)(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
 
 protected:
 	GSScanlineGlobalData m_global = {};
@@ -80,8 +80,8 @@ public:
 	void BeginDraw(const GSRasterizerData* data);
 	void EndDraw(u64 frame, u64 ticks, int actual, int total, int prims);
 
-	static void CSetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local, const GSScanlineGlobalData& global);
-	static void CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local, const GSScanlineGlobalData& global);
+	static void CSetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local);
+	static void CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
 
 	template<class T> static bool TestAlpha(T& test, T& fm, T& zm, const T& ga, const GSScanlineGlobalData& global);
 	template<class T> static void WritePixel(const T& src, int addr, int i, u32 psm, const GSScanlineGlobalData& global);
@@ -89,14 +89,14 @@ public:
 #ifdef ENABLE_JIT_RASTERIZER
 
 	__forceinline void SetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local) { m_sp(vertex, index, dscan, local); }
-	__forceinline void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan) { m_ds(pixels, left, top, scan); }
-	__forceinline void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan) { m_de(pixels, left, top, scan); }
+	__forceinline void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local) { m_ds(pixels, left, top, scan, local); }
+	__forceinline void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local) { m_de(pixels, left, top, scan, local); }
 
 #else
 
 	void SetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local);
-	void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan);
-	void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan);
+	void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
+	void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
 
 #endif
 
