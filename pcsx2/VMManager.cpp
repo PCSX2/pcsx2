@@ -214,7 +214,7 @@ void VMManager::SetState(VMState state)
 bool VMManager::HasValidVM()
 {
 	const VMState state = s_state.load(std::memory_order_acquire);
-	return (state == VMState::Running || state == VMState::Paused);
+	return (state >= VMState::Running && state <= VMState::Resetting);
 }
 
 std::string VMManager::GetDiscPath()
@@ -1161,6 +1161,19 @@ void VMManager::Shutdown(bool save_resume_state)
 
 void VMManager::Reset()
 {
+	pxAssert(HasValidVM());
+
+	// If we're running, we're probably going to be executing this at event test time,
+	// at vsync, which happens in the middle of event handling. Resetting everything
+	// immediately here is a bad idea (tm), in fact, it breaks some games (e.g. TC:NYC).
+	// So, instead, we tell the rec to exit execution, _then_ reset. Paused is fine here,
+	// since the rec won't be running, so it's safe to immediately reset there.
+	if (s_state.load(std::memory_order_acquire) == VMState::Running)
+	{
+		s_state.store(VMState::Resetting, std::memory_order_release);
+		return;
+	}
+
 #ifdef ENABLE_ACHIEVEMENTS
 	if (!Achievements::OnReset())
 		return;
@@ -1187,6 +1200,10 @@ void VMManager::Reset()
 		g_InputRecording.handleReset();
 		GetMTGS().PresentCurrentFrame();
 	}
+
+	// If we were paused, state won't be resetting, so don't flip back to running.
+	if (s_state.load(std::memory_order_acquire) == VMState::Resetting)
+		s_state.store(VMState::Running, std::memory_order_release);
 }
 
 std::string VMManager::GetSaveStateFileName(const char* game_serial, u32 game_crc, s32 slot)

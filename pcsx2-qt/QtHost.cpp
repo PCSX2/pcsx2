@@ -429,6 +429,10 @@ void EmuThread::executeVM()
 				VMManager::Execute();
 				continue;
 
+			case VMState::Resetting:
+				VMManager::Reset();
+				continue;
+
 			case VMState::Stopping:
 				destroyVM();
 				m_event_loop->processEvents(QEventLoop::AllEvents);
