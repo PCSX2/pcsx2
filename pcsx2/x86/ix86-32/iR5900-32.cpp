@@ -666,19 +666,6 @@ static void recShutdown()
 	Perf::dump();
 }
 
-static void recResetEE()
-{
-	if (eeCpuExecuting)
-	{
-		// get outta here as soon as we can
-		eeRecNeedsReset = true;
-		eeRecExitRequested = true;
-		return;
-	}
-
-	recResetRaw();
-}
-
 void recStep()
 {
 }
@@ -687,11 +674,6 @@ static fastjmp_buf m_SetJmp_StateCheck;
 
 static void recExitExecution()
 {
-	// Without SEH we'll need to hop to a safehouse point outside the scope of recompiled
-	// code.  C++ exceptions can't cross the mighty chasm in the stackframe that the recompiler
-	// creates.  However, the longjump is slow so we only want to do one when absolutely
-	// necessary:
-
 	fastjmp_jmp(&m_SetJmp_StateCheck, 1);
 }
 
@@ -699,10 +681,25 @@ static void recSafeExitExecution()
 {
 	// If we're currently processing events, we can't safely jump out of the recompiler here, because we'll
 	// leave things in an inconsistent state. So instead, we flag it for exiting once cpuEventTest() returns.
-	if (eeEventTestIsActive)
-		eeRecExitRequested = true;
-	else
-		recExitExecution();
+	// Exiting in the middle of a rec block with the registers unsaved would be a bad idea too..
+	eeRecExitRequested = true;
+
+	// Force an event test at the end of this block.
+	if (!eeEventTestIsActive)
+		cpuRegs.nextEventCycle = 0;
+}
+
+static void recResetEE()
+{
+	if (eeCpuExecuting)
+	{
+		// get outta here as soon as we can
+		eeRecNeedsReset = true;
+		recSafeExitExecution();
+		return;
+	}
+
+	recResetRaw();
 }
 
 static void recCancelInstruction()
