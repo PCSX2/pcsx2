@@ -345,6 +345,7 @@ bool OpenGLHostDisplay::BeginPresent(bool frame_skip)
 
 	glDisable(GL_SCISSOR_TEST);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, m_window_info.surface_width, m_window_info.surface_height);
