@@ -22,25 +22,29 @@
 #include "GS/Renderers/SW/GSDrawScanlineCodeGenerator.h"
 #include "GS/config.h"
 
+#include <cstring>
+
 MULTI_ISA_UNSHARED_START
 
-class GSDrawScanline : public GSAlignedClass<32>
+class GSDrawScanline : public GSVirtualAlignedClass<32>
 {
 public:
+	using SetupPrimPtr = void(*)(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local);
+	using DrawScanlinePtr = void(*)(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
+
 	class SharedData : public GSRasterizerData
 	{
 	public:
 		GSScanlineGlobalData global;
+
+#ifdef ENABLE_JIT_RASTERIZER
+		SetupPrimPtr sp;
+		DrawScanlinePtr ds;
+		DrawScanlinePtr de;
+#endif
 	};
 
-	typedef void (*SetupPrimPtr)(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local);
-	typedef void (*DrawScanlinePtr)(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
-
 protected:
-	SetupPrimPtr m_sp = nullptr;
-	DrawScanlinePtr m_ds = nullptr;
-	DrawScanlinePtr m_de = nullptr;
-
 	GSCodeGeneratorFunctionMap<GSSetupPrimCodeGenerator, u64, SetupPrimPtr> m_sp_map;
 	GSCodeGeneratorFunctionMap<GSDrawScanlineCodeGenerator, u64, DrawScanlinePtr> m_ds_map;
 
@@ -64,14 +68,12 @@ protected:
 
 public:
 	GSDrawScanline();
-	virtual ~GSDrawScanline() = default;
+	~GSDrawScanline() override;
 
-	__forceinline bool HasEdge() const { return m_de != nullptr; }
+	void SetupDraw(GSRasterizerData& data);
+	void UpdateDrawStats(u64 frame, u64 ticks, int actual, int total, int prims);
 
-	// IDrawScanline
-
-	void BeginDraw(const GSRasterizerData* data, GSScanlineLocalData& local);
-	void EndDraw(u64 frame, u64 ticks, int actual, int total, int prims);
+	static void BeginDraw(const GSRasterizerData& data, GSScanlineLocalData& local);
 
 	static void CSetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local);
 	static void CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
@@ -81,15 +83,59 @@ public:
 
 #ifdef ENABLE_JIT_RASTERIZER
 
-	__forceinline void SetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local) { m_sp(vertex, index, dscan, local); }
-	__forceinline void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local) { m_ds(pixels, left, top, scan, local); }
-	__forceinline void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local) { m_de(pixels, left, top, scan, local); }
+	__forceinline static void SetupPrim(const GSRasterizerData& data, const GSVertexSW* vertex, const u32* index,
+		const GSVertexSW& dscan, GSScanlineLocalData& local)
+	{
+		static_cast<const SharedData&>(data).sp(vertex, index, dscan, local);
+	}
+	__forceinline static void DrawScanline(
+		const GSRasterizerData& data, int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
+	{
+		static_cast<const SharedData&>(data).ds(pixels, left, top, scan, local);
+	}
+	__forceinline static void DrawEdge(
+		const GSRasterizerData& data, int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
+	{
+		static_cast<const SharedData&>(data).de(pixels, left, top, scan, local);
+	}
+
+	__forceinline static bool HasEdge(const GSRasterizerData& data)
+	{
+		return static_cast<const SharedData&>(data).de != nullptr;
+	}
 
 #else
 
-	void SetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local);
-	void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
-	void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
+	__forceinline static void SetupPrim(const GSRasterizerData& data, const GSVertexSW* vertex, const u32* index,
+		const GSVertexSW& dscan, GSScanlineLocalData& local)
+	{
+		CSetupPrim(vertex, index, dscan, local);
+	}
+	__forceinline static void DrawScanline(
+		const GSRasterizerData& data, int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
+	{
+		CDrawScanline(pixels, left, top, scan, local);
+	}
+	__forceinline static void DrawEdge(
+		const GSRasterizerData& data, int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
+	{
+		// This sucks. But so does not jitting!
+		const GSScanlineGlobalData* old_gd = local.gd;
+		GSScanlineGlobalData gd;
+		std::memcpy(&gd, &local.gd, sizeof(gd));
+		gd.sel.zwrite = 0;
+		gd.sel.edge = 1;
+		local.gd = &gd;
+
+		CDrawScanline(pixels, left, top, scan, local);
+
+		local.gd = old_gd;
+	}
+
+	__forceinline static bool HasEdge(const SharedData& data)
+	{
+		return static_cast<const SharedData&>(data).global.sel.aa1;
+	}
 
 #endif
 
