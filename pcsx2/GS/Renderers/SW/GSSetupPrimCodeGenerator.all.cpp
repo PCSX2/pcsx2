@@ -20,7 +20,7 @@
 MULTI_ISA_UNSHARED_IMPL;
 using namespace Xbyak;
 
-#define _rip_local(field) ((m_rip) ? ptr[rip + (char*)&m_local.field] : ptr[_m_local + OFFSETOF(GSScanlineLocalData, field)])
+#define _rip_local(field) (ptr[_m_local + OFFSETOF(GSScanlineLocalData, field)])
 
 #define _64_m_local _64_t0
 
@@ -51,20 +51,19 @@ using namespace Xbyak;
 GSSetupPrimCodeGenerator2::GSSetupPrimCodeGenerator2(Xbyak::CodeGenerator* base, const ProcessorFeatures& cpu, void* param, u64 key)
 	: _parent(base, cpu)
 	, m_local(*(GSScanlineLocalData*)param)
-	, m_rip(false), many_regs(false)
+	, many_regs(false)
 	// On x86 arg registers are very temporary but on x64 they aren't, so on x86 some registers overlap
 #ifdef _WIN32
 	, _64_vertex(rcx)
 	, _index(rdx)
 	, _dscan(r8)
-	, _64_t0(r9), t1(r10)
+	, _m_local(r9), t1(r10)
 #else
 	, _64_vertex(rdi)
 	, _index(rsi)
 	, _dscan(rdx)
-	, _64_t0(rcx), t1(r8)
+	, _m_local(rcx), t1(r8)
 #endif
-	, _m_local(chooseLocal(&m_local, _64_m_local))
 {
 	m_sel.key = key;
 
@@ -98,9 +97,6 @@ void GSSetupPrimCodeGenerator2::broadcastss(const XYm& reg, const Address& mem)
 
 void GSSetupPrimCodeGenerator2::Generate()
 {
-	// Technically we just need the delta < 2GB
-	m_rip = (size_t)&m_local < 0x80000000 && (size_t)getCurr() < 0x80000000;
-
 	bool needs_shift = ((m_en.z || m_en.f) && m_sel.prim != GS_SPRITE_CLASS) || m_en.t || (m_en.c && m_sel.iip);
 	many_regs = isYmm && !m_sel.notest && needs_shift;
 
@@ -115,9 +111,6 @@ void GSSetupPrimCodeGenerator2::Generate()
 		}
 	}
 #endif
-
-	if (!m_rip)
-		mov(_64_m_local, (size_t)&m_local);
 
 	if (needs_shift)
 	{

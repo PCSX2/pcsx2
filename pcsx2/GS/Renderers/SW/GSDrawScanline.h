@@ -33,7 +33,7 @@ public:
 		GSScanlineGlobalData global;
 	};
 
-	typedef void (*SetupPrimPtr)(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan);
+	typedef void (*SetupPrimPtr)(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local);
 	typedef void (*DrawScanlinePtr)(int pixels, int left, int top, const GSVertexSW& scan);
 
 protected:
@@ -69,6 +69,9 @@ public:
 	GSDrawScanline();
 	virtual ~GSDrawScanline() = default;
 
+	__forceinline GSScanlineGlobalData& GetGlobalData() { return m_global; }
+	__forceinline GSScanlineLocalData& GetLocalData() { return m_local; }
+
 	__forceinline bool HasEdge() const { return m_de != nullptr; }
 	__forceinline bool IsSolidRect() const { return m_global.sel.IsSolidRect(); }
 
@@ -85,13 +88,13 @@ public:
 
 #ifdef ENABLE_JIT_RASTERIZER
 
-	__forceinline void SetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan) { m_sp(vertex, index, dscan); }
+	__forceinline void SetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local) { m_sp(vertex, index, dscan, local); }
 	__forceinline void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan) { m_ds(pixels, left, top, scan); }
 	__forceinline void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan) { m_de(pixels, left, top, scan); }
 
 #else
 
-	void SetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan);
+	void SetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local);
 	void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan);
 	void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan);
 
