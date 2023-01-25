@@ -21,6 +21,7 @@
 MULTI_ISA_UNSHARED_IMPL;
 using namespace Xbyak;
 
+#define _rip_const(cptr) ptr[rip + ((char*)(cptr))]
 #define _rip_local(field) ptr[_m_local + OFFSETOF(GSScanlineLocalData, field)]
 #define _rip_global(field) ptr[_m_local__gd + OFFSETOF(GSScanlineGlobalData, field)]
 
@@ -77,27 +78,22 @@ GSDrawScanlineCodeGenerator2::GSDrawScanlineCodeGenerator2(Xbyak::CodeGenerator*
 	, a2(r8) , a3(r9)
 	, t0(rdi), t1(rsi)
 	, t2(r8) , t3(r9)
-	, _g_const(r10)
-	, _m_local(r12)
-	, _m_local__gd(r13)
-	, _m_local__gd__vm(t3)
-	, _m_local__gd__clut(r11)
-	, _m_local__gd__tex(r14)
+	, _m_local(r10)
 #else
 	, a0(rdi), a1(rsi)
 	, a2(rdx), a3(rcx)
-	, t0(r12), t1(r9)
+	, t0(r10), t1(r9)
 	, t2(rcx), t3(rsi)
-	, _g_const(r10)
 	, _m_local(r8)
-	, _m_local__gd(r13)
+#endif
+	, _m_local__gd(r12)
 	, _m_local__gd__vm(t3)
 	, _m_local__gd__clut(r11)
-	, _m_local__gd__tex(r14)
-#endif
+	, _m_local__gd__tex(r13)
 	, _rb(xym5), _ga(xym6), _fm(xym3), _zm(xym4), _fd(xym2), _test(xym15)
 	, _z(xym8), _f(xym9), _s(xym10), _t(xym11), _q(xym12), _f_rb(xym13), _f_ga(xym14)
 {
+	// Free: r14, r15, rbp, to use, remember to save them.
 	m_sel.key = key;
 	use_lod = m_sel.mmin;
 	if (isYmm)
@@ -105,12 +101,6 @@ GSDrawScanlineCodeGenerator2::GSDrawScanlineCodeGenerator2(Xbyak::CodeGenerator*
 }
 
 // MARK: - Helpers
-
-GSDrawScanlineCodeGenerator2::AddressReg GSDrawScanlineCodeGenerator2::loadAddress(AddressReg reg, const void* addr)
-{
-	mov(reg, (size_t)addr);
-	return reg;
-}
 
 void GSDrawScanlineCodeGenerator2::broadcastf128(const XYm& reg, const Address& mem)
 {
@@ -333,15 +323,12 @@ void GSDrawScanlineCodeGenerator2::Generate()
 	const bool need_tex = m_sel.fb && m_sel.tfx != TFX_NONE;
 	const bool need_clut = need_tex && m_sel.tlu;
 
-	push(rbp);
-	mov(rbp, rsp); // Stack traces look much nicer this way, TODO drop in release builds
 #ifdef _WIN32
 	push(rbx);
 	push(rsi);
 	push(rdi);
 	push(r12);
 	push(r13);
-	push(r14);
 
 	sub(rsp, _64_win_stack_size);
 
@@ -353,15 +340,12 @@ void GSDrawScanlineCodeGenerator2::Generate()
 	mov(ptr[rsp + _64_rz_rbx], rbx);
 	mov(ptr[rsp + _64_rz_r12], r12);
 	mov(ptr[rsp + _64_rz_r13], r13);
-	mov(ptr[rsp + _64_rz_r14], r14);
-	mov(ptr[rsp + _64_rz_r15], r15);
 #endif
-	mov(_g_const, (size_t)&g_const);
 
 #ifdef _WIN32
 	// Local (5th arg) is passed on the stack in Windows.
-	// 32 bytes shadow space less the 7 pushed registers and return address = 96.
-	mov(_m_local, ptr[rsp + _64_win_stack_size + 96]);
+	// 32 bytes shadow space less the 5 pushed registers and return address = 80.
+	mov(_m_local, ptr[rsp + _64_win_stack_size + 80]);
 #endif
 
 	mov(_m_local__gd, _rip_local(gd));
@@ -593,7 +577,6 @@ L("exit");
 	}
 	add(rsp, _64_win_stack_size);
 
-	pop(r14);
 	pop(r13);
 	pop(r12);
 	pop(rdi);
@@ -603,10 +586,7 @@ L("exit");
 	mov(rbx, ptr[rsp + _64_rz_rbx]);
 	mov(r12, ptr[rsp + _64_rz_r12]);
 	mov(r13, ptr[rsp + _64_rz_r13]);
-	mov(r14, ptr[rsp + _64_rz_r14]);
-	mov(r15, ptr[rsp + _64_rz_r15]);
 #endif
-	pop(rbp);
 	if (isYmm)
 		vzeroupper();
 	ret();
@@ -641,14 +621,16 @@ void GSDrawScanlineCodeGenerator2::Init()
 
 		if (isXmm)
 		{
+			lea(t1, _rip_const(&g_const.m_test_128b[0]));
 			shl(a1.cvt32(), 4); // * sizeof(m_test[0])
-			movdqa(_test, ptr[a1 + _g_const + offsetof(GSScanlineConstantData, m_test_128b[0])]);
-			por(_test, ptr[rax + _g_const + offsetof(GSScanlineConstantData, m_test_128b[7])]);
+			movdqa(_test, ptr[a1 + t1]);
+			por(_test, ptr[rax + t1 + (offsetof(GSScanlineConstantData, m_test_128b[7]) - offsetof(GSScanlineConstantData, m_test_128b[0]))]);
 		}
 		else
 		{
-			pmovsxbd(_test, ptr[a1 * 8 + _g_const + offsetof(GSScanlineConstantData, m_test_256b[0])]);
-			pmovsxbd(xym0, ptr[rax * 8 + _g_const + offsetof(GSScanlineConstantData, m_test_256b[15])]);
+			lea(t1, _rip_const(&g_const.m_test_256b[0]));
+			pmovsxbd(_test, ptr[a1 * 8 + t1]);
+			pmovsxbd(xym0, ptr[rax * 8 + t1 + (offsetof(GSScanlineConstantData, m_test_256b[15]) - offsetof(GSScanlineConstantData, m_test_256b[0]))]);
 			por(_test, xym0);
 			shl(a1.cvt32(), 5); // * sizeof(m_test[0])
 		}
@@ -1027,9 +1009,11 @@ void GSDrawScanlineCodeGenerator2::Step()
 		cdqe();
 
 #if USING_XMM
-		movdqa(_test, ptr[rax + _g_const + offsetof(GSScanlineConstantData, m_test_128b[7])]);
+		lea(t2, _rip_const(&g_const.m_test_128b[7]));
+		movdqa(_test, ptr[rax + t2]);
 #else
-		pmovsxbd(_test, ptr[rax * 8 + _g_const + offsetof(GSScanlineConstantData, m_test_256b[15])]);
+		lea(t2, _rip_const(&g_const.m_test_256b[15]));
+		pmovsxbd(_test, ptr[rax * 8 + t2]);
 #endif
 	}
 }
@@ -1065,8 +1049,7 @@ void GSDrawScanlineCodeGenerator2::TestZ(const XYm& temp1, const XYm& temp2)
 			// zs = GSVector8i(zl, zh);
 			// zs += VectorI::x80000000();
 
-			auto m_imin = loadAddress(rax, &GSVector4::m_xc1e00000000fffff);
-			broadcastsd(temp1, ptr[m_imin]);
+			broadcastsd(temp1, _rip_const(&GSVector4::m_xc1e00000000fffff));
 
 			addpd(xym7, temp1);
 			addpd(temp1, _z);
@@ -1624,9 +1607,9 @@ void GSDrawScanlineCodeGenerator2::SampleTextureLOD()
 		auto log2_coeff = [this](int i) -> Address
 		{
 			if (isXmm)
-				return ptr[_g_const + OFFSETOF(GSScanlineConstantData, m_log2_coef_128b[i])];
+				return _rip_const(&g_const.m_log2_coef_128b[i]);
 			else
-				return ptr[_g_const + OFFSETOF(GSScanlineConstantData, m_log2_coef_256b[i])];
+				return _rip_const(&g_const.m_log2_coef_256b[i]);
 		};
 
 		orps(xym4, log2_coeff(3));
