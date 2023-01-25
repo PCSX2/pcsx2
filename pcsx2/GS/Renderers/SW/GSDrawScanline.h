@@ -24,7 +24,7 @@
 
 MULTI_ISA_UNSHARED_START
 
-class GSDrawScanline : public IDrawScanline
+class GSDrawScanline : public GSAlignedClass<32>
 {
 public:
 	class SharedData : public GSRasterizerData
@@ -33,9 +33,16 @@ public:
 		GSScanlineGlobalData global;
 	};
 
+	typedef void (*SetupPrimPtr)(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan);
+	typedef void (*DrawScanlinePtr)(int pixels, int left, int top, const GSVertexSW& scan);
+
 protected:
-	GSScanlineGlobalData m_global;
-	GSScanlineLocalData m_local;
+	GSScanlineGlobalData m_global = {};
+	GSScanlineLocalData m_local = {};
+
+	SetupPrimPtr m_sp = nullptr;
+	DrawScanlinePtr m_ds = nullptr;
+	DrawScanlinePtr m_de = nullptr;
 
 	GSCodeGeneratorFunctionMap<GSSetupPrimCodeGenerator, u64, SetupPrimPtr> m_sp_map;
 	GSCodeGeneratorFunctionMap<GSDrawScanlineCodeGenerator, u64, DrawScanlinePtr> m_ds_map;
@@ -62,12 +69,13 @@ public:
 	GSDrawScanline();
 	virtual ~GSDrawScanline() = default;
 
+	__forceinline bool HasEdge() const { return m_de != nullptr; }
+	__forceinline bool IsSolidRect() const { return m_global.sel.IsSolidRect(); }
+
 	// IDrawScanline
 
 	void BeginDraw(const GSRasterizerData* data);
 	void EndDraw(u64 frame, u64 ticks, int actual, int total, int prims);
-
-	void DrawRect(const GSVector4i& r, const GSVertexSW& v);
 
 	static void CSetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local, const GSScanlineGlobalData& global);
 	static void CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local, const GSScanlineGlobalData& global);
@@ -75,13 +83,22 @@ public:
 	template<class T> static bool TestAlpha(T& test, T& fm, T& zm, const T& ga, const GSScanlineGlobalData& global);
 	template<class T> static void WritePixel(const T& src, int addr, int i, u32 psm, const GSScanlineGlobalData& global);
 
-#ifndef ENABLE_JIT_RASTERIZER
+#ifdef ENABLE_JIT_RASTERIZER
+
+	__forceinline void SetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan) { m_sp(vertex, index, dscan); }
+	__forceinline void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan) { m_ds(pixels, left, top, scan); }
+	__forceinline void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan) { m_de(pixels, left, top, scan); }
+
+#else
 
 	void SetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan);
 	void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan);
 	void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan);
 
 #endif
+
+	// Not currently jitted.
+	void DrawRect(const GSVector4i& r, const GSVertexSW& v);
 
 	void PrintStats()
 	{

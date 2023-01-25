@@ -16,7 +16,8 @@
 // TODO: JIT Draw* (flags: depth, texture, color (+iip), scissor)
 
 #include "PrecompiledHeader.h"
-#include "GSRasterizer.h"
+#include "GS/Renderers/SW/GSRasterizer.h"
+#include "GS/Renderers/SW/GSDrawScanline.h"
 #include "GS/GSExtra.h"
 #include "PerformanceMetrics.h"
 #include "common/AlignedMalloc.h"
@@ -43,7 +44,7 @@ static int compute_best_thread_height(int threads)
 		return 4;
 }
 
-GSRasterizer::GSRasterizer(IDrawScanline* ds, int id, int threads)
+GSRasterizer::GSRasterizer(GSDrawScanline* ds, int id, int threads)
 	: m_ds(ds)
 	, m_id(id)
 	, m_threads(threads)
@@ -1153,6 +1154,20 @@ void GSRasterizer::DrawEdge(int pixels, int left, int top, const GSVertexSW& sca
 	m_ds->DrawEdge(pixels, left, top, scan);
 }
 
+void GSRasterizer::Sync()
+{
+}
+
+bool GSRasterizer::IsSynced() const
+{
+	return true;
+}
+
+void GSRasterizer::PrintStats()
+{
+	m_ds->PrintStats();
+}
+
 //
 
 GSRasterizerList::GSRasterizerList(int threads)
@@ -1253,4 +1268,31 @@ int GSRasterizerList::GetPixels(bool reset)
 	}
 
 	return pixels;
+}
+
+std::unique_ptr<IRasterizer> GSRasterizerList::Create(int threads)
+{
+	threads = std::max<int>(threads, 0);
+
+	if (threads == 0)
+	{
+		return std::make_unique<GSRasterizer>(new GSDrawScanline(), 0, 1);
+	}
+
+	std::unique_ptr<GSRasterizerList> rl(new GSRasterizerList(threads));
+
+	for (int i = 0; i < threads; i++)
+	{
+		rl->m_r.push_back(std::unique_ptr<GSRasterizer>(new GSRasterizer(new GSDrawScanline(), i, threads)));
+		auto& r = *rl->m_r[i];
+		rl->m_workers.push_back(std::unique_ptr<GSWorker>(new GSWorker([i]() { GSRasterizerList::OnWorkerStartup(i); },
+			[&r](GSRingHeap::SharedPtr<GSRasterizerData>& item) { r.Draw(item.get()); },
+			[i]() { GSRasterizerList::OnWorkerShutdown(i); })));
+	}
+
+	return rl;
+}
+
+void GSRasterizerList::PrintStats()
+{
 }

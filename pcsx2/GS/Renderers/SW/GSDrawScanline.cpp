@@ -75,16 +75,7 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData* data)
 	}
 	else
 	{
-		m_de = NULL;
-	}
-
-	if (m_global.sel.IsSolidRect())
-	{
-		m_dr = (DrawRectPtr)&GSDrawScanline::DrawRect;
-	}
-	else
-	{
-		m_dr = NULL;
+		m_de = nullptr;
 	}
 
 	// doesn't need all bits => less functions generated
