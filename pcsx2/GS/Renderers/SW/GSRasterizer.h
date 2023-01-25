@@ -71,19 +71,7 @@ public:
 	}
 };
 
-class IRasterizer : public GSVirtualAlignedClass<32>
-{
-public:
-	virtual ~IRasterizer() {}
-
-	virtual void Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& data) = 0;
-	virtual void Sync() = 0;
-	virtual bool IsSynced() const = 0;
-	virtual int GetPixels(bool reset = true) = 0;
-	virtual void PrintStats() = 0;
-};
-
-class alignas(32) GSRasterizer final : public IRasterizer
+class alignas(32) GSRasterizer final : public GSVirtualAlignedClass<32>
 {
 protected:
 	GSDrawScanline* m_ds;
@@ -101,51 +89,77 @@ protected:
 
 	GSScanlineLocalData m_local = {};
 
-	typedef void (GSRasterizer::*DrawPrimPtr)(const GSVertexSW* v, int count);
+	// TODO: Make data pointer a class member?
+	// Or, at the very least, pull the function pointers out.
 
 	template <bool scissor_test>
-	void DrawPoint(const GSVertexSW* vertex, int vertex_count, const u32* index, int index_count);
-	void DrawLine(const GSVertexSW* vertex, const u32* index);
-	void DrawTriangle(const GSVertexSW* vertex, const u32* index);
-	void DrawSprite(const GSVertexSW* vertex, const u32* index);
+	void DrawPoint(const GSRasterizerData& data, const GSVertexSW* vertex, const u32* index);
+	void DrawLine(const GSRasterizerData& data, const GSVertexSW* vertex, const u32* index);
+	void DrawTriangle(const GSRasterizerData& data, const GSVertexSW* vertex, const u32* index);
+	void DrawSprite(const GSRasterizerData& data, const GSVertexSW* vertex, const u32* index);
 
 #if _M_SSE >= 0x501
-	__forceinline void DrawTriangleSection(int top, int bottom, GSVertexSW2& RESTRICT edge, const GSVertexSW2& RESTRICT dedge, const GSVertexSW2& RESTRICT dscan, const GSVector4& RESTRICT p0);
+	__forceinline void DrawTriangleSection(const GSRasterizerData& data, int top, int bottom, GSVertexSW2& RESTRICT edge, const GSVertexSW2& RESTRICT dedge, const GSVertexSW2& RESTRICT dscan, const GSVector4& RESTRICT p0);
 #else
-	__forceinline void DrawTriangleSection(int top, int bottom, GSVertexSW& RESTRICT edge, const GSVertexSW& RESTRICT dedge, const GSVertexSW& RESTRICT dscan, const GSVector4& RESTRICT p0);
+	__forceinline void DrawTriangleSection(const GSRasterizerData& data, int top, int bottom, GSVertexSW& RESTRICT edge, const GSVertexSW& RESTRICT dedge, const GSVertexSW& RESTRICT dscan, const GSVector4& RESTRICT p0);
 #endif
 
-	void DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GSVertexSW& dv, int orientation, int side);
+	void DrawEdge(const GSRasterizerData& data, const GSVertexSW& v0, const GSVertexSW& v1, const GSVertexSW& dv, int orientation, int side);
 
 	__forceinline void AddScanline(GSVertexSW* e, int pixels, int left, int top, const GSVertexSW& scan);
-	__forceinline void Flush(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, bool edge = false);
+	__forceinline void Flush(const GSRasterizerData& data, const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, bool edge = false);
 
-	__forceinline void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan);
-	__forceinline void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan);
+	__forceinline void DrawScanline(const GSRasterizerData& data, int pixels, int left, int top, const GSVertexSW& scan);
+	__forceinline void DrawEdge(const GSRasterizerData& data, int pixels, int left, int top, const GSVertexSW& scan);
 
 public:
 	GSRasterizer(GSDrawScanline* ds, int id, int threads);
-	~GSRasterizer() override;
+	~GSRasterizer();
 
 	__forceinline bool IsOneOfMyScanlines(int top) const;
 	__forceinline bool IsOneOfMyScanlines(int top, int bottom) const;
 	__forceinline int FindMyNextScanline(int top) const;
 
-	void Draw(GSRasterizerData* data);
+	void Draw(GSRasterizerData& data);
+	int GetPixels(bool reset);
+};
 
-	// IRasterizer
+class IRasterizer : public GSVirtualAlignedClass<32>
+{
+public:
+	virtual ~IRasterizer() {}
+
+	virtual void Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& data) = 0;
+	virtual void Sync() = 0;
+	virtual bool IsSynced() const = 0;
+	virtual int GetPixels(bool reset = true) = 0;
+	virtual void PrintStats() = 0;
+};
+
+class GSSingleRasterizer final : public IRasterizer
+{
+public:
+	GSSingleRasterizer();
+	~GSSingleRasterizer() override;
 
 	void Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& data) override;
 	void Sync() override;
 	bool IsSynced() const override;
-	int GetPixels(bool reset) override;
+	int GetPixels(bool reset = true) override;
 	void PrintStats() override;
+
+private:
+	// TODO: Get rid of indirection here
+	std::unique_ptr<GSDrawScanline> m_ds;
+	std::unique_ptr<GSRasterizer> m_r;
 };
 
 class GSRasterizerList final : public IRasterizer
 {
 protected:
 	using GSWorker = GSJobQueue<GSRingHeap::SharedPtr<GSRasterizerData>, 65536>;
+
+	std::unique_ptr<GSDrawScanline> m_ds;
 
 	// Worker threads depend on the rasterizers, so don't change the order.
 	std::vector<std::unique_ptr<GSRasterizer>> m_r;

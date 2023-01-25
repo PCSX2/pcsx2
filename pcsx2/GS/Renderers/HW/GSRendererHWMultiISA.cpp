@@ -549,9 +549,13 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 	}
 
 	if (!hw.m_sw_rasterizer)
-		hw.m_sw_rasterizer = std::make_unique<GSRasterizer>(new GSDrawScanline(), 0, 1);
+	{
+		hw.m_sw_draw_scanline = std::make_unique<GSDrawScanline>();
+		hw.m_sw_rasterizer = std::make_unique<GSRasterizer>(static_cast<GSDrawScanline*>(hw.m_sw_draw_scanline.get()), 0, 1);
+	}
 
-	static_cast<GSRasterizer*>(hw.m_sw_rasterizer.get())->Draw(&data);
+	static_cast<GSDrawScanline*>(hw.m_sw_draw_scanline.get())->SetupDraw(data);
+	static_cast<GSRasterizer*>(hw.m_sw_rasterizer.get())->Draw(data);
 
 	if (invalidate_tc)
 		hw.m_tc->InvalidateVideoMem(context->offset.fb, bbox);

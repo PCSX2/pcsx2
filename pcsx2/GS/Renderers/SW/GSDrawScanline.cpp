@@ -35,9 +35,11 @@ GSDrawScanline::GSDrawScanline()
 {
 }
 
-void GSDrawScanline::BeginDraw(const GSRasterizerData* data, GSScanlineLocalData& local)
+GSDrawScanline::~GSDrawScanline() = default;
+
+void GSDrawScanline::BeginDraw(const GSRasterizerData& data, GSScanlineLocalData& local)
 {
-	const GSScanlineGlobalData& global = ((const SharedData*)data)->global;
+	const GSScanlineGlobalData& global = static_cast<const SharedData&>(data).global;
 	local.gd = &global;
 
 	if (global.sel.mmin && global.sel.lcm)
@@ -63,8 +65,14 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData* data, GSScanlineLocalData
 		local.temp.uv_minmax[0] = v.upl32(v);
 		local.temp.uv_minmax[1] = v.uph32(v);
 	}
+}
 
-	m_ds = m_ds_map[global.sel];
+void GSDrawScanline::SetupDraw(GSRasterizerData& data)
+{
+#ifdef ENABLE_JIT_RASTERIZER
+	SharedData& sdata = static_cast<SharedData&>(data);
+	const GSScanlineGlobalData& global = sdata.global;
+	sdata.ds = m_ds_map[global.sel];
 
 	if (global.sel.aa1)
 	{
@@ -74,11 +82,11 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData* data, GSScanlineLocalData
 		sel.zwrite = 0;
 		sel.edge = 1;
 
-		m_de = m_ds_map[sel];
+		sdata.de = m_ds_map[sel];
 	}
 	else
 	{
-		m_de = nullptr;
+		sdata.de = nullptr;
 	}
 
 	// doesn't need all bits => less functions generated
@@ -99,10 +107,11 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData* data, GSScanlineLocalData
 	sel.zequal = global.sel.zequal;
 	sel.notest = global.sel.notest;
 
-	m_sp = m_sp_map[sel];
+	sdata.sp = m_sp_map[sel];
+#endif
 }
 
-void GSDrawScanline::EndDraw(u64 frame, u64 ticks, int actual, int total, int prims)
+void GSDrawScanline::UpdateDrawStats(u64 frame, u64 ticks, int actual, int total, int prims)
 {
 	m_ds_map.UpdateStats(frame, ticks, actual, total, prims);
 }
@@ -1577,30 +1586,6 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 		}
 	}
 }
-
-#ifndef ENABLE_JIT_RASTERIZER
-void GSDrawScanline::SetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local)
-{
-	CSetupPrim(vertex, index, dscan, local);
-}
-void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
-{
-	CDrawScanline(pixels, left, top, scan, local);
-}
-void GSDrawScanline::DrawEdge(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
-{
-	u32 zwrite = m_global.sel.zwrite;
-	u32 edge = m_global.sel.edge;
-
-	m_global.sel.zwrite = 0;
-	m_global.sel.edge = 1;
-
-	CDrawScanline(pixels, left, top, scan, local);
-
-	m_global.sel.zwrite = zwrite;
-	m_global.sel.edge = edge;
-}
-#endif
 
 template <class T>
 bool GSDrawScanline::TestAlpha(T& test, T& fm, T& zm, const T& ga, const GSScanlineGlobalData& global)
