@@ -1573,9 +1573,9 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 }
 
 #ifndef ENABLE_JIT_RASTERIZER
-void GSDrawScanline::SetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan)
+void GSDrawScanline::SetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local)
 {
-	CSetupPrim(vertex, index, dscan, m_local, m_global);
+	CSetupPrim(vertex, index, dscan, local, *local.gd);
 }
 void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexSW& scan)
 {
