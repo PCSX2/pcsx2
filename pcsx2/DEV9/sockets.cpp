@@ -563,7 +563,7 @@ bool SocketAdapter::SendUDP(ConnectionKey Key, IP_Packet* ipPkt)
 	{
 		UDP_Session* s = nullptr;
 
-		if (udp.sourcePort == udp.destinationPort || //Used for LAN games that assume the destination port
+		if (abs(udp.sourcePort - udp.destinationPort) <= 10 || //Used for games that assume the destination/source port
 			ipPkt->destinationIP == dhcpServer.broadcastIP || //Broadcast packets
 			ipPkt->destinationIP == IP_Address{{{255, 255, 255, 255}}} || //Limited Broadcast packets
 			(ipPkt->destinationIP.bytes[0] & 0xF0) == 0xE0) //Multicast address start with 0b1110
