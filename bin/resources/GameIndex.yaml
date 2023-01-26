@@ -16096,8 +16096,11 @@ SLES-52985:
     halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLES-52986:
-  name: "Bob Esponja La Película"
+  name: "Bob Esponja - La Película"
   region: "PAL-S"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
+    cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLES-52988:
   name: "Mega Man X8"
   region: "PAL-M5"
@@ -17221,9 +17224,15 @@ SLES-53471:
 SLES-53473:
   name: "Incredibles, The - Rise of the Underminer"
   region: "PAL-M3"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
+    cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLES-53474:
   name: "Incredibles, The - Rise of the Underminer"
   region: "PAL-M3"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
+    cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLES-53480:
   name: "Harvest Moon - A Wonderful Life [Special Edition]"
   region: "PAL-E"
@@ -17854,6 +17863,9 @@ SLES-53657:
 SLES-53658:
   name: "Disney-Pixar's The Incredibles - Rise of the Underminer"
   region: "PAL-R"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
+    cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLES-53659:
   name: "Brothers In Arms - Earned in Blood"
   region: "PAL-M5"
@@ -31747,6 +31759,9 @@ SLPM-66247:
 SLPM-66248:
   name: "Mr. Incredible - Kyouteki Underminer Toujou"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
+    cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLPM-66249:
   name: "Growlanser V - Generations [Limited Edition]"
   region: "NTSC-J"
@@ -46200,9 +46215,12 @@ SLUS-21216:
     halfPixelOffset: 1 # Fixes blurriness.
     texturePreloading: 1 # Improves performance.
 SLUS-21217:
-  name: "Incredibles, The - Rise of the Underminers"
+  name: "Incredibles, The - Rise of the Underminer"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
+    cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLUS-21218:
   name: "Tak - The Great Juju Challenge"
   region: "NTSC-U"
