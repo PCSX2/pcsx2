@@ -21,7 +21,6 @@
 #include "Host.h"
 
 #include "common/Assertions.h"
-#include "common/Exceptions.h"
 
 #include "fmt/format.h"
 
@@ -254,7 +253,7 @@ bool InputIsoFile::Open(std::string srcfile, bool testOnly)
 
 	if (!detected)
 	{
-		Host::ReportErrorAsync("Unrecognized ISO image file format", "ISO mounting failed: PCSX2 is unable to identify the ISO image type.");
+		Console.Error(fmt::format("Unable to identify the ISO image type for '{}'", srcfile));
 		Close();
 		return false;
 	}
