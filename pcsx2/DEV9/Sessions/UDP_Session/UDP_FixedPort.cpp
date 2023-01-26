@@ -116,7 +116,7 @@ namespace Sessions
 		if (ret == SOCKET_ERROR)
 		{
 			hasData = false;
-			Console.WriteLn("DEV9: UDP: select failed. Error Code: %d",
+			Console.Error("DEV9: UDP: select failed. Error Code: %d",
 #ifdef _WIN32
 				WSAGetLastError());
 #elif defined(__POSIX__)

@@ -168,7 +168,7 @@ namespace Sessions
 					}
 					return nullptr;
 				}
-				DevCon.WriteLn("DEV9: TCP: [SRV]Sending %d bytes", recived);
+				DevCon.WriteLn("DEV9: TCP: [SRV] Sending %d bytes", recived);
 
 				PayloadData* recivedData = new PayloadData(recived);
 				memcpy(recivedData->data.get(), buffer.get(), recived);

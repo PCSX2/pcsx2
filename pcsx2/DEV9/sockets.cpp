@@ -582,7 +582,7 @@ bool SocketAdapter::SendUDP(ConnectionKey Key, IP_Packet* ipPkt)
 				fKey.ps2Port = udp.sourcePort;
 				fKey.srvPort = 0;
 
-				Console.WriteLn("DEV9: Socket: Creating New UDPFixedPort with port %d", udp.destinationPort);
+				Console.WriteLn("DEV9: Socket: Creating New UDPFixedPort with port %d", udp.sourcePort);
 
 				fPort = new UDP_FixedPort(fKey, adapterIP, udp.sourcePort);
 				fPort->AddConnectionClosedHandler([&](BaseSession* session) { HandleFixedPortClosed(session); });
@@ -594,7 +594,7 @@ bool SocketAdapter::SendUDP(ConnectionKey Key, IP_Packet* ipPkt)
 				fixedUDPPorts.Add(udp.sourcePort, fPort);
 			}
 
-			Console.WriteLn("DEV9: Socket: Creating New UDP Connection from FixedPort %d", udp.destinationPort);
+			Console.WriteLn("DEV9: Socket: Creating New UDP Connection from FixedPort %d to %d", udp.sourcePort, udp.destinationPort);
 			s = fPort->NewClientSession(Key,
 				ipPkt->destinationIP == dhcpServer.broadcastIP || ipPkt->destinationIP == IP_Address{{{255, 255, 255, 255}}},
 				(ipPkt->destinationIP.bytes[0] & 0xF0) == 0xE0);
