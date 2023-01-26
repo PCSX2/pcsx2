@@ -89,17 +89,3 @@ __forceinline static u128 r128_to_u128(r128 val)
 	_mm_store_si128(reinterpret_cast<r128*>(&ret), val);
 	return ret;
 }
-
-template <typename u>
-struct rhelper;
-
-template <>
-struct rhelper<u128>
-{
-	using r = r128;
-	__forceinline static r load(void* ptr) { return r128_load(ptr); }
-	__forceinline static r zero() { return r128_zero(); }
-};
-
-template <typename u>
-using u_to_r = typename rhelper<u>::r;

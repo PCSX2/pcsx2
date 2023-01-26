@@ -62,10 +62,8 @@ namespace vtlb_private
 static vtlbHandler vtlbHandlerCount = 0;
 
 static vtlbHandler DefaultPhyHandler;
-static vtlbHandler UnmappedVirtHandler0;
-static vtlbHandler UnmappedVirtHandler1;
-static vtlbHandler UnmappedPhyHandler0;
-static vtlbHandler UnmappedPhyHandler1;
+static vtlbHandler UnmappedVirtHandler;
+static vtlbHandler UnmappedPhyHandler;
 
 struct FastmemVirtualMapping
 {
@@ -471,29 +469,21 @@ static __ri void vtlb_BusError(u32 addr,u32 mode)
 		Console.Error( R5900Exception::TLBMiss( addr, !!mode ).FormatMessage() );
 }
 
-template<typename OperandType, u32 saddr>
-OperandType vtlbUnmappedVReadSm(u32 addr)                   { vtlb_Miss(addr|saddr,0); return 0; }
+template <typename OperandType>
+static OperandType vtlbUnmappedVReadSm(u32 addr) { vtlb_Miss(addr, 0); return 0; }
+static RETURNS_R128 vtlbUnmappedVReadLg(u32 addr) { vtlb_Miss(addr, 0); return r128_zero(); }
 
-template<typename OperandType, u32 saddr>
-u_to_r<OperandType> __vectorcall vtlbUnmappedVReadLg(u32 addr)         { vtlb_Miss(addr|saddr,0); return rhelper<OperandType>::zero(); }
+template <typename OperandType>
+static void vtlbUnmappedVWriteSm(u32 addr, OperandType data) { vtlb_Miss(addr, 1); }
+static void TAKES_R128 vtlbUnmappedVWriteLg(u32 addr, r128 data) { vtlb_Miss(addr, 1); }
 
-template<typename OperandType, u32 saddr>
-void vtlbUnmappedVWriteSm(u32 addr,OperandType data)        { vtlb_Miss(addr|saddr,1); }
+template <typename OperandType>
+static OperandType vtlbUnmappedPReadSm(u32 addr) { vtlb_BusError(addr, 0); return 0; }
+static RETURNS_R128 vtlbUnmappedPReadLg(u32 addr) { vtlb_BusError(addr, 0); return r128_zero(); }
 
-template<typename OperandType, u32 saddr>
-void __vectorcall vtlbUnmappedVWriteLg(u32 addr,u_to_r<OperandType> data)      { vtlb_Miss(addr|saddr,1); }
-
-template<typename OperandType, u32 saddr>
-OperandType vtlbUnmappedPReadSm(u32 addr)                   { vtlb_BusError(addr|saddr,0); return 0; }
-
-template<typename OperandType, u32 saddr>
-u_to_r<OperandType> __vectorcall vtlbUnmappedPReadLg(u32 addr)         { vtlb_BusError(addr|saddr,0); return rhelper<OperandType>::zero(); }
-
-template<typename OperandType, u32 saddr>
-void vtlbUnmappedPWriteSm(u32 addr,OperandType data)        { vtlb_BusError(addr|saddr,1); }
-
-template<typename OperandType, u32 saddr>
-void __vectorcall vtlbUnmappedPWriteLg(u32 addr,u_to_r<OperandType> data)      { vtlb_BusError(addr|saddr,1); }
+template <typename OperandType>
+static void vtlbUnmappedPWriteSm(u32 addr, OperandType data) { vtlb_BusError(addr, 1); }
+static void TAKES_R128 vtlbUnmappedPWriteLg(u32 addr, r128 data) { vtlb_BusError(addr, 1); }
 
 // --------------------------------------------------------------------------------------
 //  VTLB mapping errors
@@ -1059,20 +1049,17 @@ void vtlb_VMap(u32 vaddr,u32 paddr,u32 size)
 	while (size > 0)
 	{
 		VTLBVirtual vmv;
-		if (paddr >= VTLB_PMAP_SZ) {
-			if ((s32)paddr >= 0) {
-				vmv = VTLBVirtual(VTLBPhysical::fromHandler(UnmappedPhyHandler0), paddr, vaddr);
-			} else {
-				vmv = VTLBVirtual(VTLBPhysical::fromHandler(UnmappedPhyHandler1), paddr & ~(1<<31), vaddr);
-			}
-		} else {
-			vmv = VTLBVirtual(vtlbdata.pmap[paddr>>VTLB_PAGE_BITS], paddr, vaddr);
-		}
+		if (paddr >= VTLB_PMAP_SZ)
+			vmv = VTLBVirtual(VTLBPhysical::fromHandler(UnmappedPhyHandler), paddr, vaddr);
+		else
+			vmv = VTLBVirtual(vtlbdata.pmap[paddr >> VTLB_PAGE_BITS], paddr, vaddr);
 
-		vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] = vmv;
+		vtlbdata.vmap[vaddr >> VTLB_PAGE_BITS] = vmv;
 		if (vtlbdata.ppmap)
+		{
 			if (!(vaddr & 0x80000000)) // those address are already physical don't change them
-				vtlbdata.ppmap[vaddr>>VTLB_PAGE_BITS] = paddr & ~VTLB_PAGE_MASK;
+				vtlbdata.ppmap[vaddr >> VTLB_PAGE_BITS] = paddr & ~VTLB_PAGE_MASK;
+		}
 
 		vaddr += VTLB_PAGE_SIZE;
 		paddr += VTLB_PAGE_SIZE;
@@ -1120,15 +1107,7 @@ void vtlb_VMapUnmap(u32 vaddr,u32 size)
 
 	while (size > 0)
 	{
-
-		VTLBVirtual handl;
-		if ((s32)vaddr >= 0) {
-			handl = VTLBVirtual(VTLBPhysical::fromHandler(UnmappedVirtHandler0), vaddr, vaddr);
-		} else {
-			handl = VTLBVirtual(VTLBPhysical::fromHandler(UnmappedVirtHandler1), vaddr & ~(1<<31), vaddr);
-		}
-
-		vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] = handl;
+		vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] = VTLBVirtual(VTLBPhysical::fromHandler(UnmappedVirtHandler), vaddr, vaddr);
 		vaddr += VTLB_PAGE_SIZE;
 		size -= VTLB_PAGE_SIZE;
 	}
@@ -1140,11 +1119,11 @@ void vtlb_Init()
 	vtlbHandlerCount=0;
 	memzero(vtlbdata.RWFT);
 
-#define VTLB_BuildUnmappedHandler(baseName, highBit) \
-	baseName##ReadSm<mem8_t,0>,		baseName##ReadSm<mem16_t,0>,	baseName##ReadSm<mem32_t,0>, \
-	baseName##ReadSm<mem64_t,0>,	baseName##ReadLg<mem128_t,0>, \
-	baseName##WriteSm<mem8_t,0>,	baseName##WriteSm<mem16_t,0>,	baseName##WriteSm<mem32_t,0>, \
-	baseName##WriteSm<mem64_t,0>,	baseName##WriteLg<mem128_t,0>
+#define VTLB_BuildUnmappedHandler(baseName) \
+	baseName##ReadSm<mem8_t>,		baseName##ReadSm<mem16_t>,	baseName##ReadSm<mem32_t>, \
+	baseName##ReadSm<mem64_t>,	baseName##ReadLg, \
+	baseName##WriteSm<mem8_t>,	baseName##WriteSm<mem16_t>,	baseName##WriteSm<mem32_t>, \
+	baseName##WriteSm<mem64_t>,	baseName##WriteLg
 
 	//Register default handlers
 	//Unmapped Virt handlers _MUST_ be registered first.
@@ -1152,23 +1131,19 @@ void vtlb_Init()
 	//the physical address space can be 'compressed' to just 29 bits.However, to properly handle exceptions
 	//there must be a way to get the full address back.Thats why i use these 2 functions and encode the hi bit directly into em :)
 
-	UnmappedVirtHandler0 = vtlb_RegisterHandler( VTLB_BuildUnmappedHandler(vtlbUnmappedV, 0) );
-	UnmappedVirtHandler1 = vtlb_RegisterHandler( VTLB_BuildUnmappedHandler(vtlbUnmappedV, 0x80000000) );
-
-	UnmappedPhyHandler0 = vtlb_RegisterHandler( VTLB_BuildUnmappedHandler(vtlbUnmappedP, 0) );
-	UnmappedPhyHandler1 = vtlb_RegisterHandler( VTLB_BuildUnmappedHandler(vtlbUnmappedP, 0x80000000) );
-
-	DefaultPhyHandler = vtlb_RegisterHandler(0,0,0,0,0,0,0,0,0,0);
+	UnmappedVirtHandler = vtlb_RegisterHandler(VTLB_BuildUnmappedHandler(vtlbUnmappedV));
+	UnmappedPhyHandler = vtlb_RegisterHandler(VTLB_BuildUnmappedHandler(vtlbUnmappedP));
+	DefaultPhyHandler = vtlb_RegisterHandler(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 	//done !
 
 	//Setup the initial mappings
-	vtlb_MapHandler(DefaultPhyHandler,0,VTLB_PMAP_SZ);
+	vtlb_MapHandler(DefaultPhyHandler, 0, VTLB_PMAP_SZ);
 
 	//Set the V space as unmapped
-	vtlb_VMapUnmap(0,(VTLB_VMAP_ITEMS-1)*VTLB_PAGE_SIZE);
+	vtlb_VMapUnmap(0, (VTLB_VMAP_ITEMS - 1) * VTLB_PAGE_SIZE);
 	//yeah i know, its stupid .. but this code has to be here for now ;p
-	vtlb_VMapUnmap((VTLB_VMAP_ITEMS-1)*VTLB_PAGE_SIZE,VTLB_PAGE_SIZE);
+	vtlb_VMapUnmap((VTLB_VMAP_ITEMS - 1) * VTLB_PAGE_SIZE, VTLB_PAGE_SIZE);
 
 	// The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
 	if (EmuConfig.Gamefixes.GoemonTlbHack)
