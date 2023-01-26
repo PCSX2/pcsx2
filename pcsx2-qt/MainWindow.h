@@ -111,7 +111,7 @@ public:
 	void rescanFile(const std::string& path);
 
 public Q_SLOTS:
-	void checkForUpdates(bool display_message);
+	void checkForUpdates(bool display_message, bool force_check);
 	void refreshGameList(bool invalidate_cache);
 	void cancelGameListRefresh();
 	void invalidateSaveStateCache();
@@ -162,7 +162,6 @@ private Q_SLOTS:
 	void onSupportForumsActionTriggered();
 	void onDiscordServerActionTriggered();
 	void onAboutActionTriggered();
-	void onCheckForUpdatesActionTriggered();
 	void onToolsOpenDataDirectoryTriggered();
 	void onToolsCoverDownloaderTriggered();
 	void updateTheme();
