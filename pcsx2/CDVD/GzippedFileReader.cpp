@@ -293,7 +293,7 @@ bool GzippedFileReader::OkIndex()
 	Console.Warning("This may take a while (but only once). Scanning compressed file to generate a quick access index...");
 
 	const s64 prevoffset = FileSystem::FTell64(m_src);
-	Access* index;
+	Access* index = nullptr;
 	int len = build_index(m_src, GZFILE_SPAN_DEFAULT, &index);
 	printf("\n"); // build_index prints progress without \n's
 	FileSystem::FSeek64(m_src, prevoffset, SEEK_SET);
