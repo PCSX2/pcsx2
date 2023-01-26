@@ -151,7 +151,7 @@ void ControllerLEDSettingsDialog::linkButton(ColorPickerButton* button, u32 play
 	const u32 current_value = SDLInputSource::ParseRGBForPlayerId(m_dialog->getStringValue("SDLExtra", key.c_str(), ""), player_id);
 	button->setColor(current_value);
 
-	connect(button, &ColorPickerButton::colorChanged, this, [this, player_id, key = std::move(key)](u32 new_rgb) {
+	connect(button, &ColorPickerButton::colorChanged, this, [this, key = std::move(key)](u32 new_rgb) {
 		m_dialog->setStringValue("SDLExtra", key.c_str(), fmt::format("{:06X}", new_rgb).c_str());
 	});
 #endif
