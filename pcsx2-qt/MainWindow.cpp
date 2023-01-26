@@ -346,7 +346,7 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionDiscordServer, &QAction::triggered, this, &MainWindow::onDiscordServerActionTriggered);
 	connect(m_ui.actionAboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
 	connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
-	connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
+	connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, [this]() { checkForUpdates(true, true); });
 	connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
 	connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
 	connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
@@ -1676,15 +1676,7 @@ void MainWindow::onAboutActionTriggered()
 	about.exec();
 }
 
-void MainWindow::onCheckForUpdatesActionTriggered()
-{
-	// Wipe out the last version, that way it displays the update if we've previously skipped it.
-	Host::RemoveBaseSettingValue("AutoUpdater", "LastVersion");
-	Host::CommitBaseSettingChanges();
-	checkForUpdates(true);
-}
-
-void MainWindow::checkForUpdates(bool display_message)
+void MainWindow::checkForUpdates(bool display_message, bool force_check)
 {
 	if (!AutoUpdaterDialog::isSupported())
 	{
@@ -1715,6 +1707,13 @@ void MainWindow::checkForUpdates(bool display_message)
 	if (m_auto_updater_dialog)
 		return;
 
+	if (force_check)
+	{
+		// Wipe out the last version, that way it displays the update if we've previously skipped it.
+		Host::RemoveBaseSettingValue("AutoUpdater", "LastVersion");
+		Host::CommitBaseSettingChanges();
+	}
+
 	m_auto_updater_dialog = new AutoUpdaterDialog(this);
 	connect(m_auto_updater_dialog, &AutoUpdaterDialog::updateCheckCompleted, this, &MainWindow::onUpdateCheckComplete);
 	m_auto_updater_dialog->queueUpdateCheck(display_message);
@@ -1734,7 +1733,7 @@ void MainWindow::startupUpdateCheck()
 	if (!Host::GetBaseBoolSettingValue("AutoUpdater", "CheckAtStartup", true))
 		return;
 
-	checkForUpdates(false);
+	checkForUpdates(false, false);
 }
 
 void MainWindow::onToolsOpenDataDirectoryTriggered()
