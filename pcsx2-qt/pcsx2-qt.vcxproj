@@ -71,6 +71,8 @@
       <FloatingPointModel>Precise</FloatingPointModel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ConformanceMode>true</ConformanceMode>
+      <!-- Current Qt debug builds assert on RTTI. Remove this once we next build Qt. -->
+      <RuntimeTypeInfo Condition="$(Configuration.Contains(Clang)) And $(Configuration.Contains(Debug))">true</RuntimeTypeInfo>
       <AdditionalOptions>/Zc:__cplusplus /Zo /utf-8%(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
