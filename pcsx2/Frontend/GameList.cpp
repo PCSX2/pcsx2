@@ -306,11 +306,6 @@ bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 	if (!FileSystem::StatFile(path.c_str(), &sd))
 		return false;
 
-	// This isn't great, we really want to make it all thread-local...
-	CDVD = &CDVDapi_Iso;
-	if (CDVD->open(path.c_str()) != 0)
-		return false;
-
 	s32 disc_type;
 	if (!GetIsoSerialAndCRC(path, &disc_type, &entry->serial, &entry->crc))
 		return false;
