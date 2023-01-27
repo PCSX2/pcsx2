@@ -23,4 +23,3 @@ We thank everybody for their contributions to the project, but we would like to 
     - noigeaR
     - xTVaser
     - jrdnhnz
-    - Dormant-Hero
