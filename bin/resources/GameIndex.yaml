@@ -13010,7 +13010,7 @@ SLES-51647:
   name: "Energy Airforce"
   region: "PAL-I"
 SLES-51649:
-  name: "Judge Dredd vs. Judge Death"
+  name: "Judge Dredd - Dredd vs. Death"
   region: "PAL-M4"
 SLES-51650:
   name: "Judge Dredd - Dredd vs. Death"
@@ -18213,6 +18213,9 @@ SLES-53768:
   name: "Sword of Etheria, The"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Fixes misalgined bloom on sun.
 SLES-53769:
   name: "Suikoden Tactics"
   region: "PAL-M5"
@@ -20203,6 +20206,8 @@ SLES-54583:
 SLES-54584:
   name: "Pac-Man Rally"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth line.
   clampModes:
     vuClampMode: 3 # Fixes bad geometry.
 SLES-54586:
@@ -23981,6 +23986,9 @@ SLKA-25290:
 SLKA-25291:
   name: "Chains of Power"
   region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Fixes misalgined bloom on sun.
 SLKA-25296:
   name: "Inuyasha - Feudal Combat"
   region: "NTSC-K"
@@ -30946,6 +30954,9 @@ SLPM-66032:
 SLPM-66033:
   name: "Oz"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Fixes misalgined bloom on sun.
 SLPM-66034:
   name: "Grand Theft Auto - Vice City"
   region: "NTSC-J"
@@ -31803,6 +31814,9 @@ SLPM-66260:
 SLPM-66261:
   name: "Oz [Konami The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Fixes misalgined bloom on sun.
 SLPM-66262:
   name: "Tom Clancy's Rainbow Six 3 [Ubisoft The Best]"
   region: "NTSC-J"
@@ -32334,7 +32348,7 @@ SLPM-66404:
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
 SLPM-66405:
-  name: "Rajirugi - Precious"
+  name: "Radirgy Precious"
   region: "NTSC-J"
   compat: 5
 SLPM-66406:
@@ -46896,6 +46910,8 @@ SLUS-21328:
   compat: 5
   clampModes:
     vuClampMode: 3 # Fixes bad geometry.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth line.
   patches:
     default:
       content: |-
