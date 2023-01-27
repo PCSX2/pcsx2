@@ -1571,12 +1571,14 @@ void MainWindow::onChangeDiscMenuAboutToHide()
 
 void MainWindow::onLoadStateMenuAboutToShow()
 {
+	m_ui.menuLoadState->clear();
 	updateSaveStateMenusEnableState(!m_current_game_serial.isEmpty());
 	populateLoadStateMenu(m_ui.menuLoadState, m_current_disc_path, m_current_game_serial, m_current_game_crc);
 }
 
 void MainWindow::onSaveStateMenuAboutToShow()
 {
+	m_ui.menuSaveState->clear();
 	updateSaveStateMenusEnableState(!m_current_game_serial.isEmpty());
 	populateSaveStateMenu(m_ui.menuSaveState, m_current_game_serial, m_current_game_crc);
 }
@@ -2712,8 +2714,6 @@ static QString formatTimestampForSaveStateMenu(time_t timestamp)
 
 void MainWindow::populateLoadStateMenu(QMenu* menu, const QString& filename, const QString& serial, quint32 crc)
 {
-	menu->clear();
-
 	if (serial.isEmpty())
 		return;
 
@@ -2788,8 +2788,6 @@ void MainWindow::populateLoadStateMenu(QMenu* menu, const QString& filename, con
 
 void MainWindow::populateSaveStateMenu(QMenu* menu, const QString& serial, quint32 crc)
 {
-	menu->clear();
-
 	if (serial.isEmpty())
 		return;
 
