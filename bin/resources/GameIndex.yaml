@@ -3835,7 +3835,7 @@ SCES-53183:
   region: "PAL-E"
 SCES-53184:
   name: "SingStar Norske Hits"
-  region: "PAL-N"
+  region: "PAL-NO"
 SCES-53185:
   name: "SingStar Svenska Hits"
   region: "PAL-SW"
@@ -4181,7 +4181,7 @@ SCES-54077:
   region: "PAL-I"
 SCES-54078:
   name: "SingStar Norsk på Norsk"
-  region: "PAL-N"
+  region: "PAL-NO"
 SCES-54094:
   name: "EyeToy - Play Sports"
   region: "PAL-M15"
@@ -12130,7 +12130,7 @@ SLES-51214:
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLES-51215:
   name: "Harry Potter og Mysteriekammeret"
-  region: "PAL-N"
+  region: "PAL-NO"
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
