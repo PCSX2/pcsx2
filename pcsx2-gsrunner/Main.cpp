@@ -373,7 +373,7 @@ void Host::SetFullscreen(bool enabled)
 {
 }
 
-void Host::RequestExit(bool save_state_if_running)
+void Host::RequestExit(bool allow_confirm)
 {
 }
 

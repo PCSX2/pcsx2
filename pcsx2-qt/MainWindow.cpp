@@ -1275,8 +1275,7 @@ void MainWindow::runOnUIThread(const std::function<void()>& func)
 	func();
 }
 
-bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_save_to_state /* = true */,
-	bool default_save_to_state /* = true */, bool block_until_done /* = false */)
+bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, bool default_save_to_state)
 {
 	if (!s_vm_valid)
 		return true;
@@ -1321,34 +1320,21 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
 
 	// Now we can actually shut down the VM.
 	g_emu_thread->shutdownVM(save_state);
-
-	if (block_until_done || m_is_closing || QtHost::InBatchMode())
-	{
-		// We need to yield here, since the display gets destroyed.
-		while (VMManager::GetState() != VMState::Shutdown)
-			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
-	}
-
-	if (!m_is_closing && QtHost::InBatchMode())
-	{
-		// If we don't set the closing flag here, the VM shutdown may not complete by the time closeEvent() is called,
-		// leading to a confirm.
-		m_is_closing = true;
-		QGuiApplication::quit();
-	}
-
 	return true;
 }
 
-void MainWindow::requestExit()
+void MainWindow::requestExit(bool allow_confirm)
 {
 	// this is block, because otherwise closeEvent() will also prompt
-	if (!requestShutdown(true, true, EmuConfig.SaveStateOnShutdown, true))
+	if (!requestShutdown(allow_confirm, true, EmuConfig.SaveStateOnShutdown))
 		return;
 
-	// We could use close here, but if we're not visible (e.g. quitting from fullscreen), closing the window
-	// doesn't quit the application.
-	QGuiApplication::quit();
+	// VM stopped signal won't have fired yet, so queue an exit if we still have one.
+	// Otherwise, immediately exit, because there's no VM to exit us later.
+	if (QtHost::IsVMValid())
+		m_is_closing = true;
+	else
+		QGuiApplication::quit();
 }
 
 void MainWindow::checkForSettingChanges()
@@ -1943,6 +1929,13 @@ void MainWindow::onVMStopped()
 	updateStatusBarWidgetVisibility();
 	updateInputRecordingActions(false);
 
+	// If we're closing or in batch mode, quit the whole application now.
+	if (m_is_closing || QtHost::InBatchMode())
+	{
+		QCoreApplication::quit();
+		return;
+	}
+
 	if (m_display_widget)
 		updateDisplayWidgetCursor();
 	else
@@ -1982,7 +1975,7 @@ void MainWindow::showEvent(QShowEvent* event)
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-	if (!requestShutdown(true, true, EmuConfig.SaveStateOnShutdown, true))
+	if (!requestShutdown(true, true, EmuConfig.SaveStateOnShutdown))
 	{
 		event->ignore();
 		return;
