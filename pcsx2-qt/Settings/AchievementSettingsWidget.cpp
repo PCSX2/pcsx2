@@ -105,14 +105,13 @@ void AchievementSettingsWidget::updateEnableState()
 {
 	const bool enabled = m_dialog->getEffectiveBoolValue("Achievements", "Enabled", false);
 	const bool challenge = m_dialog->getEffectiveBoolValue("Achievements", "ChallengeMode", false);
-	const bool notifications = m_dialog->getEffectiveBoolValue("Achievements", "Notifications", true);
 	m_ui.testMode->setEnabled(enabled);
 	m_ui.unofficialTestMode->setEnabled(enabled);
 	m_ui.richPresence->setEnabled(enabled);
 	m_ui.challengeMode->setEnabled(enabled);
 	m_ui.leaderboards->setEnabled(enabled && challenge);
 	m_ui.notifications->setEnabled(enabled);
-	m_ui.soundEffects->setEnabled(enabled && notifications);
+	m_ui.soundEffects->setEnabled(enabled);
 	m_ui.primedIndicators->setEnabled(enabled);
 }
 

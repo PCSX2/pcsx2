@@ -1033,7 +1033,7 @@ void Achievements::DownloadImage(std::string url, std::string cache_filename)
 
 void Achievements::DisplayAchievementSummary()
 {
-	if (FullscreenUI::IsInitialized() && EmuConfig.Achievements.Notifications)
+	if (EmuConfig.Achievements.Notifications)
 	{
 		std::string title = s_game_title;
 		if (ChallengeModeActive())
@@ -1056,24 +1056,30 @@ void Achievements::DisplayAchievementSummary()
 				summary.append("Leaderboard submission is enabled.");
 		}
 
-		ImGuiFullscreen::AddNotification(10.0f, std::move(title), std::move(summary), s_game_icon);
-
-		// Technically not going through the resource API, but since we're passing this to something else, we can't.
-		if (EmuConfig.Achievements.SoundEffects)
-			Common::PlaySoundAsync(Path::Combine(EmuFolders::Resources, INFO_SOUND_NAME).c_str());
+		GetMTGS().RunOnGSThread([title = std::move(title), summary = std::move(summary), icon = s_game_icon]() {
+			if (FullscreenUI::IsInitialized())
+				ImGuiFullscreen::AddNotification(10.0f, std::move(title), std::move(summary), std::move(icon));
+		});
 	}
+
+	// Technically not going through the resource API, but since we're passing this to something else, we can't.
+	if (EmuConfig.Achievements.SoundEffects)
+		Common::PlaySoundAsync(Path::Combine(EmuFolders::Resources, INFO_SOUND_NAME).c_str());
 }
 
 void Achievements::DisplayMasteredNotification()
 {
-	if (!FullscreenUI::IsInitialized() || !EmuConfig.Achievements.Notifications)
+	if (!EmuConfig.Achievements.Notifications)
 		return;
 
 	std::string title(fmt::format("Mastered {}", s_game_title));
 	std::string message(fmt::format(
 		"{} achievements, {} points{}", GetAchievementCount(), GetCurrentPointsForGame(), s_challenge_mode ? " (Hardcore Mode)" : ""));
 
-	ImGuiFullscreen::AddNotification(20.0f, std::move(title), std::move(message), s_game_icon);
+	GetMTGS().RunOnGSThread([title = std::move(title), message = std::move(message), icon = s_game_icon]() {
+		if (FullscreenUI::IsInitialized())
+			ImGuiFullscreen::AddNotification(20.0f, std::move(title), std::move(message), std::move(icon));
+	});
 }
 
 void Achievements::GetUserUnlocksCallback(s32 status_code, const std::string& content_type, Common::HTTPDownloader::Request::Data data)
@@ -1796,7 +1802,10 @@ void Achievements::SubmitLeaderboardCallback(s32 status_code, const std::string&
 	std::string summary = fmt::format(
 		"Your Score: {} (Best: {})\nLeaderboard Position: {} of {}", submitted_score, best_score, response.new_rank, response.num_entries);
 
-	ImGuiFullscreen::AddNotification(10.0f, lb->title, std::move(summary), s_game_icon);
+	GetMTGS().RunOnGSThread([title = lb->title, summary = std::move(summary), icon = s_game_icon]() {
+		if (FullscreenUI::IsInitialized())
+			ImGuiFullscreen::AddNotification(10.0f, std::move(title), std::move(summary), std::move(icon));
+	});
 }
 
 void Achievements::UnlockAchievement(u32 achievement_id, bool add_notification /* = true*/)
@@ -1819,7 +1828,7 @@ void Achievements::UnlockAchievement(u32 achievement_id, bool add_notification /
 
 	Console.WriteLn("Achievement %s (%u) for game %u unlocked", achievement->title.c_str(), achievement_id, s_game_id);
 
-	if (FullscreenUI::IsInitialized() && EmuConfig.Achievements.Notifications)
+	if (EmuConfig.Achievements.Notifications)
 	{
 		std::string title;
 		switch (achievement->category)
@@ -1836,10 +1845,14 @@ void Achievements::UnlockAchievement(u32 achievement_id, bool add_notification /
 				break;
 		}
 
-		ImGuiFullscreen::AddNotification(15.0f, std::move(title), achievement->description, GetAchievementBadgePath(*achievement));
-		if (EmuConfig.Achievements.SoundEffects)
-			Common::PlaySoundAsync(Path::Combine(EmuFolders::Resources, UNLOCK_SOUND_NAME).c_str());
+		GetMTGS().RunOnGSThread(
+			[title = std::move(title), description = achievement->description, icon = GetAchievementBadgePath(*achievement)]() {
+				ImGuiFullscreen::AddNotification(15.0f, std::move(title), std::move(description), std::move(icon));
+			});
 	}
+
+	if (EmuConfig.Achievements.SoundEffects)
+		Common::PlaySoundAsync(Path::Combine(EmuFolders::Resources, UNLOCK_SOUND_NAME).c_str());
 
 	if (IsMastered())
 		DisplayMasteredNotification();
