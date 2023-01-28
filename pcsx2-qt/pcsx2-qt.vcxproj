@@ -421,6 +421,9 @@
     <QtUi Include="Settings\ControllerLEDSettingsDialog.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="Settings\ControllerMouseSettingsDialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <None Include="Settings\USBBindingWidget_DrivingForce.ui" />
     <None Include="Settings\USBBindingWidget_GTForce.ui" />
     <QtUi Include="Settings\USBDeviceWidget.ui">
