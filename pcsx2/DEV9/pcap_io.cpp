@@ -45,18 +45,6 @@ using namespace PacketReader;
 using namespace PacketReader::ARP;
 using namespace PacketReader::IP;
 
-#ifdef _WIN32
-int gettimeofday(struct timeval* tv, void* tz)
-{
-	unsigned __int64 ns100; /*time since 1 Jan 1601 in 100ns units */
-
-	GetSystemTimeAsFileTime((LPFILETIME)&ns100);
-	tv->tv_usec = (long)((ns100 / 10L) % 1000000L);
-	tv->tv_sec = (long)((ns100 - 116444736000000000L) / 10000000L);
-	return (0);
-}
-#endif
-
 PCAPAdapter::PCAPAdapter()
 	: NetAdapter()
 {
@@ -123,8 +111,6 @@ PCAPAdapter::PCAPAdapter()
 		InitInternalServer(&adapter);
 	else
 		InitInternalServer(nullptr);
-
-	InitPCAPDumper();
 }
 AdapterOptions PCAPAdapter::GetAdapterOptions()
 {
@@ -168,9 +154,6 @@ bool PCAPAdapter::recv(NetPacket* pkt)
 		if (!switched)
 			SetMACBridgedRecv(pkt);
 
-		if (hpcap_dumper)
-			pcap_dump((u_char*)hpcap_dumper, header, pkt_data);
-
 		if (VerifyPkt(pkt, header->len))
 		{
 			InspectRecv(pkt);
@@ -189,15 +172,6 @@ bool PCAPAdapter::send(NetPacket* pkt)
 	InspectSend(pkt);
 	if (NetAdapter::send(pkt))
 		return true;
-
-	if (hpcap_dumper)
-	{
-		pcap_pkthdr ph;
-		gettimeofday(&ph.ts, NULL);
-		ph.caplen = pkt->size;
-		ph.len = pkt->size;
-		pcap_dump((u_char*)hpcap_dumper, &ph, (u_char*)pkt->buffer);
-	}
 
 	// TODO: loopback broadcast packets to host pc in switched mode.
 	if (!switched)
@@ -221,11 +195,6 @@ void PCAPAdapter::reloadSettings()
 
 PCAPAdapter::~PCAPAdapter()
 {
-	if (hpcap_dumper)
-	{
-		pcap_dump_close(hpcap_dumper);
-		hpcap_dumper = nullptr;
-	}
 	if (hpcap)
 	{
 		pcap_close(hpcap);
@@ -347,14 +316,6 @@ bool PCAPAdapter::InitPCAP(const std::string& adapter, bool promiscuous)
 
 	Console.WriteLn("DEV9: Adapter Ok.");
 	return true;
-}
-
-void PCAPAdapter::InitPCAPDumper()
-{
-#ifdef DEBUG
-	const std::string plfile(s_strLogPath + "/pkt_log.pcap");
-	hpcap_dumper = pcap_dump_open(hpcap, plfile.c_str());
-#endif
 }
 
 bool PCAPAdapter::SetMACSwitchedFilter(MAC_Address mac)
