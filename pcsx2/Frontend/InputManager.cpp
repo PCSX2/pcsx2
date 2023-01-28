@@ -162,6 +162,7 @@ static std::array<std::array<PointerAxisState, static_cast<u8>(InputPointerAxis:
 static std::array<float, 2> s_pointer_axis_speed;
 static std::array<float, 2> s_pointer_axis_dead_zone;
 static std::array<float, 2> s_pointer_axis_range;
+static std::array<float, 2> s_pointer_pos = {0.0f, 0.0f};
 static float s_pointer_inertia;
 
 using PointerMoveCallback = std::function<void(InputBindingKey key, float value)>;
@@ -936,8 +937,6 @@ bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInpu
 
 void InputManager::GenerateRelativeMouseEvents()
 {
-	static float pos[2] = {0.0f, 0.0f};
-
 	for (u32 device = 0; device < MAX_POINTER_DEVICES; device++)
 	{
 		for (u32 axis = 0; axis < static_cast<u32>(static_cast<u8>(InputPointerAxis::Count)); axis++)
@@ -950,10 +949,10 @@ void InputManager::GenerateRelativeMouseEvents()
 
 			if (axis < 2)
 			{
-				pos[axis] += delta * s_pointer_axis_speed[axis];
-				value      = std::clamp(pos[axis], -1.0f, 1.0f);
-				pos[axis] -= value;
-				pos[axis] *= s_pointer_inertia;
+				s_pointer_pos[axis] += delta * s_pointer_axis_speed[axis];
+				value = std::clamp(s_pointer_pos[axis], -1.0f, 1.0f);
+				s_pointer_pos[axis] -= value;
+				s_pointer_pos[axis] *= s_pointer_inertia;
 
 				value *= s_pointer_axis_range[axis];
 				if (value > 0.0f)
@@ -1219,6 +1218,7 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 		s_pointer_axis_range[axis]     = 1.0f - s_pointer_axis_dead_zone[axis];
 	}
 	s_pointer_inertia = si.GetFloatValue("Pad", fmt::format("PointerInertia").c_str()) / ui_ctrl_range;
+	s_pointer_pos = {0.0f, 0.0f};
 
 	for (u32 port = 0; port < USB::NUM_PORTS; port++)
 		AddUSBBindings(binding_si, port);
