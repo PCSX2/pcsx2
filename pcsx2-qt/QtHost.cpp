@@ -1228,12 +1228,9 @@ void Host::CancelGameListRefresh()
 	QMetaObject::invokeMethod(g_main_window, "cancelGameListRefresh", Qt::BlockingQueuedConnection);
 }
 
-void Host::RequestExit(bool save_state_if_running)
+void Host::RequestExit(bool allow_confirm)
 {
-	if (VMManager::HasValidVM())
-		g_emu_thread->shutdownVM(save_state_if_running);
-
-	QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection);
+	QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection, Q_ARG(bool, allow_confirm));
 }
 
 void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool default_save_state)
@@ -1241,16 +1238,24 @@ void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool def
 	if (!VMManager::HasValidVM())
 		return;
 
-	// MainWindow handles close-on-exit for batch mode.
-	if (allow_confirm || QtHost::InBatchMode())
+	// This is a bit messy here - we want to shut down immediately (in case it was requested by the game),
+	// but we also need to exit-on-shutdown for batch mode. So, if we're running on the CPU thread, destroy
+	// the VM, then request the main window to exit.
+	if (allow_confirm || !g_emu_thread->isOnEmuThread())
 	{
 		// Run it on the host thread, that way we get the confirm prompt (if enabled).
 		QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection, Q_ARG(bool, allow_confirm),
-			Q_ARG(bool, allow_save_state), Q_ARG(bool, default_save_state), Q_ARG(bool, false));
+			Q_ARG(bool, allow_save_state), Q_ARG(bool, default_save_state));
 	}
 	else
 	{
+		// Change state to stopping -> return -> shut down VM.
 		g_emu_thread->shutdownVM(allow_save_state && default_save_state);
+
+		// This will probably call shutdownVM() again, but by the time it runs, we'll have already shut down
+		// and it'll be a noop.
+		if (QtHost::InBatchMode())
+			QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection, Q_ARG(bool, false));
 	}
 }
 
@@ -1559,7 +1564,7 @@ static void SignalHandler(int signal)
 		graceful_shutdown_attempted = true;
 
 		// This could be a bit risky invoking from a signal handler... hopefully it's okay.
-		QMetaObject::invokeMethod(g_main_window, &MainWindow::requestExit, Qt::QueuedConnection);
+		QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection, Q_ARG(bool, false));
 		return;
 	}
 

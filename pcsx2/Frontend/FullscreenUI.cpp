@@ -1062,7 +1062,7 @@ void FullscreenUI::DoChangeDisc()
 
 void FullscreenUI::DoRequestExit()
 {
-	Host::RunOnCPUThread([]() { Host::RequestExit(EmuConfig.SaveStateOnShutdown); });
+	Host::RunOnCPUThread([]() { Host::RequestExit(true); });
 }
 
 void FullscreenUI::DoToggleFullscreen()

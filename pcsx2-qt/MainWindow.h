@@ -117,9 +117,8 @@ public Q_SLOTS:
 	void reportError(const QString& title, const QString& message);
 	bool confirmMessage(const QString& title, const QString& message);
 	void runOnUIThread(const std::function<void()>& func);
-	bool requestShutdown(
-		bool allow_confirm = true, bool allow_save_to_state = true, bool default_save_to_state = true, bool block_until_done = false);
-	void requestExit();
+	bool requestShutdown(bool allow_confirm = true, bool allow_save_to_state = true, bool default_save_to_state = true);
+	void requestExit(bool allow_confirm = true);
 	void checkForSettingChanges();
 	std::optional<WindowInfo> getWindowInfo();
 

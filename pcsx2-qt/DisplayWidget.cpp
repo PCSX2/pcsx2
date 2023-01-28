@@ -156,7 +156,7 @@ void DisplayWidget::handleCloseEvent(QCloseEvent* event)
 	}
 	else
 	{
-		QMetaObject::invokeMethod(g_main_window, &MainWindow::requestExit);
+		QMetaObject::invokeMethod(g_main_window, "requestExit", Q_ARG(bool, true));
 	}
 
 	// Cancel the event from closing the window.

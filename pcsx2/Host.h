@@ -83,7 +83,7 @@ namespace Host
 
 	/// Requests shut down and exit of the hosting application. This may not actually exit,
 	/// if the user cancels the shutdown confirmation.
-	void RequestExit(bool save_state_if_running);
+	void RequestExit(bool allow_confirm);
 
 	/// Requests shut down of the current virtual machine.
 	void RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool default_save_state);
