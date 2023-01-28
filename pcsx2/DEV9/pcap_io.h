@@ -27,7 +27,6 @@ class PCAPAdapter : public NetAdapter
 {
 private:
 	pcap_t* hpcap = nullptr;
-	pcap_dumper_t* hpcap_dumper = nullptr;
 
 	bool switched;
 	bool blocking;
