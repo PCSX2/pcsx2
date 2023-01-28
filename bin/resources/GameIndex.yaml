@@ -12043,6 +12043,7 @@ SLES-51192:
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51193:
   name: "Harry Potter et la Chambre des Secrets"
   region: "PAL-F"
@@ -12051,6 +12052,7 @@ SLES-51193:
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51194:
   name: "Harry Potter und die Kammer des Schreckens"
   region: "PAL-G"
@@ -12059,6 +12061,7 @@ SLES-51194:
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51195:
   name: "Harry Potter y la Cámara Secreta"
   region: "PAL-S"
@@ -12067,6 +12070,7 @@ SLES-51195:
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51196:
   name: "Harry Potter e La Camera dei Secreti"
   region: "PAL-I"
@@ -12075,6 +12079,7 @@ SLES-51196:
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51197:
   name: "FIFA 2003"
   region: "PAL-M7"
@@ -12128,6 +12133,7 @@ SLES-51214:
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51215:
   name: "Harry Potter og Mysteriekammeret"
   region: "PAL-NO"
@@ -12136,6 +12142,7 @@ SLES-51215:
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51216:
   name: "Harry Potter ja Salaisuuksien Kammio"
   region: "PAL-FI"
@@ -12144,6 +12151,7 @@ SLES-51216:
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51217:
   name: "Harry Potter och Hemligheternas Kammare"
   region: "PAL-SW"
@@ -12152,6 +12160,7 @@ SLES-51217:
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51218:
   name: "Harry Potter en de Geheime Kamer"
   region: "PAL-NL"
@@ -12160,6 +12169,7 @@ SLES-51218:
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51219:
   name: "Harry Potter ea Camara dos Segredos"
   region: "PAL-P"
@@ -12168,6 +12178,7 @@ SLES-51219:
   gsHWFixes:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+    texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51220:
   name: "TY the Tasmanian Tiger"
   region: "PAL-M5"
