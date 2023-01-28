@@ -686,7 +686,19 @@ static void recSafeExitExecution()
 
 	// Force an event test at the end of this block.
 	if (!eeEventTestIsActive)
+	{
+		// EE is running.
 		cpuRegs.nextEventCycle = 0;
+	}
+	else
+	{
+		// IOP might be running, so break out if so.
+		if (psxRegs.iopCycleEE > 0)
+		{
+			psxRegs.iopBreak += psxRegs.iopCycleEE; // record the number of cycles the IOP didn't run.
+			psxRegs.iopCycleEE = 0;
+		}
+	}
 }
 
 static void recResetEE()

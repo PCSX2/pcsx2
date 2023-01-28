@@ -209,6 +209,11 @@ void VMManager::SetState(VMState state)
 		else
 			Host::OnVMResumed();
 	}
+	else if (state == VMState::Stopping)
+	{
+		// If stopping, break execution as soon as possible.
+		Cpu->ExitExecution();
+	}
 }
 
 bool VMManager::HasValidVM()
