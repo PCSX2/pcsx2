@@ -12041,7 +12041,8 @@ SLES-51192:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes blurry textures.
+    trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51193:
@@ -12050,7 +12051,8 @@ SLES-51193:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes blurry textures.
+    trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51194:
@@ -12059,7 +12061,8 @@ SLES-51194:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes blurry textures.
+    trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51195:
@@ -12068,7 +12071,8 @@ SLES-51195:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes blurry textures.
+    trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51196:
@@ -12077,7 +12081,8 @@ SLES-51196:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes blurry textures.
+    trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51197:
@@ -12131,7 +12136,8 @@ SLES-51214:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes blurry textures.
+    trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51215:
@@ -12140,7 +12146,8 @@ SLES-51215:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes blurry textures.
+    trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51216:
@@ -12149,7 +12156,8 @@ SLES-51216:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes blurry textures.
+    trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51217:
@@ -12158,7 +12166,8 @@ SLES-51217:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes blurry textures.
+    trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51218:
@@ -12167,7 +12176,8 @@ SLES-51218:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes blurry textures.
+    trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51219:
@@ -12176,7 +12186,8 @@ SLES-51219:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes blurry textures.
+    trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
 SLES-51220:
@@ -25784,7 +25795,8 @@ SLPM-62241:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes blurry textures.
+    trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLPM-62244:
   name: "Choro Q HG 3"
@@ -26570,7 +26582,8 @@ SLPM-62513:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes blurry textures.
+    trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLPM-62514:
   name: "Sim People [EA Best Hits]"
@@ -27408,7 +27421,8 @@ SLPM-64528:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes blurry textures.
+    trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLPM-64532:
   name: "Digital Holmes"
@@ -34761,7 +34775,8 @@ SLPM-68005:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes blurry textures.
+    trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLPM-68018:
   name: "Virtua Fighter - 10th Anniversary Edition"
@@ -35755,7 +35770,8 @@ SLPS-20234:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes blurry textures.
+    trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLPS-20239:
   name: "Jissen Pachi-Slot Hisshouhou! Moujuuou S [Limited Edition]"
@@ -39784,6 +39800,9 @@ SLPS-25914:
 SLPS-25915:
   name: "King of Fighters 2002, The - Unlimited Match"
   region: "NTSC-J"
+SLPS-25916:
+  name: "Shinjuku no Ookami"
+  region: "NTSC-J"
 SLPS-25917:
   name: "Sacred Blaze"
   region: "NTSC-J"
@@ -43039,7 +43058,8 @@ SLUS-20576:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes blurry textures.
+    trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLUS-20577:
   name: "Drome Racers"
