@@ -16,6 +16,12 @@
 #include "common/emitter/internal.h"
 #include "common/emitter/tools.h"
 
+// warning: suggest braces around initialization of subobject [-Wmissing-braces]
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-braces"
+#endif
+
 namespace x86Emitter
 {
 	const xImplAVX_Move xVMOVAPS = {0x00, 0x28, 0x29};
