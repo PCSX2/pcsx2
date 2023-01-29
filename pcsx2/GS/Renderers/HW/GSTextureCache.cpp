@@ -700,7 +700,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 		// From a performance point of view, it might cost a little on big upscaling
 		// but normally few RT are miss so it must remain reasonable.
 		bool supported_fmt = !GSConfig.UserHacks_DisableDepthSupport || psm_s.depth == 0;
-		if (preload && TEX0.TBW > 0 && supported_fmt)
+		if ((is_frame || preload) && TEX0.TBW > 0 && supported_fmt)
 		{
 			GL_INS("Preloading the RT DATA");
 			// RT doesn't have height but if we use a too big value, we will read outside of the GS memory.
