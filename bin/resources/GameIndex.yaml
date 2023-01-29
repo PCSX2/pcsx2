@@ -36452,7 +36452,7 @@ SLPS-20489:
   name: "Simple 2000 Series Vol. 114 - The Onna Okappichi Torimonochou - Oharu-chan GoGoGo!"
   region: "NTSC-J"
   gsHWFixes:
-    preloadFrameData: 1 # Fixes black screen in-game.
+    disableDepthSupport: 1 # Fixes black screen in-game.
     getSkipCount: "GSC_Simple2000Vol114"
 SLPS-20490:
   name: "Pachi-Slot Club Collection - IM Juggler EX - Juggler Selection"

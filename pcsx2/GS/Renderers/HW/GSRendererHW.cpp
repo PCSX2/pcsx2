@@ -1704,7 +1704,7 @@ void GSRendererHW::Draw()
 
 	GSTextureCache::Target* rt = nullptr;
 	if (!no_rt)
-		rt = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::RenderTarget, true, fm, false, 0, 0, preload);
+		rt = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::RenderTarget, true, fm, false, unscaled_size.x, unscaled_size.y, preload);
 
 	TEX0.TBP0 = context->ZBUF.Block();
 	TEX0.TBW = context->FRAME.FBW;

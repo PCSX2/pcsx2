@@ -147,6 +147,8 @@ void GSState::Reset(bool hardware_reset)
 
 	m_env.Reset();
 
+	m_draw_transfers.clear();
+
 	PRIM = &m_env.PRIM;
 
 	UpdateContext();
@@ -1984,7 +1986,11 @@ void GSState::Write(const u8* mem, int len)
 	if (!m_tr.Update(w, h, psm.trbpp, len))
 		return;
 
-	
+	if (GSConfig.PreloadFrameWithGSData)
+	{
+		// Store the transfer for preloading new RT's.
+		m_draw_transfers.push_front(blit);
+	}
 
 	GIFRegTEX0& prev_tex0 = m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0;
 
