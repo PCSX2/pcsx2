@@ -198,6 +198,7 @@ public:
 		GSVector4i m_valid;
 		const bool m_depth_supported;
 		bool m_dirty_alpha;
+		bool m_is_frame;
 
 	public:
 		Target(const GIFRegTEX0& TEX0, const bool depth_supported, const int type);
@@ -352,6 +353,7 @@ public:
 	void Read(Target* t, const GSVector4i& r);
 	void Read(Source* t, const GSVector4i& r);
 	void RemoveAll();
+	void InvalidateFrameAge();
 	void RemovePartial();
 	void AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw);
 

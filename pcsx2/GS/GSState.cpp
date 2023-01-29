@@ -56,10 +56,12 @@ GSState::GSState()
 	memset(&m_v, 0, sizeof(m_v));
 	memset(&m_vertex, 0, sizeof(m_vertex));
 	memset(&m_index, 0, sizeof(m_index));
-
+	memset(m_mem.m_vm8, 0, m_mem.m_vmsize);
 	m_v.RGBAQ.Q = 1.0f;
 
 	GrowVertexBuffer();
+
+	m_draw_transfers.clear();
 
 	m_sssize = 0;
 
@@ -140,14 +142,10 @@ void GSState::Reset(bool hardware_reset)
 	Flush(GSFlushReason::RESET);
 
 	// FIXME: bios logo not shown cut in half after reset, missing graphics in GoW after first FMV
-	if (hardware_reset)
-		memset(m_mem.m_vm8, 0, m_mem.m_vmsize);
 	memset(&m_path, 0, sizeof(m_path));
 	memset(&m_v, 0, sizeof(m_v));
 
 	m_env.Reset();
-
-	m_draw_transfers.clear();
 
 	PRIM = &m_env.PRIM;
 
@@ -1986,12 +1984,6 @@ void GSState::Write(const u8* mem, int len)
 	if (!m_tr.Update(w, h, psm.trbpp, len))
 		return;
 
-	if (GSConfig.PreloadFrameWithGSData)
-	{
-		// Store the transfer for preloading new RT's.
-		m_draw_transfers.push_front(blit);
-	}
-
 	GIFRegTEX0& prev_tex0 = m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0;
 
 	const u32 write_start_bp = m_mem.m_psm[blit.DPSM].info.bn(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, blit.DBP, blit.DBW); // (m_mem.*psm.pa)(static_cast<int>(m_env.TRXPOS.DSAX), static_cast<int>(m_env.TRXPOS.DSAY), blit.DBP, blit.DBW) >> 6;
@@ -2005,6 +1997,13 @@ void GSState::Write(const u8* mem, int len)
 	}
 	// Invalid the CLUT if it crosses paths.
 	m_mem.m_clut.InvalidateRange(write_start_bp, write_end_bp);
+
+	if (GSConfig.PreloadFrameWithGSData)
+	{
+		// Store the transfer for preloading new RT's.
+		if(m_draw_transfers.size() == 0 || (m_draw_transfers.size() > 0 && blit.DBP != m_draw_transfers.front().DBP))
+			m_draw_transfers.push_front(blit);
+	}
 
 	GL_CACHE("Write! ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d)",
 			 blit.DBP, blit.DBW, psm_str(blit.DPSM),
