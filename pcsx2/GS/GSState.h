@@ -222,6 +222,7 @@ public:
 	bool m_mipmap;
 	u32 m_dirty_gs_regs;
 	int m_backed_up_ctx;
+	std::list<GIFRegBITBLTBUF> m_draw_transfers;
 
 	static int s_n;
 
