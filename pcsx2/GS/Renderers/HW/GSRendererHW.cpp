@@ -202,16 +202,17 @@ void GSRendererHW::VSync(u32 field, bool registers_written)
 {
 	if (m_reset)
 	{
-		m_tc->RemoveAll();
+		m_tc->InvalidateFrameAge();
 		m_reset = false;
 	}
 
 	if (GSConfig.LoadTextureReplacements)
 		GSTextureReplacements::ProcessAsyncLoadedTextures();
 
+	m_tc->IncAge();
+
 	GSRenderer::VSync(field, registers_written);
 
-	m_tc->IncAge();
 
 	if (m_tc->GetHashCacheMemoryUsage() > 1024 * 1024 * 1024)
 	{

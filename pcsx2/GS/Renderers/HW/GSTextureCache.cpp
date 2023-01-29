@@ -61,6 +61,19 @@ void GSTextureCache::RemovePartial()
 	}
 }
 
+// Causes old frames to be flushed
+void GSTextureCache::InvalidateFrameAge()
+{
+	for (int type = 0; type < 2; type++)
+	{
+		for (auto t : m_dst[type])
+		{
+			if (t->m_is_frame)
+				t->m_age = 9999;
+		}
+	}
+}
+
 void GSTextureCache::RemoveAll()
 {
 	m_src.RemoveAll();
@@ -728,8 +741,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 				AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW);
 				dst->Update(true);
 			}
+			static_cast<GSRendererHW*>(g_gs_renderer.get())->m_draw_transfers.clear();
 		}
-		static_cast<GSRendererHW*>(g_gs_renderer.get())->m_draw_transfers.clear();
 	}
 	if (used)
 	{
@@ -737,6 +750,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 	}
 	if (is_frame)
 		dst->m_dirty_alpha = false;
+	dst->m_is_frame |= is_frame;
+
 	assert(dst && dst->m_texture && dst->m_texture->GetScale() == new_s);
 	assert(dst && dst->m_dirty.empty());
 	return dst;
