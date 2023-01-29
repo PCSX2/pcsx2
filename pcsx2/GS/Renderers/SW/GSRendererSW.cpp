@@ -173,8 +173,14 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 
 		const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[DISPFB.PSM];
 
+		// Display doesn't use texa, and instead uses the equivalent of this
+		GIFRegTEXA texa = {};
+		texa.AEM = 0;
+		texa.TA0 = (DISPFB.PSM == PSM_PSMCT24 || DISPFB.PSM == PSM_PSGPU24) ? 0x80 : 0;
+		texa.TA1 = 0x80;
+
 		// Top left rect
-		psm.rtx(m_mem, m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), r.ralign<Align_Outside>(psm.bs), m_output, pitch, m_env.TEXA);
+		psm.rtx(m_mem, m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), r.ralign<Align_Outside>(psm.bs), m_output, pitch, texa);
 
 		int top = (h_wrap) ? ((r.bottom - r.top) * pitch) : 0;
 		int left = (w_wrap) ? (r.right - r.left) * (GSLocalMemory::m_psm[DISPFB.PSM].bpp / 8) : 0;
@@ -183,18 +189,18 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 
 		// Top right rect
 		if (w_wrap)
-			psm.rtx(m_mem, m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), rw.ralign<Align_Outside>(psm.bs), &m_output[left], pitch, m_env.TEXA);
+			psm.rtx(m_mem, m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), rw.ralign<Align_Outside>(psm.bs), &m_output[left], pitch, texa);
 
 		// Bottom left rect
 		if (h_wrap)
-			psm.rtx(m_mem, m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), rh.ralign<Align_Outside>(psm.bs), &m_output[top], pitch, m_env.TEXA);
+			psm.rtx(m_mem, m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), rh.ralign<Align_Outside>(psm.bs), &m_output[top], pitch, texa);
 
 		// Bottom right rect
 		if (h_wrap && w_wrap)
 		{
 			// Needs also rw with the start/end height of rh, fills in the bottom right rect which will be missing if both overflow.
 			const GSVector4i rwh(rw.left, rh.top, rw.right, rh.bottom);
-			psm.rtx(m_mem, m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), rwh.ralign<Align_Outside>(psm.bs), &m_output[top + left], pitch, m_env.TEXA);
+			psm.rtx(m_mem, m_mem.GetOffset(DISPFB.Block(), DISPFB.FBW, DISPFB.PSM), rwh.ralign<Align_Outside>(psm.bs), &m_output[top + left], pitch, texa);
 		}
 
 		m_texture[i]->Update(out_r, m_output, pitch);
