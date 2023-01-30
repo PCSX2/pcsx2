@@ -191,7 +191,7 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	m_ui.settingsContainer->setCurrentIndex(0);
 	m_ui.helpText->setText(m_category_help_text[0]);
 	connect(m_ui.settingsCategory, &QListWidget::currentRowChanged, this, &SettingsDialog::onCategoryCurrentRowChanged);
-	connect(m_ui.closeButton, &QPushButton::clicked, this, &SettingsDialog::accept);
+	connect(m_ui.closeButton, &QPushButton::clicked, this, &SettingsDialog::close);
 	connect(m_ui.restoreDefaultsButton, &QPushButton::clicked, this, &SettingsDialog::onRestoreDefaultsClicked);
 }
 
