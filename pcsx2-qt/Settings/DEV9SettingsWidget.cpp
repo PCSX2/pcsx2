@@ -686,7 +686,7 @@ void DEV9SettingsWidget::onEthHostEdit(QStandardItem* item)
 
 void DEV9SettingsWidget::onHddEnabledChanged(int state)
 {
-	const bool enabled = state == Qt::CheckState::PartiallyChecked ? m_dialog->getEffectiveBoolValue("DEV9/Hdd", "HddEnable", false) : state;
+	const bool enabled = state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("DEV9/Hdd", "HddEnable", false) : state;
 
 	m_ui.hddFile->setEnabled(enabled);
 	m_ui.hddFileLabel->setEnabled(enabled);
