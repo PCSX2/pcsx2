@@ -49,7 +49,11 @@ private Q_SLOTS:
 	void onHddBrowseFileClicked();
 	void onHddFileEdit();
 	void onHddSizeSlide(int i);
-	void onHddSizeSpin(int i);
+	// Per game only.
+	void onHddSizeSliderContext(const QPoint& pt);
+	void onHddSizeSliderReset(bool checked = false);
+	//
+	void onHddSizeAccessorSpin();
 	void onHddCreateClicked();
 
 public:
