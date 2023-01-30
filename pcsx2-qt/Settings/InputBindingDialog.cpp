@@ -17,12 +17,15 @@
 
 #include "QtHost.h"
 #include "QtUtils.h"
+#include "Settings/ControllerSettingWidgetBinder.h"
 #include "Settings/InputBindingDialog.h"
 #include "Settings/InputBindingWidget.h"
 #include <QtCore/QTimer>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QWheelEvent>
+
+#include "fmt/format.h"
 
 // _BitScanForward()
 #include "pcsx2/GS/GSIntrin.h"
@@ -45,6 +48,26 @@ InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo:
 	connect(m_ui.clearBindings, &QPushButton::clicked, this, &InputBindingDialog::onClearBindingsButtonClicked);
 	connect(m_ui.buttonBox, &QDialogButtonBox::rejected, [this]() { done(0); });
 	updateList();
+
+	// Only show the sensitivity controls for binds where it's applicable.
+	if (bind_type == InputBindingInfo::Type::Button || bind_type == InputBindingInfo::Type::Axis ||
+		bind_type == InputBindingInfo::Type::HalfAxis)
+	{
+		ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(
+			sif, m_ui.sensitivity, m_section_name, fmt::format("{}Scale", m_key_name), 100.0f, 1.0f);
+		ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(
+			sif, m_ui.deadzone, m_section_name, fmt::format("{}Deadzone", m_key_name), 100.0f, 0.0f);
+
+		connect(m_ui.sensitivity, &QSlider::valueChanged, this, &InputBindingDialog::onSensitivityChanged);
+		connect(m_ui.deadzone, &QSlider::valueChanged, this, &InputBindingDialog::onDeadzoneChanged);
+
+		onSensitivityChanged(m_ui.sensitivity->value());
+		onDeadzoneChanged(m_ui.deadzone->value());
+	}
+	else
+	{
+		m_ui.verticalLayout->removeWidget(m_ui.sensitivityWidget);
+	}
 }
 
 InputBindingDialog::~InputBindingDialog()
@@ -316,6 +339,16 @@ void InputBindingDialog::inputManagerHookCallback(InputBindingKey key, float val
 		key_to_add.invert = reverse_threshold;
 		m_new_bindings.push_back(key_to_add);
 	}
+}
+
+void InputBindingDialog::onSensitivityChanged(int value)
+{
+	m_ui.sensitivityValue->setText(tr("%1%").arg(value));
+}
+
+void InputBindingDialog::onDeadzoneChanged(int value)
+{
+	m_ui.deadzoneValue->setText(tr("%1%").arg(value));
 }
 
 void InputBindingDialog::hookInputManager()
