@@ -317,6 +317,8 @@ void ipuSoftReset()
 	memzero(g_BP);
 
 	coded_block_pattern = 0;
+	g_ipu_thresh[0] = 0;
+	g_ipu_thresh[1] = 0;
 
 	ipuRegs.ctrl.reset();
 	ipuRegs.top = 0;
