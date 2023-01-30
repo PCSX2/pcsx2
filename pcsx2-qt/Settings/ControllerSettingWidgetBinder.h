@@ -38,7 +38,8 @@ namespace ControllerSettingWidgetBinder
 {
 	/// Interface specific method of BindWidgetToBoolSetting().
 	template <typename WidgetType>
-	static void BindWidgetToInputProfileBool(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, bool default_value)
+	static void BindWidgetToInputProfileBool(
+		SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, bool default_value)
 	{
 		using Accessor = SettingWidgetBinder::SettingAccessor<WidgetType>;
 
@@ -68,19 +69,53 @@ namespace ControllerSettingWidgetBinder
 		}
 	}
 
+	/// Interface specific method of BindWidgetToIntSetting().
+	template <typename WidgetType>
+	static void BindWidgetToInputProfileInt(
+		SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, s32 default_value, s32 option_offset = 0)
+	{
+		using Accessor = SettingWidgetBinder::SettingAccessor<WidgetType>;
+
+		if (sif)
+		{
+			const s32 value = sif->GetIntValue(section.c_str(), key.c_str(), default_value);
+			Accessor::setIntValue(widget, value - option_offset);
+
+			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key), option_offset]() {
+				const float new_value = Accessor::getIntValue(widget);
+				sif->SetIntValue(section.c_str(), key.c_str(), new_value + option_offset);
+				sif->Save();
+				g_emu_thread->reloadGameSettings();
+			});
+		}
+		else
+		{
+			const s32 value = Host::GetBaseIntSettingValue(section.c_str(), key.c_str(), default_value);
+			Accessor::setIntValue(widget, value - option_offset);
+
+			Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key), option_offset]() {
+				const s32 new_value = Accessor::getIntValue(widget);
+				Host::SetBaseIntSettingValue(section.c_str(), key.c_str(), new_value + option_offset);
+				Host::CommitBaseSettingChanges();
+				g_emu_thread->applySettings();
+			});
+		}
+	}
+
 	/// Interface specific method of BindWidgetToFloatSetting().
 	template <typename WidgetType>
-	static void BindWidgetToInputProfileFloat(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, float default_value)
+	static void BindWidgetToInputProfileFloat(
+		SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, float default_value, float multiplier = 1.0f)
 	{
 		using Accessor = SettingWidgetBinder::SettingAccessor<WidgetType>;
 
 		if (sif)
 		{
 			const float value = sif->GetFloatValue(section.c_str(), key.c_str(), default_value);
-			Accessor::setFloatValue(widget, value);
+			Accessor::setFloatValue(widget, value * multiplier);
 
-			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key)]() {
-				const float new_value = Accessor::getFloatValue(widget);
+			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key), multiplier]() {
+				const float new_value = Accessor::getFloatValue(widget) / multiplier;
 				sif->SetFloatValue(section.c_str(), key.c_str(), new_value);
 				sif->Save();
 				g_emu_thread->reloadGameSettings();
@@ -89,10 +124,10 @@ namespace ControllerSettingWidgetBinder
 		else
 		{
 			const float value = Host::GetBaseFloatSettingValue(section.c_str(), key.c_str(), default_value);
-			Accessor::setFloatValue(widget, value);
+			Accessor::setFloatValue(widget, value * multiplier);
 
-			Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key)]() {
-				const float new_value = Accessor::getFloatValue(widget);
+			Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key), multiplier]() {
+				const float new_value = Accessor::getFloatValue(widget) / multiplier;
 				Host::SetBaseFloatSettingValue(section.c_str(), key.c_str(), new_value);
 				Host::CommitBaseSettingChanges();
 				g_emu_thread->applySettings();
@@ -160,7 +195,8 @@ namespace ControllerSettingWidgetBinder
 		}
 		else
 		{
-			const QString value(QString::fromStdString(Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value.c_str())));
+			const QString value(
+				QString::fromStdString(Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value.c_str())));
 
 			Accessor::setStringValue(widget, value);
 

@@ -500,8 +500,6 @@ static std::tuple<QString, QString> getPrefixAndSuffixForIntFormat(const QString
 	return std::tie(prefix, suffix);
 }
 
-#if 0
-// Unused until we handle multiplier below.
 static std::tuple<QString, QString, int> getPrefixAndSuffixForFloatFormat(const QString& format)
 {
 	QString prefix, suffix;
@@ -529,7 +527,6 @@ static std::tuple<QString, QString, int> getPrefixAndSuffixForFloatFormat(const 
 
 	return std::tie(prefix, suffix, decimals);
 }
-#endif
 
 void ControllerCustomSettingsWidget::createSettingWidgets(const char* translation_ctx, QWidget* widget_parent, QGridLayout* layout)
 {
@@ -566,7 +563,8 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 					sb->setPrefix(prefix);
 					sb->setSuffix(suffix);
 				}
-				SettingWidgetBinder::BindWidgetToIntSetting(sif, sb, m_config_section, std::move(key_name), si.IntegerDefaultValue());
+				ControllerSettingWidgetBinder::BindWidgetToInputProfileInt(
+					sif, sb, m_config_section, std::move(key_name), si.IntegerDefaultValue());
 				layout->addWidget(new QLabel(qApp->translate(translation_ctx, si.display_name), widget_parent), current_row, 0);
 				layout->addWidget(sb, current_row, 1, 1, 3);
 				current_row++;
@@ -579,7 +577,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 				cb->setObjectName(QString::fromUtf8(si.name));
 				for (u32 i = 0; si.options[i] != nullptr; i++)
 					cb->addItem(qApp->translate(translation_ctx, si.options[i]));
-				SettingWidgetBinder::BindWidgetToIntSetting(
+				ControllerSettingWidgetBinder::BindWidgetToInputProfileInt(
 					sif, cb, m_config_section, std::move(key_name), si.IntegerDefaultValue(), si.IntegerMinValue());
 				layout->addWidget(new QLabel(qApp->translate(translation_ctx, si.display_name), widget_parent), current_row, 0);
 				layout->addWidget(cb, current_row, 1, 1, 3);
@@ -591,11 +589,10 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 			{
 				QDoubleSpinBox* sb = new QDoubleSpinBox(widget_parent);
 				sb->setObjectName(QString::fromUtf8(si.name));
-				sb->setMinimum(si.FloatMinValue());
-				sb->setMaximum(si.FloatMaxValue());
-				sb->setSingleStep(si.FloatStepValue());
-#if 0
-				// We can't use this until we handle multiplier.
+				sb->setMinimum(si.FloatMinValue() * si.multiplier);
+				sb->setMaximum(si.FloatMaxValue() * si.multiplier);
+				sb->setSingleStep(si.FloatStepValue() * si.multiplier);
+
 				if (si.format)
 				{
 					const auto [prefix, suffix, decimals] = getPrefixAndSuffixForFloatFormat(QString::fromUtf8(si.format));
@@ -604,8 +601,9 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 						sb->setDecimals(decimals);
 					sb->setSuffix(suffix);
 				}
-#endif
-				SettingWidgetBinder::BindWidgetToFloatSetting(sif, sb, m_config_section, std::move(key_name), si.FloatDefaultValue());
+
+				ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(
+					sif, sb, m_config_section, std::move(key_name), si.FloatDefaultValue(), si.multiplier);
 				layout->addWidget(new QLabel(qApp->translate(translation_ctx, si.display_name), widget_parent), current_row, 0);
 				layout->addWidget(sb, current_row, 1, 1, 3);
 				current_row++;
@@ -616,7 +614,8 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 			{
 				QLineEdit* le = new QLineEdit(widget_parent);
 				le->setObjectName(QString::fromUtf8(si.name));
-				SettingWidgetBinder::BindWidgetToStringSetting(sif, le, m_config_section, std::move(key_name), si.StringDefaultValue());
+				ControllerSettingWidgetBinder::BindWidgetToInputProfileString(
+					sif, le, m_config_section, std::move(key_name), si.StringDefaultValue());
 				layout->addWidget(new QLabel(qApp->translate(translation_ctx, si.display_name), widget_parent), current_row, 0);
 				layout->addWidget(le, current_row, 1, 1, 3);
 				current_row++;
@@ -638,7 +637,8 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 					for (u32 i = 0; si.options[i] != nullptr; i++)
 						cb->addItem(qApp->translate(translation_ctx, si.options[i]), QString::fromUtf8(si.options[i]));
 				}
-				SettingWidgetBinder::BindWidgetToStringSetting(sif, cb, m_config_section, std::move(key_name), si.StringDefaultValue());
+				ControllerSettingWidgetBinder::BindWidgetToInputProfileString(
+					sif, cb, m_config_section, std::move(key_name), si.StringDefaultValue());
 				layout->addWidget(new QLabel(qApp->translate(translation_ctx, si.display_name), widget_parent), current_row, 0);
 				layout->addWidget(cb, current_row, 1, 1, 3);
 				current_row++;
@@ -650,7 +650,8 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 				QLineEdit* le = new QLineEdit(widget_parent);
 				le->setObjectName(QString::fromUtf8(si.name));
 				QPushButton* browse_button = new QPushButton(tr("Browse..."), widget_parent);
-				SettingWidgetBinder::BindWidgetToStringSetting(sif, le, m_config_section, std::move(key_name), si.StringDefaultValue());
+				ControllerSettingWidgetBinder::BindWidgetToInputProfileString(
+					sif, le, m_config_section, std::move(key_name), si.StringDefaultValue());
 				connect(browse_button, &QPushButton::clicked, [this, le]() {
 					const QString path(QDir::toNativeSeparators(QFileDialog::getOpenFileName(this, tr("Select File"))));
 					if (!path.isEmpty())
@@ -722,7 +723,7 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 			{
 				QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QString::fromStdString(si.name));
 				if (widget)
-					widget->setValue(si.FloatDefaultValue());
+					widget->setValue(si.FloatDefaultValue() * si.multiplier);
 			}
 			break;
 
