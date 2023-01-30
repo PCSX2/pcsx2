@@ -40,6 +40,7 @@ namespace PAD
 		u8 m_button_pressure[NUM_CONTROLLER_PORTS][MAX_KEYS];
 		PADAnalog m_analog[NUM_CONTROLLER_PORTS];
 		float m_axis_scale[NUM_CONTROLLER_PORTS][2];
+		float m_trigger_scale[NUM_CONTROLLER_PORTS][2];
 		float m_vibration_scale[NUM_CONTROLLER_PORTS][2];
 		float m_pressure_modifier[NUM_CONTROLLER_PORTS];
 		float m_button_deadzone[NUM_CONTROLLER_PORTS];
@@ -65,6 +66,11 @@ namespace PAD
 		{
 			m_axis_scale[pad][0] = deadzone;
 			m_axis_scale[pad][1] = scale;
+		}
+		__fi void SetTriggerScale(u32 pad, float deadzone, float scale)
+		{
+			m_trigger_scale[pad][0] = deadzone;
+			m_trigger_scale[pad][1] = scale;
 		}
 		__fi float GetVibrationScale(u32 pad, u32 motor) const { return m_vibration_scale[pad][motor]; }
 		__fi void SetVibrationScale(u32 pad, u32 motor, float scale) { m_vibration_scale[pad][motor] = scale; }
