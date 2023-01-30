@@ -217,8 +217,11 @@ void PAD::LoadConfig(const SettingsInterface& si)
 
 		const float axis_deadzone = si.GetFloatValue(section.c_str(), "Deadzone", DEFAULT_STICK_DEADZONE);
 		const float axis_scale = si.GetFloatValue(section.c_str(), "AxisScale", DEFAULT_STICK_SCALE);
+		const float trigger_deadzone = si.GetFloatValue(section.c_str(), "TriggerDeadzone", DEFAULT_TRIGGER_DEADZONE);
+		const float trigger_scale = si.GetFloatValue(section.c_str(), "TriggerDeadzone", DEFAULT_TRIGGER_SCALE);
 		const float button_deadzone = si.GetFloatValue(section.c_str(), "ButtonDeadzone", DEFAULT_BUTTON_DEADZONE);
 		g_key_status.SetAxisScale(i, axis_deadzone, axis_scale);
+		g_key_status.SetTriggerScale(i, trigger_deadzone, trigger_scale);
 		g_key_status.SetButtonDeadzone(i, button_deadzone);
 
 		if (ci->vibration_caps != VibrationCapabilities::NoVibration)
@@ -415,6 +418,12 @@ static const SettingInfo s_dualshock2_settings[] = {
 		"Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent "
 		"controllers, e.g. DualShock 4, Xbox One Controller.",
 		"1.33", "0.01", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
+	{SettingInfo::Type::Float, "TriggerDeadzone", "Trigger Deadzone",
+		"Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.",
+		"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
+	{SettingInfo::Type::Float, "TriggerScale", "Trigger Sensitivity",
+		"Sets the trigger scaling factor.",
+		"1.00", "0.01", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "LargeMotorScale", "Large Motor Vibration Scale",
 		"Increases or decreases the intensity of low frequency vibration sent by the game.",
 		"1.00", "0.00", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
@@ -564,14 +573,6 @@ void PAD::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 
 		if (copy_pad_config)
 		{
-			dest_si->CopyFloatValue(src_si, section.c_str(), "AxisScale");
-
-			if (info->vibration_caps != VibrationCapabilities::NoVibration)
-			{
-				dest_si->CopyFloatValue(src_si, section.c_str(), "LargeMotorScale");
-				dest_si->CopyFloatValue(src_si, section.c_str(), "SmallMotorScale");
-			}
-
 			for (u32 i = 0; i < info->num_settings; i++)
 			{
 				const SettingInfo& csi = info->settings[i];

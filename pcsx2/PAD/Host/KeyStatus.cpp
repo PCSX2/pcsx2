@@ -55,6 +55,29 @@ void KeyStatus::Init()
 
 void KeyStatus::Set(u32 pad, u32 index, float value)
 {
+	// Since we reordered the buttons for better UI, we need to remap them here.
+	static constexpr std::array<u8, MAX_KEYS> bitmask_mapping = {{
+		12, // PAD_UP
+		13, // PAD_RIGHT
+		14, // PAD_DOWN
+		15, // PAD_LEFT
+		4, // PAD_TRIANGLE
+		5, // PAD_CIRCLE
+		6, // PAD_CROSS
+		7, // PAD_SQUARE
+		8, // PAD_SELECT
+		11, // PAD_START
+		2, // PAD_L1
+		0, // PAD_L2
+		3, // PAD_R1
+		1, // PAD_R2
+		9, // PAD_L3
+		10, // PAD_R3
+		16, // PAD_ANALOG
+		17, // PAD_PRESSURE
+		// remainder are analogs and not used here
+	}};
+
 	if (IsAnalogKey(index))
 	{
 		m_button_pressure[pad][index] = static_cast<u8>(std::clamp(value * m_axis_scale[pad][1] * 255.0f, 0.0f, 255.0f));
@@ -123,37 +146,23 @@ void KeyStatus::Set(u32 pad, u32 index, float value)
 			}
 #undef MERGE_F
 		}
-
+	}
+	else if (IsTriggerKey(index))
+	{
+		const float s_value = std::clamp(value * m_trigger_scale[pad][1], 0.0f, 1.0f);
+		const float dz_value = (m_axis_scale[pad][0] > 0.0f && s_value < m_axis_scale[pad][0]) ? 0.0f : s_value;
+		m_button_pressure[pad][index] = static_cast<u8>(dz_value * 255.0f);
+		if (dz_value > 0.0f)
+			m_button[pad] &= ~(1u << bitmask_mapping[index]);
+		else
+			m_button[pad] |= (1u << bitmask_mapping[index]);
 	}
 	else
 	{
 		// Don't affect L2/R2, since they are analog on most pads.
-		const float pmod = ((m_button[pad] & (1u << PAD_PRESSURE)) == 0 && !IsTriggerKey(index)) ? m_pressure_modifier[pad] : 1.0f;
+		const float pmod = ((m_button[pad] & (1u << PAD_PRESSURE)) == 0) ? m_pressure_modifier[pad] : 1.0f;
 		const float dz_value = (value < m_button_deadzone[pad]) ? 0.0f : value;
 		m_button_pressure[pad][index] = static_cast<u8>(std::clamp(dz_value * pmod * 255.0f, 0.0f, 255.0f));
-
-		// Since we reordered the buttons for better UI, we need to remap them here.
-		static constexpr std::array<u8, MAX_KEYS> bitmask_mapping = {{
-			12, // PAD_UP
-			13, // PAD_RIGHT
-			14, // PAD_DOWN
-			15, // PAD_LEFT
-			4, // PAD_TRIANGLE
-			5, // PAD_CIRCLE
-			6, // PAD_CROSS
-			7, // PAD_SQUARE
-			8, // PAD_SELECT
-			11, // PAD_START
-			2, // PAD_L1
-			0, // PAD_L2
-			3, // PAD_R1
-			1, // PAD_R2
-			9, // PAD_L3
-			10, // PAD_R3
-			16, // PAD_ANALOG
-			17, // PAD_PRESSURE
-			// remainder are analogs and not used here
-		}};
 
 		if (dz_value > 0.0f)
 			m_button[pad] &= ~(1u << bitmask_mapping[index]);
