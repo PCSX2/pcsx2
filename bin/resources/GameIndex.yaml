@@ -17075,6 +17075,9 @@ SLES-53402:
   name: "Taxi Rider"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Fixes road markings.
+    trilinearFiltering: 1 # Smooths the texture transitions.
   roundModes:
     eeRoundMode: 2 # Positive rounding fixes distant white models.
     vu1RoundMode: 2 # Positive rounding fixes close white models.
@@ -26486,6 +26489,9 @@ SLPM-62482:
 SLPM-62483:
   name: "Simple 2000 Series Vol. 48 - The Taxi - Untenshu ha Kimi da"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Fixes road markings.
+    trilinearFiltering: 1 # Smooths the texture transitions.
   roundModes:
     eeRoundMode: 2 # Positive rounding fixes distant white models.
     vu1RoundMode: 2 # Positive rounding fixes close white models.
