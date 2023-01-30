@@ -274,18 +274,27 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 
 	if (m_dialog->isPerGameSettings())
 	{
+		std::optional<int> sizeOpt = std::nullopt;
+		if (size > 0)
+			sizeOpt = size;
 		const int sizeGlobal = (u64)Host::GetBaseIntSettingValue("DEV9/Hdd", "HddSizeSectors", 0) * 512 / (1024 * 1024 * 1024);
-		m_ui.hddSizeSpinBox->setMinimum(39);
-		m_ui.hddSizeSpinBox->setSpecialValueText(tr("Global [%1]").arg(sizeGlobal));
+
+		SettingWidgetBinder::SettingAccessor<QSpinBox>::makeNullableInt(m_ui.hddSizeSpinBox, sizeGlobal);
+		SettingWidgetBinder::SettingAccessor<QSpinBox>::setNullableIntValue(m_ui.hddSizeSpinBox, sizeOpt);
+
+		m_ui.hddSizeSlider->setValue(sizeOpt.value_or(sizeGlobal));
+
+		m_ui.hddSizeSlider->setContextMenuPolicy(Qt::CustomContextMenu);
+		connect(m_ui.hddSizeSlider, &QSlider::customContextMenuRequested, this, &DEV9SettingsWidget::onHddSizeSliderContext);
+	}
+	else
+	{
+		m_ui.hddSizeSlider->setValue(size);
+		SettingWidgetBinder::SettingAccessor<QSpinBox>::setIntValue(m_ui.hddSizeSpinBox, size);
 	}
 
-	// clang-format off
-	m_ui.hddSizeSlider ->setValue(size);
-	m_ui.hddSizeSpinBox->setValue(size);
-
-	connect(m_ui.hddSizeSlider,  QOverload<int>::of(&QSlider ::valueChanged), this, &DEV9SettingsWidget::onHddSizeSlide);
-	connect(m_ui.hddSizeSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &DEV9SettingsWidget::onHddSizeSpin );
-	// clang-format on
+	connect(m_ui.hddSizeSlider, QOverload<int>::of(&QSlider::valueChanged), this, &DEV9SettingsWidget::onHddSizeSlide);
+	SettingWidgetBinder::SettingAccessor<QSpinBox>::connectValueChanged(m_ui.hddSizeSpinBox, [&]() { onHddSizeAccessorSpin(); });
 
 	connect(m_ui.hddCreate, &QPushButton::clicked, this, &DEV9SettingsWidget::onHddCreateClicked);
 }
@@ -749,22 +758,49 @@ void DEV9SettingsWidget::onHddFileEdit()
 
 void DEV9SettingsWidget::onHddSizeSlide(int i)
 {
+	// We have to call onHddSizeAccessorSpin() ourself, as the value could still be considered null when the valueChanged signal is fired
 	QSignalBlocker sb(m_ui.hddSizeSpinBox);
-	m_ui.hddSizeSpinBox->setValue(i);
-
-	m_dialog->setIntSettingValue("DEV9/Hdd", "HddSizeSectors", (int)((s64)i * 1024 * 1024 * 1024 / 512));
+	SettingWidgetBinder::SettingAccessor<QSpinBox>::setNullableIntValue(m_ui.hddSizeSpinBox, i);
+	onHddSizeAccessorSpin();
 }
 
-void DEV9SettingsWidget::onHddSizeSpin(int i)
+void DEV9SettingsWidget::onHddSizeSliderContext(const QPoint& pt)
 {
-	QSignalBlocker sb(m_ui.hddSizeSlider);
-	m_ui.hddSizeSlider->setValue(i);
+	QMenu menu(m_ui.hddSizeSlider);
+	connect(menu.addAction(qApp->translate("SettingWidgetBinder", "Reset")), &QAction::triggered, this, &DEV9SettingsWidget::onHddSizeSliderReset);
+	menu.exec(m_ui.hddSizeSlider->mapToGlobal(pt));
+}
 
-	//TODO: need a setUintSettingValue for if 48bit support occurs
-	if (i == 39)
-		m_dialog->setIntSettingValue("DEV9/Hdd", "HddSizeSectors", std::nullopt);
+void DEV9SettingsWidget::onHddSizeSliderReset([[maybe_unused]] bool checked)
+{
+	// We have to call onHddSizeAccessorSpin() ourself, as the value could still be considered non-null when the valueChanged signal is fired
+	QSignalBlocker sb(m_ui.hddSizeSpinBox);
+	SettingWidgetBinder::SettingAccessor<QSpinBox>::setNullableIntValue(m_ui.hddSizeSpinBox, std::nullopt);
+	onHddSizeAccessorSpin();
+}
+
+void DEV9SettingsWidget::onHddSizeAccessorSpin()
+{
+	//TODO: need a getUintValue for if 48bit support occurs
+	QSignalBlocker sb(m_ui.hddSizeSlider);
+	if (m_dialog->isPerGameSettings())
+	{
+		std::optional<int> new_value = SettingWidgetBinder::SettingAccessor<QSpinBox>::getNullableIntValue(m_ui.hddSizeSpinBox);
+
+		const int sizeGlobal = (u64)Host::GetBaseIntSettingValue("DEV9/Hdd", "HddSizeSectors", 0) * 512 / (1024 * 1024 * 1024);
+		m_ui.hddSizeSlider->setValue(new_value.value_or(sizeGlobal));
+
+		if (new_value.has_value())
+			m_dialog->setIntSettingValue("DEV9/Hdd", "HddSizeSectors", new_value.value() * (1024 * 1024 * 1024 / 512));
+		else
+			m_dialog->setIntSettingValue("DEV9/Hdd", "HddSizeSectors", std::nullopt);
+	}
 	else
-		m_dialog->setIntSettingValue("DEV9/Hdd", "HddSizeSectors", i * (1024 * 1024 * 1024 / 512));
+	{
+		const int new_value = SettingWidgetBinder::SettingAccessor<QSpinBox>::getIntValue(m_ui.hddSizeSpinBox);
+		m_ui.hddSizeSlider->setValue(new_value);
+		m_dialog->setIntSettingValue("DEV9/Hdd", "HddSizeSectors", new_value * (1024 * 1024 * 1024 / 512));
+	}
 }
 
 void DEV9SettingsWidget::onHddCreateClicked()
