@@ -703,8 +703,8 @@ void DEV9SettingsWidget::onHddBrowseFileClicked()
 {
 	QString path =
 		QDir::toNativeSeparators(QFileDialog::getSaveFileName(QtUtils::GetRootWidget(this), tr("HDD Image File"),
-			!m_ui.hddFile->text().isEmpty() ? m_ui.hddFile->text() : "DEV9hdd.raw", tr("HDD (*.raw)"), nullptr,
-			QFileDialog::DontConfirmOverwrite));
+			!m_ui.hddFile->text().isEmpty() ? m_ui.hddFile->text() : (!m_ui.hddFile->placeholderText().isEmpty() ? m_ui.hddFile->placeholderText() : "DEV9hdd.raw"),
+			tr("HDD (*.raw)"), nullptr, QFileDialog::DontConfirmOverwrite));
 
 	if (path.isEmpty())
 		return;
