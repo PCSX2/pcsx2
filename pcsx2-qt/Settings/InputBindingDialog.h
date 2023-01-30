@@ -41,6 +41,9 @@ protected Q_SLOTS:
 	void onInputListenTimerTimeout();
 	void inputManagerHookCallback(InputBindingKey key, float value);
 
+	void onSensitivityChanged(int value);
+	void onDeadzoneChanged(int value);
+
 protected:
 	enum : u32
 	{

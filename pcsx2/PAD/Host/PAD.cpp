@@ -504,7 +504,12 @@ void PAD::ClearPortBindings(SettingsInterface& si, u32 port)
 		return;
 
 	for (u32 i = 0; i < info->num_bindings; i++)
-		si.DeleteValue(section.c_str(), info->bindings[i].name);
+	{
+		const InputBindingInfo& bi = info->bindings[i];
+		si.DeleteValue(section.c_str(), bi.name);
+		si.DeleteValue(section.c_str(), fmt::format("{}Scale", bi.name).c_str());
+		si.DeleteValue(section.c_str(), fmt::format("{}Deadzone", bi.name).c_str());
+	}
 }
 
 void PAD::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_si,
@@ -543,6 +548,8 @@ void PAD::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 			{
 				const InputBindingInfo& bi = info->bindings[i];
 				dest_si->CopyStringListValue(src_si, section.c_str(), bi.name);
+				dest_si->CopyFloatValue(src_si, section.c_str(), fmt::format("{}Sensitivity", bi.name).c_str());
+				dest_si->CopyFloatValue(src_si, section.c_str(), fmt::format("{}Deadzone", bi.name).c_str());
 			}
 
 			for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
@@ -599,8 +606,8 @@ void PAD::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 }
 
 static u32 TryMapGenericMapping(SettingsInterface& si, const std::string& section,
-	const InputManager::GenericInputBindingMapping& mapping, GenericInputBinding generic_name,
-	const char* bind_name)
+	const InputManager::GenericInputBindingMapping& mapping, InputBindingInfo::Type bind_type,
+	GenericInputBinding generic_name, const char* bind_name)
 {
 	// find the mapping it corresponds to
 	const std::string* found_mapping = nullptr;
@@ -611,6 +618,14 @@ static u32 TryMapGenericMapping(SettingsInterface& si, const std::string& sectio
 			found_mapping = &it.second;
 			break;
 		}
+	}
+
+	// Remove previously-set binding scales.
+	if (bind_type == InputBindingInfo::Type::Button || bind_type == InputBindingInfo::Type::Axis ||
+		bind_type == InputBindingInfo::Type::HalfAxis)
+	{
+		si.DeleteValue(section.c_str(), fmt::format("{}Scale", bind_name).c_str());
+		si.DeleteValue(section.c_str(), fmt::format("{}Deadzone", bind_name).c_str());
 	}
 
 	if (found_mapping)
@@ -643,17 +658,17 @@ bool PAD::MapController(SettingsInterface& si, u32 controller,
 		if (bi.generic_mapping == GenericInputBinding::Unknown)
 			continue;
 
-		num_mappings += TryMapGenericMapping(si, section, mapping, bi.generic_mapping, bi.name);
+		num_mappings += TryMapGenericMapping(si, section, mapping, bi.bind_type, bi.generic_mapping, bi.name);
 	}
 	if (info->vibration_caps == VibrationCapabilities::LargeSmallMotors)
 	{
-		num_mappings += TryMapGenericMapping(si, section, mapping, GenericInputBinding::SmallMotor, "SmallMotor");
-		num_mappings += TryMapGenericMapping(si, section, mapping, GenericInputBinding::LargeMotor, "LargeMotor");
+		num_mappings += TryMapGenericMapping(si, section, mapping, InputBindingInfo::Type::Motor, GenericInputBinding::SmallMotor, "SmallMotor");
+		num_mappings += TryMapGenericMapping(si, section, mapping, InputBindingInfo::Type::Motor, GenericInputBinding::LargeMotor, "LargeMotor");
 	}
 	else if (info->vibration_caps == VibrationCapabilities::SingleMotor)
 	{
-		if (TryMapGenericMapping(si, section, mapping, GenericInputBinding::LargeMotor, "Motor") == 0)
-			num_mappings += TryMapGenericMapping(si, section, mapping, GenericInputBinding::SmallMotor, "Motor");
+		if (TryMapGenericMapping(si, section, mapping, InputBindingInfo::Type::Motor, GenericInputBinding::LargeMotor, "Motor") == 0)
+			num_mappings += TryMapGenericMapping(si, section, mapping, InputBindingInfo::Type::Motor, GenericInputBinding::SmallMotor, "Motor");
 		else
 			num_mappings++;
 	}
