@@ -42,10 +42,12 @@
 ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSettingsDialog* dialog, u32 port)
 	: QWidget(parent)
 	, m_dialog(dialog)
-	, m_config_section(StringUtil::StdStringFromFormat("Pad%u", port + 1u))
+	, m_config_section(fmt::format("Pad{}", port + 1))
 	, m_port_number(port)
 {
 	m_ui.setupUi(this);
+	m_ui.groupBox->setTitle(tr("Controller Port %1").arg(port + 1));
+
 	populateControllerTypes();
 	onTypeChanged();
 
@@ -113,10 +115,9 @@ void ControllerBindingWidget::onTypeChanged()
 
 	if (has_settings)
 	{
-		const QString settings_title(tr("%1 Settings").arg(qApp->translate("PAD", cinfo->display_name)));
 		const gsl::span<const SettingInfo> settings(cinfo->settings, cinfo->num_settings);
-		m_settings_widget = new ControllerCustomSettingsWidget(
-			settings, m_config_section, std::string(), settings_title, cinfo->name, getDialog(), m_ui.stackedWidget);
+		m_settings_widget =
+			new ControllerCustomSettingsWidget(settings, m_config_section, std::string(), cinfo->name, getDialog(), m_ui.stackedWidget);
 		m_ui.stackedWidget->addWidget(m_settings_widget);
 	}
 
@@ -458,8 +459,7 @@ void ControllerMacroEditWidget::updateBinds()
 //////////////////////////////////////////////////////////////////////////
 
 ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(gsl::span<const SettingInfo> settings, std::string config_section,
-	std::string config_prefix, const QString& group_title, const char* translation_ctx, ControllerSettingsDialog* dialog,
-	QWidget* parent_widget)
+	std::string config_prefix, const char* translation_ctx, ControllerSettingsDialog* dialog, QWidget* parent_widget)
 	: QWidget(parent_widget)
 	, m_settings(settings)
 	, m_config_section(std::move(config_section))
@@ -469,22 +469,19 @@ ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(gsl::span<const S
 	if (settings.empty())
 		return;
 
-	QGroupBox* gbox = new QGroupBox(group_title, this);
-	QGridLayout* gbox_layout = new QGridLayout(gbox);
-	createSettingWidgets(translation_ctx, gbox, gbox_layout);
+	QScrollArea* sarea = new QScrollArea(this);
+	QWidget* swidget = new QWidget(sarea);
+	sarea->setWidget(swidget);
+	sarea->setWidgetResizable(true);
+	sarea->setFrameShape(QFrame::StyledPanel);
+	sarea->setFrameShadow(QFrame::Sunken);
+
+	QGridLayout* swidget_layout = new QGridLayout(swidget);
+	createSettingWidgets(translation_ctx, swidget, swidget_layout);
 
 	QVBoxLayout* layout = new QVBoxLayout(this);
 	layout->setContentsMargins(0, 0, 0, 0);
-	layout->addWidget(gbox);
-
-	QHBoxLayout* bottom_hlayout = new QHBoxLayout();
-	QPushButton* restore_defaults = new QPushButton(tr("Restore Default Settings"), this);
-	restore_defaults->setIcon(QIcon::fromTheme(QStringLiteral("restart-line")));
-	connect(restore_defaults, &QPushButton::clicked, this, &ControllerCustomSettingsWidget::restoreDefaults);
-	bottom_hlayout->addStretch(1);
-	bottom_hlayout->addWidget(restore_defaults);
-	layout->addLayout(bottom_hlayout);
-	layout->addStretch(1);
+	layout->addWidget(sarea);
 }
 
 ControllerCustomSettingsWidget::~ControllerCustomSettingsWidget() = default;
@@ -677,6 +674,16 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 
 		layout->addItem(new QSpacerItem(1, 10, QSizePolicy::Minimum, QSizePolicy::Fixed), current_row++, 0, 1, 4);
 	}
+
+	QHBoxLayout* bottom_hlayout = new QHBoxLayout();
+	QPushButton* restore_defaults = new QPushButton(tr("Restore Default Settings"), this);
+	restore_defaults->setIcon(QIcon::fromTheme(QStringLiteral("restart-line")));
+	connect(restore_defaults, &QPushButton::clicked, this, &ControllerCustomSettingsWidget::restoreDefaults);
+	bottom_hlayout->addStretch(1);
+	bottom_hlayout->addWidget(restore_defaults);
+	layout->addLayout(bottom_hlayout, current_row++, 0, 1, 4);
+
+	layout->addItem(new QSpacerItem(1, 1, QSizePolicy::Minimum, QSizePolicy::Expanding), current_row++, 0, 1, 4);
 }
 
 void ControllerCustomSettingsWidget::restoreDefaults()
@@ -851,10 +858,12 @@ ControllerBindingWidget_Base* ControllerBindingWidget_DualShock2::createInstance
 USBDeviceWidget::USBDeviceWidget(QWidget* parent, ControllerSettingsDialog* dialog, u32 port)
 	: QWidget(parent)
 	, m_dialog(dialog)
-	, m_config_section(StringUtil::StdStringFromFormat("USB%u", port + 1u))
+	, m_config_section(fmt::format("USB{}", port + 1))
 	, m_port_number(port)
 {
 	m_ui.setupUi(this);
+	m_ui.groupBox->setTitle(tr("USB Port %1").arg(port + 1));
+
 	populateDeviceTypes();
 	populatePages();
 
@@ -926,9 +935,8 @@ void USBDeviceWidget::populatePages()
 
 	if (!settings.empty())
 	{
-		const QString settings_title(tr("Device Settings"));
 		m_settings_widget = new ControllerCustomSettingsWidget(
-			settings, m_config_section, m_device_type + "_", settings_title, m_device_type.c_str(), m_dialog, m_ui.stackedWidget);
+			settings, m_config_section, m_device_type + "_", m_device_type.c_str(), m_dialog, m_ui.stackedWidget);
 		m_ui.stackedWidget->addWidget(m_settings_widget);
 	}
 
