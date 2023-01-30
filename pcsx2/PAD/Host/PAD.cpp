@@ -412,7 +412,7 @@ static const SettingInfo s_dualshock2_settings[] = {
 		"Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.",
 		"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "AxisScale", "Analog Sensitivity",
-		"Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
+		"Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent "
 		"controllers, e.g. DualShock 4, Xbox One Controller.",
 		"1.33", "0.01", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "LargeMotorScale", "Large Motor Vibration Scale",
