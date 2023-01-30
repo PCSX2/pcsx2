@@ -38,7 +38,7 @@ namespace ControllerSettingWidgetBinder
 {
 	/// Interface specific method of BindWidgetToBoolSetting().
 	template <typename WidgetType>
-	static void BindWidgetToInputProfileBool(
+	static inline void BindWidgetToInputProfileBool(
 		SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, bool default_value)
 	{
 		using Accessor = SettingWidgetBinder::SettingAccessor<WidgetType>;
@@ -71,7 +71,7 @@ namespace ControllerSettingWidgetBinder
 
 	/// Interface specific method of BindWidgetToIntSetting().
 	template <typename WidgetType>
-	static void BindWidgetToInputProfileInt(
+	static inline void BindWidgetToInputProfileInt(
 		SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, s32 default_value, s32 option_offset = 0)
 	{
 		using Accessor = SettingWidgetBinder::SettingAccessor<WidgetType>;
@@ -104,7 +104,7 @@ namespace ControllerSettingWidgetBinder
 
 	/// Interface specific method of BindWidgetToFloatSetting().
 	template <typename WidgetType>
-	static void BindWidgetToInputProfileFloat(
+	static inline void BindWidgetToInputProfileFloat(
 		SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, float default_value, float multiplier = 1.0f)
 	{
 		using Accessor = SettingWidgetBinder::SettingAccessor<WidgetType>;
@@ -137,11 +137,10 @@ namespace ControllerSettingWidgetBinder
 
 	/// Interface specific method of BindWidgetToNormalizedSetting().
 	template <typename WidgetType>
-	static void BindWidgetToInputProfileNormalized(
+	static inline void BindWidgetToInputProfileNormalized(
 		SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, float range, float default_value)
 	{
 		using Accessor = SettingWidgetBinder::SettingAccessor<WidgetType>;
-
 
 		if (sif)
 		{
@@ -171,7 +170,7 @@ namespace ControllerSettingWidgetBinder
 
 	/// Interface specific method of BindWidgetToStringSetting().
 	template <typename WidgetType>
-	static void BindWidgetToInputProfileString(
+	static inline void BindWidgetToInputProfileString(
 		SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, std::string default_value = std::string())
 	{
 		using Accessor = SettingWidgetBinder::SettingAccessor<WidgetType>;
