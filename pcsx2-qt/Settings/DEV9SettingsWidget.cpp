@@ -260,9 +260,13 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hddEnabled, "DEV9/Hdd", "HddEnable", false);
 
 	connect(m_ui.hddFile, &QLineEdit::editingFinished, this, &DEV9SettingsWidget::onHddFileEdit);
-	SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.hddFile, "DEV9/Hdd", "HddFile", "DEV9hdd.raw");
 	if (m_dialog->isPerGameSettings())
+	{
+		m_ui.hddFile->setText(QString::fromUtf8(m_dialog->getStringValue("DEV9/Hdd", "HddFile", "").value().c_str()));
 		m_ui.hddFile->setPlaceholderText(QString::fromUtf8(Host::GetBaseStringSettingValue("DEV9/Hdd", "HddFile", "DEV9hdd.raw")));
+	}
+	else
+		m_ui.hddFile->setText(QString::fromUtf8(m_dialog->getStringValue("DEV9/Hdd", "HddFile", "DEV9hdd.raw").value().c_str()));
 	connect(m_ui.hddBrowseFile, &QPushButton::clicked, this, &DEV9SettingsWidget::onHddBrowseFileClicked);
 
 	//TODO: need a getUintValue for if 48bit support occurs
@@ -711,10 +715,16 @@ void DEV9SettingsWidget::onHddBrowseFileClicked()
 
 void DEV9SettingsWidget::onHddFileEdit()
 {
-	//Check if file exists, if so set HddSize to correct value
+	// Check if file exists, if so set HddSize to correct value.
+	// Also save the hddPath setting
 	std::string hddPath(m_ui.hddFile->text().toStdString());
 	if (hddPath.empty())
+	{
+		m_dialog->setStringSettingValue("DEV9/Hdd", "HddFile", std::nullopt);
 		return;
+	}
+	else
+		m_dialog->setStringSettingValue("DEV9/Hdd", "HddFile", hddPath.c_str());
 
 	if (!Path::IsAbsolute(hddPath))
 		hddPath = Path::Combine(EmuFolders::Settings, hddPath);
