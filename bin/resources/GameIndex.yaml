@@ -15755,6 +15755,8 @@ SLES-52831:
 SLES-52832:
   name: "Mega Man X - Command Mission"
   region: "PAL-M3"
+  clampModes:
+    vu1ClampMode: 3 # Fixes the trophies.
 SLES-52834:
   name: "Sega Superstars Eyetoy Bundle"
   region: "PAL-M4"
@@ -29629,6 +29631,8 @@ SLPM-65642:
 SLPM-65643:
   name: "RockMan X - Command Mission"
   region: "NTSC-J"
+  clampModes:
+    vu1ClampMode: 3 # Fixes the trophies.
 SLPM-65644:
   name: "Guilty Gear Isuka"
   region: "NTSC-J"
@@ -44642,6 +44646,8 @@ SLUS-20903:
   name: "Mega Man X - Command Mission"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vu1ClampMode: 3 # Fixes the trophies.
 SLUS-20904:
   name: "SpongeBob SquarePants - The Movie"
   region: "NTSC-U"
