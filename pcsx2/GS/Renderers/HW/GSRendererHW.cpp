@@ -202,9 +202,13 @@ void GSRendererHW::VSync(u32 field, bool registers_written)
 {
 	if (m_reset)
 	{
-		m_tc->InvalidateFrameAge();
+		m_tc->RemoveAll();
 		m_reset = false;
+		m_force_preload = true;
 	}
+	else
+		m_force_preload = false;
+
 
 	if (GSConfig.LoadTextureReplacements)
 		GSTextureReplacements::ProcessAsyncLoadedTextures();
@@ -1363,7 +1367,7 @@ void GSRendererHW::Draw()
 	}
 
 	// SW CLUT Render enable.
-	bool preload = GSConfig.PreloadFrameWithGSData;
+	bool preload = GSConfig.PreloadFrameWithGSData | m_force_preload;
 	if (GSConfig.UserHacks_CPUCLUTRender > 0 || GSConfig.UserHacks_GPUTargetCLUTMode != GSGPUTargetCLUTMode::Disabled)
 	{
 		const CLUTDrawTestResult result = (GSConfig.UserHacks_CPUCLUTRender == 2) ? PossibleCLUTDrawAggressive() : PossibleCLUTDraw();

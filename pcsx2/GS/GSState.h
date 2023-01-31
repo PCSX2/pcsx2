@@ -223,6 +223,7 @@ public:
 	u32 m_dirty_gs_regs;
 	int m_backed_up_ctx;
 	std::list<GIFRegBITBLTBUF> m_draw_transfers;
+	bool m_force_preload;
 
 	static int s_n;
 
