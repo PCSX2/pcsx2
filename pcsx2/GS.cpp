@@ -32,19 +32,15 @@ void gsSetVideoMode(GS_VideoMode mode)
 {
 	gsVideoMode = mode;
 	UpdateVSyncRate();
-	CSRreg.FIELD = 1;
 }
 
 // Make sure framelimiter options are in sync with GS capabilities.
 void gsReset()
 {
 	GetMTGS().ResetGS(true);
-
-	UpdateVSyncRate();
+	gsVideoMode = GS_VideoMode::Uninitialized;
 	memzero(g_RealGSMem);
-
-	CSRreg.Reset();
-	GSIMR.reset();
+	UpdateVSyncRate();
 }
 
 void gsUpdateFrequency(Pcsx2Config& config)
@@ -85,13 +81,12 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 		//Console.Warning( "csr.RESET" );
 		//gifUnit.Reset(true); // Don't think gif should be reset...
 		gifUnit.gsSIGNAL.queued = false;
+		gifUnit.gsFINISH.gsFINISHFired = true;
 		// Privilage registers also reset.
-		memset(PS2MEM_GS, 0, sizeof(PS2MEM_GS));
+		memzero(g_RealGSMem);
+		gsVideoMode = GS_VideoMode::Uninitialized;
+		UpdateVSyncRate();
 		GetMTGS().SendSimplePacket(GS_RINGTYPE_RESET, 0, 0, 0);
-		const u32 field = CSRreg.FIELD;
-		CSRreg.Reset();
-		GSIMR.reset();
-		CSRreg.FIELD = field;
 	}
 
 	if(csr.FLUSH)
