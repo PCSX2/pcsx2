@@ -153,7 +153,6 @@ union tGS_CSR
 
 	void Reset()
 	{
-		_u64 = 0;
 		FIFO = CSR_FIFO_EMPTY;
 		REV = 0x1B; // GS Revision
 		ID = 0x55; // GS ID
