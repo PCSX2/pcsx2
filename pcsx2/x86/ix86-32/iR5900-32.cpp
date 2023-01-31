@@ -2251,16 +2251,20 @@ static void recRecompile(const u32 startpc)
 
 	if (EmuConfig.Gamefixes.GoemonTlbHack)
 	{
-		if (pc == 0x33ad48 || pc == 0x35060c)
+		if (pc == 0x33ad48 || pc == 0x35060c || pc == 0x340600 || pc == 0x341ad0 || pc == 0x357844 || pc == 0x356334)
 		{
 			// 0x33ad48 and 0x35060c are the return address of the function (0x356250) that populate the TLB cache
-			xFastCall((void*)GoemonPreloadTlb);
+			// 0x340600 and 0x356334 are the addresses in the June 22 prototype
+			// 0x341ad0 and 0x357844 are the addresses in the August 26 prototype
+			xFastCall((void*)GoemonPreloadTlb, 0x3d5580);
 		}
-		else if (pc == 0x3563b8)
+		else if (pc == 0x3563b8 || pc == 0x35d628 || pc == 0x35c118)
 		{
 			// Game will unmap some virtual addresses. If a constant address were hardcoded in the block, we would be in a bad situation.
 			eeRecNeedsReset = true;
 			// 0x3563b8 is the start address of the function that invalidate entry in TLB cache
+			// 0x35c118 is the address in the June 22 prototype
+			// 0x35d628 is the address in the August 26 prototype
 			xFastCall((void*)GoemonUnloadTlb, ptr32[&cpuRegs.GPR.n.a0.UL[0]]);
 		}
 	}
