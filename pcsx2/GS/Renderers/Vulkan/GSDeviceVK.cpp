@@ -1948,6 +1948,8 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_FST", sel.fst);
 	AddMacro(ss, "PS_WMS", sel.wms);
 	AddMacro(ss, "PS_WMT", sel.wmt);
+	AddMacro(ss, "PS_ADJS", sel.adjs);
+	AddMacro(ss, "PS_ADJT", sel.adjt);
 	AddMacro(ss, "PS_AEM_FMT", sel.aem_fmt);
 	AddMacro(ss, "PS_PAL_FMT", sel.pal_fmt);
 	AddMacro(ss, "PS_DFMT", sel.dfmt);
@@ -1955,7 +1957,6 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_CHANNEL_FETCH", sel.channel);
 	AddMacro(ss, "PS_URBAN_CHAOS_HLE", sel.urban_chaos_hle);
 	AddMacro(ss, "PS_TALES_OF_ABYSS_HLE", sel.tales_of_abyss_hle);
-	AddMacro(ss, "PS_INVALID_TEX0", sel.invalid_tex0);
 	AddMacro(ss, "PS_AEM", sel.aem);
 	AddMacro(ss, "PS_TFX", sel.tfx);
 	AddMacro(ss, "PS_TCC", sel.tcc);

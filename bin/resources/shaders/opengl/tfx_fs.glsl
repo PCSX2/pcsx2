@@ -109,7 +109,20 @@ vec4 sample_c(vec2 uv)
     // As of 2018 this issue is still present.
     uv = (trunc(uv * WH.zw) + vec2(0.5, 0.5)) / WH.zw;
 #endif
-    uv *= STScale;
+#if !PS_ADJS && !PS_ADJT
+	uv *= STScale;
+#else
+	#if PS_ADJS
+		uv.x = (uv.x - STRange.x) * STRange.z;
+	#else
+		uv.x = uv.x * STScale.x;
+	#endif
+	#if PS_ADJT
+		uv.y = (uv.y - STRange.y) * STRange.w;
+	#else
+		uv.y = uv.y * STScale.y;
+	#endif
+#endif
 
 #if PS_AUTOMATIC_LOD == 1
     return texture(TextureSampler, uv);
@@ -146,11 +159,7 @@ vec4 sample_p_norm(float u)
 vec4 clamp_wrap_uv(vec4 uv)
 {
     vec4 uv_out = uv;
-#if PS_INVALID_TEX0 == 1
-    vec4 tex_size = WH.zwzw;
-#else
     vec4 tex_size = WH.xyxy;
-#endif
 
 #if PS_WMS == PS_WMT
 
@@ -162,7 +171,7 @@ vec4 clamp_wrap_uv(vec4 uv)
     // textures. Fixes Xenosaga's hair issue.
     uv = fract(uv);
     #endif
-    uv_out = vec4((uvec4(uv * tex_size) & MskFix.xyxy) | MskFix.zwzw) / tex_size;
+    uv_out = vec4((uvec4(uv * tex_size) & floatBitsToUint(MinMax.xyxy)) | floatBitsToUint(MinMax.zwzw)) / tex_size;
 #endif
 
 #else // PS_WMS != PS_WMT
@@ -174,7 +183,7 @@ vec4 clamp_wrap_uv(vec4 uv)
     #if PS_FST == 0
     uv.xz = fract(uv.xz);
     #endif
-    uv_out.xz = vec2((uvec2(uv.xz * tex_size.xx) & MskFix.xx) | MskFix.zz) / tex_size.xx;
+    uv_out.xz = vec2((uvec2(uv.xz * tex_size.xx) & floatBitsToUint(MinMax.xx)) | floatBitsToUint(MinMax.zz)) / tex_size.xx;
 
 #endif
 
@@ -185,7 +194,7 @@ vec4 clamp_wrap_uv(vec4 uv)
     #if PS_FST == 0
     uv.yw = fract(uv.yw);
     #endif
-    uv_out.yw = vec2((uvec2(uv.yw * tex_size.yy) & MskFix.yy) | MskFix.ww) / tex_size.yy;
+    uv_out.yw = vec2((uvec2(uv.yw * tex_size.yy) & floatBitsToUint(MinMax.yy)) | floatBitsToUint(MinMax.ww)) / tex_size.yy;
 #endif
 
 #endif
@@ -288,7 +297,7 @@ ivec2 clamp_wrap_uv_depth(ivec2 uv)
 
     // Keep the full precision
     // It allow to multiply the ScalingFactor before the 1/16 coeff
-    ivec4 mask = ivec4(MskFix) << 4;
+    ivec4 mask = floatBitsToInt(MinMax) << 4;
 
 #if PS_WMS == PS_WMT
 
@@ -591,11 +600,7 @@ void fog(inout vec4 C, float f)
 vec4 ps_color()
 {
     //FIXME: maybe we can set gl_Position.w = q in VS
-#if (PS_FST == 0) && (PS_INVALID_TEX0 == 1)
-    // Re-normalize coordinate from invalid GS to corrected texture size
-    vec2 st = (PSin.t_float.xy * WH.xy) / (vec2(PSin.t_float.w) * WH.zw);
-    vec2 st_int = (PSin.t_int.zw * WH.xy) / (vec2(PSin.t_float.w) * WH.zw);
-#elif (PS_FST == 0)
+#if (PS_FST == 0)
     vec2 st = PSin.t_float.xy / vec2(PSin.t_float.w);
     vec2 st_int = PSin.t_int.zw / vec2(PSin.t_float.w);
 #else

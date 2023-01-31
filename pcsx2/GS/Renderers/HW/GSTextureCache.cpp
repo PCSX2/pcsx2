@@ -119,7 +119,7 @@ void GSTextureCache::AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm
 		target->m_dirty.push_back(GSDirtyRect(rect, psm, bw));
 }
 
-GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette)
+GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, bool palette)
 {
 	if (GSConfig.UserHacks_DisableDepthSupport)
 	{
@@ -177,7 +177,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 			TEX0.TBP0, psm_str(psm));
 
 		// Create a shared texture source
-		src = new Source(TEX0, TEXA, true);
+		src = new Source(TEX0, TEXA);
 		src->m_texture = dst->m_texture;
 		src->m_shared_texture = true;
 		src->m_target = true; // So renderer can check if a conversion is required
@@ -201,7 +201,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 	else if (g_gs_renderer->m_game.title == CRC::SVCChaos || g_gs_renderer->m_game.title == CRC::KOF2002)
 	{
 		// SVCChaos black screen & KOF2002 blue screen on main menu, regardless of depth enabled or disabled.
-		return LookupSource(TEX0, TEXA, r, nullptr);
+		return LookupSource(TEX0, TEXA, CLAMP, r, nullptr);
 	}
 	else
 	{
@@ -227,24 +227,13 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 	return src;
 }
 
-GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, const GSVector2i* lod)
+__ri static GSTextureCache::Source* FindSourceInMap(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA,
+	const GSLocalMemory::psm_t& psm_s, const u32* clut, const GSTexture* gpu_clut, const GSVector2i& compare_lod,
+	const GSTextureCache::SourceRegion& region, FastList<GSTextureCache::Source*>& map)
 {
-	GL_CACHE("TC: Lookup Source <%d,%d => %d,%d> (0x%x, %s, BW: %u, CBP: 0x%x)", r.x, r.y, r.z, r.w, TEX0.TBP0, psm_str(TEX0.PSM), TEX0.TBW, TEX0.CBP);
-
-	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
-	//const GSLocalMemory::psm_t& cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[TEX0.CPSM] : psm;
-
-	const u32* const clut = g_gs_renderer->m_mem.m_clut;
-	GSTexture* const gpu_clut = (psm_s.pal > 0) ? g_gs_renderer->m_mem.m_clut.GetGPUTexture() : nullptr;
-
-	Source* src = NULL;
-
-	auto& m = m_src.m_map[TEX0.TBP0 >> 5];
-
-	const GSVector2i compare_lod(lod ? *lod : GSVector2i(0, 0));
-	for (auto i = m.begin(); i != m.end(); ++i)
+	for (auto i = map.begin(); i != map.end(); ++i)
 	{
-		Source* s = *i;
+		GSTextureCache::Source* s = *i;
 
 		if (((TEX0.U32[0] ^ s->m_TEX0.U32[0]) | ((TEX0.U32[1] ^ s->m_TEX0.U32[1]) & 3)) != 0) // TBP0 TBW PSM TW TH
 			continue;
@@ -272,20 +261,92 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					continue;
 			}
 
+			if (s->m_region.bits != 0 && s->m_region.bits != region.bits)
+				continue;
+
 			// Same base mip texture, but we need to check that MXL was the same as well.
 			// When mipmapping is off, this will be 0,0 vs 0,0.
 			if (s->m_lod != compare_lod)
 				continue;
 		}
 
-		m.MoveFront(i.Index());
-
-		src = s;
-
-		break;
+		map.MoveFront(i.Index());
+		return s;
 	}
 
-	Target* dst = NULL;
+	return nullptr;
+}
+
+GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const GSVector2i* lod)
+{
+	GL_CACHE("TC: Lookup Source <%d,%d => %d,%d> (0x%x, %s, BW: %u, CBP: 0x%x, TW: %d, TH: %d)", r.x, r.y, r.z, r.w, TEX0.TBP0, psm_str(TEX0.PSM), TEX0.TBW, TEX0.CBP, 1 << TEX0.TW, 1 << TEX0.TH);
+
+	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
+	//const GSLocalMemory::psm_t& cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[TEX0.CPSM] : psm;
+
+	const u32* const clut = g_gs_renderer->m_mem.m_clut;
+	GSTexture* const gpu_clut = (psm_s.pal > 0) ? g_gs_renderer->m_mem.m_clut.GetGPUTexture() : nullptr;
+
+	SourceRegion region = {};
+	if (CLAMP.WMS == CLAMP_REGION_CLAMP && CLAMP.MAXU >= CLAMP.MINU)
+	{
+		// Another Lupin case here, it uses region clamp with UV (not ST), puts a clamp region further
+		// into the texture, but a smaller TW/TH. Catch this by looking for a clamp range above TW.
+		const u32 rw = CLAMP.MAXU - CLAMP.MAXU + 1;
+		if (rw < (1u << TEX0.TW) || CLAMP.MAXU >= (1u << TEX0.TW))
+		{
+			region.SetX(CLAMP.MINU, CLAMP.MAXU + 1);
+			GL_CACHE("TC: Region clamp optimization: %d width -> %d", 1 << TEX0.TW, region.GetWidth());
+		}
+	}
+	else if (CLAMP.WMS == CLAMP_REGION_REPEAT && CLAMP.MINU != 0)
+	{
+		// Lupin the 3rd is really evil, it sets TW/TH to the texture size, but then uses region repeat
+		// to offset the actual texture data to elsewhere. So, we'll just force any cases like this down
+		// the region texture path.
+		const u32 rw = ((CLAMP.MINU | CLAMP.MAXU) - CLAMP.MAXU) + 1;
+		if (rw < (1u << TEX0.TW) || CLAMP.MAXU != 0)
+		{
+			region.SetX(CLAMP.MAXU, (CLAMP.MINU | CLAMP.MAXU) + 1);
+			GL_CACHE("TC: Region repeat optimization: %d width -> %d", 1 << TEX0.TW, region.GetWidth());
+		}
+	}
+	if (CLAMP.WMT == CLAMP_REGION_CLAMP && CLAMP.MAXV >= CLAMP.MINV)
+	{
+		const u32 rh = CLAMP.MAXV - CLAMP.MINV + 1;
+		if (rh < (1u << TEX0.TH) || CLAMP.MAXV >= (1u << TEX0.TH))
+		{
+			region.SetY(CLAMP.MINV, CLAMP.MAXV + 1);
+			GL_CACHE("TC: Region clamp optimization: %d height -> %d", 1 << TEX0.TW, region.GetHeight());
+		}
+	}
+	else if (CLAMP.WMT == CLAMP_REGION_REPEAT && CLAMP.MINV != 0)
+	{
+		const u32 rh = ((CLAMP.MINV | CLAMP.MAXV) - CLAMP.MAXV) + 1;
+		if (rh < (1u << TEX0.TH) || CLAMP.MAXV != 0)
+		{
+			region.SetY(CLAMP.MAXV, (CLAMP.MINV | CLAMP.MAXV) + 1);
+			GL_CACHE("TC: Region repeat optimization: %d height -> %d", 1 << TEX0.TW, region.GetHeight());
+		}
+	}
+
+	const GSVector2i compare_lod(lod ? *lod : GSVector2i(0, 0));
+	Source* src = nullptr;
+
+	// Region textures might be placed in a different page, so check that first.
+	const u32 lookup_page = TEX0.TBP0 >> 5;
+	if (region.GetMinX() != 0 || region.GetMinY() != 0)
+	{
+		const GSOffset offset(psm_s.info, TEX0.TBP0, TEX0.TBW, TEX0.PSM);
+		const u32 region_page = offset.bn(region.GetMinX(), region.GetMinY()) >> 5;
+		if (lookup_page != region_page)
+			src = FindSourceInMap(TEX0, TEXA, psm_s, clut, gpu_clut, compare_lod, region, m_src.m_map[region_page]);
+	}
+	if (!src)
+		src = FindSourceInMap(TEX0, TEXA, psm_s, clut, gpu_clut, compare_lod, region, m_src.m_map[lookup_page]);
+
+
+	Target* dst = nullptr;
 	bool half_right = false;
 	int x_offset = 0;
 	int y_offset = 0;
@@ -293,7 +354,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 #ifdef DISABLE_HW_TEXTURE_CACHE
 	if (0)
 #else
-	if (src == NULL)
+	if (!src)
 #endif
 	{
 		const u32 bp = TEX0.TBP0;
@@ -466,11 +527,11 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 						GIFRegTEX0 depth_TEX0;
 						depth_TEX0.U32[0] = TEX0.U32[0] | (0x30u << 20u);
 						depth_TEX0.U32[1] = TEX0.U32[1];
-						return LookupDepthSource(depth_TEX0, TEXA, r);
+						return LookupDepthSource(depth_TEX0, TEXA, CLAMP, r);
 					}
 					else
 					{
-						return LookupDepthSource(TEX0, TEXA, r, true);
+						return LookupDepthSource(TEX0, TEXA, CLAMP, r, true);
 					}
 				}
 			}
@@ -496,7 +557,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 			GL_CACHE("TC: src miss (0x%x, 0x%x, %s)", TEX0.TBP0, psm_s.pal > 0 ? TEX0.CBP : 0, psm_str(TEX0.PSM));
 		}
 #endif
-		src = CreateSource(TEX0, TEXA, dst, half_right, x_offset, y_offset, lod, &r, gpu_clut);
+		src = CreateSource(TEX0, TEXA, dst, half_right, x_offset, y_offset, lod, &r, gpu_clut, region);
 	}
 	else
 	{
@@ -1893,13 +1954,13 @@ void GSTextureCache::IncAge()
 }
 
 //Fixme: Several issues in here. Not handling depth stencil, pitch conversion doesnt work.
-GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* dst, bool half_right, int x_offset, int y_offset, const GSVector2i* lod, const GSVector4i* src_range, GSTexture* gpu_clut)
+GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* dst, bool half_right, int x_offset, int y_offset, const GSVector2i* lod, const GSVector4i* src_range, GSTexture* gpu_clut, SourceRegion region)
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
-	Source* src = new Source(TEX0, TEXA, false);
+	Source* src = new Source(TEX0, TEXA);
 
-	const int tw = 1 << TEX0.TW;
-	const int th = 1 << TEX0.TH;
+	int tw = 1 << TEX0.TW;
+	int th = 1 << TEX0.TH;
 	//int tp = TEX0.TBW << 6;
 	int tlevels = 1;
 	if (lod)
@@ -2211,8 +2272,13 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		bool paltex = (GSConfig.GPUPaletteConversion && psm.pal > 0) || gpu_clut;
 		const u32* clut = (psm.pal > 0) ? static_cast<const u32*>(g_gs_renderer->m_mem.m_clut) : nullptr;
 
+		// adjust texture size to fit
+		src->m_region = region;
+		tw = region.HasX() ? region.GetWidth() : tw;
+		th = region.HasY() ? region.GetHeight() : th;
+
 		// try the hash cache
-		if ((src->m_from_hash_cache = LookupHashCache(TEX0, TEXA, paltex, clut, lod)) != nullptr)
+		if ((src->m_from_hash_cache = LookupHashCache(TEX0, TEXA, paltex, clut, lod, region)) != nullptr)
 		{
 			src->m_texture = src->m_from_hash_cache->texture;
 			if (gpu_clut)
@@ -2245,6 +2311,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	ASSERT(src->m_from_target == (dst ? &dst->m_texture : nullptr));
 	ASSERT(src->m_texture->GetScale() == ((!dst || TEX0.PSM == PSM_PSMT8) ? GSVector2(1, 1) : dst->m_texture->GetScale()));
 
+	src->SetPages();
+
 	m_src.Add(src, TEX0, g_gs_renderer->m_context->offset.tex);
 
 	return src;
@@ -2253,7 +2321,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 // This really needs a better home...
 extern bool FMVstarted;
 
-GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool& paltex, const u32* clut, const GSVector2i* lod)
+GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool& paltex, const u32* clut, const GSVector2i* lod, SourceRegion region)
 {
 	// don't bother hashing if we're not dumping or replacing.
 	const bool dump = GSConfig.DumpReplaceableTextures && (!FMVstarted || GSConfig.DumpTexturesWithFMVActive) &&
@@ -2265,13 +2333,13 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 
 	// need the hash either for replacing, dumping or caching.
 	// if dumping/replacing is on, we compute the clut hash regardless, since replacements aren't indexed
-	HashCacheKey key{HashCacheKey::Create(TEX0, TEXA, (dump || replace || !paltex) ? clut : nullptr, lod)};
+	HashCacheKey key{HashCacheKey::Create(TEX0, TEXA, (dump || replace || !paltex) ? clut : nullptr, lod, region)};
 
 	// handle dumping first, this is mostly isolated.
 	if (dump)
 	{
 		// dump base level
-		GSTextureReplacements::DumpTexture(key, TEX0, TEXA, g_gs_renderer->m_mem, 0);
+		GSTextureReplacements::DumpTexture(key, TEX0, TEXA, region, g_gs_renderer->m_mem, 0);
 
 		// and the mips
 		if (lod && GSConfig.DumpReplaceableMipmaps)
@@ -2281,7 +2349,7 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 			for (int mip = 1; mip < nmips; mip++)
 			{
 				const GIFRegTEX0 MIP_TEX0{g_gs_renderer->GetTex0Layer(basemip + mip)};
-				GSTextureReplacements::DumpTexture(key, MIP_TEX0, TEXA, g_gs_renderer->m_mem, mip);
+				GSTextureReplacements::DumpTexture(key, MIP_TEX0, TEXA, region, g_gs_renderer->m_mem, mip);
 			}
 		}
 	}
@@ -2355,8 +2423,8 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 		return nullptr;
 
 	// expand/upload texture
-	const int tw = 1 << TEX0.TW;
-	const int th = 1 << TEX0.TH;
+	const int tw = region.HasX() ? region.GetWidth() : (1 << TEX0.TW);
+	const int th = region.HasY() ? region.GetHeight() : (1 << TEX0.TH);
 	const int tlevels = lod ? ((GSConfig.HWMipmap != HWMipmapLevel::Full) ? -1 : (lod->y - lod->x + 1)) : 1;
 	GSTexture* tex = g_gs_device->CreateTexture(tw, th, tlevels, paltex ? GSTexture::Format::UNorm8 : GSTexture::Format::Color);
 	if (!tex)
@@ -2366,7 +2434,7 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 	}
 
 	// upload base level
-	PreloadTexture(TEX0, TEXA, g_gs_renderer->m_mem, paltex, tex, 0);
+	PreloadTexture(TEX0, TEXA, region, g_gs_renderer->m_mem, paltex, tex, 0);
 
 	// upload mips if present
 	if (lod)
@@ -2376,7 +2444,7 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 		for (int mip = 1; mip < nmips; mip++)
 		{
 			const GIFRegTEX0 MIP_TEX0{g_gs_renderer->GetTex0Layer(basemip + mip)};
-			PreloadTexture(MIP_TEX0, TEXA, g_gs_renderer->m_mem, paltex, tex, mip);
+			PreloadTexture(MIP_TEX0, TEXA, region.AdjustForMipmap(mip), g_gs_renderer->m_mem, paltex, tex, mip);
 		}
 	}
 
@@ -2649,12 +2717,13 @@ bool GSTextureCache::Surface::Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i
 
 // GSTextureCache::Source
 
-GSTextureCache::Source::Source(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool dummy_container)
+GSTextureCache::Source::Source(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 	: m_palette_obj(nullptr)
 	, m_palette(nullptr)
 	, m_valid_rect(0, 0)
 	, m_lod(0, 0)
 	, m_target(false)
+	, m_repeating(false)
 	, m_p2t(NULL)
 	, m_from_target(NULL)
 	, m_from_target_TEX0(TEX0)
@@ -2662,32 +2731,8 @@ GSTextureCache::Source::Source(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, b
 	m_TEX0 = TEX0;
 	m_TEXA = TEXA;
 
-	if (dummy_container)
-	{
-		// Dummy container only contain a m_texture that is a pointer to another source.
-
-		m_write.rect = NULL;
-		m_write.count = 0;
-
-		m_repeating = false;
-	}
-	else
-	{
-		memset(m_layer_TEX0, 0, sizeof(m_layer_TEX0));
-		memset(m_layer_hash, 0, sizeof(m_layer_hash));
-
-		m_write.rect = (GSVector4i*)_aligned_malloc(3 * sizeof(GSVector4i), 32);
-		m_write.count = 0;
-
-		m_repeating = m_TEX0.IsRepeating();
-
-		if (m_repeating && !CanPreload())
-		{
-			m_p2t = g_gs_renderer->m_mem.GetPage2TileMap(m_TEX0);
-		}
-
-		m_pages = g_gs_renderer->m_context->offset.tex.pageLooperForRect(GSVector4i(0, 0, 1 << TEX0.TW, 1 << TEX0.TH));
-	}
+	memset(m_layer_TEX0, 0, sizeof(m_layer_TEX0));
+	memset(m_layer_hash, 0, sizeof(m_layer_hash));
 }
 
 GSTextureCache::Source::~Source()
@@ -2701,6 +2746,23 @@ GSTextureCache::Source::~Source()
 		GSRendererHW::GetInstance()->GetTextureCache()->m_source_memory_usage -= m_texture->GetMemUsage();
 		g_gs_device->Recycle(m_texture);
 	}
+}
+
+void GSTextureCache::Source::SetPages()
+{
+	const int tw = 1 << m_TEX0.TW;
+	const int th = 1 << m_TEX0.TH;
+
+	m_repeating = !m_from_hash_cache && m_TEX0.IsRepeating() && !m_region.IsFixedTEX0(tw, th);
+
+	if (m_repeating && !CanPreload())
+	{
+		// TODO: wrong for lupin/invalid tex0
+		m_p2t = g_gs_renderer->m_mem.GetPage2TileMap(m_TEX0);
+	}
+
+	const GSVector4i rect(m_region.GetRect(tw, th));
+	m_pages = g_gs_renderer->m_context->offset.tex.pageLooperForRect(rect);
 }
 
 void GSTextureCache::Source::Update(const GSVector4i& rect, int level)
@@ -2719,9 +2781,17 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int level)
 	const GSVector2i& bs = GSLocalMemory::m_psm[m_TEX0.PSM].bs;
 	const int tw = 1 << m_TEX0.TW;
 	const int th = 1 << m_TEX0.TH;
-	const GSVector4i r = rect.ralign<Align_Outside>(bs);
 
-	if (r.eq(GSVector4i(0, 0, tw, th)))
+	GSVector4i r(rect);
+	const GSVector4i region_rect(m_region.GetRect(tw, th));
+
+	// Offset the pages we use by the clamp region.
+	if (m_region.HasEither())
+		r = (r + m_region.GetOffset(tw, th)).rintersect(region_rect);
+
+	r = r.ralign<Align_Outside>(bs);
+
+	if (region_rect.eq(m_region.HasEither() ? r.rintersect(region_rect) : r))
 		m_complete_layers |= (1u << level);
 
 	const GSOffset& off = g_gs_renderer->m_context->offset.tex;
@@ -2818,6 +2888,9 @@ void GSTextureCache::Source::UpdateLayer(const GIFRegTEX0& TEX0, const GSVector4
 
 void GSTextureCache::Source::Write(const GSVector4i& r, int layer)
 {
+	if (!m_write.rect)
+		m_write.rect = static_cast<GSVector4i*>(_aligned_malloc(3 * sizeof(GSVector4i), 32));
+
 	m_write.rect[m_write.count++] = r;
 
 	while (m_write.count >= 2)
@@ -2857,11 +2930,12 @@ void GSTextureCache::Source::Flush(u32 count, int layer)
 	// However the function is never called for these cases.  This is just for information
 	// should someone wish to use this function for these cases later.
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_TEX0.PSM];
+	const SourceRegion region((layer == 0) ? m_region : m_region.AdjustForMipmap(layer));
 
-	const int tw = 1 << m_TEX0.TW;
-	const int th = 1 << m_TEX0.TH;
-
-	const GSVector4i tr(0, 0, tw, th);
+	// For the invalid tex0 case, the region might be larger than TEX0.TW/TH.
+	const int tw = std::max(region.GetWidth(), 1u << m_TEX0.TW);
+	const int th = std::max(region.GetHeight(), 1u << m_TEX0.TH);
+	const GSVector4i tex_r(region.GetRect(tw, th));
 
 	int pitch = std::max(tw, psm.bs.x) * sizeof(u32);
 
@@ -2877,35 +2951,33 @@ void GSTextureCache::Source::Flush(u32 count, int layer)
 		rtx = psm.rtxP;
 	}
 
-	u8* buff = s_unswizzle_buffer;
-
 	for (u32 i = 0; i < count; i++)
 	{
-		const GSVector4i r = m_write.rect[i];
+		const GSVector4i r(m_write.rect[i]);
 
-		if ((r > tr).mask() & 0xff00)
-		{
-			rtx(mem, off, r, buff, pitch, m_TEXA);
-
-			m_texture->Update(r.rintersect(tr), buff, pitch, layer);
-		}
-		else
+		// if update rect lies to the left/above of the region rectangle, or extends past the texture bounds, we can't use a direct map
+		if (((r > tex_r).mask() & 0xff00) == 0 && ((tex_r > r).mask() & 0x00ff) == 0)
 		{
 			GSTexture::GSMap m;
-
-			if (m_texture->Map(m, &r, layer))
+			const GSVector4i map_r(r - tex_r.xyxy());
+			if (m_texture->Map(m, &map_r, layer))
 			{
 				rtx(mem, off, r, m.bits, m.pitch, m_TEXA);
-
 				m_texture->Unmap();
-			}
-			else
-			{
-				rtx(mem, off, r, buff, pitch, m_TEXA);
-
-				m_texture->Update(r, buff, pitch, layer);
+				continue;
 			}
 		}
+
+		const GSVector4i rint(r.rintersect(tex_r));
+		if (rint.width() == 0 || rint.height() == 0)
+			continue;
+
+		rtx(mem, off, r, s_unswizzle_buffer, pitch, m_TEXA);
+
+		// need to offset if we're a region texture
+		const u8* src = s_unswizzle_buffer + (pitch * static_cast<u32>(std::max(tex_r.top - r.top, 0))) +
+						(static_cast<u32>(std::max(tex_r.left - r.left, 0)) << (m_palette ? 0 : 2));
+		m_texture->Update(rint - tex_r.xyxy(), src, pitch, layer);
 	}
 
 	if (count < m_write.count)
@@ -2920,7 +2992,7 @@ void GSTextureCache::Source::Flush(u32 count, int layer)
 void GSTextureCache::Source::PreloadLevel(int level)
 {
 	// m_TEX0 is adjusted for mips (messy, should be changed).
-	const HashType hash = HashTexture(m_TEX0, m_TEXA);
+	const HashType hash = HashTexture(m_TEX0, m_TEXA, m_region);
 
 	// Layer is complete again, regardless of whether the hash matches or not (and we reupload).
 	const u8 layer_bit = static_cast<u8>(1) << level;
@@ -2934,7 +3006,7 @@ void GSTextureCache::Source::PreloadLevel(int level)
 	m_layer_hash[level] = hash;
 
 	// And upload the texture.
-	PreloadTexture(m_TEX0, m_TEXA, g_gs_renderer->m_mem, m_palette != nullptr, m_texture, level);
+	PreloadTexture(m_TEX0, m_TEXA, m_region.AdjustForMipmap(level), g_gs_renderer->m_mem, m_palette != nullptr, m_texture, level);
 }
 
 bool GSTextureCache::Source::ClutMatch(const PaletteKey& palette_key)
@@ -3674,6 +3746,47 @@ bool GSTextureCache::SurfaceOffsetKeyEqual::operator()(const GSTextureCache::Sur
 	return true;
 }
 
+bool GSTextureCache::SourceRegion::IsFixedTEX0(int tw, int th) const
+{
+	return (GetMinX() >= static_cast<u32>(tw) || GetMinY() >= static_cast<u32>(th));
+}
+
+GSVector4i GSTextureCache::SourceRegion::GetRect(int tw, int th) const
+{
+	return GSVector4i(HasX() ? GetMinX() : 0, HasY() ? GetMinY() : 0, HasX() ? GetMaxX() : tw, HasY() ? GetMaxY() : th);
+}
+
+GSVector4i GSTextureCache::SourceRegion::GetOffset(int tw, int th) const
+{
+	const int xoffs = (GetMaxX() > static_cast<u32>(tw)) ? static_cast<int>(GetMinX()) : 0;
+	const int yoffs = (GetMaxY() > static_cast<u32>(th)) ? static_cast<int>(GetMinY()) : 0;
+	return GSVector4i(xoffs, yoffs, xoffs, yoffs);
+}
+
+GSTextureCache::SourceRegion GSTextureCache::SourceRegion::AdjustForMipmap(u32 level) const
+{
+	SourceRegion ret = {};
+	if (HasX())
+	{
+		const u32 new_minx = GetMinX() >> level;
+		const u32 new_maxx = ((GetMaxX() - 1) >> level) + 1;
+		ret.SetX(new_minx, new_maxx);
+	}
+	if (HasY())
+	{
+		const u32 new_miny = GetMinY() >> level;
+		const u32 new_maxy = ((GetMaxY() - 1) >> level) + 1;
+		ret.SetY(new_miny, new_maxy);
+	}
+	return ret;
+}
+
+void GSTextureCache::SourceRegion::AdjustTEX0(GIFRegTEX0* TEX0) const
+{
+	const GSOffset offset(GSLocalMemory::m_psm[TEX0->PSM].info, TEX0->TBP0, TEX0->TBW, TEX0->PSM);
+	TEX0->TBP0 += offset.bn(GetMinX(), GetMinY());
+}
+
 using BlockHashState = XXH3_state_t;
 
 __fi static void BlockHashReset(BlockHashState& st)
@@ -3696,16 +3809,16 @@ __fi static GSTextureCache::HashType FinishBlockHash(BlockHashState& st)
 	return GSXXH3_64bits_digest(&st);
 }
 
-static void HashTextureLevel(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, BlockHashState& hash_st, u8* temp)
+static void HashTextureLevel(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSTextureCache::SourceRegion region, BlockHashState& hash_st, u8* temp)
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 	const GSVector2i& bs = psm.bs;
-	const int tw = 1 << TEX0.TW;
-	const int th = 1 << TEX0.TH;
+	const int tw = region.HasX() ? region.GetWidth() : (1 << TEX0.TW);
+	const int th = region.HasY() ? region.GetHeight() : (1 << TEX0.TH);
 
 	// From GSLocalMemory foreachBlock(), used for reading textures.
 	// We want to hash the exact same blocks here.
-	const GSVector4i rect(0, 0, tw, th);
+	const GSVector4i rect(region.GetRect(tw, th));
 	const GSVector4i block_rect(rect.ralign<Align_Outside>(bs));
 	GSLocalMemory& mem = g_gs_renderer->m_mem;
 	const GSOffset off = mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
@@ -3717,7 +3830,7 @@ static void HashTextureLevel(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Blo
 	// the texture data with other textures/framebuffers/etc (which is common).
 	// Even though you might think this would be slower than just hashing for the hash
 	// cache, it actually ends up faster (unswizzling is faster than hashing).
-	if (tw < bs.x || th < bs.y || psm.fmsk != 0xFFFFFFFFu)
+	if (tw < bs.x || th < bs.y || psm.fmsk != 0xFFFFFFFFu || region.GetMaxX() > 0 || region.GetMinY() > 0)
 	{
 		// Expand texture indices. Align to 32 bytes for AVX2.
 		const u32 pitch = Common::AlignUpPow2(static_cast<u32>(block_rect.z), 32);
@@ -3728,7 +3841,8 @@ static void HashTextureLevel(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Blo
 		rtx(mem, off, block_rect, temp, pitch, TEXA);
 
 		// Hash the expanded texture.
-		u8* ptr = temp;
+		u8* ptr = temp + (pitch * static_cast<u32>(rect.top - block_rect.top)) +
+				  static_cast<u32>(rect.left - block_rect.left);
 		if (pitch == row_size)
 		{
 			BlockHashAccumulate(hash_st, ptr, pitch * static_cast<u32>(th));
@@ -3741,8 +3855,6 @@ static void HashTextureLevel(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Blo
 	}
 	else
 	{
-		BlockHashReset(hash_st);
-
 		GSOffset::BNHelper bn = off.bnMulti(block_rect.left, block_rect.top);
 		const int right = block_rect.right >> off.blockShiftX();
 		const int bottom = block_rect.bottom >> off.blockShiftY();
@@ -3758,27 +3870,27 @@ static void HashTextureLevel(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Blo
 	}
 }
 
-GSTextureCache::HashType GSTextureCache::HashTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
+GSTextureCache::HashType GSTextureCache::HashTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, SourceRegion region)
 {
 	BlockHashState hash_st;
 	BlockHashReset(hash_st);
-	HashTextureLevel(TEX0, TEXA, hash_st, s_unswizzle_buffer);
+	HashTextureLevel(TEX0, TEXA, region, hash_st, s_unswizzle_buffer);
 	return FinishBlockHash(hash_st);
 }
 
-void GSTextureCache::PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSLocalMemory& mem, bool paltex, GSTexture* tex, u32 level)
+void GSTextureCache::PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, SourceRegion region, GSLocalMemory& mem, bool paltex, GSTexture* tex, u32 level)
 {
 	// m_TEX0 is adjusted for mips (messy, should be changed).
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 	const GSVector2i& bs = psm.bs;
-	const int tw = 1 << TEX0.TW;
-	const int th = 1 << TEX0.TH;
+	const int tw = region.HasX() ? region.GetWidth() : (1 << TEX0.TW);
+	const int th = region.HasY() ? region.GetHeight() : (1 << TEX0.TH);
 
 	// Expand texture/apply palette.
-	const GSVector4i rect(0, 0, tw, th);
+	const GSVector4i rect(region.GetRect(tw, th));
 	const GSVector4i block_rect(rect.ralign<Align_Outside>(bs));
 	const GSOffset off(mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM));
-	const int read_width = std::max(tw, psm.bs.x);
+	const int read_width = block_rect.width();
 	u32 pitch = static_cast<u32>(read_width) * sizeof(u32);
 	GSLocalMemory::readTexture rtx = psm.rtx;
 	if (paltex)
@@ -3788,8 +3900,9 @@ void GSTextureCache::PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TE
 	}
 
 	// If we can stream it directly to GPU memory, do so, otherwise go through a temp buffer.
+	const GSVector4i unoffset_rect(0, 0, tw, th);
 	GSTexture::GSMap map;
-	if (rect.eq(block_rect) && tex->Map(map, &rect, level))
+	if (rect.eq(block_rect) && tex->Map(map, &unoffset_rect, level))
 	{
 		rtx(mem, off, block_rect, map.bits, map.pitch, TEXA);
 		tex->Unmap();
@@ -3801,7 +3914,10 @@ void GSTextureCache::PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TE
 
 		u8* buff = s_unswizzle_buffer;
 		rtx(mem, off, block_rect, buff, pitch, TEXA);
-		tex->Update(rect, buff, pitch, level);
+
+		const u8* ptr = buff + (pitch * static_cast<u32>(rect.top - block_rect.top)) +
+						(static_cast<u32>(rect.left - block_rect.left) << (paltex ? 0 : 2));
+		tex->Update(unoffset_rect, ptr, pitch, level);
 	}
 }
 
@@ -3813,7 +3929,7 @@ GSTextureCache::HashCacheKey::HashCacheKey()
 	TEXA.U64 = 0;
 }
 
-GSTextureCache::HashCacheKey GSTextureCache::HashCacheKey::Create(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const u32* clut, const GSVector2i* lod)
+GSTextureCache::HashCacheKey GSTextureCache::HashCacheKey::Create(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const u32* clut, const GSVector2i* lod, SourceRegion region)
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 
@@ -3821,12 +3937,13 @@ GSTextureCache::HashCacheKey GSTextureCache::HashCacheKey::Create(const GIFRegTE
 	ret.TEX0.U64 = TEX0.U64 & 0x00000007FFF00000ULL;
 	ret.TEXA.U64 = (psm.pal == 0 && psm.fmt > 0) ? (TEXA.U64 & 0x000000FF000080FFULL) : 0;
 	ret.CLUTHash = clut ? GSTextureCache::PaletteKeyHash{}({clut, psm.pal}) : 0;
+	ret.region = region;
 
 	BlockHashState hash_st;
 	BlockHashReset(hash_st);
 
 	// base level is always hashed
-	HashTextureLevel(TEX0, TEXA, hash_st, s_unswizzle_buffer);
+	HashTextureLevel(TEX0, TEXA, region, hash_st, s_unswizzle_buffer);
 
 	if (lod)
 	{
@@ -3836,7 +3953,7 @@ GSTextureCache::HashCacheKey GSTextureCache::HashCacheKey::Create(const GIFRegTE
 		for (int i = 1; i < nmips; i++)
 		{
 			const GIFRegTEX0 MIP_TEX0{g_gs_renderer->GetTex0Layer(basemip + i)};
-			HashTextureLevel(MIP_TEX0, TEXA, hash_st, s_unswizzle_buffer);
+			HashTextureLevel(MIP_TEX0, TEXA, region.AdjustForMipmap(i), hash_st, s_unswizzle_buffer);
 		}
 	}
 
@@ -3860,6 +3977,6 @@ void GSTextureCache::HashCacheKey::RemoveCLUTHash()
 u64 GSTextureCache::HashCacheKeyHash::operator()(const HashCacheKey& key) const
 {
 	std::size_t h = 0;
-	HashCombine(h, key.TEX0Hash, key.CLUTHash, key.TEX0.U64, key.TEXA.U64);
+	HashCombine(h, key.TEX0Hash, key.CLUTHash, key.TEX0.U64, key.TEXA.U64, key.region.bits);
 	return h;
 }

@@ -1374,6 +1374,8 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		setFnConstantB(m_fn_constants, pssel.tcc,                GSMTLConstantIndex_PS_TCC);
 		setFnConstantI(m_fn_constants, pssel.wms,                GSMTLConstantIndex_PS_WMS);
 		setFnConstantI(m_fn_constants, pssel.wmt,                GSMTLConstantIndex_PS_WMT);
+		setFnConstantB(m_fn_constants, pssel.adjs,               GSMTLConstantIndex_PS_ADJS);
+		setFnConstantB(m_fn_constants, pssel.adjt,               GSMTLConstantIndex_PS_ADJT);
 		setFnConstantB(m_fn_constants, pssel.ltf,                GSMTLConstantIndex_PS_LTF);
 		setFnConstantB(m_fn_constants, pssel.shuffle,            GSMTLConstantIndex_PS_SHUFFLE);
 		setFnConstantB(m_fn_constants, pssel.read_ba,            GSMTLConstantIndex_PS_READ_BA);
@@ -1403,7 +1405,6 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		setFnConstantB(m_fn_constants, pssel.automatic_lod,      GSMTLConstantIndex_PS_AUTOMATIC_LOD);
 		setFnConstantB(m_fn_constants, pssel.manual_lod,         GSMTLConstantIndex_PS_MANUAL_LOD);
 		setFnConstantB(m_fn_constants, pssel.point_sampler,      GSMTLConstantIndex_PS_POINT_SAMPLER);
-		setFnConstantB(m_fn_constants, pssel.invalid_tex0,       GSMTLConstantIndex_PS_INVALID_TEX0);
 		setFnConstantI(m_fn_constants, pssel.scanmsk,            GSMTLConstantIndex_PS_SCANMSK);
 		auto newps = LoadShader(@"ps_main");
 		ps = newps;
@@ -1594,10 +1595,10 @@ static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, WH)               == of
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, TA_MaxDepth_Af.x) == offsetof(GSMTLMainPSUniform, ta));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, TA_MaxDepth_Af.z) == offsetof(GSMTLMainPSUniform, max_depth));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, TA_MaxDepth_Af.w) == offsetof(GSMTLMainPSUniform, alpha_fix));
-static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, MskFix)           == offsetof(GSMTLMainPSUniform, uv_msk_fix));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, FbMask)           == offsetof(GSMTLMainPSUniform, fbmask));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, HalfTexel)        == offsetof(GSMTLMainPSUniform, half_texel));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, MinMax)           == offsetof(GSMTLMainPSUniform, uv_min_max));
+static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, STRange)          == offsetof(GSMTLMainPSUniform, st_range));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, ChannelShuffle)   == offsetof(GSMTLMainPSUniform, channel_shuffle));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, TCOffsetHack)     == offsetof(GSMTLMainPSUniform, tc_offset));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, STScale)          == offsetof(GSMTLMainPSUniform, st_scale));

@@ -21,6 +21,8 @@
 #define PS_FST 0
 #define PS_WMS 0
 #define PS_WMT 0
+#define PS_ADJS 0
+#define PS_ADJT 0
 #define PS_AEM_FMT FMT_32
 #define PS_AEM 0
 #define PS_TFX 0
@@ -42,7 +44,6 @@
 #define PS_CHANNEL_FETCH 0
 #define PS_TALES_OF_ABYSS_HLE 0
 #define PS_URBAN_CHAOS_HLE 0
-#define PS_INVALID_TEX0 0
 #define PS_SCALE_FACTOR 1.0
 #define PS_HDR 0
 #define PS_COLCLIP 0
@@ -158,10 +159,10 @@ cbuffer cb1
 	float2 TA;
 	float MaxDepthPS;
 	float Af;
-	uint4 MskFix;
 	uint4 FbMask;
 	float4 HalfTexel;
 	float4 MinMax;
+	float4 STRange;
 	int4 ChannelShuffle;
 	float2 TC_OffsetHack;
 	float2 STScale;
@@ -183,7 +184,20 @@ float4 sample_c(float2 uv, float uv_w)
 		// As of 2018 this issue is still present.
 		uv = (trunc(uv * WH.zw) + float2(0.5, 0.5)) / WH.zw;
 	}
+#if !PS_ADJS && !PS_ADJT
 	uv *= STScale;
+#else
+	#if PS_ADJS
+		uv.x = (uv.x - STRange.x) * STRange.z;
+	#else
+		uv.x = uv.x * STScale.x;
+	#endif
+	#if PS_ADJT
+		uv.y = (uv.y - STRange.y) * STRange.w;
+	#else
+		uv.y = uv.y * STScale.y;
+	#endif
+#endif
 
 #if PS_AUTOMATIC_LOD == 1
 	return Texture.Sample(TextureSampler, uv);
@@ -218,12 +232,7 @@ float4 sample_p_norm(float u)
 
 float4 clamp_wrap_uv(float4 uv)
 {
-	float4 tex_size;
-
-	if (PS_INVALID_TEX0 == 1)
-		tex_size = WH.zwzw;
-	else
-		tex_size = WH.xyxy;
+	float4 tex_size = WH.xyxy;
 
 	if(PS_WMS == PS_WMT)
 	{
@@ -238,7 +247,7 @@ float4 clamp_wrap_uv(float4 uv)
 			// textures. Fixes Xenosaga's hair issue.
 			uv = frac(uv);
 			#endif
-			uv = (float4)(((uint4)(uv * tex_size) & MskFix.xyxy) | MskFix.zwzw) / tex_size;
+			uv = (float4)(((uint4)(uv * tex_size) & asuint(MinMax.xyxy)) | asuint(MinMax.zwzw)) / tex_size;
 		}
 	}
 	else
@@ -252,7 +261,7 @@ float4 clamp_wrap_uv(float4 uv)
 			#if PS_FST == 0
 			uv.xz = frac(uv.xz);
 			#endif
-			uv.xz = (float2)(((uint2)(uv.xz * tex_size.xx) & MskFix.xx) | MskFix.zz) / tex_size.xx;
+			uv.xz = (float2)(((uint2)(uv.xz * tex_size.xx) & asuint(MinMax.xx)) | asuint(MinMax.zz)) / tex_size.xx;
 		}
 		if(PS_WMT == 2)
 		{
@@ -263,7 +272,7 @@ float4 clamp_wrap_uv(float4 uv)
 			#if PS_FST == 0
 			uv.yw = frac(uv.yw);
 			#endif
-			uv.yw = (float2)(((uint2)(uv.yw * tex_size.yy) & MskFix.yy) | MskFix.ww) / tex_size.yy;
+			uv.yw = (float2)(((uint2)(uv.yw * tex_size.yy) & asuint(MinMax.yy)) | asuint(MinMax.ww)) / tex_size.yy;
 		}
 	}
 
@@ -353,7 +362,7 @@ float4 fetch_c(int2 uv)
 
 int2 clamp_wrap_uv_depth(int2 uv)
 {
-	int4 mask = (int4)MskFix << 4;
+	int4 mask = asint(MinMax) << 4;
 	if (PS_WMS == PS_WMT)
 	{
 		if (PS_WMS == 2)
@@ -676,11 +685,7 @@ float4 fog(float4 c, float f)
 
 float4 ps_color(PS_INPUT input)
 {
-#if PS_FST == 0 && PS_INVALID_TEX0 == 1
-	// Re-normalize coordinate from invalid GS to corrected texture size
-	float2 st = (input.t.xy * WH.xy) / (input.t.w * WH.zw);
-	float2 st_int = (input.ti.zw * WH.xy) / (input.t.w * WH.zw);
-#elif PS_FST == 0
+#if PS_FST == 0
 	float2 st = input.t.xy / input.t.w;
 	float2 st_int = input.ti.zw / input.t.w;
 #else

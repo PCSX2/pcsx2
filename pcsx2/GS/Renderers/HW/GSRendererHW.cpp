@@ -1279,10 +1279,6 @@ void GSRendererHW::Draw()
 		return;
 	}
 
-	// Fix TEX0 size
-	if (PRIM->TME && !IsMipMapActive())
-		m_context->ComputeFixedTEX0(m_vt.m_min.t.xyxy(m_vt.m_max.t));
-
 	// skip alpha test if possible
 	// Note: do it first so we know if frame/depth writes are masked
 
@@ -1528,8 +1524,8 @@ void GSRendererHW::Draw()
 
 		TextureMinMaxResult tmm = GetTextureMinMax(TEX0, MIP_CLAMP, m_vt.IsLinear());
 
-		m_src = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, tmm.coverage) :
-			m_tc->LookupSource(TEX0, env.TEXA, tmm.coverage, (GSConfig.HWMipmap >= HWMipmapLevel::Basic ||
+		m_src = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage) :
+			m_tc->LookupSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, (GSConfig.HWMipmap >= HWMipmapLevel::Basic ||
 				GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr);
 
 		// Hypothesis: texture shuffle is used as a postprocessing effect so texture will be an old target.
@@ -1642,7 +1638,7 @@ void GSRendererHW::Draw()
 
 			for (int layer = m_lod.x + 1; layer <= m_lod.y; layer++)
 			{
-				const GIFRegTEX0& MIP_TEX0 = GetTex0Layer(layer);
+				const GIFRegTEX0 MIP_TEX0(GetTex0Layer(layer));
 
 				m_context->offset.tex = m_mem.GetOffset(MIP_TEX0.TBP0, MIP_TEX0.TBW, MIP_TEX0.PSM);
 
@@ -3105,6 +3101,26 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 	}
 }
 
+__ri static constexpr bool IsRedundantClamp(u8 clamp, u32 clamp_min, u32 clamp_max, u32 tsize)
+{
+	// Don't shader sample when the clamp/repeat is configured to the texture size.
+	// That way trilinear etc still works.
+	const u32 textent = (1u << tsize) - 1u;
+	if (clamp == CLAMP_REGION_CLAMP)
+		return (clamp_min == 0 && clamp_max == textent);
+	else if (clamp == CLAMP_REGION_REPEAT)
+		return (clamp_max == 0 && clamp_min == textent);
+	else
+		return false;
+}
+
+__ri static constexpr u8 EffectiveClamp(u8 clamp, bool has_region)
+{
+	// When we have extracted the region in the texture, we can use the hardware sampler for repeat/clamp.
+	// (weird flip here because clamp/repeat is inverted for region vs non-region).
+	return (clamp >= CLAMP_REGION_CLAMP && has_region) ? (clamp ^ 3) : clamp;
+}
+
 void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Source* tex)
 {
 	// Warning fetch the texture PSM format rather than the context format. The latter could have been corrected in the texture cache for depth.
@@ -3112,9 +3128,16 @@ void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[tex->m_TEX0.PSM];
 	const GSLocalMemory::psm_t& cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[m_context->TEX0.CPSM] : psm;
 
-	const u8 wms = m_context->CLAMP.WMS;
-	const u8 wmt = m_context->CLAMP.WMT;
+	static constexpr const char* clamp_modes[] = { "REPEAT", "CLAMP", "REGION_CLAMP", "REGION_REPEAT" };
+	const bool redundant_wms = IsRedundantClamp(m_context->CLAMP.WMS, m_context->CLAMP.MINU, m_context->CLAMP.MAXU, tex->m_TEX0.TW);
+	const bool redundant_wmt = IsRedundantClamp(m_context->CLAMP.WMT, m_context->CLAMP.MINV, m_context->CLAMP.MAXV, tex->m_TEX0.TH);
+	const u8 wms = EffectiveClamp(m_context->CLAMP.WMS, tex->m_region.HasX());
+	const u8 wmt = EffectiveClamp(m_context->CLAMP.WMT, tex->m_region.HasY());
 	const bool complex_wms_wmt = !!((wms | wmt) & 2);
+	GL_CACHE("WMS: %s [%s%s] WMT: %s [%s%s] Complex: %d MINU: %d MINV: %d MINV: %d MAXV: %d",
+		clamp_modes[m_context->CLAMP.WMS], redundant_wms ? "redundant," : "", clamp_modes[wms],
+		clamp_modes[m_context->CLAMP.WMT], redundant_wmt ? "redundant," : "", clamp_modes[wmt],
+		complex_wms_wmt, m_context->CLAMP.MINU, m_context->CLAMP.MINV, m_context->CLAMP.MAXU, m_context->CLAMP.MAXV);
 
 	const bool need_mipmap = IsMipMapDraw();
 	const bool shader_emulated_sampler = tex->m_palette || cpsm.fmt != 0 || complex_wms_wmt || psm.depth;
@@ -3290,14 +3313,38 @@ void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	const GSVector4 st_scale = WH.zwzw() / GSVector4(w, h).xyxy();
 	m_conf.cb_ps.STScale = GSVector2(st_scale.x, st_scale.y);
 
+	if (tex->m_region.HasX())
+	{
+		m_conf.cb_ps.STRange.x = static_cast<float>(tex->m_region.GetMinX()) / static_cast<float>(miptw);
+		m_conf.cb_ps.STRange.z = static_cast<float>(miptw) / static_cast<float>(tex->m_region.GetWidth());
+		m_conf.ps.adjs = 1;
+	}
+	if (tex->m_region.HasY())
+	{
+		m_conf.cb_ps.STRange.y = static_cast<float>(tex->m_region.GetMinY()) / static_cast<float>(mipth);
+		m_conf.cb_ps.STRange.w = static_cast<float>(mipth) / static_cast<float>(tex->m_region.GetHeight());
+		m_conf.ps.adjt = 1;
+	}
+
 	m_conf.ps.fst = !!PRIM->FST;
 
 	m_conf.cb_ps.WH = WH;
 	m_conf.cb_ps.HalfTexel = GSVector4(-0.5f, 0.5f).xxyy() / WH.zwzw();
 	if (complex_wms_wmt)
 	{
-		m_conf.cb_ps.MskFix = GSVector4i(m_context->CLAMP.MINU, m_context->CLAMP.MINV, m_context->CLAMP.MAXU, m_context->CLAMP.MAXV);;
-		m_conf.cb_ps.MinMax = GSVector4(m_conf.cb_ps.MskFix) / WH.xyxy();
+		const GSVector4i clamp(m_context->CLAMP.MINU, m_context->CLAMP.MINV, m_context->CLAMP.MAXU, m_context->CLAMP.MAXV);
+		const GSVector4 region_repeat(GSVector4::cast(clamp));
+		const GSVector4 region_clamp(GSVector4(clamp) / WH.xyxy());
+		if (wms >= CLAMP_REGION_CLAMP)
+		{
+			m_conf.cb_ps.MinMax.x = (wms == CLAMP_REGION_CLAMP && !m_conf.ps.depth_fmt) ? region_clamp.x : region_repeat.x;
+			m_conf.cb_ps.MinMax.z = (wms == CLAMP_REGION_CLAMP && !m_conf.ps.depth_fmt) ? region_clamp.z : region_repeat.z;
+		}
+		if (wmt >= CLAMP_REGION_CLAMP)
+		{
+			m_conf.cb_ps.MinMax.y = (wmt == CLAMP_REGION_CLAMP && !m_conf.ps.depth_fmt) ? region_clamp.y : region_repeat.y;
+			m_conf.cb_ps.MinMax.w = (wmt == CLAMP_REGION_CLAMP && !m_conf.ps.depth_fmt) ? region_clamp.w : region_repeat.w;
+		}
 	}
 	else if (trilinear_manual)
 	{
@@ -3317,18 +3364,6 @@ void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	const GSVector4 tc_oh_ts = GSVector4(1 / 16.0f, 1 / 16.0f, m_userhacks_tcoffset_x, m_userhacks_tcoffset_y) / WH.xyxy();
 	m_conf.cb_ps.TCOffsetHack = GSVector2(tc_oh_ts.z, tc_oh_ts.w);
 	m_conf.cb_vs.texture_scale = GSVector2(tc_oh_ts.x, tc_oh_ts.y);
-
-	// Must be done after all coordinates math
-	if (m_context->HasFixedTEX0() && !PRIM->FST)
-	{
-		m_conf.ps.invalid_tex0 = 1;
-		// Use invalid size to denormalize ST coordinate
-		m_conf.cb_ps.WH.x = static_cast<float>(1 << m_context->stack.TEX0.TW);
-		m_conf.cb_ps.WH.y = static_cast<float>(1 << m_context->stack.TEX0.TH);
-
-		// We can't handle m_target with invalid_tex0 atm due to upscaling
-		ASSERT(!tex->m_target);
-	}
 
 	// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader
 	m_conf.sampler.tau = (wms != CLAMP_CLAMP);

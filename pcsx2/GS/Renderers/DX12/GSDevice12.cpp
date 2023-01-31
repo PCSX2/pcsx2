@@ -1483,6 +1483,8 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_FST", sel.fst);
 	sm.AddMacro("PS_WMS", sel.wms);
 	sm.AddMacro("PS_WMT", sel.wmt);
+	sm.AddMacro("PS_ADJS", sel.adjs);
+	sm.AddMacro("PS_ADJT", sel.adjt);
 	sm.AddMacro("PS_AEM_FMT", sel.aem_fmt);
 	sm.AddMacro("PS_AEM", sel.aem);
 	sm.AddMacro("PS_TFX", sel.tfx);
@@ -1505,7 +1507,6 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_DFMT", sel.dfmt);
 	sm.AddMacro("PS_DEPTH_FMT", sel.depth_fmt);
 	sm.AddMacro("PS_PAL_FMT", sel.pal_fmt);
-	sm.AddMacro("PS_INVALID_TEX0", sel.invalid_tex0);
 	sm.AddMacro("PS_HDR", sel.hdr);
 	sm.AddMacro("PS_COLCLIP", sel.colclip);
 	sm.AddMacro("PS_BLEND_A", sel.blend_a);
