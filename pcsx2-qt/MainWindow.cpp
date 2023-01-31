@@ -1363,6 +1363,7 @@ void MainWindow::onGameListRefreshProgress(const QString& status, int current, i
 
 void MainWindow::onGameListRefreshComplete()
 {
+	m_ui.statusBar->clearMessage();
 	clearProgressBar();
 }
 
