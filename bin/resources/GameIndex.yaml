@@ -850,7 +850,6 @@ SCAJ-20086:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Fix slowdown due to large textures.
   memcardFilters:
     - "SLPS-29001"
     - "SLPS-29002"
@@ -865,7 +864,6 @@ SCAJ-20087:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Fix slowdown due to large textures.
   memcardFilters:
     - "SLPS-29001"
     - "SLPS-29002"
@@ -1371,7 +1369,6 @@ SCAJ-20179:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Performs much better with it off.
     getSkipCount: "GSC_XenosagaE3"
 SCAJ-20180:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 2 of 2]"
@@ -1380,7 +1377,6 @@ SCAJ-20180:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Performs much better with it off.
     getSkipCount: "GSC_XenosagaE3"
 SCAJ-20181:
   name: "Minna no Tennis"
@@ -1390,8 +1386,6 @@ SCAJ-20182:
   region: "NTSC-Unk"
   gameFixes:
     - FpuMulHack
-  gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
 SCAJ-20183:
   name: "Wild ARMs - The Vth Vanguard"
   region: "NTSC-J"
@@ -1429,8 +1423,6 @@ SCAJ-20193:
   region: "NTSC-Ch-J"
   gameFixes:
     - FpuMulHack
-  gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
 SCAJ-20194:
   name: "Minna no Golf 4 [PlayStation 2 The Best]"
   region: "NTSC-Unk"
@@ -1685,7 +1677,6 @@ SCED-50041:
   region: "PAL-E"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    texturePreloading: 0 # Performs much better with no preloading.
 SCED-50065:
   name: "Official PlayStation 2 Magazine Demo 1"
   region: "PAL-M5"
@@ -2791,7 +2782,6 @@ SCES-50001:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    texturePreloading: 0 # Performs much better with no preloading.
 SCES-50002:
   name: "FantaVision"
   region: "PAL-M5"
@@ -3106,7 +3096,6 @@ SCES-50878:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    texturePreloading: 0 # Performs much better with no preloading.
 SCES-50885:
   name: "Ape Escape 2"
   region: "PAL-E"
@@ -4797,7 +4786,6 @@ SCES-82034:
   region: "PAL-M3"
   gsHWFixes:
     autoFlush: 1
-    texturePreloading: 0
   memcardFilters:
     - "SLES-82034"
 SCES-82035:
@@ -5046,7 +5034,6 @@ SCKA-20045:
   region: "NTSC-K"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    texturePreloading: 0 # Performs much better with no preloading.
 SCKA-20047:
   name: "Armored Core Nine Breaker"
   region: "NTSC-K"
@@ -6746,7 +6733,6 @@ SCPS-55017:
   compat: 3
   gsHWFixes:
     alignSprite: 1
-    texturePreloading: 0 # Performs much better with no preloading.
 SCPS-55018:
   name: "Kingdom of Scribbling"
   region: "NTSC-J"
@@ -6935,7 +6921,6 @@ SCPS-56002:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    texturePreloading: 0 # Performs much better with no preloading.
 SCPS-56003:
   name: "Jak and Daxter - The Precursor Legacy"
   region: "NTSC-K"
@@ -6955,7 +6940,6 @@ SCPS-56006:
   compat: 5
   gsHWFixes:
     alignSprite: 1
-    texturePreloading: 0 # Performs much better with no preloading.
 SCPS-56008:
   name: "Fatal Frame"
   region: "NTSC-K"
@@ -9197,8 +9181,6 @@ SLED-50117:
   region: "PAL-E"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
-  gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLED-50286:
   name: "Red Faction [Demo]"
   region: "PAL-E"
@@ -10384,22 +10366,16 @@ SLES-50383:
   compat: 5
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
-  gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLES-50384:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-I"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
-  gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLES-50385:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-S"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
-  gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLES-50386:
   name: "Crash Bandicoot - The Wrath of Cortex"
   region: "PAL-M6"
@@ -11201,31 +11177,26 @@ SLES-50804:
   region: "PAL-E"
   gsHWFixes:
     roundSprite: 1 # Fixes lines in HUD and text boxes.
-    texturePreloading: 1 # Performs much better with partial.
 SLES-50805:
   name: "Deus Ex"
   region: "PAL-G"
   gsHWFixes:
     roundSprite: 1 # Fixes lines in HUD and text boxes.
-    texturePreloading: 1 # Performs much better with partial.
 SLES-50806:
   name: "Deus Ex"
   region: "PAL-F"
   gsHWFixes:
     roundSprite: 1 # Fixes lines in HUD and text boxes.
-    texturePreloading: 1 # Performs much better with partial.
 SLES-50807:
   name: "Deus Ex"
   region: "PAL-I"
   gsHWFixes:
     roundSprite: 1 # Fixes lines in HUD and text boxes.
-    texturePreloading: 1 # Performs much better with partial.
 SLES-50808:
   name: "Deus Ex"
   region: "PAL-S"
   gsHWFixes:
     roundSprite: 1 # Fixes lines in HUD and text boxes.
-    texturePreloading: 1 # Performs much better with partial.
 SLES-50809:
   name: "Next Generation Tennis"
   region: "PAL-M6"
@@ -22944,7 +22915,6 @@ SLES-82009:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro-stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLES-82010:
   name: "Metal Gear Solid 2, Document of"
@@ -23052,7 +23022,6 @@ SLES-82034:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Fix slowdown due to large textures.
   memcardFilters:
     - "SLES-82034"
     - "SCES-82034"
@@ -23063,7 +23032,6 @@ SLES-82035:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Fix slowdown due to large textures.
   memcardFilters:
     - "SLES-82034"
     - "SCES-82034"
@@ -24492,7 +24460,6 @@ SLKA-35001:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro-stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLKA-35003:
   name: "Sakura Taisen - Atsuki Chishioni"
@@ -25343,7 +25310,6 @@ SLPM-61147:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Performs much better with it off.
     getSkipCount: "GSC_XenosagaE3"
 SLPM-61157:
   name: "Naruto Shippuuden - Narutimate Accel [Trial]"
@@ -27909,8 +27875,6 @@ SLPM-65077:
   region: "NTSC-J"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
-  gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro-stuttering.
   memcardFilters:
     - "SLPM-65078"
     - "SLPM-65077"
@@ -27919,8 +27883,6 @@ SLPM-65078:
   region: "NTSC-J"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
-  gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro-stuttering.
   memcardFilters:
     - "SLPM-65078"
     - "SLPM-65077"
@@ -32986,8 +32948,6 @@ SLPM-66503:
   region: "NTSC-J"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
-  gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLPM-66504:
   name: "Onimusha 2 [Mega Hits]"
   region: "NTSC-J"
@@ -34116,8 +34076,6 @@ SLPM-66792:
   region: "NTSC-J"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
-  gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLPM-66794:
   name: "Metal Gear Solid 3 - Snake Eater [20th Anniversary Edition]"
   region: "NTSC-J"
@@ -34763,7 +34721,6 @@ SLPM-67002:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro-stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLPM-67003:
   name: "Sakura Taisen - Atsuki Chishioni"
@@ -34789,7 +34746,6 @@ SLPM-67008:
   name: "Metal Gear Solid 2 - Substance [Konami Dendou Collection]"
   region: "NTSC-J"
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro-stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLPM-67009:
   name: "Sakura Taisen V - Saraba Itoshiki Hito Yo"
@@ -34886,8 +34842,6 @@ SLPM-67515:
   region: "NTSC-K"
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts
-  gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLPM-67518:
   name: "Onimusha 2 Samurai's Destiny"
   region: "NTSC-K"
@@ -35457,7 +35411,6 @@ SLPS-20015:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    texturePreloading: 0 # Performs much better with no preloading.
 SLPS-20016:
   name: "Dream Audition"
   region: "NTSC-J"
@@ -37125,7 +37078,6 @@ SLPS-25100:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    texturePreloading: 0 # Performs much better with no preloading.
 SLPS-25102:
   name: "Project Arms"
   region: "NTSC-J"
@@ -38030,7 +37982,6 @@ SLPS-25366:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Fix slowdown due to large textures.
   memcardFilters:
     - "SLPS-29001"
     - "SLPS-29002"
@@ -38045,7 +37996,6 @@ SLPS-25367:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Fix slowdown due to large textures.
   memcardFilters:
     - "SLPS-29001"
     - "SLPS-29002"
@@ -38060,7 +38010,6 @@ SLPS-25368:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Fix slowdown due to large textures.
   memcardFilters: # Allows import of Xenosaga I, Xenosaga I Reloaded, and Xenosaga Freaks data.
     - "SLPS-29001"
     - "SLPS-29002"
@@ -38075,7 +38024,6 @@ SLPS-25369:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Fix slowdown due to large textures.
   memcardFilters:
     - "SLPS-29001"
     - "SLPS-29002"
@@ -39045,7 +38993,6 @@ SLPS-25640:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Performs much better with it off.
     getSkipCount: "GSC_XenosagaE3"
   memcardFilters: # Allows import of Xenosaga II save data.
     - "SLPS-25640"
@@ -39058,7 +39005,6 @@ SLPS-25641:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Performs much better with it off.
     getSkipCount: "GSC_XenosagaE3"
   memcardFilters:
     - "SLPS-25640"
@@ -39373,8 +39319,6 @@ SLPS-25715:
   region: "NTSC-J"
   gameFixes:
     - FpuMulHack
-  gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
 SLPS-25716:
   name: "Digimon Savers - Another Mission"
   region: "NTSC-J"
@@ -39805,8 +39749,6 @@ SLPS-25841:
   region: "NTSC-J"
   gameFixes:
     - FpuMulHack
-  gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
   memcardFilters: # Allows import of non-DC Tales of Destiny data.
     - "SLPS-25841"
     - "SLPS-25842"
@@ -39817,8 +39759,6 @@ SLPS-25842:
   compat: 5
   gameFixes:
     - FpuMulHack
-  gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
   memcardFilters:
     - "SLPS-25841"
     - "SLPS-25842"
@@ -40213,7 +40153,6 @@ SLPS-71501:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    texturePreloading: 0 # Performs much better with no preloading.
 SLPS-72501:
   name: "Final Fantasy X [Mega Hits]"
   region: "NTSC-J"
@@ -40251,7 +40190,6 @@ SLPS-73104:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    texturePreloading: 0 # Performs much better with no preloading.
 SLPS-73105:
   name: "Kinnikuman Generations [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -40334,7 +40272,6 @@ SLPS-73209:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    texturePreloading: 0 # Performs much better with no preloading.
 SLPS-73210:
   name: "Katamari Damacy [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -40417,7 +40354,6 @@ SLPS-73224:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Fix slowdown due to large textures.
   memcardFilters:
     - "SLPS-29001"
     - "SLPS-29002"
@@ -40432,7 +40368,6 @@ SLPS-73225:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Fix slowdown due to large textures.
   memcardFilters:
     - "SLPS-29001"
     - "SLPS-29002"
@@ -40818,7 +40753,6 @@ SLUS-20001:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    texturePreloading: 0 # Performs much better with no preloading.
 SLUS-20002:
   name: "Ridge Racer V"
   region: "NTSC-U"
@@ -41306,8 +41240,6 @@ SLUS-20144:
   compat: 5
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
-  gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLUS-20145:
   name: "Ring of Red"
   region: "NTSC-U"
@@ -42120,7 +42052,6 @@ SLUS-20328:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    texturePreloading: 0 # Performs much better with no preloading.
 SLUS-20329:
   name: "Pro Race Driver"
   region: "NTSC-U"
@@ -43178,7 +43109,6 @@ SLUS-20554:
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro-stuttering.
     roundSprite: 2 # Fixes font artifacts.
 SLUS-20555:
   name: "Reel Fishing 3"
@@ -44810,7 +44740,6 @@ SLUS-20892:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Fix slowdown due to large textures.
   memcardFilters: # Allows import of Xenosaga I data.
     - "SLUS-20469"
     - "SLUS-20892"
@@ -46083,7 +46012,6 @@ SLUS-21133:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Fix slowdown due to large textures.
   memcardFilters: # Allows import of Xenosaga I data.
     - "SLUS-20469"
     - "SLUS-20892"
@@ -47587,7 +47515,6 @@ SLUS-21389:
     autoFlush: 1
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows.
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Performs much better with it off.
     getSkipCount: "GSC_XenosagaE3"
   memcardFilters: # Allows import of Xenosaga II save data.
     - "SLUS-21389"
@@ -47736,7 +47663,6 @@ SLUS-21417:
     autoFlush: 1
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows.
     roundSprite: 2 # Fixes font artifacts.
-    texturePreloading: 0 # Performs much better with it off.
     getSkipCount: "GSC_XenosagaE3"
   memcardFilters:
     - "SLUS-21389"
@@ -50203,7 +50129,6 @@ SLUS-28012:
   region: "NTSC-U"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    texturePreloading: 0 # Performs much better with no preloading.
 SLUS-28013:
   name: "Dual Hearts [Trade Demo]"
   region: "NTSC-U"
@@ -50355,8 +50280,6 @@ SLUS-29003:
   compat: 5
   gameFixes:
     - DMABusyHack # Fixes broken half-bottom artifacts.
-  gsHWFixes:
-    gpuPaletteConversion: 2 # Fixes micro-stuttering.
 SLUS-29004:
   name: "Unison & Dead or Alive 2 Hardcore [Demo]"
   region: "NTSC-U"
@@ -50452,7 +50375,6 @@ SLUS-29034:
   region: "NTSC-U"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    texturePreloading: 0 # Performs much better with no preloading.
 SLUS-29035:
   name: "Eidos Demo Disc"
   region: "NTSC-U"
