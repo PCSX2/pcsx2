@@ -353,7 +353,6 @@ public:
 	void Read(Target* t, const GSVector4i& r);
 	void Read(Source* t, const GSVector4i& r);
 	void RemoveAll();
-	void InvalidateFrameAge();
 	void RemovePartial();
 	void AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw);
 

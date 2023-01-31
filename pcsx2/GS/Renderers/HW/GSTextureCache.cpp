@@ -61,19 +61,6 @@ void GSTextureCache::RemovePartial()
 	}
 }
 
-// Causes old frames to be flushed
-void GSTextureCache::InvalidateFrameAge()
-{
-	for (int type = 0; type < 2; type++)
-	{
-		for (auto t : m_dst[type])
-		{
-			if (t->m_is_frame)
-				t->m_age = 9999;
-		}
-	}
-}
-
 void GSTextureCache::RemoveAll()
 {
 	m_src.RemoveAll();
@@ -713,10 +700,11 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 		//
 		// From a performance point of view, it might cost a little on big upscaling
 		// but normally few RT are miss so it must remain reasonable.
-		bool supported_fmt = !GSConfig.UserHacks_DisableDepthSupport || psm_s.depth == 0;
-		if ((is_frame || preload) && TEX0.TBW > 0 && supported_fmt)
+		const bool supported_fmt = !GSConfig.UserHacks_DisableDepthSupport || psm_s.depth == 0;
+		const bool forced_preload = static_cast<GSRendererHW*>(g_gs_renderer.get())->m_force_preload;
+		if ((is_frame || preload || forced_preload) && TEX0.TBW > 0 && supported_fmt)
 		{
-			if (!is_frame)
+			if (!is_frame && !forced_preload)
 			{
 				// Check for an EE transfer that matches our RT.
 				while (static_cast<GSRendererHW*>(g_gs_renderer.get())->m_draw_transfers.size() > 0)
