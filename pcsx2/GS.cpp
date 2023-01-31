@@ -85,6 +85,8 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 		//Console.Warning( "csr.RESET" );
 		//gifUnit.Reset(true); // Don't think gif should be reset...
 		gifUnit.gsSIGNAL.queued = false;
+		// Privilage registers also reset.
+		memset(PS2MEM_GS, 0, sizeof(PS2MEM_GS));
 		GetMTGS().SendSimplePacket(GS_RINGTYPE_RESET, 0, 0, 0);
 		const u32 field = CSRreg.FIELD;
 		CSRreg.Reset();
