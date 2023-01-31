@@ -3884,6 +3884,8 @@ SCES-53286:
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
+    mipmap: 2 # Fixes bad textures.
+    trilinearFiltering: 1 # Fixes smooths texture transitions.
     beforeDraw: "OI_JakGames"
   memcardFilters: # Reads Ratchet Gladiator data.
     - "SCES-53286"
@@ -8133,6 +8135,8 @@ SCUS-97429:
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
+    mipmap: 2 # Fixes bad textures.
+    trilinearFiltering: 1 # Fixes smooths texture transitions.
     beforeDraw: "OI_JakGames"
   memcardFilters:
     - "SCUS-97429"
@@ -8401,6 +8405,8 @@ SCUS-97486:
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
+    mipmap: 2 # Fixes bad textures.
+    trilinearFiltering: 1 # Fixes smooths texture transitions.
     beforeDraw: "OI_JakGames"
 SCUS-97487:
   name: "Ratchet - Deadlocked [Public Beta v.1]"
@@ -8421,6 +8427,8 @@ SCUS-97488:
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
+    mipmap: 2 # Fixes bad textures.
+    trilinearFiltering: 1 # Fixes smooths texture transitions.
     beforeDraw: "OI_JakGames"
 SCUS-97489:
   name: "SOCOM 3 - U.S. Navy SEALs [Public Beta v.1]"
@@ -17669,9 +17677,11 @@ SLES-53563:
   name: "Nickelodeon SpongeBob SquarePants and Friends Unite!"
   region: "PAL-M6"
   gsHWFixes:
-    autoFlush: 1 # Fixes glows.
-    mipmap: 1 # Better characters and environment but has a texture cache issue that makes it worse.
-    textureInsideRT: 1 # Fixes rainbow lighting for lamps, computer and other areas.
+    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
+    textureInsideRT: 1 # Fixes rainbow lighting for some areas.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLES-53564:
   name: "Darkwatch"
   region: "PAL-M5"
@@ -25293,8 +25303,9 @@ SLPM-62026:
 SLPM-62027:
   name: "Snowboard Heaven"
   region: "NTSC-J"
-  gsHWFixes:
-    textureInsideRT: 1 # Fixes fmv.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs.
+  # tex in rt makes videos semi appear in hardware but they are flashy and broken.
 SLPM-62028:
   name: "Greatest Striker"
   region: "NTSC-J"
@@ -25888,8 +25899,9 @@ SLPM-62262:
 SLPM-62263:
   name: "Snowboard Heaven"
   region: "NTSC-J"
-  gsHWFixes:
-    textureInsideRT: 1 # Fixes fmv.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs.
+  # tex in rt makes videos semi appear in hardware but they are flashy and broken.
 SLPM-62264:
   name: "Shin Contra"
   region: "NTSC-J"
@@ -50894,6 +50906,8 @@ TCES-53286:
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
     preloadFrameData: 1 # Fixes Sony splash at boot.
+    mipmap: 2 # Fixes bad textures.
+    trilinearFiltering: 1 # Fixes smooths texture transitions.
     beforeDraw: "OI_JakGames"
 TCPS-10058:
   name: "Densha de Go! Shinkansen [with Controller]"
