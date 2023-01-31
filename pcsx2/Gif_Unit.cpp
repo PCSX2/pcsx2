@@ -85,6 +85,7 @@ bool Gif_HandlerAD(u8* pMem)
 	{ // FINISH
 		GUNIT_WARN("GIF Handler - FINISH");
 		CSRreg.FINISH = true;
+		gifUnit.gsFINISH.gsFINISHFired = false;
 	}
 	else if (reg == GIF_A_D_REG_LABEL)
 	{ // LABEL
