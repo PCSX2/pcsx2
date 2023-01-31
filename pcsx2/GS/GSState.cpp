@@ -2001,8 +2001,11 @@ void GSState::Write(const u8* mem, int len)
 	if (GSConfig.PreloadFrameWithGSData)
 	{
 		// Store the transfer for preloading new RT's.
-		if(m_draw_transfers.size() == 0 || (m_draw_transfers.size() > 0 && blit.DBP != m_draw_transfers.front().DBP))
-			m_draw_transfers.push_front(blit);
+		if (m_draw_transfers.size() == 0 || (m_draw_transfers.size() > 0 && blit.DBP != m_draw_transfers.back().blit.DBP))
+		{
+			GSUploadQueue new_transfer = { blit, s_n };
+			m_draw_transfers.push_back(new_transfer);
+		}
 	}
 
 	GL_CACHE("Write! ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d)",

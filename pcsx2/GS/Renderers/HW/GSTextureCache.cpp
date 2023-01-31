@@ -706,16 +706,18 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 		{
 			if (!is_frame && !forced_preload)
 			{
-				for (auto transfer : static_cast<GSRendererHW*>(g_gs_renderer.get())->m_draw_transfers)
-				{
-					if (transfer.DBP == TEX0.TBP0 && GSUtil::HasSharedBits(transfer.DPSM, TEX0.PSM))
+				std::vector<GSState::GSUploadQueue>::iterator iter;
+				for (iter = static_cast<GSRendererHW*>(g_gs_renderer.get())->m_draw_transfers.begin(); iter != static_cast<GSRendererHW*>(g_gs_renderer.get())->m_draw_transfers.end(); ) {
+					if (iter->blit.DBP == TEX0.TBP0 && GSUtil::HasSharedBits(iter->blit.DPSM, TEX0.PSM))
 					{
+						iter = static_cast<GSRendererHW*>(g_gs_renderer.get())->m_draw_transfers.erase(iter);
 						GL_INS("Preloading the RT DATA");
 						const GSVector4i newrect = GSVector4i(0, 0, real_w, real_h);
 						AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW);
 						dst->Update(true);
 						break;
 					}
+					iter++;
 				}
 			}
 			else
