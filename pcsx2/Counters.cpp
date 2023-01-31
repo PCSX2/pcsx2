@@ -461,7 +461,9 @@ u32 UpdateVSyncRate()
 
 		hsyncCounter.CycleT = vSyncInfo.hRender; // Amount of cycles before the counter will be updated
 		vsyncCounter.CycleT = vSyncInfo.Render;  // Amount of cycles before the counter will be updated
-
+		hsyncCounter.sCycle = cpuRegs.cycle;
+		vsyncCounter.sCycle = cpuRegs.cycle;
+		vsyncCounter.Mode = MODE_VRENDER;
 		cpuRcntSet();
 	}
 
