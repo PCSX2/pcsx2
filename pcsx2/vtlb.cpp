@@ -374,10 +374,25 @@ template bool vtlb_ramWrite<mem128_t>(u32 mem, const mem128_t& data);
 // memory ops don't flush the PC prior to invoking the indirect handlers.
 
 
+static GoemonTlb* FindGoemonTlbCacheAddress()
+{
+	u32 tlbAddrs[] = {
+		0x3d5580, // Cache table address for JPN final
+		0x3db400, // Cache table address for June 22 prototype
+		0x3dcd80 // Cache table address for August 26 prototype
+	};
+	for (u32 i = 0; i < sizeof(tlbAddrs); i++)
+	{
+		GoemonTlb* testTlb = (GoemonTlb*)&eeMem->Main[tlbAddrs[i]];
+		if (testTlb[0].valid < 2)
+			return testTlb;
+	}
+	DevCon.WriteLn("FindGoemonTlbCacheAddress: Unable to find valid TLB address. Expect cache misses.");
+}
+
 static void GoemonTlbMissDebug()
 {
-	// 0x3d5580 is the address of the TLB cache
-	GoemonTlb* tlb = (GoemonTlb*)&eeMem->Main[0x3d5580];
+	GoemonTlb* tlb = FindGoemonTlbCacheAddress();
 
 	for (u32 i = 0; i < 150; i++)
 	{
@@ -390,8 +405,7 @@ static void GoemonTlbMissDebug()
 
 void GoemonPreloadTlb()
 {
-	// 0x3d5580 is the address of the TLB cache table
-	GoemonTlb* tlb = (GoemonTlb*)&eeMem->Main[0x3d5580];
+	GoemonTlb* tlb = FindGoemonTlbCacheAddress();
 
 	for (u32 i = 0; i < 150; i++)
 	{
@@ -417,8 +431,7 @@ void GoemonPreloadTlb()
 
 void GoemonUnloadTlb(u32 key)
 {
-	// 0x3d5580 is the address of the TLB cache table
-	GoemonTlb* tlb = (GoemonTlb*)&eeMem->Main[0x3d5580];
+	GoemonTlb* tlb = FindGoemonTlbCacheAddress();
 	for (u32 i = 0; i < 150; i++)
 	{
 		if (tlb[i].key == key)
