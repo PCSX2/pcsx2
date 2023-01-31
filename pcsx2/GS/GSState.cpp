@@ -1699,7 +1699,6 @@ inline void GSState::CopyEnv(GSDrawingEnvironment* dest, GSDrawingEnvironment* s
 {
 	memcpy(dest, src, 88);
 	memcpy(&dest->CTXT[ctx], &src->CTXT[ctx], 96);
-	dest->CTXT[ctx].m_fixed_tex0 = src->CTXT[ctx].m_fixed_tex0;
 }
 
 void GSState::Flush(GSFlushReason reason)
@@ -3583,8 +3582,11 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(const GIFRegTEX0& TEX0, c
 
 	const int minu = (int)CLAMP.MINU;
 	const int minv = (int)CLAMP.MINV;
-	const int maxu = (int)CLAMP.MAXU;
-	const int maxv = (int)CLAMP.MAXV;
+
+	// For the FixedTEX0 case, in hardware, we handle this in the texture cache. Don't OR the bits in here, otherwise
+	// we'll end up with an invalid rectangle, we want the passed-in rectangle to be relative to the normalized size.
+	const int maxu = (wms != CLAMP_REGION_REPEAT || (int)CLAMP.MAXU < w) ? (int)CLAMP.MAXU : 0;
+	const int maxv = (wmt != CLAMP_REGION_REPEAT || (int)CLAMP.MAXV < h) ? (int)CLAMP.MAXV : 0;
 
 	GSVector4i vr = tr;
 

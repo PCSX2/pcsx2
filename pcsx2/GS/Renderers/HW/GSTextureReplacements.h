@@ -52,7 +52,8 @@ namespace GSTextureReplacements
 	GSTexture* CreateReplacementTexture(const ReplacementTexture& rtex, const GSVector2& scale, bool mipmap);
 	void ProcessAsyncLoadedTextures();
 
-	void DumpTexture(const GSTextureCache::HashCacheKey& hash, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSLocalMemory& mem, u32 level);
+	void DumpTexture(const GSTextureCache::HashCacheKey& hash, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA,
+		GSTextureCache::SourceRegion region, GSLocalMemory& mem, u32 level);
 	void ClearDumpedTextureList();
 
 	/// Loader will take a filename and interpret the format (e.g. DDS, PNG, etc).
