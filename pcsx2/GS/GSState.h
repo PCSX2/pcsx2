@@ -206,6 +206,12 @@ protected:
 	bool IsCoverageAlpha();
 
 public:
+	struct GSUploadQueue
+	{
+		GIFRegBITBLTBUF blit;
+		int draw;
+	};
+
 	GIFPath m_path[4];
 	GIFRegPRIM* PRIM;
 	GSPrivRegSet* m_regs;
@@ -222,7 +228,7 @@ public:
 	bool m_mipmap;
 	u32 m_dirty_gs_regs;
 	int m_backed_up_ctx;
-	std::list<GIFRegBITBLTBUF> m_draw_transfers;
+	std::vector<GSUploadQueue> m_draw_transfers;
 	bool m_force_preload;
 
 	static int s_n;

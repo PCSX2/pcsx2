@@ -207,9 +207,16 @@ void GSRendererHW::VSync(u32 field, bool registers_written)
 		m_force_preload = true;
 	}
 	else
+	{
 		m_force_preload = false;
-
-	m_draw_transfers.clear();
+		std::vector<GSState::GSUploadQueue>::iterator iter;
+		for (iter = m_draw_transfers.begin(); iter != m_draw_transfers.end(); ) {
+			if ((s_n - iter->draw) > 5)
+				iter = m_draw_transfers.erase(iter);
+			else
+				iter++;
+		}
+	}
 
 	if (GSConfig.LoadTextureReplacements)
 		GSTextureReplacements::ProcessAsyncLoadedTextures();
@@ -4003,10 +4010,12 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 		// If we have GPU CLUT enabled, don't do a CPU draw when it would result in a download.
 		if (GSConfig.UserHacks_GPUTargetCLUTMode != GSGPUTargetCLUTMode::Disabled)
 		{
-			for (auto upload : m_draw_transfers)
-			{
-				if (upload.DBP == m_context->TEX0.TBP0 && GSUtil::HasSharedBits(upload.DPSM, m_context->TEX0.PSM))
+			std::vector<GSState::GSUploadQueue>::iterator iter;
+			for (iter = m_draw_transfers.begin(); iter != m_draw_transfers.end(); ) {
+				if (iter->blit.DBP == m_context->TEX0.TBP0 && GSUtil::HasSharedBits(iter->blit.DPSM, m_context->TEX0.PSM))
 					return CLUTDrawTestResult::CLUTDrawOnCPU;
+
+				iter++;
 			}
 
 			GSTextureCache::Target* tgt = m_tc->GetExactTarget(m_context->TEX0.TBP0, m_context->TEX0.TBW, m_context->TEX0.PSM);
@@ -4030,10 +4039,12 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 		}
 		else
 		{
-			for (auto upload : m_draw_transfers)
-			{
-				if (upload.DBP == m_context->TEX0.TBP0 && GSUtil::HasSharedBits(upload.DPSM, m_context->TEX0.PSM))
+			std::vector<GSState::GSUploadQueue>::iterator iter;
+			for (iter = m_draw_transfers.begin(); iter != m_draw_transfers.end(); ) {
+				if (iter->blit.DBP == m_context->TEX0.TBP0 && GSUtil::HasSharedBits(iter->blit.DPSM, m_context->TEX0.PSM))
 					return CLUTDrawTestResult::CLUTDrawOnCPU;
+
+				iter++;
 			}
 		}
 
