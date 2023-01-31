@@ -108,11 +108,15 @@ struct GSMTLMainPSUniform
 	vector_float2 ta;
 	float max_depth;
 	float alpha_fix;
-	vector_uint4 uv_msk_fix;
 	vector_uint4 fbmask;
 
 	vector_float4 half_texel;
-	vector_float4 uv_min_max;
+	union
+	{
+		vector_float4 uv_min_max;
+		vector_uint4 uv_msk_fix;
+	};
+	vector_float4 st_range;
 	struct
 	{
 		unsigned int blue_mask;
@@ -166,6 +170,8 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_TCC,
 	GSMTLConstantIndex_PS_WMS,
 	GSMTLConstantIndex_PS_WMT,
+	GSMTLConstantIndex_PS_ADJS,
+	GSMTLConstantIndex_PS_ADJT,
 	GSMTLConstantIndex_PS_LTF,
 	GSMTLConstantIndex_PS_SHUFFLE,
 	GSMTLConstantIndex_PS_READ_BA,
@@ -194,6 +200,5 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_AUTOMATIC_LOD,
 	GSMTLConstantIndex_PS_MANUAL_LOD,
 	GSMTLConstantIndex_PS_POINT_SAMPLER,
-	GSMTLConstantIndex_PS_INVALID_TEX0,
 	GSMTLConstantIndex_PS_SCANMSK,
 };

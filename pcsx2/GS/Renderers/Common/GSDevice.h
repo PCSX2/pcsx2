@@ -309,6 +309,8 @@ struct alignas(16) GSHWDrawConfig
 				u32 tcc : 1;
 				u32 wms : 2;
 				u32 wmt : 2;
+				u32 adjs : 1;
+				u32 adjt : 1;
 				u32 ltf : 1;
 				// Shuffle and fbmask effect
 				u32 shuffle  : 1;
@@ -352,7 +354,6 @@ struct alignas(16) GSHWDrawConfig
 				u32 automatic_lod : 1;
 				u32 manual_lod : 1;
 				u32 point_sampler : 1;
-				u32 invalid_tex0 : 1; // Lupin the 3rd
 
 				// Scan mask
 				u32 scanmsk : 2;
@@ -554,11 +555,11 @@ struct alignas(16) GSHWDrawConfig
 		GSVector4 FogColor_AREF;
 		GSVector4 WH;
 		GSVector4 TA_MaxDepth_Af;
-		GSVector4i MskFix;
 		GSVector4i FbMask;
 
 		GSVector4 HalfTexel;
 		GSVector4 MinMax;
+		GSVector4 STRange;
 		GSVector4i ChannelShuffle;
 		GSVector2 TCOffsetHack;
 		GSVector2 STScale;

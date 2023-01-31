@@ -823,6 +823,7 @@ union
 REG_END2
 	__forceinline bool IsRepeating() const
 	{
+		// This is actually "does the texture span more than one page".
 		if (TBW < 2)
 		{
 			if (PSM == PSM_PSMT8)

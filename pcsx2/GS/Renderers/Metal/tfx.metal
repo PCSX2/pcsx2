@@ -37,6 +37,8 @@ constant uint PS_TFX                [[function_constant(GSMTLConstantIndex_PS_TF
 constant bool PS_TCC                [[function_constant(GSMTLConstantIndex_PS_TCC)]];
 constant uint PS_WMS                [[function_constant(GSMTLConstantIndex_PS_WMS)]];
 constant uint PS_WMT                [[function_constant(GSMTLConstantIndex_PS_WMT)]];
+constant bool PS_ADJS               [[function_constant(GSMTLConstantIndex_PS_ADJS)]];
+constant bool PS_ADJT               [[function_constant(GSMTLConstantIndex_PS_ADJT)]];
 constant bool PS_LTF                [[function_constant(GSMTLConstantIndex_PS_LTF)]];
 constant bool PS_SHUFFLE            [[function_constant(GSMTLConstantIndex_PS_SHUFFLE)]];
 constant bool PS_READ_BA            [[function_constant(GSMTLConstantIndex_PS_READ_BA)]];
@@ -65,7 +67,6 @@ constant bool PS_TEX_IS_FB          [[function_constant(GSMTLConstantIndex_PS_TE
 constant bool PS_AUTOMATIC_LOD      [[function_constant(GSMTLConstantIndex_PS_AUTOMATIC_LOD)]];
 constant bool PS_MANUAL_LOD         [[function_constant(GSMTLConstantIndex_PS_MANUAL_LOD)]];
 constant bool PS_POINT_SAMPLER      [[function_constant(GSMTLConstantIndex_PS_POINT_SAMPLER)]];
-constant bool PS_INVALID_TEX0       [[function_constant(GSMTLConstantIndex_PS_INVALID_TEX0)]];
 constant uint PS_SCANMSK            [[function_constant(GSMTLConstantIndex_PS_SCANMSK)]];
 
 constant GSMTLExpandType VS_EXPAND_TYPE = static_cast<GSMTLExpandType>(VS_EXPAND_TYPE_RAW);
@@ -321,7 +322,21 @@ struct PSMain
 			// As of 2018 this issue is still present.
 			uv = (trunc(uv * cb.wh.zw) + 0.5) / cb.wh.zw;
 		}
-		uv *= cb.st_scale;
+		if (!PS_ADJS && !PS_ADJT)
+		{
+			uv *= cb.st_scale;
+		}
+		else
+		{
+			if (PS_ADJS)
+				uv.x = (uv.x - cb.st_range.x) * cb.st_range.z;
+			else
+				uv.x = uv.x * cb.st_scale.x;
+			if (PS_ADJT)
+				uv.y = (uv.y - cb.st_range.y) * cb.st_range.w;
+			else
+				uv.y = uv.y * cb.st_scale.y;
+		}
 
 		if (PS_AUTOMATIC_LOD)
 		{
@@ -360,7 +375,7 @@ struct PSMain
 	float4 clamp_wrap_uv(float4 uv)
 	{
 		float4 uv_out = uv;
-		float4 tex_size = PS_INVALID_TEX0 ? cb.wh.zwzw : cb.wh.xyxy;
+		float4 tex_size = cb.wh.xyxy;
 
 		if (PS_WMS == PS_WMT)
 		{
@@ -724,12 +739,7 @@ struct PSMain
 	float4 ps_color()
 	{
 		float2 st, st_int;
-		if (!FST && PS_INVALID_TEX0)
-		{
-			st = (in.t.xy * cb.wh.xy) / (in.t.w * cb.wh.zw);
-			st_int = (in.ti.zw * cb.wh.xy) / (in.t.w * cb.wh.zw);
-		}
-		else if (!FST)
+		if (!FST)
 		{
 			st = in.t.xy / in.t.w;
 			st_int = in.ti.zw / in.t.w;
