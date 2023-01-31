@@ -706,12 +706,9 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 		{
 			if (!is_frame && !forced_preload)
 			{
-				// Check for an EE transfer that matches our RT.
-				while (static_cast<GSRendererHW*>(g_gs_renderer.get())->m_draw_transfers.size() > 0)
+				for (auto transfer : static_cast<GSRendererHW*>(g_gs_renderer.get())->m_draw_transfers)
 				{
-					const GIFRegBITBLTBUF* transfer = &static_cast<GSRendererHW*>(g_gs_renderer.get())->m_draw_transfers.front();
-
-					if (transfer->DBP == TEX0.TBP0 && GSUtil::HasSharedBits(transfer->DPSM, TEX0.PSM))
+					if (transfer.DBP == TEX0.TBP0 && GSUtil::HasSharedBits(transfer.DPSM, TEX0.PSM))
 					{
 						GL_INS("Preloading the RT DATA");
 						const GSVector4i newrect = GSVector4i(0, 0, real_w, real_h);
@@ -719,7 +716,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 						dst->Update(true);
 						break;
 					}
-					static_cast<GSRendererHW*>(g_gs_renderer.get())->m_draw_transfers.pop_front();
 				}
 			}
 			else
@@ -729,7 +725,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 				AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW);
 				dst->Update(true);
 			}
-			static_cast<GSRendererHW*>(g_gs_renderer.get())->m_draw_transfers.clear();
 		}
 	}
 	if (used)

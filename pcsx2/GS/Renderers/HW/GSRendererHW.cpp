@@ -209,6 +209,7 @@ void GSRendererHW::VSync(u32 field, bool registers_written)
 	else
 		m_force_preload = false;
 
+	m_draw_transfers.clear();
 
 	if (GSConfig.LoadTextureReplacements)
 		GSTextureReplacements::ProcessAsyncLoadedTextures();
@@ -4002,6 +4003,12 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 		// If we have GPU CLUT enabled, don't do a CPU draw when it would result in a download.
 		if (GSConfig.UserHacks_GPUTargetCLUTMode != GSGPUTargetCLUTMode::Disabled)
 		{
+			for (auto upload : m_draw_transfers)
+			{
+				if (upload.DBP == m_context->TEX0.TBP0 && GSUtil::HasSharedBits(upload.DPSM, m_context->TEX0.PSM))
+					return CLUTDrawTestResult::CLUTDrawOnCPU;
+			}
+
 			GSTextureCache::Target* tgt = m_tc->GetExactTarget(m_context->TEX0.TBP0, m_context->TEX0.TBW, m_context->TEX0.PSM);
 			if (tgt)
 			{
@@ -4019,6 +4026,14 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 					GL_INS("GPU clut is enabled and this draw would readback, leaving on GPU");
 					return CLUTDrawTestResult::CLUTDrawOnGPU;
 				}
+			}
+		}
+		else
+		{
+			for (auto upload : m_draw_transfers)
+			{
+				if (upload.DBP == m_context->TEX0.TBP0 && GSUtil::HasSharedBits(upload.DPSM, m_context->TEX0.PSM))
+					return CLUTDrawTestResult::CLUTDrawOnCPU;
 			}
 		}
 
