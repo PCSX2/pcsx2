@@ -337,6 +337,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					else
 						dst = t;
 					found_t = true;
+					x_offset = 0;
+					y_offset = 0;
 					break;
 				}
 				else if (t_clean && (t->m_TEX0.TBW >= 16) && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0 + t->m_TEX0.TBW * 0x10, t->m_TEX0.PSM))
@@ -347,10 +349,13 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					half_right = true;
 					dst = t;
 					found_t = true;
+					x_offset = 0;
+					y_offset = 0;
 					break;
 				}
+				// Make sure the texture actually is INSIDE the RT, it's possibly not valid if it isn't.
 				else if (GSConfig.UserHacks_TextureInsideRt && psm == PSM_PSMCT32 && t->m_TEX0.PSM == psm &&
-					((t->m_TEX0.TBP0 < bp && t->m_end_block >= bp) || t_wraps) && t->m_age < 1)
+						(t->Overlaps(bp, bw, psm, r) || t_wraps) && t->m_age < 1 && !found_t)
 				{
 					// Only PSMCT32 to limit false hits.
 					// PSM equality needed because CreateSource does not handle PSM conversion.
@@ -374,8 +379,35 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 						// Offset from Target to Source in Target coords.
 						x_offset = so.b2a_offset.x;
 						y_offset = so.b2a_offset.y;
+
+						// Clear any dirty stuff, we don't want to copy that :)
+						dst->Update(true);
+
+						// Hopefully in most cases we only expand in one direction, so only make it dirty from the edge of the texture.
+						// If it's both directions, then, YOLO I guess.. Ideally we redo the dirty handling to do one rect at a time.
+						GSVector2i min_start = { 0, 0 };
+						if (x_offset && !y_offset)
+							min_start.x = dst->m_valid.z;
+
+						if (!x_offset && y_offset)
+							min_start.y = dst->m_valid.w;
+
+						// Expand the target if it's only partially inside it.
+						const GSVector4i dirty_rect = { min_start.x, min_start.y, x_offset + (1 << TEX0.TW), y_offset + (1 << TEX0.TH) };
+						const GSVector2 up_s(dst->m_texture->GetScale());
+						const int new_w = std::max(static_cast<int>(dirty_rect.z * up_s.x), dst->m_texture->GetWidth());
+						const int new_h = std::max(static_cast<int>(dirty_rect.w * up_s.y), dst->m_texture->GetHeight());
+
+						if (new_w > dst->m_texture->GetWidth() || new_h > dst->m_texture->GetHeight())
+						{
+							dst->ResizeTexture(new_w, new_h, up_s);
+							dst->UpdateValidity(dirty_rect);
+							AddDirtyRectTarget(dst, dirty_rect, dst->m_TEX0.PSM, dst->m_TEX0.TBW);
+						}
+
 						found_t = true;
-						break;
+						// Keep looking, just in case there is an exact match (Situation: Target frame drawn inside target frame, current makes a separate texture)
+						continue;
 					}
 				}
 			}
