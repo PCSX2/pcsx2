@@ -29,6 +29,7 @@
 #include <sstream>
 #include <VersionHelpers.h>
 #include <d3dcompiler.h>
+#include <dxgidebug.h>
 
 static bool SupportsTextureFormat(ID3D11Device* dev, DXGI_FORMAT format)
 {
@@ -90,6 +91,8 @@ bool GSDevice11::Create()
 
 	m_dev = static_cast<ID3D11Device*>(g_host_display->GetDevice());
 	m_ctx = static_cast<ID3D11DeviceContext*>(g_host_display->GetContext());
+	if (GSConfig.UseDebugDevice)
+		m_annotation = m_ctx.try_query<ID3DUserDefinedAnnotation>();
 	level = m_dev->GetFeatureLevel();
 	const bool support_feature_level_11_0 = (level >= D3D_FEATURE_LEVEL_11_0);
 
@@ -449,6 +452,40 @@ void GSDevice11::ClearStencil(GSTexture* t, u8 c)
 	if (!t)
 		return;
 	m_ctx->ClearDepthStencilView(*(GSTexture11*)t, D3D11_CLEAR_STENCIL, 0, c);
+}
+
+void GSDevice11::PushDebugGroup(const char* fmt, ...)
+{
+	if (!m_annotation)
+		return;
+
+	std::va_list ap;
+	va_start(ap, fmt);
+	std::string str(StringUtil::StdStringFromFormatV(fmt, ap));
+	va_end(ap);
+
+	m_annotation->BeginEvent(StringUtil::UTF8StringToWideString(str).c_str());
+}
+
+void GSDevice11::PopDebugGroup()
+{
+	if (!m_annotation)
+		return;
+
+	m_annotation->EndEvent();
+}
+
+void GSDevice11::InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...)
+{
+	if (!m_annotation)
+		return;
+
+	std::va_list ap;
+	va_start(ap, fmt);
+	std::string str(StringUtil::StdStringFromFormatV(fmt, ap));
+	va_end(ap);
+
+	m_annotation->SetMarker(StringUtil::UTF8StringToWideString(str).c_str());
 }
 
 GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
