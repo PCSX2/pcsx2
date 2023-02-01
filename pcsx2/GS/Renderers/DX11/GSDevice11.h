@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <wil/com.h>
 #include <dxgi1_3.h>
+#include <d3d11_1.h>
 
 struct GSVertexShader11
 {
@@ -130,6 +131,7 @@ private:
 
 	wil::com_ptr_nothrow<ID3D11Device> m_dev;
 	wil::com_ptr_nothrow<ID3D11DeviceContext> m_ctx;
+	wil::com_ptr_nothrow<ID3DUserDefinedAnnotation> m_annotation;
 	wil::com_ptr_nothrow<IDXGISwapChain1> m_swapchain;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_vb;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_ib;
@@ -256,6 +258,10 @@ public:
 	void ClearRenderTarget(GSTexture* t, u32 c) override;
 	void ClearDepth(GSTexture* t) override;
 	void ClearStencil(GSTexture* t, u8 c) override;
+
+	void PushDebugGroup(const char* fmt, ...) override;
+	void PopDebugGroup() override;
+	void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) override;
 
 	void CloneTexture(GSTexture* src, GSTexture** dest, const GSVector4i& rect);
 
