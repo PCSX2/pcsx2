@@ -110,6 +110,8 @@ public:
 	/// Rescans a single file. NOTE: Happens on UI thread.
 	void rescanFile(const std::string& path);
 
+	void openDebugger();
+
 public Q_SLOTS:
 	void checkForUpdates(bool display_message, bool force_check);
 	void refreshGameList(bool invalidate_cache);
@@ -241,7 +243,6 @@ private:
 	void updateInputRecordingActions(bool started);
 
 	DebuggerWindow* getDebuggerWindow();
-	void openDebugger();
 
 	ControllerSettingsDialog* getControllerSettingsDialog();
 	void doControllerSettings(ControllerSettingsDialog::Category category = ControllerSettingsDialog::Category::Count);
