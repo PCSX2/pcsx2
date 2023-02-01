@@ -227,7 +227,7 @@ uvec4 sample_4_index(vec4 uv)
 
 #if PS_PAL_FMT == 1
     // 4HL
-    return i & 0xFu
+    return i & 0xFu;
 #elif PS_PAL_FMT == 2
     // 4HH
     return i >> 4u;
