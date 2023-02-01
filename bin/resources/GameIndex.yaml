@@ -9259,6 +9259,11 @@ SLED-51342:
   region: "PAL-E"
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
+SLED-51676:
+  name: "Warhammer 40,000 - Fire Warrior [Demo]"
+  region: "PAL"
+  gameFixes:
+    - XGKickHack # Fixes corrupted graphics.
 SLED-51901:
   name: "Soul Calibur II [Demo]"
   region: "PAL-E"
@@ -11591,7 +11596,7 @@ SLES-50955:
   region: "PAL-E"
   compat: 5
 SLES-50958:
-  name: "Warhammer 40,000 - Firewarrior"
+  name: "Warhammer 40,000 - Fire Warrior"
   region: "PAL-M4"
   gameFixes:
     - XGKickHack # Fixes corrupted graphics.
@@ -13984,11 +13989,13 @@ SLES-52044:
   name: "Crescent Suzuki Racing - Superbikes and Super Sidecars"
   region: "PAL-E"
 SLES-52045:
-  name: "GTR 400"
+  name: "GT-R 400"
   region: "PAL-E"
   compat: 5
   gameFixes:
     - XGKickHack # Fixes bad Geometry.
+  gsHWFixes:
+    roundSprite: 1 # Fixes lines in menus and misaligned text.
 SLES-52046:
   name: "007 - Everything or Nothing"
   region: "PAL-F-G"
