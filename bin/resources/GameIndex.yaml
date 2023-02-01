@@ -5465,7 +5465,7 @@ SCPS-11011:
   name: "Check-i-TV"
   region: "NTSC-J"
 SCPS-11012:
-  name: "Rimoko Koron"
+  name: "Rimococoron"
   region: "NTSC-J"
   compat: 5
 SCPS-11013:
@@ -9113,6 +9113,8 @@ SLAJ-25080:
   region: "NTSC-Unk"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes light occlusion.
+    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
 SLAJ-25081:
   name: "FIFA World Cup - Germany 2006"
   region: "NTSC-Unk"
@@ -16144,7 +16146,7 @@ SLES-52988:
   region: "PAL-M5"
   gsHWFixes:
     autoFlush: 1 # Fixes bloom.
-    roundSprite: 1 # Fixes misalliged bloom.
+    roundSprite: 1 # Fixes misaligned bloom.
     deinterlace: 6 # Game requires blend tff de-interlacing when auto for 'fixing' subtitles flickering or half weaved.
   memcardFilters: # Reads Command Mission save for bonus boss.
     - "SLES-52988"
@@ -17609,6 +17611,8 @@ SLES-53556:
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes some bad textures.
     cpuCLUTRender: 1 # Fixes the rest of the bad textures.
+    roundSprite: 1 # Reduces misaligned bloom.
+    mergeSprite: 1 # Removes bloom explosion around electrical lights and other light sources such as moon/sun.
 SLES-53557:
   name: "Need for Speed - Most Wanted"
   region: "PAL-E"
@@ -18684,6 +18688,8 @@ SLES-53967:
   region: "PAL-M6"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes light occlusion.
+    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
 SLES-53968:
   name: "Parrain, Le"
   region: "PAL-F"
@@ -18850,6 +18856,8 @@ SLES-54027:
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes some bad textures.
     cpuCLUTRender: 1 # Fixes the rest of the bad textures.
+    roundSprite: 1 # Reduces misaligned bloom.
+    mergeSprite: 1 # Removes bloom explosion around electrical lights and other light sources such as moon/sun.
 SLES-54030:
   name: "Black"
   region: "PAL-E"
@@ -23853,7 +23861,7 @@ SLKA-25222:
   region: "NTSC-K"
   gsHWFixes:
     autoFlush: 1 # Fixes bloom.
-    roundSprite: 1 # Fixes misalliged bloom.
+    roundSprite: 1 # Fixes misaligned bloom.
 SLKA-25223:
   name: "K.League - Winning Eleven 8 - Asia Championship"
   region: "NTSC-K"
@@ -24185,6 +24193,8 @@ SLKA-25341:
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes some bad textures.
     cpuCLUTRender: 1 # Fixes the rest of the bad textures.
+    roundSprite: 1 # Reduces misaligned bloom.
+    mergeSprite: 1 # Removes bloom explosion around electrical lights and other light sources such as moon/sun.
 SLKA-25342:
   name: "Ryu ga Gotoku"
   region: "NTSC-K"
@@ -24967,6 +24977,7 @@ SLPM-60149:
     roundSprite: 2 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
+    getSkipCount: "GSC_AceCombat4"
 SLPM-60172:
   name: "Itadaki Street 3 - Okuman Chouja ni Shiteageru"
   region: "NTSC-J"
@@ -29924,7 +29935,7 @@ SLPM-65730:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 1 # Fixes bloom.
-    roundSprite: 1 # Fixes misalliged bloom.
+    roundSprite: 1 # Fixes misaligned bloom.
   gameFixes:
     - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
   memcardFilters:
@@ -33034,6 +33045,8 @@ SLPM-66567:
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes some bad textures.
     cpuCLUTRender: 1 # Fixes the rest of the bad textures.
+    roundSprite: 1 # Reduces misaligned bloom.
+    mergeSprite: 1 # Removes bloom explosion around electrical lights and other light sources such as moon/sun.
 SLPM-66568:
   name: "Brothers In Arms - Road to Hill 30 [Ubisoft Best]"
   region: "NTSC-J"
@@ -33610,6 +33623,8 @@ SLPM-66710:
   region: "NTSC-J"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes light occlusion.
+    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
 SLPM-66712:
   name: "Rozen Maiden - Geppetto Garden [Limited Edition]"
   region: "NTSC-J"
@@ -34489,6 +34504,8 @@ SLPM-66966:
   region: "NTSC-J"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes light occlusion.
+    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
 SLPM-66967:
   name: "Aria - The Natural - Tooi Yume no Mirage [Alchemist Best Collection]"
   region: "NTSC-J"
@@ -36433,7 +36450,7 @@ SLPS-20477:
   name: "Fish Eyes 3 [Super Best Collection]"
   region: "NTSC-J"
 SLPS-20478:
-  name: "Simple 2000 Series Vol. 109 - The Taxi 2 - Utenshi ha Yappari Kimi da!"
+  name: "Simple 2000 Series Vol. 109 - The Taxi 2 - Untenshu ha Yappari Kimi da!"
   region: "NTSC-J"
 SLPS-20479:
   name: "Sokudoku Master"
@@ -44961,7 +44978,7 @@ SLUS-20960:
   compat: 5
   gsHWFixes:
     autoFlush: 1 # Fixes bloom.
-    roundSprite: 1 # Fixes misalliged bloom.
+    roundSprite: 1 # Fixes misaligned bloom.
     deinterlace: 6 # Game requires blend tff de-interlacing when auto for 'fixing' subtitles flickering or half weaved.
   memcardFilters:
     - "SLUS-20960"
@@ -46656,6 +46673,8 @@ SLUS-21271:
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes some bad textures.
     cpuCLUTRender: 1 # Fixes the rest of the bad textures.
+    roundSprite: 1 # Reduces misaligned bloom.
+    mergeSprite: 1 # Removes bloom explosion around electrical lights and other light sources such as moon/sun.
 SLUS-21272:
   name: "Super Monkey Ball Adventure"
   region: "NTSC-U"
@@ -47340,6 +47359,8 @@ SLUS-21385:
   compat: 5
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes light occlusion.
+    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
 SLUS-21386:
   name: "Tales of the Abyss"
   region: "NTSC-U"
@@ -47420,6 +47441,8 @@ SLUS-21399:
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes some bad textures.
     cpuCLUTRender: 1 # Fixes the rest of the bad textures.
+    roundSprite: 1 # Reduces misaligned bloom.
+    mergeSprite: 1 # Removes bloom explosion around electrical lights and other light sources such as moon/sun.
 SLUS-21400:
   name: "Monster House"
   region: "NTSC-U"
@@ -47447,6 +47470,10 @@ SLUS-21405:
 SLUS-21406:
   name: "Godfather, The - Collector's Edition"
   region: "NTSC-U"
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes light occlusion.
+    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
 SLUS-21407:
   name: "NFL Head Coach"
   region: "NTSC-U"
@@ -50702,6 +50729,8 @@ SLUS-29185:
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes some bad textures.
     cpuCLUTRender: 1 # Fixes the rest of the bad textures.
+    roundSprite: 1 # Reduces misaligned bloom.
+    mergeSprite: 1 # Removes bloom explosion around electrical lights and other light sources such as moon/sun.
 SLUS-29188:
   name: "Steambot Chronicles [Regular Demo]"
   region: "NTSC-U"
