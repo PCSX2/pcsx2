@@ -729,9 +729,8 @@ namespace usb_msd
 		int index, int length, uint8_t* data)
 	{
 		MSDState* s = USB_CONTAINER_OF(dev, MSDState, dev);
-		int ret = 0;
+		const int ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
 
-		ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
 		if (ret >= 0)
 		{
 			return;
@@ -743,7 +742,6 @@ namespace usb_msd
 			case ClassInterfaceOutRequest | MassStorageReset:
 				/* Reset state ready for the next CBW.  */
 				s->f.mode = USB_MSDM_CBW;
-				ret = 0;
 				break;
 			case ClassInterfaceRequest | GetMaxLun:
 				data[0] = 0;
