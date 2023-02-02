@@ -744,11 +744,11 @@ protected:
 
 	struct
 	{
-		size_t stride, start, count, limit;
+		u32 start, count;
 	} m_vertex = {};
 	struct
 	{
-		size_t start, count, limit;
+		u32 start, count;
 	} m_index = {};
 	unsigned int m_frame = 0; // for ageing the pool
 	bool m_rbswapped = false;
@@ -798,9 +798,6 @@ public:
 
 	virtual void ResetAPIState();
 	virtual void RestoreAPIState();
-
-	virtual void BeginScene() {}
-	virtual void EndScene();
 
 	virtual void ClearRenderTarget(GSTexture* t, const GSVector4& c) {}
 	virtual void ClearRenderTarget(GSTexture* t, u32 c) {}
