@@ -149,6 +149,15 @@ bool GSClut::InvalidateRange(u32 start_block, u32 end_block, bool is_draw)
 	GIFRegTEX0 next_cbp;
 	next_cbp.U64 = m_write.next_tex0;
 
+	// Handle wrapping writes. Star Wars Battlefront 2 does this.
+	if ((end_block & 0xFFE0) < (start_block & 0xFFE0))
+	{
+		if ((next_cbp.CBP + 3U) <= end_block)
+			next_cbp.CBP += 0x4000;
+
+		end_block += 0x4000;
+	}
+
 	if ((next_cbp.CBP + 3U) >= start_block && end_block >= next_cbp.CBP)
 	{
 		m_write.dirty |= is_draw ? 2 : 1;
