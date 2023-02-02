@@ -187,14 +187,6 @@ std::unique_ptr<GSDownloadTexture> GSDevice::CreateDownloadTexture(u32 width, u3
 	return {};
 }
 
-void GSDevice::EndScene()
-{
-	m_vertex.start += m_vertex.count;
-	m_vertex.count = 0;
-	m_index.start += m_index.count;
-	m_index.count = 0;
-}
-
 void GSDevice::Recycle(GSTexture* t)
 {
 	if (!t)

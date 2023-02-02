@@ -882,38 +882,10 @@ void GSDeviceVK::IASetVertexBuffer(const void* vertex, size_t stride, size_t cou
 	}
 
 	m_vertex.start = m_vertex_stream_buffer.GetCurrentOffset() / stride;
-	m_vertex.limit = count;
-	m_vertex.stride = stride;
 	m_vertex.count = count;
 	SetVertexBuffer(m_vertex_stream_buffer.GetBuffer(), 0);
 
 	GSVector4i::storent(m_vertex_stream_buffer.GetCurrentHostPointer(), vertex, count * stride);
-	m_vertex_stream_buffer.CommitMemory(size);
-}
-
-bool GSDeviceVK::IAMapVertexBuffer(void** vertex, size_t stride, size_t count)
-{
-	const u32 size = static_cast<u32>(stride) * static_cast<u32>(count);
-	if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
-	{
-		ExecuteCommandBufferAndRestartRenderPass(false, "Mapping bytes to vertex buffer");
-		if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
-			pxFailRel("Failed to reserve space for vertices");
-	}
-
-	m_vertex.start = m_vertex_stream_buffer.GetCurrentOffset() / stride;
-	m_vertex.limit = m_vertex_stream_buffer.GetCurrentSpace() / stride;
-	m_vertex.stride = stride;
-	m_vertex.count = count;
-	SetVertexBuffer(m_vertex_stream_buffer.GetBuffer(), 0);
-
-	*vertex = m_vertex_stream_buffer.GetCurrentHostPointer();
-	return true;
-}
-
-void GSDeviceVK::IAUnmapVertexBuffer()
-{
-	const u32 size = static_cast<u32>(m_vertex.stride) * static_cast<u32>(m_vertex.count);
 	m_vertex_stream_buffer.CommitMemory(size);
 }
 
@@ -928,7 +900,6 @@ void GSDeviceVK::IASetIndexBuffer(const void* index, size_t count)
 	}
 
 	m_index.start = m_index_stream_buffer.GetCurrentOffset() / sizeof(u32);
-	m_index.limit = count;
 	m_index.count = count;
 	SetIndexBuffer(m_index_stream_buffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
@@ -3176,8 +3147,6 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 	if (date_image)
 		Recycle(date_image);
-
-	EndScene();
 
 	// now blit the hdr texture back to the original target
 	if (hdr_rt)

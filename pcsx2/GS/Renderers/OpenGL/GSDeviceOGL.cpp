@@ -1093,7 +1093,6 @@ void GSDeviceOGL::BlitRect(GSTexture* sTex, const GSVector4i& r, const GSVector2
 
 	const GSVector4 float_r(r);
 
-	BeginScene();
 	m_convert.ps[static_cast<int>(ShaderConvert::COPY)].Bind();
 	OMSetDepthStencilState(m_convert.dss);
 	OMSetBlendState();
@@ -1101,7 +1100,6 @@ void GSDeviceOGL::BlitRect(GSTexture* sTex, const GSVector4i& r, const GSVector2
 	PSSetShaderResource(0, sTex);
 	PSSetSamplerState(linear ? m_convert.ln : m_convert.pt);
 	DrawStretchRect(float_r / (GSVector4(sTex->GetSize()).xyxy()), float_r, dsize);
-	EndScene();
 
 	glEnable(GL_SCISSOR_TEST);
 }
@@ -1190,8 +1188,6 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// Init
 	// ************************************
 
-	BeginScene();
-
 	GL_PUSH("StretchRect from %d to %d", sTex->GetID(), dTex->GetID());
 	if (draw_in_depth)
 		OMSetRenderTargets(NULL, dTex);
@@ -1223,19 +1219,11 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// Draw
 	// ************************************
 	DrawStretchRect(sRect, dRect, dTex->GetSize());
-
-	// ************************************
-	// End
-	// ************************************
-
-	EndScene();
 }
 
 void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear)
 {
 	ASSERT(sTex);
-
-	BeginScene();
 
 	const GSVector2i ds(dTex ? dTex->GetSize() : GSVector2i(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight()));
 	DisplayConstantBuffer cb;
@@ -1269,14 +1257,10 @@ void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// Only flipping the backbuffer is transparent (I hope)...
 	const GSVector4 flip_sr(sRect.xwzy());
 	DrawStretchRect(flip_sr, dRect, ds);
-
-	EndScene();
 }
 
 void GSDeviceOGL::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
 {
-	BeginScene();
-
 	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
 	GL::Program& prog = m_convert.ps[static_cast<int>(shader)];
 	prog.Bind();
@@ -1293,8 +1277,6 @@ void GSDeviceOGL::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, G
 
 	const GSVector4 dRect(0, 0, dSize, 1);
 	DrawStretchRect(GSVector4::zero(), dRect, dTex->GetSize());
-
-	EndScene();
 }
 
 void GSDeviceOGL::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect, const GSVector2i& ds)
@@ -1458,8 +1440,6 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 
 	// sfex3 (after the capcom logo), vf4 (first menu fading in), ffxii shadows, rumble roses shadows, persona4 shadows
 
-	BeginScene();
-
 	ClearStencil(ds, 0);
 
 	m_convert.ps[static_cast<int>(datm ? ShaderConvert::DATM_1 : ShaderConvert::DATM_0)].Bind();
@@ -1490,8 +1470,6 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 	{
 		glEnable(GL_BLEND);
 	}
-
-	EndScene();
 }
 
 void GSDeviceOGL::IASetVertexBuffer(const void* vertices, size_t count)
@@ -1894,8 +1872,6 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		CopyRect(config.rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
 	}
 
-	BeginScene();
-
 	IASetVertexBuffer(config.verts, config.nverts);
 	IASetIndexBuffer(config.indices, config.nindices);
 	GLenum topology = 0;
@@ -2047,10 +2023,6 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	if (draw_rt_clone)
 		Recycle(draw_rt_clone);
 
-	EndScene();
-
-	// Warning: EndScene must be called before StretchRect otherwise
-	// vertices will be overwritten. Trust me you don't want to do that.
 	if (hdr_rt)
 	{
 		GSVector2i size = config.rt->GetSize();
