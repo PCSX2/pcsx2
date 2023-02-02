@@ -1127,8 +1127,6 @@ void GSDeviceMTL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 
 void GSDeviceMTL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, id<MTLRenderPipelineState> pipeline, bool linear, LoadAction load_action, void* frag_uniform, size_t frag_uniform_len)
 {
-	BeginScene();
-
 	FlushClears(sTex);
 
 	GSTextureMTL* sT = static_cast<GSTextureMTL*>(sTex);
@@ -1164,8 +1162,6 @@ void GSDeviceMTL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextu
 	MRESetSampler(linear ? SamplerSelector::Linear() : SamplerSelector::Point());
 
 	DrawStretchRect(sRect, dRect, ds);
-
-	EndScene();
 }
 
 void GSDeviceMTL::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect, const GSVector2i& ds)
@@ -1609,7 +1605,6 @@ static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, DitherMatrix)     == of
 
 void GSDeviceMTL::SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVector4i& r, bool datm)
 {
-	BeginScene();
 	FlushClears(rt);
 	BeginRenderPass(@"Destination Alpha Setup", nullptr, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare, ds, MTLLoadActionDontCare);
 	[m_current_render.encoder setStencilReferenceValue:1];
@@ -1617,7 +1612,6 @@ void GSDeviceMTL::SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVe
 	RenderCopy(nullptr, m_stencil_clear_pipeline, r);
 	MRESetDSS(m_dss_stencil_write);
 	RenderCopy(rt, m_datm_pipeline[datm], r);
-	EndScene();
 }
 
 static id<MTLTexture> getTexture(GSTexture* tex)
@@ -1696,7 +1690,6 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 			break;
 	}
 
-	BeginScene();
 	GSTexture* hdr_rt = nullptr;
 	if (config.ps.hdr)
 	{

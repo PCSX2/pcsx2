@@ -110,8 +110,13 @@ public:
 	};
 
 private:
-	static constexpr u32 MAX_TEXTURES = 4;
-	static constexpr u32 MAX_SAMPLERS = 1;
+	enum : u32
+	{
+		MAX_TEXTURES = 4,
+		MAX_SAMPLERS = 1,
+		VERTEX_BUFFER_SIZE = 32 * 1024 * 1024,
+		INDEX_BUFFER_SIZE = 16 * 1024 * 1024,
+	};
 
 	int m_d3d_texsize;
 
@@ -135,12 +140,11 @@ private:
 	wil::com_ptr_nothrow<IDXGISwapChain1> m_swapchain;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_vb;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_ib;
+	u32 m_vb_pos = 0; // bytes
+	u32 m_ib_pos = 0; // indices/sizeof(u32)
 
 	struct
 	{
-		ID3D11Buffer* vb;
-		size_t vb_stride;
-		ID3D11Buffer* ib;
 		ID3D11InputLayout* layout;
 		D3D11_PRIMITIVE_TOPOLOGY topology;
 		ID3D11VertexShader* vs;
@@ -153,6 +157,7 @@ private:
 		std::array<ID3D11SamplerState*, MAX_SAMPLERS> ps_ss;
 		GSVector2i viewport;
 		GSVector4i scissor;
+		u32 vb_stride;
 		ID3D11DepthStencilState* dss;
 		u8 sref;
 		ID3D11BlendState* bs;
@@ -276,12 +281,8 @@ public:
 
 	void SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm);
 
-	void IASetVertexBuffer(const void* vertex, size_t stride, size_t count);
-	bool IAMapVertexBuffer(void** vertex, size_t stride, size_t count);
-	void IAUnmapVertexBuffer();
-	void IASetVertexBuffer(ID3D11Buffer* vb, size_t stride);
-	void IASetIndexBuffer(const void* index, size_t count);
-	void IASetIndexBuffer(ID3D11Buffer* ib);
+	bool IASetVertexBuffer(const void* vertex, u32 stride, u32 count);
+	bool IASetIndexBuffer(const void* index, u32 count);
 	void IASetInputLayout(ID3D11InputLayout* layout);
 	void IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY topology);
 
