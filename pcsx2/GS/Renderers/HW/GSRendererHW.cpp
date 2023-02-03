@@ -1703,7 +1703,7 @@ void GSRendererHW::Draw()
 			// on. So, instead, let the draw go through with the expanded rectangle, and copy color->depth.
 			const bool is_zero_clear = (((GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 0) ?
 												m_vertex.buff[1].RGBAQ.U32[0] :
-												(m_vertex.buff[1].RGBAQ.U32[0] & ~0xFF000000)) == 0) && m_context->FRAME.FBMSK == 0;
+												(m_vertex.buff[1].RGBAQ.U32[0] & ~0xFF000000)) == 0) && m_context->FRAME.FBMSK == 0 && IsBlendedOrOpaque();
 			
 			if (is_zero_clear && OI_GsMemClear() && clear_height_valid)
 			{
@@ -1832,7 +1832,7 @@ void GSRendererHW::Draw()
 
 	if (!GSConfig.UserHacks_DisableSafeFeatures)
 	{
-		if (IsConstantDirectWriteMemClear(false))
+		if (IsConstantDirectWriteMemClear(false) && IsBlendedOrOpaque())
 			OI_DoubleHalfClear(rt, ds);
 	}
 
@@ -4266,6 +4266,7 @@ bool GSRendererHW::OI_GsMemClear()
 		if (m_r.width() < ((static_cast<int>(m_context->FRAME.FBW) - 1) * 64) || r.height() <= 128)
 			return false;
 
+		GL_INS("OI_GsMemClear (%d,%d => %d,%d)", r.x, r.y, r.z, r.w);
 		const int format = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
 		// Take the vertex colour, but check if the blending would make it black.
@@ -4384,13 +4385,16 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 	// Nothing to see keep going
 	return true;
 }
+bool GSRendererHW::IsBlendedOrOpaque()
+{
+	return (!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsCdOutput());
+}
 
 bool GSRendererHW::IsConstantDirectWriteMemClear(bool include_zero)
 {
 	// Constant Direct Write without texture/test/blending (aka a GS mem clear)
 	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME // Direct write
-		&& (!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsCdOutput()) // No transparency
-		&& (m_context->FRAME.FBMSK == 0 || (include_zero && m_vt.m_max.c.eq(GSVector4i(0)))) // no color mask
+		&& (m_context->FRAME.FBMSK == 0 || (include_zero && m_vt.m_max.c.eq(GSVector4i::zero()))) // no color mask
 		&& !(m_env.SCANMSK.MSK & 2)
 		&& !m_context->TEST.ATE // no alpha test
 		&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
