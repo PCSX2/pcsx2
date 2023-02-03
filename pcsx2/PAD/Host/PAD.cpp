@@ -1,4 +1,4 @@
-﻿/*  PCSX2 - PS2 Emulator for PCs
+/*  PCSX2 - PS2 Emulator for PCs
  *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
@@ -512,8 +512,6 @@ void PAD::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 {
 	if (copy_pad_config)
 	{
-		dest_si->CopyBoolValue(src_si, "Pad", "MultitapPort1");
-		dest_si->CopyBoolValue(src_si, "Pad", "MultitapPort2");
 		dest_si->CopyBoolValue(src_si, "Pad", "MultitapPort1");
 		dest_si->CopyBoolValue(src_si, "Pad", "MultitapPort2");
 		dest_si->CopyFloatValue(src_si, "Pad", "PointerXScale");
