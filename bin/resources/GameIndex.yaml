@@ -784,6 +784,8 @@ SCAJ-20075:
 SCAJ-20076:
   name: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-Unk"
+  roundModes:
+    eeRoundMode: 0 # Fixes Z-Fighting.
   memcardFilters:
     - "SCAJ-20076"
     - "SCAJ-20077"
@@ -794,6 +796,8 @@ SCAJ-20076:
 SCAJ-20077:
   name: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-Unk"
+  roundModes:
+    eeRoundMode: 0 # Fixes Z-Fighting.
   memcardFilters:
     - "SCAJ-20076"
     - "SCAJ-20077"
@@ -23066,12 +23070,16 @@ SLES-82035:
 SLES-82036:
   name: "Armored Core - Nexus [Disc 1 of 2 - Evolution Disc]"
   region: "PAL-M5"
+  roundModes:
+    eeRoundMode: 0 # Fixes Z-Fighting.
   memcardFilters:
     - "SLES-82036"
     - "SLES-82037"
 SLES-82037:
   name: "Armored Core - Nexus [Disc 2 of 2 - Revolution Disc]"
   region: "PAL-M5"
+  roundModes:
+    eeRoundMode: 0 # Fixes Z-Fighting.
   memcardFilters:
     - "SLES-82036"
     - "SLES-82037"
@@ -23843,12 +23851,16 @@ SLKA-25200:
 SLKA-25201:
   name: "Armored Core Nexus Evolution [Disc 1]"
   region: "NTSC-K"
+  roundModes:
+    eeRoundMode: 0 # Fixes Z-Fighting.
   memcardFilters:
     - "SLKA-25201"
     - "SLKA-25202"
 SLKA-25202:
   name: "Armored Core Nexus Revolution [Disc 2]"
   region: "NTSC-K"
+  roundModes:
+    eeRoundMode: 0 # Fixes Z-Fighting.
   memcardFilters:
     - "SLKA-25201"
     - "SLKA-25202"
@@ -37898,6 +37910,8 @@ SLPS-25337:
 SLPS-25338:
   name: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0 # Fixes Z-Fighting.
   memcardFilters:
     - "SCAJ-20076"
     - "SCAJ-20077"
@@ -37908,6 +37922,8 @@ SLPS-25338:
 SLPS-25339:
   name: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0 # Fixes Z-Fighting.
   memcardFilters:
     - "SCAJ-20076"
     - "SCAJ-20077"
@@ -40267,6 +40283,8 @@ SLPS-73201:
 SLPS-73202:
   name: "Armored Core - Nexus [PlayStation 2 The Best] [Disc 1]"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0 # Fixes Z-Fighting.
   memcardFilters:
     - "SCAJ-20076"
     - "SCAJ-20077"
@@ -40277,6 +40295,8 @@ SLPS-73202:
 SLPS-73203:
   name: "Armored Core - Nexus [PlayStation 2 The Best] [Disc 2]"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0 # Fixes Z-Fighting.
   memcardFilters:
     - "SCAJ-20076"
     - "SCAJ-20077"
@@ -45294,6 +45314,8 @@ SLUS-20985:
 SLUS-20986:
   name: "Armored Core Nexus [Evolution Disc]"
   region: "NTSC-U"
+  roundModes:
+    eeRoundMode: 0 # Fixes Z-Fighting.
   compat: 5
   memcardFilters:
     - "SLUS-20986"
@@ -45805,6 +45827,8 @@ SLUS-21078:
 SLUS-21079:
   name: "Armored Core Nexus [Revolution Disc]"
   region: "NTSC-U"
+  roundModes:
+    eeRoundMode: 0 # Fixes Z-Fighting.
   memcardFilters:
     - "SLUS-20986"
     - "SLUS-21079"
