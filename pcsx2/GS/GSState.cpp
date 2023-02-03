@@ -563,6 +563,16 @@ int GSState::GetFramebufferHeight()
 	return frame_memory_height;
 }
 
+int GSState::GetFramebufferBitDepth()
+{
+	if (IsEnabled(0))
+		return GSLocalMemory::m_psm[m_regs->DISP[0].DISPFB.PSM].bpp;
+	else if (IsEnabled(1))
+		return GSLocalMemory::m_psm[m_regs->DISP[1].DISPFB.PSM].bpp;
+
+	return 32;
+}
+
 int GSState::GetFramebufferWidth()
 {
 	const GSVector4i disp1_rect = GetFrameRect(0, true);
