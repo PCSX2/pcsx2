@@ -41,8 +41,7 @@ std::vector<std::string> GetDriveListFromClasses(CFMutableDictionaryRef classes)
 	result = IOServiceGetMatchingServices(kIOMasterPortDefault, classes, &iterator);
 	if (result != KERN_SUCCESS)
 		return drives;
-	io_object_t media = IOIteratorNext(iterator);
-	while (media)
+	while (io_object_t media = IOIteratorNext(iterator))
 	{
 		CFTypeRef path_cfstr = IORegistryEntryCreateCFProperty(media, CFSTR(kIOBSDNameKey), kCFAllocatorDefault, 0);
 		if (path_cfstr)
@@ -58,7 +57,6 @@ std::vector<std::string> GetDriveListFromClasses(CFMutableDictionaryRef classes)
 			CFRelease(path_cfstr);
 		}
 		IOObjectRelease(media);
-		media = IOIteratorNext(iterator);
 	}
 	IOObjectRelease(iterator);
 	return drives;
@@ -71,15 +69,13 @@ std::vector<std::string> GetOpticalDriveList()
 #ifdef __APPLE__
 	std::vector<std::string> drives;
 
-	CFMutableDictionaryRef cd_classes = IOServiceMatching(kIOCDMediaClass);
-	if (cd_classes)
+	if (CFMutableDictionaryRef cd_classes = IOServiceMatching(kIOCDMediaClass))
 	{
 		std::vector<std::string> cd = GetDriveListFromClasses(cd_classes);
 		drives.insert(drives.end(), cd.begin(), cd.end());
 	}
 
-	CFMutableDictionaryRef dvd_classes = IOServiceMatching(kIODVDMediaClass);
-	if (dvd_classes)
+	if (CFMutableDictionaryRef dvd_classes = IOServiceMatching(kIODVDMediaClass))
 	{
 		std::vector<std::string> dvd = GetDriveListFromClasses(dvd_classes);
 		drives.insert(drives.end(), dvd.begin(), dvd.end());
