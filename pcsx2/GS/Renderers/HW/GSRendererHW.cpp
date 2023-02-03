@@ -1678,9 +1678,21 @@ void GSRendererHW::Draw()
 			const bool clear_height_valid = (m_r.w >= 1024);
 			if (clear_height_valid && context->FRAME.FBW == 1)
 			{
+				m_r.x = 0;
+				m_r.y = 0;
 				m_r.w = GetFramebufferHeight();
 				m_r.z = GetFramebufferWidth();
 				context->FRAME.FBW = (m_r.z + 63) / 64;
+				m_context->scissor.in.z = context->FRAME.FBW * 64;
+
+				GSVertex* s = &m_vertex.buff[0];
+				s[0].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + 0);
+				s[1].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + 16384);
+				s[0].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + 0);
+				s[1].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + 16384);
+
+				m_vertex.head = m_vertex.tail = m_vertex.next = 2;
+				m_index.tail = 2;
 			}
 
 			// Superman does a clear to white, not black, on its depth buffer.
@@ -1688,7 +1700,8 @@ void GSRendererHW::Draw()
 			// on. So, instead, let the draw go through with the expanded rectangle, and copy color->depth.
 			const bool is_zero_clear = (((GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 0) ?
 												m_vertex.buff[1].RGBAQ.U32[0] :
-                                                (m_vertex.buff[1].RGBAQ.U32[0] & ~0xFF000000)) == 0);
+												(m_vertex.buff[1].RGBAQ.U32[0] & ~0xFF000000)) == 0);
+			
 			if (is_zero_clear && OI_GsMemClear() && clear_height_valid)
 			{
 				m_tc->InvalidateVideoMem(context->offset.fb, m_r, false, true);
@@ -4238,12 +4251,11 @@ bool GSRendererHW::OI_GsMemClear()
 							&& (m_context->FRAME.PSM & 0xF) == (m_context->ZBUF.PSM & 0xF) && m_vt.m_eq.z == 1 && m_vertex.buff[1].XYZ.Z == m_vertex.buff[1].RGBAQ.U32[0];
 
 	// Limit it further to a full screen 0 write
-	if (((m_vertex.next == 2) || ZisFrame) && m_vt.m_eq.rgba == 0xFFFF)
+	if (((m_vertex.next == 4) || (m_vertex.next == 2) || ZisFrame) && m_vt.m_eq.rgba == 0xFFFF)
 	{
 		const GSOffset& off = m_context->offset.fb;
 		GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
 
-		
 		if (r.width() == 32 && ZisFrame)
 			r.z += 32;
 		// Limit the hack to a single full buffer clear. Some games might use severals column to clear a screen
@@ -4251,7 +4263,6 @@ bool GSRendererHW::OI_GsMemClear()
 		if (m_r.width() < ((static_cast<int>(m_context->FRAME.FBW) - 1) * 64) || r.height() <= 128)
 			return false;
 
-		GL_INS("OI_GsMemClear (%d,%d => %d,%d)", r.x, r.y, r.z, r.w);
 		const int format = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
 		// Take the vertex colour, but check if the blending would make it black.
@@ -4260,7 +4271,6 @@ bool GSRendererHW::OI_GsMemClear()
 			vert_color &= ~0xFF000000;
 
 		const u32 color = (format == 0) ? vert_color : (vert_color & ~0xFF000000);
-
 		// FIXME: loop can likely be optimized with AVX/SSE. Pixels aren't
 		// linear but the value will be done for all pixels of a block.
 		// FIXME: maybe we could limit the write to the top and bottom row page.
@@ -4307,6 +4317,7 @@ bool GSRendererHW::OI_GsMemClear()
 			}
 #endif
 		}
+
 		return true;
 	}
 	return false;
