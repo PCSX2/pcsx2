@@ -3221,28 +3221,31 @@ __forceinline void GSState::HandleAutoFlush()
 	}
 }
 
-template <u32 prim, bool auto_flush, bool index_swap>
-__forceinline void GSState::VertexKick(u32 skip)
+static constexpr size_t NumIndicesForPrim(u32 prim)
 {
-	size_t n = 0;
-
 	switch (prim)
 	{
 		case GS_POINTLIST:
 		case GS_INVALID:
-			n = 1;
-			break;
+			return 1;
 		case GS_LINELIST:
 		case GS_SPRITE:
 		case GS_LINESTRIP:
-			n = 2;
-			break;
+			return 2;
 		case GS_TRIANGLELIST:
 		case GS_TRIANGLESTRIP:
 		case GS_TRIANGLEFAN:
-			n = 3;
-			break;
+			return 3;
+		default:
+			return 0;
 	}
+}
+
+template <u32 prim, bool auto_flush, bool index_swap>
+__forceinline void GSState::VertexKick(u32 skip)
+{
+	constexpr size_t n = NumIndicesForPrim(prim);
+	static_assert(n > 0);
 
 	ASSERT(m_vertex.tail < m_vertex.maxcount + 3);
 
@@ -3460,34 +3463,47 @@ __forceinline void GSState::VertexKick(u32 skip)
 			__assume(0);
 	}
 
-	
-	
-	GSVector4i draw_coord;
-	const GSVector2i offset = GSVector2i(m_context->XYOFFSET.OFX, m_context->XYOFFSET.OFY);
-
-	for (size_t i = 0; i < n; i++)
 	{
-		const GSVertex* v = &m_vertex.buff[m_index.buff[(m_index.tail - n) + i]];
-		draw_coord.x = (static_cast<int>(v->XYZ.X) - offset.x) >> 4;
-		draw_coord.y = (static_cast<int>(v->XYZ.Y) - offset.y) >> 4;
+		const GSVector4i voffset(GSVector4i::loadl(&m_context->XYOFFSET));
 
-		if (m_vertex.tail == n && i == 0)
+		auto get_vertex = [&](u32 i) {
+			GSVector4i v(GSVector4i::loadl(&m_vertex.buff[m_index.buff[(m_index.tail - n) + (i)]].XYZ));
+			v = v.upl16(); // 16->32
+			v = v.sub32(voffset); // -= (OFX, OFY)
+			v = v.sra32(4); // >> 4
+			return v;
+		};
+
+		const GSVector4i xy0(get_vertex(0));
+		GSVector4i min, max;
+		if (m_vertex.tail == n)
 		{
-			temp_draw_rect.x = draw_coord.x;
-			temp_draw_rect.y = draw_coord.y;
-			temp_draw_rect = temp_draw_rect.xyxy();
+			min = xy0;
+			max = xy0;
 		}
 		else
 		{
-			temp_draw_rect.x = std::min(draw_coord.x, temp_draw_rect.x);
-			temp_draw_rect.y = std::min(draw_coord.y, temp_draw_rect.y);
-			temp_draw_rect.z = std::max(draw_coord.x, temp_draw_rect.z);
-			temp_draw_rect.w = std::max(draw_coord.y, temp_draw_rect.w);
+			min = temp_draw_rect.min_i32(xy0);
+			max = temp_draw_rect.zwzw().max_i32(xy0);
 		}
-	}
 
-	const GSVector4i scissor = GSVector4i(m_context->scissor.in);
-	temp_draw_rect.rintersect(scissor);
+		if constexpr (n > 1)
+		{
+			const GSVector4i xy1(get_vertex(1));
+			min = min.min_i32(xy1);
+			max = max.max_i32(xy1);
+
+			if constexpr (n > 2)
+			{
+				const GSVector4i xy2(get_vertex(2));
+				min = min.min_i32(xy2);
+				max = max.max_i32(xy2);
+			}
+		}
+
+		const GSVector4i scissor = GSVector4i(m_context->scissor.in);
+		temp_draw_rect = min.upl64(max).rintersect(scissor);
+	}
 
 	CLUTAutoFlush();
 }
