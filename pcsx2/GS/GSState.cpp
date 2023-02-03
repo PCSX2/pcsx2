@@ -3455,7 +3455,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 			break;
 		case GS_INVALID:
 			m_vertex.tail = head;
-			break;
+			return;
 		default:
 			__assume(0);
 	}
