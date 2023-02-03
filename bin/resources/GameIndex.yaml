@@ -1260,6 +1260,7 @@ SCAJ-20161:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs that aren't fixed with merge sprite.
   gsHWFixes:
     mergeSprite: 1 # Fixes vertical lines in-game.
+    preloadFrameData: 1 # Fixes some missing effects.
 SCAJ-20162:
   name: "Rogue Galaxy"
   region: "NTSC-Unk"
@@ -1296,6 +1297,7 @@ SCAJ-20167:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs that aren't fixed with merge sprite.
   gsHWFixes:
     mergeSprite: 1 # Fixes vertical lines in-game.
+    preloadFrameData: 1 # Fixes some missing effects.
 SCAJ-20168:
   name: "Rule of Rose"
   region: "NTSC-Unk"
@@ -4058,6 +4060,7 @@ SCES-53851:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs that aren't fixed with merge sprite.
   gsHWFixes:
     mergeSprite: 1 # Fixes vertical lines in-game.
+    preloadFrameData: 1 # Fixes some missing effects.
   patches:
     default:
       content: |-
@@ -5192,6 +5195,7 @@ SCKA-20069:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs that aren't fixed with merge sprite.
   gsHWFixes:
     mergeSprite: 1 # Fixes vertical lines in-game.
+    preloadFrameData: 1 # Fixes some missing effects.
 SCKA-20070:
   name: "Ace Combat Zero - The Belkan War"
   region: "NTSC-K"
@@ -6099,6 +6103,7 @@ SCPS-15106:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs that aren't fixed with merge sprite.
   gsHWFixes:
     mergeSprite: 1 # Fixes vertical lines in-game.
+    preloadFrameData: 1 # Fixes some missing effects.
   patches:
     626552EB:
       content: |-
@@ -6572,6 +6577,7 @@ SCPS-19326:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs that aren't fixed with merge sprite.
   gsHWFixes:
     mergeSprite: 1 # Fixes vertical lines in-game.
+    preloadFrameData: 1 # Fixes some missing effects.
 SCPS-19327:
   name: "Ape Escape 3 [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
