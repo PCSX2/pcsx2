@@ -3399,6 +3399,8 @@ SCES-51635:
   region: "PAL-M5"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes lighting/shadows.
+    preloadFrameData: 1 # Fixes sun flickering.
+    autoFlush: 1 # Fixes sun through objects.
 SCES-51648:
   name: "Everquest - Online Adventures"
   region: "PAL-E-I"
@@ -11730,6 +11732,8 @@ SLES-51046:
 SLES-51053:
   name: "Tom & Jerry's War of the Wiskers"
   region: "PAL-M6"
+  gsHWFixes:
+    disableDepthSupport: 1 # Fixes shadow flicker.
 SLES-51054:
   name: "Midnight Club 2"
   region: "PAL-M5"
@@ -21776,6 +21780,8 @@ SLES-55170:
 SLES-55172:
   name: "Code Lyoko - Quest for Infinity"
   region: "PAL-M4"
+  gsHWFixes:
+    deinterlace: 9 # Game requires adaptive bff de-interlacing instead of auto for the UI at native.
 SLES-55174:
   name: "NHL 08"
   region: "PAL-R"
@@ -26375,6 +26381,8 @@ SLPM-62448:
 SLPM-62449:
   name: "Tom & Jerry - War of the Whiskers"
   region: "NTSC-J"
+  gsHWFixes:
+    disableDepthSupport: 1 # Fixes shadow flicker.
 SLPM-62450:
   name: "Karaoke Revolution - Anime Song Selection"
   region: "NTSC-J"
@@ -42004,6 +42012,8 @@ SLUS-20355:
   name: "Tom & Jerry - War of the Whiskers"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    disableDepthSupport: 1 # Fixes shadow flicker.
 SLUS-20356:
   name: "Transworld SURF"
   region: "NTSC-U"
@@ -45812,6 +45822,8 @@ SLUS-21127:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Fixes lighting/shadows.
+    preloadFrameData: 1 # Fixes sun flickering.
+    autoFlush: 1 # Fixes sun through objects.
 SLUS-21128:
   name: "Blitz - The League"
   region: "NTSC-U"
@@ -48981,6 +48993,8 @@ SLUS-21743:
   name: "Code Lyoko - Quest for Infinity"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    deinterlace: 9 # Game requires adaptive bff de-interlacing instead of auto for the UI at native.
 SLUS-21744:
   name: "NASCAR '09"
   region: "NTSC-U"
