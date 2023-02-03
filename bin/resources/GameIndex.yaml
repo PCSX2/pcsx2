@@ -26382,6 +26382,7 @@ SLPM-62449:
   name: "Tom & Jerry - War of the Whiskers"
   region: "NTSC-J"
   gsHWFixes:
+    mipmap: 1 # Cleans up texture detail.
     disableDepthSupport: 1 # Fixes shadow flicker.
 SLPM-62450:
   name: "Karaoke Revolution - Anime Song Selection"
@@ -42013,6 +42014,7 @@ SLUS-20355:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    mipmap: 1 # Cleans up texture detail.
     disableDepthSupport: 1 # Fixes shadow flicker.
 SLUS-20356:
   name: "Transworld SURF"
@@ -43801,6 +43803,8 @@ SLUS-20730:
   name: "NARC"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 1 # Fixes textures.
 SLUS-20731:
   name: "Tony Hawk's Underground"
   region: "NTSC-U"
