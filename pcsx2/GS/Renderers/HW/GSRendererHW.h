@@ -66,6 +66,7 @@ private:
 	void SwSpriteRender();
 	bool CanUseSwSpriteRender();
 	bool IsConstantDirectWriteMemClear(bool include_zero);
+	bool IsBlendedOrOpaque();
 
 	enum class CLUTDrawTestResult
 	{
