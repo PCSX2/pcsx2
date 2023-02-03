@@ -348,6 +348,11 @@
      </item>
      <item>
       <property name="text">
+       <string>Playable</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string>Perfect</string>
       </property>
      </item>

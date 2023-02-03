@@ -488,7 +488,7 @@ void GameListWidget::resizeTableViewColumnsToFit()
 														 80, // last played
 														 80, // size
 														 60, // region
-														 100 // compatibility
+														 120 // compatibility
 													 });
 }
 
