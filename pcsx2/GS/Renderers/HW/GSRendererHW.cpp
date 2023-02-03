@@ -1396,7 +1396,7 @@ void GSRendererHW::Draw()
 				!IsOpaque()) // Blending enabled
 			{
 				GL_INS("Forcing preload due to partial/blended CLUT draw");
-				preload = true;
+				preload = m_force_preload = true;
 			}
 		}
 	}
