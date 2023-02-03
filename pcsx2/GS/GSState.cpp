@@ -2154,6 +2154,16 @@ void GSState::Move()
 	{
 		Flush(GSFlushReason::LOCALTOLOCALMOVE);
 	}
+
+	if (GSConfig.PreloadFrameWithGSData)
+	{
+		// Store the transfer for preloading new RT's.
+		if (m_draw_transfers.size() == 0 || (m_draw_transfers.size() > 0 && dbp != m_draw_transfers.back().blit.DBP))
+		{
+			GSUploadQueue new_transfer = { m_env.BITBLTBUF, s_n };
+			m_draw_transfers.push_back(new_transfer);
+		}
+	}
 	// Invalid the CLUT if it crosses paths.
 	m_mem.m_clut.InvalidateRange(write_start_bp, write_end_bp);
 
