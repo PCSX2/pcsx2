@@ -337,7 +337,7 @@
       <item row="3" column="0">
        <widget class="QLabel" name="label_3b">
         <property name="text">
-         <string>ProLogic Level:</string>
+         <string extracomment=":I18N COMMENT: ProLogic is a Dolby brand. Leave the name as-is unless there is an official translation for your language.">ProLogic Level:</string>
         </property>
        </widget>
       </item>
@@ -350,12 +350,12 @@
         </item>
         <item>
          <property name="text">
-          <string>ProLogic Decoding (basic)</string>
+          <string extracomment=":I18N COMMENT: ProLogic is a Dolby brand. Leave the name as-is unless there is an official translation for your language.">ProLogic Decoding (basic)</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>ProLogic II Decoding (gigaherz)</string>
+          <string extracomment=":I18N COMMENT: ProLogic II is a Dolby brand. Leave the name as-is unless there is an official translation for your language. gigaherz is the nickname of one of PCSX2's developers. Leave as-is.">ProLogic II Decoding (gigaherz)</string>
          </property>
         </item>
        </widget>

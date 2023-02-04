@@ -197,7 +197,9 @@ void ControllerBindingWidget::onAutomaticBindingClicked()
 
 void ControllerBindingWidget::onClearBindingsClicked()
 {
+	//:I18N COMMENT: Bindings in this case is Mappings, but it seems that the word is not unified across the entire menu. To be unified or confirmed.
 	if (QMessageBox::question(QtUtils::GetRootWidget(this), tr("Clear Bindings"),
+			//:I18N COMMENT: Bindings in this case is Mappings, but it seems that the word is not unified across the entire menu. To be unified or confirmed.
 			tr("Are you sure you want to clear all bindings for this controller? This action cannot be undone.")) != QMessageBox::Yes)
 	{
 		return;
@@ -274,6 +276,7 @@ ControllerMacroWidget::~ControllerMacroWidget() = default;
 
 void ControllerMacroWidget::updateListItem(u32 index)
 {
+	//:I18N COMMENT: This is the full text that appears in each option of the 16 available macros, and reads like this:\n\nMacro 1\nNot Configured/Buttons configured
 	m_ui.portList->item(static_cast<int>(index))->setText(tr("Macro %1\n%2").arg(index + 1).arg(m_macros[index]->getSummary()));
 }
 

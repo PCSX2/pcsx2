@@ -43,7 +43,7 @@
      <item>
       <widget class="QGroupBox" name="groupBox">
        <property name="title">
-        <string>D-Pad</string>
+        <string extracomment=":I18N COMMENT: Try to use Sony's official terminology for this. A good place to start would be in the console or the DualShock 2's manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.">D-Pad</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_5">
         <item row="3" column="1" colspan="2">
@@ -212,7 +212,7 @@
      <item>
       <widget class="QGroupBox" name="groupBox_6">
        <property name="title">
-        <string>Left Analog</string>
+        <string extracomment=":I18N COMMENT: Try to use Sony's official terminology for this. A good place to start would be in the console or the DualShock 2's manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.">Left Analog</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_6">
         <item row="3" column="1" colspan="2">
@@ -438,7 +438,7 @@
      <item row="0" column="0">
       <widget class="QGroupBox" name="groupBox_21">
        <property name="title">
-        <string>L2</string>
+        <string extracomment=":I18N COMMENT: Leave this button name as-is.">L2</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_21">
         <property name="leftMargin">
@@ -472,7 +472,7 @@
      <item row="0" column="3">
       <widget class="QGroupBox" name="groupBox_23">
        <property name="title">
-        <string>R2</string>
+        <string extracomment=":I18N COMMENT: Leave this button name as-is.">R2</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_23">
         <property name="leftMargin">
@@ -506,7 +506,7 @@
      <item row="1" column="0">
       <widget class="QGroupBox" name="groupBox_22">
        <property name="title">
-        <string>L1</string>
+        <string extracomment=":I18N COMMENT: Leave this button name as-is.">L1</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_22">
         <property name="leftMargin">
@@ -540,7 +540,7 @@
      <item row="1" column="3">
       <widget class="QGroupBox" name="groupBox_24">
        <property name="title">
-        <string>R1</string>
+        <string extracomment=":I18N COMMENT: Leave this button name as-is.">R1</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_24">
         <property name="leftMargin">
@@ -574,7 +574,7 @@
      <item row="1" column="2">
       <widget class="QGroupBox" name="groupBox_26">
        <property name="title">
-        <string>Start</string>
+        <string extracomment=":I18N COMMENT: Leave this button name as-is or uppercase it entirely.">Start</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_26">
         <property name="leftMargin">
@@ -608,7 +608,7 @@
      <item row="1" column="1">
       <widget class="QGroupBox" name="groupBox_25">
        <property name="title">
-        <string>Select</string>
+        <string extracomment=":I18N COMMENT: Leave this button name as-is or uppercase it entirely.">Select</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_25">
         <property name="leftMargin">
@@ -646,13 +646,13 @@
      <item>
       <widget class="QGroupBox" name="groupBox_16">
        <property name="title">
-        <string>Face Buttons</string>
+        <string extracomment=":I18N COMMENT: Try to use Sony's official terminology for this. A good place to start would be in the console or the DualShock 2's manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.">Face Buttons</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_16">
         <item row="3" column="1" colspan="2">
          <widget class="QGroupBox" name="groupBox_17">
           <property name="title">
-           <string>Cross</string>
+           <string extracomment=":I18N COMMENT: Try to use Sony's official terminology for this. A good place to start would be in the console or the DualShock 2's manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.">Cross</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_17">
            <property name="leftMargin">
@@ -692,7 +692,7 @@
         <item row="2" column="0" colspan="2">
          <widget class="QGroupBox" name="groupBox_18">
           <property name="title">
-           <string>Square</string>
+           <string extracomment=":I18N COMMENT: Try to use Sony's official terminology for this. A good place to start would be in the console or the DualShock 2's manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.">Square</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_18">
            <property name="leftMargin">
@@ -732,7 +732,7 @@
         <item row="0" column="1" colspan="2">
          <widget class="QGroupBox" name="groupBox_19">
           <property name="title">
-           <string>Triangle</string>
+           <string extracomment=":I18N COMMENT: Try to use Sony's official terminology for this. A good place to start would be in the console or the DualShock 2's manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.">Triangle</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_19">
            <property name="leftMargin">
@@ -772,7 +772,7 @@
         <item row="2" column="2" colspan="2">
          <widget class="QGroupBox" name="groupBox_20">
           <property name="title">
-           <string>Circle</string>
+           <string extracomment=":I18N COMMENT: Try to use Sony's official terminology for this. A good place to start would be in the console or the DualShock 2's manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.">Circle</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_20">
            <property name="leftMargin">
@@ -815,7 +815,7 @@
      <item>
       <widget class="QGroupBox" name="groupBox_11">
        <property name="title">
-        <string>Right Analog</string>
+        <string extracomment=":I18N COMMENT: Try to use Sony's official terminology for this. A good place to start would be in the console or the DualShock 2's manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.">Right Analog</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_11">
         <item row="2" column="0" colspan="2">
@@ -1109,7 +1109,7 @@
      <item row="0" column="0">
       <widget class="QGroupBox" name="groupBox_27">
        <property name="title">
-        <string>L3</string>
+        <string extracomment=":I18N COMMENT: Leave this button name as-is.">L3</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_28">
         <property name="leftMargin">
@@ -1149,7 +1149,7 @@
      <item row="0" column="3">
       <widget class="QGroupBox" name="groupBox_28">
        <property name="title">
-        <string>R3</string>
+        <string extracomment=":I18N COMMENT: Leave this button name as-is.">R3</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_29">
         <property name="leftMargin">

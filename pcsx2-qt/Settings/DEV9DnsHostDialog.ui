@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Network DNS Hosts Inport/Export</string>
+   <string>Network DNS Hosts Import/Export</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

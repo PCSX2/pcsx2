@@ -40,8 +40,10 @@ static constexpr s32 DEFAULT_SOUNDTOUCH_SEEK_WINDOW = 20;
 static constexpr s32 DEFAULT_SOUNDTOUCH_OVERLAP = 10;
 
 static const char* s_output_module_entries[] = {QT_TRANSLATE_NOOP("AudioSettingsWidget", "No Sound (Emulate SPU2 only)"),
+	//:I18N COMMENT: Cubeb is an audio engine name. Leave as-is.
 	QT_TRANSLATE_NOOP("AudioSettingsWidget", "Cubeb (Cross-platform)"),
 #ifdef _WIN32
+	//:I18N COMMENT: XAudio2 is an audio engine name. Leave as-is.
 	QT_TRANSLATE_NOOP("AudioSettingsWidget", "XAudio2"),
 #endif
 	nullptr};
@@ -70,6 +72,7 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 	SettingWidgetBinder::BindWidgetToEnumSetting(
 		sif, m_ui.outputModule, "SPU2/Output", "OutputModule", s_output_module_entries, s_output_module_values, DEFAULT_OUTPUT_MODULE);
 	SettingWidgetBinder::BindSliderToIntSetting(
+		//:I18N COMMENT: Measuring unit that will appear after the number selected in its option. Adapt the space depending on your language's rules.
 		sif, m_ui.targetLatency, m_ui.targetLatencyLabel, tr(" ms"), "SPU2/Output", "Latency", DEFAULT_TARGET_LATENCY);
 	SettingWidgetBinder::BindSliderToIntSetting(
 		sif, m_ui.outputLatency, m_ui.outputLatencyLabel, tr(" ms"), "SPU2/Output", "OutputLatency", DEFAULT_OUTPUT_LATENCY);
@@ -113,6 +116,7 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 
 	dialog->registerWidgetHelp(m_ui.expansionMode, tr("Expansion"), tr("Stereo (None, Default)"), tr(""));
 
+	//:I18N COMMENT: Cubeb is an audio engine name. Leave as-is.
 	dialog->registerWidgetHelp(m_ui.outputModule, tr("Output Module"), tr("Cubeb (Cross-platform)"), tr(""));
 
 	dialog->registerWidgetHelp(m_ui.backend, tr("Output Backend"), tr("Default"), tr(""));
@@ -126,6 +130,7 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 
 	dialog->registerWidgetHelp(m_ui.sequenceLength, tr("Sequence Length"), tr("30 ms"), tr(""));
 
+	//:I18N COMMENT: "Seekwindow" meaning to be written.
 	dialog->registerWidgetHelp(m_ui.seekWindowSize, tr("Seekwindow Size"), tr("20 ms"), tr(""));
 
 	dialog->registerWidgetHelp(m_ui.overlap, tr("Overlap"), tr("10 ms"), tr(""));
@@ -298,6 +303,7 @@ void AudioSettingsWidget::volumeContextMenuRequested(const QPoint& pt)
 
 void AudioSettingsWidget::updateVolumeLabel()
 {
+	//:I18N COMMENT: Variable value that indicates a percentage. Preserve the %1 variable, adapt the latter % (and/or any possible spaces) to your language's ruleset.
 	m_ui.volumeLabel->setText(tr("%1%").arg(m_ui.volume->value()));
 }
 
@@ -316,6 +322,7 @@ void AudioSettingsWidget::updateLatencyLabels()
 {
 	const bool minimal_output = m_dialog->getEffectiveBoolValue("SPU2/Output", "OutputLatencyMinimal", false);
 
+	//:I18N COMMENT: Variable value that indicates a percentage. Preserve the %1 variable, adapt the latter ms (and/or any possible spaces) to your language's ruleset.
 	m_ui.outputLatencyLabel->setText(minimal_output ? tr("N/A") : tr("%1 ms").arg(m_ui.outputLatency->value()));
 
 	const u32 output_latency_ms =

@@ -49,17 +49,29 @@ public:
 
 private:
 	const std::map<int, QString> ThreadStateStrings{
+		//ADDING I18N comments here because the context string added by QtLinguist does not mention that these are thread states.
+		//:I18N COMMENT: Refers to a Thread State in the Debugger.
 		{THS_BAD, tr("BAD")},
+		//:I18N COMMENT: Refers to a Thread State in the Debugger.
 		{THS_RUN, tr("RUN")},
+		//:I18N COMMENT: Refers to a Thread State in the Debugger.
 		{THS_READY, tr("READY")},
+		//:I18N COMMENT: Refers to a Thread State in the Debugger.
 		{THS_WAIT, tr("WAIT")},
+		//:I18N COMMENT: Refers to a Thread State in the Debugger.
 		{THS_SUSPEND, tr("SUSPEND")},
+		//:I18N COMMENT: Refers to a Thread State in the Debugger.
 		{THS_WAIT_SUSPEND, tr("WAIT SUSPEND")},
+		//:I18N COMMENT: Refers to a Thread State in the Debugger.
 		{THS_DORMANT, tr("DORMANT")}};
 
 	const std::map<int, QString> ThreadWaitStrings{
+		//ADDING I18N comments here because the context string added by QtLinguist does not mention that these are thread wait states.
+		//:I18N COMMENT: Refers to a Thread Wait State in the Debugger.
 		{WAIT_NONE, tr("NONE")},
+		//:I18N COMMENT: Refers to a Thread Wait State in the Debugger.
 		{WAIT_WAKEUP_REQ, tr("WAKEUP REQUEST")},
+		//:I18N COMMENT: Refers to a Thread Wait State in the Debugger.
 		{WAIT_SEMA, tr("SEMAPHORE")}};
 
 	DebugInterface& m_cpu;

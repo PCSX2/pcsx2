@@ -72,17 +72,20 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
 	dialog->registerWidgetHelp(m_ui.eeClampMode, tr("Clamping Mode"), tr("Normal (Default)"), tr(""));
 
 	dialog->registerWidgetHelp(m_ui.eeRecompiler, tr("Enable Recompiler"), tr("Checked"),
-		tr("Performs just - in - time binary translation of 64 - bit MIPS - IV machine code to x86."));
+		tr("Performs just-in-time binary translation of 64-bit MIPS-IV machine code to x86."));
 
+	//:I18N COMMENT: "Wait Loop" should be explained to translators. To be written.
 	dialog->registerWidgetHelp(m_ui.eeWaitLoopDetection, tr("Wait Loop Detection"), tr("Checked"),
 		tr("Moderate speedup for some games, with no known side effects."));
 
 	dialog->registerWidgetHelp(m_ui.eeCache, tr("Enable Cache (Slow)"), tr("Unchecked"), tr("Interpreter only, provided for diagnostic."));
 
+	//:I18N COMMENT: INTC = Name of a PS2 register, leave as-is. "spin" = Definition to be written.
 	dialog->registerWidgetHelp(m_ui.eeINTCSpinDetection, tr("INTC Spin Detection"), tr("Checked"),
 		tr("Huge speedup for some games, with almost no compatibility side effects."));
 
 	dialog->registerWidgetHelp(m_ui.eeFastmem, tr("Enable Fast Memory Access"), tr("Checked"),
+		//:I18N COMMENT: "Backpatching" = Generate code and then patch it at the end of the process. Definition to be verified.
 		tr("Uses backpatching to avoid register flushing on every memory access."));
 
 	dialog->registerWidgetHelp(m_ui.pauseOnTLBMiss, tr("Pause On TLB Miss"), tr("Unchecked"),
@@ -96,11 +99,14 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
 	dialog->registerWidgetHelp(m_ui.vu0ClampMode, tr("Clamping Mode"), tr("Normal (Default)"), tr(""));
 	dialog->registerWidgetHelp(m_ui.vu1ClampMode, tr("Clamping Mode"), tr("Normal (Default)"), tr(""));
 
+	//:I18N COMMENT: VU0 = Vector Unit 0. One of the PS2's processors.
 	dialog->registerWidgetHelp(m_ui.vu0Recompiler, tr("Enable VU0 Recompiler (Micro Mode)"), tr("Checked"), tr("Enables VU0 Recompiler."));
 
+	//:I18N COMMENT: VU1 = Vector Unit 1. One of the PS2's processors.
 	dialog->registerWidgetHelp(m_ui.vu1Recompiler, tr("Enable VU1 Recompiler"), tr("Checked"), tr("Enables VU1 Recompiler."));
 
 	dialog->registerWidgetHelp(
+		//:I18N COMMENT: mVU = Something related to the Vector Units. Definition to be written.
 		m_ui.vuFlagHack, tr("mVU Flag Hack"), tr("Checked"), tr("Good speedup and high compatibility, may cause graphical errors."));
 
 	dialog->registerWidgetHelp(m_ui.iopRecompiler, tr("Enable Recompiler"), tr("Checked"),

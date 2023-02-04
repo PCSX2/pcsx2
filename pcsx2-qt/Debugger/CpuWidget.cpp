@@ -418,6 +418,7 @@ void CpuWidget::onFuncListContextMenu(QPoint pos)
 	else
 		m_funclistContextMenu->clear();
 
+	//:I18N COMMENT: "Demangling" is the opposite of "Code mangling". See here: https://en.wikipedia.org/wiki/Name_mangling#C++ SHORT DEFINITION FOR TRANSLATORS TO BE WRITTEN
 	QAction* demangleAction = new QAction(tr("Demangle Symbols"), m_ui.listFunctions);
 	demangleAction->setCheckable(true);
 	demangleAction->setChecked(m_demangleFunctions);

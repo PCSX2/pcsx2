@@ -402,7 +402,9 @@ void ControllerSettingsDialog::createWidgets()
 		const QString display_name(ci ? QString::fromUtf8(ci->display_name) : QStringLiteral("Unknown"));
 
 		QListWidgetItem* item = new QListWidgetItem();
+		//:I18N COMMENT: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
 		item->setText(mtap_enabled[port] ? (tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot]).arg(display_name)) :
+                                           //:I18N COMMENT: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
                                            tr("Controller Port %1\n%2").arg(port + 1).arg(display_name));
 		item->setIcon(m_port_bindings[global_slot]->getIcon());
 		item->setData(Qt::UserRole, QVariant(global_slot));
@@ -455,7 +457,9 @@ void ControllerSettingsDialog::updateListDescription(u32 global_slot, Controller
 			const PAD::ControllerInfo* ci = PAD::GetControllerInfo(widget->getControllerType());
 			const QString display_name(ci ? QString::fromUtf8(ci->display_name) : QStringLiteral("Unknown"));
 
+			//:I18N COMMENT: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
 			item->setText(mtap_enabled ? (tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot]).arg(display_name)) :
+                                         //:I18N COMMENT: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
                                          tr("Controller Port %1\n%2").arg(port + 1).arg(display_name));
 			item->setIcon(widget->getIcon());
 			break;
@@ -487,6 +491,7 @@ void ControllerSettingsDialog::refreshProfileList()
 
 	QSignalBlocker sb(m_ui.currentProfile);
 	m_ui.currentProfile->clear();
+	//:I18N COMMENT: "Shared" refers here to the shared input profile.
 	m_ui.currentProfile->addItem(tr("Shared"));
 	if (isEditingGlobalSettings())
 		m_ui.currentProfile->setCurrentIndex(0);

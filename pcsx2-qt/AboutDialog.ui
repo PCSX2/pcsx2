@@ -66,7 +66,7 @@
    <item>
     <widget class="QLabel" name="scmversion">
      <property name="text">
-      <string>SCM Version</string>
+      <string extracomment=":I18N MESSAGE: SCM= Source Code Management">SCM Version</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

@@ -509,6 +509,7 @@ void MemoryCardSlotWidget::setCard(const std::optional<std::string>& name)
 	else
 	{
 		item->setIcon(QIcon::fromTheme("close-line"));
+		//:I18N COMMENT: Ignore Crowdin's warning for [Missing], the text should be translated.
 		item->setText(tr("%1 [Missing]").arg(QString::fromStdString(name.value())));
 	}
 }
