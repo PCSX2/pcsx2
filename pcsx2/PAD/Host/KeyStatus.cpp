@@ -170,7 +170,8 @@ void KeyStatus::Set(u32 pad, u32 index, float value)
 					continue;
 
 				// We add 0.5 here so that the round trip between 255->127->255 when applying works as expected.
-				m_button_pressure[pad][i] = static_cast<u8>(std::clamp((static_cast<float>(m_button_pressure[pad][i]) + 0.5f) * adjust_pmod, 0.0f, 255.0f));
+				const float add = (m_button_pressure[pad][i] != 0) ? 0.5f : 0.0f;
+				m_button_pressure[pad][i] = static_cast<u8>(std::clamp((static_cast<float>(m_button_pressure[pad][i]) + add) * adjust_pmod, 0.0f, 255.0f));
 			}
 		}
 	}
