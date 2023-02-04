@@ -7005,10 +7005,15 @@ SCUS-21494:
     halfPixelOffset: 2 # Fixes blurriness.
     roundSprite: 2 # Fixes blurriness.
 SCUS-90174:
-  name: "Toy Story 3 [PlayStation 2 Bundle]"
+  name: "Disney-Pixar Toy Story 3 [PlayStation 2 Bundle]"
   region: "NTSC-U"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
+  gsHWFixes:
+    halfPixelOffset: 2 # Help fixes ghosting.
+    roundSprite: 2 # Help fixes ghosting.
+    skipDrawStart: 1 # Removes the ghosting effect when upscaling.
+    skipDrawEnd: 1 # Removes the ghosting effect when upscaling.
 SCUS-94346:
   name: "SingStar Latino"
   region: "NTSC-U"
@@ -21790,26 +21795,51 @@ SLES-55184:
   region: "PAL-A"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
+    skipDrawStart: 1 # Removes the ghosting effect when upscaling.
+    skipDrawEnd: 1 # Removes the ghosting effect when upscaling.
 SLES-55185:
   name: "Disney-Pixar WALL-E"
   region: "PAL-UK"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
+    skipDrawStart: 1 # Removes the ghosting effect when upscaling.
+    skipDrawEnd: 1 # Removes the ghosting effect when upscaling.
 SLES-55186:
   name: "Disney-Pixar WALL-E"
   region: "PAL-S-P"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
+    skipDrawStart: 1 # Removes the ghosting effect when upscaling.
+    skipDrawEnd: 1 # Removes the ghosting effect when upscaling.
 SLES-55187:
   name: "Disney-Pixar WALL-E"
   region: "PAL-F-G"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
+    skipDrawStart: 1 # Removes the ghosting effect when upscaling.
+    skipDrawEnd: 1 # Removes the ghosting effect when upscaling.
 SLES-55188:
   name: "Disney-Pixar WALL-E"
   region: "PAL-G"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
+    skipDrawStart: 1 # Removes the ghosting effect when upscaling.
+    skipDrawEnd: 1 # Removes the ghosting effect when upscaling.
 SLES-55189:
   name: "Nick Jr. Go Diego Go! Safari Rescue"
   region: "PAL-E-F"
@@ -21829,21 +21859,41 @@ SLES-55193:
   region: "PAL-R"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
+    skipDrawStart: 1 # Removes the ghosting effect when upscaling.
+    skipDrawEnd: 1 # Removes the ghosting effect when upscaling.
 SLES-55194:
   name: "Disney-Pixar WALL-E"
   region: "PAL-SC"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
+    skipDrawStart: 1 # Removes the ghosting effect when upscaling.
+    skipDrawEnd: 1 # Removes the ghosting effect when upscaling.
 SLES-55195:
   name: "Disney-Pixar WALL-E"
   region: "PAL-GR-I"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
+    skipDrawStart: 1 # Removes the ghosting effect when upscaling.
+    skipDrawEnd: 1 # Removes the ghosting effect when upscaling.
 SLES-55196:
   name: "Disney-Pixar WALL-E"
   region: "PAL-PL-CR"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
+    skipDrawStart: 1 # Removes the ghosting effect when upscaling.
+    skipDrawEnd: 1 # Removes the ghosting effect when upscaling.
 SLES-55197:
   name: "Dancing Stage SuperNOVA 2"
   region: "PAL-M5"
@@ -22745,11 +22795,21 @@ SLES-55622:
   compat: 5
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
+  gsHWFixes:
+    halfPixelOffset: 2 # Help fixes ghosting.
+    roundSprite: 2 # Help fixes ghosting.
+    skipDrawStart: 1 # Removes the ghosting effect when upscaling.
+    skipDrawEnd: 1 # Removes the ghosting effect when upscaling.
 SLES-55623:
   name: "Disney-Pixar Toy Story 3"
   region: "PAL-R"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
+  gsHWFixes:
+    halfPixelOffset: 2 # Help fixes ghosting.
+    roundSprite: 2 # Help fixes ghosting.
+    skipDrawStart: 1 # Removes the ghosting effect when upscaling.
+    skipDrawEnd: 1 # Removes the ghosting effect when upscaling.
 SLES-55625:
   name: "Despicable Me - The Game"
   region: "PAL-M9"
@@ -48963,11 +49023,16 @@ SLUS-21735:
   gsHWFixes:
     roundSprite: 1 # Fixes misalignment of textures in the Pause Menu.
 SLUS-21736:
-  name: "Wall-E"
+  name: "Disney-Pixar WALL-E"
   region: "NTSC-U"
   compat: 5
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
+    skipDrawStart: 1 # Removes the ghosting effect when upscaling.
+    skipDrawEnd: 1 # Removes the ghosting effect when upscaling.
 SLUS-21737:
   name: "Riding Star"
   region: "NTSC-U"
@@ -49816,10 +49881,15 @@ SLUS-21930:
   gsHWFixes:
     getSkipCount: "GSC_SakuraWarsSoLongMyLove"
 SLUS-21931:
-  name: "Toy Story 3"
+  name: "Disney-Pixar Toy Story 3"
   region: "NTSC-U"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
+  gsHWFixes:
+    halfPixelOffset: 2 # Help fixes ghosting.
+    roundSprite: 2 # Help fixes ghosting.
+    skipDrawStart: 1 # Removes the ghosting effect when upscaling.
+    skipDrawEnd: 1 # Removes the ghosting effect when upscaling.
 SLUS-21932:
   name: "NCAA Football 11"
   region: "NTSC-U"
