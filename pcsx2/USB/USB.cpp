@@ -410,7 +410,7 @@ bool USB::DoState(StateWrapper& sw)
 				Console.Error("Save state has device type %u, but config has %u. Reattaching device.", state_devtype, EmuConfig.USB.Ports[port].DeviceType);
 				if (s_usb_device[port])
 					usb_reattach(&USB::GetOHCIPort(port).port);
-				
+
 				sw.SkipBytes(state_size);
 				continue;
 			}
@@ -670,8 +670,10 @@ std::string USB::GetConfigSubKey(const std::string_view& device, const std::stri
 	return fmt::format("{}_{}", device, bind_name);
 }
 
-void USB::CopyConfiguration(SettingsInterface& dest_si, const SettingsInterface& src_si) {
-	for (u32 port = 0; port < USB::NUM_PORTS; port++) {
+void USB::CopyConfiguration(SettingsInterface& dest_si, const SettingsInterface& src_si)
+{
+	for (u32 port = 0; port < USB::NUM_PORTS; port++)
+	{
 		const std::string section(GetConfigSection(port));
 
 		const std::string type(GetConfigDevice(src_si, port));
@@ -680,14 +682,16 @@ void USB::CopyConfiguration(SettingsInterface& dest_si, const SettingsInterface&
 		const u32 subtype(GetConfigSubType(src_si, port, type));
 
 		const gsl::span<const InputBindingInfo> bindings(GetDeviceBindings(type, subtype));
-		for (const InputBindingInfo binding : bindings) {
+		for (const InputBindingInfo binding : bindings)
+		{
 			const std::string binding_settings_key(GetConfigSubKey(type, binding.name));
 			const std::string source_value(src_si.GetStringValue(section.c_str(), binding_settings_key.c_str()));
 			dest_si.SetStringValue(section.c_str(), binding_settings_key.c_str(), source_value.c_str());
 		}
 
 		const gsl::span<const SettingInfo> settings(GetDeviceSettings(type, subtype));
-		for (const SettingInfo setting : settings) {
+		for (const SettingInfo setting : settings)
+		{
 			const std::string source_value(src_si.GetStringValue(section.c_str(), setting.name));
 			dest_si.SetStringValue(section.c_str(), setting.name, source_value.c_str());
 		}
