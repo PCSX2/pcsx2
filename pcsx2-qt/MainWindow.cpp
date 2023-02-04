@@ -1932,6 +1932,7 @@ void MainWindow::onVMStopped()
 	// If we're closing or in batch mode, quit the whole application now.
 	if (m_is_closing || QtHost::InBatchMode())
 	{
+		QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
 		QCoreApplication::quit();
 		return;
 	}
@@ -1975,16 +1976,24 @@ void MainWindow::showEvent(QShowEvent* event)
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-	if (!requestShutdown(true, true, EmuConfig.SaveStateOnShutdown))
+	// If there's no VM, we can just exit as normal.
+	if (!s_vm_valid)
 	{
-		event->ignore();
+		QMainWindow::closeEvent(event);
 		return;
 	}
 
+	// But if there is, we have to cancel the action, regardless of whether we ended exiting
+	// or not. The window still needs to be visible while GS is shutting down.
+	event->ignore();
+
+	// Exit cancelled?
+	if (!requestShutdown(true, true, EmuConfig.SaveStateOnShutdown))
+		return;
+
+	// Application will be exited in VM stopped handler.
 	saveStateToConfig();
 	m_is_closing = true;
-
-	QMainWindow::closeEvent(event);
 }
 
 static QString getFilenameFromMimeData(const QMimeData* md)
