@@ -670,6 +670,30 @@ std::string USB::GetConfigSubKey(const std::string_view& device, const std::stri
 	return fmt::format("{}_{}", device, bind_name);
 }
 
+void USB::CopyConfiguration(SettingsInterface& dest_si, const SettingsInterface& src_si) {
+	for (u32 port = 0; port < USB::NUM_PORTS; port++) {
+		const std::string section(GetConfigSection(port));
+
+		const std::string type(GetConfigDevice(src_si, port));
+		SetConfigDevice(dest_si, port, type.c_str());
+
+		const u32 subtype(GetConfigSubType(src_si, port, type));
+
+		const gsl::span<const InputBindingInfo> bindings(GetDeviceBindings(type, subtype));
+		for (const InputBindingInfo binding : bindings) {
+			const std::string binding_settings_key(GetConfigSubKey(type, binding.name));
+			const std::string source_value(src_si.GetStringValue(section.c_str(), binding_settings_key.c_str()));
+			dest_si.SetStringValue(section.c_str(), binding_settings_key.c_str(), source_value.c_str());
+		}
+
+		const gsl::span<const SettingInfo> settings(GetDeviceSettings(type, subtype));
+		for (const SettingInfo setting : settings) {
+			const std::string source_value(src_si.GetStringValue(section.c_str(), setting.name));
+			dest_si.SetStringValue(section.c_str(), setting.name, source_value.c_str());
+		}
+	}
+}
+
 bool USB::GetConfigBool(SettingsInterface& si, u32 port, const char* devname, const char* key, bool default_value)
 {
 	const std::string real_key(fmt::format("{}_{}", devname, key));
