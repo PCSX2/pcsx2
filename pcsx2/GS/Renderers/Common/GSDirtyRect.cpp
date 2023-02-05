@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSDirtyRect.h"
+#include <vector>
 
 GSDirtyRect::GSDirtyRect() :
 	r(GSVector4i::zero()),
@@ -30,7 +31,7 @@ GSDirtyRect::GSDirtyRect(GSVector4i& r, u32 psm, u32 bw) :
 {
 }
 
-GSVector4i GSDirtyRect::GetDirtyRect(GIFRegTEX0& TEX0) const
+GSVector4i GSDirtyRect::GetDirtyRect(GIFRegTEX0& TEX0)
 {
 	GSVector4i _r;
 
@@ -53,9 +54,7 @@ GSVector4i GSDirtyRect::GetDirtyRect(GIFRegTEX0& TEX0) const
 	return _r;
 }
 
-//
-
-GSVector4i GSDirtyRectList::GetDirtyRect(GIFRegTEX0& TEX0, const GSVector2i& size) const
+GSVector4i GSDirtyRectList::GetTotalRect(GIFRegTEX0& TEX0, const GSVector2i& size)
 {
 	if (!empty())
 	{
@@ -74,9 +73,31 @@ GSVector4i GSDirtyRectList::GetDirtyRect(GIFRegTEX0& TEX0, const GSVector2i& siz
 	return GSVector4i::zero();
 }
 
+GSVector4i GSDirtyRectList::GetDirtyRect(GIFRegTEX0& TEX0, const GSVector2i& size, bool clear)
+{
+	if (!empty())
+	{
+		const std::vector<GSDirtyRect>::iterator &it = begin();
+		const GSVector4i r = it[0].GetDirtyRect(TEX0);
+
+		if (clear)
+			erase(it);
+
+		GSVector2i bs = GSLocalMemory::m_psm[TEX0.PSM].bs;
+
+		return r.ralign<Align_Outside>(bs).rintersect(GSVector4i(0, 0, size.x, size.y));
+	}
+
+	return GSVector4i::zero();
+}
+
 GSVector4i GSDirtyRectList::GetDirtyRectAndClear(GIFRegTEX0& TEX0, const GSVector2i& size)
 {
-	GSVector4i r = GetDirtyRect(TEX0, size);
-	clear();
+	const GSVector4i r = GetDirtyRect(TEX0, size, true);
 	return r;
+}
+
+void GSDirtyRectList::ClearDirty()
+{
+	clear();
 }
