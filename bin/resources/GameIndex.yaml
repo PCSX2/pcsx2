@@ -36089,8 +36089,10 @@ SLPS-20373:
   name: "Jissen Pachi-Slot Hisshouhou! Hokuto no Ken"
   region: "NTSC-J"
 SLPS-20374:
-  name: "Football Kingdom [Trial Edition]"
+  name: "Football Kingdom - Trial Edition"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-20375:
   name: "Sanyo Pachinko Paradise 10"
   region: "NTSC-J"
