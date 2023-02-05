@@ -26,6 +26,10 @@
 #include "USB/usb-lightgun/guncon2.h"
 #include "VMManager.h"
 
+#include "Input/InputManager.h"
+
+#include "common/StringUtil.h"
+
 #include <tuple>
 
 namespace usb_lightgun
@@ -133,6 +137,7 @@ namespace usb_lightgun
 		//////////////////////////////////////////////////////////////////////////
 		// Configuration
 		//////////////////////////////////////////////////////////////////////////
+		s32 pointer_index = -1;
 		bool custom_config = false;
 		u32 screen_width = 640;
 		u32 screen_height = 240;
@@ -145,6 +150,9 @@ namespace usb_lightgun
 		// Host State (Not Saved)
 		//////////////////////////////////////////////////////////////////////////
 		u32 button_state = 0;
+		std::string cursor_path;
+		float cursor_scale = 1.0f;
+		u32 cursor_color = 0xFFFFFFFF;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Device State (Saved)
@@ -323,6 +331,10 @@ namespace usb_lightgun
 	static void usb_hid_unrealize(USBDevice* dev)
 	{
 		GunCon2State* us = USB_CONTAINER_OF(dev, GunCon2State, dev);
+
+		if (us->pointer_index >= 0 && !us->cursor_path.empty())
+			InputManager::ClearSoftwareCursor(static_cast<u32>(us->pointer_index));
+
 		delete us;
 	}
 
@@ -359,7 +371,8 @@ namespace usb_lightgun
 	std::tuple<s16, s16> GunCon2State::CalculatePosition()
 	{
 		float pointer_x, pointer_y;
-		const std::pair<float, float> abs_pos(InputManager::GetPointerAbsolutePosition(0));
+		const std::pair<float, float> abs_pos(InputManager::GetPointerAbsolutePosition(
+			pointer_index < 0 ? 0 : static_cast<u32>(pointer_index)));
 		GSTranslateWindowToDisplayCoordinates(abs_pos.first, abs_pos.second, &pointer_x, &pointer_y);
 
 		s16 pos_x, pos_y;
@@ -435,6 +448,8 @@ namespace usb_lightgun
 		usb_desc_init(&s->dev);
 		usb_ep_init(&s->dev);
 
+		UpdateSettings(&s->dev, si);
+
 		return &s->dev;
 	fail:
 		usb_hid_unrealize(&s->dev);
@@ -456,6 +471,38 @@ namespace usb_lightgun
 			s->center_y = USB::GetConfigFloat(si, s->port, TypeName(), "center_y", DEFAULT_CENTER_Y);
 			s->scale_x = USB::GetConfigFloat(si, s->port, TypeName(), "scale_x", DEFAULT_SCALE_X) / 100.0f;
 			s->scale_y = USB::GetConfigFloat(si, s->port, TypeName(), "scale_y", DEFAULT_SCALE_Y) / 100.0f;
+		}
+
+		// Pointer settings.
+		const std::string pointer_binding = USB::GetConfigString(si, s->port, TypeName(), "Pointer", "");
+		std::string cursor_path(USB::GetConfigString(si, s->port, TypeName(), "cursor_path"));
+		const float cursor_scale = USB::GetConfigFloat(si, s->port, TypeName(), "cursor_scale", 1.0f);
+		u32 cursor_color = 0xFFFFFF;
+		if (std::string cursor_color_str(USB::GetConfigString(si, s->port, TypeName(), "cursor_color")); !cursor_color_str.empty())
+		{
+			// Strip the leading hash, if it's a CSS style colour.
+			const std::optional<u32> cursor_color_opt(
+				StringUtil::FromChars<u32>(cursor_color_str[0] == '#' ?
+					std::string_view(cursor_color_str).substr(1) : std::string_view(cursor_color_str), 16));
+			if (cursor_color_opt.has_value())
+				cursor_color = cursor_color_opt.value();
+		}
+
+		const std::optional<u32> opt_pointer_index = InputManager::GetIndexFromPointerBinding(pointer_binding);
+		const s32 pointer_index = opt_pointer_index.has_value() ? static_cast<s32>(opt_pointer_index.value()) : -1;
+		if (s->pointer_index != pointer_index || s->cursor_path != cursor_path || s->cursor_scale != cursor_scale ||
+			s->cursor_color != cursor_color)
+		{
+			// Pointer changed, so need to update software cursor.
+			if (pointer_index >= 0 && !cursor_path.empty())
+				InputManager::SetSoftwareCursor(static_cast<u32>(pointer_index), cursor_path, cursor_scale, cursor_color);
+			else if (s->pointer_index >= 0 && !s->cursor_path.empty())
+				InputManager::ClearSoftwareCursor(static_cast<u32>(s->pointer_index));
+
+			s->pointer_index = pointer_index;
+			s->cursor_path = std::move(cursor_path);
+			s->cursor_scale = cursor_scale;
+			s->cursor_color = cursor_color;
 		}
 	}
 
@@ -481,7 +528,7 @@ namespace usb_lightgun
 	gsl::span<const InputBindingInfo> GunCon2Device::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo bindings[] = {
-			//{"pointer", "Pointer/Aiming", InputBindingInfo::Type::Pointer, BID_POINTER_X, GenericInputBinding::Unknown},
+			{"Pointer", "Pointer/Aiming", InputBindingInfo::Type::AbsolutePointer, 0, GenericInputBinding::Unknown},
 			{"Up", TRANSLATE_NOOP("USB", "D-Pad Up"), InputBindingInfo::Type::Button, BID_DPAD_UP, GenericInputBinding::DPadUp},
 			{"Down", TRANSLATE_NOOP("USB", "D-Pad Down"), InputBindingInfo::Type::Button, BID_DPAD_DOWN, GenericInputBinding::DPadDown},
 			{"Left", TRANSLATE_NOOP("USB", "D-Pad Left"), InputBindingInfo::Type::Button, BID_DPAD_LEFT, GenericInputBinding::DPadLeft},
@@ -509,6 +556,15 @@ namespace usb_lightgun
 				TRANSLATE_NOOP("USB",
 					"Forces the use of the screen parameters below, instead of automatic parameters if available."),
 				"false"},
+			{SettingInfo::Type::Path, "cursor_path", "Cursor Path",
+				"Sets the crosshair image that this lightgun will use. A pointer must also be bound in the Bindings page.",
+				""},
+			{SettingInfo::Type::Float, "cursor_scale", TRANSLATE_NOOP("USB", "Cursor Scale"),
+				"Scales the crosshair image set above.", "1", "0.01", "10", "0.01", "%.0f%%", nullptr, nullptr,
+				100.0f},
+			{SettingInfo::Type::String, "cursor_color", TRANSLATE_NOOP("USB", "Cursor Color"),
+				"Applys a color to the chosen crosshair images, can be used for multiple players. Specify in HTML/CSS format (e.g. #aabbcc)",
+				"#ffffff"},
 			{SettingInfo::Type::Float, "scale_x", TRANSLATE_NOOP("USB", "X Scale (Sensitivity)"),
 				"Scales the position to simulate CRT curvature.", "100", "0", "200", "0.1", "%.2f%%", nullptr, nullptr,
 				1.0f},

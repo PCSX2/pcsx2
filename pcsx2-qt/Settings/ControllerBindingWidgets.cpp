@@ -805,7 +805,7 @@ void ControllerBindingWidget_Base::initBindingWidgets()
 		const InputBindingInfo& bi = cinfo->bindings[i];
 		if (bi.bind_type == InputBindingInfo::Type::Axis || bi.bind_type == InputBindingInfo::Type::HalfAxis ||
 			bi.bind_type == InputBindingInfo::Type::Button || bi.bind_type == InputBindingInfo::Type::Pointer ||
-			bi.bind_type == InputBindingInfo::Type::Device)
+			bi.bind_type == InputBindingInfo::Type::AbsolutePointer || bi.bind_type == InputBindingInfo::Type::Device)
 		{
 			InputBindingWidget* widget = findChild<InputBindingWidget*>(QString::fromStdString(bi.name));
 			if (!widget)
@@ -1132,7 +1132,8 @@ void USBBindingWidget::createWidgets(gsl::span<const InputBindingInfo> bindings)
 	for (const InputBindingInfo& bi : bindings)
 	{
 		if (bi.bind_type == InputBindingInfo::Type::Axis || bi.bind_type == InputBindingInfo::Type::HalfAxis ||
-			bi.bind_type == InputBindingInfo::Type::Pointer || bi.bind_type == InputBindingInfo::Type::Device)
+			bi.bind_type == InputBindingInfo::Type::Pointer || bi.bind_type == InputBindingInfo::Type::AbsolutePointer ||
+			bi.bind_type == InputBindingInfo::Type::Device)
 		{
 			if (!axis_gbox)
 			{
@@ -1207,7 +1208,7 @@ void USBBindingWidget::bindWidgets(gsl::span<const InputBindingInfo> bindings)
 	{
 		if (bi.bind_type == InputBindingInfo::Type::Axis || bi.bind_type == InputBindingInfo::Type::HalfAxis ||
 			bi.bind_type == InputBindingInfo::Type::Button || bi.bind_type == InputBindingInfo::Type::Pointer ||
-			bi.bind_type == InputBindingInfo::Type::Device)
+			bi.bind_type == InputBindingInfo::Type::AbsolutePointer || bi.bind_type == InputBindingInfo::Type::Device)
 		{
 			InputBindingWidget* widget = findChild<InputBindingWidget*>(QString::fromUtf8(bi.name));
 			if (!widget)

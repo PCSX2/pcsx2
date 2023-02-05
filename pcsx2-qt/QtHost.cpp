@@ -797,6 +797,7 @@ void EmuThread::onDisplayWindowResized(int width, int height, float scale)
 		return;
 
 	MTGS::ResizeDisplayWindow(width, height, scale);
+	InputManager::SetDisplayWindowSize(static_cast<float>(width), static_cast<float>(height));
 }
 
 void EmuThread::onApplicationStateChanged(Qt::ApplicationState state)

@@ -219,6 +219,7 @@
     <ClCompile Include="Input\InputSource.cpp" />
     <ClCompile Include="Input\SDLInputSource.cpp" />
     <ClCompile Include="Input\XInputSource.cpp" />
+    <ClCompile Include="Input\Win32RawInputSource.cpp" />
     <ClCompile Include="IopGte.cpp" />
     <ClCompile Include="LayeredSettingsInterface.cpp" />
     <ClCompile Include="LogSink.cpp" />
@@ -567,6 +568,7 @@
     <ClInclude Include="Input\InputSource.h" />
     <ClInclude Include="Input\SDLInputSource.h" />
     <ClInclude Include="Input\XInputSource.h" />
+    <ClInclude Include="Input\Win32RawInputSource.h" />
     <ClInclude Include="IopGte.h" />
     <ClInclude Include="IPU\mpeg2_vlc.h" />
     <ClInclude Include="LayeredSettingsInterface.h" />

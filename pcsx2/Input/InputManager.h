@@ -36,6 +36,7 @@ enum class InputSourceType : u32
 #ifdef _WIN32
 	DInput,
 	XInput,
+	RawInput,
 #endif
 #ifdef SDL_BUILD
 	SDL,
@@ -167,7 +168,7 @@ namespace InputManager
 	static constexpr double VIBRATION_UPDATE_INTERVAL_SECONDS = 0.5; // 500ms
 
 	/// Maximum number of host mouse devices.
-	static constexpr u32 MAX_POINTER_DEVICES = 1;
+	static constexpr u32 MAX_POINTER_DEVICES = 8;
 	static constexpr u32 MAX_POINTER_BUTTONS = 3;
 
 	/// Returns a pointer to the external input source class, if present.
@@ -278,6 +279,9 @@ namespace InputManager
 	/// The pad vibration state will internally remain, so that when emulation is unpaused, the effect resumes.
 	void PauseVibration();
 
+	/// Returns the number of currently-connected pointer devices.
+	u32 GetPointerCount();
+
 	/// Reads absolute pointer position.
 	std::pair<float, float> GetPointerAbsolutePosition(u32 index);
 
@@ -286,6 +290,16 @@ namespace InputManager
 
 	/// Updates relative pointer position. Can call from the UI thread, use when host supports relative coordinate reporting.
 	void UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, float d, bool raw_input = false);
+
+	/// Returns true if the raw input source is being used.
+	bool IsUsingRawInput();
+
+	/// Updates InputManager's view of the window size, used for clamping raw input coordinates.
+	void SetDisplayWindowSize(float width, float height);
+
+	/// Sets an image and scale for a software cursor. Software cursors can be used for things like crosshairs.
+	void SetSoftwareCursor(u32 index, std::string image_path, float image_scale, u32 multiply_color = 0xFFFFFF);
+	void ClearSoftwareCursor(u32 index);
 
 	/// Called when a new input device is connected.
 	void OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name);

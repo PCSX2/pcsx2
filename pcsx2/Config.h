@@ -85,6 +85,7 @@ struct InputBindingInfo
 		HalfAxis,
 		Motor,
 		Pointer, // Receive relative mouse movement events, bind_index is offset by the axis.
+		AbsolutePointer, // Allows selection of specific pointers, but defaults to the first.
 		Keyboard, // Receive host key events, bind_index is offset by the key code.
 		Device, // Used for special-purpose device selection, e.g. force feedback.
 		Macro,

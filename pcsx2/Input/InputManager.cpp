@@ -105,6 +105,7 @@ namespace InputManager
 	static void AddBinding(const std::string_view& binding, const InputEventHandler& handler);
 	static void AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler);
 	static bool ParseBindingAndGetSource(const std::string_view& binding, InputBindingKey* key, InputSource** source);
+	static void UpdatePointerCount();
 
 	static bool IsAxisHandler(const InputEventHandler& handler);
 	static float ApplySingleBindingScale(float sensitivity, float deadzone, float value);
@@ -160,8 +161,8 @@ struct PointerAxisState
 	float last_value;
 };
 static std::array<std::array<float, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES> s_host_pointer_positions;
-static std::array<std::array<PointerAxisState, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES>
-	s_pointer_state;
+static std::array<std::array<PointerAxisState, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES> s_pointer_state;
+static u32 s_pointer_count = 0;
 static std::array<float, 2> s_pointer_axis_speed;
 static std::array<float, 2> s_pointer_axis_dead_zone;
 static std::array<float, 2> s_pointer_axis_range;
@@ -172,6 +173,10 @@ using PointerMoveCallback = std::function<void(InputBindingKey key, float value)
 using KeyboardEventCallback = std::function<void(InputBindingKey key, float value)>;
 static std::vector<KeyboardEventCallback> s_keyboard_event_callbacks;
 static std::vector<std::pair<u32, PointerMoveCallback>> s_pointer_move_callbacks;
+
+// Window size, used for clamping the mouse position in raw input modes.
+static std::array<float, 2> s_window_size = {};
+static bool s_relative_mouse_mode = false;
 
 // ------------------------------------------------------------------------
 // Binding Parsing
@@ -277,7 +282,11 @@ bool InputManager::ParseBindingAndGetSource(const std::string_view& binding, Inp
 
 std::string InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key)
 {
-	if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::Device)
+	if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::AbsolutePointer)
+	{
+		return GetPointerDeviceName(key.source_index);
+	}
+	else if (binding_type == InputBindingInfo::Type::Device)
 	{
 		// pointer and device bindings don't have a data part
 		if (key.source_type == InputSourceType::Keyboard)
@@ -333,7 +342,8 @@ std::string InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type 
 std::string InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type, const InputBindingKey* keys, size_t num_keys)
 {
 	// can't have a chord of devices/pointers
-	if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::Device)
+	if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::AbsolutePointer ||
+		binding_type == InputBindingInfo::Type::Device)
 	{
 		// so only take the first
 		if (num_keys > 0)
@@ -445,6 +455,7 @@ static std::array<const char*, static_cast<u32>(InputSourceType::Count)> s_input
 #ifdef _WIN32
 	"DInput",
 	"XInput",
+	"RawInput",
 #endif
 #ifdef SDL_BUILD
 	"SDL",
@@ -480,6 +491,9 @@ bool InputManager::GetInputSourceDefaultEnabled(InputSourceType type)
 #else
 			return true;
 #endif
+
+		case InputSourceType::RawInput:
+			return false;
 #endif
 
 #ifdef SDL_BUILD
@@ -804,6 +818,8 @@ bool InputManager::IsAxisHandler(const InputEventHandler& handler)
 
 bool InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key)
 {
+	if (key.source_type == InputSourceType::Pointer && key.source_subtype == InputSubclass::PointerButton)
+		Console.WriteLn("Pointer %u button %u %f", key.source_index, key.data, value);
 	if (DoEventHook(key, value))
 		return true;
 
@@ -1016,7 +1032,7 @@ bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInpu
 
 void InputManager::GenerateRelativeMouseEvents()
 {
-	for (u32 device = 0; device < MAX_POINTER_DEVICES; device++)
+	for (u32 device = 0; device < s_pointer_count; device++)
 	{
 		for (u32 axis = 0; axis < static_cast<u32>(static_cast<u8>(InputPointerAxis::Count)); axis++)
 		{
@@ -1066,14 +1082,44 @@ void InputManager::GenerateRelativeMouseEvents()
 	}
 }
 
+void InputManager::UpdatePointerCount()
+{
+	if (!IsUsingRawInput())
+	{
+		s_pointer_count = 1;
+		return;
+	}
+
+#if defined(_WIN32)
+	InputSource* ris = GetInputSourceInterface(InputSourceType::RawInput);
+	pxAssert(ris);
+
+	s_pointer_count = 0;
+	for (const std::pair<std::string, std::string>& it : ris->EnumerateDevices())
+	{
+		if (StringUtil::StartsWith(it.first, "Pointer-"))
+			s_pointer_count++;
+	}
+#endif
+}
+
+u32 InputManager::GetPointerCount()
+{
+	return s_pointer_count;
+}
+
 std::pair<float, float> InputManager::GetPointerAbsolutePosition(u32 index)
 {
+	pxAssert(index < std::size(s_host_pointer_positions));
 	return std::make_pair(s_host_pointer_positions[index][static_cast<u8>(InputPointerAxis::X)],
 		s_host_pointer_positions[index][static_cast<u8>(InputPointerAxis::Y)]);
 }
 
 void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y)
 {
+	if (index >= MAX_POINTER_DEVICES)
+		return;
+
 	const float dx = x - std::exchange(s_host_pointer_positions[index][static_cast<u8>(InputPointerAxis::X)], x);
 	const float dy = y - std::exchange(s_host_pointer_positions[index][static_cast<u8>(InputPointerAxis::Y)], y);
 
@@ -1090,11 +1136,39 @@ void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y)
 
 void InputManager::UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, float d, bool raw_input)
 {
+	if (index >= MAX_POINTER_DEVICES || raw_input != IsUsingRawInput())
+		return;
+
 	s_host_pointer_positions[index][static_cast<u8>(axis)] += d;
 	s_pointer_state[index][static_cast<u8>(axis)].delta.fetch_add(static_cast<s32>(d * 65536.0f), std::memory_order_release);
 
-	if (index == 0 && axis <= InputPointerAxis::Y)
-		ImGuiManager::UpdateMousePosition(s_host_pointer_positions[0][0], s_host_pointer_positions[0][1]);
+	// We need to clamp the position ourselves in relative mode.
+	if (s_relative_mouse_mode && axis <= InputPointerAxis::Y)
+	{
+		s_host_pointer_positions[index][static_cast<u8>(axis)] =
+			std::clamp(s_host_pointer_positions[index][static_cast<u8>(axis)], 0.0f, s_window_size[static_cast<u8>(axis)]);
+
+		// Imgui also needs to be updated, since the absolute position won't be set above.
+		if (index == 0)
+			ImGuiManager::UpdateMousePosition(s_host_pointer_positions[0][0], s_host_pointer_positions[0][1]);
+	}
+
+	//Console.WriteLn("Pos %u: %.2f,%.2f", index, s_host_pointer_positions[index][0], s_host_pointer_positions[index][1]);
+}
+
+bool InputManager::IsUsingRawInput()
+{
+#if defined(_WIN32)
+	return static_cast<bool>(s_input_sources[static_cast<u32>(InputSourceType::RawInput)]);
+#else
+	return false;
+#endif
+}
+
+void InputManager::SetDisplayWindowSize(float width, float height)
+{
+	s_window_size[0] = width;
+	s_window_size[1] = height;
 }
 
 void InputManager::OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name)
@@ -1309,8 +1383,9 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 		AddUSBBindings(binding_si, port);
 
 	// Check for relative mode bindings, and enable if there's anything using it.
-	bool has_relative_mode_bindings = !s_pointer_move_callbacks.empty();
-	if (!has_relative_mode_bindings)
+	const bool prev_relative_mouse_mode = s_relative_mouse_mode;
+	s_relative_mouse_mode = !s_pointer_move_callbacks.empty() || IsUsingRawInput();
+	if (!s_relative_mouse_mode)
 	{
 		for (const auto& it : s_binding_map)
 		{
@@ -1318,12 +1393,23 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 			if (key.source_type == InputSourceType::Pointer && key.source_subtype == InputSubclass::PointerAxis &&
 				key.data >= static_cast<u32>(InputPointerAxis::X) && key.data <= static_cast<u32>(InputPointerAxis::Y))
 			{
-				has_relative_mode_bindings = true;
+				s_relative_mouse_mode = true;
 				break;
 			}
 		}
 	}
-	Host::SetRelativeMouseMode(has_relative_mode_bindings);
+
+	// this really should be below, but bugz
+	Host::SetRelativeMouseMode(s_relative_mouse_mode);
+
+	if (s_relative_mouse_mode != prev_relative_mouse_mode)
+	{
+		//Host::SetRelativeMouseMode(s_relative_mouse_mode);
+
+		// Reset cursor positions if we're entering relative mode, so we don't end up with whacky half positions.
+		if (!prev_relative_mouse_mode)
+			s_host_pointer_positions = {};
+	}
 }
 
 // ------------------------------------------------------------------------
@@ -1339,6 +1425,8 @@ bool InputManager::ReloadDevices()
 		if (s_input_sources[i])
 			changed |= s_input_sources[i]->ReloadDevices();
 	}
+
+	UpdatePointerCount();
 
 	return changed;
 }
@@ -1506,6 +1594,7 @@ void InputManager::UpdateInputSourceState(SettingsInterface& si, std::unique_loc
 #ifdef _WIN32
 #include "Input/DInputSource.h"
 #include "Input/XInputSource.h"
+#include "Input/Win32RawInputSource.h"
 #endif
 
 #ifdef SDL_BUILD
@@ -1517,8 +1606,11 @@ void InputManager::ReloadSources(SettingsInterface& si, std::unique_lock<std::mu
 #ifdef _WIN32
 	UpdateInputSourceState<DInputSource>(si, settings_lock, InputSourceType::DInput);
 	UpdateInputSourceState<XInputSource>(si, settings_lock, InputSourceType::XInput);
+	UpdateInputSourceState<Win32RawInputSource>(si, settings_lock, InputSourceType::RawInput);
 #endif
 #ifdef SDL_BUILD
 	UpdateInputSourceState<SDLInputSource>(si, settings_lock, InputSourceType::SDL);
 #endif
+
+	UpdatePointerCount();
 }

@@ -906,10 +906,12 @@ endif()
 if(WIN32)
 	list(APPEND pcsx2InputSources
 		Input/DInputSource.cpp
+		Input/Win32RawInputSource.cpp
 		Input/XInputSource.cpp
 	)
 	list(APPEND pcsx2InputHeaders
 		Input/DInputSource.h
+		Input/Win32RawInputSource.h
 		Input/XInputSource.h
 	)
 endif()

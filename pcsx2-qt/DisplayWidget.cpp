@@ -253,12 +253,10 @@ bool DisplayWidget::event(QEvent* event)
 
 		case QEvent::MouseMove:
 		{
-			const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
-
 			if (!m_relative_mouse_enabled)
 			{
 				const qreal dpr = QtUtils::GetDevicePixelRatioForWidget(this);
-				const QPoint mouse_pos = mouse_event->pos();
+				const QPoint mouse_pos = static_cast<QMouseEvent*>(event)->pos();
 
 				const float scaled_x = static_cast<float>(static_cast<qreal>(mouse_pos.x()) * dpr);
 				const float scaled_y = static_cast<float>(static_cast<qreal>(mouse_pos.y()) * dpr);
@@ -288,10 +286,13 @@ bool DisplayWidget::event(QEvent* event)
 				}
 #endif
 
-				if (dx != 0.0f)
-					InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::X, dx);
-				if (dy != 0.0f)
-					InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::Y, dy);
+				if (!InputManager::IsUsingRawInput())
+				{
+					if (dx != 0.0f)
+						InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::X, dx);
+					if (dy != 0.0f)
+						InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::Y, dy);
+				}
 			}
 
 			return true;
@@ -302,7 +303,8 @@ bool DisplayWidget::event(QEvent* event)
 		case QEvent::MouseButtonRelease:
 		{
 			unsigned long button_index;
-			if (_BitScanForward(&button_index, static_cast<u32>(static_cast<const QMouseEvent*>(event)->button())))
+			if (!InputManager::IsUsingRawInput() &&
+				_BitScanForward(&button_index, static_cast<u32>(static_cast<const QMouseEvent*>(event)->button())))
 			{
 				Host::RunOnCPUThread([button_index, pressed = (event->type() != QEvent::MouseButtonRelease)]() {
 					InputManager::InvokeEvents(InputManager::MakePointerButtonKey(0, button_index), static_cast<float>(pressed));

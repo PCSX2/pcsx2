@@ -344,6 +344,9 @@ bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* b
 		return false;
 	}
 
+	InputManager::SetDisplayWindowSize(
+		static_cast<float>(g_gs_device->GetWindowWidth()), static_cast<float>(g_gs_device->GetWindowHeight()));
+
 	return true;
 }
 
@@ -501,6 +504,9 @@ void GSSetGameCRC(u32 crc)
 void GSResizeDisplayWindow(int width, int height, float scale)
 {
 	g_gs_device->ResizeWindow(width, height, scale);
+
+	InputManager::SetDisplayWindowSize(
+		static_cast<float>(width), static_cast<float>(height));
 	ImGuiManager::WindowResized();
 }
 

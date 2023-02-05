@@ -1352,6 +1352,9 @@
     <ClCompile Include="Input\XInputSource.cpp">
       <Filter>Misc\Input</Filter>
     </ClCompile>
+    <ClCompile Include="Input\Win32RawInputSource.cpp">
+      <Filter>Host</Filter>
+    </ClCompile>
     <ClCompile Include="Host.cpp">
       <Filter>System</Filter>
     </ClCompile>
@@ -2282,6 +2285,9 @@
     </ClInclude>
     <ClInclude Include="Input\XInputSource.h">
       <Filter>Misc\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\Win32RawInputSource.h">
+      <Filter>Host</Filter>
     </ClInclude>
     <ClInclude Include="Host.h">
       <Filter>System</Filter>

@@ -195,6 +195,8 @@ ControllerMouseSettingsDialog::ControllerMouseSettingsDialog(QWidget* parent, Co
 	m_ui.pointerYDeadZoneVal->setText(QStringLiteral("%1").arg(m_ui.pointerYDeadZoneSlider->value()));
 	m_ui.pointerInertiaVal->setText(QStringLiteral("%1").arg(m_ui.pointerInertiaSlider->value()));
 
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableRawInput, "InputSources", "RawInput", false);
+
 	connect(m_ui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, this, &QDialog::accept);
 }
 

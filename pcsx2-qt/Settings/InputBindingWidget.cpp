@@ -59,7 +59,7 @@ InputBindingWidget::~InputBindingWidget()
 
 bool InputBindingWidget::isMouseMappingEnabled()
 {
-	return Host::GetBaseBoolSettingValue("UI", "EnableMouseMapping", false);
+	return Host::GetBaseBoolSettingValue("UI", "EnableMouseMapping", false) && !InputManager::IsUsingRawInput();
 }
 
 void InputBindingWidget::initialize(
@@ -119,7 +119,7 @@ bool InputBindingWidget::eventFilter(QObject* watched, QEvent* event)
 	const QEvent::Type event_type = event->type();
 
 	// if the key is being released, set the input
-	if (event_type == QEvent::KeyRelease || event_type == QEvent::MouseButtonRelease)
+	if (event_type == QEvent::KeyRelease || (event_type == QEvent::MouseButtonRelease && m_mouse_mapping_enabled))
 	{
 		setNewBinding();
 		stopListeningForInput();
@@ -131,7 +131,7 @@ bool InputBindingWidget::eventFilter(QObject* watched, QEvent* event)
 		m_new_bindings.push_back(InputManager::MakeHostKeyboardKey(QtUtils::KeyEventToCode(key_event)));
 		return true;
 	}
-	else if (event_type == QEvent::MouseButtonPress || event_type == QEvent::MouseButtonDblClick)
+	else if ((event_type == QEvent::MouseButtonPress || event_type == QEvent::MouseButtonDblClick) && m_mouse_mapping_enabled)
 	{
 		// double clicks get triggered if we click bind, then click again quickly.
 		unsigned long button_index;
