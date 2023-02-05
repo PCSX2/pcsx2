@@ -5553,6 +5553,8 @@ SCPS-15001:
   name: "Scandal"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - InstantDMAHack # Fixes graphical corruption.
 SCPS-15002:
   name: "TV DJ"
   region: "NTSC-J"
