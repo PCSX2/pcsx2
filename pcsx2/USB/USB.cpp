@@ -685,15 +685,13 @@ void USB::CopyConfiguration(SettingsInterface& dest_si, const SettingsInterface&
 		for (const InputBindingInfo binding : bindings)
 		{
 			const std::string binding_settings_key(GetConfigSubKey(type, binding.name));
-			const std::string source_value(src_si.GetStringValue(section.c_str(), binding_settings_key.c_str()));
-			dest_si.SetStringValue(section.c_str(), binding_settings_key.c_str(), source_value.c_str());
+			dest_si.CopyStringValue(src_si, section.c_str(), binding_settings_key.c_str());
 		}
 
 		const gsl::span<const SettingInfo> settings(GetDeviceSettings(type, subtype));
 		for (const SettingInfo setting : settings)
 		{
-			const std::string source_value(src_si.GetStringValue(section.c_str(), setting.name));
-			dest_si.SetStringValue(section.c_str(), setting.name, source_value.c_str());
+			dest_si.CopyStringValue(src_si, section.c_str(), setting.name);
 		}
 	}
 }
