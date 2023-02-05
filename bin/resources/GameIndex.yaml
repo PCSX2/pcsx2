@@ -5283,11 +5283,9 @@ SCKA-20092:
   region: "NTSC-K"
   gsHWFixes:
     deinterlace: 9 # Game requires AdaptiveBFF de-interlacing when auto.
-  speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes random black frames from happening when in a fight session.
-    MTVUSpeedHack: 0
   gameFixes:
     - XGKickHack # Fixes grey fighters problem.
+    - InstantDMAHack # Fixes black flickering.
 SCKA-20093:
   name: "Ratatouille"
   region: "NTSC-K"
@@ -18325,9 +18323,7 @@ SLES-53809:
   region: "PAL-E"
   gameFixes:
     - XGKickHack # Fixes black and white fighters.
-  speedHacks:
-    MTVUSpeedHack: 0 # Fixes game from crashing.
-    InstantVU1SpeedHack: 0 # Fixes graphical issues.
+    - InstantDMAHack # Fixes black flickering.
   patches:
     B6F9C8D3:
       content: |-
@@ -26804,13 +26800,11 @@ SLPM-62580:
   region: "NTSC-J"
   compat: 5
 SLPM-62581:
-  name: "K-1 Premium 2004 - Fighting Dynamite!!"
+  name: "K-1 Premium 2004 Dynamite!!"
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes black and white fighters.
-  speedHacks:
-    MTVUSpeedHack: 0 # Fixes game from crashing.
-    InstantVU1SpeedHack: 0 # Fixes graphical issues.
+    - InstantDMAHack # Fixes black flickering.
   patches:
     0A1042EE:
       content: |-
@@ -36337,9 +36331,7 @@ SLPS-20453:
   compat: 5
   gameFixes:
     - XGKickHack # Fixes black and white fighters.
-  speedHacks:
-    MTVUSpeedHack: 0 # Fixes game from crashing.
-    InstantVU1SpeedHack: 0 # Fixes graphical issues.
+    - InstantDMAHack # Fixes black flickering.
   patches:
     602B7A48:
       content: |-
@@ -38601,9 +38593,7 @@ SLPS-25578:
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes black and white fighters.
-  speedHacks:
-    MTVUSpeedHack: 0 # Fixes game from crashing.
-    InstantVU1SpeedHack: 0 # Fixes graphical issues.
+    - InstantDMAHack # Fixes black flickering.
   patches:
     F8664E20:
       content: |-
@@ -39130,11 +39120,9 @@ SLPS-25710:
   compat: 4
   gsHWFixes:
     deinterlace: 9 # Game requires AdaptiveBFF de-interlacing when auto.
-  speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes random black frames from happening when in a fight session.
-    MTVUSpeedHack: 0
   gameFixes:
     - XGKickHack # Fixes grey fighters problem.
+    - InstantDMAHack # Fixes black flickering.
   patches:
     A7E5CE23:
       content: |-
