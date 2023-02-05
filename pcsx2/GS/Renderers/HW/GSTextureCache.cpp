@@ -307,6 +307,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		// else.)
 
 		bool found_t = false;
+		bool tex_in_rt = false;
 		for (auto t : m_dst[RenderTarget])
 		{
 			if (t->m_used)
@@ -323,24 +324,34 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				const bool t_clean = t->m_dirty.empty();
 				const bool t_wraps = t->m_end_block > GSTextureCache::MAX_BP;
 
+				// Match if we haven't already got a tex in rt
 				if (t_clean && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t_psm))
 				{
-					// It is a complex to convert the code in shader. As a reference, let's do it on the CPU, it will be slow but
-					// 1/ it just works :)
-					// 2/ even with upscaling
-					// 3/ for both Direct3D and OpenGL
-					if (GSConfig.UserHacks_CPUFBConversion && (psm == PSM_PSMT4 || psm == PSM_PSMT8))
-						// Forces 4-bit and 8-bit frame buffer conversion to be done on the CPU instead of the GPU, but performance will be slower.
-						// There is no dedicated shader to handle 4-bit conversion (Stuntman has been confirmed to use 4-bit).
-						// Direct3D10/11 and OpenGL support 8-bit fb conversion but don't render some corner cases properly (Harry Potter games).
-						// The hack can fix glitches in some games.
-						Read(t, t->m_valid);
-					else
-						dst = t;
-					found_t = true;
-					x_offset = 0;
-					y_offset = 0;
-					break;
+					bool match = true;
+					if (found_t && (bw != t->m_TEX0.TBW || t->m_TEX0.PSM != psm))
+						match = false;
+
+					if (match)
+					{
+						// It is a complex to convert the code in shader. As a reference, let's do it on the CPU, it will be slow but
+						// 1/ it just works :)
+						// 2/ even with upscaling
+						// 3/ for both Direct3D and OpenGL
+						if (GSConfig.UserHacks_CPUFBConversion && (psm == PSM_PSMT4 || psm == PSM_PSMT8))
+							// Forces 4-bit and 8-bit frame buffer conversion to be done on the CPU instead of the GPU, but performance will be slower.
+							// There is no dedicated shader to handle 4-bit conversion (Stuntman has been confirmed to use 4-bit).
+							// Direct3D10/11 and OpenGL support 8-bit fb conversion but don't render some corner cases properly (Harry Potter games).
+							// The hack can fix glitches in some games.
+							Read(t, t->m_valid);
+						else
+							dst = t;
+
+						found_t = true;
+						tex_in_rt = false;
+						x_offset = 0;
+						y_offset = 0;
+						break;
+					}
 				}
 				else if (t_clean && (t->m_TEX0.TBW >= 16) && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0 + t->m_TEX0.TBW * 0x10, t->m_TEX0.PSM))
 				{
@@ -350,13 +361,15 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					half_right = true;
 					dst = t;
 					found_t = true;
+					tex_in_rt = false;
 					x_offset = 0;
 					y_offset = 0;
 					break;
 				}
 				// Make sure the texture actually is INSIDE the RT, it's possibly not valid if it isn't.
+				// Also check BP >= TBP, create source isn't equpped to expand it backwards and all data comes from the target. (GH3)
 				else if (GSConfig.UserHacks_TextureInsideRt && psm == PSM_PSMCT32 && t->m_TEX0.PSM == psm &&
-						(t->Overlaps(bp, bw, psm, r) || t_wraps) && t->m_age < 1 && !found_t)
+						(t->Overlaps(bp, bw, psm, r) || t_wraps) && t->m_age <= 1 && !found_t && bp >= t->m_TEX0.TBP0)
 				{
 					// Only PSMCT32 to limit false hits.
 					// PSM equality needed because CreateSource does not handle PSM conversion.
@@ -380,32 +393,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 						// Offset from Target to Source in Target coords.
 						x_offset = so.b2a_offset.x;
 						y_offset = so.b2a_offset.y;
-
-						// Clear any dirty stuff, we don't want to copy that :)
-						dst->Update(true);
-
-						// Hopefully in most cases we only expand in one direction, so only make it dirty from the edge of the texture.
-						// If it's both directions, then, YOLO I guess.. Ideally we redo the dirty handling to do one rect at a time.
-						GSVector2i min_start = { 0, 0 };
-						if (x_offset && !y_offset)
-							min_start.x = dst->m_valid.z;
-
-						if (!x_offset && y_offset)
-							min_start.y = dst->m_valid.w;
-
-						// Expand the target if it's only partially inside it.
-						const GSVector4i dirty_rect = { min_start.x, min_start.y, x_offset + (1 << TEX0.TW), y_offset + (1 << TEX0.TH) };
-						const GSVector2 up_s(dst->m_texture->GetScale());
-						const int new_w = std::max(static_cast<int>(dirty_rect.z * up_s.x), dst->m_texture->GetWidth());
-						const int new_h = std::max(static_cast<int>(dirty_rect.w * up_s.y), dst->m_texture->GetHeight());
-
-						if (new_w > dst->m_texture->GetWidth() || new_h > dst->m_texture->GetHeight())
-						{
-							dst->ResizeTexture(new_w, new_h, up_s);
-							dst->UpdateValidity(dirty_rect);
-							AddDirtyRectTarget(dst, dirty_rect, dst->m_TEX0.PSM, dst->m_TEX0.TBW);
-						}
-
+						tex_in_rt = true;
 						found_t = true;
 						// Keep looking, just in case there is an exact match (Situation: Target frame drawn inside target frame, current makes a separate texture)
 						continue;
@@ -413,7 +401,45 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				}
 			}
 		}
+		
+		if (tex_in_rt)
+		{
+			GSVector2i size_delta = { ((x_offset + (1 << TEX0.TW)) - dst->m_valid.z), ((y_offset + (1 << TEX0.TH)) - dst->m_valid.w) };
 
+			if (size_delta.x > 0)
+			{
+				// Expand the target if it's only partially inside it.
+				const GSVector4i dirty_rect = { dst->m_valid.z, 0, x_offset + (1 << TEX0.TW), dst->m_valid.w };
+
+				if (dirty_rect.z > dst->m_valid.z)
+				{
+					dst->UpdateValidity(dirty_rect);
+
+					AddDirtyRectTarget(dst, dirty_rect, dst->m_TEX0.PSM, dst->m_TEX0.TBW);
+				}
+			}
+
+			if (size_delta.y > 0)
+			{
+				// Expand the target if it's only partially inside it.
+				const GSVector4i dirty_rect = { 0, dst->m_valid.w, dst->m_valid.z, y_offset + (1 << TEX0.TH) };
+
+				if (dirty_rect.w > dst->m_valid.w)
+				{
+					dst->UpdateValidity(dirty_rect);
+
+					AddDirtyRectTarget(dst, dirty_rect, dst->m_TEX0.PSM, dst->m_TEX0.TBW);
+				}
+			}
+			const GSVector2 up_s(dst->m_texture->GetScale());
+			const int new_w = std::max(static_cast<int>(dst->m_valid.z * up_s.x), dst->m_texture->GetWidth());
+			const int new_h = std::max(static_cast<int>(dst->m_valid.w * up_s.y), dst->m_texture->GetHeight());
+
+			if (new_w > dst->m_texture->GetWidth() || new_h > dst->m_texture->GetHeight())
+			{
+				dst->ResizeTexture(new_w, new_h, up_s);
+			}
+		}
 		// Pure depth texture format will be fetched by LookupDepthSource.
 		// However guess what, some games (GoW) read the depth as a standard
 		// color format (instead of a depth format). All pixels are scrambled
@@ -728,6 +754,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 				dst->Update(true);
 			}
 		}
+		dst->m_is_frame = is_frame;
 	}
 	if (used)
 	{
@@ -735,7 +762,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 	}
 	if (is_frame)
 		dst->m_dirty_alpha = false;
-	dst->m_is_frame |= is_frame;
+	
 
 	assert(dst && dst->m_texture && dst->m_texture->GetScale() == new_s);
 	assert(dst && dst->m_dirty.empty());
@@ -1089,12 +1116,11 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 			// (The color on the previous example)
 			if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 			{
-				if (!found && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
+				if (!found && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM) && bw == t->m_TEX0.TBW)
 				{
 					GL_CACHE("TC: Dirty Target(%s) %d (0x%x) r(%d,%d,%d,%d)", to_string(type),
 						t->m_texture ? t->m_texture->GetID() : 0,
 						t->m_TEX0.TBP0, r.x, r.y, r.z, r.w);
-					t->m_TEX0.TBW = bw;
 
 					if (eewrite)
 						t->m_age = 0;
@@ -1108,33 +1134,67 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					// Possibly because the block layout is opposite for the 32bit colour and depth, it never actually overwrites the depth, so this is kind of a miss detection.
 					// The new code rightfully calculates that the depth does not become dirty, but in other cases, like bigger draws of the same format
 					// it might become invalid, so we check below and erase as before if so.
-					const SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
-					if (so.is_valid)
+					bool can_erase = found;
+					if (!found && t->m_age <= 1)
 					{
-						if (eewrite)
-							t->m_age = 0;
+						if (bw == t->m_TEX0.TBW && GSLocalMemory::m_psm[psm].bpp == GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp)
+						{
+							AddDirtyRectTarget(t, rect, psm, bw);
+							GL_CACHE("TC: Direct Dirty in the middle [aggressive] of Target(%s) %d [PSM:%s BP:0x%x->0x%x BW:%u rect(%d,%d=>%d,%d)] write[PSM:%s BP:0x%x BW:%u rect(%d,%d=>%d,%d)]",
+								to_string(type),
+								t->m_texture ? t->m_texture->GetID() : 0,
+								psm_str(t->m_TEX0.PSM),
+								t->m_TEX0.TBP0,
+								t->m_end_block,
+								t->m_TEX0.TBW,
+								rect.x,
+								rect.y,
+								rect.z,
+								rect.w,
+								psm_str(psm),
+								bp,
+								bw,
+								r.x,
+								r.y,
+								r.z,
+								r.w);
+						}
+						else
+						{
+							SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
+							if (so.is_valid)
+							{
+								AddDirtyRectTarget(t, so.b2a_offset, psm, bw);
+								GL_CACHE("TC: Dirty in the middle [aggressive] of Target(%s) %d [PSM:%s BP:0x%x->0x%x BW:%u rect(%d,%d=>%d,%d)] write[PSM:%s BP:0x%x BW:%u rect(%d,%d=>%d,%d)]",
+									to_string(type),
+									t->m_texture ? t->m_texture->GetID() : 0,
+									psm_str(t->m_TEX0.PSM),
+									t->m_TEX0.TBP0,
+									t->m_end_block,
+									t->m_TEX0.TBW,
+									so.b2a_offset.x,
+									so.b2a_offset.y,
+									so.b2a_offset.z,
+									so.b2a_offset.w,
+									psm_str(psm),
+									bp,
+									bw,
+									r.x,
+									r.y,
+									r.z,
+									r.w);
 
-						AddDirtyRectTarget(t, so.b2a_offset, psm, bw);
-						GL_CACHE("TC: Dirty in the middle [aggressive] of Target(%s) %d [PSM:%s BP:0x%x->0x%x BW:%u rect(%d,%d=>%d,%d)] write[PSM:%s BP:0x%x BW:%u rect(%d,%d=>%d,%d)]",
-							to_string(type),
-							t->m_texture ? t->m_texture->GetID() : 0,
-							psm_str(t->m_TEX0.PSM),
-							t->m_TEX0.TBP0,
-							t->m_end_block,
-							t->m_TEX0.TBW,
-							so.b2a_offset.x,
-							so.b2a_offset.y,
-							so.b2a_offset.z,
-							so.b2a_offset.w,
-							psm_str(psm),
-							bp,
-							bw,
-							r.x,
-							r.y,
-							r.z,
-							r.w);
+								if (eewrite)
+									t->m_age = 0;
+							}
+							else
+								can_erase = true;
+						}
 					}
-					if (!ComputeSurfaceOffset(off, r, t).is_valid)
+					else
+						can_erase = true;
+
+					if (can_erase)
 					{
 						i = list.erase(j);
 						GL_CACHE("TC: Remove Target(%s) %d (0x%x)", to_string(type),
@@ -2392,7 +2452,7 @@ GSTexture* GSTextureCache::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVec
 
 			const GSVector4i clut_rc(this_offset.x, this_offset.y, this_offset.x + size.x, this_offset.y + size.y);
 			bool is_dirty = false;
-			for (const GSDirtyRect& dirty : t->m_dirty)
+			for (GSDirtyRect& dirty : t->m_dirty)
 			{
 				if (!dirty.GetDirtyRect(t->m_TEX0).rintersect(clut_rc).rempty())
 				{
@@ -2908,10 +2968,7 @@ void GSTextureCache::Target::Update(bool reset_age)
 	// Alternate
 	// 1/ uses multiple vertex rectangle
 
-	const GSVector4i unscaled_size = GSVector4i(GSVector4(m_texture->GetSize()) / GSVector4(m_texture->GetScale()));
-	const GSVector4i r = m_dirty.GetDirtyRectAndClear(m_TEX0, GSVector2i(unscaled_size.x, unscaled_size.y));
-
-	if (r.rempty())
+	if (m_dirty.size() <= 0)
 		return;
 
 	// No handling please
@@ -2919,7 +2976,7 @@ void GSTextureCache::Target::Update(bool reset_age)
 	{
 		// do the most likely thing a direct write would do, clear it
 		GL_INS("ERROR: Update DepthStencil dummy");
-
+		m_dirty.ClearDirty();
 		return;
 	}
 	else if (m_type == DepthStencil && g_gs_renderer->m_game.title == CRC::FFX2)
@@ -2934,11 +2991,9 @@ void GSTextureCache::Target::Update(bool reset_age)
 		//
 		// So the quick and dirty solution is just to clean the depth buffer.
 		g_gs_device->ClearDepth(m_texture);
+		m_dirty.ClearDirty();
 		return;
 	}
-
-	const int w = r.width();
-	const int h = r.height();
 
 	GIFRegTEXA TEXA = {};
 
@@ -2946,47 +3001,60 @@ void GSTextureCache::Target::Update(bool reset_age)
 	TEXA.TA0 = 0;
 	TEXA.TA1 = 0x80;
 
-	GSTexture* t = g_gs_device->CreateTexture(w, h, 1, GSTexture::Format::Color);
-
 	const GSOffset off = g_gs_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
 
 	GSTexture::GSMap m;
 
-	if (t->Map(m))
+	const GSVector4i unscaled_size = GSVector4i(GSVector4(m_texture->GetSize()) / GSVector4(m_texture->GetScale()));
+	const GSVector4i rect_size = m_dirty.GetTotalRect(m_TEX0, GSVector2i(unscaled_size.x, unscaled_size.y));
+
+	GSTexture* t = g_gs_device->CreateTexture(rect_size.z, rect_size.w, 1, GSTexture::Format::Color);
+
+	while (m_dirty.size() > 0)
 	{
-		g_gs_renderer->m_mem.ReadTexture(off, r, m.bits, m.pitch, TEXA);
+		const GSVector4i r = m_dirty.GetDirtyRectAndClear(m_TEX0, GSVector2i(unscaled_size.x, unscaled_size.y));
 
-		t->Unmap();
+		if (r.rempty())
+			continue;
+
+		if (t->Map(m))
+		{
+			g_gs_renderer->m_mem.ReadTexture(off, r, m.bits, m.pitch, TEXA);
+
+			t->Unmap();
+		}
+		else
+		{
+			int pitch = ((r.width()+3) & ~3) * 4;
+			g_gs_renderer->m_mem.ReadTexture(off, r, s_unswizzle_buffer, pitch, TEXA);
+
+			t->Update(r, s_unswizzle_buffer, pitch);
+		}
+
+		const GSVector4 sRect = GSVector4(0.0f, 0.0f, static_cast<float>(r.width()) / rect_size.z, static_cast<float>(r.height()) / rect_size.w);
+		const GSVector4 dest_rect = (GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy());
+
+		// Copy the new GS memory content into the destination texture.
+		if (m_type == RenderTarget)
+		{
+			GL_INS("ERROR: Update RenderTarget 0x%x bw:%d (%d,%d => %d,%d)", m_TEX0.TBP0, m_TEX0.TBW, r.x, r.y, r.z, r.w);
+
+			// Bilinear filtering this is probably not a good thing, at least in native, but upscaling Nearest can be gross and messy.
+			g_gs_device->StretchRect(t, sRect, m_texture, dest_rect,ShaderConvert::COPY, g_gs_renderer->CanUpscale());
+		}
+		else if (m_type == DepthStencil)
+		{
+			GL_INS("ERROR: Update DepthStencil 0x%x", m_TEX0.TBP0);
+
+			// FIXME linear or not?
+			const GSVector4 sRect = GSVector4(0.0f, 0.0f, static_cast<float>(r.width()) / rect_size.z, static_cast<float>(r.height()) / rect_size.w);
+			g_gs_device->StretchRect(t, sRect, m_texture, dest_rect, ShaderConvert::RGBA8_TO_FLOAT32_BILN);
+		}
 	}
-	else
-	{
-		int pitch = ((w + 3) & ~3) * 4;
-
-		g_gs_renderer->m_mem.ReadTexture(off, r, s_unswizzle_buffer, pitch, TEXA);
-
-		t->Update(r.rsize(), s_unswizzle_buffer, pitch);
-	}
-
 	// m_renderer->m_perfmon.Put(GSPerfMon::Unswizzle, w * h * 4);
-
-	// Copy the new GS memory content into the destination texture.
-	if (m_type == RenderTarget)
-	{
-		GL_INS("ERROR: Update RenderTarget 0x%x bw:%d (%d,%d => %d,%d)", m_TEX0.TBP0, m_TEX0.TBW, r.x, r.y, r.z, r.w);
-
-		g_gs_device->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy());
-	}
-	else if (m_type == DepthStencil)
-	{
-		GL_INS("ERROR: Update DepthStencil 0x%x", m_TEX0.TBP0);
-
-		// FIXME linear or not?
-		g_gs_device->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy(), ShaderConvert::RGBA8_TO_FLOAT32_BILN);
-	}
-
 	g_gs_device->Recycle(t);
 
-	UpdateValidity(r);
+	UpdateValidity(rect_size);
 }
 
 void GSTextureCache::Target::UpdateIfDirtyIntersects(const GSVector4i& rc)

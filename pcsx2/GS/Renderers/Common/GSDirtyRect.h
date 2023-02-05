@@ -26,13 +26,15 @@ public:
 
 	GSDirtyRect();
 	GSDirtyRect(GSVector4i& r, u32 psm, u32 bw);
-	GSVector4i GetDirtyRect(GIFRegTEX0& TEX0) const;
+	GSVector4i GetDirtyRect(GIFRegTEX0& TEX0);
 };
 
 class GSDirtyRectList : public std::vector<GSDirtyRect>
 {
 public:
 	GSDirtyRectList() {}
-	GSVector4i GetDirtyRect(GIFRegTEX0& TEX0, const GSVector2i& size) const;
+	GSVector4i GetTotalRect(GIFRegTEX0& TEX0, const GSVector2i& size);
+	GSVector4i GetDirtyRect(GIFRegTEX0& TEX0, const GSVector2i& size, bool clear = false);
 	GSVector4i GetDirtyRectAndClear(GIFRegTEX0& TEX0, const GSVector2i& size);
+	void ClearDirty();
 };
