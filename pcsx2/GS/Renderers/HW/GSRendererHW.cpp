@@ -4038,7 +4038,7 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 			if (tgt)
 			{
 				bool is_dirty = false;
-				for (const GSDirtyRect& rc : tgt->m_dirty)
+				for (GSDirtyRect& rc : tgt->m_dirty)
 				{
 					if (!rc.GetDirtyRect(m_context->TEX0).rintersect(r).rempty())
 					{
