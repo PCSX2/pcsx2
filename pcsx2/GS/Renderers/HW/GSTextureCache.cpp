@@ -91,9 +91,10 @@ void GSTextureCache::AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm
 {
 	bool skipdirty = false;
 	bool canskip = true;
-	std::vector<GSDirtyRect>::iterator it = target->m_dirty.begin();
-	while (it != target->m_dirty.end())
+	std::vector<GSDirtyRect>::iterator it = target->m_dirty.end();
+	while (it != target->m_dirty.begin())
 	{
+		--it;
 		if (it[0].bw == bw && it[0].psm == psm)
 		{
 			if (it[0].r.rintersect(rect).eq(rect) && canskip)
@@ -112,7 +113,6 @@ void GSTextureCache::AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm
 				continue;
 			}
 		}
-		++it;
 	}
 
 	if (!skipdirty)
