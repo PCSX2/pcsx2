@@ -709,7 +709,7 @@ GSVector4i GSRendererHW::ComputeBoundingBox(const GSVector2& rtscale, const GSVe
 void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 {
 	// Upscaling hack to avoid various line/grid issues
-	if (GSConfig.UserHacks_MergePPSprite && tex && tex->m_target && (m_vt.m_primclass == GS_SPRITE_CLASS))
+	if (GSConfig.UserHacks_MergePPSprite && CanUpscale() && tex && tex->m_target && (m_vt.m_primclass == GS_SPRITE_CLASS))
 	{
 		if (PRIM->FST && GSLocalMemory::m_psm[tex->m_TEX0.PSM].fmt < 2 && ((m_vt.m_eq.value & 0xCFFFF) == 0xCFFFF))
 		{
