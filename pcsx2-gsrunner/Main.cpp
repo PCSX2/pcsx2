@@ -522,6 +522,27 @@ static bool ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& param
 				s_settings_interface.SetIntValue("EmuCore/GS", "Renderer", static_cast<int>(type));
 				continue;
 			}
+			else if (CHECK_ARG_PARAM("-renderhacks"))
+			{
+				std::string str(argv[++i]);
+
+				s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks", true);
+
+				if(str.find("af") != std::string::npos)
+					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_AutoFlush", true);
+				if (str.find("cpufb") != std::string::npos)
+					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_CPU_FB_Conversion ", true);
+				if (str.find("dds") != std::string::npos)
+					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_DisableDepthSupport ", true);
+				if (str.find("dpi") != std::string::npos)
+					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_DisablePartialInvalidation ", true);
+				if (str.find("dsf") != std::string::npos)
+					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_DisableSafeFeatures ", true);
+				if (str.find("tinrt") != std::string::npos)
+					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_TextureInsideRt ", true);
+
+				continue;
+			}
 			else if (CHECK_ARG_PARAM("-logfile"))
 			{
 				const char* logfile = argv[++i];

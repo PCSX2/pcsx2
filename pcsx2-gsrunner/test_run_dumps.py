@@ -16,7 +16,7 @@ def is_gs_path(path):
     return False
 
 
-def run_regression_test(runner, dumpdir, renderer, parallel, gspath):
+def run_regression_test(runner, dumpdir, renderer, parallel, renderhacks, gspath):
     args = [runner]
     gsname = Path(gspath).name
     while gsname.rfind('.') >= 0:
@@ -28,6 +28,10 @@ def run_regression_test(runner, dumpdir, renderer, parallel, gspath):
 
     if renderer is not None:
         args.extend(["-renderer", renderer])
+        
+    if renderhacks is not None:
+        args.extend(["-renderhacks", renderhacks])
+
     args.extend(["-dumpdir", real_dumpdir])
     args.extend(["-logfile", os.path.join(real_dumpdir, "emulog.txt")])
 
@@ -46,7 +50,7 @@ def run_regression_test(runner, dumpdir, renderer, parallel, gspath):
     subprocess.run(args)
 
 
-def run_regression_tests(runner, gsdir, dumpdir, renderer, parallel=1):
+def run_regression_tests(runner, gsdir, dumpdir, renderer, renderhacks, parallel=1):
     paths = glob.glob(gsdir + "/*.*", recursive=True)
     gamepaths = list(filter(is_gs_path, paths))
 
@@ -57,10 +61,10 @@ def run_regression_tests(runner, gsdir, dumpdir, renderer, parallel=1):
 
     if parallel <= 1:
         for game in gamepaths:
-            run_regression_test(runner, dumpdir, renderer, parallel, game)
+            run_regression_test(runner, dumpdir, renderer, parallel, renderhacks, game)
     else:
         print("Processing %u games on %u processors" % (len(gamepaths), parallel))
-        func = partial(run_regression_test, runner, dumpdir, renderer, parallel)
+        func = partial(run_regression_test, runner, dumpdir, renderer, parallel, renderhacks)
         pool = multiprocessing.Pool(parallel)
         pool.map(func, gamepaths)
         pool.close()
@@ -76,10 +80,11 @@ if __name__ == "__main__":
     parser.add_argument("-dumpdir", action="store", required=True, help="Base directory to dump frames to")
     parser.add_argument("-renderer", action="store", required=False, help="Renderer to use")
     parser.add_argument("-parallel", action="store", type=int, default=1, help="Number of proceeses to run")
+    parser.add_argument("-renderhacks", action="store", required=False, help="Enable HW Renering hacks")
 
     args = parser.parse_args()
 
-    if not run_regression_tests(args.runner, os.path.realpath(args.gsdir), os.path.realpath(args.dumpdir), args.renderer, args.parallel):
+    if not run_regression_tests(args.runner, os.path.realpath(args.gsdir), os.path.realpath(args.dumpdir), args.renderer, args.renderhacks, args.parallel):
         sys.exit(1)
     else:
         sys.exit(0)
