@@ -2258,7 +2258,12 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main, bool 
 		// Don't risk doing this on Wayland, it really doesn't like window state changes,
 		// and positioning has no effect anyway.
 		if (!s_use_central_widget)
-			restoreDisplayWindowGeometryFromConfig();
+		{
+			if (isVisible() && g_emu_thread->shouldRenderToMain())
+				container->move(pos());
+			else
+				restoreDisplayWindowGeometryFromConfig();
+		}
 
 		if (!is_exclusive_fullscreen)
 			container->showFullScreen();
