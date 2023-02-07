@@ -17,6 +17,7 @@
 #include "GSRenderer.h"
 #include "GS/GSCapture.h"
 #include "GS/GSGL.h"
+#include "GSDumpReplayer.h"
 #include "Host.h"
 #include "HostDisplay.h"
 #include "PerformanceMetrics.h"
@@ -554,15 +555,18 @@ static void CompressAndWriteScreenshot(std::string filename, u32 width, u32 heig
 	image.SetPixels(width, height, std::move(pixels));
 
 	std::string key(fmt::format("GSScreenshot_{}", filename));
-	Host::AddIconOSDMessage(key, ICON_FA_CAMERA, fmt::format("Saving screenshot to '{}'.", Path::GetFileName(filename)), 60.0f);
+
+	if(!GSDumpReplayer::IsRunner())
+		Host::AddIconOSDMessage(key, ICON_FA_CAMERA, fmt::format("Saving screenshot to '{}'.", Path::GetFileName(filename)), 60.0f);
 
 	// maybe std::async would be better here.. but it's definitely worth threading, large screenshots take a while to compress.
 	std::unique_lock lock(s_screenshot_threads_mutex);
 	s_screenshot_threads.emplace_back([key = std::move(key), filename = std::move(filename), image = std::move(image), quality = GSConfig.ScreenshotQuality]() {
 		if (image.SaveToFile(filename.c_str(), quality))
 		{
-			Host::AddIconOSDMessage(std::move(key), ICON_FA_CAMERA,
-				fmt::format("Saved screenshot to '{}'.", Path::GetFileName(filename)), Host::OSD_INFO_DURATION);
+			if(!GSDumpReplayer::IsRunner())
+				Host::AddIconOSDMessage(std::move(key), ICON_FA_CAMERA,
+					fmt::format("Saved screenshot to '{}'.", Path::GetFileName(filename)), Host::OSD_INFO_DURATION);
 		}
 		else
 		{

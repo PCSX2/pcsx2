@@ -58,6 +58,7 @@ static bool s_dump_running = false;
 static bool s_needs_state_loaded = false;
 static u64 s_frame_ticks = 0;
 static u64 s_next_frame_time = 0;
+static bool s_is_dump_runner = false;
 
 R5900cpu GSDumpReplayerCpu = {
 	GSDumpReplayerCpuReserve,
@@ -77,9 +78,24 @@ bool GSDumpReplayer::IsReplayingDump()
 	return static_cast<bool>(s_dump_file);
 }
 
+bool GSDumpReplayer::IsRunner()
+{
+	return s_is_dump_runner;
+}
+
+void GSDumpReplayer::SetIsDumpRunner(bool is_runner)
+{
+	s_is_dump_runner = is_runner;
+}
+
 void GSDumpReplayer::SetLoopCount(s32 loop_count)
 {
 	s_dump_loop_count = loop_count - 1;
+}
+
+int GSDumpReplayer::GetLoopCount()
+{
+	return s_dump_loop_count;
 }
 
 bool GSDumpReplayer::Initialize(const char* filename)
