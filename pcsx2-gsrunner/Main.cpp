@@ -531,15 +531,17 @@ static bool ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& param
 				if(str.find("af") != std::string::npos)
 					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_AutoFlush", true);
 				if (str.find("cpufb") != std::string::npos)
-					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_CPU_FB_Conversion ", true);
+					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_CPU_FB_Conversion", true);
 				if (str.find("dds") != std::string::npos)
-					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_DisableDepthSupport ", true);
+					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_DisableDepthSupport", true);
 				if (str.find("dpi") != std::string::npos)
-					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_DisablePartialInvalidation ", true);
+					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_DisablePartialInvalidation", true);
 				if (str.find("dsf") != std::string::npos)
-					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_DisableSafeFeatures ", true);
+					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_DisableSafeFeatures", true);
 				if (str.find("tinrt") != std::string::npos)
-					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_TextureInsideRt ", true);
+					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_TextureInsideRt", true);
+				if (str.find("plf") != std::string::npos)
+					s_settings_interface.SetBoolValue("EmuCore/GS", "preload_frame_with_gs_data", true);
 
 				continue;
 			}
