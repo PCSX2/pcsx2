@@ -8705,6 +8705,16 @@ SCUS-97572:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
+SCUS-97574:
+  name: "Jak X - Combat Racing [Greatest Hits]"
+  region: "NTSC-U"
+  gsHWFixes:
+    roundSprite: 1 # Fix lines in the sky.
+    textureInsideRT: 1 # Fixes broken character models.
+    autoFlush: 1 # Fixes lighting.
+    mipmap: 2 # Fixes bad textures.
+    trilinearFiltering: 1 # Fixes smooths texture transitions.
+    beforeDraw: "OI_JakGames"
 SCUS-97579:
   name: "ATV Offroad Fury 4 [Demo]"
   region: "NTSC-U"
@@ -20711,12 +20721,24 @@ SLES-54755:
   name: "Transformers - The Game"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes double image on objects and menus.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out texture transitions.
 SLES-54756:
   name: "Transformers - The Game"
   region: "PAL-F-S"
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes double image on objects and menus.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out texture transitions.
 SLES-54757:
   name: "Transformers - The Game"
   region: "PAL-G-I"
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes double image on objects and menus.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out texture transitions.
 SLES-54767:
   name: "Sniper Assault"
   region: "PAL-E"
@@ -24312,6 +24334,10 @@ SLKA-25374:
 SLKA-25375:
   name: "Transformers - The Game"
   region: "NTSC-K"
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes double image on objects and menus.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out texture transitions.
 SLKA-25378:
   name: "FIFA world cup 2006"
   region: "NTSC-K"
@@ -35837,6 +35863,9 @@ SLPS-20209:
 SLPS-20211:
   name: "Yamasa Digi World 3 - Time Park, King Pulsar, Cyber Dragon"
   region: "NTSC-J"
+SLPS-20212:
+  name: "Neppachi Gold - CR Monster Mansion"
+  region: "NTSC-J"
 SLPS-20213:
   name: "Hissatsu Pachinko Station V4 - Drumtic Mahjong"
   region: "NTSC-J"
@@ -35879,11 +35908,26 @@ SLPS-20221:
 SLPS-20222:
   name: "Inaka Kurasi - Nan no Shima no Monogatari"
   region: "NTSC-J"
+SLPS-20223:
+  name: "Exciting Pro Wres 4"
+  region: "NTSC-J"
+SLPS-20224:
+  name: "Mahjong Haou - Dankyuu Battle"
+  region: "NTSC-J"
+SLPS-20225:
+  name: "Toudai Shougi - Shiken Bisha Doujou"
+  region: "NTSC-J"
 SLPS-20226:
   name: "Yamasa Digi World SP DX - Neo Planett XX"
   region: "NTSC-J"
 SLPS-20227:
   name: "Yamasa Digi World SP - Neo Planett XX"
+  region: "NTSC-J"
+SLPS-20228:
+  name: "Daisenryaku 1941 - Gyakuten no Taiheiyou"
+  region: "NTSC-J"
+SLPS-20229:
+  name: "Hissatsu Pachinko Station V5 - PinkLady"
   region: "NTSC-J"
 SLPS-20230:
   name: "Chulip"
@@ -39664,6 +39708,10 @@ SLPS-25833:
 SLPS-25834:
   name: "Transformers - The Game"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes double image on objects and menus.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out texture transitions.
 SLPS-25835:
   name: "Super Robot Taisen OG - Original Generations Gaiden [Limited Edition]"
   region: "NTSC-J"
@@ -48428,6 +48476,10 @@ SLUS-21602:
   name: "Transformers - The Game"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes double image on objects and menus.
+    mipmap: 2 # Cleans up texture detail.
+    trilinearFiltering: 1 # Smoothes out texture transitions.
 SLUS-21603:
   name: "Soul Nomad & The World Eaters"
   region: "NTSC-U"
