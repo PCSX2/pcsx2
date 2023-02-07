@@ -18687,15 +18687,31 @@ SLES-53967:
 SLES-53968:
   name: "Parrain, Le"
   region: "PAL-F"
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes light occlusion.
+    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
 SLES-53969:
   name: "Pate, Der"
   region: "PAL-G"
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes light occlusion.
+    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
 SLES-53970:
   name: "Padrino, Il"
   region: "PAL-I"
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes light occlusion.
+    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
 SLES-53971:
   name: "Padrino, El"
   region: "PAL-S"
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes light occlusion.
+    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
 SLES-53972:
   name: "Stock Car Crash"
   region: "PAL-E"
@@ -24240,6 +24256,13 @@ SLKA-25335:
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned lighting.
+SLKA-25338:
+  name: "Godfather, The"
+  region: "NTSC-K"
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes light occlusion.
+    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
 SLKA-25341:
   name: "Driver - Parallel Lines"
   region: "NTSC-K"
