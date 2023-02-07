@@ -95,7 +95,7 @@ namespace usb_lightgun
 	};
 
 	static constexpr s32 DEFAULT_SCREEN_WIDTH = 640;
-	static constexpr s32 DEFAULT_SCREEN_HEIGHT = 480;
+	static constexpr s32 DEFAULT_SCREEN_HEIGHT = 240;
 	static constexpr float DEFAULT_CENTER_X = 320.0f;
 	static constexpr float DEFAULT_CENTER_Y = 120.0f;
 	static constexpr float DEFAULT_SCALE_X = 100.0f;
@@ -359,7 +359,7 @@ namespace usb_lightgun
 		GSTranslateWindowToDisplayCoordinates(abs_pos.first, abs_pos.second, &pointer_x, &pointer_y);
 
 		s16 pos_x, pos_y;
-		if (pointer_x < 0.0f || pointer_y < 0.0f || (button_state & BID_SHOOT_OFFSCREEN))
+		if (pointer_x < 0.0f || pointer_y < 0.0f)
 		{
 			// off-screen
 			pos_x = 0;
