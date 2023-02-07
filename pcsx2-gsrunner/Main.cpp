@@ -79,6 +79,7 @@ static std::optional<bool> s_use_window;
 
 // Owned by the GS thread.
 static u32 s_dump_frame_number = 0;
+static u32 s_loop_number = s_loop_count;
 
 bool GSRunner::InitializeConfig()
 {
@@ -273,13 +274,15 @@ void Host::ReleaseHostDisplay(bool clear_state)
 
 bool Host::BeginPresentFrame(bool frame_skip)
 {
-	// when we wrap around, don't race other files
-	GSJoinSnapshotThreads();
+	if (s_loop_number == 0)
+	{
+		// when we wrap around, don't race other files
+		GSJoinSnapshotThreads();
 
-	// queue dumping of this frame
-	std::string dump_path(fmt::format("{}_frame{}.png", s_output_prefix, s_dump_frame_number));
-	GSQueueSnapshot(dump_path);
-
+		// queue dumping of this frame
+		std::string dump_path(fmt::format("{}_frame{}.png", s_output_prefix, s_dump_frame_number));
+		GSQueueSnapshot(dump_path);
+	}
 	if (g_host_display->BeginPresent(frame_skip))
 		return true;
 
@@ -627,6 +630,7 @@ int main(int argc, char* argv[])
 
 	// apply new settings (e.g. pick up renderer change)
 	VMManager::ApplySettings();
+	GSDumpReplayer::SetIsDumpRunner(true);
 
 	if (VMManager::Initialize(params))
 	{
@@ -651,6 +655,7 @@ void Host::CPUThreadVSync()
 {
 	// update GS thread copy of frame number
 	GetMTGS().RunOnGSThread([frame_number = GSDumpReplayer::GetFrameNumber()]() { s_dump_frame_number = frame_number; });
+	GetMTGS().RunOnGSThread([loop_number = GSDumpReplayer::GetLoopCount()]() { s_loop_number = loop_number; });
 
 	// process any window messages (but we shouldn't really have any)
 	GSRunner::PumpPlatformMessages();
