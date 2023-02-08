@@ -38373,13 +38373,13 @@ SLPS-25462:
   gsHWFixes:
     roundSprite: 2 # Fixes HUD artifacts.
   memcardFilters:
-    - SLPS-25338
-    - SLPS-25339
-    - SLPS-73202
-    - SLPS-73203
-    - SLPS-25408
-    - SLPS-25462
-    - SLPS-73247
+    - "SLPS-25338"
+    - "SLPS-25339"
+    - "SLPS-73202"
+    - "SLPS-73203"
+    - "SLPS-25408"
+    - "SLPS-25462"
+    - "SLPS-73247"
 SLPS-25463:
   name: "My Home o Tsukurou 2! Takumi"
   region: "NTSC-J"
@@ -40543,13 +40543,13 @@ SLPS-73247:
   gsHWFixes:
     roundSprite: 2 # Fixes HUD artifacts.
   memcardFilters:
-    - SLPS-25338
-    - SLPS-25339
-    - SLPS-73202
-    - SLPS-73203
-    - SLPS-25408
-    - SLPS-25462
-    - SLPS-73247
+    - "SLPS-25338"
+    - "SLPS-25339"
+    - "SLPS-73202"
+    - "SLPS-73203"
+    - "SLPS-25408"
+    - "SLPS-25462"
+    - "SLPS-73247"
 SLPS-73248:
   name: "Kagero 2 - Dark Illusion [PlayStation 2 The Best]"
   region: "NTSC-J"
