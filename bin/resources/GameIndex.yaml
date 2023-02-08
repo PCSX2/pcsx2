@@ -5522,6 +5522,8 @@ SCPS-11025:
 SCPS-11026:
   name: "Gacharoku"
   region: "NTSC-J"
+  gsHWFixes:
+    gpuPaletteConversion: 2 # Fixes hash cache exploding.
 SCPS-11027:
   name: "Mawaza"
   region: "NTSC-J"
