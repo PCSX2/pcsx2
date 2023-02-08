@@ -261,8 +261,13 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int 
 		sb->Unmap(map_size);
 		sb->Bind();
 
+		const u32 row_length = CalcUploadRowLengthFromPitch(preferred_pitch);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, row_length);
+
 		glTextureSubImage2D(m_texture_id, layer, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type,
 			reinterpret_cast<void*>(static_cast<uintptr_t>(map.buffer_offset)));
+
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
 		sb->Unbind();
 	}
