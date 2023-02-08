@@ -23097,6 +23097,7 @@ SLES-82042:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -23106,6 +23107,7 @@ SLES-82043:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -23117,6 +23119,7 @@ SLES-82044:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -23126,6 +23129,7 @@ SLES-82045:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -23137,6 +23141,7 @@ SLES-82046:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -23146,6 +23151,7 @@ SLES-82047:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -23157,6 +23163,7 @@ SLES-82048:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -23166,6 +23173,7 @@ SLES-82049:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -23177,6 +23185,7 @@ SLES-82050:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -23188,6 +23197,7 @@ SLES-82051:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -23199,6 +23209,7 @@ SLES-82052:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -23210,6 +23221,7 @@ SLES-82053:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -24299,6 +24311,7 @@ SLKA-25353:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -24309,6 +24322,7 @@ SLKA-25354:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -24321,6 +24335,7 @@ SLKA-25355:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -31423,6 +31438,7 @@ SLPM-66117:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -31432,6 +31448,7 @@ SLPM-66118:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -31441,6 +31458,7 @@ SLPM-66119:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -31828,6 +31846,7 @@ SLPM-66220:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -31839,6 +31858,7 @@ SLPM-66221:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -31850,6 +31870,7 @@ SLPM-66222:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -31861,6 +31882,7 @@ SLPM-66223:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -31872,6 +31894,7 @@ SLPM-66224:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -46644,6 +46667,7 @@ SLUS-21243:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -47337,6 +47361,7 @@ SLUS-21359:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
@@ -47346,6 +47371,7 @@ SLUS-21360:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
+    autoFlush: 1 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
