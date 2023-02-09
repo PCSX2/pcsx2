@@ -458,6 +458,8 @@ namespace Vulkan
 			SupportsExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, false);
 		m_optional_extensions.vk_ext_calibrated_timestamps =
 			SupportsExtension(VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME, false);
+		m_optional_extensions.vk_ext_line_rasterization =
+			SupportsExtension(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME, false);
 		m_optional_extensions.vk_khr_driver_properties =
 			SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
 		m_optional_extensions.vk_arm_rasterization_order_attachment_access =
@@ -654,11 +656,18 @@ namespace Vulkan
 			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
 		VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM rasterization_order_access_feature = {
 			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_ARM};
+		VkPhysicalDeviceLineRasterizationFeaturesEXT line_rasterization_feature = {
+			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT};
 
 		if (m_optional_extensions.vk_ext_provoking_vertex)
 		{
 			provoking_vertex_feature.provokingVertexLast = VK_TRUE;
 			Util::AddPointerToChain(&device_info, &provoking_vertex_feature);
+		}
+		if (m_optional_extensions.vk_ext_line_rasterization)
+		{
+			line_rasterization_feature.bresenhamLines = VK_TRUE;
+			Util::AddPointerToChain(&device_info, &line_rasterization_feature);
 		}
 		if (m_optional_extensions.vk_arm_rasterization_order_attachment_access)
 		{
@@ -724,12 +733,16 @@ namespace Vulkan
 		VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
 		VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_features = {
 			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
+		VkPhysicalDeviceLineRasterizationFeaturesEXT line_rasterization_feature = {
+			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT};
 		VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM rasterization_order_access_feature = {
 			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_ARM};
 
 		// add in optional feature structs
 		if (m_optional_extensions.vk_ext_provoking_vertex)
 			Util::AddPointerToChain(&features2, &provoking_vertex_features);
+		if (m_optional_extensions.vk_ext_line_rasterization)
+			Util::AddPointerToChain(&features2, &line_rasterization_feature);
 		if (m_optional_extensions.vk_arm_rasterization_order_attachment_access)
 			Util::AddPointerToChain(&features2, &rasterization_order_access_feature);
 
@@ -739,6 +752,7 @@ namespace Vulkan
 		// confirm we actually support it
 		m_optional_extensions.vk_ext_provoking_vertex &= (provoking_vertex_features.provokingVertexLast == VK_TRUE);
 		m_optional_extensions.vk_arm_rasterization_order_attachment_access &= (rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
+		m_optional_extensions.vk_ext_line_rasterization &= (line_rasterization_feature.bresenhamLines == VK_TRUE);
 
 		VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
 		void** pNext = &properties2.pNext;
@@ -789,6 +803,8 @@ namespace Vulkan
 
 		Console.WriteLn("VK_EXT_provoking_vertex is %s",
 			m_optional_extensions.vk_ext_provoking_vertex ? "supported" : "NOT supported");
+		Console.WriteLn("VK_EXT_line_rasterization is %s",
+			m_optional_extensions.vk_ext_line_rasterization ? "supported" : "NOT supported");
 		Console.WriteLn("VK_EXT_calibrated_timestamps is %s",
 			m_optional_extensions.vk_ext_calibrated_timestamps ? "supported" : "NOT supported");
 		Console.WriteLn("VK_ARM_rasterization_order_attachment_access is %s",

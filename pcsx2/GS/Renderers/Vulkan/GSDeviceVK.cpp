@@ -251,6 +251,9 @@ bool GSDeviceVK::CheckFeatures()
 	if (!m_features.texture_barrier)
 		Console.Warning("Texture buffers are disabled. This may break some graphical effects.");
 
+	if (!g_vulkan_context->GetOptionalExtensions().vk_ext_line_rasterization)
+		Console.WriteLn("VK_EXT_line_rasterization or the BRESENHAM mode is not supported, this may cause rendering inaccuracies.");
+
 	// Test for D32S8 support.
 	{
 		VkFormatProperties props = {};
@@ -2047,6 +2050,8 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	gpb.SetRasterizationState(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
 	if (p.line_width)
 		gpb.SetLineWidth(static_cast<float>(GSConfig.UpscaleMultiplier));
+	if (p.topology == static_cast<u8>(GSHWDrawConfig::Topology::Line) && g_vulkan_context->GetOptionalExtensions().vk_ext_line_rasterization)
+		gpb.SetLineRasterizationMode(VK_LINE_RASTERIZATION_MODE_BRESENHAM_EXT);
 	gpb.SetDynamicViewportAndScissorState();
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
 
