@@ -3035,6 +3035,7 @@ __forceinline void GSState::CLUTAutoFlush()
 	}
 }
 
+template<bool index_swap>
 __forceinline void GSState::HandleAutoFlush()
 {
 	// Kind of a cheat, making the assumption that 2 consecutive fan/strip triangles won't overlap each other (*should* be safe)
@@ -3126,7 +3127,7 @@ __forceinline void GSState::HandleAutoFlush()
 		}
 
 		// Get the last texture position from the last draw.
-		const GSVertex* v = &m_vertex.buff[m_index.buff[m_index.tail - 1]];
+		const GSVertex* v = &m_vertex.buff[m_index.buff[m_index.tail - (index_swap ? n : 1)]];
 
 		if (PRIM->FST)
 		{
@@ -3260,7 +3261,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 
 	if (auto_flush && skip == 0 && m_index.tail > 0 && ((m_vertex.tail + 1) - m_vertex.head) >= n)
 	{
-		HandleAutoFlush();
+		HandleAutoFlush<index_swap>();
 	}
 
 	size_t head = m_vertex.head;

@@ -169,6 +169,7 @@ protected:
 
 	void GrowVertexBuffer();
 	bool IsAutoFlushDraw();
+	template<bool index_swap>
 	void HandleAutoFlush();
 	void CLUTAutoFlush();
 
