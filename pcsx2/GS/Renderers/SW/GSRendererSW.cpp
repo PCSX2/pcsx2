@@ -245,7 +245,7 @@ void GSVertexSW::InitStatic()
 MULTI_ISA_UNSHARED_START
 
 template <u32 primclass, u32 tme, u32 fst, u32 q_div>
-void ConvertVertexBuffer(const GSDrawingContext* RESTRICT ctx, GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, size_t count)
+void ConvertVertexBuffer(const GSDrawingContext* RESTRICT ctx, GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, u32 count)
 {
 	// FIXME q_div wasn't added to AVX2 code path.
 

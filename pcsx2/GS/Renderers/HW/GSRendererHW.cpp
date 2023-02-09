@@ -333,7 +333,7 @@ void GSRendererHW::Lines2Sprites()
 
 	if (m_vertex.next >= 2)
 	{
-		const size_t count = m_vertex.next;
+		const u32 count = m_vertex.next;
 
 		int i = static_cast<int>(count) * 2 - 4;
 		GSVertex* s = &m_vertex.buff[count - 2];
@@ -403,7 +403,7 @@ void GSRendererHW::Lines2Sprites()
 template <GSHWDrawConfig::VSExpand Expand>
 void GSRendererHW::ExpandIndices()
 {
-	size_t process_count = (m_index.tail + 3) / 4 * 4;
+	u32 process_count = (m_index.tail + 3) / 4 * 4;
 	if (Expand == GSHWDrawConfig::VSExpand::Point)
 	{
 		// Make sure we have space for writing off the end slightly
@@ -465,7 +465,7 @@ void GSRendererHW::ExpandIndices()
 // Fix the vertex position/tex_coordinate from 16 bits color to 32 bits color
 void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 {
-	const size_t count = m_vertex.next;
+	const u32 count = m_vertex.next;
 	GSVertex* v = &m_vertex.buff[0];
 	const GIFRegXYOFFSET& o = m_context->XYOFFSET;
 
@@ -516,7 +516,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 
 			int maxvert = 0;
 			int minvert = 4096;
-			for (size_t i = 0; i < count; i ++)
+			for (u32 i = 0; i < count; i ++)
 			{
 				int YCord = 0;
 
@@ -539,7 +539,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 	{
 		GL_INS("First vertex is  P: %d => %d    T: %d => %d", v[0].XYZ.X, v[1].XYZ.X, v[0].U, v[1].U);
 
-		for (size_t i = 0; i < count; i += 2)
+		for (u32 i = 0; i < count; i += 2)
 		{
 			if (write_ba)
 				v[i].XYZ.X   -= 128u;
@@ -572,7 +572,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 		const float offset_8pix = 8.0f / tw;
 		GL_INS("First vertex is  P: %d => %d    T: %f => %f (offset %f)", v[0].XYZ.X, v[1].XYZ.X, v[0].ST.S, v[1].ST.S, offset_8pix);
 
-		for (size_t i = 0; i < count; i += 2)
+		for (u32 i = 0; i < count; i += 2)
 		{
 			if (write_ba)
 				v[i].XYZ.X   -= 128u;
@@ -722,7 +722,7 @@ void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 			// SSE optimization: shuffle m[1] to have (4*32 bits) X, Y, U, V
 			const int first_dpX = v[1].XYZ.X - v[0].XYZ.X;
 			const int first_dpU = v[1].U - v[0].U;
-			for (size_t i = 0; i < m_vertex.next; i += 2)
+			for (u32 i = 0; i < m_vertex.next; i += 2)
 			{
 				const int dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
 				const int dpU = v[i + 1].U - v[i].U;
@@ -1125,10 +1125,10 @@ void GSRendererHW::RoundSpriteOffset()
 #if defined(DEBUG_V) || defined(DEBUG_U)
 	bool debug = linear;
 #endif
-	const size_t count = m_vertex.next;
+	const u32 count = m_vertex.next;
 	GSVertex* v = &m_vertex.buff[0];
 
-	for (size_t i = 0; i < count; i += 2)
+	for (u32 i = 0; i < count; i += 2)
 	{
 		// Performance note: if it had any impact on perf, someone would port it to SSE (AKA GSVector)
 
@@ -1837,7 +1837,7 @@ void GSRendererHW::Draw()
 	// Note: second hack corrects only the texture coordinate
 	if (CanUpscale() && (m_vt.m_primclass == GS_SPRITE_CLASS))
 	{
-		const size_t count = m_vertex.next;
+		const u32 count = m_vertex.next;
 		GSVertex* v = &m_vertex.buff[0];
 
 		// Hack to avoid vertical black line in various games (ace combat/tekken)
@@ -1854,7 +1854,7 @@ void GSRendererHW::Draw()
 				// Normaly vertex are aligned on full pixels and texture in half
 				// pixels. Let's extend the coverage of an half-pixel to avoid
 				// hole after upscaling
-				for (size_t i = 0; i < count; i += 2)
+				for (u32 i = 0; i < count; i += 2)
 				{
 					v[i + 1].XYZ.X += 8;
 					// I really don't know if it is a good idea. Neither what to do for !PRIM->FST
@@ -1965,7 +1965,7 @@ bool GSRendererHW::VerifyIndices()
 			[[fallthrough]];
 		case GS_POINT_CLASS:
 			// Expect indices to be flat increasing
-			for (size_t i = 0; i < m_index.tail; i++)
+			for (u32 i = 0; i < m_index.tail; i++)
 			{
 				if (m_index.buff[i] != i)
 					return false;
@@ -1978,7 +1978,7 @@ bool GSRendererHW::VerifyIndices()
 			// VS expand relies on this!
 			if (g_gs_device->Features().provoking_vertex_last)
 			{
-				for (size_t i = 0; i < m_index.tail; i += 2)
+				for (u32 i = 0; i < m_index.tail; i += 2)
 				{
 					if (m_index.buff[i] + 1 != m_index.buff[i + 1])
 						return false;
@@ -1986,7 +1986,7 @@ bool GSRendererHW::VerifyIndices()
 			}
 			else
 			{
-				for (size_t i = 0; i < m_index.tail; i += 2)
+				for (u32 i = 0; i < m_index.tail; i += 2)
 				{
 					if (m_index.buff[i] != m_index.buff[i + 1] + 1)
 						return false;
@@ -2009,7 +2009,7 @@ void GSRendererHW::SetupIA(const float& sx, const float& sy)
 
 	if (GSConfig.UserHacks_WildHack && !m_isPackedUV_HackFlag && PRIM->TME && PRIM->FST)
 	{
-		for (unsigned int i = 0; i < m_vertex.next; i++)
+		for (u32 i = 0; i < m_vertex.next; i++)
 			m_vertex.buff[i].UV &= 0x3FEF3FEF;
 	}
 	const bool unscale_pt_ln = !GSConfig.UserHacks_DisableSafeFeatures && (GetUpscaleMultiplier() != 1.0f);

@@ -155,7 +155,7 @@ void GSState::Reset(bool hardware_reset)
 
 	m_env.UpdateDIMX();
 
-	for (size_t i = 0; i < 2; i++)
+	for (u32 i = 0; i < 2; i++)
 	{
 		m_env.CTXT[i].UpdateScissor();
 
@@ -683,14 +683,14 @@ void GSState::DumpVertices(const std::string& filename)
 
 	file << std::endl << std::endl;
 
-	const size_t count = m_index.tail;
+	const u32 count = m_index.tail;
 	GSVertex* buffer = &m_vertex.buff[0];
 
 	const char* DEL = ", ";
 
 	file << "VERTEX COORDS (XYZ)" << std::endl;
 	file << std::fixed << std::setprecision(4);
-	for (size_t i = 0; i < count; ++i)
+	for (u32 i = 0; i < count; ++i)
 	{
 		file << "\t" << "v" << i << ": ";
 		GSVertex v = buffer[m_index.buff[i]];
@@ -708,7 +708,7 @@ void GSState::DumpVertices(const std::string& filename)
 
 	file << "VERTEX COLOR (RGBA)" << std::endl;
 	file << std::fixed << std::setprecision(6);
-	for (size_t i = 0; i < count; ++i)
+	for (u32 i = 0; i < count; ++i)
 	{
 		file << "\t" << "v" << i << ": ";
 		GSVertex v = buffer[m_index.buff[i]];
@@ -726,7 +726,7 @@ void GSState::DumpVertices(const std::string& filename)
 	const std::string qualifier = use_uv ? "UV" : "STQ";
 
 	file << "TEXTURE COORDS (" << qualifier << ")" << std::endl;;
-	for (size_t i = 0; i < count; ++i)
+	for (u32 i = 0; i < count; ++i)
 	{
 		file << "\t" << "v" << i << ": ";
 		const GSVertex v = buffer[m_index.buff[i]];
@@ -1853,10 +1853,10 @@ void GSState::FlushPrim()
 		GSVertex buff[2];
 		s_n++;
 
-		const size_t head = m_vertex.head;
-		const size_t tail = m_vertex.tail;
-		const size_t next = m_vertex.next;
-		size_t unused = 0;
+		const u32 head = m_vertex.head;
+		const u32 tail = m_vertex.tail;
+		const u32 next = m_vertex.next;
+		u32 unused = 0;
 
 		if (tail > head)
 		{
@@ -1873,7 +1873,7 @@ void GSState::FlushPrim()
 					break;
 				case GS_TRIANGLELIST:
 				case GS_TRIANGLESTRIP:
-					unused = std::min<size_t>(tail - head, 2);
+					unused = std::min<u32>(tail - head, 2);
 					memcpy(buff, &m_vertex.buff[tail - unused], sizeof(GSVertex) * 2);
 					break;
 				case GS_TRIANGLEFAN:
@@ -1941,7 +1941,7 @@ void GSState::FlushPrim()
 			// Jak 3 shadows get spikey (with autoflush) if you don't.
 			if (PRIM->PRIM == GS_TRIANGLEFAN)
 			{
-				for (size_t i = 0; i < unused; i++)
+				for (u32 i = 0; i < unused; i++)
 				{
 					GSVector4i* RESTRICT vert_ptr = (GSVector4i*)&m_vertex.buff[i];
 					GSVector4i v = vert_ptr[1];
@@ -2760,7 +2760,7 @@ int GSState::Defrost(const freezeData* fd)
 
 	m_env.UpdateDIMX();
 
-	for (size_t i = 0; i < 2; i++)
+	for (u32 i = 0; i < 2; i++)
 	{
 		m_env.CTXT[i].UpdateScissor();
 
@@ -2829,7 +2829,7 @@ void GSState::UpdateVertexKick()
 
 void GSState::GrowVertexBuffer()
 {
-	const size_t maxcount = std::max<size_t>(m_vertex.maxcount * 3 / 2, 10000);
+	const u32 maxcount = std::max<u32>(m_vertex.maxcount * 3 / 2, 10000);
 
 	GSVertex* vertex = (GSVertex*)_aligned_malloc(sizeof(GSVertex) * maxcount, 32);
 	// Worst case index list is a list of points with vs expansion, 6 indices per point
@@ -2837,8 +2837,8 @@ void GSState::GrowVertexBuffer()
 
 	if (vertex == NULL || index == NULL)
 	{
-		const size_t vert_byte_count = sizeof(GSVertex) * maxcount;
-		const size_t idx_byte_count = sizeof(u32) * maxcount * 3;
+		const u32 vert_byte_count = sizeof(GSVertex) * maxcount;
+		const u32 idx_byte_count = sizeof(u32) * maxcount * 3;
 
 		Console.Error("GS: failed to allocate %zu bytes for verticles and %zu for indices.",
 			vert_byte_count, idx_byte_count);
@@ -2876,12 +2876,12 @@ GSState::PRIM_OVERLAP GSState::PrimitiveOverlap()
 		return PRIM_OVERLAP_UNKNOW; // maybe, maybe not
 
 	// Check intersection of sprite primitive only
-	const size_t count = m_vertex.next;
+	const u32 count = m_vertex.next;
 	PRIM_OVERLAP overlap = PRIM_OVERLAP_NO;
 	const GSVertex* v = m_vertex.buff;
 
 	m_drawlist.clear();
-	size_t i = 0;
+	u32 i = 0;
 	while (i < count)
 	{
 		// In order to speed up comparison a bounding-box is accumulated. It removes a
@@ -2895,7 +2895,7 @@ GSState::PRIM_OVERLAP GSState::PrimitiveOverlap()
 		GSVector4i all = GSVector4i(v[i].m[1]).upl16(GSVector4i(v[i + 1].m[1])).upl16().xzyw();
 		all = all.xyxy().blend(all.zwzw(), all > all.zwxy());
 
-		size_t j = i + 2;
+		u32 j = i + 2;
 		while (j < count)
 		{
 			GSVector4i sprite = GSVector4i(v[j].m[1]).upl16(GSVector4i(v[j + 1].m[1])).upl16().xzyw();
@@ -2933,12 +2933,12 @@ GSState::PRIM_OVERLAP GSState::PrimitiveOverlap()
 	// Some safe-guard will be added in the outer-loop to avoid corruption with a limited perf impact
 	if (v[1].XYZ.Y < v[0].XYZ.Y) {
 		// First vertex is Top-Left
-		for (size_t i = 0; i < count; i += 2) {
+		for (u32 i = 0; i < count; i += 2) {
 			if (v[i + 1].XYZ.Y > v[i].XYZ.Y) {
 				return PRIM_OVERLAP_UNKNOW;
 			}
 			GSVector4i vi(v[i].XYZ.X, v[i + 1].XYZ.Y, v[i + 1].XYZ.X, v[i].XYZ.Y);
-			for (size_t j = i + 2; j < count; j += 2) {
+			for (u32 j = i + 2; j < count; j += 2) {
 				GSVector4i vj(v[j].XYZ.X, v[j + 1].XYZ.Y, v[j + 1].XYZ.X, v[j].XYZ.Y);
 				GSVector4i inter = vi.rintersect(vj);
 				if (!inter.rempty()) {
@@ -2949,12 +2949,12 @@ GSState::PRIM_OVERLAP GSState::PrimitiveOverlap()
 	}
 	else {
 		// First vertex is Bottom-Left
-		for (size_t i = 0; i < count; i += 2) {
+		for (u32 i = 0; i < count; i += 2) {
 			if (v[i + 1].XYZ.Y < v[i].XYZ.Y) {
 				return PRIM_OVERLAP_UNKNOW;
 			}
 			GSVector4i vi(v[i].XYZ.X, v[i].XYZ.Y, v[i + 1].XYZ.X, v[i + 1].XYZ.Y);
-			for (size_t j = i + 2; j < count; j += 2) {
+			for (u32 j = i + 2; j < count; j += 2) {
 				GSVector4i vj(v[j].XYZ.X, v[j].XYZ.Y, v[j + 1].XYZ.X, v[j + 1].XYZ.Y);
 				GSVector4i inter = vi.rintersect(vj);
 				if (!inter.rempty()) {
@@ -2992,7 +2992,7 @@ __forceinline void GSState::CLUTAutoFlush(u32 prim)
 	if (m_mem.m_clut.IsInvalid() & 2)
 		return;
 
-	size_t  n = 1;
+	u32 n = 1;
 
 	switch (prim)
 	{
@@ -3048,9 +3048,9 @@ __forceinline void GSState::HandleAutoFlush()
 	if (IsAutoFlushDraw())
 	{
 		int  n = 1;
-		size_t buff[3];
-		const size_t head = m_vertex.head;
-		const size_t tail = m_vertex.tail;
+		u32 buff[3];
+		const u32 head = m_vertex.head;
+		const u32 tail = m_vertex.tail;
 
 		switch (prim)
 		{
@@ -3232,7 +3232,7 @@ __forceinline void GSState::HandleAutoFlush()
 	}
 }
 
-static constexpr size_t NumIndicesForPrim(u32 prim)
+static constexpr u32 NumIndicesForPrim(u32 prim)
 {
 	switch (prim)
 	{
@@ -3255,7 +3255,7 @@ static constexpr size_t NumIndicesForPrim(u32 prim)
 template <u32 prim, bool auto_flush, bool index_swap>
 __forceinline void GSState::VertexKick(u32 skip)
 {
-	constexpr size_t n = NumIndicesForPrim(prim);
+	constexpr u32 n = NumIndicesForPrim(prim);
 	static_assert(n > 0);
 
 	ASSERT(m_vertex.tail < m_vertex.maxcount + 3);
@@ -3265,10 +3265,10 @@ __forceinline void GSState::VertexKick(u32 skip)
 		HandleAutoFlush<prim, index_swap>();
 	}
 
-	size_t head = m_vertex.head;
-	size_t tail = m_vertex.tail;
-	size_t next = m_vertex.next;
-	size_t xy_tail = m_vertex.xy_tail;
+	u32 head = m_vertex.head;
+	u32 tail = m_vertex.tail;
+	u32 next = m_vertex.next;
+	u32 xy_tail = m_vertex.xy_tail;
 
 	// callers should write XYZUVF to m_v.m[1] in one piece to have this load store-forwarded, either by the cpu or the compiler when this function is inlined
 
@@ -3287,7 +3287,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 	m_vertex.tail = ++tail;
 	m_vertex.xy_tail = ++xy_tail;
 
-	const size_t m = tail - head;
+	const u32 m = tail - head;
 
 	if (m < n)
 		return;

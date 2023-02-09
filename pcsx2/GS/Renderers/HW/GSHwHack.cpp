@@ -838,7 +838,7 @@ bool GSHwHack::GSC_BlueTongueGames(GSRendererHW& r, const GSFrameInfo& fi, int& 
 
 bool GSHwHack::OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
-	const size_t n_vertices = r.m_vertex.next;
+	const u32 n_vertices = r.m_vertex.next;
 	const int w = r.m_r.width();
 	const int h = r.m_r.height();
 	const bool is_copy = !r.PRIM->ABE || (
