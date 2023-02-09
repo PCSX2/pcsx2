@@ -52,6 +52,7 @@ namespace Vulkan
 			bool vk_ext_provoking_vertex : 1;
 			bool vk_ext_memory_budget : 1;
 			bool vk_ext_calibrated_timestamps : 1;
+			bool vk_ext_line_rasterization : 1;
 			bool vk_khr_driver_properties : 1;
 			bool vk_arm_rasterization_order_attachment_access : 1;
 			bool vk_khr_fragment_shader_barycentric : 1;
@@ -398,6 +399,7 @@ namespace Vulkan
 		VkPhysicalDeviceProperties m_device_properties = {};
 		VkPhysicalDeviceMemoryProperties m_device_memory_properties = {};
 		VkPhysicalDeviceDriverPropertiesKHR m_device_driver_properties = {};
+		VkPhysicalDeviceLineRasterizationFeaturesEXT m_line_rasterization_features = {};
 		OptionalExtensions m_optional_extensions = {};
 	};
 

@@ -96,6 +96,7 @@ namespace Vulkan
 
 		void SetRasterizationState(VkPolygonMode polygon_mode, VkCullModeFlags cull_mode, VkFrontFace front_face);
 		void SetLineWidth(float width);
+		void SetLineRasterizationMode(VkLineRasterizationModeEXT mode);
 		void SetMultisamples(u32 multisamples, bool per_sample_shading);
 		void SetNoCullRasterizationState();
 
@@ -157,6 +158,7 @@ namespace Vulkan
 		VkPipelineMultisampleStateCreateInfo m_multisample_state;
 
 		VkPipelineRasterizationProvokingVertexStateCreateInfoEXT m_provoking_vertex;
+		VkPipelineRasterizationLineStateCreateInfoEXT m_line_rasterization_state;
 	};
 
 	class ComputePipelineBuilder
