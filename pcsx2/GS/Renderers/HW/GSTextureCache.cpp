@@ -1134,9 +1134,10 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					// Possibly because the block layout is opposite for the 32bit colour and depth, it never actually overwrites the depth, so this is kind of a miss detection.
 					// The new code rightfully calculates that the depth does not become dirty, but in other cases, like bigger draws of the same format
 					// it might become invalid, so we check below and erase as before if so.
-					bool can_erase = found;
+					bool can_erase = true;
 					if (!found && t->m_age <= 1)
 					{
+						// Compatible formats and same width, probably updating the same texture, so just mark it as dirty.
 						if (bw == t->m_TEX0.TBW && GSLocalMemory::m_psm[psm].bpp == GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp)
 						{
 							AddDirtyRectTarget(t, rect, psm, bw);
@@ -1158,41 +1159,46 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 								r.y,
 								r.z,
 								r.w);
+
+							can_erase = false;
 						}
 						else
 						{
-							SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
-							if (so.is_valid)
+							// Incompatible format write, small writes *should* be okay (Destruction Derby Arenas) and matching bpp should be fine.
+							// If it's overwriting a good chunk of the texture, it's more than likely a different texture, so kill it (Dragon Quest 8).
+							const GSLocalMemory::psm_t& t_psm_s = GSLocalMemory::m_psm[psm];
+							const u32 bp_end = t_psm_s.info.bn(r.z - 1, r.w - 1, bp, bw);
+							if (GSLocalMemory::m_psm[psm].bpp == GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp ||
+								((100.0f / static_cast<float>(t->m_end_block - t->m_TEX0.TBP0)) * static_cast<float>(bp_end - bp)) < 20.0f)
 							{
-								AddDirtyRectTarget(t, so.b2a_offset, psm, bw);
-								GL_CACHE("TC: Dirty in the middle [aggressive] of Target(%s) %d [PSM:%s BP:0x%x->0x%x BW:%u rect(%d,%d=>%d,%d)] write[PSM:%s BP:0x%x BW:%u rect(%d,%d=>%d,%d)]",
-									to_string(type),
-									t->m_texture ? t->m_texture->GetID() : 0,
-									psm_str(t->m_TEX0.PSM),
-									t->m_TEX0.TBP0,
-									t->m_end_block,
-									t->m_TEX0.TBW,
-									so.b2a_offset.x,
-									so.b2a_offset.y,
-									so.b2a_offset.z,
-									so.b2a_offset.w,
-									psm_str(psm),
-									bp,
-									bw,
-									r.x,
-									r.y,
-									r.z,
-									r.w);
+								SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
+								if (so.is_valid)
+								{
+									AddDirtyRectTarget(t, so.b2a_offset, psm, bw);
+									GL_CACHE("TC: Dirty in the middle [aggressive] of Target(%s) %d [PSM:%s BP:0x%x->0x%x BW:%u rect(%d,%d=>%d,%d)] write[PSM:%s BP:0x%x BW:%u rect(%d,%d=>%d,%d)]",
+										to_string(type),
+										t->m_texture ? t->m_texture->GetID() : 0,
+										psm_str(t->m_TEX0.PSM),
+										t->m_TEX0.TBP0,
+										t->m_end_block,
+										t->m_TEX0.TBW,
+										so.b2a_offset.x,
+										so.b2a_offset.y,
+										so.b2a_offset.z,
+										so.b2a_offset.w,
+										psm_str(psm),
+										bp,
+										bw,
+										r.x,
+										r.y,
+										r.z,
+										r.w);
 
-								if (eewrite)
-									t->m_age = 0;
+									can_erase = false;
+								}
 							}
-							else
-								can_erase = true;
 						}
 					}
-					else
-						can_erase = true;
 
 					if (can_erase)
 					{
@@ -1203,7 +1209,11 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 						delete t;
 					}
 					else
+					{
+						if (eewrite)
+							t->m_age = 0;
 						++i;
+					}
 					continue;
 				}
 			}
