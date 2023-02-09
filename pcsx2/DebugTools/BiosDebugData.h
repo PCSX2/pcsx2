@@ -137,6 +137,7 @@ public:
 			case EEWaitStatus::WAIT_SEMA:
 				return WaitState::SEMA;
 		}
+		return WaitState::NONE;
 	};
 	[[nodiscard]] u32 EntryPoint() const override { return data.entry_init; };
 	[[nodiscard]] u32 StackTop() const override { return data.stack; };
