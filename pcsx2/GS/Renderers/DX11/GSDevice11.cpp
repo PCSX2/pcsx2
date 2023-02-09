@@ -305,7 +305,7 @@ bool GSDevice11::Create()
 	rd.SlopeScaledDepthBias = 0;
 	rd.DepthClipEnable = false; // ???
 	rd.ScissorEnable = true;
-	rd.MultisampleEnable = true;
+	rd.MultisampleEnable = false;
 	rd.AntialiasedLineEnable = false;
 
 	m_dev->CreateRasterizerState(&rd, m_rs.put());
