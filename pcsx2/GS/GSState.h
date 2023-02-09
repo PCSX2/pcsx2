@@ -169,9 +169,9 @@ protected:
 
 	void GrowVertexBuffer();
 	bool IsAutoFlushDraw();
-	template<bool index_swap>
+	template<u32 prim, bool index_swap>
 	void HandleAutoFlush();
-	void CLUTAutoFlush();
+	void CLUTAutoFlush(u32 prim);
 
 	template <u32 prim, bool auto_flush, bool index_swap>
 	void VertexKick(u32 skip);

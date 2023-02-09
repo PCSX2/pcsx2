@@ -1072,7 +1072,7 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 		if (TEX0.CBP != m_mem.m_clut.GetCLUTCBP())
 		{
 			m_mem.m_clut.ClearDrawInvalidity();
-			CLUTAutoFlush();
+			CLUTAutoFlush(PRIM->PRIM);
 		}
 		Flush(GSFlushReason::CLUTCHANGE);
 	}
@@ -2987,14 +2987,14 @@ __forceinline bool GSState::IsAutoFlushDraw()
 	return false;
 }
 
-__forceinline void GSState::CLUTAutoFlush()
+__forceinline void GSState::CLUTAutoFlush(u32 prim)
 {
 	if (m_mem.m_clut.IsInvalid() & 2)
 		return;
 
 	size_t  n = 1;
 
-	switch (PRIM->PRIM)
+	switch (prim)
 	{
 		case GS_POINTLIST:
 			n = 1;
@@ -3027,7 +3027,7 @@ __forceinline void GSState::CLUTAutoFlush()
 			// If it's a point, then we only have one coord, so the address for start and end will be the same, which is bad for the following check.
 			u32 endbp = startbp;
 			// otherwise calculate the end.
-			if (PRIM->PRIM != GS_POINTLIST || (m_index.tail > 1))
+			if (prim != GS_POINTLIST || (m_index.tail > 1))
 				endbp = psm.info.bn(temp_draw_rect.z - 1, temp_draw_rect.w - 1, m_context->FRAME.Block(), m_context->FRAME.FBW);
 
 			m_mem.m_clut.InvalidateRange(startbp, endbp, true);
@@ -3035,7 +3035,7 @@ __forceinline void GSState::CLUTAutoFlush()
 	}
 }
 
-template<bool index_swap>
+template<u32 prim, bool index_swap>
 __forceinline void GSState::HandleAutoFlush()
 {
 	// Kind of a cheat, making the assumption that 2 consecutive fan/strip triangles won't overlap each other (*should* be safe)
@@ -3052,9 +3052,10 @@ __forceinline void GSState::HandleAutoFlush()
 		const size_t head = m_vertex.head;
 		const size_t tail = m_vertex.tail;
 
-		switch (PRIM->PRIM)
+		switch (prim)
 		{
 			case GS_POINTLIST:
+				buff[0] = tail - 1;
 				n = 1;
 				break;
 			case GS_LINELIST:
@@ -3261,7 +3262,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 
 	if (auto_flush && skip == 0 && m_index.tail > 0 && ((m_vertex.tail + 1) - m_vertex.head) >= n)
 	{
-		HandleAutoFlush<index_swap>();
+		HandleAutoFlush<prim, index_swap>();
 	}
 
 	size_t head = m_vertex.head;
@@ -3515,7 +3516,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 		temp_draw_rect = min.upl64(max).rintersect(scissor);
 	}
 
-	CLUTAutoFlush();
+	CLUTAutoFlush(prim);
 }
 
 /// Checks if region repeat is used (applying it does something to at least one of the values in min...max)
