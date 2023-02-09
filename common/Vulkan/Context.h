@@ -399,7 +399,6 @@ namespace Vulkan
 		VkPhysicalDeviceProperties m_device_properties = {};
 		VkPhysicalDeviceMemoryProperties m_device_memory_properties = {};
 		VkPhysicalDeviceDriverPropertiesKHR m_device_driver_properties = {};
-		VkPhysicalDeviceLineRasterizationFeaturesEXT m_line_rasterization_features = {};
 		OptionalExtensions m_optional_extensions = {};
 	};
 
