@@ -1431,6 +1431,61 @@ void GSRendererHW::Draw()
 	m_texture_shuffle = false;
 	m_tex_is_fb = false;
 
+	// The rectangle of the draw
+	m_r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
+
+	if (!GSConfig.UserHacks_DisableSafeFeatures)
+	{
+		if (IsConstantDirectWriteMemClear(true))
+		{
+			// Likely doing a huge single page width clear, which never goes well. (Superman)
+			// Burnout 3 does a 32x1024 double width clear on its reflection targets.
+			const bool clear_height_valid = (m_r.w >= 1024);
+			if (clear_height_valid && context->FRAME.FBW == 1)
+			{
+				u32 width = ceil(static_cast<float>(m_r.w) / GetFramebufferHeight()) * 64;
+				// Framebuffer is likely to be read as 16bit later, so we will need to double the width if the write is 32bit.
+				const bool double_width = GSLocalMemory::m_psm[context->FRAME.PSM].bpp == 32 && GetFramebufferBitDepth() == 16;
+				m_r.x = 0;
+				m_r.y = 0;
+				m_r.w = GetFramebufferHeight();
+				m_r.z = std::max((width * (double_width ? 2 : 1)), static_cast<u32>(GetFramebufferWidth()));
+				context->FRAME.FBW = (m_r.z + 63) / 64;
+				m_context->scissor.in.z = context->FRAME.FBW * 64;
+
+				GSVertex* s = &m_vertex.buff[0];
+				s[0].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + 0);
+				s[1].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + 16384);
+				s[0].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + 0);
+				s[1].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + 16384);
+
+				m_vertex.head = m_vertex.tail = m_vertex.next = 2;
+				m_index.tail = 2;
+			}
+
+			// Superman does a clear to white, not black, on its depth buffer.
+			// Since we don't preload depth, OI_GsMemClear() won't work here, since we invalidate the target later
+			// on. So, instead, let the draw go through with the expanded rectangle, and copy color->depth.
+			const bool is_zero_clear = (((GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 0) ?
+				m_vertex.buff[1].RGBAQ.U32[0] :
+				(m_vertex.buff[1].RGBAQ.U32[0] & ~0xFF000000)) == 0) && m_context->FRAME.FBMSK == 0 && IsBlendedOrOpaque();
+
+			if (is_zero_clear && OI_GsMemClear() && clear_height_valid)
+			{
+				m_tc->InvalidateVideoMem(context->offset.fb, m_r, false, true);
+				m_tc->InvalidateVideoMemType(GSTextureCache::RenderTarget, context->FRAME.Block());
+
+				if (m_context->ZBUF.ZMSK == 0)
+				{
+					m_tc->InvalidateVideoMem(context->offset.zb, m_r, false, false);
+					m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, context->ZBUF.Block());
+				}
+
+				return;
+			}
+		}
+	}
+	TextureMinMaxResult tmm;
 	// Disable texture mapping if the blend is black and using alpha from vertex.
 	if (PRIM->TME && !(PRIM->ABE && m_context->ALPHA.IsBlack() && !m_context->TEX0.TCC))
 	{
@@ -1522,18 +1577,54 @@ void GSRendererHW::Draw()
 
 		m_context->offset.tex = m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
-		TextureMinMaxResult tmm = GetTextureMinMax(TEX0, MIP_CLAMP, m_vt.IsLinear());
+		tmm = GetTextureMinMax(TEX0, MIP_CLAMP, m_vt.IsLinear());
 
 		m_src = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage) :
 			m_tc->LookupSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, (GSConfig.HWMipmap >= HWMipmapLevel::Basic ||
 				GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr);
+
+	}
+
+	GSVector2i unscaled_target_size;
+	const GSVector2i t_size = GetTargetSize(&unscaled_target_size);
+
+	// Ensure draw rect is clamped to framebuffer size. Necessary for updating valid area.
+	m_r = m_r.rintersect(GSVector4i(0, 0, unscaled_target_size.x, unscaled_target_size.y));
+
+	TEX0.TBP0 = context->FRAME.Block();
+	TEX0.TBW = context->FRAME.FBW;
+	TEX0.PSM = context->FRAME.PSM;
+
+	GSTextureCache::Target* rt = nullptr;
+	if (!no_rt)
+		rt = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::RenderTarget, true, fm, false, unscaled_target_size.x, unscaled_target_size.y, preload);
+
+	TEX0.TBP0 = context->ZBUF.Block();
+	TEX0.TBW = context->FRAME.FBW;
+	TEX0.PSM = context->ZBUF.PSM;
+
+	GSTextureCache::Target* ds = nullptr;
+	if (!no_ds)
+		ds = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::DepthStencil, context->DepthWrite(), 0, false, 0, 0, preload);
+
+	if (PRIM->TME)
+	{
+		GIFRegCLAMP MIP_CLAMP = context->CLAMP;
+
+		bool copy_16bit_to_target_shuffle = false;
+
+		if (rt)
+		{
+			// copy of a 16bit source in to this target, make sure it's opaque and not bilinear to reduce false positives.
+			copy_16bit_to_target_shuffle = context->TEX0.TBP0 != context->FRAME.Block() && rt->m_32_bits_fmt == true && IsOpaque() && !(context->TEX1.MMIN & 1);
+		}
 
 		// Hypothesis: texture shuffle is used as a postprocessing effect so texture will be an old target.
 		// Initially code also tested the RT but it gives too much false-positive
 		//
 		// Both input and output are 16 bits and texture was initially 32 bits!
 		m_texture_shuffle = (GSLocalMemory::m_psm[context->FRAME.PSM].bpp == 16) && (tex_psm.bpp == 16)
-			&& draw_sprite_tex && m_src->m_32_bits_fmt;
+			&& draw_sprite_tex && (m_src->m_32_bits_fmt || copy_16bit_to_target_shuffle);
 
 		// Okami mustn't call this code
 		if (m_texture_shuffle && m_vertex.next < 3 && PRIM->FST && ((m_context->FRAME.FBMSK & fm_mask) == 0))
@@ -1571,7 +1662,6 @@ void GSRendererHW::Draw()
 		{
 			m_channel_shuffle = false;
 		}
-
 #if 0
 		// FIXME: We currently crop off the rightmost and bottommost pixel when upscaling clamps,
 		// until the issue is properly solved we should keep this disabled as it breaks many games when upscaling.
@@ -1594,6 +1684,7 @@ void GSRendererHW::Draw()
 		const int tw = 1 << TEX0.TW;
 		const int th = 1 << TEX0.TH;
 		const bool is_shuffle = m_channel_shuffle || m_texture_shuffle;
+
 		// If m_src is from a target that isn't the same size as the texture, texture sample edge modes won't work quite the same way
 		// If the game actually tries to access stuff outside of the rendered target, it was going to get garbage anyways so whatever
 		// But the game could issue reads that wrap to valid areas, so move wrapping to the shader if wrapping is used
@@ -1661,84 +1752,7 @@ void GSRendererHW::Draw()
 			m_vt.m_max.t = tmax;
 		}
 	}
-
-	// The rectangle of the draw
-	m_r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
-
-	if (!GSConfig.UserHacks_DisableSafeFeatures)
-	{
-		if (IsConstantDirectWriteMemClear(true))
-		{
-			// Likely doing a huge single page width clear, which never goes well. (Superman)
-			// Burnout 3 does a 32x1024 double width clear on its reflection targets.
-			const bool clear_height_valid = (m_r.w >= 1024);
-			if (clear_height_valid && context->FRAME.FBW == 1)
-			{
-				u32 width = ceil(static_cast<float>(m_r.w) / GetFramebufferHeight()) * 64;
-				// Framebuffer is likely to be read as 16bit later, so we will need to double the width if the write is 32bit.
-				const bool double_width = GSLocalMemory::m_psm[context->FRAME.PSM].bpp == 32 && GetFramebufferBitDepth() == 16;
-				m_r.x = 0;
-				m_r.y = 0;
-				m_r.w = GetFramebufferHeight();
-				m_r.z = std::max((width * (double_width ? 2 : 1)), static_cast<u32>(GetFramebufferWidth()));
-				context->FRAME.FBW = (m_r.z + 63) / 64;
-				m_context->scissor.in.z = context->FRAME.FBW * 64;
-
-				GSVertex* s = &m_vertex.buff[0];
-				s[0].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + 0);
-				s[1].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + 16384);
-				s[0].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + 0);
-				s[1].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + 16384);
-
-				m_vertex.head = m_vertex.tail = m_vertex.next = 2;
-				m_index.tail = 2;
-			}
-
-			// Superman does a clear to white, not black, on its depth buffer.
-			// Since we don't preload depth, OI_GsMemClear() won't work here, since we invalidate the target later
-			// on. So, instead, let the draw go through with the expanded rectangle, and copy color->depth.
-			const bool is_zero_clear = (((GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 0) ?
-												m_vertex.buff[1].RGBAQ.U32[0] :
-												(m_vertex.buff[1].RGBAQ.U32[0] & ~0xFF000000)) == 0) && m_context->FRAME.FBMSK == 0 && IsBlendedOrOpaque();
-			
-			if (is_zero_clear && OI_GsMemClear() && clear_height_valid)
-			{
-				m_tc->InvalidateVideoMem(context->offset.fb, m_r, false, true);
-				m_tc->InvalidateVideoMemType(GSTextureCache::RenderTarget, context->FRAME.Block());
-
-				if (m_context->ZBUF.ZMSK == 0)
-				{
-					m_tc->InvalidateVideoMem(context->offset.zb, m_r, false, false);
-					m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, context->ZBUF.Block());
-				}
-
-				return;
-			}
-		}
-	}
-
-	GSVector2i unscaled_size;
-	const GSVector2i t_size = GetTargetSize(&unscaled_size);
-
-	// Ensure draw rect is clamped to framebuffer size. Necessary for updating valid area.
-	m_r = m_r.rintersect(GSVector4i(0, 0, unscaled_size.x, unscaled_size.y));
-
-	TEX0.TBP0 = context->FRAME.Block();
-	TEX0.TBW = context->FRAME.FBW;
-	TEX0.PSM = context->FRAME.PSM;
-
-	GSTextureCache::Target* rt = nullptr;
-	if (!no_rt)
-		rt = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::RenderTarget, true, fm, false, unscaled_size.x, unscaled_size.y, preload);
-
-	TEX0.TBP0 = context->ZBUF.Block();
-	TEX0.TBW = context->FRAME.FBW;
-	TEX0.PSM = context->ZBUF.PSM;
-
-	GSTextureCache::Target* ds = nullptr;
-	if (!no_ds)
-		ds = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::DepthStencil, context->DepthWrite(), 0, false, 0, 0, preload);
-
+	
 	if (rt)
 	{
 		// Be sure texture shuffle detection is properly propagated
