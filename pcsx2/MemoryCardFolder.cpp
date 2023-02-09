@@ -1919,10 +1919,13 @@ void FolderMemoryCard::DeleteFromIndex(const std::string& filePath, const std::s
 	if (yaml.has_value() && !yaml.value().empty())
 	{
 		ryml::NodeRef index = yaml.value().rootref();
-		index.remove_child(c4::csubstr(entry.data(), entry.length()));
-
-		// Write out the changes
-		SaveYAMLToFile(indexName.c_str(), index);
+		
+		if (index.has_child(c4::csubstr(entry.data(), entry.length())))
+		{
+			index.remove_child(c4::csubstr(entry.data(), entry.length()));
+			// Write out the changes
+			SaveYAMLToFile(indexName.c_str(), index);
+		}
 	}
 }
 
