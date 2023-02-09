@@ -150,7 +150,7 @@ void KeyStatus::Set(u32 pad, u32 index, float value)
 	else if (IsTriggerKey(index))
 	{
 		const float s_value = std::clamp(value * m_trigger_scale[pad][1], 0.0f, 1.0f);
-		const float dz_value = (m_axis_scale[pad][0] > 0.0f && s_value < m_axis_scale[pad][0]) ? 0.0f : s_value;
+		const float dz_value = (m_trigger_scale[pad][0] > 0.0f && s_value < m_trigger_scale[pad][0]) ? 0.0f : s_value;
 		m_button_pressure[pad][index] = static_cast<u8>(dz_value * 255.0f);
 		if (dz_value > 0.0f)
 			m_button[pad] &= ~(1u << bitmask_mapping[index]);
