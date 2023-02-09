@@ -507,10 +507,12 @@ void GSDownloadTextureOGL::CopyFromTexture(
 	pxAssert((drc.left == 0 && drc.top == 0) || !use_transfer_pitch);
 
 	u32 copy_offset, copy_size, copy_rows;
-	m_current_pitch =
-		GetTransferPitch(use_transfer_pitch ? static_cast<u32>(drc.width()) : m_width, GSTexture::GetCompressedBytesPerBlock(m_format));
+	m_current_pitch = GetTransferPitch(use_transfer_pitch ? static_cast<u32>(drc.width()) : m_width, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
 	GetTransferSize(drc, &copy_offset, &copy_size, &copy_rows);
 	g_perfmon.Put(GSPerfMon::Readbacks, 1);
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, GSDeviceOGL::GetInstance()->GetFBORead());
+	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glTex->GetID(), 0);
 
 	glPixelStorei(GL_PACK_ALIGNMENT, 1u << glTex->GetIntShift());
 	glPixelStorei(GL_PACK_ROW_LENGTH, GSTexture::CalcUploadRowLengthFromPitch(m_format, m_current_pitch));
@@ -521,10 +523,7 @@ void GSDownloadTextureOGL::CopyFromTexture(
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, m_buffer_id);
 	}
 
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, GSDeviceOGL::GetInstance()->GetFBORead());
-	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glTex->GetID(), 0);
-
-	glReadPixels(drc.left, drc.top, drc.width(), drc.height(), glTex->GetIntFormat(), glTex->GetIntType(), m_cpu_buffer);
+	glReadPixels(src.left, src.top, src.width(), src.height(), glTex->GetIntFormat(), glTex->GetIntType(), m_cpu_buffer + copy_offset);
 
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
@@ -535,7 +534,7 @@ void GSDownloadTextureOGL::CopyFromTexture(
 	}
 	else
 	{
-		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
 		// Create a sync object so we know when the GPU is done copying.
 		if (m_sync)
