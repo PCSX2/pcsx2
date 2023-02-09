@@ -519,7 +519,7 @@ void DSRLV(){ if (!_Rd_) return; cpuRegs.GPR.r[_Rd_].UD[0] = (u64)(cpuRegs.GPR.r
 //    exceptions, since the lower bits of the address are used to determine the portions
 //    of the address/register operations.
 
-[[ noreturn ]] __noinline static void RaiseAddressError(u32 addr, bool store)
+__noinline static void RaiseAddressError(u32 addr, bool store)
 {
 	const std::string message(fmt::format("Address Error, addr=0x{:x} [{}]", addr, store ? "store" : "load"));
 
