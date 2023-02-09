@@ -218,7 +218,7 @@ void PAD::LoadConfig(const SettingsInterface& si)
 		const float axis_deadzone = si.GetFloatValue(section.c_str(), "Deadzone", DEFAULT_STICK_DEADZONE);
 		const float axis_scale = si.GetFloatValue(section.c_str(), "AxisScale", DEFAULT_STICK_SCALE);
 		const float trigger_deadzone = si.GetFloatValue(section.c_str(), "TriggerDeadzone", DEFAULT_TRIGGER_DEADZONE);
-		const float trigger_scale = si.GetFloatValue(section.c_str(), "TriggerDeadzone", DEFAULT_TRIGGER_SCALE);
+		const float trigger_scale = si.GetFloatValue(section.c_str(), "TriggerScale", DEFAULT_TRIGGER_SCALE);
 		const float button_deadzone = si.GetFloatValue(section.c_str(), "ButtonDeadzone", DEFAULT_BUTTON_DEADZONE);
 		g_key_status.SetAxisScale(i, axis_deadzone, axis_scale);
 		g_key_status.SetTriggerScale(i, trigger_deadzone, trigger_scale);
