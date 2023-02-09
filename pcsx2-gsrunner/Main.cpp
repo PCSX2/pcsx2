@@ -48,6 +48,7 @@
 #include "pcsx2/HostDisplay.h"
 #include "pcsx2/HostSettings.h"
 #include "pcsx2/INISettingsInterface.h"
+#include "pcsx2/PAD/Host/PAD.h"
 #include "pcsx2/PerformanceMetrics.h"
 #include "pcsx2/VMManager.h"
 
@@ -102,6 +103,13 @@ bool GSRunner::InitializeConfig()
 
 	// we don't need any sound output
 	si.SetStringValue("SPU2/Output", "OutputModule", "nullout");
+
+	// none of the bindings are going to resolve to anything
+	PAD::ClearPortBindings(si, 0);
+	si.ClearSection("Hotkeys");
+
+	// make sure any gamesettings inis in your tree don't get loaded
+	si.SetBoolValue("EmuCore", "EnablePerGameSettings", false);
 
 	// force logging
 	si.SetBoolValue("Logging", "EnableSystemConsole", true);
