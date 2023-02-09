@@ -3142,7 +3142,7 @@ void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[tex->m_TEX0.PSM];
 	const GSLocalMemory::psm_t& cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[m_context->TEX0.CPSM] : psm;
 
-	static constexpr const char* clamp_modes[] = { "REPEAT", "CLAMP", "REGION_CLAMP", "REGION_REPEAT" };
+	[[maybe_unused]] static constexpr const char* clamp_modes[] = { "REPEAT", "CLAMP", "REGION_CLAMP", "REGION_REPEAT" };
 	const bool redundant_wms = IsRedundantClamp(m_context->CLAMP.WMS, m_context->CLAMP.MINU, m_context->CLAMP.MAXU, tex->m_TEX0.TW);
 	const bool redundant_wmt = IsRedundantClamp(m_context->CLAMP.WMT, m_context->CLAMP.MINV, m_context->CLAMP.MAXV, tex->m_TEX0.TH);
 	const u8 wms = EffectiveClamp(m_context->CLAMP.WMS, tex->m_region.HasX());
