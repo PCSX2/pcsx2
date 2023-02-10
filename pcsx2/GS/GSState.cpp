@@ -3517,6 +3517,13 @@ __forceinline void GSState::VertexKick(u32 skip)
 	}
 
 	CLUTAutoFlush(prim);
+
+	if (GSLocalMemory::m_psm[m_prev_env.CTXT[m_prev_env.PRIM.CTXT].FRAME.PSM].bpp == 16 && GSLocalMemory::m_psm[m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0.PSM].bpp == 16
+		&& m_prev_env.CTXT[m_prev_env.PRIM.CTXT].FRAME.FBMSK == 0x3FFF && m_prev_env.CTXT[m_prev_env.PRIM.CTXT].ALPHA.IsOpaque())
+	{
+		DevCon.Warning("Shuffle flush %d", s_n+1);
+		Flush(AUTOFLUSH);
+	}
 }
 
 /// Checks if region repeat is used (applying it does something to at least one of the values in min...max)

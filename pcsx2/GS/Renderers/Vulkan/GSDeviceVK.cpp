@@ -1996,6 +1996,7 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_NO_COLOR1", sel.no_color1);
 	AddMacro(ss, "PS_NO_ABLEND", sel.no_ablend);
 	AddMacro(ss, "PS_ONLY_ALPHA", sel.only_alpha);
+	AddMacro(ss, "PS_SWAP_GA", sel.swap_ga);
 	ss << m_tfx_source;
 
 	VkShaderModule mod = g_vulkan_shader_cache->GetFragmentShader(ss.str());

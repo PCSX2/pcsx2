@@ -357,6 +357,7 @@ struct alignas(16) GSHWDrawConfig
 
 				// Scan mask
 				u32 scanmsk : 2;
+				u32 swap_ga : 1;
 			};
 
 			struct

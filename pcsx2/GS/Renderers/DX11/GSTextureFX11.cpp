@@ -160,6 +160,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_POINT_SAMPLER", sel.point_sampler);
 		sm.AddMacro("PS_SHUFFLE", sel.shuffle);
 		sm.AddMacro("PS_READ_BA", sel.read_ba);
+		sm.AddMacro("PS_SWAP_GA", sel.swap_ga);
 		sm.AddMacro("PS_CHANNEL_FETCH", sel.channel);
 		sm.AddMacro("PS_TALES_OF_ABYSS_HLE", sel.tales_of_abyss_hle);
 		sm.AddMacro("PS_URBAN_CHAOS_HLE", sel.urban_chaos_hle);

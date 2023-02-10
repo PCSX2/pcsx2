@@ -463,21 +463,46 @@ void GSRendererHW::ExpandIndices()
 }
 
 // Fix the vertex position/tex_coordinate from 16 bits color to 32 bits color
-void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
+void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, bool& swap_ga)
 {
 	const u32 count = m_vertex.next;
 	GSVertex* v = &m_vertex.buff[0];
 	const GIFRegXYOFFSET& o = m_context->XYOFFSET;
-
+	int first_vertex = (v[1].XYZ.X > v[0].XYZ.X) ? 0 : 1;
 	// vertex position is 8 to 16 pixels, therefore it is the 16-31 bits of the colors
-	const int pos = (v[0].XYZ.X - o.OFX) & 0xFF;
+	const int pos = (v[first_vertex].XYZ.X - o.OFX) & 0xFF;
+	DevCon.Warning("Draw %d Pos %d(%d)",s_n, pos, pos >> 4);
 	write_ba = (pos > 112 && pos < 136);
 
-	// Read texture is 8 to 16 pixels (same as above)
 	const float tw = static_cast<float>(1u << m_context->TEX0.TW);
-	int tex_pos = (PRIM->FST) ? v[0].U : static_cast<int>(tw * v[0].ST.S);
+
+	// Read texture is 8 to 16 pixels (same as above)
+	int tex_pos = (PRIM->FST) ? v[first_vertex].U : static_cast<int>(tw * v[first_vertex].ST.S);
 	tex_pos &= 0xFF;
 	read_ba = (tex_pos > 112 && tex_pos < 144);
+
+	int coord_width = std::abs(v[first_vertex].XYZ.X - v[1 - first_vertex].XYZ.X) >> 4;
+
+	int tex_width = m_vt.m_max.t.x - m_vt.m_min.t.x;
+
+	// Probably Green/Alpha swap
+	if (tex_width > 14)
+	{
+		/*v[1 - first_vertex].XYZ.X = ((v[1 - first_vertex].XYZ.X - o.OFX) * 2) + o.OFX;
+		v[first_vertex].XYZ.X = ((v[first_vertex].XYZ.X - o.OFX) * 2) + o.OFX;
+		if (m_vt.m_max.p.y > 512.0f)
+		{
+			DevCon.Warning("Changing width from %d to %d", v[1 - first_vertex].XYZ.X, v[1 - first_vertex].XYZ.X + (tex_width << 4));
+			v[1 - first_vertex].XYZ.X -= tex_width << 4;
+		}*/
+		DevCon.Warning("Width %d Max y %f", tex_width, m_vt.m_max.p.y);
+		//read_ba = true;
+		//write_ba = false;
+		swap_ga = true;
+		return;
+	}
+	else
+		swap_ga = false;
 
 	bool half_bottom = false;
 	switch (GSConfig.UserHacks_HalfBottomOverride)
@@ -541,15 +566,16 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 
 		for (u32 i = 0; i < count; i += 2)
 		{
+			first_vertex = (v[i+1].XYZ.X > v[i].XYZ.X) ? 0 : 1;
 			if (write_ba)
-				v[i].XYZ.X   -= 128u;
+				v[i+first_vertex].XYZ.X   -= 128u;
 			else
-				v[i+1].XYZ.X += 128u;
+				v[i+(1-first_vertex)].XYZ.X += 128u;
 
 			if (read_ba)
-				v[i].U       -= 128u;
+				v[i + first_vertex].U       -= 128u;
 			else
-				v[i+1].U     += 128u;
+				v[i+(1 - first_vertex)].U   += 128u;
 
 			if (!half_bottom)
 			{
@@ -557,13 +583,13 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 				const int tex_offset = v[i].V & 0xF;
 				const GSVector4i offset(o.OFY, tex_offset, o.OFY, tex_offset);
 
-				GSVector4i tmp(v[i].XYZ.Y, v[i].V, v[i + 1].XYZ.Y, v[i + 1].V);
+				GSVector4i tmp(v[i + first_vertex].XYZ.Y, v[i +first_vertex].V, v[i + (1 - first_vertex)].XYZ.Y, v[i + (1 - first_vertex)].V);
 				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
 
-				v[i].XYZ.Y = static_cast<u16>(tmp.x);
-				v[i].V = static_cast<u16>(tmp.y);
-				v[i + 1].XYZ.Y = static_cast<u16>(tmp.z);
-				v[i + 1].V = static_cast<u16>(tmp.w);
+				v[i + first_vertex].XYZ.Y = static_cast<u16>(tmp.x);
+				v[i + first_vertex].V = static_cast<u16>(tmp.y);
+				v[i + (1 - first_vertex)].XYZ.Y = static_cast<u16>(tmp.z);
+				v[i + (1 - first_vertex)].V = static_cast<u16>(tmp.w);
 			}
 		}
 	}
@@ -574,22 +600,24 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 
 		for (u32 i = 0; i < count; i += 2)
 		{
+			first_vertex = (v[i + 1].XYZ.X > v[i].XYZ.X) ? 0 : 1;
+
 			if (write_ba)
-				v[i].XYZ.X   -= 128u;
+				v[i+ first_vertex].XYZ.X   -= 128u;
 			else
-				v[i+1].XYZ.X += 128u;
+				v[i+(1- first_vertex)].XYZ.X += 128u;
 
 			if (read_ba)
-				v[i].ST.S    -= offset_8pix;
+				v[i + first_vertex].ST.S    -= offset_8pix;
 			else
-				v[i+1].ST.S  += offset_8pix;
+				v[i + (1- first_vertex)].ST.S += offset_8pix;
 
 			if (!half_bottom)
 			{
 				// Height is too big (2x).
 				const GSVector4i offset(o.OFY, o.OFY);
 
-				GSVector4i tmp(v[i].XYZ.Y, v[i + 1].XYZ.Y);
+				GSVector4i tmp(v[i+ first_vertex].XYZ.Y, v[i + (1- first_vertex)].XYZ.Y);
 				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
 
 				//fprintf(stderr, "Before %d, After %d\n", v[i + 1].XYZ.Y, tmp.y);
@@ -1626,6 +1654,9 @@ void GSRendererHW::Draw()
 		m_texture_shuffle = (GSLocalMemory::m_psm[context->FRAME.PSM].bpp == 16) && (tex_psm.bpp == 16)
 			&& draw_sprite_tex && (m_src->m_32_bits_fmt || copy_16bit_to_target_shuffle);
 
+
+		if (copy_16bit_to_target_shuffle && m_texture_shuffle)
+			DevCon.Warning("here");
 		// Okami mustn't call this code
 		if (m_texture_shuffle && m_vertex.next < 3 && PRIM->FST && ((m_context->FRAME.FBMSK & fm_mask) == 0))
 		{
@@ -2230,8 +2261,9 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask()
 
 		bool write_ba;
 		bool read_ba;
+		bool swap_ga;
 
-		ConvertSpriteTextureShuffle(write_ba, read_ba);
+		ConvertSpriteTextureShuffle(write_ba, read_ba, swap_ga);
 
 		// If date is enabled you need to test the green channel instead of the
 		// alpha channel. Only enable this code in DATE mode to reduce the number
@@ -2251,37 +2283,52 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask()
 		const GSVector2i rb_ga_mask = GSVector2i(fbmask & 0xFF, (fbmask >> 8) & 0xFF);
 		m_conf.colormask.wrgba = 0;
 
-		// 2 Select the new mask
-		if (rb_ga_mask.r != 0xFF)
+		if (swap_ga)
 		{
-			if (write_ba)
-			{
-				GL_INS("Color shuffle %s => B", read_ba ? "B" : "R");
-				m_conf.colormask.wb = 1;
-			}
-			else
-			{
-				GL_INS("Color shuffle %s => R", read_ba ? "B" : "R");
-				m_conf.colormask.wr = 1;
-			}
-			if (rb_ga_mask.r)
-				m_conf.ps.fbmask = 1;
+			m_conf.ps.swap_ga = true;
+			m_conf.ps.fbmask = 0;
+			GL_CACHE("I hate myself");
+			m_conf.colormask.wg = 1;
+			m_conf.colormask.wa = 1;
+			m_skip = 1;
+			DevCon.Warning("Kill me");
+			m_conf.ps.tex_is_fb = true;
+			return;
 		}
-
-		if (rb_ga_mask.g != 0xFF)
+		else
 		{
-			if (write_ba)
+			// 2 Select the new mask
+			if (rb_ga_mask.r != 0xFF)
 			{
-				GL_INS("Color shuffle %s => A", read_ba ? "A" : "G");
-				m_conf.colormask.wa = 1;
+				if (write_ba)
+				{
+					DevCon.Warning("Color shuffle %s => B", read_ba ? "B" : "R");
+					m_conf.colormask.wb = 1;
+				}
+				else
+				{
+					DevCon.Warning("Color shuffle %s => R", read_ba ? "B" : "R");
+					m_conf.colormask.wr = 1;
+				}
+				if (rb_ga_mask.r)
+					m_conf.ps.fbmask = 1;
 			}
-			else
+
+			if (rb_ga_mask.g != 0xFF)
 			{
-				GL_INS("Color shuffle %s => G", read_ba ? "A" : "G");
-				m_conf.colormask.wg = 1;
+				if (write_ba)
+				{
+					DevCon.Warning("Color shuffle %s => A", read_ba ? "A" : "G");
+					m_conf.colormask.wa = 1;
+				}
+				else
+				{
+					DevCon.Warning("Color shuffle %s => G", read_ba ? "A" : "G");
+					m_conf.colormask.wg = 1;
+				}
+				if (rb_ga_mask.g)
+					m_conf.ps.fbmask = 1;
 			}
-			if (rb_ga_mask.g)
-				m_conf.ps.fbmask = 1;
 		}
 
 		if (m_conf.ps.fbmask && enable_fbmask_emulation)
@@ -2294,12 +2341,12 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask()
 			// No blending so hit unsafe path.
 			if (!PRIM->ABE || !features.texture_barrier)
 			{
-				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on tex shuffle", fbmask);
+				DevCon.Warning("FBMASK Unsafe SW emulated fb_mask:%x on tex shuffle", fbmask);
 				m_conf.require_one_barrier = true;
 			}
 			else
 			{
-				GL_INS("FBMASK SW emulated fb_mask:%x on tex shuffle", fbmask);
+				DevCon.Warning("FBMASK SW emulated fb_mask:%x on tex shuffle", fbmask);
 				m_conf.require_full_barrier = true;
 			}
 		}
@@ -2351,14 +2398,14 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask()
 			// No blending so hit unsafe path.
 			if (!PRIM->ABE || !(~ff_fbmask & ~zero_fbmask & 0x7) || !g_gs_device->Features().texture_barrier)
 			{
-				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
+				DevCon.Warning("FBMASK Unsafe SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
 					(m_conf.ps.dfmt == 2) ? 16 : 32);
 				m_conf.require_one_barrier = true;
 			}
 			else
 			{
 				// The safe and accurate path (but slow)
-				GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
+				DevCon.Warning("FBMASK SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
 					(m_conf.ps.dfmt == 2) ? 16 : 32);
 				m_conf.require_full_barrier = true;
 			}

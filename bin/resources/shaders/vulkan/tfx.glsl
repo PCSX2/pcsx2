@@ -347,6 +347,7 @@ void main()
 #define PS_ZCLAMP 0
 #define PS_FEEDBACK_LOOP 0
 #define PS_TEX_IS_FB 0
+#define PS_SWAP_GA 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
@@ -1173,26 +1174,32 @@ void main()
 	vec4 C = ps_color();
 
 	#if PS_SHUFFLE
-		uvec4 denorm_c = uvec4(C);
-		uvec2 denorm_TA = uvec2(vec2(TA.xy) * 255.0f + 0.5f);
-
-		// Mask will take care of the correct destination
-		#if PS_READ_BA
-			C.rb = C.bb;
+		#if PS_SWAP_GA
+			vec4 RT = trunc(subpassLoad(RtSampler) * 255.0f + 0.1f);
+			C.a = RT.g;
+			C.g = RT.a;
 		#else
-			C.rb = C.rr;
-		#endif
+			uvec4 denorm_c = uvec4(C);
+			uvec2 denorm_TA = uvec2(vec2(TA.xy) * 255.0f + 0.5f);
 
-		#if PS_READ_BA
-			if ((denorm_c.a & 0x80u) != 0u)
-				C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
-			else
-				C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
-		#else
-			if ((denorm_c.g & 0x80u) != 0u)
-				C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
-			else
-				C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
+			// Mask will take care of the correct destination
+			#if PS_READ_BA
+				C.rb = C.bb;
+			#else
+				C.rb = C.rr;
+			#endif
+
+			#if PS_READ_BA
+				if ((denorm_c.a & 0x80u) != 0u)
+					C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
+				else
+					C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
+			#else
+				if ((denorm_c.g & 0x80u) != 0u)
+					C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
+				else
+					C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
+			#endif
 		#endif
 	#endif
 

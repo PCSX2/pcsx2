@@ -38,6 +38,7 @@
 #define PS_POINT_SAMPLER 0
 #define PS_SHUFFLE 0
 #define PS_READ_BA 0
+#define PS_SWAP_GA 0
 #define PS_DFMT 0
 #define PS_DEPTH_FMT 0
 #define PS_PAL_FMT 0
@@ -875,28 +876,37 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 	if (PS_SHUFFLE)
 	{
-		uint4 denorm_c = uint4(C);
-		uint2 denorm_TA = uint2(float2(TA.xy) * 255.0f + 0.5f);
-
-		// Mask will take care of the correct destination
-		if (PS_READ_BA)
-			C.rb = C.bb;
-		else
-			C.rb = C.rr;
-
-		if (PS_READ_BA)
+		if(PS_SWAP_GA)
 		{
-			if (denorm_c.a & 0x80u)
-				C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
-			else
-				C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
+			float4 RT = trunc(RtTexture.Load(int3(input.p.xy, 0)) * 255.0f + 0.1f);
+			C.a = C.g;
+			C.g = C.a;
 		}
 		else
 		{
-			if (denorm_c.g & 0x80u)
-				C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
+			uint4 denorm_c = uint4(C);
+			uint2 denorm_TA = uint2(float2(TA.xy) * 255.0f + 0.5f);
+
+			// Mask will take care of the correct destination
+			if (PS_READ_BA)
+				C.rb = C.bb;
 			else
-				C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
+				C.rb = C.rr;
+
+			if (PS_READ_BA)
+			{
+				if (denorm_c.a & 0x80u)
+					C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
+				else
+					C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
+			}
+			else
+			{
+				if (denorm_c.g & 0x80u)
+					C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
+				else
+					C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
+			}
 		}
 	}
 

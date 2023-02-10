@@ -140,7 +140,7 @@ public:
 	void Lines2Sprites();
 	bool VerifyIndices();
 	template <GSHWDrawConfig::VSExpand Expand> void ExpandIndices();
-	void ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba);
+	void ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, bool& swap_ga);
 	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
 	GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
 	void MergeSprite(GSTextureCache::Source* tex);
