@@ -17,6 +17,7 @@
 #include "GLLoader.h"
 #include "GS/GS.h"
 #include "Host.h"
+#include "HostSettings.h"
 
 namespace ReplaceGL
 {
@@ -112,8 +113,8 @@ namespace GLLoader
 	bool vendor_id_amd = false;
 	bool vendor_id_nvidia = false;
 	bool vendor_id_intel = false;
-	bool mesa_driver = false;
 	bool buggy_pbo = false;
+	bool disable_download_pbo = false;
 
 	bool is_gles = false;
 	bool has_dual_source_blend = false;
@@ -131,14 +132,8 @@ namespace GLLoader
 			vendor_id_amd = true;
 		else if (strstr(vendor, "NVIDIA Corporation"))
 			vendor_id_nvidia = true;
-
-#ifdef _WIN32
 		else if (strstr(vendor, "Intel"))
 			vendor_id_intel = true;
-#else
-		// On linux assumes the free driver if it isn't nvidia or amd pro driver
-		mesa_driver = !vendor_id_nvidia && !vendor_id_amd;
-#endif
 
 		if (GSConfig.OverrideGeometryShaders != -1)
 		{
@@ -225,9 +220,15 @@ namespace GLLoader
 
 		// Don't use PBOs when we don't have ARB_buffer_storage, orphaning buffers probably ends up worse than just
 		// using the normal texture update routines and letting the driver take care of it.
-		GLLoader::buggy_pbo = !GLAD_GL_VERSION_4_4 && !GLAD_GL_ARB_buffer_storage && !GLAD_GL_EXT_buffer_storage;
-		if (GLLoader::buggy_pbo)
+		buggy_pbo = !GLAD_GL_VERSION_4_4 && !GLAD_GL_ARB_buffer_storage && !GLAD_GL_EXT_buffer_storage;
+		if (buggy_pbo)
 			Console.Warning("Not using PBOs for texture uploads because buffer_storage is unavailable.");
+
+		// Give the user the option to disable PBO usage for downloads.
+		// Most drivers seem to be faster with PBO.
+		disable_download_pbo = Host::GetBoolSettingValue("EmuCore/GS", "DisableGLDownloadPBO", false);
+		if (disable_download_pbo)
+			Console.Warning("Not using PBOs for texture downloads, this may reduce performance.");
 
 		return true;
 	}

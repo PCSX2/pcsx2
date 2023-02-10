@@ -455,7 +455,8 @@ std::unique_ptr<GSDownloadTextureOGL> GSDownloadTextureOGL::Create(u32 width, u3
 {
 	const u32 buffer_size = GetBufferSize(width, height, format, GSTexture::GetCompressedBytesPerBlock(format));
 
-	const bool use_buffer_storage = (GLAD_GL_VERSION_4_4 || GLAD_GL_ARB_buffer_storage || GLAD_GL_EXT_buffer_storage);
+	const bool use_buffer_storage = (GLAD_GL_VERSION_4_4 || GLAD_GL_ARB_buffer_storage || GLAD_GL_EXT_buffer_storage) &&
+									!GLLoader::disable_download_pbo;
 	if (use_buffer_storage)
 	{
 		GLuint buffer_id;
