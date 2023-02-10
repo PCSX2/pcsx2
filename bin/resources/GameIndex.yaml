@@ -22231,37 +22231,27 @@ SLES-55349:
   region: "PAL-E"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    skipDrawStart: 1 # Removes even more blurriness and garbage texture like on top left.
-    skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
 SLES-55350:
   name: "Need for Speed - Undercover"
   region: "PAL-F-G"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    skipDrawStart: 1 # Removes even more blurriness and garbage texture like on top left.
-    skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
 SLES-55351:
   name: "Need for Speed - Undercover"
   region: "PAL-I-S"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    skipDrawStart: 1 # Removes even more blurriness and garbage texture like on top left.
-    skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
 SLES-55352:
   name: "Need for Speed - Undercover"
   region: "PAL-M4"
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    skipDrawStart: 1 # Removes even more blurriness and garbage texture like on top left.
-    skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
 SLES-55353:
   name: "Need for Speed - Undercover"
   region: "PAL-M6"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    skipDrawStart: 1 # Removes even more blurriness and garbage texture like on top left.
-    skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
 SLES-55354:
   name: "Shin Megami Tensei - Persona 3 FES"
   region: "PAL-E"
@@ -24709,8 +24699,6 @@ SLPM-55127:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    skipDrawStart: 1 # Removes even more blurriness and garbage texture like on top left.
-    skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
 SLPM-55131:
   name: "World Soccer Winning Eleven 2009"
   region: "NTSC-J"
@@ -24905,8 +24893,6 @@ SLPM-55244:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    skipDrawStart: 1 # Removes even more blurriness and garbage texture like on top left.
-    skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
 SLPM-55245:
   name: "Himawari - Pebble in the Sky"
   region: "NTSC-J"
