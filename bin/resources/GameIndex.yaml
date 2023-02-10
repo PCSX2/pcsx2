@@ -424,7 +424,6 @@ SCAJ-10008:
   name: "Taiko no Tatsujin - Atsumare! Matsuri da!! Yondaime"
   region: "NTSC-Unk"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SCAJ-10009:
   name: "Psikyo Shooting Collection Vol.1 - Strikers 1-2"
@@ -439,31 +438,26 @@ SCAJ-10011:
   name: "Taiko no Tatsujin - Go! Go! Godaime"
   region: "NTSC-Unk"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SCAJ-10012:
   name: "Taiko Drum Master"
   region: "NTSC-Unk"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SCAJ-10013:
   name: "Taiko no Tatsujin - Tobikkiri! Anime Special"
   region: "NTSC-Unk"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SCAJ-10014:
   name: "Taiko no Tatsujin - Wai Wai Happy! Rokudaime"
   region: "NTSC-Unk"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SCAJ-10015:
   name: "Taiko no Tatsujin - Doka! to Oomori Nanadaime"
   region: "NTSC-Unk"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SCAJ-20001:
   name: "Ratchet & Clank"
@@ -3246,8 +3240,6 @@ SCES-51159:
 SCES-51164:
   name: "Mark of Kri, The"
   region: "PAL-M5"
-  gsHWFixes:
-    deinterlace: 4 # Game requires bob de-interlacing when auto.
 SCES-51176:
   name: "Disney's Treasure Planet"
   region: "PAL-M4"
@@ -7159,8 +7151,6 @@ SCUS-97140:
   name: "Mark of Kri, The"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    deinterlace: 4 # Game requires bob de-interlacing when auto.
   patches:
     DBD09DD4:
       content: |-
@@ -7390,8 +7380,6 @@ SCUS-97200:
 SCUS-97201:
   name: "Mark of Kri, The"
   region: "NTSC-U"
-  gsHWFixes:
-    deinterlace: 4 # Game requires bob de-interlacing when auto.
 SCUS-97203:
   name: "Wild ARMs 3"
   region: "NTSC-U"
@@ -7473,8 +7461,6 @@ SCUS-97220:
 SCUS-97222:
   name: "Mark of Kri [Demo]"
   region: "NTSC-U"
-  gsHWFixes:
-    deinterlace: 4 # Game requires bob de-interlacing when auto.
 SCUS-97223:
   name: "NFL GameDay 2003 [Demo]"
   region: "NTSC-U"
@@ -16131,7 +16117,6 @@ SLES-52988:
   gsHWFixes:
     autoFlush: 1 # Fixes bloom.
     roundSprite: 1 # Fixes misaligned bloom.
-    deinterlace: 6 # Game requires blend tff de-interlacing when auto for 'fixing' subtitles flickering or half weaved.
   memcardFilters: # Reads Command Mission save for bonus boss.
     - "SLES-52988"
     - "SLES-52832"
@@ -17788,7 +17773,6 @@ SLES-53621:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    deinterlace: 4 # Game requires bob de-interlacing when auto.
     halfPixelOffset: 1 # Fixes misalignment/bloom when upscaling.
 SLES-53623:
   name: "SpongeBob SquarePants - Battle for Bikini Bottom"
@@ -19935,7 +19919,6 @@ SLES-54455:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
-    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLES-54456:
   name: "Beverly Hills Cop"
   region: "PAL-M11"
@@ -20101,14 +20084,12 @@ SLES-54516:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
-    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLES-54517:
   name: "Thrillville"
   region: "PAL-M3"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
-    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLES-54518:
   name: "Clumsy Shumsy"
   region: "PAL-E"
@@ -20859,13 +20840,11 @@ SLES-54806:
   region: "PAL-E"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
-    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLES-54807:
   name: "Thrillville - Off the Rails"
   region: "PAL-F"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
-    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLES-54809:
   name: "Charlotte's Web"
   region: "PAL-A"
@@ -20883,6 +20862,8 @@ SLES-54812:
 SLES-54813:
   name: "NASCAR 08"
   region: "PAL-A-E"
+  gsHWFixes:
+    deinterlace: 8 # Game requires AdaptiveTFF de-interlacing when auto.
 SLES-54814:
   name: "Dead Eye Jim"
   region: "PAL-E"
@@ -21099,7 +21080,6 @@ SLES-54887:
   region: "PAL-G"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
-    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLES-54888:
   name: "Pro Biker 2"
   region: "PAL-E"
@@ -21461,13 +21441,11 @@ SLES-55010:
   region: "PAL-I"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
-    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLES-55011:
   name: "Thrillville - Fuera de Control"
   region: "PAL-S"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
-    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLES-55012:
   name: "Golden Compass, The"
   region: "PAL-M5"
@@ -21917,6 +21895,8 @@ SLES-55199:
   name: "NASCAR 09"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    deinterlace: 8 # Game requires AdaptiveTFF de-interlacing when auto.
 SLES-55200:
   name: "Guitar Hero - Aerosmith"
   region: "PAL-M4"
@@ -22710,8 +22690,6 @@ SLES-55579:
     eeRoundMode: 1 # Fixes black textures in conjunction with VU0 clamping set to none.
   clampModes:
     vu0ClampMode: 0 # Fixes black textures and SPS.
-  gsHWFixes:
-    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the FMVs.
 SLES-55581:
   name: "FIFA 10"
   region: "PAL-M5"
@@ -28674,8 +28652,6 @@ SLPM-65309:
 SLPM-65310:
   name: "Mark of Kri, The"
   region: "NTSC-J"
-  gsHWFixes:
-    deinterlace: 4 # Game requires bob de-interlacing when auto.
 SLPM-65311:
   name: "Violet no Atelier - Gramnad no Renkinjutsushi"
   region: "NTSC-J"
@@ -32257,7 +32233,6 @@ SLPM-66327:
   name: "Wallace & Gromit - The Curse of the Were-Rabbit"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 4 # Game requires bob de-interlacing when auto.
     halfPixelOffset: 1 # Fixes misalignment/bloom when upscaling.
 SLPM-66328:
   name: "Call of Duty 2 - Big Red One"
@@ -36292,13 +36267,11 @@ SLPS-20382:
   name: "Taiko no Tatsujin - Atsumare! Matsuri da!! Yondaime [with Tatacon]"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20383:
   name: "Taiko no Tatsujin - Atsumare! Matsuri da!! Yondaime"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20384:
   name: "Hayarigami - Keishichou Kaii Jiken File"
@@ -36340,13 +36313,11 @@ SLPS-20399:
   name: "Taiko no Tatsujin - Go! Go! Godaime [with Tatacon]"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20400:
   name: "Taiko no Tatsujin - Go! Go! Godaime"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20401:
   name: "Tecmo Hit Parade"
@@ -36387,14 +36358,12 @@ SLPS-20413:
   name: "Taiko no Tatsujin - Taiko Drum Master [with Tatacon]"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20414:
   name: "Taiko no Tatsujin - Taiko Drum Master"
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20416:
   name: "Inyou Taisenki - Byakko Enbu [with EyeToy]"
@@ -36423,13 +36392,11 @@ SLPS-20424:
   name: "Taiko no Tatsujin - Tobikkiri! Anime Special [with Tatacon]"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20425:
   name: "Taiko no Tatsujin - Tobikkiri! Anime Special"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20426:
   name: "Dreamworks Madagascar"
@@ -36495,13 +36462,11 @@ SLPS-20450:
   name: "Taiko no Tatsujin - Wai Wai Happy! Rokudaime [with Tatacon]"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20451:
   name: "Taiko no Tatsujin - Wai Wai Happy! Rokudaime"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20452:
   name: "Simple 2000 Series Ultimate Vol. 30 - Kourin! Zokusha Goddo!"
@@ -36622,13 +36587,11 @@ SLPS-20485:
   name: "Taiko no Tatsujin - Doka! to Oomori Nanadaime [with Tatacon]"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20486:
   name: "Taiko no Tatsujin - Doka! to Oomori Nanadaime"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20487:
   name: "Pachi-Slot King! Kagaku Ninja-Tai Gatchaman"
@@ -40214,7 +40177,6 @@ SLPS-73107:
   name: "Taiko no Tatsujin - Go! Go! Godaime [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLPS-73108:
   name: "Phantom Brave [PlayStation 2 The Best]"
@@ -42769,8 +42731,10 @@ SLUS-20474:
 SLUS-20475:
   name: "Dual Hearts"
   region: "NTSC-U"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flashing FMV.
   gsHWFixes:
-    deinterlace: 6 # Game requires blend tff de-interlacing when auto.
+    deinterlace: 9 # Game looks better with Adaptive BFF.
   compat: 5
 SLUS-20476:
   name: "NBA 2K3 - Sega Sports"
@@ -44322,7 +44286,6 @@ SLUS-20800:
   name: "Taiko Drum Master"
   region: "NTSC-U"
   gsHWFixes:
-    deinterlace: 5 # Game requires bob bff de-interlacing when auto.
     alignSprite: 1 # Fixes vertical lines.
 SLUS-20801:
   name: "Midway Arcade Treasures"
@@ -45059,7 +45022,6 @@ SLUS-20948:
   gsHWFixes:
     wildArmsHack: 1 # Fixes blurriness.
     roundSprite: 2 # Reduces misalignment bloom effects.
-#    deinterlace: 6 # Game requires blend tff de-interlacing when auto for 'fixing' shimmer on character models and more flickering or half weaved, though the game suffers from the field order.
 SLUS-20949:
   name: "Street Fighter Anniversary Collection"
   region: "NTSC-U"
@@ -47037,7 +46999,6 @@ SLUS-21312:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    deinterlace: 4 # Game requires bob de-interlacing when auto.
     halfPixelOffset: 1 # Fixes misalignment/bloom when upscaling.
 SLUS-21313:
   name: "Friends - The One with all the Trivia"
@@ -47660,7 +47621,6 @@ SLUS-21413:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
-    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLUS-21414:
   name: "Delta Force - Black Hawk Down - Team Sabre"
   region: "NTSC-U"
@@ -48545,7 +48505,6 @@ SLUS-21611:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
-    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the whole game.
 SLUS-21612:
   name: "Legend of the Dragon"
   region: "NTSC-U"
@@ -48703,6 +48662,8 @@ SLUS-21639:
   name: "NASCAR '08"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    deinterlace: 8 # Game requires AdaptiveTFF de-interlacing when auto.
 SLUS-21640:
   name: "Rugby '08"
   region: "NTSC-U"
@@ -49192,6 +49153,8 @@ SLUS-21744:
   name: "NASCAR '09"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    deinterlace: 8 # Game requires AdaptiveTFF de-interlacing when auto.
   patches:
     1B6C22B9:
       content: |-
@@ -49892,8 +49855,6 @@ SLUS-21902:
     eeRoundMode: 1 # Fixes black textures in conjunction with VU0 clamping set to none.
   clampModes:
     vu0ClampMode: 0 # Fixes black textures and SPS.
-  gsHWFixes:
-    deinterlace: 8 # Game requires adaptive (or blend) tff de-interlacing instead of auto for the FMVs.
 SLUS-21904:
   name: "Teenage Mutant Ninja Turtles - Smash-Up"
   region: "NTSC-U"
