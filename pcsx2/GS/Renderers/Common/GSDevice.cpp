@@ -356,6 +356,7 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 			break;
 		default:
 			m_current = m_merge;
+			break;
 	}
 }
 
