@@ -10803,6 +10803,9 @@ SLES-50632:
 SLES-50636:
   name: "Centre Court - Hard Hitter"
   region: "PAL-M3"
+  gsHWFixes:
+    mipmap: 2 # Improves ground texture rendering.
+    trilinearFiltering: 1
 SLES-50637:
   name: "Pro Rally 2002"
   region: "PAL-M5"
@@ -11752,6 +11755,9 @@ SLES-51056:
 SLES-51057:
   name: "Hard Hitter 2"
   region: "PAL-M3"
+  gsHWFixes:
+    mipmap: 2 # Improves ground texture rendering.
+    trilinearFiltering: 1
 SLES-51058:
   name: "Maken Shao - Demon Sword"
   region: "PAL-E"
@@ -23234,6 +23240,9 @@ SLKA-15011:
 SLKA-15013:
   name: "Grand Slam 2003 Tennis" # Hard Hitter 2
   region: "NTSC-K"
+  gsHWFixes:
+    mipmap: 2 # Improves ground texture rendering.
+    trilinearFiltering: 1
 SLKA-15015:
   name: "Ichigeki Sacchuu!! HoiHoi-San"
   region: "NTSC-K"
@@ -35634,6 +35643,9 @@ SLPS-20097:
 SLPS-20098:
   name: "Magical Sports - Hard Hitter"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Improves ground texture rendering.
+    trilinearFiltering: 1
 SLPS-20099:
   name: "Dream Audition 3"
   region: "NTSC-J"
@@ -35785,6 +35797,9 @@ SLPS-20171:
 SLPS-20173:
   name: "Magical Sports - Hard Hitter 2"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Improves ground texture rendering.
+    trilinearFiltering: 1
 SLPS-20174:
   name: "Typing Renai Hakusho - Boys Be... [with Keyboard]"
   region: "NTSC-J"
@@ -43188,6 +43203,9 @@ SLUS-20567:
 SLUS-20568:
   name: "Hard Hitter Tennis"
   region: "NTSC-U"
+  gsHWFixes:
+    mipmap: 2 # Improves ground texture rendering.
+    trilinearFiltering: 1
 SLUS-20569:
   name: "All-Star Baseball 2004"
   region: "NTSC-U"
