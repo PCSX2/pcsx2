@@ -3116,7 +3116,7 @@ void GSTextureCache::Target::Update(bool reset_age)
 		}
 		else
 		{
-			int pitch = ((r.width()+3) & ~3) * 4;
+			const int pitch = Common::AlignUpPow2(r.width() * sizeof(u32), 32);
 			g_gs_renderer->m_mem.ReadTexture(off, r, s_unswizzle_buffer, pitch, TEXA);
 
 			t->Update(r, s_unswizzle_buffer, pitch);
