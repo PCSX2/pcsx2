@@ -1959,9 +1959,13 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 	Source* src = new Source(TEX0, TEXA);
 
-	int tw = 1 << TEX0.TW;
-	int th = 1 << TEX0.TH;
-	//int tp = TEX0.TBW << 6;
+	// Normally we wouldn't use the region with targets, but for the case where we're drawing UVs and the
+	// clamp rectangle exceeds the TW/TH (which is now unused), we do need to use it. Timesplitters 2 does
+	// its frame blending effect using a smaller TW/TH, *and* triangles instead of sprites just to be extra
+	// annoying.
+	int tw = region.IsFixedTEX0W(1 << TEX0.TW) ? region.GetWidth() : (1 << TEX0.TW);
+	int th = region.IsFixedTEX0H(1 << TEX0.TH) ? region.GetHeight() : (1 << TEX0.TH);
+
 	int tlevels = 1;
 	if (lod)
 	{
@@ -2176,16 +2180,21 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			const GSDrawingContext* const context = g_gs_renderer->m_context;
 			if (context->FRAME.Block() == TEX0.TBP0 || context->ZBUF.Block() == TEX0.TBP0)
 			{
-				// if it looks like a texture shuffle, we might read up to +/- 8 pixels on either side.
-				GSVector4 adjusted_src_range(*src_range);
-				if (GSRendererHW::GetInstance()->IsPossibleTextureShuffle(dst, TEX0))
-					adjusted_src_range += GSVector4(-8.0f, 0.0f, 8.0f, 0.0f);
+				// For the TS2 case above, src_range is going to be incorrect, since TW/TH are incorrect.
+				// We can remove this check once we move it to tex-is-fb instead.
+				if (!region.IsFixedTEX0(1 << TEX0.TW, 1 << TEX0.TH))
+				{
+					// if it looks like a texture shuffle, we might read up to +/- 8 pixels on either side.
+					GSVector4 adjusted_src_range(*src_range);
+					if (GSRendererHW::GetInstance()->IsPossibleTextureShuffle(dst, TEX0))
+						adjusted_src_range += GSVector4(-8.0f, 0.0f, 8.0f, 0.0f);
 
-				// don't forget to scale the copy range
-				adjusted_src_range = adjusted_src_range * GSVector4(scale).xyxy();
-				sRect = sRect.rintersect(GSVector4i(adjusted_src_range));
-				destX = sRect.x;
-				destY = sRect.y;
+					// don't forget to scale the copy range
+					adjusted_src_range = adjusted_src_range * GSVector4(scale).xyxy();
+					sRect = sRect.rintersect(GSVector4i(adjusted_src_range));
+					destX = sRect.x;
+					destY = sRect.y;
+				}
 
 				// clean up immediately afterwards
 				m_temporary_source = src;
@@ -3748,7 +3757,17 @@ bool GSTextureCache::SurfaceOffsetKeyEqual::operator()(const GSTextureCache::Sur
 
 bool GSTextureCache::SourceRegion::IsFixedTEX0(int tw, int th) const
 {
-	return (GetMinX() >= static_cast<u32>(tw) || GetMinY() >= static_cast<u32>(th));
+	return IsFixedTEX0W(tw) || IsFixedTEX0H(th);
+}
+
+bool GSTextureCache::SourceRegion::IsFixedTEX0W(int tw) const
+{
+	return (GetMaxX() > static_cast<u32>(tw));
+}
+
+bool GSTextureCache::SourceRegion::IsFixedTEX0H(int th) const
+{
+	return (GetMaxY() > static_cast<u32>(th));
 }
 
 GSVector4i GSTextureCache::SourceRegion::GetRect(int tw, int th) const
