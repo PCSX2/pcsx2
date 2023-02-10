@@ -1486,8 +1486,9 @@ void GSRendererHW::Draw()
 		}
 	}
 	TextureMinMaxResult tmm;
+	const bool process_texture = PRIM->TME && !(PRIM->ABE && m_context->ALPHA.IsBlack() && !m_context->TEX0.TCC);
 	// Disable texture mapping if the blend is black and using alpha from vertex.
-	if (PRIM->TME && !(PRIM->ABE && m_context->ALPHA.IsBlack() && !m_context->TEX0.TCC))
+	if (process_texture)
 	{
 		GIFRegCLAMP MIP_CLAMP = context->CLAMP;
 		GSVector2i hash_lod_range(0, 0);
@@ -1607,7 +1608,7 @@ void GSRendererHW::Draw()
 	if (!no_ds)
 		ds = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::DepthStencil, context->DepthWrite(), 0, false, 0, 0, preload);
 
-	if (PRIM->TME)
+	if (process_texture)
 	{
 		GIFRegCLAMP MIP_CLAMP = context->CLAMP;
 
