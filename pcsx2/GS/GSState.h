@@ -330,6 +330,7 @@ public:
 			int FBP;
 			int FBW;
 			int PSM;
+			GSRegDISPFB prevFramebufferReg;
 			GSVector2i prevDisplayOffset;
 			GSVector2i displayOffset;
 			GSVector4i displayRect;
@@ -534,7 +535,7 @@ public:
 			PCRTCDisplays[display].FBP = framebufferReg.FBP;
 			PCRTCDisplays[display].FBW = framebufferReg.FBW;
 			PCRTCDisplays[display].PSM = framebufferReg.PSM;
-
+			PCRTCDisplays[display].prevFramebufferReg = framebufferReg;
 			// Probably not really enabled but will cause a mess.
 			// Q-Ball Billiards enables both circuits but doesn't set one of them up.
 			if (PCRTCDisplays[display].FBW == 0 && displayReg.DW == 0 && displayReg.DH == 0 && displayReg.MAGH == 0)

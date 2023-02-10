@@ -77,8 +77,6 @@ void GSRenderer::Destroy()
 
 bool GSRenderer::Merge(int field)
 {
-	s_n++;
-
 	GSVector2i fs(0, 0);
 	GSTexture* tex[3] = { NULL, NULL, NULL };
 	int y_offset[3] = { 0, 0, 0 };
@@ -89,6 +87,10 @@ bool GSRenderer::Merge(int field)
 
 	if (!PCRTCDisplays.PCRTCDisplays[0].enabled && !PCRTCDisplays.PCRTCDisplays[1].enabled)
 		return false;
+
+	// Need to do this here, if the user has Anti-Blur enabled, these offsets can get wiped out/changed.
+	const bool game_deinterlacing = (m_regs->DISP[0].DISPFB.DBY != PCRTCDisplays.PCRTCDisplays[0].prevFramebufferReg.DBY) !=
+									(m_regs->DISP[1].DISPFB.DBY != PCRTCDisplays.PCRTCDisplays[1].prevFramebufferReg.DBY);
 
 	PCRTCDisplays.SetRects(0, m_regs->DISP[0].DISPLAY, m_regs->DISP[0].DISPFB);
 	PCRTCDisplays.SetRects(1, m_regs->DISP[1].DISPLAY, m_regs->DISP[1].DISPFB);
@@ -113,29 +115,40 @@ bool GSRenderer::Merge(int field)
 			tex[2] = GetFeedbackOutput();
 	}
 
+	if (!tex[0] && !tex[1])
+		return false;
+
+	s_n++;
+
 	GSVector4 src_out_rect[2];
 	GSVector4 src_gs_read[2];
 	GSVector4 dst[3];
 
-	const bool is_bob = GSConfig.InterlaceMode == GSInterlaceMode::BobTFF || GSConfig.InterlaceMode == GSInterlaceMode::BobBFF;
-
 	// Use offset for bob deinterlacing always, extra offset added later for FFMD mode.
-	float offset = is_bob ? (tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) : 0.0f;
-
+	const bool scanmask_frame = m_scanmask_used && abs(PCRTCDisplays.PCRTCDisplays[0].displayRect.y - PCRTCDisplays.PCRTCDisplays[1].displayRect.y) != 1;
 	int field2 = 0;
-	int mode = 3;
+	int mode = 3; // If the game is manually deinterlacing then we need to bob (if we want to get away with no deinterlacing).
+	bool is_bob = GSConfig.InterlaceMode == GSInterlaceMode::BobTFF || GSConfig.InterlaceMode == GSInterlaceMode::BobBFF;
 
-	bool scanmask_frame = m_scanmask_used && abs(PCRTCDisplays.PCRTCDisplays[0].displayRect.y - PCRTCDisplays.PCRTCDisplays[1].displayRect.y) != 1;
-	// FFMD (half frames) requires blend deinterlacing, so automatically use that. Same when SCANMSK is used but not blended in the merge circuit (Alpine Racer 3)
+	// FFMD (half frames) requires blend deinterlacing, so automatically use that. Same when SCANMSK is used but not blended in the merge circuit (Alpine Racer 3).
 	if (GSConfig.InterlaceMode != GSInterlaceMode::Automatic || (!m_regs->SMODE2.FFMD && !scanmask_frame))
 	{
-		field2 = ((static_cast<int>(GSConfig.InterlaceMode) - 2) & 1);
-		mode = ((static_cast<int>(GSConfig.InterlaceMode) - 2) >> 1);
+		// If the game is offsetting each frame itself and we're using full height buffers, we can offset this with Bob.
+		if (game_deinterlacing && !scanmask_frame && GSConfig.InterlaceMode == GSInterlaceMode::Automatic)
+		{
+			mode = 1; // Bob.
+			is_bob = true;
+		}
+		else
+		{
+			field2 = ((static_cast<int>(GSConfig.InterlaceMode) - 2) & 1);
+			mode = ((static_cast<int>(GSConfig.InterlaceMode) - 2) >> 1);
+		}
 	}
 
 	for (int i = 0; i < 2; i++)
 	{
-		GSPCRTCRegs::PCRTCDisplay& curCircuit = PCRTCDisplays.PCRTCDisplays[i];
+		 const GSPCRTCRegs::PCRTCDisplay& curCircuit = PCRTCDisplays.PCRTCDisplays[i];
 
 		if (!curCircuit.enabled || !tex[i])
 			continue;
@@ -189,9 +202,6 @@ bool GSRenderer::Merge(int field)
 
 	m_real_size = GSVector2i(fs.x, fs.y);
 
-	if (!tex[0] && !tex[1])
-		return false;
-
 	if ((tex[0] == tex[1]) && (src_out_rect[0] == src_out_rect[1]).alltrue() && 
 		(PCRTCDisplays.PCRTCDisplays[0].displayRect == PCRTCDisplays.PCRTCDisplays[1].displayRect).alltrue() &&
 		(PCRTCDisplays.PCRTCDisplays[0].framebufferRect == PCRTCDisplays.PCRTCDisplays[1].framebufferRect).alltrue() &&
@@ -206,7 +216,11 @@ bool GSRenderer::Merge(int field)
 	g_gs_device->Merge(tex, src_gs_read, dst, fs, m_regs->PMODE, m_regs->EXTBUF, c);
 
 	if (isReallyInterlaced() && GSConfig.InterlaceMode != GSInterlaceMode::Off)
+	{
+		const float offset = is_bob ? (tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) : 0.0f;
+
 		g_gs_device->Interlace(fs, field ^ field2, mode, offset);
+	}
 
 	if (GSConfig.ShadeBoost)
 		g_gs_device->ShadeBoost();
