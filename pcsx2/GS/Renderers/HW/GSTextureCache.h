@@ -65,6 +65,8 @@ public:
 
 		/// Returns true if the area of the region exceeds the TW/TH size (i.e. "fixed tex0").
 		bool IsFixedTEX0(int tw, int th) const;
+		bool IsFixedTEX0W(int tw) const;
+		bool IsFixedTEX0H(int th) const;
 
 		/// Returns the rectangle relative to the texture base pointer that the region occupies.
 		GSVector4i GetRect(int tw, int th) const;
