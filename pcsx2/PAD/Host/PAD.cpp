@@ -267,8 +267,11 @@ void PAD::SetDefaultControllerConfig(SettingsInterface& si)
 #endif
 	si.SetBoolValue("Pad", "MultitapPort1", false);
 	si.SetBoolValue("Pad", "MultitapPort2", false);
-	si.SetFloatValue("Pad", "PointerXScale", 8.0f);
-	si.SetFloatValue("Pad", "PointerYScale", 8.0f);
+	si.SetFloatValue("Pad", "PointerXSpeed", 40.0f);
+	si.SetFloatValue("Pad", "PointerYSpeed", 40.0f);
+	si.SetFloatValue("Pad", "PointerXDeadZone", 20.0f);
+	si.SetFloatValue("Pad", "PointerYDeadZone", 20.0f);
+	si.SetFloatValue("Pad", "PointerInertia", 10.0f);
 
 	// PCSX2 Controller Settings - Default pad types and parameters.
 	for (u32 i = 0; i < NUM_CONTROLLER_PORTS; i++)
@@ -530,8 +533,11 @@ void PAD::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 		dest_si->CopyBoolValue(src_si, "Pad", "MultitapPort2");
 		dest_si->CopyBoolValue(src_si, "Pad", "MultitapPort1");
 		dest_si->CopyBoolValue(src_si, "Pad", "MultitapPort2");
-		dest_si->CopyFloatValue(src_si, "Pad", "PointerXScale");
-		dest_si->CopyFloatValue(src_si, "Pad", "PointerYScale");
+		dest_si->CopyFloatValue(src_si, "Pad", "PointerXSpeed");
+		dest_si->CopyFloatValue(src_si, "Pad", "PointerYSpeed");
+		dest_si->CopyFloatValue(src_si, "Pad", "PointerXDeadZone");
+		dest_si->CopyFloatValue(src_si, "Pad", "PointerYDeadZone");
+		dest_si->CopyFloatValue(src_si, "Pad", "PointerInertia");
 		for (u32 i = 0; i < static_cast<u32>(InputSourceType::Count); i++)
 		{
 			dest_si->CopyBoolValue(src_si, "InputSources",

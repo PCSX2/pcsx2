@@ -24,6 +24,7 @@
 
 #include "ui_ControllerGlobalSettingsWidget.h"
 #include "ui_ControllerLEDSettingsDialog.h"
+#include "ui_ControllerMouseSettingsDialog.h"
 
 class ControllerSettingsDialog;
 
@@ -44,6 +45,7 @@ Q_SIGNALS:
 private Q_SLOTS:
 	void updateSDLOptionsEnabled();
 	void ledSettingsClicked();
+	void mouseSettingsClicked();
 
 private:
 	Ui::ControllerGlobalSettingsWidget m_ui;
@@ -63,4 +65,16 @@ private:
 
 	Ui::ControllerLEDSettingsDialog m_ui;
 	ControllerSettingsDialog* m_dialog;
+};
+
+class ControllerMouseSettingsDialog : public QDialog
+{
+	Q_OBJECT
+
+public:
+	ControllerMouseSettingsDialog(QWidget* parent, ControllerSettingsDialog* dialog);
+	~ControllerMouseSettingsDialog();
+
+private:
+	Ui::ControllerMouseSettingsDialog m_ui;
 };
