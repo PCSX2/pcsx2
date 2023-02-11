@@ -664,7 +664,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Allows the GPU instead of just the CPU to transform lines into sprites. "
 			   "This reduces CPU load and bandwidth requirement, but it is heavier on the GPU."));
 
-		dialog->registerWidgetHelp(m_ui.gsDumpCompression, tr("GS Dump Compression"), tr("Zstandard (zst)"), tr(""));
+		dialog->registerWidgetHelp(m_ui.gsDumpCompression, tr("GS Dump Compression"), tr("Zstandard (zst)"),
+			tr("Change the compression algorithm used when creating a GS dump."));
 
 		dialog->registerWidgetHelp(m_ui.useBlitSwapChain, tr("Use Blit Swap Chain"), tr("Unchecked"),
 			tr("Uses a blit presentation model instead of flipping when using the Direct3D 11 "
