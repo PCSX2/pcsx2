@@ -53,7 +53,7 @@ s16 GSLookupBeforeDrawFunctionId(const std::string_view& name);
 int GSinit();
 void GSshutdown();
 bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* basemem);
-bool GSreopen(bool recreate_display, const Pcsx2Config::GSOptions& old_config);
+bool GSreopen(bool recreate_display, bool recreate_renderer, const Pcsx2Config::GSOptions& old_config);
 void GSreset(bool hardware_reset);
 void GSclose();
 void GSgifSoftReset(u32 mask);

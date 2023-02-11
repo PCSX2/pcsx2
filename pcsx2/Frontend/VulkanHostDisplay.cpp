@@ -339,16 +339,17 @@ bool VulkanHostDisplay::DoneCurrent()
 	return true;
 }
 
-bool VulkanHostDisplay::BeginPresent(bool frame_skip)
+HostDisplay::PresentResult VulkanHostDisplay::BeginPresent(bool frame_skip)
 {
 	if (frame_skip || !m_swap_chain)
-	{
-		ImGui::EndFrame();
-		return false;
-	}
+		return PresentResult::FrameSkipped;
 
 	// Previous frame needs to be presented before we can acquire the swap chain.
 	g_vulkan_context->WaitForPresentComplete();
+
+	// Check if the device was lost.
+	if (g_vulkan_context->CheckLastSubmitFail())
+		return PresentResult::DeviceLost;
 
 	VkResult res = m_swap_chain->AcquireNextImage();
 	if (res != VK_SUCCESS)
@@ -367,7 +368,7 @@ bool VulkanHostDisplay::BeginPresent(bool frame_skip)
 			{
 				Console.Error("Failed to recreate surface after loss");
 				g_vulkan_context->ExecuteCommandBuffer(Vulkan::Context::WaitType::None);
-				return false;
+				return PresentResult::FrameSkipped;
 			}
 
 			res = m_swap_chain->AcquireNextImage();
@@ -380,7 +381,7 @@ bool VulkanHostDisplay::BeginPresent(bool frame_skip)
 			// Still submit the command buffer, otherwise we'll end up with several frames waiting.
 			LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR() failed: ");
 			g_vulkan_context->ExecuteCommandBuffer(Vulkan::Context::WaitType::None);
-			return false;
+			return PresentResult::FrameSkipped;
 		}
 	}
 
@@ -401,7 +402,7 @@ bool VulkanHostDisplay::BeginPresent(bool frame_skip)
 	const VkRect2D scissor{{0, 0}, {static_cast<u32>(swap_chain_texture.GetWidth()), static_cast<u32>(swap_chain_texture.GetHeight())}};
 	vkCmdSetViewport(g_vulkan_context->GetCurrentCommandBuffer(), 0, 1, &vp);
 	vkCmdSetScissor(g_vulkan_context->GetCurrentCommandBuffer(), 0, 1, &scissor);
-	return true;
+	return PresentResult::OK;
 }
 
 void VulkanHostDisplay::EndPresent()

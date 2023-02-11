@@ -23,6 +23,7 @@ class GSRenderer : public GSState
 {
 private:
 	bool Merge(int field);
+	bool BeginPresentFrame(bool frame_skip);
 
 	u64 m_shader_time_start = 0;
 

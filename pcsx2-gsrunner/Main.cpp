@@ -280,7 +280,7 @@ void Host::ReleaseHostDisplay(bool clear_state)
 	g_host_display.reset();
 }
 
-bool Host::BeginPresentFrame(bool frame_skip)
+HostDisplay::PresentResult Host::BeginPresentFrame(bool frame_skip)
 {
 	if (s_loop_number == 0)
 	{
@@ -291,12 +291,15 @@ bool Host::BeginPresentFrame(bool frame_skip)
 		std::string dump_path(fmt::format("{}_frame{}.png", s_output_prefix, s_dump_frame_number));
 		GSQueueSnapshot(dump_path);
 	}
-	if (g_host_display->BeginPresent(frame_skip))
-		return true;
 
-	// don't render imgui
-	ImGuiManager::NewFrame();
-	return false;
+	const HostDisplay::PresentResult result = g_host_display->BeginPresent(frame_skip);
+	if (result != HostDisplay::PresentResult::OK)
+	{
+		// don't render imgui
+		ImGuiManager::SkipFrame();
+	}
+
+	return result;
 }
 
 void Host::EndPresentFrame()

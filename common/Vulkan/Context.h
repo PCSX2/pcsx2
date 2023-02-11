@@ -209,6 +209,7 @@ namespace Vulkan
 
 		// Was the last present submitted to the queue a failure? If so, we must recreate our swapchain.
 		bool CheckLastPresentFail();
+		bool CheckLastSubmitFail();
 
 		// Schedule a vulkan resource for destruction later on. This will occur when the command buffer
 		// is next re-used, and the GPU has finished working with the specified resource.
@@ -373,6 +374,7 @@ namespace Vulkan
 
 		StreamBuffer m_texture_upload_buffer;
 
+		std::atomic_bool m_last_submit_failed{false};
 		std::atomic_bool m_last_present_failed{false};
 		std::atomic_bool m_present_done{true};
 		std::mutex m_present_mutex;

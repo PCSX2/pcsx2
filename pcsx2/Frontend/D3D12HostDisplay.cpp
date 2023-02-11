@@ -554,13 +554,13 @@ bool D3D12HostDisplay::UpdateImGuiFontTexture()
 	return ImGui_ImplDX12_CreateFontsTexture();
 }
 
-bool D3D12HostDisplay::BeginPresent(bool frame_skip)
+HostDisplay::PresentResult D3D12HostDisplay::BeginPresent(bool frame_skip)
 {
+	if (m_device_lost)
+		return HostDisplay::PresentResult::DeviceLost;
+
 	if (frame_skip || !m_swap_chain)
-	{
-		ImGui::EndFrame();
-		return false;
-	}
+		return PresentResult::FrameSkipped;
 
 	static constexpr std::array<float, 4> clear_color = {};
 	D3D12::Texture& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
@@ -574,7 +574,7 @@ bool D3D12HostDisplay::BeginPresent(bool frame_skip)
 	const D3D12_RECT scissor{0, 0, static_cast<LONG>(m_window_info.surface_width), static_cast<LONG>(m_window_info.surface_height)};
 	cmdlist->RSSetViewports(1, &vp);
 	cmdlist->RSSetScissorRects(1, &scissor);
-	return true;
+	return PresentResult::OK;
 }
 
 void D3D12HostDisplay::EndPresent()
@@ -586,7 +586,11 @@ void D3D12HostDisplay::EndPresent()
 	m_current_swap_chain_buffer = ((m_current_swap_chain_buffer + 1) % static_cast<u32>(m_swap_chain_buffers.size()));
 
 	swap_chain_buf.TransitionToState(g_d3d12_context->GetCommandList(), D3D12_RESOURCE_STATE_PRESENT);
-	g_d3d12_context->ExecuteCommandList(D3D12::Context::WaitType::None);
+	if (!g_d3d12_context->ExecuteCommandList(D3D12::Context::WaitType::None))
+	{
+		m_device_lost = true;
+		return;
+	}
 
 	const bool vsync = static_cast<UINT>(m_vsync_mode != VsyncMode::Off);
 	if (!vsync && m_using_allow_tearing)
