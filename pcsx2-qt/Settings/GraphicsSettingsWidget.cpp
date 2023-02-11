@@ -602,7 +602,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.shadeBoostSaturation, tr("Saturation"), tr("50"), tr(""));
 
 		dialog->registerWidgetHelp(m_ui.tvShader, tr("TV Shader"), tr("None (Default)"),
-			tr("Applies a shader effect which replicates the visual effects of different styles of display."));
+			tr("Applies a shader which replicates the visual effects of different television sets."));
 	}
 
 	// OSD tab
