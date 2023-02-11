@@ -169,8 +169,8 @@ The clamp modes are also numerically based.
 *   alignSprite              [`0` or `1`]                      {Off or On}       Default: Off (`0`)
 *   mergeSprite              [`0` or `1`]                      {Off or On}       Default: Off (`0`)
 *   wildArmsHack             [`0` or `1`]                      {Off or On}       Default: Off (`0`)
-*   skipDrawStart            [Value between `0` to `100000`]   {0-100000}        Default: Off (`0`)
-*   skipDrawEnd              [Value between `0` to `100000`]   {0-100000}        Default: Off (`0`)
+*   skipDrawStart            [Value between `0` to `10000`]    {0-10000}         Default: Off (`0`)
+*   skipDrawEnd              [Value between `0` to `10000`]    {0-10000}         Default: Off (`0`)
 *   halfPixelOffset          [`0` or `1` or `2` or `3`]   {Off, Normal Vertex, Special Texture or Special Texture Aggressive}    Default: Off (`0`)
 *   roundSprite              [`0` or `1` or `2`]          {Off, Half or Full}    Default: Off (`0`)
 
