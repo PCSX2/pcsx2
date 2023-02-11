@@ -45,10 +45,10 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 #endif
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableMouseMapping, "UI", "EnableMouseMapping", false);
+	connect(m_ui.mouseSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::mouseSettingsClicked);
+
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.multitapPort1, "Pad", "MultitapPort1", false);
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.multitapPort2, "Pad", "MultitapPort2", false);
-	ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerXScale, "Pad", "PointerXScale", 8.0f);
-	ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerYScale, "Pad", "PointerYScale", 8.0f);
 
 #ifdef _WIN32
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableXInputSource, "InputSources", "XInput", false);
@@ -80,13 +80,6 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 
 	for (QCheckBox* cb : {m_ui.multitapPort1, m_ui.multitapPort2})
 		connect(cb, &QCheckBox::stateChanged, this, [this]() { emit bindingSetupChanged(); });
-
-	connect(m_ui.pointerXScale, &QSlider::valueChanged, this,
-		[this](int value) { m_ui.pointerXScaleLabel->setText(QStringLiteral("%1").arg(value)); });
-	connect(m_ui.pointerYScale, &QSlider::valueChanged, this,
-		[this](int value) { m_ui.pointerYScaleLabel->setText(QStringLiteral("%1").arg(value)); });
-	m_ui.pointerXScaleLabel->setText(QStringLiteral("%1").arg(m_ui.pointerXScale->value()));
-	m_ui.pointerYScaleLabel->setText(QStringLiteral("%1").arg(m_ui.pointerYScale->value()));
 
 	updateSDLOptionsEnabled();
 }
@@ -128,6 +121,12 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
 	dialog.exec();
 }
 
+void ControllerGlobalSettingsWidget::mouseSettingsClicked()
+{
+	ControllerMouseSettingsDialog dialog(this, m_dialog);
+	dialog.exec();
+}
+
 ControllerLEDSettingsDialog::ControllerLEDSettingsDialog(QWidget* parent, ControllerSettingsDialog* dialog)
 	: QDialog(parent)
 	, m_dialog(dialog)
@@ -156,3 +155,35 @@ void ControllerLEDSettingsDialog::linkButton(ColorPickerButton* button, u32 play
 	});
 #endif
 }
+
+ControllerMouseSettingsDialog::ControllerMouseSettingsDialog(QWidget* parent, ControllerSettingsDialog* dialog)
+	: QDialog(parent)
+{
+	m_ui.setupUi(this);
+
+	SettingsInterface* sif = dialog->getProfileSettingsInterface();
+
+	m_ui.icon->setPixmap(QIcon::fromTheme(QStringLiteral("mouse-line")).pixmap(32, 32));
+
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerXSpeedSlider, "Pad", "PointerXSpeed", 40.0f);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerYSpeedSlider, "Pad", "PointerYSpeed", 40.0f);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerXDeadZoneSlider, "Pad", "PointerXDeadZone", 20.0f);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerYDeadZoneSlider, "Pad", "PointerYDeadZone", 20.0f);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerInertiaSlider, "Pad", "PointerInertia", 10.0f);
+
+	connect(m_ui.pointerXSpeedSlider, &QSlider::valueChanged, this, [this](int value) { m_ui.pointerXSpeedVal->setText(QStringLiteral("%1").arg(value)); });
+	connect(m_ui.pointerYSpeedSlider, &QSlider::valueChanged, this, [this](int value) { m_ui.pointerYSpeedVal->setText(QStringLiteral("%1").arg(value)); });
+	connect(m_ui.pointerXDeadZoneSlider, &QSlider::valueChanged, this, [this](int value) { m_ui.pointerXDeadZoneVal->setText(QStringLiteral("%1").arg(value)); });
+	connect(m_ui.pointerYDeadZoneSlider, &QSlider::valueChanged, this, [this](int value) { m_ui.pointerYDeadZoneVal->setText(QStringLiteral("%1").arg(value)); });
+	connect(m_ui.pointerInertiaSlider, &QSlider::valueChanged, this, [this](int value) { m_ui.pointerInertiaVal->setText(QStringLiteral("%1").arg(value)); });
+
+	m_ui.pointerXSpeedVal->setText(QStringLiteral("%1").arg(m_ui.pointerXSpeedSlider->value()));
+	m_ui.pointerYSpeedVal->setText(QStringLiteral("%1").arg(m_ui.pointerYSpeedSlider->value()));
+	m_ui.pointerXDeadZoneVal->setText(QStringLiteral("%1").arg(m_ui.pointerXDeadZoneSlider->value()));
+	m_ui.pointerYDeadZoneVal->setText(QStringLiteral("%1").arg(m_ui.pointerYDeadZoneSlider->value()));
+	m_ui.pointerInertiaVal->setText(QStringLiteral("%1").arg(m_ui.pointerInertiaSlider->value()));
+
+	connect(m_ui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, this, &QDialog::accept);
+}
+
+ControllerMouseSettingsDialog::~ControllerMouseSettingsDialog() = default;

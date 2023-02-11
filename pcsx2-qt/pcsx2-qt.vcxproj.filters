@@ -583,6 +583,9 @@
     <QtUi Include="Settings\ControllerLEDSettingsDialog.ui">
       <Filter>Settings</Filter>
     </QtUi>
+    <QtUi Include="Settings\ControllerMouseSettingsDialog.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
   </ItemGroup>
   <ItemGroup>
     <None Include="Settings\FolderSettingsWidget.ui">

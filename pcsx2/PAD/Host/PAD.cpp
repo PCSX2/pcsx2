@@ -267,8 +267,11 @@ void PAD::SetDefaultControllerConfig(SettingsInterface& si)
 #endif
 	si.SetBoolValue("Pad", "MultitapPort1", false);
 	si.SetBoolValue("Pad", "MultitapPort2", false);
-	si.SetFloatValue("Pad", "PointerXScale", 8.0f);
-	si.SetFloatValue("Pad", "PointerYScale", 8.0f);
+	si.SetFloatValue("Pad", "PointerXSpeed", 40.0f);
+	si.SetFloatValue("Pad", "PointerYSpeed", 40.0f);
+	si.SetFloatValue("Pad", "PointerXDeadZone", 20.0f);
+	si.SetFloatValue("Pad", "PointerYDeadZone", 20.0f);
+	si.SetFloatValue("Pad", "PointerInertia", 10.0f);
 
 	// PCSX2 Controller Settings - Default pad types and parameters.
 	for (u32 i = 0; i < NUM_CONTROLLER_PORTS; i++)
