@@ -188,8 +188,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cpuSpriteRenderBW, "EmuCore/GS", "UserHacks_CPUSpriteRenderBW", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cpuCLUTRender, "EmuCore/GS", "UserHacks_CPUCLUTRender", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.gpuTargetCLUTMode, "EmuCore/GS", "UserHacks_GPUTargetCLUTMode", 0);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.skipDrawStart, "EmuCore/GS", "
-						    ", 0);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.skipDrawStart, "EmuCore/GS", "UserHacks_SkipDraw_Start", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.skipDrawEnd, "EmuCore/GS", "UserHacks_SkipDraw_End", 0);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hwAutoFlush, "EmuCore/GS", "UserHacks_AutoFlush", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.frameBufferConversion, "EmuCore/GS", "UserHacks_CPU_FB_Conversion", false);
@@ -410,13 +409,17 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.fullscreenModes, tr("Fullscreen Mode"), tr("Borderless Fullscreen"),
 			tr("Chooses the fullscreen resolution and frequency."));
 
-		dialog->registerWidgetHelp(m_ui.cropLeft, tr("Left"), tr("0px"), tr("Changes number of pixels cropped from the left side of the display"));
+		dialog->registerWidgetHelp(m_ui.cropLeft, tr("Left"), tr("0px"),
+			tr("Changes number of pixels cropped from the left side of the display"));
 
-		dialog->registerWidgetHelp(m_ui.cropTop, tr("Top"), tr("0px"), tr("Changes number of pixels cropped from the top of the display"));
+		dialog->registerWidgetHelp(m_ui.cropTop, tr("Top"), tr("0px"),
+			tr("Changes number of pixels cropped from the top of the display"));
 
-		dialog->registerWidgetHelp(m_ui.cropRight, tr("Right"), tr("0px"), tr("Changes number of pixels cropped from the right side of the display"));
+		dialog->registerWidgetHelp(m_ui.cropRight, tr("Right"), tr("0px"),
+			tr("Changes number of pixels cropped from the right side of the display"));
 
-		dialog->registerWidgetHelp(m_ui.cropBottom, tr("Bottom"), tr("0px"), tr("Changes number of pixels cropped from the bottom of the display"));
+		dialog->registerWidgetHelp(m_ui.cropBottom, tr("Bottom"), tr("0px"),
+			tr("Changes number of pixels cropped from the bottom of the display"));
 	}
 
 	// Rendering tab
@@ -598,8 +601,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 		dialog->registerWidgetHelp(m_ui.shadeBoostSaturation, tr("Saturation"), tr("50"), tr(""));
 
-		dialog->registerWidgetHelp(m_ui.tvShader, tr("TV Shader"), tr("None (Default)"), tr("Applies a shader effect which replicates "
-												    "the visual effects of different styles of display."));
+		dialog->registerWidgetHelp(m_ui.tvShader, tr("TV Shader"), tr("None (Default)"),
+			tr("Applies a shader effect which replicates the visual effects of different styles of display."));
 	}
 
 	// OSD tab
