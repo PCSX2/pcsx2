@@ -163,7 +163,7 @@ static std::array<float, 2> s_pointer_axis_speed;
 static std::array<float, 2> s_pointer_axis_dead_zone;
 static std::array<float, 2> s_pointer_axis_range;
 static std::array<float, 2> s_pointer_pos = {0.0f, 0.0f};
-static float s_pointer_inertia;
+static float s_pointer_inertia = 0.0f;
 
 using PointerMoveCallback = std::function<void(InputBindingKey key, float value)>;
 using KeyboardEventCallback = std::function<void(InputBindingKey key, float value)>;
@@ -1213,11 +1213,11 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 	const float pointer_sensitivity = 0.05;
 	for (u32 axis = 0; axis <= static_cast<u32>(InputPointerAxis::Y); axis++)
 	{
-		s_pointer_axis_speed[axis]     = si.GetFloatValue("Pad", fmt::format("Pointer{}Speed", s_pointer_axis_names[axis]).c_str()) / ui_ctrl_range * pointer_sensitivity;
-		s_pointer_axis_dead_zone[axis] = std::min(si.GetFloatValue("Pad", fmt::format("Pointer{}DeadZone", s_pointer_axis_names[axis]).c_str()) / ui_ctrl_range, 1.0f);
+		s_pointer_axis_speed[axis]     = si.GetFloatValue("Pad", fmt::format("Pointer{}Speed", s_pointer_axis_names[axis]).c_str(), 40.0f) / ui_ctrl_range * pointer_sensitivity;
+		s_pointer_axis_dead_zone[axis] = std::min(si.GetFloatValue("Pad", fmt::format("Pointer{}DeadZone", s_pointer_axis_names[axis]).c_str(), 20.0f) / ui_ctrl_range, 1.0f);
 		s_pointer_axis_range[axis]     = 1.0f - s_pointer_axis_dead_zone[axis];
 	}
-	s_pointer_inertia = si.GetFloatValue("Pad", fmt::format("PointerInertia").c_str()) / ui_ctrl_range;
+	s_pointer_inertia = si.GetFloatValue("Pad", fmt::format("PointerInertia").c_str(), 0.0f) / ui_ctrl_range;
 	s_pointer_pos = {0.0f, 0.0f};
 
 	for (u32 port = 0; port < USB::NUM_PORTS; port++)
