@@ -23799,6 +23799,15 @@ SLKA-25182:
 SLKA-25183:
   name: "Street Fighter - Anniversary Collection"
   region: "NTSC-K"
+SLKA-25185:
+  name: "Need for Speed - Carbon [Collector's Edition]"
+  region: "NTSC-K"
+  compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes game hang after opening intro.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
 SLKA-25186:
   name: "King of Fighters, The - Maximum Impact [Limited Edition]"
   region: "NTSC-K"
