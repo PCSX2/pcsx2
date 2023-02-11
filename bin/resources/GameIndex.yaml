@@ -14579,7 +14579,7 @@ SLES-52372:
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
     autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
-    halfPixelOffset: 1 # Fixes shadows.
+    halfPixelOffset: 2 # Fixes shadows.
     gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
 SLES-52373:
   name: "Champions of Norrath"
@@ -14742,7 +14742,7 @@ SLES-52447:
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
     autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
-    halfPixelOffset: 1 # Fixes shadows.
+    halfPixelOffset: 2 # Fixes shadows.
     gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
 SLES-52448:
   name: "Knights of the Temple"
@@ -14855,7 +14855,7 @@ SLES-52493:
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
     autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
-    halfPixelOffset: 1 # Fixes shadows.
+    halfPixelOffset: 2 # Fixes shadows.
     gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
 SLES-52495:
   name: "Bujingai - Swordmaster"
@@ -29791,6 +29791,14 @@ SLPM-65657:
 SLPM-65661:
   name: "Densha de Go! Professional 2 [Taito Best]"
   region: "NTSC-J"
+SLPM-65662:
+  name: "Spider-Man 2"
+  region: "NTSC-J"
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
+    autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
+    halfPixelOffset: 2 # Fixes shadows.
+    gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
 SLPM-65663:
   name: "Zwei!!"
   region: "NTSC-J"
@@ -31444,6 +31452,14 @@ SLPM-66119:
     halfPixelOffset: 2 # Fixes blurriness.
   speedHacks:
     InstantVU1SpeedHack: 0 # Fixes missing letters in text such as E.
+SLPM-66121:
+  name: "Spider-Man 2 [Taito Best]"
+  region: "NTSC-J"
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes textures.
+    autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
+    halfPixelOffset: 2 # Fixes shadows.
+    gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
 SLPM-66122:
   name: "Kingdom Hearts [Ultimate Hits]"
   region: "NTSC-J"
@@ -44229,7 +44245,7 @@ SLUS-20776:
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
     autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
-    halfPixelOffset: 1 # Fixes shadows.
+    halfPixelOffset: 2 # Fixes shadows.
     gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
 SLUS-20777:
   name: "Obscure"
