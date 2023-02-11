@@ -119,7 +119,7 @@ namespace GL
 		if (!context)
 			return nullptr;
 
-		Console.WriteLn("Created a %s context", context->IsGLES() ? "OpenGL ES" : "OpenGL");
+		Console.WriteLn("Created an %s context", context->IsGLES() ? "OpenGL ES" : "OpenGL");
 
 		// NOTE: Not thread-safe. But this is okay, since we're not going to be creating more than one context at a time.
 		static Context* context_being_created;
