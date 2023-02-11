@@ -403,8 +403,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Selects the quality at which screenshots will be compressed. Higher values preserve more detail for JPEG, and reduce file "
 			   "size for PNG."));
 
-		dialog->registerWidgetHelp(m_ui.stretchY, tr("Stretch Height"), tr("100%"), tr("Stretches (> 100%) or squashes (< 100%) "
-											       "the vertical component of the display"));
+		dialog->registerWidgetHelp(m_ui.stretchY, tr("Stretch Height"), tr("100%"),
+			tr("Stretches (> 100%) or squashes (< 100%) the vertical component of the display"));
 
 		dialog->registerWidgetHelp(m_ui.fullscreenModes, tr("Fullscreen Mode"), tr("Borderless Fullscreen"),
 			tr("Chooses the fullscreen resolution and frequency."));
