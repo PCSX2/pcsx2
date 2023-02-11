@@ -3073,48 +3073,67 @@ void GSTextureCache::Target::Update(bool reset_age)
 	{
 		// do the most likely thing a direct write would do, clear it
 		GL_INS("ERROR: Update DepthStencil dummy");
-		m_dirty.ClearDirty();
+		m_dirty.clear();
 		return;
 	}
 
-	GIFRegTEXA TEXA = {};
+	const GSVector2i unscaled_size(static_cast<int>(m_texture->GetWidth() / m_texture->GetScale().x),
+		static_cast<int>(m_texture->GetHeight() / m_texture->GetScale().y));
+	const GSVector4i total_rect(m_dirty.GetTotalRect(m_TEX0, unscaled_size));
+	if (total_rect.rempty())
+	{
+		GL_INS("ERROR: Nothing to update?");
+		m_dirty.clear();
+		return;
+	}
 
+	const GSVector4i t_offset(total_rect.xyxy());
+	const GSVector4i t_size(total_rect - t_offset);
+	const GSVector4 t_sizef(t_size.zwzw());
+
+	// This'll leave undefined data in pixels that we're not reading from... shouldn't hurt anything.
+	GSTexture* const t = g_gs_device->CreateTexture(t_size.z, t_size.w, 1, GSTexture::Format::Color);
+	GSTexture::GSMap m;
+	const bool mapped = t->Map(m);
+
+	GIFRegTEXA TEXA = {};
 	TEXA.AEM = 1;
 	TEXA.TA0 = 0;
 	TEXA.TA1 = 0x80;
 
-	const GSOffset off = g_gs_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
-
-	GSTexture::GSMap m;
-
-	const GSVector4i unscaled_size = GSVector4i(GSVector4(m_texture->GetSize()) / GSVector4(m_texture->GetScale()));
-	const GSVector4i rect_size = m_dirty.GetTotalRect(m_TEX0, GSVector2i(unscaled_size.x, unscaled_size.y));
-
-	GSTexture* t = g_gs_device->CreateTexture(rect_size.z, rect_size.w, 1, GSTexture::Format::Color);
-
-	while (m_dirty.size() > 0)
+	const GSOffset off(g_gs_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM));
+	for (size_t i = 0; i < m_dirty.size(); i++)
 	{
-		const GSVector4i r = m_dirty.GetDirtyRectAndClear(m_TEX0, GSVector2i(unscaled_size.x, unscaled_size.y));
-
+		const GSVector4i r(m_dirty.GetDirtyRect(i, m_TEX0, total_rect));
 		if (r.rempty())
 			continue;
 
-		if (t->Map(m))
+		const GSVector4i t_r(r - t_offset);
+		if (mapped)
 		{
-			g_gs_renderer->m_mem.ReadTexture(off, r, m.bits, m.pitch, TEXA);
-
-			t->Unmap();
+			g_gs_renderer->m_mem.ReadTexture(
+				off, r, m.bits + t_r.y * static_cast<u32>(m.pitch) + (t_r.x * sizeof(u32)), m.pitch, TEXA);
 		}
 		else
 		{
 			const int pitch = Common::AlignUpPow2(r.width() * sizeof(u32), 32);
 			g_gs_renderer->m_mem.ReadTexture(off, r, s_unswizzle_buffer, pitch, TEXA);
 
-			t->Update(r, s_unswizzle_buffer, pitch);
+			t->Update(t_r, s_unswizzle_buffer, pitch);
 		}
+	}
 
-		const GSVector4 sRect = GSVector4(0.0f, 0.0f, static_cast<float>(r.width()) / rect_size.z, static_cast<float>(r.height()) / rect_size.w);
-		const GSVector4 dest_rect = (GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy());
+	if (mapped)
+		t->Unmap();
+
+	for (size_t i = 0; i < m_dirty.size(); i++)
+	{
+		const GSVector4i r(m_dirty.GetDirtyRect(i, m_TEX0, total_rect));
+		if (r.rempty())
+			continue;
+
+		const GSVector4 sRect(GSVector4(r - t_offset) / t_sizef);
+		const GSVector4 dRect(GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy());
 
 		// Copy the new GS memory content into the destination texture.
 		if (m_type == RenderTarget)
@@ -3122,21 +3141,21 @@ void GSTextureCache::Target::Update(bool reset_age)
 			GL_INS("ERROR: Update RenderTarget 0x%x bw:%d (%d,%d => %d,%d)", m_TEX0.TBP0, m_TEX0.TBW, r.x, r.y, r.z, r.w);
 
 			// Bilinear filtering this is probably not a good thing, at least in native, but upscaling Nearest can be gross and messy.
-			g_gs_device->StretchRect(t, sRect, m_texture, dest_rect,ShaderConvert::COPY, g_gs_renderer->CanUpscale());
+			g_gs_device->StretchRect(t, sRect, m_texture, dRect, ShaderConvert::COPY, g_gs_renderer->CanUpscale());
 		}
 		else if (m_type == DepthStencil)
 		{
 			GL_INS("ERROR: Update DepthStencil 0x%x", m_TEX0.TBP0);
 
 			// FIXME linear or not?
-			const GSVector4 sRect = GSVector4(0.0f, 0.0f, static_cast<float>(r.width()) / rect_size.z, static_cast<float>(r.height()) / rect_size.w);
-			g_gs_device->StretchRect(t, sRect, m_texture, dest_rect, ShaderConvert::RGBA8_TO_FLOAT32_BILN);
+			g_gs_device->StretchRect(t, sRect, m_texture, dRect, ShaderConvert::RGBA8_TO_FLOAT32_BILN);
 		}
 	}
-	// m_renderer->m_perfmon.Put(GSPerfMon::Unswizzle, w * h * 4);
-	g_gs_device->Recycle(t);
 
-	UpdateValidity(rect_size);
+	UpdateValidity(total_rect);
+
+	g_gs_device->Recycle(t);
+	m_dirty.clear();
 }
 
 void GSTextureCache::Target::UpdateIfDirtyIntersects(const GSVector4i& rc)
