@@ -24,15 +24,6 @@ const CRC::Game CRC::m_games[] =
 {
 	// Note: IDs 0x7ACF7E03, 0x7D4EA48F, 0x37C53760 - shouldn't be added as it's from the multiloaders when packing games.
 	{0x00000000, NoTitle /* NoRegion */},
-	{0x9AAC5309, FFX2 /* EU */},
-	{0x9AAC530C, FFX2 /* FR */},
-	{0x9AAC530A, FFX2 /* ES */},
-	{0x9AAC530D, FFX2 /* DE */},
-	{0x9AAC530B, FFX2 /* IT */},
-	{0x48FE0C71, FFX2 /* US */},
-	{0x8A6D7F14, FFX2 /* JP */},
-	{0xE1FD9A2D, FFX2 /* JP */}, // int.
-	{0x11624CD6, FFX2 /* KO */},
 	{0x08C1ED4D, HauntingGround /* EU */},
 	{0x2CD5794C, HauntingGround /* EU */},
 	{0x867BB945, HauntingGround /* JP */},
