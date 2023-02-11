@@ -50,6 +50,8 @@ std::unique_ptr<GSRenderer> g_gs_renderer;
 // we might be switching while the other thread reads it.
 static GSVector4 s_last_draw_rect;
 
+// Last time we reset the renderer due to a GPU crash, if any.
+static Common::Timer::Value s_last_gpu_reset_time;
 
 GSRenderer::GSRenderer()
 	: m_shader_time_start(Common::Timer::GetCurrentValue())
@@ -602,6 +604,40 @@ void GSJoinSnapshotThreads()
 	}
 }
 
+bool GSRenderer::BeginPresentFrame(bool frame_skip)
+{
+	const HostDisplay::PresentResult result = Host::BeginPresentFrame(frame_skip);
+	if (result == HostDisplay::PresentResult::OK)
+		return true;
+	else if (result == HostDisplay::PresentResult::FrameSkipped)
+		return false;
+
+	// If we're constantly crashing on something in particular, we don't want to end up in an
+	// endless reset loop.. that'd probably end up leaking memory and/or crashing us for other
+	// reasons. So just abort in such case.
+	const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+	if (s_last_gpu_reset_time != 0 &&
+		Common::Timer::ConvertValueToSeconds(current_time - s_last_gpu_reset_time) < 15.0f)
+	{
+		pxFailRel("Host GPU lost too many times, device is probably completely wedged.");
+	}
+	s_last_gpu_reset_time = current_time;
+
+	// Device lost, something went really bad.
+	// Let's just toss out everything, and try to hobble on.
+	if (!GSreopen(true, false, GSConfig))
+	{
+		pxFailRel("Failed to recreate GS device after loss.");
+		return false;
+	}
+
+	// First frame after reopening is definitely going to be trash, so skip it.
+	Host::AddIconOSDMessage("GSDeviceLost", ICON_FA_EXCLAMATION_TRIANGLE,
+		"Host GPU device encountered an error and was recovered. This may have broken rendering.",
+		Host::OSD_CRITICAL_ERROR_DURATION);
+	return false;
+}
+
 void GSRenderer::VSync(u32 field, bool registers_written)
 {
 	Flush(GSFlushReason::VSYNC);
@@ -647,7 +683,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 	if (skip_frame)
 	{
 		g_gs_device->ResetAPIState();
-		if (Host::BeginPresentFrame(true))
+		if (BeginPresentFrame(true))
 			Host::EndPresentFrame();
 		g_gs_device->RestoreAPIState();
 		PerformanceMetrics::Update(registers_written, fb_sprite_frame, true);
@@ -694,7 +730,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 	}
 
 	g_gs_device->ResetAPIState();
-	if (Host::BeginPresentFrame(false))
+	if (BeginPresentFrame(false))
 	{
 		if (current && !blank_frame)
 		{
@@ -910,7 +946,7 @@ void GSRenderer::StopGSDump()
 void GSRenderer::PresentCurrentFrame()
 {
 	g_gs_device->ResetAPIState();
-	if (Host::BeginPresentFrame(false))
+	if (BeginPresentFrame(false))
 	{
 		GSTexture* current = g_gs_device->GetCurrent();
 		if (current)

@@ -445,7 +445,7 @@ ID3D12GraphicsCommandList4* Context::GetInitCommandList()
 	return res.command_lists[0].get();
 }
 
-void Context::ExecuteCommandList(WaitType wait_for_completion)
+bool Context::ExecuteCommandList(WaitType wait_for_completion)
 {
 	CommandListResources& res = m_command_lists[m_current_command_list];
 	HRESULT hr;
@@ -463,12 +463,21 @@ void Context::ExecuteCommandList(WaitType wait_for_completion)
 	if (res.init_command_list_used)
 	{
 		hr = res.command_lists[0]->Close();
-		pxAssertRel(SUCCEEDED(hr), "Close init command list");
+		if (FAILED(hr))
+		{
+			Console.Error("Closing init command list failed with HRESULT %08X", hr);
+			return false;
+		}
 	}
 
 	// Close and queue command list.
 	hr = res.command_lists[1]->Close();
-	pxAssertRel(SUCCEEDED(hr), "Close command list");
+	if (FAILED(hr))
+	{
+		Console.Error("Closing main command list failed with HRESULT %08X", hr);
+		return false;
+	}
+
 	if (res.init_command_list_used)
 	{
 		const std::array<ID3D12CommandList*, 2> execute_lists{res.command_lists[0].get(), res.command_lists[1].get()};
@@ -487,6 +496,8 @@ void Context::ExecuteCommandList(WaitType wait_for_completion)
 	MoveToNextCommandList();
 	if (wait_for_completion != WaitType::None)
 		WaitForFence(res.ready_fence_value, wait_for_completion == WaitType::Spin);
+
+	return true;
 }
 
 void Context::InvalidateSamplerGroups()

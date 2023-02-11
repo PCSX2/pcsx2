@@ -114,9 +114,9 @@ void Host::ReleaseHostDisplay(bool clear_state)
 {
 }
 
-bool Host::BeginPresentFrame(bool frame_skip)
+HostDisplay::PresentResult Host::BeginPresentFrame(bool frame_skip)
 {
-	return false;
+	return HostDisplay::PresentResult::FrameSkipped;
 }
 
 void Host::EndPresentFrame()

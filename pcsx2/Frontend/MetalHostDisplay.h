@@ -81,7 +81,7 @@ public:
 	std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, const void* data, u32 data_stride, bool dynamic = false) override;
 	void UpdateTexture(id<MTLTexture> texture, u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_stride);
 	void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_stride) override;
-	bool BeginPresent(bool frame_skip) override;
+	PresentResult BeginPresent(bool frame_skip) override;
 	void EndPresent() override;
 	void SetVSync(VsyncMode mode) override;
 

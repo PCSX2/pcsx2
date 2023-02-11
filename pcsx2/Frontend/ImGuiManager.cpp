@@ -229,6 +229,12 @@ void ImGuiManager::NewFrame()
 	}
 }
 
+void ImGuiManager::SkipFrame()
+{
+	ImGui::EndFrame();
+	NewFrame();
+}
+
 void ImGuiManager::SetStyle()
 {
 	ImGuiStyle& style = ImGui::GetStyle();

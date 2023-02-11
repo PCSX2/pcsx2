@@ -335,13 +335,10 @@ bool OpenGLHostDisplay::UpdateImGuiFontTexture()
 	return ImGui_ImplOpenGL3_CreateFontsTexture();
 }
 
-bool OpenGLHostDisplay::BeginPresent(bool frame_skip)
+HostDisplay::PresentResult OpenGLHostDisplay::BeginPresent(bool frame_skip)
 {
 	if (frame_skip || m_window_info.type == WindowInfo::Type::Surfaceless)
-	{
-		ImGui::EndFrame();
-		return false;
-	}
+		return PresentResult::FrameSkipped;
 
 	glDisable(GL_SCISSOR_TEST);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -350,7 +347,7 @@ bool OpenGLHostDisplay::BeginPresent(bool frame_skip)
 	glClear(GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, m_window_info.surface_width, m_window_info.surface_height);
 
-	return true;
+	return PresentResult::OK;
 }
 
 void OpenGLHostDisplay::EndPresent()
