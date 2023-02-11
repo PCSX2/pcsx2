@@ -60,6 +60,13 @@ public:
 		RightOrBottom
 	};
 
+	enum class PresentResult
+	{
+		OK,
+		FrameSkipped,
+		DeviceLost
+	};
+
 	struct AdapterAndModeList
 	{
 		std::vector<std::string> adapter_names;
@@ -137,7 +144,7 @@ public:
 
 	/// Returns false if the window was completely occluded. If frame_skip is set, the frame won't be
 	/// displayed, but the GPU command queue will still be flushed.
-	virtual bool BeginPresent(bool frame_skip) = 0;
+	virtual PresentResult BeginPresent(bool frame_skip) = 0;
 
 	/// Presents the frame to the display, and renders OSD elements.
 	virtual void EndPresent() = 0;
@@ -184,7 +191,7 @@ namespace Host
 
 	/// Returns false if the window was completely occluded. If frame_skip is set, the frame won't be
 	/// displayed, but the GPU command queue will still be flushed.
-	bool BeginPresentFrame(bool frame_skip);
+	HostDisplay::PresentResult BeginPresentFrame(bool frame_skip);
 
 	/// Presents the frame to the display, and renders OSD elements.
 	void EndPresentFrame();
