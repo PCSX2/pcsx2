@@ -15,24 +15,39 @@
 
 #pragma once
 
-#include "GS/GSVector.h"
+#include <cstdint>
+#include <cstring>
+#include <algorithm>
+
+#include "GSVector.h"
 
 #pragma pack(push, 1)
 
-struct alignas(32) GSVertexHW9
+struct GSVertexHW9
 {
-	GSVector4 t;
-	GSVector4 p;
+    GSVector4 t;
+    GSVector4 p;
 
-	// t.z = union {struct {u8 r, g, b, a;}; u32 c0;};
-	// t.w = union {struct {u8 ta0, ta1, res, f;}; u32 c1;}
+    GSVertexHW9() = default;
 
-	GSVertexHW9& operator=(GSVertexHW9& v)
-	{
-		t = v.t;
-		p = v.p;
-		return *this;
-	}
+    GSVertexHW9(const GSVector4& t_, const GSVector4& p_)
+        : t(t_)
+        , p(p_)
+    {}
+
+    GSVertexHW9(const GSVertexHW9& other)
+    {
+        memcpy(this, &other, sizeof(GSVertexHW9));
+    }
+
+    GSVertexHW9& operator=(const GSVertexHW9& other)
+    {
+        memcpy(this, &other, sizeof(GSVertexHW9));
+        return *this;
+    }
 };
 
 #pragma pack(pop)
+
+static_assert(sizeof(GSVertexHW9) == 32, "GSVertexHW9 should have a size of 32 bytes");
+
