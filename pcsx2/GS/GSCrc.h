@@ -23,7 +23,6 @@ public:
 	enum Title : u32
 	{
 		NoTitle,
-		FFX2,
 		GetawayGames,
 		HauntingGround,
 		ICO,
