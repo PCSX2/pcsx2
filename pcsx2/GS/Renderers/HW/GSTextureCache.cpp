@@ -1579,6 +1579,24 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	// Look for an exact match on the targets.
 	GSTextureCache::Target* src = GetExactTarget(SBP, SBW, SPSM);
 	GSTextureCache::Target* dst = GetExactTarget(DBP, DBW, DPSM);
+
+	// Beware of the case where a game might create a larger texture by moving a bunch of chunks around.
+	// We use dx/dy == 0 and the TBW check as a safeguard to make sure these go through to local memory.
+	// Good test case for this is the Xenosaga I cutscene transitions, or Gradius V.
+	if (src && !dst && dx == 0 && dy == 0 && ((static_cast<u32>(w) + 63) / 64) == DBW)
+	{
+		GIFRegTEX0 new_TEX0 = {};
+		new_TEX0.TBP0 = DBP;
+		new_TEX0.TBW = DBW;
+		new_TEX0.PSM = DPSM;
+
+		const int real_height = GetTargetHeight(DBP, DBW, DPSM, h);
+		const GSVector2 scale(src->m_texture->GetScale());
+		dst = LookupTarget(new_TEX0, GSVector2i(static_cast<int>(w * scale.x), static_cast<int>(real_height * scale.y)), src->m_type, true);
+		if (dst)
+			dst->m_texture->SetScale(scale);
+	}
+
 	if (!src || !dst || src->m_texture->GetScale() != dst->m_texture->GetScale())
 		return false;
 
