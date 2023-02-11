@@ -9166,7 +9166,7 @@ SLED-50117:
   name: "Metal Gear Solid 2 - Sons of Liberty [Demo] [Zone of the Enders Bonus Disc]"
   region: "PAL-E"
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
 SLED-50286:
   name: "Red Faction [Demo]"
   region: "PAL-E"
@@ -10354,17 +10354,17 @@ SLES-50383:
   region: "PAL-M3"
   compat: 5
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
 SLES-50384:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-I"
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
 SLES-50385:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-S"
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
 SLES-50386:
   name: "Crash Bandicoot - The Wrath of Cortex"
   region: "PAL-M6"
@@ -27860,7 +27860,7 @@ SLPM-65077:
   name: "Metal Gear Solid 2 - Sons of Liberty [Premium Package]"
   region: "NTSC-J"
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
   memcardFilters:
     - "SLPM-65078"
     - "SLPM-65077"
@@ -27868,7 +27868,7 @@ SLPM-65078:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "NTSC-J"
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
   memcardFilters:
     - "SLPM-65078"
     - "SLPM-65077"
@@ -34074,7 +34074,7 @@ SLPM-66792:
   name: "Metal Gear Solid 2 - Sons of Liberty [20th Anniversary Edition]"
   region: "NTSC-J"
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
 SLPM-66794:
   name: "Metal Gear Solid 3 - Snake Eater [20th Anniversary Edition]"
   region: "NTSC-J"
@@ -34840,7 +34840,7 @@ SLPM-67515:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "NTSC-K"
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
 SLPM-67518:
   name: "Onimusha 2 Samurai's Destiny"
   region: "NTSC-K"
@@ -34954,6 +34954,8 @@ SLPM-68019:
 SLPM-68503:
   name: "Metal Gear Solid 2 - Sons of Liberty [Shareholder Edition]"
   region: "NTSC-J"
+  gameFixes:
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
 SLPM-68504:
   name: "Tokimeki Memorial 3 - Special Sound Track"
   region: "NTSC-J"
@@ -41231,7 +41233,7 @@ SLUS-20144:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
 SLUS-20145:
   name: "Ring of Red"
   region: "NTSC-U"
@@ -50276,7 +50278,7 @@ SLUS-29003:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
 SLUS-29004:
   name: "Unison & Dead or Alive 2 Hardcore [Demo]"
   region: "NTSC-U"
