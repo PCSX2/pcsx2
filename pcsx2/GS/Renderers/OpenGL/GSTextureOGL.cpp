@@ -453,7 +453,7 @@ GSDownloadTextureOGL::~GSDownloadTextureOGL()
 
 std::unique_ptr<GSDownloadTextureOGL> GSDownloadTextureOGL::Create(u32 width, u32 height, GSTexture::Format format)
 {
-	const u32 buffer_size = GetBufferSize(width, height, format, GSTexture::GetCompressedBytesPerBlock(format));
+	const u32 buffer_size = GetBufferSize(width, height, format, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
 
 	const bool use_buffer_storage = (GLAD_GL_VERSION_4_4 || GLAD_GL_ARB_buffer_storage || GLAD_GL_EXT_buffer_storage) &&
 									!GLLoader::disable_download_pbo;
