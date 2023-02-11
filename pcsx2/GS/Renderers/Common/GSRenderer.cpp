@@ -50,6 +50,8 @@ std::unique_ptr<GSRenderer> g_gs_renderer;
 // we might be switching while the other thread reads it.
 static GSVector4 s_last_draw_rect;
 
+// Last time we reset the renderer due to a GPU crash, if any.
+static Common::Timer::Value s_last_gpu_reset_time;
 
 GSRenderer::GSRenderer()
 	: m_shader_time_start(Common::Timer::GetCurrentValue())
@@ -75,264 +77,109 @@ void GSRenderer::Destroy()
 
 bool GSRenderer::Merge(int field)
 {
-	bool en[2];
-
-	GSVector4i fr[2];
-	GSVector4i dr[2];
-	GSVector2i display_offsets[2];
-
-	GSVector2i display_baseline = {INT_MAX, INT_MAX};
-	GSVector2i frame_baseline = {INT_MAX, INT_MAX};
-	GSVector2i display_combined = {0, 0};
-	bool feedback_merge = m_regs->EXTWRITE.WRITE == 1;
-	bool display_offset = false;
-
-	for (int i = 0; i < 2; i++)
-	{
-		en[i] = IsEnabled(i) || (m_regs->EXTBUF.FBIN == i && feedback_merge);
-
-		if (en[i])
-		{
-			fr[i] = GetFrameRect(i);
-			dr[i] = GetDisplayRect(i);
-			display_offsets[i] = GetResolutionOffset(i);
-
-			display_combined.x = std::max(((dr[i].right) - dr[i].left) + display_offsets[i].x, display_combined.x);
-			display_combined.y = std::max((dr[i].bottom - dr[i].top) + display_offsets[i].y, display_combined.y);
-
-			display_baseline.x = std::min(display_offsets[i].x, display_baseline.x);
-			display_baseline.y = std::min(display_offsets[i].y, display_baseline.y);
-			frame_baseline.x = std::min(std::max(fr[i].left, 0), frame_baseline.x);
-			frame_baseline.y = std::min(std::max(fr[i].top, 0), frame_baseline.y);
-
-			display_offset |= std::abs(display_baseline.y - display_offsets[i].y) == 1;
-			/*DevCon.Warning("Read offset was X %d(left %d) Y %d(top %d)", display_baseline.x, dr[i].left, display_baseline.y, dr[i].top);
-			DevCon.Warning("[%d]: %d %d %d %d, %d %d %d %d\n", i, fr[i].x,fr[i].y,fr[i].z,fr[i].w , dr[i].x,dr[i].y,dr[i].z,dr[i].w);
-			DevCon.Warning("Offset X %d Offset Y %d", display_offsets[i].x, display_offsets[i].y);*/
-		}
-	}
-
-	if (!en[0] && !en[1])
-	{
-		return false;
-	}
-
-	GL_PUSH("Renderer Merge %d (0: enabled %d 0x%x, 1: enabled %d 0x%x)", s_n, en[0], m_regs->DISP[0].DISPFB.Block(), en[1], m_regs->DISP[1].DISPFB.Block());
-
-	// try to avoid fullscreen blur, could be nice on tv but on a monitor it's like double vision, hurts my eyes (persona 4, guitar hero)
-	//
-	// NOTE: probably the technique explained in graphtip.pdf (Antialiasing by Supersampling / 4. Reading Odd/Even Scan Lines Separately with the PCRTC then Blending)
-
-	const bool samesrc =
-		en[0] && en[1] &&
-		m_regs->DISP[0].DISPFB.FBP == m_regs->DISP[1].DISPFB.FBP &&
-		m_regs->DISP[0].DISPFB.FBW == m_regs->DISP[1].DISPFB.FBW &&
-		GSUtil::HasCompatibleBits(m_regs->DISP[0].DISPFB.PSM, m_regs->DISP[1].DISPFB.PSM);
-	bool single_fetch = false;
-
 	GSVector2i fs(0, 0);
-	GSVector2i ds(0, 0);
+	GSTexture* tex[3] = { NULL, NULL, NULL };
+	int y_offset[3] = { 0, 0, 0 };
+	bool feedback_merge = m_regs->EXTWRITE.WRITE == 1;
 
-	GSTexture* tex[3] = {NULL, NULL, NULL};
-	int y_offset[3] = {0, 0, 0};
+	PCRTCDisplays.SetVideoMode(GetVideoMode());
+	PCRTCDisplays.EnableDisplays(m_regs->PMODE, m_regs->SMODE2, isReallyInterlaced());
 
-	s_n++;
+	if (!PCRTCDisplays.PCRTCDisplays[0].enabled && !PCRTCDisplays.PCRTCDisplays[1].enabled)
+		return false;
+
+	// Need to do this here, if the user has Anti-Blur enabled, these offsets can get wiped out/changed.
+	const bool game_deinterlacing = (m_regs->DISP[0].DISPFB.DBY != PCRTCDisplays.PCRTCDisplays[0].prevFramebufferReg.DBY) !=
+									(m_regs->DISP[1].DISPFB.DBY != PCRTCDisplays.PCRTCDisplays[1].prevFramebufferReg.DBY);
+
+	PCRTCDisplays.SetRects(0, m_regs->DISP[0].DISPLAY, m_regs->DISP[0].DISPFB);
+	PCRTCDisplays.SetRects(1, m_regs->DISP[1].DISPLAY, m_regs->DISP[1].DISPFB);
+	PCRTCDisplays.CalculateDisplayOffset(m_scanmask_used);
+	PCRTCDisplays.CalculateFramebufferOffset();
+	PCRTCDisplays.CheckSameSource();
 
 	// Only need to check the right/bottom on software renderer, hardware always gets the full texture then cuts a bit out later.
-	if (samesrc && !feedback_merge && (GSConfig.UseHardwareRenderer() || (fr[0].right == fr[1].right && fr[0].bottom == fr[1].bottom)))
+	if (PCRTCDisplays.FrameRectMatch() && !PCRTCDisplays.FrameWrap() && !feedback_merge)
 	{
-		tex[0] = GetOutput(0, y_offset[0]);
+		tex[0] = GetOutput(-1, y_offset[0]);
 		tex[1] = tex[0]; // saves one texture fetch
 		y_offset[1] = y_offset[0];
-		single_fetch = true;
 	}
 	else
 	{
-		if (en[0])
+		if (PCRTCDisplays.PCRTCDisplays[0].enabled)
 			tex[0] = GetOutput(0, y_offset[0]);
-		if (en[1])
+		if (PCRTCDisplays.PCRTCDisplays[1].enabled)
 			tex[1] = GetOutput(1, y_offset[1]);
 		if (feedback_merge)
 			tex[2] = GetFeedbackOutput();
 	}
 
+	if (!tex[0] && !tex[1])
+		return false;
+
+	s_n++;
+
 	GSVector4 src_out_rect[2];
 	GSVector4 src_gs_read[2];
 	GSVector4 dst[3];
 
-	const bool slbg = m_regs->PMODE.SLBG;
-
-	GSVector2i resolution(GetResolution());
-	bool scanmask_frame = m_scanmask_used && !display_offset;
-	const bool ignore_offset = !GSConfig.PCRTCOffsets;
-	const bool is_bob = GSConfig.InterlaceMode == GSInterlaceMode::BobTFF || GSConfig.InterlaceMode == GSInterlaceMode::BobBFF;
-
 	// Use offset for bob deinterlacing always, extra offset added later for FFMD mode.
-	float offset = is_bob ? (tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) : 0.0f;
-
+	const bool scanmask_frame = m_scanmask_used && abs(PCRTCDisplays.PCRTCDisplays[0].displayRect.y - PCRTCDisplays.PCRTCDisplays[1].displayRect.y) != 1;
 	int field2 = 0;
-	int mode = 3;
+	int mode = 3; // If the game is manually deinterlacing then we need to bob (if we want to get away with no deinterlacing).
+	bool is_bob = GSConfig.InterlaceMode == GSInterlaceMode::BobTFF || GSConfig.InterlaceMode == GSInterlaceMode::BobBFF;
 
-	// FFMD (half frames) requires blend deinterlacing, so automatically use that. Same when SCANMSK is used but not blended in the merge circuit (Alpine Racer 3)
+	// FFMD (half frames) requires blend deinterlacing, so automatically use that. Same when SCANMSK is used but not blended in the merge circuit (Alpine Racer 3).
 	if (GSConfig.InterlaceMode != GSInterlaceMode::Automatic || (!m_regs->SMODE2.FFMD && !scanmask_frame))
 	{
-		field2 = ((static_cast<int>(GSConfig.InterlaceMode) - 2) & 1);
-		mode = ((static_cast<int>(GSConfig.InterlaceMode) - 2) >> 1);
+		// If the game is offsetting each frame itself and we're using full height buffers, we can offset this with Bob.
+		if (game_deinterlacing && !scanmask_frame && GSConfig.InterlaceMode == GSInterlaceMode::Automatic)
+		{
+			mode = 1; // Bob.
+			is_bob = true;
+		}
+		else
+		{
+			field2 = ((static_cast<int>(GSConfig.InterlaceMode) - 2) & 1);
+			mode = ((static_cast<int>(GSConfig.InterlaceMode) - 2) >> 1);
+		}
 	}
 
 	for (int i = 0; i < 2; i++)
 	{
-		if (!en[i] || !tex[i])
+		 const GSPCRTCRegs::PCRTCDisplay& curCircuit = PCRTCDisplays.PCRTCDisplays[i];
+
+		if (!curCircuit.enabled || !tex[i])
 			continue;
 
-		GSVector4i r = GetFrameMagnifiedRect(i);
 		GSVector4 scale = GSVector4(tex[i]->GetScale()).xyxy();
 
-
-		GSVector2i off(ignore_offset ? 0 : display_offsets[i]);
-		GSVector2i display_diff(display_offsets[i].x - display_baseline.x, display_offsets[i].y - display_baseline.y);
-		GSVector2i frame_diff(fr[i].left - frame_baseline.x, fr[i].top - frame_baseline.y);
-
-		if (!GSConfig.UseHardwareRenderer())
-		{
-			// Clear any frame offsets, offset is already done in the software GetOutput.
-			fr[i].right -= fr[i].left;
-			fr[i].left = 0;
-			fr[i].bottom -= fr[i].top;
-			fr[i].top = 0;
-
-			// Put any frame offset difference back if we aren't anti-blurring on a single fetch (not offset).
-			if (!GSConfig.PCRTCAntiBlur && single_fetch)
-			{
-				fr[i].right += frame_diff.x;
-				fr[i].left += frame_diff.x;
-				fr[i].bottom += frame_diff.y;
-				fr[i].top += frame_diff.y;
-			}
-			
-		}
-
-		// If using scanmsk we have to keep the single line offset, regardless of upscale
-		// so we handle this separately after the rect calculations.
-		float interlace_offset = 0.0f;
-
-		if ((!GSConfig.PCRTCAntiBlur || m_scanmask_used) && display_offset)
-		{
-			interlace_offset = static_cast<float>(display_diff.y & 1);
-
-			// When the displays are offset by 1 we need to adjust for upscale to handle it (reduces bounce in MGS2 when upscaling)
-			interlace_offset += (tex[i]->GetScale().y - 1.0f)  / 2;
-
-			if (interlace_offset >= 1.0f)
-			{
-				if (!ignore_offset)
-					off.y -= 1;
-
-				display_diff.y -= 1;
-			}
-		}
-
-		// Start of Anti-Blur code.
-		if (!ignore_offset)
-		{
-			if (GSConfig.PCRTCAntiBlur)
-			{
-				if (samesrc)
-				{
-					// Offset by DISPLAY setting
-					if (display_diff.x < 4)
-						off.x -= display_diff.x;
-					if (display_diff.y < 4)
-						off.y -= display_diff.y;
-
-					// Only functional in HW mode, software clips/positions the framebuffer on read.
-					if (GSConfig.UseHardwareRenderer())
-					{
-						// Offset by DISPFB setting
-						if (abs(frame_diff.x) < 4)
-							off.x += frame_diff.x;
-						if (abs(frame_diff.y) < 4)
-							off.y += frame_diff.y;
-					}
-				}
-			}
-		}
-		else
-		{
-			if (!slbg || !feedback_merge)
-			{
-				// If the offsets between the two displays are quite large, it's probably intended for an effect.
-				if (display_diff.x >= 4 || !GSConfig.PCRTCAntiBlur)
-					off.x = display_diff.x;
-
-				if (display_diff.y >= 4 || !GSConfig.PCRTCAntiBlur)
-					off.y = display_diff.y;
-
-				// Need to check if only circuit 2 is enabled. Stuntman toggles circuit 1 on and off every other frame.
-				if (samesrc || m_regs->PMODE.EN == 2)
-				{
-					// Adjusting the screen offset when using a negative offset.
-					const int videomode = static_cast<int>(GetVideoMode()) - 1;
-					const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
-					GSVector2i base_resolution(offsets.x, offsets.y);
-
-					if (isinterlaced() && !m_regs->SMODE2.FFMD)
-						base_resolution.y *= 2;
-
-					// Offset by DISPLAY setting
-					if (display_diff.x < 0)
-					{
-						off.x = 0;
-						if (base_resolution.x > resolution.x)
-							resolution.x -= display_diff.x;
-					}
-					if (display_diff.y < 0)
-					{
-						off.y = 0;
-						if (base_resolution.y > resolution.y)
-							resolution.y -= display_diff.y;
-					}
-
-					// Don't do X, we only care about height, this would need to be tailored for games using X (Black does -5).
-					// Mainly for Hokuto no Ken which does -14 Y offset.
-					if (display_baseline.y < -4)
-						off.y += display_baseline.y;
-
-					// Anti-Blur stuff
-					// Only functional in HW mode, software clips/positions the framebuffer on read.
-					if (GSConfig.PCRTCAntiBlur && GSConfig.UseHardwareRenderer())
-					{
-						// Offset by DISPFB setting
-						if (abs(frame_diff.x) < 4)
-							off.x += frame_diff.x;
-						if (abs(frame_diff.y) < 4)
-							off.y += frame_diff.y;
-					}
-				}
-			}
-		}
-		// End of Anti-Blur code.
-
-		if (isinterlaced() && m_regs->SMODE2.FFMD)
-			off.y >>= 1;
-
 		// dst is the final destination rect with offset on the screen.
-		dst[i] = scale * (GSVector4(off).xyxy() + GSVector4(r.rsize()));
+		dst[i] = scale * GSVector4(curCircuit.displayRect);
 
 		// src_gs_read is the size which we're really reading from GS memory.
-		src_gs_read[i] = ((GSVector4(fr[i]) + GSVector4(0, y_offset[i], 0, y_offset[i])) * scale) / GSVector4(tex[i]->GetSize()).xyxy();
-
-		// src_out_rect is the resized rect for output. (Not really used)
-		src_out_rect[i] = (GSVector4(r) * scale) / GSVector4(tex[i]->GetSize()).xyxy();
-
-		if (m_regs->SMODE2.FFMD && !is_bob && !GSConfig.DisableInterlaceOffset && GSConfig.InterlaceMode != GSInterlaceMode::Off)
+		src_gs_read[i] = ((GSVector4(curCircuit.framebufferRect) + GSVector4(0, y_offset[i], 0, y_offset[i])) * scale) / GSVector4(tex[i]->GetSize()).xyxy();
+		
+		float interlace_offset = 0.0f;
+		if (isReallyInterlaced() && m_regs->SMODE2.FFMD && !is_bob && !GSConfig.DisableInterlaceOffset && GSConfig.InterlaceMode != GSInterlaceMode::Off)
 		{
-			// We do half because FFMD is a half sized framebuffer, then we offset by 1 in the shader for the actual interlace
-			if(GetUpscaleMultiplier() > 1.0f)
-				interlace_offset += ((((tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) + 0.5f) * 0.5f) - 1.0f) * static_cast<float>(field ^ field2);
-			offset = 1.0f;
+			interlace_offset = (scale.y) * static_cast<float>(field ^ field2);
 		}
-		// Restore manually offset "interlace" lines
+		// Scanmask frame offsets. It's gross, I'm sorry but it sucks.
+		if (m_scanmask_used)
+		{
+			int displayIntOffset = PCRTCDisplays.PCRTCDisplays[i].displayRect.y - PCRTCDisplays.PCRTCDisplays[1 - i].displayRect.y;
+			
+			if (displayIntOffset > 0)
+			{
+				displayIntOffset &= 1;
+				dst[i].y -= displayIntOffset * scale.y;
+				dst[i].w -= displayIntOffset * scale.y;
+				interlace_offset += displayIntOffset;
+			}
+		}
+
 		dst[i] += GSVector4(0.0f, interlace_offset, 0.0f, interlace_offset);
 	}
 
@@ -349,41 +196,18 @@ bool GSRenderer::Merge(int field)
 		dst[2] = GSVector4(scale * GSVector4(feedback_rect.rsize()));
 	}
 
-	// Set the resolution to the height of the displays (kind of a saturate height)
-	if (ignore_offset && !feedback_merge)
-	{
-		GSVector2i max_resolution = GetResolution();
-		resolution.x = display_combined.x - display_baseline.x;
-		resolution.y = display_combined.y - display_baseline.y;
-
-		if (isinterlaced() && m_regs->SMODE2.FFMD)
-		{
-			resolution.y >>= 1;
-		}
-
-		resolution.x = std::min(max_resolution.x, resolution.x);
-		resolution.y = std::min(max_resolution.y, resolution.y);
-	}
-
+	GSVector2i resolution = PCRTCDisplays.GetResolution();
 	fs = GSVector2i(static_cast<int>(static_cast<float>(resolution.x) * GetUpscaleMultiplier()),
 		static_cast<int>(static_cast<float>(resolution.y) * GetUpscaleMultiplier()));
-	ds = fs;
 
-	// When interlace(FRAME) mode, the rect is half height, so it needs to be stretched.
-	const bool is_interlaced_resolution = m_regs->SMODE2.INT || (isReallyInterlaced() && IsAnalogue() && GSConfig.InterlaceMode != GSInterlaceMode::Off);
+	m_real_size = GSVector2i(fs.x, fs.y);
 
-	if (is_interlaced_resolution && m_regs->SMODE2.FFMD)
-		ds.y *= 2;
-
-	m_real_size = GSVector2i(fs.x, is_interlaced_resolution ? ds.y : fs.y);
-
-	if (!tex[0] && !tex[1])
-		return false;
-
-	if ((tex[0] == tex[1]) && (src_out_rect[0] == src_out_rect[1]).alltrue() && (dst[0] == dst[1]).alltrue() && !feedback_merge && !slbg)
+	if ((tex[0] == tex[1]) && (src_out_rect[0] == src_out_rect[1]).alltrue() && 
+		(PCRTCDisplays.PCRTCDisplays[0].displayRect == PCRTCDisplays.PCRTCDisplays[1].displayRect).alltrue() &&
+		(PCRTCDisplays.PCRTCDisplays[0].framebufferRect == PCRTCDisplays.PCRTCDisplays[1].framebufferRect).alltrue() &&
+		!feedback_merge && !m_regs->PMODE.SLBG)
 	{
 		// the two outputs are identical, skip drawing one of them (the one that is alpha blended)
-
 		tex[0] = NULL;
 	}
 
@@ -392,7 +216,11 @@ bool GSRenderer::Merge(int field)
 	g_gs_device->Merge(tex, src_gs_read, dst, fs, m_regs->PMODE, m_regs->EXTBUF, c);
 
 	if (isReallyInterlaced() && GSConfig.InterlaceMode != GSInterlaceMode::Off)
-		g_gs_device->Interlace(ds, field ^ field2, mode, offset);
+	{
+		const float offset = is_bob ? (tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) : 0.0f;
+
+		g_gs_device->Interlace(fs, field ^ field2, mode, offset);
+	}
 
 	if (GSConfig.ShadeBoost)
 		g_gs_device->ShadeBoost();
@@ -602,6 +430,40 @@ void GSJoinSnapshotThreads()
 	}
 }
 
+bool GSRenderer::BeginPresentFrame(bool frame_skip)
+{
+	const HostDisplay::PresentResult result = Host::BeginPresentFrame(frame_skip);
+	if (result == HostDisplay::PresentResult::OK)
+		return true;
+	else if (result == HostDisplay::PresentResult::FrameSkipped)
+		return false;
+
+	// If we're constantly crashing on something in particular, we don't want to end up in an
+	// endless reset loop.. that'd probably end up leaking memory and/or crashing us for other
+	// reasons. So just abort in such case.
+	const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+	if (s_last_gpu_reset_time != 0 &&
+		Common::Timer::ConvertValueToSeconds(current_time - s_last_gpu_reset_time) < 15.0f)
+	{
+		pxFailRel("Host GPU lost too many times, device is probably completely wedged.");
+	}
+	s_last_gpu_reset_time = current_time;
+
+	// Device lost, something went really bad.
+	// Let's just toss out everything, and try to hobble on.
+	if (!GSreopen(true, false, GSConfig))
+	{
+		pxFailRel("Failed to recreate GS device after loss.");
+		return false;
+	}
+
+	// First frame after reopening is definitely going to be trash, so skip it.
+	Host::AddIconOSDMessage("GSDeviceLost", ICON_FA_EXCLAMATION_TRIANGLE,
+		"Host GPU device encountered an error and was recovered. This may have broken rendering.",
+		Host::OSD_CRITICAL_ERROR_DURATION);
+	return false;
+}
+
 void GSRenderer::VSync(u32 field, bool registers_written)
 {
 	Flush(GSFlushReason::VSYNC);
@@ -647,7 +509,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 	if (skip_frame)
 	{
 		g_gs_device->ResetAPIState();
-		if (Host::BeginPresentFrame(true))
+		if (BeginPresentFrame(true))
 			Host::EndPresentFrame();
 		g_gs_device->RestoreAPIState();
 		PerformanceMetrics::Update(registers_written, fb_sprite_frame, true);
@@ -694,7 +556,7 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 	}
 
 	g_gs_device->ResetAPIState();
-	if (Host::BeginPresentFrame(false))
+	if (BeginPresentFrame(false))
 	{
 		if (current && !blank_frame)
 		{
@@ -910,7 +772,7 @@ void GSRenderer::StopGSDump()
 void GSRenderer::PresentCurrentFrame()
 {
 	g_gs_device->ResetAPIState();
-	if (Host::BeginPresentFrame(false))
+	if (BeginPresentFrame(false))
 	{
 		GSTexture* current = g_gs_device->GetCurrent();
 		if (current)

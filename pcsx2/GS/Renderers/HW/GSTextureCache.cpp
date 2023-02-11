@@ -3088,21 +3088,6 @@ void GSTextureCache::Target::Update(bool reset_age)
 		m_dirty.ClearDirty();
 		return;
 	}
-	else if (m_type == DepthStencil && g_gs_renderer->m_game.title == CRC::FFX2)
-	{
-		GL_INS("ERROR: bad invalidation detected, depth buffer will be cleared");
-		// FFX2 menu. Invalidation of the depth is wrongly done and only the first
-		// page is invalidated. Technically a CRC hack will be better but I don't expect
-		// any games to only upload a single page of data for the depth.
-		//
-		// FFX2 menu got another bug. I'm not sure the top-left is properly written or not. It
-		// could be a gs transfer bug too due to unaligned-page transfer.
-		//
-		// So the quick and dirty solution is just to clean the depth buffer.
-		g_gs_device->ClearDepth(m_texture);
-		m_dirty.ClearDirty();
-		return;
-	}
 
 	GIFRegTEXA TEXA = {};
 

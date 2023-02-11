@@ -50,43 +50,7 @@ GSRendererHW::GSRendererHW()
 
 GSVector2i GSRendererHW::GetOutputSize(int real_h)
 {
-	GSVector2i crtc_size(GetResolution());
-
-	// Correct framebuffer size to get output size when offsets not considered (uses framebuffer height)
-	if (!GSConfig.PCRTCOffsets)
-	{
-		const int videomode = static_cast<int>(GetVideoMode()) - 1;
-		const int display_width = (VideoModeDividers[videomode].z + 1) / GetDisplayHMagnification();
-		const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
-		int display_height = offsets.y;
-
-		if (isinterlaced() && !m_regs->SMODE2.FFMD)
-			display_height *= 2;
-
-		if (crtc_size.x < display_width || crtc_size.y < display_height)
-		{
-			GSVector2i display_baseline = { 4096, 4096 };
-
-			for (int i = 0; i < 2; i++)
-			{
-				if (IsEnabled(i))
-				{
-					const GSVector4i dr = GetDisplayRect(i);
-
-					const GSVector2i display_diff(dr.left - display_baseline.x, dr.top - display_baseline.y);
-
-					if (display_diff.x != 0 && abs(display_diff.x) < 4 && crtc_size.x < display_width)
-						crtc_size.x -= display_diff.x;
-
-					if (display_diff.y != 0 && abs(display_diff.y) < 4 && crtc_size.y < display_height)
-						crtc_size.y -= display_diff.y;
-
-					display_baseline.x = std::min(dr.left, display_baseline.x);
-					display_baseline.y = std::min(dr.top, display_baseline.y);
-				}
-			}
-		}
-	}
+	GSVector2i crtc_size(PCRTCDisplays.GetResolution());
 
 	// Include negative display offsets in the height here.
 	crtc_size.y = std::max(crtc_size.y, real_h);
@@ -241,40 +205,33 @@ void GSRendererHW::VSync(u32 field, bool registers_written)
 
 GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 {
-	const GSRegDISPFB& DISPFB = m_regs->DISP[i].DISPFB;
+	int index = i >= 0 ? i : 1;
 
-	GIFRegTEX0 TEX0 = {};
+	GSPCRTCRegs::PCRTCDisplay& curFramebuffer = PCRTCDisplays.PCRTCDisplays[index];
+	GSVector2i framebufferSize = PCRTCDisplays.GetFramebufferSize(i);
+	const int fb_width = framebufferSize.x;
+	const int fb_height = framebufferSize.y;
 
-	TEX0.TBP0 = DISPFB.Block();
-	TEX0.TBW = DISPFB.FBW;
-	TEX0.PSM = DISPFB.PSM;
-
-	const int videomode = static_cast<int>(GetVideoMode()) - 1;
-	const GSVector4i offsets = VideoModeOffsets[videomode];
-
-	const int fb_width = std::min<int>(std::min<int>(GetFramebufferWidth(), DISPFB.FBW * 64) + static_cast<int>(DISPFB.DBX), 2048);
-	const int display_height = offsets.y * ((isinterlaced() && !m_regs->SMODE2.FFMD) ? 2 : 1);
-	const int display_offset = GetResolutionOffset(i).y;
-	int fb_height = (std::min<int>(GetFramebufferHeight(), display_height) + static_cast<int>(DISPFB.DBY)) % 2048;
-	// If there is a negative vertical offset on the picture, we need to read more.
-	if (display_offset < 0)
-	{
-		fb_height += -display_offset;
-	}
-	// TRACE(_T("[%d] GetOutput %d %05x (%d)\n"), static_cast<int>(g_perfmon.GetFrame()), i, static_cast<int>(TEX0.TBP0), static_cast<int>(TEX0.PSM));
+	PCRTCDisplays.RemoveFramebufferOffset(i);
+	// TRACE(_T("[%d] GetOutput %d %05x (%d)\n"), (int)m_perfmon.GetFrame(), i, (int)TEX0.TBP0, (int)TEX0.PSM);
 
 	GSTexture* t = nullptr;
+
+	GIFRegTEX0 TEX0 = {};
+	TEX0.TBP0 = curFramebuffer.Block();
+	TEX0.TBW = curFramebuffer.FBW;
+	TEX0.PSM = curFramebuffer.PSM;
 
 	if (GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, GetOutputSize(fb_height) * GSConfig.UpscaleMultiplier, fb_width, fb_height))
 	{
 		t = rt->m_texture;
 
 		const int delta = TEX0.TBP0 - rt->m_TEX0.TBP0;
-		if (delta > 0 && DISPFB.FBW != 0)
+		if (delta > 0 && curFramebuffer.FBW != 0)
 		{
 			const int pages = delta >> 5u;
-			int y_pages = pages / DISPFB.FBW;
-			y_offset = y_pages * GSLocalMemory::m_psm[DISPFB.PSM].pgs.y;
+			int y_pages = pages / curFramebuffer.FBW;
+			y_offset = y_pages * GSLocalMemory::m_psm[curFramebuffer.PSM].pgs.y;
 			GL_CACHE("Frame y offset %d pixels, unit %d", y_offset, i);
 		}
 
@@ -797,8 +754,8 @@ GSVector2i GSRendererHW::GetTargetSize(GSVector2i* unscaled_size)
 		const int page_y = GSLocalMemory::m_psm[m_context->FRAME.PSM].pgs.y - 1;
 
 		// Round up the page as channel shuffles are generally done in pages at a time
-		width = (std::max(static_cast<u32>(GetResolution().x), width) + page_x) & ~page_x;
-		min_height = (std::max(static_cast<u32>(GetResolution().y), min_height) + page_y) & ~page_y;
+		width = (std::max(static_cast<u32>(PCRTCDisplays.GetResolution().x), width) + page_x) & ~page_x;
+		min_height = (std::max(static_cast<u32>(PCRTCDisplays.GetResolution().y), min_height) + page_y) & ~page_y;
 	}
 
 	// Align to even lines, reduces the chance of tiny resizes.
@@ -1443,13 +1400,14 @@ void GSRendererHW::Draw()
 			const bool clear_height_valid = (m_r.w >= 1024);
 			if (clear_height_valid && context->FRAME.FBW == 1)
 			{
-				u32 width = ceil(static_cast<float>(m_r.w) / GetFramebufferHeight()) * 64;
+				GSVector2i fb_size = PCRTCDisplays.GetFramebufferSize(-1);
+				u32 width = ceil(static_cast<float>(m_r.w) / fb_size.y) * 64;
 				// Framebuffer is likely to be read as 16bit later, so we will need to double the width if the write is 32bit.
-				const bool double_width = GSLocalMemory::m_psm[context->FRAME.PSM].bpp == 32 && GetFramebufferBitDepth() == 16;
+				const bool double_width = GSLocalMemory::m_psm[context->FRAME.PSM].bpp == 32 && PCRTCDisplays.GetFramebufferBitDepth() == 16;
 				m_r.x = 0;
 				m_r.y = 0;
-				m_r.w = GetFramebufferHeight();
-				m_r.z = std::max((width * (double_width ? 2 : 1)), static_cast<u32>(GetFramebufferWidth()));
+				m_r.w = fb_size.y;
+				m_r.z = std::max((width * (double_width ? 2 : 1)), static_cast<u32>(fb_size.x));
 				context->FRAME.FBW = (m_r.z + 63) / 64;
 				m_context->scissor.in.z = context->FRAME.FBW * 64;
 

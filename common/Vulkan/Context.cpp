@@ -1122,9 +1122,13 @@ namespace Vulkan
 	void Context::WaitForCommandBufferCompletion(u32 index)
 	{
 		// Wait for this command buffer to be completed.
-		VkResult res = vkWaitForFences(m_device, 1, &m_frame_resources[index].fence, VK_TRUE, UINT64_MAX);
+		const VkResult res = vkWaitForFences(m_device, 1, &m_frame_resources[index].fence, VK_TRUE, UINT64_MAX);
 		if (res != VK_SUCCESS)
+		{
 			LOG_VULKAN_ERROR(res, "vkWaitForFences failed: ");
+			m_last_submit_failed.store(true, std::memory_order_release);
+			return;
+		}
 
 		// Clean up any resources for command buffers between the last known completed buffer and this
 		// now-completed command buffer. If we use >2 buffers, this may be more than one buffer.
@@ -1266,11 +1270,12 @@ namespace Vulkan
 			submit_info.pSignalSemaphores = &m_spin_resources[index].semaphore;
 		}
 
-		VkResult res = vkQueueSubmit(m_graphics_queue, 1, &submit_info, resources.fence);
+		const VkResult res = vkQueueSubmit(m_graphics_queue, 1, &submit_info, resources.fence);
 		if (res != VK_SUCCESS)
 		{
 			LOG_VULKAN_ERROR(res, "vkQueueSubmit failed: ");
-			pxFailRel("Failed to submit command buffer.");
+			m_last_submit_failed.store(true, std::memory_order_release);
+			return;
 		}
 
 		if (spin_cycles != 0)
@@ -1286,14 +1291,14 @@ namespace Vulkan
 
 		present_swap_chain->ReleaseCurrentImage();
 
-		VkResult res = vkQueuePresentKHR(m_present_queue, &present_info);
+		const VkResult res = vkQueuePresentKHR(m_present_queue, &present_info);
 		if (res != VK_SUCCESS)
 		{
 			// VK_ERROR_OUT_OF_DATE_KHR is not fatal, just means we need to recreate our swap chain.
 			if (res != VK_ERROR_OUT_OF_DATE_KHR && res != VK_SUBOPTIMAL_KHR)
 				LOG_VULKAN_ERROR(res, "vkQueuePresentKHR failed: ");
 
-			m_last_present_failed.store(true);
+			m_last_present_failed.store(true, std::memory_order_release);
 			return;
 		}
 
@@ -1460,6 +1465,9 @@ namespace Vulkan
 
 	void Context::ExecuteCommandBuffer(WaitType wait_for_completion)
 	{
+		if (m_last_submit_failed.load(std::memory_order_acquire))
+			return;
+
 		// If we're waiting for completion, don't bother waking the worker thread.
 		const u32 current_frame = m_current_frame;
 		SubmitCommandBuffer();
@@ -1481,9 +1489,12 @@ namespace Vulkan
 
 	bool Context::CheckLastPresentFail()
 	{
-		bool res = m_last_present_failed;
-		m_last_present_failed = false;
-		return res;
+		return m_last_present_failed.exchange(false, std::memory_order_acq_rel);
+	}
+
+	bool Context::CheckLastSubmitFail()
+	{
+		return m_last_submit_failed.load(std::memory_order_acquire);
 	}
 
 	void Context::DeferBufferDestruction(VkBuffer object)
@@ -1596,7 +1607,7 @@ namespace Vulkan
 				VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT,
 			DebugMessengerCallback, nullptr};
 
-		VkResult res =
+		const VkResult res =
 			vkCreateDebugUtilsMessengerEXT(m_instance, &messenger_info, nullptr, &m_debug_messenger_callback);
 		if (res != VK_SUCCESS)
 		{
@@ -1688,7 +1699,7 @@ namespace Vulkan
 			subpass_dependency_ptr};
 
 		VkRenderPass pass;
-		VkResult res = vkCreateRenderPass(m_device, &pass_info, nullptr, &pass);
+		const VkResult res = vkCreateRenderPass(m_device, &pass_info, nullptr, &pass);
 		if (res != VK_SUCCESS)
 		{
 			LOG_VULKAN_ERROR(res, "vkCreateRenderPass failed: ");
@@ -1894,9 +1905,14 @@ void main()
 		SpinResources& resources = m_spin_resources[index];
 		if (!resources.in_progress)
 			return;
-		VkResult res = vkWaitForFences(m_device, 1, &resources.fence, VK_TRUE, UINT64_MAX);
+
+		const VkResult res = vkWaitForFences(m_device, 1, &resources.fence, VK_TRUE, UINT64_MAX);
 		if (res != VK_SUCCESS)
+		{
 			LOG_VULKAN_ERROR(res, "vkWaitForFences failed: ");
+			m_last_submit_failed.store(true, std::memory_order_release);
+			return;
+		}
 		SpinCommandCompleted(index);
 	}
 
@@ -1906,7 +1922,7 @@ void main()
 		resources.in_progress = false;
 		const u32 timestamp_base = (index + NUM_COMMAND_BUFFERS) * 2;
 		std::array<u64, 2> timestamps;
-		VkResult res = vkGetQueryPoolResults(m_device, m_timestamp_query_pool, timestamp_base, static_cast<u32>(timestamps.size()),
+		const VkResult res = vkGetQueryPoolResults(m_device, m_timestamp_query_pool, timestamp_base, static_cast<u32>(timestamps.size()),
 			sizeof(timestamps), timestamps.data(), sizeof(u64), VK_QUERY_RESULT_64_BIT);
 		if (res == VK_SUCCESS)
 		{
@@ -2014,7 +2030,7 @@ void main()
 		constexpr u64 MAX_MAX_DEVIATION = 100000; // 100µs
 		for (int i = 0; i < 4; i++) // 4 tries to get under MAX_MAX_DEVIATION
 		{
-			VkResult res = vkGetCalibratedTimestampsEXT(m_device, std::size(infos), infos, timestamps, &maxDeviation);
+			const VkResult res = vkGetCalibratedTimestampsEXT(m_device, std::size(infos), infos, timestamps, &maxDeviation);
 			if (res != VK_SUCCESS)
 			{
 				LOG_VULKAN_ERROR(res, "vkGetCalibratedTimestampsEXT failed: ");

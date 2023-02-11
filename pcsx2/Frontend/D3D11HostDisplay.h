@@ -65,7 +65,7 @@ public:
 
 	void SetVSync(VsyncMode mode) override;
 
-	bool BeginPresent(bool frame_skip) override;
+	PresentResult BeginPresent(bool frame_skip) override;
 	void EndPresent() override;
 
 	bool SetGPUTimingEnabled(bool enabled) override;

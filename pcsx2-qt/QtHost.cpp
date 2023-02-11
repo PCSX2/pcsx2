@@ -967,17 +967,17 @@ void Host::ReleaseHostDisplay(bool clear_state)
 	g_emu_thread->releaseHostDisplay(clear_state);
 }
 
-bool Host::BeginPresentFrame(bool frame_skip)
+HostDisplay::PresentResult Host::BeginPresentFrame(bool frame_skip)
 {
-	if (!g_host_display->BeginPresent(frame_skip))
+	const HostDisplay::PresentResult result = g_host_display->BeginPresent(frame_skip);
+	if (result != HostDisplay::PresentResult::OK)
 	{
 		// if we're skipping a frame, we need to reset imgui's state, since
 		// we won't be calling EndPresentFrame().
-		ImGuiManager::NewFrame();
-		return false;
+		ImGuiManager::SkipFrame();
 	}
 
-	return true;
+	return result;
 }
 
 void Host::EndPresentFrame()

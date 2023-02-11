@@ -209,15 +209,15 @@ static bool DoGSOpen(GSRendererType renderer, u8* basemem)
 			return false;
 	}
 
-	try
+	if (!g_gs_device->Create())
 	{
-		if (!g_gs_device->Create())
-		{
-			g_gs_device->Destroy();
-			g_gs_device.reset();
-			return false;
-		}
+		g_gs_device->Destroy();
+		g_gs_device.reset();
+		return false;
+	}
 
+	if (!g_gs_renderer)
+	{
 		if (renderer == GSRendererType::Null)
 		{
 			g_gs_renderer = std::make_unique<GSRendererNull>();
@@ -230,55 +230,68 @@ static bool DoGSOpen(GSRendererType renderer, u8* basemem)
 		{
 			g_gs_renderer = std::unique_ptr<GSRenderer>(MULTI_ISA_SELECT(makeGSRendererSW)(GSConfig.SWExtraThreads));
 		}
+
+		g_gs_renderer->SetRegsMem(basemem);
+		g_gs_renderer->ResetPCRTC();
 	}
-	catch (std::exception& ex)
+	else
 	{
-		Host::ReportFormattedErrorAsync("GS", "GS error: Exception caught in GSopen: %s", ex.what());
-		g_gs_renderer.reset();
-		g_gs_device->Destroy();
-		g_gs_device.reset();
-		return false;
+		Console.Warning("(DoGSOpen) Using existing renderer.");
 	}
 
 	GSConfig.OsdShowGPU = EmuConfig.GS.OsdShowGPU && g_host_display->SetGPUTimingEnabled(true);
 
-	g_gs_renderer->SetRegsMem(basemem);
 	g_perfmon.Reset();
 	return true;
 }
 
-bool GSreopen(bool recreate_display, const Pcsx2Config::GSOptions& old_config)
+bool GSreopen(bool recreate_display, bool recreate_renderer, const Pcsx2Config::GSOptions& old_config)
 {
 	Console.WriteLn("Reopening GS with %s display", recreate_display ? "new" : "existing");
 
-	g_gs_renderer->Flush(GSState::GSFlushReason::GSREOPEN);
+	if (recreate_renderer)
+		g_gs_renderer->Flush(GSState::GSFlushReason::GSREOPEN);
 
 	freezeData fd = {};
-	if (g_gs_renderer->Freeze(&fd, true) != 0)
+	std::unique_ptr<u8[]> fd_data;
+	if (recreate_renderer)
 	{
-		Console.Error("(GSreopen) Failed to get GS freeze size");
-		return false;
-	}
+		if (g_gs_renderer->Freeze(&fd, true) != 0)
+		{
+			Console.Error("(GSreopen) Failed to get GS freeze size");
+			return false;
+		}
 
-	std::unique_ptr<u8[]> fd_data = std::make_unique<u8[]>(fd.size);
-	fd.data = fd_data.get();
-	if (g_gs_renderer->Freeze(&fd, false) != 0)
+		fd_data = std::make_unique<u8[]>(fd.size);
+		fd.data = fd_data.get();
+		if (g_gs_renderer->Freeze(&fd, false) != 0)
+		{
+			Console.Error("(GSreopen) Failed to freeze GS");
+			return false;
+		}
+	}
+	else
 	{
-		Console.Error("(GSreopen) Failed to freeze GS");
-		return false;
+		// Make sure nothing is left over.
+		g_gs_renderer->PurgePool();
+		g_gs_renderer->PurgeTextureCache();
 	}
 
 	if (recreate_display)
 	{
 		g_gs_device->ResetAPIState();
-		if (Host::BeginPresentFrame(true))
+		if (Host::BeginPresentFrame(false) == HostDisplay::PresentResult::OK)
 			Host::EndPresentFrame();
 	}
 
 	u8* basemem = g_gs_renderer->GetRegsMem();
 	const u32 gamecrc = g_gs_renderer->GetGameCRC();
-	g_gs_renderer->Destroy();
-	g_gs_renderer.reset();
+	if (recreate_renderer)
+	{
+		g_gs_renderer->Destroy();
+		g_gs_renderer.reset();
+	}
+
 	g_gs_device->Destroy();
 	g_gs_device.reset();
 
@@ -327,13 +340,17 @@ bool GSreopen(bool recreate_display, const Pcsx2Config::GSOptions& old_config)
 		}
 	}
 
-	if (g_gs_renderer->Defrost(&fd) != 0)
+	if (recreate_renderer)
 	{
-		Console.Error("(GSreopen) Failed to defrost");
-		return false;
+		if (g_gs_renderer->Defrost(&fd) != 0)
+		{
+			Console.Error("(GSreopen) Failed to defrost");
+			return false;
+		}
+
+		g_gs_renderer->SetGameCRC(gamecrc);
 	}
 
-	g_gs_renderer->SetGameCRC(gamecrc);
 	return true;
 }
 
@@ -698,7 +715,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 			GSConfig.DisableShaderCache != old_config.DisableShaderCache ||
 			GSConfig.DisableThreadedPresentation != old_config.DisableThreadedPresentation
 		);
-		if (!GSreopen(do_full_restart, old_config))
+		if (!GSreopen(do_full_restart, true, old_config))
 			pxFailRel("Failed to do full GS reopen");
 		return;
 	}
@@ -709,7 +726,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		GSConfig.SWExtraThreads != old_config.SWExtraThreads ||
 		GSConfig.SWExtraThreadsHeight != old_config.SWExtraThreadsHeight)
 	{
-		if (!GSreopen(false, old_config))
+		if (!GSreopen(false, true, old_config))
 			pxFailRel("Failed to do quick GS reopen");
 
 		return;
@@ -787,7 +804,7 @@ void GSSwitchRenderer(GSRendererType new_renderer)
 	const bool recreate_display = (!is_software_switch && existing_api != GetAPIForRenderer(new_renderer));
 	const Pcsx2Config::GSOptions old_config(GSConfig);
 	GSConfig.Renderer = new_renderer;
-	if (!GSreopen(recreate_display, old_config))
+	if (!GSreopen(recreate_display, true, old_config))
 		pxFailRel("Failed to reopen GS for renderer switch.");
 }
 

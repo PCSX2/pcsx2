@@ -130,7 +130,7 @@ namespace D3D12
 		};
 
 		/// Executes the current command list.
-		void ExecuteCommandList(WaitType wait_for_completion);
+		bool ExecuteCommandList(WaitType wait_for_completion);
 
 		/// Waits for a specific fence.
 		void WaitForFence(u64 fence, bool spin);

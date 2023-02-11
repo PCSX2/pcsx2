@@ -641,13 +641,10 @@ bool D3D11HostDisplay::UpdateImGuiFontTexture()
 	return true;
 }
 
-bool D3D11HostDisplay::BeginPresent(bool frame_skip)
+HostDisplay::PresentResult D3D11HostDisplay::BeginPresent(bool frame_skip)
 {
 	if (frame_skip || !m_swap_chain)
-	{
-		ImGui::EndFrame();
-		return false;
-	}
+		return PresentResult::FrameSkipped;
 
 	// When using vsync, the time here seems to include the time for the buffer to become available.
 	// This blows our our GPU usage number considerably, so read the timestamp before the final blit
@@ -664,7 +661,7 @@ bool D3D11HostDisplay::BeginPresent(bool frame_skip)
 	const CD3D11_RECT scissor(0, 0, m_window_info.surface_width, m_window_info.surface_height);
 	m_context->RSSetViewports(1, &vp);
 	m_context->RSSetScissorRects(1, &scissor);
-	return true;
+	return PresentResult::OK;
 }
 
 void D3D11HostDisplay::EndPresent()
