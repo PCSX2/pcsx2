@@ -18828,6 +18828,13 @@ SLES-54013:
 SLES-54015:
   name: "Disney-Pixar's Cars"
   region: "PAL-SC"
+  patches:
+    B36778F5:
+      content: |-
+        author=refraction ported by jordanthetoast
+        // COP2 Rearrangement. Fixes broken collisions.
+        patch=1,EE,00203df8,word,484e9000
+        patch=1,EE,00203dfc,word,4bdbd9ff
 SLES-54016:
   name: "AND 1 Streetball"
   region: "PAL-M5"
