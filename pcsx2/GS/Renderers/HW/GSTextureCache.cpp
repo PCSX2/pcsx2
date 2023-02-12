@@ -775,16 +775,17 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 		// From a performance point of view, it might cost a little on big upscaling
 		// but normally few RT are miss so it must remain reasonable.
 		const bool supported_fmt = !GSConfig.UserHacks_DisableDepthSupport || psm_s.depth == 0;
-		const bool forced_preload = static_cast<GSRendererHW*>(g_gs_renderer.get())->m_force_preload;
+		const bool forced_preload = GSRendererHW::GetInstance()->m_force_preload > 0;
 		if ((is_frame || preload || forced_preload) && TEX0.TBW > 0 && supported_fmt)
 		{
 			if (!is_frame && !forced_preload)
 			{
 				std::vector<GSState::GSUploadQueue>::iterator iter;
-				for (iter = static_cast<GSRendererHW*>(g_gs_renderer.get())->m_draw_transfers.begin(); iter != static_cast<GSRendererHW*>(g_gs_renderer.get())->m_draw_transfers.end(); ) {
+				for (iter = GSRendererHW::GetInstance()->m_draw_transfers.begin(); iter != GSRendererHW::GetInstance()->m_draw_transfers.end(); )
+				{
 					if (iter->blit.DBP == TEX0.TBP0 && GSUtil::HasSharedBits(iter->blit.DPSM, TEX0.PSM))
 					{
-						iter = static_cast<GSRendererHW*>(g_gs_renderer.get())->m_draw_transfers.erase(iter);
+						GSRendererHW::GetInstance()->m_draw_transfers.erase(iter);
 						GL_INS("Preloading the RT DATA");
 						const GSVector4i newrect = GSVector4i(0, 0, real_w, real_h);
 						AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW);
