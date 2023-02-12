@@ -122,6 +122,10 @@ private:
 	std::unique_ptr<GSTextureCacheSW::Texture> m_sw_texture[7 + 1];
 	std::unique_ptr<GSVirtualAlignedClass<32>> m_sw_rasterizer;
 
+	// Tracking draw counters for idle frame detection.
+	int m_last_draw_n = 0;
+	int m_last_transfer_n = 0;
+
 public:
 	GSRendererHW();
 	virtual ~GSRendererHW() override;

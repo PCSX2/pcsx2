@@ -232,6 +232,7 @@ public:
 	std::vector<GSUploadQueue> m_draw_transfers;
 
 	static int s_n;
+	static int s_transfer_n;
 
 	static constexpr u32 STATE_VERSION = 8;
 
