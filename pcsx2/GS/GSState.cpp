@@ -37,14 +37,61 @@ static __fi bool IsFirstProvokingVertex()
 	return (GSConfig.Renderer != GSRendererType::SW && !g_gs_device->Features().provoking_vertex_last);
 }
 
+constexpr int GSState::GetSaveStateSize()
+{
+	int size = 0;
+
+	size += sizeof(STATE_VERSION);
+	size += sizeof(m_env.PRIM);
+	size += sizeof(m_env.PRMODECONT);
+	size += sizeof(m_env.TEXCLUT);
+	size += sizeof(m_env.SCANMSK);
+	size += sizeof(m_env.TEXA);
+	size += sizeof(m_env.FOGCOL);
+	size += sizeof(m_env.DIMX);
+	size += sizeof(m_env.DTHE);
+	size += sizeof(m_env.COLCLAMP);
+	size += sizeof(m_env.PABE);
+	size += sizeof(m_env.BITBLTBUF);
+	size += sizeof(m_env.TRXDIR);
+	size += sizeof(m_env.TRXPOS);
+	size += sizeof(m_env.TRXREG);
+	size += sizeof(m_env.TRXREG); // obsolete
+
+	for (int i = 0; i < 2; i++)
+	{
+		size += sizeof(m_env.CTXT[i].XYOFFSET);
+		size += sizeof(m_env.CTXT[i].TEX0);
+		size += sizeof(m_env.CTXT[i].TEX1);
+		size += sizeof(m_env.CTXT[i].CLAMP);
+		size += sizeof(m_env.CTXT[i].MIPTBP1);
+		size += sizeof(m_env.CTXT[i].MIPTBP2);
+		size += sizeof(m_env.CTXT[i].SCISSOR);
+		size += sizeof(m_env.CTXT[i].ALPHA);
+		size += sizeof(m_env.CTXT[i].TEST);
+		size += sizeof(m_env.CTXT[i].FBA);
+		size += sizeof(m_env.CTXT[i].FRAME);
+		size += sizeof(m_env.CTXT[i].ZBUF);
+	}
+
+	size += sizeof(m_v.RGBAQ);
+	size += sizeof(m_v.ST);
+	size += sizeof(m_v.UV);
+	size += sizeof(m_v.FOG);
+	size += sizeof(m_v.XYZ);
+	size += sizeof(GIFReg); // obsolete
+
+	size += sizeof(m_tr.x);
+	size += sizeof(m_tr.y);
+	size += GSLocalMemory::m_vmsize;
+	size += (sizeof(GIFPath::tag) + sizeof(GIFPath::reg)) * 4 /* std::size(GSState::m_path) */; // std::size won't work without an instance.
+	size += sizeof(m_q);
+
+	return size;
+}
+
 GSState::GSState()
-	: m_version(STATE_VERSION)
-	, m_q(1.0f)
-	, m_scanmask_used(0)
-	, tex_flushed(true)
-	, m_vt(this, IsFirstProvokingVertex())
-	, m_regs(NULL)
-	, m_crc(0)
+	: m_vt(this, IsFirstProvokingVertex())
 {
 	// m_nativeres seems to be a hack. Unfortunately it impacts draw call number which make debug painful in the replayer.
 	// Let's keep it disabled to ease debug.
@@ -62,54 +109,6 @@ GSState::GSState()
 	GrowVertexBuffer();
 
 	m_draw_transfers.clear();
-
-	m_sssize = 0;
-
-	m_sssize += sizeof(m_version);
-	m_sssize += sizeof(m_env.PRIM);
-	m_sssize += sizeof(m_env.PRMODECONT);
-	m_sssize += sizeof(m_env.TEXCLUT);
-	m_sssize += sizeof(m_env.SCANMSK);
-	m_sssize += sizeof(m_env.TEXA);
-	m_sssize += sizeof(m_env.FOGCOL);
-	m_sssize += sizeof(m_env.DIMX);
-	m_sssize += sizeof(m_env.DTHE);
-	m_sssize += sizeof(m_env.COLCLAMP);
-	m_sssize += sizeof(m_env.PABE);
-	m_sssize += sizeof(m_env.BITBLTBUF);
-	m_sssize += sizeof(m_env.TRXDIR);
-	m_sssize += sizeof(m_env.TRXPOS);
-	m_sssize += sizeof(m_env.TRXREG);
-	m_sssize += sizeof(m_env.TRXREG); // obsolete
-
-	for (int i = 0; i < 2; i++)
-	{
-		m_sssize += sizeof(m_env.CTXT[i].XYOFFSET);
-		m_sssize += sizeof(m_env.CTXT[i].TEX0);
-		m_sssize += sizeof(m_env.CTXT[i].TEX1);
-		m_sssize += sizeof(m_env.CTXT[i].CLAMP);
-		m_sssize += sizeof(m_env.CTXT[i].MIPTBP1);
-		m_sssize += sizeof(m_env.CTXT[i].MIPTBP2);
-		m_sssize += sizeof(m_env.CTXT[i].SCISSOR);
-		m_sssize += sizeof(m_env.CTXT[i].ALPHA);
-		m_sssize += sizeof(m_env.CTXT[i].TEST);
-		m_sssize += sizeof(m_env.CTXT[i].FBA);
-		m_sssize += sizeof(m_env.CTXT[i].FRAME);
-		m_sssize += sizeof(m_env.CTXT[i].ZBUF);
-	}
-
-	m_sssize += sizeof(m_v.RGBAQ);
-	m_sssize += sizeof(m_v.ST);
-	m_sssize += sizeof(m_v.UV);
-	m_sssize += sizeof(m_v.FOG);
-	m_sssize += sizeof(m_v.XYZ);
-	m_sssize += sizeof(GIFReg); // obsolete
-
-	m_sssize += sizeof(m_tr.x);
-	m_sssize += sizeof(m_tr.y);
-	m_sssize += m_mem.m_vmsize;
-	m_sssize += (sizeof(m_path[0].tag) + sizeof(m_path[0].reg)) * std::size(m_path);
-	m_sssize += sizeof(m_q);
 
 	PRIM = &m_env.PRIM;
 	//CSR->rREV = 0x20;
@@ -2330,18 +2329,19 @@ int GSState::Freeze(freezeData* fd, bool sizeonly)
 {
 	if (sizeonly)
 	{
-		fd->size = m_sssize;
+		fd->size = GetSaveStateSize();
 		return 0;
 	}
 
-	if (!fd->data || fd->size < m_sssize)
+	if (!fd->data || fd->size < GetSaveStateSize())
 		return -1;
 
 	Flush(GSFlushReason::SAVESTATE);
 
 	u8* data = fd->data;
+	const u32 version = STATE_VERSION;
 
-	WriteState(data, &m_version);
+	WriteState(data, &version);
 	WriteState(data, &m_env.PRIM);
 	WriteState(data, &m_env.PRMODECONT);
 	WriteState(data, &m_env.TEXCLUT);
@@ -2409,7 +2409,7 @@ int GSState::Defrost(const freezeData* fd)
 	if (!fd || !fd->data || fd->size == 0)
 		return -1;
 
-	if (fd->size < m_sssize)
+	if (fd->size < GetSaveStateSize())
 		return -1;
 
 	u8* data = fd->data;
@@ -2418,7 +2418,7 @@ int GSState::Defrost(const freezeData* fd)
 
 	ReadState(&version, data);
 
-	if (version > m_version)
+	if (version > STATE_VERSION)
 	{
 		Console.Error("GS: Savestate version is incompatible.  Load aborted.");
 		return -1;
@@ -3850,9 +3850,6 @@ GIFRegTEX0 GSState::GetTex0Layer(u32 lod)
 
 GSState::GSTransferBuffer::GSTransferBuffer()
 {
-	x = y = 0;
-	start = end = total = 0;
-
 	constexpr size_t alloc_size = 1024 * 1024 * 4;
 	buff = reinterpret_cast<u8*>(_aligned_malloc(alloc_size, 32));
 }
