@@ -481,7 +481,7 @@ public:
 	static psm_t m_psm[64];
 	static readImage m_readImageX;
 
-	static const int m_vmsize = 1024 * 1024 * 4;
+	static constexpr int m_vmsize = 1024 * 1024 * 4;
 
 	u8* m_vm8;
 

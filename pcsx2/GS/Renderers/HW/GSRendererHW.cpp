@@ -24,14 +24,6 @@
 GSRendererHW::GSRendererHW()
 	: GSRenderer()
 	, m_tc(new GSTextureCache())
-	, m_src(nullptr)
-	, m_reset(false)
-	, m_tex_is_fb(false)
-	, m_channel_shuffle(false)
-	, m_userhacks_tcoffset(false)
-	, m_userhacks_tcoffset_x(0)
-	, m_userhacks_tcoffset_y(0)
-	, m_lod(GSVector2i(0, 0))
 {
 	MULTI_ISA_SELECT(GSRendererHWPopulateFunctions)(*this);
 	m_mipmap = (GSConfig.HWMipmap >= HWMipmapLevel::Basic);
@@ -44,7 +36,6 @@ GSRendererHW::GSRendererHW()
 
 	memset(&m_conf, 0, sizeof(m_conf));
 
-	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 	ResetStates();
 }
 
