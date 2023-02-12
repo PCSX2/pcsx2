@@ -43,22 +43,7 @@ GSTextureCache::~GSTextureCache()
 
 	RemoveAll();
 
-	m_surface_offset_cache.clear();
-
 	_aligned_free(s_unswizzle_buffer);
-}
-
-void GSTextureCache::RemovePartial()
-{
-	//m_src.RemoveAll();
-
-	for (int type = 0; type < 2; type++)
-	{
-		for (auto t : m_dst[type])
-			delete t;
-
-		m_dst[type].clear();
-	}
 }
 
 void GSTextureCache::RemoveAll()
@@ -85,6 +70,8 @@ void GSTextureCache::RemoveAll()
 
 	m_source_memory_usage = 0;
 	m_target_memory_usage = 0;
+
+	m_surface_offset_cache.clear();
 }
 
 void GSTextureCache::AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw)
