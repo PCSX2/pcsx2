@@ -1347,13 +1347,23 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 				}
 				else if (GSConfig.UserHacks_TextureInsideRt && t->Overlaps(bp, bw, psm, rect) && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
 				{
-					const SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
+					SurfaceOffsetKey sok;
+					sok.elems[0].bp = bp;
+					sok.elems[0].bw = bw;
+					sok.elems[0].psm = psm;
+					sok.elems[0].rect = r;
+					sok.elems[1].bp = t->m_TEX0.TBP0;
+					sok.elems[1].bw = t->m_TEX0.TBW;
+					sok.elems[1].psm = t->m_TEX0.PSM;
+					sok.elems[1].rect = t->m_valid;
+
+					const SurfaceOffset so = ComputeSurfaceOffset(sok);
 					if (so.is_valid)
 					{
 						if (eewrite)
 							t->m_age = 0;
 
-						AddDirtyRectTarget(t, so.b2a_offset, psm, bw);
+						AddDirtyRectTarget(t, so.b2a_offset, t->m_TEX0.PSM, t->m_TEX0.TBW);
 					}
 				}
 #endif
