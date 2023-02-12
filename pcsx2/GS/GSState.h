@@ -226,7 +226,7 @@ public:
 	std::unique_ptr<GSDumpBase> m_dump;
 	bool m_nativeres = false;
 	bool m_mipmap = false;
-	bool m_force_preload = false;
+	u8 m_force_preload = 0;
 	u32 m_dirty_gs_regs = 0;
 	int m_backed_up_ctx = 0;
 	std::vector<GSUploadQueue> m_draw_transfers;
