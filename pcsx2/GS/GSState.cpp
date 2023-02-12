@@ -26,6 +26,7 @@
 #include <iomanip> // Dump Verticles
 
 int GSState::s_n = 0;
+int GSState::s_transfer_n = 0;
 
 static __fi bool IsAutoFlushEnabled()
 {
@@ -1520,6 +1521,7 @@ void GSState::FlushWrite()
 	m_tr.start += len;
 
 	g_perfmon.Put(GSPerfMon::Swizzle, len);
+	s_transfer_n++;
 }
 
 // This function decides if the context has changed in a way which warrants flushing the draw.
@@ -1788,6 +1790,7 @@ void GSState::Write(const u8* mem, int len)
 		m_tr.start = m_tr.end = m_tr.total;
 
 		g_perfmon.Put(GSPerfMon::Swizzle, len);
+		s_transfer_n++;
 	}
 	else
 	{
@@ -1854,6 +1857,7 @@ void GSState::Move()
 {
 	// ffxii uses this to move the top/bottom of the scrolling menus offscreen and then blends them back over the text to create a shading effect
 	// guitar hero copies the far end of the board to do a similar blend too
+	s_transfer_n++;
 
 	int sx = m_env.TRXPOS.SSAX;
 	int sy = m_env.TRXPOS.SSAY;
