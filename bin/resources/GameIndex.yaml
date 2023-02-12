@@ -1352,6 +1352,7 @@ SCAJ-20177:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SCAJ-20178:
   name: "Ape Escape - Million Monkeys"
   region: "NTSC-Unk"
@@ -1452,6 +1453,7 @@ SCAJ-20197:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SCAJ-20198:
   name: "Everybody's Tennis [PlayStation 2 The Best]"
   region: "NTSC-Unk"
@@ -5224,6 +5226,7 @@ SCKA-20079:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SCKA-20081:
   name: "Tekken 5 [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
@@ -10477,6 +10480,8 @@ SLES-50438:
 SLES-50443:
   name: "LEGO Racers 2"
   region: "PAL-M8"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes top left corner rendering.
 SLES-50444:
   name: "Portal Runner"
   region: "PAL-M4"
@@ -20382,6 +20387,7 @@ SLES-54644:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SLES-54645:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-F"
@@ -20390,6 +20396,7 @@ SLES-54645:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SLES-54646:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-G"
@@ -20399,6 +20406,7 @@ SLES-54646:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SLES-54647:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-I"
@@ -20408,6 +20416,7 @@ SLES-54647:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SLES-54648:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-S"
@@ -20416,6 +20425,7 @@ SLES-54648:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SLES-54653:
   name: "Freak Out - Extreme Freeride"
   region: "PAL-M5"
@@ -25804,6 +25814,8 @@ SLPM-62203:
 SLPM-62204:
   name: "LEGO Racers 2"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes top left corner rendering.
 SLPM-62205:
   name: "Virtua Cop Re-Birth"
   region: "NTSC-J"
@@ -32595,6 +32607,7 @@ SLPM-66419:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SLPM-66420:
   name: "Front Mission 4 [Ultimate Hits]"
   region: "NTSC-J"
@@ -34048,6 +34061,7 @@ SLPM-66782:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SLPM-66783:
   name: "Idol Janshi Suchie-Pai 4 [Limited Edition]"
   region: "NTSC-J"
@@ -40905,6 +40919,8 @@ SLUS-20042:
   name: "LEGO Racers 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes top left corner rendering.
 SLUS-20043:
   name: "Star Wars - Super Bombad Racing"
   region: "NTSC-U"
@@ -47878,6 +47894,7 @@ SLUS-21452:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SLUS-21453:
   name: "Disney's Meet the Robinsons"
   region: "NTSC-U"
