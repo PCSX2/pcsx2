@@ -516,7 +516,7 @@ public:
 				}
 
 				// Cap the framebuffer read to the maximum display height, otherwise the hardware renderer gets messy.
-				int min_mag = std::min(PCRTCDisplays[0].magnification.y, PCRTCDisplays[1].magnification.y);
+				int min_mag = std::max(1, std::min(PCRTCDisplays[0].magnification.y, PCRTCDisplays[1].magnification.y));
 				combined_rect.w = std::min(combined_rect.w, combined_rect.y + (max_height / min_mag));
 				return GSVector2i(combined_rect.z, combined_rect.w);
 			}
