@@ -489,6 +489,13 @@ public:
 
 		GSVector2i GetFramebufferSize(int display)
 		{
+			int max_height = VideoModeOffsets[videomode].y;
+
+			if (!(FFMD && interlaced))
+			{
+				max_height *= 2;
+			}
+
 			if (display == -1)
 			{
 				GSVector4i combined_rect = PCRTCDisplays[0].framebufferRect.runion(PCRTCDisplays[1].framebufferRect);
@@ -506,6 +513,9 @@ public:
 					combined_rect.w -= GSConfig.UseHardwareRenderer() ? 2048 : high_y;
 					combined_rect.y = 0;
 				}
+
+				// Cap the framebuffer read to the maximum display height, otherwise the hardware renderer gets messy.
+				combined_rect.w = std::min(combined_rect.w, combined_rect.y + (max_height * PCRTCDisplays[display].magnification.y));
 				return GSVector2i(combined_rect.z, combined_rect.w);
 			}
 			else
@@ -523,6 +533,9 @@ public:
 					out_rect.w -= GSConfig.UseHardwareRenderer() ? 2048 : out_rect.y;
 					out_rect.y = 0;
 				}
+
+				// Cap the framebuffer read to the maximum display height, otherwise the hardware renderer gets messy.
+				out_rect.w = std::min(out_rect.w, out_rect.y + (max_height * PCRTCDisplays[display].magnification.y));
 				return GSVector2i(out_rect.z, out_rect.w);
 			}
 		}
