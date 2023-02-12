@@ -138,10 +138,11 @@ float GSRendererHW::GetUpscaleMultiplier()
 
 void GSRendererHW::Reset(bool hardware_reset)
 {
-	// TODO: GSreset can come from the main thread too => crash
-	// m_tc->RemoveAll();
+	// Force targets to preload for 2 frames (for 30fps games).
+	static constexpr u8 TARGET_PRELOAD_FRAMES = 2;
 
-	m_reset = true;
+	m_tc->RemoveAll();
+	m_force_preload = TARGET_PRELOAD_FRAMES;
 
 	GSRenderer::Reset(hardware_reset);
 }
@@ -155,21 +156,18 @@ void GSRendererHW::UpdateSettings(const Pcsx2Config::GSOptions& old_config)
 
 void GSRendererHW::VSync(u32 field, bool registers_written)
 {
-	if (m_reset)
+	if (m_force_preload > 0)
 	{
-		m_tc->RemoveAll();
-		m_reset = false;
-		m_force_preload = true;
-	}
-	else
-	{
-		m_force_preload = false;
-		std::vector<GSState::GSUploadQueue>::iterator iter;
-		for (iter = m_draw_transfers.begin(); iter != m_draw_transfers.end(); ) {
-			if ((s_n - iter->draw) > 5)
-				iter = m_draw_transfers.erase(iter);
-			else
-				iter++;
+		m_force_preload--;
+		if (m_force_preload == 0)
+		{
+			for (auto iter = m_draw_transfers.begin(); iter != m_draw_transfers.end();)
+			{
+				if ((s_n - iter->draw) > 5)
+					iter = m_draw_transfers.erase(iter);
+				else
+					iter++;
+			}
 		}
 	}
 
@@ -1319,7 +1317,7 @@ void GSRendererHW::Draw()
 	}
 
 	// SW CLUT Render enable.
-	bool preload = GSConfig.PreloadFrameWithGSData | m_force_preload;
+	bool preload = GSConfig.PreloadFrameWithGSData | (m_force_preload > 0);
 	if (GSConfig.UserHacks_CPUCLUTRender > 0 || GSConfig.UserHacks_GPUTargetCLUTMode != GSGPUTargetCLUTMode::Disabled)
 	{
 		const CLUTDrawTestResult result = (GSConfig.UserHacks_CPUCLUTRender == 2) ? PossibleCLUTDrawAggressive() : PossibleCLUTDraw();

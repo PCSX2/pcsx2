@@ -107,7 +107,6 @@ private:
 	int m_skip = 0;
 	int m_skip_offset = 0;
 
-	bool m_reset = false;
 	bool m_tex_is_fb = false;
 	bool m_channel_shuffle = false;
 	bool m_userhacks_tcoffset = false;
