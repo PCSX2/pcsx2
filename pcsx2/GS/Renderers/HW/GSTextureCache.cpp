@@ -416,7 +416,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				}
 				// Make sure the texture actually is INSIDE the RT, it's possibly not valid if it isn't.
 				// Also check BP >= TBP, create source isn't equpped to expand it backwards and all data comes from the target. (GH3)
-				else if (GSConfig.UserHacks_TextureInsideRt && psm == PSM_PSMCT32 && t->m_TEX0.PSM == psm &&
+				else if (GSConfig.UserHacks_TextureInsideRt && psm >= PSM_PSMCT32 && psm <= PSM_PSMCT16S && t->m_TEX0.PSM == psm &&
 						(t->Overlaps(bp, bw, psm, r) || t_wraps) && t->m_age <= 1 && !found_t && bp >= t->m_TEX0.TBP0)
 				{
 					// Only PSMCT32 to limit false hits.
