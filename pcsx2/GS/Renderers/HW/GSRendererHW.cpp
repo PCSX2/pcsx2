@@ -24,14 +24,6 @@
 GSRendererHW::GSRendererHW()
 	: GSRenderer()
 	, m_tc(new GSTextureCache())
-	, m_src(nullptr)
-	, m_reset(false)
-	, m_tex_is_fb(false)
-	, m_channel_shuffle(false)
-	, m_userhacks_tcoffset(false)
-	, m_userhacks_tcoffset_x(0)
-	, m_userhacks_tcoffset_y(0)
-	, m_lod(GSVector2i(0, 0))
 {
 	MULTI_ISA_SELECT(GSRendererHWPopulateFunctions)(*this);
 	m_mipmap = (GSConfig.HWMipmap >= HWMipmapLevel::Basic);
@@ -44,7 +36,6 @@ GSRendererHW::GSRendererHW()
 
 	memset(&m_conf, 0, sizeof(m_conf));
 
-	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 	ResetStates();
 }
 
@@ -147,10 +138,11 @@ float GSRendererHW::GetUpscaleMultiplier()
 
 void GSRendererHW::Reset(bool hardware_reset)
 {
-	// TODO: GSreset can come from the main thread too => crash
-	// m_tc->RemoveAll();
+	// Force targets to preload for 2 frames (for 30fps games).
+	static constexpr u8 TARGET_PRELOAD_FRAMES = 2;
 
-	m_reset = true;
+	m_tc->RemoveAll();
+	m_force_preload = TARGET_PRELOAD_FRAMES;
 
 	GSRenderer::Reset(hardware_reset);
 }
@@ -164,31 +156,39 @@ void GSRendererHW::UpdateSettings(const Pcsx2Config::GSOptions& old_config)
 
 void GSRendererHW::VSync(u32 field, bool registers_written)
 {
-	if (m_reset)
+	if (m_force_preload > 0)
 	{
-		m_tc->RemoveAll();
-		m_reset = false;
-		m_force_preload = true;
-	}
-	else
-	{
-		m_force_preload = false;
-		std::vector<GSState::GSUploadQueue>::iterator iter;
-		for (iter = m_draw_transfers.begin(); iter != m_draw_transfers.end(); ) {
-			if ((s_n - iter->draw) > 5)
-				iter = m_draw_transfers.erase(iter);
-			else
-				iter++;
+		m_force_preload--;
+		if (m_force_preload == 0)
+		{
+			for (auto iter = m_draw_transfers.begin(); iter != m_draw_transfers.end();)
+			{
+				if ((s_n - iter->draw) > 5)
+					iter = m_draw_transfers.erase(iter);
+				else
+					iter++;
+			}
 		}
 	}
 
 	if (GSConfig.LoadTextureReplacements)
 		GSTextureReplacements::ProcessAsyncLoadedTextures();
 
-	m_tc->IncAge();
+	// Don't age the texture cache when no draws or EE writes have occurred.
+	// Xenosaga needs its targets kept around while it's loading, because it uses them for a fade transition.
+	if (m_last_draw_n == s_n && m_last_transfer_n == s_transfer_n)
+	{
+		GL_INS("No draws or transfers, not aging TC");
+	}
+	else
+	{
+		m_tc->IncAge();
+	}
+
+	m_last_draw_n = s_n + 1; // +1 for vsync
+	m_last_transfer_n = s_transfer_n;
 
 	GSRenderer::VSync(field, registers_written);
-
 
 	if (m_tc->GetHashCacheMemoryUsage() > 1024 * 1024 * 1024)
 	{
@@ -1328,7 +1328,7 @@ void GSRendererHW::Draw()
 	}
 
 	// SW CLUT Render enable.
-	bool preload = GSConfig.PreloadFrameWithGSData | m_force_preload;
+	bool preload = GSConfig.PreloadFrameWithGSData | (m_force_preload > 0);
 	if (GSConfig.UserHacks_CPUCLUTRender > 0 || GSConfig.UserHacks_GPUTargetCLUTMode != GSGPUTargetCLUTMode::Disabled)
 	{
 		const CLUTDrawTestResult result = (GSConfig.UserHacks_CPUCLUTRender == 2) ? PossibleCLUTDrawAggressive() : PossibleCLUTDraw();

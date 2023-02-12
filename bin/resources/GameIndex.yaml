@@ -1352,6 +1352,7 @@ SCAJ-20177:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SCAJ-20178:
   name: "Ape Escape - Million Monkeys"
   region: "NTSC-Unk"
@@ -1452,6 +1453,7 @@ SCAJ-20197:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SCAJ-20198:
   name: "Everybody's Tennis [PlayStation 2 The Best]"
   region: "NTSC-Unk"
@@ -5224,6 +5226,7 @@ SCKA-20079:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SCKA-20081:
   name: "Tekken 5 [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
@@ -9166,7 +9169,7 @@ SLED-50117:
   name: "Metal Gear Solid 2 - Sons of Liberty [Demo] [Zone of the Enders Bonus Disc]"
   region: "PAL-E"
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
 SLED-50286:
   name: "Red Faction [Demo]"
   region: "PAL-E"
@@ -10354,17 +10357,17 @@ SLES-50383:
   region: "PAL-M3"
   compat: 5
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
 SLES-50384:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-I"
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
 SLES-50385:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-S"
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
 SLES-50386:
   name: "Crash Bandicoot - The Wrath of Cortex"
   region: "PAL-M6"
@@ -10477,6 +10480,8 @@ SLES-50438:
 SLES-50443:
   name: "LEGO Racers 2"
   region: "PAL-M8"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes top left corner rendering.
 SLES-50444:
   name: "Portal Runner"
   region: "PAL-M4"
@@ -20382,6 +20387,7 @@ SLES-54644:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SLES-54645:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-F"
@@ -20390,6 +20396,7 @@ SLES-54645:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SLES-54646:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-G"
@@ -20399,6 +20406,7 @@ SLES-54646:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SLES-54647:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-I"
@@ -20408,6 +20416,7 @@ SLES-54647:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SLES-54648:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-S"
@@ -20416,6 +20425,7 @@ SLES-54648:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SLES-54653:
   name: "Freak Out - Extreme Freeride"
   region: "PAL-M5"
@@ -23777,6 +23787,15 @@ SLKA-25182:
 SLKA-25183:
   name: "Street Fighter - Anniversary Collection"
   region: "NTSC-K"
+SLKA-25185:
+  name: "Need for Speed - Carbon [Collector's Edition]"
+  region: "NTSC-K"
+  compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes game hang after opening intro.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blurriness.
+    roundSprite: 2 # Fixes blurriness.
 SLKA-25186:
   name: "King of Fighters, The - Maximum Impact [Limited Edition]"
   region: "NTSC-K"
@@ -25795,6 +25814,8 @@ SLPM-62203:
 SLPM-62204:
   name: "LEGO Racers 2"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes top left corner rendering.
 SLPM-62205:
   name: "Virtua Cop Re-Birth"
   region: "NTSC-J"
@@ -27860,7 +27881,7 @@ SLPM-65077:
   name: "Metal Gear Solid 2 - Sons of Liberty [Premium Package]"
   region: "NTSC-J"
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
   memcardFilters:
     - "SLPM-65078"
     - "SLPM-65077"
@@ -27868,7 +27889,7 @@ SLPM-65078:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "NTSC-J"
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
   memcardFilters:
     - "SLPM-65078"
     - "SLPM-65077"
@@ -32586,6 +32607,7 @@ SLPM-66419:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SLPM-66420:
   name: "Front Mission 4 [Ultimate Hits]"
   region: "NTSC-J"
@@ -34039,6 +34061,7 @@ SLPM-66782:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SLPM-66783:
   name: "Idol Janshi Suchie-Pai 4 [Limited Edition]"
   region: "NTSC-J"
@@ -34074,7 +34097,7 @@ SLPM-66792:
   name: "Metal Gear Solid 2 - Sons of Liberty [20th Anniversary Edition]"
   region: "NTSC-J"
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
 SLPM-66794:
   name: "Metal Gear Solid 3 - Snake Eater [20th Anniversary Edition]"
   region: "NTSC-J"
@@ -34840,7 +34863,7 @@ SLPM-67515:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "NTSC-K"
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
 SLPM-67518:
   name: "Onimusha 2 Samurai's Destiny"
   region: "NTSC-K"
@@ -34954,6 +34977,8 @@ SLPM-68019:
 SLPM-68503:
   name: "Metal Gear Solid 2 - Sons of Liberty [Shareholder Edition]"
   region: "NTSC-J"
+  gameFixes:
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
 SLPM-68504:
   name: "Tokimeki Memorial 3 - Special Sound Track"
   region: "NTSC-J"
@@ -40894,6 +40919,8 @@ SLUS-20042:
   name: "LEGO Racers 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes top left corner rendering.
 SLUS-20043:
   name: "Star Wars - Super Bombad Racing"
   region: "NTSC-U"
@@ -41231,7 +41258,7 @@ SLUS-20144:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
 SLUS-20145:
   name: "Ring of Red"
   region: "NTSC-U"
@@ -47867,6 +47894,7 @@ SLUS-21452:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines.
+    textureInsideRT: 1 # Required for swirl battle transition.
 SLUS-21453:
   name: "Disney's Meet the Robinsons"
   region: "NTSC-U"
@@ -50276,7 +50304,7 @@ SLUS-29003:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
 SLUS-29004:
   name: "Unison & Dead or Alive 2 Hardcore [Demo]"
   region: "NTSC-U"

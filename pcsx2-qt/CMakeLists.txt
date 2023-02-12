@@ -58,6 +58,7 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/ControllerGlobalSettingsWidget.ui
 	Settings/ControllerMacroEditWidget.ui
 	Settings/ControllerMacroWidget.ui
+	Settings/ControllerMouseSettingsDialog.ui
 	Settings/ControllerSettingsDialog.cpp
 	Settings/ControllerSettingsDialog.h
 	Settings/ControllerSettingsDialog.ui
