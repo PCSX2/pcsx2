@@ -35,13 +35,15 @@ public:
 	GSState();
 	virtual ~GSState();
 
+	static constexpr int GetSaveStateSize();
+
 private:
 	// RESTRICT prevents multiple loads of the same part of the register when accessing its bitfields (the compiler is happy to know that memory writes in-between will not go there)
 
 	typedef void (GSState::*GIFPackedRegHandler)(const GIFPackedReg* RESTRICT r);
 
-	GIFPackedRegHandler m_fpGIFPackedRegHandlers[16];
-	GIFPackedRegHandler m_fpGIFPackedRegHandlerXYZ[8][4];
+	GIFPackedRegHandler m_fpGIFPackedRegHandlers[16] = {};
+	GIFPackedRegHandler m_fpGIFPackedRegHandlerXYZ[8][4] = {};
 
 	void CheckFlushes();
 
@@ -58,14 +60,14 @@ private:
 
 	typedef void (GSState::*GIFRegHandler)(const GIFReg* RESTRICT r);
 
-	GIFRegHandler m_fpGIFRegHandlers[256];
-	GIFRegHandler m_fpGIFRegHandlerXYZ[8][4];
+	GIFRegHandler m_fpGIFRegHandlers[256] = {};
+	GIFRegHandler m_fpGIFRegHandlerXYZ[8][4] = {};
 
 	typedef void (GSState::*GIFPackedRegHandlerC)(const GIFPackedReg* RESTRICT r, u32 size);
 
-	GIFPackedRegHandlerC m_fpGIFPackedRegHandlersC[2];
-	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerSTQRGBAXYZF2[8];
-	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerSTQRGBAXYZ2[8];
+	GIFPackedRegHandlerC m_fpGIFPackedRegHandlersC[2] = {};
+	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerSTQRGBAXYZF2[8] = {};
+	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerSTQRGBAXYZ2[8] = {};
 
 	template<u32 prim, bool auto_flush, bool index_swap> void GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u32 size);
 	template<u32 prim, bool auto_flush, bool index_swap> void GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32 size);
@@ -117,15 +119,12 @@ private:
 	template<bool auto_flush, bool index_swap>
 	void SetPrimHandlers();
 
-	u32 m_version;
-	int m_sssize;
-
 	struct GSTransferBuffer
 	{
-		int x, y;
-		int start, end, total;
-		u8* buff;
-		GIFRegBITBLTBUF m_blit;
+		int x = 0, y = 0;
+		int start = 0, end = 0, total = 0;
+		u8* buff = nullptr;
+		GIFRegBITBLTBUF m_blit = {};
 
 		GSTransferBuffer();
 		virtual ~GSTransferBuffer();
@@ -139,14 +138,14 @@ private:
 	void CalcAlphaMinMax();
 
 protected:
-	GSVertex m_v;
-	float m_q;
-	GSVector4i m_scissor;
-	GSVector4i m_ofxy;
+	GSVertex m_v = {};
+	float m_q = 1.0f;
+	GSVector4i m_scissor = {};
+	GSVector4i m_ofxy = {};
 
-	u8 m_scanmask_used;
-	bool tex_flushed;
-	bool m_isPackedUV_HackFlag;
+	u8 m_scanmask_used = 0;
+	bool tex_flushed = true;
+	bool m_isPackedUV_HackFlag = false;
 
 	struct
 	{
@@ -154,13 +153,13 @@ protected:
 		u32 head, tail, next, maxcount; // head: first vertex, tail: last vertex + 1, next: last indexed + 1
 		u32 xy_tail;
 		u64 xy[4];
-	} m_vertex;
+	} m_vertex = {};
 
 	struct
 	{
 		u32* buff;
 		u32 tail;
-	} m_index;
+	} m_index = {};
 
 	void UpdateContext();
 	void UpdateScissor();
@@ -213,24 +212,24 @@ public:
 		int draw;
 	};
 
-	GIFPath m_path[4];
-	GIFRegPRIM* PRIM;
-	GSPrivRegSet* m_regs;
+	GIFPath m_path[4] = {};
+	GIFRegPRIM* PRIM = nullptr;
+	GSPrivRegSet* m_regs = nullptr;
 	GSLocalMemory m_mem;
-	GSDrawingEnvironment m_env;
-	GSDrawingEnvironment m_backup_env;
-	GSDrawingEnvironment m_prev_env;
-	GSVector4i temp_draw_rect;
-	GSDrawingContext* m_context;
-	u32 m_crc;
-	CRC::Game m_game;
+	GSDrawingEnvironment m_env = {};
+	GSDrawingEnvironment m_backup_env = {};
+	GSDrawingEnvironment m_prev_env = {};
+	GSVector4i temp_draw_rect = {};
+	GSDrawingContext* m_context = nullptr;
+	u32 m_crc = 0;
+	CRC::Game m_game = {};
 	std::unique_ptr<GSDumpBase> m_dump;
-	bool m_nativeres;
-	bool m_mipmap;
-	u32 m_dirty_gs_regs;
-	int m_backed_up_ctx;
+	bool m_nativeres = false;
+	bool m_mipmap = false;
+	bool m_force_preload = false;
+	u32 m_dirty_gs_regs = 0;
+	int m_backed_up_ctx = 0;
 	std::vector<GSUploadQueue> m_draw_transfers;
-	bool m_force_preload;
 
 	static int s_n;
 
@@ -278,7 +277,7 @@ public:
 		GSREOPEN = 1 << 13,
 	};
 
-	GSFlushReason m_state_flush_reason;
+	GSFlushReason m_state_flush_reason = UNKNOWN;
 
 	enum PRIM_OVERLAP
 	{
@@ -287,7 +286,7 @@ public:
 		PRIM_OVERLAP_NO
 	};
 
-	PRIM_OVERLAP m_prim_overlap;
+	PRIM_OVERLAP m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 	std::vector<size_t> m_drawlist;
 
 	struct GSPCRTCRegs
@@ -297,31 +296,31 @@ public:
 		// these values leave a small black line on the right in a bunch of games, but it's not so bad.
 		// The only conclusion I can come to is there is horizontal overscan expected so there would normally
 		// be black borders either side anyway, or both sides slightly covered.
-		const GSVector4i VideoModeOffsets[6] = {
-			GSVector4i(640, 224, 642, 25),
-			GSVector4i(640, 256, 676, 36),
-			GSVector4i(640, 480, 276, 34),
-			GSVector4i(720, 480, 232, 35),
-			GSVector4i(1280, 720, 302, 24),
-			GSVector4i(1920, 540, 238, 40)
+		static inline constexpr GSVector4i VideoModeOffsets[6] = {
+			GSVector4i::cxpr(640, 224, 642, 25),
+			GSVector4i::cxpr(640, 256, 676, 36),
+			GSVector4i::cxpr(640, 480, 276, 34),
+			GSVector4i::cxpr(720, 480, 232, 35),
+			GSVector4i::cxpr(1280, 720, 302, 24),
+			GSVector4i::cxpr(1920, 540, 238, 40)
 		};
 
-		const GSVector4i VideoModeOffsetsOverscan[6] = {
-			GSVector4i(711, 243, 498, 12),
-			GSVector4i(702, 288, 532, 18),
-			GSVector4i(640, 480, 276, 34),
-			GSVector4i(720, 480, 232, 35),
-			GSVector4i(1280, 720, 302, 24),
-			GSVector4i(1920, 540, 238, 40)
+		static inline constexpr GSVector4i VideoModeOffsetsOverscan[6] = {
+			GSVector4i::cxpr(711, 243, 498, 12),
+			GSVector4i::cxpr(702, 288, 532, 18),
+			GSVector4i::cxpr(640, 480, 276, 34),
+			GSVector4i::cxpr(720, 480, 232, 35),
+			GSVector4i::cxpr(1280, 720, 302, 24),
+			GSVector4i::cxpr(1920, 540, 238, 40)
 		};
 
-		const GSVector4i VideoModeDividers[6] = {
-			GSVector4i(3, 0, 2559, 239),
-			GSVector4i(3, 0, 2559, 287),
-			GSVector4i(1, 0, 1279, 479),
-			GSVector4i(1, 0, 1439, 479),
-			GSVector4i(0, 0, 1279, 719),
-			GSVector4i(0, 0, 1919, 1079)
+		static inline constexpr GSVector4i VideoModeDividers[6] = {
+			GSVector4i::cxpr(3, 0, 2559, 239),
+			GSVector4i::cxpr(3, 0, 2559, 287),
+			GSVector4i::cxpr(1, 0, 1279, 479),
+			GSVector4i::cxpr(1, 0, 1439, 479),
+			GSVector4i::cxpr(0, 0, 1279, 719),
+			GSVector4i::cxpr(0, 0, 1919, 1079)
 		};
 
 		struct PCRTCDisplay
@@ -345,12 +344,12 @@ public:
 			}
 		};
 
-		int videomode;
-		int interlaced;
-		int FFMD;
-		bool PCRTCSameSrc;
-		bool toggling_field;
-		PCRTCDisplay PCRTCDisplays[2];
+		int videomode = 0;
+		int interlaced = 0;
+		int FFMD = 0;
+		bool PCRTCSameSrc = false;
+		bool toggling_field = false;
+		PCRTCDisplay PCRTCDisplays[2] = {};
 
 		bool IsAnalogue()
 		{
