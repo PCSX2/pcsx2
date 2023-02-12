@@ -502,6 +502,7 @@ SCAJ-20008:
   region: "NTSC-Unk"
   gsHWFixes:
     preloadFrameData: 1 # Fixes fog and make lights on cars work again.
+    autoFlush: 1 # Fixes sun luminosity and penetration of objects.
 SCAJ-20009:
   name: "Herdy Gerdy"
   region: "NTSC-Unk"
@@ -10974,6 +10975,7 @@ SLES-50725:
   compat: 5
   gsHWFixes:
     preloadFrameData: 1 # Fixes fog and make lights on cars work again.
+    autoFlush: 1 # Fixes sun luminosity and penetration of objects.
 SLES-50726:
   name: "Myst III - Exile"
   region: "PAL-M6"
@@ -23887,6 +23889,8 @@ SLKA-25213:
   gsHWFixes:
     preloadFrameData: 1 # Partially fixes HUD elements.
     halfPixelOffset: 1 # Fixes misaligned blur around objects and enemies.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes subtitles not showing during FMVs.
 SLKA-25214:
   name: "Final Fantasy X - International [PlayStation 2 - Big Hit Series]"
   region: "NTSC-K"
@@ -28194,6 +28198,7 @@ SLPM-65191:
   region: "NTSC-J"
   gsHWFixes:
     preloadFrameData: 1 # Fixes fog and make lights on cars work again.
+    autoFlush: 1 # Fixes sun luminosity and penetration of objects.
 SLPM-65192:
   name: "NBA Live 2003"
   region: "NTSC-J"
@@ -29409,6 +29414,7 @@ SLPM-65539:
   region: "NTSC-J"
   gsHWFixes:
     preloadFrameData: 1 # Fixes fog and make lights on cars work again.
+    autoFlush: 1 # Fixes sun luminosity and penetration of objects.
 SLPM-65540:
   name: "Galaxy Angel - Moonlit Lovers [First Limited Edition]"
   region: "NTSC-J"
@@ -29874,6 +29880,8 @@ SLPM-65686:
   gsHWFixes:
     preloadFrameData: 1 # Partially fixes HUD elements.
     halfPixelOffset: 1 # Fixes misaligned blur around objects and enemies.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes subtitles not showing during FMVs.
 SLPM-65687:
   name: "Star Wars - Battlefront"
   region: "NTSC-J"
@@ -29884,6 +29892,8 @@ SLPM-65688:
   gsHWFixes:
     preloadFrameData: 1 # Partially fixes HUD elements.
     halfPixelOffset: 1 # Fixes misaligned blur around objects and enemies.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes subtitles not showing during FMVs.
 SLPM-65689:
   name: "Never 7 - The End of Infinity [SuperLite 2000 Series]"
   region: "NTSC-J"
@@ -42876,6 +42886,7 @@ SLUS-20496:
   compat: 5
   gsHWFixes:
     preloadFrameData: 1 # Fixes fog and make lights on cars work again.
+    autoFlush: 1 # Fixes sun luminosity and penetration of objects.
 SLUS-20497:
   name: "Burnout 2 - Point of Impact"
   region: "NTSC-U"
