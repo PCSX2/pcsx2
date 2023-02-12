@@ -960,7 +960,7 @@ void InputManager::GenerateRelativeMouseEvents()
 			const float delta = static_cast<float>(state.delta.exchange(0, std::memory_order_acquire)) / 65536.0f;
 			float value = 0.0f;
 
-			if (axis < 2)
+			if (axis <= static_cast<u32>(InputPointerAxis::Y))
 			{
 				s_pointer_pos[axis] += delta * s_pointer_axis_speed[axis];
 				value = std::clamp(s_pointer_pos[axis], -1.0f, 1.0f);
@@ -975,6 +975,10 @@ void InputManager::GenerateRelativeMouseEvents()
 			}
 			else
 			{
+				// ImGui can consume mouse wheel events when the mouse is over a UI element.
+				if (delta != 0.0f && ImGuiManager::ProcessPointerAxisEvent(key, delta))
+					continue;
+
 				value = std::clamp(delta, -1.0f, 1.0f);
 			}
 
