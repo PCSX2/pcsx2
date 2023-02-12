@@ -66,6 +66,7 @@ bool IOCtlSrc::Reopen()
 
 void IOCtlSrc::SetSpindleSpeed(bool restore_defaults) const
 {
+#ifdef __APPLE__
 	u16 speed = restore_defaults ? 0xFFFF : m_media_type >= 0 ? 5540 :
 																3600;
 	int ioctl_code = m_media_type >= 0 ? DKIOCDVDSETSPEED : DKIOCCDSETSPEED;
@@ -77,6 +78,10 @@ void IOCtlSrc::SetSpindleSpeed(bool restore_defaults) const
 	{
 		DevCon.WriteLn("CDVD: Spindle speed set to %d", speed);
 	}
+#else
+	// FIXME: FreeBSD equivalent for DKIOCDVDSETSPEED DKIOCCDSETSPEED.
+	DevCon.Warning("CDVD: Setting spindle speed not supported!");
+#endif
 }
 
 u32 IOCtlSrc::GetSectorCount() const
