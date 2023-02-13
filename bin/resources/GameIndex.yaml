@@ -24522,6 +24522,8 @@ SLPM-55005:
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes missing graphical effects.
 SLPM-55008:
   name: "Sengoku Basara X"
   region: "NTSC-J"
@@ -24689,6 +24691,8 @@ SLPM-55114:
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes missing graphical effects.
 SLPM-55117:
   name: "beatmania IIDX 15 DJ TROOPERS"
   region: "NTSC-J"
@@ -49863,6 +49867,8 @@ SLUS-21890:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes missing graphical effects.
 SLUS-21891:
   name: "G-Force"
   region: "NTSC-U"
