@@ -10562,6 +10562,7 @@ SLES-50481:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes geometry alignment, removing lines.
+    textureInsideRT: 1 # Fixes underwater rendering.
 SLES-50484:
   name: "Rayman M"
   region: "PAL-Unk"
@@ -23622,6 +23623,12 @@ SLKA-25120:
   region: "NTSC-K"
   gsHWFixes:
     autoFlush: 1 # Reduces post-processing misalignment.
+SLKA-25121:
+  name: "Vexx"
+  region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes geometry alignment, removing lines.
+    textureInsideRT: 1 # Fixes underwater rendering.
 SLKA-25122:
   name: "Sonic Heroes"
   region: "NTSC-K"
@@ -42327,6 +42334,7 @@ SLUS-20383:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes geometry alignment, removing lines.
+    textureInsideRT: 1 # Fixes underwater rendering.
 SLUS-20384:
   name: "SkyGunner"
   region: "NTSC-U"
