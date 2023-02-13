@@ -775,19 +775,22 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 		// From a performance point of view, it might cost a little on big upscaling
 		// but normally few RT are miss so it must remain reasonable.
 		const bool supported_fmt = !GSConfig.UserHacks_DisableDepthSupport || psm_s.depth == 0;
-		const bool forced_preload = GSRendererHW::GetInstance()->m_force_preload > 0;
-		if ((is_frame || preload || forced_preload) && TEX0.TBW > 0 && supported_fmt)
+
+		if (TEX0.TBW > 0 && supported_fmt)
 		{
-			if (!is_frame && !forced_preload)
+			const bool forced_preload = GSRendererHW::GetInstance()->m_force_preload > 0;
+			const GSVector4i newrect = GSVector4i(0, 0, real_w, real_h);
+
+			if (!is_frame && !forced_preload && !preload)
 			{
 				std::vector<GSState::GSUploadQueue>::iterator iter;
 				for (iter = GSRendererHW::GetInstance()->m_draw_transfers.begin(); iter != GSRendererHW::GetInstance()->m_draw_transfers.end(); )
 				{
-					if (iter->blit.DBP == TEX0.TBP0 && GSUtil::HasSharedBits(iter->blit.DPSM, TEX0.PSM))
+					// If the format, and location doesn't match, but also the upload is at least the size of the target, don't preload.
+					if (iter->blit.DBP == TEX0.TBP0 && GSUtil::HasCompatibleBits(iter->blit.DPSM, TEX0.PSM) && iter->rect.rintersect(newrect).eq(newrect))
 					{
 						GSRendererHW::GetInstance()->m_draw_transfers.erase(iter);
 						GL_INS("Preloading the RT DATA");
-						const GSVector4i newrect = GSVector4i(0, 0, real_w, real_h);
 						AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW);
 						dst->Update(true);
 						break;
@@ -798,7 +801,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 			else
 			{
 				GL_INS("Preloading the RT DATA");
-				const GSVector4i newrect = GSVector4i(0, 0, real_w, real_h);
 				AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW);
 				dst->Update(true);
 			}

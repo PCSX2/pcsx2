@@ -166,10 +166,15 @@ void GSRendererHW::VSync(u32 field, bool registers_written)
 				if ((s_n - iter->draw) > 5)
 					iter = m_draw_transfers.erase(iter);
 				else
+				{
 					iter++;
+				}
+
 			}
 		}
 	}
+	else
+		m_draw_transfers.clear();
 
 	if (GSConfig.LoadTextureReplacements)
 		GSTextureReplacements::ProcessAsyncLoadedTextures();
@@ -1328,7 +1333,7 @@ void GSRendererHW::Draw()
 	}
 
 	// SW CLUT Render enable.
-	bool preload = GSConfig.PreloadFrameWithGSData | (m_force_preload > 0);
+	bool force_preload = GSConfig.PreloadFrameWithGSData;
 	if (GSConfig.UserHacks_CPUCLUTRender > 0 || GSConfig.UserHacks_GPUTargetCLUTMode != GSGPUTargetCLUTMode::Disabled)
 	{
 		const CLUTDrawTestResult result = (GSConfig.UserHacks_CPUCLUTRender == 2) ? PossibleCLUTDrawAggressive() : PossibleCLUTDraw();
@@ -1349,7 +1354,7 @@ void GSRendererHW::Draw()
 				!IsOpaque()) // Blending enabled
 			{
 				GL_INS("Forcing preload due to partial/blended CLUT draw");
-				preload = m_force_preload = true;
+				force_preload = true;
 			}
 		}
 	}
@@ -1556,7 +1561,7 @@ void GSRendererHW::Draw()
 
 	GSTextureCache::Target* rt = nullptr;
 	if (!no_rt)
-		rt = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::RenderTarget, true, fm, false, unscaled_target_size.x, unscaled_target_size.y, preload);
+		rt = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::RenderTarget, true, fm, false, unscaled_target_size.x, unscaled_target_size.y, force_preload);
 
 	TEX0.TBP0 = context->ZBUF.Block();
 	TEX0.TBW = context->FRAME.FBW;
@@ -1564,7 +1569,7 @@ void GSRendererHW::Draw()
 
 	GSTextureCache::Target* ds = nullptr;
 	if (!no_ds)
-		ds = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::DepthStencil, context->DepthWrite(), 0, false, 0, 0, preload);
+		ds = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::DepthStencil, context->DepthWrite(), 0, false, unscaled_target_size.x, unscaled_target_size.y, force_preload);
 
 	if (process_texture)
 	{
