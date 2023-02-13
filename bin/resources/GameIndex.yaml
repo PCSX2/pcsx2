@@ -33638,7 +33638,7 @@ SLPM-66675:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 1 # Fixes effects.
-    halfPixelOffset: 1 # Fixes upscaling artifacts.
+    roundSprite: 2 # Fixes upscaling artifacts.
   compat: 5
   memcardFilters: # Reads Re:Chain data and vice-versa.
     - "SLPM-66675"
