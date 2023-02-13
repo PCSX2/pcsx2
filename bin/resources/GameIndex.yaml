@@ -39219,7 +39219,8 @@ SLPS-25657:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_FightingBeautyWulong"
+    autoFlush: 1 # Helps ghosting.
+    halfPixelOffset: 2 # Helps ghosting when upscaling.
 SLPS-25658:
   name: "Binchou-Tan - Shiwase Goyomi [Shokai Genteiban]"
   region: "NTSC-J"
