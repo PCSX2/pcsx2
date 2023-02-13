@@ -10016,6 +10016,9 @@ SLES-50215:
 SLES-50217:
   name: "Dave Mirra Freestyle BMX 2"
   region: "PAL-E-S"
+  gsHWFixes:
+    mipmap: 2 # Fixes noisy bumpy textures.
+    trilinearFiltering: 1 # Smoothes out mipmapping
 SLES-50218:
   name: "All-Star Baseball 2002"
   region: "PAL-E"
@@ -11378,6 +11381,10 @@ SLES-50846:
 SLES-50848:
   name: "Speed Kings"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned bloom.
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Fixes graphical corruption.
   patches:
     4C133D9D:
       content: |-
@@ -15928,15 +15935,23 @@ SLES-52908:
 SLES-52909:
   name: "UEFA Champions League 2004-2005"
   region: "PAL-E-G"
+  gameFixes:
+    - EETimingHack # Fixes graphical corruption.
 SLES-52910:
   name: "UEFA Champions League 2005"
   region: "PAL-F-G"
+  gameFixes:
+    - EETimingHack # Fixes graphical corruption.
 SLES-52911:
   name: "UEFA Champions League 2005"
   region: "PAL-I-S"
+  gameFixes:
+    - EETimingHack # Fixes graphical corruption.
 SLES-52912:
   name: "UEFA Champions League 2005"
   region: "PAL-E-DU"
+  gameFixes:
+    - EETimingHack # Fixes graphical corruption.
 SLES-52913:
   name: "Suikoden IV"
   region: "PAL-M5"
@@ -41384,6 +41399,9 @@ SLUS-20159:
   name: "Dave Mirra Freestyle BMX 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Fixes noisy bumpy textures.
+    trilinearFiltering: 1 # Smoothes out mipmapping
 SLUS-20160:
   name: "Winback - Covert Operations"
   region: "NTSC-U"
@@ -43341,6 +43359,10 @@ SLUS-20584:
   name: "Speed Kings"
   region: "NTSC-U"
   compat: 3
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned bloom.
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Fixes graphical corruption.
   patches:
     C90920FC:
       content: |-
