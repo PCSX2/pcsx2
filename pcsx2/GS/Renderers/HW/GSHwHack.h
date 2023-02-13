@@ -39,7 +39,6 @@ public:
 	static bool GSC_Kunoichi(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_ZettaiZetsumeiToshi2(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_SakuraWarsSoLongMyLove(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_FightingBeautyWulong(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_GodHand(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_KnightsOfTheTemple2(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_UltramanFightingEvolution(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
