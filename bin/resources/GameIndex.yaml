@@ -1493,6 +1493,10 @@ SCAJ-25034:
 SCAJ-25037:
   name: "Astro Boy Atom"
   region: "NTSC-Unk"
+  roundModes:
+    eeRoundMode: 0 # Fixes character behaviour.
+  gsHWFixes:
+    autoFlush: 1 # Fixes flame bloom.
 SCAJ-25045:
   name: "Sakura Taisen V - Episode 0"
   region: "NTSC-Unk"
@@ -8940,6 +8944,10 @@ SLAJ-25035:
 SLAJ-25037:
   name: "Astro Boy Atom"
   region: "NTSC-Unk"
+  roundModes:
+    eeRoundMode: 0 # Fixes character behaviour.
+  gsHWFixes:
+    autoFlush: 1 # Fixes flame bloom.
 SLAJ-25039:
   name: "Beni no Umi 2"
   region: "NTSC-Unk"
@@ -9298,6 +9306,8 @@ SLED-52485:
   region: "PAL-E"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes lights penetrating objects.
+    autoFlush: 1 # Helps with the light penetration problem.
+    cpuSpriteRenderBW: 1 # Fixes light glows.
 SLED-52488:
   name: "Suffering, The [Demo]"
   region: "PAL-E"
@@ -13410,11 +13420,15 @@ SLES-51821:
   region: "PAL-M5"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes lights penetrating objects.
+    autoFlush: 1 # Helps with the light penetration problem.
+    cpuSpriteRenderBW: 1 # Fixes light glows.
 SLES-51822:
   name: "Alias"
   region: "PAL-I"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes lights penetrating objects.
+    autoFlush: 1 # Helps with the light penetration problem.
+    cpuSpriteRenderBW: 1 # Fixes light glows.
 SLES-51823:
   name: "Hunter - The Reckoning Wayward"
   region: "PAL-M3"
@@ -14847,6 +14861,8 @@ SLES-52486:
   region: "PAL-M5"
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
+  gsHWFixes:
+    autoFlush: 1 # Fixes flame bloom.
 SLES-52490:
   name: "Dance UK - Extra Trax"
   region: "PAL-E"
@@ -23731,6 +23747,8 @@ SLKA-25159:
   region: "NTSC-K"
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
+  gsHWFixes:
+    autoFlush: 1 # Fixes flame bloom.
 SLKA-25160:
   name: "Shin Megami Tensei III - Nocturne Maniax"
   region: "NTSC-K"
@@ -29467,6 +29485,8 @@ SLPM-65551:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
+  gsHWFixes:
+    autoFlush: 1 # Fixes flame bloom.
 SLPM-65552:
   name: "Metal Wolf Rev [Limited Edition]"
   region: "NTSC-J"
@@ -43746,6 +43766,8 @@ SLUS-20673:
   compat: 5
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes lights penetrating objects.
+    autoFlush: 1 # Helps with the light penetration problem.
+    cpuSpriteRenderBW: 1 # Fixes light glows.
 SLUS-20674:
   name: "Cyber Troopers - Virtual-On Marz"
   region: "NTSC-U"
@@ -44659,6 +44681,8 @@ SLUS-20867:
   compat: 5
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
+  gsHWFixes:
+    autoFlush: 1 # Fixes flame bloom.
 SLUS-20868:
   name: "MVP Baseball 2004"
   region: "NTSC-U"
