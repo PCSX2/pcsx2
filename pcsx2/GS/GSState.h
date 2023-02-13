@@ -209,6 +209,7 @@ public:
 	struct GSUploadQueue
 	{
 		GIFRegBITBLTBUF blit;
+		GSVector4i rect;
 		int draw;
 	};
 
