@@ -2923,7 +2923,7 @@ __forceinline void GSState::HandleAutoFlush()
 
 				const GSVector2i offset = GSVector2i(m_context->XYOFFSET.OFX, m_context->XYOFFSET.OFY);
 				const GSVector4i scissor = GSVector4i(m_context->scissor.in);
-				GSVector4i old_tex_rect = GSVector4i(0, 0, 0, 0);
+				GSVector4i old_tex_rect = GSVector4i::zero();
 				int current_draw_end = m_index.tail;
 
 				while (current_draw_end >= n)

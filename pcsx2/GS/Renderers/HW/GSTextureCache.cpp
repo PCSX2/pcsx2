@@ -386,11 +386,18 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 						// 2/ even with upscaling
 						// 3/ for both Direct3D and OpenGL
 						if (GSConfig.UserHacks_CPUFBConversion && (psm == PSM_PSMT4 || psm == PSM_PSMT8))
+						{
 							// Forces 4-bit and 8-bit frame buffer conversion to be done on the CPU instead of the GPU, but performance will be slower.
 							// There is no dedicated shader to handle 4-bit conversion (Stuntman has been confirmed to use 4-bit).
 							// Direct3D10/11 and OpenGL support 8-bit fb conversion but don't render some corner cases properly (Harry Potter games).
 							// The hack can fix glitches in some games.
-							Read(t, t->m_valid);
+							if (!t->m_drawn_since_read.rempty())
+							{
+								Read(t, t->m_drawn_since_read);
+
+								t->m_drawn_since_read = GSVector4i::zero();
+							}
+						}
 						else
 							dst = t;
 
@@ -762,7 +769,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 		GL_CACHE("TC: Lookup %s(%s) %dx%d, miss (0x%x, %s)", is_frame ? "Frame" : "Target", to_string(type), size.x, size.y, bp, psm_str(TEX0.PSM));
 
 		dst = CreateTarget(TEX0, size.x, size.y, type, true);
-
 		// In theory new textures contain invalidated data. Still in theory a new target
 		// must contains the content of the GS memory.
 		// In practice, TC will wrongly invalidate some RT. For example due to write on the alpha
@@ -813,7 +819,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 	}
 	if (is_frame)
 		dst->m_dirty_alpha = false;
-	
+
+	dst->readbacks_since_draw = 0;
 
 	assert(dst && dst->m_texture && dst->m_texture->GetScale() == new_s);
 	assert(dst && dst->m_dirty.empty());
@@ -1410,7 +1417,14 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 				{
 					if (GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
-						Read(t, r.rintersect(t->m_valid));
+					{
+						const GSVector4i draw_rect = (t->readbacks_since_draw > 0) ? t->m_drawn_since_read : r.rintersect(t->m_drawn_since_read);
+						Read(t, draw_rect);
+
+						t->readbacks_since_draw++;
+						if(draw_rect.rintersect(t->m_drawn_since_read).eq(t->m_drawn_since_read))
+							t->m_drawn_since_read = GSVector4i::zero();
+					}
 				}
 			}
 		}
@@ -1449,6 +1463,10 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				// note: r.rintersect breaks Wizardry and Chaos Legion
 				// Read(t, t->m_valid) works in all tested games but is very slow in GUST titles ><
 
+				// If the game has been spamming downloads, we've already read the whole texture back at this point.
+				if (t->m_drawn_since_read.rempty())
+					continue;
+
 				// propagate the format from the result of a channel effect
 				// texture is 16/8 bit but the real data is 32
 				// common use for shuffling is moving data into the alpha channel
@@ -1464,16 +1482,39 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 					const GSVector4i rb_rc((!GSConfig.UserHacks_DisablePartialInvalidation && targetr.x == 0 && targetr.y == 0) ? t->m_valid : targetr.rintersect(t->m_valid));
 					DevCon.Error("Skipping depth readback of %ux%u @ %u,%u", rb_rc.width(), rb_rc.height(), rb_rc.left, rb_rc.top);
 				}
-				else if (GSConfig.UserHacks_DisablePartialInvalidation)
-				{
-					Read(t, targetr.rintersect(t->m_valid));
-				}
 				else
 				{
-					if (targetr.x == 0 && targetr.y == 0) // Full screen read?
-						Read(t, t->m_valid);
-					else // Block level read?
-						Read(t, targetr.rintersect(t->m_valid));
+					// If it's a download to the EE, or we've done multiple reads of the same texture between draws, just get it all.
+					if (!GSConfig.UserHacks_DisablePartialInvalidation && t->readbacks_since_draw > 0)
+					{
+						Read(t, t->m_drawn_since_read);
+						t->m_drawn_since_read = GSVector4i::zero();
+						t->readbacks_since_draw++;
+					}
+					else if(!targetr.rintersect(t->m_drawn_since_read).rempty()) // Block level read?
+					{
+						// Read full width of drawn area, it's not much slower and makes invalidation easier.
+						GSVector4i full_lines = GSVector4i(0, targetr.y, t->m_valid.z, targetr.w);
+						full_lines = full_lines.rintersect(t->m_drawn_since_read);
+
+						Read(t, full_lines);
+
+						// After reading, try to cut down our "dirty" rect.
+						if (full_lines.rintersect(t->m_drawn_since_read).eq(t->m_drawn_since_read))
+							t->m_drawn_since_read = GSVector4i::zero();
+						else
+						{
+							// Try to cut down how much we read next, if we can.
+							if (full_lines.w >= t->m_drawn_since_read.y)
+							{
+								if (full_lines.y <= t->m_drawn_since_read.y)
+									t->m_drawn_since_read.y = full_lines.w;
+								else if (full_lines.w >= t->m_drawn_since_read.w)
+									t->m_drawn_since_read.w = full_lines.y;
+							}
+						}
+						t->readbacks_since_draw++;
+					}
 				}
 			}
 		}
@@ -3194,6 +3235,7 @@ void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
 	else
 		m_valid = m_valid.runion(rect);
 
+	m_drawn_since_read = m_drawn_since_read.runion(rect);
 	// Block of the bottom right texel of the validity rectangle, last valid block of the texture
 	// TODO: This is not correct when the PSM changes. e.g. a 512x448 target being shuffled will become 512x896 temporarily, and
 	// at the moment, we blow the valid rect out to twice the size. The only thing stopping everything breaking is the fact

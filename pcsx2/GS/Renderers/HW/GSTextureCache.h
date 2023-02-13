@@ -234,13 +234,15 @@ public:
 	class Target : public Surface
 	{
 	public:
-		const int m_type;
-		bool m_used;
+		const int m_type = 0;
+		bool m_used = false;
 		GSDirtyRectList m_dirty;
-		GSVector4i m_valid;
-		const bool m_depth_supported;
-		bool m_dirty_alpha;
-		bool m_is_frame;
+		GSVector4i m_valid{};
+		GSVector4i m_drawn_since_read{};
+		const bool m_depth_supported = false;
+		bool m_dirty_alpha = true;
+		bool m_is_frame = false;
+		int readbacks_since_draw = 0;
 
 	public:
 		Target(const GIFRegTEX0& TEX0, const bool depth_supported, const int type);
