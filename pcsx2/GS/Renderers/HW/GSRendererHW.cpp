@@ -1361,7 +1361,10 @@ void GSRendererHW::Draw()
 
 	if (m_channel_shuffle)
 	{
-		m_channel_shuffle = draw_sprite_tex && (m_context->TEX0.PSM == PSM_PSMT8) && single_page;
+		// NFSU2 does consecutive channel shuffles with blending, reducing the alpha channel over time.
+		// Fortunately, it seems to change the FBMSK along the way, so this check alone is sufficient.
+		m_channel_shuffle = draw_sprite_tex && m_context->TEX0.PSM == PSM_PSMT8 && single_page &&
+							m_last_channel_shuffle_fbmsk == m_context->FRAME.FBMSK;
 		if (m_channel_shuffle)
 		{
 			GL_CACHE("Channel shuffle effect detected SKIP");
@@ -1375,6 +1378,7 @@ void GSRendererHW::Draw()
 		{
 			GL_INS("Channel shuffle effect detected");
 			m_channel_shuffle = true;
+			m_last_channel_shuffle_fbmsk = m_context->FRAME.FBMSK;
 		}
 		else
 		{
@@ -1621,6 +1625,7 @@ void GSRendererHW::Draw()
 		{
 			GL_INS("Channel shuffle effect detected (2nd shot)");
 			m_channel_shuffle = true;
+			m_last_channel_shuffle_fbmsk = m_context->FRAME.FBMSK;
 		}
 		else
 		{

@@ -107,8 +107,10 @@ private:
 	int m_skip = 0;
 	int m_skip_offset = 0;
 
-	bool m_tex_is_fb = false;
+	u32 m_last_channel_shuffle_fbmsk = 0;
 	bool m_channel_shuffle = false;
+
+	bool m_tex_is_fb = false;
 	bool m_userhacks_tcoffset = false;
 	float m_userhacks_tcoffset_x = 0.0f;
 	float m_userhacks_tcoffset_y = 0.0f;
