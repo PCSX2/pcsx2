@@ -9274,6 +9274,8 @@ SLED-51901:
 SLED-52326:
   name: "007 - Everything or Nothing [Demo]"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes lines in cutscenes.
 SLED-52375:
   name: "Fight Night 2004 [Demo]"
   region: "PAL-E"
@@ -13916,6 +13918,8 @@ SLES-52005:
   name: "007 - Everything or Nothing"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes lines in cutscenes.
 SLES-52008:
   name: "NBA Live 2004"
   region: "PAL-M5"
@@ -14008,6 +14012,8 @@ SLES-52046:
   name: "007 - Everything or Nothing"
   region: "PAL-F-G"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes lines in cutscenes.
 SLES-52047:
   name: "Sims, The - Bustin' Out"
   region: "PAL-M6"
@@ -29169,6 +29175,8 @@ SLPM-65445:
 SLPM-65446:
   name: "007 - Everything or Nothing"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes lines in cutscenes.
 SLPM-65447:
   name: "Kunoichi"
   region: "NTSC-J"
@@ -30076,6 +30084,8 @@ SLPM-65724:
 SLPM-65725:
   name: "007 - Everything or Nothing [EA Best Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes lines in cutscenes.
 SLPM-65726:
   name: "Star Wars - Jango Fett [EA Best Hits]"
   region: "NTSC-J"
@@ -44151,6 +44161,8 @@ SLUS-20751:
   name: "007 - Everything or Nothing"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes lines in cutscenes.
 SLUS-20752:
   name: "Madden NFL 2004"
   region: "NTSC-U"
@@ -50657,6 +50669,8 @@ SLUS-29093:
 SLUS-29095:
   name: "007 - Everything or Nothing [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes lines in cutscenes.
 SLUS-29096:
   name: "Final Night 2004 [Demo]"
   region: "NTSC-U"
