@@ -1245,7 +1245,6 @@ SCAJ-20159:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
-    texturePreloading: 1 # Improves performance.
 SCAJ-20160:
   name: "Yoshitsuneki"
   region: "NTSC-Unk"
@@ -1494,6 +1493,10 @@ SCAJ-25034:
 SCAJ-25037:
   name: "Astro Boy Atom"
   region: "NTSC-Unk"
+  roundModes:
+    eeRoundMode: 0 # Fixes character behaviour.
+  gsHWFixes:
+    autoFlush: 1 # Fixes flame bloom.
 SCAJ-25045:
   name: "Sakura Taisen V - Episode 0"
   region: "NTSC-Unk"
@@ -2520,6 +2523,16 @@ SCED-53622:
 SCED-53660:
   name: "Jak X & Ratchet Gladiator [Demo]"
   region: "PAL"
+SCED-53674:
+  name: "Soul Calibur III [Demo]"
+  region: "PAL-E"
+  gameFixes:
+    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
+  clampModes:
+    vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
+    halfPixelOffset: 1 # Fixes blurriness.
 SCED-53679:
   name: "Fire It Up Lads [Demo]"
   region: "PAL-E"
@@ -3909,7 +3922,6 @@ SCES-53312:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
-    texturePreloading: 1 # Improves performance.
 SCES-53315:
   name: "EyeToy - Play 3"
   region: "PAL-M12"
@@ -5108,7 +5120,6 @@ SCKA-20059:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
-    texturePreloading: 1 # Improves performance.
 SCKA-20060:
   name: "Ratchet - Deadlocked"
   region: "NTSC-K"
@@ -8933,6 +8944,10 @@ SLAJ-25035:
 SLAJ-25037:
   name: "Astro Boy Atom"
   region: "NTSC-Unk"
+  roundModes:
+    eeRoundMode: 0 # Fixes character behaviour.
+  gsHWFixes:
+    autoFlush: 1 # Fixes flame bloom.
 SLAJ-25039:
   name: "Beni no Umi 2"
   region: "NTSC-Unk"
@@ -9291,6 +9306,8 @@ SLED-52485:
   region: "PAL-E"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes lights penetrating objects.
+    autoFlush: 1 # Helps with the light penetration problem.
+    cpuSpriteRenderBW: 1 # Fixes light glows.
 SLED-52488:
   name: "Suffering, The [Demo]"
   region: "PAL-E"
@@ -9999,6 +10016,9 @@ SLES-50215:
 SLES-50217:
   name: "Dave Mirra Freestyle BMX 2"
   region: "PAL-E-S"
+  gsHWFixes:
+    mipmap: 2 # Fixes noisy bumpy textures.
+    trilinearFiltering: 1 # Smoothes out mipmapping
 SLES-50218:
   name: "All-Star Baseball 2002"
   region: "PAL-E"
@@ -10562,6 +10582,7 @@ SLES-50481:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes geometry alignment, removing lines.
+    textureInsideRT: 1 # Fixes underwater rendering.
 SLES-50484:
   name: "Rayman M"
   region: "PAL-Unk"
@@ -11360,6 +11381,10 @@ SLES-50846:
 SLES-50848:
   name: "Speed Kings"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned bloom.
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Fixes graphical corruption.
   patches:
     4C133D9D:
       content: |-
@@ -13402,11 +13427,15 @@ SLES-51821:
   region: "PAL-M5"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes lights penetrating objects.
+    autoFlush: 1 # Helps with the light penetration problem.
+    cpuSpriteRenderBW: 1 # Fixes light glows.
 SLES-51822:
   name: "Alias"
   region: "PAL-I"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes lights penetrating objects.
+    autoFlush: 1 # Helps with the light penetration problem.
+    cpuSpriteRenderBW: 1 # Fixes light glows.
 SLES-51823:
   name: "Hunter - The Reckoning Wayward"
   region: "PAL-M3"
@@ -14839,6 +14868,8 @@ SLES-52486:
   region: "PAL-M5"
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
+  gsHWFixes:
+    autoFlush: 1 # Fixes flame bloom.
 SLES-52490:
   name: "Dance UK - Extra Trax"
   region: "PAL-E"
@@ -15904,15 +15935,23 @@ SLES-52908:
 SLES-52909:
   name: "UEFA Champions League 2004-2005"
   region: "PAL-E-G"
+  gameFixes:
+    - EETimingHack # Fixes graphical corruption.
 SLES-52910:
   name: "UEFA Champions League 2005"
   region: "PAL-F-G"
+  gameFixes:
+    - EETimingHack # Fixes graphical corruption.
 SLES-52911:
   name: "UEFA Champions League 2005"
   region: "PAL-I-S"
+  gameFixes:
+    - EETimingHack # Fixes graphical corruption.
 SLES-52912:
   name: "UEFA Champions League 2005"
   region: "PAL-E-DU"
+  gameFixes:
+    - EETimingHack # Fixes graphical corruption.
 SLES-52913:
   name: "Suikoden IV"
   region: "PAL-M5"
@@ -23622,6 +23661,12 @@ SLKA-25120:
   region: "NTSC-K"
   gsHWFixes:
     autoFlush: 1 # Reduces post-processing misalignment.
+SLKA-25121:
+  name: "Vexx"
+  region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes geometry alignment, removing lines.
+    textureInsideRT: 1 # Fixes underwater rendering.
 SLKA-25122:
   name: "Sonic Heroes"
   region: "NTSC-K"
@@ -23717,6 +23762,8 @@ SLKA-25159:
   region: "NTSC-K"
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
+  gsHWFixes:
+    autoFlush: 1 # Fixes flame bloom.
 SLKA-25160:
   name: "Shin Megami Tensei III - Nocturne Maniax"
   region: "NTSC-K"
@@ -24515,6 +24562,8 @@ SLPM-55005:
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes missing graphical effects.
 SLPM-55008:
   name: "Sengoku Basara X"
   region: "NTSC-J"
@@ -24682,6 +24731,8 @@ SLPM-55114:
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes missing graphical effects.
 SLPM-55117:
   name: "beatmania IIDX 15 DJ TROOPERS"
   region: "NTSC-J"
@@ -25304,7 +25355,6 @@ SLPM-61133:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
-    texturePreloading: 1 # Improves performance.
 SLPM-61135:
   name: "Naruto - Narutimett Hero 3 [Trial Version]"
   region: "NTSC-J"
@@ -29450,6 +29500,8 @@ SLPM-65551:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
+  gsHWFixes:
+    autoFlush: 1 # Fixes flame bloom.
 SLPM-65552:
   name: "Metal Wolf Rev [Limited Edition]"
   region: "NTSC-J"
@@ -33621,7 +33673,7 @@ SLPM-66675:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 1 # Fixes effects.
-    halfPixelOffset: 1 # Fixes upscaling artifacts.
+    roundSprite: 2 # Fixes upscaling artifacts.
   compat: 5
   memcardFilters: # Reads Re:Chain data and vice-versa.
     - "SLPM-66675"
@@ -38787,7 +38839,6 @@ SLPS-25577:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
-    texturePreloading: 1 # Improves performance.
 SLPS-25578:
   name: "K-1 World Grand Prix 2005"
   region: "NTSC-J"
@@ -41348,6 +41399,9 @@ SLUS-20159:
   name: "Dave Mirra Freestyle BMX 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Fixes noisy bumpy textures.
+    trilinearFiltering: 1 # Smoothes out mipmapping
 SLUS-20160:
   name: "Winback - Covert Operations"
   region: "NTSC-U"
@@ -42327,6 +42381,7 @@ SLUS-20383:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes geometry alignment, removing lines.
+    textureInsideRT: 1 # Fixes underwater rendering.
 SLUS-20384:
   name: "SkyGunner"
   region: "NTSC-U"
@@ -43304,6 +43359,10 @@ SLUS-20584:
   name: "Speed Kings"
   region: "NTSC-U"
   compat: 3
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned bloom.
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Fixes graphical corruption.
   patches:
     C90920FC:
       content: |-
@@ -43729,6 +43788,8 @@ SLUS-20673:
   compat: 5
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes lights penetrating objects.
+    autoFlush: 1 # Helps with the light penetration problem.
+    cpuSpriteRenderBW: 1 # Fixes light glows.
 SLUS-20674:
   name: "Cyber Troopers - Virtual-On Marz"
   region: "NTSC-U"
@@ -44642,6 +44703,8 @@ SLUS-20867:
   compat: 5
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
+  gsHWFixes:
+    autoFlush: 1 # Fixes flame bloom.
 SLUS-20868:
   name: "MVP Baseball 2004"
   region: "NTSC-U"
@@ -46473,7 +46536,6 @@ SLUS-21216:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
-    texturePreloading: 1 # Improves performance.
 SLUS-21217:
   name: "Incredibles, The - Rise of the Underminer"
   region: "NTSC-U"
@@ -49855,6 +49917,8 @@ SLUS-21890:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
+  speedHacks:
+    mvuFlagSpeedHack: 0 # Fixes missing graphical effects.
 SLUS-21891:
   name: "G-Force"
   region: "NTSC-U"

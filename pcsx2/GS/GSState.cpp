@@ -1758,14 +1758,18 @@ void GSState::Write(const u8* mem, int len)
 	// Invalid the CLUT if it crosses paths.
 	m_mem.m_clut.InvalidateRange(write_start_bp, write_end_bp);
 
-	if (GSConfig.PreloadFrameWithGSData)
+	GSVector4i r;
+
+	r.left = m_env.TRXPOS.DSAX;
+	r.top = m_env.TRXPOS.DSAY;
+	r.right = r.left + m_env.TRXREG.RRW;
+	r.bottom = r.top + m_env.TRXREG.RRH;
+
+	// Store the transfer for preloading new RT's.
+	if (m_draw_transfers.size() == 0 || (m_draw_transfers.size() > 0 && blit.DBP != m_draw_transfers.back().blit.DBP))
 	{
-		// Store the transfer for preloading new RT's.
-		if (m_draw_transfers.size() == 0 || (m_draw_transfers.size() > 0 && blit.DBP != m_draw_transfers.back().blit.DBP))
-		{
-			GSUploadQueue new_transfer = { blit, s_n };
-			m_draw_transfers.push_back(new_transfer);
-		}
+		GSUploadQueue new_transfer = { blit, r, s_n };
+		m_draw_transfers.push_back(new_transfer);
 	}
 
 	GL_CACHE("Write! ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d)",
@@ -1776,12 +1780,6 @@ void GSState::Write(const u8* mem, int len)
 	if (m_tr.end == 0 && len >= m_tr.total)
 	{
 		// received all data in one piece, no need to buffer it
-		GSVector4i r;
-
-		r.left = m_env.TRXPOS.DSAX;
-		r.top = m_env.TRXPOS.DSAY;
-		r.right = r.left + m_env.TRXREG.RRW;
-		r.bottom = r.top + m_env.TRXREG.RRH;
 		ExpandTarget(m_env.BITBLTBUF, r);
 		InvalidateVideoMem(blit, r, true);
 
@@ -1917,15 +1915,20 @@ void GSState::Move()
 		Flush(GSFlushReason::LOCALTOLOCALMOVE);
 	}
 
-	if (GSConfig.PreloadFrameWithGSData)
+	// Store the transfer for preloading new RT's.
+	if (m_draw_transfers.size() == 0 || (m_draw_transfers.size() > 0 && dbp != m_draw_transfers.back().blit.DBP))
 	{
-		// Store the transfer for preloading new RT's.
-		if (m_draw_transfers.size() == 0 || (m_draw_transfers.size() > 0 && dbp != m_draw_transfers.back().blit.DBP))
-		{
-			GSUploadQueue new_transfer = { m_env.BITBLTBUF, s_n };
-			m_draw_transfers.push_back(new_transfer);
-		}
+		GSVector4i r;
+
+		r.left = m_env.TRXPOS.DSAX;
+		r.top = m_env.TRXPOS.DSAY;
+		r.right = r.left + m_env.TRXREG.RRW;
+		r.bottom = r.top + m_env.TRXREG.RRH;
+
+		GSUploadQueue new_transfer = { m_env.BITBLTBUF, r, s_n };
+		m_draw_transfers.push_back(new_transfer);
 	}
+
 	// Invalid the CLUT if it crosses paths.
 	m_mem.m_clut.InvalidateRange(write_start_bp, write_end_bp);
 
