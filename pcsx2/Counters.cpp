@@ -605,6 +605,9 @@ static __fi void VSyncStart(u32 sCycle)
 	PAD::Update();
 
 	VSyncUpdateCore();
+	frameLimit(); // limit FPS
+	gsPostVsyncStart(); // MUST be after framelimit; doing so before causes funk with frame times!
+	VSyncCheckExit();
 
 	if(EmuConfig.Trace.Enabled && EmuConfig.Trace.EE.m_EnableAll)
 		SysTrace.EE.Counters.Write( "    ================  EE COUNTER VSYNC START (frame: %d)  ================", g_FrameCount );
@@ -671,9 +674,6 @@ static __fi void VSyncEnd(u32 sCycle)
 	if (!(g_FrameCount % 60))
 		sioNextFrame();
 
-	frameLimit(); // limit FPS
-	gsPostVsyncStart(); // MUST be after framelimit; doing so before causes funk with frame times!
-	VSyncCheckExit();
 	// This doesn't seem to be needed here.  Games only seem to break with regard to the
 	// vsyncstart irq.
 	//cpuRegs.eCycle[30] = 2;
