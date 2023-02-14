@@ -1228,7 +1228,7 @@ struct Pcsx2Config
 		// TODO - Vaser - where are these settings exposed in the Qt UI?
 		EnableRecordingTools : 1,
 		EnableGameFixes : 1, // enables automatic game fixes
-		SaveStateOnShutdown : 0, // default value for saving state on shutdown
+		SaveStateOnShutdown : 1, // default value for saving state on shutdown
 		EnableDiscordPresence : 1, // enables discord rich presence integration
 		InhibitScreensaver : 1,
 		// when enabled uses BOOT2 injection, skipping sony bios splashes
