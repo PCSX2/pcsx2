@@ -58,8 +58,8 @@ namespace USB
 	std::string GetConfigSection(int port);
 	std::string GetConfigDevice(const SettingsInterface& si, u32 port);
 	void SetConfigDevice(SettingsInterface& si, u32 port, const char* devname);
-	u32 GetConfigSubType(const SettingsInterface& si, u32 port, const std::string_view& devname);
-	void SetConfigSubType(SettingsInterface& si, u32 port, const std::string_view& devname, u32 subtype);
+	u32 GetConfigSubType(const SettingsInterface& si, u32 port);
+	void SetConfigSubType(SettingsInterface& si, u32 port, u32 subtype);
 
 	/// Returns the configuration key for the specified bind and device type.
 	std::string GetConfigSubKey(const std::string_view& device, const std::string_view& bind_name);

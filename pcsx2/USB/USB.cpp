@@ -655,14 +655,20 @@ void USB::SetConfigDevice(SettingsInterface& si, u32 port, const char* devname)
 	si.SetStringValue(GetConfigSection(port).c_str(), "Type", devname);
 }
 
-u32 USB::GetConfigSubType(const SettingsInterface& si, u32 port, const std::string_view& devname)
-{
-	return si.GetUIntValue(GetConfigSection(port).c_str(), fmt::format("{}_subtype", devname).c_str(), 0u);
+std::string SubTypeKeyForDevice(const std::string_view devname) {
+	return fmt::format("{}_subtype", devname);
 }
 
-void USB::SetConfigSubType(SettingsInterface& si, u32 port, const std::string_view& devname, u32 subtype)
+u32 USB::GetConfigSubType(const SettingsInterface& si, u32 port)
 {
-	si.SetUIntValue(GetConfigSection(port).c_str(), fmt::format("{}_subtype", devname).c_str(), subtype);
+	const std::string device_type(GetConfigDevice(si, port));
+	return si.GetUIntValue(GetConfigSection(port).c_str(), SubTypeKeyForDevice(device_type).c_str(), 0u);
+}
+
+void USB::SetConfigSubType(SettingsInterface& si, u32 port, u32 subtype)
+{
+	const std::string device_type(GetConfigDevice(si, port));
+	si.SetUIntValue(GetConfigSection(port).c_str(), SubTypeKeyForDevice(device_type).c_str(), subtype);
 }
 
 std::string USB::GetConfigSubKey(const std::string_view& device, const std::string_view& bind_name)
@@ -729,7 +735,7 @@ bool USB::MapDevice(SettingsInterface& si, u32 port, const std::vector<std::pair
 {
 	const std::string section(GetConfigSection(port));
 	const std::string type(GetConfigDevice(si, port));
-	const u32 subtype = GetConfigSubType(si, port, type);
+	const u32 subtype = GetConfigSubType(si, port);
 	const DeviceProxy* dev = RegisterDevice::instance().Device(type);
 	if (!dev)
 		return false;
@@ -750,7 +756,7 @@ void USB::ClearPortBindings(SettingsInterface& si, u32 port)
 {
 	const std::string section(GetConfigSection(port));
 	const std::string type(GetConfigDevice(si, port));
-	const u32 subtype = GetConfigSubType(si, port, type);
+	const u32 subtype = GetConfigSubType(si, port);
 	const DeviceProxy* dev = RegisterDevice::instance().Device(type);
 	if (!dev)
 		return;

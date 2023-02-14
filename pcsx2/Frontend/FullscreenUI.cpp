@@ -3967,7 +3967,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 			continue;
 		}
 
-		const u32 subtype = USB::GetConfigSubType(*bsi, port, type);
+		const u32 subtype = USB::GetConfigSubType(*bsi, port);
 		const gsl::span<const char*> subtypes(USB::GetDeviceSubtypes(type));
 		if (!subtypes.empty())
 		{
@@ -3986,7 +3986,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 
 						auto lock = Host::GetSettingsLock();
 						SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-						USB::SetConfigSubType(*bsi, port, type.c_str(), static_cast<u32>(index));
+						USB::SetConfigSubType(*bsi, port, static_cast<u32>(index));
 						SetSettingsChanged(bsi);
 						CloseChoiceDialog();
 					});
