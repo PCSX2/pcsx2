@@ -503,6 +503,8 @@ SCAJ-20008:
   gsHWFixes:
     preloadFrameData: 1 # Fixes fog and make lights on cars work again.
     autoFlush: 1 # Fixes sun luminosity and penetration of objects.
+  gameFixes:
+    - EETimingHack # Fixes random graphical corruption.
 SCAJ-20009:
   name: "Herdy Gerdy"
   region: "NTSC-Unk"
@@ -10999,6 +11001,8 @@ SLES-50725:
   gsHWFixes:
     preloadFrameData: 1 # Fixes fog and make lights on cars work again.
     autoFlush: 1 # Fixes sun luminosity and penetration of objects.
+  gameFixes:
+    - EETimingHack # Fixes random graphical corruption.
 SLES-50726:
   name: "Myst III - Exile"
   region: "PAL-M6"
@@ -28255,6 +28259,8 @@ SLPM-65191:
   gsHWFixes:
     preloadFrameData: 1 # Fixes fog and make lights on cars work again.
     autoFlush: 1 # Fixes sun luminosity and penetration of objects.
+  gameFixes:
+    - EETimingHack # Fixes random graphical corruption.
 SLPM-65192:
   name: "NBA Live 2003"
   region: "NTSC-J"
@@ -29473,6 +29479,8 @@ SLPM-65539:
   gsHWFixes:
     preloadFrameData: 1 # Fixes fog and make lights on cars work again.
     autoFlush: 1 # Fixes sun luminosity and penetration of objects.
+  gameFixes:
+    - EETimingHack # Fixes random graphical corruption.
 SLPM-65540:
   name: "Galaxy Angel - Moonlit Lovers [First Limited Edition]"
   region: "NTSC-J"
@@ -42950,6 +42958,8 @@ SLUS-20496:
   gsHWFixes:
     preloadFrameData: 1 # Fixes fog and make lights on cars work again.
     autoFlush: 1 # Fixes sun luminosity and penetration of objects.
+  gameFixes:
+    - EETimingHack # Fixes random graphical corruption.
 SLUS-20497:
   name: "Burnout 2 - Point of Impact"
   region: "NTSC-U"
