@@ -39265,8 +39265,6 @@ SLPS-25674:
   name: "Metal Slug 6"
   region: "NTSC-J"
   compat: 5
-  gsHWFixes:
-    beforeDraw: "OI_MetalSlug6"
 SLPS-25675:
   name: "Battle Stadium D.O.N"
   region: "NTSC-J"
