@@ -1036,30 +1036,6 @@ bool GSHwHack::OI_FFX(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCa
 	return true;
 }
 
-bool GSHwHack::OI_MetalSlug6(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	// missing red channel fix (looks alright in pcsx2 r5000+)
-
-	GSVertex* RESTRICT v = r.m_vertex.buff;
-
-	for (size_t i = r.m_vertex.next; i > 0; i--, v++)
-	{
-		const u32 c = v->RGBAQ.U32[0];
-
-		const u32 r = (c >> 0) & 0xff;
-		const u32 g = (c >> 8) & 0xff;
-		const u32 b = (c >> 16) & 0xff;
-
-		if (r == 0 && g != 0 && b != 0)
-		{
-			v->RGBAQ.U32[0] = (c & 0xffffff00) | ((g + b + 1) >> 1);
-		}
-	}
-
-	r.m_vt.Update(r.m_vertex.buff, r.m_index.buff, r.m_vertex.tail, r.m_index.tail, r.m_vt.m_primclass);
-
-	return true;
-}
 
 bool GSHwHack::OI_RozenMaidenGebetGarden(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
@@ -1322,7 +1298,6 @@ const GSHwHack::Entry<GSRendererHW::OI_Ptr> GSHwHack::s_before_draw_functions[] 
 	CRC_F(OI_DBZBTGames, CRCHackLevel::Minimum),
 	CRC_F(OI_FFXII, CRCHackLevel::Minimum),
 	CRC_F(OI_FFX, CRCHackLevel::Minimum),
-	CRC_F(OI_MetalSlug6, CRCHackLevel::Minimum),
 	CRC_F(OI_RozenMaidenGebetGarden, CRCHackLevel::Minimum),
 	CRC_F(OI_SonicUnleashed, CRCHackLevel::Minimum),
 	CRC_F(OI_ArTonelico2, CRCHackLevel::Minimum),
