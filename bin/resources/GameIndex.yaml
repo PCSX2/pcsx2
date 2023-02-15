@@ -9425,8 +9425,6 @@ SLED-53732:
   region: "PAL"
   gameFixes:
     - EETimingHack # Fixes garbage textures flashing on the character model.
-  gsHWFixes:
-    getSkipCount: "GSC_Spartan"
 SLED-53745:
   name: "Total Overdose [Demo]"
   region: "PAL-M5"
@@ -17087,15 +17085,11 @@ SLES-53393:
   compat: 5
   gameFixes:
     - EETimingHack # Fixes garbage textures flashing on the character model.
-  gsHWFixes:
-    getSkipCount: "GSC_Spartan"
 SLES-53396:
   name: "Spartan - Total Warrior"
   region: "PAL-M3"
   gameFixes:
     - EETimingHack # Fixes garbage textures flashing on the character model.
-  gsHWFixes:
-    getSkipCount: "GSC_Spartan"
 SLES-53398:
   name: "Zombie Zone"
   region: "PAL-E"
@@ -32781,8 +32775,6 @@ SLPM-66444:
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Fixes garbage textures flashing on the character model.
-  gsHWFixes:
-    getSkipCount: "GSC_Spartan"
 SLPM-66445:
   name: "Persona 3"
   region: "NTSC-J"
@@ -46535,8 +46527,6 @@ SLUS-21212:
   compat: 5
   gameFixes:
     - EETimingHack # Fixes garbage textures flashing on the character model.
-  gsHWFixes:
-    getSkipCount: "GSC_Spartan"
 SLUS-21213:
   name: "Madden NFL '06"
   region: "NTSC-U"
