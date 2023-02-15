@@ -170,25 +170,6 @@ bool GSHwHack::GSC_SacredBlaze(GSRendererHW& r, const GSFrameInfo& fi, int& skip
 	return true;
 }
 
-bool GSHwHack::GSC_Spartan(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if ((fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)))
-			{
-				skip = 2;
-			}
-		}
-	}
-
-	return true;
-}
-
 bool GSHwHack::GSC_Oneechanbara2Special(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -1243,7 +1224,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	// Channel Effect
 	CRC_F(GSC_CrashBandicootWoC, CRCHackLevel::Partial),
 	CRC_F(GSC_GiTS, CRCHackLevel::Partial),
-	CRC_F(GSC_Spartan, CRCHackLevel::Partial),
 	CRC_F(GSC_SteambotChronicles, CRCHackLevel::Partial),
 
 	// Depth Issue
