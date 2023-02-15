@@ -176,6 +176,11 @@
               "minimum": 0,
               "maximum": 1
             },
+            "estimateTextureRegion": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
             "mipmap": {
               "type": "integer",
               "minimum": 0,

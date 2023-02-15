@@ -1636,6 +1636,27 @@ void GSRendererHW::Draw()
 
 		tmm = GetTextureMinMax(TEX0, MIP_CLAMP, m_vt.IsLinear());
 
+		// Snowblind games set TW/TH to 1024, and use UVs for smaller textures inside that.
+		// Such textures usually contain junk in local memory, so try to make them smaller based on UVs.
+		// We can only do this for UVs, because ST repeat won't be correct.
+
+		if (GSConfig.UserHacks_EstimateTextureRegion && // enabled
+			(PRIM->FST || (MIP_CLAMP.WMS == CLAMP_CLAMP && MIP_CLAMP.WMT == CLAMP_CLAMP)) && // UV or ST with clamp
+			TEX0.TW >= 9 && TEX0.TH >= 9 && // 512x512
+			MIP_CLAMP.WMS < CLAMP_REGION_CLAMP && MIP_CLAMP.WMT < CLAMP_REGION_CLAMP && // not using custom region
+			((m_vt.m_max.t >= GSVector4(512.0f)).mask() & 0x3) == 0) // If the UVs actually are large, don't optimize.
+		{
+			// Clamp to the UVs of the texture. We could align this to something, but it ends up working better to just duplicate
+			// for different sizes in the hash cache, rather than hashing more and duplicating based on local memory.
+			const GSVector4i maxt(m_vt.m_max.t + GSVector4(m_vt.IsLinear() ? 0.5f : 0.0f));
+			MIP_CLAMP.WMS = CLAMP_REGION_CLAMP;
+			MIP_CLAMP.WMT = CLAMP_REGION_CLAMP;
+			MIP_CLAMP.MINU = 0;
+			MIP_CLAMP.MAXU = (maxt.x - 1) >> m_lod.x;
+			MIP_CLAMP.MINV = 0;
+			MIP_CLAMP.MAXV = (maxt.y - 1) >> m_lod.x;
+		}
+
 		m_src = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage) :
 								m_tc->LookupSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, (GSConfig.HWMipmap >= HWMipmapLevel::Basic || GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr);
 	}

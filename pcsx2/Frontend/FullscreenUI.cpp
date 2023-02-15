@@ -3203,6 +3203,9 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			DrawToggleSetting(bsi, "Read Targets When Closing",
 				"Flushes all targets in the texture cache back to local memory when shutting down.", "EmuCore/GS",
 				"UserHacks_ReadTCOnClose", false, manual_hw_fixes);
+			DrawToggleSetting(bsi, "Estimate Texture Region",
+				"Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games).", "EmuCore/GS",
+				"UserHacks_EstimateTextureRegion", false, manual_hw_fixes);
 
 			MenuHeading("Upscaling Fixes");
 			DrawIntListSetting(bsi, "Half-Pixel Offset", "Adjusts vertices relative to upscaling.", "EmuCore/GS",
