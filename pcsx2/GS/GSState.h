@@ -704,6 +704,7 @@ public:
 		// If using screen offsets, calculate the positions here.
 		void CalculateDisplayOffset(bool scanmask)
 		{
+			const bool both_enabled = PCRTCDisplays[0].enabled && PCRTCDisplays[1].enabled;
 			// Offsets are generally ignored, the "hacky" way of doing the displays, but direct to framebuffers.
 			if (!GSConfig.PCRTCOffsets)
 			{
@@ -712,13 +713,16 @@ public:
 				GSVector2i zeroDisplay = NearestToZeroOffset();
 				GSVector2i baseOffset = PCRTCDisplays[zeroDisplay.y].displayOffset;
 
-				int blurOffset = abs(PCRTCDisplays[1].displayOffset.y - PCRTCDisplays[0].displayOffset.y);
-				if (GSConfig.PCRTCAntiBlur && !scanmask && blurOffset < 4)
+				if (both_enabled)
 				{
-					if (PCRTCDisplays[1].displayOffset.y > PCRTCDisplays[0].displayOffset.y)
-						PCRTCDisplays[1].displayOffset.y -= blurOffset;
-					else
-						PCRTCDisplays[0].displayOffset.y -= blurOffset;
+					int blurOffset = abs(PCRTCDisplays[1].displayOffset.y - PCRTCDisplays[0].displayOffset.y);
+					if (GSConfig.PCRTCAntiBlur && !scanmask && blurOffset < 4)
+					{
+						if (PCRTCDisplays[1].displayOffset.y > PCRTCDisplays[0].displayOffset.y)
+							PCRTCDisplays[1].displayOffset.y -= blurOffset;
+						else
+							PCRTCDisplays[0].displayOffset.y -= blurOffset;
+					}
 				}
 
 				// If there's a single pixel offset, account for it else it can throw interlacing out.
@@ -743,7 +747,7 @@ public:
 
 				// Handle difference in offset between the two displays, used in games like DmC and Time Crisis 2 (for split screen).
 				// Offset is not screen based, but relative to each other.
-				if (PCRTCDisplays[0].enabled && PCRTCDisplays[1].enabled)
+				if (both_enabled)
 				{
 					GSVector2i offset;
 
@@ -781,14 +785,18 @@ public:
 			{
 				const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
 				GSVector2i offset = { 0, 0 };
+				GSVector2i zeroDisplay = NearestToZeroOffset();
 
-				int blurOffset = abs(PCRTCDisplays[1].displayOffset.y - PCRTCDisplays[0].displayOffset.y);
-				if (GSConfig.PCRTCAntiBlur && !scanmask && blurOffset < 4)
+				if (both_enabled)
 				{
-					if (PCRTCDisplays[1].displayOffset.y > PCRTCDisplays[0].displayOffset.y)
-						PCRTCDisplays[1].displayOffset.y -= blurOffset;
-					else
-						PCRTCDisplays[0].displayOffset.y -= blurOffset;
+					int blurOffset = abs(PCRTCDisplays[1].displayOffset.y - PCRTCDisplays[0].displayOffset.y);
+					if (GSConfig.PCRTCAntiBlur && !scanmask && blurOffset < 4)
+					{
+						if (PCRTCDisplays[1].displayOffset.y > PCRTCDisplays[0].displayOffset.y)
+							PCRTCDisplays[1].displayOffset.y -= blurOffset;
+						else
+							PCRTCDisplays[0].displayOffset.y -= blurOffset;
+					}
 				}
 
 				for (int i = 0; i < 2; i++)
@@ -801,6 +809,25 @@ public:
 					PCRTCDisplays[i].displayRect.z += offset.x;
 					PCRTCDisplays[i].displayRect.y += offset.y;
 					PCRTCDisplays[i].displayRect.w += offset.y;
+				}
+
+				if (both_enabled)
+				{
+					GSVector2i offset;
+
+					offset.x = (PCRTCDisplays[1 - zeroDisplay.x].displayRect.x - PCRTCDisplays[zeroDisplay.x].displayRect.x);
+					offset.y = (PCRTCDisplays[1 - zeroDisplay.y].displayRect.y - PCRTCDisplays[zeroDisplay.y].displayRect.y);
+
+					if (offset.x > 0 && offset.x < 4 && GSConfig.PCRTCAntiBlur)
+					{
+						PCRTCDisplays[1 - zeroDisplay.x].displayRect.x -= offset.x;
+						PCRTCDisplays[1 - zeroDisplay.x].displayRect.z -= offset.x;
+					}
+					if (offset.y > 0 && offset.y < 4 && GSConfig.PCRTCAntiBlur)
+					{
+						PCRTCDisplays[1 - zeroDisplay.y].displayRect.y -= offset.y;
+						PCRTCDisplays[1 - zeroDisplay.y].displayRect.w -= offset.y;
+					}
 				}
 			}
 		}
