@@ -24,7 +24,6 @@ public:
 	static bool GSC_Manhunt2(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_CrashBandicootWoC(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_SacredBlaze(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_Spartan(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_Oneechanbara2Special(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_SakuraTaisen(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_SFEX3(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
@@ -39,7 +38,6 @@ public:
 	static bool GSC_Kunoichi(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_ZettaiZetsumeiToshi2(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_SakuraWarsSoLongMyLove(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_FightingBeautyWulong(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_GodHand(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_KnightsOfTheTemple2(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_UltramanFightingEvolution(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
