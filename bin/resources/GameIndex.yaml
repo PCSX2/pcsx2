@@ -18878,10 +18878,13 @@ SLES-54018:
   name: "Jackpot Madness"
   region: "PAL-E"
 SLES-54021:
-  name: "Ruff Trigger"
+  name: "Ruff Trigger - The Vanocore Conspiracy"
   region: "PAL-M5"
   gameFixes:
     - EETimingHack # Fixes game engine errors when going ingame.
+  gsHWFixes:
+    cpuCLUTRender: 1 # Bring back blooming scattering like in software mode.
+    halfPixelOffset: 1 # Fixes misalignment like volcano lighting.
   patches:
     B02C81E5:
       content: |-
@@ -47143,6 +47146,9 @@ SLUS-21314:
   compat: 4
   gameFixes:
     - EETimingHack # Needed to go ingame.
+  gsHWFixes:
+    cpuCLUTRender: 1 # Bring back blooming scattering like in software mode.
+    halfPixelOffset: 1 # Fixes misalignment like volcano lighting.
   patches:
     F73488D5:
       content: |-
