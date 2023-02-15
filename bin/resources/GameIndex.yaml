@@ -22747,6 +22747,8 @@ SLES-55579:
     eeRoundMode: 1 # Fixes black textures in conjunction with VU0 clamping set to none.
   clampModes:
     vu0ClampMode: 0 # Fixes black textures and SPS.
+  gsHWFixes:
+    deinterlace: 8 # Game requires AdaptiveTFF de-interlacing when auto for the (starter) FMVs.
 SLES-55581:
   name: "FIFA 10"
   region: "PAL-M5"
@@ -49991,6 +49993,8 @@ SLUS-21902:
     eeRoundMode: 1 # Fixes black textures in conjunction with VU0 clamping set to none.
   clampModes:
     vu0ClampMode: 0 # Fixes black textures and SPS.
+  gsHWFixes:
+    deinterlace: 8 # Game requires AdaptiveTFF de-interlacing when auto for the (starter) FMVs.
 SLUS-21904:
   name: "Teenage Mutant Ninja Turtles - Smash-Up"
   region: "NTSC-U"
