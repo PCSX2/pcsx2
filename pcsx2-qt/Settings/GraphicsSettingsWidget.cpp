@@ -203,6 +203,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.textureInsideRt, "EmuCore/GS", "UserHacks_TextureInsideRt", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.readTCOnClose, "EmuCore/GS", "UserHacks_ReadTCOnClose", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.targetPartialInvalidation, "EmuCore/GS", "UserHacks_TargetPartialInvalidation", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.estimateTextureRegion, "EmuCore/GS", "UserHacks_EstimateTextureRegion", false);
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Upscaling Fixes
@@ -549,6 +550,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.targetPartialInvalidation, tr("Target Partial Invalidation"), tr("Unchecked"),
 			tr("Allows partial invalidation of render targets, which can fix graphical errors in some games. Texture Inside Render Target "
 			   "automatically enables this option."));
+
+		dialog->registerWidgetHelp(m_ui.estimateTextureRegion, tr("Estimate Texture Region"), tr("Unchecked"),
+			tr("Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games)."));
 	}
 
 	// Upscaling Fixes tab

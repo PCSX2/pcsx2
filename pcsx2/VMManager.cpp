@@ -1997,6 +1997,8 @@ void VMManager::WarnAboutUnsafeSettings()
 		messages += ICON_FA_EXCLAMATION_CIRCLE " GPU Palette Conversion is enabled, this may reduce performance.\n";
 	if (EmuConfig.GS.TexturePreloading != TexturePreloadingLevel::Full)
 		messages += ICON_FA_EXCLAMATION_CIRCLE " Texture Preloading is not Full, this may reduce performance.\n";
+	if (EmuConfig.GS.UserHacks_EstimateTextureRegion)
+		messages += ICON_FA_EXCLAMATION_CIRCLE " Estimate texture region is enabled, this may reduce performance.\n";
 
 	if (!messages.empty())
 	{

@@ -1068,6 +1068,13 @@
            </property>
           </widget>
          </item>
+         <item row="4" column="1">
+          <widget class="QCheckBox" name="estimateTextureRegion">
+           <property name="text">
+            <string>Estimate Texture Region</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
       </layout>

@@ -72,6 +72,7 @@ namespace GameDatabaseSchema
 		AlignSprite,
 		MergeSprite,
 		WildArmsHack,
+		EstimateTextureRegion,
 
 		// integer settings
 		Mipmap,

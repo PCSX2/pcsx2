@@ -672,6 +672,7 @@ struct Pcsx2Config
 					UserHacks_WildHack : 1,
 					UserHacks_TextureInsideRt : 1,
 					UserHacks_TargetPartialInvalidation : 1,
+					UserHacks_EstimateTextureRegion : 1,
 					FXAA : 1,
 					ShadeBoost : 1,
 					DumpGSData : 1,
