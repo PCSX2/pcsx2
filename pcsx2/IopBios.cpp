@@ -96,6 +96,11 @@ void Hle_SetElfPath(const char* elfFileName)
 	Console.WriteLn("HLE Host: Set 'host:' root path to: %s\n", hostRoot.c_str());
 }
 
+void Hle_ClearElfPath()
+{
+	hostRoot = {};
+}
+
 namespace R3000A
 {
 

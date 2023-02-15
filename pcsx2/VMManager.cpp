@@ -905,6 +905,10 @@ bool VMManager::ApplyBootParameters(VMBootParameters params, std::string* state_
 		Hle_SetElfPath(s_elf_override.c_str());
 		EmuConfig.UseBOOT2Injection = true;
 	}
+	else
+	{
+		Hle_ClearElfPath();
+	}
 
 	return true;
 }
