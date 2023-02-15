@@ -10017,6 +10017,8 @@ SLES-50215:
   name: "Crazy Taxi"
   region: "PAL-M4"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes credits screen.
 SLES-50217:
   name: "Dave Mirra Freestyle BMX 2"
   region: "PAL-E-S"
@@ -25629,6 +25631,8 @@ SLPM-62101:
 SLPM-62102:
   name: "Crazy Taxi"
   region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Fixes credits screen.
 SLPM-62103:
   name: "EX Okuman Chouja Game - The Money Battle"
   region: "NTSC-J"
@@ -41565,6 +41569,8 @@ SLUS-20202:
   name: "Crazy Taxi"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes credits screen.
 SLUS-20204:
   name: "Smuggler's Run 2 - Hostile Territory"
   region: "NTSC-U"
