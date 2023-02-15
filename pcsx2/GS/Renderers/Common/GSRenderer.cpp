@@ -80,10 +80,11 @@ bool GSRenderer::Merge(int field)
 	GSVector2i fs(0, 0);
 	GSTexture* tex[3] = { NULL, NULL, NULL };
 	int y_offset[3] = { 0, 0, 0 };
-	bool feedback_merge = m_regs->EXTWRITE.WRITE == 1;
+	const bool feedback_merge = m_regs->EXTWRITE.WRITE == 1;
 
 	PCRTCDisplays.SetVideoMode(GetVideoMode());
 	PCRTCDisplays.EnableDisplays(m_regs->PMODE, m_regs->SMODE2, isReallyInterlaced());
+	PCRTCDisplays.CheckSameSource();
 
 	if (!PCRTCDisplays.PCRTCDisplays[0].enabled && !PCRTCDisplays.PCRTCDisplays[1].enabled)
 		return false;
@@ -96,7 +97,6 @@ bool GSRenderer::Merge(int field)
 	PCRTCDisplays.SetRects(1, m_regs->DISP[1].DISPLAY, m_regs->DISP[1].DISPFB);
 	PCRTCDisplays.CalculateDisplayOffset(m_scanmask_used);
 	PCRTCDisplays.CalculateFramebufferOffset();
-	PCRTCDisplays.CheckSameSource();
 
 	// Only need to check the right/bottom on software renderer, hardware always gets the full texture then cuts a bit out later.
 	if (PCRTCDisplays.FrameRectMatch() && !PCRTCDisplays.FrameWrap() && !feedback_merge)
