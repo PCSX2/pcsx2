@@ -49580,8 +49580,6 @@ SLUS-21801:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    skipDrawStart: 1 # Removes even more blurriness and garbage texture like on top left.
-    skipDrawEnd: 1 # Removes even more blurriness and garbage texture like on top left.
 SLUS-21802:
   name: "Naked Brothers Band - The Video Game"
   region: "NTSC-U"
