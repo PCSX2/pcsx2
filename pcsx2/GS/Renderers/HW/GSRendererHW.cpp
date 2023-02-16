@@ -3353,8 +3353,8 @@ void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	m_conf.cb_vs.texture_scale = GSVector2(tc_oh_ts.x, tc_oh_ts.y);
 
 	// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader
-	m_conf.sampler.tau = (wms != CLAMP_CLAMP);
-	m_conf.sampler.tav = (wmt != CLAMP_CLAMP);
+	m_conf.sampler.tau = (wms == CLAMP_REPEAT);
+	m_conf.sampler.tav = (wmt == CLAMP_REPEAT);
 	if (shader_emulated_sampler)
 	{
 		m_conf.sampler.biln = 0;
