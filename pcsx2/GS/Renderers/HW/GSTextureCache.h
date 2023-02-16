@@ -305,10 +305,10 @@ public:
 
 			struct
 			{
-				u32 fbp : 9;
+				u32 fbp : 14;
 				u32 fbw : 6;
 				u32 psm : 6;
-				u32 pad : 11;
+				u32 pad : 6;
 			};
 		};
 
