@@ -19861,6 +19861,8 @@ SLES-54402:
 SLES-54420:
   name: "Arthur and the Minimoys"
   region: "PAL-M7"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom.
 SLES-54421:
   name: "Happy Feet"
   region: "PAL-M5"
@@ -47098,6 +47100,8 @@ SLUS-21304:
 SLUS-21305:
   name: "Arthur and the Invisibles - The Game"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom.
 SLUS-21306:
   name: "Ghost Rider"
   region: "NTSC-U"
