@@ -328,6 +328,7 @@ void main()
 #define PS_POINT_SAMPLER 0
 #define PS_SHUFFLE 0
 #define PS_READ_BA 0
+#define PS_READ16_SRC 0
 #define PS_DFMT 0
 #define PS_DEPTH_FMT 0
 #define PS_PAL_FMT 0
@@ -1175,24 +1176,31 @@ void main()
 	#if PS_SHUFFLE
 		uvec4 denorm_c = uvec4(C);
 		uvec2 denorm_TA = uvec2(vec2(TA.xy) * 255.0f + 0.5f);
-
-		// Mask will take care of the correct destination
-		#if PS_READ_BA
-			C.rb = C.bb;
-		#else
-			C.rb = C.rr;
-		#endif
-
-		#if PS_READ_BA
+		#if PS_READ16_SRC
+			C.rb = vec2(float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5)));
 			if ((denorm_c.a & 0x80u) != 0u)
-				C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
+				C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80u)));
 			else
-				C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
+				C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
 		#else
-			if ((denorm_c.g & 0x80u) != 0u)
-				C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
-			else
-				C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
+			// Mask will take care of the correct destination
+			#if PS_READ_BA
+				C.rb = C.bb;
+			#else
+				C.rb = C.rr;
+			#endif
+
+			#if PS_READ_BA
+				if ((denorm_c.a & 0x80u) != 0u)
+					C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
+				else
+					C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
+			#else
+				if ((denorm_c.g & 0x80u) != 0u)
+					C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
+				else
+					C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
+			#endif
 		#endif
 	#endif
 
