@@ -21953,6 +21953,8 @@ SLES-55198:
   name: "Iron Man"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes lighting misalignment.
 SLES-55199:
   name: "NASCAR 09"
   region: "PAL-M5"
@@ -49276,6 +49278,8 @@ SLUS-21739:
   name: "Iron Man"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes lighting misalignment.
 SLUS-21740:
   name: "Guitar Hero - Aerosmith"
   region: "NTSC-U"
