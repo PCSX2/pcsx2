@@ -871,7 +871,13 @@ void ps_main()
 #if PS_SHUFFLE
     uvec4 denorm_c = uvec4(C);
     uvec2 denorm_TA = uvec2(vec2(TA.xy) * 255.0f + 0.5f);
-
+#if PS_READ16_SRC
+	C.rb = vec2(float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5)));
+	if (bool(denorm_c.a & 0x80u))
+		C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80u)));
+	else
+		C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
+#else
     // Write RB part. Mask will take care of the correct destination
 #if PS_READ_BA
     C.rb = C.bb;
@@ -907,9 +913,10 @@ void ps_main()
     // float sel = step(128.0f, c.g);
     // vec2 c_shuffle = vec2((denorm_c.gg & 0x7Fu) | (denorm_TA & 0x80u));
     // c.ga = mix(c_shuffle.xx, c_shuffle.yy, sel);
-#endif
+#endif // PS_READ_BA
 
-#endif
+#endif // READ16_SRC
+#endif // PS_SHUFFLE
 
     // Must be done before alpha correction
 

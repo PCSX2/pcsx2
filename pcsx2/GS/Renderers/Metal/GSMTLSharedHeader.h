@@ -175,6 +175,7 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_LTF,
 	GSMTLConstantIndex_PS_SHUFFLE,
 	GSMTLConstantIndex_PS_READ_BA,
+	GSMTLConstantIndex_PS_READ16_SRC,
 	GSMTLConstantIndex_PS_WRITE_RG,
 	GSMTLConstantIndex_PS_FBMASK,
 	GSMTLConstantIndex_PS_BLEND_A,
