@@ -279,7 +279,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	{
 		// Another Lupin case here, it uses region clamp with UV (not ST), puts a clamp region further
 		// into the texture, but a smaller TW/TH. Catch this by looking for a clamp range above TW.
-		const u32 rw = CLAMP.MAXU - CLAMP.MAXU + 1;
+		const u32 rw = CLAMP.MAXU - CLAMP.MINU + 1;
 		if (rw < (1u << TEX0.TW) || CLAMP.MAXU >= (1u << TEX0.TW))
 		{
 			region.SetX(CLAMP.MINU, CLAMP.MAXU + 1);
