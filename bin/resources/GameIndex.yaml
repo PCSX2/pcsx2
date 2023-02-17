@@ -9052,6 +9052,8 @@ SLAJ-25072:
   name: "Matrix, The - Path of Neo"
   region: "NTSC-Unk"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 2 # Fix effects upscaling.
 SLAJ-25073:
   name: "Resident Evil 4"
@@ -9437,6 +9439,8 @@ SLED-53845:
   name: "Matrix, The - Path of Neo [Demo]"
   region: "PAL-E"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 2 # Fix effects upscaling.
 SLED-53937:
   name: "Black [Demo]"
@@ -17267,6 +17271,8 @@ SLES-53462:
   name: "Matrix, The - Path of Neo"
   region: "PAL-M5"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 2 # Fix effects upscaling.
 SLES-53463:
   name: "NHL '06"
@@ -18260,6 +18266,8 @@ SLES-53759:
   name: "Matrix, The - Path of Neo"
   region: "PAL-M5"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 2 # Fix effects upscaling.
 SLES-53760:
   name: "Rugby Challenge 2006"
@@ -18347,6 +18355,8 @@ SLES-53799:
   region: "PAL-M4"
   compat: 5
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 2 # Fix effects upscaling.
 SLES-53800:
   name: "Rampage - Total Destruction"
@@ -24212,6 +24222,8 @@ SLKA-25303:
   name: "Matrix, The - Path of Neo"
   region: "NTSC-K"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 2 # Fix effects upscaling.
 SLKA-25304:
   name: "Burnout Revenge"
@@ -31761,6 +31773,8 @@ SLPM-66177:
   name: "Matrix, The - Path of Neo"
   region: "NTSC-J"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 2 # Fix effects upscaling.
 SLPM-66178:
   name: "pop'n music 7 [Konami The Best]"
@@ -46943,6 +46957,8 @@ SLUS-21273:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 2 # Fix effects upscaling.
 SLUS-21274:
   name: "OutRun 2006 - Coast 2 Coast"
