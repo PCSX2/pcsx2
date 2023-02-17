@@ -3121,10 +3121,10 @@ void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	const u8 wms = EffectiveClamp(m_context->CLAMP.WMS, tex->m_region.HasX() || redundant_wms);
 	const u8 wmt = EffectiveClamp(m_context->CLAMP.WMT, tex->m_region.HasY() || redundant_wmt);
 	const bool complex_wms_wmt = !!((wms | wmt) & 2);
-	GL_CACHE("WMS: %s [%s%s] WMT: %s [%s%s] Complex: %d MINU: %d MINV: %d MINV: %d MAXV: %d",
+	GL_CACHE("WMS: %s [%s%s] WMT: %s [%s%s] Complex: %d MINU: %d MAXU: %d MINV: %d MAXV: %d",
 		clamp_modes[m_context->CLAMP.WMS], redundant_wms ? "redundant," : "", clamp_modes[wms],
 		clamp_modes[m_context->CLAMP.WMT], redundant_wmt ? "redundant," : "", clamp_modes[wmt],
-		complex_wms_wmt, m_context->CLAMP.MINU, m_context->CLAMP.MINV, m_context->CLAMP.MAXU, m_context->CLAMP.MAXV);
+		complex_wms_wmt, m_context->CLAMP.MINU, m_context->CLAMP.MAXU, m_context->CLAMP.MINV, m_context->CLAMP.MAXV);
 
 	const bool need_mipmap = IsMipMapDraw();
 	const bool shader_emulated_sampler = tex->m_palette || cpsm.fmt != 0 || complex_wms_wmt || psm.depth;

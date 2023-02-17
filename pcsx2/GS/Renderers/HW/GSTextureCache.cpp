@@ -216,7 +216,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 
 __ri static GSTextureCache::Source* FindSourceInMap(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA,
 	const GSLocalMemory::psm_t& psm_s, const u32* clut, const GSTexture* gpu_clut, const GSVector2i& compare_lod,
-	const GSTextureCache::SourceRegion& region, FastList<GSTextureCache::Source*>& map)
+	const GSTextureCache::SourceRegion& region, u32 fixed_tex0, FastList<GSTextureCache::Source*>& map)
 {
 	for (auto i = map.begin(); i != map.end(); ++i)
 	{
@@ -248,7 +248,10 @@ __ri static GSTextureCache::Source* FindSourceInMap(const GIFRegTEX0& TEX0, cons
 					continue;
 			}
 
-			if (s->m_region.bits != 0 && s->m_region.bits != region.bits)
+			// When fixed tex0 is used, we must find a matching region texture. The base likely
+			// doesn't contain to the correct region. Bit cheeky here, avoid a logical or by
+			// adding the invalid tex0 bit in.
+			if (((s->m_region.bits | fixed_tex0) != 0) && s->m_region.bits != region.bits)
 				continue;
 
 			// Same base mip texture, but we need to check that MXL was the same as well.
@@ -322,15 +325,16 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 	// Region textures might be placed in a different page, so check that first.
 	const u32 lookup_page = TEX0.TBP0 >> 5;
+	const bool is_fixed_tex0 = region.IsFixedTEX0(1 << TEX0.TW, 1 << TEX0.TH);
 	if (region.GetMinX() != 0 || region.GetMinY() != 0)
 	{
 		const GSOffset offset(psm_s.info, TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 		const u32 region_page = offset.bn(region.GetMinX(), region.GetMinY()) >> 5;
 		if (lookup_page != region_page)
-			src = FindSourceInMap(TEX0, TEXA, psm_s, clut, gpu_clut, compare_lod, region, m_src.m_map[region_page]);
+			src = FindSourceInMap(TEX0, TEXA, psm_s, clut, gpu_clut, compare_lod, region, is_fixed_tex0, m_src.m_map[region_page]);
 	}
 	if (!src)
-		src = FindSourceInMap(TEX0, TEXA, psm_s, clut, gpu_clut, compare_lod, region, m_src.m_map[lookup_page]);
+		src = FindSourceInMap(TEX0, TEXA, psm_s, clut, gpu_clut, compare_lod, region, is_fixed_tex0, m_src.m_map[lookup_page]);
 
 
 	Target* dst = nullptr;
