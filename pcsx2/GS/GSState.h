@@ -491,7 +491,7 @@ public:
 
 		GSVector2i GetFramebufferSize(int display)
 		{
-			int max_height = VideoModeOffsets[videomode].y;
+			int max_height = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode].y : VideoModeOffsetsOverscan[videomode].y;
 
 			if (!(FFMD && interlaced))
 			{
@@ -518,7 +518,21 @@ public:
 
 				// Cap the framebuffer read to the maximum display height, otherwise the hardware renderer gets messy.
 				const int min_mag = std::max(1, std::min(PCRTCDisplays[0].magnification.y, PCRTCDisplays[1].magnification.y));
-				combined_rect.w = std::min(combined_rect.w, combined_rect.y + (max_height / min_mag));
+				int offset = PCRTCDisplays[0].displayRect.runion(PCRTCDisplays[1].displayRect).y;
+
+				if (FFMD && interlaced)
+				{
+					offset = (offset - 1) / 2;
+				}
+
+				// Hardware mode needs a wider framebuffer as it can't offset the read.
+				if (GSConfig.UseHardwareRenderer())
+				{
+					combined_rect.z += std::max(PCRTCDisplays[0].framebufferOffsets.x, PCRTCDisplays[1].framebufferOffsets.x);
+					combined_rect.w += std::max(PCRTCDisplays[0].framebufferOffsets.y, PCRTCDisplays[1].framebufferOffsets.y);
+				}
+				offset = (max_height / min_mag) - offset;
+				combined_rect.w = std::min(combined_rect.w, offset);
 				return GSVector2i(combined_rect.z, combined_rect.w);
 			}
 			else
@@ -538,7 +552,23 @@ public:
 				}
 
 				// Cap the framebuffer read to the maximum display height, otherwise the hardware renderer gets messy.
-				out_rect.w = std::min(out_rect.w, out_rect.y + (max_height * PCRTCDisplays[display].magnification.y));
+				const int min_mag = std::max(1, PCRTCDisplays[display].magnification.y);
+				int offset = PCRTCDisplays[display].displayRect.y;
+
+				if (FFMD && interlaced)
+				{
+					offset = (offset - 1) / 2;
+				}
+
+				offset = (max_height / min_mag) - offset;
+				out_rect.w = std::min(out_rect.w, offset);
+
+				// Hardware mode needs a wider framebuffer as it can't offset the read.
+				if (GSConfig.UseHardwareRenderer())
+				{
+					out_rect.z += PCRTCDisplays[display].framebufferOffsets.x;
+					out_rect.w += PCRTCDisplays[display].framebufferOffsets.y;
+				}
 				return GSVector2i(out_rect.z, out_rect.w);
 			}
 		}
