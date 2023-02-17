@@ -11274,6 +11274,13 @@ SLES-50821:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
     disablePartialInvalidation: 1 # Fixes ghost rendering.
+  patches:
+    "22E91837":
+      content: |-
+        author=WeirdBeardGame, TellowKrinkle, CheeseyBurrito.
+        // Wraps sceVu0ScaleVector in if statement to prevent bad divide by zero behaviour.
+        patch=1,EE,0011f3b4,word,46156032
+        patch=1,EE,0011f3b8,word,45010002
 SLES-50822:
   name: "Shadow Hearts"
   region: "PAL-M3"
@@ -37122,6 +37129,13 @@ SLPS-25074:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
     disablePartialInvalidation: 1 # Fixes ghost rendering.
+  patches:
+    9883194E:
+      content: |-
+        author=WeirdBeardGame, TellowKrinkle, CheeseyBurrito.
+        // Wraps sceVu0ScaleVector in if statement to prevent bad divide by zero behaviour.
+        patch=1,EE,0011de3c,word,46156032
+        patch=1,EE,0011de40,word,45010002
 SLPS-25075:
   name: "Sidewinder F"
   region: "NTSC-J"
@@ -42458,6 +42472,13 @@ SLUS-20388:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
     disablePartialInvalidation: 1 # Fixes ghost rendering.
+  patches:
+    339A0B8C:
+      content: |-
+        author=WeirdBeardGame, TellowKrinkle, CheeseyBurrito.
+        // Wraps sceVu0ScaleVector in if statement to prevent bad divide by zero behaviour.
+        patch=1,EE,0011f0cc,word,46156032
+        patch=1,EE,0011f0d0,word,45010002
 SLUS-20389:
   name: "Endgame"
   region: "NTSC-U"
