@@ -3090,7 +3090,7 @@ __ri static constexpr bool IsRedundantClamp(u8 clamp, u32 clamp_min, u32 clamp_m
 	// That way trilinear etc still works.
 	const u32 textent = (1u << tsize) - 1u;
 	if (clamp == CLAMP_REGION_CLAMP)
-		return (clamp_min == 0 && clamp_max == textent);
+		return (clamp_min == 0 && clamp_max >= textent);
 	else if (clamp == CLAMP_REGION_REPEAT)
 		return (clamp_max == 0 && clamp_min == textent);
 	else
