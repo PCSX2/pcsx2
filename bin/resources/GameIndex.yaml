@@ -27666,6 +27666,9 @@ SLPM-64544:
 SLPM-64549:
   name: "Siksin-ui Seong"
   region: "NTSC-K"
+SLPM-64552:
+  name: "Silent Scope 3"
+  region: "NTSC-K"
 SLPM-65001:
   name: "Kessen"
   region: "NTSC-J"
