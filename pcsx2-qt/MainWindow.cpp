@@ -983,27 +983,28 @@ void MainWindow::saveStateToConfig()
 	if (!isVisible())
 		return;
 
+	bool changed = false;
+
+	const QByteArray geometry(saveGeometry());
+	const QByteArray geometry_b64(geometry.toBase64());
+	const std::string old_geometry_b64(Host::GetBaseStringSettingValue("UI", "MainWindowGeometry"));
+	if (old_geometry_b64 != geometry_b64.constData())
 	{
-		const QByteArray geometry = saveGeometry();
-		const QByteArray geometry_b64 = geometry.toBase64();
-		const std::string old_geometry_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowGeometry");
-		if (old_geometry_b64 != geometry_b64.constData())
-		{
-			Host::SetBaseStringSettingValue("UI", "MainWindowGeometry", geometry_b64.constData());
-			Host::CommitBaseSettingChanges();
-		}
+		Host::SetBaseStringSettingValue("UI", "MainWindowGeometry", geometry_b64.constData());
+		changed = true;
 	}
 
+	const QByteArray state(saveState());
+	const QByteArray state_b64(state.toBase64());
+	const std::string old_state_b64(Host::GetBaseStringSettingValue("UI", "MainWindowState"));
+	if (old_state_b64 != state_b64.constData())
 	{
-		const QByteArray state = saveState();
-		const QByteArray state_b64 = state.toBase64();
-		const std::string old_state_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowState");
-		if (old_state_b64 != state_b64.constData())
-		{
-			Host::SetBaseStringSettingValue("UI", "MainWindowState", state_b64.constData());
-			Host::CommitBaseSettingChanges();
-		}
+		Host::SetBaseStringSettingValue("UI", "MainWindowState", state_b64.constData());
+		changed = true;
 	}
+
+	if (changed)
+		Host::CommitBaseSettingChanges();
 }
 
 void MainWindow::restoreStateFromConfig()
@@ -1979,6 +1980,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 	// If there's no VM, we can just exit as normal.
 	if (!s_vm_valid)
 	{
+		saveStateToConfig();
 		QMainWindow::closeEvent(event);
 		return;
 	}
@@ -1992,7 +1994,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
 		return;
 
 	// Application will be exited in VM stopped handler.
-	saveStateToConfig();
 	m_is_closing = true;
 }
 
