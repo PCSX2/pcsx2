@@ -372,7 +372,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.PCRTCOverscan, tr("Show Overscan"), tr("Unchecked"),
 			tr("Enables the option to show the overscan area on games which draw more than the safe area of the screen."));
 
-		dialog->registerWidgetHelp(m_ui.fmvAspectRatio, tr("FMV Aspect Ratio"), tr("Off (Default)"), tr("Overrides the FMV aspect ratio."));
+		dialog->registerWidgetHelp(m_ui.fmvAspectRatio, tr("FMV Aspect Ratio"), tr("Off (Default)"),
+			tr("Overrides the full-motion video (FMV) aspect ratio."));
 
 		dialog->registerWidgetHelp(m_ui.PCRTCAntiBlur, tr("Anti-Blur"), tr("Checked"),
 			tr("Enables internal Anti-Blur hacks. Less accurate to PS2 rendering but will make a lot of games look less blurry."));
@@ -402,24 +403,32 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Selects the quality at which screenshots will be compressed. Higher values preserve more detail for JPEG, and reduce file "
 			   "size for PNG."));
 
-		dialog->registerWidgetHelp(m_ui.stretchY, tr("Stretch Height"), tr("100%"), tr(""));
+		dialog->registerWidgetHelp(m_ui.stretchY, tr("Stretch Height"), tr("100%"),
+			tr("Stretches (> 100%) or squashes (< 100%) the vertical component of the display"));
 
 		dialog->registerWidgetHelp(m_ui.fullscreenModes, tr("Fullscreen Mode"), tr("Borderless Fullscreen"),
 			tr("Chooses the fullscreen resolution and frequency."));
 
-		dialog->registerWidgetHelp(m_ui.cropLeft, tr("Left"), tr("0px"), tr(""));
+		dialog->registerWidgetHelp(m_ui.cropLeft, tr("Left"), tr("0px"),
+			tr("Changes number of pixels cropped from the left side of the display"));
 
-		dialog->registerWidgetHelp(m_ui.cropTop, tr("Top"), tr("0px"), tr(""));
+		dialog->registerWidgetHelp(m_ui.cropTop, tr("Top"), tr("0px"),
+			tr("Changes number of pixels cropped from the top of the display"));
 
-		dialog->registerWidgetHelp(m_ui.cropRight, tr("Right"), tr("0px"), tr(""));
+		dialog->registerWidgetHelp(m_ui.cropRight, tr("Right"), tr("0px"),
+			tr("Changes number of pixels cropped from the right side of the display"));
 
-		dialog->registerWidgetHelp(m_ui.cropBottom, tr("Bottom"), tr("0px"), tr(""));
+		dialog->registerWidgetHelp(m_ui.cropBottom, tr("Bottom"), tr("0px"),
+			tr("Changes number of pixels cropped from the bottom of the display"));
 	}
 
 	// Rendering tab
 	{
 		// Hardware
-		dialog->registerWidgetHelp(m_ui.upscaleMultiplier, tr("Internal Resolution"), tr("Native (PS2) (Default)"), tr(""));
+		dialog->registerWidgetHelp(m_ui.upscaleMultiplier, tr("Internal Resolution"), tr("Native (PS2) (Default)"),
+			tr("Control the resolution at which games are rendered. High resolutions can impact performance on"
+			   "older or lower-end GPUs.<br>Non-native resolution may cause minor graphical issues in some games.<br>"
+			   "FMV resolution will remain unchanged, as the video files are pre-rendered."));
 
 		dialog->registerWidgetHelp(
 			m_ui.mipmapping, tr("Mipmapping"), tr("Automatic (Default)"), tr("Control the accuracy level of the mipmapping emulation."));
@@ -491,7 +500,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 		dialog->registerWidgetHelp(m_ui.cpuSpriteRenderBW, tr("CPU Sprite Renderer Size"), tr("0 (Disabled)"), tr(""));
 
-		dialog->registerWidgetHelp(m_ui.cpuCLUTRender, tr("Software Clut Render"), tr("0 (Disabled)"), tr(""));
+		dialog->registerWidgetHelp(m_ui.cpuCLUTRender, tr("Software CLUT Render"), tr("0 (Disabled)"), tr(""));
 
 		dialog->registerWidgetHelp(m_ui.skipDrawStart, tr("Skipdraw Range Start"), tr("0"),
 			tr("Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right."));
@@ -592,7 +601,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 		dialog->registerWidgetHelp(m_ui.shadeBoostSaturation, tr("Saturation"), tr("50"), tr(""));
 
-		dialog->registerWidgetHelp(m_ui.tvShader, tr("TV Shader"), tr("None (Default)"), tr(""));
+		dialog->registerWidgetHelp(m_ui.tvShader, tr("TV Shader"), tr("None (Default)"),
+			tr("Applies a shader which replicates the visual effects of different styles of television set."));
 	}
 
 	// OSD tab
@@ -654,7 +664,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Allows the GPU instead of just the CPU to transform lines into sprites. "
 			   "This reduces CPU load and bandwidth requirement, but it is heavier on the GPU."));
 
-		dialog->registerWidgetHelp(m_ui.gsDumpCompression, tr("GS Dump Compression"), tr("Zstandard (zst)"), tr(""));
+		dialog->registerWidgetHelp(m_ui.gsDumpCompression, tr("GS Dump Compression"), tr("Zstandard (zst)"),
+			tr("Change the compression algorithm used when creating a GS dump."));
 
 		dialog->registerWidgetHelp(m_ui.useBlitSwapChain, tr("Use Blit Swap Chain"), tr("Unchecked"),
 			tr("Uses a blit presentation model instead of flipping when using the Direct3D 11 "

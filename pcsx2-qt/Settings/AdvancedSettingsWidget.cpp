@@ -72,7 +72,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
 	dialog->registerWidgetHelp(m_ui.eeClampMode, tr("Clamping Mode"), tr("Normal (Default)"), tr(""));
 
 	dialog->registerWidgetHelp(m_ui.eeRecompiler, tr("Enable Recompiler"), tr("Checked"),
-		tr("Performs just - in - time binary translation of 64 - bit MIPS - IV machine code to x86."));
+		tr("Performs just-in-time binary translation of 64-bit MIPS-IV machine code to x86."));
 
 	dialog->registerWidgetHelp(m_ui.eeWaitLoopDetection, tr("Wait Loop Detection"), tr("Checked"),
 		tr("Moderate speedup for some games, with no known side effects."));
@@ -86,7 +86,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
 		tr("Uses backpatching to avoid register flushing on every memory access."));
 
 	dialog->registerWidgetHelp(m_ui.pauseOnTLBMiss, tr("Pause On TLB Miss"), tr("Unchecked"),
-		tr("Pauses the virtual machine when a TLB miss occurs, instead of ignoring it and continuing. Note the the VM will pause after the "
+		tr("Pauses the virtual machine when a TLB miss occurs, instead of ignoring it and continuing. Note that the VM will pause after the "
 		   "end of the block, not on the instruction which caused the exception. Refer to the console to see the address where the invalid "
 		   "access occurred."));
 
