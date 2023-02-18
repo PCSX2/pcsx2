@@ -1451,11 +1451,10 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 			// instead of just comparing TBPs should fix that.
 			// For example, this fixes Judgement ring rendering in Shadow Hearts 2.
 			// Be wary of old targets being misdetected, set a sensible range of 30 frames (like Display source lookups).
-			if (t->Overlaps(bp, bw, psm, r) && t->m_TEX0.TBP0 >= bp && GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) && t->m_age <= 30)
+			if (t->Overlaps(bp, bw, psm, r) && GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) && t->m_age <= 30)
 			{
-				// Enforce full invalidation if BP's don't match.
-				const GSVector4i targetr = (bp == t->m_TEX0.TBP0) ? r : t->m_valid;
-
+				// Calculate the rect offset if the BP doesn't match.
+				const GSVector4i targetr = (bp == t->m_TEX0.TBP0 && bw == t->m_TEX0.TBW) ? r : ComputeSurfaceOffset(bp, bw, psm, r, t).b2a_offset;
 				// GH Note: Read will do a StretchRect and then will sizzle data to the GS memory
 				// t->m_valid will do the full target texture whereas r.intersect(t->m_valid) will be limited
 				// to the useful part for the transfer.
@@ -1466,6 +1465,8 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 
 				// note: r.rintersect breaks Wizardry and Chaos Legion
 				// Read(t, t->m_valid) works in all tested games but is very slow in GUST titles ><
+				// Update: 18/02/2023: Chaos legion breaks because it reads the width at half of the real width.
+				// Surface offset deals with this.
 
 				// If the game has been spamming downloads, we've already read the whole texture back at this point.
 				if (t->m_drawn_since_read.rempty())
