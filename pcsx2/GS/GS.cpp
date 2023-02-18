@@ -800,6 +800,8 @@ void GSSwitchRenderer(GSRendererType new_renderer)
 	if (existing_api == RenderAPI::OpenGLES)
 		existing_api = RenderAPI::OpenGL;
 
+	g_gs_renderer->PurgeTextureCache();
+
 	const bool is_software_switch = (new_renderer == GSRendererType::SW || GSConfig.Renderer == GSRendererType::SW);
 	const bool recreate_display = (!is_software_switch && existing_api != GetAPIForRenderer(new_renderer));
 	const Pcsx2Config::GSOptions old_config(GSConfig);
