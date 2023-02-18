@@ -17699,6 +17699,8 @@ SLES-53561:
 SLES-53563:
   name: "Nickelodeon SpongeBob SquarePants and Friends Unite!"
   region: "PAL-M6"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes shuffle-like FMVs because the game adjusts the width.
   gsHWFixes:
     autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
     mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
@@ -17863,6 +17865,8 @@ SLES-53633:
 SLES-53634:
   name: "Nicktoons Unite!"
   region: "PAL-A"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes shuffle-like FMVs because the game adjusts the width.
   gsHWFixes:
     autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
     mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
@@ -47017,6 +47021,8 @@ SLUS-21283:
 SLUS-21284:
   name: "Nicktoons Unite!"
   region: "NTSC-U"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes shuffle-like FMVs because the game adjusts the width.
   gsHWFixes:
     autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
     mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
