@@ -72,7 +72,7 @@ void GSRendererHW::Destroy()
 void GSRendererHW::PurgeTextureCache()
 {
 	GSRenderer::PurgeTextureCache();
-	m_tc->RemoveAll();
+	m_tc->RemoveAll(true);
 }
 
 GSTexture* GSRendererHW::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, const GSVector2i& size)
