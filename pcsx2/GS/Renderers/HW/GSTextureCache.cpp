@@ -618,7 +618,18 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 				dst = t;
 
 				dst->m_32_bits_fmt |= (psm_s.bpp != 16);
-				dst->m_TEX0 = TEX0;
+				// Nicktoons Unite tries to change the width from 10 to 8 and breaks FMVs.
+				// Haunting ground has some messed textures if you don't modify the rest.
+				if (!dst->m_is_frame)
+				{
+					dst->m_TEX0 = TEX0;
+				}
+				else
+				{
+					u32 width = dst->m_TEX0.TBW;
+					dst->m_TEX0 = TEX0;
+					dst->m_TEX0.TBW = width;
+				}
 
 				break;
 			}
@@ -695,7 +706,10 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 		}
 
 		if (dst)
+		{
 			dst->m_TEX0.TBW = TEX0.TBW; // Fix Jurassic Park - Operation Genesis loading disk logo.
+			dst->m_is_frame |= is_frame; // Nicktoons Unite tries to change the width from 10 to 8 and breaks FMVs.
+		}
 	}
 
 	if (dst)
