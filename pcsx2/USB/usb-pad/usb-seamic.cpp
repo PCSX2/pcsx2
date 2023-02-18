@@ -366,11 +366,15 @@ namespace usb_pad
 			{"StickUp", "Stick Up", InputBindingInfo::Type::HalfAxis, CID_THROTTLE, GenericInputBinding::LeftStickUp},
 			{"StickDown", "Stick Down", InputBindingInfo::Type::HalfAxis, CID_BRAKE, GenericInputBinding::LeftStickDown},
 			{"A", "A", InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Cross},
-			{"B", "B", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Circle},
-			{"X", "X", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Square},
-			{"Y", "Y", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Triangle},
-			{"Z", "Z", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::L1},
-			{"C", "C", InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::R1},
+			{"B", "B", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Circle},
+			{"C", "C", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::R2},
+			{"X", "X", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Square},
+			{"Y", "Y", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::Triangle},
+			{"Z", "Z", InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::L2},
+			{"L", "L", InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::L1},
+			{"R", "R", InputBindingInfo::Type::Button, CID_BUTTON7, GenericInputBinding::R1},
+			{"Select", "Select", InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Select},
+			{"Start", "Start", InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Start},
 			{"DPadUp", "D-Pad Up", InputBindingInfo::Type::Button, CID_DPAD_UP, GenericInputBinding::DPadUp},
 			{"DPadDown", "D-Pad Down", InputBindingInfo::Type::Button, CID_DPAD_DOWN, GenericInputBinding::DPadDown},
 			{"DPadLeft", "D-Pad Left", InputBindingInfo::Type::Button, CID_DPAD_LEFT, GenericInputBinding::DPadLeft},
@@ -436,7 +440,7 @@ namespace usb_pad
 
 	bool SeamicDevice::Freeze(USBDevice* dev, StateWrapper& sw) const
 	{
-		pxFailRel("Not implemented!");
+		Console.Warning("Not implemented!");
 		return true;
 		//  SeamicState *s = (SeamicState *)dev;
 		// 	switch (mode)
