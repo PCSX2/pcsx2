@@ -602,9 +602,9 @@ static __fi void frameLimit()
 static __fi void VSyncStart(u32 sCycle)
 {
 	// Update vibration at the end of a frame.
+	VSyncUpdateCore();
 	PAD::Update();
 
-	VSyncUpdateCore();
 	frameLimit(); // limit FPS
 	gsPostVsyncStart(); // MUST be after framelimit; doing so before causes funk with frame times!
 	VSyncCheckExit();
