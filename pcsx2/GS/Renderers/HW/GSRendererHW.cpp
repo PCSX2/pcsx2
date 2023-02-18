@@ -766,7 +766,7 @@ GSVector2i GSRendererHW::GetTargetSize(GSVector2i* unscaled_size)
 	// Align to even lines, reduces the chance of tiny resizes.
 	min_height = Common::AlignUpPow2(min_height, 2);
 
-	u32 height = m_tc->GetTargetHeight(m_context->FRAME.FBP, m_context->FRAME.FBW, m_context->FRAME.PSM, min_height);
+	u32 height = m_tc->GetTargetHeight(m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, min_height);
 
 	if (unscaled_size)
 	{
@@ -774,7 +774,7 @@ GSVector2i GSRendererHW::GetTargetSize(GSVector2i* unscaled_size)
 		unscaled_size->y = static_cast<int>(height);
 	}
 
-	GL_INS("Target size for %x %u %u: %ux%u", m_context->FRAME.FBP, m_context->FRAME.FBW, m_context->FRAME.PSM, width, height);
+	GL_INS("Target size for %x %u %u: %ux%u", m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, width, height);
 
 	return GSVector2i(static_cast<int>(static_cast<float>(width) * GSConfig.UpscaleMultiplier),
 		static_cast<int>(static_cast<float>(height) * GSConfig.UpscaleMultiplier));
