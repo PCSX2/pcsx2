@@ -3883,7 +3883,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 	else if (m_conf.tex == m_conf.ds)
 	{
 		// GL, Vulkan (in General layout), not DirectX!
-		const bool can_read_current_depth_buffer = false;
+		const bool can_read_current_depth_buffer = g_gs_device->Features().test_and_sample_depth;
 
 		// If this is our current Z buffer, we might not be able to read it directly if it's being written to.
 		// Rather than leaving the backend to do it, we'll check it here.

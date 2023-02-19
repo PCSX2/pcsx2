@@ -56,17 +56,6 @@ namespace GL
 #endif
 	}
 
-	static void DisableBrokenExtensions(const char* gl_vendor, const char* gl_renderer)
-	{
-		if (std::strstr(gl_vendor, "ARM"))
-		{
-			// GL_{EXT,OES}_copy_image seem to be implemented on the CPU in the Mali drivers...
-			Console.Warning("Mali driver detected, disabling GL_{EXT,OES}_copy_image");
-			GLAD_GL_EXT_copy_image = 0;
-			GLAD_GL_OES_copy_image = 0;
-		}
-	}
-
 	Context::Context(const WindowInfo& wi)
 		: m_wi(wi)
 	{
@@ -153,8 +142,6 @@ namespace GL
 		DevCon.WriteLn(Color_Magenta, "GL_RENDERER: %s", gl_renderer);
 		DevCon.WriteLn(Color_Magenta, "GL_VERSION: %s", gl_version);
 		DevCon.WriteLn(Color_Magenta, "GL_SHADING_LANGUAGE_VERSION: %s", gl_shading_language_version);
-
-		DisableBrokenExtensions(gl_vendor, gl_renderer);
 
 		return context;
 	}

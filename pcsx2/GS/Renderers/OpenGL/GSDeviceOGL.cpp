@@ -125,6 +125,7 @@ bool GSDeviceOGL::Create()
 	m_features.dual_source_blend = GLLoader::has_dual_source_blend && !GSConfig.DisableDualSourceBlend;
 	m_features.clip_control = GLLoader::has_clip_control;
 	m_features.stencil_buffer = true;
+	m_features.test_and_sample_depth = m_features.texture_barrier && !GLLoader::is_gles;
 
 	GLint point_range[2] = {};
 	glGetIntegerv(GL_ALIASED_POINT_SIZE_RANGE, point_range);
@@ -1948,6 +1949,12 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			config.drawarea.left, config.drawarea.top,
 			config.drawarea.width(), config.drawarea.height());
 		CopyRect(config.rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
+	}
+	else if (config.tex && config.tex == config.ds)
+	{
+		// Ensure all depth writes are finished before sampling
+		GL_INS("Texture barrier to flush depth before reading");
+		glTextureBarrier();
 	}
 
 	IASetVertexBuffer(config.verts, config.nverts);

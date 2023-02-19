@@ -29,6 +29,7 @@ public:
 	static std::unique_ptr<GSTextureVK> Create(Type type, u32 width, u32 height, u32 levels, Format format, VkFormat vk_format);
 
 	__fi Vulkan::Texture& GetTexture() { return m_texture; }
+	__fi Vulkan::Texture* GetTexturePtr() { return &m_texture; }
 	__fi VkFormat GetNativeFormat() const { return m_texture.GetFormat(); }
 	__fi VkImage GetImage() const { return m_texture.GetImage(); }
 	__fi VkImageView GetView() const { return m_texture.GetView(); }

@@ -139,7 +139,8 @@ namespace Vulkan
 			VkAttachmentLoadOp depth_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
 			VkAttachmentStoreOp depth_store_op = VK_ATTACHMENT_STORE_OP_STORE,
 			VkAttachmentLoadOp stencil_load_op = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-			VkAttachmentStoreOp stencil_store_op = VK_ATTACHMENT_STORE_OP_DONT_CARE, bool color_feedback_loop = false)
+			VkAttachmentStoreOp stencil_store_op = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+			bool color_feedback_loop = false, bool depth_sampling = false)
 		{
 			RenderPassCacheKey key = {};
 			key.color_format = color_format;
@@ -151,6 +152,7 @@ namespace Vulkan
 			key.stencil_load_op = stencil_load_op;
 			key.stencil_store_op = stencil_store_op;
 			key.color_feedback_loop = color_feedback_loop;
+			key.depth_sampling = depth_sampling;
 
 			auto it = m_render_pass_cache.find(key.key);
 			if (it != m_render_pass_cache.end())
@@ -252,6 +254,7 @@ namespace Vulkan
 				u32 stencil_load_op : 2;
 				u32 stencil_store_op : 1;
 				u32 color_feedback_loop : 1;
+				u32 depth_sampling : 1;
 			};
 
 			u32 key;

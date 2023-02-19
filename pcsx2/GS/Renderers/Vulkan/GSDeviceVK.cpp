@@ -264,6 +264,9 @@ bool GSDeviceVK::CheckFeatures()
 	// Fbfetch is useless if we don't have barriers enabled.
 	m_features.framebuffer_fetch &= m_features.texture_barrier;
 
+	// Buggy drivers with broken barriers probably have no chance using GENERAL layout for depth either...
+	m_features.test_and_sample_depth = m_features.texture_barrier;
+
 	// Use D32F depth instead of D32S8 when we have framebuffer fetch.
 	m_features.stencil_buffer &= !m_features.framebuffer_fetch;
 
@@ -466,7 +469,7 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 
 			// otherwise we need to do an attachment clear
 			const bool depth = (dTexVK->GetType() == GSTexture::Type::DepthStencil);
-			OMSetRenderTargets(depth ? nullptr : dTexVK, depth ? dTexVK : nullptr, dtex_rc, false);
+			OMSetRenderTargets(depth ? nullptr : dTexVK, depth ? dTexVK : nullptr, dtex_rc);
 			BeginRenderPassForStretchRect(dTexVK, dtex_rc, GSVector4i(destX, destY, destX + r.width(), destY + r.height()));
 
 			// so use an attachment clear
@@ -506,9 +509,11 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 	sTexVK->TransitionToLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 	sTexVK->SetUsedThisCommandBuffer();
 
-	// ensure we don't leave this bound later on
-	if (m_tfx_textures[0] == sTexVK->GetView())
+#ifdef PCSX2_DEVBUILD
+	// ensure we don't leave this bound later on, debug layer gets cranky
+	if (m_tfx_textures[0] == sTexVK->GetTexturePtr())
 		PSSetShaderResource(0, nullptr, false);
+#endif
 
 	vkCmdCopyImage(g_vulkan_context->GetCurrentCommandBuffer(), sTexVK->GetImage(),
 		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dTexVK->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &ic);
@@ -653,7 +658,7 @@ void GSDeviceVK::DoMultiStretchRects(
 
 	// Even though we're batching, a cmdbuffer submit could've messed this up.
 	const GSVector4i rc(dTex->GetRect());
-	OMSetRenderTargets(dTex->IsRenderTarget() ? dTex : nullptr, dTex->IsDepthStencil() ? dTex : nullptr, rc, false);
+	OMSetRenderTargets(dTex->IsRenderTarget() ? dTex : nullptr, dTex->IsDepthStencil() ? dTex : nullptr, rc);
 	if (!InRenderPass() || !CheckRenderPassArea(rc))
 		BeginRenderPassForStretchRect(dTex, rc, rc, false);
 	SetUtilityTexture(rects[0].src, rects[0].linear ? m_linear_sampler : m_point_sampler);
@@ -729,7 +734,7 @@ void GSDeviceVK::DoStretchRect(GSTextureVK* sTex, const GSVector4& sRect, GSText
 	// switch rts (which might not end the render pass), so check the bounds
 	if (!is_present)
 	{
-		OMSetRenderTargets(depth ? nullptr : dTex, depth ? dTex : nullptr, dst_rc, false);
+		OMSetRenderTargets(depth ? nullptr : dTex, depth ? dTex : nullptr, dst_rc);
 		if (InRenderPass() && (!CheckRenderPassArea(dst_rc) || dTex->GetState() == GSTexture::State::Cleared))
 			EndRenderPass();
 	}
@@ -777,7 +782,7 @@ void GSDeviceVK::BlitRect(GSTexture* sTex, const GSVector4i& sRect, u32 sLevel, 
 	dTexVK->TransitionToLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
 	// ensure we don't leave this bound later on
-	if (m_tfx_textures[0] == sTexVK->GetView())
+	if (m_tfx_textures[0] == sTexVK->GetTexturePtr())
 		PSSetShaderResource(0, nullptr, false);
 
 	pxAssert(
@@ -862,7 +867,7 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		if (sTex[1]->GetState() == GSTexture::State::Dirty)
 		{
 			static_cast<GSTextureVK*>(sTex[1])->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-			OMSetRenderTargets(dTex, nullptr, darea, false);
+			OMSetRenderTargets(dTex, nullptr, darea);
 			SetUtilityTexture(sTex[1], sampler);
 			BeginClearRenderPass(m_utility_color_render_pass_clear, darea, c);
 			SetPipeline(m_convert[static_cast<int>(ShaderConvert::COPY)]);
@@ -878,7 +883,7 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	if (feedback_write_2)
 	{
 		EndRenderPass();
-		OMSetRenderTargets(sTex[2], nullptr, fbarea, false);
+		OMSetRenderTargets(sTex[2], nullptr, fbarea);
 		if (dcleared)
 			SetUtilityTexture(dTex, sampler);
 		// sTex[2] can be sTex[0], in which case it might be cleared (e.g. Xenosaga).
@@ -902,13 +907,13 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	if (feedback_write_2_but_blend_bg || !dcleared)
 	{
 		EndRenderPass();
-		OMSetRenderTargets(dTex, nullptr, darea, false);
+		OMSetRenderTargets(dTex, nullptr, darea);
 		BeginClearRenderPass(m_utility_color_render_pass_clear, darea, c);
 		dTex->SetState(GSTexture::State::Dirty);
 	}
 	else if (!InRenderPass())
 	{
-		OMSetRenderTargets(dTex, nullptr, darea, false);
+		OMSetRenderTargets(dTex, nullptr, darea);
 		BeginRenderPass(m_utility_color_render_pass_load, darea);
 	}
 
@@ -927,7 +932,7 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		SetPipeline(m_convert[static_cast<int>(ShaderConvert::YUV)]);
 		SetUtilityTexture(dTex, sampler);
 		SetUtilityPushConstants(yuv_constants, sizeof(yuv_constants));
-		OMSetRenderTargets(sTex[2], nullptr, fbarea, false);
+		OMSetRenderTargets(sTex[2], nullptr, fbarea);
 		BeginRenderPass(m_utility_color_render_pass_load, fbarea);
 		DrawStretchRect(full_r, dRect[2], dsize);
 	}
@@ -945,7 +950,7 @@ void GSDeviceVK::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 	const GSVector4i rc = GSVector4i(dRect);
 	EndRenderPass();
-	OMSetRenderTargets(dTex, nullptr, rc, false);
+	OMSetRenderTargets(dTex, nullptr, rc);
 	SetUtilityTexture(sTex, linear ? m_linear_sampler : m_point_sampler);
 	BeginRenderPassForStretchRect(static_cast<GSTextureVK*>(dTex), dTex->GetRect(), rc, false);
 	SetPipeline(m_interlace[static_cast<int>(shader)]);
@@ -961,7 +966,7 @@ void GSDeviceVK::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float para
 	const GSVector4 sRect(0.0f, 0.0f, 1.0f, 1.0f);
 	const GSVector4i dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
 	EndRenderPass();
-	OMSetRenderTargets(dTex, nullptr, dRect, false);
+	OMSetRenderTargets(dTex, nullptr, dRect);
 	SetUtilityTexture(sTex, m_point_sampler);
 	BeginRenderPass(m_utility_color_render_pass_discard, dRect);
 	dTex->SetState(GSTexture::State::Dirty);
@@ -978,7 +983,7 @@ void GSDeviceVK::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	const GSVector4 sRect(0.0f, 0.0f, 1.0f, 1.0f);
 	const GSVector4i dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
 	EndRenderPass();
-	OMSetRenderTargets(dTex, nullptr, dRect, false);
+	OMSetRenderTargets(dTex, nullptr, dRect);
 	SetUtilityTexture(sTex, m_linear_sampler);
 	BeginRenderPass(m_utility_color_render_pass_discard, dRect);
 	dTex->SetState(GSTexture::State::Dirty);
@@ -1025,35 +1030,51 @@ void GSDeviceVK::IASetIndexBuffer(const void* index, size_t count)
 	m_index_stream_buffer.CommitMemory(size);
 }
 
-void GSDeviceVK::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor, bool feedback_loop)
+void GSDeviceVK::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor, FeedbackLoopFlag feedback_loop)
 {
 	GSTextureVK* vkRt = static_cast<GSTextureVK*>(rt);
 	GSTextureVK* vkDs = static_cast<GSTextureVK*>(ds);
 	pxAssert(vkRt || vkDs);
 
 	if (m_current_render_target != vkRt || m_current_depth_target != vkDs ||
-		m_current_framebuffer_has_feedback_loop != feedback_loop)
+		m_current_framebuffer_feedback_loop != feedback_loop)
 	{
 		// framebuffer change or feedback loop enabled/disabled
 		EndRenderPass();
 
 		if (vkRt)
-			m_current_framebuffer = vkRt->GetLinkedFramebuffer(vkDs, feedback_loop);
+		{
+			m_current_framebuffer = vkRt->GetLinkedFramebuffer(vkDs, (feedback_loop & FeedbackLoopFlag_ReadAndWriteRT) != 0);
+		}
 		else
-			m_current_framebuffer = vkDs->GetLinkedFramebuffer(nullptr, feedback_loop);
+		{
+			pxAssert(!(feedback_loop & FeedbackLoopFlag_ReadAndWriteRT));
+			m_current_framebuffer = vkDs->GetLinkedFramebuffer(nullptr, false);
+		}
 	}
 
 	m_current_render_target = vkRt;
 	m_current_depth_target = vkDs;
-	m_current_framebuffer_has_feedback_loop = feedback_loop;
+	m_current_framebuffer_feedback_loop = feedback_loop;
 
 	if (!InRenderPass())
 	{
 		if (vkRt)
-			vkRt->TransitionToLayout(
-				feedback_loop ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		{
+			vkRt->TransitionToLayout((feedback_loop & FeedbackLoopFlag_ReadAndWriteRT) ?
+										 VK_IMAGE_LAYOUT_GENERAL :
+										 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		}
 		if (vkDs)
-			vkDs->TransitionToLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		{
+			// need to update descriptors to reflect the new layout
+			if ((feedback_loop & FeedbackLoopFlag_ReadDS) && vkDs->GetLayout() != VK_IMAGE_LAYOUT_GENERAL)
+				m_dirty_flags |= DIRTY_FLAG_TFX_SAMPLERS_DS;
+
+			vkDs->TransitionToLayout((feedback_loop & FeedbackLoopFlag_ReadDS) ?
+										 VK_IMAGE_LAYOUT_GENERAL :
+										 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		}
 	}
 
 	// This is used to set/initialize the framebuffer for tfx rendering.
@@ -1192,7 +1213,7 @@ bool GSDeviceVK::CreateNullTexture()
 	const VkClearColorValue ccv{};
 	m_null_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	vkCmdClearColorImage(cmdbuf, m_null_texture.GetImage(), m_null_texture.GetLayout(), &ccv, 1, &srr);
-	m_null_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	m_null_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_GENERAL);
 	Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_null_texture.GetImage(), "Null texture");
 	Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_null_texture.GetView(), "Null texture view");
 
@@ -1280,7 +1301,7 @@ bool GSDeviceVK::CreatePipelineLayouts()
 
 bool GSDeviceVK::CreateRenderPasses()
 {
-#define GET(dest, rt, depth, fbl, opa, opb, opc) \
+#define GET(dest, rt, depth, fbl, dsp, opa, opb, opc) \
 	do \
 	{ \
 		dest = g_vulkan_context->GetRenderPass( \
@@ -1292,7 +1313,8 @@ bool GSDeviceVK::CreateRenderPasses()
                                                VK_ATTACHMENT_STORE_OP_DONT_CARE, /* depth store */ \
 			((depth) != VK_FORMAT_UNDEFINED) ? (opc) : VK_ATTACHMENT_LOAD_OP_DONT_CARE, /* stencil load */ \
 			VK_ATTACHMENT_STORE_OP_DONT_CARE, /* stencil store */ \
-			(fbl) /* feedback loop */ \
+			(fbl), /* feedback loop */ \
+			(dsp) /* depth sampling */ \
 		); \
 		if (dest == VK_NULL_HANDLE) \
 			return false; \
@@ -1312,21 +1334,25 @@ bool GSDeviceVK::CreateRenderPasses()
 				{
 					for (u32 fbl = 0; fbl < 2; fbl++)
 					{
-						for (u32 opa = VK_ATTACHMENT_LOAD_OP_LOAD; opa <= VK_ATTACHMENT_LOAD_OP_DONT_CARE; opa++)
+						for (u32 dsp = 0; dsp < 2; dsp++)
 						{
-							for (u32 opb = VK_ATTACHMENT_LOAD_OP_LOAD; opb <= VK_ATTACHMENT_LOAD_OP_DONT_CARE; opb++)
+							for (u32 opa = VK_ATTACHMENT_LOAD_OP_LOAD; opa <= VK_ATTACHMENT_LOAD_OP_DONT_CARE; opa++)
 							{
-								const VkFormat rp_rt_format =
-									(rt != 0) ? ((hdr != 0) ? hdr_rt_format : rt_format) : VK_FORMAT_UNDEFINED;
-								const VkFormat rp_depth_format = (ds != 0) ? depth_format : VK_FORMAT_UNDEFINED;
-								const VkAttachmentLoadOp opc =
-									((date == DATE_RENDER_PASS_NONE || !m_features.stencil_buffer) ?
-                                            VK_ATTACHMENT_LOAD_OP_DONT_CARE :
-                                            (date == DATE_RENDER_PASS_STENCIL_ONE ? VK_ATTACHMENT_LOAD_OP_CLEAR :
-                                                                                    VK_ATTACHMENT_LOAD_OP_LOAD));
-								GET(m_tfx_render_pass[rt][ds][hdr][date][fbl][opa][opb], rp_rt_format, rp_depth_format,
-									(fbl != 0), static_cast<VkAttachmentLoadOp>(opa),
-									static_cast<VkAttachmentLoadOp>(opb), static_cast<VkAttachmentLoadOp>(opc));
+								for (u32 opb = VK_ATTACHMENT_LOAD_OP_LOAD; opb <= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+									 opb++)
+								{
+									const VkFormat rp_rt_format =
+										(rt != 0) ? ((hdr != 0) ? hdr_rt_format : rt_format) : VK_FORMAT_UNDEFINED;
+									const VkFormat rp_depth_format = (ds != 0) ? depth_format : VK_FORMAT_UNDEFINED;
+									const VkAttachmentLoadOp opc =
+										((date == DATE_RENDER_PASS_NONE || !m_features.stencil_buffer) ?
+												VK_ATTACHMENT_LOAD_OP_DONT_CARE :
+												(date == DATE_RENDER_PASS_STENCIL_ONE ? VK_ATTACHMENT_LOAD_OP_CLEAR :
+																						VK_ATTACHMENT_LOAD_OP_LOAD));
+									GET(m_tfx_render_pass[rt][ds][hdr][date][fbl][dsp][opa][opb], rp_rt_format,
+										rp_depth_format, (fbl != 0), (dsp != 0), static_cast<VkAttachmentLoadOp>(opa),
+										static_cast<VkAttachmentLoadOp>(opb), static_cast<VkAttachmentLoadOp>(opc));
+								}
 							}
 						}
 					}
@@ -1335,18 +1361,18 @@ bool GSDeviceVK::CreateRenderPasses()
 		}
 	}
 
-	GET(m_utility_color_render_pass_load, rt_format, VK_FORMAT_UNDEFINED, false, VK_ATTACHMENT_LOAD_OP_LOAD,
+	GET(m_utility_color_render_pass_load, rt_format, VK_FORMAT_UNDEFINED, false, false, VK_ATTACHMENT_LOAD_OP_LOAD,
 		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
-	GET(m_utility_color_render_pass_clear, rt_format, VK_FORMAT_UNDEFINED, false, VK_ATTACHMENT_LOAD_OP_CLEAR,
+	GET(m_utility_color_render_pass_clear, rt_format, VK_FORMAT_UNDEFINED, false, false, VK_ATTACHMENT_LOAD_OP_CLEAR,
 		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
-	GET(m_utility_color_render_pass_discard, rt_format, VK_FORMAT_UNDEFINED, false, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
-	GET(m_utility_depth_render_pass_load, VK_FORMAT_UNDEFINED, depth_format, false, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-		VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
-	GET(m_utility_depth_render_pass_clear, VK_FORMAT_UNDEFINED, depth_format, false, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-		VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
-	GET(m_utility_depth_render_pass_discard, VK_FORMAT_UNDEFINED, depth_format, false, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+	GET(m_utility_color_render_pass_discard, rt_format, VK_FORMAT_UNDEFINED, false, false,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+	GET(m_utility_depth_render_pass_load, VK_FORMAT_UNDEFINED, depth_format, false, false,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+	GET(m_utility_depth_render_pass_clear, VK_FORMAT_UNDEFINED, depth_format, false, false,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+	GET(m_utility_depth_render_pass_discard, VK_FORMAT_UNDEFINED, depth_format, false, false,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
 
 	m_date_setup_render_pass = g_vulkan_context->GetRenderPass(VK_FORMAT_UNDEFINED, depth_format,
 		VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE,
@@ -1498,7 +1524,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 					pxAssert(!arr[ds][fbl]);
 
 					gpb.SetRenderPass(
-						GetTFXRenderPass(true, ds != 0, is_setup, DATE_RENDER_PASS_NONE, fbl != 0,
+						GetTFXRenderPass(true, ds != 0, is_setup, DATE_RENDER_PASS_NONE, fbl != 0, false,
 							VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 						0);
 					arr[ds][fbl] = gpb.Create(g_vulkan_context->GetDevice(), g_vulkan_shader_cache->GetPipelineCache(true), false);
@@ -2155,7 +2181,8 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	{
 		gpb.SetRenderPass(
 			GetTFXRenderPass(p.rt, p.ds, p.ps.hdr, p.dss.date ? DATE_RENDER_PASS_STENCIL : DATE_RENDER_PASS_NONE,
-				p.feedback_loop, p.rt ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+				p.IsRTFeedbackLoop(), p.IsTestingAndSamplingDepth(),
+				p.rt ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 				p.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 			0);
 	}
@@ -2231,7 +2258,7 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	// Tests have shown that it's faster to just enable rast order on the entire pass, rather than alternating
 	// between turning it on and off for different draws, and adding the required barrier between non-rast-order
 	// and rast-order draws.
-	if (m_features.framebuffer_fetch && p.feedback_loop)
+	if (m_features.framebuffer_fetch && p.IsRTFeedbackLoop())
 		gpb.AddBlendFlags(VK_PIPELINE_COLOR_BLEND_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_BIT_ARM);
 
 	VkPipeline pipeline = gpb.Create(g_vulkan_context->GetDevice(), g_vulkan_shader_cache->GetPipelineCache(true));
@@ -2277,9 +2304,9 @@ void GSDeviceVK::InitializeState()
 	m_current_render_pass = VK_NULL_HANDLE;
 
 	for (u32 i = 0; i < NUM_TFX_TEXTURES; i++)
-		m_tfx_textures[i] = m_null_texture.GetView();
+		m_tfx_textures[i] = &m_null_texture;
 
-	m_utility_texture = m_null_texture.GetView();
+	m_utility_texture = &m_null_texture;
 
 	m_point_sampler = GetSampler(GSHWDrawConfig::SamplerSelector::Point());
 	if (m_point_sampler)
@@ -2425,7 +2452,7 @@ void GSDeviceVK::SetBlendConstants(u8 color)
 
 void GSDeviceVK::PSSetShaderResource(int i, GSTexture* sr, bool check_state)
 {
-	VkImageView view;
+	const Vulkan::Texture* tex;
 	if (sr)
 	{
 		GSTextureVK* vkTex = static_cast<GSTextureVK*>(sr);
@@ -2441,17 +2468,17 @@ void GSDeviceVK::PSSetShaderResource(int i, GSTexture* sr, bool check_state)
 			vkTex->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 		vkTex->SetUsedThisCommandBuffer();
-		view = vkTex->GetView();
+		tex = vkTex->GetTexturePtr();
 	}
 	else
 	{
-		view = m_null_texture.GetView();
+		tex = &m_null_texture;
 	}
 
-	if (m_tfx_textures[i] == view)
+	if (m_tfx_textures[i] == tex)
 		return;
 
-	m_tfx_textures[i] = view;
+	m_tfx_textures[i] = tex;
 
 	m_dirty_flags |= (i < 2) ? DIRTY_FLAG_TFX_SAMPLERS_DS : DIRTY_FLAG_TFX_RT_TEXTURE_DS;
 }
@@ -2468,24 +2495,24 @@ void GSDeviceVK::PSSetSampler(GSHWDrawConfig::SamplerSelector sel)
 
 void GSDeviceVK::SetUtilityTexture(GSTexture* tex, VkSampler sampler)
 {
-	VkImageView view;
+	const Vulkan::Texture* vtex;
 	if (tex)
 	{
 		GSTextureVK* vkTex = static_cast<GSTextureVK*>(tex);
 		vkTex->CommitClear();
 		vkTex->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		vkTex->SetUsedThisCommandBuffer();
-		view = vkTex->GetView();
+		vtex = vkTex->GetTexturePtr();
 	}
 	else
 	{
-		view = m_null_texture.GetView();
+		vtex = &m_null_texture;
 	}
 
-	if (m_utility_texture == view && m_utility_sampler == sampler)
+	if (m_utility_texture == vtex && m_utility_sampler == sampler)
 		return;
 
-	m_utility_texture = view;
+	m_utility_texture = vtex;
 	m_utility_sampler = sampler;
 	m_dirty_flags |= DIRTY_FLAG_UTILITY_TEXTURE;
 }
@@ -2498,18 +2525,18 @@ void GSDeviceVK::SetUtilityPushConstants(const void* data, u32 size)
 
 void GSDeviceVK::UnbindTexture(GSTextureVK* tex)
 {
-	const VkImageView view = tex->GetView();
+	const Vulkan::Texture* vtex = tex->GetTexturePtr();
 	for (u32 i = 0; i < NUM_TFX_TEXTURES; i++)
 	{
-		if (m_tfx_textures[i] == view)
+		if (m_tfx_textures[i] == vtex)
 		{
-			m_tfx_textures[i] = m_null_texture.GetView();
+			m_tfx_textures[i] = &m_null_texture;
 			m_dirty_flags |= (i < 2) ? DIRTY_FLAG_TFX_SAMPLERS_DS : DIRTY_FLAG_TFX_RT_TEXTURE_DS;
 		}
 	}
-	if (m_utility_texture == view)
+	if (m_utility_texture == vtex)
 	{
-		m_utility_texture = m_null_texture.GetView();
+		m_utility_texture = &m_null_texture;
 		m_dirty_flags |= DIRTY_FLAG_UTILITY_TEXTURE;
 	}
 	if (m_current_render_target == tex || m_current_depth_target == tex)
@@ -2732,8 +2759,9 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			return ApplyTFXState(true);
 		}
 
-		dsub.AddCombinedImageSamplerDescriptorWrite(ds, 0, m_tfx_textures[0], m_tfx_sampler);
-		dsub.AddImageDescriptorWrite(ds, 1, m_tfx_textures[1]);
+		dsub.AddCombinedImageSamplerDescriptorWrite(
+			ds, 0, m_tfx_textures[0]->GetView(), m_tfx_sampler, m_tfx_textures[0]->GetLayout());
+		dsub.AddImageDescriptorWrite(ds, 1, m_tfx_textures[1]->GetView(), m_tfx_textures[1]->GetLayout());
 		dsub.Update(dev);
 
 		m_tfx_descriptor_sets[1] = ds;
@@ -2757,10 +2785,17 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 		}
 
 		if (m_features.texture_barrier)
-			dsub.AddInputAttachmentDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_DRAW_TEXTURES]);
+		{
+			dsub.AddInputAttachmentDescriptorWrite(
+				ds, 0, m_tfx_textures[NUM_TFX_DRAW_TEXTURES]->GetView(), VK_IMAGE_LAYOUT_GENERAL);
+		}
 		else
-			dsub.AddImageDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_DRAW_TEXTURES]);
-		dsub.AddImageDescriptorWrite(ds, 1, m_tfx_textures[NUM_TFX_DRAW_TEXTURES + 1]);
+		{
+			dsub.AddImageDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_DRAW_TEXTURES]->GetView(),
+				m_tfx_textures[NUM_TFX_DRAW_TEXTURES]->GetLayout());
+		}
+		dsub.AddImageDescriptorWrite(ds, 1, m_tfx_textures[NUM_TFX_DRAW_TEXTURES + 1]->GetView(),
+			m_tfx_textures[NUM_TFX_DRAW_TEXTURES + 1]->GetLayout());
 		dsub.Update(dev);
 
 		m_tfx_descriptor_sets[2] = ds;
@@ -2831,7 +2866,8 @@ bool GSDeviceVK::ApplyUtilityState(bool already_execed)
 		}
 
 		Vulkan::DescriptorSetUpdateBuilder dsub;
-		dsub.AddCombinedImageSamplerDescriptorWrite(m_utility_descriptor_set, 0, m_utility_texture, m_utility_sampler);
+		dsub.AddCombinedImageSamplerDescriptorWrite(m_utility_descriptor_set, 0, m_utility_texture->GetView(),
+			m_utility_sampler, m_utility_texture->GetLayout());
 		dsub.Update(dev);
 		rebind = true;
 	}
@@ -2888,7 +2924,7 @@ void GSDeviceVK::SetupDATE(GSTexture* rt, GSTexture* ds, bool datm, const GSVect
 	// sfex3 (after the capcom logo), vf4 (first menu fading in), ffxii shadows, rumble roses shadows, persona4 shadows
 	EndRenderPass();
 	SetUtilityTexture(rt, m_point_sampler);
-	OMSetRenderTargets(nullptr, ds, bbox, false);
+	OMSetRenderTargets(nullptr, ds, bbox);
 	IASetVertexBuffer(vertices, sizeof(vertices[0]), 4);
 	SetPipeline(m_convert[static_cast<int>(datm ? ShaderConvert::DATM_1 : ShaderConvert::DATM_0)]);
 	BeginClearRenderPass(m_date_setup_render_pass, bbox, 0.0f, 0);
@@ -2918,7 +2954,7 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 
 	// setup the fill quad to prefill with existing alpha values
 	SetUtilityTexture(config.rt, m_point_sampler);
-	OMSetRenderTargets(image, config.ds, config.drawarea, false);
+	OMSetRenderTargets(image, config.ds, config.drawarea);
 
 	// if the depth target has been cleared, we need to preserve that clear
 	const VkAttachmentLoadOp ds_load_op = GetLoadOpForTexture(static_cast<GSTextureVK*>(config.ds));
@@ -2961,7 +2997,7 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 	pipe.dss.zwe = false;
 	pipe.cms.wrgba = 0;
 	pipe.bs = {};
-	pipe.feedback_loop = false;
+	pipe.feedback_loop_flags = FeedbackLoopFlag_None;
 	pipe.rt = true;
 	pipe.ps.blend_a = pipe.ps.blend_b = pipe.ps.blend_c = pipe.ps.blend_d = false;
 	pipe.ps.no_color = false;
@@ -3020,7 +3056,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	// bind textures before checking the render pass, in case we need to transition them
 	if (config.tex)
 	{
-		PSSetShaderResource(0, config.tex, config.tex != config.rt);
+		PSSetShaderResource(0, config.tex, config.tex != config.rt && config.tex != config.ds);
 		PSSetSampler(config.sampler);
 	}
 	if (config.pal)
@@ -3110,8 +3146,9 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// clear texture binding when it's bound to RT or DS
-	if (!config.tex && ((config.rt && static_cast<GSTextureVK*>(config.rt)->GetView() == m_tfx_textures[0]) ||
-						   (config.ds && static_cast<GSTextureVK*>(config.ds)->GetView() == m_tfx_textures[0])))
+	if (!config.tex &&
+		((!pipe.IsRTFeedbackLoop() && static_cast<GSTextureVK*>(config.rt)->GetTexturePtr() == m_tfx_textures[0]) ||
+			(config.ds && static_cast<GSTextureVK*>(config.ds)->GetTexturePtr() == m_tfx_textures[0])))
 	{
 		PSSetShaderResource(0, nullptr, false);
 	}
@@ -3125,7 +3162,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		// avoid restarting the render pass just to switch from rt+depth to rt and vice versa
 		if (!draw_ds && m_current_depth_target && m_current_render_target == draw_rt &&
 			config.tex != m_current_depth_target && m_current_depth_target->GetSize() == draw_rt->GetSize() &&
-			!(pipe.feedback_loop && !CurrentFramebufferHasFeedbackLoop()))
+			((pipe.feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteRT) ==
+				(m_current_framebuffer_feedback_loop & FeedbackLoopFlag_ReadAndWriteRT)))
 		{
 			draw_ds = m_current_depth_target;
 			m_pipeline_selector.ds = true;
@@ -3134,8 +3172,9 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		}
 
 		// Prefer keeping feedback loop enabled, that way we're not constantly restarting render passes
-		pipe.feedback_loop |= m_current_render_target == draw_rt && m_current_depth_target == draw_ds &&
-							  CurrentFramebufferHasFeedbackLoop();
+		pipe.feedback_loop_flags |= (m_current_render_target == draw_rt && m_current_depth_target == draw_ds) ?
+								  m_current_framebuffer_feedback_loop :
+								  0;
 	}
 
 	// We don't need the very first barrier if this is the first draw after switching to feedback loop,
@@ -3143,8 +3182,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	// setup and the first draw to read it. TODO: Make HDR use subpasses instead.
 	const bool skip_first_barrier = (draw_rt && draw_rt->GetLayout() != VK_IMAGE_LAYOUT_GENERAL && !pipe.ps.hdr);
 
-	OMSetRenderTargets(draw_rt, draw_ds, config.scissor, pipe.feedback_loop);
-	if (pipe.feedback_loop)
+	OMSetRenderTargets(draw_rt, draw_ds, config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
+	if (pipe.IsRTFeedbackLoop())
 	{
 		pxAssertMsg(m_features.texture_barrier, "Texture barriers enabled");
 		PSSetShaderResource(2, draw_rt, false);
@@ -3155,8 +3194,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	{
 		const VkAttachmentLoadOp rt_op = GetLoadOpForTexture(draw_rt);
 		const VkAttachmentLoadOp ds_op = GetLoadOpForTexture(draw_ds);
-		const VkRenderPass rp =
-			GetTFXRenderPass(pipe.rt, pipe.ds, pipe.ps.hdr, DATE_rp, pipe.feedback_loop, rt_op, ds_op);
+		const VkRenderPass rp = GetTFXRenderPass(pipe.rt, pipe.ds, pipe.ps.hdr, DATE_rp, pipe.IsRTFeedbackLoop(),
+			pipe.IsTestingAndSamplingDepth(), rt_op, ds_op);
 		const bool is_clearing_rt = (rt_op == VK_ATTACHMENT_LOAD_OP_CLEAR || ds_op == VK_ATTACHMENT_LOAD_OP_CLEAR);
 
 		if (is_clearing_rt || DATE_rp == DATE_RENDER_PASS_STENCIL_ONE)
@@ -3184,7 +3223,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	if (hdr_rt && config.rt->GetState() == GSTexture::State::Dirty)
 	{
 		SetUtilityTexture(static_cast<GSTextureVK*>(config.rt), m_point_sampler);
-		SetPipeline(m_hdr_setup_pipelines[pipe.ds][pipe.feedback_loop]);
+		SetPipeline(m_hdr_setup_pipelines[pipe.ds][pipe.IsRTFeedbackLoop()]);
 
 		const GSVector4 sRect(GSVector4(render_area) / GSVector4(rtsize.x, rtsize.y).xyxy());
 		DrawStretchRect(sRect, GSVector4(render_area), rtsize);
@@ -3253,7 +3292,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		hdr_rt->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		draw_rt = static_cast<GSTextureVK*>(config.rt);
-		OMSetRenderTargets(draw_rt, draw_ds, config.scissor, pipe.feedback_loop);
+		OMSetRenderTargets(draw_rt, draw_ds, config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
 
 		// if this target was cleared and never drawn to, perform the clear as part of the resolve here.
 		if (draw_rt->GetState() == GSTexture::State::Cleared)
@@ -3264,23 +3303,22 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			if (draw_ds)
 				cvs[cv_count++].depthStencil = {draw_ds->GetClearDepth(), 1};
 
-			BeginClearRenderPass(
-				GetTFXRenderPass(true, pipe.ds, false, DATE_RENDER_PASS_NONE, pipe.feedback_loop, VK_ATTACHMENT_LOAD_OP_CLEAR,
-					pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
-				GSVector4i(0, 0, draw_rt->GetWidth(), draw_rt->GetHeight()),
-				cvs, cv_count);
+			BeginClearRenderPass(GetTFXRenderPass(true, pipe.ds, false, DATE_RENDER_PASS_NONE, pipe.IsRTFeedbackLoop(),
+									 pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_CLEAR,
+									 pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
+				GSVector4i(0, 0, draw_rt->GetWidth(), draw_rt->GetHeight()), cvs, cv_count);
 			draw_rt->SetState(GSTexture::State::Dirty);
 		}
 		else
 		{
-			BeginRenderPass(
-				GetTFXRenderPass(true, pipe.ds, false, DATE_RENDER_PASS_NONE, pipe.feedback_loop, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-					pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
+			BeginRenderPass(GetTFXRenderPass(true, pipe.ds, false, DATE_RENDER_PASS_NONE, pipe.IsRTFeedbackLoop(),
+								pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+								pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 				render_area);
 		}
 
 		const GSVector4 sRect(GSVector4(render_area) / GSVector4(rtsize.x, rtsize.y).xyxy());
-		SetPipeline(m_hdr_finish_pipelines[pipe.ds][pipe.feedback_loop]);
+		SetPipeline(m_hdr_finish_pipelines[pipe.ds][pipe.IsRTFeedbackLoop()]);
 		SetUtilityTexture(hdr_rt, m_point_sampler);
 		DrawStretchRect(sRect, GSVector4(render_area), rtsize);
 		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
@@ -3303,8 +3341,12 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelect
 	pipe.rt = config.rt != nullptr;
 	pipe.ds = config.ds != nullptr;
 	pipe.line_width = config.line_expand;
-	pipe.feedback_loop = m_features.texture_barrier &&
-										(config.ps.IsFeedbackLoop() || config.require_one_barrier || config.require_full_barrier);
+	pipe.feedback_loop_flags =
+		(m_features.texture_barrier &&
+			(config.ps.IsFeedbackLoop() || config.require_one_barrier || config.require_full_barrier)) ?
+			FeedbackLoopFlag_ReadAndWriteRT :
+			FeedbackLoopFlag_None;
+	pipe.feedback_loop_flags |= (config.tex == config.ds) ? FeedbackLoopFlag_ReadDS : FeedbackLoopFlag_None;
 
 	// enable point size in the vertex shader if we're rendering points regardless of upscaling.
 	pipe.vs.point_size |= (config.topology == GSHWDrawConfig::Topology::Point);
