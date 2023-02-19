@@ -22686,6 +22686,13 @@ SLES-55520:
     cpuSpriteRenderBW: 2 # Fixes textures.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Fixes soft shadows.
+  patches:
+    9E36E023:
+      content: |-
+        //Patched by kozarrov
+        //Fix Pause menu, some hud parts, etc. 
+        patch=1,EE,0016ee38,word,3464fff0
+        patch=1,EE,0016ee58,word,3464fffc
 SLES-55522:
   name: "Disney-Pixar Up"
   region: "PAL-E"
