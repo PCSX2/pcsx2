@@ -300,9 +300,18 @@ PBPX-95517:
 PBPX-95520:
   name: "PlayStation 2 - Demo Disc 2002"
   region: "PAL-M5"
+PBPX-95523:
+  name: "Gran Turismo 4 - Prologue [PlayStation 2 Racing Pack]"
+  region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+  # eeClampMode = 3  Text in races works.
+  # vuClampMode = 2  Text in GT mode works.
 PBPX-95524:
-  name: "Gran Turismo 4 - Prologue"
-  region: "NTSC-Unk"
+  name: "Gran Turismo 4 - Prologue [PlayStation 2 Racing Pack]"
+  region: "NTSC-C"
   compat: 5
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
@@ -16022,7 +16031,8 @@ SLES-52931:
   clampModes:
     vuClampMode: 3 # Fixes broken polygons on trees.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes stretched shadows.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Fixes glitchy black rectangles.
 SLES-52934:
   name: "Guilty Gear Isuka [Preview]"
   region: "PAL-E"
@@ -22674,6 +22684,8 @@ SLES-55520:
   compat: 5
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Fixes soft shadows.
 SLES-55522:
   name: "Disney-Pixar Up"
   region: "PAL-E"
@@ -46799,7 +46811,8 @@ SLUS-21248:
   clampModes:
     vuClampMode: 3 # Fixes broken polygons on trees.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes stretched shadows.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Fixes glitchy black rectangles.
 SLUS-21249:
   name: "Yourself! Fitness - Lifestyle"
   region: "NTSC-U"
@@ -49931,6 +49944,8 @@ SLUS-21881:
   compat: 5
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 1 # Fixes soft shadows.
   patches:
     137C792E:
       content: |-
