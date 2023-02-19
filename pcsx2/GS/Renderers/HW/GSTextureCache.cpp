@@ -581,6 +581,19 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	return src;
 }
 
+GSTextureCache::Target* GSTextureCache::FindTargetOverlap(u32 bp, u32 end_block, int type, int psm)
+{
+	u32 end_block_bp = end_block < bp ? (MAX_BP + 1) : end_block;
+
+	for (auto t : m_dst[type])
+	{
+		// Only checks that the texure starts at the requested bp, which shares data. Size isn't considered.
+		if (t->m_TEX0.TBP0 >= bp && t->m_TEX0.TBP0 < end_block_bp && GSUtil::HasSharedBits(t->m_TEX0.PSM, psm))
+			return t;
+	}
+	return nullptr;
+}
+
 GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask, const bool is_frame, const int real_w, const int real_h, bool preload)
 {
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
@@ -3251,14 +3264,44 @@ void GSTextureCache::Target::UpdateIfDirtyIntersects(const GSVector4i& rc)
 	}
 }
 
+void GSTextureCache::Target::ResizeValidity(const GSVector4i& rect)
+{
+	if (!m_valid.eq(GSVector4i::zero()))
+	{
+		m_valid = m_valid.rintersect(rect);
+		m_drawn_since_read = m_drawn_since_read.rintersect(rect);
+	}
+	else
+	{
+		m_valid = rect;
+		m_drawn_since_read = rect;
+	}
+	// Block of the bottom right texel of the validity rectangle, last valid block of the texture
+	// TODO: This is not correct when the PSM changes. e.g. a 512x448 target being shuffled will become 512x896 temporarily, and
+	// at the moment, we blow the valid rect out to twice the size. The only thing stopping everything breaking is the fact
+	// that we clamp the draw rect to the target size in GSRendererHW::Draw().
+	m_end_block = GSLocalMemory::m_psm[m_TEX0.PSM].info.bn(m_valid.z - 1, m_valid.w - 1, m_TEX0.TBP0, m_TEX0.TBW); // Valid only for color formats
+
+	// GL_CACHE("UpdateValidity (0x%x->0x%x) from R:%d,%d Valid: %d,%d", m_TEX0.TBP0, m_end_block, rect.z, rect.w, m_valid.z, m_valid.w);
+}
+
 void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
 {
+	if (m_valid.runion(rect).eq(m_valid))
+	{
+		m_drawn_since_read = m_drawn_since_read.runion(rect);
+		return;
+	}
+
 	if (m_valid.eq(GSVector4i::zero()))
 		m_valid = rect;
 	else
 		m_valid = m_valid.runion(rect);
 
-	m_drawn_since_read = m_drawn_since_read.runion(rect);
+	if (m_drawn_since_read.eq(GSVector4i::zero()))
+		m_drawn_since_read = rect;
+	else
+		m_drawn_since_read = m_drawn_since_read.runion(rect);
 	// Block of the bottom right texel of the validity rectangle, last valid block of the texture
 	// TODO: This is not correct when the PSM changes. e.g. a 512x448 target being shuffled will become 512x896 temporarily, and
 	// at the moment, we blow the valid rect out to twice the size. The only thing stopping everything breaking is the fact
@@ -3284,6 +3327,7 @@ bool GSTextureCache::Target::ResizeTexture(int new_width, int new_height, GSVect
 	// These exceptions *really* need to get lost. This gets called outside of draws, which just crashes
 	// when it tries to propogate the exception back.
 	const bool clear = (new_width > width || new_height > height);
+
 	GSTexture* tex = nullptr;
 	try
 	{
@@ -3325,6 +3369,7 @@ bool GSTextureCache::Target::ResizeTexture(int new_width, int new_height, GSVect
 		delete m_texture;
 
 	m_texture = tex;
+
 	return true;
 }
 

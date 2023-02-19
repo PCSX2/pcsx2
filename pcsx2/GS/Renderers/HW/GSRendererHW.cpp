@@ -1309,13 +1309,13 @@ void GSRendererHW::Draw()
 	// 2/ SuperMan really draws (0,0,0,0) color and a (0) 32-bits depth
 	// 3/ 50cents really draws (0,0,0,128) color and a (0) 24 bits depth
 	// Note: FF DoC has both buffer at same location but disable the depth test (write?) with ZTE = 0
-	const bool no_rt = (context->ALPHA.IsCd() && PRIM->ABE && (context->FRAME.PSM == 1));
-	const bool no_ds = !no_rt && (
+	const bool no_rt = (context->ALPHA.IsCd() && PRIM->ABE && (context->FRAME.PSM == 1))
+						|| (!context->TEST.DATE && (context->FRAME.FBMSK & GSLocalMemory::m_psm[context->FRAME.PSM].fmsk) == GSLocalMemory::m_psm[context->FRAME.PSM].fmsk);
+	const bool no_ds = (
 			// Depth is always pass/fail (no read) and write are discarded (tekken 5).  (Note: DATE is currently implemented with a stencil buffer => a depth/stencil buffer)
 			(zm != 0 && m_context->TEST.ZTST <= ZTST_ALWAYS && !m_context->TEST.DATE) ||
 			// Depth will be written through the RT
-			(context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && zm == 0 && (fm & fm_mask) == 0 && context->TEST.ZTE)
-			);
+			(!no_rt && context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && zm == 0 && (fm & fm_mask) == 0 && context->TEST.ZTE));
 
 	if (no_rt && no_ds)
 	{
@@ -1740,15 +1740,72 @@ void GSRendererHW::Draw()
 
 		if (rt)
 		{
+			const u32 old_end_block = rt->m_end_block;
+			const bool new_height = new_h > rt->m_texture->GetHeight();
+			const int old_height = rt->m_texture->GetHeight();
+
 			pxAssert(rt->m_texture->GetScale() == up_s);
 			rt->ResizeTexture(new_w, new_h, up_s);
+			
+			if (!m_texture_shuffle && !m_channel_shuffle)
+			{
+				const GSVector4i new_valid = GSVector4i(0, 0, new_w / up_s.x, new_h / up_s.y);
+				rt->ResizeValidity(new_valid);
+			}
 			rt->UpdateValidity(m_r);
+
+			// Probably changing to double buffering, so invalidate any old target that was next to it.
+			// This resolves an issue where the PCRTC will find the old target in FMV's causing flashing.
+			// Grandia Xtreme, Onimusha Warlord.
+			if (new_height && old_end_block != rt->m_end_block)
+			{
+				GSTextureCache::Target* old_rt = nullptr;
+				old_rt = m_tc->FindTargetOverlap(old_end_block, rt->m_end_block, GSTextureCache::RenderTarget, context->FRAME.PSM);
+
+				if (old_rt && old_rt != rt && GSUtil::HasSharedBits(old_rt->m_TEX0.PSM, rt->m_TEX0.PSM))
+				{
+					const int copy_width = (old_rt->m_texture->GetWidth()) > (rt->m_texture->GetWidth()) ? (rt->m_texture->GetWidth()) : old_rt->m_texture->GetWidth();
+					const int copy_height = (old_rt->m_texture->GetHeight()) > (rt->m_texture->GetHeight() - old_height) ? (rt->m_texture->GetHeight() - old_height) : old_rt->m_texture->GetHeight();
+
+					g_gs_device->CopyRect(old_rt->m_texture, rt->m_texture, GSVector4i(0, 0, copy_width, copy_height), 0, old_height);
+
+					m_tc->InvalidateVideoMemType(GSTextureCache::RenderTarget, old_rt->m_TEX0.TBP0);
+					old_rt = nullptr;
+				}
+			}
 		}
 		if (ds)
 		{
+			const u32 old_end_block = ds->m_end_block;
+			const bool new_height = new_h > ds->m_texture->GetHeight();
+			const int old_height = ds->m_texture->GetHeight();
+
 			pxAssert(ds->m_texture->GetScale() == up_s);
 			ds->ResizeTexture(new_w, new_h, up_s);
+			
+			if (!m_texture_shuffle && !m_channel_shuffle)
+			{
+				const GSVector4i new_valid = GSVector4i(0, 0, new_w / up_s.x, new_h / up_s.y);
+				ds->ResizeValidity(new_valid);
+			}
 			ds->UpdateValidity(m_r);
+
+			if (new_height && old_end_block != ds->m_end_block)
+			{
+				GSTextureCache::Target* old_ds = nullptr;
+				old_ds = m_tc->FindTargetOverlap(old_end_block, ds->m_end_block, GSTextureCache::DepthStencil, context->ZBUF.PSM);
+
+				if (old_ds && old_ds != ds && GSUtil::HasSharedBits(old_ds->m_TEX0.PSM, ds->m_TEX0.PSM))
+				{
+					const int copy_width = (old_ds->m_texture->GetWidth()) > (ds->m_texture->GetWidth()) ? (ds->m_texture->GetWidth()) : old_ds->m_texture->GetWidth();
+					const int copy_height = (old_ds->m_texture->GetHeight()) > (ds->m_texture->GetHeight() - old_height) ? (ds->m_texture->GetHeight() - old_height) : old_ds->m_texture->GetHeight();
+
+					g_gs_device->CopyRect(old_ds->m_texture, ds->m_texture, GSVector4i(0, 0, copy_width, copy_height), 0, old_height);
+
+					m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, old_ds->m_TEX0.TBP0);
+					old_ds = nullptr;
+				}
+			}
 		}
 	}
 
@@ -1924,7 +1981,7 @@ void GSRendererHW::Draw()
 			s = GetDrawDumpPath("%05d_f%lld_rz1_%05x_%s.bmp", s_n, frame, context->ZBUF.Block(), psm_str(context->ZBUF.PSM));
 
 			if (ds)
-				rt->m_texture->Save(s);
+				ds->m_texture->Save(s);
 		}
 
 		if (GSConfig.SaveL > 0 && (s_n - GSConfig.SaveN) > GSConfig.SaveL)
