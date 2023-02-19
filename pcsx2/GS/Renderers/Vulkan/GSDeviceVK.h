@@ -27,6 +27,13 @@
 class GSDeviceVK final : public GSDevice
 {
 public:
+	enum FeedbackLoopFlag : u8
+	{
+		FeedbackLoopFlag_None = 0,
+		FeedbackLoopFlag_ReadAndWriteRT = 1,
+		FeedbackLoopFlag_ReadDS = 2,
+	};
+
 	struct alignas(8) PipelineSelector
 	{
 		GSHWDrawConfig::PSSelector ps;
@@ -39,7 +46,7 @@ public:
 				u32 rt : 1;
 				u32 ds : 1;
 				u32 line_width : 1;
-				u32 feedback_loop : 1;
+				u32 feedback_loop_flags : 2;
 			};
 
 			u32 key;
@@ -55,6 +62,9 @@ public:
 		__fi bool operator!=(const PipelineSelector& p) const { return (memcmp(this, &p, sizeof(p)) != 0); }
 
 		__fi PipelineSelector() { memset(this, 0, sizeof(*this)); }
+
+		__fi bool IsRTFeedbackLoop() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteRT) != 0); }
+		__fi bool IsTestingAndSamplingDepth() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadDS) != 0); }
 	};
 	static_assert(sizeof(PipelineSelector) == 24, "Pipeline selector is 24 bytes");
 
@@ -138,7 +148,7 @@ private:
 	VkRenderPass m_date_setup_render_pass = VK_NULL_HANDLE;
 	VkRenderPass m_swap_chain_render_pass = VK_NULL_HANDLE;
 
-	VkRenderPass m_tfx_render_pass[2][2][2][3][2][3][3] = {}; // [rt][ds][hdr][date][fbl][rt_op][ds_op]
+	VkRenderPass m_tfx_render_pass[2][2][2][3][2][2][3][3] = {}; // [rt][ds][hdr][date][fbl][dsp][rt_op][ds_op]
 
 	VkDescriptorSetLayout m_cas_ds_layout = VK_NULL_HANDLE;
 	VkPipelineLayout m_cas_pipeline_layout = VK_NULL_HANDLE;
@@ -194,10 +204,10 @@ public:
 
 	__fi static GSDeviceVK* GetInstance() { return static_cast<GSDeviceVK*>(g_gs_device.get()); }
 
-	__fi VkRenderPass GetTFXRenderPass(bool rt, bool ds, bool hdr, DATE_RENDER_PASS date, bool fbl,
+	__fi VkRenderPass GetTFXRenderPass(bool rt, bool ds, bool hdr, DATE_RENDER_PASS date, bool fbl, bool dsp,
 		VkAttachmentLoadOp rt_op, VkAttachmentLoadOp ds_op) const
 	{
-		return m_tfx_render_pass[rt][ds][hdr][date][fbl][rt_op][ds_op];
+		return m_tfx_render_pass[rt][ds][hdr][date][fbl][dsp][rt_op][ds_op];
 	}
 	__fi VkSampler GetPointSampler() const { return m_point_sampler; }
 	__fi VkSampler GetLinearSampler() const { return m_linear_sampler; }
@@ -256,7 +266,8 @@ public:
 	void PSSetShaderResource(int i, GSTexture* sr, bool check_state);
 	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
 
-	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor, bool feedback_loop);
+	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor,
+		FeedbackLoopFlag feedback_loop = FeedbackLoopFlag_None);
 
 	void SetVSConstantBuffer(const GSHWDrawConfig::VSConstantBuffer& cb);
 	void SetPSConstantBuffer(const GSHWDrawConfig::PSConstantBuffer& cb);
@@ -271,7 +282,6 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 
 public:
-	__fi bool CurrentFramebufferHasFeedbackLoop() const { return m_current_framebuffer_has_feedback_loop; }
 	__fi VkFramebuffer GetCurrentFramebuffer() const { return m_current_framebuffer; }
 
 	/// Ends any render pass, executes the command buffer, and invalidates cached state.
@@ -347,7 +357,7 @@ private:
 
 	// Which bindings/state has to be updated before the next draw.
 	u32 m_dirty_flags = 0;
-	bool m_current_framebuffer_has_feedback_loop = false;
+	FeedbackLoopFlag m_current_framebuffer_feedback_loop = FeedbackLoopFlag_None;
 	bool m_warned_slow_spin = false;
 
 	// input assembly
@@ -367,13 +377,13 @@ private:
 	GSVector4i m_scissor = GSVector4i::zero();
 	u8 m_blend_constant_color = 0;
 
-	std::array<VkImageView, NUM_TFX_TEXTURES> m_tfx_textures{};
+	std::array<const Vulkan::Texture*, NUM_TFX_TEXTURES> m_tfx_textures{};
 	VkSampler m_tfx_sampler = VK_NULL_HANDLE;
 	u32 m_tfx_sampler_sel = 0;
 	std::array<VkDescriptorSet, NUM_TFX_DESCRIPTOR_SETS> m_tfx_descriptor_sets{};
 	std::array<u32, NUM_TFX_DYNAMIC_OFFSETS> m_tfx_dynamic_offsets{};
 
-	VkImageView m_utility_texture = VK_NULL_HANDLE;
+	const Vulkan::Texture* m_utility_texture = nullptr;
 	VkSampler m_utility_sampler = VK_NULL_HANDLE;
 	VkDescriptorSet m_utility_descriptor_set = VK_NULL_HANDLE;
 

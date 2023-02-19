@@ -1685,14 +1685,15 @@ namespace Vulkan
 		}
 		if (key.depth_format != VK_FORMAT_UNDEFINED)
 		{
+			const VkImageLayout layout = key.depth_sampling ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 			attachments[num_attachments] = {0, static_cast<VkFormat>(key.depth_format), VK_SAMPLE_COUNT_1_BIT,
 				static_cast<VkAttachmentLoadOp>(key.depth_load_op),
 				static_cast<VkAttachmentStoreOp>(key.depth_store_op),
 				static_cast<VkAttachmentLoadOp>(key.stencil_load_op),
 				static_cast<VkAttachmentStoreOp>(key.stencil_store_op),
-				VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+				layout, layout};
 			depth_reference.attachment = num_attachments;
-			depth_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+			depth_reference.layout = layout;
 			depth_reference_ptr = &depth_reference;
 			num_attachments++;
 		}
