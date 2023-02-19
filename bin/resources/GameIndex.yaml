@@ -148,6 +148,7 @@ PAPX-90506:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes clown suit textures.
 PAPX-90512:
   name: "Gran Turismo 4 - Toyota Prius [Trial]"
   region: "NTSC-J"
@@ -3288,6 +3289,7 @@ SCES-51190:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes clown suit textures.
 SCES-51224:
   name: "War of the Monsters"
   region: "PAL-E"
@@ -4878,6 +4880,7 @@ SCKA-20014:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes clown suit textures.
 SCKA-20015:
   name: "Time Crisis 3"
   region: "NTSC-K"
@@ -5698,6 +5701,7 @@ SCPS-15033:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes clown suit textures.
 SCPS-15034:
   name: "This is Football 2003"
   region: "NTSC-J"
@@ -6350,6 +6354,7 @@ SCPS-19215:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes clown suit textures.
 SCPS-19251:
   name: "Wild ARMs - Alter Code F [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -6424,6 +6429,7 @@ SCPS-19306:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes clown suit textures.
 SCPS-19307:
   name: "Popolocrois - The First Adventure [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -6881,6 +6887,7 @@ SCPS-55048:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes clown suit textures.
 SCPS-55049:
   name: "King of Fighters 2000, The"
   region: "NTSC-J"
@@ -7457,6 +7464,7 @@ SCUS-97213:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes clown suit textures.
 SCUS-97214:
   name: "NCAA GameBreaker 2003"
   region: "NTSC-U"
@@ -7513,6 +7521,7 @@ SCUS-97229:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes clown suit textures.
 SCUS-97230:
   name: "SOCOM - U.S. Navy SEALs"
   region: "NTSC-U"
