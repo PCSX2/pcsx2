@@ -54,7 +54,6 @@ bool NoOSD;
 bool AllowParams1;
 bool AllowParams2;
 std::string BiosDescription;
-std::string BiosZone;
 std::string BiosPath;
 BiosDebugInformation CurrentBiosInformation;
 
@@ -284,7 +283,8 @@ bool LoadBIOS()
 	if (filesize <= 0)
 		return false;
 
-	LoadBiosVersion(fp.get(), BiosVersion, BiosDescription, BiosRegion, BiosZone);
+	std::string zone;
+	LoadBiosVersion(fp.get(), BiosVersion, BiosDescription, BiosRegion, zone);
 
 	if (FileSystem::FSeek64(fp.get(), 0, SEEK_SET) ||
 		std::fread(eeMem->ROM, static_cast<size_t>(std::min<s64>(Ps2MemSize::Rom, filesize)), 1, fp.get()) != 1)
