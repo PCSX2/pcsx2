@@ -1905,26 +1905,25 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 									SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
 									if (so.is_valid)
 									{
-										AddDirtyRectTarget(t, so.b2a_offset, psm, bw, rgba);
-										GL_CACHE("TC: Dirty in the middle [aggressive] of Target(%s) [PSM:%s BP:0x%x->0x%x BW:%u rect(%d,%d=>%d,%d)] write[PSM:%s BP:0x%x BW:%u rect(%d,%d=>%d,%d)]",
-											to_string(type),
-											psm_str(t->m_TEX0.PSM),
-											t->m_TEX0.TBP0,
-											t->m_end_block,
-											t->m_TEX0.TBW,
-											so.b2a_offset.x,
-											so.b2a_offset.y,
-											so.b2a_offset.z,
-											so.b2a_offset.w,
-											psm_str(psm),
-											bp,
-											bw,
-											r.x,
-											r.y,
-											r.z,
-											r.w);
+										if (!t->m_valid.rintersect(so.b2a_offset).eq(t->m_valid))
+										{
+											GL_CACHE("TC: Dirty in the middle [aggressive] of Target(%s) [PSM:%s "
+													 "BP:0x%x->0x%x BW:%u rect(%d,%d=>%d,%d)] write[PSM:%s BP:0x%x "
+													 "BW:%u rect(%d,%d=>%d,%d)]",
+												to_string(type), psm_str(t->m_TEX0.PSM), t->m_TEX0.TBP0, t->m_end_block,
+												t->m_TEX0.TBW, so.b2a_offset.x, so.b2a_offset.y, so.b2a_offset.z,
+												so.b2a_offset.w, psm_str(psm), bp, bw, r.x, r.y, r.z, r.w);
 
-										can_erase = false;
+											AddDirtyRectTarget(t, so.b2a_offset, psm, bw, rgba);
+											can_erase = false;
+										}
+										else
+										{
+											GL_CACHE(
+												"TC: SO dirty rect (%d,%d=>%d,%d) covers valid rect (%d,%d=>%d,%d)",
+												so.b2a_offset.x, so.b2a_offset.y, so.b2a_offset.z, so.b2a_offset.w,
+												t->m_valid.x, t->m_valid.y, t->m_valid.z, t->m_valid.w);
+										}
 									}
 								}
 							}
