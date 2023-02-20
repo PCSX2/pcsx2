@@ -227,7 +227,9 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 	TEX0.TBW = curFramebuffer.FBW;
 	TEX0.PSM = curFramebuffer.PSM;
 
-	if (GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, GetOutputSize(fb_height) * GSConfig.UpscaleMultiplier, fb_width, fb_height))
+	const GSVector2i scaled_size(static_cast<int>(static_cast<float>(fb_width) * GSConfig.UpscaleMultiplier),
+		static_cast<int>(static_cast<float>(fb_height) * GSConfig.UpscaleMultiplier));
+	if (GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, scaled_size, fb_width, fb_height))
 	{
 		t = rt->m_texture;
 
