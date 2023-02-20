@@ -44,7 +44,7 @@
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Create Memory Card&lt;/span&gt;&lt;br /&gt;Enter the name of the memory card you wish to create, and choose a size. We recommend either using 8MB memory cards, or folder memory cards for best compatibility.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Create Memory Card&lt;/span&gt;&lt;br /&gt;Enter the name of the Memory Card you wish to create, and choose a size. We recommend either using 8MB Memory Cards, or folder Memory Cards for best compatibility.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="textFormat">
         <enum>Qt::RichText</enum>
@@ -112,7 +112,7 @@
      <item>
       <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>A typical size for third-party memory cards which should work with most games.</string>
+        <string>A typical size for third-party Memory Cards which should work with most games.</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -136,7 +136,7 @@
      <item>
       <widget class="QLabel" name="label_6">
        <property name="text">
-        <string>A typical size for third-party memory cards which should work with most games.</string>
+        <string>A typical size for third-party Memory Cards which should work with most games.</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -184,7 +184,7 @@
      <item>
       <widget class="QLabel" name="label_8">
        <property name="text">
-        <string>Store memory card contents in the host filesystem instead of a file.</string>
+        <string>Store Memory Card contents in the host filesystem instead of a file.</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -208,7 +208,7 @@
      <item>
       <widget class="QLabel" name="label_9">
        <property name="text">
-        <string>This is the standard Sony-provisioned size PS1 memory card, and only compatible with PS1 games.</string>
+        <string>This is the standard Sony-provisioned size PS1 Memory Card, and only compatible with PS1 games.</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -235,7 +235,7 @@
      <item>
       <widget class="QLabel" name="label_10">
        <property name="text">
-        <string>NTFS compression is built-in, fast, and completely reliable. Typically compresses memory cards (highly recommended).</string>
+        <string>NTFS compression is built-in, fast, and completely reliable. Typically compresses Memory Cards (highly recommended).</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>

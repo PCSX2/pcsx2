@@ -56,8 +56,8 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWi
 	dialog->registerWidgetHelp(m_ui.unofficialTestMode, tr("Test Unofficial Achievements"), tr("Unchecked"),
 		tr("When enabled, PCSX2 will list achievements from unofficial sets. Please note that these achievements are "
 		   "not tracked by RetroAchievements, so they unlock every time."));
-	dialog->registerWidgetHelp(m_ui.richPresence, tr("Enable Rich Presence"), tr("Unchecked"),
-		tr("When enabled, rich presence information will be collected and sent to the server where supported."));
+	dialog->registerWidgetHelp(m_ui.richPresence, tr("Enable RA's Rich Presence"), tr("Unchecked"),
+		tr("When enabled, rich presence information will be collected and sent to the RetroAchivements servers where supported."));
 	dialog->registerWidgetHelp(m_ui.challengeMode, tr("Enable Hardcore Mode"), tr("Unchecked"),
 		tr("\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions."));
 	dialog->registerWidgetHelp(m_ui.leaderboards, tr("Enable Leaderboards"), tr("Checked"),
