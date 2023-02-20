@@ -181,8 +181,6 @@ PBGP-0063:
 PBGP-0065:
   name: "D.C. Da Capo The Origin [First Limited Edition]"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and bad textures in FMV.
   gsHWFixes:
     roundSprite: 2 # Reduces sprite artifacts like in the menu.
 PBPX-95201:
@@ -364,8 +362,6 @@ PCPX-96322:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
-  gameFixes:
-    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
@@ -659,8 +655,6 @@ SCAJ-20043:
 SCAJ-20044:
   name: "Tomb Raider - The Angel of Darkness"
   region: "NTSC-Unk"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes garbage pixels.
   gsHWFixes:
     autoFlush: 1 # Fixes lava effect.
 SCAJ-20045:
@@ -914,8 +908,6 @@ SCAJ-20099:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
-  gameFixes:
-    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
@@ -1626,8 +1618,6 @@ SCCS-40005:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
-  gameFixes:
-    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
@@ -3077,8 +3067,6 @@ SCES-50760:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
-  gameFixes:
-    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
@@ -4956,8 +4944,6 @@ SCKA-20028:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
-  gameFixes:
-    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
@@ -5074,8 +5060,6 @@ SCKA-20050:
   name: "Tales of Legendia"
   region: "NTSC-K"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes garbage textures presumably from texture cache issue.
   gsHWFixes:
     getSkipCount: "GSC_TalesOfLegendia"
 SCKA-20051:
@@ -5432,8 +5416,6 @@ SCPS-11003:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
-  gameFixes:
-    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
@@ -6246,8 +6228,6 @@ SCPS-19103:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
-  gameFixes:
-    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
@@ -6264,8 +6244,6 @@ SCPS-19151:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
-  gameFixes:
-    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
@@ -6924,8 +6902,6 @@ SCPS-56001:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
-  gameFixes:
-    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
@@ -7077,8 +7053,6 @@ SCUS-97113:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
-  gameFixes:
-    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
@@ -7256,8 +7230,6 @@ SCUS-97159:
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
-  gameFixes:
-    - SoftwareRendererFMVHack # FMV is cut off to the upper left.
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
@@ -10095,8 +10067,6 @@ SLES-50247:
   compat: 5
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes flickering fmvs.
 SLES-50248:
   name: "MDK 2 - Armageddon"
   region: "PAL-M5"
@@ -12254,6 +12224,8 @@ SLES-51227:
   name: "Tomb Raider - Angel of Darkness"
   region: "PAL-M10"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes lava effect.
   patches:
     default:
       content: |-
@@ -12262,10 +12234,6 @@ SLES-51227:
         // Fix ingame SPS by interchanging vclipw.xyz vf5, vf5w with cfc2.
         patch=1,EE,001db3a0,word,48489000
         patch=1,EE,001db3a4,word,4bc529ff
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes garbage pixels.
-  gsHWFixes:
-    autoFlush: 1 # Fixes lava effect.
 SLES-51229:
   name: "Virtua Cop - Elite Edition"
   region: "PAL-M5"
@@ -16664,22 +16632,16 @@ SLES-53155:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes FMVs.
 SLES-53156:
   name: "Star Wars - Episode III - La Revanche des Sith"
   region: "PAL-F"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes FMVs.
 SLES-53157:
   name: "Star Wars - Episode III - Die Rache der Sith"
   region: "PAL-G"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes FMVs.
 SLES-53158:
   name: "Cold Fear"
   region: "PAL-M5"
@@ -18621,8 +18583,6 @@ SLES-53908:
   name: "Tomb Raider - Legend"
   region: "PAL-M8"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes garbage pixels.
   gsHWFixes:
     mipmap: 1 # Fixes distant characters and models but there are still some flickering textures.
     getSkipCount: "GSC_TombRaiderLegend"
@@ -20268,8 +20228,6 @@ SLES-54555:
 SLES-54559:
   name: "Free Running"
   region: "PAL-E"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
     autoFlush: 1 # Reduces post-processing misalignment.
     halfPixelOffset: 1 # Reduces lighting misalignment but doesn't fully fix it.
@@ -20576,8 +20534,6 @@ SLES-54674:
   name: "Lara Croft Tomb Raider - Anniversary"
   region: "PAL-M10"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes garbage pixels.
   gsHWFixes:
     mipmap: 1
     getSkipCount: "GSC_TombRaiderAnniversary"
@@ -23576,8 +23532,6 @@ SLKA-25072:
 SLKA-25073:
   name: "Tomb Raider - The Angel of Darkness"
   region: "NTSC-K"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes garbage pixels.
   gsHWFixes:
     autoFlush: 1 # Fixes lava effect.
 SLKA-25076:
@@ -28636,8 +28590,6 @@ SLPM-65271:
 SLPM-65272:
   name: "Kyuuketsu-hime Yui - Sen'yashou"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes flickering and bad textures in FMV.
 SLPM-65273:
   name: "Triangle Again 2"
   region: "NTSC-J"
@@ -31053,8 +31005,6 @@ SLPM-65984:
 SLPM-65985:
   name: "Iris no Atelier - Eternal Mana 2"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts for health and other sprites.
     texturePreloading: 0 # Improves performance and prevents it disabling itself regardless.
@@ -31273,8 +31223,6 @@ SLPM-66046:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes FMVs.
 SLPM-66047:
   name: "FIFA Street"
   region: "NTSC-J"
@@ -31338,8 +31286,6 @@ SLPM-66069:
   name: "Shikigami no Shiro - Nanayozuki Gensoukyoku"
   region: "NTSC-J"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and bad textures in FMV.
 SLPM-66070:
   name: "Shadow Hearts - From the New World [Limited Edition]"
   region: "NTSC-J"
@@ -33122,8 +33068,6 @@ SLPM-66515:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes FMVs.
 SLPM-66516:
   name: "Sims, The & The Urbz - Sims in the City [EA Best Hits]"
   region: "NTSC-J"
@@ -33191,7 +33135,7 @@ SLPM-66537:
   name: "Iris no Atelier - Eternal Mana 2 [Gust Best Price]"
   region: "NTSC-J"
   gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
+    - SoftwareRendererFMVHack # Horizontal lines in FMV.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts for health and other sprites.
     texturePreloading: 0 # Improves performance and prevents it disabling itself regardless.
@@ -33250,8 +33194,6 @@ SLPM-66557:
 SLPM-66558:
   name: "Tomb Raider - Legend"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes garbage pixels.
   gsHWFixes:
     mipmap: 1 # Fixes distant characters and models but there are still some flickering textures.
     getSkipCount: "GSC_TombRaiderLegend"
@@ -34555,8 +34497,6 @@ SLPM-66903:
 SLPM-66905:
   name: "D.C. Da Capo The Origin"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and bad textures in FMV.
   gsHWFixes:
     roundSprite: 2 # Reduces sprite artifacts like in the menu.
 SLPM-66906:
@@ -34943,8 +34883,6 @@ SLPM-67507:
   region: "NTSC-K"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes flickering fmvs.
 SLPM-67508:
   name: "Gitaroo Man"
   region: "NTSC-K"
@@ -37700,8 +37638,6 @@ SLPS-25245:
 SLPS-25246:
   name: "Tomb Raider - The Angel of Darkness"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes garbage pixels.
   gsHWFixes:
     autoFlush: 1 # Fixes lava effect.
 SLPS-25247:
@@ -37711,8 +37647,6 @@ SLPS-25247:
 SLPS-25248:
   name: "Kino no Tabi - The Beautiful World"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and bad textures in FMV.
 SLPS-25250:
   name: "Final Fantasy X-2"
   region: "NTSC-J"
@@ -38461,8 +38395,6 @@ SLPS-25451:
 SLPS-25452:
   name: "Kino no Tabi - The Beautiful World [MediaWorks Best]"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and bad textures in FMV.
 SLPS-25453:
   name: "Digimon World X"
   region: "NTSC-J"
@@ -38736,8 +38668,6 @@ SLPS-25533:
   name: "Tales of Legendia"
   region: "NTSC-J"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes garbage textures presumably from texture cache issue.
   gsHWFixes:
     getSkipCount: "GSC_TalesOfLegendia"
 SLPS-25534:
@@ -38747,8 +38677,6 @@ SLPS-25534:
 SLPS-25535:
   name: "NeoGeo Online Collection Vol.3 - The King of Fighters - Orochi Collection [Special Pack]"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
 SLPS-25537:
   name: "Super Robot Wars - Alpha 3"
   region: "NTSC-J"
@@ -38993,8 +38921,6 @@ SLPS-25604:
 SLPS-25605:
   name: "NeoGeo Online Collection Vol.3 - The King of Fighters - Orochi Collection"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
 SLPS-25606:
   name: "Zettai Zetsumei Toshi 2 - Itetsuita Kioutachi"
   region: "NTSC-J"
@@ -39272,8 +39198,6 @@ SLPS-25660:
 SLPS-25661:
   name: "King of Fighters, The - Nests"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
 SLPS-25662:
   name: "Kyo Kara Maoh! The 1st trip of Maoh! [Premium Box]"
   region: "NTSC-J"
@@ -39707,8 +39631,6 @@ SLPS-25790:
 SLPS-25791:
   name: "King of Fighters, The - Orochi Collection [NeoGeo Online Collection the Best]"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
 SLPS-25792:
   name: "Bakumatsu Roman - Last Blade 2-in-1 [NeoGeo Online Collection the Best]"
   region: "NTSC-J"
@@ -39949,8 +39871,6 @@ SLPS-25855:
 SLPS-25856:
   name: "Tomb Raider - Anniversary"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes garbage pixels.
   gsHWFixes:
     mipmap: 1
     getSkipCount: "GSC_TombRaiderAnniversary"
@@ -39978,8 +39898,6 @@ SLPS-25864:
 SLPS-25865:
   name: "King of Fighters, The - Nests [SNK the Best]"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
 SLPS-25866:
   name: "Fuuun Super Combo [SNK the Best]"
   region: "NTSC-J"
@@ -40630,8 +40548,6 @@ SLPS-73241:
 SLPS-73242:
   name: "Tales of Legendia [PlayStation 2 The Best]"
   region: "NTSC-J"
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes garbage textures presumably from texture cache issue.
   gsHWFixes:
     getSkipCount: "GSC_TalesOfLegendia"
 SLPS-73243:
@@ -40963,8 +40879,6 @@ SLUS-20018:
   compat: 5
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes flickering fmvs.
 SLUS-20021:
   name: "Kengo - Master of Bushido"
   region: "NTSC-U"
@@ -42752,8 +42666,6 @@ SLUS-20445:
   name: "Robot Alchemic Drive - RAD"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLUS-20446:
   name: "Agassi Tennis Generation"
   region: "NTSC-U"
@@ -42851,8 +42763,6 @@ SLUS-20467:
         // Force English - else the game crashes with French or Spanish set
         // in the BIOS configuration - a gamebug, not an emulator bug.
         patch=1,EE,0020520C,word,24020001 // 0C0882C8
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes garbage pixels.
   gsHWFixes:
     autoFlush: 1 # Fixes lava effect.
 SLUS-20468:
@@ -44874,8 +44784,6 @@ SLUS-20888:
   name: "Front Mission 4"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes FMVs.
   gsHWFixes:
     preloadFrameData: 1 # Fixes mech shadows.
     roundSprite: 2 # Fixes font artifacts.
@@ -46225,8 +46133,6 @@ SLUS-21143:
   name: "Star Wars - Episode III - Revenge of the Sith"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes FMVs.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
 SLUS-21144:
@@ -46511,8 +46417,6 @@ SLUS-21201:
   name: "Tales of Legendia"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes garbage textures presumably from texture cache issue.
   gsHWFixes:
     getSkipCount: "GSC_TalesOfLegendia"
 SLUS-21202:
@@ -46523,8 +46427,6 @@ SLUS-21203:
   name: "Tomb Raider - Legend"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes garbage pixels.
   gsHWFixes:
     mipmap: 1 # Fixes distant characters and models but there are still some flickering textures.
     getSkipCount: "GSC_TombRaiderLegend"
@@ -47281,8 +47183,6 @@ SLUS-21327:
   name: "Atelier Iris 2 - The Azoth of Destiny"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts for health and other sprites.
     texturePreloading: 0 # Improves performance and prevents it disabling itself regardless.
@@ -47311,8 +47211,6 @@ SLUS-21330:
   name: "Monster Rancher Evo"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes FMVs.
 SLUS-21331:
   name: "Sonic Riders"
   region: "NTSC-U"
@@ -48406,11 +48304,9 @@ SLUS-21554:
   region: "NTSC-U"
   compat: 5
 SLUS-21555:
-  name: "Tomb Raider - Anniversary"
+  name: "Lara Croft Tomb Raider - Anniversary"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes garbage pixels.
   gsHWFixes:
     mipmap: 1
     getSkipCount: "GSC_TombRaiderAnniversary"
@@ -50515,8 +50411,6 @@ SLUS-29022:
 SLUS-29025:
   name: "R.A.D. - Robot Alchemic Drive [Demo]"
   region: "NTSC-U"
-  gameFixes:
-    - SoftwareRendererFMVHack # Flickering in FMV.
 SLUS-29026:
   name: "MX SuperFly [Demo]"
   region: "NTSC-U"
