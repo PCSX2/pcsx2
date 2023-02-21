@@ -174,22 +174,37 @@ namespace D3D
 		switch (Vendor())
 		{
 			case VendorID::Nvidia:
+			{
 				if (feature_level == D3D_FEATURE_LEVEL_12_0)
 					return Renderer::Vulkan;
 				else if (feature_level == D3D_FEATURE_LEVEL_11_0)
 					return Renderer::OpenGL;
-				[[fallthrough]];
+				else
+					return Renderer::Direct3D11;
+			}
+
 			case VendorID::AMD:
+			{
 				if (feature_level == D3D_FEATURE_LEVEL_12_0)
 					return Renderer::Vulkan;
-				[[fallthrough]];
+				else
+					return Renderer::Direct3D11;
+			}
+
 			case VendorID::Intel:
-				if (feature_level == D3D_FEATURE_LEVEL_12_0)
-					return Renderer::OpenGL;
-				[[fallthrough]];
+			{
+				// Older Intel GPUs prior to Xe seem to have broken OpenGL drivers which choke
+				// on some of our shaders, causing what appears to be GPU timeouts+device removals.
+				// Vulkan has broken barriers, also prior to Xe. So just fall back to DX11 everywhere,
+				// unless we can find some way of differentiating Xe.
+				return Renderer::Direct3D11;
+			}
+
 			default:
+			{
 				// Default is D3D11
-				return Renderer::Default;
+				return Renderer::Direct3D11;
+			}
 		}
 	}
 }

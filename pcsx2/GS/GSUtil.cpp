@@ -156,14 +156,19 @@ GSRendererType GSUtil::GetPreferredRenderer()
 	// Mac: Prefer Metal hardware.
 	return GSRendererType::Metal;
 #elif defined(_WIN32)
-	if (D3D::ShouldPreferRenderer() == D3D::Renderer::Vulkan)
+	const u8 preferred = D3D::ShouldPreferRenderer();
+#if defined(ENABLE_VULKAN)
+	if (preferred == D3D::Renderer::Vulkan)
 		return GSRendererType::VK;
+#endif
 #if defined(ENABLE_OPENGL)
-	else if (D3D::ShouldPreferRenderer() == D3D::Renderer::OpenGL)
+	if (preferred == D3D::Renderer::OpenGL)
 		return GSRendererType::OGL;
 #endif
-	else
-		return GSRendererType::DX11;
+	if (preferred == D3D::Renderer::Direct3D12)
+		return GSRendererType::DX12;
+
+	return GSRendererType::DX11;
 #else
 	// Linux: Prefer GL/Vulkan, whatever is available.
 #if defined(ENABLE_OPENGL)
