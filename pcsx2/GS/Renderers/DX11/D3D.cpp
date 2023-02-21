@@ -17,7 +17,11 @@
 #include "GS/Renderers/DX11/D3D.h"
 #include "GS/GSExtra.h"
 
+#include "common/StringUtil.h"
+
 #include <d3d11.h>
+
+#include "fmt/format.h"
 
 namespace D3D
 {
@@ -67,6 +71,52 @@ namespace D3D
 		}
 
 		return adapter;
+	}
+
+	std::string GetDriverVersionFromLUID(const LUID& luid)
+	{
+		std::string ret;
+
+		HKEY hKey;
+		if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\DirectX", 0, KEY_READ, &hKey) == ERROR_SUCCESS)
+		{
+			DWORD max_key_len = 0, adapter_count = 0;
+			if (RegQueryInfoKeyW(hKey, nullptr, nullptr, nullptr, &adapter_count, &max_key_len, nullptr, nullptr,
+					nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS)
+			{
+				std::vector<TCHAR> current_name(max_key_len + 1);
+				for (DWORD i = 0; i < adapter_count; ++i)
+				{
+					DWORD subKeyLength = static_cast<DWORD>(current_name.size());
+					if (RegEnumKeyExW(hKey, i, current_name.data(), &subKeyLength, nullptr, nullptr, nullptr,
+							nullptr) == ERROR_SUCCESS)
+					{
+						LUID current_luid = {};
+						DWORD current_luid_size = sizeof(uint64_t);
+						if (RegGetValueW(hKey, current_name.data(), L"AdapterLuid", RRF_RT_QWORD, nullptr,
+								&current_luid, &current_luid_size) == ERROR_SUCCESS &&
+							current_luid.HighPart == luid.HighPart && current_luid.LowPart == luid.LowPart)
+						{
+							LARGE_INTEGER driver_version = {};
+							DWORD driver_version_size = sizeof(driver_version);
+							if (RegGetValueW(hKey, current_name.data(), L"DriverVersion", RRF_RT_QWORD, nullptr,
+									&driver_version, &driver_version_size) == ERROR_SUCCESS)
+							{
+								WORD nProduct = HIWORD(driver_version.HighPart);
+								WORD nVersion = LOWORD(driver_version.HighPart);
+								WORD nSubVersion = HIWORD(driver_version.LowPart);
+								WORD nBuild = LOWORD(driver_version.LowPart);
+								ret = fmt::format("{}.{}.{}.{}", nProduct, nVersion, nSubVersion, nBuild);
+							}
+						}
+					}
+				}
+			}
+
+			RegCloseKey(hKey);
+		}
+
+		return ret;
 	}
 
 	u8 Vendor()
