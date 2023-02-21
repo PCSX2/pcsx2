@@ -338,7 +338,7 @@
          <item row="1" column="1">
           <widget class="QCheckBox" name="integerScaling">
            <property name="text">
-            <string>Integer Upscaling</string>
+            <string>Integer Scaling</string>
            </property>
           </widget>
          </item>
@@ -1611,7 +1611,7 @@
             <item row="0" column="1">
              <widget class="QCheckBox" name="osdShowSpeed">
               <property name="text">
-               <string>Show Emulation Speed</string>
+               <string>Show Emulation/Game Speed</string>
               </property>
              </widget>
             </item>

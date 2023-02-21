@@ -382,7 +382,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Enable this option to match PCSX2's refresh rate with your current monitor or screen. VSync is automatically disabled when "
 			   "it is not possible (eg. running at non-100% speed)."));
 
-		dialog->registerWidgetHelp(m_ui.integerScaling, tr("Integer Upscaling"), tr("Unchecked"),
+		dialog->registerWidgetHelp(m_ui.integerScaling, tr("Integer Scaling"), tr("Unchecked"),
 			tr("Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an "
 			   "integer number. May result in a sharper image in some 2D games."));
 
@@ -404,7 +404,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			   "size for PNG."));
 
 		dialog->registerWidgetHelp(m_ui.stretchY, tr("Vertical Stretch"), tr("100%"),
-			tr("Stretches (\074 100%) or squashes (\076 100%) the vertical component of the display."));
+			tr("Stretches (\< 100%) or squashes (\> 100%) the vertical component of the display."));
 
 		dialog->registerWidgetHelp(m_ui.fullscreenModes, tr("Fullscreen Mode"), tr("Borderless Fullscreen"),
 			tr("Chooses the fullscreen resolution and frequency."));
@@ -617,7 +617,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.osdShowFPS, tr("Show Internal FPS"), tr("Unchecked"),
 			tr("Shows the internal frame rate of the game in the top-right corner of the display."));
 
-		dialog->registerWidgetHelp(m_ui.osdShowSpeed, tr("Show Emulation Speed"), tr("Unchecked"),
+		dialog->registerWidgetHelp(m_ui.osdShowSpeed, tr("Show Emulation/Game Speed"), tr("Unchecked"),
 			tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."));
 
 		dialog->registerWidgetHelp(m_ui.osdShowResolution, tr("Show Resolution"), tr("Unchecked"),
