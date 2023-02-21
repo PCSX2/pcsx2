@@ -404,7 +404,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			   "size for PNG."));
 
 		dialog->registerWidgetHelp(m_ui.stretchY, tr("Vertical Stretch"), tr("100%"),
-			tr("Stretches (\< 100%) or squashes (\> 100%) the vertical component of the display."));
+			// Characters </> need to be converted into entities in order to be shown correctly.
+			tr("Stretches (&lt; 100%) or squashes (&gt; 100%) the vertical component of the display."));
 
 		dialog->registerWidgetHelp(m_ui.fullscreenModes, tr("Fullscreen Mode"), tr("Borderless Fullscreen"),
 			tr("Chooses the fullscreen resolution and frequency."));
