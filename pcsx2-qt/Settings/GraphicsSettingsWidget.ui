@@ -957,7 +957,7 @@
          <item row="0" column="1">
           <widget class="QCheckBox" name="frameBufferConversion">
            <property name="text">
-            <string>Frame Buffer Conversion</string>
+            <string>Framebuffer Conversion</string>
            </property>
           </widget>
          </item>
@@ -2101,7 +2101,7 @@
             <item row="0" column="1">
              <widget class="QCheckBox" name="disableFramebufferFetch">
               <property name="text">
-               <string>Disable Frame Buffer Fetch</string>
+               <string>Disable Framebuffer Fetch</string>
               </property>
              </widget>
             </item>

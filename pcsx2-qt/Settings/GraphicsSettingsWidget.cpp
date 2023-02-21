@@ -486,7 +486,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			   "7+ threads will not give much more performance and could perhaps even lower it."));
 
 		dialog->registerWidgetHelp(m_ui.swAutoFlush, tr("Auto Flush"), tr("Checked"),
-			tr("Force a primitive flush when a frame buffer is also an input texture. "
+			tr("Force a primitive flush when a framebuffer is also an input texture. "
 			   "Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA."));
 
 		dialog->registerWidgetHelp(
@@ -509,7 +509,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right."));
 
 		dialog->registerWidgetHelp(m_ui.hwAutoFlush, tr("Auto Flush"), tr("Unchecked"),
-			tr("Force a primitive flush when a frame buffer is also an input texture. "
+			tr("Force a primitive flush when a framebuffer is also an input texture. "
 			   "Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA."));
 
 		dialog->registerWidgetHelp(m_ui.disableDepthEmulation, tr("Disable Depth Emulation"), tr("Unchecked"),
@@ -526,8 +526,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise. "
 			   "This hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load. "
 			   "It helps with the Snowblind engine games."));
-		dialog->registerWidgetHelp(m_ui.frameBufferConversion, tr("Frame Buffer Conversion"), tr("Unchecked"),
-			tr("Convert 4-bit and 8-bit frame buffer on the CPU instead of the GPU. "
+		dialog->registerWidgetHelp(m_ui.frameBufferConversion, tr("Framebuffer Conversion"), tr("Unchecked"),
+			tr("Convert 4-bit and 8-bit framebuffer on the CPU instead of the GPU. "
 			   "Helps Harry Potter and Stuntman games. It has a big impact on performance."));
 
 		dialog->registerWidgetHelp(m_ui.preloadFrameData, tr("Preload Frame Data"), tr("Unchecked"),
@@ -535,7 +535,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			   "Fixes black screen issues in games like Armored Core: Last Raven."));
 
 		dialog->registerWidgetHelp(m_ui.textureInsideRt, tr("Texture Inside RT"), tr("Unchecked"),
-			tr("Allows the texture cache to reuse as an input texture the inner portion of a previous frame buffer. "
+			tr("Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer. "
 			   "In some selected games this is enabled by default regardless of this setting."));
 	}
 
@@ -676,7 +676,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 		dialog->registerWidgetHelp(m_ui.disableDualSource, tr("Disable Dual Source Blending"), tr("Unchecked"), tr(""));
 
-		dialog->registerWidgetHelp(m_ui.disableFramebufferFetch, tr("Disable Frame Buffer Fetch"), tr("Unchecked"), tr(""));
+		dialog->registerWidgetHelp(m_ui.disableFramebufferFetch, tr("Disable Framebuffer Fetch"), tr("Unchecked"), tr(""));
 
 		dialog->registerWidgetHelp(m_ui.skipPresentingDuplicateFrames, tr("Skip Presenting Duplicate Frames"), tr("Unchecked"),
 			tr("Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still "
