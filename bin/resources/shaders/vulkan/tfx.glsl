@@ -1002,8 +1002,10 @@ void ps_color_clamp_wrap(inout vec3 C)
 #endif
 }
 
-void ps_blend(inout vec4 Color, inout float As)
+void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 {
+	float As = As_rgba.a;
+
 	#if SW_BLEND
 
 		// PABE
@@ -1087,16 +1089,15 @@ void ps_blend(inout vec4 Color, inout float As)
 		#if PS_CLR_HW == 1
 				// Replace Af with As so we can do proper compensation for Alpha.
 				#if PS_BLEND_C == 2
-					As = Af;
+					As_rgba = vec4(Af);
 				#endif
 				// Subtract 1 for alpha to compensate for the changed equation,
 				// if c.rgb > 255.0f then we further need to adjust alpha accordingly,
 				// we pick the lowest overflow from all colors because it's the safest,
 				// we divide by 255 the color because we don't know Cd value,
 				// changed alpha should only be done for hw blend.
-				float min_color = min(min(Color.r, Color.g), Color.b);
-				float alpha_compensate = max(1.0f, min_color / 255.0f);
-				As -= alpha_compensate;
+				vec3 alpha_compensate = max(vec3(1.0f), Color.rgb / vec3(255.0f));
+				As_rgba.rgb -= alpha_compensate;
 		#elif PS_CLR_HW == 2
 				// Compensate slightly for Cd*(As + 1) - Cs*As.
 				// The initial factor we chose is 1 (0.00392)
@@ -1213,9 +1214,9 @@ void main()
 
 #if (PS_BLEND_C == 1 && PS_CLR_HW > 3)
   vec4 RT = trunc(subpassLoad(RtSampler) * 255.0f + 0.1f);
-  float alpha_blend = RT.a / 128.0f;
+  vec4 alpha_blend = vec4(RT.a / 128.0f);
 #else
-  float alpha_blend = C.a / 128.0f;
+  vec4 alpha_blend = vec4(C.a / 128.0f);
 #endif
 
   // Correct the ALPHA value based on the output format
@@ -1257,12 +1258,12 @@ void main()
 	o_col0 = C / 255.0f;
 #endif
 #if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
-	o_col1 = vec4(alpha_blend);
+	o_col1 = alpha_blend;
 #endif
 
 #if PS_NO_ABLEND
 	// write alpha blend factor into col0
-	o_col0.a = alpha_blend;
+	o_col0.a = alpha_blend.a;
 #endif
 #if PS_ONLY_ALPHA
 	// rgb isn't used
