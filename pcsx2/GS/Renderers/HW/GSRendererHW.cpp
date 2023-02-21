@@ -3088,10 +3088,9 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 					// Replace Cs*F + Cd*(1 - F) with Cs*F - Cd*(F - 1).
 					// As - 1 or F - 1 subtraction is only done for the dual source output (hw blending part) since we are changing the equation.
 					// Af will be replaced with As in shader and send it to dual source output.
-					m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::SRC1_ALPHA, GSDevice::OP_SUBTRACT, false, 0};
+					m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::SRC1_COLOR, GSDevice::OP_SUBTRACT, false, 0};
 					// clr_hw 1 will disable alpha clamp, we can reuse the old bits.
 					m_conf.ps.clr_hw = 1;
-					//m_conf.ps.blend_mix = 0;
 					// DSB output will always be used.
 					m_conf.ps.no_color1 = false;
 				}
