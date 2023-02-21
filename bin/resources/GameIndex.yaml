@@ -20804,21 +20804,18 @@ SLES-54755:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes double image on objects and menus.
     mipmap: 2 # Cleans up texture detail.
     trilinearFiltering: 1 # Smoothes out texture transitions.
 SLES-54756:
   name: "Transformers - The Game"
   region: "PAL-F-S"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes double image on objects and menus.
     mipmap: 2 # Cleans up texture detail.
     trilinearFiltering: 1 # Smoothes out texture transitions.
 SLES-54757:
   name: "Transformers - The Game"
   region: "PAL-G-I"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes double image on objects and menus.
     mipmap: 2 # Cleans up texture detail.
     trilinearFiltering: 1 # Smoothes out texture transitions.
 SLES-54767:
@@ -24458,7 +24455,6 @@ SLKA-25375:
   name: "Transformers - The Game"
   region: "NTSC-K"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes double image on objects and menus.
     mipmap: 2 # Cleans up texture detail.
     trilinearFiltering: 1 # Smoothes out texture transitions.
 SLKA-25378:
@@ -39859,7 +39855,6 @@ SLPS-25834:
   name: "Transformers - The Game"
   region: "NTSC-J"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes double image on objects and menus.
     mipmap: 2 # Cleans up texture detail.
     trilinearFiltering: 1 # Smoothes out texture transitions.
 SLPS-25835:
@@ -48651,7 +48646,6 @@ SLUS-21602:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes double image on objects and menus.
     mipmap: 2 # Cleans up texture detail.
     trilinearFiltering: 1 # Smoothes out texture transitions.
 SLUS-21603:
