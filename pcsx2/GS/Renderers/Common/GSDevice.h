@@ -858,8 +858,8 @@ public:
 
 	__fi static constexpr bool IsDualSourceBlendFactor(u8 factor)
 	{
-		return (factor == SRC1_ALPHA || factor == INV_SRC1_ALPHA
-			/*|| factor == SRC1_COLOR || factor == INV_SRC1_COLOR*/); // not used
+		return (factor == SRC1_ALPHA || factor == INV_SRC1_ALPHA || factor == SRC1_COLOR
+			/* || factor == INV_SRC1_COLOR*/); // not used
 	}
 	__fi static constexpr bool IsConstantBlendFactor(u16 factor)
 	{
