@@ -1671,7 +1671,10 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		const GSVector2 scale(src->m_texture->GetScale());
 		dst = LookupTarget(new_TEX0, GSVector2i(static_cast<int>(w * scale.x), static_cast<int>(real_height * scale.y)), src->m_type, true);
 		if (dst)
+		{
 			dst->m_texture->SetScale(scale);
+			dst->UpdateValidity(GSVector4i(dx, dy, dx + w, dy + h));
+		}
 	}
 
 	if (!src || !dst || src->m_texture->GetScale() != dst->m_texture->GetScale())
