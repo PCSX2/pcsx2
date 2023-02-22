@@ -599,7 +599,7 @@ GSTextureCache::Target* GSTextureCache::FindTargetOverlap(u32 bp, u32 end_block,
 	return nullptr;
 }
 
-GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask, const bool is_frame, const int real_w, const int real_h, bool preload)
+GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask, const bool is_frame, const int real_w, const int real_h, bool preload, bool is_clear)
 {
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 	const GSVector2& new_s = static_cast<GSRendererHW*>(g_gs_renderer.get())->GetTextureScaleFactor();
@@ -806,6 +806,13 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 
 	if (!dst)
 	{
+		// Skip full screen clears from making massive targets.
+		if (is_clear)
+		{
+			GL_CACHE("TC: Create RT skipped on clear draw");
+			return nullptr;
+		}
+
 		GL_CACHE("TC: Lookup %s(%s) %dx%d, miss (0x%x, %s)", is_frame ? "Frame" : "Target", to_string(type), size.x, size.y, bp, psm_str(TEX0.PSM));
 
 		dst = CreateTarget(TEX0, size.x, size.y, type, true);
@@ -3317,8 +3324,8 @@ void GSTextureCache::Target::ResizeValidity(const GSVector4i& rect)
 	}
 	else
 	{
-		m_valid = rect;
-		m_drawn_since_read = rect;
+		// No valid size, so need to resize down.
+		return;
 	}
 	// Block of the bottom right texel of the validity rectangle, last valid block of the texture
 	// TODO: This is not correct when the PSM changes. e.g. a 512x448 target being shuffled will become 512x896 temporarily, and
