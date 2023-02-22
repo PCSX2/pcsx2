@@ -1723,7 +1723,7 @@ void GSRendererHW::Draw()
 			m_vt.m_max.t = tmax;
 		}
 	}
-	
+
 	if (rt)
 	{
 		// Be sure texture shuffle detection is properly propagated
@@ -1732,6 +1732,8 @@ void GSRendererHW::Draw()
 		rt->m_32_bits_fmt = m_texture_shuffle || (GSLocalMemory::m_psm[context->FRAME.PSM].bpp != 16);
 	}
 
+	const bool is_mem_clear = IsConstantDirectWriteMemClear(false);
+	const bool can_update_size = !is_mem_clear && !m_texture_shuffle && !m_channel_shuffle;
 	{
 		// We still need to make sure the dimensions of the targets match.
 		const GSVector2 up_s(GetTextureScaleFactor());
@@ -1746,13 +1748,18 @@ void GSRendererHW::Draw()
 
 			pxAssert(rt->m_texture->GetScale() == up_s);
 			rt->ResizeTexture(new_w, new_h, up_s);
+			const GSVector2i tex_size = rt->m_texture->GetSize();
 			
-			if (!m_texture_shuffle && !m_channel_shuffle)
+			// Avoid temporary format changes, as this will change the end block and could break things.
+			if ((old_height != tex_size.y) && can_update_size)
 			{
-				const GSVector4i new_valid = GSVector4i(0, 0, new_w / up_s.x, new_h / up_s.y);
+				const GSVector2 tex_scale = rt->m_texture->GetScale();
+				const GSVector4i new_valid = GSVector4i(0, 0, tex_size.x / tex_scale.x, tex_size.y / tex_scale.y);
 				rt->ResizeValidity(new_valid);
 			}
-			rt->UpdateValidity(m_r);
+			GSVector2i resolution = PCRTCDisplays.GetResolution();
+			// Limit to 2x the vertical height of the resolution (for double buffering)
+			rt->UpdateValidity(m_r, can_update_size || m_r.w <= (resolution.y * 2));
 
 			// Probably changing to double buffering, so invalidate any old target that was next to it.
 			// This resolves an issue where the PCRTC will find the old target in FMV's causing flashing.
@@ -1782,13 +1789,18 @@ void GSRendererHW::Draw()
 
 			pxAssert(ds->m_texture->GetScale() == up_s);
 			ds->ResizeTexture(new_w, new_h, up_s);
+			const GSVector2i tex_size = ds->m_texture->GetSize();
 			
-			if (!m_texture_shuffle && !m_channel_shuffle)
+			if ((old_height != tex_size.y) && can_update_size)
 			{
-				const GSVector4i new_valid = GSVector4i(0, 0, new_w / up_s.x, new_h / up_s.y);
+				const GSVector2 tex_scale = ds->m_texture->GetScale();
+				const GSVector4i new_valid = GSVector4i(0, 0, tex_size.x / tex_scale.x, tex_size.y / tex_scale.y);
 				ds->ResizeValidity(new_valid);
 			}
-			ds->UpdateValidity(m_r);
+
+			GSVector2i resolution = PCRTCDisplays.GetResolution();
+			// Limit to 2x the vertical height of the resolution (for double buffering)
+			ds->UpdateValidity(m_r, can_update_size || m_r.w <= (resolution.y * 2));
 
 			if (new_height && old_end_block != ds->m_end_block)
 			{
@@ -1938,12 +1950,13 @@ void GSRendererHW::Draw()
 	// Temporary source *must* be invalidated before normal, because otherwise it'll be double freed.
 	m_tc->InvalidateTemporarySource();
 
-	//
-
+	// If it's a mem clear or shuffle we don't want to resize the texture, it can cause textures to take up the entire
+	// video memory, and that is not good.
 	if ((fm & fm_mask) != fm_mask && rt)
 	{
 		//rt->m_valid = rt->m_valid.runion(r);
-		rt->UpdateValidity(m_r);
+		if(can_update_size)
+			rt->UpdateValidity(m_r);
 
 		m_tc->InvalidateVideoMem(context->offset.fb, m_r, false, false);
 
@@ -1953,7 +1966,9 @@ void GSRendererHW::Draw()
 	if (zm != 0xffffffff && ds)
 	{
 		//ds->m_valid = ds->m_valid.runion(r);
-		ds->UpdateValidity(m_r);
+		// Shouldn't be a problem as Z will be masked.
+		if (can_update_size)
+			ds->UpdateValidity(m_r);
 
 		m_tc->InvalidateVideoMem(context->offset.zb, m_r, false, false);
 
