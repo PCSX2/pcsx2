@@ -4050,6 +4050,38 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	g_gs_device->RenderHW(m_conf);
 }
 
+// If the EE uploaded a new CLUT since the last draw, use that.
+bool GSRendererHW::HasEEUpload(GSVector4i r)
+{
+	std::vector<GSState::GSUploadQueue>::iterator iter;
+	for (iter = m_draw_transfers.begin(); iter != m_draw_transfers.end(); ) {
+		if (iter->draw == (s_n - 1) && iter->blit.DBP == m_context->TEX0.TBP0 && GSUtil::HasSharedBits(iter->blit.DPSM, m_context->TEX0.PSM))
+		{
+			GSVector4i rect = r;
+
+			if (!GSUtil::HasCompatibleBits(iter->blit.DPSM, m_context->TEX0.PSM))
+			{
+				GSTextureCache::SurfaceOffsetKey sok;
+				sok.elems[0].bp = iter->blit.DBP;
+				sok.elems[0].bw = iter->blit.DBW;
+				sok.elems[0].psm = iter->blit.DPSM;
+				sok.elems[0].rect = iter->rect;
+				sok.elems[1].bp = m_context->TEX0.TBP0;
+				sok.elems[1].bw = m_context->TEX0.TBW;
+				sok.elems[1].psm = m_context->TEX0.PSM;
+				sok.elems[1].rect = r;
+
+				rect = m_tc->ComputeSurfaceOffset(sok).b2a_offset;
+			}
+			if (rect.rintersect(r).eq(r))
+				return true;
+		}
+
+		iter++;
+	}
+	return false;
+}
+
 GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 {
 	// No shuffles.
@@ -4131,13 +4163,8 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 		// If we have GPU CLUT enabled, don't do a CPU draw when it would result in a download.
 		if (GSConfig.UserHacks_GPUTargetCLUTMode != GSGPUTargetCLUTMode::Disabled)
 		{
-			std::vector<GSState::GSUploadQueue>::iterator iter;
-			for (iter = m_draw_transfers.begin(); iter != m_draw_transfers.end(); ) {
-				if (iter->blit.DBP == m_context->TEX0.TBP0 && GSUtil::HasSharedBits(iter->blit.DPSM, m_context->TEX0.PSM))
-					return CLUTDrawTestResult::CLUTDrawOnCPU;
-
-				iter++;
-			}
+			if (HasEEUpload(r))
+				return CLUTDrawTestResult::CLUTDrawOnCPU;
 
 			GSTextureCache::Target* tgt = m_tc->GetExactTarget(m_context->TEX0.TBP0, m_context->TEX0.TBW, m_context->TEX0.PSM);
 			if (tgt)
@@ -4160,13 +4187,8 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 		}
 		else
 		{
-			std::vector<GSState::GSUploadQueue>::iterator iter;
-			for (iter = m_draw_transfers.begin(); iter != m_draw_transfers.end(); ) {
-				if (iter->blit.DBP == m_context->TEX0.TBP0 && GSUtil::HasSharedBits(iter->blit.DPSM, m_context->TEX0.PSM))
-					return CLUTDrawTestResult::CLUTDrawOnCPU;
-
-				iter++;
-			}
+			if(HasEEUpload(r))
+				return CLUTDrawTestResult::CLUTDrawOnCPU;
 		}
 
 		GIFRegBITBLTBUF BITBLTBUF = {};
