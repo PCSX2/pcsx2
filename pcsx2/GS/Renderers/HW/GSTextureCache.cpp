@@ -1345,8 +1345,6 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 							GL_CACHE("TC: Dirty After Target(%s) %d (0x%x)", to_string(type),
 								t->m_texture ? t->m_texture->GetID() : 0,
 								t->m_TEX0.TBP0);
-							// TODO: do not add this rect above too
-							t->m_TEX0.TBW = bw;
 
 							if (eewrite)
 								t->m_age = 0;
@@ -1381,8 +1379,6 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 
 						if (eewrite)
 							t->m_age = 0;
-
-						t->m_TEX0.TBW = bw;
 
 						const GSVector4i dirty_r = GSVector4i(r.left, r.top + y, r.right, r.bottom + y);
 						AddDirtyRectTarget(t, dirty_r, psm, bw);
