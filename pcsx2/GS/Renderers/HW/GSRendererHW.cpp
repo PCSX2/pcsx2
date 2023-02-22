@@ -756,7 +756,7 @@ GSVector2i GSRendererHW::GetTargetSize(GSVector2i* unscaled_size)
 		}
 	}
 
-	u32 width = m_context->FRAME.FBW * 64u;
+	u32 width = std::min(m_context->FRAME.FBW * 64u, static_cast<u32>(m_context->scissor.in.z));
 
 	// If it's a channel shuffle, it'll likely be just a single page, so assume full screen.
 	if (m_channel_shuffle)
@@ -1573,7 +1573,17 @@ void GSRendererHW::Draw()
 
 	GSTextureCache::Target* rt = nullptr;
 	if (!no_rt)
-		rt = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::RenderTarget, true, fm, false, unscaled_target_size.x, unscaled_target_size.y, force_preload);
+	{
+		const bool is_square = (unscaled_target_size.y == unscaled_target_size.x) && m_r.w >= 1024 && m_vertex.next;
+		rt = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::RenderTarget, true, fm, false, unscaled_target_size.x, unscaled_target_size.y, force_preload, IsConstantDirectWriteMemClear(false) && is_square);
+
+		// Draw skipped because it was a clear and there was no target.
+		if (!rt)
+		{
+			OI_GsMemClear();
+			return;
+		}
+	}
 
 	TEX0.TBP0 = context->ZBUF.Block();
 	TEX0.TBW = context->FRAME.FBW;
@@ -1581,7 +1591,9 @@ void GSRendererHW::Draw()
 
 	GSTextureCache::Target* ds = nullptr;
 	if (!no_ds)
+	{
 		ds = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::DepthStencil, context->DepthWrite(), 0, false, unscaled_target_size.x, unscaled_target_size.y, force_preload);
+	}
 
 	if (process_texture)
 	{
@@ -1739,6 +1751,7 @@ void GSRendererHW::Draw()
 
 	const bool is_mem_clear = IsConstantDirectWriteMemClear(false);
 	const bool can_update_size = !is_mem_clear && !m_texture_shuffle && !m_channel_shuffle;
+	const GSVector2i resolution = PCRTCDisplays.GetResolution();
 	{
 		// We still need to make sure the dimensions of the targets match.
 		const GSVector2 up_s(GetTextureScaleFactor());
@@ -1753,23 +1766,20 @@ void GSRendererHW::Draw()
 
 			pxAssert(rt->m_texture->GetScale() == up_s);
 			rt->ResizeTexture(new_w, new_h, up_s);
-			const GSVector2i tex_size = rt->m_texture->GetSize();
 			
-			// Avoid temporary format changes, as this will change the end block and could break things.
-			if ((old_height != tex_size.y) && can_update_size)
+			if (!m_texture_shuffle && !m_channel_shuffle)
 			{
-				const GSVector2 tex_scale = rt->m_texture->GetScale();
-				const GSVector4i new_valid = GSVector4i(0, 0, tex_size.x / tex_scale.x, tex_size.y / tex_scale.y);
+				const GSVector2i tex_size = rt->m_texture->GetSize();
+				const GSVector4i new_valid = GSVector4i(0, 0, tex_size.x / up_s.x, tex_size.y / up_s.y);
 				rt->ResizeValidity(new_valid);
 			}
-			GSVector2i resolution = PCRTCDisplays.GetResolution();
 			// Limit to 2x the vertical height of the resolution (for double buffering)
 			rt->UpdateValidity(m_r, can_update_size || m_r.w <= (resolution.y * 2));
 
 			// Probably changing to double buffering, so invalidate any old target that was next to it.
 			// This resolves an issue where the PCRTC will find the old target in FMV's causing flashing.
 			// Grandia Xtreme, Onimusha Warlord.
-			if (new_height && old_end_block != rt->m_end_block)
+			if (old_end_block != rt->m_TEX0.TBP0 && new_height && old_end_block != rt->m_end_block)
 			{
 				GSTextureCache::Target* old_rt = nullptr;
 				old_rt = m_tc->FindTargetOverlap(old_end_block, rt->m_end_block, GSTextureCache::RenderTarget, context->FRAME.PSM);
@@ -1794,20 +1804,17 @@ void GSRendererHW::Draw()
 
 			pxAssert(ds->m_texture->GetScale() == up_s);
 			ds->ResizeTexture(new_w, new_h, up_s);
-			const GSVector2i tex_size = ds->m_texture->GetSize();
 			
-			if ((old_height != tex_size.y) && can_update_size)
+			if (!m_texture_shuffle && !m_channel_shuffle)
 			{
-				const GSVector2 tex_scale = ds->m_texture->GetScale();
-				const GSVector4i new_valid = GSVector4i(0, 0, tex_size.x / tex_scale.x, tex_size.y / tex_scale.y);
+				const GSVector2i tex_size = ds->m_texture->GetSize();
+				const GSVector4i new_valid = GSVector4i(0, 0, tex_size.x / up_s.x, tex_size.y / up_s.y);
 				ds->ResizeValidity(new_valid);
 			}
-
-			GSVector2i resolution = PCRTCDisplays.GetResolution();
 			// Limit to 2x the vertical height of the resolution (for double buffering)
 			ds->UpdateValidity(m_r, can_update_size || m_r.w <= (resolution.y * 2));
 
-			if (new_height && old_end_block != ds->m_end_block)
+			if (old_end_block != ds->m_TEX0.TBP0 && new_height && old_end_block != ds->m_end_block)
 			{
 				GSTextureCache::Target* old_ds = nullptr;
 				old_ds = m_tc->FindTargetOverlap(old_end_block, ds->m_end_block, GSTextureCache::DepthStencil, context->ZBUF.PSM);
@@ -1955,13 +1962,13 @@ void GSRendererHW::Draw()
 	// Temporary source *must* be invalidated before normal, because otherwise it'll be double freed.
 	m_tc->InvalidateTemporarySource();
 
-	// If it's a mem clear or shuffle we don't want to resize the texture, it can cause textures to take up the entire
-	// video memory, and that is not good.
+	//
+
 	if ((fm & fm_mask) != fm_mask && rt)
 	{
 		//rt->m_valid = rt->m_valid.runion(r);
-		if(can_update_size)
-			rt->UpdateValidity(m_r);
+		// Limit to 2x the vertical height of the resolution (for double buffering)
+		rt->UpdateValidity(m_r, can_update_size || m_r.w <= (resolution.y * 2));
 
 		rt->UpdateValidBits(~fm & fm_mask);
 
@@ -1973,9 +1980,8 @@ void GSRendererHW::Draw()
 	if (zm != 0xffffffff && ds)
 	{
 		//ds->m_valid = ds->m_valid.runion(r);
-		// Shouldn't be a problem as Z will be masked.
-		if (can_update_size)
-			ds->UpdateValidity(m_r);
+		// Limit to 2x the vertical height of the resolution (for double buffering)
+		ds->UpdateValidity(m_r, can_update_size || m_r.w <= (resolution.y * 2));
 
 		ds->UpdateValidBits(GSLocalMemory::m_psm[context->ZBUF.PSM].fmsk);
 
