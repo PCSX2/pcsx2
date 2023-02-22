@@ -248,6 +248,13 @@ public:
 		Target(const GIFRegTEX0& TEX0, const bool depth_supported, const int type);
 		~Target();
 
+		/// Returns true if the target wraps around the end of GS memory.
+		bool Wraps() const { return (m_end_block < m_TEX0.TBP0); }
+
+		/// Returns the end block for the target, but doesn't wrap at 0x3FFF.
+		/// Can be used for overlap tests.
+		u32 UnwrappedEndBlock() const { return (m_end_block + (Wraps() ? MAX_BLOCKS : 0)); }
+
 		void ResizeValidity(const GSVector4i& rect);
 		void UpdateValidity(const GSVector4i& rect, bool can_resize = true);
 

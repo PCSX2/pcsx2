@@ -1330,7 +1330,8 @@ void GSRendererHW::Draw()
 	// We trigger the sw prim render here super early, to avoid creating superfluous render targets.
 	if (CanUseSwPrimRender(no_rt, no_ds, draw_sprite_tex) && SwPrimRender(*this, true))
 	{
-		GL_CACHE("Possible texture decompression, drawn with SwPrimRender()");
+		GL_CACHE("Possible texture decompression, drawn with SwPrimRender() (BP %x BW %u TBP0 %x TBW %u)",
+			m_context->FRAME.Block(), m_context->FRAME.FBMSK, m_context->TEX0.TBP0, m_context->TEX0.TBW);
 		return;
 	}
 
