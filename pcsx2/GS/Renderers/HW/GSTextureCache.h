@@ -249,7 +249,7 @@ public:
 		~Target();
 
 		void ResizeValidity(const GSVector4i& rect);
-		void UpdateValidity(const GSVector4i& rect);
+		void UpdateValidity(const GSVector4i& rect, bool can_resize = true);
 
 		void Update(bool reset_age);
 
