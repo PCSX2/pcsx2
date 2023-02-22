@@ -1192,6 +1192,10 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 	if (!target)
 		return;
 
+	// Handle the case where the transfer wrapped around the end of GS memory.
+	const u32 end_bp = off.bn(rect.z - 1, rect.w - 1);
+	const u32 unwrapped_end_bp = end_bp + ((end_bp < bp) ? MAX_BLOCKS : 0);
+
 	for (int type = 0; type < 2; type++)
 	{
 		auto& list = m_dst[type];
@@ -1199,6 +1203,13 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 		{
 			auto j = i;
 			Target* t = *j;
+
+			// Don't bother checking any further if the target doesn't overlap with the write/invalidation.
+			if ((bp < t->m_TEX0.TBP0 && unwrapped_end_bp < t->m_TEX0.TBP0) || bp > t->UnwrappedEndBlock())
+			{
+				++i;
+				continue;
+			}
 
 			// GH: (I think) this code is completely broken. Typical issue:
 			// EE write an alpha channel into 32 bits texture
