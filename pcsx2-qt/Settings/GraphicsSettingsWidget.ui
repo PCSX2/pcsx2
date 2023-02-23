@@ -947,17 +947,17 @@
        </item>
        <item row="5" column="0" colspan="2">
         <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="hwAutoFlush">
-           <property name="text">
-            <string>Auto Flush</string>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="1">
           <widget class="QCheckBox" name="frameBufferConversion">
            <property name="text">
             <string>Frame Buffer Conversion</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="hwAutoFlush">
+           <property name="text">
+            <string>Auto Flush</string>
            </property>
           </widget>
          </item>
@@ -968,10 +968,10 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QCheckBox" name="disableSafeFeatures">
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="preloadFrameData">
            <property name="text">
-            <string>Disable Safe Features</string>
+            <string>Preload Frame Data</string>
            </property>
           </widget>
          </item>
@@ -982,10 +982,10 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QCheckBox" name="preloadFrameData">
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="disableSafeFeatures">
            <property name="text">
-            <string>Preload Frame Data</string>
+            <string>Disable Safe Features</string>
            </property>
           </widget>
          </item>
@@ -993,6 +993,13 @@
           <widget class="QCheckBox" name="textureInsideRt">
            <property name="text">
             <string>Texture Inside RT</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QCheckBox" name="readTCOnClose">
+           <property name="text">
+            <string>Read Targets When Closing</string>
            </property>
           </widget>
          </item>

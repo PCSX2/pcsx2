@@ -829,15 +829,6 @@ void GSRenderer::EndCapture()
 	GSCapture::EndCapture();
 }
 
-void GSRenderer::PurgePool()
-{
-	g_gs_device->PurgePool();
-}
-
-void GSRenderer::PurgeTextureCache()
-{
-}
-
 GSTexture* GSRenderer::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, const GSVector2i& size)
 {
 	return nullptr;

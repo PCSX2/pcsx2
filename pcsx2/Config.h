@@ -664,6 +664,7 @@ struct Pcsx2Config
 					UserHacks_AlignSpriteX : 1,
 					UserHacks_AutoFlush : 1,
 					UserHacks_CPUFBConversion : 1,
+					UserHacks_ReadTCOnClose : 1,
 					UserHacks_DisableDepthSupport : 1,
 					UserHacks_DisablePartialInvalidation : 1,
 					UserHacks_DisableSafeFeatures : 1,

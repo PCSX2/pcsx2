@@ -252,6 +252,9 @@ bool GSreopen(bool recreate_display, bool recreate_renderer, const Pcsx2Config::
 	if (recreate_renderer)
 		g_gs_renderer->Flush(GSState::GSFlushReason::GSREOPEN);
 
+	if (GSConfig.UserHacks_ReadTCOnClose)
+		g_gs_renderer->ReadbackTextureCache();
+
 	freezeData fd = {};
 	std::unique_ptr<u8[]> fd_data;
 	if (recreate_renderer)
@@ -273,8 +276,8 @@ bool GSreopen(bool recreate_display, bool recreate_renderer, const Pcsx2Config::
 	else
 	{
 		// Make sure nothing is left over.
-		g_gs_renderer->PurgePool();
 		g_gs_renderer->PurgeTextureCache();
+		g_gs_renderer->PurgePool();
 	}
 
 	if (recreate_display)
@@ -762,6 +765,8 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		GSConfig.UserHacks_CPUCLUTRender != old_config.UserHacks_CPUCLUTRender ||
 		GSConfig.UserHacks_GPUTargetCLUTMode != old_config.UserHacks_GPUTargetCLUTMode)
 	{
+		if (GSConfig.UserHacks_ReadTCOnClose)
+			g_gs_renderer->ReadbackTextureCache();
 		g_gs_renderer->PurgeTextureCache();
 		g_gs_renderer->PurgePool();
 	}
@@ -799,8 +804,6 @@ void GSSwitchRenderer(GSRendererType new_renderer)
 	RenderAPI existing_api = g_host_display->GetRenderAPI();
 	if (existing_api == RenderAPI::OpenGLES)
 		existing_api = RenderAPI::OpenGL;
-
-	g_gs_renderer->PurgeTextureCache();
 
 	const bool is_software_switch = (new_renderer == GSRendererType::SW || GSConfig.Renderer == GSRendererType::SW);
 	const bool recreate_display = (!is_software_switch && existing_api != GetAPIForRenderer(new_renderer));

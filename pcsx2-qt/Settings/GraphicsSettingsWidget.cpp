@@ -198,6 +198,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(
 		sif, m_ui.disablePartialInvalidation, "EmuCore/GS", "UserHacks_DisablePartialInvalidation", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.textureInsideRt, "EmuCore/GS", "UserHacks_TextureInsideRt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.readTCOnClose, "EmuCore/GS", "UserHacks_ReadTCOnClose", false);
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Upscaling Fixes
@@ -537,6 +538,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.textureInsideRt, tr("Texture Inside RT"), tr("Unchecked"),
 			tr("Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer. "
 			   "In some selected games this is enabled by default regardless of this setting."));
+
+		dialog->registerWidgetHelp(m_ui.readTCOnClose, tr("Read Targets When Closing"), tr("Unchecked"),
+			tr("Flushes all targets in the texture cache back to local memory when shutting down. Can prevent lost visuals when saving "
+			   "state or switching renderers, but can also cause graphical corruption."));
 	}
 
 	// Upscaling Fixes tab

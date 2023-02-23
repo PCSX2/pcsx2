@@ -46,18 +46,23 @@ GSTextureCache::~GSTextureCache()
 	_aligned_free(s_unswizzle_buffer);
 }
 
-void GSTextureCache::RemoveAll(bool readback_targets)
+void GSTextureCache::ReadbackAll()
+{
+	for (int type = 0; type < 2; type++)
+	{
+		for (auto t : m_dst[type])
+			Read(t, t->m_drawn_since_read);
+	}
+}
+
+void GSTextureCache::RemoveAll()
 {
 	m_src.RemoveAll();
 
 	for (int type = 0; type < 2; type++)
 	{
 		for (auto t : m_dst[type])
-		{
-			if (readback_targets)
-				Read(t, t->m_drawn_since_read);
 			delete t;
-		}
 
 		m_dst[type].clear();
 	}
