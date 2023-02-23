@@ -1494,18 +1494,31 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 	// (Busen0: Wizardry and Chaos Legion).
 	// Also in a few games the below code ran the Grandia3 case when it shouldn't :p
 	auto& rts = m_dst[RenderTarget];
-	for (auto it = rts.rbegin(); it != rts.rend(); ++it) // Iterate targets from LRU to MRU.
+	for (auto it = rts.rbegin(); it != rts.rend(); it++) // Iterate targets from LRU to MRU.
 	{
 		Target* t = *it;
 		if (t->m_TEX0.PSM != PSM_PSMZ32 && t->m_TEX0.PSM != PSM_PSMZ24 && t->m_TEX0.PSM != PSM_PSMZ16 && t->m_TEX0.PSM != PSM_PSMZ16S)
 		{
-			if (!t->Overlaps(bp, bw, psm, r) || !GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) || t->m_age >= 30)
+			const u32 read_start = GSLocalMemory::m_psm[psm].info.bn(r.x, r.y, bp, bw);
+			// Check the offset of the read, if they're not pointing at or inside this texture, it's probably not what we want.
+			const bool expecting_this_tex = (bp < t->m_TEX0.TBP0 && read_start >= t->m_TEX0.TBP0) || bp >= t->m_TEX0.TBP0;
+
+			if (!expecting_this_tex || !t->Overlaps(bp, bw, psm, r) || !GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) || t->m_age >= 30)
 				continue;
 
 			const bool bpp_match = GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[psm].bpp;
 			const bool format_match = (bp == t->m_TEX0.TBP0 && bw == t->m_TEX0.TBW && bpp_match);
+			SurfaceOffsetKey sok;
+			sok.elems[0].bp = bp;
+			sok.elems[0].bw = bw;
+			sok.elems[0].psm = psm;
+			sok.elems[0].rect = r;
+			sok.elems[1].bp = t->m_TEX0.TBP0;
+			sok.elems[1].bw = t->m_TEX0.TBW;
+			sok.elems[1].psm = t->m_TEX0.PSM;
+			sok.elems[1].rect = t->m_valid;
 			// Calculate the rect offset if the BP doesn't match.
-			const GSVector4i targetr = (format_match) ? r.rintersect(t->m_valid) : ComputeSurfaceOffset(bp, bw, psm, r, t).b2a_offset;
+			const GSVector4i targetr = (format_match) ? r.rintersect(t->m_valid) : ComputeSurfaceOffset(sok).b2a_offset;
 
 			// Some games like to offset their GS download memory addresses by
 			// using overly big source Y position values.

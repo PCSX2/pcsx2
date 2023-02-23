@@ -795,7 +795,37 @@ void GSRendererHW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 {
 	// printf("[%d] InvalidateVideoMem %d,%d - %d,%d %05x (%d)\n", static_cast<int>(g_perfmon.GetFrame()), r.left, r.top, r.right, r.bottom, static_cast<int>(BITBLTBUF.DBP), static_cast<int>(BITBLTBUF.DPSM));
 
-	m_tc->InvalidateVideoMem(m_mem.GetOffset(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM), r, eewrite);
+	// This is gross, but if the EE write loops, we need to split it on the 2048 border.
+	GSVector4i rect = r;
+	bool loop_h = false;
+	bool loop_w = false;
+	if (r.w > 2048)
+	{
+		rect.w = 2048;
+		loop_h = true;
+	}
+	if (r.z > 2048)
+	{
+		rect.z = 2048;
+		loop_w = true;
+	}
+	if (loop_h || loop_w)
+	{	
+		m_tc->InvalidateVideoMem(m_mem.GetOffset(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM), rect, eewrite);
+		if (loop_h)
+		{
+			rect.y = 0;
+			rect.w = r.w - 2048;
+		}
+		if (loop_w)
+		{
+			rect.x = 0;
+			rect.z = r.w - 2048;
+		}
+		m_tc->InvalidateVideoMem(m_mem.GetOffset(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM), rect, eewrite);
+	}
+	else
+		m_tc->InvalidateVideoMem(m_mem.GetOffset(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM), r, eewrite);
 }
 
 void GSRendererHW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut)
@@ -804,6 +834,23 @@ void GSRendererHW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 
 	if (clut)
 		return; // FIXME
+
+	u32 incoming_end = GSLocalMemory::m_psm[BITBLTBUF.SPSM].info.bn(r.z - 1, r.w - 1, BITBLTBUF.SBP, BITBLTBUF.SBW);
+	std::vector<GSState::GSUploadQueue>::iterator iter = GSRendererHW::GetInstance()->m_draw_transfers.end();
+
+	// If the EE write overlaps the readback and was done since the last draw, there's no need to read it back.
+	// Dog's life and Ratchet Gladiator do this.
+	while (iter != GSRendererHW::GetInstance()->m_draw_transfers.begin())
+	{
+		--iter;
+		u32 ee_write_end = GSLocalMemory::m_psm[iter->blit.DPSM].info.bn(iter->rect.z - 1, iter->rect.w - 1, iter->blit.DBP, iter->blit.DBW);
+		// If the format, and location doesn't match, but also the upload is at least the size of the target, don't preload.
+		if (iter->blit.DBP < incoming_end && GSUtil::HasSharedBits(iter->blit.DPSM, BITBLTBUF.SPSM) && ee_write_end > BITBLTBUF.SBP && iter->draw == s_n)
+		{
+			DevCon.Warning("Download from same draw as write address %x, skipping invalidation", BITBLTBUF.SBP);
+			return;
+		}
+	}
 
 	m_tc->InvalidateLocalMem(m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM), r);
 }
