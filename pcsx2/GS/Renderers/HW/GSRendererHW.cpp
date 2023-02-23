@@ -1808,6 +1808,7 @@ void GSRendererHW::Draw()
 		if (rt)
 		{
 			const u32 old_end_block = rt->m_end_block;
+			const bool new_rect = rt->m_valid.rempty();
 			const bool new_height = new_h > rt->m_texture->GetHeight();
 			const int old_height = rt->m_texture->GetHeight();
 
@@ -1826,7 +1827,7 @@ void GSRendererHW::Draw()
 			// Probably changing to double buffering, so invalidate any old target that was next to it.
 			// This resolves an issue where the PCRTC will find the old target in FMV's causing flashing.
 			// Grandia Xtreme, Onimusha Warlord.
-			if (old_end_block != rt->m_TEX0.TBP0 && new_height && old_end_block != rt->m_end_block)
+			if (!new_rect && new_height && old_end_block != rt->m_end_block)
 			{
 				GSTextureCache::Target* old_rt = nullptr;
 				old_rt = m_tc->FindTargetOverlap(old_end_block, rt->m_end_block, GSTextureCache::RenderTarget, context->FRAME.PSM);
@@ -1846,6 +1847,7 @@ void GSRendererHW::Draw()
 		if (ds)
 		{
 			const u32 old_end_block = ds->m_end_block;
+			const bool new_rect = ds->m_valid.rempty();
 			const bool new_height = new_h > ds->m_texture->GetHeight();
 			const int old_height = ds->m_texture->GetHeight();
 
@@ -1860,8 +1862,8 @@ void GSRendererHW::Draw()
 			}
 			// Limit to 2x the vertical height of the resolution (for double buffering)
 			ds->UpdateValidity(m_r, can_update_size || m_r.w <= (resolution.y * 2));
-
-			if (old_end_block != ds->m_TEX0.TBP0 && new_height && old_end_block != ds->m_end_block)
+			
+			if (!new_rect && new_height && old_end_block != ds->m_end_block)
 			{
 				GSTextureCache::Target* old_ds = nullptr;
 				old_ds = m_tc->FindTargetOverlap(old_end_block, ds->m_end_block, GSTextureCache::DepthStencil, context->ZBUF.PSM);
