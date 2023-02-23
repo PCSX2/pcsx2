@@ -126,6 +126,11 @@
               "minimum": 0,
               "maximum": 1
             },
+            "readTCOnClose": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
             "disableDepthSupport": {
               "type": "integer",
               "minimum": 0,

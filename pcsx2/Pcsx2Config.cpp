@@ -429,6 +429,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	UserHacks_AlignSpriteX = false;
 	UserHacks_AutoFlush = false;
 	UserHacks_CPUFBConversion = false;
+	UserHacks_ReadTCOnClose = false;
 	UserHacks_DisableDepthSupport = false;
 	UserHacks_DisablePartialInvalidation = false;
 	UserHacks_DisableSafeFeatures = false;
@@ -640,6 +641,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	GSSettingBoolEx(UserHacks_AlignSpriteX, "UserHacks_align_sprite_X");
 	GSSettingBoolEx(UserHacks_AutoFlush, "UserHacks_AutoFlush");
 	GSSettingBoolEx(UserHacks_CPUFBConversion, "UserHacks_CPU_FB_Conversion");
+	GSSettingBoolEx(UserHacks_ReadTCOnClose, "UserHacks_ReadTCOnClose");
 	GSSettingBoolEx(UserHacks_DisableDepthSupport, "UserHacks_DisableDepthSupport");
 	GSSettingBoolEx(UserHacks_DisablePartialInvalidation, "UserHacks_DisablePartialInvalidation");
 	GSSettingBoolEx(UserHacks_DisableSafeFeatures, "UserHacks_Disable_Safe_Features");
@@ -770,6 +772,7 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 	UserHacks_DisablePartialInvalidation = false;
 	UserHacks_DisableDepthSupport = false;
 	UserHacks_CPUFBConversion = false;
+	UserHacks_ReadTCOnClose = false;
 	UserHacks_TextureInsideRt = false;
 	UserHacks_TCOffsetX = 0;
 	UserHacks_TCOffsetY = 0;

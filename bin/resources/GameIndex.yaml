@@ -12860,6 +12860,8 @@ SLES-51504:
 SLES-51507:
   name: "Futurama"
   region: "PAL-M5"
+  gsHWFixes:
+    readTCOnClose: 1 # Fixes render to target getting lost on state/switch.
 SLES-51508:
   name: "Hulk, The"
   region: "PAL-M5"
@@ -42646,6 +42648,8 @@ SLUS-20439:
   name: "Futurama"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    readTCOnClose: 1 # Fixes render to target getting lost on state/switch.
 SLUS-20440:
   name: "Kya - Dark Lineage"
   region: "NTSC-U"

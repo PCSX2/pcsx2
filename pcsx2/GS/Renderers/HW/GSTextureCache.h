@@ -406,7 +406,8 @@ public:
 
 	void Read(Target* t, const GSVector4i& r);
 	void Read(Source* t, const GSVector4i& r);
-	void RemoveAll(bool readback_targets = false);
+	void RemoveAll();
+	void ReadbackAll();
 	void AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw);
 
 	GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, const GSVector2i& size);

@@ -342,6 +342,7 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 static const char* s_gs_hw_fix_names[] = {
 	"autoFlush",
 	"cpuFramebufferConversion",
+	"readTCOnClose",
 	"disableDepthSupport",
 	"wrapGSMem",
 	"preloadFrameData",
@@ -548,6 +549,9 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::CPUFramebufferConversion:
 			return (static_cast<int>(config.UserHacks_CPUFBConversion) == value);
 
+		case GSHWFixId::FlushTCOnClose:
+			return (static_cast<int>(config.UserHacks_ReadTCOnClose) == value);
+
 		case GSHWFixId::DisableDepthSupport:
 			return (static_cast<int>(config.UserHacks_DisableDepthSupport) == value);
 
@@ -652,6 +656,10 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 
 			case GSHWFixId::CPUFramebufferConversion:
 				config.UserHacks_CPUFBConversion = (value > 0);
+				break;
+
+			case GSHWFixId::FlushTCOnClose:
+				config.UserHacks_ReadTCOnClose = (value > 0);
 				break;
 
 			case GSHWFixId::DisableDepthSupport:

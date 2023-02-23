@@ -421,6 +421,8 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("AF ");
 		if (GSConfig.UserHacks_CPUFBConversion)
 			APPEND("FBC ");
+		if (GSConfig.UserHacks_ReadTCOnClose)
+			APPEND("FTC ");
 		if(GSConfig.UserHacks_DisableDepthSupport)
 			APPEND("DDE ");
 		if (GSConfig.UserHacks_DisablePartialInvalidation)

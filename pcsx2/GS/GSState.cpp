@@ -2126,6 +2126,19 @@ void GSState::ReadLocalMemoryUnsync(u8* mem, int qwc, GIFRegBITBLTBUF BITBLTBUF,
 	m_mem.ReadImageX(tb.x, tb.y, mem, len, BITBLTBUF, TRXPOS, TRXREG);
 }
 
+void GSState::PurgePool()
+{
+	g_gs_device->PurgePool();
+}
+
+void GSState::PurgeTextureCache()
+{
+}
+
+void GSState::ReadbackTextureCache()
+{
+}
+
 template void GSState::Transfer<0>(const u8* mem, u32 size);
 template void GSState::Transfer<1>(const u8* mem, u32 size);
 template void GSState::Transfer<2>(const u8* mem, u32 size);
@@ -2344,6 +2357,9 @@ int GSState::Freeze(freezeData* fd, bool sizeonly)
 		return -1;
 
 	Flush(GSFlushReason::SAVESTATE);
+
+	if (GSConfig.UserHacks_ReadTCOnClose)
+		ReadbackTextureCache();
 
 	u8* data = fd->data;
 	const u32 version = STATE_VERSION;
