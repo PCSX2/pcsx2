@@ -130,16 +130,23 @@ bool GSUtil::HasSharedBits(u32 spsm, const u32* RESTRICT ptr)
 	return (ptr[spsm >> 5] & (1 << (spsm & 0x1f))) == 0;
 }
 
+// Pixels can NOT coexist in the same 32bits of space.
+// Example: Using PSMT8H or PSMT4HL/HH with CT24 would fail this check.
 bool GSUtil::HasSharedBits(u32 spsm, u32 dpsm)
 {
 	return (s_maps.SharedBitsField[dpsm][spsm >> 5] & (1 << (spsm & 0x1f))) == 0;
 }
 
+// Pixels can NOT coexist in the same 32bits of space.
+// Example: Using PSMT8H or PSMT4HL/HH with CT24 would fail this check.
+// SBP and DBO must match.
 bool GSUtil::HasSharedBits(u32 sbp, u32 spsm, u32 dbp, u32 dpsm)
 {
 	return ((sbp ^ dbp) | (s_maps.SharedBitsField[dpsm][spsm >> 5] & (1 << (spsm & 0x1f)))) == 0;
 }
 
+// Shares bit depths, only detects 16/24/32 bit formats.
+// 24/32bit cross compatible, 16bit compatbile with 16bit.
 bool GSUtil::HasCompatibleBits(u32 spsm, u32 dpsm)
 {
 	return (s_maps.CompatibleBitsField[spsm][dpsm >> 5] & (1 << (dpsm & 0x1f))) != 0;
