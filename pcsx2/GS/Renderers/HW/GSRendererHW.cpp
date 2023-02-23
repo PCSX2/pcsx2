@@ -2748,10 +2748,11 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 
 	// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
 	bool accumulation_blend = !!(blend_flag & BLEND_ACCU);
-	// If alpha == 1.0, almost everything is an accumulation blend!
+	// If alpha == 1.0, it's possible to use accumulation blend.
+	// If A != D where D is 2(0.0f) then it's possible to underflow because of subtraction.
 	// Ones that use (1 + Alpha) can't guarante the mixed sw+hw blending this enables will give an identical result to sw due to clamping
 	// But enable for everything else that involves dst color
-	if (alpha_one && (m_conf.ps.blend_a != m_conf.ps.blend_d) && blend_preliminary.dst != GSDevice::CONST_ZERO)
+	if (alpha_one && (m_conf.ps.blend_a != m_conf.ps.blend_d) && (m_conf.ps.blend_d != 2) && blend_preliminary.dst != GSDevice::CONST_ZERO)
 		accumulation_blend = true;
 
 	// Blending doesn't require barrier, or sampling of the rt
