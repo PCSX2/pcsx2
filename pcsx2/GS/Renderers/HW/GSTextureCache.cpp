@@ -1005,6 +1005,7 @@ void GSTextureCache::ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVect
 				AddDirtyRectTarget(dst, r, TEX0.PSM, TEX0.TBW);
 				GetTargetHeight(TEX0.TBP0, TEX0.TBW, TEX0.PSM, aligned_height);
 				dst->UpdateValidity(r);
+				dst->UpdateValidBits(GSLocalMemory::m_psm[TEX0.PSM].fmsk);
 			}
 		}
 	}
@@ -1015,6 +1016,7 @@ void GSTextureCache::ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVect
 				static_cast<int>(dst->m_texture->GetHeight() / dst->m_texture->GetScale().y))));
 		AddDirtyRectTarget(dst, clamped_r, TEX0.PSM, TEX0.TBW);
 		dst->UpdateValidity(clamped_r);
+		dst->UpdateValidBits(GSLocalMemory::m_psm[TEX0.PSM].fmsk);
 	}
 }
 // Goal: Depth And Target at the same address is not possible. On GS it is
@@ -1699,6 +1701,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		{
 			dst->m_texture->SetScale(scale);
 			dst->UpdateValidity(GSVector4i(dx, dy, dx + w, dy + h));
+			dst->m_valid_bits = src->m_valid_bits;
 		}
 	}
 
@@ -2726,6 +2729,16 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 			return;
 	}
 
+	// Don't overwrite bits which aren't used in the target's format.
+	// Stops Burnout 3's sky from breaking when flushing targets to local memory.
+	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
+	const u32 write_mask = t->m_valid_bits & psm.fmsk;
+	if (psm.bpp > 16 && write_mask == 0)
+	{
+		Console.Warning("Not reading back target %x PSM %s due to no write mask", TEX0.TBP0, psm_str(TEX0.PSM));
+		return;
+	}
+
 	// Yes lots of logging, but I'm not confident with this code
 	GL_PUSH("Texture Cache Read. Format(0x%x)", TEX0.PSM);
 
@@ -2771,11 +2784,9 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 	{
 		case PSM_PSMCT32:
 		case PSM_PSMZ32:
-			g_gs_renderer->m_mem.WritePixel32(bits, pitch, off, r);
-			break;
 		case PSM_PSMCT24:
 		case PSM_PSMZ24:
-			g_gs_renderer->m_mem.WritePixel24(bits, pitch, off, r);
+			g_gs_renderer->m_mem.WritePixel32(bits, pitch, off, r, write_mask);
 			break;
 		case PSM_PSMCT16:
 		case PSM_PSMCT16S:
@@ -3343,6 +3354,10 @@ void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect, bool can_res
 	// GL_CACHE("UpdateValidity (0x%x->0x%x) from R:%d,%d Valid: %d,%d", m_TEX0.TBP0, m_end_block, rect.z, rect.w, m_valid.z, m_valid.w);
 }
 
+void GSTextureCache::Target::UpdateValidBits(u32 bits_written)
+{
+	m_valid_bits |= bits_written;
+}
 
 bool GSTextureCache::Target::ResizeTexture(int new_width, int new_height, bool recycle_old)
 {

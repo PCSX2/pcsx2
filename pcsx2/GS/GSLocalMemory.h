@@ -981,10 +981,15 @@ public:
 		off.loopPixels(r, vm32(), (u32*)src, pitch, [&](u32* dst, u32* src) { *dst = *src; });
 	}
 
+	void WritePixel32(u8* RESTRICT src, u32 pitch, const GSOffset& off, const GSVector4i& r, u32 write_mask)
+	{
+		off.loopPixels(r, vm32(), (u32*)src, pitch, [&](u32* dst, u32* src) { *dst = (*dst & ~write_mask) | (*src & write_mask); });
+	}
+
 	void WritePixel24(u8* RESTRICT src, u32 pitch, const GSOffset& off, const GSVector4i& r)
 	{
 		off.loopPixels(r, vm32(), (u32*)src, pitch,
-		[&](u32* dst, u32* src)
+			[&](u32* dst, u32* src)
 		{
 			*dst = (*dst & 0xff000000) | (*src & 0x00ffffff);
 		});

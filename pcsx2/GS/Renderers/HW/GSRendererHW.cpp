@@ -1959,6 +1959,8 @@ void GSRendererHW::Draw()
 		if(can_update_size)
 			rt->UpdateValidity(m_r);
 
+		rt->UpdateValidBits(~fm & fm_mask);
+
 		m_tc->InvalidateVideoMem(context->offset.fb, m_r, false, false);
 
 		m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, context->FRAME.Block());
@@ -1970,6 +1972,8 @@ void GSRendererHW::Draw()
 		// Shouldn't be a problem as Z will be masked.
 		if (can_update_size)
 			ds->UpdateValidity(m_r);
+
+		ds->UpdateValidBits(GSLocalMemory::m_psm[context->ZBUF.PSM].fmsk);
 
 		m_tc->InvalidateVideoMem(context->offset.zb, m_r, false, false);
 
