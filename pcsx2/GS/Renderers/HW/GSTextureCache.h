@@ -235,13 +235,14 @@ public:
 	{
 	public:
 		const int m_type = 0;
+		const bool m_depth_supported = false;
+		bool m_dirty_alpha = true;
+		bool m_is_frame = false;
 		bool m_used = false;
 		GSDirtyRectList m_dirty;
 		GSVector4i m_valid{};
 		GSVector4i m_drawn_since_read{};
-		const bool m_depth_supported = false;
-		bool m_dirty_alpha = true;
-		bool m_is_frame = false;
+		u32 m_valid_bits = 0;
 		int readbacks_since_draw = 0;
 
 	public:
@@ -257,6 +258,7 @@ public:
 
 		void ResizeValidity(const GSVector4i& rect);
 		void UpdateValidity(const GSVector4i& rect, bool can_resize = true);
+		void UpdateValidBits(u32 bits_written);
 
 		void Update(bool reset_age);
 
