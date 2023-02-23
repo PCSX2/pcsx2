@@ -119,8 +119,8 @@ bool GSRendererHW::UpdateTexIsFB(GSTextureCache::Target* dst, const GIFRegTEX0& 
 bool GSRendererHW::IsPossibleTextureShuffle(GSTextureCache::Target* dst, const GIFRegTEX0& TEX0) const
 {
 	return (PRIM->TME && m_vt.m_primclass == GS_SPRITE_CLASS &&
-		dst->m_32_bits_fmt && GSLocalMemory::m_psm[TEX0.PSM].bpp == 16 &&
-		GSLocalMemory::m_psm[m_context->FRAME.PSM].bpp == 16);
+			dst->m_32_bits_fmt && GSLocalMemory::m_psm[TEX0.PSM].bpp == 16 &&
+			GSLocalMemory::m_psm[m_context->FRAME.PSM].bpp == 16);
 }
 
 void GSRendererHW::SetGameCRC(u32 crc)
@@ -173,7 +173,6 @@ void GSRendererHW::VSync(u32 field, bool registers_written)
 				{
 					iter++;
 				}
-
 			}
 		}
 	}
@@ -484,7 +483,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 
 			int maxvert = 0;
 			int minvert = 4096;
-			for (u32 i = 0; i < count; i ++)
+			for (u32 i = 0; i < count; i++)
 			{
 				int YCord = 0;
 
@@ -810,7 +809,7 @@ void GSRendererHW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 		loop_w = true;
 	}
 	if (loop_h || loop_w)
-	{	
+	{
 		m_tc->InvalidateVideoMem(m_mem.GetOffset(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM), rect, eewrite);
 		if (loop_h)
 		{
@@ -847,7 +846,7 @@ void GSRendererHW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 		// If the format, and location doesn't match, but also the upload is at least the size of the target, don't preload.
 		if (iter->blit.DBP < incoming_end && GSUtil::HasSharedBits(iter->blit.DPSM, BITBLTBUF.SPSM) && ee_write_end > BITBLTBUF.SBP && iter->draw == s_n)
 		{
-			DevCon.Warning("Download from same draw as write address %x, skipping invalidation", BITBLTBUF.SBP);
+			//DevCon.Warning("Download from same draw as write address %x, skipping invalidation", BITBLTBUF.SBP);
 			return;
 		}
 	}
@@ -1363,10 +1362,10 @@ void GSRendererHW::Draw()
 	const bool no_rt = (context->ALPHA.IsCd() && PRIM->ABE && (context->FRAME.PSM == 1))
 						|| (!context->TEST.DATE && (context->FRAME.FBMSK & GSLocalMemory::m_psm[context->FRAME.PSM].fmsk) == GSLocalMemory::m_psm[context->FRAME.PSM].fmsk);
 	const bool no_ds = (
-			// Depth is always pass/fail (no read) and write are discarded (tekken 5).  (Note: DATE is currently implemented with a stencil buffer => a depth/stencil buffer)
-			(zm != 0 && m_context->TEST.ZTST <= ZTST_ALWAYS && !m_context->TEST.DATE) ||
-			// Depth will be written through the RT
-			(!no_rt && context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && zm == 0 && (fm & fm_mask) == 0 && context->TEST.ZTE));
+		// Depth is always pass/fail (no read) and write are discarded (tekken 5).  (Note: DATE is currently implemented with a stencil buffer => a depth/stencil buffer)
+		(zm != 0 && m_context->TEST.ZTST <= ZTST_ALWAYS && !m_context->TEST.DATE) ||
+		// Depth will be written through the RT
+		(!no_rt && context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && zm == 0 && (fm & fm_mask) == 0 && context->TEST.ZTE));
 
 	if (no_rt && no_ds)
 	{
@@ -1603,9 +1602,7 @@ void GSRendererHW::Draw()
 		tmm = GetTextureMinMax(TEX0, MIP_CLAMP, m_vt.IsLinear());
 
 		m_src = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage) :
-			m_tc->LookupSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, (GSConfig.HWMipmap >= HWMipmapLevel::Basic ||
-				GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr);
-
+								m_tc->LookupSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, (GSConfig.HWMipmap >= HWMipmapLevel::Basic || GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr);
 	}
 
 	GSVector2i unscaled_target_size;
@@ -1814,7 +1811,7 @@ void GSRendererHW::Draw()
 
 			pxAssert(rt->m_texture->GetScale() == up_s);
 			rt->ResizeTexture(new_w, new_h, up_s);
-			
+
 			if (!m_texture_shuffle && !m_channel_shuffle)
 			{
 				const GSVector2i tex_size = rt->m_texture->GetSize();
@@ -1853,7 +1850,7 @@ void GSRendererHW::Draw()
 
 			pxAssert(ds->m_texture->GetScale() == up_s);
 			ds->ResizeTexture(new_w, new_h, up_s);
-			
+
 			if (!m_texture_shuffle && !m_channel_shuffle)
 			{
 				const GSVector2i tex_size = ds->m_texture->GetSize();
@@ -1862,7 +1859,7 @@ void GSRendererHW::Draw()
 			}
 			// Limit to 2x the vertical height of the resolution (for double buffering)
 			ds->UpdateValidity(m_r, can_update_size || m_r.w <= (resolution.y * 2));
-			
+
 			if (!new_rect && new_height && old_end_block != ds->m_end_block)
 			{
 				GSTextureCache::Target* old_ds = nullptr;
@@ -2354,7 +2351,7 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask()
 		// fbmask is converted to a 16bit version to represent the 2 32bit channels it's writing to.
 		// The lower 8 bits represents the Red/Blue channels, the top 8 bits is Green/Alpha, depending on write_ba.
 		const u32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
-		// r = rb mask, g = ga mask 
+		// r = rb mask, g = ga mask
 		const GSVector2i rb_ga_mask = GSVector2i(fbmask & 0xFF, (fbmask >> 8) & 0xFF);
 		m_conf.colormask.wrgba = 0;
 
@@ -2773,11 +2770,10 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 	// BLEND_C_CLR1 with Ad, BLEND_C_CLR3  Cs > 0.5f will require sw blend.
 	// BLEND_C_CLR1 with As/F, BLEND_C_CLR2_AF, BLEND_C_CLR2_AS can be done in hw.
 	const bool clr_blend = !!(blend_flag & (BLEND_C_CLR1 | BLEND_C_CLR2_AF | BLEND_C_CLR2_AS | BLEND_C_CLR3));
-	bool clr_blend1_2 = (blend_flag & (BLEND_C_CLR1 | BLEND_C_CLR2_AF | BLEND_C_CLR2_AS))
-		&& (m_conf.ps.blend_c != 1)                       // Make sure it isn't an Ad case
-		&& !m_env.PABE.PABE                               // No PABE as it will require sw blending.
-		&& (m_env.COLCLAMP.CLAMP)                         // Let's add a colclamp check too, hw blend will clamp to 0-1.
-		&& !(one_barrier || m_conf.require_full_barrier); // Also don't run if there are barriers present.
+	bool clr_blend1_2 = (blend_flag & (BLEND_C_CLR1 | BLEND_C_CLR2_AF | BLEND_C_CLR2_AS)) && (m_conf.ps.blend_c != 1) // Make sure it isn't an Ad case
+						&& !m_env.PABE.PABE // No PABE as it will require sw blending.
+						&& (m_env.COLCLAMP.CLAMP) // Let's add a colclamp check too, hw blend will clamp to 0-1.
+						&& !(one_barrier || m_conf.require_full_barrier); // Also don't run if there are barriers present.
 
 	// Warning no break on purpose
 	// Note: the [[fallthrough]] attribute tell compilers not to complain about not having breaks.
@@ -3204,7 +3200,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 
 		// Remove second color output when unused. Works around bugs in some drivers (e.g. Intel).
 		m_conf.ps.no_color1 |= !GSDevice::IsDualSourceBlendFactor(m_conf.blend.src_factor) &&
-		                       !GSDevice::IsDualSourceBlendFactor(m_conf.blend.dst_factor);
+							   !GSDevice::IsDualSourceBlendFactor(m_conf.blend.dst_factor);
 	}
 
 	// DATE_PRIMID interact very badly with sw blending. DATE_PRIMID uses the primitiveID to find the primitive
@@ -3251,7 +3247,7 @@ void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 	// Redundant clamp tests are restricted to local memory/1x sources only, if we're from a target,
 	// we keep the shader clamp. See #5851 on github, and the note in Draw().
-	[[maybe_unused]] static constexpr const char* clamp_modes[] = { "REPEAT", "CLAMP", "REGION_CLAMP", "REGION_REPEAT" };
+	[[maybe_unused]] static constexpr const char* clamp_modes[] = {"REPEAT", "CLAMP", "REGION_CLAMP", "REGION_REPEAT"};
 	const bool redundant_wms = !tex->m_target && IsRedundantClamp(m_context->CLAMP.WMS, m_context->CLAMP.MINU,
 													 m_context->CLAMP.MAXU, tex->m_TEX0.TW);
 	const bool redundant_wmt = !tex->m_target && IsRedundantClamp(m_context->CLAMP.WMT, m_context->CLAMP.MINV,
@@ -3630,7 +3626,7 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	const bool DATE = m_context->TEST.DATE && m_context->FRAME.PSM != PSM_PSMCT24;
 	bool DATE_PRIMID = false;
 	bool DATE_BARRIER = false;
-	bool DATE_one  = false;
+	bool DATE_one = false;
 
 	const bool ate_first_pass = m_context->TEST.DoFirstPass();
 	const bool ate_second_pass = m_context->TEST.DoSecondPass();
@@ -4109,7 +4105,8 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 bool GSRendererHW::HasEEUpload(GSVector4i r)
 {
 	std::vector<GSState::GSUploadQueue>::iterator iter;
-	for (iter = m_draw_transfers.begin(); iter != m_draw_transfers.end(); ) {
+	for (iter = m_draw_transfers.begin(); iter != m_draw_transfers.end();)
+	{
 		if (iter->draw == (s_n - 1) && iter->blit.DBP == m_context->TEX0.TBP0 && GSUtil::HasSharedBits(iter->blit.DPSM, m_context->TEX0.PSM))
 		{
 			GSVector4i rect = r;
@@ -4190,11 +4187,12 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 
 	// Make sure it's a division of 8 in width to avoid bad draws. Points will go from 0-7 inclusive, but sprites etc will do 0-16 exclusive.
 	int draw_divder_match = false;
-	const int valid_sizes[] = { 8, 16, 32, 64 };
+	const int valid_sizes[] = {8, 16, 32, 64};
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 4; i++)
+	{
 		draw_divder_match = ((m_vt.m_primclass == GS_POINT_CLASS) ? ((static_cast<int>(m_vt.m_max.p.x + 1) & ~1) == valid_sizes[i]) : (static_cast<int>(m_vt.m_max.p.x) == valid_sizes[i]));
-		
+
 		if (draw_divder_match)
 			break;
 	}
@@ -4242,7 +4240,7 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 		}
 		else
 		{
-			if(HasEEUpload(r))
+			if (HasEEUpload(r))
 				return CLUTDrawTestResult::CLUTDrawOnCPU;
 		}
 
@@ -4250,7 +4248,7 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 		BITBLTBUF.SBP = m_context->TEX0.TBP0;
 		BITBLTBUF.SBW = m_context->TEX0.TBW;
 		BITBLTBUF.SPSM = m_context->TEX0.PSM;
-		
+
 		InvalidateLocalMem(BITBLTBUF, r);
 	}
 	// Debugging stuff..
