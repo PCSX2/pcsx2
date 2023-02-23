@@ -2867,7 +2867,8 @@ SCES-50295:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes mipmapping.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
 SCES-50300:
   name: "Time Crisis 2"
@@ -3900,7 +3901,7 @@ SCES-53305:
   region: "PAL-M4"
 SCES-53307:
   name: "Buzz! The Music Quiz"
-  region: "PAL-M4"
+  region: "PAL-SC"
 SCES-53308:
   name: "Buzz! The Music Quiz"
   region: "PAL-P-S"
@@ -5558,7 +5559,8 @@ SCPS-15004:
   name: "Dark Cloud"
   region: "NTSC-J"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes mipmapping.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
 SCPS-15005:
   name: "Phase Paradox"
@@ -6275,7 +6277,8 @@ SCPS-19203:
   name: "Dark Cloud [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes mipmapping.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
 SCPS-19204:
   name: "Legaia - Duel Saga [PlayStation 2 The Best]"
@@ -7045,7 +7048,8 @@ SCUS-97111:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes mipmapping.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
 SCUS-97112:
   name: "Extermination"
@@ -7213,7 +7217,8 @@ SCUS-97152:
   name: "Dark Cloud [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Fixes mipmapping.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
 SCUS-97153:
   name: "Vans Warped Tour '01 [Demo]"
@@ -15908,18 +15913,21 @@ SLES-52895:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
+    textureInsideRT: 1 # Helps align bloom when upscaling.
 SLES-52896:
   name: "Spongebob SquarePants - The Movie"
   region: "PAL-F-G"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
+    textureInsideRT: 1 # Helps align bloom when upscaling.
 SLES-52897:
   name: "Spongebob SquarePants - The Movie"
   region: "PAL-I"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
+    textureInsideRT: 1 # Helps align bloom when upscaling.
 SLES-52898:
   name: "King of Fighters - Maximum Impact"
   region: "PAL-E-JP"
@@ -16161,12 +16169,14 @@ SLES-52985:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
+    textureInsideRT: 1 # Helps align bloom when upscaling.
 SLES-52986:
   name: "Bob Esponja - La Película"
   region: "PAL-S"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
+    textureInsideRT: 1 # Helps align bloom when upscaling.
 SLES-52988:
   name: "Mega Man X8"
   region: "PAL-M5"
@@ -21023,7 +21033,7 @@ SLES-54860:
     vu1RoundMode: 0 # Massages the Z on the score meter for hardware mode, software doesn't really need this.
 SLES-54861:
   name: "Thomas & Friends - A Day at the Races"
-  region: "PAL-M5"
+  region: "PAL-SC"
 SLES-54863:
   name: "Thomas & Friends - A Day at the Races"
   region: "PAL-M2"
@@ -21392,6 +21402,9 @@ SLES-54986:
   region: "PAL-E-F"
   gsHWFixes:
     halfPixelOffset: 3 # Removes ghosting of bloom and shadows.
+SLES-54987:
+  name: "Bratz - The Movie"
+  region: "PAL-SC"
 SLES-54988:
   name: "Bratz - The Movie"
   region: "PAL-G"
@@ -21739,7 +21752,7 @@ SLES-55126:
   region: "PAL-M6"
   gsHWFixes:
     autoFlush: 1 # Fixes certains font colors.
-    halfPixelOffset: 1 # Fixes lighting misalignment.
+    halfPixelOffset: 2 # Fixes lighting misalignment.
     alignSprite: 1 # Fixes almost all vertical lines.
 SLES-55129:
   name: "Jumper - Griffin's Story"
@@ -22009,7 +22022,7 @@ SLES-55220:
   region: "PAL-M5"
 SLES-55227:
   name: "Legend of Spyro, The - Dawn of the Dragon"
-  region: "PAL-M5"
+  region: "PAL-SC"
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting and bloom misalignment.
@@ -22213,6 +22226,9 @@ SLES-55293:
 SLES-55294:
   name: "Ferrari Challenge - Trofeo Pirelli"
   region: "PAL-M5"
+  gsHWFixes:
+    autoFlush: 1 # Fixes lack of bloom intensity.
+    halfPixelOffset: 1 # Fixes misaligned bloom and rainbow garbage at edges.
 SLES-55295:
   name: "Score International Baja 1000 - World Championship Off Road Racing"
   region: "PAL-E"
@@ -22770,7 +22786,7 @@ SLES-55582:
     trilinearFiltering: 1 # Smoothes out mipmapping.
 SLES-55583:
   name: "FIFA 10"
-  region: "PAL-M4"
+  region: "PAL-SC"
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
@@ -33622,7 +33638,7 @@ SLPM-66662:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 1 # Fixes certains font colors.
-    halfPixelOffset: 1 # Fixes lighting misalignment.
+    halfPixelOffset: 2 # Fixes lighting misalignment.
     alignSprite: 1 # Fixes almost all vertical lines.
 SLPM-66663:
   name: "Phantasy Star Universe - Ambition of the Illuminus"
@@ -40013,6 +40029,12 @@ SLPS-25899:
 SLPS-25902:
   name: "Junjou Romantica - Koi no Doki Doki Daisakusen"
   region: "NTSC-J"
+SLPS-25903:
+  name: "Magician's Academy, The [eb! Kore]"
+  region: "NTSC-J"
+SLPS-25904:
+  name: "Katekyoo Hitman Reborn! Kindan no Yami no Delta"
+  region: "NTSC-J"
 SLPS-25905:
   name: "Dragon Ball Z - Infinite World"
   region: "NTSC-J"
@@ -44886,6 +44908,7 @@ SLUS-20904:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
+    textureInsideRT: 1 # Helps align bloom when upscaling.
 SLUS-20905:
   name: "Incredibles, The"
   region: "NTSC-U"
@@ -48298,7 +48321,7 @@ SLUS-21551:
   compat: 5
   gsHWFixes:
     autoFlush: 1 # Fixes certains font colors.
-    halfPixelOffset: 1 # Fixes lighting misalignment.
+    halfPixelOffset: 2 # Fixes lighting misalignment.
     alignSprite: 1 # Fixes almost all vertical lines.
 SLUS-21552:
   name: "Spider-Man 3"
@@ -49430,9 +49453,12 @@ SLUS-21779:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness when upscaling.
 SLUS-21780:
-  name: "Ferrari Challenge"
+  name: "Ferrari Challenge - Trofeo Pirelli"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes lack of bloom intensity.
+    halfPixelOffset: 1 # Fixes misaligned bloom and rainbow garbage at edges.
 SLUS-21781:
   name: "Guitar Hero - World Tour"
   region: "NTSC-U"
