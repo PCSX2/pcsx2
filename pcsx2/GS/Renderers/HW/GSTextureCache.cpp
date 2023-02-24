@@ -2830,6 +2830,9 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 
 void GSTextureCache::Read(Source* t, const GSVector4i& r)
 {
+	if (r.rempty())
+		return;
+
 	const GSVector4i drc(0, 0, r.width(), r.height());
 
 	if (!PrepareDownloadTexture(drc.z, drc.w, GSTexture::Format::Color, &m_color_download_texture))
