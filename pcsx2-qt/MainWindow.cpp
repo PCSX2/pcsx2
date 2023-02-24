@@ -737,6 +737,41 @@ void MainWindow::setStyleFromSettings()
 
 		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
 	}
+	else if (theme == "CobaltSky")
+	{
+		// Custom palette by KamFretoZ, A soothing deep royal blue 
+		// that are meant to be easy on the eyes as the main color.
+		// Alternative dark theme.
+		qApp->setStyle(QStyleFactory::create("Fusion"));
+
+		const QColor gray(192, 192, 192);
+		const QColor royalBlue(29, 41, 81);
+		const QColor darkishBlue(17, 30, 108);
+
+		QPalette darkPalette;
+		darkPalette.setColor(QPalette::Window, royalBlue);
+		darkPalette.setColor(QPalette::WindowText, Qt::white);
+		darkPalette.setColor(QPalette::Base, royalBlue.lighter());
+		darkPalette.setColor(QPalette::AlternateBase, royalBlue);
+		darkPalette.setColor(QPalette::ToolTipBase, darkishBlue);
+		darkPalette.setColor(QPalette::ToolTipText, Qt::white);
+		darkPalette.setColor(QPalette::Text, Qt::white);
+		darkPalette.setColor(QPalette::Button, royalBlue.darker());
+		darkPalette.setColor(QPalette::ButtonText, Qt::white);
+		darkPalette.setColor(QPalette::Link, Qt::white);
+		darkPalette.setColor(QPalette::Highlight, darkishBlue.lighter());
+		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
+
+		darkPalette.setColor(QPalette::Active, QPalette::Button, darkishBlue);
+		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
+		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
+		darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray);
+		darkPalette.setColor(QPalette::Disabled, QPalette::Light, gray.darker());
+
+		qApp->setPalette(darkPalette);
+
+		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
+	}
 	else if (theme == "VioletAngelPurple")
 	{
 		// Custom palette by RedDevilus, Blue as main color and Purple as complimentary.
