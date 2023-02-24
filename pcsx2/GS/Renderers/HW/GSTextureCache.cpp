@@ -1210,6 +1210,9 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 	const u32 end_bp = off.bn(rect.z - 1, rect.w - 1);
 	const u32 unwrapped_end_bp = end_bp + ((end_bp < bp) ? MAX_BLOCKS : 0);
 
+	// Ideally in the future we can turn this on unconditionally, but for now it breaks too much.
+	const bool check_inside_target = (GSConfig.UserHacks_TargetPartialInvalidation || GSConfig.UserHacks_TextureInsideRt);
+
 	for (int type = 0; type < 2; type++)
 	{
 		auto& list = m_dst[type];
@@ -1355,17 +1358,11 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					const u32 rowsize = bw * 8192;
 					const u32 offset = static_cast<u32>((t->m_TEX0.TBP0 - bp) * 256);
 
-					// This grossness is needed to fix incorrect invalidations in True Crime: New York City.
-					// Because it's writing tiny texture blocks (which are later decompressed) over previous targets,
-					// we need to be ensure said targets are invalidated, otherwise the SW prim render path won't be
-					// triggered. This whole thing needs rewriting anyway, because it can't handle non-page-aligned
-					// writes, but for now we'll just use the unsafer logic when the TC hack is enabled.
-					const bool start_of_page = rowsize > 0 && (offset % rowsize == 0);
-					if (start_of_page || (rowsize > 0 && GSConfig.UserHacks_CPUSpriteRenderBW != 0))
+					if (rowsize > 0 && offset % rowsize == 0)
 					{
 						int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
 
-						if (r.bottom > y && (start_of_page || r.top >= y))
+						if (r.bottom > y)
 						{
 							GL_CACHE("TC: Dirty After Target(%s) %d (0x%x)", to_string(type),
 								t->m_texture ? t->m_texture->GetID() : 0,
@@ -1410,7 +1407,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 						continue;
 					}
 				}
-				else if (GSConfig.UserHacks_TextureInsideRt && t->Overlaps(bp, bw, psm, rect) && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
+				else if (check_inside_target && t->Overlaps(bp, bw, psm, rect) && GSUtil::HasSharedBits(psm, t->m_TEX0.PSM))
 				{
 					SurfaceOffsetKey sok;
 					sok.elems[0].bp = bp;

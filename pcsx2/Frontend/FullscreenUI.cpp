@@ -3196,6 +3196,10 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			DrawToggleSetting(bsi, "Texture Inside Render Target",
 				"Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer.", "EmuCore/GS",
 				"UserHacks_TextureInsideRt", false, manual_hw_fixes);
+			DrawToggleSetting(bsi, "Target Partial Invalidation",
+				"Allows partial invalidation of render targets, which can fix graphical errors in some games.", "EmuCore/GS",
+				"UserHacks_TargetPartialInvalidation", false,
+				!GetEffectiveBoolSetting(bsi, "EmuCore/GS", "UserHacks_TextureInsideRt", false));
 			DrawToggleSetting(bsi, "Read Targets When Closing",
 				"Flushes all targets in the texture cache back to local memory when shutting down.", "EmuCore/GS",
 				"UserHacks_ReadTCOnClose", false, manual_hw_fixes);

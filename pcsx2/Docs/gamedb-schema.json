@@ -151,6 +151,11 @@
               "minimum": 0,
               "maximum": 1
             },
+            "partialTargetInvalidation": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
             "textureInsideRT": {
               "type": "integer",
               "minimum": 0,

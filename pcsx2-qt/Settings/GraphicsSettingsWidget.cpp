@@ -178,8 +178,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		&GraphicsSettingsWidget::onTrilinearFilteringChanged);
 	connect(m_ui.gpuPaletteConversion, QOverload<int>::of(&QCheckBox::stateChanged), this,
 		&GraphicsSettingsWidget::onGpuPaletteConversionChanged);
+	connect(m_ui.textureInsideRt, QOverload<int>::of(&QCheckBox::stateChanged), this,
+		&GraphicsSettingsWidget::onTextureInsideRtChanged);
 	onTrilinearFilteringChanged();
 	onGpuPaletteConversionChanged(m_ui.gpuPaletteConversion->checkState());
+	onTextureInsideRtChanged(m_ui.textureInsideRt->checkState());
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Renderer Fixes
@@ -199,6 +202,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		sif, m_ui.disablePartialInvalidation, "EmuCore/GS", "UserHacks_DisablePartialInvalidation", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.textureInsideRt, "EmuCore/GS", "UserHacks_TextureInsideRt", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.readTCOnClose, "EmuCore/GS", "UserHacks_ReadTCOnClose", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.targetPartialInvalidation, "EmuCore/GS", "UserHacks_TargetPartialInvalidation", false);
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Upscaling Fixes
@@ -523,7 +527,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			   "Disables accurate GS Memory Clearing to be done on the CPU, and let the GPU handle it, which can help Kingdom Hearts "
 			   "games."));
 
-		dialog->registerWidgetHelp(m_ui.disablePartialInvalidation, tr("Disable Partial Invalidation"), tr("Unchecked"),
+		dialog->registerWidgetHelp(m_ui.disablePartialInvalidation, tr("Disable Partial Source Invalidation"), tr("Unchecked"),
 			tr("By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise. "
 			   "This hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load. "
 			   "It helps snowblind engine games."));
@@ -536,12 +540,15 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			   "Fixes black screen issues in games like Armored Core: Last Raven."));
 
 		dialog->registerWidgetHelp(m_ui.textureInsideRt, tr("Texture Inside RT"), tr("Unchecked"),
-			tr("Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer. "
-			   "In some selected games this is enabled by default regardless of this setting."));
+			tr("Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer."));
 
 		dialog->registerWidgetHelp(m_ui.readTCOnClose, tr("Read Targets When Closing"), tr("Unchecked"),
 			tr("Flushes all targets in the texture cache back to local memory when shutting down. Can prevent lost visuals when saving "
 			   "state or switching renderers, but can also cause graphical corruption."));
+
+		dialog->registerWidgetHelp(m_ui.targetPartialInvalidation, tr("Target Partial Invalidation"), tr("Unchecked"),
+			tr("Allows partial invalidation of render targets, which can fix graphical errors in some games. Texture Inside Render Target "
+			   "automatically enables this option."));
 	}
 
 	// Upscaling Fixes tab
@@ -844,9 +851,19 @@ void GraphicsSettingsWidget::onEnableAudioCaptureArgumentsChanged()
 
 void GraphicsSettingsWidget::onGpuPaletteConversionChanged(int state)
 {
-	const bool enabled = state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("EmuCore/GS", "paltex", false) : state;
+	const bool disabled =
+		state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("EmuCore/GS", "paltex", false) : (state != 0);
 
-	m_ui.anisotropicFiltering->setEnabled(!enabled);
+	m_ui.anisotropicFiltering->setDisabled(disabled);
+}
+
+void GraphicsSettingsWidget::onTextureInsideRtChanged(int state)
+{
+	const bool disabled = state == Qt::CheckState::PartiallyChecked ?
+							  Host::GetBaseBoolSettingValue("EmuCore/GS", "UserHacks_TextureInsideRt", false) :
+							  (state != 0);
+
+	m_ui.targetPartialInvalidation->setDisabled(disabled);
 }
 
 GSRendererType GraphicsSettingsWidget::getEffectiveRenderer() const

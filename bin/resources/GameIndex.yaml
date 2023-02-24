@@ -17799,9 +17799,12 @@ SLES-53616:
     eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
-    preloadFrameData: 1 # Fixes static text screens.
+    partialTargetInvalidation: 1 # Needed due to procedural textures overlapping EE writes.
+    preloadFrameData: 1 # Fixes numberplates and ensures above targets are valid.
     roundSprite: 1 # Fixes lines in some post-effects.
-    cpuCLUTRender: 1 # Fixes light occlusion.
+    gpuTargetCLUT: 1 # Fixes light occlusion.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53617:
   name: "True Crime - New York City"
   region: "PAL-G"
@@ -17811,9 +17814,12 @@ SLES-53617:
     eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
-    preloadFrameData: 1 # Fixes static text screens.
+    partialTargetInvalidation: 1 # Needed due to procedural textures overlapping EE writes.
+    preloadFrameData: 1 # Fixes numberplates and ensures above targets are valid.
     roundSprite: 1 # Fixes lines in some post-effects.
-    cpuCLUTRender: 1 # Fixes light occlusion.
+    gpuTargetCLUT: 1 # Fixes light occlusion.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53618:
   name: "True Crime - New York City"
   region: "PAL-S"
@@ -17823,9 +17829,12 @@ SLES-53618:
     eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
-    preloadFrameData: 1 # Fixes static text screens.
+    partialTargetInvalidation: 1 # Needed due to procedural textures overlapping EE writes.
+    preloadFrameData: 1 # Fixes numberplates and ensures above targets are valid.
     roundSprite: 1 # Fixes lines in some post-effects.
-    cpuCLUTRender: 1 # Fixes light occlusion.
+    gpuTargetCLUT: 1 # Fixes light occlusion.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53621:
   name: "Wallace & Gromit - The Curse of the Were-Rabbit"
   region: "PAL-M5"
@@ -32922,9 +32931,12 @@ SLPM-66473:
     eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
-    preloadFrameData: 1 # Fixes static text screens.
+    partialTargetInvalidation: 1 # Needed due to procedural textures overlapping EE writes.
+    preloadFrameData: 1 # Fixes numberplates and ensures above targets are valid.
     roundSprite: 1 # Fixes lines in some post-effects.
-    cpuCLUTRender: 1 # Fixes light occlusion.
+    gpuTargetCLUT: 1 # Fixes light occlusion.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-66474:
   name: "Odin Sphere"
   region: "NTSC-J"
@@ -35287,9 +35299,12 @@ SLPM-74243:
     eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
-    preloadFrameData: 1 # Fixes static text screens.
+    partialTargetInvalidation: 1 # Needed due to procedural textures overlapping EE writes.
+    preloadFrameData: 1 # Fixes numberplates and ensures above targets are valid.
     roundSprite: 1 # Fixes lines in some post-effects.
-    cpuCLUTRender: 1 # Fixes light occlusion.
+    gpuTargetCLUT: 1 # Fixes light occlusion.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-74244:
   name: "Phantasy Star Universe [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -45988,9 +46003,12 @@ SLUS-21106:
     eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
-    preloadFrameData: 1 # Fixes static text screens.
+    partialTargetInvalidation: 1 # Needed due to procedural textures overlapping EE writes.
+    preloadFrameData: 1 # Fixes numberplates and ensures above targets are valid.
     roundSprite: 1 # Fixes lines in some post-effects.
-    cpuCLUTRender: 1 # Fixes light occlusion.
+    gpuTargetCLUT: 1 # Fixes light occlusion.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21107:
   name: "X-Men - The Official Game"
   region: "NTSC-U"
