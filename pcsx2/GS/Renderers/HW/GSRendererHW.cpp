@@ -4560,7 +4560,7 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 
 		// Copy back the texture into the GS mem. I don't know why but it will be
 		// reuploaded again later
-		m_tc->Read(tex, r_texture);
+		m_tc->Read(tex, r_texture.rintersect(tex->m_texture->GetRect()));
 
 		m_tc->InvalidateVideoMemSubTarget(_rt);
 
