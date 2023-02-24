@@ -4322,7 +4322,20 @@ bool GSRendererHW::CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_t
 	// will use a much smaller block size than the framebuffer.
 	GSTextureCache::Target* src_target = m_tc->GetTargetWithSharedBits(m_context->TEX0.TBP0, m_context->TEX0.PSM);
 	if (src_target && src_target->m_TEX0.TBW == m_context->TEX0.TBW)
+	{
+		// If the EE has written over our sample area, we're fine to do this on the CPU, despite the target.
+		if (!src_target->m_dirty.empty())
+		{
+			const GSVector4i tr(GetTextureMinMax(m_context->TEX0, m_context->CLAMP, m_vt.IsLinear()).coverage);
+			for (GSDirtyRect& rc : src_target->m_dirty)
+			{
+				if (!rc.GetDirtyRect(m_context->TEX0).rintersect(tr).rempty())
+					return true;
+			}
+		}
+
 		return false;
+	}
 
 	// We can use the sw prim render path!
 	return true;
