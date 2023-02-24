@@ -427,6 +427,8 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("DDE ");
 		if (GSConfig.UserHacks_DisablePartialInvalidation)
 			APPEND("DPIV ");
+		if (GSConfig.UserHacks_TargetPartialInvalidation)
+			APPEND("TPV ");
 		if (GSConfig.UserHacks_DisableSafeFeatures)
 			APPEND("DSF ");
 		if (GSConfig.WrapGSMem)

@@ -67,6 +67,7 @@ namespace GameDatabaseSchema
 		WrapGSMem,
 		PreloadFrameData,
 		DisablePartialInvalidation,
+		TargetPartialInvalidation,
 		TextureInsideRT,
 		AlignSprite,
 		MergeSprite,
