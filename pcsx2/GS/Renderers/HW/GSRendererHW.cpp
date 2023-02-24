@@ -1296,10 +1296,6 @@ void GSRendererHW::Draw()
 	// skip alpha test if possible
 	// Note: do it first so we know if frame/depth writes are masked
 
-	const GIFRegTEST TEST = context->TEST;
-	const GIFRegFRAME FRAME = context->FRAME;
-	const GIFRegZBUF ZBUF = context->ZBUF;
-
 	u32 fm = context->FRAME.FBMSK;
 	u32 zm = context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
 	const u32 fm_mask = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
@@ -1359,13 +1355,25 @@ void GSRendererHW::Draw()
 	// 2/ SuperMan really draws (0,0,0,0) color and a (0) 32-bits depth
 	// 3/ 50cents really draws (0,0,0,128) color and a (0) 24 bits depth
 	// Note: FF DoC has both buffer at same location but disable the depth test (write?) with ZTE = 0
+	const u32 max_z = (0xFFFFFFFF >> (GSLocalMemory::m_psm[context->ZBUF.PSM].fmt * 8));
 	const bool no_rt = (context->ALPHA.IsCd() && PRIM->ABE && (context->FRAME.PSM == 1))
 						|| (!context->TEST.DATE && (context->FRAME.FBMSK & GSLocalMemory::m_psm[context->FRAME.PSM].fmsk) == GSLocalMemory::m_psm[context->FRAME.PSM].fmsk);
 	const bool no_ds = (
-		// Depth is always pass/fail (no read) and write are discarded (tekken 5).  (Note: DATE is currently implemented with a stencil buffer => a depth/stencil buffer)
-		(zm != 0 && m_context->TEST.ZTST <= ZTST_ALWAYS && !m_context->TEST.DATE) ||
+		// Depth is always pass/fail (no read) and write are discarded.
+		(zm != 0 && context->TEST.ZTST <= ZTST_ALWAYS) ||
+		// Depth test will always pass
+		(zm != 0 && context->TEST.ZTST == ZTST_GEQUAL && m_vt.m_eq.z && std::min(m_vertex.buff[0].XYZ.Z, max_z) == max_z) ||
 		// Depth will be written through the RT
 		(!no_rt && context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && zm == 0 && (fm & fm_mask) == 0 && context->TEST.ZTE));
+
+	// No Z test if no z buffer.
+	if (no_ds)
+	{
+		if (context->TEST.ZTST != ZTST_ALWAYS)
+			GL_CACHE("Disabling Z buffer because all tests will pass.");
+
+		context->TEST.ZTST = ZTST_ALWAYS;
+	}
 
 	if (no_rt && no_ds)
 	{
@@ -1381,7 +1389,7 @@ void GSRendererHW::Draw()
 	if (CanUseSwPrimRender(no_rt, no_ds, draw_sprite_tex) && SwPrimRender(*this, true))
 	{
 		GL_CACHE("Possible texture decompression, drawn with SwPrimRender() (BP %x BW %u TBP0 %x TBW %u)",
-			m_context->FRAME.Block(), m_context->FRAME.FBMSK, m_context->TEX0.TBP0, m_context->TEX0.TBW);
+			context->FRAME.Block(), context->FRAME.FBMSK, context->TEX0.TBP0, context->TEX0.TBW);
 		return;
 	}
 
@@ -1999,12 +2007,6 @@ void GSRendererHW::Draw()
 
 	//
 
-	context->TEST = TEST;
-	context->FRAME = FRAME;
-	context->ZBUF = ZBUF;
-
-	//
-
 	// Temporary source *must* be invalidated before normal, because otherwise it'll be double freed.
 	m_tc->InvalidateTemporarySource();
 
@@ -2281,14 +2283,6 @@ void GSRendererHW::EmulateZbuffer()
 			m_conf.cb_ps.TA_MaxDepth_Af.z = static_cast<float>(max_z) * (g_gs_device->Features().clip_control ? 0x1p-32f : 0x1p-24f);
 			m_conf.ps.zclamp = 1;
 		}
-	}
-
-	const GSVertex* v = &m_vertex.buff[0];
-	// Minor optimization of a corner case (it allow to better emulate some alpha test effects)
-	if (m_conf.depth.ztst == ZTST_GEQUAL && m_vt.m_eq.z && v[0].XYZ.Z == max_z)
-	{
-		GL_DBG("Optimize Z test GEQUAL to ALWAYS (%s)", psm_str(m_context->ZBUF.PSM));
-		m_conf.depth.ztst = ZTST_ALWAYS;
 	}
 }
 
@@ -3790,6 +3784,15 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	m_conf.datm = m_context->TEST.DATM;
 
+	// If we're doing stencil DATE and we don't have a depth buffer, we need to allocate a temporary one.
+	GSTexture* temp_ds = nullptr;
+	if (m_conf.destination_alpha >= GSHWDrawConfig::DestinationAlphaMode::Stencil &&
+		m_conf.destination_alpha <= GSHWDrawConfig::DestinationAlphaMode::StencilOne && !m_conf.ds)
+	{
+		temp_ds = g_gs_device->CreateDepthStencil(rt->GetWidth(), rt->GetHeight(), GSTexture::Format::DepthStencil, false);
+		m_conf.ds = temp_ds;
+	}
+
 	// vs
 
 	m_conf.vs.tme = PRIM->TME;
@@ -4098,6 +4101,9 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	m_conf.drawlist = (m_conf.require_full_barrier && m_vt.m_primclass == GS_SPRITE_CLASS) ? &m_drawlist : nullptr;
 
 	g_gs_device->RenderHW(m_conf);
+
+	if (temp_ds)
+		g_gs_device->Recycle(temp_ds);
 }
 
 // If the EE uploaded a new CLUT since the last draw, use that.

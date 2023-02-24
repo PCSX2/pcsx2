@@ -2540,7 +2540,8 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// avoid restarting the render pass just to switch from rt+depth to rt and vice versa
-	if (m_in_render_pass && !hdr_rt && !draw_ds && m_current_depth_target && m_current_render_target == draw_rt && config.tex != m_current_depth_target)
+	if (m_in_render_pass && !hdr_rt && !draw_ds && m_current_depth_target && m_current_render_target == draw_rt &&
+		config.tex != m_current_depth_target && m_current_depth_target->GetSize() == draw_rt->GetSize())
 	{
 		draw_ds = m_current_depth_target;
 		m_pipeline_selector.ds = true;
