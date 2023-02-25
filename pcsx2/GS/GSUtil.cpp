@@ -152,6 +152,22 @@ bool GSUtil::HasCompatibleBits(u32 spsm, u32 dpsm)
 	return (s_maps.CompatibleBitsField[spsm][dpsm >> 5] & (1 << (dpsm & 0x1f))) != 0;
 }
 
+u32 GSUtil::GetChannelMask(u32 spsm)
+{
+	switch (spsm)
+	{
+		case PSM_PSMCT24:
+		case PSM_PSMZ24:
+			return 0x7;
+		case PSM_PSMT8H:
+		case PSM_PSMT4HH: // This sucks, I'm sorry, but we don't have a way to do half channels
+		case PSM_PSMT4HL: // So uuhh TODO I guess.
+			return 0x8;
+		default:
+			return 0xf;
+	}
+}
+
 CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)
 {
 	return (type == GSRendererType::DX11 || type == GSRendererType::DX12) ? CRCHackLevel::Full : CRCHackLevel::Partial;
