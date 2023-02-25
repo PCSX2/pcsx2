@@ -1600,35 +1600,27 @@ bool GSDeviceOGL::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, con
 
 void GSDeviceOGL::OMAttachRt(GSTextureOGL* rt)
 {
-	GLuint id = 0;
 	if (rt)
-	{
 		rt->WasAttached();
-		id = rt->GetID();
-	}
 
-	if (GLState::rt != id)
+	if (GLState::rt != rt)
 	{
-		GLState::rt = id;
-		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id, 0);
+		GLState::rt = rt;
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt ? rt->GetID() : 0, 0);
 	}
 }
 
 void GSDeviceOGL::OMAttachDs(GSTextureOGL* ds)
 {
-	GLuint id = 0;
 	if (ds)
-	{
 		ds->WasAttached();
-		id = ds->GetID();
-	}
 
-	if (GLState::ds != id)
+	if (GLState::ds != ds)
 	{
-		GLState::ds = id;
+		GLState::ds = ds;
 
 		const GLenum target = m_features.framebuffer_fetch ? GL_DEPTH_ATTACHMENT : GL_DEPTH_STENCIL_ATTACHMENT;
-		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, target, GL_TEXTURE_2D, id, 0);
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, target, GL_TEXTURE_2D, ds ? ds->GetID() : 0, 0);
 	}
 }
 
@@ -1655,6 +1647,14 @@ void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
 
 		glColorMaski(0, sel.wr, sel.wg, sel.wb, sel.wa);
 	}
+}
+
+void GSDeviceOGL::OMUnbindTexture(GSTextureOGL* tex)
+{
+	if (GLState::rt == tex)
+		OMAttachRt();
+	if (GLState::ds == tex)
+		OMAttachDs();
 }
 
 void GSDeviceOGL::OMSetBlendState(bool enable, GLenum src_factor, GLenum dst_factor, GLenum op, bool is_constant, u8 constant)
@@ -1968,8 +1968,21 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		s_gl_blend_factors[config.blend.dst_factor], s_gl_blend_ops[config.blend.op],
 		config.blend.constant_enable, config.blend.constant);
 	OMSetColorMaskState(config.colormask);
+
+	// avoid changing framebuffer just to switch from rt+depth to rt and vice versa
+	GSTexture* draw_rt = hdr_rt ? hdr_rt : config.rt;
+	GSTexture* draw_ds = config.ds;
+	if (!draw_ds && GLState::ds && GLState::rt == draw_rt && config.tex != GLState::ds &&
+		GLState::ds->GetSize() == draw_rt->GetSize())
+	{
+		// should already be always-pass.
+		draw_ds = GLState::ds;
+		config.depth.ztst = ZTST_ALWAYS;
+		config.depth.zwe = false;
+	}
+
+	OMSetRenderTargets(draw_rt, draw_ds, &config.scissor);
 	SetupOM(config.depth);
-	OMSetRenderTargets(hdr_rt ? hdr_rt : config.rt, config.ds, &config.scissor);
 
 	SendHWDraw(config, psel.ps.IsFeedbackLoop());
 
