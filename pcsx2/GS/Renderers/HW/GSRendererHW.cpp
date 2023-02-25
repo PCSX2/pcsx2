@@ -1626,7 +1626,10 @@ void GSRendererHW::Draw()
 	GSTextureCache::Target* rt = nullptr;
 	if (!no_rt)
 	{
-		const bool is_square = (unscaled_target_size.y == unscaled_target_size.x) && m_r.w >= 1024 && m_vertex.next;
+		// Normally we would use 1024 here to match the clear above, but The Godfather does a 1023x1023 draw instead
+		// (very close to 1024x1024, but apparently the GS rounds down..). So, catch that here, we don't want to
+		// create that target, because the clear isn't black, it'll hang around and never get invalidated.
+		const bool is_square = (unscaled_target_size.y == unscaled_target_size.x) && m_r.w >= 1023 && m_vertex.next == 2;
 		rt = m_tc->LookupTarget(TEX0, t_size, GSTextureCache::RenderTarget, true, fm, false, unscaled_target_size.x, unscaled_target_size.y, force_preload, IsConstantDirectWriteMemClear(false) && is_square);
 
 		// Draw skipped because it was a clear and there was no target.
