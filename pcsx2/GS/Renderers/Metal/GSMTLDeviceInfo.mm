@@ -4,12 +4,19 @@
 #include "GSMTLDeviceInfo.h"
 #include "GS/GS.h"
 #include "common/Console.h"
+#include "common/Path.h"
 
 #ifdef __APPLE__
 
 static id<MTLLibrary> loadMainLibrary(id<MTLDevice> dev, NSString* name)
 {
 	NSString* path = [[NSBundle mainBundle] pathForResource:name ofType:@"metallib"];
+	if (!path)
+	{
+		std::string ssname = std::string([name UTF8String]) + ".metallib";
+		std::string sspath = Path::Combine(EmuFolders::Resources, ssname);
+		path = [[NSString alloc] initWithBytes:sspath.data() length:sspath.length() encoding:NSUTF8StringEncoding];
+	}
 	return path ? [dev newLibraryWithFile:path error:nullptr] : nullptr;
 }
 
@@ -24,6 +31,8 @@ static MRCOwned<id<MTLLibrary>> loadMainLibrary(id<MTLDevice> dev)
 	if (@available(macOS 10.14, iOS 12.0, *))
 		if (id<MTLLibrary> lib = loadMainLibrary(dev, @"Metal21"))
 			return MRCTransfer(lib);
+	if (id<MTLLibrary> lib = loadMainLibrary(dev, @"default"))
+		return MRCTransfer(lib);
 	return MRCTransfer([dev newDefaultLibrary]);
 }
 

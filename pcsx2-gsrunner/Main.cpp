@@ -16,6 +16,7 @@
 #include "fmt/format.h"
 
 #include "common/Assertions.h"
+#include "common/CocoaTools.h"
 #include "common/Console.h"
 #include "common/CrashHandler.h"
 #include "common/FileSystem.h"
@@ -1031,4 +1032,46 @@ int wmain(int argc, wchar_t** argv)
 	return real_main(argc, u8_argptrs.data());
 }
 
-#endif // _WIN32
+#elif defined(__APPLE__)
+
+static void* s_window;
+static WindowInfo s_wi;
+
+bool GSRunner::CreatePlatformWindow()
+{
+	pxAssertRel(!s_window, "Tried to create window when there already was one!");
+	s_window = CocoaTools::CreateWindow("PCSX2 GS Runner", WINDOW_WIDTH, WINDOW_HEIGHT);
+	CocoaTools::GetWindowInfoFromWindow(&s_wi, s_window);
+	PumpPlatformMessages();
+	return s_window;
+}
+
+void GSRunner::DestroyPlatformWindow()
+{
+	if (s_window) {
+		CocoaTools::DestroyWindow(s_window);
+		s_window = nullptr;
+	}
+}
+
+std::optional<WindowInfo> GSRunner::GetPlatformWindowInfo()
+{
+	WindowInfo wi;
+	if (s_window)
+		wi = s_wi;
+	else
+		wi.type = WindowInfo::Type::Surfaceless;
+	return wi;
+}
+
+void GSRunner::PumpPlatformMessages(bool forever)
+{
+	CocoaTools::RunCocoaEventLoop(forever);
+}
+
+void GSRunner::StopPlatformMessagePump()
+{
+	CocoaTools::StopMainThreadEventLoop();
+}
+
+#endif // _WIN32 / __APPLE__
