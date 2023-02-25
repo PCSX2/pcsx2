@@ -174,12 +174,10 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 
 GSTextureOGL::~GSTextureOGL()
 {
-	/* Unbind the texture from our local state */
+	// Textures aren't cleared from attachments on deletion.
+	GSDeviceOGL::GetInstance()->OMUnbindTexture(this);
 
-	if (m_texture_id == GLState::rt)
-		GLState::rt = 0;
-	if (m_texture_id == GLState::ds)
-		GLState::ds = 0;
+	// But they are unbound.
 	for (GLuint& tex : GLState::tex_unit)
 	{
 		if (m_texture_id == tex)
