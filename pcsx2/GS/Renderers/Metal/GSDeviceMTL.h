@@ -287,7 +287,7 @@ public:
 			bool blend_color  : 1;
 			bool pipeline_sel : 1;
 			bool sampler      : 1;
-		} has;
+		} has = {};
 		DepthStencilSelector depth_sel = DepthStencilSelector::NoDepth();
 		// Clear line (Things below here are tracked by `has` and don't need to be cleared to reset)
 		SamplerSelector sampler_sel;
