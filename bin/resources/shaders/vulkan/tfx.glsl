@@ -438,22 +438,22 @@ vec4 sample_c(vec2 uv)
 #endif
 
 #if PS_AUTOMATIC_LOD == 1
-    return texture(Texture, uv);
+	return texture(Texture, uv);
 #elif PS_MANUAL_LOD == 1
-    // FIXME add LOD: K - ( LOG2(Q) * (1 << L))
-    float K = MinMax.x;
-    float L = MinMax.y;
-    float bias = MinMax.z;
-    float max_lod = MinMax.w;
+	// FIXME add LOD: K - ( LOG2(Q) * (1 << L))
+	float K = MinMax.x;
+	float L = MinMax.y;
+	float bias = MinMax.z;
+	float max_lod = MinMax.w;
 
-    float gs_lod = K - log2(abs(vsIn.t.w)) * L;
-    // FIXME max useful ?
-    //float lod = max(min(gs_lod, max_lod) - bias, 0.0f);
-    float lod = min(gs_lod, max_lod) - bias;
+	float gs_lod = K - log2(abs(vsIn.t.w)) * L;
+	// FIXME max useful ?
+	//float lod = max(min(gs_lod, max_lod) - bias, 0.0f);
+	float lod = min(gs_lod, max_lod) - bias;
 
-    return textureLod(Texture, uv, lod);
+	return textureLod(Texture, uv, lod);
 #else
-    return textureLod(Texture, uv, 0); // No lod
+	return textureLod(Texture, uv, 0); // No lod
 #endif
 #endif
 }
@@ -976,27 +976,27 @@ void ps_dither(inout vec3 C)
 
 void ps_color_clamp_wrap(inout vec3 C)
 {
-    // When dithering the bottom 3 bits become meaningless and cause lines in the picture
-    // so we need to limit the color depth on dithered items
+	// When dithering the bottom 3 bits become meaningless and cause lines in the picture
+	// so we need to limit the color depth on dithered items
 #if SW_BLEND || PS_DITHER || PS_FBMASK
 
-    // Correct the Color value based on the output format
+	// Correct the Color value based on the output format
 #if PS_COLCLIP == 0 && PS_HDR == 0
-    // Standard Clamp
-    C = clamp(C, vec3(0.0f), vec3(255.0f));
+	// Standard Clamp
+	C = clamp(C, vec3(0.0f), vec3(255.0f));
 #endif
 
-    // FIXME rouding of negative float?
-    // compiler uses trunc but it might need floor
+	// FIXME rouding of negative float?
+	// compiler uses trunc but it might need floor
 
-    // Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
-    // GS: Color = 1, Alpha = 255 => output 1
-    // GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
+	// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
+	// GS: Color = 1, Alpha = 255 => output 1
+	// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
 #if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0
-    // In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
-    C = vec3(ivec3(C) & ivec3(0xF8));
+	// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
+	C = vec3(ivec3(C) & ivec3(0xF8));
 #elif PS_COLCLIP == 1 || PS_HDR == 1
-    C = vec3(ivec3(C) & ivec3(0xFF));
+	C = vec3(ivec3(C) & ivec3(0xFF));
 #endif
 
 #endif
@@ -1010,67 +1010,67 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 
 		// PABE
 		#if PS_PABE
-				// No blending so early exit
-				if (As < 1.0f)
-					return;
+			// No blending so early exit
+			if (As < 1.0f)
+				return;
 		#endif
 
 		#if PS_FEEDBACK_LOOP_IS_NEEDED
-				vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
+			vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
 		#else
-				// Not used, but we define it to make the selection below simpler.
-				vec4 RT = vec4(0.0f);
+			// Not used, but we define it to make the selection below simpler.
+			vec4 RT = vec4(0.0f);
 		#endif
 
-				// FIXME FMT_16 case
-				// FIXME Ad or Ad * 2?
-				float Ad = RT.a / 128.0f;
+			// FIXME FMT_16 case
+			// FIXME Ad or Ad * 2?
+			float Ad = RT.a / 128.0f;
 
-				// Let the compiler do its jobs !
-				vec3 Cd = RT.rgb;
-				vec3 Cs = Color.rgb;
+			// Let the compiler do its jobs !
+			vec3 Cd = RT.rgb;
+			vec3 Cs = Color.rgb;
 
 		#if PS_BLEND_A == 0
-				vec3 A = Cs;
+			vec3 A = Cs;
 		#elif PS_BLEND_A == 1
-				vec3 A = Cd;
+			vec3 A = Cd;
 		#else
-				vec3 A = vec3(0.0f);
+			vec3 A = vec3(0.0f);
 		#endif
 
 		#if PS_BLEND_B == 0
-				vec3 B = Cs;
+			vec3 B = Cs;
 		#elif PS_BLEND_B == 1
-				vec3 B = Cd;
+			vec3 B = Cd;
 		#else
-				vec3 B = vec3(0.0f);
+			vec3 B = vec3(0.0f);
 		#endif
 
 		#if PS_BLEND_C == 0
-				float C = As;
+			float C = As;
 		#elif PS_BLEND_C == 1
-				float C = Ad;
+			float C = Ad;
 		#else
-				float C = Af;
+			float C = Af;
 		#endif
 
 		#if PS_BLEND_D == 0
-				vec3 D = Cs;
+			vec3 D = Cs;
 		#elif PS_BLEND_D == 1
-				vec3 D = Cd;
+			vec3 D = Cd;
 		#else
-				vec3 D = vec3(0.0f);
+			vec3 D = vec3(0.0f);
 		#endif
 
 		// As/Af clamp alpha for Blend mix
 		// We shouldn't clamp blend mix with clr1 as we want alpha higher
 		float C_clamped = C;
 		#if PS_BLEND_MIX > 0 && PS_CLR_HW != 1
-				C_clamped = min(C_clamped, 1.0f);
+			C_clamped = min(C_clamped, 1.0f);
 		#endif
 
 		#if PS_BLEND_A == PS_BLEND_B
-				Color.rgb = D;
+			Color.rgb = D;
 		// In blend_mix, HW adds on some alpha factor * dst.
 		// Truncating here wouldn't quite get the right result because it prevents the <1 bit here from combining with a <1 bit in dst to form a ≥1 amount that pushes over the truncation.
 		// Instead, apply an offset to convert HW's round to a floor.
@@ -1087,25 +1087,25 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 		#endif
 
 		#if PS_CLR_HW == 1
-				// Replace Af with As so we can do proper compensation for Alpha.
-				#if PS_BLEND_C == 2
-					As_rgba = vec4(Af);
-				#endif
-				// Subtract 1 for alpha to compensate for the changed equation,
-				// if c.rgb > 255.0f then we further need to adjust alpha accordingly,
-				// we pick the lowest overflow from all colors because it's the safest,
-				// we divide by 255 the color because we don't know Cd value,
-				// changed alpha should only be done for hw blend.
-				vec3 alpha_compensate = max(vec3(1.0f), Color.rgb / vec3(255.0f));
-				As_rgba.rgb -= alpha_compensate;
+			// Replace Af with As so we can do proper compensation for Alpha.
+			#if PS_BLEND_C == 2
+				As_rgba = vec4(Af);
+			#endif
+			// Subtract 1 for alpha to compensate for the changed equation,
+			// if c.rgb > 255.0f then we further need to adjust alpha accordingly,
+			// we pick the lowest overflow from all colors because it's the safest,
+			// we divide by 255 the color because we don't know Cd value,
+			// changed alpha should only be done for hw blend.
+			vec3 alpha_compensate = max(vec3(1.0f), Color.rgb / vec3(255.0f));
+			As_rgba.rgb -= alpha_compensate;
 		#elif PS_CLR_HW == 2
-				// Compensate slightly for Cd*(As + 1) - Cs*As.
-				// The initial factor we chose is 1 (0.00392)
-				// as that is the minimum color Cd can be,
-				// then we multiply by alpha to get the minimum
-				// blended value it can be.
-				float color_compensate = 1.0f * (C + 1.0f);
-				Color.rgb -= vec3(color_compensate);
+			// Compensate slightly for Cd*(As + 1) - Cs*As.
+			// The initial factor we chose is 1 (0.00392)
+			// as that is the minimum color Cd can be,
+			// then we multiply by alpha to get the minimum
+			// blended value it can be.
+			float color_compensate = 1.0f * (C + 1.0f);
+			Color.rgb -= vec3(color_compensate);
 		#endif
 
 	#else
@@ -1136,40 +1136,40 @@ void main()
 {
 #if PS_SCANMSK & 2
 	// fail depth test on prohibited lines
- 	if ((int(gl_FragCoord.y) & 1) == (PS_SCANMSK & 1))
+	if ((int(gl_FragCoord.y) & 1) == (PS_SCANMSK & 1))
 		discard;
 #endif
 #if PS_DATE >= 5
 
 #if PS_WRITE_RG == 1
-  // Pseudo 16 bits access.
-  float rt_a = sample_from_rt().g;
+	// Pseudo 16 bits access.
+	float rt_a = sample_from_rt().g;
 #else
-  float rt_a = sample_from_rt().a;
+	float rt_a = sample_from_rt().a;
 #endif
 
 #if (PS_DATE & 3) == 1
-  // DATM == 0: Pixel with alpha equal to 1 will failed
-  bool bad = (127.5f / 255.0f) < rt_a;
+	// DATM == 0: Pixel with alpha equal to 1 will failed
+	bool bad = (127.5f / 255.0f) < rt_a;
 #elif (PS_DATE & 3) == 2
-  // DATM == 1: Pixel with alpha equal to 0 will failed
-  bool bad = rt_a < (127.5f / 255.0f);
+	// DATM == 1: Pixel with alpha equal to 0 will failed
+	bool bad = rt_a < (127.5f / 255.0f);
 #endif
 
-  if (bad) {
-    discard;
-  }
+	if (bad) {
+		discard;
+	}
 
 #endif		// PS_DATE >= 5
 
 #if PS_DATE == 3
-  int stencil_ceil = int(texelFetch(PrimMinTexture, ivec2(gl_FragCoord.xy), 0).r);
-  // Note gl_PrimitiveID == stencil_ceil will be the primitive that will update
-  // the bad alpha value so we must keep it.
+	int stencil_ceil = int(texelFetch(PrimMinTexture, ivec2(gl_FragCoord.xy), 0).r);
+	// Note gl_PrimitiveID == stencil_ceil will be the primitive that will update
+	// the bad alpha value so we must keep it.
 
-  if (gl_PrimitiveID > stencil_ceil) {
-    discard;
-  }
+	if (gl_PrimitiveID > stencil_ceil) {
+		discard;
+	}
 #endif
 
 	vec4 C = ps_color();
@@ -1205,77 +1205,77 @@ void main()
 		#endif
 	#endif
 
-  // Must be done before alpha correction
+	// Must be done before alpha correction
 
-  // AA (Fixed one) will output a coverage of 1.0 as alpha
+	// AA (Fixed one) will output a coverage of 1.0 as alpha
 #if PS_FIXED_ONE_A
-   C.a = 128.0f;
+	C.a = 128.0f;
 #endif
 
 #if (PS_BLEND_C == 1 && PS_CLR_HW > 3)
-  vec4 RT = trunc(subpassLoad(RtSampler) * 255.0f + 0.1f);
-  vec4 alpha_blend = vec4(RT.a / 128.0f);
+	vec4 RT = trunc(subpassLoad(RtSampler) * 255.0f + 0.1f);
+	vec4 alpha_blend = vec4(RT.a / 128.0f);
 #else
-  vec4 alpha_blend = vec4(C.a / 128.0f);
+	vec4 alpha_blend = vec4(C.a / 128.0f);
 #endif
 
   // Correct the ALPHA value based on the output format
 #if (PS_DFMT == FMT_16)
-  float A_one = 128.0f; // alpha output will be 0x80
-  C.a = (PS_FBA != 0) ? A_one : step(128.0f, C.a) * A_one;
+	float A_one = 128.0f; // alpha output will be 0x80
+	C.a = (PS_FBA != 0) ? A_one : step(128.0f, C.a) * A_one;
 #elif (PS_DFMT == FMT_32) && (PS_FBA != 0)
-  if(C.a < 128.0f) C.a += 128.0f;
+	if(C.a < 128.0f) C.a += 128.0f;
 #endif
 
-  // Get first primitive that will write a failling alpha value
+	// Get first primitive that will write a failling alpha value
 #if PS_DATE == 1
 
-  // DATM == 0
-  // Pixel with alpha equal to 1 will failed (128-255)
+	// DATM == 0
+	// Pixel with alpha equal to 1 will failed (128-255)
 	o_col0 = (C.a > 127.5f) ? vec4(gl_PrimitiveID) : vec4(0x7FFFFFFF);
 
 #elif PS_DATE == 2
 
-  // DATM == 1
-  // Pixel with alpha equal to 0 will failed (0-127)
-  o_col0 = (C.a < 127.5f) ? vec4(gl_PrimitiveID) : vec4(0x7FFFFFFF);
+	// DATM == 1
+	// Pixel with alpha equal to 0 will failed (0-127)
+	o_col0 = (C.a < 127.5f) ? vec4(gl_PrimitiveID) : vec4(0x7FFFFFFF);
 
 #else
 
 	ps_blend(C, alpha_blend);
 
-  ps_dither(C.rgb);
+	ps_dither(C.rgb);
 
-  // Color clamp/wrap needs to be done after sw blending and dithering
-  ps_color_clamp_wrap(C.rgb);
+	// Color clamp/wrap needs to be done after sw blending and dithering
+	ps_color_clamp_wrap(C.rgb);
 
-  ps_fbmask(C);
+	ps_fbmask(C);
 
-#if !PS_NO_COLOR
-#if PS_HDR == 1
-	o_col0 = vec4(C.rgb / 65535.0f, C.a / 255.0f);
-#else
-	o_col0 = C / 255.0f;
-#endif
-#if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
-	o_col1 = alpha_blend;
-#endif
+	#if !PS_NO_COLOR
+		#if PS_HDR == 1
+			o_col0 = vec4(C.rgb / 65535.0f, C.a / 255.0f);
+		#else
+			o_col0 = C / 255.0f;
+		#endif
+		#if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
+			o_col1 = alpha_blend;
+		#endif
 
-#if PS_NO_ABLEND
-	// write alpha blend factor into col0
-	o_col0.a = alpha_blend.a;
-#endif
-#if PS_ONLY_ALPHA
-	// rgb isn't used
-	o_col0.rgb = vec3(0.0f);
-#endif
-#endif
+		#if PS_NO_ABLEND
+			// write alpha blend factor into col0
+			o_col0.a = alpha_blend.a;
+		#endif
+		#if PS_ONLY_ALPHA
+			// rgb isn't used
+			o_col0.rgb = vec3(0.0f);
+		#endif
+	#endif
 
-#if PS_ZCLAMP
-	gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);
-#endif
+	#if PS_ZCLAMP
+		gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);
+	#endif
 
-#endif		// PS_DATE
+#endif // PS_DATE
 }
 
 #endif
