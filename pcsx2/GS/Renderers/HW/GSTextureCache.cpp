@@ -1530,7 +1530,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				Read(t, draw_rect);
 
 				t->readbacks_since_draw++;
-				if(draw_rect.rintersect(t->m_drawn_since_read).eq(t->m_drawn_since_read))
+				if (draw_rect.rintersect(t->m_drawn_since_read).eq(t->m_drawn_since_read))
 					t->m_drawn_since_read = GSVector4i::zero();
 			}
 		}
@@ -1586,7 +1586,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 
 			// Calculate the rect offset if the BP doesn't match.
 			const GSVector4i targetr = GSVector4i((format_match) ? r.rintersect(t->m_valid) : ComputeSurfaceOffset(sok).b2a_offset).rintersect(t->m_drawn_since_read);
-			
+
 			if (!targetr.rempty())
 			{
 				// GH Note: Read will do a StretchRect and then will sizzle data to the GS memory
@@ -2927,8 +2927,13 @@ bool GSTextureCache::Surface::Inside(u32 bp, u32 bw, u32 psm, const GSVector4i& 
 bool GSTextureCache::Surface::Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i& rect)
 {
 	// Valid only for color formats.
-	const u32 end_block = GSLocalMemory::m_psm[psm].info.bn(rect.z - 1, rect.w - 1, bp, bw);
-	const u32 start_block = GSLocalMemory::m_psm[psm].info.bn(rect.x, rect.y, bp, bw);
+	u32 end_block = GSLocalMemory::m_psm[psm].info.bn(rect.z - 1, rect.w - 1, bp, bw);
+	u32 start_block = GSLocalMemory::m_psm[psm].info.bn(rect.x, rect.y, bp, bw);
+	// Due to block ordering, end can be below start in a page, so if it's within a page, swap them.
+	if (end_block < start_block && ((start_block - end_block) < (1 << 5)))
+	{
+		std::swap(start_block, end_block);
+	}
 	const bool overlap = GSTextureCache::CheckOverlap(m_TEX0.TBP0, m_end_block, start_block, end_block);
 	return overlap;
 }
