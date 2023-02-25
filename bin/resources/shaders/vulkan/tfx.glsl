@@ -970,7 +970,12 @@ void ps_dither(inout vec3 C)
 			fpos = ivec2(gl_FragCoord.xy / float(PS_SCALE_FACTOR));
 		#endif
 
-		C += DitherMatrix[fpos.y & 3][fpos.x & 3];
+		float value = DitherMatrix[fpos.y & 3][fpos.x & 3];
+		#if PS_ROUND_INV
+			C -= value;
+		#else
+			C += value;
+		#endif
 	#endif
 }
 
@@ -979,6 +984,10 @@ void ps_color_clamp_wrap(inout vec3 C)
 	// When dithering the bottom 3 bits become meaningless and cause lines in the picture
 	// so we need to limit the color depth on dithered items
 #if SW_BLEND || PS_DITHER || PS_FBMASK
+
+#if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV != 0
+	C += 7.0f; // Need to round up, not down since the shader will invert
+#endif
 
 	// Correct the Color value based on the output format
 #if PS_COLCLIP == 0 && PS_HDR == 0

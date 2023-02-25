@@ -332,6 +332,7 @@ struct alignas(16) GSHWDrawConfig
 				u32 hdr         : 1;
 				u32 colclip     : 1;
 				u32 blend_mix   : 2;
+				u32 round_inv   : 1; // Blending will invert the value, so rounding needs to go the other way
 				u32 pabe        : 1;
 				u32 no_color    : 1; // disables color output entirely (depth only)
 				u32 no_color1   : 1; // disables second color output (when unnecessary)
