@@ -6673,7 +6673,6 @@ SCPS-55002:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
-    disablePartialInvalidation: 1 # Fixes ghost rendering.
 SCPS-55003:
   name: "Vampire Night"
   region: "NTSC-J"
@@ -6850,7 +6849,6 @@ SCPS-55043:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
-    disablePartialInvalidation: 1 # Fixes ghost rendering.
 SCPS-55044:
   name: "Energy Airforce"
   region: "NTSC-J"
@@ -6952,7 +6950,6 @@ SCPS-56008:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
-    disablePartialInvalidation: 1 # Fixes ghost rendering.
 SCPS-56009:
   name: "Smash Court Pro Tournament"
   region: "NTSC-K"
@@ -11271,7 +11268,6 @@ SLES-50821:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    disablePartialInvalidation: 1 # Fixes ghost rendering.
   patches:
     "22E91837":
       content: |-
@@ -25095,7 +25091,6 @@ SLPM-60167:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
-    disablePartialInvalidation: 1 # Fixes ghost rendering.
 SLPM-60149:
   name: "Ace Combat 04 - Shattered Skies [Trial]"
   region: "NTSC-J"
@@ -37069,7 +37064,6 @@ SLPS-25074:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    disablePartialInvalidation: 1 # Fixes ghost rendering.
   patches:
     9883194E:
       content: |-
@@ -40638,7 +40632,6 @@ SLPS-73255:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
-    disablePartialInvalidation: 1 # Fixes ghost rendering.
 SLPS-73256:
   name: "Fatal Frame II - Crimson Butterfly [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
@@ -40693,7 +40686,6 @@ SLPS-73405:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
-    disablePartialInvalidation: 1 # Fixes ghost rendering.
 SLPS-73406:
   name: "DOA 2 - Hardcore [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -42392,7 +42384,6 @@ SLUS-20388:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
-    disablePartialInvalidation: 1 # Fixes ghost rendering.
   patches:
     339A0B8C:
       content: |-
