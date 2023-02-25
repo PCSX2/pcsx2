@@ -1563,10 +1563,13 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 	gpb.SetRasterizationState(D3D12_FILL_MODE_SOLID, D3D12_CULL_MODE_NONE, false);
 	if (p.rt)
 	{
-		gpb.SetRenderTarget(0,
-			IsDATEModePrimIDInit(p.ps.date) ? DXGI_FORMAT_R32_FLOAT :
-			p.ps.hdr                        ? DXGI_FORMAT_R32G32B32A32_FLOAT :
-			                                  DXGI_FORMAT_R8G8B8A8_UNORM);
+		const GSTexture::Format format = IsDATEModePrimIDInit(p.ps.date) ?
+											 GSTexture::Format::PrimID :
+											 (p.ps.hdr ? GSTexture::Format::HDRColor : GSTexture::Format::Color);
+
+		DXGI_FORMAT native_format;
+		LookupNativeFormat(format, nullptr, nullptr, &native_format, nullptr);
+		gpb.SetRenderTarget(0, native_format);
 	}
 	if (p.ds)
 		gpb.SetDepthStencilFormat(DXGI_FORMAT_D32_FLOAT_S8X24_UINT);
