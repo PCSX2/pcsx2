@@ -9113,7 +9113,7 @@ SLAJ-25080:
   name: "Godfather, The"
   region: "NTSC-Unk"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes light occlusion.
+    gpuTargetCLUT: 1 # Fixes light occlusion.
     skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
     skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
 SLAJ-25081:
@@ -18711,7 +18711,7 @@ SLES-53967:
   name: "Godfather, The"
   region: "PAL-M6"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes light occlusion.
+    gpuTargetCLUT: 1 # Fixes light occlusion.
     skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
     skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
 SLES-53968:
@@ -24291,7 +24291,7 @@ SLKA-25338:
   name: "Godfather, The"
   region: "NTSC-K"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes light occlusion.
+    gpuTargetCLUT: 1 # Fixes light occlusion.
     skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
     skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
 SLKA-25341:
@@ -33817,7 +33817,7 @@ SLPM-66710:
   name: "Godfather, The"
   region: "NTSC-J"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes light occlusion.
+    gpuTargetCLUT: 1 # Fixes light occlusion.
     skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
     skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
 SLPM-66712:
@@ -34695,7 +34695,7 @@ SLPM-66966:
   name: "Godfather, The [EA-SY! 1980]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes light occlusion.
+    gpuTargetCLUT: 1 # Fixes light occlusion.
     skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
     skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
 SLPM-66967:
@@ -47571,7 +47571,7 @@ SLUS-21385:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes light occlusion.
+    gpuTargetCLUT: 1 # Fixes light occlusion.
     skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
     skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
 SLUS-21386:
@@ -47683,7 +47683,7 @@ SLUS-21406:
   name: "Godfather, The - Collector's Edition"
   region: "NTSC-U"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes light occlusion.
+    gpuTargetCLUT: 1 # Fixes light occlusion.
     skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
     skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
 SLUS-21407:
