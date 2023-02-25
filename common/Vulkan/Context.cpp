@@ -197,9 +197,9 @@ namespace Vulkan
 	{
 		u32 gpu_count = 0;
 		VkResult res = vkEnumeratePhysicalDevices(instance, &gpu_count, nullptr);
-		if (res != VK_SUCCESS || gpu_count == 0)
+		if ((res != VK_SUCCESS && res != VK_INCOMPLETE) || gpu_count == 0)
 		{
-			LOG_VULKAN_ERROR(res, "vkEnumeratePhysicalDevices failed: ");
+			LOG_VULKAN_ERROR(res, "vkEnumeratePhysicalDevices (1) failed: ");
 			return {};
 		}
 
@@ -207,11 +207,19 @@ namespace Vulkan
 		gpus.resize(gpu_count);
 
 		res = vkEnumeratePhysicalDevices(instance, &gpu_count, gpus.data());
-		if (res != VK_SUCCESS)
+		if (res == VK_INCOMPLETE)
 		{
-			LOG_VULKAN_ERROR(res, "vkEnumeratePhysicalDevices failed: ");
+			Console.Warning("First vkEnumeratePhysicalDevices() call returned %zu devices, but second returned %u", gpus.size(), gpu_count);
+		}
+		else if (res != VK_SUCCESS)
+		{
+			LOG_VULKAN_ERROR(res, "vkEnumeratePhysicalDevices (2) failed: ");
 			return {};
 		}
+
+		// Maybe we lost a GPU?
+		if (gpu_count < gpus.size())
+			gpus.resize(gpu_count);
 
 		return gpus;
 	}
