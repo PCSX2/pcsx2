@@ -53,6 +53,7 @@ constant uint PS_CLR_HW             [[function_constant(GSMTLConstantIndex_PS_CL
 constant bool PS_HDR                [[function_constant(GSMTLConstantIndex_PS_HDR)]];
 constant bool PS_COLCLIP            [[function_constant(GSMTLConstantIndex_PS_COLCLIP)]];
 constant uint PS_BLEND_MIX          [[function_constant(GSMTLConstantIndex_PS_BLEND_MIX)]];
+constant bool PS_ROUND_INV          [[function_constant(GSMTLConstantIndex_PS_ROUND_INV)]];
 constant bool PS_FIXED_ONE_A        [[function_constant(GSMTLConstantIndex_PS_FIXED_ONE_A)]];
 constant bool PS_PABE               [[function_constant(GSMTLConstantIndex_PS_PABE)]];
 constant bool PS_NO_COLOR           [[function_constant(GSMTLConstantIndex_PS_NO_COLOR)]];
@@ -793,7 +794,11 @@ struct PSMain
 			fpos = ushort2(in.p.xy);
 		else
 			fpos = ushort2(in.p.xy / SCALING_FACTOR);
-		C.rgb += cb.dither_matrix[fpos.y & 3][fpos.x & 3];
+		float value = cb.dither_matrix[fpos.y & 3][fpos.x & 3];;
+		if (PS_ROUND_INV)
+			C.rgb -= value;
+		else
+			C.rgb += value;
 	}
 
 	void ps_color_clamp_wrap(thread float4& C)
@@ -801,6 +806,9 @@ struct PSMain
 		// When dithering the bottom 3 bits become meaningless and cause lines in the picture so we need to limit the color depth on dithered items
 		if (!SW_BLEND && !PS_DITHER && !PS_FBMASK)
 			return;
+
+		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
+			C.rgb += 7.f; // Need to round up, not down since the shader will invert
 
 		// Correct the Color value based on the output format
 		if (!PS_COLCLIP && !PS_HDR)

@@ -1515,6 +1515,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_BLEND_C", sel.blend_c);
 	sm.AddMacro("PS_BLEND_D", sel.blend_d);
 	sm.AddMacro("PS_BLEND_MIX", sel.blend_mix);
+	sm.AddMacro("PS_ROUND_INV", sel.round_inv);
 	sm.AddMacro("PS_FIXED_ONE_A", sel.fixed_one_a);
 	sm.AddMacro("PS_PABE", sel.pabe);
 	sm.AddMacro("PS_DITHER", sel.dither);

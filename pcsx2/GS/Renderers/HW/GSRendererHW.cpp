@@ -3226,6 +3226,10 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 							   !GSDevice::IsDualSourceBlendFactor(m_conf.blend.dst_factor);
 	}
 
+	// Notify the shader that it needs to invert rounding
+	if (m_conf.blend.op == GSDevice::OP_REV_SUBTRACT)
+		m_conf.ps.round_inv = 1;
+
 	// DATE_PRIMID interact very badly with sw blending. DATE_PRIMID uses the primitiveID to find the primitive
 	// that write the bad alpha value. Sw blending will force the draw to run primitive by primitive
 	// (therefore primitiveID will be constant to 1).
