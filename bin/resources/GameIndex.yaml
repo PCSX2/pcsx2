@@ -5595,6 +5595,8 @@ SCPS-15012:
 SCPS-15013:
   name: "Poinie's Poin"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes text corruption.
 SCPS-15014:
   name: "Genshi no Kotoba"
   region: "NTSC-J"
@@ -6853,8 +6855,10 @@ SCPS-55044:
   name: "Energy Airforce"
   region: "NTSC-J"
 SCPS-55045:
-  name: "Poinie's Poin 3"
+  name: "Poinie's Poin"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes text corruption.
 SCPS-55046:
   name: "Ultraman Fighting Evolution 2"
   region: "NTSC-J"
@@ -21975,8 +21979,8 @@ SLES-55215:
   name: "Growlanser - Heritage of War"
   region: "PAL-E"
   compat: 5
-  # gsHWFixes: Disabled because of GitHub Issue #6797
-  #   preloadFrameData: 1 # Fixes layers where characters should be visually behind an object.
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes character layering issue.
 SLES-55216:
   name: "Baroque"
   region: "PAL-E"
@@ -25340,6 +25344,11 @@ SLPM-61147:
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
     getSkipCount: "GSC_XenosagaE3"
+SLPM-61148:
+  name: "Growlanser V - Generations [Taikenban Demo]"
+  region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes character layering issue.
 SLPM-61157:
   name: "Naruto Shippuuden - Narutimate Accel [Trial]"
   region: "NTSC-J"
@@ -32031,8 +32040,8 @@ SLPM-66249:
   name: "Growlanser V - Generations [Limited Edition]"
   region: "NTSC-J"
   compat: 5
-  # gsHWFixes: Disabled because of GitHub Issue #6797
-  #   preloadFrameData: 1 # Fixes layers where characters should be visually behind an object.
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes character layering issue.
 SLPM-66250:
   name: "Choro Q HG 4 [Takara Best]"
   region: "NTSC-J"
@@ -32639,8 +32648,8 @@ SLPM-66418:
   name: "Growlanser V - Generations"
   region: "NTSC-J"
   compat: 5
-  # gsHWFixes: Disabled because of GitHub Issue #6797
-  #   preloadFrameData: 1 # Fixes layers where characters should be visually behind an object.
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes character layering issue.
 SLPM-66419:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "NTSC-J"
@@ -33834,8 +33843,8 @@ SLPM-66716:
   name: "Growlanser VI"
   region: "NTSC-J"
   compat: 5
-  # gsHWFixes: Disabled because of GitHub Issue #6797
-  #   preloadFrameData: 1 # Fixes layers where characters should be visually behind an object.
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes character layering issue.
 SLPM-66717:
   name: "Standard Daisenryaku - Dengekisen [Sega the Best]"
   region: "NTSC-J"
@@ -48384,8 +48393,8 @@ SLUS-21571:
   name: "Growlanser - Heritage of War"
   region: "NTSC-U"
   compat: 5
-  # gsHWFixes: Disabled because of GitHub Issue #6797
-  #   preloadFrameData: 1 # Fixes layers where characters should be visually behind an object.
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes character layering issue.
 SLUS-21572:
   name: "Surf's Up"
   region: "NTSC-U"
