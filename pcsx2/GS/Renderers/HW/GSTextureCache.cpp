@@ -833,27 +833,56 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 		{
 			const bool forced_preload = GSRendererHW::GetInstance()->m_force_preload > 0;
 			const GSVector4i newrect = GSVector4i(0, 0, real_w, real_h);
+			const u32 rect_end = GSLocalMemory::m_psm[TEX0.PSM].info.bn(newrect.z - 1, newrect.w - 1, TEX0.TBP0, TEX0.TBW);
 
 			if (!is_frame && !forced_preload && !preload)
 			{
 				std::vector<GSState::GSUploadQueue>::iterator iter;
+				GSVector4i eerect = GSVector4i::zero();
 				for (iter = GSRendererHW::GetInstance()->m_draw_transfers.begin(); iter != GSRendererHW::GetInstance()->m_draw_transfers.end(); )
 				{
-					// If the format, and location doesn't match, but also the upload is at least the size of the target, don't preload.
-					if (iter->blit.DBP == TEX0.TBP0 && GSUtil::HasCompatibleBits(iter->blit.DPSM, TEX0.PSM) && iter->rect.rintersect(newrect).eq(newrect))
+					// If the format, and location doesn't overlap
+					if (iter->blit.DBP >= TEX0.TBP0 && iter->blit.DBP <= rect_end && GSUtil::HasCompatibleBits(iter->blit.DPSM, TEX0.PSM))
 					{
-						GSRendererHW::GetInstance()->m_draw_transfers.erase(iter);
-						GL_INS("Preloading the RT DATA");
-						AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW);
-						dst->Update(true);
-						break;
+						GSTextureCache::SurfaceOffsetKey sok;
+						sok.elems[0].bp = iter->blit.DBP;
+						sok.elems[0].bw = iter->blit.DBW;
+						sok.elems[0].psm = iter->blit.DPSM;
+						sok.elems[0].rect = iter->rect;
+						sok.elems[1].bp = TEX0.TBP0;
+						sok.elems[1].bw = TEX0.TBW;
+						sok.elems[1].psm = TEX0.PSM;
+						sok.elems[1].rect = newrect;
+
+						// Calculate the rect offset if the BP doesn't match.
+						const GSVector4i targetr = (iter->blit.DBP == TEX0.TBP0 && GSUtil::HasCompatibleBits(iter->blit.DPSM, TEX0.PSM)) ? iter->rect : ComputeSurfaceOffset(sok).b2a_offset;
+						if (eerect.rempty())
+							eerect = targetr;
+						else
+							eerect = eerect.runion(targetr);
+
+						iter = GSRendererHW::GetInstance()->m_draw_transfers.erase(iter);
+
+						if (eerect.rintersect(newrect).eq(newrect))
+							break;
+						else
+							continue;
 					}
 					iter++;
+				}
+
+				if (!eerect.rempty())
+				{
+					GL_INS("Preloading the RT DATA");
+					dst->UpdateValidity(eerect);
+					AddDirtyRectTarget(dst, eerect, TEX0.PSM, TEX0.TBW);
+					dst->Update(true);
 				}
 			}
 			else
 			{
 				GL_INS("Preloading the RT DATA");
+				dst->UpdateValidity(newrect);
 				AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW);
 				dst->Update(true);
 			}
@@ -1441,6 +1470,9 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 	const u32 bp = off.bp();
 	const u32 psm = off.psm();
 	[[maybe_unused]] const u32 bw = off.bw();
+	const u32 read_start = GSLocalMemory::m_psm[psm].info.bn(r.x, r.y, bp, bw);
+	const u32 read_end = GSLocalMemory::m_psm[psm].info.bn(r.x, r.y, bp, bw);
+	const bool read_paltex = GSLocalMemory::m_psm[psm].pal > 0;
 
 	GL_CACHE("TC: InvalidateLocalMem off(0x%x, %u, %s) r(%d, %d => %d, %d)",
 		bp,
@@ -1468,7 +1500,9 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 			{
 				Target* t = *it;
 
-				if (!t->Overlaps(bp, bw, psm, r) || !GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) || t->m_age >= 30)
+				// Check the offset of the read, if they're not pointing at or inside this texture, it's probably not what we want.
+				const bool expecting_this_tex = ((bp < t->m_TEX0.TBP0 && read_start >= t->m_TEX0.TBP0) || bp >= t->m_TEX0.TBP0) && read_end <= t->m_end_block;
+				if (!expecting_this_tex || !t->Overlaps(bp, bw, psm, r) || !GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) || ((bp != t->m_TEX0.TBP0) && !GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM)))
 					continue;
 
 				const bool bpp_match = GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[psm].bpp;
@@ -1496,11 +1530,29 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 		Target* t = *it;
 		if (t->m_TEX0.PSM != PSM_PSMZ32 && t->m_TEX0.PSM != PSM_PSMZ24 && t->m_TEX0.PSM != PSM_PSMZ16 && t->m_TEX0.PSM != PSM_PSMZ16S)
 		{
-			const u32 read_start = GSLocalMemory::m_psm[psm].info.bn(r.x, r.y, bp, bw);
-			// Check the offset of the read, if they're not pointing at or inside this texture, it's probably not what we want.
-			const bool expecting_this_tex = (bp < t->m_TEX0.TBP0 && read_start >= t->m_TEX0.TBP0) || bp >= t->m_TEX0.TBP0;
+			// propagate the format from the result of a channel effect
+			// texture is 16/8 bit but the real data is 32
+			// common use for shuffling is moving data into the alpha channel
+			// the game can then draw using 8H format
+			// in the case of silent hill blit 8H -> 8P
+			// this will matter later when the data ends up in GS memory in the wrong format
+			// Be careful to avoid 24 bit textures which are technically 32bit, as you could lose alpha (8H) data.
+			if (t->m_32_bits_fmt && t->m_TEX0.PSM > PSM_PSMCT24)
+				t->m_TEX0.PSM = PSM_PSMCT32;
 
-			if (!expecting_this_tex || !t->Overlaps(bp, bw, psm, r) || !GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) || t->m_age >= 30)
+			// Check the offset of the read, if they're not pointing at or inside this texture, it's probably not what we want.
+			const bool expecting_this_tex = ((bp < t->m_TEX0.TBP0 && read_start >= t->m_TEX0.TBP0) || bp >= t->m_TEX0.TBP0) && read_end <= t->m_end_block;
+			const bool target_paltex = GSLocalMemory::m_psm[t->m_TEX0.PSM].pal > 0;
+			// Only allow an indexed format on a 32bit colour, if it's alpha channel.
+			const bool alpha_read = t->m_TEX0.PSM == PSM_PSMCT32 && psm >= PSM_PSMT8H;
+
+			// Okay this is a nightmare of a check, so these are the conditions:
+			// 1. Check if it's expecting this texture, so the read must be inside this texture, even if the BP doesn't match.
+			// 2. It must overlap (okay maybe redundant).
+			// 3. If it's a paltex (indexed format), the target must also be paltex, unless it's only reading the alpha channel.
+			// 4. They share bits in some capacity.
+			// 5. If the BP doesn't match, make sure the formats are compatible, at very least (like CT32 + CT24 for example).
+			if (!expecting_this_tex || !t->Overlaps(bp, bw, psm, r) || (read_paltex != target_paltex && !alpha_read) || !GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) || (bp != t->m_TEX0.TBP0 && !GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM)))
 				continue;
 
 			const bool bpp_match = GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[psm].bpp;
@@ -1514,15 +1566,10 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 			sok.elems[1].bw = t->m_TEX0.TBW;
 			sok.elems[1].psm = t->m_TEX0.PSM;
 			sok.elems[1].rect = t->m_valid;
-			// Calculate the rect offset if the BP doesn't match.
-			const GSVector4i targetr = (format_match) ? r.rintersect(t->m_valid) : ComputeSurfaceOffset(sok).b2a_offset;
 
-			// Some games like to offset their GS download memory addresses by
-			// using overly big source Y position values.
-			// Checking for targets that overlap with the requested memory region
-			// instead of just comparing TBPs should fix that.
-			// For example, this fixes Judgement ring rendering in Shadow Hearts 2.
-			// Be wary of old targets being misdetected, set a sensible range of 30 frames (like Display source lookups).
+			// Calculate the rect offset if the BP doesn't match.
+			const GSVector4i targetr = GSVector4i((format_match) ? r.rintersect(t->m_valid) : ComputeSurfaceOffset(sok).b2a_offset).rintersect(t->m_drawn_since_read);
+			
 			if (!targetr.rempty())
 			{
 				// GH Note: Read will do a StretchRect and then will sizzle data to the GS memory
@@ -1537,20 +1584,9 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				// Read(t, t->m_valid) works in all tested games but is very slow in GUST titles ><
 				// Update: 18/02/2023: Chaos legion breaks because it reads the width at half of the real width.
 				// Surface offset deals with this.
-
 				// If the game has been spamming downloads, we've already read the whole texture back at this point.
-				if (t->m_drawn_since_read.rempty())
+				if (t->m_drawn_since_read.rempty() || !t->m_dirty.empty())
 					continue;
-
-				// propagate the format from the result of a channel effect
-				// texture is 16/8 bit but the real data is 32
-				// common use for shuffling is moving data into the alpha channel
-				// the game can then draw using 8H format
-				// in the case of silent hill blit 8H -> 8P
-				// this will matter later when the data ends up in GS memory in the wrong format
-				// Be careful to avoid 24 bit textures which are technically 32bit, as you could lose alpha (8H) data.
-				if (t->m_32_bits_fmt && t->m_TEX0.PSM > PSM_PSMCT24)
-					t->m_TEX0.PSM = PSM_PSMCT32;
 
 				if (GSConfig.HWDownloadMode != GSHardwareDownloadMode::Enabled)
 				{
@@ -1569,33 +1605,30 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 					else if(!targetr.rintersect(t->m_drawn_since_read).rempty()) // Block level read?
 					{
 						// Read the width of the draw, reading too much could wipe out dirty memory.
-						GSVector4i full_lines = GSVector4i(0, targetr.y, t->m_drawn_since_read.z, targetr.w);
-						full_lines = targetr.rintersect(t->m_drawn_since_read);
-						
-						Read(t, full_lines);
+						Read(t, targetr);
 
 						// After reading, try to cut down our "dirty" rect.
-						if (full_lines.rintersect(t->m_drawn_since_read).eq(t->m_drawn_since_read))
+						if (targetr.rintersect(t->m_drawn_since_read).eq(t->m_drawn_since_read))
 							t->m_drawn_since_read = GSVector4i::zero();
 						else
 						{
 							// Try to cut down how much we read next, if we can.
 							// Fatal Frame reads in vertical strips, SOCOM 2 does horizontal, so we can handle that below.
-							if (full_lines.width() == t->m_drawn_since_read.width()
-								&& full_lines.w >= t->m_drawn_since_read.y)
+							if (targetr.width() == t->m_drawn_since_read.width()
+								&& targetr.w >= t->m_drawn_since_read.y)
 							{
-								if (full_lines.y <= t->m_drawn_since_read.y)
-									t->m_drawn_since_read.y = full_lines.w;
-								else if (full_lines.w >= t->m_drawn_since_read.w)
-									t->m_drawn_since_read.w = full_lines.y;
+								if (targetr.y <= t->m_drawn_since_read.y)
+									t->m_drawn_since_read.y = targetr.w;
+								else if (targetr.w >= t->m_drawn_since_read.w)
+									t->m_drawn_since_read.w = targetr.y;
 							}
-							else if (full_lines.height() == t->m_drawn_since_read.height()
-									&& full_lines.z >= t->m_drawn_since_read.x)
+							else if (targetr.height() == t->m_drawn_since_read.height()
+									&& targetr.z >= t->m_drawn_since_read.x)
 							{
-								if (full_lines.x <= t->m_drawn_since_read.x)
-									t->m_drawn_since_read.x = full_lines.z;
-								else if (full_lines.z >= t->m_drawn_since_read.z)
-									t->m_drawn_since_read.z = full_lines.x;
+								if (targetr.x <= t->m_drawn_since_read.x)
+									t->m_drawn_since_read.x = targetr.z;
+								else if (targetr.z >= t->m_drawn_since_read.z)
+									t->m_drawn_since_read.z = targetr.x;
 							}
 						}
 						t->readbacks_since_draw++;
