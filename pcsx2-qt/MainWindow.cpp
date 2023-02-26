@@ -2882,6 +2882,9 @@ void MainWindow::doStartFile(std::optional<CDVD_SourceType> source, const QStrin
 	// we might still be saving a resume state...
 	VMManager::WaitForSaveStateFlush();
 
+	// GetSaveStateFileName() might temporarily mount the ISO to get the serial.
+	cancelGameListRefresh();
+
 	const std::optional<bool> resume(
 		promptForResumeState(QString::fromStdString(VMManager::GetSaveStateFileName(params->filename.c_str(), -1))));
 	if (!resume.has_value())
