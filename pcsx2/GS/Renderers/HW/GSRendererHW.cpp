@@ -3793,6 +3793,7 @@ void GSRendererHW::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		m_conf.destination_alpha <= GSHWDrawConfig::DestinationAlphaMode::StencilOne && !m_conf.ds)
 	{
 		temp_ds = g_gs_device->CreateDepthStencil(rt->GetWidth(), rt->GetHeight(), GSTexture::Format::DepthStencil, false);
+		temp_ds->SetScale(m_conf.rt->GetScale());
 		m_conf.ds = temp_ds;
 	}
 
