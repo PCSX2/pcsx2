@@ -978,14 +978,14 @@
          </item>
         </widget>
        </item>
-       <item row="4" column="0">
+       <item row="5" column="0">
         <widget class="QLabel" name="label_12">
          <property name="text">
           <string>Skipdraw Range:</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="5" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
           <widget class="QSpinBox" name="skipDrawStart">
@@ -1003,19 +1003,12 @@
          </item>
         </layout>
        </item>
-       <item row="5" column="0" colspan="2">
+       <item row="6" column="0" colspan="2">
         <layout class="QGridLayout" name="gridLayout">
          <item row="1" column="1">
           <widget class="QCheckBox" name="preloadFrameData">
            <property name="text">
             <string>Preload Frame Data</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QCheckBox" name="textureInsideRt">
-           <property name="text">
-            <string>Texture Inside RT</string>
            </property>
           </widget>
          </item>
@@ -1061,7 +1054,7 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="0">
+         <item row="2" column="1">
           <widget class="QCheckBox" name="readTCOnClose">
            <property name="text">
             <string>Read Targets When Closing</string>
@@ -1069,6 +1062,32 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_45">
+         <property name="text">
+          <string>Texture Inside RT:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QComboBox" name="textureInsideRt">
+         <item>
+          <property name="text">
+           <string>Disabled (Default)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Inside Target</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Merge Targets</string>
+          </property>
+         </item>
+        </widget>
        </item>
       </layout>
      </widget>

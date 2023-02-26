@@ -687,8 +687,11 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 				break;
 
 			case GSHWFixId::TextureInsideRT:
-				config.UserHacks_TextureInsideRt = (value > 0);
-				break;
+			{
+				if (value >= 0 && value <= static_cast<int>(GSTextureInRtMode::MergeTargets))
+					config.UserHacks_TextureInsideRt = static_cast<GSTextureInRtMode>(value);
+			}
+			break;
 
 			case GSHWFixId::AlignSprite:
 				config.UserHacks_AlignSpriteX = (value > 0);

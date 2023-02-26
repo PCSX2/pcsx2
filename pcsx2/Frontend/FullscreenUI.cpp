@@ -3166,6 +3166,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 				"3 (192 Max Width)", "4 (256 Max Width)", "5 (320 Max Width)", "6 (384 Max Width)", "7 (448 Max Width)",
 				"8 (512 Max Width)", "9 (576 Max Width)", "10 (640 Max Width)"};
 			static constexpr const char* s_cpu_clut_render_options[] = {"0 (Disabled)", "1 (Normal)", "2 (Aggressive)"};
+			static constexpr const char* s_texture_inside_rt_options[] = {"Disabled", "Inside Target", "Merge Targets"};
 			static constexpr const char* s_half_pixel_offset_options[] = {
 				"Off (Default)", "Normal (Vertex)", "Special (Texture)", "Special (Texture - Aggressive)"};
 			static constexpr const char* s_round_sprite_options[] = {"Off (Default)", "Half", "Full"};
@@ -3193,9 +3194,9 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			DrawToggleSetting(bsi, "Disable Partial Invalidation",
 				"Removes texture cache entries when there is any intersection, rather than only the intersected areas.", "EmuCore/GS",
 				"UserHacks_DisablePartialInvalidation", false, manual_hw_fixes);
-			DrawToggleSetting(bsi, "Texture Inside Render Target",
+			DrawIntListSetting(bsi, "Texture Inside Render Target",
 				"Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer.", "EmuCore/GS",
-				"UserHacks_TextureInsideRt", false, manual_hw_fixes);
+				"UserHacks_TextureInsideRt", 0, s_texture_inside_rt_options, std::size(s_texture_inside_rt_options), 0, manual_hw_fixes);
 			DrawToggleSetting(bsi, "Target Partial Invalidation",
 				"Allows partial invalidation of render targets, which can fix graphical errors in some games.", "EmuCore/GS",
 				"UserHacks_TargetPartialInvalidation", false,
