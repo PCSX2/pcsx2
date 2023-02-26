@@ -3154,6 +3154,12 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 			}
 			else if (blend_mix2)
 			{
+				// Allow to compensate when Cs*(Alpha + 1) overflows, to compensate we change
+				// the alpha output value for Cd*Alpha.
+				m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::SRC1_COLOR, blend.op, false, 0};
+				m_conf.ps.clr_hw = 3;
+				m_conf.ps.no_color1 = false;
+
 				m_conf.ps.blend_a = 0;
 				m_conf.ps.blend_b = 2;
 				m_conf.ps.blend_d = 0;
