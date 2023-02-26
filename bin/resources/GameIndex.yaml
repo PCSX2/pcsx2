@@ -25430,6 +25430,8 @@ SLPM-62029:
   name: "Bust A Move - Dance Summit 2001"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    gpuPaletteConversion: 2 # Improves FPS drastically and reduces HC size massively.
 SLPM-62031:
   name: "Primal Image for Printer"
   region: "NTSC-J"
