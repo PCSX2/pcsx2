@@ -357,6 +357,13 @@ enum class GSGPUTargetCLUTMode : u8
 	InsideTarget,
 };
 
+enum class GSTextureInRtMode : u8
+{
+	Disabled,
+	InsideTargets,
+	MergeTargets,
+};
+
 // Template function for casting enumerations to their underlying type
 template <typename Enumeration>
 typename std::underlying_type<Enumeration>::type enum_cast(Enumeration E)
@@ -670,7 +677,6 @@ struct Pcsx2Config
 					UserHacks_DisableSafeFeatures : 1,
 					UserHacks_MergePPSprite : 1,
 					UserHacks_WildHack : 1,
-					UserHacks_TextureInsideRt : 1,
 					UserHacks_TargetPartialInvalidation : 1,
 					UserHacks_EstimateTextureRegion : 1,
 					FXAA : 1,
@@ -748,6 +754,7 @@ struct Pcsx2Config
 		int UserHacks_CPUSpriteRenderBW{0};
 		int UserHacks_CPUCLUTRender{ 0 };
 		GSGPUTargetCLUTMode UserHacks_GPUTargetCLUTMode{GSGPUTargetCLUTMode::Disabled};
+		GSTextureInRtMode UserHacks_TextureInsideRt{GSTextureInRtMode::Disabled};
 		TriFiltering TriFilter{TriFiltering::Automatic};
 		int OverrideTextureBarriers{-1};
 		int OverrideGeometryShaders{-1};

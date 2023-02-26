@@ -409,8 +409,8 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("CCD={} ", GSConfig.UserHacks_CPUCLUTRender);
 		if (GSConfig.SkipDrawStart != 0 || GSConfig.SkipDrawEnd != 0)
 			APPEND("SD={}/{} ", GSConfig.SkipDrawStart, GSConfig.SkipDrawEnd);
-		if (GSConfig.UserHacks_TextureInsideRt)
-			APPEND("TexRT ");
+		if (GSConfig.UserHacks_TextureInsideRt != GSTextureInRtMode::Disabled)
+			APPEND("TexRT={} ", static_cast<int>(GSConfig.UserHacks_TextureInsideRt));
 		if (GSConfig.UserHacks_WildHack)
 			APPEND("WA ");
 		if (GSConfig.UserHacks_MergePPSprite)

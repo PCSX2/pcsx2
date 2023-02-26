@@ -178,11 +178,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		&GraphicsSettingsWidget::onTrilinearFilteringChanged);
 	connect(m_ui.gpuPaletteConversion, QOverload<int>::of(&QCheckBox::stateChanged), this,
 		&GraphicsSettingsWidget::onGpuPaletteConversionChanged);
-	connect(m_ui.textureInsideRt, QOverload<int>::of(&QCheckBox::stateChanged), this,
+	connect(m_ui.textureInsideRt, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
 		&GraphicsSettingsWidget::onTextureInsideRtChanged);
 	onTrilinearFilteringChanged();
 	onGpuPaletteConversionChanged(m_ui.gpuPaletteConversion->checkState());
-	onTextureInsideRtChanged(m_ui.textureInsideRt->checkState());
+	onTextureInsideRtChanged();
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Renderer Fixes
@@ -200,7 +200,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preloadFrameData, "EmuCore/GS", "preload_frame_with_gs_data", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(
 		sif, m_ui.disablePartialInvalidation, "EmuCore/GS", "UserHacks_DisablePartialInvalidation", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.textureInsideRt, "EmuCore/GS", "UserHacks_TextureInsideRt", false);
+	SettingWidgetBinder::BindWidgetToIntSetting(
+		sif, m_ui.textureInsideRt, "EmuCore/GS", "UserHacks_TextureInsideRt", static_cast<int>(GSTextureInRtMode::Disabled));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.readTCOnClose, "EmuCore/GS", "UserHacks_ReadTCOnClose", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.targetPartialInvalidation, "EmuCore/GS", "UserHacks_TargetPartialInvalidation", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.estimateTextureRegion, "EmuCore/GS", "UserHacks_EstimateTextureRegion", false);
@@ -540,7 +541,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Uploads GS data when rendering a new frame to reproduce some effects accurately. "
 			   "Fixes black screen issues in games like Armored Core: Last Raven."));
 
-		dialog->registerWidgetHelp(m_ui.textureInsideRt, tr("Texture Inside RT"), tr("Unchecked"),
+		dialog->registerWidgetHelp(m_ui.textureInsideRt, tr("Texture Inside RT"), tr("Disabled"),
 			tr("Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer."));
 
 		dialog->registerWidgetHelp(m_ui.readTCOnClose, tr("Read Targets When Closing"), tr("Unchecked"),
@@ -861,11 +862,10 @@ void GraphicsSettingsWidget::onGpuPaletteConversionChanged(int state)
 	m_ui.anisotropicFiltering->setDisabled(disabled);
 }
 
-void GraphicsSettingsWidget::onTextureInsideRtChanged(int state)
+void GraphicsSettingsWidget::onTextureInsideRtChanged()
 {
-	const bool disabled = state == Qt::CheckState::PartiallyChecked ?
-							  Host::GetBaseBoolSettingValue("EmuCore/GS", "UserHacks_TextureInsideRt", false) :
-							  (state != 0);
+	const bool disabled = static_cast<GSTextureInRtMode>(m_dialog->getEffectiveIntValue("EmuCore/GS", "UserHacks_TextureInsideRt",
+							  static_cast<int>(GSTextureInRtMode::Disabled))) >= GSTextureInRtMode::InsideTargets;
 
 	m_ui.targetPartialInvalidation->setDisabled(disabled);
 }

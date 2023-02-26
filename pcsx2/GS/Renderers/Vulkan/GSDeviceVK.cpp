@@ -587,7 +587,7 @@ void GSDeviceVK::DrawMultiStretchRects(
 		last_tex = rects[i].src;
 		last_linear = rects[i].linear;
 		first += count;
-		count = 0;
+		count = 1;
 	}
 
 	DoMultiStretchRects(rects + first, count, static_cast<GSTextureVK*>(dTex), shader);
