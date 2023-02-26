@@ -553,11 +553,118 @@ void GSDeviceVK::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 		m_present[static_cast<int>(shader)], linear);
 }
 
-void GSDeviceVK::BeginRenderPassForStretchRect(GSTextureVK* dTex, const GSVector4i& dtex_rc, const GSVector4i& dst_rc)
+void GSDeviceVK::DrawMultiStretchRects(
+	const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader)
 {
-	const bool is_whole_target = dst_rc.eq(dtex_rc);
+	GSTexture* last_tex = rects[0].src;
+	bool last_linear = rects[0].linear;
+
+	u32 first = 0;
+	u32 count = 1;
+
+	// Make sure all textures are in shader read only layout, so we don't need to break
+	// the render pass to transition.
+	for (u32 i = 0; i < num_rects; i++)
+	{
+		GSTextureVK* const stex = static_cast<GSTextureVK*>(rects[i].src);
+		stex->CommitClear();
+		if (stex->GetLayout() != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+		{
+			EndRenderPass();
+			stex->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
+	}
+
+	for (u32 i = 1; i < num_rects; i++)
+	{
+		if (rects[i].src == last_tex && rects[i].linear == last_linear)
+		{
+			count++;
+			continue;
+		}
+
+		DoMultiStretchRects(rects + first, count, static_cast<GSTextureVK*>(dTex), shader);
+		last_tex = rects[i].src;
+		last_linear = rects[i].linear;
+		first += count;
+		count = 0;
+	}
+
+	DoMultiStretchRects(rects + first, count, static_cast<GSTextureVK*>(dTex), shader);
+}
+
+void GSDeviceVK::DoMultiStretchRects(
+	const MultiStretchRect* rects, u32 num_rects, GSTextureVK* dTex, ShaderConvert shader)
+{
+	// Set up vertices first.
+	const u32 vertex_reserve_size = num_rects * 4 * sizeof(GSVertexPT1);
+	const u32 index_reserve_size = num_rects * 6 * sizeof(u32);
+	if (!m_vertex_stream_buffer.ReserveMemory(vertex_reserve_size, sizeof(GSVertexPT1)) ||
+		!m_index_stream_buffer.ReserveMemory(index_reserve_size, sizeof(u32)))
+	{
+		ExecuteCommandBufferAndRestartRenderPass(false, "Uploading bytes to vertex buffer");
+		if (!m_vertex_stream_buffer.ReserveMemory(vertex_reserve_size, sizeof(GSVertexPT1)) ||
+			!m_index_stream_buffer.ReserveMemory(index_reserve_size, sizeof(u32)))
+		{
+			pxFailRel("Failed to reserve space for vertices");
+		}
+	}
+
+	// Pain in the arse because the primitive topology for the pipelines is all triangle strips.
+	// Don't use primitive restart here, it ends up slower on some drivers.
+	const GSVector2 ds(static_cast<float>(dTex->GetWidth()), static_cast<float>(dTex->GetHeight()));
+	GSVertexPT1* verts = reinterpret_cast<GSVertexPT1*>(m_vertex_stream_buffer.GetCurrentHostPointer());
+	u32* idx = reinterpret_cast<u32*>(m_index_stream_buffer.GetCurrentHostPointer());
+	u32 icount = 0;
+	u32 vcount = 0;
+	for (u32 i = 0; i < num_rects; i++)
+	{
+		const GSVector4& sRect = rects[i].src_rect;
+		const GSVector4& dRect = rects[i].dst_rect;
+		const float left = dRect.x * 2 / ds.x - 1.0f;
+		const float top = 1.0f - dRect.y * 2 / ds.y;
+		const float right = dRect.z * 2 / ds.x - 1.0f;
+		const float bottom = 1.0f - dRect.w * 2 / ds.y;
+
+		const u32 vstart = vcount;
+		verts[vcount++] = {GSVector4(left, top, 0.5f, 1.0f), GSVector2(sRect.x, sRect.y)};
+		verts[vcount++] = {GSVector4(right, top, 0.5f, 1.0f), GSVector2(sRect.z, sRect.y)};
+		verts[vcount++] = {GSVector4(left, bottom, 0.5f, 1.0f), GSVector2(sRect.x, sRect.w)};
+		verts[vcount++] = {GSVector4(right, bottom, 0.5f, 1.0f), GSVector2(sRect.z, sRect.w)};
+
+		if (i > 0)
+			idx[icount++] = vstart;
+
+		idx[icount++] = vstart;
+		idx[icount++] = vstart + 1;
+		idx[icount++] = vstart + 2;
+		idx[icount++] = vstart + 3;
+		idx[icount++] = vstart + 3;
+	};
+
+	m_vertex.start = m_vertex_stream_buffer.GetCurrentOffset() / sizeof(GSVertexPT1);
+	m_vertex.count = vcount;
+	m_index.start = m_index_stream_buffer.GetCurrentOffset() / sizeof(u32);
+	m_index.count = icount;
+	m_vertex_stream_buffer.CommitMemory(vcount * sizeof(GSVertexPT1));
+	m_index_stream_buffer.CommitMemory(icount * sizeof(u32));
+
+	// Even though we're batching, a cmdbuffer submit could've messed this up.
+	const GSVector4i rc(dTex->GetRect());
+	OMSetRenderTargets(dTex, nullptr, dTex->GetRect(), false);
+	if (!InRenderPass() || !CheckRenderPassArea(rc))
+		BeginRenderPassForStretchRect(dTex, rc, rc, false);
+	SetUtilityTexture(rects[0].src, rects[0].linear ? m_linear_sampler : m_point_sampler);
+	SetPipeline(m_convert[static_cast<int>(shader)]);
+	if (ApplyUtilityState())
+		DrawIndexedPrimitive();
+}
+
+void GSDeviceVK::BeginRenderPassForStretchRect(
+	GSTextureVK* dTex, const GSVector4i& dtex_rc, const GSVector4i& dst_rc, bool allow_discard)
+{
 	const VkAttachmentLoadOp load_op =
-		is_whole_target ? VK_ATTACHMENT_LOAD_OP_DONT_CARE : GetLoadOpForTexture(dTex);
+		(allow_discard && dst_rc.eq(dtex_rc)) ? VK_ATTACHMENT_LOAD_OP_DONT_CARE : GetLoadOpForTexture(dTex);
 	dTex->SetState(GSTexture::State::Dirty);
 
 	if (dTex->GetType() == GSTexture::Type::DepthStencil)
