@@ -180,6 +180,12 @@ public:
 		return BNHelper(*this, x, y).value();
 	}
 
+	/// Get the block number of the given pixel, without wrapping to MAX_BLOCKS
+	u32 bnNoWrap(int x, int y) const
+	{
+		return BNHelper(*this, x, y).valueNoWrap();
+	}
+
 	/// Get a helper class for efficiently calculating multiple block numbers
 	BNHelper bnMulti(int x, int y) const
 	{
