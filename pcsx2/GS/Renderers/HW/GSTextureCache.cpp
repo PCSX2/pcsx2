@@ -2985,7 +2985,7 @@ void GSTextureCache::Source::SetPages()
 
 	m_repeating = !m_from_hash_cache && m_TEX0.IsRepeating() && !m_region.IsFixedTEX0(tw, th);
 
-	if (m_repeating && !CanPreload())
+	if (m_repeating && !m_target && !CanPreload())
 	{
 		// TODO: wrong for lupin/invalid tex0
 		m_p2t = g_gs_renderer->m_mem.GetPage2TileMap(m_TEX0);
@@ -3519,18 +3519,6 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, const GSO
 {
 	m_surfaces.insert(s);
 
-	if (s->m_target)
-	{
-		// TODO
-
-		// GH: I don't know why but it seems we only consider the first page for a render target
-		const size_t page = TEX0.TBP0 >> 5;
-
-		s->m_erase_it[page] = m_map[page].InsertFront(s);
-
-		return;
-	}
-
 	// The source pointer will be stored/duplicated in all m_map[array of pages]
 	s->m_pages.loopPages([this, s](u32 page)
 	{
@@ -3568,18 +3556,10 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 		s->m_texture ? s->m_texture->GetID() : 0,
 		s->m_TEX0.TBP0);
 
-	if (s->m_target)
+	s->m_pages.loopPages([this, s](u32 page)
 	{
-		const size_t page = s->m_TEX0.TBP0 >> 5;
 		m_map[page].EraseIndex(s->m_erase_it[page]);
-	}
-	else
-	{
-		s->m_pages.loopPages([this, s](u32 page)
-		{
-			m_map[page].EraseIndex(s->m_erase_it[page]);
-		});
-	}
+	});
 
 	if (s->m_from_hash_cache)
 	{
