@@ -821,9 +821,8 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 
 		if (PS_CLR_HW == 1)
 		{
-			// Replace Af with As so we can do proper compensation for Alpha.
-			if (PS_BLEND_C == 2)
-				As_rgba = (float4)Af;
+			// As or Af
+			As_rgba.rgb = (float3)C;
 			// Subtract 1 for alpha to compensate for the changed equation,
 			// if c.rgb > 255.0f then we further need to adjust alpha accordingly,
 			// we pick the lowest overflow from all colors because it's the safest,
@@ -841,6 +840,16 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			// blended value it can be.
 			float color_compensate = 1.0f * (C + 1.0f);
 			Color.rgb -= (float3)color_compensate;
+		}
+		else if (PS_CLR_HW == 3)
+		{
+			// As, Ad or Af clamped.
+			As_rgba.rgb = (float3)C_clamped;
+			// Cs*(Alpha + 1) might overflow, if it does then adjust alpha value
+			// that is sent on second output to compensate.
+			float3 overflow_check = (Color.rgb - (float3)255.0f) / 255.0f;
+			float3 alpha_compensate = max((float3)0.0f, overflow_check);
+			As_rgba.rgb -= alpha_compensate;
 		}
 	}
 	else
