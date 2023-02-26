@@ -1611,7 +1611,7 @@
             <item row="0" column="1">
              <widget class="QCheckBox" name="osdShowSpeed">
               <property name="text">
-               <string>Show Emulation/Game Speed</string>
+               <string>Show Speed Percentages</string>
               </property>
              </widget>
             </item>
