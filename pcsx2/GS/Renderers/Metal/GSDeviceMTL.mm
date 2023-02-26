@@ -741,6 +741,7 @@ bool GSDeviceMTL::Create()
 	m_features.bptc_textures = true;
 	m_features.framebuffer_fetch = m_dev.features.framebuffer_fetch;
 	m_features.dual_source_blend = true;
+	m_features.clip_control = true;
 	m_features.stencil_buffer = true;
 	m_features.cas_sharpening = true;
 
