@@ -4056,17 +4056,18 @@ GSVector4i GSTextureCache::SourceRegion::GetOffset(int tw, int th) const
 
 GSTextureCache::SourceRegion GSTextureCache::SourceRegion::AdjustForMipmap(u32 level) const
 {
+	// Texture levels must be at least one pixel wide/high.
 	SourceRegion ret = {};
 	if (HasX())
 	{
 		const u32 new_minx = GetMinX() >> level;
-		const u32 new_maxx = ((GetMaxX() - 1) >> level) + 1;
+		const u32 new_maxx = std::max<u32>(GetMaxX() >> level, new_minx + 1);
 		ret.SetX(new_minx, new_maxx);
 	}
 	if (HasY())
 	{
 		const u32 new_miny = GetMinY() >> level;
-		const u32 new_maxy = ((GetMaxY() - 1) >> level) + 1;
+		const u32 new_maxy = std::max<u32>(GetMaxY() >> level, new_miny + 1);
 		ret.SetY(new_miny, new_maxy);
 	}
 	return ret;
