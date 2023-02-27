@@ -971,47 +971,19 @@ void GSRendererHW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 	if (clut)
 		return; // FIXME
 
-	const u32 incoming_end = GSLocalMemory::m_psm[BITBLTBUF.SPSM].info.bn(r.z - 1, r.w - 1, BITBLTBUF.SBP, BITBLTBUF.SBW);
 	std::vector<GSState::GSUploadQueue>::iterator iter = GSRendererHW::GetInstance()->m_draw_transfers.end();
-
 	bool skip = false;
 	// If the EE write overlaps the readback and was done since the last draw, there's no need to read it back.
-	// Dog's life and Ratchet Gladiator do this.
+	// Dog's life does this.
 	while (iter != GSRendererHW::GetInstance()->m_draw_transfers.begin())
 	{
 		--iter;
 
-		if (!GSUtil::HasSharedBits(iter->blit.DPSM, BITBLTBUF.SPSM) || iter->draw != s_n)
+		if (!(iter->draw == s_n && BITBLTBUF.SBP == iter->blit.DBP && iter->blit.DPSM == BITBLTBUF.SPSM && r.eq(iter->rect)))
 			continue;
-
-		// Make sure write covers the read area.
-		const u32 ee_write_end = GSLocalMemory::m_psm[iter->blit.DPSM].info.bn(iter->rect.z - 1, iter->rect.w - 1, iter->blit.DBP, iter->blit.DBW);
-		if (!(iter->blit.DBP < incoming_end && ee_write_end > BITBLTBUF.SBP))
-			continue;
-
-		GSTextureCache::SurfaceOffsetKey sok;
-		sok.elems[0].bp = BITBLTBUF.SBP;
-		sok.elems[0].bw = BITBLTBUF.SBW;
-		sok.elems[0].psm = BITBLTBUF.SPSM;
-		sok.elems[0].rect = r;
-		sok.elems[1].bp = iter->blit.DBP;
-		sok.elems[1].bw = iter->blit.DBW;
-		sok.elems[1].psm = iter->blit.DPSM;
-		sok.elems[1].rect = iter->rect;
-
-		// Calculate the rect offset if the BP doesn't match.
-		const GSVector4i targetr = GSUtil::HasCompatibleBits(iter->blit.DPSM, BITBLTBUF.SPSM) ? r : m_tc->ComputeSurfaceOffset(sok).b2a_offset;
-
-		// Possibly incompatible or missed, we don't know, so let's assume it's a fail.
-		if (targetr.rempty())
-			continue;
-
-		//u32 ee_write_end = GSLocalMemory::m_psm[iter->blit.DPSM].info.bn(iter->rect.z - 1, iter->rect.w - 1, iter->blit.DBP, iter->blit.DBW);
-		// If the format, and location doesn't match, but also the upload is at least the size of the target, don't preload.
-		if (iter->rect.rintersect(targetr).eq(targetr))
-		{
-			skip = true;
-		}
+		m_tc->InvalidateVideoMem(m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM), r);
+		skip = true;
+		break;
 	}
 
 	if(!skip)

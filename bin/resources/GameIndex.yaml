@@ -2117,9 +2117,8 @@ SCED-52049:
   clampModes:
     vuClampMode: 3 # Fixes minor SPS on characters.
   gsHWFixes:
-    preloadFrameData: 1 # Fixes bad textures on Jake.
     halfPixelOffset: 1 # Fixes double image.
-    cpuCLUTRender: 1 # Fixes Jake going black in Smellovision.
+    preloadFrameData: 1 # Stops Jake getting black spots coming out of Smell-o-vision.
 SCED-52051:
   name: "Official PlayStation 2 Magazine Demo 43"
   region: "PAL-M5"
@@ -3338,9 +3337,8 @@ SCES-51248:
     vuClampMode: 3 # Fixes minor SPS on characters.
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
-    preloadFrameData: 1 # Fixes bad textures on Jake.
     halfPixelOffset: 1 # Fixes double image.
-    cpuCLUTRender: 1 # Fixes Jake going black in Smellovision.
+    preloadFrameData: 1 # Stops Jake getting black spots coming out of Smell-o-vision.
 SCES-51426:
   name: "Getaway, The"
   region: "PAL-M5"
@@ -31356,9 +31354,8 @@ SLPM-65995:
   clampModes:
     vuClampMode: 3 # Fixes minor SPS on characters.
   gsHWFixes:
-    preloadFrameData: 1 # Fixes bad textures on Jake.
     halfPixelOffset: 1 # Fixes double image.
-    cpuCLUTRender: 1 # Fixes Jake going black in Smellovision.
+    preloadFrameData: 1 # Stops Jake getting black spots coming out of Smell-o-vision.
 SLPM-65996:
   name: "Hametsu no Mars [Limited Edition]"
   region: "NTSC-J"
@@ -45981,9 +45978,8 @@ SLUS-21018:
   clampModes:
     vuClampMode: 3 # Fixes minor SPS on characters.
   gsHWFixes:
-    preloadFrameData: 1 # Fixes bad textures on Jake.
-    halfPixelOffset: 1 # Fixes double image.gsHWFixes:
-    cpuCLUTRender: 1 # Fixes Jake going black in Smellovision.
+    halfPixelOffset: 1 # Fixes double image.
+    preloadFrameData: 1 # Stops Jake getting black spots coming out of Smell-o-vision.
 SLUS-21019:
   name: "Technic Beat"
   region: "NTSC-U"

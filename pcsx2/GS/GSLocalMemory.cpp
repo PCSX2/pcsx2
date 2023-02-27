@@ -566,6 +566,50 @@ void GSLocalMemory::SaveBMP(const std::string& fn, u32 bp, u32 bw, u32 psm, int 
 	_aligned_free(bits);
 }
 
+bool GSLocalMemory::IsPageAligned(u32 bp, u32 spsm, GSVector4i r, bool bppbw_match)
+{
+	const bool bp_page_aligned_bp = (bp & ~((1 << 5) - 1)) == bp;
+	const GSVector2i page_size = m_psm[spsm].pgs;
+	const GSVector4i page_mask(GSVector4i(~(page_size.x - 1), ~(page_size.y - 1)).xyxy());
+	const GSVector4i masked_rect(r & page_mask);
+
+	// If the BPP and BW matches, then just make sure it's starting on the edge of a page.
+	if (bppbw_match)
+	{
+		return bp_page_aligned_bp && masked_rect.xyxy().eq(r.xyxy());
+	}
+	else
+	{
+		return bp_page_aligned_bp && masked_rect.eq(r);
+	}
+}
+
+GSVector4i GSLocalMemory::TranslateAlignedRectByPage(u32 sbp, u32 spsm, GSVector4i src_r, u32 dbp, u32 dpsm, u32 bw)
+{
+	const GSVector2i src_page_size = m_psm[spsm].pgs;
+	const GSVector2i dst_page_size = m_psm[dpsm].pgs;
+	const int page_offset = (static_cast<int>(sbp) - static_cast<int>(dbp)) >> 5;
+	const int vertical_offset = (page_offset / static_cast<int>(bw)) * dst_page_size.y;
+	const int horizontal_offset = (page_offset % static_cast<int>(bw)) * dst_page_size.x;
+	const GSVector4i rect_pages = GSVector4i(src_r.x / src_page_size.x, src_r.y / src_page_size.y, src_r.z / src_page_size.x, src_r.w / src_page_size.y);
+	GSVector4i new_rect = {};
+
+	// If they match, we can cheat and just offset the rect by the number of pages.
+	if (m_psm[spsm].bpp == m_psm[dpsm].bpp)
+	{
+		new_rect = src_r;
+	}
+	else
+	{
+		new_rect = GSVector4i(rect_pages.x * dst_page_size.x, rect_pages.y * dst_page_size.y, rect_pages.z * dst_page_size.x, rect_pages.w * dst_page_size.y);
+	}
+	new_rect = (new_rect + GSVector4i(0, vertical_offset).xyxy()).max_i32(GSVector4i(0));
+	new_rect = (new_rect + GSVector4i(horizontal_offset, 0).xyxy()).max_i32(GSVector4i(0));
+
+	return new_rect;
+}
+
+
 // GSOffset
 
 namespace
