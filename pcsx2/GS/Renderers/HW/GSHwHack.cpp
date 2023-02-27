@@ -170,25 +170,6 @@ bool GSHwHack::GSC_SacredBlaze(GSRendererHW& r, const GSFrameInfo& fi, int& skip
 	return true;
 }
 
-bool GSHwHack::GSC_Spartan(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if ((fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)))
-			{
-				skip = 2;
-			}
-		}
-	}
-
-	return true;
-}
-
 bool GSHwHack::GSC_Oneechanbara2Special(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -493,21 +474,6 @@ bool GSHwHack::GSC_SakuraWarsSoLongMyLove(GSRendererHW& r, const GSFrameInfo& fi
 		else if (fi.TME && (fi.FBP == 0 || fi.FBP == 0x1180) && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x3F3F && fi.TPSM == PSM_PSMT8)
 		{
 			skip = 1; // Floodlight
-		}
-	}
-
-	return true;
-}
-
-bool GSHwHack::GSC_FightingBeautyWulong(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (!s_nativeres && fi.TME && (fi.TBP0 == 0x0700 || fi.TBP0 == 0x0a80) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
-		{
-			// Don't enable hack on native res if crc is below aggressive.
-			// removes glow/blur which cause ghosting and other sprite issues similar to Tekken 5
-			skip = 1;
 		}
 	}
 
@@ -838,7 +804,7 @@ bool GSHwHack::GSC_BlueTongueGames(GSRendererHW& r, const GSFrameInfo& fi, int& 
 
 bool GSHwHack::OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
-	const size_t n_vertices = r.m_vertex.next;
+	const u32 n_vertices = r.m_vertex.next;
 	const int w = r.m_r.width();
 	const int h = r.m_r.height();
 	const bool is_copy = !r.PRIM->ABE || (
@@ -1036,30 +1002,6 @@ bool GSHwHack::OI_FFX(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCa
 	return true;
 }
 
-bool GSHwHack::OI_MetalSlug6(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	// missing red channel fix (looks alright in pcsx2 r5000+)
-
-	GSVertex* RESTRICT v = r.m_vertex.buff;
-
-	for (size_t i = r.m_vertex.next; i > 0; i--, v++)
-	{
-		const u32 c = v->RGBAQ.U32[0];
-
-		const u32 r = (c >> 0) & 0xff;
-		const u32 g = (c >> 8) & 0xff;
-		const u32 b = (c >> 16) & 0xff;
-
-		if (r == 0 && g != 0 && b != 0)
-		{
-			v->RGBAQ.U32[0] = (c & 0xffffff00) | ((g + b + 1) >> 1);
-		}
-	}
-
-	r.m_vt.Update(r.m_vertex.buff, r.m_index.buff, r.m_vertex.tail, r.m_index.tail, r.m_vt.m_primclass);
-
-	return true;
-}
 
 bool GSHwHack::OI_RozenMaidenGebetGarden(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
@@ -1282,7 +1224,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	// Channel Effect
 	CRC_F(GSC_CrashBandicootWoC, CRCHackLevel::Partial),
 	CRC_F(GSC_GiTS, CRCHackLevel::Partial),
-	CRC_F(GSC_Spartan, CRCHackLevel::Partial),
 	CRC_F(GSC_SteambotChronicles, CRCHackLevel::Partial),
 
 	// Depth Issue
@@ -1296,7 +1237,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_DeathByDegreesTekkenNinaWilliams, CRCHackLevel::Partial), // + Upscaling issues
 
 	// Upscaling hacks
-	CRC_F(GSC_FightingBeautyWulong, CRCHackLevel::Partial),
 	CRC_F(GSC_Oneechanbara2Special, CRCHackLevel::Partial),
 	CRC_F(GSC_UltramanFightingEvolution, CRCHackLevel::Partial),
 	CRC_F(GSC_YakuzaGames, CRCHackLevel::Partial),
@@ -1322,7 +1262,6 @@ const GSHwHack::Entry<GSRendererHW::OI_Ptr> GSHwHack::s_before_draw_functions[] 
 	CRC_F(OI_DBZBTGames, CRCHackLevel::Minimum),
 	CRC_F(OI_FFXII, CRCHackLevel::Minimum),
 	CRC_F(OI_FFX, CRCHackLevel::Minimum),
-	CRC_F(OI_MetalSlug6, CRCHackLevel::Minimum),
 	CRC_F(OI_RozenMaidenGebetGarden, CRCHackLevel::Minimum),
 	CRC_F(OI_SonicUnleashed, CRCHackLevel::Minimum),
 	CRC_F(OI_ArTonelico2, CRCHackLevel::Minimum),

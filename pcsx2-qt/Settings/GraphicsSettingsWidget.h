@@ -41,6 +41,7 @@ private Q_SLOTS:
 	void onAdapterChanged(int index);
 	void onTrilinearFilteringChanged();
 	void onGpuPaletteConversionChanged(int state);
+	void onTextureInsideRtChanged(int state);
 	void onFullscreenModeChanged(int index);
 	void onShadeBoostChanged();
 	void onCaptureContainerChanged();

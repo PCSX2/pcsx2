@@ -42,10 +42,12 @@
 ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSettingsDialog* dialog, u32 port)
 	: QWidget(parent)
 	, m_dialog(dialog)
-	, m_config_section(StringUtil::StdStringFromFormat("Pad%u", port + 1u))
+	, m_config_section(fmt::format("Pad{}", port + 1))
 	, m_port_number(port)
 {
 	m_ui.setupUi(this);
+	m_ui.groupBox->setTitle(tr("Controller Port %1").arg(port + 1));
+
 	populateControllerTypes();
 	onTypeChanged();
 
@@ -113,10 +115,9 @@ void ControllerBindingWidget::onTypeChanged()
 
 	if (has_settings)
 	{
-		const QString settings_title(tr("%1 Settings").arg(qApp->translate("PAD", cinfo->display_name)));
 		const gsl::span<const SettingInfo> settings(cinfo->settings, cinfo->num_settings);
-		m_settings_widget = new ControllerCustomSettingsWidget(
-			settings, m_config_section, std::string(), settings_title, cinfo->name, getDialog(), m_ui.stackedWidget);
+		m_settings_widget =
+			new ControllerCustomSettingsWidget(settings, m_config_section, std::string(), cinfo->name, getDialog(), m_ui.stackedWidget);
 		m_ui.stackedWidget->addWidget(m_settings_widget);
 	}
 
@@ -461,8 +462,7 @@ void ControllerMacroEditWidget::updateBinds()
 //////////////////////////////////////////////////////////////////////////
 
 ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(gsl::span<const SettingInfo> settings, std::string config_section,
-	std::string config_prefix, const QString& group_title, const char* translation_ctx, ControllerSettingsDialog* dialog,
-	QWidget* parent_widget)
+	std::string config_prefix, const char* translation_ctx, ControllerSettingsDialog* dialog, QWidget* parent_widget)
 	: QWidget(parent_widget)
 	, m_settings(settings)
 	, m_config_section(std::move(config_section))
@@ -472,22 +472,19 @@ ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(gsl::span<const S
 	if (settings.empty())
 		return;
 
-	QGroupBox* gbox = new QGroupBox(group_title, this);
-	QGridLayout* gbox_layout = new QGridLayout(gbox);
-	createSettingWidgets(translation_ctx, gbox, gbox_layout);
+	QScrollArea* sarea = new QScrollArea(this);
+	QWidget* swidget = new QWidget(sarea);
+	sarea->setWidget(swidget);
+	sarea->setWidgetResizable(true);
+	sarea->setFrameShape(QFrame::StyledPanel);
+	sarea->setFrameShadow(QFrame::Sunken);
+
+	QGridLayout* swidget_layout = new QGridLayout(swidget);
+	createSettingWidgets(translation_ctx, swidget, swidget_layout);
 
 	QVBoxLayout* layout = new QVBoxLayout(this);
 	layout->setContentsMargins(0, 0, 0, 0);
-	layout->addWidget(gbox);
-
-	QHBoxLayout* bottom_hlayout = new QHBoxLayout();
-	QPushButton* restore_defaults = new QPushButton(tr("Restore Default Settings"), this);
-	restore_defaults->setIcon(QIcon::fromTheme(QStringLiteral("restart-line")));
-	connect(restore_defaults, &QPushButton::clicked, this, &ControllerCustomSettingsWidget::restoreDefaults);
-	bottom_hlayout->addStretch(1);
-	bottom_hlayout->addWidget(restore_defaults);
-	layout->addLayout(bottom_hlayout);
-	layout->addStretch(1);
+	layout->addWidget(sarea);
 }
 
 ControllerCustomSettingsWidget::~ControllerCustomSettingsWidget() = default;
@@ -506,8 +503,6 @@ static std::tuple<QString, QString> getPrefixAndSuffixForIntFormat(const QString
 	return std::tie(prefix, suffix);
 }
 
-#if 0
-// Unused until we handle multiplier below.
 static std::tuple<QString, QString, int> getPrefixAndSuffixForFloatFormat(const QString& format)
 {
 	QString prefix, suffix;
@@ -535,7 +530,6 @@ static std::tuple<QString, QString, int> getPrefixAndSuffixForFloatFormat(const 
 
 	return std::tie(prefix, suffix, decimals);
 }
-#endif
 
 void ControllerCustomSettingsWidget::createSettingWidgets(const char* translation_ctx, QWidget* widget_parent, QGridLayout* layout)
 {
@@ -572,7 +566,8 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 					sb->setPrefix(prefix);
 					sb->setSuffix(suffix);
 				}
-				SettingWidgetBinder::BindWidgetToIntSetting(sif, sb, m_config_section, std::move(key_name), si.IntegerDefaultValue());
+				ControllerSettingWidgetBinder::BindWidgetToInputProfileInt(
+					sif, sb, m_config_section, std::move(key_name), si.IntegerDefaultValue());
 				layout->addWidget(new QLabel(qApp->translate(translation_ctx, si.display_name), widget_parent), current_row, 0);
 				layout->addWidget(sb, current_row, 1, 1, 3);
 				current_row++;
@@ -585,7 +580,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 				cb->setObjectName(QString::fromUtf8(si.name));
 				for (u32 i = 0; si.options[i] != nullptr; i++)
 					cb->addItem(qApp->translate(translation_ctx, si.options[i]));
-				SettingWidgetBinder::BindWidgetToIntSetting(
+				ControllerSettingWidgetBinder::BindWidgetToInputProfileInt(
 					sif, cb, m_config_section, std::move(key_name), si.IntegerDefaultValue(), si.IntegerMinValue());
 				layout->addWidget(new QLabel(qApp->translate(translation_ctx, si.display_name), widget_parent), current_row, 0);
 				layout->addWidget(cb, current_row, 1, 1, 3);
@@ -597,11 +592,10 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 			{
 				QDoubleSpinBox* sb = new QDoubleSpinBox(widget_parent);
 				sb->setObjectName(QString::fromUtf8(si.name));
-				sb->setMinimum(si.FloatMinValue());
-				sb->setMaximum(si.FloatMaxValue());
-				sb->setSingleStep(si.FloatStepValue());
-#if 0
-				// We can't use this until we handle multiplier.
+				sb->setMinimum(si.FloatMinValue() * si.multiplier);
+				sb->setMaximum(si.FloatMaxValue() * si.multiplier);
+				sb->setSingleStep(si.FloatStepValue() * si.multiplier);
+
 				if (si.format)
 				{
 					const auto [prefix, suffix, decimals] = getPrefixAndSuffixForFloatFormat(QString::fromUtf8(si.format));
@@ -610,8 +604,9 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 						sb->setDecimals(decimals);
 					sb->setSuffix(suffix);
 				}
-#endif
-				SettingWidgetBinder::BindWidgetToFloatSetting(sif, sb, m_config_section, std::move(key_name), si.FloatDefaultValue());
+
+				ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(
+					sif, sb, m_config_section, std::move(key_name), si.FloatDefaultValue(), si.multiplier);
 				layout->addWidget(new QLabel(qApp->translate(translation_ctx, si.display_name), widget_parent), current_row, 0);
 				layout->addWidget(sb, current_row, 1, 1, 3);
 				current_row++;
@@ -622,7 +617,8 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 			{
 				QLineEdit* le = new QLineEdit(widget_parent);
 				le->setObjectName(QString::fromUtf8(si.name));
-				SettingWidgetBinder::BindWidgetToStringSetting(sif, le, m_config_section, std::move(key_name), si.StringDefaultValue());
+				ControllerSettingWidgetBinder::BindWidgetToInputProfileString(
+					sif, le, m_config_section, std::move(key_name), si.StringDefaultValue());
 				layout->addWidget(new QLabel(qApp->translate(translation_ctx, si.display_name), widget_parent), current_row, 0);
 				layout->addWidget(le, current_row, 1, 1, 3);
 				current_row++;
@@ -644,7 +640,8 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 					for (u32 i = 0; si.options[i] != nullptr; i++)
 						cb->addItem(qApp->translate(translation_ctx, si.options[i]), QString::fromUtf8(si.options[i]));
 				}
-				SettingWidgetBinder::BindWidgetToStringSetting(sif, cb, m_config_section, std::move(key_name), si.StringDefaultValue());
+				ControllerSettingWidgetBinder::BindWidgetToInputProfileString(
+					sif, cb, m_config_section, std::move(key_name), si.StringDefaultValue());
 				layout->addWidget(new QLabel(qApp->translate(translation_ctx, si.display_name), widget_parent), current_row, 0);
 				layout->addWidget(cb, current_row, 1, 1, 3);
 				current_row++;
@@ -656,7 +653,8 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 				QLineEdit* le = new QLineEdit(widget_parent);
 				le->setObjectName(QString::fromUtf8(si.name));
 				QPushButton* browse_button = new QPushButton(tr("Browse..."), widget_parent);
-				SettingWidgetBinder::BindWidgetToStringSetting(sif, le, m_config_section, std::move(key_name), si.StringDefaultValue());
+				ControllerSettingWidgetBinder::BindWidgetToInputProfileString(
+					sif, le, m_config_section, std::move(key_name), si.StringDefaultValue());
 				connect(browse_button, &QPushButton::clicked, [this, le]() {
 					const QString path(QDir::toNativeSeparators(QFileDialog::getOpenFileName(this, tr("Select File"))));
 					if (!path.isEmpty())
@@ -680,6 +678,16 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 
 		layout->addItem(new QSpacerItem(1, 10, QSizePolicy::Minimum, QSizePolicy::Fixed), current_row++, 0, 1, 4);
 	}
+
+	QHBoxLayout* bottom_hlayout = new QHBoxLayout();
+	QPushButton* restore_defaults = new QPushButton(tr("Restore Default Settings"), this);
+	restore_defaults->setIcon(QIcon::fromTheme(QStringLiteral("restart-line")));
+	connect(restore_defaults, &QPushButton::clicked, this, &ControllerCustomSettingsWidget::restoreDefaults);
+	bottom_hlayout->addStretch(1);
+	bottom_hlayout->addWidget(restore_defaults);
+	layout->addLayout(bottom_hlayout, current_row++, 0, 1, 4);
+
+	layout->addItem(new QSpacerItem(1, 1, QSizePolicy::Minimum, QSizePolicy::Expanding), current_row++, 0, 1, 4);
 }
 
 void ControllerCustomSettingsWidget::restoreDefaults()
@@ -718,7 +726,7 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 			{
 				QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QString::fromStdString(si.name));
 				if (widget)
-					widget->setValue(si.FloatDefaultValue());
+					widget->setValue(si.FloatDefaultValue() * si.multiplier);
 			}
 			break;
 
@@ -854,10 +862,12 @@ ControllerBindingWidget_Base* ControllerBindingWidget_DualShock2::createInstance
 USBDeviceWidget::USBDeviceWidget(QWidget* parent, ControllerSettingsDialog* dialog, u32 port)
 	: QWidget(parent)
 	, m_dialog(dialog)
-	, m_config_section(StringUtil::StdStringFromFormat("USB%u", port + 1u))
+	, m_config_section(fmt::format("USB{}", port + 1))
 	, m_port_number(port)
 {
 	m_ui.setupUi(this);
+	m_ui.groupBox->setTitle(tr("USB Port %1").arg(port + 1));
+
 	populateDeviceTypes();
 	populatePages();
 
@@ -929,9 +939,8 @@ void USBDeviceWidget::populatePages()
 
 	if (!settings.empty())
 	{
-		const QString settings_title(tr("Device Settings"));
 		m_settings_widget = new ControllerCustomSettingsWidget(
-			settings, m_config_section, m_device_type + "_", settings_title, m_device_type.c_str(), m_dialog, m_ui.stackedWidget);
+			settings, m_config_section, m_device_type + "_", m_device_type.c_str(), m_dialog, m_ui.stackedWidget);
 		m_ui.stackedWidget->addWidget(m_settings_widget);
 	}
 

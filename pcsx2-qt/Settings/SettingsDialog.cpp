@@ -115,8 +115,8 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	{
 		addWidget(m_game_fix_settings_widget = new GameFixSettingsWidget(this, m_ui.settingsContainer), tr("Game Fix"),
 			QStringLiteral("close-line"),
-			tr("<strong>Game Fix Settings</strong><hr>Game fixes can work around incorrect emulation in some titles.<br>However, they "
-			   "can also cause problems in games if used incorrectly.<br>It is best to leave them all disabled unless advised otherwise."));
+			tr("<strong>Game Fix Settings</strong><hr>Gamefixes can work around incorrect emulation in some titles.<br>However, they can "
+			   "also cause problems in games if used incorrectly.<br>It is best to leave them all disabled unless advised otherwise."));
 	}
 
 	addWidget(m_graphics_settings = new GraphicsSettingsWidget(this, m_ui.settingsContainer), tr("Graphics"), QStringLiteral("brush-line"),

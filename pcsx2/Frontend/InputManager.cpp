@@ -105,6 +105,7 @@ namespace InputManager
 	static bool ParseBindingAndGetSource(const std::string_view& binding, InputBindingKey* key, InputSource** source);
 
 	static bool IsAxisHandler(const InputEventHandler& handler);
+	static float ApplySingleBindingScale(float sensitivity, float deadzone, float value);
 
 	static void AddHotkeyBindings(SettingsInterface& si);
 	static void AddPadBindings(SettingsInterface& si, u32 pad, const char* default_type);
@@ -159,7 +160,11 @@ struct PointerAxisState
 static std::array<std::array<float, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES> s_host_pointer_positions;
 static std::array<std::array<PointerAxisState, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES>
 	s_pointer_state;
-static std::array<float, static_cast<u8>(InputPointerAxis::Count)> s_pointer_axis_scale;
+static std::array<float, 2> s_pointer_axis_speed;
+static std::array<float, 2> s_pointer_axis_dead_zone;
+static std::array<float, 2> s_pointer_axis_range;
+static std::array<float, 2> s_pointer_pos = {0.0f, 0.0f};
+static float s_pointer_inertia = 0.0f;
 
 using PointerMoveCallback = std::function<void(InputBindingKey key, float value)>;
 using KeyboardEventCallback = std::function<void(InputBindingKey key, float value)>;
@@ -585,6 +590,12 @@ std::string InputManager::GetPointerDeviceName(u32 pointer_index)
 // Binding Enumeration
 // ------------------------------------------------------------------------
 
+float InputManager::ApplySingleBindingScale(float scale, float deadzone, float value)
+{
+	const float svalue = std::clamp(value * scale, 0.0f, 1.0f);
+	return (deadzone > 0.0f && svalue < deadzone) ? 0.0f : svalue;
+}
+
 std::vector<const HotkeyInfo*> InputManager::GetHotkeyList()
 {
 	std::vector<const HotkeyInfo*> ret;
@@ -613,7 +624,7 @@ void InputManager::AddHotkeyBindings(SettingsInterface& si)
 
 void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const char* default_type)
 {
-	const std::string section(StringUtil::StdStringFromFormat("Pad%u", pad_index + 1));
+	const std::string section(fmt::format("Pad{}", pad_index + 1));
 	const std::string type(si.GetStringValue(section.c_str(), "Type", default_type));
 	if (type.empty() || type == "None")
 		return;
@@ -636,9 +647,12 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 				if (!bindings.empty())
 				{
 					// we use axes for all pad bindings to simplify things, and because they are pressure sensitive
-					AddBindings(bindings, InputAxisEventHandler{[pad_index, bind_index = bi.bind_index](float value) {
-						PAD::SetControllerState(pad_index, bind_index, value);
-					}});
+					const float sensitivity = si.GetFloatValue(section.c_str(), fmt::format("{}Scale", bi.name).c_str(), 1.0f);
+					const float deadzone = si.GetFloatValue(section.c_str(), fmt::format("{}Deadzone", bi.name).c_str(), 0.0f);
+					AddBindings(
+						bindings, InputAxisEventHandler{[pad_index, bind_index = bi.bind_index, sensitivity, deadzone](float value) {
+							PAD::SetControllerState(pad_index, bind_index, ApplySingleBindingScale(sensitivity, deadzone, value));
+						}});
 				}
 			}
 			break;
@@ -717,8 +731,11 @@ void InputManager::AddUSBBindings(SettingsInterface& si, u32 port)
 				const std::vector<std::string> bindings(si.GetStringList(section.c_str(), bind_name.c_str()));
 				if (!bindings.empty())
 				{
-					AddBindings(bindings, InputAxisEventHandler{[port, bind_index = bi.bind_index](
-																	float value) { USB::SetDeviceBindValue(port, bind_index, value); }});
+					const float sensitivity = si.GetFloatValue(section.c_str(), fmt::format("{}Scale", bi.name).c_str(), 1.0f);
+					const float deadzone = si.GetFloatValue(section.c_str(), fmt::format("{}Deadzone", bi.name).c_str(), 0.0f);
+					AddBindings(bindings, InputAxisEventHandler{[port, bind_index = bi.bind_index, sensitivity, deadzone](float value) {
+						USB::SetDeviceBindValue(port, bind_index, ApplySingleBindingScale(sensitivity, deadzone, value));
+					}});
 				}
 			}
 			break;
@@ -937,15 +954,34 @@ void InputManager::GenerateRelativeMouseEvents()
 	{
 		for (u32 axis = 0; axis < static_cast<u32>(static_cast<u8>(InputPointerAxis::Count)); axis++)
 		{
+			const InputBindingKey key(MakePointerAxisKey(device, static_cast<InputPointerAxis>(axis)));
+
 			PointerAxisState& state = s_pointer_state[device][axis];
 			const float delta = static_cast<float>(state.delta.exchange(0, std::memory_order_acquire)) / 65536.0f;
-			const float unclamped_value = delta * s_pointer_axis_scale[axis];
+			float value = 0.0f;
 
-			const InputBindingKey key(MakePointerAxisKey(device, static_cast<InputPointerAxis>(axis)));
-			if (axis >= static_cast<u32>(InputPointerAxis::WheelX) && ImGuiManager::ProcessPointerAxisEvent(key, unclamped_value))
-				continue;
+			if (axis <= static_cast<u32>(InputPointerAxis::Y))
+			{
+				s_pointer_pos[axis] += delta * s_pointer_axis_speed[axis];
+				value = std::clamp(s_pointer_pos[axis], -1.0f, 1.0f);
+				s_pointer_pos[axis] -= value;
+				s_pointer_pos[axis] *= s_pointer_inertia;
 
-			const float value = std::clamp(unclamped_value, -1.0f, 1.0f);
+				value *= s_pointer_axis_range[axis];
+				if (value > 0.0f)
+					value += s_pointer_axis_dead_zone[axis];
+				else if (value < 0.0f)
+					value -= s_pointer_axis_dead_zone[axis];
+			}
+			else
+			{
+				// ImGui can consume mouse wheel events when the mouse is over a UI element.
+				if (delta != 0.0f && ImGuiManager::ProcessPointerAxisEvent(key, delta))
+					continue;
+
+				value = std::clamp(delta, -1.0f, 1.0f);
+			}
+
 			if (value != state.last_value)
 			{
 				state.last_value = value;
@@ -1190,14 +1226,18 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 	for (u32 pad = 0; pad < PAD::NUM_CONTROLLER_PORTS; pad++)
 		AddPadBindings(binding_si, pad, PAD::GetDefaultPadType(pad));
 
-	for (u32 axis = 0; axis < static_cast<u32>(InputPointerAxis::Count); axis++)
+	constexpr float ui_ctrl_range = 100.0f;
+	constexpr float pointer_sensitivity = 0.05f;
+	for (u32 axis = 0; axis <= static_cast<u32>(InputPointerAxis::Y); axis++)
 	{
-		// From lilypad: 1 mouse pixel = 1/8th way down.
-		const float default_scale = (axis <= static_cast<u32>(InputPointerAxis::Y)) ? 8.0f : 1.0f;
-		s_pointer_axis_scale[axis] =
-			1.0f /
-			std::max(si.GetFloatValue("Pad", fmt::format("Pointer{}Scale", s_pointer_axis_names[axis]).c_str(), default_scale), 1.0f);
+		s_pointer_axis_speed[axis] = si.GetFloatValue("Pad", fmt::format("Pointer{}Speed", s_pointer_axis_names[axis]).c_str(), 40.0f) /
+									 ui_ctrl_range * pointer_sensitivity;
+		s_pointer_axis_dead_zone[axis] = std::min(
+			si.GetFloatValue("Pad", fmt::format("Pointer{}DeadZone", s_pointer_axis_names[axis]).c_str(), 20.0f) / ui_ctrl_range, 1.0f);
+		s_pointer_axis_range[axis] = 1.0f - s_pointer_axis_dead_zone[axis];
 	}
+	s_pointer_inertia = si.GetFloatValue("Pad", "PointerInertia", 10.0f) / ui_ctrl_range;
+	s_pointer_pos = {};
 
 	for (u32 port = 0; port < USB::NUM_PORTS; port++)
 		AddUSBBindings(binding_si, port);

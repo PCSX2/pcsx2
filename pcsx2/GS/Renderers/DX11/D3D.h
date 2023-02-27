@@ -32,6 +32,9 @@ namespace D3D
 	// however in the event that the adapter is not found due to the above, use the default
 	wil::com_ptr_nothrow<IDXGIAdapter1> GetAdapterFromIndex(IDXGIFactory2* factory, int index);
 
+	// returns the driver version from the registry as a string
+	std::string GetDriverVersionFromLUID(const LUID& luid);
+
 	// this is sort of a legacy thing that doesn't have much to do with d3d (just the easiest way)
 	// checks to see if the adapter at 0 is NV and thus we should prefer OpenGL
 	enum VendorID

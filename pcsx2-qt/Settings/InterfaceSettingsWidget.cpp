@@ -40,6 +40,8 @@ static const char* THEME_NAMES[] = {
 	//:I18N COMMENT: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Violet Angel (Blue/Purple) [Dark]"),
 	//:I18N COMMENT: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Cobalt Sky (Royal Blue) [Dark]"),
+	//:I18N COMMENT: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Ruby (Black/Red) [Dark]"),
 	//:I18N COMMENT: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Sapphire (Black/Blue) [Dark]"),
@@ -57,6 +59,7 @@ static const char* THEME_VALUES[] = {
 	"PCSX2Blue",
 	"ScarletDevilRed",
 	"VioletAngelPurple",
+	"CobaltSky",
 	"Ruby",
 	"Sapphire",
 	"Custom",
@@ -141,7 +144,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 		m_ui.confirmShutdown, tr("Confirm Shutdown"), tr("Checked"),
 		tr("Determines whether a prompt will be displayed to confirm shutting down the virtual machine "
 		   "when the hotkey is pressed."));
-	dialog->registerWidgetHelp(m_ui.saveStateOnShutdown, tr("Save State On Shutdown"), tr("Checked"),
+	dialog->registerWidgetHelp(m_ui.saveStateOnShutdown, tr("Save State On Shutdown"), tr("Unchecked"),
 		tr("Automatically saves the emulator state when powering down or exiting. You can then "
 		   "resume directly from where you left off next time."));
 	dialog->registerWidgetHelp(m_ui.pauseOnStart, tr("Pause On Start"), tr("Unchecked"),

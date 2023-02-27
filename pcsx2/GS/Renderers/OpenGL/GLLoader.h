@@ -29,9 +29,8 @@ namespace GLLoader
 	extern bool vendor_id_amd;
 	extern bool vendor_id_nvidia;
 	extern bool vendor_id_intel;
-	extern bool mesa_driver;
 	extern bool buggy_pbo;
-	extern bool in_replayer;
+	extern bool disable_download_pbo;
 
 	// GL
 	extern bool is_gles;

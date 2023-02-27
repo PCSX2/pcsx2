@@ -309,9 +309,12 @@ struct alignas(16) GSHWDrawConfig
 				u32 tcc : 1;
 				u32 wms : 2;
 				u32 wmt : 2;
+				u32 adjs : 1;
+				u32 adjt : 1;
 				u32 ltf : 1;
 				// Shuffle and fbmask effect
 				u32 shuffle  : 1;
+				u32 real16src: 1;
 				u32 read_ba  : 1;
 				u32 write_rg : 1;
 				u32 fbmask   : 1;
@@ -329,6 +332,7 @@ struct alignas(16) GSHWDrawConfig
 				u32 hdr         : 1;
 				u32 colclip     : 1;
 				u32 blend_mix   : 2;
+				u32 round_inv   : 1; // Blending will invert the value, so rounding needs to go the other way
 				u32 pabe        : 1;
 				u32 no_color    : 1; // disables color output entirely (depth only)
 				u32 no_color1   : 1; // disables second color output (when unnecessary)
@@ -352,7 +356,6 @@ struct alignas(16) GSHWDrawConfig
 				u32 automatic_lod : 1;
 				u32 manual_lod : 1;
 				u32 point_sampler : 1;
-				u32 invalid_tex0 : 1; // Lupin the 3rd
 
 				// Scan mask
 				u32 scanmsk : 2;
@@ -554,11 +557,11 @@ struct alignas(16) GSHWDrawConfig
 		GSVector4 FogColor_AREF;
 		GSVector4 WH;
 		GSVector4 TA_MaxDepth_Af;
-		GSVector4i MskFix;
 		GSVector4i FbMask;
 
 		GSVector4 HalfTexel;
 		GSVector4 MinMax;
+		GSVector4 STRange;
 		GSVector4i ChannelShuffle;
 		GSVector2 TCOffsetHack;
 		GSVector2 STScale;
@@ -744,11 +747,11 @@ protected:
 
 	struct
 	{
-		size_t stride, start, count, limit;
+		u32 start, count;
 	} m_vertex = {};
 	struct
 	{
-		size_t start, count, limit;
+		u32 start, count;
 	} m_index = {};
 	unsigned int m_frame = 0; // for ageing the pool
 	bool m_rbswapped = false;
@@ -757,7 +760,7 @@ protected:
 	virtual GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) = 0;
 	GSTexture* FetchSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format, bool clear, bool prefer_reuse);
 
-	virtual void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) = 0;
+	virtual void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c, const bool linear) = 0;
 	virtual void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset, int bufIdx) = 0;
 	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) {}
 	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) {}
@@ -798,9 +801,6 @@ public:
 
 	virtual void ResetAPIState();
 	virtual void RestoreAPIState();
-
-	virtual void BeginScene() {}
-	virtual void EndScene();
 
 	virtual void ClearRenderTarget(GSTexture* t, const GSVector4& c) {}
 	virtual void ClearRenderTarget(GSTexture* t, u32 c) {}
@@ -859,8 +859,8 @@ public:
 
 	__fi static constexpr bool IsDualSourceBlendFactor(u8 factor)
 	{
-		return (factor == SRC1_ALPHA || factor == INV_SRC1_ALPHA
-			/*|| factor == SRC1_COLOR || factor == INV_SRC1_COLOR*/); // not used
+		return (factor == SRC1_ALPHA || factor == INV_SRC1_ALPHA || factor == SRC1_COLOR
+			/* || factor == INV_SRC1_COLOR*/); // not used
 	}
 	__fi static constexpr bool IsConstantBlendFactor(u16 factor)
 	{

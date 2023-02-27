@@ -153,6 +153,9 @@ namespace Vulkan
 		m_provoking_vertex = {};
 		m_provoking_vertex.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT;
 
+		m_line_rasterization_state = {};
+		m_line_rasterization_state.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_EXT;
+
 		// set defaults
 		SetNoCullRasterizationState();
 		SetNoDepthTestState();
@@ -255,7 +258,17 @@ namespace Vulkan
 		m_ci.pRasterizationState = &m_rasterization_state;
 	}
 
-	void GraphicsPipelineBuilder::SetLineWidth(float width) { m_rasterization_state.lineWidth = width; }
+	void GraphicsPipelineBuilder::SetLineWidth(float width)
+	{
+		m_rasterization_state.lineWidth = width;
+	}
+
+	void GraphicsPipelineBuilder::SetLineRasterizationMode(VkLineRasterizationModeEXT mode)
+	{
+		Util::AddPointerToChain(&m_rasterization_state, &m_line_rasterization_state);
+
+		m_line_rasterization_state.lineRasterizationMode = mode;
+	}
 
 	void GraphicsPipelineBuilder::SetMultisamples(u32 multisamples, bool per_sample_shading)
 	{

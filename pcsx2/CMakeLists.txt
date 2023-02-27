@@ -916,14 +916,14 @@ set(pcsx2LinuxSources
 	)
 
 set(pcsx2OSXSources
-	CDVD/Linux/DriveUtility.cpp
-	CDVD/Linux/IOCtlSrc.cpp
+	CDVD/Darwin/DriveUtility.cpp
+	CDVD/Darwin/IOCtlSrc.cpp
 	Darwin/DarwinFlatFileReader.cpp
 	)
 
 set(pcsx2FreeBSDSources
-	CDVD/Linux/DriveUtility.cpp
-	CDVD/Linux/IOCtlSrc.cpp
+	CDVD/Darwin/DriveUtility.cpp
+	CDVD/Darwin/IOCtlSrc.cpp
 	Darwin/DarwinFlatFileReader.cpp
 	)
 

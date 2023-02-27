@@ -251,6 +251,9 @@ bool GSDeviceVK::CheckFeatures()
 	if (!m_features.texture_barrier)
 		Console.Warning("Texture buffers are disabled. This may break some graphical effects.");
 
+	if (!g_vulkan_context->GetOptionalExtensions().vk_ext_line_rasterization)
+		Console.WriteLn("VK_EXT_line_rasterization or the BRESENHAM mode is not supported, this may cause rendering inaccuracies.");
+
 	// Test for D32S8 support.
 	{
 		VkFormatProperties props = {};
@@ -702,7 +705,7 @@ void GSDeviceVK::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GS
 }
 
 void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect,
-	const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
+	const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c, const bool linear)
 {
 	GL_PUSH("DoMerge");
 
@@ -711,7 +714,7 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	const bool feedback_write_2 = PMODE.EN2 && sTex[2] != nullptr && EXTBUF.FBIN == 1;
 	const bool feedback_write_1 = PMODE.EN1 && sTex[2] != nullptr && EXTBUF.FBIN == 0;
 	const bool feedback_write_2_but_blend_bg = feedback_write_2 && PMODE.SLBG == 1;
-
+	const VkSampler& sampler = linear? m_linear_sampler : m_point_sampler;
 	// Merge the 2 source textures (sTex[0],sTex[1]). Final results go to dTex. Feedback write will go to sTex[2].
 	// If either 2nd output is disabled or SLBG is 1, a background color will be used.
 	// Note: background color is also used when outside of the unit rectangle area
@@ -733,7 +736,7 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		{
 			static_cast<GSTextureVK*>(sTex[1])->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 			OMSetRenderTargets(dTex, nullptr, darea, false);
-			SetUtilityTexture(sTex[1], m_linear_sampler);
+			SetUtilityTexture(sTex[1], sampler);
 			BeginClearRenderPass(m_utility_color_render_pass_clear, darea, c);
 			SetPipeline(m_convert[static_cast<int>(ShaderConvert::COPY)]);
 			DrawStretchRect(sRect[1], PMODE.SLBG ? dRect[2] : dRect[1], dsize);
@@ -750,7 +753,7 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		EndRenderPass();
 		OMSetRenderTargets(sTex[2], nullptr, fbarea, false);
 		if (dcleared)
-			SetUtilityTexture(dTex, m_linear_sampler);
+			SetUtilityTexture(dTex, sampler);
 		// sTex[2] can be sTex[0], in which case it might be cleared (e.g. Xenosaga).
 		BeginRenderPassForStretchRect(static_cast<GSTextureVK*>(sTex[2]), fbarea, GSVector4i(dRect[2]));
 		if (dcleared)
@@ -784,7 +787,7 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	if (sTex[0] && sTex[0]->GetState() == GSTexture::State::Dirty)
 	{
 		// 1st output is enabled. It must be blended
-		SetUtilityTexture(sTex[0], m_linear_sampler);
+		SetUtilityTexture(sTex[0], sampler);
 		SetPipeline(m_merge[PMODE.MMOD]);
 		SetUtilityPushConstants(&c, sizeof(c));
 		DrawStretchRect(sRect[0], dRect[0], dTex->GetSize());
@@ -794,7 +797,7 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	{
 		EndRenderPass();
 		SetPipeline(m_convert[static_cast<int>(ShaderConvert::YUV)]);
-		SetUtilityTexture(dTex, m_linear_sampler);
+		SetUtilityTexture(dTex, sampler);
 		SetUtilityPushConstants(yuv_constants, sizeof(yuv_constants));
 		OMSetRenderTargets(sTex[2], nullptr, fbarea, false);
 		BeginRenderPass(m_utility_color_render_pass_load, fbarea);
@@ -882,38 +885,10 @@ void GSDeviceVK::IASetVertexBuffer(const void* vertex, size_t stride, size_t cou
 	}
 
 	m_vertex.start = m_vertex_stream_buffer.GetCurrentOffset() / stride;
-	m_vertex.limit = count;
-	m_vertex.stride = stride;
 	m_vertex.count = count;
 	SetVertexBuffer(m_vertex_stream_buffer.GetBuffer(), 0);
 
 	GSVector4i::storent(m_vertex_stream_buffer.GetCurrentHostPointer(), vertex, count * stride);
-	m_vertex_stream_buffer.CommitMemory(size);
-}
-
-bool GSDeviceVK::IAMapVertexBuffer(void** vertex, size_t stride, size_t count)
-{
-	const u32 size = static_cast<u32>(stride) * static_cast<u32>(count);
-	if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
-	{
-		ExecuteCommandBufferAndRestartRenderPass(false, "Mapping bytes to vertex buffer");
-		if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
-			pxFailRel("Failed to reserve space for vertices");
-	}
-
-	m_vertex.start = m_vertex_stream_buffer.GetCurrentOffset() / stride;
-	m_vertex.limit = m_vertex_stream_buffer.GetCurrentSpace() / stride;
-	m_vertex.stride = stride;
-	m_vertex.count = count;
-	SetVertexBuffer(m_vertex_stream_buffer.GetBuffer(), 0);
-
-	*vertex = m_vertex_stream_buffer.GetCurrentHostPointer();
-	return true;
-}
-
-void GSDeviceVK::IAUnmapVertexBuffer()
-{
-	const u32 size = static_cast<u32>(m_vertex.stride) * static_cast<u32>(m_vertex.count);
 	m_vertex_stream_buffer.CommitMemory(size);
 }
 
@@ -928,7 +903,6 @@ void GSDeviceVK::IASetIndexBuffer(const void* index, size_t count)
 	}
 
 	m_index.start = m_index_stream_buffer.GetCurrentOffset() / sizeof(u32);
-	m_index.limit = count;
 	m_index.count = count;
 	SetIndexBuffer(m_index_stream_buffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
@@ -1977,6 +1951,8 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_FST", sel.fst);
 	AddMacro(ss, "PS_WMS", sel.wms);
 	AddMacro(ss, "PS_WMT", sel.wmt);
+	AddMacro(ss, "PS_ADJS", sel.adjs);
+	AddMacro(ss, "PS_ADJT", sel.adjt);
 	AddMacro(ss, "PS_AEM_FMT", sel.aem_fmt);
 	AddMacro(ss, "PS_PAL_FMT", sel.pal_fmt);
 	AddMacro(ss, "PS_DFMT", sel.dfmt);
@@ -1984,7 +1960,6 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_CHANNEL_FETCH", sel.channel);
 	AddMacro(ss, "PS_URBAN_CHAOS_HLE", sel.urban_chaos_hle);
 	AddMacro(ss, "PS_TALES_OF_ABYSS_HLE", sel.tales_of_abyss_hle);
-	AddMacro(ss, "PS_INVALID_TEX0", sel.invalid_tex0);
 	AddMacro(ss, "PS_AEM", sel.aem);
 	AddMacro(ss, "PS_TFX", sel.tfx);
 	AddMacro(ss, "PS_TCC", sel.tcc);
@@ -2004,10 +1979,12 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_BLEND_C", sel.blend_c);
 	AddMacro(ss, "PS_BLEND_D", sel.blend_d);
 	AddMacro(ss, "PS_BLEND_MIX", sel.blend_mix);
+	AddMacro(ss, "PS_ROUND_INV", sel.round_inv);
 	AddMacro(ss, "PS_FIXED_ONE_A", sel.fixed_one_a);
 	AddMacro(ss, "PS_IIP", sel.iip);
 	AddMacro(ss, "PS_SHUFFLE", sel.shuffle);
 	AddMacro(ss, "PS_READ_BA", sel.read_ba);
+	AddMacro(ss, "PS_READ16_SRC", sel.real16src);
 	AddMacro(ss, "PS_WRITE_RG", sel.write_rg);
 	AddMacro(ss, "PS_FBMASK", sel.fbmask);
 	AddMacro(ss, "PS_HDR", sel.hdr);
@@ -2075,6 +2052,8 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	gpb.SetRasterizationState(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
 	if (p.line_width)
 		gpb.SetLineWidth(static_cast<float>(GSConfig.UpscaleMultiplier));
+	if (p.topology == static_cast<u8>(GSHWDrawConfig::Topology::Line) && g_vulkan_context->GetOptionalExtensions().vk_ext_line_rasterization)
+		gpb.SetLineRasterizationMode(VK_LINE_RASTERIZATION_MODE_BRESENHAM_EXT);
 	gpb.SetDynamicViewportAndScissorState();
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
 
@@ -3056,7 +3035,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	{
 		// avoid restarting the render pass just to switch from rt+depth to rt and vice versa
 		if (!draw_ds && m_current_depth_target && m_current_render_target == draw_rt &&
-			config.tex != m_current_depth_target && !(pipe.feedback_loop && !CurrentFramebufferHasFeedbackLoop()))
+			config.tex != m_current_depth_target && m_current_depth_target->GetSize() == draw_rt->GetSize() &&
+			!(pipe.feedback_loop && !CurrentFramebufferHasFeedbackLoop()))
 		{
 			draw_ds = m_current_depth_target;
 			m_pipeline_selector.ds = true;
@@ -3176,8 +3156,6 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 	if (date_image)
 		Recycle(date_image);
-
-	EndScene();
 
 	// now blit the hdr texture back to the original target
 	if (hdr_rt)

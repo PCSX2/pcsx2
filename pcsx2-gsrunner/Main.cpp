@@ -48,6 +48,7 @@
 #include "pcsx2/HostDisplay.h"
 #include "pcsx2/HostSettings.h"
 #include "pcsx2/INISettingsInterface.h"
+#include "pcsx2/PAD/Host/PAD.h"
 #include "pcsx2/PerformanceMetrics.h"
 #include "pcsx2/VMManager.h"
 
@@ -79,6 +80,7 @@ static std::optional<bool> s_use_window;
 
 // Owned by the GS thread.
 static u32 s_dump_frame_number = 0;
+static u32 s_loop_number = s_loop_count;
 
 bool GSRunner::InitializeConfig()
 {
@@ -101,6 +103,13 @@ bool GSRunner::InitializeConfig()
 
 	// we don't need any sound output
 	si.SetStringValue("SPU2/Output", "OutputModule", "nullout");
+
+	// none of the bindings are going to resolve to anything
+	PAD::ClearPortBindings(si, 0);
+	si.ClearSection("Hotkeys");
+
+	// make sure any gamesettings inis in your tree don't get loaded
+	si.SetBoolValue("EmuCore", "EnablePerGameSettings", false);
 
 	// force logging
 	si.SetBoolValue("Logging", "EnableSystemConsole", true);
@@ -271,21 +280,26 @@ void Host::ReleaseHostDisplay(bool clear_state)
 	g_host_display.reset();
 }
 
-bool Host::BeginPresentFrame(bool frame_skip)
+HostDisplay::PresentResult Host::BeginPresentFrame(bool frame_skip)
 {
-	// when we wrap around, don't race other files
-	GSJoinSnapshotThreads();
+	if (s_loop_number == 0)
+	{
+		// when we wrap around, don't race other files
+		GSJoinSnapshotThreads();
 
-	// queue dumping of this frame
-	std::string dump_path(fmt::format("{}_frame{}.png", s_output_prefix, s_dump_frame_number));
-	GSQueueSnapshot(dump_path);
+		// queue dumping of this frame
+		std::string dump_path(fmt::format("{}_frame{}.png", s_output_prefix, s_dump_frame_number));
+		GSQueueSnapshot(dump_path);
+	}
 
-	if (g_host_display->BeginPresent(frame_skip))
-		return true;
+	const HostDisplay::PresentResult result = g_host_display->BeginPresent(frame_skip);
+	if (result != HostDisplay::PresentResult::OK)
+	{
+		// don't render imgui
+		ImGuiManager::SkipFrame();
+	}
 
-	// don't render imgui
-	ImGuiManager::NewFrame();
-	return false;
+	return result;
 }
 
 void Host::EndPresentFrame()
@@ -519,6 +533,29 @@ static bool ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& param
 				s_settings_interface.SetIntValue("EmuCore/GS", "Renderer", static_cast<int>(type));
 				continue;
 			}
+			else if (CHECK_ARG_PARAM("-renderhacks"))
+			{
+				std::string str(argv[++i]);
+
+				s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks", true);
+
+				if(str.find("af") != std::string::npos)
+					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_AutoFlush", true);
+				if (str.find("cpufb") != std::string::npos)
+					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_CPU_FB_Conversion", true);
+				if (str.find("dds") != std::string::npos)
+					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_DisableDepthSupport", true);
+				if (str.find("dpi") != std::string::npos)
+					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_DisablePartialInvalidation", true);
+				if (str.find("dsf") != std::string::npos)
+					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_DisableSafeFeatures", true);
+				if (str.find("tinrt") != std::string::npos)
+					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_TextureInsideRt", true);
+				if (str.find("plf") != std::string::npos)
+					s_settings_interface.SetBoolValue("EmuCore/GS", "preload_frame_with_gs_data", true);
+
+				continue;
+			}
 			else if (CHECK_ARG_PARAM("-logfile"))
 			{
 				const char* logfile = argv[++i];
@@ -627,6 +664,7 @@ int main(int argc, char* argv[])
 
 	// apply new settings (e.g. pick up renderer change)
 	VMManager::ApplySettings();
+	GSDumpReplayer::SetIsDumpRunner(true);
 
 	if (VMManager::Initialize(params))
 	{
@@ -651,6 +689,7 @@ void Host::CPUThreadVSync()
 {
 	// update GS thread copy of frame number
 	GetMTGS().RunOnGSThread([frame_number = GSDumpReplayer::GetFrameNumber()]() { s_dump_frame_number = frame_number; });
+	GetMTGS().RunOnGSThread([loop_number = GSDumpReplayer::GetLoopCount()]() { s_loop_number = loop_number; });
 
 	// process any window messages (but we shouldn't really have any)
 	GSRunner::PumpPlatformMessages();

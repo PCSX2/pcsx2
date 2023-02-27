@@ -17,22 +17,36 @@
 
 #include "GS/GSLocalMemory.h"
 
+union RGBAMask
+{
+	struct
+	{
+		u32 r : 1;
+		u32 g : 1;
+		u32 b : 1;
+		u32 a : 1;
+	} c;
+	u32 _u32;
+};
+
 class GSDirtyRect
 {
 public:
 	GSVector4i r;
 	u32 psm;
 	u32 bw;
+	RGBAMask rgba;
 
 	GSDirtyRect();
-	GSDirtyRect(GSVector4i& r, u32 psm, u32 bw);
-	GSVector4i GetDirtyRect(GIFRegTEX0& TEX0) const;
+	GSDirtyRect(GSVector4i& r, u32 psm, u32 bw, RGBAMask rgba);
+	GSVector4i GetDirtyRect(GIFRegTEX0 TEX0) const;
 };
 
 class GSDirtyRectList : public std::vector<GSDirtyRect>
 {
 public:
 	GSDirtyRectList() {}
-	GSVector4i GetDirtyRect(GIFRegTEX0& TEX0, const GSVector2i& size) const;
-	GSVector4i GetDirtyRectAndClear(GIFRegTEX0& TEX0, const GSVector2i& size);
+	GSVector4i GetTotalRect(GIFRegTEX0 TEX0, const GSVector2i& size) const;
+	u32 GetDirtyChannels();
+	GSVector4i GetDirtyRect(size_t index, GIFRegTEX0 TEX0, const GSVector4i& clamp) const;
 };

@@ -23,6 +23,7 @@ class GSRenderer : public GSState
 {
 private:
 	bool Merge(int field);
+	bool BeginPresentFrame(bool frame_skip);
 
 	u64 m_shader_time_start = 0;
 
@@ -33,6 +34,7 @@ private:
 protected:
 	GSVector2i m_real_size{0, 0};
 	bool m_texture_shuffle = false;
+	bool m_copy_16bit_to_target_shuffle = false;
 
 	virtual GSTexture* GetOutput(int i, int& y_offset) = 0;
 	virtual GSTexture* GetFeedbackOutput() { return nullptr; }
@@ -50,9 +52,6 @@ public:
 	virtual float GetUpscaleMultiplier() { return 1.0f; }
 	virtual GSVector2 GetTextureScaleFactor() { return { 1.0f, 1.0f }; }
 	GSVector2i GetInternalResolution();
-
-	virtual void PurgePool() override;
-	virtual void PurgeTextureCache();
 
 	virtual GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, const GSVector2i& size);
 

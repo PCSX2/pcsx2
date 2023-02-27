@@ -20,8 +20,12 @@
 #include "R5900.h" // for g_GameStarted
 #include "IopBios.h"
 #include "IopMem.h"
+#include "iR3000A.h"
+#include "ps2/BiosTools.h"
+#include "DebugTools/SymbolMap.h"
 
 #include <ctype.h>
+#include <fmt/format.h>
 #include <string.h>
 #include <sys/stat.h>
 #include "common/FileSystem.h"
@@ -90,6 +94,11 @@ void Hle_SetElfPath(const char* elfFileName)
 	DevCon.WriteLn("HLE Host: Will load ELF: %s\n", elfFileName);
 	hostRoot = Path::ToNativePath(Path::GetDirectory(elfFileName));
 	Console.WriteLn("HLE Host: Set 'host:' root path to: %s\n", hostRoot.c_str());
+}
+
+void Hle_ClearElfPath()
+{
+	hostRoot = {};
 }
 
 namespace R3000A
@@ -983,6 +992,37 @@ namespace R3000A
 
 	namespace loadcore
 	{
+
+		// Gets the thread list ptr from thbase
+		u32 GetThreadList(u32 a0reg, u32 version)
+		{
+			// Function 3 returns the main thread manager struct
+			u32 function = iopMemRead32(a0reg + 0x20);
+
+			// read the lui
+			u32 thstruct = (iopMemRead32(function) & 0xFFFF) << 16;
+			thstruct |= iopMemRead32(function + 4) & 0xFFFF;
+
+			u32 list = thstruct + 0x42c;
+
+			if (version > 0x101)
+				list = thstruct + 0x430;
+
+			return list;
+		}
+
+		int RegisterLibraryEntries_HLE()
+		{
+			const std::string modname = iopMemReadString(a0 + 12);
+			if (modname == "thbase")
+			{
+				const u32 version = iopMemRead32(a0 + 8);
+				CurrentBiosInformation.iopThreadListAddr = GetThreadList(a0, version);
+			}
+
+			return 0;
+		}
+
 		void RegisterLibraryEntries_DEBUG()
 		{
 			const std::string modname = iopMemReadString(a0 + 12);
@@ -1091,6 +1131,11 @@ namespace R3000A
 		// clang-format off
 		MODULE(sysmem)
 			EXPORT_H( 14, Kprintf)
+		END_MODULE
+
+		// For grabbing the thread list from thbase
+		MODULE(loadcore)
+			EXPORT_H( 6, RegisterLibraryEntries)
 		END_MODULE
 
 		// Special case with ioman and iomanX

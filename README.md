@@ -36,10 +36,10 @@ _Note: Recommended GPU is based on 3x Internal, ~1080p resolution requirements. 
 
 ### Technical Notes
 
--   You need the [Visual C++ 2019 x64 Redistributables](https://support.microsoft.com/en-us/help/2977003/) to run PCSX2.
+-   You need the [Visual C++ 2019 x64 Redistributables](https://support.microsoft.com/en-us/help/2977003/) to run PCSX2 on Windows.
 -   Windows XP and Direct3D9 support was dropped after stable release 1.4.0.
 -   Windows 7, Windows 8.0, and Windows 8.1 support was dropped after stable release 1.6.0.
--   32-bit and wxwidgets support was dropped after stable release 1.6.0, with the wxwidgets code being removed completely on 25th December 2022.
+-   32-bit and wxWidgets support was dropped after stable release 1.6.0, with the wxWidgets code being removed completely on 25th December 2022.
 -   Make sure to update your operating system and drivers to ensure you have the best experience possible. Having a newer GPU is also recommended so you have the latest supported drivers.
 -   Because of copyright issues, and the complexity of trying to work around it, you need a BIOS dump extracted from a legitimately-owned PS2 console to use the emulator. For more information about the BIOS and how to get it from your console, visit [this page](pcsx2/Docs/PCSX2_FAQ.md#question-13-where-do-i-get-a-ps2-bios).
 -   PCSX2 uses two CPU cores for emulation by default. A third core can be used via the MTVU speed hack, which is compatible with most games. This can be a significant speedup on CPUs with 3+ cores, but it may be a slowdown on GS-limited games (or on CPUs with fewer than 2 cores). Software renderers will then additionally use however many rendering threads it is set to and will need higher core counts to run efficiently.

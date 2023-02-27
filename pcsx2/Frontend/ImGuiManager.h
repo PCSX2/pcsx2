@@ -40,6 +40,9 @@ namespace ImGuiManager
 	/// Call at the beginning of the frame to set up ImGui state.
 	void NewFrame();
 
+	/// Call when skipping rendering a frame, to update internal state.
+	void SkipFrame();
+
 	/// Renders any on-screen display elements.
 	void RenderOSD();
 

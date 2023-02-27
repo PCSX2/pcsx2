@@ -75,6 +75,7 @@ private:
 		CLUTDrawOnGPU,
 	};
 
+	bool HasEEUpload(GSVector4i r);
 	CLUTDrawTestResult PossibleCLUTDraw();
 	CLUTDrawTestResult PossibleCLUTDrawAggressive();
 	bool CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_tex);
@@ -97,8 +98,8 @@ private:
 	void SetTCOffset();
 
 	GSTextureCache* m_tc;
-	GSVector4i m_r;
-	GSTextureCache::Source* m_src;
+	GSVector4i m_r = {};
+	GSTextureCache::Source* m_src = nullptr;
 
 	// CRC Hacks
 	bool IsBadFrame();
@@ -107,21 +108,26 @@ private:
 	int m_skip = 0;
 	int m_skip_offset = 0;
 
-	bool m_reset;
-	bool m_tex_is_fb;
-	bool m_channel_shuffle;
-	bool m_userhacks_tcoffset;
-	float m_userhacks_tcoffset_x;
-	float m_userhacks_tcoffset_y;
+	u32 m_last_channel_shuffle_fbmsk = 0;
+	bool m_channel_shuffle = false;
 
-	GSVector2i m_lod; // Min & Max level of detail
+	bool m_tex_is_fb = false;
+	bool m_userhacks_tcoffset = false;
+	float m_userhacks_tcoffset_x = 0.0f;
+	float m_userhacks_tcoffset_y = 0.0f;
 
-	GSHWDrawConfig m_conf;
+	GSVector2i m_lod = {}; // Min & Max level of detail
+
+	GSHWDrawConfig m_conf = {};
 
 	// software sprite renderer state
 	std::vector<GSVertexSW> m_sw_vertex_buffer;
 	std::unique_ptr<GSTextureCacheSW::Texture> m_sw_texture[7 + 1];
 	std::unique_ptr<GSVirtualAlignedClass<32>> m_sw_rasterizer;
+
+	// Tracking draw counters for idle frame detection.
+	int m_last_draw_n = 0;
+	int m_last_transfer_n = 0;
 
 public:
 	GSRendererHW();
@@ -161,6 +167,7 @@ public:
 	void Draw() override;
 
 	void PurgeTextureCache() override;
+	void ReadbackTextureCache() override;
 	GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, const GSVector2i& size) override;
 
 	// Called by the texture cache to know if current texture is useful

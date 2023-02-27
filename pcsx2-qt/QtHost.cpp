@@ -96,6 +96,7 @@ static bool s_nogui_mode = false;
 static bool s_start_fullscreen_ui = false;
 static bool s_start_fullscreen_ui_fullscreen = false;
 static bool s_test_config_and_exit = false;
+static bool s_boot_and_debug = false;
 
 //////////////////////////////////////////////////////////////////////////
 // CPU Thread
@@ -966,17 +967,17 @@ void Host::ReleaseHostDisplay(bool clear_state)
 	g_emu_thread->releaseHostDisplay(clear_state);
 }
 
-bool Host::BeginPresentFrame(bool frame_skip)
+HostDisplay::PresentResult Host::BeginPresentFrame(bool frame_skip)
 {
-	if (!g_host_display->BeginPresent(frame_skip))
+	const HostDisplay::PresentResult result = g_host_display->BeginPresent(frame_skip);
+	if (result != HostDisplay::PresentResult::OK)
 	{
 		// if we're skipping a frame, we need to reset imgui's state, since
 		// we won't be calling EndPresentFrame().
-		ImGuiManager::NewFrame();
-		return false;
+		ImGuiManager::SkipFrame();
 	}
 
-	return true;
+	return result;
 }
 
 void Host::EndPresentFrame()
@@ -1621,6 +1622,7 @@ void QtHost::PrintCommandLineHelp(const std::string_view& progname)
 	std::fprintf(stderr, "  -nofullscreen: Prevents fullscreen mode from triggering if enabled.\n");
 	std::fprintf(stderr, "  -earlyconsolelog: Forces logging of early console messages to console.\n");
 	std::fprintf(stderr, "  -testconfig: Initializes configuration and checks version, then exits.\n");
+	std::fprintf(stderr, "  -debugger: Open debugger and break on entry point.\n");
 #ifdef ENABLE_RAINTEGRATION
 	std::fprintf(stderr, "  -raintegration: Use RAIntegration instead of built-in achievement support.\n");
 #endif
@@ -1741,6 +1743,11 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 			else if (CHECK_ARG(QStringLiteral("-testconfig")))
 			{
 				s_test_config_and_exit = true;
+				continue;
+			}
+			else if (CHECK_ARG(QStringLiteral("-debugger")))
+			{
+				s_boot_and_debug = true;
 				continue;
 			}
 #ifdef ENABLE_RAINTEGRATION
@@ -1879,6 +1886,12 @@ int main(int argc, char* argv[])
 	// Initialize big picture mode if requested.
 	if (s_start_fullscreen_ui)
 		g_emu_thread->startFullscreenUI(s_start_fullscreen_ui_fullscreen);
+
+	if (s_boot_and_debug)
+	{
+		DebugInterface::setPauseOnEntry(true);
+		main_window->openDebugger();
+	}
 
 	// Skip the update check if we're booting a game directly.
 	if (autoboot)

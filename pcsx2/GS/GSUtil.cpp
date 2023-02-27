@@ -130,19 +130,42 @@ bool GSUtil::HasSharedBits(u32 spsm, const u32* RESTRICT ptr)
 	return (ptr[spsm >> 5] & (1 << (spsm & 0x1f))) == 0;
 }
 
+// Pixels can NOT coexist in the same 32bits of space.
+// Example: Using PSMT8H or PSMT4HL/HH with CT24 would fail this check.
 bool GSUtil::HasSharedBits(u32 spsm, u32 dpsm)
 {
 	return (s_maps.SharedBitsField[dpsm][spsm >> 5] & (1 << (spsm & 0x1f))) == 0;
 }
 
+// Pixels can NOT coexist in the same 32bits of space.
+// Example: Using PSMT8H or PSMT4HL/HH with CT24 would fail this check.
+// SBP and DBO must match.
 bool GSUtil::HasSharedBits(u32 sbp, u32 spsm, u32 dbp, u32 dpsm)
 {
 	return ((sbp ^ dbp) | (s_maps.SharedBitsField[dpsm][spsm >> 5] & (1 << (spsm & 0x1f)))) == 0;
 }
 
+// Shares bit depths, only detects 16/24/32 bit formats.
+// 24/32bit cross compatible, 16bit compatbile with 16bit.
 bool GSUtil::HasCompatibleBits(u32 spsm, u32 dpsm)
 {
 	return (s_maps.CompatibleBitsField[spsm][dpsm >> 5] & (1 << (dpsm & 0x1f))) != 0;
+}
+
+u32 GSUtil::GetChannelMask(u32 spsm)
+{
+	switch (spsm)
+	{
+		case PSM_PSMCT24:
+		case PSM_PSMZ24:
+			return 0x7;
+		case PSM_PSMT8H:
+		case PSM_PSMT4HH: // This sucks, I'm sorry, but we don't have a way to do half channels
+		case PSM_PSMT4HL: // So uuhh TODO I guess.
+			return 0x8;
+		default:
+			return 0xf;
+	}
 }
 
 CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)
@@ -156,14 +179,19 @@ GSRendererType GSUtil::GetPreferredRenderer()
 	// Mac: Prefer Metal hardware.
 	return GSRendererType::Metal;
 #elif defined(_WIN32)
-	if (D3D::ShouldPreferRenderer() == D3D::Renderer::Vulkan)
+	const u8 preferred = D3D::ShouldPreferRenderer();
+#if defined(ENABLE_VULKAN)
+	if (preferred == D3D::Renderer::Vulkan)
 		return GSRendererType::VK;
+#endif
 #if defined(ENABLE_OPENGL)
-	else if (D3D::ShouldPreferRenderer() == D3D::Renderer::OpenGL)
+	if (preferred == D3D::Renderer::OpenGL)
 		return GSRendererType::OGL;
 #endif
-	else
-		return GSRendererType::DX11;
+	if (preferred == D3D::Renderer::Direct3D12)
+		return GSRendererType::DX12;
+
+	return GSRendererType::DX11;
 #else
 	// Linux: Prefer GL/Vulkan, whatever is available.
 #if defined(ENABLE_OPENGL)

@@ -287,7 +287,7 @@ public:
 			bool blend_color  : 1;
 			bool pipeline_sel : 1;
 			bool sampler      : 1;
-		} has;
+		} has = {};
 		DepthStencilSelector depth_sel = DepthStencilSelector::NoDepth();
 		// Clear line (Things below here are tracked by `has` and don't need to be cleared to reset)
 		SamplerSelector sampler_sel;
@@ -351,7 +351,7 @@ public:
 
 	GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) override;
 
-	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) override;
+	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c, const bool linear) override;
 	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset, int bufIdx) override;
 	void DoFXAA(GSTexture* sTex, GSTexture* dTex) override;
 	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) override;

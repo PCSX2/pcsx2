@@ -495,6 +495,16 @@ void AutoUpdaterDialog::checkIfUpdateNeeded()
 
 	Console.WriteLn(Color_StrongRed, "Update needed.");
 
+	// Don't show the dialog if a game started while the update info was downloading. Some people have
+	// really slow connections, apparently. If we're a manual triggered update check, then display
+	// regardless. This will fall through and signal main to delete us.
+	if (!m_display_messages &&
+		(QtHost::IsVMValid() || (g_emu_thread->isRunningFullscreenUI() && g_emu_thread->isFullscreen())))
+	{
+		Console.WriteLn(Color_StrongRed, "Not showing update dialog due to active VM.");
+		return;
+	}
+
 	m_ui.currentVersion->setText(tr("Current Version: %1 (%2)").arg(getCurrentVersion()).arg(getCurrentVersionDate()));
 	m_ui.newVersion->setText(tr("New Version: %1 (%2)").arg(m_latest_version).arg(m_latest_version_timestamp.toString()));
 	m_ui.updateNotes->setText(tr("Loading..."));

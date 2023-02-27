@@ -37,9 +37,12 @@ constant uint PS_TFX                [[function_constant(GSMTLConstantIndex_PS_TF
 constant bool PS_TCC                [[function_constant(GSMTLConstantIndex_PS_TCC)]];
 constant uint PS_WMS                [[function_constant(GSMTLConstantIndex_PS_WMS)]];
 constant uint PS_WMT                [[function_constant(GSMTLConstantIndex_PS_WMT)]];
+constant bool PS_ADJS               [[function_constant(GSMTLConstantIndex_PS_ADJS)]];
+constant bool PS_ADJT               [[function_constant(GSMTLConstantIndex_PS_ADJT)]];
 constant bool PS_LTF                [[function_constant(GSMTLConstantIndex_PS_LTF)]];
 constant bool PS_SHUFFLE            [[function_constant(GSMTLConstantIndex_PS_SHUFFLE)]];
 constant bool PS_READ_BA            [[function_constant(GSMTLConstantIndex_PS_READ_BA)]];
+constant bool PS_READ16_SRC         [[function_constant(GSMTLConstantIndex_PS_READ16_SRC)]];
 constant bool PS_WRITE_RG           [[function_constant(GSMTLConstantIndex_PS_WRITE_RG)]];
 constant bool PS_FBMASK             [[function_constant(GSMTLConstantIndex_PS_FBMASK)]];
 constant uint PS_BLEND_A            [[function_constant(GSMTLConstantIndex_PS_BLEND_A)]];
@@ -50,6 +53,7 @@ constant uint PS_CLR_HW             [[function_constant(GSMTLConstantIndex_PS_CL
 constant bool PS_HDR                [[function_constant(GSMTLConstantIndex_PS_HDR)]];
 constant bool PS_COLCLIP            [[function_constant(GSMTLConstantIndex_PS_COLCLIP)]];
 constant uint PS_BLEND_MIX          [[function_constant(GSMTLConstantIndex_PS_BLEND_MIX)]];
+constant bool PS_ROUND_INV          [[function_constant(GSMTLConstantIndex_PS_ROUND_INV)]];
 constant bool PS_FIXED_ONE_A        [[function_constant(GSMTLConstantIndex_PS_FIXED_ONE_A)]];
 constant bool PS_PABE               [[function_constant(GSMTLConstantIndex_PS_PABE)]];
 constant bool PS_NO_COLOR           [[function_constant(GSMTLConstantIndex_PS_NO_COLOR)]];
@@ -65,7 +69,6 @@ constant bool PS_TEX_IS_FB          [[function_constant(GSMTLConstantIndex_PS_TE
 constant bool PS_AUTOMATIC_LOD      [[function_constant(GSMTLConstantIndex_PS_AUTOMATIC_LOD)]];
 constant bool PS_MANUAL_LOD         [[function_constant(GSMTLConstantIndex_PS_MANUAL_LOD)]];
 constant bool PS_POINT_SAMPLER      [[function_constant(GSMTLConstantIndex_PS_POINT_SAMPLER)]];
-constant bool PS_INVALID_TEX0       [[function_constant(GSMTLConstantIndex_PS_INVALID_TEX0)]];
 constant uint PS_SCANMSK            [[function_constant(GSMTLConstantIndex_PS_SCANMSK)]];
 
 constant GSMTLExpandType VS_EXPAND_TYPE = static_cast<GSMTLExpandType>(VS_EXPAND_TYPE_RAW);
@@ -321,7 +324,21 @@ struct PSMain
 			// As of 2018 this issue is still present.
 			uv = (trunc(uv * cb.wh.zw) + 0.5) / cb.wh.zw;
 		}
-		uv *= cb.st_scale;
+		if (!PS_ADJS && !PS_ADJT)
+		{
+			uv *= cb.st_scale;
+		}
+		else
+		{
+			if (PS_ADJS)
+				uv.x = (uv.x - cb.st_range.x) * cb.st_range.z;
+			else
+				uv.x = uv.x * cb.st_scale.x;
+			if (PS_ADJT)
+				uv.y = (uv.y - cb.st_range.y) * cb.st_range.w;
+			else
+				uv.y = uv.y * cb.st_scale.y;
+		}
 
 		if (PS_AUTOMATIC_LOD)
 		{
@@ -360,7 +377,7 @@ struct PSMain
 	float4 clamp_wrap_uv(float4 uv)
 	{
 		float4 uv_out = uv;
-		float4 tex_size = PS_INVALID_TEX0 ? cb.wh.zwzw : cb.wh.xyxy;
+		float4 tex_size = cb.wh.xyxy;
 
 		if (PS_WMS == PS_WMT)
 		{
@@ -724,12 +741,7 @@ struct PSMain
 	float4 ps_color()
 	{
 		float2 st, st_int;
-		if (!FST && PS_INVALID_TEX0)
-		{
-			st = (in.t.xy * cb.wh.xy) / (in.t.w * cb.wh.zw);
-			st_int = (in.ti.zw * cb.wh.xy) / (in.t.w * cb.wh.zw);
-		}
-		else if (!FST)
+		if (!FST)
 		{
 			st = in.t.xy / in.t.w;
 			st_int = in.ti.zw / in.t.w;
@@ -782,7 +794,11 @@ struct PSMain
 			fpos = ushort2(in.p.xy);
 		else
 			fpos = ushort2(in.p.xy / SCALING_FACTOR);
-		C.rgb += cb.dither_matrix[fpos.y & 3][fpos.x & 3];
+		float value = cb.dither_matrix[fpos.y & 3][fpos.x & 3];;
+		if (PS_ROUND_INV)
+			C.rgb -= value;
+		else
+			C.rgb += value;
 	}
 
 	void ps_color_clamp_wrap(thread float4& C)
@@ -790,6 +806,9 @@ struct PSMain
 		// When dithering the bottom 3 bits become meaningless and cause lines in the picture so we need to limit the color depth on dithered items
 		if (!SW_BLEND && !PS_DITHER && !PS_FBMASK)
 			return;
+
+		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
+			C.rgb += 7.f; // Need to round up, not down since the shader will invert
 
 		// Correct the Color value based on the output format
 		if (!PS_COLCLIP && !PS_HDR)
@@ -814,8 +833,10 @@ struct PSMain
 		return selector == 0 ? zero : selector == 1 ? one : two;
 	}
 
-	void ps_blend(thread float4& Color, thread float& As)
+	void ps_blend(thread float4& Color, thread float4& As_rgba)
 	{
+		float As = As_rgba.a;
+		
 		if (SW_BLEND)
 		{
 			// PABE
@@ -862,15 +883,14 @@ struct PSMain
 			{
 				// Replace Af with As so we can do proper compensation for Alpha.
 				if (PS_BLEND_C == 2)
-					As = cb.alpha_fix;
+					As_rgba = float4(cb.alpha_fix);
 				// Subtract 1 for alpha to compensate for the changed equation,
 				// if c.rgb > 255.0f then we further need to adjust alpha accordingly,
 				// we pick the lowest overflow from all colors because it's the safest,
 				// we divide by 255 the color because we don't know Cd value,
 				// changed alpha should only be done for hw blend.
-				float min_color = min(min(Color.r, Color.g), Color.b);
-				float alpha_compensate = max(1.f, min_color / 255.f);
-				As -= alpha_compensate;
+				float3 alpha_compensate = max(float3(1.f), Color.rgb / float3(255.f));
+				As_rgba.rgb -= alpha_compensate;
 			}
 			else if (PS_CLR_HW == 2)
 			{
@@ -940,11 +960,22 @@ struct PSMain
 			uint4 denorm_c = uint4(C);
 			uint2 denorm_TA = uint2(cb.ta * 255.5f);
 
-			C.rb = PS_READ_BA ? C.bb : C.rr;
-			if (PS_READ_BA)
-				C.ga = (denorm_c.a & 0x7F) | (denorm_c.a & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
+			if (PS_READ16_SRC)
+			{
+				C.rb = (denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5);
+				if (denorm_c.a & 0x80)
+					C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80);
+				else
+					C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80);
+			}
 			else
-				C.ga = (denorm_c.g & 0x7F) | (denorm_c.g & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
+			{
+				C.rb = PS_READ_BA ? C.bb : C.rr;
+				if (PS_READ_BA)
+					C.ga = (denorm_c.a & 0x7F) | (denorm_c.a & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
+				else
+					C.ga = (denorm_c.g & 0x7F) | (denorm_c.g & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
+			}
 		}
 
 		// Must be done before alpha correction
@@ -955,7 +986,7 @@ struct PSMain
 			C.a = 128.0f;
 		}
 
-		float alpha_blend = SW_AD_TO_HW ? (trunc(current_color.a * 255.5f) / 128.f) : (C.a / 128.f);
+		float4 alpha_blend = SW_AD_TO_HW ? float4(trunc(current_color.a * 255.5f) / 128.f) : float4(C.a / 128.f);
 
 		if (PS_DFMT == FMT_16)
 		{

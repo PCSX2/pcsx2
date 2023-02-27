@@ -89,6 +89,7 @@ static void SaveYAMLToFile(const char* filename, const ryml::NodeRef& node)
 }
 
 static constexpr time_t MEMORY_CARD_FILE_ENTRY_DATE_TIME_OFFSET = 60 * 60 * 9; // 9 hours from UTC
+static auto last = std::chrono::time_point<std::chrono::system_clock>();
 
 MemoryCardFileEntryDateTime MemoryCardFileEntryDateTime::FromTime(time_t time)
 {
@@ -1919,10 +1920,13 @@ void FolderMemoryCard::DeleteFromIndex(const std::string& filePath, const std::s
 	if (yaml.has_value() && !yaml.value().empty())
 	{
 		ryml::NodeRef index = yaml.value().rootref();
-		index.remove_child(c4::csubstr(entry.data(), entry.length()));
-
-		// Write out the changes
-		SaveYAMLToFile(indexName.c_str(), index);
+		
+		if (index.has_child(c4::csubstr(entry.data(), entry.length())))
+		{
+			index.remove_child(c4::csubstr(entry.data(), entry.length()));
+			// Write out the changes
+			SaveYAMLToFile(indexName.c_str(), index);
+		}
 	}
 }
 
@@ -2350,9 +2354,16 @@ s32 FolderMemoryCardAggregator::Save(uint slot, const u8* src, u32 adr, int size
 	const s32 saveResult = m_cards[slot].Save(src, adr, size);
 	if (saveResult)
 	{
-		const std::string_view filename = Path::GetFileName(m_cards[slot].GetFolderName());
-		Host::AddIconOSDMessage(fmt::format("MemoryCardSave{}", slot), ICON_FA_SD_CARD,
-			fmt::format("Memory card '{}' was saved to storage.", filename), Host::OSD_INFO_DURATION);
+		std::chrono::duration<float> elapsed = std::chrono::system_clock::now() - last;
+		if (elapsed > std::chrono::seconds(5))
+		{
+			const std::string_view filename = Path::GetFileName(m_cards[slot].GetFolderName());
+			Host::AddIconOSDMessage(fmt::format("MemoryCardSave{}", slot), ICON_FA_SD_CARD,
+				fmt::format("Memory card '{}' was saved to storage.", filename), Host::OSD_INFO_DURATION);
+
+			last = std::chrono::system_clock::now();
+		}
+		
 	}
 
 	return saveResult;

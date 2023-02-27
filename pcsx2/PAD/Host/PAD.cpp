@@ -217,8 +217,11 @@ void PAD::LoadConfig(const SettingsInterface& si)
 
 		const float axis_deadzone = si.GetFloatValue(section.c_str(), "Deadzone", DEFAULT_STICK_DEADZONE);
 		const float axis_scale = si.GetFloatValue(section.c_str(), "AxisScale", DEFAULT_STICK_SCALE);
+		const float trigger_deadzone = si.GetFloatValue(section.c_str(), "TriggerDeadzone", DEFAULT_TRIGGER_DEADZONE);
+		const float trigger_scale = si.GetFloatValue(section.c_str(), "TriggerScale", DEFAULT_TRIGGER_SCALE);
 		const float button_deadzone = si.GetFloatValue(section.c_str(), "ButtonDeadzone", DEFAULT_BUTTON_DEADZONE);
 		g_key_status.SetAxisScale(i, axis_deadzone, axis_scale);
+		g_key_status.SetTriggerScale(i, trigger_deadzone, trigger_scale);
 		g_key_status.SetButtonDeadzone(i, button_deadzone);
 
 		if (ci->vibration_caps != VibrationCapabilities::NoVibration)
@@ -264,8 +267,11 @@ void PAD::SetDefaultControllerConfig(SettingsInterface& si)
 #endif
 	si.SetBoolValue("Pad", "MultitapPort1", false);
 	si.SetBoolValue("Pad", "MultitapPort2", false);
-	si.SetFloatValue("Pad", "PointerXScale", 8.0f);
-	si.SetFloatValue("Pad", "PointerYScale", 8.0f);
+	si.SetFloatValue("Pad", "PointerXSpeed", 40.0f);
+	si.SetFloatValue("Pad", "PointerYSpeed", 40.0f);
+	si.SetFloatValue("Pad", "PointerXDeadZone", 20.0f);
+	si.SetFloatValue("Pad", "PointerYDeadZone", 20.0f);
+	si.SetFloatValue("Pad", "PointerInertia", 10.0f);
 
 	// PCSX2 Controller Settings - Default pad types and parameters.
 	for (u32 i = 0; i < NUM_CONTROLLER_PORTS; i++)
@@ -412,9 +418,15 @@ static const SettingInfo s_dualshock2_settings[] = {
 		"Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.",
 		"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "AxisScale", "Analog Sensitivity",
-		"Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
+		"Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent "
 		"controllers, e.g. DualShock 4, Xbox One Controller.",
 		"1.33", "0.01", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
+	{SettingInfo::Type::Float, "TriggerDeadzone", "Trigger Deadzone",
+		"Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.",
+		"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
+	{SettingInfo::Type::Float, "TriggerScale", "Trigger Sensitivity",
+		"Sets the trigger scaling factor.",
+		"1.00", "0.01", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "LargeMotorScale", "Large Motor Vibration Scale",
 		"Increases or decreases the intensity of low frequency vibration sent by the game.",
 		"1.00", "0.00", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
@@ -504,7 +516,12 @@ void PAD::ClearPortBindings(SettingsInterface& si, u32 port)
 		return;
 
 	for (u32 i = 0; i < info->num_bindings; i++)
-		si.DeleteValue(section.c_str(), info->bindings[i].name);
+	{
+		const InputBindingInfo& bi = info->bindings[i];
+		si.DeleteValue(section.c_str(), bi.name);
+		si.DeleteValue(section.c_str(), fmt::format("{}Scale", bi.name).c_str());
+		si.DeleteValue(section.c_str(), fmt::format("{}Deadzone", bi.name).c_str());
+	}
 }
 
 void PAD::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_si,
@@ -516,8 +533,11 @@ void PAD::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 		dest_si->CopyBoolValue(src_si, "Pad", "MultitapPort2");
 		dest_si->CopyBoolValue(src_si, "Pad", "MultitapPort1");
 		dest_si->CopyBoolValue(src_si, "Pad", "MultitapPort2");
-		dest_si->CopyFloatValue(src_si, "Pad", "PointerXScale");
-		dest_si->CopyFloatValue(src_si, "Pad", "PointerYScale");
+		dest_si->CopyFloatValue(src_si, "Pad", "PointerXSpeed");
+		dest_si->CopyFloatValue(src_si, "Pad", "PointerYSpeed");
+		dest_si->CopyFloatValue(src_si, "Pad", "PointerXDeadZone");
+		dest_si->CopyFloatValue(src_si, "Pad", "PointerYDeadZone");
+		dest_si->CopyFloatValue(src_si, "Pad", "PointerInertia");
 		for (u32 i = 0; i < static_cast<u32>(InputSourceType::Count); i++)
 		{
 			dest_si->CopyBoolValue(src_si, "InputSources",
@@ -545,6 +565,8 @@ void PAD::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 			{
 				const InputBindingInfo& bi = info->bindings[i];
 				dest_si->CopyStringListValue(src_si, section.c_str(), bi.name);
+				dest_si->CopyFloatValue(src_si, section.c_str(), fmt::format("{}Sensitivity", bi.name).c_str());
+				dest_si->CopyFloatValue(src_si, section.c_str(), fmt::format("{}Deadzone", bi.name).c_str());
 			}
 
 			for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
@@ -557,14 +579,6 @@ void PAD::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 
 		if (copy_pad_config)
 		{
-			dest_si->CopyFloatValue(src_si, section.c_str(), "AxisScale");
-
-			if (info->vibration_caps != VibrationCapabilities::NoVibration)
-			{
-				dest_si->CopyFloatValue(src_si, section.c_str(), "LargeMotorScale");
-				dest_si->CopyFloatValue(src_si, section.c_str(), "SmallMotorScale");
-			}
-
 			for (u32 i = 0; i < info->num_settings; i++)
 			{
 				const SettingInfo& csi = info->settings[i];
@@ -601,8 +615,8 @@ void PAD::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 }
 
 static u32 TryMapGenericMapping(SettingsInterface& si, const std::string& section,
-	const InputManager::GenericInputBindingMapping& mapping, GenericInputBinding generic_name,
-	const char* bind_name)
+	const InputManager::GenericInputBindingMapping& mapping, InputBindingInfo::Type bind_type,
+	GenericInputBinding generic_name, const char* bind_name)
 {
 	// find the mapping it corresponds to
 	const std::string* found_mapping = nullptr;
@@ -613,6 +627,14 @@ static u32 TryMapGenericMapping(SettingsInterface& si, const std::string& sectio
 			found_mapping = &it.second;
 			break;
 		}
+	}
+
+	// Remove previously-set binding scales.
+	if (bind_type == InputBindingInfo::Type::Button || bind_type == InputBindingInfo::Type::Axis ||
+		bind_type == InputBindingInfo::Type::HalfAxis)
+	{
+		si.DeleteValue(section.c_str(), fmt::format("{}Scale", bind_name).c_str());
+		si.DeleteValue(section.c_str(), fmt::format("{}Deadzone", bind_name).c_str());
 	}
 
 	if (found_mapping)
@@ -645,17 +667,17 @@ bool PAD::MapController(SettingsInterface& si, u32 controller,
 		if (bi.generic_mapping == GenericInputBinding::Unknown)
 			continue;
 
-		num_mappings += TryMapGenericMapping(si, section, mapping, bi.generic_mapping, bi.name);
+		num_mappings += TryMapGenericMapping(si, section, mapping, bi.bind_type, bi.generic_mapping, bi.name);
 	}
 	if (info->vibration_caps == VibrationCapabilities::LargeSmallMotors)
 	{
-		num_mappings += TryMapGenericMapping(si, section, mapping, GenericInputBinding::SmallMotor, "SmallMotor");
-		num_mappings += TryMapGenericMapping(si, section, mapping, GenericInputBinding::LargeMotor, "LargeMotor");
+		num_mappings += TryMapGenericMapping(si, section, mapping, InputBindingInfo::Type::Motor, GenericInputBinding::SmallMotor, "SmallMotor");
+		num_mappings += TryMapGenericMapping(si, section, mapping, InputBindingInfo::Type::Motor, GenericInputBinding::LargeMotor, "LargeMotor");
 	}
 	else if (info->vibration_caps == VibrationCapabilities::SingleMotor)
 	{
-		if (TryMapGenericMapping(si, section, mapping, GenericInputBinding::LargeMotor, "Motor") == 0)
-			num_mappings += TryMapGenericMapping(si, section, mapping, GenericInputBinding::SmallMotor, "Motor");
+		if (TryMapGenericMapping(si, section, mapping, InputBindingInfo::Type::Motor, GenericInputBinding::LargeMotor, "Motor") == 0)
+			num_mappings += TryMapGenericMapping(si, section, mapping, InputBindingInfo::Type::Motor, GenericInputBinding::SmallMotor, "Motor");
 		else
 			num_mappings++;
 	}

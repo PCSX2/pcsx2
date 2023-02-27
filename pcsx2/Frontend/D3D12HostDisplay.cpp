@@ -16,6 +16,8 @@
 #include "PrecompiledHeader.h"
 
 #include "Frontend/D3D12HostDisplay.h"
+#include "GS/Renderers/DX11/D3D.h"
+
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/D3D12/Context.h"
@@ -343,49 +345,6 @@ void D3D12HostDisplay::DestroySurface()
 	m_swap_chain.reset();
 }
 
-static std::string GetDriverVersionFromLUID(const LUID& luid)
-{
-	std::string ret;
-
-	HKEY hKey;
-	if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\DirectX", 0, KEY_READ, &hKey) == ERROR_SUCCESS)
-	{
-		DWORD max_key_len = 0, adapter_count = 0;
-		if (RegQueryInfoKey(hKey, nullptr, nullptr, nullptr, &adapter_count, &max_key_len,
-				nullptr, nullptr, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS)
-		{
-			std::vector<TCHAR> current_name(max_key_len + 1);
-			for (DWORD i = 0; i < adapter_count; ++i)
-			{
-				DWORD subKeyLength = static_cast<DWORD>(current_name.size());
-				if (RegEnumKeyExW(hKey, i, current_name.data(), &subKeyLength, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS)
-				{
-					LUID current_luid = {};
-					DWORD current_luid_size = sizeof(uint64_t);
-					if (RegGetValueW(hKey, current_name.data(), L"AdapterLuid", RRF_RT_QWORD, nullptr, &current_luid, &current_luid_size) == ERROR_SUCCESS &&
-						current_luid.HighPart == luid.HighPart && current_luid.LowPart == luid.LowPart)
-					{
-						LARGE_INTEGER driver_version = {};
-						DWORD driver_version_size = sizeof(driver_version);
-						if (RegGetValueW(hKey, current_name.data(), L"DriverVersion", RRF_RT_QWORD, nullptr, &driver_version, &driver_version_size) == ERROR_SUCCESS)
-						{
-							WORD nProduct = HIWORD(driver_version.HighPart);
-							WORD nVersion = LOWORD(driver_version.HighPart);
-							WORD nSubVersion = HIWORD(driver_version.LowPart);
-							WORD nBuild = LOWORD(driver_version.LowPart);
-							ret = StringUtil::StdStringFromFormat("%u.%u.%u.%u", nProduct, nVersion, nSubVersion, nBuild);
-						}
-					}
-				}
-			}
-		}
-
-		RegCloseKey(hKey);
-	}
-
-	return ret;
-}
-
 std::string D3D12HostDisplay::GetDriverInfo() const
 {
 	std::string ret = "Unknown Feature Level";
@@ -417,7 +376,7 @@ std::string D3D12HostDisplay::GetDriverInfo() const
 		ret += StringUtil::WideStringToUTF8String(desc.Description);
 		ret += "\n";
 
-		const std::string driver_version(GetDriverVersionFromLUID(desc.AdapterLuid));
+		const std::string driver_version(D3D::GetDriverVersionFromLUID(desc.AdapterLuid));
 		if (!driver_version.empty())
 		{
 			ret += "Driver Version: ";
@@ -554,13 +513,13 @@ bool D3D12HostDisplay::UpdateImGuiFontTexture()
 	return ImGui_ImplDX12_CreateFontsTexture();
 }
 
-bool D3D12HostDisplay::BeginPresent(bool frame_skip)
+HostDisplay::PresentResult D3D12HostDisplay::BeginPresent(bool frame_skip)
 {
+	if (m_device_lost)
+		return HostDisplay::PresentResult::DeviceLost;
+
 	if (frame_skip || !m_swap_chain)
-	{
-		ImGui::EndFrame();
-		return false;
-	}
+		return PresentResult::FrameSkipped;
 
 	static constexpr std::array<float, 4> clear_color = {};
 	D3D12::Texture& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
@@ -574,7 +533,7 @@ bool D3D12HostDisplay::BeginPresent(bool frame_skip)
 	const D3D12_RECT scissor{0, 0, static_cast<LONG>(m_window_info.surface_width), static_cast<LONG>(m_window_info.surface_height)};
 	cmdlist->RSSetViewports(1, &vp);
 	cmdlist->RSSetScissorRects(1, &scissor);
-	return true;
+	return PresentResult::OK;
 }
 
 void D3D12HostDisplay::EndPresent()
@@ -586,7 +545,11 @@ void D3D12HostDisplay::EndPresent()
 	m_current_swap_chain_buffer = ((m_current_swap_chain_buffer + 1) % static_cast<u32>(m_swap_chain_buffers.size()));
 
 	swap_chain_buf.TransitionToState(g_d3d12_context->GetCommandList(), D3D12_RESOURCE_STATE_PRESENT);
-	g_d3d12_context->ExecuteCommandList(D3D12::Context::WaitType::None);
+	if (!g_d3d12_context->ExecuteCommandList(D3D12::Context::WaitType::None))
+	{
+		m_device_lost = true;
+		return;
+	}
 
 	const bool vsync = static_cast<UINT>(m_vsync_mode != VsyncMode::Off);
 	if (!vsync && m_using_allow_tearing)

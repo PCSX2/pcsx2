@@ -597,7 +597,7 @@ namespace SettingWidgetBinder
 	/// Binds a widget's value to a setting, updating it when the value changes.
 
 	template <typename WidgetType>
-	static void BindWidgetToBoolSetting(
+	static inline void BindWidgetToBoolSetting(
 		SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, bool default_value)
 	{
 		using Accessor = SettingAccessor<WidgetType>;
@@ -638,7 +638,7 @@ namespace SettingWidgetBinder
 	}
 
 	template <typename WidgetType>
-	static void BindWidgetToIntSetting(
+	static inline void BindWidgetToIntSetting(
 		SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, int default_value, int option_offset = 0)
 	{
 		using Accessor = SettingAccessor<WidgetType>;
@@ -679,7 +679,7 @@ namespace SettingWidgetBinder
 	}
 
 	template <typename WidgetType>
-	static void BindWidgetToFloatSetting(
+	static inline void BindWidgetToFloatSetting(
 		SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, float default_value)
 	{
 		using Accessor = SettingAccessor<WidgetType>;
@@ -720,7 +720,7 @@ namespace SettingWidgetBinder
 	}
 
 	template <typename WidgetType>
-	static void BindWidgetToNormalizedSetting(
+	static inline void BindWidgetToNormalizedSetting(
 		SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, float range, float default_value)
 	{
 		using Accessor = SettingAccessor<WidgetType>;
@@ -761,7 +761,7 @@ namespace SettingWidgetBinder
 	}
 
 	template <typename WidgetType>
-	static void BindWidgetToStringSetting(
+	static inline void BindWidgetToStringSetting(
 		SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, std::string default_value = std::string())
 	{
 		using Accessor = SettingAccessor<WidgetType>;
@@ -806,7 +806,7 @@ namespace SettingWidgetBinder
 	}
 
 	template <typename WidgetType, typename DataType>
-	static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
+	static inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
 		std::optional<DataType> (*from_string_function)(const char* str), const char* (*to_string_function)(DataType value),
 		DataType default_value)
 	{
@@ -868,7 +868,7 @@ namespace SettingWidgetBinder
 	}
 
 	template <typename WidgetType, typename DataType>
-	static void BindWidgetToEnumSetting(
+	static inline void BindWidgetToEnumSetting(
 		SettingsInterface* sif, WidgetType* widget, std::string section, std::string key, const char** enum_names, DataType default_value)
 	{
 		using Accessor = SettingAccessor<WidgetType>;
@@ -930,7 +930,7 @@ namespace SettingWidgetBinder
 	}
 
 	template <typename WidgetType>
-	static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
+	static inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
 		const char** enum_names, const char** enum_values, const char* default_value)
 	{
 		using Accessor = SettingAccessor<WidgetType>;
@@ -994,7 +994,7 @@ namespace SettingWidgetBinder
 	}
 
 	template <typename WidgetType>
-	static void BindWidgetToFolderSetting(SettingsInterface* sif, WidgetType* widget, QAbstractButton* browse_button,
+	static inline void BindWidgetToFolderSetting(SettingsInterface* sif, WidgetType* widget, QAbstractButton* browse_button,
 		QAbstractButton* open_button, QAbstractButton* reset_button, std::string section, std::string key, std::string default_value,
 		bool use_relative = true)
 	{
@@ -1071,7 +1071,7 @@ namespace SettingWidgetBinder
 		}
 	}
 
-	[[maybe_unused]] static void BindSliderToIntSetting(SettingsInterface* sif, QSlider* slider, QLabel* label, const QString& label_suffix,
+	static inline void BindSliderToIntSetting(SettingsInterface* sif, QSlider* slider, QLabel* label, const QString& label_suffix,
 		std::string section, std::string key, s32 default_value)
 	{
 		const s32 global_value = Host::GetBaseIntSettingValue(section.c_str(), key.c_str(), default_value);
@@ -1112,8 +1112,8 @@ namespace SettingWidgetBinder
 				});
 
 			slider->connect(slider, &QSlider::valueChanged, slider,
-				[sif, label, label_suffix, section = std::move(section), key = std::move(key),
-					orig_font = std::move(orig_font), bold_font = std::move(bold_font)](int value) {
+				[sif, label, label_suffix, section = std::move(section), key = std::move(key), orig_font = std::move(orig_font),
+					bold_font = std::move(bold_font)](int value) {
 					label->setText(QStringLiteral("%1%2").arg(value).arg(label_suffix));
 
 					if (label->font() != bold_font)

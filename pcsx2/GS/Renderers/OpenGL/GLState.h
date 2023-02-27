@@ -18,6 +18,8 @@
 #include "GS/Renderers/OpenGL/GLLoader.h"
 #include "GS/GSVector.h"
 
+class GSTextureOGL;
+
 namespace GLState
 {
 	extern GLuint fbo; // frame buffer object
@@ -44,8 +46,8 @@ namespace GLState
 
 	extern GLuint ps_ss; // sampler
 
-	extern GLuint rt; // render target
-	extern GLuint ds; // Depth-Stencil
+	extern GSTextureOGL* rt; // render target
+	extern GSTextureOGL* ds; // Depth-Stencil
 	extern GLuint tex_unit[8]; // shader input texture
 	extern GLuint64 tex_handle[8]; // shader input texture
 

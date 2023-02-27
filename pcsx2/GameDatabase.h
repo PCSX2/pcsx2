@@ -62,10 +62,12 @@ namespace GameDatabaseSchema
 		// boolean settings
 		AutoFlush,
 		CPUFramebufferConversion,
+		FlushTCOnClose,
 		DisableDepthSupport,
 		WrapGSMem,
 		PreloadFrameData,
 		DisablePartialInvalidation,
+		TargetPartialInvalidation,
 		TextureInsideRT,
 		AlignSprite,
 		MergeSprite,

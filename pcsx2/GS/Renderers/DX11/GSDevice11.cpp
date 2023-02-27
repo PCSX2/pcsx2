@@ -29,6 +29,7 @@
 #include <sstream>
 #include <VersionHelpers.h>
 #include <d3dcompiler.h>
+#include <dxgidebug.h>
 
 static bool SupportsTextureFormat(ID3D11Device* dev, DXGI_FORMAT format)
 {
@@ -90,6 +91,8 @@ bool GSDevice11::Create()
 
 	m_dev = static_cast<ID3D11Device*>(g_host_display->GetDevice());
 	m_ctx = static_cast<ID3D11DeviceContext*>(g_host_display->GetContext());
+	if (GSConfig.UseDebugDevice)
+		m_annotation = m_ctx.try_query<ID3DUserDefinedAnnotation>();
 	level = m_dev->GetFeatureLevel();
 	const bool support_feature_level_11_0 = (level >= D3D_FEATURE_LEVEL_11_0);
 
@@ -269,6 +272,27 @@ bool GSDevice11::Create()
 	if (!m_shadeboost.ps)
 		return false;
 
+	// Vertex/Index Buffer
+	bd = {};
+	bd.ByteWidth = VERTEX_BUFFER_SIZE;
+	bd.Usage = D3D11_USAGE_DYNAMIC;
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	if (FAILED(m_dev->CreateBuffer(&bd, nullptr, m_vb.put())))
+	{
+		Console.Error("Failed to create vertex buffer.");
+		return false;
+	}
+
+	bd.ByteWidth = INDEX_BUFFER_SIZE;
+	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	if (FAILED(m_dev->CreateBuffer(&bd, nullptr, m_ib.put())))
+	{
+		Console.Error("Failed to create index buffer.");
+		return false;
+	}
+	m_ctx->IASetIndexBuffer(m_ib.get(), DXGI_FORMAT_R32_UINT, 0);
+
 	//
 
 	memset(&rd, 0, sizeof(rd));
@@ -281,7 +305,7 @@ bool GSDevice11::Create()
 	rd.SlopeScaledDepthBias = 0;
 	rd.DepthClipEnable = false; // ???
 	rd.ScissorEnable = true;
-	rd.MultisampleEnable = true;
+	rd.MultisampleEnable = false;
 	rd.AntialiasedLineEnable = false;
 
 	m_dev->CreateRasterizerState(&rd, m_rs.put());
@@ -366,10 +390,9 @@ void GSDevice11::ResetAPIState()
 
 void GSDevice11::RestoreAPIState()
 {
-	const UINT vb_stride = static_cast<UINT>(m_state.vb_stride);
 	const UINT vb_offset = 0;
-	m_ctx->IASetVertexBuffers(0, 1, &m_state.vb, &vb_stride, &vb_offset);
-	m_ctx->IASetIndexBuffer(m_state.ib, DXGI_FORMAT_R32_UINT, 0);
+	m_ctx->IASetVertexBuffers(0, 1, m_vb.addressof(), &m_state.vb_stride, &vb_offset);
+	m_ctx->IASetIndexBuffer(m_ib.get(), DXGI_FORMAT_R32_UINT, 0);
 	m_ctx->IASetInputLayout(m_state.layout);
 	m_ctx->IASetPrimitiveTopology(m_state.topology);
 	m_ctx->VSSetShader(m_state.vs, nullptr, 0);
@@ -449,6 +472,40 @@ void GSDevice11::ClearStencil(GSTexture* t, u8 c)
 	if (!t)
 		return;
 	m_ctx->ClearDepthStencilView(*(GSTexture11*)t, D3D11_CLEAR_STENCIL, 0, c);
+}
+
+void GSDevice11::PushDebugGroup(const char* fmt, ...)
+{
+	if (!m_annotation)
+		return;
+
+	std::va_list ap;
+	va_start(ap, fmt);
+	std::string str(StringUtil::StdStringFromFormatV(fmt, ap));
+	va_end(ap);
+
+	m_annotation->BeginEvent(StringUtil::UTF8StringToWideString(str).c_str());
+}
+
+void GSDevice11::PopDebugGroup()
+{
+	if (!m_annotation)
+		return;
+
+	m_annotation->EndEvent();
+}
+
+void GSDevice11::InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...)
+{
+	if (!m_annotation)
+		return;
+
+	std::va_list ap;
+	va_start(ap, fmt);
+	std::string str(StringUtil::StdStringFromFormatV(fmt, ap));
+	va_end(ap);
+
+	m_annotation->SetMarker(StringUtil::UTF8StringToWideString(str).c_str());
 }
 
 GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
@@ -579,8 +636,6 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 	const bool draw_in_depth = dTex && dTex->IsDepthStencil();
 
-	BeginScene();
-
 	GSVector2i ds;
 	if (dTex)
 	{
@@ -649,16 +704,12 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 	//
 
-	EndScene();
-
 	PSSetShaderResources(nullptr, nullptr);
 }
 
 void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear)
 {
 	ASSERT(sTex);
-
-	BeginScene();
 
 	GSVector2i ds;
 	if (dTex)
@@ -726,8 +777,6 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 	//
 
-	EndScene();
-
 	PSSetShaderResources(nullptr, nullptr);
 }
 
@@ -749,7 +798,7 @@ void GSDevice11::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GS
 	StretchRect(sTex, GSVector4::zero(), dTex, dRect, m_convert.ps[static_cast<int>(shader)].get(), m_merge.cb.get(), nullptr, false);
 }
 
-void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
+void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c, const bool linear)
 {
 	const GSVector4 full_r(0.0f, 0.0f, 1.0f, 1.0f);
 	const bool feedback_write_2 = PMODE.EN2 && sTex[2] != nullptr && EXTBUF.FBIN == 1;
@@ -772,14 +821,14 @@ void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	{
 		// 2nd output is enabled and selected. Copy it to destination so we can blend it with 1st output
 		// Note: value outside of dRect must contains the background color (c)
-		StretchRect(sTex[1], sRect[1], dTex, PMODE.SLBG ? dRect[2] : dRect[1], ShaderConvert::COPY);
+		StretchRect(sTex[1], sRect[1], dTex, PMODE.SLBG ? dRect[2] : dRect[1], ShaderConvert::COPY, linear);
 	}
 
 	// Save 2nd output
 	if (feedback_write_2)
 	{
 		StretchRect(dTex, full_r, sTex[2], dRect[2], m_convert.ps[static_cast<int>(ShaderConvert::YUV)].get(),
-			m_merge.cb.get(), nullptr, true);
+			m_merge.cb.get(), nullptr, linear);
 	}
 
 	// Restore background color to process the normal merge
@@ -789,13 +838,13 @@ void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	if (sTex[0])
 	{
 		// 1st output is enabled. It must be blended
-		StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge.ps[PMODE.MMOD].get(), m_merge.cb.get(), m_merge.bs.get(), true);
+		StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge.ps[PMODE.MMOD].get(), m_merge.cb.get(), m_merge.bs.get(), linear);
 	}
 
 	if (feedback_write_1)
 	{
 		StretchRect(sTex[0], full_r, sTex[2], dRect[2], m_convert.ps[static_cast<int>(ShaderConvert::YUV)].get(),
-			m_merge.cb.get(), nullptr, true);
+			m_merge.cb.get(), nullptr, linear);
 	}
 }
 
@@ -908,8 +957,6 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 {
 	// sfex3 (after the capcom logo), vf4 (first menu fading in), ffxii shadows, rumble roses shadows, persona4 shadows
 
-	BeginScene();
-
 	ClearStencil(ds, 0);
 
 	// om
@@ -942,156 +989,69 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 	DrawPrimitive();
 
 	//
-
-	EndScene();
 }
 
-void GSDevice11::IASetVertexBuffer(const void* vertex, size_t stride, size_t count)
+bool GSDevice11::IASetVertexBuffer(const void* vertex, u32 stride, u32 count)
 {
-	void* ptr = nullptr;
-
-	if (IAMapVertexBuffer(&ptr, stride, count))
-	{
-		GSVector4i::storent(ptr, vertex, count * stride);
-
-		IAUnmapVertexBuffer();
-	}
-}
-
-bool GSDevice11::IAMapVertexBuffer(void** vertex, size_t stride, size_t count)
-{
-	ASSERT(m_vertex.count == 0);
-
-	if (count * stride > m_vertex.limit * m_vertex.stride)
-	{
-		m_vb.reset();
-
-		m_vertex.start = 0;
-		m_vertex.limit = std::max<int>(count * 3 / 2, 11000);
-	}
-
-	if (m_vb == nullptr)
-	{
-		D3D11_BUFFER_DESC bd;
-
-		memset(&bd, 0, sizeof(bd));
-
-		bd.Usage = D3D11_USAGE_DYNAMIC;
-		bd.ByteWidth = m_vertex.limit * stride;
-		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-
-		const HRESULT hr = m_dev->CreateBuffer(&bd, nullptr, m_vb.put());
-
-		if (FAILED(hr))
-			return false;
-	}
+	const u32 size = stride * count;
+	if (size > VERTEX_BUFFER_SIZE)
+		return false;
 
 	D3D11_MAP type = D3D11_MAP_WRITE_NO_OVERWRITE;
 
-	if (m_vertex.start + count > m_vertex.limit || stride != m_vertex.stride)
+	m_vertex.start = (m_vb_pos + (stride - 1)) / stride;
+	m_vb_pos = (m_vertex.start * stride) + size;
+	if (m_vb_pos > VERTEX_BUFFER_SIZE)
 	{
 		m_vertex.start = 0;
-
+		m_vb_pos = size;
 		type = D3D11_MAP_WRITE_DISCARD;
 	}
 
 	D3D11_MAPPED_SUBRESOURCE m;
-
 	if (FAILED(m_ctx->Map(m_vb.get(), 0, type, 0, &m)))
-	{
 		return false;
+
+	GSVector4i::storent(static_cast<u8*>(m.pData) + m_vertex.start * stride, vertex, count * stride);
+
+	m_ctx->Unmap(m_vb.get(), 0);
+
+	if (m_state.vb_stride != stride)
+	{
+		m_state.vb_stride = stride;
+		const UINT vb_offset = 0;
+		m_ctx->IASetVertexBuffers(0, 1, m_vb.addressof(), &stride, &vb_offset);
 	}
 
-	*vertex = (u8*)m.pData + m_vertex.start * stride;
-
 	m_vertex.count = count;
-	m_vertex.stride = stride;
-
 	return true;
 }
 
-void GSDevice11::IAUnmapVertexBuffer()
+bool GSDevice11::IASetIndexBuffer(const void* index, u32 count)
 {
-	m_ctx->Unmap(m_vb.get(), 0);
-
-	IASetVertexBuffer(m_vb.get(), m_vertex.stride);
-}
-
-void GSDevice11::IASetVertexBuffer(ID3D11Buffer* vb, size_t stride)
-{
-	if (m_state.vb != vb || m_state.vb_stride != stride)
-	{
-		m_state.vb = vb;
-		m_state.vb_stride = stride;
-
-		const u32 stride2 = stride;
-		const u32 offset = 0;
-
-		m_ctx->IASetVertexBuffers(0, 1, &vb, &stride2, &offset);
-	}
-}
-
-void GSDevice11::IASetIndexBuffer(const void* index, size_t count)
-{
-	ASSERT(m_index.count == 0);
-
-	if (count > m_index.limit)
-	{
-		m_ib.reset();
-
-		m_index.start = 0;
-		m_index.limit = std::max<int>(count * 3 / 2, 11000);
-	}
-
-	if (m_ib == nullptr)
-	{
-		D3D11_BUFFER_DESC bd;
-
-		memset(&bd, 0, sizeof(bd));
-
-		bd.Usage = D3D11_USAGE_DYNAMIC;
-		bd.ByteWidth = m_index.limit * sizeof(u32);
-		bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-
-		HRESULT hr = m_dev->CreateBuffer(&bd, nullptr, m_ib.put());
-
-		if (FAILED(hr))
-			return;
-	}
+	if (count > (INDEX_BUFFER_SIZE / sizeof(u32)))
+		return false;
 
 	D3D11_MAP type = D3D11_MAP_WRITE_NO_OVERWRITE;
 
-	if (m_index.start + count > m_index.limit)
+	m_index.start = m_ib_pos;
+	m_ib_pos += count;
+
+	if (m_ib_pos > (INDEX_BUFFER_SIZE / sizeof(u32)))
 	{
 		m_index.start = 0;
-
+		m_ib_pos = count;
 		type = D3D11_MAP_WRITE_DISCARD;
 	}
 
 	D3D11_MAPPED_SUBRESOURCE m;
+	if (FAILED(m_ctx->Map(m_ib.get(), 0, type, 0, &m)))
+		return false;
 
-	if (SUCCEEDED(m_ctx->Map(m_ib.get(), 0, type, 0, &m)))
-	{
-		memcpy((u8*)m.pData + m_index.start * sizeof(u32), index, count * sizeof(u32));
-
-		m_ctx->Unmap(m_ib.get(), 0);
-	}
-
+	std::memcpy((u8*)m.pData + m_index.start * sizeof(u32), index, count * sizeof(u32));
+	m_ctx->Unmap(m_ib.get(), 0);
 	m_index.count = count;
-
-	IASetIndexBuffer(m_ib.get());
-}
-
-void GSDevice11::IASetIndexBuffer(ID3D11Buffer* ib)
-{
-	if (m_state.ib != ib)
-	{
-		m_state.ib = ib;
-
-		m_ctx->IASetIndexBuffer(ib, DXGI_FORMAT_R32_UINT, 0);
-	}
+	return true;
 }
 
 void GSDevice11::IASetInputLayout(ID3D11InputLayout* layout)
@@ -1370,17 +1330,15 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		// Warning: StretchRect must be called before BeginScene otherwise
 		// vertices will be overwritten. Trust me you don't want to do that.
 		StretchRect(config.rt, sRect, hdr_rt, dRect, ShaderConvert::HDR_INIT, false);
+		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 	}
 
-	BeginScene();
-
-	void* ptr = nullptr;
-	if (IAMapVertexBuffer(&ptr, sizeof(*config.verts), config.nverts))
+	if (!IASetVertexBuffer(config.verts, sizeof(*config.verts), config.nverts) ||
+		!IASetIndexBuffer(config.indices, config.nindices))
 	{
-		GSVector4i::storent(ptr, config.verts, config.nverts * sizeof(*config.verts));
-		IAUnmapVertexBuffer();
+		Console.Error("Failed to upload vertices/indices (%u/%u)", config.nverts, config.nindices);
+		return;
 	}
-	IASetIndexBuffer(config.indices, config.nindices);
 	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 	switch (config.topology)
 	{
@@ -1489,8 +1447,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	EndScene();
-
 	if (rt_copy)
 		Recycle(rt_copy);
 	if (ds_copy)
@@ -1504,6 +1460,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		const GSVector4 dRect(config.drawarea);
 		const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
 		StretchRect(hdr_rt, sRect, config.rt, dRect, ShaderConvert::HDR_RESOLVE, false);
+		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 		Recycle(hdr_rt);
 	}
 }

@@ -58,7 +58,7 @@ MemoryCardConvertDialog::MemoryCardConvertDialog(QWidget* parent, QString select
 							SetType(MemoryCardType::File, MemoryCardFileType::PS2_8MB, "A standard, 8 MB memory card. Most compatible, but smallest capacity.");
 							break;
 						case 16:
-							SetType(MemoryCardType::File, MemoryCardFileType::PS2_16MB, "2x larger as a standard memory card. May have some compatibility issues.");
+							SetType(MemoryCardType::File, MemoryCardFileType::PS2_16MB, "2x larger than a standard memory card. May have some compatibility issues.");
 							break;
 						case 32:
 							SetType(MemoryCardType::File, MemoryCardFileType::PS2_32MB, "4x larger than a standard memory card. Likely to have compatibility issues.");

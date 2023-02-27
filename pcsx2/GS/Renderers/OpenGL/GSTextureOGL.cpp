@@ -21,10 +21,17 @@
 #include "GS/GSPerfMon.h"
 #include "GS/GSPng.h"
 #include "GS/GSGL.h"
+#include "common/Align.h"
 #include "common/AlignedMalloc.h"
 #include "common/StringUtil.h"
 
-static constexpr u32 TEXTURE_UPLOAD_ALIGNMENT = 256;
+// Looking across a range of GPUs, the optimal copy alignment for Vulkan drivers seems
+// to be between 1 (AMD/NV) and 64 (Intel). So, we'll go with 64 here.
+static constexpr u32 TEXTURE_UPLOAD_ALIGNMENT = 64;
+
+// The pitch alignment must be less or equal to the upload alignment.
+// We need 32 here for AVX2, so 64 is also fine.
+static constexpr u32 TEXTURE_UPLOAD_PITCH_ALIGNMENT = 64;
 
 GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format format)
 {
@@ -167,12 +174,10 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 
 GSTextureOGL::~GSTextureOGL()
 {
-	/* Unbind the texture from our local state */
+	// Textures aren't cleared from attachments on deletion.
+	GSDeviceOGL::GetInstance()->OMUnbindTexture(this);
 
-	if (m_texture_id == GLState::rt)
-		GLState::rt = 0;
-	if (m_texture_id == GLState::ds)
-		GLState::ds = 0;
+	// But they are unbound.
 	for (GLuint& tex : GLState::tex_unit)
 	{
 		if (m_texture_id == tex)
@@ -214,8 +219,8 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int 
 
 	m_clean = false;
 
-	u32 row_byte = r.width() << m_int_shift;
-	u32 map_size = r.height() * row_byte;
+	const u32 preferred_pitch = Common::AlignUpPow2(r.width() << m_int_shift, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
+	const u32 map_size = r.height() * preferred_pitch;
 
 #if 0
 	if (r.height() == 1) {
@@ -250,12 +255,17 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int 
 		GL::StreamBuffer* const sb = GSDeviceOGL::GetTextureUploadBuffer();
 
 		const auto map = sb->Map(TEXTURE_UPLOAD_ALIGNMENT, map_size);
-		StringUtil::StrideMemCpy(map.pointer, row_byte, data, pitch, row_byte, r.height());
+		StringUtil::StrideMemCpy(map.pointer, preferred_pitch, data, pitch, r.width() << m_int_shift, r.height());
 		sb->Unmap(map_size);
 		sb->Bind();
 
+		const u32 row_length = CalcUploadRowLengthFromPitch(preferred_pitch);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, row_length);
+
 		glTextureSubImage2D(m_texture_id, layer, r.x, r.y, r.width(), r.height(), m_int_format, m_int_type,
 			reinterpret_cast<void*>(static_cast<uintptr_t>(map.buffer_offset)));
+
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
 		sb->Unbind();
 	}
@@ -275,13 +285,13 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 	ASSERT(r.width() != 0);
 	ASSERT(r.height() != 0);
 
-	u32 row_byte = r.width() << m_int_shift;
-	m.pitch = row_byte;
+	const u32 pitch = Common::AlignUpPow2(r.width() << m_int_shift, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
+	m.pitch = pitch;
 
 	if (m_type == Type::Texture || m_type == Type::RenderTarget)
 	{
-		const u32 map_size = r.height() * row_byte;
-		if (GLLoader::buggy_pbo || map_size > GSDeviceOGL::GetTextureUploadBuffer()->GetChunkSize())
+		const u32 upload_size = CalcUploadSize(r.height(), pitch);
+		if (GLLoader::buggy_pbo || upload_size > GSDeviceOGL::GetTextureUploadBuffer()->GetChunkSize())
 			return false;
 
 		GL_PUSH_("Upload Texture %d", m_texture_id); // POP is in Unmap
@@ -289,7 +299,7 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 
 		m_clean = false;
 
-		const auto map = GSDeviceOGL::GetTextureUploadBuffer()->Map(TEXTURE_UPLOAD_ALIGNMENT, map_size);
+		const auto map = GSDeviceOGL::GetTextureUploadBuffer()->Map(TEXTURE_UPLOAD_ALIGNMENT, upload_size);
 		m.bits = static_cast<u8*>(map.pointer);
 
 		// Save the area for the unmap
@@ -310,13 +320,19 @@ void GSTextureOGL::Unmap()
 {
 	if (m_type == Type::Texture || m_type == Type::RenderTarget)
 	{
-		const u32 map_size = (m_r_w << m_int_shift) * m_r_h;
+		const u32 pitch = Common::AlignUpPow2(m_r_w << m_int_shift, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
+		const u32 upload_size = pitch * m_r_h;
 		GL::StreamBuffer* sb = GSDeviceOGL::GetTextureUploadBuffer();
-		sb->Unmap(map_size);
+		sb->Unmap(upload_size);
 		sb->Bind();
+
+		const u32 row_length = CalcUploadRowLengthFromPitch(pitch);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, row_length);
 
 		glTextureSubImage2D(m_texture_id, m_layer, m_r_x, m_r_y, m_r_w, m_r_h, m_int_format, m_int_type,
 			reinterpret_cast<void*>(static_cast<uintptr_t>(m_map_offset)));
+
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
 		sb->Unbind();
 
@@ -435,9 +451,10 @@ GSDownloadTextureOGL::~GSDownloadTextureOGL()
 
 std::unique_ptr<GSDownloadTextureOGL> GSDownloadTextureOGL::Create(u32 width, u32 height, GSTexture::Format format)
 {
-	const u32 buffer_size = GetBufferSize(width, height, format, GSTexture::GetCompressedBytesPerBlock(format));
+	const u32 buffer_size = GetBufferSize(width, height, format, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
 
-	const bool use_buffer_storage = (GLAD_GL_VERSION_4_4 || GLAD_GL_ARB_buffer_storage || GLAD_GL_EXT_buffer_storage);
+	const bool use_buffer_storage = (GLAD_GL_VERSION_4_4 || GLAD_GL_ARB_buffer_storage || GLAD_GL_EXT_buffer_storage) &&
+									!GLLoader::disable_download_pbo;
 	if (use_buffer_storage)
 	{
 		GLuint buffer_id;
@@ -494,10 +511,12 @@ void GSDownloadTextureOGL::CopyFromTexture(
 	pxAssert((drc.left == 0 && drc.top == 0) || !use_transfer_pitch);
 
 	u32 copy_offset, copy_size, copy_rows;
-	m_current_pitch =
-		GetTransferPitch(use_transfer_pitch ? static_cast<u32>(drc.width()) : m_width, GSTexture::GetCompressedBytesPerBlock(m_format));
+	m_current_pitch = GetTransferPitch(use_transfer_pitch ? static_cast<u32>(drc.width()) : m_width, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
 	GetTransferSize(drc, &copy_offset, &copy_size, &copy_rows);
 	g_perfmon.Put(GSPerfMon::Readbacks, 1);
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, GSDeviceOGL::GetInstance()->GetFBORead());
+	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glTex->GetID(), 0);
 
 	glPixelStorei(GL_PACK_ALIGNMENT, 1u << glTex->GetIntShift());
 	glPixelStorei(GL_PACK_ROW_LENGTH, GSTexture::CalcUploadRowLengthFromPitch(m_format, m_current_pitch));
@@ -508,10 +527,7 @@ void GSDownloadTextureOGL::CopyFromTexture(
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, m_buffer_id);
 	}
 
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, GSDeviceOGL::GetInstance()->GetFBORead());
-	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glTex->GetID(), 0);
-
-	glReadPixels(drc.left, drc.top, drc.width(), drc.height(), glTex->GetIntFormat(), glTex->GetIntType(), m_cpu_buffer);
+	glReadPixels(src.left, src.top, src.width(), src.height(), glTex->GetIntFormat(), glTex->GetIntType(), m_cpu_buffer + copy_offset);
 
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
@@ -522,7 +538,7 @@ void GSDownloadTextureOGL::CopyFromTexture(
 	}
 	else
 	{
-		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
 		// Create a sync object so we know when the GPU is done copying.
 		if (m_sync)

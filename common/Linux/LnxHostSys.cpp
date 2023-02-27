@@ -100,6 +100,8 @@ static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void* ctx)
 
 #if defined(__APPLE__) && defined(__x86_64__)
 	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__rip);
+#elif defined(__FreeBSD__) && defined(__x86_64__)
+	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_rip);
 #elif defined(__x86_64__)
 	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.gregs[REG_RIP]);
 #else

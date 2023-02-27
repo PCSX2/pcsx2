@@ -71,11 +71,13 @@ namespace usb_lightgun
 		{"SLUS-20485", 90.25f, 92.5f, 390, 132, 640, 240}, // Dino Stalker (U)
 		{"SLUS-20389", 89.25f, 93.5f, 422, 141, 640, 240}, // Endgame (U)
 		{"SLES-50936", 112.0f, 100.0f, 320, 120, 512, 256}, // Endgame (E) (Guncon2 needs to be connected to USB port 2)
+		{"SLPM-65139", 90.0f, 91.5f, 320, 120, 640, 240}, // Gun Survivor 3: Dino Crisis (J)
 		{"SLES-52620", 89.5f, 112.3f, 390, 147, 640, 256}, // Guncom 2 (E)
 		{"SLES-51289", 84.5f, 89.0f, 456, 164, 640, 256}, // Gunfighter 2 - Jesse James (E)
 		{"SLPS-25165", 90.25f, 98.0f, 390, 138, 640, 240}, // Gunvari Collection (J) (480i)
 		// {"SLPS-25165", 86.75f, 96.0f, 454, 164, 640, 256}, // Gunvari Collection (J) (480p)
 		{"SCES-50889", 90.25f, 94.5f, 390, 169, 640, 256}, // Ninja Assault (E)
+		{"SLPS-20218", 90.0f, 92.0f, 320, 134, 640, 240}, // Ninja Assault (J)
 		{"SLUS-20492", 90.25f, 92.5f, 390, 132, 640, 240}, // Ninja Assault (U)
 		{"SLES-50650", 84.75f, 96.0f, 454, 164, 640, 240}, // Resident Evil Survivor 2 (E)
 		{"SLES-51448", 90.25f, 95.0f, 420, 132, 640, 240}, // Resident Evil - Dead Aim (E)
@@ -89,13 +91,14 @@ namespace usb_lightgun
 		{"SLUS-20927", 90.25f, 99.0f, 390, 153, 640, 240}, // Time Crisis - Crisis Zone (U) (480i)
 		// {"SLUS-20927", 94.5f, 104.75f, 423, 407, 768, 768}, // Time Crisis - Crisis Zone (U) (480p)
 		{"SCES-50411", 89.8f, 99.9f, 421, 138, 640, 256}, // Vampire Night (E)
+		{"SLPS-25077", 90.0f, 97.5f, 422, 118, 640, 240}, // Vampire Night (J)
 		{"SLUS-20221", 89.8f, 102.5f, 422, 124, 640, 228}, // Vampire Night (U)
 		{"SLES-51229", 110.15f, 100.0f, 433, 159, 512, 256}, // Virtua Cop - Elite Edition (E,J) (480i)
 		// {"SLES-51229", 85.75f, 92.0f, 456, 164, 640, 256}, // Virtua Cop - Elite Edition (E,J) (480p)
 	};
 
 	static constexpr s32 DEFAULT_SCREEN_WIDTH = 640;
-	static constexpr s32 DEFAULT_SCREEN_HEIGHT = 480;
+	static constexpr s32 DEFAULT_SCREEN_HEIGHT = 240;
 	static constexpr float DEFAULT_CENTER_X = 320.0f;
 	static constexpr float DEFAULT_CENTER_Y = 120.0f;
 	static constexpr float DEFAULT_SCALE_X = 100.0f;
@@ -359,7 +362,7 @@ namespace usb_lightgun
 		GSTranslateWindowToDisplayCoordinates(abs_pos.first, abs_pos.second, &pointer_x, &pointer_y);
 
 		s16 pos_x, pos_y;
-		if (pointer_x < 0.0f || pointer_y < 0.0f || (button_state & BID_SHOOT_OFFSCREEN))
+		if (pointer_x < 0.0f || pointer_y < 0.0f)
 		{
 			// off-screen
 			pos_x = 0;
@@ -510,9 +513,9 @@ namespace usb_lightgun
 			{SettingInfo::Type::Float, "scale_y", "Y Scale (Sensitivity)",
 				"Scales the position to simulate CRT curvature.", "100", "0", "200", "0.1", "%.2f%%", nullptr, nullptr,
 				1.0f},
-			{SettingInfo::Type::Float, "center_x", "Center X", "Sets the center position of the simulated screen.",
+			{SettingInfo::Type::Float, "center_x", "Center X", "Sets the horizontal center position of the simulated screen.",
 				"320", "0", "1024", "1", "%.0fpx", nullptr, nullptr, 1.0f},
-			{SettingInfo::Type::Float, "center_y", "Center Y", "Sets the center position of the simulated screen.",
+			{SettingInfo::Type::Float, "center_y", "Center Y", "Sets the vertical center position of the simulated screen.",
 				"120", "0", "1024", "1", "%.0fpx", nullptr, nullptr, 1.0f},
 			{SettingInfo::Type::Integer, "screen_width", "Screen Width", "Sets the width of the simulated screen.",
 				"640", "1", "1024", "1", "%dpx", nullptr, nullptr, 1.0f},

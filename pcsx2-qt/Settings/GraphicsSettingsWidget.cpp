@@ -185,8 +185,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		&GraphicsSettingsWidget::onTrilinearFilteringChanged);
 	connect(m_ui.gpuPaletteConversion, QOverload<int>::of(&QCheckBox::stateChanged), this,
 		&GraphicsSettingsWidget::onGpuPaletteConversionChanged);
+	connect(m_ui.textureInsideRt, QOverload<int>::of(&QCheckBox::stateChanged), this,
+		&GraphicsSettingsWidget::onTextureInsideRtChanged);
 	onTrilinearFilteringChanged();
 	onGpuPaletteConversionChanged(m_ui.gpuPaletteConversion->checkState());
+	onTextureInsideRtChanged(m_ui.textureInsideRt->checkState());
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Renderer Fixes
@@ -205,6 +208,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(
 		sif, m_ui.disablePartialInvalidation, "EmuCore/GS", "UserHacks_DisablePartialInvalidation", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.textureInsideRt, "EmuCore/GS", "UserHacks_TextureInsideRt", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.readTCOnClose, "EmuCore/GS", "UserHacks_ReadTCOnClose", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.targetPartialInvalidation, "EmuCore/GS", "UserHacks_TargetPartialInvalidation", false);
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Upscaling Fixes
@@ -380,7 +385,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.PCRTCOverscan, tr("Show Overscan"), tr("Unchecked"),
 			tr("Enables the option to show the overscan area on games which draw more than the safe area of the screen."));
 
-		dialog->registerWidgetHelp(m_ui.fmvAspectRatio, tr("FMV Aspect Ratio"), tr("Off (Default)"), tr("Overrides the FMV aspect ratio."));
+		dialog->registerWidgetHelp(m_ui.fmvAspectRatio, tr("FMV Aspect Ratio"), tr("Off (Default)"),
+			tr("Overrides the full-motion video (FMV) aspect ratio."));
 
 		dialog->registerWidgetHelp(m_ui.PCRTCAntiBlur, tr("Anti-Blur"), tr("Checked"),
 			tr("Enables internal Anti-Blur hacks. Less accurate to PS2 rendering but will make a lot of games look less blurry."));
@@ -410,24 +416,32 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Selects the quality at which screenshots will be compressed. Higher values preserve more detail for JPEG, and reduce file "
 			   "size for PNG."));
 
-		dialog->registerWidgetHelp(m_ui.stretchY, tr("Stretch Height"), tr("100%"), tr(""));
+		dialog->registerWidgetHelp(m_ui.stretchY, tr("Stretch Height"), tr("100%"),
+			tr("Stretches (> 100%) or squashes (< 100%) the vertical component of the display"));
 
 		dialog->registerWidgetHelp(m_ui.fullscreenModes, tr("Fullscreen Mode"), tr("Borderless Fullscreen"),
 			tr("Chooses the fullscreen resolution and frequency."));
 
-		dialog->registerWidgetHelp(m_ui.cropLeft, tr("Left"), tr("0px"), tr(""));
+		dialog->registerWidgetHelp(m_ui.cropLeft, tr("Left"), tr("0px"),
+			tr("Changes number of pixels cropped from the left side of the display"));
 
-		dialog->registerWidgetHelp(m_ui.cropTop, tr("Top"), tr("0px"), tr(""));
+		dialog->registerWidgetHelp(m_ui.cropTop, tr("Top"), tr("0px"),
+			tr("Changes number of pixels cropped from the top of the display"));
 
-		dialog->registerWidgetHelp(m_ui.cropRight, tr("Right"), tr("0px"), tr(""));
+		dialog->registerWidgetHelp(m_ui.cropRight, tr("Right"), tr("0px"),
+			tr("Changes number of pixels cropped from the right side of the display"));
 
-		dialog->registerWidgetHelp(m_ui.cropBottom, tr("Bottom"), tr("0px"), tr(""));
+		dialog->registerWidgetHelp(m_ui.cropBottom, tr("Bottom"), tr("0px"),
+			tr("Changes number of pixels cropped from the bottom of the display"));
 	}
 
 	// Rendering tab
 	{
 		// Hardware
-		dialog->registerWidgetHelp(m_ui.upscaleMultiplier, tr("Internal Resolution"), tr("Native (PS2) (Default)"), tr(""));
+		dialog->registerWidgetHelp(m_ui.upscaleMultiplier, tr("Internal Resolution"), tr("Native (PS2) (Default)"),
+			tr("Control the resolution at which games are rendered. High resolutions can impact performance on"
+			   "older or lower-end GPUs.<br>Non-native resolution may cause minor graphical issues in some games.<br>"
+			   "FMV resolution will remain unchanged, as the video files are pre-rendered."));
 
 		dialog->registerWidgetHelp(
 			m_ui.mipmapping, tr("Mipmapping"), tr("Automatic (Default)"), tr("Control the accuracy level of the mipmapping emulation."));
@@ -521,7 +535,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			   "Disables accurate GS Memory Clearing to be done on the CPU, and let the GPU handle it, which can help Kingdom Hearts "
 			   "games."));
 
-		dialog->registerWidgetHelp(m_ui.disablePartialInvalidation, tr("Disable Partial Invalidation"), tr("Unchecked"),
+		dialog->registerWidgetHelp(m_ui.disablePartialInvalidation, tr("Disable Partial Source Invalidation"), tr("Unchecked"),
 			tr("By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise. "
 			   "This hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load. "
 			   "It helps snowblind engine games."));
@@ -535,8 +549,15 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 		//:I18N COMMENT: RT: NEEDS TO BE DESCRIBED. TO BE WRITTEN.
 		dialog->registerWidgetHelp(m_ui.textureInsideRt, tr("Texture Inside RT"), tr("Unchecked"),
-			tr("Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer. "
-			   "In some selected games this is enabled by default regardless of this setting."));
+			tr("Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer."));
+
+		dialog->registerWidgetHelp(m_ui.readTCOnClose, tr("Read Targets When Closing"), tr("Unchecked"),
+			tr("Flushes all targets in the texture cache back to local memory when shutting down. Can prevent lost visuals when saving "
+			   "state or switching renderers, but can also cause graphical corruption."));
+
+		dialog->registerWidgetHelp(m_ui.targetPartialInvalidation, tr("Target Partial Invalidation"), tr("Unchecked"),
+			tr("Allows partial invalidation of render targets, which can fix graphical errors in some games. Texture Inside Render Target "
+			   "automatically enables this option."));
 	}
 
 	// Upscaling Fixes tab
@@ -607,13 +628,14 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 		dialog->registerWidgetHelp(m_ui.shadeBoostSaturation, tr("Saturation"), tr("50"), tr(""));
 
-		dialog->registerWidgetHelp(m_ui.tvShader, tr("TV Shader"), tr("None (Default)"), tr(""));
+		dialog->registerWidgetHelp(m_ui.tvShader, tr("TV Shader"), tr("None (Default)"),
+			tr("Applies a shader which replicates the visual effects of different styles of television set."));
 	}
 
 	// OSD tab
 	{
 		dialog->registerWidgetHelp(
-			m_ui.osdScale, tr("OSD Scale"), tr("100%"), tr("Scales the size of the onscreen OSD from 100% to 500%."));
+			m_ui.osdScale, tr("OSD Scale"), tr("100%"), tr("Scales the size of the onscreen OSD from 50% to 500%."));
 
 		dialog->registerWidgetHelp(m_ui.osdShowMessages, tr("Show OSD Messages"), tr("Checked"),
 			tr("Shows on-screen-display messages when events occur such as save states being "
@@ -669,7 +691,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Allows the GPU instead of just the CPU to transform lines into sprites. "
 			   "This reduces CPU load and bandwidth requirement, but it is heavier on the GPU."));
 
-		dialog->registerWidgetHelp(m_ui.gsDumpCompression, tr("GS Dump Compression"), tr("Zstandard (zst)"), tr(""));
+		dialog->registerWidgetHelp(m_ui.gsDumpCompression, tr("GS Dump Compression"), tr("Zstandard (zst)"),
+			tr("Change the compression algorithm used when creating a GS dump."));
 
 		//:I18N COMMENT: Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit \nSwap chain: see Microsoft's Terminology Portal.
 		dialog->registerWidgetHelp(m_ui.useBlitSwapChain, tr("Use Blit Swap Chain"), tr("Unchecked"),
@@ -845,9 +868,19 @@ void GraphicsSettingsWidget::onEnableAudioCaptureArgumentsChanged()
 
 void GraphicsSettingsWidget::onGpuPaletteConversionChanged(int state)
 {
-	const bool enabled = state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("EmuCore/GS", "paltex", false) : state;
+	const bool disabled =
+		state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("EmuCore/GS", "paltex", false) : (state != 0);
 
-	m_ui.anisotropicFiltering->setEnabled(!enabled);
+	m_ui.anisotropicFiltering->setDisabled(disabled);
+}
+
+void GraphicsSettingsWidget::onTextureInsideRtChanged(int state)
+{
+	const bool disabled = state == Qt::CheckState::PartiallyChecked ?
+							  Host::GetBaseBoolSettingValue("EmuCore/GS", "UserHacks_TextureInsideRt", false) :
+							  (state != 0);
+
+	m_ui.targetPartialInvalidation->setDisabled(disabled);
 }
 
 GSRendererType GraphicsSettingsWidget::getEffectiveRenderer() const

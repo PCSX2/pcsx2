@@ -542,7 +542,7 @@ GSTexture* GSDeviceMTL::CreateSurface(GSTexture::Type type, int width, int heigh
 	}
 }}
 
-void GSDeviceMTL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
+void GSDeviceMTL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c, const bool linear)
 { @autoreleasepool {
 	id<MTLCommandBuffer> cmdbuf = GetRenderCmdBuf();
 	GSScopedDebugGroupMTL dbg(cmdbuf, @"DoMerge");
@@ -563,12 +563,12 @@ void GSDeviceMTL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 	{
 		// 2nd output is enabled and selected. Copy it to destination so we can blend it with 1st output
 		// Note: value outside of dRect must contains the background color (c)
-		StretchRect(sTex[1], sRect[1], dTex, dRect[1], ShaderConvert::COPY);
+		StretchRect(sTex[1], sRect[1], dTex, dRect[1], ShaderConvert::COPY, linear);
 	}
 
 	// Save 2nd output
 	if (feedback_write_2) // FIXME I'm not sure dRect[1] is always correct
-		DoStretchRect(dTex, full_r, sTex[2], dRect[1], m_convert_pipeline[static_cast<int>(ShaderConvert::YUV)], true, LoadAction::DontCareIfFull, &cb_yuv, sizeof(cb_yuv));
+		DoStretchRect(dTex, full_r, sTex[2], dRect[1], m_convert_pipeline[static_cast<int>(ShaderConvert::YUV)], linear, LoadAction::DontCareIfFull, &cb_yuv, sizeof(cb_yuv));
 
 	if (feedback_write_2_but_blend_bg)
 		ClearRenderTarget(dTex, c);
@@ -582,17 +582,17 @@ void GSDeviceMTL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 		if (PMODE.MMOD == 1)
 		{
 			// Blend with a constant alpha
-			DoStretchRect(sTex[0], sRect[0], dTex, dRect[0], pipeline, true, LoadAction::Load, &cb_c, sizeof(cb_c));
+			DoStretchRect(sTex[0], sRect[0], dTex, dRect[0], pipeline, linear, LoadAction::Load, &cb_c, sizeof(cb_c));
 		}
 		else
 		{
 			// Blend with 2 * input alpha
-			DoStretchRect(sTex[0], sRect[0], dTex, dRect[0], pipeline, true, LoadAction::Load, nullptr, 0);
+			DoStretchRect(sTex[0], sRect[0], dTex, dRect[0], pipeline, linear, LoadAction::Load, nullptr, 0);
 		}
 	}
 
 	if (feedback_write_1) // FIXME I'm not sure dRect[0] is always correct
-		StretchRect(dTex, full_r, sTex[2], dRect[0], ShaderConvert::YUV);
+		StretchRect(dTex, full_r, sTex[2], dRect[0], ShaderConvert::YUV, linear);
 }}
 
 void GSDeviceMTL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset, int bufIdx)
@@ -741,6 +741,7 @@ bool GSDeviceMTL::Create()
 	m_features.bptc_textures = true;
 	m_features.framebuffer_fetch = m_dev.features.framebuffer_fetch;
 	m_features.dual_source_blend = true;
+	m_features.clip_control = true;
 	m_features.stencil_buffer = true;
 	m_features.cas_sharpening = true;
 
@@ -1127,8 +1128,6 @@ void GSDeviceMTL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 
 void GSDeviceMTL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, id<MTLRenderPipelineState> pipeline, bool linear, LoadAction load_action, void* frag_uniform, size_t frag_uniform_len)
 {
-	BeginScene();
-
 	FlushClears(sTex);
 
 	GSTextureMTL* sT = static_cast<GSTextureMTL*>(sTex);
@@ -1164,8 +1163,6 @@ void GSDeviceMTL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextu
 	MRESetSampler(linear ? SamplerSelector::Linear() : SamplerSelector::Point());
 
 	DrawStretchRect(sRect, dRect, ds);
-
-	EndScene();
 }
 
 void GSDeviceMTL::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect, const GSVector2i& ds)
@@ -1378,9 +1375,12 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		setFnConstantB(m_fn_constants, pssel.tcc,                GSMTLConstantIndex_PS_TCC);
 		setFnConstantI(m_fn_constants, pssel.wms,                GSMTLConstantIndex_PS_WMS);
 		setFnConstantI(m_fn_constants, pssel.wmt,                GSMTLConstantIndex_PS_WMT);
+		setFnConstantB(m_fn_constants, pssel.adjs,               GSMTLConstantIndex_PS_ADJS);
+		setFnConstantB(m_fn_constants, pssel.adjt,               GSMTLConstantIndex_PS_ADJT);
 		setFnConstantB(m_fn_constants, pssel.ltf,                GSMTLConstantIndex_PS_LTF);
 		setFnConstantB(m_fn_constants, pssel.shuffle,            GSMTLConstantIndex_PS_SHUFFLE);
 		setFnConstantB(m_fn_constants, pssel.read_ba,            GSMTLConstantIndex_PS_READ_BA);
+		setFnConstantB(m_fn_constants, pssel.real16src,          GSMTLConstantIndex_PS_READ16_SRC);
 		setFnConstantB(m_fn_constants, pssel.write_rg,           GSMTLConstantIndex_PS_WRITE_RG);
 		setFnConstantB(m_fn_constants, pssel.fbmask,             GSMTLConstantIndex_PS_FBMASK);
 		setFnConstantI(m_fn_constants, pssel.blend_a,            GSMTLConstantIndex_PS_BLEND_A);
@@ -1391,6 +1391,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		setFnConstantB(m_fn_constants, pssel.hdr,                GSMTLConstantIndex_PS_HDR);
 		setFnConstantB(m_fn_constants, pssel.colclip,            GSMTLConstantIndex_PS_COLCLIP);
 		setFnConstantI(m_fn_constants, pssel.blend_mix,          GSMTLConstantIndex_PS_BLEND_MIX);
+		setFnConstantB(m_fn_constants, pssel.round_inv,          GSMTLConstantIndex_PS_ROUND_INV);
 		setFnConstantB(m_fn_constants, pssel.fixed_one_a,        GSMTLConstantIndex_PS_FIXED_ONE_A);
 		setFnConstantB(m_fn_constants, pssel.pabe,               GSMTLConstantIndex_PS_PABE);
 		setFnConstantB(m_fn_constants, pssel.no_color,           GSMTLConstantIndex_PS_NO_COLOR);
@@ -1407,7 +1408,6 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		setFnConstantB(m_fn_constants, pssel.automatic_lod,      GSMTLConstantIndex_PS_AUTOMATIC_LOD);
 		setFnConstantB(m_fn_constants, pssel.manual_lod,         GSMTLConstantIndex_PS_MANUAL_LOD);
 		setFnConstantB(m_fn_constants, pssel.point_sampler,      GSMTLConstantIndex_PS_POINT_SAMPLER);
-		setFnConstantB(m_fn_constants, pssel.invalid_tex0,       GSMTLConstantIndex_PS_INVALID_TEX0);
 		setFnConstantI(m_fn_constants, pssel.scanmsk,            GSMTLConstantIndex_PS_SCANMSK);
 		auto newps = LoadShader(@"ps_main");
 		ps = newps;
@@ -1598,10 +1598,10 @@ static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, WH)               == of
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, TA_MaxDepth_Af.x) == offsetof(GSMTLMainPSUniform, ta));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, TA_MaxDepth_Af.z) == offsetof(GSMTLMainPSUniform, max_depth));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, TA_MaxDepth_Af.w) == offsetof(GSMTLMainPSUniform, alpha_fix));
-static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, MskFix)           == offsetof(GSMTLMainPSUniform, uv_msk_fix));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, FbMask)           == offsetof(GSMTLMainPSUniform, fbmask));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, HalfTexel)        == offsetof(GSMTLMainPSUniform, half_texel));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, MinMax)           == offsetof(GSMTLMainPSUniform, uv_min_max));
+static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, STRange)          == offsetof(GSMTLMainPSUniform, st_range));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, ChannelShuffle)   == offsetof(GSMTLMainPSUniform, channel_shuffle));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, TCOffsetHack)     == offsetof(GSMTLMainPSUniform, tc_offset));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, STScale)          == offsetof(GSMTLMainPSUniform, st_scale));
@@ -1609,7 +1609,6 @@ static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, DitherMatrix)     == of
 
 void GSDeviceMTL::SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVector4i& r, bool datm)
 {
-	BeginScene();
 	FlushClears(rt);
 	BeginRenderPass(@"Destination Alpha Setup", nullptr, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare, ds, MTLLoadActionDontCare);
 	[m_current_render.encoder setStencilReferenceValue:1];
@@ -1617,7 +1616,6 @@ void GSDeviceMTL::SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVe
 	RenderCopy(nullptr, m_stencil_clear_pipeline, r);
 	MRESetDSS(m_dss_stencil_write);
 	RenderCopy(rt, m_datm_pipeline[datm], r);
-	EndScene();
 }
 
 static id<MTLTexture> getTexture(GSTexture* tex)
@@ -1696,7 +1694,6 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 			break;
 	}
 
-	BeginScene();
 	GSTexture* hdr_rt = nullptr;
 	if (config.ps.hdr)
 	{

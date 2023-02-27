@@ -25,6 +25,9 @@ bool IsReplayingDump();
 
 /// If set, playback will repeat once it reaches the last frame.
 void SetLoopCount(s32 loop_count = 0);
+int GetLoopCount();
+bool IsRunner();
+void SetIsDumpRunner(bool is_runner);
 
 bool Initialize(const char* filename);
 void Reset();

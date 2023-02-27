@@ -71,7 +71,7 @@ public:
 
 	void SetVSync(VsyncMode mode) override;
 
-	bool BeginPresent(bool frame_skip) override;
+	PresentResult BeginPresent(bool frame_skip) override;
 	void EndPresent() override;
 
 	bool SetGPUTimingEnabled(bool enabled) override;
@@ -97,4 +97,5 @@ protected:
 
 	bool m_allow_tearing_supported = false;
 	bool m_using_allow_tearing = false;
+	bool m_device_lost = false;
 };

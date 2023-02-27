@@ -920,6 +920,64 @@
          </item>
         </widget>
        </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_16">
+         <property name="text">
+          <string>Software CLUT Render:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="cpuCLUTRender">
+         <property name="currentText">
+          <string extracomment="0 (Disabled)">0 (Disabled)</string>
+         </property>
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>0 (Disabled)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>1 (Normal)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>2 (Aggressive)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_47">
+         <property name="text">
+          <string>GPU Target CLUT:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QComboBox" name="gpuTargetCLUTMode">
+         <item>
+          <property name="text">
+           <string>Disabled (Default)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Enabled (Exact Match)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Enabled (Check Inside Target)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
        <item row="4" column="0">
         <widget class="QLabel" name="label_12">
          <property name="text">
@@ -947,41 +1005,6 @@
        </item>
        <item row="5" column="0" colspan="2">
         <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="hwAutoFlush">
-           <property name="text">
-            <string>Auto Flush</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QCheckBox" name="frameBufferConversion">
-           <property name="text">
-            <string>Frame Buffer Conversion</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QCheckBox" name="disableDepthEmulation">
-           <property name="text">
-            <string>Disable Depth Emulation</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QCheckBox" name="disableSafeFeatures">
-           <property name="text">
-            <string>Disable Safe Features</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QCheckBox" name="disablePartialInvalidation">
-           <property name="text">
-            <string>Disable Partial Invalidation</string>
-           </property>
-          </widget>
-         </item>
          <item row="1" column="1">
           <widget class="QCheckBox" name="preloadFrameData">
            <property name="text">
@@ -992,69 +1015,60 @@
          <item row="2" column="1">
           <widget class="QCheckBox" name="textureInsideRt">
            <property name="text">
-            <string extracomment=":I18N COMMENT: RT: NEEDS TO BE DESCRIBED. TO BE WRITTEN.">Texture Inside RT</string>
+            <string>Texture Inside RT</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="disableDepthEmulation">
+           <property name="text">
+            <string>Disable Depth Emulation</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QCheckBox" name="disablePartialInvalidation">
+           <property name="text">
+            <string>Disable Partial Source Invalidation</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="disableSafeFeatures">
+           <property name="text">
+            <string>Disable Safe Features</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QCheckBox" name="targetPartialInvalidation">
+           <property name="text">
+            <string>Target Partial Invalidation</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="frameBufferConversion">
+           <property name="text">
+            <string>Frame Buffer Conversion</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="hwAutoFlush">
+           <property name="text">
+            <string>Auto Flush</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QCheckBox" name="readTCOnClose">
+           <property name="text">
+            <string>Read Targets When Closing</string>
            </property>
           </widget>
          </item>
         </layout>
-       </item>
-       <item row="2" column="1">
-        <widget class="QComboBox" name="cpuCLUTRender">
-         <property name="currentText">
-          <string extracomment="0 (Disabled)">0 (Disabled)</string>
-         </property>
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <item>
-          <property name="text">
-           <string>0 (Disabled)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>1 (Normal)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>2 (Aggressive)</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_16">
-         <property name="text">
-          <string>Software CLUT Render:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_47">
-         <property name="text">
-          <string extracomment=":I18N COMMENT: &quot;Target CLUT&quot; NEEDS DESCRIPTION. TO BE WRITTEN.">GPU Target CLUT:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QComboBox" name="gpuTargetCLUTMode">
-         <item>
-          <property name="text">
-           <string>Disabled (Default)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Enabled (Exact Match)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Enabled (Check Inside Target)</string>
-          </property>
-         </item>
-        </widget>
        </item>
       </layout>
      </widget>
@@ -1536,7 +1550,7 @@
              <string>%</string>
             </property>
             <property name="minimum">
-             <number>100</number>
+             <number>50</number>
             </property>
             <property name="maximum">
              <number>500</number>

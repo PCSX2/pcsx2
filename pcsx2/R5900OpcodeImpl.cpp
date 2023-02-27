@@ -519,7 +519,7 @@ void DSRLV(){ if (!_Rd_) return; cpuRegs.GPR.r[_Rd_].UD[0] = (u64)(cpuRegs.GPR.r
 //    exceptions, since the lower bits of the address are used to determine the portions
 //    of the address/register operations.
 
-[[ noreturn ]] __noinline static void RaiseAddressError(u32 addr, bool store)
+__noinline static void RaiseAddressError(u32 addr, bool store)
 {
 	const std::string message(fmt::format("Address Error, addr=0x{:x} [{}]", addr, store ? "store" : "load"));
 
@@ -1012,7 +1012,7 @@ void SYSCALL()
 		case Syscall::StartThread:
 		case Syscall::ChangeThreadPriority:
 		{
-			if (CurrentBiosInformation.threadListAddr == 0)
+			if (CurrentBiosInformation.eeThreadListAddr == 0)
 			{
 				u32 offset = 0x0;
 				// Suprisingly not that slow :)
@@ -1030,16 +1030,16 @@ void SYSCALL()
 						// We've found the instruction pattern!
 						// We (well, I) know that the thread address is always 0x8001 + the immediate of the 6th instruction from here
 						const u32 op = memRead32(0x80000000 + offset + (sizeof(u32) * 6));
-						CurrentBiosInformation.threadListAddr = 0x80010000 + static_cast<u16>(op) - 8; // Subtract 8 because the address here is offset by 8.
-						DevCon.WriteLn("BIOS: Successfully found the instruction pattern. Assuming the thread list is here: %0x", CurrentBiosInformation.threadListAddr);
+						CurrentBiosInformation.eeThreadListAddr = 0x80010000 + static_cast<u16>(op) - 8; // Subtract 8 because the address here is offset by 8.
+						DevCon.WriteLn("BIOS: Successfully found the instruction pattern. Assuming the thread list is here: %0x", CurrentBiosInformation.eeThreadListAddr);
 						break;
 					}
 					offset += 4;
 				}
-				if (!CurrentBiosInformation.threadListAddr)
+				if (!CurrentBiosInformation.eeThreadListAddr)
 				{
 					// We couldn't find the address
-					CurrentBiosInformation.threadListAddr = -1;
+					CurrentBiosInformation.eeThreadListAddr = -1;
 					// If you're here because a user has reported this message, this means that the instruction pattern is not present on their bios, or it is aligned weirdly.
 					Console.Warning("BIOS Warning: Unable to get a thread list offset. The debugger thread and stack frame views will not be functional.");
 				}

@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <wil/com.h>
 #include <dxgi1_3.h>
+#include <d3d11_1.h>
 
 struct GSVertexShader11
 {
@@ -109,8 +110,13 @@ public:
 	};
 
 private:
-	static constexpr u32 MAX_TEXTURES = 4;
-	static constexpr u32 MAX_SAMPLERS = 1;
+	enum : u32
+	{
+		MAX_TEXTURES = 4,
+		MAX_SAMPLERS = 1,
+		VERTEX_BUFFER_SIZE = 32 * 1024 * 1024,
+		INDEX_BUFFER_SIZE = 16 * 1024 * 1024,
+	};
 
 	int m_d3d_texsize;
 
@@ -120,7 +126,7 @@ private:
 
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) final;
 
-	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) final;
+	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c, const bool linear) final;
 	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0, int bufIdx = 0) final;
 	void DoFXAA(GSTexture* sTex, GSTexture* dTex) final;
 	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) final;
@@ -130,15 +136,15 @@ private:
 
 	wil::com_ptr_nothrow<ID3D11Device> m_dev;
 	wil::com_ptr_nothrow<ID3D11DeviceContext> m_ctx;
+	wil::com_ptr_nothrow<ID3DUserDefinedAnnotation> m_annotation;
 	wil::com_ptr_nothrow<IDXGISwapChain1> m_swapchain;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_vb;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_ib;
+	u32 m_vb_pos = 0; // bytes
+	u32 m_ib_pos = 0; // indices/sizeof(u32)
 
 	struct
 	{
-		ID3D11Buffer* vb;
-		size_t vb_stride;
-		ID3D11Buffer* ib;
 		ID3D11InputLayout* layout;
 		D3D11_PRIMITIVE_TOPOLOGY topology;
 		ID3D11VertexShader* vs;
@@ -151,6 +157,7 @@ private:
 		std::array<ID3D11SamplerState*, MAX_SAMPLERS> ps_ss;
 		GSVector2i viewport;
 		GSVector4i scissor;
+		u32 vb_stride;
 		ID3D11DepthStencilState* dss;
 		u8 sref;
 		ID3D11BlendState* bs;
@@ -257,6 +264,10 @@ public:
 	void ClearDepth(GSTexture* t) override;
 	void ClearStencil(GSTexture* t, u8 c) override;
 
+	void PushDebugGroup(const char* fmt, ...) override;
+	void PopDebugGroup() override;
+	void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) override;
+
 	void CloneTexture(GSTexture* src, GSTexture** dest, const GSVector4i& rect);
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) override;
@@ -270,12 +281,8 @@ public:
 
 	void SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm);
 
-	void IASetVertexBuffer(const void* vertex, size_t stride, size_t count);
-	bool IAMapVertexBuffer(void** vertex, size_t stride, size_t count);
-	void IAUnmapVertexBuffer();
-	void IASetVertexBuffer(ID3D11Buffer* vb, size_t stride);
-	void IASetIndexBuffer(const void* index, size_t count);
-	void IASetIndexBuffer(ID3D11Buffer* ib);
+	bool IASetVertexBuffer(const void* vertex, u32 stride, u32 count);
+	bool IASetIndexBuffer(const void* index, u32 count);
 	void IASetInputLayout(ID3D11InputLayout* layout);
 	void IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY topology);
 

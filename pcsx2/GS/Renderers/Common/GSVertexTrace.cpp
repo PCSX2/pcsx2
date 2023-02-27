@@ -19,10 +19,8 @@
 #include "GS/GSState.h"
 
 GSVertexTrace::GSVertexTrace(const GSState* state, bool provoking_vertex_first)
-	: m_accurate_stq(false), m_state(state), m_primclass(GS_INVALID_CLASS)
+	: m_state(state)
 {
-	memset(&m_alpha, 0, sizeof(m_alpha));
-
 	MULTI_ISA_SELECT(GSVertexTracePopulateFunctions)(*this, provoking_vertex_first);
 }
 

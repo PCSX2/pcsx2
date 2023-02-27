@@ -54,11 +54,11 @@ bool NoOSD;
 bool AllowParams1;
 bool AllowParams2;
 std::string BiosDescription;
-std::string BiosZone;
+std::string BiosSerial;
 std::string BiosPath;
 BiosDebugInformation CurrentBiosInformation;
 
-static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& description, u32& region, std::string& zone)
+static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& description, u32& region, std::string& zone, std::string& serial)
 {
 	romdir rd;
 	for (u32 i = 0; i < 512 * 1024; i++)
@@ -73,13 +73,25 @@ static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& descriptio
 	s64 fileOffset = 0;
 	s64 fileSize = FileSystem::FSize64(fp);
 	bool foundRomVer = false;
+	char romver[14 + 1] = {}; // ascii version loaded from disk.
+	char extinfo[15 + 1] = {}; // ascii version loaded from disk.
 
 	// ensure it's a null-terminated and not zero-length string
 	while (rd.fileName[0] != '\0' && strnlen(rd.fileName, sizeof(rd.fileName)) != sizeof(rd.fileName))
 	{
+		if (std::strncmp(rd.fileName, "EXTINFO", sizeof(rd.fileName)) == 0)
+		{
+			s64 pos = FileSystem::FTell64(fp);
+			if (FileSystem::FSeek64(fp, fileOffset + 0x10, SEEK_SET) != 0 ||
+				std::fread(extinfo, 15, 1, fp) != 1 || FileSystem::FSeek64(fp, pos, SEEK_SET) != 0)
+			{
+				break;
+			}
+			serial = extinfo;
+		}
+
 		if (std::strncmp(rd.fileName, "ROMVER", sizeof(rd.fileName)) == 0)
 		{
-			char romver[14 + 1] = {}; // ascii version loaded from disk.
 
 			s64 pos = FileSystem::FTell64(fp);
 			if (FileSystem::FSeek64(fp, fileOffset, SEEK_SET) != 0 ||
@@ -88,56 +100,7 @@ static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& descriptio
 				break;
 			}
 
-			// TODO: some regions can be detected only from rom1
-			/* 
-			switch (rom1:DVDID[4])
-			{
-				// clang-format off
-				case 'O': zone = "Oceania";region = 3;  break;
-				case 'R': zone = "Russia"; region = 5;  break;
-				case 'M': zone = "Mexico"; region = 7;  break;
-				// clang-format on
-			}
-			*/
-
-			switch (romver[4])
-			{
-				// clang-format off
-				case 'J': zone = "Japan";  region = 0;  break;
-				case 'A': zone = "USA";    region = 1;  break;
-				case 'E': zone = "Europe"; region = 2;  break;
-				// case 'E': zone = "Oceania";region = 3;  break; // Not implemented
-				case 'H': zone = "Asia";   region = 4;  break;
-				// case 'E': zone = "Russia"; region = 3;  break; // Not implemented
-				case 'C': zone = "China";  region = 6;  break;
-				// case 'A': zone = "Mexico"; region = 7;  break; // Not implemented
-				case 'T': zone = "T10K";   region = 8;  break;
-				case 'X': zone = "Test";   region = 9;  break;
-				case 'P': zone = "Free";   region = 10; break;
-				// clang-format on
-				default:
-					zone.clear();
-					zone += romver[4];
-					region = 0;
-					break;
-			}
-
-			char vermaj[3] = {romver[0], romver[1], 0};
-			char vermin[3] = {romver[2], romver[3], 0};
-
-			description = StringUtil::StdStringFromFormat("%-7s v%s.%s(%c%c/%c%c/%c%c%c%c)  %s",
-				zone.c_str(),
-				vermaj, vermin,
-				romver[12], romver[13], // day
-				romver[10], romver[11], // month
-				romver[6], romver[7], romver[8], romver[9], // year!
-				(romver[5] == 'C') ? "Console" : (romver[5] == 'D') ? "Devel" : "");
-
-			version = strtol(vermaj, (char**)NULL, 0) << 8;
-			version |= strtol(vermin, (char**)NULL, 0);
 			foundRomVer = true;
-
-			Console.WriteLn("Bios Found: %s", description.c_str());
 		}
 
 		if ((rd.fileSize % 0x10) == 0)
@@ -151,7 +114,57 @@ static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& descriptio
 
 	fileOffset -= ((rd.fileSize + 0x10) & 0xfffffff0) - rd.fileSize;
 
-	if (!foundRomVer)
+	if (foundRomVer)
+	{
+		switch (romver[4])
+		{
+			// clang-format off
+			case 'J': zone = "Japan";  region = 0;  break;
+			case 'A': zone = "USA";    region = 1;  break;
+			case 'E': zone = "Europe"; region = 2;  break;
+			// case 'E': zone = "Oceania";region = 3;  break; // Not implemented
+			case 'H': zone = "Asia";   region = 4;  break;
+			// case 'E': zone = "Russia"; region = 3;  break; // Not implemented
+			case 'C': zone = "China";  region = 6;  break;
+			// case 'A': zone = "Mexico"; region = 7;  break; // Not implemented
+			case 'T': zone = "T10K";   region = 8;  break;
+			case 'X': zone = "Test";   region = 9;  break;
+			case 'P': zone = "Free";   region = 10; break;
+			// clang-format on
+			default:
+				zone.clear();
+				zone += romver[4];
+				region = 0;
+				break;
+		}
+		// TODO: some regions can be detected only from rom1
+		/* switch (rom1:DVDID[4])
+		{
+			// clang-format off
+			case 'O': zone = "Oceania";region = 3;  break;
+			case 'R': zone = "Russia"; region = 5;  break;
+			case 'M': zone = "Mexico"; region = 7;  break;
+			// clang-format on
+		} */
+
+		char vermaj[3] = {romver[0], romver[1], 0};
+		char vermin[3] = {romver[2], romver[3], 0};
+		description = StringUtil::StdStringFromFormat("%-7s v%s.%s(%c%c/%c%c/%c%c%c%c)  %s %s",
+			zone.c_str(),
+			vermaj, vermin,
+			romver[12], romver[13], // day
+			romver[10], romver[11], // month
+			romver[6], romver[7], romver[8], romver[9], // year!
+			(romver[5] == 'C') ? "Console" : (romver[5] == 'D') ? "Devel" :
+																  "",
+			serial.c_str());
+
+		version = strtol(vermaj, (char**)NULL, 0) << 8;
+		version |= strtol(vermin, (char**)NULL, 0);
+
+		Console.WriteLn("Bios Found: %s", description.c_str());
+	}
+	else
 		return false;
 
 	if (fileSize < (int)fileOffset)
@@ -284,7 +297,8 @@ bool LoadBIOS()
 	if (filesize <= 0)
 		return false;
 
-	LoadBiosVersion(fp.get(), BiosVersion, BiosDescription, BiosRegion, BiosZone);
+	std::string zone;
+	LoadBiosVersion(fp.get(), BiosVersion, BiosDescription, BiosRegion, zone, BiosSerial);
 
 	if (FileSystem::FSeek64(fp.get(), 0, SEEK_SET) ||
 		std::fread(eeMem->ROM, static_cast<size_t>(std::min<s64>(Ps2MemSize::Rom, filesize)), 1, fp.get()) != 1)
@@ -311,20 +325,20 @@ bool LoadBIOS()
 	if (EmuConfig.CurrentIRX.length() > 3)
 		LoadIrx(EmuConfig.CurrentIRX, &eeMem->ROM[0x3C0000], sizeof(eeMem->ROM) - 0x3C0000);
 
-	CurrentBiosInformation.threadListAddr = 0;
+	CurrentBiosInformation.eeThreadListAddr = 0;
 	return true;
 }
 
 bool IsBIOS(const char* filename, u32& version, std::string& description, u32& region, std::string& zone)
 {
-	const std::string bios_path(Path::Combine(EmuFolders::Bios, filename));
+	std::string serial;
 	const auto fp = FileSystem::OpenManagedCFile(filename, "rb");
 	if (!fp)
 		return false;
 
 	// FPS2BIOS is smaller and of variable size
 	//if (inway.Length() < 512*1024) return false;
-	return LoadBiosVersion(fp.get(), version, description, region, zone);
+	return LoadBiosVersion(fp.get(), version, description, region, zone, serial);
 }
 
 bool IsBIOSAvailable(const std::string& full_path)

@@ -75,13 +75,12 @@ layout(std140, binding = 0) uniform cb21
     float MaxDepthPS;
     float Af;
 
-    uvec4 MskFix;
-
     uvec4 FbMask;
 
     vec4 HalfTexel;
 
     vec4 MinMax;
+    vec4 STRange;
 
     ivec4 ChannelShuffle;
 
@@ -91,11 +90,6 @@ layout(std140, binding = 0) uniform cb21
     mat4 DitherMatrix;
 };
 #endif
-
-//layout(std140, binding = 22) uniform cb22
-//{
-//    vec4 rt_size;
-//};
 
 //////////////////////////////////////////////////////////////////////
 // Default Sampler

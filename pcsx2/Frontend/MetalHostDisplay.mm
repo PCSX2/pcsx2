@@ -265,7 +265,7 @@ void MetalHostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, 
 
 static bool s_capture_next = false;
 
-bool MetalHostDisplay::BeginPresent(bool frame_skip)
+HostDisplay::PresentResult MetalHostDisplay::BeginPresent(bool frame_skip)
 { @autoreleasepool {
 	GSDeviceMTL* dev = static_cast<GSDeviceMTL*>(g_gs_device.get());
 	if (dev && m_capture_start_frame && dev->FrameNo() == m_capture_start_frame)
@@ -273,7 +273,7 @@ bool MetalHostDisplay::BeginPresent(bool frame_skip)
 	if (frame_skip || m_window_info.type == WindowInfo::Type::Surfaceless || !g_gs_device)
 	{
 		ImGui::EndFrame();
-		return false;
+		return PresentResult::FrameSkipped;
 	}
 	id<MTLCommandBuffer> buf = dev->GetRenderCmdBuf();
 	m_current_drawable = MRCRetain([m_layer nextDrawable]);
@@ -284,13 +284,13 @@ bool MetalHostDisplay::BeginPresent(bool frame_skip)
 		[buf popDebugGroup];
 		dev->FlushEncoders();
 		ImGui::EndFrame();
-		return false;
+		return PresentResult::FrameSkipped;
 	}
 	[m_pass_desc colorAttachments][0].texture = [m_current_drawable texture];
 	id<MTLRenderCommandEncoder> enc = [buf renderCommandEncoderWithDescriptor:m_pass_desc];
 	[enc setLabel:@"Present"];
 	dev->m_current_render.encoder = MRCRetain(enc);
-	return true;
+	return PresentResult::OK;
 }}
 
 void MetalHostDisplay::EndPresent()

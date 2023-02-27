@@ -142,6 +142,8 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_FST", sel.fst);
 		sm.AddMacro("PS_WMS", sel.wms);
 		sm.AddMacro("PS_WMT", sel.wmt);
+		sm.AddMacro("PS_ADJS", sel.adjs);
+		sm.AddMacro("PS_ADJT", sel.adjt);
 		sm.AddMacro("PS_AEM_FMT", sel.aem_fmt);
 		sm.AddMacro("PS_AEM", sel.aem);
 		sm.AddMacro("PS_TFX", sel.tfx);
@@ -158,13 +160,13 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_POINT_SAMPLER", sel.point_sampler);
 		sm.AddMacro("PS_SHUFFLE", sel.shuffle);
 		sm.AddMacro("PS_READ_BA", sel.read_ba);
+		sm.AddMacro("PS_READ16_SRC", sel.real16src);
 		sm.AddMacro("PS_CHANNEL_FETCH", sel.channel);
 		sm.AddMacro("PS_TALES_OF_ABYSS_HLE", sel.tales_of_abyss_hle);
 		sm.AddMacro("PS_URBAN_CHAOS_HLE", sel.urban_chaos_hle);
 		sm.AddMacro("PS_DFMT", sel.dfmt);
 		sm.AddMacro("PS_DEPTH_FMT", sel.depth_fmt);
 		sm.AddMacro("PS_PAL_FMT", sel.pal_fmt);
-		sm.AddMacro("PS_INVALID_TEX0", sel.invalid_tex0);
 		sm.AddMacro("PS_HDR", sel.hdr);
 		sm.AddMacro("PS_COLCLIP", sel.colclip);
 		sm.AddMacro("PS_BLEND_A", sel.blend_a);
@@ -172,6 +174,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_BLEND_C", sel.blend_c);
 		sm.AddMacro("PS_BLEND_D", sel.blend_d);
 		sm.AddMacro("PS_BLEND_MIX", sel.blend_mix);
+		sm.AddMacro("PS_ROUND_INV", sel.round_inv);
 		sm.AddMacro("PS_FIXED_ONE_A", sel.fixed_one_a);
 		sm.AddMacro("PS_PABE", sel.pabe);
 		sm.AddMacro("PS_DITHER", sel.dither);

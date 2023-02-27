@@ -109,7 +109,20 @@ vec4 sample_c(vec2 uv)
     // As of 2018 this issue is still present.
     uv = (trunc(uv * WH.zw) + vec2(0.5, 0.5)) / WH.zw;
 #endif
-    uv *= STScale;
+#if !PS_ADJS && !PS_ADJT
+	uv *= STScale;
+#else
+	#if PS_ADJS
+		uv.x = (uv.x - STRange.x) * STRange.z;
+	#else
+		uv.x = uv.x * STScale.x;
+	#endif
+	#if PS_ADJT
+		uv.y = (uv.y - STRange.y) * STRange.w;
+	#else
+		uv.y = uv.y * STScale.y;
+	#endif
+#endif
 
 #if PS_AUTOMATIC_LOD == 1
     return texture(TextureSampler, uv);
@@ -146,11 +159,7 @@ vec4 sample_p_norm(float u)
 vec4 clamp_wrap_uv(vec4 uv)
 {
     vec4 uv_out = uv;
-#if PS_INVALID_TEX0 == 1
-    vec4 tex_size = WH.zwzw;
-#else
     vec4 tex_size = WH.xyxy;
-#endif
 
 #if PS_WMS == PS_WMT
 
@@ -162,7 +171,7 @@ vec4 clamp_wrap_uv(vec4 uv)
     // textures. Fixes Xenosaga's hair issue.
     uv = fract(uv);
     #endif
-    uv_out = vec4((uvec4(uv * tex_size) & MskFix.xyxy) | MskFix.zwzw) / tex_size;
+    uv_out = vec4((uvec4(uv * tex_size) & floatBitsToUint(MinMax.xyxy)) | floatBitsToUint(MinMax.zwzw)) / tex_size;
 #endif
 
 #else // PS_WMS != PS_WMT
@@ -174,7 +183,7 @@ vec4 clamp_wrap_uv(vec4 uv)
     #if PS_FST == 0
     uv.xz = fract(uv.xz);
     #endif
-    uv_out.xz = vec2((uvec2(uv.xz * tex_size.xx) & MskFix.xx) | MskFix.zz) / tex_size.xx;
+    uv_out.xz = vec2((uvec2(uv.xz * tex_size.xx) & floatBitsToUint(MinMax.xx)) | floatBitsToUint(MinMax.zz)) / tex_size.xx;
 
 #endif
 
@@ -185,7 +194,7 @@ vec4 clamp_wrap_uv(vec4 uv)
     #if PS_FST == 0
     uv.yw = fract(uv.yw);
     #endif
-    uv_out.yw = vec2((uvec2(uv.yw * tex_size.yy) & MskFix.yy) | MskFix.ww) / tex_size.yy;
+    uv_out.yw = vec2((uvec2(uv.yw * tex_size.yy) & floatBitsToUint(MinMax.yy)) | floatBitsToUint(MinMax.ww)) / tex_size.yy;
 #endif
 
 #endif
@@ -288,7 +297,7 @@ ivec2 clamp_wrap_uv_depth(ivec2 uv)
 
     // Keep the full precision
     // It allow to multiply the ScalingFactor before the 1/16 coeff
-    ivec4 mask = ivec4(MskFix) << 4;
+    ivec4 mask = floatBitsToInt(MinMax) << 4;
 
 #if PS_WMS == PS_WMT
 
@@ -591,11 +600,7 @@ void fog(inout vec4 C, float f)
 vec4 ps_color()
 {
     //FIXME: maybe we can set gl_Position.w = q in VS
-#if (PS_FST == 0) && (PS_INVALID_TEX0 == 1)
-    // Re-normalize coordinate from invalid GS to corrected texture size
-    vec2 st = (PSin.t_float.xy * WH.xy) / (vec2(PSin.t_float.w) * WH.zw);
-    vec2 st_int = (PSin.t_int.zw * WH.xy) / (vec2(PSin.t_float.w) * WH.zw);
-#elif (PS_FST == 0)
+#if (PS_FST == 0)
     vec2 st = PSin.t_float.xy / vec2(PSin.t_float.w);
     vec2 st_int = PSin.t_int.zw / vec2(PSin.t_float.w);
 #else
@@ -649,7 +654,12 @@ void ps_dither(inout vec3 C)
     #else
     ivec2 fpos = ivec2(gl_FragCoord.xy / float(PS_SCALE_FACTOR));
     #endif
-    C += DitherMatrix[fpos.y&3][fpos.x&3];
+    float value = DitherMatrix[fpos.y&3][fpos.x&3];
+    #if PS_ROUND_INV
+    C -= value;
+    #else
+    C += value;
+    #endif
 #endif
 }
 
@@ -658,6 +668,10 @@ void ps_color_clamp_wrap(inout vec3 C)
     // When dithering the bottom 3 bits become meaningless and cause lines in the picture
     // so we need to limit the color depth on dithered items
 #if SW_BLEND || PS_DITHER || PS_FBMASK
+
+#if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0
+    C += 7.f; // Need to round up, not down since the shader will invert
+#endif
 
     // Correct the Color value based on the output format
 #if PS_COLCLIP == 0 && PS_HDR == 0
@@ -681,8 +695,10 @@ void ps_color_clamp_wrap(inout vec3 C)
 #endif
 }
 
-void ps_blend(inout vec4 Color, inout float As)
+void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 {
+float As = As_rgba.a;
+
 #if SW_BLEND
 
     // PABE
@@ -763,16 +779,15 @@ void ps_blend(inout vec4 Color, inout float As)
 #if PS_CLR_HW == 1
     // Replace Af with As so we can do proper compensation for Alpha.
 #if PS_BLEND_C == 2
-    As = Af;
+    As_rgba = vec4(Af);
 #endif
     // Subtract 1 for alpha to compensate for the changed equation,
     // if c.rgb > 255.0f then we further need to adjust alpha accordingly,
     // we pick the lowest overflow from all colors because it's the safest,
     // we divide by 255 the color because we don't know Cd value,
     // changed alpha should only be done for hw blend.
-    float min_color = min(min(Color.r, Color.g), Color.b);
-    float alpha_compensate = max(1.0f, min_color / 255.0f);
-    As -= alpha_compensate;
+    vec3 alpha_compensate = max(vec3(1.0f), Color.rgb / vec3(255.0f));
+    As_rgba.rgb -= alpha_compensate;
 #elif PS_CLR_HW == 2
     // Compensate slightly for Cd*(As + 1) - Cs*As.
     // The initial factor we chose is 1 (0.00392)
@@ -866,7 +881,13 @@ void ps_main()
 #if PS_SHUFFLE
     uvec4 denorm_c = uvec4(C);
     uvec2 denorm_TA = uvec2(vec2(TA.xy) * 255.0f + 0.5f);
-
+#if PS_READ16_SRC
+	C.rb = vec2(float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5)));
+	if (bool(denorm_c.a & 0x80u))
+		C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80u)));
+	else
+		C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
+#else
     // Write RB part. Mask will take care of the correct destination
 #if PS_READ_BA
     C.rb = C.bb;
@@ -902,9 +923,10 @@ void ps_main()
     // float sel = step(128.0f, c.g);
     // vec2 c_shuffle = vec2((denorm_c.gg & 0x7Fu) | (denorm_TA & 0x80u));
     // c.ga = mix(c_shuffle.xx, c_shuffle.yy, sel);
-#endif
+#endif // PS_READ_BA
 
-#endif
+#endif // READ16_SRC
+#endif // PS_SHUFFLE
 
     // Must be done before alpha correction
 
@@ -915,9 +937,9 @@ void ps_main()
 
 #if SW_AD_TO_HW
     vec4 RT = trunc(fetch_rt() * 255.0f + 0.1f);
-    float alpha_blend = RT.a / 128.0f;
+    vec4 alpha_blend = vec4(RT.a / 128.0f);
 #else
-    float alpha_blend = C.a / 128.0f;
+    vec4 alpha_blend = vec4(C.a / 128.0f);
 #endif
 
     // Correct the ALPHA value based on the output format
@@ -957,12 +979,12 @@ void ps_main()
     SV_Target0 = C / 255.0f;
 #endif
 #if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
-    SV_Target1 = vec4(alpha_blend);
+    SV_Target1 = alpha_blend;
 #endif
 
 #if PS_NO_ABLEND
     // write alpha blend factor into col0
-    SV_Target0.a = alpha_blend;
+    SV_Target0.a = alpha_blend.a;
 #endif
 #if PS_ONLY_ALPHA
     // rgb isn't used

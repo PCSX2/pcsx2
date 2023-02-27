@@ -88,6 +88,7 @@ public:
 	int GetWidth() const { return m_size.x; }
 	int GetHeight() const { return m_size.y; }
 	GSVector2i GetSize() const { return m_size; }
+	GSVector4i GetRect() const { return GSVector4i(m_size).zwxy(); }
 	int GetMipmapLevels() const { return m_mipmap_levels; }
 	bool IsMipmap() const { return m_mipmap_levels > 1; }
 

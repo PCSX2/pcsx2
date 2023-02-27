@@ -209,7 +209,7 @@ void VMManager::SetState(VMState state)
 		else
 			Host::OnVMResumed();
 	}
-	else if (state == VMState::Stopping)
+	else if (state == VMState::Stopping && old_state == VMState::Running)
 	{
 		// If stopping, break execution as soon as possible.
 		Cpu->ExitExecution();
@@ -904,6 +904,10 @@ bool VMManager::ApplyBootParameters(VMBootParameters params, std::string* state_
 
 		Hle_SetElfPath(s_elf_override.c_str());
 		EmuConfig.UseBOOT2Injection = true;
+	}
+	else
+	{
+		Hle_ClearElfPath();
 	}
 
 	return true;

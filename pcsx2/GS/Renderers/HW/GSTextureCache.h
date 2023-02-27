@@ -44,6 +44,44 @@ public:
 		return valid && overlap;
 	}
 
+	struct SourceRegion
+	{
+		u64 bits;
+
+		bool HasX() const { return static_cast<u32>(bits) != 0; }
+		bool HasY() const { return static_cast<u32>(bits >> 32) != 0; }
+		bool HasEither() const { return (bits != 0); }
+
+		void SetX(u32 min, u32 max) { bits |= (min | (max << 16)); }
+		void SetY(u32 min, u32 max) { bits |= ((static_cast<u64>(min) << 32) | (static_cast<u64>(max) << 48)); }
+
+		u32 GetMinX() const { return static_cast<u32>(bits) & 0xFFFFu; }
+		u32 GetMaxX() const { return static_cast<u32>(bits >> 16) & 0xFFFFu; }
+		u32 GetMinY() const { return static_cast<u32>(bits >> 32) & 0xFFFFu; }
+		u32 GetMaxY() const { return static_cast<u32>(bits >> 48); }
+
+		u32 GetWidth() const { return (GetMaxX() - GetMinX()); }
+		u32 GetHeight() const { return (GetMaxY() - GetMinY()); }
+
+		/// Returns true if the area of the region exceeds the TW/TH size (i.e. "fixed tex0").
+		bool IsFixedTEX0(int tw, int th) const;
+		bool IsFixedTEX0W(int tw) const;
+		bool IsFixedTEX0H(int th) const;
+
+		/// Returns the rectangle relative to the texture base pointer that the region occupies.
+		GSVector4i GetRect(int tw, int th) const;
+
+		/// When TW/TH is less than the extents covered by the region ("fixed tex0"), returns the offset
+		/// which should be applied to any coordinates to relocate them to the actual region.
+		GSVector4i GetOffset(int tw, int th) const;
+
+		/// Reduces the range of texels relative to the specified mipmap level.
+		SourceRegion AdjustForMipmap(u32 level) const;
+
+		/// Adjusts the texture base pointer and block width relative to the region.
+		void AdjustTEX0(GIFRegTEX0* TEX0) const;
+	};
+
 	using HashType = u64;
 
 	struct HashCacheKey
@@ -51,10 +89,11 @@ public:
 		HashType TEX0Hash, CLUTHash;
 		GIFRegTEX0 TEX0;
 		GIFRegTEXA TEXA;
+		SourceRegion region;
 
 		HashCacheKey();
 
-		static HashCacheKey Create(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const u32* clut, const GSVector2i* lod);
+		static HashCacheKey Create(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const u32* clut, const GSVector2i* lod, SourceRegion region);
 
 		HashCacheKey WithRemovedCLUTHash() const;
 		void RemoveCLUTHash();
@@ -148,7 +187,7 @@ public:
 		{
 			GSVector4i* rect;
 			u32 count;
-		} m_write;
+		} m_write = {};
 
 		void PreloadLevel(int level);
 
@@ -161,6 +200,7 @@ public:
 		GSTexture* m_palette;
 		GSVector4i m_valid_rect;
 		GSVector2i m_lod;
+		SourceRegion m_region = {};
 		u8 m_valid_hashes = 0;
 		u8 m_complete_layers = 0;
 		bool m_target;
@@ -178,10 +218,12 @@ public:
 		GSOffset::PageLooper m_pages;
 
 	public:
-		Source(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool dummy_container = false);
+		Source(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA);
 		virtual ~Source();
 
 		__fi bool CanPreload() const { return CanPreloadTextureSize(m_TEX0.TW, m_TEX0.TH); }
+
+		void SetPages();
 
 		void Update(const GSVector4i& rect, int layer = 0);
 		void UpdateLayer(const GIFRegTEX0& TEX0, const GSVector4i& rect, int layer = 0);
@@ -192,19 +234,31 @@ public:
 	class Target : public Surface
 	{
 	public:
-		const int m_type;
-		bool m_used;
+		const int m_type = 0;
+		const bool m_depth_supported = false;
+		bool m_dirty_alpha = true;
+		bool m_is_frame = false;
+		bool m_used = false;
 		GSDirtyRectList m_dirty;
-		GSVector4i m_valid;
-		const bool m_depth_supported;
-		bool m_dirty_alpha;
-		bool m_is_frame;
+		GSVector4i m_valid{};
+		GSVector4i m_drawn_since_read{};
+		u32 m_valid_bits = 0;
+		int readbacks_since_draw = 0;
 
 	public:
 		Target(const GIFRegTEX0& TEX0, const bool depth_supported, const int type);
 		~Target();
 
-		void UpdateValidity(const GSVector4i& rect);
+		/// Returns true if the target wraps around the end of GS memory.
+		bool Wraps() const { return (m_end_block < m_TEX0.TBP0); }
+
+		/// Returns the end block for the target, but doesn't wrap at 0x3FFF.
+		/// Can be used for overlap tests.
+		u32 UnwrappedEndBlock() const { return (m_end_block + (Wraps() ? MAX_BLOCKS : 0)); }
+
+		void ResizeValidity(const GSVector4i& rect);
+		void UpdateValidity(const GSVector4i& rect, bool can_resize = true);
+		void UpdateValidBits(u32 bits_written);
 
 		void Update(bool reset_age);
 
@@ -261,10 +315,10 @@ public:
 
 			struct
 			{
-				u32 fbp : 9;
+				u32 fbp : 14;
 				u32 fbw : 6;
 				u32 psm : 6;
-				u32 pad : 11;
+				u32 pad : 6;
 			};
 		};
 
@@ -322,7 +376,7 @@ protected:
 	std::unique_ptr<GSDownloadTexture> m_uint16_download_texture;
 	std::unique_ptr<GSDownloadTexture> m_uint32_download_texture;
 
-	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t, bool half_right, int x_offset, int y_offset, const GSVector2i* lod, const GSVector4i* src_range, GSTexture* gpu_clut);
+	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t, bool half_right, int x_offset, int y_offset, const GSVector2i* lod, const GSVector4i* src_range, GSTexture* gpu_clut, SourceRegion region);
 	Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type, const bool clear);
 
 	/// Expands a target when the block pointer for a display framebuffer is within another target, but the read offset
@@ -332,10 +386,10 @@ protected:
 	/// Resizes the download texture if needed.
 	bool PrepareDownloadTexture(u32 width, u32 height, GSTexture::Format format, std::unique_ptr<GSDownloadTexture>* tex);
 
-	HashCacheEntry* LookupHashCache(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool& paltex, const u32* clut, const GSVector2i* lod);
+	HashCacheEntry* LookupHashCache(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool& paltex, const u32* clut, const GSVector2i* lod, SourceRegion region);
 
-	static void PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSLocalMemory& mem, bool paltex, GSTexture* tex, u32 level);
-	static HashType HashTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA);
+	static void PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, SourceRegion region, GSLocalMemory& mem, bool paltex, GSTexture* tex, u32 level);
+	static HashType HashTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, SourceRegion region);
 
 	// TODO: virtual void Write(Source* s, const GSVector4i& r) = 0;
 	// TODO: virtual void Write(Target* t, const GSVector4i& r) = 0;
@@ -353,15 +407,16 @@ public:
 	void Read(Target* t, const GSVector4i& r);
 	void Read(Source* t, const GSVector4i& r);
 	void RemoveAll();
-	void RemovePartial();
-	void AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw);
+	void ReadbackAll();
+	void AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw, RGBAMask rgba);
 
 	GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, const GSVector2i& size);
 
-	Source* LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, const GSVector2i* lod);
-	Source* LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette = false);
+	Source* LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const GSVector2i* lod);
+	Source* LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, bool palette = false);
 
-	Target* LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask = 0, const bool is_frame = false, const int real_w = 0, const int real_h = 0, bool preload = GSConfig.PreloadFrameWithGSData);
+	Target* FindTargetOverlap(u32 bp, u32 end_block, int type, int psm);
+	Target* LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask = 0, const bool is_frame = false, const int real_w = 0, const int real_h = 0, bool preload = GSConfig.PreloadFrameWithGSData, bool is_clear = false);
 	Target* LookupDisplayTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, const int real_w, const int real_h);
 
 	/// Looks up a target in the cache, and only returns it if the BP/BW/PSM match exactly.
