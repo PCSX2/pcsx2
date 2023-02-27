@@ -774,7 +774,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string extracomment=":I18N COMMENT: This section refers to the Input Recording submenu.">New</string>
+    <string extracomment="This section refers to the Input Recording submenu.">New</string>
    </property>
   </action>
   <action name="actionInputRecPlay">
@@ -782,7 +782,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string extracomment=":I18N COMMENT: This section refers to the Input Recording submenu.">Play</string>
+    <string extracomment="This section refers to the Input Recording submenu.">Play</string>
    </property>
   </action>
   <action name="actionInputRecStop">
@@ -790,7 +790,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string extracomment=":I18N COMMENT: This section refers to the Input Recording submenu.">Stop</string>
+    <string extracomment="This section refers to the Input Recording submenu.">Stop</string>
    </property>
   </action>
   <action name="actionInputRecOpenSettings">
@@ -798,7 +798,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string extracomment=":I18N COMMENT: This section refers to the Input Recording submenu.">Settings</string>
+    <string extracomment="This section refers to the Input Recording submenu.">Settings</string>
    </property>
   </action>
   <action name="actionRecording_Console_Logs">

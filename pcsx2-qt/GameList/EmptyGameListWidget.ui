@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string notr="true">Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -40,7 +40,7 @@
    <item>
     <widget class="QLabel" name="supportedFormats">
      <property name="text">
-      <string>TextLabel</string>
+      <string notr="true">TextLabel</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

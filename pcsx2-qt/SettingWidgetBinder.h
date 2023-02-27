@@ -124,9 +124,9 @@ namespace SettingWidgetBinder
 		static void setBoolValue(QComboBox* widget, bool value) { widget->setCurrentIndex(value ? 1 : 0); }
 		static void makeNullableBool(QComboBox* widget, bool globalValue)
 		{
-			//:I18N COMMENT: THIS STRING IS SHARED ACROSS MULTIPLE OPTIONS. Be wary about gender/number. Also, ignore Crowdin's warning regarding [Enabled]: the text must be translated.
+			//: THIS STRING IS SHARED ACROSS MULTIPLE OPTIONS. Be wary about gender/number. Also, ignore Crowdin's warning regarding [Enabled]: the text must be translated.
 			widget->insertItem(0, globalValue ? qApp->translate("SettingsDialog", "Use Global Setting [Enabled]") :
-												//:I18N COMMENT: THIS STRING IS SHARED ACROSS MULTIPLE OPTIONS. Be wary about gender/number. Also, ignore Crowdin's warning regarding [Disabled]: the text must be translated.
+												//: THIS STRING IS SHARED ACROSS MULTIPLE OPTIONS. Be wary about gender/number. Also, ignore Crowdin's warning regarding [Disabled]: the text must be translated.
 												qApp->translate("SettingsDialog", "Use Global Setting [Disabled]"));
 		}
 

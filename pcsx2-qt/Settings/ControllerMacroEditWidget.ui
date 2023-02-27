@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string notr="true">Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
@@ -70,7 +70,7 @@
       <item row="1" column="0" colspan="2">
        <widget class="InputBindingWidget" name="trigger">
         <property name="text">
-         <string>PushButton</string>
+         <string notr="true">PushButton</string>
         </property>
        </widget>
       </item>

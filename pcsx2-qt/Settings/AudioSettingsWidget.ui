@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string notr="true">Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <property name="leftMargin">
@@ -337,7 +337,7 @@
       <item row="3" column="0">
        <widget class="QLabel" name="label_3b">
         <property name="text">
-         <string extracomment=":I18N COMMENT: ProLogic is a Dolby brand. Leave the name as-is unless there is an official translation for your language.">ProLogic Level:</string>
+         <string extracomment="ProLogic is a Dolby brand. Leave the name as-is unless there is an official translation for your language.">ProLogic Level:</string>
         </property>
        </widget>
       </item>
@@ -350,12 +350,12 @@
         </item>
         <item>
          <property name="text">
-          <string extracomment=":I18N COMMENT: ProLogic is a Dolby brand. Leave the name as-is unless there is an official translation for your language.">ProLogic Decoding (basic)</string>
+          <string extracomment="ProLogic is a Dolby brand. Leave the name as-is unless there is an official translation for your language.">ProLogic Decoding (basic)</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string extracomment=":I18N COMMENT: ProLogic II is a Dolby brand. Leave the name as-is unless there is an official translation for your language. gigaherz is the nickname of one of PCSX2's developers. Leave as-is.">ProLogic II Decoding (gigaherz)</string>
+          <string extracomment="ProLogic II is a Dolby brand. Leave the name as-is unless there is an official translation for your language. gigaherz is the nickname of one of PCSX2's developers. Leave as-is.">ProLogic II Decoding (gigaherz)</string>
          </property>
         </item>
        </widget>

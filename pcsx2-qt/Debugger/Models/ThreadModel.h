@@ -50,41 +50,41 @@ public:
 private:
 	const std::map<ThreadStatus, QString> ThreadStateStrings{
 		//ADDING I18N comments here because the context string added by QtLinguist does not mention that these are thread states.
-		//:I18N COMMENT: Refers to a Thread State in the Debugger.
+		//: Refers to a Thread State in the Debugger.
 		{ThreadStatus::THS_BAD, tr("BAD")},
-		//:I18N COMMENT: Refers to a Thread State in the Debugger.
+		//: Refers to a Thread State in the Debugger.
 		{ThreadStatus::THS_RUN, tr("RUN")},
-		//:I18N COMMENT: Refers to a Thread State in the Debugger.
+		//: Refers to a Thread State in the Debugger.
 		{ThreadStatus::THS_READY, tr("READY")},
-		//:I18N COMMENT: Refers to a Thread State in the Debugger.
+		//: Refers to a Thread State in the Debugger.
 		{ThreadStatus::THS_WAIT, tr("WAIT")},
-		//:I18N COMMENT: Refers to a Thread State in the Debugger.
+		//: Refers to a Thread State in the Debugger.
 		{ThreadStatus::THS_SUSPEND, tr("SUSPEND")},
-		//:I18N COMMENT: Refers to a Thread State in the Debugger.
+		//: Refers to a Thread State in the Debugger.
 		{ThreadStatus::THS_WAIT_SUSPEND, tr("WAIT SUSPEND")},
-		//:I18N COMMENT: Refers to a Thread State in the Debugger.
+		//: Refers to a Thread State in the Debugger.
 		{ThreadStatus::THS_DORMANT, tr("DORMANT")},
 	};
 
-	const std::map<WaitState, QString> ThreadWaitStrings{{
+	const std::map<WaitState, QString> ThreadWaitStrings{
 		//ADDING I18N comments here because the context string added by QtLinguist does not mention that these are thread wait states.
-		//:I18N COMMENT: Refers to a Thread Wait State in the Debugger.
+		//: Refers to a Thread Wait State in the Debugger.
 		{WaitState::NONE, tr("NONE")},
-		//:I18N COMMENT: Refers to a Thread Wait State in the Debugger.
+		//: Refers to a Thread Wait State in the Debugger.
 		{WaitState::WAKEUP_REQ, tr("WAKEUP REQUEST")},
-		//:I18N COMMENT: Refers to a Thread Wait State in the Debugger.
+		//: Refers to a Thread Wait State in the Debugger.
 		{WaitState::SEMA, tr("SEMAPHORE")},
-		//:I18N COMMENT: Refers to a Thread Wait State in the Debugger.
+		//: Refers to a Thread Wait State in the Debugger.
 		{WaitState::SLEEP, tr("SLEEP")},
-		//:I18N COMMENT: Refers to a Thread Wait State in the Debugger.
+		//: Refers to a Thread Wait State in the Debugger.
 		{WaitState::DELAY, tr("DELAY")},
-		//:I18N COMMENT: Refers to a Thread Wait State in the Debugger.
+		//: Refers to a Thread Wait State in the Debugger.
 		{WaitState::EVENTFLAG, tr("EVENTFLAG")},
-		//:I18N COMMENT: Refers to a Thread Wait State in the Debugger.
+		//: Refers to a Thread Wait State in the Debugger.
 		{WaitState::MBOX, tr("MBOX")},
-		//:I18N COMMENT: Refers to a Thread Wait State in the Debugger.
+		//: Refers to a Thread Wait State in the Debugger.
 		{WaitState::VPOOL, tr("VPOOL")},
-		//:I18N COMMENT: Refers to a Thread Wait State in the Debugger.
+		//: Refers to a Thread Wait State in the Debugger.
 		{WaitState::FIXPOOL, tr("FIXPOOL")},
 	};
 

@@ -155,37 +155,37 @@
      </property>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">NTSC-B (Brazil)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">NTSC-B (Brazil)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">NTSC-C (China)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">NTSC-C (China)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">NTSC-HK (Hong Kong)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">NTSC-HK (Hong Kong)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">NTSC-J (Japan)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">NTSC-J (Japan)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">NTSC-K (Korea)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">NTSC-K (Korea)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">NTSC-T (Taiwan)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">NTSC-T (Taiwan)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">NTSC-U (US)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">NTSC-U (US)</string>
       </property>
      </item>
      <item>
@@ -195,107 +195,107 @@
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-A (Australia)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-A (Australia)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-AF (South Africa)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-AF (South Africa)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-AU (Austria)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-AU (Austria)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-BE (Belgium)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-BE (Belgium)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-E (Europe/Australia)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-E (Europe/Australia)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-F (France)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-F (France)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-FI (Finland)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-FI (Finland)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-G (Germany)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-G (Germany)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-GR (Greece)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-GR (Greece)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-I (Italy)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-I (Italy)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-IN (India)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-IN (India)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-M (Europe/Australia)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-M (Europe/Australia)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-NL (Netherlands)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-NL (Netherlands)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-NO (Norway)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-NO (Norway)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-P (Portugal)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-P (Portugal)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-R (Russia)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-R (Russia)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-S (Spain)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-S (Spain)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-SC (Scandinavia)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-SC (Scandinavia)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-SW (Sweden)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-SW (Sweden)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-SWI (Switzerland)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-SWI (Switzerland)</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Leave the code as-is, translate the country's name.">PAL-UK (United Kingdom)</string>
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-UK (United Kingdom)</string>
       </property>
      </item>
     </widget>
@@ -375,7 +375,7 @@
      </property>
      <item>
       <property name="text">
-       <string extracomment=":I18N COMMENT: Refers to the shared settings profile.">Shared</string>
+       <string extracomment="Refers to the shared settings profile.">Shared</string>
       </property>
      </item>
     </widget>

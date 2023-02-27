@@ -87,22 +87,22 @@ QVariant StackModel::headerData(int section, Qt::Orientation orientation, int ro
 		switch (section)
 		{
 			case StackColumns::ENTRY:
-				//:I18N COMMENT: Warning: short space limit. Abbreviate if needed.
+				//: Warning: short space limit. Abbreviate if needed.
 				return tr("ENTRY");
 			case StackColumns::ENTRY_LABEL:
-				//:I18N COMMENT: Warning: short space limit. Abbreviate if needed.
+				//: Warning: short space limit. Abbreviate if needed.
 				return tr("LABEL");
 			case StackColumns::PC:
-				//:I18N COMMENT: Warning: short space limit. Abbreviate if needed. PC= TO BE RESEARCHED AND WRITTEN.
+				//: Warning: short space limit. Abbreviate if needed. PC = Program Counter (location where the CPU is executing).
 				return tr("PC");
 			case StackColumns::PC_OPCODE:
-				//:I18N COMMENT: Warning: short space limit. Abbreviate if needed.
+				//: Warning: short space limit. Abbreviate if needed.
 				return tr("INSTRUCTION");
 			case StackColumns::SP:
-				//:I18N COMMENT: Warning: short space limit. Abbreviate if needed.
+				//: Warning: short space limit. Abbreviate if needed.
 				return tr("STACK POINTER");
 			case StackColumns::SIZE:
-				//:I18N COMMENT: Warning: short space limit. Abbreviate if needed.
+				//: Warning: short space limit. Abbreviate if needed.
 				return tr("SIZE");
 			default:
 				return QVariant();

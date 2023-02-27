@@ -23,29 +23,29 @@
 
 static const char* THEME_NAMES[] = {
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Native"),
-	//:I18N COMMENT: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Fusion [Light]"),
-	//:I18N COMMENT: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Dark Fusion (Gray) [Dark]"),
-	//:I18N COMMENT: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Dark Fusion (Blue) [Dark]"),
-	//:I18N COMMENT: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Untouched Lagoon (Grayish Green/-Blue ) [Light]"),
-	//:I18N COMMENT: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Baby Pastel (Pink) [Light]"),
-	//:I18N COMMENT: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "PCSX2 (White/Blue) [Light]"),
-	//:I18N COMMENT: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Scarlet Devil (Red/Purple) [Dark]"),
-	//:I18N COMMENT: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Violet Angel (Blue/Purple) [Dark]"),
-	//:I18N COMMENT: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Cobalt Sky (Royal Blue) [Dark]"),
-	//:I18N COMMENT: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Ruby (Black/Red) [Dark]"),
-	//:I18N COMMENT: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Sapphire (Black/Blue) [Dark]"),
-	//:I18N COMMENT: "Custom.qss" must be kept as-is.
+	//: "Custom.qss" must be kept as-is.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Custom.qss [Drop in PCSX2 Folder]"),
 	nullptr};
 
@@ -111,7 +111,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 		SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.autoUpdateTag, "AutoUpdater", "UpdateTag",
 			AutoUpdaterDialog::getDefaultTag());
 
-		//:I18N COMMENT: Variable %1 shows the version number and variable %2 shows a timestamp.
+		//: Variable %1 shows the version number and variable %2 shows a timestamp.
 		m_ui.autoUpdateCurrentVersion->setText(tr("%1 (%2)").arg(AutoUpdaterDialog::getCurrentVersion()).arg(AutoUpdaterDialog::getCurrentVersionDate()));
 		connect(m_ui.checkForUpdates, &QPushButton::clicked, this, []() { g_main_window->checkForUpdates(true, true); });
 	}
@@ -153,7 +153,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 		tr("Pauses the emulator when you minimize the window or switch to another application, "
 		   "and unpauses when you switch back."));
 	dialog->registerWidgetHelp(m_ui.backupSaveStates, tr("Create Save State Backups"), tr("Unchecked"),
-		//:I18N COMMENT: Do not translate the ".backup" extension.
+		//: Do not translate the ".backup" extension.
 		tr("Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix."));
 	dialog->registerWidgetHelp(m_ui.startFullscreen, tr("Start Fullscreen"), tr("Unchecked"),
 		tr("Automatically switches to fullscreen mode when a game is started."));

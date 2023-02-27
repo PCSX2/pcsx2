@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string notr="true">Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="leftMargin">
@@ -63,13 +63,13 @@
        <item>
         <widget class="QGroupBox" name="groupBox">
          <property name="title">
-          <string extracomment=":I18N COMMENT: Emotion Engine = Commercial name of one of PS2's processors. Leave as-is unless there's an official name (like for Japanese).">EmotionEngine (MIPS-IV)</string>
+          <string extracomment="Emotion Engine = Commercial name of one of PS2's processors. Leave as-is unless there's an official name (like for Japanese).">EmotionEngine (MIPS-IV)</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_7">
           <item row="0" column="0">
            <widget class="QLabel" name="label_11">
             <property name="text">
-             <string extracomment=":I18N COMMENT: Rounding refers here to the mathematical term.">Rounding Mode:</string>
+             <string extracomment="Rounding refers here to the mathematical term.">Rounding Mode:</string>
             </property>
            </widget>
           </item>
@@ -100,7 +100,7 @@
           <item row="1" column="0">
            <widget class="QLabel" name="label_12">
             <property name="text">
-             <string extracomment=":I18N COMMENT: Clamping (from Wikipedia): In computer graphics, clamping is the process of limiting a position to an area. Unlike wrapping, clamping merely moves the point to the nearest available value.">Clamping Mode:</string>
+             <string extracomment="Clamping: Forcing out of bounds things in bounds by changing them to the closest possible value.  In this case, this refers to clamping large PS2 floating point values (which map to infinity or NaN in PCs' IEEE754 floats) to non-infinite ones.">Clamping Mode:</string>
             </property>
            </widget>
           </item>
@@ -108,7 +108,7 @@
            <widget class="QComboBox" name="eeClampMode">
             <item>
              <property name="text">
-              <string extracomment=":I18N COMMENT: Warning: shared string in Crowdin. Be careful about gender/number.">None</string>
+              <string comment="ClampMode">None</string>
              </property>
             </item>
             <item>
@@ -118,7 +118,7 @@
             </item>
             <item>
              <property name="text">
-              <string extracomment=":I18N COMMENT: Sign: refers here to the mathematical meaning (plus/minus).">Extra + Preserve Sign</string>
+              <string extracomment="Sign: refers here to the mathematical meaning (plus/minus).">Extra + Preserve Sign</string>
              </property>
             </item>
             <item>
@@ -180,7 +180,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox_2">
          <property name="title">
-          <string extracomment=":I18N COMMENT: Vector Unit/VU: refers to two of PS2's processors. Do not translate the full text or do so as a comment. Leave the acronym as-is.">Vector Units (VU)</string>
+          <string extracomment="Vector Unit/VU: refers to two of PS2's processors. Do not translate the full text or do so as a comment. Leave the acronym as-is.">Vector Units (VU)</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_3">
           <item row="2" column="0">
@@ -383,7 +383,7 @@
           <item row="1" column="1">
            <widget class="QDoubleSpinBox" name="palFrameRate">
             <property name="suffix">
-             <string extracomment=":I18N COMMENT: hz=Hertz, as in the measuring unit. Shown after the corresponding number. Those languages who'd need to remove the space or do something in between should do so."> hz</string>
+             <string extracomment="hz=Hertz, as in the measuring unit. Shown after the corresponding number. Those languages who'd need to remove the space or do something in between should do so."> hz</string>
             </property>
             <property name="singleStep">
              <double>0.010000000000000</double>

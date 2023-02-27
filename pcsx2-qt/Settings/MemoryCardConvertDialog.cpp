@@ -67,13 +67,13 @@ MemoryCardConvertDialog::MemoryCardConvertDialog(QWidget* parent, QString select
 							SetType(MemoryCardType::File, MemoryCardFileType::PS2_64MB, "8x larger than a standard memory card. Likely to have compatibility issues.");
 							break;
 						default:
-							//:I18N COMMENT: MemoryCardType should be left as-is.
+							//: MemoryCardType should be left as-is.
 							QMessageBox::critical(this, tr("Convert Memory Card Failed"), tr("Invalid MemoryCardType"));
 							return;
 					}
 					break;
 				default:
-					//:I18N COMMENT: MemoryCardType should be left as-is.
+					//: MemoryCardType should be left as-is.
 					QMessageBox::critical(this, tr("Convert Memory Card Failed"), tr("Invalid MemoryCardType"));
 					return;
 			}
@@ -233,7 +233,7 @@ bool MemoryCardConvertDialog::SetupPicklist()
 
 			break;
 		default:
-			//:I18N COMMENT: MemoryCardType should be left as-is.
+			//: MemoryCardType should be left as-is.
 			QMessageBox::critical(this, tr("Convert Memory Card Failed"), tr("Invalid MemoryCardType"));
 			return false;
 	}
