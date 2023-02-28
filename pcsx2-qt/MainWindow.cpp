@@ -2154,7 +2154,10 @@ DisplayWidget* MainWindow::createDisplay(bool fullscreen, bool render_to_main)
 
 	if (!g_host_display->CreateDevice(wi.value(), Host::GetEffectiveVSyncMode()))
 	{
-		QMessageBox::critical(this, tr("Error"), tr("Failed to create host display device context."));
+		QMessageBox::critical(this, tr("Error"),
+			tr("Failed to create host display device. This may be due to your GPU not supporting the chosen renderer (%1), or because your "
+			   "graphics drivers need to be updated.")
+				.arg(QString::fromUtf8(Pcsx2Config::GSOptions::GetRendererName(EmuConfig.GS.Renderer))));
 		destroyDisplayWidget(true);
 		return nullptr;
 	}
