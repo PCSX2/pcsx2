@@ -1376,11 +1376,22 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 
 					if (can_erase)
 					{
-						i = list.erase(j);
-						GL_CACHE("TC: Remove Target(%s) %d (0x%x)", to_string(type),
-							t->m_texture ? t->m_texture->GetID() : 0,
-							t->m_TEX0.TBP0);
-						delete t;
+						// If it's a 32bit value and only the alpha channel is being killed
+						// instead of losing the RGB data, drop it back to 24bit.
+						if (rgba._u32 == 0x8 && t->m_TEX0.PSM == PSM_PSMCT32)
+						{
+							t->m_TEX0.PSM = PSM_PSMCT24;
+							t->m_dirty_alpha = false;
+							++i;
+						}
+						else
+						{
+							i = list.erase(j);
+							GL_CACHE("TC: Remove Target(%s) %d (0x%x)", to_string(type),
+								t->m_texture ? t->m_texture->GetID() : 0,
+								t->m_TEX0.TBP0);
+							delete t;
+						}
 					}
 					else
 					{
