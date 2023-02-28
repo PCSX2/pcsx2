@@ -19,6 +19,7 @@
 
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMenu>
 #include <functional>
 #include <optional>
 
@@ -170,6 +171,7 @@ private Q_SLOTS:
 	void onBlockDumpActionToggled(bool checked);
 	void onShowAdvancedSettingsToggled(bool checked);
 	void onToolsVideoCaptureToggled(bool checked);
+	void onSettingsTriggeredFromToolbar();
 
 	// Input Recording
 	void onInputRecNewActionTriggered();
@@ -282,6 +284,8 @@ private:
 	QLabel* m_status_fps_widget = nullptr;
 	QLabel* m_status_vps_widget = nullptr;
 	QLabel* m_status_resolution_widget = nullptr;
+
+	QMenu* m_settings_toolbar_menu = nullptr;
 
 	QString m_current_disc_path;
 	QString m_current_elf_override;
