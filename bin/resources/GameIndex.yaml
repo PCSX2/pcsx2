@@ -34487,6 +34487,9 @@ SLPM-66902:
 SLPM-66903:
   name: "GI Jockey 4 - 2007 [with Winning Post 7 - 2007 - Premium Pack]"
   region: "NTSC-J"
+SLPM-66904:
+  name: "Winning Post 7 - 2007 [with GI Jockey 4 - 2007 - Premium Pack]"
+  region: "NTSC-J"
 SLPM-66905:
   name: "D.C. Da Capo The Origin"
   region: "NTSC-J"
@@ -42864,11 +42867,6 @@ SLUS-20484:
   name: "Devil May Cry 2 [Disc 1 of 2]"
   region: "NTSC-U"
   compat: 5
-  patches:
-    default:
-      content: |-
-        // 08995DEE
-        comment=- This disc has the same CRC as SLPM-65232, the NTSC-J disc.
 SLUS-20485:
   name: "Dino Stalker"
   region: "NTSC-U"
@@ -48011,6 +48009,9 @@ SLUS-21464:
   name: "Winning Eleven - Pro Evolution Soccer 2007"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Fixes grass field.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
 SLUS-21465:
   name: "Raiden III"
   region: "NTSC-U"
