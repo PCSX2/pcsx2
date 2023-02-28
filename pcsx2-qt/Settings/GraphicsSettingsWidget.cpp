@@ -296,7 +296,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 		// Remove texture offset and skipdraw range for global settings.
 		m_ui.upscalingFixesLayout->removeRow(2);
-		m_ui.hardwareFixesLayout->removeRow(3);
+		m_ui.hardwareFixesLayout->removeRow(4);
 		m_ui.skipDrawStart = nullptr;
 		m_ui.skipDrawEnd = nullptr;
 		m_ui.textureOffsetX = nullptr;
