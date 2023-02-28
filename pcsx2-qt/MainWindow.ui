@@ -86,6 +86,8 @@
     <property name="title">
      <string>S&amp;ettings</string>
     </property>
+    <addaction name="actionViewGameProperties"/>
+    <addaction name="separator"/>
     <addaction name="actionInterfaceSettings"/>
     <addaction name="actionGameListSettings"/>
     <addaction name="actionBIOSSettings"/>
@@ -156,7 +158,6 @@
     <addaction name="actionViewGameList"/>
     <addaction name="actionViewGameGrid"/>
     <addaction name="actionViewSystemDisplay"/>
-    <addaction name="actionViewGameProperties"/>
     <addaction name="separator"/>
     <addaction name="actionFullscreen"/>
     <addaction name="menuWindowSize"/>
