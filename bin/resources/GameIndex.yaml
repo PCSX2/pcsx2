@@ -527,7 +527,6 @@ SCAJ-20011:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
-    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
     - "SCAJ-20011"
@@ -1147,7 +1146,7 @@ SCAJ-20143:
   name: "Armored Core - Last Raven"
   region: "NTSC-Unk"
   gsHWFixes:
-    roundSprite: 2 # Fixes HUD artifacts.
+    halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
 SCAJ-20144:
   name: "Zhuo Hou La 3"
   region: "NTSC-Ch"
@@ -6766,6 +6765,8 @@ SCPS-55024:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects positioning of reflections on player's AC.
   memcardFilters:
     - "SCPS-55024"
     - "SLPS-25007"
@@ -11530,6 +11531,8 @@ SLES-50905:
   region: "PAL-E"
   clampModes:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects positioning of reflections on player's AC.
   #  Save import option was removed from PAL release.
 SLES-50906:
   name: "Master Rally"
@@ -14264,7 +14267,7 @@ SLES-52203:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
-    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
+    partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
     - "SLES-51399"
     - "SLES-52203"
@@ -18396,7 +18399,7 @@ SLES-53820:
   name: "Armored Core - Last Raven"
   region: "PAL-E"
   gsHWFixes:
-    roundSprite: 2 # Fixes HUD artifacts.
+    halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
 SLES-53821:
   name: "Radio Helicopter II"
   region: "PAL-E"
@@ -23412,7 +23415,6 @@ SLKA-25041:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
-    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
     - "SLKA-25041"
@@ -36932,6 +36934,8 @@ SLPS-25040:
   compat: 5
   clampModes:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects positioning of reflections on player's AC.
   memcardFilters:
     - "SCPS-55024"
     - "SLPS-25007"
@@ -37385,7 +37389,6 @@ SLPS-25169:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
-    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
     - "SCAJ-20011"
@@ -38428,7 +38431,7 @@ SLPS-25462:
   name: "Armored Core - Last Raven"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 2 # Fixes HUD artifacts.
+    halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
   memcardFilters:
     - "SLPS-25338"
     - "SLPS-25339"
@@ -40570,7 +40573,7 @@ SLPS-73247:
   name: "Armored Core - Last Raven [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 2 # Fixes HUD artifacts.
+    halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
   memcardFilters:
     - "SLPS-25338"
     - "SLPS-25339"
@@ -40711,6 +40714,8 @@ SLPS-73411:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects positioning of reflections on player's AC.
   memcardFilters:
     - "SCPS-55024"
     - "SLPS-25007"
@@ -40750,7 +40755,6 @@ SLPS-73420:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
-    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
     - "SCAJ-20011"
@@ -41767,6 +41771,8 @@ SLUS-20249:
   region: "NTSC-U"
   clampModes:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
+  gsHWFixes:
+    halfPixelOffset: 1 # Corrects positioning of reflections on player's AC.
   memcardFilters: # Can import data from regular Armored Core 2.
     - "SLUS-20249"
     - "SLUS-20014"
@@ -43636,7 +43642,7 @@ SLUS-20644:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
-    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
+    partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters: # Can import data from AC3.
     - "SLUS-20435"
     - "SLUS-20644"
@@ -47258,7 +47264,7 @@ SLUS-21338:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    roundSprite: 2 # Fixes HUD artifacts.
+    halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
 SLUS-21339:
   name: "Puzzle Collection - Crosswords & More!"
   region: "NTSC-U"
