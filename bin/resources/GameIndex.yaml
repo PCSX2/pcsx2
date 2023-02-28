@@ -3116,6 +3116,8 @@ SCES-50887:
 SCES-50888:
   name: "Pac-Man World 2"
   region: "PAL-M5"
+  gsHWFixes:
+    deinterlace: 6 # Game looks better with Blend tff when auto, especially during FMVs and also gameplay as it is slightly noticable.
   gameFixes:
     - EETimingHack # Fixes hanging in Butane Pain, Ghost Bayou, Pinky's Revenge and Clyde in the Caldera levels.
 SCES-50889:
@@ -6821,6 +6823,8 @@ SCPS-55035:
 SCPS-55038:
   name: "Pac-Man World 2"
   region: "NTSC-J"
+  gsHWFixes:
+    deinterlace: 6 # Game looks better with Blend tff when auto, especially during FMVs and also gameplay as it is slightly noticable.
   gameFixes:
     - EETimingHack # Fixes hanging in Butane Pain, Ghost Bayou, Pinky's Revenge and Clyde in the Caldera levels.
 SCPS-55040:
@@ -37282,6 +37286,8 @@ SLPS-25139:
 SLPS-25141:
   name: "Pac-Man World 2"
   region: "NTSC-J"
+  gsHWFixes:
+    deinterlace: 6 # Game looks better with Blend tff when auto, especially during FMVs and also gameplay as it is slightly noticable.
   gameFixes:
     - EETimingHack # Fixes hanging in Butane Pain, Ghost Bayou, Pinky's Revenge and Clyde in the Caldera levels.
 SLPS-25142:
@@ -41653,6 +41659,8 @@ SLUS-20224:
   name: "Pac-Man World 2"
   region: "NTSC-U"
   compat: 4
+  gsHWFixes:
+    deinterlace: 6 # Game looks better with Blend tff when auto, especially during FMVs and also gameplay as it is slightly noticable.
   gameFixes:
     - EETimingHack # Fixes hanging in Butane Pain, Ghost Bayou, Pinky's Revenge and Clyde in the Caldera levels.
 SLUS-20225:
