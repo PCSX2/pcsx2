@@ -254,6 +254,10 @@ void MainWindow::setupAdditionalUi()
 	m_status_vps_widget->setFixedSize(125, 16);
 	m_status_vps_widget->hide();
 
+	m_settings_toolbar_menu = new QMenu(m_ui.toolBar);
+	m_settings_toolbar_menu->addAction(m_ui.actionSettings);
+	m_settings_toolbar_menu->addAction(m_ui.actionViewGameProperties);
+
 	for (u32 scale = 0; scale <= 10; scale++)
 	{
 		QAction* action = m_ui.menuWindowSize->addAction((scale == 0) ? tr("Internal Resolution") : tr("%1x Scale").arg(scale));
@@ -316,6 +320,7 @@ void MainWindow::connectSignals()
 	connect(m_ui.menuLoadState, &QMenu::aboutToShow, this, &MainWindow::onLoadStateMenuAboutToShow);
 	connect(m_ui.menuSaveState, &QMenu::aboutToShow, this, &MainWindow::onSaveStateMenuAboutToShow);
 	connect(m_ui.actionSettings, &QAction::triggered, [this]() { doSettings(); });
+	connect(m_ui.actionSettings2, &QAction::triggered, this, &MainWindow::onSettingsTriggeredFromToolbar);
 	connect(m_ui.actionInterfaceSettings, &QAction::triggered, [this]() { doSettings("Interface"); });
 	connect(m_ui.actionGameListSettings, &QAction::triggered, [this]() { doSettings("Game List"); });
 	connect(m_ui.actionEmulationSettings, &QAction::triggered, [this]() { doSettings("Emulation"); });
@@ -1011,6 +1016,18 @@ void MainWindow::onToolsVideoCaptureToggled(bool checked)
 	}
 
 	g_emu_thread->beginCapture(path);
+}
+
+void MainWindow::onSettingsTriggeredFromToolbar()
+{
+	if (s_vm_valid)
+	{
+		m_settings_toolbar_menu->exec(QCursor::pos());
+	}
+	else
+	{
+		doSettings();
+	}
 }
 
 void MainWindow::saveStateToConfig()
