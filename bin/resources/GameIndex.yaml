@@ -3397,7 +3397,7 @@ SCES-51635:
   name: "Brave - The Search for Spirit Dancer"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes lighting/shadows.
+    halfPixelOffset: 2 # Fixes lighting/shadows.
     preloadFrameData: 1 # Fixes sun flickering.
     autoFlush: 1 # Fixes sun through objects.
 SCES-51648:
@@ -16043,7 +16043,6 @@ SLES-52942:
         patch=1,EE,D0525A1C,extended,00000800
         patch=1,EE,20525A1C,extended,00000000
   gsHWFixes:
-    texturePreloading: 1 # Improves performance and prevents it disabling itself regardless.
     getSkipCount: "GSC_MidnightClub3"
 SLES-52943:
   name: "ESPN NFL 2K5"
@@ -18104,7 +18103,6 @@ SLES-53717:
         patch=1,EE,D0529074,extended,00000800
         patch=1,EE,20529074,extended,00000000
   gsHWFixes:
-    texturePreloading: 1 # Improves performance and prevents it disabling itself regardless.
     getSkipCount: "GSC_MidnightClub3"
 SLES-53718:
   name: "Sims 2, The"
@@ -19988,6 +19986,8 @@ SLES-54461:
   name: "Zombie Hunters"
   region: "PAL-E"
   compat: 5
+  gameFixes:
+    - XGKickHack # Fixes characters clothing.
 SLES-54462:
   name: "Zombie Virus"
   region: "PAL-E"
@@ -27153,6 +27153,8 @@ SLPM-62637:
 SLPM-62638:
   name: "Simple 2000 Series Vol. 80 - The OneeChanPuruu"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes characters clothing.
 SLPM-62639:
   name: "Mahjong Taikai III - Millennium League [Koei Selection Series]"
   region: "NTSC-J"
@@ -45596,7 +45598,6 @@ SLUS-21029:
         patch=1,EE,D05257FC,extended,00000800
         patch=1,EE,205257FC,extended,00000000
   gsHWFixes:
-    texturePreloading: 1 # Improves performance and prevents it disabling itself regardless.
     getSkipCount: "GSC_MidnightClub3"
 SLUS-21030:
   name: "Outlaw Golf 2"
@@ -46070,7 +46071,7 @@ SLUS-21127:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes lighting/shadows.
+    halfPixelOffset: 2 # Fixes lighting/shadows.
     preloadFrameData: 1 # Fixes sun flickering.
     autoFlush: 1 # Fixes sun through objects.
 SLUS-21128:
@@ -47375,7 +47376,6 @@ SLUS-21355:
         patch=1,EE,D052907C,extended,00000800
         patch=1,EE,2052907C,extended,00000000
   gsHWFixes:
-    texturePreloading: 1 # Improves performance and prevents it disabling itself regardless.
     getSkipCount: "GSC_MidnightClub3"
 SLUS-21356:
   name: "Tom Clancy's Splinter Cell - Double Agent"
