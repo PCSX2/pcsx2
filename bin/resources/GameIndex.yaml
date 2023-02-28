@@ -6982,6 +6982,8 @@ SCPS-56016:
   region: "NTSC-K"
   gameFixes:
     - GIFFIFOHack
+  gsHWFixes:
+    estimateTextureRegion: 1 # Improves performance.
 SCUS-21295:
   name: "Tony Hawk's American Wasteland Collector's Edition"
   region: "NTSC-U"
@@ -10901,8 +10903,7 @@ SLES-50672:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
-    disablePartialInvalidation: 1 # Fixes performance issues.
+    estimateTextureRegion: 1 # Improves performance.
 SLES-50677:
   name: "Shadow Hearts"
   region: "PAL-E"
@@ -14240,14 +14241,14 @@ SLES-52187:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
-    texturePreloading: 1 # Performs much better with partial preload.
+    estimateTextureRegion: 1 # Improves performance.
 SLES-52188:
   name: "Baldur's Gate - Dark Alliance II"
   region: "PAL-M3"
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
-    texturePreloading: 1 # Performs much better with partial preload.
+    estimateTextureRegion: 1 # Improves performance.
 SLES-52190:
   name: "RPM Tuning"
   region: "PAL-M6"
@@ -14531,8 +14532,7 @@ SLES-52325:
   name: "Champions of Norrath - Realms of EverQuest"
   region: "PAL-M3"
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
-    disablePartialInvalidation: 1 # Fixes performance issues.
+    estimateTextureRegion: 1 # Improves performance.
 SLES-52326:
   name: "Spawn - Armageddon"
   region: "PAL-M5"
@@ -14625,7 +14625,7 @@ SLES-52373:
   name: "Champions of Norrath"
   region: "PAL-E-S"
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
+    estimateTextureRegion: 1 # Improves performance.
 SLES-52374:
   name: "Fight Night 2004"
   region: "PAL-M3"
@@ -16375,8 +16375,7 @@ SLES-53039:
   region: "PAL-M4"
   compat: 5
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
-    disablePartialInvalidation: 1 # Fixes performance issues.
+    estimateTextureRegion: 1 # Improves performance.
   memcardFilters: # Allows import of characters from first game.
     - "SLES-53039"
     - "SLES-52325"
@@ -16566,6 +16565,7 @@ SLES-53124:
   region: "PAL-M4"
   gsHWFixes:
     mipmap: 1
+    estimateTextureRegion: 1 # Improves performance.
 SLES-53125:
   name: "Enthusia - Professional Racing"
   region: "PAL-M5"
@@ -18590,6 +18590,7 @@ SLES-53904:
   gsHWFixes:
     mipmap: 1
     autoFlush: 1
+    estimateTextureRegion: 1 # Improves performance.
 SLES-53906:
   name: "50 Cent - Bulletproof"
   region: "PAL-F"
@@ -30496,7 +30497,7 @@ SLPM-65845:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
-    texturePreloading: 1 # Performs much better with partial preload.
+    estimateTextureRegion: 1 # Improves performance.
 SLPM-65846:
   name: "Lord of the Rings, The - Uchitsu Kuni Daisanki"
   region: "NTSC-J"
@@ -37274,7 +37275,7 @@ SLPS-25139:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
+    estimateTextureRegion: 1 # Improves performance.
 SLPS-25141:
   name: "Pac-Man World 2"
   region: "NTSC-J"
@@ -37771,7 +37772,7 @@ SLPS-25291:
   compat: 5
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
-    disablePartialInvalidation: 1 # Fixes perforamnce issues.
+    estimateTextureRegion: 1 # Improves performance.
 SLPS-25292:
   name: "D-A - Black"
   region: "NTSC-J"
@@ -40923,8 +40924,7 @@ SLUS-20035:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes FMVs.
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
-    disablePartialInvalidation: 1 # Fixes performance issues.
+    estimateTextureRegion: 1 # Improves performance.
 SLUS-20037:
   name: "Run Like Hell - Hunt or Be Hunted"
   region: "NTSC-U"
@@ -43255,8 +43255,7 @@ SLUS-20565:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
-    disablePartialInvalidation: 1 # Fixes performance issues.
+    estimateTextureRegion: 1 # Improves performance.
 SLUS-20566:
   name: "Buffy the Vampire Slayer - Chaos Bleeds"
   region: "NTSC-U"
@@ -43787,7 +43786,7 @@ SLUS-20675:
     - SoftwareRendererFMVHack # Fixes FMVs.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
-    texturePreloading: 1 # Performs much better with partial preload.
+    estimateTextureRegion: 1 # Improves performance.
 SLUS-20676:
   name: "Lowrider"
   region: "NTSC-U"
@@ -45256,8 +45255,7 @@ SLUS-20973:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
-    disablePartialInvalidation: 1 # Fixes performance issues.
+    estimateTextureRegion: 1 # Improves performance.
   memcardFilters:
     - "SLUS-20973"
     - "SLUS-20565"
@@ -45899,6 +45897,7 @@ SLUS-21095:
   gsHWFixes:
     mipmap: 1
     autoFlush: 1
+    estimateTextureRegion: 1 # Improves performance.
 SLUS-21096:
   name: "Ape Escape - Pumped & Primed"
   region: "NTSC-U"
@@ -50613,8 +50612,7 @@ SLUS-29088:
   name: "Champions of Norrath - Realms of EverQuest [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
-    disablePartialInvalidation: 1
+    estimateTextureRegion: 1 # Improves performance.
 SLUS-29089:
   name: "Resident Evil Outbreak [Public Beta 1.0]"
   region: "NTSC-U"
@@ -50723,8 +50721,7 @@ SLUS-29126:
   region: "NTSC-U"
   compat: 4
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
-    disablePartialInvalidation: 1 # Fixes perfromance issues.
+    estimateTextureRegion: 1 # Improves performance.
 SLUS-29127:
   name: "FIFA Soccer 2005 [Demo]"
   region: "NTSC-U"
@@ -50739,6 +50736,7 @@ SLUS-29131:
   region: "NTSC-U"
   gsHWFixes:
     mipmap: 1
+    estimateTextureRegion: 1 # Improves performance.
 SLUS-29132:
   name: "S.L.A.I. - Steel Lancer Arena International - Phantom Crash [Public Beta Vol.1.0]"
   region: "NTSC-U"
