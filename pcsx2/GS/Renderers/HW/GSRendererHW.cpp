@@ -1546,7 +1546,7 @@ void GSRendererHW::Draw()
 		{
 			// Force enable preloading if any of the existing data is needed.
 			// e.g. NFSMW only writes the alpha channel, and needs the RGB preloaded.
-			if (((fm & fm_mask) != fm_mask) || // Some channels masked
+			if ((fm & fm_mask) != 0 && ((fm & fm_mask) != fm_mask) || // Some channels masked
 				!IsOpaque()) // Blending enabled
 			{
 				GL_INS("Forcing preload due to partial/blended CLUT draw");

@@ -576,7 +576,7 @@ bool GSLocalMemory::IsPageAligned(u32 bp, u32 spsm, GSVector4i r, bool bppbw_mat
 	// If the BPP and BW matches, then just make sure it's starting on the edge of a page.
 	if (bppbw_match)
 	{
-		return bp_page_aligned_bp && masked_rect.xyxy().eq(r.xyxy());
+		return bp_page_aligned_bp;
 	}
 	else
 	{
@@ -584,7 +584,7 @@ bool GSLocalMemory::IsPageAligned(u32 bp, u32 spsm, GSVector4i r, bool bppbw_mat
 	}
 }
 
-GSVector4i GSLocalMemory::TranslateAlignedRectByPage(u32 sbp, u32 spsm, GSVector4i src_r, u32 dbp, u32 dpsm, u32 bw)
+GSVector4i GSLocalMemory::TranslateAlignedRectByPage(u32 sbp, u32 spsm, u32 sbw, GSVector4i src_r, u32 dbp, u32 dpsm, u32 bw, bool is_invalidation)
 {
 	const GSVector2i src_page_size = m_psm[spsm].pgs;
 	const GSVector2i dst_page_size = m_psm[dpsm].pgs;
@@ -597,7 +597,74 @@ GSVector4i GSLocalMemory::TranslateAlignedRectByPage(u32 sbp, u32 spsm, GSVector
 	// If they match, we can cheat and just offset the rect by the number of pages.
 	if (m_psm[spsm].bpp == m_psm[dpsm].bpp)
 	{
-		new_rect = src_r;
+		if (sbw != bw)
+		{
+			if (sbw == 0)
+			{
+				// BW == 0 loops vertically on the first page. So just copy the whole page vertically.
+				if (src_r.z > dst_page_size.x)
+				{
+					new_rect.x = 0;
+					new_rect.z = (dst_page_size.x);
+				}
+				else
+				{
+					new_rect.x = src_r.x;
+					new_rect.z = src_r.z;
+				}
+				if (src_r.w > dst_page_size.y)
+				{
+					new_rect.y = 0;
+					new_rect.w = dst_page_size.y;
+				}
+				else
+				{
+					new_rect.y = src_r.y;
+					new_rect.w = src_r.w;
+				}
+			}
+			else
+			{
+				u32 start_page = (src_r.y / dst_page_size.y) / bw;
+				u32 num_pages = ((src_r.w - src_r.y) / dst_page_size.y);
+				// Round it up to the next row up, Armored Core 3 does SBW = 1 64x1024 on BW= 10 which is 3.2 pages wide.
+				u32 rows = ((num_pages + (bw - 1)) / bw);
+				if(((horizontal_offset / dst_page_size.x) + num_pages) == bw)
+				{
+					rows += 1;
+				}
+
+				// This is going to wrap, start offset and be overall messy, so we can't use this texture. (FIFA 2005)
+				// For invalidation, over invalidating isn't *so* bad, plus the game will likely fill in the gaps.
+				if (!is_invalidation && (((horizontal_offset / dst_page_size.x) + (rect_pages.z * rect_pages.w)) % bw) != 0 && bw > sbw && rows > 1)
+					return GSVector4i::zero();
+
+				if (rows > 1)
+				{
+					new_rect.x = 0;
+					new_rect.y = start_page + (src_r.y & (dst_page_size.y - 1));
+					new_rect.z = (bw * 64);
+					new_rect.w = (rows * dst_page_size.y) + (src_r.w & (dst_page_size.y - 1));
+				}
+				else
+				{
+					new_rect.x = (src_r.x & (dst_page_size.x - 1));
+					new_rect.z = std::max(num_pages * dst_page_size.x, static_cast<u32>(src_r.z));
+					if (src_r.w > dst_page_size.y)
+					{
+						new_rect.y = 0;
+						new_rect.w = dst_page_size.y;
+					}
+					else
+					{
+						new_rect.y = src_r.y;
+						new_rect.w = std::min(dst_page_size.y, src_r.w);
+					}
+				}
+			}
+		}
+		else
+			new_rect = src_r;
 	}
 	else
 	{
@@ -605,6 +672,12 @@ GSVector4i GSLocalMemory::TranslateAlignedRectByPage(u32 sbp, u32 spsm, GSVector
 	}
 	new_rect = (new_rect + GSVector4i(0, vertical_offset).xyxy()).max_i32(GSVector4i(0));
 	new_rect = (new_rect + GSVector4i(horizontal_offset, 0).xyxy()).max_i32(GSVector4i(0));
+
+	if (new_rect.z > (bw * dst_page_size.x))
+	{
+		new_rect.z = (bw * dst_page_size.x);
+		new_rect.w += dst_page_size.y;
+	}
 
 	return new_rect;
 }
