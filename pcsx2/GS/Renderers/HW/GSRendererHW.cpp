@@ -1652,9 +1652,11 @@ void GSRendererHW::Draw()
 			MIP_CLAMP.WMS = CLAMP_REGION_CLAMP;
 			MIP_CLAMP.WMT = CLAMP_REGION_CLAMP;
 			MIP_CLAMP.MINU = 0;
-			MIP_CLAMP.MAXU = (maxt.x - 1) >> m_lod.x;
+			MIP_CLAMP.MAXU = maxt.x >> m_lod.x;
 			MIP_CLAMP.MINV = 0;
-			MIP_CLAMP.MAXV = (maxt.y - 1) >> m_lod.x;
+			MIP_CLAMP.MAXV = maxt.y >> m_lod.x;
+			GL_CACHE("Estimated texture region: %u,%u -> %u,%u", MIP_CLAMP.MINU, MIP_CLAMP.MINV, MIP_CLAMP.MAXU + 1,
+				MIP_CLAMP.MAXV + 1);
 		}
 
 		m_src = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage) :
