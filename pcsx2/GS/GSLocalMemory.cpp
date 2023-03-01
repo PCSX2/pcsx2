@@ -603,7 +603,7 @@ GSVector4i GSLocalMemory::TranslateAlignedRectByPage(u32 sbp, u32 spsm, u32 sbw,
 	const u32 dst_bw = std::max(1U, bw);
 	GSVector4i in_rect = src_r;
 	int page_offset = (static_cast<int>(sbp) - static_cast<int>(dbp)) >> 5;
-	const bool single_page = (in_rect.width() / src_page_size.x) <= 1 && (in_rect.height() / src_page_size.y) <= 1;
+	bool single_page = (in_rect.width() / src_page_size.x) <= 1 && (in_rect.height() / src_page_size.y) <= 1;
 	if (!single_page)
 	{
 		const int inc_vertical_offset = (page_offset / static_cast<int>(src_bw)) * src_page_size.y;
@@ -611,6 +611,7 @@ GSVector4i GSLocalMemory::TranslateAlignedRectByPage(u32 sbp, u32 spsm, u32 sbw,
 		in_rect = (in_rect + GSVector4i(0, inc_vertical_offset).xyxy()).max_i32(GSVector4i(0));
 		in_rect = (in_rect + GSVector4i(inc_horizontal_offset, 0).xyxy()).max_i32(GSVector4i(0));
 		page_offset = 0;
+		single_page = (in_rect.width() / src_page_size.x) <= 1 && (in_rect.height() / src_page_size.y) <= 1;
 	}
 	const int vertical_offset = (page_offset / static_cast<int>(dst_bw)) * dst_page_size.y;
 	int horizontal_offset = (page_offset % static_cast<int>(dst_bw)) * dst_page_size.x;
@@ -676,13 +677,14 @@ GSVector4i GSLocalMemory::TranslateAlignedRectByPage(u32 sbp, u32 spsm, u32 sbw,
 			}
 			else
 			{
+				const u32 start_y_page = (rect_pages.y * src_bw) / dst_bw;
 				// Full rows in original rect, so pages are sequential
 				if (single_row || full_rows)
 				{
 					new_rect.x = 0;
 					new_rect.z = std::min(totalpages * dst_page_size.x, dst_bw * dst_page_size.x);
-					new_rect.y = 0;
-					new_rect.w = ((totalpages + (dst_bw - 1)) / dst_bw) * dst_page_size.y;
+					new_rect.y = start_y_page * dst_page_size.y;
+					new_rect.w = new_rect.y + (((totalpages + (dst_bw - 1)) / dst_bw) * dst_page_size.y);
 				}
 				else
 				{
@@ -701,7 +703,21 @@ GSVector4i GSLocalMemory::TranslateAlignedRectByPage(u32 sbp, u32 spsm, u32 sbw,
 	else
 	{
 		if (block_layout_match)
+		{
 			new_rect = in_rect;
+			// The width is mismatched to the bw.
+			// Kinda scary but covering the whole row and the next one should be okay? :/ (Check with MVP 07, sbp == 0x39a0)
+			if (rect_pages.z > static_cast<int>(bw))
+			{
+				if (!is_invalidation)
+					return GSVector4i::zero();
+
+				u32 offset = rect_pages.z - (bw * dst_page_size.x);
+				new_rect.x = offset;
+				new_rect.z -= offset;
+				new_rect.w += dst_page_size.y;
+			}
+		}
 		else
 		{
 			new_rect = GSVector4i(rect_pages.x * dst_page_size.x, rect_pages.y * dst_page_size.y, rect_pages.z * dst_page_size.x, rect_pages.w * dst_page_size.y);
@@ -710,6 +726,12 @@ GSVector4i GSLocalMemory::TranslateAlignedRectByPage(u32 sbp, u32 spsm, u32 sbw,
 
 	new_rect = (new_rect + GSVector4i(0, vertical_offset).xyxy()).max_i32(GSVector4i(0));
 	new_rect = (new_rect + GSVector4i(horizontal_offset, 0).xyxy()).max_i32(GSVector4i(0));
+
+	if (new_rect.z > (bw * dst_page_size.x))
+	{
+		new_rect.z = (bw * dst_page_size.x);
+		new_rect.w += dst_page_size.y;
+	}
 
 	return new_rect;
 }
