@@ -3020,9 +3020,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 	// clear texture binding when it's bound to RT or DS
-	if (!config.tex && m_tfx_textures[0] &&
-		((!pipe.feedback_loop && config.rt && static_cast<GSTextureVK*>(config.rt)->GetView() == m_tfx_textures[0]) ||
-			(config.ds && static_cast<GSTextureVK*>(config.ds)->GetView() == m_tfx_textures[0])))
+	if (!config.tex && ((config.rt && static_cast<GSTextureVK*>(config.rt)->GetView() == m_tfx_textures[0]) ||
+						   (config.ds && static_cast<GSTextureVK*>(config.ds)->GetView() == m_tfx_textures[0])))
 	{
 		PSSetShaderResource(0, nullptr, false);
 	}
