@@ -22818,6 +22818,8 @@ SLES-55609:
 SLES-55610:
   name: "Springdale"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces the ghosting effect.
 SLES-55622:
   name: "Disney-Pixar Toy Story 3"
   region: "PAL-M6"
