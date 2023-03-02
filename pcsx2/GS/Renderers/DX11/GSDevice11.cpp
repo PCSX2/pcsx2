@@ -196,9 +196,11 @@ bool GSDevice11::Create()
 
 	memset(&bsd, 0, sizeof(bsd));
 
-	bsd.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-
-	m_dev->CreateBlendState(&bsd, m_convert.bs.put());
+	for (u32 i = 0; i < static_cast<u32>(m_convert.bs.size()); i++)
+	{
+		bsd.RenderTarget[0].RenderTargetWriteMask = static_cast<u8>(i);
+		m_dev->CreateBlendState(&bsd, m_convert.bs[i].put());
+	}
 
 	// merge
 
@@ -608,26 +610,15 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, bool linear)
 {
-	StretchRect(sTex, sRect, dTex, dRect, ps, ps_cb, m_convert.bs.get(), linear);
+	StretchRect(sTex, sRect, dTex, dRect, ps, ps_cb, m_convert.bs[D3D11_COLOR_WRITE_ENABLE_ALL].get(), linear);
 }
 
 void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha)
 {
-	D3D11_BLEND_DESC bd = {};
-
-	u8 write_mask = 0;
-
-	if (red)   write_mask |= D3D11_COLOR_WRITE_ENABLE_RED;
-	if (green) write_mask |= D3D11_COLOR_WRITE_ENABLE_GREEN;
-	if (blue)  write_mask |= D3D11_COLOR_WRITE_ENABLE_BLUE;
-	if (alpha) write_mask |= D3D11_COLOR_WRITE_ENABLE_ALPHA;
-
-	bd.RenderTarget[0].RenderTargetWriteMask = write_mask;
-
-	wil::com_ptr_nothrow<ID3D11BlendState> bs;
-	m_dev->CreateBlendState(&bd, bs.put());
-
-	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[static_cast<int>(ShaderConvert::COPY)].get(), nullptr, bs.get(), false);
+	const u8 index = static_cast<u8>(red) | (static_cast<u8>(green) << 1) | (static_cast<u8>(blue) << 2) |
+					 (static_cast<u8>(alpha) << 3);
+	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[static_cast<int>(ShaderConvert::COPY)].get(), nullptr,
+		m_convert.bs[index].get(), false);
 }
 
 void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, ID3D11BlendState* bs, bool linear)
@@ -730,7 +721,7 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 	// om
 	OMSetDepthStencilState(m_convert.dss.get(), 0);
-	OMSetBlendState(m_convert.bs.get(), 0);
+	OMSetBlendState(m_convert.bs[D3D11_COLOR_WRITE_ENABLE_ALL].get(), 0);
 
 
 
@@ -806,7 +797,7 @@ void GSDevice11::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_re
 	GSSetShader(nullptr, nullptr);
 	PSSetShader(m_convert.ps[static_cast<int>(shader)].get(), nullptr);
 	OMSetDepthStencilState(m_convert.dss.get(), 0);
-	OMSetBlendState(nullptr, 0.0f);
+	OMSetBlendState(m_convert.bs[D3D11_COLOR_WRITE_ENABLE_ALL].get(), 0.0f);
 	OMSetRenderTargets(dTex, nullptr);
 
 	const GSVector2 ds(static_cast<float>(dTex->GetWidth()), static_cast<float>(dTex->GetHeight()));
