@@ -8625,6 +8625,8 @@ SCUS-97540:
 SCUS-97544:
   name: "NBA '07 featuring The Life Vol.2"
   region: "NTSC-U"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes glitching crowd.
 SCUS-97545:
   name: "SOCOM - U.S. Navy SEALs - Combined Assault"
   region: "NTSC-U"
@@ -8649,6 +8651,8 @@ SCUS-97548:
 SCUS-97554:
   name: "NBA '07 featuring The Life Vol.2 [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes glitching crowd.
 SCUS-97555:
   name: "Jak and Daxter Complete Trilogy [Demo]"
   region: "NTSC-U"
