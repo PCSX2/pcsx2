@@ -712,10 +712,11 @@ public:
 
 	struct MultiStretchRect
 	{
-		GSTexture* src;
 		GSVector4 src_rect;
 		GSVector4 dst_rect;
+		GSTexture* src;
 		bool linear;
+		GSHWDrawConfig::ColorMaskSelector wmask; // 0xf for all channels by default
 	};
 
 	enum BlendFactor : u8

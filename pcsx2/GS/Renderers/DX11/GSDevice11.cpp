@@ -793,23 +793,25 @@ void GSDevice11::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_re
 {
 	IASetInputLayout(m_convert.il.get());
 	IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
 	VSSetShader(m_convert.vs.get(), nullptr);
 	GSSetShader(nullptr, nullptr);
 	PSSetShader(m_convert.ps[static_cast<int>(shader)].get(), nullptr);
-	OMSetDepthStencilState(m_convert.dss.get(), 0);
-	OMSetBlendState(m_convert.bs[D3D11_COLOR_WRITE_ENABLE_ALL].get(), 0.0f);
-	OMSetRenderTargets(dTex, nullptr);
+
+	OMSetDepthStencilState(dTex->IsRenderTarget() ? m_convert.dss.get() : m_convert.dss_write.get(), 0);
+	OMSetRenderTargets(dTex->IsRenderTarget() ? dTex : nullptr, dTex->IsDepthStencil() ? dTex : nullptr);
 
 	const GSVector2 ds(static_cast<float>(dTex->GetWidth()), static_cast<float>(dTex->GetHeight()));
 	GSTexture* last_tex = rects[0].src;
 	bool last_linear = rects[0].linear;
+	u8 last_wmask = rects[0].wmask.wrgba;
 
 	u32 first = 0;
 	u32 count = 1;
 
 	for (u32 i = 1; i < num_rects; i++)
 	{
-		if (rects[i].src == last_tex && rects[i].linear == last_linear)
+		if (rects[i].src == last_tex && rects[i].linear == last_linear || rects[i].wmask.wrgba != last_wmask)
 		{
 			count++;
 			continue;
@@ -818,6 +820,7 @@ void GSDevice11::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_re
 		DoMultiStretchRects(rects + first, count, ds);
 		last_tex = rects[i].src;
 		last_linear = rects[i].linear;
+		last_wmask = rects[i].wmask.wrgba;
 		first += count;
 		count = 1;
 	}
@@ -864,6 +867,9 @@ void GSDevice11::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rect
 
 	PSSetShaderResource(0, rects[0].src);
 	PSSetSamplerState(rects[0].linear ? m_convert.ln.get() : m_convert.pt.get());
+
+	OMSetBlendState(m_convert.bs[rects[0].wmask.wrgba].get(), 0.0f);
+
 	DrawIndexedPrimitive();
 }
 

@@ -483,6 +483,7 @@ void GSDevice12::DrawMultiStretchRects(
 {
 	GSTexture* last_tex = rects[0].src;
 	bool last_linear = rects[0].linear;
+	u8 last_wmask = rects[0].wmask.wrgba;
 
 	u32 first = 0;
 	u32 count = 1;
@@ -502,7 +503,7 @@ void GSDevice12::DrawMultiStretchRects(
 
 	for (u32 i = 1; i < num_rects; i++)
 	{
-		if (rects[i].src == last_tex && rects[i].linear == last_linear)
+		if (rects[i].src == last_tex && rects[i].linear == last_linear && rects[i].wmask.wrgba == last_wmask)
 		{
 			count++;
 			continue;
@@ -511,6 +512,7 @@ void GSDevice12::DrawMultiStretchRects(
 		DoMultiStretchRects(rects + first, count, static_cast<GSTexture12*>(dTex), shader);
 		last_tex = rects[i].src;
 		last_linear = rects[i].linear;
+		last_wmask = rects[i].wmask.wrgba;
 		first += count;
 		count = 1;
 	}
@@ -579,12 +581,16 @@ void GSDevice12::DoMultiStretchRects(
 
 	// Even though we're batching, a cmdbuffer submit could've messed this up.
 	const GSVector4i rc(dTex->GetRect());
-	OMSetRenderTargets(dTex, nullptr, rc);
+	OMSetRenderTargets(dTex->IsRenderTarget() ? dTex : nullptr, dTex->IsDepthStencil() ? dTex : nullptr, rc);
 	if (!InRenderPass())
 		BeginRenderPassForStretchRect(dTex, rc, rc, false);
 	SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	SetUtilityTexture(rects[0].src, rects[0].linear ? m_linear_sampler_cpu : m_point_sampler_cpu);
-	SetPipeline(m_convert[static_cast<int>(shader)].get());
+
+	pxAssert(shader == ShaderConvert::COPY || rects[0].wmask.wrgba == 0xf);
+	SetPipeline((rects[0].wmask.wrgba != 0xf) ? m_color_copy[rects[0].wmask.wrgba].get() :
+												m_convert[static_cast<int>(shader)].get());
+
 	if (ApplyUtilityState())
 		DrawIndexedPrimitive();
 }

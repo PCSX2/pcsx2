@@ -2648,8 +2648,8 @@ GSTextureCache::Source* GSTextureCache::CreateMergedSource(GIFRegTEX0 TEX0, GIFR
 
 		// Upload texture -> render target.
 		const bool linear = (scale.x != 1.0f);
-		copy_queue[copy_count++] = {lmtex, GSVector4(rect) / GSVector4(lmtex->GetSize()).xyxy(),
-			GSVector4(rect) * GSVector4(scale).xyxy(), linear};
+		copy_queue[copy_count++] = {GSVector4(rect) / GSVector4(lmtex->GetSize()).xyxy(),
+			GSVector4(rect) * GSVector4(scale).xyxy(), lmtex, linear, 0xf};
 	};
 
 	// The idea: loop through pages that this texture covers, find targets which overlap, and copy them in.
@@ -2769,13 +2769,13 @@ GSTextureCache::Source* GSTextureCache::CreateMergedSource(GIFRegTEX0 TEX0, GIFR
 							}
 
 							GL_INS("  Copy from %d,%d -> %d,%d (%dx%d)", src_x, src_y, dst_x, dst_y, copy_width, copy_height);
-							copy_queue[copy_count++] = {t->m_texture,
+							copy_queue[copy_count++] = {
 								(GSVector4(src_x, src_y, src_x + copy_width, src_y + copy_height) *
 									GSVector4(t->m_texture->GetScale()).xyxy()) /
 									GSVector4(t->m_texture->GetSize()).xyxy(),
 								GSVector4(dst_x, dst_y, dst_x + copy_width, dst_y + copy_height) *
 									GSVector4(scale).xyxy(),
-								linear};
+								t->m_texture, linear, 0xf};
 						}
 
 						row_page++;
@@ -3644,6 +3644,15 @@ void GSTextureCache::Target::Update(bool reset_age)
 	TEXA.TA0 = 0;
 	TEXA.TA1 = 0x80;
 
+	// Bilinear filtering this is probably not a good thing, at least in native, but upscaling Nearest can be gross and messy.
+	// It's needed for depth, though.. filtering depth doesn't make much sense, but SMT3 needs it..
+	const bool upscaled = (m_texture->GetScale().x > 1.0f);
+	const bool linear = (m_type == RenderTarget && upscaled);
+
+	GSDevice::MultiStretchRect* drects = static_cast<GSDevice::MultiStretchRect*>(
+		alloca(sizeof(GSDevice::MultiStretchRect) * static_cast<u32>(m_dirty.size())));
+	u32 ndrects = 0;
+
 	const GSOffset off(g_gs_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM));
 	for (size_t i = 0; i < m_dirty.size(); i++)
 	{
@@ -3664,41 +3673,35 @@ void GSTextureCache::Target::Update(bool reset_age)
 
 			t->Update(t_r, s_unswizzle_buffer, pitch);
 		}
+
+		GSDevice::MultiStretchRect& drect = drects[ndrects++];
+		drect.src = t;
+		drect.src_rect = GSVector4(r - t_offset) / t_sizef;
+		drect.dst_rect = GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy();
+		drect.linear = linear;
+		// Copy the new GS memory content into the destination texture.
+		if (m_type == RenderTarget)
+		{
+			GL_INS("ERROR: Update RenderTarget 0x%x bw:%d (%d,%d => %d,%d)", m_TEX0.TBP0, m_TEX0.TBW, r.x, r.y, r.z, r.w);
+			drect.wmask = static_cast<u8>(m_dirty[i].rgba._u32);
+		}
+		else if (m_type == DepthStencil)
+		{
+			GL_INS("ERROR: Update DepthStencil 0x%x", m_TEX0.TBP0);
+			drect.wmask = 0xF;
+		}
 	}
 
 	if (mapped)
 		t->Unmap();
 
-	for (size_t i = 0; i < m_dirty.size(); i++)
+	if (ndrects > 0)
 	{
-		const GSVector4i r(m_dirty.GetDirtyRect(i, m_TEX0, total_rect));
-
-		if (r.rempty())
-			continue;
-
-		const GSVector4 sRect(GSVector4(r - t_offset) / t_sizef);
-		const GSVector4 dRect(GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy());
-		// Copy the new GS memory content into the destination texture.
-		if (m_type == RenderTarget)
-		{
-			GL_INS("ERROR: Update RenderTarget 0x%x bw:%d (%d,%d => %d,%d)", m_TEX0.TBP0, m_TEX0.TBW, r.x, r.y, r.z, r.w);
-			if (m_dirty[i].rgba._u32 != 0xf)
-			{
-				g_gs_device->StretchRect(t, sRect, m_texture, dRect, m_dirty[i].rgba.c.r, m_dirty[i].rgba.c.g, m_dirty[i].rgba.c.b, m_dirty[i].rgba.c.a);
-			}
-			else
-			{
-				// Bilinear filtering this is probably not a good thing, at least in native, but upscaling Nearest can be gross and messy.
-				g_gs_device->StretchRect(t, sRect, m_texture, dRect, ShaderConvert::COPY, g_gs_renderer->CanUpscale());
-			}
-		}
-		else if (m_type == DepthStencil)
-		{
-			GL_INS("ERROR: Update DepthStencil 0x%x", m_TEX0.TBP0);
-
-			// FIXME linear or not?
-			g_gs_device->StretchRect(t, sRect, m_texture, dRect, ShaderConvert::RGBA8_TO_FLOAT32_BILN);
-		}
+		// No need to sort here, it's all the one texture.
+		const ShaderConvert shader = (m_type == RenderTarget) ? ShaderConvert::COPY :
+																(upscaled ? ShaderConvert::RGBA8_TO_FLOAT32 :
+																			ShaderConvert::RGBA8_TO_FLOAT32_BILN);
+		g_gs_device->DrawMultiStretchRects(drects, ndrects, m_texture, shader);
 	}
 
 	UpdateValidity(total_rect);
