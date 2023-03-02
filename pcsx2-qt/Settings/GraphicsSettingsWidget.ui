@@ -1005,24 +1005,10 @@
        </item>
        <item row="6" column="0" colspan="2">
         <layout class="QGridLayout" name="gridLayout">
-         <item row="1" column="1">
-          <widget class="QCheckBox" name="preloadFrameData">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="hwAutoFlush">
            <property name="text">
-            <string>Preload Frame Data</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QCheckBox" name="disableDepthEmulation">
-           <property name="text">
-            <string>Disable Depth Emulation</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QCheckBox" name="disablePartialInvalidation">
-           <property name="text">
-            <string>Disable Partial Source Invalidation</string>
+            <string>Auto Flush</string>
            </property>
           </widget>
          </item>
@@ -1033,10 +1019,10 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
-          <widget class="QCheckBox" name="targetPartialInvalidation">
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="disableDepthEmulation">
            <property name="text">
-            <string>Target Partial Invalidation</string>
+            <string>Disable Depth Emulation</string>
            </property>
           </widget>
          </item>
@@ -1047,13 +1033,6 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="hwAutoFlush">
-           <property name="text">
-            <string>Auto Flush</string>
-           </property>
-          </widget>
-         </item>
          <item row="2" column="1">
           <widget class="QCheckBox" name="readTCOnClose">
            <property name="text">
@@ -1061,7 +1040,28 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="1">
+         <item row="3" column="0">
+          <widget class="QCheckBox" name="disablePartialInvalidation">
+           <property name="text">
+            <string>Disable Partial Source Invalidation</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QCheckBox" name="targetPartialInvalidation">
+           <property name="text">
+            <string>Target Partial Invalidation</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="preloadFrameData">
+           <property name="text">
+            <string>Preload Frame Data</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
           <widget class="QCheckBox" name="estimateTextureRegion">
            <property name="text">
             <string>Estimate Texture Region</string>

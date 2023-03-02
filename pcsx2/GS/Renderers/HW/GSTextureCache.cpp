@@ -2812,7 +2812,7 @@ GSTextureCache::Source* GSTextureCache::CreateMergedSource(GIFRegTEX0 TEX0, GIFR
 		page_x++;
 		if (page_x == width_in_pages)
 		{
-			start_TBP0 += row_page_increment * page_blocks;
+			start_TBP0 += page_block_increment;
 			current_TBP0 = start_TBP0;
 			page_x = 0;
 			page_y++;
