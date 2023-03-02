@@ -11715,6 +11715,9 @@ SLES-51011:
   name: "Knight Rider - The Game"
   region: "PAL-M4"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes brake lights.
+    preloadFrameData: 1 # Fixes graphical issues.
 SLES-51013:
   name: "Blade II"
   region: "PAL-E"
@@ -23274,6 +23277,12 @@ SLKA-15005:
   compat: 5
   gameFixes:
     - EETimingHack # Fixes part II intro screen.
+SLKA-15006:
+  name: "Knight Rider - The Game"
+  region: "NTSC-K"
+  gsHWFixes:
+    autoFlush: 1 # Fixes brake lights.
+    preloadFrameData: 1 # Fixes graphical issues.
 SLKA-15007:
   name: "GrowLanser2"
   region: "NTSC-K"
