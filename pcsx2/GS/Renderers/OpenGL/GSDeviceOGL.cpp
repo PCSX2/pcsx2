@@ -1323,13 +1323,14 @@ void GSDeviceOGL::DrawMultiStretchRects(
 	const GSVector2 ds(static_cast<float>(dTex->GetWidth()), static_cast<float>(dTex->GetHeight()));
 	GSTexture* last_tex = rects[0].src;
 	bool last_linear = rects[0].linear;
+	u8 last_wmask = rects[0].wmask.wrgba;
 
 	u32 first = 0;
 	u32 count = 1;
 
 	for (u32 i = 1; i < num_rects; i++)
 	{
-		if (rects[i].src == last_tex && rects[i].linear == last_linear)
+		if (rects[i].src == last_tex && rects[i].linear == last_linear || rects[i].wmask.wrgba != last_wmask)
 		{
 			count++;
 			continue;
@@ -1338,6 +1339,7 @@ void GSDeviceOGL::DrawMultiStretchRects(
 		DoMultiStretchRects(rects + first, count, ds);
 		last_tex = rects[i].src;
 		last_linear = rects[i].linear;
+		last_wmask = rects[i].wmask.wrgba;
 		first += count;
 		count = 1;
 	}
@@ -1391,6 +1393,7 @@ void GSDeviceOGL::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rec
 
 	PSSetShaderResource(0, rects[0].src);
 	PSSetSamplerState(rects[0].linear ? m_convert.ln : m_convert.pt);
+	OMSetColorMaskState(rects[0].wmask);
 	DrawIndexedPrimitive();
 }
 
