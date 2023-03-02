@@ -176,7 +176,7 @@ private:
 		wil::com_ptr_nothrow<ID3D11SamplerState> pt;
 		wil::com_ptr_nothrow<ID3D11DepthStencilState> dss;
 		wil::com_ptr_nothrow<ID3D11DepthStencilState> dss_write;
-		wil::com_ptr_nothrow<ID3D11BlendState> bs;
+		std::array<wil::com_ptr_nothrow<ID3D11BlendState>, 16> bs;
 	} m_convert;
 
 	struct
