@@ -23,7 +23,17 @@ layout(location = 0) in vec2 v_tex;
 
 #if defined(ps_convert_rgba8_16bits) || defined(ps_convert_float32_32bits)
 layout(location = 0) out uint o_col0;
-#else
+#elif !defined(ps_datm1) && \
+	!defined(ps_datm0) && \
+	!defined(ps_convert_rgba8_float32) && \
+	!defined(ps_convert_rgba8_float24) && \
+	!defined(ps_convert_rgba8_float16) && \
+	!defined(ps_convert_rgb5a1_float16) && \
+	!defined(ps_convert_rgba8_float32_biln) && \
+	!defined(ps_convert_rgba8_float24_biln) && \
+	!defined(ps_convert_rgba8_float16_biln) && \
+	!defined(ps_convert_rgb5a1_float16_biln) && \
+	!defined(ps_depth_copy)
 layout(location = 0) out vec4 o_col0;
 #endif
 
@@ -69,8 +79,6 @@ void ps_convert_rgba8_16bits()
 #ifdef ps_datm1
 void ps_datm1()
 {
-	o_col0 = vec4(0, 0, 0, 0);
-
 	if(sample_c(v_tex).a < (127.5f / 255.0f)) // >= 0x80 pass
 		discard;
 
@@ -80,8 +88,6 @@ void ps_datm1()
 #ifdef ps_datm0
 void ps_datm0()
 {
-	o_col0 = vec4(0, 0, 0, 0);
-
 	if((127.5f / 255.0f) < sample_c(v_tex).a) // < 0x80 pass (== 0x80 should not pass)
 		discard;
 }

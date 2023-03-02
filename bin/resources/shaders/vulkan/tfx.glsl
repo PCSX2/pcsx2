@@ -387,7 +387,7 @@ layout(location = 0) in VSOutput
 #if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
 layout(location = 0, index = 0) out vec4 o_col0;
 layout(location = 0, index = 1) out vec4 o_col1;
-#else
+#elif !PS_NO_COLOR
 layout(location = 0) out vec4 o_col0;
 #endif
 

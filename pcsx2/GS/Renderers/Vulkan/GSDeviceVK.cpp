@@ -1143,7 +1143,6 @@ static void AddUtilityVertexAttributes(Vulkan::GraphicsPipelineBuilder& gpb)
 	gpb.AddVertexBuffer(0, sizeof(GSVertexPT1));
 	gpb.AddVertexAttribute(0, 0, VK_FORMAT_R32G32B32A32_SFLOAT, 0);
 	gpb.AddVertexAttribute(1, 0, VK_FORMAT_R32G32_SFLOAT, 16);
-	gpb.AddVertexAttribute(2, 0, VK_FORMAT_R8G8B8A8_UNORM, 28);
 	gpb.SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
 }
 
