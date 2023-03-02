@@ -17474,8 +17474,11 @@ SLES-53523:
   roundModes:
     vu1RoundMode: 0 # Fixes textures and crashes.
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes bloom misalignment.
-    wildArmsHack: 1 # Fixes bloom misalignment.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures and water textures and reflections.
+    trilinearFiltering: 1
+    textureInsideRT: 1 # Fixes rainbow artifacting around edges of screen.
+    halfPixelOffset: 2 # Fixes misalgined bloom.
+    autoFlush: 1 # Fixes missing bloom intensity and alignment.
 SLES-53524:
   name: "Mortal Kombat - Shaolin Monks"
   region: "PAL-M5"
@@ -17943,8 +17946,11 @@ SLES-53647:
   roundModes:
     vu1RoundMode: 0 # Fixes textures and crashes.
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes bloom misalignment.
-    wildArmsHack: 1 # Fixes bloom misalignment.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures and water textures and reflections.
+    trilinearFiltering: 1
+    textureInsideRT: 1 # Fixes rainbow artifacting around edges of screen.
+    halfPixelOffset: 2 # Fixes misalgined bloom.
+    autoFlush: 1 # Fixes missing bloom intensity and alignment.
 SLES-53651:
   name: "WWII - Soldier"
   region: "PAL-E"
@@ -46215,8 +46221,11 @@ SLUS-21139:
   roundModes:
     vu1RoundMode: 0 # Fixes textures and crashes.
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes bloom misalignment.
-    wildArmsHack: 1 # Fixes bloom misalignment.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures and water textures and reflections.
+    trilinearFiltering: 1
+    textureInsideRT: 1 # Fixes rainbow artifacting around edges of screen.
+    halfPixelOffset: 2 # Fixes misalgined bloom.
+    autoFlush: 1 # Fixes missing bloom intensity and alignment.
 SLUS-21140:
   name: "Mobile Suit Gundam Seed - Never Ending Tomorrow"
   region: "NTSC-U"
