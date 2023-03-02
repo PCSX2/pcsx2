@@ -651,7 +651,7 @@ void GSDeviceVK::DoMultiStretchRects(
 
 	// Even though we're batching, a cmdbuffer submit could've messed this up.
 	const GSVector4i rc(dTex->GetRect());
-	OMSetRenderTargets(dTex, nullptr, dTex->GetRect(), false);
+	OMSetRenderTargets(dTex, nullptr, rc, false);
 	if (!InRenderPass() || !CheckRenderPassArea(rc))
 		BeginRenderPassForStretchRect(dTex, rc, rc, false);
 	SetUtilityTexture(rects[0].src, rects[0].linear ? m_linear_sampler : m_point_sampler);
