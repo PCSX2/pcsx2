@@ -2322,7 +2322,7 @@ SCED-52869:
         patch=0,EE,005ffff4,double,00c7e8200818000c
   gsHWFixes:
     autoFlush: 1 # Fixes car shadows.
-    roundSprite: 1 # Fixes misalgined text.
+    roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 1 # Fixes minor ghosting on objects.
 SCED-52880:
   name: "WRC 4 - The Official Game of the FIA World Rally Championship [Demo]"
@@ -2331,7 +2331,7 @@ SCED-52880:
     - XGKickHack # Fixes SPS.
   gsHWFixes:
     autoFlush: 1 # Fixes car shadows.
-    roundSprite: 1 # Fixes misalgined text.
+    roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 1 # Fixes minor ghosting on objects.
 SCED-52899:
   name: "Killzone [Bonus Disc]"
@@ -3586,7 +3586,7 @@ SCES-52389:
         patch=0,EE,005ffff4,double,00c7e8200818000c
   gsHWFixes:
     autoFlush: 1 # Fixes car shadows.
-    roundSprite: 1 # Fixes misalgined text.
+    roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 1 # Fixes minor ghosting on objects.
 SCES-52405:
   name: "DJ - Decks & FX - House Edition"
@@ -9408,7 +9408,7 @@ SLED-53537:
   region: "PAL-E"
   gsHWFixes:
     autoFlush: 1 # Softens bloom on objects and cars.
-    halfPixelOffset: 2 # Fixes misalgined bloom on objects and cars.
+    halfPixelOffset: 2 # Fixes misaligned bloom on objects and cars.
 SLED-53673:
   name: "007 - From Russia with Love [Demo]"
   region: "PAL-E"
@@ -9489,9 +9489,9 @@ SLED-54401:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     textureInsideRT: 2 # Fixes shadow maps.
-    roundSprite: 2 # Fixes misalgined bloom.
-    mergeSprite: 1 # Fixes misalgined bloom.
-    halfPixelOffset: 2 # Fixes misalgined bloom.
+    roundSprite: 2 # Fixes misaligned bloom.
+    mergeSprite: 1 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Fixes sun occlusion and brightness.
 SLES-50003:
   name: "Swap Magic DVD Disc v2.0"
@@ -14402,7 +14402,7 @@ SLES-52276:
   compat: 5
   gsHWFixes:
     autoFlush: 1 # Softens bloom on objects and cars.
-    halfPixelOffset: 2 # Fixes misalgined bloom on objects and cars.
+    halfPixelOffset: 2 # Fixes misaligned bloom on objects and cars.
 SLES-52277:
   name: "Riding Spirits 2"
   region: "PAL-M5"
@@ -16084,7 +16084,7 @@ SLES-52950:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes blurriness and misalgined garbage when upscaling.
+    halfPixelOffset: 2 # Fixes blurriness and misaligned garbage when upscaling.
 SLES-52951:
   name: "Phantom Brave"
   region: "PAL-E"
@@ -16741,9 +16741,9 @@ SLES-53196:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     textureInsideRT: 2 # Fixes shadow maps.
-    roundSprite: 2 # Fixes misalgined bloom.
-    mergeSprite: 1 # Fixes misalgined bloom.
-    halfPixelOffset: 2 # Fixes misalgined bloom.
+    roundSprite: 2 # Fixes misaligned bloom.
+    mergeSprite: 1 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Fixes sun occlusion and brightness.
 SLES-53197:
   name: "Destroy All Humans!"
@@ -16752,9 +16752,9 @@ SLES-53197:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     textureInsideRT: 2 # Fixes shadow maps.
-    roundSprite: 2 # Fixes misalgined bloom.
-    mergeSprite: 1 # Fixes misalgined bloom.
-    halfPixelOffset: 2 # Fixes misalgined bloom.
+    roundSprite: 2 # Fixes misaligned bloom.
+    mergeSprite: 1 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Fixes sun occlusion and brightness.
 SLES-53199:
   name: "25 to Life"
@@ -17924,9 +17924,9 @@ SLES-53641:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     textureInsideRT: 2 # Fixes shadow maps.
-    roundSprite: 2 # Fixes misalgined bloom.
-    mergeSprite: 1 # Fixes misalgined bloom.
-    halfPixelOffset: 2 # Fixes misalgined bloom.
+    roundSprite: 2 # Fixes misaligned bloom.
+    mergeSprite: 1 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Fixes sun occlusion and brightness.
 SLES-53644:
   name: "Gene Troopers"
@@ -18329,7 +18329,7 @@ SLES-53768:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes misalgined bloom on sun.
+    autoFlush: 1 # Fixes misaligned bloom on sun.
 SLES-53769:
   name: "Suikoden Tactics"
   region: "PAL-M5"
@@ -19146,7 +19146,8 @@ SLES-54138:
   name: "Steambot Chronicles"
   region: "PAL-E"
   gsHWFixes:
-    getSkipCount: "GSC_SteambotChronicles"
+    getSkipCount: "GSC_SteambotChronicles" # Causes green (incorrect) water but removes depth and blur issues.
+    roundSprite: 1 # Fixes colored 3D anaglyph bleeding effects.
 SLES-54139:
   name: "Earache - Extreme Metal Racing"
   region: "PAL-E"
@@ -19651,7 +19652,8 @@ SLES-54335:
   name: "Steambot Chronicles"
   region: "PAL-F"
   gsHWFixes:
-    getSkipCount: "GSC_SteambotChronicles"
+    getSkipCount: "GSC_SteambotChronicles" # Causes green (incorrect) water but removes depth and blur issues.
+    roundSprite: 1 # Fixes colored 3D anaglyph bleeding effects.
 SLES-54336:
   name: "Lumines Plus"
   region: "PAL-M5"
@@ -19844,9 +19846,9 @@ SLES-54384:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     textureInsideRT: 2 # Fixes shadow maps.
-    roundSprite: 2 # Fixes misalgined bloom.
-    mergeSprite: 1 # Fixes misalgined bloom.
-    halfPixelOffset: 2 # Fixes misalgined bloom.
+    roundSprite: 2 # Fixes misaligned bloom.
+    mergeSprite: 1 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Fixes sun occlusion and brightness.
 SLES-54385:
   name: "Atelier Iris 2 - The Azoth of Destiny"
@@ -24199,7 +24201,7 @@ SLKA-25291:
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes misalgined bloom on sun.
+    autoFlush: 1 # Fixes misaligned bloom on sun.
 SLKA-25296:
   name: "Inuyasha - Feudal Combat"
   region: "NTSC-K"
@@ -24827,9 +24829,9 @@ SLPM-55141:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     textureInsideRT: 2 # Fixes shadow maps.
-    roundSprite: 2 # Fixes misalgined bloom.
-    mergeSprite: 1 # Fixes misalgined bloom.
-    halfPixelOffset: 2 # Fixes misalgined bloom.
+    roundSprite: 2 # Fixes misaligned bloom.
+    mergeSprite: 1 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Fixes sun occlusion and brightness.
 SLPM-55146:
   name: "Jikkyou Powerful Pro Yakyuu 2009"
@@ -25257,7 +25259,8 @@ SLPM-60266:
   name: "Ponkotsu Roman Daikatsugeki Bumpy Trot [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    getSkipCount: "GSC_SteambotChronicles"
+    getSkipCount: "GSC_SteambotChronicles" # Causes green (incorrect) water but removes depth and blur issues.
+    roundSprite: 1 # Fixes colored 3D anaglyph bleeding effects.
 SLPM-60267:
   name: "Garouden Breakblow [Taikenban]"
   region: "NTSC-J"
@@ -30694,7 +30697,7 @@ SLPM-65883:
   name: "Shadow of Rome"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes blurriness and misalgined garbage when upscaling.
+    halfPixelOffset: 2 # Fixes blurriness and misaligned garbage when upscaling.
 SLPM-65884:
   name: "Remote Control Dandy SF"
   region: "NTSC-J"
@@ -31034,7 +31037,7 @@ SLPM-65975:
         patch=0,EE,005ffff4,double,00c7e8200818000c
   gsHWFixes:
     autoFlush: 1 # Fixes car shadows.
-    roundSprite: 1 # Fixes misalgined text.
+    roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 1 # Fixes minor ghosting on objects.
 SLPM-65976:
   name: "Grandia III [Disc 1 of 2]"
@@ -31249,7 +31252,7 @@ SLPM-66033:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes misalgined bloom on sun.
+    autoFlush: 1 # Fixes misaligned bloom on sun.
 SLPM-66034:
   name: "Grand Theft Auto - Vice City"
   region: "NTSC-J"
@@ -32153,7 +32156,7 @@ SLPM-66261:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes misalgined bloom on sun.
+    autoFlush: 1 # Fixes misaligned bloom on sun.
 SLPM-66262:
   name: "Tom Clancy's Rainbow Six 3 [Ubisoft The Best]"
   region: "NTSC-J"
@@ -32450,7 +32453,7 @@ SLPM-66334:
         patch=0,EE,005ffff4,double,00c7e8200818000c
   gsHWFixes:
     autoFlush: 1 # Fixes car shadows.
-    roundSprite: 1 # Fixes misalgined text.
+    roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 1 # Fixes minor ghosting on objects.
 SLPM-66336:
   name: "Shinseiki Evangelion - Koutetsu no Girlfriend [Special Edition]"
@@ -32769,9 +32772,9 @@ SLPM-66430:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     textureInsideRT: 2 # Fixes shadow maps.
-    roundSprite: 2 # Fixes misalgined bloom.
-    mergeSprite: 1 # Fixes misalgined bloom.
-    halfPixelOffset: 2 # Fixes misalgined bloom.
+    roundSprite: 2 # Fixes misaligned bloom.
+    mergeSprite: 1 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Fixes sun occlusion and brightness.
 SLPM-66431:
   name: "WinBack 2 - Project Poseidon"
@@ -34047,7 +34050,7 @@ SLPM-66745:
   name: "Shadow of Rome [CapKore]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes blurriness and misalgined garbage when upscaling.
+    halfPixelOffset: 2 # Fixes blurriness and misaligned garbage when upscaling.
 SLPM-66746:
   name: "Guilty Gear XX - Accent Core"
   region: "NTSC-J"
@@ -44958,7 +44961,7 @@ SLUS-20902:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes blurriness and misalgined garbage when upscaling.
+    halfPixelOffset: 2 # Fixes blurriness and misaligned garbage when upscaling.
 SLUS-20903:
   name: "Mega Man X - Command Mission"
   region: "NTSC-U"
@@ -45199,9 +45202,9 @@ SLUS-20945:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     textureInsideRT: 2 # Fixes shadow maps.
-    roundSprite: 2 # Fixes misalgined bloom.
-    mergeSprite: 1 # Fixes misalgined bloom.
-    halfPixelOffset: 2 # Fixes misalgined bloom.
+    roundSprite: 2 # Fixes misaligned bloom.
+    mergeSprite: 1 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Fixes sun occlusion and brightness.
 SLUS-20946:
   name: "Grand Theft Auto - San Andreas"
@@ -46115,7 +46118,7 @@ SLUS-21116:
   compat: 5
   gsHWFixes:
     autoFlush: 1 # Softens bloom on objects and cars.
-    halfPixelOffset: 2 # Fixes misalgined bloom on objects and cars.
+    halfPixelOffset: 2 # Fixes misaligned bloom on objects and cars.
 SLUS-21117:
   name: "World Soccer - Winning Eleven 8 - International"
   region: "NTSC-U"
@@ -47380,7 +47383,8 @@ SLUS-21344:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_SteambotChronicles"
+    getSkipCount: "GSC_SteambotChronicles" # Causes green (incorrect) water but removes depth and blur issues.
+    roundSprite: 1 # Fixes colored 3D anaglyph bleeding effects.
 SLUS-21345:
   name: "Grandia III [Disc 2 of 2]"
   region: "NTSC-U"
@@ -47978,9 +47982,9 @@ SLUS-21439:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     textureInsideRT: 2 # Fixes shadow maps.
-    roundSprite: 2 # Fixes misalgined bloom.
-    mergeSprite: 1 # Fixes misalgined bloom.
-    halfPixelOffset: 2 # Fixes misalgined bloom.
+    roundSprite: 2 # Fixes misaligned bloom.
+    mergeSprite: 1 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Fixes sun occlusion and brightness.
 SLUS-21440:
   name: "Big Idea's VeggieTales - LarryBoy and the Bad Apple"
@@ -50427,7 +50431,8 @@ SLUS-28061:
   name: "Steambot Chronicles [Trade Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    getSkipCount: "GSC_SteambotChronicles"
+    getSkipCount: "GSC_SteambotChronicles" # Causes green (incorrect) water but removes depth and blur issues.
+    roundSprite: 1 # Fixes colored 3D anaglyph bleeding effects.
 SLUS-28062:
   name: "Dance Factory [Trade Demo]"
   region: "NTSC-U"
@@ -50871,7 +50876,7 @@ SLUS-29139:
   name: "Shadow of Rome [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes blurriness and misalgined garbage when upscaling.
+    halfPixelOffset: 2 # Fixes blurriness and misaligned garbage when upscaling.
 SLUS-29140:
   name: "MX vs. ATV Unleashed [Demo]"
   region: "NTSC-U"
@@ -50897,9 +50902,9 @@ SLUS-29150:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     textureInsideRT: 2 # Fixes shadow maps.
-    roundSprite: 2 # Fixes misalgined bloom.
-    mergeSprite: 1 # Fixes misalgined bloom.
-    halfPixelOffset: 2 # Fixes misalgined bloom.
+    roundSprite: 2 # Fixes misaligned bloom.
+    mergeSprite: 1 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Fixes sun occlusion and brightness.
 SLUS-29152:
   name: "Battlefield 2 - Modern Combat [Regular Demo]"
@@ -51051,7 +51056,8 @@ SLUS-29188:
   name: "Steambot Chronicles [Regular Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    getSkipCount: "GSC_SteambotChronicles"
+    getSkipCount: "GSC_SteambotChronicles" # Causes green (incorrect) water but removes depth and blur issues.
+    roundSprite: 1 # Fixes colored 3D anaglyph bleeding effects.
 SLUS-29189:
   name: "FIFA World Cup - Germany 2006 [Demo]"
   region: "NTSC-U"
@@ -51093,9 +51099,9 @@ SLUS-29196:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     textureInsideRT: 2 # Fixes shadow maps.
-    roundSprite: 2 # Fixes misalgined bloom.
-    mergeSprite: 1 # Fixes misalgined bloom.
-    halfPixelOffset: 2 # Fixes misalgined bloom.
+    roundSprite: 2 # Fixes misaligned bloom.
+    mergeSprite: 1 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Fixes sun occlusion and brightness.
 SLUS-29197:
   name: "Flushed Away [Demo]"
@@ -51181,7 +51187,7 @@ TCES-52389:
   region: "PAL-E"
   gsHWFixes:
     autoFlush: 1 # Fixes car shadows.
-    roundSprite: 1 # Fixes misalgined text.
+    roundSprite: 1 # Fixes misaligned text.
 TCES-52456:
   name: "Ratchet and Clank 3 Beta Trial Code"
   region: "PAL-E"
