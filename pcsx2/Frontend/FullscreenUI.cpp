@@ -3892,6 +3892,10 @@ void FullscreenUI::DrawControllerSettingsPage()
 			if (MenuButton(ICON_FA_LIGHTBULB " Frequency", freq_summary.c_str()))
 				ImGui::OpenPopup(freq_key.c_str());
 
+			const std::string pressure_key(fmt::format("Macro{}Pressure", macro_index + 1));
+			DrawFloatSpinBoxSetting(bsi, ICON_FA_ARROW_DOWN " Pressure", "Determines how much pressure is simulated when macro is active.",
+				section, pressure_key.c_str(), 1.0f, 0.01f, 1.0f, 0.01f, 100.0f, "%.0f%%");
+
 			ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
 			ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
