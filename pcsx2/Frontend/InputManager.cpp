@@ -666,8 +666,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 
 	for (u32 macro_button_index = 0; macro_button_index < PAD::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_button_index++)
 	{
-		const std::vector<std::string> bindings(
-			si.GetStringList(section.c_str(), StringUtil::StdStringFromFormat("Macro%u", macro_button_index + 1).c_str()));
+		const std::vector<std::string> bindings(si.GetStringList(section.c_str(), fmt::format("Macro{}", macro_button_index + 1).c_str()));
 		if (!bindings.empty())
 		{
 			AddBindings(bindings, InputButtonEventHandler{[pad_index, macro_button_index](bool state) {
