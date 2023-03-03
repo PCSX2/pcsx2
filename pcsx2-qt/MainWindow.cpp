@@ -2065,7 +2065,7 @@ static QString getFilenameFromMimeData(const QMimeData* md)
 		// only one url accepted
 		const QList<QUrl> urls(md->urls());
 		if (urls.size() == 1)
-			filename = urls.front().toLocalFile();
+			filename = QDir::toNativeSeparators(urls.front().toLocalFile());
 	}
 
 	return filename;
@@ -2925,11 +2925,23 @@ void MainWindow::doStartFile(std::optional<CDVD_SourceType> source, const QStrin
 
 void MainWindow::doDiscChange(CDVD_SourceType source, const QString& path)
 {
+	const bool is_gs_dump = VMManager::IsGSDumpFileName(path.toStdString());
+	if (is_gs_dump != GSDumpReplayer::IsReplayingDump())
+	{
+		QMessageBox::critical(this, tr("Error"), tr("Cannot switch from game to GS dump or vice versa."));
+		return;
+	}
+	else if (is_gs_dump)
+	{
+		Host::RunOnCPUThread([path = path.toStdString()]() { GSDumpReplayer::ChangeDump(path.c_str()); });
+		return;
+	}
+
 	bool reset_system = false;
 	if (!m_was_disc_change_request)
 	{
 		QMessageBox message(QMessageBox::Question, tr("Confirm Disc Change"),
-			tr("Do you want to swap discs or boot the new image (via system reset)?"));
+			tr("Do you want to swap discs or boot the new image (via system reset)?"), QMessageBox::NoButton, this);
 		message.addButton(tr("Swap Disc"), QMessageBox::ActionRole);
 		QPushButton* reset_button = message.addButton(tr("Reset"), QMessageBox::ActionRole);
 		QPushButton* cancel_button = message.addButton(QMessageBox::Cancel);
