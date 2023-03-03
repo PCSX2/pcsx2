@@ -24,7 +24,6 @@ public:
 	static bool GSC_Manhunt2(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_CrashBandicootWoC(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_SacredBlaze(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_Oneechanbara2Special(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_SakuraTaisen(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_SFEX3(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_Tekken5(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
