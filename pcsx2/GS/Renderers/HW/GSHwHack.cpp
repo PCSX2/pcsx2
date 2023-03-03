@@ -170,21 +170,6 @@ bool GSHwHack::GSC_SacredBlaze(GSRendererHW& r, const GSFrameInfo& fi, int& skip
 	return true;
 }
 
-bool GSHwHack::GSC_Oneechanbara2Special(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (!s_nativeres && fi.TPSM == PSM_PSMCT24 && fi.TME && fi.FBP == 0x01180)
-		{
-			// Don't enable hack on native res if crc is below aggressive.
-			// Ghosting upscaling issue, bottom and right red lines also by upscaling.
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
 bool GSHwHack::GSC_SakuraTaisen(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -1237,7 +1222,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_DeathByDegreesTekkenNinaWilliams, CRCHackLevel::Partial), // + Upscaling issues
 
 	// Upscaling hacks
-	CRC_F(GSC_Oneechanbara2Special, CRCHackLevel::Partial),
 	CRC_F(GSC_UltramanFightingEvolution, CRCHackLevel::Partial),
 	CRC_F(GSC_YakuzaGames, CRCHackLevel::Partial),
 
