@@ -20126,6 +20126,8 @@ SLES-54485:
 SLES-54486:
   name: "Xiaolin Showdown"
   region: "PAL-M5"
+  gsHWFixes:
+    PCRTCOffsets: 1 # Stops screen shaking.
 SLES-54487:
   name: "Tokobot Plus - Mysteries of the Karakuri"
   region: "PAL-M5"
@@ -47766,6 +47768,8 @@ SLUS-21405:
   name: "Xiaolin Showdown"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    PCRTCOffsets: 1 # Stops screen shaking.
 SLUS-21406:
   name: "Godfather, The - Collector's Edition"
   region: "NTSC-U"
