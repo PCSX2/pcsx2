@@ -20323,6 +20323,9 @@ SLES-54569:
   name: "Zombie Hunters 2"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Needed to remove part of red box.
+    roundSprite: 2 #  Fully remove red box when upscaling .
   gameFixes:
     - XGKickHack # Fixes blank textures.
 SLES-54579:
@@ -36615,7 +36618,10 @@ SLPS-20444:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_Oneechanbara2Special"
+    halfPixelOffset: 1 # Needed to remove part of red box.
+    roundSprite: 2 #  Fully remove red box when upscaling .
+  gameFixes:
+    - XGKickHack # Fixes blank textures.
 SLPS-20445:
   name: "Simple 2000 Series Ultimate Vol. 28 - Tousou! Kenka Grand Prix - Drive to Survive"
   region: "NTSC-J"
@@ -36696,7 +36702,10 @@ SLPS-20466:
   name: "Simple 2000 Series Vol. 101 - The OneeChanpon - OneeChan 2 Special Edition"
   region: "NTSC-J"
   gsHWFixes:
-    getSkipCount: "GSC_Oneechanbara2Special"
+    halfPixelOffset: 1 # Needed to remove part of red box.
+    roundSprite: 2 #  Fully remove red box when upscaling .
+  gameFixes:
+    - XGKickHack # Fixes blank textures.
 SLPS-20467:
   name: "Simple 2000 Series Vol. 102 - The Hohei - Senjou no Inutachi"
   region: "NTSC-J"
