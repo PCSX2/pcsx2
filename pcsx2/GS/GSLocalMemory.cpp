@@ -566,21 +566,32 @@ void GSLocalMemory::SaveBMP(const std::string& fn, u32 bp, u32 bw, u32 psm, int 
 	_aligned_free(bits);
 }
 
-bool GSLocalMemory::IsPageAligned(u32 bp, u32 spsm, GSVector4i r, bool bppbw_match)
+bool GSLocalMemory::CanTranslate(u32 bp, u32 bw, u32 spsm, GSVector4i r, u32 dbp, u32 dpsm, u32 dbw)
 {
-	const bool bp_page_aligned_bp = (bp & ~((1 << 5) - 1)) == bp;
 	const GSVector2i page_size = m_psm[spsm].pgs;
-	const GSVector4i page_mask(GSVector4i(~(page_size.x - 1), ~(page_size.y - 1)).xyxy());
-	const GSVector4i masked_rect(r & page_mask);
+	const bool bp_page_aligned_bp = ((bp & ~((1 << 5) - 1)) == bp) || bp == dbp;
+	const bool block_layout_match = GSLocalMemory::m_psm[spsm].bpp == GSLocalMemory::m_psm[dpsm].bpp;
+	const GSVector4i page_mask(GSVector4i((page_size.x - 1), (page_size.y - 1)).xyxy());
+	const GSVector4i masked_rect(r & ~page_mask);
+	const int src_pixel_width = page_size.x * static_cast<int>(bw);
+	// We can do this if:
+	// The page width matches.
+	// The rect width is less than the width of the destination texture and the height is less than or equal to 1 page high.
+	// The rect width and height is equal to the page size and it covers the width of the incoming bw, so lines are sequential.
+	const bool page_aligned_rect = masked_rect.eq(r);
+	const bool width_match = bw == dbw;
+	const bool sequential_pages = page_aligned_rect && r.x == 0 && r.z == src_pixel_width;
+	const bool single_row = bw < dbw && r.z <= src_pixel_width && r.w <= page_size.y;
 
-	// If the BPP and BW matches, then just make sure it's starting on the edge of a page.
-	if (bppbw_match)
+	if (block_layout_match)
 	{
-		return bp_page_aligned_bp;
+		// Same swizzle, so as long as the block is aligned and it's not a crazy size, we can translate it.
+		return bp_page_aligned_bp && (width_match || single_row || sequential_pages);
 	}
 	else
 	{
-		return bp_page_aligned_bp && masked_rect.eq(r);
+		// If the format is different, the rect needs to additionally aligned to the pages.
+		return bp_page_aligned_bp && page_aligned_rect && (single_row || width_match || sequential_pages);
 	}
 }
 
@@ -588,96 +599,117 @@ GSVector4i GSLocalMemory::TranslateAlignedRectByPage(u32 sbp, u32 spsm, u32 sbw,
 {
 	const GSVector2i src_page_size = m_psm[spsm].pgs;
 	const GSVector2i dst_page_size = m_psm[dpsm].pgs;
-	const int page_offset = (static_cast<int>(sbp) - static_cast<int>(dbp)) >> 5;
-	const int vertical_offset = (page_offset / static_cast<int>(bw)) * dst_page_size.y;
-	const int horizontal_offset = (page_offset % static_cast<int>(bw)) * dst_page_size.x;
-	const GSVector4i rect_pages = GSVector4i(src_r.x / src_page_size.x, src_r.y / src_page_size.y, src_r.z / src_page_size.x, src_r.w / src_page_size.y);
+	const u32 src_bw = std::max(1U, sbw);
+	const u32 dst_bw = std::max(1U, bw);
+	GSVector4i in_rect = src_r;
+	int page_offset = (static_cast<int>(sbp) - static_cast<int>(dbp)) >> 5;
+	const bool single_page = (in_rect.width() / src_page_size.x) <= 1 && (in_rect.height() / src_page_size.y) <= 1;
+	if (!single_page)
+	{
+		const int inc_vertical_offset = (page_offset / static_cast<int>(src_bw)) * src_page_size.y;
+		int inc_horizontal_offset = (page_offset % static_cast<int>(src_bw)) * src_page_size.x;
+		in_rect = (in_rect + GSVector4i(0, inc_vertical_offset).xyxy()).max_i32(GSVector4i(0));
+		in_rect = (in_rect + GSVector4i(inc_horizontal_offset, 0).xyxy()).max_i32(GSVector4i(0));
+		page_offset = 0;
+	}
+	const int vertical_offset = (page_offset / static_cast<int>(dst_bw)) * dst_page_size.y;
+	int horizontal_offset = (page_offset % static_cast<int>(dst_bw)) * dst_page_size.x;
+	const GSVector4i rect_pages = GSVector4i(in_rect.x / src_page_size.x, in_rect.y / src_page_size.y, (in_rect.z + src_page_size.x - 1) / src_page_size.x, (in_rect.w + (src_page_size.y - 1)) / src_page_size.y);
+	const bool block_layout_match = GSLocalMemory::m_psm[spsm].bpp == GSLocalMemory::m_psm[dpsm].bpp;
 	GSVector4i new_rect = {};
 
-	// If they match, we can cheat and just offset the rect by the number of pages.
-	if (m_psm[spsm].bpp == m_psm[dpsm].bpp)
+	if (sbw != bw)
 	{
-		if (sbw != bw)
+		if (sbw == 0)
 		{
-			if (sbw == 0)
+			// BW == 0 loops vertically on the first page. So just copy the whole page vertically.
+			if (in_rect.z > dst_page_size.x)
 			{
-				// BW == 0 loops vertically on the first page. So just copy the whole page vertically.
-				if (src_r.z > dst_page_size.x)
-				{
-					new_rect.x = 0;
-					new_rect.z = (dst_page_size.x);
-				}
-				else
-				{
-					new_rect.x = src_r.x;
-					new_rect.z = src_r.z;
-				}
-				if (src_r.w > dst_page_size.y)
-				{
-					new_rect.y = 0;
-					new_rect.w = dst_page_size.y;
-				}
-				else
-				{
-					new_rect.y = src_r.y;
-					new_rect.w = src_r.w;
-				}
+				new_rect.x = 0;
+				new_rect.z = (dst_page_size.x);
 			}
 			else
 			{
-				u32 start_page = (src_r.y / dst_page_size.y) / bw;
-				u32 num_pages = ((src_r.w - src_r.y) / dst_page_size.y);
-				// Round it up to the next row up, Armored Core 3 does SBW = 1 64x1024 on BW= 10 which is 3.2 pages wide.
-				u32 rows = ((num_pages + (bw - 1)) / bw);
-				if(((horizontal_offset / dst_page_size.x) + num_pages) == bw)
-				{
-					rows += 1;
-				}
+				new_rect.x = in_rect.x;
+				new_rect.z = in_rect.z;
+			}
+			if (in_rect.w > dst_page_size.y)
+			{
+				new_rect.y = 0;
+				new_rect.w = dst_page_size.y;
+			}
+			else
+			{
+				new_rect.y = in_rect.y;
+				new_rect.w = in_rect.w;
+			}
+		}
+		else if(src_bw == rect_pages.width())
+		{
 
-				// This is going to wrap, start offset and be overall messy, so we can't use this texture. (FIFA 2005)
-				// For invalidation, over invalidating isn't *so* bad, plus the game will likely fill in the gaps.
-				if (!is_invalidation && (((horizontal_offset / dst_page_size.x) + (rect_pages.z * rect_pages.w)) % bw) != 0 && bw > sbw && rows > 1)
+			const u32 totalpages = rect_pages.width() * rect_pages.height();
+			const bool full_rows = in_rect.width() == (src_bw * src_page_size.x);
+			const bool single_row = in_rect.x == 0 && in_rect.y == 0 && totalpages <= dst_bw;
+			bool uneven_pages = (horizontal_offset || (totalpages % dst_bw) != 0) && !single_row;
+			
+			// Less than or equal a page and the block layout matches, just copy the rect
+			if (block_layout_match && single_page)
+			{
+				new_rect = in_rect;
+			}
+			else if (uneven_pages)
+			{
+				// Results won't be square, if it's not invalidation, it's a texture, which is problematic to translate, so let's not (FIFA 2005).
+				if (!is_invalidation)
 					return GSVector4i::zero();
 
-				if (rows > 1)
+				//TODO: Maybe control dirty blocks directly and add them page at a time for better granularity.
+				const u32 start_y_page = (rect_pages.y * src_bw) / dst_bw;
+				const u32 end_y_page = (((rect_pages.w + (dst_bw - 1)) * src_bw) + (dst_bw - 1));
+
+				// Not easily translatable full pages and make sure the height is rounded upto encompass the half row.
+				horizontal_offset = 0;
+				new_rect.x = 0;
+				new_rect.z = (dst_bw * dst_page_size.x);
+				new_rect.y = (start_y_page * dst_page_size.y);
+				new_rect.w = (end_y_page * dst_page_size.y) / dst_bw;
+			}
+			else
+			{
+				// Full rows in original rect, so pages are sequential
+				if (single_row || full_rows)
 				{
 					new_rect.x = 0;
-					new_rect.y = start_page + (src_r.y & (dst_page_size.y - 1));
-					new_rect.z = (bw * 64);
-					new_rect.w = (rows * dst_page_size.y) + (src_r.w & (dst_page_size.y - 1));
+					new_rect.z = std::min(totalpages * dst_page_size.x, dst_bw * dst_page_size.x);
+					new_rect.y = 0;
+					new_rect.w = ((totalpages + (dst_bw - 1)) / dst_bw) * dst_page_size.y;
 				}
 				else
 				{
-					new_rect.x = (src_r.x & (dst_page_size.x - 1));
-					new_rect.z = std::max(num_pages * dst_page_size.x, static_cast<u32>(src_r.z));
-					if (src_r.w > dst_page_size.y)
-					{
-						new_rect.y = 0;
-						new_rect.w = dst_page_size.y;
-					}
-					else
-					{
-						new_rect.y = src_r.y;
-						new_rect.w = std::min(dst_page_size.y, src_r.w);
-					}
+					DevCon.Warning("Panic! How did we get here?");
 				}
 			}
 		}
+		else if (single_page)
+		{
+			//The offsets will move this to the right place
+			new_rect = GSVector4i(rect_pages.x * dst_page_size.x, rect_pages.y * dst_page_size.y, rect_pages.z * dst_page_size.x, rect_pages.w * dst_page_size.y);
+		}
 		else
-			new_rect = src_r;
+			return GSVector4i::zero();
 	}
 	else
 	{
-		new_rect = GSVector4i(rect_pages.x * dst_page_size.x, rect_pages.y * dst_page_size.y, rect_pages.z * dst_page_size.x, rect_pages.w * dst_page_size.y);
+		if (block_layout_match)
+			new_rect = in_rect;
+		else
+		{
+			new_rect = GSVector4i(rect_pages.x * dst_page_size.x, rect_pages.y * dst_page_size.y, rect_pages.z * dst_page_size.x, rect_pages.w * dst_page_size.y);
+		}
 	}
+
 	new_rect = (new_rect + GSVector4i(0, vertical_offset).xyxy()).max_i32(GSVector4i(0));
 	new_rect = (new_rect + GSVector4i(horizontal_offset, 0).xyxy()).max_i32(GSVector4i(0));
-
-	if (new_rect.z > (bw * dst_page_size.x))
-	{
-		new_rect.z = (bw * dst_page_size.x);
-		new_rect.w += dst_page_size.y;
-	}
 
 	return new_rect;
 }
