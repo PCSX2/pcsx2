@@ -362,6 +362,15 @@ const char* Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames[] = {
 	"16:9",
 	nullptr};
 
+const char* Pcsx2Config::GSOptions::BlendingLevelNames[] = {
+	"Minimum",
+	"Basic",
+	"Medium",
+	"High",
+	"Full",
+	"Maximum",
+	nullptr};
+
 const char* Pcsx2Config::GSOptions::CaptureContainers[] = {
 	"mp4",
 	"mkv",

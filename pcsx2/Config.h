@@ -614,6 +614,7 @@ struct Pcsx2Config
 	{
 		static const char* AspectRatioNames[];
 		static const char* FMVAspectRatioSwitchNames[];
+		static const char* BlendingLevelNames[];
 		static const char* CaptureContainers[];
 
 		static const char* GetRendererName(GSRendererType type);
