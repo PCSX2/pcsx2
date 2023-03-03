@@ -101,7 +101,7 @@ int GSDumpReplayer::GetLoopCount()
 bool GSDumpReplayer::Initialize(const char* filename)
 {
 	Common::Timer timer;
-	Console.WriteLn("(GSDumpReplayer) Reading file...");
+	Console.WriteLn("(GSDumpReplayer) Reading file '%s'...", filename);
 
 	s_dump_file = GSDumpFile::OpenGSDump(filename);
 	if (!s_dump_file || !s_dump_file->ReadFile())
@@ -122,6 +122,25 @@ bool GSDumpReplayer::Initialize(const char* filename)
 	// loop infinitely by default
 	s_dump_loop_count = -1;
 
+	return true;
+}
+
+bool GSDumpReplayer::ChangeDump(const char* filename)
+{
+	Console.WriteLn("(GSDumpReplayer) Switching to '%s'...", filename);
+
+	std::unique_ptr<GSDumpFile> new_dump(GSDumpFile::OpenGSDump(filename));
+	if (!new_dump || !new_dump->ReadFile())
+	{
+		Host::ReportFormattedErrorAsync("GSDumpReplayer", "Failed to open or read '%s'.", filename);
+		return false;
+	}
+
+	s_dump_file = std::move(new_dump);
+	s_current_packet = 0;
+
+	// Don't forget to reset the GS!
+	GSDumpReplayerCpuReset();
 	return true;
 }
 
@@ -185,6 +204,7 @@ void GSDumpReplayerCpuReset()
 	s_needs_state_loaded = true;
 	s_current_packet = 0;
 	s_dump_frame_number = 0;
+	hwReset();
 }
 
 static void GSDumpReplayerLoadInitialState()

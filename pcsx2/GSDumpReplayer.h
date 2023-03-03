@@ -30,6 +30,7 @@ bool IsRunner();
 void SetIsDumpRunner(bool is_runner);
 
 bool Initialize(const char* filename);
+bool ChangeDump(const char* filename);
 void Reset();
 void Shutdown();
 
