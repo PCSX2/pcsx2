@@ -213,7 +213,7 @@ private:
 	void saveStateToConfig();
 	void restoreStateFromConfig();
 
-	void updateEmulationActions(bool starting, bool running);
+	void updateEmulationActions(bool starting, bool running, bool stopping);
 	void updateDisplayRelatedActions(bool has_surface, bool render_to_main, bool fullscreen);
 	void updateStatusBarWidgetVisibility();
 	void updateWindowTitle();
