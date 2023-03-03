@@ -39,17 +39,6 @@ GSRendererHW::GSRendererHW()
 	ResetStates();
 }
 
-GSVector2i GSRendererHW::GetOutputSize(int real_h)
-{
-	GSVector2i crtc_size(PCRTCDisplays.GetResolution());
-
-	// Include negative display offsets in the height here.
-	crtc_size.y = std::max(crtc_size.y, real_h);
-
-	return GSVector2i(static_cast<float>(crtc_size.x),
-		static_cast<float>(crtc_size.y));
-}
-
 void GSRendererHW::SetTCOffset()
 {
 	m_userhacks_tcoffset_x = std::max<s32>(GSConfig.UserHacks_TCOffsetX, 0) / -1000.0f;
@@ -261,19 +250,19 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 
 GSTexture* GSRendererHW::GetFeedbackOutput()
 {
-	GIFRegTEX0 TEX0 = {};
+	const int index = m_regs->EXTBUF.FBIN & 1;
+	const GSVector2i fb_size(PCRTCDisplays.GetFramebufferSize(index));
 
+	GIFRegTEX0 TEX0 = {};
 	TEX0.TBP0 = m_regs->EXTBUF.EXBP;
 	TEX0.TBW = m_regs->EXTBUF.EXBW;
-	TEX0.PSM = m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPFB.PSM;
+	TEX0.PSM = PCRTCDisplays.PCRTCDisplays[index].PSM;
 
-	const int fb_height = /*GetFrameRect(i).bottom*/ m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPLAY.DH;
-	GSVector2i size = GetOutputSize(fb_height);
-
-	if (m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPFB.DBX)
-		size.x += m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPFB.DBX;
-
-	GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, GetOutputSize(fb_height) * GSConfig.UpscaleMultiplier, size.x, fb_height);
+	const GSVector2i scaled_size(static_cast<int>(static_cast<float>(fb_size.x) * GSConfig.UpscaleMultiplier),
+		static_cast<int>(static_cast<float>(fb_size.y) * GSConfig.UpscaleMultiplier));
+	GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, scaled_size, fb_size.x, fb_size.y);
+	if (!rt)
+		return nullptr;
 
 	GSTexture* t = rt->m_texture;
 
