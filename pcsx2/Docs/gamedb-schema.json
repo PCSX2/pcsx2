@@ -181,6 +181,16 @@
               "minimum": 0,
               "maximum": 1
             },
+            "PCRTCOffsets": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "PCRTCOverscan": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
             "mipmap": {
               "type": "integer",
               "minimum": 0,
@@ -245,6 +255,21 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 2
+            },
+            "minimumBlendingLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "maximumBlendingLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "recommendedBlendingLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
             },
             "getSkipCount": {
               "type": "string"
