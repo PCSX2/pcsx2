@@ -1122,7 +1122,7 @@ bool GSHwHack::OI_ArTonelico2(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GST
 
 bool GSHwHack::OI_JakGames(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
-	if (!(r.m_r == GSVector4i(0, 0, 16, 16)).alltrue())
+	if (RCONTEXT->FRAME.FBW != 1 || !(r.m_r == GSVector4i(0, 0, 16, 16)).alltrue())
 		return true; // Only 16x16 draws.
 
 	if (!r.CanUseSwSpriteRender())
