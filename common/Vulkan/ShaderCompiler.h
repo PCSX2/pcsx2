@@ -38,16 +38,16 @@ namespace Vulkan::ShaderCompiler
 	using SPIRVCodeVector = std::vector<SPIRVCodeType>;
 
 	// Compile a vertex shader to SPIR-V.
-	std::optional<SPIRVCodeVector> CompileVertexShader(std::string_view source_code);
+	std::optional<SPIRVCodeVector> CompileVertexShader(std::string_view source_code, bool debug);
 
 	// Compile a geometry shader to SPIR-V.
-	std::optional<SPIRVCodeVector> CompileGeometryShader(std::string_view source_code);
+	std::optional<SPIRVCodeVector> CompileGeometryShader(std::string_view source_code, bool debug);
 
 	// Compile a fragment shader to SPIR-V.
-	std::optional<SPIRVCodeVector> CompileFragmentShader(std::string_view source_code);
+	std::optional<SPIRVCodeVector> CompileFragmentShader(std::string_view source_code, bool debug);
 
 	// Compile a compute shader to SPIR-V.
-	std::optional<SPIRVCodeVector> CompileComputeShader(std::string_view source_code);
+	std::optional<SPIRVCodeVector> CompileComputeShader(std::string_view source_code, bool debug);
 
 	std::optional<SPIRVCodeVector> CompileShader(Type type, std::string_view source_code, bool debug);
 } // namespace Vulkan::ShaderCompiler

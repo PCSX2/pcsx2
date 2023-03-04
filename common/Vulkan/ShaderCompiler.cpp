@@ -37,7 +37,7 @@ namespace Vulkan::ShaderCompiler
 	static bool glslang_initialized = false;
 
 	static std::optional<SPIRVCodeVector> CompileShaderToSPV(
-		EShLanguage stage, const char* stage_filename, std::string_view source)
+		EShLanguage stage, const char* stage_filename, std::string_view source, bool debug)
 	{
 		if (!InitializeGlslang())
 			return std::nullopt;
@@ -45,9 +45,9 @@ namespace Vulkan::ShaderCompiler
 		std::unique_ptr<glslang::TShader> shader = std::make_unique<glslang::TShader>(stage);
 		std::unique_ptr<glslang::TProgram> program;
 		glslang::TShader::ForbidIncluder includer;
-		EProfile profile = ECoreProfile;
-		EShMessages messages = static_cast<EShMessages>(EShMsgDefault | EShMsgSpvRules | EShMsgVulkanRules);
-		int default_version = 450;
+		const EProfile profile = ECoreProfile;
+		const EShMessages messages = static_cast<EShMessages>(EShMsgDefault | EShMsgSpvRules | EShMsgVulkanRules | (debug ? EShMsgDebugInfo : 0));
+		const int default_version = 450;
 
 		std::string full_source_code;
 		const char* pass_source_code = source.data();
@@ -104,7 +104,9 @@ namespace Vulkan::ShaderCompiler
 
 		SPIRVCodeVector out_code;
 		spv::SpvBuildLogger logger;
-		glslang::GlslangToSpv(*intermediate, out_code, &logger);
+		glslang::SpvOptions options;
+		options.generateDebugInfo = debug;
+		glslang::GlslangToSpv(*intermediate, out_code, &logger, &options);
 
 		// Write out messages
 		if (std::strlen(shader->getInfoLog()) > 0)
@@ -147,24 +149,24 @@ namespace Vulkan::ShaderCompiler
 		glslang_initialized = false;
 	}
 
-	std::optional<SPIRVCodeVector> CompileVertexShader(std::string_view source_code)
+	std::optional<SPIRVCodeVector> CompileVertexShader(std::string_view source_code, bool debug)
 	{
-		return CompileShaderToSPV(EShLangVertex, "vs", source_code);
+		return CompileShaderToSPV(EShLangVertex, "vs", source_code, debug);
 	}
 
-	std::optional<SPIRVCodeVector> CompileGeometryShader(std::string_view source_code)
+	std::optional<SPIRVCodeVector> CompileGeometryShader(std::string_view source_code, bool debug)
 	{
-		return CompileShaderToSPV(EShLangGeometry, "gs", source_code);
+		return CompileShaderToSPV(EShLangGeometry, "gs", source_code, debug);
 	}
 
-	std::optional<SPIRVCodeVector> CompileFragmentShader(std::string_view source_code)
+	std::optional<SPIRVCodeVector> CompileFragmentShader(std::string_view source_code, bool debug)
 	{
-		return CompileShaderToSPV(EShLangFragment, "ps", source_code);
+		return CompileShaderToSPV(EShLangFragment, "ps", source_code, debug);
 	}
 
-	std::optional<SPIRVCodeVector> CompileComputeShader(std::string_view source_code)
+	std::optional<SPIRVCodeVector> CompileComputeShader(std::string_view source_code, bool debug)
 	{
-		return CompileShaderToSPV(EShLangCompute, "cs", source_code);
+		return CompileShaderToSPV(EShLangCompute, "cs", source_code, debug);
 	}
 
 	std::optional<ShaderCompiler::SPIRVCodeVector> CompileShader(Type type, std::string_view source_code, bool debug)
@@ -172,16 +174,16 @@ namespace Vulkan::ShaderCompiler
 		switch (type)
 		{
 			case Type::Vertex:
-				return CompileShaderToSPV(EShLangVertex, "vs", source_code);
+				return CompileShaderToSPV(EShLangVertex, "vs", source_code, debug);
 
 			case Type::Geometry:
-				return CompileShaderToSPV(EShLangGeometry, "gs", source_code);
+				return CompileShaderToSPV(EShLangGeometry, "gs", source_code, debug);
 
 			case Type::Fragment:
-				return CompileShaderToSPV(EShLangFragment, "ps", source_code);
+				return CompileShaderToSPV(EShLangFragment, "ps", source_code, debug);
 
 			case Type::Compute:
-				return CompileShaderToSPV(EShLangCompute, "cs", source_code);
+				return CompileShaderToSPV(EShLangCompute, "cs", source_code, debug);
 
 			default:
 				return std::nullopt;

@@ -1748,7 +1748,7 @@ void main()
 	{
 		if (!m_spinning_supported)
 			return true;
-		auto spirv = ShaderCompiler::CompileComputeShader(SPIN_SHADER);
+		auto spirv = ShaderCompiler::CompileComputeShader(SPIN_SHADER, false);
 		if (!spirv.has_value())
 			return false;
 
