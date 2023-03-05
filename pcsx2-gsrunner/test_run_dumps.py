@@ -16,7 +16,7 @@ def is_gs_path(path):
     return False
 
 
-def run_regression_test(runner, dumpdir, renderer, parallel, renderhacks, gspath):
+def run_regression_test(runner, dumpdir, renderer, upscale, renderhacks, parallel, gspath):
     args = [runner]
     gsname = Path(gspath).name
     while gsname.rfind('.') >= 0:
@@ -28,6 +28,9 @@ def run_regression_test(runner, dumpdir, renderer, parallel, renderhacks, gspath
 
     if renderer is not None:
         args.extend(["-renderer", renderer])
+
+    if upscale != 1.0:
+        args.extend(["-upscale", str(upscale)])
         
     if renderhacks is not None:
         args.extend(["-renderhacks", renderhacks])
@@ -50,7 +53,7 @@ def run_regression_test(runner, dumpdir, renderer, parallel, renderhacks, gspath
     subprocess.run(args)
 
 
-def run_regression_tests(runner, gsdir, dumpdir, renderer, renderhacks, parallel=1):
+def run_regression_tests(runner, gsdir, dumpdir, renderer, upscale, renderhacks, parallel=1):
     paths = glob.glob(gsdir + "/*.*", recursive=True)
     gamepaths = list(filter(is_gs_path, paths))
 
@@ -61,10 +64,10 @@ def run_regression_tests(runner, gsdir, dumpdir, renderer, renderhacks, parallel
 
     if parallel <= 1:
         for game in gamepaths:
-            run_regression_test(runner, dumpdir, renderer, parallel, renderhacks, game)
+            run_regression_test(runner, dumpdir, renderer, upscale, renderhacks, parallel, game)
     else:
         print("Processing %u games on %u processors" % (len(gamepaths), parallel))
-        func = partial(run_regression_test, runner, dumpdir, renderer, parallel, renderhacks)
+        func = partial(run_regression_test, runner, dumpdir, renderer, upscale, renderhacks, parallel)
         pool = multiprocessing.Pool(parallel)
         pool.map(func, gamepaths)
         pool.close()
@@ -79,12 +82,13 @@ if __name__ == "__main__":
     parser.add_argument("-gsdir", action="store", required=True, help="Directory containing GS dumps")
     parser.add_argument("-dumpdir", action="store", required=True, help="Base directory to dump frames to")
     parser.add_argument("-renderer", action="store", required=False, help="Renderer to use")
+    parser.add_argument("-upscale", action="store", type=float, default=1, help="Upscaling multiplier to use")
+    parser.add_argument("-renderhacks", action="store", required=False, help="Enable HW Rendering hacks")
     parser.add_argument("-parallel", action="store", type=int, default=1, help="Number of proceeses to run")
-    parser.add_argument("-renderhacks", action="store", required=False, help="Enable HW Renering hacks")
 
     args = parser.parse_args()
 
-    if not run_regression_tests(args.runner, os.path.realpath(args.gsdir), os.path.realpath(args.dumpdir), args.renderer, args.renderhacks, args.parallel):
+    if not run_regression_tests(args.runner, os.path.realpath(args.gsdir), os.path.realpath(args.dumpdir), args.renderer, args.upscale, args.renderhacks, args.parallel):
         sys.exit(1)
     else:
         sys.exit(0)

@@ -556,6 +556,19 @@ static bool ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& param
 
 				continue;
 			}
+			else if (CHECK_ARG_PARAM("-upscale"))
+			{
+				const float upscale = StringUtil::FromChars<float>(argv[++i]).value_or(0.0f);
+				if (upscale < 0.5f)
+				{
+					Console.WriteLn("Invalid upscale multiplier");
+					return false;
+				}
+
+				Console.WriteLn(fmt::format("Setting upscale multiplier to {}", upscale));
+				s_settings_interface.SetFloatValue("EmuCore/GS", "upscale_multiplier", upscale);
+				continue;
+			}
 			else if (CHECK_ARG_PARAM("-logfile"))
 			{
 				const char* logfile = argv[++i];
