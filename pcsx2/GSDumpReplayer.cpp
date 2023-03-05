@@ -213,6 +213,9 @@ static void GSDumpReplayerLoadInitialState()
 	std::memcpy(PS2MEM_GS, s_dump_file->GetRegsData().data(),
 		std::min(Ps2MemSize::GSregs, static_cast<u32>(s_dump_file->GetRegsData().size())));
 
+	// update serial to load hw fixes
+	VMManager::Internal::GameStartingOnCPUThread();
+
 	// load GS state
 	freezeData fd = {static_cast<int>(s_dump_file->GetStateData().size()),
 		const_cast<u8*>(s_dump_file->GetStateData().data())};
