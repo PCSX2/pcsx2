@@ -682,9 +682,11 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 				dst = t;
 
 				dst->m_32_bits_fmt |= (psm_s.bpp != 16);
-				// Nicktoons Unite tries to change the width from 10 to 8 and breaks FMVs.
+				// Nicktoons Unite tries to change the width from 640 to 512 and breaks FMVs.
 				// Haunting ground has some messed textures if you don't modify the rest.
-				if (!dst->m_is_frame)
+				// Champions of Norrath expands the width from 512 to 1024, picture cut in half if you don't.
+				// The safest option is to probably let it expand but not retract.
+				if (!dst->m_is_frame || dst->m_TEX0.TBW < TEX0.TBW)
 				{
 					dst->m_TEX0 = TEX0;
 				}
