@@ -294,7 +294,8 @@ bool VulkanHostDisplay::CreateDevice(const WindowInfo& wi, VsyncMode vsync)
 
 bool VulkanHostDisplay::SetupDevice()
 {
-	Vulkan::ShaderCache::Create(EmuFolders::Cache, SHADER_CACHE_VERSION, EmuConfig.GS.UseDebugDevice);
+	Vulkan::ShaderCache::Create(EmuConfig.GS.DisableShaderCache ? std::string_view() : std::string_view(EmuFolders::Cache),
+		SHADER_CACHE_VERSION, EmuConfig.GS.UseDebugDevice);
 	return true;
 }
 
