@@ -657,12 +657,6 @@ void GSDevice12::DoStretchRect(GSTexture12* sTex, const GSVector4& sRect, GSText
 		BeginRenderPassForStretchRect(dTex, dtex_rc, dst_rc);
 
 	DrawStretchRect(sRect, dRect, size);
-
-	if (!drawing_to_current_rt)
-	{
-		EndRenderPass();
-		static_cast<GSTexture12*>(dTex)->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-	}
 }
 
 void GSDevice12::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect, const GSVector2i& ds)
@@ -772,6 +766,7 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
 			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, c);
+		dTex->SetState(GSTexture::State::Dirty);
 	}
 	else if (!InRenderPass())
 	{
@@ -828,15 +823,13 @@ void GSDevice12::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool 
 	OMSetRenderTargets(dTex, nullptr, rc);
 	SetUtilityRootSignature();
 	SetUtilityTexture(sTex, linear ? m_linear_sampler_cpu : m_point_sampler_cpu);
-	BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
-		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS);
+	BeginRenderPassForStretchRect(static_cast<GSTexture12*>(dTex), rc, rc, false);
 	SetPipeline(m_interlace[shader].get());
 	SetUtilityPushConstants(&cb, sizeof(cb));
 	DrawStretchRect(sRect, dRect, dTex->GetSize());
 	EndRenderPass();
 
 	// this texture is going to get used as an input, so make sure we don't read undefined data
-	static_cast<GSTexture12*>(dTex)->CommitClear();
 	static_cast<GSTexture12*>(dTex)->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }
 
@@ -850,6 +843,7 @@ void GSDevice12::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float para
 	SetUtilityTexture(sTex, m_point_sampler_cpu);
 	BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS);
+	dTex->SetState(GSTexture::State::Dirty);
 	SetPipeline(m_shadeboost_pipeline.get());
 	SetUtilityPushConstants(params, sizeof(float) * 4);
 	DrawStretchRect(sRect, GSVector4(dRect), dTex->GetSize());
@@ -868,6 +862,7 @@ void GSDevice12::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	SetUtilityTexture(sTex, m_linear_sampler_cpu);
 	BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS);
+	dTex->SetState(GSTexture::State::Dirty);
 	SetPipeline(m_fxaa_pipeline.get());
 	DrawStretchRect(sRect, GSVector4(dRect), dTex->GetSize());
 	EndRenderPass();
