@@ -927,8 +927,13 @@ struct PSMain
 			else if (PS_CLR_HW == 3)
 			{
 				// Needed for Cs*Ad, Cs*Ad + Cd, Cd - Cs*Ad
-				// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value
-				Color.rgb *= (255.f / 128.f);
+				// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value when rgb are below 128.
+				// When any color channel is higher than 128 then adjust the compensation automatically
+				// to give us more accurate colors, otherwise they will be wrong.
+				// The higher the value (>128) the lower the compensation will be.
+				float max_color = max(max(Color.r, Color.g), Color.b);
+				float color_compensate = 255.f / max(128.f, max_color);
+				Color.rgb *= float3(color_compensate);
 			}
 		}
 	}
