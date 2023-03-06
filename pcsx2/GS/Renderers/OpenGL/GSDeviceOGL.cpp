@@ -1330,7 +1330,7 @@ void GSDeviceOGL::DrawMultiStretchRects(
 
 	for (u32 i = 1; i < num_rects; i++)
 	{
-		if (rects[i].src == last_tex && rects[i].linear == last_linear || rects[i].wmask.wrgba != last_wmask)
+		if (rects[i].src == last_tex && rects[i].linear == last_linear && rects[i].wmask.wrgba == last_wmask)
 		{
 			count++;
 			continue;
