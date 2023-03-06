@@ -34,6 +34,7 @@
 #include "CDVD/CDVD.h"
 #include "Patch.h"
 #include "GameDatabase.h"
+#include "GSDumpReplayer.h"
 
 #include "DebugTools/Breakpoints.h"
 #include "DebugTools/MIPSAnalyst.h"
@@ -78,7 +79,8 @@ void cpuReset()
 	if (GetMTGS().IsOpen())
 		GetMTGS().WaitGS();		// GS better be done processing before we reset the EE, just in case.
 
-	GetVmMemory().Reset();
+	if (!GSDumpReplayer::IsReplayingDump())
+		GetVmMemory().Reset();
 
 	memzero(cpuRegs);
 	memzero(fpuRegs);

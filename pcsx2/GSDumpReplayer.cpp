@@ -144,11 +144,6 @@ bool GSDumpReplayer::ChangeDump(const char* filename)
 	return true;
 }
 
-void GSDumpReplayer::Reset()
-{
-	GSDumpReplayerCpuReset();
-}
-
 void GSDumpReplayer::Shutdown()
 {
 	Console.WriteLn("(GSDumpReplayer) Shutting down.");
@@ -204,7 +199,6 @@ void GSDumpReplayerCpuReset()
 	s_needs_state_loaded = true;
 	s_current_packet = 0;
 	s_dump_frame_number = 0;
-	hwReset();
 }
 
 static void GSDumpReplayerLoadInitialState()
