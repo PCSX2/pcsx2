@@ -743,7 +743,7 @@ void ps_dither(inout float3 C, float2 pos_xy)
 			fpos = int2(pos_xy / (float)PS_SCALE_FACTOR);
 
 		float value = DitherMatrix[fpos.x & 3][fpos.y & 3];
-		if (PS_ROUND_INV != 0)
+		if (PS_ROUND_INV)
 			C -= value;
 		else
 			C += value;
@@ -756,7 +756,7 @@ void ps_color_clamp_wrap(inout float3 C)
 	// so we need to limit the color depth on dithered items
 	if (SW_BLEND || PS_DITHER || PS_FBMASK)
 	{
-		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV != 0)
+		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
 			C += 7.0f; // Need to round up, not down since the shader will invert
 
 		// Standard Clamp

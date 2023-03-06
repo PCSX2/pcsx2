@@ -669,8 +669,8 @@ void ps_color_clamp_wrap(inout vec3 C)
     // so we need to limit the color depth on dithered items
 #if SW_BLEND || PS_DITHER || PS_FBMASK
 
-#if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0
-    C += 7.f; // Need to round up, not down since the shader will invert
+#if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV
+    C += 7.0f; // Need to round up, not down since the shader will invert
 #endif
 
     // Correct the Color value based on the output format
