@@ -1074,6 +1074,9 @@ SCAJ-20128:
 SCAJ-20129:
   name: "Ponkotsu Roman Daikatsugeki Bumpy Trot"
   region: "NTSC-Unk"
+  gsHWFixes:
+    getSkipCount: "GSC_SteambotChronicles" # Causes green (incorrect) water but removes depth and blur issues.
+    roundSprite: 1 # Fixes colored 3D anaglyph bleeding effects.
 SCAJ-20130:
   name: "Namco x Capcom"
   region: "NTSC-Unk"
@@ -5152,6 +5155,9 @@ SCKA-20057:
 SCKA-20058:
   name: "Bumpy Trot"
   region: "NTSC-K"
+  gsHWFixes:
+    getSkipCount: "GSC_SteambotChronicles" # Causes green (incorrect) water but removes depth and blur issues.
+    roundSprite: 1 # Fixes colored 3D anaglyph bleeding effects.
 SCKA-20059:
   name: "Soul Calibur III"
   region: "NTSC-K"
@@ -11577,7 +11583,8 @@ SLES-50876:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
-    halfPixelOffset: 2 # Fixes misaligned lighting.
+    roundSprite: 2 # Fixes misaligned lighting.
+    mergeSprite: 1 # Fixes misaligned lighting.
     cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
@@ -13022,14 +13029,14 @@ SLES-51525:
   name: "Fallout - Brotherhood of Steel"
   region: "PAL-M3"
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
-    disablePartialInvalidation: 1 # Fixes perfomrance issues.
+    estimateTextureRegion: 1 # Improves performance and reduces hash cache size when moving.
+    roundSprite: 1 # Fixes HUD garbage.
 SLES-51526:
   name: "Fallout - Brotherhood of Steel"
   region: "PAL-M3"
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
-    disablePartialInvalidation: 1 # Fixes performace issues.
+    estimateTextureRegion: 1 # Improves performance and reduces hash cache size when moving.
+    roundSprite: 1 # Fixes HUD garbage.
 SLES-51541:
   name: "Grand Theft Auto - San Andreas"
   region: "PAL-Unk"
@@ -14323,7 +14330,8 @@ SLES-52153:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
-    halfPixelOffset: 2 # Fixes misaligned lighting.
+    roundSprite: 2 # Fixes misaligned lighting.
+    mergeSprite: 1 # Fixes misaligned lighting.
     cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
@@ -16026,8 +16034,7 @@ SLES-52894:
   name: "Bard's Tale, The"
   region: "PAL-E"
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
-    disablePartialInvalidation: 1 # Fixes performance issues.
+    estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
 SLES-52895:
   name: "Spongebob SquarePants - The Movie"
   region: "PAL-E"
@@ -16766,8 +16773,7 @@ SLES-53154:
   name: "Bard's Tale, The"
   region: "PAL-M8"
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
-    disablePartialInvalidation: 1 # Fixes performance issues.
+    estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
 SLES-53155:
   name: "Star Wars - Episode III - Revenge of the Sith"
   region: "PAL-M3"
@@ -20333,6 +20339,9 @@ SLES-54518:
 SLES-54519:
   name: "Ford Street Racing XR Edition"
   region: "PAL-A"
+SLES-54520:
+  name: "Agent Hugo - RoboRumble"
+  region: "PAL"
 SLES-54521:
   name: "Nickelodeon SpongeBob and Friends - Battle for Volcano Island"
   region: "PAL-M5"
@@ -24044,7 +24053,8 @@ SLKA-25196:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
-    halfPixelOffset: 2 # Fixes misaligned lighting.
+    roundSprite: 2 # Fixes misaligned lighting.
+    mergeSprite: 1 # Fixes misaligned lighting.
     cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
@@ -24227,8 +24237,7 @@ SLKA-25246:
   name: "Bard's Tale, The"
   region: "NTSC-K"
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
-    disablePartialInvalidation: 1 # Fixes performance issues.
+    estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
 SLKA-25249:
   name: "Ys - The Ark of Napishtim [with Guide Book]"
   region: "NTSC-K"
@@ -25413,6 +25422,12 @@ SLPM-60254:
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes some shading/shadows.
     getSkipCount: "GSC_ZettaiZetsumeiToshi2"
+SLPM-60255:
+  name: "Ponkotsu Roman Daikatsugeki Bumpy Trot [Trial]"
+  region: "NTSC-J"
+  gsHWFixes:
+    getSkipCount: "GSC_SteambotChronicles" # Causes green (incorrect) water but removes depth and blur issues.
+    roundSprite: 1 # Fixes colored 3D anaglyph bleeding effects.
 SLPM-60256:
   name: "Dengeki D73 demo"
   region: "NTSC-J"
@@ -25544,7 +25559,8 @@ SLPM-61092:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
-    halfPixelOffset: 2 # Fixes misaligned lighting.
+    roundSprite: 2 # Fixes misaligned lighting.
+    mergeSprite: 1 # Fixes misaligned lighting.
     cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
@@ -30426,7 +30442,8 @@ SLPM-65741:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
-    halfPixelOffset: 2 # Fixes misaligned lighting.
+    roundSprite: 2 # Fixes misaligned lighting.
+    mergeSprite: 1 # Fixes misaligned lighting.
     cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
@@ -31031,8 +31048,8 @@ SLPM-65915:
   name: "Fallout - Brotherhood of Steel"
   region: "NTSC-J"
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
-    disablePartialInvalidation: 1 # Fixes performance issues.
+    estimateTextureRegion: 1 # Improves performance and reduces hash cache size when moving.
+    roundSprite: 1 # Fixes HUD garbage.
 SLPM-65916:
   name: "Harukanaru Jikuu no Kade - Hachiha Katsunori"
   region: "NTSC-J"
@@ -38790,6 +38807,9 @@ SLPS-25456:
 SLPS-25457:
   name: "Ponkotsu Roeman Daikatsugeki Bumpy Trot"
   region: "NTSC-J"
+  gsHWFixes:
+    getSkipCount: "GSC_SteambotChronicles" # Causes green (incorrect) water but removes depth and blur issues.
+    roundSprite: 1 # Fixes colored 3D anaglyph bleeding effects.
 SLPS-25458:
   name: "King of Fighters 2001, The [SNK Best Collection]"
   region: "NTSC-J"
@@ -39645,6 +39665,9 @@ SLPS-25682:
 SLPS-25683:
   name: "Ponkotsu Roman Daikatsugeki Bumpy Trot [Irem Collection]"
   region: "NTSC-J"
+  gsHWFixes:
+    getSkipCount: "GSC_SteambotChronicles" # Causes green (incorrect) water but removes depth and blur issues.
+    roundSprite: 1 # Fixes colored 3D anaglyph bleeding effects.
 SLPS-25684:
   name: "Mermaid Prism [Limited Edition]"
   region: "NTSC-J"
@@ -43505,7 +43528,8 @@ SLUS-20539:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
+    estimateTextureRegion: 1 # Improves performance and reduces hash cache size when moving.
+    roundSprite: 1 # Fixes HUD garbage.
 SLUS-20540:
   name: "Evolution Skateboarding"
   region: "NTSC-U"
@@ -43763,7 +43787,8 @@ SLUS-20587:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
-    halfPixelOffset: 2 # Fixes misaligned lighting.
+    roundSprite: 2 # Fixes misaligned lighting.
+    mergeSprite: 1 # Fixes misaligned lighting.
     cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
@@ -44799,7 +44824,7 @@ SLUS-20803:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
+    estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
 SLUS-20804:
   name: "Forgotten Realms - Demon Stone"
   region: "NTSC-U"
