@@ -3690,8 +3690,8 @@ void GSTextureCache::Target::Update(bool reset_age)
 	{
 		// No need to sort here, it's all the one texture.
 		const ShaderConvert shader = (m_type == RenderTarget) ? ShaderConvert::COPY :
-																(upscaled ? ShaderConvert::RGBA8_TO_FLOAT32 :
-																			ShaderConvert::RGBA8_TO_FLOAT32_BILN);
+																(upscaled ? ShaderConvert::RGBA8_TO_FLOAT32_BILN :
+																			ShaderConvert::RGBA8_TO_FLOAT32);
 		g_gs_device->DrawMultiStretchRects(drects, ndrects, m_texture, shader);
 	}
 
