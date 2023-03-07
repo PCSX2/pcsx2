@@ -79,8 +79,7 @@ void cpuReset()
 	if (GetMTGS().IsOpen())
 		GetMTGS().WaitGS();		// GS better be done processing before we reset the EE, just in case.
 
-	if (!GSDumpReplayer::IsReplayingDump())
-		GetVmMemory().Reset();
+	GetVmMemory().Reset();
 
 	memzero(cpuRegs);
 	memzero(fpuRegs);
