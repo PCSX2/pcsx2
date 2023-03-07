@@ -46,11 +46,15 @@ def run_regression_test(runner, dumpdir, renderer, upscale, renderhacks, paralle
     if parallel > 1:
         args.append("-noshadercache")
 
+    # disable output console entirely
+    environ = os.environ.copy()
+    environ["PCSX2_NOCONSOLE"] = "1"
+
     args.append("--")
     args.append(gspath)
 
-    print("Running '%s'" % (" ".join(args)))
-    subprocess.run(args)
+    #print("Running '%s'" % (" ".join(args)))
+    subprocess.run(args, env=environ, stdin=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
 
 
 def run_regression_tests(runner, gsdir, dumpdir, renderer, upscale, renderhacks, parallel=1):
@@ -69,7 +73,10 @@ def run_regression_tests(runner, gsdir, dumpdir, renderer, upscale, renderhacks,
         print("Processing %u games on %u processors" % (len(gamepaths), parallel))
         func = partial(run_regression_test, runner, dumpdir, renderer, upscale, renderhacks, parallel)
         pool = multiprocessing.Pool(parallel)
-        pool.map(func, gamepaths)
+        completed = 0
+        for _ in pool.imap_unordered(func, gamepaths, chunksize=1):
+            completed += 1
+            print("Processed %u of %u GS dumps (%u%%)" % (completed, len(gamepaths), (completed * 100) // len(gamepaths)))
         pool.close()
 
 
