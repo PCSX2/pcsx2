@@ -921,10 +921,12 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	else if (is_hardware && prev_tab == 2)
 		m_ui.tabs->setCurrentIndex(1);
 
+	m_ui.useBlitSwapChain->setEnabled(is_dx11);
+
 	m_ui.overrideTextureBarriers->setDisabled(is_sw_dx);
 	m_ui.overrideGeometryShader->setDisabled(is_sw_dx);
 
-	m_ui.useBlitSwapChain->setEnabled(is_dx11);
+	m_ui.disableFramebufferFetch->setDisabled(is_sw_dx);
 
 	// populate adapters
 	HostDisplay::AdapterAndModeList modes;
