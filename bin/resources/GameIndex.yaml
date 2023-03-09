@@ -1309,6 +1309,8 @@ SCAJ-20168:
 SCAJ-20169:
   name: "Dirge of Cerberus - Final Fantasy VII"
   region: "NTSC-Unk"
+  gsHWFixes:
+    autoFlush: 1 # Fixes lighting.
 SCAJ-20170:
   name: "Tourist Trophy"
   region: "NTSC-Ch"
@@ -19468,6 +19470,8 @@ SLES-54185:
   name: "Dirge of Cerberus - Final Fantasy VII"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes lighting.
 SLES-54186:
   name: "Devil May Cry 3 - Dante's Awakening [Special Edition]"
   region: "PAL-M5"
@@ -32438,6 +32442,8 @@ SLPM-66271:
   name: "Dirge of Cerberus - Final Fantasy VII"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes lighting.
 SLPM-66272:
   name: "I-O"
   region: "NTSC-J"
@@ -33815,6 +33821,8 @@ SLPM-66628:
 SLPM-66629:
   name: "Dirge of Cerberus - Final Fantasy VII International"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes lighting.
 SLPM-66630:
   name: "Melheaven - Arm Fight Dream [Konami the Best]"
   region: "NTSC-J"
@@ -48222,6 +48230,8 @@ SLUS-21419:
   name: "Dirge of Cerberus - Final Fantasy VII"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes lighting.
 SLUS-21420:
   name: "Disney's Chicken Little - Ace in Action"
   region: "NTSC-U"
