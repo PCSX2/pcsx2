@@ -1210,7 +1210,6 @@ SCAJ-20152:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes corruption.
-    texturePreloading: 1 # Performs much better with partial preload.
     getSkipCount: "GSC_UrbanReign"
 SCAJ-20153:
   name: "Code Age Commanders"
@@ -4098,7 +4097,6 @@ SCES-53688:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes corruption.
-    texturePreloading: 1 # Performs much better with partial preload.
     getSkipCount: "GSC_UrbanReign"
 SCES-53795:
   name: "SingStar '80s"
@@ -5226,7 +5224,6 @@ SCKA-20065:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes corruption.
-    texturePreloading: 1 # Performs much better with partial preload.
     getSkipCount: "GSC_UrbanReign"
 SCKA-20066:
   name: "EyeToy - Play 3"
@@ -11020,6 +11017,7 @@ SLES-50672:
   compat: 5
   gsHWFixes:
     estimateTextureRegion: 1 # Improves performance.
+    roundSprite: 1 # Fixes lines in menus.
 SLES-50677:
   name: "Shadow Hearts"
   region: "PAL-E"
@@ -14818,7 +14816,7 @@ SLES-52392:
   name: "Combat Elite - WWII Paratroopers [Preview]"
   region: "PAL-E"
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
+    estimateTextureRegion: 1 # Improves performance.
 SLES-52393:
   name: "Pinball Fun"
   region: "PAL-E"
@@ -16512,6 +16510,7 @@ SLES-53039:
   compat: 5
   gsHWFixes:
     estimateTextureRegion: 1 # Improves performance.
+    roundSprite: 1 # Fixes lines in menus HUD and in game.
   memcardFilters: # Allows import of characters from first game.
     - "SLES-53039"
     - "SLES-52325"
@@ -25479,7 +25478,6 @@ SLPM-60272:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes corruption.
-    texturePreloading: 1 # Performs much better with partial preload.
     getSkipCount: "GSC_UrbanReign"
 SLPM-60273:
   name: "Zettai Zetsumei Toshi 2 - Itetsuita Kioku-tachi [Trial B]"
@@ -37670,11 +37668,18 @@ SLPS-25138:
   name: "Ever 17 - The Out of Infinity"
   region: "NTSC-J"
 SLPS-25139:
-  name: "Baldur's Gate - Dark Alliance"
+  name: "Baldur's Gate - Dark Alliance [Limited Edition]"
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
     estimateTextureRegion: 1 # Improves performance.
+    roundSprite: 1 # Fixes lines in menus.
+SLPS-25140:
+  name: "Baldur's Gate - Dark Alliance"
+  region: "NTSC-J"
+  gsHWFixes:
+    estimateTextureRegion: 1 # Improves performance.
+    roundSprite: 1 # Fixes lines in menus.
 SLPS-25141:
   name: "Pac-Man World 2"
   region: "NTSC-J"
@@ -39157,7 +39162,6 @@ SLPS-25557:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes corruption.
-    texturePreloading: 1 # Performs much better with partial preload.
     getSkipCount: "GSC_UrbanReign"
 SLPS-25558:
   name: "NeoGeo Battle Coliseum"
@@ -41338,6 +41342,7 @@ SLUS-20035:
     - SoftwareRendererFMVHack # Fixes FMVs.
   gsHWFixes:
     estimateTextureRegion: 1 # Improves performance.
+    roundSprite: 1 # Fixes lines in menus.
 SLUS-20037:
   name: "Run Like Hell - Hunt or Be Hunted"
   region: "NTSC-U"
@@ -44391,8 +44396,7 @@ SLUS-20715:
   name: "Combat Elite - WWII Paratroopers"
   region: "NTSC-U"
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
-    disablePartialInvalidation: 1 # Fixes performance issues.
+    estimateTextureRegion: 1 # Improves performance.
 SLUS-20716:
   name: "Teenage Mutant Ninja Turtles"
   region: "NTSC-U"
@@ -45698,6 +45702,7 @@ SLUS-20973:
   compat: 5
   gsHWFixes:
     estimateTextureRegion: 1 # Improves performance.
+    roundSprite: 1 # Fixes lines in menus HUD and in game.
   memcardFilters:
     - "SLUS-20973"
     - "SLUS-20565"
@@ -46927,7 +46932,6 @@ SLUS-21209:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes corruption.
-    texturePreloading: 1 # Performs much better with partial preload.
     getSkipCount: "GSC_UrbanReign"
 SLUS-21212:
   name: "Spartan - Total Warrior"
@@ -50783,8 +50787,7 @@ SLUS-28054:
   name: "Combat Elite - WWII Paratroopers [Trade Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
-    disablePartialInvalidation: 1 # Fixes performance issues.
+    estimateTextureRegion: 1 # Improves performance.
 SLUS-28056:
   name: "State of Emergency 2 [Trade Demo]"
   region: "NTSC-U"
@@ -51206,6 +51209,7 @@ SLUS-29126:
   compat: 4
   gsHWFixes:
     estimateTextureRegion: 1 # Improves performance.
+    roundSprite: 1 # Fixes lines in menus HUD and in game.
 SLUS-29127:
   name: "FIFA Soccer 2005 [Demo]"
   region: "NTSC-U"
