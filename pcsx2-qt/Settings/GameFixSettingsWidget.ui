@@ -111,7 +111,7 @@
           <item>
            <widget class="QCheckBox" name="OPHFlagHack">
             <property name="text">
-             <string extracomment="OPH: Name of a flag (Output Path active Hack) in the GIF_STAT register in the EE. Leave as-is.\nBleach Blade Battles: a game's name. Leave as-is or use an official translation.">OPH Flag Hack (For Bleach Blade Battlers)</string>
+             <string extracomment="OPH: Name of a flag (Output PatH) in the GIF_STAT register in the EE. Leave as-is.\nBleach Blade Battles: a game's name. Leave as-is or use an official translation.">OPH Flag Hack (For Bleach Blade Battlers)</string>
             </property>
            </widget>
           </item>
@@ -174,7 +174,7 @@
           <item>
            <widget class="QCheckBox" name="VUSyncHack">
             <property name="text">
-             <string extracomment="VU = Vector Unit. Leave as-is.\nRun Behind: watch out for misleading capitalization for non-English: this refers to making the VUs run behind (delayed relative to) the EE.\nM-Bit: a type of bits. TO BE REWRITTEN.">VU Sync (Run Behind, M-Bit games)</string>
+             <string extracomment="VU = Vector Unit. Leave as-is.\nRun Behind: watch out for misleading capitalization for non-English: this refers to making the VUs run behind (delayed relative to) the EE.\nM-Bit: a bitflag in VU instructions that tells VU0 to synchronize with the EE. M-Bit Game: A game that uses instructions with the M-Bit enabled (unofficial PCSX2 name).">VU Sync (Run Behind, M-Bit games)</string>
             </property>
            </widget>
           </item>
@@ -188,7 +188,7 @@
           <item>
            <widget class="QCheckBox" name="BlitInternalFPSHack">
             <property name="text">
-             <string extracomment="Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit">Force Blit Internal FPS Detection (When auto-detection fails)</string>
+             <string extracomment="Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit  This option tells PCSX2 to estimate internal FPS by detecting blits (image copies) onto visible display memory.">Force Blit Internal FPS Detection (When auto-detection fails)</string>
             </property>
            </widget>
           </item>

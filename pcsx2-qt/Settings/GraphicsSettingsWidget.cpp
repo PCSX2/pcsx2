@@ -810,6 +810,7 @@ void GraphicsSettingsWidget::onCaptureContainerChanged()
 
 	m_ui.videoCaptureCodec->disconnect();
 	m_ui.videoCaptureCodec->clear();
+	//: This string possibly refers to default audio/video codecs.
 	m_ui.videoCaptureCodec->addItem(tr("Default"), QString());
 	for (const auto& [format, name] : GSCapture::GetVideoCodecList(container.c_str()))
 	{

@@ -651,7 +651,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>System &amp;Display</string>
+    <string extracomment="This grayed-out at first option will become available while there is a game emulated and the game list is displayed over the actual emulation, to let users display the system emulation once more.">System &amp;Display</string>
    </property>
   </action>
   <action name="actionViewGameProperties">

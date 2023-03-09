@@ -955,7 +955,7 @@
        <item row="3" column="0">
         <widget class="QLabel" name="label_47">
          <property name="text">
-          <string>GPU Target CLUT:</string>
+          <string extracomment="EXPLANATION TBW.">GPU Target CLUT:</string>
          </property>
         </widget>
        </item>

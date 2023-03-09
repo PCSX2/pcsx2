@@ -68,7 +68,7 @@
           <item row="0" column="1">
            <widget class="QCheckBox" name="ethInterceptDHCP">
             <property name="text">
-             <string>Enabled</string>
+             <string comment="InterceptDHCP">Enabled</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -261,7 +261,7 @@
       <item row="0" column="0" colspan="3">
        <widget class="QCheckBox" name="ethEnabled">
         <property name="text">
-         <string>Enabled</string>
+         <string comment="InternalDNSTable">Enabled</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -344,7 +344,7 @@
       <item row="0" column="0">
        <widget class="QCheckBox" name="hddEnabled">
         <property name="text">
-         <string>Enabled</string>
+         <string comment="HDD">Enabled</string>
         </property>
         <property name="checked">
          <bool>true</bool>
