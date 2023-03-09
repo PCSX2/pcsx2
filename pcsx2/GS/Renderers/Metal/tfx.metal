@@ -891,7 +891,7 @@ struct PSMain
 				float3 alpha_compensate = max(float3(1.f), Color.rgb / float3(255.f));
 				As_rgba.rgb -= alpha_compensate;
 			}
-			else if (PS_CLR_HW == 2)
+			else if (PS_CLR_HW == 2 || PS_CLR_HW == 4)
 			{
 				// Compensate slightly for Cd*(As + 1) - Cs*As.
 				// The initial factor we chose is 1 (0.00392)
@@ -901,7 +901,7 @@ struct PSMain
 				float color_compensate = 1.f * (C + 1.f);
 				Color.rgb -= float3(color_compensate);
 			}
-			else if (PS_CLR_HW == 3)
+			else if (PS_CLR_HW == 3 || PS_CLR_HW == 5)
 			{
 				// As, Ad or Af clamped.
 				As_rgba.rgb = float3(C_clamped);
