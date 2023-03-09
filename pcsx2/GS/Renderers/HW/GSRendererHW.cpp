@@ -3198,33 +3198,21 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 		if (blend_flag & BLEND_C_CLR1)
 		{
 			if (blend_ad_alpha_masked)
-			{
-				m_conf.ps.blend_c = 1;
 				m_conf.ps.clr_hw = 5;
-				m_conf.require_one_barrier |= true;
-			}
 			else
-			{
 				m_conf.ps.clr_hw = 1;
-			}
 		}
-		else if (blend_flag & (BLEND_C_CLR2_AF | BLEND_C_CLR2_AS))
+		else if (blend_flag & (BLEND_C_CLR2_AS | BLEND_C_CLR2_AF))
 		{
 			if (blend_ad_alpha_masked)
 			{
-				m_conf.ps.blend_c = 1;
 				m_conf.ps.clr_hw = 4;
-				m_conf.require_one_barrier |= true;
 			}
-			else if (m_conf.ps.blend_c == 2)
+			else
 			{
-				m_conf.ps.blend_c = 2;
-				m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(AFIX) / 128.0f;
-				m_conf.ps.clr_hw = 2;
-			}
-			else // m_conf.ps.blend_c == 0
-			{
-				m_conf.ps.blend_c = 0;
+				if (m_conf.ps.blend_c == 2)
+					m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(AFIX) / 128.0f;
+
 				m_conf.ps.clr_hw = 2;
 			}
 		}
@@ -3234,10 +3222,11 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 		}
 		else if (blend_ad_alpha_masked)
 		{
-			m_conf.ps.blend_c = 1;
 			m_conf.ps.clr_hw = 6;
-			m_conf.require_one_barrier |= true;
 		}
+
+		m_conf.require_one_barrier |= blend_ad_alpha_masked;
+
 		const HWBlend blend(GSDevice::GetBlend(blend_index, replace_dual_src));
 		m_conf.blend = {true, blend.src, blend.dst, blend.op, m_conf.ps.blend_c == 2, AFIX};
 
