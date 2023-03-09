@@ -79,6 +79,7 @@
     <addaction name="menuLoadState"/>
     <addaction name="menuSaveState"/>
     <addaction name="separator"/>
+    <addaction name="actionSettings"/> <!-- Please consult with macOS users before removing -->
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
