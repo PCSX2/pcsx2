@@ -1105,7 +1105,7 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 			// changed alpha should only be done for hw blend.
 			vec3 alpha_compensate = max(vec3(1.0f), Color.rgb / vec3(255.0f));
 			As_rgba.rgb -= alpha_compensate;
-		#elif PS_CLR_HW == 2
+		#elif PS_CLR_HW == 2 || PS_CLR_HW == 4
 			// Compensate slightly for Cd*(As + 1) - Cs*As.
 			// The initial factor we chose is 1 (0.00392)
 			// as that is the minimum color Cd can be,
@@ -1113,7 +1113,7 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 			// blended value it can be.
 			float color_compensate = 1.0f * (C + 1.0f);
 			Color.rgb -= vec3(color_compensate);
-		#elif PS_CLR_HW == 3
+		#elif PS_CLR_HW == 3 || PS_CLR_HW == 5
 			// As, Ad or Af clamped.
 			As_rgba.rgb = vec3(C_clamped);
 			// Cs*(Alpha + 1) might overflow, if it does then adjust alpha value

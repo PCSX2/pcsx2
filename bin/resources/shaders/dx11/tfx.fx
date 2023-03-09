@@ -831,7 +831,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			float3 alpha_compensate = max((float3)1.0f, Color.rgb / (float3)255.0f);
 			As_rgba.rgb -= alpha_compensate;
 		}
-		else if (PS_CLR_HW == 2)
+		else if (PS_CLR_HW == 2 || PS_CLR_HW == 4)
 		{
 			// Compensate slightly for Cd*(As + 1) - Cs*As.
 			// The initial factor we chose is 1 (0.00392)
@@ -841,7 +841,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			float color_compensate = 1.0f * (C + 1.0f);
 			Color.rgb -= (float3)color_compensate;
 		}
-		else if (PS_CLR_HW == 3)
+		else if (PS_CLR_HW == 3 || PS_CLR_HW == 5)
 		{
 			// As, Ad or Af clamped.
 			As_rgba.rgb = (float3)C_clamped;

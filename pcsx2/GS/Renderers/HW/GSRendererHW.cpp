@@ -3134,7 +3134,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 				{
 					// Compensate slightly for Cd*(As + 1) - Cs*As.
 					// Try to compensate a bit with subtracting 1 (0.00392) * (Alpha + 1) from Cs.
-					m_conf.ps.clr_hw = 2;
+					m_conf.ps.clr_hw = blend_ad_alpha_masked ? 4 : 2;
 				}
 
 				m_conf.ps.blend_a = 0;
@@ -3146,7 +3146,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 				// Allow to compensate when Cs*(Alpha + 1) overflows, to compensate we change
 				// the alpha output value for Cd*Alpha.
 				m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::SRC1_COLOR, blend.op, false, 0};
-				m_conf.ps.clr_hw = 3;
+				m_conf.ps.clr_hw = blend_ad_alpha_masked ? 5 : 3;
 				m_conf.ps.no_color1 = false;
 
 				m_conf.ps.blend_a = 0;
@@ -3165,7 +3165,9 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 			{
 				m_conf.require_one_barrier |= true;
 				// Swap Ad with As for hw blend
-				m_conf.ps.clr_hw = 6;
+				// Check if blend mix 1 or 2 already enabled clr
+				if (m_conf.ps.clr_hw == 0)
+					m_conf.ps.clr_hw = 6;
 			}
 		}
 		else
