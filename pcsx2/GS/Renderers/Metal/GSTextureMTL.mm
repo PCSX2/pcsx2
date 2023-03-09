@@ -17,9 +17,13 @@
 #include "GS/Renderers/Metal/GSTextureMTL.h"
 #include "GS/Renderers/Metal/GSDeviceMTL.h"
 #include "GS/GSPerfMon.h"
+#include "common/Align.h"
 #include "common/Console.h"
 
 #ifdef __APPLE__
+
+// Uploads/downloads need 32-byte alignment for AVX2.
+static constexpr u32 PITCH_ALIGNMENT = 32;
 
 GSTextureMTL::GSTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLTexture>> texture, Type type, Format format)
 	: m_dev(dev)
@@ -119,7 +123,7 @@ bool GSTextureMTL::Map(GSMap& m, const GSVector4i* _r, int layer)
 	GSVector4i r = _r ? *_r : GSVector4i(0, 0, m_size.x, m_size.y);
 	u32 block_size = GetCompressedBlockSize();
 	u32 blocks_wide = (r.width() + block_size - 1) / block_size;
-	m.pitch = blocks_wide * GetCompressedBytesPerBlock();
+	m.pitch = Common::AlignUpPow2(blocks_wide * GetCompressedBytesPerBlock(), PITCH_ALIGNMENT);
 	if (void* buffer = MapWithPitch(r, m.pitch, layer))
 	{
 		m.bits = static_cast<u8*>(buffer);

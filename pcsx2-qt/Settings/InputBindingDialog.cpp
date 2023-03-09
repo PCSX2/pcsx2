@@ -67,6 +67,8 @@ InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo:
 	else
 	{
 		m_ui.verticalLayout->removeWidget(m_ui.sensitivityWidget);
+		delete m_ui.sensitivityWidget;
+		m_ui.sensitivityWidget = nullptr;
 	}
 }
 

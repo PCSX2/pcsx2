@@ -666,8 +666,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 
 	for (u32 macro_button_index = 0; macro_button_index < PAD::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_button_index++)
 	{
-		const std::vector<std::string> bindings(
-			si.GetStringList(section.c_str(), StringUtil::StdStringFromFormat("Macro%u", macro_button_index + 1).c_str()));
+		const std::vector<std::string> bindings(si.GetStringList(section.c_str(), fmt::format("Macro{}", macro_button_index + 1).c_str()));
 		if (!bindings.empty())
 		{
 			AddBindings(bindings, InputButtonEventHandler{[pad_index, macro_button_index](bool state) {
@@ -921,6 +920,71 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
 	}
 
 	return true;
+}
+
+void InputManager::ClearBindStateFromSource(InputBindingKey key)
+{
+	// Why are we doing it this way? Because any of the bindings could cause a reload and invalidate our iterators :(.
+	// Axis handlers should be fine, so we'll do those as a first pass.
+	for (const auto& [match_key, binding] : s_binding_map)
+	{
+		if (key.source_type != match_key.source_type || key.source_subtype != match_key.source_subtype ||
+			key.source_index != match_key.source_index || !IsAxisHandler(binding->handler))
+		{
+			continue;
+		}
+
+		for (u32 i = 0; i < binding->num_keys; i++)
+		{
+			if (binding->keys[i].MaskDirection() != match_key)
+				continue;
+
+			std::get<InputAxisEventHandler>(binding->handler)(0.0f);
+			break;
+		}
+	}
+
+	// Now go through the button handlers, and pick them off.
+	bool matched;
+	do
+	{
+		matched = false;
+
+		for (const auto& [match_key, binding] : s_binding_map)
+		{
+			if (key.source_type != match_key.source_type || key.source_subtype != match_key.source_subtype ||
+				key.source_index != match_key.source_index || IsAxisHandler(binding->handler))
+			{
+				continue;
+			}
+
+			for (u32 i = 0; i < binding->num_keys; i++)
+			{
+				if (binding->keys[i].MaskDirection() != match_key)
+					continue;
+
+				// Skip if we weren't pressed.
+				const u8 bit = static_cast<u8>(1) << i;
+				if ((binding->current_mask & bit) == 0)
+					continue;
+
+				// Only fire handler if we're changing from active state.
+				const u8 current_mask = binding->current_mask;
+				binding->current_mask &= ~bit;
+
+				if (current_mask == binding->full_mask)
+				{
+					std::get<InputButtonEventHandler>(binding->handler)(0.0f);
+					matched = true;
+					break;
+				}
+			}
+
+			// Need to start again, might've reloaded.
+			if (matched)
+				break;
+		}
+	} while (matched);
 }
 
 bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInputBinding generic_key)

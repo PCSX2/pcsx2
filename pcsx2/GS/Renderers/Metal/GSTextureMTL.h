@@ -93,9 +93,6 @@ public:
 	void Flush() override;
 
 private:
-	// TODO: Is there an optimal transfer pitch alignment for Metal?
-	static constexpr u32 PITCH_ALIGNMENT = 32;
-
 	GSDownloadTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLBuffer>> buffer, u32 width, u32 height, GSTexture::Format format);
 
 	GSDeviceMTL* m_dev;

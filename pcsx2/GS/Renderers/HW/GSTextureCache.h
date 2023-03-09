@@ -132,6 +132,13 @@ public:
 		Surface();
 		virtual ~Surface();
 
+		/// Returns true if the target wraps around the end of GS memory.
+		bool Wraps() const { return (m_end_block < m_TEX0.TBP0); }
+
+		/// Returns the end block for the target, but doesn't wrap at 0x3FFF.
+		/// Can be used for overlap tests.
+		u32 UnwrappedEndBlock() const { return (m_end_block + (Wraps() ? MAX_BLOCKS : 0)); }
+
 		void UpdateAge();
 		bool Inside(u32 bp, u32 bw, u32 psm, const GSVector4i& rect);
 		bool Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i& rect);
@@ -248,13 +255,6 @@ public:
 	public:
 		Target(const GIFRegTEX0& TEX0, const bool depth_supported, const int type);
 		~Target();
-
-		/// Returns true if the target wraps around the end of GS memory.
-		bool Wraps() const { return (m_end_block < m_TEX0.TBP0); }
-
-		/// Returns the end block for the target, but doesn't wrap at 0x3FFF.
-		/// Can be used for overlap tests.
-		u32 UnwrappedEndBlock() const { return (m_end_block + (Wraps() ? MAX_BLOCKS : 0)); }
 
 		void ResizeValidity(const GSVector4i& rect);
 		void UpdateValidity(const GSVector4i& rect, bool can_resize = true);
@@ -393,6 +393,8 @@ protected:
 
 	// TODO: virtual void Write(Source* s, const GSVector4i& r) = 0;
 	// TODO: virtual void Write(Target* t, const GSVector4i& r) = 0;
+
+	Source* CreateMergedSource(GIFRegTEX0 TEX0, GIFRegTEXA TEXA, SourceRegion region, const GSVector2& scale);
 
 public:
 	GSTextureCache();

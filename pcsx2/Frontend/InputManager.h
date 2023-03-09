@@ -257,6 +257,9 @@ namespace InputManager
 	/// Returns true if anything was bound to this key, otherwise false.
 	bool InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key = GenericInputBinding::Unknown);
 
+	/// Clears internal state for any binds with a matching source/index.
+	void ClearBindStateFromSource(InputBindingKey key);
+
 	/// Sets a hook which can be used to intercept events before they're processed by the normal bindings.
 	/// This is typically used when binding new controls to detect what gets pressed.
 	void SetHook(InputInterceptHook::Callback callback);

@@ -795,17 +795,22 @@ void EmuThread::onDisplayWindowResized(int width, int height, float scale)
 void EmuThread::onApplicationStateChanged(Qt::ApplicationState state)
 {
 	// NOTE: This is executed on the emu thread, not UI thread.
-	if (!m_pause_on_focus_loss || !VMManager::HasValidVM())
+	if (!VMManager::HasValidVM())
 		return;
 
 	const bool focus_loss = (state != Qt::ApplicationActive);
 	if (focus_loss)
 	{
-		if (!m_was_paused_by_focus_loss && VMManager::GetState() == VMState::Running)
+		if (m_pause_on_focus_loss && !m_was_paused_by_focus_loss && VMManager::GetState() == VMState::Running)
 		{
 			m_was_paused_by_focus_loss = true;
 			VMManager::SetPaused(true);
 		}
+
+		// Clear the state of all keyboard binds.
+		// That way, if we had a key held down, and lost focus, the bind won't be stuck enabled because we never
+		// got the key release message, because it happened in another window which "stole" the event.
+		InputManager::ClearBindStateFromSource(InputManager::MakeHostKeyboardKey(0));
 	}
 	else
 	{

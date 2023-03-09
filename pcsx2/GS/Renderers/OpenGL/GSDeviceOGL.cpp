@@ -1310,6 +1310,93 @@ void GSDeviceOGL::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect
 	DrawPrimitive();
 }
 
+void GSDeviceOGL::DrawMultiStretchRects(
+	const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader)
+{
+	IASetPrimitiveTopology(GL_TRIANGLE_STRIP);
+	OMSetDepthStencilState(m_convert.dss);
+	OMSetBlendState(false);
+	OMSetColorMaskState();
+	OMSetRenderTargets(dTex, nullptr);
+	m_convert.ps[static_cast<int>(shader)].Bind();
+
+	const GSVector2 ds(static_cast<float>(dTex->GetWidth()), static_cast<float>(dTex->GetHeight()));
+	GSTexture* last_tex = rects[0].src;
+	bool last_linear = rects[0].linear;
+	u8 last_wmask = rects[0].wmask.wrgba;
+
+	u32 first = 0;
+	u32 count = 1;
+
+	for (u32 i = 1; i < num_rects; i++)
+	{
+		if (rects[i].src == last_tex && rects[i].linear == last_linear && rects[i].wmask.wrgba == last_wmask)
+		{
+			count++;
+			continue;
+		}
+
+		DoMultiStretchRects(rects + first, count, ds);
+		last_tex = rects[i].src;
+		last_linear = rects[i].linear;
+		last_wmask = rects[i].wmask.wrgba;
+		first += count;
+		count = 1;
+	}
+
+	DoMultiStretchRects(rects + first, count, ds);
+}
+
+void GSDeviceOGL::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, const GSVector2& ds)
+{
+	const u32 vertex_reserve_size = num_rects * 4 * sizeof(GSVertexPT1);
+	const u32 index_reserve_size = num_rects * 6 * sizeof(u32);
+	auto vertex_map = m_vertex_stream_buffer->Map(sizeof(GSVertexPT1), vertex_reserve_size);
+	auto index_map = m_index_stream_buffer->Map(sizeof(u32), index_reserve_size);
+	m_vertex.start = vertex_map.index_aligned;
+	m_index.start = index_map.index_aligned;
+
+	// Don't use primitive restart here, it ends up slower on some drivers.
+	GSVertexPT1* verts = reinterpret_cast<GSVertexPT1*>(vertex_map.pointer);
+	u32* idx = reinterpret_cast<u32*>(index_map.pointer);
+	u32 icount = 0;
+	u32 vcount = 0;
+	for (u32 i = 0; i < num_rects; i++)
+	{
+		const GSVector4& sRect = rects[i].src_rect;
+		const GSVector4& dRect = rects[i].dst_rect;
+		const float left = dRect.x * 2 / ds.x - 1.0f;
+		const float right = dRect.z * 2 / ds.x - 1.0f;
+		const float top = -1.0f + dRect.y * 2 / ds.y;
+		const float bottom = -1.0f + dRect.w * 2 / ds.y;
+
+		const u32 vstart = vcount;
+		verts[vcount++] = { GSVector4(left  , top   , 0.0f, 0.0f) , GSVector2(sRect.x , sRect.y) };
+		verts[vcount++] = { GSVector4(right , top   , 0.0f, 0.0f) , GSVector2(sRect.z , sRect.y) };
+		verts[vcount++] = { GSVector4(left  , bottom, 0.0f, 0.0f) , GSVector2(sRect.x , sRect.w) };
+		verts[vcount++] = { GSVector4(right , bottom, 0.0f, 0.0f) , GSVector2(sRect.z , sRect.w) };
+
+		if (i > 0)
+			idx[icount++] = vstart;
+
+		idx[icount++] = vstart;
+		idx[icount++] = vstart + 1;
+		idx[icount++] = vstart + 2;
+		idx[icount++] = vstart + 3;
+		idx[icount++] = vstart + 3;
+	};
+
+	m_vertex.count = vcount;
+	m_index.count = icount;
+	m_vertex_stream_buffer->Unmap(vcount * sizeof(GSVertexPT1));
+	m_index_stream_buffer->Unmap(icount * sizeof(u32));
+
+	PSSetShaderResource(0, rects[0].src);
+	PSSetSamplerState(rects[0].linear ? m_convert.ln : m_convert.pt);
+	OMSetColorMaskState(rects[0].wmask);
+	DrawIndexedPrimitive();
+}
+
 void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c, const bool linear)
 {
 	GL_PUSH("DoMerge");

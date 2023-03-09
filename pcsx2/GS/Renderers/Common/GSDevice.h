@@ -710,6 +710,15 @@ public:
 		}
 	};
 
+	struct MultiStretchRect
+	{
+		GSVector4 src_rect;
+		GSVector4 dst_rect;
+		GSTexture* src;
+		bool linear;
+		GSHWDrawConfig::ColorMaskSelector wmask; // 0xf for all channels by default
+	};
+
 	enum BlendFactor : u8
 	{
 		// HW blend factors
@@ -827,6 +836,13 @@ public:
 
 	/// Performs a screen blit for display. If dTex is null, it assumes you are writing to the system framebuffer/swap chain.
 	virtual void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear) {}
+
+	/// Same as doing StretchRect for each item, except tries to batch together rectangles in as few draws as possible.
+	/// The provided list should be sorted by texture, the implementations only check if it's the same as the last.
+	virtual void DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader = ShaderConvert::COPY);
+
+	/// Sorts a MultiStretchRect list for optimal batching.
+	static void SortMultiStretchRects(MultiStretchRect* rects, u32 num_rects);
 
 	/// Updates a GPU CLUT texture from a source texture.
 	virtual void UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) {}
