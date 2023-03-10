@@ -2803,10 +2803,10 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 	const bool one_barrier = m_conf.require_one_barrier || blend_ad_alpha_masked;
 
 	// Blend can be done on hw. As and F cases should be accurate.
-	// BLEND_C_CLR1 with Ad, BLEND_C_CLR3  Cs > 0.5f will require sw blend.
-	// BLEND_C_CLR1 with As/F, BLEND_C_CLR2_AF, BLEND_C_CLR2_AS can be done in hw.
-	const bool clr_blend = !!(blend_flag & (BLEND_C_CLR1 | BLEND_C_CLR2_AF | BLEND_C_CLR2_AS | BLEND_C_CLR3));
-	bool clr_blend1_2 = (blend_flag & (BLEND_C_CLR1 | BLEND_C_CLR2_AF | BLEND_C_CLR2_AS)) && (m_conf.ps.blend_c != 1) // Make sure it isn't an Ad case
+	// BLEND_HW_CLR1 with Ad, BLEND_HW_CLR3  Cs > 0.5f will require sw blend.
+	// BLEND_HW_CLR1 with As/F and BLEND_HW_CLR2 can be done in hw.
+	const bool clr_blend = !!(blend_flag & (BLEND_HW_CLR1 | BLEND_HW_CLR2 | BLEND_HW_CLR3));
+	bool clr_blend1_2 = (blend_flag & (BLEND_HW_CLR1 | BLEND_HW_CLR2)) && (m_conf.ps.blend_c != 1) // Make sure it isn't an Ad case
 						&& !m_env.PABE.PABE // No PABE as it will require sw blending.
 						&& (m_env.COLCLAMP.CLAMP) // Let's add a colclamp check too, hw blend will clamp to 0-1.
 						&& !(one_barrier || m_conf.require_full_barrier); // Also don't run if there are barriers present.
@@ -3195,14 +3195,14 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 		m_conf.ps.blend_d = 0;
 
 		// Care for hw blend value, 6 is for hw/sw, sw blending used.
-		if (blend_flag & BLEND_C_CLR1)
+		if (blend_flag & BLEND_HW_CLR1)
 		{
 			if (blend_ad_alpha_masked)
 				m_conf.ps.blend_hw = 5;
 			else
 				m_conf.ps.blend_hw = 1;
 		}
-		else if (blend_flag & (BLEND_C_CLR2_AS | BLEND_C_CLR2_AF))
+		else if (blend_flag & (BLEND_HW_CLR2))
 		{
 			if (blend_ad_alpha_masked)
 			{
@@ -3216,7 +3216,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 				m_conf.ps.blend_hw = 2;
 			}
 		}
-		else if (blend_flag & BLEND_C_CLR3)
+		else if (blend_flag & BLEND_HW_CLR3)
 		{
 			m_conf.ps.blend_hw = 3;
 		}
