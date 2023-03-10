@@ -669,8 +669,8 @@ void ps_color_clamp_wrap(inout vec3 C)
     // so we need to limit the color depth on dithered items
 #if SW_BLEND || PS_DITHER || PS_FBMASK
 
-#if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0
-    C += 7.f; // Need to round up, not down since the shader will invert
+#if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV
+    C += 7.0f; // Need to round up, not down since the shader will invert
 #endif
 
     // Correct the Color value based on the output format
@@ -777,10 +777,8 @@ float As = As_rgba.a;
 #endif
 
 #if PS_CLR_HW == 1
-    // Replace Af with As so we can do proper compensation for Alpha.
-#if PS_BLEND_C == 2
-    As_rgba = vec4(Af);
-#endif
+    // As or Af
+    As_rgba.rgb = vec3(C);
     // Subtract 1 for alpha to compensate for the changed equation,
     // if c.rgb > 255.0f then we further need to adjust alpha accordingly,
     // we pick the lowest overflow from all colors because it's the safest,
@@ -796,6 +794,14 @@ float As = As_rgba.a;
     // blended value it can be.
     float color_compensate = 1.0f * (C + 1.0f);
     Color.rgb -= vec3(color_compensate);
+#elif PS_CLR_HW == 3
+    // As, Ad or Af clamped.
+    As_rgba.rgb = vec3(C_clamped);
+    // Cs*(Alpha + 1) might overflow, if it does then adjust alpha value
+    // that is sent on second output to compensate.
+    vec3 overflow_check = (Color.rgb - vec3(255.0f)) / 255.0f;
+    vec3 alpha_compensate = max(vec3(0.0f), overflow_check);
+    As_rgba.rgb -= alpha_compensate;
 #endif
 
 #else
@@ -815,9 +821,13 @@ float As = As_rgba.a;
     Color.rgb *= vec3(255.0f);
 #elif PS_CLR_HW == 3
     // Needed for Cs*Ad, Cs*Ad + Cd, Cd - Cs*Ad
-    // Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value
-
-    Color.rgb *= (255.0f / 128.0f);
+    // Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value when rgb are below 128.
+    // When any color channel is higher than 128 then adjust the compensation automatically
+    // to give us more accurate colors, otherwise they will be wrong.
+    // The higher the value (>128) the lower the compensation will be.
+    float max_color = max(max(Color.r, Color.g), Color.b);
+    float color_compensate = 255.0f / max(128.0f, max_color);
+    Color.rgb *= vec3(color_compensate);
 #endif
 
 #endif

@@ -881,9 +881,8 @@ struct PSMain
 
 			if (PS_CLR_HW == 1)
 			{
-				// Replace Af with As so we can do proper compensation for Alpha.
-				if (PS_BLEND_C == 2)
-					As_rgba = float4(cb.alpha_fix);
+				// As or Af
+				As_rgba.rgb = float3(C);
 				// Subtract 1 for alpha to compensate for the changed equation,
 				// if c.rgb > 255.0f then we further need to adjust alpha accordingly,
 				// we pick the lowest overflow from all colors because it's the safest,
@@ -902,6 +901,16 @@ struct PSMain
 				float color_compensate = 1.f * (C + 1.f);
 				Color.rgb -= float3(color_compensate);
 			}
+			else if (PS_CLR_HW == 3)
+			{
+				// As, Ad or Af clamped.
+				As_rgba.rgb = float3(C_clamped);
+				// Cs*(Alpha + 1) might overflow, if it does then adjust alpha value
+				// that is sent on second output to compensate.
+				float3 overflow_check = (Color.rgb - float3(255.f)) / 255.f;
+				float3 alpha_compensate = max(float3(0.f), overflow_check);
+				As_rgba.rgb -= alpha_compensate;
+			}
 		}
 		else
 		{
@@ -918,8 +927,13 @@ struct PSMain
 			else if (PS_CLR_HW == 3)
 			{
 				// Needed for Cs*Ad, Cs*Ad + Cd, Cd - Cs*Ad
-				// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value
-				Color.rgb *= (255.f / 128.f);
+				// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value when rgb are below 128.
+				// When any color channel is higher than 128 then adjust the compensation automatically
+				// to give us more accurate colors, otherwise they will be wrong.
+				// The higher the value (>128) the lower the compensation will be.
+				float max_color = max(max(Color.r, Color.g), Color.b);
+				float color_compensate = 255.f / max(128.f, max_color);
+				Color.rgb *= float3(color_compensate);
 			}
 		}
 	}

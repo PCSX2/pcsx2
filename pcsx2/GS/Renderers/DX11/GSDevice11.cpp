@@ -196,9 +196,11 @@ bool GSDevice11::Create()
 
 	memset(&bsd, 0, sizeof(bsd));
 
-	bsd.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-
-	m_dev->CreateBlendState(&bsd, m_convert.bs.put());
+	for (u32 i = 0; i < static_cast<u32>(m_convert.bs.size()); i++)
+	{
+		bsd.RenderTarget[0].RenderTargetWriteMask = static_cast<u8>(i);
+		m_dev->CreateBlendState(&bsd, m_convert.bs[i].put());
+	}
 
 	// merge
 
@@ -608,26 +610,15 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, bool linear)
 {
-	StretchRect(sTex, sRect, dTex, dRect, ps, ps_cb, m_convert.bs.get(), linear);
+	StretchRect(sTex, sRect, dTex, dRect, ps, ps_cb, m_convert.bs[D3D11_COLOR_WRITE_ENABLE_ALL].get(), linear);
 }
 
 void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha)
 {
-	D3D11_BLEND_DESC bd = {};
-
-	u8 write_mask = 0;
-
-	if (red)   write_mask |= D3D11_COLOR_WRITE_ENABLE_RED;
-	if (green) write_mask |= D3D11_COLOR_WRITE_ENABLE_GREEN;
-	if (blue)  write_mask |= D3D11_COLOR_WRITE_ENABLE_BLUE;
-	if (alpha) write_mask |= D3D11_COLOR_WRITE_ENABLE_ALPHA;
-
-	bd.RenderTarget[0].RenderTargetWriteMask = write_mask;
-
-	wil::com_ptr_nothrow<ID3D11BlendState> bs;
-	m_dev->CreateBlendState(&bd, bs.put());
-
-	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[static_cast<int>(ShaderConvert::COPY)].get(), nullptr, bs.get(), false);
+	const u8 index = static_cast<u8>(red) | (static_cast<u8>(green) << 1) | (static_cast<u8>(blue) << 2) |
+					 (static_cast<u8>(alpha) << 3);
+	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[static_cast<int>(ShaderConvert::COPY)].get(), nullptr,
+		m_convert.bs[index].get(), false);
 }
 
 void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, ID3D11BlendState* bs, bool linear)
@@ -730,7 +721,7 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 	// om
 	OMSetDepthStencilState(m_convert.dss.get(), 0);
-	OMSetBlendState(m_convert.bs.get(), 0);
+	OMSetBlendState(m_convert.bs[D3D11_COLOR_WRITE_ENABLE_ALL].get(), 0);
 
 
 
@@ -796,6 +787,90 @@ void GSDevice11::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GS
 	const GSVector4 dRect(0, 0, dSize, 1);
 	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
 	StretchRect(sTex, GSVector4::zero(), dTex, dRect, m_convert.ps[static_cast<int>(shader)].get(), m_merge.cb.get(), nullptr, false);
+}
+
+void GSDevice11::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader)
+{
+	IASetInputLayout(m_convert.il.get());
+	IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+	VSSetShader(m_convert.vs.get(), nullptr);
+	GSSetShader(nullptr, nullptr);
+	PSSetShader(m_convert.ps[static_cast<int>(shader)].get(), nullptr);
+
+	OMSetDepthStencilState(dTex->IsRenderTarget() ? m_convert.dss.get() : m_convert.dss_write.get(), 0);
+	OMSetRenderTargets(dTex->IsRenderTarget() ? dTex : nullptr, dTex->IsDepthStencil() ? dTex : nullptr);
+
+	const GSVector2 ds(static_cast<float>(dTex->GetWidth()), static_cast<float>(dTex->GetHeight()));
+	GSTexture* last_tex = rects[0].src;
+	bool last_linear = rects[0].linear;
+	u8 last_wmask = rects[0].wmask.wrgba;
+
+	u32 first = 0;
+	u32 count = 1;
+
+	for (u32 i = 1; i < num_rects; i++)
+	{
+		if (rects[i].src == last_tex && rects[i].linear == last_linear && rects[i].wmask.wrgba == last_wmask)
+		{
+			count++;
+			continue;
+		}
+
+		DoMultiStretchRects(rects + first, count, ds);
+		last_tex = rects[i].src;
+		last_linear = rects[i].linear;
+		last_wmask = rects[i].wmask.wrgba;
+		first += count;
+		count = 1;
+	}
+
+	DoMultiStretchRects(rects + first, count, ds);
+}
+
+void GSDevice11::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, const GSVector2& ds)
+{
+	// Don't use primitive restart here, it ends up slower on some drivers.
+	const u32 vertex_reserve_size = num_rects * 4;
+	const u32 index_reserve_size = num_rects * 6;
+	GSVertexPT1* verts = static_cast<GSVertexPT1*>(IAMapVertexBuffer(sizeof(GSVertexPT1), vertex_reserve_size));
+	u32* idx = IAMapIndexBuffer(index_reserve_size);
+	u32 icount = 0;
+	u32 vcount = 0;
+	for (u32 i = 0; i < num_rects; i++)
+	{
+		const GSVector4& sRect = rects[i].src_rect;
+		const GSVector4& dRect = rects[i].dst_rect;
+		const float left = dRect.x * 2 / ds.x - 1.0f;
+		const float top = 1.0f - dRect.y * 2 / ds.y;
+		const float right = dRect.z * 2 / ds.x - 1.0f;
+		const float bottom = 1.0f - dRect.w * 2 / ds.y;
+
+		const u32 vstart = vcount;
+		verts[vcount++] = {GSVector4(left, top, 0.5f, 1.0f), GSVector2(sRect.x, sRect.y)};
+		verts[vcount++] = {GSVector4(right, top, 0.5f, 1.0f), GSVector2(sRect.z, sRect.y)};
+		verts[vcount++] = {GSVector4(left, bottom, 0.5f, 1.0f), GSVector2(sRect.x, sRect.w)};
+		verts[vcount++] = {GSVector4(right, bottom, 0.5f, 1.0f), GSVector2(sRect.z, sRect.w)};
+
+		if (i > 0)
+			idx[icount++] = vstart;
+
+		idx[icount++] = vstart;
+		idx[icount++] = vstart + 1;
+		idx[icount++] = vstart + 2;
+		idx[icount++] = vstart + 3;
+		idx[icount++] = vstart + 3;
+	};
+
+	IAUnmapVertexBuffer(sizeof(GSVertexPT1), vcount);
+	IAUnmapIndexBuffer(icount);
+
+	PSSetShaderResource(0, rects[0].src);
+	PSSetSamplerState(rects[0].linear ? m_convert.ln.get() : m_convert.pt.get());
+
+	OMSetBlendState(m_convert.bs[rects[0].wmask.wrgba].get(), 0.0f);
+
+	DrawIndexedPrimitive();
 }
 
 void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c, const bool linear)
@@ -991,11 +1066,11 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 	//
 }
 
-bool GSDevice11::IASetVertexBuffer(const void* vertex, u32 stride, u32 count)
+void* GSDevice11::IAMapVertexBuffer(u32 stride, u32 count)
 {
 	const u32 size = stride * count;
 	if (size > VERTEX_BUFFER_SIZE)
-		return false;
+		return nullptr;
 
 	D3D11_MAP type = D3D11_MAP_WRITE_NO_OVERWRITE;
 
@@ -1010,10 +1085,13 @@ bool GSDevice11::IASetVertexBuffer(const void* vertex, u32 stride, u32 count)
 
 	D3D11_MAPPED_SUBRESOURCE m;
 	if (FAILED(m_ctx->Map(m_vb.get(), 0, type, 0, &m)))
-		return false;
+		return nullptr;
 
-	GSVector4i::storent(static_cast<u8*>(m.pData) + m_vertex.start * stride, vertex, count * stride);
+	return static_cast<u8*>(m.pData) + (m_vertex.start * stride);
+}
 
+void GSDevice11::IAUnmapVertexBuffer(u32 stride, u32 count)
+{
 	m_ctx->Unmap(m_vb.get(), 0);
 
 	if (m_state.vb_stride != stride)
@@ -1024,13 +1102,24 @@ bool GSDevice11::IASetVertexBuffer(const void* vertex, u32 stride, u32 count)
 	}
 
 	m_vertex.count = count;
+}
+
+bool GSDevice11::IASetVertexBuffer(const void* vertex, u32 stride, u32 count)
+{
+	void* map = IAMapVertexBuffer(stride, count);
+	if (!map)
+		return false;
+
+	GSVector4i::storent(map, vertex, count * stride);
+
+	IAUnmapVertexBuffer(stride, count);
 	return true;
 }
 
-bool GSDevice11::IASetIndexBuffer(const void* index, u32 count)
+u32* GSDevice11::IAMapIndexBuffer(u32 count)
 {
 	if (count > (INDEX_BUFFER_SIZE / sizeof(u32)))
-		return false;
+		return nullptr;
 
 	D3D11_MAP type = D3D11_MAP_WRITE_NO_OVERWRITE;
 
@@ -1046,11 +1135,25 @@ bool GSDevice11::IASetIndexBuffer(const void* index, u32 count)
 
 	D3D11_MAPPED_SUBRESOURCE m;
 	if (FAILED(m_ctx->Map(m_ib.get(), 0, type, 0, &m)))
-		return false;
+		return nullptr;
 
-	std::memcpy((u8*)m.pData + m_index.start * sizeof(u32), index, count * sizeof(u32));
+	return static_cast<u32*>(m.pData) + m_index.start;
+}
+
+void GSDevice11::IAUnmapIndexBuffer(u32 count)
+{
 	m_ctx->Unmap(m_ib.get(), 0);
 	m_index.count = count;
+}
+
+bool GSDevice11::IASetIndexBuffer(const void* index, u32 count)
+{
+	u32* map = IAMapIndexBuffer(count);
+	if (!map)
+		return false;
+
+	std::memcpy(map, index, count * sizeof(u32));
+	IAUnmapIndexBuffer(count);
 	return true;
 }
 

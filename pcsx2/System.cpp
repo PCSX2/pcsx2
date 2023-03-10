@@ -303,6 +303,15 @@ BaseVUmicroCPU* CpuVU1 = nullptr;
 
 void SysCpuProviderPack::ApplyConfig() const
 {
+	if (GSDumpReplayer::IsReplayingDump())
+	{
+		Cpu = &GSDumpReplayerCpu;
+		psxCpu = &psxInt;
+		CpuVU0 = &CpuIntVU0;
+		CpuVU1 = &CpuIntVU1;
+		return;
+	}
+
 	Cpu = CHECK_EEREC ? &recCpu : &intCpu;
 	psxCpu = CHECK_IOPREC ? &psxRec : &psxInt;
 
@@ -314,9 +323,6 @@ void SysCpuProviderPack::ApplyConfig() const
 
 	if (EmuConfig.Cpu.Recompiler.EnableVU1)
 		CpuVU1 = &CpuMicroVU1;
-
-	if (GSDumpReplayer::IsReplayingDump())
-		Cpu = &GSDumpReplayerCpu;
 }
 
 // Resets all PS2 cpu execution caches, which does not affect that actual PS2 state/condition.

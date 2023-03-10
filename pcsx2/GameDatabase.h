@@ -72,6 +72,9 @@ namespace GameDatabaseSchema
 		AlignSprite,
 		MergeSprite,
 		WildArmsHack,
+		EstimateTextureRegion,
+		PCRTCOffsets,
+		PCRTCOverscan,
 
 		// integer settings
 		Mipmap,
@@ -87,6 +90,9 @@ namespace GameDatabaseSchema
 		CPUCLUTRender,
 		GPUTargetCLUT,
 		GPUPaletteConversion,
+		MinimumBlendingLevel,
+		MaximumBlendingLevel,
+		RecommendedBlendingLevel,
 		GetSkipCount,
 		BeforeDraw,
 

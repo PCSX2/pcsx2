@@ -79,13 +79,15 @@
     <addaction name="menuLoadState"/>
     <addaction name="menuSaveState"/>
     <addaction name="separator"/>
-    <addaction name="actionSettings"/>
+    <addaction name="actionSettings"/> <!-- Please consult with macOS users before removing -->
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
      <string>S&amp;ettings</string>
     </property>
+    <addaction name="actionViewGameProperties"/>
+    <addaction name="separator"/>
     <addaction name="actionInterfaceSettings"/>
     <addaction name="actionGameListSettings"/>
     <addaction name="actionBIOSSettings"/>
@@ -156,7 +158,6 @@
     <addaction name="actionViewGameList"/>
     <addaction name="actionViewGameGrid"/>
     <addaction name="actionViewSystemDisplay"/>
-    <addaction name="actionViewGameProperties"/>
     <addaction name="separator"/>
     <addaction name="actionFullscreen"/>
     <addaction name="menuWindowSize"/>
@@ -245,7 +246,7 @@
    <addaction name="separator"/>
    <addaction name="actionFullscreen"/>
    <addaction name="separator"/>
-   <addaction name="actionSettings"/>
+   <addaction name="actionSettings2"/>
    <addaction name="actionControllerSettings"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -522,7 +523,19 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Settings...</string>
+    <string>&amp;Settings</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::PreferencesRole</enum>
+   </property>
+  </action>
+  <action name="actionSettings2">
+   <property name="icon">
+    <iconset theme="settings-3-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Settings</string>
    </property>
    <property name="menuRole">
     <enum>QAction::PreferencesRole</enum>

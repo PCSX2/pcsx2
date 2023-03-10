@@ -25,6 +25,12 @@
 #include "common/Align.h"
 #include "common/HashCombine.h"
 
+#ifdef __APPLE__
+#include <stdlib.h>
+#else
+#include <malloc.h>
+#endif
+
 static u8* s_unswizzle_buffer;
 
 GSTextureCache::GSTextureCache()
@@ -377,6 +383,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 		bool found_t = false;
 		bool tex_in_rt = false;
+		bool tex_merge_rt = false;
 		for (auto t : m_dst[RenderTarget])
 		{
 			if (t->m_used)
@@ -428,6 +435,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 						found_t = true;
 						tex_in_rt = false;
+						tex_merge_rt = false;
 						x_offset = 0;
 						y_offset = 0;
 						break;
@@ -442,40 +450,57 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					dst = t;
 					found_t = true;
 					tex_in_rt = false;
+					tex_merge_rt = false;
 					x_offset = 0;
 					y_offset = 0;
 					break;
 				}
 				// Make sure the texture actually is INSIDE the RT, it's possibly not valid if it isn't.
 				// Also check BP >= TBP, create source isn't equpped to expand it backwards and all data comes from the target. (GH3)
-				else if (GSConfig.UserHacks_TextureInsideRt && psm >= PSM_PSMCT32 && psm <= PSM_PSMCT16S && t->m_TEX0.PSM == psm &&
-						(t->Overlaps(bp, bw, psm, r) || t_wraps) && t->m_age <= 1 && !found_t && bp >= t->m_TEX0.TBP0)
+				else if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && psm >= PSM_PSMCT32 &&
+						 psm <= PSM_PSMCT16S && t->m_TEX0.PSM == psm && (t->Overlaps(bp, bw, psm, r) || t_wraps) &&
+						 t->m_age <= 1 && !found_t)
 				{
-					// Only PSMCT32 to limit false hits.
 					// PSM equality needed because CreateSource does not handle PSM conversion.
 					// Only inclusive hit to limit false hits.
 
-					// Check if it is possible to hit with valid <x,y> offset on the given Target.
-					// Fixes Jak eyes rendering.
-					// Fixes Xenosaga 3 last dungeon graphic bug.
-					// Fixes Pause menu in The Getaway.
-
-					SurfaceOffset so = ComputeSurfaceOffset(bp, bw, psm, r, t);
-					if (!so.is_valid && t_wraps)
+					if (bp >= t->m_TEX0.TBP0)
 					{
-						// Improves Beyond Good & Evil shadow.
-						const u32 bp_unwrap = bp + GSTextureCache::MAX_BP + 0x1;
-						so = ComputeSurfaceOffset(bp_unwrap, bw, psm, r, t);
+						// Check if it is possible to hit with valid <x,y> offset on the given Target.
+						// Fixes Jak eyes rendering.
+						// Fixes Xenosaga 3 last dungeon graphic bug.
+						// Fixes Pause menu in The Getaway.
+
+						SurfaceOffset so = ComputeSurfaceOffset(bp, bw, psm, r, t);
+						if (!so.is_valid && t_wraps)
+						{
+							// Improves Beyond Good & Evil shadow.
+							const u32 bp_unwrap = bp + GSTextureCache::MAX_BP + 0x1;
+							so = ComputeSurfaceOffset(bp_unwrap, bw, psm, r, t);
+						}
+						if (so.is_valid)
+						{
+							dst = t;
+							// Offset from Target to Source in Target coords.
+							x_offset = so.b2a_offset.x;
+							y_offset = so.b2a_offset.y;
+							tex_in_rt = true;
+							tex_merge_rt = false;
+							found_t = true;
+							// Keep looking, just in case there is an exact match (Situation: Target frame drawn inside target frame, current makes a separate texture)
+							continue;
+						}
 					}
-					if (so.is_valid)
+					else if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::MergeTargets && !tex_merge_rt)
 					{
 						dst = t;
-						// Offset from Target to Source in Target coords.
-						x_offset = so.b2a_offset.x;
-						y_offset = so.b2a_offset.y;
-						tex_in_rt = true;
-						found_t = true;
-						// Keep looking, just in case there is an exact match (Situation: Target frame drawn inside target frame, current makes a separate texture)
+						x_offset = 0;
+						y_offset = 0;
+						tex_in_rt = false;
+						tex_merge_rt = true;
+
+						// Prefer a target inside over a target outside.
+						found_t = false;
 						continue;
 					}
 				}
@@ -530,7 +555,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		//
 		// Sigh... They don't help us.
 
-		if (!found_t && !GSConfig.UserHacks_DisableDepthSupport)
+		if (!found_t && !dst && !GSConfig.UserHacks_DisableDepthSupport)
 		{
 			// Let's try a trick to avoid to use wrongly a depth buffer
 			// Unfortunately, I don't have any Arc the Lad testcase
@@ -557,6 +582,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				}
 			}
 		}
+
+		if (tex_merge_rt)
+			src = CreateMergedSource(TEX0, TEXA, region, dst->m_texture->GetScale());
 	}
 
 	if (!src)
@@ -654,9 +682,11 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 				dst = t;
 
 				dst->m_32_bits_fmt |= (psm_s.bpp != 16);
-				// Nicktoons Unite tries to change the width from 10 to 8 and breaks FMVs.
+				// Nicktoons Unite tries to change the width from 640 to 512 and breaks FMVs.
 				// Haunting ground has some messed textures if you don't modify the rest.
-				if (!dst->m_is_frame)
+				// Champions of Norrath expands the width from 512 to 1024, picture cut in half if you don't.
+				// The safest option is to probably let it expand but not retract.
+				if (!dst->m_is_frame || dst->m_TEX0.TBW < TEX0.TBW)
 				{
 					dst->m_TEX0 = TEX0;
 				}
@@ -1258,11 +1288,11 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 		return;
 
 	// Handle the case where the transfer wrapped around the end of GS memory.
-	const u32 end_bp = off.bn(rect.z - 1, rect.w - 1);
-	const u32 unwrapped_end_bp = end_bp + ((end_bp < bp) ? MAX_BLOCKS : 0);
+	const u32 end_bp = off.bnNoWrap(rect.z - 1, rect.w - 1);
 
 	// Ideally in the future we can turn this on unconditionally, but for now it breaks too much.
-	const bool check_inside_target = (GSConfig.UserHacks_TargetPartialInvalidation || GSConfig.UserHacks_TextureInsideRt);
+	const bool check_inside_target = (GSConfig.UserHacks_TargetPartialInvalidation ||
+									  GSConfig.UserHacks_TextureInsideRt != GSTextureInRtMode::Disabled);
 	RGBAMask rgba;
 	rgba._u32 = GSUtil::GetChannelMask(psm);
 
@@ -1275,7 +1305,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 			Target* t = *j;
 
 			// Don't bother checking any further if the target doesn't overlap with the write/invalidation.
-			if ((bp < t->m_TEX0.TBP0 && unwrapped_end_bp < t->m_TEX0.TBP0) || bp > t->UnwrappedEndBlock())
+			if ((bp < t->m_TEX0.TBP0 && end_bp < t->m_TEX0.TBP0) || bp > t->UnwrappedEndBlock())
 			{
 				++i;
 				continue;
@@ -1376,11 +1406,22 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 
 					if (can_erase)
 					{
-						i = list.erase(j);
-						GL_CACHE("TC: Remove Target(%s) %d (0x%x)", to_string(type),
-							t->m_texture ? t->m_texture->GetID() : 0,
-							t->m_TEX0.TBP0);
-						delete t;
+						// If it's a 32bit value and only the alpha channel is being killed
+						// instead of losing the RGB data, drop it back to 24bit.
+						if (rgba._u32 == 0x8 && t->m_TEX0.PSM == PSM_PSMCT32)
+						{
+							t->m_TEX0.PSM = PSM_PSMCT24;
+							t->m_dirty_alpha = false;
+							++i;
+						}
+						else
+						{
+							i = list.erase(j);
+							GL_CACHE("TC: Remove Target(%s) %d (0x%x)", to_string(type),
+								t->m_texture ? t->m_texture->GetID() : 0,
+								t->m_TEX0.TBP0);
+							delete t;
+						}
 					}
 					else
 					{
@@ -1766,7 +1807,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	// Beware of the case where a game might create a larger texture by moving a bunch of chunks around.
 	// We use dx/dy == 0 and the TBW check as a safeguard to make sure these go through to local memory.
 	// Good test case for this is the Xenosaga I cutscene transitions, or Gradius V.
-	if (src && !dst && dx == 0 && dy == 0 && ((static_cast<u32>(w) + 63) / 64) == DBW)
+	if (src && !dst && dx == 0 && dy == 0 && ((static_cast<u32>(w) + 63) / 64) <= DBW)
 	{
 		GIFRegTEX0 new_TEX0 = {};
 		new_TEX0.TBP0 = DBP;
@@ -1775,7 +1816,8 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 
 		const int real_height = GetTargetHeight(DBP, DBW, DPSM, h);
 		const GSVector2 scale(src->m_texture->GetScale());
-		dst = LookupTarget(new_TEX0, GSVector2i(static_cast<int>(w * scale.x), static_cast<int>(real_height * scale.y)), src->m_type, true);
+		dst = LookupTarget(new_TEX0, GSVector2i(static_cast<int>(Common::AlignUpPow2(w, 64) * scale.x),
+			static_cast<int>(real_height * scale.y)), src->m_type, true);
 		if (dst)
 		{
 			dst->m_texture->SetScale(scale);
@@ -2356,7 +2398,6 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		const GSVector2 scale = is_8bits ? GSVector2(1, 1) : dst->m_texture->GetScale();
 
-		const bool use_texture = shader == ShaderConvert::COPY;
 		GSVector4i sRect(0, 0, w, h);
 		int destX = 0;
 		int destY = 0;
@@ -2406,6 +2447,10 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			}
 		}
 
+		// Create a cleared RT if we somehow end up with an empty source rect (because the RT isn't large enough).
+		const bool source_rect_empty = sRect.rempty();
+		const bool use_texture = (shader == ShaderConvert::COPY && !source_rect_empty);
+
 		// Assuming everything matches up, instead of copying the target, we can just sample it directly.
 		// It's the same as doing the copy first, except we save GPU time.
 		if (!half_right && // not the size change from above
@@ -2442,7 +2487,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			{
 				g_gs_device->CopyRect(sTex, dTex, sRect, destX, destY);
 			}
-			else
+			else if (!source_rect_empty)
 			{
 				GSVector4 sRectF(sRect);
 				sRectF.z /= sTex->GetWidth();
@@ -2529,6 +2574,289 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 	m_src.Add(src, TEX0, g_gs_renderer->m_context->offset.tex);
 
+	return src;
+}
+
+GSTextureCache::Source* GSTextureCache::CreateMergedSource(GIFRegTEX0 TEX0, GIFRegTEXA TEXA, SourceRegion region, const GSVector2& scale)
+{
+	// We *should* be able to use the TBW here as an indicator of size... except Destroy All Humans 2 sets
+	// TBW to 10, and samples from 64 through 703... which means it'd be grabbing the next row at the end.
+	const int tex_width = std::max<int>(64 * TEX0.TBW, region.GetMaxX());
+	const int tex_height = region.HasY() ? region.GetHeight() : (1 << TEX0.TH);
+	const int scaled_width = static_cast<int>(static_cast<float>(tex_width) * scale.x);
+	const int scaled_height = static_cast<int>(static_cast<float>(tex_height) * scale.y);
+
+	// Compute new end block based on size.
+	const u32 end_block = GSLocalMemory::m_psm[TEX0.PSM].info.bn(tex_width - 1, tex_height - 1, TEX0.TBP0, TEX0.TBW);
+	GL_PUSH("Merging targets from %x through %x", TEX0.TBP0, end_block);
+
+	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
+	const int page_width = psm.pgs.x;
+	const int page_height = psm.pgs.y;
+	constexpr int page_blocks = 32;
+
+	// Number of pages to increment by for each row. This may be smaller than tex_width.
+	const int row_page_increment = TEX0.TBW;
+	const int page_block_increment = row_page_increment * page_blocks;
+	const int width_in_pages = (tex_width + (page_width - 1)) / page_width;
+	const int height_in_pages = (tex_height + (page_height - 1)) / page_height;
+	const int num_pages = width_in_pages * height_in_pages;
+	const GSVector4i page_rect(GSVector4i(psm.pgs).zwxy());
+
+	// Temporary texture for preloading local memory.
+	const GSOffset lm_off(psm.info, TEX0.TBP0, TEX0.TBW, TEX0.PSM);
+	GSTexture* lmtex = nullptr;
+	GSTexture::GSMap lmtex_map;
+	bool lmtex_mapped = false;
+
+	u8* pages_done = static_cast<u8*>(alloca((num_pages + 7) / 8));
+	std::memset(pages_done, 0, (num_pages + 7) / 8);
+
+	// Queue of rectangles to copy, we try to batch as many at once as possible.
+	// Multiply by 2 in case we need to preload.
+	GSDevice::MultiStretchRect* copy_queue =
+		static_cast<GSDevice::MultiStretchRect*>(alloca(sizeof(GSDevice::MultiStretchRect) * num_pages * 2));
+	u32 copy_count = 0;
+
+	// Page counters.
+	u32 start_TBP0 = TEX0.TBP0;
+	u32 current_TBP0 = start_TBP0;
+	int page_x = 0;
+	int page_y = 0;
+
+	// Helper to preload a page.
+	auto preload_page = [&](int dst_x, int dst_y) {
+		if (!lmtex)
+		{
+			lmtex = g_gs_device->CreateTexture(tex_width, tex_height, 1, GSTexture::Format::Color, false);
+			lmtex_mapped = lmtex->Map(lmtex_map);
+		}
+
+		const GSVector4i rect(
+			dst_x, dst_y, std::min(dst_x + page_width, tex_width), std::min(dst_y + page_height, tex_height));
+
+		if (lmtex_mapped)
+		{
+			psm.rtx(g_gs_renderer->m_mem, lm_off, rect, lmtex_map.bits + dst_y * lmtex_map.pitch + dst_x * sizeof(u32),
+				lmtex_map.pitch, TEXA);
+		}
+		else
+		{
+			// Slow for DX11... page_width * 4 should still be 32 byte aligned for AVX.
+			const int pitch = page_width * sizeof(u32);
+			psm.rtx(g_gs_renderer->m_mem, lm_off, rect, s_unswizzle_buffer, pitch, TEXA);
+			lmtex->Update(rect, s_unswizzle_buffer, pitch);
+		}
+
+		// Upload texture -> render target.
+		const bool linear = (scale.x != 1.0f);
+		copy_queue[copy_count++] = {GSVector4(rect) / GSVector4(lmtex->GetSize()).xyxy(),
+			GSVector4(rect) * GSVector4(scale).xyxy(), lmtex, linear, 0xf};
+	};
+
+	// The idea: loop through pages that this texture covers, find targets which overlap, and copy them in.
+	// For pages which don't have any targets covering, if preloading is enabled, load that page from local memory.
+	// Try to batch as much as possible, ideally this shouldn't be more than a handful of draw calls.
+	for (int page_num = 0; page_num < num_pages; page_num++)
+	{
+		const u32 this_start_block = current_TBP0;
+		const u32 this_end_block = (current_TBP0 + page_blocks) - 1;
+		bool found = false;
+
+		if (pages_done[page_num / 8] & (1u << (page_num % 8)))
+			goto next_page;
+
+		GL_INS("Searching for block range %x - %x for (%u,%u)", this_start_block, this_end_block, page_x * page_width,
+			page_y * page_height);
+
+		for (auto i = m_dst[RenderTarget].begin(); i != m_dst[RenderTarget].end(); ++i)
+		{
+			Target* const t = *i;
+			if (this_start_block >= t->m_TEX0.TBP0 && this_end_block <= t->m_end_block && t->m_TEX0.PSM == TEX0.PSM)
+			{
+				GL_INS("  Candidate at BP %x BW %d PSM %d", t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM);
+
+				// Can't copy multiple pages when we're past the TBW.. only grab one page at a time then.
+				GSVector4i src_rect(page_rect);
+				bool copy_multiple_pages = (t->m_TEX0.TBW == TEX0.TBW && page_x < row_page_increment);
+				int available_pages_x = 1;
+				int available_pages_y = 1;
+				if (copy_multiple_pages)
+				{
+					// TBW matches, we can copy multiple pages.
+					available_pages_x = (row_page_increment - page_x);
+					available_pages_y = (height_in_pages - page_y);
+					src_rect.z = available_pages_x * page_width;
+					src_rect.w = available_pages_y * page_height;
+				}
+
+				// Why do we do this? Things go really haywire when we try to get surface offsets when
+				// the valid rect isn't starting at 0. In most cases, the target has been cleared anyway,
+				// so we really should be setting this to 0, not the draw...
+				//
+				// Guitar Hero needs it, the player meshes don't necessarily touch the corner, and so
+				// does Aqua Teen Hunger Force.
+				//
+				const GSVector4i t_rect(t->m_valid.insert64<0>(0));
+
+				SurfaceOffset so;
+				if (this_start_block > t->m_TEX0.TBP0)
+				{
+					SurfaceOffsetKey sok;
+					sok.elems[0].bp = this_start_block;
+					sok.elems[0].bw = TEX0.TBW;
+					sok.elems[0].psm = TEX0.PSM;
+					sok.elems[0].rect = src_rect;
+					sok.elems[1].bp = t->m_TEX0.TBP0;
+					sok.elems[1].bw = t->m_TEX0.TBW;
+					sok.elems[1].psm = t->m_TEX0.PSM;
+					sok.elems[1].rect = t_rect;
+					so = ComputeSurfaceOffset(sok);
+					if (!so.is_valid)
+						goto next_page;
+				}
+				else
+				{
+					so.is_valid = true;
+					so.b2a_offset = src_rect.rintersect(t_rect);
+				}
+
+				// Adjust to what the target actually has.
+				if (copy_multiple_pages)
+				{
+					// Min here because we don't want to go off the end of the target.
+					available_pages_x = std::min(available_pages_x, (so.b2a_offset.width() + (psm.pgs.x - 1)) / psm.pgs.x);
+					available_pages_y = std::min(available_pages_y, (so.b2a_offset.height() + (psm.pgs.y - 1)) / psm.pgs.y);
+				}
+
+				// We might not even have a full page valid..
+				const bool linear = (scale != t->m_texture->GetScale());
+				const int src_x_end = so.b2a_offset.z;
+				const int src_y_end = so.b2a_offset.w;
+				int src_y = so.b2a_offset.y;
+				int dst_y = page_y * page_height;
+				int current_copy_page = page_num;
+
+				for (int copy_page_y = 0; copy_page_y < available_pages_y; copy_page_y++)
+				{
+					if (src_y >= src_y_end)
+						break;
+
+					const int wanted_height = std::min(tex_height - dst_y, page_height);
+					const int copy_height = std::min(src_y_end - src_y, wanted_height);
+					int src_x = so.b2a_offset.x;
+					int dst_x = page_x * page_width;
+					int row_page = current_copy_page;
+					pxAssert(dst_y < tex_height && copy_height > 0);
+
+					for (int copy_page_x = 0; copy_page_x < available_pages_x; copy_page_x++)
+					{
+						if (src_x >= src_x_end)
+							break;
+
+						if ((pages_done[row_page / 8] & (1u << (row_page % 8))) == 0)
+						{
+							pages_done[row_page / 8] |= (1u << (row_page % 8));
+
+							// In case a whole page isn't valid.
+							const int wanted_width = std::min(tex_width - dst_x, page_width);
+							const int copy_width = std::min(src_x_end - src_x, wanted_width);
+							pxAssert(dst_x < tex_width && copy_width > 0);
+
+							// Preload any missing parts. This will  happen when the valid rect isn't page aligned.
+							if (GSConfig.PreloadFrameWithGSData &&
+								(copy_width < wanted_width || copy_height < wanted_height))
+							{
+								preload_page(dst_x, dst_y);
+							}
+
+							GL_INS("  Copy from %d,%d -> %d,%d (%dx%d)", src_x, src_y, dst_x, dst_y, copy_width, copy_height);
+							copy_queue[copy_count++] = {
+								(GSVector4(src_x, src_y, src_x + copy_width, src_y + copy_height) *
+									GSVector4(t->m_texture->GetScale()).xyxy()) /
+									GSVector4(t->m_texture->GetSize()).xyxy(),
+								GSVector4(dst_x, dst_y, dst_x + copy_width, dst_y + copy_height) *
+									GSVector4(scale).xyxy(),
+								t->m_texture, linear, 0xf};
+						}
+
+						row_page++;
+						src_x += page_width;
+						dst_x += page_width;
+					}
+
+					current_copy_page += width_in_pages;
+					src_y += page_height;
+					dst_y += page_height;
+				}
+
+				found = true;
+				break;
+			}
+		}
+
+		if (!found)
+		{
+			if (GSConfig.PreloadFrameWithGSData)
+			{
+				pages_done[page_num / 8] |= (1u << (page_num % 8));
+
+				GL_INS("  *** NOT FOUND, preloading from local memory");
+				const int dst_x = page_x * page_width;
+				const int dst_y = page_y * page_height;
+				preload_page(dst_x, dst_y);
+			}
+			else
+			{
+				GL_INS("  *** NOT FOUND");
+			}
+		}
+
+	next_page:
+		current_TBP0 += page_blocks;
+		page_x++;
+		if (page_x == width_in_pages)
+		{
+			start_TBP0 += page_block_increment;
+			current_TBP0 = start_TBP0;
+			page_x = 0;
+			page_y++;
+		}
+	}
+
+	// If we didn't find anything, abort.
+	if (copy_count == 0)
+	{
+		GL_INS("No sources found.");
+		return nullptr;
+	}
+
+	// Actually do the drawing.
+	if (lmtex_mapped)
+		lmtex->Unmap();
+
+	// Allocate our render target for drawing everything to.
+	GSTexture* dtex = g_gs_device->CreateRenderTarget(scaled_width, scaled_height, GSTexture::Format::Color, true);
+	dtex->SetScale(scale);
+	m_source_memory_usage += dtex->GetMemUsage();
+
+	// Sort rect list by the texture, we want to batch as many as possible together.
+	g_gs_device->SortMultiStretchRects(copy_queue, copy_count);
+	g_gs_device->DrawMultiStretchRects(copy_queue, copy_count, dtex, ShaderConvert::COPY);
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
+	if (lmtex)
+		g_gs_device->Recycle(lmtex);
+
+	Source* src = new Source(TEX0, TEXA);
+	src->m_texture = dtex;
+	src->m_end_block = end_block;
+	src->m_target = true;
+
+	// Can't use the normal SetPages() here, it'll try to use TW/TH, which might be bad.
+	src->m_pages = g_gs_renderer->m_context->offset.tex.pageLooperForRect(GSVector4i(0, 0, tex_width, tex_height));
+
+	m_src.Add(src, TEX0, g_gs_renderer->m_context->offset.tex);
 	return src;
 }
 
@@ -2927,21 +3255,23 @@ void GSTextureCache::Surface::UpdateAge()
 bool GSTextureCache::Surface::Inside(u32 bp, u32 bw, u32 psm, const GSVector4i& rect)
 {
 	// Valid only for color formats.
-	const u32 end_block = GSLocalMemory::m_psm[psm].info.bn(rect.z - 1, rect.w - 1, bp, bw);
-	return bp >= m_TEX0.TBP0 && end_block <= m_end_block;
+	const GSOffset off(GSLocalMemory::m_psm[psm].info, bp, bw, psm);
+	const u32 end_block = off.bnNoWrap(rect.z - 1, rect.w - 1);
+	return bp >= m_TEX0.TBP0 && end_block <= UnwrappedEndBlock();
 }
 
 bool GSTextureCache::Surface::Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i& rect)
 {
 	// Valid only for color formats.
-	u32 end_block = GSLocalMemory::m_psm[psm].info.bn(rect.z - 1, rect.w - 1, bp, bw);
-	u32 start_block = GSLocalMemory::m_psm[psm].info.bn(rect.x, rect.y, bp, bw);
+	const GSOffset off(GSLocalMemory::m_psm[psm].info, bp, bw, psm);
+	u32 end_block = off.bnNoWrap(rect.z - 1, rect.w - 1);
+	u32 start_block = off.bnNoWrap(rect.x, rect.y);
 	// Due to block ordering, end can be below start in a page, so if it's within a page, swap them.
 	if (end_block < start_block && ((start_block - end_block) < (1 << 5)))
 	{
 		std::swap(start_block, end_block);
 	}
-	const bool overlap = GSTextureCache::CheckOverlap(m_TEX0.TBP0, m_end_block, start_block, end_block);
+	const bool overlap = GSTextureCache::CheckOverlap(m_TEX0.TBP0, UnwrappedEndBlock(), start_block, end_block);
 	return overlap;
 }
 
@@ -2985,7 +3315,7 @@ void GSTextureCache::Source::SetPages()
 
 	m_repeating = !m_from_hash_cache && m_TEX0.IsRepeating() && !m_region.IsFixedTEX0(tw, th);
 
-	if (m_repeating && !CanPreload())
+	if (m_repeating && !m_target && !CanPreload())
 	{
 		// TODO: wrong for lupin/invalid tex0
 		m_p2t = g_gs_renderer->m_mem.GetPage2TileMap(m_TEX0);
@@ -3316,6 +3646,15 @@ void GSTextureCache::Target::Update(bool reset_age)
 	TEXA.TA0 = 0;
 	TEXA.TA1 = 0x80;
 
+	// Bilinear filtering this is probably not a good thing, at least in native, but upscaling Nearest can be gross and messy.
+	// It's needed for depth, though.. filtering depth doesn't make much sense, but SMT3 needs it..
+	const bool upscaled = (m_texture->GetScale().x > 1.0f);
+	const bool linear = (m_type == RenderTarget && upscaled);
+
+	GSDevice::MultiStretchRect* drects = static_cast<GSDevice::MultiStretchRect*>(
+		alloca(sizeof(GSDevice::MultiStretchRect) * static_cast<u32>(m_dirty.size())));
+	u32 ndrects = 0;
+
 	const GSOffset off(g_gs_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM));
 	for (size_t i = 0; i < m_dirty.size(); i++)
 	{
@@ -3336,41 +3675,35 @@ void GSTextureCache::Target::Update(bool reset_age)
 
 			t->Update(t_r, s_unswizzle_buffer, pitch);
 		}
+
+		GSDevice::MultiStretchRect& drect = drects[ndrects++];
+		drect.src = t;
+		drect.src_rect = GSVector4(r - t_offset) / t_sizef;
+		drect.dst_rect = GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy();
+		drect.linear = linear;
+		// Copy the new GS memory content into the destination texture.
+		if (m_type == RenderTarget)
+		{
+			GL_INS("ERROR: Update RenderTarget 0x%x bw:%d (%d,%d => %d,%d)", m_TEX0.TBP0, m_TEX0.TBW, r.x, r.y, r.z, r.w);
+			drect.wmask = static_cast<u8>(m_dirty[i].rgba._u32);
+		}
+		else if (m_type == DepthStencil)
+		{
+			GL_INS("ERROR: Update DepthStencil 0x%x", m_TEX0.TBP0);
+			drect.wmask = 0xF;
+		}
 	}
 
 	if (mapped)
 		t->Unmap();
 
-	for (size_t i = 0; i < m_dirty.size(); i++)
+	if (ndrects > 0)
 	{
-		const GSVector4i r(m_dirty.GetDirtyRect(i, m_TEX0, total_rect));
-
-		if (r.rempty())
-			continue;
-
-		const GSVector4 sRect(GSVector4(r - t_offset) / t_sizef);
-		const GSVector4 dRect(GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy());
-		// Copy the new GS memory content into the destination texture.
-		if (m_type == RenderTarget)
-		{
-			GL_INS("ERROR: Update RenderTarget 0x%x bw:%d (%d,%d => %d,%d)", m_TEX0.TBP0, m_TEX0.TBW, r.x, r.y, r.z, r.w);
-			if (m_dirty[i].rgba._u32 != 0xf)
-			{
-				g_gs_device->StretchRect(t, sRect, m_texture, dRect, m_dirty[i].rgba.c.r, m_dirty[i].rgba.c.g, m_dirty[i].rgba.c.b, m_dirty[i].rgba.c.a);
-			}
-			else
-			{
-				// Bilinear filtering this is probably not a good thing, at least in native, but upscaling Nearest can be gross and messy.
-				g_gs_device->StretchRect(t, sRect, m_texture, dRect, ShaderConvert::COPY, g_gs_renderer->CanUpscale());
-			}
-		}
-		else if (m_type == DepthStencil)
-		{
-			GL_INS("ERROR: Update DepthStencil 0x%x", m_TEX0.TBP0);
-
-			// FIXME linear or not?
-			g_gs_device->StretchRect(t, sRect, m_texture, dRect, ShaderConvert::RGBA8_TO_FLOAT32_BILN);
-		}
+		// No need to sort here, it's all the one texture.
+		const ShaderConvert shader = (m_type == RenderTarget) ? ShaderConvert::COPY :
+																(upscaled ? ShaderConvert::RGBA8_TO_FLOAT32 :
+																			ShaderConvert::RGBA8_TO_FLOAT32_BILN);
+		g_gs_device->DrawMultiStretchRects(drects, ndrects, m_texture, shader);
 	}
 
 	UpdateValidity(total_rect);
@@ -3519,18 +3852,6 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, const GSO
 {
 	m_surfaces.insert(s);
 
-	if (s->m_target)
-	{
-		// TODO
-
-		// GH: I don't know why but it seems we only consider the first page for a render target
-		const size_t page = TEX0.TBP0 >> 5;
-
-		s->m_erase_it[page] = m_map[page].InsertFront(s);
-
-		return;
-	}
-
 	// The source pointer will be stored/duplicated in all m_map[array of pages]
 	s->m_pages.loopPages([this, s](u32 page)
 	{
@@ -3568,18 +3889,10 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 		s->m_texture ? s->m_texture->GetID() : 0,
 		s->m_TEX0.TBP0);
 
-	if (s->m_target)
+	s->m_pages.loopPages([this, s](u32 page)
 	{
-		const size_t page = s->m_TEX0.TBP0 >> 5;
 		m_map[page].EraseIndex(s->m_erase_it[page]);
-	}
-	else
-	{
-		s->m_pages.loopPages([this, s](u32 page)
-		{
-			m_map[page].EraseIndex(s->m_erase_it[page]);
-		});
-	}
+	});
 
 	if (s->m_from_hash_cache)
 	{

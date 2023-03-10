@@ -348,6 +348,11 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
 		m_ui.bindList->addItem(item);
 	}
 
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(
+		dialog->getProfileSettingsInterface(), m_ui.pressure, section, fmt::format("Macro{}Pressure", index + 1u), 100.0f, 1.0f);
+	connect(m_ui.pressure, &QSlider::valueChanged, this, &ControllerMacroEditWidget::onPressureChanged);
+	onPressureChanged();
+
 	m_frequency = dialog->getIntValue(section.c_str(), fmt::format("Macro{}Frequency", index + 1u).c_str(), 0);
 	updateFrequencyText();
 
@@ -372,6 +377,11 @@ QString ControllerMacroEditWidget::getSummary() const
 		str += QString::fromUtf8(bi->name);
 	}
 	return str.isEmpty() ? tr("Not Configured") : str;
+}
+
+void ControllerMacroEditWidget::onPressureChanged()
+{
+	m_ui.pressureValue->setText(tr("%1%").arg(m_ui.pressure->value()));
 }
 
 void ControllerMacroEditWidget::onSetFrequencyClicked()

@@ -1710,6 +1710,15 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 		config.ds = nullptr;
 	if (!config.ds && m_current_render.color_target == rt && stencil == m_current_render.stencil_target && m_current_render.depth_target != config.tex)
 		config.ds = m_current_render.depth_target;
+	if (!rt && !config.ds)
+	{
+		// If we were rendering depth-only and depth gets cleared by the above check, that turns into rendering nothing, which should be a no-op
+		pxAssertDev(0, "RenderHW was given a completely useless draw call!");
+		[m_current_render.encoder insertDebugSignpost:@"Skipped no-color no-depth draw"];
+		if (primid_tex)
+			Recycle(primid_tex);
+		return;
+	}
 
 	BeginRenderPass(@"RenderHW", rt, MTLLoadActionLoad, config.ds, MTLLoadActionLoad, stencil, MTLLoadActionLoad);
 	id<MTLRenderCommandEncoder> mtlenc = m_current_render.encoder;

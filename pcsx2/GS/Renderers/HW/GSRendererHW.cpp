@@ -39,17 +39,6 @@ GSRendererHW::GSRendererHW()
 	ResetStates();
 }
 
-GSVector2i GSRendererHW::GetOutputSize(int real_h)
-{
-	GSVector2i crtc_size(PCRTCDisplays.GetResolution());
-
-	// Include negative display offsets in the height here.
-	crtc_size.y = std::max(crtc_size.y, real_h);
-
-	return GSVector2i(static_cast<float>(crtc_size.x),
-		static_cast<float>(crtc_size.y));
-}
-
 void GSRendererHW::SetTCOffset()
 {
 	m_userhacks_tcoffset_x = std::max<s32>(GSConfig.UserHacks_TCOffsetX, 0) / -1000.0f;
@@ -261,19 +250,19 @@ GSTexture* GSRendererHW::GetOutput(int i, int& y_offset)
 
 GSTexture* GSRendererHW::GetFeedbackOutput()
 {
-	GIFRegTEX0 TEX0 = {};
+	const int index = m_regs->EXTBUF.FBIN & 1;
+	const GSVector2i fb_size(PCRTCDisplays.GetFramebufferSize(index));
 
+	GIFRegTEX0 TEX0 = {};
 	TEX0.TBP0 = m_regs->EXTBUF.EXBP;
 	TEX0.TBW = m_regs->EXTBUF.EXBW;
-	TEX0.PSM = m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPFB.PSM;
+	TEX0.PSM = PCRTCDisplays.PCRTCDisplays[index].PSM;
 
-	const int fb_height = /*GetFrameRect(i).bottom*/ m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPLAY.DH;
-	GSVector2i size = GetOutputSize(fb_height);
-
-	if (m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPFB.DBX)
-		size.x += m_regs->DISP[m_regs->EXTBUF.FBIN & 1].DISPFB.DBX;
-
-	GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, GetOutputSize(fb_height) * GSConfig.UpscaleMultiplier, size.x, fb_height);
+	const GSVector2i scaled_size(static_cast<int>(static_cast<float>(fb_size.x) * GSConfig.UpscaleMultiplier),
+		static_cast<int>(static_cast<float>(fb_size.y) * GSConfig.UpscaleMultiplier));
+	GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, scaled_size, fb_size.x, fb_size.y);
+	if (!rt)
+		return nullptr;
 
 	GSTexture* t = rt->m_texture;
 
@@ -1635,6 +1624,29 @@ void GSRendererHW::Draw()
 		m_context->offset.tex = m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
 		tmm = GetTextureMinMax(TEX0, MIP_CLAMP, m_vt.IsLinear());
+
+		// Snowblind games set TW/TH to 1024, and use UVs for smaller textures inside that.
+		// Such textures usually contain junk in local memory, so try to make them smaller based on UVs.
+		// We can only do this for UVs, because ST repeat won't be correct.
+
+		if (GSConfig.UserHacks_EstimateTextureRegion && // enabled
+			(PRIM->FST || (MIP_CLAMP.WMS == CLAMP_CLAMP && MIP_CLAMP.WMT == CLAMP_CLAMP)) && // UV or ST with clamp
+			TEX0.TW >= 9 && TEX0.TH >= 9 && // 512x512
+			MIP_CLAMP.WMS < CLAMP_REGION_CLAMP && MIP_CLAMP.WMT < CLAMP_REGION_CLAMP && // not using custom region
+			((m_vt.m_max.t >= GSVector4(512.0f)).mask() & 0x3) == 0) // If the UVs actually are large, don't optimize.
+		{
+			// Clamp to the UVs of the texture. We could align this to something, but it ends up working better to just duplicate
+			// for different sizes in the hash cache, rather than hashing more and duplicating based on local memory.
+			const GSVector4i maxt(m_vt.m_max.t + GSVector4(m_vt.IsLinear() ? 0.5f : 0.0f));
+			MIP_CLAMP.WMS = CLAMP_REGION_CLAMP;
+			MIP_CLAMP.WMT = CLAMP_REGION_CLAMP;
+			MIP_CLAMP.MINU = 0;
+			MIP_CLAMP.MAXU = maxt.x >> m_lod.x;
+			MIP_CLAMP.MINV = 0;
+			MIP_CLAMP.MAXV = maxt.y >> m_lod.x;
+			GL_CACHE("Estimated texture region: %u,%u -> %u,%u", MIP_CLAMP.MINU, MIP_CLAMP.MINV, MIP_CLAMP.MAXU + 1,
+				MIP_CLAMP.MAXV + 1);
+		}
 
 		m_src = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage) :
 								m_tc->LookupSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, (GSConfig.HWMipmap >= HWMipmapLevel::Basic || GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr);
@@ -3131,6 +3143,12 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 			}
 			else if (blend_mix2)
 			{
+				// Allow to compensate when Cs*(Alpha + 1) overflows, to compensate we change
+				// the alpha output value for Cd*Alpha.
+				m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::SRC1_COLOR, blend.op, false, 0};
+				m_conf.ps.clr_hw = 3;
+				m_conf.ps.no_color1 = false;
+
 				m_conf.ps.blend_a = 0;
 				m_conf.ps.blend_b = 2;
 				m_conf.ps.blend_d = 0;
