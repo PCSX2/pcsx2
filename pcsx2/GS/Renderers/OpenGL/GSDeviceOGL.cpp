@@ -515,7 +515,7 @@ bool GSDeviceOGL::Create()
 	}
 	else
 	{
-		fprintf(stdout, "No extenstion supported to get available memory. Use default value !\n");
+		fprintf(stdout, "No extension supported to get available memory. Use default value !\n");
 	}
 
 	// When VRAM is at least 2GB, we set the limit to the default i.e. 3.8 GB
