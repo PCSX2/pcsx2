@@ -2076,7 +2076,7 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_TCC", sel.tcc);
 	AddMacro(ss, "PS_ATST", sel.atst);
 	AddMacro(ss, "PS_FOG", sel.fog);
-	AddMacro(ss, "PS_CLR_HW", sel.clr_hw);
+	AddMacro(ss, "PS_BLEND_HW", sel.clr_hw);
 	AddMacro(ss, "PS_FBA", sel.fba);
 	AddMacro(ss, "PS_LTF", sel.ltf);
 	AddMacro(ss, "PS_AUTOMATIC_LOD", sel.automatic_lod);

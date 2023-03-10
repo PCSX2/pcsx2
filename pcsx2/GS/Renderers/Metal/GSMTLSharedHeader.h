@@ -182,7 +182,7 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_BLEND_B,
 	GSMTLConstantIndex_PS_BLEND_C,
 	GSMTLConstantIndex_PS_BLEND_D,
-	GSMTLConstantIndex_PS_CLR_HW,
+	GSMTLConstantIndex_PS_BLEND_HW,
 	GSMTLConstantIndex_PS_HDR,
 	GSMTLConstantIndex_PS_COLCLIP,
 	GSMTLConstantIndex_PS_BLEND_MIX,
