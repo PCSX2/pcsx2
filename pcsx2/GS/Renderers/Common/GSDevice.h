@@ -327,7 +327,8 @@ struct alignas(16) GSHWDrawConfig
 				u32 blend_c     : 2;
 				u32 blend_d     : 2;
 				u32 fixed_one_a : 1;
-				u32 blend_hw    : 3;
+				u32 blend_hw    : 2;
+				u32 a_masked    : 1;
 				u32 hdr         : 1;
 				u32 colclip     : 1;
 				u32 blend_mix   : 2;
