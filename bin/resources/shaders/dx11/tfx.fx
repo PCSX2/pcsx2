@@ -30,7 +30,7 @@
 #define PS_ATST 1
 #define PS_FOG 0
 #define PS_IIP 0
-#define PS_CLR_HW 0
+#define PS_BLEND_HW 0
 #define PS_FBA 0
 #define PS_FBMASK 0
 #define PS_LTF 1
@@ -798,9 +798,9 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		float3 D = (PS_BLEND_D == 0) ? Cs : ((PS_BLEND_D == 1) ? Cd : (float3)0.0f);
 
 		// As/Af clamp alpha for Blend mix
-		// We shouldn't clamp blend mix with clr1 as we want alpha higher
+		// We shouldn't clamp blend mix with blend hw 1 as we want alpha higher
 		float C_clamped = C;
-		if (PS_BLEND_MIX > 0 && PS_CLR_HW != 1)
+		if (PS_BLEND_MIX > 0 && PS_BLEND_HW != 1)
 			C_clamped = min(C_clamped, 1.0f);
 
 		if (PS_BLEND_A == PS_BLEND_B)
@@ -819,7 +819,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		else
 			Color.rgb = trunc(((A - B) * C) + D);
 
-		if (PS_CLR_HW == 1)
+		if (PS_BLEND_HW == 1)
 		{
 			// As or Af
 			As_rgba.rgb = (float3)C;
@@ -831,7 +831,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			float3 alpha_compensate = max((float3)1.0f, Color.rgb / (float3)255.0f);
 			As_rgba.rgb -= alpha_compensate;
 		}
-		else if (PS_CLR_HW == 2 || PS_CLR_HW == 4)
+		else if (PS_BLEND_HW == 2 || PS_BLEND_HW == 4)
 		{
 			// Compensate slightly for Cd*(As + 1) - Cs*As.
 			// The initial factor we chose is 1 (0.00392)
@@ -841,7 +841,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			float color_compensate = 1.0f * (C + 1.0f);
 			Color.rgb -= (float3)color_compensate;
 		}
-		else if (PS_CLR_HW == 3 || PS_CLR_HW == 5)
+		else if (PS_BLEND_HW == 3 || PS_BLEND_HW == 5)
 		{
 			// As, Ad or Af clamped.
 			As_rgba.rgb = (float3)C_clamped;
@@ -854,13 +854,13 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 	}
 	else
 	{
-		if (PS_CLR_HW == 1 || PS_CLR_HW == 5)
+		if (PS_BLEND_HW == 1 || PS_BLEND_HW == 5)
 		{
 			// Needed for Cd * (As/Ad/F + 1) blending modes
 
 			Color.rgb = (float3)255.0f;
 		}
-		else if (PS_CLR_HW == 2 || PS_CLR_HW == 4)
+		else if (PS_BLEND_HW == 2 || PS_BLEND_HW == 4)
 		{
 			// Cd*As,Cd*Ad or Cd*F
 
@@ -869,7 +869,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			Color.rgb = max((float3)0.0f, (Alpha - (float3)1.0f));
 			Color.rgb *= (float3)255.0f;
 		}
-		else if (PS_CLR_HW == 3)
+		else if (PS_BLEND_HW == 3)
 		{
 			// Needed for Cs*Ad, Cs*Ad + Cd, Cd - Cs*Ad
 			// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value when rgb are below 128.
@@ -943,7 +943,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	}
 
 	float4 alpha_blend;
-	if (PS_BLEND_C == 1 && PS_CLR_HW > 3)
+	if (PS_BLEND_C == 1 && PS_BLEND_HW > 3)
 	{
 		float4 RT = trunc(RtTexture.Load(int3(input.p.xy, 0)) * 255.0f + 0.1f);
 		alpha_blend = (float4)(RT.a / 128.0f);
