@@ -3105,6 +3105,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 			m_conf.ps.no_color1 = true;
 
 			// Only Ad case will require one barrier
+			// No need to set a_masked bit for blend_ad_alpha_masked case
 			m_conf.require_one_barrier |= blend_ad_alpha_masked;
 		}
 		else if (blend_mix)
@@ -3134,7 +3135,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 				{
 					// Compensate slightly for Cd*(As + 1) - Cs*As.
 					// Try to compensate a bit with subtracting 1 (0.00392) * (Alpha + 1) from Cs.
-					m_conf.ps.blend_hw = blend_ad_alpha_masked ? 4 : 2;
+					m_conf.ps.blend_hw = 2;
 				}
 
 				m_conf.ps.blend_a = 0;
@@ -3146,7 +3147,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 				// Allow to compensate when Cs*(Alpha + 1) overflows, to compensate we change
 				// the alpha output value for Cd*Alpha.
 				m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::SRC1_COLOR, blend.op, false, 0};
-				m_conf.ps.blend_hw = blend_ad_alpha_masked ? 5 : 3;
+				m_conf.ps.blend_hw = 3;
 				m_conf.ps.no_color1 = false;
 
 				m_conf.ps.blend_a = 0;
@@ -3163,11 +3164,9 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 			// Only Ad case will require one barrier
 			if (blend_ad_alpha_masked)
 			{
-				m_conf.require_one_barrier |= true;
 				// Swap Ad with As for hw blend
-				// Check if blend mix 1 or 2 already enabled clr
-				if (m_conf.ps.blend_hw == 0)
-					m_conf.ps.blend_hw = 6;
+				m_conf.ps.a_masked = 1;
+				m_conf.require_one_barrier |= true;
 			}
 		}
 		else
@@ -3178,6 +3177,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 			replace_dual_src = false;
 			blending_alpha_pass = false;
 
+			// No need to set a_masked bit for blend_ad_alpha_masked case
 			const bool blend_non_recursive_one_barrier = blend_non_recursive && blend_ad_alpha_masked;
 			if (blend_non_recursive_one_barrier)
 				m_conf.require_one_barrier |= true;
@@ -3197,35 +3197,25 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 		// Care for hw blend value, 6 is for hw/sw, sw blending used.
 		if (blend_flag & BLEND_HW_CLR1)
 		{
-			if (blend_ad_alpha_masked)
-				m_conf.ps.blend_hw = 5;
-			else
-				m_conf.ps.blend_hw = 1;
+			m_conf.ps.blend_hw = 1;
 		}
 		else if (blend_flag & (BLEND_HW_CLR2))
 		{
-			if (blend_ad_alpha_masked)
-			{
-				m_conf.ps.blend_hw = 4;
-			}
-			else
-			{
-				if (m_conf.ps.blend_c == 2)
-					m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(AFIX) / 128.0f;
+			if (m_conf.ps.blend_c == 2)
+				m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(AFIX) / 128.0f;
 
-				m_conf.ps.blend_hw = 2;
-			}
+			m_conf.ps.blend_hw = 2;
 		}
 		else if (blend_flag & BLEND_HW_CLR3)
 		{
 			m_conf.ps.blend_hw = 3;
 		}
-		else if (blend_ad_alpha_masked)
-		{
-			m_conf.ps.blend_hw = 6;
-		}
 
-		m_conf.require_one_barrier |= blend_ad_alpha_masked;
+		if (blend_ad_alpha_masked)
+		{
+			m_conf.ps.a_masked = 1;
+			m_conf.require_one_barrier |= true;
+		}
 
 		const HWBlend blend(GSDevice::GetBlend(blend_index, replace_dual_src));
 		m_conf.blend = {true, blend.src, blend.dst, blend.op, m_conf.ps.blend_c == 2, AFIX};

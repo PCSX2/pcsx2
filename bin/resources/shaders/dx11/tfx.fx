@@ -31,6 +31,7 @@
 #define PS_FOG 0
 #define PS_IIP 0
 #define PS_BLEND_HW 0
+#define PS_A_MASKED 0
 #define PS_FBA 0
 #define PS_FBMASK 0
 #define PS_LTF 1
@@ -71,6 +72,7 @@
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 #define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
+#define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
 
 struct VS_INPUT
 {
@@ -831,7 +833,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			float3 alpha_compensate = max((float3)1.0f, Color.rgb / (float3)255.0f);
 			As_rgba.rgb -= alpha_compensate;
 		}
-		else if (PS_BLEND_HW == 2 || PS_BLEND_HW == 4)
+		else if (PS_BLEND_HW == 2)
 		{
 			// Compensate slightly for Cd*(As + 1) - Cs*As.
 			// The initial factor we chose is 1 (0.00392)
@@ -841,7 +843,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			float color_compensate = 1.0f * (C + 1.0f);
 			Color.rgb -= (float3)color_compensate;
 		}
-		else if (PS_BLEND_HW == 3 || PS_BLEND_HW == 5)
+		else if (PS_BLEND_HW == 3)
 		{
 			// As, Ad or Af clamped.
 			As_rgba.rgb = (float3)C_clamped;
@@ -854,13 +856,13 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 	}
 	else
 	{
-		if (PS_BLEND_HW == 1 || PS_BLEND_HW == 5)
+		if (PS_BLEND_HW == 1)
 		{
 			// Needed for Cd * (As/Ad/F + 1) blending modes
 
 			Color.rgb = (float3)255.0f;
 		}
-		else if (PS_BLEND_HW == 2 || PS_BLEND_HW == 4)
+		else if (PS_BLEND_HW == 2)
 		{
 			// Cd*As,Cd*Ad or Cd*F
 
@@ -943,7 +945,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	}
 
 	float4 alpha_blend;
-	if (PS_BLEND_C == 1 && PS_BLEND_HW > 3)
+	if (SW_AD_TO_HW)
 	{
 		float4 RT = trunc(RtTexture.Load(int3(input.p.xy, 0)) * 255.0f + 0.1f);
 		alpha_blend = (float4)(RT.a / 128.0f);

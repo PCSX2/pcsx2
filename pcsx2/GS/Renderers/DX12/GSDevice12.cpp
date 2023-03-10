@@ -1614,6 +1614,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_FOG", sel.fog);
 	sm.AddMacro("PS_IIP", sel.iip);
 	sm.AddMacro("PS_BLEND_HW", sel.blend_hw);
+	sm.AddMacro("PS_A_MASKED", sel.a_masked);
 	sm.AddMacro("PS_FBA", sel.fba);
 	sm.AddMacro("PS_FBMASK", sel.fbmask);
 	sm.AddMacro("PS_LTF", sel.ltf);

@@ -50,6 +50,7 @@ constant uint PS_BLEND_B            [[function_constant(GSMTLConstantIndex_PS_BL
 constant uint PS_BLEND_C            [[function_constant(GSMTLConstantIndex_PS_BLEND_C)]];
 constant uint PS_BLEND_D            [[function_constant(GSMTLConstantIndex_PS_BLEND_D)]];
 constant uint PS_BLEND_HW           [[function_constant(GSMTLConstantIndex_PS_BLEND_HW)]];
+constant bool PS_A_MASKED           [[function_constant(GSMTLConstantIndex_PS_A_MASKED)]];
 constant bool PS_HDR                [[function_constant(GSMTLConstantIndex_PS_HDR)]];
 constant bool PS_COLCLIP            [[function_constant(GSMTLConstantIndex_PS_COLCLIP)]];
 constant uint PS_BLEND_MIX          [[function_constant(GSMTLConstantIndex_PS_BLEND_MIX)]];
@@ -95,7 +96,7 @@ constant bool PS_TEX_IS_COLOR = !PS_TEX_IS_DEPTH;
 constant bool PS_HAS_PALETTE = PS_PAL_FMT != 0 || (PS_CHANNEL >= 1 && PS_CHANNEL <= 5);
 constant bool NOT_IIP = !IIP;
 constant bool SW_BLEND = (PS_BLEND_A != PS_BLEND_B) || PS_BLEND_D;
-constant bool SW_AD_TO_HW = PS_BLEND_C == 1 && PS_BLEND_HW > 3;
+constant bool SW_AD_TO_HW = (PS_BLEND_C == 1 && PS_A_MASKED);
 constant bool NEEDS_RT_FOR_BLEND = (((PS_BLEND_A != PS_BLEND_B) && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1)) || PS_BLEND_D == 1 || SW_AD_TO_HW);
 constant bool NEEDS_RT_EARLY = PS_TEX_IS_FB || PS_DATE >= 5;
 constant bool NEEDS_RT = NEEDS_RT_EARLY || (!PS_PRIM_CHECKING_INIT && (PS_FBMASK || NEEDS_RT_FOR_BLEND));
@@ -891,7 +892,7 @@ struct PSMain
 				float3 alpha_compensate = max(float3(1.f), Color.rgb / float3(255.f));
 				As_rgba.rgb -= alpha_compensate;
 			}
-			else if (PS_BLEND_HW == 2 || PS_BLEND_HW == 4)
+			else if (PS_BLEND_HW == 2)
 			{
 				// Compensate slightly for Cd*(As + 1) - Cs*As.
 				// The initial factor we chose is 1 (0.00392)
@@ -901,7 +902,7 @@ struct PSMain
 				float color_compensate = 1.f * (C + 1.f);
 				Color.rgb -= float3(color_compensate);
 			}
-			else if (PS_BLEND_HW == 3 || PS_BLEND_HW == 5)
+			else if (PS_BLEND_HW == 3)
 			{
 				// As, Ad or Af clamped.
 				As_rgba.rgb = float3(C_clamped);
@@ -915,11 +916,11 @@ struct PSMain
 		else
 		{
 			// Needed for Cd * (As/Ad/F + 1) blending mdoes
-			if (PS_BLEND_HW == 1 || PS_BLEND_HW == 5)
+			if (PS_BLEND_HW == 1)
 			{
 				Color.rgb = 255.f;
 			}
-			else if (PS_BLEND_HW == 2 || PS_BLEND_HW == 4)
+			else if (PS_BLEND_HW == 2)
 			{
 				float Alpha = PS_BLEND_C == 2 ? cb.alpha_fix : As;
 				Color.rgb = saturate(Alpha - 1.f) * 255.f;

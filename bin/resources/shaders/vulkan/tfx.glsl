@@ -321,6 +321,7 @@ void main()
 #define PS_ATST 1
 #define PS_FOG 0
 #define PS_BLEND_HW 0
+#define PS_A_MASKED 0
 #define PS_FBA 0
 #define PS_FBMASK 0
 #define PS_LTF 1
@@ -352,6 +353,7 @@ void main()
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 #define SW_BLEND_NEEDS_RT (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1)
+#define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
 
 #define PS_FEEDBACK_LOOP_IS_NEEDED (PS_TEX_IS_FB == 1 || PS_FBMASK || SW_BLEND_NEEDS_RT || (PS_DATE >= 5))
 
@@ -1105,7 +1107,7 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 			// changed alpha should only be done for hw blend.
 			vec3 alpha_compensate = max(vec3(1.0f), Color.rgb / vec3(255.0f));
 			As_rgba.rgb -= alpha_compensate;
-		#elif PS_BLEND_HW == 2 || PS_BLEND_HW == 4
+		#elif PS_BLEND_HW == 2
 			// Compensate slightly for Cd*(As + 1) - Cs*As.
 			// The initial factor we chose is 1 (0.00392)
 			// as that is the minimum color Cd can be,
@@ -1113,7 +1115,7 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 			// blended value it can be.
 			float color_compensate = 1.0f * (C + 1.0f);
 			Color.rgb -= vec3(color_compensate);
-		#elif PS_BLEND_HW == 3 || PS_BLEND_HW == 5
+		#elif PS_BLEND_HW == 3
 			// As, Ad or Af clamped.
 			As_rgba.rgb = vec3(C_clamped);
 			// Cs*(Alpha + 1) might overflow, if it does then adjust alpha value
@@ -1124,10 +1126,10 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 		#endif
 
 	#else
-		#if PS_BLEND_HW == 1 || PS_BLEND_HW == 5
+		#if PS_BLEND_HW == 1
 			// Needed for Cd * (As/Ad/F + 1) blending modes
 			Color.rgb = vec3(255.0f);
-		#elif PS_BLEND_HW == 2 || PS_BLEND_HW == 4
+		#elif PS_BLEND_HW == 2
 			// Cd*As,Cd*Ad or Cd*F
 
 			#if PS_BLEND_C == 2
@@ -1231,7 +1233,7 @@ void main()
 	C.a = 128.0f;
 #endif
 
-#if (PS_BLEND_C == 1 && PS_BLEND_HW > 3)
+#if (SW_AD_TO_HW)
 	vec4 RT = trunc(subpassLoad(RtSampler) * 255.0f + 0.1f);
 	vec4 alpha_blend = vec4(RT.a / 128.0f);
 #else
