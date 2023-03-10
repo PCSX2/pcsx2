@@ -285,7 +285,7 @@ void Host::ReleaseHostDisplay(bool clear_state)
 
 HostDisplay::PresentResult Host::BeginPresentFrame(bool frame_skip)
 {
-	if (s_loop_number == 0)
+	if (s_loop_number == 0 && !s_output_prefix.empty())
 	{
 		// when we wrap around, don't race other files
 		GSJoinSnapshotThreads();
@@ -680,7 +680,7 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	if (s_use_window.value_or(false) && !GSRunner::CreatePlatformWindow())
+	if (s_use_window.value_or(true) && !GSRunner::CreatePlatformWindow())
 	{
 		Console.Error("Failed to create window.");
 		return EXIT_FAILURE;
