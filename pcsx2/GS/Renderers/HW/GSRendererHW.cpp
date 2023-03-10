@@ -3125,8 +3125,8 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 					// As - 1 or F - 1 subtraction is only done for the dual source output (hw blending part) since we are changing the equation.
 					// Af will be replaced with As in shader and send it to dual source output.
 					m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::SRC1_COLOR, GSDevice::OP_SUBTRACT, false, 0};
-					// clr_hw 1 will disable alpha clamp, we can reuse the old bits.
-					m_conf.ps.clr_hw = 1;
+					// blend hw 1 will disable alpha clamp, we can reuse the old bits.
+					m_conf.ps.blend_hw = 1;
 					// DSB output will always be used.
 					m_conf.ps.no_color1 = false;
 				}
@@ -3134,7 +3134,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 				{
 					// Compensate slightly for Cd*(As + 1) - Cs*As.
 					// Try to compensate a bit with subtracting 1 (0.00392) * (Alpha + 1) from Cs.
-					m_conf.ps.clr_hw = blend_ad_alpha_masked ? 4 : 2;
+					m_conf.ps.blend_hw = blend_ad_alpha_masked ? 4 : 2;
 				}
 
 				m_conf.ps.blend_a = 0;
@@ -3146,7 +3146,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 				// Allow to compensate when Cs*(Alpha + 1) overflows, to compensate we change
 				// the alpha output value for Cd*Alpha.
 				m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::SRC1_COLOR, blend.op, false, 0};
-				m_conf.ps.clr_hw = blend_ad_alpha_masked ? 5 : 3;
+				m_conf.ps.blend_hw = blend_ad_alpha_masked ? 5 : 3;
 				m_conf.ps.no_color1 = false;
 
 				m_conf.ps.blend_a = 0;
@@ -3166,8 +3166,8 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 				m_conf.require_one_barrier |= true;
 				// Swap Ad with As for hw blend
 				// Check if blend mix 1 or 2 already enabled clr
-				if (m_conf.ps.clr_hw == 0)
-					m_conf.ps.clr_hw = 6;
+				if (m_conf.ps.blend_hw == 0)
+					m_conf.ps.blend_hw = 6;
 			}
 		}
 		else
@@ -3194,35 +3194,35 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 		m_conf.ps.blend_b = 0;
 		m_conf.ps.blend_d = 0;
 
-		// Care for clr_hw value, 6 is for hw/sw, sw blending used.
+		// Care for hw blend value, 6 is for hw/sw, sw blending used.
 		if (blend_flag & BLEND_C_CLR1)
 		{
 			if (blend_ad_alpha_masked)
-				m_conf.ps.clr_hw = 5;
+				m_conf.ps.blend_hw = 5;
 			else
-				m_conf.ps.clr_hw = 1;
+				m_conf.ps.blend_hw = 1;
 		}
 		else if (blend_flag & (BLEND_C_CLR2_AS | BLEND_C_CLR2_AF))
 		{
 			if (blend_ad_alpha_masked)
 			{
-				m_conf.ps.clr_hw = 4;
+				m_conf.ps.blend_hw = 4;
 			}
 			else
 			{
 				if (m_conf.ps.blend_c == 2)
 					m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(AFIX) / 128.0f;
 
-				m_conf.ps.clr_hw = 2;
+				m_conf.ps.blend_hw = 2;
 			}
 		}
 		else if (blend_flag & BLEND_C_CLR3)
 		{
-			m_conf.ps.clr_hw = 3;
+			m_conf.ps.blend_hw = 3;
 		}
 		else if (blend_ad_alpha_masked)
 		{
-			m_conf.ps.clr_hw = 6;
+			m_conf.ps.blend_hw = 6;
 		}
 
 		m_conf.require_one_barrier |= blend_ad_alpha_masked;
