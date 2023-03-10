@@ -46,6 +46,9 @@ def run_regression_test(runner, dumpdir, renderer, upscale, renderhacks, paralle
     if parallel > 1:
         args.append("-noshadercache")
 
+    # run surfaceless, we don't want tons of windows popping up
+    args.append("-surfaceless");
+
     # disable output console entirely
     environ = os.environ.copy()
     environ["PCSX2_NOCONSOLE"] = "1"
