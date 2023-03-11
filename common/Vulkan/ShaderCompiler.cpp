@@ -55,7 +55,7 @@ namespace Vulkan::ShaderCompiler
 		shader->setStringsWithLengths(&pass_source_code, &pass_source_code_length, 1);
 
 		auto DumpBadShader = [&](const char* msg) {
-			std::string filename = StringUtil::StdStringFromFormat("bad_shader_%u.txt", s_next_bad_shader_id++);
+			std::string filename = StringUtil::StdStringFromFormat("pcsx2_bad_shader_%u.txt", s_next_bad_shader_id++);
 			Console.Error("CompileShaderToSPV: %s, writing to %s", msg, filename.c_str());
 
 			std::ofstream ofs(filename.c_str(), std::ofstream::out | std::ofstream::binary);
