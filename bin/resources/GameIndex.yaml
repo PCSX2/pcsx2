@@ -714,7 +714,7 @@ SCAJ-20062:
   name: "Crouching Tiger, Hidden Dragon"
   region: "NTSC-Unk"
   gameFixes:
-    - InstantDMAHack # Fixes FMVs to be visable.
+    - InstantDMAHack # Fixes FMVs to be visible.
 SCAJ-20063:
   name: "Popolocrois - The Law of the Moon"
   region: "NTSC-Unk"
@@ -13850,7 +13850,7 @@ SLES-51916:
   name: "Crouching Tiger, Hidden Dragon"
   region: "PAL-M5"
   gameFixes:
-    - InstantDMAHack # Fixes FMVs to be visable.
+    - InstantDMAHack # Fixes FMVs to be visible.
 SLES-51917:
   name: "Beyond Good and Evil"
   region: "PAL-M6"
@@ -15388,6 +15388,7 @@ SLES-52621:
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes water and grass textures.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
 SLES-52622:
@@ -38240,7 +38241,7 @@ SLPS-25308:
   name: "Crouching Tiger, Hidden Dragon"
   region: "NTSC-J"
   gameFixes:
-    - InstantDMAHack # Fixes FMVs to be visable.
+    - InstantDMAHack # Fixes FMVs to be visible.
 SLPS-25309:
   name: "Exciting Pro Wrestling 4 [Yuke's The Best]"
   region: "NTSC-J"
@@ -43479,7 +43480,7 @@ SLUS-20523:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - InstantDMAHack # Fixes FMVs to be visable.
+    - InstantDMAHack # Fixes FMVs to be visible.
 SLUS-20524:
   name: "Fighter Maker 2"
   region: "NTSC-U"
@@ -45677,6 +45678,7 @@ SLUS-20965:
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes water and grass textures.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
 SLUS-20966:
