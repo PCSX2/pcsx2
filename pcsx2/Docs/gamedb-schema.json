@@ -136,11 +136,6 @@
               "minimum": 0,
               "maximum": 1
             },
-            "wrapGSMem": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1
-            },
             "preloadFrameData": {
               "type": "integer",
               "minimum": 0,
