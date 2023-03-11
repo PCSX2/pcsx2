@@ -15396,6 +15396,10 @@ SLES-52622:
   region: "PAL-M4"
   roundModes:
     vu1RoundMode: 0 # Crashes without.
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes water and grass textures.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-52624:
   name: "X-Men Legends"
   region: "PAL-E"
