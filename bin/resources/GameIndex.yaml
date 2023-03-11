@@ -15383,6 +15383,9 @@ SLES-52621:
   region: "PAL-E"
   roundModes:
     vu1RoundMode: 0 # Crashes without.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-52622:
   name: "Tony Hawk's Underground 2"
   region: "PAL-M4"
@@ -45665,6 +45668,9 @@ SLUS-20965:
   compat: 5
   roundModes:
     vu1RoundMode: 0 # Crashes without.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20966:
   name: "State of Emergency 2"
   region: "NTSC-U"
