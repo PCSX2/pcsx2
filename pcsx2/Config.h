@@ -666,7 +666,6 @@ struct Pcsx2Config
 					GPUPaletteConversion : 1,
 					AutoFlushSW : 1,
 					PreloadFrameWithGSData : 1,
-					WrapGSMem : 1,
 					Mipmap : 1,
 					ManualUserHacks : 1,
 					UserHacks_AlignSpriteX : 1,

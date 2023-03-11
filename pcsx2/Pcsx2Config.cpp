@@ -431,7 +431,6 @@ Pcsx2Config::GSOptions::GSOptions()
 	GPUPaletteConversion = false;
 	AutoFlushSW = true;
 	PreloadFrameWithGSData = false;
-	WrapGSMem = false;
 	Mipmap = true;
 
 	ManualUserHacks = false;
@@ -780,7 +779,6 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 	UserHacks_RoundSprite = 0;
 	UserHacks_AutoFlush = false;
 	PreloadFrameWithGSData = false;
-	WrapGSMem = false;
 	UserHacks_DisablePartialInvalidation = false;
 	UserHacks_DisableDepthSupport = false;
 	UserHacks_CPUFBConversion = false;

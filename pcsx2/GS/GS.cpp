@@ -756,7 +756,6 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		GSConfig.TriFilter != old_config.TriFilter ||
 		GSConfig.GPUPaletteConversion != old_config.GPUPaletteConversion ||
 		GSConfig.PreloadFrameWithGSData != old_config.PreloadFrameWithGSData ||
-		GSConfig.WrapGSMem != old_config.WrapGSMem ||
 		GSConfig.UserHacks_CPUFBConversion != old_config.UserHacks_CPUFBConversion ||
 		GSConfig.UserHacks_DisableDepthSupport != old_config.UserHacks_DisableDepthSupport ||
 		GSConfig.UserHacks_DisablePartialInvalidation != old_config.UserHacks_DisablePartialInvalidation ||
