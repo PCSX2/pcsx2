@@ -431,8 +431,6 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("TPV ");
 		if (GSConfig.UserHacks_DisableSafeFeatures)
 			APPEND("DSF ");
-		if (GSConfig.WrapGSMem)
-			APPEND("WGSM ");
 		if (GSConfig.PreloadFrameWithGSData)
 			APPEND("PLFD ");
 	}

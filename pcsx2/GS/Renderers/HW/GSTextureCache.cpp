@@ -3369,23 +3369,18 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int level)
 			for (int x = r.left; x < r.right; bn.nextBlockX(), x += bs.x)
 			{
 				const int i = (bn.blkY() << 7) + bn.blkX();
-				const u32 block = bn.valueNoWrap();
+				const u32 addr = i % MAX_BLOCKS;
 
-				if (block < MAX_BLOCKS || GSConfig.WrapGSMem)
+				const u32 row = addr >> 5u;
+				const u32 col = 1 << (addr & 31u);
+
+				if ((m_valid[row] & col) == 0)
 				{
-					const u32 addr = i % MAX_BLOCKS;
+					m_valid[row] |= col;
 
-					const u32 row = addr >> 5u;
-					const u32 col = 1 << (addr & 31u);
+					Write(GSVector4i(x, y, x + bs.x, y + bs.y), level);
 
-					if ((m_valid[row] & col) == 0)
-					{
-						m_valid[row] |= col;
-
-						Write(GSVector4i(x, y, x + bs.x, y + bs.y), level);
-
-						blocks++;
-					}
+					blocks++;
 				}
 			}
 		}
@@ -3396,23 +3391,17 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int level)
 		{
 			for (int x = r.left; x < r.right; x += bs.x, bn.nextBlockX())
 			{
-				u32 block = bn.valueNoWrap();
+				const u32 block = bn.value();
+				const u32 row = block >> 5u;
+				const u32 col = 1 << (block & 31u);
 
-				if (block < MAX_BLOCKS || GSConfig.WrapGSMem)
+				if ((m_valid[row] & col) == 0)
 				{
-					block %= MAX_BLOCKS;
+					m_valid[row] |= col;
 
-					const u32 row = block >> 5u;
-					const u32 col = 1 << (block & 31u);
+					Write(GSVector4i(x, y, x + bs.x, y + bs.y), level);
 
-					if ((m_valid[row] & col) == 0)
-					{
-						m_valid[row] |= col;
-
-						Write(GSVector4i(x, y, x + bs.x, y + bs.y), level);
-
-						blocks++;
-					}
+					blocks++;
 				}
 			}
 		}

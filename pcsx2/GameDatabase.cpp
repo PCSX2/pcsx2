@@ -345,7 +345,6 @@ static const char* s_gs_hw_fix_names[] = {
 	"cpuFramebufferConversion",
 	"readTCOnClose",
 	"disableDepthSupport",
-	"wrapGSMem",
 	"preloadFrameData",
 	"disablePartialInvalidation",
 	"partialTargetInvalidation",
@@ -568,9 +567,6 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::DisableDepthSupport:
 			return (static_cast<int>(config.UserHacks_DisableDepthSupport) == value);
 
-		case GSHWFixId::WrapGSMem:
-			return (static_cast<int>(config.WrapGSMem) == value);
-
 		case GSHWFixId::PreloadFrameData:
 			return (static_cast<int>(config.PreloadFrameWithGSData) == value);
 
@@ -698,10 +694,6 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 
 			case GSHWFixId::DisableDepthSupport:
 				config.UserHacks_DisableDepthSupport = (value > 0);
-				break;
-
-			case GSHWFixId::WrapGSMem:
-				config.WrapGSMem = (value > 0);
 				break;
 
 			case GSHWFixId::PreloadFrameData:
