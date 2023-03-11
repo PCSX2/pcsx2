@@ -77,7 +77,7 @@ namespace GL
 			{
 				Console.Error("Shader failed to compile:\n%s", info_log.c_str());
 
-				std::ofstream ofs(StringUtil::StdStringFromFormat("bad_shader_%u.txt", s_next_bad_shader_id++).c_str(),
+				std::ofstream ofs(StringUtil::StdStringFromFormat("pcsx2_bad_shader_%u.txt", s_next_bad_shader_id++).c_str(),
 					std::ofstream::out | std::ofstream::binary);
 				if (ofs.is_open())
 				{

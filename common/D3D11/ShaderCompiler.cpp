@@ -79,7 +79,7 @@ wil::com_ptr_nothrow<ID3DBlob> D3D11::ShaderCompiler::CompileShader(Type type, D
 	{
 		Console.WriteLn("Failed to compile '%s':\n%s", target, error_string.c_str());
 
-		std::ofstream ofs(StringUtil::StdStringFromFormat("bad_shader_%u.txt", s_next_bad_shader_id++).c_str(),
+		std::ofstream ofs(StringUtil::StdStringFromFormat("pcsx2_bad_shader_%u.txt", s_next_bad_shader_id++).c_str(),
 			std::ofstream::out | std::ofstream::binary);
 		if (ofs.is_open())
 		{
