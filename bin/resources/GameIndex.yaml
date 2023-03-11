@@ -713,6 +713,8 @@ SCAJ-20061:
 SCAJ-20062:
   name: "Crouching Tiger, Hidden Dragon"
   region: "NTSC-Unk"
+  gameFixes:
+    - InstantDMAHack # Fixes FMVs to be visable.
 SCAJ-20063:
   name: "Popolocrois - The Law of the Moon"
   region: "NTSC-Unk"
@@ -13847,6 +13849,8 @@ SLES-51915:
 SLES-51916:
   name: "Crouching Tiger, Hidden Dragon"
   region: "PAL-M5"
+  gameFixes:
+    - InstantDMAHack # Fixes FMVs to be visable.
 SLES-51917:
   name: "Beyond Good and Evil"
   region: "PAL-M6"
@@ -38235,6 +38239,8 @@ SLPS-25307:
 SLPS-25308:
   name: "Crouching Tiger, Hidden Dragon"
   region: "NTSC-J"
+  gameFixes:
+    - InstantDMAHack # Fixes FMVs to be visable.
 SLPS-25309:
   name: "Exciting Pro Wrestling 4 [Yuke's The Best]"
   region: "NTSC-J"
@@ -43472,6 +43478,8 @@ SLUS-20523:
   name: "Crouching Tiger Hidden Dragon"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - InstantDMAHack # Fixes FMVs to be visable.
 SLUS-20524:
   name: "Fighter Maker 2"
   region: "NTSC-U"
