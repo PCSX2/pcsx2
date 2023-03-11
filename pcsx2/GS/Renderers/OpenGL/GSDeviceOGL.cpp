@@ -1067,6 +1067,7 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_DITHER {}\n", sel.dither)
 		+ fmt::format("#define PS_ZCLAMP {}\n", sel.zclamp)
 		+ fmt::format("#define PS_BLEND_MIX {}\n", sel.blend_mix)
+		+ fmt::format("#define PS_ROUND_INV {}\n", sel.round_inv)
 		+ fmt::format("#define PS_FIXED_ONE_A {}\n", sel.fixed_one_a)
 		+ fmt::format("#define PS_PABE {}\n", sel.pabe)
 		+ fmt::format("#define PS_SCANMSK {}\n", sel.scanmsk)
@@ -1307,6 +1308,93 @@ void GSDeviceOGL::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect
 	IASetVertexBuffer(vertices, 4);
 	IASetPrimitiveTopology(GL_TRIANGLE_STRIP);
 	DrawPrimitive();
+}
+
+void GSDeviceOGL::DrawMultiStretchRects(
+	const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader)
+{
+	IASetPrimitiveTopology(GL_TRIANGLE_STRIP);
+	OMSetDepthStencilState(m_convert.dss);
+	OMSetBlendState(false);
+	OMSetColorMaskState();
+	OMSetRenderTargets(dTex, nullptr);
+	m_convert.ps[static_cast<int>(shader)].Bind();
+
+	const GSVector2 ds(static_cast<float>(dTex->GetWidth()), static_cast<float>(dTex->GetHeight()));
+	GSTexture* last_tex = rects[0].src;
+	bool last_linear = rects[0].linear;
+	u8 last_wmask = rects[0].wmask.wrgba;
+
+	u32 first = 0;
+	u32 count = 1;
+
+	for (u32 i = 1; i < num_rects; i++)
+	{
+		if (rects[i].src == last_tex && rects[i].linear == last_linear && rects[i].wmask.wrgba == last_wmask)
+		{
+			count++;
+			continue;
+		}
+
+		DoMultiStretchRects(rects + first, count, ds);
+		last_tex = rects[i].src;
+		last_linear = rects[i].linear;
+		last_wmask = rects[i].wmask.wrgba;
+		first += count;
+		count = 1;
+	}
+
+	DoMultiStretchRects(rects + first, count, ds);
+}
+
+void GSDeviceOGL::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, const GSVector2& ds)
+{
+	const u32 vertex_reserve_size = num_rects * 4 * sizeof(GSVertexPT1);
+	const u32 index_reserve_size = num_rects * 6 * sizeof(u32);
+	auto vertex_map = m_vertex_stream_buffer->Map(sizeof(GSVertexPT1), vertex_reserve_size);
+	auto index_map = m_index_stream_buffer->Map(sizeof(u32), index_reserve_size);
+	m_vertex.start = vertex_map.index_aligned;
+	m_index.start = index_map.index_aligned;
+
+	// Don't use primitive restart here, it ends up slower on some drivers.
+	GSVertexPT1* verts = reinterpret_cast<GSVertexPT1*>(vertex_map.pointer);
+	u32* idx = reinterpret_cast<u32*>(index_map.pointer);
+	u32 icount = 0;
+	u32 vcount = 0;
+	for (u32 i = 0; i < num_rects; i++)
+	{
+		const GSVector4& sRect = rects[i].src_rect;
+		const GSVector4& dRect = rects[i].dst_rect;
+		const float left = dRect.x * 2 / ds.x - 1.0f;
+		const float right = dRect.z * 2 / ds.x - 1.0f;
+		const float top = -1.0f + dRect.y * 2 / ds.y;
+		const float bottom = -1.0f + dRect.w * 2 / ds.y;
+
+		const u32 vstart = vcount;
+		verts[vcount++] = { GSVector4(left  , top   , 0.0f, 0.0f) , GSVector2(sRect.x , sRect.y) };
+		verts[vcount++] = { GSVector4(right , top   , 0.0f, 0.0f) , GSVector2(sRect.z , sRect.y) };
+		verts[vcount++] = { GSVector4(left  , bottom, 0.0f, 0.0f) , GSVector2(sRect.x , sRect.w) };
+		verts[vcount++] = { GSVector4(right , bottom, 0.0f, 0.0f) , GSVector2(sRect.z , sRect.w) };
+
+		if (i > 0)
+			idx[icount++] = vstart;
+
+		idx[icount++] = vstart;
+		idx[icount++] = vstart + 1;
+		idx[icount++] = vstart + 2;
+		idx[icount++] = vstart + 3;
+		idx[icount++] = vstart + 3;
+	};
+
+	m_vertex.count = vcount;
+	m_index.count = icount;
+	m_vertex_stream_buffer->Unmap(vcount * sizeof(GSVertexPT1));
+	m_index_stream_buffer->Unmap(icount * sizeof(u32));
+
+	PSSetShaderResource(0, rects[0].src);
+	PSSetSamplerState(rects[0].linear ? m_convert.ln : m_convert.pt);
+	OMSetColorMaskState(rects[0].wmask);
+	DrawIndexedPrimitive();
 }
 
 void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c, const bool linear)
@@ -1600,35 +1688,27 @@ bool GSDeviceOGL::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, con
 
 void GSDeviceOGL::OMAttachRt(GSTextureOGL* rt)
 {
-	GLuint id = 0;
 	if (rt)
-	{
 		rt->WasAttached();
-		id = rt->GetID();
-	}
 
-	if (GLState::rt != id)
+	if (GLState::rt != rt)
 	{
-		GLState::rt = id;
-		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id, 0);
+		GLState::rt = rt;
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt ? rt->GetID() : 0, 0);
 	}
 }
 
 void GSDeviceOGL::OMAttachDs(GSTextureOGL* ds)
 {
-	GLuint id = 0;
 	if (ds)
-	{
 		ds->WasAttached();
-		id = ds->GetID();
-	}
 
-	if (GLState::ds != id)
+	if (GLState::ds != ds)
 	{
-		GLState::ds = id;
+		GLState::ds = ds;
 
 		const GLenum target = m_features.framebuffer_fetch ? GL_DEPTH_ATTACHMENT : GL_DEPTH_STENCIL_ATTACHMENT;
-		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, target, GL_TEXTURE_2D, id, 0);
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, target, GL_TEXTURE_2D, ds ? ds->GetID() : 0, 0);
 	}
 }
 
@@ -1655,6 +1735,14 @@ void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
 
 		glColorMaski(0, sel.wr, sel.wg, sel.wb, sel.wa);
 	}
+}
+
+void GSDeviceOGL::OMUnbindTexture(GSTextureOGL* tex)
+{
+	if (GLState::rt == tex)
+		OMAttachRt();
+	if (GLState::ds == tex)
+		OMAttachDs();
 }
 
 void GSDeviceOGL::OMSetBlendState(bool enable, GLenum src_factor, GLenum dst_factor, GLenum op, bool is_constant, u8 constant)
@@ -1968,8 +2056,21 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		s_gl_blend_factors[config.blend.dst_factor], s_gl_blend_ops[config.blend.op],
 		config.blend.constant_enable, config.blend.constant);
 	OMSetColorMaskState(config.colormask);
+
+	// avoid changing framebuffer just to switch from rt+depth to rt and vice versa
+	GSTexture* draw_rt = hdr_rt ? hdr_rt : config.rt;
+	GSTexture* draw_ds = config.ds;
+	if (!draw_ds && GLState::ds && GLState::rt == draw_rt && config.tex != GLState::ds &&
+		GLState::ds->GetSize() == draw_rt->GetSize())
+	{
+		// should already be always-pass.
+		draw_ds = GLState::ds;
+		config.depth.ztst = ZTST_ALWAYS;
+		config.depth.zwe = false;
+	}
+
+	OMSetRenderTargets(draw_rt, draw_ds, &config.scissor);
 	SetupOM(config.depth);
-	OMSetRenderTargets(hdr_rt ? hdr_rt : config.rt, config.ds, &config.scissor);
 
 	SendHWDraw(config, psel.ps.IsFeedbackLoop());
 

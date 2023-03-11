@@ -126,6 +126,11 @@
               "minimum": 0,
               "maximum": 1
             },
+            "readTCOnClose": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
             "disableDepthSupport": {
               "type": "integer",
               "minimum": 0,
@@ -146,10 +151,15 @@
               "minimum": 0,
               "maximum": 1
             },
-            "textureInsideRT": {
+            "partialTargetInvalidation": {
               "type": "integer",
               "minimum": 0,
               "maximum": 1
+            },
+            "textureInsideRT": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
             },
             "alignSprite": {
               "type": "integer",
@@ -162,6 +172,21 @@
               "maximum": 1
             },
             "wildArmsHack": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "estimateTextureRegion": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "PCRTCOffsets": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "PCRTCOverscan": {
               "type": "integer",
               "minimum": 0,
               "maximum": 1
@@ -230,6 +255,21 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 2
+            },
+            "minimumBlendingLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "maximumBlendingLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "recommendedBlendingLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
             },
             "getSkipCount": {
               "type": "string"

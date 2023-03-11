@@ -53,9 +53,6 @@ public:
 	virtual GSVector2 GetTextureScaleFactor() { return { 1.0f, 1.0f }; }
 	GSVector2i GetInternalResolution();
 
-	virtual void PurgePool() override;
-	virtual void PurgeTextureCache();
-
 	virtual GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, const GSVector2i& size);
 
 	bool SaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,

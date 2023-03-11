@@ -654,7 +654,12 @@ void ps_dither(inout vec3 C)
     #else
     ivec2 fpos = ivec2(gl_FragCoord.xy / float(PS_SCALE_FACTOR));
     #endif
-    C += DitherMatrix[fpos.y&3][fpos.x&3];
+    float value = DitherMatrix[fpos.y&3][fpos.x&3];
+    #if PS_ROUND_INV
+    C -= value;
+    #else
+    C += value;
+    #endif
 #endif
 }
 
@@ -663,6 +668,10 @@ void ps_color_clamp_wrap(inout vec3 C)
     // When dithering the bottom 3 bits become meaningless and cause lines in the picture
     // so we need to limit the color depth on dithered items
 #if SW_BLEND || PS_DITHER || PS_FBMASK
+
+#if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV
+    C += 7.0f; // Need to round up, not down since the shader will invert
+#endif
 
     // Correct the Color value based on the output format
 #if PS_COLCLIP == 0 && PS_HDR == 0
@@ -686,8 +695,10 @@ void ps_color_clamp_wrap(inout vec3 C)
 #endif
 }
 
-void ps_blend(inout vec4 Color, inout float As)
+void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 {
+float As = As_rgba.a;
+
 #if SW_BLEND
 
     // PABE
@@ -766,19 +777,16 @@ void ps_blend(inout vec4 Color, inout float As)
 #endif
 
 #if PS_CLR_HW == 1
-    // Replace Af with As so we can do proper compensation for Alpha.
-#if PS_BLEND_C == 2
-    As = Af;
-#endif
+    // As or Af
+    As_rgba.rgb = vec3(C);
     // Subtract 1 for alpha to compensate for the changed equation,
     // if c.rgb > 255.0f then we further need to adjust alpha accordingly,
     // we pick the lowest overflow from all colors because it's the safest,
     // we divide by 255 the color because we don't know Cd value,
     // changed alpha should only be done for hw blend.
-    float min_color = min(min(Color.r, Color.g), Color.b);
-    float alpha_compensate = max(1.0f, min_color / 255.0f);
-    As -= alpha_compensate;
-#elif PS_CLR_HW == 2
+    vec3 alpha_compensate = max(vec3(1.0f), Color.rgb / vec3(255.0f));
+    As_rgba.rgb -= alpha_compensate;
+#elif PS_CLR_HW == 2 || PS_CLR_HW == 4
     // Compensate slightly for Cd*(As + 1) - Cs*As.
     // The initial factor we chose is 1 (0.00392)
     // as that is the minimum color Cd can be,
@@ -786,6 +794,14 @@ void ps_blend(inout vec4 Color, inout float As)
     // blended value it can be.
     float color_compensate = 1.0f * (C + 1.0f);
     Color.rgb -= vec3(color_compensate);
+#elif PS_CLR_HW == 3 || PS_CLR_HW == 5
+    // As, Ad or Af clamped.
+    As_rgba.rgb = vec3(C_clamped);
+    // Cs*(Alpha + 1) might overflow, if it does then adjust alpha value
+    // that is sent on second output to compensate.
+    vec3 overflow_check = (Color.rgb - vec3(255.0f)) / 255.0f;
+    vec3 alpha_compensate = max(vec3(0.0f), overflow_check);
+    As_rgba.rgb -= alpha_compensate;
 #endif
 
 #else
@@ -805,9 +821,13 @@ void ps_blend(inout vec4 Color, inout float As)
     Color.rgb *= vec3(255.0f);
 #elif PS_CLR_HW == 3
     // Needed for Cs*Ad, Cs*Ad + Cd, Cd - Cs*Ad
-    // Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value
-
-    Color.rgb *= (255.0f / 128.0f);
+    // Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value when rgb are below 128.
+    // When any color channel is higher than 128 then adjust the compensation automatically
+    // to give us more accurate colors, otherwise they will be wrong.
+    // The higher the value (>128) the lower the compensation will be.
+    float max_color = max(max(Color.r, Color.g), Color.b);
+    float color_compensate = 255.0f / max(128.0f, max_color);
+    Color.rgb *= vec3(color_compensate);
 #endif
 
 #endif
@@ -927,9 +947,9 @@ void ps_main()
 
 #if SW_AD_TO_HW
     vec4 RT = trunc(fetch_rt() * 255.0f + 0.1f);
-    float alpha_blend = RT.a / 128.0f;
+    vec4 alpha_blend = vec4(RT.a / 128.0f);
 #else
-    float alpha_blend = C.a / 128.0f;
+    vec4 alpha_blend = vec4(C.a / 128.0f);
 #endif
 
     // Correct the ALPHA value based on the output format
@@ -969,12 +989,12 @@ void ps_main()
     SV_Target0 = C / 255.0f;
 #endif
 #if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
-    SV_Target1 = vec4(alpha_blend);
+    SV_Target1 = alpha_blend;
 #endif
 
 #if PS_NO_ABLEND
     // write alpha blend factor into col0
-    SV_Target0.a = alpha_blend;
+    SV_Target0.a = alpha_blend.a;
 #endif
 #if PS_ONLY_ALPHA
     // rgb isn't used

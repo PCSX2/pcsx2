@@ -132,6 +132,13 @@ public:
 		Surface();
 		virtual ~Surface();
 
+		/// Returns true if the target wraps around the end of GS memory.
+		bool Wraps() const { return (m_end_block < m_TEX0.TBP0); }
+
+		/// Returns the end block for the target, but doesn't wrap at 0x3FFF.
+		/// Can be used for overlap tests.
+		u32 UnwrappedEndBlock() const { return (m_end_block + (Wraps() ? MAX_BLOCKS : 0)); }
+
 		void UpdateAge();
 		bool Inside(u32 bp, u32 bw, u32 psm, const GSVector4i& rect);
 		bool Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i& rect);
@@ -235,20 +242,23 @@ public:
 	{
 	public:
 		const int m_type = 0;
+		const bool m_depth_supported = false;
+		bool m_dirty_alpha = true;
+		bool m_is_frame = false;
 		bool m_used = false;
 		GSDirtyRectList m_dirty;
 		GSVector4i m_valid{};
 		GSVector4i m_drawn_since_read{};
-		const bool m_depth_supported = false;
-		bool m_dirty_alpha = true;
-		bool m_is_frame = false;
+		u32 m_valid_bits = 0;
 		int readbacks_since_draw = 0;
 
 	public:
 		Target(const GIFRegTEX0& TEX0, const bool depth_supported, const int type);
 		~Target();
 
-		void UpdateValidity(const GSVector4i& rect);
+		void ResizeValidity(const GSVector4i& rect);
+		void UpdateValidity(const GSVector4i& rect, bool can_resize = true);
+		void UpdateValidBits(u32 bits_written);
 
 		void Update(bool reset_age);
 
@@ -384,6 +394,8 @@ protected:
 	// TODO: virtual void Write(Source* s, const GSVector4i& r) = 0;
 	// TODO: virtual void Write(Target* t, const GSVector4i& r) = 0;
 
+	Source* CreateMergedSource(GIFRegTEX0 TEX0, GIFRegTEXA TEXA, SourceRegion region, const GSVector2& scale);
+
 public:
 	GSTextureCache();
 	~GSTextureCache();
@@ -396,15 +408,17 @@ public:
 
 	void Read(Target* t, const GSVector4i& r);
 	void Read(Source* t, const GSVector4i& r);
-	void RemoveAll(bool readback_targets = false);
-	void AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw);
+	void RemoveAll();
+	void ReadbackAll();
+	void AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw, RGBAMask rgba);
 
 	GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, const GSVector2i& size);
 
 	Source* LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const GSVector2i* lod);
 	Source* LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, bool palette = false);
 
-	Target* LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask = 0, const bool is_frame = false, const int real_w = 0, const int real_h = 0, bool preload = GSConfig.PreloadFrameWithGSData);
+	Target* FindTargetOverlap(u32 bp, u32 end_block, int type, int psm);
+	Target* LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask = 0, const bool is_frame = false, const int real_w = 0, const int real_h = 0, bool preload = GSConfig.PreloadFrameWithGSData, bool is_clear = false);
 	Target* LookupDisplayTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, const int real_w, const int real_h);
 
 	/// Looks up a target in the cache, and only returns it if the BP/BW/PSM match exactly.

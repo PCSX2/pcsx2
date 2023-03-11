@@ -78,7 +78,7 @@ void GSRenderer::Destroy()
 bool GSRenderer::Merge(int field)
 {
 	GSVector2i fs(0, 0);
-	GSTexture* tex[3] = { NULL, NULL, NULL };
+	GSTexture* tex[3] = { nullptr, nullptr, nullptr };
 	int y_offset[3] = { 0, 0, 0 };
 	const bool feedback_merge = m_regs->EXTWRITE.WRITE == 1;
 
@@ -120,7 +120,6 @@ bool GSRenderer::Merge(int field)
 
 	s_n++;
 
-	GSVector4 src_out_rect[2];
 	GSVector4 src_gs_read[2];
 	GSVector4 dst[3];
 
@@ -202,13 +201,13 @@ bool GSRenderer::Merge(int field)
 
 	m_real_size = GSVector2i(fs.x, fs.y);
 
-	if ((tex[0] == tex[1]) && (src_out_rect[0] == src_out_rect[1]).alltrue() && 
+	if ((tex[0] == tex[1]) && (src_gs_read[0] == src_gs_read[1]).alltrue() && (dst[0] == dst[1]).alltrue() &&
 		(PCRTCDisplays.PCRTCDisplays[0].displayRect == PCRTCDisplays.PCRTCDisplays[1].displayRect).alltrue() &&
 		(PCRTCDisplays.PCRTCDisplays[0].framebufferRect == PCRTCDisplays.PCRTCDisplays[1].framebufferRect).alltrue() &&
 		!feedback_merge && !m_regs->PMODE.SLBG)
 	{
 		// the two outputs are identical, skip drawing one of them (the one that is alpha blended)
-		tex[0] = NULL;
+		tex[0] = nullptr;
 	}
 
 	GSVector4 c = GSVector4((int)m_regs->BGCOLOR.R, (int)m_regs->BGCOLOR.G, (int)m_regs->BGCOLOR.B, (int)m_regs->PMODE.ALP) / 255;
@@ -827,15 +826,6 @@ bool GSRenderer::BeginCapture(std::string filename)
 void GSRenderer::EndCapture()
 {
 	GSCapture::EndCapture();
-}
-
-void GSRenderer::PurgePool()
-{
-	g_gs_device->PurgePool();
-}
-
-void GSRenderer::PurgeTextureCache()
-{
 }
 
 GSTexture* GSRenderer::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, const GSVector2i& size)

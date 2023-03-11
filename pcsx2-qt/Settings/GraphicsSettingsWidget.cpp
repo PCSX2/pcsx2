@@ -178,8 +178,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		&GraphicsSettingsWidget::onTrilinearFilteringChanged);
 	connect(m_ui.gpuPaletteConversion, QOverload<int>::of(&QCheckBox::stateChanged), this,
 		&GraphicsSettingsWidget::onGpuPaletteConversionChanged);
+	connect(m_ui.textureInsideRt, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+		&GraphicsSettingsWidget::onTextureInsideRtChanged);
 	onTrilinearFilteringChanged();
 	onGpuPaletteConversionChanged(m_ui.gpuPaletteConversion->checkState());
+	onTextureInsideRtChanged();
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Renderer Fixes
@@ -197,7 +200,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preloadFrameData, "EmuCore/GS", "preload_frame_with_gs_data", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(
 		sif, m_ui.disablePartialInvalidation, "EmuCore/GS", "UserHacks_DisablePartialInvalidation", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.textureInsideRt, "EmuCore/GS", "UserHacks_TextureInsideRt", false);
+	SettingWidgetBinder::BindWidgetToIntSetting(
+		sif, m_ui.textureInsideRt, "EmuCore/GS", "UserHacks_TextureInsideRt", static_cast<int>(GSTextureInRtMode::Disabled));
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.readTCOnClose, "EmuCore/GS", "UserHacks_ReadTCOnClose", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.targetPartialInvalidation, "EmuCore/GS", "UserHacks_TargetPartialInvalidation", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.estimateTextureRegion, "EmuCore/GS", "UserHacks_EstimateTextureRegion", false);
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Upscaling Fixes
@@ -291,7 +298,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 		// Remove texture offset and skipdraw range for global settings.
 		m_ui.upscalingFixesLayout->removeRow(2);
-		m_ui.hardwareFixesLayout->removeRow(3);
+		m_ui.hardwareFixesLayout->removeRow(5);
 		m_ui.skipDrawStart = nullptr;
 		m_ui.skipDrawEnd = nullptr;
 		m_ui.textureOffsetX = nullptr;
@@ -523,7 +530,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			   "Disables accurate GS Memory Clearing to be done on the CPU, and let the GPU handle it, which can help Kingdom Hearts "
 			   "games."));
 
-		dialog->registerWidgetHelp(m_ui.disablePartialInvalidation, tr("Disable Partial Invalidation"), tr("Unchecked"),
+		dialog->registerWidgetHelp(m_ui.disablePartialInvalidation, tr("Disable Partial Source Invalidation"), tr("Unchecked"),
 			tr("By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise. "
 			   "This hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load. "
 			   "It helps with the Snowblind engine games."));
@@ -535,9 +542,19 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Uploads GS data when rendering a new frame to reproduce some effects accurately. "
 			   "Fixes black screen issues in games like Armored Core: Last Raven."));
 
-		dialog->registerWidgetHelp(m_ui.textureInsideRt, tr("Texture Inside RT"), tr("Unchecked"),
-			tr("Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer. "
-			   "In some selected games this is enabled by default regardless of this setting."));
+		dialog->registerWidgetHelp(m_ui.textureInsideRt, tr("Texture Inside RT"), tr("Disabled"),
+			tr("Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer."));
+
+		dialog->registerWidgetHelp(m_ui.readTCOnClose, tr("Read Targets When Closing"), tr("Unchecked"),
+			tr("Flushes all targets in the texture cache back to local memory when shutting down. Can prevent lost visuals when saving "
+			   "state or switching renderers, but can also cause graphical corruption."));
+
+		dialog->registerWidgetHelp(m_ui.targetPartialInvalidation, tr("Target Partial Invalidation"), tr("Unchecked"),
+			tr("Allows partial invalidation of render targets, which can fix graphical errors in some games. Texture Inside Render Target "
+			   "automatically enables this option."));
+
+		dialog->registerWidgetHelp(m_ui.estimateTextureRegion, tr("Estimate Texture Region"), tr("Unchecked"),
+			tr("Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games)."));
 	}
 
 	// Upscaling Fixes tab
@@ -840,9 +857,18 @@ void GraphicsSettingsWidget::onEnableAudioCaptureArgumentsChanged()
 
 void GraphicsSettingsWidget::onGpuPaletteConversionChanged(int state)
 {
-	const bool enabled = state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("EmuCore/GS", "paltex", false) : state;
+	const bool disabled =
+		state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("EmuCore/GS", "paltex", false) : (state != 0);
 
-	m_ui.anisotropicFiltering->setEnabled(!enabled);
+	m_ui.anisotropicFiltering->setDisabled(disabled);
+}
+
+void GraphicsSettingsWidget::onTextureInsideRtChanged()
+{
+	const bool disabled = static_cast<GSTextureInRtMode>(m_dialog->getEffectiveIntValue("EmuCore/GS", "UserHacks_TextureInsideRt",
+							  static_cast<int>(GSTextureInRtMode::Disabled))) >= GSTextureInRtMode::InsideTargets;
+
+	m_ui.targetPartialInvalidation->setDisabled(disabled);
 }
 
 GSRendererType GraphicsSettingsWidget::getEffectiveRenderer() const
@@ -896,10 +922,12 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	else if (is_hardware && prev_tab == 2)
 		m_ui.tabs->setCurrentIndex(1);
 
+	m_ui.useBlitSwapChain->setEnabled(is_dx11);
+
 	m_ui.overrideTextureBarriers->setDisabled(is_sw_dx);
 	m_ui.overrideGeometryShader->setDisabled(is_sw_dx);
 
-	m_ui.useBlitSwapChain->setEnabled(is_dx11);
+	m_ui.disableFramebufferFetch->setDisabled(is_sw_dx);
 
 	// populate adapters
 	HostDisplay::AdapterAndModeList modes;

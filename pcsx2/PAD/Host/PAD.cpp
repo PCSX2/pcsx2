@@ -41,6 +41,7 @@ namespace PAD
 	struct MacroButton
 	{
 		std::vector<u32> buttons; ///< Buttons to activate.
+		float pressure; ///< Pressure to apply when macro is active.
 		u32 toggle_frequency; ///< Interval at which the buttons will be toggled, if not 0.
 		u32 toggle_counter; ///< When this counter reaches zero, buttons will be toggled.
 		bool toggle_state; ///< Current state for turbo.
@@ -422,7 +423,7 @@ static const SettingInfo s_dualshock2_settings[] = {
 		"controllers, e.g. DualShock 4, Xbox One Controller.",
 		"1.33", "0.01", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "TriggerDeadzone", "Trigger Deadzone",
-		"Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.",
+		"Sets the deadzone for activating triggers, i.e. the fraction of the trigger which will be ignored.",
 		"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "TriggerScale", "Trigger Sensitivity",
 		"Sets the trigger scaling factor.",
@@ -433,8 +434,8 @@ static const SettingInfo s_dualshock2_settings[] = {
 	{SettingInfo::Type::Float, "SmallMotorScale", "Small Motor Vibration Scale",
 		"Increases or decreases the intensity of high frequency vibration sent by the game.",
 		"1.00", "0.00", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
-	{SettingInfo::Type::Float, "ButtonDeadzone", "Button/Trigger Deadzone",
-		"Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored.",
+	{SettingInfo::Type::Float, "ButtonDeadzone", "Button Deadzone",
+		"Sets the deadzone for activating buttons, i.e. the fraction of the button push which will be ignored.",
 		"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
 	/*{SettingInfo::Type::Float, "InitialPressure", "Initial Pressure",
 	"Sets the pressure when the modifier button isn't held.",
@@ -574,6 +575,7 @@ void PAD::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 				dest_si->CopyStringListValue(src_si, section.c_str(), fmt::format("Macro{}", i + 1).c_str());
 				dest_si->CopyStringValue(src_si, section.c_str(), fmt::format("Macro{}Binds", i + 1).c_str());
 				dest_si->CopyUIntValue(src_si, section.c_str(), fmt::format("Macro{}Frequency", i + 1).c_str());
+				dest_si->CopyFloatValue(src_si, section.c_str(), fmt::format("Macro{}Pressure", i + 1).c_str());
 			}
 		}
 
@@ -701,12 +703,14 @@ void PAD::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const std:
 	for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
 	{
 		std::string binds_string;
-		if (!si.GetStringValue(section.c_str(), StringUtil::StdStringFromFormat("Macro%uBinds", i + 1).c_str(), &binds_string))
+		if (!si.GetStringValue(section.c_str(), fmt::format("Macro{}Binds", i + 1).c_str(), &binds_string))
 			continue;
 
-		const u32 frequency = si.GetUIntValue(section.c_str(), StringUtil::StdStringFromFormat("Macro%uFrequency", i + 1).c_str(), 0u);
+		const u32 frequency = si.GetUIntValue(section.c_str(), fmt::format("Macro{}Frequency", i + 1).c_str(), 0u);
 		if (binds.empty())
 			binds = GetControllerBinds(type);
+
+		const float pressure = si.GetFloatValue(section.c_str(), fmt::format("Macro{}Pressure", i + 1).c_str(), 1.0f);
 
 		// convert binds
 		std::vector<u32> bind_indices;
@@ -729,6 +733,7 @@ void PAD::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const std:
 
 		s_macro_buttons[pad][i].buttons = std::move(bind_indices);
 		s_macro_buttons[pad][i].toggle_frequency = frequency;
+		s_macro_buttons[pad][i].pressure = pressure;
 	}
 }
 
@@ -766,7 +771,7 @@ std::vector<std::string> PAD::GetInputProfileNames()
 
 void PAD::ApplyMacroButton(u32 pad, const MacroButton& mb)
 {
-	const float value = mb.toggle_state ? 1.0f : 0.0f;
+	const float value = mb.toggle_state ? mb.pressure : 0.0f;
 	for (const u32 btn : mb.buttons)
 		g_key_status.Set(pad, btn, value);
 }

@@ -42,8 +42,8 @@ namespace GLState
 
 	GLuint ps_ss;
 
-	GLuint rt;
-	GLuint ds;
+	GSTextureOGL* rt = nullptr;
+	GSTextureOGL* ds = nullptr;
 	GLuint tex_unit[8];
 	GLuint64 tex_handle[8];
 
@@ -72,8 +72,8 @@ namespace GLState
 
 		ps_ss = 0;
 
-		rt = 0;
-		ds = 0;
+		rt = nullptr;
+		ds = nullptr;
 		std::fill(std::begin(tex_unit), std::end(tex_unit), 0);
 		std::fill(std::begin(tex_handle), std::end(tex_handle), 0);
 

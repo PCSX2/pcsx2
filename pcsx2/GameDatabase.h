@@ -62,14 +62,19 @@ namespace GameDatabaseSchema
 		// boolean settings
 		AutoFlush,
 		CPUFramebufferConversion,
+		FlushTCOnClose,
 		DisableDepthSupport,
 		WrapGSMem,
 		PreloadFrameData,
 		DisablePartialInvalidation,
+		TargetPartialInvalidation,
 		TextureInsideRT,
 		AlignSprite,
 		MergeSprite,
 		WildArmsHack,
+		EstimateTextureRegion,
+		PCRTCOffsets,
+		PCRTCOverscan,
 
 		// integer settings
 		Mipmap,
@@ -85,6 +90,9 @@ namespace GameDatabaseSchema
 		CPUCLUTRender,
 		GPUTargetCLUT,
 		GPUPaletteConversion,
+		MinimumBlendingLevel,
+		MaximumBlendingLevel,
+		RecommendedBlendingLevel,
 		GetSkipCount,
 		BeforeDraw,
 

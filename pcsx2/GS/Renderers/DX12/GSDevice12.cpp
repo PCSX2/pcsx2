@@ -210,6 +210,7 @@ bool GSDevice12::CheckFeatures()
 	m_features.line_expand = false;
 	m_features.framebuffer_fetch = false;
 	m_features.dual_source_blend = true;
+	m_features.clip_control = true;
 	m_features.stencil_buffer = true;
 
 	m_features.dxt_textures = g_d3d12_context->SupportsTextureFormat(DXGI_FORMAT_BC1_UNORM) &&
@@ -477,10 +478,129 @@ void GSDevice12::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GS
 		m_convert[static_cast<int>(shader)].get(), false);
 }
 
-void GSDevice12::BeginRenderPassForStretchRect(GSTexture12* dTex, const GSVector4i& dtex_rc, const GSVector4i& dst_rc)
+void GSDevice12::DrawMultiStretchRects(
+	const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader)
 {
-	const bool is_whole_target = dst_rc.eq(dtex_rc);
-	const D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE load_op = is_whole_target ? D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD : GetLoadOpForTexture(dTex);
+	GSTexture* last_tex = rects[0].src;
+	bool last_linear = rects[0].linear;
+	u8 last_wmask = rects[0].wmask.wrgba;
+
+	u32 first = 0;
+	u32 count = 1;
+
+	// Make sure all textures are in shader read only layout, so we don't need to break
+	// the render pass to transition.
+	for (u32 i = 0; i < num_rects; i++)
+	{
+		GSTexture12* const stex = static_cast<GSTexture12*>(rects[i].src);
+		stex->CommitClear();
+		if (stex->GetResourceState() != D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
+		{
+			EndRenderPass();
+			stex->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		}
+	}
+
+	for (u32 i = 1; i < num_rects; i++)
+	{
+		if (rects[i].src == last_tex && rects[i].linear == last_linear && rects[i].wmask.wrgba == last_wmask)
+		{
+			count++;
+			continue;
+		}
+
+		DoMultiStretchRects(rects + first, count, static_cast<GSTexture12*>(dTex), shader);
+		last_tex = rects[i].src;
+		last_linear = rects[i].linear;
+		last_wmask = rects[i].wmask.wrgba;
+		first += count;
+		count = 1;
+	}
+
+	DoMultiStretchRects(rects + first, count, static_cast<GSTexture12*>(dTex), shader);
+}
+
+void GSDevice12::DoMultiStretchRects(
+	const MultiStretchRect* rects, u32 num_rects, GSTexture12* dTex, ShaderConvert shader)
+{
+	// Set up vertices first.
+	const u32 vertex_reserve_size = num_rects * 4 * sizeof(GSVertexPT1);
+	const u32 index_reserve_size = num_rects * 6 * sizeof(u32);
+	if (!m_vertex_stream_buffer.ReserveMemory(vertex_reserve_size, sizeof(GSVertexPT1)) ||
+		!m_index_stream_buffer.ReserveMemory(index_reserve_size, sizeof(u32)))
+	{
+		ExecuteCommandListAndRestartRenderPass(false, "Uploading bytes to vertex buffer");
+		if (!m_vertex_stream_buffer.ReserveMemory(vertex_reserve_size, sizeof(GSVertexPT1)) ||
+			!m_index_stream_buffer.ReserveMemory(index_reserve_size, sizeof(u32)))
+		{
+			pxFailRel("Failed to reserve space for vertices");
+		}
+	}
+
+	// Pain in the arse because the primitive topology for the pipelines is all triangle strips.
+	// Don't use primitive restart here, it ends up slower on some drivers.
+	const GSVector2 ds(static_cast<float>(dTex->GetWidth()), static_cast<float>(dTex->GetHeight()));
+	GSVertexPT1* verts = reinterpret_cast<GSVertexPT1*>(m_vertex_stream_buffer.GetCurrentHostPointer());
+	u32* idx = reinterpret_cast<u32*>(m_index_stream_buffer.GetCurrentHostPointer());
+	u32 icount = 0;
+	u32 vcount = 0;
+	for (u32 i = 0; i < num_rects; i++)
+	{
+		const GSVector4& sRect = rects[i].src_rect;
+		const GSVector4& dRect = rects[i].dst_rect;
+
+		const float left = dRect.x * 2 / ds.x - 1.0f;
+		const float top = 1.0f - dRect.y * 2 / ds.y;
+		const float right = dRect.z * 2 / ds.x - 1.0f;
+		const float bottom = 1.0f - dRect.w * 2 / ds.y;
+
+		const u32 vstart = vcount;
+		verts[vcount++] = {GSVector4(left, top, 0.5f, 1.0f), GSVector2(sRect.x, sRect.y)};
+		verts[vcount++] = {GSVector4(right, top, 0.5f, 1.0f), GSVector2(sRect.z, sRect.y)};
+		verts[vcount++] = {GSVector4(left, bottom, 0.5f, 1.0f), GSVector2(sRect.x, sRect.w)};
+		verts[vcount++] = {GSVector4(right, bottom, 0.5f, 1.0f), GSVector2(sRect.z, sRect.w)};
+
+		if (i > 0)
+			idx[icount++] = vstart;
+
+		idx[icount++] = vstart;
+		idx[icount++] = vstart + 1;
+		idx[icount++] = vstart + 2;
+		idx[icount++] = vstart + 3;
+		idx[icount++] = vstart + 3;
+	};
+
+	m_vertex.start = m_vertex_stream_buffer.GetCurrentOffset() / sizeof(GSVertexPT1);
+	m_vertex.count = vcount;
+	m_index.start = m_index_stream_buffer.GetCurrentOffset() / sizeof(u32);
+	m_index.count = icount;
+	m_vertex_stream_buffer.CommitMemory(vcount * sizeof(GSVertexPT1));
+	m_index_stream_buffer.CommitMemory(icount * sizeof(u32));
+	SetVertexBuffer(m_vertex_stream_buffer.GetGPUPointer(), m_vertex_stream_buffer.GetSize(), sizeof(GSVertexPT1));
+	SetIndexBuffer(m_index_stream_buffer.GetGPUPointer(), m_index_stream_buffer.GetSize(), DXGI_FORMAT_R32_UINT);
+
+	// Even though we're batching, a cmdbuffer submit could've messed this up.
+	const GSVector4i rc(dTex->GetRect());
+	OMSetRenderTargets(dTex->IsRenderTarget() ? dTex : nullptr, dTex->IsDepthStencil() ? dTex : nullptr, rc);
+	if (!InRenderPass())
+		BeginRenderPassForStretchRect(dTex, rc, rc, false);
+	SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	SetUtilityTexture(rects[0].src, rects[0].linear ? m_linear_sampler_cpu : m_point_sampler_cpu);
+
+	pxAssert(shader == ShaderConvert::COPY || rects[0].wmask.wrgba == 0xf);
+	SetPipeline((rects[0].wmask.wrgba != 0xf) ? m_color_copy[rects[0].wmask.wrgba].get() :
+												m_convert[static_cast<int>(shader)].get());
+
+	if (ApplyUtilityState())
+		DrawIndexedPrimitive();
+}
+
+void GSDevice12::BeginRenderPassForStretchRect(
+	GSTexture12* dTex, const GSVector4i& dtex_rc, const GSVector4i& dst_rc, bool allow_discard)
+{
+	const D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE load_op = (allow_discard && dst_rc.eq(dtex_rc)) ?
+																D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD :
+																GetLoadOpForTexture(dTex);
 	dTex->SetState(GSTexture::State::Dirty);
 
 	if (dTex->GetType() != GSTexture::Type::DepthStencil)
@@ -494,8 +614,8 @@ void GSDevice12::BeginRenderPassForStretchRect(GSTexture12* dTex, const GSVector
 	else
 	{
 		const float clear_depth = dTex->GetClearDepth();
-		BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-			load_op, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+		BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
+			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, load_op, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
 			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 			GSVector4::zero(), clear_depth);
 	}
@@ -1515,6 +1635,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_BLEND_C", sel.blend_c);
 	sm.AddMacro("PS_BLEND_D", sel.blend_d);
 	sm.AddMacro("PS_BLEND_MIX", sel.blend_mix);
+	sm.AddMacro("PS_ROUND_INV", sel.round_inv);
 	sm.AddMacro("PS_FIXED_ONE_A", sel.fixed_one_a);
 	sm.AddMacro("PS_PABE", sel.pabe);
 	sm.AddMacro("PS_DITHER", sel.dither);
@@ -1563,10 +1684,13 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 	gpb.SetRasterizationState(D3D12_FILL_MODE_SOLID, D3D12_CULL_MODE_NONE, false);
 	if (p.rt)
 	{
-		gpb.SetRenderTarget(0,
-			IsDATEModePrimIDInit(p.ps.date) ? DXGI_FORMAT_R32_FLOAT :
-			p.ps.hdr                        ? DXGI_FORMAT_R32G32B32A32_FLOAT :
-			                                  DXGI_FORMAT_R8G8B8A8_UNORM);
+		const GSTexture::Format format = IsDATEModePrimIDInit(p.ps.date) ?
+											 GSTexture::Format::PrimID :
+											 (p.ps.hdr ? GSTexture::Format::HDRColor : GSTexture::Format::Color);
+
+		DXGI_FORMAT native_format;
+		LookupNativeFormat(format, nullptr, nullptr, &native_format, nullptr);
+		gpb.SetRenderTarget(0, native_format);
 	}
 	if (p.ds)
 		gpb.SetDepthStencilFormat(DXGI_FORMAT_D32_FLOAT_S8X24_UINT);
@@ -2347,13 +2471,12 @@ GSTexture12* GSDevice12::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 	OMSetRenderTargets(image, config.ds, config.drawarea);
 
 	// if the depth target has been cleared, we need to preserve that clear
-	BeginRenderPass(
-		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
-		GetLoadOpForTexture(static_cast<GSTexture12*>(config.ds)),
+	BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+		config.ds ? GetLoadOpForTexture(static_cast<GSTexture12*>(config.ds)) :
+					D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
 		config.ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-		GSVector4::zero(),
-		static_cast<GSTexture12*>(config.ds)->GetClearDepth());
+		GSVector4::zero(), config.ds ? static_cast<GSTexture12*>(config.ds)->GetClearDepth() : 0.0f);
 
 	// draw the quad to prefill the image
 	const GSVector4 src = GSVector4(config.drawarea) / GSVector4(rtsize).xyxy();
@@ -2537,7 +2660,8 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// avoid restarting the render pass just to switch from rt+depth to rt and vice versa
-	if (m_in_render_pass && !hdr_rt && !draw_ds && m_current_depth_target && m_current_render_target == draw_rt && config.tex != m_current_depth_target)
+	if (m_in_render_pass && !hdr_rt && !draw_ds && m_current_depth_target && m_current_render_target == draw_rt &&
+		config.tex != m_current_depth_target && m_current_depth_target->GetSize() == draw_rt->GetSize())
 	{
 		draw_ds = m_current_depth_target;
 		m_pipeline_selector.ds = true;

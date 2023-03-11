@@ -338,6 +338,8 @@ public:
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GL::Program& ps, bool alpha_blend, OMColorMaskSelector cms, bool linear = true);
 	void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear) final;
 	void UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) final;
+	void DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader) final;
+	void DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, const GSVector2& ds);
 
 	void RenderHW(GSHWDrawConfig& config) final;
 	void SendHWDraw(const GSHWDrawConfig& config, bool needs_barrier);
@@ -357,6 +359,7 @@ public:
 	void OMSetBlendState(bool enable = false, GLenum src_factor = GL_ONE, GLenum dst_factor = GL_ZERO, GLenum op = GL_FUNC_ADD, bool is_constant = false, u8 constant = 0);
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL);
 	void OMSetColorMaskState(OMColorMaskSelector sel = OMColorMaskSelector());
+	void OMUnbindTexture(GSTextureOGL* tex);
 
 	bool CreateTextureFX();
 	std::string GetShaderSource(const std::string_view& entry, GLenum type, const std::string_view& common_header, const std::string_view& glsl_h_code, const std::string_view& macro_sel);

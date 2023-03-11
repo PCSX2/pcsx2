@@ -409,8 +409,8 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("CCD={} ", GSConfig.UserHacks_CPUCLUTRender);
 		if (GSConfig.SkipDrawStart != 0 || GSConfig.SkipDrawEnd != 0)
 			APPEND("SD={}/{} ", GSConfig.SkipDrawStart, GSConfig.SkipDrawEnd);
-		if (GSConfig.UserHacks_TextureInsideRt)
-			APPEND("TexRT ");
+		if (GSConfig.UserHacks_TextureInsideRt != GSTextureInRtMode::Disabled)
+			APPEND("TexRT={} ", static_cast<int>(GSConfig.UserHacks_TextureInsideRt));
 		if (GSConfig.UserHacks_WildHack)
 			APPEND("WA ");
 		if (GSConfig.UserHacks_MergePPSprite)
@@ -421,10 +421,14 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("AF ");
 		if (GSConfig.UserHacks_CPUFBConversion)
 			APPEND("FBC ");
+		if (GSConfig.UserHacks_ReadTCOnClose)
+			APPEND("FTC ");
 		if(GSConfig.UserHacks_DisableDepthSupport)
 			APPEND("DDE ");
 		if (GSConfig.UserHacks_DisablePartialInvalidation)
 			APPEND("DPIV ");
+		if (GSConfig.UserHacks_TargetPartialInvalidation)
+			APPEND("TPV ");
 		if (GSConfig.UserHacks_DisableSafeFeatures)
 			APPEND("DSF ");
 		if (GSConfig.WrapGSMem)

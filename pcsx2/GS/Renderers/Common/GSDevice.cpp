@@ -20,6 +20,8 @@
 #include "Host.h"
 #include "common/StringUtil.h"
 
+#include <algorithm>
+
 const char* shaderName(ShaderConvert value)
 {
 	switch (value)
@@ -262,6 +264,33 @@ void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dR
 	StretchRect(sTex, GSVector4(0, 0, 1, 1), dTex, dRect, shader, linear);
 }
 
+void GSDevice::DrawMultiStretchRects(
+	const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader)
+{
+	for (u32 i = 0; i < num_rects; i++)
+	{
+		const MultiStretchRect& sr = rects[i];
+		pxAssert(shader == ShaderConvert::COPY || rects[0].wmask.wrgba == 0xf);
+		if (rects[0].wmask.wrgba != 0xf)
+		{
+			g_gs_device->StretchRect(sr.src, sr.src_rect, dTex, sr.dst_rect, rects[0].wmask.wr,
+				rects[0].wmask.wg, rects[0].wmask.wb, rects[0].wmask.wa);
+		}
+		else
+		{
+			g_gs_device->StretchRect(sr.src, sr.src_rect, dTex, sr.dst_rect, shader, sr.linear);
+		}
+	}
+}
+
+void GSDevice::SortMultiStretchRects(MultiStretchRect* rects, u32 num_rects)
+{
+	// Depending on num_rects, insertion sort may be better here.
+	std::sort(rects, rects + num_rects, [](const MultiStretchRect& lhs, const MultiStretchRect& rhs) {
+		return lhs.src < rhs.src || lhs.linear < rhs.linear;
+	});
+}
+
 void GSDevice::ClearCurrent()
 {
 	m_current = nullptr;
@@ -283,36 +312,8 @@ void GSDevice::ClearCurrent()
 
 void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
 {
-	// KH:COM crashes at startup when booting *through the bios* due to m_merge being NULL.
-	// (texture appears to be non-null, and is being re-created at a size around like 1700x340,
-	// dunno if that's relevant) -- air
-
 	if (ResizeTarget(&m_merge, fs.x, fs.y))
-	{
-		GSTexture* tex[3] = {NULL, NULL, NULL};
-
-		for (size_t i = 0; i < std::size(tex); i++)
-		{
-			if (sTex[i] != NULL)
-			{
-				tex[i] = sTex[i];
-			}
-		}
-
-		DoMerge(tex, sRect, m_merge, dRect, PMODE, EXTBUF, c, GSConfig.PCRTCOffsets);
-
-		for (size_t i = 0; i < std::size(tex); i++)
-		{
-			if (tex[i] != sTex[i])
-			{
-				Recycle(tex[i]);
-			}
-		}
-	}
-	else
-	{
-		printf("GS: m_merge is NULL!\n");
-	}
+		DoMerge(sTex, sRect, m_merge, dRect, PMODE, EXTBUF, c, GSConfig.PCRTCOffsets);
 
 	m_current = m_merge;
 }

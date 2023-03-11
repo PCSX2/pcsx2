@@ -886,7 +886,9 @@ public:
 	bool TestDrawChanged();
 	void FlushWrite();
 	virtual void Draw() = 0;
-	virtual void PurgePool() = 0;
+	virtual void PurgePool();
+	virtual void PurgeTextureCache();
+	virtual void ReadbackTextureCache();
 	virtual void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool eewrite = false) {}
 	virtual void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false) {}
 	virtual void ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r) {}

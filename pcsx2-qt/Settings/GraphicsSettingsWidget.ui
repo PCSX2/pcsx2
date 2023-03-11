@@ -920,83 +920,12 @@
          </item>
         </widget>
        </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_12">
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_16">
          <property name="text">
-          <string>Skipdraw Range:</string>
+          <string>Software CLUT Render:</string>
          </property>
         </widget>
-       </item>
-       <item row="4" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QSpinBox" name="skipDrawStart">
-           <property name="maximum">
-            <number>10000</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="skipDrawEnd">
-           <property name="maximum">
-            <number>10000</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="5" column="0" colspan="2">
-        <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="hwAutoFlush">
-           <property name="text">
-            <string>Auto Flush</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QCheckBox" name="frameBufferConversion">
-           <property name="text">
-            <string>Framebuffer Conversion</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QCheckBox" name="disableDepthEmulation">
-           <property name="text">
-            <string>Disable Depth Emulation</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QCheckBox" name="disableSafeFeatures">
-           <property name="text">
-            <string>Disable Safe Features</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QCheckBox" name="disablePartialInvalidation">
-           <property name="text">
-            <string>Disable Partial Invalidation</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QCheckBox" name="preloadFrameData">
-           <property name="text">
-            <string>Preload Frame Data</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QCheckBox" name="textureInsideRt">
-           <property name="text">
-            <string>Texture Inside RT</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </item>
        <item row="2" column="1">
         <widget class="QComboBox" name="cpuCLUTRender">
@@ -1023,13 +952,6 @@
          </item>
         </widget>
        </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_16">
-         <property name="text">
-          <string>Software CLUT Render:</string>
-         </property>
-        </widget>
-       </item>
        <item row="3" column="0">
         <widget class="QLabel" name="label_47">
          <property name="text">
@@ -1052,6 +974,124 @@
          <item>
           <property name="text">
            <string>Enabled (Check Inside Target)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_12">
+         <property name="text">
+          <string>Skipdraw Range:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QSpinBox" name="skipDrawStart">
+           <property name="maximum">
+            <number>10000</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="skipDrawEnd">
+           <property name="maximum">
+            <number>10000</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="6" column="0" colspan="2">
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="hwAutoFlush">
+           <property name="text">
+            <string>Auto Flush</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="disableSafeFeatures">
+           <property name="text">
+            <string>Disable Safe Features</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="disableDepthEmulation">
+           <property name="text">
+            <string>Disable Depth Emulation</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="frameBufferConversion">
+           <property name="text">
+            <string>Frame Buffer Conversion</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QCheckBox" name="readTCOnClose">
+           <property name="text">
+            <string>Read Targets When Closing</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QCheckBox" name="disablePartialInvalidation">
+           <property name="text">
+            <string>Disable Partial Source Invalidation</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QCheckBox" name="targetPartialInvalidation">
+           <property name="text">
+            <string>Target Partial Invalidation</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="preloadFrameData">
+           <property name="text">
+            <string>Preload Frame Data</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QCheckBox" name="estimateTextureRegion">
+           <property name="text">
+            <string>Estimate Texture Region</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_45">
+         <property name="text">
+          <string>Texture Inside RT:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QComboBox" name="textureInsideRt">
+         <item>
+          <property name="text">
+           <string>Disabled (Default)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Inside Target</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Merge Targets</string>
           </property>
          </item>
         </widget>

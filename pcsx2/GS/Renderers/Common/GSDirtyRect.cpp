@@ -20,14 +20,16 @@
 GSDirtyRect::GSDirtyRect() :
 	r(GSVector4i::zero()),
 	psm(PSM_PSMCT32),
-	bw(1)
+	bw(1),
+	rgba({})
 {
 }
 
-GSDirtyRect::GSDirtyRect(GSVector4i& r, u32 psm, u32 bw) :
+GSDirtyRect::GSDirtyRect(GSVector4i& r, u32 psm, u32 bw, RGBAMask rgba) :
 	r(r),
 	psm(psm),
-	bw(bw)
+	bw(bw),
+	rgba(rgba)
 {
 }
 
@@ -71,6 +73,21 @@ GSVector4i GSDirtyRectList::GetTotalRect(GIFRegTEX0 TEX0, const GSVector2i& size
 	}
 
 	return GSVector4i::zero();
+}
+
+u32 GSDirtyRectList::GetDirtyChannels()
+{
+	u32 channels = 0;
+
+	if (!empty())
+	{
+		for (auto& dirty_rect : *this)
+		{
+			channels |= dirty_rect.rgba._u32;
+		}
+	}
+
+	return channels;
 }
 
 GSVector4i GSDirtyRectList::GetDirtyRect(size_t index, GIFRegTEX0 TEX0, const GSVector4i& clamp) const

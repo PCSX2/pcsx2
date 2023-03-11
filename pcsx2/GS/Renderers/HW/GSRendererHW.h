@@ -75,6 +75,7 @@ private:
 		CLUTDrawOnGPU,
 	};
 
+	bool HasEEUpload(GSVector4i r);
 	CLUTDrawTestResult PossibleCLUTDraw();
 	CLUTDrawTestResult PossibleCLUTDrawAggressive();
 	bool CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_tex);
@@ -150,7 +151,6 @@ public:
 	GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
 	void MergeSprite(GSTextureCache::Source* tex);
 	GSVector2 GetTextureScaleFactor() override;
-	GSVector2i GetOutputSize(int real_h);
 	GSVector2i GetTargetSize(GSVector2i* unscaled_size = nullptr);
 
 	void Reset(bool hardware_reset) override;
@@ -166,6 +166,7 @@ public:
 	void Draw() override;
 
 	void PurgeTextureCache() override;
+	void ReadbackTextureCache() override;
 	GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, const GSVector2i& size) override;
 
 	// Called by the texture cache to know if current texture is useful

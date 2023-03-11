@@ -27,6 +27,7 @@
 #include "common/Perf.h"
 #include "common/StringUtil.h"
 #include "CDVD/CDVD.h"
+#include "ps2/BiosTools.h"
 #include "GS/Renderers/Common/GSFunctionMap.h"
 
 #include "common/emitter/x86_intrin.h"
@@ -123,8 +124,10 @@ void SysLogMachineCaps()
 
 	std::string features;
 
-	if (x86caps.hasAVX)  features += "AVX ";
-	if (x86caps.hasAVX2) features += "AVX2 ";
+	if (x86caps.hasAVX)
+		features += "AVX ";
+	if (x86caps.hasAVX2)
+		features += "AVX2 ";
 
 	StringUtil::StripWhitespace(&features);
 
@@ -300,6 +303,15 @@ BaseVUmicroCPU* CpuVU1 = nullptr;
 
 void SysCpuProviderPack::ApplyConfig() const
 {
+	if (GSDumpReplayer::IsReplayingDump())
+	{
+		Cpu = &GSDumpReplayerCpu;
+		psxCpu = &psxInt;
+		CpuVU0 = &CpuIntVU0;
+		CpuVU1 = &CpuIntVU1;
+		return;
+	}
+
 	Cpu = CHECK_EEREC ? &recCpu : &intCpu;
 	psxCpu = CHECK_IOPREC ? &psxRec : &psxInt;
 
@@ -311,9 +323,6 @@ void SysCpuProviderPack::ApplyConfig() const
 
 	if (EmuConfig.Cpu.Recompiler.EnableVU1)
 		CpuVU1 = &CpuMicroVU1;
-
-	if (GSDumpReplayer::IsReplayingDump())
-		Cpu = &GSDumpReplayerCpu;
 }
 
 // Resets all PS2 cpu execution caches, which does not affect that actual PS2 state/condition.
@@ -340,18 +349,18 @@ void SysClearExecutionCache()
 	}
 }
 
+// This function returns part of EXTINFO data of the BIOS rom
+// This module contains information about Sony build environment at offst 0x10
+// first 15 symbols is build date/time that is unique per rom and can be used as unique serial
+// Example for romver 0160EC20010704
+// 20010704-160707,ROMconf,PS20160EC20010704.bin,kuma@rom-server/~/f10k/g/app/rom
+// 20010704-160707 can be used as unique ID for Bios
 std::string SysGetBiosDiscID()
 {
-	// FIXME: we should return a serial based on
-	// the BIOS being run (either a checksum of the BIOS roms, and/or a string based on BIOS
-	// region and revision).
-	// Good candidate can be first part of EXTINFO data in the BIOS rom:
-	// Example for romver 0160EC20010704
-	// 20010704-160707,ROMconf,PS20160EC20010704.bin,kuma@rom-server/~/f10k/g/app/rom
-	// 20010704-160707 can be used as unique ID for Bios
-	// rom0:EXTINFO first 15 bytes
-
-	return {};
+	if (!BiosSerial.empty())
+		return BiosSerial;
+	else
+		return {};
 }
 
 // This function always returns a valid DiscID -- using the Sony serial when possible, and

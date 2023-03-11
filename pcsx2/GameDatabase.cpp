@@ -18,6 +18,7 @@
 #include "GameDatabase.h"
 #include "GS/GS.h"
 #include "Host.h"
+#include "IconsFontAwesome5.h"
 #include "vtlb.h"
 
 #include "common/FileSystem.h"
@@ -342,14 +343,19 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 static const char* s_gs_hw_fix_names[] = {
 	"autoFlush",
 	"cpuFramebufferConversion",
+	"readTCOnClose",
 	"disableDepthSupport",
 	"wrapGSMem",
 	"preloadFrameData",
 	"disablePartialInvalidation",
+	"partialTargetInvalidation",
 	"textureInsideRT",
 	"alignSprite",
 	"mergeSprite",
 	"wildArmsHack",
+	"estimateTextureRegion",
+	"PCRTCOffsets",
+	"PCRTCOverscan",
 	"mipmap",
 	"trilinearFiltering",
 	"skipDrawStart",
@@ -363,8 +369,11 @@ static const char* s_gs_hw_fix_names[] = {
 	"cpuCLUTRender",
 	"gpuTargetCLUT",
 	"gpuPaletteConversion",
+	"minimumBlendingLevel",
+	"maximumBlendingLevel",
+	"recommendedBlendingLevel",
 	"getSkipCount",
-	"beforeDraw",
+	"beforeDraw"
 };
 static_assert(std::size(s_gs_hw_fix_names) == static_cast<u32>(GameDatabaseSchema::GSHWFixId::Count), "HW fix name lookup is correct size");
 
@@ -392,6 +401,11 @@ bool GameDatabaseSchema::isUserHackHWFix(GSHWFixId id)
 		case GSHWFixId::Mipmap:
 		case GSHWFixId::TexturePreloading:
 		case GSHWFixId::TrilinearFiltering:
+		case GSHWFixId::MinimumBlendingLevel:
+		case GSHWFixId::MaximumBlendingLevel:
+		case GSHWFixId::RecommendedBlendingLevel:
+		case GSHWFixId::PCRTCOffsets:
+		case GSHWFixId::PCRTCOverscan:
 		case GSHWFixId::GetSkipCount:
 		case GSHWFixId::BeforeDraw:
 			return false;
@@ -548,6 +562,9 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::CPUFramebufferConversion:
 			return (static_cast<int>(config.UserHacks_CPUFBConversion) == value);
 
+		case GSHWFixId::FlushTCOnClose:
+			return (static_cast<int>(config.UserHacks_ReadTCOnClose) == value);
+
 		case GSHWFixId::DisableDepthSupport:
 			return (static_cast<int>(config.UserHacks_DisableDepthSupport) == value);
 
@@ -560,6 +577,9 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::DisablePartialInvalidation:
 			return (static_cast<int>(config.UserHacks_DisablePartialInvalidation) == value);
 
+		case GSHWFixId::TargetPartialInvalidation:
+			return (static_cast<int>(config.UserHacks_TargetPartialInvalidation) == value);
+
 		case GSHWFixId::TextureInsideRT:
 			return (static_cast<int>(config.UserHacks_TextureInsideRt) == value);
 
@@ -571,6 +591,15 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 
 		case GSHWFixId::WildArmsHack:
 			return (config.UpscaleMultiplier <= 1.0f || static_cast<int>(config.UserHacks_WildHack) == value);
+
+		case GSHWFixId::EstimateTextureRegion:
+			return (static_cast<int>(config.UserHacks_EstimateTextureRegion) == value);
+
+		case GSHWFixId::PCRTCOffsets:
+			return (static_cast<int>(config.PCRTCOffsets) == value);
+
+		case GSHWFixId::PCRTCOverscan:
+			return (static_cast<int>(config.PCRTCOverscan) == value);
 
 		case GSHWFixId::Mipmap:
 			return (config.HWMipmap == HWMipmapLevel::Automatic || static_cast<int>(config.HWMipmap) == value);
@@ -610,6 +639,15 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 
 		case GSHWFixId::GPUPaletteConversion:
 			return (config.GPUPaletteConversion == ((value > 1) ? (config.TexturePreloading == TexturePreloadingLevel::Full) : (value != 0)));
+
+		case GSHWFixId::MinimumBlendingLevel:
+			return (static_cast<int>(config.AccurateBlendingUnit) >= value);
+
+		case GSHWFixId::MaximumBlendingLevel:
+			return (static_cast<int>(config.AccurateBlendingUnit) <= value);
+
+		case GSHWFixId::RecommendedBlendingLevel:
+			return true;
 
 		case GSHWFixId::GetSkipCount:
 			return (static_cast<int>(config.GetSkipCountFunctionId) == value);
@@ -654,6 +692,10 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 				config.UserHacks_CPUFBConversion = (value > 0);
 				break;
 
+			case GSHWFixId::FlushTCOnClose:
+				config.UserHacks_ReadTCOnClose = (value > 0);
+				break;
+
 			case GSHWFixId::DisableDepthSupport:
 				config.UserHacks_DisableDepthSupport = (value > 0);
 				break;
@@ -670,9 +712,16 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 				config.UserHacks_DisablePartialInvalidation = (value > 0);
 				break;
 
-			case GSHWFixId::TextureInsideRT:
-				config.UserHacks_TextureInsideRt = (value > 0);
+			case GSHWFixId::TargetPartialInvalidation:
+				config.UserHacks_TargetPartialInvalidation = (value > 0);
 				break;
+
+			case GSHWFixId::TextureInsideRT:
+			{
+				if (value >= 0 && value <= static_cast<int>(GSTextureInRtMode::MergeTargets))
+					config.UserHacks_TextureInsideRt = static_cast<GSTextureInRtMode>(value);
+			}
+			break;
 
 			case GSHWFixId::AlignSprite:
 				config.UserHacks_AlignSpriteX = (value > 0);
@@ -684,6 +733,18 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 
 			case GSHWFixId::WildArmsHack:
 				config.UserHacks_WildHack = (value > 0);
+				break;
+
+			case GSHWFixId::EstimateTextureRegion:
+				config.UserHacks_EstimateTextureRegion = (value > 0);
+				break;
+
+			case GSHWFixId::PCRTCOffsets:
+				config.PCRTCOffsets = (value > 0);
+				break;
+
+			case GSHWFixId::PCRTCOverscan:
+				config.PCRTCOverscan = (value > 0);
 				break;
 
 			case GSHWFixId::Mipmap:
@@ -774,6 +835,40 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 			}
 			break;
 
+			case GSHWFixId::MinimumBlendingLevel:
+			{
+				if (value >= 0 && value <= static_cast<int>(AccBlendLevel::Maximum))
+					config.AccurateBlendingUnit = std::max(config.AccurateBlendingUnit, static_cast<AccBlendLevel>(value));
+			}
+			break;
+
+			case GSHWFixId::MaximumBlendingLevel:
+			{
+				if (value >= 0 && value <= static_cast<int>(AccBlendLevel::Maximum))
+					config.AccurateBlendingUnit = std::min(config.AccurateBlendingUnit, static_cast<AccBlendLevel>(value));
+			}
+			break;
+
+			case GSHWFixId::RecommendedBlendingLevel:
+			{
+				if (value >= 0 && value <= static_cast<int>(AccBlendLevel::Maximum) && static_cast<int>(EmuConfig.GS.AccurateBlendingUnit) < value)
+				{
+					Host::AddKeyedOSDMessage("HWBlendingWarning",
+						fmt::format(ICON_FA_PAINT_BRUSH " Current Blending Accuracy is {}.\n"
+														"Recommended Blending Accuracy for this game is {}.\n"
+														"You can adjust the blending level in Game Properties to improve\n"
+														"graphical quality, but this will increase system requirements.",
+							Pcsx2Config::GSOptions::BlendingLevelNames[static_cast<int>(EmuConfig.GS.AccurateBlendingUnit)],
+							Pcsx2Config::GSOptions::BlendingLevelNames[value]),
+						Host::OSD_WARNING_DURATION);
+				}
+				else
+				{
+					Host::RemoveKeyedOSDMessage("HWBlendingWarning");
+				}
+			}
+			break;
+
 			case GSHWFixId::GetSkipCount:
 				config.GetSkipCountFunctionId = static_cast<s16>(value);
 				break;
@@ -796,7 +891,7 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 	if (!disabled_fixes.empty())
 	{
 		Host::AddKeyedOSDMessage("HWFixesWarning",
-			fmt::format("Manual GS hardware renderer fixes are enabled, automatic fixes were not applied:\n{}",
+			fmt::format(ICON_FA_MAGIC " Manual GS hardware renderer fixes are enabled, automatic fixes were not applied:\n{}",
 				disabled_fixes),
 			Host::OSD_ERROR_DURATION);
 	}

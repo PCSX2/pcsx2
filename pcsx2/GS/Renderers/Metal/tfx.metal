@@ -53,6 +53,7 @@ constant uint PS_CLR_HW             [[function_constant(GSMTLConstantIndex_PS_CL
 constant bool PS_HDR                [[function_constant(GSMTLConstantIndex_PS_HDR)]];
 constant bool PS_COLCLIP            [[function_constant(GSMTLConstantIndex_PS_COLCLIP)]];
 constant uint PS_BLEND_MIX          [[function_constant(GSMTLConstantIndex_PS_BLEND_MIX)]];
+constant bool PS_ROUND_INV          [[function_constant(GSMTLConstantIndex_PS_ROUND_INV)]];
 constant bool PS_FIXED_ONE_A        [[function_constant(GSMTLConstantIndex_PS_FIXED_ONE_A)]];
 constant bool PS_PABE               [[function_constant(GSMTLConstantIndex_PS_PABE)]];
 constant bool PS_NO_COLOR           [[function_constant(GSMTLConstantIndex_PS_NO_COLOR)]];
@@ -793,7 +794,11 @@ struct PSMain
 			fpos = ushort2(in.p.xy);
 		else
 			fpos = ushort2(in.p.xy / SCALING_FACTOR);
-		C.rgb += cb.dither_matrix[fpos.y & 3][fpos.x & 3];
+		float value = cb.dither_matrix[fpos.y & 3][fpos.x & 3];;
+		if (PS_ROUND_INV)
+			C.rgb -= value;
+		else
+			C.rgb += value;
 	}
 
 	void ps_color_clamp_wrap(thread float4& C)
@@ -801,6 +806,9 @@ struct PSMain
 		// When dithering the bottom 3 bits become meaningless and cause lines in the picture so we need to limit the color depth on dithered items
 		if (!SW_BLEND && !PS_DITHER && !PS_FBMASK)
 			return;
+
+		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
+			C.rgb += 7.f; // Need to round up, not down since the shader will invert
 
 		// Correct the Color value based on the output format
 		if (!PS_COLCLIP && !PS_HDR)
@@ -825,8 +833,10 @@ struct PSMain
 		return selector == 0 ? zero : selector == 1 ? one : two;
 	}
 
-	void ps_blend(thread float4& Color, thread float& As)
+	void ps_blend(thread float4& Color, thread float4& As_rgba)
 	{
+		float As = As_rgba.a;
+		
 		if (SW_BLEND)
 		{
 			// PABE
@@ -871,19 +881,17 @@ struct PSMain
 
 			if (PS_CLR_HW == 1)
 			{
-				// Replace Af with As so we can do proper compensation for Alpha.
-				if (PS_BLEND_C == 2)
-					As = cb.alpha_fix;
+				// As or Af
+				As_rgba.rgb = float3(C);
 				// Subtract 1 for alpha to compensate for the changed equation,
 				// if c.rgb > 255.0f then we further need to adjust alpha accordingly,
 				// we pick the lowest overflow from all colors because it's the safest,
 				// we divide by 255 the color because we don't know Cd value,
 				// changed alpha should only be done for hw blend.
-				float min_color = min(min(Color.r, Color.g), Color.b);
-				float alpha_compensate = max(1.f, min_color / 255.f);
-				As -= alpha_compensate;
+				float3 alpha_compensate = max(float3(1.f), Color.rgb / float3(255.f));
+				As_rgba.rgb -= alpha_compensate;
 			}
-			else if (PS_CLR_HW == 2)
+			else if (PS_CLR_HW == 2 || PS_CLR_HW == 4)
 			{
 				// Compensate slightly for Cd*(As + 1) - Cs*As.
 				// The initial factor we chose is 1 (0.00392)
@@ -892,6 +900,16 @@ struct PSMain
 				// blended value it can be.
 				float color_compensate = 1.f * (C + 1.f);
 				Color.rgb -= float3(color_compensate);
+			}
+			else if (PS_CLR_HW == 3 || PS_CLR_HW == 5)
+			{
+				// As, Ad or Af clamped.
+				As_rgba.rgb = float3(C_clamped);
+				// Cs*(Alpha + 1) might overflow, if it does then adjust alpha value
+				// that is sent on second output to compensate.
+				float3 overflow_check = (Color.rgb - float3(255.f)) / 255.f;
+				float3 alpha_compensate = max(float3(0.f), overflow_check);
+				As_rgba.rgb -= alpha_compensate;
 			}
 		}
 		else
@@ -909,8 +927,13 @@ struct PSMain
 			else if (PS_CLR_HW == 3)
 			{
 				// Needed for Cs*Ad, Cs*Ad + Cd, Cd - Cs*Ad
-				// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value
-				Color.rgb *= (255.f / 128.f);
+				// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value when rgb are below 128.
+				// When any color channel is higher than 128 then adjust the compensation automatically
+				// to give us more accurate colors, otherwise they will be wrong.
+				// The higher the value (>128) the lower the compensation will be.
+				float max_color = max(max(Color.r, Color.g), Color.b);
+				float color_compensate = 255.f / max(128.f, max_color);
+				Color.rgb *= float3(color_compensate);
 			}
 		}
 	}
@@ -977,7 +1000,7 @@ struct PSMain
 			C.a = 128.0f;
 		}
 
-		float alpha_blend = SW_AD_TO_HW ? (trunc(current_color.a * 255.5f) / 128.f) : (C.a / 128.f);
+		float4 alpha_blend = SW_AD_TO_HW ? float4(trunc(current_color.a * 255.5f) / 128.f) : float4(C.a / 128.f);
 
 		if (PS_DFMT == FMT_16)
 		{

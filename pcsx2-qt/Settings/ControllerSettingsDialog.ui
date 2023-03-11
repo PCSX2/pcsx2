@@ -68,7 +68,7 @@
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>Profile:</string>
+          <string>Editing Profile:</string>
          </property>
         </widget>
        </item>
