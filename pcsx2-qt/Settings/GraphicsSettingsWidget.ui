@@ -667,7 +667,7 @@
         </widget>
        </item>
        <item row="8" column="0" colspan="2">
-        <layout class="QGridLayout" name="basicCheckboxGridLayout">
+        <layout class="QGridLayout" name="hardwareRenderingOptionsLayout">
          <item row="0" column="0">
           <widget class="QCheckBox" name="spinGPUDuringReadbacks">
            <property name="text">
