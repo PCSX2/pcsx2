@@ -1623,7 +1623,7 @@
             <item row="1" column="0">
              <widget class="QCheckBox" name="osdShowFPS">
               <property name="text">
-               <string>Show Internal FPS</string>
+               <string>Show FPS</string>
               </property>
              </widget>
             </item>

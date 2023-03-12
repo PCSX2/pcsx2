@@ -632,7 +632,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Shows on-screen-display messages when events occur such as save states being "
 			   "created/loaded, screenshots being taken, etc."));
 
-		dialog->registerWidgetHelp(m_ui.osdShowFPS, tr("Show Internal FPS"), tr("Unchecked"),
+		dialog->registerWidgetHelp(m_ui.osdShowFPS, tr("Show FPS"), tr("Unchecked"),
 			tr("Shows the internal frame rate of the game in the top-right corner of the display."));
 
 		dialog->registerWidgetHelp(m_ui.osdShowSpeed, tr("Show Speed Percentages"), tr("Unchecked"),
