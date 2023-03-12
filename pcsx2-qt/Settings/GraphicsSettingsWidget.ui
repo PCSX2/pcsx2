@@ -710,27 +710,20 @@
        <item row="9" column="0" colspan="2">
         <layout class="QGridLayout" name="basicCheckboxGridLayout">
          <item row="0" column="0">
-          <widget class="QCheckBox" name="gpuPaletteConversion">
-           <property name="text">
-            <string>GPU Palette Conversion</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QCheckBox" name="enableHWFixes">
-           <property name="text">
-            <string>Manual Hardware Renderer Fixes</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
           <widget class="QCheckBox" name="spinGPUDuringReadbacks">
            <property name="text">
             <string>Spin GPU During Readbacks</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="enableHWFixes">
+           <property name="text">
+            <string>Manual Hardware Renderer Fixes</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
           <widget class="QCheckBox" name="spinCPUDuringReadbacks">
            <property name="text">
             <string>Spin CPU During Readbacks</string>
@@ -1065,6 +1058,13 @@
           <widget class="QCheckBox" name="estimateTextureRegion">
            <property name="text">
             <string>Estimate Texture Region</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QCheckBox" name="gpuPaletteConversion">
+           <property name="text">
+            <string>GPU Palette Conversion</string>
            </property>
           </widget>
          </item>
