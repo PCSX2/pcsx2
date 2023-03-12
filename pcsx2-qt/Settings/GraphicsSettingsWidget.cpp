@@ -898,7 +898,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	const bool is_hardware = (type == GSRendererType::DX11 || type == GSRendererType::DX12 || type == GSRendererType::OGL ||
 							  type == GSRendererType::VK || type == GSRendererType::Metal);
 	const bool is_software = (type == GSRendererType::SW);
-	const bool hw_fixes = (is_hardware && m_ui.enableHWFixes->checkState() == Qt::Checked);
+	const bool hw_fixes = (is_hardware && m_ui.enableHWFixes && m_ui.enableHWFixes->checkState() == Qt::Checked);
 	const int prev_tab = m_ui.tabs->currentIndex();
 
 	// hw rendering
