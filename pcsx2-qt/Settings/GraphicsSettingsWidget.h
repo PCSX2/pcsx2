@@ -54,6 +54,7 @@ private Q_SLOTS:
 private:
 	GSRendererType getEffectiveRenderer() const;
 	void updateRendererDependentOptions();
+	void resetManualHardwareFixes();
 
 	SettingsDialog* m_dialog;
 
