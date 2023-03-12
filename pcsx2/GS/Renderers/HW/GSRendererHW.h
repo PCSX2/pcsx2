@@ -84,10 +84,10 @@ private:
 	template <bool linear>
 	void RoundSpriteOffset();
 
-	void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex);
+	void DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Target* ds, GSTextureCache::Source* tex);
 
 	void ResetStates();
-	void SetupIA(const float& sx, const float& sy);
+	void SetupIA(float target_scale, float sx, float sy);
 	void EmulateTextureShuffleAndFbmask();
 	void EmulateChannelShuffle(const GSTextureCache::Source* tex);
 	void EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& blending_alpha_pass);
@@ -96,6 +96,9 @@ private:
 	void EmulateATST(float& AREF, GSHWDrawConfig::PSSelector& ps, bool pass_2);
 
 	void SetTCOffset();
+
+	bool IsSplitTextureShuffle();
+	GSVector4i GetSplitTextureShuffleDrawRect() const;
 
 	GSTextureCache* m_tc;
 	GSVector4i m_r = {};
@@ -107,6 +110,11 @@ private:
 	OI_Ptr m_oi = nullptr;
 	int m_skip = 0;
 	int m_skip_offset = 0;
+
+	u32 m_split_texture_shuffle_pages = 0;
+	u32 m_split_texture_shuffle_pages_high = 0;
+	u32 m_split_texture_shuffle_start_FBP = 0;
+	u32 m_split_texture_shuffle_start_TBP = 0;
 
 	u32 m_last_channel_shuffle_fbmsk = 0;
 	bool m_channel_shuffle = false;
@@ -148,17 +156,17 @@ public:
 	template <GSHWDrawConfig::VSExpand Expand> void ExpandIndices();
 	void ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba);
 	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
-	GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
+	GSVector4i ComputeBoundingBox(const GSVector2i& rtsize, float rtscale);
 	void MergeSprite(GSTextureCache::Source* tex);
-	GSVector2 GetTextureScaleFactor() override;
-	GSVector2i GetTargetSize(GSVector2i* unscaled_size = nullptr);
+	float GetTextureScaleFactor() override;
+	GSVector2i GetTargetSize(const GSTextureCache::Source* tex = nullptr);
 
 	void Reset(bool hardware_reset) override;
 	void UpdateSettings(const Pcsx2Config::GSOptions& old_config) override;
 	void VSync(u32 field, bool registers_written) override;
 
-	GSTexture* GetOutput(int i, int& y_offset) override;
-	GSTexture* GetFeedbackOutput() override;
+	GSTexture* GetOutput(int i, float& scale, int& y_offset) override;
+	GSTexture* GetFeedbackOutput(float& scale) override;
 	void ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r) override;
 	void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool eewrite = false) override;
 	void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false) override;
@@ -167,7 +175,7 @@ public:
 
 	void PurgeTextureCache() override;
 	void ReadbackTextureCache() override;
-	GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, const GSVector2i& size) override;
+	GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, float* scale, const GSVector2i& size) override;
 
 	// Called by the texture cache to know if current texture is useful
 	bool UpdateTexIsFB(GSTextureCache::Target* src, const GIFRegTEX0& TEX0);

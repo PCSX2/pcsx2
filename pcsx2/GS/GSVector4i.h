@@ -1547,6 +1547,11 @@ public:
 		return GSVector4i(_mm_castps_si128(_mm_loadh_pi(_mm_castsi128_ps(v.m), (__m64*)p)));
 	}
 
+	__forceinline static GSVector4i loadh(const GSVector2i& v)
+	{
+		return loadh(&v);
+	}
+
 	__forceinline static GSVector4i load(const void* pl, const void* ph)
 	{
 		return loadh(ph, loadl(pl));

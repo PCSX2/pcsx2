@@ -100,6 +100,7 @@ GSState::GSState()
 	m_mipmap = GSConfig.Mipmap;
 
 	s_n = 0;
+	s_transfer_n = 0;
 
 	memset(&m_v, 0, sizeof(m_v));
 	memset(&m_vertex, 0, sizeof(m_vertex));
@@ -1780,7 +1781,7 @@ void GSState::Write(const u8* mem, int len)
 		m_draw_transfers.push_back(new_transfer);
 	}
 
-	GL_CACHE("Write! ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d)",
+	GL_CACHE("Write! %u ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d)", s_transfer_n,
 			 blit.DBP, blit.DBW, psm_str(blit.DPSM),
 			 m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
 			 m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, w, h);
@@ -3123,8 +3124,8 @@ __forceinline void GSState::VertexKick(u32 skip)
 			case GS_TRIANGLESTRIP:
 			case GS_TRIANGLEFAN:
 			case GS_SPRITE:
-				// FIXME: GREG I don't understand the purpose of the m_nativeres check
-				// It impacts badly the number of draw call in the HW renderer.
+				// Discard degenerate triangles. For native resolution, we can ignore the subpixel bits,
+				// because at the boundaries, they're irrelevant.
 				test |= m_nativeres ? pmin.eq16(pmax).zwzwl() : pmin.eq16(pmax);
 				break;
 			default:

@@ -76,17 +76,6 @@ namespace
 		__fi bool HasPalette() const { return (GSLocalMemory::m_psm[TEX0_PSM].pal > 0); }
 		__fi bool HasRegion() const { return region.HasEither(); }
 
-		__fi GSVector2 ReplacementScale(const GSTextureReplacements::ReplacementTexture& rtex) const
-		{
-			return ReplacementScale(rtex.width, rtex.height);
-		}
-
-		__fi GSVector2 ReplacementScale(u32 rwidth, u32 rheight) const
-		{
-			return GSVector2(static_cast<float>(rwidth) / static_cast<float>(Width()),
-				static_cast<float>(rheight) / static_cast<float>(Height()));
-		}
-
 		__fi bool operator==(const TextureName& rhs) const
 		{
 			return std::tie(TEX0Hash, CLUTHash, region.bits, bits) ==
@@ -467,7 +456,7 @@ GSTexture* GSTextureReplacements::LookupReplacementTexture(const GSTextureCache:
 		if (it != s_replacement_texture_cache.end())
 		{
 			// replacement is cached, can immediately upload to host GPU
-			return CreateReplacementTexture(it->second, name.ReplacementScale(it->second), mipmap);
+			return CreateReplacementTexture(it->second, mipmap);
 		}
 	}
 
@@ -493,7 +482,7 @@ GSTexture* GSTextureReplacements::LookupReplacementTexture(const GSTextureCache:
 		const ReplacementTexture& rtex = s_replacement_texture_cache.emplace(name, std::move(replacement.value())).first->second;
 
 		// and upload to gpu
-		return CreateReplacementTexture(rtex, name.ReplacementScale(rtex), mipmap);
+		return CreateReplacementTexture(rtex, mipmap);
 	}
 }
 
@@ -571,7 +560,7 @@ void GSTextureReplacements::ClearReplacementTextures()
 	s_async_loaded_textures.clear();
 }
 
-GSTexture* GSTextureReplacements::CreateReplacementTexture(const ReplacementTexture& rtex, const GSVector2& scale, bool mipmap)
+GSTexture* GSTextureReplacements::CreateReplacementTexture(const ReplacementTexture& rtex, bool mipmap)
 {
 	// can't use generated mipmaps with compressed formats, because they can't be rendered to
 	// in the future I guess we could decompress the dds and generate them... but there's no reason that modders can't generate mips in dds
@@ -607,7 +596,6 @@ GSTexture* GSTextureReplacements::CreateReplacementTexture(const ReplacementText
 		}
 	}
 
-	tex->SetScale(scale);
 	return tex;
 }
 
@@ -626,7 +614,7 @@ void GSTextureReplacements::ProcessAsyncLoadedTextures()
 			continue;
 
 		// upload and inject into TC
-		GSTexture* tex = CreateReplacementTexture(it->second, name.ReplacementScale(it->second), mipmap);
+		GSTexture* tex = CreateReplacementTexture(it->second, mipmap);
 		if (tex)
 			s_tc->InjectHashCacheTexture(HashCacheKeyFromTextureName(name), tex);
 	}

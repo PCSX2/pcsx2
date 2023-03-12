@@ -79,6 +79,7 @@ bool GSRenderer::Merge(int field)
 {
 	GSVector2i fs(0, 0);
 	GSTexture* tex[3] = { nullptr, nullptr, nullptr };
+	float tex_scale[3] = { 0.0f, 0.0f, 0.0f };
 	int y_offset[3] = { 0, 0, 0 };
 	const bool feedback_merge = m_regs->EXTWRITE.WRITE == 1;
 
@@ -101,18 +102,19 @@ bool GSRenderer::Merge(int field)
 	// Only need to check the right/bottom on software renderer, hardware always gets the full texture then cuts a bit out later.
 	if (PCRTCDisplays.FrameRectMatch() && !PCRTCDisplays.FrameWrap() && !feedback_merge)
 	{
-		tex[0] = GetOutput(-1, y_offset[0]);
+		tex[0] = GetOutput(-1, tex_scale[0], y_offset[0]);
 		tex[1] = tex[0]; // saves one texture fetch
 		y_offset[1] = y_offset[0];
+		tex_scale[1] = tex_scale[0];
 	}
 	else
 	{
 		if (PCRTCDisplays.PCRTCDisplays[0].enabled)
-			tex[0] = GetOutput(0, y_offset[0]);
+			tex[0] = GetOutput(0, tex_scale[0], y_offset[0]);
 		if (PCRTCDisplays.PCRTCDisplays[1].enabled)
-			tex[1] = GetOutput(1, y_offset[1]);
+			tex[1] = GetOutput(1, tex_scale[1], y_offset[1]);
 		if (feedback_merge)
-			tex[2] = GetFeedbackOutput();
+			tex[2] = GetFeedbackOutput(tex_scale[2]);
 	}
 
 	if (!tex[0] && !tex[1])
@@ -152,7 +154,7 @@ bool GSRenderer::Merge(int field)
 		if (!curCircuit.enabled || !tex[i])
 			continue;
 
-		GSVector4 scale = GSVector4(tex[i]->GetScale()).xyxy();
+		GSVector4 scale = GSVector4(tex_scale[i]);
 
 		// dst is the final destination rect with offset on the screen.
 		dst[i] = scale * GSVector4(curCircuit.displayRect);
@@ -184,7 +186,7 @@ bool GSRenderer::Merge(int field)
 
 	if (feedback_merge && tex[2])
 	{
-		GSVector4 scale = GSVector4(tex[2]->GetScale()).xyxy();
+		GSVector4 scale = GSVector4(tex_scale[2]);
 		GSVector4i feedback_rect;
 
 		feedback_rect.left = m_regs->EXTBUF.WDX;
@@ -216,7 +218,7 @@ bool GSRenderer::Merge(int field)
 
 	if (isReallyInterlaced() && GSConfig.InterlaceMode != GSInterlaceMode::Off)
 	{
-		const float offset = is_bob ? (tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y) : 0.0f;
+		const float offset = is_bob ? (tex[1] ? tex_scale[1] : tex_scale[0]) : 0.0f;
 
 		g_gs_device->Interlace(fs, field ^ field2, mode, offset);
 	}
@@ -828,7 +830,7 @@ void GSRenderer::EndCapture()
 	GSCapture::EndCapture();
 }
 
-GSTexture* GSRenderer::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, const GSVector2i& size)
+GSTexture* GSRenderer::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, float* scale, const GSVector2i& size)
 {
 	return nullptr;
 }

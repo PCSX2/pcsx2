@@ -24,5 +24,5 @@ public:
 
 protected:
 	void Draw() override;
-	GSTexture* GetOutput(int i, int& y_offset) override;
+	GSTexture* GetOutput(int i, float& scale, int& y_offset) override;
 };

@@ -126,7 +126,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 
 		if (t->GetType() == type && t->GetFormat() == format && t->GetSize() == size && t->GetMipmapLevels() == levels)
 		{
-			if (!prefer_new_texture || t->last_frame_used != m_frame)
+			if (!prefer_new_texture || t->GetLastFrameUsed() != m_frame)
 			{
 				m_pool_memory_usage -= t->GetMemUsage();
 				m_pool.erase(i);
@@ -156,8 +156,6 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 				throw std::bad_alloc();
 		}
 	}
-
-	t->SetScale(GSVector2(1, 1)); // Things seem to assume that all textures come out of here with scale 1...
 
 	switch (type)
 	{
@@ -194,7 +192,7 @@ void GSDevice::Recycle(GSTexture* t)
 	if (!t)
 		return;
 
-	t->last_frame_used = m_frame;
+	t->SetLastFrameUsed(m_frame);
 
 	m_pool.push_front(t);
 	m_pool_memory_usage += t->GetMemUsage();
@@ -214,7 +212,7 @@ void GSDevice::AgePool()
 {
 	m_frame++;
 
-	while (m_pool.size() > 40 && m_frame - m_pool.back()->last_frame_used > 10)
+	while (m_pool.size() > 40 && m_frame - m_pool.back()->GetLastFrameUsed() > 10)
 	{
 		m_pool_memory_usage -= m_pool.back()->GetMemUsage();
 		delete m_pool.back();

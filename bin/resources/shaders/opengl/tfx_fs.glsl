@@ -328,7 +328,7 @@ ivec2 clamp_wrap_uv_depth(ivec2 uv)
 
 vec4 sample_depth(vec2 st)
 {
-    vec2 uv_f = vec2(clamp_wrap_uv_depth(ivec2(st))) * vec2(float(PS_SCALE_FACTOR)) * vec2(1.0f/16.0f);
+    vec2 uv_f = vec2(clamp_wrap_uv_depth(ivec2(st))) * vec2(ScaledScaleFactor);
     ivec2 uv = ivec2(uv_f);
 
     vec4 t = vec4(0.0f);
@@ -652,7 +652,7 @@ void ps_dither(inout vec3 C)
     #if PS_DITHER == 2
     ivec2 fpos = ivec2(gl_FragCoord.xy);
     #else
-    ivec2 fpos = ivec2(gl_FragCoord.xy / float(PS_SCALE_FACTOR));
+    ivec2 fpos = ivec2(gl_FragCoord.xy * RcpScaleFactor);
     #endif
     float value = DitherMatrix[fpos.y&3][fpos.x&3];
     #if PS_ROUND_INV

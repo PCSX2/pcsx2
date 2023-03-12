@@ -118,19 +118,26 @@ public:
 
 	class Surface : public GSAlignedClass<32>
 	{
-	public:
-		GSTexture* m_texture;
-		HashCacheEntry* m_from_hash_cache;
-		GIFRegTEX0 m_TEX0;
-		GIFRegTEXA m_TEXA;
-		int m_age;
-		bool m_32_bits_fmt; // Allow to detect the casting of 32 bits as 16 bits texture
-		bool m_shared_texture;
-		u32 m_end_block; // Hint of the surface area.
+	protected:
+		Surface();
+		~Surface();
 
 	public:
-		Surface();
-		virtual ~Surface();
+		GSTexture* m_texture = nullptr;
+		GIFRegTEX0 m_TEX0 = {};
+		GIFRegTEXA m_TEXA = {};
+		GSVector2i m_unscaled_size = {};
+		float m_scale = 0.0f;
+		int m_age = 0;
+		u32 m_end_block = MAX_BP; // Hint of the surface area.
+		bool m_32_bits_fmt = false; // Allow to detect the casting of 32 bits as 16 bits texture
+		bool m_shared_texture = false;
+
+		__fi int GetUnscaledWidth() const { return m_unscaled_size.x; }
+		__fi int GetUnscaledHeight() const { return m_unscaled_size.y; }
+		__fi const GSVector2i& GetUnscaledSize() const { return m_unscaled_size; }
+		__fi GSVector4i GetUnscaledRect() const { return GSVector4i::loadh(m_unscaled_size); }
+		__fi float GetScale() const { return m_scale; }
 
 		/// Returns true if the target wraps around the end of GS memory.
 		bool Wraps() const { return (m_end_block < m_TEX0.TBP0); }
@@ -202,25 +209,27 @@ public:
 		void Flush(u32 count, int layer);
 
 	public:
+		HashCacheEntry* m_from_hash_cache = nullptr;
 		std::shared_ptr<Palette> m_palette_obj;
 		std::unique_ptr<u32[]> m_valid;// each u32 bits map to the 32 blocks of that page
-		GSTexture* m_palette;
-		GSVector4i m_valid_rect;
-		GSVector2i m_lod;
+		GSTexture* m_palette = nullptr;
+		GSVector4i m_valid_rect = {};
+		GSVector2i m_lod = {};
 		SourceRegion m_region = {};
 		u8 m_valid_hashes = 0;
 		u8 m_complete_layers = 0;
-		bool m_target;
-		bool m_repeating;
-		std::vector<GSVector2i>* m_p2t;
+		bool m_target = false;
+		bool m_repeating = false;
+		std::vector<GSVector2i>* m_p2t = nullptr;
 		// Keep a trace of the target origin. There is no guarantee that pointer will
 		// still be valid on future. However it ought to be good when the source is created
 		// so it can be used to access un-converted data for the current draw call.
-		GSTexture** m_from_target;
-		GIFRegTEX0 m_from_target_TEX0; // TEX0 of the target texture, if any, else equal to texture TEX0
-		GIFRegTEX0 m_layer_TEX0[7]; // Detect already loaded value
-		HashType m_layer_hash[7];
+		GSTexture** m_from_target = nullptr;
+		GIFRegTEX0 m_from_target_TEX0 = {}; // TEX0 of the target texture, if any, else equal to texture TEX0
+		GIFRegTEX0 m_layer_TEX0[7] = {}; // Detect already loaded value
+		HashType m_layer_hash[7] = {};
 		// Keep a GSTextureCache::SourceMap::m_map iterator to allow fast erase
+		// Deliberately not initialized to save cycles.
 		std::array<u16, MAX_PAGES> m_erase_it;
 		GSOffset::PageLooper m_pages;
 
@@ -246,6 +255,7 @@ public:
 		bool m_dirty_alpha = true;
 		bool m_is_frame = false;
 		bool m_used = false;
+		float OffsetHack_modxy = 0.0f;
 		GSDirtyRectList m_dirty;
 		GSVector4i m_valid{};
 		GSVector4i m_drawn_since_read{};
@@ -265,8 +275,8 @@ public:
 		/// Updates the target, if the dirty area intersects with the specified rectangle.
 		void UpdateIfDirtyIntersects(const GSVector4i& rc);
 
-		bool ResizeTexture(int new_width, int new_height, bool recycle_old = true);
-		bool ResizeTexture(int new_width, int new_height, GSVector2 new_scale, bool recycle_old = true);
+		/// Resizes target texture, DOES NOT RESCALE.
+		bool ResizeTexture(int new_unscaled_width, int new_unscaled_height, bool recycle_old = true);
 	};
 
 	class PaletteMap
@@ -377,7 +387,7 @@ protected:
 	std::unique_ptr<GSDownloadTexture> m_uint32_download_texture;
 
 	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t, bool half_right, int x_offset, int y_offset, const GSVector2i* lod, const GSVector4i* src_range, GSTexture* gpu_clut, SourceRegion region);
-	Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type, const bool clear);
+	Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, float scale, int type, const bool clear);
 
 	/// Expands a target when the block pointer for a display framebuffer is within another target, but the read offset
 	/// plus the height is larger than the current size of the target.
@@ -394,7 +404,7 @@ protected:
 	// TODO: virtual void Write(Source* s, const GSVector4i& r) = 0;
 	// TODO: virtual void Write(Target* t, const GSVector4i& r) = 0;
 
-	Source* CreateMergedSource(GIFRegTEX0 TEX0, GIFRegTEXA TEXA, SourceRegion region, const GSVector2& scale);
+	Source* CreateMergedSource(GIFRegTEX0 TEX0, GIFRegTEXA TEXA, SourceRegion region, float scale);
 
 public:
 	GSTextureCache();
@@ -412,20 +422,21 @@ public:
 	void ReadbackAll();
 	void AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw, RGBAMask rgba);
 
-	GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, const GSVector2i& size);
+	GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, float* scale, const GSVector2i& size);
 
 	Source* LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const GSVector2i* lod);
 	Source* LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, bool palette = false);
 
 	Target* FindTargetOverlap(u32 bp, u32 end_block, int type, int psm);
-	Target* LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, int type, bool used, u32 fbmask = 0, const bool is_frame = false, const int real_w = 0, const int real_h = 0, bool preload = GSConfig.PreloadFrameWithGSData, bool is_clear = false);
-	Target* LookupDisplayTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, const int real_w, const int real_h);
+	Target* LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, float scale, int type, bool used, u32 fbmask = 0, const bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool is_clear = false);
+	Target* LookupDisplayTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, float scale);
 
 	/// Looks up a target in the cache, and only returns it if the BP/BW/PSM match exactly.
 	Target* GetExactTarget(u32 BP, u32 BW, u32 PSM) const;
 	Target* GetTargetWithSharedBits(u32 BP, u32 PSM) const;
 
 	u32 GetTargetHeight(u32 fbp, u32 fbw, u32 psm, u32 min_height);
+	bool Has32BitTarget(u32 bp);
 
 	void ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r);
 	void InvalidateVideoMemType(int type, u32 bp);

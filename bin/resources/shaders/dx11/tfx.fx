@@ -46,7 +46,6 @@
 #define PS_CHANNEL_FETCH 0
 #define PS_TALES_OF_ABYSS_HLE 0
 #define PS_URBAN_CHAOS_HLE 0
-#define PS_SCALE_FACTOR 1.0
 #define PS_HDR 0
 #define PS_COLCLIP 0
 #define PS_BLEND_A 0
@@ -171,6 +170,8 @@ cbuffer cb1
 	float2 TC_OffsetHack;
 	float2 STScale;
 	float4x4 DitherMatrix;
+	float ScaledScaleFactor;
+	float RcpScaleFactor;
 };
 
 float4 sample_c(float2 uv, float uv_w)
@@ -402,7 +403,7 @@ int2 clamp_wrap_uv_depth(int2 uv)
 
 float4 sample_depth(float2 st, float2 pos)
 {
-	float2 uv_f = (float2)clamp_wrap_uv_depth(int2(st)) * (float2)PS_SCALE_FACTOR * (float2)(1.0f / 16.0f);
+	float2 uv_f = (float2)clamp_wrap_uv_depth(int2(st)) * (float2)ScaledScaleFactor;
 	int2 uv = (int2)uv_f;
 
 	float4 t = (float4)(0.0f);
@@ -742,7 +743,7 @@ void ps_dither(inout float3 C, float2 pos_xy)
 		if (PS_DITHER == 2)
 			fpos = int2(pos_xy);
 		else
-			fpos = int2(pos_xy / (float)PS_SCALE_FACTOR);
+			fpos = int2(pos_xy * RcpScaleFactor);
 
 		float value = DitherMatrix[fpos.x & 3][fpos.y & 3];
 		if (PS_ROUND_INV)

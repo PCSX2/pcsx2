@@ -725,7 +725,6 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 
 	// Options which aren't using the global struct yet, so we need to recreate all GS objects.
 	if (
-		GSConfig.UpscaleMultiplier != old_config.UpscaleMultiplier ||
 		GSConfig.SWExtraThreads != old_config.SWExtraThreads ||
 		GSConfig.SWExtraThreadsHeight != old_config.SWExtraThreadsHeight)
 	{

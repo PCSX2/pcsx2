@@ -1,9 +1,5 @@
 #ifdef SHADER_MODEL // make safe to include in resource file to enforce dependency
 
-#ifndef PS_SCALE_FACTOR
-#define PS_SCALE_FACTOR 1
-#endif
-
 struct VS_INPUT
 {
 	float4 p : POSITION;
@@ -24,7 +20,6 @@ cbuffer cb0 : register(b0)
 	int EMODA;
 	int EMODC;
 	int DOFFSET;
-	int cb0_pad;
 };
 
 static const float3x3 rgb2yuv =
@@ -274,16 +269,25 @@ PS_OUTPUT ps_convert_rgba_8i(PS_INPUT input)
 	uint2 subblock = pos & uint2(7u, 1u);
 	uint2 coord = block | subblock;
 
+	// Compensate for potentially differing page pitch.
+	uint SBW = uint(EMODA);
+	uint DBW = uint(EMODC);
+	uint2 block_xy = coord / uint2(64, 32);
+	uint block_num = (block_xy.y * (DBW / 128)) + block_xy.x;
+	uint2 block_offset = uint2((block_num % (SBW / 64)) * 64, (block_num / (SBW / 64)) * 32);
+	coord = (coord % uint2(64, 32)) + block_offset;
+
 	// Apply offset to cols 1 and 2
 	uint is_col23 = pos.y & 4u;
 	uint is_col13 = pos.y & 2u;
 	uint is_col12 = is_col23 ^ (is_col13 << 1);
 	coord.x ^= is_col12; // If cols 1 or 2, flip bit 3 of x
 
-	if (floor(PS_SCALE_FACTOR) != PS_SCALE_FACTOR)
-		coord = uint2(float2(coord) * PS_SCALE_FACTOR);
+	float ScaleFactor = BGColor.x;
+	if (floor(ScaleFactor) != ScaleFactor)
+		coord = uint2(float2(coord) * ScaleFactor);
 	else
-		coord *= PS_SCALE_FACTOR;
+		coord *= uint(ScaleFactor);
 
 	float4 pixel = Texture.Load(int3(int2(coord), 0));
 	float2 sel0 = (pos.y & 2u) == 0u ? pixel.rb : pixel.ga;
@@ -295,7 +299,7 @@ PS_OUTPUT ps_convert_rgba_8i(PS_INPUT input)
 PS_OUTPUT ps_convert_clut_4(PS_INPUT input)
 {
 	// Borrowing the YUV constant buffer.
-	float2 scale = BGColor.xy;
+	float scale = BGColor.x;
 	uint2 offset = uint2(uint(EMODA), uint(EMODC)) + uint(DOFFSET);
 
 	// CLUT4 is easy, just two rows of 8x8.
@@ -310,7 +314,7 @@ PS_OUTPUT ps_convert_clut_4(PS_INPUT input)
 
 PS_OUTPUT ps_convert_clut_8(PS_INPUT input)
 {
-	float2 scale = BGColor.xy;
+	float scale = BGColor.x;
 	uint2 offset = uint2(uint(EMODA), uint(EMODC));
 	uint index = min(uint(input.p.x) + uint(DOFFSET), 255u);
 

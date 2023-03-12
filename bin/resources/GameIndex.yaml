@@ -518,7 +518,6 @@ SCAJ-20010:
   name: "Bakusou Dekotora Densetsu - Otoko Hanamichi Yume Roman"
   region: "NTSC-Unk"
   gsHWFixes:
-    getSkipCount: "GSC_BigMuthaTruckers"
     beforeDraw: "OI_BigMuthaTruckers"
 SCAJ-20011:
   name: "Armored Core 3 - Silent Line"
@@ -12696,7 +12695,6 @@ SLES-51355:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_BigMuthaTruckers"
     beforeDraw: "OI_BigMuthaTruckers"
 SLES-51356:
   name: "Road Trip Adventure"
@@ -28745,7 +28743,6 @@ SLPM-65234:
   name: "Bakusou Dekotora Densetsu - Otoko Hanamichi Yume Roman"
   region: "NTSC-J"
   gsHWFixes:
-    getSkipCount: "GSC_BigMuthaTruckers"
     beforeDraw: "OI_BigMuthaTruckers"
 SLPM-65235:
   name: "New Roommania - Porori Seishun"
@@ -42385,7 +42382,6 @@ SLUS-20291:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_BigMuthaTruckers"
     beforeDraw: "OI_BigMuthaTruckers"
 SLUS-20292:
   name: "Tsugunai - Atonement"
@@ -43904,7 +43900,6 @@ SLUS-20605:
   name: "Big Mutha Truckers"
   region: "NTSC-U"
   gsHWFixes:
-    getSkipCount: "GSC_BigMuthaTruckers"
     beforeDraw: "OI_BigMuthaTruckers"
 SLUS-20606:
   name: "Bounty Hunter - Seek & Destroy"
