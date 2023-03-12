@@ -1846,6 +1846,8 @@ void GSRendererHW::Draw()
 	const bool is_mem_clear = IsConstantDirectWriteMemClear(false);
 	const bool can_update_size = !is_mem_clear && !m_texture_shuffle && !m_channel_shuffle;
 	const GSVector2i resolution = PCRTCDisplays.GetResolution();
+	GSTextureCache::Target* old_rt = nullptr;
+	GSTextureCache::Target* old_ds = nullptr;
 	{
 		// We still need to make sure the dimensions of the targets match.
 		const GSVector2 up_s(GetTextureScaleFactor());
@@ -1876,7 +1878,6 @@ void GSRendererHW::Draw()
 			// Grandia Xtreme, Onimusha Warlord.
 			if (!new_rect && new_height && old_end_block != rt->m_end_block)
 			{
-				GSTextureCache::Target* old_rt = nullptr;
 				old_rt = m_tc->FindTargetOverlap(old_end_block, rt->m_end_block, GSTextureCache::RenderTarget, context->FRAME.PSM);
 
 				if (old_rt && old_rt != rt && GSUtil::HasSharedBits(old_rt->m_TEX0.PSM, rt->m_TEX0.PSM))
@@ -1884,9 +1885,11 @@ void GSRendererHW::Draw()
 					const int copy_width = (old_rt->m_texture->GetWidth()) > (rt->m_texture->GetWidth()) ? (rt->m_texture->GetWidth()) : old_rt->m_texture->GetWidth();
 					const int copy_height = (old_rt->m_texture->GetHeight()) > (rt->m_texture->GetHeight() - old_height) ? (rt->m_texture->GetHeight() - old_height) : old_rt->m_texture->GetHeight();
 
+					// Invalidate has been moved to after DrawPrims(), because we might kill the current sources' backing.
 					g_gs_device->CopyRect(old_rt->m_texture, rt->m_texture, GSVector4i(0, 0, copy_width, copy_height), 0, old_height);
-
-					m_tc->InvalidateVideoMemType(GSTextureCache::RenderTarget, old_rt->m_TEX0.TBP0);
+				}
+				else
+				{
 					old_rt = nullptr;
 				}
 			}
@@ -1912,7 +1915,6 @@ void GSRendererHW::Draw()
 
 			if (!new_rect && new_height && old_end_block != ds->m_end_block)
 			{
-				GSTextureCache::Target* old_ds = nullptr;
 				old_ds = m_tc->FindTargetOverlap(old_end_block, ds->m_end_block, GSTextureCache::DepthStencil, context->ZBUF.PSM);
 
 				if (old_ds && old_ds != ds && GSUtil::HasSharedBits(old_ds->m_TEX0.PSM, ds->m_TEX0.PSM))
@@ -1921,8 +1923,9 @@ void GSRendererHW::Draw()
 					const int copy_height = (old_ds->m_texture->GetHeight()) > (ds->m_texture->GetHeight() - old_height) ? (ds->m_texture->GetHeight() - old_height) : old_ds->m_texture->GetHeight();
 
 					g_gs_device->CopyRect(old_ds->m_texture, ds->m_texture, GSVector4i(0, 0, copy_width, copy_height), 0, old_height);
-
-					m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, old_ds->m_TEX0.TBP0);
+				}
+				else
+				{
 					old_ds = nullptr;
 				}
 			}
@@ -2051,6 +2054,14 @@ void GSRendererHW::Draw()
 
 	// Temporary source *must* be invalidated before normal, because otherwise it'll be double freed.
 	m_tc->InvalidateTemporarySource();
+
+	//
+
+	// Invalidation of old targets when changing to double-buffering.
+	if (old_rt)
+		m_tc->InvalidateVideoMemType(GSTextureCache::RenderTarget, old_rt->m_TEX0.TBP0);
+	if (old_ds)
+		m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, old_ds->m_TEX0.TBP0);
 
 	//
 
