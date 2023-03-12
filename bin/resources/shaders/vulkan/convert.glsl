@@ -1,7 +1,3 @@
-#ifndef PS_SCALE_FACTOR
-#define PS_SCALE_FACTOR 1.0
-#endif
-
 #ifdef VERTEX_SHADER
 
 layout(location = 0) in vec4 a_pos;
@@ -244,6 +240,15 @@ void ps_convert_rgb5a1_float16_biln()
 #endif
 
 #ifdef ps_convert_rgba_8i
+layout(push_constant) uniform cb10
+{
+	uint SBW;
+	uint DBW;
+	uvec2 cb_pad1;
+	float ScaleFactor;
+	vec3 cb_pad2;
+};
+
 void ps_convert_rgba_8i()
 {
 	// Convert a RGBA texture into a 8 bits packed texture
@@ -255,37 +260,45 @@ void ps_convert_rgba_8i()
 	// 1: 8 R | 8 B
 	// 2: 8 G | 8 A
 	// 3: 8 G | 8 A
-  uvec2 pos = uvec2(gl_FragCoord.xy);
+	uvec2 pos = uvec2(gl_FragCoord.xy);
 
-  // Collapse separate R G B A areas into their base pixel
-  uvec2 block = (pos & ~uvec2(15u, 3u)) >> 1;
-  uvec2 subblock = pos & uvec2(7u, 1u);
-  uvec2 coord = block | subblock;
+	// Collapse separate R G B A areas into their base pixel
+	uvec2 block = (pos & ~uvec2(15u, 3u)) >> 1;
+	uvec2 subblock = pos & uvec2(7u, 1u);
+	uvec2 coord = block | subblock;
 
-  // Apply offset to cols 1 and 2
-  uint is_col23 = pos.y & 4u;
-  uint is_col13 = pos.y & 2u;
-  uint is_col12 = is_col23 ^ (is_col13 << 1);
-  coord.x ^= is_col12; // If cols 1 or 2, flip bit 3 of x
+	// Compensate for potentially differing page pitch.
+	uvec2 block_xy = coord / uvec2(64u, 32u);
+	uint block_num = (block_xy.y * (DBW / 128u)) + block_xy.x;
+	uvec2 block_offset = uvec2((block_num % (SBW / 64u)) * 64u, (block_num / (SBW / 64u)) * 32u);
+	coord = (coord % uvec2(64u, 32u)) + block_offset;
 
-  if (floor(PS_SCALE_FACTOR) != PS_SCALE_FACTOR)
-    coord = uvec2(vec2(coord) * PS_SCALE_FACTOR);
-  else
-    coord *= uvec2(PS_SCALE_FACTOR);
+	// Apply offset to cols 1 and 2
+	uint is_col23 = pos.y & 4u;
+	uint is_col13 = pos.y & 2u;
+	uint is_col12 = is_col23 ^ (is_col13 << 1);
+	coord.x ^= is_col12; // If cols 1 or 2, flip bit 3 of x
 
-  vec4 pixel = texelFetch(samp0, ivec2(coord), 0);
-  vec2  sel0 = (pos.y & 2u) == 0u ? pixel.rb : pixel.ga;
-  float sel1 = (pos.x & 8u) == 0u ? sel0.x : sel0.y;
-  o_col0 = vec4(sel1); // Divide by something here?
+	if (floor(ScaleFactor) != ScaleFactor)
+		coord = uvec2(vec2(coord) * ScaleFactor);
+	else
+		coord *= uvec2(ScaleFactor);
+
+	vec4 pixel = texelFetch(samp0, ivec2(coord), 0);
+	vec2  sel0 = (pos.y & 2u) == 0u ? pixel.rb : pixel.ga;
+	float sel1 = (pos.x & 8u) == 0u ? sel0.x : sel0.y;
+	o_col0 = vec4(sel1); // Divide by something here?
 }
 #endif
 
 #ifdef ps_convert_clut_4
 layout(push_constant) uniform cb10
 {
-	vec2 scale;
 	uvec2 offset;
 	uint doffset;
+	uint cb_pad1;
+	float scale;
+	vec3 cb_pad2;
 };
 
 void ps_convert_clut_4()
@@ -294,7 +307,7 @@ void ps_convert_clut_4()
 	uint index = uint(gl_FragCoord.x) + doffset;
 	uvec2 pos = uvec2(index % 8u, index / 8u);
 
-	ivec2 final = ivec2(floor(vec2(offset + pos) * scale));
+	ivec2 final = ivec2(floor(vec2(offset + pos) * vec2(scale)));
 	o_col0 = texelFetch(samp0, final, 0);
 }
 #endif
@@ -302,9 +315,11 @@ void ps_convert_clut_4()
 #ifdef ps_convert_clut_8
 layout(push_constant) uniform cb10
 {
-	vec2 scale;
 	uvec2 offset;
 	uint doffset;
+	uint cb_pad1;
+	float scale;
+	vec3 cb_pad2;
 };
 
 void ps_convert_clut_8()
@@ -318,7 +333,7 @@ void ps_convert_clut_8()
 	pos.x = (index % 8u) + ((subgroup >= 2u) ? 8u : 0u);
 	pos.y = ((index / 32u) * 2u) + (subgroup % 2u);
 
-	ivec2 final = ivec2(floor(vec2(offset + pos) * scale));
+	ivec2 final = ivec2(floor(vec2(offset + pos) * vec2(scale)));
 	o_col0 = texelFetch(samp0, final, 0);
 }
 #endif

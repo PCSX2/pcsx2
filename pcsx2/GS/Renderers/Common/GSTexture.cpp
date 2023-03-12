@@ -21,18 +21,7 @@
 #include "common/StringUtil.h"
 #include <bitset>
 
-GSTexture::GSTexture()
-	: m_scale(1, 1)
-	, m_size(0, 0)
-	, m_mipmap_levels(0)
-	, m_type(Type::Invalid)
-	, m_format(Format::Invalid)
-	, m_state(State::Dirty)
-	, m_needs_mipmaps_generated(true)
-	, last_frame_used(0)
-	, OffsetHack_modxy(0.0f)
-{
-}
+GSTexture::GSTexture() = default;
 
 bool GSTexture::Save(const std::string& fn)
 {
@@ -67,15 +56,13 @@ bool GSTexture::Save(const std::string& fn)
 
 void GSTexture::Swap(GSTexture* tex)
 {
-	std::swap(m_scale, tex->m_scale);
 	std::swap(m_size, tex->m_size);
 	std::swap(m_mipmap_levels, tex->m_mipmap_levels);
 	std::swap(m_type, tex->m_type);
 	std::swap(m_format, tex->m_format);
 	std::swap(m_state, tex->m_state);
 	std::swap(m_needs_mipmaps_generated, tex->m_needs_mipmaps_generated);
-	std::swap(last_frame_used, tex->last_frame_used);
-	std::swap(OffsetHack_modxy, tex->OffsetHack_modxy);
+	std::swap(m_last_frame_used, tex->m_last_frame_used);
 }
 
 u32 GSTexture::GetCompressedBytesPerBlock() const

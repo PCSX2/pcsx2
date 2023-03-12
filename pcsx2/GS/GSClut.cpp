@@ -406,6 +406,7 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 			u32 CBW;
 			GSVector2i offset;
 			GSVector2i size;
+			float scale;
 			if (!TEX0.CSM)
 			{
 				CBW = 0; // don't care
@@ -422,7 +423,7 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 				size.y = 1;
 			}
 
-			GSTexture* src = g_gs_renderer->LookupPaletteSource(TEX0.CBP, TEX0.CPSM, CBW, offset, size);
+			GSTexture* src = g_gs_renderer->LookupPaletteSource(TEX0.CBP, TEX0.CPSM, CBW, offset, &scale, size);
 			if (src)
 			{
 				GSTexture* dst = is_4bit ? m_gpu_clut4 : m_gpu_clut8;
@@ -438,7 +439,7 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 				{
 					GL_PUSH("Update GPU CLUT [CBP=%04X, CPSM=%s, CBW=%u, CSA=%u, Offset=(%d,%d)]",
 						TEX0.CBP, psm_str(TEX0.CPSM), CBW, TEX0.CSA, offset.x, offset.y);
-					g_gs_device->UpdateCLUTTexture(src, offset.x, offset.y, dst, dOffset, dst_size);
+					g_gs_device->UpdateCLUTTexture(src, scale, offset.x, offset.y, dst, dOffset, dst_size);
 					m_current_gpu_clut = dst;
 				}
 			}

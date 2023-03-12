@@ -78,7 +78,7 @@ void main()
 	#endif
 
 	#if VS_POINT_SIZE
-		gl_PointSize = float(VS_POINT_SIZE_VALUE);
+		gl_PointSize = PointSize.x;
 	#endif
 
 	vsOut.c = a_c;
@@ -336,7 +336,6 @@ void main()
 #define PS_CHANNEL_FETCH 0
 #define PS_TALES_OF_ABYSS_HLE 0
 #define PS_URBAN_CHAOS_HLE 0
-#define PS_SCALE_FACTOR 1.0
 #define PS_HDR 0
 #define PS_COLCLIP 0
 #define PS_BLEND_A 0
@@ -373,6 +372,8 @@ layout(std140, set = 0, binding = 1) uniform cb1
 	vec2 TC_OffsetHack;
 	vec2 STScale;
 	mat4 DitherMatrix;
+	float ScaledScaleFactor;
+	float RcpScaleFactor;
 };
 
 layout(location = 0) in VSOutput
@@ -592,7 +593,11 @@ vec4 fetch_raw_color(ivec2 xy)
 
 vec4 fetch_c(ivec2 uv)
 {
+#if PS_TEX_IS_FB
+	return sample_from_rt();
+#else
 	return texelFetch(Texture, uv, 0);
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -641,7 +646,7 @@ ivec2 clamp_wrap_uv_depth(ivec2 uv)
 
 vec4 sample_depth(vec2 st, ivec2 pos)
 {
-	vec2 uv_f = vec2(clamp_wrap_uv_depth(ivec2(st))) * vec2(PS_SCALE_FACTOR) * vec2(1.0f / 16.0f);
+	vec2 uv_f = vec2(clamp_wrap_uv_depth(ivec2(st))) * vec2(ScaledScaleFactor);
 	ivec2 uv = ivec2(uv_f);
 
 	vec4 t = vec4(0.0f);
@@ -969,7 +974,7 @@ void ps_dither(inout vec3 C)
 		#if PS_DITHER == 2
 			fpos = ivec2(gl_FragCoord.xy);
 		#else
-			fpos = ivec2(gl_FragCoord.xy / float(PS_SCALE_FACTOR));
+			fpos = ivec2(gl_FragCoord.xy * RcpScaleFactor);
 		#endif
 
 		float value = DitherMatrix[fpos.y & 3][fpos.x & 3];

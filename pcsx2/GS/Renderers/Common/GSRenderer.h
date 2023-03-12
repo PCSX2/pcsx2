@@ -36,8 +36,8 @@ protected:
 	bool m_texture_shuffle = false;
 	bool m_copy_16bit_to_target_shuffle = false;
 
-	virtual GSTexture* GetOutput(int i, int& y_offset) = 0;
-	virtual GSTexture* GetFeedbackOutput() { return nullptr; }
+	virtual GSTexture* GetOutput(int i, float& scale, int& y_offset) = 0;
+	virtual GSTexture* GetFeedbackOutput(float& scale) { return nullptr; }
 
 public:
 	GSRenderer();
@@ -50,10 +50,10 @@ public:
 	virtual void VSync(u32 field, bool registers_written);
 	virtual bool CanUpscale() { return false; }
 	virtual float GetUpscaleMultiplier() { return 1.0f; }
-	virtual GSVector2 GetTextureScaleFactor() { return { 1.0f, 1.0f }; }
+	virtual float GetTextureScaleFactor() { return 1.0f; }
 	GSVector2i GetInternalResolution();
 
-	virtual GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, const GSVector2i& size);
+	virtual GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, float* scale, const GSVector2i& size);
 
 	bool SaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
 		u32* width, u32* height, std::vector<u32>* pixels);

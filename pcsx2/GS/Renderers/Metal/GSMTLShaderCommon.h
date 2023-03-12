@@ -19,8 +19,6 @@
 
 using namespace metal;
 
-constant float2 SCALING_FACTOR [[function_constant(GSMTLConstantIndex_SCALING_FACTOR)]];
-
 struct ConvertShaderData
 {
 	float4 p [[position]];

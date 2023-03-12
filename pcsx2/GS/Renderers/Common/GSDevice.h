@@ -184,7 +184,8 @@ public:
 	GSVector4 BGColor;
 	u32 EMODA;
 	u32 EMODC;
-	u32 pad[2];
+	u32 DOFFSET;
+	float ScaleFactor;
 };
 
 class InterlaceConstantBuffer
@@ -568,6 +569,8 @@ struct alignas(16) GSHWDrawConfig
 
 		GSVector4 DitherMatrix[4];
 
+		GSVector4 ScaleFactor;
+
 		__fi PSConstantBuffer()
 		{
 			memset(this, 0, sizeof(*this));
@@ -845,7 +848,10 @@ public:
 	static void SortMultiStretchRects(MultiStretchRect* rects, u32 num_rects);
 
 	/// Updates a GPU CLUT texture from a source texture.
-	virtual void UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) {}
+	virtual void UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) {}
+
+	/// Converts a colour format to an indexed format texture.
+	virtual void ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM) {}
 
 	virtual void RenderHW(GSHWDrawConfig& config) {}
 

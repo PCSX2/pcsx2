@@ -49,7 +49,7 @@ namespace GSTextureReplacements
 	bool HasAnyReplacementTextures();
 	bool HasReplacementTextureWithOtherPalette(const GSTextureCache::HashCacheKey& hash);
 	GSTexture* LookupReplacementTexture(const GSTextureCache::HashCacheKey& hash, bool mipmap, bool* pending);
-	GSTexture* CreateReplacementTexture(const ReplacementTexture& rtex, const GSVector2& scale, bool mipmap);
+	GSTexture* CreateReplacementTexture(const ReplacementTexture& rtex, bool mipmap);
 	void ProcessAsyncLoadedTextures();
 
 	void DumpTexture(const GSTextureCache::HashCacheKey& hash, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA,

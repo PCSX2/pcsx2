@@ -23,13 +23,6 @@
 class GSTextureVK final : public GSTexture
 {
 public:
-	union alignas(16) ClearValue
-	{
-		float color[4];
-		float depth;
-	};
-
-public:
 	GSTextureVK(Type type, Format format, Vulkan::Texture texture);
 	~GSTextureVK() override;
 
@@ -40,8 +33,6 @@ public:
 	__fi VkImage GetImage() const { return m_texture.GetImage(); }
 	__fi VkImageView GetView() const { return m_texture.GetView(); }
 	__fi VkImageLayout GetLayout() const { return m_texture.GetLayout(); }
-	__fi GSVector4 GetClearColor() const { return GSVector4::load<true>(m_clear_value.color); }
-	__fi float GetClearDepth() const { return m_clear_value.depth; }
 
 	void* GetNativeHandle() const override;
 
@@ -60,17 +51,6 @@ public:
 
 	VkFramebuffer GetLinkedFramebuffer(GSTextureVK* depth_texture, bool feedback_loop);
 
-	__fi void SetClearColor(const GSVector4& color)
-	{
-		m_state = State::Cleared;
-		GSVector4::store<true>(m_clear_value.color, color);
-	}
-	__fi void SetClearDepth(float depth)
-	{
-		m_state = State::Cleared;
-		m_clear_value.depth = depth;
-	}
-
 	// Call when the texture is bound to the pipeline, or read from in a copy.
 	__fi void SetUsedThisCommandBuffer()
 	{
@@ -87,8 +67,6 @@ private:
 	// Contains the fence counter when the texture was last used.
 	// When this matches the current fence counter, the texture was used this command buffer.
 	u64 m_use_fence_counter = 0;
-
-	ClearValue m_clear_value = {};
 
 	GSVector4i m_map_area = GSVector4i::zero();
 	u32 m_map_level = UINT32_MAX;

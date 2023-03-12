@@ -188,7 +188,7 @@ static MainVSOut vs_main_run(thread const MainVSIn& v, constant GSMTLMainVSUnifo
 	out.t.z = v.f.x; // pack fog with texture
 
 	if (VS_POINT_SIZE)
-		out.point_size = SCALING_FACTOR.x;
+		out.point_size = cb.point_size.x;
 
 	return out;
 }
@@ -522,7 +522,7 @@ struct PSMain
 
 	float4 sample_depth(float2 st)
 	{
-		float2 uv_f = float2(clamp_wrap_uv_depth(ushort2(st))) * (SCALING_FACTOR * float2(1.f / 16.f));
+		float2 uv_f = float2(clamp_wrap_uv_depth(ushort2(st))) * float2(cb.scale_factor.x);
 		ushort2 uv = ushort2(uv_f);
 
 		float4 t = float4(0);
@@ -794,7 +794,7 @@ struct PSMain
 		if (PS_DITHER == 2)
 			fpos = ushort2(in.p.xy);
 		else
-			fpos = ushort2(in.p.xy / SCALING_FACTOR);
+			fpos = ushort2(in.p.xy * float2(cb.scale_factor.y));
 		float value = cb.dither_matrix[fpos.y & 3][fpos.x & 3];;
 		if (PS_ROUND_INV)
 			C.rgb -= value;

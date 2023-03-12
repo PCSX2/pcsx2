@@ -792,19 +792,41 @@ void GSDeviceVK::BlitRect(GSTexture* sTex, const GSVector4i& sRect, u32 sLevel, 
 		&ib, linear ? VK_FILTER_LINEAR : VK_FILTER_NEAREST);
 }
 
-void GSDeviceVK::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
+void GSDeviceVK::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
 {
+	// Super annoying, but apparently NVIDIA doesn't like floats/ints packed together in the same vec4?
 	struct Uniforms
 	{
-		float scaleX, scaleY;
-		u32 offsetX, offsetY, dOffset;
+		u32 offsetX, offsetY, dOffset, pad1;
+		float scale;
+		float pad2[3];
 	};
 
-	const Uniforms uniforms = {sTex->GetScale().x, sTex->GetScale().y, offsetX, offsetY, dOffset};
+	const Uniforms uniforms = {offsetX, offsetY, dOffset, 0, sScale, {}};
 	SetUtilityPushConstants(&uniforms, sizeof(uniforms));
 
 	const GSVector4 dRect(0, 0, dSize, 1);
 	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
+	DoStretchRect(static_cast<GSTextureVK*>(sTex), GSVector4::zero(), static_cast<GSTextureVK*>(dTex), dRect,
+		m_convert[static_cast<int>(shader)], false);
+}
+
+void GSDeviceVK::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM)
+{
+	struct Uniforms
+	{
+		u32 SBW;
+		u32 DBW;
+		u32 pad1[2];
+		float ScaleFactor;
+		float pad2[3];
+	};
+
+	const Uniforms uniforms = {SBW, DBW, {}, sScale, {}};
+	SetUtilityPushConstants(&uniforms, sizeof(uniforms));
+
+	const ShaderConvert shader = ShaderConvert::RGBA_TO_8I;
+	const GSVector4 dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
 	DoStretchRect(static_cast<GSTextureVK*>(sTex), GSVector4::zero(), static_cast<GSTextureVK*>(dTex), dRect,
 		m_convert[static_cast<int>(shader)], false);
 }
@@ -1150,7 +1172,6 @@ VkShaderModule GSDeviceVK::GetUtilityVertexShader(const std::string& source, con
 	std::stringstream ss;
 	AddShaderHeader(ss);
 	AddShaderStageMacro(ss, true, false, false);
-	AddMacro(ss, "PS_SCALE_FACTOR", StringUtil::ToChars(GSConfig.UpscaleMultiplier).c_str());
 	if (replace_main)
 		ss << "#define " << replace_main << " main\n";
 	ss << source;
@@ -1163,7 +1184,6 @@ VkShaderModule GSDeviceVK::GetUtilityFragmentShader(const std::string& source, c
 	std::stringstream ss;
 	AddShaderHeader(ss);
 	AddShaderStageMacro(ss, false, false, true);
-	AddMacro(ss, "PS_SCALE_FACTOR", StringUtil::ToChars(GSConfig.UpscaleMultiplier).c_str());
 	if (replace_main)
 		ss << "#define " << replace_main << " main\n";
 	ss << source;
@@ -2009,8 +2029,6 @@ VkShaderModule GSDeviceVK::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
 	AddMacro(ss, "VS_FST", sel.fst);
 	AddMacro(ss, "VS_IIP", sel.iip);
 	AddMacro(ss, "VS_POINT_SIZE", sel.point_size);
-	if (sel.point_size)
-		AddMacro(ss, "VS_POINT_SIZE_VALUE", StringUtil::ToChars(GSConfig.UpscaleMultiplier).c_str());
 	ss << m_tfx_source;
 
 	VkShaderModule mod = g_vulkan_shader_cache->GetVertexShader(ss.str());
@@ -2098,7 +2116,6 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_ZCLAMP", sel.zclamp);
 	AddMacro(ss, "PS_PABE", sel.pabe);
 	AddMacro(ss, "PS_SCANMSK", sel.scanmsk);
-	AddMacro(ss, "PS_SCALE_FACTOR", StringUtil::ToChars(GSConfig.UpscaleMultiplier).c_str());
 	AddMacro(ss, "PS_TEX_IS_FB", sel.tex_is_fb);
 	AddMacro(ss, "PS_NO_COLOR", sel.no_color);
 	AddMacro(ss, "PS_NO_COLOR1", sel.no_color1);

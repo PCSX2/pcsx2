@@ -88,6 +88,9 @@ layout(std140, binding = 0) uniform cb21
     vec2 STScale;
 
     mat4 DitherMatrix;
+
+    float ScaledScaleFactor;
+    float RcpScaleFactor;
 };
 #endif
 

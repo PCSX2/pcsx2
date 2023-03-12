@@ -749,8 +749,6 @@ bool GSDeviceMTL::Create()
 	{
 		// Init metal stuff
 		m_fn_constants = MRCTransfer([MTLFunctionConstantValues new]);
-		vector_float2 upscale2 = vector2(GSConfig.UpscaleMultiplier, GSConfig.UpscaleMultiplier);
-		[m_fn_constants setConstantValue:&upscale2 type:MTLDataTypeFloat2 atIndex:GSMTLConstantIndex_SCALING_FACTOR];
 		setFnConstantB(m_fn_constants, m_dev.features.framebuffer_fetch, GSMTLConstantIndex_FRAMEBUFFER_FETCH);
 
 		m_draw_sync_fence = MRCTransfer([m_dev.dev newFence]);
@@ -1262,9 +1260,9 @@ void GSDeviceMTL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	}
 }}
 
-void GSDeviceMTL::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
+void GSDeviceMTL::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
 {
-	GSMTLCLUTConvertPSUniform uniform = { ToSimd(sTex->GetScale()), {offsetX, offsetY}, dOffset };
+	GSMTLCLUTConvertPSUniform uniform = { sScale, {offsetX, offsetY}, dOffset };
 
 	const bool is_clut4 = dSize == 16;
 	const GSVector4i dRect(0, 0, dSize, 1);
@@ -1273,6 +1271,19 @@ void GSDeviceMTL::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, G
 	[m_current_render.encoder setFragmentBytes:&uniform length:sizeof(uniform) atIndex:GSMTLBufferIndexUniforms];
 	RenderCopy(sTex, m_clut_pipeline[!is_clut4], dRect);
 }
+
+void GSDeviceMTL::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM)
+{ @autoreleasepool {
+	const ShaderConvert shader = ShaderConvert::RGBA_TO_8I;
+	id<MTLRenderPipelineState> pipeline = m_convert_pipeline[static_cast<int>(shader)];
+	if (!pipeline)
+		[NSException raise:@"StretchRect Missing Pipeline" format:@"No pipeline for %d", static_cast<int>(shader)];
+
+	GSMTLIndexedConvertPSUniform uniform = { sScale, SBW, DBW };
+
+	const GSVector4 dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
+	DoStretchRect(sTex, GSVector4::zero(), dTex, dRect, pipeline, false, LoadAction::DontCareIfFull, &uniform, sizeof(uniform));
+}}
 
 void GSDeviceMTL::FlushClears(GSTexture* tex)
 {
@@ -1607,6 +1618,7 @@ static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, ChannelShuffle)   == of
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, TCOffsetHack)     == offsetof(GSMTLMainPSUniform, tc_offset));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, STScale)          == offsetof(GSMTLMainPSUniform, st_scale));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, DitherMatrix)     == offsetof(GSMTLMainPSUniform, dither_matrix));
+static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, ScaleFactor)      == offsetof(GSMTLMainPSUniform, scale_factor));
 
 void GSDeviceMTL::SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVector4i& r, bool datm)
 {

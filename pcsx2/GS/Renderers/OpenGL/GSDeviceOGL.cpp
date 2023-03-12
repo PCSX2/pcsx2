@@ -286,15 +286,18 @@ bool GSDeviceOGL::Create()
 		for (size_t i = 0; i < std::size(m_convert.ps); i++)
 		{
 			const char* name = shaderName(static_cast<ShaderConvert>(i));
-			const std::string macro_sel = (static_cast<ShaderConvert>(i) == ShaderConvert::RGBA_TO_8I) ?
-                                              fmt::format("#define PS_SCALE_FACTOR {:.8f}f\n", GSConfig.UpscaleMultiplier) :
-                                              std::string();
-			const std::string ps(GetShaderSource(name, GL_FRAGMENT_SHADER, m_shader_common_header, *convert_glsl, macro_sel));
+			const std::string ps(GetShaderSource(name, GL_FRAGMENT_SHADER, m_shader_common_header, *convert_glsl, std::string()));
 			if (!m_shader_cache.GetProgram(&m_convert.ps[i], m_convert.vs, {}, ps))
 				return false;
 			m_convert.ps[i].SetFormattedName("Convert pipe %s", name);
 
-			if (static_cast<ShaderConvert>(i) == ShaderConvert::YUV)
+			if (static_cast<ShaderConvert>(i) == ShaderConvert::RGBA_TO_8I)
+			{
+				m_convert.ps[i].RegisterUniform("SBW");
+				m_convert.ps[i].RegisterUniform("DBW");
+				m_convert.ps[i].RegisterUniform("ScaleFactor");
+			}
+			else if (static_cast<ShaderConvert>(i) == ShaderConvert::YUV)
 			{
 				m_convert.ps[i].RegisterUniform("EMOD");
 			}
@@ -971,8 +974,6 @@ std::string GSDeviceOGL::GetVSSource(VSSelector sel)
 	std::string macro = fmt::format("#define VS_INT_FST {}\n", static_cast<u32>(sel.int_fst))
 		+ fmt::format("#define VS_IIP {}\n", static_cast<u32>(sel.iip))
 		+ fmt::format("#define VS_POINT_SIZE {}\n", static_cast<u32>(sel.point_size));
-	if (sel.point_size)
-		macro += fmt::format("#define VS_POINT_SIZE_VALUE {:.8f}f\n", GSConfig.UpscaleMultiplier);
 
 	std::string src = GenGlslHeader("vs_main", GL_VERTEX_SHADER, macro);
 	src += m_shader_common_header;
@@ -1044,7 +1045,6 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_FIXED_ONE_A {}\n", sel.fixed_one_a)
 		+ fmt::format("#define PS_PABE {}\n", sel.pabe)
 		+ fmt::format("#define PS_SCANMSK {}\n", sel.scanmsk)
-		+ fmt::format("#define PS_SCALE_FACTOR {:.8f}f\n", GSConfig.UpscaleMultiplier)
 		+ fmt::format("#define PS_NO_COLOR {}\n", sel.no_color)
 		+ fmt::format("#define PS_NO_COLOR1 {}\n", sel.no_color1)
 		+ fmt::format("#define PS_NO_ABLEND {}\n", sel.no_ablend)
@@ -1235,13 +1235,13 @@ void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	DrawStretchRect(flip_sr, dRect, ds);
 }
 
-void GSDeviceOGL::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
+void GSDeviceOGL::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
 {
 	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
 	GL::Program& prog = m_convert.ps[static_cast<int>(shader)];
 	prog.Bind();
 	prog.Uniform3ui(0, offsetX, offsetY, dOffset);
-	prog.Uniform2f(1, sTex->GetScale().x, sTex->GetScale().y);
+	prog.Uniform1f(1, sScale);
 
 	OMSetDepthStencilState(m_convert.dss);
 	OMSetBlendState(false);
@@ -1252,6 +1252,27 @@ void GSDeviceOGL::UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, G
 	PSSetSamplerState(m_convert.pt);
 
 	const GSVector4 dRect(0, 0, dSize, 1);
+	DrawStretchRect(GSVector4::zero(), dRect, dTex->GetSize());
+}
+
+void GSDeviceOGL::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM)
+{
+	const ShaderConvert shader = ShaderConvert::RGBA_TO_8I;
+	GL::Program& prog = m_convert.ps[static_cast<int>(shader)];
+	prog.Bind();
+	prog.Uniform1ui(0, SBW);
+	prog.Uniform1ui(1, DBW);
+	prog.Uniform1f(2, sScale);
+
+	OMSetDepthStencilState(m_convert.dss);
+	OMSetBlendState(false);
+	OMSetColorMaskState();
+	OMSetRenderTargets(dTex, nullptr);
+
+	PSSetShaderResource(0, sTex);
+	PSSetSamplerState(m_convert.pt);
+
+	const GSVector4 dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
 	DrawStretchRect(GSVector4::zero(), dRect, dTex->GetSize());
 }
 

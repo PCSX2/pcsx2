@@ -66,9 +66,16 @@ struct GSMTLCASPSUniform
 
 struct GSMTLCLUTConvertPSUniform
 {
-	vector_float2 scale;
+	float scale;
 	vector_uint2 offset;
 	uint doffset;
+};
+
+struct GSMTLIndexedConvertPSUniform
+{
+	float scale;
+	uint sbw;
+	uint dbw;
 };
 
 struct GSMTLMainVertex
@@ -127,6 +134,8 @@ struct GSMTLMainPSUniform
 	vector_float2 tc_offset;
 	vector_float2 st_scale;
 	matrix_float4x4 dither_matrix;
+
+	vector_float4 scale_factor;
 };
 
 enum GSMTLAttributes
@@ -151,7 +160,6 @@ enum class GSMTLExpandType : unsigned char
 enum GSMTLFnConstants
 {
 	GSMTLConstantIndex_CAS_SHARPEN_ONLY,
-	GSMTLConstantIndex_SCALING_FACTOR,
 	GSMTLConstantIndex_FRAMEBUFFER_FETCH,
 	GSMTLConstantIndex_FST,
 	GSMTLConstantIndex_IIP,

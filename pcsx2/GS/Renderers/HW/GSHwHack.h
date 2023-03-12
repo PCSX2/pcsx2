@@ -18,7 +18,6 @@
 class GSHwHack
 {
 public:
-	static bool GSC_BigMuthaTruckers(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_DeathByDegreesTekkenNinaWilliams(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_GiTS(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_Manhunt2(GSRendererHW& r, const GSFrameInfo& fi, int& skip);

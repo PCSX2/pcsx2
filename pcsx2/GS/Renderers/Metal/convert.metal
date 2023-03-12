@@ -247,7 +247,7 @@ fragment DepthOut ps_convert_rgb5a1_float16_biln(ConvertShaderData data [[stage_
 }
 
 fragment float4 ps_convert_rgba_8i(ConvertShaderData data [[stage_in]], DirectReadTextureIn<float> res,
-	constant GSMTLConvertPSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
+	constant GSMTLIndexedConvertPSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
 {
 	// Convert a RGBA texture into a 8 bits packed texture
 	// Input column: 8x2 RGBA pixels
@@ -265,16 +265,22 @@ fragment float4 ps_convert_rgba_8i(ConvertShaderData data [[stage_in]], DirectRe
 	uint2 subblock = pos & uint2(7, 1);
 	uint2 coord = block | subblock;
 
+	// Compensate for potentially differing page pitch.
+	uint2 block_xy = coord / uint2(64, 32);
+	uint block_num = (block_xy.y * (uniform.dbw / 128)) + block_xy.x;
+	uint2 block_offset = uint2((block_num % (uniform.sbw / 64)) * 64, (block_num / (uniform.sbw / 64)) * 32);
+	coord = (coord % uint2(64, 32)) + block_offset;
+
 	// Apply offset to cols 1 and 2
 	uint is_col23 = pos.y & 4;
 	uint is_col13 = pos.y & 2;
 	uint is_col12 = is_col23 ^ (is_col13 << 1);
 	coord.x ^= is_col12; // If cols 1 or 2, flip bit 3 of x
 
-	if (any(floor(SCALING_FACTOR) != SCALING_FACTOR))
-		coord = uint2(float2(coord) * SCALING_FACTOR);
+	if (any(floor(uniform.scale) != uniform.scale))
+		coord = uint2(float2(coord) * uniform.scale);
 	else
-		coord = mul24(coord, uint2(SCALING_FACTOR));
+		coord = mul24(coord, uint2(uniform.scale));
 
 	float4 pixel = res.tex.read(coord);
 	float2 sel0 = (pos.y & 2) == 0 ? pixel.rb : pixel.ga;

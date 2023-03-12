@@ -22,7 +22,7 @@ void GSRendererNull::Draw()
 {
 }
 
-GSTexture* GSRendererNull::GetOutput(int i, int& y_offset)
+GSTexture* GSRendererNull::GetOutput(int i, float& scale, int& y_offset)
 {
 	return nullptr;
 }

@@ -107,7 +107,7 @@ void GSRendererSW::VSync(u32 field, bool registers_written)
 	// if((m_perfmon.GetFrame() & 255) == 0) m_rl->PrintStats();
 }
 
-GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
+GSTexture* GSRendererSW::GetOutput(int i, float& scale, int& y_offset)
 {
 	Sync(1);
 
@@ -194,10 +194,11 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 		}
 	}
 
+	scale = 1.0f;
 	return m_texture[index];
 }
 
-GSTexture* GSRendererSW::GetFeedbackOutput()
+GSTexture* GSRendererSW::GetFeedbackOutput(float& scale)
 {
 	int dummy;
 
@@ -205,7 +206,7 @@ GSTexture* GSRendererSW::GetFeedbackOutput()
 	for (int i = 0; i < 2; i++)
 	{
 		if (m_regs->EXTBUF.EXBP == m_regs->DISP[i].DISPFB.Block())
-			return GetOutput(i, dummy);
+			return GetOutput(i, scale, dummy);
 	}
 
 	return nullptr;

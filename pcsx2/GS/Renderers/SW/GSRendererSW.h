@@ -72,8 +72,8 @@ protected:
 
 	void Reset(bool hardware_reset) override;
 	void VSync(u32 field, bool registers_written) override;
-	GSTexture* GetOutput(int i, int& y_offset) override;
-	GSTexture* GetFeedbackOutput() override;
+	GSTexture* GetOutput(int i, float& scale, int& y_offset) override;
+	GSTexture* GetFeedbackOutput(float& scale) override;
 
 	void Draw() override;
 	void Queue(GSRingHeap::SharedPtr<GSRasterizerData>& item);
