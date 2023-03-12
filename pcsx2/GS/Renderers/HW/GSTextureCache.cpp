@@ -3735,19 +3735,24 @@ void GSTextureCache::Target::ResizeValidity(const GSVector4i& rect)
 	{
 		m_valid = m_valid.rintersect(rect);
 		m_drawn_since_read = m_drawn_since_read.rintersect(rect);
+		m_end_block = GSLocalMemory::m_psm[m_TEX0.PSM].info.bn(m_valid.z - 1, m_valid.w - 1, m_TEX0.TBP0, m_TEX0.TBW); // Valid only for color formats
+		// Because m_end_block, especially on Z is not remotely linear, the end of the block can be near the beginning,
+		// meaning any overlap checks on blocks could fail (FFX with Tex in RT).
+		// So if the coordinates page align, round it up to the next page and minus one.
+		const GSVector2i page_size = GSLocalMemory::m_psm[m_TEX0.PSM].pgs;
+		if ((m_valid.z & (page_size.x - 1)) == 0 && (m_valid.w & (page_size.y - 1)) == 0)
+		{
+			constexpr u32 page_mask = (1 << 5) - 1;
+			m_end_block = (((m_end_block + page_mask) & ~page_mask)) - 1;
+		}
 	}
 	else
 	{
 		// No valid size, so need to resize down.
 		return;
 	}
-	// Block of the bottom right texel of the validity rectangle, last valid block of the texture
-	// TODO: This is not correct when the PSM changes. e.g. a 512x448 target being shuffled will become 512x896 temporarily, and
-	// at the moment, we blow the valid rect out to twice the size. The only thing stopping everything breaking is the fact
-	// that we clamp the draw rect to the target size in GSRendererHW::Draw().
-	m_end_block = GSLocalMemory::m_psm[m_TEX0.PSM].info.bn(m_valid.z - 1, m_valid.w - 1, m_TEX0.TBP0, m_TEX0.TBW); // Valid only for color formats
 
-	// GL_CACHE("UpdateValidity (0x%x->0x%x) from R:%d,%d Valid: %d,%d", m_TEX0.TBP0, m_end_block, rect.z, rect.w, m_valid.z, m_valid.w);
+	// GL_CACHE("ResizeValidity (0x%x->0x%x) from R:%d,%d Valid: %d,%d", m_TEX0.TBP0, m_end_block, rect.z, rect.w, m_valid.z, m_valid.w);
 }
 
 void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect, bool can_resize)
@@ -3764,6 +3769,17 @@ void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect, bool can_res
 			m_valid = rect;
 		else
 			m_valid = m_valid.runion(rect);
+
+		m_end_block = GSLocalMemory::m_psm[m_TEX0.PSM].info.bn(m_valid.z - 1, m_valid.w - 1, m_TEX0.TBP0, m_TEX0.TBW); // Valid only for color formats
+		// Because m_end_block, especially on Z is not remotely linear, the end of the block can be near the beginning,
+		// meaning any overlap checks on blocks could fail (FFX with Tex in RT).
+		// So if the coordinates page align, round it up to the next page and minus one.
+		const GSVector2i page_size = GSLocalMemory::m_psm[m_TEX0.PSM].pgs;
+		if ((m_valid.z & (page_size.x - 1)) == 0 && (m_valid.w & (page_size.y - 1)) == 0)
+		{
+			constexpr u32 page_mask = (1 << 5) - 1;
+			m_end_block = (((m_end_block + page_mask) & ~page_mask)) - 1;
+		}
 	}
 
 	if (m_drawn_since_read.eq(GSVector4i::zero()) || !can_resize)
@@ -3772,11 +3788,7 @@ void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect, bool can_res
 	}
 	else
 		m_drawn_since_read = m_drawn_since_read.runion(rect);
-	// Block of the bottom right texel of the validity rectangle, last valid block of the texture
-	// TODO: This is not correct when the PSM changes. e.g. a 512x448 target being shuffled will become 512x896 temporarily, and
-	// at the moment, we blow the valid rect out to twice the size. The only thing stopping everything breaking is the fact
-	// that we clamp the draw rect to the target size in GSRendererHW::Draw().
-	m_end_block = GSLocalMemory::m_psm[m_TEX0.PSM].info.bn(m_valid.z - 1, m_valid.w - 1, m_TEX0.TBP0, m_TEX0.TBW); // Valid only for color formats
+
 	// GL_CACHE("UpdateValidity (0x%x->0x%x) from R:%d,%d Valid: %d,%d", m_TEX0.TBP0, m_end_block, rect.z, rect.w, m_valid.z, m_valid.w);
 }
 
