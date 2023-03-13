@@ -80,15 +80,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 	m_ui.setupUi(this);
 
-#ifndef PCSX2_DEVBUILD
-	if (!m_dialog->isPerGameSettings())
-	{
-		// We removed hardware fixes from global settings, but people in the past did set this stuff globally.
-		// So, just reset it all. We can remove this code at some point in the future.
-		resetManualHardwareFixes();
-	}
-#endif
-
 	//////////////////////////////////////////////////////////////////////////
 	// Global Settings
 	//////////////////////////////////////////////////////////////////////////
@@ -176,7 +167,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.mipmapping, "EmuCore/GS", "mipmap_hw", static_cast<int>(HWMipmapLevel::Automatic), -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(
+		sif, m_ui.crcFixLevel, "EmuCore/GS", "crc_hack_level", static_cast<int>(CRCHackLevel::Automatic), -1);
+	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.blending, "EmuCore/GS", "accurate_blending_unit", static_cast<int>(AccBlendLevel::Basic));
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuPaletteConversion, "EmuCore/GS", "paltex", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.texturePreloading, "EmuCore/GS", "texture_preloading", static_cast<int>(TexturePreloadingLevel::Off));
 
@@ -193,7 +187,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Renderer Fixes
 	//////////////////////////////////////////////////////////////////////////
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.crcFixLevel, "EmuCore/GS", "crc_hack_level", static_cast<int>(CRCHackLevel::Automatic), -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.halfScreenFix, "EmuCore/GS", "UserHacks_Half_Bottom_Override", -1, -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cpuSpriteRenderBW, "EmuCore/GS", "UserHacks_CPUSpriteRenderBW", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cpuCLUTRender, "EmuCore/GS", "UserHacks_CPUCLUTRender", 0);
@@ -212,7 +205,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.readTCOnClose, "EmuCore/GS", "UserHacks_ReadTCOnClose", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.targetPartialInvalidation, "EmuCore/GS", "UserHacks_TargetPartialInvalidation", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.estimateTextureRegion, "EmuCore/GS", "UserHacks_EstimateTextureRegion", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuPaletteConversion, "EmuCore/GS", "paltex", false);
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Upscaling Fixes
@@ -304,11 +296,13 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		m_ui.advancedOptionsFormLayout->removeRow(0);
 		m_ui.gsDownloadMode = nullptr;
 
-		// Don't allow setting hardware fixes globally.
-		// Too many stupid youtube "best settings" guides, that break other games.
-		m_ui.hardwareRenderingOptionsLayout->removeWidget(m_ui.enableHWFixes);
-		delete m_ui.enableHWFixes;
-		m_ui.enableHWFixes = nullptr;
+		// Remove texture offset and skipdraw range for global settings.
+		m_ui.upscalingFixesLayout->removeRow(2);
+		m_ui.hardwareFixesLayout->removeRow(5);
+		m_ui.skipDrawStart = nullptr;
+		m_ui.skipDrawEnd = nullptr;
+		m_ui.textureOffsetX = nullptr;
+		m_ui.textureOffsetY = nullptr;
 	}
 #endif
 
@@ -1025,59 +1019,4 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 				m_ui.fullscreenModes->setCurrentIndex(m_ui.fullscreenModes->count() - 1);
 		}
 	}
-}
-
-void GraphicsSettingsWidget::resetManualHardwareFixes()
-{
-	bool changed = false;
-	{
-		auto lock = Host::GetSettingsLock();
-		SettingsInterface* const si = Host::Internal::GetBaseSettingsLayer();
-
-		auto check_bool = [&](const char* section, const char* key, bool expected) {
-			if (si->GetBoolValue(section, key, expected) != expected)
-			{
-				si->SetBoolValue(section, key, expected);
-				changed = true;
-			}
-		};
-		auto check_int = [&](const char* section, const char* key, s32 expected) {
-			if (si->GetIntValue(section, key, expected) != expected)
-			{
-				si->SetIntValue(section, key, expected);
-				changed = true;
-			}
-		};
-
-		check_bool("EmuCore/GS", "UserHacks", false);
-
-		check_int("EmuCore/GS", "crc_hack_level", static_cast<int>(CRCHackLevel::Automatic));
-		check_int("EmuCore/GS", "UserHacks_Half_Bottom_Override", -1);
-		check_int("EmuCore/GS", "UserHacks_CPUSpriteRenderBW", 0);
-		check_int("EmuCore/GS", "UserHacks_CPUCLUTRender", 0);
-		check_int("EmuCore/GS", "UserHacks_GPUTargetCLUTMode", 0);
-		check_int("EmuCore/GS", "UserHacks_SkipDraw_Start", 0);
-		check_int("EmuCore/GS", "UserHacks_SkipDraw_End", 0);
-		check_bool("EmuCore/GS", "UserHacks_AutoFlush", false);
-		check_bool("EmuCore/GS", "UserHacks_CPU_FB_Conversion", false);
-		check_bool("EmuCore/GS", "UserHacks_DisableDepthSupport", false);
-		check_bool("EmuCore/GS", "UserHacks_Disable_Safe_Features", false);
-		check_bool("EmuCore/GS", "preload_frame_with_gs_data", false);
-		check_bool("EmuCore/GS", "UserHacks_DisablePartialInvalidation", false);
-		check_int("EmuCore/GS", "UserHacks_TextureInsideRt", static_cast<int>(GSTextureInRtMode::Disabled));
-		check_bool("EmuCore/GS", "UserHacks_ReadTCOnClose", false);
-		check_bool("EmuCore/GS", "UserHacks_TargetPartialInvalidation", false);
-		check_bool("EmuCore/GS", "UserHacks_EstimateTextureRegion", false);
-		check_bool("EmuCore/GS", "paltex", false);
-		check_int("EmuCore/GS", "UserHacks_HalfPixelOffset", 0);
-		check_int("EmuCore/GS", "UserHacks_round_sprite_offset", 0);
-		check_int("EmuCore/GS", "UserHacks_TCOffsetX", 0);
-		check_int("EmuCore/GS", "UserHacks_TCOffsetY", 0);
-		check_bool("EmuCore/GS", "UserHacks_align_sprite_X", false);
-		check_bool("EmuCore/GS", "UserHacks_merge_pp_sprite", false);
-		check_bool("EmuCore/GS", "UserHacks_WildHack", false);
-	}
-
-	if (changed)
-		Host::CommitBaseSettingChanges();
 }
