@@ -498,34 +498,6 @@ bool GSDeviceOGL::Create()
 		}
 	}
 
-	// ****************************************************************
-	// Get Available Memory
-	// ****************************************************************
-	GLint vram[4] = {0};
-	if (GLLoader::vendor_id_amd)
-	{
-		// Full vram, remove a small margin for others buffer
-		glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI, vram);
-	}
-	else if (GLAD_GL_NVX_gpu_memory_info)
-	{
-		// GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX <= give full memory
-		// Available vram
-		glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, vram);
-	}
-	else
-	{
-		fprintf(stdout, "No extenstion supported to get available memory. Use default value !\n");
-	}
-
-	// When VRAM is at least 2GB, we set the limit to the default i.e. 3.8 GB
-	// When VRAM is below 2GB, we add a factor 2 because RAM can be used. Potentially
-	// low VRAM gpu can go higher but perf will be bad anyway.
-	if (vram[0] > 0 && vram[0] < 1800000)
-		GLState::available_vram = (s64)(vram[0]) * 1024ul * 2ul;
-
-	fprintf(stdout, "Available VRAM/RAM:%lldMB for textures\n", GLState::available_vram >> 20u);
-
 	// Basic to ensure structures are correctly packed
 	static_assert(sizeof(VSSelector) == 1, "Wrong VSSelector size");
 	static_assert(sizeof(PSSelector) == 12, "Wrong PSSelector size");
@@ -1044,7 +1016,8 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_TCC {}\n", sel.tcc)
 		+ fmt::format("#define PS_ATST {}\n", sel.atst)
 		+ fmt::format("#define PS_FOG {}\n", sel.fog)
-		+ fmt::format("#define PS_CLR_HW {}\n", sel.clr_hw)
+		+ fmt::format("#define PS_BLEND_HW {}\n", sel.blend_hw)
+		+ fmt::format("#define PS_A_MASKED {}\n", sel.a_masked)
 		+ fmt::format("#define PS_FBA {}\n", sel.fba)
 		+ fmt::format("#define PS_LTF {}\n", sel.ltf)
 		+ fmt::format("#define PS_AUTOMATIC_LOD {}\n", sel.automatic_lod)

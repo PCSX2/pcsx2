@@ -143,7 +143,7 @@
        <item row="3" column="0">
         <widget class="QLabel" name="label_23">
          <property name="text">
-          <string>De-interlacing:</string>
+          <string>Deinterlacing:</string>
          </property>
         </widget>
        </item>
@@ -338,7 +338,7 @@
          <item row="1" column="1">
           <widget class="QCheckBox" name="integerScaling">
            <property name="text">
-            <string>Integer Upscaling</string>
+            <string>Integer Scaling</string>
            </property>
           </widget>
          </item>
@@ -600,54 +600,13 @@
         </widget>
        </item>
        <item row="6" column="0">
-        <widget class="QLabel" name="label_7">
-         <property name="text">
-          <string>CRC Fix Level:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="QComboBox" name="crcFixLevel">
-         <item>
-          <property name="text">
-           <string>Automatic (Default)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>None (Debug)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Minimum (Debug)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Partial (OpenGL)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Full (Direct3D)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Aggressive</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="7" column="0">
         <widget class="QLabel" name="label_8">
          <property name="text">
           <string>Blending Accuracy:</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="6" column="1">
         <widget class="QComboBox" name="blending">
          <item>
           <property name="text">
@@ -681,14 +640,14 @@
          </item>
         </widget>
        </item>
-       <item row="8" column="0">
+       <item row="7" column="0">
         <widget class="QLabel" name="label_20">
          <property name="text">
           <string>Texture Preloading:</string>
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
+       <item row="7" column="1">
         <widget class="QComboBox" name="texturePreloading">
          <item>
           <property name="text">
@@ -707,30 +666,23 @@
          </item>
         </widget>
        </item>
-       <item row="9" column="0" colspan="2">
-        <layout class="QGridLayout" name="basicCheckboxGridLayout">
+       <item row="8" column="0" colspan="2">
+        <layout class="QGridLayout" name="hardwareRenderingOptionsLayout">
          <item row="0" column="0">
-          <widget class="QCheckBox" name="gpuPaletteConversion">
-           <property name="text">
-            <string>GPU Palette Conversion</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QCheckBox" name="enableHWFixes">
-           <property name="text">
-            <string>Manual Hardware Renderer Fixes</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
           <widget class="QCheckBox" name="spinGPUDuringReadbacks">
            <property name="text">
             <string>Spin GPU During Readbacks</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="enableHWFixes">
+           <property name="text">
+            <string>Manual Hardware Renderer Fixes</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
           <widget class="QCheckBox" name="spinCPUDuringReadbacks">
            <property name="text">
             <string>Spin CPU During Readbacks</string>
@@ -828,14 +780,14 @@
        <string>Hardware Fixes</string>
       </attribute>
       <layout class="QFormLayout" name="hardwareFixesLayout">
-       <item row="0" column="0">
+       <item row="1" column="0">
         <widget class="QLabel" name="label_10">
          <property name="text">
           <string>Half Screen Fix:</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
+       <item row="1" column="1">
         <widget class="QComboBox" name="halfScreenFix">
          <item>
           <property name="text">
@@ -854,14 +806,14 @@
          </item>
         </widget>
        </item>
-       <item row="1" column="0">
+       <item row="2" column="0">
         <widget class="QLabel" name="label_36">
          <property name="text">
           <string>CPU Sprite Render Size:</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="2" column="1">
         <widget class="QComboBox" name="cpuSpriteRenderBW">
          <item>
           <property name="text">
@@ -920,14 +872,14 @@
          </item>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="3" column="0">
         <widget class="QLabel" name="label_16">
          <property name="text">
           <string>Software CLUT Render:</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="3" column="1">
         <widget class="QComboBox" name="cpuCLUTRender">
          <property name="currentText">
           <string extracomment="0 (Disabled)">0 (Disabled)</string>
@@ -952,14 +904,14 @@
          </item>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item row="4" column="0">
         <widget class="QLabel" name="label_47">
          <property name="text">
           <string extracomment="CLUT: Color Look Up Table, often referred to as a palette in non-PS2 things.  GPU Target CLUT: GPU handling of when a game uses data from a render target as a CLUT.">GPU Target CLUT:</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="4" column="1">
         <widget class="QComboBox" name="gpuTargetCLUTMode">
          <item>
           <property name="text">
@@ -979,13 +931,39 @@
         </widget>
        </item>
        <item row="5" column="0">
+        <widget class="QLabel" name="label_45">
+         <property name="text">
+          <string>Texture Inside RT:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QComboBox" name="textureInsideRt">
+         <item>
+          <property name="text">
+           <string>Disabled (Default)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Inside Target</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Merge Targets</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="6" column="0">
         <widget class="QLabel" name="label_12">
          <property name="text">
           <string>Skipdraw Range:</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="6" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
           <widget class="QSpinBox" name="skipDrawStart">
@@ -1003,7 +981,7 @@
          </item>
         </layout>
        </item>
-       <item row="6" column="0" colspan="2">
+       <item row="7" column="0" colspan="2">
         <layout class="QGridLayout" name="gridLayout">
          <item row="0" column="0">
           <widget class="QCheckBox" name="hwAutoFlush">
@@ -1068,30 +1046,52 @@
            </property>
           </widget>
          </item>
+         <item row="4" column="1">
+          <widget class="QCheckBox" name="gpuPaletteConversion">
+           <property name="text">
+            <string>GPU Palette Conversion</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_45">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_7">
          <property name="text">
-          <string>Texture Inside RT:</string>
+          <string>CRC Fix Level:</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
-        <widget class="QComboBox" name="textureInsideRt">
+       <item row="0" column="1">
+        <widget class="QComboBox" name="crcFixLevel">
          <item>
           <property name="text">
-           <string>Disabled (Default)</string>
+           <string>Automatic (Default)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Inside Target</string>
+           <string>None (Debug)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Merge Targets</string>
+           <string>Minimum (Debug)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Partial (OpenGL)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Full (Direct3D)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Aggressive</string>
           </property>
          </item>
         </widget>
@@ -1630,7 +1630,7 @@
             <item row="0" column="0">
              <widget class="QCheckBox" name="osdShowMessages">
               <property name="text">
-               <string>Show Notifications</string>
+               <string>Show OSD Messages</string>
               </property>
              </widget>
             </item>
@@ -1651,7 +1651,7 @@
             <item row="0" column="1">
              <widget class="QCheckBox" name="osdShowSpeed">
               <property name="text">
-               <string>Show Speed</string>
+               <string>Show Speed Percentages</string>
               </property>
              </widget>
             </item>

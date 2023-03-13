@@ -21,7 +21,7 @@
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 #define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
-#define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_CLR_HW > 3)
+#define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
 #define PS_PRIMID_INIT (PS_DATE == 1 || PS_DATE == 2)
 #define NEEDS_RT_EARLY (PS_TEX_IS_FB == 1 || PS_DATE >= 5)
 #define NEEDS_RT (NEEDS_RT_EARLY || (!PS_PRIMID_INIT && (PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW)))
@@ -753,9 +753,9 @@ float As = As_rgba.a;
 #endif
 
     // As/Af clamp alpha for Blend mix
-    // We shouldn't clamp blend mix with clr1 as we want alpha higher
+    // We shouldn't clamp blend mix with blend hw 1 as we want alpha higher
     float C_clamped = C;
-#if PS_BLEND_MIX > 0 && PS_CLR_HW != 1
+#if PS_BLEND_MIX > 0 && PS_BLEND_HW != 1
     C_clamped = min(C_clamped, 1.0f);
 #endif
 
@@ -776,7 +776,7 @@ float As = As_rgba.a;
     Color.rgb = trunc((A - B) * C + D);
 #endif
 
-#if PS_CLR_HW == 1
+#if PS_BLEND_HW == 1
     // As or Af
     As_rgba.rgb = vec3(C);
     // Subtract 1 for alpha to compensate for the changed equation,
@@ -786,7 +786,7 @@ float As = As_rgba.a;
     // changed alpha should only be done for hw blend.
     vec3 alpha_compensate = max(vec3(1.0f), Color.rgb / vec3(255.0f));
     As_rgba.rgb -= alpha_compensate;
-#elif PS_CLR_HW == 2
+#elif PS_BLEND_HW == 2
     // Compensate slightly for Cd*(As + 1) - Cs*As.
     // The initial factor we chose is 1 (0.00392)
     // as that is the minimum color Cd can be,
@@ -794,7 +794,7 @@ float As = As_rgba.a;
     // blended value it can be.
     float color_compensate = 1.0f * (C + 1.0f);
     Color.rgb -= vec3(color_compensate);
-#elif PS_CLR_HW == 3
+#elif PS_BLEND_HW == 3
     // As, Ad or Af clamped.
     As_rgba.rgb = vec3(C_clamped);
     // Cs*(Alpha + 1) might overflow, if it does then adjust alpha value
@@ -806,9 +806,9 @@ float As = As_rgba.a;
 
 #else
     // Needed for Cd * (As/Ad/F + 1) blending modes
-#if PS_CLR_HW == 1 || PS_CLR_HW == 5
+#if PS_BLEND_HW == 1
     Color.rgb = vec3(255.0f);
-#elif PS_CLR_HW == 2 || PS_CLR_HW == 4
+#elif PS_BLEND_HW == 2
     // Cd*As,Cd*Ad or Cd*F
 
 #if PS_BLEND_C == 2
@@ -819,7 +819,7 @@ float As = As_rgba.a;
 
     Color.rgb = max(vec3(0.0f), (Alpha - vec3(1.0f)));
     Color.rgb *= vec3(255.0f);
-#elif PS_CLR_HW == 3
+#elif PS_BLEND_HW == 3
     // Needed for Cs*Ad, Cs*Ad + Cd, Cd - Cs*Ad
     // Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value when rgb are below 128.
     // When any color channel is higher than 128 then adjust the compensation automatically

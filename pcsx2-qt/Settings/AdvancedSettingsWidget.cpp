@@ -93,11 +93,11 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
 		   "end of the block, not on the instruction which caused the exception. Refer to the console to see the address where the invalid "
 		   "access occurred."));
 
-	dialog->registerWidgetHelp(m_ui.vu0RoundingMode, tr("Rounding Mode"), tr("Chop / Zero (Default)"), tr(""));
-	dialog->registerWidgetHelp(m_ui.vu1RoundingMode, tr("Rounding Mode"), tr("Chop / Zero (Default)"), tr(""));
+	dialog->registerWidgetHelp(m_ui.vu0RoundingMode, tr("VU0 Rounding Mode"), tr("Chop / Zero (Default)"), tr(""));
+	dialog->registerWidgetHelp(m_ui.vu1RoundingMode, tr("VU1 Rounding Mode"), tr("Chop / Zero (Default)"), tr(""));
 
-	dialog->registerWidgetHelp(m_ui.vu0ClampMode, tr("Clamping Mode"), tr("Normal (Default)"), tr(""));
-	dialog->registerWidgetHelp(m_ui.vu1ClampMode, tr("Clamping Mode"), tr("Normal (Default)"), tr(""));
+	dialog->registerWidgetHelp(m_ui.vu0ClampMode, tr("VU0 Clamping Mode"), tr("Normal (Default)"), tr(""));
+	dialog->registerWidgetHelp(m_ui.vu1ClampMode, tr("VU1 Clamping Mode"), tr("Normal (Default)"), tr(""));
 
 	//: VU0 = Vector Unit 0. One of the PS2's processors.
 	dialog->registerWidgetHelp(m_ui.vu0Recompiler, tr("Enable VU0 Recompiler (Micro Mode)"), tr("Checked"), tr("Enables VU0 Recompiler."));
@@ -113,7 +113,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* 
 		tr("Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86."));
 
 	dialog->registerWidgetHelp(m_ui.gameFixes, tr("Enable Game Fixes"), tr("Checked"),
-		tr("Automatically loads and applies gamefixes to known problematic games on game start."));
+		tr("Automatically loads and applies fixes to known problematic games on game start."));
 
 	dialog->registerWidgetHelp(m_ui.patches, tr("Enable Compatibility Patches"), tr("Checked"),
 		tr("Automatically loads and applies compatibility patches to known problematic games."));

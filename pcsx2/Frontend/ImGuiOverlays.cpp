@@ -406,7 +406,9 @@ void ImGuiManager::DrawSettingsOverlay()
 		if (GSConfig.UserHacks_CPUSpriteRenderBW != 0)
 			APPEND("CSBW={} ", GSConfig.UserHacks_CPUSpriteRenderBW);
 		if (GSConfig.UserHacks_CPUCLUTRender != 0)
-			APPEND("CCD={} ", GSConfig.UserHacks_CPUCLUTRender);
+			APPEND("CCLUT={} ", GSConfig.UserHacks_CPUCLUTRender);
+		if (GSConfig.UserHacks_GPUTargetCLUTMode != GSGPUTargetCLUTMode::Disabled)
+			APPEND("GCLUT={} ", static_cast<int>(GSConfig.UserHacks_GPUTargetCLUTMode));
 		if (GSConfig.SkipDrawStart != 0 || GSConfig.SkipDrawEnd != 0)
 			APPEND("SD={}/{} ", GSConfig.SkipDrawStart, GSConfig.SkipDrawEnd);
 		if (GSConfig.UserHacks_TextureInsideRt != GSTextureInRtMode::Disabled)
@@ -431,10 +433,10 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("TPV ");
 		if (GSConfig.UserHacks_DisableSafeFeatures)
 			APPEND("DSF ");
-		if (GSConfig.WrapGSMem)
-			APPEND("WGSM ");
 		if (GSConfig.PreloadFrameWithGSData)
 			APPEND("PLFD ");
+		if (GSConfig.UserHacks_EstimateTextureRegion)
+			APPEND("ETR ");
 	}
 
 #undef APPEND

@@ -112,7 +112,7 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 	updateLatencyLabels();
 
 	dialog->registerWidgetHelp(m_ui.syncMode, tr("Synchronization"), tr("TimeStretch (Recommended)"),
-		tr("When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast forward/slowdown audio."));
+		tr("When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast-forward/slowdown audio."));
 
 	dialog->registerWidgetHelp(m_ui.expansionMode, tr("Expansion"), tr("Stereo (None, Default)"), tr(""));
 
@@ -130,8 +130,8 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 
 	dialog->registerWidgetHelp(m_ui.sequenceLength, tr("Sequence Length"), tr("30 ms"), tr(""));
 
-	//: Seekwindow: the region of samples (window) the audio stretching algorithm is allowed to search.
-	dialog->registerWidgetHelp(m_ui.seekWindowSize, tr("Seekwindow Size"), tr("20 ms"), tr(""));
+	//: Seek Window: the region of samples (window) the audio stretching algorithm is allowed to search.
+	dialog->registerWidgetHelp(m_ui.seekWindowSize, tr("Seek Window Size"), tr("20 ms"), tr(""));
 
 	dialog->registerWidgetHelp(m_ui.overlap, tr("Overlap"), tr("10 ms"), tr(""));
 

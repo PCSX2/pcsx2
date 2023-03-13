@@ -64,7 +64,6 @@ namespace GameDatabaseSchema
 		CPUFramebufferConversion,
 		FlushTCOnClose,
 		DisableDepthSupport,
-		WrapGSMem,
 		PreloadFrameData,
 		DisablePartialInvalidation,
 		TargetPartialInvalidation,

@@ -198,7 +198,7 @@
       <item row="0" column="0">
        <widget class="QCheckBox" name="autoEject">
         <property name="text">
-         <string>Auto-eject memory cards when loading save states</string>
+         <string>Auto-eject Memory Cards when loading save states</string>
         </property>
        </widget>
       </item>

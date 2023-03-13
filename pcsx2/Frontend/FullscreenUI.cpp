@@ -3071,6 +3071,12 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 							  renderer == GSRendererType::OGL || renderer == GSRendererType::VK || renderer == GSRendererType::Metal);
 	//const bool is_software = (renderer == GSRendererType::SW);
 
+#ifndef PCSX2_DEVBUILD
+	const bool hw_fixes_visible = is_hardware && IsEditingGameSettings(bsi);
+#else
+	const bool hw_fixes_visible = is_hardware;
+#endif
+
 	BeginMenuButtons();
 
 	MenuHeading("Renderer");
@@ -3134,8 +3140,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			std::size(s_anisotropic_filtering_entries));
 		DrawIntListSetting(bsi, "Dithering", "Selects the type of dithering applies when the game requests it.", "EmuCore/GS",
 			"dithering_ps2", 2, s_dithering_options, std::size(s_dithering_options));
-		DrawIntListSetting(bsi, "CRC Fix Level", "Applies manual fixes to difficult-to-emulate effects in the hardware renderers.",
-			"EmuCore/GS", "crc_hack_level", static_cast<int>(CRCHackLevel::Automatic), s_crc_fix_options, std::size(s_crc_fix_options), -1);
 		DrawIntListSetting(bsi, "Blending Accuracy",
 			"Determines the level of accuracy when emulating blend modes not supported by the host graphics API.", "EmuCore/GS",
 			"accurate_blending_unit", static_cast<int>(AccBlendLevel::Basic), s_blending_options, std::size(s_blending_options));
@@ -3143,17 +3147,18 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			"Uploads full textures to the GPU on use, rather than only the utilized regions. Can improve performance in some games.",
 			"EmuCore/GS", "texture_preloading", static_cast<int>(TexturePreloadingLevel::Off), s_preloading_options,
 			std::size(s_preloading_options));
-		DrawIntListSetting(bsi, "Hardware Download Mode", "Changes synchronization behavior for GS downloads.", "EmuCore/GS",
-			"HWDownloadMode", static_cast<int>(GSHardwareDownloadMode::Enabled), s_hw_download, std::size(s_hw_download));
-		DrawToggleSetting(bsi, "GPU Palette Conversion",
-			"Applies palettes to textures on the GPU instead of the CPU. Can result in speed improvements in some games.", "EmuCore/GS",
-			"paltex", false);
 	}
 	else
 	{
+		DrawIntRangeSetting(bsi, "Software Rendering Threads",
+			"Number of threads to use in addition to the main GS thread for rasterization.", "EmuCore/GS", "extrathreads", 2, 0, 10);
+		DrawToggleSetting(bsi, "Auto Flush (Software)", "Force a primitive flush when a framebuffer is also an input texture.",
+			"EmuCore/GS", "autoflush_sw", true);
+		DrawToggleSetting(bsi, "Edge AA (AA1)", "Enables emulation of the GS's edge anti-aliasing (AA1).", "EmuCore/GS", "aa1", true);
+		DrawToggleSetting(bsi, "Mipmapping", "Enables emulation of the GS's texture mipmapping.", "EmuCore/GS", "mipmap", true);
 	}
 
-	if (is_hardware)
+	if (hw_fixes_visible)
 	{
 		MenuHeading("Hardware Fixes");
 		DrawToggleSetting(bsi, "Manual Hardware Fixes", "Disables automatic hardware fixes, allowing you to set fixes manually.",
@@ -3171,6 +3176,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 				"Off (Default)", "Normal (Vertex)", "Special (Texture)", "Special (Texture - Aggressive)"};
 			static constexpr const char* s_round_sprite_options[] = {"Off (Default)", "Half", "Full"};
 
+			DrawIntListSetting(bsi, "CRC Fix Level", "Applies manual fixes to difficult-to-emulate effects in the hardware renderers.",
+				"EmuCore/GS", "crc_hack_level", static_cast<int>(CRCHackLevel::Automatic), s_crc_fix_options, std::size(s_crc_fix_options), -1);
 			DrawIntListSetting(bsi, "Half-Bottom Override", "Control the half-screen fix detection on texture shuffling.", "EmuCore/GS",
 				"UserHacks_Half_Bottom_Override", -1, s_generic_options, std::size(s_generic_options), -1);
 			DrawIntListSetting(bsi, "CPU Sprite Render Size", "Uses software renderer to draw texture decompression-like sprites.",
@@ -3207,6 +3214,9 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			DrawToggleSetting(bsi, "Estimate Texture Region",
 				"Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games).", "EmuCore/GS",
 				"UserHacks_EstimateTextureRegion", false, manual_hw_fixes);
+			DrawToggleSetting(bsi, "GPU Palette Conversion",
+				"Applies palettes to textures on the GPU instead of the CPU. Can result in speed improvements in some games.", "EmuCore/GS",
+				"paltex", false);
 
 			MenuHeading("Upscaling Fixes");
 			DrawIntListSetting(bsi, "Half-Pixel Offset", "Adjusts vertices relative to upscaling.", "EmuCore/GS",
@@ -3225,16 +3235,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 				"Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games.", "EmuCore/GS",
 				"UserHacks_WildHack", false, manual_hw_fixes);
 		}
-	}
-	else
-	{
-		// extrathreads
-		DrawIntRangeSetting(bsi, "Software Rendering Threads",
-			"Number of threads to use in addition to the main GS thread for rasterization.", "EmuCore/GS", "extrathreads", 2, 0, 10);
-		DrawToggleSetting(bsi, "Auto Flush (Software)", "Force a primitive flush when a framebuffer is also an input texture.",
-			"EmuCore/GS", "autoflush_sw", true);
-		DrawToggleSetting(bsi, "Edge AA (AA1)", "Enables emulation of the GS's edge anti-aliasing (AA1).", "EmuCore/GS", "aa1", true);
-		DrawToggleSetting(bsi, "Mipmapping", "Enables emulation of the GS's texture mipmapping.", "EmuCore/GS", "mipmap", true);
 	}
 
 	if (is_hardware)
@@ -3302,6 +3302,11 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 	DrawToggleSetting(bsi, "Disable Threaded Presentation",
 		"Presents frames on a worker thread, instead of on the GS thread. Can improve frame times on some systems, at the cost of "
 		"potentially worse frame pacing.", "EmuCore/GS", "DisableThreadedPresentation", false);
+	if (hw_fixes_visible)
+	{
+		DrawIntListSetting(bsi, "Hardware Download Mode", "Changes synchronization behavior for GS downloads.", "EmuCore/GS",
+			"HWDownloadMode", static_cast<int>(GSHardwareDownloadMode::Enabled), s_hw_download, std::size(s_hw_download));
+	}
 	DrawIntListSetting(bsi, "Override Texture Barriers", "Forces texture barrier functionality to the specified value.", "EmuCore/GS",
 		"OverrideTextureBarriers", -1, s_generic_options, std::size(s_generic_options), -1);
 	DrawIntListSetting(bsi, "Override Geometry Shaders", "Forces geometry shader functionality to the specified value.", "EmuCore/GS",

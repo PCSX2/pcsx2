@@ -1846,6 +1846,8 @@ void GSRendererHW::Draw()
 	const bool is_mem_clear = IsConstantDirectWriteMemClear(false);
 	const bool can_update_size = !is_mem_clear && !m_texture_shuffle && !m_channel_shuffle;
 	const GSVector2i resolution = PCRTCDisplays.GetResolution();
+	GSTextureCache::Target* old_rt = nullptr;
+	GSTextureCache::Target* old_ds = nullptr;
 	{
 		// We still need to make sure the dimensions of the targets match.
 		const GSVector2 up_s(GetTextureScaleFactor());
@@ -1876,7 +1878,6 @@ void GSRendererHW::Draw()
 			// Grandia Xtreme, Onimusha Warlord.
 			if (!new_rect && new_height && old_end_block != rt->m_end_block)
 			{
-				GSTextureCache::Target* old_rt = nullptr;
 				old_rt = m_tc->FindTargetOverlap(old_end_block, rt->m_end_block, GSTextureCache::RenderTarget, context->FRAME.PSM);
 
 				if (old_rt && old_rt != rt && GSUtil::HasSharedBits(old_rt->m_TEX0.PSM, rt->m_TEX0.PSM))
@@ -1884,9 +1885,11 @@ void GSRendererHW::Draw()
 					const int copy_width = (old_rt->m_texture->GetWidth()) > (rt->m_texture->GetWidth()) ? (rt->m_texture->GetWidth()) : old_rt->m_texture->GetWidth();
 					const int copy_height = (old_rt->m_texture->GetHeight()) > (rt->m_texture->GetHeight() - old_height) ? (rt->m_texture->GetHeight() - old_height) : old_rt->m_texture->GetHeight();
 
+					// Invalidate has been moved to after DrawPrims(), because we might kill the current sources' backing.
 					g_gs_device->CopyRect(old_rt->m_texture, rt->m_texture, GSVector4i(0, 0, copy_width, copy_height), 0, old_height);
-
-					m_tc->InvalidateVideoMemType(GSTextureCache::RenderTarget, old_rt->m_TEX0.TBP0);
+				}
+				else
+				{
 					old_rt = nullptr;
 				}
 			}
@@ -1912,7 +1915,6 @@ void GSRendererHW::Draw()
 
 			if (!new_rect && new_height && old_end_block != ds->m_end_block)
 			{
-				GSTextureCache::Target* old_ds = nullptr;
 				old_ds = m_tc->FindTargetOverlap(old_end_block, ds->m_end_block, GSTextureCache::DepthStencil, context->ZBUF.PSM);
 
 				if (old_ds && old_ds != ds && GSUtil::HasSharedBits(old_ds->m_TEX0.PSM, ds->m_TEX0.PSM))
@@ -1921,8 +1923,9 @@ void GSRendererHW::Draw()
 					const int copy_height = (old_ds->m_texture->GetHeight()) > (ds->m_texture->GetHeight() - old_height) ? (ds->m_texture->GetHeight() - old_height) : old_ds->m_texture->GetHeight();
 
 					g_gs_device->CopyRect(old_ds->m_texture, ds->m_texture, GSVector4i(0, 0, copy_width, copy_height), 0, old_height);
-
-					m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, old_ds->m_TEX0.TBP0);
+				}
+				else
+				{
 					old_ds = nullptr;
 				}
 			}
@@ -2051,6 +2054,14 @@ void GSRendererHW::Draw()
 
 	// Temporary source *must* be invalidated before normal, because otherwise it'll be double freed.
 	m_tc->InvalidateTemporarySource();
+
+	//
+
+	// Invalidation of old targets when changing to double-buffering.
+	if (old_rt)
+		m_tc->InvalidateVideoMemType(GSTextureCache::RenderTarget, old_rt->m_TEX0.TBP0);
+	if (old_ds)
+		m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, old_ds->m_TEX0.TBP0);
 
 	//
 
@@ -2803,10 +2814,10 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 	const bool one_barrier = m_conf.require_one_barrier || blend_ad_alpha_masked;
 
 	// Blend can be done on hw. As and F cases should be accurate.
-	// BLEND_C_CLR1 with Ad, BLEND_C_CLR3  Cs > 0.5f will require sw blend.
-	// BLEND_C_CLR1 with As/F, BLEND_C_CLR2_AF, BLEND_C_CLR2_AS can be done in hw.
-	const bool clr_blend = !!(blend_flag & (BLEND_C_CLR1 | BLEND_C_CLR2_AF | BLEND_C_CLR2_AS | BLEND_C_CLR3));
-	bool clr_blend1_2 = (blend_flag & (BLEND_C_CLR1 | BLEND_C_CLR2_AF | BLEND_C_CLR2_AS)) && (m_conf.ps.blend_c != 1) // Make sure it isn't an Ad case
+	// BLEND_HW_CLR1 with Ad, BLEND_HW_CLR3  Cs > 0.5f will require sw blend.
+	// BLEND_HW_CLR1 with As/F and BLEND_HW_CLR2 can be done in hw.
+	const bool clr_blend = !!(blend_flag & (BLEND_HW_CLR1 | BLEND_HW_CLR2 | BLEND_HW_CLR3));
+	bool clr_blend1_2 = (blend_flag & (BLEND_HW_CLR1 | BLEND_HW_CLR2)) && (m_conf.ps.blend_c != 1) // Make sure it isn't an Ad case
 						&& !m_env.PABE.PABE // No PABE as it will require sw blending.
 						&& (m_env.COLCLAMP.CLAMP) // Let's add a colclamp check too, hw blend will clamp to 0-1.
 						&& !(one_barrier || m_conf.require_full_barrier); // Also don't run if there are barriers present.
@@ -3105,6 +3116,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 			m_conf.ps.no_color1 = true;
 
 			// Only Ad case will require one barrier
+			// No need to set a_masked bit for blend_ad_alpha_masked case
 			m_conf.require_one_barrier |= blend_ad_alpha_masked;
 		}
 		else if (blend_mix)
@@ -3125,8 +3137,8 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 					// As - 1 or F - 1 subtraction is only done for the dual source output (hw blending part) since we are changing the equation.
 					// Af will be replaced with As in shader and send it to dual source output.
 					m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::SRC1_COLOR, GSDevice::OP_SUBTRACT, false, 0};
-					// clr_hw 1 will disable alpha clamp, we can reuse the old bits.
-					m_conf.ps.clr_hw = 1;
+					// blend hw 1 will disable alpha clamp, we can reuse the old bits.
+					m_conf.ps.blend_hw = 1;
 					// DSB output will always be used.
 					m_conf.ps.no_color1 = false;
 				}
@@ -3134,7 +3146,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 				{
 					// Compensate slightly for Cd*(As + 1) - Cs*As.
 					// Try to compensate a bit with subtracting 1 (0.00392) * (Alpha + 1) from Cs.
-					m_conf.ps.clr_hw = 2;
+					m_conf.ps.blend_hw = 2;
 				}
 
 				m_conf.ps.blend_a = 0;
@@ -3146,7 +3158,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 				// Allow to compensate when Cs*(Alpha + 1) overflows, to compensate we change
 				// the alpha output value for Cd*Alpha.
 				m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::SRC1_COLOR, blend.op, false, 0};
-				m_conf.ps.clr_hw = 3;
+				m_conf.ps.blend_hw = 3;
 				m_conf.ps.no_color1 = false;
 
 				m_conf.ps.blend_a = 0;
@@ -3163,9 +3175,9 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 			// Only Ad case will require one barrier
 			if (blend_ad_alpha_masked)
 			{
-				m_conf.require_one_barrier |= true;
 				// Swap Ad with As for hw blend
-				m_conf.ps.clr_hw = 6;
+				m_conf.ps.a_masked = 1;
+				m_conf.require_one_barrier |= true;
 			}
 		}
 		else
@@ -3176,6 +3188,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 			replace_dual_src = false;
 			blending_alpha_pass = false;
 
+			// No need to set a_masked bit for blend_ad_alpha_masked case
 			const bool blend_non_recursive_one_barrier = blend_non_recursive && blend_ad_alpha_masked;
 			if (blend_non_recursive_one_barrier)
 				m_conf.require_one_barrier |= true;
@@ -3192,50 +3205,29 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 		m_conf.ps.blend_b = 0;
 		m_conf.ps.blend_d = 0;
 
-		// Care for clr_hw value, 6 is for hw/sw, sw blending used.
-		if (blend_flag & BLEND_C_CLR1)
+		// Care for hw blend value, 6 is for hw/sw, sw blending used.
+		if (blend_flag & BLEND_HW_CLR1)
 		{
-			if (blend_ad_alpha_masked)
-			{
-				m_conf.ps.blend_c = 1;
-				m_conf.ps.clr_hw = 5;
-				m_conf.require_one_barrier |= true;
-			}
-			else
-			{
-				m_conf.ps.clr_hw = 1;
-			}
+			m_conf.ps.blend_hw = 1;
 		}
-		else if (blend_flag & (BLEND_C_CLR2_AF | BLEND_C_CLR2_AS))
+		else if (blend_flag & (BLEND_HW_CLR2))
 		{
-			if (blend_ad_alpha_masked)
-			{
-				m_conf.ps.blend_c = 1;
-				m_conf.ps.clr_hw = 4;
-				m_conf.require_one_barrier |= true;
-			}
-			else if (m_conf.ps.blend_c == 2)
-			{
-				m_conf.ps.blend_c = 2;
+			if (m_conf.ps.blend_c == 2)
 				m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(AFIX) / 128.0f;
-				m_conf.ps.clr_hw = 2;
-			}
-			else // m_conf.ps.blend_c == 0
-			{
-				m_conf.ps.blend_c = 0;
-				m_conf.ps.clr_hw = 2;
-			}
+
+			m_conf.ps.blend_hw = 2;
 		}
-		else if (blend_flag & BLEND_C_CLR3)
+		else if (blend_flag & BLEND_HW_CLR3)
 		{
-			m_conf.ps.clr_hw = 3;
+			m_conf.ps.blend_hw = 3;
 		}
-		else if (blend_ad_alpha_masked)
+
+		if (blend_ad_alpha_masked)
 		{
-			m_conf.ps.blend_c = 1;
-			m_conf.ps.clr_hw = 6;
+			m_conf.ps.a_masked = 1;
 			m_conf.require_one_barrier |= true;
 		}
+
 		const HWBlend blend(GSDevice::GetBlend(blend_index, replace_dual_src));
 		m_conf.blend = {true, blend.src, blend.dst, blend.op, m_conf.ps.blend_c == 2, AFIX};
 

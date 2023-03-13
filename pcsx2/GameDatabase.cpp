@@ -345,7 +345,6 @@ static const char* s_gs_hw_fix_names[] = {
 	"cpuFramebufferConversion",
 	"readTCOnClose",
 	"disableDepthSupport",
-	"wrapGSMem",
 	"preloadFrameData",
 	"disablePartialInvalidation",
 	"partialTargetInvalidation",
@@ -568,9 +567,6 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::DisableDepthSupport:
 			return (static_cast<int>(config.UserHacks_DisableDepthSupport) == value);
 
-		case GSHWFixId::WrapGSMem:
-			return (static_cast<int>(config.WrapGSMem) == value);
-
 		case GSHWFixId::PreloadFrameData:
 			return (static_cast<int>(config.PreloadFrameWithGSData) == value);
 
@@ -698,10 +694,6 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 
 			case GSHWFixId::DisableDepthSupport:
 				config.UserHacks_DisableDepthSupport = (value > 0);
-				break;
-
-			case GSHWFixId::WrapGSMem:
-				config.WrapGSMem = (value > 0);
 				break;
 
 			case GSHWFixId::PreloadFrameData:
@@ -851,14 +843,14 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 
 			case GSHWFixId::RecommendedBlendingLevel:
 			{
-				if (value >= 0 && value <= static_cast<int>(AccBlendLevel::Maximum) && static_cast<int>(GSConfig.AccurateBlendingUnit) < value)
+				if (value >= 0 && value <= static_cast<int>(AccBlendLevel::Maximum) && static_cast<int>(EmuConfig.GS.AccurateBlendingUnit) < value)
 				{
 					Host::AddKeyedOSDMessage("HWBlendingWarning",
 						fmt::format(ICON_FA_PAINT_BRUSH " Current Blending Accuracy is {}.\n"
 														"Recommended Blending Accuracy for this game is {}.\n"
 														"You can adjust the blending level in Game Properties to improve\n"
 														"graphical quality, but this will increase system requirements.",
-							Pcsx2Config::GSOptions::BlendingLevelNames[static_cast<int>(GSConfig.AccurateBlendingUnit)],
+							Pcsx2Config::GSOptions::BlendingLevelNames[static_cast<int>(EmuConfig.GS.AccurateBlendingUnit)],
 							Pcsx2Config::GSOptions::BlendingLevelNames[value]),
 						Host::OSD_WARNING_DURATION);
 				}
