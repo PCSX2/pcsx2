@@ -113,9 +113,9 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	// Only show the game fixes for per-game settings, there's really no reason to be setting them globally.
 	if (show_advanced_settings && isPerGameSettings())
 	{
-		addWidget(m_game_fix_settings_widget = new GameFixSettingsWidget(this, m_ui.settingsContainer), tr("Game Fix"),
+		addWidget(m_game_fix_settings_widget = new GameFixSettingsWidget(this, m_ui.settingsContainer), tr("Game Fixes"),
 			QStringLiteral("close-line"),
-			tr("<strong>Game Fix Settings</strong><hr>Gamefixes can work around incorrect emulation in some titles.<br>However, they can "
+			tr("<strong>Game Fixes Settings</strong><hr>Game Fixes can work around incorrect emulation in some titles.<br>However, they can "
 			   "also cause problems in games if used incorrectly.<br>It is best to leave them all disabled unless advised otherwise."));
 	}
 
@@ -126,7 +126,7 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 		tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console.<br><br>Mouse over an option for "
 		   "additional information."));
 
-	// for now, memory cards aren't settable per-game
+	// for now, Memory Cards aren't settable per-game
 	if (!isPerGameSettings())
 	{
 		addWidget(m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),

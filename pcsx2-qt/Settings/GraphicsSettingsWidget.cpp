@@ -416,23 +416,24 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Selects the quality at which screenshots will be compressed. Higher values preserve more detail for JPEG, and reduce file "
 			   "size for PNG."));
 
-		dialog->registerWidgetHelp(m_ui.stretchY, tr("Stretch Height"), tr("100%"),
-			tr("Stretches (> 100%) or squashes (< 100%) the vertical component of the display"));
+		dialog->registerWidgetHelp(m_ui.stretchY, tr("Vertical Stretch"), tr("100%"),
+			// Characters </> need to be converted into entities in order to be shown correctly.
+			tr("Stretches (&lt; 100%) or squashes (&gt; 100%) the vertical component of the display."));
 
 		dialog->registerWidgetHelp(m_ui.fullscreenModes, tr("Fullscreen Mode"), tr("Borderless Fullscreen"),
 			tr("Chooses the fullscreen resolution and frequency."));
 
 		dialog->registerWidgetHelp(m_ui.cropLeft, tr("Left"), tr("0px"),
-			tr("Changes number of pixels cropped from the left side of the display"));
+			tr("Changes the number of pixels cropped from the left side of the display."));
 
 		dialog->registerWidgetHelp(m_ui.cropTop, tr("Top"), tr("0px"),
-			tr("Changes number of pixels cropped from the top of the display"));
+			tr("Changes the number of pixels cropped from the top of the display."));
 
 		dialog->registerWidgetHelp(m_ui.cropRight, tr("Right"), tr("0px"),
-			tr("Changes number of pixels cropped from the right side of the display"));
+			tr("Changes the number of pixels cropped from the right side of the display."));
 
 		dialog->registerWidgetHelp(m_ui.cropBottom, tr("Bottom"), tr("0px"),
-			tr("Changes number of pixels cropped from the bottom of the display"));
+			tr("Changes the number of pixels cropped from the bottom of the display."));
 	}
 
 	// Rendering tab
@@ -450,7 +451,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			m_ui.textureFiltering, tr("Texture Filtering"), tr("Bilinear (PS2)"), tr("Control the texture filtering of the emulation."));
 
 		dialog->registerWidgetHelp(m_ui.trilinearFiltering, tr("Trilinear Filtering"), tr("Automatic (Default)"),
-			tr("Control the texture tri-filtering of the emulation."));
+			tr("Control the texture's trilinear filtering of the emulation."));
 
 		dialog->registerWidgetHelp(m_ui.anisotropicFiltering, tr("Anisotropic Filtering"), tr("Off (Default)"),
 			tr("Reduces texture aliasing at extreme viewing angles."));
@@ -468,7 +469,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Control the accuracy level of the GS blending unit emulation.<br> "
 			   "The higher the setting, the more blending is emulated in the shader accurately, and the higher the speed penalty will "
 			   "be.<br> "
-			   "Do note that Direct3D's blending is reduced in capability compared to OpenGL/Vulkan"));
+			   "Do note that Direct3D's blending is reduced in capability compared to OpenGL/Vulkan."));
 
 		dialog->registerWidgetHelp(m_ui.texturePreloading, tr("Texture Preloading"), tr("Full (Hash Cache)"),
 			tr("Uploads entire textures at once instead of small pieces, avoiding redundant uploads when possible. "
@@ -538,9 +539,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.disablePartialInvalidation, tr("Disable Partial Source Invalidation"), tr("Unchecked"),
 			tr("By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise. "
 			   "This hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load. "
-			   "It helps snowblind engine games."));
-		dialog->registerWidgetHelp(m_ui.frameBufferConversion, tr("Frame Buffer Conversion"), tr("Unchecked"),
-			tr("Convert 4-bit and 8-bit frame buffer on the CPU instead of the GPU. "
+			   "It helps with the Snowblind engine games."));
+		dialog->registerWidgetHelp(m_ui.frameBufferConversion, tr("Framebuffer Conversion"), tr("Unchecked"),
+			tr("Convert 4-bit and 8-bit framebuffer on the CPU instead of the GPU. "
 			   "Helps Harry Potter and Stuntman games. It has a big impact on performance."));
 
 		dialog->registerWidgetHelp(m_ui.preloadFrameData, tr("Preload Frame Data"), tr("Unchecked"),
@@ -581,7 +582,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			   "too."));
 
 		dialog->registerWidgetHelp(m_ui.alignSprite, tr("Align Sprite"), tr("Unchecked"),
-			tr("Fixes issues with upscaling(vertical lines) in Namco games like Ace Combat, Tekken, Soul Calibur, etc."));
+			tr("Fixes issues with upscaling (vertical lines) in Namco games like Ace Combat, Tekken, Soul Calibur, etc."));
 
 		dialog->registerWidgetHelp(m_ui.wildHack, tr("Wild Arms Hack"), tr("Unchecked"),
 			tr("Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games."));
@@ -637,10 +638,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Shows on-screen-display messages when events occur such as save states being "
 			   "created/loaded, screenshots being taken, etc."));
 
-		dialog->registerWidgetHelp(m_ui.osdShowFPS, tr("Show Game Frame Rate"), tr("Unchecked"),
+		dialog->registerWidgetHelp(m_ui.osdShowFPS, tr("Show FPS"), tr("Unchecked"),
 			tr("Shows the internal frame rate of the game in the top-right corner of the display."));
 
-		dialog->registerWidgetHelp(m_ui.osdShowSpeed, tr("Show Emulation Speed"), tr("Unchecked"),
+		dialog->registerWidgetHelp(m_ui.osdShowSpeed, tr("Show Speed Percentages"), tr("Unchecked"),
 			tr("Shows the current emulation speed of the system in the top-right corner of the display as a percentage."));
 
 		dialog->registerWidgetHelp(m_ui.osdShowResolution, tr("Show Resolution"), tr("Unchecked"),
@@ -654,7 +655,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Shows counters for internal graphical utilization, useful for debugging."));
 
 		dialog->registerWidgetHelp(m_ui.osdShowIndicators, tr("Show Indicators"), tr("Unchecked"),
-			tr("Shows OSD icon indicators for emulation states such as Pausing, Turbo, Fast Forward, and Slow Motion."));
+			tr("Shows OSD icon indicators for emulation states such as Pausing, Turbo, Fast-Forward, and Slow-Motion."));
 
 		dialog->registerWidgetHelp(m_ui.osdShowSettings, tr("Show Settings"), tr("Unchecked"),
 			tr("Displays various settings and the current values of those settings, useful for debugging."));
@@ -699,7 +700,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 		dialog->registerWidgetHelp(m_ui.disableDualSource, tr("Disable Dual Source Blending"), tr("Unchecked"), tr(""));
 
-		dialog->registerWidgetHelp(m_ui.disableFramebufferFetch, tr("Disable Frame Buffer Fetch"), tr("Unchecked"), tr(""));
+		dialog->registerWidgetHelp(m_ui.disableFramebufferFetch, tr("Disable Framebuffer Fetch"), tr("Unchecked"), tr(""));
 
 		dialog->registerWidgetHelp(m_ui.skipPresentingDuplicateFrames, tr("Skip Presenting Duplicate Frames"), tr("Unchecked"),
 			tr("Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still "

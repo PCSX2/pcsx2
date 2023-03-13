@@ -385,7 +385,7 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
 			if (update_will_break_save_states)
 			{
 				changes_html.prepend(tr("<h2>Save State Warning</h2><p>Installing this update will make your save states "
-										"<b>incompatible</b>. Please ensure you have saved your games to memory card "
+										"<b>incompatible</b>. Please ensure you have saved your games to a Memory Card "
 										"before installing this update or you will lose progress.</p>"));
 			}
 

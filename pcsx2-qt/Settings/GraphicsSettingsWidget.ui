@@ -143,7 +143,7 @@
        <item row="3" column="0">
         <widget class="QLabel" name="label_23">
          <property name="text">
-          <string>De-interlacing:</string>
+          <string>Deinterlacing:</string>
          </property>
         </widget>
        </item>
@@ -338,7 +338,7 @@
          <item row="1" column="1">
           <widget class="QCheckBox" name="integerScaling">
            <property name="text">
-            <string>Integer Upscaling</string>
+            <string>Integer Scaling</string>
            </property>
           </widget>
          </item>
@@ -1630,7 +1630,7 @@
             <item row="0" column="0">
              <widget class="QCheckBox" name="osdShowMessages">
               <property name="text">
-               <string>Show Notifications</string>
+               <string>Show OSD Messages</string>
               </property>
              </widget>
             </item>
@@ -1651,7 +1651,7 @@
             <item row="0" column="1">
              <widget class="QCheckBox" name="osdShowSpeed">
               <property name="text">
-               <string>Show Speed</string>
+               <string>Show Speed Percentages</string>
               </property>
              </widget>
             </item>
