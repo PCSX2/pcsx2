@@ -144,12 +144,12 @@ jobs:
             APPNAME="PCSX2-$TAG"
           fi
           mv build/pcsx2*/PCSX2.app "$APPNAME.app"
-          tar cvzf "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.gz" "$APPNAME.app"
+          tar --options xz:compression-level=9 -cvJf "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.xz" "$APPNAME.app"
           mkdir ci-artifacts
-          cp "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.gz" ci-artifacts/macOS-${{ inputs.gui }}.tar.gz
+          cp "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.xz" ci-artifacts/macOS-${{ inputs.gui }}.tar.xz
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}
-          path: "*.tar.gz"
+          path: "*.tar.xz"
