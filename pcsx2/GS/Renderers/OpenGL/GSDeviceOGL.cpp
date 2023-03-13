@@ -518,14 +518,6 @@ bool GSDeviceOGL::Create()
 		fprintf(stdout, "No extenstion supported to get available memory. Use default value !\n");
 	}
 
-	// When VRAM is at least 2GB, we set the limit to the default i.e. 3.8 GB
-	// When VRAM is below 2GB, we add a factor 2 because RAM can be used. Potentially
-	// low VRAM gpu can go higher but perf will be bad anyway.
-	/*if (vram[0] > 0 && vram[0] < 1800000)
-		GLState::available_vram = (s64)(vram[0]) * 1024ul * 2ul;
-
-	fprintf(stdout, "Available VRAM/RAM:%lldMB for textures\n", GLState::available_vram >> 20u);*/
-
 	// Basic to ensure structures are correctly packed
 	static_assert(sizeof(VSSelector) == 1, "Wrong VSSelector size");
 	static_assert(sizeof(PSSelector) == 12, "Wrong PSSelector size");

@@ -159,16 +159,6 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 		glTextureParameteri(m_texture_id, GL_TEXTURE_SWIZZLE_A, GL_RED);
 	}
 
-	static int every_512 = 0;
-	/*GLState::available_vram -= GetMemUsage();
-	if ((GLState::available_vram < 0) && (every_512 % 512 == 0))
-	{
-		fprintf(stderr, "Available VRAM is very low (%lld), a crash is expected! Enable conservative buffer allocation or reduce upscaling!\n", GLState::available_vram);
-		every_512++;
-		// Pull emergency break
-		throw std::bad_alloc();
-	}*/
-
 	glTextureStorage2D(m_texture_id, m_mipmap_levels, gl_fmt, m_size.x, m_size.y);
 }
 
@@ -185,8 +175,6 @@ GSTextureOGL::~GSTextureOGL()
 	}
 
 	glDeleteTextures(1, &m_texture_id);
-
-	//GLState::available_vram += GetMemUsage();
 }
 
 void* GSTextureOGL::GetNativeHandle() const
