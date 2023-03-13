@@ -4,7 +4,7 @@ import shutil
 tag = os.environ['TAG'].split("refs/tags/")[1]
 scan_dir = os.environ['SCAN_DIR']
 output_dir = os.environ['OUT_DIR']
-accepted_exts = ["AppImage", "tar.gz", "7z"]
+accepted_exts = ["AppImage", "tar.xz", "7z"]
 
 
 for dir_name in os.listdir(scan_dir):
