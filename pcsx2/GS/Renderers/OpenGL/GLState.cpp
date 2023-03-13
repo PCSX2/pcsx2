@@ -47,7 +47,7 @@ namespace GLState
 	GLuint tex_unit[8];
 	GLuint64 tex_handle[8];
 
-	s64 available_vram;
+	//s64 available_vram;
 
 	void Clear()
 	{
@@ -79,6 +79,6 @@ namespace GLState
 
 		// Set a max vram limit for texture allocation
 		// (256MB are reserved for PBO/IBO/VBO/UBO buffers)
-		available_vram = (4096u - 256u) * 1024u * 1024u;
+		//available_vram = (4096u - 256u) * 1024u * 1024u;
 	}
 } // namespace GLState
