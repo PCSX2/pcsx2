@@ -797,8 +797,20 @@ GSVector2i GSRendererHW::GetTargetSize(const GSTextureCache::Source* tex)
 					m_context->FRAME.FBMSK && m_tc->Has32BitTarget(m_context->FRAME.Block()))));
 	if (possible_texture_shuffle)
 	{
-		GL_CACHE("Halving height due to texture shuffle, %dx%d -> %dx%d", width, min_height, width, min_height / 2);
-		min_height /= 2;
+		const u32 tex_width_pgs = (tex->m_target ? tex->m_from_target_TEX0.TBW : tex->m_TEX0.TBW);
+		const u32 half_draw_width_pgs = ((width + (frame_psm.pgs.x - 1)) / frame_psm.pgs.x) >> 1;
+
+		// Games such as Midnight Club 3 draw headlights with a texture shuffle, but instead of doubling the height, they doubled the width.
+		if (tex_width_pgs == half_draw_width_pgs)
+		{
+			GL_CACHE("Halving width due to texture shuffle with double width, %dx%d -> %dx%d", width, min_height, width / 2, min_height);
+			width /= 2;
+		}
+		else
+		{
+			GL_CACHE("Halving height due to texture shuffle, %dx%d -> %dx%d", width, min_height, width, min_height / 2);
+			min_height /= 2;
+		}
 	}
 
 	u32 height = m_tc->GetTargetHeight(m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, min_height);
