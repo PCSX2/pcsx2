@@ -871,8 +871,7 @@ void GraphicsSettingsWidget::onGpuPaletteConversionChanged(int state)
 
 void GraphicsSettingsWidget::onTextureInsideRtChanged()
 {
-	const bool disabled = static_cast<GSTextureInRtMode>(m_dialog->getEffectiveIntValue("EmuCore/GS", "UserHacks_TextureInsideRt",
-							  static_cast<int>(GSTextureInRtMode::Disabled))) >= GSTextureInRtMode::InsideTargets;
+	const bool disabled = static_cast<GSTextureInRtMode>(m_ui.textureInsideRt->currentIndex()) >= GSTextureInRtMode::InsideTargets;
 
 	m_ui.targetPartialInvalidation->setDisabled(disabled);
 }
