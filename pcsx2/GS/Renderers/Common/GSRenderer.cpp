@@ -289,8 +289,22 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 	if (GSConfig.IntegerScaling)
 	{
 		// make target width/height an integer multiple of the texture width/height
-		const float t_width = static_cast<double>(src_rect.width());
-		const float t_height = static_cast<double>(src_rect.height());
+		float t_width = static_cast<double>(src_rect.width());
+		float t_height = static_cast<double>(src_rect.height());
+
+		// If using Bilinear (Shape) the image will be prescaled to larger than the window, so we need to unscale it.
+		if (GSConfig.LinearPresent == GSPostBilinearMode::BilinearSharp && src_rect.width() > 0 && src_rect.height() > 0)
+		{
+			GSVector2i resolution = g_gs_renderer->PCRTCDisplays.GetResolution();
+			const GSVector2i fs = GSVector2i(static_cast<int>(static_cast<float>(resolution.x) * g_gs_renderer->GetUpscaleMultiplier()),
+				static_cast<int>(static_cast<float>(resolution.y) * g_gs_renderer->GetUpscaleMultiplier()));
+
+			if (g_host_display->GetWindowWidth() > fs.x || g_host_display->GetWindowHeight() > fs.y)
+			{
+				t_width *= static_cast<float>(fs.x) / src_rect.width();
+				t_height *= static_cast<float>(fs.y) / src_rect.height();
+			}
+		}
 
 		float scale;
 		if ((t_width / t_height) >= 1.0)
