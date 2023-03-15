@@ -11871,6 +11871,9 @@ SLES-51043:
   name: "Spyro - Enter the Dragonfly"
   region: "PAL-M6"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
   patches:
     0EF1D4BA:
       content: |-
@@ -42503,6 +42506,9 @@ SLUS-20315:
   name: "Spyro the Dragon - Enter the Dragonfly"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
   patches:
     4B8E0DE8:
       content: |-
