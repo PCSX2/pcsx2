@@ -89,7 +89,7 @@ void GSTextureCache::RemoveAll()
 	m_surface_offset_cache.clear();
 }
 
-void GSTextureCache::AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw, RGBAMask rgba)
+void GSTextureCache::AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw, RGBAMask rgba, bool req_linear)
 {
 	bool skipdirty = false;
 	bool canskip = true;
@@ -119,7 +119,347 @@ void GSTextureCache::AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm
 	}
 
 	if (!skipdirty)
-		target->m_dirty.push_back(GSDirtyRect(rect, psm, bw, rgba));
+	{
+		target->m_dirty.push_back(GSDirtyRect(rect, psm, bw, rgba, req_linear));
+
+		if (!target->m_drawn_since_read.rempty())
+		{
+			// If we're covering the drawn area, clear it, in case of readback.
+			if (target->m_drawn_since_read.rintersect(target->m_dirty.GetTotalRect(target->m_TEX0, target->m_unscaled_size)).eq(target->m_drawn_since_read))
+				target->m_drawn_since_read = GSVector4i::zero();
+		}
+	}
+}
+
+
+
+bool GSTextureCache::CanTranslate(u32 bp, u32 bw, u32 spsm, GSVector4i r, u32 dbp, u32 dpsm, u32 dbw)
+{
+	const GSVector2i page_size = GSLocalMemory::m_psm[spsm].pgs;
+	const bool bp_page_aligned_bp = ((bp & ~((1 << 5) - 1)) == bp) || bp == dbp;
+	const bool block_layout_match = GSLocalMemory::m_psm[spsm].bpp == GSLocalMemory::m_psm[dpsm].bpp;
+	const GSVector4i page_mask(GSVector4i((page_size.x - 1), (page_size.y - 1)).xyxy());
+	const GSVector4i masked_rect(r & ~page_mask);
+	const int src_pixel_width = page_size.x * static_cast<int>(bw);
+	// We can do this if:
+	// The page width matches.
+	// The rect width is less than the width of the destination texture and the height is less than or equal to 1 page high.
+	// The rect width and height is equal to the page size and it covers the width of the incoming bw, so lines are sequential.
+	const bool page_aligned_rect = masked_rect.eq(r);
+	const bool width_match = bw == dbw;
+	const bool sequential_pages = page_aligned_rect && r.x == 0 && r.z == src_pixel_width;
+	const bool single_row = bw < dbw && r.z <= src_pixel_width && r.w <= page_size.y;
+
+	if (block_layout_match)
+	{
+		// Same swizzle, so as long as the block is aligned and it's not a crazy size, we can translate it.
+		return bp_page_aligned_bp && (width_match || single_row || sequential_pages);
+	}
+	else
+	{
+		// If the format is different, the rect needs to additionally aligned to the pages.
+		return bp_page_aligned_bp && page_aligned_rect && (single_row || width_match || sequential_pages);
+	}
+}
+
+
+GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 sbp, u32 spsm, u32 sbw, GSVector4i src_r, u32 dbp, u32 dpsm, u32 bw, bool is_invalidation)
+{
+	const GSVector2i src_page_size = GSLocalMemory::m_psm[spsm].pgs;
+	const GSVector2i dst_page_size = GSLocalMemory::m_psm[dpsm].pgs;
+	const u32 src_bw = std::max(1U, sbw);
+	const u32 dst_bw = std::max(1U, bw);
+	GSVector4i in_rect = src_r;
+	int page_offset = (static_cast<int>(sbp) - static_cast<int>(dbp)) >> 5;
+	bool single_page = (in_rect.width() / src_page_size.x) <= 1 && (in_rect.height() / src_page_size.y) <= 1;
+	if (!single_page)
+	{
+		const int inc_vertical_offset = (page_offset / static_cast<int>(src_bw)) * src_page_size.y;
+		int inc_horizontal_offset = (page_offset % static_cast<int>(src_bw)) * src_page_size.x;
+		in_rect = (in_rect + GSVector4i(0, inc_vertical_offset).xyxy()).max_i32(GSVector4i(0));
+		in_rect = (in_rect + GSVector4i(inc_horizontal_offset, 0).xyxy()).max_i32(GSVector4i(0));
+		page_offset = 0;
+		single_page = (in_rect.width() / src_page_size.x) <= 1 && (in_rect.height() / src_page_size.y) <= 1;
+	}
+	const int vertical_offset = (page_offset / static_cast<int>(dst_bw)) * dst_page_size.y;
+	int horizontal_offset = (page_offset % static_cast<int>(dst_bw)) * dst_page_size.x;
+	const GSVector4i rect_pages = GSVector4i(in_rect.x / src_page_size.x, in_rect.y / src_page_size.y, (in_rect.z + src_page_size.x - 1) / src_page_size.x, (in_rect.w + (src_page_size.y - 1)) / src_page_size.y);
+	const bool block_layout_match = GSLocalMemory::m_psm[spsm].bpp == GSLocalMemory::m_psm[dpsm].bpp;
+	GSVector4i new_rect = {};
+
+	if (sbw != bw)
+	{
+		if (sbw == 0)
+		{
+			// BW == 0 loops vertically on the first page. So just copy the whole page vertically.
+			if (in_rect.z > dst_page_size.x)
+			{
+				new_rect.x = 0;
+				new_rect.z = (dst_page_size.x);
+			}
+			else
+			{
+				new_rect.x = in_rect.x;
+				new_rect.z = in_rect.z;
+			}
+			if (in_rect.w > dst_page_size.y)
+			{
+				new_rect.y = 0;
+				new_rect.w = dst_page_size.y;
+			}
+			else
+			{
+				new_rect.y = in_rect.y;
+				new_rect.w = in_rect.w;
+			}
+		}
+		else if (src_bw == rect_pages.width())
+		{
+
+			const u32 totalpages = rect_pages.width() * rect_pages.height();
+			const bool full_rows = in_rect.width() == (src_bw * src_page_size.x);
+			const bool single_row = in_rect.x == 0 && in_rect.y == 0 && totalpages <= dst_bw;
+			bool uneven_pages = (horizontal_offset || (totalpages % dst_bw) != 0) && !single_row;
+
+			// Less than or equal a page and the block layout matches, just copy the rect
+			if (block_layout_match && single_page)
+			{
+				new_rect = in_rect;
+			}
+			else if (uneven_pages)
+			{
+				// Results won't be square, if it's not invalidation, it's a texture, which is problematic to translate, so let's not (FIFA 2005).
+				if (!is_invalidation)
+					return GSVector4i::zero();
+
+				//TODO: Maybe control dirty blocks directly and add them page at a time for better granularity.
+				const u32 start_y_page = (rect_pages.y * src_bw) / dst_bw;
+				const u32 end_y_page = ((rect_pages.w * src_bw) + (dst_bw - 1)) / dst_bw;
+
+				// Not easily translatable full pages and make sure the height is rounded upto encompass the half row.
+				horizontal_offset = 0;
+				new_rect.x = 0;
+				new_rect.z = (dst_bw * dst_page_size.x);
+				new_rect.y = (start_y_page * dst_page_size.y);
+				new_rect.w = (end_y_page * dst_page_size.y);
+			}
+			else
+			{
+				const u32 start_y_page = (rect_pages.y * src_bw) / dst_bw;
+				// Full rows in original rect, so pages are sequential
+				if (single_row || full_rows)
+				{
+					new_rect.x = 0;
+					new_rect.z = std::min(totalpages * dst_page_size.x, dst_bw * dst_page_size.x);
+					new_rect.y = start_y_page * dst_page_size.y;
+					new_rect.w = new_rect.y + (((totalpages + (dst_bw - 1)) / dst_bw) * dst_page_size.y);
+				}
+				else
+				{
+					DevCon.Warning("Panic! How did we get here?");
+				}
+			}
+		}
+		else if (single_page)
+		{
+			//The offsets will move this to the right place
+			new_rect = GSVector4i(rect_pages.x * dst_page_size.x, rect_pages.y * dst_page_size.y, rect_pages.z * dst_page_size.x, rect_pages.w * dst_page_size.y);
+		}
+		else
+			return GSVector4i::zero();
+	}
+	else
+	{
+		if (block_layout_match)
+		{
+			new_rect = in_rect;
+			// The width is mismatched to the bw.
+			// Kinda scary but covering the whole row and the next one should be okay? :/ (Check with MVP 07, sbp == 0x39a0)
+			if (rect_pages.z > static_cast<int>(bw))
+			{
+				if (!is_invalidation)
+					return GSVector4i::zero();
+
+				u32 offset = rect_pages.z - (bw * dst_page_size.x);
+				new_rect.x = offset;
+				new_rect.z -= offset;
+				new_rect.w += dst_page_size.y;
+			}
+		}
+		else
+		{
+			new_rect = GSVector4i(rect_pages.x * dst_page_size.x, rect_pages.y * dst_page_size.y, rect_pages.z * dst_page_size.x, rect_pages.w * dst_page_size.y);
+		}
+	}
+
+	new_rect = (new_rect + GSVector4i(0, vertical_offset).xyxy()).max_i32(GSVector4i(0));
+	new_rect = (new_rect + GSVector4i(horizontal_offset, 0).xyxy()).max_i32(GSVector4i(0));
+
+	if (new_rect.z > (static_cast<int>(bw) * dst_page_size.x))
+	{
+		new_rect.z = (bw * dst_page_size.x);
+		new_rect.w += dst_page_size.y;
+	}
+
+	return new_rect;
+}
+
+void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVector4i src_r, u32 dbp, u32 dpsm, u32 bw)
+{
+	const GSVector2i src_page_size = GSLocalMemory::m_psm[spsm].pgs;
+	const GSVector2i dst_page_size = GSLocalMemory::m_psm[dpsm].pgs;
+	const u32 src_bw = std::max(1U, sbw);
+	const u32 dst_bw = std::max(1U, bw);
+	GSVector4i in_rect = src_r;
+	int page_offset = (static_cast<int>(sbp) - static_cast<int>(dbp)) >> 5;
+	bool single_page = (in_rect.width() / src_page_size.x) <= 1 && (in_rect.height() / src_page_size.y) <= 1;
+	if (!single_page)
+	{
+		const int inc_vertical_offset = (page_offset / static_cast<int>(src_bw)) * src_page_size.y;
+		int inc_horizontal_offset = (page_offset % static_cast<int>(src_bw)) * src_page_size.x;
+		in_rect = (in_rect + GSVector4i(0, inc_vertical_offset).xyxy()).max_i32(GSVector4i(0));
+		in_rect = (in_rect + GSVector4i(inc_horizontal_offset, 0).xyxy()).max_i32(GSVector4i(0));
+		page_offset = 0;
+		single_page = (in_rect.width() / src_page_size.x) <= 1 && (in_rect.height() / src_page_size.y) <= 1;
+	}
+	const int vertical_offset = (page_offset / static_cast<int>(dst_bw)) * dst_page_size.y;
+	int horizontal_offset = (page_offset % static_cast<int>(dst_bw)) * dst_page_size.x;
+	const GSVector4i rect_pages = GSVector4i(in_rect.x / src_page_size.x, in_rect.y / src_page_size.y, (in_rect.z + src_page_size.x - 1) / src_page_size.x, (in_rect.w + (src_page_size.y - 1)) / src_page_size.y);
+	const bool block_layout_match = GSLocalMemory::m_psm[spsm].bpp == GSLocalMemory::m_psm[dpsm].bpp;
+	GSVector4i new_rect = {};
+	RGBAMask rgba;
+	rgba._u32 = GSUtil::GetChannelMask(spsm);
+
+	if (sbw != bw)
+	{
+		if (sbw == 0)
+		{
+			// BW == 0 loops vertically on the first page. So just copy the whole page vertically.
+			if (in_rect.z > dst_page_size.x)
+			{
+				new_rect.x = 0;
+				new_rect.z = (dst_page_size.x);
+			}
+			else
+			{
+				new_rect.x = in_rect.x;
+				new_rect.z = in_rect.z;
+			}
+			if (in_rect.w > dst_page_size.y)
+			{
+				new_rect.y = 0;
+				new_rect.w = dst_page_size.y;
+			}
+			else
+			{
+				new_rect.y = in_rect.y;
+				new_rect.w = in_rect.w;
+			}
+		}
+		else if (src_bw == rect_pages.width())
+		{
+
+			const u32 totalpages = rect_pages.width() * rect_pages.height();
+			const bool full_rows = in_rect.width() == (src_bw * src_page_size.x);
+			const bool single_row = in_rect.x == 0 && in_rect.y == 0 && totalpages <= dst_bw;
+			bool uneven_pages = (horizontal_offset || (totalpages % dst_bw) != 0) && !single_row;
+
+			// Less than or equal a page and the block layout matches, just copy the rect
+			if (block_layout_match && single_page)
+			{
+				new_rect = in_rect;
+			}
+			else if (uneven_pages)
+			{
+				//TODO: Maybe control dirty blocks directly and add them page at a time for better granularity.
+				const u32 start_page = (rect_pages.y * src_bw) + rect_pages.x;
+				const u32 end_page = start_page + totalpages;
+
+				for (u32 i = start_page; i < end_page; i++)
+				{
+					new_rect.x = (i % dst_bw) * dst_page_size.x;
+					new_rect.z = new_rect.x + dst_page_size.x;
+					new_rect.y = (i / dst_bw) * dst_page_size.y;
+					new_rect.w = new_rect.y + dst_page_size.y;
+					AddDirtyRectTarget(t, new_rect, t->m_TEX0.PSM, t->m_TEX0.TBW, rgba);
+					
+				}
+				return;
+				// Not easily translatable full pages and make sure the height is rounded upto encompass the half row.
+				horizontal_offset = 0;
+				
+			}
+			else
+			{
+				const u32 start_y_page = (rect_pages.y * src_bw) / dst_bw;
+				// Full rows in original rect, so pages are sequential
+				if (single_row || full_rows)
+				{
+					new_rect.x = 0;
+					new_rect.z = std::min(totalpages * dst_page_size.x, dst_bw * dst_page_size.x);
+					new_rect.y = start_y_page * dst_page_size.y;
+					new_rect.w = new_rect.y + (((totalpages + (dst_bw - 1)) / dst_bw) * dst_page_size.y);
+				}
+				else
+				{
+					DevCon.Warning("Panic! How did we get here?");
+				}
+			}
+		}
+		else if (single_page)
+		{
+			//The offsets will move this to the right place
+			new_rect = GSVector4i(rect_pages.x * dst_page_size.x, rect_pages.y * dst_page_size.y, rect_pages.z * dst_page_size.x, rect_pages.w * dst_page_size.y);
+		}
+		else // Last resort, hopefully never hit this, but it's better than nothing.
+		{
+			SurfaceOffsetKey sok;
+			sok.elems[0].bp = sbp;
+			sok.elems[0].bw = sbw;
+			sok.elems[0].psm = spsm;
+			sok.elems[0].rect = src_r;
+			sok.elems[1].bp = t->m_TEX0.TBP0;
+			sok.elems[1].bw = t->m_TEX0.TBW;
+			sok.elems[1].psm = t->m_TEX0.PSM;
+			sok.elems[1].rect = t->m_valid;
+
+			const SurfaceOffset so = ComputeSurfaceOffset(sok);
+			if (so.is_valid)
+				AddDirtyRectTarget(t, so.b2a_offset, t->m_TEX0.PSM, t->m_TEX0.TBW, rgba);
+			return;
+		}
+	}
+	else
+	{
+		if (block_layout_match)
+		{
+			new_rect = in_rect;
+			// The width is mismatched to the bw.
+			// Kinda scary but covering the whole row and the next one should be okay? :/ (Check with MVP 07, sbp == 0x39a0)
+			if (rect_pages.z > static_cast<int>(bw))
+			{
+				u32 offset = rect_pages.z - (bw * dst_page_size.x);
+				new_rect.x = offset;
+				new_rect.z -= offset;
+				new_rect.w += dst_page_size.y;
+			}
+		}
+		else
+		{
+			new_rect = GSVector4i(rect_pages.x * dst_page_size.x, rect_pages.y * dst_page_size.y, rect_pages.z * dst_page_size.x, rect_pages.w * dst_page_size.y);
+		}
+	}
+
+	new_rect = (new_rect + GSVector4i(0, vertical_offset).xyxy()).max_i32(GSVector4i(0));
+	new_rect = (new_rect + GSVector4i(horizontal_offset, 0).xyxy()).max_i32(GSVector4i(0));
+
+	if (new_rect.z > (static_cast<int>(bw) * dst_page_size.x))
+	{
+		new_rect.z = (bw * dst_page_size.x);
+		new_rect.w += dst_page_size.y;
+	}
+
+	AddDirtyRectTarget(t, new_rect, t->m_TEX0.PSM, t->m_TEX0.TBW, rgba);
 }
 
 GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, bool palette)
@@ -398,10 +738,11 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				//
 				// Solution: consider the RT as 32 bits if the alpha was used in the past
 				const u32 t_psm = (t->m_dirty_alpha) ? t->m_TEX0.PSM & ~0x1 : t->m_TEX0.PSM;
-				bool rect_clean = psm == t_psm;
+				bool rect_clean = GSUtil::HasSameSwizzleBits(psm, t_psm);
 				if (rect_clean && bp >= t->m_TEX0.TBP0 && bp < t->m_end_block && bw == t->m_TEX0.TBW && bp <= t->m_end_block && !t->m_dirty.empty())
 				{
 					GSVector4i new_rect = r;
+					bool partial = false;
 					// If it's compatible and page aligned, then handle it this way.
 					// It's quicker, and Surface Offsets can get it wrong.
 					// Example doing PSMT8H to C32, BP 0x1c80, TBP 0x1d80, incoming rect 0,128 -> 128,256
@@ -409,14 +750,14 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					if (bp > t->m_TEX0.TBP0)
 					{
 						const GSVector2i page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
-						const bool can_translate = GSLocalMemory::CanTranslate(bp, bw, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
+						const bool can_translate = CanTranslate(bp, bw, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 						const bool swizzle_match = GSLocalMemory::m_psm[psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
 
 						if (can_translate)
 						{
 							if (swizzle_match)
 							{
-								new_rect = GSLocalMemory::TranslateAlignedRectByPage(bp, psm, bw, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
+								new_rect = TranslateAlignedRectByPage(bp, psm, bw, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 
 								if (new_rect.eq(GSVector4i::zero()))
 								{
@@ -440,7 +781,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 									new_rect.z = (r.z + (page_size.x - 1)) & ~(page_size.x - 1);
 									new_rect.w = (r.w + (page_size.y - 1)) & ~(page_size.y - 1);
 								}
-								new_rect = GSLocalMemory::TranslateAlignedRectByPage(bp & ~((1 << 5) - 1), psm, bw, new_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
+								new_rect = TranslateAlignedRectByPage(bp & ~((1 << 5) - 1), psm, bw, new_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 							}
 						}
 						else
@@ -469,14 +810,15 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 						if (!dirty_rect.rintersect(new_rect).rempty())
 						{
 							rect_clean = false;
+							partial |= !new_rect.rintersect(dirty_rect).eq(new_rect);
 							break;
 						}
 					}
 
 					const u32 channel_mask = GSUtil::GetChannelMask(psm);
 					const u32 channels = t->m_dirty.GetDirtyChannels() & channel_mask;
-					// If not all channels are clean/dirty, we need to update the target.
-					if ((channels & channel_mask) != 0 && !rect_clean)
+					// If not all channels are clean/dirty or only part of the rect is dirty, we need to update the target.
+					if (((channels & channel_mask) != channel_mask || partial) && !rect_clean)
 						t->Update(false);
 				}
 				else
@@ -550,21 +892,17 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 						// Fixes Jak eyes rendering.
 						// Fixes Xenosaga 3 last dungeon graphic bug.
 						// Fixes Pause menu in The Getaway.
-						const GSVector2i page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
-
-						/*if ((t->m_TEX0.TBW * page_size.x) < t->m_valid.z)
-							t->m_TEX0.TBW = (t->m_valid.z + page_size.x - 1) / page_size.x;*/
-
-						const bool can_translate = GSLocalMemory::CanTranslate(bp, bw, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
-						const bool swizzle_match = GSLocalMemory::m_psm[psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
+						const bool can_translate = CanTranslate(bp, bw, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 						if (can_translate)
 						{
+							const bool swizzle_match = GSLocalMemory::m_psm[psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
+							const GSVector2i page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
 							const GSVector4i page_mask(GSVector4i((page_size.x - 1), (page_size.y - 1)).xyxy());
 							GSVector4i rect = r & ~page_mask;
 
 							if (swizzle_match)
 							{
-								rect = GSLocalMemory::TranslateAlignedRectByPage(bp, psm, bw, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
+								rect = TranslateAlignedRectByPage(bp, psm, bw, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 								rect.x -= r.x;
 								rect.y -= r.y;
 							}
@@ -584,7 +922,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 									rect.z = (r.z + (page_size.x - 1)) & ~(page_size.x - 1);
 									rect.w = (r.w + (page_size.y - 1)) & ~(page_size.y - 1);
 								}
-								rect = GSLocalMemory::TranslateAlignedRectByPage(bp & ~((1 << 5) - 1), psm, bw, rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
+								rect = TranslateAlignedRectByPage(bp & ~((1 << 5) - 1), psm, bw, rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 								rect.x -= r.x & ~(page_size.y - 1);
 								rect.y -= r.x & ~(page_size.y - 1);
 							}
@@ -613,6 +951,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 							tex_in_rt = true;
 							tex_merge_rt = false;
 							found_t = true;
+							continue;
 						}
 						else
 						{
@@ -1021,13 +1360,13 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 					if (iter->blit.DBP >= TEX0.TBP0 && iter->blit.DBP <= rect_end && GSUtil::HasCompatibleBits(iter->blit.DPSM, TEX0.PSM))
 					{
 						GSVector4i targetr = {};
-						const bool can_translate = GSLocalMemory::CanTranslate(iter->blit.DBP, iter->blit.DBW, iter->blit.DPSM, iter->rect, TEX0.TBP0, TEX0.PSM, TEX0.TBW);
+						const bool can_translate = CanTranslate(iter->blit.DBP, iter->blit.DBW, iter->blit.DPSM, iter->rect, TEX0.TBP0, TEX0.PSM, TEX0.TBW);
 						const bool swizzle_match = GSLocalMemory::m_psm[iter->blit.DPSM].depth == GSLocalMemory::m_psm[TEX0.PSM].depth;
 						if (can_translate)
 						{
 							if (swizzle_match)
 							{
-								targetr = GSLocalMemory::TranslateAlignedRectByPage(iter->blit.DBP, iter->blit.DPSM, iter->blit.DBW, iter->rect, TEX0.TBP0, TEX0.PSM, TEX0.TBW, true);
+								targetr = TranslateAlignedRectByPage(iter->blit.DBP, iter->blit.DPSM, iter->blit.DBW, iter->rect, TEX0.TBP0, TEX0.PSM, TEX0.TBW, true);
 							}
 							else
 							{
@@ -1048,7 +1387,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 									new_rect.z = (new_rect.z + (page_size.x - 1)) & ~(page_size.x - 1);
 									new_rect.w = (new_rect.w + (page_size.y - 1)) & ~(page_size.y - 1);
 								}
-								targetr = GSLocalMemory::TranslateAlignedRectByPage(iter->blit.DBP & ~((1 << 5) - 1), iter->blit.DPSM, iter->blit.DBW, new_rect, TEX0.TBP0, TEX0.PSM, TEX0.TBW, true);
+								targetr = TranslateAlignedRectByPage(iter->blit.DBP & ~((1 << 5) - 1), iter->blit.DPSM, iter->blit.DBW, new_rect, TEX0.TBP0, TEX0.PSM, TEX0.TBW, true);
 							}
 						}
 						else
@@ -1087,14 +1426,14 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 					GL_INS("Preloading the RT DATA");
 					eerect = eerect.rintersect(newrect);
 					dst->UpdateValidity(newrect);
-					AddDirtyRectTarget(dst, eerect, TEX0.PSM, TEX0.TBW, rgba);
+					AddDirtyRectTarget(dst, eerect, TEX0.PSM, TEX0.TBW, rgba/*, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16*/);
 				}
 			}
 			else
 			{
 				GL_INS("Preloading the RT DATA");
 				dst->UpdateValidity(newrect);
-				AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW, rgba);
+				AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW, rgba/*, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16*/);
 			}
 		}
 		dst->m_is_frame = is_frame;
@@ -1487,8 +1826,11 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 
 					if (eewrite)
 						t->m_age = 0;
-
+					
 					AddDirtyRectTarget(t, r, psm, bw, rgba);
+					
+					++i;
+					continue;
 				}
 				else
 				{
@@ -1530,7 +1872,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 							// Incompatible format write, small writes *should* be okay (Destruction Derby Arenas) and matching bpp should be fine.
 							// If it's overwriting a good chunk of the texture, it's more than likely a different texture, so kill it (Dragon Quest 8).
 							const GSVector2i page_size = GSLocalMemory::m_psm[psm].pgs;
-							const bool can_translate = GSLocalMemory::CanTranslate(bp, bw, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
+							const bool can_translate = CanTranslate(bp, bw, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 							const bool swizzle_match = GSLocalMemory::m_psm[psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
 
 							if (can_translate)
@@ -1538,28 +1880,10 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 								// Alter echo match bit depth problem.
 								if (swizzle_match)
 								{
-									GSVector4i new_rect = GSLocalMemory::TranslateAlignedRectByPage(bp, psm, bw, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW, true).rintersect(t->m_valid);
+									DirtyRectByPage(bp, psm, bw, t, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 
 									if (eewrite)
 										t->m_age = 0;
-									if (new_rect.eq(GSVector4i::zero()))
-									{
-										SurfaceOffsetKey sok;
-										sok.elems[0].bp = bp;
-										sok.elems[0].bw = bw;
-										sok.elems[0].psm = psm;
-										sok.elems[0].rect = r;
-										sok.elems[1].bp = t->m_TEX0.TBP0;
-										sok.elems[1].bw = t->m_TEX0.TBW;
-										sok.elems[1].psm = t->m_TEX0.PSM;
-										sok.elems[1].rect = t->m_valid;
-
-										new_rect = ComputeSurfaceOffset(sok).b2a_offset;
-									}
-
-									AddDirtyRectTarget(t, new_rect, t->m_TEX0.PSM, t->m_TEX0.TBW, rgba);
-									const GSLocalMemory::psm_t& t_psm_s = GSLocalMemory::m_psm[psm];
-									const u32 bp_end = t_psm_s.info.bn(r.z - 1, r.w - 1, bp, bw);
 
 									can_erase = t->m_dirty.GetTotalRect(t->m_TEX0, GSVector2i(t->m_valid.z, t->m_valid.w)).eq(t->m_valid);
 								}
@@ -1580,12 +1904,11 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 										new_rect.z = (r.z + (page_size.x - 1)) & ~(page_size.x - 1);
 										new_rect.w = (r.w + (page_size.y - 1)) & ~(page_size.y - 1);
 									}
-									new_rect = GSLocalMemory::TranslateAlignedRectByPage(bp & ~((1 << 5) - 1), psm, bw, new_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW, true);
+									DirtyRectByPage(bp & ~((1 << 5) - 1), psm, bw, t, new_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 
 									if (eewrite)
 										t->m_age = 0;
 
-									AddDirtyRectTarget(t, new_rect, t->m_TEX0.PSM, t->m_TEX0.TBW, rgba);
 									can_erase = t->m_dirty.GetTotalRect(t->m_TEX0, GSVector2i(t->m_valid.z, t->m_valid.w)).eq(t->m_valid);
 								}
 							}
@@ -1725,48 +2048,22 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 				}
 				else if (check_inside_target && t->Overlaps(bp, bw, psm, rect) && GSUtil::HasSharedBits(psm, t->m_TEX0.PSM))
 				{
-					const bool bpp_match = GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[psm].bpp;
 					// If it's compatible and page aligned, then handle it this way.
 					// It's quicker, and Surface Offsets can get it wrong.
 					// Example doing PSMT8H to C32, BP 0x1c80, TBP 0x1d80, incoming rect 0,128 -> 128,256
 					// Surface offsets translates it to 0, 128 -> 128, 128, not 0, 0 -> 128, 128.
 					const GSVector2i page_size = GSLocalMemory::m_psm[psm].pgs;
-					const bool can_translate = GSLocalMemory::CanTranslate(bp, bw, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
+					const bool can_translate = CanTranslate(bp, bw, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 
-					if (can_translate /*&& bpp_match*/)
+					if (can_translate)
 					{
 						const bool swizzle_match = GSLocalMemory::m_psm[psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
 						if (swizzle_match)
 						{
-							const GSVector4i new_rect = GSLocalMemory::TranslateAlignedRectByPage(bp, psm, bw, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW, true).rintersect(t->m_valid);
+							DirtyRectByPage(bp, psm, bw, t, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 
 							if (eewrite)
 								t->m_age = 0;
-
-							if (new_rect.rempty())
-							{
-								const GSVector4i new2_rect = GSLocalMemory::TranslateAlignedRectByPage(bp, psm, bw, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW, true).rintersect(t->m_valid);
-								SurfaceOffsetKey sok;
-								sok.elems[0].bp = bp;
-								sok.elems[0].bw = bw;
-								sok.elems[0].psm = psm;
-								sok.elems[0].rect = r;
-								sok.elems[1].bp = t->m_TEX0.TBP0;
-								sok.elems[1].bw = t->m_TEX0.TBW;
-								sok.elems[1].psm = t->m_TEX0.PSM;
-								sok.elems[1].rect = t->m_valid;
-
-								const SurfaceOffset so = ComputeSurfaceOffset(sok);
-								if (so.is_valid)
-								{
-									if (eewrite)
-										t->m_age = 0;
-
-									AddDirtyRectTarget(t, so.b2a_offset, t->m_TEX0.PSM, t->m_TEX0.TBW, rgba);
-								}
-							}
-							else
-								AddDirtyRectTarget(t, new_rect, t->m_TEX0.PSM, t->m_TEX0.TBW, rgba);
 						}
 						else
 						{
@@ -1776,12 +2073,11 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 							new_rect.y &= ~(page_size.y - 1);
 							new_rect.z = (r.z + (page_size.x - 1)) & ~(page_size.x - 1);
 							new_rect.w = (r.w + (page_size.y - 1)) & ~(page_size.y - 1);
-							new_rect = GSLocalMemory::TranslateAlignedRectByPage(bp & ~((1 << 5) - 1), psm, bw, new_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW, true).rintersect(t->m_valid);
+
+							DirtyRectByPage(bp & ~((1 << 5) - 1), psm, bw, t, new_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 
 							if (eewrite)
 								t->m_age = 0;
-
-							AddDirtyRectTarget(t, new_rect, t->m_TEX0.PSM, t->m_TEX0.TBW, rgba);
 						}
 					}
 					else
@@ -1892,7 +2188,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				t->readbacks_since_draw++;
 
 				GSVector2i page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
-				const bool can_translate = GSLocalMemory::CanTranslate(bp, bw, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
+				const bool can_translate = CanTranslate(bp, bw, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 				const bool swizzle_match = GSLocalMemory::m_psm[psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
 				// Calculate the rect offset if the BP doesn't match.
 				GSVector4i targetr = {};
@@ -1904,7 +2200,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				{
 					if (swizzle_match)
 					{
-						targetr = GSLocalMemory::TranslateAlignedRectByPage(bp, psm, bw, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW, true);
+						targetr = TranslateAlignedRectByPage(bp, psm, bw, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW, true);
 					}
 					else
 					{
@@ -1939,7 +2235,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 
 							new_rect = ComputeSurfaceOffset(sok).b2a_offset;
 						}
-						targetr = GSLocalMemory::TranslateAlignedRectByPage(bp & ~((1 << 5) - 1), psm, bw, new_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW, true);
+						targetr = TranslateAlignedRectByPage(bp & ~((1 << 5) - 1), psm, bw, new_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW, true);
 					}
 				}
 				else
@@ -1948,6 +2244,10 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				}
 
 				const GSVector4i draw_rect = (t->readbacks_since_draw > 1) ? t->m_drawn_since_read : targetr.rintersect(t->m_drawn_since_read);
+
+				// Recently made this section dirty, no need to read it.
+				if (draw_rect.rintersect(t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size)).eq(draw_rect))
+					return;
 
 				if (t->m_drawn_since_read.eq(GSVector4i::zero()))
 				{
@@ -2010,7 +2310,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 			t->readbacks_since_draw++;
 
 			GSVector2i page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
-			const bool can_translate = GSLocalMemory::CanTranslate(bp, bw, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
+			const bool can_translate = CanTranslate(bp, bw, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 			const bool swizzle_match = GSLocalMemory::m_psm[psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
 			// Calculate the rect offset if the BP doesn't match.
 			GSVector4i targetr = {};
@@ -2022,7 +2322,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 			{
 				if (swizzle_match)
 				{
-					targetr = GSLocalMemory::TranslateAlignedRectByPage(bp, psm, bw, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW, true);
+					targetr = TranslateAlignedRectByPage(bp, psm, bw, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW, true);
 				}
 				else
 				{
@@ -2057,7 +2357,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 
 						new_rect = ComputeSurfaceOffset(sok).b2a_offset;
 					}
-					targetr = GSLocalMemory::TranslateAlignedRectByPage(bp & ~((1 << 5) - 1), psm, bw, new_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW, true);
+					targetr = TranslateAlignedRectByPage(bp & ~((1 << 5) - 1), psm, bw, new_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW, true);
 				}
 			}
 			else
@@ -2073,7 +2373,9 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 					continue;
 			}
 
-			targetr = targetr.rintersect(t->m_drawn_since_read);
+			// Recently made this section dirty, no need to read it.
+			if (targetr.rintersect(t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size)).eq(targetr))
+				return;
 
 			if (!targetr.rempty())
 			{
@@ -2083,7 +2385,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 					continue;
 				}
 
-				Read(t, targetr);
+				Read(t, targetr.rintersect(t->m_drawn_since_read));
 
 				// Try to cut down how much we read next, if we can.
 				// Fatal Frame reads in vertical strips, SOCOM 2 does horizontal, so we can handle that below.
@@ -4041,7 +4343,7 @@ void GSTextureCache::Target::Update(bool reset_age)
 		drect.src = t;
 		drect.src_rect = GSVector4(r - t_offset) / t_sizef;
 		drect.dst_rect = GSVector4(r) * GSVector4(m_scale);
-		drect.linear = linear;
+		drect.linear = linear && m_dirty[i].req_linear;
 		// Copy the new GS memory content into the destination texture.
 		if (m_type == RenderTarget)
 		{

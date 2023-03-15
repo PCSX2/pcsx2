@@ -37,6 +37,7 @@ public:
 	u8 ClassVertexCountField[4];
 	u32 CompatibleBitsField[64][2];
 	u32 SharedBitsField[64][2];
+	u32 SwizzleField[64][2];
 
 	// Defer init to avoid AVX2 illegal instructions
 	void Init()
@@ -68,7 +69,7 @@ public:
 
 		for (int i = 0; i < 64; i++)
 		{
-			CompatibleBitsField[i][i >> 5] |= 1 << (i & 0x1f);
+			CompatibleBitsField[i][i >> 5] |= 1U << (i & 0x1f);
 		}
 
 		CompatibleBitsField[PSM_PSMCT32][PSM_PSMCT24 >> 5] |= 1 << (PSM_PSMCT24 & 0x1f);
@@ -79,6 +80,24 @@ public:
 		CompatibleBitsField[PSM_PSMZ24][PSM_PSMZ32 >> 5] |= 1 << (PSM_PSMZ32 & 0x1f);
 		CompatibleBitsField[PSM_PSMZ16][PSM_PSMZ16S >> 5] |= 1 << (PSM_PSMZ16S & 0x1f);
 		CompatibleBitsField[PSM_PSMZ16S][PSM_PSMZ16 >> 5] |= 1 << (PSM_PSMZ16 & 0x1f);
+
+		memset(SwizzleField, 0, sizeof(SwizzleField));
+
+		for (int i = 0; i < 64; i++)
+		{
+			SwizzleField[i][i >> 5] |= 1U << (i & 0x1f);
+		}
+
+		SwizzleField[PSM_PSMCT32][PSM_PSMCT24 >> 5] |= 1 << (PSM_PSMCT24 & 0x1f);
+		SwizzleField[PSM_PSMCT24][PSM_PSMCT32 >> 5] |= 1 << (PSM_PSMCT32 & 0x1f);
+		SwizzleField[PSM_PSMT8H][PSM_PSMCT32 >> 5] |= 1 << (PSM_PSMCT32 & 0x1f);
+		SwizzleField[PSM_PSMCT32][PSM_PSMT8H >> 5] |= 1 << (PSM_PSMT8H & 0x1f);
+		SwizzleField[PSM_PSMT4HL][PSM_PSMCT32 >> 5] |= 1 << (PSM_PSMCT32 & 0x1f);
+		SwizzleField[PSM_PSMCT32][PSM_PSMT4HL >> 5] |= 1 << (PSM_PSMT4HL & 0x1f);
+		SwizzleField[PSM_PSMT4HH][PSM_PSMCT32 >> 5] |= 1 << (PSM_PSMCT32 & 0x1f);
+		SwizzleField[PSM_PSMCT32][PSM_PSMT4HH >> 5] |= 1 << (PSM_PSMT4HH & 0x1f);
+		SwizzleField[PSM_PSMZ32][PSM_PSMZ24 >> 5] |= 1 << (PSM_PSMZ24 & 0x1f);
+		SwizzleField[PSM_PSMZ24][PSM_PSMZ32 >> 5] |= 1 << (PSM_PSMZ32 & 0x1f);
 
 		memset(SharedBitsField, 0, sizeof(SharedBitsField));
 
@@ -150,6 +169,11 @@ bool GSUtil::HasSharedBits(u32 sbp, u32 spsm, u32 dbp, u32 dpsm)
 bool GSUtil::HasCompatibleBits(u32 spsm, u32 dpsm)
 {
 	return (s_maps.CompatibleBitsField[spsm][dpsm >> 5] & (1 << (dpsm & 0x1f))) != 0;
+}
+
+bool GSUtil::HasSameSwizzleBits(u32 spsm, u32 dpsm)
+{
+	return (s_maps.SwizzleField[spsm][dpsm >> 5] & (1 << (dpsm & 0x1f))) != 0;
 }
 
 u32 GSUtil::GetChannelMask(u32 spsm)

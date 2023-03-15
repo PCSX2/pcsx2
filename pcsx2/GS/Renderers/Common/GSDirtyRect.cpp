@@ -21,15 +21,17 @@ GSDirtyRect::GSDirtyRect() :
 	r(GSVector4i::zero()),
 	psm(PSM_PSMCT32),
 	bw(1),
-	rgba({})
+	rgba({}),
+	req_linear(false)
 {
 }
 
-GSDirtyRect::GSDirtyRect(GSVector4i& r, u32 psm, u32 bw, RGBAMask rgba) :
+GSDirtyRect::GSDirtyRect(GSVector4i& r, u32 psm, u32 bw, RGBAMask rgba, bool req_linear) :
 	r(r),
 	psm(psm),
 	bw(bw),
-	rgba(rgba)
+	rgba(rgba),
+	req_linear(req_linear)
 {
 }
 
