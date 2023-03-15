@@ -1133,9 +1133,6 @@ public:
 	//
 
 	void SaveBMP(const std::string& fn, u32 bp, u32 bw, u32 psm, int w, int h);
-
-	static bool CanTranslate(u32 bp, u32 bw, u32 spsm, GSVector4i r, u32 dbp, u32 dpsm, u32 dbw);
-	static GSVector4i TranslateAlignedRectByPage(u32 sbp, u32 spsm, u32 sbw, GSVector4i src_r, u32 dbp, u32 dpsm, u32 bw, bool is_invalidation = false);
 };
 
 constexpr inline GSOffset GSOffset::fromKnownPSM(u32 bp, u32 bw, GS_PSM psm)
