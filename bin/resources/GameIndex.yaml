@@ -20916,7 +20916,7 @@ SLES-54735:
     autoFlush: 1 # Fixes glows.
 SLES-54736:
   name: "Disney-Pixar Ratatouille"
-  region: "PAL-S"
+  region: "PAL-SCA"
   compat: 5
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
@@ -22289,7 +22289,7 @@ SLES-55245:
     halfPixelOffset: 2 # Reduces blurriness.
 SLES-55246:
   name: "FIFA 09"
-  region: "PAL-M4"
+  region: "PAL-SCA"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
 SLES-55247:
@@ -22496,7 +22496,7 @@ SLES-55351:
     halfPixelOffset: 2 # Fixes blurriness.
 SLES-55352:
   name: "Need for Speed - Undercover"
-  region: "PAL-M4"
+  region: "PAL-SCA"
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
@@ -23023,7 +23023,7 @@ SLES-55609:
   region: "PAL-M5"
 SLES-55610:
   name: "Springdale"
-  region: "PAL-M5"
+  region: "PAL-SCA"
   gsHWFixes:
     halfPixelOffset: 1 # Reduces the ghosting effect.
 SLES-55622:
@@ -25538,6 +25538,9 @@ SLPM-61011:
     MTVUSpeedHack: 0
 SLPM-61018:
   name: "Abarenbou Princess [Trial]"
+  region: "NTSC-J"
+SLPM-61035:
+  name: "Anubis - Zone of the Enders [Trial]"
   region: "NTSC-J"
 SLPM-61039:
   name: "Gun Survivor 4 - BioHazard - Heroes Never Die [Demo]"
@@ -35814,6 +35817,9 @@ SLPM-74421:
   region: "NTSC-J"
   gsHWFixes:
     cpuCLUTRender: 2 # Fixes CLUT colours.
+SLPM-84075:
+  name: "Anubis Zone of Enders Special Edition [Konami Dendou Selection]"
+  region: "NTSC-J"
 SLPS-20001:
   name: "Ridge Racer V"
   region: "NTSC-J"
