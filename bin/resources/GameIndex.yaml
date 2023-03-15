@@ -19745,6 +19745,8 @@ SLES-54317:
 SLES-54319:
   name: "Biker Mice from Mars"
   region: "PAL-M5"
+  gsHWFixes:
+    textureInsideRT: 2 # Fixes shadow maps.
 SLES-54320:
   name: "Championship Manager 2007"
   region: "PAL-M5"
@@ -48916,6 +48918,8 @@ SLUS-21578:
   name: "Biker Mice from Mars"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 2 # Fixes shadow maps.
 SLUS-21579:
   name: "Barbie in The 12 Dancing Princesses"
   region: "NTSC-U"
