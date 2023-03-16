@@ -1221,7 +1221,7 @@ SCAJ-20154:
   gsHWFixes:
     autoFlush: 1 # Reduces post-processing misalignment.
 SCAJ-20155:
-  name: "Yoshitsune Eiyuuden Syura"
+  name: "Yoshitsune Eiyuuden Shura - The Story of Hero Yoshitsune Shura"
   region: "NTSC-Unk"
 SCAJ-20156:
   name: "Gallop Racer 8 - Live Horse Racing"
@@ -6539,6 +6539,12 @@ SCPS-19317:
   gsHWFixes:
     mipmap: 1
     autoFlush: 1
+  memcardFilters:
+    - "SCAJ-20001"
+    - "SCPS-15037"
+    - "SCPS-19211"
+    - "SCPS-19310"
+    - "SCPS-19316"
 SCPS-19318:
   name: "Genji - Dawn of the Samurai [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -25682,7 +25688,7 @@ SLPM-62011:
   name: "Jikkyou G1 Stable"
   region: "NTSC-J"
 SLPM-62012:
-  name: "KEYBOARDMANIA"
+  name: "KeyboardMania"
   region: "NTSC-J"
 SLPM-62013:
   name: "Ring of Red"
@@ -28319,6 +28325,8 @@ SLPM-65100:
 SLPM-65101:
   name: "Onimusha 2"
   region: "NTSC-J"
+  memcardFilters:
+    - "SLPM-65100"
 SLPM-65105:
   name: "Shin Combat Choro Q"
   region: "NTSC-J"
@@ -36734,7 +36742,7 @@ SLPS-20374:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20375:
-  name: "Sanyo Pachinko Paradise 10"
+  name: "Sanyo Pachinko Paradise 10 - Gen-san Okaeri"
   region: "NTSC-J"
 SLPS-20376:
   name: "Daito Giken Koushiki Pachi-Slot Simulator Yoshimune"
@@ -37387,7 +37395,7 @@ SLPS-25047:
   name: "Golf Navigator Vol.2"
   region: "NTSC-J"
 SLPS-25048:
-  name: "Zeonic Front - Mobile Suit Gundam 0079"
+  name: "Zeonic Front - Kidou Senshi Gundam 0079"
   region: "NTSC-J"
 SLPS-25050:
   name: "Final Fantasy X"
@@ -38760,8 +38768,10 @@ SLPS-25429:
   name: "King of Fighters 2000, The [SNK Best Collection]"
   region: "NTSC-J"
 SLPS-25430:
-  name: "Lupin III - Columbus no Isan wa Akenisomar"
+  name: "Lupin III - Columbus no Isan wa Akenisomaru"
   region: "NTSC-J"
+  gameFixes:
+    - FpuNegDivHack # Fixes game softlock after prison level.
 SLPS-25432:
   name: "Majo-musume A La Mode [Magical Box]"
   region: "NTSC-J"
@@ -39165,7 +39175,7 @@ SLPS-25552:
   name: "Inuyasha - Juuso no Kamen [Bandai the Best]"
   region: "NTSC-J"
 SLPS-25553:
-  name: "Yoshitsune Eiyuuden Shura"
+  name: "Yoshitsune Eiyuuden Shura -The Story of Hero Yoshitsune Shura"
   region: "NTSC-J"
 SLPS-25554:
   name: "Eureka Seven TR1 - New Wave"
