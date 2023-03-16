@@ -3234,6 +3234,9 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			DrawToggleSetting(bsi, "Wild Arms Hack",
 				"Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games.", "EmuCore/GS",
 				"UserHacks_WildHack", false, manual_hw_fixes);
+			DrawToggleSetting(bsi, "Bilinear Upscale",
+				"Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare.", "EmuCore/GS",
+				"UserHacks_BilinearHack", false, manual_hw_fixes);
 		}
 	}
 

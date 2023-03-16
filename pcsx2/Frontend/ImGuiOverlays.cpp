@@ -415,6 +415,8 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("TexRT={} ", static_cast<int>(GSConfig.UserHacks_TextureInsideRt));
 		if (GSConfig.UserHacks_WildHack)
 			APPEND("WA ");
+		if (GSConfig.UserHacks_BilinearHack)
+			APPEND("BLU ");
 		if (GSConfig.UserHacks_MergePPSprite)
 			APPEND("MS ");
 		if (GSConfig.UserHacks_AlignSpriteX)

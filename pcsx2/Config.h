@@ -677,6 +677,7 @@ struct Pcsx2Config
 					UserHacks_DisableSafeFeatures : 1,
 					UserHacks_MergePPSprite : 1,
 					UserHacks_WildHack : 1,
+					UserHacks_BilinearHack : 1,
 					UserHacks_TargetPartialInvalidation : 1,
 					UserHacks_EstimateTextureRegion : 1,
 					FXAA : 1,

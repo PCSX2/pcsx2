@@ -171,6 +171,11 @@
               "minimum": 0,
               "maximum": 1
             },
+            "bilinearUpscale": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
             "estimateTextureRegion": {
               "type": "integer",
               "minimum": 0,

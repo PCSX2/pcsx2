@@ -1426,14 +1426,14 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, con
 					GL_INS("Preloading the RT DATA");
 					eerect = eerect.rintersect(newrect);
 					dst->UpdateValidity(newrect);
-					AddDirtyRectTarget(dst, eerect, TEX0.PSM, TEX0.TBW, rgba/*, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16*/);
+					AddDirtyRectTarget(dst, eerect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
 				}
 			}
 			else
 			{
 				GL_INS("Preloading the RT DATA");
 				dst->UpdateValidity(newrect);
-				AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW, rgba/*, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16*/);
+				AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
 			}
 		}
 		dst->m_is_frame = is_frame;
@@ -4310,6 +4310,7 @@ void GSTextureCache::Target::Update(bool reset_age)
 	// Bilinear filtering this is probably not a good thing, at least in native, but upscaling Nearest can be gross and messy.
 	// It's needed for depth, though.. filtering depth doesn't make much sense, but SMT3 needs it..
 	const bool upscaled = (m_scale != 1.0f);
+	const bool override_linear = upscaled && GSConfig.UserHacks_BilinearHack;
 	const bool linear = (m_type == RenderTarget && upscaled);
 
 	GSDevice::MultiStretchRect* drects = static_cast<GSDevice::MultiStretchRect*>(
@@ -4341,7 +4342,8 @@ void GSTextureCache::Target::Update(bool reset_age)
 		drect.src = t;
 		drect.src_rect = GSVector4(r - t_offset) / t_sizef;
 		drect.dst_rect = GSVector4(r) * GSVector4(m_scale);
-		drect.linear = linear && m_dirty[i].req_linear;
+		drect.linear = linear && (m_dirty[i].req_linear || override_linear);
+
 		// Copy the new GS memory content into the destination texture.
 		if (m_type == RenderTarget)
 		{

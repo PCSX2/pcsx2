@@ -443,6 +443,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	UserHacks_DisableSafeFeatures = false;
 	UserHacks_MergePPSprite = false;
 	UserHacks_WildHack = false;
+	UserHacks_BilinearHack = false;
 
 	DumpReplaceableTextures = false;
 	DumpReplaceableMipmaps = false;
@@ -656,6 +657,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	GSSettingBoolEx(UserHacks_DisableSafeFeatures, "UserHacks_Disable_Safe_Features");
 	GSSettingBoolEx(UserHacks_MergePPSprite, "UserHacks_merge_pp_sprite");
 	GSSettingBoolEx(UserHacks_WildHack, "UserHacks_WildHack");
+	GSSettingBoolEx(UserHacks_BilinearHack, "UserHacks_BilinearHack");
 	GSSettingIntEnumEx(UserHacks_TextureInsideRt, "UserHacks_TextureInsideRt");
 	GSSettingBoolEx(UserHacks_TargetPartialInvalidation, "UserHacks_TargetPartialInvalidation");
 	GSSettingBoolEx(UserHacks_EstimateTextureRegion, "UserHacks_EstimateTextureRegion");
@@ -773,6 +775,7 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 	UserHacks_AlignSpriteX = false;
 	UserHacks_MergePPSprite = false;
 	UserHacks_WildHack = false;
+	UserHacks_BilinearHack = false;
 	UserHacks_DisableSafeFeatures = false;
 	UserHacks_HalfBottomOverride = -1;
 	UserHacks_HalfPixelOffset = 0;
@@ -803,6 +806,7 @@ void Pcsx2Config::GSOptions::MaskUpscalingHacks()
 	UserHacks_AlignSpriteX = false;
 	UserHacks_MergePPSprite = false;
 	UserHacks_WildHack = false;
+	UserHacks_BilinearHack = false;
 	UserHacks_HalfPixelOffset = 0;
 	UserHacks_RoundSprite = 0;
 	UserHacks_TCOffsetX = 0;
