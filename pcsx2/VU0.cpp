@@ -137,12 +137,18 @@ void CFC2() {
 	}
 	if (_Rt_ == 0) return;
 
-	cpuRegs.GPR.r[_Rt_].UL[0] = VU0.VI[_Fs_].UL;
-
-	if(VU0.VI[_Fs_].UL & 0x80000000)
-		cpuRegs.GPR.r[_Rt_].UL[1] = 0xffffffff;
+	if (_Fs_ == REG_R)
+		cpuRegs.GPR.r[_Rt_].UL[0] = VU0.VI[REG_R].UL & 0x7FFFFF;
 	else
-		cpuRegs.GPR.r[_Rt_].UL[1] = 0;
+	{
+		cpuRegs.GPR.r[_Rt_].UL[0] = VU0.VI[_Fs_].UL;
+
+		if (VU0.VI[_Fs_].UL & 0x80000000)
+			cpuRegs.GPR.r[_Rt_].UL[1] = 0xffffffff;
+		else
+			cpuRegs.GPR.r[_Rt_].UL[1] = 0;
+	}
+
 }
 
 void CTC2() {
