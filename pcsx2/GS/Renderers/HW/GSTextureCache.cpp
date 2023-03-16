@@ -107,8 +107,8 @@ void GSTextureCache::AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm
 			}
 
 			// Edges lined up so just expand the dirty rect
-			if (it[0].r.xzxz().eq(rect.xzxz()) ||
-				it[0].r.ywyw().eq(rect.ywyw()))
+			if ((it[0].r.xzxz().eq(rect.xzxz()) && (it[0].r.wwww().eq(rect.yyyy()) || it[0].r.yyyy().eq(rect.wwww()))) ||
+				(it[0].r.ywyw().eq(rect.ywyw()) && (it[0].r.zzzz().eq(rect.xxxx()) || it[0].r.xxxx().eq(rect.zzzz()))))
 			{
 				rect = rect.runion(it[0].r);
 				it = target->m_dirty.erase(it);
@@ -1716,8 +1716,9 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 	}
 
 	bool found = false;
-
-	GSVector4i r = rect.ralign<Align_Outside>((bp & 31) == 0 ? GSLocalMemory::m_psm[psm].pgs : GSLocalMemory::m_psm[psm].bs);
+	// Previously: rect.ralign<Align_Outside>((bp & 31) == 0 ? GSLocalMemory::m_psm[psm].pgs : GSLocalMemory::m_psm[psm].bs)
+	// But this causes rects to be too big, especially in WRC games, I don't think there's any need to align them here.
+	GSVector4i r = rect;
 
 	off.loopPages(rect, [&](u32 page)
 	{
