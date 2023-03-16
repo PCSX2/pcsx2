@@ -9260,6 +9260,7 @@ SLED-50117:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLED-50286:
   name: "Red Faction [Demo]"
   region: "PAL-E"
@@ -10500,6 +10501,7 @@ SLES-50383:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLES-50384:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-I"
@@ -10507,6 +10509,7 @@ SLES-50384:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLES-50385:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-S"
@@ -10514,6 +10517,7 @@ SLES-50385:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLES-50386:
   name: "Crash Bandicoot - The Wrath of Cortex"
   region: "PAL-M6"
@@ -12057,6 +12061,8 @@ SLES-51113:
   compat: 5
   gameFixes:
     - DMABusyHack # Fixes the corrupted fade effect in cutscenes.
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLES-51114:
   name: "Pro Evolution Soccer 2"
   region: "PAL-M5"
@@ -23164,6 +23170,7 @@ SLES-82009:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLES-82010:
   name: "Metal Gear Solid 2, Document of"
   region: "PAL-E"
@@ -23730,6 +23737,8 @@ SLKA-25066:
   name: "Zone of the Enders - The 2nd Runner SE"
   region: "NTSC-K"
   compat: 5
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLKA-25067:
   name: "Unlimited Saga"
   region: "NTSC-K"
@@ -24735,6 +24744,7 @@ SLKA-35001:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLKA-35003:
   name: "Sakura Taisen - Atsuki Chishioni"
   region: "NTSC-K"
@@ -25763,6 +25773,7 @@ SLPM-62043:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-62044:
   name: "RC Revenge Pro"
   region: "NTSC-J"
@@ -28229,6 +28240,7 @@ SLPM-65077:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
   memcardFilters:
     - "SLPM-65078"
     - "SLPM-65077"
@@ -28239,6 +28251,7 @@ SLPM-65078:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
   memcardFilters:
     - "SLPM-65078"
     - "SLPM-65077"
@@ -28755,6 +28768,8 @@ SLPM-65235:
 SLPM-65236:
   name: "Anubis - Zone of the Enders"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-65237:
   name: "Z.O.E. - Zone of the Enders [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -29179,6 +29194,8 @@ SLPM-65361:
   name: "Anubis - Zone of the Enders Special Edition [Limited Edition]"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-65362:
   name: "NHK Tensai Bit-Kun - Guramon Battle"
   region: "NTSC-J"
@@ -29640,6 +29657,8 @@ SLPM-65499:
 SLPM-65500:
   name: "Anubis - Zone of the Enders Special Edition"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-65501:
   name: "Onimusha [Mega Hits!]"
   region: "NTSC-J"
@@ -30508,6 +30527,7 @@ SLPM-65754:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-65755:
   name: "Samurai Western - Katsugeki Samurai-dou"
   region: "NTSC-J"
@@ -31351,6 +31371,8 @@ SLPM-65990:
 SLPM-65991:
   name: "Anubis - Zone of the Enders Special Edition [Konami Dendou Collection]"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-65994:
   name: "Remember 11 - The Age of Infinity [Superlite 2000 Series]"
   region: "NTSC-J"
@@ -33375,6 +33397,7 @@ SLPM-66503:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-66504:
   name: "Onimusha 2 [Mega Hits]"
   region: "NTSC-J"
@@ -34509,6 +34532,7 @@ SLPM-66792:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-66793:
   name: "Metal Gear Solid 2 - Sons of Liberty [20th Anniversary Edition] [Disc 2 of 2]"
   region: "NTSC-J"
@@ -34516,6 +34540,7 @@ SLPM-66793:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-66794:
   name: "Metal Gear Solid 3 - Snake Eater [20th Anniversary Edition]"
   region: "NTSC-J"
@@ -35167,6 +35192,7 @@ SLPM-67002:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-67003:
   name: "Sakura Taisen - Atsuki Chishioni"
   region: "NTSC-J"
@@ -35192,6 +35218,7 @@ SLPM-67008:
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-67009:
   name: "Sakura Taisen V - Saraba Itoshiki Hito Yo"
   region: "NTSC-J"
@@ -35287,6 +35314,7 @@ SLPM-67515:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-67518:
   name: "Onimusha 2 Samurai's Destiny"
   region: "NTSC-K"
@@ -35405,6 +35433,7 @@ SLPM-68503:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-68504:
   name: "Tokimeki Memorial 3 - Special Sound Track"
   region: "NTSC-J"
@@ -35711,6 +35740,7 @@ SLPM-74255:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-74256:
   name: "Metal Gear Solid 2 - Sons of Liberty [PlayStation 2 The Best] [Disc 2 of 2]"
   region: "NTSC-J"
@@ -35718,6 +35748,7 @@ SLPM-74256:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-74259:
   name: "Odin Sphere [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -41730,6 +41761,7 @@ SLUS-20144:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLUS-20145:
   name: "Ring of Red"
   region: "NTSC-U"
@@ -43581,6 +43613,8 @@ SLUS-20545:
   name: "Zone of the Enders - The 2nd Runner"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLUS-20546:
   name: "Evolution Snowboarding"
   region: "NTSC-U"
@@ -43625,6 +43659,7 @@ SLUS-20554:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLUS-20555:
   name: "Reel Fishing 3"
   region: "NTSC-U"
@@ -50853,6 +50888,7 @@ SLUS-29003:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLUS-29004:
   name: "Unison & Dead or Alive 2 Hardcore [Demo]"
   region: "NTSC-U"
