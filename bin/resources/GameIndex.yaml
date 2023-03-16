@@ -3448,6 +3448,7 @@ SCES-51635:
     halfPixelOffset: 2 # Fixes lighting/shadows.
     preloadFrameData: 1 # Fixes sun flickering.
     autoFlush: 1 # Fixes sun through objects.
+    bilinearUpscale: 1 # Smooths out sun glare textures like native.
 SCES-51648:
   name: "Everquest - Online Adventures"
   region: "PAL-E-I"
@@ -46538,6 +46539,7 @@ SLUS-21127:
     halfPixelOffset: 2 # Fixes lighting/shadows.
     preloadFrameData: 1 # Fixes sun flickering.
     autoFlush: 1 # Fixes sun through objects.
+    bilinearUpscale: 1 # Smooths out sun glare textures like native.
 SLUS-21128:
   name: "Blitz - The League"
   region: "NTSC-U"

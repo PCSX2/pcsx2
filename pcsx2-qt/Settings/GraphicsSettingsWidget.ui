@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>720</width>
-    <height>466</height>
+    <height>476</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -58,7 +58,7 @@
    <item>
     <widget class="QTabWidget" name="tabs">
      <property name="currentIndex">
-      <number>0</number>
+      <number>4</number>
      </property>
      <property name="documentMode">
       <bool>true</bool>
@@ -1219,6 +1219,13 @@
           <widget class="QCheckBox" name="wildHack">
            <property name="text">
             <string>Wild Arms Hack</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="bilinearHack">
+           <property name="text">
+            <string>Bilinear Dirty Upscale</string>
            </property>
           </widget>
          </item>

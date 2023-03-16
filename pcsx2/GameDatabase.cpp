@@ -352,6 +352,7 @@ static const char* s_gs_hw_fix_names[] = {
 	"alignSprite",
 	"mergeSprite",
 	"wildArmsHack",
+	"bilinearUpscale",
 	"estimateTextureRegion",
 	"PCRTCOffsets",
 	"PCRTCOverscan",
@@ -588,6 +589,9 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::WildArmsHack:
 			return (config.UpscaleMultiplier <= 1.0f || static_cast<int>(config.UserHacks_WildHack) == value);
 
+		case GSHWFixId::BilinearUpscale:
+			return (config.UpscaleMultiplier <= 1.0f || static_cast<int>(config.UserHacks_BilinearHack) == value);
+
 		case GSHWFixId::EstimateTextureRegion:
 			return (static_cast<int>(config.UserHacks_EstimateTextureRegion) == value);
 
@@ -725,6 +729,10 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 
 			case GSHWFixId::WildArmsHack:
 				config.UserHacks_WildHack = (value > 0);
+				break;
+
+			case GSHWFixId::BilinearUpscale:
+				config.UserHacks_BilinearHack = (value > 0);
 				break;
 
 			case GSHWFixId::EstimateTextureRegion:

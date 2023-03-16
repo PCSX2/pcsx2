@@ -224,7 +224,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.alignSprite, "EmuCore/GS", "UserHacks_align_sprite_X", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.mergeSprite, "EmuCore/GS", "UserHacks_merge_pp_sprite", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.wildHack, "EmuCore/GS", "UserHacks_WildHack", false);
-
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.bilinearHack, "EmuCore/GS", "UserHacks_BilinearHack", false);
 	//////////////////////////////////////////////////////////////////////////
 	// Texture Replacements
 	//////////////////////////////////////////////////////////////////////////
@@ -586,6 +586,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 		dialog->registerWidgetHelp(m_ui.wildHack, tr("Wild Arms Hack"), tr("Unchecked"),
 			tr("Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games."));
+
+		dialog->registerWidgetHelp(m_ui.bilinearHack, tr("Bilinear Upscale"), tr("Unchecked"),
+			tr("Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare."));
 
 		dialog->registerWidgetHelp(m_ui.mergeSprite, tr("Merge Sprite"), tr("Unchecked"),
 			tr("Replaces post-processing multiple paving sprites by a single fat sprite. It reduces various upscaling lines."));
@@ -1075,6 +1078,7 @@ void GraphicsSettingsWidget::resetManualHardwareFixes()
 		check_bool("EmuCore/GS", "UserHacks_align_sprite_X", false);
 		check_bool("EmuCore/GS", "UserHacks_merge_pp_sprite", false);
 		check_bool("EmuCore/GS", "UserHacks_WildHack", false);
+		check_bool("EmuCore/GS", "UserHacks_BilinearHack", false);
 	}
 
 	if (changed)
