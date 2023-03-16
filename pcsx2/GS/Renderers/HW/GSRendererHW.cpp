@@ -219,6 +219,7 @@ GSTexture* GSRendererHW::GetOutput(int i, float& scale, int& y_offset)
 
 	if (GSTextureCache::Target* rt = m_tc->LookupDisplayTarget(TEX0, framebufferSize, GetTextureScaleFactor()))
 	{
+		rt->Update(false);
 		t = rt->m_texture;
 		scale = rt->m_scale;
 
@@ -259,6 +260,7 @@ GSTexture* GSRendererHW::GetFeedbackOutput(float& scale)
 	if (!rt)
 		return nullptr;
 
+	rt->Update(false);
 	GSTexture* t = rt->m_texture;
 	scale = rt->m_scale;
 
