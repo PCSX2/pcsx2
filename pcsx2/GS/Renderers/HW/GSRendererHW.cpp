@@ -842,7 +842,6 @@ bool GSRendererHW::IsSplitTextureShuffle()
 	// Check that both the position and texture coordinates are page aligned, so we can work in pages instead of coordinates.
 	// For texture shuffles, the U will be offset by 8.
 	const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_context->FRAME.PSM];
-	const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
 
 	const GSVector4i pos_rc = GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p));
 	const GSVector4i tex_rc = GSVector4i(m_vt.m_min.t.upld(m_vt.m_max.t));
@@ -3702,7 +3701,6 @@ void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	const int mipth = 1 << tex->m_TEX0.TH;
 
 	const GSVector4 WH(static_cast<float>(tw), static_cast<float>(th), miptw * scale, mipth * scale);
-	const GSVector4 st_scale = WH.zwzw() / GSVector4(w, h).xyxy();
 
 	// Reduction factor when source is a target and smaller/larger than TW/TH.
 	m_conf.cb_ps.STScale = GSVector2(static_cast<float>(miptw) / static_cast<float>(unscaled_size.x),
