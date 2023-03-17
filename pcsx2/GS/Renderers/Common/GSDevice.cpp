@@ -449,11 +449,22 @@ bool GSDevice::ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h, 
 	{
 		const GSTexture::Format fmt = t2 ? t2->GetFormat() : GetDefaultTextureFormat(type);
 		const int levels = t2 ? (t2->IsMipmap() ? MipmapLevelsForSize(w, h) : 1) : 1;
-		delete t2;
 
-		t2 = FetchSurface(type, w, h, levels, fmt, clear, prefer_reuse);
+		GSTexture* new_t = FetchSurface(type, w, h, levels, fmt, clear, prefer_reuse);
+		if (new_t)
+		{
+			if (t2)
+			{
+				// TODO: We probably want to make this optional if we're overwriting it...
+				const GSVector4 sRect(0, 0, 1, 1);
+				const GSVector4 dRect(0, 0, t2->GetWidth(), t2->GetHeight());
+				StretchRect(m_current, sRect, new_t, dRect, ShaderConvert::COPY, true);
+				Recycle(t2);
+			}
 
-		*t = t2;
+			t2 = new_t;
+			*t = t2;
+		}
 	}
 
 	return t2 != NULL;

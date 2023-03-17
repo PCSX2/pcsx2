@@ -16182,6 +16182,7 @@ SLES-52877:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Fixes blurriness.
+    beforeDraw: "OI_HauntingGround" # Fix bloom.
 SLES-52882:
   name: "Stolen"
   region: "PAL-M5"
@@ -31325,6 +31326,7 @@ SLPM-65913:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Fixes blurriness.
+    beforeDraw: "OI_HauntingGround" # Fix bloom.
 SLPM-65914:
   name: "Nana"
   region: "NTSC-J"
@@ -34144,6 +34146,7 @@ SLPM-66638:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes blurriness.
+    beforeDraw: "OI_HauntingGround" # Fix bloom.
 SLPM-66639:
   name: "Street Fighter III - 3rd Strike [Capcom the Best]"
   region: "NTSC-J"
@@ -46679,6 +46682,7 @@ SLUS-21075:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Fixes blurriness.
+    beforeDraw: "OI_HauntingGround" # Fix bloom.
 SLUS-21076:
   name: "Atari Anthology"
   region: "NTSC-U"

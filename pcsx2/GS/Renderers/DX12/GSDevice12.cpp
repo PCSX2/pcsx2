@@ -1622,6 +1622,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_LTF", sel.ltf);
 	sm.AddMacro("PS_TCOFFSETHACK", sel.tcoffsethack);
 	sm.AddMacro("PS_POINT_SAMPLER", sel.point_sampler);
+	sm.AddMacro("PS_REGION_RECT", sel.region_rect);
 	sm.AddMacro("PS_SHUFFLE", sel.shuffle);
 	sm.AddMacro("PS_READ_BA", sel.read_ba);
 	sm.AddMacro("PS_READ16_SRC", sel.real16src);
@@ -2582,7 +2583,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	GSTexture12* draw_ds = static_cast<GSTexture12*>(config.ds);
 	GSTexture12* draw_rt_clone = nullptr;
 	GSTexture12* hdr_rt = nullptr;
-	GSTexture12* copy_ds = nullptr;
 
 	// Switch to hdr target for colclip rendering
 	if (pipe.ps.hdr)
@@ -2634,30 +2634,9 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	if (config.tex)
-	{
-		if (config.tex == config.ds)
-		{
-			// requires a copy of the depth buffer. this is mainly for ico.
-			copy_ds = static_cast<GSTexture12*>(CreateDepthStencil(rtsize.x, rtsize.y, GSTexture::Format::DepthStencil, false));
-			if (copy_ds)
-			{
-				EndRenderPass();
-
-				GL_PUSH("Copy depth to temp texture for shuffle {%d,%d %dx%d}",
-					config.drawarea.left, config.drawarea.top,
-					config.drawarea.width(), config.drawarea.height());
-
-				pxAssert(copy_ds->GetState() == GSTexture::State::Invalidated);
-				CopyRect(config.ds, copy_ds, GSVector4i(config.ds->GetSize()).zwxy(), 0, 0);
-				PSSetShaderResource(0, copy_ds, true);
-			}
-		}
-	}
 	// clear texture binding when it's bound to RT or DS
-	else if (m_tfx_textures[0] &&
-			 ((config.rt && static_cast<GSTexture12*>(config.rt)->GetSRVDescriptor() == m_tfx_textures[0]) ||
-				 (config.ds && static_cast<GSTexture12*>(config.ds)->GetSRVDescriptor() == m_tfx_textures[0])))
+	if (((config.rt && static_cast<GSTexture12*>(config.rt)->GetSRVDescriptor() == m_tfx_textures[0]) ||
+			(config.ds && static_cast<GSTexture12*>(config.ds)->GetSRVDescriptor() == m_tfx_textures[0])))
 	{
 		PSSetShaderResource(0, nullptr, false);
 	}
@@ -2747,9 +2726,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			}
 		}
 	}
-
-	if (copy_ds)
-		Recycle(copy_ds);
 
 	if (draw_rt_clone)
 		Recycle(draw_rt_clone);

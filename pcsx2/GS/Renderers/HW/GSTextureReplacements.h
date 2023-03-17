@@ -38,7 +38,7 @@ namespace GSTextureReplacements
 		std::vector<MipData> mips;
 	};
 
-	void Initialize(GSTextureCache* tc);
+	void Initialize();
 	void GameChanged();
 	void ReloadReplacementMap();
 	void UpdateConfig(Pcsx2Config::GSOptions& old_config);

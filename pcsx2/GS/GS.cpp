@@ -282,7 +282,7 @@ bool GSreopen(bool recreate_display, bool recreate_renderer, const Pcsx2Config::
 	if (recreate_display)
 	{
 		g_gs_device->ResetAPIState();
-		if (Host::BeginPresentFrame(false) == HostDisplay::PresentResult::OK)
+		if (Host::BeginPresentFrame(true) == HostDisplay::PresentResult::OK)
 			Host::EndPresentFrame();
 	}
 
@@ -643,12 +643,12 @@ void GSgetStats(std::string& info)
 
 void GSgetMemoryStats(std::string& info)
 {
-	if (GSConfig.Renderer == GSRendererType::SW || GSConfig.Renderer == GSRendererType::Null)
+	if (!g_texture_cache)
 		return;
 
-	const u64 targets = GSRendererHW::GetInstance()->GetTextureCache()->GetTargetMemoryUsage();
-	const u64 sources = GSRendererHW::GetInstance()->GetTextureCache()->GetSourceMemoryUsage();
-	const u64 hashcache = GSRendererHW::GetInstance()->GetTextureCache()->GetHashCacheMemoryUsage();
+	const u64 targets = g_texture_cache->GetTargetMemoryUsage();
+	const u64 sources = g_texture_cache->GetSourceMemoryUsage();
+	const u64 hashcache = g_texture_cache->GetHashCacheMemoryUsage();
 	const u64 pool = g_gs_device->GetPoolMemoryUsage();
 	const u64 total = targets + sources + hashcache + pool;
 

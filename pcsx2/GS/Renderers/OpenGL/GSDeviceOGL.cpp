@@ -1027,6 +1027,7 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_DATE {}\n", sel.date)
 		+ fmt::format("#define PS_TCOFFSETHACK {}\n", sel.tcoffsethack)
 		+ fmt::format("#define PS_POINT_SAMPLER {}\n", sel.point_sampler)
+		+ fmt::format("#define PS_REGION_RECT {}\n", sel.region_rect)
 		+ fmt::format("#define PS_BLEND_A {}\n", sel.blend_a)
 		+ fmt::format("#define PS_BLEND_B {}\n", sel.blend_b)
 		+ fmt::format("#define PS_BLEND_C {}\n", sel.blend_c)
@@ -1164,7 +1165,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// Init
 	// ************************************
 
-	GL_PUSH("StretchRect from %d to %d", sTex->GetID(), dTex->GetID());
+	GL_PUSH("StretchRect from %d to %d", static_cast<GSTextureOGL*>(sTex)->GetID(), static_cast<GSTextureOGL*>(dTex)->GetID());
 	if (draw_in_depth)
 		OMSetRenderTargets(NULL, dTex);
 	else

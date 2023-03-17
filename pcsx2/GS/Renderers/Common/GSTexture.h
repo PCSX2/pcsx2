@@ -91,7 +91,6 @@ public:
 	virtual void GenerateMipmap() {}
 	virtual bool Save(const std::string& fn);
 	virtual void Swap(GSTexture* tex);
-	virtual u32 GetID() { return 0; }
 
 	__fi int GetWidth() const { return m_size.x; }
 	__fi int GetHeight() const { return m_size.y; }

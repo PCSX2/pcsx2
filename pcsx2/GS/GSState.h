@@ -199,7 +199,7 @@ protected:
 		GSVector4i coverage; ///< Part of the texture used
 		u8 uses_boundary;    ///< Whether or not the usage touches the left, top, right, or bottom edge (and therefore needs wrap modes preserved)
 	};
-	TextureMinMaxResult GetTextureMinMax(const GIFRegTEX0& TEX0, const GIFRegCLAMP& CLAMP, bool linear);
+	TextureMinMaxResult GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, bool linear, bool clamp_to_tsize);
 	bool TryAlphaTest(u32& fm, const u32 fm_mask, u32& zm);
 	bool IsOpaque();
 	bool IsMipMapDraw();
@@ -918,4 +918,7 @@ public:
 
 	PRIM_OVERLAP PrimitiveOverlap();
 	GIFRegTEX0 GetTex0Layer(u32 lod);
+
+	/// Returns true if the specified texture address matches the frame or Z buffer.
+	bool IsTBPFrameOrZ(u32 tbp) const;
 };
