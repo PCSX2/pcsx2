@@ -110,6 +110,9 @@ bool GSHwHack::GSC_Manhunt2(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
 
 bool GSHwHack::GSC_CrashBandicootWoC(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
 {
+	if (s_nativeres)
+		return false;
+
 	// Channel effect not properly supported - Removes fog to fix the fog wall issue on Direct3D at any resolution, and while upscaling on every Hardware renderer.
 	if (skip == 0)
 	{
@@ -548,6 +551,18 @@ bool GSHwHack::GSC_UrbanReign(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
 		{
 			skip = 1; // Black shadow
 		}
+
+		// Urban Reign downsamples the framebuffer with page-wide columns at a time, and offsets the TBP0 forward as such,
+		// which would be fine, except their texture coordinates appear to be off by one. Which prevents the page translation
+		// from matching the last column, because it's trying to fit the last 65 columns of a 640x448 (effectively 641x448)
+		// texture into a 640x448 render target.
+		if (fi.TME && fi.TBP0 != fi.FBP && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMCT32 &&
+			RCONTEXT->FRAME.FBW == (RCONTEXT->TEX0.TBW / 2) && RCONTEXT->CLAMP.WMS == CLAMP_REGION_CLAMP &&
+			RCONTEXT->CLAMP.WMT == CLAMP_REGION_CLAMP && ((r.m_vt.m_max.t == GSVector4(64.0f, 448.0f)).mask() == 0x3))
+		{
+			GL_CACHE("GSC_UrbanReign: Fix region clamp to 64 wide");
+			r.m_context->CLAMP.MAXU = 63;
+		}
 	}
 
 	return true;
@@ -810,7 +825,7 @@ bool GSHwHack::OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds
 			const u32 c = vi.RGBAQ.U32[0];
 			r.m_mem.WritePixel32(x, y, c, FBP, FBW);
 		}
-		r.m_tc->InvalidateVideoMem(r.m_context->offset.fb, r.m_r);
+		g_texture_cache->InvalidateVideoMem(r.m_context->offset.fb, r.m_r);
 		return false;
 	}
 	return true;
@@ -981,7 +996,7 @@ bool GSHwHack::OI_RozenMaidenGebetGarden(GSRendererHW& r, GSTexture* rt, GSTextu
 			TEX0.TBW = RCONTEXT->FRAME.FBW;
 			TEX0.PSM = RCONTEXT->FRAME.PSM;
 
-			if (GSTextureCache::Target* tmp_rt = r.m_tc->LookupTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget, true))
+			if (GSTextureCache::Target* tmp_rt = g_texture_cache->LookupTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget, true))
 			{
 				GL_INS("OI_RozenMaidenGebetGarden FB clear");
 				g_gs_device->ClearRenderTarget(tmp_rt->m_texture, 0);
@@ -999,7 +1014,7 @@ bool GSHwHack::OI_RozenMaidenGebetGarden(GSRendererHW& r, GSTexture* rt, GSTextu
 			TEX0.TBW = RCONTEXT->FRAME.FBW;
 			TEX0.PSM = RCONTEXT->ZBUF.PSM;
 
-			if (GSTextureCache::Target* tmp_ds = r.m_tc->LookupTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::DepthStencil, true))
+			if (GSTextureCache::Target* tmp_ds = g_texture_cache->LookupTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::DepthStencil, true))
 			{
 				GL_INS("OI_RozenMaidenGebetGarden ZB clear");
 				g_gs_device->ClearDepth(tmp_ds->m_texture);
@@ -1032,7 +1047,7 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 
 	GL_INS("OI_SonicUnleashed replace draw by a copy");
 
-	GSTextureCache::Target* src = r.m_tc->LookupTarget(Texture, GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget, true);
+	GSTextureCache::Target* src = g_texture_cache->LookupTarget(Texture, GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget, true);
 
 	const GSVector2i src_size(src->m_texture->GetSize());
 	GSVector2i rt_size(rt->GetSize());
@@ -1040,7 +1055,7 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 	// This is awful, but so is the CRC hack... it's a texture shuffle split horizontally instead of vertically.
 	if (rt_size.x < src_size.x || rt_size.y < src_size.y)
 	{
-		GSTextureCache::Target* rt_again = r.m_tc->LookupTarget(Frame, src_size, src->m_scale, GSTextureCache::RenderTarget, true);
+		GSTextureCache::Target* rt_again = g_texture_cache->LookupTarget(Frame, src_size, src->m_scale, GSTextureCache::RenderTarget, true);
 		if (rt_again->m_unscaled_size.x < src->m_unscaled_size.x || rt_again->m_unscaled_size.y < src->m_unscaled_size.y)
 		{
 			rt_again->ResizeTexture(std::max(rt_again->m_unscaled_size.x, src->m_unscaled_size.x),
@@ -1122,7 +1137,7 @@ bool GSHwHack::GSC_Battlefield2(GSRendererHW& r, const GSFrameInfo& fi, int& ski
 			GIFRegTEX0 TEX0 = {};
 			TEX0.TBP0 = fi.FBP;
 			TEX0.TBW = 8;
-			GSTextureCache::Target* dst = r.m_tc->LookupTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::DepthStencil, true);
+			GSTextureCache::Target* dst = g_texture_cache->LookupTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::DepthStencil, true);
 			if (dst)
 			{
 				g_gs_device->ClearDepth(dst->m_texture);
@@ -1144,8 +1159,23 @@ bool GSHwHack::OI_Battlefield2(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GS
 		g_gs_device->CopyRect(t->m_texture, rt, rc, 0, 0);
 	}
 
-	r.m_tc->InvalidateTemporarySource();
+	g_texture_cache->InvalidateTemporarySource();
 	return false;
+}
+
+bool GSHwHack::OI_HauntingGround(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+{
+	// Haunting Ground clears two targets by doing a 256x448 direct colour write at 0x3000, covering a target at 0x3380.
+	// This currently isn't handled in our HLE clears, so we need to manually remove the other target.
+	if (rt && !ds && !t && r.IsConstantDirectWriteMemClear(true))
+	{
+		GL_CACHE("GSHwHack::OI_HauntingGround()");
+		g_texture_cache->InvalidateVideoMemTargets(GSTextureCache::RenderTarget, RCONTEXT->FRAME.Block(),
+			RCONTEXT->FRAME.FBW, RCONTEXT->FRAME.PSM, r.m_r);
+	}
+
+	// Not skipping anything. This is just an invalidation hack.
+	return true;
 }
 
 #undef RCONTEXT
@@ -1224,6 +1254,7 @@ const GSHwHack::Entry<GSRendererHW::OI_Ptr> GSHwHack::s_before_draw_functions[] 
 	CRC_F(OI_ArTonelico2, CRCHackLevel::Minimum),
 	CRC_F(OI_BurnoutGames, CRCHackLevel::Minimum),
 	CRC_F(OI_Battlefield2, CRCHackLevel::Minimum),
+	CRC_F(OI_HauntingGround, CRCHackLevel::Minimum)
 };
 
 #undef CRC_F

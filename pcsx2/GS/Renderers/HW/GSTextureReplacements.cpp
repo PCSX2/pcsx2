@@ -130,9 +130,6 @@ namespace GSTextureReplacements
 
 	static std::string s_current_serial;
 
-	/// Backreference to the texture cache so we can inject replacements.
-	static GSTextureCache* s_tc;
-
 	/// Textures that have been dumped, to save stat() calls.
 	static std::unordered_set<TextureName> s_dumped_textures;
 
@@ -302,9 +299,8 @@ std::string GSTextureReplacements::GetDumpFilename(const TextureName& name, u32 
 	return ret;
 }
 
-void GSTextureReplacements::Initialize(GSTextureCache* tc)
+void GSTextureReplacements::Initialize()
 {
-	s_tc = tc;
 	s_current_serial = VMManager::GetGameSerial();
 
 	if (GSConfig.DumpReplaceableTextures || GSConfig.LoadTextureReplacements)
@@ -315,9 +311,6 @@ void GSTextureReplacements::Initialize(GSTextureCache* tc)
 
 void GSTextureReplacements::GameChanged()
 {
-	if (!s_tc)
-		return;
-
 	std::string new_serial(VMManager::GetGameSerial());
 	if (s_current_serial == new_serial)
 		return;
@@ -420,7 +413,6 @@ void GSTextureReplacements::Shutdown()
 	std::string().swap(s_current_serial);
 	ClearReplacementTextures();
 	ClearDumpedTextureList();
-	s_tc = nullptr;
 }
 
 u32 GSTextureReplacements::CalcMipmapLevelsForReplacement(u32 width, u32 height)
@@ -637,7 +629,7 @@ void GSTextureReplacements::ProcessAsyncLoadedTextures()
 		// upload and inject into TC
 		GSTexture* tex = CreateReplacementTexture(it->second, mipmap);
 		if (tex)
-			s_tc->InjectHashCacheTexture(HashCacheKeyFromTextureName(name), tex);
+			g_texture_cache->InjectHashCacheTexture(HashCacheKeyFromTextureName(name), tex);
 	}
 	s_async_loaded_textures.clear();
 }

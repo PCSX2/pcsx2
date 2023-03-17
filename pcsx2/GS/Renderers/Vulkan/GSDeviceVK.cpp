@@ -2085,6 +2085,7 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_DATE", sel.date);
 	AddMacro(ss, "PS_TCOFFSETHACK", sel.tcoffsethack);
 	AddMacro(ss, "PS_POINT_SAMPLER", sel.point_sampler);
+	AddMacro(ss, "PS_REGION_RECT", sel.region_rect);
 	AddMacro(ss, "PS_BLEND_A", sel.blend_a);
 	AddMacro(ss, "PS_BLEND_B", sel.blend_b);
 	AddMacro(ss, "PS_BLEND_C", sel.blend_c);
@@ -3058,7 +3059,6 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	GSTextureVK* draw_ds = static_cast<GSTextureVK*>(config.ds);
 	GSTextureVK* draw_rt_clone = nullptr;
 	GSTextureVK* hdr_rt = nullptr;
-	GSTextureVK* copy_ds = nullptr;
 
 	// Switch to hdr target for colclip rendering
 	if (pipe.ps.hdr)
@@ -3109,26 +3109,6 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	if (config.tex)
-	{
-		if (config.tex == config.ds)
-		{
-			// requires a copy of the depth buffer. this is mainly for ico.
-			copy_ds = static_cast<GSTextureVK*>(CreateDepthStencil(rtsize.x, rtsize.y, GSTexture::Format::DepthStencil, false));
-			if (copy_ds)
-			{
-				EndRenderPass();
-
-				GL_PUSH("Copy depth to temp texture for shuffle {%d,%d %dx%d}",
-					config.drawarea.left, config.drawarea.top,
-					config.drawarea.width(), config.drawarea.height());
-
-				pxAssert(copy_ds->GetState() == GSTexture::State::Invalidated);
-				CopyRect(config.ds, copy_ds, GSVector4i(config.ds->GetSize()).zwxy(), 0, 0);
-				PSSetShaderResource(0, copy_ds, true);
-			}
-		}
-	}
 	// clear texture binding when it's bound to RT or DS
 	if (!config.tex && ((config.rt && static_cast<GSTextureVK*>(config.rt)->GetView() == m_tfx_textures[0]) ||
 						   (config.ds && static_cast<GSTextureVK*>(config.ds)->GetView() == m_tfx_textures[0])))
@@ -3257,9 +3237,6 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			}
 		}
 	}
-
-	if (copy_ds)
-		Recycle(copy_ds);
 
 	if (draw_rt_clone)
 		Recycle(draw_rt_clone);

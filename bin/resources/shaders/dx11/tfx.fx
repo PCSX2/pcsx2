@@ -37,6 +37,7 @@
 #define PS_LTF 1
 #define PS_TCOFFSETHACK 0
 #define PS_POINT_SAMPLER 0
+#define PS_REGION_RECT 0
 #define PS_SHUFFLE 0
 #define PS_READ_BA 0
 #define PS_READ16_SRC 0
@@ -178,6 +179,8 @@ float4 sample_c(float2 uv, float uv_w)
 {
 #if PS_TEX_IS_FB == 1
 	return RtTexture.Load(int3(int2(uv * WH.zw), 0));
+#elif PS_REGION_RECT == 1
+	return Texture.Load(int3(int2(uv), 0));
 #else
 	if (PS_POINT_SAMPLER)
 	{
@@ -241,7 +244,15 @@ float4 clamp_wrap_uv(float4 uv)
 
 	if(PS_WMS == PS_WMT)
 	{
-		if(PS_WMS == 2)
+		if(PS_REGION_RECT != 0 && PS_WMS == 0)
+		{
+			uv = frac(uv);
+		}
+		else if(PS_REGION_RECT != 0 && PS_WMS == 1)
+		{
+			uv = saturate(uv);
+		}
+		else if(PS_WMS == 2)
 		{
 			uv = clamp(uv, MinMax.xyxy, MinMax.zwzw);
 		}
@@ -257,7 +268,15 @@ float4 clamp_wrap_uv(float4 uv)
 	}
 	else
 	{
-		if(PS_WMS == 2)
+		if(PS_REGION_RECT != 0 && PS_WMS == 0)
+		{
+			uv.xz = frac(uv.xz);
+		}
+		else if(PS_REGION_RECT != 0 && PS_WMS == 1)
+		{
+			uv.xz = saturate(uv.xz);
+		}
+		else if(PS_WMS == 2)
 		{
 			uv.xz = clamp(uv.xz, MinMax.xx, MinMax.zz);
 		}
@@ -268,7 +287,15 @@ float4 clamp_wrap_uv(float4 uv)
 			#endif
 			uv.xz = (float2)(((uint2)(uv.xz * tex_size.xx) & asuint(MinMax.xx)) | asuint(MinMax.zz)) / tex_size.xx;
 		}
-		if(PS_WMT == 2)
+		if(PS_REGION_RECT != 0 && PS_WMT == 0)
+		{
+			uv.yw = frac(uv.yw);
+		}
+		else if(PS_REGION_RECT != 0 && PS_WMT == 1)
+		{
+			uv.yw = saturate(uv.yw);
+		}
+		else if(PS_WMT == 2)
 		{
 			uv.yw = clamp(uv.yw, MinMax.yy, MinMax.ww);
 		}
@@ -279,6 +306,12 @@ float4 clamp_wrap_uv(float4 uv)
 			#endif
 			uv.yw = (float2)(((uint2)(uv.yw * tex_size.yy) & asuint(MinMax.yy)) | asuint(MinMax.ww)) / tex_size.yy;
 		}
+	}
+
+	if(PS_REGION_RECT != 0)
+	{
+		// Normalized -> Integer Coordinates.
+		uv = clamp(uv * WH.zwzw + STRange.xyxy, STRange.xyxy, STRange.zwzw);
 	}
 
 	return uv;
@@ -564,7 +597,7 @@ float4 sample_color(float2 st, float uv_w)
 	float4x4 c;
 	float2 dd;
 
-	if (PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_WMS < 2 && PS_WMT < 2)
+	if (PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_REGION_RECT == 0 && PS_WMS < 2 && PS_WMT < 2)
 	{
 		c[0] = sample_c(st, uv_w);
 	}

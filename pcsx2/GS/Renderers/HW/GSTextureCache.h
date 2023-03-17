@@ -64,9 +64,13 @@ public:
 		u32 GetHeight() const { return (GetMaxY() - GetMinY()); }
 
 		/// Returns true if the area of the region exceeds the TW/TH size (i.e. "fixed tex0").
+		bool IsFixedTEX0(GIFRegTEX0 TEX0) const;
 		bool IsFixedTEX0(int tw, int th) const;
 		bool IsFixedTEX0W(int tw) const;
 		bool IsFixedTEX0H(int th) const;
+
+		/// Returns the size that the region occupies.
+		GSVector2i GetSize(int tw, int th) const;
 
 		/// Returns the rectangle relative to the texture base pointer that the region occupies.
 		GSVector4i GetRect(int tw, int th) const;
@@ -80,6 +84,9 @@ public:
 
 		/// Adjusts the texture base pointer and block width relative to the region.
 		void AdjustTEX0(GIFRegTEX0* TEX0) const;
+
+		/// Creates a new source region based on the CLAMP register.
+		static SourceRegion Create(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP);
 	};
 
 	using HashType = u64;
@@ -146,8 +153,6 @@ public:
 		/// Can be used for overlap tests.
 		u32 UnwrappedEndBlock() const { return (m_end_block + (Wraps() ? MAX_BLOCKS : 0)); }
 
-		void UpdateAge();
-
 		bool Inside(u32 bp, u32 bw, u32 psm, const GSVector4i& rect);
 		bool Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i& rect);
 	};
@@ -196,58 +201,6 @@ public:
 		bool operator()(const PaletteKey& lhs, const PaletteKey& rhs) const;
 	};
 
-	class Source : public Surface
-	{
-		struct
-		{
-			GSVector4i* rect;
-			u32 count;
-		} m_write = {};
-
-		void PreloadLevel(int level);
-
-		void Write(const GSVector4i& r, int layer);
-		void Flush(u32 count, int layer);
-
-	public:
-		HashCacheEntry* m_from_hash_cache = nullptr;
-		std::shared_ptr<Palette> m_palette_obj;
-		std::unique_ptr<u32[]> m_valid;// each u32 bits map to the 32 blocks of that page
-		GSTexture* m_palette = nullptr;
-		GSVector4i m_valid_rect = {};
-		GSVector2i m_lod = {};
-		SourceRegion m_region = {};
-		u8 m_valid_hashes = 0;
-		u8 m_complete_layers = 0;
-		bool m_target = false;
-		bool m_repeating = false;
-		std::vector<GSVector2i>* m_p2t = nullptr;
-		// Keep a trace of the target origin. There is no guarantee that pointer will
-		// still be valid on future. However it ought to be good when the source is created
-		// so it can be used to access un-converted data for the current draw call.
-		GSTexture** m_from_target = nullptr;
-		GIFRegTEX0 m_from_target_TEX0 = {}; // TEX0 of the target texture, if any, else equal to texture TEX0
-		GIFRegTEX0 m_layer_TEX0[7] = {}; // Detect already loaded value
-		HashType m_layer_hash[7] = {};
-		// Keep a GSTextureCache::SourceMap::m_map iterator to allow fast erase
-		// Deliberately not initialized to save cycles.
-		std::array<u16, MAX_PAGES> m_erase_it;
-		GSOffset::PageLooper m_pages;
-
-	public:
-		Source(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA);
-		virtual ~Source();
-
-		__fi bool CanPreload() const { return CanPreloadTextureSize(m_TEX0.TW, m_TEX0.TH); }
-
-		void SetPages();
-
-		void Update(const GSVector4i& rect, int layer = 0);
-		void UpdateLayer(const GIFRegTEX0& TEX0, const GSVector4i& rect, int layer = 0);
-
-		bool ClutMatch(const PaletteKey& palette_key);
-	};
-
 	class Target : public Surface
 	{
 	public:
@@ -280,6 +233,63 @@ public:
 
 		/// Resizes target texture, DOES NOT RESCALE.
 		bool ResizeTexture(int new_unscaled_width, int new_unscaled_height, bool recycle_old = true);
+	};
+
+	class Source : public Surface
+	{
+		struct
+		{
+			GSVector4i* rect;
+			u32 count;
+		} m_write = {};
+
+		void PreloadLevel(int level);
+
+		void Write(const GSVector4i& r, int layer);
+		void Flush(u32 count, int layer);
+
+	public:
+		HashCacheEntry* m_from_hash_cache = nullptr;
+		std::shared_ptr<Palette> m_palette_obj;
+		std::unique_ptr<u32[]> m_valid;// each u32 bits map to the 32 blocks of that page
+		GSTexture* m_palette = nullptr;
+		GSVector4i m_valid_rect = {};
+		GSVector2i m_lod = {};
+		SourceRegion m_region = {};
+		u8 m_valid_hashes = 0;
+		u8 m_complete_layers = 0;
+		bool m_target = false;
+		bool m_repeating = false;
+		std::vector<GSVector2i>* m_p2t = nullptr;
+		// Keep a trace of the target origin. There is no guarantee that pointer will
+		// still be valid on future. However it ought to be good when the source is created
+		// so it can be used to access un-converted data for the current draw call.
+		Target* m_from_target = nullptr;
+		GIFRegTEX0 m_from_target_TEX0 = {}; // TEX0 of the target texture, if any, else equal to texture TEX0
+		GIFRegTEX0 m_layer_TEX0[7] = {}; // Detect already loaded value
+		HashType m_layer_hash[7] = {};
+		// Keep a GSTextureCache::SourceMap::m_map iterator to allow fast erase
+		// Deliberately not initialized to save cycles.
+		std::array<u16, MAX_PAGES> m_erase_it;
+		GSOffset::PageLooper m_pages;
+
+	public:
+		Source(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA);
+		virtual ~Source();
+
+		__fi bool CanPreload() const { return CanPreloadTextureSize(m_TEX0.TW, m_TEX0.TH); }
+		__fi bool IsFromTarget() const { return m_target; }
+
+		__fi const SourceRegion& GetRegion() const { return m_region; }
+		__fi GSVector2i GetRegionSize() const { return m_region.GetSize(m_unscaled_size.x, m_unscaled_size.y); }
+		__fi GSVector4i GetRegionRect() const { return m_region.GetRect(m_unscaled_size.x, m_unscaled_size.y); }
+
+		void SetPages();
+
+		void Update(const GSVector4i& rect, int layer = 0);
+		void UpdateLayer(const GIFRegTEX0& TEX0, const GSVector4i& rect, int layer = 0);
+
+		bool ClutMatch(const PaletteKey& palette_key);
 	};
 
 	class PaletteMap
@@ -328,7 +338,7 @@ public:
 
 			struct
 			{
-				u32 fbp : 14;
+				u32 bp : 14;
 				u32 fbw : 6;
 				u32 psm : 6;
 				u32 pad : 6;
@@ -434,20 +444,27 @@ public:
 	Source* LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, bool palette = false);
 
 	Target* FindTargetOverlap(u32 bp, u32 end_block, int type, int psm);
-	Target* LookupTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, float scale, int type, bool used, u32 fbmask = 0, const bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool is_clear = false);
-	Target* LookupDisplayTarget(const GIFRegTEX0& TEX0, const GSVector2i& size, float scale);
+	Target* LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type, bool used, u32 fbmask = 0, const bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool is_clear = false);
+	Target* LookupDisplayTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale);
 
 	/// Looks up a target in the cache, and only returns it if the BP/BW/PSM match exactly.
 	Target* GetExactTarget(u32 BP, u32 BW, u32 PSM) const;
 	Target* GetTargetWithSharedBits(u32 BP, u32 PSM) const;
 
-	u32 GetTargetHeight(u32 fbp, u32 fbw, u32 psm, u32 min_height);
+	u32 GetTargetHeight(u32 bp, u32 fbw, u32 psm, u32 min_height);
 	bool Has32BitTarget(u32 bp);
 
 	void InvalidateVideoMemType(int type, u32 bp);
 	void InvalidateVideoMemSubTarget(GSTextureCache::Target* rt);
 	void InvalidateVideoMem(const GSOffset& off, const GSVector4i& r, bool eewrite = false, bool target = true);
 	void InvalidateLocalMem(const GSOffset& off, const GSVector4i& r);
+
+	/// Removes any targets overlapping the specified BP and rectangle.
+	void InvalidateVideoMemTargets(int type, u32 bp, u32 bw, u32 psm, const GSVector4i& r);
+
+	/// Removes any sources which point to the specified target.
+	void InvalidateSourcesFromTarget(const Target* t);
+
 	bool Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u32 DBW, u32 DPSM, int dx, int dy, int w, int h);
 	bool ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx, int dy, int w, int h);
 
@@ -470,3 +487,5 @@ public:
 	/// Injects a texture into the hash cache, by using GSTexture::Swap(), transitively applying to all sources. Ownership of tex is transferred.
 	void InjectHashCacheTexture(const HashCacheKey& key, GSTexture* tex);
 };
+
+extern std::unique_ptr<GSTextureCache> g_texture_cache;

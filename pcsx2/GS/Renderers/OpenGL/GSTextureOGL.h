@@ -66,7 +66,7 @@ public:
 		return (m_int_type == GL_UNSIGNED_BYTE || m_int_type == GL_UNSIGNED_SHORT || m_int_type == GL_UNSIGNED_INT);
 	}
 
-	u32 GetID() final { return m_texture_id; }
+	u32 GetID() { return m_texture_id; }
 	bool HasBeenCleaned() { return m_clean; }
 	void WasAttached() { m_clean = false; }
 	void WasCleaned() { m_clean = true; }

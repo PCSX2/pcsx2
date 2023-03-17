@@ -98,6 +98,8 @@ vec4 sample_c(vec2 uv)
 {
 #if PS_TEX_IS_FB == 1
     return fetch_rt();
+#elif PS_REGION_RECT
+	return texelFetch(TextureSampler, ivec2(uv), 0);
 #else
 
 #if PS_POINT_SAMPLER
@@ -163,7 +165,11 @@ vec4 clamp_wrap_uv(vec4 uv)
 
 #if PS_WMS == PS_WMT
 
-#if PS_WMS == 2
+#if PS_REGION_RECT == 1 && PS_WMS == 0
+	uv_out = fract(uv);
+#elif PS_REGION_RECT == 1 && PS_WMS == 1
+	uv_out = clamp(uv, vec4(0.0f), vec4(1.0f));
+#elif PS_WMS == 2
     uv_out = clamp(uv, MinMax.xyxy, MinMax.zwzw);
 #elif PS_WMS == 3
     #if PS_FST == 0
@@ -176,7 +182,13 @@ vec4 clamp_wrap_uv(vec4 uv)
 
 #else // PS_WMS != PS_WMT
 
-#if PS_WMS == 2
+#if PS_REGION_RECT == 1 && PS_WMS == 0
+	uv.xz = fract(uv.xz);
+
+#elif PS_REGION_RECT == 1 && PS_WMS == 1
+	uv.xz = clamp(uv.xz, vec2(0.0f), vec2(1.0f));
+
+#elif PS_WMS == 2
     uv_out.xz = clamp(uv.xz, MinMax.xx, MinMax.zz);
 
 #elif PS_WMS == 3
@@ -187,7 +199,13 @@ vec4 clamp_wrap_uv(vec4 uv)
 
 #endif
 
-#if PS_WMT == 2
+#if PS_REGION_RECT == 1 && PS_WMT == 0
+	uv_out.yw = fract(uv.yw);
+
+#elif PS_REGION_RECT == 1 && PS_WMT == 1
+	uv_out.yw = clamp(uv.yw, vec2(0.0f), vec2(1.0f));
+
+#elif PS_WMT == 2
     uv_out.yw = clamp(uv.yw, MinMax.yy, MinMax.ww);
 
 #elif PS_WMT == 3
@@ -197,6 +215,11 @@ vec4 clamp_wrap_uv(vec4 uv)
     uv_out.yw = vec2((uvec2(uv.yw * tex_size.yy) & floatBitsToUint(MinMax.yy)) | floatBitsToUint(MinMax.ww)) / tex_size.yy;
 #endif
 
+#endif
+
+#if PS_REGION_RECT == 1
+    // Normalized -> Integer Coordinates.
+	uv_out = clamp(uv_out * WH.zwzw + STRange.xyxy, STRange.xyxy, STRange.zwzw);
 #endif
 
     return uv_out;
@@ -473,7 +496,7 @@ vec4 sample_color(vec2 st)
     vec2 dd;
 
     // FIXME I'm not sure this condition is useful (I think code will be optimized)
-#if (PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_WMS < 2 && PS_WMT < 2)
+#if (PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_REGION_RECT == 0 && PS_WMS < 2 && PS_WMT < 2)
     // No software LTF and pure 32 bits RGBA texure without special texture wrapping
     c[0] = sample_c(st);
 #ifdef TEX_COORD_DEBUG

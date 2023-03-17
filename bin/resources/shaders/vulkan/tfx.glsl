@@ -415,6 +415,8 @@ vec4 sample_c(vec2 uv)
 {
 #if PS_TEX_IS_FB
 	return sample_from_rt();
+#elif PS_REGION_RECT
+	return texelFetch(Texture, ivec2(uv), 0);
 #else
 #if PS_POINT_SAMPLER
 		// Weird issue with ATI/AMD cards,
@@ -477,7 +479,15 @@ vec4 clamp_wrap_uv(vec4 uv)
 
 	#if PS_WMS == PS_WMT
 	{
-		#if PS_WMS == 2
+		#if PS_REGION_RECT == 1 && PS_WMS == 0
+		{
+			uv = fract(uv);
+		}
+		#elif PS_REGION_RECT == 1 && PS_WMS == 1
+		{
+			uv = clamp(uv, vec4(0.0f), vec4(1.0f));
+		}
+		#elif PS_WMS == 2
 		{
 			uv = clamp(uv, MinMax.xyxy, MinMax.zwzw);
 		}
@@ -494,7 +504,15 @@ vec4 clamp_wrap_uv(vec4 uv)
 	}
 	#else
 	{
-		#if PS_WMS == 2
+		#if PS_REGION_RECT == 1 && PS_WMS == 0
+		{
+			uv.xz = fract(uv.xz);
+		}
+		#elif PS_REGION_RECT == 1 && PS_WMS == 1
+		{
+			uv.xz = clamp(uv.xz, vec2(0.0f), vec2(1.0f));
+		}
+		#elif PS_WMS == 2
 		{
 			uv.xz = clamp(uv.xz, MinMax.xx, MinMax.zz);
 		}
@@ -506,7 +524,15 @@ vec4 clamp_wrap_uv(vec4 uv)
 			uv.xz = vec2((uvec2(uv.xz * tex_size.xx) & floatBitsToUint(MinMax.xx)) | floatBitsToUint(MinMax.zz)) / tex_size.xx;
 		}
 		#endif
-		#if PS_WMT == 2
+		#if PS_REGION_RECT == 1 && PS_WMT == 0
+		{
+			uv.yw = fract(uv.yw);
+		}
+		#elif PS_REGION_RECT == 1 && PS_WMT == 1
+		{
+			uv.yw = clamp(uv.yw, vec2(0.0f), vec2(1.0f));
+		}
+		#elif PS_WMT == 2
 		{
 			uv.yw = clamp(uv.yw, MinMax.yy, MinMax.ww);
 		}
@@ -519,6 +545,11 @@ vec4 clamp_wrap_uv(vec4 uv)
 		}
 		#endif
 	}
+	#endif
+
+	#if PS_REGION_RECT == 1
+		// Normalized -> Integer Coordinates.
+		uv = clamp(uv * WH.zwzw + STRange.xyxy, STRange.xyxy, STRange.zwzw);
 	#endif
 
 	return uv;
@@ -797,7 +828,7 @@ vec4 sample_color(vec2 st)
 	mat4 c;
 	vec2 dd;
 
-	#if PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_WMS < 2 && PS_WMT < 2
+	#if PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_REGION_RECT == 0 && PS_WMS < 2 && PS_WMT < 2
 	{
 		c[0] = sample_c(st);
 	}

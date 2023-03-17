@@ -24,7 +24,6 @@ public:
 	{
 		NoTitle,
 		GetawayGames,
-		HauntingGround,
 		ICO,
 		KOF2002,
 		PolyphonyDigitalGames,
