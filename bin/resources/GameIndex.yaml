@@ -11872,8 +11872,8 @@ SLES-51043:
   region: "PAL-M6"
   compat: 5
   gsHWFixes:
-    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
-    trilinearFiltering: 1
+    trilinearFiltering: 1 # Trilinear, improves some textures.
+    recommendedBlendingLevel: 3 # Fixes gem reflections.
   patches:
     0EF1D4BA:
       content: |-
@@ -42513,8 +42513,8 @@ SLUS-20315:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
-    trilinearFiltering: 1
+    trilinearFiltering: 1 # Trilinear, improves some textures.
+    recommendedBlendingLevel: 3 # Fixes gem reflections.
   patches:
     4B8E0DE8:
       content: |-
