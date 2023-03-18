@@ -1378,6 +1378,7 @@ SCAJ-20179:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes bad crystal surfaces.
     getSkipCount: "GSC_XenosagaE3"
 SCAJ-20180:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 2 of 2]"
@@ -1386,6 +1387,7 @@ SCAJ-20180:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes bad crystal surfaces.
     getSkipCount: "GSC_XenosagaE3"
 SCAJ-20181:
   name: "Minna no Tennis"
@@ -25657,6 +25659,7 @@ SLPM-61147:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes bad crystal surfaces.
     getSkipCount: "GSC_XenosagaE3"
 SLPM-61148:
   name: "Growlanser V - Generations [Taikenban Demo]"
@@ -39520,6 +39523,7 @@ SLPS-25640:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes bad crystal surfaces.
     getSkipCount: "GSC_XenosagaE3"
   memcardFilters: # Allows import of Xenosaga II save data.
     - "SLPS-25640"
@@ -39532,6 +39536,7 @@ SLPS-25641:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes bad crystal surfaces.
     getSkipCount: "GSC_XenosagaE3"
   memcardFilters:
     - "SLPS-25640"
@@ -48115,6 +48120,7 @@ SLUS-21389:
     autoFlush: 1
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows.
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes bad crystal surfaces.
     getSkipCount: "GSC_XenosagaE3"
   memcardFilters: # Allows import of Xenosaga II save data.
     - "SLUS-21389"
@@ -48264,6 +48270,7 @@ SLUS-21417:
     autoFlush: 1
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows.
     roundSprite: 2 # Fixes font artifacts.
+    textureInsideRT: 1 # Fixes bad crystal surfaces.
     getSkipCount: "GSC_XenosagaE3"
   memcardFilters:
     - "SLUS-21389"
