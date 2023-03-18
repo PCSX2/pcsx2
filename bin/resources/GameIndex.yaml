@@ -19435,8 +19435,6 @@ SLES-54171:
   compat: 5
   gameFixes:
     - EETimingHack # Fixes flickering.
-  gsHWFixes:
-    getSkipCount: "GSC_YakuzaGames"
 SLES-54172:
   name: "Garfield 2 - Tale of Two Kitties"
   region: "PAL-M11"
@@ -22283,8 +22281,6 @@ SLES-55242:
   memcardFilters: # Allows import of Yakuza 1 data.
     - "SLES-55242"
     - "SLES-54171"
-  gsHWFixes:
-    getSkipCount: "GSC_YakuzaGames"
 SLES-55243:
   name: "FIFA 09"
   region: "PAL-E"
@@ -24355,16 +24351,12 @@ SLKA-25280:
   memcardFilters:
     - "SLKA-25280"
     - "SLKA-25342"
-  gsHWFixes:
-    getSkipCount: "GSC_YakuzaGames"
 SLKA-25281:
   name: "Ryu ga Gotoku 2 [Disc 2 of 2]"
   region: "NTSC-K"
   memcardFilters:
     - "SLKA-25280"
     - "SLKA-25342"
-  gsHWFixes:
-    getSkipCount: "GSC_YakuzaGames"
 SLKA-25284:
   name: "Sakura Taisen 3"
   region: "NTSC-K"
@@ -24557,8 +24549,6 @@ SLKA-25341:
 SLKA-25342:
   name: "Ryu ga Gotoku"
   region: "NTSC-K"
-  gsHWFixes:
-    getSkipCount: "GSC_YakuzaGames"
 SLKA-25346:
   name: "Prince of Persia - The Two Thrones"
   region: "NTSC-K"
@@ -32040,8 +32030,6 @@ SLPM-66167:
 SLPM-66168:
   name: "Ryu Ga Gotoku"
   region: "NTSC-J"
-  gsHWFixes:
-    getSkipCount: "GSC_YakuzaGames"
 SLPM-66169:
   name: "J-League Winning Eleven 9 - Asia Championship"
   region: "NTSC-J"
@@ -33747,8 +33735,6 @@ SLPM-66602:
     - "SLPM-66168"
     - "SLPM-74234"
     - "SLPM-74253"
-  gsHWFixes:
-    getSkipCount: "GSC_YakuzaGames"
 SLPM-66603:
   name: "Ryu ga Gotoku 2 [Disc 2 of 2]"
   region: "NTSC-J"
@@ -33758,8 +33744,6 @@ SLPM-66603:
     - "SLPM-66168"
     - "SLPM-74234"
     - "SLPM-74253"
-  gsHWFixes:
-    getSkipCount: "GSC_YakuzaGames"
 SLPM-66604:
   name: "Galaxy Angel - Moonlit Lovers [Banpresido the Best]"
   region: "NTSC-J"
@@ -35607,8 +35591,6 @@ SLPM-74233:
 SLPM-74234:
   name: "Ryu Ga Gotoku [PlayStation 2 The Best]"
   region: "NTSC-J"
-  gsHWFixes:
-    getSkipCount: "GSC_YakuzaGames"
 SLPM-74235:
   name: "Sengoku Musou [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -35719,8 +35701,6 @@ SLPM-74252:
 SLPM-74253:
   name: "Ryu ga Gotoku [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
-  gsHWFixes:
-    getSkipCount: "GSC_YakuzaGames"
 SLPM-74254:
   name: "EX Jinsei Game II [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
@@ -35780,8 +35760,6 @@ SLPM-74301:
     - "SLPM-66168"
     - "SLPM-74234"
     - "SLPM-74253"
-  gsHWFixes:
-    getSkipCount: "GSC_YakuzaGames"
 SLPM-74402:
   name: "Capcom vs. SNK 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -47827,8 +47805,6 @@ SLUS-21348:
   compat: 5
   gameFixes:
     - EETimingHack # Fixes flickering.
-  gsHWFixes:
-    getSkipCount: "GSC_YakuzaGames"
 SLUS-21349:
   name: "Taito Legends 2"
   region: "NTSC-U"
@@ -49895,8 +49871,6 @@ SLUS-21769:
   memcardFilters: # Allows import of Yakuza 1 data.
     - "SLUS-21769"
     - "SLUS-21348"
-  gsHWFixes:
-    getSkipCount: "GSC_YakuzaGames"
 SLUS-21770:
   name: "Madden NFL '09"
   region: "NTSC-U"
@@ -51518,8 +51492,6 @@ SLUS-29194:
 SLUS-29195:
   name: "Yakuza [Demo]"
   region: "NTSC-U"
-  gsHWFixes:
-    getSkipCount: "GSC_YakuzaGames"
 SLUS-29196:
   name: "Destroy All Humans! 2 [Demo]"
   region: "NTSC-U"
