@@ -2053,11 +2053,14 @@ void GSRendererHW::Draw()
 			rt->ResizeTexture(new_w, new_h);
 
 			if (!m_texture_shuffle && !m_channel_shuffle)
+			{
 				rt->ResizeValidity(rt->GetUnscaledRect());
+				rt->ResizeDrawn(rt->GetUnscaledRect());
+			}
 
 			// Limit to 2x the vertical height of the resolution (for double buffering)
 			rt->UpdateValidity(m_r, can_update_size || m_r.w <= (resolution.y * 2));
-
+			rt->UpdateDrawn(m_r, can_update_size || m_r.w <= (resolution.y * 2));
 			// Probably changing to double buffering, so invalidate any old target that was next to it.
 			// This resolves an issue where the PCRTC will find the old target in FMV's causing flashing.
 			// Grandia Xtreme, Onimusha Warlord.
@@ -2090,10 +2093,14 @@ void GSRendererHW::Draw()
 			ds->ResizeTexture(new_w, new_h);
 
 			if (!m_texture_shuffle && !m_channel_shuffle)
+			{
 				ds->ResizeValidity(ds->GetUnscaledRect());
+				ds->ResizeDrawn(ds->GetUnscaledRect());
+			}
 
 			// Limit to 2x the vertical height of the resolution (for double buffering)
 			ds->UpdateValidity(m_r, can_update_size || m_r.w <= (resolution.y * 2));
+			ds->UpdateDrawn(m_r, can_update_size || m_r.w <= (resolution.y * 2));
 
 			if (!new_rect && new_height && old_end_block != ds->m_end_block)
 			{
