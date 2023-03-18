@@ -2672,8 +2672,7 @@ StartRecomp:
 
 	pxAssert(xGetPtr() < recMem->GetPtrEnd());
 
-	pxAssert(xGetPtr() - recPtr < _64kb);
-	s_pCurBlockEx->x86size = xGetPtr() - recPtr;
+	s_pCurBlockEx->x86size = static_cast<u32>(xGetPtr() - recPtr);
 
 #if 0
 	// Example: Dump both x86/EE code
