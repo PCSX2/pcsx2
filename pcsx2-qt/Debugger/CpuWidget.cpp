@@ -665,9 +665,11 @@ void CpuWidget::onSearchButtonClicked()
 
 	const QString searchValue = m_ui.txtSearchValue->text();
 
+	unsigned long long value;
+
 	if (searchType < 4)
 	{
-		searchValue.toULongLong(&ok, searchHex ? 16 : 10);
+		value = searchValue.toULongLong(&ok, searchHex ? 16 : 10);
 	}
 	else if (searchType != 6)
 	{
@@ -678,6 +680,29 @@ void CpuWidget::onSearchButtonClicked()
 	{
 		QMessageBox::critical(this, tr("Debugger"), tr("Invalid search value"));
 		return;
+	}
+
+	switch (searchType)
+	{
+		case 6:
+		case 5:
+		case 4:
+			break;
+		case 3:
+			if (value <= std::numeric_limits<unsigned long long>::max())
+				break;
+		case 2:
+			if (value <= std::numeric_limits<unsigned long>::max())
+				break;
+		case 1:
+			if (value <= std::numeric_limits<unsigned short>::max())
+				break;
+		case 0:
+			if (value <= std::numeric_limits<unsigned char>::max())
+				break;
+		default:
+			QMessageBox::critical(this, tr("Debugger"), tr("Value is larger than type"));
+			return;
 	}
 
 	QFutureWatcher<std::vector<u32>>* workerWatcher = new QFutureWatcher<std::vector<u32>>;
