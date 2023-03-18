@@ -1819,13 +1819,13 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 				if (yaml.has_value() && !yaml.value().empty())
 				{
 					ryml::NodeRef index = yaml.value().rootref();
-					for (const ryml::NodeRef& n : index.children())
+					for (const auto& n : index.children())
 					{
 						auto key = std::string(n.key().str, n.key().len);
 					}
 					if (index.has_child(c4::to_csubstr(fd.FileName)))
 					{
-						const ryml::NodeRef& node = index[c4::to_csubstr(fd.FileName)];
+						const auto& node = index[c4::to_csubstr(fd.FileName)];
 						if (node.has_child("timeCreated"))
 						{
 							node["timeCreated"] >> entry.m_timeCreated;
@@ -1871,7 +1871,7 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 						// NOTE - working around a rapidyaml issue that needs to get resolved upstream
 						// '%' is a directive in YAML and it's not being quoted, this makes the memcards backwards compatible
 						// switched from '%' to '$'
-						const ryml::NodeRef& node = indexForDirectory["%ROOT"];
+						const auto& node = indexForDirectory["%ROOT"];
 						if (node.has_child("timeCreated"))
 						{
 							node["timeCreated"] >> entry.m_timeCreated;
@@ -1883,7 +1883,7 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 					}
 					else if (indexForDirectory.has_child("$ROOT"))
 					{
-						const ryml::NodeRef& node = indexForDirectory["$ROOT"];
+						const auto& node = indexForDirectory["$ROOT"];
 						if (node.has_child("timeCreated"))
 						{
 							node["timeCreated"] >> entry.m_timeCreated;
@@ -2105,7 +2105,7 @@ void FileAccessHelper::WriteIndex(const std::string& baseFolderName, MemoryCardF
 			ryml::NodeRef newNode = index[key];
 			newNode |= ryml::MAP;
 			unsigned int maxOrder = 0;
-			for (const ryml::NodeRef& n : index.children())
+			for (const auto& n : index.children())
 			{
 				unsigned int currOrder = 0; // NOTE - this limits the usefulness of making the order an int64
 				if (n.is_map() && n.has_child("order"))
