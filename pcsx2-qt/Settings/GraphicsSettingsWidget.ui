@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string notr="true">Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
@@ -161,42 +161,42 @@
          </item>
          <item>
           <property name="text">
-           <string>Weave (Top Field First, Sawtooth)</string>
+           <string extracomment="Weave: deinterlacing method that can be translated or left as-is in English. Sawtooth: refers to the jagged effect weave deinterlacing has on motion.">Weave (Top Field First, Sawtooth)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Weave (Bottom Field First, Sawtooth)</string>
+           <string extracomment="Weave: deinterlacing method that can be translated or left as-is in English. Sawtooth: refers to the jagged effect weave deinterlacing has on motion.">Weave (Bottom Field First, Sawtooth)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Bob (Top Field First, Full Frames)</string>
+           <string extracomment="Bob: deinterlacing method that refers to the way it makes video look like it's bobbing up and down.">Bob (Top Field First, Full Frames)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Bob (Bottom Field First, Full Frames)</string>
+           <string extracomment="Bob: deinterlacing method that refers to the way it makes video look like it's bobbing up and down.">Bob (Bottom Field First, Full Frames)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Blend (Top Field First, Merge 2 Fields)</string>
+           <string extracomment="Blend: deinterlacing method that blends the colors of the two frames, can be translated or left as-is in English.">Blend (Top Field First, Merge 2 Fields)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Blend (Bottom Field First, Merge 2 Fields)</string>
+           <string extracomment="Blend: deinterlacing method that blends the colors of the two frames, can be translated or left as-is in English.">Blend (Bottom Field First, Merge 2 Fields)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Adaptive (Top Field First, Similar to Bob + Weave)</string>
+           <string extracomment="Adaptive: deinterlacing method that should be translated.">Adaptive (Top Field First, Similar to Bob + Weave)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Adaptive (Bottom Field First, Similar to Bob + Weave)</string>
+           <string extracomment="Adaptive: deinterlacing method that should be translated.">Adaptive (Bottom Field First, Similar to Bob + Weave)</string>
           </property>
          </item>
         </widget>
@@ -217,12 +217,12 @@
          </item>
          <item>
           <property name="text">
-           <string>Bilinear (Smooth)</string>
+           <string extracomment="Smooth: Refers to the texture clarity.">Bilinear (Smooth)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Bilinear (Sharp)</string>
+           <string extracomment="Sharp: Refers to the texture clarity.">Bilinear (Sharp)</string>
           </property>
          </item>
         </widget>
@@ -237,7 +237,7 @@
        <item row="6" column="1">
         <widget class="QSpinBox" name="stretchY">
          <property name="suffix">
-          <string>%</string>
+          <string extracomment="Percentage sign that shows next to a value. You might want to add a space before if you language requires it.">%</string>
          </property>
          <property name="minimum">
           <number>1</number>
@@ -259,7 +259,7 @@
          <item>
           <widget class="QLabel" name="label_39">
            <property name="text">
-            <string>Left:</string>
+            <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Left:</string>
            </property>
           </widget>
          </item>
@@ -276,7 +276,7 @@
          <item>
           <widget class="QLabel" name="label_25">
            <property name="text">
-            <string>Top:</string>
+            <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Top:</string>
            </property>
           </widget>
          </item>
@@ -293,7 +293,7 @@
          <item>
           <widget class="QLabel" name="label_40">
            <property name="text">
-            <string>Right:</string>
+            <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Right:</string>
            </property>
           </widget>
          </item>
@@ -310,7 +310,7 @@
          <item>
           <widget class="QLabel" name="label_41">
            <property name="text">
-            <string>Bottom:</string>
+            <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Bottom:</string>
            </property>
           </widget>
          </item>
@@ -907,7 +907,7 @@
        <item row="4" column="0">
         <widget class="QLabel" name="label_47">
          <property name="text">
-          <string>GPU Target CLUT:</string>
+          <string extracomment="CLUT: Color Look Up Table, often referred to as a palette in non-PS2 things.  GPU Target CLUT: GPU handling of when a game uses data from a render target as a CLUT.">GPU Target CLUT:</string>
          </property>
         </widget>
        </item>
@@ -1218,7 +1218,7 @@
          <item row="1" column="0">
           <widget class="QCheckBox" name="wildHack">
            <property name="text">
-            <string>Wild Arms Hack</string>
+            <string extracomment="Wild Arms: name of a game series. Leave as-is or use an official translation.">Wild Arms Hack</string>
            </property>
           </widget>
          </item>
@@ -1358,7 +1358,7 @@
           <item row="0" column="0">
            <widget class="QLabel" name="label_17">
             <property name="text">
-             <string>Contrast Adaptive Sharpening:</string>
+             <string extracomment="You might find an official translation for this on AMD's website (Spanish version linked): https://www.amd.com/es/technologies/radeon-software-fidelityfx">Contrast Adaptive Sharpening:</string>
             </property>
            </widget>
           </item>
@@ -1395,7 +1395,7 @@
               <item>
                <widget class="QSpinBox" name="casSharpness">
                 <property name="suffix">
-                 <string>%</string>
+                 <string extracomment="Percentage sign that will appear next to a number. Add a space or whatever is needed before depending on your language.">%</string>
                 </property>
                 <property name="maximum">
                  <number>100</number>
@@ -1461,7 +1461,7 @@
             </item>
             <item>
              <property name="text">
-              <string>Lottes CRT</string>
+              <string extracomment="Lottes = Timothy Lottes, the creator of the shader filter. Leave as-is. CRT= Cathode Ray Tube, an old type of television technology.">Lottes CRT</string>
              </property>
             </item>
            </widget>
@@ -1865,7 +1865,7 @@
                <item row="1" column="1">
                 <widget class="QSpinBox" name="videoCaptureBitrate">
                  <property name="suffix">
-                  <string> kbps</string>
+                  <string extracomment="Unit that will appear next to a number. Alter the space or whatever is needed before the text depending on your language."> kbps</string>
                  </property>
                  <property name="minimum">
                   <number>100</number>
@@ -1977,7 +1977,7 @@
      </widget>
      <widget class="QGroupBox" name="advancedTab">
       <attribute name="title">
-       <string>Advanced</string>
+       <string extracomment="Advanced here refers to the advanced graphics options.">Advanced</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
@@ -2055,7 +2055,7 @@
             <item row="0" column="0">
              <widget class="QCheckBox" name="useBlitSwapChain">
               <property name="text">
-               <string>Use Blit Swap Chain</string>
+               <string extracomment="Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit \nSwap chain: see Microsoft's Terminology Portal.">Use Blit Swap Chain</string>
               </property>
              </widget>
             </item>

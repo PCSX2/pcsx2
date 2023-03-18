@@ -1492,6 +1492,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 			});
 		}
 
+		//: Refers to the directory where a game is contained.
 		action = menu.addAction(tr("Open Containing Directory..."));
 		connect(action, &QAction::triggered, [this, entry]() {
 			const QFileInfo fi(QString::fromStdString(entry->path));

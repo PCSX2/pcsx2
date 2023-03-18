@@ -342,6 +342,7 @@ bool RegisterWidget::contextFetchNewValue(u64& out, u64 currentValue, bool segme
 	else
 		existingValue = existingValue.arg(bit_cast<float>((u32)currentValue));
 
+	//: Changing the value in a CPU register (e.g. "Change t0")
 	QString input = QInputDialog::getText(this, tr("Change %1").arg(m_cpu->getRegisterName(categoryIndex, m_selectedRow)), "",
 		QLineEdit::Normal, existingValue, &ok);
 

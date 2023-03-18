@@ -90,8 +90,10 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 	dialog->registerWidgetHelp(m_ui.normalSpeed, tr("Normal Speed"), "100%",
 		tr("Sets the target emulation speed. It is not guaranteed that this speed will be reached, "
 		   "and if not, the emulator will run as fast as it can manage."));
+	//: The "User Preference" string will appear after the text "Recommended Value:"
 	dialog->registerWidgetHelp(m_ui.fastForwardSpeed, tr("Fast-Forward Speed"), tr("User Preference"),
 		tr("Sets the fast-forward speed. This speed will be used when the fast-forward hotkey is pressed/toggled."));
+	//: The "User Preference" string will appear after the text "Recommended Value:"
 	dialog->registerWidgetHelp(m_ui.slowMotionSpeed, tr("Slow-Motion Speed"), tr("User Preference"),
 		tr("Sets the slow-motion speed. This speed will be used when the slow-motion hotkey is pressed/toggled."));	
 	dialog->registerWidgetHelp(m_ui.speedLimiter, tr("Speed Limiter"), tr("Checked"),
@@ -102,9 +104,11 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 		   "Lower values will reduce the CPU load allowing lightweight games to run full speed on weaker CPUs."));
 	dialog->registerWidgetHelp(m_ui.eeCycleSkipping, tr("EE Cycle Skip"), tr("Disabled"),
 		tr("Makes the emulated Emotion Engine skip cycles. "
+		   //: SOTC = Shadow of the Colossus. A game's title, should not be translated unless an official translation exists.
 		   "Helps a small subset of games like SOTC. Most of the time it's harmful to performance."));
 	dialog->registerWidgetHelp(m_ui.affinityControl, tr("Affinity Control"), tr("Disabled"),
 		tr("Sets the priority for specific threads in a specific order ignoring the system scheduler. "
+		   //: P-Core = Performance Core, E-Core = Efficiency Core. See if Intel has official translations for these terms.
 		   "May help CPUs with big (P) and little (E) cores (e.g. Intel 12th or newer generation CPUs from Intel or other vendors such as AMD)."));
 	dialog->registerWidgetHelp(m_ui.MTVU, tr("Enable Multithreaded VU1 (MTVU1)"), tr("Checked"),
 		tr("Generally a speedup on CPUs with 3 or more threads. "
@@ -161,9 +165,11 @@ void EmulationSettingsWidget::initializeSpeedCombo(QComboBox* cb, const char* se
 			QVariant(static_cast<float>(speed) / 100.0f));
 	}
 
+	//: Every case that uses this particular string seems to refer to speeds: Normal Speed/Fast Forward Speed/Slow Motion Speed.
 	cb->addItem(tr("Unlimited"), QVariant(0.0f));
 
 	const int custom_index = cb->count();
+	//: Every case that uses this particular string seems to refer to speeds: Normal Speed/Fast Forward Speed/Slow Motion Speed.
 	cb->addItem(tr("Custom"));
 
 	if (const int index = cb->findData(QVariant(value)); index >= 0)

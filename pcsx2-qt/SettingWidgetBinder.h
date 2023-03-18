@@ -124,7 +124,9 @@ namespace SettingWidgetBinder
 		static void setBoolValue(QComboBox* widget, bool value) { widget->setCurrentIndex(value ? 1 : 0); }
 		static void makeNullableBool(QComboBox* widget, bool globalValue)
 		{
+			//: THIS STRING IS SHARED ACROSS MULTIPLE OPTIONS. Be wary about gender/number. Also, ignore Crowdin's warning regarding [Enabled]: the text must be translated.
 			widget->insertItem(0, globalValue ? qApp->translate("SettingsDialog", "Use Global Setting [Enabled]") :
+												//: THIS STRING IS SHARED ACROSS MULTIPLE OPTIONS. Be wary about gender/number. Also, ignore Crowdin's warning regarding [Disabled]: the text must be translated.
 												qApp->translate("SettingsDialog", "Use Global Setting [Disabled]"));
 		}
 
@@ -1045,6 +1047,7 @@ namespace SettingWidgetBinder
 		{
 			QObject::connect(browse_button, &QAbstractButton::clicked, browse_button, [widget, key]() {
 				const QString path(QDir::toNativeSeparators(QFileDialog::getExistingDirectory(QtUtils::GetRootWidget(widget),
+					//It seems that the latter half should show the types of folders that can be selected within Settings -> Folders, but right now it's broken. It would be best for localization purposes to duplicate this into multiple lines, each per type of folder.
 					qApp->translate("SettingWidgetBinder", "Select folder for %1").arg(QString::fromStdString(key)))));
 				if (path.isEmpty())
 					return;

@@ -36,7 +36,7 @@
           <item>
            <widget class="QRadioButton" name="m_recTypePowerOn">
             <property name="text">
-             <string>Power On</string>
+             <string extracomment="Indicates that the input recording that is about to be started will be recorded from the moment the emulation boots on/starts.">Power On</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -46,7 +46,7 @@
           <item>
            <widget class="QRadioButton" name="m_recTypeSaveState">
             <property name="text">
-             <string>Save State</string>
+             <string extracomment="Indicates that the input recording that is about to be started will be recorded when an accompanying save state is saved.">Save State</string>
             </property>
            </widget>
           </item>

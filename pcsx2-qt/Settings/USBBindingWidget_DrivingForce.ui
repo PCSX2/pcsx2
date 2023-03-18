@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string notr="true">Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_6">
    <property name="leftMargin">
@@ -86,7 +86,7 @@
            </size>
           </property>
           <property name="text">
-           <string>PushButton</string>
+           <string notr="true">PushButton</string>
           </property>
          </widget>
         </item>
@@ -136,7 +136,7 @@
               </size>
              </property>
              <property name="text">
-              <string>PushButton</string>
+              <string notr="true">PushButton</string>
              </property>
             </widget>
            </item>
@@ -176,7 +176,7 @@
               </size>
              </property>
              <property name="text">
-              <string>PushButton</string>
+              <string notr="true">PushButton</string>
              </property>
             </widget>
            </item>
@@ -216,7 +216,7 @@
               </size>
              </property>
              <property name="text">
-              <string>PushButton</string>
+              <string notr="true">PushButton</string>
              </property>
             </widget>
            </item>
@@ -256,7 +256,7 @@
               </size>
              </property>
              <property name="text">
-              <string>PushButton</string>
+              <string notr="true">PushButton</string>
              </property>
             </widget>
            </item>
@@ -299,7 +299,7 @@
            </size>
           </property>
           <property name="text">
-           <string>PushButton</string>
+           <string notr="true">PushButton</string>
           </property>
          </widget>
         </item>
@@ -339,7 +339,7 @@
            </size>
           </property>
           <property name="text">
-           <string>PushButton</string>
+           <string notr="true">PushButton</string>
           </property>
          </widget>
         </item>
@@ -392,7 +392,7 @@
            </size>
           </property>
           <property name="text">
-           <string>PushButton</string>
+           <string notr="true">PushButton</string>
           </property>
          </widget>
         </item>
@@ -451,7 +451,7 @@
              </size>
             </property>
             <property name="text">
-             <string>PushButton</string>
+             <string notr="true">PushButton</string>
             </property>
            </widget>
           </item>
@@ -491,7 +491,7 @@
              </size>
             </property>
             <property name="text">
-             <string>PushButton</string>
+             <string notr="true">PushButton</string>
             </property>
            </widget>
           </item>
@@ -587,7 +587,7 @@
              </size>
             </property>
             <property name="text">
-             <string>PushButton</string>
+             <string notr="true">PushButton</string>
             </property>
            </widget>
           </item>
@@ -633,7 +633,7 @@
              </size>
             </property>
             <property name="text">
-             <string>PushButton</string>
+             <string notr="true">PushButton</string>
             </property>
            </widget>
           </item>
@@ -698,7 +698,7 @@
               </size>
              </property>
              <property name="text">
-              <string>PushButton</string>
+              <string notr="true">PushButton</string>
              </property>
             </widget>
            </item>
@@ -738,7 +738,7 @@
               </size>
              </property>
              <property name="text">
-              <string>PushButton</string>
+              <string notr="true">PushButton</string>
              </property>
             </widget>
            </item>
@@ -778,7 +778,7 @@
               </size>
              </property>
              <property name="text">
-              <string>PushButton</string>
+              <string notr="true">PushButton</string>
              </property>
             </widget>
            </item>
@@ -818,7 +818,7 @@
               </size>
              </property>
              <property name="text">
-              <string>PushButton</string>
+              <string notr="true">PushButton</string>
              </property>
             </widget>
            </item>
@@ -861,7 +861,7 @@
            </size>
           </property>
           <property name="text">
-           <string>PushButton</string>
+           <string notr="true">PushButton</string>
           </property>
          </widget>
         </item>
@@ -901,7 +901,7 @@
            </size>
           </property>
           <property name="text">
-           <string>PushButton</string>
+           <string notr="true">PushButton</string>
           </property>
          </widget>
         </item>
@@ -954,7 +954,7 @@
            </size>
           </property>
           <property name="text">
-           <string>PushButton</string>
+           <string notr="true">PushButton</string>
           </property>
          </widget>
         </item>

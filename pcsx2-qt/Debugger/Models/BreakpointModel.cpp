@@ -79,6 +79,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 					QString type("");
 					type += (mc->cond & MEMCHECK_READ) ? tr("Read") : "";
 					type += ((mc->cond & MEMCHECK_BOTH) == MEMCHECK_BOTH) ? ", " : " ";
+					//: (C) = changes, as in "look for changes".
 					type += (mc->cond & MEMCHECK_WRITE) ? (mc->cond & MEMCHECK_WRITE_ONCHANGE) ? tr("Write(C)") : tr("Write") : "";
 					return type;
 				}
@@ -169,18 +170,25 @@ QVariant BreakpointModel::headerData(int section, Qt::Orientation orientation, i
 		switch (section)
 		{
 			case BreakpointColumns::TYPE:
+				//: Warning: limited space available. Abbreviate if needed.
 				return tr("TYPE");
 			case BreakpointColumns::OFFSET:
+				//: Warning: limited space available. Abbreviate if needed.
 				return tr("OFFSET");
 			case BreakpointColumns::SIZE_LABEL:
+				//: Warning: limited space available. Abbreviate if needed.
 				return tr("SIZE / LABEL");
 			case BreakpointColumns::OPCODE:
+				//: Warning: limited space available. Abbreviate if needed.
 				return tr("INSTRUCTION");
 			case BreakpointColumns::CONDITION:
+				//: Warning: limited space available. Abbreviate if needed.
 				return tr("CONDITION");
 			case BreakpointColumns::HITS:
+				//: Warning: limited space available. Abbreviate if needed.
 				return tr("HITS");
 			case BreakpointColumns::ENABLED:
+				//: Warning: limited space available. Abbreviate if needed.
 				return tr("ENABLED");
 			default:
 				return QVariant();
