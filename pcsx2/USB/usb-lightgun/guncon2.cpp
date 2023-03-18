@@ -34,7 +34,7 @@ namespace usb_lightgun
 	{
 		GUNCON2_FLAG_PROGRESSIVE = 0x0100,
 
-		GUNCON2_CALIBRATION_DELAY = 9
+        GUNCON2_CALIBRATION_DELAY = 12
 	};
 
 	enum : u32
@@ -51,6 +51,10 @@ namespace usb_lightgun
 		BID_START = 15,
 		BID_SHOOT_OFFSCREEN = 16,
 		BID_RECALIBRATE = 17,
+		BID_AXIS_XL = 18,
+		BID_AXIS_XR = 19,
+		BID_AXIS_YU = 20,
+		BID_AXIS_YD = 21,
 	};
 
 	// Right pain in the arse. Different games seem to have different scales..
@@ -133,6 +137,7 @@ namespace usb_lightgun
 		// Configuration
 		//////////////////////////////////////////////////////////////////////////
 		bool custom_config = false;
+		bool use_gamepad = false;
 		u32 screen_width = 640;
 		u32 screen_height = 240;
 		float center_x = 320;
@@ -161,6 +166,13 @@ namespace usb_lightgun
 		void AutoConfigure();
 
 		std::tuple<s16, s16> CalculatePosition();
+		
+		std::tuple<s16, s16> CalculatePositionGamepad(USBDevice* dev, USBPacket* p);
+
+        float gamepad_xr = 0;
+        float gamepad_xl = 0;
+		float gamepad_y = 0;
+
 	};
 
 	static const USBDescStrings desc_strings = {
@@ -261,8 +273,15 @@ namespace usb_lightgun
 			{
 				if (p->ep->nr == 1)
 				{
-					const auto [pos_x, pos_y] = us->CalculatePosition();
+					auto [pos_x, pos_y] = us->CalculatePosition();
+					if (us->use_gamepad)
+					{
+						auto [pos_x2, pos_y2] = us->CalculatePositionGamepad(dev, p);
+						pos_x = pos_x2;
+						pos_y = pos_y2;
 
+					}
+					
 					// Time Crisis games do a "calibration" by displaying a black frame for a single frame,
 					// waiting for the gun to report (0, 0), and then computing an offset on the first non-zero
 					// value. So, after the trigger is pulled, we wait for a few frames, then send the (0, 0)
@@ -289,7 +308,7 @@ namespace usb_lightgun
 						out.pos_y = us->calibration_pos_y;
 						us->calibration_timer--;
 
-						if (us->calibration_timer == 0)
+                        if (us->calibration_timer < 5)
 						{
 							out.pos_x = 0;
 							out.pos_y = 0;
@@ -360,7 +379,7 @@ namespace usb_lightgun
 		float pointer_x, pointer_y;
 		const std::pair<float, float> abs_pos(InputManager::GetPointerAbsolutePosition(0));
 		GSTranslateWindowToDisplayCoordinates(abs_pos.first, abs_pos.second, &pointer_x, &pointer_y);
-
+		
 		s16 pos_x, pos_y;
 		if (pointer_x < 0.0f || pointer_y < 0.0f)
 		{
@@ -373,6 +392,59 @@ namespace usb_lightgun
 			// scale to internal coordinate system and center
 			float fx = (pointer_x * static_cast<float>(screen_width)) - static_cast<float>(screen_width / 2u);
 			float fy = (pointer_y * static_cast<float>(screen_height)) - static_cast<float>(screen_height / 2u);
+
+			// apply curvature scale
+			fx *= scale_x;
+			fy *= scale_y;
+
+			// and re-center based on game center
+			s32 x = static_cast<s32>(std::round(fx + center_x));
+			s32 y = static_cast<s32>(std::round(fy + center_y));
+
+			// apply game-configured offset
+			if (param_mode & GUNCON2_FLAG_PROGRESSIVE)
+			{
+				x -= param_x / 2;
+				y -= param_y / 2;
+			}
+			else
+			{
+				x -= param_x;
+				y -= param_y;
+			}
+
+			// 0,0 is reserved for offscreen, so ensure we don't send that
+			pos_x = static_cast<s16>(std::max(x, 1));
+			pos_y = static_cast<s16>(std::max(y, 1));
+		}
+
+		return std::tie(pos_x, pos_y);
+	}
+
+	std::tuple<s16, s16> GunCon2State::CalculatePositionGamepad(USBDevice* dev, USBPacket* p)
+	{
+		GunCon2State* const us = USB_CONTAINER_OF(dev, GunCon2State, dev);
+		float pointer_x, pointer_y;
+		//const std::pair<float, float> abs_pos(InputManager::GetPointerAbsolutePosition(0));
+		//GSTranslateWindowToDisplayCoordinates(abs_pos.first, abs_pos.second, &pointer_x, &pointer_y);
+        pointer_x = us->gamepad_xl;
+        pointer_x += us->gamepad_xr;
+        pointer_x += 1;
+        pointer_x /= 2;
+		pointer_y = us->gamepad_y;
+
+		s16 pos_x, pos_y;
+		if (pointer_x < 0.0f || pointer_y < 0.0f)
+		{
+			// off-screen
+			pos_x = 0;
+			pos_y = 0;
+		}
+		else
+		{
+			// scale to internal coordinate system and center
+            float fx = (pointer_x * static_cast<float>(screen_width)) - static_cast<float>(screen_width / 2u);
+            float fy = ((pointer_y) * static_cast<float>(screen_height)) - static_cast<float>(screen_height / 2u);
 
 			// apply curvature scale
 			fx *= scale_x;
@@ -445,6 +517,7 @@ namespace usb_lightgun
 		GunCon2State* s = USB_CONTAINER_OF(dev, GunCon2State, dev);
 
 		s->custom_config = USB::GetConfigBool(si, s->port, TypeName(), "custom_config", false);
+		s->use_gamepad = USB::GetConfigBool(si, s->port, TypeName(), "use_gamepad", false);
 
 		// Don't override auto config if we've set it.
 		if (!s->auto_config_done || s->custom_config)
@@ -462,6 +535,18 @@ namespace usb_lightgun
 	{
 		GunCon2State* s = USB_CONTAINER_OF(dev, GunCon2State, dev);
 
+		switch (bind_index)
+		{
+			case BID_AXIS_XL:
+                return 1.0f - (static_cast<float>(s->gamepad_xl) / 65535.0f);
+			case BID_AXIS_XR:
+                return 1.0f - (static_cast<float>(s->gamepad_xr) / 65535.0f);
+			case BID_AXIS_YU:
+				return 1.0f - (static_cast<float>(s->gamepad_y) / 65535.0f);
+			case BID_AXIS_YD:
+				return 1.0f - (static_cast<float>(s->gamepad_y) / 65535.0f);
+
+		}
 		const u32 bit = 1u << bind_index;
 		return ((s->button_state & bit) != 0) ? 1.0f : 0.0f;
 	}
@@ -469,7 +554,26 @@ namespace usb_lightgun
 	void GunCon2Device::SetBindingValue(USBDevice* dev, u32 bind_index, float value) const
 	{
 		GunCon2State* s = USB_CONTAINER_OF(dev, GunCon2State, dev);
-
+		
+		switch (bind_index)
+		{
+			case BID_AXIS_XR:
+                //printf("xr:%f\r\n",value);
+                s->gamepad_xr = value;//static_cast<u32>(65535 - std::clamp<long>(std::lroundf(value * 65535.0f), 0, 65535));
+				return;
+			case BID_AXIS_XL:
+                //printf("xl:%f\r\n",value);
+                s->gamepad_xl = (-1)*value;//static_cast<u32>(65535 - std::clamp<long>(std::lroundf(value * 65535.0f), 0, 65535));
+				return;
+			case BID_AXIS_YU:
+            //printf("yu:%f\r\n",value);
+                s->gamepad_y = value;//static_cast<u32>(65535 - std::clamp<long>(std::lroundf(value * 65535.0f), 0, 65535));
+				return;
+			case BID_AXIS_YD:
+            //printf("yd:%f\r\n",value);
+                s->gamepad_y = value;//static_cast<u32>(65535 - std::clamp<long>(std::lroundf(value * 65535.0f), 0, 65535));
+				return;
+		}
 		const u32 bit = 1u << bind_index;
 		if (value >= 0.5f)
 			s->button_state |= bit;
@@ -481,6 +585,10 @@ namespace usb_lightgun
 	{
 		static constexpr const InputBindingInfo bindings[] = {
 			//{"pointer", "Pointer/Aiming", InputBindingInfo::Type::Pointer, BID_POINTER_X, GenericInputBinding::Unknown},
+			{"AimX_L", "Axis XL", InputBindingInfo::Type::HalfAxis, BID_AXIS_XL, GenericInputBinding::LeftStickLeft},
+			{"AimX_R", "Axis XR", InputBindingInfo::Type::HalfAxis, BID_AXIS_XR, GenericInputBinding::LeftStickRight},
+			{"AimY_U", "Axis YUp", InputBindingInfo::Type::Axis, BID_AXIS_YU, GenericInputBinding::LeftStickUp},
+			{"AimY_D", "Axis Ydown", InputBindingInfo::Type::Axis, BID_AXIS_YD, GenericInputBinding::LeftStickUp},
 			{"Up", "D-Pad Up", InputBindingInfo::Type::Button, BID_DPAD_UP, GenericInputBinding::DPadUp},
 			{"Down", "D-Pad Down", InputBindingInfo::Type::Button, BID_DPAD_DOWN, GenericInputBinding::DPadDown},
 			{"Left", "D-Pad Left", InputBindingInfo::Type::Button, BID_DPAD_LEFT, GenericInputBinding::DPadLeft},
@@ -506,6 +614,9 @@ namespace usb_lightgun
 		static constexpr const SettingInfo info[] = {
 			{SettingInfo::Type::Boolean, "custom_config", "Manual Screen Configuration",
 				"Forces the use of the screen parameters below, instead of automatic parameters if available.",
+				"false"},
+			{SettingInfo::Type::Boolean, "use_gamepad", "Use gamepad like guncon2",
+				"Use a gamepad like guncon2",
 				"false"},
 			{SettingInfo::Type::Float, "scale_x", "X Scale (Sensitivity)",
 				"Scales the position to simulate CRT curvature.", "100", "0", "200", "0.1", "%.2f%%", nullptr, nullptr,
