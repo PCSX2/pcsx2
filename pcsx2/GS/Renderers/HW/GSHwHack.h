@@ -43,7 +43,6 @@ public:
 	static bool GSC_Simple2000Vol114(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_UrbanReign(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_SteambotChronicles(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_YakuzaGames(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_GetawayGames(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_AceCombat4(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
 	static bool GSC_FFXGames(GSRendererHW& r, const GSFrameInfo& fi, int& skip);

@@ -566,24 +566,6 @@ bool GSHwHack::GSC_SteambotChronicles(GSRendererHW& r, const GSFrameInfo& fi, in
 	return true;
 }
 
-bool GSHwHack::GSC_YakuzaGames(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (!s_nativeres && !fi.TME && (fi.FBP == 0x1c20 || fi.FBP == 0x1e20 || fi.FBP == 0x1620) && (fi.TBP0 == 0xe00 || fi.TBP0 == 0x1000 || fi.TBP0 == 0x800) && fi.TPSM == PSM_PSMZ24 && fi.FPSM == PSM_PSMCT32
-			/*&& fi.FBMSK == 0xffffff && fi.TZTST && !GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)*/)
-		{
-			// Don't enable hack on native res if crc is below aggressive.
-			// Upscaling issues, removes glow/blur effect which fixes ghosting.
-			// Skip 3 removes most of the post effect which doesn't upscale well, but causes a depth effect to completely mess up.
-			// Skip 9 removes both the depth and blur effect, which seems to work okay.
-			skip = 9;
-		}
-	}
-
-	return true;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Full level, correctly emulated on OpenGL/Vulkan but can be used as potential speed hack
 ////////////////////////////////////////////////////////////////////////////////
@@ -1217,7 +1199,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 
 	// Upscaling hacks
 	CRC_F(GSC_UltramanFightingEvolution, CRCHackLevel::Partial),
-	CRC_F(GSC_YakuzaGames, CRCHackLevel::Partial),
 
 	// Accurate Blending
 	CRC_F(GSC_GetawayGames, CRCHackLevel::Full), // Blending High
