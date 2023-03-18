@@ -448,7 +448,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	{
 		// Hardware
 		dialog->registerWidgetHelp(m_ui.upscaleMultiplier, tr("Internal Resolution"), tr("Native (PS2) (Default)"),
-			tr("Control the resolution at which games are rendered. High resolutions can impact performance on"
+			tr("Control the resolution at which games are rendered. High resolutions can impact performance on "
 			   "older or lower-end GPUs.<br>Non-native resolution may cause minor graphical issues in some games.<br>"
 			   "FMV resolution will remain unchanged, as the video files are pre-rendered."));
 
