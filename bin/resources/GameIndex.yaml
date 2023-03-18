@@ -13435,9 +13435,15 @@ SLES-51752:
 SLES-51753:
   name: "True Crime - Streets of L.A."
   region: "PAL-E"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes fixes signs and license plates.
+    wildArmsHack: 1 # Fixes double image.
 SLES-51754:
   name: "True Crime - Streets of L.A."
   region: "PAL-M5"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes fixes signs and license plates.
+    wildArmsHack: 1 # Fixes double image.
   compat: 3
 SLES-51755:
   name: "Disney-Pixar's Finding Nemo"
@@ -30441,6 +30447,9 @@ SLPM-65728:
 SLPM-65729:
   name: "True Crime - Streets of L.A."
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes fixes signs and license plates.
+    wildArmsHack: 1 # Fixes double image.
 SLPM-65730:
   name: "Rockman X8"
   region: "NTSC-J"
@@ -31753,6 +31762,9 @@ SLPM-66097:
 SLPM-66098:
   name: "True Crime - Streets of L.A. [CapKore]"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes fixes signs and license plates.
+    wildArmsHack: 1 # Fixes double image.
 SLPM-66099:
   name: "Harukanaru Toki no Naka de 3 - Izayoiki [Premium Box-Triple Pack]"
   region: "NTSC-J"
@@ -43660,6 +43672,9 @@ SLUS-20550:
   name: "True Crime - Streets of L.A."
   region: "NTSC-U"
   compat: 3
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes fixes signs and license plates.
+    wildArmsHack: 1 # Fixes double image.
 SLUS-20552:
   name: "Grand Theft Auto - Vice City"
   region: "NTSC-U"
