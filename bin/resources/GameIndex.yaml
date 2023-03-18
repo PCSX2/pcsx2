@@ -1234,6 +1234,7 @@ SCAJ-20157:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
 SCAJ-20158:
@@ -3924,6 +3925,7 @@ SCES-53285:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
 SCES-53286:
@@ -5178,6 +5180,7 @@ SCKA-20060:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
 SCKA-20061:
@@ -6114,6 +6117,7 @@ SCPS-15099:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
 SCPS-15100:
@@ -6124,6 +6128,7 @@ SCPS-15100:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
 SCPS-15101:
@@ -6581,6 +6586,7 @@ SCPS-19321:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
 SCPS-19322:
@@ -6654,6 +6660,7 @@ SCPS-19328:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
 SCPS-19329:
@@ -8328,6 +8335,7 @@ SCUS-97465:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
 SCUS-97466:
@@ -8444,6 +8452,7 @@ SCUS-97485:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
 SCUS-97486:
@@ -8464,6 +8473,7 @@ SCUS-97487:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
+    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
 SCUS-97488:
