@@ -2053,6 +2053,21 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					// It's quicker, and Surface Offsets can get it wrong.
 					// Example doing PSMT8H to C32, BP 0x1c80, TBP 0x1d80, incoming rect 0,128 -> 128,256
 					// Surface offsets translates it to 0, 128 -> 128, 128, not 0, 0 -> 128, 128.
+
+					// If the RT is more than 1 frame old and the new data just doesn't line up properly, it's probably not made for it, kill the old target.
+					if (t->m_age > 1 && bw > 1 && bw != t->m_TEX0.TBW)
+					{
+						i = list.erase(j);
+						GL_CACHE("TC: Tex in RT Remove Old Target(%s) %d (0x%x) TPSM %x PSM %x bp 0x%x", to_string(type),
+							t->m_texture ? t->m_texture->GetID() : 0,
+							t->m_TEX0.TBP0,
+							t->m_TEX0.PSM,
+							psm,
+							bp);
+						delete t;
+						continue;
+					}
+
 					const GSVector2i page_size = GSLocalMemory::m_psm[psm].pgs;
 					const bool can_translate = CanTranslate(bp, bw, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 
@@ -4391,6 +4406,22 @@ void GSTextureCache::Target::UpdateIfDirtyIntersects(const GSVector4i& rc)
 		break;
 	}
 }
+void GSTextureCache::Target::ResizeDrawn(const GSVector4i& rect)
+{
+	m_drawn_since_read = m_drawn_since_read.rintersect(rect);
+}
+
+
+void GSTextureCache::Target::UpdateDrawn(const GSVector4i& rect, bool can_resize)
+{
+	if (can_resize)
+	{
+		if(m_drawn_since_read.rempty())
+			m_drawn_since_read = rect.rintersect(m_valid);
+		else
+			m_drawn_since_read = m_drawn_since_read.runion(rect);
+	}
+}
 
 void GSTextureCache::Target::ResizeValidity(const GSVector4i& rect)
 {
@@ -4420,12 +4451,6 @@ void GSTextureCache::Target::ResizeValidity(const GSVector4i& rect)
 
 void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect, bool can_resize)
 {
-	if (m_valid.runion(rect).eq(m_valid))
-	{
-		m_drawn_since_read = m_drawn_since_read.runion(rect);
-		return;
-	}
-
 	if (can_resize)
 	{
 		if (m_valid.eq(GSVector4i::zero()))
@@ -4444,14 +4469,6 @@ void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect, bool can_res
 			m_end_block = (((m_end_block + page_mask) & ~page_mask)) - 1;
 		}
 	}
-
-	if (m_drawn_since_read.eq(GSVector4i::zero()) || !can_resize)
-	{
-		m_drawn_since_read = rect.rintersect(m_valid);
-	}
-	else
-		m_drawn_since_read = m_drawn_since_read.runion(rect);
-
 	// GL_CACHE("UpdateValidity (0x%x->0x%x) from R:%d,%d Valid: %d,%d", m_TEX0.TBP0, m_end_block, rect.z, rect.w, m_valid.z, m_valid.w);
 }
 

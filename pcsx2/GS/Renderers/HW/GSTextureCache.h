@@ -267,6 +267,8 @@ public:
 		Target(const GIFRegTEX0& TEX0, const bool depth_supported, const int type);
 		~Target();
 
+		void ResizeDrawn(const GSVector4i& rect);
+		void UpdateDrawn(const GSVector4i& rect, bool can_resize = true);
 		void ResizeValidity(const GSVector4i& rect);
 		void UpdateValidity(const GSVector4i& rect, bool can_resize = true);
 		void UpdateValidBits(u32 bits_written);
