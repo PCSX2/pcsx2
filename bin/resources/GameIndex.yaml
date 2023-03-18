@@ -1263,7 +1263,6 @@ SCAJ-20161:
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes SPS.
-    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs that aren't fixed with merge sprite.
   gsHWFixes:
     mergeSprite: 1 # Fixes vertical lines in-game.
     preloadFrameData: 1 # Fixes some missing effects.
@@ -1301,7 +1300,6 @@ SCAJ-20167:
   region: "NTSC-C-J"
   gameFixes:
     - XGKickHack # Fixes SPS.
-    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs that aren't fixed with merge sprite.
   gsHWFixes:
     mergeSprite: 1 # Fixes vertical lines in-game.
     preloadFrameData: 1 # Fixes some missing effects.
@@ -4111,7 +4109,6 @@ SCES-53851:
   compat: 5
   gameFixes:
     - XGKickHack # Fixes SPS.
-    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs that aren't fixed with merge sprite.
   gsHWFixes:
     mergeSprite: 1 # Fixes vertical lines in-game.
     preloadFrameData: 1 # Fixes some missing effects.
@@ -5245,7 +5242,6 @@ SCKA-20069:
   region: "NTSC-K"
   gameFixes:
     - XGKickHack # Fixes SPS.
-    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs that aren't fixed with merge sprite.
   gsHWFixes:
     mergeSprite: 1 # Fixes vertical lines in-game.
     preloadFrameData: 1 # Fixes some missing effects.
@@ -6161,7 +6157,6 @@ SCPS-15106:
   compat: 5
   gameFixes:
     - XGKickHack # Fixes SPS.
-    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs that aren't fixed with merge sprite.
   gsHWFixes:
     mergeSprite: 1 # Fixes vertical lines in-game.
     preloadFrameData: 1 # Fixes some missing effects.
@@ -6642,7 +6637,6 @@ SCPS-19326:
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes SPS.
-    - SoftwareRendererFMVHack # Fixes vertical lines in FMVs that aren't fixed with merge sprite.
   gsHWFixes:
     mergeSprite: 1 # Fixes vertical lines in-game.
     preloadFrameData: 1 # Fixes some missing effects.
