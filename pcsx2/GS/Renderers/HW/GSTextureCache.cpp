@@ -2418,7 +2418,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				{
 					t->m_drawn_since_read = GSVector4i::zero();
 				}
-				else if (targetr.width() == t->m_drawn_since_read.width()
+				else if (targetr.xzxz().eq(t->m_drawn_since_read.xzxz())
 					&& targetr.w >= t->m_drawn_since_read.y)
 				{
 					if (targetr.y <= t->m_drawn_since_read.y)
@@ -2426,7 +2426,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 					else if (targetr.w >= t->m_drawn_since_read.w)
 						t->m_drawn_since_read.w = targetr.y;
 				}
-				else if (targetr.height() == t->m_drawn_since_read.height()
+				else if (targetr.ywyw().eq(t->m_drawn_since_read.ywyw())
 					&& targetr.z >= t->m_drawn_since_read.x)
 				{
 					if (targetr.x <= t->m_drawn_since_read.x)
