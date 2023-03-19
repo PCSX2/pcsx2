@@ -86,6 +86,8 @@ else()
 		if(WAYLAND_API)
 			find_package(Wayland REQUIRED)
 		endif()
+
+		find_package(Libbacktrace)
 	endif()
 endif(WIN32)
 
