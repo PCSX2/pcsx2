@@ -241,6 +241,11 @@
               "minimum": 1,
               "maximum": 10
             },
+            "cpuSpriteRenderLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
             "cpuCLUTRender": {
               "type": "integer",
               "minimum": 1,

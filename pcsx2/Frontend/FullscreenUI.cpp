@@ -3170,6 +3170,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			static constexpr const char* s_cpu_sprite_render_bw_options[] = {"0 (Disabled)", "1 (64 Max Width)", "2 (128 Max Width)",
 				"3 (192 Max Width)", "4 (256 Max Width)", "5 (320 Max Width)", "6 (384 Max Width)", "7 (448 Max Width)",
 				"8 (512 Max Width)", "9 (576 Max Width)", "10 (640 Max Width)"};
+			static constexpr const char* s_cpu_sprite_render_level_options[] = {
+				"Sprites Only", "Sprites/Triangles", "Blended Sprites/Triangles"};
 			static constexpr const char* s_cpu_clut_render_options[] = {"0 (Disabled)", "1 (Normal)", "2 (Aggressive)"};
 			static constexpr const char* s_texture_inside_rt_options[] = {"Disabled", "Inside Target", "Merge Targets"};
 			static constexpr const char* s_half_pixel_offset_options[] = {
@@ -3182,6 +3184,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 				"UserHacks_Half_Bottom_Override", -1, s_generic_options, std::size(s_generic_options), -1);
 			DrawIntListSetting(bsi, "CPU Sprite Render Size", "Uses software renderer to draw texture decompression-like sprites.",
 				"EmuCore/GS", "UserHacks_CPUSpriteRenderBW", 0, s_cpu_sprite_render_bw_options, std::size(s_cpu_sprite_render_bw_options));
+			DrawIntListSetting(bsi, "CPU Sprite Render Level", "Determines filter level for CPU sprite render.", "EmuCore/GS",
+				"UserHacks_CPUSpriteRenderLevel", 0, s_cpu_sprite_render_level_options, std::size(s_cpu_sprite_render_level_options));
 			DrawIntListSetting(bsi, "Software CLUT Render", "Uses software renderer to draw texture CLUT points/sprites.", "EmuCore/GS",
 				"UserHacks_CPUCLUTRender", 0, s_cpu_clut_render_options, std::size(s_cpu_clut_render_options));
 			DrawIntSpinBoxSetting(

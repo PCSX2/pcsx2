@@ -524,6 +524,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(UserHacks_TCOffsetX) &&
 		OpEqu(UserHacks_TCOffsetY) &&
 		OpEqu(UserHacks_CPUSpriteRenderBW) &&
+		OpEqu(UserHacks_CPUSpriteRenderLevel) &&
 		OpEqu(UserHacks_CPUCLUTRender) &&
 		OpEqu(UserHacks_GPUTargetCLUTMode) &&
 		OpEqu(UserHacks_TextureInsideRt) &&
@@ -717,6 +718,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	GSSettingIntEx(UserHacks_TCOffsetX, "UserHacks_TCOffsetX");
 	GSSettingIntEx(UserHacks_TCOffsetY, "UserHacks_TCOffsetY");
 	GSSettingIntEx(UserHacks_CPUSpriteRenderBW, "UserHacks_CPUSpriteRenderBW");
+	GSSettingIntEx(UserHacks_CPUSpriteRenderLevel, "UserHacks_CPUSpriteRenderLevel");
 	GSSettingIntEx(UserHacks_CPUCLUTRender, "UserHacks_CPUCLUTRender");
 	GSSettingIntEnumEx(UserHacks_GPUTargetCLUTMode, "UserHacks_GPUTargetCLUTMode");
 	GSSettingIntEnumEx(TriFilter, "TriFilter");
@@ -792,6 +794,7 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 	UserHacks_TCOffsetX = 0;
 	UserHacks_TCOffsetY = 0;
 	UserHacks_CPUSpriteRenderBW = 0;
+	UserHacks_CPUSpriteRenderLevel = 0;
 	UserHacks_CPUCLUTRender = 0;
 	UserHacks_GPUTargetCLUTMode = GSGPUTargetCLUTMode::Disabled;
 	SkipDrawStart = 0;
