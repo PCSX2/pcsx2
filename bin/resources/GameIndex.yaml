@@ -1767,6 +1767,11 @@ SCED-50381:
 SCED-50404:
   name: "Official PlayStation 2 Magazine Demo 10" # German
   region: "PAL-E-G"
+SCED-50449:
+  name: "This is Football 2002 [Demo]"
+  region: "PAL-M6"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken loading screen and menus.
 SCED-50450:
   name: "Le Monde des Bleus 2002 [Demo]"
   region: "PAL-F"
@@ -2896,6 +2901,13 @@ SCES-50241:
 SCES-50244:
   name: "This is Football 2002"
   region: "PAL-M6"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken loading screen and menus.
+SCES-50245:
+  name: "Le Monde des Bleus 2002"
+  region: "PAL-F"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken loading screen and menus.
 SCES-50246:
   name: "AirBlade"
   region: "PAL-M5"
@@ -7370,6 +7382,8 @@ SCUS-97171:
 SCUS-97172:
   name: "World Tour Soccer 2002"
   region: "NTSC-U"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken loading screen and menus.
 SCUS-97173:
   name: "Jet X2O"
   region: "NTSC-U"
@@ -7427,6 +7441,8 @@ SCUS-97191:
 SCUS-97192:
   name: "World Tour Soccer 2002 [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken loading screen and menus.
 SCUS-97194:
   name: "NFL GameDay 2003"
   region: "NTSC-U"
@@ -13533,6 +13549,8 @@ SLES-51799:
 SLES-51800:
   name: "Smash Cars Racing"
   region: "PAL-M5"
+  gameFixes:
+    - EETimingHack # Fixes random graphical corruption.
 SLES-51806:
   name: "Evil Dead - A Fistful of Boomstick"
   region: "PAL-E"
@@ -16552,6 +16570,7 @@ SLES-53039:
   gsHWFixes:
     estimateTextureRegion: 1 # Improves performance.
     roundSprite: 1 # Fixes lines in menus HUD and in game.
+    halfPixelOffset: 2 # Fixes erroneous line in menus.
   memcardFilters: # Allows import of characters from first game.
     - "SLES-53039"
     - "SLES-52325"
@@ -26768,6 +26787,11 @@ SLPM-62409:
 SLPM-62410:
   name: "Silent Scope 3 [Konami The Best]"
   region: "NTSC-J"
+SLPM-62411:
+  name: "Buggy Grand Prix - Kattobi! Daisakusen"
+  region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Fixes random graphical corruption.
 SLPM-62412:
   name: "Simple 2000 Series Vol. 41 - The Volleyball"
   region: "NTSC-J"
@@ -44022,6 +44046,8 @@ SLUS-20619:
 SLUS-20620:
   name: "Smash Cars"
   region: "NTSC-U"
+  gameFixes:
+    - EETimingHack # Fixes random graphical corruption.
 SLUS-20621:
   name: "Seven Samurai 20XX"
   region: "NTSC-U"
@@ -45788,6 +45814,7 @@ SLUS-20973:
   gsHWFixes:
     estimateTextureRegion: 1 # Improves performance.
     roundSprite: 1 # Fixes lines in menus HUD and in game.
+    halfPixelOffset: 2 # Fixes erroneous line in menus.
   memcardFilters:
     - "SLUS-20973"
     - "SLUS-20565"
@@ -51299,6 +51326,7 @@ SLUS-29126:
   gsHWFixes:
     estimateTextureRegion: 1 # Improves performance.
     roundSprite: 1 # Fixes lines in menus HUD and in game.
+    halfPixelOffset: 2 # Fixes erroneous line in menus.
 SLUS-29127:
   name: "FIFA Soccer 2005 [Demo]"
   region: "NTSC-U"
