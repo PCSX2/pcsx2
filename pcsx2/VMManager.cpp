@@ -591,7 +591,7 @@ void VMManager::LoadPatches(const std::string& serial, u32 crc, bool show_messag
 	// wide screen patches
 	if (EmuConfig.EnableWideScreenPatches && crc != 0)
 	{
-		if (!Achievements::ChallengeModeActive() && (s_active_widescreen_patches = LoadPatchesFromDir(crc_string, EmuFolders::CheatsWS, "Widescreen hacks", false) > 0))
+		if (!Achievements::ChallengeModeActive() && (s_active_widescreen_patches = LoadPatchesFromDir(crc_string, EmuFolders::CheatsWS, "Widescreen hacks", false)) > 0)
 		{
 			Console.WriteLn(Color_Gray, "Found widescreen patches in the cheats_ws folder --> skipping cheats_ws.zip");
 		}
