@@ -1094,7 +1094,7 @@ bool GSHwHack::OI_ArTonelico2(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GST
 	return true;
 }
 
-bool GSHwHack::OI_JakGames(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+bool GSHwHack::OI_JakX(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
 	if (RCONTEXT->FRAME.FBW != 1 || !(r.m_r == GSVector4i(0, 0, 16, 16)).alltrue())
 		return true; // Only 16x16 draws.
@@ -1236,7 +1236,7 @@ const GSHwHack::Entry<GSRendererHW::OI_Ptr> GSHwHack::s_before_draw_functions[] 
 	CRC_F(OI_RozenMaidenGebetGarden, CRCHackLevel::Minimum),
 	CRC_F(OI_SonicUnleashed, CRCHackLevel::Minimum),
 	CRC_F(OI_ArTonelico2, CRCHackLevel::Minimum),
-	CRC_F(OI_JakGames, CRCHackLevel::Minimum),
+	CRC_F(OI_JakX, CRCHackLevel::Minimum),
 	CRC_F(OI_BurnoutGames, CRCHackLevel::Minimum),
 	CRC_F(OI_Battlefield2, CRCHackLevel::Minimum),
 };
