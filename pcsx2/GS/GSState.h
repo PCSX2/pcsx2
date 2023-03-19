@@ -123,6 +123,7 @@ private:
 	{
 		int x = 0, y = 0;
 		int start = 0, end = 0, total = 0;
+		int offset = 0;
 		u8* buff = nullptr;
 		GIFRegBITBLTBUF m_blit = {};
 
