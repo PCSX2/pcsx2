@@ -992,40 +992,21 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 			}
 		}
 
-		if (tex_in_rt)
+		// If the source is reading the rt, make sure it's big enough.
+		
+		if (dst && GSUtil::HasCompatibleBits(psm, dst->m_TEX0.PSM))
 		{
-			GSVector2i size_delta = { ((x_offset + (1 << TEX0.TW)) - dst->m_valid.z), ((y_offset + (1 << TEX0.TH)) - dst->m_valid.w) };
-			RGBAMask rgba;
-			rgba._u32 = GSUtil::GetChannelMask(psm);
+			const GSVector2i size_delta = { (r.z - dst->m_valid.z), (r.w - dst->m_valid.w) };
 
-			if (size_delta.x > 0)
+			if (size_delta.x > 0 || size_delta.y > 0)
 			{
-				// Expand the target if it's only partially inside it.
-				const GSVector4i dirty_rect = { dst->m_valid.z, 0, x_offset + (1 << TEX0.TW), dst->m_valid.w };
+				const GSVector4i valid_rect = { dst->m_valid.x, dst->m_valid.y, dst->m_valid.z + std::max(0, size_delta.x), dst->m_valid.w + std::max(0, size_delta.y) };
+				dst->UpdateValidity(valid_rect);
 
-				if (dirty_rect.z > dst->m_valid.z)
-				{
-					dst->UpdateValidity(dirty_rect);
-
-					AddDirtyRectTarget(dst, dirty_rect, dst->m_TEX0.PSM, dst->m_TEX0.TBW, rgba);
-				}
+				const int new_w = std::max(dst->m_unscaled_size.x, dst->m_valid.z);
+				const int new_h = std::max(dst->m_unscaled_size.y, dst->m_valid.w);
+				dst->ResizeTexture(new_w, new_h);
 			}
-
-			if (size_delta.y > 0)
-			{
-				// Expand the target if it's only partially inside it.
-				const GSVector4i dirty_rect = { 0, dst->m_valid.w, dst->m_valid.z, y_offset + (1 << TEX0.TH) };
-
-				if (dirty_rect.w > dst->m_valid.w)
-				{
-					dst->UpdateValidity(dirty_rect);
-
-					AddDirtyRectTarget(dst, dirty_rect, dst->m_TEX0.PSM, dst->m_TEX0.TBW, rgba);
-				}
-			}
-
-			if (dst->m_valid.z > dst->m_unscaled_size.x || dst->m_valid.w > dst->m_unscaled_size.y)
-				dst->ResizeTexture(dst->m_valid.z, dst->m_valid.w);
 		}
 		// Pure depth texture format will be fetched by LookupDepthSource.
 		// However guess what, some games (GoW) read the depth as a standard
