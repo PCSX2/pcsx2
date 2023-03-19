@@ -4568,40 +4568,42 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDrawAggressive()
 bool GSRendererHW::CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_tex)
 {
 	// Master enable.
-	if (GSConfig.UserHacks_CPUSpriteRenderBW == 0)
+	const int bw = GSConfig.UserHacks_CPUSpriteRenderBW;
+	const int level = GSConfig.UserHacks_CPUSpriteRenderLevel;
+	if (bw == 0)
 		return false;
 
 	// We don't ever want to do this when we have a depth buffer, and only for textured sprites.
-	if (no_rt || !no_ds || !draw_sprite_tex)
+	if (no_rt || !no_ds || (level == 0 && !draw_sprite_tex))
 		return false;
 
 	// Check the size threshold. Spider-man 2 uses a FBW of 32 for some silly reason...
-	if (m_context->FRAME.FBW > static_cast<u32>(GSConfig.UserHacks_CPUSpriteRenderBW) && m_context->FRAME.FBW != 32)
+	if (m_context->FRAME.FBW > static_cast<u32>(bw) && m_context->FRAME.FBW != 32)
 		return false;
 
 	// We shouldn't be using mipmapping, and this shouldn't be a blended draw.
-	// TODO: Jak 3 builds textures semi-procedurally using blending, and would be a good candidate here.
-	if (IsMipMapActive() || !IsOpaque())
+	if (level < 2 && (IsMipMapActive() || !IsOpaque()))
 		return false;
 
 	// Make sure this isn't something we've actually rendered to (e.g. a texture shuffle).
-	// We do this by checking the texture block width against the target's block width, as all the decompression draws
-	// will use a much smaller block size than the framebuffer.
-	GSTextureCache::Target* src_target = m_tc->GetTargetWithSharedBits(m_context->TEX0.TBP0, m_context->TEX0.PSM);
-	if (src_target && src_target->m_TEX0.TBW == m_context->TEX0.TBW)
+	if (PRIM->TME)
 	{
-		// If the EE has written over our sample area, we're fine to do this on the CPU, despite the target.
-		if (!src_target->m_dirty.empty())
+		GSTextureCache::Target* src_target = m_tc->GetTargetWithSharedBits(m_context->TEX0.TBP0, m_context->TEX0.PSM);
+		if (src_target)
 		{
-			const GSVector4i tr(GetTextureMinMax(m_context->TEX0, m_context->CLAMP, m_vt.IsLinear()).coverage);
-			for (GSDirtyRect& rc : src_target->m_dirty)
+			// If the EE has written over our sample area, we're fine to do this on the CPU, despite the target.
+			if (!src_target->m_dirty.empty())
 			{
-				if (!rc.GetDirtyRect(m_context->TEX0).rintersect(tr).rempty())
-					return true;
+				const GSVector4i tr(GetTextureMinMax(m_context->TEX0, m_context->CLAMP, m_vt.IsLinear()).coverage);
+				for (GSDirtyRect& rc : src_target->m_dirty)
+				{
+					if (!rc.GetDirtyRect(m_context->TEX0).rintersect(tr).rempty())
+						return true;
+				}
 			}
-		}
 
-		return false;
+			return false;
+		}
 	}
 
 	// We can use the sw prim render path!

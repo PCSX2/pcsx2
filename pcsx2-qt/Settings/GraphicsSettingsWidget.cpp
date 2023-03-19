@@ -186,16 +186,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		sif, m_ui.blending, "EmuCore/GS", "accurate_blending_unit", static_cast<int>(AccBlendLevel::Basic));
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.texturePreloading, "EmuCore/GS", "texture_preloading", static_cast<int>(TexturePreloadingLevel::Off));
-
 	connect(m_ui.trilinearFiltering, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
 		&GraphicsSettingsWidget::onTrilinearFilteringChanged);
-	connect(m_ui.gpuPaletteConversion, QOverload<int>::of(&QCheckBox::stateChanged), this,
-		&GraphicsSettingsWidget::onGpuPaletteConversionChanged);
-	connect(m_ui.textureInsideRt, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-		&GraphicsSettingsWidget::onTextureInsideRtChanged);
 	onTrilinearFilteringChanged();
-	onGpuPaletteConversionChanged(m_ui.gpuPaletteConversion->checkState());
-	onTextureInsideRtChanged();
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Renderer Fixes
@@ -203,6 +196,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.crcFixLevel, "EmuCore/GS", "crc_hack_level", static_cast<int>(CRCHackLevel::Automatic), -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.halfScreenFix, "EmuCore/GS", "UserHacks_Half_Bottom_Override", -1, -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cpuSpriteRenderBW, "EmuCore/GS", "UserHacks_CPUSpriteRenderBW", 0);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cpuSpriteRenderLevel, "EmuCore/GS", "UserHacks_CPUSpriteRenderLevel", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cpuCLUTRender, "EmuCore/GS", "UserHacks_CPUCLUTRender", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.gpuTargetCLUTMode, "EmuCore/GS", "UserHacks_GPUTargetCLUTMode", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.skipDrawStart, "EmuCore/GS", "UserHacks_SkipDraw_Start", 0);
@@ -220,6 +214,15 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.targetPartialInvalidation, "EmuCore/GS", "UserHacks_TargetPartialInvalidation", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.estimateTextureRegion, "EmuCore/GS", "UserHacks_EstimateTextureRegion", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuPaletteConversion, "EmuCore/GS", "paltex", false);
+	connect(m_ui.cpuSpriteRenderBW, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+		&GraphicsSettingsWidget::onCPUSpriteRenderBWChanged);
+	connect(m_ui.textureInsideRt, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+		&GraphicsSettingsWidget::onTextureInsideRtChanged);
+	connect(m_ui.gpuPaletteConversion, QOverload<int>::of(&QCheckBox::stateChanged), this,
+		&GraphicsSettingsWidget::onGpuPaletteConversionChanged);
+	onCPUSpriteRenderBWChanged();
+	onTextureInsideRtChanged();
+	onGpuPaletteConversionChanged(m_ui.gpuPaletteConversion->checkState());
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Upscaling Fixes
@@ -887,6 +890,12 @@ void GraphicsSettingsWidget::onGpuPaletteConversionChanged(int state)
 		state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("EmuCore/GS", "paltex", false) : (state != 0);
 
 	m_ui.anisotropicFiltering->setDisabled(disabled);
+}
+
+void GraphicsSettingsWidget::onCPUSpriteRenderBWChanged()
+{
+	const int value = m_dialog->getEffectiveIntValue("EmuCore/GS", "UserHacks_CPUSpriteRenderBW", 0);
+	m_ui.cpuSpriteRenderLevel->setEnabled(value != 0);
 }
 
 void GraphicsSettingsWidget::onTextureInsideRtChanged()

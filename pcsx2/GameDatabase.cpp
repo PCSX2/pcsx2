@@ -366,6 +366,7 @@ static const char* s_gs_hw_fix_names[] = {
 	"texturePreloading",
 	"deinterlace",
 	"cpuSpriteRenderBW",
+	"cpuSpriteRenderLevel",
 	"cpuCLUTRender",
 	"gpuTargetCLUT",
 	"gpuPaletteConversion",
@@ -631,6 +632,9 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::CPUSpriteRenderBW:
 			return (config.UserHacks_CPUSpriteRenderBW == value);
 
+		case GSHWFixId::CPUSpriteRenderLevel:
+			return (config.UserHacks_CPUSpriteRenderLevel == value);
+
 		case GSHWFixId::CPUCLUTRender:
 			return (config.UserHacks_CPUCLUTRender == value);
 
@@ -812,6 +816,10 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 
 			case GSHWFixId::CPUSpriteRenderBW:
 				config.UserHacks_CPUSpriteRenderBW = value;
+				break;
+
+			case GSHWFixId::CPUSpriteRenderLevel:
+				config.UserHacks_CPUSpriteRenderLevel = value;
 				break;
 
 			case GSHWFixId::CPUCLUTRender:

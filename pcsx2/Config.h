@@ -753,7 +753,8 @@ struct Pcsx2Config
 		int UserHacks_TCOffsetX{0};
 		int UserHacks_TCOffsetY{0};
 		int UserHacks_CPUSpriteRenderBW{0};
-		int UserHacks_CPUCLUTRender{ 0 };
+		int UserHacks_CPUSpriteRenderLevel{0};
+		int UserHacks_CPUCLUTRender{0};
 		GSGPUTargetCLUTMode UserHacks_GPUTargetCLUTMode{GSGPUTargetCLUTMode::Disabled};
 		GSTextureInRtMode UserHacks_TextureInsideRt{GSTextureInRtMode::Disabled};
 		TriFiltering TriFilter{TriFiltering::Automatic};

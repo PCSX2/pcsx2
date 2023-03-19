@@ -404,7 +404,7 @@ void ImGuiManager::DrawSettingsOverlay()
 		if (GSConfig.UserHacks_TCOffsetX != 0 || GSConfig.UserHacks_TCOffsetY != 0)
 			APPEND("TCO={}/{} ", GSConfig.UserHacks_TCOffsetX, GSConfig.UserHacks_TCOffsetY);
 		if (GSConfig.UserHacks_CPUSpriteRenderBW != 0)
-			APPEND("CSBW={} ", GSConfig.UserHacks_CPUSpriteRenderBW);
+			APPEND("CSBW={}/{} ", GSConfig.UserHacks_CPUSpriteRenderBW, GSConfig.UserHacks_CPUSpriteRenderLevel);
 		if (GSConfig.UserHacks_CPUCLUTRender != 0)
 			APPEND("CCLUT={} ", GSConfig.UserHacks_CPUCLUTRender);
 		if (GSConfig.UserHacks_GPUTargetCLUTMode != GSGPUTargetCLUTMode::Disabled)

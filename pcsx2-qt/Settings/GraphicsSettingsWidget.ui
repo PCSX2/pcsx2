@@ -813,65 +813,6 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QComboBox" name="cpuSpriteRenderBW">
-         <item>
-          <property name="text">
-           <string>0 (Disabled)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>1 (64 Max Width)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>2 (128 Max Width)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>3 (192 Max Width)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>4 (256 Max Width)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>5 (320 Max Width)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>6 (384 Max Width)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>7 (448 Max Width)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>8 (512 Max Width)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>9 (576 Max Width)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>10 (640 Max Width)</string>
-          </property>
-         </item>
-        </widget>
-       </item>
        <item row="3" column="0">
         <widget class="QLabel" name="label_16">
          <property name="text">
@@ -1095,6 +1036,88 @@
           </property>
          </item>
         </widget>
+       </item>
+       <item row="2" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,0">
+         <item>
+          <widget class="QComboBox" name="cpuSpriteRenderBW">
+           <item>
+            <property name="text">
+             <string>0 (Disabled)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>1 (64 Max Width)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>2 (128 Max Width)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>3 (192 Max Width)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>4 (256 Max Width)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>5 (320 Max Width)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>6 (384 Max Width)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>7 (448 Max Width)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>8 (512 Max Width)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>9 (576 Max Width)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>10 (640 Max Width)</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="cpuSpriteRenderLevel">
+           <item>
+            <property name="text">
+             <string>Sprites Only</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Sprites/Triangles</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Blended Sprites/Triangles</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
