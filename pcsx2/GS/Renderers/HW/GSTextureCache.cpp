@@ -1554,62 +1554,6 @@ bool GSTextureCache::PrepareDownloadTexture(u32 width, u32 height, GSTexture::Fo
 	return true;
 }
 
-// Expands targets where the write from the EE overlaps the edge of a render target and uses the same base pointer.
-void GSTextureCache::ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)
-{
-	GIFRegTEX0 TEX0;
-	TEX0.TBP0 = BITBLTBUF.DBP;
-	TEX0.TBW = BITBLTBUF.DBW;
-	TEX0.PSM = BITBLTBUF.DPSM;
-	Target* dst = nullptr;
-	auto& list = m_dst[RenderTarget];
-	RGBAMask rgba;
-	rgba._u32 = GSUtil::GetChannelMask(TEX0.PSM);
-
-	for (auto i = list.begin(); i != list.end(); ++i)
-	{
-		Target* t = *i;
-
-		if (TEX0.TBP0 == t->m_TEX0.TBP0 && GSLocalMemory::m_psm[TEX0.PSM].bpp == GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp && t->Overlaps(TEX0.TBP0, TEX0.TBW, TEX0.PSM, r))
-		{
-			list.MoveFront(i.Index());
-
-			dst = t;
-			break;
-		}
-	}
-
-	if (!dst)
-		return;
-
-	// Only expand the target when the FBW matches. Otherwise, games like GT4 will end up with the main render target
-	// being 2000+ due to unrelated EE writes.
-	if (TEX0.TBW == dst->m_TEX0.TBW)
-	{
-		// Round up to the nearest even height, like the draw target allocator.
-		const s32 aligned_height = Common::AlignUpPow2(r.w, 2);
-		if (r.z > dst->m_unscaled_size.x || aligned_height > dst->m_unscaled_size.y)
-		{
-			// We don't recycle here, because most of the time when this happens it's strange-sized textures
-			// which are being expanded one-line-at-a-time.
-			if (dst->ResizeTexture(std::max(r.z, dst->m_unscaled_size.x),
-					std::max(aligned_height, dst->m_unscaled_size.y), false))
-			{
-				AddDirtyRectTarget(dst, r, TEX0.PSM, TEX0.TBW, rgba);
-				GetTargetHeight(TEX0.TBP0, TEX0.TBW, TEX0.PSM, aligned_height);
-				dst->UpdateValidity(r);
-				dst->UpdateValidBits(GSLocalMemory::m_psm[TEX0.PSM].fmsk);
-			}
-		}
-	}
-	else
-	{
-		const GSVector4i clamped_r(r.rintersect(dst->GetUnscaledRect()));
-		AddDirtyRectTarget(dst, clamped_r, TEX0.PSM, TEX0.TBW, rgba);
-		dst->UpdateValidity(clamped_r);
-		dst->UpdateValidBits(GSLocalMemory::m_psm[TEX0.PSM].fmsk);
-	}
-}
 // Goal: Depth And Target at the same address is not possible. On GS it is
 // the same memory but not on the Dx/GL. Therefore a write to the Depth/Target
 // must invalidate the Target/Depth respectively
