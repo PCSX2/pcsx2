@@ -33,6 +33,10 @@ struct ConvertPSRes
 	{
 		return texture.sample(s, coord);
 	}
+	float4 sample_level(float2 coord, float lod)
+	{
+		return texture.sample(s, coord, level(lod));
+	}
 };
 
 struct ConvertPSDepthRes

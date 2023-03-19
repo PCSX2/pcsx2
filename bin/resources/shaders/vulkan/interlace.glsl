@@ -35,7 +35,7 @@ void ps_main0()
 	const int vpos  = int(gl_FragCoord.y); // vertical position of destination texture
 
 	if ((vpos & 1) == field)
-		o_col0 = texture(samp0, v_tex);
+		o_col0 = textureLod(samp0, v_tex, 0);
 	else
 		discard;
 }
@@ -46,7 +46,7 @@ void ps_main0()
 #ifdef ps_main1
 void ps_main1()
 {
-	o_col0 = texture(samp0, v_tex);
+	o_col0 = textureLod(samp0, v_tex, 0);
 }
 #endif
 
@@ -56,9 +56,9 @@ void ps_main1()
 void ps_main2()
 {
 	vec2 vstep = vec2(0.0f, ZrH.y);
-	vec4 c0 = texture(samp0, v_tex - vstep);
-	vec4 c1 = texture(samp0, v_tex);
-	vec4 c2 = texture(samp0, v_tex + vstep);
+	vec4 c0 = textureLod(samp0, v_tex - vstep, 0);
+	vec4 c1 = textureLod(samp0, v_tex, 0);
+	vec4 c2 = textureLod(samp0, v_tex + vstep, 0);
 
 	o_col0 = (c0 + c1 * 2.0f + c2) / 4.0f;
 }
@@ -90,7 +90,7 @@ void ps_main3()
 	// if the index of current destination line belongs to the current fiels we update it, otherwise
 	// we leave the old line in the destination buffer
 	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) == field))
-		o_col0 = texture(samp0, iptr);
+		o_col0 = textureLod(samp0, iptr, 0);
 	else
 		discard;
 }
@@ -150,13 +150,13 @@ void ps_main4()
 
 	// calculating motion, only relevant for missing lines where the "center line" is pointed by p_t1
 
-	vec4 hn = texture(samp0, p_t0 - lofs); // new high pixel
-	vec4 cn = texture(samp0, p_t1);        // new center pixel
-	vec4 ln = texture(samp0, p_t0 + lofs); // new low pixel
+	vec4 hn = textureLod(samp0, p_t0 - lofs, 0); // new high pixel
+	vec4 cn = textureLod(samp0, p_t1, 0);        // new center pixel
+	vec4 ln = textureLod(samp0, p_t0 + lofs, 0); // new low pixel
 
-	vec4 ho = texture(samp0, p_t2 - lofs); // old high pixel
-	vec4 co = texture(samp0, p_t3);        // old center pixel
-	vec4 lo = texture(samp0, p_t2 + lofs); // old low pixel
+	vec4 ho = textureLod(samp0, p_t2 - lofs, 0); // old high pixel
+	vec4 co = textureLod(samp0, p_t3, 0);        // old center pixel
+	vec4 lo = textureLod(samp0, p_t2 + lofs, 0); // old low pixel
 
 	vec3 mh = hn.rgb - ho.rgb; // high pixel motion
 	vec3 mc = cn.rgb - co.rgb; // center pixel motion
@@ -181,7 +181,7 @@ void ps_main4()
 	if ((vpos & 1) == field) // output coordinate present on current field
 	{
 		// output coordinate present on current field
-		o_col0 = texture(samp0, p_t0);
+		o_col0 = textureLod(samp0, p_t0, 0);
 	}
 	else if ((iptr.y > 0.5f - lofs.y) || (iptr.y < 0.0 + lofs.y))
 	{

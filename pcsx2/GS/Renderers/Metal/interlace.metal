@@ -27,7 +27,7 @@ fragment float4 ps_interlace0(ConvertShaderData data [[stage_in]], ConvertPSRes 
 	const int vpos  = int(data.p.y);      // vertical position of destination texture
 
 	if ((vpos & 1) == field)
-		return res.sample(data.t);
+		return res.sample_level(data.t, 0);
 	else
 		discard_fragment();
 
@@ -38,7 +38,7 @@ fragment float4 ps_interlace0(ConvertShaderData data [[stage_in]], ConvertPSRes 
 // Bob shader
 fragment float4 ps_interlace1(ConvertShaderData data [[stage_in]], ConvertPSRes res)
 {
-	return res.sample(data.t);
+	return res.sample_level(data.t);
 }
 
 
@@ -47,9 +47,9 @@ fragment float4 ps_interlace2(ConvertShaderData data [[stage_in]], ConvertPSRes 
 	constant GSMTLInterlacePSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
 {
 	float2 vstep = float2(0.0f, uniform.ZrH.y);
-	float4 c0 = res.sample(data.t - vstep);
-	float4 c1 = res.sample(data.t);
-	float4 c2 = res.sample(data.t + vstep);
+	float4 c0 = res.sample_level(data.t - vstep, 0);
+	float4 c1 = res.sample_level(data.t, 0);
+	float4 c2 = res.sample_level(data.t + vstep, 0);
 	return (c0 + c1 * 2.f + c2) / 4.f;
 }
 
@@ -79,7 +79,7 @@ fragment float4 ps_interlace3(ConvertShaderData data [[stage_in]], ConvertPSRes 
 	// if the index of current destination line belongs to the current fiels we update it, otherwise
 	// we leave the old line in the destination buffer
 	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) == field))
-		return res.sample(iptr);
+		return res.sample_level(iptr, 0);
 	else
 		discard_fragment();
 
@@ -137,13 +137,13 @@ fragment float4 ps_interlace4(ConvertShaderData data [[stage_in]], ConvertPSRes 
 
 	// calculating motion, only relevant for missing lines where the "center line" is pointed by p_t1
 
-	float4 hn = res.sample(p_t0 - lofs); // new high pixel
-	float4 cn = res.sample(p_t1);        // new center pixel
-	float4 ln = res.sample(p_t0 + lofs); // new low pixel
+	float4 hn = res.sample_level(p_t0 - lofs, 0); // new high pixel
+	float4 cn = res.sample_level(p_t1, 0);        // new center pixel
+	float4 ln = res.sample_level(p_t0 + lofs, 0); // new low pixel
 
-	float4 ho = res.sample(p_t2 - lofs); // old high pixel
-	float4 co = res.sample(p_t3);        // old center pixel
-	float4 lo = res.sample(p_t2 + lofs); // old low pixel
+	float4 ho = res.sample_level(p_t2 - lofs, 0); // old high pixel
+	float4 co = res.sample_level(p_t3, 0);        // old center pixel
+	float4 lo = res.sample_level(p_t2 + lofs, 0); // old low pixel
 
 	float3 mh = hn.rgb - ho.rgb;
 	float3 mc = cn.rgb - co.rgb;
@@ -168,7 +168,7 @@ fragment float4 ps_interlace4(ConvertShaderData data [[stage_in]], ConvertPSRes 
 	if ((vpos & 1) == field)
 	{
 		// output coordinate present on current field
-		return res.sample(p_t0);
+		return res.sample_level(p_t0, 0);
 	}
 	else if ((iptr.y > 0.5f - lofs.y) || (iptr.y < 0.0 + lofs.y))
 	{

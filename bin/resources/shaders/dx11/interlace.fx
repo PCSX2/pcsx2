@@ -23,7 +23,7 @@ float4 ps_main0(PS_INPUT input) : SV_Target0
 	const int vpos  = int(input.p.y); // vertical position of destination texture
 
 	if ((vpos & 1) == field)
-		return Texture.Sample(Sampler, input.t);
+		return Texture.SampleLevel(Sampler, input.t, 0);
 	else
 		discard;
 
@@ -34,7 +34,7 @@ float4 ps_main0(PS_INPUT input) : SV_Target0
 // Bob shader
 float4 ps_main1(PS_INPUT input) : SV_Target0
 {
-	return Texture.Sample(Sampler, input.t);
+	return Texture.SampleLevel(Sampler, input.t, 0);
 }
 
 
@@ -42,9 +42,9 @@ float4 ps_main1(PS_INPUT input) : SV_Target0
 float4 ps_main2(PS_INPUT input) : SV_Target0
 {
 	float2 vstep = float2(0.0f, ZrH.y);
-	float4 c0 = Texture.Sample(Sampler, input.t - vstep);
-	float4 c1 = Texture.Sample(Sampler, input.t);
-	float4 c2 = Texture.Sample(Sampler, input.t + vstep);
+	float4 c0 = Texture.SampleLevel(Sampler, input.t - vstep, 0);
+	float4 c1 = Texture.SampleLevel(Sampler, input.t, 0);
+	float4 c2 = Texture.SampleLevel(Sampler, input.t + vstep, 0);
 
 	return (c0 + c1 * 2 + c2) / 4;
 }
@@ -74,7 +74,7 @@ float4 ps_main3(PS_INPUT input) : SV_Target0
 	// if the index of current destination line belongs to the current fiels we update it, otherwise
 	// we leave the old line in the destination buffer
 	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) == field))
-		return Texture.Sample(Sampler, iptr);
+		return Texture.SampleLevel(Sampler, iptr, 0);
 	else
 		discard;
 
@@ -133,13 +133,13 @@ float4 ps_main4(PS_INPUT input) : SV_Target0
 
 	// calculating motion, only relevant for missing lines where the "center line" is pointed by p_t1
 
-	float4 hn = Texture.Sample(Sampler, p_t0 - lofs); // new high pixel
-	float4 cn = Texture.Sample(Sampler, p_t1);        // new center pixel
-	float4 ln = Texture.Sample(Sampler, p_t0 + lofs); // new low pixel
+	float4 hn = Texture.SampleLevel(Sampler, p_t0 - lofs, 0); // new high pixel
+	float4 cn = Texture.SampleLevel(Sampler, p_t1, 0);        // new center pixel
+	float4 ln = Texture.SampleLevel(Sampler, p_t0 + lofs, 0); // new low pixel
 
-	float4 ho = Texture.Sample(Sampler, p_t2 - lofs); // old high pixel
-	float4 co = Texture.Sample(Sampler, p_t3);        // old center pixel
-	float4 lo = Texture.Sample(Sampler, p_t2 + lofs); // old low pixel
+	float4 ho = Texture.SampleLevel(Sampler, p_t2 - lofs, 0); // old high pixel
+	float4 co = Texture.SampleLevel(Sampler, p_t3, 0);        // old center pixel
+	float4 lo = Texture.SampleLevel(Sampler, p_t2 + lofs, 0); // old low pixel
 
 	float3 mh = hn.rgb - ho.rgb; // high pixel motion
 	float3 mc = cn.rgb - co.rgb; // center pixel motion
@@ -164,7 +164,7 @@ float4 ps_main4(PS_INPUT input) : SV_Target0
 	if ((vpos & 1) == field)
 	{
 		// output coordinate present on current field
-		return Texture.Sample(Sampler, p_t0);
+		return Texture.SampleLevel(Sampler, p_t0, 0);
 	}
 	else if ((iptr.y > 0.5f - lofs.y) || (iptr.y < 0.0 + lofs.y))
 	{
