@@ -2199,8 +2199,6 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				if (!expecting_this_tex)
 					continue;
 
-				z_found = true;
-
 				t->readbacks_since_draw++;
 
 				GSVector2i page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
@@ -2273,9 +2271,15 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 						continue;
 				}
 
-				Read(t, draw_rect);
-				if (draw_rect.rintersect(t->m_drawn_since_read).eq(t->m_drawn_since_read))
-					t->m_drawn_since_read = GSVector4i::zero();
+				if (!draw_rect.rempty())
+				{
+					Read(t, draw_rect);
+
+					z_found = true;
+
+					if (draw_rect.rintersect(t->m_drawn_since_read).eq(t->m_drawn_since_read))
+						t->m_drawn_since_read = GSVector4i::zero();
+				}
 			}
 		}
 		if (z_found)
@@ -2393,6 +2397,11 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 			if (targetr.rintersect(t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size)).eq(targetr))
 				return;
 
+			// Need to check the drawn area first.
+			// Shadow Hearts From the New World tries to double buffer, then because we don't support rendering inside an RT, it makes a new one.
+			// This makes sure any misdetection doesn't accidentally break the drawn area or skip download completely.
+			targetr = targetr.rintersect(t->m_drawn_since_read);
+
 			if (!targetr.rempty())
 			{
 				if (GSConfig.HWDownloadMode != GSHardwareDownloadMode::Enabled)
@@ -2401,7 +2410,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 					continue;
 				}
 
-				Read(t, targetr.rintersect(t->m_drawn_since_read));
+				Read(t, targetr);
 
 				// Try to cut down how much we read next, if we can.
 				// Fatal Frame reads in vertical strips, SOCOM 2 does horizontal, so we can handle that below.
