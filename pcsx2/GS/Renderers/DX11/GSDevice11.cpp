@@ -935,20 +935,11 @@ void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	}
 }
 
-void GSDevice11::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset, int bufIdx)
+void GSDevice11::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb)
 {
-	const GSVector4 ds = GSVector4(dTex->GetSize());
-
-	const GSVector4 sRect(0, 0, 1, 1);
-	const GSVector4 dRect(0.0f, yoffset, ds.x, ds.y + yoffset);
-
-	InterlaceConstantBuffer cb;
-
-	cb.ZrH = GSVector4(static_cast<float>(bufIdx), 1.0f / ds.y, ds.y, MAD_SENSITIVITY);
-
 	m_ctx->UpdateSubresource(m_interlace.cb.get(), 0, nullptr, &cb, 0, 0);
 
-	StretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[shader].get(), m_interlace.cb.get(), linear);
+	StretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[static_cast<int>(shader)].get(), m_interlace.cb.get(), linear);
 }
 
 void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)

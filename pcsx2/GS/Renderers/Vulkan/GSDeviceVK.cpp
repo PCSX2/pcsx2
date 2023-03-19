@@ -939,29 +939,16 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
-void GSDeviceVK::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset, int bufIdx)
+void GSDeviceVK::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb)
 {
-	const GSVector2i ds_i = dTex->GetSize();
-	const GSVector4  ds   = GSVector4(ds_i);
-	
-
-	const GSVector4 sRect(0, 0, 1, 1);
-	const GSVector4 dRect(0.0f, yoffset, ds.x, ds.y + yoffset);
-
-	InterlaceConstantBuffer cb;
-
-	cb.ZrH = GSVector4(static_cast<float>(bufIdx), 1.0f / ds.y, ds.y, MAD_SENSITIVITY);
-
-	GL_PUSH("DoInterlace %dx%d Shader:%d Linear:%d", ds_i.x, ds_i.y, shader, linear);
-
 	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-	const GSVector4i rc(0, 0, ds_i.x, ds_i.y);
+	const GSVector4i rc = GSVector4i(dRect);
 	EndRenderPass();
 	OMSetRenderTargets(dTex, nullptr, rc, false);
 	SetUtilityTexture(sTex, linear ? m_linear_sampler : m_point_sampler);
-	BeginRenderPassForStretchRect(static_cast<GSTextureVK*>(dTex), rc, rc, false);
-	SetPipeline(m_interlace[shader]);
+	BeginRenderPassForStretchRect(static_cast<GSTextureVK*>(dTex), dTex->GetRect(), rc, false);
+	SetPipeline(m_interlace[static_cast<int>(shader)]);
 	SetUtilityPushConstants(&cb, sizeof(cb));
 	DrawStretchRect(sRect, dRect, dTex->GetSize());
 	EndRenderPass();
