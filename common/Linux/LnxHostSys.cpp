@@ -89,6 +89,7 @@ static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void* ctx)
 	// Prevent recursive exception filtering.
 	if (s_in_exception_handler)
 	{
+		lock.unlock();
 		CallExistingSignalHandler(signal, siginfo, ctx);
 		return;
 	}
@@ -121,6 +122,7 @@ static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void* ctx)
 		return;
 
 	// Call old signal handler, which will likely dump core.
+	lock.unlock();
 	CallExistingSignalHandler(signal, siginfo, ctx);
 }
 
@@ -135,6 +137,10 @@ bool HostSys::InstallPageFaultHandler(PageFaultHandler handler)
 		sigemptyset(&sa.sa_mask);
 		sa.sa_flags = SA_SIGINFO;
 		sa.sa_sigaction = SysPageFaultSignalFilter;
+#ifdef __linux__
+		// Don't block the signal from executing recursively, we want to fire the original handler.
+		sa.sa_flags |= SA_NODEFER;
+#endif
 #ifdef __APPLE__
 		// MacOS uses SIGBUS for memory permission violations
 		if (sigaction(SIGBUS, &sa, &s_old_sigbus_action) != 0)

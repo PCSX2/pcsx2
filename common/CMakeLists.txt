@@ -288,6 +288,11 @@ if(NOT WIN32 AND (QT_BUILD OR NOGUI_BUILD))
 	target_link_libraries(common PRIVATE CURL::libcurl)
 endif()
 
+if(UNIX AND NOT APPLE AND TARGET libbacktrace::libbacktrace)
+	target_compile_definitions(common PRIVATE "HAS_LIBBACKTRACE=1")
+	target_link_libraries(common PRIVATE libbacktrace::libbacktrace)
+endif()
+
 target_link_libraries(common PRIVATE
 	${LIBC_LIBRARIES}
 	PNG::PNG
