@@ -1845,7 +1845,9 @@ void GSState::Read(u8* mem, int len)
 	if (!m_tr.Update(w, h, bpp, len))
 		return;
 
-	m_mem.ReadImageX(m_tr.x, m_tr.y, mem, len, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);
+	mem += m_tr.offset;
+	len -= m_tr.offset;
+	m_mem.ReadImageX(m_tr.x, m_tr.y, m_tr.offset, mem, len, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);
 
 	if (GSConfig.DumpGSData && GSConfig.SaveRT && s_n >= GSConfig.SaveN)
 	{
@@ -2136,7 +2138,9 @@ void GSState::ReadLocalMemoryUnsync(u8* mem, int qwc, GIFRegBITBLTBUF BITBLTBUF,
 	if (!tb.Update(w, h, bpp, len))
 		return;
 
-	m_mem.ReadImageX(tb.x, tb.y, mem, len, BITBLTBUF, TRXPOS, TRXREG);
+	mem += tb.offset;
+	len -= tb.offset;
+	m_mem.ReadImageX(tb.x, tb.y, tb.offset, mem, len, BITBLTBUF, TRXPOS, TRXREG);
 }
 
 void GSState::PurgePool()
@@ -3900,6 +3904,7 @@ void GSState::GSTransferBuffer::Init(int tx, int ty, const GIFRegBITBLTBUF& blit
 	x = tx;
 	y = ty;
 	total = 0;
+	offset = 0;
 	m_blit = blit;
 }
 

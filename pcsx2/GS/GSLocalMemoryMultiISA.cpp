@@ -87,7 +87,7 @@ class CURRENT_ISA::GSLocalMemoryFunctions
 	static void ReadTexture(GSLocalMemory& mem, const GSOffset& off, const GSVector4i& r, u8* dst, int dstpitch, const GIFRegTEXA& TEXA);
 
 public:
-	static void ReadImageX(const GSLocalMemory& mem, int& tx, int& ty, u8* dst, int len, GIFRegBITBLTBUF& BITBLTBUF, GIFRegTRXPOS& TRXPOS, GIFRegTRXREG& TRXREG);
+	static void ReadImageX(const GSLocalMemory& mem, int& tx, int& ty, int& offset, u8* dst, int len, GIFRegBITBLTBUF& BITBLTBUF, GIFRegTRXPOS& TRXPOS, GIFRegTRXREG& TRXREG);
 
 	static void PopulateFunctions(GSLocalMemory& mem);
 };
@@ -931,7 +931,7 @@ void GSLocalMemoryFunctions::WriteImageX(GSLocalMemory& mem, int& tx, int& ty, c
 
 //
 
-void GSLocalMemoryFunctions::ReadImageX(const GSLocalMemory& mem, int& tx, int& ty, u8* dst, int len, GIFRegBITBLTBUF& BITBLTBUF, GIFRegTRXPOS& TRXPOS, GIFRegTRXREG& TRXREG)
+void GSLocalMemoryFunctions::ReadImageX(const GSLocalMemory& mem, int& tx, int& ty, int& offset, u8* dst, int len, GIFRegBITBLTBUF& BITBLTBUF, GIFRegTRXPOS& TRXPOS, GIFRegTRXREG& TRXREG)
 {
 	if (len <= 0)
 		return;
@@ -1005,16 +1005,23 @@ void GSLocalMemoryFunctions::ReadImageX(const GSLocalMemory& mem, int& tx, int& 
 
 		case PSM_PSMCT24:
 		case PSM_PSMZ24:
-			readWriteHelper(mem.vm32(), tx, ty, len / 3, 1, sx, w, off.assertSizesMatch(GSLocalMemory::swizzle32), [&](auto& pa, int x)
+		{
+			const int length = len / 3;
+			const int aligned_length = (len + 2) / 3;
+			if (length != aligned_length)
 			{
-				u32 c = *pa.value(x);
-				pb[0] = (u8)(c);
-				pb[1] = (u8)(c >> 8);
-				pb[2] = (u8)(c >> 16);
-				pb += 3;
-			});
+				offset = 3 - (len - (length * 3));
+			}
+			readWriteHelper(mem.vm32(), tx, ty, aligned_length, 1, sx, w, off.assertSizesMatch(GSLocalMemory::swizzle32), [&](auto& pa, int x)
+				{
+					u32 c = *pa.value(x);
+					pb[0] = (u8)(c);
+					pb[1] = (u8)(c >> 8);
+					pb[2] = (u8)(c >> 16);
+					pb += 3;
+				});
 			break;
-
+		}
 		case PSM_PSMCT16:
 		case PSM_PSMCT16S:
 		case PSM_PSMZ16:
