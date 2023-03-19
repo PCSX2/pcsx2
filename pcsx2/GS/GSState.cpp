@@ -1512,7 +1512,6 @@ void GSState::FlushWrite()
 	r.top = m_env.TRXPOS.DSAY;
 	r.right = r.left + m_env.TRXREG.RRW;
 	r.bottom = r.top + m_env.TRXREG.RRH;
-	ExpandTarget(m_env.BITBLTBUF, r);
 	InvalidateVideoMem(m_env.BITBLTBUF, r, true);
 
 	const GSLocalMemory::writeImage wi = GSLocalMemory::m_psm[m_env.BITBLTBUF.DPSM].wi;
@@ -1789,7 +1788,6 @@ void GSState::Write(const u8* mem, int len)
 	if (m_tr.end == 0 && len >= m_tr.total)
 	{
 		// received all data in one piece, no need to buffer it
-		ExpandTarget(m_env.BITBLTBUF, r);
 		InvalidateVideoMem(blit, r, true);
 
 		psm.wi(m_mem, m_tr.x, m_tr.y, mem, m_tr.total, blit, m_env.TRXPOS, m_env.TRXREG);
