@@ -121,16 +121,18 @@ PAPX-90222:
   name: "Jak x Daxter - Kyuu Sekai no Isan [Demo, Taikenban]"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 PAPX-90223:
   name: "Jak x Daxter - Kyuu Sekai no Isan [Demo, Taikenban]"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 PAPX-90231:
   name: "Kaitou Sly Cooper [Demo, Taikenban]"
   region: "NTSC-J"
@@ -163,11 +165,11 @@ PAPX-90516:
   name: "Jak and Daxter II [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1 # Fixes broken textures.
-    textureInsideRT: 1 # Fixes broken character models.
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes lighting.
-    beforeDraw: "OI_JakGames"
 PAPX-90517:
   name: "Prince of Persia - Jikan no Suna [Trial]"
   region: "NTSC-J"
@@ -785,11 +787,11 @@ SCAJ-20073:
   name: "Jak and Daxter II"
   region: "NTSC-Unk"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1 # Fixes broken textures.
-    textureInsideRT: 1 # Fixes broken character models.
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes lighting.
-    beforeDraw: "OI_JakGames"
 SCAJ-20074:
   name: "King of Fighters 2002, The"
   region: "NTSC-Unk"
@@ -1830,9 +1832,10 @@ SCED-50614:
   name: "Jak and Daxter - The Precursor Legacy [Demo]"
   region: "PAL-Unk"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCED-50622:
   name: "Official PlayStation 2 Magazine Demo 14" # German
   region: "PAL-E-G"
@@ -2110,11 +2113,11 @@ SCED-51700:
   name: "Jak II - Renegade [Demo]"
   region: "PAL-M5"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1 # Fixes broken textures.
-    textureInsideRT: 1 # Fixes broken character models.
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes lighting.
-    beforeDraw: "OI_JakGames"
 SCED-51899:
   name: "PlayStation Experience [Demo]"
   region: "PAL-E"
@@ -2423,11 +2426,11 @@ SCED-52952:
   name: "Jak 3 [Demo]"
   region: "PAL-M5"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
-    autoFlush: 1
-    beforeDraw: "OI_JakGames"
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    autoFlush: 1 # Fixes lighting.
 SCED-52970:
   name: "SCEE Hits Demo"
   region: "PAL-M5"
@@ -2973,9 +2976,10 @@ SCES-50361:
   region: "PAL-M6"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCES-50408:
   name: "PaRappa the Rapper 2"
   region: "PAL-M5"
@@ -3135,9 +3139,10 @@ SCES-50614:
   name: "Jak and Daxter - The Precursor Legacy"
   region: "PAL-Unk"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCES-50759:
   name: "Virtua Fighter 4"
   region: "PAL-M5"
@@ -3454,11 +3459,11 @@ SCES-51608:
   region: "PAL-M7"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1 # Fixes broken textures.
-    textureInsideRT: 1 # Fixes broken character models.
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes lighting.
-    beforeDraw: "OI_JakGames"
 SCES-51610:
   name: "This is Football 2004 [Red Devils 2004]"
   region: "PAL-BE"
@@ -3765,11 +3770,11 @@ SCES-52460:
   region: "PAL-M7"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
-    autoFlush: 1
-    beforeDraw: "OI_JakGames"
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    autoFlush: 1 # Fixes lighting.
 SCES-52529:
   name: "Sly 2 - Band of Thieves"
   region: "PAL-M11"
@@ -3975,7 +3980,7 @@ SCES-53286:
     autoFlush: 1 # Fixes lighting.
     mipmap: 2 # Fixes bad textures.
     trilinearFiltering: 1 # Fixes smooths texture transitions.
-    beforeDraw: "OI_JakGames"
+    beforeDraw: "OI_JakX"
   memcardFilters: # Reads Ratchet Gladiator data.
     - "SCES-53286"
     - "SCES-53285"
@@ -4936,11 +4941,11 @@ SCKA-20010:
   name: "Jak II"
   region: "NTSC-K"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1 # Fixes broken textures.
-    textureInsideRT: 1 # Fixes broken character models.
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes lighting.
-    beforeDraw: "OI_JakGames"
 SCKA-20011:
   name: "Ratchet & Clank 2"
   region: "NTSC-K"
@@ -5109,11 +5114,11 @@ SCKA-20040:
   name: "Jak 3"
   region: "NTSC-K"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
-    autoFlush: 1
-    beforeDraw: "OI_JakGames"
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    autoFlush: 1 # Fixes lighting.
 SCKA-20041:
   name: "EyeToy - Play 2"
   region: "NTSC-K"
@@ -5730,9 +5735,10 @@ SCPS-15021:
   name: "Jak x Daxter - Kyuusekai no Isan"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCPS-15022:
   name: "Dual Hearts"
   region: "NTSC-J"
@@ -5904,11 +5910,11 @@ SCPS-15057:
   name: "Jak and Daxter II"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
-    autoFlush: 1
-    beforeDraw: "OI_JakGames"
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    autoFlush: 1 # Fixes lighting.
 SCPS-15058:
   name: "Arc the Lad - Generation"
   region: "NTSC-J"
@@ -6413,9 +6419,10 @@ SCPS-19210:
   name: "Jak x Daxter - Kyuusekai no Isan [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCPS-19211:
   name: "Ratchet & Clank [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -6796,9 +6803,10 @@ SCPS-55004:
   name: "Jak x Daxter - Kyuusekai no Isan"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCPS-55005:
   name: "Gran Turismo - Concept 2001 Tokyo"
   region: "NTSC-J"
@@ -7049,9 +7057,10 @@ SCPS-56003:
   name: "Jak and Daxter - The Precursor Legacy"
   region: "NTSC-K"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCPS-56004:
   name: "Otostaz"
   region: "NTSC-K"
@@ -7224,9 +7233,10 @@ SCUS-97124:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCUS-97125:
   name: "Frequency"
   region: "NTSC-U"
@@ -7409,16 +7419,18 @@ SCUS-97170:
   name: "Jak and Daxter - The Precursor Legacy [Cingular Wireless Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCUS-97171:
   name: "Jak and Daxter - The Precursor Legacy [PS Underground Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCUS-97172:
   name: "World Tour Soccer 2002"
   region: "NTSC-U"
@@ -7763,11 +7775,11 @@ SCUS-97265:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1 # Fixes broken textures.
-    textureInsideRT: 1 # Fixes broken character models.
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes lighting.
-    beforeDraw: "OI_JakGames"
 SCUS-97266:
   name: "Final Fantasy XI [Disc 1 of 2]"
   region: "NTSC-U"
@@ -7802,11 +7814,11 @@ SCUS-97273:
   name: "Jak II [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1 # Fixes broken textures.
-    textureInsideRT: 1 # Fixes broken character models.
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes lighting.
-    beforeDraw: "OI_JakGames"
 SCUS-97274:
   name: "Jak II [Video Demo]"
   region: "NTSC-U"
@@ -7928,11 +7940,11 @@ SCUS-97330:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
-    autoFlush: 1
-    beforeDraw: "OI_JakGames"
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    autoFlush: 1 # Fixes lighting.
 SCUS-97331:
   name: "Official U.S. PlayStation Magazine Demo Disc 078"
   region: "NTSC-U"
@@ -8055,7 +8067,7 @@ SCUS-97374:
     mipmap: 1 # Fixes broken textures.
     textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
-    beforeDraw: "OI_JakGames"
+    beforeDraw: "OI_JakX"
 SCUS-97377:
   name: "Syphon Filter - The Omega Strain [Regular Demo]"
   region: "NTSC-U"
@@ -8178,11 +8190,11 @@ SCUS-97412:
   name: "Jak 3 [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
-    autoFlush: 1
-    beforeDraw: "OI_JakGames"
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    autoFlush: 1 # Fixes lighting.
 SCUS-97413:
   name: "Ratchet & Clank - Up Your Arsenal [Public Beta v1.0]"
   region: "NTSC-U"
@@ -8253,7 +8265,7 @@ SCUS-97429:
     autoFlush: 1 # Fixes lighting.
     mipmap: 2 # Fixes bad textures.
     trilinearFiltering: 1 # Fixes smooths texture transitions.
-    beforeDraw: "OI_JakGames"
+    beforeDraw: "OI_JakX"
   memcardFilters:
     - "SCUS-97429"
     - "SCUS-97465"
@@ -8305,10 +8317,11 @@ SCUS-97440:
   name: "Jak and Daxter Trilogy [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
-    autoFlush: 1
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    autoFlush: 1 # Fixes lighting.
 SCUS-97441:
   name: "Getaway The - Black Monday [Demo]"
   region: "NTSC-U"
@@ -8525,7 +8538,7 @@ SCUS-97486:
     autoFlush: 1 # Fixes lighting.
     mipmap: 2 # Fixes bad textures.
     trilinearFiltering: 1 # Fixes smooths texture transitions.
-    beforeDraw: "OI_JakGames"
+    beforeDraw: "OI_JakX"
 SCUS-97487:
   name: "Ratchet - Deadlocked [Public Beta v.1]"
   region: "NTSC-U"
@@ -8547,7 +8560,7 @@ SCUS-97488:
     autoFlush: 1 # Fixes lighting.
     mipmap: 2 # Fixes bad textures.
     trilinearFiltering: 1 # Fixes smooths texture transitions.
-    beforeDraw: "OI_JakGames"
+    beforeDraw: "OI_JakX"
 SCUS-97489:
   name: "SOCOM 3 - U.S. Navy SEALs [Public Beta v.1]"
   region: "NTSC-U"
@@ -8631,11 +8644,11 @@ SCUS-97509:
   name: "Jak II [Greatest Hits]"
   region: "NTSC-U"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1 # Fixes broken textures.
-    textureInsideRT: 1 # Fixes broken character models.
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes lighting.
-    beforeDraw: "OI_JakGames"
 SCUS-97510:
   name: "ATV Offroad Fury 2 [Greatest Hits]"
   region: "NTSC-U"
@@ -8676,11 +8689,11 @@ SCUS-97516:
   name: "Jak 3 [Greatest Hits]"
   region: "NTSC-U"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
-    autoFlush: 1
-    beforeDraw: "OI_JakGames"
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    autoFlush: 1 # Fixes lighting.
 SCUS-97517:
   name: "Killzone [Greatest Hits]"
   region: "NTSC-U"
@@ -8797,10 +8810,10 @@ SCUS-97555:
   name: "Jak and Daxter Complete Trilogy [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1
-    textureInsideRT: 1
-    beforeDraw: "OI_JakGames"
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCUS-97556:
   name: "MLB '07 - The Show"
   region: "NTSC-U"
@@ -8848,7 +8861,7 @@ SCUS-97574:
     autoFlush: 1 # Fixes lighting.
     mipmap: 2 # Fixes bad textures.
     trilinearFiltering: 1 # Fixes smooths texture transitions.
-    beforeDraw: "OI_JakGames"
+    beforeDraw: "OI_JakX"
 SCUS-97579:
   name: "ATV Offroad Fury 4 [Demo]"
   region: "NTSC-U"
@@ -51893,7 +51906,7 @@ TCES-53286:
     autoFlush: 1 # Fixes lighting.
     mipmap: 2 # Fixes bad textures.
     trilinearFiltering: 1 # Fixes smooths texture transitions.
-    beforeDraw: "OI_JakGames"
+    beforeDraw: "OI_JakX"
 TCPS-10058:
   name: "Densha de Go! Shinkansen [with Controller]"
   region: "NTSC-J"
