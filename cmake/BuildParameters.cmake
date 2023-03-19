@@ -169,6 +169,12 @@ if(WIN32)
 	list(APPEND PCSX2_DEFS TIXML_USE_STL _SCL_SECURE_NO_WARNINGS _UNICODE UNICODE)
 endif()
 
+# Enable debug information in release builds for Linux.
+# Makes the backtrace actually meaningful.
+if(UNIX AND NOT APPLE)
+	add_compile_options($<$<CONFIG:Release>:-g>)
+endif()
+
 if(MSVC)
 	# Enable PDB generation in release builds
 	add_compile_options(
