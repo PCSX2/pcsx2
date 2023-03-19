@@ -823,30 +823,17 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	static_cast<GSTexture12*>(dTex)->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }
 
-void GSDevice12::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset, int bufIdx)
+void GSDevice12::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb)
 {
-	const GSVector2i ds_i = dTex->GetSize();
-	const GSVector4  ds   = GSVector4(ds_i);
-	
-
-	const GSVector4 sRect(0, 0, 1, 1);
-	const GSVector4 dRect(0.0f, yoffset, ds.x, ds.y + yoffset);
-
-	InterlaceConstantBuffer cb;
-
-	cb.ZrH = GSVector4(static_cast<float>(bufIdx), 1.0f / ds.y, ds.y, MAD_SENSITIVITY);
-
-	GL_PUSH("DoInterlace %dx%d Shader:%d Linear:%d", ds_i.x, ds_i.y, shader, linear);
-
 	static_cast<GSTexture12*>(dTex)->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-	const GSVector4i rc(0, 0, ds_i.x, ds_i.y);
+	const GSVector4i rc = GSVector4i(dRect);
 	EndRenderPass();
 	OMSetRenderTargets(dTex, nullptr, rc);
 	SetUtilityRootSignature();
 	SetUtilityTexture(sTex, linear ? m_linear_sampler_cpu : m_point_sampler_cpu);
-	BeginRenderPassForStretchRect(static_cast<GSTexture12*>(dTex), rc, rc, false);
-	SetPipeline(m_interlace[shader].get());
+	BeginRenderPassForStretchRect(static_cast<GSTexture12*>(dTex), dTex->GetRect(), rc, false);
+	SetPipeline(m_interlace[static_cast<int>(shader)].get());
 	SetUtilityPushConstants(&cb, sizeof(cb));
 	DrawStretchRect(sRect, dRect, dTex->GetSize());
 	EndRenderPass();

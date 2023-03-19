@@ -82,15 +82,11 @@ void ps_main3()
 	const int  vres   = int(ZrH.z) >> 1;                          // vertical resolution of source texture
 	const int  lofs   = ((((vres + 1) >> 1) << 1) - vres) & bank; // line alignment offset for bank 1
 	const int  vpos   = int(gl_FragCoord.y) + lofs;               // vertical position of destination texture
-	const vec2 bofs   = vec2(0.0f, 0.5f * bank);                  // vertical offset of the current bank relative to source texture size
-	const vec2 vscale = vec2(1.0f, 2.0f);                         // scaling factor from source to destination texture
-	const vec2 optr   = v_tex - bofs;                             // used to check if the current destination line is within the current bank
-	const vec2 iptr   = optr * vscale;                            // pointer to the current pixel in the source texture
 
 	// if the index of current destination line belongs to the current fiels we update it, otherwise
 	// we leave the old line in the destination buffer
-	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) == field))
-		o_col0 = textureLod(samp0, iptr, 0);
+	if ((vpos & 1) == field)
+		o_col0 = textureLod(samp0, v_tex, 0);
 	else
 		discard;
 }

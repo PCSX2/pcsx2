@@ -55,6 +55,16 @@ enum class ShaderConvert
 	Count
 };
 
+enum class ShaderInterlace
+{
+	WEAVE = 0,
+	BOB = 1,
+	BLEND = 2,
+	MAD_BUFFER = 3,
+	MAD_RECONSTRUCT = 4,
+	Count
+};
+
 static inline bool HasDepthOutput(ShaderConvert shader)
 {
 	switch (shader)
@@ -192,7 +202,6 @@ class InterlaceConstantBuffer
 {
 public:
 	GSVector4 ZrH; // data passed to the shader
-	InterlaceConstantBuffer() { memset(this, 0, sizeof(*this)); }
 };
 
 #pragma pack(pop)
@@ -773,7 +782,7 @@ protected:
 	GSTexture* FetchSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format, bool clear, bool prefer_reuse);
 
 	virtual void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c, const bool linear) = 0;
-	virtual void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset, int bufIdx) = 0;
+	virtual void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb) = 0;
 	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) {}
 	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) {}
 

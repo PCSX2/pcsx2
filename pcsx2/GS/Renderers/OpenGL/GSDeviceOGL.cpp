@@ -1453,21 +1453,14 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 		StretchRect(dTex, full_r, sTex[2], dRect[2], ShaderConvert::YUV, linear);
 }
 
-void GSDeviceOGL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset, int bufIdx)
+void GSDeviceOGL::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb)
 {
-	GL_PUSH("DoInterlace");
-
 	OMSetColorMaskState();
 
-	const GSVector4 ds = GSVector4(dTex->GetSize());
+	m_interlace.ps[static_cast<int>(shader)].Bind();
+	m_interlace.ps[static_cast<int>(shader)].Uniform4fv(0, cb.ZrH.F32);
 
-	const GSVector4 sRect(0, 0, 1, 1);
-	const GSVector4 dRect(0.0f, yoffset, ds.x, ds.y + yoffset);
-
-	m_interlace.ps[shader].Bind();
-	m_interlace.ps[shader].Uniform4f(0, bufIdx, 1.0f / ds.y, ds.y, MAD_SENSITIVITY);
-
-	StretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[shader], linear);
+	StretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[static_cast<int>(shader)], linear);
 }
 
 void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
