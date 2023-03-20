@@ -665,6 +665,8 @@ SCAJ-20044:
 SCAJ-20045:
   name: "Shadow Tower Abyss"
   region: "NTSC-Unk"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20046:
   name: "Siren"
   region: "NTSC-Unk"
@@ -720,6 +722,8 @@ SCAJ-20063:
 SCAJ-20064:
   name: "Nebula - Echo Night"
   region: "NTSC-Unk"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20065:
   name: "EyeToy - Play [with Camera]"
   region: "NTSC-Unk"
@@ -792,6 +796,8 @@ SCAJ-20075:
 SCAJ-20076:
   name: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-Unk"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
     - "SCAJ-20077"
@@ -802,6 +808,8 @@ SCAJ-20076:
 SCAJ-20077:
   name: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-Unk"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
     - "SCAJ-20077"
@@ -820,6 +828,7 @@ SCAJ-20078:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting.
     preloadFrameData: 1 # Fixes red cracklines on walls.
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20079:
   name: "Katamari Damacy"
   region: "NTSC-Unk"
@@ -945,6 +954,8 @@ SCAJ-20104:
 SCAJ-20105:
   name: "Armored Core - Nine breaker"
   region: "NTSC-Unk"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20107:
   name: "Bakufuu Slash! Kizna Arashi"
   region: "NTSC-Unk"
@@ -987,6 +998,8 @@ SCAJ-20114:
 SCAJ-20115:
   name: "Yoshitsune Eiyuuden"
   region: "NTSC-Unk"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20116:
   name: "Death by Degrees - Tekken - Nina Williams"
   region: "NTSC-Ch-J"
@@ -1026,6 +1039,8 @@ SCAJ-20120:
 SCAJ-20121:
   name: "Armored Core - Formula Front"
   region: "NTSC-Unk"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20122:
   name: "Swords of Destiny"
   region: "NTSC-Unk"
@@ -1653,6 +1668,8 @@ SCCS-40010:
 SCCS-40011:
   name: "Armored Core 2 - Another Age"
   region: "NTSC-C"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SCCS-40014:
   name: "World Soccer Winning Eleven 7 - International"
   region: "NTSC-C"
@@ -5110,6 +5127,8 @@ SCKA-20045:
 SCKA-20047:
   name: "Armored Core Nine Breaker"
   region: "NTSC-K"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCKA-20047"
     - "SLKA-25201"
@@ -6852,6 +6871,7 @@ SCPS-55024:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
   gsHWFixes:
     halfPixelOffset: 1 # Corrects positioning of reflections on player's AC.
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCPS-55024"
     - "SLPS-25007"
@@ -10192,6 +10212,8 @@ SLES-50224:
   compat: 5
   speedHacks:
     MTVUSpeedHack: 0 # Prevents broken textures and graphics.
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-50225:
   name: "Escape from Monkey Island"
   region: "PAL-E"
@@ -11697,6 +11719,7 @@ SLES-50905:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
   gsHWFixes:
     halfPixelOffset: 1 # Corrects positioning of reflections on player's AC.
+    partialTargetInvalidation: 1 # Fixes broken textures.
   #  Save import option was removed from PAL release.
 SLES-50906:
   name: "Master Rally"
@@ -11718,6 +11741,7 @@ SLES-50920:
   gsHWFixes:
     preloadFrameData: 1 # Fixes invisible lava, there is another issue that needs skipdraw 1 for blurry font but it removes much brightness.
     halfPixelOffset: 2 # Fixes font rendering.
+    partialTargetInvalidation: 1 # Fixes broken textures.
   patches:
     401F4726:
       content: |-
@@ -17359,6 +17383,7 @@ SLES-53411:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting.
     preloadFrameData: 1 # Fixes red cracklines on walls.
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-53413:
   name: "Rebel Raiders - Operation Nighthawk"
   region: "PAL-M5"
@@ -17366,6 +17391,8 @@ SLES-53414:
   name: "Echo Night - Beyond"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-53415:
   name: "Call of Duty 2 - Big Red One"
   region: "PAL-E"
@@ -18633,6 +18660,8 @@ SLES-53813:
 SLES-53819:
   name: "Armored Core - Nine Breaker"
   region: "PAL-E"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLES-53819"
     - "SLES-82036"
@@ -23346,12 +23375,16 @@ SLES-82035:
 SLES-82036:
   name: "Armored Core - Nexus [Disc 1 of 2 - Evolution Disc]"
   region: "PAL-M5"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLES-82036"
     - "SLES-82037"
 SLES-82037:
   name: "Armored Core - Nexus [Disc 2 of 2 - Revolution Disc]"
   region: "PAL-M5"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLES-82036"
     - "SLES-82037"
@@ -24075,6 +24108,7 @@ SLKA-25171:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting.
     preloadFrameData: 1 # Fixes red cracklines on walls.
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLKA-25172:
   name: "Harry Potter and the Prisoner of Azkaban"
   region: "NTSC-K"
@@ -24152,12 +24186,16 @@ SLKA-25200:
 SLKA-25201:
   name: "Armored Core Nexus Evolution [Disc 1]"
   region: "NTSC-K"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLKA-25201"
     - "SLKA-25202"
 SLKA-25202:
   name: "Armored Core Nexus Revolution [Disc 2]"
   region: "NTSC-K"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLKA-25201"
     - "SLKA-25202"
@@ -24351,6 +24389,8 @@ SLKA-25258:
   name: "Story of the Hero Yoshitsune, The"
   region: "NTSC-K"
   compat: 5
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLKA-25259:
   name: "Swords of Destiny"
   region: "NTSC-K"
@@ -24386,6 +24426,8 @@ SLKA-25268:
 SLKA-25270:
   name: "Armored Core - Formula Front"
   region: "NTSC-K"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLKA-25274:
   name: "Princess Maker 4"
   region: "NTSC-K"
@@ -25398,6 +25440,13 @@ SLPM-60125:
 SLPM-60126:
   name: "Hajime no Ippo - Victorious Boxers [Trial]"
   region: "NTSC-J"
+SLPM-60127:
+  name: "Kurikuri Mix [Taikenban trial]"
+  region: "NTSC-J"
+  speedHacks:
+    MTVUSpeedHack: 0 # Prevents broken textures and graphics.
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-60138:
   name: "Klonoa 2 - Lunatea's Veil [Trial]"
   region: "NTSC-J"
@@ -37325,6 +37374,8 @@ SLPS-25013:
   region: "NTSC-J"
   speedHacks:
     MTVUSpeedHack: 0 # Prevents broken textures and graphics.
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25014:
   name: "Choro Q HG [Jenny Hi-Grade Box]"
   region: "NTSC-J"
@@ -37447,6 +37498,7 @@ SLPS-25040:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
   gsHWFixes:
     halfPixelOffset: 1 # Corrects positioning of reflections on player's AC.
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCPS-55024"
     - "SLPS-25007"
@@ -37477,6 +37529,7 @@ SLPS-25044:
     textureInsideRT: 1 # Fixes missing effects.
     mipmap: 2 # Fixes shimmering noisy textures
     trilinearFiltering: 1 # Fixes shimmering noisy textures
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25045:
   name: "Lilie no Atelier - Salburg no Renkinjutsushi 3"
   region: "NTSC-J"
@@ -37528,6 +37581,7 @@ SLPS-25057:
   gsHWFixes:
     preloadFrameData: 1 # Fixes invisible lava, there is another issue that needs skipdraw 1 for blurry font but it removes much brightness.
     halfPixelOffset: 2 # Fixes font rendering.
+    partialTargetInvalidation: 1 # Fixes broken textures.
   patches:
     04C3765E:
       content: |-
@@ -38074,6 +38128,8 @@ SLPS-25217:
   name: "Shadow Tower Abyss"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25219:
   name: "Canary"
   region: "NTSC-J"
@@ -38373,6 +38429,8 @@ SLPS-25314:
   name: "Nebula - Echo Night"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25315:
   name: "One Piece - Grand Battle 3"
   region: "NTSC-J"
@@ -38429,6 +38487,7 @@ SLPS-25329:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting.
     preloadFrameData: 1 # Fixes red cracklines on walls.
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25330:
   name: "Dragon Ball Z - Budokai 2"
   region: "NTSC-J"
@@ -38465,6 +38524,8 @@ SLPS-25337:
 SLPS-25338:
   name: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
     - "SCAJ-20077"
@@ -38475,6 +38536,8 @@ SLPS-25338:
 SLPS-25339:
   name: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
     - "SCAJ-20077"
@@ -38705,6 +38768,8 @@ SLPS-25393:
 SLPS-25394:
   name: "Another Century's Episode"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25395:
   name: "Sentimental Prelude"
   region: "NTSC-J"
@@ -38760,6 +38825,8 @@ SLPS-25407:
 SLPS-25408:
   name: "Armored Core - Nine Breaker"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLPS-25408"
     - "SCAJ-20076"
@@ -38928,6 +38995,8 @@ SLPS-25453:
 SLPS-25454:
   name: "Daisenryaku VII Exceed"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25455:
   name: "Sanyo Pachinko Paradise 11"
   region: "NTSC-J"
@@ -38956,6 +39025,8 @@ SLPS-25460:
 SLPS-25461:
   name: "Armored Core - Formula Front"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25462:
   name: "Armored Core - Last Raven"
   region: "NTSC-J"
@@ -39511,6 +39582,8 @@ SLPS-25623:
   name: "Another Century's Episode 2"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25624:
   name: "Futakoi-Futakoi Island Collection"
   region: "NTSC-J"
@@ -39971,6 +40044,18 @@ SLPS-25729:
 SLPS-25730:
   name: "Armored Core [Machine Side Box]"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
+SLPS-25731:
+  name: "Armored Core 2 [Machine Side Box]"
+  region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
+SLPS-25732:
+  name: "Armored Core 3 [Machine Side Box]"
+  region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25733:
   name: "Super Robot Taisen OG - Original Generations"
   region: "NTSC-J"
@@ -40144,6 +40229,8 @@ SLPS-25784:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 3 # Was used to fix game crash, but not sure it's required anymore.
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25786:
   name: "Hisshou Pachinko-Pachislot Kouryaku Series Vol.10 - CR Shinseiki Evangelion - Kiseki no kachi Ha"
   region: "NTSC-J"
@@ -40295,6 +40382,8 @@ SLPS-25828:
 SLPS-25829:
   name: "Another Century's Episode 2 [Special Vocal Version]"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25830:
   name: "Zero no Tsukaima - Muma ga Tsumugu Yokaze no Gensoukyoku [Limited Edition]"
   region: "NTSC-J"
@@ -40815,6 +40904,8 @@ SLPS-73201:
 SLPS-73202:
   name: "Armored Core - Nexus [PlayStation 2 The Best] [Disc 1]"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
     - "SCAJ-20077"
@@ -40825,6 +40916,8 @@ SLPS-73202:
 SLPS-73203:
   name: "Armored Core - Nexus [PlayStation 2 The Best] [Disc 2]"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
     - "SCAJ-20077"
@@ -40971,6 +41064,8 @@ SLPS-73226:
 SLPS-73227:
   name: "Another Century's Episode [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-73228:
   name: "Fuuun Bakumatsuden [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -41253,6 +41348,7 @@ SLPS-73411:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
   gsHWFixes:
     halfPixelOffset: 1 # Corrects positioning of reflections on player's AC.
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCPS-55024"
     - "SLPS-25007"
@@ -42323,6 +42419,7 @@ SLUS-20249:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
   gsHWFixes:
     halfPixelOffset: 1 # Corrects positioning of reflections on player's AC.
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters: # Can import data from regular Armored Core 2.
     - "SLUS-20249"
     - "SLUS-20014"
@@ -42620,6 +42717,7 @@ SLUS-20318:
   gsHWFixes:
     preloadFrameData: 1 # Fixes invisible lava, there is another issue that needs skipdraw 1 for blurry font but it removes much brightness.
     halfPixelOffset: 2 # Fixes font rendering.
+    partialTargetInvalidation: 1 # Fixes broken textures.
   patches:
     36E02E91:
       content: |-
@@ -42735,6 +42833,7 @@ SLUS-20343:
     textureInsideRT: 1 # Fixes missing effects.
     mipmap: 2 # Fixes shimmering noisy textures
     trilinearFiltering: 1 # Fixes shimmering noisy textures
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-20344:
   name: "Rez"
   region: "NTSC-U"
@@ -42776,6 +42875,7 @@ SLUS-20353:
   gsHWFixes:
     preloadFrameData: 1 # Fixes invisible lava, there is another issue that needs skipdraw 1 for blurry font but it removes much brightness.
     halfPixelOffset: 2 # Fixes font rendering.
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-20354:
   name: "Red Card Soccer 2003"
   region: "NTSC-U"
@@ -45602,6 +45702,8 @@ SLUS-20928:
   name: "Echo Night - Beyond"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-20929:
   name: "Battle Assault 3 featuring Gundam Seed"
   region: "NTSC-U"
@@ -45916,6 +46018,8 @@ SLUS-20986:
   name: "Armored Core Nexus [Evolution Disc]"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLUS-20986"
     - "SLUS-21079"
@@ -46051,6 +46155,7 @@ SLUS-21007:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting.
     preloadFrameData: 1 # Fixes red cracklines on walls.
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-21008:
   name: "Katamari Damacy"
   region: "NTSC-U"
@@ -46423,6 +46528,8 @@ SLUS-21078:
 SLUS-21079:
   name: "Armored Core Nexus [Revolution Disc]"
   region: "NTSC-U"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLUS-20986"
     - "SLUS-21079"
@@ -47016,6 +47123,8 @@ SLUS-21200:
   name: "Armored Core - Nine Breaker"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters: # Can import data from AC:Nexus.
     - "SLUS-21200"
     - "SLUS-20986"
