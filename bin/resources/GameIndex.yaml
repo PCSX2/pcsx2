@@ -23275,6 +23275,7 @@ SLES-82013:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurry characters.
+    autoFlush: 1 # Fixes lens flare.
 SLES-82018:
   name: "Cy Girls [Ice Disc]"
   region: "PAL-E-F-S"
@@ -23298,6 +23299,7 @@ SLES-82024:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurry characters.
+    autoFlush: 1 # Fixes lens flare.
 SLES-82026:
   name: "Metal Gear Solid 3 - Snake Eater"
   region: "PAL-S"
@@ -23305,6 +23307,7 @@ SLES-82026:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurry characters.
+    autoFlush: 1 # Fixes lens flare.
 SLES-82028:
   name: "Star Ocean 3 - Till the End of Time [Disc 1 of 2]"
   region: "PAL-E"
@@ -23352,6 +23355,7 @@ SLES-82032:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurry characters.
+    autoFlush: 1 # Fixes lens flare.
 SLES-82034:
   name: "Xenosaga Episode II [Disc 1 of 2]"
   region: "PAL-M3"
@@ -24365,6 +24369,7 @@ SLKA-25251:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    autoFlush: 1 # Fixes lens flare.
 SLKA-25252:
   name: "Forgotten Realms - Demon Stone"
   region: "NTSC-K"
@@ -30761,6 +30766,7 @@ SLPM-65789:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    autoFlush: 1 # Fixes lens flare.
 SLPM-65790:
   name: "Metal Gear Solid 3 - Snake Eater"
   region: "NTSC-J"
@@ -30768,6 +30774,7 @@ SLPM-65790:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    autoFlush: 1 # Fixes lens flare.
 SLPM-65791:
   name: "S.L.A.I. - Steel Lancer Arena International"
   region: "NTSC-J"
@@ -34669,6 +34676,7 @@ SLPM-66794:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    autoFlush: 1 # Fixes lens flare.
 SLPM-66796:
   name: "Metal Gear Solid - 20th Anniversary Collection"
   region: "NTSC-J"
@@ -35568,6 +35576,7 @@ SLPM-68516:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    autoFlush: 1 # Fixes lens flare.
 SLPM-68520:
   name: "Armored Core - Last Raven [Monthly Champion magazine Special Edition]"
   region: "NTSC-J"
@@ -45617,6 +45626,7 @@ SLUS-20915:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    autoFlush: 1 # Fixes lens flare.
 SLUS-20916:
   name: "Dance Dance Revolution EXTREME"
   region: "NTSC-U"
