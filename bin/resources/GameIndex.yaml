@@ -959,6 +959,7 @@ SCAJ-20109:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
 SCAJ-20110:
@@ -1157,6 +1158,7 @@ SCAJ-20143:
   region: "NTSC-Unk"
   gsHWFixes:
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20144:
   name: "Zhuo Hou La 3"
   region: "NTSC-Ch"
@@ -3728,6 +3730,7 @@ SCES-52456:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
   memcardFilters: # Reads Ratchet 1 & 2 data.
@@ -5063,6 +5066,7 @@ SCKA-20037:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
   memcardFilters:
@@ -6013,6 +6017,7 @@ SCPS-15084:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
   memcardFilters:
@@ -6497,6 +6502,7 @@ SCPS-19309:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
 SCPS-19310:
@@ -7942,6 +7948,7 @@ SCUS-97353:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
   memcardFilters:
@@ -8124,6 +8131,7 @@ SCUS-97411:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
 SCUS-97412:
@@ -8143,6 +8151,7 @@ SCUS-97413:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
 SCUS-97414:
@@ -8646,6 +8655,7 @@ SCUS-97518:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
 SCUS-97519:
@@ -18632,6 +18642,7 @@ SLES-53820:
   region: "PAL-E"
   gsHWFixes:
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-53821:
   name: "Radio Helicopter II"
   region: "PAL-E"
@@ -25632,6 +25643,18 @@ SLPM-61117:
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Fixes garbled character animation.
+SLPM-61118:
+  name: "Armored Core - Last Raven [Famitsu Special Trial Version]"
+  region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
+    partialTargetInvalidation: 1 # Fixes broken textures.
+SLPM-61119:
+  name: "Armored Core - Last Raven [Trial]"
+  region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-61120:
   name: "Drag-on Dragoon 2 - Fuuin no Aka, Haitoku no Kuro [Trial Version]"
   region: "NTSC-J"
@@ -35496,6 +35519,12 @@ SLPM-68516:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+SLPM-68520:
+  name: "Armored Core - Last Raven [Monthly Champion magazine Special Edition]"
+  region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-68521:
   name: "Dot Hack Fraegment [Senkou Release-ban]"
   region: "NTSC-J"
@@ -38932,6 +38961,7 @@ SLPS-25462:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLPS-25338"
     - "SLPS-25339"
@@ -41078,6 +41108,7 @@ SLPS-73247:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
+    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLPS-25338"
     - "SLPS-25339"
@@ -47828,6 +47859,7 @@ SLUS-21338:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-21339:
   name: "Puzzle Collection - Crosswords & More!"
   region: "NTSC-U"
@@ -51690,6 +51722,7 @@ TCES-52456:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
 TCES-52582:
