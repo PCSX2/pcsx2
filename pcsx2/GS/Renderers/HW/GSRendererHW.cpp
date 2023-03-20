@@ -1574,8 +1574,9 @@ void GSRendererHW::Draw()
 		}
 	}
 
-	// The rectangle of the draw
-	m_r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
+	// The rectangle of the draw rounded up.
+	const GSVector4 rect = m_vt.m_min.p.xyxy(m_vt.m_max.p) + GSVector4(0.0f, 0.0f, 0.5f, 0.5f);
+	m_r = GSVector4i(rect).rintersect(GSVector4i(context->scissor.in));
 
 	if (m_channel_shuffle)
 	{
