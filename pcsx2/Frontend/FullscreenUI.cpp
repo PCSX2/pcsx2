@@ -4093,18 +4093,6 @@ void FullscreenUI::DrawFoldersSettingsPage()
 	EndMenuButtons();
 }
 
-#ifndef ENABLE_ACHIEVEMENTS
-
-void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& settings_lock)
-{
-	BeginMenuButtons();
-	ActiveButton(ICON_FA_BAN " This build was not compiled with Achievements support.", false, false,
-		ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-	EndMenuButtons();
-}
-
-#endif
-
 void FullscreenUI::DrawAdvancedSettingsPage()
 {
 	static constexpr const char* ee_rounding_mode_settings[] = {"Nearest", "Negative", "Positive", "Chop/Zero (Default)"};
@@ -6959,17 +6947,15 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
 #else
 
-bool FullscreenUI::OpenAchievementsWindow()
+void FullscreenUI::OpenAchievementsWindow()
 {
-	return false;
 }
 
-bool FullscreenUI::OpenLeaderboardsWindow()
+void FullscreenUI::OpenLeaderboardsWindow()
 {
-	return false;
 }
 
-void FullscreenUI::DrawAchievementsSettingsPage()
+void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& settings_lock)
 {
 	BeginMenuButtons();
 	ActiveButton(ICON_FA_BAN "  This build was not compiled with RetroAchievements support.", false, false,
