@@ -3668,8 +3668,6 @@ void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 	const float scale = tex->GetScale();
 	const GSVector2i unscaled_size = tex->GetUnscaledSize();
-	const int w = tex->m_texture->GetWidth();
-	const int h = tex->m_texture->GetHeight();
 
 	const int tw = static_cast<int>(1 << m_context->TEX0.TW);
 	const int th = static_cast<int>(1 << m_context->TEX0.TH);
