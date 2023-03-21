@@ -172,7 +172,7 @@ endif()
 # Enable debug information in release builds for Linux.
 # Makes the backtrace actually meaningful.
 if(UNIX AND NOT APPLE)
-	add_compile_options($<$<CONFIG:Release>:-g>)
+	add_compile_options($<$<CONFIG:Release>:-g1>)
 endif()
 
 if(MSVC)
