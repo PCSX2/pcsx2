@@ -56,6 +56,7 @@
 
 #include "fmt/core.h"
 
+#include "AutoUpdaterDialog.h"
 #include "DisplayWidget.h"
 #include "GameList/GameListWidget.h"
 #include "MainWindow.h"
@@ -1753,6 +1754,13 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 			else if (CHECK_ARG(QStringLiteral("-debugger")))
 			{
 				s_boot_and_debug = true;
+				continue;
+			}
+			else if (CHECK_ARG(QStringLiteral("-updatecleanup")))
+			{
+				if (AutoUpdaterDialog::isSupported())
+					AutoUpdaterDialog::cleanupAfterUpdate();
+
 				continue;
 			}
 #ifdef ENABLE_RAINTEGRATION
