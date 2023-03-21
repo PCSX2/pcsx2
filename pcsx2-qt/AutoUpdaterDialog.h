@@ -37,6 +37,7 @@ public:
 	static std::string getDefaultTag();
 	static QString getCurrentVersion();
 	static QString getCurrentVersionDate();
+	static void cleanupAfterUpdate();
 
 Q_SIGNALS:
 	void updateCheckCompleted();

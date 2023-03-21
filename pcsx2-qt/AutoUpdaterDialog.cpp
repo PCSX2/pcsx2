@@ -595,6 +595,11 @@ bool AutoUpdaterDialog::doUpdate(const QString& zip_path, const QString& updater
 	return true;
 }
 
+void AutoUpdaterDialog::cleanupAfterUpdate()
+{
+	// Nothing to do on Windows for now, the updater stub cleans everything up.
+}
+
 #elif defined(__linux__)
 
 bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data, QProgressDialog&)
@@ -663,6 +668,7 @@ bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data, QProgressDi
 	// Execute new appimage.
 	QProcess* new_process = new QProcess();
 	new_process->setProgram(qappimage_path);
+	new_process->setArguments(QStringList{QStringLiteral("-updatecleanup")});
 	if (!new_process->startDetached())
 	{
 		reportError("Failed to execute new AppImage.");
@@ -671,6 +677,23 @@ bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data, QProgressDi
 
 	// We exit once we return.
 	return true;
+}
+
+void AutoUpdaterDialog::cleanupAfterUpdate()
+{
+	// Remove old/backup AppImage.
+	const char* appimage_path = std::getenv("APPIMAGE");
+	if (!appimage_path)
+		return;
+
+	const QString qappimage_path(QString::fromUtf8(appimage_path));
+	const QString backup_appimage_path(qappimage_path + QStringLiteral(".backup"));
+	if (!QFile::exists(backup_appimage_path))
+		return;
+
+	Console.WriteLn(Color_StrongOrange, QStringLiteral("Removing backup AppImage %1").arg(backup_appimage_path).toStdString());
+	if (!QFile::remove(backup_appimage_path))
+		Console.Error(QStringLiteral("Failed to remove backup AppImage %1").arg(backup_appimage_path).toStdString());
 }
 
 #elif defined(__APPLE__)
@@ -789,11 +812,19 @@ bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data, QProgressDi
 	return true;
 }
 
+void AutoUpdaterDialog::cleanupAfterUpdate()
+{
+}
+
 #else
 
 bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data, QProgressDialog& progress)
 {
 	return false;
+}
+
+void AutoUpdaterDialog::cleanupAfterUpdate()
+{
 }
 
 #endif
