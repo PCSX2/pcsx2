@@ -17,6 +17,7 @@
 #include "common/Assertions.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
+#include "pcsx2/Achievements.h"
 #include "Frontend/CommonHost.h"
 #include "Frontend/FullscreenUI.h"
 #include "Frontend/InputManager.h"
