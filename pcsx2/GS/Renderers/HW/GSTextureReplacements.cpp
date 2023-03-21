@@ -117,7 +117,7 @@ namespace GSTextureReplacements
 	static std::string GetGameTextureDirectory();
 	static std::string GetDumpFilename(const TextureName& name, u32 level);
 	static std::optional<ReplacementTexture> LoadReplacementTexture(const TextureName& name, const std::string& filename, bool only_base_image);
-	static void QueueAsyncReplacementTextureLoad(const TextureName& name, const std::string& filename, bool mipmap);
+	static void QueueAsyncReplacementTextureLoad(const TextureName& name, const std::string& filename, bool mipmap, bool cache_only);
 	static void PrecacheReplacementTextures();
 	static void ClearReplacementTextures();
 
@@ -146,8 +146,8 @@ namespace GSTextureReplacements
 	static std::unordered_map<TextureName, ReplacementTexture> s_replacement_texture_cache;
 	static std::mutex s_replacement_texture_cache_mutex;
 
-	/// List of textures that are pending asynchronous load.
-	static std::unordered_set<TextureName> s_pending_async_load_textures;
+	/// List of textures that are pending asynchronous load. Second element is whether we're only precaching.
+	static std::unordered_map<TextureName, bool> s_pending_async_load_textures;
 
 	/// List of textures that we have asynchronously loaded and can now be injected back into the TC.
 	/// Second element is whether the texture should be created with mipmaps.
@@ -465,7 +465,7 @@ GSTexture* GSTextureReplacements::LookupReplacementTexture(const GSTextureCache:
 	{
 		// replacement will be injected into the TC later on
 		std::unique_lock<std::mutex> lock(s_replacement_texture_cache_mutex);
-		QueueAsyncReplacementTextureLoad(name, fnit->second, mipmap);
+		QueueAsyncReplacementTextureLoad(name, fnit->second, mipmap, false);
 
 		*pending = true;
 		return nullptr;
@@ -499,21 +499,33 @@ std::optional<GSTextureReplacements::ReplacementTexture> GSTextureReplacements::
 	return rtex;
 }
 
-void GSTextureReplacements::QueueAsyncReplacementTextureLoad(const TextureName& name, const std::string& filename, bool mipmap)
+void GSTextureReplacements::QueueAsyncReplacementTextureLoad(const TextureName& name, const std::string& filename, bool mipmap, bool cache_only)
 {
 	// check the pending list, so we don't queue it up multiple times
-	if (s_pending_async_load_textures.find(name) != s_pending_async_load_textures.end())
+	auto it = s_pending_async_load_textures.find(name);
+	if (it != s_pending_async_load_textures.end())
+	{
+		it->second &= cache_only;
 		return;
+	}
 
-	s_pending_async_load_textures.insert(name);
+	s_pending_async_load_textures.emplace(name, cache_only);
 	QueueWorkerThreadItem([name, filename, mipmap]() {
 		// actually load the file, this is what will take the time
 		std::optional<ReplacementTexture> replacement(LoadReplacementTexture(name, filename, !mipmap));
 
 		// check the pending set, there's a race here if we disable replacements while loading otherwise
+		// also check the full replacement list, if async loading is off, it might already be in there
 		std::unique_lock<std::mutex> lock(s_replacement_texture_cache_mutex);
-		if (s_pending_async_load_textures.find(name) == s_pending_async_load_textures.end())
+		auto it = s_pending_async_load_textures.find(name);
+		if (it == s_pending_async_load_textures.end() ||
+			s_replacement_texture_cache.find(name) != s_replacement_texture_cache.end())
+		{
+			if (it != s_pending_async_load_textures.end())
+				s_pending_async_load_textures.erase(it);
+
 			return;
+		}
 
 		// insert into the cache and queue for later injection
 		if (replacement.has_value())
@@ -545,7 +557,7 @@ void GSTextureReplacements::PrecacheReplacementTextures()
 			continue;
 
 		// precaching always goes async.. for now
-		QueueAsyncReplacementTextureLoad(it.first, it.second, mipmap);
+		QueueAsyncReplacementTextureLoad(it.first, it.second, mipmap, true);
 	}
 }
 
@@ -606,7 +618,16 @@ void GSTextureReplacements::ProcessAsyncLoadedTextures()
 	for (const auto& [name, mipmap] : s_async_loaded_textures)
 	{
 		// no longer pending!
-		s_pending_async_load_textures.erase(name);
+		const auto pit = s_pending_async_load_textures.find(name);
+		if (pit != s_pending_async_load_textures.end())
+		{
+			const bool cache_only = pit->second;
+			s_pending_async_load_textures.erase(pit);
+
+			// if we were precaching, don't inject into the TC if we didn't actually get requested
+			if (cache_only)
+				continue;
+		}
 
 		// we should be in the cache now, lock and loaded
 		auto it = s_replacement_texture_cache.find(name);
