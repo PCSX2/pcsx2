@@ -285,7 +285,6 @@
     <ClCompile Include="GS\GSCrc.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSDevice.cpp" />
     <ClCompile Include="GS\Renderers\DX11\GSDevice11.cpp" />
-    <ClCompile Include="GS\Renderers\Null\GSDeviceNull.cpp" />
     <ClCompile Include="GS\Renderers\OpenGL\GSDeviceOGL.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSDirtyRect.cpp" />
     <ClCompile Include="GS\GSDrawingContext.cpp" />
@@ -318,7 +317,6 @@
     <ClCompile Include="GS\Renderers\HW\GSTextureCache.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSTextureCacheSW.cpp" />
     <ClCompile Include="GS\Renderers\DX11\GSTextureFX11.cpp" />
-    <ClCompile Include="GS\Renderers\Null\GSTextureNull.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSTextureSW.cpp" />
     <ClCompile Include="GS\GSUtil.cpp" />
     <ClCompile Include="GS\GSVector.cpp" />
@@ -624,7 +622,6 @@
     <ClInclude Include="GS\GSCrc.h" />
     <ClInclude Include="GS\Renderers\Common\GSDevice.h" />
     <ClInclude Include="GS\Renderers\DX11\GSDevice11.h" />
-    <ClInclude Include="GS\Renderers\Null\GSDeviceNull.h" />
     <ClInclude Include="GS\Renderers\OpenGL\GSDeviceOGL.h" />
     <ClInclude Include="GS\Renderers\Common\GSDirtyRect.h" />
     <ClInclude Include="GS\GSDrawingContext.h" />
@@ -656,7 +653,6 @@
     <ClInclude Include="GS\Renderers\OpenGL\GSTextureOGL.h" />
     <ClInclude Include="GS\Renderers\HW\GSTextureCache.h" />
     <ClInclude Include="GS\Renderers\SW\GSTextureCacheSW.h" />
-    <ClInclude Include="GS\Renderers\Null\GSTextureNull.h" />
     <ClInclude Include="GS\Renderers\SW\GSTextureSW.h" />
     <ClInclude Include="GS\GSThread.h" />
     <ClInclude Include="GS\GSThread_CXX11.h" />

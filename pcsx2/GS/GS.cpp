@@ -21,7 +21,6 @@
 #include "GSUtil.h"
 #include "GSExtra.h"
 #include "Renderers/Null/GSRendererNull.h"
-#include "Renderers/Null/GSDeviceNull.h"
 #include "Renderers/HW/GSRendererHW.h"
 #include "Renderers/HW/GSTextureReplacements.h"
 #include "GSLzma.h"

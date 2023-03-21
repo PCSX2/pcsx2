@@ -518,9 +518,7 @@ set(pcsx2GSSources
 	GS/Renderers/Common/GSRenderer.cpp
 	GS/Renderers/Common/GSTexture.cpp
 	GS/Renderers/Common/GSVertexTrace.cpp
-	GS/Renderers/Null/GSDeviceNull.cpp
 	GS/Renderers/Null/GSRendererNull.cpp
-	GS/Renderers/Null/GSTextureNull.cpp
 	GS/Renderers/HW/GSHwHack.cpp
 	GS/Renderers/HW/GSRendererHW.cpp
 	GS/Renderers/HW/GSTextureCache.cpp
@@ -572,9 +570,7 @@ set(pcsx2GSHeaders
 	GS/Renderers/Common/GSVertex.h
 	GS/Renderers/Common/GSVertexList.h
 	GS/Renderers/Common/GSVertexTrace.h
-	GS/Renderers/Null/GSDeviceNull.h
 	GS/Renderers/Null/GSRendererNull.h
-	GS/Renderers/Null/GSTextureNull.h
 	GS/Renderers/HW/GSHwHack.h
 	GS/Renderers/HW/GSRendererHW.h
 	GS/Renderers/HW/GSTextureCache.h

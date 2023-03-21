@@ -1100,13 +1100,7 @@
     <ClCompile Include="GS\Renderers\SW\GSRasterizer.cpp">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClCompile>
-    <ClCompile Include="GS\Renderers\Null\GSDeviceNull.cpp">
-      <Filter>System\Ps2\GS\Renderers\Null</Filter>
-    </ClCompile>
     <ClCompile Include="GS\Renderers\Null\GSRendererNull.cpp">
-      <Filter>System\Ps2\GS\Renderers\Null</Filter>
-    </ClCompile>
-    <ClCompile Include="GS\Renderers\Null\GSTextureNull.cpp">
       <Filter>System\Ps2\GS\Renderers\Null</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\HW\GSRendererHW.cpp">
@@ -2026,13 +2020,7 @@
     <ClInclude Include="GS\Renderers\SW\GSRasterizer.h">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClInclude>
-    <ClInclude Include="GS\Renderers\Null\GSDeviceNull.h">
-      <Filter>System\Ps2\GS\Renderers\Null</Filter>
-    </ClInclude>
     <ClInclude Include="GS\Renderers\Null\GSRendererNull.h">
-      <Filter>System\Ps2\GS\Renderers\Null</Filter>
-    </ClInclude>
-    <ClInclude Include="GS\Renderers\Null\GSTextureNull.h">
       <Filter>System\Ps2\GS\Renderers\Null</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\HW\GSRendererHW.h">
