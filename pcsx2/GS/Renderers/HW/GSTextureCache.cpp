@@ -213,11 +213,11 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 sbp, u32 spsm, u32 sbw
 				new_rect.w = in_rect.w;
 			}
 		}
-		else if (src_bw == rect_pages.width())
+		else if (static_cast<int>(src_bw) == rect_pages.width())
 		{
 
 			const u32 totalpages = rect_pages.width() * rect_pages.height();
-			const bool full_rows = in_rect.width() == (src_bw * src_page_size.x);
+			const bool full_rows = in_rect.width() == (static_cast<int>(src_bw) * src_page_size.x);
 			const bool single_row = in_rect.x == 0 && in_rect.y == 0 && totalpages <= dst_bw;
 			bool uneven_pages = (horizontal_offset || (totalpages % dst_bw) != 0) && !single_row;
 
@@ -356,11 +356,11 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 				new_rect.w = in_rect.w;
 			}
 		}
-		else if (src_bw == rect_pages.width())
+		else if (static_cast<int>(src_bw) == rect_pages.width())
 		{
 
 			const u32 totalpages = rect_pages.width() * rect_pages.height();
-			const bool full_rows = in_rect.width() == (src_bw * src_page_size.x);
+			const bool full_rows = in_rect.width() == (static_cast<int>(src_bw) * src_page_size.x);
 			const bool single_row = in_rect.x == 0 && in_rect.y == 0 && totalpages <= dst_bw;
 			bool uneven_pages = (horizontal_offset || (totalpages % dst_bw) != 0) && !single_row;
 
@@ -2111,8 +2111,6 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 		r.y,
 		r.z,
 		r.w);
-
-	const bool read_is_depth = (psm & 0x30) == 0x30;
 
 	// Could be reading Z24/32 back as CT32 (Gundam Battle Assault 3)
 	if (GSLocalMemory::m_psm[psm].bpp >= 16)
