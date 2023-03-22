@@ -1324,8 +1324,8 @@ void Host::SetDefaultUISettings(SettingsInterface& si)
 	si.SetBoolValue("UI", "StartPaused", false);
 	si.SetBoolValue("UI", "PauseOnFocusLoss", false);
 	si.SetBoolValue("UI", "StartFullscreen", false);
-	si.SetBoolValue("UI", "DoubleClickTogglesFullscreen", true);
-	si.SetBoolValue("UI", "HideMouseCursor", false);
+	si.SetBoolValue("UI", "DoubleClickTogglesFullscreen", false);
+	si.SetBoolValue("UI", "HideMouseCursor", true);
 	si.SetBoolValue("UI", "RenderToSeparateWindow", false);
 	si.SetBoolValue("UI", "HideMainWindowWhenRunning", false);
 	si.SetBoolValue("UI", "DisableWindowResize", false);

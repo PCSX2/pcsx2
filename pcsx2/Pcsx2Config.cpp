@@ -1282,7 +1282,6 @@ Pcsx2Config::Pcsx2Config()
 	EnableRecordingTools = true;
 	EnableGameFixes = true;
 	InhibitScreensaver = true;
-	BackupSavestate = true;
 	SavestateZstdCompression = true;
 
 #ifdef _WIN32
