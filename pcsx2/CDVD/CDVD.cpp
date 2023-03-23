@@ -58,6 +58,7 @@ static __fi void SetSCMDResultSize(u8 size)
 	cdvd.SCMDResultC = size;
 	cdvd.SCMDResultP = 0;
 	cdvd.sDataIn &= ~0x40;
+	memset(cdvd.SCMDResult, 0, size);
 }
 
 static void CDVDSECTORREADY_INT(u32 eCycle)
@@ -2344,8 +2345,8 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 
 					default:
 						SetSCMDResultSize(1);
-						cdvd.SCMDResult[0] = 0x80;
-						Console.Warning("*Unknown Mecacon Command param[0]=%02X", cdvd.SCMDParam[0]);
+						cdvd.SCMDResult[0] = 0x81;
+						Console.Warning("*Unknown Mecacon Command param Test2 subparams - param[0]=%02X", cdvd.SCMDParam[0]);
 						break;
 				}
 				break;
@@ -2910,9 +2911,8 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				break;
 
 			default:
-				// fake a 'correct' command
 				SetSCMDResultSize(1); //in:0
-				cdvd.SCMDResult[0] = 0; // 0 complete ; 1 busy ; 0x80 error
+				cdvd.SCMDResult[0] = 0x80; // 0 complete ; 1 busy ; 0x80 error
 				Console.WriteLn("SCMD Unknown %x", rt);
 				break;
 		} // end switch
