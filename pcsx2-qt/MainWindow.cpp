@@ -797,7 +797,7 @@ void MainWindow::setStyleFromSettings()
 		darkPalette.setColor(QPalette::ToolTipBase, darkishBlue);
 		darkPalette.setColor(QPalette::ToolTipText, Qt::white);
 		darkPalette.setColor(QPalette::Text, Qt::white);
-		darkPalette.setColor(QPalette::Button, royalBlue.darker());
+		darkPalette.setColor(QPalette::Button, darkishBlue);
 		darkPalette.setColor(QPalette::ButtonText, Qt::white);
 		darkPalette.setColor(QPalette::Link, Qt::white);
 		darkPalette.setColor(QPalette::Highlight, darkishBlue.lighter());
