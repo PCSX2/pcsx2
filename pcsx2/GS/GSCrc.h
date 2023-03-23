@@ -27,6 +27,7 @@ public:
 		HauntingGround,
 		ICO,
 		KOF2002,
+		MagnaCarta,
 		PolyphonyDigitalGames,
 		SMTNocturne,
 		SVCChaos,
