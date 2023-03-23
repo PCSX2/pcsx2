@@ -543,9 +543,9 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 
 		m_src.m_surfaces.insert(src);
 	}
-	else if (g_gs_renderer->m_game.title == CRC::SVCChaos || g_gs_renderer->m_game.title == CRC::KOF2002)
+	else if (g_gs_renderer->m_game.title == CRC::SVCChaos || g_gs_renderer->m_game.title == CRC::KOF2002 || g_gs_renderer->m_game.title == CRC::MagnaCarta)
 	{
-		// SVCChaos black screen & KOF2002 blue screen on main menu, regardless of depth enabled or disabled.
+		// SVCChaos black screen, KOF2002 blue screen on main menu, Magna Carta missing effects & black screens regardless of depth enabled or disabled.
 		return LookupSource(TEX0, TEXA, CLAMP, r, nullptr);
 	}
 	else
