@@ -672,6 +672,42 @@ void MainWindow::setStyleFromSettings()
 
 		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
 	}
+	else if (theme == "Pizza")
+	{
+		// Custom palette by KamFretoZ, a Pizza Tower Reference!
+		// Thanks to Jordan for the idea :P
+		// Alternative light theme.
+		qApp->setStyle(QStyleFactory::create("Fusion"));
+
+		const QColor gray(192, 192, 192);
+		const QColor extr(248, 192, 88);
+		const QColor main(233, 187, 147);
+		const QColor comp(248, 230, 213);
+
+		QPalette darkPalette;
+		darkPalette.setColor(QPalette::Window, main);
+		darkPalette.setColor(QPalette::WindowText, Qt::black);
+		darkPalette.setColor(QPalette::Base, comp);
+		darkPalette.setColor(QPalette::AlternateBase, extr);
+		darkPalette.setColor(QPalette::ToolTipBase, comp);
+		darkPalette.setColor(QPalette::ToolTipText, Qt::black);
+		darkPalette.setColor(QPalette::Text, Qt::black);
+		darkPalette.setColor(QPalette::Button, extr);
+		darkPalette.setColor(QPalette::ButtonText, Qt::black);
+		darkPalette.setColor(QPalette::Link, Qt::black);
+		darkPalette.setColor(QPalette::Highlight, extr);
+		darkPalette.setColor(QPalette::HighlightedText, Qt::black);
+
+		darkPalette.setColor(QPalette::Active, QPalette::Button, extr);
+		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray.darker());
+		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray.darker());
+		darkPalette.setColor(QPalette::Disabled, QPalette::Text, Qt::gray);
+		darkPalette.setColor(QPalette::Disabled, QPalette::Light, gray.lighter());
+
+		qApp->setPalette(darkPalette);
+
+		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #cc3f18; border: 1px solid white; }");
+	}
 	else if (theme == "PCSX2Blue")
 	{
 		// Custom palette by RedDevilus, White as main color and Blue as complimentary.
