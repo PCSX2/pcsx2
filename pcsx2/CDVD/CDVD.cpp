@@ -703,6 +703,7 @@ s32 cdvdCtrlTrayClose()
 		DevCon.WriteLn(Color_Green, "Media already loaded (fast boot)");
 		cdvdUpdateReady(CDVD_DRIVE_READY);
 		cdvdUpdateStatus(CDVD_STATUS_PAUSE);
+		cdvd.Spinning = true;
 		cdvd.Tray.trayState = CDVD_DISC_ENGAGED;
 		cdvd.Tray.cdvdActionSeconds = 0;
 	}
@@ -710,7 +711,8 @@ s32 cdvdCtrlTrayClose()
 	{
 		DevCon.WriteLn(Color_Green, "Detecting media");
 		cdvdUpdateReady(CDVD_DRIVE_BUSY);
-		cdvdUpdateStatus(CDVD_STATUS_SEEK);
+		cdvdUpdateStatus(CDVD_STATUS_STOP);
+		cdvd.Spinning = false;
 		cdvd.Tray.trayState = CDVD_DISC_DETECTING;
 		cdvd.Tray.cdvdActionSeconds = 3;
 	}
@@ -1443,22 +1445,18 @@ void cdvdUpdateTrayState()
 				case CDVD_DISC_DETECTING:
 					DevCon.WriteLn(Color_Green, "Seeking new disc");
 					cdvd.Tray.trayState = CDVD_DISC_SEEKING;
+					cdvdUpdateStatus(CDVD_STATUS_SEEK);
 					cdvd.Tray.cdvdActionSeconds = 2;
-					cdvd.Spinning = true;
 					break;
 				case CDVD_DISC_SEEKING:
+					cdvd.Spinning = true;
 				case CDVD_DISC_ENGAGED:
 					cdvd.Tray.trayState = CDVD_DISC_ENGAGED;
 					cdvdUpdateReady(CDVD_DRIVE_READY);
+					cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 					if (CDVDsys_GetSourceType() != CDVD_SourceType::NoDisc)
 					{
-						DevCon.WriteLn(Color_Green, "Media ready to read");
-						cdvdUpdateStatus(CDVD_STATUS_PAUSE);
-					}
-					else
-					{
-						cdvd.Spinning = false;
-						cdvdUpdateStatus(CDVD_STATUS_STOP);
+						DevCon.WriteLn(Color_Green, "Media ready to use");
 					}
 					break;
 			}
