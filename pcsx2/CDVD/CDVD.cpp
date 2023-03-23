@@ -681,19 +681,10 @@ s32 cdvdCtrlTrayOpen()
 	}
 
 	cdvdDetectDisk();
-
-	DiscSwapTimerSeconds = cdvd.RTC.second; // remember the PS2 time when this happened
 	cdvdUpdateStatus(CDVD_STATUS_TRAY_OPEN);
 	cdvdUpdateReady(0);
 	cdvd.Spinning = false;
 	cdvdSetIrq(1 << Irq_Eject);
-
-	if (cdvd.Type > 0 || CDVDsys_GetSourceType() == CDVD_SourceType::NoDisc)
-	{
-		cdvd.Tray.cdvdActionSeconds = 3;
-		cdvd.Tray.trayState = CDVD_DISC_EJECT;
-		DevCon.WriteLn(Color_Green, "Simulating ejected media");
-	}
 
 	return 0; // needs to be 0 for success according to homebrew test "CDVD"
 }
@@ -1446,6 +1437,16 @@ void cdvdUpdateTrayState()
 		{
 			switch (cdvd.Tray.trayState)
 			{
+				case CDVD_DISC_OPEN:
+					cdvdCtrlTrayOpen();
+					if (cdvd.Type > 0 || CDVDsys_GetSourceType() == CDVD_SourceType::NoDisc)
+					{
+						cdvd.Tray.cdvdActionSeconds = 3;
+						cdvd.Tray.trayState = CDVD_DISC_EJECT;
+						DevCon.WriteLn(Color_Green, "Simulating ejected media");
+					}
+
+				break;
 				case CDVD_DISC_EJECT:
 					cdvdCtrlTrayClose();
 					break;
