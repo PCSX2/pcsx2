@@ -672,9 +672,10 @@ void MainWindow::setStyleFromSettings()
 
 		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
 	}
-	else if (theme == "Pizza")
+	else if (theme == "PizzaBrown")
 	{
 		// Custom palette by KamFretoZ, a Pizza Tower Reference!
+		// With a mixtures of Light Brown, Peachy/Creamy White, Latte-like Color.
 		// Thanks to Jordan for the idea :P
 		// Alternative light theme.
 		qApp->setStyle(QStyleFactory::create("Fusion"));
