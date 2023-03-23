@@ -101,7 +101,7 @@ const CRC::Game CRC::m_games[] =
 	{0xE8C0AD1A, GetawayGames /* JP */}, // GetawayBlackMonday
 	{0x09C3DF79, GetawayGames /* EU */}, // GetawayBlackMonday
 	{0xC0AC5781, MagnaCarta /* US */}, // Magna Carta - Tears of Blood (Trade Demo also has same CRC)
-	{0x49F7BF24, MagnaCarta /* EU */}, // Magna Carta - Tears of Blood
+	{0x49F78F24, MagnaCarta /* EU */}, // Magna Carta - Tears of Blood
 	{0xEB925207, MagnaCarta /* JP */}, // Magna Carta (Playstation 2 The Best has same CRC)
 	{0x42CD7065, MagnaCarta /* EU */}, // Magna Carta - Les Larmes de Sang
 	{0xE3B1855B, MagnaCarta /* EU */}, // Magna Carta - Lacrime di Sangue
