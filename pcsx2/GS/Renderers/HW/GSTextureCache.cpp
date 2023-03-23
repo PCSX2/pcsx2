@@ -825,7 +825,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 							const GSVector4i valid_rect = { t->m_valid.x, t->m_valid.y, t->m_valid.z + std::max(0, size_delta.x), t->m_valid.w + std::max(0, size_delta.y) };
 							t->UpdateValidity(valid_rect);
 							t->UpdateValidBits(GSLocalMemory::m_psm[t->m_TEX0.PSM].fmsk);
-							GetTargetHeight(TEX0.TBP0, TEX0.TBW, TEX0.PSM, t->m_valid.w);
+							GetTargetSize(TEX0.TBP0, TEX0.TBW, TEX0.PSM, t->m_valid.z, t->m_valid.w);
 							const int new_w = std::max(t->m_unscaled_size.x, t->m_valid.z);
 							const int new_h = std::max(t->m_unscaled_size.y, t->m_valid.w);
 							t->ResizeTexture(new_w, new_h);
@@ -1506,8 +1506,8 @@ void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, 
 		AddDirtyRectTarget(t, newrect, t->m_TEX0.PSM, t->m_TEX0.TBW, rgba);
 	}
 
-	// Inject the new height back into the cache.
-	GetTargetHeight(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, static_cast<u32>(needed_height));
+	// Inject the new size back into the cache.
+	GetTargetSize(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, 0, static_cast<u32>(needed_height));
 }
 
 bool GSTextureCache::PrepareDownloadTexture(u32 width, u32 height, GSTexture::Format format, std::unique_ptr<GSDownloadTexture>* tex)
@@ -2366,9 +2366,8 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		new_TEX0.TBW = DBW;
 		new_TEX0.PSM = DPSM;
 
-		const int real_height = GetTargetHeight(DBP, DBW, DPSM, h);
-		dst = LookupTarget(new_TEX0, GSVector2i(static_cast<int>(Common::AlignUpPow2(w, 64)),
-			static_cast<int>(real_height)), src->m_scale, src->m_type, true);
+		const GSVector2i target_size = GetTargetSize(DBP, DBW, DPSM, Common::AlignUpPow2(w, 64), h);
+		dst = LookupTarget(new_TEX0, target_size, src->m_scale, src->m_type, true);
 		if (dst)
 		{
 			dst->UpdateValidity(GSVector4i(dx, dy, dx + w, dy + h));
@@ -2415,7 +2414,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		// We don't recycle the old texture here, because the height cache will track the new size,
 		// so the old size won't get created again.
 		GL_INS("Resize %dx%d target to %dx%d for move", dst->m_unscaled_size.x, dst->m_unscaled_size.y, dst->m_unscaled_size.x, new_height);
-		GetTargetHeight(DBP, DBW, DPSM, new_height);
+		GetTargetSize(DBP, DBW, DPSM, 0, new_height);
 
 		if (!dst->ResizeTexture(dst->m_unscaled_size.x, new_height, false))
 		{
@@ -2591,12 +2590,13 @@ GSTextureCache::Target* GSTextureCache::GetTargetWithSharedBits(u32 BP, u32 PSM)
 	return nullptr;
 }
 
-u32 GSTextureCache::GetTargetHeight(u32 bp, u32 fbw, u32 psm, u32 min_height)
+GSVector2i GSTextureCache::GetTargetSize(u32 bp, u32 fbw, u32 psm, s32 min_width, s32 min_height)
 {
 	TargetHeightElem search = {};
 	search.bp = bp;
 	search.fbw = fbw;
 	search.psm = psm;
+	search.width = min_width;
 	search.height = min_height;
 
 	for (auto it = m_target_heights.begin(); it != m_target_heights.end(); ++it)
@@ -2604,21 +2604,24 @@ u32 GSTextureCache::GetTargetHeight(u32 bp, u32 fbw, u32 psm, u32 min_height)
 		TargetHeightElem& elem = const_cast<TargetHeightElem&>(*it);
 		if (elem.bits == search.bits)
 		{
-			if (elem.height < min_height)
+			if (elem.width < min_width || elem.height < min_height)
 			{
-				DbgCon.WriteLn("Expand height at %x %u %u from %u to %u", bp, fbw, psm, elem.height, min_height);
-				elem.height = min_height;
+				DbgCon.WriteLn("Expand size at %x %u %u from %ux%u to %ux%u", bp, fbw, psm, elem.width, elem.height,
+					min_width, min_height);
 			}
+
+			elem.width = std::max(elem.width, min_width);
+			elem.height = std::max(elem.height, min_height);
 
 			m_target_heights.MoveFront(it.Index());
 			elem.age = 0;
-			return elem.height;
+			return GSVector2i(elem.width, elem.height);
 		}
 	}
 
-	DbgCon.WriteLn("New height at %x %u %u: %u", bp, fbw, psm, min_height);
+	DbgCon.WriteLn("New size at %x %u %u: %ux%u", bp, fbw, psm, min_width, min_height);
 	m_target_heights.push_front(search);
-	return min_height;
+	return GSVector2i(min_width, min_height);
 }
 
 bool GSTextureCache::Has32BitTarget(u32 bp)
@@ -2762,6 +2765,9 @@ void GSTextureCache::IncAge()
 	// Original maxage was 4 here, Xenosaga 2 needs at least 240, else it flickers on scene transitions.
 	static constexpr int max_rt_age = 400; // ffx intro scene changes leave the old image untouched for a couple of frames and only then start using it
 
+	// Toss and recompute sizes after 2 seconds of not being used. Should be sufficient for most loading screens.
+	static constexpr int max_size_age = 120;
+
 	for (int type = 0; type < 2; type++)
 	{
 		auto& list = m_dst[type];
@@ -2797,7 +2803,7 @@ void GSTextureCache::IncAge()
 	for (auto it = m_target_heights.begin(); it != m_target_heights.end();)
 	{
 		TargetHeightElem& elem = const_cast<TargetHeightElem&>(*it);
-		if (elem.age >= max_rt_age)
+		if (elem.age >= max_size_age)
 		{
 			it = m_target_heights.erase(it);
 		}
