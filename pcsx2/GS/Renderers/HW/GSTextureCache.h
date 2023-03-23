@@ -345,7 +345,8 @@ public:
 			};
 		};
 
-		u32 height;
+		s32 width;
+		s32 height;
 		u32 age;
 	};
 
@@ -451,7 +452,7 @@ public:
 	Target* GetExactTarget(u32 BP, u32 BW, u32 PSM) const;
 	Target* GetTargetWithSharedBits(u32 BP, u32 PSM) const;
 
-	u32 GetTargetHeight(u32 bp, u32 fbw, u32 psm, u32 min_height);
+	GSVector2i GetTargetSize(u32 bp, u32 fbw, u32 psm, s32 min_width, s32 min_height);
 	bool Has32BitTarget(u32 bp);
 
 	void InvalidateVideoMemType(int type, u32 bp);

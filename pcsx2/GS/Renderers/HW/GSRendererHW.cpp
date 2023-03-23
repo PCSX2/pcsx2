@@ -725,11 +725,11 @@ GSVector2i GSRendererHW::GetTargetSize(const GSTextureCache::Source* tex)
 {
 	// Don't blindly expand out to the scissor size if we're not drawing to it.
 	// e.g. Burnout 3, God of War II, etc.
-	u32 min_height = std::min<u32>(static_cast<u32>(m_context->scissor.in.w), m_r.w);
+	int height = std::min<int>(static_cast<int>(m_context->scissor.in.w), m_r.w);
 
 	// If the draw is less than a page high, FBW=0 is the same as FBW=1.
 	const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_context->FRAME.PSM];
-	u32 width = std::min(std::max<u32>(m_context->FRAME.FBW, 1) * 64u, static_cast<u32>(m_context->scissor.in.z));
+	int width = std::min(std::max<int>(m_context->FRAME.FBW, 1) * 64, static_cast<int>(m_context->scissor.in.z));
 	if (m_context->FRAME.FBW == 0 && m_r.w > frame_psm.pgs.y)
 	{
 		GL_INS("FBW=0 when drawing more than 1 page in height (PSM %s, PGS %dx%d).", psm_str(m_context->FRAME.PSM),
@@ -743,12 +743,13 @@ GSVector2i GSRendererHW::GetTargetSize(const GSTextureCache::Source* tex)
 		const int page_y = frame_psm.pgs.y - 1;
 
 		// Round up the page as channel shuffles are generally done in pages at a time
-		width = (std::max(static_cast<u32>(PCRTCDisplays.GetResolution().x), width) + page_x) & ~page_x;
-		min_height = (std::max(static_cast<u32>(PCRTCDisplays.GetResolution().y), min_height) + page_y) & ~page_y;
+		width = (std::max(PCRTCDisplays.GetResolution().x, width) + page_x) & ~page_x;
+		height = (std::max(PCRTCDisplays.GetResolution().y, height) + page_y) & ~page_y;
 	}
 
 	// Align to page size. Since FRAME/Z has to always start on a page boundary, in theory no two should overlap.
-	min_height = Common::AlignUpPow2(min_height, frame_psm.pgs.y);
+	width = Common::AlignUpPow2(width, frame_psm.pgs.x);
+	height = Common::AlignUpPow2(height, frame_psm.pgs.y);
 
 	// Early detection of texture shuffles. These double the input height because they're interpreting 64x32 C32 pages as 64x64 C16.
 	// Why? Well, we don't want to be doubling the heights of targets, but also we don't want to align C32 targets to 64 instead of 32.
@@ -767,21 +768,21 @@ GSVector2i GSRendererHW::GetTargetSize(const GSTextureCache::Source* tex)
 		// Games such as Midnight Club 3 draw headlights with a texture shuffle, but instead of doubling the height, they doubled the width.
 		if (tex_width_pgs == half_draw_width_pgs)
 		{
-			GL_CACHE("Halving width due to texture shuffle with double width, %dx%d -> %dx%d", width, min_height, width / 2, min_height);
+			GL_CACHE("Halving width due to texture shuffle with double width, %dx%d -> %dx%d", width, height, width / 2, height);
 			width /= 2;
 		}
 		else
 		{
-			GL_CACHE("Halving height due to texture shuffle, %dx%d -> %dx%d", width, min_height, width, min_height / 2);
-			min_height /= 2;
+			GL_CACHE("Halving height due to texture shuffle, %dx%d -> %dx%d", width, height, width, height / 2);
+			height /= 2;
 		}
 	}
 
-	u32 height = g_texture_cache->GetTargetHeight(m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, min_height);
+	const GSVector2i size = g_texture_cache->GetTargetSize(m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, width, height);
 
-	GL_INS("Target size for %x %u %u: %ux%u", m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, width, height);
+	GL_INS("Target size for %x %u %u: %ux%u", m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, size.x, size.y);
 
-	return GSVector2i(width, height);
+	return size;
 }
 
 bool GSRendererHW::IsPossibleChannelShuffle() const
