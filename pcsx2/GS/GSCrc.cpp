@@ -100,6 +100,7 @@ const CRC::Game CRC::m_games[] =
 	{0x342D97FA, GetawayGames /* US */}, // GetawayBlackMonday Demo
 	{0xE8C0AD1A, GetawayGames /* JP */}, // GetawayBlackMonday
 	{0x09C3DF79, GetawayGames /* EU */}, // GetawayBlackMonday
+	{0xC0AC5781, MagnaCarta /* US */}, // Magna Carta: Tears of Blood
 };
 
 const CRC::Game& CRC::Lookup(u32 crc)
