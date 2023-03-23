@@ -667,6 +667,9 @@ static void cdvdUpdateReady(u8 NewReadyStatus)
 
 s32 cdvdCtrlTrayOpen()
 {
+	if (cdvd.Status & CDVD_STATUS_TRAY_OPEN)
+		return 0x80;
+
 	DevCon.WriteLn(Color_Green, "Open virtual disk tray");
 
 	// If we switch using a source change we need to pretend it's a new disc
@@ -696,6 +699,9 @@ s32 cdvdCtrlTrayOpen()
 
 s32 cdvdCtrlTrayClose()
 {
+	if (!(cdvd.Status & CDVD_STATUS_TRAY_OPEN))
+		return 0x80;
+
 	DevCon.WriteLn(Color_Green, "Close virtual disk tray");
 
 	if (!g_GameStarted && g_SkipBiosHack)
@@ -862,7 +868,7 @@ void cdvdReset()
 
 	cdvd.sDataIn = 0x40;
 	cdvdUpdateReady(CDVD_DRIVE_READY);
-	cdvdUpdateStatus(CDVD_STATUS_PAUSE);
+	cdvdUpdateStatus(CDVD_STATUS_TRAY_OPEN);
 	cdvd.Speed = 4;
 	cdvd.BlockSize = 2064;
 	cdvd.Action = cdvdAction_None;
@@ -2355,7 +2361,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 
 			case 0x06: // CdTrayCtrl  (1:1)
 				SetSCMDResultSize(1);
-				//Console.Warning( "CdTrayCtrl, param = %d", cdvd.Param[0]);
+				//Console.Warning( "CdTrayCtrl, param = %d", cdvd.SCMDParam[0]);
 				if (cdvd.SCMDParam[0] == 0)
 					cdvd.SCMDResult[0] = cdvdCtrlTrayOpen();
 				else
