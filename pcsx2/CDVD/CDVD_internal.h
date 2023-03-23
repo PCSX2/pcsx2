@@ -170,7 +170,6 @@ static const uint DVD_MAX_ROTATION_X1 = 1515;
 
 static const uint Cdvd_FullSeek_Cycles = (PSXCLK * 100) / 1000; // average number of cycles per fullseek (100ms)
 static const uint Cdvd_FastSeek_Cycles = (PSXCLK * 30) / 1000;  // average number of cycles per fastseek (37ms)
-short DiscSwapTimerSeconds = 0;
 bool trayState = 0; // Used to check if the CD tray status has changed since the last time
 
 static const char* mg_zones[8] = {"Japan", "USA", "Europe", "Oceania", "Asia", "Russia", "China", "Mexico"};
