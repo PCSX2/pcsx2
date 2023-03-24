@@ -1522,8 +1522,8 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 			DoCDVDopen();
 		}
 	}
-
-	cdvdCtrlTrayOpen();
+	cdvd.Tray.cdvdActionSeconds = 1;
+	cdvd.Tray.trayState = CDVD_DISC_OPEN;
 	return result;
 }
 

@@ -58,6 +58,7 @@ static __fi void SetSCMDResultSize(u8 size)
 	cdvd.SCMDResultC = size;
 	cdvd.SCMDResultP = 0;
 	cdvd.sDataIn &= ~0x40;
+	memset(cdvd.SCMDResult, 0, size);
 }
 
 static void CDVDSECTORREADY_INT(u32 eCycle)
@@ -667,6 +668,9 @@ static void cdvdUpdateReady(u8 NewReadyStatus)
 
 s32 cdvdCtrlTrayOpen()
 {
+	if (cdvd.Status & CDVD_STATUS_TRAY_OPEN)
+		return 0x80;
+
 	DevCon.WriteLn(Color_Green, "Open virtual disk tray");
 
 	// If we switch using a source change we need to pretend it's a new disc
@@ -677,25 +681,19 @@ s32 cdvdCtrlTrayOpen()
 	}
 
 	cdvdDetectDisk();
-
-	DiscSwapTimerSeconds = cdvd.RTC.second; // remember the PS2 time when this happened
 	cdvdUpdateStatus(CDVD_STATUS_TRAY_OPEN);
 	cdvdUpdateReady(0);
 	cdvd.Spinning = false;
 	cdvdSetIrq(1 << Irq_Eject);
-
-	if (cdvd.Type > 0 || CDVDsys_GetSourceType() == CDVD_SourceType::NoDisc)
-	{
-		cdvd.Tray.cdvdActionSeconds = 3;
-		cdvd.Tray.trayState = CDVD_DISC_EJECT;
-		DevCon.WriteLn(Color_Green, "Simulating ejected media");
-	}
 
 	return 0; // needs to be 0 for success according to homebrew test "CDVD"
 }
 
 s32 cdvdCtrlTrayClose()
 {
+	if (!(cdvd.Status & CDVD_STATUS_TRAY_OPEN))
+		return 0x80;
+
 	DevCon.WriteLn(Color_Green, "Close virtual disk tray");
 
 	if (!g_GameStarted && g_SkipBiosHack)
@@ -703,6 +701,7 @@ s32 cdvdCtrlTrayClose()
 		DevCon.WriteLn(Color_Green, "Media already loaded (fast boot)");
 		cdvdUpdateReady(CDVD_DRIVE_READY);
 		cdvdUpdateStatus(CDVD_STATUS_PAUSE);
+		cdvd.Spinning = true;
 		cdvd.Tray.trayState = CDVD_DISC_ENGAGED;
 		cdvd.Tray.cdvdActionSeconds = 0;
 	}
@@ -710,7 +709,8 @@ s32 cdvdCtrlTrayClose()
 	{
 		DevCon.WriteLn(Color_Green, "Detecting media");
 		cdvdUpdateReady(CDVD_DRIVE_BUSY);
-		cdvdUpdateStatus(CDVD_STATUS_SEEK);
+		cdvdUpdateStatus(CDVD_STATUS_STOP);
+		cdvd.Spinning = false;
 		cdvd.Tray.trayState = CDVD_DISC_DETECTING;
 		cdvd.Tray.cdvdActionSeconds = 3;
 	}
@@ -860,7 +860,7 @@ void cdvdReset()
 
 	cdvd.sDataIn = 0x40;
 	cdvdUpdateReady(CDVD_DRIVE_READY);
-	cdvdUpdateStatus(CDVD_STATUS_PAUSE);
+	cdvdUpdateStatus(CDVD_STATUS_TRAY_OPEN);
 	cdvd.Speed = 4;
 	cdvd.BlockSize = 2064;
 	cdvd.Action = cdvdAction_None;
@@ -1437,28 +1437,34 @@ void cdvdUpdateTrayState()
 		{
 			switch (cdvd.Tray.trayState)
 			{
+				case CDVD_DISC_OPEN:
+					cdvdCtrlTrayOpen();
+					if (cdvd.Type > 0 || CDVDsys_GetSourceType() == CDVD_SourceType::NoDisc)
+					{
+						cdvd.Tray.cdvdActionSeconds = 3;
+						cdvd.Tray.trayState = CDVD_DISC_EJECT;
+						DevCon.WriteLn(Color_Green, "Simulating ejected media");
+					}
+
+				break;
 				case CDVD_DISC_EJECT:
 					cdvdCtrlTrayClose();
 					break;
 				case CDVD_DISC_DETECTING:
 					DevCon.WriteLn(Color_Green, "Seeking new disc");
 					cdvd.Tray.trayState = CDVD_DISC_SEEKING;
+					cdvdUpdateStatus(CDVD_STATUS_SEEK);
 					cdvd.Tray.cdvdActionSeconds = 2;
-					cdvd.Spinning = true;
 					break;
 				case CDVD_DISC_SEEKING:
+					cdvd.Spinning = true;
 				case CDVD_DISC_ENGAGED:
 					cdvd.Tray.trayState = CDVD_DISC_ENGAGED;
 					cdvdUpdateReady(CDVD_DRIVE_READY);
+					cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 					if (CDVDsys_GetSourceType() != CDVD_SourceType::NoDisc)
 					{
-						DevCon.WriteLn(Color_Green, "Media ready to read");
-						cdvdUpdateStatus(CDVD_STATUS_PAUSE);
-					}
-					else
-					{
-						cdvd.Spinning = false;
-						cdvdUpdateStatus(CDVD_STATUS_STOP);
+						DevCon.WriteLn(Color_Green, "Media ready to use");
 					}
 					break;
 			}
@@ -2340,8 +2346,8 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 
 					default:
 						SetSCMDResultSize(1);
-						cdvd.SCMDResult[0] = 0x80;
-						Console.Warning("*Unknown Mecacon Command param[0]=%02X", cdvd.SCMDParam[0]);
+						cdvd.SCMDResult[0] = 0x81;
+						Console.Warning("*Unknown Mecacon Command param Test2 subparams - param[0]=%02X", cdvd.SCMDParam[0]);
 						break;
 				}
 				break;
@@ -2357,7 +2363,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 
 			case 0x06: // CdTrayCtrl  (1:1)
 				SetSCMDResultSize(1);
-				//Console.Warning( "CdTrayCtrl, param = %d", cdvd.Param[0]);
+				//Console.Warning( "CdTrayCtrl, param = %d", cdvd.SCMDParam[0]);
 				if (cdvd.SCMDParam[0] == 0)
 					cdvd.SCMDResult[0] = cdvdCtrlTrayOpen();
 				else
@@ -2906,9 +2912,8 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				break;
 
 			default:
-				// fake a 'correct' command
 				SetSCMDResultSize(1); //in:0
-				cdvd.SCMDResult[0] = 0; // 0 complete ; 1 busy ; 0x80 error
+				cdvd.SCMDResult[0] = 0x80; // 0 complete ; 1 busy ; 0x80 error
 				Console.WriteLn("SCMD Unknown %x", rt);
 				break;
 		} // end switch
