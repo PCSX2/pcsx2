@@ -789,6 +789,7 @@ void GSDevice11::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offs
 	struct Uniforms
 	{
 		float scale;
+		float pad1[3];
 		u32 SBW, DBW, pad3;
 	};
 
