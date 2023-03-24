@@ -34,6 +34,8 @@ static const char* THEME_NAMES[] = {
 	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Baby Pastel (Pink) [Light]"),
 	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Pizza Time! (Brownish/Peachy White) [Light]"),
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "PCSX2 (White/Blue) [Light]"),
 	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Scarlet Devil (Red/Purple) [Dark]"),
@@ -56,6 +58,7 @@ static const char* THEME_VALUES[] = {
 	"darkfusionblue",
 	"UntouchedLagoon",
 	"BabyPastel",
+	"PizzaBrown",
 	"PCSX2Blue",
 	"ScarletDevilRed",
 	"VioletAngelPurple",
