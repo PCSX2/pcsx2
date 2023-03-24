@@ -11673,9 +11673,6 @@ SLES-50876:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
-    roundSprite: 2 # Fixes misaligned lighting.
-    mergeSprite: 1 # Fixes misaligned lighting.
-    cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
 SLES-50877:
@@ -14436,9 +14433,6 @@ SLES-52153:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
-    roundSprite: 2 # Fixes misaligned lighting.
-    mergeSprite: 1 # Fixes misaligned lighting.
-    cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
 SLES-52155:
@@ -14875,27 +14869,32 @@ SLES-52379:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
-    mipmap: 1 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
+    mipmap: 2 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
+    trilinearFiltering: 1
 SLES-52380:
   name: "Shrek 2"
   region: "PAL-F"
   gsHWFixes:
-    mipmap: 1 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
+    mipmap: 2 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
+    trilinearFiltering: 1
 SLES-52381:
   name: "Shrek 2"
   region: "PAL-G"
   gsHWFixes:
-    mipmap: 1 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
+    mipmap: 2 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
+    trilinearFiltering: 1
 SLES-52382:
   name: "Shrek 2"
   region: "PAL-S"
   gsHWFixes:
-    mipmap: 1 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
+    mipmap: 2 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
+    trilinearFiltering: 1
 SLES-52383:
   name: "Shrek 2"
   region: "PAL-I"
   gsHWFixes:
-    mipmap: 1 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
+    mipmap: 2 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
+    trilinearFiltering: 1
 SLES-52384:
   name: "Project Zero 2 - Crimson Butterfly"
   region: "PAL-M5"
@@ -15041,7 +15040,8 @@ SLES-52457:
   name: "Shrek 2"
   region: "PAL-SW"
   gsHWFixes:
-    mipmap: 1 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
+    mipmap: 2 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
+    trilinearFiltering: 1
 SLES-52458:
   name: "Disgaea - Hour of Darkness"
   region: "PAL-E"
@@ -24189,9 +24189,6 @@ SLKA-25196:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
-    roundSprite: 2 # Fixes misaligned lighting.
-    mergeSprite: 1 # Fixes misaligned lighting.
-    cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
 SLKA-25198:
@@ -25708,9 +25705,6 @@ SLPM-61092:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
-    roundSprite: 2 # Fixes misaligned lighting.
-    mergeSprite: 1 # Fixes misaligned lighting.
-    cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
 SLPM-61117:
@@ -30464,7 +30458,8 @@ SLPM-65697:
   name: "Shrek 2"
   region: "NTSC-J"
   gsHWFixes:
-    mipmap: 1 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
+    mipmap: 2 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
+    trilinearFiltering: 1
 SLPM-65698:
   name: "Love Songs - ADV Futaba Riho 14-sai Natsu"
   region: "NTSC-J"
@@ -30622,9 +30617,6 @@ SLPM-65741:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
-    roundSprite: 2 # Fixes misaligned lighting.
-    mergeSprite: 1 # Fixes misaligned lighting.
-    cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
 SLPM-65742:
@@ -44067,9 +44059,6 @@ SLUS-20587:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
-    roundSprite: 2 # Fixes misaligned lighting.
-    mergeSprite: 1 # Fixes misaligned lighting.
-    cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
 SLUS-20588:
@@ -44812,7 +44801,8 @@ SLUS-20745:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    mipmap: 1 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
+    mipmap: 2 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
+    trilinearFiltering: 1
 SLUS-20746:
   name: "Rogue Ops"
   region: "NTSC-U"
