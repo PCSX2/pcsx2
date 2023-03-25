@@ -67,13 +67,6 @@ const CRC::Game CRC::m_games[] =
 	{0x5AC7E79C, PolyphonyDigitalGames /* CH */}, // TouristTrophy
 	{0xFF9C0E93, PolyphonyDigitalGames /* US */}, // TouristTrophy
 	{0xCA9AA903, PolyphonyDigitalGames /* EU */}, // TouristTrophy
-	{0xAC3C1147, SVCChaos /* EU */}, // SVC Chaos: SNK vs. Capcom
-	{0xB00FF2ED, SVCChaos /* JP */},
-	{0x94834BD3, SVCChaos /* JP */},
-	{0xCF1D71EE, KOF2002 /* EU */}, // The King of Fighters 2002
-	{0xABD16263, KOF2002 /* JP */},
-	{0x424A8601, KOF2002 /* JP */},
-	{0x7F74D8D0, KOF2002 /* US */},
 	{0xFC46EA61, Tekken5 /* JP */},
 	{0x1F88EE37, Tekken5 /* EU */},
 	{0x1F88BECD, Tekken5 /* EU */}, // language selector...

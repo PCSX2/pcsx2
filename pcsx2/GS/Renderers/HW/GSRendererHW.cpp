@@ -844,8 +844,9 @@ bool GSRendererHW::IsSplitTextureShuffle()
 	// X might be offset by up to -8/+8, but either the position or UV should be aligned.
 	GSVector4i aligned_rc = pos_rc.min_i32(tex_rc).blend32<12>(pos_rc.max_i32(tex_rc));
 
-	// Check page alignment.
-	if (aligned_rc.x != 0 || (aligned_rc.z & (frame_psm.pgs.x - 1)) != 0 ||
+	// Y should be page aligned. X should be too, but if it's doing a copy with a shuffle (which is kinda silly), both the
+	// position and coordinates may be offset by +8. See Psi-Ops - The Mindgate Conspiracy.
+	if ((aligned_rc.x & 7) != 0 || aligned_rc.x > 8 || (aligned_rc.z & 7) != 0 ||
 		aligned_rc.y != 0 || (aligned_rc.w & (frame_psm.pgs.y - 1)) != 0)
 	{
 		return false;
