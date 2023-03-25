@@ -25,10 +25,8 @@ public:
 		NoTitle,
 		GetawayGames,
 		ICO,
-		KOF2002,
 		PolyphonyDigitalGames,
 		SMTNocturne,
-		SVCChaos,
 		Tekken5,
 		TitleCount,
 	};
