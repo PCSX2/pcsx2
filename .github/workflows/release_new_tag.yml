@@ -53,7 +53,7 @@ jobs:
         env:
           OWNER: pcnimdock
           REPO: pcsx2
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_PAT }}
           COMMIT_SHA: ${{ github.SHA }}
         run: |
           cd ./.github/workflows/scripts/releases/generate-release-notes
