@@ -24,19 +24,22 @@ class ChdFileReader : public ThreadedFileReader
 	DeclareNoncopyableObject(ChdFileReader);
 
 public:
-	virtual ~ChdFileReader() override;;
+	ChdFileReader();
+	virtual ~ChdFileReader() override;
 
 	static bool CanHandle(const std::string& fileName, const std::string& displayName);
+
 	bool Open2(std::string fileName) override;
 
 	Chunk ChunkForOffset(u64 offset) override;
-	int ReadChunk(void *dst, s64 blockID) override;
+	int ReadChunk(void* dst, s64 blockID) override;
 
 	void Close2(void) override;
 	uint GetBlockCount(void) const override;
-	ChdFileReader(void);
 
 private:
+	bool ParseTOC(u64* out_frame_count);
+
 	chd_file* ChdFile;
 	u64 file_size;
 	u32 hunk_size;
