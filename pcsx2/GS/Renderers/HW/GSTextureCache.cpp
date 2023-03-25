@@ -2775,16 +2775,6 @@ void GSTextureCache::IncAge()
 		{
 			Target* t = *i;
 
-			// This variable is used to detect the texture shuffle effect. There is a high
-			// probability that game will do it on the current RT.
-			// Variable is cleared here to avoid issue with game that uses a 16 bits
-			// render target
-			if (t->m_age > 0)
-			{
-				// GoW2 uses the effect at the start of the frame
-				t->m_32_bits_fmt = false;
-			}
-
 			if (++t->m_age > max_rt_age)
 			{
 				i = list.erase(i);
