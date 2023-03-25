@@ -18710,6 +18710,7 @@ SLES-53825:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Reduces blurriness.
+    partialTargetInvalidation: 1 # Fixes corruption after taking a picture.
 SLES-53826:
   name: "Tom Clancy's Splinter Cell - Double Agent"
   region: "PAL-M5"
@@ -41300,6 +41301,9 @@ SLPS-73256:
 SLPS-73257:
   name: "Fatal Frame III - The Tormented [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Reduces blurriness.
+    partialTargetInvalidation: 1 # Fixes corruption after taking a picture.
 SLPS-73258:
   name: "Kenka Banchou 2 - Full Throttle [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -47438,11 +47442,12 @@ SLUS-21243:
   memcardFilters:
     - "SLUS-21359"
 SLUS-21244:
-  name: "Fatal Frame 3 - The Tormented"
+  name: "Fatal Frame III - The Tormented"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Reduces blurriness.
+    partialTargetInvalidation: 1 # Fixes corruption after taking a picture.
 SLUS-21245:
   name: "Suikoden Tactics"
   region: "NTSC-U"
