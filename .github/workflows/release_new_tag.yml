@@ -23,7 +23,7 @@ on:
 
 jobs:
   cut-release:
-    if: github.repository == 'PCSX2/pcsx2'
+    if: github.repository == 'pcnimdock/pcsx2'
     runs-on: ubuntu-latest
     name: "Create Tag and Release"
     steps:
