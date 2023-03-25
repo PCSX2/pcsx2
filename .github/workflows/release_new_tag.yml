@@ -36,7 +36,7 @@ jobs:
         with:
           # Workflows cannot trigger other workflows implicitly
           # - https://github.community/t/github-actions-workflow-not-triggering-with-tag-push/17053/7
-          github_token: ${{ secrets.BOT_PAT }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           tag_prefix: v
           default_bump: patch
 
@@ -51,7 +51,7 @@ jobs:
 
       - name: Generate Release Notes
         env:
-          OWNER: PCSX2
+          OWNER: pcnimdock
           REPO: pcsx2
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMIT_SHA: ${{ github.SHA }}
