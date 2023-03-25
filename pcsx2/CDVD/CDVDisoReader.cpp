@@ -208,7 +208,7 @@ s32 CALLBACK ISOgetTOC(void* toc)
 
 		if (layer1start < 0)
 		{
-			// fake it
+			// Single Layer - Values are fixed.
 			tocBuff[0] = 0x04;
 			tocBuff[1] = 0x02;
 			tocBuff[2] = 0xF2;
@@ -216,15 +216,35 @@ s32 CALLBACK ISOgetTOC(void* toc)
 			tocBuff[4] = 0x86;
 			tocBuff[5] = 0x72;
 
+			// These values are fixed on all discs, except position 14 which is the OTP/PTP flags which are 0 in single layer.
+			tocBuff[12] = 0x01;
+			tocBuff[13] = 0x02;
+			tocBuff[14] = 0x01;
+			tocBuff[15] = 0x00;
+
+			// Values are fixed.
 			tocBuff[16] = 0x00;
 			tocBuff[17] = 0x03;
 			tocBuff[18] = 0x00;
 			tocBuff[19] = 0x00;
+
+			cdvdTD trackInfo;
+			// Get the max LSN for the track
+			if (ISOgetTD(0, &trackInfo) == -1)
+				trackInfo.lsn = 0;
+
+			// Max LSN in the TOC is calculated as the blocks + 0x30000, then - 1.
+			// same as layer 1 start.
+			const s32 maxlsn = trackInfo.lsn + (0x30000 - 1);
+			tocBuff[20] = maxlsn >> 24;
+			tocBuff[21] = (maxlsn >> 16) & 0xff;
+			tocBuff[22] = (maxlsn >> 8) & 0xff;
+			tocBuff[23] = (maxlsn >> 0) & 0xff;
 			return 0;
 		}
 		else
 		{
-			// dual sided
+			// Dual sided - Values are fixed.
 			tocBuff[0] = 0x24;
 			tocBuff[1] = 0x02;
 			tocBuff[2] = 0xF2;
@@ -232,14 +252,19 @@ s32 CALLBACK ISOgetTOC(void* toc)
 			tocBuff[4] = 0x41;
 			tocBuff[5] = 0x95;
 
-			tocBuff[14] = 0x60; // dual sided, ptp
+			// These values are fixed on all discs, except position 14 which is the OTP/PTP flags.
+			tocBuff[12] = 0x01;
+			tocBuff[13] = 0x02;
+			tocBuff[14] = 0x21; // PTP
+			tocBuff[15] = 0x10;
 
+			// Values are fixed.
 			tocBuff[16] = 0x00;
 			tocBuff[17] = 0x03;
 			tocBuff[18] = 0x00;
 			tocBuff[19] = 0x00;
 
-			s32 l1s = layer1start + 0x30000 - 1;
+			const s32 l1s = layer1start + 0x30000 - 1;
 			tocBuff[20] = (l1s >> 24);
 			tocBuff[21] = (l1s >> 16) & 0xff;
 			tocBuff[22] = (l1s >> 8) & 0xff;
@@ -280,7 +305,9 @@ s32 CALLBACK ISOgetTOC(void* toc)
 		tocBuff[22] = 0xA2;
 		tocBuff[27] = itob(min);
 		tocBuff[28] = itob(sec);
+		tocBuff[29] = itob(frm);
 
+		// TODO: When cue support is added, this will need to account for pregap.
 		for (i = diskInfo.strack; i <= diskInfo.etrack; i++)
 		{
 			err = ISOgetTD(i, &trackInfo);
