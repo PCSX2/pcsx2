@@ -11114,6 +11114,8 @@ SLES-50677:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes invisible characters in various scenes.
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes black screens on judgement wheel.
 SLES-50679:
   name: "Tenchu 3 - Wrath of Heaven"
   region: "PAL-E"
@@ -11485,6 +11487,8 @@ SLES-50822:
   region: "PAL-M3"
   clampModes:
     eeClampMode: 3 # Fixes invisible characters in various scenes.
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes black screens on judgement wheel.
 SLES-50826:
   name: "Star Wars - Clone Wars"
   region: "PAL-E"
@@ -37532,6 +37536,8 @@ SLPS-25041:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes invisible characters in various scenes.
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes black screens on judgement wheel.
 SLPS-25042:
   name: "Maken Shao [Limited Edition]"
   region: "NTSC-J"
@@ -41400,6 +41406,8 @@ SLPS-73418:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes invisible characters in various scenes.
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes black screens on judgement wheel.
 SLPS-73419:
   name: "Lupin III - Majutsu-Ou no Isan [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -42878,6 +42886,8 @@ SLUS-20347:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes invisible characters in various scenes.
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes black screens on judgement wheel.
 SLUS-20348:
   name: "Monopoly Party"
   region: "NTSC-U"
