@@ -30,6 +30,12 @@
 #pragma clang diagnostic pop
 #endif
 
+ChdFileReader::ChdFileReader()
+{
+	m_blocksize = 2048;
+	ChdFile = nullptr;
+}
+
 ChdFileReader::~ChdFileReader()
 {
 	Close();
@@ -81,7 +87,7 @@ bool ChdFileReader::Open2(std::string fileName)
 	std::string dirname;
 	FileSystem::FindResultsArray results;
 
-	while (CHDERR_REQUIRES_PARENT == (error = chd_open_wrapper(chds[chd_depth].c_str(), &fp, CHD_OPEN_READ, NULL, &child)))
+	while (CHDERR_REQUIRES_PARENT == (error = chd_open_wrapper(chds[chd_depth].c_str(), &fp, CHD_OPEN_READ, nullptr, &child)))
 	{
 		if (chd_depth >= static_cast<int>(std::size(chds) - 1))
 		{
@@ -138,7 +144,7 @@ bool ChdFileReader::Open2(std::string fileName)
 	for (int d = chd_depth - 1; d >= 0; d--)
 	{
 		parent = child;
-		child = NULL;
+		child = nullptr;
 		error = chd_open_wrapper(chds[d].c_str(), &fp, CHD_OPEN_READ, parent, &child);
 		if (error != CHDERR_NONE)
 		{
@@ -153,11 +159,23 @@ bool ChdFileReader::Open2(std::string fileName)
 	ChdFile = child;
 
 	const chd_header* chd_header = chd_get_header(ChdFile);
-	file_size = static_cast<u64>(chd_header->unitbytes) * chd_header->unitcount;
 	hunk_size = chd_header->hunkbytes;
 	// CHD likes to use full 2448 byte blocks, but keeps the +24 offset of source ISOs
 	// The rest of PCSX2 likes to use 2448 byte buffers, which can't fit that so trim blocks instead
 	m_internalBlockSize = chd_header->unitbytes;
+
+	// The file size in the header is incorrect, each track gets padded to a multiple of 4 frames.
+	// (see chdman.cpp from MAME). Instead, we pull the real frame count from the TOC.
+	u64 total_frames;
+	if (ParseTOC(&total_frames))
+	{
+		file_size = total_frames * static_cast<u64>(chd_header->unitbytes);
+	}
+	else
+	{
+		Console.Warning("Failed to parse CHD TOC, file size may be incorrect.");
+		file_size = static_cast<u64>(chd_header->unitbytes) * chd_header->unitcount;
+	}
 
 	return true;
 }
@@ -195,10 +213,10 @@ int ChdFileReader::ReadChunk(void* dst, s64 chunkID)
 
 void ChdFileReader::Close2()
 {
-	if (ChdFile != NULL)
+	if (ChdFile)
 	{
 		chd_close(ChdFile);
-		ChdFile = NULL;
+		ChdFile = nullptr;
 	}
 }
 
@@ -206,8 +224,70 @@ u32 ChdFileReader::GetBlockCount() const
 {
 	return (file_size - m_dataoffset) / m_internalBlockSize;
 }
-ChdFileReader::ChdFileReader(void)
+
+bool ChdFileReader::ParseTOC(u64* out_frame_count)
 {
-	m_blocksize = 2048;
-	ChdFile = NULL;
-};
+	u64 total_frames = 0;
+	int max_found_track = -1;
+
+	for (int search_index = 0;; search_index++)
+	{
+		char metadata_str[256];
+		char type_str[256];
+		char subtype_str[256];
+		char pgtype_str[256];
+		char pgsub_str[256];
+		u32 metadata_length;
+
+		int track_num = 0, frames = 0, pregap_frames = 0, postgap_frames = 0;
+		chd_error err = chd_get_metadata(ChdFile, CDROM_TRACK_METADATA2_TAG, search_index, metadata_str, sizeof(metadata_str),
+			&metadata_length, nullptr, nullptr);
+		if (err == CHDERR_NONE)
+		{
+			if (std::sscanf(metadata_str, CDROM_TRACK_METADATA2_FORMAT, &track_num, type_str, subtype_str, &frames,
+				&pregap_frames, pgtype_str, pgsub_str, &postgap_frames) != 8)
+			{
+				Console.Error(fmt::format("Invalid track v2 metadata: '{}'", metadata_str));
+				return false;
+			}
+		}
+		else
+		{
+			// try old version
+			err = chd_get_metadata(ChdFile, CDROM_TRACK_METADATA_TAG, search_index, metadata_str, sizeof(metadata_str),
+				&metadata_length, nullptr, nullptr);
+			if (err != CHDERR_NONE)
+			{
+				// not found, so no more tracks
+				break;
+			}
+
+			if (std::sscanf(metadata_str, CDROM_TRACK_METADATA_FORMAT, &track_num, type_str, subtype_str, &frames) != 4)
+			{
+				Console.Error(fmt::format("Invalid track metadata: '{}'", metadata_str));
+				return false;
+			}
+		}
+
+		DevCon.WriteLn(fmt::format("CHD Track {}: frames:{} pregap:{} postgap:{} type:{} sub:{} pgtype:{} pgsub:{}",
+			track_num, frames, pregap_frames, postgap_frames, type_str, subtype_str, pgtype_str, pgsub_str));
+
+		// PCSX2 doesn't currently support multiple tracks for CDs.
+		if (track_num != 1)
+		{
+			Console.Warning(fmt::format("  Ignoring track {} in CHD.", track_num, frames));
+			continue;
+		}
+
+		total_frames += static_cast<u64>(pregap_frames) + static_cast<u64>(frames) + static_cast<u64>(postgap_frames);
+		max_found_track = std::max(max_found_track, track_num);
+	}
+
+	// No tracks in TOC?
+	if (max_found_track < 0)
+		return false;
+
+	// Compute total data size.
+	*out_frame_count = total_frames;
+	return true;
+}
