@@ -36,7 +36,7 @@ jobs:
         with:
           # Workflows cannot trigger other workflows implicitly
           # - https://github.community/t/github-actions-workflow-not-triggering-with-tag-push/17053/7
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.BOT_PAT }}
           tag_prefix: v
           default_bump: patch
 
