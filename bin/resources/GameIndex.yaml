@@ -293,6 +293,7 @@ PBPX-95516:
     eeRoundMode: 0 # Fixes Hydrodisplacer behaviour.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
 PBPX-95517:
   name: "Network Adapter Start-Up Disc"
   region: "NTSC-U"
@@ -401,6 +402,7 @@ PCPX-98017:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 1 # Helps fix misaligned bloom.
 PDPX-99109:
@@ -472,6 +474,7 @@ SCAJ-20001:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCAJ-20002:
   name: "Gallop Racer 6 - Revolution"
   region: "NTSC-Unk"
@@ -1943,6 +1946,7 @@ SCED-51075:
     eeRoundMode: 0 # Fixes Hydrodisplacer behaviour.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCED-51140:
   name: "PS2 Bonus Demo 03"
   region: "PAL-M5"
@@ -3208,6 +3212,7 @@ SCES-50916:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCES-50917:
   name: "Sly Raccoon"
   region: "PAL-M5"
@@ -3432,6 +3437,7 @@ SCES-51607:
   gsHWFixes:
     mipmap: 1
     autoFlush: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
   dynaPatches:
     - pattern:
         - { offset: 0x0, value: 0x0280202d }
@@ -4942,6 +4948,7 @@ SCKA-20011:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCKA-20012:
   name: "Arc the Lad - Jeong Ryeo Hui Hwang Ho"
   region: "NTSC-K"
@@ -5797,6 +5804,7 @@ SCPS-15037:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCPS-15038:
   name: "Operator's Side"
   region: "NTSC-J"
@@ -5888,6 +5896,7 @@ SCPS-15056:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
   memcardFilters:
     - "SCPS-15056"
     - "SCPS-15037"
@@ -6414,6 +6423,7 @@ SCPS-19211:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCPS-19213:
   name: "Operator's Side [PlayStation 2 The Best] [with Microphone]"
   region: "NTSC-J"
@@ -6473,6 +6483,7 @@ SCPS-19302:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCPS-19303:
   name: "Boku no Natsuyasumi 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -6531,6 +6542,7 @@ SCPS-19310:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCPS-19311:
   name: "Saru Get You 3 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -6572,6 +6584,7 @@ SCPS-19316:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCPS-19317:
   name: "Ratchet & Clank 2 - Going Commando [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -6579,6 +6592,7 @@ SCPS-19317:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
     autoFlush: 1
   memcardFilters:
     - "SCAJ-20001"
@@ -7495,6 +7509,7 @@ SCUS-97199:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCUS-97200:
   name: "Kiosk Demo Disc 2.05"
   region: "NTSC-U"
@@ -7535,6 +7550,7 @@ SCUS-97209:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCUS-97210:
   name: "Sly Cooper and the Thievius Raccoonus [Demo]"
   region: "NTSC-U"
@@ -7658,6 +7674,7 @@ SCUS-97240:
     eeRoundMode: 0 # Fixes Hydrodisplacer behaviour.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCUS-97241:
   name: "Official U.S. PlayStation Magazine Demo Disc 066"
   region: "NTSC-U"
@@ -7763,6 +7780,7 @@ SCUS-97268:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
     autoFlush: 1
   memcardFilters:
     - "SCUS-97268"
@@ -7862,6 +7880,7 @@ SCUS-97322:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
     autoFlush: 1
 SCUS-97323:
   name: "Ratchet & Clank 2 - Going Commando [Retail Employees Demo]"
@@ -7870,6 +7889,7 @@ SCUS-97323:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
     autoFlush: 1
 SCUS-97324:
   name: "Kiosk Demo Disc 2.11"
@@ -8639,6 +8659,7 @@ SCUS-97513:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
     autoFlush: 1
 SCUS-97514:
   name: "ATV Offroad Fury 3 [Greatest Hits]"
