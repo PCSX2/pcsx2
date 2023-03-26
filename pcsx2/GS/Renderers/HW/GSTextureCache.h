@@ -316,14 +316,6 @@ public:
 	public:
 		std::unordered_set<Source*> m_surfaces;
 		std::array<FastList<Source*>, MAX_PAGES> m_map;
-		u32 m_pages[16]; // bitmap of all pages
-		bool m_used;
-
-		SourceMap()
-			: m_used(false)
-		{
-			memset(m_pages, 0, sizeof(m_pages));
-		}
 
 		void Add(Source* s, const GIFRegTEX0& TEX0, const GSOffset& off);
 		void RemoveAll();

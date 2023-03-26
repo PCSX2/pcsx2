@@ -1062,9 +1062,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	}
 
 	src->Update(r);
-
-	m_src.m_used = true;
-
 	return src;
 }
 
@@ -2707,8 +2704,8 @@ void GSTextureCache::InvalidateSourcesFromTarget(const Target* t)
 
 void GSTextureCache::IncAge()
 {
-	const int max_age = m_src.m_used ? 3 : 6;
-	const int max_preload_age = m_src.m_used ? 30 : 60;
+	static constexpr int max_age = 3;
+	static constexpr int max_preload_age = 30;
 
 	// You can't use m_map[page] because Source* are duplicated on several pages.
 	for (auto i = m_src.m_surfaces.begin(); i != m_src.m_surfaces.end();)
@@ -2739,8 +2736,6 @@ void GSTextureCache::IncAge()
 			++it;
 		}
 	}
-
-	m_src.m_used = false;
 
 	// Clearing of Rendertargets causes flickering in many scene transitions.
 	// Sigh, this seems to be used to invalidate surfaces. So set a huge maxage to avoid flicker,
