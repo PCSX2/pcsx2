@@ -202,8 +202,6 @@ public:
 	};
 
 private:
-	// Place holder for the GLSL shader code (to avoid useless reload)
-	std::string m_shader_common_header;
 	std::string m_shader_tfx_vgs;
 	std::string m_shader_tfx_fs;
 
@@ -364,7 +362,8 @@ public:
 	void OMUnbindTexture(GSTextureOGL* tex);
 
 	bool CreateTextureFX();
-	std::string GetShaderSource(const std::string_view& entry, GLenum type, const std::string_view& common_header, const std::string_view& glsl_h_code, const std::string_view& macro_sel);
+	std::string GetShaderSource(const std::string_view& entry, GLenum type, const std::string_view& glsl_h_code,
+		const std::string_view& macro_sel = std::string_view());
 	std::string GenGlslHeader(const std::string_view& entry, GLenum type, const std::string_view& macro);
 	std::string GetVSSource(VSSelector sel);
 	std::string GetGSSource(GSSelector sel);

@@ -1,15 +1,9 @@
 //#version 420 // Keep it for text editor detection
 
-// Require for bit operation
-//#extension GL_ARB_gpu_shader5 : enable
-
 #define FMT_32 0
 #define FMT_24 1
 #define FMT_16 2
 
-// APITRACE_DEBUG enables forced pixel output to easily detect
-// the fragment computed by primitive
-#define APITRACE_DEBUG 0
 // TEX_COORD_DEBUG output the uv coordinate as color. It is useful
 // to detect bad sampling due to upscaling
 //#define TEX_COORD_DEBUG
@@ -25,12 +19,37 @@
 #define PS_PRIMID_INIT (PS_DATE == 1 || PS_DATE == 2)
 #define NEEDS_RT_EARLY (PS_TEX_IS_FB == 1 || PS_DATE >= 5)
 #define NEEDS_RT (NEEDS_RT_EARLY || (!PS_PRIMID_INIT && (PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW)))
+#define NEEDS_TEX (PS_TFX != 4)
 
-#ifdef FRAGMENT_SHADER
+layout(std140, binding = 0) uniform cb21
+{
+    vec3 FogColor;
+    float AREF;
 
-#if !defined(BROKEN_DRIVER) && (pGL_ES || defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts)
-layout(location = 0)
-#endif
+    vec4 WH;
+
+    vec2 TA;
+    float MaxDepthPS;
+    float Af;
+
+    uvec4 FbMask;
+
+    vec4 HalfTexel;
+
+    vec4 MinMax;
+    vec4 STRange;
+
+    ivec4 ChannelShuffle;
+
+    vec2 TC_OffsetHack;
+    vec2 STScale;
+
+    mat4 DitherMatrix;
+
+    float ScaledScaleFactor;
+    float RcpScaleFactor;
+};
+
 in SHADER
 {
     vec4 t_float;
@@ -70,7 +89,10 @@ in SHADER
 #endif
 #endif
 
+#if NEEDS_TEX
+layout(binding = 0) uniform sampler2D TextureSampler;
 layout(binding = 1) uniform sampler2D PaletteSampler;
+#endif
 
 #if !HAS_FRAMEBUFFER_FETCH && NEEDS_RT
 layout(binding = 2) uniform sampler2D RtSampler; // note 2 already use by the image below
@@ -93,6 +115,8 @@ vec4 fetch_rt()
     return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
 #endif
 }
+
+#if NEEDS_TEX
 
 vec4 sample_c(vec2 uv)
 {
@@ -565,6 +589,8 @@ vec4 sample_color(vec2 st)
     return trunc(t * 255.0f + 0.05f);
 }
 
+#endif // NEEDS_TEX
+
 vec4 tfx(vec4 T, vec4 C)
 {
     vec4 C_out;
@@ -632,7 +658,9 @@ vec4 ps_color()
     vec2 st_int = PSin.t_int.zw;
 #endif
 
-#if PS_CHANNEL_FETCH == 1
+#if !NEEDS_TEX
+    vec4 T = vec4(0.0);
+#elif PS_CHANNEL_FETCH == 1
     vec4 T = fetch_red();
 #elif PS_CHANNEL_FETCH == 2
     vec4 T = fetch_green();
@@ -898,18 +926,6 @@ void ps_main()
 #endif
 
     vec4 C = ps_color();
-#if (APITRACE_DEBUG & 1) == 1
-    C.r = 255.0f;
-#endif
-#if (APITRACE_DEBUG & 2) == 2
-    C.g = 255.0f;
-#endif
-#if (APITRACE_DEBUG & 4) == 4
-    C.b = 255.0f;
-#endif
-#if (APITRACE_DEBUG & 8) == 8
-    C.a = 128.0f;
-#endif
 
 #if PS_SHUFFLE
     uvec4 denorm_c = uvec4(C);
@@ -1029,5 +1045,3 @@ void ps_main()
 	gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);
 #endif
 }
-
-#endif
