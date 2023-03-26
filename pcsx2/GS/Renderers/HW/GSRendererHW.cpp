@@ -1841,6 +1841,7 @@ void GSRendererHW::Draw()
 	GIFRegTEX0 ZBUF_TEX0;
 	if (!no_ds)
 	{
+		ZBUF_TEX0.U64 = 0;
 		ZBUF_TEX0.TBP0 = context->ZBUF.Block();
 		ZBUF_TEX0.TBW = context->FRAME.FBW;
 		ZBUF_TEX0.PSM = context->ZBUF.PSM;
