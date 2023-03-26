@@ -612,13 +612,9 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 		for (size_t i = 0; i < std::size(s_sdl_button_names); i++)
 			mark_bind(SDL_GameControllerGetBindForButton(gcontroller, static_cast<SDL_GameControllerButton>(i)));
 	}
-	else
-	{
-		// GC doesn't have the concept of hats, so we only need to do this for joysticks.
-		const int num_hats = SDL_JoystickNumHats(joystick);
-		if (num_hats > 0)
-			cd.last_hat_state.resize(static_cast<size_t>(num_hats), u8(0));
-	}
+	const int num_hats = SDL_JoystickNumHats(joystick);
+	if (num_hats > 0)
+		cd.last_hat_state.resize(static_cast<size_t>(num_hats), u8(0));
 
 	cd.use_game_controller_rumble = (gcontroller && SDL_GameControllerRumble(gcontroller, 0, 0, 0) == 0);
 	if (cd.use_game_controller_rumble)
