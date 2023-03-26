@@ -356,6 +356,8 @@ void main()
 
 #define PS_FEEDBACK_LOOP_IS_NEEDED (PS_TEX_IS_FB == 1 || PS_FBMASK || SW_BLEND_NEEDS_RT || (PS_DATE >= 5))
 
+#define NEEDS_TEX (PS_TFX != 4)
+
 layout(std140, set = 0, binding = 1) uniform cb1
 {
 	vec3 FogColor;
@@ -394,8 +396,10 @@ layout(location = 0, index = 1) out vec4 o_col1;
 layout(location = 0) out vec4 o_col0;
 #endif
 
+#if NEEDS_TEX
 layout(set = 1, binding = 0) uniform sampler2D Texture;
 layout(set = 1, binding = 1) uniform texture2D Palette;
+#endif
 
 #if PS_FEEDBACK_LOOP_IS_NEEDED
 	#ifndef DISABLE_TEXTURE_BARRIER
@@ -410,6 +414,8 @@ layout(set = 1, binding = 1) uniform texture2D Palette;
 #if PS_DATE > 0
 layout(set = 2, binding = 1) uniform texture2D PrimMinTexture;
 #endif
+
+#if NEEDS_TEX
 
 vec4 sample_c(vec2 uv)
 {
@@ -885,6 +891,8 @@ vec4 sample_color(vec2 st)
 	return trunc(t * 255.0f + 0.05f);
 }
 
+#endif // NEEDS_TEX
+
 vec4 tfx(vec4 T, vec4 C)
 {
 	vec4 C_out;
@@ -962,7 +970,9 @@ vec4 ps_color()
 	vec2 st_int = vsIn.ti.zw;
 #endif
 
-#if PS_CHANNEL_FETCH == 1
+#if !NEEDS_TEX
+	vec4 T = vec4(0.0f);
+#elif PS_CHANNEL_FETCH == 1
 	vec4 T = fetch_red(ivec2(gl_FragCoord.xy));
 #elif PS_CHANNEL_FETCH == 2
 	vec4 T = fetch_green(ivec2(gl_FragCoord.xy));

@@ -35,6 +35,8 @@ in vec4 PSin_p;
 in vec2 PSin_t;
 in vec4 PSin_c;
 
+layout(binding = 0) uniform sampler2D TextureSampler;
+
 // Give a different name so I remember there is a special case!
 #if defined(ps_convert_rgba8_16bits) || defined(ps_convert_float32_32bits)
 layout(location = 0) out uint SV_Target1;

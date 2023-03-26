@@ -46,6 +46,8 @@ in vec4 PSin_p;
 in vec2 PSin_t;
 in vec4 PSin_c;
 
+layout(binding = 0) uniform sampler2D TextureSampler;
+
 layout(location = 0) out vec4 SV_Target0;
 
 vec4 sample_c()

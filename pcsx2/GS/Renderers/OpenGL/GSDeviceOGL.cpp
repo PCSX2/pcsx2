@@ -145,17 +145,6 @@ bool GSDeviceOGL::Create()
 	DevCon.WriteLn("Using %s for point expansion and %s for line expansion.",
 		m_features.point_expand ? "hardware" : "geometry shaders", m_features.line_expand ? "hardware" : "geometry shaders");
 
-	{
-		auto shader = Host::ReadResourceFileToString("shaders/opengl/common_header.glsl");
-		if (!shader.has_value())
-		{
-			Host::ReportErrorAsync("GS", "Failed to read shaders/opengl/common_header.glsl.");
-			return false;
-		}
-
-		m_shader_common_header = std::move(*shader);
-	}
-
 	// because of fbo bindings below...
 	GLState::Clear();
 
@@ -282,12 +271,12 @@ bool GSDeviceOGL::Create()
 
 
 
-		m_convert.vs = GetShaderSource("vs_main", GL_VERTEX_SHADER, m_shader_common_header, *convert_glsl, {});
+		m_convert.vs = GetShaderSource("vs_main", GL_VERTEX_SHADER, *convert_glsl);
 
 		for (size_t i = 0; i < std::size(m_convert.ps); i++)
 		{
 			const char* name = shaderName(static_cast<ShaderConvert>(i));
-			const std::string ps(GetShaderSource(name, GL_FRAGMENT_SHADER, m_shader_common_header, *convert_glsl, std::string()));
+			const std::string ps(GetShaderSource(name, GL_FRAGMENT_SHADER, *convert_glsl));
 			if (!m_shader_cache.GetProgram(&m_convert.ps[i], m_convert.vs, {}, ps))
 				return false;
 			m_convert.ps[i].SetFormattedName("Convert pipe %s", name);
@@ -336,12 +325,12 @@ bool GSDeviceOGL::Create()
 			return false;
 		}
 
-		std::string present_vs(GetShaderSource("vs_main", GL_VERTEX_SHADER, m_shader_common_header, *shader, {}));
+		std::string present_vs(GetShaderSource("vs_main", GL_VERTEX_SHADER, *shader));
 
 		for (size_t i = 0; i < std::size(m_present); i++)
 		{
 			const char* name = shaderName(static_cast<PresentShader>(i));
-			const std::string ps(GetShaderSource(name, GL_FRAGMENT_SHADER, m_shader_common_header, *shader, {}));
+			const std::string ps(GetShaderSource(name, GL_FRAGMENT_SHADER, *shader));
 			if (!m_shader_cache.GetProgram(&m_present[i], present_vs, {}, ps))
 				return false;
 			m_present[i].SetFormattedName("Present pipe %s", name);
@@ -374,7 +363,7 @@ bool GSDeviceOGL::Create()
 
 		for (size_t i = 0; i < std::size(m_merge_obj.ps); i++)
 		{
-			const std::string ps(GetShaderSource(fmt::format("ps_main{}", i), GL_FRAGMENT_SHADER, m_shader_common_header, *shader, {}));
+			const std::string ps(GetShaderSource(fmt::format("ps_main{}", i), GL_FRAGMENT_SHADER, *shader));
 			if (!m_shader_cache.GetProgram(&m_merge_obj.ps[i], m_convert.vs, {}, ps))
 				return false;
 			m_merge_obj.ps[i].SetFormattedName("Merge pipe %zu", i);
@@ -397,7 +386,7 @@ bool GSDeviceOGL::Create()
 
 		for (size_t i = 0; i < std::size(m_interlace.ps); i++)
 		{
-			const std::string ps(GetShaderSource(fmt::format("ps_main{}", i), GL_FRAGMENT_SHADER, m_shader_common_header, *shader, {}));
+			const std::string ps(GetShaderSource(fmt::format("ps_main{}", i), GL_FRAGMENT_SHADER, *shader));
 			if (!m_shader_cache.GetProgram(&m_interlace.ps[i], m_convert.vs, {}, ps))
 				return false;
 			m_interlace.ps[i].SetFormattedName("Merge pipe %zu", i);
@@ -418,7 +407,7 @@ bool GSDeviceOGL::Create()
 			return false;
 		}
 
-		const std::string ps(GetShaderSource("ps_main", GL_FRAGMENT_SHADER, m_shader_common_header, *shader, {}));
+		const std::string ps(GetShaderSource("ps_main", GL_FRAGMENT_SHADER, *shader));
 		if (!m_shader_cache.GetProgram(&m_shadeboost.ps, m_convert.vs, {}, ps))
 			return false;
 		m_shadeboost.ps.RegisterUniform("params");
@@ -458,7 +447,7 @@ bool GSDeviceOGL::Create()
 		{
 			const std::string ps(GetShaderSource(
 				fmt::format("ps_stencil_image_init_{}", i),
-				GL_FRAGMENT_SHADER, m_shader_common_header, *convert_glsl, {}));
+				GL_FRAGMENT_SHADER, *convert_glsl));
 			m_shader_cache.GetProgram(&m_date.primid_ps[i], m_convert.vs, {}, ps);
 			m_date.primid_ps[i].SetFormattedName("PrimID Destination Alpha Init %d", i);
 		}
@@ -862,10 +851,9 @@ GSTexture* GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& are
 	return tex;
 }
 
-std::string GSDeviceOGL::GetShaderSource(const std::string_view& entry, GLenum type, const std::string_view& common_header, const std::string_view& glsl_h_code, const std::string_view& macro_sel)
+std::string GSDeviceOGL::GetShaderSource(const std::string_view& entry, GLenum type, const std::string_view& glsl_h_code, const std::string_view& macro_sel)
 {
 	std::string src = GenGlslHeader(entry, type, macro_sel);
-	src += m_shader_common_header;
 	src += glsl_h_code;
 	return src;
 }
@@ -930,18 +918,6 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view& entry, GLenum typ
 	else
 		header += "#define HAS_CLIP_CONTROL 0\n";
 
-	if (GLLoader::vendor_id_amd || GLLoader::vendor_id_intel)
-		header += "#define BROKEN_DRIVER as_usual\n";
-
-	// Stupid GL implementation (can't use GL_ES)
-	// AMD/nvidia define it to 0
-	// intel window don't define it
-	// intel linux refuse to define it
-	if (GLLoader::is_gles)
-		header += "#define pGL_ES 1\n";
-	else
-		header += "#define pGL_ES 0\n";
-
 	// Allow to puts several shader in 1 files
 	switch (type)
 	{
@@ -977,7 +953,6 @@ std::string GSDeviceOGL::GetVSSource(VSSelector sel)
 		+ fmt::format("#define VS_POINT_SIZE {}\n", static_cast<u32>(sel.point_size));
 
 	std::string src = GenGlslHeader("vs_main", GL_VERTEX_SHADER, macro);
-	src += m_shader_common_header;
 	src += m_shader_tfx_vgs;
 	return src;
 }
@@ -991,7 +966,6 @@ std::string GSDeviceOGL::GetGSSource(GSSelector sel)
 		+ fmt::format("#define GS_IIP {}\n", static_cast<u32>(sel.iip));
 
 	std::string src = GenGlslHeader("gs_main", GL_GEOMETRY_SHADER, macro);
-	src += m_shader_common_header;
 	src += m_shader_tfx_vgs;
 	return src;
 }
@@ -1054,7 +1028,6 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 	;
 
 	std::string src = GenGlslHeader("ps_main", GL_FRAGMENT_SHADER, macro);
-	src += m_shader_common_header;
 	src += m_shader_tfx_fs;
 	return src;
 }
@@ -1474,12 +1447,12 @@ void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 		if (!GLLoader::is_gles && !GLLoader::found_GL_ARB_gpu_shader5)
 			return;
 
-		std::string fxaa_macro = "#define FXAA_GLSL_130 1\n";
+		const std::string_view fxaa_macro = "#define FXAA_GLSL_130 1\n";
 		std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/common/fxaa.fx");
 		if (!shader.has_value())
 			return;
 
-		const std::string ps(GetShaderSource("ps_main", GL_FRAGMENT_SHADER, m_shader_common_header, shader->c_str(), fxaa_macro));
+		const std::string ps(GetShaderSource("ps_main", GL_FRAGMENT_SHADER, shader->c_str(), fxaa_macro));
 		if (!m_fxaa.ps.Compile(m_convert.vs, {}, ps) || !m_fxaa.ps.Link())
 			return;
 	}

@@ -8,6 +8,8 @@ in vec4 PSin_c;
 
 uniform vec4 ZrH;
 
+layout(binding = 0) uniform sampler2D TextureSampler;
+
 layout(location = 0) out vec4 SV_Target0;
 
 

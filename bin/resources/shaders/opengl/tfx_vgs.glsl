@@ -1,5 +1,18 @@
 //#version 420 // Keep it for text editor detection
 
+layout(std140, binding = 1) uniform cb20
+{
+    vec2  VertexScale;
+    vec2  VertexOffset;
+
+    vec2  TextureScale;
+    vec2  TextureOffset;
+
+    vec2  PointSize;
+    uint  MaxDepth;
+    uint  pad_cb20;
+};
+
 #ifdef VERTEX_SHADER
 layout(location = 0) in vec2  i_st;
 layout(location = 2) in vec4  i_c;
@@ -9,9 +22,6 @@ layout(location = 5) in uint  i_z;
 layout(location = 6) in uvec2 i_uv;
 layout(location = 7) in vec4  i_f;
 
-#if !defined(BROKEN_DRIVER) && (pGL_ES || defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts)
-layout(location = 0)
-#endif
 out SHADER
 {
     vec4 t_float;
@@ -85,9 +95,6 @@ void vs_main()
 
 #ifdef GEOMETRY_SHADER
 
-#if !defined(BROKEN_DRIVER) && (pGL_ES || defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts)
-layout(location = 0)
-#endif
 in SHADER
 {
     vec4 t_float;
@@ -99,9 +106,6 @@ in SHADER
     #endif
 } GSin[];
 
-#if !defined(BROKEN_DRIVER) && (pGL_ES || defined(GL_ARB_enhanced_layouts) && GL_ARB_enhanced_layouts)
-layout(location = 0)
-#endif
 out SHADER
 {
     vec4 t_float;
