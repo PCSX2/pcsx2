@@ -3976,11 +3976,12 @@ SCES-53286:
   region: "PAL-M7"
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
-    textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
-    mipmap: 2 # Fixes bad textures.
-    trilinearFiltering: 1 # Fixes smooths texture transitions.
-    beforeDraw: "OI_JakX"
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 2 # Fixes water textures. Can't use BW 4 here because of post effects.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    textureInsideRT: 1 # Fixes broken character models.
   memcardFilters: # Reads Ratchet Gladiator data.
     - "SCES-53286"
     - "SCES-53285"
@@ -8063,11 +8064,10 @@ SCUS-97374:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    roundSprite: 1 # Fix lines in the sky.
-    mipmap: 1 # Fixes broken textures.
-    textureInsideRT: 1 # Fixes broken character models.
-    autoFlush: 1 # Fixes lighting.
-    beforeDraw: "OI_JakX"
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCUS-97377:
   name: "Syphon Filter - The Omega Strain [Regular Demo]"
   region: "NTSC-U"
@@ -8261,11 +8261,12 @@ SCUS-97429:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
-    textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
-    mipmap: 2 # Fixes bad textures.
-    trilinearFiltering: 1 # Fixes smooths texture transitions.
-    beforeDraw: "OI_JakX"
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 2 # Fixes water textures. Can't use BW 4 here because of post effects.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    textureInsideRT: 1 # Fixes broken character models.
   memcardFilters:
     - "SCUS-97429"
     - "SCUS-97465"
@@ -8534,11 +8535,12 @@ SCUS-97486:
   region: "NTSC-U"
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
-    textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
-    mipmap: 2 # Fixes bad textures.
-    trilinearFiltering: 1 # Fixes smooths texture transitions.
-    beforeDraw: "OI_JakX"
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 2 # Fixes water textures. Can't use BW 4 here because of post effects.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    textureInsideRT: 1 # Fixes broken character models.
 SCUS-97487:
   name: "Ratchet - Deadlocked [Public Beta v.1]"
   region: "NTSC-U"
@@ -8556,11 +8558,12 @@ SCUS-97488:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
-    textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
-    mipmap: 2 # Fixes bad textures.
-    trilinearFiltering: 1 # Fixes smooths texture transitions.
-    beforeDraw: "OI_JakX"
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 2 # Fixes water textures. Can't use BW 4 here because of post effects.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    textureInsideRT: 1 # Fixes broken character models.
 SCUS-97489:
   name: "SOCOM 3 - U.S. Navy SEALs [Public Beta v.1]"
   region: "NTSC-U"
@@ -8857,11 +8860,12 @@ SCUS-97574:
   region: "NTSC-U"
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
-    textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
-    mipmap: 2 # Fixes bad textures.
-    trilinearFiltering: 1 # Fixes smooths texture transitions.
-    beforeDraw: "OI_JakX"
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 2 # Fixes water textures. Can't use BW 4 here because of post effects.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    textureInsideRT: 1 # Fixes broken character models.
 SCUS-97579:
   name: "ATV Offroad Fury 4 [Demo]"
   region: "NTSC-U"
@@ -51902,11 +51906,12 @@ TCES-53286:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
-    textureInsideRT: 1 # Fixes broken character models.
     autoFlush: 1 # Fixes lighting.
-    mipmap: 2 # Fixes bad textures.
-    trilinearFiltering: 1 # Fixes smooths texture transitions.
-    beforeDraw: "OI_JakX"
+    mipmap: 2 # Fixes broken textures.
+    trilinearFiltering: 1 # Fixes water textures.
+    cpuSpriteRenderBW: 2 # Fixes water textures. Can't use BW 4 here because of post effects.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    textureInsideRT: 1 # Fixes broken character models.
 TCPS-10058:
   name: "Densha de Go! Shinkansen [with Controller]"
   region: "NTSC-J"
