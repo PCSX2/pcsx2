@@ -466,7 +466,7 @@ static __ri void vtlb_Miss(u32 addr, u32 mode)
 		return;
 	}
 
-	const std::string message(fmt::format("TLB Miss, addr=0x{:x} [{}]", addr, mode ? "store" : "load"));
+	const std::string message(fmt::format("TLB Miss, pc=0x{:x} addr=0x{:x} [{}]", cpuRegs.pc, addr, mode ? "store" : "load"));
 	if (EmuConfig.Cpu.Recompiler.PauseOnTLBMiss)
 	{
 		// Pause, let the user try to figure out what went wrong in the debugger.
