@@ -2217,7 +2217,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				{
 					Read(t, draw_rect);
 
-					z_found = true;
+					z_found = read_start >= t->m_TEX0.TBP0 && read_end <= t->m_end_block;
 
 					if (draw_rect.rintersect(t->m_drawn_since_read).eq(t->m_drawn_since_read))
 						t->m_drawn_since_read = GSVector4i::zero();
@@ -2377,7 +2377,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 						t->m_drawn_since_read.z = targetr.x;
 				}
 
-				if (targetr.rintersect(t->m_valid).eq(targetr))
+				if (read_start >= t->m_TEX0.TBP0 && read_end <= t->m_end_block)
 					return;
 			}
 		}
