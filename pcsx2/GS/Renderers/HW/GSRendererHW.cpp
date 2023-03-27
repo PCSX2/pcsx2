@@ -822,6 +822,28 @@ GSVector2i GSRendererHW::GetTargetSize(const GSTextureCache::Source* tex)
 	return GSVector2i(width, height);
 }
 
+bool GSRendererHW::IsPossibleChannelShuffle() const
+{
+	if (!PRIM->TME || m_context->TEX0.PSM != PSM_PSMT8 || // 8-bit texture draw
+		m_vt.m_primclass != GS_SPRITE_CLASS) // draw_sprite_tex
+	{
+		return false;
+	}
+
+	const int mask = (((m_vt.m_max.p - m_vt.m_min.p) <= GSVector4(64.0f)).mask() & 0x3);
+	if (mask == 0x3) // single_page
+		return true;
+	else if (mask != 0x1) // Not a single page in width.
+		return false;
+
+	// WRC 4 does channel shuffles in vertical strips. So check for page alignment.
+	// Texture TBW should also be twice the framebuffer FBW, because the page is twice as wide.
+	if (m_context->TEX0.TBW == (m_context->FRAME.FBW * 2) && GSLocalMemory::IsPageAligned(m_context->FRAME.PSM, m_r))
+		return true;
+
+	return false;
+}
+
 bool GSRendererHW::IsSplitTextureShuffle()
 {
 	// For this to work, we're peeking into the next draw, therefore we need dirty registers.
@@ -1552,6 +1574,9 @@ void GSRendererHW::Draw()
 		}
 	}
 
+	// The rectangle of the draw
+	m_r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
+
 	if (m_channel_shuffle)
 	{
 		// NFSU2 does consecutive channel shuffles with blending, reducing the alpha channel over time.
@@ -1564,20 +1589,12 @@ void GSRendererHW::Draw()
 			return;
 		}
 	}
-	else if (draw_sprite_tex && m_context->FRAME.Block() == m_context->TEX0.TBP0)
+	else if (m_context->FRAME.Block() == m_context->TEX0.TBP0 && IsPossibleChannelShuffle())
 	{
 		// Special post-processing effect
-		if ((m_context->TEX0.PSM == PSM_PSMT8) && single_page)
-		{
-			GL_INS("Channel shuffle effect detected");
-			m_channel_shuffle = true;
-			m_last_channel_shuffle_fbmsk = m_context->FRAME.FBMSK;
-		}
-		else
-		{
-			GL_DBG("Special post-processing effect not supported");
-			m_channel_shuffle = false;
-		}
+		GL_INS("Possible channel shuffle effect detected");
+		m_channel_shuffle = true;
+		m_last_channel_shuffle_fbmsk = m_context->FRAME.FBMSK;
 	}
 	else
 	{
@@ -1590,9 +1607,6 @@ void GSRendererHW::Draw()
 	m_texture_shuffle = false;
 	m_copy_16bit_to_target_shuffle = false;
 	m_tex_is_fb = false;
-
-	// The rectangle of the draw
-	m_r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
 
 	const bool is_split_texture_shuffle = (m_split_texture_shuffle_pages > 0);
 	if (is_split_texture_shuffle)
@@ -1887,7 +1901,7 @@ void GSRendererHW::Draw()
 		// Texture shuffle is not yet supported with strange clamp mode
 		ASSERT(!m_texture_shuffle || (context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3));
 
-		if (m_src->m_target && m_context->TEX0.PSM == PSM_PSMT8 && single_page && draw_sprite_tex)
+		if (m_src->m_target && IsPossibleChannelShuffle())
 		{
 			GL_INS("Channel shuffle effect detected (2nd shot)");
 			m_channel_shuffle = true;
