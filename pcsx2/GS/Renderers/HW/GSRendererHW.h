@@ -97,6 +97,7 @@ private:
 
 	void SetTCOffset();
 
+	bool IsPossibleChannelShuffle() const;
 	bool IsSplitTextureShuffle();
 	GSVector4i GetSplitTextureShuffleDrawRect() const;
 

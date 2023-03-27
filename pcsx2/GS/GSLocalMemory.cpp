@@ -446,6 +446,13 @@ std::vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
 	return p2t;
 }
 
+bool GSLocalMemory::IsPageAligned(u32 psm, const GSVector4i& rc)
+{
+	const psm_t& psm_s = m_psm[psm];
+	const GSVector4i pgmsk = GSVector4i(psm_s.pgs).xyxy() - GSVector4i(1);
+	return (rc & pgmsk).eq(GSVector4i::zero());
+}
+
 ///////////////////
 
 void GSLocalMemory::ReadTexture(const GSOffset& off, const GSVector4i& r, u8* dst, int dstpitch, const GIFRegTEXA& TEXA)
