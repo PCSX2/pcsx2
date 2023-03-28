@@ -1297,6 +1297,7 @@ SCAJ-20162:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
+    partialTargetInvalidation: 1 # Fixes broken character color.
 SCAJ-20163:
   name: "Tales of the Abyss"
   region: "NTSC-Unk"
@@ -4432,6 +4433,7 @@ SCES-54552:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
+    partialTargetInvalidation: 1 # Fixes broken character color.
   patches:
     CBB4B383:
       content: |-
@@ -6192,6 +6194,7 @@ SCPS-15102:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
+    partialTargetInvalidation: 1 # Fixes broken character color.
 SCPS-15103:
   name: "Gunparade Orchestra - Shiro no Shou - Aomori Penguin Densetsu [Limited Edition]"
   region: "NTSC-J"
@@ -6325,6 +6328,7 @@ SCPS-17013:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
+    partialTargetInvalidation: 1 # Fixes broken character color.
   patches:
     CDEE4B19:
       content: |-
@@ -6481,6 +6485,15 @@ SCPS-19253:
   region: "NTSC-J"
   gsHWFixes:
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+SCPS-19254:
+  name: "Rogue Galaxy [PlayStation 2 The Best]"
+  region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fix glow effects from lamps.
+    roundSprite: 1 # Fix mini-map and field menu.
+    preloadFrameData: 1 # Fixes corrupt textures especially on water.
+    disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
+    partialTargetInvalidation: 1 # Fixes broken character color.
 SCPS-19301:
   name: "Minna no Golf 4 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -8578,6 +8591,7 @@ SCUS-97490:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
+    partialTargetInvalidation: 1 # Fixes broken character color.
   patches:
     0643F90C:
       content: |-
@@ -8855,6 +8869,7 @@ SCUS-97572:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
+    partialTargetInvalidation: 1 # Fixes broken character color.
 SCUS-97574:
   name: "Jak X - Combat Racing [Greatest Hits]"
   region: "NTSC-U"
