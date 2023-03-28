@@ -2382,6 +2382,8 @@ SCED-52869:
     autoFlush: 1 # Fixes car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
+  roundModes:
+    eeRoundMode: 2 # Fixes rainbow highlighting on cars.
 SCED-52880:
   name: "WRC 4 - The Official Game of the FIA World Rally Championship [Demo]"
   region: "PAL-E"
@@ -2391,6 +2393,8 @@ SCED-52880:
     autoFlush: 1 # Fixes car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
+  roundModes:
+    eeRoundMode: 2 # Fixes rainbow highlighting on cars.
 SCED-52899:
   name: "Killzone [Bonus Disc]"
   region: "PAL-M5"
@@ -2415,6 +2419,8 @@ SCED-52945:
     autoFlush: 1 # Fixes car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
+  roundModes:
+    eeRoundMode: 2 # Fixes rainbow highlighting on cars.
 SCED-52946:
   name: "Getaway, The - Black Monday [Demo]"
   region: "PAL-E"
@@ -3681,6 +3687,8 @@ SCES-52389:
     autoFlush: 1 # Fixes car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
+  roundModes:
+    eeRoundMode: 2 # Fixes rainbow highlighting on cars.
 SCES-52405:
   name: "DJ - Decks & FX - House Edition"
   region: "PAL-M9"
@@ -31490,6 +31498,8 @@ SLPM-65975:
     autoFlush: 1 # Fixes car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
+  roundModes:
+    eeRoundMode: 2 # Fixes rainbow highlighting on cars.
 SLPM-65976:
   name: "Grandia III [Disc 1 of 2]"
   region: "NTSC-J"
@@ -32922,6 +32932,8 @@ SLPM-66334:
     autoFlush: 1 # Fixes car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
+  roundModes:
+    eeRoundMode: 2 # Fixes rainbow highlighting on cars.
 SLPM-66336:
   name: "Shinseiki Evangelion - Koutetsu no Girlfriend [Special Edition]"
   region: "NTSC-J"
