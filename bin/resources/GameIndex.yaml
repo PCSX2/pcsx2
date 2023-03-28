@@ -30730,6 +30730,8 @@ SLPM-65759:
   name: "Mr. Incredible"
   region: "NTSC-J"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes offset post processing.
     cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLPM-65760:
