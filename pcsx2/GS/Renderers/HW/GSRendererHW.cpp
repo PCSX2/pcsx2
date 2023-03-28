@@ -1540,8 +1540,6 @@ void GSRendererHW::Draw()
 	}
 
 	const bool draw_sprite_tex = PRIM->TME && (m_vt.m_primclass == GS_SPRITE_CLASS);
-	const GSVector4 delta_p = m_vt.m_max.p - m_vt.m_min.p;
-	const bool single_page = (delta_p.x <= 64.0f) && (delta_p.y <= 64.0f);
 
 	// We trigger the sw prim render here super early, to avoid creating superfluous render targets.
 	if (CanUseSwPrimRender(no_rt, no_ds, draw_sprite_tex) && SwPrimRender(*this, true))
@@ -1586,8 +1584,7 @@ void GSRendererHW::Draw()
 	{
 		// NFSU2 does consecutive channel shuffles with blending, reducing the alpha channel over time.
 		// Fortunately, it seems to change the FBMSK along the way, so this check alone is sufficient.
-		m_channel_shuffle = draw_sprite_tex && m_context->TEX0.PSM == PSM_PSMT8 && single_page &&
-							m_last_channel_shuffle_fbmsk == m_context->FRAME.FBMSK;
+		m_channel_shuffle = IsPossibleChannelShuffle() && m_last_channel_shuffle_fbmsk == m_context->FRAME.FBMSK;
 		if (m_channel_shuffle)
 		{
 			GL_CACHE("Channel shuffle effect detected SKIP");
