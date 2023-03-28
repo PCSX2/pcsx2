@@ -15991,6 +15991,8 @@ SLES-52812:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes offset post processing.
     cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLES-52813:
@@ -15998,36 +16000,48 @@ SLES-52813:
   region: "PAL-NL-F"
   compat: 5
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes offset post processing.
     cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLES-52814:
   name: "Incredibles, The"
   region: "PAL-I"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes offset post processing.
     cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLES-52815:
   name: "Disney-Pixar's The Incredibles"
   region: "PAL-G"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes offset post processing.
     cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLES-52816:
   name: "Increíbles, Los"
   region: "PAL-S"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes offset post processing.
     cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLES-52820:
   name: "Incredibles, The"
   region: "PAL-SC"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes offset post processing.
     cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLES-52821:
   name: "Incredibles, The"
   region: "PAL-P"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes offset post processing.
     cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLES-52822:
@@ -17582,12 +17596,16 @@ SLES-53473:
   name: "Incredibles, The - Rise of the Underminer"
   region: "PAL-M3"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLES-53474:
   name: "Incredibles, The - Rise of the Underminer"
   region: "PAL-M3"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLES-53480:
@@ -18244,6 +18262,8 @@ SLES-53658:
   name: "Disney-Pixar's The Incredibles - Rise of the Underminer"
   region: "PAL-R"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLES-53659:
@@ -24356,6 +24376,8 @@ SLKA-25226:
   name: "Incredibles, The"
   region: "NTSC-K"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes offset post processing.
     cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLKA-25227:
@@ -30708,6 +30730,8 @@ SLPM-65759:
   name: "Mr. Incredible"
   region: "NTSC-J"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes offset post processing.
     cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLPM-65760:
@@ -45617,6 +45641,8 @@ SLUS-20905:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes offset post processing.
     cpuCLUTRender: 1 # Fixes duplicated post processing.
 SLUS-20906:
@@ -47273,6 +47299,8 @@ SLUS-21217:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 1 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLUS-21218:
