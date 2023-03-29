@@ -863,6 +863,10 @@ bool GSRendererHW::IsSplitTextureShuffle()
 		return false;
 	}
 
+	// Different channel being shuffled, so needs to be handled separately (misdetection in 50 Cent)
+	if (m_vertex.buff[m_index.buff[0]].U != m_v.U)
+		return false;
+
 	// Check that both the position and texture coordinates are page aligned, so we can work in pages instead of coordinates.
 	// For texture shuffles, the U will be offset by 8.
 	const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_context->FRAME.PSM];
