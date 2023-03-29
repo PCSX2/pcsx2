@@ -4081,17 +4081,7 @@ void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Target*
 	//but introduces a few bad pixels on the edges.
 	if (!rt)
 	{
-		if (GSConfig.UserHacks_HalfPixelOffset == 1)
-		{
-			mod_xy = g_gs_renderer->GetUpscaleMultiplier();
-			switch (static_cast<int>(std::round(g_gs_renderer->GetUpscaleMultiplier())))
-			{
-				case 2: case 4: case 6: case 8: mod_xy += 0.2f; break;
-				case 3: case 7:                 mod_xy += 0.1f; break;
-				case 5:                         mod_xy += 0.3f; break;
-				default:                        mod_xy = 0.0f; break;
-			}
-		}
+		mod_xy = GetModXYOffset();
 	}
 	else
 		mod_xy = rt->OffsetHack_modxy;

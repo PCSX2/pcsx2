@@ -246,6 +246,25 @@ GSVector2i GSRenderer::GetInternalResolution()
 	return m_real_size;
 }
 
+float GSRenderer::GetModXYOffset()
+{
+	float mod_xy = 0.0f;
+
+	if (GSConfig.UserHacks_HalfPixelOffset == 1)
+	{
+		mod_xy = GetUpscaleMultiplier();
+		switch (static_cast<int>(std::round(mod_xy)))
+		{
+			case 2: case 4: case 6: case 8: mod_xy += 0.2f; break;
+			case 3: case 7:                 mod_xy += 0.1f; break;
+			case 5:                         mod_xy += 0.3f; break;
+			default:                        mod_xy = 0.0f; break;
+		}
+	}
+
+	return mod_xy;
+}
+
 static float GetCurrentAspectRatioFloat(bool is_progressive)
 {
 	static constexpr std::array<float, static_cast<size_t>(AspectRatioType::MaxCount) + 1> ars = {{4.0f / 3.0f, 4.0f / 3.0f, 4.0f / 3.0f, 16.0f / 9.0f, 3.0f / 2.0f}};

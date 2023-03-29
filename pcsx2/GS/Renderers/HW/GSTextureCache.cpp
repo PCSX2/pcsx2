@@ -3155,16 +3155,9 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// The offset will be used in Draw().
 		float modxy = 0.0f;
 
-		if (GSConfig.UserHacks_HalfPixelOffset == 1 && hack)
+		if (hack)
 		{
-			modxy = g_gs_renderer->GetUpscaleMultiplier();
-			switch (static_cast<int>(std::round(g_gs_renderer->GetUpscaleMultiplier())))
-			{
-				case 2: case 4: case 6: case 8: modxy += 0.2f; break;
-				case 3: case 7:                 modxy += 0.1f; break;
-				case 5:                         modxy += 0.3f; break;
-				default:                        modxy  = 0.0f; break;
-			}
+			modxy = g_gs_renderer->GetModXYOffset();
 		}
 
 		dst->OffsetHack_modxy = modxy;
