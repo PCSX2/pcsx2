@@ -30,25 +30,6 @@ jobs:
       buildSystem: cmake
     secrets: inherit
 
-  build_qt_sse4:
-    if: github.repository == 'PCSX2/pcsx2'
-    name: "Windows - SSE4"
-    uses: ./.github/workflows/windows_build_qt.yml
-    with:
-      jobName: Qt
-      configuration: Release
-      simd: "SSE4"
-    secrets: inherit
-
-  build_qt_avx2:
-    if: github.repository == 'PCSX2/pcsx2'
-    name: "Windows - AVX2"
-    uses: ./.github/workflows/windows_build_qt.yml
-    with:
-      jobName: Qt
-      configuration: Release AVX2
-    secrets: inherit
-
   # MacOS
   build_macos_qt:
     if: github.repository == 'PCSX2/pcsx2'
@@ -65,8 +46,6 @@ jobs:
     needs:
       - build_linux_qt
       - build_windows_qt
-      - build_qt_sse4
-      - build_qt_avx2
       - build_macos_qt
     name: "Upload Artifacts"
     runs-on: ubuntu-latest
