@@ -20463,10 +20463,14 @@ SLES-54487:
 SLES-54488:
   name: "WWE SmackDown! vs. RAW 2007"
   region: "PAL-I"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken text.
 SLES-54489:
   name: "WWE SmackDown! vs. RAW 2007"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken text.
 SLES-54490:
   name: "God Hand"
   region: "PAL-M5"
@@ -21269,6 +21273,7 @@ SLES-54793:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
+    partialTargetInvalidation: 1 # Fixes broken text.
 SLES-54795:
   name: "Falling Stars"
   region: "PAL-M6"
@@ -21479,6 +21484,7 @@ SLES-54879:
   region: "PAL-M5"
   gsHWFixes:
     halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
+    partialTargetInvalidation: 1 # Fixes broken text.
 SLES-54880:
   name: "NBA 2K8"
   region: "PAL-M5"
@@ -22500,12 +22506,14 @@ SLES-55250:
   region: "PAL-A"
   gsHWFixes:
     halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
+    partialTargetInvalidation: 1 # Fixes broken text.
 SLES-55251:
   name: "WWE SmackDown vs. Raw 2009"
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
+    partialTargetInvalidation: 1 # Fixes broken text.
 SLES-55252:
   name: "NHL 2K9"
   region: "PAL-M5"
@@ -23085,6 +23093,8 @@ SLES-55545:
   name: "WWE SmackDown vs. Raw 2010"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken text.
 SLES-55546:
   name: "Secret Saturdays, The - Beasts of the 5th Sun"
   region: "PAL-M5"
@@ -24807,6 +24817,7 @@ SLKA-25365:
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
+    partialTargetInvalidation: 1 # Fixes broken text.
 SLKA-25366:
   name: "Naruto - Uzumaki Chronicles 2"
   region: "NTSC-K"
@@ -24904,6 +24915,12 @@ SLKA-25443:
   name: "Musou Orochi Maou Sairin"
   region: "NTSC-K"
   compat: 5
+SLKA-25451:
+  name: "WWE SmackDown! vs. Raw 2008"
+  region: "NTSC-K"
+  gsHWFixes:
+    halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
+    partialTargetInvalidation: 1 # Fixes broken text.
 SLKA-25459:
   name: "Transformers - Revenge of the Fallen"
   region: "NTSC-K"
@@ -34056,6 +34073,8 @@ SLPM-66626:
 SLPM-66627:
   name: "WWE SmackDown! vs. RAW 2007"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken text.
 SLPM-66628:
   name: "OutRun 2 SP [First Print Limited Edition]"
   region: "NTSC-J"
@@ -34964,6 +34983,7 @@ SLPM-66863:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
+    partialTargetInvalidation: 1 # Fixes broken text.
 SLPM-66864:
   name: "Umisho"
   region: "NTSC-J"
@@ -48661,6 +48681,8 @@ SLUS-21427:
   name: "WWE SmackDown! vs. RAW 2007"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken text.
 SLUS-21428:
   name: "Bionicle Heroes"
   region: "NTSC-U"
@@ -49645,6 +49667,7 @@ SLUS-21645:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
+    partialTargetInvalidation: 1 # Fixes broken text.
 SLUS-21646:
   name: "Tiger Woods PGA Tour 08"
   region: "NTSC-U"
@@ -50422,6 +50445,7 @@ SLUS-21810:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Lessens blur around people and fixes depth bleed on the right side.
+    partialTargetInvalidation: 1 # Fixes broken text.
 SLUS-21811:
   name: "MotoGP 08"
   region: "NTSC-U"
@@ -50798,6 +50822,8 @@ SLUS-21901:
   name: "WWE SmackDown vs. Raw 2010"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken text.
 SLUS-21902:
   name: "Bakugan - Battle Brawlers"
   region: "NTSC-U"
