@@ -9268,6 +9268,8 @@ SLAJ-25076:
 SLAJ-25077:
   name: "Sengoku Musou 2"
   region: "NTSC-Unk"
+  gsHWFixes:
+    roundSprite: 2 # Helps to alleviate misaligned text.
   memcardFilters:
     - "SLAJ-25077"
     - "SLPM-55122"
@@ -19989,6 +19991,8 @@ SLES-54339:
 SLES-54340:
   name: "Samurai Warriors 2"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Helps to alleviate misaligned text.
   memcardFilters: # Reads Samurai Warriors and Samurai Warriors Xtreme Legends saves for unlockables.
     - "SLES-54340"
     - "SLES-52551"
@@ -32819,6 +32823,8 @@ SLPM-66302:
 SLPM-66307:
   name: "Sengoku Musou 2"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Helps to alleviate misaligned text.
   memcardFilters:
     - "SLAJ-25077"
     - "SLPM-55122"
@@ -35905,6 +35911,8 @@ SLPM-74246:
 SLPM-74247:
   name: "Sengoku Musou 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Helps to alleviate misaligned text.
   memcardFilters:
     - "SLAJ-25077"
     - "SLPM-55122"
@@ -48827,6 +48835,8 @@ SLUS-21462:
   name: "Samurai Warriors 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 2 # Helps to alleviate misaligned text.
   memcardFilters:
     - "SLUS-21462"
     - "SLUS-20878"
