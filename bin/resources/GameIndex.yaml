@@ -23230,6 +23230,8 @@ SLES-55635:
   name: "WWE SmackDown vs. Raw 2011"
   region: "PAL-M4"
   compat: 5
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken text.
 SLES-55636:
   name: "Pro Evolution Soccer 2011"
   region: "PAL-M5"
@@ -50954,6 +50956,8 @@ SLUS-21939:
   name: "WWE SmackDown vs. Raw 2011"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes broken text.
 SLUS-21940:
   name: "WWE All-Stars"
   region: "NTSC-U"
