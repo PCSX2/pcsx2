@@ -359,11 +359,6 @@ public:
 		return "xaudio2";
 	}
 
-	const char* GetLongName() const override
-	{
-		return "XAudio 2 (Recommended)";
-	}
-
 	const char* const* GetBackendNames() const override
 	{
 		return nullptr;
