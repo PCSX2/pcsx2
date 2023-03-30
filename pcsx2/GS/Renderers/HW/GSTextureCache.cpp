@@ -3917,17 +3917,30 @@ bool GSTextureCache::Surface::Inside(u32 bp, u32 bw, u32 psm, const GSVector4i& 
 
 bool GSTextureCache::Surface::Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i& rect)
 {
-	// Valid only for color formats.
 	const GSOffset off(GSLocalMemory::m_psm[psm].info, bp, bw, psm);
-	u32 end_block = off.bnNoWrap(rect.z, rect.w) - 1;
+
+	// Computing the end block from the bottom-right pixel will not be correct for Z formats,
+	// as the block swizzle is not sequential.
+	u32 end_block = off.bnNoWrap(rect.z - 1, rect.w - 1);
 	u32 start_block = off.bnNoWrap(rect.x, rect.y);
+
+	// So, if the rectangle we're checking is page-aligned, round the block number up to the end of the page.
+	const GSVector2i page_size = GSLocalMemory::m_psm[psm].pgs;
+	if ((rect.z & (page_size.x - 1)) == 0 && (rect.w & (page_size.y - 1)) == 0)
+	{
+		constexpr u32 page_mask = (1 << 5) - 1;
+		end_block = (((end_block + page_mask) & ~page_mask)) - 1;
+	}
 	// Due to block ordering, end can be below start in a page, so if it's within a page, swap them.
-	if (end_block < start_block && ((start_block - end_block) < (1 << 5)))
+	else if (end_block < start_block && ((start_block - end_block) < (1 << 5)))
 	{
 		std::swap(start_block, end_block);
 	}
-	if (end_block > 0x4000 && bp < m_end_block && m_end_block < m_TEX0.TBP0)
-		bp += 0x4000;
+
+	// Wrapping around to the beginning of memory.
+	if (end_block > MAX_BLOCKS && bp < m_end_block && m_end_block < m_TEX0.TBP0)
+		bp += MAX_BLOCKS;
+
 	const bool overlap = GSTextureCache::CheckOverlap(m_TEX0.TBP0, UnwrappedEndBlock(), start_block, end_block);
 	return overlap;
 }
