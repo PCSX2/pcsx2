@@ -28,6 +28,7 @@ jobs:
       jobName: Qt
       configuration: CMake
       buildSystem: cmake
+      cmakeFlags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
     secrets: inherit
 
   # MacOS
