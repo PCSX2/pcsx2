@@ -1702,6 +1702,11 @@ SCCS-40022:
   name: "World Soccer Winning Eleven 8 - Asia Championship"
   region: "NTSC-C"
   compat: 5
+SCCS-60001:
+  name: "Sakura Taisen - Atsuki Chishio Ni"
+  region: "NTSC-CH"
+  gsHWFixes:
+    getSkipCount: "GSC_SakuraTaisen"
 SCCS-60002:
   name: "Gran Turismo 4 [Review Copy]"
   region: "NTSC-C"
@@ -2221,6 +2226,7 @@ SCED-52141:
     - XGKickHack # Fixes SPS.
   gsHWFixes:
     roundSprite: 2 # Correct misaligned font, better aligns car shadow.
+    autoFlush: 1 # Fixes sun luminosity.
 SCED-52160:
   name: "Official PlayStation 2 Magazine Demo 45"
   region: "PAL-M5"
@@ -2379,7 +2385,7 @@ SCED-52869:
         patch=0,EE,005fffec,double,24e7100024c60080
         patch=0,EE,005ffff4,double,00c7e8200818000c
   gsHWFixes:
-    autoFlush: 1 # Fixes car shadows.
+    autoFlush: 1 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
   roundModes:
@@ -2390,7 +2396,7 @@ SCED-52880:
   gameFixes:
     - XGKickHack # Fixes SPS.
   gsHWFixes:
-    autoFlush: 1 # Fixes car shadows.
+    autoFlush: 1 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
   roundModes:
@@ -2416,7 +2422,7 @@ SCED-52945:
   gameFixes:
     - XGKickHack # Fixes SPS.
   gsHWFixes:
-    autoFlush: 1 # Fixes car shadows.
+    autoFlush: 1 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
   roundModes:
@@ -3515,6 +3521,7 @@ SCES-51684:
     - XGKickHack # Fixes SPS.
   gsHWFixes:
     roundSprite: 2 # Correct misaligned font, better aligns car shadow.
+    autoFlush: 1 # Fixes sun luminosity.
 SCES-51685:
   name: "Primal"
   region: "PAL-E-R"
@@ -3684,7 +3691,7 @@ SCES-52389:
         patch=0,EE,005fffec,double,24e7100024c60080
         patch=0,EE,005ffff4,double,00c7e8200818000c
   gsHWFixes:
-    autoFlush: 1 # Fixes car shadows.
+    autoFlush: 1 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
   roundModes:
@@ -3961,6 +3968,7 @@ SCES-53247:
     eeClampMode: 2 # Fixes rare bug causing player to respawn when starting the race or during certain car crashes.
   gsHWFixes:
     roundSprite: 1 # Fixes misaligned text.
+    autoFlush: 1 # Fixes sun luminosity.
   patches:
     CBBC2E7F:
       content: |-
@@ -4136,6 +4144,7 @@ SCES-53680:
     - XGKickHack # Fixes SPS.
   gsHWFixes:
     roundSprite: 1 # Fixes misaligned text.
+    autoFlush: 1 # Fixes sun luminosity.
   patches:
     79BAD675:
       content: |-
@@ -10703,6 +10712,8 @@ SLES-50423:
 SLES-50424:
   name: "Cricket 2002"
   region: "PAL-E"
+  roundModes:
+    eeRoundMode: 0 # Fixes AI behaviour.
 SLES-50425:
   name: "NHL 2002"
   region: "PAL-M3"
@@ -17407,6 +17418,9 @@ SLES-53390:
     vuClampMode: 0 # Fixes Spider-Man's eye texture colour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
+    partialTargetInvalidation: 1 # Fixes texture distortion.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53391:
   name: "Ultimate Spider-Man"
   region: "PAL-M5"
@@ -17414,6 +17428,9 @@ SLES-53391:
     vuClampMode: 0 # Fixes Spider-Man's eye texture colour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
+    partialTargetInvalidation: 1 # Fixes texture distortion.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53393:
   name: "Spartan - Total Warrior"
   region: "PAL-M5"
@@ -18337,6 +18354,9 @@ SLES-53672:
     vuClampMode: 0 # Fixes Fixes Spider-Man's eye texture colour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
+    partialTargetInvalidation: 1 # Fixes texture distortion.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53676:
   name: "WWE SmackDown! vs. RAW 2006"
   region: "PAL-E"
@@ -30171,6 +30191,7 @@ SLPM-65583:
     - XGKickHack # Fixes SPS.
   gsHWFixes:
     roundSprite: 2 # Correct misaligned font, better aligns car shadow.
+    autoFlush: 1 # Fixes sun luminosity.
 SLPM-65585:
   name: "Princess Holiday"
   region: "NTSC-J"
@@ -31560,7 +31581,7 @@ SLPM-65975:
         patch=0,EE,005fffec,double,24e7100024c60080
         patch=0,EE,005ffff4,double,00c7e8200818000c
   gsHWFixes:
-    autoFlush: 1 # Fixes car shadows.
+    autoFlush: 1 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
   roundModes:
@@ -32017,6 +32038,7 @@ SLPM-66103:
     - XGKickHack # Fixes SPS.
   gsHWFixes:
     roundSprite: 2 # Correct misaligned font, better aligns car shadow.
+    autoFlush: 1 # Fixes sun luminosity.
 SLPM-66104:
   name: "Puyo Puyo Fever 2"
   region: "NTSC-J"
@@ -32997,7 +33019,7 @@ SLPM-66334:
         patch=0,EE,005fffec,double,24e7100024c60080
         patch=0,EE,005ffff4,double,00c7e8200818000c
   gsHWFixes:
-    autoFlush: 1 # Fixes car shadows.
+    autoFlush: 1 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
   roundModes:
@@ -33234,6 +33256,9 @@ SLPM-66404:
     vuClampMode: 0 # Fixes Spider-Man's eye texture colour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
+    partialTargetInvalidation: 1 # Fixes texture distortion.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-66405:
   name: "Radirgy Precious"
   region: "NTSC-J"
@@ -35459,6 +35484,8 @@ SLPM-67003:
   name: "Sakura Taisen - Atsuki Chishioni"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    getSkipCount: "GSC_SakuraTaisen"
 SLPM-67004:
   name: "Medal of Honor - Rising Sun"
   region: "NTSC-J"
@@ -45549,6 +45576,9 @@ SLUS-20870:
     vuClampMode: 0 # Fixes wrong texture colour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
+    partialTargetInvalidation: 1 # Fixes texture distortion.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20871:
   name: "Naval Ops - Commander"
   region: "NTSC-U"
@@ -47837,6 +47867,9 @@ SLUS-21285:
     vuClampMode: 0 # Fixes Spider-Man's eyes texture.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
+    partialTargetInvalidation: 1 # Fixes texture distortion.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21286:
   name: "WWE SmackDown! vs. RAW 2006"
   region: "NTSC-U"
@@ -52001,7 +52034,7 @@ TCES-52389:
   name: "World Rally Championship 4 Beta Trial Code"
   region: "PAL-E"
   gsHWFixes:
-    autoFlush: 1 # Fixes car shadows.
+    autoFlush: 1 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
 TCES-52456:
@@ -52028,6 +52061,7 @@ TCES-53247:
     - XGKickHack # Fixes SPS.
   gsHWFixes:
     roundSprite: 1 # Fixes misaligned text.
+    autoFlush: 1 # Fixes sun luminosity.
 TCES-53286:
   name: "Jak X Beta Trial Code"
   region: "PAL-E"
@@ -52132,6 +52166,16 @@ TCPS-10153:
 TCPS-10154:
   name: "Ys V - Lost Kefin - Kingdom of Sand"
   region: "NTSC-J"
+TCPS-10158:
+  name: "Ultimate Spider-Man"
+  region: "NTSC-J"
+  clampModes:
+    vuClampMode: 0 # Fixes Spider-Man's eye texture colour.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes textures.
+    partialTargetInvalidation: 1 # Fixes texture distortion.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 TCPS-10159:
   name: "Suzuki TT Super Bikes - Real Road Racing"
   region: "NTSC-J"
