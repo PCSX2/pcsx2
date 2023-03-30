@@ -2249,6 +2249,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 			if (t->m_32_bits_fmt && t->m_TEX0.PSM > PSM_PSMCT24)
 				t->m_TEX0.PSM = PSM_PSMCT32;
 
+			const bool exact_bp = t->m_TEX0.TBP0 == bp;
 			// pass 0 == Exact match, pass 1 == partial match
 			if (pass == 0)
 			{
@@ -2330,7 +2331,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 
 			if (t->m_drawn_since_read.eq(GSVector4i::zero()))
 			{
-				if (targetr.rintersect(t->m_valid).eq(targetr))
+				if (targetr.rintersect(t->m_valid).eq(targetr) && exact_bp)
 					return;
 				else
 					continue;
@@ -2338,7 +2339,12 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 
 			// Recently made this section dirty, no need to read it.
 			if (targetr.rintersect(t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size)).eq(targetr))
-				return;
+			{
+				if (exact_bp)
+					return;
+				else
+					continue;
+			}
 
 			// Need to check the drawn area first.
 			// Shadow Hearts From the New World tries to double buffer, then because we don't support rendering inside an RT, it makes a new one.
@@ -2378,7 +2384,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 						t->m_drawn_since_read.z = targetr.x;
 				}
 
-				if (read_start >= t->m_TEX0.TBP0 && read_end <= t->m_end_block)
+				if (exact_bp)
 					return;
 			}
 		}
