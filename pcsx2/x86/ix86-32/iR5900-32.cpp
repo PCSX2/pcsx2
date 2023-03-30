@@ -58,7 +58,6 @@
 using namespace x86Emitter;
 using namespace R5900;
 
-static bool eeRecIsReset = false;
 static bool eeRecNeedsReset = false;
 static bool eeCpuExecuting = false;
 static bool eeRecExitRequested = false;
@@ -615,10 +614,6 @@ alignas(16) static u8 manual_counter[Ps2MemSize::MainRam >> 12];
 ////////////////////////////////////////////////////
 static void recResetRaw()
 {
-	eeRecNeedsReset = false;
-	if (eeRecIsReset)
-		return;
-
 	Console.WriteLn(Color_StrongBlack, "EE/iR5900-32 Recompiler Reset");
 
 	Perf::ee.reset();
@@ -646,7 +641,6 @@ static void recResetRaw()
 
 	g_branch = 0;
 	g_resetEeScalingStats = true;
-	eeRecIsReset = true;
 }
 
 static void recShutdown()
@@ -724,9 +718,11 @@ static void recExecute()
 	// Reset before we try to execute any code, if there's one pending.
 	// We need to do this here, because if we reset while we're executing, it sets the "needs reset"
 	// flag, which triggers a JIT exit (the fastjmp_set below), and eventually loops back here.
-	eeRecIsReset = false;
 	if (eeRecNeedsReset)
+	{
+		eeRecNeedsReset = false;
 		recResetRaw();
+	}
 
 	// setjmp will save the register context and will return 0
 	// A call to longjmp will restore the context (included the eip/rip)
