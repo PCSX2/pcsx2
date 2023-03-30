@@ -48,11 +48,6 @@ namespace
 			return "nullout";
 		}
 
-		const char* GetLongName() const override
-		{
-			return "No Sound (Emulate SPU2 only)";
-		}
-
 		const char* const* GetBackendNames() const override
 		{
 			return nullptr;

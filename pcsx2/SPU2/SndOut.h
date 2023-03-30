@@ -326,10 +326,6 @@ public:
 	// (usually just matches the driver's cpp filename)
 	virtual const char* GetIdent() const = 0;
 
-	// Returns the long name / description for this driver.
-	// (for use in configuration screen)
-	virtual const char* GetLongName() const = 0;
-
 	// Returns a null-terminated list of backends, or nullptr.
 	virtual const char* const* GetBackendNames() const = 0;
 

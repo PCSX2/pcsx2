@@ -378,11 +378,6 @@ public:
 		return "cubeb";
 	}
 
-	const char* GetLongName() const override
-	{
-		return "Cubeb (Cross-platform)";
-	}
-
 	const char* const* GetBackendNames() const override
 	{
 		return cubeb_get_backend_names();
