@@ -329,7 +329,8 @@ void GSDumpReplayerCpuStep()
 			u32 size;
 			std::memcpy(&size, packet.data, sizeof(size));
 
-			std::unique_ptr<u8[]> arr(new u8[size * 16]);
+			// Allocate an extra quadword, some transfers write too much (e.g. Lego Racers 2 with Z24 downloads).
+			std::unique_ptr<u8[]> arr(new u8[(size + 1) * 16]);
 			GetMTGS().InitAndReadFIFO(arr.get(), size);
 		}
 		break;
