@@ -154,6 +154,9 @@ if(QT_BUILD)
 	# rcheevos backend for RetroAchievements.
 	if(USE_ACHIEVEMENTS)
 		add_subdirectory(3rdparty/rcheevos EXCLUDE_FROM_ALL)
+		if(WIN32)
+			add_subdirectory(3rdparty/rainterface EXCLUDE_FROM_ALL)
+		endif()
 	endif()
 
 	# Discord-RPC library for rich presence.
