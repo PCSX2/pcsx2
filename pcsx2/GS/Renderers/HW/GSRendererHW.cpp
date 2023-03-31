@@ -2742,13 +2742,22 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 	// First let's check we really have a channel shuffle effect
 	if (m_game.title == CRC::PolyphonyDigitalGames)
 	{
+		// These games appear to grab red and write it to a new page-sized render target, then
+		// grab green and blue, with alpha blending turned on, to accumulate them to the temporary
+		// target, then copy the temporary target back to the main FB. The CLUT is set to an offset
+		// ramp texture, presumably this is for screen brightness.
 		GL_INS("Gran Turismo RGB Channel");
 		if (test_only)
+		{
+			// Since test_only gets executed when creating a source, before target lookup, we can hack
+			// the FBP here to point to the source, which is where it will eventually be copied back to.
+			pxAssertMsg((m_context->TEX0.TBP0 & 31) == 0, "TEX0 should be page aligned");
+			m_context->FRAME.FBP = m_context->TEX0.TBP0 >> 5;
 			return true;
+		}
 
 		m_conf.ps.channel = ChannelFetch_RGB;
 		m_context->TEX0.TFX = TFX_DECAL;
-		m_conf.rt = src->m_texture;
 	}
 	else if (m_game.title == CRC::Tekken5)
 	{
@@ -2757,14 +2766,17 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 			// Used in stages: Secret Garden, Acid Rain, Moonlit Wilderness
 			GL_INS("Tekken5 RGB Channel");
 			if (test_only)
+			{
+				pxAssertMsg((m_context->TEX0.TBP0 & 31) == 0, "TEX0 should be page aligned");
+				m_context->FRAME.FBP = m_context->TEX0.TBP0 >> 5;
 				return true;
+			}
 
 			m_conf.ps.channel = ChannelFetch_RGB;
 			m_context->FRAME.FBMSK = 0xFF000000;
 			// 12 pages: 2 calls by channel, 3 channels, 1 blit
 			// Minus current draw call
 			m_skip = 12 * (3 + 3 + 1) - 1;
-			m_conf.rt = src->m_texture;
 		}
 		else
 		{
