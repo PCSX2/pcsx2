@@ -11765,6 +11765,8 @@ SLES-50897:
   name: "Super Trucks"
   region: "PAL-M6"
   compat: 5
+  roundModes:
+    eeRoundMode: 0 # Fixes starting position.
   gsHWFixes:
     halfPixelOffset: 2 # Gets rid of fog line.
     roundSprite: 1 # Fixes lines in FMVs.
@@ -26564,6 +26566,8 @@ SLPM-62255:
 SLPM-62256:
   name: "Super Trucks"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0 # Fixes starting position.
   gsHWFixes:
     halfPixelOffset: 2 # Gets rid of fog line.
     roundSprite: 1 # Fixes lines in FMVs.
@@ -44980,6 +44984,8 @@ SLUS-20748:
   name: "Super Trucks Racing"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeRoundMode: 0 # Fixes starting position.
   gsHWFixes:
     halfPixelOffset: 2 # Gets rid of fog line.
     roundSprite: 1 # Fixes lines in FMVs.
