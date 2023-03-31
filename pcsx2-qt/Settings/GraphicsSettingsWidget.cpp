@@ -503,6 +503,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Submits useless work to the GPU during readbacks to prevent it from going into powersave modes. "
 			   "May improve performance but with a significant increase in power usage."));
 
+		dialog->registerWidgetHelp(m_ui.PCSX2Optimisations, tr("PCSX2 Optimisations"), tr("Checked"),
+			tr("Enables massive optimisations to speed up PCSX2 for the slowest of computers."));
+
 		// Software
 		dialog->registerWidgetHelp(m_ui.extraSWThreads, tr("Extra Rendering Threads"), tr("2 threads"),
 			tr("Number of rendering threads: 0 for single thread, 2 or more for multithread (1 is for debugging). "

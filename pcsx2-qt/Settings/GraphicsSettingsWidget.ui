@@ -58,7 +58,7 @@
    <item>
     <widget class="QTabWidget" name="tabs">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <property name="documentMode">
       <bool>true</bool>
@@ -686,6 +686,13 @@
           <widget class="QCheckBox" name="spinCPUDuringReadbacks">
            <property name="text">
             <string>Spin CPU During Readbacks</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="PCSX2Optimisations">
+           <property name="text">
+            <string>PCSX2 Optimisations</string>
            </property>
           </widget>
          </item>
