@@ -417,6 +417,8 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("WA ");
 		if (GSConfig.UserHacks_BilinearHack)
 			APPEND("BLU ");
+		if (GSConfig.UserHacks_NativePaletteDraw)
+			APPEND("NPD ");
 		if (GSConfig.UserHacks_MergePPSprite)
 			APPEND("MS ");
 		if (GSConfig.UserHacks_AlignSpriteX)

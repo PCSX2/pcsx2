@@ -3241,6 +3241,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			DrawToggleSetting(bsi, "Bilinear Upscale",
 				"Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare.", "EmuCore/GS",
 				"UserHacks_BilinearHack", false, manual_hw_fixes);
+			DrawToggleSetting(bsi, "Unscaled Palette Texture Draws", "Can fix some broken effects which rely on pixel perfect precision.",
+				"EmuCore/GS", "UserHacks_NativePaletteDraw", false, manual_hw_fixes);
 		}
 	}
 
