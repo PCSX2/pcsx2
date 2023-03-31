@@ -2732,7 +2732,8 @@ bool GSRendererHW::TestChannelShuffle(GSTextureCache::Target* src)
 		(((m_vt.m_max.p - m_vt.m_min.p) <= GSVector4(64.0f)).mask() & 0x3) == 0x3); // single_page
 
 	// This is a little redundant since it'll get called twice, but the only way to stop us wasting time on copies.
-	return (shuffle && EmulateChannelShuffle(src, true));
+	m_channel_shuffle = (shuffle && EmulateChannelShuffle(src, true));
+	return m_channel_shuffle;
 }
 
 __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only)
