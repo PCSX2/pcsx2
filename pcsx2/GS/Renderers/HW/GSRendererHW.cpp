@@ -1817,7 +1817,8 @@ void GSRendererHW::Draw()
 		// Normally we would use 1024 here to match the clear above, but The Godfather does a 1023x1023 draw instead
 		// (very close to 1024x1024, but apparently the GS rounds down..). So, catch that here, we don't want to
 		// create that target, because the clear isn't black, it'll hang around and never get invalidated.
-		const bool is_square = (t_size.y == t_size.x) && m_r.w >= 1023 && m_vertex.next == 2;
+		const bool is_square = (t_size.y == t_size.x) && m_r.w >= 1023 && 
+			((m_index.tail == 2 && m_vt.m_primclass == GS_SPRITE_CLASS) || (m_index.tail == 6 && m_vt.m_primclass == GS_TRIANGLE_CLASS));
 		const bool is_clear = IsConstantDirectWriteMemClear(false) && is_square;
 		rt = g_texture_cache->LookupTarget(FRAME_TEX0, t_size, target_scale, GSTextureCache::RenderTarget, true,
 			fm, false, is_clear, force_preload);
@@ -5099,8 +5100,9 @@ bool GSRendererHW::IsBlendedOrOpaque()
 
 bool GSRendererHW::IsConstantDirectWriteMemClear(bool include_zero)
 {
+	const bool direct_draw = (m_vt.m_primclass == GS_SPRITE_CLASS) || (m_index.tail == 6 && m_vt.m_primclass == GS_TRIANGLE_CLASS);
 	// Constant Direct Write without texture/test/blending (aka a GS mem clear)
-	if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME // Direct write
+	if (direct_draw && !PRIM->TME // Direct write
 		&& (m_context->FRAME.FBMSK == 0 || (include_zero && m_vt.m_max.c.eq(GSVector4i::zero()))) // no color mask
 		&& !(m_env.SCANMSK.MSK & 2)
 		&& !m_context->TEST.ATE // no alpha test
