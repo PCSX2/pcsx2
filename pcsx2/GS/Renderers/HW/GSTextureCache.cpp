@@ -292,7 +292,7 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(Target* t, u32 sbp, u32 sp
 				if (!is_invalidation)
 					return GSVector4i::zero();
 
-				const u32 offset = rect_pages.z - (dst_pgw);
+				// const u32 offset = rect_pages.z - (dst_pgw);
 				new_rect.x = 0;
 				new_rect.z = dst_pgw * dst_page_size.x;
 				new_rect.w += dst_page_size.y;
@@ -457,7 +457,7 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 			// Kinda scary but covering the whole row and the next one should be okay? :/ (Check with MVP 07, sbp == 0x39a0)
 			if (rect_pages.z > static_cast<int>(dst_pgw))
 			{
-				u32 offset = rect_pages.z - (dst_pgw);
+				// u32 offset = rect_pages.z - (dst_pgw);
 				new_rect.x = 0;
 				new_rect.z = dst_pgw * dst_page_size.x;
 				new_rect.w += dst_page_size.y;
@@ -699,7 +699,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		// else.)
 
 		bool found_t = false;
-		bool tex_in_rt = false;
 		bool tex_merge_rt = false;
 		for (auto t : m_dst[RenderTarget])
 		{
@@ -853,7 +852,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 							dst = t;
 
 						found_t = true;
-						tex_in_rt = false;
 						tex_merge_rt = false;
 						x_offset = 0;
 						y_offset = 0;
@@ -868,7 +866,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					half_right = true;
 					dst = t;
 					found_t = true;
-					tex_in_rt = false;
 					tex_merge_rt = false;
 					x_offset = 0;
 					y_offset = 0;
@@ -945,7 +942,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 							x_offset = rect.x;
 							y_offset = rect.y;
 							dst = t;
-							tex_in_rt = true;
 							tex_merge_rt = false;
 							found_t = true;
 							continue;
@@ -965,7 +961,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 								// Offset from Target to Source in Target coords.
 								x_offset = so.b2a_offset.x;
 								y_offset = so.b2a_offset.y;
-								tex_in_rt = true;
 								tex_merge_rt = false;
 								found_t = true;
 								// Keep looking, just in case there is an exact match (Situation: Target frame drawn inside target frame, current makes a separate texture)
@@ -978,7 +973,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 						dst = t;
 						x_offset = 0;
 						y_offset = 0;
-						tex_in_rt = false;
 						tex_merge_rt = true;
 
 						// Prefer a target inside over a target outside.
