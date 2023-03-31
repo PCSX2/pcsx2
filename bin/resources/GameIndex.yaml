@@ -14400,8 +14400,10 @@ SLES-52111:
   region: "PAL-M6"
   compat: 5
 SLES-52116:
-  name: "Sitting Duck"
+  name: "Sitting Ducks"
   region: "PAL-M6"
+  gsHWFixes:
+    wildArmsHack: 1 # Fixes blurriness.
 SLES-52117:
   name: "Go Go Copter"
   region: "PAL-M3"
@@ -45653,6 +45655,8 @@ SLUS-20885:
 SLUS-20886:
   name: "Sitting Ducks"
   region: "NTSC-U"
+  gsHWFixes:
+    wildArmsHack: 1 # Fixes blurriness.
 SLUS-20887:
   name: "Adventures of Jimmy Neutron, The - Boy Genius - Attack of the Twonkies"
   region: "NTSC-U"
