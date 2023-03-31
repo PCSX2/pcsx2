@@ -108,39 +108,6 @@ bool GSHwHack::GSC_Manhunt2(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSHwHack::GSC_CrashBandicootWoC(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
-{
-	if (s_nativeres)
-		return false;
-
-	// Channel effect not properly supported - Removes fog to fix the fog wall issue on Direct3D at any resolution, and while upscaling on every Hardware renderer.
-	if (skip == 0)
-	{
-		if (fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x008c0 || fi.FBP == 0x00a00) && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x008c0 || fi.TBP0 == 0x00a00) && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.FPSM == fi.TPSM)
-		{
-			return false; // allowed
-		}
-
-		if (fi.TME && (fi.FBP == 0x01e40 || fi.FBP == 0x02200) && fi.FPSM == PSM_PSMZ24 && (fi.TBP0 == 0x01180 || fi.TBP0 == 0x01400) && fi.TPSM == PSM_PSMZ24)
-		{
-			skip = 42;
-		}
-	}
-	else
-	{
-		if (fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x008c0 || fi.FBP == 0x00a00) && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x03c00 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 0;
-		}
-		else if (!fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x008c0 || fi.FBP == 0x00a00))
-		{
-			skip = 0;
-		}
-	}
-
-	return true;
-}
-
 bool GSHwHack::GSC_SacredBlaze(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
 {
 	//Fix Sacred Blaze rendering glitches
@@ -1212,7 +1179,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_Battlefield2, CRCHackLevel::Partial),
 
 	// Channel Effect
-	CRC_F(GSC_CrashBandicootWoC, CRCHackLevel::Partial),
 	CRC_F(GSC_GiTS, CRCHackLevel::Partial),
 	CRC_F(GSC_SteambotChronicles, CRCHackLevel::Partial),
 
