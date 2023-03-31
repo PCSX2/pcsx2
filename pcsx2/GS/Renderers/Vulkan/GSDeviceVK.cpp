@@ -1135,11 +1135,6 @@ void GSDeviceVK::ClearSamplerCache()
 	m_tfx_sampler = m_point_sampler;
 }
 
-static void AddMacro(std::stringstream& ss, const char* name, const char* value)
-{
-	ss << "#define " << name << " " << value << "\n";
-}
-
 static void AddMacro(std::stringstream& ss, const char* name, int value)
 {
 	ss << "#define " << name << " " << value << "\n";
