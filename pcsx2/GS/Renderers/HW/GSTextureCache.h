@@ -205,7 +205,6 @@ public:
 	{
 	public:
 		const int m_type = 0;
-		const bool m_depth_supported = false;
 		bool m_dirty_alpha = true;
 		bool m_is_frame = false;
 		bool m_used = false;
@@ -217,7 +216,7 @@ public:
 		int readbacks_since_draw = 0;
 
 	public:
-		Target(const GIFRegTEX0& TEX0, const bool depth_supported, const int type);
+		Target(const GIFRegTEX0& TEX0, const int type);
 		~Target();
 
 		void ResizeDrawn(const GSVector4i& rect);
@@ -437,7 +436,8 @@ public:
 	Source* LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, bool palette = false);
 
 	Target* FindTargetOverlap(u32 bp, u32 end_block, int type, int psm);
-	Target* LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type, bool used, u32 fbmask = 0, const bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool is_clear = false);
+	Target* LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type, bool used = true, u32 fbmask = 0,
+		bool is_frame = false, bool is_clear = false, bool preload = GSConfig.PreloadFrameWithGSData);
 	Target* LookupDisplayTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale);
 
 	/// Looks up a target in the cache, and only returns it if the BP/BW/PSM match exactly.

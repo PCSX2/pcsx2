@@ -1070,7 +1070,8 @@ GSTextureCache::Target* GSTextureCache::FindTargetOverlap(u32 bp, u32 end_block,
 	return nullptr;
 }
 
-GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type, bool used, u32 fbmask, const bool is_frame, bool preload, bool is_clear)
+GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type,
+	bool used, u32 fbmask, bool is_frame, bool is_clear, bool preload)
 {
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 	const u32 bp = TEX0.TBP0;
@@ -1386,10 +1387,9 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 		}
 		dst->m_is_frame = is_frame;
 	}
-	if (used)
-	{
-		dst->m_used = true;
-	}
+
+	dst->m_used |= used;
+
 	if (is_frame)
 		dst->m_dirty_alpha = false;
 
@@ -2339,7 +2339,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		new_TEX0.PSM = DPSM;
 
 		const GSVector2i target_size = GetTargetSize(DBP, DBW, DPSM, Common::AlignUpPow2(w, 64), h);
-		dst = LookupTarget(new_TEX0, target_size, src->m_scale, src->m_type, true);
+		dst = LookupTarget(new_TEX0, target_size, src->m_scale, src->m_type);
 		if (dst)
 		{
 			dst->UpdateValidity(GSVector4i(dx, dy, dx + w, dy + h));
@@ -3018,12 +3018,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			src->m_scale = dst->m_scale;
 			src->m_unscaled_size = dst->m_unscaled_size;
 			src->m_shared_texture = true;
-			src->m_target = true; // So renderer can check if a conversion is required
-			src->m_from_target = dst; // avoid complex condition on the renderer
-			src->m_from_target_TEX0 = dst->m_TEX0;
 			src->m_32_bits_fmt = dst->m_32_bits_fmt;
-			src->m_valid_rect = dst->m_valid;
-			src->m_end_block = dst->m_end_block;
 
 			// if the size doesn't match, we need to engage shader sampling.
 			if (new_size != dst_texture_size)
@@ -3577,7 +3572,7 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int
 
 	// TODO: This leaks if memory allocation fails. Use a unique_ptr so it gets freed, but these
 	// exceptions really need to get lost.
-	std::unique_ptr<Target> t = std::make_unique<Target>(TEX0, !GSConfig.UserHacks_DisableDepthSupport, type);
+	std::unique_ptr<Target> t = std::make_unique<Target>(TEX0, type);
 	t->m_unscaled_size = GSVector2i(w, h);
 	t->m_scale = scale;
 
@@ -4129,9 +4124,8 @@ bool GSTextureCache::Source::ClutMatch(const PaletteKey& palette_key)
 
 // GSTextureCache::Target
 
-GSTextureCache::Target::Target(const GIFRegTEX0& TEX0, const bool depth_supported, const int type)
+GSTextureCache::Target::Target(const GIFRegTEX0& TEX0, const int type)
 	: m_type(type)
-	, m_depth_supported(depth_supported)
 	, m_used(false)
 	, m_valid(GSVector4i::zero())
 {
@@ -4181,7 +4175,7 @@ void GSTextureCache::Target::Update(bool reset_age)
 		return;
 
 	// No handling please
-	if ((m_type == DepthStencil) && !m_depth_supported)
+	if (m_type == DepthStencil && GSConfig.UserHacks_DisableDepthSupport)
 	{
 		// do the most likely thing a direct write would do, clear it
 		GL_INS("ERROR: Update DepthStencil dummy");

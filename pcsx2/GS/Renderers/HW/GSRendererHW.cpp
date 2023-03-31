@@ -1806,7 +1806,9 @@ void GSRendererHW::Draw()
 		// (very close to 1024x1024, but apparently the GS rounds down..). So, catch that here, we don't want to
 		// create that target, because the clear isn't black, it'll hang around and never get invalidated.
 		const bool is_square = (t_size.y == t_size.x) && m_r.w >= 1023 && m_vertex.next == 2;
-		rt = g_texture_cache->LookupTarget(FRAME_TEX0, t_size, GetTextureScaleFactor(), GSTextureCache::RenderTarget, true, fm, false, force_preload, IsConstantDirectWriteMemClear(false) && is_square);
+		const bool is_clear = IsConstantDirectWriteMemClear(false) && is_square;
+		rt = g_texture_cache->LookupTarget(FRAME_TEX0, t_size, target_scale, GSTextureCache::RenderTarget, true,
+			fm, false, is_clear, force_preload);
 
 		// Draw skipped because it was a clear and there was no target.
 		if (!rt)
@@ -1826,7 +1828,8 @@ void GSRendererHW::Draw()
 		ZBUF_TEX0.TBW = context->FRAME.FBW;
 		ZBUF_TEX0.PSM = context->ZBUF.PSM;
 
-		ds = g_texture_cache->LookupTarget(ZBUF_TEX0, t_size, GetTextureScaleFactor(), GSTextureCache::DepthStencil, context->DepthWrite(), 0, false, force_preload);
+		ds = g_texture_cache->LookupTarget(ZBUF_TEX0, t_size, target_scale, GSTextureCache::DepthStencil,
+			context->DepthWrite(), 0, false, false, force_preload);
 	}
 
 	if (process_texture)
@@ -2029,7 +2032,6 @@ void GSRendererHW::Draw()
 	GSTextureCache::Target* old_ds = nullptr;
 	{
 		// We still need to make sure the dimensions of the targets match.
-		const float up_s = GetTextureScaleFactor();
 		const int new_w = std::max(t_size.x, std::max(rt ? rt->m_unscaled_size.x : 0, ds ? ds->m_unscaled_size.x : 0));
 		const int new_h = std::max(t_size.y, std::max(rt ? rt->m_unscaled_size.y : 0, ds ? ds->m_unscaled_size.y : 0));
 
@@ -2040,7 +2042,7 @@ void GSRendererHW::Draw()
 			const bool new_height = new_h > rt->GetUnscaledHeight();
 			const int old_height = rt->m_texture->GetHeight();
 
-			pxAssert(rt->GetScale() == up_s);
+			pxAssert(rt->GetScale() == target_scale);
 			rt->ResizeTexture(new_w, new_h);
 
 			if (!m_texture_shuffle && !m_channel_shuffle)
@@ -2080,7 +2082,7 @@ void GSRendererHW::Draw()
 			const bool new_height = new_h > ds->GetUnscaledHeight();
 			const int old_height = ds->m_texture->GetHeight();
 
-			pxAssert(ds->GetScale() == up_s);
+			pxAssert(ds->GetScale() == target_scale);
 			ds->ResizeTexture(new_w, new_h);
 
 			if (!m_texture_shuffle && !m_channel_shuffle)
