@@ -10656,7 +10656,7 @@ SLES-50386:
   region: "PAL-M6"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_CrashBandicootWoC"
+    nativePaletteDraw: 1
 SLES-50390:
   name: "Driven"
   region: "PAL-M5"
@@ -26193,7 +26193,7 @@ SLPM-62114:
   name: "Crash Bandicoot 4 - Sakuretsu! Majin Power"
   region: "NTSC-J"
   gsHWFixes:
-    getSkipCount: "GSC_CrashBandicootWoC"
+    nativePaletteDraw: 1
 SLPM-62115:
   name: "EX Jinsei Game [Doukonban]"
   region: "NTSC-J"
@@ -28124,12 +28124,12 @@ SLPM-64509:
   name: "Crash Bandicoot - Return of the Demon King [English Dub Edition]" # Wrath of Cortex
   region: "NTSC-K"
   gsHWFixes:
-    getSkipCount: "GSC_CrashBandicootWoC"
+    nativePaletteDraw: 1
 SLPM-64513:
   name: "Crash Bandicoot - Mawangui Buwhal" # Wrath of Cortex
   region: "NTSC-K"
   gsHWFixes:
-    getSkipCount: "GSC_CrashBandicootWoC"
+    nativePaletteDraw: 1
 SLPM-64514:
   name: "Legends of Wrestling"
   region: "NTSC-K"
@@ -35774,7 +35774,7 @@ SLPM-74003:
   name: "Crash Bandicoot 4 - Sakuretsu! Majin Power! [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    getSkipCount: "GSC_CrashBandicootWoC"
+    nativePaletteDraw: 1
 SLPM-74004:
   name: "Maximo - Ghosts to Glory [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -42565,7 +42565,7 @@ SLUS-20238:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_CrashBandicootWoC"
+    nativePaletteDraw: 1
 SLUS-20239:
   name: "Driven"
   region: "NTSC-U"
@@ -51333,7 +51333,7 @@ SLUS-29010:
   name: "Crash Bandicoot - The Wrath of Cortex [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    getSkipCount: "GSC_CrashBandicootWoC"
+    nativePaletteDraw: 1
 SLUS-29011:
   name: "WWF SmackDown! - Just Bring It [Demo]"
   region: "NTSC-U"
@@ -52236,9 +52236,9 @@ VW067-J1:
   name: "Crash Bandicoot 4 - Sakuretsu! Majin Power!"
   region: "NTSC-J"
   gsHWFixes:
-    getSkipCount: "GSC_CrashBandicootWoC"
+    nativePaletteDraw: 1
 VW067-J2:
   name: "Crash Bandicoot 4 - Sakuretsu! Majin Power! [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    getSkipCount: "GSC_CrashBandicootWoC"
+    nativePaletteDraw: 1
