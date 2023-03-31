@@ -58,6 +58,13 @@
       <string>SDL Input Source</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="enableSDLSource">
+        <property name="text">
+         <string>Enable SDL Input Source</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="0" colspan="2">
        <widget class="QLabel" name="label_2">
         <property name="text">
@@ -65,13 +72,6 @@
         </property>
         <property name="wordWrap">
          <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QCheckBox" name="enableSDLSource">
-        <property name="text">
-         <string>Enable SDL Input Source</string>
         </property>
        </widget>
       </item>
@@ -96,6 +96,13 @@
          </widget>
         </item>
        </layout>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="enableSDLRawInput">
+        <property name="text">
+         <string>Enable SDL Raw Input</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

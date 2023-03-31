@@ -142,10 +142,11 @@ bool SDLInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mut
 void SDLInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
 	const bool old_controller_enhanced_mode = m_controller_enhanced_mode;
+	const bool old_controller_raw_mode = m_controller_raw_mode;
 
 	LoadSettings(si);
 
-	if (m_controller_enhanced_mode != old_controller_enhanced_mode)
+	if (m_controller_enhanced_mode != old_controller_enhanced_mode || m_controller_raw_mode != old_controller_raw_mode)
 	{
 		settings_lock.unlock();
 		ShutdownSubsystem();
@@ -170,6 +171,7 @@ void SDLInputSource::Shutdown()
 void SDLInputSource::LoadSettings(SettingsInterface& si)
 {
 	m_controller_enhanced_mode = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
+	m_controller_raw_mode = si.GetBoolValue("InputSources", "SDLRawInput", false);
 	m_sdl_hints = si.GetKeyValueList("SDLHints");
 
   for (u32 i = 0; i < MAX_LED_COLORS; i++)
@@ -208,6 +210,7 @@ u32 SDLInputSource::ParseRGBForPlayerId(const std::string_view& str, u32 player_
 
 void SDLInputSource::SetHints()
 {
+	SDL_SetHint(SDL_HINT_JOYSTICK_RAWINPUT, m_controller_raw_mode ? "1" : "0");
 	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
 	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
 	// Enable Wii U Pro Controller support
