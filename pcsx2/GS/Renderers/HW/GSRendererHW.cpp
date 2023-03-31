@@ -1793,6 +1793,18 @@ void GSRendererHW::Draw()
 	// Ensure draw rect is clamped to framebuffer size. Necessary for updating valid area.
 	m_r = m_r.rintersect(GSVector4i::loadh(t_size));
 
+	float target_scale = GetTextureScaleFactor();
+
+	// This upscaling hack is for games which construct P8 textures by drawing a bunch of small sprites in C32,
+	// then reinterpreting it as P8. We need to keep the off-screen intermediate textures at native resolution,
+	// but not propagate that through to the normal render targets. Test Case: Crash Wrath of Cortex.
+	if (no_ds && src && !m_channel_shuffle && GSConfig.UserHacks_NativePaletteDraw && src->m_from_target &&
+		src->m_scale == 1.0f && (src->m_TEX0.PSM == PSM_PSMT8 || src->m_TEX0.TBP0 == m_context->FRAME.Block()))
+	{
+		GL_CACHE("Using native resolution for target based on texture source");
+		target_scale = 1.0f;
+	}
+
 	GSTextureCache::Target* rt = nullptr;
 	GIFRegTEX0 FRAME_TEX0;
 	if (!no_rt)

@@ -72,6 +72,7 @@ namespace GameDatabaseSchema
 		MergeSprite,
 		WildArmsHack,
 		BilinearUpscale,
+		NativePaletteDraw,
 		EstimateTextureRegion,
 		PCRTCOffsets,
 		PCRTCOverscan,

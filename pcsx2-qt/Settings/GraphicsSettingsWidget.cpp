@@ -235,6 +235,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.mergeSprite, "EmuCore/GS", "UserHacks_merge_pp_sprite", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.wildHack, "EmuCore/GS", "UserHacks_WildHack", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.bilinearHack, "EmuCore/GS", "UserHacks_BilinearHack", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.nativePaletteDraw, "EmuCore/GS", "UserHacks_NativePaletteDraw", false);
 	//////////////////////////////////////////////////////////////////////////
 	// Texture Replacements
 	//////////////////////////////////////////////////////////////////////////

@@ -1224,13 +1224,6 @@
        </item>
        <item row="3" column="0" colspan="2">
         <layout class="QGridLayout" name="gridLayout_3">
-         <item row="0" column="1">
-          <widget class="QCheckBox" name="mergeSprite">
-           <property name="text">
-            <string>Merge Sprite</string>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="0">
           <widget class="QCheckBox" name="alignSprite">
            <property name="text">
@@ -1249,6 +1242,20 @@
           <widget class="QCheckBox" name="bilinearHack">
            <property name="text">
             <string>Bilinear Dirty Upscale</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="mergeSprite">
+           <property name="text">
+            <string>Merge Sprite</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="nativePaletteDraw">
+           <property name="text">
+            <string>Unscaled Palette Texture Draws</string>
            </property>
           </widget>
          </item>
