@@ -37,11 +37,13 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 #ifdef SDL_BUILD
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLEnhancedMode, "InputSources", "SDLControllerEnhancedMode", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLRawInput, "InputSources", "SDLRawInput", false);
 	connect(m_ui.enableSDLSource, &QCheckBox::stateChanged, this, &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
 	connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
 #else
 	m_ui.enableSDLSource->setEnabled(false);
 	m_ui.ledSettings->setEnabled(false);
+	m_ui.enableSDLRawInput->setEnabled(false);
 #endif
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableMouseMapping, "UI", "EnableMouseMapping", false);
@@ -113,6 +115,7 @@ void ControllerGlobalSettingsWidget::updateSDLOptionsEnabled()
 	const bool enabled = m_ui.enableSDLSource->isChecked();
 	m_ui.enableSDLEnhancedMode->setEnabled(enabled);
 	m_ui.ledSettings->setEnabled(enabled);
+	m_ui.enableSDLRawInput->setEnabled(enabled);
 }
 
 void ControllerGlobalSettingsWidget::ledSettingsClicked()
