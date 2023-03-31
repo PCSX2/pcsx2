@@ -1482,7 +1482,7 @@ void GSRendererHW::Draw()
 						|| (!context->TEST.DATE && (context->FRAME.FBMSK & GSLocalMemory::m_psm[context->FRAME.PSM].fmsk) == GSLocalMemory::m_psm[context->FRAME.PSM].fmsk);
 	const bool no_ds = (
 		// Depth is always pass/fail (no read) and write are discarded.
-		(zm != 0 && context->TEST.ZTST <= ZTST_ALWAYS) ||
+		(zm != 0 && (!context->TEST.ZTE || context->TEST.ZTST <= ZTST_ALWAYS)) ||
 		// Depth test will always pass
 		(zm != 0 && context->TEST.ZTST == ZTST_GEQUAL && m_vt.m_eq.z && std::min(m_vertex.buff[0].XYZ.Z, max_z) == max_z) ||
 		// Depth will be written through the RT
