@@ -2597,6 +2597,14 @@ SCED-53514:
 SCED-53515:
   name: "Bonus Demo 10"
   region: "PAL-M5"
+SCED-53538:
+  name: "Tekken 5 [Demo]"
+  region: "PAL-M5"
+  clampModes:
+    eeClampMode: 2 # Fixes camera and stops constant coin noises on Pirates Cove.
+  gsHWFixes:
+    alignSprite: 1
+    getSkipCount: "GSC_Tekken5"
 SCED-53622:
   name: "24 - The Game [Demo]"
   region: "PAL-M9"
