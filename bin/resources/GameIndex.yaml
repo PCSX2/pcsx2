@@ -18909,6 +18909,8 @@ SLES-53863:
 SLES-53866:
   name: "Over the Hedge"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes fog line.
   speedHacks:
     MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-53867:
@@ -19202,11 +19204,15 @@ SLES-53987:
 SLES-53988:
   name: "Over the Hedge"
   region: "PAL-E-G"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes fog line.
   speedHacks:
     MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-53989:
   name: "Over the Hedge"
   region: "PAL-NL"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes fog line.
   speedHacks:
     MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-53991:
@@ -19653,6 +19659,8 @@ SLES-54172:
 SLES-54173:
   name: "Over The Hedge"
   region: "PAL-SW"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes fog line.
   speedHacks:
     MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-54174:
@@ -47952,6 +47960,8 @@ SLUS-21300:
   name: "Over the Hedge"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes fog line.
   speedHacks:
     MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLUS-21301:
