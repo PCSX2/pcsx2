@@ -10712,6 +10712,8 @@ SLES-50423:
 SLES-50424:
   name: "Cricket 2002"
   region: "PAL-E"
+  gameFixes:
+    - EETimingHack # Fixes the running animation.
   roundModes:
     eeRoundMode: 0 # Fixes AI behaviour.
 SLES-50425:
