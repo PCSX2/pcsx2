@@ -884,6 +884,15 @@ if(USE_ACHIEVEMENTS)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		rcheevos
 	)
+	if(WIN32)
+		# RAIntegration is only supported on Windows.
+		target_compile_definitions(PCSX2_FLAGS INTERFACE
+			ENABLE_RAINTEGRATION
+		)
+		target_link_libraries(PCSX2_FLAGS INTERFACE
+			rainterface
+		)
+	endif()
 endif()
 if(USE_DISCORD_PRESENCE)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE
