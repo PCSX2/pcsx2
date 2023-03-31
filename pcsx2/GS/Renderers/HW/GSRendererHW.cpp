@@ -1882,9 +1882,6 @@ void GSRendererHW::Draw()
 			return;
 		}
 
-		// Texture shuffle is not yet supported with strange clamp mode
-		ASSERT(!m_texture_shuffle || (context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3));
-
 		if (src->m_target && IsPossibleChannelShuffle())
 		{
 			GL_INS("Channel shuffle effect detected (2nd shot)");
