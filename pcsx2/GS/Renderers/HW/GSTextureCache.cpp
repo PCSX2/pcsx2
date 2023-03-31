@@ -2806,6 +2806,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	}
 
 	bool hack = false;
+	bool channel_shuffle = false;
 
 	if (dst && (x_offset != 0 || y_offset != 0))
 	{
@@ -2868,9 +2869,9 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// TODO: clean up this mess
 
 		ShaderConvert shader = dst->m_type != RenderTarget ? ShaderConvert::FLOAT32_TO_RGBA8 : ShaderConvert::COPY;
-		const bool channel_shuffle = GSRendererHW::GetInstance()->TestChannelShuffle(dst);
-		const bool is_8bits = TEX0.PSM == PSM_PSMT8 && !channel_shuffle;
+		channel_shuffle = GSRendererHW::GetInstance()->TestChannelShuffle(dst);
 
+		const bool is_8bits = TEX0.PSM == PSM_PSMT8 && !channel_shuffle;
 		if (is_8bits)
 		{
 			GL_INS("Reading RT as a packed-indexed 8 bits format");
@@ -3134,7 +3135,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	ASSERT(src->m_texture);
 	ASSERT(src->m_target == (dst != nullptr));
 	ASSERT(src->m_from_target == dst);
-	ASSERT(src->m_scale == ((!dst || TEX0.PSM == PSM_PSMT8) ? 1.0f : dst->m_scale));
+	ASSERT(src->m_scale == ((!dst || (TEX0.PSM == PSM_PSMT8 && !channel_shuffle)) ? 1.0f : dst->m_scale));
 
 	if (src != m_temporary_source)
 	{
