@@ -680,32 +680,32 @@ void MainWindow::setStyleFromSettings()
 		// Alternative light theme.
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 
-		const QColor gray(192, 192, 192);
+		const QColor gray(128, 128, 128);
 		const QColor extr(248, 192, 88);
 		const QColor main(233, 187, 147);
 		const QColor comp(248, 230, 213);
+		const QColor highlight(188, 100, 60);
 
-		QPalette darkPalette;
-		darkPalette.setColor(QPalette::Window, main);
-		darkPalette.setColor(QPalette::WindowText, Qt::black);
-		darkPalette.setColor(QPalette::Base, comp);
-		darkPalette.setColor(QPalette::AlternateBase, extr);
-		darkPalette.setColor(QPalette::ToolTipBase, comp);
-		darkPalette.setColor(QPalette::ToolTipText, Qt::black);
-		darkPalette.setColor(QPalette::Text, Qt::black);
-		darkPalette.setColor(QPalette::Button, extr);
-		darkPalette.setColor(QPalette::ButtonText, Qt::black);
-		darkPalette.setColor(QPalette::Link, Qt::black);
-		darkPalette.setColor(QPalette::Highlight, extr);
-		darkPalette.setColor(QPalette::HighlightedText, Qt::black);
+		QPalette standardPalette;
+		standardPalette.setColor(QPalette::Window, main);
+		standardPalette.setColor(QPalette::WindowText, Qt::black);
+		standardPalette.setColor(QPalette::Base, comp);
+		standardPalette.setColor(QPalette::AlternateBase, extr);
+		standardPalette.setColor(QPalette::ToolTipBase, comp);
+		standardPalette.setColor(QPalette::ToolTipText, Qt::black);
+		standardPalette.setColor(QPalette::Text, Qt::black);
+		standardPalette.setColor(QPalette::Button, extr);
+		standardPalette.setColor(QPalette::ButtonText, Qt::black);
+		standardPalette.setColor(QPalette::Link, Qt::black);
+		standardPalette.setColor(QPalette::Highlight, highlight);
+		standardPalette.setColor(QPalette::HighlightedText, Qt::white);
+		standardPalette.setColor(QPalette::Active, QPalette::Button, extr);
+		standardPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray.darker());
+		standardPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray.darker());
+		standardPalette.setColor(QPalette::Disabled, QPalette::Text, Qt::gray);
+		standardPalette.setColor(QPalette::Disabled, QPalette::Light, gray.lighter());
 
-		darkPalette.setColor(QPalette::Active, QPalette::Button, extr);
-		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray.darker());
-		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray.darker());
-		darkPalette.setColor(QPalette::Disabled, QPalette::Text, Qt::gray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::Light, gray.lighter());
-
-		qApp->setPalette(darkPalette);
+		qApp->setPalette(standardPalette);
 
 		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #cc3f18; border: 1px solid white; }");
 	}
@@ -789,26 +789,27 @@ void MainWindow::setStyleFromSettings()
 		const QColor gray(192, 192, 192);
 		const QColor royalBlue(29, 41, 81);
 		const QColor darkishBlue(17, 30, 108);
+		const QColor highlight(36, 93, 218);
 
 		QPalette darkPalette;
 		darkPalette.setColor(QPalette::Window, royalBlue);
 		darkPalette.setColor(QPalette::WindowText, Qt::white);
 		darkPalette.setColor(QPalette::Base, royalBlue.lighter());
-		darkPalette.setColor(QPalette::AlternateBase, royalBlue);
+		darkPalette.setColor(QPalette::AlternateBase, darkishBlue);
 		darkPalette.setColor(QPalette::ToolTipBase, darkishBlue);
 		darkPalette.setColor(QPalette::ToolTipText, Qt::white);
 		darkPalette.setColor(QPalette::Text, Qt::white);
 		darkPalette.setColor(QPalette::Button, darkishBlue);
 		darkPalette.setColor(QPalette::ButtonText, Qt::white);
 		darkPalette.setColor(QPalette::Link, Qt::white);
-		darkPalette.setColor(QPalette::Highlight, darkishBlue.lighter());
+		darkPalette.setColor(QPalette::Highlight, highlight);
 		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
 
 		darkPalette.setColor(QPalette::Active, QPalette::Button, darkishBlue);
 		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
 		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
 		darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::Light, gray.darker());
+		darkPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
 
 		qApp->setPalette(darkPalette);
 
