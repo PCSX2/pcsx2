@@ -17,14 +17,13 @@
 
 #include "common/HashCombine.h"
 #include "common/WindowInfo.h"
-#include "GSFastList.h"
-#include "GSTexture.h"
-#include "GSVertex.h"
+#include "GS/GS.h"
+#include "GS/Renderers/Common/GSFastList.h"
+#include "GS/Renderers/Common/GSTexture.h"
+#include "GS/Renderers/Common/GSVertex.h"
 #include "GS/GSAlignedClass.h"
 #include "GS/GSExtra.h"
 #include <array>
-
-class HostDisplay;
 
 enum class ShaderConvert
 {
@@ -694,6 +693,22 @@ struct alignas(16) GSHWDrawConfig
 class GSDevice : public GSAlignedClass<32>
 {
 public:
+	enum class PresentResult
+	{
+		OK,
+		FrameSkipped,
+		DeviceLost
+	};
+
+	enum class DebugMessageCategory
+	{
+		Cache,
+		Reg,
+		Debug,
+		Message,
+		Performance
+	};
+
 	// clang-format off
 	struct FeatureSupport
 	{
@@ -747,6 +762,7 @@ public:
 private:
 	FastList<GSTexture*> m_pool;
 	u64 m_pool_memory_usage = 0;
+
 	static const std::array<HWBlend, 3*3*3*3> m_blendMap;
 	static const std::array<u8, 16> m_replaceDualSrcBlendMap;
 
@@ -755,6 +771,11 @@ protected:
 	static constexpr float MAD_SENSITIVITY = 0.08f;
 	static constexpr u32   MAX_POOLED_TEXTURES = 300;
 	static constexpr u32   NUM_CAS_CONSTANTS = 12; // 8 plus src offset x/y, 16 byte alignment
+
+	WindowInfo m_window_info;
+	VsyncMode m_vsync_mode = VsyncMode::Off;
+
+	GSTexture* m_imgui_font = nullptr;
 
 	GSTexture* m_merge = nullptr;
 	GSTexture* m_weavebob = nullptr;
@@ -781,8 +802,8 @@ protected:
 
 	virtual void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c, const bool linear) = 0;
 	virtual void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb) = 0;
-	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) {}
-	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) {}
+	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) = 0;
+	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) = 0;
 
 	/// Resolves CAS shader includes for the specified source.
 	static bool GetCASShaderSource(std::string* source);
@@ -794,58 +815,111 @@ public:
 	GSDevice();
 	virtual ~GSDevice();
 
+	/// Returns a string representing the specified API.
+	static const char* RenderAPIToString(RenderAPI api);
+
+	/// Parses a fullscreen mode into its components (width * height @ refresh hz)
+	static bool ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height, float* refresh_rate);
+
+	/// Converts a fullscreen mode to a string.
+	static std::string GetFullscreenModeString(u32 width, u32 height, float refresh_rate);
+
 	__fi unsigned int GetFrameNumber() const { return m_frame; }
 	__fi u64 GetPoolMemoryUsage() const { return m_pool_memory_usage; }
 
+	__fi FeatureSupport Features() const { return m_features; }
+
+	__fi const WindowInfo& GetWindowInfo() const { return m_window_info; }
+	__fi s32 GetWindowWidth() const { return static_cast<s32>(m_window_info.surface_width); }
+	__fi s32 GetWindowHeight() const { return static_cast<s32>(m_window_info.surface_height); }
+	__fi GSVector2i GetWindowSize() const { return GSVector2i(static_cast<s32>(m_window_info.surface_width), static_cast<s32>(m_window_info.surface_height)); }
+	__fi float GetWindowScale() const { return m_window_info.surface_scale; }
+	__fi VsyncMode GetVsyncMode() const { return m_vsync_mode; }
+
+	__fi GSTexture* GetCurrent() const { return m_current; }
+
 	void Recycle(GSTexture* t);
 
-	enum
-	{
-		Windowed,
-		Fullscreen,
-		DontCare
-	};
+	/// Returns true if it's an OpenGL-based renderer.
+	bool UsesLowerLeftOrigin() const;
 
-	enum class DebugMessageCategory
-	{
-		Cache,
-		Reg,
-		Debug,
-		Message,
-		Performance
-	};
+	/// Recreates the font, call when the window scaling changes.
+	bool UpdateImGuiFontTexture();
 
-	virtual bool Create();
+	virtual bool Create(const WindowInfo& wi, VsyncMode vsync);
 	virtual void Destroy();
 
-	virtual void ResetAPIState();
-	virtual void RestoreAPIState();
+	/// Returns the graphics API used by this device.
+	virtual RenderAPI GetRenderAPI() const = 0;
 
-	virtual void ClearRenderTarget(GSTexture* t, const GSVector4& c) {}
-	virtual void ClearRenderTarget(GSTexture* t, u32 c) {}
-	virtual void InvalidateRenderTarget(GSTexture* t) {}
-	virtual void ClearDepth(GSTexture* t) {}
-	virtual void ClearStencil(GSTexture* t, u8 c) {}
+	/// Returns true if we have a window we're rendering into.
+	virtual bool HasSurface() const = 0;
 
-	virtual void PushDebugGroup(const char* fmt, ...) {}
-	virtual void PopDebugGroup() {}
-	virtual void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) {}
+	/// Destroys the surface we're currently drawing to.
+	virtual void DestroySurface() = 0;
+
+	/// Switches to a new window/surface.
+	virtual bool ChangeWindow(const WindowInfo& wi) = 0;
+
+	/// Call when the window size changes externally to recreate any resources.
+	virtual void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) = 0;
+
+	/// Returns true if exclusive fullscreen is supported.
+	virtual bool SupportsExclusiveFullscreen() const = 0;
+
+	/// Returns true if exclusive fullscreen is active.
+	virtual bool IsExclusiveFullscreen() = 0;
+
+	/// Attempts to switch to the specified mode in exclusive fullscreen.
+	virtual bool SetExclusiveFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) = 0;
+
+	/// Returns false if the window was completely occluded. If frame_skip is set, the frame won't be
+	/// displayed, but the GPU command queue will still be flushed.
+	virtual PresentResult BeginPresent(bool frame_skip) = 0;
+
+	/// Presents the frame to the display.
+	virtual void EndPresent() = 0;
+
+	/// Changes vsync mode for this display.
+	virtual void SetVSync(VsyncMode mode) = 0;
+
+	/// Returns the effective refresh rate of this display.
+	virtual bool GetHostRefreshRate(float* refresh_rate);
+
+	/// Returns a string of information about the graphics driver being used.
+	virtual std::string GetDriverInfo() const = 0;
+
+	/// Enables/disables GPU frame timing.
+	virtual bool SetGPUTimingEnabled(bool enabled) = 0;
+
+	/// Returns the amount of GPU time utilized since the last time this method was called.
+	virtual float GetAndResetAccumulatedGPUTime() = 0;
+
+	virtual void ClearRenderTarget(GSTexture* t, const GSVector4& c) = 0;
+	virtual void ClearRenderTarget(GSTexture* t, u32 c) = 0;
+	virtual void InvalidateRenderTarget(GSTexture* t) = 0;
+	virtual void ClearDepth(GSTexture* t) = 0;
+	virtual void ClearStencil(GSTexture* t, u8 c) = 0;
+
+	virtual void PushDebugGroup(const char* fmt, ...) = 0;
+	virtual void PopDebugGroup() = 0;
+	virtual void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) = 0;
 
 	GSTexture* CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear = true);
 	GSTexture* CreateDepthStencil(int w, int h, GSTexture::Format format, bool clear = true);
 	GSTexture* CreateTexture(int w, int h, int mipmap_levels, GSTexture::Format format, bool prefer_reuse = false);
 	GSTexture::Format GetDefaultTextureFormat(GSTexture::Type type);
 
-	virtual std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format);
+	virtual std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) = 0;
 
-	virtual void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) {}
-	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true) {}
-	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha) {}
+	virtual void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) = 0;
+	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true) = 0;
+	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha) = 0;
 
 	void StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true);
 
 	/// Performs a screen blit for display. If dTex is null, it assumes you are writing to the system framebuffer/swap chain.
-	virtual void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear) {}
+	virtual void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear) = 0;
 
 	/// Same as doing StretchRect for each item, except tries to batch together rectangles in as few draws as possible.
 	/// The provided list should be sorted by texture, the implementations only check if it's the same as the last.
@@ -855,18 +929,14 @@ public:
 	static void SortMultiStretchRects(MultiStretchRect* rects, u32 num_rects);
 
 	/// Updates a GPU CLUT texture from a source texture.
-	virtual void UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) {}
+	virtual void UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) = 0;
 
 	/// Converts a colour format to an indexed format texture.
-	virtual void ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM) {}
+	virtual void ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM) = 0;
 
-	/// Converts a colour format to an indexed format texture.
-	virtual void ConvertToIndexedTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM) {}
+	virtual void RenderHW(GSHWDrawConfig& config) = 0;
 
-	virtual void RenderHW(GSHWDrawConfig& config) {}
-
-	__fi FeatureSupport Features() const { return m_features; }
-	__fi GSTexture* GetCurrent() const { return m_current; }
+	virtual void ClearSamplerCache() = 0;
 
 	void ClearCurrent();
 	void Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c);
@@ -886,8 +956,6 @@ public:
 
 	void AgePool();
 	void PurgePool();
-
-	virtual void ClearSamplerCache();
 
 	__fi static constexpr bool IsDualSourceBlendFactor(u8 factor)
 	{

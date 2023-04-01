@@ -362,12 +362,6 @@ fragment half4 ps_imgui(ImGuiShaderData data [[stage_in]], texture2d<half> textu
 	return data.c * texture.sample(s, data.t);
 }
 
-fragment half4 ps_imgui_a8(ImGuiShaderData data [[stage_in]], texture2d<half> texture [[texture(GSMTLTextureIndexNonHW)]])
-{
-	constexpr sampler s(coord::normalized, filter::linear, address::clamp_to_edge);
-	return data.c * half4(1, 1, 1, texture.sample(s, data.t).a);
-}
-
 fragment float4 ps_shadeboost(float4 p [[position]], DirectReadTextureIn<float> tex, constant float3& cb [[buffer(GSMTLBufferIndexUniforms)]])
 {
 	const float brt = cb.x;

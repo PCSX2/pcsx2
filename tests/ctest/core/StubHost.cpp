@@ -17,8 +17,8 @@
 #include "pcsx2/Frontend/ImGuiManager.h"
 #include "pcsx2/Frontend/InputManager.h"
 #include "pcsx2/GS.h"
+#include "pcsx2/GS/GS.h"
 #include "pcsx2/Host.h"
-#include "pcsx2/HostDisplay.h"
 #include "pcsx2/HostSettings.h"
 #include "pcsx2/VMManager.h"
 
@@ -49,7 +49,7 @@ void Host::SetDefaultUISettings(SettingsInterface& si)
 
 std::optional<std::vector<u8>> Host::ReadResourceFile(const char* filename)
 {
-    return std::nullopt;
+	return std::nullopt;
 }
 
 std::optional<std::string> Host::ReadResourceFileToString(const char* filename)
@@ -90,7 +90,7 @@ void Host::EndTextInput()
 
 std::optional<WindowInfo> Host::GetTopLevelWindowInfo()
 {
-    return std::nullopt;
+	return std::nullopt;
 }
 
 void Host::OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name)
@@ -105,29 +105,21 @@ void Host::SetRelativeMouseMode(bool enabled)
 {
 }
 
-bool Host::AcquireHostDisplay(RenderAPI api, bool clear_state_on_fail)
+std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI api)
 {
-    return false;
+	return std::nullopt;
 }
 
-void Host::ReleaseHostDisplay(bool clear_state)
+std::optional<WindowInfo> Host::UpdateRenderWindow()
 {
+	return std::nullopt;
 }
 
-HostDisplay::PresentResult Host::BeginPresentFrame(bool frame_skip)
-{
-	return HostDisplay::PresentResult::FrameSkipped;
-}
-
-void Host::EndPresentFrame()
+void Host::ReleaseRenderWindow()
 {
 }
 
-void Host::ResizeHostDisplay(u32 new_window_width, u32 new_window_height, float new_window_scale)
-{
-}
-
-void Host::UpdateHostDisplay()
+void Host::BeginPresentFrame()
 {
 }
 
@@ -227,7 +219,7 @@ std::optional<std::string> InputManager::ConvertHostKeyboardCodeToString(u32 cod
 
 SysMtgsThread& GetMTGS()
 {
-    throw std::exception();
+	throw std::exception();
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -218,9 +218,17 @@ namespace GL
 	{
 		m_index.clear();
 		if (m_index_file)
+		{
 			std::fclose(m_index_file);
+			m_index_file = nullptr;
+		}
 		if (m_blob_file)
+		{
 			std::fclose(m_blob_file);
+			m_blob_file = nullptr;
+		}
+
+		m_base_path = {};
 	}
 
 	bool ShaderCache::Recreate()

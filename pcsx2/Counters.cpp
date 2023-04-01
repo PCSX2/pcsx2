@@ -25,13 +25,13 @@
 #include "IopCounters.h"
 
 #include "GS.h"
+#include "GS/GS.h"
 #include "VUmicro.h"
 #include "PerformanceMetrics.h"
 #include "Patch.h"
 
 #include "ps2/HwInternal.h"
 #include "Sio.h"
-#include "HostDisplay.h"
 #include "SPU2/spu2.h"
 #include "PAD/Host/PAD.h"
 #include "Recording/InputRecording.h"
@@ -357,7 +357,7 @@ static double AdjustToHostRefreshRate(double vertical_frequency, double frame_li
 	}
 
 	float host_refresh_rate;
-	if (!g_host_display->GetHostRefreshRate(&host_refresh_rate))
+	if (!GSGetHostRefreshRate(&host_refresh_rate))
 	{
 		Console.Warning("Cannot sync to host refresh since the query failed.");
 		SPU2::SetDeviceSampleRateMultiplier(1.0);

@@ -36,6 +36,7 @@ namespace GL
 		~ShaderCache();
 
 		bool Open(bool is_gles, std::string_view base_path, u32 version);
+		void Close();
 
 		std::optional<Program> GetProgram(const std::string_view vertex_shader, const std::string_view geometry_shader,
 			const std::string_view fragment_shader, const PreLinkCallback& callback = {});
@@ -94,7 +95,6 @@ namespace GL
 
 		bool CreateNew(const std::string& index_filename, const std::string& blob_filename);
 		bool ReadExisting(const std::string& index_filename, const std::string& blob_filename);
-		void Close();
 		bool Recreate();
 
 		bool WriteToBlobFile(const CacheIndexKey& key, const std::vector<u8>& prog_data, u32 prog_format);

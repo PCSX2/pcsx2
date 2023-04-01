@@ -33,6 +33,9 @@ namespace D3D
 	// returns a list of all adapter names
 	std::vector<std::string> GetAdapterNames(IDXGIFactory5* factory);
 
+	// returns a list of fullscreen modes for the specified adapter
+	std::vector<std::string> GetFullscreenModes(IDXGIFactory5* factory, const std::string_view& adapter_name);
+
 	// get an adapter based on name
 	wil::com_ptr_nothrow<IDXGIAdapter1> GetAdapterByName(IDXGIFactory5* factory, const std::string_view& name);
 

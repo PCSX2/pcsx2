@@ -45,14 +45,7 @@ ShaderCache::ShaderCache() = default;
 
 ShaderCache::~ShaderCache()
 {
-	if (m_pipeline_index_file)
-		std::fclose(m_pipeline_index_file);
-	if (m_pipeline_blob_file)
-		std::fclose(m_pipeline_blob_file);
-	if (m_shader_index_file)
-		std::fclose(m_shader_index_file);
-	if (m_shader_blob_file)
-		std::fclose(m_shader_blob_file);
+	Close();
 }
 
 bool ShaderCache::CacheIndexKey::operator==(const CacheIndexKey& key) const
@@ -107,6 +100,32 @@ bool ShaderCache::Open(std::string_view base_path, D3D_FEATURE_LEVEL feature_lev
 	}
 
 	return result;
+}
+
+void ShaderCache::Close()
+{
+	if (m_pipeline_index_file)
+	{
+		std::fclose(m_pipeline_index_file);
+		m_pipeline_index_file = nullptr;
+	}
+	if (m_pipeline_blob_file)
+	{
+		std::fclose(m_pipeline_blob_file);
+		m_pipeline_blob_file = nullptr;
+	}
+	if (m_shader_index_file)
+	{
+		std::fclose(m_shader_index_file);
+		m_shader_index_file = nullptr;
+	}
+	if (m_shader_blob_file)
+	{
+		std::fclose(m_shader_blob_file);
+		m_shader_blob_file = nullptr;
+	}
+
+	m_base_path = {};
 }
 
 void ShaderCache::InvalidatePipelineCache()

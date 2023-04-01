@@ -32,8 +32,8 @@
 #include "common/StringUtil.h"
 #include "pcsx2/Config.h"
 #include "pcsx2/Counters.h"
+#include "pcsx2/Frontend/ImGuiManager.h"
 #include "pcsx2/Host.h"
-#include "pcsx2/HostDisplay.h"
 #include "pcsx2/HostSettings.h"
 #include "pcsx2/Frontend/FullscreenUI.h"
 #include "pcsx2/Frontend/InputManager.h"
@@ -106,27 +106,6 @@ void GSshutdown()
 	GSJoinSnapshotThreads();
 }
 
-void GSclose()
-{
-	GSTextureReplacements::Shutdown();
-
-	if (g_gs_renderer)
-	{
-		g_gs_renderer->Destroy();
-		g_gs_renderer.reset();
-	}
-	if (g_gs_device)
-	{
-		g_gs_device->Destroy();
-		g_gs_device.reset();
-	}
-
-	if (g_host_display)
-		g_host_display->SetGPUTimingEnabled(false);
-
-	Host::ReleaseHostDisplay(true);
-}
-
 static RenderAPI GetAPIForRenderer(GSRendererType renderer)
 {
 	switch (renderer)
@@ -155,11 +134,55 @@ static RenderAPI GetAPIForRenderer(GSRendererType renderer)
 	}
 }
 
-static bool DoGSOpen(GSRendererType renderer, u8* basemem)
+static void UpdateExclusiveFullscreen(bool force_off)
 {
-	s_render_api = g_host_display->GetRenderAPI();
+	if (!g_gs_device->SupportsExclusiveFullscreen())
+		return;
 
-	switch (g_host_display->GetRenderAPI())
+	std::string fullscreen_mode = Host::GetBaseStringSettingValue("EmuCore/GS", "FullscreenMode", "");
+	u32 width, height;
+	float refresh_rate;
+
+	const bool wants_fullscreen = !force_off && Host::IsFullscreen() && !fullscreen_mode.empty() &&
+								  GSDevice::ParseFullscreenMode(fullscreen_mode, &width, &height, &refresh_rate);
+	const bool is_fullscreen = g_gs_device->IsExclusiveFullscreen();
+	if (wants_fullscreen == is_fullscreen)
+		return;
+
+	if (wants_fullscreen)
+	{
+		Console.WriteLn("Trying to acquire exclusive fullscreen...");
+		if (g_gs_device->SetExclusiveFullscreen(true, width, height, refresh_rate))
+		{
+			Host::AddKeyedOSDMessage(
+				"UpdateExclusiveFullscreen", "Acquired exclusive fullscreen.", Host::OSD_INFO_DURATION);
+		}
+		else
+		{
+			Host::AddKeyedOSDMessage(
+				"UpdateExclusiveFullscreen", "Failed to acquire exclusive fullscreen.", Host::OSD_WARNING_DURATION);
+		}
+	}
+	else
+	{
+		Console.WriteLn("Leaving exclusive fullscreen...");
+		g_gs_device->SetExclusiveFullscreen(false, 0, 0, 0.0f);
+		Host::AddKeyedOSDMessage("UpdateExclusiveFullscreen", "Lost exclusive fullscreen.", Host::OSD_INFO_DURATION);
+	}
+}
+
+static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail)
+{
+	s_render_api = GetAPIForRenderer(renderer);
+
+	std::optional<WindowInfo> wi = Host::AcquireRenderWindow(s_render_api);
+	if (!wi.has_value())
+	{
+		Console.Error("Failed to acquire render window.");
+		return false;
+	}
+
+	switch (s_render_api)
 	{
 #ifdef _WIN32
 		case RenderAPI::D3D11:
@@ -188,55 +211,102 @@ static bool DoGSOpen(GSRendererType renderer, u8* basemem)
 #endif
 
 		default:
-			Console.Error("Unknown render API %u", static_cast<unsigned>(g_host_display->GetRenderAPI()));
+			Console.Error("Unsupported render API %s", GSDevice::RenderAPIToString(s_render_api));
 			return false;
 	}
 
-	if (!g_gs_device->Create())
+	const VsyncMode vsync_mode = Host::GetEffectiveVSyncMode();
+	bool okay = g_gs_device->Create(wi.value(), vsync_mode);
+	if (okay)
 	{
-		g_gs_device->Destroy();
-		g_gs_device.reset();
-		return false;
-	}
-
-	if (!g_gs_renderer)
-	{
-		if (renderer == GSRendererType::Null)
-		{
-			g_gs_renderer = std::make_unique<GSRendererNull>();
-		}
-		else if (renderer != GSRendererType::SW)
-		{
-			g_gs_renderer = std::make_unique<GSRendererHW>();
-		}
-		else
-		{
-			g_gs_renderer = std::unique_ptr<GSRenderer>(MULTI_ISA_SELECT(makeGSRendererSW)(GSConfig.SWExtraThreads));
-		}
-
-		g_gs_renderer->SetRegsMem(basemem);
-		g_gs_renderer->ResetPCRTC();
+		okay = ImGuiManager::Initialize();
+		if (!okay)
+			Console.Error("Failed to initialize ImGuiManager");
 	}
 	else
 	{
-		Console.Warning("(DoGSOpen) Using existing renderer.");
+		Console.Error("Failed to create GS device");
 	}
 
-	GSConfig.OsdShowGPU = EmuConfig.GS.OsdShowGPU && g_host_display->SetGPUTimingEnabled(true);
+	if (!okay)
+	{
+		ImGuiManager::Shutdown(clear_state_on_fail);
+		g_gs_device->Destroy();
+		g_gs_device.reset();
+		Host::ReleaseRenderWindow();
+		return false;
+	}
+
+	GSConfig.OsdShowGPU = EmuConfig.GS.OsdShowGPU && g_gs_device->SetGPUTimingEnabled(true);
+
+	s_render_api = g_gs_device->GetRenderAPI();
+	Console.WriteLn(Color_StrongGreen, "%s Graphics Driver Info:", GSDevice::RenderAPIToString(s_render_api));
+	Console.Indent().WriteLn(g_gs_device->GetDriverInfo());
+
+	// Switch to exclusive fullscreen if enabled.
+	UpdateExclusiveFullscreen(false);
 
 	g_perfmon.Reset();
 	return true;
 }
 
-bool GSreopen(bool recreate_display, bool recreate_renderer, const Pcsx2Config::GSOptions& old_config)
+static void CloseGSDevice(bool clear_state)
 {
-	Console.WriteLn("Reopening GS with %s display", recreate_display ? "new" : "existing");
+	if (!g_gs_device)
+		return;
+
+	UpdateExclusiveFullscreen(true);
+	ImGuiManager::Shutdown(clear_state);
+	g_gs_device->Destroy();
+	g_gs_device.reset();
+
+	Host::ReleaseRenderWindow();
+}
+
+static bool OpenGSRenderer(GSRendererType renderer, u8* basemem)
+{
+	if (renderer == GSRendererType::Null)
+	{
+		g_gs_renderer = std::make_unique<GSRendererNull>();
+	}
+	else if (renderer != GSRendererType::SW)
+	{
+		g_gs_renderer = std::make_unique<GSRendererHW>();
+	}
+	else
+	{
+		g_gs_renderer = std::unique_ptr<GSRenderer>(MULTI_ISA_SELECT(makeGSRendererSW)(GSConfig.SWExtraThreads));
+	}
+
+	g_gs_renderer->SetRegsMem(basemem);
+	g_gs_renderer->ResetPCRTC();
+	return true;
+}
+
+static void CloseGSRenderer()
+{
+	GSTextureReplacements::Shutdown();
+
+	if (g_gs_renderer)
+	{
+		g_gs_renderer->Destroy();
+		g_gs_renderer.reset();
+	}
+}
+
+bool GSreopen(bool recreate_device, bool recreate_renderer, const Pcsx2Config::GSOptions& old_config)
+{
+	Console.WriteLn("Reopening GS with %s device and %s renderer", recreate_device ? "new" : "existing",
+		recreate_renderer ? "new" : "existing");
 
 	if (recreate_renderer)
 		g_gs_renderer->Flush(GSState::GSFlushReason::GSREOPEN);
 
 	if (GSConfig.UserHacks_ReadTCOnClose)
 		g_gs_renderer->ReadbackTextureCache();
+
+	u8* basemem = g_gs_renderer->GetRegsMem();
+	const u32 gamecrc = g_gs_renderer->GetGameCRC();
 
 	freezeData fd = {};
 	std::unique_ptr<u8[]> fd_data;
@@ -255,6 +325,8 @@ bool GSreopen(bool recreate_display, bool recreate_renderer, const Pcsx2Config::
 			Console.Error("(GSreopen) Failed to freeze GS");
 			return false;
 		}
+
+		CloseGSRenderer();
 	}
 	else
 	{
@@ -263,66 +335,30 @@ bool GSreopen(bool recreate_display, bool recreate_renderer, const Pcsx2Config::
 		g_gs_renderer->PurgePool();
 	}
 
-	if (recreate_display)
+	if (recreate_device)
 	{
-		g_gs_device->ResetAPIState();
-		if (Host::BeginPresentFrame(true) == HostDisplay::PresentResult::OK)
-			Host::EndPresentFrame();
-	}
+		CloseGSDevice(false);
 
-	u8* basemem = g_gs_renderer->GetRegsMem();
-	const u32 gamecrc = g_gs_renderer->GetGameCRC();
-	if (recreate_renderer)
-	{
-		GSTextureReplacements::Shutdown();
-		g_gs_renderer->Destroy();
-		g_gs_renderer.reset();
-	}
-
-	g_gs_device->Destroy();
-	g_gs_device.reset();
-
-	if (recreate_display)
-	{
-		Host::ReleaseHostDisplay(false);
-		if (!Host::AcquireHostDisplay(GetAPIForRenderer(GSConfig.Renderer), false))
+		if (!OpenGSDevice(GSConfig.Renderer, false) || (recreate_renderer && !OpenGSRenderer(GSConfig.Renderer, basemem)))
 		{
-			Console.Error("(GSreopen) Failed to reacquire host display");
+			Host::AddKeyedOSDMessage(
+				"GSReopenFailed", "Failed to reopen, restoring old configuration.", Host::OSD_CRITICAL_ERROR_DURATION);
 
-			// try to get the old one back
-			if (!Host::AcquireHostDisplay(GetAPIForRenderer(old_config.Renderer), false))
-			{
-				pxFailRel("Failed to recreate old config host display");
-				return false;
-			}
+			CloseGSDevice(false);
 
-			Host::AddKeyedOSDMessage("GSReopenFailed", fmt::format("Failed to open {} display, switching back to {}.",
-														   HostDisplay::RenderAPIToString(GetAPIForRenderer(GSConfig.Renderer)),
-														   HostDisplay::RenderAPIToString(GetAPIForRenderer(old_config.Renderer)), Host::OSD_CRITICAL_ERROR_DURATION));
 			GSConfig = old_config;
-		}
-	}
-
-	if (!DoGSOpen(GSConfig.Renderer, basemem))
-	{
-		Console.Error("(GSreopen) Failed to recreate GS");
-
-		// try the old config
-		if (recreate_display && GSConfig.Renderer != old_config.Renderer)
-		{
-			Host::ReleaseHostDisplay(false);
-			if (!Host::AcquireHostDisplay(GetAPIForRenderer(old_config.Renderer), false))
+			if (!OpenGSDevice(GSConfig.Renderer, false) || (recreate_renderer && !OpenGSRenderer(GSConfig.Renderer, basemem)))
 			{
-				pxFailRel("Failed to recreate old config host display (part 2)");
+				pxFailRel("Failed to reopen GS on old config");
 				return false;
 			}
 		}
-
-		Host::AddKeyedOSDMessage("GSReopenFailed","Failed to reopen, restoring old configuration.", Host::OSD_CRITICAL_ERROR_DURATION);
-		GSConfig = old_config;
-		if (!DoGSOpen(GSConfig.Renderer, basemem))
+	}
+	else if (recreate_renderer)
+	{
+		if (!OpenGSRenderer(GSConfig.Renderer, basemem))
 		{
-			pxFailRel("Failed to reopen GS on old config");
+			Console.Error("(GSreopen) Failed to create new renderer");
 			return false;
 		}
 	}
@@ -349,19 +385,30 @@ bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* b
 	GSConfig = config;
 	GSConfig.Renderer = renderer;
 
-	if (!Host::AcquireHostDisplay(GetAPIForRenderer(renderer), true))
+	bool res = OpenGSDevice(renderer, true);
+	if (res)
 	{
-		Console.Error("Failed to acquire host display");
-		return false;
+		res = OpenGSRenderer(renderer, basemem);
+		if (!res)
+			CloseGSDevice(true);
 	}
 
-	if (!DoGSOpen(renderer, basemem))
+	if (!res)
 	{
-		Host::ReleaseHostDisplay(true);
+		Host::ReportErrorAsync(
+			"Error", fmt::format("Failed to create render device. This may be due to your GPU not supporting the "
+								 "chosen renderer ({}), or because your graphics drivers need to be updated.",
+						 Pcsx2Config::GSOptions::GetRendererName(EmuConfig.GS.Renderer)));
 		return false;
 	}
 
 	return true;
+}
+
+void GSclose()
+{
+	CloseGSRenderer();
+	CloseGSDevice(true);
 }
 
 void GSreset(bool hardware_reset)
@@ -539,7 +586,7 @@ void GSPresentCurrentFrame()
 
 void GSThrottlePresentation()
 {
-	if (g_host_display->GetVsyncMode() != VsyncMode::Off)
+	if (g_gs_device->GetVsyncMode() != VsyncMode::Off)
 	{
 		// Let vsync take care of throttling.
 		return;
@@ -547,7 +594,7 @@ void GSThrottlePresentation()
 
 	// Manually throttle presentation when vsync isn't enabled, so we don't try to render the
 	// fullscreen UI at thousands of FPS and make the gpu go brrrrrrrr.
-	const float surface_refresh_rate = g_host_display->GetWindowInfo().surface_refresh_rate;
+	const float surface_refresh_rate = g_gs_device->GetWindowInfo().surface_refresh_rate;
 	const float throttle_rate = (surface_refresh_rate > 0.0f) ? surface_refresh_rate : 60.0f;
 
 	const u64 sleep_period = static_cast<u64>(static_cast<double>(GetTickFrequency()) / static_cast<double>(throttle_rate));
@@ -564,9 +611,94 @@ void GSThrottlePresentation()
 	Threading::SleepUntil(s_next_manual_present_time);
 }
 
-void GSsetGameCRC(u32 crc)
+void GSSetGameCRC(u32 crc)
 {
 	g_gs_renderer->SetGameCRC(crc);
+}
+
+void GSResizeDisplayWindow(int width, int height, float scale)
+{
+	g_gs_device->ResizeWindow(width, height, scale);
+	ImGuiManager::WindowResized();
+}
+
+void GSUpdateDisplayWindow()
+{
+	UpdateExclusiveFullscreen(true);
+	g_gs_device->DestroySurface();
+
+	const std::optional<WindowInfo> wi = Host::UpdateRenderWindow();
+	if (!wi.has_value())
+	{
+		pxFailRel("Failed to get window info after update.");
+		return;
+	}
+
+	if (!g_gs_device->ChangeWindow(wi.value()))
+	{
+		pxFailRel("Failed to change window after update.");
+		return;
+	}
+
+	UpdateExclusiveFullscreen(false);
+
+	ImGuiManager::WindowResized();
+}
+
+void GSSetVSyncMode(VsyncMode mode)
+{
+	g_gs_device->SetVSync(mode);
+}
+
+bool GSGetHostRefreshRate(float* refresh_rate)
+{
+	if (!g_gs_device)
+		return false;
+
+	return g_gs_device->GetHostRefreshRate(refresh_rate);
+}
+
+void GSGetAdaptersAndFullscreenModes(
+	GSRendererType renderer, std::vector<std::string>* adapters, std::vector<std::string>* fullscreen_modes)
+{
+	switch (renderer)
+	{
+#ifdef _WIN32
+		case GSRendererType::DX11:
+		case GSRendererType::DX12:
+		{
+			auto factory = D3D::CreateFactory(false);
+			if (factory)
+			{
+				if (adapters)
+					*adapters = D3D::GetAdapterNames(factory.get());
+				if (fullscreen_modes)
+					*fullscreen_modes = D3D::GetFullscreenModes(factory.get(), EmuConfig.GS.Adapter);
+			}
+		}
+		break;
+#endif
+
+#ifdef ENABLE_VULKAN
+		case GSRendererType::VK:
+		{
+			GSDeviceVK::GetAdaptersAndFullscreenModes(adapters, fullscreen_modes);
+		}
+		break;
+#endif
+
+#ifdef __APPLE__
+		case GSRendererType::Metal:
+		{
+			if (adapters)
+				*adapters = GetMetalAdapterList();
+		}
+		break;
+#endif
+
+		default:
+			break;
+	}
 }
 
 GSVideoMode GSgetDisplayMode()
@@ -594,7 +726,7 @@ void GSgetInternalResolution(int* width, int* height)
 void GSgetStats(std::string& info)
 {
 	GSPerfMon& pm = g_perfmon;
-	const char* api_name = HostDisplay::RenderAPIToString(s_render_api);
+	const char* api_name = GSDevice::RenderAPIToString(s_render_api);
 	if (GSConfig.Renderer == GSRendererType::SW)
 	{
 		const double fps = GetVerticalFrequency();
@@ -661,7 +793,7 @@ void GSgetTitleStats(std::string& info)
 	static constexpr const char* deinterlace_modes[] = {
 		"Automatic", "None", "Weave tff", "Weave bff", "Bob tff", "Bob bff", "Blend tff", "Blend bff", "Adaptive tff", "Adaptive bff"};
 
-	const char* api_name = HostDisplay::RenderAPIToString(s_render_api);
+	const char* api_name = GSDevice::RenderAPIToString(s_render_api);
 	const char* hw_sw_name = (GSConfig.Renderer == GSRendererType::Null) ? " Null" : (GSConfig.UseHardwareRenderer() ? " HW" : " SW");
 	const char* deinterlace_mode = deinterlace_modes[static_cast<int>(GSConfig.InterlaceMode)];
 
@@ -681,28 +813,12 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 
 	// Handle OSD scale changes by pushing a window resize through.
 	if (new_config.OsdScale != old_config.OsdScale)
-	{
-		g_gs_device->ResetAPIState();
-		Host::ResizeHostDisplay(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight(), g_host_display->GetWindowScale());
-		g_gs_device->RestoreAPIState();
-	}
+		ImGuiManager::WindowResized();
 
 	// Options which need a full teardown/recreate.
 	if (!GSConfig.RestartOptionsAreEqual(old_config))
 	{
-		RenderAPI existing_api = g_host_display->GetRenderAPI();
-		if (existing_api == RenderAPI::OpenGLES)
-			existing_api = RenderAPI::OpenGL;
-
-		const bool do_full_restart = (
-			existing_api != GetAPIForRenderer(GSConfig.Renderer) ||
-			GSConfig.Adapter != old_config.Adapter ||
-			GSConfig.UseDebugDevice != old_config.UseDebugDevice ||
-			GSConfig.UseBlitSwapChain != old_config.UseBlitSwapChain ||
-			GSConfig.DisableShaderCache != old_config.DisableShaderCache ||
-			GSConfig.DisableThreadedPresentation != old_config.DisableThreadedPresentation
-		);
-		if (!GSreopen(do_full_restart, true, old_config))
+		if (!GSreopen(true, true, old_config))
 			pxFailRel("Failed to do full GS reopen");
 		return;
 	}
@@ -771,7 +887,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 
 	if (GSConfig.OsdShowGPU != old_config.OsdShowGPU)
 	{
-		if (!g_host_display->SetGPUTimingEnabled(GSConfig.OsdShowGPU))
+		if (!g_gs_device->SetGPUTimingEnabled(GSConfig.OsdShowGPU))
 			GSConfig.OsdShowGPU = false;
 	}
 }
@@ -784,7 +900,7 @@ void GSSwitchRenderer(GSRendererType new_renderer)
 	if (!g_gs_renderer || GSConfig.Renderer == new_renderer)
 		return;
 
-	RenderAPI existing_api = g_host_display->GetRenderAPI();
+	RenderAPI existing_api = g_gs_device->GetRenderAPI();
 	if (existing_api == RenderAPI::OpenGLES)
 		existing_api = RenderAPI::OpenGL;
 
@@ -794,22 +910,6 @@ void GSSwitchRenderer(GSRendererType new_renderer)
 	GSConfig.Renderer = new_renderer;
 	if (!GSreopen(recreate_display, true, old_config))
 		pxFailRel("Failed to reopen GS for renderer switch.");
-}
-
-void GSResetAPIState()
-{
-	if (!g_gs_device)
-		return;
-
-	g_gs_device->ResetAPIState();
-}
-
-void GSRestoreAPIState()
-{
-	if (!g_gs_device)
-		return;
-
-	g_gs_device->RestoreAPIState();
 }
 
 bool GSSaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,

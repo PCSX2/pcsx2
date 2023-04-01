@@ -37,8 +37,9 @@
 #include "CDVD/CDVDcommon.h"
 #include "CDVD/CDVDdiscReader.h"
 #include "GS.h"
+#include "GS/Renderers/Common/GSDevice.h"
+#include "GS/Renderers/Common/GSTexture.h"
 #include "Host.h"
-#include "HostDisplay.h"
 #include "HostSettings.h"
 #include "INISettingsInterface.h"
 #include "MemoryCardFile.h"
@@ -196,6 +197,7 @@ namespace FullscreenUI
 	//////////////////////////////////////////////////////////////////////////
 	// Utility
 	//////////////////////////////////////////////////////////////////////////
+	static void ReleaseTexture(std::unique_ptr<GSTexture>& tex);
 	static std::string TimeToPrintableString(time_t t);
 	static void StartAsyncOp(std::function<void(::ProgressCallback*)> callback, std::string name);
 	static void AsyncOpThreadEntryPoint(std::function<void(::ProgressCallback*)> callback, FullscreenUI::ProgressCallback* progress);
@@ -244,12 +246,12 @@ namespace FullscreenUI
 	static bool LoadResources();
 	static void DestroyResources();
 
-	static std::shared_ptr<HostDisplayTexture> s_app_icon_texture;
-	static std::array<std::shared_ptr<HostDisplayTexture>, static_cast<u32>(GameDatabaseSchema::Compatibility::Perfect)>
+	static std::shared_ptr<GSTexture> s_app_icon_texture;
+	static std::array<std::shared_ptr<GSTexture>, static_cast<u32>(GameDatabaseSchema::Compatibility::Perfect)>
 		s_game_compatibility_textures;
-	static std::shared_ptr<HostDisplayTexture> s_fallback_disc_texture;
-	static std::shared_ptr<HostDisplayTexture> s_fallback_exe_texture;
-	static std::vector<std::unique_ptr<HostDisplayTexture>> s_cleanup_textures;
+	static std::shared_ptr<GSTexture> s_fallback_disc_texture;
+	static std::shared_ptr<GSTexture> s_fallback_exe_texture;
+	static std::vector<std::unique_ptr<GSTexture>> s_cleanup_textures;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Landing
@@ -397,7 +399,7 @@ namespace FullscreenUI
 		std::string title;
 		std::string summary;
 		std::string path;
-		std::unique_ptr<HostDisplayTexture> preview_texture;
+		std::unique_ptr<GSTexture> preview_texture;
 		time_t timestamp;
 		s32 slot;
 	};
@@ -433,9 +435,9 @@ namespace FullscreenUI
 	static void DrawGameListSettingsPage(const ImVec2& heading_size);
 	static void SwitchToGameList();
 	static void PopulateGameListEntryList();
-	static HostDisplayTexture* GetTextureForGameListEntryType(GameList::EntryType type);
-	static HostDisplayTexture* GetGameListCover(const GameList::Entry* entry);
-	static HostDisplayTexture* GetCoverForCurrentGame();
+	static GSTexture* GetTextureForGameListEntryType(GameList::EntryType type);
+	static GSTexture* GetGameListCover(const GameList::Entry* entry);
+	static GSTexture* GetCoverForCurrentGame();
 
 	// Lazily populated cover images.
 	static std::unordered_map<std::string, std::string> s_cover_image_map;
@@ -464,6 +466,12 @@ namespace FullscreenUI
 //////////////////////////////////////////////////////////////////////////
 // Utility
 //////////////////////////////////////////////////////////////////////////
+
+void FullscreenUI::ReleaseTexture(std::unique_ptr<GSTexture>& tex)
+{
+	if (tex)
+		g_gs_device->Recycle(tex.release());
+}
 
 std::string FullscreenUI::TimeToPrintableString(time_t t)
 {
@@ -765,8 +773,8 @@ void FullscreenUI::Render()
 	if (!s_initialized)
 		return;
 
-	for (std::unique_ptr<HostDisplayTexture>& tex : s_cleanup_textures)
-		tex.reset();
+	for (std::unique_ptr<GSTexture>& tex : s_cleanup_textures)
+		g_gs_device->Recycle(tex.release());
 	s_cleanup_textures.clear();
 	ImGuiFullscreen::UploadAsyncTextures();
 
@@ -883,7 +891,7 @@ void FullscreenUI::DestroyResources()
 	for (auto& tex : s_game_compatibility_textures)
 		tex.reset();
 	for (auto& tex : s_cleanup_textures)
-		tex.reset();
+		g_gs_device->Recycle(tex.release());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1089,7 +1097,7 @@ void FullscreenUI::DrawLandingWindow()
 		const float image_size = LayoutScale(380.f);
 		ImGui::SetCursorPos(
 			ImVec2((ImGui::GetWindowWidth() * 0.5f) - (image_size * 0.5f), (ImGui::GetWindowHeight() * 0.5f) - (image_size * 0.5f)));
-		ImGui::Image(s_app_icon_texture->GetHandle(), ImVec2(image_size, image_size));
+		ImGui::Image(s_app_icon_texture->GetNativeHandle(), ImVec2(image_size, image_size));
 	}
 	EndFullscreenColumnWindow();
 
@@ -2360,10 +2368,7 @@ void FullscreenUI::SwitchToGameSettings(const GameList::Entry* entry)
 
 void FullscreenUI::PopulateGraphicsAdapterList()
 {
-	HostDisplay::AdapterAndModeList ml(g_host_display->GetAdapterAndModeList());
-	s_graphics_adapter_list_cache = std::move(ml.adapter_names);
-	s_fullscreen_mode_list_cache = std::move(ml.fullscreen_modes);
-	s_fullscreen_mode_list_cache.insert(s_fullscreen_mode_list_cache.begin(), "Borderless Fullscreen");
+	GSGetAdaptersAndFullscreenModes(GSConfig.Renderer, &s_graphics_adapter_list_cache, &s_fullscreen_mode_list_cache);
 }
 
 void FullscreenUI::PopulateGameListDirectoryCache(SettingsInterface* si)
@@ -3179,7 +3184,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			static constexpr const char* s_round_sprite_options[] = {"Off (Default)", "Half", "Full"};
 
 			DrawIntListSetting(bsi, "CRC Fix Level", "Applies manual fixes to difficult-to-emulate effects in the hardware renderers.",
-				"EmuCore/GS", "crc_hack_level", static_cast<int>(CRCHackLevel::Automatic), s_crc_fix_options, std::size(s_crc_fix_options), -1);
+				"EmuCore/GS", "crc_hack_level", static_cast<int>(CRCHackLevel::Automatic), s_crc_fix_options, std::size(s_crc_fix_options),
+				-1);
 			DrawIntListSetting(bsi, "Half-Bottom Override", "Control the half-screen fix detection on texture shuffling.", "EmuCore/GS",
 				"UserHacks_Half_Bottom_Override", -1, s_generic_options, std::size(s_generic_options), -1);
 			DrawIntListSetting(bsi, "CPU Sprite Render Size", "Uses software renderer to draw texture decompression-like sprites.",
@@ -3310,7 +3316,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 		"EmuCore/GS", "SkipDuplicateFrames", false);
 	DrawToggleSetting(bsi, "Disable Threaded Presentation",
 		"Presents frames on a worker thread, instead of on the GS thread. Can improve frame times on some systems, at the cost of "
-		"potentially worse frame pacing.", "EmuCore/GS", "DisableThreadedPresentation", false);
+		"potentially worse frame pacing.",
+		"EmuCore/GS", "DisableThreadedPresentation", false);
 	if (hw_fixes_visible)
 	{
 		DrawIntListSetting(bsi, "Hardware Download Mode", "Changes synchronization behavior for GS downloads.", "EmuCore/GS",
@@ -3743,9 +3750,8 @@ void FullscreenUI::DrawControllerSettingsPage()
 	DrawToggleSetting(bsi, ICON_FA_WIFI " SDL DualShock 4 / DualSense Enhanced Mode",
 		"Provides vibration and LED control support over Bluetooth.", "InputSources", "SDLControllerEnhancedMode", false,
 		bsi->GetBoolValue("InputSources", "SDL", true), false);
-	DrawToggleSetting(bsi, ICON_FA_COG " SDL Raw Input",
-		"Allow SDL to use raw access to input devices.", "InputSources", "SDLRawInput", false,
-		bsi->GetBoolValue("InputSources", "SDL", true), false);
+	DrawToggleSetting(bsi, ICON_FA_COG " SDL Raw Input", "Allow SDL to use raw access to input devices.", "InputSources", "SDLRawInput",
+		false, bsi->GetBoolValue("InputSources", "SDL", true), false);
 #endif
 #ifdef _WIN32
 	DrawToggleSetting(bsi, ICON_FA_COG " Enable XInput Input Source",
@@ -4317,13 +4323,13 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 #endif
 
 
-		HostDisplayTexture* const cover = GetCoverForCurrentGame();
+		GSTexture* const cover = GetCoverForCurrentGame();
 		const ImVec2 image_min(
 			display_size.x - LayoutScale(10.0f + image_width) - rp_height, display_size.y - LayoutScale(10.0f + image_height) - rp_height);
 		const ImVec2 image_max(image_min.x + LayoutScale(image_width) + rp_height, image_min.y + LayoutScale(image_height) + rp_height);
 		const ImRect image_rect(CenterImage(
 			ImRect(image_min, image_max), ImVec2(static_cast<float>(cover->GetWidth()), static_cast<float>(cover->GetHeight()))));
-		dl->AddImage(cover->GetHandle(), image_rect.Min, image_rect.Max);
+		dl->AddImage(cover->GetNativeHandle(), image_rect.Min, image_rect.Max);
 	}
 
 	// current time / play time
@@ -4549,10 +4555,14 @@ bool FullscreenUI::InitializeSaveStateListEntry(
 	std::vector<u32> screenshot_pixels;
 	if (SaveState_ReadScreenshot(li->path, &screenshot_width, &screenshot_height, &screenshot_pixels))
 	{
-		li->preview_texture = g_host_display->CreateTexture(
-			screenshot_width, screenshot_height, screenshot_pixels.data(), sizeof(u32) * screenshot_width, false);
-		if (!li->preview_texture)
+		li->preview_texture =
+			std::unique_ptr<GSTexture>(g_gs_device->CreateTexture(screenshot_width, screenshot_height, 1, GSTexture::Format::Color));
+		if (!li->preview_texture || !li->preview_texture->Update(GSVector4i(0, 0, screenshot_width, screenshot_height),
+										screenshot_pixels.data(), sizeof(u32) * screenshot_width))
+		{
 			Console.Error("Failed to upload save state image to GPU");
+			ReleaseTexture(li->preview_texture);
+		}
 	}
 
 	return true;
@@ -4849,12 +4859,11 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 				bb.Min += style.FramePadding;
 				bb.Max -= style.FramePadding;
 
-				const HostDisplayTexture* const screenshot =
-					entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
+				const GSTexture* const screenshot = entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
 				const ImRect image_rect(CenterImage(ImRect(bb.Min, bb.Min + image_size),
 					ImVec2(static_cast<float>(screenshot->GetWidth()), static_cast<float>(screenshot->GetHeight()))));
 
-				ImGui::GetWindowDrawList()->AddImage(screenshot->GetHandle(), image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
+				ImGui::GetWindowDrawList()->AddImage(screenshot->GetNativeHandle(), image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
 					ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
 
 				const ImVec2 title_pos(bb.Min.x, bb.Min.y + image_height + title_spacing);
@@ -4956,14 +4965,14 @@ void FullscreenUI::DrawResumeStateSelector()
 		ImGui::TextWrapped("A resume save state created at %s was found.\n\nDo you want to load this save and continue?",
 			TimeToPrintableString(entry.timestamp).c_str());
 
-		const HostDisplayTexture* image = entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
+		const GSTexture* image = entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
 		const float image_height = LayoutScale(250.0f);
 		const float image_width = image_height * (static_cast<float>(image->GetWidth()) / static_cast<float>(image->GetHeight()));
 		const ImVec2 pos(ImGui::GetCursorScreenPos() +
 						 ImVec2((ImGui::GetCurrentWindow()->WorkRect.GetWidth() - image_width) * 0.5f, LayoutScale(20.0f)));
 		const ImRect image_bb(pos, pos + ImVec2(image_width, image_height));
-		ImGui::GetWindowDrawList()->AddImage(
-			static_cast<ImTextureID>(entry.preview_texture ? entry.preview_texture->GetHandle() : GetPlaceholderTexture()->GetHandle()),
+		ImGui::GetWindowDrawList()->AddImage(static_cast<ImTextureID>(entry.preview_texture ? entry.preview_texture->GetNativeHandle() :
+																							  GetPlaceholderTexture()->GetNativeHandle()),
 			image_bb.Min, image_bb.Max);
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + image_height + LayoutScale(40.0f));
@@ -5226,7 +5235,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 			if (!visible)
 				continue;
 
-			HostDisplayTexture* cover_texture = GetGameListCover(entry);
+			GSTexture* cover_texture = GetGameListCover(entry);
 
 			summary.clear();
 			if (entry->serial.empty())
@@ -5240,7 +5249,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 			const ImRect image_rect(CenterImage(ImRect(bb.Min, bb.Min + image_size),
 				ImVec2(static_cast<float>(cover_texture->GetWidth()), static_cast<float>(cover_texture->GetHeight()))));
 
-			ImGui::GetWindowDrawList()->AddImage(cover_texture->GetHandle(), image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
+			ImGui::GetWindowDrawList()->AddImage(cover_texture->GetNativeHandle(), image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
 				ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
 
 			const float midpoint = bb.Min.y + g_large_font->FontSize + LayoutScale(4.0f);
@@ -5280,7 +5289,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
 	if (BeginFullscreenColumnWindow(-530.0f, 0.0f, "game_list_info", UIPrimaryDarkColor))
 	{
-		const HostDisplayTexture* cover_texture =
+		const GSTexture* cover_texture =
 			selected_entry ? GetGameListCover(selected_entry) : GetTextureForGameListEntryType(GameList::EntryType::Count);
 		if (cover_texture)
 		{
@@ -5288,8 +5297,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 				ImVec2(static_cast<float>(cover_texture->GetWidth()), static_cast<float>(cover_texture->GetHeight()))));
 
 			ImGui::SetCursorPos(LayoutScale(ImVec2(128.0f, 20.0f)) + image_rect.Min);
-			ImGui::Image(selected_entry ? GetGameListCover(selected_entry)->GetHandle() :
-										  GetTextureForGameListEntryType(GameList::EntryType::Count)->GetHandle(),
+			ImGui::Image(selected_entry ? GetGameListCover(selected_entry)->GetNativeHandle() :
+										  GetTextureForGameListEntryType(GameList::EntryType::Count)->GetNativeHandle(),
 				image_rect.GetSize());
 		}
 
@@ -5337,7 +5346,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 				std::string flag_texture(fmt::format("icons/flags/{}.png", GameList::RegionToString(selected_entry->region)));
 				ImGui::TextUnformatted("Region: ");
 				ImGui::SameLine();
-				ImGui::Image(GetCachedTextureAsync(flag_texture.c_str())->GetHandle(), LayoutScale(23.0f, 16.0f));
+				ImGui::Image(GetCachedTextureAsync(flag_texture.c_str())->GetNativeHandle(), LayoutScale(23.0f, 16.0f));
 				ImGui::SameLine();
 				ImGui::Text(" (%s)", GameList::RegionToString(selected_entry->region));
 			}
@@ -5347,7 +5356,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 			ImGui::SameLine();
 			if (selected_entry->compatibility_rating != GameDatabaseSchema::Compatibility::Unknown)
 			{
-				ImGui::Image(s_game_compatibility_textures[static_cast<u32>(selected_entry->compatibility_rating) - 1]->GetHandle(),
+				ImGui::Image(s_game_compatibility_textures[static_cast<u32>(selected_entry->compatibility_rating) - 1]->GetNativeHandle(),
 					LayoutScale(64.0f, 16.0f));
 				ImGui::SameLine();
 			}
@@ -5451,11 +5460,11 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 			bb.Min += style.FramePadding;
 			bb.Max -= style.FramePadding;
 
-			const HostDisplayTexture* const cover_texture = GetGameListCover(entry);
+			const GSTexture* const cover_texture = GetGameListCover(entry);
 			const ImRect image_rect(CenterImage(ImRect(bb.Min, bb.Min + image_size),
 				ImVec2(static_cast<float>(cover_texture->GetWidth()), static_cast<float>(cover_texture->GetHeight()))));
 
-			ImGui::GetWindowDrawList()->AddImage(cover_texture->GetHandle(), image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
+			ImGui::GetWindowDrawList()->AddImage(cover_texture->GetNativeHandle(), image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
 				ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
 
 			const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
@@ -5777,7 +5786,7 @@ void FullscreenUI::SwitchToGameList()
 	QueueResetFocus();
 }
 
-HostDisplayTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry)
+GSTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry)
 {
 	// lookup and grab cover image
 	auto cover_it = s_cover_image_map.find(entry->path);
@@ -5787,11 +5796,11 @@ HostDisplayTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry)
 		cover_it = s_cover_image_map.emplace(entry->path, std::move(cover_path)).first;
 	}
 
-	HostDisplayTexture* tex = (!cover_it->second.empty()) ? GetCachedTextureAsync(cover_it->second.c_str()) : nullptr;
+	GSTexture* tex = (!cover_it->second.empty()) ? GetCachedTextureAsync(cover_it->second.c_str()) : nullptr;
 	return tex ? tex : GetTextureForGameListEntryType(entry->type);
 }
 
-HostDisplayTexture* FullscreenUI::GetTextureForGameListEntryType(GameList::EntryType type)
+GSTexture* FullscreenUI::GetTextureForGameListEntryType(GameList::EntryType type)
 {
 	switch (type)
 	{
@@ -5805,7 +5814,7 @@ HostDisplayTexture* FullscreenUI::GetTextureForGameListEntryType(GameList::Entry
 	}
 }
 
-HostDisplayTexture* FullscreenUI::GetCoverForCurrentGame()
+GSTexture* FullscreenUI::GetCoverForCurrentGame()
 {
 	auto lock = GameList::GetLock();
 
@@ -6064,11 +6073,11 @@ void FullscreenUI::DrawAchievement(const Achievements::Achievement& cheevo)
 	const std::string& badge_path = Achievements::GetAchievementBadgePath(cheevo);
 	if (!badge_path.empty())
 	{
-		HostDisplayTexture* badge = GetCachedTextureAsync(badge_path.c_str());
+		GSTexture* badge = GetCachedTextureAsync(badge_path.c_str());
 		if (badge)
 		{
-			ImGui::GetWindowDrawList()->AddImage(
-				badge->GetHandle(), bb.Min, bb.Min + image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+			ImGui::GetWindowDrawList()->AddImage(badge->GetNativeHandle(), bb.Min, bb.Min + image_size, ImVec2(0.0f, 0.0f),
+				ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
 		}
 	}
 
@@ -6183,11 +6192,11 @@ void FullscreenUI::DrawAchievementsWindow()
 			const std::string& icon_path = Achievements::GetGameIcon();
 			if (!icon_path.empty())
 			{
-				HostDisplayTexture* badge = GetCachedTexture(icon_path.c_str());
+				GSTexture* badge = GetCachedTexture(icon_path.c_str());
 				if (badge)
 				{
 					ImGui::GetWindowDrawList()->AddImage(
-						badge->GetHandle(), icon_min, icon_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+						badge->GetNativeHandle(), icon_min, icon_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
 				}
 			}
 
@@ -6318,12 +6327,12 @@ void FullscreenUI::DrawPrimedAchievementsIcons()
 		if (badge_path.empty())
 			return true;
 
-		HostDisplayTexture* badge = GetCachedTextureAsync(badge_path.c_str());
+		GSTexture* badge = GetCachedTextureAsync(badge_path.c_str());
 		if (!badge)
 			return true;
 
 		ImDrawList* dl = ImGui::GetBackgroundDrawList();
-		dl->AddImage(badge->GetHandle(), position, position + image_size);
+		dl->AddImage(badge->GetNativeHandle(), position, position + image_size);
 		position.x -= x_advance;
 		return true;
 	});
@@ -6367,12 +6376,12 @@ void FullscreenUI::DrawPrimedAchievementsList()
 		if (badge_path.empty())
 			return true;
 
-		HostDisplayTexture* badge = GetCachedTextureAsync(badge_path.c_str());
+		GSTexture* badge = GetCachedTextureAsync(badge_path.c_str());
 		if (!badge)
 			return true;
 
 		ImDrawList* dl = ImGui::GetBackgroundDrawList();
-		dl->AddImage(badge->GetHandle(), position, position + image_size);
+		dl->AddImage(badge->GetNativeHandle(), position, position + image_size);
 
 		const char* achievement_title = achievement.title.c_str();
 		const char* achievement_tile_end = achievement_title + achievement.title.length();
@@ -6580,11 +6589,11 @@ void FullscreenUI::DrawLeaderboardsWindow()
 			const std::string& icon_path = Achievements::GetGameIcon();
 			if (!icon_path.empty())
 			{
-				HostDisplayTexture* badge = GetCachedTexture(icon_path.c_str());
+				GSTexture* badge = GetCachedTexture(icon_path.c_str());
 				if (badge)
 				{
 					ImGui::GetWindowDrawList()->AddImage(
-						badge->GetHandle(), icon_min, icon_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+						badge->GetNativeHandle(), icon_min, icon_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
 				}
 			}
 

@@ -22,7 +22,6 @@
 #include "common/StringUtil.h"
 #include "Config.h"
 #include "GS.h"
-#include "HostDisplay.h"
 #include "CDVD/CDVDcommon.h"
 #include "MemoryCardFile.h"
 #include "USB/USB.h"

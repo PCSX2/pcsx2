@@ -14,6 +14,15 @@
  */
 
 #include "PrecompiledHeader.h"
+
+#include "GS/GS.h"
+#include "GS/Renderers/Vulkan/GSDeviceVK.h"
+#include "GS/GSGL.h"
+#include "GS/GSPerfMon.h"
+#include "GS/GSUtil.h"
+#include "Host.h"
+#include "ShaderCacheVersion.h"
+
 #include "common/Vulkan/Builders.h"
 #include "common/Vulkan/Context.h"
 #include "common/Vulkan/ShaderCache.h"
@@ -22,13 +31,9 @@
 #include "common/Align.h"
 #include "common/Path.h"
 #include "common/ScopedGuard.h"
-#include "GS.h"
-#include "GSDeviceVK.h"
-#include "GS/GSGL.h"
-#include "GS/GSPerfMon.h"
-#include "GS/GSUtil.h"
-#include "Host.h"
-#include "HostDisplay.h"
+
+#include "imgui.h"
+
 #include <sstream>
 #include <limits>
 
@@ -55,6 +60,16 @@ static VkAttachmentLoadOp GetLoadOpForTexture(GSTextureVK* tex)
 	// clang-format on
 }
 
+static VkPresentModeKHR GetPreferredPresentModeForVsyncMode(VsyncMode mode)
+{
+	if (mode == VsyncMode::On)
+		return VK_PRESENT_MODE_FIFO_KHR;
+	else if (mode == VsyncMode::Adaptive)
+		return VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+	else
+		return VK_PRESENT_MODE_IMMEDIATE_KHR;
+}
+
 GSDeviceVK::GSDeviceVK()
 {
 #ifdef ENABLE_OGL_DEBUG
@@ -64,12 +79,89 @@ GSDeviceVK::GSDeviceVK()
 	std::memset(&m_pipeline_selector, 0, sizeof(m_pipeline_selector));
 }
 
-GSDeviceVK::~GSDeviceVK() {}
-
-bool GSDeviceVK::Create()
+GSDeviceVK::~GSDeviceVK()
 {
-	if (!GSDevice::Create() || !CheckFeatures())
+	pxAssert(!g_vulkan_context);
+}
+
+void GSDeviceVK::GetAdaptersAndFullscreenModes(
+	std::vector<std::string>* adapters, std::vector<std::string>* fullscreen_modes)
+{
+	std::vector<Vulkan::SwapChain::FullscreenModeInfo> fsmodes;
+
+	if (g_vulkan_context)
+	{
+		if (adapters)
+			*adapters = Vulkan::Context::EnumerateGPUNames(g_vulkan_context->GetVulkanInstance());
+
+		if (fullscreen_modes)
+		{
+			fsmodes = Vulkan::SwapChain::GetSurfaceFullscreenModes(
+				g_vulkan_context->GetVulkanInstance(), g_vulkan_context->GetPhysicalDevice(), WindowInfo());
+		}
+	}
+	else
+	{
+		if (Vulkan::LoadVulkanLibrary())
+		{
+			ScopedGuard lib_guard([]() { Vulkan::UnloadVulkanLibrary(); });
+			const VkInstance instance = Vulkan::Context::CreateVulkanInstance(nullptr, false, false);
+			if (instance != VK_NULL_HANDLE)
+			{
+				if (Vulkan::LoadVulkanInstanceFunctions(instance))
+					*adapters = Vulkan::Context::EnumerateGPUNames(instance);
+
+				vkDestroyInstance(instance, nullptr);
+			}
+		}
+	}
+
+	if (!fsmodes.empty())
+	{
+		fullscreen_modes->clear();
+		fullscreen_modes->reserve(fsmodes.size());
+		for (const Vulkan::SwapChain::FullscreenModeInfo& fmi : fsmodes)
+		{
+			fullscreen_modes->push_back(GetFullscreenModeString(fmi.width, fmi.height, fmi.refresh_rate));
+		}
+	}
+}
+
+RenderAPI GSDeviceVK::GetRenderAPI() const
+{
+	return RenderAPI::Vulkan;
+}
+
+bool GSDeviceVK::HasSurface() const
+{
+	return static_cast<bool>(m_swap_chain);
+}
+
+bool GSDeviceVK::Create(const WindowInfo& wi, VsyncMode vsync)
+{
+	if (!GSDevice::Create(wi, vsync))
 		return false;
+
+	WindowInfo local_wi(wi);
+	const bool debug_device = GSConfig.UseDebugDevice;
+	if (!Vulkan::Context::Create(GSConfig.Adapter, &local_wi, &m_swap_chain, GetPreferredPresentModeForVsyncMode(vsync),
+			!GSConfig.DisableThreadedPresentation, debug_device, debug_device))
+	{
+		Console.Error("Failed to create Vulkan context");
+		return false;
+	}
+
+	Vulkan::ShaderCache::Create(GSConfig.DisableShaderCache ? std::string_view() : std::string_view(EmuFolders::Cache),
+		SHADER_CACHE_VERSION, GSConfig.UseDebugDevice);
+
+	// NOTE: This is assigned afterwards, because some platforms can modify the window info (e.g. Metal).
+	m_window_info = m_swap_chain ? m_swap_chain->GetWindowInfo() : local_wi;
+
+	if (!CheckFeatures())
+	{
+		Console.Error("Your GPU does not support the required Vulkan features.");
+		return false;
+	}
 
 	{
 		std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/vulkan/tfx.glsl");
@@ -119,29 +211,251 @@ bool GSDeviceVK::Create()
 
 	CompileCASPipelines();
 
+	if (!CompileImGuiPipeline())
+		return false;
+
 	InitializeState();
 	return true;
 }
 
 void GSDeviceVK::Destroy()
 {
-	if (!g_vulkan_context)
+	GSDevice::Destroy();
+
+	if (g_vulkan_context)
+	{
+		EndRenderPass();
+		ExecuteCommandBuffer(true);
+		DestroyResources();
+
+		g_vulkan_context->WaitForGPUIdle();
+		m_swap_chain.reset();
+
+		Vulkan::ShaderCache::Destroy();
+		Vulkan::Context::Destroy();
+	}
+}
+
+bool GSDeviceVK::ChangeWindow(const WindowInfo& new_wi)
+{
+	if (new_wi.type == WindowInfo::Type::Surfaceless)
+	{
+		ExecuteCommandBuffer(true);
+		m_swap_chain.reset();
+		m_window_info = new_wi;
+		return true;
+	}
+
+	// make sure previous frames are presented
+	g_vulkan_context->WaitForGPUIdle();
+
+	// recreate surface in existing swap chain if it already exists
+	if (m_swap_chain)
+	{
+		if (m_swap_chain->RecreateSurface(new_wi))
+		{
+			m_window_info = m_swap_chain->GetWindowInfo();
+			return true;
+		}
+
+		m_swap_chain.reset();
+	}
+
+	WindowInfo wi_copy(new_wi);
+	VkSurfaceKHR surface = Vulkan::SwapChain::CreateVulkanSurface(
+		g_vulkan_context->GetVulkanInstance(), g_vulkan_context->GetPhysicalDevice(), &wi_copy);
+	if (surface == VK_NULL_HANDLE)
+	{
+		Console.Error("Failed to create new surface for swap chain");
+		return false;
+	}
+
+	m_swap_chain = Vulkan::SwapChain::Create(wi_copy, surface, GetPreferredPresentModeForVsyncMode(m_vsync_mode));
+	if (!m_swap_chain)
+	{
+		Console.Error("Failed to create swap chain");
+		Vulkan::SwapChain::DestroyVulkanSurface(g_vulkan_context->GetVulkanInstance(), &wi_copy, surface);
+		return false;
+	}
+
+	m_window_info = m_swap_chain->GetWindowInfo();
+	return true;
+}
+
+void GSDeviceVK::ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
+{
+	if (m_swap_chain->GetWidth() == static_cast<u32>(new_window_width) &&
+		m_swap_chain->GetHeight() == static_cast<u32>(new_window_height))
+	{
+		// skip unnecessary resizes
+		m_window_info.surface_scale = new_window_scale;
+		return;
+	}
+
+	// make sure previous frames are presented
+	g_vulkan_context->WaitForGPUIdle();
+
+	if (!m_swap_chain->ResizeSwapChain(new_window_width, new_window_height, new_window_scale))
+	{
+		// AcquireNextImage() will fail, and we'll recreate the surface.
+		Console.Error("Failed to resize swap chain. Next present will fail.");
+		return;
+	}
+
+	m_window_info = m_swap_chain->GetWindowInfo();
+}
+
+bool GSDeviceVK::SupportsExclusiveFullscreen() const
+{
+	return false;
+}
+
+bool GSDeviceVK::IsExclusiveFullscreen()
+{
+	return false;
+}
+
+bool GSDeviceVK::SetExclusiveFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate)
+{
+	return false;
+}
+
+void GSDeviceVK::DestroySurface()
+{
+	g_vulkan_context->WaitForGPUIdle();
+	m_swap_chain.reset();
+}
+
+std::string GSDeviceVK::GetDriverInfo() const
+{
+	std::string ret;
+	const u32 api_version = g_vulkan_context->GetDeviceProperties().apiVersion;
+	const u32 driver_version = g_vulkan_context->GetDeviceProperties().driverVersion;
+	if (g_vulkan_context->GetOptionalExtensions().vk_khr_driver_properties)
+	{
+		const VkPhysicalDeviceDriverProperties& props = g_vulkan_context->GetDeviceDriverProperties();
+		ret = StringUtil::StdStringFromFormat(
+			"Driver %u.%u.%u\nVulkan %u.%u.%u\nConformance Version %u.%u.%u.%u\n%s\n%s\n%s",
+			VK_VERSION_MAJOR(driver_version), VK_VERSION_MINOR(driver_version), VK_VERSION_PATCH(driver_version),
+			VK_API_VERSION_MAJOR(api_version), VK_API_VERSION_MINOR(api_version), VK_API_VERSION_PATCH(api_version),
+			props.conformanceVersion.major, props.conformanceVersion.minor, props.conformanceVersion.subminor,
+			props.conformanceVersion.patch, props.driverInfo, props.driverName,
+			g_vulkan_context->GetDeviceProperties().deviceName);
+	}
+	else
+	{
+		ret = StringUtil::StdStringFromFormat("Driver %u.%u.%u\nVulkan %u.%u.%u\n%s", VK_VERSION_MAJOR(driver_version),
+			VK_VERSION_MINOR(driver_version), VK_VERSION_PATCH(driver_version), VK_API_VERSION_MAJOR(api_version),
+			VK_API_VERSION_MINOR(api_version), VK_API_VERSION_PATCH(api_version),
+			g_vulkan_context->GetDeviceProperties().deviceName);
+	}
+
+	return ret;
+}
+
+void GSDeviceVK::SetVSync(VsyncMode mode)
+{
+	if (!m_swap_chain || m_vsync_mode == mode)
 		return;
 
-	EndRenderPass();
-	ExecuteCommandBuffer(true);
-	DestroyResources();
-	GSDevice::Destroy();
+	// This swap chain should not be used by the current buffer, thus safe to destroy.
+	g_vulkan_context->WaitForGPUIdle();
+	m_swap_chain->SetVSync(GetPreferredPresentModeForVsyncMode(mode));
+	m_vsync_mode = mode;
 }
 
-void GSDeviceVK::ResetAPIState()
+GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 {
 	EndRenderPass();
+
+	if (frame_skip || !m_swap_chain)
+		return PresentResult::FrameSkipped;
+
+	// Previous frame needs to be presented before we can acquire the swap chain.
+	g_vulkan_context->WaitForPresentComplete();
+
+	// Check if the device was lost.
+	if (g_vulkan_context->CheckLastSubmitFail())
+		return PresentResult::DeviceLost;
+
+	VkResult res = m_swap_chain->AcquireNextImage();
+	if (res != VK_SUCCESS)
+	{
+		m_swap_chain->ReleaseCurrentImage();
+
+		if (res == VK_SUBOPTIMAL_KHR || res == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			ResizeWindow(0, 0, m_window_info.surface_scale);
+			res = m_swap_chain->AcquireNextImage();
+		}
+		else if (res == VK_ERROR_SURFACE_LOST_KHR)
+		{
+			Console.Warning("Surface lost, attempting to recreate");
+			if (!m_swap_chain->RecreateSurface(m_window_info))
+			{
+				Console.Error("Failed to recreate surface after loss");
+				g_vulkan_context->ExecuteCommandBuffer(Vulkan::Context::WaitType::None);
+				return PresentResult::FrameSkipped;
+			}
+
+			res = m_swap_chain->AcquireNextImage();
+		}
+
+		// This can happen when multiple resize events happen in quick succession.
+		// In this case, just wait until the next frame to try again.
+		if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
+		{
+			// Still submit the command buffer, otherwise we'll end up with several frames waiting.
+			LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR() failed: ");
+			g_vulkan_context->ExecuteCommandBuffer(Vulkan::Context::WaitType::None);
+			return PresentResult::FrameSkipped;
+		}
+	}
+
+	VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
+
+	// Swap chain images start in undefined
+	Vulkan::Texture& swap_chain_texture = m_swap_chain->GetCurrentTexture();
+	swap_chain_texture.OverrideImageLayout(VK_IMAGE_LAYOUT_UNDEFINED);
+	swap_chain_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+	const VkClearValue clear_value = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+	const VkRenderPassBeginInfo rp = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr,
+		m_swap_chain->GetClearRenderPass(), m_swap_chain->GetCurrentFramebuffer(),
+		{{0, 0}, {swap_chain_texture.GetWidth(), swap_chain_texture.GetHeight()}}, 1u, &clear_value};
+	vkCmdBeginRenderPass(g_vulkan_context->GetCurrentCommandBuffer(), &rp, VK_SUBPASS_CONTENTS_INLINE);
+
+	const VkViewport vp{0.0f, 0.0f, static_cast<float>(swap_chain_texture.GetWidth()),
+		static_cast<float>(swap_chain_texture.GetHeight()), 0.0f, 1.0f};
+	const VkRect2D scissor{
+		{0, 0}, {static_cast<u32>(swap_chain_texture.GetWidth()), static_cast<u32>(swap_chain_texture.GetHeight())}};
+	vkCmdSetViewport(g_vulkan_context->GetCurrentCommandBuffer(), 0, 1, &vp);
+	vkCmdSetScissor(g_vulkan_context->GetCurrentCommandBuffer(), 0, 1, &scissor);
+	return PresentResult::OK;
 }
 
-void GSDeviceVK::RestoreAPIState()
+void GSDeviceVK::EndPresent()
 {
+	RenderImGui();
+
+	VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
+	vkCmdEndRenderPass(g_vulkan_context->GetCurrentCommandBuffer());
+	m_swap_chain->GetCurrentTexture().TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
+	g_vulkan_context->SubmitCommandBuffer(m_swap_chain.get(), !m_swap_chain->IsPresentModeSynchronizing());
+	g_vulkan_context->MoveToNextCommandBuffer();
+
 	InvalidateCachedState();
+}
+
+bool GSDeviceVK::SetGPUTimingEnabled(bool enabled)
+{
+	return g_vulkan_context->SetEnableGPUTiming(enabled);
+}
+
+float GSDeviceVK::GetAndResetAccumulatedGPUTime()
+{
+	return g_vulkan_context->GetAndResetAccumulatedGPUTime();
 }
 
 #ifdef ENABLE_OGL_DEBUG
@@ -551,7 +865,7 @@ void GSDeviceVK::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 {
 	DisplayConstantBuffer cb;
 	cb.SetSource(sRect, sTex->GetSize());
-	cb.SetTarget(dRect, dTex ? dTex->GetSize() : GSVector2i(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight()));
+	cb.SetTarget(dRect, dTex ? dTex->GetSize() : GSVector2i(GetWindowWidth(), GetWindowHeight()));
 	cb.SetTime(shaderTime);
 	SetUtilityPushConstants(&cb, sizeof(cb));
 
@@ -728,7 +1042,7 @@ void GSDeviceVK::DoStretchRect(GSTextureVK* sTex, const GSVector4& sRect, GSText
 	const bool is_present = (!dTex);
 	const bool depth = (dTex && dTex->GetType() == GSTexture::Type::DepthStencil);
 	const GSVector2i size(
-		is_present ? GSVector2i(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight()) : dTex->GetSize());
+		is_present ? GSVector2i(GetWindowWidth(), GetWindowHeight()) : dTex->GetSize());
 	const GSVector4i dtex_rc(0, 0, size.x, size.y);
 	const GSVector4i dst_rc(GSVector4i(dRect).rintersect(dtex_rc));
 
@@ -1007,7 +1321,6 @@ void GSDeviceVK::IASetVertexBuffer(const void* vertex, size_t stride, size_t cou
 
 	m_vertex.start = m_vertex_stream_buffer.GetCurrentOffset() / stride;
 	m_vertex.count = count;
-	SetVertexBuffer(m_vertex_stream_buffer.GetBuffer(), 0);
 
 	GSVector4i::storent(m_vertex_stream_buffer.GetCurrentHostPointer(), vertex, count * stride);
 	m_vertex_stream_buffer.CommitMemory(size);
@@ -1025,7 +1338,6 @@ void GSDeviceVK::IASetIndexBuffer(const void* index, size_t count)
 
 	m_index.start = m_index_stream_buffer.GetCurrentOffset() / sizeof(u32);
 	m_index.count = count;
-	SetIndexBuffer(m_index_stream_buffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
 	std::memcpy(m_index_stream_buffer.GetCurrentHostPointer(), index, size);
 	m_index_stream_buffer.CommitMemory(size);
@@ -1242,6 +1554,9 @@ bool GSDeviceVK::CreateBuffers()
 		return false;
 	}
 
+	SetVertexBuffer(m_vertex_stream_buffer.GetBuffer(), 0);
+	SetIndexBuffer(m_index_stream_buffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
 	return true;
 }
 
@@ -1384,16 +1699,6 @@ bool GSDeviceVK::CreateRenderPasses()
 
 bool GSDeviceVK::CompileConvertPipelines()
 {
-	// we may not have a swap chain if running in headless mode.
-	Vulkan::SwapChain* swapchain = static_cast<Vulkan::SwapChain*>(g_host_display->GetSurface());
-	if (swapchain)
-	{
-		m_swap_chain_render_pass =
-			g_vulkan_context->GetRenderPass(swapchain->GetSurfaceFormat().format, VK_FORMAT_UNDEFINED);
-		if (!m_swap_chain_render_pass)
-			return false;
-	}
-
 	std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/vulkan/convert.glsl");
 	if (!shader)
 	{
@@ -1583,11 +1888,10 @@ bool GSDeviceVK::CompileConvertPipelines()
 bool GSDeviceVK::CompilePresentPipelines()
 {
 	// we may not have a swap chain if running in headless mode.
-	Vulkan::SwapChain* swapchain = static_cast<Vulkan::SwapChain*>(g_host_display->GetSurface());
-	m_swap_chain_render_pass = swapchain ?
-								   swapchain->GetClearRenderPass() :
-                                   g_vulkan_context->GetRenderPass(VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_UNDEFINED);
-	if (!m_swap_chain_render_pass)
+	m_swap_chain_render_pass = m_swap_chain ?
+								   m_swap_chain->GetClearRenderPass() :
+								   g_vulkan_context->GetRenderPass(VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_UNDEFINED);
+	if (m_swap_chain_render_pass == VK_NULL_HANDLE)
 		return false;
 
 	std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/vulkan/present.glsl");
@@ -1880,6 +2184,155 @@ bool GSDeviceVK::CompileCASPipelines()
 	return true;
 }
 
+bool GSDeviceVK::CompileImGuiPipeline()
+{
+	const std::optional<std::string> glsl = Host::ReadResourceFileToString("shaders/vulkan/imgui.glsl");
+	if (!glsl.has_value())
+	{
+		Console.Error("Failed to read imgui.glsl");
+		return false;
+	}
+	
+	VkShaderModule vs = GetUtilityVertexShader(glsl.value(), "vs_main");
+	if (vs == VK_NULL_HANDLE)
+	{
+		Console.Error("Failed to compile ImGui vertex shader");
+		return false;
+	}
+	ScopedGuard vs_guard([&vs]() { Vulkan::Util::SafeDestroyShaderModule(vs); });
+
+	VkShaderModule ps = GetUtilityFragmentShader(glsl.value(), "ps_main");
+	if (ps == VK_NULL_HANDLE)
+	{
+		Console.Error("Failed to compile ImGui pixel shader");
+		return false;
+	}
+	ScopedGuard ps_guard([&ps]() { Vulkan::Util::SafeDestroyShaderModule(ps); });
+
+	Vulkan::GraphicsPipelineBuilder gpb;
+	gpb.SetPipelineLayout(m_utility_pipeline_layout);
+	gpb.SetRenderPass(m_swap_chain_render_pass, 0);
+	gpb.AddVertexBuffer(0, sizeof(ImDrawVert), VK_VERTEX_INPUT_RATE_VERTEX);
+	gpb.AddVertexAttribute(0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(ImDrawVert, pos));
+	gpb.AddVertexAttribute(1, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(ImDrawVert, uv));
+	gpb.AddVertexAttribute(2, 0, VK_FORMAT_R8G8B8A8_UNORM, offsetof(ImDrawVert, col));
+	gpb.SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+	gpb.SetVertexShader(vs);
+	gpb.SetFragmentShader(ps);
+	gpb.SetNoCullRasterizationState();
+	gpb.SetNoDepthTestState();
+	gpb.SetBlendAttachment(0, true, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
+		VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
+	gpb.SetDynamicViewportAndScissorState();
+	gpb.AddDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
+
+	m_imgui_pipeline = gpb.Create(g_vulkan_context->GetDevice(), g_vulkan_shader_cache->GetPipelineCache(), false);
+	if (!m_imgui_pipeline)
+	{
+		Console.Error("Failed to compile ImGui pipeline");
+		return false;
+	}
+
+	Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_imgui_pipeline, "ImGui pipeline");
+	return true;
+}
+
+void GSDeviceVK::RenderImGui()
+{
+	ImGui::Render();
+	const ImDrawData* draw_data = ImGui::GetDrawData();
+	if (draw_data->CmdListsCount == 0)
+		return;
+
+	const float uniforms[2][2] = {{
+									  2.0f / static_cast<float>(m_window_info.surface_width),
+									  2.0f / static_cast<float>(m_window_info.surface_height),
+								  },
+		{
+			-1.0f,
+			-1.0f,
+		}};
+
+	SetUtilityPushConstants(uniforms, sizeof(uniforms));
+	SetPipeline(m_imgui_pipeline);
+
+	if (m_utility_sampler != m_linear_sampler)
+	{
+		m_utility_sampler = m_linear_sampler;
+		m_dirty_flags |= DIRTY_FLAG_UTILITY_TEXTURE;
+	}
+
+	// imgui uses 16-bit indices
+	SetIndexBuffer(m_index_stream_buffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT16);
+
+	// this is for presenting, we don't want to screw with the viewport/scissor set by display
+	m_dirty_flags &= ~(DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR);
+
+	for (int n = 0; n < draw_data->CmdListsCount; n++)
+	{
+		const ImDrawList* cmd_list = draw_data->CmdLists[n];
+
+		u32 vertex_offset;
+		{
+			const u32 size = sizeof(ImDrawVert) * static_cast<u32>(cmd_list->VtxBuffer.Size);
+			if (!m_vertex_stream_buffer.ReserveMemory(size, sizeof(ImDrawVert)))
+			{
+				Console.Warning("Skipping ImGui draw because of no vertex buffer space");
+				return;
+			}
+
+			vertex_offset = m_vertex_stream_buffer.GetCurrentOffset() / sizeof(ImDrawVert);
+			std::memcpy(m_vertex_stream_buffer.GetCurrentHostPointer(), cmd_list->VtxBuffer.Data, size);
+			m_vertex_stream_buffer.CommitMemory(size);
+		}
+
+		u32 index_offset;
+		{
+			const u32 size = sizeof(ImDrawIdx) * static_cast<u32>(cmd_list->IdxBuffer.Size);
+			if (!m_index_stream_buffer.ReserveMemory(size, sizeof(ImDrawIdx)))
+			{
+				Console.Warning("Skipping ImGui draw because of no vertex buffer space");
+				return;
+			}
+
+			index_offset = m_index_stream_buffer.GetCurrentOffset() / sizeof(ImDrawIdx);
+			std::memcpy(m_index_stream_buffer.GetCurrentHostPointer(), cmd_list->IdxBuffer.Data, size);
+			m_index_stream_buffer.CommitMemory(size);
+		}
+
+		for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
+		{
+			const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
+			pxAssert(!pcmd->UserCallback);
+
+			const GSVector4 clip = GSVector4::load<false>(&pcmd->ClipRect);
+			if ((clip.zwzw() <= clip.xyxy()).mask() != 0)
+				continue;
+
+			SetScissor(GSVector4i(clip));
+
+			// Since we don't have the GSTexture...
+			Vulkan::Texture* tex = static_cast<Vulkan::Texture*>(pcmd->GetTexID());
+			if (m_utility_texture != tex)
+			{
+				m_utility_texture = tex;
+				m_dirty_flags |= DIRTY_FLAG_UTILITY_TEXTURE;
+			}
+
+			if (ApplyUtilityState())
+			{
+				vkCmdDrawIndexed(g_vulkan_context->GetCurrentCommandBuffer(), pcmd->ElemCount, 1,
+					index_offset + pcmd->IdxOffset, vertex_offset + pcmd->VtxOffset, 0);
+			}
+		}
+
+		g_perfmon.Put(GSPerfMon::DrawCalls, cmd_list->CmdBuffer.Size);
+	}
+
+	// normal draws use 32-bit indices
+	SetIndexBuffer(m_index_stream_buffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
+}
+
 bool GSDeviceVK::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants)
 {
 	EndRenderPass();
@@ -1994,6 +2447,7 @@ void GSDeviceVK::DestroyResources()
 		Vulkan::Util::SafeDestroyPipeline(it);
 	Vulkan::Util::SafeDestroyPipelineLayout(m_cas_pipeline_layout);
 	Vulkan::Util::SafeDestroyDescriptorSetLayout(m_cas_ds_layout);
+	Vulkan::Util::SafeDestroyPipeline(m_imgui_pipeline);
 
 	for (auto& it : m_samplers)
 		Vulkan::Util::SafeDestroySampler(it.second);

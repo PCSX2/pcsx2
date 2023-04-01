@@ -19,8 +19,6 @@
 #include <string>
 #include <memory>
 
-class HostDisplayTexture;
-
 struct Pcsx2Config;
 
 namespace FullscreenUI

@@ -1157,22 +1157,10 @@
     <ClCompile Include="SPU2\SndOut_Cubeb.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
-    <ClCompile Include="HostDisplay.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\OpenGLHostDisplay.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\D3D11HostDisplay.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
     <ClCompile Include="Frontend\ImGuiManager.cpp">
       <Filter>Host</Filter>
     </ClCompile>
     <ClCompile Include="Host.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\VulkanHostDisplay.cpp">
       <Filter>Host</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\Vulkan\GSTextureVK.cpp">
@@ -1234,21 +1222,6 @@
     </ClCompile>
     <ClCompile Include="GS\Renderers\DX12\GSDevice12.cpp">
       <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\D3D12HostDisplay.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\imgui_impl_dx11.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\imgui_impl_dx12.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\imgui_impl_opengl3.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\imgui_impl_vulkan.cpp">
-      <Filter>Host</Filter>
     </ClCompile>
     <ClCompile Include="Recording\InputRecording.cpp">
       <Filter>Tools\Input Recording</Filter>
@@ -2074,19 +2047,7 @@
     <ClInclude Include="Host.h">
       <Filter>Host</Filter>
     </ClInclude>
-    <ClInclude Include="HostDisplay.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\OpenGLHostDisplay.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\D3D11HostDisplay.h">
-      <Filter>Host</Filter>
-    </ClInclude>
     <ClInclude Include="Frontend\ImGuiManager.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\VulkanHostDisplay.h">
       <Filter>Host</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\Vulkan\GSTextureVK.h">
@@ -2146,21 +2107,6 @@
     </ClInclude>
     <ClInclude Include="GS\Renderers\DX12\GSDevice12.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\D3D12HostDisplay.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\imgui_impl_dx11.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\imgui_impl_dx12.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\imgui_impl_opengl3.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\imgui_impl_vulkan.h">
-      <Filter>Host</Filter>
     </ClInclude>
     <ClInclude Include="Recording\InputRecording.h">
       <Filter>Tools\Input Recording</Filter>

@@ -138,6 +138,15 @@ public:
 	};
 
 private:
+	ComPtr<IDXGIFactory5> m_dxgi_factory;
+	ComPtr<IDXGISwapChain1> m_swap_chain;
+	std::vector<D3D12::Texture> m_swap_chain_buffers;
+	u32 m_current_swap_chain_buffer = 0;
+
+	bool m_allow_tearing_supported = false;
+	bool m_using_allow_tearing = false;
+	bool m_device_lost = false;
+
 	ComPtr<ID3D12RootSignature> m_tfx_root_signature;
 	ComPtr<ID3D12RootSignature> m_utility_root_signature;
 
@@ -161,6 +170,7 @@ private:
 	std::array<std::array<ComPtr<ID3D12PipelineState>, 2>, 2> m_date_image_setup_pipelines{}; // [depth][datm]
 	ComPtr<ID3D12PipelineState> m_fxaa_pipeline;
 	ComPtr<ID3D12PipelineState> m_shadeboost_pipeline;
+	ComPtr<ID3D12PipelineState> m_imgui_pipeline;
 
 	std::unordered_map<u32, ComPtr<ID3DBlob>> m_tfx_vertex_shaders;
 	std::unordered_map<u32, ComPtr<ID3DBlob>> m_tfx_geometry_shaders;
@@ -179,6 +189,10 @@ private:
 	std::string m_tfx_source;
 
 	void LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format, DXGI_FORMAT* rtv_format, DXGI_FORMAT* dsv_format) const;
+
+	bool CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode);
+	bool CreateSwapChainRTV();
+	void DestroySwapChainRTVs();
 
 	GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) override;
 
@@ -215,6 +229,9 @@ private:
 	bool CompilePostProcessingPipelines();
 	bool CompileCASPipelines();
 
+	bool CompileImGuiPipeline();
+	void RenderImGui();
+
 	void DestroyResources();
 
 public:
@@ -223,11 +240,29 @@ public:
 
 	__fi static GSDevice12* GetInstance() { return static_cast<GSDevice12*>(g_gs_device.get()); }
 
-	bool Create() override;
+	RenderAPI GetRenderAPI() const override;
+	bool HasSurface() const override;
+
+	bool Create(const WindowInfo& wi, VsyncMode vsync) override;
 	void Destroy() override;
 
-	void ResetAPIState() override;
-	void RestoreAPIState() override;
+	bool ChangeWindow(const WindowInfo& new_wi) override;
+	void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
+	bool SupportsExclusiveFullscreen() const override;
+	bool IsExclusiveFullscreen() override;
+	bool SetExclusiveFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) override;
+	void DestroySurface() override;
+	std::string GetDriverInfo() const override;
+
+	bool GetHostRefreshRate(float* refresh_rate) override;
+
+	void SetVSync(VsyncMode mode) override;
+
+	PresentResult BeginPresent(bool frame_skip) override;
+	void EndPresent() override;
+
+	bool SetGPUTimingEnabled(bool enabled) override;
+	float GetAndResetAccumulatedGPUTime() override;
 
 	void PushDebugGroup(const char* fmt, ...) override;
 	void PopDebugGroup() override;

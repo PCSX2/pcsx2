@@ -38,6 +38,7 @@ namespace D3D11
 		bool UsingDebugShaders() const { return m_debug; }
 
 		bool Open(std::string_view base_path, D3D_FEATURE_LEVEL feature_level, u32 version, bool debug);
+		void Close();
 
 		wil::com_ptr_nothrow<ID3DBlob> GetShaderBlob(ShaderCompiler::Type type, const std::string_view& shader_code,
 			const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main");
@@ -103,7 +104,6 @@ namespace D3D11
 
 		bool CreateNew(const std::string& index_filename, const std::string& blob_filename);
 		bool ReadExisting(const std::string& index_filename, const std::string& blob_filename);
-		void Close();
 
 		wil::com_ptr_nothrow<ID3DBlob> CompileAndAddShaderBlob(const CacheIndexKey& key, const std::string_view& shader_code,
 			const D3D_SHADER_MACRO* macros, const char* entry_point);

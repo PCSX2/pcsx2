@@ -45,7 +45,7 @@
 #include "pcsx2/GS.h"
 #include "pcsx2/GS/GS.h"
 #include "pcsx2/GSDumpReplayer.h"
-#include "pcsx2/HostDisplay.h"
+#include "pcsx2/Host.h"
 #include "pcsx2/HostSettings.h"
 #include "pcsx2/INISettingsInterface.h"
 #include "pcsx2/PAD/Host/PAD.h"
@@ -254,36 +254,21 @@ void Host::SetRelativeMouseMode(bool enabled)
 {
 }
 
-bool Host::AcquireHostDisplay(RenderAPI api, bool clear_state_on_fail)
+std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI api)
 {
-	const std::optional<WindowInfo> wi(GSRunner::GetPlatformWindowInfo());
-	if (!wi.has_value())
-		return false;
-
-	g_host_display = HostDisplay::CreateForAPI(api);
-	if (!g_host_display)
-		return false;
-
-	if (!g_host_display->CreateDevice(wi.value(), Host::GetEffectiveVSyncMode()) ||
-		!g_host_display->MakeCurrent() || !g_host_display->SetupDevice() || !ImGuiManager::Initialize())
-	{
-		ReleaseHostDisplay(clear_state_on_fail);
-		return false;
-	}
-
-	Console.WriteLn(Color_StrongGreen, "%s Graphics Driver Info:", HostDisplay::RenderAPIToString(g_host_display->GetRenderAPI()));
-	Console.Indent().WriteLn(g_host_display->GetDriverInfo());
-
-	return g_host_display.get();
+	return GSRunner::GetPlatformWindowInfo();
 }
 
-void Host::ReleaseHostDisplay(bool clear_state)
+std::optional<WindowInfo> Host::UpdateRenderWindow()
 {
-	ImGuiManager::Shutdown(clear_state);
-	g_host_display.reset();
+	return GSRunner::GetPlatformWindowInfo();
 }
 
-HostDisplay::PresentResult Host::BeginPresentFrame(bool frame_skip)
+void Host::ReleaseRenderWindow()
+{
+}
+
+void Host::BeginPresentFrame()
 {
 	if (s_loop_number == 0 && !s_output_prefix.empty())
 	{
@@ -294,33 +279,6 @@ HostDisplay::PresentResult Host::BeginPresentFrame(bool frame_skip)
 		std::string dump_path(fmt::format("{}_frame{}.png", s_output_prefix, s_dump_frame_number));
 		GSQueueSnapshot(dump_path);
 	}
-
-	const HostDisplay::PresentResult result = g_host_display->BeginPresent(frame_skip);
-	if (result != HostDisplay::PresentResult::OK)
-	{
-		// don't render imgui
-		ImGuiManager::SkipFrame();
-	}
-
-	return result;
-}
-
-void Host::EndPresentFrame()
-{
-	if (GSDumpReplayer::IsReplayingDump())
-		GSDumpReplayer::RenderUI();
-
-	ImGuiManager::RenderOSD();
-	g_host_display->EndPresent();
-	ImGuiManager::NewFrame();
-}
-
-void Host::ResizeHostDisplay(u32 new_window_width, u32 new_window_height, float new_window_scale)
-{
-}
-
-void Host::UpdateHostDisplay()
-{
 }
 
 void Host::RequestResizeHostDisplay(s32 width, s32 height)

@@ -21,7 +21,6 @@
 #include <optional>
 
 #include "pcsx2/Host.h"
-#include "pcsx2/HostDisplay.h"
 #include "pcsx2/HostSettings.h"
 #include "pcsx2/Frontend/InputManager.h"
 #include "pcsx2/VMManager.h"
@@ -70,10 +69,10 @@ public:
 	bool shouldRenderToMain() const;
 
 	/// Called back from the GS thread when the display state changes (e.g. fullscreen, render to main).
-	bool acquireHostDisplay(RenderAPI api, bool clear_state_on_fail);
+	std::optional<WindowInfo> acquireRenderWindow();
+	std::optional<WindowInfo> updateRenderWindow();
 	void connectDisplaySignals(DisplayWidget* widget);
-	void releaseHostDisplay(bool clear_state);
-	void updateDisplay();
+	void releaseRenderWindow();
 
 	void startBackgroundControllerPollTimer();
 	void stopBackgroundControllerPollTimer();
@@ -118,8 +117,8 @@ public Q_SLOTS:
 Q_SIGNALS:
 	bool messageConfirmed(const QString& title, const QString& message);
 
-	DisplayWidget* onCreateDisplayRequested(bool fullscreen, bool render_to_main);
-	DisplayWidget* onUpdateDisplayRequested(bool fullscreen, bool render_to_main, bool surfaceless);
+	std::optional<WindowInfo> onCreateDisplayRequested(bool fullscreen, bool render_to_main);
+	std::optional<WindowInfo> onUpdateDisplayRequested(bool fullscreen, bool render_to_main, bool surfaceless);
 	void onResizeDisplayRequested(qint32 width, qint32 height);
 	void onDestroyDisplayRequested();
 	void onRelativeMouseModeRequested(bool enabled);

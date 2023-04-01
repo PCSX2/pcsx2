@@ -27,7 +27,6 @@
 #include "Elfheader.h"
 
 #include "Host.h"
-#include "HostDisplay.h"
 #include "IconsFontAwesome5.h"
 #include "VMManager.h"
 
@@ -276,7 +275,7 @@ bool SysMtgsThread::TryOpenGS()
 	if (!GSopen(EmuConfig.GS, EmuConfig.GS.Renderer, RingBuffer.Regs))
 		return false;
 
-	GSsetGameCRC(ElfCRC);
+	GSSetGameCRC(ElfCRC);
 	return true;
 }
 
@@ -511,7 +510,7 @@ void SysMtgsThread::MainLoop()
 						break;
 
 						case GS_RINGTYPE_CRC:
-							GSsetGameCRC(tag.data[0]);
+							GSSetGameCRC(tag.data[0]);
 							break;
 
 						case GS_RINGTYPE_INIT_AND_READ_FIFO:
@@ -915,7 +914,7 @@ void SysMtgsThread::ApplySettings()
 
 	RunOnGSThread([opts = EmuConfig.GS]() {
 		GSUpdateConfig(opts);
-		g_host_display->SetVSync(Host::GetEffectiveVSyncMode());
+		GSSetVSyncMode(Host::GetEffectiveVSyncMode());
 	});
 
 	// We need to synchronize the thread when changing any settings when the download mode
@@ -929,9 +928,7 @@ void SysMtgsThread::ResizeDisplayWindow(int width, int height, float scale)
 {
 	pxAssertRel(IsOpen(), "MTGS is running");
 	RunOnGSThread([width, height, scale]() {
-		GSResetAPIState();
-		Host::ResizeHostDisplay(width, height, scale);
-		GSRestoreAPIState();
+		GSResizeDisplayWindow(width, height, scale);
 
 		// If we're paused, re-present the current frame at the new window size.
 		if (VMManager::GetState() == VMState::Paused)
@@ -943,9 +940,7 @@ void SysMtgsThread::UpdateDisplayWindow()
 {
 	pxAssertRel(IsOpen(), "MTGS is running");
 	RunOnGSThread([]() {
-		GSResetAPIState();
-		Host::UpdateHostDisplay();
-		GSRestoreAPIState();
+		GSUpdateDisplayWindow();
 
 		// If we're paused, re-present the current frame at the new window size.
 		if (VMManager::GetState() == VMState::Paused)
@@ -959,7 +954,7 @@ void SysMtgsThread::SetVSyncMode(VsyncMode mode)
 
 	RunOnGSThread([mode]() {
 		Console.WriteLn("Vsync is %s", mode == VsyncMode::Off ? "OFF" : (mode == VsyncMode::Adaptive ? "ADAPTIVE" : "ON"));
-		g_host_display->SetVSync(mode);
+		GSSetVSyncMode(mode);
 	});
 }
 

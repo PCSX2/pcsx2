@@ -72,7 +72,7 @@ void PADshutdown()
 {
 }
 
-s32 PADopen(const WindowInfo& wi)
+s32 PADopen()
 {
 	g_key_status.Init();
 	return 0;

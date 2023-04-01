@@ -25,7 +25,7 @@
 #include <string_view>
 #include <vector>
 
-class HostDisplayTexture;
+class GSTexture;
 
 namespace ImGuiFullscreen
 {
@@ -116,10 +116,10 @@ namespace ImGuiFullscreen
 	void Shutdown(bool clear_state);
 
 	/// Texture cache.
-	const std::shared_ptr<HostDisplayTexture>& GetPlaceholderTexture();
-	std::shared_ptr<HostDisplayTexture> LoadTexture(const char* path);
-	HostDisplayTexture* GetCachedTexture(const char* name);
-	HostDisplayTexture* GetCachedTextureAsync(const char* name);
+	const std::shared_ptr<GSTexture>& GetPlaceholderTexture();
+	std::shared_ptr<GSTexture> LoadTexture(const char* path);
+	GSTexture* GetCachedTexture(const char* name);
+	GSTexture* GetCachedTextureAsync(const char* name);
 	bool InvalidateCachedTexture(const std::string& path);
 	void UploadAsyncTextures();
 
