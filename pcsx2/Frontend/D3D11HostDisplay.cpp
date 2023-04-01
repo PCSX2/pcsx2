@@ -36,8 +36,8 @@
 class D3D11HostDisplayTexture : public HostDisplayTexture
 {
 public:
-	D3D11HostDisplayTexture(wil::com_ptr_nothrow<ID3D11Texture2D> texture,
-		wil::com_ptr_nothrow<ID3D11ShaderResourceView> srv, u32 width, u32 height, bool dynamic)
+	D3D11HostDisplayTexture(wil::com_ptr_nothrow<ID3D11Texture2D> texture, wil::com_ptr_nothrow<ID3D11ShaderResourceView> srv, u32 width,
+		u32 height, bool dynamic)
 		: m_texture(std::move(texture))
 		, m_srv(std::move(srv))
 		, m_width(width)
@@ -103,19 +103,18 @@ bool D3D11HostDisplay::HasSurface() const
 	return static_cast<bool>(m_swap_chain);
 }
 
-std::unique_ptr<HostDisplayTexture> D3D11HostDisplay::CreateTexture(u32 width, u32 height, const void* data, u32 data_stride, bool dynamic /* = false */)
+std::unique_ptr<HostDisplayTexture> D3D11HostDisplay::CreateTexture(
+	u32 width, u32 height, const void* data, u32 data_stride, bool dynamic /* = false */)
 {
-	const CD3D11_TEXTURE2D_DESC desc(DXGI_FORMAT_R8G8B8A8_UNORM, width, height, 1u, 1u,
-		D3D11_BIND_SHADER_RESOURCE, dynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT,
-		dynamic ? D3D11_CPU_ACCESS_WRITE : 0, 1, 0, 0);
+	const CD3D11_TEXTURE2D_DESC desc(DXGI_FORMAT_R8G8B8A8_UNORM, width, height, 1u, 1u, D3D11_BIND_SHADER_RESOURCE,
+		dynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT, dynamic ? D3D11_CPU_ACCESS_WRITE : 0, 1, 0, 0);
 	const D3D11_SUBRESOURCE_DATA srd{data, data_stride, data_stride * height};
 	ComPtr<ID3D11Texture2D> texture;
 	HRESULT hr = m_device->CreateTexture2D(&desc, data ? &srd : nullptr, texture.addressof());
 	if (FAILED(hr))
 		return {};
 
-	const CD3D11_SHADER_RESOURCE_VIEW_DESC srv_desc(D3D11_SRV_DIMENSION_TEXTURE2D, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 1, 0,
-		1);
+	const CD3D11_SHADER_RESOURCE_VIEW_DESC srv_desc(D3D11_SRV_DIMENSION_TEXTURE2D, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 1, 0, 1);
 	ComPtr<ID3D11ShaderResourceView> srv;
 	hr = m_device->CreateShaderResourceView(texture.get(), &srv_desc, srv.addressof());
 	if (FAILED(hr))
@@ -124,14 +123,15 @@ std::unique_ptr<HostDisplayTexture> D3D11HostDisplay::CreateTexture(u32 width, u
 	return std::make_unique<D3D11HostDisplayTexture>(std::move(texture), std::move(srv), width, height, dynamic);
 }
 
-void D3D11HostDisplay::UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* texture_data, u32 texture_data_stride)
+void D3D11HostDisplay::UpdateTexture(
+	HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* texture_data, u32 texture_data_stride)
 {
 	D3D11HostDisplayTexture* d3d11_texture = static_cast<D3D11HostDisplayTexture*>(texture);
 	if (!d3d11_texture->IsDynamic())
 	{
 		const CD3D11_BOX dst_box(x, y, 0, x + width, y + height, 1);
-		m_context->UpdateSubresource(d3d11_texture->GetD3DTexture(), 0, &dst_box, texture_data, texture_data_stride,
-			texture_data_stride * height);
+		m_context->UpdateSubresource(
+			d3d11_texture->GetD3DTexture(), 0, &dst_box, texture_data, texture_data_stride, texture_data_stride * height);
 	}
 	else
 	{
@@ -167,10 +167,9 @@ bool D3D11HostDisplay::GetHostRefreshRate(float* refresh_rate)
 		if (SUCCEEDED(m_swap_chain->GetDesc(&desc)) && desc.BufferDesc.RefreshRate.Numerator > 0 &&
 			desc.BufferDesc.RefreshRate.Denominator > 0)
 		{
-			DevCon.WriteLn("using fs rr: %u %u", desc.BufferDesc.RefreshRate.Numerator,
-				desc.BufferDesc.RefreshRate.Denominator);
-			*refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
-							static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
+			DevCon.WriteLn("using fs rr: %u %u", desc.BufferDesc.RefreshRate.Numerator, desc.BufferDesc.RefreshRate.Denominator);
+			*refresh_rate =
+				static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) / static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
 			return true;
 		}
 	}
@@ -189,52 +188,21 @@ bool D3D11HostDisplay::CreateDevice(const WindowInfo& wi, VsyncMode vsync)
 	if (EmuConfig.GS.UseDebugDevice)
 		create_flags |= D3D11_CREATE_DEVICE_DEBUG;
 
-	ComPtr<IDXGIFactory> temp_dxgi_factory;
-	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(temp_dxgi_factory.put()));
-	if (FAILED(hr))
-	{
-		Console.Error("Failed to create DXGI factory: 0x%08X", hr);
+	m_dxgi_factory = D3D::CreateFactory(EmuConfig.GS.UseDebugDevice);
+	if (!m_dxgi_factory)
 		return false;
-	}
 
-	u32 adapter_index;
-	if (!EmuConfig.GS.Adapter.empty())
-	{
-		AdapterAndModeList adapter_info(GetAdapterAndModeList(temp_dxgi_factory.get()));
-		for (adapter_index = 0; adapter_index < static_cast<u32>(adapter_info.adapter_names.size()); adapter_index++)
-		{
-			if (EmuConfig.GS.Adapter == adapter_info.adapter_names[adapter_index])
-				break;
-		}
-		if (adapter_index == static_cast<u32>(adapter_info.adapter_names.size()))
-		{
-			Console.Warning("Could not find adapter '%s', using first (%s)", EmuConfig.GS.Adapter.c_str(),
-				adapter_info.adapter_names[0].c_str());
-			adapter_index = 0;
-		}
-	}
-	else
-	{
-		Console.WriteLn("No adapter selected, using first.");
-		adapter_index = 0;
-	}
-
-	ComPtr<IDXGIAdapter> dxgi_adapter;
-	hr = temp_dxgi_factory->EnumAdapters(adapter_index, dxgi_adapter.put());
-	if (FAILED(hr))
-		Console.Warning("Failed to enumerate adapter %u, using default", adapter_index);
+	ComPtr<IDXGIAdapter1> dxgi_adapter = D3D::GetAdapterByName(m_dxgi_factory.get(), EmuConfig.GS.Adapter);
 
 	static constexpr std::array<D3D_FEATURE_LEVEL, 3> requested_feature_levels = {
 		{D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0}};
 
-	hr =
-		D3D11CreateDevice(dxgi_adapter.get(), dxgi_adapter ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE, nullptr,
-			create_flags, requested_feature_levels.data(), static_cast<UINT>(requested_feature_levels.size()),
-			D3D11_SDK_VERSION, m_device.put(), nullptr, m_context.put());
+	HRESULT hr = D3D11CreateDevice(dxgi_adapter.get(), dxgi_adapter ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE, nullptr,
+		create_flags, requested_feature_levels.data(), static_cast<UINT>(requested_feature_levels.size()), D3D11_SDK_VERSION,
+		m_device.put(), nullptr, m_context.put());
 
 	// we re-grab these later, see below
 	dxgi_adapter.reset();
-	temp_dxgi_factory.reset();
 
 	if (FAILED(hr))
 	{
@@ -252,39 +220,15 @@ bool D3D11HostDisplay::CreateDevice(const WindowInfo& wi, VsyncMode vsync)
 		}
 	}
 
-	// we need the specific factory for the device, otherwise MakeWindowAssociation() is flaky.
 	ComPtr<IDXGIDevice> dxgi_device;
-	if (!m_device.try_query_to(&dxgi_device) || FAILED(dxgi_device->GetParent(IID_PPV_ARGS(dxgi_adapter.put()))) ||
-		FAILED(dxgi_adapter->GetParent(IID_PPV_ARGS(m_dxgi_factory.put()))))
-	{
-		Console.Warning("Failed to get parent adapter/device/factory");
-		return false;
-	}
+	if (m_device.try_query_to(&dxgi_device) && SUCCEEDED(dxgi_device->GetParent(IID_PPV_ARGS(dxgi_adapter.put()))))
+		Console.WriteLn(fmt::format("D3D Adapter: {}", D3D::GetAdapterName(dxgi_adapter.get())));
+	else
+		Console.Error("Failed to obtain D3D adapter name.");
 
-	DXGI_ADAPTER_DESC adapter_desc;
-	if (SUCCEEDED(dxgi_adapter->GetDesc(&adapter_desc)))
-	{
-		char adapter_name_buffer[128];
-		const int name_length =
-			WideCharToMultiByte(CP_UTF8, 0, adapter_desc.Description, static_cast<int>(std::wcslen(adapter_desc.Description)),
-				adapter_name_buffer, sizeof(adapter_name_buffer), 0, nullptr);
-		if (name_length >= 0)
-		{
-			adapter_name_buffer[name_length] = 0;
-			Console.WriteLn("D3D Adapter: %s", adapter_name_buffer);
-		}
-	}
-
-	m_allow_tearing_supported = false;
-	ComPtr<IDXGIFactory5> dxgi_factory5;
-	if (m_dxgi_factory.try_query_to(&dxgi_factory5))
-	{
-		BOOL allow_tearing_supported = false;
-		hr = dxgi_factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported,
-			sizeof(allow_tearing_supported));
-		if (SUCCEEDED(hr))
-			m_allow_tearing_supported = (allow_tearing_supported == TRUE);
-	}
+	BOOL allow_tearing_supported = false;
+	hr = m_dxgi_factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported, sizeof(allow_tearing_supported));
+	m_allow_tearing_supported = (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
 
 	m_window_info = wi;
 	m_vsync_mode = vsync;
@@ -323,33 +267,36 @@ bool D3D11HostDisplay::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
 	const u32 width = static_cast<u32>(client_rc.right - client_rc.left);
 	const u32 height = static_cast<u32>(client_rc.bottom - client_rc.top);
 
-	DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
-	swap_chain_desc.BufferDesc.Width = width;
-	swap_chain_desc.BufferDesc.Height = height;
-	swap_chain_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
+	swap_chain_desc.Width = width;
+	swap_chain_desc.Height = height;
+	swap_chain_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	swap_chain_desc.SampleDesc.Count = 1;
 	swap_chain_desc.BufferCount = 3;
 	swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swap_chain_desc.OutputWindow = window_hwnd;
-	swap_chain_desc.Windowed = TRUE;
 	swap_chain_desc.SwapEffect = m_using_flip_model_swap_chain ? DXGI_SWAP_EFFECT_FLIP_DISCARD : DXGI_SWAP_EFFECT_DISCARD;
 
 	m_using_allow_tearing = (m_allow_tearing_supported && m_using_flip_model_swap_chain && !fullscreen_mode);
 	if (m_using_allow_tearing)
 		swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
+	DXGI_SWAP_CHAIN_FULLSCREEN_DESC fs_desc = {};
 	if (fullscreen_mode)
 	{
 		swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-		swap_chain_desc.Windowed = FALSE;
-		swap_chain_desc.BufferDesc = *fullscreen_mode;
+		swap_chain_desc.Width = fullscreen_mode->Width;
+		swap_chain_desc.Height = fullscreen_mode->Height;
+		fs_desc.RefreshRate = fullscreen_mode->RefreshRate;
+		fs_desc.ScanlineOrdering = fullscreen_mode->ScanlineOrdering;
+		fs_desc.Scaling = fullscreen_mode->Scaling;
+		fs_desc.Windowed = FALSE;
 	}
 
-	Console.WriteLn("Creating a %dx%d %s %s swap chain", swap_chain_desc.BufferDesc.Width,
-		swap_chain_desc.BufferDesc.Height, m_using_flip_model_swap_chain ? "flip-discard" : "discard",
-		swap_chain_desc.Windowed ? "windowed" : "full-screen");
+	Console.WriteLn("Creating a %dx%d %s %s swap chain", swap_chain_desc.Width, swap_chain_desc.Height,
+		m_using_flip_model_swap_chain ? "flip-discard" : "discard", fullscreen_mode ? "full-screen" : "windowed");
 
-	HRESULT hr = m_dxgi_factory->CreateSwapChain(m_device.get(), &swap_chain_desc, m_swap_chain.put());
+	HRESULT hr = m_dxgi_factory->CreateSwapChainForHwnd(
+		m_device.get(), window_hwnd, &swap_chain_desc, fullscreen_mode ? &fs_desc : nullptr, nullptr, m_swap_chain.put());
 	if (FAILED(hr) && m_using_flip_model_swap_chain)
 	{
 		Console.Warning("Failed to create a flip-discard swap chain, trying discard.");
@@ -358,22 +305,18 @@ bool D3D11HostDisplay::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
 		m_using_flip_model_swap_chain = false;
 		m_using_allow_tearing = false;
 
-		hr = m_dxgi_factory->CreateSwapChain(m_device.get(), &swap_chain_desc, m_swap_chain.put());
+		hr = m_dxgi_factory->CreateSwapChainForHwnd(
+			m_device.get(), window_hwnd, &swap_chain_desc, fullscreen_mode ? &fs_desc : nullptr, nullptr, m_swap_chain.put());
 		if (FAILED(hr))
 		{
-			Console.Error("CreateSwapChain failed: 0x%08X", hr);
+			Console.Error("CreateSwapChainForHwnd failed: 0x%08X", hr);
 			return false;
 		}
 	}
 
-	ComPtr<IDXGIFactory> dxgi_factory;
-	hr = m_swap_chain->GetParent(IID_PPV_ARGS(dxgi_factory.put()));
-	if (SUCCEEDED(hr))
-	{
-		hr = dxgi_factory->MakeWindowAssociation(swap_chain_desc.OutputWindow, DXGI_MWA_NO_WINDOW_CHANGES);
-		if (FAILED(hr))
-			Console.Warning("MakeWindowAssociation() to disable ALT+ENTER failed");
-	}
+	hr = m_dxgi_factory->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
+	if (FAILED(hr))
+		Console.Warning("MakeWindowAssociation() to disable ALT+ENTER failed");
 
 	return CreateSwapChainRTV();
 }
@@ -391,8 +334,7 @@ bool D3D11HostDisplay::CreateSwapChainRTV()
 	D3D11_TEXTURE2D_DESC backbuffer_desc;
 	backbuffer->GetDesc(&backbuffer_desc);
 
-	CD3D11_RENDER_TARGET_VIEW_DESC rtv_desc(D3D11_RTV_DIMENSION_TEXTURE2D, backbuffer_desc.Format, 0, 0,
-		backbuffer_desc.ArraySize);
+	CD3D11_RENDER_TARGET_VIEW_DESC rtv_desc(D3D11_RTV_DIMENSION_TEXTURE2D, backbuffer_desc.Format, 0, 0, backbuffer_desc.ArraySize);
 	hr = m_device->CreateRenderTargetView(backbuffer.get(), &rtv_desc, m_swap_chain_rtv.put());
 	if (FAILED(hr))
 	{
@@ -408,11 +350,10 @@ bool D3D11HostDisplay::CreateSwapChainRTV()
 	{
 		BOOL fullscreen = FALSE;
 		DXGI_SWAP_CHAIN_DESC desc;
-		if (SUCCEEDED(m_swap_chain->GetFullscreenState(&fullscreen, nullptr)) && fullscreen &&
-			SUCCEEDED(m_swap_chain->GetDesc(&desc)))
+		if (SUCCEEDED(m_swap_chain->GetFullscreenState(&fullscreen, nullptr)) && fullscreen && SUCCEEDED(m_swap_chain->GetDesc(&desc)))
 		{
-			m_window_info.surface_refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
-												 static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
+			m_window_info.surface_refresh_rate =
+				static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) / static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
 		}
 		else
 		{
@@ -501,8 +442,7 @@ void D3D11HostDisplay::ResizeWindow(s32 new_window_width, s32 new_window_height,
 
 	m_swap_chain_rtv.reset();
 
-	HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN,
-		m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
+	HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
 	if (FAILED(hr))
 		Console.Error("ResizeBuffers() failed: 0x%08X", hr);
 
@@ -681,7 +621,8 @@ void D3D11HostDisplay::PopTimestampQuery()
 	while (m_waiting_timestamp_queries > 0)
 	{
 		D3D11_QUERY_DATA_TIMESTAMP_DISJOINT disjoint;
-		const HRESULT disjoint_hr = m_context->GetData(m_timestamp_queries[m_read_timestamp_query][0].get(), &disjoint, sizeof(disjoint), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+		const HRESULT disjoint_hr = m_context->GetData(
+			m_timestamp_queries[m_read_timestamp_query][0].get(), &disjoint, sizeof(disjoint), D3D11_ASYNC_GETDATA_DONOTFLUSH);
 		if (disjoint_hr != S_OK)
 			break;
 
@@ -696,11 +637,14 @@ void D3D11HostDisplay::PopTimestampQuery()
 		else
 		{
 			u64 start = 0, end = 0;
-			const HRESULT start_hr = m_context->GetData(m_timestamp_queries[m_read_timestamp_query][1].get(), &start, sizeof(start), D3D11_ASYNC_GETDATA_DONOTFLUSH);
-			const HRESULT end_hr = m_context->GetData(m_timestamp_queries[m_read_timestamp_query][2].get(), &end, sizeof(end), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+			const HRESULT start_hr = m_context->GetData(
+				m_timestamp_queries[m_read_timestamp_query][1].get(), &start, sizeof(start), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+			const HRESULT end_hr =
+				m_context->GetData(m_timestamp_queries[m_read_timestamp_query][2].get(), &end, sizeof(end), D3D11_ASYNC_GETDATA_DONOTFLUSH);
 			if (start_hr == S_OK && end_hr == S_OK)
 			{
-				m_accumulated_gpu_time += static_cast<float>(static_cast<double>(end - start) / (static_cast<double>(disjoint.Frequency) / 1000.0));
+				m_accumulated_gpu_time +=
+					static_cast<float>(static_cast<double>(end - start) / (static_cast<double>(disjoint.Frequency) / 1000.0));
 				m_read_timestamp_query = (m_read_timestamp_query + 1) % NUM_TIMESTAMP_QUERIES;
 				m_waiting_timestamp_queries--;
 			}
@@ -753,77 +697,38 @@ float D3D11HostDisplay::GetAndResetAccumulatedGPUTime()
 
 HostDisplay::AdapterAndModeList D3D11HostDisplay::StaticGetAdapterAndModeList()
 {
-	ComPtr<IDXGIFactory> dxgi_factory;
-	const HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(dxgi_factory.put()));
-	if (FAILED(hr))
+	auto factory = D3D::CreateFactory(false);
+	if (!factory)
 		return {};
 
-	return GetAdapterAndModeList(dxgi_factory.get());
+	return GetAdapterAndModeList(factory.get());
 }
 
-HostDisplay::AdapterAndModeList D3D11HostDisplay::GetAdapterAndModeList(IDXGIFactory* dxgi_factory)
+HostDisplay::AdapterAndModeList D3D11HostDisplay::GetAdapterAndModeList(IDXGIFactory5* dxgi_factory)
 {
 	AdapterAndModeList adapter_info;
-	ComPtr<IDXGIAdapter> current_adapter;
-	while (SUCCEEDED(dxgi_factory->EnumAdapters(static_cast<UINT>(adapter_info.adapter_names.size()),
-		current_adapter.put())))
-	{
-		DXGI_ADAPTER_DESC adapter_desc;
-		std::string adapter_name;
-		if (SUCCEEDED(current_adapter->GetDesc(&adapter_desc)))
-		{
-			char adapter_name_buffer[128];
-			const int name_length = WideCharToMultiByte(CP_UTF8, 0, adapter_desc.Description,
-				static_cast<int>(std::wcslen(adapter_desc.Description)),
-				adapter_name_buffer, sizeof(adapter_name_buffer), 0, nullptr);
-			if (name_length >= 0)
-				adapter_name.assign(adapter_name_buffer, static_cast<size_t>(name_length));
-			else
-				adapter_name.assign("(Unknown)");
-		}
-		else
-		{
-			adapter_name.assign("(Unknown)");
-		}
+	adapter_info.adapter_names = D3D::GetAdapterNames(dxgi_factory);
 
-		if (adapter_info.fullscreen_modes.empty())
+	auto adapter = D3D::GetChosenOrFirstAdapter(dxgi_factory, EmuConfig.GS.Adapter);
+	if (adapter)
+	{
+		ComPtr<IDXGIOutput> output;
+		if (SUCCEEDED(adapter->EnumOutputs(0, &output)))
 		{
-			ComPtr<IDXGIOutput> output;
-			if (SUCCEEDED(current_adapter->EnumOutputs(0, &output)))
+			UINT num_modes = 0;
+			if (SUCCEEDED(output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, nullptr)))
 			{
-				UINT num_modes = 0;
-				if (SUCCEEDED(output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, nullptr)))
+				std::vector<DXGI_MODE_DESC> modes(num_modes);
+				if (SUCCEEDED(output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, modes.data())))
 				{
-					std::vector<DXGI_MODE_DESC> modes(num_modes);
-					if (SUCCEEDED(output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, modes.data())))
+					for (const DXGI_MODE_DESC& mode : modes)
 					{
-						for (const DXGI_MODE_DESC& mode : modes)
-						{
-							adapter_info.fullscreen_modes.push_back(GetFullscreenModeString(
-								mode.Width, mode.Height,
-								static_cast<float>(mode.RefreshRate.Numerator) / static_cast<float>(mode.RefreshRate.Denominator)));
-						}
+						adapter_info.fullscreen_modes.push_back(GetFullscreenModeString(mode.Width, mode.Height,
+							static_cast<float>(mode.RefreshRate.Numerator) / static_cast<float>(mode.RefreshRate.Denominator)));
 					}
 				}
 			}
 		}
-
-		// handle duplicate adapter names
-		if (std::any_of(adapter_info.adapter_names.begin(), adapter_info.adapter_names.end(),
-				[&adapter_name](const std::string& other) { return (adapter_name == other); }))
-		{
-			std::string original_adapter_name = std::move(adapter_name);
-
-			u32 current_extra = 2;
-			do
-			{
-				adapter_name = StringUtil::StdStringFromFormat("%s (%u)", original_adapter_name.c_str(), current_extra);
-				current_extra++;
-			} while (std::any_of(adapter_info.adapter_names.begin(), adapter_info.adapter_names.end(),
-				[&adapter_name](const std::string& other) { return (adapter_name == other); }));
-		}
-
-		adapter_info.adapter_names.push_back(std::move(adapter_name));
 	}
 
 	return adapter_info;
@@ -833,4 +738,3 @@ HostDisplay::AdapterAndModeList D3D11HostDisplay::GetAdapterAndModeList()
 {
 	return GetAdapterAndModeList(m_dxgi_factory.get());
 }
-

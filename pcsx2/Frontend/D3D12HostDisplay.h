@@ -25,7 +25,7 @@
 #include "HostDisplay.h"
 
 #include <d3d12.h>
-#include <dxgi.h>
+#include <dxgi1_5.h>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -80,7 +80,7 @@ public:
 	static AdapterAndModeList StaticGetAdapterAndModeList();
 
 protected:
-	static AdapterAndModeList GetAdapterAndModeList(IDXGIFactory* dxgi_factory);
+	static AdapterAndModeList GetAdapterAndModeList(IDXGIFactory5* dxgi_factory);
 
 	bool CreateImGuiContext() override;
 	void DestroyImGuiContext() override;
@@ -90,8 +90,8 @@ protected:
 	bool CreateSwapChainRTV();
 	void DestroySwapChainRTVs();
 
-	ComPtr<IDXGIFactory> m_dxgi_factory;
-	ComPtr<IDXGISwapChain> m_swap_chain;
+	ComPtr<IDXGIFactory5> m_dxgi_factory;
+	ComPtr<IDXGISwapChain1> m_swap_chain;
 	std::vector<D3D12::Texture> m_swap_chain_buffers;
 	u32 m_current_swap_chain_buffer = 0;
 

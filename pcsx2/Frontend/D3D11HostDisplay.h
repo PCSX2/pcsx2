@@ -20,7 +20,7 @@
 #include "common/WindowInfo.h"
 #include <array>
 #include <d3d11.h>
-#include <dxgi.h>
+#include <dxgi1_5.h>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -77,7 +77,7 @@ protected:
 	static constexpr u32 DISPLAY_CONSTANT_BUFFER_SIZE = 16;
 	static constexpr u8 NUM_TIMESTAMP_QUERIES = 5;
 
-	static AdapterAndModeList GetAdapterAndModeList(IDXGIFactory* dxgi_factory);
+	static AdapterAndModeList GetAdapterAndModeList(IDXGIFactory5* dxgi_factory);
 
 	bool CreateImGuiContext() override;
 	void DestroyImGuiContext() override;
@@ -94,8 +94,8 @@ protected:
 	ComPtr<ID3D11Device> m_device;
 	ComPtr<ID3D11DeviceContext> m_context;
 
-	ComPtr<IDXGIFactory> m_dxgi_factory;
-	ComPtr<IDXGISwapChain> m_swap_chain;
+	ComPtr<IDXGIFactory5> m_dxgi_factory;
+	ComPtr<IDXGISwapChain1> m_swap_chain;
 	ComPtr<ID3D11RenderTargetView> m_swap_chain_rtv;
 
 	bool m_allow_tearing_supported = false;
