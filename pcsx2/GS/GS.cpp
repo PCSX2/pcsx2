@@ -108,6 +108,8 @@ void GSshutdown()
 
 void GSclose()
 {
+	GSTextureReplacements::Shutdown();
+
 	if (g_gs_renderer)
 	{
 		g_gs_renderer->Destroy();
@@ -290,6 +292,7 @@ bool GSreopen(bool recreate_display, bool recreate_renderer, const Pcsx2Config::
 	const u32 gamecrc = g_gs_renderer->GetGameCRC();
 	if (recreate_renderer)
 	{
+		GSTextureReplacements::Shutdown();
 		g_gs_renderer->Destroy();
 		g_gs_renderer.reset();
 	}
@@ -773,7 +776,8 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		g_gs_device->ClearSamplerCache();
 
 	// texture dumping/replacement options
-	GSTextureReplacements::UpdateConfig(old_config);
+	if (GSConfig.UseHardwareRenderer())
+		GSTextureReplacements::UpdateConfig(old_config);
 
 	// clear the hash texture cache since we might have replacements now
 	// also clear it when dumping changes, since we want to dump everything being used

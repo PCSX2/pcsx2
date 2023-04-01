@@ -47,8 +47,6 @@ GSTextureCache::GSTextureCache()
 
 GSTextureCache::~GSTextureCache()
 {
-	GSTextureReplacements::Shutdown();
-
 	RemoveAll();
 
 	_aligned_free(s_unswizzle_buffer);

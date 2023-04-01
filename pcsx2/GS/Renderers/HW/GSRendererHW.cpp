@@ -55,7 +55,6 @@ GSRendererHW::~GSRendererHW()
 void GSRendererHW::Destroy()
 {
 	g_texture_cache->RemoveAll();
-	GSTextureReplacements::Shutdown();
 	GSRenderer::Destroy();
 }
 
