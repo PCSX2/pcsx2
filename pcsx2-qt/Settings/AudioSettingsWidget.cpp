@@ -114,12 +114,18 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 	dialog->registerWidgetHelp(m_ui.syncMode, tr("Synchronization"), tr("TimeStretch (Recommended)"),
 		tr("When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast-forward/slowdown audio."));
 
-	dialog->registerWidgetHelp(m_ui.expansionMode, tr("Expansion"), tr("Stereo (None, Default)"), tr(""));
+	dialog->registerWidgetHelp(m_ui.expansionMode, tr("Expansion"), tr("Stereo (None, Default)"), 
+		tr("Determines how the stereo output from the emulated system is upmixed into a greater number of the output speakers."));
 
 	//: Cubeb is an audio engine name. Leave as-is.
-	dialog->registerWidgetHelp(m_ui.outputModule, tr("Output Module"), tr("Cubeb (Cross-platform)"), tr(""));
+	dialog->registerWidgetHelp(m_ui.outputModule, tr("Output Module"), tr("Cubeb (Cross-platform)"), 
+		tr("Selects the library to be used for audio output."));
 
-	dialog->registerWidgetHelp(m_ui.backend, tr("Output Backend"), tr("Default"), tr(""));
+	dialog->registerWidgetHelp(m_ui.backend, tr("Output Backend"), tr("Default"), 
+		tr("When the sound output module supports multiple audio backends, determines the API to be used for audio output to the system."));
+
+	dialog->registerWidgetHelp(m_ui.outputDevice, tr("Output Device"), tr("Default"), 
+		tr("Determines which audio device to output the sound to."));
 
 	dialog->registerWidgetHelp(m_ui.targetLatency, tr("Target Latency"), tr("60 ms"),
 		tr("Determines the buffer size which the time stretcher will try to keep filled. It effectively selects the average latency, as "
