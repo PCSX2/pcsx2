@@ -188,17 +188,18 @@ namespace usb_pad
 			return;
 
 		const s16 new_level = static_cast<s16>(std::clamp(level, -32768, 32767));
-		if (m_constant_effect.constant.level != level)
+		if (m_constant_effect.constant.level != new_level)
 		{
 			m_constant_effect.constant.level = new_level;
 			if (SDL_HapticUpdateEffect(m_haptic, m_constant_effect_id, &m_constant_effect) != 0)
 				Console.Warning("SDL_HapticUpdateEffect() for constant failed: %s", SDL_GetError());
 		}
 
-		if (!m_constant_effect_running && SDL_HapticRunEffect(m_haptic, m_constant_effect_id, SDL_HAPTIC_INFINITY) == 0)
-			m_constant_effect_running = true;
-		else
-			Console.Error("SDL_HapticRunEffect() for constant failed: %s", SDL_GetError());
+		if (!m_constant_effect_running)
+			if (SDL_HapticRunEffect(m_haptic, m_constant_effect_id, SDL_HAPTIC_INFINITY) == 0)
+				m_constant_effect_running = true;
+			else
+				Console.Error("SDL_HapticRunEffect() for constant failed: %s", SDL_GetError());
 	}
 
 	template <typename T>
@@ -222,10 +223,11 @@ namespace usb_pad
 		if (SDL_HapticUpdateEffect(m_haptic, m_spring_effect_id, &m_spring_effect) != 0)
 			Console.Warning("SDL_HapticUpdateEffect() for spring failed: %s", SDL_GetError());
 
-		if (!m_spring_effect_running && SDL_HapticRunEffect(m_haptic, m_spring_effect_id, SDL_HAPTIC_INFINITY) == 0)
-			m_spring_effect_running = true;
-		else
-			Console.Warning("SDL_HapticRunEffect() for spring failed: %s", SDL_GetError());
+		if (!m_spring_effect_running)
+			if (SDL_HapticRunEffect(m_haptic, m_spring_effect_id, SDL_HAPTIC_INFINITY) == 0)
+				m_spring_effect_running = true;
+			else 
+				Console.Error("SDL_HapticRunEffect() for spring failed: %s", SDL_GetError());		
 	}
 
 	void SDLFFDevice::SetDamperForce(const parsed_ff_data& ff)
@@ -243,10 +245,11 @@ namespace usb_pad
 		if (SDL_HapticUpdateEffect(m_haptic, m_damper_effect_id, &m_damper_effect) != 0)
 			Console.Warning("SDL_HapticUpdateEffect() for damper failed: %s", SDL_GetError());
 
-		if (!m_damper_effect_running && SDL_HapticRunEffect(m_haptic, m_damper_effect_id, SDL_HAPTIC_INFINITY) == 0)
-			m_damper_effect_running = true;
-		else
-			Console.Warning("SDL_HapticRunEffect() for damper failed: %s", SDL_GetError());
+		if (!m_damper_effect_running)
+			if (SDL_HapticRunEffect (m_haptic, m_damper_effect_id, SDL_HAPTIC_INFINITY) == 0)
+				m_damper_effect_running = true;
+			else
+				Console.Error("SDL_HapticRunEffect() for damper failed: %s", SDL_GetError());
 	}
 
 	void SDLFFDevice::SetFrictionForce(const parsed_ff_data& ff)
@@ -262,12 +265,10 @@ namespace usb_pad
 		m_friction_effect.condition.center[0] = ClampU16(ff.u.condition.center);
 
 		if (SDL_HapticUpdateEffect(m_haptic, m_friction_effect_id, &m_friction_effect) != 0)
-			Console.Warning("SDL_HapticUpdateEffect() for friction failed: %s", SDL_GetError());
-
-		if (!m_friction_effect_running && SDL_HapticRunEffect(m_haptic, m_friction_effect_id, SDL_HAPTIC_INFINITY) == 0)
-			m_friction_effect_running = true;
-		else
-			Console.Warning("SDL_HapticRunEffect() for friction failed: %s", SDL_GetError());
+			if (!m_friction_effect_running && SDL_HapticRunEffect(m_haptic, m_friction_effect_id, SDL_HAPTIC_INFINITY) == 0)
+				m_friction_effect_running = true;
+			else
+				Console.Error("SDL_HapticUpdateEffect() for friction failed: %s", SDL_GetError());
 	}
 
 	void SDLFFDevice::SetAutoCenter(int value)
