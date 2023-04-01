@@ -173,8 +173,12 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 	dialog->registerWidgetHelp(
 		m_ui.discordPresence, tr("Enable Discord Presence"), tr("Unchecked"),
 		tr("Shows the game you are currently playing as part of your profile in Discord."));
-	dialog->registerWidgetHelp(m_ui.doubleClickTogglesFullscreen, tr("Double-Click Toggles Fullscreen"), tr("Checked"), tr(""));
-	dialog->registerWidgetHelp(m_ui.disableWindowResizing, tr("Disable Window Resizing"), tr("Unchecked"), tr(""));
+	dialog->registerWidgetHelp(
+		m_ui.doubleClickTogglesFullscreen, tr("Double-Click Toggles Fullscreen"), tr("Checked"), 
+		tr("Allows switching in and out of fullscreen mode by double-clicking the game window."));
+	dialog->registerWidgetHelp(
+		m_ui.disableWindowResizing, tr("Disable Window Resizing"), tr("Unchecked"), 
+		tr("Prevents the main window from being resized."));
 
 	// Not yet used, disable the options
 	m_ui.language->setDisabled(true);

@@ -692,7 +692,7 @@ Login token generated on %2.</source>
     </message>
     <message>
         <location filename="../Settings/AudioSettingsWidget.ui" line="179"/>
-        <source>Reset Defaults</source>
+        <source>Restore Defaults</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
