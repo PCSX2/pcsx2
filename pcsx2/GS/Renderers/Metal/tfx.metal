@@ -70,6 +70,7 @@ constant bool PS_TEX_IS_FB          [[function_constant(GSMTLConstantIndex_PS_TE
 constant bool PS_AUTOMATIC_LOD      [[function_constant(GSMTLConstantIndex_PS_AUTOMATIC_LOD)]];
 constant bool PS_MANUAL_LOD         [[function_constant(GSMTLConstantIndex_PS_MANUAL_LOD)]];
 constant bool PS_POINT_SAMPLER      [[function_constant(GSMTLConstantIndex_PS_POINT_SAMPLER)]];
+constant bool PS_REGION_RECT        [[function_constant(GSMTLConstantIndex_PS_REGION_RECT)]];
 constant uint PS_SCANMSK            [[function_constant(GSMTLConstantIndex_PS_SCANMSK)]];
 
 constant GSMTLExpandType VS_EXPAND_TYPE = static_cast<GSMTLExpandType>(VS_EXPAND_TYPE_RAW);
@@ -310,10 +311,20 @@ struct PSMain
 			return tex.sample(args...);
 	}
 
+	float4 read_tex(uint2 pos, uint lod = 0)
+	{
+		if (PS_TEX_IS_DEPTH)
+			return float4(tex_depth.read(pos, lod));
+		else
+			return tex.read(pos, lod);
+	}
+
 	float4 sample_c(float2 uv)
 	{
 		if (PS_TEX_IS_FB)
 			return current_color;
+		if (PS_REGION_RECT)
+			return read_tex(uint2(uv));
 
 		if (PS_POINT_SAMPLER)
 		{
@@ -382,7 +393,15 @@ struct PSMain
 
 		if (PS_WMS == PS_WMT)
 		{
-			if (PS_WMS == 2)
+			if (PS_REGION_RECT && PS_WMS == 0)
+			{
+				uv_out = fract(uv);
+			}
+			else if (PS_REGION_RECT && PS_WMS == 1)
+			{
+				uv_out = saturate(uv);
+			}
+			else if (PS_WMS == 2)
 			{
 				uv_out = clamp(uv, cb.uv_min_max.xyxy, cb.uv_min_max.zwzw);
 			}
@@ -398,7 +417,15 @@ struct PSMain
 		}
 		else
 		{
-			if (PS_WMS == 2)
+			if (PS_REGION_RECT && PS_WMS == 0)
+			{
+				uv_out.xz = fract(uv.xz);
+			}
+			else if (PS_REGION_RECT && PS_WMS == 1)
+			{
+				uv_out.xz = saturate(uv.xz);
+			}
+			else if (PS_WMS == 2)
 			{
 				uv_out.xz = clamp(uv.xz, cb.uv_min_max.xx, cb.uv_min_max.zz);
 			}
@@ -410,7 +437,15 @@ struct PSMain
 				uv_out.xz = float2((ushort2(uv.xz * tex_size.xx) & ushort2(cb.uv_msk_fix.xx)) | ushort2(cb.uv_msk_fix.zz)) / tex_size.xx;
 			}
 
-			if (PS_WMT == 2)
+			if (PS_REGION_RECT && PS_WMT == 0)
+			{
+				uv_out.yw = fract(uv.yw);
+			}
+			else if (PS_REGION_RECT && PS_WMT == 1)
+			{
+				uv_out.yw = saturate(uv.yw);
+			}
+			else if (PS_WMT == 2)
 			{
 				uv_out.yw = clamp(uv.yw, cb.uv_min_max.yy, cb.uv_min_max.ww);
 			}
@@ -421,6 +456,12 @@ struct PSMain
 
 				uv_out.yw = float2((ushort2(uv.yw * tex_size.yy) & ushort2(cb.uv_msk_fix.yy)) | ushort2(cb.uv_msk_fix.ww)) / tex_size.yy;
 			}
+		}
+
+		if (PS_REGION_RECT)
+		{
+			// Normalized -> Integer Coordinates.
+			uv_out = clamp(uv_out * cb.wh.zwzw + cb.st_range.xyxy, cb.st_range.xyxy, cb.st_range.zwzw);
 		}
 
 		return uv_out;
@@ -631,7 +672,7 @@ struct PSMain
 		float4x4 c;
 		float2 dd;
 
-		if (!PS_LTF && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_WMS < 2 && PS_WMT < 2)
+		if (!PS_LTF && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && !PS_REGION_RECT && PS_WMS < 2 && PS_WMT < 2)
 		{
 			c[0] = sample_c(st);
 		}
