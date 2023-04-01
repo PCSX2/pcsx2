@@ -20,7 +20,6 @@
 #include "USB/qemu-usb/USBinternal.h"
 #include "USB/USB.h"
 #include "GS/GS.h"
-#include "HostDisplay.h"
 #include "StateWrapper.h"
 #include "VMManager.h"
 

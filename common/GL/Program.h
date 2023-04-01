@@ -79,27 +79,9 @@ namespace GL
 		void Uniform3fv(int index, const float* v) const;
 		void Uniform4fv(int index, const float* v) const;
 
-		void Uniform1ui(const char* name, u32 x) const;
-		void Uniform2ui(const char* name, u32 x, u32 y) const;
-		void Uniform3ui(const char* name, u32 x, u32 y, u32 z) const;
-		void Uniform4ui(const char* name, u32 x, u32 y, u32 z, u32 w) const;
-		void Uniform1i(const char* name, s32 x) const;
-		void Uniform2i(const char* name, s32 x, s32 y) const;
-		void Uniform3i(const char* name, s32 x, s32 y, s32 z) const;
-		void Uniform4i(const char* name, s32 x, s32 y, s32 z, s32 w) const;
-		void Uniform1f(const char* name, float x) const;
-		void Uniform2f(const char* name, float x, float y) const;
-		void Uniform3f(const char* name, float x, float y, float z) const;
-		void Uniform4f(const char* name, float x, float y, float z, float w) const;
-		void Uniform2uiv(const char* name, const u32* v) const;
-		void Uniform3uiv(const char* name, const u32* v) const;
-		void Uniform4uiv(const char* name, const u32* v) const;
-		void Uniform2iv(const char* name, const s32* v) const;
-		void Uniform3iv(const char* name, const s32* v) const;
-		void Uniform4iv(const char* name, const s32* v) const;
-		void Uniform2fv(const char* name, const float* v) const;
-		void Uniform3fv(const char* name, const float* v) const;
-		void Uniform4fv(const char* name, const float* v) const;
+		void UniformMatrix2fv(int index, const float* v);
+		void UniformMatrix3fv(int index, const float* v);
+		void UniformMatrix4fv(int index, const float* v);
 
 		void BindUniformBlock(const char* name, u32 index);
 

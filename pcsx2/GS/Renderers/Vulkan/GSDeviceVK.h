@@ -24,6 +24,11 @@
 #include <array>
 #include <unordered_map>
 
+namespace Vulkan
+{
+class SwapChain;
+}
+
 class GSDeviceVK final : public GSDevice
 {
 public:
@@ -104,6 +109,8 @@ public:
 	};
 
 private:
+	std::unique_ptr<Vulkan::SwapChain> m_swap_chain;
+
 	VkDescriptorSetLayout m_utility_ds_layout = VK_NULL_HANDLE;
 	VkPipelineLayout m_utility_pipeline_layout = VK_NULL_HANDLE;
 
@@ -153,6 +160,7 @@ private:
 	VkDescriptorSetLayout m_cas_ds_layout = VK_NULL_HANDLE;
 	VkPipelineLayout m_cas_pipeline_layout = VK_NULL_HANDLE;
 	std::array<VkPipeline, NUM_CAS_PIPELINES> m_cas_pipelines = {};
+	VkPipeline m_imgui_pipeline = VK_NULL_HANDLE;
 
 	GSHWDrawConfig::VSConstantBuffer m_vs_cb_cache;
 	GSHWDrawConfig::PSConstantBuffer m_ps_cb_cache;
@@ -196,6 +204,9 @@ private:
 	bool CompilePostProcessingPipelines();
 	bool CompileCASPipelines();
 
+	bool CompileImGuiPipeline();
+	void RenderImGui();
+
 	void DestroyResources();
 
 public:
@@ -203,6 +214,8 @@ public:
 	~GSDeviceVK() override;
 
 	__fi static GSDeviceVK* GetInstance() { return static_cast<GSDeviceVK*>(g_gs_device.get()); }
+
+	static void GetAdaptersAndFullscreenModes(std::vector<std::string>* adapters, std::vector<std::string>* fullscreen_modes);
 
 	__fi VkRenderPass GetTFXRenderPass(bool rt, bool ds, bool hdr, DATE_RENDER_PASS date, bool fbl, bool dsp,
 		VkAttachmentLoadOp rt_op, VkAttachmentLoadOp ds_op) const
@@ -212,11 +225,27 @@ public:
 	__fi VkSampler GetPointSampler() const { return m_point_sampler; }
 	__fi VkSampler GetLinearSampler() const { return m_linear_sampler; }
 
-	bool Create() override;
+	RenderAPI GetRenderAPI() const override;
+	bool HasSurface() const override;
+
+	bool Create(const WindowInfo& wi, VsyncMode vsync) override;
 	void Destroy() override;
 
-	void ResetAPIState() override;
-	void RestoreAPIState() override;
+	bool ChangeWindow(const WindowInfo& new_wi) override;
+	void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
+	bool SupportsExclusiveFullscreen() const override;
+	bool IsExclusiveFullscreen() override;
+	bool SetExclusiveFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) override;
+	void DestroySurface() override;
+	std::string GetDriverInfo() const override;
+
+	void SetVSync(VsyncMode mode) override;
+
+	PresentResult BeginPresent(bool frame_skip) override;
+	void EndPresent() override;
+
+	bool SetGPUTimingEnabled(bool enabled) override;
+	float GetAndResetAccumulatedGPUTime() override;
 
 	void PushDebugGroup(const char* fmt, ...) override;
 	void PopDebugGroup() override;

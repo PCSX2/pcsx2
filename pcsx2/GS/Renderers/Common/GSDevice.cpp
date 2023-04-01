@@ -20,6 +20,8 @@
 #include "Host.h"
 #include "common/StringUtil.h"
 
+#include "imgui.h"
+
 #include <algorithm>
 
 const char* shaderName(ShaderConvert value)
@@ -91,23 +93,129 @@ GSDevice::~GSDevice()
 	pxAssert(m_pool.empty() && !m_merge && !m_weavebob && !m_blend && !m_mad && !m_target_tmp && !m_cas);
 }
 
-bool GSDevice::Create()
+const char* GSDevice::RenderAPIToString(RenderAPI api)
 {
+	switch (api)
+	{
+		// clang-format off
+#define CASE(x) case RenderAPI::x: return #x
+		CASE(None);
+		CASE(D3D11);
+		CASE(D3D12);
+		CASE(Metal);
+		CASE(Vulkan);
+		CASE(OpenGL);
+		CASE(OpenGLES);
+#undef CASE
+		// clang-format on
+	default:
+		return "Unknown";
+	}
+}
+
+bool GSDevice::ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height, float* refresh_rate)
+{
+	if (!mode.empty())
+	{
+		std::string_view::size_type sep1 = mode.find('x');
+		if (sep1 != std::string_view::npos)
+		{
+			std::optional<u32> owidth = StringUtil::FromChars<u32>(mode.substr(0, sep1));
+			sep1++;
+
+			while (sep1 < mode.length() && std::isspace(mode[sep1]))
+				sep1++;
+
+			if (owidth.has_value() && sep1 < mode.length())
+			{
+				std::string_view::size_type sep2 = mode.find('@', sep1);
+				if (sep2 != std::string_view::npos)
+				{
+					std::optional<u32> oheight = StringUtil::FromChars<u32>(mode.substr(sep1, sep2 - sep1));
+					sep2++;
+
+					while (sep2 < mode.length() && std::isspace(mode[sep2]))
+						sep2++;
+
+					if (oheight.has_value() && sep2 < mode.length())
+					{
+						std::optional<float> orefresh_rate = StringUtil::FromChars<float>(mode.substr(sep2));
+						if (orefresh_rate.has_value())
+						{
+							*width = owidth.value();
+							*height = oheight.value();
+							*refresh_rate = orefresh_rate.value();
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	*width = 0;
+	*height = 0;
+	*refresh_rate = 0;
+	return false;
+}
+
+std::string GSDevice::GetFullscreenModeString(u32 width, u32 height, float refresh_rate)
+{
+	return StringUtil::StdStringFromFormat("%u x %u @ %f hz", width, height, refresh_rate);
+}
+
+bool GSDevice::Create(const WindowInfo& wi, VsyncMode vsync)
+{
+	m_window_info = wi;
+	m_vsync_mode = vsync;
 	return true;
 }
 
 void GSDevice::Destroy()
 {
+	if (m_imgui_font)
+	{
+		Recycle(m_imgui_font);
+		m_imgui_font = nullptr;
+	}
+
 	ClearCurrent();
 	PurgePool();
 }
 
-void GSDevice::ResetAPIState()
+bool GSDevice::GetHostRefreshRate(float* refresh_rate)
 {
+	if (m_window_info.surface_refresh_rate > 0.0f)
+	{
+		*refresh_rate = m_window_info.surface_refresh_rate;
+		return true;
+	}
+
+	return WindowInfo::QueryRefreshRateForWindow(m_window_info, refresh_rate);
 }
 
-void GSDevice::RestoreAPIState()
+bool GSDevice::UpdateImGuiFontTexture()
 {
+	unsigned char* pixels;
+	int width, height;
+	ImGui::GetIO().Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+
+	const GSVector4i r(0, 0, width, height);
+	const int pitch = sizeof(u32) * width;
+
+	if (m_imgui_font && m_imgui_font->GetWidth() == width && m_imgui_font->GetHeight() == height)
+		return m_imgui_font->Update(r, pixels, pitch);
+
+	GSTexture* new_font = CreateTexture(width, height, 1, GSTexture::Format::Color);
+	if (!new_font || !new_font->Update(r, pixels, pitch))
+		return false;
+
+	if (m_imgui_font)
+		Recycle(m_imgui_font);
+
+	m_imgui_font = new_font;
+	ImGui::GetIO().Fonts->SetTexID(new_font->GetNativeHandle());
+	return true;
 }
 
 GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format, bool clear, bool prefer_reuse)
@@ -182,11 +290,6 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 	return t;
 }
 
-std::unique_ptr<GSDownloadTexture> GSDevice::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
-{
-	return {};
-}
-
 void GSDevice::Recycle(GSTexture* t)
 {
 	if (!t)
@@ -208,6 +311,12 @@ void GSDevice::Recycle(GSTexture* t)
 	}
 }
 
+bool GSDevice::UsesLowerLeftOrigin() const
+{
+	const RenderAPI api = GetRenderAPI();
+	return (api == RenderAPI::OpenGL || api == RenderAPI::OpenGLES);
+}
+
 void GSDevice::AgePool()
 {
 	m_frame++;
@@ -227,10 +336,6 @@ void GSDevice::PurgePool()
 		delete t;
 	m_pool.clear();
 	m_pool_memory_usage = 0;
-}
-
-void GSDevice::ClearSamplerCache()
-{
 }
 
 GSTexture* GSDevice::CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear)

@@ -143,6 +143,12 @@ class GSDeviceMTL final : public GSDevice
 public:
 	using DepthStencilSelector = GSHWDrawConfig::DepthStencilSelector;
 	using SamplerSelector = GSHWDrawConfig::SamplerSelector;
+	enum class UsePresentDrawable : u8
+	{
+		Never = 0,
+		Always = 1,
+		IfVsync = 2,
+	};
 	enum class LoadAction
 	{
 		DontCare,
@@ -219,7 +225,18 @@ public:
 	MRCOwned<id<MTLFence>> m_draw_sync_fence;
 	MRCOwned<MTLFunctionConstantValues*> m_fn_constants;
 	MRCOwned<MTLVertexDescriptor*> m_hw_vertex;
-	std::unique_ptr<GSTextureMTL> m_font;
+
+	// Previously in MetalHostDisplay.
+	MRCOwned<NSView*> m_view;
+	MRCOwned<CAMetalLayer*> m_layer;
+	MRCOwned<id<CAMetalDrawable>> m_current_drawable;
+	MRCOwned<MTLRenderPassDescriptor*> m_pass_desc;
+	u32 m_capture_start_frame;
+	UsePresentDrawable m_use_present_drawable;
+	bool m_gpu_timing_enabled = false;
+	double m_accumulated_gpu_time = 0;
+	double m_last_gpu_time_end = 0;
+	std::mutex m_mtx;
 
 	// Draw IDs are used to make sure we're not clobbering things
 	u64 m_current_draw = 1;
@@ -361,14 +378,44 @@ public:
 	MRCOwned<id<MTLFunction>> LoadShader(NSString* name);
 	MRCOwned<id<MTLRenderPipelineState>> MakePipeline(MTLRenderPipelineDescriptor* desc, id<MTLFunction> vertex, id<MTLFunction> fragment, NSString* name);
 	MRCOwned<id<MTLComputePipelineState>> MakeComputePipeline(id<MTLFunction> compute, NSString* name);
-	bool Create() override;
+	bool Create(const WindowInfo& wi, VsyncMode vsync) override;
+	void Destroy() override;
+
+	void AttachSurfaceOnMainThread();
+	void DetachSurfaceOnMainThread();
+
+	RenderAPI GetRenderAPI() const override;
+	bool HasSurface() const override;
+	void DestroySurface() override;
+	bool ChangeWindow(const WindowInfo& wi) override;
+	bool SupportsExclusiveFullscreen() const override;
+	bool IsExclusiveFullscreen() override;
+	bool SetExclusiveFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) override;
+	std::string GetDriverInfo() const override;
+
+	void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
+
+	void UpdateTexture(id<MTLTexture> texture, u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_stride);
+
+	PresentResult BeginPresent(bool frame_skip) override;
+	void EndPresent() override;
+	void SetVSync(VsyncMode mode) override;
+
+	bool GetHostRefreshRate(float* refresh_rate) override;
+
+	bool SetGPUTimingEnabled(bool enabled) override;
+	float GetAndResetAccumulatedGPUTime() override;
+	void AccumulateCommandBufferTime(id<MTLCommandBuffer> buffer);
 
 	void ClearRenderTarget(GSTexture* t, const GSVector4& c) override;
 	void ClearRenderTarget(GSTexture* t, u32 c) override;
 	void ClearDepth(GSTexture* t) override;
 	void ClearStencil(GSTexture* t, u8 c) override;
+	void InvalidateRenderTarget(GSTexture* t) override;
 
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
+
+	void ClearSamplerCache() override;
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) override;
 	void DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, id<MTLRenderPipelineState> pipeline, bool linear, LoadAction load_action, const void* frag_uniform, size_t frag_uniform_len);

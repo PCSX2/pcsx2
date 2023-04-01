@@ -128,8 +128,8 @@ public Q_SLOTS:
 private Q_SLOTS:
 	void onUpdateCheckComplete();
 
-	DisplayWidget* createDisplay(bool fullscreen, bool render_to_main);
-	DisplayWidget* updateDisplay(bool fullscreen, bool render_to_main, bool surfaceless);
+	std::optional<WindowInfo> createDisplayWindow(bool fullscreen, bool render_to_main);
+	std::optional<WindowInfo> updateDisplayWindow(bool fullscreen, bool render_to_main, bool surfaceless);
 	void displayResizeRequested(qint32 width, qint32 height);
 	void relativeMouseModeRequested(bool enabled);
 	void destroyDisplay();
@@ -233,10 +233,9 @@ private:
 	QWidget* getDisplayContainer() const;
 	void saveDisplayWindowGeometryToConfig();
 	void restoreDisplayWindowGeometryFromConfig();
-	void createDisplayWidget(bool fullscreen, bool render_to_main, bool is_exclusive_fullscreen);
+	void createDisplayWidget(bool fullscreen, bool render_to_main);
 	void destroyDisplayWidget(bool show_game_list);
 	void updateDisplayWidgetCursor();
-	void setDisplayFullscreen(const std::string& fullscreen_mode);
 
 	SettingsDialog* getSettingsDialog();
 	void doSettings(const char* category = nullptr);

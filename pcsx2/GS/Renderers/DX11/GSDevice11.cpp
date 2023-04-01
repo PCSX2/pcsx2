@@ -21,15 +21,21 @@
 #include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
 #include "Host.h"
-#include "HostDisplay.h"
 #include "ShaderCacheVersion.h"
+
+#include "common/Align.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
+
+#include "imgui.h"
+
 #include <fstream>
 #include <sstream>
 #include <VersionHelpers.h>
 #include <d3dcompiler.h>
 #include <dxgidebug.h>
+
+// #define REPORT_LEAKED_OBJECTS 1
 
 static bool SupportsTextureFormat(ID3D11Device* dev, DXGI_FORMAT format)
 {
@@ -63,17 +69,89 @@ GSDevice11::GSDevice11()
 	m_features.test_and_sample_depth = false;
 }
 
-GSDevice11::~GSDevice11()
+GSDevice11::~GSDevice11() = default;
+
+RenderAPI GSDevice11::GetRenderAPI() const
 {
-	if (m_state.rt_view)
-		m_state.rt_view->Release();
-	if (m_state.dsv)
-		m_state.dsv->Release();
+	return RenderAPI::D3D11;
 }
 
-bool GSDevice11::Create()
+bool GSDevice11::Create(const WindowInfo& wi, VsyncMode vsync)
 {
-	if (!GSDevice::Create())
+	if (!GSDevice::Create(wi, vsync))
+		return false;
+
+	UINT create_flags = 0;
+	if (GSConfig.UseDebugDevice)
+		create_flags |= D3D11_CREATE_DEVICE_DEBUG;
+
+	m_dxgi_factory = D3D::CreateFactory(GSConfig.UseDebugDevice);
+	if (!m_dxgi_factory)
+		return false;
+
+	wil::com_ptr_nothrow<IDXGIAdapter1> dxgi_adapter = D3D::GetAdapterByName(m_dxgi_factory.get(), GSConfig.Adapter);
+
+	static constexpr std::array<D3D_FEATURE_LEVEL, 3> requested_feature_levels = {
+		{D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0}};
+
+	wil::com_ptr_nothrow<ID3D11Device> temp_dev;
+	wil::com_ptr_nothrow<ID3D11DeviceContext> temp_ctx;
+
+	HRESULT hr =
+		D3D11CreateDevice(dxgi_adapter.get(), dxgi_adapter ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE,
+			nullptr, create_flags, requested_feature_levels.data(), static_cast<UINT>(requested_feature_levels.size()),
+			D3D11_SDK_VERSION, temp_dev.put(), nullptr, temp_ctx.put());
+
+	if (FAILED(hr))
+	{
+		Console.Error("Failed to create D3D device: 0x%08X", hr);
+		return false;
+	}
+
+	if (!temp_dev.try_query_to(&m_dev) || !temp_ctx.try_query_to(&m_ctx))
+	{
+		Console.Error("Direct3D 11.1 is required and not supported.");
+		return false;
+	}
+
+	// we re-grab these later, see below
+	dxgi_adapter.reset();
+	temp_dev.reset();
+	temp_ctx.reset();
+
+	if (GSConfig.UseDebugDevice && IsDebuggerPresent())
+	{
+		wil::com_ptr_nothrow<ID3D11InfoQueue> info;
+		if (m_dev.try_query_to(&info))
+		{
+			info->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, TRUE);
+			info->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_WARNING, TRUE);
+
+			// Silence some annoying harmless warnings.
+			D3D11_MESSAGE_ID hide[] = {
+				D3D11_MESSAGE_ID_DEVICE_OMSETRENDERTARGETS_HAZARD,
+				D3D11_MESSAGE_ID_DEVICE_PSSETSHADERRESOURCES_HAZARD,
+			};
+
+			D3D11_INFO_QUEUE_FILTER filter = {};
+			filter.DenyList.NumIDs = std::size(hide);
+			filter.DenyList.pIDList = hide;
+			info->AddStorageFilterEntries(&filter);
+		}
+	}
+
+	wil::com_ptr_nothrow<IDXGIDevice> dxgi_device;
+	if (m_dev.try_query_to(&dxgi_device) && SUCCEEDED(dxgi_device->GetParent(IID_PPV_ARGS(dxgi_adapter.put()))))
+		Console.WriteLn(fmt::format("D3D Adapter: {}", D3D::GetAdapterName(dxgi_adapter.get())));
+	else
+		Console.Error("Failed to obtain D3D adapter name.");
+
+	BOOL allow_tearing_supported = false;
+	hr = m_dxgi_factory->CheckFeatureSupport(
+		DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported, sizeof(allow_tearing_supported));
+	m_allow_tearing_supported = (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
+
+	if (wi.type != WindowInfo::Type::Surfaceless && !CreateSwapChain(nullptr))
 		return false;
 
 	D3D11_BUFFER_DESC bd;
@@ -84,14 +162,6 @@ bool GSDevice11::Create()
 
 	D3D_FEATURE_LEVEL level;
 
-	if (g_host_display->GetRenderAPI() != RenderAPI::D3D11)
-	{
-		Console.Error("Render API is incompatible with D3D11");
-		return false;
-	}
-
-	m_dev = static_cast<ID3D11Device*>(g_host_display->GetDevice());
-	m_ctx = static_cast<ID3D11DeviceContext*>(g_host_display->GetContext());
 	if (GSConfig.UseDebugDevice)
 		m_annotation = m_ctx.try_query<ID3DUserDefinedAnnotation>();
 	level = m_dev->GetFeatureLevel();
@@ -373,7 +443,61 @@ bool GSDevice11::Create()
 
 	m_features.cas_sharpening = support_feature_level_11_0 && CreateCASShaders();
 
+	if (!CreateImGuiResources())
+		return false;
+
 	return true;
+}
+
+void GSDevice11::Destroy()
+{
+	GSDevice::Destroy();
+	GSDevice11::DestroySurface();
+	DestroyTimestampQueries();
+
+	m_convert = {};
+	m_present = {};
+	m_merge = {};
+	m_interlace = {};
+	m_shadeboost = {};
+	m_date = {};
+	m_cas = {};
+	m_imgui = {};
+
+	m_vb.reset();
+	m_ib.reset();
+
+	m_vs.clear();
+	m_vs_cb.reset();
+	m_gs.clear();
+	m_ps.clear();
+	m_ps_cb.reset();
+	m_ps_ss.clear();
+	m_om_dss.clear();
+	m_om_bs.clear();
+	m_rs.reset();
+
+	if (m_state.rt_view)
+		m_state.rt_view->Release();
+	if (m_state.dsv)
+		m_state.dsv->Release();
+
+	m_shader_cache.Close();
+
+#ifdef REPORT_LEAKED_OBJECTS
+	wil::com_ptr_nothrow<ID3D11Debug> debug;
+	m_dev.try_query_to(&debug);
+#endif
+
+	m_annotation.reset();
+	m_ctx.reset();
+	m_dev.reset();
+	m_dxgi_factory.reset();
+
+#ifdef REPORT_LEAKED_OBJECTS
+	if (debug)
+		debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL);
+#endif
 }
 
 void GSDevice11::SetFeatures()
@@ -386,44 +510,477 @@ void GSDevice11::SetFeatures()
 	m_features.bptc_textures = SupportsTextureFormat(m_dev.get(), DXGI_FORMAT_BC7_UNORM);
 }
 
-void GSDevice11::ResetAPIState()
+bool GSDevice11::HasSurface() const
 {
-	// Clear out the GS, since the imgui draw doesn't get rid of it.
-	m_ctx->GSSetShader(nullptr, nullptr, 0);
+	return static_cast<bool>(m_swap_chain);
 }
 
-void GSDevice11::RestoreAPIState()
+bool GSDevice11::GetHostRefreshRate(float* refresh_rate)
 {
-	const UINT vb_offset = 0;
-	m_ctx->IASetVertexBuffers(0, 1, m_vb.addressof(), &m_state.vb_stride, &vb_offset);
-	m_ctx->IASetIndexBuffer(m_ib.get(), DXGI_FORMAT_R32_UINT, 0);
-	m_ctx->IASetInputLayout(m_state.layout);
-	m_ctx->IASetPrimitiveTopology(m_state.topology);
-	m_ctx->VSSetShader(m_state.vs, nullptr, 0);
-	m_ctx->VSSetConstantBuffers(0, 1, &m_state.vs_cb);
-	m_ctx->GSSetShader(m_state.gs, nullptr, 0);
-	m_ctx->GSSetConstantBuffers(0, 1, &m_state.gs_cb);
-	m_ctx->PSSetShader(m_state.ps, nullptr, 0);
-	m_ctx->PSSetConstantBuffers(0, 1, &m_state.ps_cb);
+	if (m_swap_chain && IsExclusiveFullscreen())
+	{
+		DXGI_SWAP_CHAIN_DESC desc;
+		if (SUCCEEDED(m_swap_chain->GetDesc(&desc)) && desc.BufferDesc.RefreshRate.Numerator > 0 &&
+			desc.BufferDesc.RefreshRate.Denominator > 0)
+		{
+			DevCon.WriteLn(
+				"using fs rr: %u %u", desc.BufferDesc.RefreshRate.Numerator, desc.BufferDesc.RefreshRate.Denominator);
+			*refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
+							static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
+			return true;
+		}
+	}
 
-	const CD3D11_VIEWPORT vp(0.0f, 0.0f,
-		static_cast<float>(m_state.viewport.x), static_cast<float>(m_state.viewport.y),
-		0.0f, 1.0f);
-	m_ctx->RSSetViewports(1, &vp);
-	m_ctx->RSSetScissorRects(1, reinterpret_cast<const D3D11_RECT*>(&m_state.scissor));
-	m_ctx->RSSetState(m_rs.get());
+	return GSDevice::GetHostRefreshRate(refresh_rate);
+}
 
-	m_ctx->OMSetDepthStencilState(m_state.dss, m_state.sref);
+void GSDevice11::SetVSync(VsyncMode mode)
+{
+	m_vsync_mode = mode;
+}
 
-	const float blend_factors[4] = { m_state.bf, m_state.bf, m_state.bf, m_state.bf };
-	m_ctx->OMSetBlendState(m_state.bs, blend_factors, 0xFFFFFFFFu);
+bool GSDevice11::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
+{
+	if (m_window_info.type != WindowInfo::Type::Win32)
+		return false;
 
-	PSUpdateShaderState();
+	m_using_flip_model_swap_chain = !EmuConfig.GS.UseBlitSwapChain || fullscreen_mode;
 
+	const HWND window_hwnd = reinterpret_cast<HWND>(m_window_info.window_handle);
+	RECT client_rc{};
+	GetClientRect(window_hwnd, &client_rc);
+	const u32 width = static_cast<u32>(client_rc.right - client_rc.left);
+	const u32 height = static_cast<u32>(client_rc.bottom - client_rc.top);
+
+	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
+	swap_chain_desc.Width = width;
+	swap_chain_desc.Height = height;
+	swap_chain_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swap_chain_desc.SampleDesc.Count = 1;
+	swap_chain_desc.BufferCount = 3;
+	swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swap_chain_desc.SwapEffect =
+		m_using_flip_model_swap_chain ? DXGI_SWAP_EFFECT_FLIP_DISCARD : DXGI_SWAP_EFFECT_DISCARD;
+
+	m_using_allow_tearing = (m_allow_tearing_supported && m_using_flip_model_swap_chain && !fullscreen_mode);
+	if (m_using_allow_tearing)
+		swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+
+	DXGI_SWAP_CHAIN_FULLSCREEN_DESC fs_desc = {};
+	if (fullscreen_mode)
+	{
+		swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+		swap_chain_desc.Width = fullscreen_mode->Width;
+		swap_chain_desc.Height = fullscreen_mode->Height;
+		fs_desc.RefreshRate = fullscreen_mode->RefreshRate;
+		fs_desc.ScanlineOrdering = fullscreen_mode->ScanlineOrdering;
+		fs_desc.Scaling = fullscreen_mode->Scaling;
+		fs_desc.Windowed = FALSE;
+	}
+
+	Console.WriteLn("Creating a %dx%d %s %s swap chain", swap_chain_desc.Width, swap_chain_desc.Height,
+		m_using_flip_model_swap_chain ? "flip-discard" : "discard", fullscreen_mode ? "full-screen" : "windowed");
+
+	HRESULT hr = m_dxgi_factory->CreateSwapChainForHwnd(m_dev.get(), window_hwnd, &swap_chain_desc,
+		fullscreen_mode ? &fs_desc : nullptr, nullptr, m_swap_chain.put());
+	if (FAILED(hr) && m_using_flip_model_swap_chain)
+	{
+		Console.Warning("Failed to create a flip-discard swap chain, trying discard.");
+		swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+		swap_chain_desc.Flags = 0;
+		m_using_flip_model_swap_chain = false;
+		m_using_allow_tearing = false;
+
+		hr = m_dxgi_factory->CreateSwapChainForHwnd(m_dev.get(), window_hwnd, &swap_chain_desc,
+			fullscreen_mode ? &fs_desc : nullptr, nullptr, m_swap_chain.put());
+		if (FAILED(hr))
+		{
+			Console.Error("CreateSwapChainForHwnd failed: 0x%08X", hr);
+			return false;
+		}
+	}
+
+	hr = m_dxgi_factory->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
+	if (FAILED(hr))
+		Console.Warning("MakeWindowAssociation() to disable ALT+ENTER failed");
+
+	return CreateSwapChainRTV();
+}
+
+bool GSDevice11::CreateSwapChainRTV()
+{
+	wil::com_ptr_nothrow<ID3D11Texture2D> backbuffer;
+	HRESULT hr = m_swap_chain->GetBuffer(0, IID_PPV_ARGS(backbuffer.put()));
+	if (FAILED(hr))
+	{
+		Console.Error("GetBuffer for RTV failed: 0x%08X", hr);
+		return false;
+	}
+
+	D3D11_TEXTURE2D_DESC backbuffer_desc;
+	backbuffer->GetDesc(&backbuffer_desc);
+
+	CD3D11_RENDER_TARGET_VIEW_DESC rtv_desc(
+		D3D11_RTV_DIMENSION_TEXTURE2D, backbuffer_desc.Format, 0, 0, backbuffer_desc.ArraySize);
+	hr = m_dev->CreateRenderTargetView(backbuffer.get(), &rtv_desc, m_swap_chain_rtv.put());
+	if (FAILED(hr))
+	{
+		Console.Error("CreateRenderTargetView for swap chain failed: 0x%08X", hr);
+		return false;
+	}
+
+	m_window_info.surface_width = backbuffer_desc.Width;
+	m_window_info.surface_height = backbuffer_desc.Height;
+	DevCon.WriteLn("Swap chain buffer size: %ux%u", m_window_info.surface_width, m_window_info.surface_height);
+
+	if (m_window_info.type == WindowInfo::Type::Win32)
+	{
+		BOOL fullscreen = FALSE;
+		DXGI_SWAP_CHAIN_DESC desc;
+		if (SUCCEEDED(m_swap_chain->GetFullscreenState(&fullscreen, nullptr)) && fullscreen &&
+			SUCCEEDED(m_swap_chain->GetDesc(&desc)))
+		{
+			m_window_info.surface_refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
+												 static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
+		}
+		else
+		{
+			m_window_info.surface_refresh_rate = 0.0f;
+		}
+	}
+
+	return true;
+}
+
+bool GSDevice11::ChangeWindow(const WindowInfo& new_wi)
+{
+	DestroySurface();
+
+	m_window_info = new_wi;
+	if (new_wi.type == WindowInfo::Type::Surfaceless)
+		return true;
+
+	return CreateSwapChain(nullptr);
+}
+
+void GSDevice11::DestroySurface()
+{
+	m_swap_chain_rtv.reset();
+
+	if (IsExclusiveFullscreen())
+		SetExclusiveFullscreen(false, 0, 0, 0.0f);
+
+	m_swap_chain.reset();
+}
+
+std::string GSDevice11::GetDriverInfo() const
+{
+	std::string ret = "Unknown Feature Level";
+
+	static constexpr std::array<std::tuple<D3D_FEATURE_LEVEL, const char*>, 4> feature_level_names = {{
+		{D3D_FEATURE_LEVEL_10_0, "D3D_FEATURE_LEVEL_10_0"},
+		{D3D_FEATURE_LEVEL_10_0, "D3D_FEATURE_LEVEL_10_1"},
+		{D3D_FEATURE_LEVEL_11_0, "D3D_FEATURE_LEVEL_11_0"},
+		{D3D_FEATURE_LEVEL_11_1, "D3D_FEATURE_LEVEL_11_1"},
+	}};
+
+	const D3D_FEATURE_LEVEL fl = m_dev->GetFeatureLevel();
+	for (size_t i = 0; i < std::size(feature_level_names); i++)
+	{
+		if (fl == std::get<0>(feature_level_names[i]))
+		{
+			ret = std::get<1>(feature_level_names[i]);
+			break;
+		}
+	}
+
+	ret += "\n";
+
+	wil::com_ptr_nothrow<IDXGIDevice> dxgi_dev;
+	if (m_dev.try_query_to(&dxgi_dev))
+	{
+		wil::com_ptr_nothrow<IDXGIAdapter> dxgi_adapter;
+		if (SUCCEEDED(dxgi_dev->GetAdapter(dxgi_adapter.put())))
+		{
+			DXGI_ADAPTER_DESC desc;
+			if (SUCCEEDED(dxgi_adapter->GetDesc(&desc)))
+			{
+				ret += StringUtil::StdStringFromFormat("VID: 0x%04X PID: 0x%04X\n", desc.VendorId, desc.DeviceId);
+				ret += StringUtil::WideStringToUTF8String(desc.Description);
+				ret += "\n";
+
+				const std::string driver_version(D3D::GetDriverVersionFromLUID(desc.AdapterLuid));
+				if (!driver_version.empty())
+				{
+					ret += "Driver Version: ";
+					ret += driver_version;
+				}
+			}
+		}
+	}
+
+	return ret;
+}
+
+void GSDevice11::ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
+{
+	if (!m_swap_chain)
+		return;
+
+	m_window_info.surface_scale = new_window_scale;
+
+	if (m_window_info.surface_width == new_window_width && m_window_info.surface_height == new_window_height)
+		return;
+
+	m_swap_chain_rtv.reset();
+
+	HRESULT hr = m_swap_chain->ResizeBuffers(
+		0, 0, 0, DXGI_FORMAT_UNKNOWN, m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
+	if (FAILED(hr))
+		Console.Error("ResizeBuffers() failed: 0x%08X", hr);
+
+	if (!CreateSwapChainRTV())
+		pxFailRel("Failed to recreate swap chain RTV after resize");
+}
+
+bool GSDevice11::SupportsExclusiveFullscreen() const
+{
+	return true;
+}
+
+bool GSDevice11::IsExclusiveFullscreen()
+{
+	BOOL is_fullscreen = FALSE;
+	return (m_swap_chain && SUCCEEDED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) && is_fullscreen);
+}
+
+bool GSDevice11::SetExclusiveFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate)
+{
+	if (!m_swap_chain)
+		return false;
+
+	BOOL is_fullscreen = FALSE;
+	HRESULT hr = m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr);
+	if (!fullscreen)
+	{
+		// leaving fullscreen
+		if (is_fullscreen)
+			return SUCCEEDED(m_swap_chain->SetFullscreenState(FALSE, nullptr));
+		else
+			return true;
+	}
+
+	IDXGIOutput* output;
+	if (FAILED(hr = m_swap_chain->GetContainingOutput(&output)))
+		return false;
+
+	DXGI_SWAP_CHAIN_DESC current_desc;
+	hr = m_swap_chain->GetDesc(&current_desc);
+	if (FAILED(hr))
+		return false;
+
+	DXGI_MODE_DESC new_mode = current_desc.BufferDesc;
+	new_mode.Width = width;
+	new_mode.Height = height;
+	new_mode.RefreshRate.Numerator = static_cast<UINT>(std::floor(refresh_rate * 1000.0f));
+	new_mode.RefreshRate.Denominator = 1000u;
+
+	DXGI_MODE_DESC closest_mode;
+	if (FAILED(hr = output->FindClosestMatchingMode(&new_mode, &closest_mode, nullptr)) ||
+		new_mode.Format != current_desc.BufferDesc.Format)
+	{
+		Console.Error("Failed to find closest matching mode, hr=%08X", hr);
+		return false;
+	}
+
+	if (new_mode.Width == current_desc.BufferDesc.Width && new_mode.Height == current_desc.BufferDesc.Height &&
+		new_mode.RefreshRate.Numerator == current_desc.BufferDesc.RefreshRate.Numerator &&
+		new_mode.RefreshRate.Denominator == current_desc.BufferDesc.RefreshRate.Denominator)
+	{
+		DevCon.WriteLn("Fullscreen mode already set");
+		return true;
+	}
+
+	m_swap_chain_rtv.reset();
+	m_swap_chain.reset();
+
+	if (!CreateSwapChain(&closest_mode))
+	{
+		Console.Error("Failed to create a fullscreen swap chain");
+		if (!CreateSwapChain(nullptr))
+			pxFailRel("Failed to recreate windowed swap chain");
+
+		return false;
+	}
+
+	return true;
+}
+
+GSDevice::PresentResult GSDevice11::BeginPresent(bool frame_skip)
+{
+	if (frame_skip || !m_swap_chain)
+		return PresentResult::FrameSkipped;
+
+	// When using vsync, the time here seems to include the time for the buffer to become available.
+	// This blows our our GPU usage number considerably, so read the timestamp before the final blit
+	// in this configuration. It does reduce accuracy a little, but better than seeing 100% all of
+	// the time, when it's more like a couple of percent.
+	if (m_vsync_mode != VsyncMode::Off && m_gpu_timing_enabled)
+		PopTimestampQuery();
+
+	static constexpr std::array<float, 4> clear_color = {};
+	m_ctx->ClearRenderTargetView(m_swap_chain_rtv.get(), clear_color.data());
+	m_ctx->OMSetRenderTargets(1, m_swap_chain_rtv.addressof(), nullptr);
 	if (m_state.rt_view)
-		m_ctx->OMSetRenderTargets(1, &m_state.rt_view, m_state.dsv);
+		m_state.rt_view->Release();
+	m_state.rt_view = m_swap_chain_rtv.get();
+	m_state.rt_view->AddRef();
+	if (m_state.dsv)
+	{
+		m_state.dsv->Release();
+		m_state.dsv = nullptr;
+	}	
+
+	const GSVector2i size = GetWindowSize();
+	SetViewport(size);
+	SetScissor(GSVector4i::loadh(size));
+
+	return PresentResult::OK;
+}
+
+void GSDevice11::EndPresent()
+{
+	RenderImGui();
+
+	// See note in BeginPresent() for why it's conditional on vsync-off.
+	const bool vsync_on = m_vsync_mode != VsyncMode::Off;
+	if (!vsync_on && m_gpu_timing_enabled)
+		PopTimestampQuery();
+
+	if (!vsync_on && m_using_allow_tearing)
+		m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
 	else
-		m_ctx->OMSetRenderTargets(0, nullptr, m_state.dsv);
+		m_swap_chain->Present(static_cast<UINT>(vsync_on), 0);
+
+	if (m_gpu_timing_enabled)
+		KickTimestampQuery();
+
+	// clear out the swap chain view, it might get resized..
+	OMSetRenderTargets(nullptr, nullptr, nullptr);
+}
+
+bool GSDevice11::CreateTimestampQueries()
+{
+	for (u32 i = 0; i < NUM_TIMESTAMP_QUERIES; i++)
+	{
+		for (u32 j = 0; j < 3; j++)
+		{
+			const CD3D11_QUERY_DESC qdesc((j == 0) ? D3D11_QUERY_TIMESTAMP_DISJOINT : D3D11_QUERY_TIMESTAMP);
+			const HRESULT hr = m_dev->CreateQuery(&qdesc, m_timestamp_queries[i][j].put());
+			if (FAILED(hr))
+			{
+				m_timestamp_queries = {};
+				return false;
+			}
+		}
+	}
+
+	KickTimestampQuery();
+	return true;
+}
+
+void GSDevice11::DestroyTimestampQueries()
+{
+	if (!m_timestamp_queries[0][0])
+		return;
+
+	if (m_timestamp_query_started)
+		m_ctx->End(m_timestamp_queries[m_write_timestamp_query][1].get());
+
+	m_timestamp_queries = {};
+	m_read_timestamp_query = 0;
+	m_write_timestamp_query = 0;
+	m_waiting_timestamp_queries = 0;
+	m_timestamp_query_started = 0;
+}
+
+void GSDevice11::PopTimestampQuery()
+{
+	while (m_waiting_timestamp_queries > 0)
+	{
+		D3D11_QUERY_DATA_TIMESTAMP_DISJOINT disjoint;
+		const HRESULT disjoint_hr = m_ctx->GetData(m_timestamp_queries[m_read_timestamp_query][0].get(), &disjoint,
+			sizeof(disjoint), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+		if (disjoint_hr != S_OK)
+			break;
+
+		if (disjoint.Disjoint)
+		{
+			DevCon.WriteLn("GPU timing disjoint, resetting.");
+			m_read_timestamp_query = 0;
+			m_write_timestamp_query = 0;
+			m_waiting_timestamp_queries = 0;
+			m_timestamp_query_started = 0;
+		}
+		else
+		{
+			u64 start = 0, end = 0;
+			const HRESULT start_hr = m_ctx->GetData(m_timestamp_queries[m_read_timestamp_query][1].get(), &start,
+				sizeof(start), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+			const HRESULT end_hr = m_ctx->GetData(m_timestamp_queries[m_read_timestamp_query][2].get(), &end,
+				sizeof(end), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+			if (start_hr == S_OK && end_hr == S_OK)
+			{
+				m_accumulated_gpu_time += static_cast<float>(
+					static_cast<double>(end - start) / (static_cast<double>(disjoint.Frequency) / 1000.0));
+				m_read_timestamp_query = (m_read_timestamp_query + 1) % NUM_TIMESTAMP_QUERIES;
+				m_waiting_timestamp_queries--;
+			}
+		}
+	}
+
+	if (m_timestamp_query_started)
+	{
+		m_ctx->End(m_timestamp_queries[m_write_timestamp_query][2].get());
+		m_ctx->End(m_timestamp_queries[m_write_timestamp_query][0].get());
+		m_write_timestamp_query = (m_write_timestamp_query + 1) % NUM_TIMESTAMP_QUERIES;
+		m_timestamp_query_started = false;
+		m_waiting_timestamp_queries++;
+	}
+}
+
+void GSDevice11::KickTimestampQuery()
+{
+	if (m_timestamp_query_started || !m_timestamp_queries[0][0] || m_waiting_timestamp_queries == NUM_TIMESTAMP_QUERIES)
+		return;
+
+	m_ctx->Begin(m_timestamp_queries[m_write_timestamp_query][0].get());
+	m_ctx->End(m_timestamp_queries[m_write_timestamp_query][1].get());
+	m_timestamp_query_started = true;
+}
+
+bool GSDevice11::SetGPUTimingEnabled(bool enabled)
+{
+	if (m_gpu_timing_enabled == enabled)
+		return true;
+
+	m_gpu_timing_enabled = enabled;
+	if (m_gpu_timing_enabled)
+	{
+		return CreateTimestampQueries();
+	}
+	else
+	{
+		DestroyTimestampQueries();
+		return true;
+	}
+}
+
+float GSDevice11::GetAndResetAccumulatedGPUTime()
+{
+	const float value = m_accumulated_gpu_time;
+	m_accumulated_gpu_time = 0.0f;
+	return value;
 }
 
 void GSDevice11::DrawPrimitive()
@@ -464,17 +1021,21 @@ void GSDevice11::ClearRenderTarget(GSTexture* t, u32 c)
 	m_ctx->ClearRenderTargetView(*(GSTexture11*)t, color.v);
 }
 
+void GSDevice11::InvalidateRenderTarget(GSTexture* t)
+{
+	if (t->IsDepthStencil())
+		m_ctx->DiscardView(static_cast<ID3D11DepthStencilView*>(*static_cast<GSTexture11*>(t)));
+	else
+		m_ctx->DiscardView(static_cast<ID3D11RenderTargetView*>(*static_cast<GSTexture11*>(t)));
+}
+
 void GSDevice11::ClearDepth(GSTexture* t)
 {
-	if (!t)
-		return;
 	m_ctx->ClearDepthStencilView(*(GSTexture11*)t, D3D11_CLEAR_DEPTH, 0.0f, 0);
 }
 
 void GSDevice11::ClearStencil(GSTexture* t, u8 c)
 {
-	if (!t)
-		return;
 	m_ctx->ClearDepthStencilView(*(GSTexture11*)t, D3D11_CLEAR_STENCIL, 0, c);
 }
 
@@ -545,22 +1106,15 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 			break;
 	}
 
-	GSTexture11* t = nullptr;
-
 	wil::com_ptr_nothrow<ID3D11Texture2D> texture;
 	HRESULT hr = m_dev->CreateTexture2D(&desc, nullptr, texture.put());
-
-	if (SUCCEEDED(hr))
+	if (FAILED(hr))
 	{
-		t = new GSTexture11(std::move(texture), desc, type, format);
-		assert(type == t->GetType());
-	}
-	else
-	{
-		throw std::bad_alloc();
+		Console.Error("DX11: Failed to allocate %dx%d surface", width, height);
+		return nullptr;
 	}
 
-	return t;
+	return new GSTexture11(std::move(texture), desc, type, format);
 }
 
 std::unique_ptr<GSDownloadTexture> GSDevice11::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
@@ -640,7 +1194,7 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	}
 	else
 	{
-		ds = GSVector2i(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight());
+		ds = GSVector2i(m_window_info.surface_width, m_window_info.surface_height);
 
 	}
 
@@ -712,7 +1266,7 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	}
 	else
 	{
-		ds = GSVector2i(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight());
+		ds = GSVector2i(m_window_info.surface_width, m_window_info.surface_height);
 	}
 
 	DisplayConstantBuffer cb;
@@ -1039,6 +1593,177 @@ bool GSDevice11::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, cons
 	return true;
 }
 
+bool GSDevice11::CreateImGuiResources()
+{
+	HRESULT hr;
+
+	const std::optional<std::string> hlsl = Host::ReadResourceFileToString("shaders/dx11/imgui.fx");
+	if (!hlsl.has_value())
+	{
+		Console.Error("Failed to read imgui.fx");
+		return false;
+	}
+
+	// clang-format off
+	static constexpr D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT,   0, (UINT)IM_OFFSETOF(ImDrawVert, pos), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,   0, (UINT)IM_OFFSETOF(ImDrawVert, uv),  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR",    0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, (UINT)IM_OFFSETOF(ImDrawVert, col), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+	// clang-format on
+
+	if (!m_shader_cache.GetVertexShaderAndInputLayout(m_dev.get(), m_imgui.vs.put(), m_imgui.il.put(), layout,
+			std::size(layout), hlsl.value(), nullptr, "vs_main") ||
+		!(m_imgui.ps = m_shader_cache.GetPixelShader(m_dev.get(), hlsl.value(), nullptr, "ps_main")))
+	{
+		Console.Error("Failed to compile ImGui shaders");
+		return false;
+	}
+
+	D3D11_BLEND_DESC blend_desc = {};
+	blend_desc.RenderTarget[0].BlendEnable = true;
+	blend_desc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	blend_desc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	blend_desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blend_desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blend_desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+	blend_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blend_desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	hr = m_dev->CreateBlendState(&blend_desc, m_imgui.bs.put());
+	if (FAILED(hr))
+	{
+		Console.Error("CreateImGuiResources(): CreateBlendState() failed: %08X", hr);
+		return false;
+	}
+
+	D3D11_BUFFER_DESC buffer_desc = {};
+	buffer_desc.Usage = D3D11_USAGE_DEFAULT;
+	buffer_desc.ByteWidth = sizeof(float) * 4 * 4;
+	buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	hr = m_dev->CreateBuffer(&buffer_desc, nullptr, m_imgui.vs_cb.put());
+	if (FAILED(hr))
+	{
+		Console.Error("CreateImGuiResources(): CreateBlendState() failed: %08X", hr);
+		return false;
+	}
+
+	return true;
+}
+
+void GSDevice11::RenderImGui()
+{
+	ImGui::Render();
+	const ImDrawData* draw_data = ImGui::GetDrawData();
+	if (draw_data->CmdListsCount == 0)
+		return;
+
+	const float L = 0.0f;
+	const float R = static_cast<float>(m_window_info.surface_width);
+	const float T = 0.0f;
+	const float B = static_cast<float>(m_window_info.surface_height);
+
+	// clang-format off
+  const float ortho_projection[4][4] =
+	{
+		{ 2.0f/(R-L),   0.0f,           0.0f,       0.0f },
+		{ 0.0f,         2.0f/(T-B),     0.0f,       0.0f },
+		{ 0.0f,         0.0f,           0.5f,       0.0f },
+		{ (R+L)/(L-R),  (T+B)/(B-T),    0.5f,       1.0f },
+	};
+	// clang-format on
+
+	m_ctx->UpdateSubresource(m_imgui.vs_cb.get(), 0, nullptr, ortho_projection, 0, 0);
+
+	const UINT vb_stride = sizeof(ImDrawVert);
+	const UINT vb_offset = 0;
+	m_ctx->IASetVertexBuffers(0, 1, m_vb.addressof(), &vb_stride, &vb_offset);
+  m_ctx->IASetIndexBuffer(m_ib.get(), DXGI_FORMAT_R16_UINT, 0);
+	IASetInputLayout(m_imgui.il.get());
+	IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	VSSetShader(m_imgui.vs.get(), m_imgui.vs_cb.get());
+	GSSetShader(nullptr, nullptr);
+	PSSetShader(m_imgui.ps.get(), nullptr);
+	OMSetBlendState(m_imgui.bs.get(), 0.0f);
+	OMSetDepthStencilState(m_convert.dss.get(), 0);
+	PSSetSamplerState(m_convert.ln.get());
+
+	// Render command lists
+	for (int n = 0; n < draw_data->CmdListsCount; n++)
+	{
+		const ImDrawList* cmd_list = draw_data->CmdLists[n];
+
+		// This mess is because the vertex size isn't the same...
+		u32 vertex_offset;
+		{
+			static_assert(Common::IsPow2(sizeof(GSVertexPT1)));
+
+			D3D11_MAP type = D3D11_MAP_WRITE_NO_OVERWRITE;
+
+			const u32 unaligned_size = cmd_list->VtxBuffer.Size * sizeof(ImDrawVert);
+			u32 start_pos = Common::AlignUp(m_vb_pos, sizeof(ImDrawVert));
+			u32 end_pos = Common::AlignUpPow2(start_pos + unaligned_size, sizeof(GSVertexPT1));
+			if (end_pos > VERTEX_BUFFER_SIZE)
+			{
+				type = D3D11_MAP_WRITE_DISCARD;
+				m_vb_pos = 0;
+				start_pos = 0;
+				end_pos = Common::AlignUpPow2(unaligned_size, sizeof(GSVertexPT1));
+			}
+
+			m_vb_pos = end_pos;
+			vertex_offset = start_pos / sizeof(ImDrawVert);
+
+			D3D11_MAPPED_SUBRESOURCE sr;
+			const HRESULT hr = m_ctx->Map(m_vb.get(), 0, type, 0, &sr);
+			if (FAILED(hr))
+				continue;
+
+			std::memcpy(static_cast<u8*>(sr.pData) + start_pos, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
+			m_ctx->Unmap(m_vb.get(), 0);
+		}
+
+		// Bit awkward, because this is using 16-bit indices, not 32-bit.
+		static_assert(sizeof(ImDrawIdx) == sizeof(u16));
+		const u32 index_count = static_cast<u32>(cmd_list->IdxBuffer.Size + 1) / 2;
+		u32* index_map = IAMapIndexBuffer(index_count);
+		if (!index_map)
+			continue;
+
+		const u32 index_start = m_index.start * 2;
+		std::memcpy(index_map, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
+		IAUnmapIndexBuffer(index_count);
+
+		for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
+		{
+			const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
+			pxAssert(!pcmd->UserCallback);
+
+			const GSVector4 clip = GSVector4::load<false>(&pcmd->ClipRect);
+			if ((clip.zwzw() <= clip.xyxy()).mask() != 0)
+				continue;
+
+			const GSVector4i iclip = GSVector4i(clip);
+			if (!m_state.scissor.eq(iclip))
+			{
+				m_state.scissor = iclip;
+				m_ctx->RSSetScissorRects(1, reinterpret_cast<const D3D11_RECT*>(&iclip));
+			}
+
+			// Since we don't have the GSTexture...
+			m_state.ps_sr_views[0] = static_cast<ID3D11ShaderResourceView*>(pcmd->GetTexID());
+			PSUpdateShaderState();
+
+			m_ctx->DrawIndexed(pcmd->ElemCount, index_start + pcmd->IdxOffset, vertex_offset + pcmd->VtxOffset);
+		}
+
+		g_perfmon.Put(GSPerfMon::DrawCalls, cmd_list->CmdBuffer.Size);
+	}
+
+	m_ctx->IASetVertexBuffers(0, 1, m_vb.addressof(), &m_state.vb_stride, &vb_offset);
+	m_ctx->IASetIndexBuffer(m_ib.get(), DXGI_FORMAT_R32_UINT, 0);
+}
+
 void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm)
 {
 	// sfex3 (after the capcom logo), vf4 (first menu fading in), ffxii shadows, rumble roses shadows, persona4 shadows
@@ -1291,9 +2016,6 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	ID3D11RenderTargetView* rtv = nullptr;
 	ID3D11DepthStencilView* dsv = nullptr;
 
-	if (!rt && !ds)
-		throw GSRecoverableError();
-
 	if (rt) rtv = *(GSTexture11*)rt;
 	if (ds) dsv = *(GSTexture11*)ds;
 
@@ -1317,31 +2039,34 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	if (changed)
 		m_ctx->OMSetRenderTargets(1, &rtv, dsv);
 
-	const GSVector2i size = rt ? rt->GetSize() : ds->GetSize();
-	if (m_state.viewport != size)
+	if (rt || ds)
 	{
-		m_state.viewport = size;
+		const GSVector2i size = rt ? rt->GetSize() : ds->GetSize();
+		SetViewport(size);
+		SetScissor(scissor ? *scissor : GSVector4i::loadh(size));
+	}
+}
 
-		D3D11_VIEWPORT vp;
-		memset(&vp, 0, sizeof(vp));
+void GSDevice11::SetViewport(const GSVector2i& viewport)
+{
+	if (m_state.viewport != viewport)
+	{
+		m_state.viewport = viewport;
 
-		vp.TopLeftX = 0.0f;
-		vp.TopLeftY = 0.0f;
-		vp.Width = (float)size.x;
-		vp.Height = (float)size.y;
-		vp.MinDepth = 0.0f;
-		vp.MaxDepth = 1.0f;
-
+		const D3D11_VIEWPORT vp = {
+			0.0f, 0.0f, static_cast<float>(viewport.x), static_cast<float>(viewport.y), 0.0f, 1.0f};
 		m_ctx->RSSetViewports(1, &vp);
 	}
+}
 
-	GSVector4i r = scissor ? *scissor : GSVector4i(size).zwxy();
+void GSDevice11::SetScissor(const GSVector4i& scissor)
+{
+	static_assert(sizeof(D3D11_RECT) == sizeof(GSVector4i));
 
-	if (!m_state.scissor.eq(r))
+	if (!m_state.scissor.eq(scissor))
 	{
-		m_state.scissor = r;
-
-		m_ctx->RSSetScissorRects(1, reinterpret_cast<const D3D11_RECT*>(&r));
+		m_state.scissor = scissor;
+		m_ctx->RSSetScissorRects(1, reinterpret_cast<const D3D11_RECT*>(&scissor));
 	}
 }
 

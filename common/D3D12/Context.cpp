@@ -130,7 +130,10 @@ bool Context::Create(IDXGIFactory5* dxgi_factory, IDXGIAdapter1* adapter, bool e
 	pxAssertRel(!g_d3d12_context, "No context exists");
 
 	if (!LoadD3D12Library())
+	{
+		Console.Error("Failed to load D3D12 library");
 		return false;
+	}
 
 	g_d3d12_context.reset(new Context());
 	if (!g_d3d12_context->CreateDevice(dxgi_factory, adapter, enable_debug_layer) ||
@@ -188,7 +191,10 @@ bool Context::CreateDevice(IDXGIFactory5* dxgi_factory, IDXGIAdapter1* adapter, 
 	// Create the actual device.
 	hr = s_d3d12_create_device(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device));
 	if (FAILED(hr))
+	{
+		Console.Error("Failed to create D3D12 device: %08X", hr);
 		return false;
+	}
 
 	// get adapter
 	const LUID luid(m_device->GetAdapterLuid());

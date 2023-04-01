@@ -37,8 +37,8 @@
 #include "Frontend/InputManager.h"
 #include "GS.h"
 #include "GS/GS.h"
+#include "GS/Renderers/Common/GSDevice.h"
 #include "Host.h"
-#include "HostDisplay.h"
 #include "IconsFontAwesome5.h"
 #include "PerformanceMetrics.h"
 #include "Recording/InputRecording.h"
@@ -90,40 +90,32 @@ bool ImGuiManager::Initialize()
 		return false;
 	}
 
-	s_global_scale = std::max(0.5f, g_host_display->GetWindowScale() * (EmuConfig.GS.OsdScale / 100.0f));
+	s_global_scale = std::max(0.5f, g_gs_device->GetWindowScale() * (GSConfig.OsdScale / 100.0f));
 
 	ImGui::CreateContext();
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.IniFilename = nullptr;
-	io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+	io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset | ImGuiBackendFlags_HasGamepad;
 	io.BackendUsingLegacyKeyArrays = 0;
 	io.BackendUsingLegacyNavInputArray = 0;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
 
 	io.DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
-	io.DisplaySize.x = static_cast<float>(g_host_display->GetWindowWidth());
-	io.DisplaySize.y = static_cast<float>(g_host_display->GetWindowHeight());
+	io.DisplaySize.x = static_cast<float>(g_gs_device->GetWindowWidth());
+	io.DisplaySize.y = static_cast<float>(g_gs_device->GetWindowHeight());
 
 	SetKeyMap();
 	SetStyle();
 
 	const bool add_fullscreen_fonts = s_fullscreen_ui_was_initialized;
 	pxAssertRel(!FullscreenUI::IsInitialized(), "Fullscreen UI is not initialized on ImGui init");
+	if (add_fullscreen_fonts)
+		ImGuiFullscreen::UpdateLayoutScale();
 
-	if (!g_host_display->CreateImGuiContext())
+	if (!AddImGuiFonts(add_fullscreen_fonts) || !g_gs_device->UpdateImGuiFontTexture())
 	{
-		pxFailRel("Failed to create ImGui device context");
-		g_host_display->DestroyImGuiContext();
-		ImGui::DestroyContext();
-		UnloadFontData();
-		return false;
-	}
-
-	if (!AddImGuiFonts(add_fullscreen_fonts) || !g_host_display->UpdateImGuiFontTexture())
-	{
-		pxFailRel("Failed to create ImGui font text");
-		g_host_display->DestroyImGuiContext();
+		Host::ReportErrorAsync("ImGuiManager", "Failed to create ImGui font text");
 		ImGui::DestroyContext();
 		UnloadFontData();
 		return false;
@@ -143,7 +135,7 @@ bool ImGuiManager::Initialize()
 
 bool ImGuiManager::InitializeFullscreenUI()
 {
-	s_fullscreen_ui_was_initialized = FullscreenUI::Initialize();
+	s_fullscreen_ui_was_initialized = !ImGui::GetCurrentContext() || FullscreenUI::Initialize();
 	return s_fullscreen_ui_was_initialized;
 }
 
@@ -154,8 +146,6 @@ void ImGuiManager::Shutdown(bool clear_state)
 	if (clear_state)
 		s_fullscreen_ui_was_initialized = false;
 
-	if (g_host_display)
-		g_host_display->DestroyImGuiContext();
 	if (ImGui::GetCurrentContext())
 		ImGui::DestroyContext();
 
@@ -170,8 +160,8 @@ void ImGuiManager::Shutdown(bool clear_state)
 
 void ImGuiManager::WindowResized()
 {
-	const u32 new_width = g_host_display ? g_host_display->GetWindowWidth() : 0;
-	const u32 new_height = g_host_display ? g_host_display->GetWindowHeight() : 0;
+	const u32 new_width = g_gs_device ? g_gs_device->GetWindowWidth() : 0;
+	const u32 new_height = g_gs_device ? g_gs_device->GetWindowHeight() : 0;
 
 	ImGui::GetIO().DisplaySize = ImVec2(static_cast<float>(new_width), static_cast<float>(new_height));
 
@@ -184,7 +174,7 @@ void ImGuiManager::WindowResized()
 
 void ImGuiManager::UpdateScale()
 {
-	const float window_scale = g_host_display ? g_host_display->GetWindowScale() : 1.0f;
+	const float window_scale = g_gs_device ? g_gs_device->GetWindowScale() : 1.0f;
 	const float scale = std::max(window_scale * (EmuConfig.GS.OsdScale / 100.0f), 0.5f);
 
 	if (scale == s_global_scale && (!HasFullscreenFonts() || !ImGuiFullscreen::UpdateLayoutScale()))
@@ -199,7 +189,7 @@ void ImGuiManager::UpdateScale()
 	if (!AddImGuiFonts(HasFullscreenFonts()))
 		pxFailRel("Failed to create ImGui font text");
 
-	if (!g_host_display->UpdateImGuiFontTexture())
+	if (!g_gs_device->UpdateImGuiFontTexture())
 		pxFailRel("Failed to recreate font texture after scale+resize");
 
 	NewFrame();
@@ -483,7 +473,7 @@ bool ImGuiManager::AddFullscreenFontsIfMissing()
 		AddImGuiFonts(false);
 	}
 
-	g_host_display->UpdateImGuiFontTexture();
+	g_gs_device->UpdateImGuiFontTexture();
 	NewFrame();
 
 	return HasFullscreenFonts();

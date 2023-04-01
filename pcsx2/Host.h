@@ -24,6 +24,8 @@
 #include <optional>
 #include <vector>
 
+enum class VsyncMode;
+
 namespace Host
 {
 	/// Typical durations for OSD messages.
@@ -87,10 +89,4 @@ namespace Host
 
 	/// Requests shut down of the current virtual machine.
 	void RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool default_save_state);
-
-	/// Returns true if the hosting application is currently fullscreen.
-	bool IsFullscreen();
-
-	/// Alters fullscreen state of hosting application.
-	void SetFullscreen(bool enabled);
 } // namespace Host

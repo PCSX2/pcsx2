@@ -26,18 +26,6 @@
 #include "pcsx2/GS/GSCapture.h"
 #include "pcsx2/GS/GSUtil.h"
 
-#ifdef ENABLE_VULKAN
-#include "Frontend/VulkanHostDisplay.h"
-#endif
-
-#ifdef _WIN32
-#include "Frontend/D3D11HostDisplay.h"
-#include "Frontend/D3D12HostDisplay.h"
-#endif
-#ifdef __APPLE__
-#include "GS/Renderers/Metal/GSMetalCPPAccessible.h"
-#endif
-
 struct RendererInfo
 {
 	const char* name;
@@ -965,37 +953,9 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	m_ui.disableFramebufferFetch->setDisabled(is_sw_dx);
 
 	// populate adapters
-	HostDisplay::AdapterAndModeList modes;
-	switch (type)
-	{
-#ifdef _WIN32
-		case GSRendererType::DX11:
-			modes = D3D11HostDisplay::StaticGetAdapterAndModeList();
-			break;
-		case GSRendererType::DX12:
-			modes = D3D12HostDisplay::StaticGetAdapterAndModeList();
-			break;
-#endif
-
-#ifdef ENABLE_VULKAN
-		case GSRendererType::VK:
-			modes = VulkanHostDisplay::StaticGetAdapterAndModeList(nullptr);
-			break;
-#endif
-
-#ifdef __APPLE__
-		case GSRendererType::Metal:
-			modes = GetMetalAdapterAndModeList();
-			break;
-#endif
-
-		case GSRendererType::OGL:
-		case GSRendererType::SW:
-		case GSRendererType::Null:
-		case GSRendererType::Auto:
-		default:
-			break;
-	}
+	std::vector<std::string> adapters;
+	std::vector<std::string> fullscreen_modes;
+	GSGetAdaptersAndFullscreenModes(type, &adapters, &fullscreen_modes);
 
 	// fill+select adapters
 	{
@@ -1003,7 +963,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 
 		std::string current_adapter = Host::GetBaseStringSettingValue("EmuCore/GS", "Adapter", "");
 		m_ui.adapter->clear();
-		m_ui.adapter->setEnabled(!modes.adapter_names.empty());
+		m_ui.adapter->setEnabled(!adapters.empty());
 		m_ui.adapter->addItem(tr("(Default)"));
 		m_ui.adapter->setCurrentIndex(0);
 
@@ -1019,7 +979,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 			}
 		}
 
-		for (const std::string& adapter : modes.adapter_names)
+		for (const std::string& adapter : adapters)
 		{
 			m_ui.adapter->addItem(QString::fromStdString(adapter));
 			if (current_adapter == adapter)
@@ -1047,7 +1007,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 			}
 		}
 
-		for (const std::string& fs_mode : modes.fullscreen_modes)
+		for (const std::string& fs_mode : fullscreen_modes)
 		{
 			m_ui.fullscreenModes->addItem(QString::fromStdString(fs_mode));
 			if (current_mode == fs_mode)

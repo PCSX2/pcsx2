@@ -29,7 +29,9 @@
 #include "common/Threading.h"
 #include "common/Timer.h"
 #include "fmt/core.h"
-#include "HostDisplay.h"
+#include "Host.h"
+#include "GS/Renderers/Common/GSDevice.h"
+#include "GS/Renderers/Common/GSTexture.h"
 #include "imgui_internal.h"
 #include "imgui_stdlib.h"
 #include <array>
@@ -43,7 +45,7 @@ namespace ImGuiFullscreen
 	using MessageDialogCallbackVariant = std::variant<InfoMessageDialogCallback, ConfirmMessageDialogCallback>;
 
 	static std::optional<Common::RGBA8Image> LoadTextureImage(const char* path);
-	static std::shared_ptr<HostDisplayTexture> UploadTexture(const char* path, const Common::RGBA8Image& image);
+	static std::shared_ptr<GSTexture> UploadTexture(const char* path, const Common::RGBA8Image& image);
 	static void TextureLoaderThread();
 
 	static void DrawFileSelector();
@@ -89,8 +91,8 @@ namespace ImGuiFullscreen
 	static u32 s_close_button_state = 0;
 	static bool s_focus_reset_queued = false;
 
-	static LRUCache<std::string, std::shared_ptr<HostDisplayTexture>> s_texture_cache(128, true);
-	static std::shared_ptr<HostDisplayTexture> s_placeholder_texture;
+	static LRUCache<std::string, std::shared_ptr<GSTexture>> s_texture_cache(128, true);
+	static std::shared_ptr<GSTexture> s_placeholder_texture;
 	static std::atomic_bool s_texture_load_thread_quit{false};
 	static std::mutex s_texture_load_mutex;
 	static std::condition_variable s_texture_load_cv;
@@ -247,7 +249,7 @@ void ImGuiFullscreen::Shutdown(bool clear_state)
 	}
 }
 
-const std::shared_ptr<HostDisplayTexture>& ImGuiFullscreen::GetPlaceholderTexture()
+const std::shared_ptr<GSTexture>& ImGuiFullscreen::GetPlaceholderTexture()
 {
 	return s_placeholder_texture;
 }
@@ -278,26 +280,32 @@ std::optional<Common::RGBA8Image> ImGuiFullscreen::LoadTextureImage(const char* 
 	return image;
 }
 
-std::shared_ptr<HostDisplayTexture> ImGuiFullscreen::UploadTexture(const char* path, const Common::RGBA8Image& image)
+std::shared_ptr<GSTexture> ImGuiFullscreen::UploadTexture(const char* path, const Common::RGBA8Image& image)
 {
-	std::unique_ptr<HostDisplayTexture> texture =
-		g_host_display->CreateTexture(image.GetWidth(), image.GetHeight(), image.GetPixels(), image.GetByteStride());
+	GSTexture* texture = g_gs_device->CreateTexture(image.GetWidth(), image.GetHeight(), 1, GSTexture::Format::Color);
 	if (!texture)
 	{
 		Console.Error("failed to create %ux%u texture for resource", image.GetWidth(), image.GetHeight());
 		return {};
 	}
 
+	if (!texture->Update(GSVector4i(0, 0, image.GetWidth(), image.GetHeight()), image.GetPixels(), image.GetByteStride()))
+	{
+		Console.Error("Failed to upload %ux%u texture for resource", image.GetWidth(), image.GetHeight());
+		g_gs_device->Recycle(texture);
+		return {};
+	}
+
 	DevCon.WriteLn("Uploaded texture resource '%s' (%ux%u)", path, image.GetWidth(), image.GetHeight());
-	return std::shared_ptr<HostDisplayTexture>(std::move(texture));
+	return std::shared_ptr<GSTexture>(texture, [](GSTexture* tex) { g_gs_device->Recycle(tex); });
 }
 
-std::shared_ptr<HostDisplayTexture> ImGuiFullscreen::LoadTexture(const char* path)
+std::shared_ptr<GSTexture> ImGuiFullscreen::LoadTexture(const char* path)
 {
 	std::optional<Common::RGBA8Image> image(LoadTextureImage(path));
 	if (image.has_value())
 	{
-		std::shared_ptr<HostDisplayTexture> ret(UploadTexture(path, image.value()));
+		std::shared_ptr<GSTexture> ret(UploadTexture(path, image.value()));
 		if (ret)
 			return ret;
 	}
@@ -305,21 +313,21 @@ std::shared_ptr<HostDisplayTexture> ImGuiFullscreen::LoadTexture(const char* pat
 	return s_placeholder_texture;
 }
 
-HostDisplayTexture* ImGuiFullscreen::GetCachedTexture(const char* name)
+GSTexture* ImGuiFullscreen::GetCachedTexture(const char* name)
 {
-	std::shared_ptr<HostDisplayTexture>* tex_ptr = s_texture_cache.Lookup(name);
+	std::shared_ptr<GSTexture>* tex_ptr = s_texture_cache.Lookup(name);
 	if (!tex_ptr)
 	{
-		std::shared_ptr<HostDisplayTexture> tex(LoadTexture(name));
+		std::shared_ptr<GSTexture> tex(LoadTexture(name));
 		tex_ptr = s_texture_cache.Insert(name, std::move(tex));
 	}
 
 	return tex_ptr->get();
 }
 
-HostDisplayTexture* ImGuiFullscreen::GetCachedTextureAsync(const char* name)
+GSTexture* ImGuiFullscreen::GetCachedTextureAsync(const char* name)
 {
-	std::shared_ptr<HostDisplayTexture>* tex_ptr = s_texture_cache.Lookup(name);
+	std::shared_ptr<GSTexture>* tex_ptr = s_texture_cache.Lookup(name);
 	if (!tex_ptr)
 	{
 		// insert the placeholder
@@ -348,7 +356,7 @@ void ImGuiFullscreen::UploadAsyncTextures()
 		s_texture_upload_queue.pop_front();
 		lock.unlock();
 
-		std::shared_ptr<HostDisplayTexture> tex = UploadTexture(it.first.c_str(), it.second);
+		std::shared_ptr<GSTexture> tex = UploadTexture(it.first.c_str(), it.second);
 		if (tex)
 			s_texture_cache.Insert(std::move(it.first), std::move(tex));
 
@@ -2378,9 +2386,9 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
 		const ImVec2 badge_max(badge_min.x + badge_size, badge_min.y + badge_size);
 		if (!notif.badge_path.empty())
 		{
-			HostDisplayTexture* tex = GetCachedTexture(notif.badge_path.c_str());
+			GSTexture* tex = GetCachedTexture(notif.badge_path.c_str());
 			if (tex)
-				dl->AddImage(static_cast<ImTextureID>(tex->GetHandle()), badge_min, badge_max);
+				dl->AddImage(tex->GetNativeHandle(), badge_min, badge_max);
 		}
 
 		const ImVec2 title_min(badge_max.x + horizontal_spacing, box_min.y + vertical_padding);

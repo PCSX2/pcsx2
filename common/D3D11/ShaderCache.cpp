@@ -41,10 +41,7 @@ D3D11::ShaderCache::ShaderCache() = default;
 
 D3D11::ShaderCache::~ShaderCache()
 {
-	if (m_index_file)
-		std::fclose(m_index_file);
-	if (m_blob_file)
-		std::fclose(m_blob_file);
+	Close();
 }
 
 bool D3D11::ShaderCache::CacheIndexKey::operator==(const CacheIndexKey& key) const
@@ -80,6 +77,20 @@ bool D3D11::ShaderCache::Open(std::string_view base_path, D3D_FEATURE_LEVEL feat
 	}
 
 	return true;
+}
+
+void D3D11::ShaderCache::Close()
+{
+	if (m_index_file)
+	{
+		std::fclose(m_index_file);
+		m_index_file = nullptr;
+	}
+	if (m_blob_file)
+	{
+		std::fclose(m_blob_file);
+		m_blob_file = nullptr;
+	}
 }
 
 bool D3D11::ShaderCache::CreateNew(const std::string& index_filename, const std::string& blob_filename)

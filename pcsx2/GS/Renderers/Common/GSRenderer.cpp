@@ -14,22 +14,27 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSRenderer.h"
+
+#include "Frontend/FullscreenUI.h"
+#include "Frontend/ImGuiManager.h"
+#include "GS/Renderers/Common/GSRenderer.h"
 #include "GS/GSCapture.h"
 #include "GS/GSGL.h"
 #include "GSDumpReplayer.h"
 #include "Host.h"
-#include "HostDisplay.h"
 #include "PerformanceMetrics.h"
 #include "pcsx2/Config.h"
 #include "IconsFontAwesome5.h"
 #include "VMManager.h"
+
 #include "common/FileSystem.h"
 #include "common/Image.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
+
 #include "fmt/core.h"
+
 #include <algorithm>
 #include <array>
 #include <deque>
@@ -52,6 +57,9 @@ static GSVector4 s_last_draw_rect;
 
 // Last time we reset the renderer due to a GPU crash, if any.
 static Common::Timer::Value s_last_gpu_reset_time;
+
+// Screen alignment
+static GSDisplayAlignment s_display_alignment = GSDisplayAlignment::Center;
 
 GSRenderer::GSRenderer()
 	: m_shader_time_start(Common::Timer::GetCurrentValue())
@@ -230,9 +238,9 @@ bool GSRenderer::Merge(int field)
 		g_gs_device->FXAA();
 
 	// Sharpens biinear at lower resolutions, almost nearest but with more uniform pixels.
-	if (GSConfig.LinearPresent == GSPostBilinearMode::BilinearSharp && (g_host_display->GetWindowWidth() > fs.x || g_host_display->GetWindowHeight() > fs.y))
+	if (GSConfig.LinearPresent == GSPostBilinearMode::BilinearSharp && (g_gs_device->GetWindowWidth() > fs.x || g_gs_device->GetWindowHeight() > fs.y))
 	{
-		g_gs_device->Resize(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight());
+		g_gs_device->Resize(g_gs_device->GetWindowWidth(), g_gs_device->GetWindowHeight());
 	}
 
 	if (m_scanmask_used)
@@ -271,7 +279,7 @@ static float GetCurrentAspectRatioFloat(bool is_progressive)
 	return ars[static_cast<u32>(GSConfig.AspectRatio) + (3u * (is_progressive && GSConfig.AspectRatio == AspectRatioType::RAuto4_3_3_2))];
 }
 
-static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const GSVector4i& src_rect, const GSVector2i& src_size, HostDisplay::Alignment alignment, bool flip_y, bool is_progressive)
+static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const GSVector4i& src_rect, const GSVector2i& src_size, GSDisplayAlignment alignment, bool flip_y, bool is_progressive)
 {
 	const float f_width = static_cast<float>(window_width);
 	const float f_height = static_cast<float>(window_height);
@@ -318,7 +326,7 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 			const GSVector2i fs = GSVector2i(static_cast<int>(static_cast<float>(resolution.x) * g_gs_renderer->GetUpscaleMultiplier()),
 				static_cast<int>(static_cast<float>(resolution.y) * g_gs_renderer->GetUpscaleMultiplier()));
 
-			if (g_host_display->GetWindowWidth() > fs.x || g_host_display->GetWindowHeight() > fs.y)
+			if (g_gs_device->GetWindowWidth() > fs.x || g_gs_device->GetWindowHeight() > fs.y)
 			{
 				t_width *= static_cast<float>(fs.x) / src_rect.width();
 				t_height *= static_cast<float>(fs.y) / src_rect.height();
@@ -348,13 +356,13 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 	{
 		switch (alignment)
 		{
-			case HostDisplay::Alignment::Center:
+			case GSDisplayAlignment::Center:
 				target_x = (f_width - target_width) * 0.5f;
 				break;
-			case HostDisplay::Alignment::RightOrBottom:
+			case GSDisplayAlignment::RightOrBottom:
 				target_x = (f_width - target_width);
 				break;
-			case HostDisplay::Alignment::LeftOrTop:
+			case GSDisplayAlignment::LeftOrTop:
 			default:
 				target_x = 0.0f;
 				break;
@@ -368,13 +376,13 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 	{
 		switch (alignment)
 		{
-			case HostDisplay::Alignment::Center:
+			case GSDisplayAlignment::Center:
 				target_y = (f_height - target_height) * 0.5f;
 				break;
-			case HostDisplay::Alignment::RightOrBottom:
+			case GSDisplayAlignment::RightOrBottom:
 				target_y = (f_height - target_height);
 				break;
-			case HostDisplay::Alignment::LeftOrTop:
+			case GSDisplayAlignment::LeftOrTop:
 			default:
 				target_y = 0.0f;
 				break;
@@ -466,11 +474,21 @@ void GSJoinSnapshotThreads()
 
 bool GSRenderer::BeginPresentFrame(bool frame_skip)
 {
-	const HostDisplay::PresentResult result = Host::BeginPresentFrame(frame_skip);
-	if (result == HostDisplay::PresentResult::OK)
-		return true;
-	else if (result == HostDisplay::PresentResult::FrameSkipped)
+	Host::BeginPresentFrame();
+
+	const GSDevice::PresentResult res = g_gs_device->BeginPresent(frame_skip);
+	if (res == GSDevice::PresentResult::FrameSkipped)
+	{
+		// If we're skipping a frame, we need to reset imgui's state, since
+		// we won't be calling EndPresentFrame().
+		ImGuiManager::SkipFrame();
 		return false;
+	}
+	else if (res == GSDevice::PresentResult::OK)
+	{
+		// All good!
+		return true;
+	}
 
 	// If we're constantly crashing on something in particular, we don't want to end up in an
 	// endless reset loop.. that'd probably end up leaking memory and/or crashing us for other
@@ -496,6 +514,17 @@ bool GSRenderer::BeginPresentFrame(bool frame_skip)
 		"Host GPU device encountered an error and was recovered. This may have broken rendering.",
 		Host::OSD_CRITICAL_ERROR_DURATION);
 	return false;
+}
+
+void GSRenderer::EndPresentFrame()
+{
+	if (GSDumpReplayer::IsReplayingDump())
+		GSDumpReplayer::RenderUI();
+
+	FullscreenUI::Render();
+	ImGuiManager::RenderOSD();
+	g_gs_device->EndPresent();
+	ImGuiManager::NewFrame();
 }
 
 void GSRenderer::VSync(u32 field, bool registers_written)
@@ -542,10 +571,9 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 
 	if (skip_frame)
 	{
-		g_gs_device->ResetAPIState();
 		if (BeginPresentFrame(true))
-			Host::EndPresentFrame();
-		g_gs_device->RestoreAPIState();
+			EndPresentFrame();
+
 		PerformanceMetrics::Update(registers_written, fb_sprite_frame, true);
 		return;
 	}
@@ -564,8 +592,8 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 	{
 		src_rect = CalculateDrawSrcRect(current);
 		src_uv = GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy();
-		draw_rect = CalculateDrawDstRect(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight(),
-			src_rect, current->GetSize(), g_host_display->GetDisplayAlignment(), g_host_display->UsesLowerLeftOrigin(),
+		draw_rect = CalculateDrawDstRect(g_gs_device->GetWindowWidth(), g_gs_device->GetWindowHeight(),
+			src_rect, current->GetSize(), s_display_alignment, g_gs_device->UsesLowerLeftOrigin(),
 			GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets));
 		s_last_draw_rect = draw_rect;
 
@@ -576,8 +604,8 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 			{
 				// sharpen only if the IR is higher than the display resolution
 				const bool sharpen_only = (GSConfig.CASMode == GSCASMode::SharpenOnly ||
-										   (current->GetWidth() > g_host_display->GetWindowWidth() &&
-											   current->GetHeight() > g_host_display->GetWindowHeight()));
+										   (current->GetWidth() > g_gs_device->GetWindowWidth() &&
+											   current->GetHeight() > g_gs_device->GetWindowHeight()));
 				g_gs_device->CAS(current, src_rect, src_uv, draw_rect, sharpen_only);
 			}
 			else if (!cas_log_once)
@@ -589,7 +617,6 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 		}
 	}
 
-	g_gs_device->ResetAPIState();
 	if (BeginPresentFrame(false))
 	{
 		if (current && !blank_frame)
@@ -601,12 +628,12 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 				s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent != GSPostBilinearMode::Off);
 		}
 
-		Host::EndPresentFrame();
+		EndPresentFrame();
 
 		if (GSConfig.OsdShowGPU)
-			PerformanceMetrics::OnGPUPresent(g_host_display->GetAndResetAccumulatedGPUTime());
+			PerformanceMetrics::OnGPUPresent(g_gs_device->GetAndResetAccumulatedGPUTime());
 	}
-	g_gs_device->RestoreAPIState();
+
 	PerformanceMetrics::Update(registers_written, fb_sprite_frame, false);
 
 	// snapshot
@@ -665,8 +692,8 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 		const bool aspect_correct = (GSConfig.ScreenshotSize != GSScreenshotSize::InternalResolutionUncorrected);
 
 		if (g_gs_device->GetCurrent() && SaveSnapshotToMemory(
-			internal_resolution ? 0 : g_host_display->GetWindowWidth(),
-			internal_resolution ? 0 : g_host_display->GetWindowHeight(),
+			internal_resolution ? 0 : g_gs_device->GetWindowWidth(),
+			internal_resolution ? 0 : g_gs_device->GetWindowHeight(),
 			aspect_correct, true,
 			&screenshot_width, &screenshot_height, &screenshot_pixels))
 		{
@@ -805,7 +832,6 @@ void GSRenderer::StopGSDump()
 
 void GSRenderer::PresentCurrentFrame()
 {
-	g_gs_device->ResetAPIState();
 	if (BeginPresentFrame(false))
 	{
 		GSTexture* current = g_gs_device->GetCurrent();
@@ -813,8 +839,8 @@ void GSRenderer::PresentCurrentFrame()
 		{
 			const GSVector4i src_rect(CalculateDrawSrcRect(current));
 			const GSVector4 src_uv(GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy());
-			const GSVector4 draw_rect(CalculateDrawDstRect(g_host_display->GetWindowWidth(), g_host_display->GetWindowHeight(),
-				src_rect, current->GetSize(), g_host_display->GetDisplayAlignment(), g_host_display->UsesLowerLeftOrigin(),
+			const GSVector4 draw_rect(CalculateDrawDstRect(g_gs_device->GetWindowWidth(), g_gs_device->GetWindowHeight(),
+				src_rect, current->GetSize(), s_display_alignment, g_gs_device->UsesLowerLeftOrigin(),
 				GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets)));
 			s_last_draw_rect = draw_rect;
 
@@ -825,9 +851,8 @@ void GSRenderer::PresentCurrentFrame()
 				s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent != GSPostBilinearMode::Off);
 		}
 
-		Host::EndPresentFrame();
+		EndPresentFrame();
 	}
-	g_gs_device->RestoreAPIState();
 }
 
 void GSTranslateWindowToDisplayCoordinates(float window_x, float window_y, float* display_x, float* display_y)
@@ -845,6 +870,11 @@ void GSTranslateWindowToDisplayCoordinates(float window_x, float window_y, float
 
 	*display_x = rel_x / draw_width;
 	*display_y = rel_y / draw_height;
+}
+
+void GSSetDisplayAlignment(GSDisplayAlignment alignment)
+{
+	s_display_alignment = alignment;
 }
 
 bool GSRenderer::BeginCapture(std::string filename)
@@ -910,7 +940,7 @@ bool GSRenderer::SaveSnapshotToMemory(u32 window_width, u32 window_height, bool 
 	else
 	{
 		draw_rect = CalculateDrawDstRect(window_width, window_height, src_rect, current->GetSize(),
-			HostDisplay::Alignment::LeftOrTop, false, is_progressive);
+			GSDisplayAlignment::LeftOrTop, false, is_progressive);
 	}
 	const u32 draw_width = static_cast<u32>(draw_rect.z - draw_rect.x);
 	const u32 draw_height = static_cast<u32>(draw_rect.w - draw_rect.y);

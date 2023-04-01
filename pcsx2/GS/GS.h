@@ -20,8 +20,21 @@
 #include "pcsx2/Config.h"
 
 #include <map>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
+
+enum class RenderAPI
+{
+	None,
+	D3D11,
+	Metal,
+	D3D12,
+	Vulkan,
+	OpenGL,
+	OpenGLES
+};
 
 // ST_WRITE is defined in libc, avoid this
 enum stateType
@@ -42,6 +55,13 @@ enum class GSVideoMode : u8
 	HDTV_1080I
 };
 
+enum class GSDisplayAlignment
+{
+	Center,
+	LeftOrTop,
+	RightOrBottom
+};
+
 extern Pcsx2Config::GSOptions GSConfig;
 
 class HostDisplay;
@@ -53,7 +73,7 @@ s16 GSLookupBeforeDrawFunctionId(const std::string_view& name);
 int GSinit();
 void GSshutdown();
 bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* basemem);
-bool GSreopen(bool recreate_display, bool recreate_renderer, const Pcsx2Config::GSOptions& old_config);
+bool GSreopen(bool recreate_device, bool recreate_renderer, const Pcsx2Config::GSOptions& old_config);
 void GSreset(bool hardware_reset);
 void GSclose();
 void GSgifSoftReset(u32 mask);
@@ -74,8 +94,15 @@ bool GSBeginCapture(std::string filename);
 void GSEndCapture();
 void GSPresentCurrentFrame();
 void GSThrottlePresentation();
-void GSsetGameCRC(u32 crc);
+void GSSetGameCRC(u32 crc);
+void GSSetDisplayAlignment(GSDisplayAlignment alignment);
+void GSResizeDisplayWindow(int width, int height, float scale);
+void GSUpdateDisplayWindow();
+void GSSetVSyncMode(VsyncMode mode);
 
+bool GSGetHostRefreshRate(float* refresh_rate);
+void GSGetAdaptersAndFullscreenModes(
+	GSRendererType renderer, std::vector<std::string>* adapters, std::vector<std::string>* fullscreen_modes);
 GSVideoMode GSgetDisplayMode();
 void GSgetInternalResolution(int* width, int* height);
 void GSgetStats(std::string& info);
@@ -88,8 +115,6 @@ void GSTranslateWindowToDisplayCoordinates(float window_x, float window_y, float
 
 void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config);
 void GSSwitchRenderer(GSRendererType new_renderer);
-void GSResetAPIState();
-void GSRestoreAPIState();
 bool GSSaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
 	u32* width, u32* height, std::vector<u32>* pixels);
 void GSJoinSnapshotThreads();
@@ -100,3 +125,28 @@ struct GSError
 struct GSRecoverableError : GSError
 {
 };
+
+namespace Host
+{
+	/// Called when the GS is creating a render device.
+	std::optional<WindowInfo> AcquireRenderWindow(RenderAPI api);
+
+	/// Called on the MTGS thread when a request to update the display is received.
+	/// This could be a fullscreen transition, for example.
+	std::optional<WindowInfo> UpdateRenderWindow();
+
+	/// Called before drawing the OSD and other display elements.
+	void BeginPresentFrame();
+
+	/// Called when the GS is finished with a render window.
+	void ReleaseRenderWindow();
+
+	/// Returns true if the hosting application is currently fullscreen.
+	bool IsFullscreen();
+
+	/// Alters fullscreen state of hosting application.
+	void SetFullscreen(bool enabled);
+
+	/// Returns the desired vsync mode, depending on the runtime environment.
+	VsyncMode GetEffectiveVSyncMode();
+}

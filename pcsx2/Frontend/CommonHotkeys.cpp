@@ -23,7 +23,6 @@
 #include "Frontend/InputManager.h"
 #include "GS.h"
 #include "Host.h"
-#include "HostDisplay.h"
 #include "IconsFontAwesome5.h"
 #include "Recording/InputRecording.h"
 #include "SPU2/spu2.h"

@@ -52,6 +52,7 @@ namespace D3D12
 		__fi bool UsingDebugShaders() const { return m_debug; }
 
 		bool Open(std::string_view base_path, D3D_FEATURE_LEVEL feature_level, u32 version, bool debug);
+		void Close();
 
 		__fi ComPtr<ID3DBlob> GetVertexShader(std::string_view shader_code,
 			const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main")
@@ -129,7 +130,6 @@ namespace D3D12
 		bool ReadExisting(const std::string& index_filename, const std::string& blob_filename, std::FILE*& index_file,
 			std::FILE*& blob_file, CacheIndex& index);
 		void InvalidatePipelineCache();
-		void Close();
 
 		ComPtr<ID3DBlob> CompileAndAddShaderBlob(const CacheIndexKey& key, std::string_view shader_code,
 			const D3D_SHADER_MACRO* macros, const char* entry_point);

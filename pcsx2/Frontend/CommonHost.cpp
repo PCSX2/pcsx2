@@ -29,7 +29,6 @@
 #include "GS.h"
 #include "GS/Renderers/HW/GSTextureReplacements.h"
 #include "Host.h"
-#include "HostDisplay.h"
 #include "HostSettings.h"
 #include "IconsFontAwesome5.h"
 #include "MemoryCardFile.h"

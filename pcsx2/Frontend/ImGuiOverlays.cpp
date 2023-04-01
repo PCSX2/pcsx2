@@ -43,7 +43,6 @@
 #include "GS/GSCapture.h"
 #include "GS/GSVector.h"
 #include "Host.h"
-#include "HostDisplay.h"
 #include "IconsFontAwesome5.h"
 #include "PerformanceMetrics.h"
 #include "PAD/Host/PAD.h"

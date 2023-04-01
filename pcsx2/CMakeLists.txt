@@ -98,7 +98,6 @@ set(pcsx2Sources
 	Gif_Unit.cpp
 	GS.cpp
 	Host.cpp
-	HostDisplay.cpp
 	Hw.cpp
 	HwRead.cpp
 	HwWrite.cpp
@@ -180,7 +179,6 @@ set(pcsx2Headers
 	GS.h
 	Hardware.h
 	Host.h
-	HostDisplay.h
 	Hw.h
 	IopBios.h
 	IopCounters.h
@@ -785,42 +783,7 @@ set(pcsx2FrontendHeaders
 	Frontend/ImGuiOverlays.h
 )
 
-if(USE_OPENGL)
-	list(APPEND pcsx2FrontendSources
-		Frontend/OpenGLHostDisplay.cpp
-		Frontend/imgui_impl_opengl3.cpp
-	)
-	list(APPEND pcsx2FrontendHeaders
-		Frontend/OpenGLHostDisplay.h
-		Frontend/imgui_impl_opengl3.h
-	)
-endif()
-
-if(USE_VULKAN)
-	list(APPEND pcsx2FrontendSources
-		Frontend/VulkanHostDisplay.cpp
-		Frontend/imgui_impl_vulkan.cpp
-	)
-	list(APPEND pcsx2FrontendHeaders
-		Frontend/imgui_impl_vulkan.h
-		Frontend/VulkanHostDisplay.h
-	)
-endif()
-
-if(WIN32)
-	list(APPEND pcsx2FrontendSources
-		Frontend/D3D11HostDisplay.cpp
-		Frontend/D3D12HostDisplay.cpp
-		Frontend/imgui_impl_dx11.cpp
-		Frontend/imgui_impl_dx12.cpp
-	)
-	list(APPEND pcsx2FrontendHeaders
-		Frontend/D3D11HostDisplay.h
-		Frontend/D3D12HostDisplay.h
-		Frontend/imgui_impl_dx11.h
-		Frontend/imgui_impl_dx12.h
-	)
-elseif(APPLE)
+if(APPLE)
 	list(APPEND pcsx2GSSources
 		GS/Renderers/Metal/GSDeviceMTL.mm
 		GS/Renderers/Metal/GSMTLDeviceInfo.mm
@@ -833,12 +796,6 @@ elseif(APPLE)
 		GS/Renderers/Metal/GSMTLSharedHeader.h
 		GS/Renderers/Metal/GSMTLShaderCommon.h
 		GS/Renderers/Metal/GSTextureMTL.h
-	)
-	list(APPEND pcsx2FrontendSources
-		Frontend/MetalHostDisplay.mm
-	)
-	list(APPEND pcsx2FrontendHeaders
-		Frontend/MetalHostDisplay.h
 	)
 endif()
 
