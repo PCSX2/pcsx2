@@ -1146,12 +1146,18 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool stoppi
 
 	m_ui.actionToolsVideoCapture->setEnabled(running);
 	if (!running && m_ui.actionToolsVideoCapture->isChecked())
+	{
+		QSignalBlocker sb(m_ui.actionToolsVideoCapture);
 		m_ui.actionToolsVideoCapture->setChecked(false);
+	}
 
 	m_game_list_widget->setDisabled(starting && !running);
 
 	if (!starting && !running)
+	{
+		QSignalBlocker sb(m_ui.actionPause);
 		m_ui.actionPause->setChecked(false);
+	}
 
 	// scanning needs to be disabled while running
 	m_ui.actionScanForNewGames->setDisabled(starting_or_running || stopping);
