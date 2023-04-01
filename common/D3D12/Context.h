@@ -22,6 +22,7 @@
 
 #include <array>
 #include <d3d12.h>
+#include <dxgi1_5.h>
 #include <memory>
 #include <vector>
 #include <wil/com.h>
@@ -60,7 +61,7 @@ namespace D3D12
 		~Context();
 
 		/// Creates new device and context.
-		static bool Create(IDXGIFactory* dxgi_factory, u32 adapter_index, bool enable_debug_layer);
+		static bool Create(IDXGIFactory5* dxgi_factory, IDXGIAdapter1* adapter, bool enable_debug_layer);
 
 		/// Destroys active context.
 		static void Destroy();
@@ -167,7 +168,7 @@ namespace D3D12
 
 		Context();
 
-		bool CreateDevice(IDXGIFactory* dxgi_factory, u32 adapter_index, bool enable_debug_layer);
+		bool CreateDevice(IDXGIFactory5* dxgi_factory, IDXGIAdapter1* adapter, bool enable_debug_layer);
 		bool CreateCommandQueue();
 		bool CreateAllocator();
 		bool CreateFence();

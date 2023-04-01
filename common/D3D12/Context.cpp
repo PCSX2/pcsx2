@@ -125,7 +125,7 @@ bool Context::SupportsTextureFormat(DXGI_FORMAT format)
 		   (support.Support1 & required) == required;
 }
 
-bool Context::Create(IDXGIFactory* dxgi_factory, u32 adapter_index, bool enable_debug_layer)
+bool Context::Create(IDXGIFactory5* dxgi_factory, IDXGIAdapter1* adapter, bool enable_debug_layer)
 {
 	pxAssertRel(!g_d3d12_context, "No context exists");
 
@@ -133,7 +133,7 @@ bool Context::Create(IDXGIFactory* dxgi_factory, u32 adapter_index, bool enable_
 		return false;
 
 	g_d3d12_context.reset(new Context());
-	if (!g_d3d12_context->CreateDevice(dxgi_factory, adapter_index, enable_debug_layer) ||
+	if (!g_d3d12_context->CreateDevice(dxgi_factory, adapter, enable_debug_layer) ||
 		!g_d3d12_context->CreateCommandQueue() || !g_d3d12_context->CreateAllocator() ||
 		!g_d3d12_context->CreateFence() || !g_d3d12_context->CreateDescriptorHeaps() ||
 		!g_d3d12_context->CreateCommandLists() || !g_d3d12_context->CreateTimestampQuery() ||
@@ -166,31 +166,9 @@ u32 Context::GetAdapterVendorID() const
 	return desc.VendorId;
 }
 
-bool Context::CreateDevice(IDXGIFactory* dxgi_factory, u32 adapter_index, bool enable_debug_layer)
+bool Context::CreateDevice(IDXGIFactory5* dxgi_factory, IDXGIAdapter1* adapter, bool enable_debug_layer)
 {
-	ComPtr<IDXGIAdapter> adapter;
-	HRESULT hr = dxgi_factory->EnumAdapters(adapter_index, &adapter);
-	if (FAILED(hr))
-	{
-		Console.Error("Adapter %u not found, using default", adapter_index);
-		adapter = nullptr;
-	}
-	else
-	{
-		DXGI_ADAPTER_DESC adapter_desc;
-		if (SUCCEEDED(adapter->GetDesc(&adapter_desc)))
-		{
-			char adapter_name_buffer[128];
-			const int name_length = WideCharToMultiByte(CP_UTF8, 0, adapter_desc.Description,
-				static_cast<int>(std::wcslen(adapter_desc.Description)),
-				adapter_name_buffer, std::size(adapter_name_buffer), 0, nullptr);
-			if (name_length >= 0)
-			{
-				adapter_name_buffer[name_length] = 0;
-				Console.WriteLn("D3D Adapter: %s", adapter_name_buffer);
-			}
-		}
-	}
+	HRESULT hr;
 
 	// Enabling the debug layer will fail if the Graphics Tools feature is not installed.
 	if (enable_debug_layer)
@@ -208,18 +186,14 @@ bool Context::CreateDevice(IDXGIFactory* dxgi_factory, u32 adapter_index, bool e
 	}
 
 	// Create the actual device.
-	hr = s_d3d12_create_device(adapter.get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device));
+	hr = s_d3d12_create_device(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device));
 	if (FAILED(hr))
 		return false;
 
 	// get adapter
-	ComPtr<IDXGIFactory4> dxgi_factory4;
-	if (SUCCEEDED(dxgi_factory->QueryInterface<IDXGIFactory4>(dxgi_factory4.put())))
-	{
-		const LUID luid(m_device->GetAdapterLuid());
-		if (FAILED(dxgi_factory4->EnumAdapterByLuid(luid, IID_PPV_ARGS(m_adapter.put()))))
-			Console.Error("Failed to get lookup adapter by device LUID");
-	}
+	const LUID luid(m_device->GetAdapterLuid());
+	if (FAILED(dxgi_factory->EnumAdapterByLuid(luid, IID_PPV_ARGS(m_adapter.put()))))
+		Console.Error("Failed to get lookup adapter by device LUID");
 
 	if (enable_debug_layer)
 	{

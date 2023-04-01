@@ -119,7 +119,13 @@ bool GSDevice11::Create()
 	{
 		// HACK: check AMD
 		// Broken point sampler should be enabled only on AMD.
-		m_features.broken_point_sampler = (D3D::Vendor() == D3D::VendorID::AMD);
+		wil::com_ptr_nothrow<IDXGIDevice> dxgi_device;
+		wil::com_ptr_nothrow<IDXGIAdapter1> dxgi_adapter;
+		if (SUCCEEDED(m_dev->QueryInterface(dxgi_device.put())) &&
+			SUCCEEDED(dxgi_device->GetParent(IID_PPV_ARGS(dxgi_adapter.put()))))
+		{
+			m_features.broken_point_sampler = (D3D::GetVendorID(dxgi_adapter.get()) == D3D::VendorID::AMD);
+		}
 	}
 
 	SetFeatures();

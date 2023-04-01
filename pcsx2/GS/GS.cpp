@@ -127,24 +127,6 @@ void GSclose()
 
 static RenderAPI GetAPIForRenderer(GSRendererType renderer)
 {
-#if defined(_WIN32)
-	// On Windows, we use DX11 for software, since it's always available.
-	constexpr RenderAPI default_api = RenderAPI::D3D11;
-#elif defined(__APPLE__)
-	// For Macs, default to Metal.
-	constexpr RenderAPI default_api = RenderAPI::Metal;
-#else
-	// For Linux, default to OpenGL (because of hardware compatibility), if we
-	// have it, otherwise Vulkan (if we have it).
-#if defined(ENABLE_OPENGL)
-	constexpr RenderAPI default_api = RenderAPI::OpenGL;
-#elif defined(ENABLE_VULKAN)
-	constexpr RenderAPI default_api = RenderAPI::Vulkan;
-#else
-	constexpr RenderAPI default_api = RenderAPI::None;
-#endif
-#endif
-
 	switch (renderer)
 	{
 		case GSRendererType::OGL:
@@ -167,7 +149,7 @@ static RenderAPI GetAPIForRenderer(GSRendererType renderer)
 #endif
 
 		default:
-			return default_api;
+			return GetAPIForRenderer(GSUtil::GetPreferredRenderer());
 	}
 }
 

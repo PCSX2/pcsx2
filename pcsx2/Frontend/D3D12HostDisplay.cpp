@@ -122,10 +122,9 @@ bool D3D12HostDisplay::GetHostRefreshRate(float* refresh_rate)
 		if (SUCCEEDED(m_swap_chain->GetDesc(&desc)) && desc.BufferDesc.RefreshRate.Numerator > 0 &&
 			desc.BufferDesc.RefreshRate.Denominator > 0)
 		{
-			DevCon.WriteLn("using fs rr: %u %u", desc.BufferDesc.RefreshRate.Numerator,
-				desc.BufferDesc.RefreshRate.Denominator);
-			*refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
-							static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
+			DevCon.WriteLn("using fs rr: %u %u", desc.BufferDesc.RefreshRate.Numerator, desc.BufferDesc.RefreshRate.Denominator);
+			*refresh_rate =
+				static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) / static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
 			return true;
 		}
 	}
@@ -140,56 +139,19 @@ void D3D12HostDisplay::SetVSync(VsyncMode mode)
 
 bool D3D12HostDisplay::CreateDevice(const WindowInfo& wi, VsyncMode vsync)
 {
-	ComPtr<IDXGIFactory> temp_dxgi_factory;
-	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(temp_dxgi_factory.put()));
-	if (FAILED(hr))
-	{
-		Console.Error("Failed to create DXGI factory: 0x%08X", hr);
-		return false;
-	}
-
-	u32 adapter_index;
-	if (!EmuConfig.GS.Adapter.empty())
-	{
-		AdapterAndModeList adapter_info(GetAdapterAndModeList(temp_dxgi_factory.get()));
-		for (adapter_index = 0; adapter_index < static_cast<u32>(adapter_info.adapter_names.size()); adapter_index++)
-		{
-			if (EmuConfig.GS.Adapter == adapter_info.adapter_names[adapter_index])
-				break;
-		}
-		if (adapter_index == static_cast<u32>(adapter_info.adapter_names.size()))
-		{
-			Console.Warning("Could not find adapter '%s', using first (%s)", EmuConfig.GS.Adapter.c_str(), adapter_info.adapter_names[0].c_str());
-			adapter_index = 0;
-		}
-	}
-	else
-	{
-		Console.WriteLn("No adapter selected, using first.");
-		adapter_index = 0;
-	}
-
-	if (!D3D12::Context::Create(temp_dxgi_factory.get(), adapter_index, EmuConfig.GS.UseDebugDevice))
+	m_dxgi_factory = D3D::CreateFactory(EmuConfig.GS.UseDebugDevice);
+	if (!m_dxgi_factory)
 		return false;
 
-	if (FAILED(hr))
-	{
-		Console.Error("Failed to create D3D device: 0x%08X", hr);
+	ComPtr<IDXGIAdapter1> dxgi_adapter = D3D::GetAdapterByName(m_dxgi_factory.get(), EmuConfig.GS.Adapter);
+
+	if (!D3D12::Context::Create(m_dxgi_factory.get(), dxgi_adapter.get(), EmuConfig.GS.UseDebugDevice))
 		return false;
-	}
 
-	m_dxgi_factory = std::move(temp_dxgi_factory);
-
-	m_allow_tearing_supported = false;
-	ComPtr<IDXGIFactory5> dxgi_factory5(m_dxgi_factory.try_query<IDXGIFactory5>());
-	if (dxgi_factory5)
-	{
-		BOOL allow_tearing_supported = false;
-		hr = dxgi_factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported,
-			sizeof(allow_tearing_supported));
-		if (SUCCEEDED(hr))
-			m_allow_tearing_supported = (allow_tearing_supported == TRUE);
-	}
+	BOOL allow_tearing_supported = false;
+	HRESULT hr =
+		m_dxgi_factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported, sizeof(allow_tearing_supported));
+	m_allow_tearing_supported = (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
 
 	m_window_info = wi;
 	m_vsync_mode = vsync;
@@ -226,40 +188,43 @@ bool D3D12HostDisplay::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
 	const u32 width = static_cast<u32>(client_rc.right - client_rc.left);
 	const u32 height = static_cast<u32>(client_rc.bottom - client_rc.top);
 
-	DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
-	swap_chain_desc.BufferDesc.Width = width;
-	swap_chain_desc.BufferDesc.Height = height;
-	swap_chain_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
+	swap_chain_desc.Width = width;
+	swap_chain_desc.Height = height;
+	swap_chain_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	swap_chain_desc.SampleDesc.Count = 1;
 	swap_chain_desc.BufferCount = 3;
 	swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swap_chain_desc.OutputWindow = window_hwnd;
-	swap_chain_desc.Windowed = TRUE;
 	swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
 	m_using_allow_tearing = (m_allow_tearing_supported && !fullscreen_mode);
 	if (m_using_allow_tearing)
 		swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
+	DXGI_SWAP_CHAIN_FULLSCREEN_DESC fs_desc = {};
 	if (fullscreen_mode)
 	{
 		swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-		swap_chain_desc.Windowed = FALSE;
-		swap_chain_desc.BufferDesc = *fullscreen_mode;
+		swap_chain_desc.Width = fullscreen_mode->Width;
+		swap_chain_desc.Height = fullscreen_mode->Height;
+		fs_desc.RefreshRate = fullscreen_mode->RefreshRate;
+		fs_desc.ScanlineOrdering = fullscreen_mode->ScanlineOrdering;
+		fs_desc.Scaling = fullscreen_mode->Scaling;
+		fs_desc.Windowed = FALSE;
 	}
 
-	DevCon.WriteLn("Creating a %dx%d %s swap chain", swap_chain_desc.BufferDesc.Width, swap_chain_desc.BufferDesc.Height,
-		swap_chain_desc.Windowed ? "windowed" : "full-screen");
+	DevCon.WriteLn(
+		"Creating a %dx%d %s swap chain", swap_chain_desc.Width, swap_chain_desc.Height, fullscreen_mode ? "full-screen" : "windowed");
 
-	HRESULT hr =
-		m_dxgi_factory->CreateSwapChain(g_d3d12_context->GetCommandQueue(), &swap_chain_desc, m_swap_chain.put());
+	HRESULT hr = m_dxgi_factory->CreateSwapChainForHwnd(g_d3d12_context->GetCommandQueue(), window_hwnd, &swap_chain_desc,
+		fullscreen_mode ? &fs_desc : nullptr, nullptr, m_swap_chain.put());
 	if (FAILED(hr))
 	{
-		Console.Error("CreateSwapChain failed: 0x%08X", hr);
+		Console.Error("CreateSwapChainForHwnd failed: 0x%08X", hr);
 		return false;
 	}
 
-	hr = m_dxgi_factory->MakeWindowAssociation(swap_chain_desc.OutputWindow, DXGI_MWA_NO_WINDOW_CHANGES);
+	hr = m_dxgi_factory->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
 	if (FAILED(hr))
 		Console.Warning("MakeWindowAssociation() to disable ALT+ENTER failed");
 
@@ -301,11 +266,10 @@ bool D3D12HostDisplay::CreateSwapChainRTV()
 	{
 		BOOL fullscreen = FALSE;
 		DXGI_SWAP_CHAIN_DESC desc;
-		if (SUCCEEDED(m_swap_chain->GetFullscreenState(&fullscreen, nullptr)) && fullscreen &&
-			SUCCEEDED(m_swap_chain->GetDesc(&desc)))
+		if (SUCCEEDED(m_swap_chain->GetFullscreenState(&fullscreen, nullptr)) && fullscreen && SUCCEEDED(m_swap_chain->GetDesc(&desc)))
 		{
-			m_window_info.surface_refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
-												 static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
+			m_window_info.surface_refresh_rate =
+				static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) / static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
 		}
 		else
 		{
@@ -402,8 +366,7 @@ void D3D12HostDisplay::ResizeWindow(s32 new_window_width, s32 new_window_height,
 
 	DestroySwapChainRTVs();
 
-	HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN,
-		m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
+	HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
 	if (FAILED(hr))
 		Console.Error("ResizeBuffers() failed: 0x%08X", hr);
 
@@ -529,7 +492,8 @@ HostDisplay::PresentResult D3D12HostDisplay::BeginPresent(bool frame_skip)
 	cmdlist->ClearRenderTargetView(swap_chain_buf.GetWriteDescriptor(), clear_color.data(), 0, nullptr);
 	cmdlist->OMSetRenderTargets(1, &swap_chain_buf.GetWriteDescriptor().cpu_handle, FALSE, nullptr);
 
-	const D3D12_VIEWPORT vp{0.0f, 0.0f, static_cast<float>(m_window_info.surface_width), static_cast<float>(m_window_info.surface_height), 0.0f, 1.0f};
+	const D3D12_VIEWPORT vp{
+		0.0f, 0.0f, static_cast<float>(m_window_info.surface_width), static_cast<float>(m_window_info.surface_height), 0.0f, 1.0f};
 	const D3D12_RECT scissor{0, 0, static_cast<LONG>(m_window_info.surface_width), static_cast<LONG>(m_window_info.surface_height)};
 	cmdlist->RSSetViewports(1, &vp);
 	cmdlist->RSSetScissorRects(1, &scissor);
@@ -571,77 +535,38 @@ float D3D12HostDisplay::GetAndResetAccumulatedGPUTime()
 
 HostDisplay::AdapterAndModeList D3D12HostDisplay::StaticGetAdapterAndModeList()
 {
-	ComPtr<IDXGIFactory> dxgi_factory;
-	const HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(dxgi_factory.put()));
-	if (FAILED(hr))
+	auto factory = D3D::CreateFactory(false);
+	if (!factory)
 		return {};
 
-	return GetAdapterAndModeList(dxgi_factory.get());
+	return GetAdapterAndModeList(factory.get());
 }
 
-HostDisplay::AdapterAndModeList D3D12HostDisplay::GetAdapterAndModeList(IDXGIFactory* dxgi_factory)
+HostDisplay::AdapterAndModeList D3D12HostDisplay::GetAdapterAndModeList(IDXGIFactory5* dxgi_factory)
 {
 	AdapterAndModeList adapter_info;
-	ComPtr<IDXGIAdapter> current_adapter;
-	while (SUCCEEDED(dxgi_factory->EnumAdapters(static_cast<UINT>(adapter_info.adapter_names.size()),
-		current_adapter.put())))
-	{
-		DXGI_ADAPTER_DESC adapter_desc;
-		std::string adapter_name;
-		if (SUCCEEDED(current_adapter->GetDesc(&adapter_desc)))
-		{
-			char adapter_name_buffer[128];
-			const int name_length = WideCharToMultiByte(CP_UTF8, 0, adapter_desc.Description,
-				static_cast<int>(std::wcslen(adapter_desc.Description)),
-				adapter_name_buffer, std::size(adapter_name_buffer), 0, nullptr);
-			if (name_length >= 0)
-				adapter_name.assign(adapter_name_buffer, static_cast<size_t>(name_length));
-			else
-				adapter_name.assign("(Unknown)");
-		}
-		else
-		{
-			adapter_name.assign("(Unknown)");
-		}
+	adapter_info.adapter_names = D3D::GetAdapterNames(dxgi_factory);
 
-		if (adapter_info.fullscreen_modes.empty())
+	auto adapter = D3D::GetChosenOrFirstAdapter(dxgi_factory, EmuConfig.GS.Adapter);
+	if (adapter)
+	{
+		ComPtr<IDXGIOutput> output;
+		if (SUCCEEDED(adapter->EnumOutputs(0, &output)))
 		{
-			ComPtr<IDXGIOutput> output;
-			if (SUCCEEDED(current_adapter->EnumOutputs(0, &output)))
+			UINT num_modes = 0;
+			if (SUCCEEDED(output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, nullptr)))
 			{
-				UINT num_modes = 0;
-				if (SUCCEEDED(output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, nullptr)))
+				std::vector<DXGI_MODE_DESC> modes(num_modes);
+				if (SUCCEEDED(output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, modes.data())))
 				{
-					std::vector<DXGI_MODE_DESC> modes(num_modes);
-					if (SUCCEEDED(output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, modes.data())))
+					for (const DXGI_MODE_DESC& mode : modes)
 					{
-						for (const DXGI_MODE_DESC& mode : modes)
-						{
-							adapter_info.fullscreen_modes.push_back(StringUtil::StdStringFromFormat(
-								"%u x %u @ %f hz", mode.Width, mode.Height,
-								static_cast<float>(mode.RefreshRate.Numerator) / static_cast<float>(mode.RefreshRate.Denominator)));
-						}
+						adapter_info.fullscreen_modes.push_back(GetFullscreenModeString(mode.Width, mode.Height,
+							static_cast<float>(mode.RefreshRate.Numerator) / static_cast<float>(mode.RefreshRate.Denominator)));
 					}
 				}
 			}
 		}
-
-		// handle duplicate adapter names
-		if (std::any_of(adapter_info.adapter_names.begin(), adapter_info.adapter_names.end(),
-				[&adapter_name](const std::string& other) { return (adapter_name == other); }))
-		{
-			std::string original_adapter_name = std::move(adapter_name);
-
-			u32 current_extra = 2;
-			do
-			{
-				adapter_name = StringUtil::StdStringFromFormat("%s (%u)", original_adapter_name.c_str(), current_extra);
-				current_extra++;
-			} while (std::any_of(adapter_info.adapter_names.begin(), adapter_info.adapter_names.end(),
-				[&adapter_name](const std::string& other) { return (adapter_name == other); }));
-		}
-
-		adapter_info.adapter_names.push_back(std::move(adapter_name));
 	}
 
 	return adapter_info;
