@@ -1385,9 +1385,10 @@ SCAJ-20177:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
     textureInsideRT: 1 # Required for swirl battle transition.
+    nativePaletteDraw: 1
 SCAJ-20178:
   name: "Ape Escape - Million Monkeys"
   region: "NTSC-Unk"
@@ -1488,9 +1489,10 @@ SCAJ-20197:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
     textureInsideRT: 1 # Required for swirl battle transition.
+    nativePaletteDraw: 1
 SCAJ-20198:
   name: "Everybody's Tennis [PlayStation 2 The Best]"
   region: "NTSC-Unk"
@@ -5362,9 +5364,10 @@ SCKA-20079:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
     textureInsideRT: 1 # Required for swirl battle transition.
+    nativePaletteDraw: 1
 SCKA-20081:
   name: "Tekken 5 [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
@@ -11737,8 +11740,10 @@ SLES-50876:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
+    cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
+    nativePaletteDraw: 1 # Alleviates text and sky rendering issues.
 SLES-50877:
   name: "TimeSplitters 2"
   region: "PAL-M5"
@@ -14501,8 +14506,10 @@ SLES-52153:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
+    cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
+    nativePaletteDraw: 1 # Alleviates text and sky rendering issues.
 SLES-52155:
   name: "EyeToy - L'Eredita"
   region: "PAL-I"
@@ -20889,18 +20896,20 @@ SLES-54644:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
     textureInsideRT: 1 # Required for swirl battle transition.
+    nativePaletteDraw: 1
 SLES-54645:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-F"
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
     textureInsideRT: 1 # Required for swirl battle transition.
+    nativePaletteDraw: 1
 SLES-54646:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-G"
@@ -20908,9 +20917,10 @@ SLES-54646:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
     textureInsideRT: 1 # Required for swirl battle transition.
+    nativePaletteDraw: 1
 SLES-54647:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-I"
@@ -20918,18 +20928,20 @@ SLES-54647:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
     textureInsideRT: 1 # Required for swirl battle transition.
+    nativePaletteDraw: 1
 SLES-54648:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-S"
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
     textureInsideRT: 1 # Required for swirl battle transition.
+    nativePaletteDraw: 1
 SLES-54653:
   name: "Freak Out - Extreme Freeride"
   region: "PAL-M5"
@@ -21942,6 +21954,8 @@ SLES-55007:
   name: "Boogie"
   region: "PAL-M7"
   compat: 4
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes skin colour.
 SLES-55008:
   name: "Riding Star 3"
   region: "PAL-M4"
@@ -30764,8 +30778,10 @@ SLPM-65741:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
+    cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
+    nativePaletteDraw: 1 # Alleviates text and sky rendering issues.
 SLPM-65742:
   name: "Cool Girl [Konami the Best]"
   region: "NTSC-J"
@@ -33329,9 +33345,10 @@ SLPM-66419:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
     textureInsideRT: 1 # Required for swirl battle transition.
+    nativePaletteDraw: 1
 SLPM-66420:
   name: "Front Mission 4 [Ultimate Hits]"
   region: "NTSC-J"
@@ -34799,9 +34816,10 @@ SLPM-66782:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
     textureInsideRT: 1 # Required for swirl battle transition.
+    nativePaletteDraw: 1
 SLPM-66783:
   name: "Idol Janshi Suchie-Pai 4 [Limited Edition]"
   region: "NTSC-J"
@@ -44250,8 +44268,10 @@ SLUS-20587:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     autoFlush: 1
+    cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
+    nativePaletteDraw: 1 # Alleviates text and sky rendering issues.
 SLUS-20588:
   name: "Activision Anthology"
   region: "NTSC-U"
@@ -48903,9 +48923,10 @@ SLUS-21452:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 1 # Reduces bloom misalignment.
-    roundSprite: 1 # Fixes area transition vertical lines.
+    halfPixelOffset: 2 # Reduces bloom misalignment.
+    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
     textureInsideRT: 1 # Required for swirl battle transition.
+    nativePaletteDraw: 1
 SLUS-21453:
   name: "Disney's Meet the Robinsons"
   region: "NTSC-U"
@@ -49908,6 +49929,8 @@ SLUS-21681:
   name: "Boogie"
   region: "NTSC-U"
   compat: 4
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes skin colour.
 SLUS-21682:
   name: "Rock Band"
   region: "NTSC-U"
