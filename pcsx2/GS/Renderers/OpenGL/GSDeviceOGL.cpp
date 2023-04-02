@@ -1286,7 +1286,10 @@ void GSDeviceOGL::DrawMultiStretchRects(
 	OMSetDepthStencilState(m_convert.dss);
 	OMSetBlendState(false);
 	OMSetColorMaskState();
-	OMSetRenderTargets(dTex, nullptr);
+	if (!dTex->IsDepthStencil())
+		OMSetRenderTargets(dTex, nullptr);
+	else
+		OMSetRenderTargets(nullptr, dTex);
 	m_convert.ps[static_cast<int>(shader)].Bind();
 
 	const GSVector2 ds(static_cast<float>(dTex->GetWidth()), static_cast<float>(dTex->GetHeight()));
