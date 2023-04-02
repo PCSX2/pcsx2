@@ -537,7 +537,7 @@ void FPU_MUL(int regd, int regt, bool reverseOperands)
 		// 	else
 		// 		return 0;
 
-		alignas(16) static constexpr const u32 result[4] = { 0x3e800000 };
+		alignas(16) static constexpr const u32 result[4] = { 0x3f490fda };
 
 		xMOVD(ecx, xRegisterSSE(reverseOperands ? regt : regd));
 		xMOVD(edx, xRegisterSSE(reverseOperands ? regd : regt));
