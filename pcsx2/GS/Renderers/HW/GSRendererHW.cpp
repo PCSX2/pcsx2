@@ -800,8 +800,11 @@ bool GSRendererHW::IsPossibleChannelShuffle() const
 
 	// WRC 4 does channel shuffles in vertical strips. So check for page alignment.
 	// Texture TBW should also be twice the framebuffer FBW, because the page is twice as wide.
-	if (m_cached_ctx.TEX0.TBW == (m_cached_ctx.FRAME.FBW * 2) && GSLocalMemory::IsPageAligned(m_cached_ctx.FRAME.PSM, m_r))
+	if (m_cached_ctx.TEX0.TBW == (m_cached_ctx.FRAME.FBW * 2) &&
+		GSLocalMemory::IsPageAligned(m_cached_ctx.FRAME.PSM, GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p))))
+	{
 		return true;
+	}
 
 	return false;
 }
@@ -1422,6 +1425,10 @@ void GSRendererHW::Draw()
 		DumpVertices(s);
 	}
 
+#ifdef ENABLE_OGL_DEBUG
+	static u32 num_skipped_channel_shuffle_draws = 0;
+#endif
+
 	// We mess with this state as an optimization, so take a copy and use that instead.
 	const GSDrawingContext* context = m_context;
 	m_cached_ctx.TEX0 = context->TEX0;
@@ -1435,6 +1442,30 @@ void GSRendererHW::Draw()
 		GL_INS("Warning skipping a draw call (%d)", s_n);
 		return;
 	}
+
+	// Channel shuffles repeat lots of draws. Get out early if we can.
+	if (m_channel_shuffle)
+	{
+		// NFSU2 does consecutive channel shuffles with blending, reducing the alpha channel over time.
+		// Fortunately, it seems to change the FBMSK along the way, so this check alone is sufficient.
+		m_channel_shuffle = IsPossibleChannelShuffle() && m_last_channel_shuffle_fbmsk == m_context->FRAME.FBMSK;
+
+#ifdef ENABLE_OGL_DEBUG
+		if (m_channel_shuffle)
+		{
+			num_skipped_channel_shuffle_draws++;
+			return;
+		}
+
+		if (num_skipped_channel_shuffle_draws > 0)
+			GL_INS("Skipped %u channel shuffle draws", num_skipped_channel_shuffle_draws);
+		num_skipped_channel_shuffle_draws = 0;
+#else
+		if (m_channel_shuffle)
+			return;
+#endif
+	}
+
 	GL_PUSH("HW Draw %d", s_n);
 
 	// When the format is 24bit (Z or C), DATE ceases to function.
@@ -1576,27 +1607,13 @@ void GSRendererHW::Draw()
 	const GSVector4 rect = m_vt.m_min.p.xyxy(m_vt.m_max.p) + GSVector4(0.0f, 0.0f, 0.5f, 0.5f);
 	m_r = GSVector4i(rect).rintersect(GSVector4i(context->scissor.in));
 
-	if (m_channel_shuffle)
-	{
-		// NFSU2 does consecutive channel shuffles with blending, reducing the alpha channel over time.
-		// Fortunately, it seems to change the FBMSK along the way, so this check alone is sufficient.
-		m_channel_shuffle = IsPossibleChannelShuffle() && m_last_channel_shuffle_fbmsk == m_cached_ctx.FRAME.FBMSK;
-		if (m_channel_shuffle)
-		{
-			GL_CACHE("Channel shuffle effect detected SKIP");
-			return;
-		}
-	}
-	else if (m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0 && IsPossibleChannelShuffle())
+	if (!m_channel_shuffle && m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0 &&
+		IsPossibleChannelShuffle())
 	{
 		// Special post-processing effect
 		GL_INS("Possible channel shuffle effect detected");
 		m_channel_shuffle = true;
-		m_last_channel_shuffle_fbmsk = m_cached_ctx.FRAME.FBMSK;
-	}
-	else
-	{
-		m_channel_shuffle = false;
+		m_last_channel_shuffle_fbmsk = m_context->FRAME.FBMSK;
 	}
 
 	m_texture_shuffle = false;
@@ -1932,7 +1949,7 @@ void GSRendererHW::Draw()
 		{
 			GL_INS("Channel shuffle effect detected (2nd shot)");
 			m_channel_shuffle = true;
-			m_last_channel_shuffle_fbmsk = m_cached_ctx.FRAME.FBMSK;
+			m_last_channel_shuffle_fbmsk = m_context->FRAME.FBMSK;
 		}
 		else
 		{
@@ -2762,10 +2779,7 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask()
 bool GSRendererHW::TestChannelShuffle(GSTextureCache::Target* src)
 {
 	// We have to do the second test early here, because it might be a different source.
-	const bool shuffle = m_channel_shuffle || (
-		PRIM->TME && m_cached_ctx.TEX0.PSM == PSM_PSMT8 && // 8-bit texture draw
-		m_vt.m_primclass == GS_SPRITE_CLASS && // draw_sprite_tex
-		(((m_vt.m_max.p - m_vt.m_min.p) <= GSVector4(64.0f)).mask() & 0x3) == 0x3); // single_page
+	const bool shuffle = m_channel_shuffle || IsPossibleChannelShuffle();
 
 	// This is a little redundant since it'll get called twice, but the only way to stop us wasting time on copies.
 	m_channel_shuffle = (shuffle && EmulateChannelShuffle(src, true));
