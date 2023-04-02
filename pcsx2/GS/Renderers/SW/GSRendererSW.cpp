@@ -327,7 +327,7 @@ void GSRendererSW::Draw()
 			// Dump Register state
 			s = GetDrawDumpPath("%05d_context.txt", s_n);
 
-			m_env.Dump(s);
+			m_draw_env->Dump(s);
 			m_context->Dump(s);
 
 			// Dump vertices
@@ -345,7 +345,7 @@ void GSRendererSW::Draw()
 	sd->vertex_count = m_vertex.next;
 	sd->index = (u32*)(sd->buff + sizeof(GSVertexSW) * ((m_vertex.next + 1) & ~1));
 	sd->index_count = m_index.tail;
-	sd->scanmsk_value = m_env.SCANMSK.MSK;
+	sd->scanmsk_value = m_draw_env->SCANMSK.MSK;
 
 	// skip per pixel division if q is constant.
 	// Optimize the division by 1 with a nop. It also means that GS_SPRITE_CLASS must be processed when !m_vt.m_eq.q.
@@ -939,7 +939,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 {
 	GSScanlineGlobalData& gd = data->global;
 
-	const GSDrawingEnvironment& env = m_env;
+	const GSDrawingEnvironment& env = *m_draw_env;
 	const GSDrawingContext* context = m_context;
 	const GS_PRIM_CLASS primclass = m_vt.m_primclass;
 
@@ -1327,9 +1327,9 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 		{
 			gd.sel.dthe = 1;
 
-			gd.dimx = (GSVector4i*)m_vertex_heap.alloc(sizeof(env.dimx), 32);
+			gd.dimx = (GSVector4i*)m_vertex_heap.alloc(sizeof(dimx), 32);
 
-			memcpy(gd.dimx, env.dimx, sizeof(env.dimx));
+			memcpy(gd.dimx, dimx, sizeof(dimx));
 		}
 	}
 

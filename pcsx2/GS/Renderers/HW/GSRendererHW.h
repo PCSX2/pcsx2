@@ -109,6 +109,30 @@ private:
 	GSVector4i GetSplitTextureShuffleDrawRect() const;
 
 	GSVector4i m_r = {};
+	
+	// We modify some of the context registers to optimize away unnecessary operations.
+	// Instead of messing with the real context, we copy them and use those instead.
+	struct
+	{
+		GIFRegTEX0 TEX0;
+		GIFRegCLAMP CLAMP;
+		GIFRegTEST TEST;
+		GIFRegFRAME FRAME;
+		GIFRegZBUF ZBUF;
+
+		__ri bool DepthRead() const { return TEST.ZTE && TEST.ZTST >= 2; }
+
+		__ri bool DepthWrite() const
+		{
+			if (TEST.ATE && TEST.ATST == ATST_NEVER &&
+				TEST.AFAIL != AFAIL_ZB_ONLY) // alpha test, all pixels fail, z buffer is not updated
+			{
+				return false;
+			}
+
+			return ZBUF.ZMSK == 0 && TEST.ZTE != 0; // ZTE == 0 is bug on the real hardware, write is blocked then
+		}
+	} m_cached_ctx;
 
 	// CRC Hacks
 	bool IsBadFrame();
@@ -182,4 +206,7 @@ public:
 
 	/// Called by the texture cache to know for certain whether there is a channel shuffle.
 	bool TestChannelShuffle(GSTextureCache::Target* src);
+
+	/// Returns true if the specified texture address matches the frame or Z buffer.
+	bool IsTBPFrameOrZ(u32 tbp) const;
 };

@@ -205,6 +205,7 @@ protected:
 	bool IsMipMapDraw();
 	bool IsMipMapActive();
 	bool IsCoverageAlpha();
+	void UpdateDIMX();
 
 public:
 	struct GSUploadQueue
@@ -215,14 +216,15 @@ public:
 	};
 
 	GIFPath m_path[4] = {};
-	GIFRegPRIM* PRIM = nullptr;
+	const GIFRegPRIM* PRIM = nullptr;
 	GSPrivRegSet* m_regs = nullptr;
 	GSLocalMemory m_mem;
 	GSDrawingEnvironment m_env = {};
-	GSDrawingEnvironment m_backup_env = {};
 	GSDrawingEnvironment m_prev_env = {};
-	GSVector4i temp_draw_rect = {};
+	const GSDrawingEnvironment* m_draw_env = &m_env;
 	GSDrawingContext* m_context = nullptr;
+	GSVector4i temp_draw_rect = {};
+	GSVector4i dimx[8] = {};
 	u32 m_crc = 0;
 	CRC::Game m_game = {};
 	std::unique_ptr<GSDumpBase> m_dump;
@@ -881,7 +883,6 @@ public:
 	virtual void Reset(bool hardware_reset);
 	virtual void UpdateSettings(const Pcsx2Config::GSOptions& old_config);
 
-	void CopyEnv(GSDrawingEnvironment* dest, GSDrawingEnvironment* src, int ctx);
 	void Flush(GSFlushReason reason);
 	void FlushPrim();
 	bool TestDrawChanged();
@@ -918,7 +919,4 @@ public:
 
 	PRIM_OVERLAP PrimitiveOverlap();
 	GIFRegTEX0 GetTex0Layer(u32 lod);
-
-	/// Returns true if the specified texture address matches the frame or Z buffer.
-	bool IsTBPFrameOrZ(u32 tbp) const;
 };
