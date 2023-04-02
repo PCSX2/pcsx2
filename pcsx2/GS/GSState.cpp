@@ -154,8 +154,6 @@ void GSState::Reset(bool hardware_reset)
 
 	UpdateVertexKick();
 
-	UpdateDIMX();
-
 	for (u32 i = 0; i < 2; i++)
 	{
 		m_env.CTXT[i].UpdateScissor();
@@ -1207,9 +1205,6 @@ void GSState::GIFRegHandlerDIMX(const GIFReg* RESTRICT r)
 
 	m_env.DIMX = r->DIMX;
 
-	if (update)
-		UpdateDIMX();
-
 	if (m_prev_env.DIMX != m_env.DIMX)
 		m_dirty_gs_regs |= (1 << DIRTY_REG_DIMX);
 	else
@@ -1454,17 +1449,11 @@ void GSState::Flush(GSFlushReason reason)
 			PRIM = &m_prev_env.PRIM;
 			UpdateContext();
 
-			if (m_dirty_gs_regs & (1 << DIRTY_REG_DIMX))
-				UpdateDIMX();
-
 			FlushPrim();
 
 			m_draw_env = &m_env;
 			PRIM = &m_env.PRIM;
 			UpdateContext();
-
-			if (m_dirty_gs_regs & (1 << DIRTY_REG_DIMX))
-				UpdateDIMX();
 
 			m_backed_up_ctx = -1;
 		}
@@ -2526,8 +2515,6 @@ int GSState::Defrost(const freezeData* fd)
 
 	UpdateVertexKick();
 
-	UpdateDIMX();
-
 	for (u32 i = 0; i < 2; i++)
 	{
 		m_env.CTXT[i].UpdateScissor();
@@ -2566,7 +2553,6 @@ void GSState::UpdateContext()
 	if (ctx_switch)
 		GL_REG("Context Switch %d", PRIM->CTXT);
 
-	// TODO: Don't mutate context (looking at you, HW)
 	m_context = const_cast<GSDrawingContext*>(&m_draw_env->CTXT[PRIM->CTXT]);
 
 	UpdateScissor();
@@ -3812,19 +3798,6 @@ bool GSState::IsMipMapActive()
 bool GSState::IsCoverageAlpha()
 {
 	return !PRIM->ABE && PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS);
-}
-
-void GSState::UpdateDIMX()
-{
-	const GIFRegDIMX& DIMX = m_draw_env->DIMX;
-	dimx[1] = GSVector4i(DIMX.DM00, 0, DIMX.DM01, 0, DIMX.DM02, 0, DIMX.DM03, 0);
-	dimx[0] = dimx[1].xxzzlh();
-	dimx[3] = GSVector4i(DIMX.DM10, 0, DIMX.DM11, 0, DIMX.DM12, 0, DIMX.DM13, 0);
-	dimx[2] = dimx[3].xxzzlh();
-	dimx[5] = GSVector4i(DIMX.DM20, 0, DIMX.DM21, 0, DIMX.DM22, 0, DIMX.DM23, 0);
-	dimx[4] = dimx[5].xxzzlh();
-	dimx[7] = GSVector4i(DIMX.DM30, 0, DIMX.DM31, 0, DIMX.DM32, 0, DIMX.DM33, 0);
-	dimx[6] = dimx[7].xxzzlh();
 }
 
 GIFRegTEX0 GSState::GetTex0Layer(u32 lod)

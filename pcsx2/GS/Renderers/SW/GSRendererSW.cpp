@@ -1327,9 +1327,15 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 		{
 			gd.sel.dthe = 1;
 
-			gd.dimx = (GSVector4i*)m_vertex_heap.alloc(sizeof(dimx), 32);
+			if (m_last_dimx != env.DIMX)
+			{
+				m_last_dimx = env.DIMX;
+				ExpandDIMX(m_dimx, env.DIMX);
+			}
 
-			memcpy(gd.dimx, dimx, sizeof(dimx));
+			gd.dimx = (GSVector4i*)m_vertex_heap.alloc(sizeof(m_dimx), 32);
+
+			std::memcpy(gd.dimx, m_dimx, sizeof(m_dimx));
 		}
 	}
 
