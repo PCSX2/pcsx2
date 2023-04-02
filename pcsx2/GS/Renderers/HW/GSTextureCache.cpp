@@ -619,7 +619,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		else
 		{
 			src->SetPages();
-			m_src.Add(src, TEX0, g_gs_renderer->m_context->offset.tex);
+			m_src.Add(src, TEX0);
 		}
 
 		if (palette)
@@ -3133,7 +3133,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	if (src != m_temporary_source)
 	{
 		src->SetPages();
-		m_src.Add(src, TEX0, g_gs_renderer->m_context->offset.tex);
+		m_src.Add(src, TEX0);
 	}
 
 	return src;
@@ -3417,9 +3417,10 @@ GSTextureCache::Source* GSTextureCache::CreateMergedSource(GIFRegTEX0 TEX0, GIFR
 	src->m_target = true;
 
 	// Can't use the normal SetPages() here, it'll try to use TW/TH, which might be bad.
-	src->m_pages = g_gs_renderer->m_context->offset.tex.pageLooperForRect(GSVector4i(0, 0, tex_width, tex_height));
+	const GSOffset offset = g_gs_renderer->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
+	src->m_pages = offset.pageLooperForRect(GSVector4i(0, 0, tex_width, tex_height));
+	m_src.Add(src, TEX0);
 
-	m_src.Add(src, TEX0, g_gs_renderer->m_context->offset.tex);
 	return src;
 }
 
@@ -3878,8 +3879,9 @@ void GSTextureCache::Source::SetPages()
 		m_p2t = g_gs_renderer->m_mem.GetPage2TileMap(m_TEX0);
 	}
 
+	const GSOffset offset = g_gs_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
 	const GSVector4i rect(m_region.GetRect(tw, th));
-	m_pages = g_gs_renderer->m_context->offset.tex.pageLooperForRect(rect);
+	m_pages = offset.pageLooperForRect(rect);
 }
 
 void GSTextureCache::Source::Update(const GSVector4i& rect, int level)
@@ -3913,7 +3915,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int level)
 	if (region_rect.eq(r.rintersect(region_rect)))
 		m_complete_layers |= (1u << level);
 
-	const GSOffset& off = g_gs_renderer->m_context->offset.tex;
+	const GSOffset off = g_gs_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
 	GSOffset::BNHelper bn = off.bnMulti(r.left, r.top);
 
 	u32 blocks = 0;
@@ -3937,7 +3939,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int level)
 				{
 					m_valid[row] |= col;
 
-					Write(GSVector4i(x, y, x + bs.x, y + bs.y), level);
+					Write(GSVector4i(x, y, x + bs.x, y + bs.y), level, off);
 
 					blocks++;
 				}
@@ -3958,7 +3960,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int level)
 				{
 					m_valid[row] |= col;
 
-					Write(GSVector4i(x, y, x + bs.x, y + bs.y), level);
+					Write(GSVector4i(x, y, x + bs.x, y + bs.y), level, off);
 
 					blocks++;
 				}
@@ -3969,7 +3971,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int level)
 	if (blocks > 0)
 	{
 		g_perfmon.Put(GSPerfMon::Unswizzle, bs.x * bs.y * blocks << (m_palette ? 2 : 0));
-		Flush(m_write.count, level);
+		Flush(m_write.count, level, off);
 	}
 }
 
@@ -3994,7 +3996,7 @@ void GSTextureCache::Source::UpdateLayer(const GIFRegTEX0& TEX0, const GSVector4
 	m_TEX0 = old_TEX0;
 }
 
-void GSTextureCache::Source::Write(const GSVector4i& r, int layer)
+void GSTextureCache::Source::Write(const GSVector4i& r, int layer, const GSOffset& off)
 {
 	if (!m_write.rect)
 		m_write.rect = static_cast<GSVector4i*>(_aligned_malloc(3 * sizeof(GSVector4i), 32));
@@ -4026,11 +4028,11 @@ void GSTextureCache::Source::Write(const GSVector4i& r, int layer)
 
 	if (m_write.count > 2)
 	{
-		Flush(1, layer);
+		Flush(1, layer, off);
 	}
 }
 
-void GSTextureCache::Source::Flush(u32 count, int layer)
+void GSTextureCache::Source::Flush(u32 count, int layer, const GSOffset& off)
 {
 	// This function as written will not work for paletted formats copied from framebuffers
 	// because they are 8 or 4 bit formats on the GS and the GS local memory module reads
@@ -4048,8 +4050,6 @@ void GSTextureCache::Source::Flush(u32 count, int layer)
 	int pitch = std::max(tw, psm.bs.x) * sizeof(u32);
 
 	GSLocalMemory& mem = g_gs_renderer->m_mem;
-
-	const GSOffset& off = g_gs_renderer->m_context->offset.tex;
 
 	GSLocalMemory::readTexture rtx = psm.rtx;
 
@@ -4435,7 +4435,7 @@ bool GSTextureCache::Target::ResizeTexture(int new_unscaled_width, int new_unsca
 
 // GSTextureCache::SourceMap
 
-void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, const GSOffset& off)
+void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0)
 {
 	m_surfaces.insert(s);
 

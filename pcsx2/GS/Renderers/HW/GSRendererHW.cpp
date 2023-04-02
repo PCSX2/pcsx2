@@ -1082,7 +1082,7 @@ void GSRendererHW::SwSpriteRender()
 
 	GL_INS("SwSpriteRender: Dest 0x%x W:%d F:%s, size(%d %d)", m_context->FRAME.Block(), m_context->FRAME.FBW, psm_str(m_context->FRAME.PSM), w, h);
 
-	const GSOffset& spo = m_context->offset.tex;
+	const GSOffset spo = m_mem.GetOffset(m_context->TEX0.TBP0, m_context->TEX0.TBW, m_context->TEX0.PSM);
 	const GSOffset& dpo = m_context->offset.fb;
 
 	const bool alpha_blending_enabled = PRIM->ABE;
@@ -1591,8 +1591,6 @@ void GSRendererHW::Draw()
 		m_context->FRAME.FBP = m_split_texture_shuffle_start_FBP;
 		m_context->offset.fb = GSOffset(GSLocalMemory::m_psm[m_context->FRAME.PSM].info, m_context->FRAME.Block(),
 			m_context->FRAME.FBW, m_context->FRAME.PSM);
-		m_context->offset.tex = GSOffset(GSLocalMemory::m_psm[m_context->TEX0.PSM].info, m_context->TEX0.TBP0,
-			m_context->TEX0.TBW, m_context->TEX0.PSM);
 	}
 
 	const auto cleanup_cancelled_draw = [&]() {
@@ -1604,8 +1602,6 @@ void GSRendererHW::Draw()
 		{
 			m_context->offset.fb = GSOffset(GSLocalMemory::m_psm[m_context->FRAME.PSM].info, m_context->FRAME.Block(),
 				m_context->FRAME.FBW, m_context->FRAME.PSM);
-			m_context->offset.tex = GSOffset(GSLocalMemory::m_psm[m_context->TEX0.PSM].info, m_context->TEX0.TBP0,
-				m_context->TEX0.TBW, m_context->TEX0.PSM);
 		}
 	};
 
@@ -1755,8 +1751,6 @@ void GSRendererHW::Draw()
 		{
 			TEX0 = GetTex0Layer(0);
 		}
-
-		m_context->offset.tex = m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
 		tmm = GetTextureMinMax(TEX0, MIP_CLAMP, m_vt.IsLinear(), false);
 
@@ -1977,8 +1971,6 @@ void GSRendererHW::Draw()
 			for (int layer = m_lod.x + 1; layer <= m_lod.y; layer++)
 			{
 				const GIFRegTEX0 MIP_TEX0(GetTex0Layer(layer));
-
-				m_context->offset.tex = m_mem.GetOffset(MIP_TEX0.TBP0, MIP_TEX0.TBW, MIP_TEX0.PSM);
 
 				MIP_CLAMP.MINU >>= 1;
 				MIP_CLAMP.MINV >>= 1;
@@ -2293,8 +2285,6 @@ void GSRendererHW::Draw()
 	{
 		m_context->offset.fb = GSOffset(GSLocalMemory::m_psm[m_context->FRAME.PSM].info, m_context->FRAME.Block(),
 			m_context->FRAME.FBW, m_context->FRAME.PSM);
-		m_context->offset.tex = GSOffset(GSLocalMemory::m_psm[m_context->TEX0.PSM].info, m_context->TEX0.TBP0,
-			m_context->TEX0.TBW, m_context->TEX0.PSM);
 	}
 
 	//

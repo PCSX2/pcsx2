@@ -48,8 +48,6 @@ public:
 	{
 		GSOffset fb;
 		GSOffset zb;
-		GSOffset tex;
-		GSPixelOffset* fzb;
 		GSPixelOffset4* fzb4;
 	} offset;
 
