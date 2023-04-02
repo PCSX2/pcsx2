@@ -86,8 +86,6 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 		memzero(g_RealGSMem);
 		GSIMR.reset();
 		CSRreg.Reset();
-		gsVideoMode = GS_VideoMode::Uninitialized;
-		UpdateVSyncRate();
 		GetMTGS().SendSimplePacket(GS_RINGTYPE_RESET, 0, 0, 0);
 	}
 
