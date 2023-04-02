@@ -14,18 +14,22 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GS.h"
-#include "GSExtra.h"
-#include "GSUtil.h"
+#include "GS/GS.h"
+#include "GS/GSExtra.h"
+#include "GS/GSUtil.h"
 #include "MultiISA.h"
 #include "common/StringUtil.h"
+
+#ifdef ENABLE_VULKAN
+#include "GS/Renderers/Vulkan/GSDeviceVK.h"
+#endif
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
 #include <d3dcommon.h>
 #include <dxgi.h>
 #include <VersionHelpers.h>
-#include "Renderers/DX11/D3D.h"
+#include "GS/Renderers/DX11/D3D.h"
 #include <wil/com.h>
 #endif
 
@@ -206,7 +210,13 @@ GSRendererType GSUtil::GetPreferredRenderer()
 	// Use D3D device info to select renderer.
 	return D3D::GetPreferredRenderer();
 #else
-	// Linux: Prefer GL/Vulkan, whatever is available.
+	// Linux: Prefer Vulkan if the driver isn't buggy.
+#if defined(ENABLE_VULKAN)
+	if (GSDeviceVK::IsSuitableDefaultRenderer())
+		return GSRendererType::VK;
+#endif
+
+	// Otherwise, whatever is available.
 #if defined(ENABLE_OPENGL)
 	return GSRendererType::OGL;
 #elif defined(ENABLE_VULKAN)
