@@ -244,8 +244,8 @@ public:
 
 		void PreloadLevel(int level);
 
-		void Write(const GSVector4i& r, int layer);
-		void Flush(u32 count, int layer);
+		void Write(const GSVector4i& r, int layer, const GSOffset& off);
+		void Flush(u32 count, int layer, const GSOffset& off);
 
 	public:
 		HashCacheEntry* m_from_hash_cache = nullptr;
@@ -316,7 +316,7 @@ public:
 		std::unordered_set<Source*> m_surfaces;
 		std::array<FastList<Source*>, MAX_PAGES> m_map;
 
-		void Add(Source* s, const GIFRegTEX0& TEX0, const GSOffset& off);
+		void Add(Source* s, const GIFRegTEX0& TEX0);
 		void RemoveAll();
 		void RemoveAt(Source* s);
 	};

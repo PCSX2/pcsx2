@@ -162,8 +162,6 @@ void GSState::Reset(bool hardware_reset)
 
 		m_env.CTXT[i].offset.fb = m_mem.GetOffset(m_env.CTXT[i].FRAME.Block(), m_env.CTXT[i].FRAME.FBW, m_env.CTXT[i].FRAME.PSM);
 		m_env.CTXT[i].offset.zb = m_mem.GetOffset(m_env.CTXT[i].ZBUF.Block(), m_env.CTXT[i].FRAME.FBW, m_env.CTXT[i].ZBUF.PSM);
-		m_env.CTXT[i].offset.tex = m_mem.GetOffset(m_env.CTXT[i].TEX0.TBP0, m_env.CTXT[i].TEX0.TBW, m_env.CTXT[i].TEX0.PSM);
-		m_env.CTXT[i].offset.fzb = m_mem.GetPixelOffset(m_env.CTXT[i].FRAME, m_env.CTXT[i].ZBUF);
 		m_env.CTXT[i].offset.fzb4 = m_mem.GetPixelOffset4(m_env.CTXT[i].FRAME, m_env.CTXT[i].ZBUF);
 	}
 
@@ -752,7 +750,7 @@ void GSState::GIFRegHandlerRGBAQ(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerST(const GIFReg* RESTRICT r)
 {
-	m_v.ST = (GSVector4i)r->ST;
+	m_v.ST = r->ST;
 
 #if defined(PCSX2_DEVBUILD) || defined(_DEBUG)
 	if (std::isnan(m_v.ST.S) || std::isnan(m_v.ST.T))
@@ -830,10 +828,7 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 
 	TEX0.CPSM &= 0xa; // 1010b
 
-	if ((TEX0.U32[0] ^ m_env.CTXT[i].TEX0.U32[0]) & 0x3ffffff) // TBP0 TBW PSM
-		m_env.CTXT[i].offset.tex = m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
-
-	m_env.CTXT[i].TEX0 = (GSVector4i)TEX0;
+	m_env.CTXT[i].TEX0 = TEX0;
 
 	if (wt)
 	{
@@ -970,7 +965,7 @@ void GSState::GIFRegHandlerCLAMP(const GIFReg* RESTRICT r)
 {
 	GL_REG("CLAMP_%d = 0x%x_%x", i, r->U32[1], r->U32[0]);
 
-	m_env.CTXT[i].CLAMP = (GSVector4i)r->CLAMP;
+	m_env.CTXT[i].CLAMP = r->CLAMP;
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
@@ -995,7 +990,7 @@ void GSState::GIFRegHandlerTEX1(const GIFReg* RESTRICT r)
 {
 	GL_REG("TEX1_%d = 0x%x_%x", i, r->U32[1], r->U32[0]);
 
-	m_env.CTXT[i].TEX1 = (GSVector4i)r->TEX1;
+	m_env.CTXT[i].TEX1 = r->TEX1;
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
@@ -1064,7 +1059,7 @@ void GSState::GIFRegHandlerPRMODE(const GIFReg* RESTRICT r)
 		return;
 
 	const u32 _PRIM = m_env.PRIM.PRIM;
-	m_env.PRIM = (GSVector4i)r->PRMODE;
+	m_env.PRIM = r->PRMODE;
 	m_env.PRIM.PRIM = _PRIM;
 
 	if (m_prev_env.PRIM.U32[0] ^ m_env.PRIM.U32[0])
@@ -1079,12 +1074,12 @@ void GSState::GIFRegHandlerTEXCLUT(const GIFReg* RESTRICT r)
 {
 	GL_REG("TEXCLUT = 0x%x_%x", r->U32[1], r->U32[0]);
 
-	m_env.TEXCLUT = (GSVector4i)r->TEXCLUT;
+	m_env.TEXCLUT = r->TEXCLUT;
 }
 
 void GSState::GIFRegHandlerSCANMSK(const GIFReg* RESTRICT r)
 {
-	m_env.SCANMSK = (GSVector4i)r->SCANMSK;
+	m_env.SCANMSK = r->SCANMSK;
 
 	if (m_env.SCANMSK.MSK & 2)
 		m_scanmask_used = 2;
@@ -1100,7 +1095,7 @@ void GSState::GIFRegHandlerMIPTBP1(const GIFReg* RESTRICT r)
 {
 	GL_REG("MIPTBP1_%d = 0x%x_%x", i, r->U32[1], r->U32[0]);
 
-	m_env.CTXT[i].MIPTBP1 = (GSVector4i)r->MIPTBP1;
+	m_env.CTXT[i].MIPTBP1 = r->MIPTBP1;
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
@@ -1116,7 +1111,7 @@ void GSState::GIFRegHandlerMIPTBP2(const GIFReg* RESTRICT r)
 {
 	GL_REG("MIPTBP2_%d = 0x%x_%x", i, r->U32[1], r->U32[0]);
 
-	m_env.CTXT[i].MIPTBP2 = (GSVector4i)r->MIPTBP2;
+	m_env.CTXT[i].MIPTBP2 = r->MIPTBP2;
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
@@ -1131,7 +1126,7 @@ void GSState::GIFRegHandlerTEXA(const GIFReg* RESTRICT r)
 {
 	GL_REG("TEXA = 0x%x_%x", r->U32[1], r->U32[0]);
 
-	m_env.TEXA = (GSVector4i)r->TEXA;
+	m_env.TEXA = r->TEXA;
 
 	if (m_prev_env.TEXA != m_env.TEXA)
 		m_dirty_gs_regs |= (1 << DIRTY_REG_TEXA);
@@ -1143,7 +1138,7 @@ void GSState::GIFRegHandlerFOGCOL(const GIFReg* RESTRICT r)
 {
 	GL_REG("FOGCOL = 0x%x_%x", r->U32[1], r->U32[0]);
 
-	m_env.FOGCOL = (GSVector4i)r->FOGCOL;
+	m_env.FOGCOL = r->FOGCOL;
 
 	if (m_prev_env.FOGCOL != m_env.FOGCOL)
 		m_dirty_gs_regs |= (1 << DIRTY_REG_FOGCOL);
@@ -1165,7 +1160,7 @@ void GSState::GIFRegHandlerTEXFLUSH(const GIFReg* RESTRICT r)
 template <int i>
 void GSState::GIFRegHandlerSCISSOR(const GIFReg* RESTRICT r)
 {
-	m_env.CTXT[i].SCISSOR = (GSVector4i)r->SCISSOR;
+	m_env.CTXT[i].SCISSOR = r->SCISSOR;
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
@@ -1185,7 +1180,7 @@ void GSState::GIFRegHandlerALPHA(const GIFReg* RESTRICT r)
 {
 	GL_REG("ALPHA = 0x%x_%x", r->U32[1], r->U32[0]);
 
-	m_env.CTXT[i].ALPHA = (GSVector4i)r->ALPHA;
+	m_env.CTXT[i].ALPHA = r->ALPHA;
 
 	// value of 3 is not allowed by the spec
 	// acts like 2 on real hw, so just clamp it
@@ -1210,7 +1205,7 @@ void GSState::GIFRegHandlerDIMX(const GIFReg* RESTRICT r)
 	if (r->DIMX != m_env.DIMX)
 		update = true;
 
-	m_env.DIMX = (GSVector4i)r->DIMX;
+	m_env.DIMX = r->DIMX;
 
 	if (update)
 		m_env.UpdateDIMX();
@@ -1223,7 +1218,7 @@ void GSState::GIFRegHandlerDIMX(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerDTHE(const GIFReg* RESTRICT r)
 {
-	m_env.DTHE = (GSVector4i)r->DTHE;
+	m_env.DTHE = r->DTHE;
 
 	if (m_prev_env.DTHE != m_env.DTHE)
 		m_dirty_gs_regs |= (1 << DIRTY_REG_DTHE);
@@ -1233,7 +1228,7 @@ void GSState::GIFRegHandlerDTHE(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerCOLCLAMP(const GIFReg* RESTRICT r)
 {
-	m_env.COLCLAMP = (GSVector4i)r->COLCLAMP;
+	m_env.COLCLAMP = r->COLCLAMP;
 
 	if (m_prev_env.COLCLAMP != m_env.COLCLAMP)
 		m_dirty_gs_regs |= (1 << DIRTY_REG_COLCLAMP);
@@ -1244,7 +1239,7 @@ void GSState::GIFRegHandlerCOLCLAMP(const GIFReg* RESTRICT r)
 template <int i>
 void GSState::GIFRegHandlerTEST(const GIFReg* RESTRICT r)
 {
-	m_env.CTXT[i].TEST = (GSVector4i)r->TEST;
+	m_env.CTXT[i].TEST = r->TEST;
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
@@ -1257,8 +1252,7 @@ void GSState::GIFRegHandlerTEST(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerPABE(const GIFReg* RESTRICT r)
 {
-
-	m_env.PABE = (GSVector4i)r->PABE;
+	m_env.PABE = r->PABE;
 
 	if (m_prev_env.PABE != m_env.PABE)
 		m_dirty_gs_regs |= (1 << DIRTY_REG_PABE);
@@ -1269,7 +1263,7 @@ void GSState::GIFRegHandlerPABE(const GIFReg* RESTRICT r)
 template <int i>
 void GSState::GIFRegHandlerFBA(const GIFReg* RESTRICT r)
 {
-	m_env.CTXT[i].FBA = (GSVector4i)r->FBA;
+	m_env.CTXT[i].FBA = r->FBA;
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
@@ -1298,11 +1292,10 @@ void GSState::GIFRegHandlerFRAME(const GIFReg* RESTRICT r)
 	{
 		m_env.CTXT[i].offset.fb = m_mem.GetOffset(NewFrame.Block(), NewFrame.FBW, NewFrame.PSM);
 		m_env.CTXT[i].offset.zb = m_mem.GetOffset(m_env.CTXT[i].ZBUF.Block(), NewFrame.FBW, m_env.CTXT[i].ZBUF.PSM);
-		m_env.CTXT[i].offset.fzb = m_mem.GetPixelOffset(NewFrame, m_env.CTXT[i].ZBUF);
 		m_env.CTXT[i].offset.fzb4 = m_mem.GetPixelOffset4(NewFrame, m_env.CTXT[i].ZBUF);
 	}
 
-	m_env.CTXT[i].FRAME = (GSVector4i)NewFrame;
+	m_env.CTXT[i].FRAME = NewFrame;
 
 	switch (m_env.CTXT[i].FRAME.PSM)
 	{
@@ -1356,11 +1349,10 @@ void GSState::GIFRegHandlerZBUF(const GIFReg* RESTRICT r)
 	if ((m_env.CTXT[i].ZBUF.U32[0] ^ ZBUF.U32[0]) & 0x3f0001ff) // ZBP PSM
 	{
 		m_env.CTXT[i].offset.zb = m_mem.GetOffset(ZBUF.Block(), m_env.CTXT[i].FRAME.FBW, ZBUF.PSM);
-		m_env.CTXT[i].offset.fzb = m_mem.GetPixelOffset(m_env.CTXT[i].FRAME, ZBUF);
 		m_env.CTXT[i].offset.fzb4 = m_mem.GetPixelOffset4(m_env.CTXT[i].FRAME, ZBUF);
 	}
 
-	m_env.CTXT[i].ZBUF = (GSVector4i)ZBUF;
+	m_env.CTXT[i].ZBUF = ZBUF;
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
@@ -1388,7 +1380,7 @@ void GSState::GIFRegHandlerBITBLTBUF(const GIFReg* RESTRICT r)
 	if (r->BITBLTBUF != m_env.BITBLTBUF)
 		FlushWrite();
 
-	m_env.BITBLTBUF = (GSVector4i)r->BITBLTBUF;
+	m_env.BITBLTBUF = r->BITBLTBUF;
 }
 
 void GSState::GIFRegHandlerTRXPOS(const GIFReg* RESTRICT r)
@@ -1398,7 +1390,7 @@ void GSState::GIFRegHandlerTRXPOS(const GIFReg* RESTRICT r)
 	if (r->TRXPOS != m_env.TRXPOS)
 		FlushWrite();
 
-	m_env.TRXPOS = (GSVector4i)r->TRXPOS;
+	m_env.TRXPOS = r->TRXPOS;
 }
 
 void GSState::GIFRegHandlerTRXREG(const GIFReg* RESTRICT r)
@@ -1407,7 +1399,7 @@ void GSState::GIFRegHandlerTRXREG(const GIFReg* RESTRICT r)
 	if (r->TRXREG != m_env.TRXREG)
 		FlushWrite();
 
-	m_env.TRXREG = (GSVector4i)r->TRXREG;
+	m_env.TRXREG = r->TRXREG;
 }
 
 void GSState::GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r)
@@ -1416,7 +1408,7 @@ void GSState::GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r)
 
 	Flush(GSFlushReason::GSTRANSFER);
 
-	m_env.TRXDIR = (GSVector4i)r->TRXDIR;
+	m_env.TRXDIR = r->TRXDIR;
 
 	switch (m_env.TRXDIR.XDIR)
 	{
@@ -2556,8 +2548,6 @@ int GSState::Defrost(const freezeData* fd)
 
 		m_env.CTXT[i].offset.fb = m_mem.GetOffset(m_env.CTXT[i].FRAME.Block(), m_env.CTXT[i].FRAME.FBW, m_env.CTXT[i].FRAME.PSM);
 		m_env.CTXT[i].offset.zb = m_mem.GetOffset(m_env.CTXT[i].ZBUF.Block(), m_env.CTXT[i].FRAME.FBW, m_env.CTXT[i].ZBUF.PSM);
-		m_env.CTXT[i].offset.tex = m_mem.GetOffset(m_env.CTXT[i].TEX0.TBP0, m_env.CTXT[i].TEX0.TBW, m_env.CTXT[i].TEX0.PSM);
-		m_env.CTXT[i].offset.fzb = m_mem.GetPixelOffset(m_env.CTXT[i].FRAME, m_env.CTXT[i].ZBUF);
 		m_env.CTXT[i].offset.fzb4 = m_mem.GetPixelOffset4(m_env.CTXT[i].FRAME, m_env.CTXT[i].ZBUF);
 	}
 
