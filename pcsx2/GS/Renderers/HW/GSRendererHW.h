@@ -28,19 +28,6 @@ MULTI_ISA_DEF(void GSRendererHWPopulateFunctions(GSRendererHW& renderer);)
 
 class GSHwHack;
 
-struct GSFrameInfo
-{
-	u32 FBP;
-	u32 FPSM;
-	u32 FBMSK;
-	u32 ZBP;
-	u32 ZMSK;
-	u32 ZTST;
-	u32 TME;
-	u32 TBP0;
-	u32 TPSM;
-};
-
 class GSRendererHW : public GSRenderer
 {
 	MULTI_ISA_FRIEND(GSRendererHWFunctions);
@@ -52,7 +39,7 @@ public:
 private:
 	static constexpr float SSR_UV_TOLERANCE = 1.0f;
 
-	using GSC_Ptr = bool(*)(GSRendererHW& r, const GSFrameInfo& fi, int& skip);	// GSC - Get Skip Count
+	using GSC_Ptr = bool(*)(GSRendererHW& r, int& skip);	// GSC - Get Skip Count
 	using OI_Ptr = bool(*)(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t); // OI - Before draw
 
 	// Require special argument
