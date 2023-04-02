@@ -154,7 +154,7 @@ void GSState::Reset(bool hardware_reset)
 
 	UpdateVertexKick();
 
-	m_env.UpdateDIMX();
+	UpdateDIMX();
 
 	for (u32 i = 0; i < 2; i++)
 	{
@@ -1208,7 +1208,7 @@ void GSState::GIFRegHandlerDIMX(const GIFReg* RESTRICT r)
 	m_env.DIMX = r->DIMX;
 
 	if (update)
-		m_env.UpdateDIMX();
+		UpdateDIMX();
 
 	if (m_prev_env.DIMX != m_env.DIMX)
 		m_dirty_gs_regs |= (1 << DIRTY_REG_DIMX);
@@ -1438,12 +1438,6 @@ void GSState::GIFRegHandlerHWREG(const GIFReg* RESTRICT r)
 	Write(reinterpret_cast<const u8*>(r), 8); // haunting ground
 }
 
-inline void GSState::CopyEnv(GSDrawingEnvironment* dest, GSDrawingEnvironment* src, int ctx)
-{
-	memcpy(dest, src, 88);
-	memcpy(&dest->CTXT[ctx], &src->CTXT[ctx], 96);
-}
-
 void GSState::Flush(GSFlushReason reason)
 {
 	FlushWrite();
@@ -1455,35 +1449,29 @@ void GSState::Flush(GSFlushReason reason)
 		if (m_dirty_gs_regs)
 		{
 			const int ctx = m_prev_env.PRIM.CTXT;
-			bool restore_offsets = false;
 
-			CopyEnv(&m_backup_env, &m_env, ctx);
-			CopyEnv(&m_env, &m_prev_env, ctx);
-
-			m_env.UpdateDIMX();
-			m_env.CTXT[ctx].UpdateScissor();
+			m_draw_env = &m_prev_env;
+			PRIM = &m_prev_env.PRIM;
 			UpdateContext();
 
-			if (((m_backup_env.CTXT[ctx].ZBUF.U32[0] ^ m_env.CTXT[ctx].ZBUF.U32[0]) & 0x3f0001ff) || ((m_backup_env.CTXT[ctx].FRAME.U32[0] ^ m_env.CTXT[ctx].FRAME.U32[0]) & 0x3f3f01ff))
-			{
-				memcpy(&m_backup_env.CTXT[ctx].offset, &m_env.CTXT[ctx].offset, sizeof(m_env.CTXT[ctx].offset));
-				memcpy(&m_env.CTXT[ctx].offset, &m_prev_env.CTXT[ctx].offset, sizeof(m_env.CTXT[ctx].offset));
-				restore_offsets = true;
-			}
+			if (m_dirty_gs_regs & (1 << DIRTY_REG_DIMX))
+				UpdateDIMX();
 
 			FlushPrim();
 
-			if (restore_offsets)
-				memcpy(&m_env.CTXT[ctx].offset, &m_backup_env.CTXT[ctx].offset, sizeof(m_env.CTXT[ctx].offset));
-
-			CopyEnv(&m_env, &m_backup_env, ctx);
-			m_env.CTXT[ctx].UpdateScissor();
-			m_env.UpdateDIMX();
+			m_draw_env = &m_env;
+			PRIM = &m_env.PRIM;
 			UpdateContext();
+
+			if (m_dirty_gs_regs & (1 << DIRTY_REG_DIMX))
+				UpdateDIMX();
+
 			m_backed_up_ctx = -1;
 		}
 		else
+		{
 			FlushPrim();
+		}
 
 		m_dirty_gs_regs = 0;
 	}
@@ -1641,14 +1629,14 @@ void GSState::FlushPrim()
 		// we can ignore the Z format, since it won't be used in the draw (Star Ocean 3 transitions)
 		const bool ignoreZ = m_context->ZBUF.ZMSK && m_context->TEST.ZTST == 1;
 
+#ifdef PCSX2_DEVBUILD
 		if (GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt >= 3 || (GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt >= 3 && !ignoreZ))
 		{
 			Console.Warning("GS: Possible invalid draw, Frame PSM %x ZPSM %x", m_context->FRAME.PSM, m_context->ZBUF.PSM);
 		}
+#endif
 
 		m_vt.Update(m_vertex.buff, m_index.buff, m_vertex.tail, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
-
-		m_context->SaveReg();
 
 		try
 		{
@@ -1664,8 +1652,6 @@ void GSState::FlushPrim()
 			PurgePool();
 			Console.Error("GS: Memory allocation failure.");
 		}
-
-		m_context->RestoreReg();
 
 		g_perfmon.Put(GSPerfMon::Draw, 1);
 		g_perfmon.Put(GSPerfMon::Prim, m_index.tail / GSUtil::GetVertexCount(PRIM->PRIM));
@@ -2540,7 +2526,7 @@ int GSState::Defrost(const freezeData* fd)
 
 	UpdateVertexKick();
 
-	m_env.UpdateDIMX();
+	UpdateDIMX();
 
 	for (u32 i = 0; i < 2; i++)
 	{
@@ -2575,12 +2561,13 @@ void GSState::UpdateCRCHacks()
 
 void GSState::UpdateContext()
 {
-	const bool ctx_switch = (m_context != &m_env.CTXT[PRIM->CTXT]);
+	const bool ctx_switch = (m_context != &m_draw_env->CTXT[PRIM->CTXT]);
 
 	if (ctx_switch)
 		GL_REG("Context Switch %d", PRIM->CTXT);
 
-	m_context = &m_env.CTXT[PRIM->CTXT];
+	// TODO: Don't mutate context (looking at you, HW)
+	m_context = const_cast<GSDrawingContext*>(&m_draw_env->CTXT[PRIM->CTXT]);
 
 	UpdateScissor();
 }
@@ -3173,8 +3160,11 @@ __forceinline void GSState::VertexKick(u32 skip)
 
 	if (m_index.tail == 0 && ((m_backed_up_ctx != m_env.PRIM.CTXT) || m_dirty_gs_regs))
 	{
-		CopyEnv(&m_prev_env, &m_env, m_env.PRIM.CTXT);
-		memcpy(&m_prev_env.CTXT[m_prev_env.PRIM.CTXT].offset, &m_env.CTXT[m_prev_env.PRIM.CTXT].offset, sizeof(m_env.CTXT[m_prev_env.PRIM.CTXT].offset));
+		const int ctx = m_env.PRIM.CTXT;
+		std::memcpy(&m_prev_env, &m_env, 88);
+		std::memcpy(&m_prev_env.CTXT[ctx], &m_env.CTXT[ctx], 96);
+		std::memcpy(&m_prev_env.CTXT[ctx].offset, &m_env.CTXT[ctx].offset, sizeof(m_env.CTXT[ctx].offset));
+		std::memcpy(&m_prev_env.CTXT[ctx].scissor, &m_env.CTXT[ctx].scissor, sizeof(m_env.CTXT[ctx].scissor));
 		m_dirty_gs_regs = 0;
 		m_backed_up_ctx = m_env.PRIM.CTXT;
 	}
@@ -3583,7 +3573,7 @@ void GSState::CalcAlphaMinMax()
 		GSVector4i a = m_vt.m_min.c.uph32(m_vt.m_max.c).zzww();
 		if (PRIM->TME && context->TEX0.TCC)
 		{
-			const GSDrawingEnvironment& env = m_env;
+			const GSDrawingEnvironment& env = *m_draw_env;
 
 			switch (GSLocalMemory::m_psm[context->TEX0.PSM].fmt)
 			{
@@ -3824,6 +3814,19 @@ bool GSState::IsCoverageAlpha()
 	return !PRIM->ABE && PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS);
 }
 
+void GSState::UpdateDIMX()
+{
+	const GIFRegDIMX& DIMX = m_draw_env->DIMX;
+	dimx[1] = GSVector4i(DIMX.DM00, 0, DIMX.DM01, 0, DIMX.DM02, 0, DIMX.DM03, 0);
+	dimx[0] = dimx[1].xxzzlh();
+	dimx[3] = GSVector4i(DIMX.DM10, 0, DIMX.DM11, 0, DIMX.DM12, 0, DIMX.DM13, 0);
+	dimx[2] = dimx[3].xxzzlh();
+	dimx[5] = GSVector4i(DIMX.DM20, 0, DIMX.DM21, 0, DIMX.DM22, 0, DIMX.DM23, 0);
+	dimx[4] = dimx[5].xxzzlh();
+	dimx[7] = GSVector4i(DIMX.DM30, 0, DIMX.DM31, 0, DIMX.DM32, 0, DIMX.DM33, 0);
+	dimx[6] = dimx[7].xxzzlh();
+}
+
 GIFRegTEX0 GSState::GetTex0Layer(u32 lod)
 {
 	// Shortcut
@@ -3874,33 +3877,6 @@ GIFRegTEX0 GSState::GetTex0Layer(u32 lod)
 		TEX0.TW -= lod;
 
 	return TEX0;
-}
-
-bool GSState::IsTBPFrameOrZ(u32 tbp) const
-{
-	GSDrawingContext* context = m_context;
-	const bool is_frame = (context->FRAME.Block() == tbp);
-	const bool is_z = (context->ZBUF.Block() == tbp);
-	if (!is_frame && !is_z)
-		return false;
-
-	const u32 fm = context->FRAME.FBMSK;
-	const u32 zm = context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
-	const u32 fm_mask = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
-
-	const u32 max_z = (0xFFFFFFFF >> (GSLocalMemory::m_psm[context->ZBUF.PSM].fmt * 8));
-	const bool no_rt = (context->ALPHA.IsCd() && PRIM->ABE && (context->FRAME.PSM == 1))
-		|| (!context->TEST.DATE && (context->FRAME.FBMSK & GSLocalMemory::m_psm[context->FRAME.PSM].fmsk) == GSLocalMemory::m_psm[context->FRAME.PSM].fmsk);
-	const bool no_ds = (
-		// Depth is always pass/fail (no read) and write are discarded.
-		(zm != 0 && context->TEST.ZTST <= ZTST_ALWAYS) ||
-		// Depth test will always pass
-		(zm != 0 && context->TEST.ZTST == ZTST_GEQUAL && m_vt.m_eq.z && std::min(m_vertex.buff[0].XYZ.Z, max_z) == max_z) ||
-		// Depth will be written through the RT
-		(!no_rt && context->FRAME.FBP == context->ZBUF.ZBP && !PRIM->TME && zm == 0 && (fm & fm_mask) == 0 && context->TEST.ZTE));
-
-	// Relying a lot on the optimizer here... I don't like it.
-	return (is_frame && !no_rt) || (is_z && !no_ds);
 }
 
 // GSTransferBuffer

@@ -28,6 +28,12 @@ static CRCHackLevel s_crc_hack_level = CRCHackLevel::Full;
 #define RPRIM r.PRIM
 #define RCONTEXT r.m_context
 
+#define RTEX0 r.m_cached_ctx.TEX0
+#define RTEST r.m_cached_ctx.TEST
+#define RFRAME r.m_cached_ctx.FRAME
+#define RZBUF r.m_cached_ctx.ZBUF
+#define RCLAMP r.m_cached_ctx.CLAMP
+
 ////////////////////////////////////////////////////////////////////////////////
 // Partial level, broken on all renderers.
 ////////////////////////////////////////////////////////////////////////////////
@@ -266,9 +272,9 @@ bool GSHwHack::GSC_BlackAndBurnoutSky(GSRendererHW& r, const GSFrameInfo& fi, in
 	if (skip != 0)
 		return true;
 
-	const GIFRegTEX0& TEX0 = RCONTEXT->TEX0;
+	const GIFRegTEX0& TEX0 = RTEX0;
+	const GIFRegFRAME& FRAME = RFRAME;
 	const GIFRegALPHA& ALPHA = RCONTEXT->ALPHA;
-	const GIFRegFRAME& FRAME = RCONTEXT->FRAME;
 
 	if (RPRIM->PRIM == GS_SPRITE && !RPRIM->IIP && RPRIM->TME && !RPRIM->FGE && RPRIM->ABE && !RPRIM->AA1 && !RPRIM->FST && !RPRIM->FIX &&
 		ALPHA.A == ALPHA.B && ALPHA.D == 0 && FRAME.PSM == PSM_PSMCT32 && TEX0.CPSM == PSM_PSMCT32 && TEX0.TCC && !TEX0.TFX && !TEX0.CSM)
@@ -530,11 +536,11 @@ bool GSHwHack::GSC_UrbanReign(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
 		// from matching the last column, because it's trying to fit the last 65 columns of a 640x448 (effectively 641x448)
 		// texture into a 640x448 render target.
 		if (fi.TME && fi.TBP0 != fi.FBP && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMCT32 &&
-			RCONTEXT->FRAME.FBW == (RCONTEXT->TEX0.TBW / 2) && RCONTEXT->CLAMP.WMS == CLAMP_REGION_CLAMP &&
-			RCONTEXT->CLAMP.WMT == CLAMP_REGION_CLAMP && ((r.m_vt.m_max.t == GSVector4(64.0f, 448.0f)).mask() == 0x3))
+			RFRAME.FBW == (RTEX0.TBW / 2) && RCLAMP.WMS == CLAMP_REGION_CLAMP &&
+			RCLAMP.WMT == CLAMP_REGION_CLAMP && ((r.m_vt.m_max.t == GSVector4(64.0f, 448.0f)).mask() == 0x3))
 		{
 			GL_CACHE("GSC_UrbanReign: Fix region clamp to 64 wide");
-			r.m_context->CLAMP.MAXU = 63;
+			RCLAMP.MAXU = 63;
 		}
 	}
 
@@ -769,18 +775,18 @@ bool GSHwHack::OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds
 		&& !r.PRIM->FGE // No FOG.
 		&& !r.PRIM->AA1 // No antialiasing.
 		&& !r.PRIM->FIX // Normal fragment value control.
-		&& !r.m_env.DTHE.DTHE // No dithering.
-		&& !r.m_context->TEST.ATE // No alpha test.
-		&& !r.m_context->TEST.DATE // No destination alpha test.
-		&& (!r.m_context->DepthRead() && !r.m_context->DepthWrite()) // No depth handling.
-		&& !r.m_context->TEX0.CSM // No CLUT usage.
-		&& !r.m_env.PABE.PABE // No PABE.
+		&& !r.m_draw_env->DTHE.DTHE // No dithering.
+		&& !r.m_cached_ctx.TEST.ATE // No alpha test.
+		&& !r.m_cached_ctx.TEST.DATE // No destination alpha test.
+		&& (!r.m_cached_ctx.DepthRead() && !r.m_cached_ctx.DepthWrite()) // No depth handling.
+		&& !RTEX0.CSM // No CLUT usage.
+		&& !r.m_draw_env->PABE.PABE // No PABE.
 		&& r.m_context->FBA.FBA == 0 // No Alpha Correction.
-		&& r.m_context->FRAME.FBMSK == 0 // No frame buffer masking.
+		&& r.m_cached_ctx.FRAME.FBMSK == 0 // No frame buffer masking.
 	)
 	{
-		const u32 FBP = r.m_context->FRAME.Block();
-		const u32 FBW = r.m_context->FRAME.FBW;
+		const u32 FBP = r.m_cached_ctx.FRAME.Block();
+		const u32 FBW = r.m_cached_ctx.FRAME.FBW;
 		GL_INS("PointListPalette - m_r = <%d, %d => %d, %d>, n_vertices = %zu, FBP = 0x%x, FBW = %u", r.m_r.x, r.m_r.y, r.m_r.z, r.m_r.w, n_vertices, FBP, FBW);
 		const GSVertex* RESTRICT v = r.m_vertex.buff;
 		const int ox(r.m_context->XYOFFSET.OFX);
@@ -813,11 +819,11 @@ bool GSHwHack::OI_BigMuthaTruckers(GSRendererHW& r, GSTexture* rt, GSTexture* ds
 	// vertical resolution is half so only half is processed at once
 	// We, however, don't have this limitation so we'll replace the draw with a full-screen TS.
 
-	const GIFRegTEX0& Texture = RCONTEXT->TEX0;
+	const GIFRegTEX0& Texture = RTEX0;
 
 	GIFRegTEX0 Frame = {};
-	Frame.TBW = RCONTEXT->FRAME.FBW;
-	Frame.TBP0 = RCONTEXT->FRAME.Block();
+	Frame.TBW = RFRAME.FBW;
+	Frame.TBP0 = RFRAME.Block();
 
 	if (RPRIM->TME && Frame.TBW == 10 && Texture.TBW == 10 && Frame.TBP0 == 0x00a00 && Texture.PSM == PSM_PSMT8H && (r.m_r.y == 256 || r.m_r.y == 224))
 	{
@@ -937,11 +943,11 @@ bool GSHwHack::OI_FFXII(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTexture
 
 bool GSHwHack::OI_FFX(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
-	const u32 FBP = RCONTEXT->FRAME.Block();
-	const u32 ZBP = RCONTEXT->ZBUF.Block();
-	const u32 TBP = RCONTEXT->TEX0.TBP0;
+	const u32 FBP = RFRAME.Block();
+	const u32 ZBP = RZBUF.Block();
+	const u32 TBP = RTEX0.TBP0;
 
-	if ((FBP == 0x00d00 || FBP == 0x00000) && ZBP == 0x02100 && RPRIM->TME && TBP == 0x01a00 && RCONTEXT->TEX0.PSM == PSM_PSMCT16S)
+	if ((FBP == 0x00d00 || FBP == 0x00000) && ZBP == 0x02100 && RPRIM->TME && TBP == 0x01a00 && RTEX0.PSM == PSM_PSMCT16S)
 	{
 		// random battle transition (z buffer written directly, clear it now)
 		GL_INS("OI_FFX ZB clear");
@@ -956,8 +962,8 @@ bool GSHwHack::OI_RozenMaidenGebetGarden(GSRendererHW& r, GSTexture* rt, GSTextu
 {
 	if (!RPRIM->TME)
 	{
-		const u32 FBP = RCONTEXT->FRAME.Block();
-		const u32 ZBP = RCONTEXT->ZBUF.Block();
+		const u32 FBP = RFRAME.Block();
+		const u32 ZBP = RZBUF.Block();
 
 		if (FBP == 0x008c0 && ZBP == 0x01a40)
 		{
@@ -966,8 +972,8 @@ bool GSHwHack::OI_RozenMaidenGebetGarden(GSRendererHW& r, GSTexture* rt, GSTextu
 			GIFRegTEX0 TEX0 = {};
 
 			TEX0.TBP0 = ZBP;
-			TEX0.TBW = RCONTEXT->FRAME.FBW;
-			TEX0.PSM = RCONTEXT->FRAME.PSM;
+			TEX0.TBW = RFRAME.FBW;
+			TEX0.PSM = RFRAME.PSM;
 
 			if (GSTextureCache::Target* tmp_rt = g_texture_cache->LookupTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget))
 			{
@@ -977,15 +983,15 @@ bool GSHwHack::OI_RozenMaidenGebetGarden(GSRendererHW& r, GSTexture* rt, GSTextu
 
 			return false;
 		}
-		else if (FBP == 0x00000 && RCONTEXT->ZBUF.Block() == 0x01180)
+		else if (FBP == 0x00000 && RZBUF.Block() == 0x01180)
 		{
 			// z buffer clear, frame buffer now points to the z buffer (how can they be so clever?)
 
 			GIFRegTEX0 TEX0 = {};
 
 			TEX0.TBP0 = FBP;
-			TEX0.TBW = RCONTEXT->FRAME.FBW;
-			TEX0.PSM = RCONTEXT->ZBUF.PSM;
+			TEX0.TBW = RFRAME.FBW;
+			TEX0.PSM = RZBUF.PSM;
 
 			if (GSTextureCache::Target* tmp_ds = g_texture_cache->LookupTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::DepthStencil))
 			{
@@ -1008,12 +1014,12 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 	// save result in alpha with a TS,
 	// Restore RG channel that we previously copied to render shadows.
 
-	const GIFRegTEX0& Texture = RCONTEXT->TEX0;
+	const GIFRegTEX0& Texture = RTEX0;
 
 	GIFRegTEX0 Frame = {};
-	Frame.TBW = RCONTEXT->FRAME.FBW;
-	Frame.TBP0 = RCONTEXT->FRAME.Block();
-	Frame.PSM = RCONTEXT->FRAME.PSM;
+	Frame.TBW = RFRAME.FBW;
+	Frame.TBP0 = RFRAME.Block();
+	Frame.PSM = RFRAME.PSM;
 
 	if ((!RPRIM->TME) || (GSLocalMemory::m_psm[Texture.PSM].bpp != 16) || (GSLocalMemory::m_psm[Frame.PSM].bpp != 16) || (Texture.TBP0 == Frame.TBP0) || (Frame.TBW != 16 && Texture.TBW != 16))
 		return true;
@@ -1073,7 +1079,7 @@ bool GSHwHack::OI_ArTonelico2(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GST
 
 	const GSVertex* v = &r.m_vertex.buff[0];
 
-	if (r.m_vertex.next == 2 && !RPRIM->TME && RCONTEXT->FRAME.FBW == 10 && v->XYZ.Z == 0 && RCONTEXT->TEST.ZTST == ZTST_ALWAYS)
+	if (r.m_vertex.next == 2 && !RPRIM->TME && RFRAME.FBW == 10 && v->XYZ.Z == 0 && RTEST.ZTST == ZTST_ALWAYS)
 	{
 		GL_INS("OI_ArTonelico2");
 		g_gs_device->ClearDepth(ds);
@@ -1123,10 +1129,10 @@ bool GSHwHack::GSC_Battlefield2(GSRendererHW& r, const GSFrameInfo& fi, int& ski
 
 bool GSHwHack::OI_Battlefield2(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
-	if (!RPRIM->TME || RCONTEXT->FRAME.Block() > 0xD00 || RCONTEXT->TEX0.TBP0 > 0x1D00)
+	if (!RPRIM->TME || RFRAME.Block() > 0xD00 || RTEX0.TBP0 > 0x1D00)
 		return true;
 
-	if (rt && t && RCONTEXT->FRAME.Block() == 0 && RCONTEXT->TEX0.TBP0 == 0x1000)
+	if (rt && t && RFRAME.Block() == 0 && RTEX0.TBP0 == 0x1000)
 	{
 		const GSVector4i rc(0, 0, std::min(rt->GetWidth(), t->m_texture->GetWidth()), std::min(rt->GetHeight(), t->m_texture->GetHeight()));
 		g_gs_device->CopyRect(t->m_texture, rt, rc, 0, 0);
@@ -1143,16 +1149,21 @@ bool GSHwHack::OI_HauntingGround(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 	if (rt && !ds && !t && r.IsConstantDirectWriteMemClear(true))
 	{
 		GL_CACHE("GSHwHack::OI_HauntingGround()");
-		g_texture_cache->InvalidateVideoMemTargets(GSTextureCache::RenderTarget, RCONTEXT->FRAME.Block(),
-			RCONTEXT->FRAME.FBW, RCONTEXT->FRAME.PSM, r.m_r);
+		g_texture_cache->InvalidateVideoMemTargets(GSTextureCache::RenderTarget, RFRAME.Block(), RFRAME.FBW, RFRAME.PSM, r.m_r);
 	}
 
 	// Not skipping anything. This is just an invalidation hack.
 	return true;
 }
 
-#undef RCONTEXT
 #undef RPRIM
+#undef RCONTEXT
+
+#undef RTEX0
+#undef RTEST
+#undef RFRAME
+#undef RZBUF
+#undef RCLAMP
 
 #undef CRC_Partial
 #undef CRC_Full
@@ -1289,6 +1300,7 @@ bool GSRendererHW::IsBadFrame()
 {
 	if (m_gsc)
 	{
+		// GSC occurs before cached regs are set up
 		const GSFrameInfo fi = {
 			m_context->FRAME.Block(),
 			m_context->FRAME.PSM,

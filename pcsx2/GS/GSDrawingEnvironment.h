@@ -59,25 +59,9 @@ public:
 
 		CTXT[0].Reset();
 		CTXT[1].Reset();
-
-		memset(dimx, 0, sizeof(dimx));
 	}
 
-	GSVector4i dimx[8];
-
-	void UpdateDIMX()
-	{
-		dimx[1] = GSVector4i(DIMX.DM00, 0, DIMX.DM01, 0, DIMX.DM02, 0, DIMX.DM03, 0);
-		dimx[0] = dimx[1].xxzzlh();
-		dimx[3] = GSVector4i(DIMX.DM10, 0, DIMX.DM11, 0, DIMX.DM12, 0, DIMX.DM13, 0),
-		dimx[2] = dimx[3].xxzzlh();
-		dimx[5] = GSVector4i(DIMX.DM20, 0, DIMX.DM21, 0, DIMX.DM22, 0, DIMX.DM23, 0),
-		dimx[4] = dimx[5].xxzzlh();
-		dimx[7] = GSVector4i(DIMX.DM30, 0, DIMX.DM31, 0, DIMX.DM32, 0, DIMX.DM33, 0),
-		dimx[6] = dimx[7].xxzzlh();
-	}
-
-	void Dump(const std::string& filename)
+	void Dump(const std::string& filename) const
 	{
 		FILE* fp = fopen(filename.c_str(), "wt");
 		if (!fp)

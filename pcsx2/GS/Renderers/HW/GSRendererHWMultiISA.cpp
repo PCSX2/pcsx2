@@ -41,7 +41,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 	GSVertexTrace& vt = hw.m_vt;
 	const GIFRegPRIM* PRIM = hw.PRIM;
 	const GSDrawingContext* context = hw.m_context;
-	const GSDrawingEnvironment& env = hw.m_env;
+	const GSDrawingEnvironment& env = *hw.m_draw_env;
 	const GS_PRIM_CLASS primclass = vt.m_primclass;
 
 	GSRasterizerData data;
@@ -58,7 +58,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 	data.vertex_count = hw.m_vertex.next;
 	data.index = hw.m_index.buff;
 	data.index_count = hw.m_index.tail;
-	data.scanmsk_value = hw.m_env.SCANMSK.MSK;
+	data.scanmsk_value = env.SCANMSK.MSK;
 
 	// Skip per pixel division if q is constant.
 	// Optimize the division by 1 with a nop. It also means that GS_SPRITE_CLASS must be processed when !vt.m_eq.q.
@@ -455,7 +455,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 
 			gd.dimx = dimx_storage;
 
-			memcpy(gd.dimx, env.dimx, sizeof(env.dimx));
+			memcpy(gd.dimx, hw.dimx, sizeof(hw.dimx));
 		}
 	}
 
