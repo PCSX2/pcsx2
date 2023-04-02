@@ -2763,8 +2763,11 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 		{
 			// Since test_only gets executed when creating a source, before target lookup, we can hack
 			// the FBP here to point to the source, which is where it will eventually be copied back to.
+			// We need to force it to PSMCT24, the crossfade draw ends up reading the RT instead of local
+			// memory, which ends up with blue rubbish becuase the shuffle isn't correctly emulated.
 			pxAssertMsg((m_context->TEX0.TBP0 & 31) == 0, "TEX0 should be page aligned");
 			m_context->FRAME.FBP = m_context->TEX0.TBP0 >> 5;
+			m_context->FRAME.PSM = PSM_PSMCT24;
 			return true;
 		}
 
