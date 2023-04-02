@@ -110,11 +110,17 @@ bool GSHwHack::GSC_Manhunt2(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
 
 bool GSHwHack::GSC_SacredBlaze(GSRendererHW& r, const GSFrameInfo& fi, int& skip)
 {
-	//Fix Sacred Blaze rendering glitches
+	// Fix Sacred Blaze rendering glitches.
+	// The game renders a mask for the glow effect during battles, but it offsets the target, something the TC doesn't support.
+	// So let's throw it at the SW renderer to deal with.
 	if (skip == 0)
 	{
-		if (fi.TME && (fi.FBP == 0x0000 || fi.FBP == 0x0e00) && (fi.TBP0 == 0x2880 || fi.TBP0 == 0x2a80) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0x0)
+		const GIFRegFRAME& FRAME = RCONTEXT->FRAME;
+
+		if ((fi.FBP == 0x2680 || fi.FBP == 0x26c0 || fi.FBP == 0x2780 || fi.FBP == 0x2880 || fi.FBP == 0x2a80) && fi.TPSM == PSM_PSMCT32 && FRAME.FBW <= 2 &&
+			(!fi.TME || (fi.TBP0 == 0x0 || fi.TBP0 == 0xe00 || fi.TBP0 == 0x3e00)))
 		{
+			r.SwPrimRender(r, fi.TBP0 > 0x1000);
 			skip = 1;
 		}
 	}
