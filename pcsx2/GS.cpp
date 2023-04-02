@@ -224,6 +224,12 @@ void gsWrite64_page_00( u32 mem, u64 value )
 {
 	s_GSRegistersWritten |= (mem == GS_DISPFB1 || mem == GS_DISPFB2 || mem == GS_PMODE);
 
+	if (mem == GS_SMODE1 || mem == GS_SMODE2)
+	{
+		if (value != *(u64*)PS2GS_BASE(mem))
+			UpdateVSyncRate();
+	}
+
 	gsWrite64_generic( mem, value );
 }
 
