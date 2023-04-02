@@ -327,10 +327,10 @@ double GetVerticalFrequency()
 		return 60.00;
 	case GS_VideoMode::PAL:
 	case GS_VideoMode::DVD_PAL:
-		return gsIsInterlaced ? EmuConfig.GS.FrameratePAL : EmuConfig.GS.FrameratePAL - 0.24f;
+		return (IsProgressiveVideoMode() == false) ? EmuConfig.GS.FrameratePAL : EmuConfig.GS.FrameratePAL - 0.24f;
 	case GS_VideoMode::NTSC:
 	case GS_VideoMode::DVD_NTSC:
-		return gsIsInterlaced ? EmuConfig.GS.FramerateNTSC : EmuConfig.GS.FramerateNTSC - 0.11f;
+		return (IsProgressiveVideoMode() == false) ? EmuConfig.GS.FramerateNTSC : EmuConfig.GS.FramerateNTSC - 0.11f;
 	case GS_VideoMode::SDTV_480P:
 		return 59.94;
 	case GS_VideoMode::HDTV_1080P:
