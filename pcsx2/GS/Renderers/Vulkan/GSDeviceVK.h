@@ -217,6 +217,9 @@ public:
 
 	static void GetAdaptersAndFullscreenModes(std::vector<std::string>* adapters, std::vector<std::string>* fullscreen_modes);
 
+	/// Returns true if Vulkan is suitable as a default for the devices in the system.
+	static bool IsSuitableDefaultRenderer();
+
 	__fi VkRenderPass GetTFXRenderPass(bool rt, bool ds, bool hdr, DATE_RENDER_PASS date, bool fbl, bool dsp,
 		VkAttachmentLoadOp rt_op, VkAttachmentLoadOp ds_op) const
 	{

@@ -127,6 +127,40 @@ void GSDeviceVK::GetAdaptersAndFullscreenModes(
 	}
 }
 
+bool GSDeviceVK::IsSuitableDefaultRenderer()
+{
+	std::vector<std::string> adapters;
+	GetAdaptersAndFullscreenModes(&adapters, nullptr);
+	if (adapters.empty())
+	{
+		// No adapters, not gonna be able to use VK.
+		return false;
+	}
+
+	// Check the first GPU, should be enough.
+	const std::string& name = adapters.front();
+	Console.WriteLn(fmt::format("Using Vulkan GPU '{}' for automatic renderer check.", name));
+
+	// Any software rendering (LLVMpipe, SwiftShader).
+	if (StringUtil::StartsWithNoCase(name, "llvmpipe") ||
+		StringUtil::StartsWithNoCase(name, "SwiftShader"))
+	{
+		Console.WriteLn(Color_StrongOrange, "Not using Vulkan for software renderer.");
+		return false;
+	}
+
+	// For Intel, OpenGL usually ends up faster on Linux, because of fbfetch.
+	// Plus, the Ivy Bridge and Haswell drivers are incomplete.
+	if (StringUtil::StartsWithNoCase(name, "Intel"))
+	{
+		Console.WriteLn(Color_StrongOrange, "Not using Vulkan for Intel GPU.");
+		return false;
+	}
+
+	Console.WriteLn(Color_StrongGreen, "Allowing Vulkan as default renderer.");
+	return true;
+}
+
 RenderAPI GSDeviceVK::GetRenderAPI() const
 {
 	return RenderAPI::Vulkan;
