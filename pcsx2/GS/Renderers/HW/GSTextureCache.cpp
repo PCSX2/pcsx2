@@ -224,7 +224,7 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(Target* t, u32 sbp, u32 sp
 		{
 
 			const u32 totalpages = rect_pages.width() * rect_pages.height();
-			const bool full_rows = in_rect.width() == (src_pgw * src_page_size.x);
+			const bool full_rows = in_rect.width() == static_cast<int>(src_pgw * src_page_size.x);
 			const bool single_row = in_rect.x == 0 && in_rect.y == 0 && totalpages <= dst_pgw;
 			const bool uneven_pages = (horizontal_offset || (totalpages % dst_pgw) != 0) && !single_row;
 
@@ -375,7 +375,7 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 		else if (static_cast<int>(src_pgw) == rect_pages.width())
 		{
 			const u32 totalpages = rect_pages.width() * rect_pages.height();
-			const bool full_rows = in_rect.width() == (src_pgw * src_page_size.x);
+			const bool full_rows = in_rect.width() == static_cast<int>(src_pgw * src_page_size.x);
 			const bool single_row = in_rect.x == 0 && in_rect.y == 0 && totalpages <= dst_pgw;
 			const bool uneven_pages = (horizontal_offset || (totalpages % dst_pgw) != 0) && !single_row;
 
