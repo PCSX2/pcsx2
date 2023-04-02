@@ -15603,6 +15603,8 @@ SLES-52636:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
     autoFlush: 1 # Fixes incorrect colors.
     alignSprite: 1 # Fixes vertical lines such as in FMVs.
 SLES-52637:
