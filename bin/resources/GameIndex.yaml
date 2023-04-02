@@ -40890,6 +40890,8 @@ SLPS-25917:
   name: "Sacred Blaze"
   region: "NTSC-J"
   gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes half screen effects.
+    cpuSpriteRenderLevel: 1 # Needed for above.
     getSkipCount: "GSC_SacredBlaze"
 SLPS-25922:
   name: "Vitamin Z [Limited Edition]"
