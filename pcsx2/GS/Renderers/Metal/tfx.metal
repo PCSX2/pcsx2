@@ -388,22 +388,21 @@ struct PSMain
 
 	float4 clamp_wrap_uv(float4 uv)
 	{
-		float4 uv_out = uv;
 		float4 tex_size = cb.wh.xyxy;
 
 		if (PS_WMS == PS_WMT)
 		{
 			if (PS_REGION_RECT && PS_WMS == 0)
 			{
-				uv_out = fract(uv);
+				uv = fract(uv);
 			}
 			else if (PS_REGION_RECT && PS_WMS == 1)
 			{
-				uv_out = saturate(uv);
+				uv = saturate(uv);
 			}
 			else if (PS_WMS == 2)
 			{
-				uv_out = clamp(uv, cb.uv_min_max.xyxy, cb.uv_min_max.zwzw);
+				uv = clamp(uv, cb.uv_min_max.xyxy, cb.uv_min_max.zwzw);
 			}
 			else if (PS_WMS == 3)
 			{
@@ -412,59 +411,59 @@ struct PSMain
 				if (!FST)
 					uv = fract(uv);
 
-				uv_out = float4((ushort4(uv * tex_size) & ushort4(cb.uv_msk_fix.xyxy)) | ushort4(cb.uv_msk_fix.zwzw)) / tex_size;
+				uv = float4((ushort4(uv * tex_size) & ushort4(cb.uv_msk_fix.xyxy)) | ushort4(cb.uv_msk_fix.zwzw)) / tex_size;
 			}
 		}
 		else
 		{
 			if (PS_REGION_RECT && PS_WMS == 0)
 			{
-				uv_out.xz = fract(uv.xz);
+				uv.xz = fract(uv.xz);
 			}
 			else if (PS_REGION_RECT && PS_WMS == 1)
 			{
-				uv_out.xz = saturate(uv.xz);
+				uv.xz = saturate(uv.xz);
 			}
 			else if (PS_WMS == 2)
 			{
-				uv_out.xz = clamp(uv.xz, cb.uv_min_max.xx, cb.uv_min_max.zz);
+				uv.xz = clamp(uv.xz, cb.uv_min_max.xx, cb.uv_min_max.zz);
 			}
 			else if (PS_WMS == 3)
 			{
 				if (!FST)
 					uv.xz = fract(uv.xz);
 
-				uv_out.xz = float2((ushort2(uv.xz * tex_size.xx) & ushort2(cb.uv_msk_fix.xx)) | ushort2(cb.uv_msk_fix.zz)) / tex_size.xx;
+				uv.xz = float2((ushort2(uv.xz * tex_size.xx) & ushort2(cb.uv_msk_fix.xx)) | ushort2(cb.uv_msk_fix.zz)) / tex_size.xx;
 			}
 
 			if (PS_REGION_RECT && PS_WMT == 0)
 			{
-				uv_out.yw = fract(uv.yw);
+				uv.yw = fract(uv.yw);
 			}
 			else if (PS_REGION_RECT && PS_WMT == 1)
 			{
-				uv_out.yw = saturate(uv.yw);
+				uv.yw = saturate(uv.yw);
 			}
 			else if (PS_WMT == 2)
 			{
-				uv_out.yw = clamp(uv.yw, cb.uv_min_max.yy, cb.uv_min_max.ww);
+				uv.yw = clamp(uv.yw, cb.uv_min_max.yy, cb.uv_min_max.ww);
 			}
 			else if (PS_WMT == 3)
 			{
 				if (!FST)
 					uv.yw = fract(uv.yw);
 
-				uv_out.yw = float2((ushort2(uv.yw * tex_size.yy) & ushort2(cb.uv_msk_fix.yy)) | ushort2(cb.uv_msk_fix.ww)) / tex_size.yy;
+				uv.yw = float2((ushort2(uv.yw * tex_size.yy) & ushort2(cb.uv_msk_fix.yy)) | ushort2(cb.uv_msk_fix.ww)) / tex_size.yy;
 			}
 		}
 
 		if (PS_REGION_RECT)
 		{
 			// Normalized -> Integer Coordinates.
-			uv_out = clamp(uv_out * cb.wh.zwzw + cb.st_range.xyxy, cb.st_range.xyxy, cb.st_range.zwzw);
+			uv = clamp(uv * cb.wh.zwzw + cb.st_range.xyxy, cb.st_range.xyxy, cb.st_range.zwzw);
 		}
 
-		return uv_out;
+		return uv;
 	}
 
 	float4x4 sample_4c(float4 uv)
