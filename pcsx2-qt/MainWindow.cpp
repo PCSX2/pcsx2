@@ -1430,13 +1430,16 @@ bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 
 void MainWindow::requestExit(bool allow_confirm)
 {
+	// requestShutdown() clears this flag.
+	const bool vm_was_valid = QtHost::IsVMValid();
+
 	// this is block, because otherwise closeEvent() will also prompt
 	if (!requestShutdown(allow_confirm, true, EmuConfig.SaveStateOnShutdown))
 		return;
 
 	// VM stopped signal won't have fired yet, so queue an exit if we still have one.
 	// Otherwise, immediately exit, because there's no VM to exit us later.
-	if (QtHost::IsVMValid())
+	if (vm_was_valid)
 		m_is_closing = true;
 	else
 		QGuiApplication::quit();
