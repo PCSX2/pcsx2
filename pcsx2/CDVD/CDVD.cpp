@@ -907,14 +907,6 @@ void cdvdReset()
 	cdvdCtrlTrayClose();
 }
 
-struct Freeze_v10Compat
-{
-	u8 Action;
-	u32 SeekToSector;
-	u32 ReadTime;
-	bool Spinning;
-};
-
 void SaveStateBase::cdvdFreeze()
 {
 	FreezeTag("cdvd");
