@@ -1912,11 +1912,10 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 
 				else if (COP2IsQOP(cpuRegs.code))
 				{
-					std::string disasm;
 					Console.Warning("Possible incorrect Q value used in COP2. If the game is broken, please report to http://github.com/pcsx2/pcsx2.");
 					for (u32 i = s_pCurBlockEx->startpc; i < s_nEndBlock; i += 4)
 					{
-						disasm = "";
+						std::string disasm = "";
 						disR5900Fasm(disasm, memRead32(i), i, false);
 						Console.Warning("%x %s%08X %s", i, i == pc - 4 ? "*" : i == p ? "=" :
                                                                                         " ",
