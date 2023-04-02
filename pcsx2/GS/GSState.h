@@ -205,7 +205,6 @@ protected:
 	bool IsMipMapDraw();
 	bool IsMipMapActive();
 	bool IsCoverageAlpha();
-	void UpdateDIMX();
 
 public:
 	struct GSUploadQueue
@@ -224,7 +223,6 @@ public:
 	const GSDrawingEnvironment* m_draw_env = &m_env;
 	GSDrawingContext* m_context = nullptr;
 	GSVector4i temp_draw_rect = {};
-	GSVector4i dimx[8] = {};
 	u32 m_crc = 0;
 	CRC::Game m_game = {};
 	std::unique_ptr<GSDumpBase> m_dump;
@@ -870,6 +868,9 @@ public:
 	/// Returns the appropriate directory for draw dumping.
 	static std::string GetDrawDumpPath(const char* format, ...);
 
+	/// Expands dither matrix, suitable for software renderer.
+	static void ExpandDIMX(GSVector4i* dimx, const GIFRegDIMX DIMX);
+
 	void ResetHandlers();
 	void ResetPCRTC();
 
@@ -920,3 +921,16 @@ public:
 	PRIM_OVERLAP PrimitiveOverlap();
 	GIFRegTEX0 GetTex0Layer(u32 lod);
 };
+
+// We put this in the header because of Multi-ISA.
+inline void GSState::ExpandDIMX(GSVector4i* dimx, const GIFRegDIMX DIMX)
+{
+	dimx[1] = GSVector4i(DIMX.DM00, 0, DIMX.DM01, 0, DIMX.DM02, 0, DIMX.DM03, 0);
+	dimx[0] = dimx[1].xxzzlh();
+	dimx[3] = GSVector4i(DIMX.DM10, 0, DIMX.DM11, 0, DIMX.DM12, 0, DIMX.DM13, 0);
+	dimx[2] = dimx[3].xxzzlh();
+	dimx[5] = GSVector4i(DIMX.DM20, 0, DIMX.DM21, 0, DIMX.DM22, 0, DIMX.DM23, 0);
+	dimx[4] = dimx[5].xxzzlh();
+	dimx[7] = GSVector4i(DIMX.DM30, 0, DIMX.DM31, 0, DIMX.DM32, 0, DIMX.DM33, 0);
+	dimx[6] = dimx[7].xxzzlh();
+}

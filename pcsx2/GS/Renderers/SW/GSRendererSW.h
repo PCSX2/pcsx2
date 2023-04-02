@@ -69,6 +69,8 @@ protected:
 	u32 m_fzb_cur_pages[16];
 	std::atomic<u32> m_fzb_pages[512]; // u16 frame/zbuf pages interleaved
 	std::atomic<u16> m_tex_pages[512];
+	GIFRegDIMX m_last_dimx = {};
+	GSVector4i m_dimx[8] = {};
 
 	void Reset(bool hardware_reset) override;
 	void VSync(u32 field, bool registers_written) override;
