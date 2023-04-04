@@ -2171,7 +2171,10 @@ static void recRecompile(const u32 startpc)
 		eeRecNeedsReset = true;
 
 	if (eeRecNeedsReset)
+	{
+		eeRecNeedsReset = false;
 		recResetRaw();
+	}
 
 	xSetPtr(recPtr);
 	recPtr = xGetAlignedCallTarget();
