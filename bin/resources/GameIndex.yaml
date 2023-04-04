@@ -22745,28 +22745,38 @@ SLES-55349:
   name: "Need for Speed - Undercover"
   region: "PAL-E"
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    getSkipCount: "GSC_NFSUndercover"
 SLES-55350:
   name: "Need for Speed - Undercover"
   region: "PAL-F-G"
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    getSkipCount: "GSC_NFSUndercover"
 SLES-55351:
   name: "Need for Speed - Undercover"
   region: "PAL-I-S"
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    getSkipCount: "GSC_NFSUndercover"
 SLES-55352:
   name: "Need for Speed - Undercover"
   region: "PAL-SCA"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    getSkipCount: "GSC_NFSUndercover"
 SLES-55353:
   name: "Need for Speed - Undercover"
   region: "PAL-M6"
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    getSkipCount: "GSC_NFSUndercover"
 SLES-55354:
   name: "Shin Megami Tensei - Persona 3 FES"
   region: "PAL-E"
@@ -25270,7 +25280,9 @@ SLPM-55127:
   name: "Need for Speed - Undercover"
   region: "NTSC-J"
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    getSkipCount: "GSC_NFSUndercover"
 SLPM-55131:
   name: "World Soccer Winning Eleven 2009"
   region: "NTSC-J"
@@ -25475,7 +25487,9 @@ SLPM-55244:
   name: "Need for Speed - Undercover [Ea-SY! 1980]"
   region: "NTSC-J"
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    getSkipCount: "GSC_NFSUndercover"
 SLPM-55245:
   name: "Himawari - Pebble in the Sky"
   region: "NTSC-J"
@@ -50522,7 +50536,9 @@ SLUS-21801:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    getSkipCount: "GSC_NFSUndercover"
 SLUS-21802:
   name: "Naked Brothers Band - The Video Game"
   region: "NTSC-U"
