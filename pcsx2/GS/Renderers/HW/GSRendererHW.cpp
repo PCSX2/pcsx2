@@ -2239,8 +2239,10 @@ void GSRendererHW::Draw()
 
 	if (!GSConfig.UserHacks_DisableSafeFeatures)
 	{
-		if (IsConstantDirectWriteMemClear(false) && IsBlendedOrOpaque())
+		if (IsConstantDirectWriteMemClear(true) && IsBlendedOrOpaque())
+		{
 			OI_DoubleHalfClear(rt, ds);
+		}
 	}
 
 	// A couple of hack to avoid upscaling issue. So far it seems to impacts mostly sprite
@@ -2309,7 +2311,8 @@ void GSRendererHW::Draw()
 	if (old_ds)
 		g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, old_ds->m_TEX0.TBP0);
 
-	//
+	// Make sure they aren't the same source (double half clear), we don't want to invalidate the texture.
+	const bool can_invalidate = (m_cached_ctx.FRAME.Block() != m_cached_ctx.ZBUF.Block()) || !rt || !ds;
 
 	if ((fm & fm_mask) != fm_mask && rt)
 	{
@@ -2321,7 +2324,8 @@ void GSRendererHW::Draw()
 
 		g_texture_cache->InvalidateVideoMem(context->offset.fb, m_r, false, false);
 
-		g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, m_cached_ctx.FRAME.Block());
+		if (can_invalidate)
+			g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, m_cached_ctx.FRAME.Block());
 	}
 
 	if (zm != 0xffffffff && ds)
@@ -2334,7 +2338,8 @@ void GSRendererHW::Draw()
 
 		g_texture_cache->InvalidateVideoMem(context->offset.zb, m_r, false, false);
 
-		g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, m_cached_ctx.ZBUF.Block());
+		if (can_invalidate)
+			g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, m_cached_ctx.ZBUF.Block());
 	}
 
 	//
@@ -4929,6 +4934,12 @@ void GSRendererHW::OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCach
 {
 	// Note gs mem clear must be tested before calling this function
 
+	// If the mask is on any of the colour or partial alpha, keep the whole channel
+	const bool keep_a = (m_cached_ctx.FRAME.FBMSK >> 24) & 0xFF;
+	const bool keep_b = (m_cached_ctx.FRAME.FBMSK >> 16) & 0xFF;
+	const bool keep_g = (m_cached_ctx.FRAME.FBMSK >> 8) & 0xFF;
+	const bool keep_r = m_cached_ctx.FRAME.FBMSK & 0xFF;
+
 	// Limit further to unmask Z write
 	if (!m_cached_ctx.ZBUF.ZMSK && rt && ds)
 	{
@@ -4975,16 +4986,63 @@ void GSRendererHW::OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCach
 			GL_INS("OI_DoubleHalfClear:%s: base %x half %x. w_pages %d h_pages %d fbw %d. Color %x",
 				clear_depth ? "depth" : "target", base << 5, half << 5, w_pages, h_pages, m_cached_ctx.FRAME.FBW, color);
 
-			if (clear_depth)
+			// If some of the channels are masked, we need to keep them.
+			if (m_cached_ctx.FRAME.FBMSK != 0)
 			{
-				// Only pure clear are supported for depth
-				ASSERT(color == 0);
-				g_gs_device->ClearDepth(ds->m_texture);
+				GSTexture* tex = nullptr;
+				GSTextureCache::Target* target = clear_depth ? ds : rt;
+				const GSVector2 size = GSVector2(static_cast<float>(target->GetUnscaledWidth()) * target->m_scale, static_cast<float>(target->GetUnscaledHeight()) * target->m_scale);
+				try
+				{
+					tex = target->m_texture->IsDepthStencil() ?
+						g_gs_device->CreateDepthStencil(size.x, size.y, target->m_texture->GetFormat(), true) :
+						g_gs_device->CreateRenderTarget(size.x, size.y, target->m_texture->GetFormat(), true);
+				}
+				catch (const std::bad_alloc&)
+				{
+				}
+
+				if (!tex)
+				{
+					Console.Error("(ResizeTexture) Failed to allocate %dx%d texture", size.x, size.y);
+					return;
+				}
+
+				if (clear_depth)
+				{
+					// Only pure clear are supported for depth
+					ASSERT(color == 0);
+					g_gs_device->ClearDepth(tex);
+				}
+				else
+				{
+					g_gs_device->ClearRenderTarget(tex, color);
+				}
+				const GSVector4 drect = GSVector4(target->GetUnscaledRect()) * GSVector4(target->m_scale);
+
+				// Copy channels being masked.
+				g_gs_device->StretchRect(target->m_texture, GSVector4(0.0f,0.0f,1.0f,1.0f), tex, drect, keep_r, keep_g, keep_b, keep_a);
+				delete target->m_texture;
+
+				target->m_texture = tex;
+				target->UpdateValidity(target->GetUnscaledRect());
 			}
 			else
 			{
-				g_gs_device->ClearRenderTarget(rt->m_texture, color);
+				if (clear_depth)
+				{
+					// Only pure clear are supported for depth
+					ASSERT(color == 0);
+					g_gs_device->ClearDepth(ds->m_texture);
+					ds->UpdateValidity(ds->GetUnscaledRect());
+				}
+				else
+				{
+					g_gs_device->ClearRenderTarget(rt->m_texture, color);
+					rt->UpdateValidity(rt->GetUnscaledRect());
+				}
 			}
+
 		}
 	}
 	// Striped double clear done by Powerdrome and Snoopy Vs Red Baron, it will clear in 32 pixel stripes half done by the Z and half done by the FRAME
@@ -4999,7 +5057,43 @@ void GSRendererHW::OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCach
 
 		// If both buffers are side by side we can expect a fast clear in on-going
 		const u32 color = v[1].RGBAQ.U32[0];
-		g_gs_device->ClearRenderTarget(rt->m_texture, color);
+
+		// If some of the channels are masked, we need to keep them.
+		if (m_cached_ctx.FRAME.FBMSK != 0)
+		{
+			GSTexture* tex = nullptr;
+			GSTextureCache::Target* target = rt;
+			const GSVector2 size = GSVector2(static_cast<float>(target->GetUnscaledWidth()) * target->m_scale, static_cast<float>(target->GetUnscaledHeight()) * target->m_scale);
+			try
+			{
+				tex = g_gs_device->CreateRenderTarget(size.x, size.y, target->m_texture->GetFormat(), true);
+			}
+			catch (const std::bad_alloc&)
+			{
+			}
+
+			if (!tex)
+			{
+				Console.Error("(ResizeTexture) Failed to allocate %dx%d texture", size.x, size.y);
+				return;
+			}
+
+			g_gs_device->ClearRenderTarget(tex, color);
+
+			const GSVector4 drect = GSVector4(target->GetUnscaledRect()) * GSVector4(target->m_scale);
+
+			// Copy channels being masked.
+			g_gs_device->StretchRect(target->m_texture, GSVector4(0, 0, 1, 1), tex, drect, keep_r, keep_g, keep_b, keep_a);
+			delete target->m_texture;
+
+			target->m_texture = tex;
+			target->UpdateValidity(target->GetUnscaledRect());
+		}
+		else
+		{
+			g_gs_device->ClearRenderTarget(rt->m_texture, color);
+			rt->UpdateValidity(rt->GetUnscaledRect());
+		}
 	}
 }
 
@@ -5154,7 +5248,6 @@ bool GSRendererHW::IsConstantDirectWriteMemClear(bool include_zero)
 	const bool direct_draw = (m_vt.m_primclass == GS_SPRITE_CLASS) || (m_index.tail == 6 && m_vt.m_primclass == GS_TRIANGLE_CLASS);
 	// Constant Direct Write without texture/test/blending (aka a GS mem clear)
 	if (direct_draw && !PRIM->TME // Direct write
-		&& (m_cached_ctx.FRAME.FBMSK == 0 || (include_zero && m_vt.m_max.c.eq(GSVector4i::zero()))) // no color mask
 		&& !(m_draw_env->SCANMSK.MSK & 2)
 		&& !m_cached_ctx.TEST.ATE // no alpha test
 		&& (!m_cached_ctx.TEST.ZTE || m_cached_ctx.TEST.ZTST == ZTST_ALWAYS) // no depth test

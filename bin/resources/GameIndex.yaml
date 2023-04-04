@@ -46296,6 +46296,8 @@ SLUS-20978:
   name: "Power Drome"
   region: "NTSC-U"
   compat: 4
+  gsHWFixes:
+    autoFlush: 1
   patches:
     42E15DEF:
       content: |-
