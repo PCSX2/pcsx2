@@ -95,6 +95,10 @@ void GSRendererHW::Reset(bool hardware_reset)
 	// Force targets to preload for 2 frames (for 30fps games).
 	static constexpr u8 TARGET_PRELOAD_FRAMES = 2;
 
+	// Read back on CSR Reset, conditional downloading on render swap etc handled elsewhere.
+	if (!hardware_reset)
+		g_texture_cache->ReadbackAll();
+
 	g_texture_cache->RemoveAll();
 	m_force_preload = TARGET_PRELOAD_FRAMES;
 
