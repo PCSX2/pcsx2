@@ -311,35 +311,35 @@ void GSClut::Read(const GIFRegTEX0& TEX0)
 
 		u16* clut = m_clut;
 
-		if(TEX0.CPSM == PSM_PSMCT32 || TEX0.CPSM == PSM_PSMCT24)
+		if(TEX0.CPSM == PSMCT32 || TEX0.CPSM == PSMCT24)
 		{
 			switch(TEX0.PSM)
 			{
-			case PSM_PSMT8:
-			case PSM_PSMT8H:
+			case PSMT8:
+			case PSMT8H:
 				clut += (TEX0.CSA & 15) << 4;
 				ReadCLUT_T32_I8(clut, m_buff32);
 				break;
-			case PSM_PSMT4:
-			case PSM_PSMT4HL:
-			case PSM_PSMT4HH:
+			case PSMT4:
+			case PSMT4HL:
+			case PSMT4HH:
 				clut += (TEX0.CSA & 15) << 4;
 				ReadCLUT_T32_I4(clut, m_buff32, m_buff64);
 				break;
 			}
 		}
-		else if(TEX0.CPSM == PSM_PSMCT16 || TEX0.CPSM == PSM_PSMCT16S)
+		else if(TEX0.CPSM == PSMCT16 || TEX0.CPSM == PSMCT16S)
 		{
 			switch(TEX0.PSM)
 			{
-			case PSM_PSMT8:
-			case PSM_PSMT8H:
+			case PSMT8:
+			case PSMT8H:
 				clut += TEX0.CSA << 4;
 				ReadCLUT_T16_I8(clut, m_buff32);
 				break;
-			case PSM_PSMT4:
-			case PSM_PSMT4HL:
-			case PSM_PSMT4HH:
+			case PSMT4:
+			case PSMT4HL:
+			case PSMT4HH:
 				clut += TEX0.CSA << 4;
 				ReadCLUT_T16_I4(clut, m_buff32, m_buff64);
 				break;

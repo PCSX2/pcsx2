@@ -2963,7 +2963,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			//GSVector4 scale = GSVector4(dst->m_texture->GetScale()).xyxy();
 
 			//int blockWidth  = 64;
-			//int blockHeight = TEX0.PSM == PSM_PSMCT32 || TEX0.PSM == PSM_PSMCT24 ? 32 : 64;
+			//int blockHeight = TEX0.PSM == PSMCT32 || TEX0.PSM == PSMCT24 ? 32 : 64;
 
 			//GSVector4i br(0, 0, blockWidth, blockHeight);
 

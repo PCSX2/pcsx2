@@ -1296,17 +1296,17 @@ void GSState::GIFRegHandlerFRAME(const GIFReg* RESTRICT r)
 	{
 		case PSMT8H:
 			// Berserk uses the format to only update the alpha channel
-			GL_INS("CORRECT FRAME FORMAT replaces PSM_PSMT8H by PSM_PSMCT32/0x00FF_FFFF");
+			GL_INS("CORRECT FRAME FORMAT replaces PSMT8H by PSMCT32/0x00FF_FFFF");
 			m_env.CTXT[i].FRAME.PSM = PSMCT32;
 			m_env.CTXT[i].FRAME.FBMSK = 0x00FFFFFF;
 			break;
-		case PSMT4HH: // Not tested. Based on PSM_PSMT8H behavior
-			GL_INS("CORRECT FRAME FORMAT replaces PSM_PSMT4HH by PSM_PSMCT32/0x0FFF_FFFF");
+		case PSMT4HH: // Not tested. Based on PSMT8H behavior
+			GL_INS("CORRECT FRAME FORMAT replaces PSMT4HH by PSMCT32/0x0FFF_FFFF");
 			m_env.CTXT[i].FRAME.PSM = PSMCT32;
 			m_env.CTXT[i].FRAME.FBMSK = 0x0FFFFFFF;
 			break;
-		case PSMT4HL: // Not tested. Based on PSM_PSMT8H behavior
-			GL_INS("CORRECT FRAME FORMAT replaces PSM_PSMT4HL by PSM_PSMCT32/0xF0FF_FFFF");
+		case PSMT4HL: // Not tested. Based on PSMT8H behavior
+			GL_INS("CORRECT FRAME FORMAT replaces PSMT4HL by PSMCT32/0xF0FF_FFFF");
 			m_env.CTXT[i].FRAME.PSM = PSMCT32;
 			m_env.CTXT[i].FRAME.FBMSK = 0xF0FFFFFF;
 			break;
