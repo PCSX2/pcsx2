@@ -1294,20 +1294,20 @@ void GSState::GIFRegHandlerFRAME(const GIFReg* RESTRICT r)
 
 	switch (m_env.CTXT[i].FRAME.PSM)
 	{
-		case PSM_PSMT8H:
+		case PSMT8H:
 			// Berserk uses the format to only update the alpha channel
 			GL_INS("CORRECT FRAME FORMAT replaces PSM_PSMT8H by PSM_PSMCT32/0x00FF_FFFF");
-			m_env.CTXT[i].FRAME.PSM = PSM_PSMCT32;
+			m_env.CTXT[i].FRAME.PSM = PSMCT32;
 			m_env.CTXT[i].FRAME.FBMSK = 0x00FFFFFF;
 			break;
-		case PSM_PSMT4HH: // Not tested. Based on PSM_PSMT8H behavior
+		case PSMT4HH: // Not tested. Based on PSM_PSMT8H behavior
 			GL_INS("CORRECT FRAME FORMAT replaces PSM_PSMT4HH by PSM_PSMCT32/0x0FFF_FFFF");
-			m_env.CTXT[i].FRAME.PSM = PSM_PSMCT32;
+			m_env.CTXT[i].FRAME.PSM = PSMCT32;
 			m_env.CTXT[i].FRAME.FBMSK = 0x0FFFFFFF;
 			break;
-		case PSM_PSMT4HL: // Not tested. Based on PSM_PSMT8H behavior
+		case PSMT4HL: // Not tested. Based on PSM_PSMT8H behavior
 			GL_INS("CORRECT FRAME FORMAT replaces PSM_PSMT4HL by PSM_PSMCT32/0xF0FF_FFFF");
-			m_env.CTXT[i].FRAME.PSM = PSM_PSMCT32;
+			m_env.CTXT[i].FRAME.PSM = PSMCT32;
 			m_env.CTXT[i].FRAME.FBMSK = 0xF0FFFFFF;
 			break;
 		default:
@@ -1701,7 +1701,7 @@ void GSState::Write(const u8* mem, int len)
 
 	if (m_game.title == CRC::SMTNocturne) // TODO: hack
 	{
-		if (blit.DBP == 0 && blit.DPSM == PSM_PSMZ32 && w == 512 && h > 224)
+		if (blit.DBP == 0 && blit.DPSM == PSMZ32 && w == 512 && h > 224)
 		{
 			h = 224;
 			m_env.TRXREG.RRH = 224;
@@ -2037,16 +2037,16 @@ void GSState::Move()
 			});
 		}
 	}
-	else if (m_env.BITBLTBUF.SPSM == PSM_PSMT8 && m_env.BITBLTBUF.DPSM == PSM_PSMT8)
+	else if (m_env.BITBLTBUF.SPSM == PSMT8 && m_env.BITBLTBUF.DPSM == PSMT8)
 	{
-		copyFast(m_mem.m_vm8, GSOffset::fromKnownPSM(dbp, dbw, PSM_PSMT8), GSOffset::fromKnownPSM(sbp, sbw, PSM_PSMT8), [](u8* d, u8* s)
+		copyFast(m_mem.m_vm8, GSOffset::fromKnownPSM(dbp, dbw, PSMT8), GSOffset::fromKnownPSM(sbp, sbw, PSMT8), [](u8* d, u8* s)
 		{
 			*d = *s;
 		});
 	}
-	else if (m_env.BITBLTBUF.SPSM == PSM_PSMT4 && m_env.BITBLTBUF.DPSM == PSM_PSMT4)
+	else if (m_env.BITBLTBUF.SPSM == PSMT4 && m_env.BITBLTBUF.DPSM == PSMT4)
 	{
-		copy(GSOffset::fromKnownPSM(dbp, dbw, PSM_PSMT4), GSOffset::fromKnownPSM(sbp, sbw, PSM_PSMT4), [&](u32 doff, u32 soff)
+		copy(GSOffset::fromKnownPSM(dbp, dbw, PSMT4), GSOffset::fromKnownPSM(sbp, sbw, PSMT4), [&](u32 doff, u32 soff)
 		{
 			m_mem.WritePixel4(doff, m_mem.ReadPixel4(soff));
 		});
@@ -3773,7 +3773,7 @@ bool GSState::IsOpaque()
 		}
 		else if (context->ALPHA.C == 1)
 		{
-			if (context->FRAME.PSM == PSM_PSMCT24 || context->FRAME.PSM == PSM_PSMZ24)
+			if (context->FRAME.PSM == PSMCT24 || context->FRAME.PSM == PSMZ24)
 				amin = amax = 0x80;
 		}
 		else if (context->ALPHA.C == 2)

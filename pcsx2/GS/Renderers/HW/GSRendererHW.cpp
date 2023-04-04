@@ -786,7 +786,7 @@ GSVector2i GSRendererHW::GetTargetSize(const GSTextureCache::Source* tex)
 
 bool GSRendererHW::IsPossibleChannelShuffle() const
 {
-	if (!PRIM->TME || m_cached_ctx.TEX0.PSM != PSM_PSMT8 || // 8-bit texture draw
+	if (!PRIM->TME || m_cached_ctx.TEX0.PSM != PSMT8 || // 8-bit texture draw
 		m_vt.m_primclass != GS_SPRITE_CLASS) // draw_sprite_tex
 	{
 		return false;
@@ -1063,8 +1063,8 @@ void GSRendererHW::SwSpriteRender()
 	ASSERT(!m_draw_env->PABE.PABE); // No PABE
 
 	// PSMCT32 pixel format
-	ASSERT(!PRIM->TME || m_cached_ctx.TEX0.PSM == PSM_PSMCT32);
-	ASSERT(m_cached_ctx.FRAME.PSM == PSM_PSMCT32);
+	ASSERT(!PRIM->TME || m_cached_ctx.TEX0.PSM == PSMCT32);
+	ASSERT(m_cached_ctx.FRAME.PSM == PSMCT32);
 
 	// No rasterization required
 	ASSERT(PRIM->PRIM == GS_SPRITE
@@ -1251,13 +1251,13 @@ bool GSRendererHW::CanUseSwSpriteRender()
 		return false;
 	if (m_cached_ctx.DepthRead() || m_cached_ctx.DepthWrite()) // No depth handling
 		return false;
-	if (m_cached_ctx.FRAME.PSM != PSM_PSMCT32) // Frame buffer format is 32 bit color
+	if (m_cached_ctx.FRAME.PSM != PSMCT32) // Frame buffer format is 32 bit color
 		return false;
 	if (PRIM->TME)
 	{
 		// Texture mapping enabled
 
-		if (m_cached_ctx.TEX0.PSM != PSM_PSMCT32) // Input texture format is 32 bit color
+		if (m_cached_ctx.TEX0.PSM != PSMCT32) // Input texture format is 32 bit color
 			return false;
 		if (IsMipMapDraw()) // No mipmapping.
 			return false;
@@ -1471,7 +1471,7 @@ void GSRendererHW::Draw()
 	// When the format is 24bit (Z or C), DATE ceases to function.
 	// It was believed that in 24bit mode all pixels pass because alpha doesn't exist
 	// however after testing this on a PS2 it turns out nothing passes, it ignores the draw.
-	if ((m_cached_ctx.FRAME.PSM & 0xF) == PSM_PSMCT24 && m_context->TEST.DATE)
+	if ((m_cached_ctx.FRAME.PSM & 0xF) == PSMCT24 && m_context->TEST.DATE)
 	{
 		GL_CACHE("DATE on a 24bit format, Frame PSM %x", m_context->FRAME.PSM);
 		return;
@@ -1846,7 +1846,7 @@ void GSRendererHW::Draw()
 	// then reinterpreting it as P8. We need to keep the off-screen intermediate textures at native resolution,
 	// but not propagate that through to the normal render targets. Test Case: Crash Wrath of Cortex.
 	if (no_ds && src && !m_channel_shuffle && GSConfig.UserHacks_NativePaletteDraw && src->m_from_target &&
-		src->m_scale == 1.0f && (src->m_TEX0.PSM == PSM_PSMT8 || src->m_TEX0.TBP0 == m_cached_ctx.FRAME.Block()))
+		src->m_scale == 1.0f && (src->m_TEX0.PSM == PSMT8 || src->m_TEX0.TBP0 == m_cached_ctx.FRAME.Block()))
 	{
 		GL_CACHE("Using native resolution for target based on texture source");
 		target_scale = 1.0f;
@@ -2804,7 +2804,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 			// memory, which ends up with blue rubbish becuase the shuffle isn't correctly emulated.
 			pxAssertMsg((m_context->TEX0.TBP0 & 31) == 0, "TEX0 should be page aligned");
 			m_cached_ctx.FRAME.FBP = m_context->TEX0.TBP0 >> 5;
-			m_cached_ctx.FRAME.PSM = PSM_PSMCT24;
+			m_cached_ctx.FRAME.PSM = PSMCT24;
 			return true;
 		}
 
@@ -3600,7 +3600,7 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		if (tex && m_vt.m_primclass == GS_SPRITE_CLASS && m_vertex.next == 2 && PRIM->ABE && // Blend texture
 			((v[1].U == 8200 && v[1].V == 7176 && mode == GSVideoMode::NTSC) || // at display resolution 512x448
 			(v[1].U == 8200 && v[1].V == 8200 && mode == GSVideoMode::PAL)) && // at display resolution 512x512
-			tex->m_TEX0.PSM == PSM_PSMT8H) // i.e. read the alpha channel of a 32 bits texture
+			tex->m_TEX0.PSM == PSMT8H) // i.e. read the alpha channel of a 32 bits texture
 		{
 			// Note potentially we can limit to TBP0:0x2800
 
@@ -3755,9 +3755,9 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		if (tex->m_palette)
 		{
 			// FIXME Potentially improve fmt field in GSLocalMemory
-			if (m_cached_ctx.TEX0.PSM == PSM_PSMT4HL)
+			if (m_cached_ctx.TEX0.PSM == PSMT4HL)
 				m_conf.ps.pal_fmt = 1;
-			else if (m_cached_ctx.TEX0.PSM == PSM_PSMT4HH)
+			else if (m_cached_ctx.TEX0.PSM == PSMT4HH)
 				m_conf.ps.pal_fmt = 2;
 			else
 				m_conf.ps.pal_fmt = 3;
@@ -4213,7 +4213,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 #endif
 
 	const GSDrawingEnvironment& env = *m_draw_env;
-	const bool DATE = m_cached_ctx.TEST.DATE && m_cached_ctx.FRAME.PSM != PSM_PSMCT24;
+	const bool DATE = m_cached_ctx.TEST.DATE && m_cached_ctx.FRAME.PSM != PSMCT24;
 	bool DATE_PRIMID = false;
 	bool DATE_BARRIER = false;
 	bool DATE_one = false;

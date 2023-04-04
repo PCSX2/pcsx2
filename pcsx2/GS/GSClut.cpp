@@ -47,8 +47,8 @@ GSClut::GSClut(GSLocalMemory* mem)
 
 			switch (i)
 			{
-				case PSM_PSMCT32:
-				case PSM_PSMCT24: // undocumented (KH?)
+				case PSMCT32:
+				case PSMCT24: // undocumented (KH?)
 					if (eight_bit)
 						m_wc[0][i][j] = &GSClut::WriteCLUT32_I8_CSM1;
 					else if (four_bit)
@@ -56,7 +56,7 @@ GSClut::GSClut(GSLocalMemory* mem)
 					else
 						m_wc[0][i][j] = &GSClut::WriteCLUT_NULL;
 					break;
-				case PSM_PSMCT16:
+				case PSMCT16:
 					if (eight_bit)
 						m_wc[0][i][j] = &GSClut::WriteCLUT16_I8_CSM1;
 					else if (four_bit)
@@ -64,7 +64,7 @@ GSClut::GSClut(GSLocalMemory* mem)
 					else
 						m_wc[0][i][j] = &GSClut::WriteCLUT_NULL;
 					break;
-				case PSM_PSMCT16S:
+				case PSMCT16S:
 					if (eight_bit)
 						m_wc[0][i][j] = &GSClut::WriteCLUT16S_I8_CSM1;
 					else if (four_bit)
@@ -81,26 +81,26 @@ GSClut::GSClut(GSLocalMemory* mem)
 		}
 	}
 
-	m_wc[1][PSM_PSMCT32][PSM_PSMT8] = &GSClut::WriteCLUT32_CSM2<256>;
-	m_wc[1][PSM_PSMCT32][PSM_PSMT8H] = &GSClut::WriteCLUT32_CSM2<256>;
-	m_wc[1][PSM_PSMCT32][PSM_PSMT4] = &GSClut::WriteCLUT32_CSM2<16>;
-	m_wc[1][PSM_PSMCT32][PSM_PSMT4HL] = &GSClut::WriteCLUT32_CSM2<16>;
-	m_wc[1][PSM_PSMCT32][PSM_PSMT4HH] = &GSClut::WriteCLUT32_CSM2<16>;
-	m_wc[1][PSM_PSMCT24][PSM_PSMT8] = &GSClut::WriteCLUT32_CSM2<256>;
-	m_wc[1][PSM_PSMCT24][PSM_PSMT8H] = &GSClut::WriteCLUT32_CSM2<256>;
-	m_wc[1][PSM_PSMCT24][PSM_PSMT4] = &GSClut::WriteCLUT32_CSM2<16>;
-	m_wc[1][PSM_PSMCT24][PSM_PSMT4HL] = &GSClut::WriteCLUT32_CSM2<16>;
-	m_wc[1][PSM_PSMCT24][PSM_PSMT4HH] = &GSClut::WriteCLUT32_CSM2<16>;
-	m_wc[1][PSM_PSMCT16][PSM_PSMT8] = &GSClut::WriteCLUT16_CSM2<256>;
-	m_wc[1][PSM_PSMCT16][PSM_PSMT8H] = &GSClut::WriteCLUT16_CSM2<256>;
-	m_wc[1][PSM_PSMCT16][PSM_PSMT4] = &GSClut::WriteCLUT16_CSM2<16>;
-	m_wc[1][PSM_PSMCT16][PSM_PSMT4HL] = &GSClut::WriteCLUT16_CSM2<16>;
-	m_wc[1][PSM_PSMCT16][PSM_PSMT4HH] = &GSClut::WriteCLUT16_CSM2<16>;
-	m_wc[1][PSM_PSMCT16S][PSM_PSMT8] = &GSClut::WriteCLUT16S_CSM2<256>;
-	m_wc[1][PSM_PSMCT16S][PSM_PSMT8H] = &GSClut::WriteCLUT16S_CSM2<256>;
-	m_wc[1][PSM_PSMCT16S][PSM_PSMT4] = &GSClut::WriteCLUT16S_CSM2<16>;
-	m_wc[1][PSM_PSMCT16S][PSM_PSMT4HL] = &GSClut::WriteCLUT16S_CSM2<16>;
-	m_wc[1][PSM_PSMCT16S][PSM_PSMT4HH] = &GSClut::WriteCLUT16S_CSM2<16>;
+	m_wc[1][PSMCT32][PSMT8] = &GSClut::WriteCLUT32_CSM2<256>;
+	m_wc[1][PSMCT32][PSMT8H] = &GSClut::WriteCLUT32_CSM2<256>;
+	m_wc[1][PSMCT32][PSMT4] = &GSClut::WriteCLUT32_CSM2<16>;
+	m_wc[1][PSMCT32][PSMT4HL] = &GSClut::WriteCLUT32_CSM2<16>;
+	m_wc[1][PSMCT32][PSMT4HH] = &GSClut::WriteCLUT32_CSM2<16>;
+	m_wc[1][PSMCT24][PSMT8] = &GSClut::WriteCLUT32_CSM2<256>;
+	m_wc[1][PSMCT24][PSMT8H] = &GSClut::WriteCLUT32_CSM2<256>;
+	m_wc[1][PSMCT24][PSMT4] = &GSClut::WriteCLUT32_CSM2<16>;
+	m_wc[1][PSMCT24][PSMT4HL] = &GSClut::WriteCLUT32_CSM2<16>;
+	m_wc[1][PSMCT24][PSMT4HH] = &GSClut::WriteCLUT32_CSM2<16>;
+	m_wc[1][PSMCT16][PSMT8] = &GSClut::WriteCLUT16_CSM2<256>;
+	m_wc[1][PSMCT16][PSMT8H] = &GSClut::WriteCLUT16_CSM2<256>;
+	m_wc[1][PSMCT16][PSMT4] = &GSClut::WriteCLUT16_CSM2<16>;
+	m_wc[1][PSMCT16][PSMT4HL] = &GSClut::WriteCLUT16_CSM2<16>;
+	m_wc[1][PSMCT16][PSMT4HH] = &GSClut::WriteCLUT16_CSM2<16>;
+	m_wc[1][PSMCT16S][PSMT8] = &GSClut::WriteCLUT16S_CSM2<256>;
+	m_wc[1][PSMCT16S][PSMT8H] = &GSClut::WriteCLUT16S_CSM2<256>;
+	m_wc[1][PSMCT16S][PSMT4] = &GSClut::WriteCLUT16S_CSM2<16>;
+	m_wc[1][PSMCT16S][PSMT4HL] = &GSClut::WriteCLUT16S_CSM2<16>;
+	m_wc[1][PSMCT16S][PSMT4HH] = &GSClut::WriteCLUT16S_CSM2<16>;
 }
 
 GSClut::~GSClut()
@@ -253,7 +253,7 @@ void GSClut::WriteCLUT16S_I4_CSM1(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& T
 template <int n>
 void GSClut::WriteCLUT32_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
-	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT32);
+	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSMCT32);
 	auto pa = off.paMulti(m_mem->vm32(), TEXCLUT.COU << 4, TEXCLUT.COV);
 
 	u16* RESTRICT clut = m_clut + ((TEX0.CSA & 15) << 4);
@@ -270,7 +270,7 @@ void GSClut::WriteCLUT32_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCL
 template <int n>
 void GSClut::WriteCLUT16_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
-	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT16);
+	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSMCT16);
 	auto pa = off.paMulti(m_mem->vm16(), TEXCLUT.COU << 4, TEXCLUT.COV);
 
 	u16* RESTRICT clut = m_clut + (TEX0.CSA << 4);
@@ -284,7 +284,7 @@ void GSClut::WriteCLUT16_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCL
 template <int n>
 void GSClut::WriteCLUT16S_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
-	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT16S);
+	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSMCT16S);
 	auto pa = off.paMulti(m_mem->vm16(), TEXCLUT.COU << 4, TEXCLUT.COV);
 
 	u16* RESTRICT clut = m_clut + (TEX0.CSA << 4);
@@ -360,17 +360,17 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 
 		u16* clut = m_clut;
 
-		if (TEX0.CPSM == PSM_PSMCT32 || TEX0.CPSM == PSM_PSMCT24)
+		if (TEX0.CPSM == PSMCT32 || TEX0.CPSM == PSMCT24)
 		{
 			switch (TEX0.PSM)
 			{
-				case PSM_PSMT8:
-				case PSM_PSMT8H:
+				case PSMT8:
+				case PSMT8H:
 					ReadCLUT_T32_I8(clut, m_buff32, (TEX0.CSA & 15) << 4);
 					break;
-				case PSM_PSMT4:
-				case PSM_PSMT4HL:
-				case PSM_PSMT4HH:
+				case PSMT4:
+				case PSMT4HL:
+				case PSMT4HH:
 					clut += (TEX0.CSA & 15) << 4;
 					// TODO: merge these functions
 					ReadCLUT_T32_I4(clut, m_buff32);
@@ -378,18 +378,18 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 					break;
 			}
 		}
-		else if (TEX0.CPSM == PSM_PSMCT16 || TEX0.CPSM == PSM_PSMCT16S)
+		else if (TEX0.CPSM == PSMCT16 || TEX0.CPSM == PSMCT16S)
 		{
 			switch (TEX0.PSM)
 			{
-				case PSM_PSMT8:
-				case PSM_PSMT8H:
+				case PSMT8:
+				case PSMT8H:
 					clut += TEX0.CSA << 4;
 					Expand16(clut, m_buff32, 256, TEXA);
 					break;
-				case PSM_PSMT4:
-				case PSM_PSMT4HL:
-				case PSM_PSMT4HH:
+				case PSMT4:
+				case PSMT4HL:
+				case PSMT4HH:
 					clut += TEX0.CSA << 4;
 					// TODO: merge these functions
 					Expand16(clut, m_buff32, 16, TEXA);
@@ -401,7 +401,7 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 		m_current_gpu_clut = nullptr;
 		if (GSConfig.UserHacks_GPUTargetCLUTMode != GSGPUTargetCLUTMode::Disabled)
 		{
-			const bool is_4bit = (TEX0.PSM == PSM_PSMT4 || TEX0.PSM == PSM_PSMT4HL || TEX0.PSM == PSM_PSMT4HH);
+			const bool is_4bit = (TEX0.PSM == PSMT4 || TEX0.PSM == PSMT4HL || TEX0.PSM == PSMT4HH);
 
 			u32 CBW;
 			GSVector2i offset;
@@ -428,7 +428,7 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 			{
 				GSTexture* dst = is_4bit ? m_gpu_clut4 : m_gpu_clut8;
 				u32 dst_size = is_4bit ? 16 : 256;
-				const u32 dOffset = (TEX0.CSA & ((TEX0.CPSM == PSM_PSMCT16 || TEX0.CPSM == PSM_PSMCT16S) ? 15u : 31u)) << 4;
+				const u32 dOffset = (TEX0.CSA & ((TEX0.CPSM == PSMCT16 || TEX0.CPSM == PSMCT16S) ? 15u : 31u)) << 4;
 				if (!dst)
 				{
 					// allocate texture lazily
@@ -899,10 +899,10 @@ bool GSClut::ReadState::IsDirty(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 	else // Just to optimise the checks.
 	{
 		// Check TA0 and AEM in 24bit mode.
-		if (TEX0.CPSM == PSM_PSMCT24 && ((this->TEXA.U64 ^ TEXA.U64) & texa24_mask))
+		if (TEX0.CPSM == PSMCT24 && ((this->TEXA.U64 ^ TEXA.U64) & texa24_mask))
 			is_dirty |= true;
 		// Check all fields in 16bit mode.
-		else if (TEX0.CPSM >= PSM_PSMCT16 && ((this->TEXA.U64 ^ TEXA.U64) & texa16_mask))
+		else if (TEX0.CPSM >= PSMCT16 && ((this->TEXA.U64 ^ TEXA.U64) & texa16_mask))
 			is_dirty |= true;
 	}
 

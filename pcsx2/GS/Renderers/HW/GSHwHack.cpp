@@ -58,13 +58,13 @@ bool GSHwHack::GSC_DeathByDegreesTekkenNinaWilliams(GSRendererHW& r, int& skip)
 	// See https://forums.pcsx2.net/Thread-GSDX-Texture-Cache-Bug-Report-Death-By-Degrees-SLUS-20934-NTSC
 	if (skip == 0)
 	{
-		if (!s_nativeres && RTME && RFBP == 0 && RTBP0 == 0x34a0 && RTPSM == PSM_PSMCT32)
+		if (!s_nativeres && RTME && RFBP == 0 && RTBP0 == 0x34a0 && RTPSM == PSMCT32)
 		{
 			// Don't enable hack on native res if crc is below aggressive.
 			// Upscaling issue similar to Tekken 5.
 			skip = 1; // Animation pane
 		}
-		else if (CRC_Aggressive && RFBP == 0x3500 && RTPSM == PSM_PSMT8 && RFBMSK == 0xFFFF00FF)
+		else if (CRC_Aggressive && RFBP == 0x3500 && RTPSM == PSMT8 && RFBMSK == 0xFFFF00FF)
 		{
 			// Needs to be further tested so put it on Aggressive for now, likely channel shuffle.
 			skip = 4; // Underwater white fog
@@ -86,7 +86,7 @@ bool GSHwHack::GSC_GiTS(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (RTME && RFBP == 0x03000 && RFPSM == PSM_PSMCT32 && RTPSM == PSM_PSMT8)
+		if (RTME && RFBP == 0x03000 && RFPSM == PSMCT32 && RTPSM == PSMT8)
 		{
 			// Channel effect not properly supported yet
 			skip = 9;
@@ -119,7 +119,7 @@ bool GSHwHack::GSC_Manhunt2(GSRendererHW& r, int& skip)
 	 */
 	if (skip == 0)
 	{
-		if (RTME && RFBP == 0x03c20 && RFPSM == PSM_PSMCT32 && RTBP0 == 0x01400 && RTPSM == PSM_PSMT8)
+		if (RTME && RFBP == 0x03c20 && RFPSM == PSMCT32 && RTBP0 == 0x01400 && RTPSM == PSMT8)
 		{
 			skip = 640;
 		}
@@ -135,7 +135,7 @@ bool GSHwHack::GSC_SacredBlaze(GSRendererHW& r, int& skip)
 	// So let's throw it at the SW renderer to deal with.
 	if (skip == 0)
 	{
-		if ((RFBP == 0x2680 || RFBP == 0x26c0 || RFBP == 0x2780 || RFBP == 0x2880 || RFBP == 0x2a80) && RTPSM == PSM_PSMCT32 && RFBW <= 2 &&
+		if ((RFBP == 0x2680 || RFBP == 0x26c0 || RFBP == 0x2780 || RFBP == 0x2880 || RFBP == 0x2a80) && RTPSM == PSMCT32 && RFBW <= 2 &&
 			(!RTME || (RTBP0 == 0x0 || RTBP0 == 0xe00 || RTBP0 == 0x3e00)))
 		{
 			r.SwPrimRender(r, RTBP0 > 0x1000);
@@ -150,25 +150,25 @@ bool GSHwHack::GSC_SakuraTaisen(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (!RTME && (RFBP == 0x0 || RFBP == 0x1180) && (RTBP0 != 0x3fc0 && RTBP0 != 0x3c9a && RTBP0 != 0x3dec /*GSC_TBP0 ==0x38d0 || GSC_TBP0==0x3912 ||GSC_TBP0==0x3bdc ||GSC_TBP0==0x3ab3 ||GSC_TBP0<=0x3a92*/) && RFPSM == PSM_PSMCT32 && (RTPSM == PSM_PSMT8 || RTPSM == PSM_PSMT4) && (RFBMSK == 0x00FFFFFF || !RFBMSK))
+		if (!RTME && (RFBP == 0x0 || RFBP == 0x1180) && (RTBP0 != 0x3fc0 && RTBP0 != 0x3c9a && RTBP0 != 0x3dec /*GSC_TBP0 ==0x38d0 || GSC_TBP0==0x3912 ||GSC_TBP0==0x3bdc ||GSC_TBP0==0x3ab3 ||GSC_TBP0<=0x3a92*/) && RFPSM == PSMCT32 && (RTPSM == PSMT8 || RTPSM == PSMT4) && (RFBMSK == 0x00FFFFFF || !RFBMSK))
 		{
 			skip = 0; //3dec 3fc0 3c9a
 		}
-		if (!RTME && (RFBP | RTBP0) != 0 && (RFBP | RTBP0) != 0x1180 && (RFBP | RTBP0) != 0x3be0 && (RFBP | RTBP0) != 0x3c80 && RTBP0 != 0x3c9a && (RFBP | RTBP0) != 0x3d80 && RTBP0 != 0x3dec && RFPSM == PSM_PSMCT32 && (RFBMSK == 0))
+		if (!RTME && (RFBP | RTBP0) != 0 && (RFBP | RTBP0) != 0x1180 && (RFBP | RTBP0) != 0x3be0 && (RFBP | RTBP0) != 0x3c80 && RTBP0 != 0x3c9a && (RFBP | RTBP0) != 0x3d80 && RTBP0 != 0x3dec && RFPSM == PSMCT32 && (RFBMSK == 0))
 		{
 			skip = 0; //3dec 3fc0 3c9a
 		}
-		if (!RTME && (RFBP | RTBP0) != 0 && (RFBP | RTBP0) != 0x1180 && (RFBP | RTBP0) != 0x3be0 && (RFBP | RTBP0) != 0x3c80 && (RFBP | RTBP0) != 0x3d80 && RTBP0 != 0x3c9a && RTBP0 != 0x3de && RFPSM == PSM_PSMCT32 && (RFBMSK == 0))
+		if (!RTME && (RFBP | RTBP0) != 0 && (RFBP | RTBP0) != 0x1180 && (RFBP | RTBP0) != 0x3be0 && (RFBP | RTBP0) != 0x3c80 && (RFBP | RTBP0) != 0x3d80 && RTBP0 != 0x3c9a && RTBP0 != 0x3de && RFPSM == PSMCT32 && (RFBMSK == 0))
 		{
 			skip = 1; //3dec 3fc0 3c9a
 		}
-		else if (RTME && (RFBP == 0 || RFBP == 0x1180) && RTBP0 == 0x35B8 && RTPSM == PSM_PSMT4)
+		else if (RTME && (RFBP == 0 || RFBP == 0x1180) && RTBP0 == 0x35B8 && RTPSM == PSMT4)
 		{
 			skip = 1;
 		}
 		else
 		{
-			if (!RTME && (RFBP | RTBP0) == 0x38d0 && RFPSM == PSM_PSMCT32)
+			if (!RTME && (RFBP | RTBP0) == 0x38d0 && RFPSM == PSMCT32)
 			{
 				skip = 1; //3dec 3fc0 3c9a
 			}
@@ -182,7 +182,7 @@ bool GSHwHack::GSC_SFEX3(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (RTME && RFBP == 0x00500 && RFPSM == PSM_PSMCT16 && RTBP0 == 0x00f00 && RTPSM == PSM_PSMCT16)
+		if (RTME && RFBP == 0x00500 && RFPSM == PSMCT16 && RTBP0 == 0x00f00 && RTPSM == PSMCT16)
 		{
 			// Not an upscaling issue.
 			// Elements on the screen show double/distorted.
@@ -197,7 +197,7 @@ bool GSHwHack::GSC_Tekken5(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (!s_nativeres && RTME && (RFBP == 0x02d60 || RFBP == 0x02d80 || RFBP == 0x02ea0 || RFBP == 0x03620 || RFBP == 0x03640) && RFPSM == RTPSM && RTBP0 == 0x00000 && RTPSM == PSM_PSMCT32)
+		if (!s_nativeres && RTME && (RFBP == 0x02d60 || RFBP == 0x02d80 || RFBP == 0x02ea0 || RFBP == 0x03620 || RFBP == 0x03640) && RFPSM == RTPSM && RTBP0 == 0x00000 && RTPSM == PSMCT32)
 		{
 			// Don't enable hack on native res if crc is below aggressive.
 			// Fixes/removes ghosting/blur effect and white lines appearing in stages: Moonfit Wilderness, Acid Rain - caused by upscaling.
@@ -205,7 +205,7 @@ bool GSHwHack::GSC_Tekken5(GSRendererHW& r, int& skip)
 			// Let's enable this hack for Aggressive only since it's an upscaling issue for both renders.
 			skip = 95;
 		}
-		else if (RZTST == 1 && RTME && (RFBP == 0x02bc0 || RFBP == 0x02be0 || RFBP == 0x02d00 || RFBP == 0x03480 || RFBP == 0x034a0) && RFPSM == RTPSM && RTBP0 == 0x00000 && RTPSM == PSM_PSMCT32)
+		else if (RZTST == 1 && RTME && (RFBP == 0x02bc0 || RFBP == 0x02be0 || RFBP == 0x02d00 || RFBP == 0x03480 || RFBP == 0x034a0) && RFPSM == RTPSM && RTBP0 == 0x00000 && RTPSM == PSMCT32)
 		{
 			// The moving display effect(flames) is not emulated properly in the entire screen so let's remove the effect in the stage: Burning Temple. Related to half screen bottom issue.
 			// Fixes black lines in the stage: Burning Temple - caused by upscaling. Note the black lines can also be fixed with Merge Sprite hack.
@@ -220,7 +220,7 @@ bool GSHwHack::GSC_TombRaiderAnniversary(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (RTME && RFBP == 0x01000 && RFPSM == RTPSM && RTPSM == PSM_PSMCT32)
+		if (RTME && RFBP == 0x01000 && RFPSM == RTPSM && RTPSM == PSMCT32)
 		{
 			skip = 1; // Garbage TC
 		}
@@ -234,11 +234,11 @@ bool GSHwHack::GSC_TombRaiderLegend(GSRendererHW& r, int& skip)
 	if (skip == 0)
 	{
 		// ||GSC_TBP0 ==0x2F00
-		if (RTME && RFBP == 0x01000 && RFPSM == RTPSM && RTPSM == PSM_PSMCT32 && (RTBP0 == 0x2b60 || RTBP0 == 0x2b80 || RTBP0 == 0x2E60 || RTBP0 == 0x3020 || RTBP0 == 0x3200 || RTBP0 == 0x3320))
+		if (RTME && RFBP == 0x01000 && RFPSM == RTPSM && RTPSM == PSMCT32 && (RTBP0 == 0x2b60 || RTBP0 == 0x2b80 || RTBP0 == 0x2E60 || RTBP0 == 0x3020 || RTBP0 == 0x3200 || RTBP0 == 0x3320))
 		{
 			skip = 1; // Garbage TC
 		}
-		else if (RTPSM == PSM_PSMCT32 && (RTPSM | RFBP) == 0x2fa0 && (RTBP0 == 0x2bc0) && RFBMSK == 0)
+		else if (RTPSM == PSMCT32 && (RTPSM | RFBP) == 0x2fa0 && (RTBP0 == 0x2bc0) && RFBMSK == 0)
 		{
 			skip = 2; // Underwater black screen
 		}
@@ -251,11 +251,11 @@ bool GSHwHack::GSC_TombRaiderUnderWorld(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (RTME && RFBP == 0x01000 && RFPSM == RTPSM && RTPSM == PSM_PSMCT32 && (RTBP0 == 0x2B60 /*|| GSC_TBP0 == 0x2EFF || GSC_TBP0 ==0x2F00 || GSC_TBP0 == 0x3020*/ || (RTBP0 >= 0x2C01 && RTBP0 != 0x3029 && RTBP0 != 0x302d)))
+		if (RTME && RFBP == 0x01000 && RFPSM == RTPSM && RTPSM == PSMCT32 && (RTBP0 == 0x2B60 /*|| GSC_TBP0 == 0x2EFF || GSC_TBP0 ==0x2F00 || GSC_TBP0 == 0x3020*/ || (RTBP0 >= 0x2C01 && RTBP0 != 0x3029 && RTBP0 != 0x302d)))
 		{
 			skip = 1; // Garbage TC
 		}
-		else if (RTPSM == PSM_PSMCT32 && (RTPSM | RFBP) == 0x2c00 && (RTBP0 == 0x0ee0) && RFBMSK == 0)
+		else if (RTPSM == PSMCT32 && (RTPSM | RFBP) == 0x2c00 && (RTBP0 == 0x0ee0) && RFBMSK == 0)
 		{
 			skip = 2; // Underwater black screen
 		}
@@ -267,7 +267,7 @@ bool GSHwHack::GSC_TombRaiderUnderWorld(GSRendererHW& r, int& skip)
 bool GSHwHack::GSC_BurnoutGames(GSRendererHW& r, int& skip)
 {
 	// We don't check if we already have a skip here, because it gets confused when auto flush is on.
-	if (RTME && (RFBP == 0x01dc0 || RFBP == 0x01c00 || RFBP == 0x01f00 || RFBP == 0x01d40 || RFBP == 0x02200 || RFBP == 0x02000) && RFPSM == RTPSM && (RTBP0 == 0x01dc0 || RTBP0 == 0x01c00 || RTBP0 == 0x01f00 || RTBP0 == 0x01d40 || RTBP0 == 0x02200 || RTBP0 == 0x02000) && RTPSM == PSM_PSMCT32)
+	if (RTME && (RFBP == 0x01dc0 || RFBP == 0x01c00 || RFBP == 0x01f00 || RFBP == 0x01d40 || RFBP == 0x02200 || RFBP == 0x02000) && RFPSM == RTPSM && (RTBP0 == 0x01dc0 || RTBP0 == 0x01c00 || RTBP0 == 0x01f00 || RTBP0 == 0x01d40 || RTBP0 == 0x02200 || RTBP0 == 0x02000) && RTPSM == PSMCT32)
 	{
 		// 0x01dc0 01c00(MP) ntsc, 0x01f00 0x01d40(MP) ntsc progressive, 0x02200(MP) pal.
 		// Yellow stripes.
@@ -289,9 +289,9 @@ bool GSHwHack::GSC_BlackAndBurnoutSky(GSRendererHW& r, int& skip)
 	const GIFRegALPHA& ALPHA = RCONTEXT->ALPHA;
 
 	if (RPRIM->PRIM == GS_SPRITE && !RPRIM->IIP && RPRIM->TME && !RPRIM->FGE && RPRIM->ABE && !RPRIM->AA1 && !RPRIM->FST && !RPRIM->FIX &&
-		ALPHA.A == ALPHA.B && ALPHA.D == 0 && FRAME.PSM == PSM_PSMCT32 && TEX0.CPSM == PSM_PSMCT32 && TEX0.TCC && !TEX0.TFX && !TEX0.CSM)
+		ALPHA.A == ALPHA.B && ALPHA.D == 0 && FRAME.PSM == PSMCT32 && TEX0.CPSM == PSMCT32 && TEX0.TCC && !TEX0.TFX && !TEX0.CSM)
 	{
-		if (TEX0.TBW == 16 && TEX0.TW == 10 && TEX0.PSM == PSM_PSMT8 && TEX0.TH == 8 && FRAME.FBW == 16)
+		if (TEX0.TBW == 16 && TEX0.TW == 10 && TEX0.PSM == PSMT8 && TEX0.TH == 8 && FRAME.FBW == 16)
 		{
 			// Readback clouds being rendered during level loading.
 			// Later the alpha channel from the 32 bit frame buffer is used as an 8 bit indexed texture to draw
@@ -301,7 +301,7 @@ bool GSHwHack::GSC_BlackAndBurnoutSky(GSRendererHW& r, int& skip)
 			r.SwPrimRender(r, true);
 			skip = 1;
 		}
-		if (TEX0.TBW == 2 && TEX0.TW == 7 && ((TEX0.PSM == PSM_PSMT4 && FRAME.FBW == 3) || (TEX0.PSM == PSM_PSMT8 && FRAME.FBW == 2)) && TEX0.TH == 6 && (FRAME.FBMSK & 0xFFFFFF) == 0xFFFFFF)
+		if (TEX0.TBW == 2 && TEX0.TW == 7 && ((TEX0.PSM == PSMT4 && FRAME.FBW == 3) || (TEX0.PSM == PSMT8 && FRAME.FBW == 2)) && TEX0.TH == 6 && (FRAME.FBMSK & 0xFFFFFF) == 0xFFFFFF)
 		{
 			// Rendering of the glass smashing effect and some chassis decal in to the alpha channel of the FRAME on boot (before the menu).
 			// This gets ejected from the texture cache due to old age, but never gets written back.
@@ -317,7 +317,7 @@ bool GSHwHack::GSC_MidnightClub3(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (RTME && (RFBP > 0x01d00 && RFBP <= 0x02a00) && RFPSM == PSM_PSMCT32 && (RFBP >= 0x01600 && RFBP < 0x03260) && RTPSM == PSM_PSMT8H)
+		if (RTME && (RFBP > 0x01d00 && RFBP <= 0x02a00) && RFPSM == PSMCT32 && (RFBP >= 0x01600 && RFBP < 0x03260) && RTPSM == PSMT8H)
 		{
 			// Vram usage.
 			// Tested: tokyo default cruise.
@@ -333,15 +333,15 @@ bool GSHwHack::GSC_TalesOfLegendia(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (RTME && (RFBP == 0x3f80 || RFBP == 0x03fa0) && RFPSM == PSM_PSMCT32 && RTPSM == PSM_PSMT8)
+		if (RTME && (RFBP == 0x3f80 || RFBP == 0x03fa0) && RFPSM == PSMCT32 && RTPSM == PSMT8)
 		{
 			skip = 3; // 3, 9
 		}
-		if (RTME && RFBP == 0x3800 && RFPSM == PSM_PSMCT32 && RTPSM == PSM_PSMZ32)
+		if (RTME && RFBP == 0x3800 && RFPSM == PSMCT32 && RTPSM == PSMZ32)
 		{
 			skip = 2;
 		}
-		if (RTME && RFBP && RFPSM == PSM_PSMCT32 && RTBP0 == 0x3d80)
+		if (RTME && RFBP && RFPSM == PSMCT32 && RTBP0 == 0x3d80)
 		{
 			skip = 1; // Missing block 2a00 in the upper left
 		}
@@ -362,7 +362,7 @@ bool GSHwHack::GSC_Kunoichi(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (!RTME && (RFBP == 0x0 || RFBP == 0x00700 || RFBP == 0x00800) && RFPSM == PSM_PSMCT32 && RFBMSK == 0x00FFFFFF)
+		if (!RTME && (RFBP == 0x0 || RFBP == 0x00700 || RFBP == 0x00800) && RFPSM == PSMCT32 && RFBMSK == 0x00FFFFFF)
 		{
 			// Removes depth effects(shadows) not rendered correctly on all renders.
 			skip = 3;
@@ -374,7 +374,7 @@ bool GSHwHack::GSC_Kunoichi(GSRendererHW& r, int& skip)
 	}
 	else
 	{
-		if (RTME && (RFBP == 0x0e00) && RFPSM == PSM_PSMCT32 && RFBMSK == 0xFF000000)
+		if (RTME && (RFBP == 0x0e00) && RFPSM == PSMCT32 && RFBMSK == 0xFF000000)
 		{
 			skip = 0;
 		}
@@ -387,15 +387,15 @@ bool GSHwHack::GSC_ZettaiZetsumeiToshi2(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (RTME && RTPSM == PSM_PSMCT16S && (RFBMSK >= 0x6FFFFFFF || RFBMSK == 0))
+		if (RTME && RTPSM == PSMCT16S && (RFBMSK >= 0x6FFFFFFF || RFBMSK == 0))
 		{
 			skip = 1000;
 		}
-		else if (RTME && RTPSM == PSM_PSMCT32 && RFBMSK == 0xFF000000)
+		else if (RTME && RTPSM == PSMCT32 && RFBMSK == 0xFF000000)
 		{
 			skip = 2; // Fog
 		}
-		else if ((RFBP | RTBP0) && RFPSM == RTPSM && RTPSM == PSM_PSMCT16 && RFBMSK == 0x3FFF)
+		else if ((RFBP | RTBP0) && RFPSM == RTPSM && RTPSM == PSMCT16 && RFBMSK == 0x3FFF)
 		{
 			// Note start of the effect (texture shuffle) is fixed but maybe not the extra draw call
 			skip = 1000;
@@ -403,27 +403,27 @@ bool GSHwHack::GSC_ZettaiZetsumeiToshi2(GSRendererHW& r, int& skip)
 	}
 	else
 	{
-		if (!RTME && RTPSM == PSM_PSMCT32 && RFBP == 0x1180 && RTBP0 == 0x1180 && (RFBMSK == 0))
+		if (!RTME && RTPSM == PSMCT32 && RFBP == 0x1180 && RTBP0 == 0x1180 && (RFBMSK == 0))
 		{
 			skip = 0;
 		}
-		if (RTME && RTPSM == PSM_PSMT4 && RFBP && (RTBP0 != 0x3753))
+		if (RTME && RTPSM == PSMT4 && RFBP && (RTBP0 != 0x3753))
 		{
 			skip = 0;
 		}
-		if (RTME && RTPSM == PSM_PSMT8H && RFBP == 0x22e0 && RTBP0 == 0x36e0)
+		if (RTME && RTPSM == PSMT8H && RFBP == 0x22e0 && RTBP0 == 0x36e0)
 		{
 			skip = 0;
 		}
-		if (!RTME && RTPSM == PSM_PSMT8H && RFBP == 0x22e0)
+		if (!RTME && RTPSM == PSMT8H && RFBP == 0x22e0)
 		{
 			skip = 0;
 		}
-		if (RTME && RTPSM == PSM_PSMT8 && (RFBP == 0x1180 || RFBP == 0) && (RTBP0 != 0x3764 && RTBP0 != 0x370f))
+		if (RTME && RTPSM == PSMT8 && (RFBP == 0x1180 || RFBP == 0) && (RTBP0 != 0x3764 && RTBP0 != 0x370f))
 		{
 			skip = 0;
 		}
-		if (RTME && RTPSM == PSM_PSMCT16S && (RFBP == 0x1180))
+		if (RTME && RTPSM == PSMCT16S && (RFBP == 0x1180))
 		{
 			skip = 2;
 		}
@@ -444,7 +444,7 @@ bool GSHwHack::GSC_SakuraWarsSoLongMyLove(GSRendererHW& r, int& skip)
 		{
 			skip = 3; // Remove darkness
 		}
-		else if (RTME && (RFBP == 0 || RFBP == 0x1180) && RFPSM == PSM_PSMCT32 && RTBP0 == 0x3F3F && RTPSM == PSM_PSMT8)
+		else if (RTME && (RFBP == 0 || RFBP == 0x1180) && RFPSM == PSMCT32 && RTBP0 == 0x3F3F && RTPSM == PSMT8)
 		{
 			skip = 1; // Floodlight
 		}
@@ -457,7 +457,7 @@ bool GSHwHack::GSC_GodHand(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (RTME && (RFBP == 0x0) && (RTBP0 == 0x2800) && RFPSM == RTPSM && RTPSM == PSM_PSMCT32)
+		if (RTME && (RFBP == 0x0) && (RTBP0 == 0x2800) && RFPSM == RTPSM && RTPSM == PSMCT32)
 		{
 			skip = 1; // Blur
 		}
@@ -470,11 +470,11 @@ bool GSHwHack::GSC_KnightsOfTheTemple2(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (RTPSM == PSM_PSMT8H && RFBMSK == 0)
+		if (RTPSM == PSMT8H && RFBMSK == 0)
 		{
 			skip = 1; // Ghosting
 		}
-		else if (RTPSM == 0x00000 && PSM_PSMCT24 && RTME && (RFBP == 0x3400 || RFBP == 0x3a00))
+		else if (RTPSM == 0x00000 && PSMCT24 && RTME && (RFBP == 0x3400 || RFBP == 0x3a00))
 		{
 			skip = 1; // Light source
 		}
@@ -487,7 +487,7 @@ bool GSHwHack::GSC_UltramanFightingEvolution(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (!s_nativeres && RTME && RFBP == 0x2a00 && RFPSM == PSM_PSMZ24 && RTBP0 == 0x1c00 && RTPSM == PSM_PSMZ24)
+		if (!s_nativeres && RTME && RFBP == 0x2a00 && RFPSM == PSMZ24 && RTBP0 == 0x1c00 && RTPSM == PSMZ24)
 		{
 			// Don't enable hack on native res if crc is below aggressive.
 			skip = 5; // blur
@@ -501,7 +501,7 @@ bool GSHwHack::GSC_TalesofSymphonia(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (RTME && RFPSM == PSM_PSMCT32 && (RTBP0 == 0x2bc0 || RTBP0 <= 0x0200) && (RFBMSK == 0xFF000000 || RFBMSK == 0x00FFFFFF))
+		if (RTME && RFPSM == PSMCT32 && (RTBP0 == 0x2bc0 || RTBP0 <= 0x0200) && (RFBMSK == 0xFF000000 || RFBMSK == 0x00FFFFFF))
 		{
 			skip = 1; //GSC_FBMSK==0 Causing an animated black screen to speed up the battle
 		}
@@ -538,7 +538,7 @@ bool GSHwHack::GSC_UrbanReign(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (RTME && RFBP == 0x0000 && RTBP0 == 0x3980 && RFPSM == RTPSM && RTPSM == PSM_PSMCT32 && RFBMSK == 0x0)
+		if (RTME && RFBP == 0x0000 && RTBP0 == 0x3980 && RFPSM == RTPSM && RTPSM == PSMCT32 && RFBMSK == 0x0)
 		{
 			skip = 1; // Black shadow
 		}
@@ -547,7 +547,7 @@ bool GSHwHack::GSC_UrbanReign(GSRendererHW& r, int& skip)
 		// which would be fine, except their texture coordinates appear to be off by one. Which prevents the page translation
 		// from matching the last column, because it's trying to fit the last 65 columns of a 640x448 (effectively 641x448)
 		// texture into a 640x448 render target.
-		if (RTME && RTBP0 != RFBP && RFPSM == PSM_PSMCT32 && RTPSM == PSM_PSMCT32 &&
+		if (RTME && RTBP0 != RFBP && RFPSM == PSMCT32 && RTPSM == PSMCT32 &&
 			RFRAME.FBW == (RTEX0.TBW / 2) && RCLAMP.WMS == CLAMP_REGION_CLAMP &&
 			RCLAMP.WMT == CLAMP_REGION_CLAMP && ((r.m_vt.m_max.t == GSVector4(64.0f, 448.0f)).mask() == 0x3))
 		{
@@ -564,7 +564,7 @@ bool GSHwHack::GSC_SteambotChronicles(GSRendererHW& r, int& skip)
 	if (skip == 0)
 	{
 		// Author: miseru99 on forums.pcsx2.net
-		if (RTME && RTPSM == PSM_PSMCT16S)
+		if (RTME && RTPSM == PSMCT16S)
 		{
 			if (RFBP == 0x1180)
 			{
@@ -592,7 +592,7 @@ bool GSHwHack::GSC_GetawayGames(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if ((RFBP == 0 || RFBP == 0x1180 || RFBP == 0x1400) && RTPSM == PSM_PSMT8H && RFBMSK == 0)
+		if ((RFBP == 0 || RFBP == 0x1180 || RFBP == 0x1400) && RTPSM == PSMT8H && RFBMSK == 0)
 		{
 			skip = 1; // Removes fog wall.
 		}
@@ -614,7 +614,7 @@ bool GSHwHack::GSC_AceCombat4(GSRendererHW& r, int& skip)
 
 	if (skip == 0)
 	{
-		if (RTME && RFBP == 0x02a00 && RFPSM == PSM_PSMZ24 && RTBP0 == 0x01600 && RTPSM == PSM_PSMZ24)
+		if (RTME && RFBP == 0x02a00 && RFPSM == PSMZ24 && RTBP0 == 0x01600 && RTPSM == PSMZ24)
 		{
 			skip = 71; // clouds (z, 16-bit)
 		}
@@ -630,7 +630,7 @@ bool GSHwHack::GSC_FFXGames(GSRendererHW& r, int& skip)
 		if (RTME)
 		{
 			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if ((RTPSM == PSM_PSMZ32 || RTPSM == PSM_PSMZ24 || RTPSM == PSM_PSMZ16 || RTPSM == PSM_PSMZ16S) ||
+			if ((RTPSM == PSMZ32 || RTPSM == PSMZ24 || RTPSM == PSMZ16 || RTPSM == PSMZ16S) ||
 				// General, often problematic post processing
 				(GSUtil::HasSharedBits(RFBP, RFPSM, RTBP0, RTPSM)))
 			{
@@ -646,14 +646,14 @@ bool GSHwHack::GSC_Okami(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (RTME && RFBP == 0x00e00 && RFPSM == PSM_PSMCT32 && RTBP0 == 0x00000 && RTPSM == PSM_PSMCT32)
+		if (RTME && RFBP == 0x00e00 && RFPSM == PSMCT32 && RTBP0 == 0x00000 && RTPSM == PSMCT32)
 		{
 			skip = 1000;
 		}
 	}
 	else
 	{
-		if (RTME && RFBP == 0x00e00 && RFPSM == PSM_PSMCT32 && RTBP0 == 0x03800 && RTPSM == PSM_PSMT4)
+		if (RTME && RFBP == 0x00e00 && RFPSM == PSMCT32 && RTBP0 == 0x03800 && RTPSM == PSMT4)
 		{
 			skip = 0;
 		}
@@ -666,7 +666,7 @@ bool GSHwHack::GSC_RedDeadRevolver(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (RFBP == 0x03700 && RFPSM == PSM_PSMCT32 && RTPSM == PSM_PSMCT24)
+		if (RFBP == 0x03700 && RFPSM == PSMCT32 && RTPSM == PSMCT24)
 		{
 			skip = 2; // Blur
 		}
@@ -679,23 +679,23 @@ bool GSHwHack::GSC_ShinOnimusha(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (RTME && RFBP == 0x001000 && (RTBP0 == 0 || RTBP0 == 0x0800) && RTPSM == PSM_PSMT8H && RFBMSK == 0x00FFFFFF)
+		if (RTME && RFBP == 0x001000 && (RTBP0 == 0 || RTBP0 == 0x0800) && RTPSM == PSMT8H && RFBMSK == 0x00FFFFFF)
 		{
 			skip = 0; // Water ripple not needed ?
 		}
-		else if (RTPSM == PSM_PSMCT24 && RTME && RFBP == 0x01000) // || GSC_FBP == 0x00000
+		else if (RTPSM == PSMCT24 && RTME && RFBP == 0x01000) // || GSC_FBP == 0x00000
 		{
 			skip = 28; //28 30 56 64
 		}
-		else if (RFBP && RTPSM == PSM_PSMT8H && RFBMSK == 0xFFFFFF)
+		else if (RFBP && RTPSM == PSMT8H && RFBMSK == 0xFFFFFF)
 		{
 			skip = 0; //24 33 40 9
 		}
-		else if (RTPSM == PSM_PSMT8H && RFBMSK == 0xFF000000)
+		else if (RTPSM == PSMT8H && RFBMSK == 0xFF000000)
 		{
 			skip = 1; // White fog when picking up things
 		}
-		else if (RTME && (RTBP0 == 0x1400 || RTBP0 == 0x1000 || RTBP0 == 0x1200) && (RTPSM == PSM_PSMCT32 || RTPSM == PSM_PSMCT24))
+		else if (RTME && (RTBP0 == 0x1400 || RTBP0 == 0x1000 || RTBP0 == 0x1200) && (RTPSM == PSMCT32 || RTPSM == PSMCT24))
 		{
 			skip = 1; // Eliminate excessive flooding, water and other light and shadow
 		}
@@ -708,7 +708,7 @@ bool GSHwHack::GSC_XenosagaE3(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
-		if (RTPSM == PSM_PSMT8H && RFBMSK >= 0xEFFFFFFF)
+		if (RTPSM == PSMT8H && RFBMSK >= 0xEFFFFFFF)
 		{
 			skip = 73; // Animation
 		}
@@ -721,7 +721,7 @@ bool GSHwHack::GSC_XenosagaE3(GSRendererHW& r, int& skip)
 			if (RTME)
 			{
 				// depth textures (bully, mgs3s1 intro, Front Mission 5)
-				if ((RTPSM == PSM_PSMZ32 || RTPSM == PSM_PSMZ24 || RTPSM == PSM_PSMZ16 || RTPSM == PSM_PSMZ16S) ||
+				if ((RTPSM == PSMZ32 || RTPSM == PSMZ24 || RTPSM == PSMZ16 || RTPSM == PSMZ16S) ||
 					// General, often problematic post processing
 					(GSUtil::HasSharedBits(RFBP, RFPSM, RTBP0, RTPSM)))
 				{
@@ -742,7 +742,7 @@ bool GSHwHack::GSC_NFSUndercover(GSRendererHW& r, int& skip)
 	const GIFRegTEX0& Texture = RTEX0;
 	const GIFRegFRAME& Frame = RFRAME;
 
-	if (RPRIM->TME && Frame.PSM == PSM_PSMCT16S && Frame.FBMSK != 0 && Frame.FBW == 10 && Texture.TBW == 1 && Texture.TBP0 == 0x02800 && Texture.PSM == PSM_PSMZ16S)
+	if (RPRIM->TME && Frame.PSM == PSMCT16S && Frame.FBMSK != 0 && Frame.FBW == 10 && Texture.TBW == 1 && Texture.TBP0 == 0x02800 && Texture.PSM == PSMZ16S)
 	{
 		GSVertex* v = &r.m_vertex.buff[1];
 		v[0].XYZ.X = static_cast<u16>(RCONTEXT->XYOFFSET.OFX + (r.m_r.z << 4));
@@ -782,7 +782,7 @@ bool GSHwHack::GSC_BlueTongueGames(GSRendererHW& r, int& skip)
 
 	// Catch the mipmap draws. Barnyard only uses 16/32-bit, Jurassic Park uses 24-bit.
 	// Also used for Nicktoons Unite, same engine it appears.
-	if ((context->FRAME.PSM == PSM_PSMCT16S || context->FRAME.PSM <= PSM_PSMCT24) && context->FRAME.FBW <= 5)
+	if ((context->FRAME.PSM == PSMCT16S || context->FRAME.PSM <= PSMCT24) && context->FRAME.FBW <= 5)
 	{
 		r.SwPrimRender(r, true);
 		skip = 1;
@@ -814,7 +814,7 @@ bool GSHwHack::OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds
 		&& n_vertices <= 256 // Small draws.
 		&& is_copy // Copy (no blending).
 		&& !r.PRIM->TME // No texturing please.
-		&& r.m_context->FRAME.PSM == PSM_PSMCT32 // Only 32-bit pixel format (CLUT format).
+		&& r.m_context->FRAME.PSM == PSMCT32 // Only 32-bit pixel format (CLUT format).
 		&& !r.PRIM->FGE // No FOG.
 		&& !r.PRIM->AA1 // No antialiasing.
 		&& !r.PRIM->FIX // Normal fragment value control.
@@ -868,7 +868,7 @@ bool GSHwHack::OI_BigMuthaTruckers(GSRendererHW& r, GSTexture* rt, GSTexture* ds
 	Frame.TBW = RFRAME.FBW;
 	Frame.TBP0 = RFRAME.Block();
 
-	if (RPRIM->TME && Frame.TBW == 10 && Texture.TBW == 10 && Frame.TBP0 == 0x00a00 && Texture.PSM == PSM_PSMT8H && (r.m_r.y == 256 || r.m_r.y == 224))
+	if (RPRIM->TME && Frame.TBW == 10 && Texture.TBW == 10 && Frame.TBP0 == 0x00a00 && Texture.PSM == PSMT8H && (r.m_r.y == 256 || r.m_r.y == 224))
 	{
 		// 224 ntsc, 256 pal.
 		GL_INS("OI_BigMuthaTruckers half bottom offset");
@@ -990,7 +990,7 @@ bool GSHwHack::OI_FFX(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCa
 	const u32 ZBP = RZBUF.Block();
 	const u32 TBP = RTEX0.TBP0;
 
-	if ((FBP == 0x00d00 || FBP == 0x00000) && ZBP == 0x02100 && RPRIM->TME && TBP == 0x01a00 && RTEX0.PSM == PSM_PSMCT16S)
+	if ((FBP == 0x00d00 || FBP == 0x00000) && ZBP == 0x02100 && RPRIM->TME && TBP == 0x01a00 && RTEX0.PSM == PSMCT16S)
 	{
 		// random battle transition (z buffer written directly, clear it now)
 		GL_INS("OI_FFX ZB clear");

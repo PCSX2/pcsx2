@@ -833,7 +833,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 						// 1/ it just works :)
 						// 2/ even with upscaling
 						// 3/ for both Direct3D and OpenGL
-						if (GSConfig.UserHacks_CPUFBConversion && (psm == PSM_PSMT4 || psm == PSM_PSMT8))
+						if (GSConfig.UserHacks_CPUFBConversion && (psm == PSMT4 || psm == PSMT8))
 						{
 							// Forces 4-bit and 8-bit frame buffer conversion to be done on the CPU instead of the GPU, but performance will be slower.
 							// There is no dedicated shader to handle 4-bit conversion (Stuntman has been confirmed to use 4-bit).
@@ -871,8 +871,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				}
 				// Make sure the texture actually is INSIDE the RT, it's possibly not valid if it isn't.
 				// Also check BP >= TBP, create source isn't equpped to expand it backwards and all data comes from the target. (GH3)
-				else if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && psm >= PSM_PSMCT32 &&
-						 psm <= PSM_PSMCT16S && t->m_TEX0.PSM == psm && (t->Overlaps(bp, bw, psm, r) || t_wraps) &&
+				else if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && psm >= PSMCT32 &&
+						 psm <= PSMCT16S && t->m_TEX0.PSM == psm && (t->Overlaps(bp, bw, psm, r) || t_wraps) &&
 						 t->m_age <= 1 && !found_t)
 				{
 					// PSM equality needed because CreateSource does not handle PSM conversion.
@@ -1816,9 +1816,9 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					{
 						// If it's a 32bit value and only the alpha channel is being killed
 						// instead of losing the RGB data, drop it back to 24bit.
-						if (rgba._u32 == 0x8 && t->m_TEX0.PSM == PSM_PSMCT32)
+						if (rgba._u32 == 0x8 && t->m_TEX0.PSM == PSMCT32)
 						{
-							t->m_TEX0.PSM = PSM_PSMCT24;
+							t->m_TEX0.PSM = PSMCT24;
 							t->m_dirty_alpha = false;
 							++i;
 						}
@@ -2040,8 +2040,8 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 			{
 				Target* t = *it;
 
-				if (t->m_32_bits_fmt && t->m_TEX0.PSM > PSM_PSMZ24)
-					t->m_TEX0.PSM = PSM_PSMZ32;
+				if (t->m_32_bits_fmt && t->m_TEX0.PSM > PSMZ24)
+					t->m_TEX0.PSM = PSMZ32;
 
 				// Check the offset of the read, if they're not pointing at or inside this texture, it's probably not what we want.
 				//const bool expecting_this_tex = ((bp <= t->m_TEX0.TBP0 && read_start >= t->m_TEX0.TBP0) || bp >= t->m_TEX0.TBP0) && read_end <= t->m_end_block;
@@ -2156,8 +2156,8 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 		{
 			Target* t = *it;
 
-			if (t->m_32_bits_fmt && t->m_TEX0.PSM > PSM_PSMCT24)
-				t->m_TEX0.PSM = PSM_PSMCT32;
+			if (t->m_32_bits_fmt && t->m_TEX0.PSM > PSMCT24)
+				t->m_TEX0.PSM = PSMCT32;
 
 			const bool exact_bp = t->m_TEX0.TBP0 == bp;
 			// pass 0 == Exact match, pass 1 == partial match
@@ -2417,7 +2417,7 @@ bool GSTextureCache::ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx
 	// from the original red/green channels, and writes to the blue/alpha channels. Who knows why they did it this way,
 	// when they could've used sprites, but it means that they had to offset the block pointer for each move. So, we
 	// need to use tex-in-rt here to figure out what the offset into the original PSMCT32 texture was, and HLE the move.
-	if (PSM != PSM_PSMCT16)
+	if (PSM != PSMCT16)
 		return false;
 
 	GL_CACHE("Trying ShuffleMove: BP=%04X BW=%u PSM=%u SX=%d SY=%d DX=%d DY=%d W=%d H=%d", BP, BW, PSM, sx, sy, dx, dy, w, h);
@@ -2425,7 +2425,7 @@ bool GSTextureCache::ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx
 	GSTextureCache::Target* tgt = nullptr;
 	for (auto t : m_dst[RenderTarget])
 	{
-		if (t->m_TEX0.PSM == PSM_PSMCT32 && BP >= t->m_TEX0.TBP0 && BP <= t->m_end_block)
+		if (t->m_TEX0.PSM == PSMCT32 && BP >= t->m_TEX0.TBP0 && BP <= t->m_end_block)
 		{
 			const SurfaceOffset so(ComputeSurfaceOffset(BP, BW, PSM, GSVector4i(sx, sy, sx + w, sy + h), t));
 			if (so.is_valid)
@@ -2869,7 +2869,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		ShaderConvert shader = dst->m_type != RenderTarget ? ShaderConvert::FLOAT32_TO_RGBA8 : ShaderConvert::COPY;
 		channel_shuffle = GSRendererHW::GetInstance()->TestChannelShuffle(dst);
 
-		const bool is_8bits = TEX0.PSM == PSM_PSMT8 && !channel_shuffle;
+		const bool is_8bits = TEX0.PSM == PSMT8 && !channel_shuffle;
 		if (is_8bits)
 		{
 			GL_INS("Reading RT as a packed-indexed 8 bits format");
@@ -3128,7 +3128,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	ASSERT(src->m_texture);
 	ASSERT(src->m_target == (dst != nullptr));
 	ASSERT(src->m_from_target == dst);
-	ASSERT(src->m_scale == ((!dst || (TEX0.PSM == PSM_PSMT8 && !channel_shuffle)) ? 1.0f : dst->m_scale));
+	ASSERT(src->m_scale == ((!dst || (TEX0.PSM == PSMT8 && !channel_shuffle)) ? 1.0f : dst->m_scale));
 
 	if (src != m_temporary_source)
 	{
@@ -3673,29 +3673,29 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 	std::unique_ptr<GSDownloadTexture>* dltex;
 	switch (TEX0.PSM)
 	{
-		case PSM_PSMCT32:
-		case PSM_PSMCT24:
+		case PSMCT32:
+		case PSMCT24:
 			fmt = GSTexture::Format::Color;
 			ps_shader = ShaderConvert::COPY;
 			dltex = &m_color_download_texture;
 			break;
 
-		case PSM_PSMCT16:
-		case PSM_PSMCT16S:
+		case PSMCT16:
+		case PSMCT16S:
 			fmt = GSTexture::Format::UInt16;
 			ps_shader = ShaderConvert::RGBA8_TO_16_BITS;
 			dltex = &m_uint16_download_texture;
 			break;
 
-		case PSM_PSMZ32:
-		case PSM_PSMZ24:
+		case PSMZ32:
+		case PSMZ24:
 			fmt = GSTexture::Format::UInt32;
 			ps_shader = ShaderConvert::FLOAT32_TO_32_BITS;
 			dltex = &m_uint32_download_texture;
 			break;
 
-		case PSM_PSMZ16:
-		case PSM_PSMZ16S:
+		case PSMZ16:
+		case PSMZ16S:
 			fmt = GSTexture::Format::UInt16;
 			ps_shader = ShaderConvert::FLOAT32_TO_16_BITS;
 			dltex = &m_uint16_download_texture;
@@ -3758,16 +3758,16 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 
 	switch (TEX0.PSM)
 	{
-		case PSM_PSMCT32:
-		case PSM_PSMZ32:
-		case PSM_PSMCT24:
-		case PSM_PSMZ24:
+		case PSMCT32:
+		case PSMZ32:
+		case PSMCT24:
+		case PSMZ24:
 			g_gs_renderer->m_mem.WritePixel32(bits, pitch, off, r, write_mask);
 			break;
-		case PSM_PSMCT16:
-		case PSM_PSMCT16S:
-		case PSM_PSMZ16:
-		case PSM_PSMZ16S:
+		case PSMCT16:
+		case PSMCT16S:
+		case PSMZ16:
+		case PSMZ16S:
 			g_gs_renderer->m_mem.WritePixel16(bits, pitch, off, r);
 			break;
 
