@@ -153,7 +153,7 @@ GSTexture* GSRendererSW::GetOutput(int i, float& scale, int& y_offset)
 		// Display doesn't use texa, and instead uses the equivalent of this
 		GIFRegTEXA texa = {};
 		texa.AEM = 0;
-		texa.TA0 = (curFramebuffer.PSM == PSM_PSMCT24 || curFramebuffer.PSM == PSM_PSGPU24) ? 0x80 : 0;
+		texa.TA0 = (curFramebuffer.PSM == PSMCT24 || curFramebuffer.PSM == PSGPU24) ? 0x80 : 0;
 		texa.TA1 = 0x80;
 
 		// Top left rect
@@ -966,7 +966,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	// When the format is 24bit (Z or C), DATE ceases to function.
 	// It was believed that in 24bit mode all pixels pass because alpha doesn't exist
 	// however after testing this on a PS2 it turns out nothing passes, it ignores the draw.
-	if ((m_context->FRAME.PSM & 0xF) == PSM_PSMCT24 && m_context->TEST.DATE)
+	if ((m_context->FRAME.PSM & 0xF) == PSMCT24 && m_context->TEST.DATE)
 	{
 		//DevCon.Warning("DATE on a 24bit format, Frame PSM %x", m_context->FRAME.PSM);
 		return false;
@@ -1010,7 +1010,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	}
 
 	bool fwrite = (fm & fm_mask) != fm_mask;
-	bool ftest = gd.sel.atst != ATST_ALWAYS || (context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24);
+	bool ftest = gd.sel.atst != ATST_ALWAYS || (context->TEST.DATE && context->FRAME.PSM != PSMCT24);
 
 	bool zwrite = zm != 0xffffffff;
 	bool ztest = context->TEST.ZTE && context->TEST.ZTST > ZTST_ALWAYS;
@@ -1285,7 +1285,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 			gd.fga = (env.FOGCOL.U32[0] >> 8) & 0x00ff00ff;
 		}
 
-		if (context->FRAME.PSM != PSM_PSMCT24)
+		if (context->FRAME.PSM != PSMCT24)
 		{
 			gd.sel.date = context->TEST.DATE;
 			gd.sel.datm = context->TEST.DATM;

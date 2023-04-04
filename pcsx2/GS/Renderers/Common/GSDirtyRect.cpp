@@ -19,7 +19,7 @@
 
 GSDirtyRect::GSDirtyRect() :
 	r(GSVector4i::zero()),
-	psm(PSM_PSMCT32),
+	psm(PSMCT32),
 	bw(1),
 	rgba({}),
 	req_linear(false)

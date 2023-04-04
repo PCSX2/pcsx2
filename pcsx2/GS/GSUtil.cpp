@@ -72,14 +72,14 @@ public:
 			CompatibleBitsField[i][i >> 5] |= 1U << (i & 0x1f);
 		}
 
-		CompatibleBitsField[PSM_PSMCT32][PSM_PSMCT24 >> 5] |= 1 << (PSM_PSMCT24 & 0x1f);
-		CompatibleBitsField[PSM_PSMCT24][PSM_PSMCT32 >> 5] |= 1 << (PSM_PSMCT32 & 0x1f);
-		CompatibleBitsField[PSM_PSMCT16][PSM_PSMCT16S >> 5] |= 1 << (PSM_PSMCT16S & 0x1f);
-		CompatibleBitsField[PSM_PSMCT16S][PSM_PSMCT16 >> 5] |= 1 << (PSM_PSMCT16 & 0x1f);
-		CompatibleBitsField[PSM_PSMZ32][PSM_PSMZ24 >> 5] |= 1 << (PSM_PSMZ24 & 0x1f);
-		CompatibleBitsField[PSM_PSMZ24][PSM_PSMZ32 >> 5] |= 1 << (PSM_PSMZ32 & 0x1f);
-		CompatibleBitsField[PSM_PSMZ16][PSM_PSMZ16S >> 5] |= 1 << (PSM_PSMZ16S & 0x1f);
-		CompatibleBitsField[PSM_PSMZ16S][PSM_PSMZ16 >> 5] |= 1 << (PSM_PSMZ16 & 0x1f);
+		CompatibleBitsField[PSMCT32][PSMCT24 >> 5] |= 1 << (PSMCT24 & 0x1f);
+		CompatibleBitsField[PSMCT24][PSMCT32 >> 5] |= 1 << (PSMCT32 & 0x1f);
+		CompatibleBitsField[PSMCT16][PSMCT16S >> 5] |= 1 << (PSMCT16S & 0x1f);
+		CompatibleBitsField[PSMCT16S][PSMCT16 >> 5] |= 1 << (PSMCT16 & 0x1f);
+		CompatibleBitsField[PSMZ32][PSMZ24 >> 5] |= 1 << (PSMZ24 & 0x1f);
+		CompatibleBitsField[PSMZ24][PSMZ32 >> 5] |= 1 << (PSMZ32 & 0x1f);
+		CompatibleBitsField[PSMZ16][PSMZ16S >> 5] |= 1 << (PSMZ16S & 0x1f);
+		CompatibleBitsField[PSMZ16S][PSMZ16 >> 5] |= 1 << (PSMZ16 & 0x1f);
 
 		memset(SwizzleField, 0, sizeof(SwizzleField));
 
@@ -88,33 +88,33 @@ public:
 			SwizzleField[i][i >> 5] |= 1U << (i & 0x1f);
 		}
 
-		SwizzleField[PSM_PSMCT32][PSM_PSMCT24 >> 5] |= 1 << (PSM_PSMCT24 & 0x1f);
-		SwizzleField[PSM_PSMCT24][PSM_PSMCT32 >> 5] |= 1 << (PSM_PSMCT32 & 0x1f);
-		SwizzleField[PSM_PSMT8H][PSM_PSMCT32 >> 5] |= 1 << (PSM_PSMCT32 & 0x1f);
-		SwizzleField[PSM_PSMCT32][PSM_PSMT8H >> 5] |= 1 << (PSM_PSMT8H & 0x1f);
-		SwizzleField[PSM_PSMT4HL][PSM_PSMCT32 >> 5] |= 1 << (PSM_PSMCT32 & 0x1f);
-		SwizzleField[PSM_PSMCT32][PSM_PSMT4HL >> 5] |= 1 << (PSM_PSMT4HL & 0x1f);
-		SwizzleField[PSM_PSMT4HH][PSM_PSMCT32 >> 5] |= 1 << (PSM_PSMCT32 & 0x1f);
-		SwizzleField[PSM_PSMCT32][PSM_PSMT4HH >> 5] |= 1 << (PSM_PSMT4HH & 0x1f);
-		SwizzleField[PSM_PSMZ32][PSM_PSMZ24 >> 5] |= 1 << (PSM_PSMZ24 & 0x1f);
-		SwizzleField[PSM_PSMZ24][PSM_PSMZ32 >> 5] |= 1 << (PSM_PSMZ32 & 0x1f);
+		SwizzleField[PSMCT32][PSMCT24 >> 5] |= 1 << (PSMCT24 & 0x1f);
+		SwizzleField[PSMCT24][PSMCT32 >> 5] |= 1 << (PSMCT32 & 0x1f);
+		SwizzleField[PSMT8H][PSMCT32 >> 5] |= 1 << (PSMCT32 & 0x1f);
+		SwizzleField[PSMCT32][PSMT8H >> 5] |= 1 << (PSMT8H & 0x1f);
+		SwizzleField[PSMT4HL][PSMCT32 >> 5] |= 1 << (PSMCT32 & 0x1f);
+		SwizzleField[PSMCT32][PSMT4HL >> 5] |= 1 << (PSMT4HL & 0x1f);
+		SwizzleField[PSMT4HH][PSMCT32 >> 5] |= 1 << (PSMCT32 & 0x1f);
+		SwizzleField[PSMCT32][PSMT4HH >> 5] |= 1 << (PSMT4HH & 0x1f);
+		SwizzleField[PSMZ32][PSMZ24 >> 5] |= 1 << (PSMZ24 & 0x1f);
+		SwizzleField[PSMZ24][PSMZ32 >> 5] |= 1 << (PSMZ32 & 0x1f);
 
 		memset(SharedBitsField, 0, sizeof(SharedBitsField));
 
-		SharedBitsField[PSM_PSMCT24][PSM_PSMT8H >> 5] |= 1 << (PSM_PSMT8H & 0x1f);
-		SharedBitsField[PSM_PSMCT24][PSM_PSMT4HL >> 5] |= 1 << (PSM_PSMT4HL & 0x1f);
-		SharedBitsField[PSM_PSMCT24][PSM_PSMT4HH >> 5] |= 1 << (PSM_PSMT4HH & 0x1f);
-		SharedBitsField[PSM_PSMZ24][PSM_PSMT8H >> 5] |= 1 << (PSM_PSMT8H & 0x1f);
-		SharedBitsField[PSM_PSMZ24][PSM_PSMT4HL >> 5] |= 1 << (PSM_PSMT4HL & 0x1f);
-		SharedBitsField[PSM_PSMZ24][PSM_PSMT4HH >> 5] |= 1 << (PSM_PSMT4HH & 0x1f);
-		SharedBitsField[PSM_PSMT8H][PSM_PSMCT24 >> 5] |= 1 << (PSM_PSMCT24 & 0x1f);
-		SharedBitsField[PSM_PSMT8H][PSM_PSMZ24 >> 5] |= 1 << (PSM_PSMZ24 & 0x1f);
-		SharedBitsField[PSM_PSMT4HL][PSM_PSMCT24 >> 5] |= 1 << (PSM_PSMCT24 & 0x1f);
-		SharedBitsField[PSM_PSMT4HL][PSM_PSMZ24 >> 5] |= 1 << (PSM_PSMZ24 & 0x1f);
-		SharedBitsField[PSM_PSMT4HL][PSM_PSMT4HH >> 5] |= 1 << (PSM_PSMT4HH & 0x1f);
-		SharedBitsField[PSM_PSMT4HH][PSM_PSMCT24 >> 5] |= 1 << (PSM_PSMCT24 & 0x1f);
-		SharedBitsField[PSM_PSMT4HH][PSM_PSMZ24 >> 5] |= 1 << (PSM_PSMZ24 & 0x1f);
-		SharedBitsField[PSM_PSMT4HH][PSM_PSMT4HL >> 5] |= 1 << (PSM_PSMT4HL & 0x1f);
+		SharedBitsField[PSMCT24][PSMT8H >> 5] |= 1 << (PSMT8H & 0x1f);
+		SharedBitsField[PSMCT24][PSMT4HL >> 5] |= 1 << (PSMT4HL & 0x1f);
+		SharedBitsField[PSMCT24][PSMT4HH >> 5] |= 1 << (PSMT4HH & 0x1f);
+		SharedBitsField[PSMZ24][PSMT8H >> 5] |= 1 << (PSMT8H & 0x1f);
+		SharedBitsField[PSMZ24][PSMT4HL >> 5] |= 1 << (PSMT4HL & 0x1f);
+		SharedBitsField[PSMZ24][PSMT4HH >> 5] |= 1 << (PSMT4HH & 0x1f);
+		SharedBitsField[PSMT8H][PSMCT24 >> 5] |= 1 << (PSMCT24 & 0x1f);
+		SharedBitsField[PSMT8H][PSMZ24 >> 5] |= 1 << (PSMZ24 & 0x1f);
+		SharedBitsField[PSMT4HL][PSMCT24 >> 5] |= 1 << (PSMCT24 & 0x1f);
+		SharedBitsField[PSMT4HL][PSMZ24 >> 5] |= 1 << (PSMZ24 & 0x1f);
+		SharedBitsField[PSMT4HL][PSMT4HH >> 5] |= 1 << (PSMT4HH & 0x1f);
+		SharedBitsField[PSMT4HH][PSMCT24 >> 5] |= 1 << (PSMCT24 & 0x1f);
+		SharedBitsField[PSMT4HH][PSMZ24 >> 5] |= 1 << (PSMZ24 & 0x1f);
+		SharedBitsField[PSMT4HH][PSMT4HL >> 5] |= 1 << (PSMT4HL & 0x1f);
 	}
 
 } s_maps;
@@ -180,12 +180,12 @@ u32 GSUtil::GetChannelMask(u32 spsm)
 {
 	switch (spsm)
 	{
-		case PSM_PSMCT24:
-		case PSM_PSMZ24:
+		case PSMCT24:
+		case PSMZ24:
 			return 0x7;
-		case PSM_PSMT8H:
-		case PSM_PSMT4HH: // This sucks, I'm sorry, but we don't have a way to do half channels
-		case PSM_PSMT4HL: // So uuhh TODO I guess.
+		case PSMT8H:
+		case PSMT4HH: // This sucks, I'm sorry, but we don't have a way to do half channels
+		case PSMT4HL: // So uuhh TODO I guess.
 			return 0x8;
 		default:
 			return 0xf;
@@ -222,25 +222,25 @@ const char* psm_str(int psm)
 	switch (psm)
 	{
 		// Normal color
-		case PSM_PSMCT32:  return "C_32";
-		case PSM_PSMCT24:  return "C_24";
-		case PSM_PSMCT16:  return "C_16";
-		case PSM_PSMCT16S: return "C_16S";
+		case PSMCT32:  return "C_32";
+		case PSMCT24:  return "C_24";
+		case PSMCT16:  return "C_16";
+		case PSMCT16S: return "C_16S";
 
 		// Palette color
-		case PSM_PSMT8:    return "P_8";
-		case PSM_PSMT4:    return "P_4";
-		case PSM_PSMT8H:   return "P_8H";
-		case PSM_PSMT4HL:  return "P_4HL";
-		case PSM_PSMT4HH:  return "P_4HH";
+		case PSMT8:    return "P_8";
+		case PSMT4:    return "P_4";
+		case PSMT8H:   return "P_8H";
+		case PSMT4HL:  return "P_4HL";
+		case PSMT4HH:  return "P_4HH";
 
 		// Depth
-		case PSM_PSMZ32:   return "Z_32";
-		case PSM_PSMZ24:   return "Z_24";
-		case PSM_PSMZ16:   return "Z_16";
-		case PSM_PSMZ16S:  return "Z_16S";
+		case PSMZ32:   return "Z_32";
+		case PSMZ24:   return "Z_24";
+		case PSMZ16:   return "Z_16";
+		case PSMZ16S:  return "Z_16S";
 
-		case PSM_PSGPU24:  return "PS24";
+		case PSGPU24:  return "PS24";
 
 		default:break;
 	}
