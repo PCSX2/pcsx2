@@ -97,7 +97,7 @@ bool GSRenderer::Merge(int field)
 	PCRTCDisplays.SetRects(0, m_regs->DISP[0].DISPLAY, m_regs->DISP[0].DISPFB);
 	PCRTCDisplays.SetRects(1, m_regs->DISP[1].DISPLAY, m_regs->DISP[1].DISPFB);
 	PCRTCDisplays.CalculateDisplayOffset(m_scanmask_used);
-	PCRTCDisplays.CalculateFramebufferOffset();
+	PCRTCDisplays.CalculateFramebufferOffset(m_scanmask_used);
 
 	// Only need to check the right/bottom on software renderer, hardware always gets the full texture then cuts a bit out later.
 	if (PCRTCDisplays.FrameRectMatch() && !PCRTCDisplays.FrameWrap() && !feedback_merge)

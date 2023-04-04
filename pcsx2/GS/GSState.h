@@ -642,9 +642,9 @@ public:
 
 		// Calculate framebuffer read offsets, should be considered if only one circuit is enabled, or difference is more than 1 line.
 		// Only considered if "Anti-blur" is enabled.
-		void CalculateFramebufferOffset()
+		void CalculateFramebufferOffset(bool scanmask)
 		{
-			if (GSConfig.PCRTCAntiBlur && PCRTCSameSrc)
+			if (GSConfig.PCRTCAntiBlur && PCRTCSameSrc && !scanmask)
 			{
 				if (abs(PCRTCDisplays[1].framebufferOffsets.y - PCRTCDisplays[0].framebufferOffsets.y) == 1
 					&& PCRTCDisplays[0].displayRect.y == PCRTCDisplays[1].displayRect.y)
@@ -785,12 +785,12 @@ public:
 					offset.x = (PCRTCDisplays[1 - zeroDisplay.x].displayOffset.x - PCRTCDisplays[zeroDisplay.x].displayOffset.x) / (VideoModeDividers[videomode].x + 1);
 					offset.y = (PCRTCDisplays[1 - zeroDisplay.y].displayOffset.y - PCRTCDisplays[zeroDisplay.y].displayOffset.y) / (VideoModeDividers[videomode].y + 1);
 
-					if (offset.x >= 4 || !GSConfig.PCRTCAntiBlur)
+					if (offset.x >= 4 || !GSConfig.PCRTCAntiBlur || scanmask)
 					{
 						PCRTCDisplays[1 - zeroDisplay.x].displayRect.x += offset.x;
 						PCRTCDisplays[1 - zeroDisplay.x].displayRect.z += offset.x;
 					}
-					if (offset.y >= 4 || !GSConfig.PCRTCAntiBlur)
+					if (offset.y >= 4 || !GSConfig.PCRTCAntiBlur || scanmask)
 					{
 						PCRTCDisplays[1 - zeroDisplay.y].displayRect.y += offset.y - int_off[1 - zeroDisplay.y];
 						PCRTCDisplays[1 - zeroDisplay.y].displayRect.w += offset.y - int_off[1 - zeroDisplay.y];
