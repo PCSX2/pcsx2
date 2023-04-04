@@ -920,6 +920,7 @@ bool GSHwHack::OI_FFXII(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTexture
 			if (r.m_vertex.next >= 16 * 512)
 			{
 				// incoming pixels are stored in columns, one column is 16x512, total res 448x512 or 448x454
+				GL_INS("OI_FFXII() Buffering pixels");
 
 				if (!video)
 					video = new u32[512 * 512];
@@ -952,12 +953,11 @@ bool GSHwHack::OI_FFXII(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTexture
 			{
 				// normally, this step would copy the video onto screen with 512 texture mapped horizontal lines,
 				// but we use the stored video data to create a new texture, and replace the lines with two triangles
+				GL_INS("OI_FFXII() replace lines with a quad");
 
-				g_gs_device->Recycle(t->m_texture);
-
-				t->m_texture = g_gs_device->CreateTexture(512, 512, 1, GSTexture::Format::Color);
-
-				t->m_texture->Update(GSVector4i(0, 0, 448, lines), video, 448 * 4);
+				GSTexture* tex = g_gs_device->CreateTexture(512, 512, 1, GSTexture::Format::Color);
+				tex->Update(GSVector4i(0, 0, 448, lines), video, 448 * 4);
+				g_texture_cache->ReplaceSourceTexture(t, tex, 1.0f, tex->GetSize(), nullptr, false);
 
 				r.m_vertex.buff[2] = r.m_vertex.buff[r.m_vertex.next - 2];
 				r.m_vertex.buff[3] = r.m_vertex.buff[r.m_vertex.next - 1];

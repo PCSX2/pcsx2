@@ -2694,6 +2694,35 @@ void GSTextureCache::InvalidateSourcesFromTarget(const Target* t)
 	}
 }
 
+void GSTextureCache::ReplaceSourceTexture(Source* s, GSTexture* new_texture, float new_scale,
+	const GSVector2i& new_unscaled_size, HashCacheEntry* hc_entry, bool new_texture_is_shared)
+{
+	pxAssert(!hc_entry || !new_texture_is_shared);
+
+	if (s->m_from_hash_cache)
+	{
+		pxAssert(s->m_from_hash_cache->refcount > 0);
+		if ((--s->m_from_hash_cache->refcount) == 0)
+			s->m_from_hash_cache->age = 0;
+	}
+	else if (!s->m_shared_texture)
+	{
+		m_source_memory_usage -= s->m_texture->GetMemUsage();
+		g_gs_device->Recycle(s->m_texture);
+	}
+
+	s->m_texture = new_texture;
+	s->m_shared_texture = new_texture_is_shared;
+	s->m_from_hash_cache = hc_entry;
+	s->m_unscaled_size = new_unscaled_size;
+	s->m_scale = new_scale;
+
+	if (s->m_from_hash_cache)
+		s->m_from_hash_cache->refcount++;
+	else if (!s->m_shared_texture)
+		m_source_memory_usage += s->m_texture->GetMemUsage();
+}
+
 void GSTextureCache::IncAge()
 {
 	static constexpr int max_age = 3;
@@ -2877,7 +2906,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		}
 
 #ifdef ENABLE_OGL_DEBUG
-		if (TEX0.PSM == PSM_PSMT4)
+		if (TEX0.PSM == PSMT4)
 		{
 			GL_INS("ERROR: Reading RT as a packed-indexed 4 bits format is not supported");
 		}
