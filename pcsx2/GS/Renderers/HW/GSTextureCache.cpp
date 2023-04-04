@@ -711,7 +711,12 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				// Solution: consider the RT as 32 bits if the alpha was used in the past
 				const u32 t_psm = (t->m_dirty_alpha) ? t->m_TEX0.PSM & ~0x1 : t->m_TEX0.PSM;
 				bool rect_clean = GSUtil::HasSameSwizzleBits(psm, t_psm);
-				if (rect_clean && bp >= t->m_TEX0.TBP0 && bp < t->m_end_block && bw == t->m_TEX0.TBW && bp <= t->m_end_block && !t->m_dirty.empty())
+				const u32 end_block = (t->m_TEX0.TBP0 > t->m_end_block) ? (t->m_end_block + MAX_BP + 1) : t->m_end_block;
+				const GSLocalMemory::psm_t& psm_src = GSLocalMemory::m_psm[psm];
+				const GSLocalMemory::psm_t& psm_dst = GSLocalMemory::m_psm[t->m_TEX0.PSM];
+				const bool width_match = (std::max(64U, bw * 64U) / psm_src.pgs.x) == (std::max(64U, t->m_TEX0.TBW * 64U) / psm_dst.pgs.x);
+
+				if (rect_clean && bp >= t->m_TEX0.TBP0 && bp < end_block && width_match && !t->m_dirty.empty())
 				{
 					GSVector4i new_rect = r;
 					bool partial = false;
@@ -819,7 +824,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					rect_clean = t->m_dirty.empty();
 
 				const bool t_clean = ((t->m_dirty.GetDirtyChannels() & GSUtil::GetChannelMask(psm)) == 0) || rect_clean;
-				const bool t_wraps = t->m_end_block > GSTextureCache::MAX_BP;
+				const bool t_wraps = end_block > GSTextureCache::MAX_BP;
 				// Match if we haven't already got a tex in rt
 				if (t_clean && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t_psm))
 				{
@@ -1928,11 +1933,11 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 
 					const GSVector2i page_size = GSLocalMemory::m_psm[psm].pgs;
 					const bool can_translate = CanTranslate(bp, bw, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
-
+					const u32 end_block = (t->m_TEX0.TBP0 > t->m_end_block) ? (t->m_end_block + MAX_BP + 1) : t->m_end_block;
 					if (GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp >= 16 && GSLocalMemory::m_psm[psm].bpp <= 8)
 					{
 						// could be overwriting a double buffer, so if it's the second half of it, just reduce the size down to half.
-						if (((t->m_end_block - t->m_TEX0.TBP0) >> 1) < (bp - t->m_TEX0.TBP0))
+						if (((end_block - t->m_TEX0.TBP0) >> 1) < (bp - t->m_TEX0.TBP0))
 						{
 							GSVector4i new_valid = t->m_valid;
 							new_valid.w = new_valid.w / 2;
@@ -1941,17 +1946,31 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 						else
 						{
 							i = list.erase(j);
-							GL_CACHE("TC: Tex in RT Remove Target(%s) (0x%x) TPSM %x PSM %x bp 0x%x", to_string(type),
+							GL_CACHE("TC: Tex in RT Remove Target(%s) (0x%x) TPSM %x PSM %x bp 0x%x x %d y %d z %d w %d", to_string(type),
 								t->m_TEX0.TBP0,
 								t->m_TEX0.PSM,
 								psm,
-								bp);
+								bp,
+								r.x,
+								r.y,
+								r.z,
+								r.w);
 							delete t;
 							continue;
 						}
 					}
 					else if (can_translate)
 					{
+						GL_CACHE("TC: Tex in RT Dirty Target by page(%s) (0x%x->0x%x) TPSM %x PSM %x bp 0x%x r x %d y %d z %d w %d", to_string(type),
+							t->m_TEX0.TBP0,
+							t->m_end_block,
+							t->m_TEX0.PSM,
+							psm,
+							bp,
+							r.x,
+							r.y,
+							r.z,
+							r.w);
 						const bool swizzle_match = GSLocalMemory::m_psm[psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
 						if (swizzle_match)
 						{
@@ -1977,6 +1996,16 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					}
 					else
 					{
+						GL_CACHE("TC: Tex in RT Dirty Target by offset(%s) (0x%x->0x%x) TPSM %x PSM %x bp 0x%x r x %d y %d z %d w %d", to_string(type),
+							t->m_TEX0.TBP0,
+							t->m_end_block,
+							t->m_TEX0.PSM,
+							psm,
+							bp,
+							r.x,
+							r.y,
+							r.z,
+							r.w);
 						SurfaceOffsetKey sok;
 						sok.elems[0].bp = bp;
 						sok.elems[0].bw = bw;
