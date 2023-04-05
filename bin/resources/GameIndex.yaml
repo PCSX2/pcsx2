@@ -675,6 +675,10 @@ SCAJ-20045:
 SCAJ-20046:
   name: "Siren"
   region: "NTSC-Unk"
+  gsHWFixes:
+    roundSprite: 1 # Fixes gaps between menu options.
+    cpuSpriteRenderBW: 4 # Fixes sky rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCAJ-20047:
   name: "Time Crisis 3"
   region: "NTSC-Unk"
@@ -1559,6 +1563,10 @@ SCAJ-30002:
 SCAJ-30003:
   name: "Siren"
   region: "NTSC-Unk"
+  gsHWFixes:
+    roundSprite: 1 # Fixes gaps between menu options.
+    cpuSpriteRenderBW: 4 # Fixes sky rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCAJ-30004:
   name: "Kan Wo Long Xian Shen Wei"
   region: "NTSC-CH"
@@ -2178,6 +2186,10 @@ SCED-52057:
 SCED-52260:
   name: "Forbidden Siren [Demo]"
   region: "PAL-M5"
+  gsHWFixes:
+    roundSprite: 1 # Fixes gaps between menu options.
+    cpuSpriteRenderBW: 4 # Fixes sky rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCED-52261:
   name: "Jet Li - Rise to Honor [Demo]"
   region: "PAL-M5"
@@ -3586,6 +3598,10 @@ SCES-51920:
   name: "Forbidden Siren"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes gaps between menu options.
+    cpuSpriteRenderBW: 4 # Fixes sky rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCES-51971:
   name: "Jet Li - Rise to Honor"
   region: "PAL-E"
@@ -3666,16 +3682,32 @@ SCES-52306:
 SCES-52327:
   name: "Forbidden Siren"
   region: "PAL-F"
+  gsHWFixes:
+    roundSprite: 1 # Fixes gaps between menu options.
+    cpuSpriteRenderBW: 4 # Fixes sky rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCES-52328:
   name: "Forbidden Siren"
   region: "PAL-G"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes gaps between menu options.
+    cpuSpriteRenderBW: 4 # Fixes sky rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCES-52329:
   name: "Forbidden Siren"
   region: "PAL-I"
+  gsHWFixes:
+    roundSprite: 1 # Fixes gaps between menu options.
+    cpuSpriteRenderBW: 4 # Fixes sky rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCES-52330:
   name: "Forbidden Siren - Viviendo la Pesadilla"
   region: "PAL-S"
+  gsHWFixes:
+    roundSprite: 1 # Fixes gaps between menu options.
+    cpuSpriteRenderBW: 4 # Fixes sky rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCES-52389:
   name: "WRC 4"
   region: "PAL-M8"
@@ -5025,6 +5057,10 @@ SCKA-20018:
 SCKA-20019:
   name: "Siren"
   region: "NTSC-K"
+  gsHWFixes:
+    roundSprite: 1 # Fixes gaps between menu options.
+    cpuSpriteRenderBW: 4 # Fixes sky rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCKA-20020:
   name: "SOCOM II - U.S. Navy SEALs"
   region: "NTSC-K"
@@ -5903,6 +5939,10 @@ SCPS-15053:
   name: "Siren"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes gaps between menu options.
+    cpuSpriteRenderBW: 4 # Fixes sky rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCPS-15054:
   name: "ChainDive"
   region: "NTSC-J"
@@ -6559,6 +6599,10 @@ SCPS-19304:
 SCPS-19305:
   name: "Siren [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes gaps between menu options.
+    cpuSpriteRenderBW: 4 # Fixes sky rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCPS-19306:
   name: "Dark Chronicle [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -6604,6 +6648,10 @@ SCPS-19311:
 SCPS-19312:
   name: "Siren [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes gaps between menu options.
+    cpuSpriteRenderBW: 4 # Fixes sky rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCPS-19313:
   name: "Wild ARMs - The 4th Detonator [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -6840,6 +6888,7 @@ SCPS-55002:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
+    alignSprite: 1 # Fixes vertical lines on hidden ghosts.
 SCPS-55003:
   name: "Vampire Night"
   region: "NTSC-J"
@@ -7021,6 +7070,7 @@ SCPS-55043:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
+    alignSprite: 1 # Fixes vertical lines on hidden ghosts.
 SCPS-55044:
   name: "Energy Airforce"
   region: "NTSC-J"
@@ -7123,6 +7173,7 @@ SCPS-56008:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
+    alignSprite: 1 # Fixes vertical lines on hidden ghosts.
 SCPS-56009:
   name: "Smash Court Pro Tournament"
   region: "NTSC-K"
@@ -8055,6 +8106,10 @@ SCUS-97355:
   name: "Siren"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes gaps between menu options.
+    cpuSpriteRenderBW: 4 # Fixes sky rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCUS-97356:
   name: "Network Adapter Start-Up Disc Ver.2.5"
   region: "NTSC-U"
@@ -8160,6 +8215,10 @@ SCUS-97396:
 SCUS-97398:
   name: "Siren [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    roundSprite: 1 # Fixes gaps between menu options.
+    cpuSpriteRenderBW: 4 # Fixes sky rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCUS-97399:
   name: "God of War"
   region: "NTSC-U"
@@ -11538,6 +11597,7 @@ SLES-50821:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    alignSprite: 1 # Fixes vertical lines on hidden ghosts.
   patches:
     "22E91837":
       content: |-
@@ -25651,6 +25711,7 @@ SLPM-60167:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
+    alignSprite: 1 # Fixes vertical lines on hidden ghosts.
 SLPM-60149:
   name: "Ace Combat 04 - Shattered Skies [Trial]"
   region: "NTSC-J"
@@ -37875,6 +37936,7 @@ SLPS-25074:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    alignSprite: 1 # Fixes vertical lines on hidden ghosts.
   patches:
     9883194E:
       content: |-
@@ -41508,6 +41570,7 @@ SLPS-73255:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
+    alignSprite: 1 # Fixes vertical lines on hidden ghosts.
 SLPS-73256:
   name: "Fatal Frame II - Crimson Butterfly [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
@@ -41567,6 +41630,7 @@ SLPS-73405:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
+    alignSprite: 1 # Fixes vertical lines on hidden ghosts.
 SLPS-73406:
   name: "DOA 2 - Hardcore [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -43290,6 +43354,7 @@ SLUS-20388:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
+    alignSprite: 1 # Fixes vertical lines on hidden ghosts.
   patches:
     339A0B8C:
       content: |-
