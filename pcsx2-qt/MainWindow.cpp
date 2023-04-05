@@ -3000,8 +3000,16 @@ MainWindow::VMLock::~VMLock()
 {
 	if (m_was_fullscreen)
 		g_emu_thread->setSurfaceless(false);
+
 	if (!m_was_paused)
 		g_emu_thread->setVMPaused(false);
+
+	if (m_was_fullscreen)
+	{
+		// Wait until we get the display widget back, so we're not the last window left and closing.
+		while (QtHost::IsVMValid() && !g_main_window->m_display_widget)
+			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+	}
 }
 
 void MainWindow::VMLock::cancelResume()
