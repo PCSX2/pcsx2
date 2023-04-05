@@ -5112,9 +5112,10 @@ static void HashTextureLevel(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GST
 	if (tw < bs.x || th < bs.y || psm.fmsk != 0xFFFFFFFFu || region.GetMaxX() > 0 || region.GetMinY() > 0)
 	{
 		// Expand texture indices. Align to 32 bytes for AVX2.
-		const u32 pitch = Common::AlignUpPow2(static_cast<u32>(block_rect.z), 32);
-		const u32 row_size = static_cast<u32>(tw);
-		const GSLocalMemory::readTexture rtx = psm.rtxP;
+		const bool palette = (psm.pal > 0);
+		const u32 pitch = Common::AlignUpPow2(static_cast<u32>(block_rect.z) << (palette ? 0 : 2), 32);
+		const u32 row_size = static_cast<u32>(tw) << (palette ? 0 : 2);
+		const GSLocalMemory::readTexture rtx = palette ? psm.rtxP : psm.rtx;
 
 		// Use temp buffer for expanding, since we may not need to update.
 		rtx(mem, off, block_rect, temp, pitch, TEXA);
