@@ -3670,7 +3670,7 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 			// We don't need to check for HWMipmapLevel::Off here, because forced trilinear implies forced mipmaps.
 			bilinear = true;
 			trilinear = static_cast<u8>(GS_MIN_FILTER::Linear_Mipmap_Linear);
-			trilinear_auto = !need_mipmap || GSConfig.HWMipmap != HWMipmapLevel::Full;
+			trilinear_auto = !tex->m_target && (!need_mipmap || GSConfig.HWMipmap != HWMipmapLevel::Full);
 		}
 		break;
 
@@ -3680,7 +3680,7 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 			if (need_mipmap && GSConfig.HWMipmap != HWMipmapLevel::Off)
 			{
 				trilinear = m_context->TEX1.MMIN;
-				trilinear_auto = GSConfig.HWMipmap != HWMipmapLevel::Full;
+				trilinear_auto = !tex->m_target && GSConfig.HWMipmap != HWMipmapLevel::Full;
 			}
 		}
 		break;
@@ -3884,7 +3884,7 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 	}
 	else if (trilinear_auto)
 	{
-		m_conf.tex->GenerateMipmapsIfNeeded();
+		tex->m_texture->GenerateMipmapsIfNeeded();
 	}
 
 	// TC Offset Hack
