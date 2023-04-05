@@ -226,10 +226,11 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, double framesPerSecond, u32 sca
 	// Dynasty Warriors 3 Xtreme Legends - fake save corruption when loading save
 	// Jak II - random speedups
 	// Shadow of Rome - FMV audio issues
+	const bool ntsc_hblank = gsVideoMode != GS_VideoMode::PAL && gsVideoMode == GS_VideoMode::DVD_PAL;
 	const u64 HalfFrame = Frame / 2;
-	const u64 Blank = Scanline * ((gsVideoMode == GS_VideoMode::NTSC ? 22 : 25) + static_cast<int>(gsIsInterlaced));
+	const u64 Blank = Scanline * ((ntsc_hblank ? 22 : 25) + static_cast<int>(!IsProgressiveVideoMode()));
 	const u64 Render = HalfFrame - Blank;
-	const u64 GSBlank = Scanline * (gsVideoMode == GS_VideoMode::NTSC ? 3.5 : 3); // GS VBlank/CSR Swap happens roughly 3.5(NTSC) and 3(PAL) Scanlines after VBlank Start
+	const u64 GSBlank = Scanline * (ntsc_hblank ? 3.5 : 3); // GS VBlank/CSR Swap happens roughly 3.5(NTSC) and 3(PAL) Scanlines after VBlank Start
 
 	// Important!  The hRender/hBlank timers should be 50/50 for best results.
 	//  (this appears to be what the real EE's timing crystal does anyway)
@@ -321,6 +322,7 @@ double GetVerticalFrequency()
 	// https://web.archive.org/web/20201102100937/http://forums.nesdev.com/viewtopic.php?t=7909
 	// https://web.archive.org/web/20120629231826fw_/http://ntsc-tv.com/index.html
 	// https://web.archive.org/web/20200831051302/https://www.hdretrovision.com/240p/
+
 	switch (gsVideoMode)
 	{
 	case GS_VideoMode::Uninitialized: // SetGsCrt hasn't executed yet, give some temporary values.
@@ -378,7 +380,7 @@ static double AdjustToHostRefreshRate(double vertical_frequency, double frame_li
 	return frame_limit;
 }
 
-u32 UpdateVSyncRate()
+void UpdateVSyncRate(bool force)
 {
 	// Notice:  (and I probably repeat this elsewhere, but it's worth repeating)
 	//  The PS2's vsync timer is an *independent* crystal that is fixed to either 59.94 (NTSC)
@@ -389,62 +391,63 @@ u32 UpdateVSyncRate()
 	const double vertical_frequency = GetVerticalFrequency();
 
 	const double frames_per_second = vertical_frequency / 2.0;
-	const double frame_limit = AdjustToHostRefreshRate(vertical_frequency, frames_per_second * EmuConfig.GS.LimitScalar);
 
-	const double tick_rate = GetTickFrequency() / 2.0;
-	const s64 ticks = static_cast<s64>(tick_rate / std::max(frame_limit, 1.0));
-
-	u32 total_scanlines = 0;
-	bool custom  = false;
-
-	switch (gsVideoMode)
+	if (vSyncInfo.Framerate != frames_per_second || vSyncInfo.VideoMode != gsVideoMode || force)
 	{
-	case GS_VideoMode::Uninitialized: // SYSCALL instruction hasn't executed yet, give some temporary values.
-		if(gsIsInterlaced)
-			total_scanlines = SCANLINES_TOTAL_NTSC_I;
-		else
-			total_scanlines = SCANLINES_TOTAL_NTSC_NI;
-		break;
-	case GS_VideoMode::PAL:
-	case GS_VideoMode::DVD_PAL:
-		custom = (EmuConfig.GS.FrameratePAL != Pcsx2Config::GSOptions::DEFAULT_FRAME_RATE_PAL);
-		if (gsIsInterlaced)
-			total_scanlines = SCANLINES_TOTAL_PAL_I;
-		else
-			total_scanlines = SCANLINES_TOTAL_PAL_NI;
-		break;
-	case GS_VideoMode::NTSC:
-	case GS_VideoMode::DVD_NTSC:
-		custom = (EmuConfig.GS.FramerateNTSC != Pcsx2Config::GSOptions::DEFAULT_FRAME_RATE_NTSC);
-		if (gsIsInterlaced)
-			total_scanlines = SCANLINES_TOTAL_NTSC_I;
-		else
-			total_scanlines = SCANLINES_TOTAL_NTSC_NI;
-		break;
-	case GS_VideoMode::SDTV_480P:
-	case GS_VideoMode::SDTV_576P:
-	case GS_VideoMode::HDTV_720P:
-	case GS_VideoMode::VESA:
-		total_scanlines = SCANLINES_TOTAL_NTSC_I;
-		break;
-	case GS_VideoMode::HDTV_1080P:
-	case GS_VideoMode::HDTV_1080I:
-		total_scanlines = SCANLINES_TOTAL_1080;
-		break;
-	case GS_VideoMode::Unknown:
-	default:
-		if (gsIsInterlaced)
-			total_scanlines = SCANLINES_TOTAL_NTSC_I;
-		else
-			total_scanlines = SCANLINES_TOTAL_NTSC_NI;
-		Console.Error("PCSX2-Counters: Unknown video mode detected");
-		pxAssertDev(false , "Unknown video mode detected via SetGsCrt");
-	}
+		const double frame_limit = AdjustToHostRefreshRate(vertical_frequency, frames_per_second * EmuConfig.GS.LimitScalar);
 
-	const bool video_mode_initialized = gsVideoMode != GS_VideoMode::Uninitialized;
+		const double tick_rate = GetTickFrequency() / 2.0;
+		const s64 ticks = static_cast<s64>(tick_rate / std::max(frame_limit, 1.0));
 
-	if (vSyncInfo.Framerate != frames_per_second || vSyncInfo.VideoMode != gsVideoMode)
-	{
+		u32 total_scanlines = 0;
+		bool custom = false;
+
+		switch (gsVideoMode)
+		{
+			case GS_VideoMode::Uninitialized: // SYSCALL instruction hasn't executed yet, give some temporary values.
+				if (gsIsInterlaced)
+					total_scanlines = SCANLINES_TOTAL_NTSC_I;
+				else
+					total_scanlines = SCANLINES_TOTAL_NTSC_NI;
+				break;
+			case GS_VideoMode::PAL:
+			case GS_VideoMode::DVD_PAL:
+				custom = (EmuConfig.GS.FrameratePAL != Pcsx2Config::GSOptions::DEFAULT_FRAME_RATE_PAL);
+				if (gsIsInterlaced)
+					total_scanlines = SCANLINES_TOTAL_PAL_I;
+				else
+					total_scanlines = SCANLINES_TOTAL_PAL_NI;
+				break;
+			case GS_VideoMode::NTSC:
+			case GS_VideoMode::DVD_NTSC:
+				custom = (EmuConfig.GS.FramerateNTSC != Pcsx2Config::GSOptions::DEFAULT_FRAME_RATE_NTSC);
+				if (gsIsInterlaced)
+					total_scanlines = SCANLINES_TOTAL_NTSC_I;
+				else
+					total_scanlines = SCANLINES_TOTAL_NTSC_NI;
+				break;
+			case GS_VideoMode::SDTV_480P:
+			case GS_VideoMode::SDTV_576P:
+			case GS_VideoMode::HDTV_720P:
+			case GS_VideoMode::VESA:
+				total_scanlines = SCANLINES_TOTAL_NTSC_I;
+				break;
+			case GS_VideoMode::HDTV_1080P:
+			case GS_VideoMode::HDTV_1080I:
+				total_scanlines = SCANLINES_TOTAL_1080;
+				break;
+			case GS_VideoMode::Unknown:
+			default:
+				if (gsIsInterlaced)
+					total_scanlines = SCANLINES_TOTAL_NTSC_I;
+				else
+					total_scanlines = SCANLINES_TOTAL_NTSC_NI;
+				Console.Error("PCSX2-Counters: Unknown video mode detected");
+				pxAssertDev(false, "Unknown video mode detected via SetGsCrt");
+		}
+
+		const bool video_mode_initialized = gsVideoMode != GS_VideoMode::Uninitialized;
+
 		// NBA Jam 2004 PAL will fail to display 3D on the menu if this value isn't correct on reset.
 		if (video_mode_initialized && vSyncInfo.VideoMode != gsVideoMode)
 			CSRreg.FIELD = 1;
@@ -465,16 +468,14 @@ u32 UpdateVSyncRate()
 		vsyncCounter.sCycle = cpuRegs.cycle;
 		vsyncCounter.Mode = MODE_VRENDER;
 		cpuRcntSet();
+
+		PerformanceMetrics::SetVerticalFrequency(vertical_frequency);
+
+		if (m_iTicks != ticks)
+			m_iTicks = ticks;
+
+		m_iStart = GetCPUTicks();
 	}
-
-	PerformanceMetrics::SetVerticalFrequency(vertical_frequency);
-
-	if (m_iTicks != ticks)
-		m_iTicks = ticks;
-
-	m_iStart = GetCPUTicks();
-
-	return static_cast<u32>(m_iTicks);
 }
 
 void frameLimitReset()

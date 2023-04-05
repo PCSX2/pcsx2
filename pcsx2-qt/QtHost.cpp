@@ -511,7 +511,7 @@ void EmuThread::setFullscreen(bool fullscreen)
 	GetMTGS().WaitGS();
 
 	// If we're using exclusive fullscreen, the refresh rate may have changed.
-	UpdateVSyncRate();
+	UpdateVSyncRate(true);
 }
 
 void EmuThread::setSurfaceless(bool surfaceless)
