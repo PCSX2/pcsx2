@@ -647,7 +647,7 @@ void vtlb_MapHandler(vtlbHandler handler, u32 start, u32 size)
 	verify(0 == (size & VTLB_PAGE_MASK) && size > 0);
 
 	u32 end = start + (size - VTLB_PAGE_SIZE);
-	pxAssume((end >> VTLB_PAGE_BITS) < std::size(vtlbdata.pmap));
+	pxAssume((end >> VTLB_PAGE_BITS) < (sizeof(vtlbdata.pmap) / sizeof(vtlbdata.pmap[0])));
 
 	while (start <= end)
 	{

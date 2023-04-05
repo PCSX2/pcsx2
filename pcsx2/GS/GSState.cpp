@@ -1198,11 +1198,6 @@ void GSState::GIFRegHandlerALPHA(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerDIMX(const GIFReg* RESTRICT r)
 {
-	bool update = false;
-
-	if (r->DIMX != m_env.DIMX)
-		update = true;
-
 	m_env.DIMX = r->DIMX;
 
 	if (m_prev_env.DIMX != m_env.DIMX)
@@ -1443,8 +1438,6 @@ void GSState::Flush(GSFlushReason reason)
 
 		if (m_dirty_gs_regs)
 		{
-			const int ctx = m_prev_env.PRIM.CTXT;
-
 			m_draw_env = &m_prev_env;
 			PRIM = &m_prev_env.PRIM;
 			UpdateContext();
@@ -1616,9 +1609,8 @@ void GSState::FlushPrim()
 
 		// If the PSM format of Z is invalid, but it is masked (no write) and ZTST is set to ALWAYS pass (no test, just allow)
 		// we can ignore the Z format, since it won't be used in the draw (Star Ocean 3 transitions)
-		const bool ignoreZ = m_context->ZBUF.ZMSK && m_context->TEST.ZTST == 1;
-
 #ifdef PCSX2_DEVBUILD
+		const bool ignoreZ = m_context->ZBUF.ZMSK && m_context->TEST.ZTST == 1;
 		if (GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt >= 3 || (GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt >= 3 && !ignoreZ))
 		{
 			Console.Warning("GS: Possible invalid draw, Frame PSM %x ZPSM %x", m_context->FRAME.PSM, m_context->ZBUF.PSM);
