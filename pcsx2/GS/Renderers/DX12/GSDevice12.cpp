@@ -434,7 +434,7 @@ void GSDevice12::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 		int(dRect.right - dRect.left), int(dRect.bottom - dRect.top));
 
 	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, static_cast<GSTexture12*>(dTex), dRect,
-		dTex ? m_convert[static_cast<int>(shader)].get() : m_present[static_cast<int>(shader)].get(), linear);
+		dTex ? m_convert[static_cast<int>(shader)].get() : m_present[static_cast<int>(shader)].get(), linear, true);
 }
 
 void GSDevice12::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red,
@@ -443,8 +443,9 @@ void GSDevice12::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	GL_PUSH("ColorCopy Red:%d Green:%d Blue:%d Alpha:%d", red, green, blue, alpha);
 
 	const u32 index = (red ? 1 : 0) | (green ? 2 : 0) | (blue ? 4 : 0) | (alpha ? 8 : 0);
-	DoStretchRect(
-		static_cast<GSTexture12*>(sTex), sRect, static_cast<GSTexture12*>(dTex), dRect, m_color_copy[index].get(), false);
+	const bool allow_discard = (index == 0xf);
+	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, static_cast<GSTexture12*>(dTex), dRect,
+		m_color_copy[index].get(), false, allow_discard);
 }
 
 void GSDevice12::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
@@ -458,7 +459,7 @@ void GSDevice12::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	SetUtilityPushConstants(&cb, sizeof(cb));
 
 	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, static_cast<GSTexture12*>(dTex), dRect,
-		m_present[static_cast<int>(shader)].get(), linear);
+		m_present[static_cast<int>(shader)].get(), linear, true);
 }
 
 void GSDevice12::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
@@ -478,7 +479,7 @@ void GSDevice12::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u
 	const GSVector4 dRect(0, 0, dSize, 1);
 	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
 	DoStretchRect(static_cast<GSTexture12*>(sTex), GSVector4::zero(), static_cast<GSTexture12*>(dTex), dRect,
-		m_convert[static_cast<int>(shader)].get(), false);
+		m_convert[static_cast<int>(shader)].get(), false, true);
 }
 
 void GSDevice12::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM)
@@ -498,7 +499,7 @@ void GSDevice12::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offs
 	const GSVector4 dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
 	const ShaderConvert shader = ShaderConvert::RGBA_TO_8I;
 	DoStretchRect(static_cast<GSTexture12*>(sTex), GSVector4::zero(), static_cast<GSTexture12*>(dTex), dRect,
-		m_convert[static_cast<int>(shader)].get(), false);
+		m_convert[static_cast<int>(shader)].get(), false, true);
 }
 
 void GSDevice12::DrawMultiStretchRects(
@@ -644,7 +645,8 @@ void GSDevice12::BeginRenderPassForStretchRect(
 	}
 }
 
-void GSDevice12::DoStretchRect(GSTexture12* sTex, const GSVector4& sRect, GSTexture12* dTex, const GSVector4& dRect, const ID3D12PipelineState* pipeline, bool linear)
+void GSDevice12::DoStretchRect(GSTexture12* sTex, const GSVector4& sRect, GSTexture12* dTex, const GSVector4& dRect,
+	const ID3D12PipelineState* pipeline, bool linear, bool allow_discard)
 {
 	if (sTex->GetResourceState() != D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
 	{
@@ -677,7 +679,7 @@ void GSDevice12::DoStretchRect(GSTexture12* sTex, const GSVector4& sRect, GSText
 
 	const bool drawing_to_current_rt = (is_present || InRenderPass());
 	if (!drawing_to_current_rt)
-		BeginRenderPassForStretchRect(dTex, dtex_rc, dst_rc);
+		BeginRenderPassForStretchRect(dTex, dtex_rc, dst_rc, allow_discard);
 
 	DrawStretchRect(sRect, dRect, size);
 }
