@@ -31,7 +31,7 @@ static bool s_GSRegistersWritten = false;
 void gsSetVideoMode(GS_VideoMode mode)
 {
 	gsVideoMode = mode;
-	UpdateVSyncRate();
+	UpdateVSyncRate(false);
 }
 
 // Make sure framelimiter options are in sync with GS capabilities.
@@ -40,7 +40,7 @@ void gsReset()
 	GetMTGS().ResetGS(true);
 	gsVideoMode = GS_VideoMode::Uninitialized;
 	memzero(g_RealGSMem);
-	UpdateVSyncRate();
+	UpdateVSyncRate(true);
 }
 
 void gsUpdateFrequency(Pcsx2Config& config)
@@ -71,7 +71,7 @@ void gsUpdateFrequency(Pcsx2Config& config)
 	}
 
 	GetMTGS().UpdateVSyncMode();
-	UpdateVSyncRate();
+	UpdateVSyncRate(true);
 }
 
 static __fi void gsCSRwrite( const tGS_CSR& csr )
@@ -227,7 +227,7 @@ void gsWrite64_page_00( u32 mem, u64 value )
 	if (mem == GS_SMODE1 || mem == GS_SMODE2)
 	{
 		if (value != *(u64*)PS2GS_BASE(mem))
-			UpdateVSyncRate();
+			UpdateVSyncRate(false);
 	}
 
 	gsWrite64_generic( mem, value );

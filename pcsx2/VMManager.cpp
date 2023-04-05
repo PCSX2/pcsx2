@@ -1196,7 +1196,7 @@ void VMManager::Reset()
 
 	SysClearExecutionCache();
 	memBindConditionalHandlers();
-	UpdateVSyncRate();
+	UpdateVSyncRate(true);
 	frameLimitReset();
 	cpuReset();
 
@@ -1701,7 +1701,7 @@ void VMManager::CheckForGSConfigChanges(const Pcsx2Config& old_config)
 		EmuConfig.LimiterMode = GetInitialLimiterMode();
 
 	gsUpdateFrequency(EmuConfig);
-	UpdateVSyncRate();
+	UpdateVSyncRate(true);
 	frameLimitReset();
 	GetMTGS().ApplySettings();
 }
@@ -1713,7 +1713,7 @@ void VMManager::CheckForFramerateConfigChanges(const Pcsx2Config& old_config)
 
 	Console.WriteLn("Updating frame rate configuration");
 	gsUpdateFrequency(EmuConfig);
-	UpdateVSyncRate();
+	UpdateVSyncRate(true);
 	frameLimitReset();
 }
 

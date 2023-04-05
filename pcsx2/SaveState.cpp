@@ -91,7 +91,7 @@ static void PostLoadPrep()
 	CBreakPoints::SetSkipFirst(BREAKPOINT_EE, 0);
 	CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, 0);
 
-	UpdateVSyncRate();
+	UpdateVSyncRate(true);
 }
 
 // --------------------------------------------------------------------------------------
