@@ -1248,11 +1248,11 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 
 		if (dst_match)
 		{
-			dst_match->Update(true);
 			calcRescale(dst_match);
 			dst = CreateTarget(TEX0, new_size.x, new_size.y, scale, type, clear);
 			dst->m_32_bits_fmt = dst_match->m_32_bits_fmt;
 			dst->OffsetHack_modxy = dst_match->OffsetHack_modxy;
+
 			ShaderConvert shader;
 			// m_32_bits_fmt gets set on a shuffle or if the format isn't 16bit.
 			// In this case it needs to make sure it isn't part of a shuffle, where it needs to be interpreted as 32bits.
@@ -1267,7 +1267,21 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, TBW %d, %s was %s)", new_size.x, new_size.y, bp, TEX0.TBW, psm_str(TEX0.PSM), psm_str(dst_match->m_TEX0.PSM));
 				shader = (fmt_16_bits) ? ShaderConvert::FLOAT16_TO_RGB5A1 : ShaderConvert::FLOAT32_TO_RGBA8;
 			}
-			g_gs_device->StretchRect(dst_match->m_texture, sRect, dst->m_texture, dRect, shader, false);
+
+			// The old target's going to get invalidated (at least until we handle concurrent frame+depth at the same BP),
+			// so just move the dirty rects across.
+			dst->m_dirty = std::move(dst_match->m_dirty);
+			dst_match->m_dirty = {};
+
+			// Don't bother copying the old target in if the whole thing is dirty.
+			if (dst->m_dirty.empty() || (~dst->m_dirty.GetDirtyChannels() & GSUtil::GetChannelMask(TEX0.PSM)) != 0 ||
+				!dst->m_dirty.GetDirtyRect(0, TEX0, dst->GetUnscaledRect()).eq(dst->GetUnscaledRect()))
+			{
+				g_gs_device->StretchRect(dst_match->m_texture, sRect, dst->m_texture, dRect, shader, false);
+			}
+
+			// Now pull in any dirty areas in the new format.
+			dst->Update(true);
 		}
 	}
 
