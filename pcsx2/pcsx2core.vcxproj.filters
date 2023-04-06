@@ -2288,4 +2288,12 @@
       <Filter>System\Ps2\Debug\rdebug</Filter>
     </CustomBuildStep>
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="GS\Renderers\Common\GSFastList.natvis">
+      <Filter>System\Ps2\GS</Filter>
+    </Natvis>
+    <Natvis Include="GS\Renderers\HW\GSTextureCache.natvis">
+      <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
+    </Natvis>
+  </ItemGroup>
 </Project>

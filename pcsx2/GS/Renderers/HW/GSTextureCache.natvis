@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="GSTextureCache::Target">
+		<DisplayString Condition="m_type == 0">{{ RT @ BP={m_TEX0.TBP0,X}-{m_end_block,X} BW={m_TEX0.TBW} PSM={m_TEX0.PSM,X} {m_unscaled_size.x}x{m_unscaled_size.y} {m_valid.z},{m_valid.w} }}</DisplayString>
+		<DisplayString Condition="m_type == 1">{{ Depth @ BP={m_TEX0.TBP0,X}-{m_end_block,X} BW={m_TEX0.TBW} PSM={m_TEX0.PSM,X} {m_unscaled_size.x}x{m_unscaled_size.y} {m_valid.z},{m_valid.w} }}</DisplayString>
+	</Type>
+</AutoVisualizer>
