@@ -5022,6 +5022,7 @@ void GSRendererHW::OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCach
 
 				// Copy channels being masked.
 				g_gs_device->StretchRect(target->m_texture, GSVector4(0.0f,0.0f,1.0f,1.0f), tex, drect, keep_r, keep_g, keep_b, keep_a);
+				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 				delete target->m_texture;
 
 				target->m_texture = tex;
@@ -5084,6 +5085,7 @@ void GSRendererHW::OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCach
 
 			// Copy channels being masked.
 			g_gs_device->StretchRect(target->m_texture, GSVector4(0, 0, 1, 1), tex, drect, keep_r, keep_g, keep_b, keep_a);
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 			delete target->m_texture;
 
 			target->m_texture = tex;
@@ -5218,10 +5220,13 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 			const GSVector4i r_full(0, 0, tw, th);
 
 			g_gs_device->CopyRect(tex->m_texture, rt, r_full, 0, 0);
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 			g_gs_device->StretchRect(tex->m_texture, sRect, rt, dRect);
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 			g_gs_device->CopyRect(rt, tex->m_texture, r_full, 0, 0);
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 			g_gs_device->Recycle(rt);
 		}
