@@ -1007,7 +1007,6 @@ void GSLocalMemoryFunctions::ReadImageX(const GSLocalMemory& mem, int& tx, int& 
 		case PSMZ24:
 		{
 			const int length = len / 3;
-			const int aligned_length = (len + 2) / 3;
 			if ((length * 3) != len)
 			{
 				offset = (len - (length * 3));
