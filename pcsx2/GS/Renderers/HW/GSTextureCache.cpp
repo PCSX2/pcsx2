@@ -735,12 +735,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 							if (swizzle_match)
 							{
 								new_rect = TranslateAlignedRectByPage(t, bp, psm, bw, r);
-
-								if (new_rect.eq(GSVector4i::zero()))
-								{
-									rect_clean = false;
-									break;
-								}
 							}
 							else
 							{
@@ -760,6 +754,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 								}
 								new_rect = TranslateAlignedRectByPage(t, bp & ~((1 << 5) - 1), psm, bw, new_rect);
 							}
+
+							rect_clean = !new_rect.eq(GSVector4i::zero());
 						}
 						else
 						{
@@ -781,14 +777,17 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 						}
 					}
 
-					for (auto& dirty : t->m_dirty)
+					if (rect_clean)
 					{
-						GSVector4i dirty_rect = dirty.GetDirtyRect(t->m_TEX0);
-						if (!dirty_rect.rintersect(new_rect).rempty())
+						for (auto& dirty : t->m_dirty)
 						{
-							rect_clean = false;
-							partial |= !new_rect.rintersect(dirty_rect).eq(new_rect);
-							break;
+							GSVector4i dirty_rect = dirty.GetDirtyRect(t->m_TEX0);
+							if (!dirty_rect.rintersect(new_rect).rempty())
+							{
+								rect_clean = false;
+								partial |= !new_rect.rintersect(dirty_rect).eq(new_rect);
+								break;
+							}
 						}
 					}
 
