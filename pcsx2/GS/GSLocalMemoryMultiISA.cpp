@@ -1008,11 +1008,11 @@ void GSLocalMemoryFunctions::ReadImageX(const GSLocalMemory& mem, int& tx, int& 
 		{
 			const int length = len / 3;
 			const int aligned_length = (len + 2) / 3;
-			if (length != aligned_length)
+			if ((length * 3) != len)
 			{
-				offset = 3 - (len - (length * 3));
+				offset = (len - (length * 3));
 			}
-			readWriteHelper(mem.vm32(), tx, ty, aligned_length, 1, sx, w, off.assertSizesMatch(GSLocalMemory::swizzle32), [&](auto& pa, int x)
+			readWriteHelper(mem.vm32(), tx, ty, length, 1, sx, w, off.assertSizesMatch(GSLocalMemory::swizzle32), [&](auto& pa, int x)
 				{
 					u32 c = *pa.value(x);
 					pb[0] = (u8)(c);

@@ -1804,8 +1804,13 @@ void GSState::Read(u8* mem, int len)
 	if (!m_tr.Update(w, h, bpp, len))
 		return;
 
-	mem += m_tr.offset;
-	len -= m_tr.offset;
+	// If it's 1 QW the destination is likely a register, so don't mess with this, else it can cause stack corruption.
+	// TODO: Change the FIFO downloads to just read off the whole transfer from memory to a temp buffer so we can read it in byte level chunks.
+	if (len > 16)
+	{
+		mem -= m_tr.offset;
+		len += m_tr.offset;
+	}
 	m_mem.ReadImageX(m_tr.x, m_tr.y, m_tr.offset, mem, len, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);
 
 	if (GSConfig.DumpGSData && GSConfig.SaveRT && s_n >= GSConfig.SaveN)
