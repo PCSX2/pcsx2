@@ -563,7 +563,7 @@ bool GSDevice::ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h, 
 				// TODO: We probably want to make this optional if we're overwriting it...
 				const GSVector4 sRect(0, 0, 1, 1);
 				const GSVector4 dRect(0, 0, t2->GetWidth(), t2->GetHeight());
-				StretchRect(m_current, sRect, new_t, dRect, ShaderConvert::COPY, true);
+				StretchRect(t2, sRect, new_t, dRect, ShaderConvert::COPY, true);
 				Recycle(t2);
 			}
 
