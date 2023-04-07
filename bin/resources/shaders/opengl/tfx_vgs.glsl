@@ -46,12 +46,12 @@ void texture_coord()
 
     // Integer coordinate => normalized
     VSout.t_int.xy = uv * TextureScale;
-#if VS_INT_FST == 1
-    // Some games uses float coordinate for post-processing effect
-    VSout.t_int.zw = st / TextureScale;
-#else
+#if VS_FST
     // Integer coordinate => integral
     VSout.t_int.zw = uv;
+#else
+    // Some games uses float coordinate for post-processing effect
+    VSout.t_int.zw = st / TextureScale;
 #endif
 }
 
@@ -129,7 +129,7 @@ void out_vertex(in vec4 position, in vertex v)
     GSout.t_float  = v.t_float;
     GSout.t_int    = v.t_int;
     // Flat output
-#if GS_POINT == 1
+#if GS_PRIM == 0
     GSout.c        = GSin[0].c;
 #else
     GSout.c        = GSin[1].c;
@@ -139,14 +139,14 @@ void out_vertex(in vec4 position, in vertex v)
     EmitVertex();
 }
 
-#if GS_POINT == 1
+#if GS_PRIM == 0
 layout(points) in;
 #else
 layout(lines) in;
 #endif
 layout(triangle_strip, max_vertices = 4) out;
 
-#if GS_POINT == 1
+#if GS_PRIM == 0
 
 void gs_main()
 {
@@ -172,7 +172,7 @@ void gs_main()
     EndPrimitive();
 }
 
-#elif GS_LINE == 1
+#elif GS_PRIM == 1
 
 void gs_main()
 {
@@ -203,7 +203,7 @@ void gs_main()
     EndPrimitive();
 }
 
-#else
+#else // GS_PRIM == 3
 
 void gs_main()
 {
