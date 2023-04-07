@@ -123,14 +123,14 @@ private:
 	{
 		int x = 0, y = 0;
 		int start = 0, end = 0, total = 0;
-		int offset = 0;
 		u8* buff = nullptr;
 		GIFRegBITBLTBUF m_blit = {};
+		bool write = false;
 
 		GSTransferBuffer();
 		virtual ~GSTransferBuffer();
 
-		void Init(int tx, int ty, const GIFRegBITBLTBUF& blit);
+		void Init(int tx, int ty, const GIFRegBITBLTBUF& blit, bool write);
 		bool Update(int tw, int th, int bpp, int& len);
 
 	} m_tr;
