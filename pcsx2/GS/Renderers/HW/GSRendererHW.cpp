@@ -975,7 +975,7 @@ void GSRendererHW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 		if (loop_w)
 		{
 			rect.x = 0;
-			rect.z = r.w - 2048;
+			rect.z = r.z - 2048;
 		}
 		g_texture_cache->InvalidateVideoMem(m_mem.GetOffset(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM), rect, eewrite);
 	}
