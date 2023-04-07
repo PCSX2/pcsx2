@@ -106,6 +106,7 @@ GSState::GSState()
 	memset(&m_vertex, 0, sizeof(m_vertex));
 	memset(&m_index, 0, sizeof(m_index));
 	memset(m_mem.m_vm8, 0, m_mem.m_vmsize);
+
 	m_v.RGBAQ.Q = 1.0f;
 
 	GrowVertexBuffer();
@@ -1403,10 +1404,10 @@ void GSState::GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r)
 	switch (m_env.TRXDIR.XDIR)
 	{
 		case 0: // host -> local
-			m_tr.Init(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.BITBLTBUF);
+			m_tr.Init(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.BITBLTBUF, true);
 			break;
 		case 1: // local -> host
-			m_tr.Init(m_env.TRXPOS.SSAX, m_env.TRXPOS.SSAY, m_env.BITBLTBUF);
+			m_tr.Init(m_env.TRXPOS.SSAX, m_env.TRXPOS.SSAY, m_env.BITBLTBUF, false);
 			break;
 		case 2: // local -> local
 			Move();
@@ -1463,6 +1464,9 @@ void GSState::Flush(GSFlushReason reason)
 
 void GSState::FlushWrite()
 {
+	if (!m_tr.write)
+		return;
+
 	const int len = m_tr.end - m_tr.start;
 
 	if (len <= 0)
@@ -1769,11 +1773,10 @@ void GSState::Write(const u8* mem, int len)
 
 void GSState::InitReadFIFO(u8* mem, int len)
 {
-	if (len <= 0)
+	// No size or already a transfer in progress.
+	if (len <= 0 || m_tr.total != 0)
 		return;
 
-	const int sx = m_env.TRXPOS.SSAX;
-	const int sy = m_env.TRXPOS.SSAY;
 	const int w = m_env.TRXREG.RRW;
 	const int h = m_env.TRXREG.RRH;
 
@@ -1782,36 +1785,15 @@ void GSState::InitReadFIFO(u8* mem, int len)
 	if (!m_tr.Update(w, h, bpp, len))
 		return;
 
-	if (m_tr.x == sx && m_tr.y == sy)
-		InvalidateLocalMem(m_env.BITBLTBUF, GSVector4i(sx, sy, sx + w, sy + h));
-}
-
-// NOTE: called from outside MTGS
-void GSState::Read(u8* mem, int len)
-{
-	if (len <= 0)
-		return;
-
 	const int sx = m_env.TRXPOS.SSAX;
 	const int sy = m_env.TRXPOS.SSAY;
-	const int w = m_env.TRXREG.RRW;
-	const int h = m_env.TRXREG.RRH;
-
 	const GSVector4i r(sx, sy, sx + w, sy + h);
 
-	const u16 bpp = GSLocalMemory::m_psm[m_env.BITBLTBUF.SPSM].trbpp;
+	if (m_tr.x == sx && m_tr.y == sy)
+		InvalidateLocalMem(m_env.BITBLTBUF, r);
 
-	if (!m_tr.Update(w, h, bpp, len))
-		return;
-
-	// If it's 1 QW the destination is likely a register, so don't mess with this, else it can cause stack corruption.
-	// TODO: Change the FIFO downloads to just read off the whole transfer from memory to a temp buffer so we can read it in byte level chunks.
-	if (len > 16)
-	{
-		mem -= m_tr.offset;
-		len += m_tr.offset;
-	}
-	m_mem.ReadImageX(m_tr.x, m_tr.y, m_tr.offset, mem, len, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);
+	// Read the image all in one go.
+	m_mem.ReadImageX(m_tr.x, m_tr.y, m_tr.buff, m_tr.total, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);
 
 	if (GSConfig.DumpGSData && GSConfig.SaveRT && s_n >= GSConfig.SaveN)
 	{
@@ -1821,6 +1803,36 @@ void GSState::Read(u8* mem, int len)
 			r.left, r.top, r.right, r.bottom));
 
 		m_mem.SaveBMP(s, m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM, r.right, r.bottom);
+	}
+}
+
+// NOTE: called from outside MTGS
+void GSState::Read(u8* mem, int len)
+{
+	if (len <= 0 || m_tr.total == 0)
+		return;
+
+	const int w = m_env.TRXREG.RRW;
+	const int h = m_env.TRXREG.RRH;
+	const u16 bpp = GSLocalMemory::m_psm[m_env.BITBLTBUF.SPSM].trbpp;
+
+	if (!m_tr.Update(w, h, bpp, len))
+		return;
+
+	// If it wraps memory, we need to break it up so we don't read out of bounds.
+	if ((m_tr.end + len) > m_mem.m_vmsize)
+	{
+		const int first_transfer = m_mem.m_vmsize - m_tr.end;
+		const int second_transfer = len - first_transfer;
+		memcpy(mem, &m_tr.buff[m_tr.end], first_transfer);
+		m_tr.end = 0;
+		memcpy(&mem[first_transfer], &m_tr.buff, second_transfer);
+		m_tr.end = second_transfer;
+	}
+	else
+	{
+		memcpy(mem, &m_tr.buff[m_tr.end], len);
+		m_tr.end += len;
 	}
 }
 
@@ -2096,15 +2108,34 @@ void GSState::ReadLocalMemoryUnsync(u8* mem, int qwc, GIFRegBITBLTBUF BITBLTBUF,
 	const u16 bpp = GSLocalMemory::m_psm[BITBLTBUF.SPSM].trbpp;
 
 	GSTransferBuffer tb;
-	tb.Init(TRXPOS.SSAX, TRXPOS.SSAY, BITBLTBUF);
+
+	if(m_tr.end >= m_tr.total || m_tr.write == true)
+		tb.Init(TRXPOS.SSAX, TRXPOS.SSAY, BITBLTBUF, false);
 
 	int len = qwc * 16;
 	if (!tb.Update(w, h, bpp, len))
 		return;
 
-	mem += tb.offset;
-	len -= tb.offset;
-	m_mem.ReadImageX(tb.x, tb.y, tb.offset, mem, len, BITBLTBUF, TRXPOS, TRXREG);
+	if (m_tr.start == 0)
+	{
+		m_mem.ReadImageX(tb.x, tb.y, m_tr.buff, m_tr.total, BITBLTBUF, TRXPOS, TRXREG);
+		m_tr.start += m_tr.total;
+	}
+
+	if ((m_tr.end + len) > m_mem.m_vmsize)
+	{
+		const int masked_end = m_tr.end & 0x3FFFFF; // 4mb.
+		const int first_transfer = m_mem.m_vmsize - masked_end;
+		const int second_transfer = len - first_transfer;
+		memcpy(mem, &m_tr.buff[masked_end], first_transfer);
+		memcpy(&mem[first_transfer], &m_tr.buff, second_transfer);
+		m_tr.end += len;
+	}
+	else
+	{
+		memcpy(mem, &m_tr.buff[m_tr.end], len);
+		m_tr.end += len;
+	}
 }
 
 void GSState::PurgePool()
@@ -3862,13 +3893,13 @@ GSState::GSTransferBuffer::~GSTransferBuffer()
 	_aligned_free(buff);
 }
 
-void GSState::GSTransferBuffer::Init(int tx, int ty, const GIFRegBITBLTBUF& blit)
+void GSState::GSTransferBuffer::Init(int tx, int ty, const GIFRegBITBLTBUF& blit, bool is_write)
 {
 	x = tx;
 	y = ty;
 	total = 0;
-	offset = 0;
 	m_blit = blit;
+	write = is_write;
 }
 
 bool GSState::GSTransferBuffer::Update(int tw, int th, int bpp, int& len)
