@@ -1478,6 +1478,7 @@ void GSState::FlushWrite()
 	r.top = m_env.TRXPOS.DSAY;
 	r.right = r.left + m_env.TRXREG.RRW;
 	r.bottom = r.top + m_env.TRXREG.RRH;
+
 	InvalidateVideoMem(m_env.BITBLTBUF, r, true);
 
 	const GSLocalMemory::writeImage wi = GSLocalMemory::m_psm[m_env.BITBLTBUF.DPSM].wi;
@@ -1694,7 +1695,6 @@ void GSState::Write(const u8* mem, int len)
 	//
 	// The no-solution: instead to handle garbage (aka RT) at the end of the
 	// depth buffer. Let's reduce the size of the transfer
-
 	if (m_game.title == CRC::SMTNocturne) // TODO: hack
 	{
 		if (blit.DBP == 0 && blit.DPSM == PSMZ32 && w == 512 && h > 224)
@@ -1707,68 +1707,70 @@ void GSState::Write(const u8* mem, int len)
 	if (!m_tr.Update(w, h, psm.trbpp, len))
 		return;
 
-	GIFRegTEX0& prev_tex0 = m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0;
-
-	const u32 write_start_bp = m_mem.m_psm[blit.DPSM].info.bn(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, blit.DBP, blit.DBW); // (m_mem.*psm.pa)(static_cast<int>(m_env.TRXPOS.DSAX), static_cast<int>(m_env.TRXPOS.DSAY), blit.DBP, blit.DBW) >> 6;
-	const u32 write_end_bp = m_mem.m_psm[blit.DPSM].info.bn(m_env.TRXPOS.DSAX + w - 1, m_env.TRXPOS.DSAY + h - 1, blit.DBP, blit.DBW); // (m_mem.*psm.pa)(w + static_cast<int>(m_env.TRXPOS.DSAX) - 1, h + static_cast<int>(m_env.TRXPOS.DSAY) - 1, blit.DBP, blit.DBW) >> 6;
-	const u32 tex_end_bp = m_mem.m_psm[prev_tex0.PSM].info.bn((1 << prev_tex0.TW) - 1, (1 << prev_tex0.TH) - 1, prev_tex0.TBP0, prev_tex0.TBW); // (m_mem.*psm.pa)((1 << prev_tex0.TW) - 1, (1 << prev_tex0.TH) - 1, prev_tex0.TBP0, prev_tex0.TBW) >> 6;
-	// Only flush on a NEW transfer if a pending one is using the same address or overlap.
-	// Check Fast & Furious (Hardare mode) and Assault Suits Valken (either renderer) and Tomb Raider - Angel of Darkness menu (TBP != DBP but overlaps).
-	if (m_tr.end == 0 && m_index.tail > 0 && m_prev_env.PRIM.TME && write_end_bp > prev_tex0.TBP0 && write_start_bp <= tex_end_bp)
+	if (m_tr.end == 0)
 	{
-		Flush(GSFlushReason::UPLOADDIRTYTEX);
+		const GIFRegTEX0& prev_tex0 = m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0;
+		const u32 write_start_bp = m_mem.m_psm[blit.DPSM].info.bn(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, blit.DBP, blit.DBW);
+		const u32 write_end_bp = m_mem.m_psm[blit.DPSM].info.bn(m_env.TRXPOS.DSAX + w - 1, m_env.TRXPOS.DSAY + h - 1, blit.DBP, blit.DBW);
+		const u32 tex_end_bp = m_mem.m_psm[prev_tex0.PSM].info.bn((1 << prev_tex0.TW) - 1, (1 << prev_tex0.TH) - 1, prev_tex0.TBP0, prev_tex0.TBW);
+		// Only flush on a NEW transfer if a pending one is using the same address or overlap.
+		// Check Fast & Furious (Hardare mode) and Assault Suits Valken (either renderer) and Tomb Raider - Angel of Darkness menu (TBP != DBP but overlaps).
+		if (m_index.tail > 0 && m_prev_env.PRIM.TME && write_end_bp > prev_tex0.TBP0 && write_start_bp <= tex_end_bp)
+		{
+			Flush(GSFlushReason::UPLOADDIRTYTEX);
+		}
+		// Invalid the CLUT if it crosses paths.
+		m_mem.m_clut.InvalidateRange(write_start_bp, write_end_bp);
+
+		GSVector4i r;
+
+		r.left = m_env.TRXPOS.DSAX;
+		r.top = m_env.TRXPOS.DSAY;
+		r.right = r.left + m_env.TRXREG.RRW;
+		r.bottom = r.top + m_env.TRXREG.RRH;
+
+		// Store the transfer for preloading new RT's.
+		if ((m_draw_transfers.size() > 0 && blit.DBP == m_draw_transfers.back().blit.DBP))
+		{
+			// Same BP, let's update the rect.
+			GSUploadQueue transfer = m_draw_transfers.back();
+			m_draw_transfers.pop_back();
+			transfer.rect = transfer.rect.runion(r);
+			m_draw_transfers.push_back(transfer);
+		}
+		else
+		{
+			GSUploadQueue new_transfer = { blit, r, s_n };
+			m_draw_transfers.push_back(new_transfer);
+		}
+
+		GL_CACHE("Write! %u ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d)", s_transfer_n,
+			blit.DBP, blit.DBW, psm_str(blit.DPSM),
+			m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
+			m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, w, h);
+
+		if (len >= m_tr.total)
+		{
+			// received all data in one piece, no need to buffer it
+			InvalidateVideoMem(blit, r, true);
+
+			psm.wi(m_mem, m_tr.x, m_tr.y, mem, m_tr.total, blit, m_env.TRXPOS, m_env.TRXREG);
+
+			m_tr.start = m_tr.end = m_tr.total;
+
+			g_perfmon.Put(GSPerfMon::Swizzle, len);
+			s_transfer_n++;
+
+			return;
+		}
 	}
-	// Invalid the CLUT if it crosses paths.
-	m_mem.m_clut.InvalidateRange(write_start_bp, write_end_bp);
 
-	GSVector4i r;
+	memcpy(&m_tr.buff[m_tr.end], mem, len);
 
-	r.left = m_env.TRXPOS.DSAX;
-	r.top = m_env.TRXPOS.DSAY;
-	r.right = r.left + m_env.TRXREG.RRW;
-	r.bottom = r.top + m_env.TRXREG.RRH;
+	m_tr.end += len;
 
-	// Store the transfer for preloading new RT's.
-	if ((m_draw_transfers.size() > 0 && blit.DBP == m_draw_transfers.back().blit.DBP))
-	{
-		// Same BP, let's update the rect.
-		GSUploadQueue transfer = m_draw_transfers.back();
-		m_draw_transfers.pop_back();
-		transfer.rect = transfer.rect.runion(r);
-		m_draw_transfers.push_back(transfer);
-	}
-	else
-	{
-		GSUploadQueue new_transfer = { blit, r, s_n };
-		m_draw_transfers.push_back(new_transfer);
-	}
-
-	GL_CACHE("Write! %u ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d)", s_transfer_n,
-			 blit.DBP, blit.DBW, psm_str(blit.DPSM),
-			 m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
-			 m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, w, h);
-
-	if (m_tr.end == 0 && len >= m_tr.total)
-	{
-		// received all data in one piece, no need to buffer it
-		InvalidateVideoMem(blit, r, true);
-
-		psm.wi(m_mem, m_tr.x, m_tr.y, mem, m_tr.total, blit, m_env.TRXPOS, m_env.TRXREG);
-
-		m_tr.start = m_tr.end = m_tr.total;
-
-		g_perfmon.Put(GSPerfMon::Swizzle, len);
-		s_transfer_n++;
-	}
-	else
-	{
-		memcpy(&m_tr.buff[m_tr.end], mem, len);
-
-		m_tr.end += len;
-
-		if (m_tr.end >= m_tr.total)
-			FlushWrite();
-	}
+	if (m_tr.end >= m_tr.total)
+		FlushWrite();
 }
 
 void GSState::InitReadFIFO(u8* mem, int len)
@@ -3898,6 +3900,8 @@ void GSState::GSTransferBuffer::Init(int tx, int ty, const GIFRegBITBLTBUF& blit
 	x = tx;
 	y = ty;
 	total = 0;
+	start = 0;
+	end = 0;
 	m_blit = blit;
 	write = is_write;
 }
@@ -3908,10 +3912,7 @@ bool GSState::GSTransferBuffer::Update(int tw, int th, int bpp, int& len)
 	int packet_size = (tex_size + 15) & ~0xF; // Round up to the nearest quadword
 
 	if (total == 0)
-	{
-		start = end = 0;
 		total = std::min<int>(tex_size, 1024 * 1024 * 4);
-	}
 
 	const int remaining = total - end;
 
