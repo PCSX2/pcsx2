@@ -748,6 +748,21 @@ void GSDeviceMTL::DetachSurfaceOnMainThread()
 	m_layer = nullptr;
 }
 
+// Metal is fun and won't let you use newBufferWithBytes for private buffers
+static MRCOwned<id<MTLBuffer>> CreatePrivateBufferWithContent(
+	id<MTLDevice> dev, id<MTLCommandBuffer> cb,
+	MTLResourceOptions options, NSUInteger length,
+	std::function<void(void*)> fill)
+{
+	MRCOwned<id<MTLBuffer>> tmp = MRCTransfer([dev newBufferWithLength:length options:MTLResourceStorageModeShared]);
+	MRCOwned<id<MTLBuffer>> actual = MRCTransfer([dev newBufferWithLength:length options:options|MTLResourceStorageModePrivate]);
+	fill([tmp contents]);
+	id<MTLBlitCommandEncoder> blit = [cb blitCommandEncoder];
+	[blit copyFromBuffer:tmp sourceOffset:0 toBuffer:actual destinationOffset:0 size:length];
+	[blit endEncoding];
+	return actual;
+}
+
 bool GSDeviceMTL::Create(const WindowInfo& wi, VsyncMode vsync)
 { @autoreleasepool {
 	if (!GSDevice::Create(wi, vsync))
@@ -808,7 +823,6 @@ bool GSDeviceMTL::Create(const WindowInfo& wi, VsyncMode vsync)
 	MTLPixelFormat layer_px_fmt = [m_layer pixelFormat];
 
 	m_features.broken_point_sampler = [[m_dev.dev name] containsString:@"AMD"];
-	m_features.geometry_shader = false;
 	m_features.vs_expand = true;
 	m_features.primitive_id = m_dev.features.primid;
 	m_features.texture_barrier = true;
@@ -851,6 +865,9 @@ bool GSDeviceMTL::Create(const WindowInfo& wi, VsyncMode vsync)
 			NSString* shader = m_dev.features.has_fast_half ? @"CASHalf" : @"CASFloat";
 			m_cas_pipeline[sharpen_only] = MakeComputePipeline(LoadShader(shader), sharpen_only ? @"CAS Sharpen" : @"CAS Upscale");
 		}
+
+		m_expand_index_buffer = CreatePrivateBufferWithContent(m_dev.dev, initCommands, MTLResourceHazardTrackingModeUntracked, EXPAND_BUFFER_SIZE, GenerateExpansionIndexBuffer);
+		[m_expand_index_buffer setLabel:@"Point/Sprite Expand Indices"];
 
 		m_hw_vertex = MRCTransfer([MTLVertexDescriptor new]);
 		[[[m_hw_vertex layouts] objectAtIndexedSubscript:GSMTLBufferIndexHWVertices] setStride:sizeof(GSVertex)];
@@ -1987,17 +2004,27 @@ void GSDeviceMTL::MREInitHWDraw(GSHWDrawConfig& config, const Map& verts)
 
 void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 { @autoreleasepool {
-	if (config.topology == GSHWDrawConfig::Topology::Point)
-		config.vs.point_size = 1; // M1 requires point size output on *all* points
-
 	if (config.tex && config.ds == config.tex)
 		EndRenderPass(); // Barrier
 
 	size_t vertsize = config.nverts * sizeof(*config.verts);
-	size_t idxsize = config.nindices * sizeof(*config.indices);
+	size_t idxsize = config.vs.UseExpandIndexBuffer() ? 0 : (config.nindices * sizeof(*config.indices));
 	Map allocation = Allocate(m_vertex_upload_buf, vertsize + idxsize);
 	memcpy(allocation.cpu_buffer, config.verts, vertsize);
-	memcpy(static_cast<u8*>(allocation.cpu_buffer) + vertsize, config.indices, idxsize);
+
+	id<MTLBuffer> index_buffer;
+	size_t index_buffer_offset;
+	if (!config.vs.UseExpandIndexBuffer())
+	{
+		memcpy(static_cast<u8*>(allocation.cpu_buffer) + vertsize, config.indices, idxsize);
+		index_buffer = allocation.gpu_buffer;
+		index_buffer_offset = allocation.gpu_offset + vertsize;
+	}
+	else
+	{
+		index_buffer = m_expand_index_buffer;
+		index_buffer_offset = 0;
+	}
 
 	FlushClears(config.tex);
 	FlushClears(config.pal);
@@ -2028,7 +2055,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 			ASSERT(config.require_full_barrier == false && config.drawlist == nullptr);
 			MRESetHWPipelineState(config.vs, config.ps, {}, {});
 			MREInitHWDraw(config, allocation);
-			SendHWDraw(config, m_current_render.encoder, allocation.gpu_buffer, allocation.gpu_offset + vertsize);
+			SendHWDraw(config, m_current_render.encoder, index_buffer, index_buffer_offset);
 			config.ps.date = 3;
 			break;
 		}
@@ -2084,7 +2111,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 	MRESetHWPipelineState(config.vs, config.ps, config.blend, config.colormask);
 	MRESetDSS(config.depth);
 
-	SendHWDraw(config, mtlenc, allocation.gpu_buffer, allocation.gpu_offset + vertsize);
+	SendHWDraw(config, mtlenc, index_buffer, index_buffer_offset);
 
 	if (config.alpha_second_pass.enable)
 	{
@@ -2095,7 +2122,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 		}
 		MRESetHWPipelineState(config.vs, config.alpha_second_pass.ps, config.blend, config.alpha_second_pass.colormask);
 		MRESetDSS(config.alpha_second_pass.depth);
-		SendHWDraw(config, mtlenc, allocation.gpu_buffer, allocation.gpu_offset + vertsize);
+		SendHWDraw(config, mtlenc, index_buffer, index_buffer_offset);
 	}
 
 	if (hdr_rt)
@@ -2141,25 +2168,34 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 
 		g_perfmon.Put(GSPerfMon::DrawCalls, config.drawlist->size());
 		g_perfmon.Put(GSPerfMon::Barriers, config.drawlist->size());
-		for (size_t count = 0, p = 0, n = 0; n < config.drawlist->size(); p += count, ++n)
+
+		const u32 indices_per_prim = config.indices_per_prim;
+		const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
+
+		for (u32 n = 0, p = 0; n < draw_list_size; n++)
 		{
-			count = (*config.drawlist)[n] * config.indices_per_prim;
+			const u32 count = (*config.drawlist)[n] * indices_per_prim;
 			textureBarrier(enc);
 			[enc drawIndexedPrimitives:topology
 			                indexCount:count
 			                 indexType:MTLIndexTypeUInt32
 			               indexBuffer:buffer
 			         indexBufferOffset:off + p * sizeof(*config.indices)];
+			p += count;
 		}
+
 		[enc popDebugGroup];
+		return;
 	}
 	else if (config.require_full_barrier)
 	{
-		const u32 ndraws = config.nindices / config.indices_per_prim;
+		const u32 indices_per_prim = config.indices_per_prim;
+		const u32 ndraws = config.nindices / indices_per_prim;
 		g_perfmon.Put(GSPerfMon::DrawCalls, ndraws);
 		g_perfmon.Put(GSPerfMon::Barriers, ndraws);
 		[enc pushDebugGroup:[NSString stringWithFormat:@"Full barrier split draw (%d prims)", ndraws]];
-		for (size_t p = 0; p < config.nindices; p += config.indices_per_prim)
+
+		for (u32 p = 0; p < config.nindices; p += indices_per_prim)
 		{
 			textureBarrier(enc);
 			[enc drawIndexedPrimitives:topology
@@ -2168,30 +2204,24 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 			               indexBuffer:buffer
 			         indexBufferOffset:off + p * sizeof(*config.indices)];
 		}
+
 		[enc popDebugGroup];
+		return;
 	}
 	else if (config.require_one_barrier)
 	{
 		// One barrier needed
 		textureBarrier(enc);
-		[enc drawIndexedPrimitives:topology
-		                indexCount:config.nindices
-		                 indexType:MTLIndexTypeUInt32
-		               indexBuffer:buffer
-		         indexBufferOffset:off];
-		g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 		g_perfmon.Put(GSPerfMon::Barriers, 1);
 	}
-	else
-	{
-		// No barriers needed
-		[enc drawIndexedPrimitives:topology
-		                indexCount:config.nindices
-		                 indexType:MTLIndexTypeUInt32
-		               indexBuffer:buffer
-		         indexBufferOffset:off];
-		g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	}
+
+	[enc drawIndexedPrimitives:topology
+	                indexCount:config.nindices
+	                 indexType:MTLIndexTypeUInt32
+	               indexBuffer:buffer
+	         indexBufferOffset:off];
+
+	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 }
 
 // tbh I'm not a fan of the current debug groups

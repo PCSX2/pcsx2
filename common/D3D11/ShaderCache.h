@@ -51,9 +51,6 @@ namespace D3D11
 			const D3D11_INPUT_ELEMENT_DESC* layout, size_t layout_size,
 			const std::string_view& shader_code, const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main");
 
-		wil::com_ptr_nothrow<ID3D11GeometryShader> GetGeometryShader(ID3D11Device* device, const std::string_view& shader_code,
-			const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main");
-
 		wil::com_ptr_nothrow<ID3D11PixelShader> GetPixelShader(ID3D11Device* device, const std::string_view& shader_code,
 			const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main");
 

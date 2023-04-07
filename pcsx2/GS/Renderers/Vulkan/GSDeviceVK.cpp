@@ -581,17 +581,17 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.framebuffer_fetch = g_vulkan_context->GetOptionalExtensions().vk_arm_rasterization_order_attachment_access && !GSConfig.DisableFramebufferFetch;
 	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0;
 	m_features.broken_point_sampler = isAMD;
-	m_features.geometry_shader = features.geometryShader && GSConfig.OverrideGeometryShaders != 0;
 	// Usually, geometry shader indicates primid support
 	// However on Metal (MoltenVK), geometry shader is never available, but primid sometimes is
 	// Officially, it's available on GPUs that support barycentric coordinates (Newer AMD and Apple)
 	// Unofficially, it seems to work on older Intel GPUs (but breaks other things on newer Intel GPUs, see GSMTLDeviceInfo.mm for details)
 	// We'll only enable for the officially supported GPUs here.  We'll leave in the option of force-enabling it with OverrideGeometryShaders though.
-	m_features.primitive_id = features.geometryShader || GSConfig.OverrideGeometryShaders == 1 || g_vulkan_context->GetOptionalExtensions().vk_khr_fragment_shader_barycentric;
+	m_features.primitive_id = features.geometryShader || g_vulkan_context->GetOptionalExtensions().vk_khr_fragment_shader_barycentric;
 	m_features.prefer_new_textures = true;
 	m_features.provoking_vertex_last = g_vulkan_context->GetOptionalExtensions().vk_ext_provoking_vertex;
 	m_features.dual_source_blend = features.dualSrcBlend && !GSConfig.DisableDualSourceBlend;
 	m_features.clip_control = true;
+	m_features.vs_expand = g_vulkan_context->GetOptionalExtensions().vk_khr_shader_draw_parameters;
 
 	if (!m_features.dual_source_blend)
 		Console.Warning("Vulkan driver is missing dual-source blending. This will have an impact on performance.");
@@ -624,9 +624,10 @@ bool GSDeviceVK::CheckFeatures()
 		(features.largePoints && limits.pointSizeRange[0] <= f_upscale && limits.pointSizeRange[1] >= f_upscale);
 	m_features.line_expand =
 		(features.wideLines && limits.lineWidthRange[0] <= f_upscale && limits.lineWidthRange[1] >= f_upscale);
+
 	DevCon.WriteLn("Using %s for point expansion and %s for line expansion.",
-		m_features.point_expand ? "hardware" : "geometry shaders",
-		m_features.line_expand ? "hardware" : "geometry shaders");
+		m_features.point_expand ? "hardware" : "vertex expanding",
+		m_features.line_expand ? "hardware" : "vertex expanding");
 
 	// Check texture format support before we try to create them.
 	for (u32 fmt = static_cast<u32>(GSTexture::Format::Color); fmt < static_cast<u32>(GSTexture::Format::PrimID); fmt++)
@@ -1004,6 +1005,7 @@ void GSDeviceVK::DoMultiStretchRects(
 	m_index.count = icount;
 	m_vertex_stream_buffer.CommitMemory(vcount * sizeof(GSVertexPT1));
 	m_index_stream_buffer.CommitMemory(icount * sizeof(u32));
+	SetIndexBuffer(m_index_stream_buffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
 	// Even though we're batching, a cmdbuffer submit could've messed this up.
 	const GSVector4i rc(dTex->GetRect());
@@ -1379,6 +1381,8 @@ void GSDeviceVK::IASetIndexBuffer(const void* index, size_t count)
 
 	std::memcpy(m_index_stream_buffer.GetCurrentHostPointer(), index, size);
 	m_index_stream_buffer.CommitMemory(size);
+
+	SetIndexBuffer(m_index_stream_buffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 }
 
 void GSDeviceVK::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor, FeedbackLoopFlag feedback_loop)
@@ -1493,10 +1497,14 @@ static void AddMacro(std::stringstream& ss, const char* name, int value)
 
 static void AddShaderHeader(std::stringstream& ss)
 {
+	const GSDevice::FeatureSupport features(g_gs_device->Features());
+
 	ss << "#version 460 core\n";
 	ss << "#extension GL_EXT_samplerless_texture_functions : require\n";
 
-	const GSDevice::FeatureSupport features(g_gs_device->Features());
+	if (features.vs_expand)
+		ss << "#extension GL_ARB_shader_draw_parameters : require\n";
+
 	if (!features.texture_barrier)
 		ss << "#define DISABLE_TEXTURE_BARRIER 1\n";
 	if (!features.dual_source_blend)
@@ -1568,7 +1576,9 @@ bool GSDeviceVK::CreateNullTexture()
 
 bool GSDeviceVK::CreateBuffers()
 {
-	if (!m_vertex_stream_buffer.Create(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VERTEX_BUFFER_SIZE))
+	if (!m_vertex_stream_buffer.Create(
+			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | (m_features.vs_expand ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0),
+			VERTEX_BUFFER_SIZE))
 	{
 		Host::ReportErrorAsync("GS", "Failed to allocate vertex buffer");
 		return false;
@@ -1593,7 +1603,14 @@ bool GSDeviceVK::CreateBuffers()
 	}
 
 	SetVertexBuffer(m_vertex_stream_buffer.GetBuffer(), 0);
-	SetIndexBuffer(m_index_stream_buffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+	if (!g_vulkan_context->AllocatePreinitializedGPUBuffer(EXPAND_BUFFER_SIZE, &m_expand_index_buffer,
+			&m_expand_index_buffer_allocation, VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+			&GSDevice::GenerateExpansionIndexBuffer))
+	{
+		Host::ReportErrorAsync("GS", "Failed to allocate expansion index buffer");
+		return false;
+	}
 
 	return true;
 }
@@ -1625,6 +1642,8 @@ bool GSDeviceVK::CreatePipelineLayouts()
 	dslb.AddBinding(
 		0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_GEOMETRY_BIT);
 	dslb.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	if (m_features.vs_expand)
+		dslb.AddBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
 	if ((m_tfx_ubo_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
 	Vulkan::Util::SetObjectName(dev, m_tfx_ubo_ds_layout, "TFX UBO descriptor layout");
@@ -2366,9 +2385,6 @@ void GSDeviceVK::RenderImGui()
 
 		g_perfmon.Put(GSPerfMon::DrawCalls, cmd_list->CmdBuffer.Size);
 	}
-
-	// normal draws use 32-bit indices
-	SetIndexBuffer(m_index_stream_buffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 }
 
 bool GSDeviceVK::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants)
@@ -2449,8 +2465,6 @@ void GSDeviceVK::DestroyResources()
 		Vulkan::Util::SafeDestroyPipeline(it.second);
 	for (auto& it : m_tfx_fragment_shaders)
 		Vulkan::Util::SafeDestroyShaderModule(it.second);
-	for (auto& it : m_tfx_geometry_shaders)
-		Vulkan::Util::SafeDestroyShaderModule(it.second);
 	for (auto& it : m_tfx_vertex_shaders)
 		Vulkan::Util::SafeDestroyShaderModule(it.second);
 	for (VkPipeline& it : m_interlace)
@@ -2506,6 +2520,12 @@ void GSDeviceVK::DestroyResources()
 	m_vertex_uniform_stream_buffer.Destroy(false);
 	m_index_stream_buffer.Destroy(false);
 	m_vertex_stream_buffer.Destroy(false);
+	if (m_expand_index_buffer != VK_NULL_HANDLE)
+	{
+		vmaDestroyBuffer(g_vulkan_context->GetAllocator(), m_expand_index_buffer, m_expand_index_buffer_allocation);
+		m_expand_index_buffer = VK_NULL_HANDLE;
+		m_expand_index_buffer_allocation = VK_NULL_HANDLE;
+	}
 
 	Vulkan::Util::SafeDestroyPipelineLayout(m_tfx_pipeline_layout);
 	Vulkan::Util::SafeDestroyDescriptorSetLayout(m_tfx_rt_texture_ds_layout);
@@ -2530,6 +2550,8 @@ VkShaderModule GSDeviceVK::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
 	AddMacro(ss, "VS_FST", sel.fst);
 	AddMacro(ss, "VS_IIP", sel.iip);
 	AddMacro(ss, "VS_POINT_SIZE", sel.point_size);
+	AddMacro(ss, "VS_EXPAND", static_cast<int>(sel.expand));
+	AddMacro(ss, "VS_PROVOKING_VERTEX_LAST", static_cast<int>(m_features.provoking_vertex_last));
 	ss << m_tfx_source;
 
 	VkShaderModule mod = g_vulkan_shader_cache->GetVertexShader(ss.str());
@@ -2537,29 +2559,6 @@ VkShaderModule GSDeviceVK::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
 		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), mod, "TFX Vertex %08X", sel.key);
 
 	m_tfx_vertex_shaders.emplace(sel.key, mod);
-	return mod;
-}
-
-VkShaderModule GSDeviceVK::GetTFXGeometryShader(GSHWDrawConfig::GSSelector sel)
-{
-	const auto it = m_tfx_geometry_shaders.find(sel.key);
-	if (it != m_tfx_geometry_shaders.end())
-		return it->second;
-
-	std::stringstream ss;
-	AddShaderHeader(ss);
-	AddShaderStageMacro(ss, false, true, false);
-	AddMacro(ss, "GS_IIP", sel.iip);
-	AddMacro(ss, "GS_PRIM", static_cast<int>(sel.topology));
-	AddMacro(ss, "GS_EXPAND", sel.expand);
-	AddMacro(ss, "GS_FORWARD_PRIMID", sel.forward_primid);
-	ss << m_tfx_source;
-
-	VkShaderModule mod = g_vulkan_shader_cache->GetGeometryShader(ss.str());
-	if (mod)
-		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), mod, "TFX Geometry %08X", sel.key);
-
-	m_tfx_geometry_shaders.emplace(sel.key, mod);
 	return mod;
 }
 
@@ -2651,9 +2650,8 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	}
 
 	VkShaderModule vs = GetTFXVertexShader(p.vs);
-	VkShaderModule gs = p.gs.expand ? GetTFXGeometryShader(p.gs) : VK_NULL_HANDLE;
 	VkShaderModule fs = GetTFXFragmentShader(pps);
-	if (vs == VK_NULL_HANDLE || (p.gs.expand && gs == VK_NULL_HANDLE) || fs == VK_NULL_HANDLE)
+	if (vs == VK_NULL_HANDLE || fs == VK_NULL_HANDLE)
 		return VK_NULL_HANDLE;
 
 	Vulkan::GraphicsPipelineBuilder gpb;
@@ -2685,19 +2683,20 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 
 	// Shaders
 	gpb.SetVertexShader(vs);
-	if (gs != VK_NULL_HANDLE)
-		gpb.SetGeometryShader(gs);
 	gpb.SetFragmentShader(fs);
 
 	// IA
-	gpb.AddVertexBuffer(0, sizeof(GSVertex));
-	gpb.AddVertexAttribute(0, 0, VK_FORMAT_R32G32_SFLOAT, 0); // ST
-	gpb.AddVertexAttribute(1, 0, VK_FORMAT_R8G8B8A8_UINT, 8); // RGBA
-	gpb.AddVertexAttribute(2, 0, VK_FORMAT_R32_SFLOAT, 12); // Q
-	gpb.AddVertexAttribute(3, 0, VK_FORMAT_R16G16_UINT, 16); // XY
-	gpb.AddVertexAttribute(4, 0, VK_FORMAT_R32_UINT, 20); // Z
-	gpb.AddVertexAttribute(5, 0, VK_FORMAT_R16G16_UINT, 24); // UV
-	gpb.AddVertexAttribute(6, 0, VK_FORMAT_R8G8B8A8_UNORM, 28); // FOG
+	if (p.vs.expand == GSHWDrawConfig::VSExpand::None)
+	{
+		gpb.AddVertexBuffer(0, sizeof(GSVertex));
+		gpb.AddVertexAttribute(0, 0, VK_FORMAT_R32G32_SFLOAT, 0); // ST
+		gpb.AddVertexAttribute(1, 0, VK_FORMAT_R8G8B8A8_UINT, 8); // RGBA
+		gpb.AddVertexAttribute(2, 0, VK_FORMAT_R32_SFLOAT, 12); // Q
+		gpb.AddVertexAttribute(3, 0, VK_FORMAT_R16G16_UINT, 16); // XY
+		gpb.AddVertexAttribute(4, 0, VK_FORMAT_R32_UINT, 20); // Z
+		gpb.AddVertexAttribute(5, 0, VK_FORMAT_R16G16_UINT, 24); // UV
+		gpb.AddVertexAttribute(6, 0, VK_FORMAT_R8G8B8A8_UNORM, 28); // FOG
+	}
 
 	// DepthStencil
 	static const VkCompareOp ztst[] = {
@@ -2753,7 +2752,7 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	if (pipeline)
 	{
 		Vulkan::Util::SetObjectName(
-			g_vulkan_context->GetDevice(), pipeline, "TFX Pipeline %08X/%08X/%" PRIX64 "%08X", p.vs.key, p.gs.key, p.ps.key_hi, p.ps.key_lo);
+			g_vulkan_context->GetDevice(), pipeline, "TFX Pipeline %08X/%" PRIX64 "%08X", p.vs.key, p.ps.key_hi, p.ps.key_lo);
 	}
 
 	return pipeline;
@@ -2822,6 +2821,11 @@ bool GSDeviceVK::CreatePersistentDescriptorSets()
 		m_vertex_uniform_stream_buffer.GetBuffer(), 0, sizeof(GSHWDrawConfig::VSConstantBuffer));
 	dsub.AddBufferDescriptorWrite(m_tfx_descriptor_sets[0], 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
 		m_fragment_uniform_stream_buffer.GetBuffer(), 0, sizeof(GSHWDrawConfig::PSConstantBuffer));
+	if (m_features.vs_expand)
+	{
+		dsub.AddBufferDescriptorWrite(m_tfx_descriptor_sets[0], 2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+			m_vertex_stream_buffer.GetBuffer(), 0, VERTEX_BUFFER_SIZE);
+	}
 	dsub.Update(dev);
 	Vulkan::Util::SetObjectName(dev, m_tfx_descriptor_sets[0], "Persistent TFX UBO set");
 	return true;
@@ -3476,8 +3480,7 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 		DrawPrimitive();
 
 	// image is now filled with either -1 or INT_MAX, so now we can do the prepass
-	IASetVertexBuffer(config.verts, sizeof(GSVertex), config.nverts);
-	IASetIndexBuffer(config.indices, config.nindices);
+	UploadHWDrawVerticesAndIndices(config);
 
 	// cut down the configuration for the prepass, we don't need blending or any feedback loop
 	PipelineSelector& pipe = m_pipeline_selector;
@@ -3722,10 +3725,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 	// VB/IB upload, if we did DATE setup and it's not HDR this has already been done
 	if (!date_image || hdr_rt)
-	{
-		IASetVertexBuffer(config.verts, sizeof(GSVertex), config.nverts);
-		IASetIndexBuffer(config.indices, config.nindices);
-	}
+		UploadHWDrawVerticesAndIndices(config);
 
 	// now we can do the actual draw
 	if (BindDrawPipeline(pipe))
@@ -3818,7 +3818,6 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe)
 {
 	pipe.vs.key = config.vs.key;
-	pipe.gs.key = config.gs.key;
 	pipe.ps.key_hi = config.ps.key_hi;
 	pipe.ps.key_lo = config.ps.key_lo;
 	pipe.dss.key = config.depth.key;
@@ -3840,6 +3839,22 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelect
 	pipe.vs.point_size |= (config.topology == GSHWDrawConfig::Topology::Point);
 }
 
+void GSDeviceVK::UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config)
+{
+	IASetVertexBuffer(config.verts, sizeof(GSVertex), config.nverts);
+
+	if (config.vs.UseExpandIndexBuffer())
+	{
+		m_index.start = 0;
+		m_index.count = config.nindices;
+		SetIndexBuffer(m_expand_index_buffer, 0, VK_INDEX_TYPE_UINT32);
+	}
+	else
+	{
+		IASetIndexBuffer(config.indices, config.nindices);
+	}
+}
+
 void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, bool skip_first_barrier)
 {
 	if (config.drawlist)
@@ -3847,23 +3862,25 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 		GL_PUSH("Split the draw (SPRITE)");
 		g_perfmon.Put(GSPerfMon::Barriers, static_cast<u32>(config.drawlist->size()) - static_cast<u32>(skip_first_barrier));
 
-		u32 count = 0;
+		const u32 indices_per_prim = config.indices_per_prim;
+		const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
 		u32 p = 0;
 		u32 n = 0;
 
 		if (skip_first_barrier)
 		{
-			count = (*config.drawlist)[n] * config.indices_per_prim;
+			const u32 count = (*config.drawlist)[n] * indices_per_prim;
 			DrawIndexedPrimitive(p, count);
 			p += count;
 			++n;
 		}
 
-		for (; n < static_cast<u32>(config.drawlist->size()); p += count, ++n)
+		for (; n < draw_list_size; n++)
 		{
-			count = (*config.drawlist)[n] * config.indices_per_prim;
+			const u32 count = (*config.drawlist)[n] * indices_per_prim;
 			ColorBufferBarrier(draw_rt);
 			DrawIndexedPrimitive(p, count);
+			p += count;
 		}
 
 		return;
@@ -3873,21 +3890,22 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 	{
 		if (config.require_full_barrier)
 		{
-			GL_PUSH("Split single draw in %d draw", config.nindices / config.indices_per_prim);
-			g_perfmon.Put(GSPerfMon::Barriers, (config.nindices / config.indices_per_prim) - static_cast<u32>(skip_first_barrier));
+			const u32 indices_per_prim = config.indices_per_prim;
 
-			const u32 ipp = config.indices_per_prim;
+			GL_PUSH("Split single draw in %d draw", config.nindices / indices_per_prim);
+			g_perfmon.Put(GSPerfMon::Barriers, (config.nindices / indices_per_prim) - static_cast<u32>(skip_first_barrier));
+
 			u32 p = 0;
 			if (skip_first_barrier)
 			{
-				DrawIndexedPrimitive(p, ipp);
-				p += ipp;
+				DrawIndexedPrimitive(p, indices_per_prim);
+				p += indices_per_prim;
 			}
 
-			for (; p < config.nindices; p += ipp)
+			for (; p < config.nindices; p += indices_per_prim)
 			{
 				ColorBufferBarrier(draw_rt);
-				DrawIndexedPrimitive(p, ipp);
+				DrawIndexedPrimitive(p, indices_per_prim);
 			}
 
 			return;
@@ -3897,11 +3915,8 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 		{
 			g_perfmon.Put(GSPerfMon::Barriers, 1);
 			ColorBufferBarrier(draw_rt);
-			DrawIndexedPrimitive();
-			return;
 		}
 	}
 
-	// Don't need any barrier
 	DrawIndexedPrimitive();
 }

@@ -31,21 +31,21 @@ wil::com_ptr_nothrow<ID3DBlob> D3D11::ShaderCompiler::CompileShader(Type type, D
 	{
 		case D3D_FEATURE_LEVEL_10_0:
 		{
-			static constexpr std::array<const char*, 4> targets = {{"vs_4_0", "gs_4_0", "ps_4_0", "cs_4_0"}};
+			static constexpr std::array<const char*, 4> targets = {{"vs_4_0", "ps_4_0", "cs_4_0"}};
 			target = targets[static_cast<int>(type)];
 		}
 		break;
 
 		case D3D_FEATURE_LEVEL_10_1:
 		{
-			static constexpr std::array<const char*, 4> targets = {{"vs_4_1", "gs_4_1", "ps_4_1", "cs_4_1"}};
+			static constexpr std::array<const char*, 4> targets = {{"vs_4_1", "ps_4_1", "cs_4_1"}};
 			target = targets[static_cast<int>(type)];
 		}
 		break;
 
 		case D3D_FEATURE_LEVEL_11_0:
 		{
-			static constexpr std::array<const char*, 4> targets = {{"vs_5_0", "gs_5_0", "ps_5_0", "cs_5_0"}};
+			static constexpr std::array<const char*, 4> targets = {{"vs_5_0", "ps_5_0", "cs_5_0"}};
 			target = targets[static_cast<int>(type)];
 		}
 		break;
@@ -53,7 +53,7 @@ wil::com_ptr_nothrow<ID3DBlob> D3D11::ShaderCompiler::CompileShader(Type type, D
 		case D3D_FEATURE_LEVEL_11_1:
 		default:
 		{
-			static constexpr std::array<const char*, 4> targets = {{"vs_5_1", "gs_5_1", "ps_5_1", "cs_5_1"}};
+			static constexpr std::array<const char*, 4> targets = {{"vs_5_1", "ps_5_1", "cs_5_1"}};
 			target = targets[static_cast<int>(type)];
 		}
 		break;
@@ -108,16 +108,6 @@ wil::com_ptr_nothrow<ID3D11VertexShader> D3D11::ShaderCompiler::CompileAndCreate
 	return CreateVertexShader(device, blob.get());
 }
 
-wil::com_ptr_nothrow<ID3D11GeometryShader> D3D11::ShaderCompiler::CompileAndCreateGeometryShader(ID3D11Device* device, bool debug,
-	const std::string_view& code, const D3D_SHADER_MACRO* macros /* = nullptr */, const char* entry_point /* = "main" */)
-{
-	wil::com_ptr_nothrow<ID3DBlob> blob = CompileShader(Type::Geometry, device->GetFeatureLevel(), debug, code, macros, entry_point);
-	if (!blob)
-		return {};
-
-	return CreateGeometryShader(device, blob.get());
-}
-
 wil::com_ptr_nothrow<ID3D11PixelShader> D3D11::ShaderCompiler::CompileAndCreatePixelShader(ID3D11Device* device, bool debug,
 	const std::string_view& code, const D3D_SHADER_MACRO* macros /* = nullptr */, const char* entry_point /* = "main" */)
 {
@@ -154,25 +144,6 @@ wil::com_ptr_nothrow<ID3D11VertexShader> D3D11::ShaderCompiler::CreateVertexShad
 wil::com_ptr_nothrow<ID3D11VertexShader> D3D11::ShaderCompiler::CreateVertexShader(ID3D11Device* device, const ID3DBlob* blob)
 {
 	return CreateVertexShader(device, const_cast<ID3DBlob*>(blob)->GetBufferPointer(),
-		const_cast<ID3DBlob*>(blob)->GetBufferSize());
-}
-
-wil::com_ptr_nothrow<ID3D11GeometryShader> D3D11::ShaderCompiler::CreateGeometryShader(ID3D11Device* device, const void* bytecode, size_t bytecode_length)
-{
-	wil::com_ptr_nothrow<ID3D11GeometryShader> shader;
-	const HRESULT hr = device->CreateGeometryShader(bytecode, bytecode_length, nullptr, shader.put());
-	if (FAILED(hr))
-	{
-		Console.Error("Failed to create geometry shader: 0x%08X", hr);
-		return {};
-	}
-
-	return shader;
-}
-
-wil::com_ptr_nothrow<ID3D11GeometryShader> D3D11::ShaderCompiler::CreateGeometryShader(ID3D11Device* device, const ID3DBlob* blob)
-{
-	return CreateGeometryShader(device, const_cast<ID3DBlob*>(blob)->GetBufferPointer(),
 		const_cast<ID3DBlob*>(blob)->GetBufferSize());
 }
 

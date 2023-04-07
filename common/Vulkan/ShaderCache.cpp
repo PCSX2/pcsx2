@@ -493,11 +493,6 @@ namespace Vulkan
 		return GetShaderModule(ShaderCompiler::Type::Vertex, std::move(shader_code));
 	}
 
-	VkShaderModule ShaderCache::GetGeometryShader(std::string_view shader_code)
-	{
-		return GetShaderModule(ShaderCompiler::Type::Geometry, std::move(shader_code));
-	}
-
 	VkShaderModule ShaderCache::GetFragmentShader(std::string_view shader_code)
 	{
 		return GetShaderModule(ShaderCompiler::Type::Fragment, std::move(shader_code));

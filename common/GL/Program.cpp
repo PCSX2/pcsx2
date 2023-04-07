@@ -35,8 +35,6 @@ namespace GL
 		prog.m_program_id = 0;
 		m_vertex_shader_id = prog.m_vertex_shader_id;
 		prog.m_vertex_shader_id = 0;
-		m_geometry_shader_id = prog.m_geometry_shader_id;
-		prog.m_geometry_shader_id = 0;
 		m_fragment_shader_id = prog.m_fragment_shader_id;
 		prog.m_fragment_shader_id = 0;
 		m_uniform_locations = std::move(prog.m_uniform_locations);
@@ -102,20 +100,12 @@ namespace GL
 		s_last_program_id = 0;
 	}
 
-	bool Program::Compile(const std::string_view vertex_shader, const std::string_view geometry_shader,
-		const std::string_view fragment_shader)
+	bool Program::Compile(const std::string_view vertex_shader, const std::string_view fragment_shader)
 	{
 		if (!vertex_shader.empty())
 		{
 			m_vertex_shader_id = CompileShader(GL_VERTEX_SHADER, vertex_shader);
 			if (m_vertex_shader_id == 0)
-				return false;
-		}
-
-		if (!geometry_shader.empty())
-		{
-			m_geometry_shader_id = CompileShader(GL_GEOMETRY_SHADER, geometry_shader);
-			if (m_geometry_shader_id == 0)
 				return false;
 		}
 
@@ -129,8 +119,6 @@ namespace GL
 		m_program_id = glCreateProgram();
 		if (m_vertex_shader_id != 0)
 			glAttachShader(m_program_id, m_vertex_shader_id);
-		if (m_geometry_shader_id != 0)
-			glAttachShader(m_program_id, m_geometry_shader_id);
 		if (m_fragment_shader_id != 0)
 			glAttachShader(m_program_id, m_fragment_shader_id);
 		return true;
@@ -240,9 +228,6 @@ namespace GL
 		if (m_vertex_shader_id != 0)
 			glDeleteShader(m_vertex_shader_id);
 		m_vertex_shader_id = 0;
-		if (m_geometry_shader_id != 0)
-			glDeleteShader(m_geometry_shader_id);
-		m_geometry_shader_id = 0;
 		if (m_fragment_shader_id != 0)
 			glDeleteShader(m_fragment_shader_id);
 		m_fragment_shader_id = 0;
@@ -541,8 +526,6 @@ namespace GL
 		prog.m_program_id = 0;
 		m_vertex_shader_id = prog.m_vertex_shader_id;
 		prog.m_vertex_shader_id = 0;
-		m_geometry_shader_id = prog.m_geometry_shader_id;
-		prog.m_geometry_shader_id = 0;
 		m_fragment_shader_id = prog.m_fragment_shader_id;
 		prog.m_fragment_shader_id = 0;
 		m_uniform_locations = std::move(prog.m_uniform_locations);

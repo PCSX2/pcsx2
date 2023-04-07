@@ -26,7 +26,6 @@ namespace Vulkan::ShaderCompiler
 	enum class Type
 	{
 		Vertex,
-		Geometry,
 		Fragment,
 		Compute
 	};
@@ -39,9 +38,6 @@ namespace Vulkan::ShaderCompiler
 
 	// Compile a vertex shader to SPIR-V.
 	std::optional<SPIRVCodeVector> CompileVertexShader(std::string_view source_code, bool debug);
-
-	// Compile a geometry shader to SPIR-V.
-	std::optional<SPIRVCodeVector> CompileGeometryShader(std::string_view source_code, bool debug);
 
 	// Compile a fragment shader to SPIR-V.
 	std::optional<SPIRVCodeVector> CompileFragmentShader(std::string_view source_code, bool debug);

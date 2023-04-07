@@ -602,7 +602,6 @@ bool GSDevice12::CheckFeatures()
 
 	m_features.texture_barrier = false;
 	m_features.broken_point_sampler = isAMD;
-	m_features.geometry_shader = true;
 	m_features.primitive_id = true;
 	m_features.prefer_new_textures = true;
 	m_features.provoking_vertex_last = false;
@@ -613,6 +612,7 @@ bool GSDevice12::CheckFeatures()
 	m_features.clip_control = true;
 	m_features.stencil_buffer = true;
 	m_features.test_and_sample_depth = false;
+	m_features.vs_expand = true;
 
 	m_features.dxt_textures = g_d3d12_context->SupportsTextureFormat(DXGI_FORMAT_BC1_UNORM) &&
 							  g_d3d12_context->SupportsTextureFormat(DXGI_FORMAT_BC2_UNORM) &&
@@ -1729,6 +1729,13 @@ bool GSDevice12::CreateBuffers()
 		return false;
 	}
 
+	if (!g_d3d12_context->AllocatePreinitializedGPUBuffer(EXPAND_BUFFER_SIZE, &m_expand_index_buffer,
+			&m_expand_index_buffer_allocation, &GSDevice::GenerateExpansionIndexBuffer))
+	{
+		Host::ReportErrorAsync("GS", "Failed to allocate expansion index buffer");
+		return false;
+	}
+
 	return true;
 }
 
@@ -1753,6 +1760,7 @@ bool GSDevice12::CreateRootSignatures()
 	rsb.SetInputAssemblerFlag();
 	rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
 	rsb.AddCBVParameter(1, D3D12_SHADER_VISIBILITY_PIXEL);
+	rsb.AddSRVParameter(0, D3D12_SHADER_VISIBILITY_VERTEX);
 	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_PIXEL);
 	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, NUM_TFX_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
 	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 2, D3D12_SHADER_VISIBILITY_PIXEL);
@@ -2096,7 +2104,6 @@ void GSDevice12::DestroyResources()
 		g_d3d12_context->DeferObjectDestruction(it.second.get());
 	m_tfx_pipelines.clear();
 	m_tfx_pixel_shaders.clear();
-	m_tfx_geometry_shaders.clear();
 	m_tfx_vertex_shaders.clear();
 	m_interlace = {};
 	m_merge = {};
@@ -2119,6 +2126,8 @@ void GSDevice12::DestroyResources()
 	g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetSamplerHeapManager(), &m_point_sampler_cpu);
 	g_d3d12_context->InvalidateSamplerGroups();
 
+	m_expand_index_buffer.reset();
+	m_expand_index_buffer_allocation.reset();
 	m_pixel_constant_buffer.Destroy(false);
 	m_vertex_constant_buffer.Destroy(false);
 	m_index_stream_buffer.Destroy(false);
@@ -2139,29 +2148,15 @@ const ID3DBlob* GSDevice12::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
 		return it->second.get();
 
 	ShaderMacro sm(m_shader_cache.GetFeatureLevel());
+	sm.AddMacro("VERTEX_SHADER", 1);
 	sm.AddMacro("VS_TME", sel.tme);
 	sm.AddMacro("VS_FST", sel.fst);
 	sm.AddMacro("VS_IIP", sel.iip);
+	sm.AddMacro("VS_EXPAND", static_cast<int>(sel.expand));
 
-	ComPtr<ID3DBlob> vs(m_shader_cache.GetVertexShader(m_tfx_source, sm.GetPtr(), "vs_main"));
+	const char* entry_point = (sel.expand != GSHWDrawConfig::VSExpand::None) ? "vs_main_expand" : "vs_main";
+	ComPtr<ID3DBlob> vs(m_shader_cache.GetVertexShader(m_tfx_source, sm.GetPtr(), entry_point));
 	it = m_tfx_vertex_shaders.emplace(sel.key, std::move(vs)).first;
-	return it->second.get();
-}
-
-const ID3DBlob* GSDevice12::GetTFXGeometryShader(GSHWDrawConfig::GSSelector sel)
-{
-	auto it = m_tfx_geometry_shaders.find(sel.key);
-	if (it != m_tfx_geometry_shaders.end())
-		return it->second.get();
-
-	ShaderMacro sm(m_shader_cache.GetFeatureLevel());
-	sm.AddMacro("GS_IIP", sel.iip);
-	sm.AddMacro("GS_PRIM", static_cast<int>(sel.topology));
-	sm.AddMacro("GS_EXPAND", sel.expand);
-	sm.AddMacro("GS_FORWARD_PRIMID", sel.forward_primid);
-
-	ComPtr<ID3DBlob> gs(m_shader_cache.GetGeometryShader(m_tfx_source, sm.GetPtr(), "gs_main"));
-	it = m_tfx_geometry_shaders.emplace(sel.key, std::move(gs)).first;
 	return it->second.get();
 }
 
@@ -2172,6 +2167,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 		return it->second.get();
 
 	ShaderMacro sm(m_shader_cache.GetFeatureLevel());
+	sm.AddMacro("PIXEL_SHADER", 1);
 	sm.AddMacro("PS_FST", sel.fst);
 	sm.AddMacro("PS_WMS", sel.wms);
 	sm.AddMacro("PS_WMT", sel.wmt);
@@ -2246,9 +2242,8 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 	}
 
 	const ID3DBlob* vs = GetTFXVertexShader(p.vs);
-	const ID3DBlob* gs = p.gs.expand ? GetTFXGeometryShader(p.gs) : nullptr;
 	const ID3DBlob* ps = GetTFXPixelShader(pps);
-	if (!vs || (p.gs.expand && !gs) || !ps)
+	if (!vs || !ps)
 		return nullptr;
 
 	// Common state
@@ -2271,18 +2266,19 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 
 	// Shaders
 	gpb.SetVertexShader(vs);
-	if (gs)
-		gpb.SetGeometryShader(gs);
 	gpb.SetPixelShader(ps);
 
 	// IA
-	gpb.AddVertexAttribute("TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0);
-	gpb.AddVertexAttribute("COLOR", 0, DXGI_FORMAT_R8G8B8A8_UINT, 0, 8);
-	gpb.AddVertexAttribute("TEXCOORD", 1, DXGI_FORMAT_R32_FLOAT, 0, 12);
-	gpb.AddVertexAttribute("POSITION", 0, DXGI_FORMAT_R16G16_UINT, 0, 16);
-	gpb.AddVertexAttribute("POSITION", 1, DXGI_FORMAT_R32_UINT, 0, 20);
-	gpb.AddVertexAttribute("TEXCOORD", 2, DXGI_FORMAT_R16G16_UINT, 0, 24);
-	gpb.AddVertexAttribute("COLOR", 1, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 28);
+	if (p.vs.expand == GSHWDrawConfig::VSExpand::None)
+	{
+		gpb.AddVertexAttribute("TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0);
+		gpb.AddVertexAttribute("COLOR", 0, DXGI_FORMAT_R8G8B8A8_UINT, 0, 8);
+		gpb.AddVertexAttribute("TEXCOORD", 1, DXGI_FORMAT_R32_FLOAT, 0, 12);
+		gpb.AddVertexAttribute("POSITION", 0, DXGI_FORMAT_R16G16_UINT, 0, 16);
+		gpb.AddVertexAttribute("POSITION", 1, DXGI_FORMAT_R32_UINT, 0, 20);
+		gpb.AddVertexAttribute("TEXCOORD", 2, DXGI_FORMAT_R16G16_UINT, 0, 24);
+		gpb.AddVertexAttribute("COLOR", 1, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 28);
+	}
 
 	// DepthStencil
 	if (p.ds)
@@ -2337,7 +2333,7 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 	if (pipeline)
 	{
 		D3D12::SetObjectNameFormatted(
-			pipeline.get(), "TFX Pipeline %08X/%08X/%" PRIX64 "%08X", p.vs.key, p.gs.key, p.ps.key_hi, p.ps.key_lo);
+			pipeline.get(), "TFX Pipeline %08X/%" PRIX64 "%08X", p.vs.key, p.ps.key_hi, p.ps.key_lo);
 	}
 
 	return pipeline;
@@ -2941,6 +2937,11 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 		cmdlist->SetGraphicsRootConstantBufferView(TFX_ROOT_SIGNATURE_PARAM_VS_CBV, m_tfx_constant_buffers[0]);
 	if (flags & DIRTY_FLAG_PS_CONSTANT_BUFFER_BINDING)
 		cmdlist->SetGraphicsRootConstantBufferView(TFX_ROOT_SIGNATURE_PARAM_PS_CBV, m_tfx_constant_buffers[1]);
+	if (flags & DIRTY_FLAG_VS_VERTEX_BUFFER_BINDING)
+	{
+		cmdlist->SetGraphicsRootShaderResourceView(TFX_ROOT_SIGNATURE_PARAM_VS_SRV,
+			m_vertex_stream_buffer.GetGPUPointer() + m_vertex.start * sizeof(GSVertex));
+	}
 	if (flags & DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE)
 		cmdlist->SetGraphicsRootDescriptorTable(TFX_ROOT_SIGNATURE_PARAM_PS_TEXTURES, m_tfx_textures_handle_gpu);
 	if (flags & DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE)
@@ -3070,8 +3071,7 @@ GSTexture12* GSDevice12::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 
 	// image is now filled with either -1 or INT_MAX, so now we can do the prepass
 	SetPrimitiveTopology(s_primitive_topology_mapping[static_cast<u8>(config.topology)]);
-	IASetVertexBuffer(config.verts, sizeof(GSVertex), config.nverts);
-	IASetIndexBuffer(config.indices, config.nindices);
+	UploadHWDrawVerticesAndIndices(config);
 
 	// cut down the configuration for the prepass, we don't need blending or any feedback loop
 	PipelineSelector init_pipe(m_pipeline_selector);
@@ -3252,10 +3252,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	// VB/IB upload, if we did DATE setup and it's not HDR this has already been done
 	SetPrimitiveTopology(s_primitive_topology_mapping[static_cast<u8>(config.topology)]);
 	if (!date_image || hdr_rt)
-	{
-		IASetVertexBuffer(config.verts, sizeof(GSVertex), config.nverts);
-		IASetIndexBuffer(config.indices, config.nindices);
-	}
+		UploadHWDrawVerticesAndIndices(config);
 
 	// now we can do the actual draw
 	if (BindDrawPipeline(pipe))
@@ -3333,7 +3330,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 void GSDevice12::UpdateHWPipelineSelector(GSHWDrawConfig& config)
 {
 	m_pipeline_selector.vs.key = config.vs.key;
-	m_pipeline_selector.gs.key = config.gs.key;
 	m_pipeline_selector.ps.key_hi = config.ps.key_hi;
 	m_pipeline_selector.ps.key_lo = config.ps.key_lo;
 	m_pipeline_selector.dss.key = config.depth.key;
@@ -3343,4 +3339,24 @@ void GSDevice12::UpdateHWPipelineSelector(GSHWDrawConfig& config)
 	m_pipeline_selector.topology = static_cast<u32>(config.topology);
 	m_pipeline_selector.rt = config.rt != nullptr;
 	m_pipeline_selector.ds = config.ds != nullptr;
+}
+
+void GSDevice12::UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config)
+{
+	IASetVertexBuffer(config.verts, sizeof(GSVertex), config.nverts);
+
+	// Update SRV in root signature directly, rather than using a uniform for base vertex.
+	if (config.vs.expand != GSHWDrawConfig::VSExpand::None)
+		m_dirty_flags |= DIRTY_FLAG_VS_VERTEX_BUFFER_BINDING;
+
+	if (config.vs.UseExpandIndexBuffer())
+	{
+		m_index.start = 0;
+		m_index.count = config.nindices;
+		SetIndexBuffer(m_expand_index_buffer->GetGPUVirtualAddress(), EXPAND_BUFFER_SIZE, DXGI_FORMAT_R32_UINT);
+	}
+	else
+	{
+		IASetIndexBuffer(config.indices, config.nindices);
+	}
 }

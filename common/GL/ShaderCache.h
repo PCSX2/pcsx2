@@ -38,10 +38,8 @@ namespace GL
 		bool Open(bool is_gles, std::string_view base_path, u32 version);
 		void Close();
 
-		std::optional<Program> GetProgram(const std::string_view vertex_shader, const std::string_view geometry_shader,
-			const std::string_view fragment_shader, const PreLinkCallback& callback = {});
-		bool GetProgram(Program* out_program, const std::string_view vertex_shader, const std::string_view geometry_shader,
-			const std::string_view fragment_shader, const PreLinkCallback& callback = {});
+		std::optional<Program> GetProgram(const std::string_view vertex_shader, const std::string_view fragment_shader, const PreLinkCallback& callback = {});
+		bool GetProgram(Program* out_program, const std::string_view vertex_shader, const std::string_view fragment_shader, const PreLinkCallback& callback = {});
 
 		std::optional<Program> GetComputeProgram(const std::string_view glsl, const PreLinkCallback& callback = {});
 		bool GetComputeProgram(Program* out_program, const std::string_view glsl, const PreLinkCallback& callback = {});
@@ -54,9 +52,6 @@ namespace GL
 			u64 vertex_source_hash_low;
 			u64 vertex_source_hash_high;
 			u32 vertex_source_length;
-			u64 geometry_source_hash_low;
-			u64 geometry_source_hash_high;
-			u32 geometry_source_length;
 			u64 fragment_source_hash_low;
 			u64 fragment_source_hash_high;
 			u32 fragment_source_length;
@@ -72,7 +67,6 @@ namespace GL
 				std::size_t h = 0;
 				HashCombine(h,
 					e.vertex_source_hash_low, e.vertex_source_hash_high, e.vertex_source_length,
-					e.geometry_source_hash_low, e.geometry_source_hash_high, e.geometry_source_length,
 					e.fragment_source_hash_low, e.fragment_source_hash_high, e.fragment_source_length);
 				return h;
 			}
@@ -87,8 +81,7 @@ namespace GL
 
 		using CacheIndex = std::unordered_map<CacheIndexKey, CacheIndexData, CacheIndexEntryHasher>;
 
-		static CacheIndexKey GetCacheKey(const std::string_view& vertex_shader, const std::string_view& geometry_shader,
-			const std::string_view& fragment_shader);
+		static CacheIndexKey GetCacheKey(const std::string_view& vertex_shader, const std::string_view& fragment_shader);
 
 		std::string GetIndexFileName() const;
 		std::string GetBlobFileName() const;
@@ -99,11 +92,10 @@ namespace GL
 
 		bool WriteToBlobFile(const CacheIndexKey& key, const std::vector<u8>& prog_data, u32 prog_format);
 
-		std::optional<Program> CompileProgram(const std::string_view& vertex_shader, const std::string_view& geometry_shader,
+		std::optional<Program> CompileProgram(const std::string_view& vertex_shader,
 			const std::string_view& fragment_shader, const PreLinkCallback& callback,
 			bool set_retrievable);
 		std::optional<Program> CompileAndAddProgram(const CacheIndexKey& key, const std::string_view& vertex_shader,
-			const std::string_view& geometry_shader,
 			const std::string_view& fragment_shader, const PreLinkCallback& callback);
 
 		std::optional<Program> CompileComputeProgram(const std::string_view& glsl, const PreLinkCallback& callback, bool set_retrievable);

@@ -56,6 +56,7 @@ namespace Vulkan
 			bool vk_khr_driver_properties : 1;
 			bool vk_arm_rasterization_order_attachment_access : 1;
 			bool vk_khr_fragment_shader_barycentric : 1;
+			bool vk_khr_shader_draw_parameters : 1;
 		};
 
 		~Context();
@@ -237,6 +238,10 @@ namespace Vulkan
 
 		void CountRenderPass() { m_command_buffer_render_passes++; }
 		void NotifyOfReadback();
+
+		// Allocates a temporary CPU staging buffer, fires the callback with it to populate, then copies to a GPU buffer.
+		bool AllocatePreinitializedGPUBuffer(u32 size, VkBuffer* gpu_buffer, VmaAllocation* gpu_allocation,
+			VkBufferUsageFlags gpu_usage, const std::function<void(void*)>& fill_callback);
 
 	private:
 		Context(VkInstance instance, VkPhysicalDevice physical_device);

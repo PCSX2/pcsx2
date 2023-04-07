@@ -52,7 +52,6 @@ public:
 		};
 
 		GSHWDrawConfig::VSSelector vs;
-		GSHWDrawConfig::GSSelector gs;
 		GSHWDrawConfig::DepthStencilSelector dss;
 		GSHWDrawConfig::ColorMaskSelector cms;
 		GSHWDrawConfig::BlendState bs;
@@ -69,7 +68,7 @@ public:
 		std::size_t operator()(const PipelineSelector& e) const noexcept
 		{
 			std::size_t hash = 0;
-			HashCombine(hash, e.vs.key, e.gs.key, e.ps.key_hi, e.ps.key_lo, e.dss.key, e.cms.key, e.bs.key, e.key);
+			HashCombine(hash, e.vs.key, e.ps.key_hi, e.ps.key_lo, e.dss.key, e.cms.key, e.bs.key, e.key);
 			return hash;
 		}
 	};
@@ -124,9 +123,10 @@ public:
 
 		TFX_ROOT_SIGNATURE_PARAM_VS_CBV = 0,
 		TFX_ROOT_SIGNATURE_PARAM_PS_CBV = 1,
-		TFX_ROOT_SIGNATURE_PARAM_PS_TEXTURES = 2,
-		TFX_ROOT_SIGNATURE_PARAM_PS_SAMPLERS = 3,
-		TFX_ROOT_SIGNATURE_PARAM_PS_RT_TEXTURES = 4,
+		TFX_ROOT_SIGNATURE_PARAM_VS_SRV = 2,
+		TFX_ROOT_SIGNATURE_PARAM_PS_TEXTURES = 3,
+		TFX_ROOT_SIGNATURE_PARAM_PS_SAMPLERS = 4,
+		TFX_ROOT_SIGNATURE_PARAM_PS_RT_TEXTURES = 5,
 
 		UTILITY_ROOT_SIGNATURE_PARAM_PUSH_CONSTANTS = 0,
 		UTILITY_ROOT_SIGNATURE_PARAM_PS_TEXTURES = 1,
@@ -154,6 +154,8 @@ private:
 	D3D12::StreamBuffer m_index_stream_buffer;
 	D3D12::StreamBuffer m_vertex_constant_buffer;
 	D3D12::StreamBuffer m_pixel_constant_buffer;
+	ComPtr<ID3D12Resource> m_expand_index_buffer;
+	ComPtr<D3D12MA::Allocation> m_expand_index_buffer_allocation;
 
 	D3D12::DescriptorHandle m_point_sampler_cpu;
 	D3D12::DescriptorHandle m_linear_sampler_cpu;
@@ -173,7 +175,6 @@ private:
 	ComPtr<ID3D12PipelineState> m_imgui_pipeline;
 
 	std::unordered_map<u32, ComPtr<ID3DBlob>> m_tfx_vertex_shaders;
-	std::unordered_map<u32, ComPtr<ID3DBlob>> m_tfx_geometry_shaders;
 	std::unordered_map<GSHWDrawConfig::PSSelector, ComPtr<ID3DBlob>, GSHWDrawConfig::PSSelectorHash> m_tfx_pixel_shaders;
 	std::unordered_map<PipelineSelector, ComPtr<ID3D12PipelineState>, PipelineSelectorHash> m_tfx_pipelines;
 
@@ -209,7 +210,6 @@ private:
 	bool GetTextureGroupDescriptors(D3D12::DescriptorHandle* gpu_handle, const D3D12::DescriptorHandle* cpu_handles, u32 count);
 
 	const ID3DBlob* GetTFXVertexShader(GSHWDrawConfig::VSSelector sel);
-	const ID3DBlob* GetTFXGeometryShader(GSHWDrawConfig::GSSelector sel);
 	const ID3DBlob* GetTFXPixelShader(const GSHWDrawConfig::PSSelector& sel);
 	ComPtr<ID3D12PipelineState> CreateTFXPipeline(const PipelineSelector& p);
 	const ID3D12PipelineState* GetTFXPipeline(const PipelineSelector& p);
@@ -317,6 +317,7 @@ public:
 
 	void RenderHW(GSHWDrawConfig& config) override;
 	void UpdateHWPipelineSelector(GSHWDrawConfig& config);
+	void UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config);
 
 public:
 	/// Ends any render pass, executes the command buffer, and invalidates cached state.
@@ -377,25 +378,27 @@ private:
 
 		DIRTY_FLAG_VS_CONSTANT_BUFFER_BINDING = (1 << 5),
 		DIRTY_FLAG_PS_CONSTANT_BUFFER_BINDING = (1 << 6),
-		DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE = (1 << 7),
-		DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE = (1 << 8),
-		DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2 = (1 << 9),
+		DIRTY_FLAG_VS_VERTEX_BUFFER_BINDING = (1 << 7),
+		DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE = (1 << 8),
+		DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE = (1 << 9),
+		DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2 = (1 << 10),
 
-		DIRTY_FLAG_VERTEX_BUFFER = (1 << 10),
-		DIRTY_FLAG_INDEX_BUFFER = (1 << 11),
-		DIRTY_FLAG_PRIMITIVE_TOPOLOGY = (1 << 12),
-		DIRTY_FLAG_VIEWPORT = (1 << 13),
-		DIRTY_FLAG_SCISSOR = (1 << 14),
-		DIRTY_FLAG_RENDER_TARGET = (1 << 15),
-		DIRTY_FLAG_PIPELINE = (1 << 16),
-		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 17),
-		DIRTY_FLAG_STENCIL_REF = (1 << 18),
+		DIRTY_FLAG_VERTEX_BUFFER = (1 << 11),
+		DIRTY_FLAG_INDEX_BUFFER = (1 << 12),
+		DIRTY_FLAG_PRIMITIVE_TOPOLOGY = (1 << 13),
+		DIRTY_FLAG_VIEWPORT = (1 << 14),
+		DIRTY_FLAG_SCISSOR = (1 << 15),
+		DIRTY_FLAG_RENDER_TARGET = (1 << 16),
+		DIRTY_FLAG_PIPELINE = (1 << 17),
+		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 18),
+		DIRTY_FLAG_STENCIL_REF = (1 << 19),
 
 		DIRTY_BASE_STATE = DIRTY_FLAG_VS_CONSTANT_BUFFER_BINDING | DIRTY_FLAG_PS_CONSTANT_BUFFER_BINDING |
-						   DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE | DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE | DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2 |
+						   DIRTY_FLAG_VS_VERTEX_BUFFER_BINDING | DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE |
+						   DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE | DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2 |
 						   DIRTY_FLAG_VERTEX_BUFFER | DIRTY_FLAG_INDEX_BUFFER | DIRTY_FLAG_PRIMITIVE_TOPOLOGY |
-						   DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR | DIRTY_FLAG_RENDER_TARGET |
-						   DIRTY_FLAG_PIPELINE | DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_STENCIL_REF,
+						   DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR | DIRTY_FLAG_RENDER_TARGET | DIRTY_FLAG_PIPELINE |
+						   DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_STENCIL_REF,
 
 		DIRTY_TFX_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_TFX_TEXTURES | DIRTY_FLAG_TFX_SAMPLERS | DIRTY_FLAG_TFX_RT_TEXTURES,
 		DIRTY_UTILITY_STATE = DIRTY_BASE_STATE,

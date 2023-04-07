@@ -53,8 +53,6 @@ bool GSDevice11::CreateTextureFX()
 
 	SetupVS(sel, &cb);
 
-	SetupGS(GSSelector(1));
-
 	//
 
 	return true;
@@ -68,11 +66,13 @@ void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer*
 	{
 		ShaderMacro sm(m_shader_cache.GetFeatureLevel());
 
+		sm.AddMacro("VERTEX_SHADER", 1);
 		sm.AddMacro("VS_TME", sel.tme);
 		sm.AddMacro("VS_FST", sel.fst);
 		sm.AddMacro("VS_IIP", sel.iip);
+		sm.AddMacro("VS_EXPAND", static_cast<int>(sel.expand));
 
-		D3D11_INPUT_ELEMENT_DESC layout[] =
+		static constexpr const D3D11_INPUT_ELEMENT_DESC layout[] =
 		{
 			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
 			{"COLOR", 0, DXGI_FORMAT_R8G8B8A8_UINT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0},
@@ -84,8 +84,16 @@ void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer*
 		};
 
 		GSVertexShader11 vs;
-		m_shader_cache.GetVertexShaderAndInputLayout(m_dev.get(),
-			vs.vs.put(), vs.il.put(), layout, std::size(layout), m_tfx_source, sm.GetPtr(), "vs_main");
+		if (sel.expand == GSHWDrawConfig::VSExpand::None)
+		{
+			m_shader_cache.GetVertexShaderAndInputLayout(m_dev.get(), vs.vs.put(), vs.il.put(), layout,
+				std::size(layout), m_tfx_source, sm.GetPtr(), "vs_main");
+		}
+		else
+		{
+			vs.vs = m_shader_cache.GetVertexShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "vs_main_expand");
+		}
+
 		i = m_vs.try_emplace(sel.key, std::move(vs)).first;
 	}
 
@@ -99,37 +107,6 @@ void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer*
 	IASetInputLayout(i->second.il.get());
 }
 
-void GSDevice11::SetupGS(GSSelector sel)
-{
-	wil::com_ptr_nothrow<ID3D11GeometryShader> gs;
-
-	// Geometry shader is disabled if sprite conversion is done on the cpu (sel.cpu_sprite).
-	if (sel.expand)
-	{
-		const auto i = std::as_const(m_gs).find(sel.key);
-
-		if (i != m_gs.end())
-		{
-			gs = i->second;
-		}
-		else
-		{
-			ShaderMacro sm(m_shader_cache.GetFeatureLevel());
-
-			sm.AddMacro("GS_IIP", sel.iip);
-			sm.AddMacro("GS_PRIM", static_cast<int>(sel.topology));
-			sm.AddMacro("GS_EXPAND", sel.expand);
-			sm.AddMacro("GS_FORWARD_PRIMID", sel.forward_primid);
-
-			gs = m_shader_cache.GetGeometryShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "gs_main");
-
-			m_gs[sel.key] = gs;
-		}
-	}
-
-	GSSetShader(gs.get(), m_vs_cb.get());
-}
-
 void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel)
 {
 	auto i = std::as_const(m_ps).find(sel);
@@ -138,6 +115,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 	{
 		ShaderMacro sm(m_shader_cache.GetFeatureLevel());
 
+		sm.AddMacro("PIXEL_SHADER", 1);
 		sm.AddMacro("PS_FST", sel.fst);
 		sm.AddMacro("PS_WMS", sel.wms);
 		sm.AddMacro("PS_WMT", sel.wmt);

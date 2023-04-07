@@ -665,3 +665,57 @@ void Context::SetEnableGPUTiming(bool enabled)
 {
 	m_gpu_timing_enabled = enabled;
 }
+
+bool Context::AllocatePreinitializedGPUBuffer(u32 size, ID3D12Resource** gpu_buffer,
+	D3D12MA::Allocation** gpu_allocation, const std::function<void(void*)>& fill_callback)
+{
+	// Try to place the fixed index buffer in GPU local memory.
+	// Use the staging buffer to copy into it.
+	const D3D12_RESOURCE_DESC rd = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, size, 1, 1, 1,
+		DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
+		D3D12_RESOURCE_FLAG_NONE};
+
+	const D3D12MA::ALLOCATION_DESC cpu_ad = {
+		D3D12MA::ALLOCATION_FLAG_NONE,
+		D3D12_HEAP_TYPE_UPLOAD};
+
+	ComPtr<ID3D12Resource> cpu_buffer;
+	ComPtr<D3D12MA::Allocation> cpu_allocation;
+	HRESULT hr = m_allocator->CreateResource(&cpu_ad, &rd, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+		cpu_allocation.put(), IID_PPV_ARGS(cpu_buffer.put()));
+	pxAssertMsg(SUCCEEDED(hr), "Allocate CPU buffer");
+	if (FAILED(hr))
+		return false;
+
+	static constexpr const D3D12_RANGE read_range = {};
+	const D3D12_RANGE write_range = {0, size};
+	void* mapped;
+	hr = cpu_buffer->Map(0, &read_range, &mapped);
+	pxAssertMsg(SUCCEEDED(hr), "Map CPU buffer");
+	if (FAILED(hr))
+		return false;
+	fill_callback(mapped);
+	cpu_buffer->Unmap(0, &write_range);
+
+	const D3D12MA::ALLOCATION_DESC gpu_ad = {
+		D3D12MA::ALLOCATION_FLAG_COMMITTED,
+		D3D12_HEAP_TYPE_DEFAULT};
+
+	hr = m_allocator->CreateResource(&gpu_ad, &rd, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+		gpu_allocation, IID_PPV_ARGS(gpu_buffer));
+	pxAssertMsg(SUCCEEDED(hr), "Allocate GPU buffer");
+	if (FAILED(hr))
+		return false;
+
+	GetInitCommandList()->CopyBufferRegion(*gpu_buffer, 0, cpu_buffer.get(), 0, size);
+
+	D3D12_RESOURCE_BARRIER rb = {D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE};
+	rb.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	rb.Transition.pResource = *gpu_buffer;
+	rb.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+	rb.Transition.StateAfter = D3D12_RESOURCE_STATE_INDEX_BUFFER;
+	GetInitCommandList()->ResourceBarrier(1, &rb);
+
+	DeferResourceDestruction(cpu_allocation.get(), cpu_buffer.get());
+	return true;
+}

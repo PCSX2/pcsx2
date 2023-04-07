@@ -121,7 +121,6 @@ class GSDeviceOGL final : public GSDevice
 {
 public:
 	using VSSelector = GSHWDrawConfig::VSSelector;
-	using GSSelector = GSHWDrawConfig::GSSelector;
 	using PSSelector = GSHWDrawConfig::PSSelector;
 	using PSSamplerSelector = GSHWDrawConfig::SamplerSelector;
 	using OMDepthStencilSelector = GSHWDrawConfig::DepthStencilSelector;
@@ -131,7 +130,6 @@ public:
 	{
 		PSSelector ps;
 		VSSelector vs;
-		GSSelector gs;
 		u16 pad;
 
 		__fi bool operator==(const ProgramSelector& p) const { return (std::memcmp(this, &p, sizeof(*this)) == 0); }
@@ -144,7 +142,7 @@ public:
 		__fi std::size_t operator()(const ProgramSelector& p) const noexcept
 		{
 			std::size_t h = 0;
-			HashCombine(h, p.vs.key, p.gs.key, p.ps.key_hi, p.ps.key_lo);
+			HashCombine(h, p.vs.key, p.ps.key_hi, p.ps.key_lo);
 			return h;
 		}
 	};
@@ -160,7 +158,9 @@ private:
 
 	std::unique_ptr<GL::StreamBuffer> m_vertex_stream_buffer;
 	std::unique_ptr<GL::StreamBuffer> m_index_stream_buffer;
-	GLuint m_vertex_array_object = 0;
+	GLuint m_expand_ibo = 0;
+	GLuint m_vao = 0;
+	GLuint m_expand_vao = 0;
 	GLenum m_draw_topology = 0;
 
 	std::unique_ptr<GL::StreamBuffer> m_vertex_uniform_stream_buffer;
@@ -344,6 +344,7 @@ public:
 
 	void SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm);
 
+	void IASetVAO(GLuint vao);
 	void IASetPrimitiveTopology(GLenum topology);
 	void IASetVertexBuffer(const void* vertices, size_t count);
 	void IASetIndexBuffer(const void* index, size_t count);
@@ -367,7 +368,6 @@ public:
 		const std::string_view& macro_sel = std::string_view());
 	std::string GenGlslHeader(const std::string_view& entry, GLenum type, const std::string_view& macro);
 	std::string GetVSSource(VSSelector sel);
-	std::string GetGSSource(GSSelector sel);
 	std::string GetPSSource(const PSSelector& sel);
 	GLuint CreateSampler(PSSamplerSelector sel);
 	GSDepthStencilOGL* CreateDepthStencil(OMDepthStencilSelector dssel);

@@ -27,7 +27,6 @@ namespace D3D11::ShaderCompiler
 	enum class Type
 	{
 		Vertex,
-		Geometry,
 		Pixel,
 		Compute
 	};
@@ -37,8 +36,6 @@ namespace D3D11::ShaderCompiler
 
 	wil::com_ptr_nothrow<ID3D11VertexShader> CompileAndCreateVertexShader(ID3D11Device* device, bool debug, const std::string_view& code,
 		const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main");
-	wil::com_ptr_nothrow<ID3D11GeometryShader> CompileAndCreateGeometryShader(ID3D11Device* device, bool debug, const std::string_view& code,
-		const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main");
 	wil::com_ptr_nothrow<ID3D11PixelShader> CompileAndCreatePixelShader(ID3D11Device* device, bool debug, const std::string_view& code,
 		const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main");
 	wil::com_ptr_nothrow<ID3D11ComputeShader> CompileAndCreateComputeShader(ID3D11Device* device, bool debug, const std::string_view& code,
@@ -46,8 +43,6 @@ namespace D3D11::ShaderCompiler
 
 	wil::com_ptr_nothrow<ID3D11VertexShader> CreateVertexShader(ID3D11Device* device, const void* bytecode, size_t bytecode_length);
 	wil::com_ptr_nothrow<ID3D11VertexShader> CreateVertexShader(ID3D11Device* device, const ID3DBlob* blob);
-	wil::com_ptr_nothrow<ID3D11GeometryShader> CreateGeometryShader(ID3D11Device* device, const void* bytecode, size_t bytecode_length);
-	wil::com_ptr_nothrow<ID3D11GeometryShader> CreateGeometryShader(ID3D11Device* device, const ID3DBlob* blob);
 	wil::com_ptr_nothrow<ID3D11PixelShader> CreatePixelShader(ID3D11Device* device, const void* bytecode, size_t bytecode_length);
 	wil::com_ptr_nothrow<ID3D11PixelShader> CreatePixelShader(ID3D11Device* device, const ID3DBlob* blob);
 	wil::com_ptr_nothrow<ID3D11ComputeShader> CreateComputeShader(ID3D11Device* device, const void* bytecode, size_t bytecode_length);

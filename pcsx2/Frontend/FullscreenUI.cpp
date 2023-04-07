@@ -3325,8 +3325,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 	}
 	DrawIntListSetting(bsi, "Override Texture Barriers", "Forces texture barrier functionality to the specified value.", "EmuCore/GS",
 		"OverrideTextureBarriers", -1, s_generic_options, std::size(s_generic_options), -1);
-	DrawIntListSetting(bsi, "Override Geometry Shaders", "Forces geometry shader functionality to the specified value.", "EmuCore/GS",
-		"OverrideGeometryShaders", -1, s_generic_options, std::size(s_generic_options), -1);
 	DrawIntListSetting(bsi, "GS Dump Compression", "Sets the compression algorithm for GS dumps.", "EmuCore/GS", "GSDumpCompression",
 		static_cast<int>(GSDumpCompressionMethod::LZMA), s_gsdump_compression, std::size(s_gsdump_compression));
 	DrawToggleSetting(bsi, "Disable Framebuffer Fetch", "Prevents the usage of framebuffer fetch when supported by host GPU.", "EmuCore/GS",

@@ -245,7 +245,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.skipPresentingDuplicateFrames, "EmuCore/GS", "SkipDuplicateFrames", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.threadedPresentation, "EmuCore/GS", "DisableThreadedPresentation", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.overrideTextureBarriers, "EmuCore/GS", "OverrideTextureBarriers", -1, -1);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.overrideGeometryShader, "EmuCore/GS", "OverrideGeometryShaders", -1, -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.gsDumpCompression, "EmuCore/GS", "GSDumpCompression", static_cast<int>(GSDumpCompressionMethod::Zstandard));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableFramebufferFetch, "EmuCore/GS", "DisableFramebufferFetch", false);
@@ -693,10 +692,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	{
 		dialog->registerWidgetHelp(m_ui.overrideTextureBarriers, tr("Override Texture Barriers"), tr("Automatic (Default)"), tr(""));
 
-		dialog->registerWidgetHelp(m_ui.overrideGeometryShader, tr("Override Geometry Shader"), tr("Automatic (Default)"),
-			tr("Allows the GPU instead of just the CPU to transform lines into sprites. "
-			   "This reduces CPU load and bandwidth requirement, but it is heavier on the GPU."));
-
 		dialog->registerWidgetHelp(m_ui.gsDumpCompression, tr("GS Dump Compression"), tr("Zstandard (zst)"),
 			tr("Change the compression algorithm used when creating a GS dump."));
 
@@ -948,7 +943,6 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	m_ui.useBlitSwapChain->setEnabled(is_dx11);
 
 	m_ui.overrideTextureBarriers->setDisabled(is_sw_dx);
-	m_ui.overrideGeometryShader->setDisabled(is_sw_dx);
 
 	m_ui.disableFramebufferFetch->setDisabled(is_sw_dx);
 

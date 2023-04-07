@@ -18,6 +18,7 @@
 
 namespace GLState
 {
+	GLuint vao;
 	GLuint fbo;
 	GSVector2i viewport;
 	GSVector4i scissor;
@@ -49,6 +50,7 @@ namespace GLState
 
 	void Clear()
 	{
+		vao = 0;
 		fbo = 0;
 		viewport = GSVector2i(1, 1);
 		scissor = GSVector4i(0, 0, 1, 1);

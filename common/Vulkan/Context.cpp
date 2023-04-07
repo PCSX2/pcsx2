@@ -474,6 +474,8 @@ namespace Vulkan
 			SupportsExtension(VK_ARM_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false);
 		m_optional_extensions.vk_khr_fragment_shader_barycentric =
 			SupportsExtension(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME, false);
+		m_optional_extensions.vk_khr_shader_draw_parameters =
+			SupportsExtension(VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME, false);
 
 		return true;
 	}
@@ -956,11 +958,9 @@ namespace Vulkan
 
 	bool Context::CreateGlobalDescriptorPool()
 	{
-		// TODO: A better way to choose the number of descriptors.
-		VkDescriptorPoolSize pool_sizes[] = {
-			{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1024},
-			{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024},
-			{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1},
+		static constexpr const VkDescriptorPoolSize pool_sizes[] = {
+			{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 2},
+			{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2},
 		};
 
 		VkDescriptorPoolCreateInfo pool_create_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO, nullptr,
@@ -2076,5 +2076,53 @@ void main()
 		clock_gettime(clock, &ts);
 		return static_cast<u64>(ts.tv_sec) * 1000000000 + ts.tv_nsec;
 #endif
+	}
+
+	bool Context::AllocatePreinitializedGPUBuffer(u32 size, VkBuffer* gpu_buffer, VmaAllocation* gpu_allocation,
+		VkBufferUsageFlags gpu_usage, const std::function<void(void*)>& fill_callback)
+	{
+		// Try to place the fixed index buffer in GPU local memory.
+		// Use the staging buffer to copy into it.
+
+		const VkBufferCreateInfo cpu_bci = {
+			VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+			nullptr,
+			0, size,
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE};
+		const VmaAllocationCreateInfo cpu_aci = {
+			VMA_ALLOCATION_CREATE_MAPPED_BIT, VMA_MEMORY_USAGE_CPU_ONLY, 0, 0};
+		VkBuffer cpu_buffer;
+		VmaAllocation cpu_allocation;
+		VmaAllocationInfo cpu_ai;
+		VkResult res = vmaCreateBuffer(m_allocator, &cpu_bci, &cpu_aci, &cpu_buffer,
+			&cpu_allocation, &cpu_ai);
+		if (res != VK_SUCCESS)
+		{
+			LOG_VULKAN_ERROR(res, "vmaCreateBuffer() for CPU expand buffer failed: ");
+			return false;
+		}
+
+		const VkBufferCreateInfo gpu_bci = {
+			VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+			nullptr,
+			0, size,
+			VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_SHARING_MODE_EXCLUSIVE};
+		const VmaAllocationCreateInfo gpu_aci = {
+			0, VMA_MEMORY_USAGE_GPU_ONLY, 0, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
+		VmaAllocationInfo ai;
+		res = vmaCreateBuffer(m_allocator, &gpu_bci, &gpu_aci, gpu_buffer, gpu_allocation, &ai);
+		if (res != VK_SUCCESS)
+		{
+			LOG_VULKAN_ERROR(res, "vmaCreateBuffer() for expand buffer failed: ");
+			vmaDestroyBuffer(m_allocator, cpu_buffer, cpu_allocation);
+			return false;
+		}
+
+		const VkBufferCopy buf_copy = {0u, 0u, size};
+		fill_callback(cpu_ai.pMappedData);
+		vmaFlushAllocation(m_allocator, cpu_allocation, 0, size);
+		vkCmdCopyBuffer(GetCurrentInitCommandBuffer(), cpu_buffer, *gpu_buffer, 1, &buf_copy);
+		DeferBufferDestruction(cpu_buffer, cpu_allocation);
+		return true;
 	}
 } // namespace Vulkan

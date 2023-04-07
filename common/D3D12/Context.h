@@ -152,6 +152,10 @@ namespace D3D12
 		float GetAndResetAccumulatedGPUTime();
 		void SetEnableGPUTiming(bool enabled);
 
+		// Allocates a temporary CPU staging buffer, fires the callback with it to populate, then copies to a GPU buffer.
+		bool AllocatePreinitializedGPUBuffer(u32 size, ID3D12Resource** gpu_buffer, D3D12MA::Allocation** gpu_allocation,
+			const std::function<void(void*)>& fill_callback);
+
 	private:
 		struct CommandListResources
 		{

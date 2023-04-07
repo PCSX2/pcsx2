@@ -3037,6 +3037,28 @@ static constexpr u32 NumIndicesForPrim(u32 prim)
 	}
 }
 
+static constexpr u32 MaxVerticesForPrim(u32 prim)
+{
+	switch (prim)
+	{
+		case GS_POINTLIST:
+		case GS_INVALID:
+			// Needed due to expansion in hardware renderers.
+			return (std::numeric_limits<u16>::max() / 4) - 4;
+
+		case GS_SPRITE:
+			return (std::numeric_limits<u16>::max() / 2) - 2;
+
+		case GS_LINELIST:
+		case GS_LINESTRIP:
+		case GS_TRIANGLELIST:
+		case GS_TRIANGLESTRIP:
+		case GS_TRIANGLEFAN:
+		default:
+			return 0;
+	}
+}
+
 template <u32 prim, bool auto_flush, bool index_swap>
 __forceinline void GSState::VertexKick(u32 skip)
 {
@@ -3305,6 +3327,10 @@ __forceinline void GSState::VertexKick(u32 skip)
 	}
 
 	CLUTAutoFlush(prim);
+
+	constexpr u32 max_vertices = MaxVerticesForPrim(prim);
+	if (max_vertices != 0 && m_vertex.tail >= max_vertices)
+		Flush(VERTEXCOUNT);
 }
 
 /// Checks if region repeat is used (applying it does something to at least one of the values in min...max)

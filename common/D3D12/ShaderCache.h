@@ -37,7 +37,6 @@ namespace D3D12
 		enum class EntryType
 		{
 			VertexShader,
-			GeometryShader,
 			PixelShader,
 			ComputeShader,
 			GraphicsPipeline,
@@ -58,11 +57,6 @@ namespace D3D12
 			const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main")
 		{
 			return GetShaderBlob(EntryType::VertexShader, shader_code, macros, entry_point);
-		}
-		__fi ComPtr<ID3DBlob> GetGeometryShader(std::string_view shader_code,
-			const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main")
-		{
-			return GetShaderBlob(EntryType::GeometryShader, shader_code, macros, entry_point);
 		}
 		__fi ComPtr<ID3DBlob> GetPixelShader(std::string_view shader_code,
 			const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main")

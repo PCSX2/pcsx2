@@ -2,7 +2,7 @@
 // Vertex Shader
 //////////////////////////////////////////////////////////////////////
 
-#if defined(VERTEX_SHADER) || defined(GEOMETRY_SHADER)
+#if defined(VERTEX_SHADER)
 
 layout(std140, set = 0, binding = 0) uniform cb0
 {
@@ -14,18 +14,6 @@ layout(std140, set = 0, binding = 0) uniform cb0
 	uint MaxDepth;
 	uint pad_cb0;
 };
-
-#endif
-
-#ifdef VERTEX_SHADER
-
-layout(location = 0) in vec2 a_st;
-layout(location = 1) in uvec4 a_c;
-layout(location = 2) in float a_q;
-layout(location = 3) in uvec2 a_p;
-layout(location = 4) in uint a_z;
-layout(location = 5) in uvec2 a_uv;
-layout(location = 6) in vec4 a_f;
 
 layout(location = 0) out VSOutput
 {
@@ -39,17 +27,27 @@ layout(location = 0) out VSOutput
 	#endif
 } vsOut;
 
+#if VS_EXPAND == 0
+
+layout(location = 0) in vec2 a_st;
+layout(location = 1) in uvec4 a_c;
+layout(location = 2) in float a_q;
+layout(location = 3) in uvec2 a_p;
+layout(location = 4) in uint a_z;
+layout(location = 5) in uvec2 a_uv;
+layout(location = 6) in vec4 a_f;
+
 void main()
 {
 	// Clamp to max depth, gs doesn't wrap
-	float z = min(a_z, MaxDepth);
+	uint z = min(a_z, MaxDepth);
 
 	// pos -= 0.05 (1/320 pixel) helps avoiding rounding problems (integral part of pos is usually 5 digits, 0.05 is about as low as we can go)
 	// example: ceil(afterseveralvertextransformations(y = 133)) => 134 => line 133 stays empty
 	// input granularity is 1/16 pixel, anything smaller than that won't step drawing up/left by one pixel
 	// example: 133.0625 (133 + 1/16) should start from line 134, ceil(133.0625 - 0.05) still above 133
 
-	gl_Position = vec4(a_p, z, 1.0f) - vec4(0.05f, 0.05f, 0, 0);
+	gl_Position = vec4(a_p, float(z), 1.0f) - vec4(0.05f, 0.05f, 0, 0);
 	gl_Position.xy = gl_Position.xy * vec2(VertexScale.x, -VertexScale.y) - vec2(VertexOffset.x, -VertexOffset.y);
 	gl_Position.z *= exp2(-32.0f);		// integer->float depth
 	gl_Position.y = -gl_Position.y;
@@ -81,214 +79,149 @@ void main()
 		gl_PointSize = PointSize.x;
 	#endif
 
-	vsOut.c = a_c;
+	vsOut.c = vec4(a_c);
 	vsOut.t.z = a_f.r;
 }
 
-#endif
+#else // VS_EXPAND
 
-#ifdef GEOMETRY_SHADER
-
-layout(location = 0) in VSOutput
+struct RawVertex
 {
+	vec2 ST;
+	uint RGBA;
+	float Q;
+	uint XY;
+	uint Z;
+	uint UV;
+	uint FOG;
+};
+
+layout(std140, set = 0, binding = 2) readonly buffer VertexBuffer {
+	RawVertex vertex_buffer[];
+};
+
+struct ProcessedVertex
+{
+	vec4 p;
 	vec4 t;
 	vec4 ti;
-	#if GS_IIP != 0
-		vec4 c;
+	vec4 c;
+};
+
+ProcessedVertex load_vertex(uint index)
+{
+	RawVertex rvtx = vertex_buffer[gl_BaseVertexARB + index];
+
+	vec2 a_st = rvtx.ST;
+	uvec4 a_c = uvec4(rvtx.RGBA & 0xFFu, (rvtx.RGBA >> 8) & 0xFFu, (rvtx.RGBA >> 16) & 0xFFu, rvtx.RGBA >> 24);
+	float a_q = rvtx.Q;
+	uvec2 a_p = uvec2(rvtx.XY & 0xFFFFu, rvtx.XY >> 16);
+	uint a_z = rvtx.Z;
+	uvec2 a_uv = uvec2(rvtx.UV & 0xFFFFu, rvtx.UV >> 16);
+	vec4 a_f = unpackUnorm4x8(rvtx.FOG);
+
+	ProcessedVertex vtx;
+
+	uint z = min(a_z, MaxDepth);
+	vtx.p = vec4(a_p, float(z), 1.0f) - vec4(0.05f, 0.05f, 0, 0);
+	vtx.p.xy = vtx.p.xy * vec2(VertexScale.x, -VertexScale.y) - vec2(VertexOffset.x, -VertexOffset.y);
+	vtx.p.z *= exp2(-32.0f);		// integer->float depth
+	vtx.p.y = -vtx.p.y;
+
+	#if VS_TME
+		vec2 uv = a_uv - TextureOffset;
+		vec2 st = a_st - TextureOffset;
+		vtx.ti.xy = uv * TextureScale;
+
+		#if VS_FST
+			vtx.ti.zw = uv;
+		#else
+			vtx.ti.zw = st / TextureScale;
+		#endif
+
+		vtx.t.xy = st;
+		vtx.t.w = a_q;
 	#else
-		flat vec4 c;
+		vtx.t = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+		vtx.ti = vec4(0.0f);
 	#endif
-} gsIn[];
 
-layout(location = 0) out GSOutput
-{
-	vec4 t;
-	vec4 ti;
-	#if GS_IIP != 0
-		vec4 c;
-	#else
-		flat vec4 c;
-	#endif
-} gsOut;
+	vtx.c = a_c;
+	vtx.t.z = a_f.r;
 
-void WriteVertex(vec4 pos, vec4 t, vec4 ti, vec4 c)
-{
-#if GS_FORWARD_PRIMID
-	gl_PrimitiveID = gl_PrimitiveIDIn;
-#endif
-	gl_Position = pos;
-	gsOut.t = t;
-	gsOut.ti = ti;
-	gsOut.c = c;
-	EmitVertex();
+	return vtx;
 }
-
-//////////////////////////////////////////////////////////////////////
-// Geometry Shader
-//////////////////////////////////////////////////////////////////////
-
-#if GS_PRIM == 0 && GS_POINT == 0
-
-layout(points) in;
-layout(points, max_vertices = 1) out;
-void main()
-{
-	WriteVertex(gl_in[0].gl_Position, gsIn[0].t, gsIn[0].ti, gsIn[0].c);
-	EndPrimitive();
-}
-
-#elif GS_PRIM == 0 && GS_POINT == 1
-
-layout(points) in;
-layout(triangle_strip, max_vertices = 4) out;
 
 void main()
 {
-	// Transform a point to a NxN sprite
+	ProcessedVertex vtx;
+	uint vid = uint(gl_VertexIndex - gl_BaseVertexARB);
 
-	// Get new position
-	vec4 lt_p = gl_in[0].gl_Position;
-	vec4 rb_p = gl_in[0].gl_Position + vec4(PointSize.x, PointSize.y, 0.0f, 0.0f);
-	vec4 lb_p = rb_p;
-	vec4 rt_p = rb_p;
-	lb_p.x = lt_p.x;
-	rt_p.y = lt_p.y;
+#if VS_EXPAND == 1 // Point
 
-	WriteVertex(lt_p, gsIn[0].t, gsIn[0].ti, gsIn[0].c);
-	WriteVertex(lb_p, gsIn[0].t, gsIn[0].ti, gsIn[0].c);
-	WriteVertex(rt_p, gsIn[0].t, gsIn[0].ti, gsIn[0].c);
-	WriteVertex(rb_p, gsIn[0].t, gsIn[0].ti, gsIn[0].c);
+	vtx = load_vertex(vid >> 2);
 
-	EndPrimitive();
-}
+	vtx.p.x += ((vid & 1u) != 0u) ? PointSize.x : 0.0f; 
+	vtx.p.y += ((vid & 2u) != 0u) ? PointSize.y : 0.0f;
 
-#elif GS_PRIM == 1 && GS_LINE == 0
+#elif VS_EXPAND == 2 // Line
 
-layout(lines) in;
-layout(line_strip, max_vertices = 2) out;
+	uint vid_base = vid >> 2;
 
-void main()
-{
-#if GS_IIP == 0
-	WriteVertex(gl_in[0].gl_Position, gsIn[0].t, gsIn[0].ti, gsIn[1].c);
-	WriteVertex(gl_in[1].gl_Position, gsIn[1].t, gsIn[1].ti, gsIn[1].c);
+	bool is_bottom = (vid & 2u) != 0u;
+	bool is_right = (vid & 1u) != 0u;
+#ifdef VS_PROVOKING_VERTEX_LAST
+	uint vid_other = is_bottom ? vid_base - 1 : vid_base + 1;
 #else
-	WriteVertex(gl_in[0].gl_Position, gsIn[0].t, gsIn[0].ti, gsIn[0].c);
-	WriteVertex(gl_in[1].gl_Position, gsIn[1].t, gsIn[1].ti, gsIn[1].c);
+	uint vid_other = is_bottom ? vid_base + 1 : vid_base - 1;
 #endif
-	EndPrimitive();
-}
+	
+	vtx = load_vertex(vid_base);
+	ProcessedVertex other = load_vertex(vid_other);
 
-#elif GS_PRIM == 1 && GS_LINE == 1
-
-layout(lines) in;
-layout(triangle_strip, max_vertices = 4) out;
-
-void main()
-{
-	// Transform a line to a thick line-sprite
-	vec4 left_t = gsIn[0].t;
-	vec4 left_ti = gsIn[0].ti;
-	vec4 left_c = gsIn[0].c;
-	vec4 right_t = gsIn[1].t;
-	vec4 right_ti = gsIn[1].ti;
-	vec4 right_c = gsIn[1].c;
-	vec4 lt_p = gl_in[0].gl_Position;
-	vec4 rt_p = gl_in[1].gl_Position;
-
-	// Potentially there is faster math
-	vec2 line_vector = normalize(rt_p.xy - lt_p.xy);
+	vec2 line_vector = normalize(vtx.p.xy - other.p.xy);
 	vec2 line_normal = vec2(line_vector.y, -line_vector.x);
-	vec2 line_width = (line_normal * PointSize) / 2.0;
+	vec2 line_width = (line_normal * PointSize) / 2;
+	// line_normal is inverted for bottom point
+	vec2 offset = ((uint(is_bottom) ^ uint(is_right)) != 0u) ? line_width : -line_width;
+	vtx.p.xy += offset;
 
-	lt_p.xy -= line_width;
-	rt_p.xy -= line_width;
-	vec4 lb_p = gl_in[0].gl_Position + vec4(line_width, 0.0, 0.0);
-	vec4 rb_p = gl_in[1].gl_Position + vec4(line_width, 0.0, 0.0);
+	// Lines will be run as (0 1 2) (1 2 3)
+	// This means that both triangles will have a point based off the top line point as their first point
+	// So we don't have to do anything for !IIP
 
-	#if GS_IIP == 0
-	left_c = right_c;
-	#endif
+#elif VS_EXPAND == 3 // Sprite
 
-	WriteVertex(lt_p, left_t, left_ti, left_c);
-	WriteVertex(lb_p, left_t, left_ti, left_c);
-	WriteVertex(rt_p, right_t, right_ti, right_c);
-	WriteVertex(rb_p, right_t, right_ti, right_c);
-	EndPrimitive();
-}
+	// Sprite points are always in pairs
+	uint vid_base = vid >> 1;
+	uint vid_lt = vid_base & ~1u;
+	uint vid_rb = vid_base | 1u;
 
-#elif GS_PRIM == 2
+	ProcessedVertex lt = load_vertex(vid_lt);
+	ProcessedVertex rb = load_vertex(vid_rb);
+	vtx = rb;
 
-layout(triangles) in;
-layout(triangle_strip, max_vertices = 3) out;
+	bool is_right = ((vid & 1u) != 0u);
+	vtx.p.x = is_right ? lt.p.x : vtx.p.x;
+	vtx.t.x = is_right ? lt.t.x : vtx.t.x;
+	vtx.ti.xz = is_right ? lt.ti.xz : vtx.ti.xz;
 
-void main()
-{
-	#if GS_IIP == 0
-	WriteVertex(gl_in[0].gl_Position, gsIn[0].t, gsIn[0].ti, gsIn[2].c);
-	WriteVertex(gl_in[1].gl_Position, gsIn[1].t, gsIn[1].ti, gsIn[2].c);
-	WriteVertex(gl_in[2].gl_Position, gsIn[2].t, gsIn[2].ti, gsIn[2].c);
-	#else
-	WriteVertex(gl_in[0].gl_Position, gsIn[0].t, gsIn[0].ti, gsIn[0].c);
-	WriteVertex(gl_in[1].gl_Position, gsIn[1].t, gsIn[1].ti, gsIn[0].c);
-	WriteVertex(gl_in[2].gl_Position, gsIn[2].t, gsIn[2].ti, gsIn[0].c);
-	#endif
-
-	EndPrimitive();
-}
-
-#elif GS_PRIM == 3
-
-layout(lines) in;
-layout(triangle_strip, max_vertices = 4) out;
-
-void main()
-{
-	vec4 lt_p = gl_in[0].gl_Position;
-	vec4 lt_t = gsIn[0].t;
-	vec4 lt_ti = gsIn[0].ti;
-	vec4 lt_c = gsIn[0].c;
-	vec4 rb_p = gl_in[1].gl_Position;
-	vec4 rb_t = gsIn[1].t;
-	vec4 rb_ti = gsIn[1].ti;
-	vec4 rb_c = gsIn[1].c;
-
-	// flat depth
-	lt_p.z = rb_p.z;
-	// flat fog and texture perspective
-	lt_t.zw = rb_t.zw;
-
-	// flat color
-	lt_c = rb_c;
-
-	// Swap texture and position coordinate
-	vec4 lb_p = rb_p;
-	vec4 lb_t = rb_t;
-	vec4 lb_ti = rb_ti;
-	vec4 lb_c = rb_c;
-	lb_p.x = lt_p.x;
-	lb_t.x = lt_t.x;
-	lb_ti.x = lt_ti.x;
-	lb_ti.z = lt_ti.z;
-
-	vec4 rt_p = rb_p;
-	vec4 rt_t = rb_t;
-	vec4 rt_ti = rb_ti;
-	vec4 rt_c = rb_c;
-	rt_p.y = lt_p.y;
-	rt_t.y = lt_t.y;
-	rt_ti.y = lt_ti.y;
-	rt_ti.w = lt_ti.w;
-
-	WriteVertex(lt_p, lt_t, lt_ti, lt_c);
-	WriteVertex(lb_p, lb_t, lb_ti, lb_c);
-	WriteVertex(rt_p, rt_t, rt_ti, rt_c);
-	WriteVertex(rb_p, rb_t, rb_ti, rb_c);
-	EndPrimitive();
-}
+	bool is_bottom = ((vid & 2u) != 0u);
+	vtx.p.y = is_bottom ? lt.p.y : vtx.p.y;
+	vtx.t.y = is_bottom ? lt.t.y : vtx.t.y;
+	vtx.ti.yw = is_bottom ? lt.ti.yw : vtx.ti.yw;
 
 #endif
-#endif
+
+	gl_Position = vtx.p;
+	vsOut.t = vtx.t;
+	vsOut.ti = vtx.ti;
+	vsOut.c = vtx.c;
+}
+
+#endif // VS_EXPAND
+
+#endif // VERTEX_SHADER
 
 #ifdef FRAGMENT_SHADER
 

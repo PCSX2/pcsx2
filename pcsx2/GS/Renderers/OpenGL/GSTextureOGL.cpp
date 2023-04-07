@@ -94,7 +94,7 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 		// Depth buffer
 		case Format::DepthStencil:
 		{
-			if (!GLLoader::found_framebuffer_fetch)
+			if (!g_gs_device->Features().framebuffer_fetch)
 			{
 				gl_fmt = GL_DEPTH32F_STENCIL8;
 				m_int_format = GL_DEPTH_STENCIL;

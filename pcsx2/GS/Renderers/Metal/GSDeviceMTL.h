@@ -281,7 +281,7 @@ public:
 	MRCOwned<id<MTLDepthStencilState>> m_dss_stencil_write;
 	MRCOwned<id<MTLDepthStencilState>> m_dss_hw[1 << 5];
 
-	MRCOwned<id<MTLBuffer>> m_texture_download_buf;
+	MRCOwned<id<MTLBuffer>> m_expand_index_buffer;
 	UploadBuffer m_texture_upload_buf;
 	BufferPair m_vertex_upload_buf;
 
