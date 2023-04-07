@@ -116,15 +116,6 @@ namespace GLLoader
 	bool buggy_pbo = false;
 	bool disable_download_pbo = false;
 
-	bool is_gles = false;
-	bool has_dual_source_blend = false;
-	bool has_clip_control = true;
-	bool found_framebuffer_fetch = false;
-	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
-	// DX11 GPU
-	bool found_GL_ARB_gpu_shader5 = false; // Require IvyBridge
-	bool found_GL_ARB_texture_barrier = false;
-
 	static bool check_gl_version()
 	{
 		const char* vendor = (const char*)glGetString(GL_VENDOR);
@@ -134,13 +125,6 @@ namespace GLLoader
 			vendor_id_nvidia = true;
 		else if (strstr(vendor, "Intel"))
 			vendor_id_intel = true;
-
-		if (GSConfig.OverrideGeometryShaders != -1)
-		{
-			found_geometry_shader = GSConfig.OverrideGeometryShaders != 0 &&
-									(GLAD_GL_VERSION_3_2 || GL_ARB_geometry_shader4 || GSConfig.OverrideGeometryShaders == 1);
-			Console.Warning("Overriding geometry shaders detection to %s", found_geometry_shader ? "true" : "false");
-		}
 
 		GLint major_gl = 0;
 		GLint minor_gl = 0;
@@ -157,30 +141,11 @@ namespace GLLoader
 
 	static bool check_gl_supported_extension()
 	{
-		if (GLAD_GL_VERSION_3_3 && !GLAD_GL_ARB_shading_language_420pack)
+		if (!GLAD_GL_ARB_shading_language_420pack)
 		{
 			Host::ReportFormattedErrorAsync("GS",
 				"GL_ARB_shading_language_420pack is not supported, this is required for the OpenGL renderer.");
 			return false;
-		}
-
-		// GLES doesn't have ARB_clip_control.
-		has_clip_control = GLAD_GL_ARB_clip_control;
-		if (!has_clip_control && !is_gles)
-		{
-			Host::AddOSDMessage("GL_ARB_clip_control is not supported, this will cause rendering issues.",
-				Host::OSD_ERROR_DURATION);
-		}
-
-		found_GL_ARB_gpu_shader5 = GLAD_GL_ARB_gpu_shader5;
-		found_GL_ARB_texture_barrier = GLAD_GL_ARB_texture_barrier;
-
-		has_dual_source_blend = GLAD_GL_VERSION_3_2 || GLAD_GL_ARB_blend_func_extended;
-		found_framebuffer_fetch = GLAD_GL_EXT_shader_framebuffer_fetch || GLAD_GL_ARM_shader_framebuffer_fetch;
-		if (found_framebuffer_fetch && GSConfig.DisableFramebufferFetch)
-		{
-			Console.Warning("Framebuffer fetch was found but is disabled. This will reduce performance.");
-			found_framebuffer_fetch = false;
 		}
 
 		if (!GLAD_GL_ARB_viewport_array)
@@ -201,21 +166,6 @@ namespace GLLoader
 		{
 			Console.Warning("GL_ARB_direct_state_access is not supported, this will reduce performance.");
 			Emulate_DSA::Init();
-		}
-
-		if (is_gles)
-		{
-			has_dual_source_blend = GLAD_GL_EXT_blend_func_extended || GLAD_GL_ARB_blend_func_extended;
-			if (!has_dual_source_blend && !found_framebuffer_fetch)
-			{
-				Host::AddOSDMessage("Both dual source blending and framebuffer fetch are missing, things will be broken.",
-					Host::OSD_ERROR_DURATION);
-			}
-		}
-		else
-		{
-			// Core in GL3.2, so everything supports it.
-			has_dual_source_blend = true;
 		}
 
 		// Don't use PBOs when we don't have ARB_buffer_storage, orphaning buffers probably ends up worse than just

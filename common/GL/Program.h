@@ -34,8 +34,7 @@ namespace GL
 
 		bool IsValid() const { return m_program_id != 0; }
 
-		bool Compile(const std::string_view vertex_shader, const std::string_view geometry_shader,
-			const std::string_view fragment_shader);
+		bool Compile(const std::string_view vertex_shader, const std::string_view fragment_shader);
 
 		bool CompileCompute(const std::string_view glsl);
 
@@ -99,7 +98,6 @@ namespace GL
 
 		GLuint m_program_id = 0;
 		GLuint m_vertex_shader_id = 0;
-		GLuint m_geometry_shader_id = 0;
 		GLuint m_fragment_shader_id = 0;
 
 		std::vector<GLint> m_uniform_locations;

@@ -168,7 +168,7 @@ public:
 	float GetUpscaleMultiplier() override;
 	void Lines2Sprites();
 	bool VerifyIndices();
-	template <GSHWDrawConfig::VSExpand Expand> void ExpandIndices();
+	void ExpandLineIndices();
 	void ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba);
 	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
 	GSVector4i ComputeBoundingBox(const GSVector2i& rtsize, float rtscale);

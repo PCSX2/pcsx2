@@ -235,13 +235,6 @@ struct alignas(16) GSHWDrawConfig
 		Line,
 		Triangle,
 	};
-	enum class GSTopology: u8
-	{
-		Point,
-		Line,
-		Triangle,
-		Sprite,
-	};
 	enum class VSExpand: u8
 	{
 		None,
@@ -250,22 +243,6 @@ struct alignas(16) GSHWDrawConfig
 		Sprite,
 	};
 #pragma pack(push, 1)
-	struct GSSelector
-	{
-		union
-		{
-			struct
-			{
-				GSTopology topology : 2;
-				bool expand : 1;
-				bool iip : 1;
-				bool forward_primid : 1;
-			};
-			u8 key;
-		};
-		GSSelector(): key(0) {}
-		GSSelector(u8 k): key(k) {}
-	};
 	struct VSSelector
 	{
 		union
@@ -275,7 +252,7 @@ struct alignas(16) GSHWDrawConfig
 				u8 fst : 1;
 				u8 tme : 1;
 				u8 iip : 1;
-				u8 point_size : 1;		///< Set when points need to be expanded without geometry shader.
+				u8 point_size : 1;		///< Set when points need to be expanded without VS expanding.
 				VSExpand expand : 2;
 				u8 _free : 2;
 			};
@@ -283,6 +260,9 @@ struct alignas(16) GSHWDrawConfig
 		};
 		VSSelector(): key(0) {}
 		VSSelector(u8 k): key(k) {}
+
+		/// Returns true if the fixed index buffer should be used.
+		__fi bool UseExpandIndexBuffer() const { return (expand == VSExpand::Point || expand == VSExpand::Sprite); }
 	};
 #pragma pack(pop)
 #pragma pack(push, 4)
@@ -657,7 +637,6 @@ struct alignas(16) GSHWDrawConfig
 	Topology topology;  ///< Draw topology
 
 	alignas(8) PSSelector ps;
-	GSSelector gs;
 	VSSelector vs;
 
 	BlendState blend;
@@ -713,13 +692,12 @@ public:
 	struct FeatureSupport
 	{
 		bool broken_point_sampler : 1; ///< Issue with AMD cards, see tfx shader for details
-		bool geometry_shader      : 1; ///< Supports geometry shader
 		bool vs_expand            : 1; ///< Supports expanding points/lines/sprites in the vertex shader
 		bool primitive_id         : 1; ///< Supports primitive ID for use with prim tracking destination alpha algorithm
 		bool texture_barrier      : 1; ///< Supports sampling rt and hopefully texture barrier
 		bool provoking_vertex_last: 1; ///< Supports using the last vertex in a primitive as the value for flat shading.
-		bool point_expand         : 1; ///< Supports point expansion in hardware without using geometry shaders.
-		bool line_expand          : 1; ///< Supports line expansion in hardware without using geometry shaders.
+		bool point_expand         : 1; ///< Supports point expansion in hardware.
+		bool line_expand          : 1; ///< Supports line expansion in hardware.
 		bool prefer_new_textures  : 1; ///< Allocate textures up to the pool size before reusing them, to avoid render pass restarts.
 		bool dxt_textures         : 1; ///< Supports DXTn texture compression, i.e. S3TC and BC1-3.
 		bool bptc_textures        : 1; ///< Supports BC6/7 texture compression.
@@ -771,6 +749,7 @@ protected:
 	static constexpr float MAD_SENSITIVITY = 0.08f;
 	static constexpr u32   MAX_POOLED_TEXTURES = 300;
 	static constexpr u32   NUM_CAS_CONSTANTS = 12; // 8 plus src offset x/y, 16 byte alignment
+	static constexpr u32   EXPAND_BUFFER_SIZE = sizeof(u32) * std::numeric_limits<u16>::max() * 6;
 
 	WindowInfo m_window_info;
 	VsyncMode m_vsync_mode = VsyncMode::Off;
@@ -823,6 +802,9 @@ public:
 
 	/// Converts a fullscreen mode to a string.
 	static std::string GetFullscreenModeString(u32 width, u32 height, float refresh_rate);
+
+	/// Generates a fixed index buffer for expanding points and sprites. Buffer is assumed to be at least EXPAND_BUFFER_SIZE in size.
+	static void GenerateExpansionIndexBuffer(void* buffer);
 
 	__fi unsigned int GetFrameNumber() const { return m_frame; }
 	__fi u64 GetPoolMemoryUsage() const { return m_pool_memory_usage; }

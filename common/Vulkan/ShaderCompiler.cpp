@@ -154,11 +154,6 @@ namespace Vulkan::ShaderCompiler
 		return CompileShaderToSPV(EShLangVertex, "vs", source_code, debug);
 	}
 
-	std::optional<SPIRVCodeVector> CompileGeometryShader(std::string_view source_code, bool debug)
-	{
-		return CompileShaderToSPV(EShLangGeometry, "gs", source_code, debug);
-	}
-
 	std::optional<SPIRVCodeVector> CompileFragmentShader(std::string_view source_code, bool debug)
 	{
 		return CompileShaderToSPV(EShLangFragment, "ps", source_code, debug);
@@ -175,9 +170,6 @@ namespace Vulkan::ShaderCompiler
 		{
 			case Type::Vertex:
 				return CompileShaderToSPV(EShLangVertex, "vs", source_code, debug);
-
-			case Type::Geometry:
-				return CompileShaderToSPV(EShLangGeometry, "gs", source_code, debug);
 
 			case Type::Fragment:
 				return CompileShaderToSPV(EShLangFragment, "ps", source_code, debug);

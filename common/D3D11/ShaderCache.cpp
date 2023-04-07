@@ -337,16 +337,6 @@ bool D3D11::ShaderCache::GetVertexShaderAndInputLayout(ID3D11Device* device,
 	return true;
 }
 
-wil::com_ptr_nothrow<ID3D11GeometryShader> D3D11::ShaderCache::GetGeometryShader(ID3D11Device* device,
-	const std::string_view& shader_code, const D3D_SHADER_MACRO* macros /* = nullptr */, const char* entry_point /* = "main" */)
-{
-	wil::com_ptr_nothrow<ID3DBlob> blob = GetShaderBlob(ShaderCompiler::Type::Geometry, shader_code, macros, entry_point);
-	if (!blob)
-		return {};
-
-	return D3D11::ShaderCompiler::CreateGeometryShader(device, blob.get());
-}
-
 wil::com_ptr_nothrow<ID3D11PixelShader> D3D11::ShaderCache::GetPixelShader(ID3D11Device* device,
 	const std::string_view& shader_code, const D3D_SHADER_MACRO* macros /* = nullptr */, const char* entry_point /* = "main" */)
 {

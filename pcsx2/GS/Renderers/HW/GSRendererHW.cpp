@@ -249,6 +249,7 @@ void GSRendererHW::Lines2Sprites()
 	}
 
 	// assume vertices are tightly packed and sequentially indexed (it should be the case)
+	const bool predivide_q = PRIM->TME && !PRIM->FST && m_vt.m_accurate_stq;
 
 	if (m_vertex.next >= 2)
 	{
@@ -275,7 +276,7 @@ void GSRendererHW::Lines2Sprites()
 			v0.XYZ.Z = v1.XYZ.Z;
 			v0.FOG = v1.FOG;
 
-			if (PRIM->TME && !PRIM->FST)
+			if (predivide_q)
 			{
 				const GSVector4 st0 = GSVector4::loadl(&v0.ST.U64);
 				const GSVector4 st1 = GSVector4::loadl(&v1.ST.U64);
@@ -319,65 +320,28 @@ void GSRendererHW::Lines2Sprites()
 	}
 }
 
-template <GSHWDrawConfig::VSExpand Expand>
-void GSRendererHW::ExpandIndices()
+void GSRendererHW::ExpandLineIndices()
 {
-	u32 process_count = (m_index.tail + 3) / 4 * 4;
-	if (Expand == GSHWDrawConfig::VSExpand::Point)
-	{
-		// Make sure we have space for writing off the end slightly
-		while (process_count > m_vertex.maxcount)
-			GrowVertexBuffer();
-	}
-
-	u32 expansion_factor = Expand == GSHWDrawConfig::VSExpand::Point ? 6 : 3;
+	const u32 process_count = (m_index.tail + 3) / 4 * 4;
+	const u32 expansion_factor = 3;
 	m_index.tail *= expansion_factor;
 	GSVector4i* end = reinterpret_cast<GSVector4i*>(m_index.buff);
 	GSVector4i* read = reinterpret_cast<GSVector4i*>(m_index.buff + process_count);
 	GSVector4i* write = reinterpret_cast<GSVector4i*>(m_index.buff + process_count * expansion_factor);
+
+	constexpr GSVector4i low0 = GSVector4i::cxpr(0, 1, 2, 1);
+	constexpr GSVector4i low1 = GSVector4i::cxpr(2, 3, 0, 1);
+	constexpr GSVector4i low2 = GSVector4i::cxpr(2, 1, 2, 3);
+
 	while (read > end)
 	{
 		read -= 1;
 		write -= expansion_factor;
-		switch (Expand)
-		{
-			case GSHWDrawConfig::VSExpand::None:
-				break;
-			case GSHWDrawConfig::VSExpand::Point:
-			{
-				constexpr GSVector4i low0 = GSVector4i::cxpr(0, 1, 2, 1);
-				constexpr GSVector4i low1 = GSVector4i::cxpr(2, 3, 0, 1);
-				constexpr GSVector4i low2 = GSVector4i::cxpr(2, 1, 2, 3);
-				const GSVector4i in = read->sll32(2);
-				write[0] = in.xxxx() | low0;
-				write[1] = in.xxyy() | low1;
-				write[2] = in.yyyy() | low2;
-				write[3] = in.zzzz() | low0;
-				write[4] = in.zzww() | low1;
-				write[5] = in.wwww() | low2;
-				break;
-			}
-			case GSHWDrawConfig::VSExpand::Line:
-			{
-				constexpr GSVector4i low0 = GSVector4i::cxpr(0, 1, 2, 1);
-				constexpr GSVector4i low1 = GSVector4i::cxpr(2, 3, 0, 1);
-				constexpr GSVector4i low2 = GSVector4i::cxpr(2, 1, 2, 3);
-				const GSVector4i in = read->sll32(2);
-				write[0] = in.xxyx() | low0;
-				write[1] = in.yyzz() | low1;
-				write[2] = in.wzww() | low2;
-				break;
-			}
-			case GSHWDrawConfig::VSExpand::Sprite:
-			{
-				constexpr GSVector4i low = GSVector4i::cxpr(0, 1, 0, 1);
-				const GSVector4i in = read->sll32(1);
-				write[0] = in.xxyx() | low;
-				write[1] = in.yyzz() | low;
-				write[2] = in.wzww() | low;
-				break;
-			}
-		}
+
+		const GSVector4i in = read->sll32(2);
+		write[0] = in.xxyx() | low0;
+		write[1] = in.yyzz() | low1;
+		write[2] = in.wzww() | low2;
 	}
 }
 
@@ -2453,110 +2417,90 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy)
 	switch (m_vt.m_primclass)
 	{
 		case GS_POINT_CLASS:
-			m_conf.gs.topology = GSHWDrawConfig::GSTopology::Point;
-			m_conf.topology = GSHWDrawConfig::Topology::Point;
-			m_conf.indices_per_prim = 1;
-			if (unscale_pt_ln)
 			{
-				if (features.point_expand)
+				m_conf.topology = GSHWDrawConfig::Topology::Point;
+				m_conf.indices_per_prim = 1;
+				if (unscale_pt_ln)
 				{
+					if (features.point_expand)
+					{
+						m_conf.vs.point_size = true;
+						m_conf.cb_vs.point_size = GSVector2(target_scale);
+					}
+					else if (features.vs_expand)
+					{
+						m_conf.vs.expand = GSHWDrawConfig::VSExpand::Point;
+						m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
+						m_conf.topology = GSHWDrawConfig::Topology::Triangle;
+						m_conf.verts = m_vertex.buff;
+						m_conf.nverts = m_vertex.next;
+						m_conf.nindices = m_index.tail * 6;
+						m_conf.indices_per_prim = 6;
+						return;
+					}
+				}
+				else
+				{
+					// Vulkan/GL still need to set point size.
+					m_conf.cb_vs.point_size = target_scale;
+
+					// M1 requires point size output on *all* points.
 					m_conf.vs.point_size = true;
-					m_conf.cb_vs.point_size = GSVector2(target_scale);
 				}
-				else if (features.geometry_shader)
-				{
-					m_conf.gs.expand = true;
-					m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
-				}
-				else if (features.vs_expand)
-				{
-					m_conf.vs.expand = GSHWDrawConfig::VSExpand::Point;
-					m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
-					m_conf.topology = GSHWDrawConfig::Topology::Triangle;
-					m_conf.indices_per_prim = 6;
-					ExpandIndices<GSHWDrawConfig::VSExpand::Point>();
-				}
-			}
-			else
-			{
-				// Vulkan/GL still need to set point size.
-				m_conf.cb_vs.point_size = target_scale;
 			}
 			break;
 
 		case GS_LINE_CLASS:
-			m_conf.gs.topology = GSHWDrawConfig::GSTopology::Line;
-			m_conf.topology = GSHWDrawConfig::Topology::Line;
-			m_conf.indices_per_prim = 2;
-			if (unscale_pt_ln)
 			{
-				if (features.line_expand)
+				m_conf.topology = GSHWDrawConfig::Topology::Line;
+				m_conf.indices_per_prim = 2;
+				if (unscale_pt_ln)
 				{
-					m_conf.line_expand = true;
-				}
-				else if (features.geometry_shader)
-				{
-					m_conf.gs.expand = true;
-					m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
-				}
-				else if (features.vs_expand)
-				{
-					m_conf.vs.expand = GSHWDrawConfig::VSExpand::Line;
-					m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
-					m_conf.topology = GSHWDrawConfig::Topology::Triangle;
-					m_conf.indices_per_prim = 6;
-					ExpandIndices<GSHWDrawConfig::VSExpand::Line>();
+					if (features.line_expand)
+					{
+						m_conf.line_expand = true;
+					}
+					else if (features.vs_expand)
+					{
+						m_conf.vs.expand = GSHWDrawConfig::VSExpand::Line;
+						m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
+						m_conf.topology = GSHWDrawConfig::Topology::Triangle;
+						m_conf.indices_per_prim = 6;
+						ExpandLineIndices();
+					}
 				}
 			}
 			break;
 
 		case GS_SPRITE_CLASS:
-			// Heuristics: trade-off
-			// Lines: GPU conversion => ofc, more GPU. And also more CPU due to extra shader validation stage.
-			// Triangles: CPU conversion => ofc, more CPU ;) more bandwidth (72 bytes / sprite)
-			//
-			// Note: severals openGL operation does draw call under the wood like texture upload. So even if
-			// you do 10 consecutive draw with the geometry shader, you will still pay extra validation if new
-			// texture are uploaded. (game Shadow Hearts)
-			//
-			// Note2: Due to MultiThreaded driver, Nvidia suffers less of the previous issue. Still it isn't free
-			// Shadow Heart is 90 fps (gs) vs 113 fps (no gs)
-			//
-			// Note3: Some GPUs (Happens on GT 750m, not on Intel 5200) don't properly divide by large floats (e.g. FLT_MAX/FLT_MAX == 0)
-			// Lines2Sprites predivides by Q, avoiding this issue, so always use it if m_vt.m_accurate_stq
-
-			// If the draw calls contains few primitives. Geometry Shader gain with be rather small versus
-			// the extra validation cost of the extra stage.
-			//
-			// Note: keep Geometry Shader in the replayer to ease debug.
-			if (g_gs_device->Features().geometry_shader && !m_vt.m_accurate_stq && m_vertex.next > 32) // <=> 16 sprites (based on Shadow Hearts)
 			{
-				m_conf.gs.expand = true;
+				// Need to pre-divide ST by Q if Q is very large, to avoid precision issues on some GPUs.
+				// May as well just expand the whole thing out with the CPU path in such a case.
+				if (features.vs_expand && !m_vt.m_accurate_stq)
+				{
+					m_conf.topology = GSHWDrawConfig::Topology::Triangle;
+					m_conf.vs.expand = GSHWDrawConfig::VSExpand::Sprite;
+					m_conf.verts = m_vertex.buff;
+					m_conf.nverts = m_vertex.next;
+					m_conf.nindices = m_index.tail * 3;
+					m_conf.indices_per_prim = 6;
+					return;
+				}
+				else
+				{
+					Lines2Sprites();
 
-				m_conf.topology = GSHWDrawConfig::Topology::Line;
-				m_conf.indices_per_prim = 2;
+					m_conf.topology = GSHWDrawConfig::Topology::Triangle;
+					m_conf.indices_per_prim = 6;
+				}
 			}
-			else if (features.vs_expand && !m_vt.m_accurate_stq)
-			{
-				m_conf.topology = GSHWDrawConfig::Topology::Triangle;
-				m_conf.vs.expand = GSHWDrawConfig::VSExpand::Sprite;
-				m_conf.indices_per_prim = 6;
-				ExpandIndices<GSHWDrawConfig::VSExpand::Sprite>();
-			}
-			else
-			{
-				Lines2Sprites();
-
-				m_conf.topology = GSHWDrawConfig::Topology::Triangle;
-				m_conf.indices_per_prim = 6;
-			}
-			m_conf.gs.topology = GSHWDrawConfig::GSTopology::Sprite;
 			break;
 
 		case GS_TRIANGLE_CLASS:
-			m_conf.gs.topology = GSHWDrawConfig::GSTopology::Triangle;
-			m_conf.topology = GSHWDrawConfig::Topology::Triangle;
-			m_conf.indices_per_prim = 3;
+			{
+				m_conf.topology = GSHWDrawConfig::Topology::Triangle;
+				m_conf.indices_per_prim = 3;
+			}
 			break;
 
 		default:
@@ -4443,7 +4387,6 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	// GS_SPRITE_CLASS are already flat (either by CPU or the GS)
 	m_conf.ps.iip = (m_vt.m_primclass == GS_SPRITE_CLASS) ? 0 : PRIM->IIP;
-	m_conf.gs.iip = m_conf.ps.iip;
 	m_conf.vs.iip = m_conf.ps.iip;
 
 	if (DATE_BARRIER)
@@ -4463,7 +4406,6 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	else if (DATE_PRIMID)
 	{
 		m_conf.ps.date = 1 + m_cached_ctx.TEST.DATM;
-		m_conf.gs.forward_primid = 1;
 	}
 	else if (DATE)
 	{

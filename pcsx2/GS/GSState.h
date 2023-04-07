@@ -278,6 +278,7 @@ public:
 		AUTOFLUSH = 1 << 11,
 		VSYNC  = 1 << 12,
 		GSREOPEN = 1 << 13,
+		VERTEXCOUNT = 1 << 14,
 	};
 
 	GSFlushReason m_state_flush_reason = UNKNOWN;

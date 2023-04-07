@@ -34,7 +34,6 @@ class GSDevice11 final : public GSDevice
 {
 public:
 	using VSSelector = GSHWDrawConfig::VSSelector;
-	using GSSelector = GSHWDrawConfig::GSSelector;
 	using PSSelector = GSHWDrawConfig::PSSelector;
 	using PSSamplerSelector = GSHWDrawConfig::SamplerSelector;
 	using OMDepthStencilSelector = GSHWDrawConfig::DepthStencilSelector;
@@ -150,8 +149,12 @@ private:
 
 	wil::com_ptr_nothrow<ID3D11Buffer> m_vb;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_ib;
+	wil::com_ptr_nothrow<ID3D11Buffer> m_expand_vb;
+	wil::com_ptr_nothrow<ID3D11Buffer> m_expand_ib;
+	wil::com_ptr_nothrow<ID3D11ShaderResourceView> m_expand_vb_srv;
 	u32 m_vb_pos = 0; // bytes
 	u32 m_ib_pos = 0; // indices/sizeof(u32)
+	u32 m_structured_vb_pos = 0; // bytes
 	int m_d3d_texsize = 0;
 
 	bool m_allow_tearing_supported = false;
@@ -162,10 +165,9 @@ private:
 	{
 		ID3D11InputLayout* layout;
 		D3D11_PRIMITIVE_TOPOLOGY topology;
+		ID3D11Buffer* index_buffer;
 		ID3D11VertexShader* vs;
 		ID3D11Buffer* vs_cb;
-		ID3D11GeometryShader* gs;
-		ID3D11Buffer* gs_cb;
 		std::array<ID3D11ShaderResourceView*, MAX_TEXTURES> ps_sr_views;
 		ID3D11PixelShader* ps;
 		ID3D11Buffer* ps_cb;
@@ -339,16 +341,17 @@ public:
 	void* IAMapVertexBuffer(u32 stride, u32 count);
 	void IAUnmapVertexBuffer(u32 stride, u32 count);
 	bool IASetVertexBuffer(const void* vertex, u32 stride, u32 count);
+	bool IASetExpandVertexBuffer(const void* vertex, u32 stride, u32 count);
 
 	u32* IAMapIndexBuffer(u32 count);
 	void IAUnmapIndexBuffer(u32 count);
 	bool IASetIndexBuffer(const void* index, u32 count);
+	void IASetIndexBuffer(ID3D11Buffer* buffer);
 
 	void IASetInputLayout(ID3D11InputLayout* layout);
 	void IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY topology);
 
 	void VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb);
-	void GSSetShader(ID3D11GeometryShader* gs, ID3D11Buffer* gs_cb = nullptr);
 
 	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1);
 	void PSSetShaderResource(int i, GSTexture* sr);
@@ -364,7 +367,6 @@ public:
 
 	bool CreateTextureFX();
 	void SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer* cb);
-	void SetupGS(GSSelector sel);
 	void SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel);
 	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 afix);
 

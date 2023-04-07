@@ -2609,7 +2609,6 @@ bool GSTextureCache::ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx
 	config.vs.tme = true;
 	config.vs.iip = true;
 	config.vs.fst = true;
-	config.gs.key = 0;
 	config.ps.key_lo = 0;
 	config.ps.key_hi = 0;
 	config.ps.read_ba = read_ba;

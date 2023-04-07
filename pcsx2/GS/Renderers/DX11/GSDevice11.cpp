@@ -53,7 +53,6 @@ GSDevice11::GSDevice11()
 	m_state.topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 	m_state.bf = -1;
 
-	m_features.geometry_shader = true;
 	m_features.primitive_id = true;
 	m_features.texture_barrier = false;
 	m_features.provoking_vertex_last = false;
@@ -365,7 +364,46 @@ bool GSDevice11::Create(const WindowInfo& wi, VsyncMode vsync)
 		Console.Error("Failed to create index buffer.");
 		return false;
 	}
-	m_ctx->IASetIndexBuffer(m_ib.get(), DXGI_FORMAT_R32_UINT, 0);
+	IASetIndexBuffer(m_ib.get());
+
+	if (m_features.vs_expand)
+	{
+		bd.ByteWidth = VERTEX_BUFFER_SIZE;
+		bd.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		bd.StructureByteStride = sizeof(GSVertex);
+		bd.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+
+		if (FAILED(m_dev->CreateBuffer(&bd, nullptr, m_expand_vb.put())))
+		{
+			Console.Error("Failed to create expand vertex buffer.");
+			return false;
+		}
+
+		const CD3D11_SHADER_RESOURCE_VIEW_DESC vb_srv_desc(
+			D3D11_SRV_DIMENSION_BUFFER, DXGI_FORMAT_UNKNOWN, 0, VERTEX_BUFFER_SIZE / sizeof(GSVertex));
+		if (FAILED(m_dev->CreateShaderResourceView(m_expand_vb.get(), &vb_srv_desc, m_expand_vb_srv.put())))
+		{
+			Console.Error("Failed to create expand vertex buffer SRV.");
+			return false;
+		}
+
+		m_ctx->VSSetShaderResources(0, 1, m_expand_vb_srv.addressof());
+
+		bd.ByteWidth = EXPAND_BUFFER_SIZE;
+		bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		bd.StructureByteStride = 0;
+		bd.MiscFlags = 0;
+
+		std::unique_ptr<u8[]> expand_data = std::make_unique<u8[]>(EXPAND_BUFFER_SIZE);
+		GenerateExpansionIndexBuffer(expand_data.get());
+
+		const D3D11_SUBRESOURCE_DATA srd = {expand_data.get()};
+		if (FAILED(m_dev->CreateBuffer(&bd, &srd, m_expand_ib.put())))
+		{
+			Console.Error("Failed to create expand index buffer.");
+			return false;
+		}
+	}
 
 	//
 
@@ -466,6 +504,9 @@ void GSDevice11::Destroy()
 
 	m_vb.reset();
 	m_ib.reset();
+	m_expand_vb_srv.reset();
+	m_expand_vb.reset();
+	m_expand_ib.reset();
 
 	m_vs.clear();
 	m_vs_cb.reset();
@@ -508,6 +549,9 @@ void GSDevice11::SetFeatures()
 							  SupportsTextureFormat(m_dev.get(), DXGI_FORMAT_BC3_UNORM);
 
 	m_features.bptc_textures = SupportsTextureFormat(m_dev.get(), DXGI_FORMAT_BC7_UNORM);
+
+	const D3D_FEATURE_LEVEL feature_level = m_dev->GetFeatureLevel();
+	m_features.vs_expand = (feature_level >= D3D_FEATURE_LEVEL_11_0);
 }
 
 bool GSDevice11::HasSurface() const
@@ -1234,11 +1278,6 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	VSSetShader(m_convert.vs.get(), nullptr);
 
 
-	// gs
-
-	GSSetShader(nullptr, nullptr);
-
-
 	// ps
 
 	PSSetShaderResources(sTex, nullptr);
@@ -1307,11 +1346,6 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	VSSetShader(m_present.vs.get(), nullptr);
 
 
-	// gs
-
-	GSSetShader(nullptr, nullptr);
-
-
 	// ps
 
 	PSSetShaderResources(sTex, nullptr);
@@ -1368,7 +1402,6 @@ void GSDevice11::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_re
 	IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
 	VSSetShader(m_convert.vs.get(), nullptr);
-	GSSetShader(nullptr, nullptr);
 	PSSetShader(m_convert.ps[static_cast<int>(shader)].get(), nullptr);
 
 	OMSetDepthStencilState(dTex->IsRenderTarget() ? m_convert.dss.get() : m_convert.dss_write.get(), 0);
@@ -1437,6 +1470,7 @@ void GSDevice11::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rect
 
 	IAUnmapVertexBuffer(sizeof(GSVertexPT1), vcount);
 	IAUnmapIndexBuffer(icount);
+	IASetIndexBuffer(m_ib.get());
 
 	PSSetShaderResource(0, rects[0].src);
 	PSSetSamplerState(rects[0].linear ? m_convert.ln.get() : m_convert.pt.get());
@@ -1682,7 +1716,6 @@ void GSDevice11::RenderImGui()
 	IASetInputLayout(m_imgui.il.get());
 	IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	VSSetShader(m_imgui.vs.get(), m_imgui.vs_cb.get());
-	GSSetShader(nullptr, nullptr);
 	PSSetShader(m_imgui.ps.get(), nullptr);
 	OMSetBlendState(m_imgui.bs.get(), 0.0f);
 	OMSetDepthStencilState(m_convert.dss.get(), 0);
@@ -1761,7 +1794,7 @@ void GSDevice11::RenderImGui()
 	}
 
 	m_ctx->IASetVertexBuffers(0, 1, m_vb.addressof(), &m_state.vb_stride, &vb_offset);
-	m_ctx->IASetIndexBuffer(m_ib.get(), DXGI_FORMAT_R32_UINT, 0);
+	m_ctx->IASetIndexBuffer(m_state.index_buffer, DXGI_FORMAT_R32_UINT, 0);
 }
 
 void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm)
@@ -1785,10 +1818,6 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 	// vs
 
 	VSSetShader(m_convert.vs.get(), nullptr);
-
-	// gs
-
-	GSSetShader(nullptr, nullptr);
 
 	// ps
 	PSSetShaderResources(rt, nullptr);
@@ -1852,6 +1881,37 @@ bool GSDevice11::IASetVertexBuffer(const void* vertex, u32 stride, u32 count)
 	return true;
 }
 
+bool GSDevice11::IASetExpandVertexBuffer(const void* vertex, u32 stride, u32 count)
+{
+	const u32 size = stride * count;
+	if (size > VERTEX_BUFFER_SIZE)
+		return false;
+
+	D3D11_MAP type = D3D11_MAP_WRITE_NO_OVERWRITE;
+
+	m_vertex.start = (m_structured_vb_pos + (stride - 1)) / stride;
+	m_structured_vb_pos = (m_vertex.start * stride) + size;
+	if (m_structured_vb_pos > VERTEX_BUFFER_SIZE)
+	{
+		m_vertex.start = 0;
+		m_structured_vb_pos = size;
+		type = D3D11_MAP_WRITE_DISCARD;
+	}
+
+	D3D11_MAPPED_SUBRESOURCE m;
+	if (FAILED(m_ctx->Map(m_expand_vb.get(), 0, type, 0, &m)))
+		return false;
+
+	void* map = static_cast<u8*>(m.pData) + (m_vertex.start * stride);
+
+	GSVector4i::storent(map, vertex, count * stride);
+
+	m_ctx->Unmap(m_expand_vb.get(), 0);
+
+	m_vertex.count = count;
+	return true;
+}
+
 u32* GSDevice11::IAMapIndexBuffer(u32 count)
 {
 	if (count > (INDEX_BUFFER_SIZE / sizeof(u32)))
@@ -1890,7 +1950,17 @@ bool GSDevice11::IASetIndexBuffer(const void* index, u32 count)
 
 	std::memcpy(map, index, count * sizeof(u32));
 	IAUnmapIndexBuffer(count);
+	IASetIndexBuffer(m_ib.get());
 	return true;
+}
+
+void GSDevice11::IASetIndexBuffer(ID3D11Buffer* buffer)
+{
+	if (m_state.index_buffer != buffer)
+	{
+		m_ctx->IASetIndexBuffer(buffer, DXGI_FORMAT_R32_UINT, 0);
+		m_state.index_buffer = buffer;
+	}
 }
 
 void GSDevice11::IASetInputLayout(ID3D11InputLayout* layout)
@@ -1927,23 +1997,6 @@ void GSDevice11::VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb)
 		m_state.vs_cb = vs_cb;
 
 		m_ctx->VSSetConstantBuffers(0, 1, &vs_cb);
-	}
-}
-
-void GSDevice11::GSSetShader(ID3D11GeometryShader* gs, ID3D11Buffer* gs_cb)
-{
-	if (m_state.gs != gs)
-	{
-		m_state.gs = gs;
-
-		m_ctx->GSSetShader(gs, nullptr, 0);
-	}
-
-	if (m_state.gs_cb != gs_cb)
-	{
-		m_state.gs_cb = gs_cb;
-
-		m_ctx->GSSetConstantBuffers(0, 1, &gs_cb);
 	}
 }
 
@@ -2172,12 +2225,40 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 	}
 
-	if (!IASetVertexBuffer(config.verts, sizeof(*config.verts), config.nverts) ||
-		!IASetIndexBuffer(config.indices, config.nindices))
+	if (config.vs.expand != GSHWDrawConfig::VSExpand::None)
 	{
-		Console.Error("Failed to upload vertices/indices (%u/%u)", config.nverts, config.nindices);
-		return;
+		if (!IASetExpandVertexBuffer(config.verts, sizeof(*config.verts), config.nverts))
+		{
+			Console.Error("Failed to upload structured vertices (%u)", config.nverts);
+			return;
+		}
+
+		config.cb_vs.max_depth.y = m_vertex.start;
 	}
+	else
+	{
+		if (!IASetVertexBuffer(config.verts, sizeof(*config.verts), config.nverts))
+		{
+			Console.Error("Failed to upload vertices (%u)", config.nverts);
+			return;
+		}
+	}
+
+	if (config.vs.UseExpandIndexBuffer())
+	{
+		IASetIndexBuffer(m_expand_ib.get());
+		m_index.start = 0;
+		m_index.count = config.nindices;
+	}
+	else
+	{
+		if (!IASetIndexBuffer(config.indices, config.nindices))
+		{
+			Console.Error("Failed to upload indices (%u)", config.nindices);
+			return;
+		}
+	}
+
 	D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 	switch (config.topology)
 	{
@@ -2207,7 +2288,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	}
 
 	SetupVS(config.vs, &config.cb_vs);
-	SetupGS(config.gs);
 	SetupPS(config.ps, &config.cb_ps, config.sampler);
 
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
@@ -2223,7 +2303,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		blend.blend_op = 3; // MIN
 		SetupOM(dss, blend, 0);
 		OMSetRenderTargets(primid_tex, config.ds, &config.scissor);
-
 		DrawIndexedPrimitive();
 
 		config.ps.date = 3;
@@ -2234,7 +2313,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	SetupOM(config.depth, convertSel(config.colormask, config.blend), config.blend.constant);
 	OMSetRenderTargets(hdr_rt ? hdr_rt : config.rt, config.ds, &config.scissor);
-
 	DrawIndexedPrimitive();
 
 	if (config.separate_alpha_pass)
@@ -2243,7 +2321,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		SetHWDrawConfigForAlphaPass(&config.ps, &config.colormask, &sap_blend, &config.depth);
 		SetupOM(config.depth, convertSel(config.colormask, sap_blend), config.blend.constant);
 		SetupPS(config.ps, &config.cb_ps, config.sampler);
-
 		DrawIndexedPrimitive();
 	}
 
@@ -2262,7 +2339,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		}
 
 		SetupOM(config.alpha_second_pass.depth, convertSel(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
-
 		DrawIndexedPrimitive();
 
 		if (config.second_separate_alpha_pass)
@@ -2271,7 +2347,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			SetHWDrawConfigForAlphaPass(&config.alpha_second_pass.ps, &config.alpha_second_pass.colormask, &sap_blend, &config.alpha_second_pass.depth);
 			SetupOM(config.alpha_second_pass.depth, convertSel(config.alpha_second_pass.colormask, sap_blend), config.blend.constant);
 			SetupPS(config.alpha_second_pass.ps, &config.cb_ps, config.sampler);
-
 			DrawIndexedPrimitive();
 		}
 	}

@@ -163,6 +163,23 @@ std::string GSDevice::GetFullscreenModeString(u32 width, u32 height, float refre
 	return StringUtil::StdStringFromFormat("%u x %u @ %f hz", width, height, refresh_rate);
 }
 
+void GSDevice::GenerateExpansionIndexBuffer(void* buffer)
+{
+	static constexpr u32 MAX_INDEX = std::numeric_limits<u16>::max();
+
+	u32* idx_buffer = static_cast<u32*>(buffer);
+	for (u32 i = 0; i < MAX_INDEX; i++)
+	{
+		const u32 base = i * 4;
+		*(idx_buffer++) = base + 0;
+		*(idx_buffer++) = base + 1;
+		*(idx_buffer++) = base + 2;
+		*(idx_buffer++) = base + 1;
+		*(idx_buffer++) = base + 2;
+		*(idx_buffer++) = base + 3;
+	}
+}
+
 bool GSDevice::Create(const WindowInfo& wi, VsyncMode vsync)
 {
 	m_window_info = wi;

@@ -58,7 +58,6 @@ public:
 		};
 
 		GSHWDrawConfig::VSSelector vs;
-		GSHWDrawConfig::GSSelector gs;
 		GSHWDrawConfig::DepthStencilSelector dss;
 		GSHWDrawConfig::ColorMaskSelector cms;
 		GSHWDrawConfig::BlendState bs;
@@ -78,7 +77,7 @@ public:
 		std::size_t operator()(const PipelineSelector& e) const noexcept
 		{
 			std::size_t hash = 0;
-			HashCombine(hash, e.vs.key, e.gs.key, e.ps.key_hi, e.ps.key_lo, e.dss.key, e.cms.key, e.bs.key, e.key);
+			HashCombine(hash, e.vs.key, e.ps.key_hi, e.ps.key_lo, e.dss.key, e.cms.key, e.bs.key, e.key);
 			return hash;
 		}
 	};
@@ -123,6 +122,8 @@ private:
 	Vulkan::StreamBuffer m_index_stream_buffer;
 	Vulkan::StreamBuffer m_vertex_uniform_stream_buffer;
 	Vulkan::StreamBuffer m_fragment_uniform_stream_buffer;
+	VkBuffer m_expand_index_buffer = VK_NULL_HANDLE;
+	VmaAllocation m_expand_index_buffer_allocation = VK_NULL_HANDLE;
 
 	VkSampler m_point_sampler = VK_NULL_HANDLE;
 	VkSampler m_linear_sampler = VK_NULL_HANDLE;
@@ -142,7 +143,6 @@ private:
 	VkPipeline m_shadeboost_pipeline = {};
 
 	std::unordered_map<u32, VkShaderModule> m_tfx_vertex_shaders;
-	std::unordered_map<u32, VkShaderModule> m_tfx_geometry_shaders;
 	std::unordered_map<GSHWDrawConfig::PSSelector, VkShaderModule, GSHWDrawConfig::PSSelectorHash> m_tfx_fragment_shaders;
 	std::unordered_map<PipelineSelector, VkPipeline, PipelineSelectorHash> m_tfx_pipelines;
 
@@ -183,7 +183,6 @@ private:
 	void ClearSamplerCache() final;
 
 	VkShaderModule GetTFXVertexShader(GSHWDrawConfig::VSSelector sel);
-	VkShaderModule GetTFXGeometryShader(GSHWDrawConfig::GSSelector sel);
 	VkShaderModule GetTFXFragmentShader(const GSHWDrawConfig::PSSelector& sel);
 	VkPipeline CreateTFXPipeline(const PipelineSelector& p);
 	VkPipeline GetTFXPipeline(const PipelineSelector& p);
@@ -307,6 +306,7 @@ public:
 
 	void RenderHW(GSHWDrawConfig& config) override;
 	void UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe);
+	void UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config);
 	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, bool skip_first_barrier);
 
 	//////////////////////////////////////////////////////////////////////////

@@ -28,9 +28,6 @@ namespace GL
 		u64 vertex_source_hash_low;
 		u64 vertex_source_hash_high;
 		u32 vertex_source_length;
-		u64 geometry_source_hash_low;
-		u64 geometry_source_hash_high;
-		u32 geometry_source_length;
 		u64 fragment_source_hash_low;
 		u64 fragment_source_hash_high;
 		u32 fragment_source_length;
@@ -51,9 +48,7 @@ namespace GL
 	{
 		return (
 			vertex_source_hash_low == key.vertex_source_hash_low && vertex_source_hash_high == key.vertex_source_hash_high &&
-			vertex_source_length == key.vertex_source_length && geometry_source_hash_low == key.geometry_source_hash_low &&
-			geometry_source_hash_high == key.geometry_source_hash_high &&
-			geometry_source_length == key.geometry_source_length && fragment_source_hash_low == key.fragment_source_hash_low &&
+			vertex_source_length == key.vertex_source_length && fragment_source_hash_low == key.fragment_source_hash_low &&
 			fragment_source_hash_high == key.fragment_source_hash_high && fragment_source_length == key.fragment_source_length);
 	}
 
@@ -61,9 +56,7 @@ namespace GL
 	{
 		return (
 			vertex_source_hash_low != key.vertex_source_hash_low || vertex_source_hash_high != key.vertex_source_hash_high ||
-			vertex_source_length != key.vertex_source_length || geometry_source_hash_low != key.geometry_source_hash_low ||
-			geometry_source_hash_high != key.geometry_source_hash_high ||
-			geometry_source_length != key.geometry_source_length || fragment_source_hash_low != key.fragment_source_hash_low ||
+			vertex_source_length != key.vertex_source_length || fragment_source_hash_low != key.fragment_source_hash_low ||
 			fragment_source_hash_high != key.fragment_source_hash_high || fragment_source_length != key.fragment_source_length);
 	}
 
@@ -204,7 +197,6 @@ namespace GL
 
 			const CacheIndexKey key{
 				entry.vertex_source_hash_low, entry.vertex_source_hash_high, entry.vertex_source_length,
-				entry.geometry_source_hash_low, entry.geometry_source_hash_high, entry.geometry_source_length,
 				entry.fragment_source_hash_low, entry.fragment_source_hash_high, entry.fragment_source_length};
 			const CacheIndexData data{entry.file_offset, entry.blob_size, entry.blob_format};
 			m_index.emplace(key, data);
@@ -242,7 +234,6 @@ namespace GL
 	}
 
 	ShaderCache::CacheIndexKey ShaderCache::GetCacheKey(const std::string_view& vertex_shader,
-		const std::string_view& geometry_shader,
 		const std::string_view& fragment_shader)
 	{
 		union ShaderHash
@@ -256,7 +247,6 @@ namespace GL
 		};
 
 		ShaderHash vertex_hash = {};
-		ShaderHash geometry_hash = {};
 		ShaderHash fragment_hash = {};
 
 		MD5Digest digest;
@@ -264,13 +254,6 @@ namespace GL
 		{
 			digest.Update(vertex_shader.data(), static_cast<u32>(vertex_shader.length()));
 			digest.Final(vertex_hash.bytes);
-		}
-
-		if (!geometry_shader.empty())
-		{
-			digest.Reset();
-			digest.Update(geometry_shader.data(), static_cast<u32>(geometry_shader.length()));
-			digest.Final(geometry_hash.bytes);
 		}
 
 		if (!fragment_shader.empty())
@@ -281,7 +264,6 @@ namespace GL
 		}
 
 		return CacheIndexKey{vertex_hash.low, vertex_hash.high, static_cast<u32>(vertex_shader.length()),
-			geometry_hash.low, geometry_hash.high, static_cast<u32>(geometry_shader.length()),
 			fragment_hash.low, fragment_hash.high, static_cast<u32>(fragment_shader.length())};
 	}
 
@@ -296,7 +278,6 @@ namespace GL
 	}
 
 	std::optional<Program> ShaderCache::GetProgram(const std::string_view vertex_shader,
-		const std::string_view geometry_shader,
 		const std::string_view fragment_shader, const PreLinkCallback& callback)
 	{
 		if (!m_program_binary_supported || !m_blob_file)
@@ -305,7 +286,7 @@ namespace GL
 			Common::Timer timer;
 #endif
 
-			std::optional<Program> res = CompileProgram(vertex_shader, geometry_shader, fragment_shader, callback, false);
+			std::optional<Program> res = CompileProgram(vertex_shader, fragment_shader, callback, false);
 
 #ifdef PCSX2_DEVBUILD
 			Console.WriteLn("Time to compile shader without caching: %.2fms", timer.GetTimeMilliseconds());
@@ -313,10 +294,10 @@ namespace GL
 			return res;
 		}
 
-		const auto key = GetCacheKey(vertex_shader, geometry_shader, fragment_shader);
+		const auto key = GetCacheKey(vertex_shader, fragment_shader);
 		auto iter = m_index.find(key);
 		if (iter == m_index.end())
-			return CompileAndAddProgram(key, vertex_shader, geometry_shader, fragment_shader, callback);
+			return CompileAndAddProgram(key, vertex_shader, fragment_shader, callback);
 
 		std::vector<u8> data(iter->second.blob_size);
 		if (std::fseek(m_blob_file, iter->second.file_offset, SEEK_SET) != 0 ||
@@ -343,16 +324,15 @@ namespace GL
 		Console.Warning(
 			"Failed to create program from binary, this may be due to a driver or GPU Change. Recreating cache.");
 		if (!Recreate())
-			return CompileProgram(vertex_shader, geometry_shader, fragment_shader, callback, false);
+			return CompileProgram(vertex_shader, fragment_shader, callback, false);
 		else
-			return CompileAndAddProgram(key, vertex_shader, geometry_shader, fragment_shader, callback);
+			return CompileAndAddProgram(key, vertex_shader, fragment_shader, callback);
 	}
 
 	bool ShaderCache::GetProgram(Program* out_program, const std::string_view vertex_shader,
-		const std::string_view geometry_shader, const std::string_view fragment_shader,
-		const PreLinkCallback& callback /* = */)
+		const std::string_view fragment_shader, const PreLinkCallback& callback /* = */)
 	{
-		auto prog = GetProgram(vertex_shader, geometry_shader, fragment_shader, callback);
+		auto prog = GetProgram(vertex_shader, fragment_shader, callback);
 		if (!prog)
 			return false;
 
@@ -374,9 +354,6 @@ namespace GL
 		entry.vertex_source_hash_low = key.vertex_source_hash_low;
 		entry.vertex_source_hash_high = key.vertex_source_hash_high;
 		entry.vertex_source_length = key.vertex_source_length;
-		entry.geometry_source_hash_low = key.geometry_source_hash_low;
-		entry.geometry_source_hash_high = key.geometry_source_hash_high;
-		entry.geometry_source_length = key.geometry_source_length;
 		entry.fragment_source_hash_low = key.fragment_source_hash_low;
 		entry.fragment_source_hash_high = key.fragment_source_hash_high;
 		entry.fragment_source_length = key.fragment_source_length;
@@ -397,12 +374,10 @@ namespace GL
 	}
 
 	std::optional<Program> ShaderCache::CompileProgram(const std::string_view& vertex_shader,
-		const std::string_view& geometry_shader,
-		const std::string_view& fragment_shader,
-		const PreLinkCallback& callback, bool set_retrievable)
+		const std::string_view& fragment_shader, const PreLinkCallback& callback, bool set_retrievable)
 	{
 		Program prog;
-		if (!prog.Compile(vertex_shader, geometry_shader, fragment_shader))
+		if (!prog.Compile(vertex_shader, fragment_shader))
 			return std::nullopt;
 
 		if (callback)
@@ -437,16 +412,14 @@ namespace GL
 	}
 
 	std::optional<Program> ShaderCache::CompileAndAddProgram(const CacheIndexKey& key,
-		const std::string_view& vertex_shader,
-		const std::string_view& geometry_shader,
-		const std::string_view& fragment_shader,
+		const std::string_view& vertex_shader, const std::string_view& fragment_shader,
 		const PreLinkCallback& callback)
 	{
 #ifdef PCSX2_DEVBUILD
 		Common::Timer timer;
 #endif
 
-		std::optional<Program> prog = CompileProgram(vertex_shader, geometry_shader, fragment_shader, callback, true);
+		std::optional<Program> prog = CompileProgram(vertex_shader, fragment_shader, callback, true);
 		if (!prog)
 			return std::nullopt;
 
@@ -491,7 +464,7 @@ namespace GL
 			return res;
 		}
 
-		const auto key = GetCacheKey(glsl, std::string_view(), std::string_view());
+		const auto key = GetCacheKey(glsl, std::string_view());
 		auto iter = m_index.find(key);
 		if (iter == m_index.end())
 			return CompileAndAddComputeProgram(key, glsl, callback);

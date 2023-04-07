@@ -760,7 +760,6 @@ struct Pcsx2Config
 		GSTextureInRtMode UserHacks_TextureInsideRt{GSTextureInRtMode::Disabled};
 		TriFiltering TriFilter{TriFiltering::Automatic};
 		int OverrideTextureBarriers{-1};
-		int OverrideGeometryShaders{-1};
 
 		int CAS_Sharpness{50};
 		int ShadeBoost_Brightness{50};

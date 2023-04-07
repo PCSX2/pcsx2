@@ -1,5 +1,3 @@
-#ifdef SHADER_MODEL // make safe to include in resource file to enforce dependency
-
 #define FMT_32 0
 #define FMT_24 1
 #define FMT_16 2
@@ -113,6 +111,8 @@ struct PS_INPUT
 #endif
 };
 
+#ifdef PIXEL_SHADER
+
 struct PS_OUTPUT
 {
 #if !PS_NO_COLOR
@@ -135,21 +135,6 @@ Texture2D<float4> Palette : register(t1);
 Texture2D<float4> RtTexture : register(t2);
 Texture2D<float> PrimMinTexture : register(t3);
 SamplerState TextureSampler : register(s0);
-
-#ifdef DX12
-cbuffer cb0 : register(b0)
-#else
-cbuffer cb0
-#endif
-{
-	float2 VertexScale;
-	float2 VertexOffset;
-	float2 TextureScale;
-	float2 TextureOffset;
-	float2 PointSize;
-	uint MaxDepth;
-	uint pad_cb0;
-};
 
 #ifdef DX12
 cbuffer cb1 : register(b1)
@@ -1062,9 +1047,28 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	return output;
 }
 
+#endif // PIXEL_SHADER
+
 //////////////////////////////////////////////////////////////////////
 // Vertex Shader
 //////////////////////////////////////////////////////////////////////
+
+#ifdef VERTEX_SHADER
+
+#ifdef DX12
+cbuffer cb0 : register(b0)
+#else
+cbuffer cb0
+#endif
+{
+	float2 VertexScale;
+	float2 VertexOffset;
+	float2 TextureScale;
+	float2 TextureOffset;
+	float2 PointSize;
+	uint MaxDepth;
+	uint BaseVertex; // Only used in DX11.
+};
 
 VS_OUTPUT vs_main(VS_INPUT input)
 {
@@ -1118,156 +1122,101 @@ VS_OUTPUT vs_main(VS_INPUT input)
 	return output;
 }
 
-//////////////////////////////////////////////////////////////////////
-// Geometry Shader
-//////////////////////////////////////////////////////////////////////
+#if VS_EXPAND != 0
 
-#if GS_FORWARD_PRIMID
-#define PRIMID_IN , uint primid : SV_PrimitiveID
-#define VS2PS(x) vs2ps_impl(x, primid)
-PS_INPUT vs2ps_impl(VS_OUTPUT vs, uint primid)
+struct VS_RAW_INPUT
 {
-	PS_INPUT o;
-	o.p = vs.p;
-	o.t = vs.t;
-	o.ti = vs.ti;
-	o.c = vs.c;
-	o.primid = primid;
-	return o;
-}
+	float2 ST;
+	uint RGBA;
+	float Q;
+	uint XY;
+	uint Z;
+	uint UV;
+	uint FOG;
+};
+
+StructuredBuffer<VS_RAW_INPUT> vertices : register(t0);
+
+VS_INPUT load_vertex(uint index)
+{
+#ifdef DX12
+	VS_RAW_INPUT raw = vertices.Load(index);
 #else
-#define PRIMID_IN
-#define VS2PS(x) vs2ps_impl(x)
-PS_INPUT vs2ps_impl(VS_OUTPUT vs)
-{
-	PS_INPUT o;
-	o.p = vs.p;
-	o.t = vs.t;
-	o.ti = vs.ti;
-	o.c = vs.c;
-	return o;
-}
+	VS_RAW_INPUT raw = vertices.Load(BaseVertex + index);
 #endif
 
-#if GS_PRIM == 0
-
-[maxvertexcount(6)]
-void gs_main(point VS_OUTPUT input[1], inout TriangleStream<PS_INPUT> stream PRIMID_IN)
-{
-	// Transform a point to a NxN sprite
-	PS_INPUT Point = VS2PS(input[0]);
-
-	// Get new position
-	float4 lt_p = input[0].p;
-	float4 rb_p = input[0].p + float4(PointSize.x, PointSize.y, 0.0f, 0.0f);
-	float4 lb_p = rb_p;
-	float4 rt_p = rb_p;
-	lb_p.x = lt_p.x;
-	rt_p.y = lt_p.y;
-
-	// Triangle 1
-	Point.p = lt_p;
-	stream.Append(Point);
-
-	Point.p = lb_p;
-	stream.Append(Point);
-
-	Point.p = rt_p;
-	stream.Append(Point);
-
-	// Triangle 2
-	Point.p = lb_p;
-	stream.Append(Point);
-
-	Point.p = rt_p;
-	stream.Append(Point);
-
-	Point.p = rb_p;
-	stream.Append(Point);
+	VS_INPUT vert;
+	vert.st = raw.ST;
+	vert.c = uint4(raw.RGBA & 0xFFu, (raw.RGBA >> 8) & 0xFFu, (raw.RGBA >> 16) & 0xFFu, raw.RGBA >> 24);
+	vert.q = raw.Q;
+	vert.p = uint2(raw.XY & 0xFFFFu, raw.XY >> 16);
+	vert.z = raw.Z;
+	vert.uv = uint2(raw.UV & 0xFFFFu, raw.UV >> 16);
+	vert.f = float4(float(raw.FOG & 0xFFu), float((raw.FOG >> 8) & 0xFFu), float((raw.FOG >> 16) & 0xFFu), float(raw.FOG >> 24)) / 255.0f;
+	return vert;
 }
 
-#elif GS_PRIM == 1
-
-[maxvertexcount(6)]
-void gs_main(line VS_OUTPUT input[2], inout TriangleStream<PS_INPUT> stream PRIMID_IN)
+VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 {
-	// Transform a line to a thick line-sprite
-	PS_INPUT left = VS2PS(input[0]);
-	PS_INPUT right = VS2PS(input[1]);
-	float2 lt_p = input[0].p.xy;
-	float2 rt_p = input[1].p.xy;
+#if VS_EXPAND == 1 // Point
 
-	// Potentially there is faster math
-	float2 line_vector = normalize(rt_p.xy - lt_p.xy);
+	VS_OUTPUT vtx = vs_main(load_vertex(vid >> 2));
+
+	vtx.p.x += ((vid & 1u) != 0u) ? PointSize.x : 0.0f;
+	vtx.p.y += ((vid & 2u) != 0u) ? PointSize.y : 0.0f;
+
+	return vtx;
+
+#elif VS_EXPAND == 2 // Line
+
+	uint vid_base = vid >> 2;
+	bool is_bottom = vid & 2;
+	bool is_right = vid & 1;
+	// All lines will be a pair of vertices next to each other
+	// Since DirectX uses provoking vertex first, the bottom point will be the lower of the two
+	uint vid_other = is_bottom ? vid_base + 1 : vid_base - 1;
+	VS_OUTPUT vtx = vs_main(load_vertex(vid_base));
+	VS_OUTPUT other = vs_main(load_vertex(vid_other));
+
+	float2 line_vector = normalize(vtx.p.xy - other.p.xy);
 	float2 line_normal = float2(line_vector.y, -line_vector.x);
 	float2 line_width = (line_normal * PointSize) / 2;
+	// line_normal is inverted for bottom point
+	float2 offset = (is_bottom ^ is_right) ? line_width : -line_width;
+	vtx.p.xy += offset;
 
-	lt_p -= line_width;
-	rt_p -= line_width;
-	float2 lb_p = input[0].p.xy + line_width;
-	float2 rb_p = input[1].p.xy + line_width;
+	// Lines will be run as (0 1 2) (1 2 3)
+	// This means that both triangles will have a point based off the top line point as their first point
+	// So we don't have to do anything for !IIP
 
-	#if GS_IIP == 0
-	left.c = right.c;
-	#endif
+	return vtx;
 
-	// Triangle 1
-	left.p.xy = lt_p;
-	stream.Append(left);
+#elif VS_EXPAND == 3 // Sprite
 
-	left.p.xy = lb_p;
-	stream.Append(left);
+	// Sprite points are always in pairs
+	uint vid_base = vid >> 1;
+	uint vid_lt = vid_base & ~1u;
+	uint vid_rb = vid_base | 1u;
 
-	right.p.xy = rt_p;
-	stream.Append(right);
-	stream.RestartStrip();
+	VS_OUTPUT lt = vs_main(load_vertex(vid_lt));
+	VS_OUTPUT rb = vs_main(load_vertex(vid_rb));
+	VS_OUTPUT vtx = rb;
 
-	// Triangle 2
-	left.p.xy = lb_p;
-	stream.Append(left);
+	bool is_right = ((vid & 1u) != 0u);
+	vtx.p.x = is_right ? lt.p.x : vtx.p.x;
+	vtx.t.x = is_right ? lt.t.x : vtx.t.x;
+	vtx.ti.xz = is_right ? lt.ti.xz : vtx.ti.xz;
 
-	right.p.xy = rt_p;
-	stream.Append(right);
+	bool is_bottom = ((vid & 2u) != 0u);
+	vtx.p.y = is_bottom ? lt.p.y : vtx.p.y;
+	vtx.t.y = is_bottom ? lt.t.y : vtx.t.y;
+	vtx.ti.yw = is_bottom ? lt.ti.yw : vtx.ti.yw;
 
-	right.p.xy = rb_p;
-	stream.Append(right);
-	stream.RestartStrip();
-}
-
-#elif GS_PRIM == 3
-
-[maxvertexcount(4)]
-void gs_main(line VS_OUTPUT input[2], inout TriangleStream<PS_INPUT> stream PRIMID_IN)
-{
-	PS_INPUT lt = VS2PS(input[0]);
-	PS_INPUT rb = VS2PS(input[1]);
-
-	// flat depth
-	lt.p.z = rb.p.z;
-	// flat fog and texture perspective
-	lt.t.zw = rb.t.zw;
-
-	// flat color
-	lt.c = rb.c;
-
-	// Swap texture and position coordinate
-	PS_INPUT lb = rb;
-	lb.p.x = lt.p.x;
-	lb.t.x = lt.t.x;
-	lb.ti.x = lt.ti.x;
-	lb.ti.z = lt.ti.z;
-
-	PS_INPUT rt = rb;
-	rt.p.y = lt.p.y;
-	rt.t.y = lt.t.y;
-	rt.ti.y = lt.ti.y;
-	rt.ti.w = lt.ti.w;
-
-	stream.Append(lt);
-	stream.Append(lb);
-	stream.Append(rt);
-	stream.Append(rb);
-}
+	return vtx;
 
 #endif
-#endif
+}
+
+#endif // VS_EXPAND
+
+#endif // VERTEX_SHADER

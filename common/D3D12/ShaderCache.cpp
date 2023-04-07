@@ -521,9 +521,6 @@ ShaderCache::ComPtr<ID3DBlob> ShaderCache::CompileAndAddShaderBlob(const CacheIn
 		case EntryType::VertexShader:
 			blob = D3D11::ShaderCompiler::CompileShader(D3D11::ShaderCompiler::Type::Vertex, m_feature_level, m_debug, shader_code, macros, entry_point);
 			break;
-		case EntryType::GeometryShader:
-			blob = D3D11::ShaderCompiler::CompileShader(D3D11::ShaderCompiler::Type::Geometry, m_feature_level, m_debug, shader_code, macros, entry_point);
-			break;
 		case EntryType::PixelShader:
 			blob = D3D11::ShaderCompiler::CompileShader(D3D11::ShaderCompiler::Type::Pixel, m_feature_level, m_debug, shader_code, macros, entry_point);
 			break;

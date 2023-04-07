@@ -22,6 +22,7 @@ class GSTextureOGL;
 
 namespace GLState
 {
+	extern GLuint vao; // vertex array object
 	extern GLuint fbo; // frame buffer object
 	extern GSVector2i viewport;
 	extern GSVector4i scissor;
