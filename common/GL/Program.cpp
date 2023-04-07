@@ -35,6 +35,8 @@ namespace GL
 		prog.m_program_id = 0;
 		m_vertex_shader_id = prog.m_vertex_shader_id;
 		prog.m_vertex_shader_id = 0;
+		m_geometry_shader_id = prog.m_geometry_shader_id;
+		prog.m_geometry_shader_id = 0;
 		m_fragment_shader_id = prog.m_fragment_shader_id;
 		prog.m_fragment_shader_id = 0;
 		m_uniform_locations = std::move(prog.m_uniform_locations);
@@ -103,40 +105,34 @@ namespace GL
 	bool Program::Compile(const std::string_view vertex_shader, const std::string_view geometry_shader,
 		const std::string_view fragment_shader)
 	{
-		GLuint vertex_shader_id = 0;
 		if (!vertex_shader.empty())
 		{
-			vertex_shader_id = CompileShader(GL_VERTEX_SHADER, vertex_shader);
-			if (vertex_shader_id == 0)
+			m_vertex_shader_id = CompileShader(GL_VERTEX_SHADER, vertex_shader);
+			if (m_vertex_shader_id == 0)
 				return false;
 		}
 
-		GLuint geometry_shader_id = 0;
 		if (!geometry_shader.empty())
 		{
-			geometry_shader_id = CompileShader(GL_GEOMETRY_SHADER, geometry_shader);
-			if (geometry_shader_id == 0)
+			m_geometry_shader_id = CompileShader(GL_GEOMETRY_SHADER, geometry_shader);
+			if (m_geometry_shader_id == 0)
 				return false;
 		}
 
-		GLuint fragment_shader_id = 0;
 		if (!fragment_shader.empty())
 		{
-			fragment_shader_id = CompileShader(GL_FRAGMENT_SHADER, fragment_shader);
-			if (fragment_shader_id == 0)
-			{
-				glDeleteShader(vertex_shader_id);
+			m_fragment_shader_id = CompileShader(GL_FRAGMENT_SHADER, fragment_shader);
+			if (m_fragment_shader_id == 0)
 				return false;
-			}
 		}
 
 		m_program_id = glCreateProgram();
-		if (vertex_shader_id != 0)
-			glAttachShader(m_program_id, vertex_shader_id);
-		if (geometry_shader_id != 0)
-			glAttachShader(m_program_id, geometry_shader_id);
-		if (fragment_shader_id != 0)
-			glAttachShader(m_program_id, fragment_shader_id);
+		if (m_vertex_shader_id != 0)
+			glAttachShader(m_program_id, m_vertex_shader_id);
+		if (m_geometry_shader_id != 0)
+			glAttachShader(m_program_id, m_geometry_shader_id);
+		if (m_fragment_shader_id != 0)
+			glAttachShader(m_program_id, m_fragment_shader_id);
 		return true;
 	}
 
@@ -244,6 +240,9 @@ namespace GL
 		if (m_vertex_shader_id != 0)
 			glDeleteShader(m_vertex_shader_id);
 		m_vertex_shader_id = 0;
+		if (m_geometry_shader_id != 0)
+			glDeleteShader(m_geometry_shader_id);
+		m_geometry_shader_id = 0;
 		if (m_fragment_shader_id != 0)
 			glDeleteShader(m_fragment_shader_id);
 		m_fragment_shader_id = 0;
@@ -542,6 +541,8 @@ namespace GL
 		prog.m_program_id = 0;
 		m_vertex_shader_id = prog.m_vertex_shader_id;
 		prog.m_vertex_shader_id = 0;
+		m_geometry_shader_id = prog.m_geometry_shader_id;
+		prog.m_geometry_shader_id = 0;
 		m_fragment_shader_id = prog.m_fragment_shader_id;
 		prog.m_fragment_shader_id = 0;
 		m_uniform_locations = std::move(prog.m_uniform_locations);

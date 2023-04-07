@@ -99,6 +99,7 @@ namespace GL
 
 		GLuint m_program_id = 0;
 		GLuint m_vertex_shader_id = 0;
+		GLuint m_geometry_shader_id = 0;
 		GLuint m_fragment_shader_id = 0;
 
 		std::vector<GLint> m_uniform_locations;
