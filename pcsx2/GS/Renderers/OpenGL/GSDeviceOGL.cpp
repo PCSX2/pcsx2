@@ -1176,7 +1176,7 @@ std::string GSDeviceOGL::GetVSSource(VSSelector sel)
 {
 	DevCon.WriteLn("Compiling new vertex shader with selector 0x%" PRIX64, sel.key);
 
-	std::string macro = fmt::format("#define VS_INT_FST {}\n", static_cast<u32>(sel.int_fst))
+	std::string macro = fmt::format("#define VS_FST {}\n", static_cast<u32>(sel.fst))
 		+ fmt::format("#define VS_IIP {}\n", static_cast<u32>(sel.iip))
 		+ fmt::format("#define VS_POINT_SIZE {}\n", static_cast<u32>(sel.point_size));
 
@@ -1189,8 +1189,8 @@ std::string GSDeviceOGL::GetGSSource(GSSelector sel)
 {
 	DevCon.WriteLn("Compiling new geometry shader with selector 0x%" PRIX64, sel.key);
 
-	std::string macro = fmt::format("#define GS_POINT {}\n", static_cast<u32>(sel.point))
-		+ fmt::format("#define GS_LINE {}\n", static_cast<u32>(sel.line))
+	std::string macro = fmt::format("#define GS_PRIM {}\n", static_cast<u32>(sel.topology))
+		+ fmt::format("#define GS_EXPAND {}\n", static_cast<u32>(sel.expand))
 		+ fmt::format("#define GS_IIP {}\n", static_cast<u32>(sel.iip));
 
 	std::string src = GenGlslHeader("gs_main", GL_GEOMETRY_SHADER, macro);
@@ -2243,16 +2243,6 @@ void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel)
 	OMSetDepthStencilState(m_om_dss[dssel.key]);
 }
 
-static GSDeviceOGL::VSSelector convertSel(const GSHWDrawConfig::VSSelector sel, const GSHWDrawConfig::Topology topology)
-{
-	// Mali requires gl_PointSize written when rasterizing points. The spec seems to suggest this is okay.
-	GSDeviceOGL::VSSelector out;
-	out.int_fst = !sel.fst;
-	out.iip = sel.iip;
-	out.point_size = sel.point_size || (GLLoader::is_gles && topology == GSHWDrawConfig::Topology::Point);
-	return out;
-}
-
 // clang-format off
 static constexpr std::array<GLenum, 16> s_gl_blend_factors = { {
 	GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_DST_COLOR, GL_ONE_MINUS_DST_COLOR,
@@ -2366,22 +2356,13 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 
 	ProgramSelector psel;
-	psel.vs = convertSel(config.vs, config.topology);
+	psel.vs = config.vs;
 	psel.ps.key_hi = config.ps.key_hi;
 	psel.ps.key_lo = config.ps.key_lo;
 	psel.gs.key = 0;
 	psel.pad = 0;
 	if (config.gs.expand)
-	{
-		psel.gs.iip = config.gs.iip;
-		switch (config.gs.topology)
-		{
-			case GSHWDrawConfig::GSTopology::Point:    psel.gs.point  = 1; break;
-			case GSHWDrawConfig::GSTopology::Line:     psel.gs.line   = 1; break;
-			case GSHWDrawConfig::GSTopology::Sprite:   psel.gs.sprite = 1; break;
-			case GSHWDrawConfig::GSTopology::Triangle: ASSERT(0);          break;
-		}
-	}
+		psel.gs.key = config.gs.key;
 
 	SetupPipeline(psel);
 

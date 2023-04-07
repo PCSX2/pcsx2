@@ -120,60 +120,8 @@ public:
 class GSDeviceOGL final : public GSDevice
 {
 public:
-	struct VSSelector
-	{
-		union
-		{
-			struct
-			{
-				u8 int_fst : 1;
-				u8 iip : 1;
-				u8 point_size : 1;
-				u8 _free : 5;
-			};
-
-			u8 key;
-		};
-
-		VSSelector()
-			: key(0)
-		{
-		}
-		VSSelector(u8 k)
-			: key(k)
-		{
-		}
-	};
-
-	struct GSSelector
-	{
-		union
-		{
-			struct
-			{
-				u8 sprite : 1;
-				u8 point  : 1;
-				u8 line   : 1;
-				u8 iip    : 1;
-
-				u8 _free : 4;
-			};
-
-			u8 key;
-		};
-
-		operator u32() const { return key; }
-
-		GSSelector()
-			: key(0)
-		{
-		}
-		GSSelector(u8 k)
-			: key(k)
-		{
-		}
-	};
-
+	using VSSelector = GSHWDrawConfig::VSSelector;
+	using GSSelector = GSHWDrawConfig::GSSelector;
 	using PSSelector = GSHWDrawConfig::PSSelector;
 	using PSSamplerSelector = GSHWDrawConfig::SamplerSelector;
 	using OMDepthStencilSelector = GSHWDrawConfig::DepthStencilSelector;
