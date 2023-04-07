@@ -22534,6 +22534,9 @@ SLES-55218:
 SLES-55219:
   name: "Hasbro Family Game Night"
   region: "PAL-M4"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, fixes textures on battleships model.
+    trilinearFiltering: 1
 SLES-55220:
   name: "Summer Athletics"
   region: "PAL-M5"
@@ -22583,6 +22586,9 @@ SLES-55238:
 SLES-55239:
   name: "Hasbro Family Game Night"
   region: "PAL-I"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, fixes textures on battleships model.
+    trilinearFiltering: 1
 SLES-55240:
   name: "Pipe Mania"
   region: "PAL-M5"
@@ -22778,9 +22784,15 @@ SLES-55340:
 SLES-55341:
   name: "Hasbro Family Game Night"
   region: "PAL-G"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, fixes textures on battleships model.
+    trilinearFiltering: 1
 SLES-55342:
   name: "Hasbro Family Game Night"
   region: "PAL-E"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, fixes textures on battleships model.
+    trilinearFiltering: 1
 SLES-55343:
   name: "Tube Mania"
   region: "PAL-F"
@@ -50621,6 +50633,9 @@ SLUS-21805:
   name: "Hasbro Family Game Night"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, fixes textures on battleships model.
+    trilinearFiltering: 1
 SLUS-21806:
   name: "Barbie Horse Adventures - Riding Camp"
   region: "NTSC-U"
