@@ -81,6 +81,10 @@ public:
 		static_assert(1 << ilog2(PageHeight) == PageHeight, "PageHeight must be a power of 2");
 	}
 
+	/// Returns the amount to shift to convert a width to pages.
+	u8 pageShiftX() const { return m_pageShiftX; }
+	u8 pageShiftY() const { return m_pageShiftY; }
+
 	/// Get the block number of the given pixel
 	u32 bn(int x, int y, u32 bp, u32 bw) const;
 
