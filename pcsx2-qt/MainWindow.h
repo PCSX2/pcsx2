@@ -129,7 +129,7 @@ private Q_SLOTS:
 	void onUpdateCheckComplete();
 
 	std::optional<WindowInfo> createDisplayWindow(bool fullscreen, bool render_to_main);
-	std::optional<WindowInfo> updateDisplayWindow(bool fullscreen, bool render_to_main, bool surfaceless);
+	std::optional<WindowInfo> updateDisplayWindow(bool recreate_window, bool fullscreen, bool render_to_main, bool surfaceless);
 	void displayResizeRequested(qint32 width, qint32 height);
 	void relativeMouseModeRequested(bool enabled);
 	void destroyDisplay();

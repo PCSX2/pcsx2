@@ -105,12 +105,12 @@ void Host::SetRelativeMouseMode(bool enabled)
 {
 }
 
-std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI api)
+std::optional<WindowInfo> Host::AcquireRenderWindow()
 {
 	return std::nullopt;
 }
 
-std::optional<WindowInfo> Host::UpdateRenderWindow()
+std::optional<WindowInfo> Host::UpdateRenderWindow(bool recreate_window)
 {
 	return std::nullopt;
 }

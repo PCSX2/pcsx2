@@ -60,7 +60,7 @@ GSTexture* GSDeviceOGL::CreateSurface(GSTexture::Type type, int width, int heigh
 
 RenderAPI GSDeviceOGL::GetRenderAPI() const
 {
-	return m_gl_context->IsGLES() ? RenderAPI::OpenGLES : RenderAPI::OpenGL;
+	return RenderAPI::OpenGL;
 }
 
 bool GSDeviceOGL::HasSurface() const

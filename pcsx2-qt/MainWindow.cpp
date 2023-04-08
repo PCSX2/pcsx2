@@ -2233,23 +2233,24 @@ std::optional<WindowInfo> MainWindow::createDisplayWindow(bool fullscreen, bool 
 	return wi;
 }
 
-std::optional<WindowInfo> MainWindow::updateDisplayWindow(bool fullscreen, bool render_to_main, bool surfaceless)
+std::optional<WindowInfo> MainWindow::updateDisplayWindow(bool recreate_window, bool fullscreen, bool render_to_main, bool surfaceless)
 {
-	DevCon.WriteLn("updateDisplayWindow() fullscreen=%s render_to_main=%s surfaceless=%s", fullscreen ? "true" : "false",
-		render_to_main ? "true" : "false", surfaceless ? "true" : "false");
+	DevCon.WriteLn("updateDisplayWindow() recreate=%s fullscreen=%s render_to_main=%s surfaceless=%s", recreate_window ? "true" : "false",
+		fullscreen ? "true" : "false", render_to_main ? "true" : "false", surfaceless ? "true" : "false");
 
 	QWidget* container = m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget);
 	const bool is_fullscreen = isRenderingFullscreen();
 	const bool is_rendering_to_main = isRenderingToMain();
 	const bool changing_surfaceless = (!m_display_widget != surfaceless);
-	if (fullscreen == is_fullscreen && is_rendering_to_main == render_to_main && !changing_surfaceless)
+	if (!recreate_window && fullscreen == is_fullscreen && is_rendering_to_main == render_to_main && !changing_surfaceless)
 		return m_display_widget->getWindowInfo();
 
 	// Skip recreating the surface if we're just transitioning between fullscreen and windowed with render-to-main off.
 	// .. except on Wayland, where everything tends to break if you don't recreate.
 	const bool has_container = (m_display_container != nullptr);
 	const bool needs_container = DisplayContainer::isNeeded(fullscreen, render_to_main);
-	if (!is_rendering_to_main && !render_to_main && has_container == needs_container && !needs_container && !changing_surfaceless)
+	if (!recreate_window && !is_rendering_to_main && !render_to_main && has_container == needs_container && !needs_container &&
+		!changing_surfaceless)
 	{
 		DevCon.WriteLn("Toggling to %s without recreating surface", (fullscreen ? "fullscreen" : "windowed"));
 

@@ -901,9 +901,9 @@ std::optional<WindowInfo> EmuThread::acquireRenderWindow()
 	return emit onCreateDisplayRequested(m_is_fullscreen, m_is_rendering_to_main);
 }
 
-std::optional<WindowInfo> EmuThread::updateRenderWindow()
+std::optional<WindowInfo> EmuThread::updateRenderWindow(bool recreate_window)
 {
-	return emit onUpdateDisplayRequested(m_is_fullscreen, !m_is_fullscreen && m_is_rendering_to_main, m_is_surfaceless);
+	return emit onUpdateDisplayRequested(recreate_window, m_is_fullscreen, !m_is_fullscreen && m_is_rendering_to_main, m_is_surfaceless);
 }
 
 void EmuThread::releaseRenderWindow()
@@ -911,14 +911,14 @@ void EmuThread::releaseRenderWindow()
 	emit onDestroyDisplayRequested();
 }
 
-std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI api)
+std::optional<WindowInfo> Host::AcquireRenderWindow()
 {
 	return g_emu_thread->acquireRenderWindow();
 }
 
-std::optional<WindowInfo> Host::UpdateRenderWindow()
+std::optional<WindowInfo> Host::UpdateRenderWindow(bool recreate_window)
 {
-	return g_emu_thread->updateRenderWindow();
+	return g_emu_thread->updateRenderWindow(recreate_window);
 }
 
 void Host::ReleaseRenderWindow()
