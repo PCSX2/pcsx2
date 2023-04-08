@@ -376,9 +376,14 @@ ivec2 clamp_wrap_uv_depth(ivec2 uv)
 vec4 sample_depth(vec2 st)
 {
     vec2 uv_f = vec2(clamp_wrap_uv_depth(ivec2(st))) * vec2(ScaledScaleFactor);
-    ivec2 uv = ivec2(uv_f);
 
+    #if PS_REGION_RECT == 1
+        uv_f = clamp(uv_f + STRange.xy, STRange.xy, STRange.zw);
+    #endif
+
+    ivec2 uv = ivec2(uv_f);
     vec4 t = vec4(0.0f);
+
 #if PS_TALES_OF_ABYSS_HLE == 1
     // Warning: UV can't be used in channel effect
     int depth = fetch_raw_depth();
