@@ -3055,6 +3055,11 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		int destX = 0;
 		int destY = 0;
 
+		// Create a cleared RT if we somehow end up with an empty source rect (because the RT isn't large enough).
+		const bool source_rect_empty = sRect.rempty();
+		const bool use_texture = (shader == ShaderConvert::COPY && !source_rect_empty);
+		GSVector4i region_rect = GSVector4i(0, 0, tw, th);
+
 		if (half_right)
 		{
 			// You typically hit this code in snow engine game. Dstsize is the size of of Dx/GL RT
@@ -3064,8 +3069,10 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			if (half_width < dst->m_unscaled_size.x)
 			{
 				const int copy_width = std::min(half_width, dst->m_unscaled_size.x - half_width);
-				sRect.x = static_cast<int>(static_cast<float>(half_width) * dst->m_scale);
-				sRect.z = std::min(static_cast<int>(static_cast<float>(half_width + copy_width) * dst->m_scale), dst->m_texture->GetWidth());
+				region_rect = GSVector4i(half_width, 0, half_width + copy_width, th);
+				GL_CACHE("TC: Half right fix: %d,%d => %d,%d", region_rect.x, region_rect.y, region_rect.z, region_rect.w);
+
+				sRect = sRect.blend32<5>(GSVector4i(GSVector4(region_rect.rintersect(dst->GetUnscaledRect())) * GSVector4(dst->m_scale)));
 				new_size.x = sRect.width();
 				src->m_unscaled_size.x = copy_width;
 			}
@@ -3075,15 +3082,11 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			}
 		}
 
-		// Create a cleared RT if we somehow end up with an empty source rect (because the RT isn't large enough).
-		const bool source_rect_empty = sRect.rempty();
-		const bool use_texture = (shader == ShaderConvert::COPY && !source_rect_empty);
-		const GSVector2i dst_texture_size = dst->m_texture->GetSize();
-
 		// Assuming everything matches up, instead of copying the target, we can just sample it directly.
 		// It's the same as doing the copy first, except we save GPU time.
 		// TODO: We still need to copy if the TBW is mismatched. Except when TBW <= 1 (Jak 2).
-		if (!half_right && // not the size change from above
+		const GSVector2i dst_texture_size = dst->m_texture->GetSize();
+		if ((!half_right || region_rect.z >= dst->m_unscaled_size.x) && // not a smaller subsample
 			use_texture && // not reinterpreting the RT
 			!force_target_copy)
 		{
@@ -3101,9 +3104,9 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 					dst_texture_size.y, new_size.x, new_size.y);
 
 				if (new_size.x != dst_texture_size.x)
-					src->m_region.SetX(0, tw);
+					src->m_region.SetX(region_rect.x, region_rect.z);
 				if (new_size.y != dst_texture_size.y)
-					src->m_region.SetY(0, th);
+					src->m_region.SetY(region_rect.y, region_rect.w);
 			}
 
 			// kill source immediately if it's the RT/DS, because that'll get invalidated immediately
