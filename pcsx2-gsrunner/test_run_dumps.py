@@ -7,20 +7,19 @@ import multiprocessing
 from pathlib import Path
 from functools import partial
 
-def is_gs_path(path):
-    ppath = Path(path)
-    for extension in [[".gs"], [".gs", ".xz"], [".gs", ".zst"]]:
-        if ppath.suffixes == extension:
-            return True
+def get_gs_name(path):
+    lpath = path.lower()
 
-    return False
+    for extension in [".gs", ".gs.xz", ".gs.zst"]:
+        if lpath.endswith(extension):
+            return os.path.basename(path)[:-len(extension)]
+
+    return None
 
 
 def run_regression_test(runner, dumpdir, renderer, upscale, renderhacks, parallel, gspath):
     args = [runner]
-    gsname = Path(gspath).name
-    while gsname.rfind('.') >= 0:
-        gsname = gsname[:gsname.rfind('.')]
+    gsname = get_gs_name(gspath)
 
     real_dumpdir = os.path.join(dumpdir, gsname).strip()
     if not os.path.exists(real_dumpdir):
@@ -62,7 +61,7 @@ def run_regression_test(runner, dumpdir, renderer, upscale, renderhacks, paralle
 
 def run_regression_tests(runner, gsdir, dumpdir, renderer, upscale, renderhacks, parallel=1):
     paths = glob.glob(gsdir + "/*.*", recursive=True)
-    gamepaths = list(filter(is_gs_path, paths))
+    gamepaths = list(filter(lambda x: get_gs_name(x) is not None, paths))
 
     if not os.path.isdir(dumpdir):
         os.mkdir(dumpdir)
