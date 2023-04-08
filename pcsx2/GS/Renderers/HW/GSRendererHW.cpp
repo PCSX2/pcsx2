@@ -2057,6 +2057,10 @@ void GSRendererHW::Draw()
 		rt->m_32_bits_fmt = m_texture_shuffle || (GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp != 16);
 	}
 
+	// Do the same for the depth target. Jackie Chan Adventures swaps from C32 to Z16 after a clear.
+	if (ds)
+		ds->m_32_bits_fmt = (GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].bpp != 16);
+
 	// Deferred update of TEX0. We don't want to change it when we're doing a shuffle/clear, because it
 	// may increase the buffer width, or change PSM, which breaks P8 conversion amongst other things.
 	const bool is_mem_clear = IsConstantDirectWriteMemClear(false);
