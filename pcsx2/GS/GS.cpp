@@ -242,7 +242,6 @@ static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail, bool
 	// Switch to exclusive fullscreen if enabled.
 	UpdateExclusiveFullscreen(false);
 
-	g_perfmon.Reset();
 	return true;
 }
 
@@ -277,6 +276,7 @@ static bool OpenGSRenderer(GSRendererType renderer, u8* basemem)
 
 	g_gs_renderer->SetRegsMem(basemem);
 	g_gs_renderer->ResetPCRTC();
+	g_perfmon.Reset();
 	return true;
 }
 
