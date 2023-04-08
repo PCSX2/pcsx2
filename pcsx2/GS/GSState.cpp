@@ -3434,7 +3434,25 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 		// Optimisation aims to reduce the amount of texture loaded to only the bit which will be read
 		GSVector4 st = m_vt.m_min.t.xyxy(m_vt.m_max.t);
 		if (linear)
+		{
 			st += GSVector4(-0.5f, 0.5f).xxyy();
+		}
+		else
+		{
+			// When drawing a sprite with point sampling, the UV range sampled is exclusive of the ending
+			// coordinate. Except, when the position is also offset backwards. We only do this for the
+			// hardware renderers currently, it does create some issues in software. Hardware needs the
+			// UVs to be within the target size, otherwise it can't translate sub-targets (see 10 Pin -
+			// Champions Alley and Miami Vice).
+			if (!clamp_to_tsize && m_vt.m_primclass == GS_SPRITE_CLASS && PRIM->FST == 1)
+			{
+				const int mask = (m_vt.m_min.p.floor() != m_vt.m_min.p).mask();
+				if (!(mask & 0x1))
+					st.z = std::max(st.x, st.z - 0.5f);
+				if (!(mask & 0x2))
+					st.w = std::max(st.y, st.w - 0.5f);
+			}
+		}
 
 		// Adjust texture range when sprites get scissor clipped. Since we linearly interpolate, this
 		// optimization doesn't work when perspective correction is enabled.
