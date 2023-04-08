@@ -15,12 +15,8 @@
 
 #pragma once
 
-#include "common/AlignedMalloc.h"
 #include "common/Assertions.h"
-#include "common/Exceptions.h"
 #include "common/SafeArray.h"
-
-#include "fmt/core.h"
 
 // Internal constructor for use by derived classes.  This allows a derived class to
 // use its own memory allocation (with an aligned memory, for example).
