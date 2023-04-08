@@ -70,7 +70,7 @@ public:
 
 	/// Called back from the GS thread when the display state changes (e.g. fullscreen, render to main).
 	std::optional<WindowInfo> acquireRenderWindow();
-	std::optional<WindowInfo> updateRenderWindow();
+	std::optional<WindowInfo> updateRenderWindow(bool recreate_window);
 	void connectDisplaySignals(DisplayWidget* widget);
 	void releaseRenderWindow();
 
@@ -118,7 +118,7 @@ Q_SIGNALS:
 	bool messageConfirmed(const QString& title, const QString& message);
 
 	std::optional<WindowInfo> onCreateDisplayRequested(bool fullscreen, bool render_to_main);
-	std::optional<WindowInfo> onUpdateDisplayRequested(bool fullscreen, bool render_to_main, bool surfaceless);
+	std::optional<WindowInfo> onUpdateDisplayRequested(bool recreate_window, bool fullscreen, bool render_to_main, bool surfaceless);
 	void onResizeDisplayRequested(qint32 width, qint32 height);
 	void onDestroyDisplayRequested();
 	void onRelativeMouseModeRequested(bool enabled);

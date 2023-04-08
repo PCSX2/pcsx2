@@ -105,7 +105,6 @@ const char* GSDevice::RenderAPIToString(RenderAPI api)
 		CASE(Metal);
 		CASE(Vulkan);
 		CASE(OpenGL);
-		CASE(OpenGLES);
 #undef CASE
 		// clang-format on
 	default:
@@ -323,7 +322,7 @@ void GSDevice::Recycle(GSTexture* t)
 bool GSDevice::UsesLowerLeftOrigin() const
 {
 	const RenderAPI api = GetRenderAPI();
-	return (api == RenderAPI::OpenGL || api == RenderAPI::OpenGLES);
+	return (api == RenderAPI::OpenGL);
 }
 
 void GSDevice::AgePool()

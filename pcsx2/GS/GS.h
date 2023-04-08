@@ -32,8 +32,7 @@ enum class RenderAPI
 	Metal,
 	D3D12,
 	Vulkan,
-	OpenGL,
-	OpenGLES
+	OpenGL
 };
 
 // ST_WRITE is defined in libc, avoid this
@@ -129,11 +128,11 @@ struct GSRecoverableError : GSError
 namespace Host
 {
 	/// Called when the GS is creating a render device.
-	std::optional<WindowInfo> AcquireRenderWindow(RenderAPI api);
+	std::optional<WindowInfo> AcquireRenderWindow();
 
 	/// Called on the MTGS thread when a request to update the display is received.
 	/// This could be a fullscreen transition, for example.
-	std::optional<WindowInfo> UpdateRenderWindow();
+	std::optional<WindowInfo> UpdateRenderWindow(bool recreate_window);
 
 	/// Called before drawing the OSD and other display elements.
 	void BeginPresentFrame();

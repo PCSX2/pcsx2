@@ -73,7 +73,6 @@ static HRESULT s_hr = E_FAIL;
 
 Pcsx2Config::GSOptions GSConfig;
 
-static RenderAPI s_render_api;
 static u64 s_next_manual_present_time;
 
 int GSinit()
@@ -171,18 +170,17 @@ static void UpdateExclusiveFullscreen(bool force_off)
 	}
 }
 
-static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail)
+static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail, bool reopening, bool recreate_window)
 {
-	s_render_api = GetAPIForRenderer(renderer);
-
-	std::optional<WindowInfo> wi = Host::AcquireRenderWindow(s_render_api);
+	std::optional<WindowInfo> wi = reopening ? Host::UpdateRenderWindow(recreate_window) : Host::AcquireRenderWindow();
 	if (!wi.has_value())
 	{
 		Console.Error("Failed to acquire render window.");
 		return false;
 	}
 
-	switch (s_render_api)
+	const RenderAPI new_api = GetAPIForRenderer(renderer);
+	switch (new_api)
 	{
 #ifdef _WIN32
 		case RenderAPI::D3D11:
@@ -199,7 +197,6 @@ static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail)
 #endif
 #ifdef ENABLE_OPENGL
 		case RenderAPI::OpenGL:
-		case RenderAPI::OpenGLES:
 			g_gs_device = std::make_unique<GSDeviceOGL>();
 			break;
 #endif
@@ -211,7 +208,7 @@ static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail)
 #endif
 
 		default:
-			Console.Error("Unsupported render API %s", GSDevice::RenderAPIToString(s_render_api));
+			Console.Error("Unsupported render API %s", GSDevice::RenderAPIToString(new_api));
 			return false;
 	}
 
@@ -239,8 +236,7 @@ static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail)
 
 	GSConfig.OsdShowGPU = EmuConfig.GS.OsdShowGPU && g_gs_device->SetGPUTimingEnabled(true);
 
-	s_render_api = g_gs_device->GetRenderAPI();
-	Console.WriteLn(Color_StrongGreen, "%s Graphics Driver Info:", GSDevice::RenderAPIToString(s_render_api));
+	Console.WriteLn(Color_StrongGreen, "%s Graphics Driver Info:", GSDevice::RenderAPIToString(new_api));
 	Console.Indent().WriteLn(g_gs_device->GetDriverInfo());
 
 	// Switch to exclusive fullscreen if enabled.
@@ -250,7 +246,7 @@ static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail)
 	return true;
 }
 
-static void CloseGSDevice(bool clear_state)
+static void CloseGSDevice(bool clear_state, bool reopening)
 {
 	if (!g_gs_device)
 		return;
@@ -260,7 +256,8 @@ static void CloseGSDevice(bool clear_state)
 	g_gs_device->Destroy();
 	g_gs_device.reset();
 
-	Host::ReleaseRenderWindow();
+	if (!reopening)
+		Host::ReleaseRenderWindow();
 }
 
 static bool OpenGSRenderer(GSRendererType renderer, u8* basemem)
@@ -337,19 +334,24 @@ bool GSreopen(bool recreate_device, bool recreate_renderer, const Pcsx2Config::G
 
 	if (recreate_device)
 	{
-		CloseGSDevice(false);
+		// We need a new render window when changing APIs.
+		const bool recreate_window = (g_gs_device->GetRenderAPI() != GetAPIForRenderer(GSConfig.Renderer));
+		CloseGSDevice(false, true);
 
-		if (!OpenGSDevice(GSConfig.Renderer, false) || (recreate_renderer && !OpenGSRenderer(GSConfig.Renderer, basemem)))
+		if (!OpenGSDevice(GSConfig.Renderer, false, true, recreate_window) ||
+			(recreate_renderer && !OpenGSRenderer(GSConfig.Renderer, basemem)))
 		{
 			Host::AddKeyedOSDMessage(
 				"GSReopenFailed", "Failed to reopen, restoring old configuration.", Host::OSD_CRITICAL_ERROR_DURATION);
 
-			CloseGSDevice(false);
+			CloseGSDevice(false, true);
 
 			GSConfig = old_config;
-			if (!OpenGSDevice(GSConfig.Renderer, false) || (recreate_renderer && !OpenGSRenderer(GSConfig.Renderer, basemem)))
+			if (!OpenGSDevice(GSConfig.Renderer, false, true, recreate_window) ||
+				(recreate_renderer && !OpenGSRenderer(GSConfig.Renderer, basemem)))
 			{
 				pxFailRel("Failed to reopen GS on old config");
+				Host::ReleaseRenderWindow();
 				return false;
 			}
 		}
@@ -385,12 +387,12 @@ bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* b
 	GSConfig = config;
 	GSConfig.Renderer = renderer;
 
-	bool res = OpenGSDevice(renderer, true);
+	bool res = OpenGSDevice(renderer, true, false, false);
 	if (res)
 	{
 		res = OpenGSRenderer(renderer, basemem);
 		if (!res)
-			CloseGSDevice(true);
+			CloseGSDevice(true, false);
 	}
 
 	if (!res)
@@ -408,7 +410,7 @@ bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* b
 void GSclose()
 {
 	CloseGSRenderer();
-	CloseGSDevice(true);
+	CloseGSDevice(true, false);
 }
 
 void GSreset(bool hardware_reset)
@@ -627,7 +629,7 @@ void GSUpdateDisplayWindow()
 	UpdateExclusiveFullscreen(true);
 	g_gs_device->DestroySurface();
 
-	const std::optional<WindowInfo> wi = Host::UpdateRenderWindow();
+	const std::optional<WindowInfo> wi = Host::UpdateRenderWindow(false);
 	if (!wi.has_value())
 	{
 		pxFailRel("Failed to get window info after update.");
@@ -726,7 +728,7 @@ void GSgetInternalResolution(int* width, int* height)
 void GSgetStats(std::string& info)
 {
 	GSPerfMon& pm = g_perfmon;
-	const char* api_name = GSDevice::RenderAPIToString(s_render_api);
+	const char* api_name = GSDevice::RenderAPIToString(g_gs_device->GetRenderAPI());
 	if (GSConfig.Renderer == GSRendererType::SW)
 	{
 		const double fps = GetVerticalFrequency();
@@ -793,7 +795,7 @@ void GSgetTitleStats(std::string& info)
 	static constexpr const char* deinterlace_modes[] = {
 		"Automatic", "None", "Weave tff", "Weave bff", "Bob tff", "Bob bff", "Blend tff", "Blend bff", "Adaptive tff", "Adaptive bff"};
 
-	const char* api_name = GSDevice::RenderAPIToString(s_render_api);
+	const char* api_name = GSDevice::RenderAPIToString(g_gs_device->GetRenderAPI());
 	const char* hw_sw_name = (GSConfig.Renderer == GSRendererType::Null) ? " Null" : (GSConfig.UseHardwareRenderer() ? " HW" : " SW");
 	const char* deinterlace_mode = deinterlace_modes[static_cast<int>(GSConfig.InterlaceMode)];
 
@@ -900,15 +902,10 @@ void GSSwitchRenderer(GSRendererType new_renderer)
 	if (!g_gs_renderer || GSConfig.Renderer == new_renderer)
 		return;
 
-	RenderAPI existing_api = g_gs_device->GetRenderAPI();
-	if (existing_api == RenderAPI::OpenGLES)
-		existing_api = RenderAPI::OpenGL;
-
 	const bool is_software_switch = (new_renderer == GSRendererType::SW || GSConfig.Renderer == GSRendererType::SW);
-	const bool recreate_display = (!is_software_switch && existing_api != GetAPIForRenderer(new_renderer));
 	const Pcsx2Config::GSOptions old_config(GSConfig);
 	GSConfig.Renderer = new_renderer;
-	if (!GSreopen(recreate_display, true, old_config))
+	if (!GSreopen(!is_software_switch, true, old_config))
 		pxFailRel("Failed to reopen GS for renderer switch.");
 }
 
