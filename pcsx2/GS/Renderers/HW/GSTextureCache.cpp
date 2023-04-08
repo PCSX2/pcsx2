@@ -559,22 +559,70 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 	// Check only current frame, I guess it is only used as a postprocessing effect
 	const u32 bp = TEX0.TBP0;
 	const u32 psm = TEX0.PSM;
+	bool inside_target = false;
+	GSVector4i target_rc;
 
 	for (auto t : m_dst[DepthStencil])
 	{
-		if (t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
+		if (!t->m_used || !t->m_dirty.empty())
+			continue;
+		
+		if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 		{
 			ASSERT(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
 			if (t->m_age == 0)
 			{
 				// Perfect Match
 				dst = t;
+				inside_target = false;
 				break;
 			}
 			else if (t->m_age == 1)
 			{
 				// Better than nothing (Full Spectrum Warrior)
 				dst = t;
+				inside_target = false;
+			}
+		}
+		else if (!dst && bp >= t->m_TEX0.TBP0 && bp < t->m_end_block)
+		{
+			const GSVector2i page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
+			const bool can_translate = CanTranslate(bp, TEX0.TBW, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
+			const bool swizzle_match = GSLocalMemory::m_psm[psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
+
+			if (can_translate)
+			{
+				if (swizzle_match)
+				{
+					target_rc = TranslateAlignedRectByPage(t, bp, psm, TEX0.TBW, r);
+				}
+				else
+				{
+					// If it's not page aligned, grab the whole pages it covers, to be safe.
+					if (GSLocalMemory::m_psm[psm].bpp != GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp)
+					{
+						const GSVector2i dst_page_size = GSLocalMemory::m_psm[psm].pgs;
+						target_rc = GSVector4i(target_rc.x / page_size.x, target_rc.y / page_size.y,
+							(target_rc.z + (page_size.x - 1)) / page_size.x,
+							(target_rc.w + (page_size.y - 1)) / page_size.y);
+						target_rc = GSVector4i(target_rc.x * dst_page_size.x, target_rc.y * dst_page_size.y,
+							target_rc.z * dst_page_size.x, target_rc.w * dst_page_size.y);
+					}
+					else
+					{
+						target_rc.x &= ~(page_size.x - 1);
+						target_rc.y &= ~(page_size.y - 1);
+						target_rc.z = (r.z + (page_size.x - 1)) & ~(page_size.x - 1);
+						target_rc.w = (r.w + (page_size.y - 1)) & ~(page_size.y - 1);
+					}
+					target_rc = TranslateAlignedRectByPage(t, bp & ~((1 << 5) - 1), psm, TEX0.TBW, target_rc);
+				}
+
+				if (!target_rc.rempty())
+				{
+					dst = t;
+					inside_target = true;
+				}
 			}
 		}
 	}
@@ -589,6 +637,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 			{
 				ASSERT(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
 				dst = t;
+				inside_target = false;
 				break;
 			}
 		}
@@ -611,6 +660,13 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		src->m_32_bits_fmt = dst->m_32_bits_fmt;
 		src->m_valid_rect = dst->m_valid;
 		src->m_end_block = dst->m_end_block;
+
+		if (inside_target)
+		{
+			// Need to set it up as a region target.
+			src->m_region.SetX(target_rc.x, target_rc.z);
+			src->m_region.SetY(target_rc.y, target_rc.w);
+		}
 
 		if (GSRendererHW::GetInstance()->IsTBPFrameOrZ(dst->m_TEX0.TBP0))
 		{

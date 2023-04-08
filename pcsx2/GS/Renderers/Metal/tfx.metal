@@ -563,9 +563,13 @@ struct PSMain
 	float4 sample_depth(float2 st)
 	{
 		float2 uv_f = float2(clamp_wrap_uv_depth(ushort2(st))) * float2(cb.scale_factor.x);
-		ushort2 uv = ushort2(uv_f);
 
+		if (PS_REGION_RECT)
+			uv_f = clamp(uv_f + cb.st_range.xy, cb.st_range.xy, cb.st_range.zw);
+
+		ushort2 uv = ushort2(uv_f);
 		float4 t = float4(0);
+
 		if (PS_TALES_OF_ABYSS_HLE)
 		{
 			// Warning: UV can't be used in channel effect

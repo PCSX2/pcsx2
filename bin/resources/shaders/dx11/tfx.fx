@@ -437,8 +437,12 @@ int2 clamp_wrap_uv_depth(int2 uv)
 float4 sample_depth(float2 st, float2 pos)
 {
 	float2 uv_f = (float2)clamp_wrap_uv_depth(int2(st)) * (float2)ScaledScaleFactor;
-	int2 uv = (int2)uv_f;
 
+#if PS_REGION_RECT == 1
+	uv_f = clamp(uv_f + STRange.xy, STRange.xy, STRange.zw);
+#endif
+
+	int2 uv = (int2)uv_f;
 	float4 t = (float4)(0.0f);
 
 	if (PS_TALES_OF_ABYSS_HLE == 1)
