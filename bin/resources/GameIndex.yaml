@@ -12288,7 +12288,7 @@ SLES-51113:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - DMABusyHack # Fixes the corrupted fade effect in cutscenes.
+    - InstantDMAHack # Fixes cut-off text.
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLES-51114:
