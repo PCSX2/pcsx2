@@ -15,6 +15,7 @@
 
 #include "StreamBuffer.h"
 #include "common/Align.h"
+#include "common/AlignedMalloc.h"
 #include "common/Assertions.h"
 #include <array>
 #include <cstring>
@@ -49,11 +50,14 @@ namespace GL
 		class BufferSubDataStreamBuffer final : public StreamBuffer
 		{
 		public:
-			~BufferSubDataStreamBuffer() override = default;
+			~BufferSubDataStreamBuffer() override
+			{
+				_aligned_free(m_cpu_buffer);
+			}
 
 			MappingResult Map(u32 alignment, u32 min_size) override
 			{
-				return MappingResult{static_cast<void*>(m_cpu_buffer.data()), 0, 0, m_size / alignment};
+				return MappingResult{static_cast<void*>(m_cpu_buffer), 0, 0, m_size / alignment};
 			}
 
 			void Unmap(u32 used_size) override
@@ -62,7 +66,7 @@ namespace GL
 					return;
 
 				glBindBuffer(m_target, m_buffer_id);
-				glBufferSubData(m_target, 0, used_size, m_cpu_buffer.data());
+				glBufferSubData(m_target, 0, used_size, m_cpu_buffer);
 			}
 
 			u32 GetChunkSize() const override
@@ -93,22 +97,27 @@ namespace GL
 		private:
 			BufferSubDataStreamBuffer(GLenum target, GLuint buffer_id, u32 size)
 				: StreamBuffer(target, buffer_id, size)
-				, m_cpu_buffer(size)
 			{
+				m_cpu_buffer = static_cast<u8*>(_aligned_malloc(size, 32));
+				if (!m_cpu_buffer)
+					pxFailRel("Failed to allocate CPU storage for GL buffer");
 			}
 
-			std::vector<u8> m_cpu_buffer;
+			u8* m_cpu_buffer;
 		};
 
 		// Uses BufferData() to orphan the buffer after every update. Used on Mali where BufferSubData forces a sync.
 		class BufferDataStreamBuffer final : public StreamBuffer
 		{
 		public:
-			~BufferDataStreamBuffer() override = default;
+			~BufferDataStreamBuffer() override
+			{
+				_aligned_free(m_cpu_buffer);
+			}
 
 			MappingResult Map(u32 alignment, u32 min_size) override
 			{
-				return MappingResult{static_cast<void*>(m_cpu_buffer.data()), 0, 0, m_size / alignment};
+				return MappingResult{static_cast<void*>(m_cpu_buffer), 0, 0, m_size / alignment};
 			}
 
 			void Unmap(u32 used_size) override
@@ -117,7 +126,7 @@ namespace GL
 					return;
 
 				glBindBuffer(m_target, m_buffer_id);
-				glBufferData(m_target, used_size, m_cpu_buffer.data(), GL_STREAM_DRAW);
+				glBufferData(m_target, used_size, m_cpu_buffer, GL_STREAM_DRAW);
 			}
 
 			u32 GetChunkSize() const override
@@ -148,11 +157,13 @@ namespace GL
 		private:
 			BufferDataStreamBuffer(GLenum target, GLuint buffer_id, u32 size)
 				: StreamBuffer(target, buffer_id, size)
-				, m_cpu_buffer(size)
 			{
+				m_cpu_buffer = static_cast<u8*>(_aligned_malloc(size, 32));
+				if (!m_cpu_buffer)
+					pxFailRel("Failed to allocate CPU storage for GL buffer");
 			}
 
-			std::vector<u8> m_cpu_buffer;
+			u8* m_cpu_buffer;
 		};
 
 		// Base class for implementations which require syncing.
