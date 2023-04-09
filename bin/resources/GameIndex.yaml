@@ -94,6 +94,8 @@ CPCS-01020:
   compat: 5
   clampModes:
     vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
+  gsHWFixes:
+    maximumBlendingLevel: 0 # Fixes unnecessary load on the GPU.
 GUST-00009:
   name: "Mana Khemia - Alchemists of Al-Revis [Premium Box]"
   region: "NTSC-J"
@@ -16953,6 +16955,8 @@ SLES-53099:
     - InstantDMAHack # Game has weird DMA handling (possible cache things?).
   roundModes:
     vu1RoundMode: 0 # Fixes shadow rendering.
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Improves speed by a moderate amount.
 SLES-53100:
   name: "Scooby-Doo! Unmasked"
   region: "PAL-M4"
@@ -24562,6 +24566,8 @@ SLKA-25219:
   compat: 5
   clampModes:
     vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
+  gsHWFixes:
+    maximumBlendingLevel: 0 # Fixes unnecessary load on the GPU.
 SLKA-25221:
   name: "Busin 0 - Wizardry Alternative Neo"
   region: "NTSC-K"
@@ -31330,6 +31336,8 @@ SLPM-65869:
   compat: 5
   clampModes:
     vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
+  gsHWFixes:
+    maximumBlendingLevel: 0 # Fixes unnecessary load on the GPU.
 SLPM-65870:
   name: "Magic Teacher Negima - Honor Version"
   region: "NTSC-J"
@@ -32938,6 +32946,8 @@ SLPM-66280:
   compat: 5
   clampModes:
     vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
+  gsHWFixes:
+    maximumBlendingLevel: 0 # Fixes unnecessary load on the GPU.
 SLPM-66281:
   name: "Sonic Riders"
   region: "NTSC-J"
@@ -36128,6 +36138,8 @@ SLPM-74245:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
+  gsHWFixes:
+    maximumBlendingLevel: 0 # Fixes unnecessary load on the GPU.
 SLPM-74246:
   name: "Capcom vs. SNK 2 - Millionaire Fighting 2001 [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
@@ -36153,6 +36165,8 @@ SLPM-74248:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
+  gsHWFixes:
+    maximumBlendingLevel: 0 # Fixes unnecessary load on the GPU.
 SLPM-74249:
   name: "Sengoku Musou Mushoden [PlayStation 2 The Best]"
   region: "NTSC-J"
