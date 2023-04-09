@@ -17507,7 +17507,7 @@ SLES-53390:
   region: "PAL-E"
   compat: 5
   clampModes:
-    vuClampMode: 0 # Fixes Spider-Man's eye texture colour.
+    vu1ClampMode: 0 # Fixes Spider-Man's eye texture colour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
     partialTargetInvalidation: 1 # Fixes texture distortion.
@@ -17519,7 +17519,7 @@ SLES-53391:
   name: "Ultimate Spider-Man"
   region: "PAL-M5"
   clampModes:
-    vuClampMode: 0 # Fixes Spider-Man's eye texture colour.
+    vu1ClampMode: 0 # Fixes Spider-Man's eye texture colour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
     partialTargetInvalidation: 1 # Fixes texture distortion.
@@ -18447,7 +18447,7 @@ SLES-53672:
   name: "Ultimate Spider-Man [Limited]"
   region: "PAL-E"
   clampModes:
-    vuClampMode: 0 # Fixes Fixes Spider-Man's eye texture colour.
+    vu1ClampMode: 0 # Fixes Fixes Spider-Man's eye texture colour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
     partialTargetInvalidation: 1 # Fixes texture distortion.
@@ -33396,7 +33396,7 @@ SLPM-66404:
   name: "Ultimate Spider-Man"
   region: "NTSC-J"
   clampModes:
-    vuClampMode: 0 # Fixes Spider-Man's eye texture colour.
+    vu1ClampMode: 0 # Fixes Spider-Man's eye texture colour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
     partialTargetInvalidation: 1 # Fixes texture distortion.
@@ -45729,7 +45729,7 @@ SLUS-20870:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    vuClampMode: 0 # Fixes wrong texture colour.
+    vu1ClampMode: 0 # Fixes wrong texture colour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
     partialTargetInvalidation: 1 # Fixes texture distortion.
@@ -48027,7 +48027,7 @@ SLUS-21285:
   name: "Ultimate Spider-Man [Limited Edition]"
   region: "NTSC-U"
   clampModes:
-    vuClampMode: 0 # Fixes Spider-Man's eyes texture.
+    vu1ClampMode: 0 # Fixes Spider-Man's eyes texture.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
     partialTargetInvalidation: 1 # Fixes texture distortion.
@@ -52345,7 +52345,7 @@ TCPS-10158:
   name: "Ultimate Spider-Man"
   region: "NTSC-J"
   clampModes:
-    vuClampMode: 0 # Fixes Spider-Man's eye texture colour.
+    vu1ClampMode: 0 # Fixes Spider-Man's eye texture colour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
     partialTargetInvalidation: 1 # Fixes texture distortion.
