@@ -2098,6 +2098,10 @@ void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
 
 void GSDeviceOGL::OMUnbindTexture(GSTextureOGL* tex)
 {
+	if (GLState::rt != tex && GLState::ds != tex)
+		return;
+
+	OMSetFBO(m_fbo);
 	if (GLState::rt == tex)
 		OMAttachRt();
 	if (GLState::ds == tex)
