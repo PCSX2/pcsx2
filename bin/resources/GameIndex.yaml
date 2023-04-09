@@ -2452,6 +2452,8 @@ SCED-52946:
 SCED-52952:
   name: "Jak 3 [Demo]"
   region: "PAL-M5"
+  gameFixes:
+    - InstantDMAHack # Fixes holes in face geometry.
   gsHWFixes:
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
@@ -3827,6 +3829,8 @@ SCES-52460:
   name: "Jak 3"
   region: "PAL-M7"
   compat: 5
+  gameFixes:
+    - InstantDMAHack # Fixes holes in face geometry.
   gsHWFixes:
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
@@ -5179,6 +5183,8 @@ SCKA-20039:
 SCKA-20040:
   name: "Jak 3"
   region: "NTSC-K"
+  gameFixes:
+    - InstantDMAHack # Fixes holes in face geometry.
   gsHWFixes:
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
@@ -8034,6 +8040,8 @@ SCUS-97330:
   name: "Jak 3"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - InstantDMAHack # Fixes holes in face geometry.
   gsHWFixes:
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
@@ -8291,6 +8299,8 @@ SCUS-97411:
 SCUS-97412:
   name: "Jak 3 [Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - InstantDMAHack # Fixes holes in face geometry.
   gsHWFixes:
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
@@ -8794,6 +8804,8 @@ SCUS-97515:
 SCUS-97516:
   name: "Jak 3 [Greatest Hits]"
   region: "NTSC-U"
+  gameFixes:
+    - InstantDMAHack # Fixes holes in face geometry.
   gsHWFixes:
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
