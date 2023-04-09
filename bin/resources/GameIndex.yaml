@@ -20199,32 +20199,27 @@ SLES-54354:
   compat: 5
   gsHWFixes:
     getSkipCount: "GSC_FFXGames"
-    beforeDraw: "OI_FFXII"
 SLES-54355:
   name: "Final Fantasy XII"
   region: "PAL-F"
   gsHWFixes:
     getSkipCount: "GSC_FFXGames"
-    beforeDraw: "OI_FFXII"
 SLES-54356:
   name: "Final Fantasy XII"
   region: "PAL-G"
   gsHWFixes:
     getSkipCount: "GSC_FFXGames"
-    beforeDraw: "OI_FFXII"
 SLES-54357:
   name: "Final Fantasy XII"
   region: "PAL-I"
   gsHWFixes:
     getSkipCount: "GSC_FFXGames"
-    beforeDraw: "OI_FFXII"
 SLES-54358:
   name: "Final Fantasy XII"
   region: "PAL-S"
   compat: 5
   gsHWFixes:
     getSkipCount: "GSC_FFXGames"
-    beforeDraw: "OI_FFXII"
 SLES-54359:
   name: "Legend of Spyro, The - A New Beginning"
   region: "PAL-M6"

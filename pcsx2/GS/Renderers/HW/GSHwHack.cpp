@@ -907,89 +907,6 @@ bool GSHwHack::OI_DBZBTGames(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTe
 	return false; // Skip current draw
 }
 
-bool GSHwHack::OI_FFXII(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	static u32* video = nullptr;
-	static size_t lines = 0;
-
-	if (lines == 0)
-	{
-		if (r.m_vt.m_primclass == GS_LINE_CLASS && (r.m_vertex.next == 448 * 2 || r.m_vertex.next == 512 * 2))
-		{
-			lines = r.m_vertex.next / 2;
-		}
-	}
-	else
-	{
-		if (r.m_vt.m_primclass == GS_POINT_CLASS)
-		{
-			if (r.m_vertex.next >= 16 * 512)
-			{
-				// incoming pixels are stored in columns, one column is 16x512, total res 448x512 or 448x454
-				GL_INS("OI_FFXII() Buffering pixels");
-
-				if (!video)
-					video = new u32[512 * 512];
-
-				const GSVertex* RESTRICT v = r.m_vertex.buff;
-				const int ox = RCONTEXT->XYOFFSET.OFX - 8;
-				const int oy = RCONTEXT->XYOFFSET.OFY - 8;
-
-				for (int i = (int)r.m_vertex.next; i > 0; i--, v++)
-				{
-					const int x = (v->XYZ.X - ox) >> 4;
-					const int y = (v->XYZ.Y - oy) >> 4;
-
-					if (x < 0 || x >= 448 || y < 0 || y >= (int)lines)
-						return false; // le sigh
-
-					video[(y << 8) + (y << 7) + (y << 6) + x] = v->RGBAQ.U32[0];
-				}
-
-				return false;
-			}
-			else
-			{
-				lines = 0;
-			}
-		}
-		else if (r.m_vt.m_primclass == GS_LINE_CLASS)
-		{
-			if (r.m_vertex.next == lines * 2)
-			{
-				// normally, this step would copy the video onto screen with 512 texture mapped horizontal lines,
-				// but we use the stored video data to create a new texture, and replace the lines with two triangles
-				GL_INS("OI_FFXII() replace lines with a quad");
-
-				GSTexture* tex = g_gs_device->CreateTexture(512, 512, 1, GSTexture::Format::Color);
-				tex->Update(GSVector4i(0, 0, 448, lines), video, 448 * 4);
-				g_texture_cache->ReplaceSourceTexture(t, tex, 1.0f, tex->GetSize(), nullptr, false);
-
-				r.m_vertex.buff[2] = r.m_vertex.buff[r.m_vertex.next - 2];
-				r.m_vertex.buff[3] = r.m_vertex.buff[r.m_vertex.next - 1];
-
-				r.m_index.buff[0] = 0;
-				r.m_index.buff[1] = 1;
-				r.m_index.buff[2] = 2;
-				r.m_index.buff[3] = 1;
-				r.m_index.buff[4] = 2;
-				r.m_index.buff[5] = 3;
-
-				r.m_vertex.head = r.m_vertex.tail = r.m_vertex.next = 4;
-				r.m_index.tail = 6;
-
-				r.m_vt.Update(r.m_vertex.buff, r.m_index.buff, r.m_vertex.tail, r.m_index.tail, GS_TRIANGLE_CLASS);
-			}
-			else
-			{
-				lines = 0;
-			}
-		}
-	}
-
-	return true;
-}
-
 bool GSHwHack::OI_FFX(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
 	const u32 FBP = RFRAME.Block();
@@ -1005,7 +922,6 @@ bool GSHwHack::OI_FFX(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCa
 
 	return true;
 }
-
 
 bool GSHwHack::OI_RozenMaidenGebetGarden(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
@@ -1279,8 +1195,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 
 	CRC_F(GSC_AceCombat4, CRCHackLevel::Aggressive),
 	CRC_F(GSC_FFXGames, CRCHackLevel::Aggressive),
-	CRC_F(GSC_FFXGames, CRCHackLevel::Aggressive),
-	CRC_F(GSC_FFXGames, CRCHackLevel::Aggressive),
 	CRC_F(GSC_RedDeadRevolver, CRCHackLevel::Aggressive),
 	CRC_F(GSC_ShinOnimusha, CRCHackLevel::Aggressive),
 	CRC_F(GSC_XenosagaE3, CRCHackLevel::Aggressive),
@@ -1293,7 +1207,6 @@ const GSHwHack::Entry<GSRendererHW::OI_Ptr> GSHwHack::s_before_draw_functions[] 
 	CRC_F(OI_PointListPalette, CRCHackLevel::Minimum),
 	CRC_F(OI_BigMuthaTruckers, CRCHackLevel::Minimum),
 	CRC_F(OI_DBZBTGames, CRCHackLevel::Minimum),
-	CRC_F(OI_FFXII, CRCHackLevel::Minimum),
 	CRC_F(OI_FFX, CRCHackLevel::Minimum),
 	CRC_F(OI_RozenMaidenGebetGarden, CRCHackLevel::Minimum),
 	CRC_F(OI_SonicUnleashed, CRCHackLevel::Minimum),
