@@ -17501,6 +17501,8 @@ SLES-53390:
     partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
+    autoFlush: 1 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
+    halfPixelOffset: 2
 SLES-53391:
   name: "Ultimate Spider-Man"
   region: "PAL-M5"
@@ -17511,6 +17513,8 @@ SLES-53391:
     partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
+    autoFlush: 1 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
+    halfPixelOffset: 2
 SLES-53393:
   name: "Spartan - Total Warrior"
   region: "PAL-M5"
@@ -18437,6 +18441,8 @@ SLES-53672:
     partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
+    autoFlush: 1 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
+    halfPixelOffset: 2
 SLES-53676:
   name: "WWE SmackDown! vs. RAW 2006"
   region: "PAL-E"
@@ -33384,6 +33390,8 @@ SLPM-66404:
     partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
+    autoFlush: 1 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
+    halfPixelOffset: 2
 SLPM-66405:
   name: "Radirgy Precious"
   region: "NTSC-J"
@@ -45715,6 +45723,8 @@ SLUS-20870:
     partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
+    autoFlush: 1 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
+    halfPixelOffset: 2
 SLUS-20871:
   name: "Naval Ops - Commander"
   region: "NTSC-U"
@@ -48011,6 +48021,8 @@ SLUS-21285:
     partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
+    autoFlush: 1 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
+    halfPixelOffset: 2
 SLUS-21286:
   name: "WWE SmackDown! vs. RAW 2006"
   region: "NTSC-U"
@@ -52327,6 +52339,8 @@ TCPS-10158:
     partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
+    autoFlush: 1 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
+    halfPixelOffset: 2
 TCPS-10159:
   name: "Suzuki TT Super Bikes - Real Road Racing"
   region: "NTSC-J"
