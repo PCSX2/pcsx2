@@ -258,14 +258,10 @@ void GSRendererHW::Lines2Sprites()
 		int i = static_cast<int>(count) * 2 - 4;
 		GSVertex* s = &m_vertex.buff[count - 2];
 		GSVertex* q = &m_vertex.buff[count * 2 - 4];
-		u32* RESTRICT index = &m_index.buff[count * 3 - 6];
+		u16* RESTRICT index = &m_index.buff[count * 3 - 6];
 
-		alignas(16) static constexpr std::array<int, 8> tri_normal_indices = {{0, 1, 2, 1, 2, 3}};
-		alignas(16) static constexpr std::array<int, 8> tri_swapped_indices = {{0, 1, 2, 1, 2, 3}};
-		const bool index_swap = !g_gs_device->Features().provoking_vertex_last;
-		const int* tri_indices = index_swap ? tri_swapped_indices.data() : tri_normal_indices.data();
-		const GSVector4i indices_low(GSVector4i::load<true>(tri_indices));
-		const GSVector4i indices_high(GSVector4i::loadl(tri_indices + 4));
+		// Sprites are flat shaded, so the provoking vertex doesn't matter here.
+		constexpr GSVector4i indices = GSVector4i::cxpr16(0, 1, 2, 1, 2, 3, 0, 0);
 
 		for (; i >= 0; i -= 4, s -= 2, q -= 4, index -= 6)
 		{
@@ -310,9 +306,10 @@ void GSRendererHW::Lines2Sprites()
 			q[1] = v0;
 			q[2] = v1;
 
-			const GSVector4i i_splat(i);
-			GSVector4i::store<false>(index, i_splat + indices_low);
-			GSVector4i::storel(index + 4, i_splat + indices_high);
+			const GSVector4i this_indices = GSVector4i::broadcast16(i).add16(indices);
+			const int high = this_indices.extract32<2>();
+			GSVector4i::storel(index, this_indices);
+			std::memcpy(&index[4], &high, sizeof(high));
 		}
 
 		m_vertex.head = m_vertex.tail = m_vertex.next = count * 2;
@@ -322,26 +319,30 @@ void GSRendererHW::Lines2Sprites()
 
 void GSRendererHW::ExpandLineIndices()
 {
-	const u32 process_count = (m_index.tail + 3) / 4 * 4;
+	const u32 process_count = (m_index.tail + 7) / 8 * 8;
 	const u32 expansion_factor = 3;
 	m_index.tail *= expansion_factor;
 	GSVector4i* end = reinterpret_cast<GSVector4i*>(m_index.buff);
 	GSVector4i* read = reinterpret_cast<GSVector4i*>(m_index.buff + process_count);
 	GSVector4i* write = reinterpret_cast<GSVector4i*>(m_index.buff + process_count * expansion_factor);
 
-	constexpr GSVector4i low0 = GSVector4i::cxpr(0, 1, 2, 1);
-	constexpr GSVector4i low1 = GSVector4i::cxpr(2, 3, 0, 1);
-	constexpr GSVector4i low2 = GSVector4i::cxpr(2, 1, 2, 3);
+	constexpr GSVector4i mask0 = GSVector4i::cxpr8(0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 2, 3, 4, 5, 4, 5);
+	constexpr GSVector4i mask1 = GSVector4i::cxpr8(6, 7, 4, 5, 6, 7, 6, 7, 8, 9, 8, 9, 10, 11, 8, 9);
+	constexpr GSVector4i mask2 = GSVector4i::cxpr8(10, 11, 10, 11, 12, 13, 12, 13, 14, 15, 12, 13, 14, 15, 14, 15);
+
+	constexpr GSVector4i low0 = GSVector4i::cxpr16(0, 1, 2, 1, 2, 3, 0, 1);
+	constexpr GSVector4i low1 = GSVector4i::cxpr16(2, 1, 2, 3, 0, 1, 2, 1);
+	constexpr GSVector4i low2 = GSVector4i::cxpr16(2, 3, 0, 1, 2, 1, 2, 3);
 
 	while (read > end)
 	{
 		read -= 1;
 		write -= expansion_factor;
 
-		const GSVector4i in = read->sll32(2);
-		write[0] = in.xxyx() | low0;
-		write[1] = in.yyzz() | low1;
-		write[2] = in.wzww() | low2;
+		const GSVector4i in = read->sll16(2);
+		write[0] = in.shuffle8(mask0) | low0;
+		write[1] = in.shuffle8(mask1) | low1;
+		write[2] = in.shuffle8(mask2) | low2;
 	}
 }
 

@@ -1440,7 +1440,7 @@ void GSDevice11::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rect
 	const u32 vertex_reserve_size = num_rects * 4;
 	const u32 index_reserve_size = num_rects * 6;
 	GSVertexPT1* verts = static_cast<GSVertexPT1*>(IAMapVertexBuffer(sizeof(GSVertexPT1), vertex_reserve_size));
-	u32* idx = IAMapIndexBuffer(index_reserve_size);
+	u16* idx = IAMapIndexBuffer(index_reserve_size);
 	u32 icount = 0;
 	u32 vcount = 0;
 	for (u32 i = 0; i < num_rects; i++)
@@ -1712,7 +1712,6 @@ void GSDevice11::RenderImGui()
 	const UINT vb_stride = sizeof(ImDrawVert);
 	const UINT vb_offset = 0;
 	m_ctx->IASetVertexBuffers(0, 1, m_vb.addressof(), &vb_stride, &vb_offset);
-  m_ctx->IASetIndexBuffer(m_ib.get(), DXGI_FORMAT_R16_UINT, 0);
 	IASetInputLayout(m_imgui.il.get());
 	IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	VSSetShader(m_imgui.vs.get(), m_imgui.vs_cb.get());
@@ -1756,16 +1755,8 @@ void GSDevice11::RenderImGui()
 			m_ctx->Unmap(m_vb.get(), 0);
 		}
 
-		// Bit awkward, because this is using 16-bit indices, not 32-bit.
 		static_assert(sizeof(ImDrawIdx) == sizeof(u16));
-		const u32 index_count = static_cast<u32>(cmd_list->IdxBuffer.Size + 1) / 2;
-		u32* index_map = IAMapIndexBuffer(index_count);
-		if (!index_map)
-			continue;
-
-		const u32 index_start = m_index.start * 2;
-		std::memcpy(index_map, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
-		IAUnmapIndexBuffer(index_count);
+		IASetIndexBuffer(cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size);
 
 		for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
 		{
@@ -1787,14 +1778,13 @@ void GSDevice11::RenderImGui()
 			m_state.ps_sr_views[0] = static_cast<ID3D11ShaderResourceView*>(pcmd->GetTexID());
 			PSUpdateShaderState();
 
-			m_ctx->DrawIndexed(pcmd->ElemCount, index_start + pcmd->IdxOffset, vertex_offset + pcmd->VtxOffset);
+			m_ctx->DrawIndexed(pcmd->ElemCount, m_index.start + pcmd->IdxOffset, vertex_offset + pcmd->VtxOffset);
 		}
 
 		g_perfmon.Put(GSPerfMon::DrawCalls, cmd_list->CmdBuffer.Size);
 	}
 
 	m_ctx->IASetVertexBuffers(0, 1, m_vb.addressof(), &m_state.vb_stride, &vb_offset);
-	m_ctx->IASetIndexBuffer(m_state.index_buffer, DXGI_FORMAT_R32_UINT, 0);
 }
 
 void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm)
@@ -1912,9 +1902,9 @@ bool GSDevice11::IASetExpandVertexBuffer(const void* vertex, u32 stride, u32 cou
 	return true;
 }
 
-u32* GSDevice11::IAMapIndexBuffer(u32 count)
+u16* GSDevice11::IAMapIndexBuffer(u32 count)
 {
-	if (count > (INDEX_BUFFER_SIZE / sizeof(u32)))
+	if (count > (INDEX_BUFFER_SIZE / sizeof(u16)))
 		return nullptr;
 
 	D3D11_MAP type = D3D11_MAP_WRITE_NO_OVERWRITE;
@@ -1922,7 +1912,7 @@ u32* GSDevice11::IAMapIndexBuffer(u32 count)
 	m_index.start = m_ib_pos;
 	m_ib_pos += count;
 
-	if (m_ib_pos > (INDEX_BUFFER_SIZE / sizeof(u32)))
+	if (m_ib_pos > (INDEX_BUFFER_SIZE / sizeof(u16)))
 	{
 		m_index.start = 0;
 		m_ib_pos = count;
@@ -1933,7 +1923,7 @@ u32* GSDevice11::IAMapIndexBuffer(u32 count)
 	if (FAILED(m_ctx->Map(m_ib.get(), 0, type, 0, &m)))
 		return nullptr;
 
-	return static_cast<u32*>(m.pData) + m_index.start;
+	return static_cast<u16*>(m.pData) + m_index.start;
 }
 
 void GSDevice11::IAUnmapIndexBuffer(u32 count)
@@ -1944,11 +1934,11 @@ void GSDevice11::IAUnmapIndexBuffer(u32 count)
 
 bool GSDevice11::IASetIndexBuffer(const void* index, u32 count)
 {
-	u32* map = IAMapIndexBuffer(count);
+	u16* map = IAMapIndexBuffer(count);
 	if (!map)
 		return false;
 
-	std::memcpy(map, index, count * sizeof(u32));
+	std::memcpy(map, index, count * sizeof(u16));
 	IAUnmapIndexBuffer(count);
 	IASetIndexBuffer(m_ib.get());
 	return true;
@@ -1958,7 +1948,7 @@ void GSDevice11::IASetIndexBuffer(ID3D11Buffer* buffer)
 {
 	if (m_state.index_buffer != buffer)
 	{
-		m_ctx->IASetIndexBuffer(buffer, DXGI_FORMAT_R32_UINT, 0);
+		m_ctx->IASetIndexBuffer(buffer, DXGI_FORMAT_R16_UINT, 0);
 		m_state.index_buffer = buffer;
 	}
 }

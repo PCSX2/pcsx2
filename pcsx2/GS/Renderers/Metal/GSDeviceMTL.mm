@@ -2178,7 +2178,7 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 			textureBarrier(enc);
 			[enc drawIndexedPrimitives:topology
 			                indexCount:count
-			                 indexType:MTLIndexTypeUInt32
+			                 indexType:MTLIndexTypeUInt16
 			               indexBuffer:buffer
 			         indexBufferOffset:off + p * sizeof(*config.indices)];
 			p += count;
@@ -2200,7 +2200,7 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 			textureBarrier(enc);
 			[enc drawIndexedPrimitives:topology
 			                indexCount:config.indices_per_prim
-			                 indexType:MTLIndexTypeUInt32
+			                 indexType:MTLIndexTypeUInt16
 			               indexBuffer:buffer
 			         indexBufferOffset:off + p * sizeof(*config.indices)];
 		}
@@ -2217,7 +2217,7 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 
 	[enc drawIndexedPrimitives:topology
 	                indexCount:config.nindices
-	                 indexType:MTLIndexTypeUInt32
+	                 indexType:MTLIndexTypeUInt16
 	               indexBuffer:buffer
 	         indexBufferOffset:off];
 

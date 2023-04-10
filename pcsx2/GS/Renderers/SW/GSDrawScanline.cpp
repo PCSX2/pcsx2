@@ -161,7 +161,7 @@ typedef GSVector4  VectorF;
 #define LOCAL_STEP local.d4
 #endif
 
-void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local)
+void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u16* index, const GSVertexSW& dscan, GSScanlineLocalData& local)
 {
 	const GSScanlineGlobalData& global = GlobalFromLocal(local);
 	GSScanlineSelector sel = global.sel;

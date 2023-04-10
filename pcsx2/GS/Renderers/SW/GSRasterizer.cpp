@@ -154,10 +154,10 @@ void GSRasterizer::Draw(GSRasterizerData& data)
 	const GSVertexSW* vertex = data.vertex;
 	const GSVertexSW* vertex_end = data.vertex + data.vertex_count;
 
-	const u32* index = data.index;
-	const u32* index_end = data.index + data.index_count;
+	const u16* index = data.index;
+	const u16* index_end = data.index + data.index_count;
 
-	u32 tmp_index[] = {0, 1, 2};
+	static constexpr u16 tmp_index[] = {0, 1, 2};
 
 	bool scissor_test = !data.bbox.eq(data.bbox.rintersect(data.scissor));
 
@@ -261,7 +261,7 @@ void GSRasterizer::Draw(GSRasterizerData& data)
 }
 
 template <bool scissor_test>
-void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const u32* index, int index_count)
+void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const u16* index, int index_count)
 {
 	m_primcount++;
 
@@ -286,7 +286,7 @@ void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const u
 	}
 	else
 	{
-		u32 tmp_index[1] = {0};
+		static constexpr u16 tmp_index[1] = {0};
 
 		for (int i = 0; i < vertex_count; i++, vertex++)
 		{
@@ -307,7 +307,7 @@ void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const u
 	}
 }
 
-void GSRasterizer::DrawLine(const GSVertexSW* vertex, const u32* index)
+void GSRasterizer::DrawLine(const GSVertexSW* vertex, const u16* index)
 {
 	m_primcount++;
 
@@ -425,7 +425,7 @@ static const u8 s_ysort[8][4] =
 
 #if _M_SSE >= 0x501
 
-void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u32* index)
+void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u16* index)
 {
 	m_primcount++;
 
@@ -606,7 +606,7 @@ void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW2& RESTRIC
 
 #else
 
-void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u32* index)
+void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u16* index)
 {
 	m_primcount++;
 
@@ -784,7 +784,7 @@ void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW& RESTRICT
 
 #endif
 
-void GSRasterizer::DrawSprite(const GSVertexSW* vertex, const u32* index)
+void GSRasterizer::DrawSprite(const GSVertexSW* vertex, const u16* index)
 {
 	m_primcount++;
 
@@ -1082,7 +1082,7 @@ void GSRasterizer::AddScanline(GSVertexSW* e, int pixels, int left, int top, con
 	AddScanlineInfo(e, pixels, left, top);
 }
 
-void GSRasterizer::Flush(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, bool edge /* = false */)
+void GSRasterizer::Flush(const GSVertexSW* vertex, const u16* index, const GSVertexSW& dscan, bool edge /* = false */)
 {
 	// TODO: on win64 this could be the place where xmm6-15 are preserved (not by each DrawScanline)
 

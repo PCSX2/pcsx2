@@ -18,6 +18,7 @@
 #include "GS/GSGL.h"
 #include "GS/GS.h"
 #include "Host.h"
+#include "common/Align.h"
 #include "common/StringUtil.h"
 
 #include "imgui.h"
@@ -165,9 +166,9 @@ std::string GSDevice::GetFullscreenModeString(u32 width, u32 height, float refre
 
 void GSDevice::GenerateExpansionIndexBuffer(void* buffer)
 {
-	static constexpr u32 MAX_INDEX = std::numeric_limits<u16>::max();
+	static constexpr u32 MAX_INDEX = EXPAND_BUFFER_SIZE / 6 / sizeof(u16);
 
-	u32* idx_buffer = static_cast<u32*>(buffer);
+	u16* idx_buffer = static_cast<u16*>(buffer);
 	for (u32 i = 0; i < MAX_INDEX; i++)
 	{
 		const u32 base = i * 4;

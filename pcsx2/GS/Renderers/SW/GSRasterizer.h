@@ -38,7 +38,7 @@ public:
 	u8* buff;
 	GSVertexSW* vertex;
 	int vertex_count;
-	u32* index;
+	u16* index;
 	int index_count;
 	u64 frame;
 	u64 start;
@@ -101,10 +101,10 @@ protected:
 	__forceinline bool HasEdge() const { return (m_draw_edge != nullptr); }
 
 	template <bool scissor_test>
-	void DrawPoint(const GSVertexSW* vertex, int vertex_count, const u32* index, int index_count);
-	void DrawLine(const GSVertexSW* vertex, const u32* index);
-	void DrawTriangle(const GSVertexSW* vertex, const u32* index);
-	void DrawSprite(const GSVertexSW* vertex, const u32* index);
+	void DrawPoint(const GSVertexSW* vertex, int vertex_count, const u16* index, int index_count);
+	void DrawLine(const GSVertexSW* vertex, const u16* index);
+	void DrawTriangle(const GSVertexSW* vertex, const u16* index);
+	void DrawSprite(const GSVertexSW* vertex, const u16* index);
 
 #if _M_SSE >= 0x501
 	__forceinline void DrawTriangleSection(int top, int bottom, GSVertexSW2& RESTRICT edge, const GSVertexSW2& RESTRICT dedge, const GSVertexSW2& RESTRICT dscan, const GSVector4& RESTRICT p0);
@@ -115,7 +115,7 @@ protected:
 	void DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GSVertexSW& dv, int orientation, int side);
 
 	__forceinline void AddScanline(GSVertexSW* e, int pixels, int left, int top, const GSVertexSW& scan);
-	__forceinline void Flush(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, bool edge = false);
+	__forceinline void Flush(const GSVertexSW* vertex, const u16* index, const GSVertexSW& dscan, bool edge = false);
 
 	__forceinline void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan);
 	__forceinline void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan);

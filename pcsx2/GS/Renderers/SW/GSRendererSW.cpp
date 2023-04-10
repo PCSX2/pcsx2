@@ -343,7 +343,7 @@ void GSRendererSW::Draw()
 	sd->buff = (u8*)m_vertex_heap.alloc(sizeof(GSVertexSW) * ((m_vertex.next + 1) & ~1) + sizeof(u32) * m_index.tail, 64);
 	sd->vertex = (GSVertexSW*)sd->buff;
 	sd->vertex_count = m_vertex.next;
-	sd->index = (u32*)(sd->buff + sizeof(GSVertexSW) * ((m_vertex.next + 1) & ~1));
+	sd->index = (u16*)(sd->buff + sizeof(GSVertexSW) * ((m_vertex.next + 1) & ~1));
 	sd->index_count = m_index.tail;
 	sd->scanmsk_value = m_draw_env->SCANMSK.MSK;
 
@@ -354,7 +354,7 @@ void GSRendererSW::Draw()
 
 	GSVertexSW::s_cvb[m_vt.m_primclass][PRIM->TME][PRIM->FST][q_div](m_context, sd->vertex, m_vertex.buff, m_vertex.next);
 
-	memcpy(sd->index, m_index.buff, sizeof(u32) * m_index.tail);
+	std::memcpy(sd->index, m_index.buff, sizeof(u16) * m_index.tail);
 
 	GSVector4i scissor = GSVector4i(context->scissor.in);
 	GSVector4i bbox = GSVector4i(m_vt.m_min.p.floor().xyxy(m_vt.m_max.p.ceil()));

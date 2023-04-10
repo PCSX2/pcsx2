@@ -2576,7 +2576,7 @@ bool GSTextureCache::ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx
 
 #undef V
 
-	static constexpr u32 indices[6] = { 0, 1, 2, 2, 1, 3 };
+	static constexpr u16 indices[6] = { 0, 1, 2, 2, 1, 3 };
 
 	// If we ever do this sort of thing somewhere else, extract this to a helper function.
 	GSHWDrawConfig config;

@@ -343,7 +343,7 @@ public:
 	bool IASetVertexBuffer(const void* vertex, u32 stride, u32 count);
 	bool IASetExpandVertexBuffer(const void* vertex, u32 stride, u32 count);
 
-	u32* IAMapIndexBuffer(u32 count);
+	u16* IAMapIndexBuffer(u32 count);
 	void IAUnmapIndexBuffer(u32 count);
 	bool IASetIndexBuffer(const void* index, u32 count);
 	void IASetIndexBuffer(ID3D11Buffer* buffer);

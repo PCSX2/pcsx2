@@ -210,7 +210,7 @@ void GSSetupPrimCodeGenerator2::Depth_XMM()
 	{
 		// GSVector4 p = vertex[index[1]].p;
 
-		mov(eax, ptr[_index + sizeof(u32) * 1]);
+		movzx(eax, word[_index + sizeof(u16) * 1]);
 		shl(eax, 6); // * sizeof(GSVertexSW)
 		add(rax, _64_vertex);
 
@@ -299,7 +299,7 @@ void GSSetupPrimCodeGenerator2::Depth_YMM()
 	{
 		// GSVector4 p = vertex[index[1]].p;
 
-		mov(eax, ptr[_index + sizeof(u32) * 1]);
+		movzx(eax, word[_index + sizeof(u16) * 1]);
 		shl(eax, 6); // * sizeof(GSVertexSW)
 		add(rax, _64_vertex);
 
@@ -504,7 +504,7 @@ void GSSetupPrimCodeGenerator2::Color()
 
 		if (!(m_sel.prim == GS_SPRITE_CLASS && (m_en.z || m_en.f))) // if this is a sprite, the last vertex was already loaded in Depth()
 		{
-			mov(eax, ptr[_index + sizeof(u32) * last]);
+			movzx(eax, word[_index + sizeof(u16) * last]);
 			shl(eax, 6); // * sizeof(GSVertexSW)
 			add(rax, _64_vertex);
 		}
