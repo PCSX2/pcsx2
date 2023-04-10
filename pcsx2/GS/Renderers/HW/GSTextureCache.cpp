@@ -3801,6 +3801,7 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 		return;
 
 	const GIFRegTEX0& TEX0 = t->m_TEX0;
+	const bool is_depth = (t->m_type == DepthStencil);
 
 	GSTexture::Format fmt;
 	ShaderConvert ps_shader;
@@ -3809,31 +3810,51 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 	{
 		case PSMCT32:
 		case PSMCT24:
-			fmt = GSTexture::Format::Color;
-			ps_shader = ShaderConvert::COPY;
-			dltex = &m_color_download_texture;
-			break;
+		{
+			// If we're downloading a depth buffer that's been reinterpreted as a color
+			// format, convert it to integer. The format/swizzle is likely wrong, but it's
+			// better than writing back FP values to local memory.
+			if (is_depth)
+			{
+				fmt = GSTexture::Format::UInt32;
+				ps_shader = ShaderConvert::FLOAT32_TO_32_BITS;
+				dltex = &m_uint32_download_texture;
+			}
+			else
+			{
+				fmt = GSTexture::Format::Color;
+				ps_shader = ShaderConvert::COPY;
+				dltex = &m_color_download_texture;
+			}
+		}
+		break;
 
 		case PSMCT16:
 		case PSMCT16S:
+		{
 			fmt = GSTexture::Format::UInt16;
-			ps_shader = ShaderConvert::RGBA8_TO_16_BITS;
+			ps_shader = is_depth ? ShaderConvert::FLOAT32_TO_16_BITS : ShaderConvert::RGBA8_TO_16_BITS;
 			dltex = &m_uint16_download_texture;
-			break;
+		}
+		break;
 
 		case PSMZ32:
 		case PSMZ24:
+		{
 			fmt = GSTexture::Format::UInt32;
 			ps_shader = ShaderConvert::FLOAT32_TO_32_BITS;
 			dltex = &m_uint32_download_texture;
-			break;
+		}
+		break;
 
 		case PSMZ16:
 		case PSMZ16S:
+		{
 			fmt = GSTexture::Format::UInt16;
 			ps_shader = ShaderConvert::FLOAT32_TO_16_BITS;
 			dltex = &m_uint16_download_texture;
-			break;
+		}
+		break;
 
 		default:
 			return;
@@ -3856,7 +3877,7 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 
 	const GSVector4 src(GSVector4(r) * GSVector4(t->m_scale) / GSVector4(t->m_texture->GetSize()).xyxy());
 	const GSVector4i drc(0, 0, r.width(), r.height());
-	const bool direct_read = (t->m_scale == 1.0f && ps_shader == ShaderConvert::COPY);
+	const bool direct_read = (t->m_type == RenderTarget && t->m_scale == 1.0f && ps_shader == ShaderConvert::COPY);
 
 	if (!PrepareDownloadTexture(drc.z, drc.w, fmt, dltex))
 		return;
