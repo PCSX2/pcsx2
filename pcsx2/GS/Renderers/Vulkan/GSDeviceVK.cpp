@@ -1022,6 +1022,8 @@ void GSDeviceVK::DoMultiStretchRects(
 void GSDeviceVK::BeginRenderPassForStretchRect(
 	GSTextureVK* dTex, const GSVector4i& dtex_rc, const GSVector4i& dst_rc, bool allow_discard)
 {
+	pxAssert(dst_rc.x >= 0 && dst_rc.y >= 0 && dst_rc.z <= dTex->GetWidth() && dst_rc.w <= dTex->GetHeight());
+
 	const VkAttachmentLoadOp load_op =
 		(allow_discard && dst_rc.eq(dtex_rc)) ? VK_ATTACHMENT_LOAD_OP_DONT_CARE : GetLoadOpForTexture(dTex);
 	dTex->SetState(GSTexture::State::Dirty);
@@ -1298,10 +1300,12 @@ void GSDeviceVK::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
 	const GSVector4i rc = GSVector4i(dRect);
+	const GSVector4i dtex_rc = dTex->GetRect();
+	const GSVector4i clamped_rc = rc.rintersect(dtex_rc);
 	EndRenderPass();
-	OMSetRenderTargets(dTex, nullptr, rc);
+	OMSetRenderTargets(dTex, nullptr, clamped_rc);
 	SetUtilityTexture(sTex, linear ? m_linear_sampler : m_point_sampler);
-	BeginRenderPassForStretchRect(static_cast<GSTextureVK*>(dTex), dTex->GetRect(), rc, false);
+	BeginRenderPassForStretchRect(static_cast<GSTextureVK*>(dTex), dTex->GetRect(), clamped_rc, false);
 	SetPipeline(m_interlace[static_cast<int>(shader)]);
 	SetUtilityPushConstants(&cb, sizeof(cb));
 	DrawStretchRect(sRect, dRect, dTex->GetSize());
@@ -1312,8 +1316,8 @@ void GSDeviceVK::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 void GSDeviceVK::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4])
 {
-	const GSVector4 sRect(0.0f, 0.0f, 1.0f, 1.0f);
-	const GSVector4i dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
+	const GSVector4 sRect = GSVector4(0.0f, 0.0f, 1.0f, 1.0f);
+	const GSVector4i dRect = dTex->GetRect();
 	EndRenderPass();
 	OMSetRenderTargets(dTex, nullptr, dRect);
 	SetUtilityTexture(sTex, m_point_sampler);
@@ -1329,8 +1333,8 @@ void GSDeviceVK::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float para
 
 void GSDeviceVK::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 {
-	const GSVector4 sRect(0.0f, 0.0f, 1.0f, 1.0f);
-	const GSVector4i dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
+	const GSVector4 sRect = GSVector4(0.0f, 0.0f, 1.0f, 1.0f);
+	const GSVector4i dRect = dTex->GetRect();
 	EndRenderPass();
 	OMSetRenderTargets(dTex, nullptr, dRect);
 	SetUtilityTexture(sTex, m_linear_sampler);
