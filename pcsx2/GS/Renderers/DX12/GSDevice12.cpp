@@ -1230,11 +1230,13 @@ void GSDevice12::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	static_cast<GSTexture12*>(dTex)->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 	const GSVector4i rc = GSVector4i(dRect);
+	const GSVector4i dtex_rc = dTex->GetRect();
+	const GSVector4i clamped_rc = rc.rintersect(dtex_rc);
 	EndRenderPass();
-	OMSetRenderTargets(dTex, nullptr, rc);
+	OMSetRenderTargets(dTex, nullptr, clamped_rc);
 	SetUtilityRootSignature();
 	SetUtilityTexture(sTex, linear ? m_linear_sampler_cpu : m_point_sampler_cpu);
-	BeginRenderPassForStretchRect(static_cast<GSTexture12*>(dTex), dTex->GetRect(), rc, false);
+	BeginRenderPassForStretchRect(static_cast<GSTexture12*>(dTex), dTex->GetRect(), clamped_rc, false);
 	SetPipeline(m_interlace[static_cast<int>(shader)].get());
 	SetUtilityPushConstants(&cb, sizeof(cb));
 	DrawStretchRect(sRect, dRect, dTex->GetSize());
@@ -1246,8 +1248,8 @@ void GSDevice12::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 void GSDevice12::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4])
 {
-	const GSVector4 sRect(0.0f, 0.0f, 1.0f, 1.0f);
-	const GSVector4i dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
+	const GSVector4 sRect = GSVector4(0.0f, 0.0f, 1.0f, 1.0f);
+	const GSVector4i dRect = dTex->GetRect();
 	EndRenderPass();
 	OMSetRenderTargets(dTex, nullptr, dRect);
 	SetUtilityRootSignature();
@@ -1265,8 +1267,8 @@ void GSDevice12::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float para
 
 void GSDevice12::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 {
-	const GSVector4 sRect(0.0f, 0.0f, 1.0f, 1.0f);
-	const GSVector4i dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
+	const GSVector4 sRect = GSVector4(0.0f, 0.0f, 1.0f, 1.0f);
+	const GSVector4i dRect = dTex->GetRect();
 	EndRenderPass();
 	OMSetRenderTargets(dTex, nullptr, dRect);
 	SetUtilityRootSignature();
