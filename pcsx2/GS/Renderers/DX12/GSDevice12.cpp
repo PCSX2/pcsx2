@@ -949,13 +949,13 @@ void GSDevice12::DoMultiStretchRects(
 {
 	// Set up vertices first.
 	const u32 vertex_reserve_size = num_rects * 4 * sizeof(GSVertexPT1);
-	const u32 index_reserve_size = num_rects * 6 * sizeof(u32);
+	const u32 index_reserve_size = num_rects * 6 * sizeof(u16);
 	if (!m_vertex_stream_buffer.ReserveMemory(vertex_reserve_size, sizeof(GSVertexPT1)) ||
-		!m_index_stream_buffer.ReserveMemory(index_reserve_size, sizeof(u32)))
+		!m_index_stream_buffer.ReserveMemory(index_reserve_size, sizeof(u16)))
 	{
 		ExecuteCommandListAndRestartRenderPass(false, "Uploading bytes to vertex buffer");
 		if (!m_vertex_stream_buffer.ReserveMemory(vertex_reserve_size, sizeof(GSVertexPT1)) ||
-			!m_index_stream_buffer.ReserveMemory(index_reserve_size, sizeof(u32)))
+			!m_index_stream_buffer.ReserveMemory(index_reserve_size, sizeof(u16)))
 		{
 			pxFailRel("Failed to reserve space for vertices");
 		}
@@ -965,7 +965,7 @@ void GSDevice12::DoMultiStretchRects(
 	// Don't use primitive restart here, it ends up slower on some drivers.
 	const GSVector2 ds(static_cast<float>(dTex->GetWidth()), static_cast<float>(dTex->GetHeight()));
 	GSVertexPT1* verts = reinterpret_cast<GSVertexPT1*>(m_vertex_stream_buffer.GetCurrentHostPointer());
-	u32* idx = reinterpret_cast<u32*>(m_index_stream_buffer.GetCurrentHostPointer());
+	u16* idx = reinterpret_cast<u16*>(m_index_stream_buffer.GetCurrentHostPointer());
 	u32 icount = 0;
 	u32 vcount = 0;
 	for (u32 i = 0; i < num_rects; i++)
@@ -996,12 +996,12 @@ void GSDevice12::DoMultiStretchRects(
 
 	m_vertex.start = m_vertex_stream_buffer.GetCurrentOffset() / sizeof(GSVertexPT1);
 	m_vertex.count = vcount;
-	m_index.start = m_index_stream_buffer.GetCurrentOffset() / sizeof(u32);
+	m_index.start = m_index_stream_buffer.GetCurrentOffset() / sizeof(u16);
 	m_index.count = icount;
 	m_vertex_stream_buffer.CommitMemory(vcount * sizeof(GSVertexPT1));
-	m_index_stream_buffer.CommitMemory(icount * sizeof(u32));
+	m_index_stream_buffer.CommitMemory(icount * sizeof(u16));
 	SetVertexBuffer(m_vertex_stream_buffer.GetGPUPointer(), m_vertex_stream_buffer.GetSize(), sizeof(GSVertexPT1));
-	SetIndexBuffer(m_index_stream_buffer.GetGPUPointer(), m_index_stream_buffer.GetSize(), DXGI_FORMAT_R32_UINT);
+	SetIndexBuffer(m_index_stream_buffer.GetGPUPointer(), m_index_stream_buffer.GetSize(), DXGI_FORMAT_R16_UINT);
 
 	// Even though we're batching, a cmdbuffer submit could've messed this up.
 	const GSVector4i rc(dTex->GetRect());
@@ -1422,22 +1422,10 @@ void GSDevice12::RenderImGui()
 			m_vertex_stream_buffer.CommitMemory(size);
 		}
 
-		u32 index_offset;
-		{
-			const u32 size = sizeof(ImDrawIdx) * static_cast<u32>(cmd_list->IdxBuffer.Size);
-			if (!m_index_stream_buffer.ReserveMemory(size, sizeof(ImDrawIdx)))
-			{
-				Console.Warning("Skipping ImGui draw because of no vertex buffer space");
-				return;
-			}
-
-			index_offset = m_index_stream_buffer.GetCurrentOffset() / sizeof(ImDrawIdx);
-			std::memcpy(m_index_stream_buffer.GetCurrentHostPointer(), cmd_list->IdxBuffer.Data, size);
-			m_index_stream_buffer.CommitMemory(size);
-		}
-
 		SetVertexBuffer(m_vertex_stream_buffer.GetGPUPointer(), m_vertex_stream_buffer.GetSize(), sizeof(ImDrawVert));
-		SetIndexBuffer(m_index_stream_buffer.GetGPUPointer(), m_index_stream_buffer.GetSize(), DXGI_FORMAT_R16_UINT);
+
+		static_assert(sizeof(ImDrawIdx) == sizeof(u16));
+		IASetIndexBuffer(cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size);
 
 		for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
 		{
@@ -1468,7 +1456,7 @@ void GSDevice12::RenderImGui()
 			if (ApplyUtilityState())
 			{
 				g_d3d12_context->GetCommandList()->DrawIndexedInstanced(
-					pcmd->ElemCount, 1, index_offset + pcmd->IdxOffset, vertex_offset + pcmd->VtxOffset, 0);
+					pcmd->ElemCount, 1, m_index.start + pcmd->IdxOffset, vertex_offset + pcmd->VtxOffset, 0);
 			}
 		}
 
@@ -1536,17 +1524,17 @@ void GSDevice12::IASetVertexBuffer(const void* vertex, size_t stride, size_t cou
 
 void GSDevice12::IASetIndexBuffer(const void* index, size_t count)
 {
-	const u32 size = sizeof(u32) * static_cast<u32>(count);
-	if (!m_index_stream_buffer.ReserveMemory(size, sizeof(u32)))
+	const u32 size = sizeof(u16) * static_cast<u32>(count);
+	if (!m_index_stream_buffer.ReserveMemory(size, sizeof(u16)))
 	{
 		ExecuteCommandListAndRestartRenderPass(false, "Uploading bytes to index buffer");
-		if (!m_index_stream_buffer.ReserveMemory(size, sizeof(u32)))
+		if (!m_index_stream_buffer.ReserveMemory(size, sizeof(u16)))
 			pxFailRel("Failed to reserve space for vertices");
 	}
 
-	m_index.start = m_index_stream_buffer.GetCurrentOffset() / sizeof(u32);
+	m_index.start = m_index_stream_buffer.GetCurrentOffset() / sizeof(u16);
 	m_index.count = count;
-	SetIndexBuffer(m_index_stream_buffer.GetGPUPointer(), m_index_stream_buffer.GetSize(), DXGI_FORMAT_R32_UINT);
+	SetIndexBuffer(m_index_stream_buffer.GetGPUPointer(), m_index_stream_buffer.GetSize(), DXGI_FORMAT_R16_UINT);
 
 	std::memcpy(m_index_stream_buffer.GetCurrentHostPointer(), index, size);
 	m_index_stream_buffer.CommitMemory(size);
@@ -3353,7 +3341,7 @@ void GSDevice12::UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config)
 	{
 		m_index.start = 0;
 		m_index.count = config.nindices;
-		SetIndexBuffer(m_expand_index_buffer->GetGPUVirtualAddress(), EXPAND_BUFFER_SIZE, DXGI_FORMAT_R32_UINT);
+		SetIndexBuffer(m_expand_index_buffer->GetGPUVirtualAddress(), EXPAND_BUFFER_SIZE, DXGI_FORMAT_R16_UINT);
 	}
 	else
 	{

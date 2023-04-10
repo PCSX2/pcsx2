@@ -158,7 +158,7 @@ protected:
 
 	struct
 	{
-		u32* buff;
+		u16* buff;
 		u32 tail;
 	} m_index = {};
 

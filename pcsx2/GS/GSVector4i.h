@@ -28,6 +28,16 @@ class alignas(16) GSVector4i
 	{
 	}
 
+	constexpr GSVector4i(cxpr_init_tag, short s0, short s1, short s2, short s3, short s4, short s5, short s6, short s7)
+		: I16{s0, s1, s2, s3, s4, s5, s6, s7}
+	{
+	}
+
+	constexpr GSVector4i(cxpr_init_tag, char b0, char b1, char b2, char b3, char b4, char b5, char b6, char b7, char b8, char b9, char b10, char b11, char b12, char b13, char b14, char b15)
+		: I8{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15}
+	{
+	}
+
 public:
 	union
 	{
@@ -60,6 +70,16 @@ public:
 	constexpr static GSVector4i cxpr(int x)
 	{
 		return GSVector4i(cxpr_init, x, x, x, x);
+	}
+
+	constexpr static GSVector4i cxpr16(short s0, short s1, short s2, short s3, short s4, short s5, short s6, short s7)
+	{
+		return GSVector4i(cxpr_init, s0, s1, s2, s3, s4, s5, s6, s7);
+	}
+
+	constexpr static GSVector4i cxpr8(char b0, char b1, char b2, char b3, char b4, char b5, char b6, char b7, char b8, char b9, char b10, char b11, char b12, char b13, char b14, char b15)
+	{
+		return GSVector4i(cxpr_init, b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15);
 	}
 
 	__forceinline GSVector4i(int x, int y, int z, int w)
@@ -2001,6 +2021,10 @@ public:
 		return v;
 	}
 
+	__forceinline static GSVector4i broadcast16(u16 value)
+	{
+		return GSVector4i(_mm_set1_epi16(value));
+	}
 
 	__forceinline static GSVector4i zero() { return GSVector4i(_mm_setzero_si128()); }
 

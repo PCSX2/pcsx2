@@ -627,7 +627,7 @@ struct alignas(16) GSHWDrawConfig
 	GSTexture* tex;       ///< Source texture
 	GSTexture* pal;       ///< Palette texture
 	const GSVertex* verts;///< Vertices to draw
-	const u32* indices;   ///< Indices to draw
+	const u16* indices;   ///< Indices to draw
 	u32 nverts;           ///< Number of vertices
 	u32 nindices;         ///< Number of indices
 	u32 indices_per_prim; ///< Number of indices that make up one primitive
@@ -749,7 +749,7 @@ protected:
 	static constexpr float MAD_SENSITIVITY = 0.08f;
 	static constexpr u32   MAX_POOLED_TEXTURES = 300;
 	static constexpr u32   NUM_CAS_CONSTANTS = 12; // 8 plus src offset x/y, 16 byte alignment
-	static constexpr u32   EXPAND_BUFFER_SIZE = sizeof(u32) * std::numeric_limits<u16>::max() * 6;
+	static constexpr u32   EXPAND_BUFFER_SIZE = sizeof(u16) * 65532 * 6;
 
 	WindowInfo m_window_info;
 	VsyncMode m_vsync_mode = VsyncMode::Off;
