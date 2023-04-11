@@ -152,7 +152,7 @@ s32 SPU2Savestate::ThawIt(DataBlock& spud)
 
 		for (u32 i = 0; i < 2; i++)
 		{
-			V_Core& core = spud.Cores[i];
+			V_Core& core = Cores[i];
 			FIX_POINTER(core.DMAPtr);
 			FIX_POINTER(core.DMARPtr);
 		}
