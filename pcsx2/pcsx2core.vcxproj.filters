@@ -336,9 +336,6 @@
     <None Include="..\bin\resources\shaders\opengl\shadeboost.glsl">
       <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\opengl\common_header.glsl">
-      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
-    </None>
     <None Include="..\bin\resources\shaders\common\fxaa.fx">
       <Filter>System\Ps2\GS\Shaders\Common</Filter>
     </None>
