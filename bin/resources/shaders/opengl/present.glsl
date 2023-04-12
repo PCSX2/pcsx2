@@ -75,11 +75,9 @@ void ps_copy()
 #ifdef ps_filter_scanlines
 vec4 ps_scanlines(uint i)
 {
-	vec4 mask[2] = vec4[2]
-	(
+	vec4 mask[2] = vec4[2](
 		vec4(1, 1, 1, 0),
-		vec4(0, 0, 0, 0)
-	);
+		vec4(0, 0, 0, 0));
 
 	return sample_c() * clamp((mask[i] + 0.5f), 0.0f, 1.0f);
 }
@@ -119,10 +117,10 @@ void ps_filter_triangular() // triangular
 #ifdef ps_filter_complex
 void ps_filter_complex()
 {
-    const float PI = 3.14159265359f;
-    vec2 texdim = vec2(textureSize(TextureSampler, 0));
-    float factor = (0.9f - 0.4f * cos(2.0f * PI * PSin_t.y * texdim.y));
-    vec4 c =  factor * texture(TextureSampler, vec2(PSin_t.x, (floor(PSin_t.y * texdim.y) + 0.5f) / texdim.y));
+	const float PI = 3.14159265359f;
+	vec2 texdim = vec2(textureSize(TextureSampler, 0));
+	float factor = (0.9f - 0.4f * cos(2.0f * PI * PSin_t.y * texdim.y));
+	vec4 c = factor * texture(TextureSampler, vec2(PSin_t.x, (floor(PSin_t.y * texdim.y) + 0.5f) / texdim.y));
 
 	SV_Target0 = c;
 }
@@ -130,16 +128,16 @@ void ps_filter_complex()
 
 #ifdef ps_filter_lottes
 
-#define MaskingType 4                      //[1|2|3|4] The type of CRT shadow masking used. 1: compressed TV style, 2: Aperture-grille, 3: Stretched VGA style, 4: VGA style.
-#define ScanBrightness -8.00               //[-16.0 to 1.0] The overall brightness of the scanline effect. Lower for darker, higher for brighter.
-#define FilterCRTAmount -1.00              //[-4.0 to 1.0] The amount of filtering used, to replicate the TV CRT look. Lower for less, higher for more.
-#define HorizontalWarp 0.00                //[0.0 to 0.1] The distortion warping effect for the horizontal (x) axis of the screen. Use small increments.
-#define VerticalWarp 0.00                  //[0.0 to 0.1] The distortion warping effect for the verticle (y) axis of the screen. Use small increments.
-#define MaskAmountDark 0.80                //[0.0 to 1.0] The value of the dark masking line effect used. Lower for darker lower end masking, higher for brighter.
-#define MaskAmountLight 1.50               //[0.0 to 2.0] The value of the light masking line effect used. Lower for darker higher end masking, higher for brighter.
-#define ResolutionScale 2.00               //[0.1 to 4.0] The scale of the image resolution. Lowering this can give off a nice retro TV look. Raising it can clear up the image.
-#define MaskResolutionScale 0.80           //[0.1 to 2.0] The scale of the CRT mask resolution. Use this for balancing the scanline mask scale for difference resolution scaling.
-#define UseShadowMask 1                    //[0 or 1] Enables, or disables the use of the CRT shadow mask. 0 is disabled, 1 is enabled.
+#define MaskingType 4            // [1|2|3|4] The type of CRT shadow masking used. 1: compressed TV style, 2: Aperture-grille, 3: Stretched VGA style, 4: VGA style.
+#define ScanBrightness -8.00     // [-16.0 to 1.0] The overall brightness of the scanline effect. Lower for darker, higher for brighter.
+#define FilterCRTAmount -1.00    // [-4.0 to 1.0] The amount of filtering used, to replicate the TV CRT look. Lower for less, higher for more.
+#define HorizontalWarp 0.00      // [0.0 to 0.1] The distortion warping effect for the horizontal (x) axis of the screen. Use small increments.
+#define VerticalWarp 0.00        // [0.0 to 0.1] The distortion warping effect for the verticle (y) axis of the screen. Use small increments.
+#define MaskAmountDark 0.80      // [0.0 to 1.0] The value of the dark masking line effect used. Lower for darker lower end masking, higher for brighter.
+#define MaskAmountLight 1.50     // [0.0 to 2.0] The value of the light masking line effect used. Lower for darker higher end masking, higher for brighter.
+#define ResolutionScale 2.00     // [0.1 to 4.0] The scale of the image resolution. Lowering this can give off a nice retro TV look. Raising it can clear up the image.
+#define MaskResolutionScale 0.80 // [0.1 to 2.0] The scale of the CRT mask resolution. Use this for balancing the scanline mask scale for difference resolution scaling.
+#define UseShadowMask 1          // [0 or 1] Enables, or disables the use of the CRT shadow mask. 0 is disabled, 1 is enabled.
 
 #define saturate(x) clamp(x, 0.0, 1.0)
 
