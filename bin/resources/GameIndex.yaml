@@ -595,6 +595,7 @@ SCAJ-20023:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SCAJ-20024:
   name: "dot hack - Quarantine Part 4"
   region: "NTSC-Unk"
@@ -1283,6 +1284,7 @@ SCAJ-20159:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
+    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SCAJ-20160:
   name: "Yoshitsuneki"
   region: "NTSC-Unk"
@@ -2644,6 +2646,7 @@ SCED-53674:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
+    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SCED-53679:
   name: "Fire It Up Lads [Demo]"
   region: "PAL-E"
@@ -4082,6 +4085,7 @@ SCES-53312:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
+    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SCES-53315:
   name: "EyeToy - Play 3"
   region: "PAL-M12"
@@ -5048,6 +5052,7 @@ SCKA-20016:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SCKA-20017:
   name: "EyeToy - Play"
   region: "NTSC-K"
@@ -5292,6 +5297,7 @@ SCKA-20059:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
+    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SCKA-20060:
   name: "Ratchet - Deadlocked"
   region: "NTSC-K"
@@ -9561,6 +9567,7 @@ SLED-51901:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SLED-52326:
   name: "007 - Everything or Nothing [Demo]"
   region: "PAL-E"
@@ -13743,6 +13750,7 @@ SLES-51799:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SLES-51800:
   name: "Smash Cars Racing"
   region: "PAL-M5"
@@ -26025,6 +26033,7 @@ SLPM-61133:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
+    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SLPM-61135:
   name: "Naruto - Narutimett Hero 3 [Trial Version]"
   region: "NTSC-J"
@@ -38513,6 +38522,7 @@ SLPS-25230:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SLPS-25231:
   name: "Myst III - Exile"
   region: "NTSC-J"
@@ -39776,6 +39786,7 @@ SLPS-25577:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
+    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SLPS-25578:
   name: "K-1 World Grand Prix 2005"
   region: "NTSC-J"
@@ -44649,6 +44660,7 @@ SLUS-20643:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SLUS-20643BD:
   name: "Namco Transmission Demo Disc v1.03 [Soul Calibur II Pack-In]"
   region: "NTSC-U"
@@ -47592,6 +47604,7 @@ SLUS-21216:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes blurriness.
+    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SLUS-21217:
   name: "Incredibles, The - Rise of the Underminer"
   region: "NTSC-U"
@@ -51656,6 +51669,7 @@ SLUS-29058:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SLUS-29059:
   name: "Hunter the Reckoning - Wayward [Demo]"
   region: "NTSC-U"
