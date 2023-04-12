@@ -88,7 +88,6 @@
     <None Include="..\bin\resources\shaders\vulkan\interlace.glsl" />
     <None Include="..\bin\resources\shaders\vulkan\merge.glsl" />
     <None Include="..\bin\resources\shaders\vulkan\tfx.glsl" />
-    <None Include="..\bin\resources\shaders\opengl\common_header.glsl" />
     <None Include="..\bin\resources\shaders\opengl\convert.glsl" />
     <None Include="..\bin\resources\shaders\opengl\interlace.glsl" />
     <None Include="..\bin\resources\shaders\opengl\merge.glsl" />
