@@ -111,7 +111,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 		   //: P-Core = Performance Core, E-Core = Efficiency Core. See if Intel has official translations for these terms.
 		   "May help CPUs with big (P) and little (E) cores (e.g. Intel 12th or newer generation CPUs from Intel or other vendors such as AMD)."));
 	dialog->registerWidgetHelp(m_ui.MTVU, tr("Enable Multithreaded VU1 (MTVU1)"), tr("Checked"),
-		tr("Generally a speedup on CPUs with 3 or more threads. "
+		tr("Generally a speedup on CPUs with 4 or more cores. "
 		   "Safe for most games, but a few are incompatible and may hang."));
 	dialog->registerWidgetHelp(m_ui.instantVU1, tr("Enable Instant VU1"), tr("Checked"),
 		tr("Runs VU1 instantly. Provides a modest speed improvement in most games. "
