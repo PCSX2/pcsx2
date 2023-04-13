@@ -12124,11 +12124,6 @@ SLES-51043:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
-  patches:
-    0EF1D4BA:
-      content: |-
-        comment=Spyro PAL startup fix
-        patch=1,EE,001E763C,word,24020001
 SLES-51044:
   name: "Burnout 2 - Point of Impact"
   region: "PAL-M5"
@@ -43096,17 +43091,12 @@ SLUS-20314:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes texture slight misalignment.
 SLUS-20315:
-  name: "Spyro the Dragon - Enter the Dragonfly"
+  name: "Spyro - Enter the Dragonfly"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
-  patches:
-    4B8E0DE8:
-      content: |-
-        comment=Spyro NTSC startup fix
-        patch=1,EE,001e71dc,word,24020001
 SLUS-20316:
   name: "WWF SmackDown! - Just Bring It!"
   region: "NTSC-U"
