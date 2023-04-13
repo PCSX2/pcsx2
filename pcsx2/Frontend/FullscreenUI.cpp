@@ -3749,9 +3749,11 @@ void FullscreenUI::DrawControllerSettingsPage()
 		"Provides vibration and LED control support over Bluetooth.", "InputSources", "SDLControllerEnhancedMode", false,
 		bsi->GetBoolValue("InputSources", "SDL", true), false);
 #endif
-#ifdef _WIN32
+#if defined(SDL_BUILD) && defined(_WIN32)
 	DrawToggleSetting(bsi, ICON_FA_COG " SDL Raw Input", "Allow SDL to use raw access to input devices.", "InputSources", "SDLRawInput",
 		false, bsi->GetBoolValue("InputSources", "SDL", true), false);
+#endif
+#ifdef _WIN32
 	DrawToggleSetting(bsi, ICON_FA_COG " Enable XInput Input Source",
 		"The XInput source provides support for XBox 360/XBox One/XBox Series controllers.", "InputSources", "XInput", false, true, false);
 #endif
