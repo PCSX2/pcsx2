@@ -119,10 +119,10 @@ void ps_filter_triangular() // triangular
 #ifdef ps_filter_complex
 void ps_filter_complex()
 {
-    const float PI = 3.14159265359f;
-    vec2 texdim = vec2(textureSize(TextureSampler, 0));
-    float factor = (0.9f - 0.4f * cos(2.0f * PI * PSin_t.y * texdim.y));
-    vec4 c =  factor * texture(TextureSampler, vec2(PSin_t.x, (floor(PSin_t.y * texdim.y) + 0.5f) / texdim.y));
+	const float PI = 3.14159265359f;
+	vec2 texdim = vec2(textureSize(TextureSampler, 0));
+	float factor = (0.9f - 0.4f * cos(2.0f * PI * PSin_t.y * texdim.y));
+	vec4 c = factor * texture(TextureSampler, vec2(PSin_t.x, (floor(PSin_t.y * texdim.y) + 0.5f) / texdim.y));
 
 	SV_Target0 = c;
 }
