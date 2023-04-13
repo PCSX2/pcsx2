@@ -34,7 +34,8 @@ void InitADSR() // INIT ADSR
 		else
 			rate <<= shift;
 
-		PsxRates[i] = (int)std::min(rate, (s64)0x3fffffffLL);
+		// Maximum rate is 0x4000.
+		PsxRates[i] = (int)std::min(rate, (s64)0x40000000LL);
 	}
 }
 
