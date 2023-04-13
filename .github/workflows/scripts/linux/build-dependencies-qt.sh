@@ -4,7 +4,7 @@ set -e
 
 INSTALLDIR="$HOME/deps"
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
-SDL=SDL2-2.26.4
+SDL=SDL2-2.26.5
 QT=6.4.3
 LIBBACKTRACE=ad106d5fdd5d960bd33fae1c48a351af567fd075
 
@@ -12,7 +12,7 @@ mkdir -p deps-build
 cd deps-build
 
 cat > SHASUMS <<EOF
-1a0f686498fb768ad9f3f80b39037a7d006eac093aad39cb4ebcc832a8887231  $SDL.tar.gz
+ad8fea3da1be64c83c45b1d363a6b4ba8fd60f5bde3b23ec73855709ec5eabf7  $SDL.tar.gz
 fd6f417fe9e3a071cf1424a5152d926a34c4a3c5070745470be6cf12a404ed79  $LIBBACKTRACE.zip
 5087c9e5b0165e7bc3c1a4ab176b35d0cd8f52636aea903fa377bdba00891a60  qtbase-everywhere-src-$QT.tar.xz
 88315f886cf81898705e487cedba6e6160724359d23c518c92c333c098879a4a  qtsvg-everywhere-src-$QT.tar.xz
