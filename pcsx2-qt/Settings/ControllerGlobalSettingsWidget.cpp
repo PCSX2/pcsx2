@@ -62,6 +62,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 	m_ui.mainLayout->removeWidget(m_ui.dinputGroup);
 	m_ui.dinputGroup->deleteLater();
 	m_ui.dinputGroup = nullptr;
+	m_ui.enableSDLRawInput->hide();
 #endif
 
 	if (dialog->isEditingProfile())
