@@ -5,7 +5,7 @@ set -e
 INSTALLDIR="$HOME/deps"
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
 SDL=SDL2-2.26.5
-QT=6.4.3
+QT=6.5.0
 LIBBACKTRACE=ad106d5fdd5d960bd33fae1c48a351af567fd075
 
 mkdir -p deps-build
@@ -14,11 +14,11 @@ cd deps-build
 cat > SHASUMS <<EOF
 ad8fea3da1be64c83c45b1d363a6b4ba8fd60f5bde3b23ec73855709ec5eabf7  $SDL.tar.gz
 fd6f417fe9e3a071cf1424a5152d926a34c4a3c5070745470be6cf12a404ed79  $LIBBACKTRACE.zip
-5087c9e5b0165e7bc3c1a4ab176b35d0cd8f52636aea903fa377bdba00891a60  qtbase-everywhere-src-$QT.tar.xz
-88315f886cf81898705e487cedba6e6160724359d23c518c92c333c098879a4a  qtsvg-everywhere-src-$QT.tar.xz
-867df829cd5cd3ae8efe62e825503123542764b13c96953511e567df70c5a091  qttools-everywhere-src-$QT.tar.xz
-79e56b7800d49649a8a8010818538c367a829e0b7a09d5f60bd3aecf5abe972c  qttranslations-everywhere-src-$QT.tar.xz
-c6b161da8f4c01e48c10b7b558a0a01ac07dba9b907b13a98ff5d89f46bc4789  qtwayland-everywhere-src-$QT.tar.xz
+fde1aa7b4fbe64ec1b4fc576a57f4688ad1453d2fab59cbadd948a10a6eaf5ef  qtbase-everywhere-src-$QT.tar.xz
+64ca7e61f44d51e28bcbb4e0509299b53a9a7e38879e00a7fe91643196067a4f  qtsvg-everywhere-src-$QT.tar.xz
+49c33d96b0a44988be954269b8ce3d1a495b439726e03a6be7c0d50a686369c4  qttools-everywhere-src-$QT.tar.xz
+fc85d0fd8393f518653ccada1014177a56df6e73f30f3b64eea0c2e4a0067a3d  qttranslations-everywhere-src-$QT.tar.xz
+ccc57fa277fc5f1c1c2c4733eae80a60996b67a067233c47809e542aa31759a3  qtwayland-everywhere-src-$QT.tar.xz
 EOF
 
 curl -L \
