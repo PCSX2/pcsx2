@@ -87,6 +87,7 @@ declare -a SYSLIBS=(
 	"libvorbis.so.0"
 	"libvorbisenc.so.2"
 	"libxcb.so.1"
+	"libxcb-cursor.so.0"
 	"libxcb-render.so.0"
 	"libxcb-shm.so.0"
 	"libxkbcommon.so.0"
@@ -205,6 +206,9 @@ mkdir "$OUTDIR/usr"
 
 echo "Copying binary and resources..."
 cp -a "$BUILDDIR/bin" "$OUTDIR/usr"
+
+# Get rid of unit tests, we don't want them bloating the squashfs.
+rm -fv "$OUTDIR"/usr/bin/*_test
 
 # Patch RPATH so the binary goes hunting for shared libraries in the AppDir instead of system.
 echo "Patching RPATH in ${BINARY}..."
