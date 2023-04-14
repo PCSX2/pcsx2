@@ -7085,6 +7085,13 @@ SCPS-55043:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
     alignSprite: 1 # Fixes vertical lines on hidden ghosts.
+  patches:
+    339A0B8C:
+      content: |-
+        author=WeirdBeardGame, TellowKrinkle, CheeseyBurrito.
+        // Wraps sceVu0ScaleVector in if statement to prevent bad divide by zero behaviour.
+        patch=1,EE,0011f0cc,word,46156032
+        patch=1,EE,0011f0d0,word,45010002
 SCPS-55044:
   name: "Energy Airforce"
   region: "NTSC-J"
@@ -7188,6 +7195,13 @@ SCPS-56008:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
     alignSprite: 1 # Fixes vertical lines on hidden ghosts.
+  patches:
+    339A0B8C:
+      content: |-
+        author=WeirdBeardGame, TellowKrinkle, CheeseyBurrito.
+        // Wraps sceVu0ScaleVector in if statement to prevent bad divide by zero behaviour.
+        patch=1,EE,0011f3ac,word,46156032
+        patch=1,EE,0011f3b0,word,45010002
 SCPS-56009:
   name: "Smash Court Pro Tournament"
   region: "NTSC-K"
