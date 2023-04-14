@@ -9646,8 +9646,10 @@ SLED-52736:
   name: "Need for Speed - Underground 2 [Demo]"
   region: "PAL-E"
   gsHWFixes:
-    minimumBlendingLevel: 2 # Fixes missing post processing.
+    recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
     halfPixelOffset: 1 # Fixes misaligned post-processing.
+  gameFixes:
+    - SoftwareRendererFMVHack # Workaround for strange HPO Normal screen shake.
 SLED-52852:
   name: "Forgotten Realms - Demon Stone [Demo]"
   region: "PAL-E"
@@ -15944,8 +15946,10 @@ SLES-52725:
   region: "PAL-M8"
   compat: 5
   gsHWFixes:
-    minimumBlendingLevel: 2 # Fixes missing post processing.
+    recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
     halfPixelOffset: 1 # Fixes misaligned post-processing.
+  gameFixes:
+    - SoftwareRendererFMVHack # Workaround for strange HPO Normal screen shake.
 SLES-52726:
   name: "NBA Live 2005"
   region: "PAL-F"
@@ -21854,15 +21858,27 @@ SLES-54946:
 SLES-54947:
   name: "Dogz"
   region: "PAL-M6"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
+    partialTargetInvalidation: 1 # Fixes black sqaures effect.
 SLES-54948:
   name: "Dogz"
   region: "PAL-M9"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
+    partialTargetInvalidation: 1 # Fixes black sqaures effect.
 SLES-54949:
   name: "Catz"
   region: "PAL-M6"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
+    partialTargetInvalidation: 1 # Fixes black sqaures effect.
 SLES-54950:
   name: "Catz"
   region: "PAL-M9"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
+    partialTargetInvalidation: 1 # Fixes black sqaures effect.
 SLES-54951:
   name: "Ben 10 - Protector of Earth"
   region: "PAL-M5"
@@ -24640,8 +24656,10 @@ SLKA-25241:
   name: "Need for Speed - Underground 2"
   region: "NTSC-K"
   gsHWFixes:
-    minimumBlendingLevel: 2 # Fixes missing post processing.
+    recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
     halfPixelOffset: 1 # Fixes misaligned post-processing.
+  gameFixes:
+    - SoftwareRendererFMVHack # Workaround for strange HPO Normal screen shake.
 SLKA-25243:
   name: "Medal of Honor - European Assault"
   region: "NTSC-K"
@@ -25830,8 +25848,10 @@ SLPM-60250:
   name: "Need for Speed - Underground 2 [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    minimumBlendingLevel: 2 # Fixes missing post processing.
+    recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
     halfPixelOffset: 1 # Fixes misaligned post-processing.
+  gameFixes:
+    - SoftwareRendererFMVHack # Workaround for strange HPO Normal screen shake.
 SLPM-60251:
   name: "Devil May Cry 3 [Trial Version]"
   region: "NTSC-J"
@@ -31007,8 +31027,10 @@ SLPM-65766:
   name: "Need for Speed Underground 2"
   region: "NTSC-J"
   gsHWFixes:
-    minimumBlendingLevel: 2 # Fixes missing post processing.
+    recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
     halfPixelOffset: 1 # Fixes misaligned post-processing.
+  gameFixes:
+    - SoftwareRendererFMVHack # Workaround for strange HPO Normal screen shake.
 SLPM-65767:
   name: "NBA Starting Five 2005"
   region: "NTSC-J"
@@ -32017,8 +32039,10 @@ SLPM-66051:
   name: "Need for Speed Underground 2 [EA Best Hits]"
   region: "NTSC-J"
   gsHWFixes:
-    minimumBlendingLevel: 2 # Fixes missing post processing.
+    recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
     halfPixelOffset: 1 # Fixes misaligned post-processing.
+  gameFixes:
+    - SoftwareRendererFMVHack # Workaround for strange HPO Normal screen shake.
 SLPM-66052:
   name: "Miko Mai - Eien no Omoi"
   region: "NTSC-J"
@@ -35516,8 +35540,10 @@ SLPM-66960:
   name: "Need for Speed - Underground 2 [EA-SY! 1980]"
   region: "NTSC-J"
   gsHWFixes:
-    minimumBlendingLevel: 2 # Fixes missing post processing.
+    recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
     halfPixelOffset: 1 # Fixes misaligned post-processing.
+  gameFixes:
+    - SoftwareRendererFMVHack # Workaround for strange HPO Normal screen shake.
 SLPM-66961:
   name: "Black [EA-SY! 1980]"
   region: "NTSC-J"
@@ -46861,8 +46887,10 @@ SLUS-21065:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    minimumBlendingLevel: 2 # Fixes missing post processing.
+    recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
     halfPixelOffset: 1 # Fixes misaligned post-processing.
+  gameFixes:
+    - SoftwareRendererFMVHack # Workaround for strange HPO Normal screen shake.
 SLUS-21066:
   name: "Urbz, The - Sims in the City"
   region: "NTSC-U"
@@ -50053,10 +50081,16 @@ SLUS-21674:
   name: "Petz - Dogz 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
+    partialTargetInvalidation: 1 # Fixes black sqaures effect.
 SLUS-21675:
   name: "Petz - Catz 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
+    partialTargetInvalidation: 1 # Fixes black sqaures effect.
 SLUS-21676:
   name: "Dancing with the Stars"
   region: "NTSC-U"
@@ -51871,8 +51905,10 @@ SLUS-29118:
   name: "Need for Speed - Underground 2 [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    minimumBlendingLevel: 2 # Fixes missing post processing.
+    recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
     halfPixelOffset: 1 # Fixes misaligned post-processing.
+  gameFixes:
+    - SoftwareRendererFMVHack # Workaround for strange HPO Normal screen shake.
 SLUS-29123:
   name: "Ghost in the Shell - Stand Alone Complex [Demo]"
   region: "NTSC-U"
