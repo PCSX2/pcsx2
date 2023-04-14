@@ -766,6 +766,8 @@ SCAJ-20067:
 SCAJ-20068:
   name: "Final Fantasy X-2 International"
   region: "NTSC-Unk"
+  clampModes:
+    eeClampMode: 3 # Fixes flying enemies dying upwards rather than downwards.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -1524,6 +1526,8 @@ SCAJ-25008:
 SCAJ-25012:
   name: "Final Fantasy X-2"
   region: "NTSC-Unk"
+  clampModes:
+    eeClampMode: 3 # Fixes flying enemies dying upwards rather than downwards.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -9195,6 +9199,8 @@ SLAJ-25011:
 SLAJ-25012:
   name: "Final Fantasy X-2"
   region: "NTSC-Unk"
+  clampModes:
+    eeClampMode: 3 # Fixes flying enemies dying upwards rather than downwards.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -13783,6 +13789,8 @@ SLES-51815:
   name: "Final Fantasy X-2"
   region: "PAL-E"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes flying enemies dying upwards rather than downwards.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -13791,6 +13799,8 @@ SLES-51815:
 SLES-51816:
   name: "Final Fantasy X-2"
   region: "PAL-F"
+  clampModes:
+    eeClampMode: 3 # Fixes flying enemies dying upwards rather than downwards.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -13800,6 +13810,8 @@ SLES-51817:
   name: "Final Fantasy X-2"
   region: "PAL-G"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes flying enemies dying upwards rather than downwards.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -13808,6 +13820,8 @@ SLES-51817:
 SLES-51818:
   name: "Final Fantasy X-2"
   region: "PAL-I"
+  clampModes:
+    eeClampMode: 3 # Fixes flying enemies dying upwards rather than downwards.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -13817,6 +13831,8 @@ SLES-51819:
   name: "Final Fantasy X-2"
   region: "PAL-S"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes flying enemies dying upwards rather than downwards.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -24343,6 +24359,8 @@ SLKA-25144:
   name: "Final Fantasy X-2"
   region: "NTSC-K"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes flying enemies dying upwards rather than downwards.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -30026,6 +30044,8 @@ SLPM-65478:
   name: "Final Fantasy X-2 International"
   region: "NTSC-J"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes flying enemies dying upwards rather than downwards.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -32336,6 +32356,8 @@ SLPM-66123:
 SLPM-66124:
   name: "Final Fantasy X [Ultimate Hits]"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes flying enemies dying upwards rather than downwards.
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
@@ -34538,6 +34560,8 @@ SLPM-66676:
 SLPM-66677:
   name: "Final Fantasy X - International [Ultimate Hits]"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes flying enemies dying upwards rather than downwards.
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
@@ -38617,6 +38641,8 @@ SLPS-25248:
 SLPS-25250:
   name: "Final Fantasy X-2"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes flying enemies dying upwards rather than downwards.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -44830,6 +44856,8 @@ SLUS-20672:
   name: "Final Fantasy X-2"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes flying enemies dying upwards rather than downwards.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
