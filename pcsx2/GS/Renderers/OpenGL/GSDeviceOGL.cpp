@@ -1127,7 +1127,7 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view& entry, GLenum typ
 	std::string header;
 
 	// Intel's GL driver doesn't like the readonly qualifier with 3.3 GLSL.
-	if (m_features.vs_expand)
+	if (m_features.vs_expand && GLAD_GL_VERSION_4_3)
 	{
 		header = "#version 430 core\n";
 	}
@@ -1135,6 +1135,8 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view& entry, GLenum typ
 	{
 		header = "#version 330 core\n";
 		header += "#extension GL_ARB_shading_language_420pack: require\n";
+		if (m_features.vs_expand)
+			header += "#extension GL_ARB_shader_storage_buffer_object: require\n";
 	}
 
 	if (GLAD_GL_ARB_shader_draw_parameters)
