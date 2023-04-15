@@ -113,11 +113,12 @@ ProcessedVertex load_vertex(uint index)
 	RawVertex rvtx = vertex_buffer[gl_BaseVertexARB + index];
 
 	vec2 a_st = rvtx.ST;
-	uvec4 a_c = uvec4(rvtx.RGBA & 0xFFu, (rvtx.RGBA >> 8) & 0xFFu, (rvtx.RGBA >> 16) & 0xFFu, rvtx.RGBA >> 24);
+	uvec4 a_c = uvec4(bitfieldExtract(rvtx.RGBA, 0, 8), bitfieldExtract(rvtx.RGBA, 8, 8),
+	                  bitfieldExtract(rvtx.RGBA, 16, 8), bitfieldExtract(rvtx.RGBA, 24, 8));
 	float a_q = rvtx.Q;
-	uvec2 a_p = uvec2(rvtx.XY & 0xFFFFu, rvtx.XY >> 16);
+	uvec2 a_p = uvec2(bitfieldExtract(rvtx.XY, 0, 16), bitfieldExtract(rvtx.XY, 16, 16));
 	uint a_z = rvtx.Z;
-	uvec2 a_uv = uvec2(rvtx.UV & 0xFFFFu, rvtx.UV >> 16);
+	uvec2 a_uv = uvec2(bitfieldExtract(rvtx.UV, 0, 16), bitfieldExtract(rvtx.UV, 16, 16));
 	vec4 a_f = unpackUnorm4x8(rvtx.FOG);
 
 	ProcessedVertex vtx;

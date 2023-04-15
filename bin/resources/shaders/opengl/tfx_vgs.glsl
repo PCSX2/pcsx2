@@ -128,11 +128,12 @@ ProcessedVertex load_vertex(uint index)
 #endif
 
     vec2 i_st = rvtx.ST;
-    vec4 i_c = vec4(uvec4(rvtx.RGBA & 0xFFu, (rvtx.RGBA >> 8) & 0xFFu, (rvtx.RGBA >> 16) & 0xFFu, rvtx.RGBA >> 24));
+    vec4 i_c = vec4(uvec4(bitfieldExtract(rvtx.RGBA, 0, 8), bitfieldExtract(rvtx.RGBA, 8, 8),
+	                      bitfieldExtract(rvtx.RGBA, 16, 8), bitfieldExtract(rvtx.RGBA, 24, 8)));
     float i_q = rvtx.Q;
-    uvec2 i_p = uvec2(rvtx.XY & 0xFFFFu, rvtx.XY >> 16);
+    uvec2 i_p = uvec2(bitfieldExtract(rvtx.XY, 0, 16), bitfieldExtract(rvtx.XY, 16, 16));
     uint i_z = rvtx.Z;
-    uvec2 i_uv = uvec2(rvtx.UV & 0xFFFFu, rvtx.UV >> 16);
+    uvec2 i_uv = uvec2(bitfieldExtract(rvtx.UV, 0, 16), bitfieldExtract(rvtx.UV, 16, 16));
     vec4 i_f = unpackUnorm4x8(rvtx.FOG);
 
     ProcessedVertex vtx;

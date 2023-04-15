@@ -163,7 +163,7 @@ bool GSDeviceOGL::Create(const WindowInfo& wi, VsyncMode vsync)
 		GLint max_vertex_ssbos = 0;
 		glGetIntegerv(GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS, &max_vertex_ssbos);
 		DevCon.WriteLn("GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS: %d", max_vertex_ssbos);
-		m_features.vs_expand = (max_vertex_ssbos > 0);
+		m_features.vs_expand = (max_vertex_ssbos > 0 && GLAD_GL_ARB_gpu_shader5);
 	}
 	if (!m_features.vs_expand)
 		Console.Warning("Vertex expansion is not supported. This will reduce performance.");
@@ -1134,7 +1134,9 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view& entry, GLenum typ
 	else
 	{
 		header = "#version 330 core\n";
-		header += "#extension GL_ARB_shading_language_420pack: require\n";
+		header += "#extension GL_ARB_shading_language_420pack : require\n";
+		if (GLAD_GL_ARB_gpu_shader5)
+			header += "#extension GL_ARB_gpu_shader5 : require\n";
 		if (m_features.vs_expand)
 			header += "#extension GL_ARB_shader_storage_buffer_object: require\n";
 	}
