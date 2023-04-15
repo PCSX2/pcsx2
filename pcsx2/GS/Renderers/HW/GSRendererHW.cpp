@@ -4934,16 +4934,15 @@ void GSRendererHW::OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCach
 				clear_depth ? "depth" : "target", base << 5, half << 5, w_pages, h_pages, m_cached_ctx.FRAME.FBW, color);
 
 			// If some of the channels are masked, we need to keep them.
-			if (m_cached_ctx.FRAME.FBMSK != 0)
+			if (!clear_depth && m_cached_ctx.FRAME.FBMSK != 0)
 			{
 				GSTexture* tex = nullptr;
 				GSTextureCache::Target* target = clear_depth ? ds : rt;
 				const GSVector2 size = GSVector2(static_cast<float>(target->GetUnscaledWidth()) * target->m_scale, static_cast<float>(target->GetUnscaledHeight()) * target->m_scale);
+				pxAssert(!target->m_texture->IsDepthStencil());
 				try
 				{
-					tex = target->m_texture->IsDepthStencil() ?
-						g_gs_device->CreateDepthStencil(size.x, size.y, target->m_texture->GetFormat(), true) :
-						g_gs_device->CreateRenderTarget(size.x, size.y, target->m_texture->GetFormat(), true);
+					tex = g_gs_device->CreateRenderTarget(size.x, size.y, target->m_texture->GetFormat(), false);
 				}
 				catch (const std::bad_alloc&)
 				{
