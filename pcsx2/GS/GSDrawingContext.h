@@ -40,7 +40,6 @@ public:
 	{
 		GSVector4 in;
 		GSVector4i ex;
-		GSVector4 ofex;
 		GSVector4i ofxy;
 	} scissor;
 
@@ -82,12 +81,6 @@ public:
 		scissor.ex.U16[1] = (u16)((SCISSOR.SCAY0 << 4) + XYOFFSET.OFY - 0x8000);
 		scissor.ex.U16[2] = (u16)((SCISSOR.SCAX1 << 4) + XYOFFSET.OFX - 0x8000);
 		scissor.ex.U16[3] = (u16)((SCISSOR.SCAY1 << 4) + XYOFFSET.OFY - 0x8000);
-
-		scissor.ofex = GSVector4(
-			(int)((SCISSOR.SCAX0 << 4) + XYOFFSET.OFX),
-			(int)((SCISSOR.SCAY0 << 4) + XYOFFSET.OFY),
-			(int)((SCISSOR.SCAX1 << 4) + XYOFFSET.OFX),
-			(int)((SCISSOR.SCAY1 << 4) + XYOFFSET.OFY));
 
 		scissor.in = GSVector4(
 			(int)SCISSOR.SCAX0,
