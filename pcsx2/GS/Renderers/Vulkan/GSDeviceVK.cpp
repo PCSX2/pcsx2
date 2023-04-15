@@ -2899,6 +2899,14 @@ void GSDeviceVK::InvalidateCachedState()
 		m_dirty_flags |= DIRTY_FLAG_VERTEX_BUFFER;
 	if (m_index_buffer != VK_NULL_HANDLE)
 		m_dirty_flags |= DIRTY_FLAG_INDEX_BUFFER;
+
+	for (u32 i = 0; i < NUM_TFX_TEXTURES; i++)
+		m_tfx_textures[i] = &m_null_texture;
+	m_utility_texture = &m_null_texture;
+	m_current_framebuffer = VK_NULL_HANDLE;
+	m_current_render_target = nullptr;
+	m_current_depth_target = nullptr;
+
 	m_current_pipeline_layout = PipelineLayout::Undefined;
 	m_tfx_descriptor_sets[1] = VK_NULL_HANDLE;
 	m_tfx_descriptor_sets[2] = VK_NULL_HANDLE;
