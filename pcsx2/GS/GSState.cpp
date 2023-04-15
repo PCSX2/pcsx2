@@ -159,6 +159,23 @@ void GSState::Reset(bool hardware_reset)
 	{
 		m_env.CTXT[i].UpdateScissor();
 
+		// What is this nonsense? Basically, GOW does a 32x448 draw after resetting the GS, thinking the PSM for the framebuffer is going
+		// to be set to C24, therefore the alpha bits get left alone. Because of the reset, in PCSX2, it ends up as C32, and the TC gets
+		// confused, leading to a later texture load using this render target instead of local memory. It's a problem because the game
+		// uploads texture data on startup to the beginning of VRAM, and never overwrites it.
+		//
+		// In the software renderer, if we let the draw happen, it gets scissored to 1x1 (because the scissor is inclusive of the
+		// upper bounds). This doesn't seem to destroy the chest texture, presumably it's further out in memory.
+		//
+		// Hardware test show that VRAM gets corrupted on CSR reset, but the first page remains intact. We're guessing this has something
+		// to do with DRAM refresh, and perhaps the internal counters used for refresh also getting reset. We're obviously not going
+		// to emulate this, but to work around the aforementioned issue, in the hardware renderers, we set the scissor to an out of
+		// bounds value. This means that draws get skipped until the game sets a proper scissor up, which is definitely going to happen
+		// after reset (otherwise it'd only ever render 1x1).
+		//
+		if (!hardware_reset && GSConfig.UseHardwareRenderer())
+			m_env.CTXT[i].scissor.ex = GSVector4i::xffffffff();
+
 		m_env.CTXT[i].offset.fb = m_mem.GetOffset(m_env.CTXT[i].FRAME.Block(), m_env.CTXT[i].FRAME.FBW, m_env.CTXT[i].FRAME.PSM);
 		m_env.CTXT[i].offset.zb = m_mem.GetOffset(m_env.CTXT[i].ZBUF.Block(), m_env.CTXT[i].FRAME.FBW, m_env.CTXT[i].ZBUF.PSM);
 		m_env.CTXT[i].offset.fzb4 = m_mem.GetPixelOffset4(m_env.CTXT[i].FRAME, m_env.CTXT[i].ZBUF);
@@ -1025,17 +1042,20 @@ void GSState::GIFRegHandlerXYOFFSET(const GIFReg* RESTRICT r)
 {
 	GL_REG("XYOFFSET_%d = 0x%x_%x", i, r->U32[1], r->U32[0]);
 
-	const GSVector4i o = (GSVector4i)r->XYOFFSET & GSVector4i::x0000ffff();
-
-	m_env.CTXT[i].XYOFFSET = o;
+	const u64 r_masked = r->U64 & 0x0000FFFF0000FFFFu;
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
-		if (m_prev_env.CTXT[i].XYOFFSET.U64 ^ m_env.CTXT[i].XYOFFSET.U64)
+		if (m_prev_env.CTXT[i].XYOFFSET.U64 != r_masked)
 			m_dirty_gs_regs |= (1 << DIRTY_REG_XYOFFSET);
 		else
 			m_dirty_gs_regs &= ~(1 << DIRTY_REG_XYOFFSET);
 	}
+
+	if (m_env.CTXT[i].XYOFFSET.U64 == r_masked)
+		return;
+
+	m_env.CTXT[i].XYOFFSET.U64 = r_masked;
 
 	m_env.CTXT[i].UpdateScissor();
 
@@ -1159,16 +1179,18 @@ void GSState::GIFRegHandlerTEXFLUSH(const GIFReg* RESTRICT r)
 template <int i>
 void GSState::GIFRegHandlerSCISSOR(const GIFReg* RESTRICT r)
 {
-	m_env.CTXT[i].SCISSOR = r->SCISSOR;
-
 	if (i == m_prev_env.PRIM.CTXT)
 	{
-		if (m_prev_env.CTXT[i].SCISSOR.U64 != m_env.CTXT[i].SCISSOR.U64)
+		if (m_prev_env.CTXT[i].SCISSOR.U64 != r->SCISSOR.U64)
 			m_dirty_gs_regs |= (1 << DIRTY_REG_SCISSOR);
 		else
 			m_dirty_gs_regs &= ~(1 << DIRTY_REG_SCISSOR);
 	}
 
+	if (m_env.CTXT[i].SCISSOR.U64 == r->SCISSOR.U64)
+		return;
+
+	m_env.CTXT[i].SCISSOR = r->SCISSOR;
 	m_env.CTXT[i].UpdateScissor();
 
 	UpdateScissor();
