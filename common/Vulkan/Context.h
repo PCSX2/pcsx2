@@ -53,8 +53,8 @@ namespace Vulkan
 			bool vk_ext_memory_budget : 1;
 			bool vk_ext_calibrated_timestamps : 1;
 			bool vk_ext_line_rasterization : 1;
+			bool vk_ext_rasterization_order_attachment_access : 1;
 			bool vk_khr_driver_properties : 1;
-			bool vk_arm_rasterization_order_attachment_access : 1;
 			bool vk_khr_fragment_shader_barycentric : 1;
 			bool vk_khr_shader_draw_parameters : 1;
 		};
