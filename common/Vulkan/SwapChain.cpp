@@ -545,9 +545,7 @@ namespace Vulkan
 		// Determine the dimensions of the swap chain. Values of -1 indicate the size we specify here
 		// determines window size?
 		VkExtent2D size = surface_capabilities.currentExtent;
-#ifndef ANDROID
 		if (size.width == UINT32_MAX)
-#endif
 		{
 			size.width = m_window_info.surface_width;
 			size.height = m_window_info.surface_height;
@@ -561,6 +559,14 @@ namespace Vulkan
 		VkSurfaceTransformFlagBitsKHR transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 		if (!(surface_capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR))
 			transform = surface_capabilities.currentTransform;
+
+		VkCompositeAlphaFlagBitsKHR alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+		if (!(surface_capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR))
+		{
+			// If we only support pre-multiplied/post-multiplied... :/
+			if (surface_capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR)
+				alpha = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
+		}
 
 		// Select swap chain flags, we only need a colour attachment
 		VkImageUsageFlags image_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -577,7 +583,7 @@ namespace Vulkan
 		// Now we can actually create the swap chain
 		VkSwapchainCreateInfoKHR swap_chain_info = {VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR, nullptr, 0, m_surface,
 			image_count, m_surface_format.format, m_surface_format.colorSpace, size, 1u, image_usage,
-			VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, transform, VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR, m_present_mode,
+			VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, transform, alpha, m_present_mode,
 			VK_TRUE, old_swap_chain};
 		std::array<uint32_t, 2> indices = {{
 			g_vulkan_context->GetGraphicsQueueFamilyIndex(),
