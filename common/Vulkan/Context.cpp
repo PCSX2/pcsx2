@@ -468,10 +468,11 @@ namespace Vulkan
 			SupportsExtension(VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME, false);
 		m_optional_extensions.vk_ext_line_rasterization =
 			SupportsExtension(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME, false);
+		m_optional_extensions.vk_ext_rasterization_order_attachment_access =
+			SupportsExtension(VK_EXT_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false) ||
+			SupportsExtension(VK_ARM_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false);
 		m_optional_extensions.vk_khr_driver_properties =
 			SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
-		m_optional_extensions.vk_arm_rasterization_order_attachment_access =
-			SupportsExtension(VK_ARM_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false);
 		m_optional_extensions.vk_khr_fragment_shader_barycentric =
 			SupportsExtension(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME, false);
 		m_optional_extensions.vk_khr_shader_draw_parameters =
@@ -663,8 +664,8 @@ namespace Vulkan
 		// provoking vertex
 		VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_feature = {
 			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
-		VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM rasterization_order_access_feature = {
-			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_ARM};
+		VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
+			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
 		VkPhysicalDeviceLineRasterizationFeaturesEXT line_rasterization_feature = {
 			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT};
 
@@ -678,7 +679,7 @@ namespace Vulkan
 			line_rasterization_feature.bresenhamLines = VK_TRUE;
 			Util::AddPointerToChain(&device_info, &line_rasterization_feature);
 		}
-		if (m_optional_extensions.vk_arm_rasterization_order_attachment_access)
+		if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
 		{
 			rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess = VK_TRUE;
 			Util::AddPointerToChain(&device_info, &rasterization_order_access_feature);
@@ -744,15 +745,15 @@ namespace Vulkan
 			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
 		VkPhysicalDeviceLineRasterizationFeaturesEXT line_rasterization_feature = {
 			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT};
-		VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM rasterization_order_access_feature = {
-			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_ARM};
+		VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
+			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
 
 		// add in optional feature structs
 		if (m_optional_extensions.vk_ext_provoking_vertex)
 			Util::AddPointerToChain(&features2, &provoking_vertex_features);
 		if (m_optional_extensions.vk_ext_line_rasterization)
 			Util::AddPointerToChain(&features2, &line_rasterization_feature);
-		if (m_optional_extensions.vk_arm_rasterization_order_attachment_access)
+		if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
 			Util::AddPointerToChain(&features2, &rasterization_order_access_feature);
 
 		// query
@@ -760,7 +761,7 @@ namespace Vulkan
 
 		// confirm we actually support it
 		m_optional_extensions.vk_ext_provoking_vertex &= (provoking_vertex_features.provokingVertexLast == VK_TRUE);
-		m_optional_extensions.vk_arm_rasterization_order_attachment_access &= (rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
+		m_optional_extensions.vk_ext_rasterization_order_attachment_access &= (rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
 		m_optional_extensions.vk_ext_line_rasterization &= (line_rasterization_feature.bresenhamLines == VK_TRUE);
 
 		VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
@@ -816,8 +817,8 @@ namespace Vulkan
 			m_optional_extensions.vk_ext_line_rasterization ? "supported" : "NOT supported");
 		Console.WriteLn("VK_EXT_calibrated_timestamps is %s",
 			m_optional_extensions.vk_ext_calibrated_timestamps ? "supported" : "NOT supported");
-		Console.WriteLn("VK_ARM_rasterization_order_attachment_access is %s",
-			m_optional_extensions.vk_arm_rasterization_order_attachment_access ? "supported" : "NOT supported");
+		Console.WriteLn("VK_EXT_rasterization_order_attachment_access is %s",
+			m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "supported" : "NOT supported");
 	}
 
 	bool Context::CreateAllocator()
@@ -1665,7 +1666,7 @@ namespace Vulkan
 				input_reference.layout = VK_IMAGE_LAYOUT_GENERAL;
 				input_reference_ptr = &input_reference;
 
-				if (!g_vulkan_context->GetOptionalExtensions().vk_arm_rasterization_order_attachment_access)
+				if (!g_vulkan_context->GetOptionalExtensions().vk_ext_rasterization_order_attachment_access)
 				{
 					// don't need the framebuffer-local dependency when we have rasterization order attachment access
 					subpass_dependency.srcSubpass = 0;
@@ -1698,7 +1699,9 @@ namespace Vulkan
 		}
 
 		const VkSubpassDescriptionFlags subpass_flags =
-			(key.color_feedback_loop && g_vulkan_context->GetOptionalExtensions().vk_arm_rasterization_order_attachment_access) ? VK_SUBPASS_DESCRIPTION_RASTERIZATION_ORDER_ATTACHMENT_COLOR_ACCESS_BIT_ARM : 0;
+			(key.color_feedback_loop && g_vulkan_context->GetOptionalExtensions().vk_ext_rasterization_order_attachment_access) ?
+				VK_SUBPASS_DESCRIPTION_RASTERIZATION_ORDER_ATTACHMENT_COLOR_ACCESS_BIT_EXT :
+				0;
 		const VkSubpassDescription subpass = {subpass_flags, VK_PIPELINE_BIND_POINT_GRAPHICS, input_reference_ptr ? 1u : 0u,
 			input_reference_ptr ? input_reference_ptr : nullptr, color_reference_ptr ? 1u : 0u,
 			color_reference_ptr ? color_reference_ptr : nullptr, nullptr, depth_reference_ptr, 0, nullptr};
