@@ -3613,7 +3613,8 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		m_cached_ctx.CLAMP.MINU, m_cached_ctx.CLAMP.MAXU, m_cached_ctx.CLAMP.MINV, m_cached_ctx.CLAMP.MAXV);
 
 	const bool need_mipmap = IsMipMapDraw();
-	const bool shader_emulated_sampler = tex->m_palette || cpsm.fmt != 0 || complex_wms_wmt || psm.depth || target_region;
+	const bool shader_emulated_sampler = tex->m_palette || (tex->m_target && !m_conf.ps.shuffle && cpsm.fmt != 0) ||
+										 complex_wms_wmt || psm.depth || target_region;
 	const bool trilinear_manual = need_mipmap && GSConfig.HWMipmap == HWMipmapLevel::Full;
 
 	bool bilinear = m_vt.IsLinear();
