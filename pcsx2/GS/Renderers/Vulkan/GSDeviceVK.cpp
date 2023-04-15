@@ -2361,7 +2361,7 @@ void GSDeviceVK::RenderImGui()
 			if ((clip.zwzw() <= clip.xyxy()).mask() != 0)
 				continue;
 
-			SetScissor(GSVector4i(clip));
+			SetScissor(GSVector4i(clip).max_i32(GSVector4i::zero()));
 
 			// Since we don't have the GSTexture...
 			Vulkan::Texture* tex = static_cast<Vulkan::Texture*>(pcmd->GetTexID());
