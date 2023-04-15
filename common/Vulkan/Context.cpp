@@ -490,7 +490,6 @@ namespace Vulkan
 
 		// Enable the features we use.
 		m_device_features.dualSrcBlend = available_features.dualSrcBlend;
-		m_device_features.geometryShader = available_features.geometryShader;
 		m_device_features.largePoints = available_features.largePoints;
 		m_device_features.wideLines = available_features.wideLines;
 		m_device_features.fragmentStoresAndAtomics = available_features.fragmentStoresAndAtomics;
