@@ -15,8 +15,9 @@
 
 #pragma once
 
-#include "GSVector.h"
+#include "GS/GSVector.h"
 #include "pcsx2/Config.h"
+#include "common/Align.h"
 
 /// Like `memcmp(&a, &b, sizeof(T)) == 0` but faster
 template <typename T>
@@ -116,6 +117,17 @@ static constexpr u32 MAX_SKIPPED_DUPLICATE_FRAMES = 3;
 
 extern void* GSAllocateWrappedMemory(size_t size, size_t repeat);
 extern void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat);
+
+/// We want all allocations and pitches to be aligned to 32-bit, regardless of whether we're
+/// SSE4 or AVX2, because of multi-ISA.
+static constexpr u32 VECTOR_ALIGNMENT = 32;
+
+/// Aligns allocation/pitch size to preferred host size.
+template<typename T>
+__fi static inline T VectorAlign(T value)
+{
+	return Common::AlignUpPow2(value, VECTOR_ALIGNMENT);
+}
 
 // clang-format off
 

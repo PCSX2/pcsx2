@@ -286,7 +286,7 @@ GSPixelOffset* GSLocalMemory::GetPixelOffset(const GIFRegFRAME& FRAME, const GIF
 		return it->second;
 	}
 
-	GSPixelOffset* off = (GSPixelOffset*)_aligned_malloc(sizeof(GSPixelOffset), 32);
+	GSPixelOffset* off = (GSPixelOffset*)_aligned_malloc(sizeof(GSPixelOffset), VECTOR_ALIGNMENT);
 
 	off->hash = hash;
 	off->fbp = fbp;
@@ -339,7 +339,7 @@ GSPixelOffset4* GSLocalMemory::GetPixelOffset4(const GIFRegFRAME& FRAME, const G
 		return it->second;
 	}
 
-	GSPixelOffset4* off = (GSPixelOffset4*)_aligned_malloc(sizeof(GSPixelOffset4), 32);
+	GSPixelOffset4* off = (GSPixelOffset4*)_aligned_malloc(sizeof(GSPixelOffset4), VECTOR_ALIGNMENT);
 
 	off->hash = hash;
 	off->fbp = fbp;
@@ -544,7 +544,7 @@ void GSLocalMemory::SaveBMP(const std::string& fn, u32 bp, u32 bw, u32 psm, int 
 {
 	int pitch = w * 4;
 	int size = pitch * h;
-	void* bits = _aligned_malloc(size, 32);
+	void* bits = _aligned_malloc(size, VECTOR_ALIGNMENT);
 
 	GIFRegTEX0 TEX0;
 

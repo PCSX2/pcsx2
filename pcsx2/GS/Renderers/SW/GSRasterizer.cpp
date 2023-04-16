@@ -55,7 +55,7 @@ GSRasterizer::GSRasterizer(GSDrawScanline* ds, int id, int threads)
 
 	m_thread_height = compute_best_thread_height(threads);
 
-	m_edge.buff = static_cast<GSVertexSW*>(_aligned_malloc(sizeof(GSVertexSW) * 2048, 32));
+	m_edge.buff = static_cast<GSVertexSW*>(_aligned_malloc(sizeof(GSVertexSW) * 2048, VECTOR_ALIGNMENT));
 	m_edge.count = 0;
 	if (!m_edge.buff)
 		throw std::bad_alloc();

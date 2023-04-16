@@ -19,8 +19,9 @@
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
 
-#include "GSDump.h"
-#include "GSLzma.h"
+#include "GS/GSDump.h"
+#include "GS/GSLzma.h"
+#include "GS/GSExtra.h"
 
 using namespace GSDumpTypes;
 
@@ -273,8 +274,8 @@ void GSDumpLzma::Initialize()
 	}
 
 	m_buff_size = 1024*1024;
-	m_area      = (uint8_t*)_aligned_malloc(m_buff_size, 32);
-	m_inbuf     = (uint8_t*)_aligned_malloc(BUFSIZ, 32);
+	m_area      = (uint8_t*)_aligned_malloc(m_buff_size, VECTOR_ALIGNMENT);
+	m_inbuf     = (uint8_t*)_aligned_malloc(BUFSIZ, VECTOR_ALIGNMENT);
 	m_avail     = 0;
 	m_start     = 0;
 
