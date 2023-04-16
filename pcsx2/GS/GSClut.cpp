@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GS/GSClut.h"
+#include "GS/GSExtra.h"
 #include "GS/GSLocalMemory.h"
 #include "GS/GSGL.h"
 #include "GS/Renderers/Common/GSDevice.h"
@@ -27,7 +28,7 @@ GSClut::GSClut(GSLocalMemory* mem)
 	static constexpr u32 CLUT_ALLOC_SIZE = 4096 * 2;
 
 	// 1k + 1k for mirrored area simulating wrapping memory
-	m_clut = static_cast<u16*>(_aligned_malloc(CLUT_ALLOC_SIZE, 32));
+	m_clut = static_cast<u16*>(_aligned_malloc(CLUT_ALLOC_SIZE, VECTOR_ALIGNMENT));
 	if (!m_clut)
 		throw std::bad_alloc();
 

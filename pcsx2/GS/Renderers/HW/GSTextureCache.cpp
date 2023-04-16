@@ -40,7 +40,8 @@ GSTextureCache::GSTextureCache()
 	// In theory 4MB is enough but 9MB is safer for overflow (8MB
 	// isn't enough in custom resolution)
 	// Test: onimusha 3 PAL 60Hz
-	s_unswizzle_buffer = (u8*)_aligned_malloc(9 * 1024 * 1024, 32);
+	s_unswizzle_buffer = (u8*)_aligned_malloc(9 * 1024 * 1024, VECTOR_ALIGNMENT);
+	pxAssertRel(s_unswizzle_buffer, "Failed to allocate unswizzle buffer");
 
 	m_surface_offset_cache.reserve(S_SURFACE_OFFSET_CACHE_MAX_SIZE);
 }
@@ -4154,7 +4155,7 @@ void GSTextureCache::Source::UpdateLayer(const GIFRegTEX0& TEX0, const GSVector4
 void GSTextureCache::Source::Write(const GSVector4i& r, int layer, const GSOffset& off)
 {
 	if (!m_write.rect)
-		m_write.rect = static_cast<GSVector4i*>(_aligned_malloc(3 * sizeof(GSVector4i), 32));
+		m_write.rect = static_cast<GSVector4i*>(_aligned_malloc(3 * sizeof(GSVector4i), 16));
 
 	m_write.rect[m_write.count++] = r;
 
@@ -4213,6 +4214,8 @@ void GSTextureCache::Source::Flush(u32 count, int layer, const GSOffset& off)
 		pitch >>= 2;
 		rtx = psm.rtxP;
 	}
+
+	pitch = VectorAlign(pitch);
 
 	for (u32 i = 0; i < count; i++)
 	{
@@ -4385,7 +4388,7 @@ void GSTextureCache::Target::Update(bool reset_age)
 		}
 		else
 		{
-			const int pitch = Common::AlignUpPow2(r.width() * sizeof(u32), 32);
+			const int pitch = VectorAlign(r.width() * sizeof(u32));
 			g_gs_renderer->m_mem.ReadTexture(off, r, s_unswizzle_buffer, pitch, TEXA);
 
 			t->Update(t_r, s_unswizzle_buffer, pitch);
@@ -5241,7 +5244,7 @@ static void HashTextureLevel(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GST
 	{
 		// Expand texture indices. Align to 32 bytes for AVX2.
 		const bool palette = (psm.pal > 0);
-		const u32 pitch = Common::AlignUpPow2(static_cast<u32>(block_rect.z) << (palette ? 0 : 2), 32);
+		const u32 pitch = VectorAlign(static_cast<u32>(block_rect.z) << (palette ? 0 : 2));
 		const u32 row_size = static_cast<u32>(tw) << (palette ? 0 : 2);
 		const GSLocalMemory::readTexture rtx = palette ? psm.rtxP : psm.rtx;
 
@@ -5317,8 +5320,7 @@ void GSTextureCache::PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TE
 	}
 	else
 	{
-		// Align pitch to 32 bytes for AVX2 if we're going through the temp buffer path.
-		pitch = Common::AlignUpPow2(pitch, 32);
+		pitch = VectorAlign(pitch);
 
 		u8* buff = s_unswizzle_buffer;
 		rtx(mem, off, block_rect, buff, pitch, TEXA);

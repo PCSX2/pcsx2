@@ -18,6 +18,7 @@
 #include "GS/Renderers/OpenGL/GSDeviceOGL.h"
 #include "GS/Renderers/OpenGL/GSTextureOGL.h"
 #include "GS/Renderers/OpenGL/GLState.h"
+#include "GS/GSExtra.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSPng.h"
 #include "GS/GSGL.h"
@@ -476,7 +477,7 @@ std::unique_ptr<GSDownloadTextureOGL> GSDownloadTextureOGL::Create(u32 width, u3
 	}
 
 	// Fallback to glReadPixels() + CPU buffer.
-	u8* cpu_buffer = static_cast<u8*>(_aligned_malloc(buffer_size, 32));
+	u8* cpu_buffer = static_cast<u8*>(_aligned_malloc(buffer_size, VECTOR_ALIGNMENT));
 	if (!cpu_buffer)
 		return {};
 

@@ -39,7 +39,7 @@ GSRendererSW::GSRendererSW(int threads)
 	m_tc = std::make_unique<GSTextureCacheSW>();
 	m_rl = GSRasterizerList::Create(threads);
 
-	m_output = (u8*)_aligned_malloc(1024 * 1024 * sizeof(u32), 32);
+	m_output = (u8*)_aligned_malloc(1024 * 1024 * sizeof(u32), VECTOR_ALIGNMENT);
 
 	std::fill(std::begin(m_fzb_pages), std::end(m_fzb_pages), 0);
 	std::fill(std::begin(m_tex_pages), std::end(m_tex_pages), 0);
@@ -1046,7 +1046,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 			{
 				gd.sel.tlu = 1;
 
-				gd.clut = (u32*)m_vertex_heap.alloc(sizeof(u32) * 256, 32); // FIXME: might address uninitialized data of the texture (0xCD) that is not in 0-15 range for 4-bpp formats
+				gd.clut = (u32*)m_vertex_heap.alloc(sizeof(u32) * 256, VECTOR_ALIGNMENT); // FIXME: might address uninitialized data of the texture (0xCD) that is not in 0-15 range for 4-bpp formats
 
 				memcpy(gd.clut, (const u32*)m_mem.m_clut, sizeof(u32) * GSLocalMemory::m_psm[context->TEX0.PSM].pal);
 			}
@@ -1333,7 +1333,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 				ExpandDIMX(m_dimx, env.DIMX);
 			}
 
-			gd.dimx = (GSVector4i*)m_vertex_heap.alloc(sizeof(m_dimx), 32);
+			gd.dimx = (GSVector4i*)m_vertex_heap.alloc(sizeof(m_dimx), VECTOR_ALIGNMENT);
 
 			std::memcpy(gd.dimx, m_dimx, sizeof(m_dimx));
 		}
