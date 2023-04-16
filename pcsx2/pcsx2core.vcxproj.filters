@@ -1133,9 +1133,6 @@
     <ClCompile Include="GS\Renderers\Common\GSVertexTraceFMM.cpp">
       <Filter>System\Ps2\GS\Renderers\Common</Filter>
     </ClCompile>
-    <ClCompile Include="GS\Renderers\Common\GSVertexList.cpp">
-      <Filter>System\Ps2\GS\Renderers\Common</Filter>
-    </ClCompile>
     <ClCompile Include="GS\Renderers\Common\GSFunctionMap.cpp">
       <Filter>System\Ps2\GS\Renderers\Common</Filter>
     </ClCompile>
@@ -2018,9 +2015,6 @@
       <Filter>System\Ps2\GS\Renderers\Common</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\Common\GSVertexTrace.h">
-      <Filter>System\Ps2\GS\Renderers\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="GS\Renderers\Common\GSVertexList.h">
       <Filter>System\Ps2\GS\Renderers\Common</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\Common\GSVertex.h">
