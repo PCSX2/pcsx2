@@ -316,6 +316,7 @@ __fi void vif1Interrupt()
 			CPU_INT(DMAC_VIF1, 128);
 			if (gifRegs.stat.APATH == 3)
 				vif1Regs.stat.VGW = 1; //We're waiting for path 3. Gunslinger II
+			CPU_SET_DMASTALL(DMAC_VIF1, true);
 			return;
 		}
 		vif1Regs.stat.VGW = 0; //Path 3 isn't busy so we don't need to wait for it.
