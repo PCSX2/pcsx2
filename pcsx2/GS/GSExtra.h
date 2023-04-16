@@ -124,7 +124,7 @@ static constexpr u32 VECTOR_ALIGNMENT = 32;
 
 /// Aligns allocation/pitch size to preferred host size.
 template<typename T>
-__fi static inline T VectorAlign(T value)
+__fi static T VectorAlign(T value)
 {
 	return Common::AlignUpPow2(value, VECTOR_ALIGNMENT);
 }
