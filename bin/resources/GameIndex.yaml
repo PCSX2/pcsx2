@@ -2993,6 +2993,7 @@ SCES-50295:
   compat: 5
   gsHWFixes:
     mipmap: 2 # Fixes mipmapping.
+    partialTargetInvalidation: 1 # Fixes textures.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
 SCES-50300:
@@ -5745,6 +5746,7 @@ SCPS-15004:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 2 # Fixes mipmapping.
+    partialTargetInvalidation: 1 # Fixes textures.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
 SCPS-15005:
@@ -6477,6 +6479,7 @@ SCPS-19203:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 2 # Fixes mipmapping.
+    partialTargetInvalidation: 1 # Fixes textures.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
 SCPS-19204:
@@ -7307,6 +7310,7 @@ SCUS-97111:
   compat: 5
   gsHWFixes:
     mipmap: 2 # Fixes mipmapping.
+    partialTargetInvalidation: 1 # Fixes textures.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
 SCUS-97112:
@@ -7477,6 +7481,7 @@ SCUS-97152:
   region: "NTSC-U"
   gsHWFixes:
     mipmap: 2 # Fixes mipmapping.
+    partialTargetInvalidation: 1 # Fixes textures.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
 SCUS-97153:
@@ -37039,6 +37044,9 @@ SLPS-20284:
   region: "NTSC-J"
 SLPS-20285:
   name: "Slotter Up Core"
+  region: "NTSC-J"
+SLPS-20286:
+  name: "Slotter Up Core 2 Gouda Minami no Teiou"
   region: "NTSC-J"
 SLPS-20287:
   name: "Yakiniku Bugyou Bonfire!"
