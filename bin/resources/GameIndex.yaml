@@ -5218,7 +5218,7 @@ SCKA-20045:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCKA-20047:
-  name: "Armored Core Nine Breaker"
+  name: "Armored Core - Nine Breaker"
   region: "NTSC-K"
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes broken textures.
@@ -14662,7 +14662,7 @@ SLES-52202:
   region: "PAL-M5"
   compat: 5
 SLES-52203:
-  name: "Armored Core - Silent Line"
+  name: "Armored Core 3 - Silent Line"
   region: "PAL-E"
   compat: 5
   roundModes:
@@ -23695,7 +23695,7 @@ SLES-82035:
     - "SLES-82034"
     - "SCES-82034"
 SLES-82036:
-  name: "Armored Core - Nexus [Disc 1 of 2 - Evolution Disc]"
+  name: "Armored Core - Nexus [Disc 1]"
   region: "PAL-M5"
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes broken textures.
@@ -23703,7 +23703,7 @@ SLES-82036:
     - "SLES-82036"
     - "SLES-82037"
 SLES-82037:
-  name: "Armored Core - Nexus [Disc 2 of 2 - Revolution Disc]"
+  name: "Armored Core - Nexus [Disc 2]"
   region: "PAL-M5"
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes broken textures.
@@ -24044,7 +24044,7 @@ SLKA-25039:
   roundModes:
     vu1RoundMode: 1 # Bright lights in cars.
 SLKA-25041:
-  name: "Armored Core 3 Silent Line"
+  name: "Armored Core 3 - Silent Line"
   region: "NTSC-K"
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
@@ -24491,7 +24491,7 @@ SLKA-25200:
     textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
     halfPixelOffset: 2 # Fixes depth lines.
 SLKA-25201:
-  name: "Armored Core Nexus Evolution [Disc 1]"
+  name: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-K"
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes broken textures.
@@ -24499,7 +24499,7 @@ SLKA-25201:
     - "SLKA-25201"
     - "SLKA-25202"
 SLKA-25202:
-  name: "Armored Core Nexus Revolution [Disc 2]"
+  name: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-K"
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes broken textures.
@@ -40427,7 +40427,7 @@ SLPS-25729:
   name: "Kujibiki Unbalance"
   region: "NTSC-J"
 SLPS-25730:
-  name: "Armored Core [Machine Side Box]"
+  name: "Armored Core - Last Raven [Machine Side Box]"
   region: "NTSC-J"
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes broken textures.
@@ -41289,7 +41289,7 @@ SLPS-73201:
   name: "Fatal Frame II - Crimson Butterfly [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPS-73202:
-  name: "Armored Core - Nexus [PlayStation 2 The Best] [Disc 1]"
+  name: "Armored Core - Nexus [Disc 1] [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes broken textures.
@@ -41301,7 +41301,7 @@ SLPS-73202:
     - "SLPS-73202"
     - "SLPS-73203"
 SLPS-73203:
-  name: "Armored Core - Nexus [PlayStation 2 The Best] [Disc 2]"
+  name: "Armored Core - Nexus [Disc 2] [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes broken textures.
@@ -46428,7 +46428,7 @@ SLUS-20985:
   name: "Under the Skin"
   region: "NTSC-U"
 SLUS-20986:
-  name: "Armored Core Nexus [Evolution Disc]"
+  name: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
@@ -46942,7 +46942,7 @@ SLUS-21078:
   gsHWFixes:
     halfPixelOffset: 1 # Reduces lighting misalignment but doesn't fully fix it.
 SLUS-21079:
-  name: "Armored Core Nexus [Revolution Disc]"
+  name: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-U"
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes broken textures.
