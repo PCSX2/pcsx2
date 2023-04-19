@@ -32,6 +32,10 @@ private:
 	u32 m_dump_frames = 0;
 	u32 m_skipped_duplicate_frames = 0;
 
+	// Tracking draw counters for idle frame detection.
+	int m_last_draw_n = 0;
+	int m_last_transfer_n = 0;
+
 protected:
 	GSVector2i m_real_size{0, 0};
 	bool m_texture_shuffle = false;
@@ -48,7 +52,7 @@ public:
 
 	virtual void Destroy();
 
-	virtual void VSync(u32 field, bool registers_written);
+	virtual void VSync(u32 field, bool registers_written, bool idle_frame);
 	virtual bool CanUpscale() { return false; }
 	virtual float GetUpscaleMultiplier() { return 1.0f; }
 	virtual float GetTextureScaleFactor() { return 1.0f; }
@@ -56,6 +60,8 @@ public:
 	float GetModXYOffset();
 
 	virtual GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, float* scale, const GSVector2i& size);
+
+	bool IsIdleFrame() const;
 
 	bool SaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
 		u32* width, u32* height, std::vector<u32>* pixels);

@@ -738,18 +738,21 @@ public:
 	// clang-format on
 
 private:
-	FastList<GSTexture*> m_pool;
+	std::array<FastList<GSTexture*>, 2> m_pool; // [texture, target]
 	u64 m_pool_memory_usage = 0;
 
 	static const std::array<HWBlend, 3*3*3*3> m_blendMap;
 	static const std::array<u8, 16> m_replaceDualSrcBlendMap;
 
 protected:
-	static constexpr int   NUM_INTERLACE_SHADERS = 5;
+	static constexpr int NUM_INTERLACE_SHADERS = 5;
 	static constexpr float MAD_SENSITIVITY = 0.08f;
-	static constexpr u32   MAX_POOLED_TEXTURES = 300;
-	static constexpr u32   NUM_CAS_CONSTANTS = 12; // 8 plus src offset x/y, 16 byte alignment
-	static constexpr u32   EXPAND_BUFFER_SIZE = sizeof(u16) * 65532 * 6;
+	static constexpr u32 MAX_POOLED_TARGETS = 300;
+	static constexpr u32 MAX_TARGET_AGE = 20;
+	static constexpr u32 MAX_POOLED_TEXTURES = 300;
+	static constexpr u32 MAX_TEXTURE_AGE = 10;
+	static constexpr u32 NUM_CAS_CONSTANTS = 12; // 8 plus src offset x/y, 16 byte alignment
+	static constexpr u32 EXPAND_BUFFER_SIZE = sizeof(u16) * 65532 * 6;
 
 	WindowInfo m_window_info;
 	VsyncMode m_vsync_mode = VsyncMode::Off;
@@ -806,7 +809,6 @@ public:
 	/// Generates a fixed index buffer for expanding points and sprites. Buffer is assumed to be at least EXPAND_BUFFER_SIZE in size.
 	static void GenerateExpansionIndexBuffer(void* buffer);
 
-	__fi unsigned int GetFrameNumber() const { return m_frame; }
 	__fi u64 GetPoolMemoryUsage() const { return m_pool_memory_usage; }
 
 	__fi FeatureSupport Features() const { return m_features; }

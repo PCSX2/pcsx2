@@ -91,7 +91,7 @@ GSDevice::GSDevice() = default;
 GSDevice::~GSDevice()
 {
 	// should've been cleaned up in Destroy()
-	pxAssert(m_pool.empty() && !m_merge && !m_weavebob && !m_blend && !m_mad && !m_target_tmp && !m_cas);
+	pxAssert(m_pool[0].empty() && m_pool[1].empty() && !m_merge && !m_weavebob && !m_blend && !m_mad && !m_target_tmp && !m_cas);
 }
 
 const char* GSDevice::RenderAPIToString(RenderAPI api)
@@ -248,11 +248,12 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 {
 	const GSVector2i size(width, height);
 	const bool prefer_new_texture = (m_features.prefer_new_textures && type == GSTexture::Type::Texture && !prefer_reuse);
+	FastList<GSTexture*>& pool = m_pool[type != GSTexture::Type::Texture];
 
 	GSTexture* t = nullptr;
-	auto fallback = m_pool.end();
+	auto fallback = pool.end();
 
-	for (auto i = m_pool.begin(); i != m_pool.end(); ++i)
+	for (auto i = pool.begin(); i != pool.end(); ++i)
 	{
 		t = *i;
 
@@ -263,10 +264,10 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 			if (!prefer_new_texture || t->GetLastFrameUsed() != m_frame)
 			{
 				m_pool_memory_usage -= t->GetMemUsage();
-				m_pool.erase(i);
+				pool.erase(i);
 				break;
 			}
-			else if (fallback == m_pool.end())
+			else if (fallback == pool.end())
 			{
 				fallback = i;
 			}
@@ -277,11 +278,12 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 
 	if (!t)
 	{
-		if (m_pool.size() >= MAX_POOLED_TEXTURES && fallback != m_pool.end())
+		if (pool.size() >= ((type == GSTexture::Type::Texture) ? MAX_POOLED_TEXTURES : MAX_POOLED_TARGETS) &&
+			fallback != pool.end())
 		{
 			t = *fallback;
 			m_pool_memory_usage -= t->GetMemUsage();
-			m_pool.erase(fallback);
+			pool.erase(fallback);
 		}
 		else
 		{
@@ -323,17 +325,24 @@ void GSDevice::Recycle(GSTexture* t)
 
 	t->SetLastFrameUsed(m_frame);
 
-	m_pool.push_front(t);
+	FastList<GSTexture*>& pool = m_pool[!t->IsTexture()];
+	pool.push_front(t);
 	m_pool_memory_usage += t->GetMemUsage();
 
-	//printf("%d\n",m_pool.size());
-
-	while (m_pool.size() > MAX_POOLED_TEXTURES)
+	const u32 max_size = t->IsTexture() ? MAX_POOLED_TEXTURES : MAX_POOLED_TARGETS;
+	const u32 max_age = t->IsTexture() ? MAX_TEXTURE_AGE : MAX_TARGET_AGE;
+	while (pool.size() > max_size)
 	{
-		m_pool_memory_usage -= m_pool.back()->GetMemUsage();
-		delete m_pool.back();
+		// Don't toss when the texture was last used in this frame.
+		// Because we're going to need to keep it alive anyway.
+		GSTexture* back = pool.back();
+		if ((m_frame - back->GetLastFrameUsed()) < max_age)
+			break;
 
-		m_pool.pop_back();
+		m_pool_memory_usage -= back->GetMemUsage();
+		delete back;
+
+		pool.pop_back();
 	}
 }
 
@@ -347,20 +356,33 @@ void GSDevice::AgePool()
 {
 	m_frame++;
 
-	while (m_pool.size() > 40 && m_frame - m_pool.back()->GetLastFrameUsed() > 10)
+	// Toss out textures when they're not too-recently used.
+	for (u32 pool_idx = 0; pool_idx < m_pool.size(); pool_idx++)
 	{
-		m_pool_memory_usage -= m_pool.back()->GetMemUsage();
-		delete m_pool.back();
+		const u32 max_age = (pool_idx == 0) ? MAX_TEXTURE_AGE : MAX_TARGET_AGE;
+		FastList<GSTexture*>& pool = m_pool[pool_idx];
+		while (!pool.empty())
+		{
+			GSTexture* back = pool.back();
+			if ((m_frame - back->GetLastFrameUsed()) < max_age)
+				break;
 
-		m_pool.pop_back();
+			m_pool_memory_usage -= back->GetMemUsage();
+			delete back;
+
+			pool.pop_back();
+		}
 	}
 }
 
 void GSDevice::PurgePool()
 {
-	for (auto t : m_pool)
-		delete t;
-	m_pool.clear();
+	for (FastList<GSTexture*>& pool : m_pool)
+	{
+		for (GSTexture* t : pool)
+			delete t;
+		pool.clear();
+	}
 	m_pool_memory_usage = 0;
 }
 

@@ -149,10 +149,6 @@ private:
 	std::unique_ptr<GSTextureCacheSW::Texture> m_sw_texture[7 + 1];
 	std::unique_ptr<GSVirtualAlignedClass<32>> m_sw_rasterizer;
 
-	// Tracking draw counters for idle frame detection.
-	int m_last_draw_n = 0;
-	int m_last_transfer_n = 0;
-
 public:
 	GSRendererHW();
 	virtual ~GSRendererHW() override;
@@ -178,7 +174,7 @@ public:
 
 	void Reset(bool hardware_reset) override;
 	void UpdateSettings(const Pcsx2Config::GSOptions& old_config) override;
-	void VSync(u32 field, bool registers_written) override;
+	void VSync(u32 field, bool registers_written, bool idle_frame) override;
 
 	GSTexture* GetOutput(int i, float& scale, int& y_offset) override;
 	GSTexture* GetFeedbackOutput(float& scale) override;
