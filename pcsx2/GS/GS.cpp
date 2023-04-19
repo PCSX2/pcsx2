@@ -516,7 +516,7 @@ void GSvsync(u32 field, bool registers_written)
 {
 	try
 	{
-		g_gs_renderer->VSync(field, registers_written);
+		g_gs_renderer->VSync(field, registers_written, g_gs_renderer->IsIdleFrame());
 	}
 	catch (GSRecoverableError)
 	{

@@ -112,7 +112,7 @@ void GSRendererHW::UpdateSettings(const Pcsx2Config::GSOptions& old_config)
 	SetTCOffset();
 }
 
-void GSRendererHW::VSync(u32 field, bool registers_written)
+void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame)
 {
 	if (m_force_preload > 0)
 	{
@@ -138,7 +138,7 @@ void GSRendererHW::VSync(u32 field, bool registers_written)
 
 	// Don't age the texture cache when no draws or EE writes have occurred.
 	// Xenosaga needs its targets kept around while it's loading, because it uses them for a fade transition.
-	if (m_last_draw_n == s_n && m_last_transfer_n == s_transfer_n)
+	if (idle_frame)
 	{
 		GL_INS("No draws or transfers, not aging TC");
 	}
@@ -147,10 +147,7 @@ void GSRendererHW::VSync(u32 field, bool registers_written)
 		g_texture_cache->IncAge();
 	}
 
-	m_last_draw_n = s_n + 1; // +1 for vsync
-	m_last_transfer_n = s_transfer_n;
-
-	GSRenderer::VSync(field, registers_written);
+	GSRenderer::VSync(field, registers_written, idle_frame);
 
 	if (g_texture_cache->GetHashCacheMemoryUsage() > 1024 * 1024 * 1024)
 	{

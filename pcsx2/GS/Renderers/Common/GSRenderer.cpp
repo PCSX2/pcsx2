@@ -527,7 +527,7 @@ void GSRenderer::EndPresentFrame()
 	ImGuiManager::NewFrame();
 }
 
-void GSRenderer::VSync(u32 field, bool registers_written)
+void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 {
 	Flush(GSFlushReason::VSYNC);
 
@@ -569,6 +569,9 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 
 	const bool blank_frame = !Merge(field);
 
+	m_last_draw_n = s_n;
+	m_last_transfer_n = s_transfer_n;
+
 	if (skip_frame)
 	{
 		if (BeginPresentFrame(true))
@@ -578,7 +581,8 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 		return;
 	}
 
-	g_gs_device->AgePool();
+	if (!idle_frame)
+		g_gs_device->AgePool();
 
 	g_perfmon.EndFrame();
 	if ((g_perfmon.GetFrame() & 0x1f) == 0)
@@ -896,6 +900,11 @@ void GSRenderer::EndCapture()
 GSTexture* GSRenderer::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, float* scale, const GSVector2i& size)
 {
 	return nullptr;
+}
+
+bool GSRenderer::IsIdleFrame() const
+{
+	return (m_last_draw_n == s_n && m_last_transfer_n == s_transfer_n);
 }
 
 bool GSRenderer::SaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
