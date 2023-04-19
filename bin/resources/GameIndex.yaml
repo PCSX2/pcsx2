@@ -12752,8 +12752,8 @@ SLES-51256:
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLES-51257:
-  name: "Die Sims"
-  region: "PAL-G"
+  name: "Sims, The"
+  region: "PAL-M6"
   compat: 3
   speedHacks:
     MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
@@ -31309,10 +31309,16 @@ SLPM-65837:
 SLPM-65838:
   name: "Hanjuku Hero 4 [Limited Edition]"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes clipping sprites.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-65839:
   name: "Hanjuku Hero 4"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes clipping sprites.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-65840:
   name: "Wizardry X - Zensen no Gakufu"
   region: "NTSC-J"
