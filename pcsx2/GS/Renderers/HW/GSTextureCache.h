@@ -123,6 +123,8 @@ public:
 		bool is_replacement;
 	};
 
+	using HashCacheMap = std::unordered_map<HashCacheKey, HashCacheEntry, HashCacheKeyHash>;
+
 	class Surface : public GSAlignedClass<32>
 	{
 	protected:
@@ -374,7 +376,7 @@ protected:
 	PaletteMap m_palette_map;
 	SourceMap m_src;
 	u64 m_source_memory_usage = 0;
-	std::unordered_map<HashCacheKey, HashCacheEntry, HashCacheKeyHash> m_hash_cache;
+	HashCacheMap m_hash_cache;
 	u64 m_hash_cache_memory_usage = 0;
 	u64 m_hash_cache_replacement_memory_usage = 0;
 
@@ -402,6 +404,8 @@ protected:
 	bool PrepareDownloadTexture(u32 width, u32 height, GSTexture::Format format, std::unique_ptr<GSDownloadTexture>* tex);
 
 	HashCacheEntry* LookupHashCache(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, bool& paltex, const u32* clut, const GSVector2i* lod, SourceRegion region);
+	void RemoveFromHashCache(HashCacheMap::iterator it);
+	void AgeHashCache();
 
 	static void PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, SourceRegion region, GSLocalMemory& mem, bool paltex, GSTexture* tex, u32 level);
 	static HashType HashTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, SourceRegion region);

@@ -35,6 +35,9 @@ std::unique_ptr<GSTextureCache> g_texture_cache;
 
 static u8* s_unswizzle_buffer;
 
+/// List of candidates for purging when the hash cache gets too large.
+static std::vector<std::pair<GSTextureCache::HashCacheMap::iterator, s32>> s_hash_cache_purge_list;
+
 GSTextureCache::GSTextureCache()
 {
 	// In theory 4MB is enough but 9MB is safer for overflow (8MB
@@ -50,6 +53,7 @@ GSTextureCache::~GSTextureCache()
 {
 	RemoveAll();
 
+	s_hash_cache_purge_list = {};
 	_aligned_free(s_unswizzle_buffer);
 }
 
@@ -2839,29 +2843,11 @@ void GSTextureCache::IncAge()
 		Source* s = *i;
 
 		++i;
-		if (++s->m_age > (s->CanPreload() ? max_preload_age : max_age))
+		if (++s->m_age > ((!s->m_from_hash_cache && s->CanPreload()) ? max_preload_age : max_age))
 			m_src.RemoveAt(s);
 	}
 
-	const u32 max_hash_cache_age = 30;
-	for (auto it = m_hash_cache.begin(); it != m_hash_cache.end();)
-	{
-		HashCacheEntry& e = it->second;
-		if (e.refcount == 0 && ++e.age > max_hash_cache_age)
-		{
-			const u32 mem_usage = e.texture->GetMemUsage();
-			if (e.is_replacement)
-				m_hash_cache_replacement_memory_usage -= mem_usage;
-			else
-				m_hash_cache_memory_usage -= mem_usage;
-			g_gs_device->Recycle(e.texture);
-			m_hash_cache.erase(it++);
-		}
-		else
-		{
-			++it;
-		}
-	}
+	AgeHashCache();
 
 	// Clearing of Rendertargets causes flickering in many scene transitions.
 	// Sigh, this seems to be used to invalidate surfaces. So set a huge maxage to avoid flicker,
@@ -3705,6 +3691,70 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 	const HashCacheEntry entry{ tex, 1u, 0u, false };
 	m_hash_cache_memory_usage += tex->GetMemUsage();
 	return &m_hash_cache.emplace(key, entry).first->second;
+}
+
+void GSTextureCache::RemoveFromHashCache(HashCacheMap::iterator it)
+{
+	HashCacheEntry& e = it->second;
+	const u32 mem_usage = e.texture->GetMemUsage();
+	if (e.is_replacement)
+		m_hash_cache_replacement_memory_usage -= mem_usage;
+	else
+		m_hash_cache_memory_usage -= mem_usage;
+	g_gs_device->Recycle(e.texture);
+	m_hash_cache.erase(it);
+}
+
+void GSTextureCache::AgeHashCache()
+{
+	// Where did this number come from?
+	// A game called Corvette draws its background FMVs with a ton of 17x17 tiles, which ends up
+	// being about 600 texture uploads per frame. We'll use 800 as an upper bound for a bit of
+	// a buffer, hopefully nothing's going to end up with more textures than that.
+	constexpr u32 MAX_HASH_CACHE_SIZE = 800;
+	constexpr u32 MAX_HASH_CACHE_AGE = 30;
+
+	bool might_need_cache_purge = (m_hash_cache.size() > MAX_HASH_CACHE_SIZE);
+	if (might_need_cache_purge)
+		s_hash_cache_purge_list.clear();
+
+	for (auto it = m_hash_cache.begin(); it != m_hash_cache.end();)
+	{
+		HashCacheEntry& e = it->second;
+		if (e.refcount > 0)
+		{
+			++it;
+			continue;
+		}
+
+		if (++e.age > MAX_HASH_CACHE_AGE)
+		{
+			RemoveFromHashCache(it++);
+			continue;
+		}
+
+		// We might free up enough just with "normal" removals above.
+		if (might_need_cache_purge)
+		{
+			might_need_cache_purge = (m_hash_cache.size() > MAX_HASH_CACHE_SIZE);
+			if (might_need_cache_purge)
+				s_hash_cache_purge_list.emplace_back(it, static_cast<s32>(e.age));
+		}
+
+		++it;
+	}
+
+	// Pushing to a list, sorting, and removing ends up faster than re-iterating the map.
+	if (might_need_cache_purge)
+	{
+		std::sort(s_hash_cache_purge_list.begin(), s_hash_cache_purge_list.end(),
+			[](const auto& lhs, const auto& rhs) { return lhs.second - rhs.second; });
+
+		const u32 entries_to_purge = std::min(static_cast<u32>(m_hash_cache.size() - MAX_HASH_CACHE_SIZE),
+			static_cast<u32>(s_hash_cache_purge_list.size()));
+		for (u32 i = 0; i < entries_to_purge; i++)
+			RemoveFromHashCache(s_hash_cache_purge_list[i].first);
+	}
 }
 
 GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int w, int h, float scale, int type, const bool clear)
