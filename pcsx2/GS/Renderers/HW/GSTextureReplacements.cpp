@@ -209,6 +209,7 @@ std::optional<TextureName> GSTextureReplacements::ParseReplacementName(const std
 			&ret.bits, &extension_dot) == 4 &&
 		extension_dot == '.')
 	{
+		ret.CLUTHash = 0;
 		return ret;
 	}
 
@@ -225,6 +226,7 @@ std::optional<TextureName> GSTextureReplacements::ParseReplacementName(const std
 			3 &&
 		extension_dot == '.')
 	{
+		ret.CLUTHash = 0;
 		return ret;
 	}
 
