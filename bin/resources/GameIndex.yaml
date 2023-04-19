@@ -533,7 +533,7 @@ SCAJ-20011:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
@@ -812,7 +812,7 @@ SCAJ-20076:
   region: "NTSC-Unk"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
@@ -826,7 +826,7 @@ SCAJ-20077:
   region: "NTSC-Unk"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
@@ -974,7 +974,7 @@ SCAJ-20105:
   region: "NTSC-Unk"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20107:
   name: "Bakufuu Slash! Kizna Arashi"
@@ -1061,7 +1061,7 @@ SCAJ-20121:
   region: "NTSC-Unk"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20122:
   name: "Swords of Destiny"
@@ -1195,7 +1195,7 @@ SCAJ-20143:
   region: "NTSC-Unk"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20144:
@@ -5234,7 +5234,7 @@ SCKA-20047:
   region: "NTSC-K"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCKA-20047"
@@ -6970,7 +6970,7 @@ SCPS-55014:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
@@ -13096,7 +13096,7 @@ SLES-51399:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
@@ -14687,7 +14687,7 @@ SLES-52203:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
@@ -18937,7 +18937,7 @@ SLES-53819:
   region: "PAL-E"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLES-53819"
@@ -18948,7 +18948,7 @@ SLES-53820:
   region: "PAL-E"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-53821:
@@ -23723,7 +23723,7 @@ SLES-82036:
   region: "PAL-M5"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLES-82036"
@@ -23733,7 +23733,7 @@ SLES-82037:
   region: "PAL-M5"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLES-82036"
@@ -24078,7 +24078,7 @@ SLKA-25041:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
@@ -24525,7 +24525,7 @@ SLKA-25201:
   region: "NTSC-K"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLKA-25201"
@@ -24535,7 +24535,7 @@ SLKA-25202:
   region: "NTSC-K"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLKA-25201"
@@ -24777,7 +24777,7 @@ SLKA-25270:
   region: "NTSC-K"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLKA-25274:
   name: "Princess Maker 4"
@@ -26044,7 +26044,7 @@ SLPM-61118:
   region: "NTSC-J"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-61119:
@@ -26052,7 +26052,7 @@ SLPM-61119:
   region: "NTSC-J"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-61120:
@@ -35853,7 +35853,7 @@ SLPM-67524:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
@@ -35974,7 +35974,7 @@ SLPM-68520:
   region: "NTSC-J"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-68521:
@@ -38185,7 +38185,7 @@ SLPS-25112:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
@@ -38390,7 +38390,7 @@ SLPS-25169:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
@@ -38958,7 +38958,7 @@ SLPS-25338:
   region: "NTSC-J"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
@@ -38972,7 +38972,7 @@ SLPS-25339:
   region: "NTSC-J"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
@@ -39263,7 +39263,7 @@ SLPS-25408:
   region: "NTSC-J"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLPS-25408"
@@ -39465,14 +39465,14 @@ SLPS-25461:
   region: "NTSC-J"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25462:
   name: "Armored Core - Last Raven"
   region: "NTSC-J"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
@@ -40489,7 +40489,7 @@ SLPS-25730:
   region: "NTSC-J"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25731:
   name: "Armored Core 2 [Machine Side Box]"
@@ -40501,7 +40501,7 @@ SLPS-25732:
   region: "NTSC-J"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25733:
   name: "Super Robot Taisen OG - Original Generations"
@@ -41355,7 +41355,7 @@ SLPS-73202:
   region: "NTSC-J"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
@@ -41369,7 +41369,7 @@ SLPS-73203:
   region: "NTSC-J"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
@@ -41657,7 +41657,7 @@ SLPS-73247:
   region: "NTSC-J"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
@@ -41835,7 +41835,7 @@ SLPS-73417:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
@@ -41856,7 +41856,7 @@ SLPS-73420:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
@@ -43750,7 +43750,7 @@ SLUS-20435:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
@@ -44777,7 +44777,7 @@ SLUS-20644:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters: # Can import data from AC3.
@@ -46509,7 +46509,7 @@ SLUS-20986:
   compat: 5
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLUS-20986"
@@ -47024,7 +47024,7 @@ SLUS-21079:
   region: "NTSC-U"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLUS-20986"
@@ -47621,7 +47621,7 @@ SLUS-21200:
   compat: 5
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters: # Can import data from AC:Nexus.
     - "SLUS-21200"
@@ -48477,7 +48477,7 @@ SLUS-21338:
   compat: 5
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
-	  cpuSpriteRenderLevel: 2 # Needed for above.
+    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-21339:
