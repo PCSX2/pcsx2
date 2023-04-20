@@ -253,7 +253,7 @@ bool InputIsoFile::Open(std::string srcfile, bool testOnly)
 
 	if (!detected)
 	{
-		Console.Error(fmt::format("Unable to identify the ISO image type for '{}'", srcfile));
+		Console.Error(fmt::format("Unable to identify the ISO image type for '{}'", m_filename));
 		Close();
 		return false;
 	}
