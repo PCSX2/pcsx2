@@ -10040,12 +10040,18 @@ SLES-50056:
 SLES-50057:
   name: "Dynasty Warriors 2"
   region: "PAL-E"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes invisible text.
 SLES-50058:
   name: "Dynasty Warriors 2"
   region: "PAL-F"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes invisible text.
 SLES-50059:
   name: "Dynasty Warriors 2"
   region: "PAL-G"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes invisible text.
 SLES-50060:
   name: "International Superstar Soccer"
   region: "PAL-M3"
@@ -10142,6 +10148,8 @@ SLES-50113:
   name: "Ring of Red"
   region: "PAL-M3"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLES-50114:
   name: "Kengo - Master of Bushido"
   region: "PAL-E"
@@ -25774,6 +25782,11 @@ SLPM-60109:
     roundSprite: 1 # Fixes ui and hud alignment.
     gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
     cpuCLUTRender: 1 # Fixes car textures.
+SLPM-60122:
+  name: "Ring of Red [Taikenban trial]"
+  region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPM-60123:
   name: "Gekikuukan Pro Baseball - The End of the Century 1999 [Trial]"
   region: "NTSC-J"
@@ -26133,6 +26146,8 @@ SLPM-62004:
 SLPM-62005:
   name: "Shin Sangoku Musou"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes invisible text.
 SLPM-62006:
   name: "Eisei Meijin 4"
   region: "NTSC-J"
@@ -26158,6 +26173,8 @@ SLPM-62012:
 SLPM-62013:
   name: "Ring of Red"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPM-62015:
   name: "Silpheed - The Lost Planet"
   region: "NTSC-J"
@@ -26343,8 +26360,10 @@ SLPM-62088:
   name: "J-League Winning Eleven 5"
   region: "NTSC-J"
 SLPM-62091:
-  name: "Ring of Red"
+  name: "Ring of Red [Konami the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPM-62092:
   name: "XG3 Extreme G Racing"
   region: "NTSC-J"
@@ -27714,6 +27733,8 @@ SLPM-62567:
 SLPM-62568:
   name: "Shin Sangoku Musou [Koei The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes invisible text.
 SLPM-62569:
   name: "PC Genjin [Hudson The Best]"
   region: "NTSC-J"
@@ -28325,6 +28346,8 @@ SLPM-62784:
 SLPM-64501:
   name: "Jin Samguk Mussang"
   region: "NTSC-K"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes invisible text.
 SLPM-64502:
   name: "Winback"
   region: "NTSC-J"
@@ -28954,6 +28977,8 @@ SLPM-65161:
 SLPM-65163:
   name: "Zhen San Guo Wu Shuang 2"
   region: "NTSC-C"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes invisible text.
   patches:
     397F3835:
       content: |-
@@ -36004,6 +36029,8 @@ SLPM-74001:
 SLPM-74002:
   name: "Shin Sangoku Musou [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes invisible text.
 SLPM-74003:
   name: "Crash Bandicoot 4 - Sakuretsu! Majin Power! [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -42222,6 +42249,8 @@ SLUS-20078:
 SLUS-20079:
   name: "Dynasty Warriors 2"
   region: "NTSC-U"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes invisible text.
 SLUS-20080:
   name: "GunGriffon Blaze"
   region: "NTSC-U"
@@ -42419,6 +42448,8 @@ SLUS-20145:
   name: "Ring of Red"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLUS-20146:
   name: "Shadow of Destiny"
   region: "NTSC-U"
