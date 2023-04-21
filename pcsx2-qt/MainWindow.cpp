@@ -389,7 +389,7 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionSaveBlockDump, &QAction::toggled, this, &MainWindow::onBlockDumpActionToggled);
 	connect(m_ui.actionShowAdvancedSettings, &QAction::toggled, this, &MainWindow::onShowAdvancedSettingsToggled);
 	connect(m_ui.actionSaveGSDump, &QAction::triggered, this, &MainWindow::onSaveGSDumpActionTriggered);
-	connect(m_ui.actionToolsVideoCapture, &QAction::toggled, this, &MainWindow::onToolsVideoCaptureToggled);
+	connect(m_ui.actionVideoCapture, &QAction::toggled, this, &MainWindow::onVideoCaptureToggled);
 
 	// Input Recording
 	connect(m_ui.actionInputRecNew, &QAction::triggered, this, &MainWindow::onInputRecNewActionTriggered);
@@ -786,7 +786,7 @@ void MainWindow::setStyleFromSettings()
 		// Alternative dark theme.
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 
-		const QColor gray(192, 192, 192);
+		const QColor gray(150, 150, 150);
 		const QColor royalBlue(29, 41, 81);
 		const QColor darkishBlue(17, 30, 108);
 		const QColor highlight(36, 93, 218);
@@ -1029,7 +1029,7 @@ void MainWindow::onShowAdvancedSettingsToggled(bool checked)
 		recreateSettings();
 }
 
-void MainWindow::onToolsVideoCaptureToggled(bool checked)
+void MainWindow::onVideoCaptureToggled(bool checked)
 {
 	if (!s_vm_valid)
 		return;
@@ -1048,8 +1048,8 @@ void MainWindow::onToolsVideoCaptureToggled(bool checked)
 	path = QFileDialog::getSaveFileName(this, tr("Video Capture"), path, filter);
 	if (path.isEmpty())
 	{
-		QSignalBlocker sb(m_ui.actionToolsVideoCapture);
-		m_ui.actionToolsVideoCapture->setChecked(false);
+		QSignalBlocker sb(m_ui.actionVideoCapture);
+		m_ui.actionVideoCapture->setChecked(false);
 		return;
 	}
 
@@ -1144,11 +1144,11 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool stoppi
 
 	m_ui.actionViewGameProperties->setEnabled(running);
 
-	m_ui.actionToolsVideoCapture->setEnabled(running);
-	if (!running && m_ui.actionToolsVideoCapture->isChecked())
+	m_ui.actionVideoCapture->setEnabled(running);
+	if (!running && m_ui.actionVideoCapture->isChecked())
 	{
-		QSignalBlocker sb(m_ui.actionToolsVideoCapture);
-		m_ui.actionToolsVideoCapture->setChecked(false);
+		QSignalBlocker sb(m_ui.actionVideoCapture);
+		m_ui.actionVideoCapture->setChecked(false);
 	}
 
 	m_game_list_widget->setDisabled(starting && !running);

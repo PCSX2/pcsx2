@@ -191,7 +191,7 @@
     <addaction name="actionToggleSoftwareRendering"/>
     <addaction name="actionReloadPatches"/>
     <addaction name="menuInput_Recording"/>
-    <addaction name="actionToolsVideoCapture"/>
+    <addaction name="actionVideoCapture"/>
     <addaction name="separator"/>
     <addaction name="actionEnableSystemConsole"/>
     <addaction name="actionEnableFileLogging"/>
@@ -239,7 +239,9 @@
    <addaction name="actionReset"/>
    <addaction name="actionPause"/>
    <addaction name="actionChangeDisc"/>
+   <addaction name="separator"/>
    <addaction name="actionScreenshot"/>
+   <addaction name="actionVideoCapture"/>
    <addaction name="separator"/>
    <addaction name="actionLoadState"/>
    <addaction name="actionSaveState"/>
@@ -919,9 +921,13 @@
     <string>Recording Viewer</string>
    </property>
   </action>
-  <action name="actionToolsVideoCapture">
+  <action name="actionVideoCapture">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="camera-video">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Video Capture</string>
