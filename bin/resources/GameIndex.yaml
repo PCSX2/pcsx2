@@ -36641,6 +36641,9 @@ SLPS-20083:
   region: "NTSC-J"
   gameFixes:
     - VUSyncHack # Fixes graphics.
+  gsHWFixes:
+    mipmap: 2 # Fixes ground graphics.
+    trilinearFiltering: 1 # Fixes ground graphics.
 SLPS-20084:
   name: "Basic Studio [Disc 1]"
   region: "NTSC-J"
