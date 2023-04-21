@@ -438,15 +438,27 @@
    <property name="text">
     <string>&amp;GitHub Repository...</string>
    </property>
+   <property name="icon">
+    <iconset resource="resources/resources.qrc">
+     <normaloff>:/icons/github.png</normaloff>:/icons/github.png</iconset>
+   </property>
   </action>
   <action name="actionSupportForums">
    <property name="text">
     <string>Support &amp;Forums...</string>
    </property>
+   <property name="icon">
+    <iconset resource="resources/resources.qrc">
+     <normaloff>:/icons/address-book-new-22.png</normaloff>:/icons/address-book-new-22.png</iconset>
+   </property>
   </action>
   <action name="actionDiscordServer">
    <property name="text">
     <string>&amp;Discord Server...</string>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/resources.qrc">
+     <normaloff>:/icons/discord.png</normaloff>:/icons/discord.png</iconset>
    </property>
   </action>
   <action name="actionCheckForUpdates">
@@ -470,6 +482,10 @@
   <action name="actionAbout">
    <property name="text">
     <string>&amp;About PCSX2...</string>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/resources.qrc">
+     <normaloff>:/icons/AppIcon.png</normaloff>:/icons/AppIcon.png</iconset>
    </property>
   </action>
   <action name="actionChangeDisc">

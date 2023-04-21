@@ -2,6 +2,7 @@
 	<qresource>
 		<file>icons/address-book-new-22.png</file>
 		<file>icons/applications-system-24.png</file>
+		<file>icons/AppIcon.png</file>
 		<file>icons/black/index.theme</file>
 		<file>icons/black/svg/arrow-left-right-line.svg</file>
 		<file>icons/black/svg/artboard-2-line.svg</file>
@@ -57,6 +58,7 @@
 		<file>icons/black/svg/volume-up-line.svg</file>
 		<file>icons/black/svg/window-2-line.svg</file>
 		<file>icons/discord.png</file>
+		<file>icons/github.png</file>
 		<file>icons/logo.png</file>
 		<file>icons/media-optical-24.png</file>
 		<file>icons/media-optical-gear-24.png</file>
