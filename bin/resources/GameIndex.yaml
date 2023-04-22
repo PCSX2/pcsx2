@@ -16930,6 +16930,15 @@ SLES-53073:
   name: "Michigan - Report from Hell"
   region: "PAL-M4"
   compat: 5
+  patches:
+    DCD7104E:
+      content: |-
+        comment=Rearranging code to avoid reading vf30 before VU0 program finish.
+        // Fixes falling through the floor in library.
+        patch=1,EE,0015d1f8,word,48481001
+        patch=1,EE,0015d208,word,f85e0000
+        patch=1,EE,0015d61c,word,48481001
+        patch=1,EE,0015d62c,word,f85e0000
 SLES-53074:
   name: "Soccer Life"
   region: "PAL-M5"
