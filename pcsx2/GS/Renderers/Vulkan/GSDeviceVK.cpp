@@ -2843,7 +2843,12 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartRenderPass(bool wait_for_completi
 	Console.Warning("Vulkan: Executing command buffer due to '%s'", reason);
 
 	const VkRenderPass render_pass = m_current_render_pass;
-	const GSVector4i render_pass_area(m_current_render_pass_area);
+	const GSVector4i render_pass_area = m_current_render_pass_area;
+	const GSVector4i scissor = m_scissor;
+	GSTexture* const current_rt = m_current_render_target;
+	GSTexture* const current_ds = m_current_depth_target;
+	const FeedbackLoopFlag current_feedback_loop = m_current_framebuffer_feedback_loop;
+
 	EndRenderPass();
 	g_vulkan_context->ExecuteCommandBuffer(GetWaitType(wait_for_completion, GSConfig.HWSpinCPUForReadbacks));
 	InvalidateCachedState();
@@ -2851,8 +2856,7 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartRenderPass(bool wait_for_completi
 	if (render_pass != VK_NULL_HANDLE)
 	{
 		// rebind framebuffer
-		ApplyBaseState(m_dirty_flags, g_vulkan_context->GetCurrentCommandBuffer());
-		m_dirty_flags &= ~DIRTY_BASE_STATE;
+		OMSetRenderTargets(current_rt, current_ds, scissor, current_feedback_loop);
 
 		// restart render pass
 		BeginRenderPass(render_pass, render_pass_area);
@@ -2892,6 +2896,7 @@ void GSDeviceVK::InvalidateCachedState()
 	m_current_framebuffer = VK_NULL_HANDLE;
 	m_current_render_target = nullptr;
 	m_current_depth_target = nullptr;
+	m_current_framebuffer_feedback_loop = FeedbackLoopFlag_None;
 
 	m_current_pipeline_layout = PipelineLayout::Undefined;
 	m_tfx_descriptor_sets[1] = VK_NULL_HANDLE;
@@ -3635,13 +3640,19 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		(!hdr_rt && DATE_rp != DATE_RENDER_PASS_STENCIL_ONE && CheckRenderPassArea(render_area));
 
 	// render pass restart optimizations
-	if (render_area_okay)
+	if (render_area_okay && (m_current_render_target == draw_rt || m_current_depth_target == draw_ds))
 	{
 		// avoid restarting the render pass just to switch from rt+depth to rt and vice versa
-		if (!draw_ds && m_current_depth_target && m_current_render_target == draw_rt &&
-			config.tex != m_current_depth_target && m_current_depth_target->GetSize() == draw_rt->GetSize() &&
-			((pipe.feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteRT) ==
-				(m_current_framebuffer_feedback_loop & FeedbackLoopFlag_ReadAndWriteRT)))
+		// keep the depth even if doing HDR draws, because the next draw will probably re-enable depth
+		if (!draw_rt && m_current_render_target && config.tex != m_current_render_target &&
+			m_current_render_target->GetSize() == draw_ds->GetSize())
+		{
+			draw_rt = m_current_render_target;
+			m_pipeline_selector.rt = true;
+			m_pipeline_selector.cms.wrgba = 0;
+		}
+		else if (!draw_ds && m_current_depth_target && config.tex != m_current_depth_target &&
+				 m_current_depth_target->GetSize() == draw_rt->GetSize())
 		{
 			draw_ds = m_current_depth_target;
 			m_pipeline_selector.ds = true;
@@ -3650,9 +3661,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		}
 
 		// Prefer keeping feedback loop enabled, that way we're not constantly restarting render passes
-		pipe.feedback_loop_flags |= (m_current_render_target == draw_rt && m_current_depth_target == draw_ds) ?
-								  m_current_framebuffer_feedback_loop :
-								  0;
+		pipe.feedback_loop_flags |= m_current_framebuffer_feedback_loop;
 	}
 
 	// We don't need the very first barrier if this is the first draw after switching to feedback loop,
@@ -3820,7 +3829,8 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelect
 			(config.ps.IsFeedbackLoop() || config.require_one_barrier || config.require_full_barrier)) ?
 			FeedbackLoopFlag_ReadAndWriteRT :
 			FeedbackLoopFlag_None;
-	pipe.feedback_loop_flags |= (config.tex == config.ds) ? FeedbackLoopFlag_ReadDS : FeedbackLoopFlag_None;
+	pipe.feedback_loop_flags |=
+		(config.tex && config.tex == config.ds) ? FeedbackLoopFlag_ReadDS : FeedbackLoopFlag_None;
 
 	// enable point size in the vertex shader if we're rendering points regardless of upscaling.
 	pipe.vs.point_size |= (config.topology == GSHWDrawConfig::Topology::Point);
