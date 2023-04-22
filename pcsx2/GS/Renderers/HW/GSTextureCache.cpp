@@ -856,8 +856,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					// If the source is reading the rt, make sure it's big enough.
 					if (t && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
 					{
-						GSVector4i dirty_rect = t->m_dirty.GetTotalRect(t->m_TEX0, GSVector2i(new_rect.z, new_rect.w));
-						const GSVector2i size_delta = { (dirty_rect.z - t->m_valid.z), (dirty_rect.w - t->m_valid.w) };
+						const GSVector2i size_delta = { (new_rect.z - t->m_valid.z), (new_rect.w - t->m_valid.w) };
 						if (size_delta.x > 0 || size_delta.y > 0)
 						{
 							RGBAMask rgba;
