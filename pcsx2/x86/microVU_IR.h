@@ -1025,7 +1025,17 @@ public:
 							// allocate a new register for writing to
 							int x = findFreeGPR(viWriteReg);
 							const xRegister32& gprX = xRegister32::GetInstance(x);
+
 							writeBackReg(gprX, true);
+
+							// writeReg not cached, needs backing up
+							if (backup && gprMap[x].VIreg != viWriteReg)
+							{
+								xMOVZX(gprX, ptr16[&getVI(viWriteReg)]);
+								writeVIBackup(gprX);
+								backup = false;
+							}
+
 							if (zext_if_dirty)
 								xMOVZX(gprX, xRegister16(i));
 							else
