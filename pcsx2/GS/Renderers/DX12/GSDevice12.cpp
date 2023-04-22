@@ -3205,8 +3205,20 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// avoid restarting the render pass just to switch from rt+depth to rt and vice versa
-	if (m_in_render_pass && !hdr_rt && !draw_ds && m_current_depth_target && m_current_render_target == draw_rt &&
-		config.tex != m_current_depth_target && m_current_depth_target->GetSize() == draw_rt->GetSize())
+	if (m_in_render_pass && (m_current_render_target == draw_rt || m_current_depth_target == draw_ds))
+	{
+		// avoid restarting the render pass just to switch from rt+depth to rt and vice versa
+		// keep the depth even if doing HDR draws, because the next draw will probably re-enable depth
+		if (!draw_rt && m_current_render_target && config.tex != m_current_render_target &&
+			m_current_render_target->GetSize() == draw_ds->GetSize())
+		{
+			draw_rt = m_current_render_target;
+			m_pipeline_selector.rt = true;
+			m_pipeline_selector.cms.wrgba = 0;
+		}
+	}
+	else if (!draw_ds && m_current_depth_target && config.tex != m_current_depth_target &&
+			 m_current_depth_target->GetSize() == draw_rt->GetSize())
 	{
 		draw_ds = m_current_depth_target;
 		m_pipeline_selector.ds = true;

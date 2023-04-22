@@ -2424,13 +2424,17 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	OMSetBlendState(config.blend.enable, s_gl_blend_factors[config.blend.src_factor],
 		s_gl_blend_factors[config.blend.dst_factor], s_gl_blend_ops[config.blend.op],
 		config.blend.constant_enable, config.blend.constant);
-	OMSetColorMaskState(config.colormask);
 
 	// avoid changing framebuffer just to switch from rt+depth to rt and vice versa
 	GSTexture* draw_rt = hdr_rt ? hdr_rt : config.rt;
 	GSTexture* draw_ds = config.ds;
-	if (!draw_ds && GLState::ds && GLState::rt == draw_rt && config.tex != GLState::ds &&
-		GLState::ds->GetSize() == draw_rt->GetSize())
+	OMColorMaskSelector draw_colormask = config.colormask;
+	if (!draw_rt && GLState::rt && GLState::ds == draw_ds && GLState::rt->GetSize() == draw_ds->GetSize())
+	{
+		draw_rt = GLState::rt;
+		draw_colormask.wrgba = 0;
+	}
+	else if (!draw_ds && GLState::ds && GLState::rt == draw_rt && GLState::ds->GetSize() == draw_rt->GetSize())
 	{
 		// should already be always-pass.
 		draw_ds = GLState::ds;
@@ -2439,6 +2443,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 
 	OMSetRenderTargets(draw_rt, draw_ds, &config.scissor);
+	OMSetColorMaskState(draw_colormask);
 	SetupOM(config.depth);
 
 	SendHWDraw(config, psel.ps.IsFeedbackLoop());
