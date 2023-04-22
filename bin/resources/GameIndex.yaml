@@ -7255,6 +7255,8 @@ SCPS-56016:
   gameFixes:
     - GIFFIFOHack
   gsHWFixes:
+    mipmap: 1
+    autoFlush: 1
     estimateTextureRegion: 1 # Improves performance.
 SCUS-21295:
   name: "Tony Hawk's American Wasteland Collector's Edition"
@@ -17997,6 +17999,8 @@ SLES-53526:
   region: "PAL-E-F"
   gsHWFixes:
     autoFlush: 1 # Fixes debris and blending on lower part of screen during monster transformation.
+    mipmap: 2
+    trilinearFiltering: 1
   memcardFilters:
     - "SLES-53526"
     - "SLES-53527"
@@ -18010,6 +18014,8 @@ SLES-53527:
   region: "PAL-E-I-S"
   gsHWFixes:
     autoFlush: 1 # Fixes debris and blending on lower part of screen during monster transformation.
+    mipmap: 2
+    trilinearFiltering: 1
   memcardFilters:
     - "SLES-53526"
     - "SLES-53527"
@@ -18023,6 +18029,8 @@ SLES-53528:
   region: "PAL-G"
   gsHWFixes:
     autoFlush: 1 # Fixes debris and blending on lower part of screen during monster transformation.
+    mipmap: 2
+    trilinearFiltering: 1
   memcardFilters:
     - "SLES-53526"
     - "SLES-53527"
@@ -18383,6 +18391,10 @@ SLES-53624:
 SLES-53626:
   name: "Suffering, The - Ties that Bind"
   region: "PAL-E-G"
+  gsHWFixes:
+    autoFlush: 1 # Fixes debris and blending on lower part of screen during monster transformation.
+    mipmap: 2
+    trilinearFiltering: 1
   memcardFilters:
     - "SLES-53526"
     - "SLES-53527"
@@ -19167,6 +19179,7 @@ SLES-53904:
   clampModes:
     vuClampMode: 0 # Fixes black artifacts on tracks
   gsHWFixes:
+    partialTargetInvalidation: 1
     mipmap: 1
     autoFlush: 1
     estimateTextureRegion: 1 # Improves performance.
@@ -36934,6 +36947,11 @@ SLPS-20193:
 SLPS-20194:
   name: "Underwater Unit"
   region: "NTSC-J"
+SLPS-20195:
+  name: "World Fantasista"
+  region: "NTSC-J"
+  gameFixes:
+    - FullVU0SyncHack # Fixes SPS.
 SLPS-20196:
   name: "Akagawa Jirou - Tsuki no Hikari - Shizumeru Kane no Satsujin"
   region: "NTSC-J"
@@ -38199,6 +38217,11 @@ SLPS-25100:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+SLPS-25101:
+  name: "Nichibeikan Pro Yakyuu - Final League"
+  region: "NTSC-J"
+  gameFixes:
+    - FullVU0SyncHack # Fixes SPS.
 SLPS-25102:
   name: "Project Arms"
   region: "NTSC-J"
@@ -47144,6 +47167,7 @@ SLUS-21095:
   gsHWFixes:
     mipmap: 1
     autoFlush: 1
+    partialTargetInvalidation: 1
     estimateTextureRegion: 1 # Improves performance.
 SLUS-21096:
   name: "Ape Escape - Pumped & Primed"
@@ -47616,6 +47640,8 @@ SLUS-21189:
     InstantVU1SpeedHack: 1 # Fixes SPS.
   gsHWFixes:
     autoFlush: 1 # Fixes debris and blending on lower part of screen during monster transformation.
+    mipmap: 2
+    trilinearFiltering: 1
   memcardFilters:
     - "SLUS-21189"
     - "SLUS-20636"
