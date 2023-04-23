@@ -449,7 +449,7 @@
    </property>
    <property name="icon">
     <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/address-book-new-22.png</normaloff>:/icons/address-book-new-22.png</iconset>
+     <normaloff>:/icons/forum.png</normaloff>:/icons/forum.png</iconset>
    </property>
   </action>
   <action name="actionDiscordServer">
