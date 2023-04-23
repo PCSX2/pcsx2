@@ -434,7 +434,7 @@ Pcsx2Config::GSOptions::GSOptions()
 
 	ManualUserHacks = false;
 	UserHacks_AlignSpriteX = false;
-	UserHacks_AutoFlush = false;
+	UserHacks_AutoFlush = GSHWAutoFlushLevel::Disabled;
 	UserHacks_CPUFBConversion = false;
 	UserHacks_ReadTCOnClose = false;
 	UserHacks_DisableDepthSupport = false;
@@ -518,6 +518,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(SkipDrawEnd) &&
 		OpEqu(SkipDrawStart) &&
 
+		OpEqu(UserHacks_AutoFlush) &&
 		OpEqu(UserHacks_HalfBottomOverride) &&
 		OpEqu(UserHacks_HalfPixelOffset) &&
 		OpEqu(UserHacks_RoundSprite) &&
@@ -648,7 +649,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	GSSettingBoolEx(Mipmap, "mipmap");
 	GSSettingBoolEx(ManualUserHacks, "UserHacks");
 	GSSettingBoolEx(UserHacks_AlignSpriteX, "UserHacks_align_sprite_X");
-	GSSettingBoolEx(UserHacks_AutoFlush, "UserHacks_AutoFlush");
+	GSSettingIntEnumEx(UserHacks_AutoFlush, "UserHacks_AutoFlushLevel");
 	GSSettingBoolEx(UserHacks_CPUFBConversion, "UserHacks_CPU_FB_Conversion");
 	GSSettingBoolEx(UserHacks_ReadTCOnClose, "UserHacks_ReadTCOnClose");
 	GSSettingBoolEx(UserHacks_DisableDepthSupport, "UserHacks_DisableDepthSupport");
@@ -781,7 +782,7 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 	UserHacks_HalfBottomOverride = -1;
 	UserHacks_HalfPixelOffset = 0;
 	UserHacks_RoundSprite = 0;
-	UserHacks_AutoFlush = false;
+	UserHacks_AutoFlush = GSHWAutoFlushLevel::Disabled;
 	PreloadFrameWithGSData = false;
 	UserHacks_DisablePartialInvalidation = false;
 	UserHacks_DisableDepthSupport = false;

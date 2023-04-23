@@ -171,12 +171,12 @@ PAPX-90516:
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 PAPX-90517:
   name: "Prince of Persia - Jikan no Suna [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
 PBGP-0061:
   name: "Suika A.S+ Eternal Name [First Press Limited Edition]"
   region: "NTSC-J"
@@ -408,7 +408,7 @@ PCPX-98017:
     mipmap: 1
     partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 PDPX-99109:
   name: "DVD Player Version 3.04"
   region: "NTSC-J"
@@ -515,7 +515,7 @@ SCAJ-20008:
   region: "NTSC-Unk"
   gsHWFixes:
     preloadFrameData: 1 # Fixes fog and make lights on cars work again.
-    autoFlush: 1 # Fixes sun luminosity and penetration of objects.
+    autoFlush: 2 # Fixes sun luminosity and penetration of objects.
   gameFixes:
     - EETimingHack # Fixes random graphical corruption.
 SCAJ-20009:
@@ -663,7 +663,7 @@ SCAJ-20041:
   name: "Energy Airforce - Aim Strike!"
   region: "NTSC-Unk"
   gsHWFixes:
-    autoFlush: 1 # Corrects post-processing effect on jet exhausts.
+    autoFlush: 2 # Corrects post-processing effect on jet exhausts.
 SCAJ-20043:
   name: "ChainDive"
   region: "NTSC-Unk"
@@ -671,7 +671,7 @@ SCAJ-20044:
   name: "Tomb Raider - The Angel of Darkness"
   region: "NTSC-Unk"
   gsHWFixes:
-    autoFlush: 1 # Fixes lava effect.
+    autoFlush: 2 # Fixes lava effect.
 SCAJ-20045:
   name: "Shadow Tower Abyss"
   region: "NTSC-Unk"
@@ -800,7 +800,7 @@ SCAJ-20073:
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SCAJ-20074:
   name: "King of Fighters 2002, The"
   region: "NTSC-Unk"
@@ -878,7 +878,7 @@ SCAJ-20086:
   name: "Xenosaga Episode II - Jenseits von Gut und Bose [Disc 1 of 2]"
   region: "NTSC-Unk"
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
   memcardFilters:
@@ -892,7 +892,7 @@ SCAJ-20087:
   name: "Xenosaga Episode II - Jenseits von Gut und Bose [Disc 2 of 2]"
   region: "NTSC-Unk"
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
   memcardFilters:
@@ -992,12 +992,12 @@ SCAJ-20109:
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 SCAJ-20110:
   name: "Dragon Quest VIII - Sora to Daichi to Norowareshi Himegimi"
   region: "NTSC-Unk"
   gsHWFixes:
-    autoFlush: 1 # Fixes missing bloom from surfaces like windows.
+    autoFlush: 2 # Fixes missing bloom from surfaces like windows.
     # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
@@ -1178,7 +1178,7 @@ SCAJ-20138:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    autoFlush: 1 # Fixes corruption in cutscenes and brightens the image.
+    autoFlush: 2 # Fixes corruption in cutscenes and brightens the image.
 SCAJ-20139:
   name: "Zero - Shisei no Koe" # Fatal Frame - Rei - Irezumi no Sei
   region: "NTSC-Unk"
@@ -1206,7 +1206,7 @@ SCAJ-20144:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    autoFlush: 1 # Fixes corruption in cutscenes and brightens the image.
+    autoFlush: 2 # Fixes corruption in cutscenes and brightens the image.
 SCAJ-20145:
   name: "Tales of Legendia"
   region: "NTSC-J"
@@ -1260,7 +1260,7 @@ SCAJ-20154:
   name: "Prince of Persia - Warrior Within"
   region: "NTSC-Unk"
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
 SCAJ-20155:
   name: "Yoshitsune Eiyuuden Shura - The Story of Hero Yoshitsune Shura"
   region: "NTSC-Unk"
@@ -1277,14 +1277,14 @@ SCAJ-20157:
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 SCAJ-20158:
   name: "Ikusa Gami"
   region: "NTSC-Unk"
   gameFixes:
     - VIF1StallHack # Fixes black screen on boot.
   gsHWFixes:
-    autoFlush: 1 # Fixes missing bloom effects.
+    autoFlush: 2 # Fixes missing bloom effects.
     halfPixelOffset: 2 # Fixes misaligned lighting and bloom.
 SCAJ-20159:
   name: "Soul Calibur III"
@@ -1313,7 +1313,7 @@ SCAJ-20162:
   name: "Rogue Galaxy"
   region: "NTSC-Unk"
   gsHWFixes:
-    autoFlush: 1 # Fix glow effects from lamps.
+    autoFlush: 2 # Fix glow effects from lamps.
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
@@ -1323,12 +1323,12 @@ SCAJ-20163:
   region: "NTSC-Unk"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
-    autoFlush: 1 # Fixes post lighting.
+    autoFlush: 2 # Fixes post lighting.
 SCAJ-20164:
   name: "Kingdom Hearts II"
   region: "NTSC-Unk"
   gsHWFixes:
-    autoFlush: 1 # Fixes effects.
+    autoFlush: 2 # Fixes effects.
     roundSprite: 2 # Fixes upscaling artifacts.
 SCAJ-20165:
   name: "Bleach - Hanatareshi Yabou"
@@ -1354,7 +1354,7 @@ SCAJ-20169:
   name: "Dirge of Cerberus - Final Fantasy VII"
   region: "NTSC-Unk"
   gsHWFixes:
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SCAJ-20170:
   name: "Tourist Trophy"
   region: "NTSC-Ch"
@@ -1417,7 +1417,7 @@ SCAJ-20179:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 1 of 2]"
   region: "NTSC-Unk"
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
@@ -1426,7 +1426,7 @@ SCAJ-20180:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 2 of 2]"
   region: "NTSC-Unk"
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
@@ -1487,7 +1487,7 @@ SCAJ-20195:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    autoFlush: 1 # Fixes corruption in cutscenes and brightens the image.
+    autoFlush: 2 # Fixes corruption in cutscenes and brightens the image.
 SCAJ-20196:
   name: "Wang Da Yu Ju Xiang [PlayStation 2 The Best]"
   region: "NTSC-Ch"
@@ -1555,7 +1555,7 @@ SCAJ-25037:
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
   gsHWFixes:
-    autoFlush: 1 # Fixes flame bloom.
+    autoFlush: 2 # Fixes flame bloom.
 SCAJ-25045:
   name: "Sakura Taisen V - Episode 0"
   region: "NTSC-Unk"
@@ -1567,7 +1567,7 @@ SCAJ-30001:
   region: "NTSC-Unk"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Removes puppet lines shadows.
     roundSprite: 2 # Fixes font artifacts.
 SCAJ-30002:
@@ -2149,7 +2149,7 @@ SCED-51700:
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SCED-51899:
   name: "PlayStation Experience [Demo]"
   region: "PAL-E"
@@ -2256,7 +2256,7 @@ SCED-52141:
     - XGKickHack # Fixes SPS.
   gsHWFixes:
     roundSprite: 2 # Correct misaligned font, better aligns car shadow.
-    autoFlush: 1 # Fixes sun luminosity.
+    autoFlush: 2 # Fixes sun luminosity.
 SCED-52160:
   name: "Official PlayStation 2 Magazine Demo 45"
   region: "PAL-M5"
@@ -2415,7 +2415,7 @@ SCED-52869:
         patch=0,EE,005fffec,double,24e7100024c60080
         patch=0,EE,005ffff4,double,00c7e8200818000c
   gsHWFixes:
-    autoFlush: 1 # Fixes sun luminosity and car shadows.
+    autoFlush: 2 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
   roundModes:
@@ -2426,7 +2426,7 @@ SCED-52880:
   gameFixes:
     - XGKickHack # Fixes SPS.
   gsHWFixes:
-    autoFlush: 1 # Fixes sun luminosity and car shadows.
+    autoFlush: 2 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
   roundModes:
@@ -2452,7 +2452,7 @@ SCED-52945:
   gameFixes:
     - XGKickHack # Fixes SPS.
   gsHWFixes:
-    autoFlush: 1 # Fixes sun luminosity and car shadows.
+    autoFlush: 2 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
   roundModes:
@@ -2475,7 +2475,7 @@ SCED-52952:
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SCED-52970:
   name: "SCEE Hits Demo"
   region: "PAL-M5"
@@ -2643,7 +2643,7 @@ SCED-53622:
   clampModes:
     vuClampMode: 2 # Fixes mini-map HUD.
   gsHWFixes:
-    autoFlush: 1 # Fixes pause menu backgrounds.
+    autoFlush: 2 # Fixes pause menu backgrounds.
     roundSprite: 1 # Corrects proportions of fonts and pause-screen lines, adjusts display closer to software.
 SCED-53660:
   name: "Jak X & Ratchet Gladiator [Demo]"
@@ -3497,7 +3497,7 @@ SCES-51607:
     - EETimingHack # Fixes DMA errors.
   gsHWFixes:
     mipmap: 1
-    autoFlush: 1
+    autoFlush: 2
     partialTargetInvalidation: 1 # Fixes broken pause screen.
   dynaPatches:
     - pattern:
@@ -3519,7 +3519,7 @@ SCES-51608:
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SCES-51610:
   name: "This is Football 2004 [Red Devils 2004]"
   region: "PAL-BE"
@@ -3546,7 +3546,7 @@ SCES-51635:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes lighting/shadows.
     preloadFrameData: 1 # Fixes sun flickering.
-    autoFlush: 1 # Fixes sun through objects.
+    autoFlush: 2 # Fixes sun through objects.
     bilinearUpscale: 1 # Smooths out sun glare textures like native.
 SCES-51648:
   name: "Everquest - Online Adventures"
@@ -3564,7 +3564,7 @@ SCES-51684:
     - XGKickHack # Fixes SPS.
   gsHWFixes:
     roundSprite: 2 # Correct misaligned font, better aligns car shadow.
-    autoFlush: 1 # Fixes sun luminosity.
+    autoFlush: 2 # Fixes sun luminosity.
 SCES-51685:
   name: "Primal"
   region: "PAL-E-R"
@@ -3649,7 +3649,7 @@ SCES-52033:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes lights going through walls.
+    autoFlush: 2 # Fixes lights going through walls.
     preloadFrameData: 1 # Fixes light flicker.
     halfPixelOffset: 2 # Corrects light position.
   gameFixes:
@@ -3754,7 +3754,7 @@ SCES-52389:
         patch=0,EE,005fffec,double,24e7100024c60080
         patch=0,EE,005ffff4,double,00c7e8200818000c
   gsHWFixes:
-    autoFlush: 1 # Fixes sun luminosity and car shadows.
+    autoFlush: 2 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
   roundModes:
@@ -3839,7 +3839,7 @@ SCES-52456:
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
   memcardFilters: # Reads Ratchet 1 & 2 data.
     - "SCES-52456"
     - "SCES-51607"
@@ -3855,7 +3855,7 @@ SCES-52460:
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SCES-52529:
   name: "Sly 2 - Band of Thieves"
   region: "PAL-M11"
@@ -4033,7 +4033,7 @@ SCES-53247:
     eeClampMode: 2 # Fixes rare bug causing player to respawn when starting the race or during certain car crashes.
   gsHWFixes:
     roundSprite: 1 # Fixes misaligned text.
-    autoFlush: 1 # Fixes sun luminosity.
+    autoFlush: 2 # Fixes sun luminosity.
   patches:
     CBBC2E7F:
       content: |-
@@ -4052,13 +4052,13 @@ SCES-53285:
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 SCES-53286:
   name: "Jak X - Combat Racing"
   region: "PAL-M7"
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 2 # Fixes water textures. Can't use BW 4 here because of post effects.
@@ -4130,7 +4130,7 @@ SCES-53358:
   clampModes:
     vuClampMode: 2 # Fixes mini-map HUD.
   gsHWFixes:
-    autoFlush: 1 # Fixes pause menu backgrounds.
+    autoFlush: 2 # Fixes pause menu backgrounds.
     roundSprite: 1 # Corrects proportions of fonts and pause-screen lines, adjusts display closer to software.
 SCES-53372:
   name: "Tourist Trophy - The Real Riding Simulator"
@@ -4196,7 +4196,7 @@ SCES-53642:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    autoFlush: 1 # Fixes corruption in cutscenes and brightens the image.
+    autoFlush: 2 # Fixes corruption in cutscenes and brightens the image.
 SCES-53663:
   name: "Buzz! The Music Quiz"
   region: "PAL-M3"
@@ -4210,7 +4210,7 @@ SCES-53680:
     - XGKickHack # Fixes SPS.
   gsHWFixes:
     roundSprite: 1 # Fixes misaligned text.
-    autoFlush: 1 # Fixes sun luminosity.
+    autoFlush: 2 # Fixes sun luminosity.
   patches:
     79BAD675:
       content: |-
@@ -4512,7 +4512,7 @@ SCES-54552:
   name: "Rogue Galaxy"
   region: "PAL-M5"
   gsHWFixes:
-    autoFlush: 1 # Fix glow effects from lamps.
+    autoFlush: 2 # Fix glow effects from lamps.
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
@@ -4617,7 +4617,7 @@ SCES-54794:
   name: "Syphon Filter - Dark Mirror"
   region: "PAL-M5"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 2
 SCES-54823:
   name: "SingStar Bollywood"
   region: "PAL-E"
@@ -4971,14 +4971,14 @@ SCES-82034:
   name: "Xenosaga II - Jenseits von Gut und Bose [Disc 1]"
   region: "PAL-M3"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 2
   memcardFilters:
     - "SLES-82034"
 SCES-82035:
   name: "Xenosaga II - Jenseits von Gut und Bose [Disc 2]"
   region: "PAL-M3"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 2
   memcardFilters:
     - "SLES-82034"
     - "SCES-82034"
@@ -5031,7 +5031,7 @@ SCKA-20010:
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SCKA-20011:
   name: "Ratchet & Clank 2"
   region: "NTSC-K"
@@ -5149,7 +5149,7 @@ SCKA-20032:
   name: "Syphon Filter - The Omega Virus"
   region: "NTSC-K"
   gsHWFixes:
-    autoFlush: 1 # Fixes lights going through walls.
+    autoFlush: 2 # Fixes lights going through walls.
     preloadFrameData: 1 # Fixes light flicker.
     halfPixelOffset: 2 # Corrects light position.
   gameFixes:
@@ -5188,7 +5188,7 @@ SCKA-20037:
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
   memcardFilters:
     - "SCKA-20037"
     - "SCKA-20011"
@@ -5211,7 +5211,7 @@ SCKA-20040:
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SCKA-20041:
   name: "EyeToy - Play 2"
   region: "NTSC-K"
@@ -5324,7 +5324,7 @@ SCKA-20060:
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 SCKA-20061:
   name: "Wanda to Kyozou"
   region: "NTSC-K"
@@ -5346,7 +5346,7 @@ SCKA-20062:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    autoFlush: 1 # Fixes corruption in cutscenes and brightens the image.
+    autoFlush: 2 # Fixes corruption in cutscenes and brightens the image.
 SCKA-20063:
   name: "Sly 3 - Honor Among Thieves"
   region: "NTSC-K"
@@ -5487,7 +5487,7 @@ SCKA-20093:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
-    autoFlush: 1 # Fixes glows.
+    autoFlush: 2 # Fixes glows.
 SCKA-20095:
   name: "Okami"
   region: "NTSC-K"
@@ -5500,7 +5500,7 @@ SCKA-20096:
   gsHWFixes:
     halfPixelOffset: 2 # Fix text and post blur.
     mipmap: 2 # Base mip level isn't always used.
-    autoFlush: 1 # Needed for recursive mipmap rendering.
+    autoFlush: 2 # Needed for recursive mipmap rendering.
     getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SCKA-20098:
   name: "Nickelodeon SpongeBob SquarePants - Creature from the Krusty Krab"
@@ -5578,6 +5578,7 @@ SCKA-30006:
     alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
+    autoFlush: 1 # Fixes sun occlusion.
 SCPM-85101:
   name: "McDonald's Original Happy Disc"
   region: "NTSC-J"
@@ -6016,7 +6017,7 @@ SCPS-15057:
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SCPS-15058:
   name: "Arc the Lad - Generation"
   region: "NTSC-J"
@@ -6090,7 +6091,7 @@ SCPS-15066:
   name: "Prince of Persia - The Sands of Time"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
 SCPS-15067:
   name: "Dokodemo Issyo - Toro to Nagare Boshi"
   region: "NTSC-J"
@@ -6155,7 +6156,7 @@ SCPS-15084:
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
   memcardFilters:
     - "SCPS-15084"
     - "SCPS-15056"
@@ -6241,7 +6242,7 @@ SCPS-15096:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    autoFlush: 1 # Fixes corruption in cutscenes and brightens the image.
+    autoFlush: 2 # Fixes corruption in cutscenes and brightens the image.
 SCPS-15097:
   name: "Wanda to Kyozou"
   region: "NTSC-J"
@@ -6270,7 +6271,7 @@ SCPS-15099:
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 SCPS-15100:
   name: "Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle"
   region: "NTSC-J"
@@ -6281,7 +6282,7 @@ SCPS-15100:
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 SCPS-15101:
   name: "Bleach - Hanatareshi Yabou"
   region: "NTSC-J"
@@ -6289,7 +6290,7 @@ SCPS-15102:
   name: "Rogue Galaxy"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fix glow effects from lamps.
+    autoFlush: 2 # Fix glow effects from lamps.
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
@@ -6423,7 +6424,7 @@ SCPS-17013:
   name: "Rogue Galaxy [Director's Cut]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fix glow effects from lamps.
+    autoFlush: 2 # Fix glow effects from lamps.
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
@@ -6589,7 +6590,7 @@ SCPS-19254:
   name: "Rogue Galaxy [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fix glow effects from lamps.
+    autoFlush: 2 # Fix glow effects from lamps.
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
@@ -6659,7 +6660,7 @@ SCPS-19309:
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 SCPS-19310:
   name: "Ratchet & Clank [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -6676,7 +6677,7 @@ SCPS-19311:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    autoFlush: 1 # Fixes corruption in cutscenes and brightens the image.
+    autoFlush: 2 # Fixes corruption in cutscenes and brightens the image.
 SCPS-19312:
   name: "Siren [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -6722,7 +6723,7 @@ SCPS-19317:
   gsHWFixes:
     mipmap: 1
     partialTargetInvalidation: 1 # Fixes broken pause screen.
-    autoFlush: 1
+    autoFlush: 2
   memcardFilters:
     - "SCAJ-20001"
     - "SCPS-15037"
@@ -6765,7 +6766,7 @@ SCPS-19321:
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 SCPS-19322:
   name: "Wild ARMs - The 4th Detonator [PlayStation 2 The Best - Reprint]"
   region: "NTSC-J"
@@ -6838,7 +6839,7 @@ SCPS-19328:
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 SCPS-19329:
   name: "Bleach - Blade Battlers [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -6978,7 +6979,7 @@ SCPS-55015:
   name: "Zettai Zetsumei Toshi"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes incorrect blur effect.
+    autoFlush: 2 # Fixes incorrect blur effect.
 SCPS-55016:
   name: "Jet de Go! 2"
   region: "NTSC-J"
@@ -7146,7 +7147,7 @@ SCPS-55901:
   name: "Xenosaga Episode I - Der Wille zur Macht"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Removes puppet lines shadows.
     roundSprite: 2 # Fixes font artifacts.
   patches:
@@ -7236,7 +7237,7 @@ SCPS-56012:
   region: "NTSC-K"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes some shading/shadows.
-    autoFlush: 1 # Fixes incorrect blur effect.
+    autoFlush: 2 # Fixes incorrect blur effect.
 SCPS-56013:
   name: "This is Football 2003"
   region: "NTSC-K"
@@ -7256,7 +7257,7 @@ SCPS-56016:
     - GIFFIFOHack
   gsHWFixes:
     mipmap: 1
-    autoFlush: 1
+    autoFlush: 2
     estimateTextureRegion: 1 # Improves performance.
 SCUS-21295:
   name: "Tony Hawk's American Wasteland Collector's Edition"
@@ -7905,7 +7906,7 @@ SCUS-97264:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes lights going through walls.
+    autoFlush: 2 # Fixes lights going through walls.
     preloadFrameData: 1 # Fixes light flicker.
     halfPixelOffset: 2 # Corrects light position.
   gameFixes:
@@ -7926,7 +7927,7 @@ SCUS-97265:
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SCUS-97266:
   name: "Final Fantasy XI [Disc 1 of 2]"
   region: "NTSC-U"
@@ -7940,7 +7941,7 @@ SCUS-97268:
   gsHWFixes:
     mipmap: 1
     partialTargetInvalidation: 1 # Fixes broken pause screen.
-    autoFlush: 1
+    autoFlush: 2
   memcardFilters:
     - "SCUS-97268"
     - "SCUS-97199"
@@ -7965,7 +7966,7 @@ SCUS-97273:
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SCUS-97274:
   name: "Jak II [Video Demo]"
   region: "NTSC-U"
@@ -8040,7 +8041,7 @@ SCUS-97322:
   gsHWFixes:
     mipmap: 1
     partialTargetInvalidation: 1 # Fixes broken pause screen.
-    autoFlush: 1
+    autoFlush: 2
 SCUS-97323:
   name: "Ratchet & Clank 2 - Going Commando [Retail Employees Demo]"
   region: "NTSC-U"
@@ -8049,7 +8050,7 @@ SCUS-97323:
   gsHWFixes:
     mipmap: 1
     partialTargetInvalidation: 1 # Fixes broken pause screen.
-    autoFlush: 1
+    autoFlush: 2
 SCUS-97324:
   name: "Kiosk Demo Disc 2.11"
   region: "NTSC-U"
@@ -8093,7 +8094,7 @@ SCUS-97330:
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SCUS-97331:
   name: "Official U.S. PlayStation Magazine Demo Disc 078"
   region: "NTSC-U"
@@ -8151,7 +8152,7 @@ SCUS-97353:
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
   memcardFilters:
     - "SCUS-97353"
     - "SCUS-97268"
@@ -8176,7 +8177,7 @@ SCUS-97362:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 2
 SCUS-97365:
   name: "World Tour Soccer 2005"
   region: "NTSC-U"
@@ -8224,7 +8225,7 @@ SCUS-97377:
   name: "Syphon Filter - The Omega Strain [Regular Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1 # Fixes lights going through walls.
+    autoFlush: 2 # Fixes lights going through walls.
     preloadFrameData: 1 # Fixes light flicker.
     halfPixelOffset: 2 # Corrects light position.
 SCUS-97378:
@@ -8244,7 +8245,7 @@ SCUS-97381:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    autoFlush: 1
+    autoFlush: 2
 SCUS-97382:
   name: "NBA Shootout 2004 [Demo]"
   region: "NTSC-U"
@@ -8341,7 +8342,7 @@ SCUS-97411:
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 SCUS-97412:
   name: "Jak 3 [Demo]"
   region: "NTSC-U"
@@ -8352,7 +8353,7 @@ SCUS-97412:
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SCUS-97413:
   name: "Ratchet & Clank - Up Your Arsenal [Public Beta v1.0]"
   region: "NTSC-U"
@@ -8363,7 +8364,7 @@ SCUS-97413:
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 SCUS-97414:
   name: "EyeToy - AntiGrav"
   region: "NTSC-U"
@@ -8419,7 +8420,7 @@ SCUS-97429:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 2 # Fixes water textures. Can't use BW 4 here because of post effects.
@@ -8480,7 +8481,7 @@ SCUS-97440:
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SCUS-97441:
   name: "Getaway The - Black Monday [Demo]"
   region: "NTSC-U"
@@ -8570,7 +8571,7 @@ SCUS-97465:
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 SCUS-97466:
   name: "Gretzky NHL '06"
   region: "NTSC-U"
@@ -8687,13 +8688,13 @@ SCUS-97485:
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 SCUS-97486:
   name: "Jak X - Combat Racing [Regular Demo]"
   region: "NTSC-U"
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 2 # Fixes water textures. Can't use BW 4 here because of post effects.
@@ -8709,14 +8710,14 @@ SCUS-97487:
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 SCUS-97488:
   name: "Jak X - Combat Racing [Public Beta v.1]"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 2 # Fixes water textures. Can't use BW 4 here because of post effects.
@@ -8732,7 +8733,7 @@ SCUS-97490:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fix glow effects from lamps.
+    autoFlush: 2 # Fix glow effects from lamps.
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
@@ -8776,7 +8777,7 @@ SCUS-97501:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    autoFlush: 1 # Fixes corruption in cutscenes and brightens the image.
+    autoFlush: 2 # Fixes corruption in cutscenes and brightens the image.
 SCUS-97502:
   name: "Tourist Trophy"
   region: "NTSC-U"
@@ -8810,7 +8811,7 @@ SCUS-97509:
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SCUS-97510:
   name: "ATV Offroad Fury 2 [Greatest Hits]"
   region: "NTSC-U"
@@ -8835,7 +8836,7 @@ SCUS-97513:
   gsHWFixes:
     mipmap: 1
     partialTargetInvalidation: 1 # Fixes broken pause screen.
-    autoFlush: 1
+    autoFlush: 2
 SCUS-97514:
   name: "ATV Offroad Fury 3 [Greatest Hits]"
   region: "NTSC-U"
@@ -8857,7 +8858,7 @@ SCUS-97516:
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SCUS-97517:
   name: "Killzone [Greatest Hits]"
   region: "NTSC-U"
@@ -8875,7 +8876,7 @@ SCUS-97518:
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 SCUS-97519:
   name: "Sly 2 - Band of Thieves [Greatest Hits]"
   region: "NTSC-U"
@@ -8885,7 +8886,7 @@ SCUS-97520:
   name: "Syphon Filter - The Omega Strain [Greatest Hits]"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1 # Fixes lights going through walls.
+    autoFlush: 2 # Fixes lights going through walls.
     preloadFrameData: 1 # Fixes light flicker.
     halfPixelOffset: 2 # Corrects light position.
 SCUS-97523:
@@ -8964,7 +8965,7 @@ SCUS-97548:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
     halfPixelOffset: 2 # Fixes misaligned blur.
-    autoFlush: 1 # Fixes corruption in cutscenes and brightens the image.
+    autoFlush: 2 # Fixes corruption in cutscenes and brightens the image.
 SCUS-97554:
   name: "NBA '07 featuring The Life Vol.2 [Demo]"
   region: "NTSC-U"
@@ -9012,7 +9013,7 @@ SCUS-97572:
   name: "Rogue Galaxy [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1 # Fix glow effects from lamps.
+    autoFlush: 2 # Fix glow effects from lamps.
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
@@ -9022,7 +9023,7 @@ SCUS-97574:
   region: "NTSC-U"
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 2 # Fixes water textures. Can't use BW 4 here because of post effects.
@@ -9041,7 +9042,7 @@ SCUS-97584:
   name: "Syphon Filter - Logan's Shadow"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 2
     preloadFrameData: 1
 SCUS-97589:
   name: "NBA '08 featuring The Life Vol.3"
@@ -9104,7 +9105,7 @@ SCUS-97620:
   name: "Syphon Filter - Dark Mirror [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 2
 SCUS-97621:
   name: "Twisted Metal - Head-On [Extra Twisted Edition]"
   region: "NTSC-U"
@@ -9269,7 +9270,7 @@ SLAJ-25037:
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
   gsHWFixes:
-    autoFlush: 1 # Fixes flame bloom.
+    autoFlush: 2 # Fixes flame bloom.
 SLAJ-25039:
   name: "Beni no Umi 2"
   region: "NTSC-Unk"
@@ -9312,7 +9313,7 @@ SLAJ-25053:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -9350,7 +9351,7 @@ SLAJ-25066:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -9369,7 +9370,7 @@ SLAJ-25068:
   name: "Shin Sangoku Musou 4 - Mushoden"
   region: "NTSC-Unk"
   gsHWFixes:
-    autoFlush: 1 # Fixes sun luminosity.
+    autoFlush: 2 # Fixes sun luminosity.
 SLAJ-25072:
   name: "Matrix, The - Path of Neo"
   region: "NTSC-Unk"
@@ -9428,7 +9429,7 @@ SLAJ-25078:
     vuClampMode: 3 # Fixes SPS.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
-    autoFlush: 1 # Properly diffuses light instead of strips of light.
+    autoFlush: 2 # Properly diffuses light instead of strips of light.
     roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
@@ -9483,7 +9484,7 @@ SLAJ-25094:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -9647,7 +9648,7 @@ SLED-52485:
   region: "PAL-E"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes lights penetrating objects.
-    autoFlush: 1 # Helps with the light penetration problem.
+    autoFlush: 2 # Helps with the light penetration problem.
     cpuSpriteRenderBW: 1 # Fixes light glows.
 SLED-52488:
   name: "Suffering, The [Demo]"
@@ -9662,7 +9663,7 @@ SLED-52597:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -9703,7 +9704,7 @@ SLED-52929:
   name: "Prince of Persia - Warrior Within [Demo]"
   region: "PAL-M5"
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
 SLED-53083:
   name: "Monster Hunter [Demo]"
   region: "PAL-M5"
@@ -9741,7 +9742,7 @@ SLED-53512:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -9751,7 +9752,7 @@ SLED-53537:
   name: "187 - Ride or Die [Demo]"
   region: "PAL-E"
   gsHWFixes:
-    autoFlush: 1 # Softens bloom on objects and cars.
+    autoFlush: 2 # Softens bloom on objects and cars.
     halfPixelOffset: 2 # Fixes misaligned bloom on objects and cars.
 SLED-53650:
   name: "Need for Speed - Most Wanted"
@@ -9802,7 +9803,7 @@ SLED-53937:
     vuClampMode: 3 # Fixes SPS.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
-    autoFlush: 1 # Properly diffuses light instead of strips of light.
+    autoFlush: 2 # Properly diffuses light instead of strips of light.
     roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
@@ -9846,7 +9847,7 @@ SLED-54401:
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes sun occlusion and brightness.
+    autoFlush: 2 # Fixes sun occlusion and brightness.
 SLES-50003:
   name: "Swap Magic DVD Disc v2.0"
   region: "PAL-Unk"
@@ -11431,7 +11432,7 @@ SLES-50725:
   compat: 5
   gsHWFixes:
     preloadFrameData: 1 # Fixes fog and make lights on cars work again.
-    autoFlush: 1 # Fixes sun luminosity and penetration of objects.
+    autoFlush: 2 # Fixes sun luminosity and penetration of objects.
   gameFixes:
     - EETimingHack # Fixes random graphical corruption.
 SLES-50726:
@@ -11898,7 +11899,7 @@ SLES-50876:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 2
     cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
@@ -12140,7 +12141,7 @@ SLES-51011:
   region: "PAL-M4"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes brake lights.
+    autoFlush: 2 # Fixes brake lights.
     preloadFrameData: 1 # Fixes graphical issues.
 SLES-51013:
   name: "Blade II"
@@ -12385,7 +12386,7 @@ SLES-51117:
   region: "PAL-M5"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    autoFlush: 1 # Fixes the sun flare.
+    autoFlush: 2 # Fixes the sun flare.
     halfPixelOffset: 2 # Fixes the sun flare.
 SLES-51118:
   name: "Wizardry - Tales of the Forsaken Land"
@@ -12695,7 +12696,7 @@ SLES-51227:
   region: "PAL-M10"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes lava effect.
+    autoFlush: 2 # Fixes lava effect.
   patches:
     default:
       content: |-
@@ -12908,7 +12909,7 @@ SLES-51301:
   name: "SOS - The Final Escape"
   region: "PAL-M3"
   gsHWFixes:
-    autoFlush: 1 # Fixes incorrect blur effect.
+    autoFlush: 2 # Fixes incorrect blur effect.
 SLES-51302:
   name: "Bomberman Kart"
   region: "PAL-M3"
@@ -13009,7 +13010,7 @@ SLES-51354:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    autoFlush: 2 # Fixes glows. Also needed for recursive mipmap rendering.
     mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
     trilinearFiltering: 1 # Using mipmaps, so may as well.
     textureInsideRT: 1 # Fixes rainbow lighting for some areas.
@@ -13273,7 +13274,7 @@ SLES-51473:
     - EETimingHack # Fixes smoke effects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes fog misalignment and depth line.
-    autoFlush: 1 # Fixes sun going through objects.
+    autoFlush: 2 # Fixes sun going through objects.
     preloadFrameData: 1 # Fixes missing sun and sky.
 SLES-51474:
   name: "BloodRayne"
@@ -13369,7 +13370,7 @@ SLES-51541:
   clampModes:
     eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fixes post processing.
 SLES-51547:
   name: "Next Generation Tennis 2003"
   region: "PAL-M5"
@@ -13896,7 +13897,7 @@ SLES-51820:
   name: "Sniper Elite"
   region: "PAL-M5"
   gsHWFixes:
-    autoFlush: 1 # Fixes bloom misalignment.
+    autoFlush: 2 # Fixes bloom misalignment.
     halfPixelOffset: 2 # Fixes bloom misalignment.
     textureInsideRT: 1 # Fixes sky bloom.
 SLES-51821:
@@ -13904,14 +13905,14 @@ SLES-51821:
   region: "PAL-M5"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes lights penetrating objects.
-    autoFlush: 1 # Helps with the light penetration problem.
+    autoFlush: 2 # Helps with the light penetration problem.
     cpuSpriteRenderBW: 1 # Fixes light glows.
 SLES-51822:
   name: "Alias"
   region: "PAL-I"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes lights penetrating objects.
-    autoFlush: 1 # Helps with the light penetration problem.
+    autoFlush: 2 # Helps with the light penetration problem.
     cpuSpriteRenderBW: 1 # Fixes light glows.
 SLES-51823:
   name: "Hunter - The Reckoning Wayward"
@@ -14134,7 +14135,7 @@ SLES-51897:
   gameFixes:
     - FpuNegDivHack # Lens flare appears even when behind objects.
   gsHWFixes:
-    autoFlush: 1 # Fixes missing lens flare.
+    autoFlush: 2 # Fixes missing lens flare.
 SLES-51903:
   name: "AFL Live 2004 - Aussie Rules Football"
   region: "PAL-E"
@@ -14191,7 +14192,7 @@ SLES-51917:
     eeRoundMode: 0 # Fixes SPS with water in some places.
   gsHWFixes:
     textureInsideRT: 1 # Fixes the shape of shadows.
-    autoFlush: 1 # Fixes water rendering.
+    autoFlush: 2 # Fixes water rendering.
     halfPixelOffset: 3 # Fixes bloom misalignment, needs this harsh offset for autoflush.
     cpuFramebufferConversion: 1 # Fixes shield rendering.
 SLES-51918:
@@ -14199,7 +14200,7 @@ SLES-51918:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
 SLES-51924:
   name: "World War Zero - Ironstorm"
   region: "PAL-M5"
@@ -14292,7 +14293,7 @@ SLES-51961:
   name: "Prince of Persia - The Sands of Time" # Pre-order Demo
   region: "PAL-E"
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
 SLES-51963:
   name: "FIFA 2004"
   region: "PAL-F-G"
@@ -14453,7 +14454,7 @@ SLES-52034:
   name: "Cat in the Hat, The"
   region: "PAL-M5"
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 2
 SLES-52036:
   name: "WWE SmackDown! - Here Comes the Pain!"
   region: "PAL-E"
@@ -14674,7 +14675,7 @@ SLES-52153:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 2
     cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
@@ -14834,17 +14835,17 @@ SLES-52265:
   name: "Energy Airforce - Aim Strike!"
   region: "PAL-E"
   gsHWFixes:
-    autoFlush: 1 # Corrects post-processing effect on jet exhausts.
+    autoFlush: 2 # Corrects post-processing effect on jet exhausts.
 SLES-52266:
   name: "Energy Airforce - Aim Strike!"
   region: "PAL-F"
   gsHWFixes:
-    autoFlush: 1 # Corrects post-processing effect on jet exhausts.
+    autoFlush: 2 # Corrects post-processing effect on jet exhausts.
 SLES-52267:
   name: "Energy Airforce - Aim Strike!"
   region: "PAL-I"
   gsHWFixes:
-    autoFlush: 1 # Corrects post-processing effect on jet exhausts.
+    autoFlush: 2 # Corrects post-processing effect on jet exhausts.
 SLES-52275:
   name: "Way of the Samurai 2"
   region: "PAL-M3"
@@ -14854,7 +14855,7 @@ SLES-52276:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Softens bloom on objects and cars.
+    autoFlush: 2 # Softens bloom on objects and cars.
     halfPixelOffset: 2 # Fixes misaligned bloom on objects and cars.
 SLES-52277:
   name: "Riding Spirits 2"
@@ -15095,7 +15096,7 @@ SLES-52372:
   region: "PAL-M5"
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
-    autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
+    autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
     gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
 SLES-52373:
@@ -15216,7 +15217,7 @@ SLES-52418:
   region: "PAL-M5"
   compat: 4
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 2
   patches:
     52085DF1:
       content: |-
@@ -15263,7 +15264,7 @@ SLES-52447:
   region: "PAL-I"
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
-    autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
+    autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
     gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
 SLES-52448:
@@ -15370,7 +15371,7 @@ SLES-52486:
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
   gsHWFixes:
-    autoFlush: 1 # Fixes flame bloom.
+    autoFlush: 2 # Fixes flame bloom.
 SLES-52490:
   name: "Dance UK - Extra Trax"
   region: "PAL-E"
@@ -15379,7 +15380,7 @@ SLES-52493:
   region: "PAL-E"
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
-    autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
+    autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
     gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
 SLES-52495:
@@ -15506,7 +15507,7 @@ SLES-52541:
   clampModes:
     eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fixes post processing.
 SLES-52542:
   name: "All Music Dance!"
   region: "PAL-I"
@@ -15634,7 +15635,7 @@ SLES-52584:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -15648,7 +15649,7 @@ SLES-52585:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -15663,21 +15664,21 @@ SLES-52588:
   region: "PAL-E"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
-    autoFlush: 1 # Fixes missing lighting.
+    autoFlush: 2 # Fixes missing lighting.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLES-52589:
   name: "Mercenaries - Playground of Destruction"
   region: "PAL-F"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
-    autoFlush: 1 # Fixes missing lighting.
+    autoFlush: 2 # Fixes missing lighting.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLES-52590:
   name: "Mercenaries - Playground of Destruction"
   region: "PAL-G"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
-    autoFlush: 1 # Fixes missing lighting.
+    autoFlush: 2 # Fixes missing lighting.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLES-52591:
   name: "Dynasty Warriors 4 - Empires"
@@ -15774,7 +15775,7 @@ SLES-52636:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes incorrect colors.
+    autoFlush: 2 # Fixes incorrect colors.
     alignSprite: 1 # Fixes vertical lines such as in FMVs.
 SLES-52637:
   name: "TOCA Racer Driver 2"
@@ -16283,7 +16284,7 @@ SLES-52822:
   region: "PAL-M6"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
 SLES-52824:
   name: "Furry Tales"
   region: "PAL-E-F"
@@ -16529,7 +16530,7 @@ SLES-52927:
   clampModes:
     eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fixes post processing.
 SLES-52931:
   name: "Legend of Kay"
   region: "PAL-M5"
@@ -16538,7 +16539,7 @@ SLES-52931:
     vuClampMode: 3 # Fixes broken polygons on trees.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes glitchy black rectangles.
+    autoFlush: 2 # Fixes glitchy black rectangles.
 SLES-52934:
   name: "Guilty Gear Isuka [Preview]"
   region: "PAL-E"
@@ -16703,7 +16704,7 @@ SLES-52988:
   name: "Mega Man X8"
   region: "PAL-M5"
   gsHWFixes:
-    autoFlush: 1 # Fixes bloom.
+    autoFlush: 2 # Fixes bloom.
     roundSprite: 1 # Fixes misaligned bloom.
   memcardFilters: # Reads Command Mission save for bonus boss.
     - "SLES-52988"
@@ -16756,7 +16757,7 @@ SLES-53008:
   region: "PAL-I-S"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
-    autoFlush: 1 # Fixes missing lighting.
+    autoFlush: 2 # Fixes missing lighting.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLES-53009:
   name: "Dance Factory"
@@ -17053,7 +17054,7 @@ SLES-53098:
   name: "Conspiracy - Weapons of Mass Destruction"
   region: "PAL-M5"
   gsHWFixes:
-    autoFlush: 1 # Fixes lighting misalignment.
+    autoFlush: 2 # Fixes lighting misalignment.
   gameFixes:
     - XGKickHack # Fixes stretched/spikey textures.
 SLES-53099:
@@ -17262,7 +17263,7 @@ SLES-53196:
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes sun occlusion and brightness.
+    autoFlush: 2 # Fixes sun occlusion and brightness.
 SLES-53197:
   name: "Destroy All Humans!"
   region: "PAL-G"
@@ -17273,7 +17274,7 @@ SLES-53197:
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes sun occlusion and brightness.
+    autoFlush: 2 # Fixes sun occlusion and brightness.
 SLES-53199:
   name: "25 to Life"
   region: "PAL-E"
@@ -17609,7 +17610,7 @@ SLES-53387:
   name: "Batman Begins"
   region: "PAL-M7"
   gsHWFixes:
-    autoFlush: 1 # Fixes lighting misalignment.
+    autoFlush: 2 # Fixes lighting misalignment.
     halfPixelOffset: 2 # Fixes lighting misalignment.
 SLES-53388:
   name: "Rhythmic Star!"
@@ -17625,7 +17626,7 @@ SLES-53390:
     partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
-    autoFlush: 1 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
+    autoFlush: 2 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
     halfPixelOffset: 2
 SLES-53391:
   name: "Ultimate Spider-Man"
@@ -17637,7 +17638,7 @@ SLES-53391:
     partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
-    autoFlush: 1 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
+    autoFlush: 2 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
     halfPixelOffset: 2
 SLES-53393:
   name: "Spartan - Total Warrior"
@@ -17964,7 +17965,7 @@ SLES-53506:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -17985,7 +17986,7 @@ SLES-53507:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -18026,7 +18027,7 @@ SLES-53523:
     trilinearFiltering: 1
     textureInsideRT: 1 # Fixes rainbow artifacting around edges of screen.
     halfPixelOffset: 2 # Fixes misalgined bloom.
-    autoFlush: 1 # Fixes missing bloom intensity and alignment.
+    autoFlush: 2 # Fixes missing bloom intensity and alignment.
 SLES-53524:
   name: "Mortal Kombat - Shaolin Monks"
   region: "PAL-M5"
@@ -18037,7 +18038,7 @@ SLES-53526:
   name: "Suffering, The - Ties that Bind"
   region: "PAL-E-F"
   gsHWFixes:
-    autoFlush: 1 # Fixes debris and blending on lower part of screen during monster transformation.
+    autoFlush: 2 # Fixes debris and blending on lower part of screen during monster transformation.
     mipmap: 2
     trilinearFiltering: 1
   memcardFilters:
@@ -18052,7 +18053,7 @@ SLES-53527:
   name: "Suffering, The - Ties that Bind"
   region: "PAL-E-I-S"
   gsHWFixes:
-    autoFlush: 1 # Fixes debris and blending on lower part of screen during monster transformation.
+    autoFlush: 2 # Fixes debris and blending on lower part of screen during monster transformation.
     mipmap: 2
     trilinearFiltering: 1
   memcardFilters:
@@ -18067,7 +18068,7 @@ SLES-53528:
   name: "Suffering, The - Ties that Bind"
   region: "PAL-G"
   gsHWFixes:
-    autoFlush: 1 # Fixes debris and blending on lower part of screen during monster transformation.
+    autoFlush: 2 # Fixes debris and blending on lower part of screen during monster transformation.
     mipmap: 2
     trilinearFiltering: 1
   memcardFilters:
@@ -18275,7 +18276,7 @@ SLES-53563:
   name: "Nickelodeon SpongeBob SquarePants and Friends Unite!"
   region: "PAL-M6"
   gsHWFixes:
-    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    autoFlush: 2 # Fixes glows. Also needed for recursive mipmap rendering.
     mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
     trilinearFiltering: 1 # Using mipmaps, so may as well.
     textureInsideRT: 1 # Fixes rainbow lighting for some areas.
@@ -18431,7 +18432,7 @@ SLES-53626:
   name: "Suffering, The - Ties that Bind"
   region: "PAL-E-G"
   gsHWFixes:
-    autoFlush: 1 # Fixes debris and blending on lower part of screen during monster transformation.
+    autoFlush: 2 # Fixes debris and blending on lower part of screen during monster transformation.
     mipmap: 2
     trilinearFiltering: 1
   memcardFilters:
@@ -18452,7 +18453,7 @@ SLES-53634:
   name: "Nicktoons Unite!"
   region: "PAL-A"
   gsHWFixes:
-    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    autoFlush: 2 # Fixes glows. Also needed for recursive mipmap rendering.
     mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
     trilinearFiltering: 1 # Using mipmaps, so may as well.
     textureInsideRT: 1 # Fixes rainbow lighting for some areas.
@@ -18489,7 +18490,7 @@ SLES-53641:
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes sun occlusion and brightness.
+    autoFlush: 2 # Fixes sun occlusion and brightness.
 SLES-53644:
   name: "Gene Troopers"
   region: "PAL-M5"
@@ -18513,7 +18514,7 @@ SLES-53647:
     trilinearFiltering: 1
     textureInsideRT: 1 # Fixes rainbow artifacting around edges of screen.
     halfPixelOffset: 2 # Fixes misalgined bloom.
-    autoFlush: 1 # Fixes missing bloom intensity and alignment.
+    autoFlush: 2 # Fixes missing bloom intensity and alignment.
 SLES-53651:
   name: "WWII - Soldier"
   region: "PAL-E"
@@ -18575,7 +18576,7 @@ SLES-53672:
     partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
-    autoFlush: 1 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
+    autoFlush: 2 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
     halfPixelOffset: 2
 SLES-53676:
   name: "WWE SmackDown! vs. RAW 2006"
@@ -18761,7 +18762,7 @@ SLES-53729:
   name: "Battlefield 2 - Modern Combat"
   region: "PAL-M4"
   gsHWFixes:
-    autoFlush: 1 # Post-processing.
+    autoFlush: 2 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
     textureInsideRT: 1 # Fixes light shinging through objects.
@@ -18772,7 +18773,7 @@ SLES-53730:
   name: "Battlefield 2 - Modern Combat"
   region: "PAL-M3"
   gsHWFixes:
-    autoFlush: 1 # Post-processing.
+    autoFlush: 2 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
     textureInsideRT: 1 # Fixes light shinging through objects.
@@ -18868,7 +18869,7 @@ SLES-53758:
   name: "Sniper Elite [Pre-Production]"
   region: "PAL-E"
   gsHWFixes:
-    autoFlush: 1 # Fixes bloom misalignment.
+    autoFlush: 2 # Fixes bloom misalignment.
     halfPixelOffset: 2 # Fixes bloom misalignment.
     textureInsideRT: 1 # Fixes sky bloom.
 SLES-53759:
@@ -18902,7 +18903,7 @@ SLES-53768:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes misaligned bloom on sun.
+    autoFlush: 2 # Fixes misaligned bloom on sun.
 SLES-53769:
   name: "Suikoden Tactics"
   region: "PAL-M5"
@@ -18927,7 +18928,7 @@ SLES-53777:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
     halfPixelOffset: 1 # Reduces post-processing misalignment.
 SLES-53778:
   name: "Jacked"
@@ -19112,17 +19113,17 @@ SLES-53860:
   name: "Dynasty Warriors 5 - Xtreme Legends"
   region: "PAL-E"
   gsHWFixes:
-    autoFlush: 1 # Fixes sun luminosity.
+    autoFlush: 2 # Fixes sun luminosity.
 SLES-53861:
   name: "Dynasty Warriors 5 - Xtreme Legends"
   region: "PAL-F"
   gsHWFixes:
-    autoFlush: 1 # Fixes sun luminosity.
+    autoFlush: 2 # Fixes sun luminosity.
 SLES-53862:
   name: "Dynasty Warriors 5 - Xtreme Legends"
   region: "PAL-G"
   gsHWFixes:
-    autoFlush: 1 # Fixes sun luminosity.
+    autoFlush: 2 # Fixes sun luminosity.
 SLES-53863:
   name: "Pool Paradise - International Edition"
   region: "PAL-M5"
@@ -19176,7 +19177,7 @@ SLES-53886:
     vuClampMode: 3 # Fixes SPS.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
-    autoFlush: 1 # Properly diffuses light instead of strips of light.
+    autoFlush: 2 # Properly diffuses light instead of strips of light.
     roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
@@ -19220,7 +19221,7 @@ SLES-53904:
   gsHWFixes:
     partialTargetInvalidation: 1
     mipmap: 1
-    autoFlush: 1
+    autoFlush: 2
     estimateTextureRegion: 1 # Improves performance.
 SLES-53906:
   name: "50 Cent - Bulletproof"
@@ -19383,7 +19384,7 @@ SLES-53974:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes missing bloom from surfaces like windows.
+    autoFlush: 2 # Fixes missing bloom from surfaces like windows.
     textureInsideRT: 1 # Fixes corruption.
     # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
@@ -19459,7 +19460,7 @@ SLES-53998:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
     halfPixelOffset: 2 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned + font artifacts.
 SLES-53999:
@@ -19550,7 +19551,7 @@ SLES-54030:
     vuClampMode: 3 # Fixes SPS.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
-    autoFlush: 1 # Properly diffuses light instead of strips of light.
+    autoFlush: 2 # Properly diffuses light instead of strips of light.
     roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
@@ -19666,7 +19667,7 @@ SLES-54114:
   name: "Kingdom Hearts II"
   region: "PAL-E"
   gsHWFixes:
-    autoFlush: 1 # Fixes effects.
+    autoFlush: 2 # Fixes effects.
     roundSprite: 2 # Fixes upscaling artifacts.
   compat: 5
 SLES-54115:
@@ -19905,7 +19906,7 @@ SLES-54182:
   gameFixes:
     - IbitHack
   gsHWFixes:
-    autoFlush: 1 # Fixes post processing overlay.
+    autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
 SLES-54183:
   name: "Scarface - The World is Yours"
@@ -19913,7 +19914,7 @@ SLES-54183:
   gameFixes:
     - IbitHack
   gsHWFixes:
-    autoFlush: 1 # Fixes post processing overlay.
+    autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
 SLES-54184:
   name: "Scarface - The World is Yours"
@@ -19921,14 +19922,14 @@ SLES-54184:
   gameFixes:
     - IbitHack
   gsHWFixes:
-    autoFlush: 1 # Fixes post processing overlay.
+    autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
 SLES-54185:
   name: "Dirge of Cerberus - Final Fantasy VII"
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SLES-54186:
   name: "Devil May Cry 3 - Dante's Awakening [Special Edition]"
   region: "PAL-M5"
@@ -20045,25 +20046,25 @@ SLES-54232:
   name: "Kingdom Hearts II"
   region: "PAL-F"
   gsHWFixes:
-    autoFlush: 1 # Fixes effects.
+    autoFlush: 2 # Fixes effects.
     roundSprite: 2 # Fixes upscaling artifacts.
 SLES-54233:
   name: "Kingdom Hearts II"
   region: "PAL-G"
   gsHWFixes:
-    autoFlush: 1 # Fixes effects.
+    autoFlush: 2 # Fixes effects.
     roundSprite: 2 # Fixes upscaling artifacts.
 SLES-54234:
   name: "Kingdom Hearts II"
   region: "PAL-I"
   gsHWFixes:
-    autoFlush: 1 # Fixes effects.
+    autoFlush: 2 # Fixes effects.
     roundSprite: 2 # Fixes upscaling artifacts.
 SLES-54235:
   name: "Kingdom Hearts II"
   region: "PAL-S"
   gsHWFixes:
-    autoFlush: 1 # Fixes effects.
+    autoFlush: 2 # Fixes effects.
     roundSprite: 2 # Fixes upscaling artifacts.
 SLES-54237:
   name: "Pirates of the Caribbean - The Legend of Jack Sparrow"
@@ -20143,7 +20144,7 @@ SLES-54271:
   gameFixes:
     - IbitHack
   gsHWFixes:
-    autoFlush: 1 # Fixes post processing overlay.
+    autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
 SLES-54305:
   name: "Demon Chaos"
@@ -20152,7 +20153,7 @@ SLES-54305:
   gameFixes:
     - VIF1StallHack # Fixes black screen on boot.
   gsHWFixes:
-    autoFlush: 1 # Fixes missing bloom effects.
+    autoFlush: 2 # Fixes missing bloom effects.
     halfPixelOffset: 2 # Fixes misaligned lighting and bloom.
 SLES-54306:
   name: "Cartoon Network Racing"
@@ -20399,7 +20400,7 @@ SLES-54376:
   gsHWFixes:
     halfPixelOffset: 2 # Fix text and post blur.
     mipmap: 2 # Base mip level isn't always used.
-    autoFlush: 1 # Needed for recursive mipmap rendering.
+    autoFlush: 2 # Needed for recursive mipmap rendering.
     getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SLES-54377:
   name: "Barnyard"
@@ -20407,7 +20408,7 @@ SLES-54377:
   gsHWFixes:
     halfPixelOffset: 2 # Fix text and post blur.
     mipmap: 2 # Base mip level isn't always used.
-    autoFlush: 1 # Needed for recursive mipmap rendering.
+    autoFlush: 2 # Needed for recursive mipmap rendering.
     getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SLES-54378:
   name: "Barnyard"
@@ -20415,7 +20416,7 @@ SLES-54378:
   gsHWFixes:
     halfPixelOffset: 2 # Fix text and post blur.
     mipmap: 2 # Base mip level isn't always used.
-    autoFlush: 1 # Needed for recursive mipmap rendering.
+    autoFlush: 2 # Needed for recursive mipmap rendering.
     getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SLES-54379:
   name: "NFL Street 3"
@@ -20445,7 +20446,7 @@ SLES-54384:
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes sun occlusion and brightness.
+    autoFlush: 2 # Fixes sun occlusion and brightness.
 SLES-54385:
   name: "Atelier Iris 2 - The Azoth of Destiny"
   region: "PAL-E"
@@ -20812,7 +20813,7 @@ SLES-54521:
   gsHWFixes:
     mipmap: 2 # Better characters and environment.
     trilinearFiltering: 1 # Using mipmaps, so may as well.
-    autoFlush: 1 # Fixes texture corruptions.
+    autoFlush: 2 # Fixes texture corruptions.
     getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLES-54527:
   name: "Flushed Away"
@@ -20826,7 +20827,7 @@ SLES-54534:
   gameFixes:
     - IbitHack
   gsHWFixes:
-    autoFlush: 1 # Fixes post processing overlay.
+    autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
 SLES-54536:
   name: "Big Idea's VeggieTales - LarryBoy and the Bad Apple"
@@ -20895,7 +20896,7 @@ SLES-54559:
   name: "Free Running"
   region: "PAL-E"
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
     halfPixelOffset: 1 # Reduces lighting misalignment but doesn't fully fix it.
   patches:
     D6A0A3EF:
@@ -21054,7 +21055,7 @@ SLES-54627:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -21234,7 +21235,7 @@ SLES-54681:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -21352,7 +21353,7 @@ SLES-54733:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
-    autoFlush: 1 # Fixes glows.
+    autoFlush: 2 # Fixes glows.
 SLES-54734:
   name: "Disney-Pixar Ratatouille"
   region: "PAL-F"
@@ -21361,7 +21362,7 @@ SLES-54734:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
-    autoFlush: 1 # Fixes glows.
+    autoFlush: 2 # Fixes glows.
 SLES-54735:
   name: "Disney-Pixar Ratatouille"
   region: "PAL-G"
@@ -21371,7 +21372,7 @@ SLES-54735:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
-    autoFlush: 1 # Fixes glows.
+    autoFlush: 2 # Fixes glows.
 SLES-54736:
   name: "Disney-Pixar Ratatouille"
   region: "PAL-SCA"
@@ -21381,7 +21382,7 @@ SLES-54736:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
-    autoFlush: 1 # Fixes glows.
+    autoFlush: 2 # Fixes glows.
 SLES-54737:
   name: "Disney-Pixar Ratatouille"
   region: "PAL-R"
@@ -21391,7 +21392,7 @@ SLES-54737:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
-    autoFlush: 1 # Fixes glows.
+    autoFlush: 2 # Fixes glows.
 SLES-54738:
   name: "Thunderbirds"
   region: "PAL-M11"
@@ -21404,7 +21405,7 @@ SLES-54744:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
-    autoFlush: 1 # Fixes glows.
+    autoFlush: 2 # Fixes glows.
 SLES-54745:
   name: "Disney-Pixar Ratatouille"
   region: "PAL-I"
@@ -21414,7 +21415,7 @@ SLES-54745:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
-    autoFlush: 1 # Fixes glows.
+    autoFlush: 2 # Fixes glows.
 SLES-54746:
   name: "Disney-Pixar Ratatouille"
   region: "PAL-G"
@@ -21424,7 +21425,7 @@ SLES-54746:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
-    autoFlush: 1 # Fixes glows.
+    autoFlush: 2 # Fixes glows.
 SLES-54747:
   name: "Disney-Pixar Ratatouille"
   region: "PAL-P-S"
@@ -21434,7 +21435,7 @@ SLES-54747:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
-    autoFlush: 1 # Fixes glows.
+    autoFlush: 2 # Fixes glows.
 SLES-54755:
   name: "Transformers - The Game"
   region: "PAL-E"
@@ -22102,7 +22103,7 @@ SLES-54992:
   name: "PDC World Championship Darts 2008"
   region: "PAL-M6"
   gsHWFixes:
-    autoFlush: 1 # Fixes lights not appearing.
+    autoFlush: 2 # Fixes lights not appearing.
     cpuCLUTRender: 1 # Fixes lights going through darts players.
 SLES-54994:
   name: "Pippa Funnell - Ranch Rescue"
@@ -22424,7 +22425,7 @@ SLES-55126:
   name: "Artlist Collection - The Dog Island"
   region: "PAL-M6"
   gsHWFixes:
-    autoFlush: 1 # Fixes certains font colors.
+    autoFlush: 2 # Fixes certains font colors.
     halfPixelOffset: 2 # Fixes lighting misalignment.
     alignSprite: 1 # Fixes almost all vertical lines.
 SLES-55129:
@@ -22896,7 +22897,7 @@ SLES-55294:
   name: "Ferrari Challenge - Trofeo Pirelli"
   region: "PAL-M5"
   gsHWFixes:
-    autoFlush: 1 # Fixes lack of bloom intensity.
+    autoFlush: 2 # Fixes lack of bloom intensity.
     halfPixelOffset: 1 # Fixes misaligned bloom and rainbow garbage at edges.
 SLES-55295:
   name: "Score International Baja 1000 - World Championship Off Road Racing"
@@ -23045,13 +23046,13 @@ SLES-55367:
   name: "Call of Duty - World at War - Final Fronts"
   region: "PAL-M4"
   gsHWFixes:
-    autoFlush: 1 # Fixes bloom misalignment.
+    autoFlush: 2 # Fixes bloom misalignment.
     halfPixelOffset: 2 # Fixes lighting misalignment and depth lines.
 SLES-55369:
   name: "Call of Duty - World at War - Final Fronts"
   region: "PAL-G"
   gsHWFixes:
-    autoFlush: 1 # Fixes bloom misalignment.
+    autoFlush: 2 # Fixes bloom misalignment.
     halfPixelOffset: 2 # Fixes lighting misalignment and depth lines.
 SLES-55371:
   name: "Barbie Horse Adventures - Riding Camp"
@@ -23350,7 +23351,7 @@ SLES-55520:
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes soft shadows.
+    autoFlush: 2 # Fixes soft shadows.
   patches:
     9E36E023:
       content: |-
@@ -23689,7 +23690,7 @@ SLES-82013:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurry characters.
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
 SLES-82018:
   name: "Cy Girls [Ice Disc]"
   region: "PAL-E-F-S"
@@ -23713,7 +23714,7 @@ SLES-82024:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurry characters.
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
 SLES-82026:
   name: "Metal Gear Solid 3 - Snake Eater"
   region: "PAL-S"
@@ -23721,7 +23722,7 @@ SLES-82026:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurry characters.
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
 SLES-82028:
   name: "Star Ocean 3 - Till the End of Time [Disc 1 of 2]"
   region: "PAL-E"
@@ -23751,7 +23752,7 @@ SLES-82030:
     halfPixelOffset: 2 # Fixes blurrines, preload frame for FMV breaks visuals with this setting.
     disablePartialInvalidation: 1 # Fixes shadows when upscaling.
     roundSprite: 2 # Fixes the position of monster sprites and reduces garbage in the UI.
-    autoFlush: 1 # Makes the shadow monsters appear.
+    autoFlush: 2 # Makes the shadow monsters appear.
 SLES-82031:
   name: "Shadow Hearts - Covenant [Disc 2 of 2]"
   region: "PAL-M3"
@@ -23759,7 +23760,7 @@ SLES-82031:
     halfPixelOffset: 2 # Fixes blurrines, preload frame for FMV breaks visuals with this setting.
     disablePartialInvalidation: 1 # Fixes shadows when upscaling.
     roundSprite: 2 # Fixes the position of monster sprites and reduces garbage in the UI.
-    autoFlush: 1 # Makes the shadow monsters appear.
+    autoFlush: 2 # Makes the shadow monsters appear.
   memcardFilters:
     - "SLES-82030"
 SLES-82032:
@@ -23769,12 +23770,12 @@ SLES-82032:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurry characters.
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
 SLES-82034:
   name: "Xenosaga Episode II [Disc 1 of 2]"
   region: "PAL-M3"
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
   memcardFilters:
@@ -23784,7 +23785,7 @@ SLES-82035:
   name: "Xenosaga Episode II [Disc 2 of 2]"
   region: "PAL-M3"
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
   memcardFilters:
@@ -23833,7 +23834,7 @@ SLES-82042:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
 SLES-82043:
   name: "Metal Gear Solid 3 - Subsistence [Disc 2 of 3]"
@@ -23842,7 +23843,7 @@ SLES-82043:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-82042"
@@ -23853,7 +23854,7 @@ SLES-82044:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
 SLES-82045:
   name: "Metal Gear Solid 3 - Subsistence [Disc 2 of 3]"
@@ -23862,7 +23863,7 @@ SLES-82045:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-82044"
@@ -23873,7 +23874,7 @@ SLES-82046:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
 SLES-82047:
   name: "Metal Gear Solid 3 - Subsistence [Disc 2 of 3]"
@@ -23882,7 +23883,7 @@ SLES-82047:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-82046"
@@ -23893,7 +23894,7 @@ SLES-82048:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
 SLES-82049:
   name: "Metal Gear Solid 3 - Subsistence [Disc 2 of 3]"
@@ -23902,7 +23903,7 @@ SLES-82049:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-82048"
@@ -23913,7 +23914,7 @@ SLES-82050:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-82042"
@@ -23924,7 +23925,7 @@ SLES-82051:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-82044"
@@ -23935,7 +23936,7 @@ SLES-82052:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-82046"
@@ -23946,7 +23947,7 @@ SLES-82053:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLES-82048"
@@ -23969,7 +23970,7 @@ SLKA-15006:
   name: "Knight Rider - The Game"
   region: "NTSC-K"
   gsHWFixes:
-    autoFlush: 1 # Fixes brake lights.
+    autoFlush: 2 # Fixes brake lights.
     preloadFrameData: 1 # Fixes graphical issues.
 SLKA-15007:
   name: "GrowLanser2"
@@ -24254,7 +24255,7 @@ SLKA-25073:
   name: "Tomb Raider - The Angel of Darkness"
   region: "NTSC-K"
   gsHWFixes:
-    autoFlush: 1 # Fixes lava effect.
+    autoFlush: 2 # Fixes lava effect.
 SLKA-25076:
   name: "Shin Megami Tensei 3"
   region: "NTSC-K"
@@ -24379,7 +24380,7 @@ SLKA-25120:
   name: "Prince of Persia - The Sands of Time"
   region: "NTSC-K"
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
 SLKA-25121:
   name: "Vexx"
   region: "NTSC-K"
@@ -24482,7 +24483,7 @@ SLKA-25159:
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
   gsHWFixes:
-    autoFlush: 1 # Fixes flame bloom.
+    autoFlush: 2 # Fixes flame bloom.
 SLKA-25160:
   name: "Shin Megami Tensei III - Nocturne Maniax"
   region: "NTSC-K"
@@ -24549,7 +24550,7 @@ SLKA-25181:
   name: "Energy Airforce Aim Strike"
   region: "NTSC-K"
   gsHWFixes:
-    autoFlush: 1 # Corrects post-processing effect on jet exhausts.
+    autoFlush: 2 # Corrects post-processing effect on jet exhausts.
 SLKA-25182:
   name: "Hajime no Ippo2 Victorious Road"
   region: "NTSC-K"
@@ -24577,7 +24578,7 @@ SLKA-25196:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 2
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
 SLKA-25198:
@@ -24631,7 +24632,7 @@ SLKA-25206:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -24707,13 +24708,13 @@ SLKA-25221:
   region: "NTSC-K"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Corrects blur effects in menus.
+    autoFlush: 2 # Corrects blur effects in menus.
     roundSprite: 2 # Aligns some text/graphics when upscaling.
 SLKA-25222:
   name: "Rockman X8"
   region: "NTSC-K"
   gsHWFixes:
-    autoFlush: 1 # Fixes bloom.
+    autoFlush: 2 # Fixes bloom.
     roundSprite: 1 # Fixes misaligned bloom.
 SLKA-25223:
   name: "K.League - Winning Eleven 8 - Asia Championship"
@@ -24787,7 +24788,7 @@ SLKA-25251:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
 SLKA-25252:
   name: "Forgotten Realms - Demon Stone"
   region: "NTSC-K"
@@ -24899,7 +24900,7 @@ SLKA-25291:
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes misaligned bloom on sun.
+    autoFlush: 2 # Fixes misaligned bloom on sun.
 SLKA-25296:
   name: "Inuyasha - Feudal Combat"
   region: "NTSC-K"
@@ -24942,7 +24943,7 @@ SLKA-25304:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -24992,7 +24993,7 @@ SLKA-25320:
   gameFixes:
     - VIF1StallHack # Fixes black screen on boot.
   gsHWFixes:
-    autoFlush: 1 # Fixes missing bloom effects.
+    autoFlush: 2 # Fixes missing bloom effects.
     halfPixelOffset: 2 # Fixes misaligned lighting and bloom.
 SLKA-25321:
   name: "K.League - Winning Eleven 9 - Asia Championship"
@@ -25027,7 +25028,7 @@ SLKA-25329:
   name: "Shin Sangoku Musou 4 - Mushoden"
   region: "NTSC-K"
   gsHWFixes:
-    autoFlush: 1 # Fixes sun luminosity.
+    autoFlush: 2 # Fixes sun luminosity.
 SLKA-25331:
   name: "Marc Ecko's Getting Up - Contents Under Pressure"
   region: "NTSC-K"
@@ -25075,7 +25076,7 @@ SLKA-25346:
   name: "Prince of Persia - The Two Thrones"
   region: "NTSC-K"
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
     halfPixelOffset: 1 # Reduces post-processing misalignment.
 SLKA-25351:
   name: "One Piece Pirates Carnival"
@@ -25091,7 +25092,7 @@ SLKA-25353:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
 SLKA-25354:
   name: "Metal Gear Solid 3 - Subsistence [Limited Edition] [Disc 2 of 3]"
@@ -25101,7 +25102,7 @@ SLKA-25354:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLKA-25353"
@@ -25113,7 +25114,7 @@ SLKA-25355:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLKA-25353"
@@ -25300,7 +25301,7 @@ SLPM-55004:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -25343,7 +25344,7 @@ SLPM-55036:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -25453,7 +25454,7 @@ SLPM-55092:
   clampModes:
     eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fixes post processing.
 SLPM-55096:
   name: "ThunderForce VI"
   region: "NTSC-J"
@@ -25537,7 +25538,7 @@ SLPM-55141:
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes sun occlusion and brightness.
+    autoFlush: 2 # Fixes sun occlusion and brightness.
 SLPM-55146:
   name: "Jikkyou Powerful Pro Yakyuu 2009"
   region: "NTSC-J"
@@ -25807,7 +25808,7 @@ SLPM-55292:
   clampModes:
     eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fixes post processing.
 SLPM-55294:
   name: "World Soccer Winning Eleven 2012"
   region: "NTSC-J"
@@ -25950,7 +25951,7 @@ SLPM-60246:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -26116,7 +26117,7 @@ SLPM-61092:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 2
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
 SLPM-61117:
@@ -26158,7 +26159,7 @@ SLPM-61130:
   gameFixes:
     - VIF1StallHack # Fixes black screen on boot.
   gsHWFixes:
-    autoFlush: 1 # Fixes missing bloom effects.
+    autoFlush: 2 # Fixes missing bloom effects.
     halfPixelOffset: 2 # Fixes misaligned lighting and bloom.
 SLPM-61132:
   name: "Ikusa Gami [Trial Version]"
@@ -26166,7 +26167,7 @@ SLPM-61132:
   gameFixes:
     - VIF1StallHack # Fixes black screen on boot.
   gsHWFixes:
-    autoFlush: 1 # Fixes missing bloom effects.
+    autoFlush: 2 # Fixes missing bloom effects.
     halfPixelOffset: 2 # Fixes misaligned lighting and bloom.
 SLPM-61133:
   name: "Soul Calibur III [Trial Version]"
@@ -26190,7 +26191,7 @@ SLPM-61147:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Demo]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
@@ -27129,7 +27130,7 @@ SLPM-62346:
   name: "Keiei Simulation - Jurassic Park [Konami the Best]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    autoFlush: 2 # Fixes glows. Also needed for recursive mipmap rendering.
     mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
     trilinearFiltering: 1 # Using mipmaps, so may as well.
     textureInsideRT: 1 # Fixes rainbow lighting for some areas.
@@ -27553,7 +27554,7 @@ SLPM-62490:
   name: "Dragon Quest VIII [Premium Disc]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes missing bloom from surfaces like windows.
+    autoFlush: 2 # Fixes missing bloom from surfaces like windows.
     textureInsideRT: 1 # Fixes corruption.
     # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
@@ -27622,7 +27623,7 @@ SLPM-62512:
   name: "Keiei Simulation - Jurassic Park [Konami The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    autoFlush: 2 # Fixes glows. Also needed for recursive mipmap rendering.
     mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
     trilinearFiltering: 1 # Using mipmaps, so may as well.
     textureInsideRT: 1 # Fixes rainbow lighting for some areas.
@@ -29133,7 +29134,7 @@ SLPM-65191:
   region: "NTSC-J"
   gsHWFixes:
     preloadFrameData: 1 # Fixes fog and make lights on cars work again.
-    autoFlush: 1 # Fixes sun luminosity and penetration of objects.
+    autoFlush: 2 # Fixes sun luminosity and penetration of objects.
   gameFixes:
     - EETimingHack # Fixes random graphical corruption.
 SLPM-65192:
@@ -29813,7 +29814,7 @@ SLPM-65374:
     InstantVU1SpeedHack: 0 # Fixes hanging while going ingame.
     MTVUSpeedHack: 0
   gsHWFixes:
-    autoFlush: 1 # Corrects post-processing effect on jet exhausts.
+    autoFlush: 2 # Corrects post-processing effect on jet exhausts.
 SLPM-65375:
   name: "Shin Sangoku Musou 3 - Mushoden [Premium Pack]"
   region: "NTSC-J"
@@ -29824,7 +29825,7 @@ SLPM-65378:
   name: "Busin 0 - Wizardry Alternative Neo"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Corrects blur effects in menus.
+    autoFlush: 2 # Corrects blur effects in menus.
     roundSprite: 2 # Aligns some text/graphics when upscaling.
 SLPM-65379:
   name: "Baseball 2003, The - Battle Ball Park Sengen - Perfect Play Pro Yakyuu - Shuukigou"
@@ -30367,7 +30368,7 @@ SLPM-65539:
   region: "NTSC-J"
   gsHWFixes:
     preloadFrameData: 1 # Fixes fog and make lights on cars work again.
-    autoFlush: 1 # Fixes sun luminosity and penetration of objects.
+    autoFlush: 2 # Fixes sun luminosity and penetration of objects.
   gameFixes:
     - EETimingHack # Fixes random graphical corruption.
 SLPM-65540:
@@ -30406,7 +30407,7 @@ SLPM-65551:
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
   gsHWFixes:
-    autoFlush: 1 # Fixes flame bloom.
+    autoFlush: 2 # Fixes flame bloom.
 SLPM-65552:
   name: "Metal Wolf Rev [Limited Edition]"
   region: "NTSC-J"
@@ -30506,7 +30507,7 @@ SLPM-65583:
     - XGKickHack # Fixes SPS.
   gsHWFixes:
     roundSprite: 2 # Correct misaligned font, better aligns car shadow.
-    autoFlush: 1 # Fixes sun luminosity.
+    autoFlush: 2 # Fixes sun luminosity.
 SLPM-65585:
   name: "Princess Holiday"
   region: "NTSC-J"
@@ -30757,7 +30758,7 @@ SLPM-65662:
   region: "NTSC-J"
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
-    autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
+    autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
     gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
 SLPM-65663:
@@ -30961,7 +30962,7 @@ SLPM-65719:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -31014,7 +31015,7 @@ SLPM-65730:
   name: "Rockman X8"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes bloom.
+    autoFlush: 2 # Fixes bloom.
     roundSprite: 1 # Fixes misaligned bloom.
   gameFixes:
     - SoftwareRendererFMVHack # Flickering and wrong textures in FMV.
@@ -31059,7 +31060,7 @@ SLPM-65741:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 2
     cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
@@ -31229,7 +31230,7 @@ SLPM-65789:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
 SLPM-65790:
   name: "Metal Gear Solid 3 - Snake Eater"
   region: "NTSC-J"
@@ -31237,7 +31238,7 @@ SLPM-65790:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
 SLPM-65791:
   name: "S.L.A.I. - Steel Lancer Arena International"
   region: "NTSC-J"
@@ -31540,7 +31541,7 @@ SLPM-65876:
   name: "Busin 0 - Wizardry Alternative Neo [Atlus Best Collection]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Corrects blur effects in menus.
+    autoFlush: 2 # Corrects blur effects in menus.
     roundSprite: 2 # Aligns some text/graphics when upscaling.
 SLPM-65878:
   name: "Galaxy Angel - Eternal Lovers"
@@ -31585,7 +31586,7 @@ SLPM-65888:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes missing bloom from surfaces like windows.
+    autoFlush: 2 # Fixes missing bloom from surfaces like windows.
     textureInsideRT: 1 # Fixes corruption.
     # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
@@ -31770,7 +31771,7 @@ SLPM-65942:
   region: "NTSC-J"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
-    autoFlush: 1 # Fixes missing lighting.
+    autoFlush: 2 # Fixes missing lighting.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLPM-65943:
   name: "Angel's Feather"
@@ -31829,7 +31830,7 @@ SLPM-65958:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -31909,7 +31910,7 @@ SLPM-65975:
         patch=0,EE,005fffec,double,24e7100024c60080
         patch=0,EE,005ffff4,double,00c7e8200818000c
   gsHWFixes:
-    autoFlush: 1 # Fixes sun luminosity and car shadows.
+    autoFlush: 2 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
   roundModes:
@@ -31943,7 +31944,7 @@ SLPM-65984:
   clampModes:
     eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fixes post processing.
 SLPM-65985:
   name: "Iris no Atelier - Eternal Mana 2"
   region: "NTSC-J"
@@ -32015,7 +32016,7 @@ SLPM-66002:
   name: "Prince of Persia - Warrior Within"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
 SLPM-66006:
   name: "Angelique Trois - Aizouhen [Koei Selection]"
   region: "NTSC-J"
@@ -32127,7 +32128,7 @@ SLPM-66033:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes misaligned bloom on sun.
+    autoFlush: 2 # Fixes misaligned bloom on sun.
 SLPM-66034:
   name: "Grand Theft Auto - Vice City"
   region: "NTSC-J"
@@ -32354,7 +32355,7 @@ SLPM-66101:
   name: "Shin Sangoku Musou 4 - Mushoden"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes sun luminosity.
+    autoFlush: 2 # Fixes sun luminosity.
 SLPM-66102:
   name: "Zwei!! [Taito the Best]"
   region: "NTSC-J"
@@ -32368,7 +32369,7 @@ SLPM-66103:
     - XGKickHack # Fixes SPS.
   gsHWFixes:
     roundSprite: 2 # Correct misaligned font, better aligns car shadow.
-    autoFlush: 1 # Fixes sun luminosity.
+    autoFlush: 2 # Fixes sun luminosity.
 SLPM-66104:
   name: "Puyo Puyo Fever 2"
   region: "NTSC-J"
@@ -32394,7 +32395,7 @@ SLPM-66108:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -32440,7 +32441,7 @@ SLPM-66117:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
 SLPM-66118:
   name: "Metal Gear Solid 3 - Subsistence [with Headset] [Disc 2 of 3]"
@@ -32449,7 +32450,7 @@ SLPM-66118:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
 SLPM-66119:
   name: "Metal Gear Solid 3 - Subsistence [with Headset] [Disc 3 of 3]"
@@ -32458,14 +32459,14 @@ SLPM-66119:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
 SLPM-66121:
   name: "Spider-Man 2 [Taito Best]"
   region: "NTSC-J"
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
-    autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
+    autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
     gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
 SLPM-66122:
@@ -32714,7 +32715,7 @@ SLPM-66184:
   gameFixes:
     - VIF1StallHack # Fixes black screen on boot.
   gsHWFixes:
-    autoFlush: 1 # Fixes missing bloom effects.
+    autoFlush: 2 # Fixes missing bloom effects.
     halfPixelOffset: 2 # Fixes misaligned lighting and bloom.
 SLPM-66185:
   name: "Game ni Nattayo! Dokuro-chan [Limited Edition]"
@@ -32797,7 +32798,7 @@ SLPM-66206:
   name: "Battlefield 2 - Modern Combat"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Post-processing.
+    autoFlush: 2 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
     textureInsideRT: 1 # Fixes light shinging through objects.
@@ -32855,7 +32856,7 @@ SLPM-66220:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLPM-66117"
@@ -32866,7 +32867,7 @@ SLPM-66221:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLPM-66117"
@@ -32877,7 +32878,7 @@ SLPM-66222:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLPM-66117"
@@ -32888,7 +32889,7 @@ SLPM-66223:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLPM-66117"
@@ -32899,7 +32900,7 @@ SLPM-66224:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLPM-66117"
@@ -32940,7 +32941,7 @@ SLPM-66233:
   name: "Kingdom Hearts II"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes effects.
+    autoFlush: 2 # Fixes effects.
     roundSprite: 2 # Fixes upscaling artifacts.
   compat: 5
 SLPM-66234:
@@ -33041,7 +33042,7 @@ SLPM-66261:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes misaligned bloom on sun.
+    autoFlush: 2 # Fixes misaligned bloom on sun.
 SLPM-66262:
   name: "Tom Clancy's Rainbow Six 3 [Ubisoft The Best]"
   region: "NTSC-J"
@@ -33076,7 +33077,7 @@ SLPM-66271:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SLPM-66272:
   name: "I-O"
   region: "NTSC-J"
@@ -33345,7 +33346,7 @@ SLPM-66334:
         patch=0,EE,005fffec,double,24e7100024c60080
         patch=0,EE,005ffff4,double,00c7e8200818000c
   gsHWFixes:
-    autoFlush: 1 # Fixes sun luminosity and car shadows.
+    autoFlush: 2 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
   roundModes:
@@ -33406,7 +33407,7 @@ SLPM-66354:
     vuClampMode: 3 # Fixes SPS.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
-    autoFlush: 1 # Properly diffuses light instead of strips of light.
+    autoFlush: 2 # Properly diffuses light instead of strips of light.
     roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
@@ -33528,7 +33529,7 @@ SLPM-66391:
   name: "Prince of Persia - The Two Thrones"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
     halfPixelOffset: 1 # Reduces post-processing misalignment.
 SLPM-66393:
   name: "Final Fantasy XI - Aht Urhgan no Hihou [All-in-One Pack]"
@@ -33585,7 +33586,7 @@ SLPM-66404:
     partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
-    autoFlush: 1 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
+    autoFlush: 2 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
     halfPixelOffset: 2
 SLPM-66405:
   name: "Radirgy Precious"
@@ -33677,7 +33678,7 @@ SLPM-66430:
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes sun occlusion and brightness.
+    autoFlush: 2 # Fixes sun occlusion and brightness.
 SLPM-66431:
   name: "WinBack 2 - Project Poseidon"
   region: "NTSC-J"
@@ -33838,7 +33839,7 @@ SLPM-66465:
   region: "NTSC-J"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
-    autoFlush: 1 # Fixes missing lighting.
+    autoFlush: 2 # Fixes missing lighting.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLPM-66467:
   name: "Midway Arcade Treasures - The Game Center of USA"
@@ -33919,7 +33920,7 @@ SLPM-66481:
   name: "Dragon Quest VIII [Ultimate Hits]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes missing bloom from surfaces like windows.
+    autoFlush: 2 # Fixes missing bloom from surfaces like windows.
     textureInsideRT: 1 # Fixes corruption.
     # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
@@ -34459,14 +34460,14 @@ SLPM-66628:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
     halfPixelOffset: 2 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned + font artifacts.
 SLPM-66629:
   name: "Dirge of Cerberus - Final Fantasy VII International"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SLPM-66630:
   name: "Melheaven - Arm Fight Dream [Konami the Best]"
   region: "NTSC-J"
@@ -34515,7 +34516,7 @@ SLPM-66643:
   name: "OutRun 2 SP"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
     halfPixelOffset: 2 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned + font artifacts.
 SLPM-66644:
@@ -34537,7 +34538,7 @@ SLPM-66651:
   name: "Battlefield 2 - Modern Combat [EA Best Hits]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Post-processing.
+    autoFlush: 2 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
     textureInsideRT: 1 # Fixes light shinging through objects.
@@ -34552,7 +34553,7 @@ SLPM-66652:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -34599,7 +34600,7 @@ SLPM-66662:
   name: "Dog Island, The - Hitotsu no Hana no Monogatari"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes certains font colors.
+    autoFlush: 2 # Fixes certains font colors.
     halfPixelOffset: 2 # Fixes lighting misalignment.
     alignSprite: 1 # Fixes almost all vertical lines.
 SLPM-66663:
@@ -34645,7 +34646,7 @@ SLPM-66673:
   name: "Prince of Persia - Warrior Within [Ubisoft the Best]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
 SLPM-66674:
   name: "Tiger Woods PGA Tour 07"
   region: "NTSC-J"
@@ -34655,7 +34656,7 @@ SLPM-66675:
   name: "Kingdom Hearts II - Final Mix +"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes effects.
+    autoFlush: 2 # Fixes effects.
     roundSprite: 2 # Fixes upscaling artifacts.
   compat: 5
   memcardFilters: # Reads Re:Chain data and vice-versa.
@@ -34666,7 +34667,7 @@ SLPM-66676:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes double image.
+    autoFlush: 2 # Fixes double image.
     halfPixelOffset: 1 # Fixes misaligned bloom.
   memcardFilters:
     - "SLPM-66675"
@@ -34890,7 +34891,7 @@ SLPM-66731:
     vuClampMode: 3 # Fixes SPS.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
-    autoFlush: 1 # Properly diffuses light instead of strips of light.
+    autoFlush: 2 # Properly diffuses light instead of strips of light.
     roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
@@ -34939,7 +34940,7 @@ SLPM-66739:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -35131,7 +35132,7 @@ SLPM-66788:
   clampModes:
     eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fixes post processing.
 SLPM-66789:
   name: "Grand Theft Auto III [Best Price]"
   region: "NTSC-J"
@@ -35164,7 +35165,7 @@ SLPM-66794:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
 SLPM-66796:
   name: "Metal Gear Solid - 20th Anniversary Collection"
   region: "NTSC-J"
@@ -35198,7 +35199,7 @@ SLPM-66807:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
-    autoFlush: 1 # Fixes glows.
+    autoFlush: 2 # Fixes glows.
 SLPM-66808:
   name: "Tom Clancy's Ghost Recon - Advanced Warfighter [Ubisoft the Best]"
   region: "NTSC-J"
@@ -35481,7 +35482,7 @@ SLPM-66897:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
-    autoFlush: 1 # Fixes post lighting.
+    autoFlush: 2 # Fixes post lighting.
 SLPM-66898:
   name: "Spectral Gene [Limited Edition]"
   region: "NTSC-J"
@@ -35682,7 +35683,7 @@ SLPM-66961:
     vuClampMode: 3 # Fixes SPS.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
-    autoFlush: 1 # Properly diffuses light instead of strips of light.
+    autoFlush: 2 # Properly diffuses light instead of strips of light.
     roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
@@ -35696,7 +35697,7 @@ SLPM-66962:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -36082,7 +36083,7 @@ SLPM-68516:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
 SLPM-68520:
   name: "Armored Core - Last Raven [Monthly Champion magazine Special Edition]"
   region: "NTSC-J"
@@ -36223,7 +36224,7 @@ SLPM-74227:
   gameFixes:
     - VIF1StallHack # Fixes black screen on boot.
   gsHWFixes:
-    autoFlush: 1 # Fixes missing bloom effects.
+    autoFlush: 2 # Fixes missing bloom effects.
     halfPixelOffset: 2 # Fixes misaligned lighting and bloom.
 SLPM-74228:
   name: "Fuuun Bakumatsu-den [PlayStation 2 The Best]"
@@ -36361,7 +36362,7 @@ SLPM-74250:
   name: "Shin Sangoku Musou 4 Mushoden [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes sun luminosity.
+    autoFlush: 2 # Fixes sun luminosity.
 SLPM-74251:
   name: "Shin Onimusha - Dawn of Dreams [PlayStation 2 the Best - Reprint Disc 1]"
   region: "NTSC-J"
@@ -38330,7 +38331,7 @@ SLPS-25113:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes incorrect blur effect.
+    autoFlush: 2 # Fixes incorrect blur effect.
 SLPS-25114:
   name: "G-Breaker - Daisanshi Cloudia Taisen"
   region: "NTSC-J"
@@ -38748,7 +38749,7 @@ SLPS-25235:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes double image.
+    autoFlush: 2 # Fixes double image.
 SLPS-25236:
   name: "Fantastic Fortune 2"
   region: "NTSC-J"
@@ -38786,7 +38787,7 @@ SLPS-25246:
   name: "Tomb Raider - The Angel of Darkness"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes lava effect.
+    autoFlush: 2 # Fixes lava effect.
 SLPS-25247:
   name: "R-Type Final"
   region: "NTSC-J"
@@ -39014,7 +39015,7 @@ SLPS-25317:
     halfPixelOffset: 2 # Fixes blurrines, preload frame for FMV breaks visuals with this setting.
     disablePartialInvalidation: 1 # Fixes shadows when upscaling.
     roundSprite: 2 # Fixes the position of monster sprites and reduces garbage in the UI.
-    autoFlush: 1 # Makes the shadow monsters appear.
+    autoFlush: 2 # Makes the shadow monsters appear.
 SLPS-25318:
   name: "Shadow Hearts 2 [Deluxe Pack] [Disc 2 of 2]"
   region: "NTSC-J"
@@ -39022,7 +39023,7 @@ SLPS-25318:
     halfPixelOffset: 2 # Fixes blurrines, preload frame for FMV breaks visuals with this setting.
     disablePartialInvalidation: 1 # Fixes shadows when upscaling.
     roundSprite: 2 # Fixes the position of monster sprites and reduces garbage in the UI.
-    autoFlush: 1 # Makes the shadow monsters appear.
+    autoFlush: 2 # Makes the shadow monsters appear.
   memcardFilters:
     - "SLPS-25317"
 SLPS-25319:
@@ -39072,7 +39073,7 @@ SLPS-25334:
     halfPixelOffset: 2 # Fixes blurrines, preload frame for FMV breaks visuals with this setting.
     disablePartialInvalidation: 1 # Fixes shadows when upscaling.
     roundSprite: 2 # Fixes the position of monster sprites and reduces garbage in the UI.
-    autoFlush: 1 # Makes the shadow monsters appear.
+    autoFlush: 2 # Makes the shadow monsters appear.
 SLPS-25335:
   name: "Shadow Hearts 2 [Disc 2 of 2]"
   region: "NTSC-J"
@@ -39080,7 +39081,7 @@ SLPS-25335:
     halfPixelOffset: 2 # Fixes blurrines, preload frame for FMV breaks visuals with this setting.
     disablePartialInvalidation: 1 # Fixes shadows when upscaling.
     roundSprite: 2 # Fixes the position of monster sprites and reduces garbage in the UI.
-    autoFlush: 1 # Makes the shadow monsters appear.
+    autoFlush: 2 # Makes the shadow monsters appear.
   memcardFilters:
     - "SLPS-25334"
 SLPS-25336:
@@ -39213,7 +39214,7 @@ SLPS-25366:
   name: "Xenosaga Episode II - Jenseits von Gut und Bose [Premium Box] [Disc 1 of 2]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
   memcardFilters:
@@ -39227,7 +39228,7 @@ SLPS-25367:
   name: "Xenosaga Episode II - Jenseits von Gut und Bose [Premium Box] [Disc 2 of 2]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
   memcardFilters:
@@ -39241,7 +39242,7 @@ SLPS-25368:
   name: "Xenosaga Episode II - Jenseits von Gut und Bose [Disc 1 of 2]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
   memcardFilters: # Allows import of Xenosaga I, Xenosaga I Reloaded, and Xenosaga Freaks data.
@@ -39255,7 +39256,7 @@ SLPS-25369:
   name: "Xenosaga Episode II - Jenseits von Gut und Bose [Disc 2 of 2]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
   memcardFilters:
@@ -40043,7 +40044,7 @@ SLPS-25586:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
-    autoFlush: 1 # Fixes post lighting.
+    autoFlush: 2 # Fixes post lighting.
 SLPS-25587:
   name: "Sugar Sugar Rune - Koi mo Oshare mo Pick-Up"
   region: "NTSC-J"
@@ -40237,7 +40238,7 @@ SLPS-25640:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
@@ -40250,7 +40251,7 @@ SLPS-25641:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
@@ -40288,7 +40289,7 @@ SLPS-25649:
   name: "Space Sheriff Spirits"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes black stages.
+    autoFlush: 2 # Fixes black stages.
 SLPS-25650:
   name: "Metal Slug 3D"
   region: "NTSC-J"
@@ -40367,7 +40368,7 @@ SLPS-25657:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Helps ghosting.
+    autoFlush: 2 # Helps ghosting.
     halfPixelOffset: 2 # Helps ghosting when upscaling.
 SLPS-25658:
   name: "Binchou-Tan - Shiwase Goyomi [Shokai Genteiban]"
@@ -41350,7 +41351,7 @@ SLPS-29001:
   name: "Xenosaga Episode 1 - Der Wille zur Macht [Premium Box]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Removes puppet lines shadows.
     roundSprite: 2 # Fixes font artifacts.
   patches:
@@ -41375,7 +41376,7 @@ SLPS-29002:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Removes puppet lines shadows.
     roundSprite: 2 # Fixes font artifacts.
   patches:
@@ -41414,7 +41415,7 @@ SLPS-29005:
   name: "Xenosaga Episode 1 - Der Wille zur Macht [Reloaded]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Removes puppet lines shadows.
     roundSprite: 2 # Fixes font artifacts.
 SLPS-71501:
@@ -41518,7 +41519,7 @@ SLPS-73204:
   name: "Zettai Zetsumei Toshi [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes incorrect blur effect.
+    autoFlush: 2 # Fixes incorrect blur effect.
 SLPS-73205:
   name: "Ace Combat 04 - Shattered Skies [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -41567,7 +41568,7 @@ SLPS-73214:
     halfPixelOffset: 2 # Fixes blurrines, preload frame for FMV breaks visuals with this setting.
     disablePartialInvalidation: 1 # Fixes shadows when upscaling.
     roundSprite: 2 # Fixes the position of monster sprites and reduces garbage in the UI.
-    autoFlush: 1 # Makes the shadow monsters appear.
+    autoFlush: 2 # Makes the shadow monsters appear.
 SLPS-73215:
   name: "Shadow Hearts 2 [Director's Cut] [PlayStation 2 The Best] [Disc 2 of 2]"
   region: "NTSC-J"
@@ -41575,7 +41576,7 @@ SLPS-73215:
     halfPixelOffset: 2 # Fixes blurrines, preload frame for FMV breaks visuals with this setting.
     disablePartialInvalidation: 1 # Fixes shadows when upscaling.
     roundSprite: 2 # Fixes the position of monster sprites and reduces garbage in the UI.
-    autoFlush: 1 # Makes the shadow monsters appear.
+    autoFlush: 2 # Makes the shadow monsters appear.
   memcardFilters:
     - "SLPS-73214"
 SLPS-73216:
@@ -41624,7 +41625,7 @@ SLPS-73224:
   name: "Xenosaga Episode II - Jenseits von Gut und Bose [PlayStation 2 The Best] [Disc 1 of 2]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
   memcardFilters:
@@ -41638,7 +41639,7 @@ SLPS-73225:
   name: "Xenosaga Episode II - Jenseits von Gut und Bose [PlayStation 2 The Best] [Disc 2 of 2]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
   memcardFilters:
@@ -41844,7 +41845,7 @@ SLPS-73252:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
-    autoFlush: 1 # Fixes post lighting.
+    autoFlush: 2 # Fixes post lighting.
 SLPS-73253:
   name: "Rurouni Kenshin - Enjou! Kyoto Rinne [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -42021,7 +42022,7 @@ SLPS-73901:
   name: "Xenosaga Episode 1 - Der Wille zur Macht [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Removes puppet lines shadows.
     roundSprite: 2 # Fixes font artifacts.
   patches:
@@ -43609,7 +43610,7 @@ SLUS-20380:
   name: "Jurassic Park - Operation Genesis"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    autoFlush: 2 # Fixes glows. Also needed for recursive mipmap rendering.
     mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
     trilinearFiltering: 1 # Using mipmaps, so may as well.
     textureInsideRT: 1 # Fixes rainbow lighting for some areas.
@@ -43924,7 +43925,7 @@ SLUS-20440:
     - EETimingHack # Fixes smoke effects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes fog misalignment and depth line.
-    autoFlush: 1 # Fixes sun going through objects.
+    autoFlush: 2 # Fixes sun going through objects.
     preloadFrameData: 1 # Fixes missing sun and sky.
 SLUS-20441:
   name: "NASCAR - Dirt to Daytona"
@@ -44045,7 +44046,7 @@ SLUS-20467:
         // in the BIOS configuration - a gamebug, not an emulator bug.
         patch=1,EE,0020520C,word,24020001 // 0C0882C8
   gsHWFixes:
-    autoFlush: 1 # Fixes lava effect.
+    autoFlush: 2 # Fixes lava effect.
 SLUS-20468:
   name: "Dynasty Tactics"
   region: "NTSC-U"
@@ -44054,7 +44055,7 @@ SLUS-20469:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Removes puppet lines shadows.
     roundSprite: 2 # Fixes font artifacts.
   patches:
@@ -44193,7 +44194,7 @@ SLUS-20496:
   compat: 5
   gsHWFixes:
     preloadFrameData: 1 # Fixes fog and make lights on cars work again.
-    autoFlush: 1 # Fixes sun luminosity and penetration of objects.
+    autoFlush: 2 # Fixes sun luminosity and penetration of objects.
   gameFixes:
     - EETimingHack # Fixes random graphical corruption.
 SLUS-20497:
@@ -44221,7 +44222,7 @@ SLUS-20502:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    autoFlush: 1 # Fixes the sun flare.
+    autoFlush: 2 # Fixes the sun flare.
     halfPixelOffset: 2 # Fixes the sun flare.
 SLUS-20504:
   name: "Tony Hawk's Pro Skater 4"
@@ -44503,7 +44504,7 @@ SLUS-20561:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes incorrect blur effect.
+    autoFlush: 2 # Fixes incorrect blur effect.
 SLUS-20562:
   name: "dot hack - Mutation Part 2"
   region: "NTSC-U"
@@ -44654,7 +44655,7 @@ SLUS-20587:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 2
     cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
@@ -44821,7 +44822,7 @@ SLUS-20624:
   gameFixes:
     - FpuNegDivHack # Lens flare appears even when behind objects.
   gsHWFixes:
-    autoFlush: 1 # Fixes missing lens flare.
+    autoFlush: 2 # Fixes missing lens flare.
 SLUS-20625:
   name: "MotoGP 3"
   region: "NTSC-U"
@@ -45067,7 +45068,7 @@ SLUS-20673:
   compat: 5
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes lights penetrating objects.
-    autoFlush: 1 # Helps with the light penetration problem.
+    autoFlush: 2 # Helps with the light penetration problem.
     cpuSpriteRenderBW: 1 # Fixes light glows.
 SLUS-20674:
   name: "Cyber Troopers - Virtual-On Marz"
@@ -45392,7 +45393,7 @@ SLUS-20743:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
 SLUS-20744:
   name: "EverQuest - Online Adventures - Frontiers"
   region: "NTSC-U"
@@ -45531,7 +45532,7 @@ SLUS-20763:
     eeRoundMode: 0 # Fixes SPS with water in some places.
   gsHWFixes:
     textureInsideRT: 1 # Fixes the shape of shadows.
-    autoFlush: 1 # Fixes water rendering.
+    autoFlush: 2 # Fixes water rendering.
     halfPixelOffset: 3 # Fixes bloom misalignment, needs this harsh offset for autoflush.
     cpuFramebufferConversion: 1 # Fixes shield rendering.
 SLUS-20764:
@@ -45595,7 +45596,7 @@ SLUS-20776:
   compat: 5
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
-    autoFlush: 1 # Fixes the position of the shadow and makes it not blocky.
+    autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
     gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
 SLUS-20777:
@@ -45677,7 +45678,7 @@ SLUS-20797:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 2
 SLUS-20798:
   name: "Starcraft - Ghost"
   region: "NTSC-U"
@@ -45911,7 +45912,7 @@ SLUS-20852:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes environment lights visible through player model.
+    autoFlush: 2 # Fixes environment lights visible through player model.
 SLUS-20853:
   name: "Looney Tunes - Back in Action"
   region: "NTSC-U"
@@ -45992,7 +45993,7 @@ SLUS-20867:
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
   gsHWFixes:
-    autoFlush: 1 # Fixes flame bloom.
+    autoFlush: 2 # Fixes flame bloom.
 SLUS-20868:
   name: "MVP Baseball 2004"
   region: "NTSC-U"
@@ -46014,7 +46015,7 @@ SLUS-20870:
     partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
-    autoFlush: 1 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
+    autoFlush: 2 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
     halfPixelOffset: 2
 SLUS-20871:
   name: "Naval Ops - Commander"
@@ -46128,7 +46129,7 @@ SLUS-20892:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
   memcardFilters: # Allows import of Xenosaga I data.
@@ -46254,7 +46255,7 @@ SLUS-20915:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
 SLUS-20916:
   name: "Dance Dance Revolution EXTREME"
   region: "NTSC-U"
@@ -46362,7 +46363,7 @@ SLUS-20932:
   compat: 5
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
-    autoFlush: 1 # Fixes missing lighting.
+    autoFlush: 2 # Fixes missing lighting.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLUS-20933:
   name: "Smash Court Pro Tournament Tennis 2"
@@ -46430,7 +46431,7 @@ SLUS-20945:
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes sun occlusion and brightness.
+    autoFlush: 2 # Fixes sun occlusion and brightness.
 SLUS-20946:
   name: "Grand Theft Auto - San Andreas"
   region: "NTSC-U"
@@ -46438,7 +46439,7 @@ SLUS-20946:
   clampModes:
     eeClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 1 # Fixes post processing.
 SLUS-20947:
   name: "WinBack 2 - Project Poseidon"
   region: "NTSC-U"
@@ -46504,7 +46505,7 @@ SLUS-20960:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes bloom.
+    autoFlush: 2 # Fixes bloom.
     roundSprite: 1 # Fixes misaligned bloom.
     deinterlace: 6 # Game requires blend tff de-interlacing when auto for 'fixing' subtitles flickering or half weaved.
   memcardFilters:
@@ -46610,7 +46611,7 @@ SLUS-20978:
   region: "NTSC-U"
   compat: 4
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 2
   patches:
     42E15DEF:
       content: |-
@@ -46742,7 +46743,7 @@ SLUS-21005:
   name: "Kingdom Hearts II"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1 # Fixes effects.
+    autoFlush: 2 # Fixes effects.
     roundSprite: 2 # Fixes upscaling artifacts.
   compat: 5
 SLUS-21006:
@@ -46873,7 +46874,7 @@ SLUS-21022:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
 SLUS-21025:
   name: "Madden NFL 2005 [Special Collectors Edition]"
   region: "NTSC-U"
@@ -46884,7 +46885,7 @@ SLUS-21026:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Post-processing.
+    autoFlush: 2 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
     textureInsideRT: 1 # Fixes light shinging through objects.
@@ -46989,7 +46990,7 @@ SLUS-21041:
     halfPixelOffset: 2 # Fixes blurrines, preload frame for FMV breaks visuals with this setting.
     disablePartialInvalidation: 1 # Fixes shadows when upscaling.
     roundSprite: 2 # Fixes the position of monster sprites and reduces garbage in the UI.
-    autoFlush: 1 # Makes the shadow monsters appear.
+    autoFlush: 2 # Makes the shadow monsters appear.
 SLUS-21042:
   name: "Darkwatch"
   region: "NTSC-U"
@@ -47006,7 +47007,7 @@ SLUS-21044:
     halfPixelOffset: 2 # Fixes blurrines, preload frame for FMV breaks visuals with this setting.
     disablePartialInvalidation: 1 # Fixes shadows when upscaling.
     roundSprite: 2 # Fixes the position of monster sprites and reduces garbage in the UI.
-    autoFlush: 1 # Makes the shadow monsters appear.
+    autoFlush: 2 # Makes the shadow monsters appear.
   memcardFilters:
     - "SLUS-21041"
 SLUS-21045:
@@ -47038,7 +47039,7 @@ SLUS-21050:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -47239,7 +47240,7 @@ SLUS-21095:
   compat: 5
   gsHWFixes:
     mipmap: 1
-    autoFlush: 1
+    autoFlush: 2
     partialTargetInvalidation: 1
     estimateTextureRegion: 1 # Improves performance.
 SLUS-21096:
@@ -47335,7 +47336,7 @@ SLUS-21111:
   gameFixes:
     - IbitHack
   gsHWFixes:
-    autoFlush: 1 # Fixes post processing overlay.
+    autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
 SLUS-21112:
   name: "L.A. Rush"
@@ -47363,7 +47364,7 @@ SLUS-21116:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Softens bloom on objects and cars.
+    autoFlush: 2 # Softens bloom on objects and cars.
     halfPixelOffset: 2 # Fixes misaligned bloom on objects and cars.
 SLUS-21117:
   name: "World Soccer - Winning Eleven 8 - International"
@@ -47410,7 +47411,7 @@ SLUS-21127:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes lighting/shadows.
     preloadFrameData: 1 # Fixes sun flickering.
-    autoFlush: 1 # Fixes sun through objects.
+    autoFlush: 2 # Fixes sun through objects.
     bilinearUpscale: 1 # Smooths out sun glare textures like native.
 SLUS-21128:
   name: "Blitz - The League"
@@ -47437,7 +47438,7 @@ SLUS-21133:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes shadows in cutscenes.
+    autoFlush: 2 # Fixes shadows in cutscenes.
     halfPixelOffset: 2 # Fixes lighting misalignment and shadows.
     roundSprite: 2 # Fixes font artifacts.
   memcardFilters: # Allows import of Xenosaga I data.
@@ -47478,7 +47479,7 @@ SLUS-21139:
     trilinearFiltering: 1
     textureInsideRT: 1 # Fixes rainbow artifacting around edges of screen.
     halfPixelOffset: 2 # Fixes misalgined bloom.
-    autoFlush: 1 # Fixes missing bloom intensity and alignment.
+    autoFlush: 2 # Fixes missing bloom intensity and alignment.
 SLUS-21140:
   name: "Mobile Suit Gundam Seed - Never Ending Tomorrow"
   region: "NTSC-U"
@@ -47712,7 +47713,7 @@ SLUS-21189:
   speedHacks:
     InstantVU1SpeedHack: 1 # Fixes SPS.
   gsHWFixes:
-    autoFlush: 1 # Fixes debris and blending on lower part of screen during monster transformation.
+    autoFlush: 2 # Fixes debris and blending on lower part of screen during monster transformation.
     mipmap: 2
     trilinearFiltering: 1
   memcardFilters:
@@ -47763,7 +47764,7 @@ SLUS-21198:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes lighting misalignment.
+    autoFlush: 2 # Fixes lighting misalignment.
     halfPixelOffset: 2 # Fixes lighting misalignment.
 SLUS-21199:
   name: "Medal of Honor - European Assault"
@@ -47815,7 +47816,7 @@ SLUS-21207:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes missing bloom from surfaces like windows.
+    autoFlush: 2 # Fixes missing bloom from surfaces like windows.
     textureInsideRT: 1 # Fixes corruption.
     # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
@@ -47960,7 +47961,7 @@ SLUS-21231:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes bloom misalignment.
+    autoFlush: 2 # Fixes bloom misalignment.
     halfPixelOffset: 2 # Fixes bloom misalignment.
     textureInsideRT: 1 # Fixes sky bloom.
 SLUS-21232:
@@ -48039,7 +48040,7 @@ SLUS-21242:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -48057,7 +48058,7 @@ SLUS-21243:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLUS-21359"
@@ -48090,7 +48091,7 @@ SLUS-21248:
     vuClampMode: 3 # Fixes broken polygons on trees.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes glitchy black rectangles.
+    autoFlush: 2 # Fixes glitchy black rectangles.
 SLUS-21249:
   name: "Yourself! Fitness - Lifestyle"
   region: "NTSC-U"
@@ -48215,7 +48216,7 @@ SLUS-21268:
   clampModes:
     vuClampMode: 2 # Fixes mini-map HUD.
   gsHWFixes:
-    autoFlush: 1 # Fixes pause menu backgrounds.
+    autoFlush: 2 # Fixes pause menu backgrounds.
     roundSprite: 1 # Corrects proportions of fonts and pause-screen lines, adjusts display closer to software.
 SLUS-21269:
   name: "Bully"
@@ -48260,7 +48261,7 @@ SLUS-21274:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
     halfPixelOffset: 2 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned + font artifacts.
 SLUS-21275:
@@ -48278,7 +48279,7 @@ SLUS-21277:
   gsHWFixes:
     halfPixelOffset: 2 # Fix text and post blur.
     mipmap: 2 # Base mip level isn't always used.
-    autoFlush: 1 # Needed for recursive mipmap rendering.
+    autoFlush: 2 # Needed for recursive mipmap rendering.
     getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SLUS-21278:
   name: "SSX on Tour"
@@ -48308,7 +48309,7 @@ SLUS-21284:
   name: "Nicktoons Unite!"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1 # Fixes glows. Also needed for recursive mipmap rendering.
+    autoFlush: 2 # Fixes glows. Also needed for recursive mipmap rendering.
     mipmap: 2 # Better characters and environment but has a texture cache issue that makes it worse.
     trilinearFiltering: 1 # Using mipmaps, so may as well.
     textureInsideRT: 1 # Fixes rainbow lighting for some areas.
@@ -48323,7 +48324,7 @@ SLUS-21285:
     partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
-    autoFlush: 1 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
+    autoFlush: 2 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
     halfPixelOffset: 2
 SLUS-21286:
   name: "WWE SmackDown! vs. RAW 2006"
@@ -48334,7 +48335,7 @@ SLUS-21287:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
     halfPixelOffset: 1 # Reduces post-processing misalignment.
 SLUS-21288:
   name: "American Chopper 2"
@@ -48398,7 +48399,7 @@ SLUS-21299:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes sun luminosity.
+    autoFlush: 2 # Fixes sun luminosity.
 SLUS-21300:
   name: "Over the Hedge"
   region: "NTSC-U"
@@ -48766,7 +48767,7 @@ SLUS-21359:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
 SLUS-21360:
   name: "Metal Gear Solid 3 - Subsistence [Disc 3 of 3]"
@@ -48775,7 +48776,7 @@ SLUS-21360:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
   memcardFilters:
     - "SLUS-21359"
@@ -48872,7 +48873,7 @@ SLUS-21376:
     vuClampMode: 3 # Fixes SPS.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
-    autoFlush: 1 # Properly diffuses light instead of strips of light.
+    autoFlush: 2 # Properly diffuses light instead of strips of light.
     roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
@@ -48947,7 +48948,7 @@ SLUS-21386:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
-    autoFlush: 1 # Fixes post lighting.
+    autoFlush: 2 # Fixes post lighting.
 SLUS-21387:
   name: "Warship Gunner 2"
   region: "NTSC-U"
@@ -48963,7 +48964,7 @@ SLUS-21389:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 2
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows.
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
@@ -49113,7 +49114,7 @@ SLUS-21417:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1
+    autoFlush: 2
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows.
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
@@ -49150,7 +49151,7 @@ SLUS-21419:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
 SLUS-21420:
   name: "Disney's Chicken Little - Ace in Action"
   region: "NTSC-U"
@@ -49267,7 +49268,7 @@ SLUS-21439:
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes sun occlusion and brightness.
+    autoFlush: 2 # Fixes sun occlusion and brightness.
 SLUS-21440:
   name: "Big Idea's VeggieTales - LarryBoy and the Bad Apple"
   region: "NTSC-U"
@@ -49423,7 +49424,7 @@ SLUS-21469:
   gsHWFixes:
     mipmap: 2 # Better characters and environment.
     trilinearFiltering: 1 # Using mipmaps, so may as well.
-    autoFlush: 1 # Fixes texture corruptions.
+    autoFlush: 2 # Fixes texture corruptions.
     getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SLUS-21470:
   name: "Bratz - Forever Diamondz"
@@ -49561,7 +49562,7 @@ SLUS-21492:
   gameFixes:
     - IbitHack
   gsHWFixes:
-    autoFlush: 1 # Fixes post processing overlay.
+    autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
 SLUS-21493:
   name: "Need for Speed - Carbon"
@@ -49652,7 +49653,7 @@ SLUS-21541:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
     wildArmsHack: 1 # Reduces blooming misalignment.
-    autoFlush: 1 # Fixes glows.
+    autoFlush: 2 # Fixes glows.
 SLUS-21542:
   name: "Sega Genesis Collection"
   region: "NTSC-U"
@@ -49692,7 +49693,7 @@ SLUS-21551:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes certains font colors.
+    autoFlush: 2 # Fixes certains font colors.
     halfPixelOffset: 2 # Fixes lighting misalignment.
     alignSprite: 1 # Fixes almost all vertical lines.
 SLUS-21552:
@@ -49901,7 +49902,7 @@ SLUS-21596:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -50676,7 +50677,7 @@ SLUS-21746:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes bloom misalignment.
+    autoFlush: 2 # Fixes bloom misalignment.
     halfPixelOffset: 2 # Fixes lighting misalignment and depth lines.
 SLUS-21748:
   name: "MLB Power Pros 2008"
@@ -50802,7 +50803,7 @@ SLUS-21773:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes lights not appearing.
+    autoFlush: 2 # Fixes lights not appearing.
     cpuCLUTRender: 1 # Fixes lights going through darts players.
 SLUS-21774:
   name: "Dynasty Warriors 6"
@@ -50839,7 +50840,7 @@ SLUS-21780:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes lack of bloom intensity.
+    autoFlush: 2 # Fixes lack of bloom intensity.
     halfPixelOffset: 1 # Fixes misaligned bloom and rainbow garbage at edges.
 SLUS-21781:
   name: "Guitar Hero - World Tour"
@@ -50926,7 +50927,7 @@ SLUS-21799:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 1 # Fixes double image.
+    autoFlush: 2 # Fixes double image.
     halfPixelOffset: 1 # Fixes misaligned bloom.
 SLUS-21800:
   name: "Rock Band 2"
@@ -51269,7 +51270,7 @@ SLUS-21881:
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes soft shadows.
+    autoFlush: 2 # Fixes soft shadows.
   patches:
     137C792E:
       content: |-
@@ -51659,7 +51660,7 @@ SLUS-28025:
   name: "Disaster Report [Trade Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1 # Fixes incorrect blur effect.
+    autoFlush: 2 # Fixes incorrect blur effect.
 SLUS-28026:
   name: "Everquest Online Adventures [Beta Vol.3.0]"
   region: "NTSC-U"
@@ -51685,7 +51686,7 @@ SLUS-28037:
     - EETimingHack # Fixes smoke effects.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes fog misalignment and depth line.
-    autoFlush: 1 # Fixes sun going through objects.
+    autoFlush: 2 # Fixes sun going through objects.
     preloadFrameData: 1 # Fixes missing sun and sky.
 SLUS-28039:
   name: "Rogue Ops [Trade Demo]"
@@ -51969,7 +51970,7 @@ SLUS-29069:
   name: "Prince of Persia - The Sands of Time [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1 # Reduces post-processing misalignment.
+    autoFlush: 2 # Reduces post-processing misalignment.
 SLUS-29070:
   name: "XIII [Demo]"
   region: "NTSC-U"
@@ -52013,7 +52014,7 @@ SLUS-29082:
     eeRoundMode: 0 # Fixes SPS with water in some places.
   gsHWFixes:
     textureInsideRT: 1 # Fixes the shape of shadows.
-    autoFlush: 1 # Fixes water rendering.
+    autoFlush: 2 # Fixes water rendering.
     halfPixelOffset: 3 # Fixes bloom misalignment, needs this harsh offset for autoflush.
     cpuFramebufferConversion: 1 # Fixes shield rendering.
 SLUS-29083:
@@ -52109,7 +52110,7 @@ SLUS-29113:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -52122,7 +52123,7 @@ SLUS-29117:
   name: "Battlefield 2 - Modern Combat [Public Beta Vol.1.0]"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1 # Post-processing.
+    autoFlush: 2 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
     textureInsideRT: 1 # Fixes light shinging through objects.
@@ -52187,7 +52188,7 @@ SLUS-29137:
   region: "NTSC-U"
   gsHWFixes:
     halfBottomOverride: 1 # Bottom screen has wrong colors.
-    autoFlush: 1 # Fixes missing lighting.
+    autoFlush: 2 # Fixes missing lighting.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLUS-29138:
   name: "Punisher, The [Demo]"
@@ -52227,12 +52228,12 @@ SLUS-29150:
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes sun occlusion and brightness.
+    autoFlush: 2 # Fixes sun occlusion and brightness.
 SLUS-29152:
   name: "Battlefield 2 - Modern Combat [Regular Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1 # Post-processing.
+    autoFlush: 2 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
     textureInsideRT: 1 # Fixes light shinging through objects.
@@ -52247,7 +52248,7 @@ SLUS-29153:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes depth lines.
-    autoFlush: 1 # Fixes blur and obscures sun behind objects.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -52271,7 +52272,7 @@ SLUS-29157:
   name: "Dragon Quest VIII - Journey of the Cursed King [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1 # Fixes missing bloom from surfaces like windows.
+    autoFlush: 2 # Fixes missing bloom from surfaces like windows.
     textureInsideRT: 1 # Fixes corruption.
     # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
@@ -52325,7 +52326,7 @@ SLUS-29172:
   name: "Battlefield 2 - Modern Combat [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 1 # Post-processing.
+    autoFlush: 2 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
     texturePreloading: 1 # Spikes all over the place otherwise.
     textureInsideRT: 1 # Fixes light shinging through objects.
@@ -52358,7 +52359,7 @@ SLUS-29180:
     vuClampMode: 3 # Fixes SPS.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves lighting on buildings and objects.
-    autoFlush: 1 # Properly diffuses light instead of strips of light.
+    autoFlush: 2 # Properly diffuses light instead of strips of light.
     roundSprite: 1 # Fixes lighting misalignment such as the street poles and the sun.
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
@@ -52425,7 +52426,7 @@ SLUS-29196:
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Fixes sun occlusion and brightness.
+    autoFlush: 2 # Fixes sun occlusion and brightness.
 SLUS-29197:
   name: "Flushed Away [Demo]"
   region: "NTSC-U"
@@ -52491,7 +52492,7 @@ TCES-52033:
   name: "Syphon Filter - The Omega Strain Beta Trial Code"
   region: "PAL-E"
   gsHWFixes:
-    autoFlush: 1 # Fixes lights going through walls.
+    autoFlush: 2 # Fixes lights going through walls.
     preloadFrameData: 1 # Fixes light flicker.
     halfPixelOffset: 2 # Corrects light position.
   gameFixes:
@@ -52510,7 +52511,7 @@ TCES-52389:
   name: "World Rally Championship 4 Beta Trial Code"
   region: "PAL-E"
   gsHWFixes:
-    autoFlush: 1 # Fixes sun luminosity and car shadows.
+    autoFlush: 2 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
     halfPixelOffset: 2 # Fixes minor ghosting on objects.
 TCES-52456:
@@ -52523,7 +52524,7 @@ TCES-52456:
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
-    autoFlush: 1 # Helps fix misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 TCES-52582:
   name: "Everybody's Golf 4 Beta Trial Code"
   region: "PAL-E"
@@ -52537,14 +52538,14 @@ TCES-53247:
     - XGKickHack # Fixes SPS.
   gsHWFixes:
     roundSprite: 1 # Fixes misaligned text.
-    autoFlush: 1 # Fixes sun luminosity.
+    autoFlush: 2 # Fixes sun luminosity.
 TCES-53286:
   name: "Jak X Beta Trial Code"
   region: "PAL-E"
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
-    autoFlush: 1 # Fixes lighting.
+    autoFlush: 2 # Fixes lighting.
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 2 # Fixes water textures. Can't use BW 4 here because of post effects.
@@ -52652,7 +52653,7 @@ TCPS-10158:
     partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
-    autoFlush: 1 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
+    autoFlush: 2 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
     halfPixelOffset: 2
 TCPS-10159:
   name: "Suzuki TT Super Bikes - Real Road Racing"
@@ -52712,7 +52713,7 @@ TLES-82043:
     - BlitInternalFPSHack # Fixes internal FPS detection.
     - InstantDMAHack # Fixes missing letters in text such as E.
   gsHWFixes:
-    autoFlush: 1 # Fixes lens flare.
+    autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
 VW067-J1:
   name: "Crash Bandicoot 4 - Sakuretsu! Majin Power!"

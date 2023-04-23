@@ -30,7 +30,7 @@ int GSState::s_transfer_n = 0;
 
 static __fi bool IsAutoFlushEnabled()
 {
-	return (GSConfig.Renderer == GSRendererType::SW) ? GSConfig.AutoFlushSW : GSConfig.UserHacks_AutoFlush;
+	return (GSConfig.Renderer == GSRendererType::SW) ? GSConfig.AutoFlushSW : (GSConfig.UserHacks_AutoFlush != GSHWAutoFlushLevel::Disabled);
 }
 
 static __fi bool IsFirstProvokingVertex()
@@ -1172,7 +1172,7 @@ void GSState::GIFRegHandlerTEXFLUSH(const GIFReg* RESTRICT r)
 	// Some games do a single sprite draw to itself, then flush the texture cache, then use that texture again.
 	// This won't get picked up by the new autoflush logic (which checks for page crossings for the PS2 Texture Cache flush)
 	// so we need to do it here.
-	if (IsAutoFlushEnabled() && IsAutoFlushDraw())
+	if (IsAutoFlushEnabled() && IsAutoFlushDraw(PRIM->PRIM))
 		Flush(GSFlushReason::TEXFLUSH);
 }
 
@@ -2776,9 +2776,9 @@ GSState::PRIM_OVERLAP GSState::PrimitiveOverlap()
 	return overlap;
 }
 
-__forceinline bool GSState::IsAutoFlushDraw()
+__forceinline bool GSState::IsAutoFlushDraw(u32 prim)
 {
-	if (!PRIM->TME)
+	if (!PRIM->TME || (GSConfig.UserHacks_AutoFlush == GSHWAutoFlushLevel::SpritesOnly && prim != GS_SPRITE))
 		return false;
 
 	const u32 frame_mask = GSLocalMemory::m_psm[m_context->TEX0.PSM].fmsk;
@@ -2846,13 +2846,13 @@ template<u32 prim, bool index_swap>
 __forceinline void GSState::HandleAutoFlush()
 {
 	// Kind of a cheat, making the assumption that 2 consecutive fan/strip triangles won't overlap each other (*should* be safe)
-	if ((m_index.tail & 1) && (PRIM->PRIM == GS_TRIANGLESTRIP || PRIM->PRIM == GS_TRIANGLEFAN))
+	if ((m_index.tail & 1) && (prim == GS_TRIANGLESTRIP || prim == GS_TRIANGLEFAN))
 		return;
 
 	// To briefly explain what's going on here, what we are checking for is draws over a texture when the source and destination are themselves.
 	// Because one page of the texture gets buffered in the Texture Cache (the PS2's one) if any of those pixels are overwritten, you still read the old data.
 	// So we need to calculate if a page boundary is being crossed for the format it is in and if the same part of the texture being written and read inside the draw.
-	if (IsAutoFlushDraw())
+	if (IsAutoFlushDraw(prim))
 	{
 		int  n = 1;
 		u32 buff[3];
