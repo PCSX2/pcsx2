@@ -1015,6 +1015,9 @@ public:
 				microMapGPR& mapI = gprMap[i];
 				if (mapI.VIreg == viLoadReg)
 				{
+					// Do this first, there is a case where when loadReg != writeReg, the findFreeGPR can steal the loadReg
+					gprMap[i].count = this_counter;
+
 					if (viWriteReg >= 0) // Reg will be modified
 					{
 						if (viLoadReg != viWriteReg)
@@ -1058,7 +1061,7 @@ public:
 						xMOVZX(xRegister32(i), xRegister16(i));
 						gprMap[i].isZeroExtended = true;
 					}
-					gprMap[i].count = this_counter;
+
 					gprMap[i].isNeeded = true;
 
 					if (backup)
