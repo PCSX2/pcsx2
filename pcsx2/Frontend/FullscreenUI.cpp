@@ -3182,6 +3182,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			static constexpr const char* s_half_pixel_offset_options[] = {
 				"Off (Default)", "Normal (Vertex)", "Special (Texture)", "Special (Texture - Aggressive)"};
 			static constexpr const char* s_round_sprite_options[] = {"Off (Default)", "Half", "Full"};
+			static constexpr const char* s_auto_flush_options[] = {
+				"Disabled (Default)", "Enabled (Sprites Only)", "Enabled (All Primitives)"};
 
 			DrawIntListSetting(bsi, "CRC Fix Level", "Applies manual fixes to difficult-to-emulate effects in the hardware renderers.",
 				"EmuCore/GS", "crc_hack_level", static_cast<int>(CRCHackLevel::Automatic), s_crc_fix_options, std::size(s_crc_fix_options),
@@ -3198,8 +3200,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 				bsi, "Skip Draw Start", "Object range to skip drawing.", "EmuCore/GS", "UserHacks_SkipDraw_Start", 0, 0, 5000, 1);
 			DrawIntSpinBoxSetting(
 				bsi, "Skip Draw End", "Object range to skip drawing.", "EmuCore/GS", "UserHacks_SkipDraw_End", 0, 0, 5000, 1);
-			DrawToggleSetting(bsi, "Auto Flush (Hardware)", "Force a primitive flush when a framebuffer is also an input texture.",
-				"EmuCore/GS", "UserHacks_AutoFlush", false, manual_hw_fixes);
+			DrawIntListSetting(bsi, "Auto Flush (Hardware)", "Force a primitive flush when a framebuffer is also an input texture.",
+				"EmuCore/GS", "UserHacks_AutoFlushLevel", 0, s_auto_flush_options, std::size(s_auto_flush_options), 0, manual_hw_fixes);
 			DrawToggleSetting(bsi, "CPU Framebuffer Conversion", "Convert 4-bit and 8-bit frame buffer on the CPU instead of the GPU.",
 				"EmuCore/GS", "UserHacks_CPU_FB_Conversion", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, "Disable Depth Support", "Disable the support of depth buffer in the texture cache.", "EmuCore/GS",

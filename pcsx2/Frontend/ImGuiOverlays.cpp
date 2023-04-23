@@ -407,11 +407,11 @@ void ImGuiManager::DrawSettingsOverlay()
 		if (GSConfig.UserHacks_CPUCLUTRender != 0)
 			APPEND("CCLUT={} ", GSConfig.UserHacks_CPUCLUTRender);
 		if (GSConfig.UserHacks_GPUTargetCLUTMode != GSGPUTargetCLUTMode::Disabled)
-			APPEND("GCLUT={} ", static_cast<int>(GSConfig.UserHacks_GPUTargetCLUTMode));
+			APPEND("GCLUT={} ", static_cast<unsigned>(GSConfig.UserHacks_GPUTargetCLUTMode));
 		if (GSConfig.SkipDrawStart != 0 || GSConfig.SkipDrawEnd != 0)
 			APPEND("SD={}/{} ", GSConfig.SkipDrawStart, GSConfig.SkipDrawEnd);
 		if (GSConfig.UserHacks_TextureInsideRt != GSTextureInRtMode::Disabled)
-			APPEND("TexRT={} ", static_cast<int>(GSConfig.UserHacks_TextureInsideRt));
+			APPEND("TexRT={} ", static_cast<unsigned>(GSConfig.UserHacks_TextureInsideRt));
 		if (GSConfig.UserHacks_WildHack)
 			APPEND("WA ");
 		if (GSConfig.UserHacks_BilinearHack)
@@ -422,8 +422,8 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("MS ");
 		if (GSConfig.UserHacks_AlignSpriteX)
 			APPEND("AS ");
-		if (GSConfig.UserHacks_AutoFlush)
-			APPEND("ATFL ");
+		if (GSConfig.UserHacks_AutoFlush != GSHWAutoFlushLevel::Disabled)
+			APPEND("ATFL={} ", static_cast<unsigned>(GSConfig.UserHacks_AutoFlush));
 		if (GSConfig.UserHacks_CPUFBConversion)
 			APPEND("FBC ");
 		if (GSConfig.UserHacks_ReadTCOnClose)

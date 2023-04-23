@@ -693,8 +693,11 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 		switch (id)
 		{
 			case GSHWFixId::AutoFlush:
-				config.UserHacks_AutoFlush = (value > 0);
-				break;
+			{
+				if (value >= 0 && value <= static_cast<int>(GSHWAutoFlushLevel::Enabled))
+					config.UserHacks_AutoFlush = static_cast<GSHWAutoFlushLevel>(value);
+			}
+			break;
 
 			case GSHWFixId::CPUFramebufferConversion:
 				config.UserHacks_CPUFBConversion = (value > 0);

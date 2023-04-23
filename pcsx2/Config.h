@@ -350,6 +350,13 @@ enum class GSCASMode : u8
 	SharpenAndResize,
 };
 
+enum class GSHWAutoFlushLevel : u8
+{
+	Disabled,
+	SpritesOnly,
+	Enabled,
+};
+
 enum class GSGPUTargetCLUTMode : u8
 {
 	Disabled,
@@ -669,7 +676,6 @@ struct Pcsx2Config
 					Mipmap : 1,
 					ManualUserHacks : 1,
 					UserHacks_AlignSpriteX : 1,
-					UserHacks_AutoFlush : 1,
 					UserHacks_CPUFBConversion : 1,
 					UserHacks_ReadTCOnClose : 1,
 					UserHacks_DisableDepthSupport : 1,
@@ -704,85 +710,87 @@ struct Pcsx2Config
 			};
 		};
 
-		int VsyncQueueSize{2};
+		int VsyncQueueSize = 2;
 
 		// forces the MTGS to execute tags/tasks in fully blocking/synchronous
 		// style. Useful for debugging potential bugs in the MTGS pipeline.
-		bool SynchronousMTGS{false};
-		bool FrameLimitEnable{true};
+		bool SynchronousMTGS = false;
+		bool FrameLimitEnable = true;
 
-		VsyncMode VsyncEnable{VsyncMode::Off};
+		VsyncMode VsyncEnable = VsyncMode::Off;
 
-		float LimitScalar{1.0f};
-		float FramerateNTSC{DEFAULT_FRAME_RATE_NTSC};
-		float FrameratePAL{DEFAULT_FRAME_RATE_PAL};
+		float LimitScalar = 1.0f;
+		float FramerateNTSC = DEFAULT_FRAME_RATE_NTSC;
+		float FrameratePAL = DEFAULT_FRAME_RATE_PAL;
 
-		AspectRatioType AspectRatio{AspectRatioType::RAuto4_3_3_2};
-		FMVAspectRatioSwitchType FMVAspectRatioSwitch{FMVAspectRatioSwitchType::Off};
-		GSInterlaceMode InterlaceMode{GSInterlaceMode::Automatic};
-		GSPostBilinearMode LinearPresent{ GSPostBilinearMode::BilinearSmooth };
+		AspectRatioType AspectRatio = AspectRatioType::RAuto4_3_3_2;
+		FMVAspectRatioSwitchType FMVAspectRatioSwitch = FMVAspectRatioSwitchType::Off;
+		GSInterlaceMode InterlaceMode = GSInterlaceMode::Automatic;
+		GSPostBilinearMode LinearPresent = GSPostBilinearMode::BilinearSmooth;
 
-		float StretchY{100.0f};
-		int Crop[4]{};
+		float StretchY = 100.0f;
+		int Crop[4] = {};
 
-		float OsdScale{100.0};
+		float OsdScale = 100.0;
 
-		GSRendererType Renderer{GSRendererType::Auto};
-		float UpscaleMultiplier{1.0f};
+		GSRendererType Renderer = GSRendererType::Auto;
+		float UpscaleMultiplier = 1.0f;
 
-		HWMipmapLevel HWMipmap{HWMipmapLevel::Automatic};
-		AccBlendLevel AccurateBlendingUnit{AccBlendLevel::Basic};
-		CRCHackLevel CRCHack{CRCHackLevel::Automatic};
-		BiFiltering TextureFiltering{BiFiltering::PS2};
-		TexturePreloadingLevel TexturePreloading{TexturePreloadingLevel::Full};
-		GSDumpCompressionMethod GSDumpCompression{GSDumpCompressionMethod::Zstandard};
-		GSHardwareDownloadMode HWDownloadMode{GSHardwareDownloadMode::Enabled};
-		GSCASMode CASMode{GSCASMode::Disabled};
-		int Dithering{2};
-		int MaxAnisotropy{0};
-		int SWExtraThreads{2};
-		int SWExtraThreadsHeight{4};
-		int TVShader{0};
-		s16 GetSkipCountFunctionId{-1};
-		s16 BeforeDrawFunctionId{-1};
-		int SkipDrawStart{0};
-		int SkipDrawEnd{0};
+		HWMipmapLevel HWMipmap = HWMipmapLevel::Automatic;
+		AccBlendLevel AccurateBlendingUnit = AccBlendLevel::Basic;
+		CRCHackLevel CRCHack = CRCHackLevel::Automatic;
+		BiFiltering TextureFiltering = BiFiltering::PS2;
+		TexturePreloadingLevel TexturePreloading = TexturePreloadingLevel::Full;
+		GSDumpCompressionMethod GSDumpCompression = GSDumpCompressionMethod::Zstandard;
+		GSHardwareDownloadMode HWDownloadMode = GSHardwareDownloadMode::Enabled;
+		GSCASMode CASMode = GSCASMode::Disabled;
+		u8 Dithering = 2;
+		u8 MaxAnisotropy = 0;
+		u8 TVShader = 0;
+		s16 GetSkipCountFunctionId = -1;
+		s16 BeforeDrawFunctionId = -1;
+		int SkipDrawStart = 0;
+		int SkipDrawEnd = 0;
 
-		int UserHacks_HalfBottomOverride{-1};
-		int UserHacks_HalfPixelOffset{0};
-		int UserHacks_RoundSprite{0};
-		int UserHacks_TCOffsetX{0};
-		int UserHacks_TCOffsetY{0};
-		int UserHacks_CPUSpriteRenderBW{0};
-		int UserHacks_CPUSpriteRenderLevel{0};
-		int UserHacks_CPUCLUTRender{0};
-		GSGPUTargetCLUTMode UserHacks_GPUTargetCLUTMode{GSGPUTargetCLUTMode::Disabled};
-		GSTextureInRtMode UserHacks_TextureInsideRt{GSTextureInRtMode::Disabled};
-		TriFiltering TriFilter{TriFiltering::Automatic};
-		int OverrideTextureBarriers{-1};
+		GSHWAutoFlushLevel UserHacks_AutoFlush = GSHWAutoFlushLevel::Disabled;
+		s8 UserHacks_HalfBottomOverride = -1;
+		s8 UserHacks_HalfPixelOffset = 0;
+		s8 UserHacks_RoundSprite = 0;
+		s32 UserHacks_TCOffsetX = 0;
+		s32 UserHacks_TCOffsetY = 0;
+		u8 UserHacks_CPUSpriteRenderBW = 0;
+		u8 UserHacks_CPUSpriteRenderLevel = 0;
+		u8 UserHacks_CPUCLUTRender = 0;
+		GSGPUTargetCLUTMode UserHacks_GPUTargetCLUTMode = GSGPUTargetCLUTMode::Disabled;
+		GSTextureInRtMode UserHacks_TextureInsideRt = GSTextureInRtMode::Disabled;
+		TriFiltering TriFilter = TriFiltering::Automatic;
+		s8 OverrideTextureBarriers = -1;
 
-		int CAS_Sharpness{50};
-		int ShadeBoost_Brightness{50};
-		int ShadeBoost_Contrast{50};
-		int ShadeBoost_Saturation{50};
-		int PNGCompressionLevel{1};
+		u8 CAS_Sharpness = 50;
+		u8 ShadeBoost_Brightness = 50;
+		u8 ShadeBoost_Contrast = 50;
+		u8 ShadeBoost_Saturation = 50;
+		u8 PNGCompressionLevel = 1;
 
-		int SaveN{0};
-		int SaveL{5000};
+		u16 SWExtraThreads = 2;
+		u16 SWExtraThreadsHeight = 4;
 
-		GSScreenshotSize ScreenshotSize{GSScreenshotSize::WindowResolution};
-		GSScreenshotFormat ScreenshotFormat{GSScreenshotFormat::PNG};
-		int ScreenshotQuality{50};
+		int SaveN = 0;
+		int SaveL = 5000;
 
-		std::string CaptureContainer{DEFAULT_CAPTURE_CONTAINER};
+		GSScreenshotSize ScreenshotSize = GSScreenshotSize::WindowResolution;
+		GSScreenshotFormat ScreenshotFormat = GSScreenshotFormat::PNG;
+		int ScreenshotQuality = 50;
+
+		std::string CaptureContainer = DEFAULT_CAPTURE_CONTAINER;
 		std::string VideoCaptureCodec;
 		std::string VideoCaptureParameters;
 		std::string AudioCaptureCodec;
 		std::string AudioCaptureParameters;
-		int VideoCaptureBitrate{DEFAULT_VIDEO_CAPTURE_BITRATE};
-		int VideoCaptureWidth{DEFAULT_VIDEO_CAPTURE_WIDTH};
-		int VideoCaptureHeight{DEFAULT_VIDEO_CAPTURE_HEIGHT};
-		int AudioCaptureBitrate{DEFAULT_AUDIO_CAPTURE_BITRATE};
+		int VideoCaptureBitrate = DEFAULT_VIDEO_CAPTURE_BITRATE;
+		int VideoCaptureWidth = DEFAULT_VIDEO_CAPTURE_WIDTH;
+		int VideoCaptureHeight = DEFAULT_VIDEO_CAPTURE_HEIGHT;
+		int AudioCaptureBitrate = DEFAULT_AUDIO_CAPTURE_BITRATE;
 
 		std::string Adapter;
 		std::string HWDumpDirectory;
