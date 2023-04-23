@@ -188,6 +188,7 @@ void GSState::Reset(bool hardware_reset)
 	m_vertex.next = 0;
 	m_index.tail = 0;
 	m_scanmask_used = 0;
+	m_texflush_flag = false;
 	m_dirty_gs_regs = 0;
 	m_backed_up_ctx = -1;
 
@@ -406,9 +407,6 @@ void GSState::DumpVertices(const std::string& filename)
 			break;
 		case GSFlushReason::CLUTCHANGE:
 			file << "CLUT CHANGE (RELOAD REQ)";
-			break;
-		case GSFlushReason::TEXFLUSH:
-			file << "TEXFLUSH CALL";
 			break;
 		case GSFlushReason::GSTRANSFER:
 			file << "GS TRANSFER";
@@ -1168,12 +1166,7 @@ void GSState::GIFRegHandlerFOGCOL(const GIFReg* RESTRICT r)
 void GSState::GIFRegHandlerTEXFLUSH(const GIFReg* RESTRICT r)
 {
 	GL_REG("TEXFLUSH = 0x%x_%x PRIM TME %x", r->U32[1], r->U32[0], PRIM->TME);
-
-	// Some games do a single sprite draw to itself, then flush the texture cache, then use that texture again.
-	// This won't get picked up by the new autoflush logic (which checks for page crossings for the PS2 Texture Cache flush)
-	// so we need to do it here.
-	if (IsAutoFlushEnabled() && IsAutoFlushDraw(PRIM->PRIM))
-		Flush(GSFlushReason::TEXFLUSH);
+	m_texflush_flag = true;
 }
 
 template <int i>
@@ -1579,6 +1572,9 @@ void GSState::FlushPrim()
 	if (m_index.tail > 0)
 	{
 		GL_REG("FlushPrim ctxt %d", PRIM->CTXT);
+
+		// clear texture cache flushed flag, since we're reading from it
+		m_texflush_flag = PRIM->TME ? false : m_texflush_flag;
 
 		// internal frame rate detection based on sprite blits to the display framebuffer
 		{
@@ -2955,7 +2951,7 @@ __forceinline void GSState::HandleAutoFlush()
 		const GSVector4i tex_page = tex_rect.xyxy() & page_mask;
 
 		// Crossed page since last draw end
-		if(!tex_page.eq(last_tex_page))
+		if (!tex_page.eq(last_tex_page) || m_texflush_flag)
 		{
 			const u32 frame_mask = GSLocalMemory::m_psm[m_context->TEX0.PSM].fmsk;
 			const bool frame_hit = (m_context->FRAME.Block() == m_context->TEX0.TBP0) && !(m_context->TEST.ATE && m_context->TEST.ATST == 0 && m_context->TEST.AFAIL == 2) && ((m_context->FRAME.FBMSK & frame_mask) != frame_mask);
