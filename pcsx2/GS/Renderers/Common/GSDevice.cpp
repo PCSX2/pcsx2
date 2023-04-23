@@ -380,14 +380,6 @@ GSTexture* GSDevice::CreateTexture(int w, int h, int mipmap_levels, GSTexture::F
 	return FetchSurface(GSTexture::Type::Texture, w, h, levels, format, false, prefer_reuse);
 }
 
-GSTexture::Format GSDevice::GetDefaultTextureFormat(GSTexture::Type type)
-{
-	if (type == GSTexture::Type::DepthStencil)
-		return GSTexture::Format::DepthStencil;
-	else
-		return GSTexture::Format::Color;
-}
-
 void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
 {
 	StretchRect(sTex, GSVector4(0, 0, 1, 1), dTex, dRect, shader, linear);
@@ -441,7 +433,7 @@ void GSDevice::ClearCurrent()
 
 void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
 {
-	if (ResizeTarget(&m_merge, fs.x, fs.y))
+	if (ResizeRenderTarget(&m_merge, fs.x, fs.y, false, false))
 		DoMerge(sTex, sRect, m_merge, dRect, PMODE, EXTBUF, c, GSConfig.PCRTCOffsets);
 
 	m_current = m_merge;
@@ -481,20 +473,20 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	switch (mode)
 	{
 		case 0: // Weave
-			ResizeTarget(&m_weavebob, ds.x, ds.y);
+			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
 			do_interlace(m_merge, m_weavebob, ShaderInterlace::WEAVE, false, offset, field);
 			m_current = m_weavebob;
 			break;
 		case 1: // Bob
 			// Field is reversed here as we are countering the bounce.
-			ResizeTarget(&m_weavebob, ds.x, ds.y);
+			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
 			do_interlace(m_merge, m_weavebob, ShaderInterlace::BOB, true, yoffset * (1 - field), 0);
 			m_current = m_weavebob;
 			break;
 		case 2: // Blend
-			ResizeTarget(&m_weavebob, ds.x, ds.y);
+			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
 			do_interlace(m_merge, m_weavebob, ShaderInterlace::WEAVE, false, offset, field);
-			ResizeTarget(&m_blend, ds.x, ds.y);
+			ResizeRenderTarget(&m_blend, ds.x, ds.y, true, false);
 			do_interlace(m_weavebob, m_blend, ShaderInterlace::BLEND, false, 0, 0);
 			m_current = m_blend;
 			break;
@@ -503,9 +495,9 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 			bufIdx &= ~1;
 			bufIdx |= field;
 			bufIdx &= 3;
-			ResizeTarget(&m_mad, ds.x, ds.y * 2.0f);
+			ResizeRenderTarget(&m_mad, ds.x, ds.y * 2.0f, true, false);
 			do_interlace(m_merge, m_mad, ShaderInterlace::MAD_BUFFER, false, offset, bufIdx);
-			ResizeTarget(&m_weavebob, ds.x, ds.y);
+			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
 			do_interlace(m_mad, m_weavebob, ShaderInterlace::MAD_RECONSTRUCT, false, 0, bufIdx);
 			m_current = m_weavebob;
 			break;
@@ -519,9 +511,8 @@ void GSDevice::FXAA()
 {
 	// Combining FXAA+ShadeBoost can't share the same target.
 	GSTexture*& dTex = (m_current == m_target_tmp) ? m_merge : m_target_tmp;
-	if (ResizeTexture(&dTex, GSTexture::Type::RenderTarget, m_current->GetWidth(), m_current->GetHeight(), false, true))
+	if (ResizeRenderTarget(&dTex, m_current->GetWidth(), m_current->GetHeight(), false, false))
 	{
-		InvalidateRenderTarget(dTex);
 		DoFXAA(m_current, dTex);
 		m_current = dTex;
 	}
@@ -529,10 +520,8 @@ void GSDevice::FXAA()
 
 void GSDevice::ShadeBoost()
 {
-	if (ResizeTexture(&m_target_tmp, GSTexture::Type::RenderTarget, m_current->GetWidth(), m_current->GetHeight(), false, true))
+	if (ResizeRenderTarget(&m_target_tmp, m_current->GetWidth(), m_current->GetHeight(), false, false))
 	{
-		InvalidateRenderTarget(m_target_tmp);
-
 		// predivide to avoid the divide (multiply) in the shader
 		const float params[4] = {
 			static_cast<float>(GSConfig.ShadeBoost_Brightness) * (1.0f / 50.0f),
@@ -557,7 +546,7 @@ void GSDevice::Resize(int width, int height)
 		s = m_current->GetSize() * GSVector2i(++multiplier);
 	}
 
-	if (ResizeTexture(&dTex, GSTexture::Type::RenderTarget, s.x, s.y, false))
+	if (ResizeRenderTarget(&dTex, s.x, s.y, false, false))
 	{
 		const GSVector4 sRect(0, 0, 1, 1);
 		const GSVector4 dRect(0, 0, s.x, s.y);
@@ -566,55 +555,48 @@ void GSDevice::Resize(int width, int height)
 	}
 }
 
-bool GSDevice::ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h, bool clear, bool prefer_reuse)
+bool GSDevice::ResizeRenderTarget(GSTexture** t, int w, int h, bool preserve_contents, bool recycle)
 {
-	if (t == NULL)
+	pxAssert(t);
+
+	GSTexture* orig_tex = *t;
+	if (orig_tex && orig_tex->GetWidth() == w && orig_tex->GetHeight() == h)
 	{
-		ASSERT(0);
+		if (!preserve_contents)
+			InvalidateRenderTarget(orig_tex);
+
+		return true;
+	}
+
+	GSTexture* new_tex;
+	try
+	{
+		const GSTexture::Format fmt = orig_tex ? orig_tex->GetFormat() : GSTexture::Format::Color;
+		new_tex = FetchSurface(GSTexture::Type::RenderTarget, w, h, 1, fmt, !preserve_contents, true);
+	}
+	catch (std::bad_alloc&)
+	{
+		Console.WriteLn("%dx%d texture allocation failed in ResizeTexture()", w, h);
 		return false;
 	}
 
-	GSTexture* t2 = *t;
-
-	if (t2 == NULL || t2->GetWidth() != w || t2->GetHeight() != h)
+	if (preserve_contents && orig_tex)
 	{
-		const GSTexture::Format fmt = t2 ? t2->GetFormat() : GetDefaultTextureFormat(type);
-		const int levels = t2 ? (t2->IsMipmap() ? MipmapLevelsForSize(w, h) : 1) : 1;
-
-		GSTexture* new_t = FetchSurface(type, w, h, levels, fmt, clear, prefer_reuse);
-		if (new_t)
-		{
-			if (t2)
-			{
-				// TODO: We probably want to make this optional if we're overwriting it...
-				const GSVector4 sRect(0, 0, 1, 1);
-				const GSVector4 dRect(0, 0, t2->GetWidth(), t2->GetHeight());
-				StretchRect(t2, sRect, new_t, dRect, ShaderConvert::COPY, true);
-				Recycle(t2);
-			}
-
-			t2 = new_t;
-			*t = t2;
-		}
+		constexpr GSVector4 sRect = GSVector4::cxpr(0, 0, 1, 1);
+		const GSVector4 dRect = GSVector4(orig_tex->GetRect());
+		StretchRect(orig_tex, sRect, new_tex, dRect, ShaderConvert::COPY, true);
 	}
 
-	return t2 != NULL;
-}
+	if (orig_tex)
+	{
+		if (recycle)
+			Recycle(orig_tex);
+		else
+			delete orig_tex;
+	}
 
-bool GSDevice::ResizeTexture(GSTexture** t, int w, int h, bool prefer_reuse)
-{
-	return ResizeTexture(t, GSTexture::Type::Texture, w, h, false, prefer_reuse);
-}
-
-bool GSDevice::ResizeTarget(GSTexture** t, int w, int h)
-{
-	return ResizeTexture(t, GSTexture::Type::RenderTarget, w, h);
-}
-
-bool GSDevice::ResizeTarget(GSTexture** t)
-{
-	GSVector2i s = m_current->GetSize();
-	return ResizeTexture(t, GSTexture::Type::RenderTarget, s.x, s.y);
+	*t = new_tex;
+	return true;
 }
 
 void GSDevice::SetHWDrawConfigForAlphaPass(GSHWDrawConfig::PSSelector* ps,
