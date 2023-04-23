@@ -118,7 +118,7 @@ GSTexture* GSRendererSW::GetOutput(int i, float& scale, int& y_offset)
 	int w = curFramebuffer.FBW * 64;
 	int h = framebufferSize.y;
 
-	if (g_gs_device->ResizeTarget(&m_texture[index], w, h))
+	if (g_gs_device->ResizeRenderTarget(&m_texture[index], w, h, false, false))
 	{
 		const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[curFramebuffer.PSM];
 		constexpr int pitch = 1024 * 4;

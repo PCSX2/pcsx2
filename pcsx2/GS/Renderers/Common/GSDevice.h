@@ -890,7 +890,6 @@ public:
 	GSTexture* CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear = true);
 	GSTexture* CreateDepthStencil(int w, int h, GSTexture::Format format, bool clear = true);
 	GSTexture* CreateTexture(int w, int h, int mipmap_levels, GSTexture::Format format, bool prefer_reuse = false);
-	GSTexture::Format GetDefaultTextureFormat(GSTexture::Type type);
 
 	virtual std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) = 0;
 
@@ -929,10 +928,7 @@ public:
 
 	void CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, const GSVector4& draw_rect, bool sharpen_only);
 
-	bool ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h, bool clear = true, bool prefer_reuse = false);
-	bool ResizeTexture(GSTexture** t, int w, int h, bool prefer_reuse = false);
-	bool ResizeTarget(GSTexture** t, int w, int h);
-	bool ResizeTarget(GSTexture** t);
+	bool ResizeRenderTarget(GSTexture** t, int w, int h, bool preserve_contents, bool recycle);
 
 	bool IsRBSwapped() { return m_rbswapped; }
 
