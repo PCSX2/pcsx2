@@ -786,7 +786,7 @@ void MainWindow::setStyleFromSettings()
 		// Alternative dark theme.
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 
-		const QColor gray(192, 192, 192);
+		const QColor gray(150, 150, 150);
 		const QColor royalBlue(29, 41, 81);
 		const QColor darkishBlue(17, 30, 108);
 		const QColor highlight(36, 93, 218);
