@@ -144,10 +144,6 @@ protected:
 	GSVector4i m_scissor = {};
 	GSVector4i m_ofxy = {};
 
-	u8 m_scanmask_used = 0;
-	bool tex_flushed = true;
-	bool m_isPackedUV_HackFlag = false;
-
 	struct
 	{
 		GSVertex* buff;
@@ -228,6 +224,9 @@ public:
 	std::unique_ptr<GSDumpBase> m_dump;
 	bool m_nativeres = false;
 	bool m_mipmap = false;
+	bool m_texflush_flag = false;
+	bool m_isPackedUV_HackFlag = false;
+	u8 m_scanmask_used = 0;
 	u8 m_force_preload = 0;
 	u32 m_dirty_gs_regs = 0;
 	int m_backed_up_ctx = 0;
@@ -268,17 +267,16 @@ public:
 		RESET = 1 << 1,
 		CONTEXTCHANGE = 1 << 2,
 		CLUTCHANGE = 1 << 3,
-		TEXFLUSH = 1 << 4,
-		GSTRANSFER = 1 << 5,
-		UPLOADDIRTYTEX = 1 << 6,
-		LOCALTOLOCALMOVE = 1 << 7,
-		DOWNLOADFIFO = 1 << 8,
-		SAVESTATE = 1 << 9,
-		LOADSTATE = 1 << 10,
-		AUTOFLUSH = 1 << 11,
-		VSYNC  = 1 << 12,
-		GSREOPEN = 1 << 13,
-		VERTEXCOUNT = 1 << 14,
+		GSTRANSFER = 1 << 4,
+		UPLOADDIRTYTEX = 1 << 5,
+		LOCALTOLOCALMOVE = 1 << 6,
+		DOWNLOADFIFO = 1 << 7,
+		SAVESTATE = 1 << 8,
+		LOADSTATE = 1 << 9,
+		AUTOFLUSH = 1 << 10,
+		VSYNC  = 1 << 11,
+		GSREOPEN = 1 << 12,
+		VERTEXCOUNT = 1 << 13,
 	};
 
 	GSFlushReason m_state_flush_reason = UNKNOWN;
