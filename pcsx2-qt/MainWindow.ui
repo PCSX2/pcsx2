@@ -439,8 +439,8 @@
     <string>&amp;GitHub Repository...</string>
    </property>
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/github.png</normaloff>:/icons/github.png</iconset>
+    <iconset theme="github">
+     <normaloff>.</normaloff>.</iconset>
    </property>
   </action>
   <action name="actionSupportForums">
