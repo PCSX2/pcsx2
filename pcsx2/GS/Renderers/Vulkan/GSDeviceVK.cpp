@@ -475,6 +475,7 @@ void GSDeviceVK::EndPresent()
 	VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
 	vkCmdEndRenderPass(g_vulkan_context->GetCurrentCommandBuffer());
 	m_swap_chain->GetCurrentTexture().TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
 	g_vulkan_context->SubmitCommandBuffer(m_swap_chain.get(), !m_swap_chain->IsPresentModeSynchronizing());
 	g_vulkan_context->MoveToNextCommandBuffer();
@@ -3100,9 +3101,10 @@ void GSDeviceVK::EndRenderPass()
 	if (m_current_render_pass == VK_NULL_HANDLE)
 		return;
 
-	vkCmdEndRenderPass(g_vulkan_context->GetCurrentCommandBuffer());
-
 	m_current_render_pass = VK_NULL_HANDLE;
+	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
+
+	vkCmdEndRenderPass(g_vulkan_context->GetCurrentCommandBuffer());
 }
 
 void GSDeviceVK::SetViewport(const VkViewport& viewport)

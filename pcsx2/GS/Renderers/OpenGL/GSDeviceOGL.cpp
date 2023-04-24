@@ -2156,6 +2156,8 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	GSTextureOGL* RT = static_cast<GSTextureOGL*>(rt);
 	GSTextureOGL* DS = static_cast<GSTextureOGL*>(ds);
 
+	g_perfmon.Put(GSPerfMon::RenderPasses, static_cast<double>(GLState::rt != RT || GLState::ds != DS));
+
 	OMSetFBO(m_fbo);
 	if (rt)
 	{

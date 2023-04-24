@@ -371,6 +371,7 @@ void GSDeviceMTL::EndRenderPass()
 	if (m_current_render.encoder)
 	{
 		EndDebugGroup(m_current_render.encoder);
+		g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 		if (m_spin_timer)
 			[m_current_render.encoder updateFence:m_spin_fence afterStages:MTLRenderStageFragment];
 		[m_current_render.encoder endEncoding];
