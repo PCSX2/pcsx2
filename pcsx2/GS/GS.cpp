@@ -748,12 +748,13 @@ void GSgetStats(std::string& info)
 	}
 	else
 	{
-		fmt::format_to(std::back_inserter(info), "{} HW | {} P | {} D | {} DC | {} B | {} RB | {} TC | {} TU",
+		fmt::format_to(std::back_inserter(info), "{} HW | {} P | {} D | {} DC | {} B | {} RP | {} RB | {} TC | {} TU",
 			api_name,
 			(int)pm.Get(GSPerfMon::Prim),
 			(int)pm.Get(GSPerfMon::Draw),
 			(int)std::ceil(pm.Get(GSPerfMon::DrawCalls)),
 			(int)std::ceil(pm.Get(GSPerfMon::Barriers)),
+			(int)std::ceil(pm.Get(GSPerfMon::RenderPasses)),
 			(int)std::ceil(pm.Get(GSPerfMon::Readbacks)),
 			(int)std::ceil(pm.Get(GSPerfMon::TextureCopies)),
 			(int)std::ceil(pm.Get(GSPerfMon::TextureUploads)));

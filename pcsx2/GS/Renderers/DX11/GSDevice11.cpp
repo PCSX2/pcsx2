@@ -883,7 +883,9 @@ GSDevice::PresentResult GSDevice11::BeginPresent(bool frame_skip)
 	{
 		m_state.dsv->Release();
 		m_state.dsv = nullptr;
-	}	
+	}
+
+	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
 	const GSVector2i size = GetWindowSize();
 	SetViewport(size);
@@ -2063,6 +2065,8 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	if (ds) dsv = *(GSTexture11*)ds;
 
 	const bool changed = (m_state.rt_view != rtv || m_state.dsv != dsv);
+	g_perfmon.Put(GSPerfMon::RenderPasses, static_cast<double>(changed));
+
 	if (m_state.rt_view != rtv)
 	{
 		if (m_state.rt_view)

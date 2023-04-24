@@ -538,6 +538,7 @@ GSDevice::PresentResult GSDevice12::BeginPresent(bool frame_skip)
 	swap_chain_buf.TransitionToState(cmdlist, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	cmdlist->ClearRenderTargetView(swap_chain_buf.GetWriteDescriptor(), clear_color.data(), 0, nullptr);
 	cmdlist->OMSetRenderTargets(1, &swap_chain_buf.GetWriteDescriptor().cpu_handle, FALSE, nullptr);
+	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
 	const D3D12_VIEWPORT vp{0.0f, 0.0f, static_cast<float>(m_window_info.surface_width),
 		static_cast<float>(m_window_info.surface_height), 0.0f, 1.0f};
@@ -2746,11 +2747,15 @@ void GSDevice12::EndRenderPass()
 	if (!m_in_render_pass)
 		return;
 
-	g_d3d12_context->GetCommandList()->EndRenderPass();
 	m_in_render_pass = false;
 
 	// to render again, we need to reset OM
 	m_dirty_flags |= DIRTY_FLAG_RENDER_TARGET;
+
+	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
+
+	g_d3d12_context->GetCommandList()->EndRenderPass();
+
 }
 
 void GSDevice12::SetViewport(const D3D12_VIEWPORT& viewport)

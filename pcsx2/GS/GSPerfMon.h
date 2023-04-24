@@ -27,9 +27,9 @@ public:
 		Swizzle,
 		Unswizzle,
 		Fillrate,
-		Quad,
 		SyncPoint,
 		Barriers,
+		RenderPasses,
 		CounterLast,
 
 		// Reused counters for HW.
