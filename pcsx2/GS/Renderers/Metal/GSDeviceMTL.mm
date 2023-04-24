@@ -1241,53 +1241,51 @@ static bool s_capture_next = false;
 
 GSDevice::PresentResult GSDeviceMTL::BeginPresent(bool frame_skip)
 { @autoreleasepool {
-	GSDeviceMTL* dev = static_cast<GSDeviceMTL*>(g_gs_device.get());
-	if (dev && m_capture_start_frame && dev->FrameNo() == m_capture_start_frame)
+	if (m_capture_start_frame && FrameNo() == m_capture_start_frame)
 		s_capture_next = true;
 	if (frame_skip || m_window_info.type == WindowInfo::Type::Surfaceless || !g_gs_device)
 	{
 		ImGui::EndFrame();
 		return PresentResult::FrameSkipped;
 	}
-	id<MTLCommandBuffer> buf = dev->GetRenderCmdBuf();
+	id<MTLCommandBuffer> buf = GetRenderCmdBuf();
 	m_current_drawable = MRCRetain([m_layer nextDrawable]);
-	dev->EndRenderPass();
+	EndRenderPass();
 	if (!m_current_drawable)
 	{
 		[buf pushDebugGroup:@"Present Skipped"];
 		[buf popDebugGroup];
-		dev->FlushEncoders();
+		FlushEncoders();
 		ImGui::EndFrame();
 		return PresentResult::FrameSkipped;
 	}
 	[m_pass_desc colorAttachments][0].texture = [m_current_drawable texture];
 	id<MTLRenderCommandEncoder> enc = [buf renderCommandEncoderWithDescriptor:m_pass_desc];
 	[enc setLabel:@"Present"];
-	dev->m_current_render.encoder = MRCRetain(enc);
+	m_current_render.encoder = MRCRetain(enc);
 	return PresentResult::OK;
 }}
 
 void GSDeviceMTL::EndPresent()
 { @autoreleasepool {
-	GSDeviceMTL* dev = static_cast<GSDeviceMTL*>(g_gs_device.get());
-	pxAssertDev(dev && dev->m_current_render.encoder && dev->m_current_render_cmdbuf, "BeginPresent cmdbuf was destroyed");
+	pxAssertDev(m_current_render.encoder && m_current_render_cmdbuf, "BeginPresent cmdbuf was destroyed");
 	ImGui::Render();
-	dev->RenderImGui(ImGui::GetDrawData());
-	dev->EndRenderPass();
+	RenderImGui(ImGui::GetDrawData());
+	EndRenderPass();
 	if (m_current_drawable)
 	{
 		const bool use_present_drawable = m_use_present_drawable == UsePresentDrawable::Always ||
 			(m_use_present_drawable == UsePresentDrawable::IfVsync && m_vsync_mode != VsyncMode::Off);
 
 		if (use_present_drawable)
-			[dev->m_current_render_cmdbuf presentDrawable:m_current_drawable];
+			[m_current_render_cmdbuf presentDrawable:m_current_drawable];
 		else
-			[dev->m_current_render_cmdbuf addScheduledHandler:[drawable = std::move(m_current_drawable)](id<MTLCommandBuffer>){
+			[m_current_render_cmdbuf addScheduledHandler:[drawable = std::move(m_current_drawable)](id<MTLCommandBuffer>){
 				[drawable present];
 			}];
 	}
-	dev->FlushEncoders();
-	dev->FrameCompleted();
+	FlushEncoders();
+	FrameCompleted();
 	m_current_drawable = nullptr;
 	if (m_capture_start_frame)
 	{
