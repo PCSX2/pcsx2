@@ -37,6 +37,8 @@
 
 // #define REPORT_LEAKED_OBJECTS 1
 
+static constexpr std::array<float, 4> s_present_clear_color = {};
+
 static bool SupportsTextureFormat(ID3D11Device* dev, DXGI_FORMAT format)
 {
 	UINT support;
@@ -75,9 +77,9 @@ RenderAPI GSDevice11::GetRenderAPI() const
 	return RenderAPI::D3D11;
 }
 
-bool GSDevice11::Create(const WindowInfo& wi, VsyncMode vsync)
+bool GSDevice11::Create()
 {
-	if (!GSDevice::Create(wi, vsync))
+	if (!GSDevice::Create())
 		return false;
 
 	UINT create_flags = 0;
@@ -150,7 +152,7 @@ bool GSDevice11::Create(const WindowInfo& wi, VsyncMode vsync)
 		DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported, sizeof(allow_tearing_supported));
 	m_allow_tearing_supported = (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
 
-	if (wi.type != WindowInfo::Type::Surfaceless && !CreateSwapChain(nullptr))
+	if (!AcquireWindow(true) || (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain()))
 		return false;
 
 	D3D11_BUFFER_DESC bd;
@@ -490,7 +492,8 @@ bool GSDevice11::Create(const WindowInfo& wi, VsyncMode vsync)
 void GSDevice11::Destroy()
 {
 	GSDevice::Destroy();
-	GSDevice11::DestroySurface();
+	DestroySwapChain();
+	ReleaseWindow();
 	DestroyTimestampQueries();
 
 	m_convert = {};
@@ -561,7 +564,7 @@ bool GSDevice11::HasSurface() const
 
 bool GSDevice11::GetHostRefreshRate(float* refresh_rate)
 {
-	if (m_swap_chain && IsExclusiveFullscreen())
+	if (m_swap_chain && m_is_exclusive_fullscreen)
 	{
 		DXGI_SWAP_CHAIN_DESC desc;
 		if (SUCCEEDED(m_swap_chain->GetDesc(&desc)) && desc.BufferDesc.RefreshRate.Numerator > 0 &&
@@ -583,50 +586,84 @@ void GSDevice11::SetVSync(VsyncMode mode)
 	m_vsync_mode = mode;
 }
 
-bool GSDevice11::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
+bool GSDevice11::CreateSwapChain()
 {
+	constexpr DXGI_FORMAT swap_chain_format = DXGI_FORMAT_R8G8B8A8_UNORM;
+
 	if (m_window_info.type != WindowInfo::Type::Win32)
 		return false;
-
-	m_using_flip_model_swap_chain = !EmuConfig.GS.UseBlitSwapChain || fullscreen_mode;
 
 	const HWND window_hwnd = reinterpret_cast<HWND>(m_window_info.window_handle);
 	RECT client_rc{};
 	GetClientRect(window_hwnd, &client_rc);
-	const u32 width = static_cast<u32>(client_rc.right - client_rc.left);
-	const u32 height = static_cast<u32>(client_rc.bottom - client_rc.top);
+
+	DXGI_MODE_DESC fullscreen_mode;
+	wil::com_ptr_nothrow<IDXGIOutput> fullscreen_output;
+	if (Host::IsFullscreen())
+	{
+		u32 fullscreen_width, fullscreen_height;
+		float fullscreen_refresh_rate;
+		m_is_exclusive_fullscreen =
+			GetRequestedExclusiveFullscreenMode(&fullscreen_width, &fullscreen_height, &fullscreen_refresh_rate) &&
+			D3D::GetRequestedExclusiveFullscreenModeDesc(m_dxgi_factory.get(), client_rc, fullscreen_width,
+				fullscreen_height, fullscreen_refresh_rate, swap_chain_format, &fullscreen_mode,
+				fullscreen_output.put());
+	}
+	else
+	{
+		m_is_exclusive_fullscreen = false;
+	}
+
+	m_using_flip_model_swap_chain = !EmuConfig.GS.UseBlitSwapChain || m_is_exclusive_fullscreen;
 
 	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
-	swap_chain_desc.Width = width;
-	swap_chain_desc.Height = height;
-	swap_chain_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swap_chain_desc.Width = static_cast<u32>(client_rc.right - client_rc.left);
+	swap_chain_desc.Height = static_cast<u32>(client_rc.bottom - client_rc.top);
+	swap_chain_desc.Format = swap_chain_format;
 	swap_chain_desc.SampleDesc.Count = 1;
 	swap_chain_desc.BufferCount = 3;
 	swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swap_chain_desc.SwapEffect =
 		m_using_flip_model_swap_chain ? DXGI_SWAP_EFFECT_FLIP_DISCARD : DXGI_SWAP_EFFECT_DISCARD;
 
-	m_using_allow_tearing = (m_allow_tearing_supported && m_using_flip_model_swap_chain && !fullscreen_mode);
+	m_using_allow_tearing = (m_allow_tearing_supported && m_using_flip_model_swap_chain && !m_is_exclusive_fullscreen);
 	if (m_using_allow_tearing)
 		swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
-	DXGI_SWAP_CHAIN_FULLSCREEN_DESC fs_desc = {};
-	if (fullscreen_mode)
+	HRESULT hr = S_OK;
+
+	if (m_is_exclusive_fullscreen)
 	{
-		swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-		swap_chain_desc.Width = fullscreen_mode->Width;
-		swap_chain_desc.Height = fullscreen_mode->Height;
-		fs_desc.RefreshRate = fullscreen_mode->RefreshRate;
-		fs_desc.ScanlineOrdering = fullscreen_mode->ScanlineOrdering;
-		fs_desc.Scaling = fullscreen_mode->Scaling;
+		DXGI_SWAP_CHAIN_DESC1 fs_sd_desc = swap_chain_desc;
+		DXGI_SWAP_CHAIN_FULLSCREEN_DESC fs_desc = {};
+
+		fs_sd_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+		fs_sd_desc.Width = fullscreen_mode.Width;
+		fs_sd_desc.Height = fullscreen_mode.Height;
+		fs_desc.RefreshRate = fullscreen_mode.RefreshRate;
+		fs_desc.ScanlineOrdering = fullscreen_mode.ScanlineOrdering;
+		fs_desc.Scaling = fullscreen_mode.Scaling;
 		fs_desc.Windowed = FALSE;
+
+		Console.WriteLn("Creating a %dx%d exclusive fullscreen swap chain", fs_sd_desc.Width, fs_sd_desc.Height);
+		hr = m_dxgi_factory->CreateSwapChainForHwnd(
+			m_dev.get(), window_hwnd, &fs_sd_desc, &fs_desc, fullscreen_output.get(), m_swap_chain.put());
+		if (FAILED(hr))
+		{
+			Console.Warning("Failed to create fullscreen swap chain, trying windowed.");
+			m_is_exclusive_fullscreen = false;
+			m_using_allow_tearing = m_allow_tearing_supported && m_using_flip_model_swap_chain;
+		}
 	}
 
-	Console.WriteLn("Creating a %dx%d %s %s swap chain", swap_chain_desc.Width, swap_chain_desc.Height,
-		m_using_flip_model_swap_chain ? "flip-discard" : "discard", fullscreen_mode ? "full-screen" : "windowed");
+	if (!m_is_exclusive_fullscreen)
+	{
+		Console.WriteLn("Creating a %dx%d %s windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height,
+			m_using_flip_model_swap_chain ? "flip-discard" : "discard");
+		hr = m_dxgi_factory->CreateSwapChainForHwnd(
+			m_dev.get(), window_hwnd, &swap_chain_desc, nullptr, nullptr, m_swap_chain.put());
+	}
 
-	HRESULT hr = m_dxgi_factory->CreateSwapChainForHwnd(m_dev.get(), window_hwnd, &swap_chain_desc,
-		fullscreen_mode ? &fs_desc : nullptr, nullptr, m_swap_chain.put());
 	if (FAILED(hr) && m_using_flip_model_swap_chain)
 	{
 		Console.Warning("Failed to create a flip-discard swap chain, trying discard.");
@@ -635,8 +672,8 @@ bool GSDevice11::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
 		m_using_flip_model_swap_chain = false;
 		m_using_allow_tearing = false;
 
-		hr = m_dxgi_factory->CreateSwapChainForHwnd(m_dev.get(), window_hwnd, &swap_chain_desc,
-			fullscreen_mode ? &fs_desc : nullptr, nullptr, m_swap_chain.put());
+		hr = m_dxgi_factory->CreateSwapChainForHwnd(
+			m_dev.get(), window_hwnd, &swap_chain_desc, nullptr, nullptr, m_swap_chain.put());
 		if (FAILED(hr))
 		{
 			Console.Error("CreateSwapChainForHwnd failed: 0x%08X", hr);
@@ -648,7 +685,16 @@ bool GSDevice11::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
 	if (FAILED(hr))
 		Console.Warning("MakeWindowAssociation() to disable ALT+ENTER failed");
 
-	return CreateSwapChainRTV();
+	if (!CreateSwapChainRTV())
+	{
+		DestroySwapChain();
+		return false;
+	}
+
+	// Render a frame as soon as possible to clear out whatever was previously being displayed.
+	m_ctx->ClearRenderTargetView(m_swap_chain_rtv.get(), s_present_clear_color.data());
+	m_swap_chain->Present(0, m_using_allow_tearing ? DXGI_PRESENT_ALLOW_TEARING : 0);
+	return true;
 }
 
 bool GSDevice11::CreateSwapChainRTV()
@@ -670,6 +716,7 @@ bool GSDevice11::CreateSwapChainRTV()
 	if (FAILED(hr))
 	{
 		Console.Error("CreateRenderTargetView for swap chain failed: 0x%08X", hr);
+		m_swap_chain_rtv.reset();
 		return false;
 	}
 
@@ -696,25 +743,42 @@ bool GSDevice11::CreateSwapChainRTV()
 	return true;
 }
 
-bool GSDevice11::ChangeWindow(const WindowInfo& new_wi)
+void GSDevice11::DestroySwapChain()
 {
-	DestroySurface();
+	if (!m_swap_chain)
+		return;
 
-	m_window_info = new_wi;
-	if (new_wi.type == WindowInfo::Type::Surfaceless)
-		return true;
+	m_swap_chain_rtv.reset();
 
-	return CreateSwapChain(nullptr);
+	// switch out of fullscreen before destroying
+	BOOL is_fullscreen;
+	if (SUCCEEDED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) && is_fullscreen)
+		m_swap_chain->SetFullscreenState(FALSE, nullptr);
+
+	m_swap_chain.reset();
+	m_is_exclusive_fullscreen = false;
+}
+
+bool GSDevice11::UpdateWindow()
+{
+	DestroySwapChain();
+
+	if (!AcquireWindow(false))
+		return false;
+
+	if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain())
+	{
+		Console.WriteLn("Failed to create swap chain on updated window");
+		ReleaseWindow();
+		return false;
+	}
+
+	return true;
 }
 
 void GSDevice11::DestroySurface()
 {
-	m_swap_chain_rtv.reset();
-
-	if (IsExclusiveFullscreen())
-		SetExclusiveFullscreen(false, 0, 0, 0.0f);
-
-	m_swap_chain.reset();
+	DestroySwapChain();
 }
 
 std::string GSDevice11::GetDriverInfo() const
@@ -768,7 +832,7 @@ std::string GSDevice11::GetDriverInfo() const
 
 void GSDevice11::ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
 {
-	if (!m_swap_chain)
+	if (!m_swap_chain || m_is_exclusive_fullscreen)
 		return;
 
 	m_window_info.surface_scale = new_window_scale;
@@ -792,78 +856,20 @@ bool GSDevice11::SupportsExclusiveFullscreen() const
 	return true;
 }
 
-bool GSDevice11::IsExclusiveFullscreen()
-{
-	BOOL is_fullscreen = FALSE;
-	return (m_swap_chain && SUCCEEDED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) && is_fullscreen);
-}
-
-bool GSDevice11::SetExclusiveFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate)
-{
-	if (!m_swap_chain)
-		return false;
-
-	BOOL is_fullscreen = FALSE;
-	HRESULT hr = m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr);
-	if (!fullscreen)
-	{
-		// leaving fullscreen
-		if (is_fullscreen)
-			return SUCCEEDED(m_swap_chain->SetFullscreenState(FALSE, nullptr));
-		else
-			return true;
-	}
-
-	IDXGIOutput* output;
-	if (FAILED(hr = m_swap_chain->GetContainingOutput(&output)))
-		return false;
-
-	DXGI_SWAP_CHAIN_DESC current_desc;
-	hr = m_swap_chain->GetDesc(&current_desc);
-	if (FAILED(hr))
-		return false;
-
-	DXGI_MODE_DESC new_mode = current_desc.BufferDesc;
-	new_mode.Width = width;
-	new_mode.Height = height;
-	new_mode.RefreshRate.Numerator = static_cast<UINT>(std::floor(refresh_rate * 1000.0f));
-	new_mode.RefreshRate.Denominator = 1000u;
-
-	DXGI_MODE_DESC closest_mode;
-	if (FAILED(hr = output->FindClosestMatchingMode(&new_mode, &closest_mode, nullptr)) ||
-		new_mode.Format != current_desc.BufferDesc.Format)
-	{
-		Console.Error("Failed to find closest matching mode, hr=%08X", hr);
-		return false;
-	}
-
-	if (new_mode.Width == current_desc.BufferDesc.Width && new_mode.Height == current_desc.BufferDesc.Height &&
-		new_mode.RefreshRate.Numerator == current_desc.BufferDesc.RefreshRate.Numerator &&
-		new_mode.RefreshRate.Denominator == current_desc.BufferDesc.RefreshRate.Denominator)
-	{
-		DevCon.WriteLn("Fullscreen mode already set");
-		return true;
-	}
-
-	m_swap_chain_rtv.reset();
-	m_swap_chain.reset();
-
-	if (!CreateSwapChain(&closest_mode))
-	{
-		Console.Error("Failed to create a fullscreen swap chain");
-		if (!CreateSwapChain(nullptr))
-			pxFailRel("Failed to recreate windowed swap chain");
-
-		return false;
-	}
-
-	return true;
-}
-
 GSDevice::PresentResult GSDevice11::BeginPresent(bool frame_skip)
 {
 	if (frame_skip || !m_swap_chain)
 		return PresentResult::FrameSkipped;
+
+	// Check if we lost exclusive fullscreen. If so, notify the host, so it can switch to windowed mode.
+	// This might get called repeatedly if it takes a while to switch back, that's the host's problem.
+	BOOL is_fullscreen;
+	if (m_is_exclusive_fullscreen &&
+		(FAILED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) || !is_fullscreen))
+	{
+		Host::RunOnCPUThread([]() { Host::SetFullscreen(false); });
+		return PresentResult::FrameSkipped;
+	}
 
 	// When using vsync, the time here seems to include the time for the buffer to become available.
 	// This blows our our GPU usage number considerably, so read the timestamp before the final blit
@@ -872,8 +878,7 @@ GSDevice::PresentResult GSDevice11::BeginPresent(bool frame_skip)
 	if (m_vsync_mode != VsyncMode::Off && m_gpu_timing_enabled)
 		PopTimestampQuery();
 
-	static constexpr std::array<float, 4> clear_color = {};
-	m_ctx->ClearRenderTargetView(m_swap_chain_rtv.get(), clear_color.data());
+	m_ctx->ClearRenderTargetView(m_swap_chain_rtv.get(), s_present_clear_color.data());
 	m_ctx->OMSetRenderTargets(1, m_swap_chain_rtv.addressof(), nullptr);
 	if (m_state.rt_view)
 		m_state.rt_view->Release();

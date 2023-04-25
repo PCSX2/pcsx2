@@ -569,8 +569,8 @@ namespace Vulkan
 		}
 
 		// Select swap chain flags, we only need a colour attachment
-		VkImageUsageFlags image_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-		if (!(surface_capabilities.supportedUsageFlags & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT))
+		VkImageUsageFlags image_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+		if ((surface_capabilities.supportedUsageFlags & image_usage) != image_usage)
 		{
 			Console.Error("Vulkan: Swap chain does not support usage as color attachment");
 			return false;

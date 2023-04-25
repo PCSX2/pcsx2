@@ -145,6 +145,7 @@ private:
 
 	bool m_allow_tearing_supported = false;
 	bool m_using_allow_tearing = false;
+	bool m_is_exclusive_fullscreen = false;
 	bool m_device_lost = false;
 
 	ComPtr<ID3D12RootSignature> m_tfx_root_signature;
@@ -191,9 +192,10 @@ private:
 
 	void LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format, DXGI_FORMAT* rtv_format, DXGI_FORMAT* dsv_format) const;
 
-	bool CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode);
+	bool CreateSwapChain();
 	bool CreateSwapChainRTV();
 	void DestroySwapChainRTVs();
+	void DestroySwapChain();
 
 	GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) override;
 
@@ -243,14 +245,12 @@ public:
 	RenderAPI GetRenderAPI() const override;
 	bool HasSurface() const override;
 
-	bool Create(const WindowInfo& wi, VsyncMode vsync) override;
+	bool Create() override;
 	void Destroy() override;
 
-	bool ChangeWindow(const WindowInfo& new_wi) override;
+	bool UpdateWindow() override;
 	void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
 	bool SupportsExclusiveFullscreen() const override;
-	bool IsExclusiveFullscreen() override;
-	bool SetExclusiveFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) override;
 	void DestroySurface() override;
 	std::string GetDriverInfo() const override;
 

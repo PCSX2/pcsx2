@@ -61,6 +61,7 @@ public:
 
 	__fi QEventLoop* getEventLoop() const { return m_event_loop; }
 	__fi bool isFullscreen() const { return m_is_fullscreen; }
+	__fi bool isExclusiveFullscreen() const { return m_is_exclusive_fullscreen; }
 	__fi bool isRenderingToMain() const { return m_is_rendering_to_main; }
 	__fi bool isSurfaceless() const { return m_is_surfaceless; }
 	__fi bool isRunningFullscreenUI() const { return m_run_fullscreen_ui; }
@@ -69,8 +70,7 @@ public:
 	bool shouldRenderToMain() const;
 
 	/// Called back from the GS thread when the display state changes (e.g. fullscreen, render to main).
-	std::optional<WindowInfo> acquireRenderWindow();
-	std::optional<WindowInfo> updateRenderWindow(bool recreate_window);
+	std::optional<WindowInfo> acquireRenderWindow(bool recreate_window);
 	void connectDisplaySignals(DisplayWidget* widget);
 	void releaseRenderWindow();
 
@@ -93,7 +93,7 @@ public Q_SLOTS:
 	void saveState(const QString& filename);
 	void saveStateToSlot(qint32 slot);
 	void toggleFullscreen();
-	void setFullscreen(bool fullscreen);
+	void setFullscreen(bool fullscreen, bool allow_render_to_main);
 	void setSurfaceless(bool surfaceless);
 	void applySettings();
 	void reloadGameSettings();
@@ -117,10 +117,9 @@ public Q_SLOTS:
 Q_SIGNALS:
 	bool messageConfirmed(const QString& title, const QString& message);
 
-	std::optional<WindowInfo> onCreateDisplayRequested(bool fullscreen, bool render_to_main);
-	std::optional<WindowInfo> onUpdateDisplayRequested(bool recreate_window, bool fullscreen, bool render_to_main, bool surfaceless);
-	void onResizeDisplayRequested(qint32 width, qint32 height);
-	void onDestroyDisplayRequested();
+	std::optional<WindowInfo> onAcquireRenderWindowRequested(bool recreate_window, bool fullscreen, bool render_to_main, bool surfaceless);
+	void onResizeRenderWindowRequested(qint32 width, qint32 height);
+	void onReleaseRenderWindowRequested();
 	void onRelativeMouseModeRequested(bool enabled);
 
 	/// Called when the VM is starting initialization, but has not been completed yet.
@@ -195,6 +194,7 @@ private:
 	bool m_run_fullscreen_ui = false;
 	bool m_is_rendering_to_main = false;
 	bool m_is_fullscreen = false;
+	bool m_is_exclusive_fullscreen = false;
 	bool m_is_surfaceless = false;
 	bool m_save_state_on_shutdown = false;
 	bool m_pause_on_focus_loss = false;

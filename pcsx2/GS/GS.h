@@ -99,6 +99,7 @@ void GSResizeDisplayWindow(int width, int height, float scale);
 void GSUpdateDisplayWindow();
 void GSSetVSyncMode(VsyncMode mode);
 
+bool GSWantsExclusiveFullscreen();
 bool GSGetHostRefreshRate(float* refresh_rate);
 void GSGetAdaptersAndFullscreenModes(
 	GSRendererType renderer, std::vector<std::string>* adapters, std::vector<std::string>* fullscreen_modes);
@@ -128,11 +129,8 @@ struct GSRecoverableError : GSError
 namespace Host
 {
 	/// Called when the GS is creating a render device.
-	std::optional<WindowInfo> AcquireRenderWindow();
-
-	/// Called on the MTGS thread when a request to update the display is received.
-	/// This could be a fullscreen transition, for example.
-	std::optional<WindowInfo> UpdateRenderWindow(bool recreate_window);
+	/// This could also be fullscreen transition.
+	std::optional<WindowInfo> AcquireRenderWindow(bool recreate_window);
 
 	/// Called before drawing the OSD and other display elements.
 	void BeginPresentFrame();

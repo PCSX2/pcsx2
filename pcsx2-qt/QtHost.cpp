@@ -196,8 +196,8 @@ void EmuThread::startFullscreenUI(bool fullscreen)
 	// this should just set the flag so it gets automatically started
 	ImGuiManager::InitializeFullscreenUI();
 	m_run_fullscreen_ui = true;
-	if (fullscreen)
-		m_is_fullscreen = true;
+	m_is_rendering_to_main = shouldRenderToMain();
+	m_is_fullscreen = fullscreen;
 
 	if (!GetMTGS().WaitForOpen())
 	{
@@ -242,6 +242,7 @@ void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
 	pxAssertRel(!VMManager::HasValidVM(), "VM is shut down");
 
 	// Determine whether to start fullscreen or not.
+	m_is_rendering_to_main = shouldRenderToMain();
 	if (boot_params->fullscreen.has_value())
 		m_is_fullscreen = boot_params->fullscreen.value();
 	else
@@ -492,14 +493,14 @@ void EmuThread::toggleFullscreen()
 		return;
 	}
 
-	setFullscreen(!m_is_fullscreen);
+	setFullscreen(!m_is_fullscreen, true);
 }
 
-void EmuThread::setFullscreen(bool fullscreen)
+void EmuThread::setFullscreen(bool fullscreen, bool allow_render_to_main)
 {
 	if (!isOnEmuThread())
 	{
-		QMetaObject::invokeMethod(this, "setFullscreen", Qt::QueuedConnection, Q_ARG(bool, fullscreen));
+		QMetaObject::invokeMethod(this, "setFullscreen", Qt::QueuedConnection, Q_ARG(bool, fullscreen), Q_ARG(bool, allow_render_to_main));
 		return;
 	}
 
@@ -508,6 +509,7 @@ void EmuThread::setFullscreen(bool fullscreen)
 
 	// This will call back to us on the MTGS thread.
 	m_is_fullscreen = fullscreen;
+	m_is_rendering_to_main = allow_render_to_main && shouldRenderToMain();
 	GetMTGS().UpdateDisplayWindow();
 	GetMTGS().WaitGS();
 
@@ -893,32 +895,24 @@ void EmuThread::endCapture()
 	GetMTGS().RunOnGSThread(&GSEndCapture);
 }
 
-std::optional<WindowInfo> EmuThread::acquireRenderWindow()
+std::optional<WindowInfo> EmuThread::acquireRenderWindow(bool recreate_window)
 {
-	m_is_rendering_to_main = shouldRenderToMain();
-	m_is_surfaceless = false;
+	// Check if we're wanting to get exclusive fullscreen. This should be safe to read, since we're going to be calling from the GS thread.
+	m_is_exclusive_fullscreen = m_is_fullscreen && GSWantsExclusiveFullscreen();
+	const bool window_fullscreen = m_is_fullscreen && !m_is_exclusive_fullscreen;
+	const bool render_to_main = !m_is_exclusive_fullscreen && !window_fullscreen && m_is_rendering_to_main;
 
-	return emit onCreateDisplayRequested(m_is_fullscreen, m_is_rendering_to_main);
-}
-
-std::optional<WindowInfo> EmuThread::updateRenderWindow(bool recreate_window)
-{
-	return emit onUpdateDisplayRequested(recreate_window, m_is_fullscreen, !m_is_fullscreen && m_is_rendering_to_main, m_is_surfaceless);
+	return emit onAcquireRenderWindowRequested(recreate_window, window_fullscreen, render_to_main, m_is_surfaceless);
 }
 
 void EmuThread::releaseRenderWindow()
 {
-	emit onDestroyDisplayRequested();
+	emit onReleaseRenderWindowRequested();
 }
 
-std::optional<WindowInfo> Host::AcquireRenderWindow()
+std::optional<WindowInfo> Host::AcquireRenderWindow(bool recreate_window)
 {
-	return g_emu_thread->acquireRenderWindow();
-}
-
-std::optional<WindowInfo> Host::UpdateRenderWindow(bool recreate_window)
-{
-	return g_emu_thread->updateRenderWindow(recreate_window);
+	return g_emu_thread->acquireRenderWindow(recreate_window);
 }
 
 void Host::ReleaseRenderWindow()
@@ -932,7 +926,7 @@ void Host::BeginPresentFrame()
 
 void Host::RequestResizeHostDisplay(s32 width, s32 height)
 {
-	g_emu_thread->onResizeDisplayRequested(width, height);
+	g_emu_thread->onResizeRenderWindowRequested(width, height);
 }
 
 void Host::OnVMStarting()
@@ -1194,7 +1188,7 @@ bool Host::IsFullscreen()
 
 void Host::SetFullscreen(bool enabled)
 {
-	g_emu_thread->setFullscreen(enabled);
+	g_emu_thread->setFullscreen(enabled, true);
 }
 
 alignas(16) static SysMtgsThread s_mtgs_thread;

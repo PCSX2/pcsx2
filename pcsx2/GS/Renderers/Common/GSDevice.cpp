@@ -18,6 +18,7 @@
 #include "GS/GSGL.h"
 #include "GS/GS.h"
 #include "Host.h"
+#include "HostSettings.h"
 #include "common/Align.h"
 #include "common/StringUtil.h"
 
@@ -113,14 +114,16 @@ const char* GSDevice::RenderAPIToString(RenderAPI api)
 	}
 }
 
-bool GSDevice::ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height, float* refresh_rate)
+bool GSDevice::GetRequestedExclusiveFullscreenMode(u32* width, u32* height, float* refresh_rate)
 {
+	const std::string mode = Host::GetBaseStringSettingValue("EmuCore/GS", "FullscreenMode", "");
 	if (!mode.empty())
 	{
+		const std::string_view mode_view = mode;
 		std::string_view::size_type sep1 = mode.find('x');
 		if (sep1 != std::string_view::npos)
 		{
-			std::optional<u32> owidth = StringUtil::FromChars<u32>(mode.substr(0, sep1));
+			std::optional<u32> owidth = StringUtil::FromChars<u32>(mode_view.substr(0, sep1));
 			sep1++;
 
 			while (sep1 < mode.length() && std::isspace(mode[sep1]))
@@ -131,7 +134,7 @@ bool GSDevice::ParseFullscreenMode(const std::string_view& mode, u32* width, u32
 				std::string_view::size_type sep2 = mode.find('@', sep1);
 				if (sep2 != std::string_view::npos)
 				{
-					std::optional<u32> oheight = StringUtil::FromChars<u32>(mode.substr(sep1, sep2 - sep1));
+					std::optional<u32> oheight = StringUtil::FromChars<u32>(mode_view.substr(sep1, sep2 - sep1));
 					sep2++;
 
 					while (sep2 < mode.length() && std::isspace(mode[sep2]))
@@ -139,7 +142,7 @@ bool GSDevice::ParseFullscreenMode(const std::string_view& mode, u32* width, u32
 
 					if (oheight.has_value() && sep2 < mode.length())
 					{
-						std::optional<float> orefresh_rate = StringUtil::FromChars<float>(mode.substr(sep2));
+						std::optional<float> orefresh_rate = StringUtil::FromChars<float>(mode_view.substr(sep2));
 						if (orefresh_rate.has_value())
 						{
 							*width = owidth.value();
@@ -181,10 +184,9 @@ void GSDevice::GenerateExpansionIndexBuffer(void* buffer)
 	}
 }
 
-bool GSDevice::Create(const WindowInfo& wi, VsyncMode vsync)
+bool GSDevice::Create()
 {
-	m_window_info = wi;
-	m_vsync_mode = vsync;
+	m_vsync_mode = Host::GetEffectiveVSyncMode();
 	return true;
 }
 
@@ -198,6 +200,26 @@ void GSDevice::Destroy()
 
 	ClearCurrent();
 	PurgePool();
+}
+
+bool GSDevice::AcquireWindow(bool recreate_window)
+{
+	std::optional<WindowInfo> wi = Host::AcquireRenderWindow(recreate_window);
+	if (!wi.has_value())
+	{
+		Console.Error("Failed to acquire render window.");
+		Host::ReportErrorAsync("Error", "Failed to acquire render window. The log may have more information.");
+		return false;
+	}
+
+	m_window_info = std::move(wi.value());
+	return true;
+}
+
+void GSDevice::ReleaseWindow()
+{
+	Host::ReleaseRenderWindow();
+	m_window_info = WindowInfo();
 }
 
 bool GSDevice::GetHostRefreshRate(float* refresh_rate)

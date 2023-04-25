@@ -190,6 +190,7 @@ private:
 	VkShaderModule GetUtilityVertexShader(const std::string& source, const char* replace_main);
 	VkShaderModule GetUtilityFragmentShader(const std::string& source, const char* replace_main);
 
+	bool CreateDeviceAndSwapChain();
 	bool CheckFeatures();
 	bool CreateNullTexture();
 	bool CreateBuffers();
@@ -205,6 +206,7 @@ private:
 
 	bool CompileImGuiPipeline();
 	void RenderImGui();
+	void RenderBlankFrame();
 
 	void DestroyResources();
 
@@ -230,14 +232,12 @@ public:
 	RenderAPI GetRenderAPI() const override;
 	bool HasSurface() const override;
 
-	bool Create(const WindowInfo& wi, VsyncMode vsync) override;
+	bool Create() override;
 	void Destroy() override;
 
-	bool ChangeWindow(const WindowInfo& new_wi) override;
+	bool UpdateWindow() override;
 	void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
 	bool SupportsExclusiveFullscreen() const override;
-	bool IsExclusiveFullscreen() override;
-	bool SetExclusiveFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) override;
 	void DestroySurface() override;
 	std::string GetDriverInfo() const override;
 

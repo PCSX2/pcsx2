@@ -779,6 +779,9 @@ protected:
 	bool m_rbswapped = false;
 	FeatureSupport m_features;
 
+	bool AcquireWindow(bool recreate_window);
+	void ReleaseWindow();
+
 	virtual GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) = 0;
 	GSTexture* FetchSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format, bool clear, bool prefer_reuse);
 
@@ -800,8 +803,8 @@ public:
 	/// Returns a string representing the specified API.
 	static const char* RenderAPIToString(RenderAPI api);
 
-	/// Parses a fullscreen mode into its components (width * height @ refresh hz)
-	static bool ParseFullscreenMode(const std::string_view& mode, u32* width, u32* height, float* refresh_rate);
+	/// Parses the configured fullscreen mode into its components (width * height @ refresh hz)
+	static bool GetRequestedExclusiveFullscreenMode(u32* width, u32* height, float* refresh_rate);
 
 	/// Converts a fullscreen mode to a string.
 	static std::string GetFullscreenModeString(u32 width, u32 height, float refresh_rate);
@@ -830,7 +833,7 @@ public:
 	/// Recreates the font, call when the window scaling changes.
 	bool UpdateImGuiFontTexture();
 
-	virtual bool Create(const WindowInfo& wi, VsyncMode vsync);
+	virtual bool Create();
 	virtual void Destroy();
 
 	/// Returns the graphics API used by this device.
@@ -843,19 +846,13 @@ public:
 	virtual void DestroySurface() = 0;
 
 	/// Switches to a new window/surface.
-	virtual bool ChangeWindow(const WindowInfo& wi) = 0;
+	virtual bool UpdateWindow() = 0;
 
 	/// Call when the window size changes externally to recreate any resources.
 	virtual void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) = 0;
 
 	/// Returns true if exclusive fullscreen is supported.
 	virtual bool SupportsExclusiveFullscreen() const = 0;
-
-	/// Returns true if exclusive fullscreen is active.
-	virtual bool IsExclusiveFullscreen() = 0;
-
-	/// Attempts to switch to the specified mode in exclusive fullscreen.
-	virtual bool SetExclusiveFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) = 0;
 
 	/// Returns false if the window was completely occluded. If frame_skip is set, the frame won't be
 	/// displayed, but the GPU command queue will still be flushed.

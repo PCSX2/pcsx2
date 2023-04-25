@@ -85,9 +85,13 @@ void GSDeviceOGL::SetVSync(VsyncMode mode)
 	m_vsync_mode = mode;
 }
 
-bool GSDeviceOGL::Create(const WindowInfo& wi, VsyncMode vsync)
+bool GSDeviceOGL::Create()
 {
-	if (!GSDevice::Create(wi, vsync))
+	if (!GSDevice::Create())
+		return false;
+
+	// GL is a pain and needs the window super early to create the context.
+	if (!AcquireWindow(true))
 		return false;
 
 	// We need at least GL3.3.
@@ -95,7 +99,7 @@ bool GSDeviceOGL::Create(const WindowInfo& wi, VsyncMode vsync)
 		{GL::Context::Profile::Core, 4, 5}, {GL::Context::Profile::Core, 4, 4}, {GL::Context::Profile::Core, 4, 3},
 		{GL::Context::Profile::Core, 4, 2}, {GL::Context::Profile::Core, 4, 1}, {GL::Context::Profile::Core, 4, 0},
 		{GL::Context::Profile::Core, 3, 3}};
-	m_gl_context = GL::Context::Create(wi, version_list);
+	m_gl_context = GL::Context::Create(m_window_info, version_list);
 	if (!m_gl_context)
 	{
 		Console.Error("Failed to create any GL context");
@@ -108,6 +112,10 @@ bool GSDeviceOGL::Create(const WindowInfo& wi, VsyncMode vsync)
 		Console.Error("Failed to make GL context current");
 		return false;
 	}
+
+	// Render a frame as soon as possible to clear out whatever was previously being displayed.
+	if (m_window_info.type != WindowInfo::Type::Surfaceless)
+		RenderBlankFrame();
 
 	if (!GLLoader::check_gl_requirements())
 		return false;
@@ -543,6 +551,8 @@ void GSDeviceOGL::Destroy()
 
 		m_gl_context->DoneCurrent();
 		m_gl_context.reset();
+
+		ReleaseWindow();
 	}
 }
 
@@ -651,23 +661,31 @@ void GSDeviceOGL::DestroyResources()
 		glDeleteFramebuffers(1, &m_fbo_write);
 }
 
-bool GSDeviceOGL::ChangeWindow(const WindowInfo& new_wi)
+bool GSDeviceOGL::UpdateWindow()
 {
 	pxAssert(m_gl_context);
 
-	if (!m_gl_context->ChangeSurface(new_wi))
+	DestroySurface();
+
+	if (!AcquireWindow(false))
+		return false;
+
+	if (!m_gl_context->ChangeSurface(m_window_info))
 	{
 		Console.Error("Failed to change surface");
+		ReleaseWindow();
 		return false;
 	}
 
 	m_window_info = m_gl_context->GetWindowInfo();
 
-	if (new_wi.type != WindowInfo::Type::Surfaceless)
+	if (m_window_info.type != WindowInfo::Type::Surfaceless)
 	{
 		// reset vsync rate, since it (usually) gets lost
 		if (m_vsync_mode != VsyncMode::Adaptive || !m_gl_context->SetSwapInterval(-1))
 			m_gl_context->SetSwapInterval(static_cast<s32>(m_vsync_mode != VsyncMode::Off));
+
+		RenderBlankFrame();
 	}
 
 	return true;
@@ -687,16 +705,6 @@ void GSDeviceOGL::ResizeWindow(s32 new_window_width, s32 new_window_height, floa
 }
 
 bool GSDeviceOGL::SupportsExclusiveFullscreen() const
-{
-	return false;
-}
-
-bool GSDeviceOGL::IsExclusiveFullscreen()
-{
-	return false;
-}
-
-bool GSDeviceOGL::SetExclusiveFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate)
 {
 	return false;
 }
@@ -2037,6 +2045,17 @@ void GSDeviceOGL::RenderImGui()
 
 	IASetVAO(m_vao);
 	glScissor(GLState::scissor.x, GLState::scissor.y, GLState::scissor.width(), GLState::scissor.height());
+}
+
+void GSDeviceOGL::RenderBlankFrame()
+{
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glDisable(GL_SCISSOR_TEST);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+	m_gl_context->SwapBuffers();
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLState::fbo);
+	glEnable(GL_SCISSOR_TEST);
 }
 
 void GSDeviceOGL::OMAttachRt(GSTextureOGL* rt)

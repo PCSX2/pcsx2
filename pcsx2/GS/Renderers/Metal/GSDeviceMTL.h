@@ -378,7 +378,7 @@ public:
 	MRCOwned<id<MTLFunction>> LoadShader(NSString* name);
 	MRCOwned<id<MTLRenderPipelineState>> MakePipeline(MTLRenderPipelineDescriptor* desc, id<MTLFunction> vertex, id<MTLFunction> fragment, NSString* name);
 	MRCOwned<id<MTLComputePipelineState>> MakeComputePipeline(id<MTLFunction> compute, NSString* name);
-	bool Create(const WindowInfo& wi, VsyncMode vsync) override;
+	bool Create() override;
 	void Destroy() override;
 
 	void AttachSurfaceOnMainThread();
@@ -387,10 +387,8 @@ public:
 	RenderAPI GetRenderAPI() const override;
 	bool HasSurface() const override;
 	void DestroySurface() override;
-	bool ChangeWindow(const WindowInfo& wi) override;
+	bool UpdateWindow() override;
 	bool SupportsExclusiveFullscreen() const override;
-	bool IsExclusiveFullscreen() override;
-	bool SetExclusiveFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) override;
 	std::string GetDriverInfo() const override;
 
 	void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;

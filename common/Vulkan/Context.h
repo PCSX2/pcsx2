@@ -63,7 +63,7 @@ namespace Vulkan
 
 		// Helper method to create a Vulkan instance.
 		static VkInstance CreateVulkanInstance(
-			const WindowInfo* wi, bool enable_debug_utils, bool enable_validation_layer);
+			const WindowInfo& wi, bool enable_debug_utils, bool enable_validation_layer);
 
 		// Returns a list of Vulkan-compatible GPUs.
 		using GPUList = std::vector<VkPhysicalDevice>;
@@ -72,9 +72,8 @@ namespace Vulkan
 		static GPUNameList EnumerateGPUNames(VkInstance instance);
 
 		// Creates a new context and sets it up as global.
-		static bool Create(std::string_view gpu_name, const WindowInfo* wi, std::unique_ptr<SwapChain>* out_swap_chain,
-			VkPresentModeKHR preferred_present_mode, bool threaded_presentation, bool enable_debug_utils,
-			bool enable_validation_layer);
+		static bool Create(VkInstance instance, VkSurfaceKHR surface, VkPhysicalDevice physical_device,
+			bool threaded_presentation, bool enable_debug_utils, bool enable_validation_layer);
 
 		// Destroys context.
 		static void Destroy();
@@ -267,7 +266,7 @@ namespace Vulkan
 
 		using ExtensionList = std::vector<const char*>;
 		static bool SelectInstanceExtensions(
-			ExtensionList* extension_list, const WindowInfo* wi, bool enable_debug_utils);
+			ExtensionList* extension_list, const WindowInfo& wi, bool enable_debug_utils);
 		bool SelectDeviceExtensions(ExtensionList* extension_list, bool enable_surface);
 		bool SelectDeviceFeatures(const VkPhysicalDeviceFeatures* required_features);
 		bool CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer, const char** required_device_extensions,

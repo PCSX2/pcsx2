@@ -764,9 +764,9 @@ static MRCOwned<id<MTLBuffer>> CreatePrivateBufferWithContent(
 	return actual;
 }
 
-bool GSDeviceMTL::Create(const WindowInfo& wi, VsyncMode vsync)
+bool GSDeviceMTL::Create()
 { @autoreleasepool {
-	if (!GSDevice::Create(wi, vsync))
+	if (!GSDevice::Create())
 		return false;
 
 	NSString* ns_adapter_name = [NSString stringWithUTF8String:EmuConfig.GS.Adapter.c_str()];
@@ -810,11 +810,16 @@ bool GSDeviceMTL::Create(const WindowInfo& wi, VsyncMode vsync)
 
 	if (m_dev.IsOk() && m_queue)
 	{
+		// This is a little less than ideal, pinging back and forward between threads, but we don't really
+		// have any other option, because Qt uses a blocking queued connection for window acquire.
+		if (!AcquireWindow(true))
+			return false;
+
 		OnMainThread([this]
 		{
 			AttachSurfaceOnMainThread();
 		});
-		SetVSync(vsync);
+		[m_layer setDisplaySyncEnabled:m_vsync_mode != VsyncMode::Off];
 	}
 	else
 	{
@@ -1165,6 +1170,7 @@ void GSDeviceMTL::Destroy()
 
 	GSDevice::Destroy();
 	GSDeviceMTL::DestroySurface();
+	ReleaseWindow();
 	m_queue = nullptr;
 	m_dev.Reset();
 }}
@@ -1177,20 +1183,21 @@ void GSDeviceMTL::DestroySurface()
 	m_layer = nullptr;
 }
 
-bool GSDeviceMTL::ChangeWindow(const WindowInfo& wi)
+bool GSDeviceMTL::UpdateWindow()
 {
-	OnMainThread([this, &wi]
-	{
-		DetachSurfaceOnMainThread();
-		m_window_info = wi;
-		AttachSurfaceOnMainThread();
-	});
+	DestroySurface();
+
+	if (!AcquireWindow(false))
+		return false;
+
+	if (m_window_info.type == WindowInfo::Type::Surfaceless)
+		return true;
+
+	OnMainThread([this] { AttachSurfaceOnMainThread(); });
 	return true;
 }
 
 bool GSDeviceMTL::SupportsExclusiveFullscreen() const { return false; }
-bool GSDeviceMTL::IsExclusiveFullscreen() { return false; }
-bool GSDeviceMTL::SetExclusiveFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate) { return false; }
 
 std::string GSDeviceMTL::GetDriverInfo() const
 { @autoreleasepool {
@@ -1339,6 +1346,9 @@ void GSDeviceMTL::EndPresent()
 
 void GSDeviceMTL::SetVSync(VsyncMode mode)
 {
+	if (m_vsync_mode == mode)
+		return;
+
 	[m_layer setDisplaySyncEnabled:mode != VsyncMode::Off];
 	m_vsync_mode = mode;
 }
