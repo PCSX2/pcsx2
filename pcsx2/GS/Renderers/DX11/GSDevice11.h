@@ -160,6 +160,7 @@ private:
 	bool m_allow_tearing_supported = false;
 	bool m_using_flip_model_swap_chain = true;
 	bool m_using_allow_tearing = false;
+	bool m_is_exclusive_fullscreen = false;
 
 	struct
 	{

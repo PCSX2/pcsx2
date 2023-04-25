@@ -691,6 +691,12 @@ bool GSDevice11::CreateSwapChainRTV()
 		{
 			m_window_info.surface_refresh_rate = 0.0f;
 		}
+
+		m_is_exclusive_fullscreen = fullscreen;
+	}
+	else
+	{
+		m_is_exclusive_fullscreen = false;
 	}
 
 	return true;
@@ -711,8 +717,11 @@ void GSDevice11::DestroySurface()
 {
 	m_swap_chain_rtv.reset();
 
-	if (IsExclusiveFullscreen())
-		SetExclusiveFullscreen(false, 0, 0, 0.0f);
+	if (m_is_exclusive_fullscreen)
+	{
+		m_swap_chain->SetFullscreenState(FALSE, nullptr);
+		m_is_exclusive_fullscreen = false;
+	}
 
 	m_swap_chain.reset();
 }
@@ -794,8 +803,7 @@ bool GSDevice11::SupportsExclusiveFullscreen() const
 
 bool GSDevice11::IsExclusiveFullscreen()
 {
-	BOOL is_fullscreen = FALSE;
-	return (m_swap_chain && SUCCEEDED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) && is_fullscreen);
+	return m_is_exclusive_fullscreen;
 }
 
 bool GSDevice11::SetExclusiveFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate)
@@ -803,52 +811,62 @@ bool GSDevice11::SetExclusiveFullscreen(bool fullscreen, u32 width, u32 height, 
 	if (!m_swap_chain)
 		return false;
 
-	BOOL is_fullscreen = FALSE;
-	HRESULT hr = m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr);
+	const DXGI_MODE_DESC* fullscreen_mode = nullptr;
+	DXGI_MODE_DESC closest_mode;
+	HRESULT hr;
+
 	if (!fullscreen)
 	{
 		// leaving fullscreen
-		if (is_fullscreen)
-			return SUCCEEDED(m_swap_chain->SetFullscreenState(FALSE, nullptr));
-		else
+		if (!m_is_exclusive_fullscreen)
 			return true;
+
+		if (FAILED(hr = m_swap_chain->SetFullscreenState(FALSE, nullptr)))
+		{
+			Console.WriteLn("SetFullscreenState to leave exclusive fullscreen failed, hr=%08X", hr);
+			return false;
+		}
 	}
-
-	IDXGIOutput* output;
-	if (FAILED(hr = m_swap_chain->GetContainingOutput(&output)))
-		return false;
-
-	DXGI_SWAP_CHAIN_DESC current_desc;
-	hr = m_swap_chain->GetDesc(&current_desc);
-	if (FAILED(hr))
-		return false;
-
-	DXGI_MODE_DESC new_mode = current_desc.BufferDesc;
-	new_mode.Width = width;
-	new_mode.Height = height;
-	new_mode.RefreshRate.Numerator = static_cast<UINT>(std::floor(refresh_rate * 1000.0f));
-	new_mode.RefreshRate.Denominator = 1000u;
-
-	DXGI_MODE_DESC closest_mode;
-	if (FAILED(hr = output->FindClosestMatchingMode(&new_mode, &closest_mode, nullptr)) ||
-		new_mode.Format != current_desc.BufferDesc.Format)
+	else
 	{
-		Console.Error("Failed to find closest matching mode, hr=%08X", hr);
-		return false;
-	}
+		IDXGIOutput* output;
+		if (FAILED(hr = m_swap_chain->GetContainingOutput(&output)))
+			return false;
 
-	if (new_mode.Width == current_desc.BufferDesc.Width && new_mode.Height == current_desc.BufferDesc.Height &&
-		new_mode.RefreshRate.Numerator == current_desc.BufferDesc.RefreshRate.Numerator &&
-		new_mode.RefreshRate.Denominator == current_desc.BufferDesc.RefreshRate.Denominator)
-	{
-		DevCon.WriteLn("Fullscreen mode already set");
-		return true;
+		DXGI_SWAP_CHAIN_DESC current_desc;
+		hr = m_swap_chain->GetDesc(&current_desc);
+		if (FAILED(hr))
+			return false;
+
+		DXGI_MODE_DESC new_mode = current_desc.BufferDesc;
+		new_mode.Width = width;
+		new_mode.Height = height;
+		new_mode.RefreshRate.Numerator = static_cast<UINT>(std::floor(refresh_rate * 1000.0f));
+		new_mode.RefreshRate.Denominator = 1000u;
+
+		if (FAILED(hr = output->FindClosestMatchingMode(&new_mode, &closest_mode, nullptr)) ||
+			new_mode.Format != current_desc.BufferDesc.Format)
+		{
+			Console.Error("Failed to find closest matching mode, hr=%08X", hr);
+			return false;
+		}
+
+		if (fullscreen == m_is_exclusive_fullscreen && new_mode.Width == current_desc.BufferDesc.Width &&
+			new_mode.Height == current_desc.BufferDesc.Height &&
+			new_mode.RefreshRate.Numerator == current_desc.BufferDesc.RefreshRate.Numerator &&
+			new_mode.RefreshRate.Denominator == current_desc.BufferDesc.RefreshRate.Denominator)
+		{
+			DevCon.WriteLn("Fullscreen mode already set");
+			return true;
+		}
+
+		fullscreen_mode = &closest_mode;
 	}
 
 	m_swap_chain_rtv.reset();
 	m_swap_chain.reset();
 
-	if (!CreateSwapChain(&closest_mode))
+	if (!CreateSwapChain(fullscreen_mode))
 	{
 		Console.Error("Failed to create a fullscreen swap chain");
 		if (!CreateSwapChain(nullptr))
@@ -864,6 +882,16 @@ GSDevice::PresentResult GSDevice11::BeginPresent(bool frame_skip)
 {
 	if (frame_skip || !m_swap_chain)
 		return PresentResult::FrameSkipped;
+
+	// Check if we lost exclusive fullscreen. If so, notify the host, so it can switch to windowed mode.
+	// This might get called repeatedly if it takes a while to switch back, that's the host's problem.
+	BOOL is_fullscreen;
+	if (m_is_exclusive_fullscreen &&
+		(FAILED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) || !is_fullscreen))
+	{
+		Host::RunOnCPUThread([]() { Host::SetFullscreen(false); });
+		return PresentResult::FrameSkipped;
+	}
 
 	// When using vsync, the time here seems to include the time for the buffer to become available.
 	// This blows our our GPU usage number considerably, so read the timestamp before the final blit

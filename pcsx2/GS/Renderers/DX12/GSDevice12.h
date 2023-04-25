@@ -145,6 +145,7 @@ private:
 
 	bool m_allow_tearing_supported = false;
 	bool m_using_allow_tearing = false;
+	bool m_is_exclusive_fullscreen = false;
 	bool m_device_lost = false;
 
 	ComPtr<ID3D12RootSignature> m_tfx_root_signature;
