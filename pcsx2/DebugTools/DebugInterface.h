@@ -77,6 +77,7 @@ public:
 	virtual u128 getHI() = 0;
 	virtual u128 getLO() = 0;
 	virtual u32 getPC() = 0;
+	virtual bool getCPCOND0() = 0;
 	virtual void setPc(u32 newPc) = 0;
 	virtual void setRegister(int cat, int num, u128 newValue) = 0;
 
@@ -129,6 +130,7 @@ public:
 	u128 getHI() override;
 	u128 getLO() override;
 	u32 getPC() override;
+	bool getCPCOND0() override;
 	void setPc(u32 newPc) override;
 	void setRegister(int cat, int num, u128 newValue) override;
 	[[nodiscard]] SymbolMap& GetSymbolMap() const override;
@@ -168,6 +170,7 @@ public:
 	u128 getHI() override;
 	u128 getLO() override;
 	u32 getPC() override;
+	bool getCPCOND0() override;
 	void setPc(u32 newPc) override;
 	void setRegister(int cat, int num, u128 newValue) override;
 	[[nodiscard]] SymbolMap& GetSymbolMap() const override;
