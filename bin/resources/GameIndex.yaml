@@ -12182,6 +12182,9 @@ SLES-51038:
 SLES-51042:
   name: "Disney Golf"
   region: "PAL-E"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves grass rendering to match software.
+    trilinearFiltering: 1
 SLES-51043:
   name: "Spyro - Enter the Dragonfly"
   region: "PAL-M6"
@@ -25898,6 +25901,12 @@ SLPM-60149:
 SLPM-60172:
   name: "Itadaki Street 3 - Okuman Chouja ni Shiteageru"
   region: "NTSC-J"
+SLPM-60180:
+  name: "Disney Golf Classics [Trial]"
+  region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves grass rendering to match software.
+    trilinearFiltering: 1
 SLPM-60183:
   name: "Energy Airforce [Trial]"
   region: "NTSC-J"
@@ -26626,6 +26635,9 @@ SLPM-62165:
 SLPM-62168:
   name: "Disney Golf Classics"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves grass rendering to match software.
+    trilinearFiltering: 1
 SLPM-62169:
   name: "Live World Soccer 2002"
   region: "NTSC-J"
@@ -44341,6 +44353,9 @@ SLUS-20532:
   name: "Disney Golf"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves grass rendering to match software.
+    trilinearFiltering: 1
 SLUS-20533:
   name: "Shox"
   region: "NTSC-U"
