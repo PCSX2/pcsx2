@@ -2,11 +2,11 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="UserMacros">
     <BinaryOutputDir>$(SolutionDir)bin\</BinaryOutputDir>
-    <PCSX2QTDIRDefault Condition="'$(Platform)'=='x64'">$(SolutionDir)3rdparty\qt\6.4.0\msvc2022_64\</PCSX2QTDIRDefault>
-    <PCSX2QTDIRDefault Condition="'$(Platform)'=='ARM64'">$(SolutionDir)3rdparty\qt\6.4.0\msvc2022_arm64\</PCSX2QTDIRDefault>
+    <PCSX2QTDIRDefault Condition="'$(Platform)'=='x64'">$(SolutionDir)3rdparty\qt\6.5.0\msvc2022_64\</PCSX2QTDIRDefault>
+    <PCSX2QTDIRDefault Condition="'$(Platform)'=='ARM64'">$(SolutionDir)3rdparty\qt\6.5.0\msvc2022_arm64\</PCSX2QTDIRDefault>
     <PCSX2QTDIR Condition="Exists('$(PCSX2QTDIRDefault)') And ('$(PCSX2QTDIR)'=='' Or !Exists('$(PCSX2QTDIR)'))">$(PCSX2QTDIRDefault)</PCSX2QTDIR>
     <PCSX2QTDIR Condition="Exists('$(PCSX2QTDIR)') And !HasTrailingSlash('$(PCSX2QTDIR)')">$(PCSX2QTDIR)\</PCSX2QTDIR>
-    <PCSX2QTDIRHost>$(SolutionDir)3rdparty\qt\6.4.0\msvc2022_64\</PCSX2QTDIRHost>
+    <PCSX2QTDIRHost>$(SolutionDir)3rdparty\qt\6.5.0\msvc2022_64\</PCSX2QTDIRHost>
     <QtDirValid>false</QtDirValid>
     <QtDirValid Condition="Exists('$(PCSX2QTDIR)')">true</QtDirValid>
     <QtIncludeDir>$(PCSX2QTDIR)include\</QtIncludeDir>
