@@ -252,10 +252,12 @@ void GSDeviceMTL::DrawCommandBufferFinished(u64 draw, id<MTLCommandBuffer> buffe
 
 void GSDeviceMTL::FlushEncoders()
 {
-	if (!m_current_render_cmdbuf)
-		return;
-	EndRenderPass();
-	Sync(m_vertex_upload_buf);
+	bool needs_submit = m_current_render_cmdbuf;
+	if (needs_submit)
+	{
+		EndRenderPass();
+		Sync(m_vertex_upload_buf);
+	}
 	if (m_dev.features.unified_memory)
 	{
 		ASSERT(!m_vertex_upload_cmdbuf && "Should never be used!");
@@ -274,6 +276,8 @@ void GSDeviceMTL::FlushEncoders()
 		m_texture_upload_encoder = nil;
 		m_texture_upload_cmdbuf = nil;
 	}
+	if (!needs_submit)
+		return;
 	if (m_late_texture_upload_encoder)
 	{
 		[m_late_texture_upload_encoder endEncoding];
