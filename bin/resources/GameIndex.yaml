@@ -9593,6 +9593,8 @@ SLED-51342:
   region: "PAL-E"
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLED-51676:
   name: "Warhammer 40,000 - Fire Warrior [Demo]"
   region: "PAL"
@@ -9858,21 +9860,33 @@ SLES-50010:
 SLES-50011:
   name: "FIFA 2001"
   region: "PAL-M5"
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLES-50012:
   name: "FIFA 2001"
   region: "PAL-F"
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLES-50013:
   name: "FIFA 2001"
   region: "PAL-G"
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLES-50014:
   name: "FIFA 2001"
   region: "PAL-GR"
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLES-50015:
   name: "FIFA 2001"
   region: "PAL-I"
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLES-50016:
   name: "FIFA 2001"
   region: "PAL-M5"
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLES-50017:
   name: "F1 Championship Season 2000"
   region: "PAL-M5"
@@ -10939,27 +10953,43 @@ SLES-50462:
 SLES-50464:
   name: "FIFA 2002"
   region: "PAL-M5"
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLES-50465:
   name: "FIFA 2002"
-  region: "PAL-Unk"
+  region: "PAL-BE"
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLES-50466:
   name: "FIFA 2002"
   region: "PAL-F"
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLES-50467:
   name: "FIFA 2002"
   region: "PAL-G"
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLES-50468:
   name: "FIFA 2002"
   region: "PAL-Unk"
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLES-50469:
   name: "FIFA 2002"
   region: "PAL-GR"
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLES-50470:
   name: "FIFA 2002"
   region: "PAL-I"
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLES-50471:
   name: "FIFA 2002"
   region: "PAL-M5"
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLES-50472:
   name: "GTC Africa"
   region: "PAL-M5"
@@ -14226,6 +14256,8 @@ SLES-51953:
   region: "PAL-M4"
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLES-51954:
   name: "Max Payne 2 - The Fall of Max Payne"
   region: "PAL-E"
@@ -14263,11 +14295,15 @@ SLES-51963:
   region: "PAL-F-G"
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLES-51964:
   name: "FIFA 2004"
   region: "PAL-P-S"
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLES-51966:
   name: "Bombastic"
   region: "PAL-E"
@@ -24262,6 +24298,8 @@ SLKA-25087:
   compat: 5
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLKA-25088:
   name: "Sangokushi Senki 2"
   region: "NTSC-K"
@@ -29096,6 +29134,8 @@ SLPM-65193:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLPM-65196:
   name: "Breath of Fire V - Dragon Quarter"
   region: "NTSC-J"
@@ -35833,6 +35873,8 @@ SLPM-67502:
 SLPM-67503:
   name: "FIFA 2002"
   region: "NTSC-K"
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLPM-67504:
   name: "SSX Tricky"
   region: "NTSC-K"
@@ -35956,6 +35998,10 @@ SLPM-67536:
 SLPM-67537:
   name: "FIFA 2003"
   region: "NTSC-K"
+  clampModes:
+    vuClampMode: 2 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLPM-67540:
   name: "Auto Modellista"
   region: "NTSC-K"
@@ -36626,6 +36672,8 @@ SLPS-20053:
 SLPS-20054:
   name: "FIFA World Championship 2001"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLPS-20055:
   name: "Technictix"
   region: "NTSC-J"
@@ -38098,6 +38146,8 @@ SLPS-25068:
 SLPS-25069:
   name: "FIFA 2002 - Road to World Cup"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLPS-25070:
   name: "Tales of the Sunrise Heroes 2"
   region: "NTSC-J"
@@ -42353,6 +42403,8 @@ SLUS-20096:
 SLUS-20097:
   name: "FIFA Soccer 2001"
   region: "NTSC-U"
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLUS-20098:
   name: "Kessen"
   region: "NTSC-U"
@@ -43096,6 +43148,8 @@ SLUS-20280:
   name: "FIFA 2002"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLUS-20281:
   name: "NHL 2002"
   region: "NTSC-U"
@@ -44547,6 +44601,8 @@ SLUS-20580:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
 SLUS-20582:
   name: "Street Racing Syndicate"
   region: "NTSC-U"
@@ -45355,6 +45411,8 @@ SLUS-20750:
   compat: 5
   clampModes:
     vuClampMode: 2 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 1 # Fixes broken player textures.
   memcardFilters:
     - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20750"
