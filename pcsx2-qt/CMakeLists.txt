@@ -24,6 +24,8 @@ target_sources(pcsx2-qt PRIVATE
 	MainWindow.ui
 	PrecompiledHeader.cpp
 	PrecompiledHeader.h
+	SettingWidgetBinder.h
+	Themes.cpp
 	QtHost.cpp
 	QtHost.h
 	QtKeyCodes.cpp
@@ -31,7 +33,6 @@ target_sources(pcsx2-qt PRIVATE
 	QtProgressCallback.h
 	QtUtils.cpp
 	QtUtils.h
-	SettingWidgetBinder.h
 	GameList/EmptyGameListWidget.ui
 	GameList/GameListModel.cpp
 	GameList/GameListModel.h

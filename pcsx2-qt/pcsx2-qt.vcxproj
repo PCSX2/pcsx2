@@ -144,6 +144,7 @@
     <ClCompile Include="Settings\DebugSettingsWidget.cpp" />
     <ClCompile Include="Settings\FolderSettingsWidget.cpp" />
     <ClCompile Include="Settings\MemoryCardConvertWorker.cpp" />
+    <ClCompile Include="Themes.cpp" />
     <ClCompile Include="Tools\InputRecording\InputRecordingViewer.cpp" />
     <ClCompile Include="Tools\InputRecording\NewInputRecordingDlg.cpp" />
     <ClCompile Include="Debugger\CpuWidget.cpp" />

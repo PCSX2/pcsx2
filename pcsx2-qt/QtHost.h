@@ -213,6 +213,12 @@ extern EmuThread* g_emu_thread;
 
 namespace QtHost
 {
+	/// Default theme name for the platform.
+	const char* GetDefaultThemeName();
+
+	/// Sets application theme according to settings.
+	void UpdateApplicationTheme();
+
 	/// Sets batch mode (exit after game shutdown).
 	bool InBatchMode();
 
