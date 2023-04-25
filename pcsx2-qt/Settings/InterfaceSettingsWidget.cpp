@@ -24,7 +24,7 @@
 static const char* THEME_NAMES[] = {
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Native"),
 	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
-	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Fusion [Light]"),
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Fusion [Light/Dark]"),
 	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Dark Fusion (Gray) [Dark]"),
 	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.

@@ -32,7 +32,7 @@ on:
       qt_binary_url:
         required: false
         type: string
-        default: https://github.com/PCSX2/pcsx2-windows-dependencies/releases/download/2022-11-20/qt-6.4.0-x64.7z
+        default: https://github.com/PCSX2/pcsx2-windows-dependencies/releases/download/2023-04-25/qt-6.5.0-x64.7z
       qt_dir:
         required: false
         type: string

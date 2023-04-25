@@ -95,7 +95,6 @@ const char* MainWindow::DEFAULT_THEME_NAME = "darkfusion";
 
 MainWindow* g_main_window = nullptr;
 static QString s_unthemed_style_name;
-static QPalette s_unthemed_palette;
 static bool s_unthemed_style_name_set;
 
 #if defined(_WIN32) || defined(__APPLE__)
@@ -509,7 +508,6 @@ void MainWindow::updateApplicationTheme()
 	{
 		s_unthemed_style_name_set = true;
 		s_unthemed_style_name = QApplication::style()->objectName();
-		s_unthemed_palette = QApplication::style()->standardPalette();
 	}
 
 	setStyleFromSettings();
@@ -522,9 +520,11 @@ void MainWindow::setStyleFromSettings()
 
 	if (theme == "fusion")
 	{
-		qApp->setPalette(s_unthemed_palette);
-		qApp->setStyleSheet(QString());
+		// setPalette() shouldn't be necessary, as the documentation claims that setStyle() resets the palette, but it
+		// is here, to work around a bug in 6.4.x and 6.5.x where the palette doesn't restore after changing themes.
+		qApp->setPalette(QPalette());
 		qApp->setStyle(QStyleFactory::create("Fusion"));
+		qApp->setStyleSheet(QString());
 	}
 	else if (theme == "darkfusion")
 	{
@@ -938,9 +938,11 @@ void MainWindow::setStyleFromSettings()
 	}
 	else
 	{
-		qApp->setPalette(s_unthemed_palette);
-		qApp->setStyleSheet(QString());
+		// setPalette() shouldn't be necessary, as the documentation claims that setStyle() resets the palette, but it
+		// is here, to work around a bug in 6.4.x and 6.5.x where the palette doesn't restore after changing themes.
+		qApp->setPalette(QPalette());
 		qApp->setStyle(s_unthemed_style_name);
+		qApp->setStyleSheet(QString());
 	}
 }
 

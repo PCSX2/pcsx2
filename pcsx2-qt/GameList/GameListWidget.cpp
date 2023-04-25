@@ -181,7 +181,7 @@ void GameListWidget::initialize()
 	m_list_view = new GameListGridListView(m_ui.stack);
 	m_list_view->setModel(m_sort_model);
 	m_list_view->setModelColumn(GameListModel::Column_Cover);
-	m_list_view->setSelectionMode(QAbstractItemView::ExtendedSelection);
+	m_list_view->setSelectionMode(QAbstractItemView::SingleSelection);
 	m_list_view->setViewMode(QListView::IconMode);
 	m_list_view->setResizeMode(QListView::Adjust);
 	m_list_view->setUniformItemSizes(true);
