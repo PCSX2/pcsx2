@@ -598,6 +598,12 @@ u32 R5900DebugInterface::getPC()
 	return cpuRegs.pc;
 }
 
+// Taken from COP0.cpp
+bool R5900DebugInterface::getCPCOND0()
+{
+	return (((dmacRegs.stat.CIS | ~dmacRegs.pcr.CPC) & 0x3FF) == 0x3ff);
+}
+
 void R5900DebugInterface::setPc(u32 newPc)
 {
 	cpuRegs.pc = newPc;
@@ -943,6 +949,11 @@ u128 R3000DebugInterface::getLO()
 u32 R3000DebugInterface::getPC()
 {
 	return psxRegs.pc;
+}
+
+bool R3000DebugInterface::getCPCOND0()
+{
+	return false;
 }
 
 void R3000DebugInterface::setPc(u32 newPc)

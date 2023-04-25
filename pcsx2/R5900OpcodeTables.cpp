@@ -394,10 +394,10 @@ namespace R5900
 		MakeOpcode0( MFC0, CopDefault, 0 );
 		MakeOpcode0( MTC0, CopDefault, 0 );
 
-		MakeOpcode0( BC0F, Branch, 0 );
-		MakeOpcode0( BC0T, Branch, 0 );
-		MakeOpcode0( BC0FL, Branch, 0 );
-		MakeOpcode0( BC0TL, Branch, 0 );
+		MakeOpcode0(BC0F, Branch, IS_BRANCH | BRANCHTYPE_BC0 | CONDTYPE_EQ);
+		MakeOpcode0(BC0T, Branch, IS_BRANCH | BRANCHTYPE_BC0 | CONDTYPE_NE);
+		MakeOpcode0(BC0FL, Branch, IS_BRANCH | BRANCHTYPE_BC0 | CONDTYPE_EQ | IS_LIKELY);
+		MakeOpcode0(BC0TL, Branch, IS_BRANCH | BRANCHTYPE_BC0 | CONDTYPE_NE | IS_LIKELY);
 
 		MakeOpcode0( TLBR, CopDefault, 0 );
 		MakeOpcode0( TLBWI, CopDefault, 0 );

@@ -59,7 +59,7 @@ namespace MIPSAnalyst
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 
 		int branchType = (opcode.flags & BRANCHTYPE_MASK);
-		if ((opcode.flags & IS_BRANCH) && (branchType == BRANCHTYPE_BRANCH || branchType == BRANCHTYPE_BC1))
+		if ((opcode.flags & IS_BRANCH) && (branchType == BRANCHTYPE_BRANCH || branchType == BRANCHTYPE_BC1 || branchType == BRANCHTYPE_BC0))
 			return addr + 4 + ((signed short)(op&0xFFFF)<<2);
 		else
 			return INVALIDTARGET;
@@ -71,7 +71,7 @@ namespace MIPSAnalyst
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 
 		int branchType = (opcode.flags & BRANCHTYPE_MASK);
-		if ((opcode.flags & IS_BRANCH) && (branchType == BRANCHTYPE_BRANCH || branchType == BRANCHTYPE_BC1))
+		if ((opcode.flags & IS_BRANCH) && (branchType == BRANCHTYPE_BRANCH || branchType == BRANCHTYPE_BC1 || branchType == BRANCHTYPE_BC0))
 		{
 			if (!(opcode.flags & IS_LINKED))
 				return addr + 4 + ((signed short)(op&0xFFFF)<<2);
@@ -409,6 +409,20 @@ namespace MIPSAnalyst
 				value = info.cpu->getRegister(EECAT_FCR,31)._u32[0] & 0x00800000;
 				info.branchTarget = info.opcodeAddress + 4 + ((s16)(op&0xFFFF)<<2);
 
+				switch (opcode.flags & CONDTYPE_MASK)
+				{
+				case CONDTYPE_EQ:
+					info.conditionMet = value == 0;
+					break;
+				case CONDTYPE_NE:
+					info.conditionMet = value != 0;
+					break;
+				}
+				break;
+			case BRANCHTYPE_BC0:
+				info.isConditional = true;
+				value = info.cpu->getCPCOND0();
+				info.branchTarget = info.opcodeAddress + 4 + ((s16)(op&0xFFFF)<<2);
 				switch (opcode.flags & CONDTYPE_MASK)
 				{
 				case CONDTYPE_EQ:
