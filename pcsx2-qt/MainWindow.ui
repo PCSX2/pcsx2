@@ -457,8 +457,8 @@
     <string>&amp;Discord Server...</string>
    </property>
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/discord.png</normaloff>:/icons/discord.png</iconset>
+    <iconset theme="discord">
+     <normaloff>.</normaloff>.</iconset>
    </property>
   </action>
   <action name="actionCheckForUpdates">
