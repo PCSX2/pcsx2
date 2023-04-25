@@ -36,7 +36,7 @@ on:
       qt_dir:
         required: false
         type: string
-        default: 3rdparty\qt\6.4.0\msvc2022_64
+        default: 3rdparty\qt\6.5.0\msvc2022_64
       cheats_url:
         required: false
         type: string
