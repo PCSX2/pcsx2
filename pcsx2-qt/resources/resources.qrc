@@ -7,6 +7,7 @@
 		<file>icons/black/index.theme</file>
 		<file>icons/black/svg/arrow-left-right-line.svg</file>
 		<file>icons/black/svg/artboard-2-line.svg</file>
+		<file>icons/black/svg/at.svg</file>
 		<file>icons/black/svg/book-open-line.svg</file>
 		<file>icons/black/svg/brush-line.svg</file>
 		<file>icons/black/svg/checkbox-multiple-blank-line.svg</file>
@@ -58,7 +59,6 @@
 		<file>icons/black/svg/usb-fill.svg</file>
 		<file>icons/black/svg/volume-up-line.svg</file>
 		<file>icons/black/svg/window-2-line.svg</file>
-		<file>icons/forum.png</file>
 		<file>icons/logo.png</file>
 		<file>icons/media-optical-24.png</file>
 		<file>icons/media-optical-gear-24.png</file>
@@ -70,6 +70,7 @@
 		<file>icons/white/index.theme</file>
 		<file>icons/white/svg/arrow-left-right-line.svg</file>
 		<file>icons/white/svg/artboard-2-line.svg</file>
+		<file>icons/white/svg/at.svg</file>
 		<file>icons/white/svg/book-open-line.svg</file>
 		<file>icons/white/svg/brush-line.svg</file>
 		<file>icons/white/svg/checkbox-multiple-blank-line.svg</file>
