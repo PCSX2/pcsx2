@@ -254,14 +254,8 @@ void Host::SetRelativeMouseMode(bool enabled)
 {
 }
 
-std::optional<WindowInfo> Host::AcquireRenderWindow()
+std::optional<WindowInfo> Host::AcquireRenderWindow(bool recreate_window)
 {
-	return GSRunner::GetPlatformWindowInfo();
-}
-
-std::optional<WindowInfo> Host::UpdateRenderWindow(bool recreate_window)
-{
-	// We shouldn't ever recreate with the runner, so this is okay..
 	return GSRunner::GetPlatformWindowInfo();
 }
 

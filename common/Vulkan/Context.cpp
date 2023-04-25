@@ -70,8 +70,7 @@ namespace Vulkan
 
 	Context::~Context() = default;
 
-	VkInstance Context::CreateVulkanInstance(
-		const WindowInfo* wi, bool enable_debug_utils, bool enable_validation_layer)
+	VkInstance Context::CreateVulkanInstance(const WindowInfo& wi, bool enable_debug_utils, bool enable_validation_layer)
 	{
 		ExtensionList enabled_extensions;
 		if (!SelectInstanceExtensions(&enabled_extensions, wi, enable_debug_utils))
@@ -118,7 +117,7 @@ namespace Vulkan
 		return instance;
 	}
 
-	bool Context::SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo* wi, bool enable_debug_utils)
+	bool Context::SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi, bool enable_debug_utils)
 	{
 		u32 extension_count = 0;
 		VkResult res = vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
@@ -155,34 +154,32 @@ namespace Vulkan
 		};
 
 		// Common extensions
-		if (wi && wi->type != WindowInfo::Type::Surfaceless && !SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true))
+		if (wi.type != WindowInfo::Type::Surfaceless && !SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true))
 			return false;
 
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
-		if (wi && wi->type == WindowInfo::Type::Win32 && !SupportsExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, true))
+		if (wi.type == WindowInfo::Type::Win32 && !SupportsExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, true))
 			return false;
 #endif
 #if defined(VK_USE_PLATFORM_XLIB_KHR)
-		if (wi && wi->type == WindowInfo::Type::X11 && !SupportsExtension(VK_KHR_XLIB_SURFACE_EXTENSION_NAME, true))
+		if (wi.type == WindowInfo::Type::X11 && !SupportsExtension(VK_KHR_XLIB_SURFACE_EXTENSION_NAME, true))
 			return false;
 #endif
 #if defined(VK_USE_PLATFORM_WAYLAND_KHR)
-		if (wi && wi->type == WindowInfo::Type::Wayland &&
-			!SupportsExtension(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME, true))
+		if (wi.type == WindowInfo::Type::Wayland && !SupportsExtension(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME, true))
 			return false;
 #endif
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
-		if (wi && wi->type == WindowInfo::Type::Android &&
-			!SupportsExtension(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME, true))
+		if (wi.type == WindowInfo::Type::Android && !SupportsExtension(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME, true))
 			return false;
 #endif
 #if defined(VK_USE_PLATFORM_METAL_EXT)
-		if (wi && wi->type == WindowInfo::Type::MacOS && !SupportsExtension(VK_EXT_METAL_SURFACE_EXTENSION_NAME, true))
+		if (wi.type == WindowInfo::Type::MacOS && !SupportsExtension(VK_EXT_METAL_SURFACE_EXTENSION_NAME, true))
 			return false;
 #endif
 
 #if 0
-	if (wi && wi->type == WindowInfo::Type::Display && !SupportsExtension(VK_KHR_DISPLAY_EXTENSION_NAME, true))
+	if (wi.type == WindowInfo::Type::Display && !SupportsExtension(VK_KHR_DISPLAY_EXTENSION_NAME, true))
 		return false;
 #endif
 
@@ -274,91 +271,11 @@ namespace Vulkan
 		return gpu_names;
 	}
 
-	bool Context::Create(std::string_view gpu_name, const WindowInfo* wi, std::unique_ptr<SwapChain>* out_swap_chain,
-		VkPresentModeKHR preferred_present_mode, bool threaded_presentation, bool enable_debug_utils,
-		bool enable_validation_layer)
+	bool Context::Create(VkInstance instance, VkSurfaceKHR surface, VkPhysicalDevice physical_device,
+		bool threaded_presentation, bool enable_debug_utils, bool enable_validation_layer)
 	{
 		pxAssertMsg(!g_vulkan_context, "Has no current context");
-
-		if (!Vulkan::LoadVulkanLibrary())
-		{
-			Console.Error("Failed to load Vulkan library");
-			return false;
-		}
-
-		const bool enable_surface = (wi && wi->type != WindowInfo::Type::Surfaceless);
-		VkInstance instance = CreateVulkanInstance(wi, enable_debug_utils, enable_validation_layer);
-		if (instance == VK_NULL_HANDLE)
-		{
-			if (enable_debug_utils || enable_validation_layer)
-			{
-				// Try again without the validation layer.
-				enable_debug_utils = false;
-				enable_validation_layer = false;
-				instance = CreateVulkanInstance(wi, enable_debug_utils, enable_validation_layer);
-				if (instance == VK_NULL_HANDLE)
-				{
-					Vulkan::UnloadVulkanLibrary();
-					return false;
-				}
-
-				Console.Error("Vulkan validation/debug layers requested but are unavailable. Creating non-debug device.");
-			}
-		}
-
-		if (!Vulkan::LoadVulkanInstanceFunctions(instance))
-		{
-			Console.Error("Failed to load Vulkan instance functions");
-			vkDestroyInstance(instance, nullptr);
-			Vulkan::UnloadVulkanLibrary();
-			return false;
-		}
-
-		GPUList gpus = EnumerateGPUs(instance);
-		if (gpus.empty())
-		{
-			vkDestroyInstance(instance, nullptr);
-			Vulkan::UnloadVulkanLibrary();
-			return false;
-		}
-
-		u32 gpu_index = 0;
-		GPUNameList gpu_names = EnumerateGPUNames(instance);
-		if (!gpu_name.empty())
-		{
-			for (; gpu_index < static_cast<u32>(gpu_names.size()); gpu_index++)
-			{
-				Console.WriteLn("GPU %u: %s", static_cast<u32>(gpu_index), gpu_names[gpu_index].c_str());
-				if (gpu_names[gpu_index] == gpu_name)
-					break;
-			}
-
-			if (gpu_index == static_cast<u32>(gpu_names.size()))
-			{
-				Console.Warning("Requested GPU '%s' not found, using first (%s)", std::string(gpu_name).c_str(),
-					gpu_names[0].c_str());
-				gpu_index = 0;
-			}
-		}
-		else
-		{
-			Console.WriteLn("No GPU requested, using first (%s)", gpu_names[0].c_str());
-		}
-
-		VkSurfaceKHR surface = VK_NULL_HANDLE;
-		WindowInfo wi_copy;
-		if (wi)
-			wi_copy = *wi;
-
-		if (enable_surface &&
-			(surface = SwapChain::CreateVulkanSurface(instance, gpus[gpu_index], &wi_copy)) == VK_NULL_HANDLE)
-		{
-			vkDestroyInstance(instance, nullptr);
-			Vulkan::UnloadVulkanLibrary();
-			return false;
-		}
-
-		g_vulkan_context.reset(new Context(instance, gpus[gpu_index]));
+		g_vulkan_context.reset(new Context(instance, physical_device));
 
 		if (enable_debug_utils)
 			g_vulkan_context->EnableDebugUtils();
@@ -367,8 +284,7 @@ namespace Vulkan
 		if (!g_vulkan_context->CreateDevice(surface, enable_validation_layer, nullptr, 0, nullptr, 0, nullptr) ||
 			!g_vulkan_context->CreateAllocator() || !g_vulkan_context->CreateGlobalDescriptorPool() ||
 			!g_vulkan_context->CreateCommandBuffers() || !g_vulkan_context->CreateTextureStreamBuffer() ||
-			!g_vulkan_context->InitSpinResources() ||
-			(enable_surface && (*out_swap_chain = SwapChain::Create(wi_copy, surface, preferred_present_mode)) == nullptr))
+			!g_vulkan_context->InitSpinResources())
 		{
 			// Since we are destroying the instance, we're also responsible for destroying the surface.
 			if (surface != VK_NULL_HANDLE)

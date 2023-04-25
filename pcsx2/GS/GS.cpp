@@ -133,52 +133,8 @@ static RenderAPI GetAPIForRenderer(GSRendererType renderer)
 	}
 }
 
-static void UpdateExclusiveFullscreen(bool force_off)
+static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail, bool recreate_window)
 {
-	if (!g_gs_device->SupportsExclusiveFullscreen())
-		return;
-
-	std::string fullscreen_mode = Host::GetBaseStringSettingValue("EmuCore/GS", "FullscreenMode", "");
-	u32 width, height;
-	float refresh_rate;
-
-	const bool wants_fullscreen = !force_off && Host::IsFullscreen() && !fullscreen_mode.empty() &&
-								  GSDevice::ParseFullscreenMode(fullscreen_mode, &width, &height, &refresh_rate);
-	const bool is_fullscreen = g_gs_device->IsExclusiveFullscreen();
-	if (wants_fullscreen == is_fullscreen)
-		return;
-
-	if (wants_fullscreen)
-	{
-		Console.WriteLn("Trying to acquire exclusive fullscreen...");
-		if (g_gs_device->SetExclusiveFullscreen(true, width, height, refresh_rate))
-		{
-			Host::AddKeyedOSDMessage(
-				"UpdateExclusiveFullscreen", "Acquired exclusive fullscreen.", Host::OSD_INFO_DURATION);
-		}
-		else
-		{
-			Host::AddKeyedOSDMessage(
-				"UpdateExclusiveFullscreen", "Failed to acquire exclusive fullscreen.", Host::OSD_WARNING_DURATION);
-		}
-	}
-	else
-	{
-		Console.WriteLn("Leaving exclusive fullscreen...");
-		g_gs_device->SetExclusiveFullscreen(false, 0, 0, 0.0f);
-		Host::AddKeyedOSDMessage("UpdateExclusiveFullscreen", "Lost exclusive fullscreen.", Host::OSD_INFO_DURATION);
-	}
-}
-
-static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail, bool reopening, bool recreate_window)
-{
-	std::optional<WindowInfo> wi = reopening ? Host::UpdateRenderWindow(recreate_window) : Host::AcquireRenderWindow();
-	if (!wi.has_value())
-	{
-		Console.Error("Failed to acquire render window.");
-		return false;
-	}
-
 	const RenderAPI new_api = GetAPIForRenderer(renderer);
 	switch (new_api)
 	{
@@ -212,8 +168,7 @@ static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail, bool
 			return false;
 	}
 
-	const VsyncMode vsync_mode = Host::GetEffectiveVSyncMode();
-	bool okay = g_gs_device->Create(wi.value(), vsync_mode);
+	bool okay = g_gs_device->Create();
 	if (okay)
 	{
 		okay = ImGuiManager::Initialize();
@@ -239,24 +194,17 @@ static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail, bool
 	Console.WriteLn(Color_StrongGreen, "%s Graphics Driver Info:", GSDevice::RenderAPIToString(new_api));
 	Console.Indent().WriteLn(g_gs_device->GetDriverInfo());
 
-	// Switch to exclusive fullscreen if enabled.
-	UpdateExclusiveFullscreen(false);
-
 	return true;
 }
 
-static void CloseGSDevice(bool clear_state, bool reopening)
+static void CloseGSDevice(bool clear_state)
 {
 	if (!g_gs_device)
 		return;
 
-	UpdateExclusiveFullscreen(true);
 	ImGuiManager::Shutdown(clear_state);
 	g_gs_device->Destroy();
 	g_gs_device.reset();
-
-	if (!reopening)
-		Host::ReleaseRenderWindow();
 }
 
 static bool OpenGSRenderer(GSRendererType renderer, u8* basemem)
@@ -336,18 +284,18 @@ bool GSreopen(bool recreate_device, bool recreate_renderer, const Pcsx2Config::G
 	{
 		// We need a new render window when changing APIs.
 		const bool recreate_window = (g_gs_device->GetRenderAPI() != GetAPIForRenderer(GSConfig.Renderer));
-		CloseGSDevice(false, true);
+		CloseGSDevice(false);
 
-		if (!OpenGSDevice(GSConfig.Renderer, false, true, recreate_window) ||
+		if (!OpenGSDevice(GSConfig.Renderer, false, recreate_window) ||
 			(recreate_renderer && !OpenGSRenderer(GSConfig.Renderer, basemem)))
 		{
 			Host::AddKeyedOSDMessage(
 				"GSReopenFailed", "Failed to reopen, restoring old configuration.", Host::OSD_CRITICAL_ERROR_DURATION);
 
-			CloseGSDevice(false, true);
+			CloseGSDevice(false);
 
 			GSConfig = old_config;
-			if (!OpenGSDevice(GSConfig.Renderer, false, true, recreate_window) ||
+			if (!OpenGSDevice(GSConfig.Renderer, false, recreate_window) ||
 				(recreate_renderer && !OpenGSRenderer(GSConfig.Renderer, basemem)))
 			{
 				pxFailRel("Failed to reopen GS on old config");
@@ -387,12 +335,12 @@ bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* b
 	GSConfig = config;
 	GSConfig.Renderer = renderer;
 
-	bool res = OpenGSDevice(renderer, true, false, false);
+	bool res = OpenGSDevice(renderer, true, false);
 	if (res)
 	{
 		res = OpenGSRenderer(renderer, basemem);
 		if (!res)
-			CloseGSDevice(true, false);
+			CloseGSDevice(true);
 	}
 
 	if (!res)
@@ -410,7 +358,7 @@ bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* b
 void GSclose()
 {
 	CloseGSRenderer();
-	CloseGSDevice(true, false);
+	CloseGSDevice(true);
 }
 
 void GSreset(bool hardware_reset)
@@ -626,23 +574,11 @@ void GSResizeDisplayWindow(int width, int height, float scale)
 
 void GSUpdateDisplayWindow()
 {
-	UpdateExclusiveFullscreen(true);
-	g_gs_device->DestroySurface();
-
-	const std::optional<WindowInfo> wi = Host::UpdateRenderWindow(false);
-	if (!wi.has_value())
+	if (!g_gs_device->UpdateWindow())
 	{
-		pxFailRel("Failed to get window info after update.");
+		Host::ReportErrorAsync("Error", "Failed to change window after update. The log may contain more information.");
 		return;
 	}
-
-	if (!g_gs_device->ChangeWindow(wi.value()))
-	{
-		pxFailRel("Failed to change window after update.");
-		return;
-	}
-
-	UpdateExclusiveFullscreen(false);
 
 	ImGuiManager::WindowResized();
 }
@@ -650,6 +586,16 @@ void GSUpdateDisplayWindow()
 void GSSetVSyncMode(VsyncMode mode)
 {
 	g_gs_device->SetVSync(mode);
+}
+
+bool GSWantsExclusiveFullscreen()
+{
+	if (!g_gs_device || !g_gs_device->SupportsExclusiveFullscreen())
+		return false;
+
+	u32 width, height;
+	float refresh_rate;
+	return GSDevice::GetRequestedExclusiveFullscreenMode(&width, &height, &refresh_rate);
 }
 
 bool GSGetHostRefreshRate(float* refresh_rate)

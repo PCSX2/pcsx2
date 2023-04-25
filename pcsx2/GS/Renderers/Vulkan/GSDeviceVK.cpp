@@ -70,6 +70,8 @@ static VkPresentModeKHR GetPreferredPresentModeForVsyncMode(VsyncMode mode)
 		return VK_PRESENT_MODE_IMMEDIATE_KHR;
 }
 
+static constexpr VkClearValue s_present_clear_color = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+
 GSDeviceVK::GSDeviceVK()
 {
 #ifdef ENABLE_OGL_DEBUG
@@ -105,7 +107,7 @@ void GSDeviceVK::GetAdaptersAndFullscreenModes(
 		if (Vulkan::LoadVulkanLibrary())
 		{
 			ScopedGuard lib_guard([]() { Vulkan::UnloadVulkanLibrary(); });
-			const VkInstance instance = Vulkan::Context::CreateVulkanInstance(nullptr, false, false);
+			const VkInstance instance = Vulkan::Context::CreateVulkanInstance(WindowInfo(), false, false);
 			if (instance != VK_NULL_HANDLE)
 			{
 				if (Vulkan::LoadVulkanInstanceFunctions(instance))
@@ -171,25 +173,16 @@ bool GSDeviceVK::HasSurface() const
 	return static_cast<bool>(m_swap_chain);
 }
 
-bool GSDeviceVK::Create(const WindowInfo& wi, VsyncMode vsync)
+bool GSDeviceVK::Create()
 {
-	if (!GSDevice::Create(wi, vsync))
+	if (!GSDevice::Create())
 		return false;
 
-	WindowInfo local_wi(wi);
-	const bool debug_device = GSConfig.UseDebugDevice;
-	if (!Vulkan::Context::Create(GSConfig.Adapter, &local_wi, &m_swap_chain, GetPreferredPresentModeForVsyncMode(vsync),
-			!GSConfig.DisableThreadedPresentation, debug_device, debug_device))
-	{
-		Console.Error("Failed to create Vulkan context");
+	if (!CreateDeviceAndSwapChain())
 		return false;
-	}
 
 	Vulkan::ShaderCache::Create(GSConfig.DisableShaderCache ? std::string_view() : std::string_view(EmuFolders::Cache),
 		SHADER_CACHE_VERSION, GSConfig.UseDebugDevice);
-
-	// NOTE: This is assigned afterwards, because some platforms can modify the window info (e.g. Metal).
-	m_window_info = m_swap_chain ? m_swap_chain->GetWindowInfo() : local_wi;
 
 	if (!CheckFeatures())
 	{
@@ -264,29 +257,31 @@ void GSDeviceVK::Destroy()
 
 		g_vulkan_context->WaitForGPUIdle();
 		m_swap_chain.reset();
+		ReleaseWindow();
 
 		Vulkan::ShaderCache::Destroy();
 		Vulkan::Context::Destroy();
 	}
 }
 
-bool GSDeviceVK::ChangeWindow(const WindowInfo& new_wi)
+bool GSDeviceVK::UpdateWindow()
 {
-	if (new_wi.type == WindowInfo::Type::Surfaceless)
-	{
-		ExecuteCommandBuffer(true);
-		m_swap_chain.reset();
-		m_window_info = new_wi;
+	DestroySurface();
+
+	if (!AcquireWindow(false))
+		return false;
+
+	if (m_window_info.type == WindowInfo::Type::Surfaceless)
 		return true;
-	}
 
 	// make sure previous frames are presented
+	ExecuteCommandBuffer(false);
 	g_vulkan_context->WaitForGPUIdle();
 
 	// recreate surface in existing swap chain if it already exists
 	if (m_swap_chain)
 	{
-		if (m_swap_chain->RecreateSurface(new_wi))
+		if (m_swap_chain->RecreateSurface(m_window_info))
 		{
 			m_window_info = m_swap_chain->GetWindowInfo();
 			return true;
@@ -295,24 +290,26 @@ bool GSDeviceVK::ChangeWindow(const WindowInfo& new_wi)
 		m_swap_chain.reset();
 	}
 
-	WindowInfo wi_copy(new_wi);
 	VkSurfaceKHR surface = Vulkan::SwapChain::CreateVulkanSurface(
-		g_vulkan_context->GetVulkanInstance(), g_vulkan_context->GetPhysicalDevice(), &wi_copy);
+		g_vulkan_context->GetVulkanInstance(), g_vulkan_context->GetPhysicalDevice(), &m_window_info);
 	if (surface == VK_NULL_HANDLE)
 	{
 		Console.Error("Failed to create new surface for swap chain");
+		ReleaseWindow();
 		return false;
 	}
 
-	m_swap_chain = Vulkan::SwapChain::Create(wi_copy, surface, GetPreferredPresentModeForVsyncMode(m_vsync_mode));
+	m_swap_chain = Vulkan::SwapChain::Create(m_window_info, surface, GetPreferredPresentModeForVsyncMode(m_vsync_mode));
 	if (!m_swap_chain)
 	{
 		Console.Error("Failed to create swap chain");
-		Vulkan::SwapChain::DestroyVulkanSurface(g_vulkan_context->GetVulkanInstance(), &wi_copy, surface);
+		Vulkan::SwapChain::DestroyVulkanSurface(g_vulkan_context->GetVulkanInstance(), &m_window_info, surface);
+		ReleaseWindow();
 		return false;
 	}
 
 	m_window_info = m_swap_chain->GetWindowInfo();
+	RenderBlankFrame();
 	return true;
 }
 
@@ -340,16 +337,6 @@ void GSDeviceVK::ResizeWindow(s32 new_window_width, s32 new_window_height, float
 }
 
 bool GSDeviceVK::SupportsExclusiveFullscreen() const
-{
-	return false;
-}
-
-bool GSDeviceVK::IsExclusiveFullscreen()
-{
-	return false;
-}
-
-bool GSDeviceVK::SetExclusiveFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate)
 {
 	return false;
 }
@@ -453,10 +440,9 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 	swap_chain_texture.OverrideImageLayout(VK_IMAGE_LAYOUT_UNDEFINED);
 	swap_chain_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-	const VkClearValue clear_value = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
 	const VkRenderPassBeginInfo rp = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr,
 		m_swap_chain->GetClearRenderPass(), m_swap_chain->GetCurrentFramebuffer(),
-		{{0, 0}, {swap_chain_texture.GetWidth(), swap_chain_texture.GetHeight()}}, 1u, &clear_value};
+		{{0, 0}, {swap_chain_texture.GetWidth(), swap_chain_texture.GetHeight()}}, 1u, &s_present_clear_color};
 	vkCmdBeginRenderPass(g_vulkan_context->GetCurrentCommandBuffer(), &rp, VK_SUBPASS_CONTENTS_INLINE);
 
 	const VkViewport vp{0.0f, 0.0f, static_cast<float>(swap_chain_texture.GetWidth()),
@@ -568,6 +554,128 @@ void GSDeviceVK::InsertDebugMessage(DebugMessageCategory category, const char* f
 			colors[static_cast<int>(category)][2], 1.0f}};
 	vkCmdInsertDebugUtilsLabelEXT(g_vulkan_context->GetCurrentCommandBuffer(), &label);
 #endif
+}
+
+bool GSDeviceVK::CreateDeviceAndSwapChain()
+{
+	bool enable_debug_utils = GSConfig.UseDebugDevice;
+	bool enable_validation_layer = GSConfig.UseDebugDevice;
+
+	if (!Vulkan::LoadVulkanLibrary())
+	{
+		Host::ReportErrorAsync("Error", "Failed to load Vulkan library. Does your GPU and/or driver support Vulkan?");
+		return false;
+	}
+
+	ScopedGuard library_cleanup(&Vulkan::UnloadVulkanLibrary);
+
+	if (!AcquireWindow(true))
+		return false;
+
+	ScopedGuard window_cleanup = [this]() { ReleaseWindow(); };
+
+	VkInstance instance =
+		Vulkan::Context::CreateVulkanInstance(m_window_info, enable_debug_utils, enable_validation_layer);
+	if (instance == VK_NULL_HANDLE)
+	{
+		if (enable_debug_utils || enable_validation_layer)
+		{
+			// Try again without the validation layer.
+			enable_debug_utils = false;
+			enable_validation_layer = false;
+			instance =
+				Vulkan::Context::CreateVulkanInstance(m_window_info, enable_debug_utils, enable_validation_layer);
+			if (instance == VK_NULL_HANDLE)
+			{
+				Host::ReportErrorAsync(
+					"Error", "Failed to create Vulkan instance. Does your GPU and/or driver support Vulkan?");
+				return false;
+			}
+
+			Console.Error("Vulkan validation/debug layers requested but are unavailable. Creating non-debug device.");
+		}
+	}
+
+	ScopedGuard instance_cleanup = [&instance]() { vkDestroyInstance(instance, nullptr); };
+	if (!Vulkan::LoadVulkanInstanceFunctions(instance))
+	{
+		Console.Error("Failed to load Vulkan instance functions");
+		return false;
+	}
+
+	Vulkan::Context::GPUList gpus = Vulkan::Context::EnumerateGPUs(instance);
+	if (gpus.empty())
+	{
+		Host::ReportErrorAsync("Error", "No physical devices found. Does your GPU and/or driver support Vulkan?");
+		return false;
+	}
+
+	u32 gpu_index = 0;
+	Vulkan::Context::GPUNameList gpu_names = Vulkan::Context::EnumerateGPUNames(instance);
+	if (!GSConfig.Adapter.empty())
+	{
+		for (; gpu_index < static_cast<u32>(gpu_names.size()); gpu_index++)
+		{
+			Console.WriteLn(fmt::format("GPU {}: {}", gpu_index, gpu_names[gpu_index]));
+			if (gpu_names[gpu_index] == GSConfig.Adapter)
+				break;
+		}
+
+		if (gpu_index == static_cast<u32>(gpu_names.size()))
+		{
+			Console.Warning(
+				fmt::format("Requested GPU '{}' not found, using first ({})", GSConfig.Adapter, gpu_names[0]));
+			gpu_index = 0;
+		}
+	}
+	else
+	{
+		Console.WriteLn("No GPU requested, using first (%s)", gpu_names[0].c_str());
+	}
+
+	VkSurfaceKHR surface = VK_NULL_HANDLE;
+	ScopedGuard surface_cleanup = [&instance, &surface]() {
+		if (surface != VK_NULL_HANDLE)
+			vkDestroySurfaceKHR(instance, surface, nullptr);
+	};
+	if (m_window_info.type != WindowInfo::Type::Surfaceless)
+	{
+		surface = Vulkan::SwapChain::CreateVulkanSurface(instance, gpus[gpu_index], &m_window_info);
+		if (surface == VK_NULL_HANDLE)
+			return false;
+	}
+
+	if (!Vulkan::Context::Create(instance, surface, gpus[gpu_index], enable_debug_utils, enable_validation_layer,
+			!GSConfig.DisableThreadedPresentation))
+	{
+		Console.Error("Failed to create Vulkan context");
+		return false;
+	}
+
+	// NOTE: This is assigned afterwards, because some platforms can modify the window info (e.g. Metal).
+	if (surface != VK_NULL_HANDLE)
+	{
+		m_swap_chain =
+			Vulkan::SwapChain::Create(m_window_info, surface, GetPreferredPresentModeForVsyncMode(m_vsync_mode));
+		if (!m_swap_chain)
+		{
+			Console.Error("Failed to create swap chain");
+			return false;
+		}
+
+		m_window_info = m_swap_chain->GetWindowInfo();
+	}
+
+	surface_cleanup.Cancel();
+	instance_cleanup.Cancel();
+	window_cleanup.Cancel();
+	library_cleanup.Cancel();
+
+	// Render a frame as soon as possible to clear out whatever was previously being displayed.
+	if (m_window_info.type != WindowInfo::Type::Surfaceless)
+		RenderBlankFrame();
+
+	return true;
 }
 
 bool GSDeviceVK::CheckFeatures()
@@ -2367,6 +2475,29 @@ void GSDeviceVK::RenderImGui()
 
 		g_perfmon.Put(GSPerfMon::DrawCalls, cmd_list->CmdBuffer.Size);
 	}
+}
+
+void GSDeviceVK::RenderBlankFrame()
+{
+	VkResult res = m_swap_chain->AcquireNextImage();
+	if (res != VK_SUCCESS)
+	{
+		Console.Error("Failed to acquire image for blank frame present");
+		return;
+	}
+
+	VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
+	Vulkan::Texture& sctex = m_swap_chain->GetCurrentTexture();
+	sctex.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+	constexpr VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+	vkCmdClearColorImage(cmdbuffer, sctex.GetImage(), sctex.GetLayout(), &s_present_clear_color.color, 1, &srr);
+
+	m_swap_chain->GetCurrentTexture().TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	g_vulkan_context->SubmitCommandBuffer(m_swap_chain.get(), !m_swap_chain->IsPresentModeSynchronizing());
+	g_vulkan_context->MoveToNextCommandBuffer();
+
+	InvalidateCachedState();
 }
 
 bool GSDeviceVK::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants)

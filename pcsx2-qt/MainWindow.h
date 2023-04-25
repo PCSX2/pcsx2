@@ -69,7 +69,7 @@ public:
 		void cancelResume();
 
 	private:
-		VMLock(QWidget* dialog_parent, bool was_paused, bool was_fullscreen);
+		VMLock(QWidget* dialog_parent, bool was_paused, bool was_exclusive_fullscreen);
 		friend MainWindow;
 
 		QWidget* m_dialog_parent;
@@ -122,11 +122,10 @@ public Q_SLOTS:
 private Q_SLOTS:
 	void onUpdateCheckComplete();
 
-	std::optional<WindowInfo> createDisplayWindow(bool fullscreen, bool render_to_main);
-	std::optional<WindowInfo> updateDisplayWindow(bool recreate_window, bool fullscreen, bool render_to_main, bool surfaceless);
+	std::optional<WindowInfo> acquireRenderWindow(bool recreate_window, bool fullscreen, bool render_to_main, bool surfaceless);
 	void displayResizeRequested(qint32 width, qint32 height);
 	void relativeMouseModeRequested(bool enabled);
-	void destroyDisplay();
+	void releaseRenderWindow();
 	void focusDisplayWidget();
 
 	void onGameListRefreshComplete();

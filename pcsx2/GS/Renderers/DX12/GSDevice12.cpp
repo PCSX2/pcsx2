@@ -44,6 +44,8 @@ static bool IsDATEModePrimIDInit(u32 flag) { return flag == 1 || flag == 2; }
 static constexpr std::array<D3D12_PRIMITIVE_TOPOLOGY, 3> s_primitive_topology_mapping =
 	{{D3D_PRIMITIVE_TOPOLOGY_POINTLIST, D3D_PRIMITIVE_TOPOLOGY_LINELIST, D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST}};
 
+static constexpr std::array<float, 4> s_present_clear_color = {};
+
 static D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE GetLoadOpForTexture(GSTexture12* tex)
 {
 	if (!tex)
@@ -116,9 +118,9 @@ bool GSDevice12::HasSurface() const
 	return static_cast<bool>(m_swap_chain);
 }
 
-bool GSDevice12::Create(const WindowInfo& wi, VsyncMode vsync)
+bool GSDevice12::Create()
 {
-	if (!GSDevice::Create(wi, vsync))
+	if (!GSDevice::Create())
 		return false;
 
 	m_dxgi_factory = D3D::CreateFactory(EmuConfig.GS.UseDebugDevice);
@@ -144,7 +146,7 @@ bool GSDevice12::Create(const WindowInfo& wi, VsyncMode vsync)
 		return false;
 	}
 
-	if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain(nullptr))
+	if (!AcquireWindow(true) || (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain()))
 		return false;
 
 	{
@@ -215,16 +217,15 @@ void GSDevice12::Destroy()
 		EndRenderPass();
 		ExecuteCommandList(true);
 		DestroyResources();
-
-		g_d3d12_context->WaitForGPUIdle();
-		GSDevice12::DestroySurface();
+		DestroySwapChain();
+		ReleaseWindow();
 		g_d3d12_context->Destroy();
 	}
 }
 
 bool GSDevice12::GetHostRefreshRate(float* refresh_rate)
 {
-	if (m_swap_chain && IsExclusiveFullscreen())
+	if (m_swap_chain && m_is_exclusive_fullscreen)
 	{
 		DXGI_SWAP_CHAIN_DESC desc;
 		if (SUCCEEDED(m_swap_chain->GetDesc(&desc)) && desc.BufferDesc.RefreshRate.Numerator > 0 &&
@@ -246,59 +247,101 @@ void GSDevice12::SetVSync(VsyncMode mode)
 	m_vsync_mode = mode;
 }
 
-
-bool GSDevice12::CreateSwapChain(const DXGI_MODE_DESC* fullscreen_mode)
+bool GSDevice12::CreateSwapChain()
 {
+	constexpr DXGI_FORMAT swap_chain_format = DXGI_FORMAT_R8G8B8A8_UNORM;
+
 	if (m_window_info.type != WindowInfo::Type::Win32)
 		return false;
 
 	const HWND window_hwnd = reinterpret_cast<HWND>(m_window_info.window_handle);
 	RECT client_rc{};
 	GetClientRect(window_hwnd, &client_rc);
-	const u32 width = static_cast<u32>(client_rc.right - client_rc.left);
-	const u32 height = static_cast<u32>(client_rc.bottom - client_rc.top);
+
+	DXGI_MODE_DESC fullscreen_mode;
+	wil::com_ptr_nothrow<IDXGIOutput> fullscreen_output;
+	if (Host::IsFullscreen())
+	{
+		u32 fullscreen_width, fullscreen_height;
+		float fullscreen_refresh_rate;
+		m_is_exclusive_fullscreen =
+			GetRequestedExclusiveFullscreenMode(&fullscreen_width, &fullscreen_height, &fullscreen_refresh_rate) &&
+			D3D::GetRequestedExclusiveFullscreenModeDesc(m_dxgi_factory.get(), client_rc, fullscreen_width,
+				fullscreen_height, fullscreen_refresh_rate, swap_chain_format, &fullscreen_mode,
+				fullscreen_output.put());
+	}
+	else
+	{
+		m_is_exclusive_fullscreen = false;
+	}
 
 	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
-	swap_chain_desc.Width = width;
-	swap_chain_desc.Height = height;
-	swap_chain_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swap_chain_desc.Width = static_cast<u32>(client_rc.right - client_rc.left);
+	swap_chain_desc.Height = static_cast<u32>(client_rc.bottom - client_rc.top);
+	swap_chain_desc.Format = swap_chain_format;
 	swap_chain_desc.SampleDesc.Count = 1;
 	swap_chain_desc.BufferCount = 3;
 	swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
-	m_using_allow_tearing = (m_allow_tearing_supported && !fullscreen_mode);
+	m_using_allow_tearing = (m_allow_tearing_supported && !m_is_exclusive_fullscreen);
 	if (m_using_allow_tearing)
 		swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
-	DXGI_SWAP_CHAIN_FULLSCREEN_DESC fs_desc = {};
-	if (fullscreen_mode)
+	HRESULT hr = S_OK;
+
+	if (m_is_exclusive_fullscreen)
 	{
-		swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-		swap_chain_desc.Width = fullscreen_mode->Width;
-		swap_chain_desc.Height = fullscreen_mode->Height;
-		fs_desc.RefreshRate = fullscreen_mode->RefreshRate;
-		fs_desc.ScanlineOrdering = fullscreen_mode->ScanlineOrdering;
-		fs_desc.Scaling = fullscreen_mode->Scaling;
+		DXGI_SWAP_CHAIN_DESC1 fs_sd_desc = swap_chain_desc;
+		DXGI_SWAP_CHAIN_FULLSCREEN_DESC fs_desc = {};
+
+		fs_sd_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+		fs_sd_desc.Width = fullscreen_mode.Width;
+		fs_sd_desc.Height = fullscreen_mode.Height;
+		fs_desc.RefreshRate = fullscreen_mode.RefreshRate;
+		fs_desc.ScanlineOrdering = fullscreen_mode.ScanlineOrdering;
+		fs_desc.Scaling = fullscreen_mode.Scaling;
 		fs_desc.Windowed = FALSE;
+
+		Console.WriteLn("Creating a %dx%d exclusive fullscreen swap chain", fs_sd_desc.Width, fs_sd_desc.Height);
+		hr = m_dxgi_factory->CreateSwapChainForHwnd(g_d3d12_context->GetCommandQueue(), window_hwnd, &fs_sd_desc,
+			&fs_desc, fullscreen_output.get(), m_swap_chain.put());
+		if (FAILED(hr))
+		{
+			Console.Warning("Failed to create fullscreen swap chain, trying windowed.");
+			m_is_exclusive_fullscreen = false;
+			m_using_allow_tearing = m_allow_tearing_supported;
+		}
 	}
 
-	DevCon.WriteLn("Creating a %dx%d %s swap chain", swap_chain_desc.Width, swap_chain_desc.Height,
-		fullscreen_mode ? "full-screen" : "windowed");
-
-	HRESULT hr = m_dxgi_factory->CreateSwapChainForHwnd(g_d3d12_context->GetCommandQueue(), window_hwnd,
-		&swap_chain_desc, fullscreen_mode ? &fs_desc : nullptr, nullptr, m_swap_chain.put());
-	if (FAILED(hr))
+	if (!m_is_exclusive_fullscreen)
 	{
-		Console.Error("CreateSwapChainForHwnd failed: 0x%08X", hr);
-		return false;
+		Console.WriteLn("Creating a %dx%d windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height);
+		hr = m_dxgi_factory->CreateSwapChainForHwnd(
+			g_d3d12_context->GetCommandQueue(), window_hwnd, &swap_chain_desc, nullptr, nullptr, m_swap_chain.put());
 	}
 
 	hr = m_dxgi_factory->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
 	if (FAILED(hr))
 		Console.Warning("MakeWindowAssociation() to disable ALT+ENTER failed");
 
-	return CreateSwapChainRTV();
+	if (!CreateSwapChainRTV())
+	{
+		DestroySwapChain();
+		return false;
+	}
+
+	// Render a frame as soon as possible to clear out whatever was previously being displayed.
+	EndRenderPass();
+	D3D12::Texture& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
+	ID3D12GraphicsCommandList4* cmdlist = g_d3d12_context->GetCommandList();
+	m_current_swap_chain_buffer = ((m_current_swap_chain_buffer + 1) % static_cast<u32>(m_swap_chain_buffers.size()));
+	swap_chain_buf.TransitionToState(cmdlist, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	cmdlist->ClearRenderTargetView(swap_chain_buf.GetWriteDescriptor(), s_present_clear_color.data(), 0, nullptr);
+	swap_chain_buf.TransitionToState(cmdlist, D3D12_RESOURCE_STATE_PRESENT);
+	ExecuteCommandList(false);
+	m_swap_chain->Present(0, m_using_allow_tearing ? DXGI_PRESENT_ALLOW_TEARING : 0);
+	return true;
 }
 
 bool GSDevice12::CreateSwapChainRTV()
@@ -315,6 +358,7 @@ bool GSDevice12::CreateSwapChainRTV()
 		if (FAILED(hr))
 		{
 			Console.Error("GetBuffer for RTV failed: 0x%08X", hr);
+			m_swap_chain_buffers.clear();
 			return false;
 		}
 
@@ -322,6 +366,7 @@ bool GSDevice12::CreateSwapChainRTV()
 		if (!tex.Adopt(std::move(backbuffer), DXGI_FORMAT_UNKNOWN, swap_chain_desc.BufferDesc.Format,
 				DXGI_FORMAT_UNKNOWN, D3D12_RESOURCE_STATE_PRESENT))
 		{
+			m_swap_chain_buffers.clear();
 			return false;
 		}
 
@@ -360,26 +405,44 @@ void GSDevice12::DestroySwapChainRTVs()
 	m_current_swap_chain_buffer = 0;
 }
 
-bool GSDevice12::ChangeWindow(const WindowInfo& new_wi)
+void GSDevice12::DestroySwapChain()
 {
-	DestroySurface();
+	if (!m_swap_chain)
+		return;
 
-	m_window_info = new_wi;
-	if (new_wi.type == WindowInfo::Type::Surfaceless)
-		return true;
+	DestroySwapChainRTVs();
 
-	return CreateSwapChain(nullptr);
+	// switch out of fullscreen before destroying
+	BOOL is_fullscreen;
+	if (SUCCEEDED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) && is_fullscreen)
+		m_swap_chain->SetFullscreenState(FALSE, nullptr);
+
+	m_swap_chain.reset();
+	m_is_exclusive_fullscreen = false;
+}
+
+bool GSDevice12::UpdateWindow()
+{
+	ExecuteCommandList(true);
+	DestroySwapChain();
+
+	if (!AcquireWindow(false))
+		return false;
+
+	if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain())
+	{
+		Console.WriteLn("Failed to create swap chain on updated window");
+		ReleaseWindow();
+		return false;
+	}
+
+	return true;
 }
 
 void GSDevice12::DestroySurface()
 {
 	ExecuteCommandList(true);
-
-	if (IsExclusiveFullscreen())
-		SetExclusiveFullscreen(false, 0, 0, 0.0f);
-
-	DestroySwapChainRTVs();
-	m_swap_chain.reset();
+	DestroySwapChain();
 }
 
 std::string GSDevice12::GetDriverInfo() const
@@ -452,75 +515,6 @@ bool GSDevice12::SupportsExclusiveFullscreen() const
 	return true;
 }
 
-bool GSDevice12::IsExclusiveFullscreen()
-{
-	BOOL is_fullscreen = FALSE;
-	return (m_swap_chain && SUCCEEDED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) && is_fullscreen);
-}
-
-bool GSDevice12::SetExclusiveFullscreen(bool fullscreen, u32 width, u32 height, float refresh_rate)
-{
-	if (!m_swap_chain)
-		return false;
-
-	BOOL is_fullscreen = FALSE;
-	HRESULT hr = m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr);
-	if (!fullscreen)
-	{
-		// leaving fullscreen
-		if (is_fullscreen)
-			return SUCCEEDED(m_swap_chain->SetFullscreenState(FALSE, nullptr));
-		else
-			return true;
-	}
-
-	IDXGIOutput* output;
-	if (FAILED(hr = m_swap_chain->GetContainingOutput(&output)))
-		return false;
-
-	DXGI_SWAP_CHAIN_DESC current_desc;
-	hr = m_swap_chain->GetDesc(&current_desc);
-	if (FAILED(hr))
-		return false;
-
-	DXGI_MODE_DESC new_mode = current_desc.BufferDesc;
-	new_mode.Width = width;
-	new_mode.Height = height;
-	new_mode.RefreshRate.Numerator = static_cast<UINT>(std::floor(refresh_rate * 1000.0f));
-	new_mode.RefreshRate.Denominator = 1000u;
-
-	DXGI_MODE_DESC closest_mode;
-	if (FAILED(hr = output->FindClosestMatchingMode(&new_mode, &closest_mode, nullptr)) ||
-		new_mode.Format != current_desc.BufferDesc.Format)
-	{
-		Console.Error("Failed to find closest matching mode, hr=%08X", hr);
-		return false;
-	}
-
-	if (new_mode.Width == current_desc.BufferDesc.Width && new_mode.Height == current_desc.BufferDesc.Width &&
-		new_mode.RefreshRate.Numerator == current_desc.BufferDesc.RefreshRate.Numerator &&
-		new_mode.RefreshRate.Denominator == current_desc.BufferDesc.RefreshRate.Denominator)
-	{
-		DevCon.WriteLn("Fullscreen mode already set");
-		return true;
-	}
-
-	g_d3d12_context->ExecuteCommandList(D3D12::Context::WaitType::Sleep);
-	DestroySwapChainRTVs();
-	m_swap_chain.reset();
-
-	if (!CreateSwapChain(&closest_mode))
-	{
-		Console.Error("Failed to create a fullscreen swap chain");
-		if (!CreateSwapChain(nullptr))
-			pxFailRel("Failed to recreate windowed swap chain");
-
-		return false;
-	}
-
-	return true;
-}
-
 GSDevice::PresentResult GSDevice12::BeginPresent(bool frame_skip)
 {
 	EndRenderPass();
@@ -531,12 +525,21 @@ GSDevice::PresentResult GSDevice12::BeginPresent(bool frame_skip)
 	if (frame_skip || !m_swap_chain)
 		return PresentResult::FrameSkipped;
 
-	static constexpr std::array<float, 4> clear_color = {};
+	// Check if we lost exclusive fullscreen. If so, notify the host, so it can switch to windowed mode.
+	// This might get called repeatedly if it takes a while to switch back, that's the host's problem.
+	BOOL is_fullscreen;
+	if (m_is_exclusive_fullscreen &&
+		(FAILED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) || !is_fullscreen))
+	{
+		Host::RunOnCPUThread([]() { Host::SetFullscreen(false); });
+		return PresentResult::FrameSkipped;
+	}
+
 	D3D12::Texture& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
 
 	ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
 	swap_chain_buf.TransitionToState(cmdlist, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	cmdlist->ClearRenderTargetView(swap_chain_buf.GetWriteDescriptor(), clear_color.data(), 0, nullptr);
+	cmdlist->ClearRenderTargetView(swap_chain_buf.GetWriteDescriptor(), s_present_clear_color.data(), 0, nullptr);
 	cmdlist->OMSetRenderTargets(1, &swap_chain_buf.GetWriteDescriptor().cpu_handle, FALSE, nullptr);
 	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 

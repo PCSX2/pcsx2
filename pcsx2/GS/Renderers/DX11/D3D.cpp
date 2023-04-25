@@ -120,6 +120,79 @@ std::vector<std::string> D3D::GetFullscreenModes(IDXGIFactory5* factory, const s
 	return modes;
 }
 
+bool D3D::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const RECT& window_rect, u32 width,
+	u32 height, float refresh_rate, DXGI_FORMAT format, DXGI_MODE_DESC* fullscreen_mode, IDXGIOutput** output)
+{
+	// We need to find which monitor the window is located on.
+	const GSVector4i client_rc_vec = GSVector4i::load<false>(&window_rect);
+
+	// The window might be on a different adapter to which we are rendering.. so we have to enumerate them all.
+	HRESULT hr;
+	wil::com_ptr_nothrow<IDXGIOutput> first_output, intersecting_output;
+
+	for (u32 adapter_index = 0; !intersecting_output; adapter_index++)
+	{
+		wil::com_ptr_nothrow<IDXGIAdapter1> adapter;
+		hr = factory->EnumAdapters1(adapter_index, adapter.put());
+		if (hr == DXGI_ERROR_NOT_FOUND)
+			break;
+		else if (FAILED(hr))
+			continue;
+
+		for (u32 output_index = 0;; output_index++)
+		{
+			wil::com_ptr_nothrow<IDXGIOutput> this_output;
+			DXGI_OUTPUT_DESC output_desc;
+			hr = adapter->EnumOutputs(output_index, this_output.put());
+			if (hr == DXGI_ERROR_NOT_FOUND)
+				break;
+			else if (FAILED(hr) || FAILED(this_output->GetDesc(&output_desc)))
+				continue;
+
+			const GSVector4i output_rc = GSVector4i::load<false>(&output_desc.DesktopCoordinates);
+			if (!client_rc_vec.rintersect(output_rc).rempty())
+			{
+				intersecting_output = std::move(this_output);
+				break;
+			}
+
+			// Fallback to the first monitor.
+			if (!first_output)
+				first_output = std::move(this_output);
+		}
+	}
+
+	if (!intersecting_output)
+	{
+		if (!first_output)
+		{
+			Console.Error("No DXGI output found. Can't use exclusive fullscreen.");
+			return false;
+		}
+
+		Console.Warning("No DXGI output found for window, using first.");
+		intersecting_output = std::move(first_output);
+	}
+
+	DXGI_MODE_DESC request_mode = {};
+	request_mode.Width = width;
+	request_mode.Height = height;
+	request_mode.Format = format;
+	request_mode.RefreshRate.Numerator = static_cast<UINT>(std::floor(refresh_rate * 1000.0f));
+	request_mode.RefreshRate.Denominator = 1000u;
+
+	if (FAILED(hr = intersecting_output->FindClosestMatchingMode(&request_mode, fullscreen_mode, nullptr)) ||
+		request_mode.Format != format)
+	{
+		Console.Error("Failed to find closest matching mode, hr=%08X", hr);
+		return false;
+	}
+
+	*output = intersecting_output.get();
+	intersecting_output->AddRef();
+	return true;
+}
+
 wil::com_ptr_nothrow<IDXGIAdapter1> D3D::GetAdapterByName(IDXGIFactory5* factory, const std::string_view& name)
 {
 	if (name.empty())
