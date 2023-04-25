@@ -77,9 +77,6 @@ public:
 		bool m_was_fullscreen;
 	};
 
-	/// Default theme name for the platform.
-	static const char* DEFAULT_THEME_NAME;
-
 	/// Default filter for opening a file.
 	static const char* OPEN_FILE_FILTER;
 
@@ -89,9 +86,6 @@ public:
 public:
 	MainWindow();
 	~MainWindow();
-
-	/// Sets application theme according to settings.
-	static void updateApplicationTheme();
 
 	void initialize();
 	void connectVMThreadSignals(EmuThread* thread);

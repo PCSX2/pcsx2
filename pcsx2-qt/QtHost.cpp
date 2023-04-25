@@ -1250,7 +1250,7 @@ void Host::SetDefaultUISettings(SettingsInterface& si)
 	si.SetBoolValue("UI", "RenderToSeparateWindow", false);
 	si.SetBoolValue("UI", "HideMainWindowWhenRunning", false);
 	si.SetBoolValue("UI", "DisableWindowResize", false);
-	si.SetStringValue("UI", "Theme", MainWindow::DEFAULT_THEME_NAME);
+	si.SetStringValue("UI", "Theme", QtHost::GetDefaultThemeName());
 }
 
 void QtHost::SaveSettings()
@@ -1797,7 +1797,7 @@ int main(int argc, char* argv[])
 		return EXIT_SUCCESS;
 
 	// Set theme before creating any windows.
-	MainWindow::updateApplicationTheme();
+	QtHost::UpdateApplicationTheme();
 	MainWindow* main_window = new MainWindow();
 
 	// Start up the CPU thread.

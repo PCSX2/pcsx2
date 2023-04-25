@@ -20,6 +20,7 @@
 #include "MainWindow.h"
 #include "SettingWidgetBinder.h"
 #include "SettingsDialog.h"
+#include "QtHost.h"
 
 static const char* THEME_NAMES[] = {
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Native"),
@@ -91,7 +92,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 	connect(m_ui.renderToSeparateWindow, &QCheckBox::stateChanged, this, &InterfaceSettingsWidget::onRenderToSeparateWindowChanged);
 
 	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.theme, "UI", "Theme", THEME_NAMES, THEME_VALUES,
-		MainWindow::DEFAULT_THEME_NAME);
+		QtHost::GetDefaultThemeName());
 	connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit themeChanged(); });
 
 	// Per-game settings is special, we don't want to bind it if we're editing per-game settings.

@@ -315,6 +315,7 @@
     <ClCompile Include="$(IntDir)moc_ColorPickerButton.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="Themes.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest">
