@@ -103,11 +103,7 @@ include(TargetArch)
 target_architecture(PCSX2_TARGET_ARCHITECTURES)
 if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
 	message(STATUS "Compiling a ${PCSX2_TARGET_ARCHITECTURES} build on a ${CMAKE_HOST_SYSTEM_PROCESSOR} host.")
-else()
-	message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
-endif()
 
-if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
 	# x86_64 requires -fPIC
 	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -125,9 +121,6 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
 	set(_ARCH_64 1)
 	set(_M_X86 1)
 else()
-	# All but i386 requires -fPIC
-	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 	message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
 endif()
 string(REPLACE " " ";" ARCH_FLAG_LIST "${ARCH_FLAG}")
@@ -220,12 +213,6 @@ if (USE_GCC)
 	list(APPEND DEFAULT_WARNINGS -Wno-stringop-truncation -Wno-stringop-overflow -Wno-maybe-uninitialized )
 endif()
 
-
-# -Wstrict-aliasing=n: to fix one day aliasing issue. n=1/2/3
-if (NOT MSVC)
-	set(AGGRESSIVE_WARNING -Wstrict-aliasing -Wstrict-overflow=1)
-endif()
-
 if (USE_PGO_GENERATE OR USE_PGO_OPTIMIZE)
 	add_compile_options("-fprofile-dir=${CMAKE_SOURCE_DIR}/profile")
 endif()
@@ -252,7 +239,7 @@ if(USE_CLANG AND TIMETRACE)
 	add_compile_options(-ftime-trace)
 endif()
 
-set(PCSX2_WARNINGS ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING})
+set(PCSX2_WARNINGS ${DEFAULT_WARNINGS})
 
 if(DISABLE_BUILD_DATE)
 	message(STATUS "Disabling the inclusion of the binary compile date.")
