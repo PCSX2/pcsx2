@@ -448,8 +448,8 @@
     <string>Support &amp;Forums...</string>
    </property>
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/forum.png</normaloff>:/icons/forum.png</iconset>
+    <iconset theme="at">
+     <normaloff>.</normaloff>.</iconset>
    </property>
   </action>
   <action name="actionDiscordServer">
