@@ -3756,7 +3756,7 @@ void GSTextureCache::AgeHashCache()
 	if (might_need_cache_purge)
 	{
 		std::sort(s_hash_cache_purge_list.begin(), s_hash_cache_purge_list.end(),
-			[](const auto& lhs, const auto& rhs) { return lhs.second - rhs.second; });
+			[](const auto& lhs, const auto& rhs) { return lhs.second > rhs.second; });
 
 		const u32 entries_to_purge = std::min(static_cast<u32>(m_hash_cache.size() - MAX_HASH_CACHE_SIZE),
 			static_cast<u32>(s_hash_cache_purge_list.size()));
