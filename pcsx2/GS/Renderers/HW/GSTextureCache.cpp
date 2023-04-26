@@ -2219,9 +2219,9 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				}
 
 				const GSVector4i draw_rect = (t->readbacks_since_draw > 1) ? t->m_drawn_since_read : targetr.rintersect(t->m_drawn_since_read);
-
+				const GSVector4i dirty_rect = t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size);
 				// Recently made this section dirty, no need to read it.
-				if (draw_rect.rintersect(t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size)).eq(draw_rect))
+				if (draw_rect.rintersect(dirty_rect).eq(draw_rect))
 					return;
 
 				if (t->m_drawn_since_read.eq(GSVector4i::zero()))
@@ -2234,6 +2234,10 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 
 				if (!draw_rect.rempty())
 				{
+					// The draw rect and read rect overlap somewhat, we should update the target before downloading it.
+					if (!dirty_rect.rintersect(targetr).rempty())
+						t->Update(false);
+
 					Read(t, draw_rect);
 
 					z_found = read_start >= t->m_TEX0.TBP0 && read_end <= t->m_end_block;
@@ -2356,8 +2360,9 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 					continue;
 			}
 
+			const GSVector4i dirty_rect = t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size);
 			// Recently made this section dirty, no need to read it.
-			if (targetr.rintersect(t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size)).eq(targetr))
+			if (targetr.rintersect(dirty_rect).eq(targetr))
 			{
 				if (exact_bp)
 					return;
@@ -2377,6 +2382,10 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 					DevCon.Error("Skipping depth readback of %ux%u @ %u,%u", targetr.width(), targetr.height(), targetr.left, targetr.top);
 					continue;
 				}
+
+				// The draw rect and read rect overlap somewhat, we should update the target before downloading it.
+				if (!dirty_rect.rintersect(targetr).rempty())
+					t->Update(false);
 
 				Read(t, targetr);
 
@@ -3855,7 +3864,8 @@ GSTexture* GSTextureCache::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVec
 
 void GSTextureCache::Read(Target* t, const GSVector4i& r)
 {
-	if (!t->m_dirty.empty() || r.width() == 0 || r.height() == 0)
+	if ((!t->m_dirty.empty() && !t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size).rintersect(r).rempty())
+		|| r.width() == 0 || r.height() == 0)
 		return;
 
 	const GIFRegTEX0& TEX0 = t->m_TEX0;
