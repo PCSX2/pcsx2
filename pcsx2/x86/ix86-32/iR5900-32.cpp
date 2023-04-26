@@ -2120,7 +2120,7 @@ static void memory_protect_recompiled_code(u32 startpc, u32 size)
 }
 
 // Skip MPEG Game-Fix
-bool skipMPEG_By_Pattern(u32 sPC)
+static bool skipMPEG_By_Pattern(u32 sPC)
 {
 
 	if (!CHECK_SKIPMPEGHACK)
@@ -2147,6 +2147,56 @@ bool skipMPEG_By_Pattern(u32 sPC)
 		return 1;
 	}
 	return 0;
+}
+
+static bool recSkipTimeoutLoop(s32 reg, bool is_timeout_loop)
+{
+	if (!EmuConfig.Speedhacks.WaitLoop || !is_timeout_loop)
+		return false;
+
+	DevCon.WriteLn("[EE] Skipping timeout loop at 0x%08X -> 0x%08X", s_pCurBlockEx->startpc, s_nEndBlock);
+
+	// basically, if the time it takes the loop to run is shorter than the
+	// time to the next event, then we want to skip ahead to the event, but
+	// update v0 to reflect how long the loop would have run for.
+
+	// if (cycle >= nextEventCycle) { jump to dispatcher, we're running late }
+	// new_cycles = min(v0 * 8, nextEventCycle)
+	// new_v0 = (new_cycles - cycles) / 8
+	// if new_v0 > 0 { jump to dispatcher because loop exited early }
+	// else new_v0 is 0, so exit loop
+
+	xMOV(ebx, ptr32[&cpuRegs.cycle]); // ebx = cycle
+	xMOV(ecx, ptr32[&cpuRegs.nextEventCycle]); // ecx = nextEventCycle
+	xCMP(ebx, ecx);
+	//xJAE((void*)DispatcherEvent); // jump to dispatcher if event immediately
+
+	// TODO: In the case where nextEventCycle < cycle because it's overflowed, tack 8
+	// cycles onto the event count, so hopefully it'll wrap around. This is pretty
+	// gross, but until we switch to 64-bit counters, not many better options.
+	xForwardJB8 not_dispatcher;
+	xADD(ebx, 8);
+	xMOV(ptr32[&cpuRegs.cycle], ebx);
+	xJMP((void*)DispatcherEvent);
+	not_dispatcher.SetTarget();
+
+	xMOV(edx, ptr32[&cpuRegs.GPR.r[reg].UL[0]]); // eax = v0
+	xLEA(rax, ptrNative[rdx * 8 + rbx]); // edx = v0 * 8 + cycle
+	xCMP(rcx, rax);
+	xCMOVB(rax, rcx); // eax = new_cycles = min(v8 * 8, nextEventCycle)
+	xMOV(ptr32[&cpuRegs.cycle], eax); // writeback new_cycles
+	xSUB(eax, ebx); // new_cycles -= cycle
+	xSHR(eax, 3); // compute new v0 value
+	xSUB(edx, eax); // v0 -= cycle_diff
+	xMOV(ptr32[&cpuRegs.GPR.r[reg].UL[0]], edx); // write back new value of v0
+	xJNZ((void*)DispatcherEvent); // jump to dispatcher if new v0 is not zero (i.e. an event)
+	xMOV(ptr32[&cpuRegs.pc], s_nEndBlock); // otherwise end of loop
+	recBlocks.Link(HWADDR(s_nEndBlock), xJcc32());
+
+	g_branch = 1;
+	pc = s_nEndBlock;
+
+	return true;
 }
 
 static void recRecompile(const u32 startpc)
@@ -2259,6 +2309,26 @@ static void recRecompile(const u32 startpc)
 	s_nEndBlock = 0xffffffff;
 	s_branchTo = -1;
 
+	// Timeout loop speedhack.
+	// God of War 2 and other games (e.g. NFS series) have these timeout loops which just spin for a few thousand
+	// iterations, usually after kicking something which results in an IRQ, but instead of cancelling the loop,
+	// they just let it finish anyway. Such loops look like:
+	//
+	//   00186D6C addiu  v0,v0, -0x1
+	//   00186D70 nop
+	//   00186D74 nop
+	//   00186D78 nop
+	//   00186D7C nop
+	//   00186D80 bne    v0, zero, ->$0x00186D6C
+	//   00186D84 nop
+	//
+	// Skipping them entirely seems to have no negative effects, but we skip cycles based on the incoming value
+	// if the register being decremented, which appears to vary. So far I haven't seen any which increment instead
+	// of decrementing, so we'll limit the test to that to be safe.
+	//
+	s32 timeout_reg = -1;
+	bool is_timeout_loop = true;
+
 	// compile breakpoints as individual blocks
 	int n1 = isBreakpointNeeded(i);
 	int n2 = isMemcheckNeeded(i);
@@ -2301,6 +2371,28 @@ static void recRecompile(const u32 startpc)
 
 		//HUH ? PSM ? whut ? THIS IS VIRTUAL ACCESS GOD DAMMIT
 		cpuRegs.code = *(int*)PSM(i);
+
+		if (is_timeout_loop)
+		{
+			if ((cpuRegs.code >> 26) == 8 || (cpuRegs.code >> 26) == 9)
+			{
+				// addi/addiu
+				if (timeout_reg >= 0 || _Rs_ != _Rt_ || _Imm_ >= 0)
+					is_timeout_loop = false;
+				else
+					timeout_reg = _Rs_;
+			}
+			else if ((cpuRegs.code >> 26) == 5)
+			{
+				// bne
+				if (timeout_reg != _Rs_ || _Rt_ != 0 || memRead32(i + 4) != 0)
+					is_timeout_loop = false;
+			}
+			else if (cpuRegs.code != 0)
+			{
+				is_timeout_loop = false;
+			}
+		}
 
 		switch (cpuRegs.code >> 26)
 		{
@@ -2393,11 +2485,6 @@ StartRecomp:
 	// (excepting registers initialised with constants or memory loads) or use any instructions
 	// which alter the machine state apart from registers, it will do the same thing on every
 	// iteration.
-	// TODO: special handling for counting loops.  God of war wastes time in a loop which just
-	// counts to some large number and does nothing else, many other games use a counter as a
-	// timeout on a register read.  AFAICS the only way to optimise this for non-const cases
-	// without a significant loss in cycle accuracy is with a division, but games would probably
-	// be happy with time wasting loops completing in 0 cycles and timeouts waiting forever.
 	s_nBlockFF = false;
 	if (s_branchTo == startpc)
 	{
@@ -2476,6 +2563,10 @@ StartRecomp:
 			}
 		}
 	}
+	else
+	{
+		is_timeout_loop = false;
+	}
 
 	// rec info //
 	bool has_cop2_instructions = false;
@@ -2538,7 +2629,7 @@ StartRecomp:
 	memory_protect_recompiled_code(startpc, (s_nEndBlock - startpc) >> 2);
 
 	// Skip Recompilation if sceMpegIsEnd Pattern detected
-	bool doRecompilation = !skipMPEG_By_Pattern(startpc);
+	bool doRecompilation = !skipMPEG_By_Pattern(startpc) && !recSkipTimeoutLoop(timeout_reg, is_timeout_loop);
 
 	if (doRecompilation)
 	{
