@@ -51,15 +51,16 @@ public:
 			u32 key;
 		};
 
+		GSHWDrawConfig::BlendState bs;
 		GSHWDrawConfig::VSSelector vs;
 		GSHWDrawConfig::DepthStencilSelector dss;
 		GSHWDrawConfig::ColorMaskSelector cms;
-		GSHWDrawConfig::BlendState bs;
+		u8 pad;
 
-		__fi bool operator==(const PipelineSelector& p) const { return (memcmp(this, &p, sizeof(p)) == 0); }
-		__fi bool operator!=(const PipelineSelector& p) const { return (memcmp(this, &p, sizeof(p)) != 0); }
+		__fi bool operator==(const PipelineSelector& p) const { return BitEqual(*this, p); }
+		__fi bool operator!=(const PipelineSelector& p) const { return !BitEqual(*this, p); }
 
-		__fi PipelineSelector() { memset(this, 0, sizeof(*this)); }
+		__fi PipelineSelector() { std::memset(this, 0, sizeof(*this)); }
 	};
 	static_assert(sizeof(PipelineSelector) == 24, "Pipeline selector is 24 bytes");
 

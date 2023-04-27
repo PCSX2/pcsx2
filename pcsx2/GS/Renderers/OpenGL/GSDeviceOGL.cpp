@@ -2393,7 +2393,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	psel.vs = config.vs;
 	psel.ps.key_hi = config.ps.key_hi;
 	psel.ps.key_lo = config.ps.key_lo;
-	psel.pad = 0;
+	std::memset(psel.pad, 0, sizeof(psel.pad));
 
 	SetupPipeline(psel);
 

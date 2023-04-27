@@ -264,6 +264,7 @@ struct alignas(16) GSHWDrawConfig
 		/// Returns true if the fixed index buffer should be used.
 		__fi bool UseExpandIndexBuffer() const { return (expand == VSExpand::Point || expand == VSExpand::Sprite); }
 	};
+	static_assert(sizeof(VSSelector) == 1, "VSSelector is a single byte");
 #pragma pack(pop)
 #pragma pack(push, 4)
 	struct PSSelector
@@ -382,6 +383,7 @@ struct alignas(16) GSHWDrawConfig
 			no_color = no_color1 = 1;
 		}
 	};
+	static_assert(sizeof(PSSelector) == 12, "PSSelector is 12 bytes");
 #pragma pack(pop)
 	struct PSSelectorHash
 	{
