@@ -653,9 +653,9 @@ void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 			}
 
 #if 0
-			GSVector4 delta_p = m_vt.m_max.p - m_vt.m_min.p;
-			GSVector4 delta_t = m_vt.m_max.t - m_vt.m_min.t;
-			bool is_blit = PrimitiveOverlap() == PRIM_OVERLAP_NO;
+			const GSVector4 delta_p = m_vt.m_max.p - m_vt.m_min.p;
+			const GSVector4 delta_t = m_vt.m_max.t - m_vt.m_min.t;
+			const bool is_blit = PrimitiveOverlap() == PRIM_OVERLAP_NO;
 			GL_INS("PP SAMPLER: Dp %f %f Dt %f %f. Is blit %d, is paving %d, count %d", delta_p.x, delta_p.y, delta_t.x, delta_t.y, is_blit, is_paving, m_vertex.tail);
 #endif
 
@@ -3314,7 +3314,7 @@ void GSRendererHW::EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& 
 
 	// For stat to optimize accurate option
 #if 0
-	GL_INS("BLEND_INFO: %u/%u/%u/%u. Clamp:%u. Prim:%d number %u (drawlist %u) (sw %d)",
+	GL_INS("BLEND_INFO: %u/%u/%u/%u. Clamp:%u. Prim:%d number %u (drawlist %zu) (sw %d)",
 		m_conf.ps.blend_a, m_conf.ps.blend_b, m_conf.ps.blend_c, m_conf.ps.blend_d,
 		m_env.COLCLAMP.CLAMP, m_vt.m_primclass, m_vertex.next, m_drawlist.size(), sw_blending);
 #endif
