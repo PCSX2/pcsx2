@@ -644,22 +644,8 @@ void mVUcustomSearch()
 		xMOVAPS  (xmm2, ptr32[arg1reg + 0x50]);
 		xPCMP.EQD(xmm2, ptr32[arg2reg + 0x50]);
 		xPAND    (xmm1, xmm2);
+		xPAND    (xmm0, xmm1);
 
-		xMOVAPS  (xmm2, ptr32[arg1reg + 0x60]);
-		xPCMP.EQD(xmm2, ptr32[arg2reg + 0x60]);
-		xMOVAPS  (xmm3, ptr32[arg1reg + 0x70]);
-		xPCMP.EQD(xmm3, ptr32[arg2reg + 0x70]);
-		xPAND    (xmm2, xmm3);
-
-		xMOVAPS  (xmm3, ptr32[arg1reg + 0x80]);
-		xPCMP.EQD(xmm3, ptr32[arg2reg + 0x80]);
-		xMOVAPS  (xmm4, ptr32[arg1reg + 0x90]);
-		xPCMP.EQD(xmm4, ptr32[arg2reg + 0x90]);
-		xPAND    (xmm3, xmm4);
-
-		xPAND (xmm0, xmm1);
-		xPAND (xmm2, xmm3);
-		xPAND (xmm0, xmm2);
 		xMOVMSKPS(eax, xmm0);
 		xXOR(eax, 0xf);
 
@@ -675,19 +661,10 @@ void mVUcustomSearch()
 		xForwardJNZ8 exitPoint;
 
 		xVMOVUPS(ymm0, ptr[arg1reg + 0x20]);
-		xVPCMP.EQD(ymm0, ymm0, ptr[arg2reg + 0x20]);
-
 		xVMOVUPS(ymm1, ptr[arg1reg + 0x40]);
+		xVPCMP.EQD(ymm0, ymm0, ptr[arg2reg + 0x20]);
 		xVPCMP.EQD(ymm1, ymm1, ptr[arg2reg + 0x40]);
-
-		xVMOVUPS(ymm2, ptr[arg1reg + 0x60]);
-		xVPCMP.EQD(ymm2, ymm2, ptr[arg2reg + 0x60]);
 		xVPAND(ymm0, ymm0, ymm1);
-
-		xVMOVUPS(ymm3, ptr[arg1reg + 0x80]);
-		xVPCMP.EQD(ymm3, ymm3, ptr[arg2reg + 0x80]);
-		xVPAND(ymm2, ymm2, ymm3);
-		xVPAND(ymm0, ymm0, ymm2);
 
 		xVPMOVMSKB(eax, ymm0);
 		xNOT(eax);

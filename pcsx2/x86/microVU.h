@@ -164,7 +164,7 @@ public:
 		{
 			u32 viCRC = 0, vfCRC = 0, crc = 0, z = sizeof(microRegInfo) / 4;
 			for (u32 j = 0; j < 4;  j++) viCRC -= ((u32*)linkI->block.pState.VI)[j];
-			for (u32 j = 0; j < 32; j++) vfCRC -= linkI->block.pState.VF[j].reg;
+			for (u32 j = 0; j < 32; j++) vfCRC -= linkI->block.pState.VF[j].x + (linkI->block.pState.VF[j].y << 8) + (linkI->block.pState.VF[j].z << 16) + (linkI->block.pState.VF[j].x << 24);
 			for (u32 j = 0; j < z;  j++) crc   -= ((u32*)&linkI->block.pState)[j];
 			DevCon.WriteLn(Color_Green,
 				"[%04x][Block #%d][crc=%08x][q=%02d][p=%02d][xgkick=%d][vi15=%04x][vi15v=%d][viBackup=%02d]"

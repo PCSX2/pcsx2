@@ -109,7 +109,6 @@ void SaveStateBase::vuMicroFreeze()
 	Freeze(VU0.ebit);
 	Freeze(VU0.pending_q);
 	Freeze(VU0.pending_p);
-	Freeze(VU0.blockhasmbit);
 	Freeze(VU0.micro_macflags);
 	Freeze(VU0.micro_clipflags);
 	Freeze(VU0.micro_statusflags);
@@ -149,7 +148,6 @@ void SaveStateBase::vuMicroFreeze()
 	Freeze(VU1.ebit);
 	Freeze(VU1.pending_q);
 	Freeze(VU1.pending_p);
-	Freeze(VU1.blockhasmbit);
 	Freeze(VU1.micro_macflags);
 	Freeze(VU1.micro_clipflags);
 	Freeze(VU1.micro_statusflags);
