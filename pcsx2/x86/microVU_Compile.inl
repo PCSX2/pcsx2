@@ -470,8 +470,7 @@ void mVUtestCycles(microVU& mVU, microFlagCycles& mFC)
 	else
 		xSUB(eax, 1); // Running ahead, make sure cycles left are above 0
 
-	xCMP(eax, 0);
-	xForwardJGE32 skip;
+	xForwardJNS32 skip;
 
 	u8* writeback = x86Ptr;
 	xLoadFarAddr(rax, x86Ptr);
