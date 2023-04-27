@@ -102,7 +102,7 @@ if(ENABLE_TESTS)
 	endif()
 endif()
 
-if(GCC_VERSION GREATER_EQUAL "9.0" AND GCC_VERSION LESS "9.2")
+if(GCC_VERSION VERSION_GREATER_EQUAL "9.0" AND GCC_VERSION VERSION_LESS "9.2")
 	message(WARNING "
 	It looks like you are compiling with 9.0.x or 9.1.x. Using these versions is not recommended,
 	as there is a bug known to cause the compiler to segfault while compiling. See patch
