@@ -3215,7 +3215,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		{
 			draw_rt = m_current_render_target;
 			m_pipeline_selector.rt = true;
-			m_pipeline_selector.cms.wrgba = 0;
 		}
 	}
 	else if (!draw_ds && m_current_depth_target && config.tex != m_current_depth_target &&
@@ -3223,8 +3222,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	{
 		draw_ds = m_current_depth_target;
 		m_pipeline_selector.ds = true;
-		m_pipeline_selector.dss.ztst = ZTST_ALWAYS;
-		m_pipeline_selector.dss.zwe = false;
 	}
 
 	OMSetRenderTargets(draw_rt, draw_ds, config.scissor);
