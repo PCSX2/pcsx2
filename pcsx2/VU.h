@@ -157,7 +157,6 @@ struct alignas(16) VURegs
 	u32 ebit;
 	u32 pending_q;
 	u32 pending_p;
-	u32 blockhasmbit;
 
 	alignas(16) u32 micro_macflags[4];
 	alignas(16) u32 micro_clipflags[4];
