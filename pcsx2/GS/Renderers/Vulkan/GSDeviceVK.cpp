@@ -645,8 +645,8 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 			return false;
 	}
 
-	if (!Vulkan::Context::Create(instance, surface, gpus[gpu_index], enable_debug_utils, enable_validation_layer,
-			!GSConfig.DisableThreadedPresentation))
+	if (!Vulkan::Context::Create(instance, surface, gpus[gpu_index], !GSConfig.DisableThreadedPresentation,
+			enable_debug_utils, enable_validation_layer))
 	{
 		Console.Error("Failed to create Vulkan context");
 		return false;
