@@ -102,18 +102,7 @@ if(ENABLE_TESTS)
 	endif()
 endif()
 
-#----------------------------------------
-# Check correctness of the parameter
-# Note: wxWidgets_INCLUDE_DIRS must be defined
-#----------------------------------------
-include(ApiValidation)
-
-# Blacklist bad GCC
-if(GCC_VERSION VERSION_EQUAL "7.0" OR GCC_VERSION VERSION_EQUAL "7.1")
-	GCC7_BUG()
-endif()
-
-if((GCC_VERSION VERSION_EQUAL "9.0" OR GCC_VERSION VERSION_GREATER "9.0") AND GCC_VERSION LESS "9.2")
+if(GCC_VERSION VERSION_GREATER_EQUAL "9.0" AND GCC_VERSION VERSION_LESS "9.2")
 	message(WARNING "
 	It looks like you are compiling with 9.0.x or 9.1.x. Using these versions is not recommended,
 	as there is a bug known to cause the compiler to segfault while compiling. See patch

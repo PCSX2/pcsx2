@@ -12,21 +12,12 @@ find_path(VTUNE_INCLUDE_DIRS NAMES jitprofiling.h PATHS
 	/opt/intel/vtune_amplifier_xe_2016/include
 )
 
-if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
-	find_library(VTUNE_LIBRARIES NAMES libjitprofiling.a PATHS
-		/opt/intel/oneapi/vtune/latest/lib32
-		/opt/intel/vtune_amplifier_xe_2018/lib32
-		/opt/intel/vtune_amplifier_xe_2017/lib32
-		/opt/intel/vtune_amplifier_xe_2016/lib32
-	)
-else()
-	find_library(VTUNE_LIBRARIES NAMES libjitprofiling.a PATHS
-		/opt/intel/oneapi/vtune/latest/lib64
-		/opt/intel/vtune_amplifier_xe_2018/lib64
-		/opt/intel/vtune_amplifier_xe_2017/lib64
-		/opt/intel/vtune_amplifier_xe_2016/lib64
-	)
-endif()
+find_library(VTUNE_LIBRARIES NAMES libjitprofiling.a PATHS
+	/opt/intel/oneapi/vtune/latest/lib64
+	/opt/intel/vtune_amplifier_xe_2018/lib64
+	/opt/intel/vtune_amplifier_xe_2017/lib64
+	/opt/intel/vtune_amplifier_xe_2016/lib64
+)
 
 # handle the QUIETLY and REQUIRED arguments and set VTUNE_FOUND to TRUE if
 # all listed variables are TRUE
@@ -41,4 +32,3 @@ if(VTUNE_LIBRARIES AND NOT TARGET Vtune::Vtune)
 endif()
 
 mark_as_advanced(VTUNE_FOUND VTUNE_INCLUDE_DIRS VTUNE_LIBRARIES)
-
