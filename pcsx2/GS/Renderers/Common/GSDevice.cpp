@@ -216,12 +216,6 @@ bool GSDevice::AcquireWindow(bool recreate_window)
 	return true;
 }
 
-void GSDevice::ReleaseWindow()
-{
-	Host::ReleaseRenderWindow();
-	m_window_info = WindowInfo();
-}
-
 bool GSDevice::GetHostRefreshRate(float* refresh_rate)
 {
 	if (m_window_info.surface_refresh_rate > 0.0f)

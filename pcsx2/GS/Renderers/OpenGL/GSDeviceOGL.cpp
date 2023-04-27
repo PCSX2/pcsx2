@@ -551,8 +551,6 @@ void GSDeviceOGL::Destroy()
 
 		m_gl_context->DoneCurrent();
 		m_gl_context.reset();
-
-		ReleaseWindow();
 	}
 }
 
@@ -673,7 +671,6 @@ bool GSDeviceOGL::UpdateWindow()
 	if (!m_gl_context->ChangeSurface(m_window_info))
 	{
 		Console.Error("Failed to change surface");
-		ReleaseWindow();
 		return false;
 	}
 

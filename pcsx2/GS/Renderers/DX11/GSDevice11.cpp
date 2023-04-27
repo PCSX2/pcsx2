@@ -493,7 +493,6 @@ void GSDevice11::Destroy()
 {
 	GSDevice::Destroy();
 	DestroySwapChain();
-	ReleaseWindow();
 	DestroyTimestampQueries();
 
 	m_convert = {};
@@ -769,7 +768,6 @@ bool GSDevice11::UpdateWindow()
 	if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain())
 	{
 		Console.WriteLn("Failed to create swap chain on updated window");
-		ReleaseWindow();
 		return false;
 	}
 

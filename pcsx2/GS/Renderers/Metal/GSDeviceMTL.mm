@@ -1170,7 +1170,6 @@ void GSDeviceMTL::Destroy()
 
 	GSDevice::Destroy();
 	GSDeviceMTL::DestroySurface();
-	ReleaseWindow();
 	m_queue = nullptr;
 	m_dev.Reset();
 }}
