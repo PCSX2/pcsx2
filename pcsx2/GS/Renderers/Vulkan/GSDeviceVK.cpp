@@ -257,7 +257,6 @@ void GSDeviceVK::Destroy()
 
 		g_vulkan_context->WaitForGPUIdle();
 		m_swap_chain.reset();
-		ReleaseWindow();
 
 		Vulkan::ShaderCache::Destroy();
 		Vulkan::Context::Destroy();
@@ -295,7 +294,6 @@ bool GSDeviceVK::UpdateWindow()
 	if (surface == VK_NULL_HANDLE)
 	{
 		Console.Error("Failed to create new surface for swap chain");
-		ReleaseWindow();
 		return false;
 	}
 
@@ -304,7 +302,6 @@ bool GSDeviceVK::UpdateWindow()
 	{
 		Console.Error("Failed to create swap chain");
 		Vulkan::SwapChain::DestroyVulkanSurface(g_vulkan_context->GetVulkanInstance(), &m_window_info, surface);
-		ReleaseWindow();
 		return false;
 	}
 
@@ -572,8 +569,6 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	if (!AcquireWindow(true))
 		return false;
 
-	ScopedGuard window_cleanup = [this]() { ReleaseWindow(); };
-
 	VkInstance instance =
 		Vulkan::Context::CreateVulkanInstance(m_window_info, enable_debug_utils, enable_validation_layer);
 	if (instance == VK_NULL_HANDLE)
@@ -668,7 +663,6 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 
 	surface_cleanup.Cancel();
 	instance_cleanup.Cancel();
-	window_cleanup.Cancel();
 	library_cleanup.Cancel();
 
 	// Render a frame as soon as possible to clear out whatever was previously being displayed.

@@ -359,6 +359,7 @@ void GSclose()
 {
 	CloseGSRenderer();
 	CloseGSDevice(true);
+	Host::ReleaseRenderWindow();
 }
 
 void GSreset(bool hardware_reset)

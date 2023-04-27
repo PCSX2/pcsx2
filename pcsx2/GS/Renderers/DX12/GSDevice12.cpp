@@ -218,7 +218,6 @@ void GSDevice12::Destroy()
 		ExecuteCommandList(true);
 		DestroyResources();
 		DestroySwapChain();
-		ReleaseWindow();
 		g_d3d12_context->Destroy();
 	}
 }
@@ -432,7 +431,6 @@ bool GSDevice12::UpdateWindow()
 	if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain())
 	{
 		Console.WriteLn("Failed to create swap chain on updated window");
-		ReleaseWindow();
 		return false;
 	}
 
