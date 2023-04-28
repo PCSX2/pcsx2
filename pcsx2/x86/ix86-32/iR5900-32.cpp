@@ -514,7 +514,7 @@ static void _DynGen_Dispatchers()
 
 	recBlocks.SetJITCompile(JITCompile);
 
-	Perf::any.map((uptr)&eeRecDispatchers, 4096, "EE Dispatcher");
+	Perf::any.Register((void*)eeRecDispatchers, 4096, "EE Dispatcher");
 }
 
 
@@ -533,7 +533,6 @@ static void recReserve()
 		return;
 
 	recMem = new RecompiledCodeReserve("R5900 Recompiler Cache");
-	recMem->SetProfilerName("EErec");
 	recMem->Assign(GetVmMemory().CodeMemory(), HostMemoryMap::EErecOffset, 64 * _1mb);
 }
 
@@ -616,8 +615,6 @@ static void recResetRaw()
 {
 	Console.WriteLn(Color_StrongBlack, "EE/iR5900-32 Recompiler Reset");
 
-	Perf::ee.reset();
-
 	EE::Profiler.Reset();
 
 	recAlloc();
@@ -655,9 +652,6 @@ static void recShutdown()
 
 	safe_free(s_pInstCache);
 	s_nInstCacheSize = 0;
-
-	// FIXME Warning thread unsafe
-	Perf::dump();
 }
 
 void recStep()
@@ -742,9 +736,6 @@ static void recExecute()
 	}
 
 	eeCpuExecuting = false;
-
-	// FIXME Warning thread unsafe
-	Perf::dump();
 
 	EE::Profiler.Print();
 }
@@ -2678,7 +2669,7 @@ StartRecomp:
 		iDumpBlock(s_pCurBlockEx->startpc, s_pCurBlockEx->size*4, s_pCurBlockEx->fnptr, s_pCurBlockEx->x86size);
 	}
 #endif
-	Perf::ee.map(s_pCurBlockEx->fnptr, s_pCurBlockEx->x86size, s_pCurBlockEx->startpc);
+	Perf::ee.RegisterPC((void*)s_pCurBlockEx->fnptr, s_pCurBlockEx->x86size, s_pCurBlockEx->startpc);
 
 	recPtr = xGetPtr();
 

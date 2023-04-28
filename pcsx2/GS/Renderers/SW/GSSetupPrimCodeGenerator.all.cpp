@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSSetupPrimCodeGenerator.all.h"
 #include "GSVertexSW.h"
+#include "common/Perf.h"
 
 MULTI_ISA_UNSHARED_IMPL;
 using namespace Xbyak;
@@ -147,6 +148,8 @@ void GSSetupPrimCodeGenerator2::Generate()
 	if (isYmm)
 		vzeroupper();
 	ret();
+
+	Perf::any.RegisterKey(actual.getCode(), actual.getSize(), "GSSetupPrim_", m_sel.key);
 }
 
 void GSSetupPrimCodeGenerator2::Depth_XMM()

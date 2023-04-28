@@ -307,14 +307,6 @@ RecompiledCodeReserve::~RecompiledCodeReserve()
 	Release();
 }
 
-void RecompiledCodeReserve::_registerProfiler()
-{
-	if (m_profiler_name.empty() || !IsOk())
-		return;
-
-	Perf::any.map((uptr)m_baseptr, m_size, m_profiler_name.c_str());
-}
-
 void RecompiledCodeReserve::Assign(VirtualMemoryManagerPtr allocator, size_t offset, size_t size)
 {
 	// Anything passed to the memory allocator must be page aligned.
@@ -329,7 +321,6 @@ void RecompiledCodeReserve::Assign(VirtualMemoryManagerPtr allocator, size_t off
 	}
 
 	VirtualMemoryReserve::Assign(std::move(allocator), base, size);
-	_registerProfiler();
 }
 
 void RecompiledCodeReserve::Reset()
@@ -352,14 +343,4 @@ void RecompiledCodeReserve::AllowModification()
 void RecompiledCodeReserve::ForbidModification()
 {
 	HostSys::MemProtect(m_baseptr, m_size, PageProtectionMode().Read().Execute());
-}
-
-// Sets the abbreviated name used by the profiler.  Name should be under 10 characters long.
-// After a name has been set, a profiler source will be automatically registered and cleared
-// in accordance with changes in the reserve area.
-RecompiledCodeReserve& RecompiledCodeReserve::SetProfilerName(std::string name)
-{
-	m_profiler_name = std::move(name);
-	_registerProfiler();
-	return *this;
 }
