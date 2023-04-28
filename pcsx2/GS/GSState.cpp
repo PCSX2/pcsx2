@@ -388,6 +388,40 @@ float GSState::GetTvRefreshRate()
 	__assume(0); // unreachable
 }
 
+const char* GSState::GetFlushReasonString(GSFlushReason reason)
+{
+	switch (reason)
+	{
+		case GSFlushReason::RESET:
+			return "RESET";
+		case GSFlushReason::CONTEXTCHANGE:
+			return "CONTEXT CHANGE";
+		case GSFlushReason::CLUTCHANGE:
+			return "CLUT CHANGE (RELOAD REQ)";
+		case GSFlushReason::GSTRANSFER:
+			return "GS TRANSFER";
+		case GSFlushReason::UPLOADDIRTYTEX:
+			return "GS UPLOAD OVERWRITES CURRENT TEXTURE OR CLUT";
+		case GSFlushReason::LOCALTOLOCALMOVE:
+			return "GS LOCAL TO LOCAL OVERWRITES CURRENT TEXTURE OR CLUT";
+		case GSFlushReason::DOWNLOADFIFO:
+			return "DOWNLOAD FIFO";
+		case GSFlushReason::SAVESTATE:
+			return "SAVESTATE";
+		case GSFlushReason::LOADSTATE:
+			return "LOAD SAVESTATE";
+		case GSFlushReason::AUTOFLUSH:
+			return "AUTOFLUSH OVERLAP DETECTED";
+		case GSFlushReason::VSYNC:
+			return "VSYNC";
+		case GSFlushReason::GSREOPEN:
+			return "GS REOPEN";
+		case GSFlushReason::UNKNOWN:
+		default:
+			return "UNKNOWN";
+	}
+}
+
 void GSState::DumpVertices(const std::string& filename)
 {
 	std::ofstream file(filename);
@@ -395,51 +429,7 @@ void GSState::DumpVertices(const std::string& filename)
 	if (!file.is_open())
 		return;
 
-	file << "FLUSH REASON: ";
-
-	switch (m_state_flush_reason)
-	{
-		case GSFlushReason::RESET:
-			file << "RESET";
-			break;
-		case GSFlushReason::CONTEXTCHANGE:
-			file << "CONTEXT CHANGE";
-			break;
-		case GSFlushReason::CLUTCHANGE:
-			file << "CLUT CHANGE (RELOAD REQ)";
-			break;
-		case GSFlushReason::GSTRANSFER:
-			file << "GS TRANSFER";
-			break;
-		case GSFlushReason::UPLOADDIRTYTEX:
-			file << "GS UPLOAD OVERWRITES CURRENT TEXTURE OR CLUT";
-			break;
-		case GSFlushReason::LOCALTOLOCALMOVE:
-			file << "GS LOCAL TO LOCAL OVERWRITES CURRENT TEXTURE OR CLUT";
-			break;
-		case GSFlushReason::DOWNLOADFIFO:
-			file << "DOWNLOAD FIFO";
-			break;
-		case GSFlushReason::SAVESTATE:
-			file << "SAVESTATE";
-			break;
-		case GSFlushReason::LOADSTATE:
-			file << "LOAD SAVESTATE";
-			break;
-		case GSFlushReason::AUTOFLUSH:
-			file << "AUTOFLUSH OVERLAP DETECTED";
-			break;
-		case GSFlushReason::VSYNC:
-			file << "VSYNC";
-			break;
-		case GSFlushReason::GSREOPEN:
-			file << "GS REOPEN";
-			break;
-		case GSFlushReason::UNKNOWN:
-		default:
-			file << "UNKNOWN";
-			break;
-	}
+	file << "FLUSH REASON: " << GetFlushReasonString(m_state_flush_reason);
 
 	if (m_state_flush_reason != GSFlushReason::CONTEXTCHANGE && m_dirty_gs_regs)
 		file << " AND POSSIBLE CONTEXT CHANGE";
