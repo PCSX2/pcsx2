@@ -154,9 +154,6 @@ class RecompiledCodeReserve : public VirtualMemoryReserve
 {
 	typedef VirtualMemoryReserve _parent;
 
-protected:
-	std::string m_profiler_name;
-
 public:
 	RecompiledCodeReserve(std::string name);
 	~RecompiledCodeReserve();
@@ -164,14 +161,9 @@ public:
 	void Assign(VirtualMemoryManagerPtr allocator, size_t offset, size_t size);
 	void Reset();
 
-	RecompiledCodeReserve& SetProfilerName(std::string name);
-
 	void ForbidModification();
 	void AllowModification();
 
 	operator u8*() { return m_baseptr; }
 	operator const u8*() const { return m_baseptr; }
-
-protected:
-	void _registerProfiler();
 };

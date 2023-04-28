@@ -388,7 +388,7 @@ void vtlb_dynarec_init()
 
 	HostSys::MemProtectStatic(m_IndirectDispatchers, PageAccess_ExecOnly());
 
-	Perf::any.map((uptr)m_IndirectDispatchers, __pagesize, "TLB Dispatcher");
+	Perf::any.Register(m_IndirectDispatchers, __pagesize, "TLB Dispatcher");
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

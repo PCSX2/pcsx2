@@ -997,7 +997,13 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 
 perf_and_return:
 
-	Perf::vu.map((uptr)thisPtr, x86Ptr - thisPtr, startPC);
+	if (mVU.regs().start_pc == startPC)
+	{
+		if (mVU.index)
+			Perf::vu1.RegisterPC(thisPtr, static_cast<u32>(x86Ptr - thisPtr), startPC);
+		else
+			Perf::vu0.RegisterPC(thisPtr, static_cast<u32>(x86Ptr - thisPtr), startPC);
+	}
 
 	return thisPtr;
 }

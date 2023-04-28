@@ -17,6 +17,7 @@
 #include "GSDrawScanlineCodeGenerator.all.h"
 #include "GS/Renderers/Common/GSFunctionMap.h"
 #include "GSVertexSW.h"
+#include "common/Perf.h"
 
 MULTI_ISA_UNSHARED_IMPL;
 using namespace Xbyak;
@@ -590,6 +591,8 @@ L("exit");
 	if (isYmm)
 		vzeroupper();
 	ret();
+
+	Perf::any.RegisterKey(actual.getCode(), actual.getSize(), "GSDrawScanline_", m_sel.key);
 }
 
 /// Inputs: a0=pixels, a1=left, a2[x64]=top, a3[x64]=v

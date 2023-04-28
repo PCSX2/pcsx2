@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "newVif_UnpackSSE.h"
+#include "common/Perf.h"
 #include "fmt/core.h"
 
 #define xMOV8(regX, loc)   xMOVSSZX(regX, loc)
@@ -346,7 +347,6 @@ void VifUnpackSSE_Init()
 	DevCon.WriteLn("Generating SSE-optimized unpacking functions for VIF interpreters...");
 
 	nVifUpkExec = new RecompiledCodeReserve("VIF SSE-optimized Unpacking Functions");
-	nVifUpkExec->SetProfilerName("iVIF-SSE");
 	nVifUpkExec->Assign(GetVmMemory().CodeMemory(), HostMemoryMap::VIFUnpackRecOffset, _1mb);
 	xSetPtr(*nVifUpkExec);
 
@@ -365,6 +365,8 @@ void VifUnpackSSE_Init()
 		nVifUpkExec->GetPtr(),
 		(uint)(xGetPtr() - nVifUpkExec->GetPtr())
 	);
+
+	Perf::any.Register(nVifUpkExec->GetPtr(), xGetPtr() - nVifUpkExec->GetPtr(), "VIF Unpack");
 }
 
 void VifUnpackSSE_Destroy()

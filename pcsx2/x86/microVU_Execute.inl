@@ -94,6 +94,9 @@ void mVUdispatcherAB(mV)
 
 	pxAssertDev(xGetPtr() < (mVU.dispCache + mVUdispCacheSize),
 		"microVU: Dispatcher generation exceeded reserved cache area!");
+
+	Perf::any.Register(mVU.startFunct, static_cast<u32>(xGetPtr() - mVU.startFunct),
+		mVU.index ? "VU1StartFunc" : "VU0StartFunc");
 }
 
 // Generates the code for resuming/exit xgkick
@@ -134,6 +137,9 @@ void mVUdispatcherCD(mV)
 
 	pxAssertDev(xGetPtr() < (mVU.dispCache + mVUdispCacheSize),
 		"microVU: Dispatcher generation exceeded reserved cache area!");
+
+	Perf::any.Register(mVU.startFunctXG, static_cast<u32>(xGetPtr() - mVU.startFunctXG),
+		mVU.index ? "VU1StartFuncXG" : "VU0StartFuncXG");
 }
 
 void mvuGenerateWaitMTVU(mV)
@@ -211,6 +217,9 @@ void mvuGenerateWaitMTVU(mV)
 
 	pxAssertDev(xGetPtr() < (mVU.dispCache + mVUdispCacheSize),
 		"microVU: Dispatcher generation exceeded reserved cache area!");
+
+	Perf::any.Register(mVU.waitMTVU, static_cast<u32>(xGetPtr() - mVU.waitMTVU),
+		mVU.index ? "VU1WaitMTVU" : "VU0WaitMTVU");
 }
 
 void mvuGenerateCopyPipelineState(mV)
@@ -263,6 +272,9 @@ void mvuGenerateCopyPipelineState(mV)
 
 	pxAssertDev(xGetPtr() < (mVU.dispCache + mVUdispCacheSize),
 		"microVU: Dispatcher generation exceeded reserved cache area!");
+
+	Perf::any.Register(mVU.copyPLState, static_cast<u32>(xGetPtr() - mVU.copyPLState),
+		mVU.index ? "VU1CopyPLState" : "VU0CopyPLState");
 }
 
 //------------------------------------------------------------------
