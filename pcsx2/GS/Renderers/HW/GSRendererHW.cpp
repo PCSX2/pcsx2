@@ -802,11 +802,11 @@ bool GSRendererHW::IsSplitTextureShuffle()
 	// For texture shuffles, the U will be offset by 8.
 	const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM];
 
-	const GSVector4i pos_rc = GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p));
+	const GSVector4i pos_rc = GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p + GSVector4::cxpr(0.5f)));
 	const GSVector4i tex_rc = GSVector4i(m_vt.m_min.t.upld(m_vt.m_max.t));
 
 	// Width/height should match.
-	if (pos_rc.width() != tex_rc.width() || pos_rc.height() != tex_rc.height())
+	if (std::abs(pos_rc.width() - tex_rc.width()) > 8 || pos_rc.height() != tex_rc.height())
 		return false;
 
 	// X might be offset by up to -8/+8, but either the position or UV should be aligned.
@@ -865,7 +865,7 @@ bool GSRendererHW::IsSplitTextureShuffle()
 GSVector4i GSRendererHW::GetSplitTextureShuffleDrawRect() const
 {
 	const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM];
-	GSVector4i r = GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
+	GSVector4i r = GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p + GSVector4::cxpr(0.5f))).rintersect(GSVector4i(m_context->scissor.in));
 
 	// Some games (e.g. Crash Twinsanity) adjust both FBP and TBP0, so the rectangle will be half the size
 	// of the actual shuffle. Others leave the FBP alone, but only adjust TBP0, and offset the draw rectangle
