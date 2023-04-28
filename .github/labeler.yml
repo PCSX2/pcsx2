@@ -39,8 +39,8 @@
 'Debugger':
   - 'pcsx2/DebugTools/*'
   - 'pcsx2/DebugTools/**/*'
-  - 'pcsx2/gui/Debugger/*'
-  - 'pcsx2/gui/Debugger/**/*'
+  - 'pcsx2-qt/Debugger/*'
+  - 'pcsx2-qt/Debugger/**/*'
 'IPC':
   - 'pcsx2/IPC*'
   - 'pcsx2/**/IPC*'
