@@ -56,7 +56,7 @@ void intBreakpoint(bool memcheck)
 
 	CBreakPoints::SetBreakpointTriggered(true);
 	VMManager::SetPaused(true);
-	throw Exception::ExitCpuExecute();
+	Cpu->ExitExecution();
 }
 
 void intMemcheck(u32 op, u32 bits, bool store)
