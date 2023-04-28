@@ -406,7 +406,7 @@ public:
 
 	void ClearRenderTarget(GSTexture* t, const GSVector4& c) override;
 	void ClearRenderTarget(GSTexture* t, u32 c) override;
-	void ClearDepth(GSTexture* t) override;
+	void ClearDepth(GSTexture* t, float d) override;
 	void InvalidateRenderTarget(GSTexture* t) override;
 
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;

@@ -5146,7 +5146,7 @@ void GSRendererHW::OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCach
 				{
 					// Only pure clear are supported for depth
 					ASSERT(color == 0);
-					g_gs_device->ClearDepth(tex);
+					g_gs_device->ClearDepth(tex, 0.0f);
 				}
 				else
 				{
@@ -5168,7 +5168,7 @@ void GSRendererHW::OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCach
 				{
 					// Only pure clear are supported for depth
 					ASSERT(color == 0);
-					g_gs_device->ClearDepth(ds->m_texture);
+					g_gs_device->ClearDepth(ds->m_texture, 0.0f);
 					ds->UpdateValidity(ds->GetUnscaledRect());
 				}
 				else

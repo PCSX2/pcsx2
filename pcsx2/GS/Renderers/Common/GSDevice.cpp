@@ -323,7 +323,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 	case GSTexture::Type::DepthStencil:
 		{
 			if (clear)
-				ClearDepth(t);
+				ClearDepth(t, 0.0f);
 			else
 				InvalidateRenderTarget(t);
 		}

@@ -939,7 +939,7 @@ void GSDeviceOGL::InvalidateRenderTarget(GSTexture* t)
 	}
 }
 
-void GSDeviceOGL::ClearDepth(GSTexture* t)
+void GSDeviceOGL::ClearDepth(GSTexture* t, float d)
 {
 	if (!t)
 		return;
@@ -956,15 +956,14 @@ void GSDeviceOGL::ClearDepth(GSTexture* t)
 
 	// TODO: check size of scissor before toggling it
 	glDisable(GL_SCISSOR_TEST);
-	const float c = 0.0f;
 	if (GLState::depth_mask)
 	{
-		glClearBufferfv(GL_DEPTH, 0, &c);
+		glClearBufferfv(GL_DEPTH, 0, &d);
 	}
 	else
 	{
 		glDepthMask(true);
-		glClearBufferfv(GL_DEPTH, 0, &c);
+		glClearBufferfv(GL_DEPTH, 0, &d);
 		glDepthMask(false);
 	}
 	glEnable(GL_SCISSOR_TEST);

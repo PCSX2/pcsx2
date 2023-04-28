@@ -666,7 +666,7 @@ void GSDevice12::InvalidateRenderTarget(GSTexture* t)
 	t->SetState(GSTexture::State::Invalidated);
 }
 
-void GSDevice12::ClearDepth(GSTexture* t)
+void GSDevice12::ClearDepth(GSTexture* t, float d)
 {
 	if (!t)
 		return;
@@ -674,7 +674,7 @@ void GSDevice12::ClearDepth(GSTexture* t)
 	if (m_current_depth_target == t)
 		EndRenderPass();
 
-	static_cast<GSTexture12*>(t)->SetClearDepth(0.0f);
+	static_cast<GSTexture12*>(t)->SetClearDepth(d);
 }
 
 void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format,
