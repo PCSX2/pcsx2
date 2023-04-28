@@ -319,8 +319,12 @@ bool BreakpointModel::insertBreakpointRows(int row, int count, std::vector<Break
 	if (breakpoints.size() != static_cast<size_t>(count))
 		return false;
 
-	beginInsertRows(index, row, row + count);
+	beginInsertRows(index, row, row + (count - 1));
 
+	// After endInsertRows, Qt will try and validate our new rows
+	// Because we add the breakpoints off of the UI thread, our new rows may not be visible yet
+	// To prevent the (seemingly harmless?) warning emitted by enderInsertRows, add the breakpoints manually here as well
+	m_breakpoints.insert(m_breakpoints.begin(), breakpoints.begin(), breakpoints.end());
 	for (const auto& bp_mc : breakpoints)
 	{
 		if (const auto* bp = std::get_if<BreakPoint>(&bp_mc))
