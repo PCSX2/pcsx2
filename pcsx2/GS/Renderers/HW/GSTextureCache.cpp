@@ -4870,7 +4870,7 @@ bool GSTextureCache::Target::ResizeTexture(int new_unscaled_width, int new_unsca
 		if (tex->GetType() != GSTexture::Type::DepthStencil)
 			g_gs_device->ClearRenderTarget(tex, tex->GetClearColor());
 		else
-			g_gs_device->ClearDepth(tex/*, tex->GetClearDepth()*/);
+			g_gs_device->ClearDepth(tex, tex->GetClearDepth());
 	}
 	else
 	{

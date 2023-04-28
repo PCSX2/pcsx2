@@ -1081,9 +1081,9 @@ void GSDevice11::InvalidateRenderTarget(GSTexture* t)
 		m_ctx->DiscardView(static_cast<ID3D11RenderTargetView*>(*static_cast<GSTexture11*>(t)));
 }
 
-void GSDevice11::ClearDepth(GSTexture* t)
+void GSDevice11::ClearDepth(GSTexture* t, float d)
 {
-	m_ctx->ClearDepthStencilView(*(GSTexture11*)t, D3D11_CLEAR_DEPTH, 0.0f, 0);
+	m_ctx->ClearDepthStencilView(*(GSTexture11*)t, D3D11_CLEAR_DEPTH, d, 0);
 }
 
 void GSDevice11::ClearStencil(GSTexture* t, u8 c)

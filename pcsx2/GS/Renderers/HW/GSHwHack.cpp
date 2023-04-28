@@ -818,7 +818,7 @@ bool GSHwHack::OI_FFX(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCa
 	{
 		// random battle transition (z buffer written directly, clear it now)
 		GL_INS("OI_FFX ZB clear");
-		g_gs_device->ClearDepth(ds);
+		g_gs_device->ClearDepth(ds, 0.0f);
 	}
 
 	return true;
@@ -862,7 +862,7 @@ bool GSHwHack::OI_RozenMaidenGebetGarden(GSRendererHW& r, GSTexture* rt, GSTextu
 			if (GSTextureCache::Target* tmp_ds = g_texture_cache->LookupTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::DepthStencil))
 			{
 				GL_INS("OI_RozenMaidenGebetGarden ZB clear");
-				g_gs_device->ClearDepth(tmp_ds->m_texture);
+				g_gs_device->ClearDepth(tmp_ds->m_texture, 0.0f);
 			}
 
 			return false;
@@ -948,7 +948,7 @@ bool GSHwHack::OI_ArTonelico2(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GST
 	if (r.m_vertex.next == 2 && !RPRIM->TME && RFRAME.FBW == 10 && v->XYZ.Z == 0 && RTEST.ZTST == ZTST_ALWAYS)
 	{
 		GL_INS("OI_ArTonelico2");
-		g_gs_device->ClearDepth(ds);
+		g_gs_device->ClearDepth(ds, 0.0f);
 	}
 
 	return true;
@@ -985,7 +985,7 @@ bool GSHwHack::GSC_Battlefield2(GSRendererHW& r, int& skip)
 			GSTextureCache::Target* dst = g_texture_cache->LookupTarget(TEX0, r.GetTargetSize(), r.GetTextureScaleFactor(), GSTextureCache::DepthStencil);
 			if (dst)
 			{
-				g_gs_device->ClearDepth(dst->m_texture);
+				g_gs_device->ClearDepth(dst->m_texture, 0.0f);
 			}
 		}
 	}
