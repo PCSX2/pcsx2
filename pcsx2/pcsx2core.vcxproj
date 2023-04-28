@@ -853,8 +853,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="GS\Renderers\Common\GSFastList.natvis" />
-    <Natvis Include="GS\Renderers\HW\GSTextureCache.natvis" />
+    <Natvis Include="GS\GS.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
