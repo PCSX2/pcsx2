@@ -1623,9 +1623,11 @@ void GSRendererHW::Draw()
 		cleanup_draw();
 	};
 
+	const bool is_possible_mem_clear = IsConstantDirectWriteMemClear();
+
 	if (!GSConfig.UserHacks_DisableSafeFeatures)
 	{
-		if (IsConstantDirectWriteMemClear(true))
+		if (is_possible_mem_clear)
 		{
 			// Likely doing a huge single page width clear, which never goes well. (Superman)
 			// Burnout 3 does a 32x1024 double width clear on its reflection targets.
@@ -1832,7 +1834,7 @@ void GSRendererHW::Draw()
 		// create that target, because the clear isn't black, it'll hang around and never get invalidated.
 		const bool is_square = (t_size.y == t_size.x) && m_r.w >= 1023 && 
 			((m_index.tail == 2 && m_vt.m_primclass == GS_SPRITE_CLASS) || (m_index.tail == 6 && m_vt.m_primclass == GS_TRIANGLE_CLASS));
-		const bool is_clear = IsConstantDirectWriteMemClear(false) && is_square;
+		const bool is_clear = is_possible_mem_clear && is_square;
 		rt = g_texture_cache->LookupTarget(FRAME_TEX0, t_size, target_scale, GSTextureCache::RenderTarget, true,
 			fm, false, is_clear, force_preload);
 
@@ -2025,8 +2027,7 @@ void GSRendererHW::Draw()
 
 	// Deferred update of TEX0. We don't want to change it when we're doing a shuffle/clear, because it
 	// may increase the buffer width, or change PSM, which breaks P8 conversion amongst other things.
-	const bool is_mem_clear = IsConstantDirectWriteMemClear(false);
-	const bool can_update_size = !is_mem_clear && !m_texture_shuffle && !m_channel_shuffle;
+	const bool can_update_size = !is_possible_mem_clear && !m_texture_shuffle && !m_channel_shuffle;
 	if (!m_texture_shuffle && !m_channel_shuffle)
 	{
 		if (rt)
@@ -2203,13 +2204,8 @@ void GSRendererHW::Draw()
 		return;
 	}
 
-	if (!GSConfig.UserHacks_DisableSafeFeatures)
-	{
-		if (IsConstantDirectWriteMemClear(true) && IsBlendedOrOpaque())
-		{
-			OI_DoubleHalfClear(rt, ds);
-		}
-	}
+	if (!GSConfig.UserHacks_DisableSafeFeatures && is_possible_mem_clear && IsBlendedOrOpaque())
+		OI_DoubleHalfClear(rt, ds);
 
 	// A couple of hack to avoid upscaling issue. So far it seems to impacts mostly sprite
 	// Note: first hack corrects both position and texture coordinate
@@ -5195,7 +5191,7 @@ bool GSRendererHW::IsBlendedOrOpaque()
 	return (!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsCdOutput());
 }
 
-bool GSRendererHW::IsConstantDirectWriteMemClear(bool include_zero)
+bool GSRendererHW::IsConstantDirectWriteMemClear()
 {
 	const bool direct_draw = (m_vt.m_primclass == GS_SPRITE_CLASS) || (m_index.tail == 6 && m_vt.m_primclass == GS_TRIANGLE_CLASS);
 	// Constant Direct Write without texture/test/blending (aka a GS mem clear)
