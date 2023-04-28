@@ -1636,10 +1636,23 @@ void recMemcheck(u32 op, u32 bits, bool store)
 		if (checks[i].result & MEMCHECK_LOG)
 		{
 			xMOV(edx, store);
-			xFastCall((void*)dynarecMemLogcheck, ecx, edx);
+			// Preserve ecx (address) and edx (address+size) because we aren't breaking
+			// out of this loops iteration and dynarecMemLogcheck will clobber them
+			// Also keep 16 byte stack alignment
+			if(!(checks[i].result & MEMCHECK_BREAK))
+			{
+				xPUSH(eax); xPUSH(ebx); xPUSH(ecx); xPUSH(edx);
+				xFastCall((void*)dynarecMemLogcheck, ecx, edx);
+				xPOP(edx); xPOP(ecx); xPOP(ebx); xPOP(eax);
+			}
+			else
+			{
+				xFastCall((void*)dynarecMemLogcheck, ecx, edx);
+			}
 		}
 		if (checks[i].result & MEMCHECK_BREAK)
 		{
+			// Don't need to preserve edx and ecx, we don't return
 			xFastCall((void*)dynarecMemcheck);
 		}
 
