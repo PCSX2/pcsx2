@@ -1388,7 +1388,18 @@ static void psxRecMemcheck(u32 op, u32 bits, bool store)
 		if (checks[i].result & MEMCHECK_LOG)
 		{
 			xMOV(edx, store);
-			xFastCall((void*)psxDynarecMemLogcheck, ecx, edx);
+
+			// Refer to the EE recompiler for an explaination
+			if(!(checks[i].result & MEMCHECK_BREAK))
+			{
+				xPUSH(eax); xPUSH(ebx); xPUSH(ecx); xPUSH(edx);
+				xFastCall((void*)psxDynarecMemLogcheck, ecx, edx);
+				xPOP(edx); xPOP(ecx); xPOP(ebx); xPOP(eax);
+			}
+			else
+			{
+				xFastCall((void*)psxDynarecMemLogcheck, ecx, edx);
+			}
 		}
 		if (checks[i].result & MEMCHECK_BREAK)
 		{
