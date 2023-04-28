@@ -86,7 +86,7 @@ private:
 		bool& target_region, GSVector2i& unscaled_size, float& scale, GSTexture*& src_copy);
 	bool CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextureCache::Source* tex) const;
 
-	void EmulateZbuffer();
+	void EmulateZbuffer(const GSTextureCache::Target* ds);
 	void EmulateATST(float& AREF, GSHWDrawConfig::PSSelector& ps, bool pass_2);
 
 	void SetTCOffset();

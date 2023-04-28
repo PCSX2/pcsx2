@@ -1524,7 +1524,6 @@ void GSRendererHW::Draw()
 			GL_CACHE("Disabling Z buffer because all tests will pass.");
 
 		m_cached_ctx.TEST.ZTST = ZTST_ALWAYS;
-		m_cached_ctx.ZBUF.ZMSK = true;
 	}
 
 	if (no_rt && no_ds)
@@ -2512,9 +2511,9 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy)
 	m_conf.nindices = m_index.tail;
 }
 
-void GSRendererHW::EmulateZbuffer()
+void GSRendererHW::EmulateZbuffer(const GSTextureCache::Target* ds)
 {
-	if (m_cached_ctx.TEST.ZTE)
+	if (ds && m_cached_ctx.TEST.ZTE)
 	{
 		m_conf.depth.ztst = m_cached_ctx.TEST.ZTST;
 		// AA1: Z is not written on lines since coverage is always less than 0x80.
@@ -4188,7 +4187,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	m_conf.ds = ds ? ds->m_texture : nullptr;
 
 	// Z setup has to come before channel shuffle
-	EmulateZbuffer();
+	EmulateZbuffer(ds);
 
 	// HLE implementation of the channel selection effect
 	//
