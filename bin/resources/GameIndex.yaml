@@ -1372,6 +1372,7 @@ SCAJ-20172:
   region: "NTSC-Unk"
   gsHWFixes:
     getSkipCount: "GSC_FFXGames"
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20173:
   name: "Ace Combat Zero - The Belkan War"
   region: "NTSC-Unk"
@@ -1457,6 +1458,7 @@ SCAJ-20188:
   region: "NTSC-Unk"
   gsHWFixes:
     getSkipCount: "GSC_FFXGames"
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20190:
   name: "God of War II"
   region: "NTSC-Unk"
@@ -5415,6 +5417,9 @@ SCKA-20072:
 SCKA-20073:
   name: "Final Fantasy XII"
   region: "NTSC-K"
+  gsHWFixes:
+    getSkipCount: "GSC_FFXGames"
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SCKA-20078:
   name: "Killzone [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
@@ -5547,6 +5552,12 @@ SCKA-20132:
   name: "Shin Megami Tensei - Persona 4"
   region: "NTSC-K"
   compat: 5
+SCKA-20138:
+  name: "Final Fantasy XII [Ultimate Hits International Zodiac Job System]"
+  region: "NTSC-K"
+  gsHWFixes:
+    getSkipCount: "GSC_FFXGames"
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SCKA-24008:
   name: "SOCOM - U.S. Navy SEALs"
   region: "NTSC-K"
@@ -20323,27 +20334,32 @@ SLES-54354:
   compat: 5
   gsHWFixes:
     getSkipCount: "GSC_FFXGames"
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-54355:
   name: "Final Fantasy XII"
   region: "PAL-F"
   gsHWFixes:
     getSkipCount: "GSC_FFXGames"
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-54356:
   name: "Final Fantasy XII"
   region: "PAL-G"
   gsHWFixes:
     getSkipCount: "GSC_FFXGames"
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-54357:
   name: "Final Fantasy XII"
   region: "PAL-I"
   gsHWFixes:
     getSkipCount: "GSC_FFXGames"
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-54358:
   name: "Final Fantasy XII"
   region: "PAL-S"
   compat: 5
   gsHWFixes:
     getSkipCount: "GSC_FFXGames"
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-54359:
   name: "Legend of Spyro, The - A New Beginning"
   region: "PAL-M6"
@@ -25330,6 +25346,12 @@ SLPM-55015:
 SLPM-55016:
   name: "Yotsunoha - A Journey of Sincerity"
   region: "NTSC-J"
+SLPM-55022:
+  name: "Final Fantasy XII [Ultimate Hits]"
+  region: "NTSC-J"
+  gsHWFixes:
+    getSkipCount: "GSC_FFXGames"
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-55024:
   name: "Jikkyou Powerful Pro Yakyuu 15"
   region: "NTSC-J"
@@ -25672,6 +25694,7 @@ SLPM-55210:
   region: "NTSC-J"
   gsHWFixes:
     getSkipCount: "GSC_FFXGames"
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-55211:
   name: "Pachislot Higurashi no Naku Koro ni Matsuri"
   region: "NTSC-J"
@@ -33266,6 +33289,7 @@ SLPM-66320:
   compat: 5
   gsHWFixes:
     getSkipCount: "GSC_FFXGames"
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-66321:
   name: "Kurogane no Houkou - Warship Gunner 2"
   region: "NTSC-J"
@@ -34993,6 +35017,7 @@ SLPM-66750:
   compat: 5
   gsHWFixes:
     getSkipCount: "GSC_FFXGames"
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-66751:
   name: "Mahoroba Stories"
   region: "NTSC-J"
@@ -46529,6 +46554,7 @@ SLUS-20963:
   compat: 5
   gsHWFixes:
     getSkipCount: "GSC_FFXGames"
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-20964:
   name: "Devil May Cry 3 - Dante's Awakening"
   region: "NTSC-U"
@@ -49450,6 +49476,7 @@ SLUS-21475:
   compat: 5
   gsHWFixes:
     getSkipCount: "GSC_FFXGames"
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-21476:
   name: "Madden NFL '07"
   region: "NTSC-U"
@@ -52322,6 +52349,7 @@ SLUS-29171:
   region: "NTSC-U"
   gsHWFixes:
     getSkipCount: "GSC_FFXGames"
+    partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-29172:
   name: "Battlefield 2 - Modern Combat [Demo]"
   region: "NTSC-U"
