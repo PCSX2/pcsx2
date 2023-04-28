@@ -621,7 +621,7 @@ GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Sou
 GSVector4i GSRendererHW::ComputeBoundingBox(const GSVector2i& rtsize, float rtscale)
 {
 	const GSVector4 offset = GSVector4(-1.0f, 1.0f); // Round value
-	const GSVector4 box = m_vt.m_min.p.xyxy(m_vt.m_max.p) + offset.xxyy();
+	const GSVector4 box = m_vt.m_min.p.upld(m_vt.m_max.p) + offset.xxyy();
 	return GSVector4i(box * GSVector4(rtscale)).rintersect(GSVector4i(0, 0, rtsize.x, rtsize.y));
 }
 
@@ -767,7 +767,7 @@ bool GSRendererHW::IsPossibleChannelShuffle() const
 	// WRC 4 does channel shuffles in vertical strips. So check for page alignment.
 	// Texture TBW should also be twice the framebuffer FBW, because the page is twice as wide.
 	if (m_cached_ctx.TEX0.TBW == (m_cached_ctx.FRAME.FBW * 2) &&
-		GSLocalMemory::IsPageAligned(m_cached_ctx.FRAME.PSM, GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p))))
+		GSLocalMemory::IsPageAligned(m_cached_ctx.FRAME.PSM, GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p))))
 	{
 		return true;
 	}
@@ -865,7 +865,7 @@ bool GSRendererHW::IsSplitTextureShuffle()
 GSVector4i GSRendererHW::GetSplitTextureShuffleDrawRect() const
 {
 	const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM];
-	GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
+	GSVector4i r = GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
 
 	// Some games (e.g. Crash Twinsanity) adjust both FBP and TBP0, so the rectangle will be half the size
 	// of the actual shuffle. Others leave the FBP alone, but only adjust TBP0, and offset the draw rectangle
@@ -1570,7 +1570,7 @@ void GSRendererHW::Draw()
 	}
 
 	// The rectangle of the draw rounded up.
-	const GSVector4 rect = m_vt.m_min.p.xyxy(m_vt.m_max.p) + GSVector4(0.0f, 0.0f, 0.5f, 0.5f);
+	const GSVector4 rect = m_vt.m_min.p.upld(m_vt.m_max.p + GSVector4::cxpr(0.5f));
 	m_r = GSVector4i(rect).rintersect(GSVector4i(context->scissor.in));
 
 	if (!m_channel_shuffle && m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0 &&
@@ -4090,7 +4090,7 @@ bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextu
 
 		// Make sure that we're not sampling away from the area we're rendering.
 		// We need to take the absolute here, because Beyond Good and Evil undithers itself using a -1,-1 offset.
-		const GSVector4 diff(m_vt.m_min.p.xyxy(m_vt.m_max.p) - m_vt.m_min.t.xyxy(m_vt.m_max.t));
+		const GSVector4 diff(m_vt.m_min.p.upld(m_vt.m_max.p) - m_vt.m_min.t.upld(m_vt.m_max.t));
 		GL_CACHE("Coord diff: %f,%f", diff.x, diff.y);
 		if ((diff.abs() < GSVector4(1.0f)).alltrue())
 		{
@@ -4160,8 +4160,8 @@ void GSRendererHW::ResetStates()
 __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Target* ds, GSTextureCache::Source* tex, const TextureMinMaxResult& tmm)
 {
 #ifdef ENABLE_OGL_DEBUG
-	const GSVector4i area_out = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
-	const GSVector4i area_in = GSVector4i(m_vt.m_min.t.xyxy(m_vt.m_max.t));
+	const GSVector4i area_out = GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
+	const GSVector4i area_in = GSVector4i(m_vt.m_min.t.upld(m_vt.m_max.t));
 
 	GL_PUSH("GL Draw from (area %d,%d => %d,%d) in (area %d,%d => %d,%d)",
 		area_in.x, area_in.y, area_in.z, area_in.w,
@@ -5059,7 +5059,7 @@ bool GSRendererHW::OI_GsMemClear()
 	if (((m_vertex.next == 2) || ZisFrame) && m_vt.m_eq.rgba == 0xFFFF)
 	{
 		const GSOffset& off = m_context->offset.fb;
-		GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
+		GSVector4i r = GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
 
 		if (r.width() == 32 && ZisFrame)
 			r.z += 32;
