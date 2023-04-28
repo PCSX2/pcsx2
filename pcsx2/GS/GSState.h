@@ -870,6 +870,9 @@ public:
 	/// Expands dither matrix, suitable for software renderer.
 	static void ExpandDIMX(GSVector4i* dimx, const GIFRegDIMX DIMX);
 
+	/// Returns a string representing the flush reason.
+	static const char* GetFlushReasonString(GSFlushReason reason);
+
 	void ResetHandlers();
 	void ResetPCRTC();
 

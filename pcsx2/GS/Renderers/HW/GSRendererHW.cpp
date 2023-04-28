@@ -1433,6 +1433,9 @@ void GSRendererHW::Draw()
 	}
 
 	GL_PUSH("HW Draw %d (Context %u)", s_n, PRIM->CTXT);
+	GL_INS("FLUSH REASON: %s%s", GetFlushReasonString(m_state_flush_reason),
+		(m_state_flush_reason != GSFlushReason::CONTEXTCHANGE && m_dirty_gs_regs) ? " AND POSSIBLE CONTEXT CHANGE" :
+																					"");
 
 	// When the format is 24bit (Z or C), DATE ceases to function.
 	// It was believed that in 24bit mode all pixels pass because alpha doesn't exist
