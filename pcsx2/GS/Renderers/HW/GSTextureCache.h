@@ -444,8 +444,8 @@ public:
 		bool is_frame = false, bool is_clear = false, bool preload = GSConfig.PreloadFrameWithGSData);
 	Target* LookupDisplayTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale);
 
-	/// Looks up a target in the cache, and only returns it if the BP/BW/PSM match exactly.
-	Target* GetExactTarget(u32 BP, u32 BW, u32 PSM) const;
+	/// Looks up a target in the cache, and only returns it if the BP/BW match exactly.
+	Target* GetExactTarget(u32 BP, u32 BW, int type);
 	Target* GetTargetWithSharedBits(u32 BP, u32 PSM) const;
 
 	GSVector2i GetTargetSize(u32 bp, u32 fbw, u32 psm, s32 min_width, s32 min_height);
