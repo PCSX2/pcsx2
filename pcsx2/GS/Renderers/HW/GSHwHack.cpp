@@ -1111,7 +1111,7 @@ bool GSHwHack::OI_HauntingGround(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 {
 	// Haunting Ground clears two targets by doing a 256x448 direct colour write at 0x3000, covering a target at 0x3380.
 	// This currently isn't handled in our HLE clears, so we need to manually remove the other target.
-	if (rt && !ds && !t && r.IsConstantDirectWriteMemClear(true))
+	if (rt && !ds && !t && r.IsConstantDirectWriteMemClear())
 	{
 		GL_CACHE("GSHwHack::OI_HauntingGround()");
 		g_texture_cache->InvalidateVideoMemTargets(GSTextureCache::RenderTarget, RFRAME.Block(), RFRAME.FBW, RFRAME.PSM, r.m_r);
