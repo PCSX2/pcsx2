@@ -2117,6 +2117,32 @@
             </item>
            </layout>
           </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_48">
+            <property name="text">
+             <string>Allow Exclusive Fullscreen:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="exclusiveFullscreenControl">
+            <item>
+             <property name="text">
+              <string>Automatic (Default)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Disallowed</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Allowed</string>
+             </property>
+            </item>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

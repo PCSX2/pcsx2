@@ -29,10 +29,12 @@
 
 namespace Vulkan
 {
-	SwapChain::SwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR preferred_present_mode)
+	SwapChain::SwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR preferred_present_mode,
+		std::optional<bool> exclusive_fullscreen_control)
 		: m_window_info(wi)
 		, m_surface(surface)
 		, m_preferred_present_mode(preferred_present_mode)
+		, m_exclusive_fullscreen_control(exclusive_fullscreen_control)
 	{
 	}
 
@@ -412,9 +414,10 @@ namespace Vulkan
 	}
 
 	std::unique_ptr<SwapChain> SwapChain::Create(const WindowInfo& wi, VkSurfaceKHR surface,
-		VkPresentModeKHR preferred_present_mode)
+		VkPresentModeKHR preferred_present_mode, std::optional<bool> exclusive_fullscreen_control)
 	{
-		std::unique_ptr<SwapChain> swap_chain = std::make_unique<SwapChain>(wi, surface, preferred_present_mode);
+		std::unique_ptr<SwapChain> swap_chain = std::unique_ptr<SwapChain>(
+			new SwapChain(wi, surface, preferred_present_mode, exclusive_fullscreen_control));
 		if (!swap_chain->CreateSwapChain() || !swap_chain->SetupSwapChainImages())
 			return nullptr;
 
@@ -577,6 +580,7 @@ namespace Vulkan
 		}
 
 		// Store the old/current swap chain when recreating for resize
+		// Old swap chain is destroyed regardless of whether the create call succeeds
 		VkSwapchainKHR old_swap_chain = m_swap_chain;
 		m_swap_chain = VK_NULL_HANDLE;
 
@@ -596,10 +600,27 @@ namespace Vulkan
 			swap_chain_info.pQueueFamilyIndices = indices.data();
 		}
 
-		if (m_swap_chain == VK_NULL_HANDLE)
+#ifdef _WIN32
+		VkSurfaceFullScreenExclusiveInfoEXT exclusive_info = {VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT};
+		if (g_vulkan_context->GetOptionalExtensions().vk_ext_full_screen_exclusive)
 		{
-			res = vkCreateSwapchainKHR(g_vulkan_context->GetDevice(), &swap_chain_info, nullptr, &m_swap_chain);
+			exclusive_info.fullScreenExclusive = m_exclusive_fullscreen_control.has_value() ?
+													 (m_exclusive_fullscreen_control.value() ?
+															 VK_FULL_SCREEN_EXCLUSIVE_ALLOWED_EXT :
+															 VK_FULL_SCREEN_EXCLUSIVE_DISALLOWED_EXT) :
+													 VK_FULL_SCREEN_EXCLUSIVE_DEFAULT_EXT;
+			Util::AddPointerToChain(&swap_chain_info, &exclusive_info);
 		}
+		else if (m_exclusive_fullscreen_control.has_value())
+		{
+			Console.Error("Exclusive fullscreen control requested, but VK_EXT_full_screen_exclusive is not supported.");
+		}
+#else
+		if (m_exclusive_fullscreen_control.has_value())
+			Console.Error("Exclusive fullscreen control requested, but is not supported on this platform.");
+#endif
+
+		res = vkCreateSwapchainKHR(g_vulkan_context->GetDevice(), &swap_chain_info, nullptr, &m_swap_chain);
 		if (res != VK_SUCCESS)
 		{
 			LOG_VULKAN_ERROR(res, "vkCreateSwapchainKHR failed: ");

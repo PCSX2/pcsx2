@@ -373,6 +373,11 @@ namespace Vulkan
 		m_optional_extensions.vk_khr_shader_draw_parameters =
 			SupportsExtension(VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME, false);
 
+#ifdef _WIN32
+		m_optional_extensions.vk_ext_full_screen_exclusive =
+			SupportsExtension(VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME, false);
+#endif
+
 		return true;
 	}
 

@@ -28,7 +28,6 @@ namespace Vulkan
 	class SwapChain
 	{
 	public:
-		SwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR preferred_present_mode);
 		~SwapChain();
 
 		// Creates a vulkan-renderable surface for the specified window handle.
@@ -49,7 +48,7 @@ namespace Vulkan
 
 		// Create a new swap chain from a pre-existing surface.
 		static std::unique_ptr<SwapChain> Create(const WindowInfo& wi, VkSurfaceKHR surface,
-			VkPresentModeKHR preferred_present_mode);
+			VkPresentModeKHR preferred_present_mode, std::optional<bool> exclusive_fullscreen_control);
 
 		__fi VkSurfaceKHR GetSurface() const { return m_surface; }
 		__fi VkSurfaceFormatKHR GetSurfaceFormat() const { return m_surface_format; }
@@ -91,6 +90,9 @@ namespace Vulkan
 		}
 
 	private:
+		SwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR preferred_present_mode,
+			std::optional<bool> exclusive_fullscreen_control);
+
 		bool SelectSurfaceFormat();
 		bool SelectPresentMode();
 
@@ -131,5 +133,6 @@ namespace Vulkan
 		u32 m_current_image = 0;
 		u32 m_current_semaphore = 0;
 		std::optional<VkResult> m_image_acquire_result;
+		std::optional<bool> m_exclusive_fullscreen_control;
 	};
 } // namespace Vulkan

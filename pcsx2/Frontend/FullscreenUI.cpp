@@ -3325,6 +3325,10 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 		DrawIntListSetting(bsi, "Hardware Download Mode", "Changes synchronization behavior for GS downloads.", "EmuCore/GS",
 			"HWDownloadMode", static_cast<int>(GSHardwareDownloadMode::Enabled), s_hw_download, std::size(s_hw_download));
 	}
+	DrawIntListSetting(bsi, "Allow Exclusive Fullscreen",
+		"Overrides the driver's heuristics for enabling exclusive fullscreen, or direct flip/scanout.", "EmuCore/GS",
+		"ExclusiveFullscreenControl", -1, s_generic_options, std::size(s_generic_options), -1,
+		(renderer == GSRendererType::Auto || renderer == GSRendererType::VK));
 	DrawIntListSetting(bsi, "Override Texture Barriers", "Forces texture barrier functionality to the specified value.", "EmuCore/GS",
 		"OverrideTextureBarriers", -1, s_generic_options, std::size(s_generic_options), -1);
 	DrawIntListSetting(bsi, "GS Dump Compression", "Sets the compression algorithm for GS dumps.", "EmuCore/GS", "GSDumpCompression",

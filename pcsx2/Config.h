@@ -19,6 +19,7 @@
 #include "common/General.h"
 #include <array>
 #include <string>
+#include <optional>
 #include <vector>
 
 class SettingsInterface;
@@ -626,6 +627,9 @@ struct Pcsx2Config
 
 		static const char* GetRendererName(GSRendererType type);
 
+		/// Converts a tri-state option to an optional boolean value.
+		static std::optional<bool> TriStateToOptionalBoolean(int value);
+
 		static constexpr float DEFAULT_FRAME_RATE_NTSC = 59.94f;
 		static constexpr float DEFAULT_FRAME_RATE_PAL = 50.00f;
 
@@ -778,6 +782,7 @@ struct Pcsx2Config
 		int SaveN = 0;
 		int SaveL = 5000;
 
+		s8 ExclusiveFullscreenControl = -1;
 		GSScreenshotSize ScreenshotSize = GSScreenshotSize::WindowResolution;
 		GSScreenshotFormat ScreenshotFormat = GSScreenshotFormat::PNG;
 		int ScreenshotQuality = 50;

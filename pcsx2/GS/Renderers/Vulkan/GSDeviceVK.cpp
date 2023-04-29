@@ -306,7 +306,8 @@ bool GSDeviceVK::UpdateWindow()
 		return false;
 	}
 
-	m_swap_chain = Vulkan::SwapChain::Create(m_window_info, surface, GetPreferredPresentModeForVsyncMode(m_vsync_mode));
+	m_swap_chain = Vulkan::SwapChain::Create(m_window_info, surface, GetPreferredPresentModeForVsyncMode(m_vsync_mode),
+		Pcsx2Config::GSOptions::TriStateToOptionalBoolean(GSConfig.ExclusiveFullscreenControl));
 	if (!m_swap_chain)
 	{
 		Console.Error("Failed to create swap chain");
@@ -659,7 +660,8 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	if (surface != VK_NULL_HANDLE)
 	{
 		m_swap_chain =
-			Vulkan::SwapChain::Create(m_window_info, surface, GetPreferredPresentModeForVsyncMode(m_vsync_mode));
+			Vulkan::SwapChain::Create(m_window_info, surface, GetPreferredPresentModeForVsyncMode(m_vsync_mode),
+				Pcsx2Config::GSOptions::TriStateToOptionalBoolean(GSConfig.ExclusiveFullscreenControl));
 		if (!m_swap_chain)
 		{
 			Console.Error("Failed to create swap chain");

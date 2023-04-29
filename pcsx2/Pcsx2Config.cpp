@@ -395,6 +395,11 @@ const char* Pcsx2Config::GSOptions::GetRendererName(GSRendererType type)
 	}
 }
 
+std::optional<bool> Pcsx2Config::GSOptions::TriStateToOptionalBoolean(int value)
+{
+	return (value < 0) ? std::optional<bool>(std::nullopt) : std::optional<bool>((value != 0));
+}
+
 Pcsx2Config::GSOptions::GSOptions()
 {
 	bitset = 0;
@@ -539,6 +544,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(SaveN) &&
 		OpEqu(SaveL) &&
 
+		OpEqu(ExclusiveFullscreenControl) &&
 		OpEqu(ScreenshotSize) &&
 		OpEqu(ScreenshotFormat) &&
 		OpEqu(ScreenshotQuality) &&
@@ -574,7 +580,8 @@ bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) cons
 		   OpEqu(DisableDualSourceBlend) &&
 		   OpEqu(DisableFramebufferFetch) &&
 		   OpEqu(DisableThreadedPresentation) &&
-		   OpEqu(OverrideTextureBarriers);
+		   OpEqu(OverrideTextureBarriers) &&
+		   OpEqu(ExclusiveFullscreenControl);
 }
 
 void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
@@ -727,6 +734,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	GSSettingInt(ShadeBoost_Brightness);
 	GSSettingInt(ShadeBoost_Contrast);
 	GSSettingInt(ShadeBoost_Saturation);
+	GSSettingInt(ExclusiveFullscreenControl);
 	GSSettingIntEx(PNGCompressionLevel, "png_compression_level");
 	GSSettingIntEx(SaveN, "saven");
 	GSSettingIntEx(SaveL, "savel");
