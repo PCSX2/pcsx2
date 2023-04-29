@@ -54,6 +54,7 @@ private:
 	bool CanUseSwSpriteRender();
 	bool IsConstantDirectWriteMemClear();
 	bool IsBlendedOrOpaque();
+	bool PrimitiveCoversWithoutGaps() const;
 
 	enum class CLUTDrawTestResult
 	{
