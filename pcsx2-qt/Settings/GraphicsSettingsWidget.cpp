@@ -181,7 +181,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Renderer Fixes
 	//////////////////////////////////////////////////////////////////////////
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.crcFixLevel, "EmuCore/GS", "crc_hack_level", static_cast<int>(CRCHackLevel::Automatic), -1);
+	SettingWidgetBinder::BindWidgetToIntSetting(
+		sif, m_ui.crcFixLevel, "EmuCore/GS", "crc_hack_level", static_cast<int>(CRCHackLevel::Automatic), -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.halfScreenFix, "EmuCore/GS", "UserHacks_Half_Bottom_Override", -1, -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cpuSpriteRenderBW, "EmuCore/GS", "UserHacks_CPUSpriteRenderBW", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cpuSpriteRenderLevel, "EmuCore/GS", "UserHacks_CPUSpriteRenderLevel", 0);
@@ -199,13 +200,14 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.textureInsideRt, "EmuCore/GS", "UserHacks_TextureInsideRt", static_cast<int>(GSTextureInRtMode::Disabled));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.readTCOnClose, "EmuCore/GS", "UserHacks_ReadTCOnClose", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.targetPartialInvalidation, "EmuCore/GS", "UserHacks_TargetPartialInvalidation", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(
+		sif, m_ui.targetPartialInvalidation, "EmuCore/GS", "UserHacks_TargetPartialInvalidation", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.estimateTextureRegion, "EmuCore/GS", "UserHacks_EstimateTextureRegion", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuPaletteConversion, "EmuCore/GS", "paltex", false);
 	connect(m_ui.cpuSpriteRenderBW, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
 		&GraphicsSettingsWidget::onCPUSpriteRenderBWChanged);
-	connect(m_ui.textureInsideRt, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-		&GraphicsSettingsWidget::onTextureInsideRtChanged);
+	connect(
+		m_ui.textureInsideRt, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GraphicsSettingsWidget::onTextureInsideRtChanged);
 	connect(m_ui.gpuPaletteConversion, QOverload<int>::of(&QCheckBox::stateChanged), this,
 		&GraphicsSettingsWidget::onGpuPaletteConversionChanged);
 	onCPUSpriteRenderBWChanged();
@@ -244,6 +246,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useDebugDevice, "EmuCore/GS", "UseDebugDevice", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.skipPresentingDuplicateFrames, "EmuCore/GS", "SkipDuplicateFrames", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.threadedPresentation, "EmuCore/GS", "DisableThreadedPresentation", false);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.exclusiveFullscreenControl, "EmuCore/GS", "ExclusiveFullscreenControl", -1, -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.overrideTextureBarriers, "EmuCore/GS", "OverrideTextureBarriers", -1, -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.gsDumpCompression, "EmuCore/GS", "GSDumpCompression", static_cast<int>(GSDumpCompressionMethod::Zstandard));
@@ -294,6 +297,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	connect(m_ui.textureFiltering, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onTextureFilteringChange);
 	connect(m_ui.swTextureFiltering, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onSWTextureFilteringChange);
 	updateRendererDependentOptions();
+
+#ifndef _WIN32
+	// Exclusive fullscreen control is Windows-only.
+	m_ui.advancedOptionsFormLayout->removeRow(2);
+	m_ui.exclusiveFullscreenControl = nullptr;
+#endif
 
 #ifndef PCSX2_DEVBUILD
 	if (!m_dialog->isPerGameSettings())
@@ -384,8 +393,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.PCRTCOverscan, tr("Show Overscan"), tr("Unchecked"),
 			tr("Enables the option to show the overscan area on games which draw more than the safe area of the screen."));
 
-		dialog->registerWidgetHelp(m_ui.fmvAspectRatio, tr("FMV Aspect Ratio"), tr("Off (Default)"),
-			tr("Overrides the full-motion video (FMV) aspect ratio."));
+		dialog->registerWidgetHelp(
+			m_ui.fmvAspectRatio, tr("FMV Aspect Ratio"), tr("Off (Default)"), tr("Overrides the full-motion video (FMV) aspect ratio."));
 
 		dialog->registerWidgetHelp(m_ui.PCRTCAntiBlur, tr("Anti-Blur"), tr("Checked"),
 			tr("Enables internal Anti-Blur hacks. Less accurate to PS2 rendering but will make a lot of games look less blurry."));
@@ -422,17 +431,17 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.fullscreenModes, tr("Fullscreen Mode"), tr("Borderless Fullscreen"),
 			tr("Chooses the fullscreen resolution and frequency."));
 
-		dialog->registerWidgetHelp(m_ui.cropLeft, tr("Left"), tr("0px"),
-			tr("Changes the number of pixels cropped from the left side of the display."));
+		dialog->registerWidgetHelp(
+			m_ui.cropLeft, tr("Left"), tr("0px"), tr("Changes the number of pixels cropped from the left side of the display."));
 
-		dialog->registerWidgetHelp(m_ui.cropTop, tr("Top"), tr("0px"),
-			tr("Changes the number of pixels cropped from the top of the display."));
+		dialog->registerWidgetHelp(
+			m_ui.cropTop, tr("Top"), tr("0px"), tr("Changes the number of pixels cropped from the top of the display."));
 
-		dialog->registerWidgetHelp(m_ui.cropRight, tr("Right"), tr("0px"),
-			tr("Changes the number of pixels cropped from the right side of the display."));
+		dialog->registerWidgetHelp(
+			m_ui.cropRight, tr("Right"), tr("0px"), tr("Changes the number of pixels cropped from the right side of the display."));
 
-		dialog->registerWidgetHelp(m_ui.cropBottom, tr("Bottom"), tr("0px"),
-			tr("Changes the number of pixels cropped from the bottom of the display."));
+		dialog->registerWidgetHelp(
+			m_ui.cropBottom, tr("Bottom"), tr("0px"), tr("Changes the number of pixels cropped from the bottom of the display."));
 	}
 
 	// Rendering tab
@@ -639,8 +648,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 	// OSD tab
 	{
-		dialog->registerWidgetHelp(
-			m_ui.osdScale, tr("OSD Scale"), tr("100%"), tr("Scales the size of the onscreen OSD from 50% to 500%."));
+		dialog->registerWidgetHelp(m_ui.osdScale, tr("OSD Scale"), tr("100%"), tr("Scales the size of the onscreen OSD from 50% to 500%."));
 
 		dialog->registerWidgetHelp(m_ui.osdShowMessages, tr("Show OSD Messages"), tr("Checked"),
 			tr("Shows on-screen-display messages when events occur such as save states being "
@@ -702,6 +710,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			   "renderer. This usually results in slower performance, but may be required for some "
 			   "streaming applications, or to uncap framerates on some systems."));
 
+		dialog->registerWidgetHelp(m_ui.exclusiveFullscreenControl, tr("Allow Exclusive Fullscreen"), tr("Automatic (Default)"),
+			tr("Overrides the driver's heuristics for enabling exclusive fullscreen, or direct flip/scanout.<br>"
+			   "Disallowing exclusive fullscreen may enable smoother task switching and overlays, but increase input latency."));
+
 		dialog->registerWidgetHelp(m_ui.useDebugDevice, tr("Use Debug Device"), tr("Unchecked"), tr(""));
 
 		dialog->registerWidgetHelp(m_ui.disableDualSource, tr("Disable Dual Source Blending"), tr("Unchecked"), tr(""));
@@ -710,10 +722,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 
 		dialog->registerWidgetHelp(m_ui.skipPresentingDuplicateFrames, tr("Skip Presenting Duplicate Frames"), tr("Unchecked"),
 			tr("Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still "
-			   "rendered, it just means "
-			   "the GPU has more time to complete it (this is NOT frame skipping). Can smooth our frame time fluctuations when the CPU/GPU "
-			   "are near maximum "
-			   "utilization, but makes frame pacing more inconsistent and can increase input lag."));
+			   "rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth our frame time "
+			   "fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase "
+			   "input lag."));
 
 		dialog->registerWidgetHelp(m_ui.threadedPresentation, tr("Disable Threaded Presentation"), tr("Unchecked"),
 			tr("Presents frames on the main GS thread instead of a worker thread. Used for debugging frametime issues. "
@@ -911,6 +922,8 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	const bool is_hardware = (type == GSRendererType::DX11 || type == GSRendererType::DX12 || type == GSRendererType::OGL ||
 							  type == GSRendererType::VK || type == GSRendererType::Metal);
 	const bool is_software = (type == GSRendererType::SW);
+	const bool is_auto = (type == GSRendererType::Auto);
+	const bool is_vk = (type == GSRendererType::VK);
 	const bool hw_fixes = (is_hardware && m_ui.enableHWFixes && m_ui.enableHWFixes->checkState() == Qt::Checked);
 	const int prev_tab = m_ui.tabs->currentIndex();
 
@@ -945,6 +958,8 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	m_ui.overrideTextureBarriers->setDisabled(is_sw_dx);
 
 	m_ui.disableFramebufferFetch->setDisabled(is_sw_dx);
+
+	m_ui.exclusiveFullscreenControl->setEnabled(is_auto || is_vk);
 
 	// populate adapters
 	std::vector<std::string> adapters;
