@@ -550,7 +550,10 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 
 	const SourceRegion region = SourceRegion::Create(TEX0, CLAMP);
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
-	Source* src = FindSourceInMap(TEX0, TEXA, psm_s, nullptr, nullptr, GSVector2i(0, 0), region,
+	// Yes, this can get called with color PSMs that have palettes
+	const u32* const clut = g_gs_renderer->m_mem.m_clut;
+	GSTexture* const gpu_clut = (psm_s.pal > 0) ? g_gs_renderer->m_mem.m_clut.GetGPUTexture() : nullptr;
+	Source* src = FindSourceInMap(TEX0, TEXA, psm_s, clut, gpu_clut, GSVector2i(0, 0), region,
 		region.IsFixedTEX0(TEX0), m_src.m_map[TEX0.TBP0 >> 5]);
 	if (src)
 	{
