@@ -26,6 +26,8 @@
 #include <array>
 #include <cstring>
 
+#include "fmt/format.h"
+
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
 #else
@@ -192,83 +194,60 @@ namespace Vulkan
 
 	Context::GPUList Context::EnumerateGPUs(VkInstance instance)
 	{
+		GPUList gpus;
+
 		u32 gpu_count = 0;
 		VkResult res = vkEnumeratePhysicalDevices(instance, &gpu_count, nullptr);
 		if ((res != VK_SUCCESS && res != VK_INCOMPLETE) || gpu_count == 0)
 		{
 			LOG_VULKAN_ERROR(res, "vkEnumeratePhysicalDevices (1) failed: ");
-			return {};
+			return gpus;
 		}
 
-		GPUList gpus;
-		gpus.resize(gpu_count);
-
-		res = vkEnumeratePhysicalDevices(instance, &gpu_count, gpus.data());
+		std::vector<VkPhysicalDevice> physical_devices(gpu_count);
+		res = vkEnumeratePhysicalDevices(instance, &gpu_count, physical_devices.data());
 		if (res == VK_INCOMPLETE)
 		{
-			Console.Warning("First vkEnumeratePhysicalDevices() call returned %zu devices, but second returned %u", gpus.size(), gpu_count);
+			Console.Warning("First vkEnumeratePhysicalDevices() call returned %zu devices, but second returned %u",
+				physical_devices.size(), gpu_count);
 		}
 		else if (res != VK_SUCCESS)
 		{
 			LOG_VULKAN_ERROR(res, "vkEnumeratePhysicalDevices (2) failed: ");
-			return {};
+			return gpus;
 		}
 
 		// Maybe we lost a GPU?
-		if (gpu_count < gpus.size())
-			gpus.resize(gpu_count);
+		if (gpu_count < physical_devices.size())
+			physical_devices.resize(gpu_count);
 
-		return gpus;
-	}
-
-	Context::GPUNameList Context::EnumerateGPUNames(VkInstance instance)
-	{
-		u32 gpu_count = 0;
-		VkResult res = vkEnumeratePhysicalDevices(instance, &gpu_count, nullptr);
-		if (res != VK_SUCCESS || gpu_count == 0)
-		{
-			LOG_VULKAN_ERROR(res, "vkEnumeratePhysicalDevices failed: ");
-			return {};
-		}
-
-		GPUList gpus;
-		gpus.resize(gpu_count);
-
-		res = vkEnumeratePhysicalDevices(instance, &gpu_count, gpus.data());
-		if (res != VK_SUCCESS)
-		{
-			LOG_VULKAN_ERROR(res, "vkEnumeratePhysicalDevices failed: ");
-			return {};
-		}
-
-		GPUNameList gpu_names;
-		gpu_names.reserve(gpu_count);
-		for (u32 i = 0; i < gpu_count; i++)
+		gpus.reserve(physical_devices.size());
+		for (VkPhysicalDevice device : physical_devices)
 		{
 			VkPhysicalDeviceProperties props = {};
-			vkGetPhysicalDeviceProperties(gpus[i], &props);
+			vkGetPhysicalDeviceProperties(device, &props);
 
-			std::string gpu_name(props.deviceName);
+			std::string gpu_name = props.deviceName;
 
 			// handle duplicate adapter names
-			if (std::any_of(gpu_names.begin(), gpu_names.end(),
-					[&gpu_name](const std::string& other) { return (gpu_name == other); }))
+			if (std::any_of(gpus.begin(), gpus.end(),
+					[&gpu_name](const auto& other) { return (gpu_name == other.second); }))
 			{
 				std::string original_adapter_name = std::move(gpu_name);
 
 				u32 current_extra = 2;
 				do
 				{
-					gpu_name = StringUtil::StdStringFromFormat("%s (%u)", original_adapter_name.c_str(), current_extra);
+					gpu_name = fmt::format("{} ({})", original_adapter_name, current_extra);
 					current_extra++;
-				} while (std::any_of(gpu_names.begin(), gpu_names.end(),
-					[&gpu_name](const std::string& other) { return (gpu_name == other); }));
+				} while (std::any_of(gpus.begin(), gpus.end(),
+					[&gpu_name](const auto& other) { return (gpu_name == other.second); }));
 			}
 
-			gpu_names.push_back(std::move(gpu_name));
+			gpus.emplace_back(device, std::move(gpu_name));
 		}
 
-		return gpu_names;
+		return gpus;
 	}
 
 	bool Context::Create(VkInstance instance, VkSurfaceKHR surface, VkPhysicalDevice physical_device,

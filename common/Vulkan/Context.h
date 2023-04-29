@@ -66,10 +66,8 @@ namespace Vulkan
 			const WindowInfo& wi, bool enable_debug_utils, bool enable_validation_layer);
 
 		// Returns a list of Vulkan-compatible GPUs.
-		using GPUList = std::vector<VkPhysicalDevice>;
-		using GPUNameList = std::vector<std::string>;
+		using GPUList = std::vector<std::pair<VkPhysicalDevice, std::string>>;
 		static GPUList EnumerateGPUs(VkInstance instance);
-		static GPUNameList EnumerateGPUNames(VkInstance instance);
 
 		// Creates a new context and sets it up as global.
 		static bool Create(VkInstance instance, VkSurfaceKHR surface, VkPhysicalDevice physical_device,
