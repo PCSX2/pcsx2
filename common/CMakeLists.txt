@@ -218,6 +218,14 @@ if(APPLE)
 	target_link_options(common PRIVATE -fobjc-link-runtime)
 endif()
 
+if(DBUS_API)
+	target_compile_definitions(common PRIVATE DBUS_API)
+	find_package(PkgConfig REQUIRED)
+	pkg_check_modules(DBUS REQUIRED dbus-1)
+	target_include_directories(common PRIVATE ${DBUS_INCLUDE_DIRS})
+	target_link_libraries(common PRIVATE ${DBUS_LINK_LIBRARIES})
+endif()
+
 if(USE_OPENGL)
 	if(WIN32)
 		target_sources(common PRIVATE
