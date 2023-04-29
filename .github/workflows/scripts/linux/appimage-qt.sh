@@ -158,6 +158,7 @@ declare -a SYSLIBS=(
 	"libhx509.so.5"
 	"libsqlite3.so.0"
 	"libcrypt.so.1"
+	"libdbus-1.so.3"
 )
 
 declare -a DEPLIBS=(
