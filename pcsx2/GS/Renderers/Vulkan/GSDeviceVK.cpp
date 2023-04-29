@@ -86,6 +86,15 @@ GSDeviceVK::~GSDeviceVK()
 	pxAssert(!g_vulkan_context);
 }
 
+static void GPUListToAdapterNames(std::vector<std::string>* dest, VkInstance instance)
+{
+	Vulkan::Context::GPUList gpus = Vulkan::Context::EnumerateGPUs(instance);
+	dest->clear();
+	dest->reserve(gpus.size());
+	for (auto& [gpu, name] : gpus)
+		dest->push_back(std::move(name));
+}
+
 void GSDeviceVK::GetAdaptersAndFullscreenModes(
 	std::vector<std::string>* adapters, std::vector<std::string>* fullscreen_modes)
 {
@@ -94,7 +103,7 @@ void GSDeviceVK::GetAdaptersAndFullscreenModes(
 	if (g_vulkan_context)
 	{
 		if (adapters)
-			*adapters = Vulkan::Context::EnumerateGPUNames(g_vulkan_context->GetVulkanInstance());
+			GPUListToAdapterNames(adapters, g_vulkan_context->GetVulkanInstance());
 
 		if (fullscreen_modes)
 		{
@@ -111,7 +120,7 @@ void GSDeviceVK::GetAdaptersAndFullscreenModes(
 			if (instance != VK_NULL_HANDLE)
 			{
 				if (Vulkan::LoadVulkanInstanceFunctions(instance))
-					*adapters = Vulkan::Context::EnumerateGPUNames(instance);
+					GPUListToAdapterNames(adapters, instance);
 
 				vkDestroyInstance(instance, nullptr);
 			}
@@ -606,26 +615,25 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	}
 
 	u32 gpu_index = 0;
-	Vulkan::Context::GPUNameList gpu_names = Vulkan::Context::EnumerateGPUNames(instance);
 	if (!GSConfig.Adapter.empty())
 	{
-		for (; gpu_index < static_cast<u32>(gpu_names.size()); gpu_index++)
+		for (; gpu_index < static_cast<u32>(gpus.size()); gpu_index++)
 		{
-			Console.WriteLn(fmt::format("GPU {}: {}", gpu_index, gpu_names[gpu_index]));
-			if (gpu_names[gpu_index] == GSConfig.Adapter)
+			Console.WriteLn(fmt::format("GPU {}: {}", gpu_index, gpus[gpu_index].second));
+			if (gpus[gpu_index].second == GSConfig.Adapter)
 				break;
 		}
 
-		if (gpu_index == static_cast<u32>(gpu_names.size()))
+		if (gpu_index == static_cast<u32>(gpus.size()))
 		{
 			Console.Warning(
-				fmt::format("Requested GPU '{}' not found, using first ({})", GSConfig.Adapter, gpu_names[0]));
+				fmt::format("Requested GPU '{}' not found, using first ({})", GSConfig.Adapter, gpus[0].second));
 			gpu_index = 0;
 		}
 	}
 	else
 	{
-		Console.WriteLn("No GPU requested, using first (%s)", gpu_names[0].c_str());
+		Console.WriteLn(fmt::format("No GPU requested, using first ({})", gpus[0].second));
 	}
 
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
@@ -635,12 +643,12 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	};
 	if (m_window_info.type != WindowInfo::Type::Surfaceless)
 	{
-		surface = Vulkan::SwapChain::CreateVulkanSurface(instance, gpus[gpu_index], &m_window_info);
+		surface = Vulkan::SwapChain::CreateVulkanSurface(instance, gpus[gpu_index].first, &m_window_info);
 		if (surface == VK_NULL_HANDLE)
 			return false;
 	}
 
-	if (!Vulkan::Context::Create(instance, surface, gpus[gpu_index], !GSConfig.DisableThreadedPresentation,
+	if (!Vulkan::Context::Create(instance, surface, gpus[gpu_index].first, !GSConfig.DisableThreadedPresentation,
 			enable_debug_utils, enable_validation_layer))
 	{
 		Console.Error("Failed to create Vulkan context");
