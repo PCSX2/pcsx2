@@ -7277,6 +7277,9 @@ SCUS-21295:
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes water and grass textures.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
     wildArmsHack: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
 SCUS-21494:
@@ -18129,6 +18132,9 @@ SLES-53534:
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes water and grass textures.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
     wildArmsHack: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
 SLES-53535:
@@ -18137,6 +18143,9 @@ SLES-53535:
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes water and grass textures.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
     wildArmsHack: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
 SLES-53536:
@@ -47869,6 +47878,9 @@ SLUS-21208:
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes water and grass textures.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
     wildArmsHack: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
 SLUS-21209:
@@ -48424,6 +48436,9 @@ SLUS-21295:
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes water and grass textures.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
     wildArmsHack: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
   memcardFilters: # Game saves use the normal edition serial.
