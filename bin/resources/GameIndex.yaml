@@ -28267,6 +28267,8 @@ SLPM-62713:
 SLPM-62714:
   name: "Shin Sangoku Musou Series Collection Joukan"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes invisible text.
 SLPM-62717:
   name: "Sega Ages 2500 Series Vol.26 - Dynamite Deka"
   region: "NTSC-J"
