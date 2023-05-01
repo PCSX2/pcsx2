@@ -278,6 +278,10 @@ void VifUnpackSSE_Dynarec::CompileRoutine()
 	// Value passed determines # of col regs we need to load
 	SetMasks(isFill ? blockSize : cycleSize);
 
+	// Need a zero register for V2_32/V3 unpacks.
+	if ((upkNum >= 8 && upkNum <= 10) || upkNum == 4)
+		xXOR.PS(zeroReg, zeroReg);
+
 	while (vNum)
 	{
 		ShiftDisplacementWindow(dstIndirect, arg1reg);
