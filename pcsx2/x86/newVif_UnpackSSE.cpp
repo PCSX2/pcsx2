@@ -35,12 +35,6 @@ alignas(16) static const u32 SSEXYZWMask[4][4] =
 //alignas(__pagesize) static u8 nVifUpkExec[__pagesize*4];
 static RecompiledCodeReserve* nVifUpkExec = NULL;
 
-// Merges xmm vectors without modifying source reg
-void mergeVectors(xRegisterSSE dest, xRegisterSSE src, xRegisterSSE temp, int xyzw)
-{
-	mVUmergeRegs(dest, src, xyzw);
-}
-
 // =====================================================================================================
 //  VifUnpackSSE_Base Section
 // =====================================================================================================
