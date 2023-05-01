@@ -24,14 +24,6 @@
 #define xMOV64(regX, loc)  xMOVUPS (regX, loc)
 #define xMOV128(regX, loc) xMOVUPS (regX, loc)
 
-alignas(16) static const u32 SSEXYZWMask[4][4] =
-{
-	{0xffffffff, 0xffffffff, 0xffffffff, 0x00000000},
-	{0xffffffff, 0xffffffff, 0x00000000, 0xffffffff},
-	{0xffffffff, 0x00000000, 0xffffffff, 0xffffffff},
-	{0x00000000, 0xffffffff, 0xffffffff, 0xffffffff}
-};
-
 //alignas(__pagesize) static u8 nVifUpkExec[__pagesize*4];
 static RecompiledCodeReserve* nVifUpkExec = NULL;
 
@@ -46,6 +38,7 @@ VifUnpackSSE_Base::VifUnpackSSE_Base()
 	, IsAligned(0)
 	, dstIndirect(arg1reg)
 	, srcIndirect(arg2reg)
+	, zeroReg(xmm2)
 	, workReg(xmm1)
 	, destReg(xmm0)
 {
@@ -147,13 +140,13 @@ void VifUnpackSSE_Base::xUPK_V2_32() const
 		xMOV128(workReg, ptr32[srcIndirect]);
 		xPSHUF.D(destReg, workReg, 0x44); //v1v0v1v0
 		if (IsAligned)
-			xAND.PS(destReg, ptr128[SSEXYZWMask[0]]); //zero last word - tested on ps2
+			xBLEND.PS(destReg, zeroReg, 0x8); //zero last word - tested on ps2
 	}
 	else
 	{
 		xPSHUF.D(destReg, workReg, 0xEE); //v3v2v3v2
 		if (IsAligned)
-			xAND.PS(destReg, ptr128[SSEXYZWMask[0]]); //zero last word - tested on ps2
+			xBLEND.PS(destReg, zeroReg, 0x8); //zero last word - tested on ps2
 	}
 }
 
@@ -187,7 +180,7 @@ void VifUnpackSSE_Base::xUPK_V3_32() const
 {
 	xMOV128(destReg, ptr128[srcIndirect]);
 	if (UnpkLoopIteration != IsAligned)
-		xAND.PS(destReg, ptr128[SSEXYZWMask[0]]);
+		xBLEND.PS(destReg, zeroReg, 0x8); //zero last word - tested on ps2
 }
 
 void VifUnpackSSE_Base::xUPK_V3_16() const
@@ -201,16 +194,14 @@ void VifUnpackSSE_Base::xUPK_V3_16() const
 	int result = (((UnpkLoopIteration / 4) + 1 + (4 - IsAligned)) & 0x3);
 
 	if ((UnpkLoopIteration & 0x1) == 0 && result == 0)
-	{
-		xAND.PS(destReg, ptr128[SSEXYZWMask[0]]); //zero last word on QW boundary if whole 32bit word is used - tested on ps2
-	}
+		xBLEND.PS(destReg, zeroReg, 0x8); //zero last word - tested on ps2
 }
 
 void VifUnpackSSE_Base::xUPK_V3_8() const
 {
 	xPMOVXX8(destReg);
 	if (UnpkLoopIteration != IsAligned)
-		xAND.PS(destReg, ptr128[SSEXYZWMask[0]]);
+		xBLEND.PS(destReg, zeroReg, 0x8); //zero last word - tested on ps2
 }
 
 void VifUnpackSSE_Base::xUPK_V4_32() const

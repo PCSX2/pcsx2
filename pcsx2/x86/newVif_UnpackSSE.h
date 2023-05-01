@@ -39,6 +39,7 @@ public:
 protected:
 	xAddressVoid dstIndirect;
 	xAddressVoid srcIndirect;
+	xRegisterSSE zeroReg;
 	xRegisterSSE workReg;
 	xRegisterSSE destReg;
 
