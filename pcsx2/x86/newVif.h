@@ -30,6 +30,7 @@ typedef void (*nVifrecCall)(uptr dest, uptr src);
 #include "newVif_HashBucket.h"
 
 extern void  mVUmergeRegs(const xRegisterSSE& dest, const xRegisterSSE& src,  int xyzw, bool modXYZW = 0);
+extern void  mVUsaveReg(const xRegisterSSE& reg, xAddressVoid ptr, int xyzw, bool modXYZW);
 extern void _nVifUnpack  (int idx, const u8* data, uint mode, bool isFill);
 extern void  dVifReserve (int idx);
 extern void  dVifReset   (int idx);

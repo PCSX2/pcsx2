@@ -123,17 +123,13 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 
 	if (doMask && m2) // Merge MaskRow
 	{
-		mergeVectors(regX, xmmRow, xmmTemp, m2);
+		mVUmergeRegs(regX, xmmRow, m2);
 	}
 	if (doMask && m3) // Merge MaskCol
 	{
-		mergeVectors(regX, xRegisterSSE(xmmCol0.Id + cc), xmmTemp, m3);
+		mVUmergeRegs(regX, xRegisterSSE(xmmCol0.Id + cc), m3);
 	}
-	if (doMask && m4) // Merge Write Protect
-	{
-		xMOVAPS(xmmTemp, ptr[dstIndirect]);
-		mergeVectors(regX, xmmTemp, xmmTemp, m4);
-	}
+	
 	if (doMode)
 	{
 		u32 m5 = ~(m2 | m3 | m4) & 0xf;
@@ -146,14 +142,14 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 			xPXOR(xmmTemp, xmmTemp);
 			if (doMode == 3)
 			{
-				mergeVectors(xmmRow, regX, xmmTemp, m5);
+				mVUmergeRegs(xmmRow, regX, m5);
 			}
 			else
 			{
-				mergeVectors(xmmTemp, xmmRow, xmmTemp, m5);
+				mVUmergeRegs(xmmTemp, xmmRow, m5);
 				xPADD.D(regX, xmmTemp);
 				if (doMode == 2)
-					mergeVectors(xmmRow, regX, xmmTemp, m5);
+					mVUmergeRegs(xmmRow, regX, m5);
 			}
 		}
 		else
@@ -170,7 +166,10 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 			}
 		}
 	}
-	xMOVAPS(ptr32[dstIndirect], regX);
+	if (doMask && m4) // Merge Write Protect
+		mVUsaveReg(regX, ptr32[dstIndirect], m4 ^ 0xf, false);
+	else
+		xMOVAPS(ptr32[dstIndirect], regX);
 }
 
 void VifUnpackSSE_Dynarec::writeBackRow() const
