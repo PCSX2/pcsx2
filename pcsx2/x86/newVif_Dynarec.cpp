@@ -95,6 +95,7 @@ __fi void VifUnpackSSE_Dynarec::SetMasks(int cS) const
 		xMOVAPS(xmmRow, ptr128[&vif.MaskRow]);
 		MSKPATH3_LOG("Moving row");
 	}
+
 	if (m3 && doMask)
 	{
 		MSKPATH3_LOG("Merging Cols");
@@ -111,7 +112,7 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 {
 	pxAssertDev(regX.Id <= 1, "Reg Overflow! XMM2 thru XMM6 are reserved for masking.");
 
-	int cc = std::min(vCL, 3);
+	const int cc = std::min(vCL, 3);
 	u32 m0 = (vB.mask >> (cc * 8)) & 0xff; //The actual mask example 0xE4 (protect, col, row, clear)
 	u32 m3 = ((m0 & 0xaa) >> 1) & ~m0; //all the upper bits (cols shifted right) cancelling out any write protects 0x10
 	u32 m2 = (m0 & 0x55) & (~m0 >> 1); // all the lower bits (rows)cancelling out any write protects 0x04
@@ -125,6 +126,7 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 	{
 		mVUmergeRegs(regX, xmmRow, m2);
 	}
+
 	if (doMask && m3) // Merge MaskCol
 	{
 		mVUmergeRegs(regX, xRegisterSSE(xmmCol0.Id + cc), m3);
@@ -166,6 +168,7 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 			}
 		}
 	}
+
 	if (doMask && m4) // Merge Write Protect
 		mVUsaveReg(regX, ptr32[dstIndirect], m4 ^ 0xf, false);
 	else
@@ -277,13 +280,10 @@ void VifUnpackSSE_Dynarec::CompileRoutine()
 
 	while (vNum)
 	{
-
-
 		ShiftDisplacementWindow(dstIndirect, arg1reg);
 
 		if (UnpkNoOfIterations == 0)
 			ShiftDisplacementWindow(srcIndirect, arg2reg); //Don't need to do this otherwise as we arent reading the source.
-
 
 		if (vCL < cycleSize)
 		{
@@ -302,9 +302,14 @@ void VifUnpackSSE_Dynarec::CompileRoutine()
 		}
 		else if (isFill)
 		{
-			//Filling doesn't need anything fancy, it's pretty much a normal write, just doesnt increment the source.
-			//DevCon.WriteLn("filling mode!");
-			xUnpack(upkNum);
+			// Filling doesn't need anything fancy, it's pretty much a normal write, just doesnt increment the source.
+			// If all vectors read a row or column or are masked, we don't need to process the source at all.
+			const int cc = std::min(vCL, 3);
+			u32 m0 = (vB.mask >> (cc * 8)) & 0xff;
+			m0 = (m0 >> 1) | m0;
+
+			if ((m0 & 0x55) != 0x55)
+				xUnpack(upkNum);
 			xMovDest();
 
 			dstIndirect += 16;
@@ -322,6 +327,7 @@ void VifUnpackSSE_Dynarec::CompileRoutine()
 
 	if (doMode >= 2)
 		writeBackRow();
+
 	xRET();
 }
 
