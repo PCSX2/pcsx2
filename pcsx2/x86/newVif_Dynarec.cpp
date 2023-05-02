@@ -90,15 +90,15 @@ __fi void VifUnpackSSE_Dynarec::SetMasks(int cS) const
 	u32 m3 = ((m0 & 0xaaaaaaaa) >> 1) & ~m0; //all the upper bits, so our example 0x01010000 & 0xFCFDFEFF = 0x00010000 just the cols (shifted right for maskmerge)
 	u32 m2 = (m0 & 0x55555555) & (~m0 >> 1); // 0x1000100 & 0xFE7EFF7F = 0x00000100 Just the row
 
-	if ((m2 && doMask) || doMode)
+	if ((doMask && m2) || doMode)
 	{
 		xMOVAPS(xmmRow, ptr128[&vif.MaskRow]);
 		MSKPATH3_LOG("Moving row");
 	}
 
-	if (m3 && doMask)
+	if (doMask && m3)
 	{
-		MSKPATH3_LOG("Merging Cols");
+		VIF_LOG("Merging Cols");
 		xMOVAPS(xmmCol0, ptr128[&vif.MaskCol]);
 		if ((cS >= 2) && (m3 & 0x0000ff00)) xPSHUF.D(xmmCol1, xmmCol0, _v1);
 		if ((cS >= 3) && (m3 & 0x00ff0000)) xPSHUF.D(xmmCol2, xmmCol0, _v2);
@@ -121,10 +121,6 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 	makeMergeMask(m2);
 	makeMergeMask(m3);
 	makeMergeMask(m4);
-
-	// Everything is write protected, don't touch it, saveReg can't handle a mask of 0.
-	if (doMask && m4 == 0xf)
-		return;
 
 	if (doMask && m2) // Merge MaskRow
 	{
@@ -184,8 +180,7 @@ void VifUnpackSSE_Dynarec::writeBackRow() const
 	const int idx = v.idx;
 	xMOVAPS(ptr128[&(MTVU_VifX.MaskRow)], xmmRow);
 
-	DevCon.WriteLn("nVif: writing back row reg! [doMode = %d]", doMode);
-	// ToDo: Do we need to write back to vifregs.rX too!? :/
+	VIF_LOG("nVif: writing back row reg! [doMode = %d]", doMode);
 }
 
 static void ShiftDisplacementWindow(xAddressVoid& addr, const xRegisterLong& modReg)
@@ -263,6 +258,25 @@ void VifUnpackSSE_Dynarec::ModUnpack(int upknum, bool PostOp)
 	}
 }
 
+void VifUnpackSSE_Dynarec::ProcessMasks()
+{
+	skipProcessing = false;
+	inputMasked = false;
+
+	if (!doMask)
+		return;
+
+	const int cc = std::min(vCL, 3);
+	const u32 full_mask = (vB.mask >> (cc * 8)) & 0xff;
+	const u32 rowcol_mask = ((full_mask >> 1) | full_mask) & 0x55; // Rows or Cols being written instead of data, or protected.
+
+	// Every channel is write protected for this cycle, no need to process anything.
+	skipProcessing = full_mask == 0xff;
+
+	// All channels are masked, no reason to process anything here.
+	inputMasked = rowcol_mask == 0x55;
+}
+
 void VifUnpackSSE_Dynarec::CompileRoutine()
 {
 	const int wl        = vB.wl ? vB.wl : 256; // 0 is taken as 256 (KH2)
@@ -275,7 +289,7 @@ void VifUnpackSSE_Dynarec::CompileRoutine()
 	uint vNum = vB.num ? vB.num : 256;
 	doMode    = (upkNum == 0xf) ? 0 : doMode; // V4_5 has no mode feature.
 	UnpkNoOfIterations = 0;
-	MSKPATH3_LOG("Compiling new block, unpack number %x, mode %x, masking %x, vNum %x", upkNum, doMode, doMask, vNum);
+	VIF_LOG("Compiling new block, unpack number %x, mode %x, masking %x, vNum %x", upkNum, doMode, doMask, vNum);
 
 	pxAssume(vCL == 0);
 
@@ -293,13 +307,15 @@ void VifUnpackSSE_Dynarec::CompileRoutine()
 		if (UnpkNoOfIterations == 0)
 			ShiftDisplacementWindow(srcIndirect, arg2reg); //Don't need to do this otherwise as we arent reading the source.
 
+		// Determine if reads/processing can be skipped.
+		ProcessMasks();
+
 		if (vCL < cycleSize)
 		{
 			ModUnpack(upkNum, false);
 			xUnpack(upkNum);
 			xMovDest();
 			ModUnpack(upkNum, true);
-
 
 			dstIndirect += 16;
 			srcIndirect += vift;
@@ -311,13 +327,7 @@ void VifUnpackSSE_Dynarec::CompileRoutine()
 		else if (isFill)
 		{
 			// Filling doesn't need anything fancy, it's pretty much a normal write, just doesnt increment the source.
-			// If all vectors read a row or column or are masked, we don't need to process the source at all.
-			const int cc = std::min(vCL, 3);
-			u32 m0 = (vB.mask >> (cc * 8)) & 0xff;
-			m0 = (m0 >> 1) | m0;
-
-			if ((m0 & 0x55) != 0x55)
-				xUnpack(upkNum);
+			xUnpack(upkNum);
 			xMovDest();
 
 			dstIndirect += 16;
