@@ -38,7 +38,7 @@ VifUnpackSSE_Base::VifUnpackSSE_Base()
 	, IsAligned(0)
 	, dstIndirect(arg1reg)
 	, srcIndirect(arg2reg)
-	, zeroReg(xmm2)
+	, zeroReg(xmm15)
 	, workReg(xmm1)
 	, destReg(xmm0)
 {
