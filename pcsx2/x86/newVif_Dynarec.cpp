@@ -122,6 +122,10 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 	makeMergeMask(m3);
 	makeMergeMask(m4);
 
+	// Everything is write protected, don't touch it, saveReg can't handle a mask of 0.
+	if (doMask && m4 == 0xf)
+		return;
+
 	if (doMask && m2) // Merge MaskRow
 	{
 		mVUmergeRegs(regX, xmmRow, m2);
