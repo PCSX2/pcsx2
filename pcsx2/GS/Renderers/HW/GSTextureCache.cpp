@@ -1642,7 +1642,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 			++i;
 
 			if (GSUtil::HasSharedBits(bp, psm, s->m_TEX0.TBP0, s->m_TEX0.PSM) ||
-				GSUtil::HasSharedBits(bp, psm, s->m_from_target_TEX0.TBP0, s->m_TEX0.PSM))
+				(GSUtil::HasSharedBits(bp, psm, s->m_from_target_TEX0.TBP0, s->m_TEX0.PSM) && s->m_target))
 			{
 				m_src.RemoveAt(s);
 			}
@@ -4112,8 +4112,14 @@ void GSTextureCache::Source::SetPages()
 		m_p2t = g_gs_renderer->m_mem.GetPage2TileMap(m_TEX0);
 	}
 
-	const GSOffset offset = g_gs_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
-	const GSVector4i rect(m_region.GetRect(tw, th));
+	// Target regions are inverted - we're pointing to an area from the target BP, which might be offset,
+	// not an area from the source BP which is definitely offset. So use the target's BP instead, otherwise
+	// if the target gets invalidated, and we're offset, and the area doesn't cover us, we won't get removed.
+	const GSOffset offset =
+		(m_target && m_region.HasEither()) ?
+			g_gs_renderer->m_mem.GetOffset(m_from_target_TEX0.TBP0, m_from_target_TEX0.TBW, m_from_target_TEX0.PSM) :
+			g_gs_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
+	const GSVector4i rect = m_region.GetRect(tw, th);
 	m_pages = offset.pageLooperForRect(rect);
 }
 
