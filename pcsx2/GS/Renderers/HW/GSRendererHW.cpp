@@ -5212,8 +5212,14 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps() const
 	if (m_index.tail == 2)
 		return true;
 
-	// Borrowed from MergeSprite().
+	// Check that the height matches. Xenosaga 3 draws a letterbox around
+	// the FMV with a sprite at the top and bottom of the framebuffer.
 	const GSVertex* v = &m_vertex.buff[0];
+	const int first_dpY = v[1].XYZ.Y - v[0].XYZ.Y;
+	if ((first_dpY >> 4) != m_r.w)
+		return false;
+
+	// Borrowed from MergeSprite().
 	const int first_dpX = v[1].XYZ.X - v[0].XYZ.X;
 	for (u32 i = 0; i < m_vertex.next; i += 2)
 	{
