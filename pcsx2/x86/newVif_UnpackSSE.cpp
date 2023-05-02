@@ -46,8 +46,13 @@ VifUnpackSSE_Base::VifUnpackSSE_Base()
 
 void VifUnpackSSE_Base::xMovDest() const
 {
-	if (IsUnmaskedOp()) { xMOVAPS (ptr[dstIndirect], destReg); }
-	else                { doMaskWrite(destReg); }
+	if (!IsWriteProtectedOp())
+	{
+		if (IsUnmaskedOp())
+			xMOVAPS(ptr[dstIndirect], destReg);
+		else
+			doMaskWrite(destReg);
+	}
 }
 
 void VifUnpackSSE_Base::xShiftR(const xRegisterSSE& regX, int n) const
@@ -70,10 +75,15 @@ void VifUnpackSSE_Base::xPMOVXX16(const xRegisterSSE& regX) const
 
 void VifUnpackSSE_Base::xUPK_S_32() const
 {
+	if (UnpkLoopIteration == 0)
+		xMOV128(workReg, ptr32[srcIndirect]);
+
+	if (IsInputMasked())
+		return;
+
 	switch (UnpkLoopIteration)
 	{
 		case 0:
-			xMOV128(workReg, ptr32[srcIndirect]);
 			xPSHUF.D(destReg, workReg, _v0);
 			break;
 		case 1:
@@ -90,10 +100,15 @@ void VifUnpackSSE_Base::xUPK_S_32() const
 
 void VifUnpackSSE_Base::xUPK_S_16() const
 {
+	if (UnpkLoopIteration == 0)
+		xPMOVXX16(workReg);
+
+	if (IsInputMasked())
+		return;
+
 	switch (UnpkLoopIteration)
 	{
 		case 0:
-			xPMOVXX16(workReg);
 			xPSHUF.D(destReg, workReg, _v0);
 			break;
 		case 1:
@@ -110,10 +125,15 @@ void VifUnpackSSE_Base::xUPK_S_16() const
 
 void VifUnpackSSE_Base::xUPK_S_8() const
 {
+	if (UnpkLoopIteration == 0)
+		xPMOVXX8(workReg);
+
+	if (IsInputMasked())
+		return;
+
 	switch (UnpkLoopIteration)
 	{
 		case 0:
-			xPMOVXX8(workReg);
 			xPSHUF.D(destReg, workReg, _v0);
 			break;
 		case 1:
@@ -138,12 +158,19 @@ void VifUnpackSSE_Base::xUPK_V2_32() const
 	if (UnpkLoopIteration == 0)
 	{
 		xMOV128(workReg, ptr32[srcIndirect]);
+
+		if (IsInputMasked())
+			return;
+
 		xPSHUF.D(destReg, workReg, 0x44); //v1v0v1v0
 		if (IsAligned)
 			xBLEND.PS(destReg, zeroReg, 0x8); //zero last word - tested on ps2
 	}
 	else
 	{
+		if (IsInputMasked())
+			return;
+
 		xPSHUF.D(destReg, workReg, 0xEE); //v3v2v3v2
 		if (IsAligned)
 			xBLEND.PS(destReg, zeroReg, 0x8); //zero last word - tested on ps2
@@ -155,10 +182,17 @@ void VifUnpackSSE_Base::xUPK_V2_16() const
 	if (UnpkLoopIteration == 0)
 	{
 		xPMOVXX16(workReg);
+
+		if (IsInputMasked())
+			return;
+
 		xPSHUF.D(destReg, workReg, 0x44); //v1v0v1v0
 	}
 	else
 	{
+		if (IsInputMasked())
+			return;
+
 		xPSHUF.D(destReg, workReg, 0xEE); //v3v2v3v2
 	}
 }
@@ -168,16 +202,26 @@ void VifUnpackSSE_Base::xUPK_V2_8() const
 	if (UnpkLoopIteration == 0)
 	{
 		xPMOVXX8(workReg);
+
+		if (IsInputMasked())
+			return;
+
 		xPSHUF.D(destReg, workReg, 0x44); //v1v0v1v0
 	}
 	else
 	{
+		if (IsInputMasked())
+			return;
+
 		xPSHUF.D(destReg, workReg, 0xEE); //v3v2v3v2
 	}
 }
 
 void VifUnpackSSE_Base::xUPK_V3_32() const
 {
+	if (IsInputMasked())
+		return;
+
 	xMOV128(destReg, ptr128[srcIndirect]);
 	if (UnpkLoopIteration != IsAligned)
 		xBLEND.PS(destReg, zeroReg, 0x8); //zero last word - tested on ps2
@@ -185,6 +229,9 @@ void VifUnpackSSE_Base::xUPK_V3_32() const
 
 void VifUnpackSSE_Base::xUPK_V3_16() const
 {
+	if (IsInputMasked())
+		return;
+
 	xPMOVXX16(destReg);
 
 	//With V3-16, it takes the first vector from the next position as the W vector
@@ -199,6 +246,9 @@ void VifUnpackSSE_Base::xUPK_V3_16() const
 
 void VifUnpackSSE_Base::xUPK_V3_8() const
 {
+	if (IsInputMasked())
+		return;
+
 	xPMOVXX8(destReg);
 	if (UnpkLoopIteration != IsAligned)
 		xBLEND.PS(destReg, zeroReg, 0x8); //zero last word - tested on ps2
@@ -206,21 +256,33 @@ void VifUnpackSSE_Base::xUPK_V3_8() const
 
 void VifUnpackSSE_Base::xUPK_V4_32() const
 {
+	if (IsInputMasked())
+		return;
+
 	xMOV128(destReg, ptr32[srcIndirect]);
 }
 
 void VifUnpackSSE_Base::xUPK_V4_16() const
 {
+	if (IsInputMasked())
+		return;
+
 	xPMOVXX16(destReg);
 }
 
 void VifUnpackSSE_Base::xUPK_V4_8() const
 {
+	if (IsInputMasked())
+		return;
+
 	xPMOVXX8(destReg);
 }
 
 void VifUnpackSSE_Base::xUPK_V4_5() const
 {
+	if (IsInputMasked())
+		return;
+
 	xMOV16      (workReg, ptr32[srcIndirect]);
 	xPSHUF.D    (workReg, workReg, _v0);
 	xPSLL.D     (workReg, 3);           // ABG|R5.000
