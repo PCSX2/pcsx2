@@ -5232,6 +5232,7 @@ bool GSRendererHW::IsConstantDirectWriteMemClear()
 	if (direct_draw && !PRIM->TME // Direct write
 		&& !(m_draw_env->SCANMSK.MSK & 2)
 		&& !m_cached_ctx.TEST.ATE // no alpha test
+		&& !m_cached_ctx.TEST.DATE // no destination alpha test
 		&& (!m_cached_ctx.TEST.ZTE || m_cached_ctx.TEST.ZTST == ZTST_ALWAYS) // no depth test
 		&& (m_vt.m_eq.rgba == 0xFFFF || m_vertex.next == 2) // constant color write
 		&& m_r.x == 0 && m_r.y == 0) // Likely full buffer write
