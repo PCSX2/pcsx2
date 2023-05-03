@@ -953,7 +953,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 						if (can_translate)
 						{
 							const bool swizzle_match = GSLocalMemory::m_psm[psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
-							const GSVector2i page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
+							const GSVector2i& page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
 							const GSVector4i page_mask(GSVector4i((page_size.x - 1), (page_size.y - 1)).xyxy());
 							GSVector4i rect = r & ~page_mask;
 
@@ -968,7 +968,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 								// If it's not page aligned, grab the whole pages it covers, to be safe.
 								if (GSLocalMemory::m_psm[psm].bpp != GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp)
 								{
-									const GSVector2i dst_page_size = GSLocalMemory::m_psm[psm].pgs;
+									const GSVector2i& dst_page_size = GSLocalMemory::m_psm[psm].pgs;
 									rect = GSVector4i(rect.x / page_size.x, rect.y / page_size.y, (rect.z + (page_size.x - 1)) / page_size.x, (rect.w + (page_size.y - 1)) / page_size.y);
 									rect = GSVector4i(rect.x * dst_page_size.x, rect.y * dst_page_size.y, rect.z * dst_page_size.x, rect.w * dst_page_size.y);
 								}
@@ -1031,16 +1031,47 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 							}
 						}
 					}
-					else if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::MergeTargets && !tex_merge_rt)
+					else
 					{
-						dst = t;
-						x_offset = 0;
-						y_offset = 0;
-						tex_merge_rt = true;
+						// Some games, such as Tomb Raider: Underworld, and Destroy All Humans shift the texture pointer
+						// back behind the framebuffer, but then offset their texture coordinates to compensate. Why they
+						// do this, I have no idea... but it's usually only a page wide/high of an offset. Thankfully,
+						// they also seem to set region clamp with the offset as well, so we can use that to find the target
+						// that they're expecting to read from. Example from Tomb Raider: TBP0 0xee0 with a TBW of 8, MINU/V
+						// of 64,32, which means 9 pages down, or 0x1000, which lines up with the main framebuffer. Originally
+						// I had a check on the end block too, but since the game's a bit rude, it channel shuffles into new
+						// targets that it never regularly draws to, which means the end block for them won't be correct.
+						// Omitting that check here seemed less risky than blowing CS targets out...
+						const GSVector2i& page_size = GSLocalMemory::m_psm[psm].pgs;
+						const GSOffset offset(GSLocalMemory::m_psm[psm].info, bp, bw, psm);
+						if (bp < t->m_TEX0.TBP0 && region.HasX() && region.HasY() &&
+							(region.GetMinX() & (page_size.x - 1)) == 0 && (region.GetMinY() & (page_size.y - 1)) == 0 &&
+							offset.bn(region.GetMinX(), region.GetMinY()) == t->m_TEX0.TBP0)
+						{
+							GL_CACHE("TC: Target 0x%x detected in front of TBP 0x%x with %d,%d offset (%d pages)",
+								t->m_TEX0.TBP0, TEX0.TBP0, region.GetMinX(), region.GetMinY(),
+								(region.GetMinY() / page_size.y) * TEX0.TBW + (region.GetMinX() / page_size.x));
+							x_offset = -region.GetMinX();
+							y_offset = -region.GetMinY();
+							dst = t;
+							tex_merge_rt = false;
+							found_t = true;
+							continue;
+						}
 
-						// Prefer a target inside over a target outside.
-						found_t = false;
-						continue;
+						// Strictly speaking this path is no longer needed, but I'm leaving it here for now because Guitar
+						// Hero III needs it to merge crowd textures.
+						else if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::MergeTargets && !tex_merge_rt)
+						{
+							dst = t;
+							x_offset = 0;
+							y_offset = 0;
+							tex_merge_rt = true;
+
+							// Prefer a target inside over a target outside.
+							found_t = false;
+							continue;
+						}
 					}
 				}
 			}
@@ -2909,8 +2940,14 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			GL_CACHE("TC: Sample offset (%d,%d) reduced region directly from target: %dx%d -> %dx%d @ %d,%d",
 				dst->m_texture->GetWidth(), x_offset, y_offset, dst->m_texture->GetHeight(), w, h, x_offset, y_offset);
 
-			src->m_region.SetX(x_offset, x_offset + tw);
-			src->m_region.SetY(y_offset, y_offset + th);
+			if (x_offset < 0)
+				src->m_region.SetX(x_offset, region.GetMaxX() + x_offset);
+			else
+				src->m_region.SetX(x_offset, x_offset + tw);
+			if (y_offset < 0)
+				src->m_region.SetY(y_offset, region.GetMaxY() + y_offset);
+			else
+				src->m_region.SetY(y_offset, y_offset + th);
 			src->m_texture = dst->m_texture;
 			src->m_unscaled_size = dst->m_unscaled_size;
 			src->m_shared_texture = true;
