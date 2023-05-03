@@ -706,10 +706,11 @@ GSVector2i GSRendererHW::GetTargetSize(const GSTextureCache::Source* tex)
 	{
 		const int page_x = frame_psm.pgs.x - 1;
 		const int page_y = frame_psm.pgs.y - 1;
+		pxAssert(tex);
 
 		// Round up the page as channel shuffles are generally done in pages at a time
-		width = (std::max(PCRTCDisplays.GetResolution().x, width) + page_x) & ~page_x;
-		height = (std::max(PCRTCDisplays.GetResolution().y, height) + page_y) & ~page_y;
+		width = (std::max(tex->GetUnscaledWidth(), width) + page_x) & ~page_x;
+		height = (std::max(tex->GetUnscaledHeight(), height) + page_y) & ~page_y;
 	}
 
 	// Align to page size. Since FRAME/Z has to always start on a page boundary, in theory no two should overlap.
@@ -1829,9 +1830,10 @@ void GSRendererHW::Draw()
 	GIFRegTEX0 FRAME_TEX0;
 	if (!no_rt)
 	{
+		// FBW is going to be wrong for channel shuffling into a new target, so take it from the source.
 		FRAME_TEX0.U64 = 0;
 		FRAME_TEX0.TBP0 = m_cached_ctx.FRAME.Block();
-		FRAME_TEX0.TBW = m_cached_ctx.FRAME.FBW;
+		FRAME_TEX0.TBW = m_channel_shuffle ? src->m_from_target_TEX0.TBW : m_cached_ctx.FRAME.FBW;
 		FRAME_TEX0.PSM = m_cached_ctx.FRAME.PSM;
 
 		// Normally we would use 1024 here to match the clear above, but The Godfather does a 1023x1023 draw instead
@@ -1858,7 +1860,7 @@ void GSRendererHW::Draw()
 	{
 		ZBUF_TEX0.U64 = 0;
 		ZBUF_TEX0.TBP0 = m_cached_ctx.ZBUF.Block();
-		ZBUF_TEX0.TBW = m_cached_ctx.FRAME.FBW;
+		ZBUF_TEX0.TBW = m_channel_shuffle ? src->m_from_target_TEX0.TBW : m_cached_ctx.FRAME.FBW;
 		ZBUF_TEX0.PSM = m_cached_ctx.ZBUF.PSM;
 
 		ds = g_texture_cache->LookupTarget(ZBUF_TEX0, t_size, target_scale, GSTextureCache::DepthStencil,
@@ -2055,6 +2057,21 @@ void GSRendererHW::Draw()
 
 		if (ds)
 			ds->m_TEX0 = ZBUF_TEX0;
+	}
+	else if (!m_texture_shuffle)
+	{
+		// Allow FB PSM to update on channel shuffle, it should be correct, unlike texture shuffle.
+		// The FBW should also be okay, since it's coming from the source.
+		if (rt)
+		{
+			rt->m_TEX0.TBW = std::max(rt->m_TEX0.TBW, FRAME_TEX0.TBW);
+			rt->m_TEX0.PSM = FRAME_TEX0.PSM;
+		}
+		if (ds)
+		{
+			ds->m_TEX0.TBW = std::max(ds->m_TEX0.TBW, ZBUF_TEX0.TBW);
+			ds->m_TEX0.PSM = ZBUF_TEX0.PSM;
+		}
 	}
 	if (rt)
 		rt->Update(true);
