@@ -52,16 +52,16 @@ public:
 		bool HasY() const { return static_cast<u32>(bits >> 32) != 0; }
 		bool HasEither() const { return (bits != 0); }
 
-		void SetX(u32 min, u32 max) { bits |= (min | (max << 16)); }
-		void SetY(u32 min, u32 max) { bits |= ((static_cast<u64>(min) << 32) | (static_cast<u64>(max) << 48)); }
+		void SetX(s32 min, s32 max) { bits |= (static_cast<u64>(static_cast<u16>(min)) | (static_cast<u64>(static_cast<u16>(max) << 16))); }
+		void SetY(s32 min, s32 max) { bits |= ((static_cast<u64>(static_cast<u16>(min)) << 32) | (static_cast<u64>(static_cast<u16>(max)) << 48)); }
 
-		u32 GetMinX() const { return static_cast<u32>(bits) & 0xFFFFu; }
-		u32 GetMaxX() const { return static_cast<u32>(bits >> 16) & 0xFFFFu; }
-		u32 GetMinY() const { return static_cast<u32>(bits >> 32) & 0xFFFFu; }
-		u32 GetMaxY() const { return static_cast<u32>(bits >> 48); }
+		s32 GetMinX() const { return static_cast<s16>(bits); }
+		s32 GetMaxX() const { return static_cast<s16>((bits >> 16) & 0xFFFFu); }
+		s32 GetMinY() const { return static_cast<s16>((bits >> 32) & 0xFFFFu); }
+		s32 GetMaxY() const { return static_cast<s16>(bits >> 48); }
 
-		u32 GetWidth() const { return (GetMaxX() - GetMinX()); }
-		u32 GetHeight() const { return (GetMaxY() - GetMinY()); }
+		s32 GetWidth() const { return (GetMaxX() - GetMinX()); }
+		s32 GetHeight() const { return (GetMaxY() - GetMinY()); }
 
 		/// Returns true if the area of the region exceeds the TW/TH size (i.e. "fixed tex0").
 		bool IsFixedTEX0(GIFRegTEX0 TEX0) const;
