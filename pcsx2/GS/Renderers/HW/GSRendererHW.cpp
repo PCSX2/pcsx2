@@ -1415,6 +1415,8 @@ void GSRendererHW::Draw()
 	{
 		// NFSU2 does consecutive channel shuffles with blending, reducing the alpha channel over time.
 		// Fortunately, it seems to change the FBMSK along the way, so this check alone is sufficient.
+		// Tomb Raider: Underworld does similar, except with R, G, B in separate palettes, therefore
+		// we need to split on those too.
 		m_channel_shuffle = IsPossibleChannelShuffle() && m_last_channel_shuffle_fbmsk == m_context->FRAME.FBMSK;
 
 #ifdef ENABLE_OGL_DEBUG
