@@ -135,7 +135,6 @@ private:
 	u32 m_split_texture_shuffle_start_TBP = 0;
 
 	u32 m_last_channel_shuffle_fbmsk = 0;
-	bool m_channel_shuffle = false;
 
 	bool m_userhacks_tcoffset = false;
 	float m_userhacks_tcoffset_x = 0.0f;
