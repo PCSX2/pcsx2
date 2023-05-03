@@ -959,7 +959,8 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 
 	m_ui.disableFramebufferFetch->setDisabled(is_sw_dx);
 
-	m_ui.exclusiveFullscreenControl->setEnabled(is_auto || is_vk);
+	if (m_ui.exclusiveFullscreenControl)
+		m_ui.exclusiveFullscreenControl->setEnabled(is_auto || is_vk);
 
 	// populate adapters
 	std::vector<std::string> adapters;
