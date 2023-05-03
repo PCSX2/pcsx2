@@ -2100,6 +2100,8 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 		config.ds = nullptr;
 	if (!config.ds && m_current_render.color_target == rt && stencil == m_current_render.stencil_target && m_current_render.depth_target != config.tex)
 		config.ds = m_current_render.depth_target;
+	if (!rt && config.ds == m_current_render.depth_target && m_current_render.color_target != config.tex)
+		rt = m_current_render.color_target;
 	if (!rt && !config.ds)
 	{
 		// If we were rendering depth-only and depth gets cleared by the above check, that turns into rendering nothing, which should be a no-op
