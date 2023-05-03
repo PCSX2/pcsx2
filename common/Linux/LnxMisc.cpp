@@ -75,9 +75,9 @@ std::string GetOSVersionString()
 
 #ifdef DBUS_API
 
-static dbus_uint32_t s_screensaver_dbus_cookie;
 bool ChangeScreenSaverStateDBus(const bool inhibit_requested, const char* program_name, const char* reason)
 {
+	static dbus_uint32_t s_cookie;
 	// "error_dbus" doesn't need to be cleared in the end with "dbus_message_unref" at least if there is
 	// no error set, since calling "dbus_error_free" reinitializes it like "dbus_error_init" after freeing.
 	DBusError error_dbus;
@@ -109,9 +109,8 @@ bool ChangeScreenSaverStateDBus(const bool inhibit_requested, const char* progra
 	else
 	{
 		// Only Append the cookie.
-		if (!dbus_message_iter_append_basic(&message_itr, DBUS_TYPE_UINT32, &s_screensaver_dbus_cookie))
+		if (!dbus_message_iter_append_basic(&message_itr, DBUS_TYPE_UINT32, &s_cookie))
 			goto cleanup;
-		s_screensaver_dbus_cookie = 0;
 	}
 	// Send message and get response.
 	if (!(response = dbus_connection_send_with_reply_and_block(connection, message, DBUS_TIMEOUT_USE_DEFAULT, &error_dbus)) 
@@ -120,22 +119,22 @@ bool ChangeScreenSaverStateDBus(const bool inhibit_requested, const char* progra
 	if (inhibit_requested)
 	{
 		// Get the cookie from the response message.
-		if (!dbus_message_get_args(response, &error_dbus, DBUS_TYPE_UINT32, &s_screensaver_dbus_cookie, DBUS_TYPE_INVALID))
+		if (!dbus_message_get_args(response, &error_dbus, DBUS_TYPE_UINT32, &s_cookie, DBUS_TYPE_INVALID))
 			goto cleanup;
 	}
 	dbus_message_unref(message);
 	dbus_message_unref(response);
 	return true;
-	cleanup:
-			if (dbus_error_is_set(&error_dbus))
-				dbus_error_free(&error_dbus);
-			if (connection)
-				dbus_connection_unref(connection);
-			if (message)
-				dbus_message_unref(message);
-			if (response)
-				dbus_message_unref(response);
-			return false;
+cleanup:
+	if (dbus_error_is_set(&error_dbus))
+		dbus_error_free(&error_dbus);
+	if (connection)
+		dbus_connection_unref(connection);
+	if (message)
+		dbus_message_unref(message);
+	if (response)
+		dbus_message_unref(response);
+	return false;
 }
 
 #endif
@@ -144,7 +143,7 @@ bool ChangeScreenSaverStateDBus(const bool inhibit_requested, const char* progra
 
 static bool SetScreensaverInhibitX11(const WindowInfo& wi, bool inhibit)
 {
-	extern char **environ;
+	extern char** environ;
 
 	const char* command = "xdg-screensaver";
 	const char* operation = inhibit ? "suspend" : "resume";
