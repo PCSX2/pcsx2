@@ -216,54 +216,6 @@ bool GSHwHack::GSC_Tekken5(GSRendererHW& r, int& skip)
 	return true;
 }
 
-bool GSHwHack::GSC_TombRaiderAnniversary(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		if (RTME && RFBP == 0x01000 && RFPSM == RTPSM && RTPSM == PSMCT32)
-		{
-			skip = 1; // Garbage TC
-		}
-	}
-
-	return true;
-}
-
-bool GSHwHack::GSC_TombRaiderLegend(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		// ||GSC_TBP0 ==0x2F00
-		if (RTME && RFBP == 0x01000 && RFPSM == RTPSM && RTPSM == PSMCT32 && (RTBP0 == 0x2b60 || RTBP0 == 0x2b80 || RTBP0 == 0x2E60 || RTBP0 == 0x3020 || RTBP0 == 0x3200 || RTBP0 == 0x3320))
-		{
-			skip = 1; // Garbage TC
-		}
-		else if (RTPSM == PSMCT32 && (RTPSM | RFBP) == 0x2fa0 && (RTBP0 == 0x2bc0) && RFBMSK == 0)
-		{
-			skip = 2; // Underwater black screen
-		}
-	}
-
-	return true;
-}
-
-bool GSHwHack::GSC_TombRaiderUnderWorld(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		if (RTME && RFBP == 0x01000 && RFPSM == RTPSM && RTPSM == PSMCT32 && (RTBP0 == 0x2B60 /*|| GSC_TBP0 == 0x2EFF || GSC_TBP0 ==0x2F00 || GSC_TBP0 == 0x3020*/ || (RTBP0 >= 0x2C01 && RTBP0 != 0x3029 && RTBP0 != 0x302d)))
-		{
-			skip = 1; // Garbage TC
-		}
-		else if (RTPSM == PSMCT32 && (RTPSM | RFBP) == 0x2c00 && (RTBP0 == 0x0ee0) && RFBMSK == 0)
-		{
-			skip = 2; // Underwater black screen
-		}
-	}
-
-	return true;
-}
-
 bool GSHwHack::GSC_BurnoutGames(GSRendererHW& r, int& skip)
 {
 	if (RFBW == 2 && std::abs(static_cast<int>(RFBP) - static_cast<int>(RZBP)) <= static_cast<int>(BLOCKS_PER_PAGE))
@@ -1209,9 +1161,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_SFEX3, CRCHackLevel::Partial),
 	CRC_F(GSC_TalesOfLegendia, CRCHackLevel::Partial),
 	CRC_F(GSC_TalesofSymphonia, CRCHackLevel::Partial),
-	CRC_F(GSC_TombRaiderAnniversary, CRCHackLevel::Partial),
-	CRC_F(GSC_TombRaiderLegend, CRCHackLevel::Partial),
-	CRC_F(GSC_TombRaiderUnderWorld, CRCHackLevel::Partial),
 	CRC_F(GSC_UrbanReign, CRCHackLevel::Partial),
 	CRC_F(GSC_ZettaiZetsumeiToshi2, CRCHackLevel::Partial),
 	CRC_F(GSC_BlackAndBurnoutSky, CRCHackLevel::Partial),

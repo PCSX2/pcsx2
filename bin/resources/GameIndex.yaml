@@ -19399,7 +19399,7 @@ SLES-53908:
   compat: 5
   gsHWFixes:
     mipmap: 1 # Fixes distant characters and models but there are still some flickering textures.
-    getSkipCount: "GSC_TombRaiderLegend"
+    textureInsideRT: 1 # Needed for post processing effects.
 SLES-53909:
   name: "Full Spectrum Warrior - Ten Hammers"
   region: "PAL-G"
@@ -21392,7 +21392,7 @@ SLES-54674:
   compat: 5
   gsHWFixes:
     mipmap: 1
-    getSkipCount: "GSC_TombRaiderAnniversary"
+    textureInsideRT: 1 # Needed for post processing effects.
 SLES-54675:
   name: "Street Warrior"
   region: "PAL-E"
@@ -23360,7 +23360,7 @@ SLES-55442:
   region: "PAL-M8"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_TombRaiderUnderWorld"
+    textureInsideRT: 1 # Needed for post processing effects.
 SLES-55443:
   name: "Mana Khemia - Alchemists of Al-Revis"
   region: "PAL-E"
@@ -34400,7 +34400,7 @@ SLPM-66558:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1 # Fixes distant characters and models but there are still some flickering textures.
-    getSkipCount: "GSC_TombRaiderLegend"
+    textureInsideRT: 1 # Needed for post processing effects.
 SLPM-66559:
   name: "Winning Post 6 [KOEI Selection]"
   region: "NTSC-J"
@@ -41299,7 +41299,7 @@ SLPS-25856:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
-    getSkipCount: "GSC_TombRaiderAnniversary"
+    textureInsideRT: 1 # Needed for post processing effects.
 SLPS-25858:
   name: "Dengeki SP - Shakugan no Shana"
   region: "NTSC-J"
@@ -41488,7 +41488,7 @@ SLPS-25927:
   name: "Tomb Raider - Underworld"
   region: "NTSC-J"
   gsHWFixes:
-    getSkipCount: "GSC_TombRaiderUnderWorld"
+    textureInsideRT: 1 # Needed for post processing effects.
 SLPS-25930:
   name: "Major League Baseball 2K9"
   region: "NTSC-J"
@@ -48032,7 +48032,7 @@ SLUS-21203:
   compat: 5
   gsHWFixes:
     mipmap: 1 # Fixes distant characters and models but there are still some flickering textures.
-    getSkipCount: "GSC_TombRaiderLegend"
+    textureInsideRT: 1 # Needed for post processing effects.
 SLUS-21204:
   name: "Victorious Boxers 2 - Fighting Spirit"
   region: "NTSC-U"
@@ -49965,7 +49965,7 @@ SLUS-21555:
   compat: 5
   gsHWFixes:
     mipmap: 1
-    getSkipCount: "GSC_TombRaiderAnniversary"
+    textureInsideRT: 1 # Needed for post processing effects.
 SLUS-21556:
   name: "Konami Kids Playground - Dinosaur Shapes & Colors"
   region: "NTSC-U"
@@ -51411,7 +51411,7 @@ SLUS-21858:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_TombRaiderUnderWorld"
+    textureInsideRT: 1 # Needed for post processing effects.
 SLUS-21860:
   name: "Bigs 2, The"
   region: "NTSC-U"
