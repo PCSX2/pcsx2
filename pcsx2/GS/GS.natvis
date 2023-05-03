@@ -33,4 +33,8 @@
 		<DisplayString Condition="m_type == 0">{{ RT @ BP={m_TEX0.TBP0,X}-{m_end_block,X} BW={m_TEX0.TBW} PSM={m_TEX0.PSM,X} {m_unscaled_size.x}x{m_unscaled_size.y} {m_valid.z},{m_valid.w} }}</DisplayString>
 		<DisplayString Condition="m_type == 1">{{ Depth @ BP={m_TEX0.TBP0,X}-{m_end_block,X} BW={m_TEX0.TBW} PSM={m_TEX0.PSM,X} {m_unscaled_size.x}x{m_unscaled_size.y} {m_valid.z},{m_valid.w} }}</DisplayString>
 	</Type>
+
+	<Type Name="GSTextureCache::SourceRegion">
+		<DisplayString>{{ Min=({(s16)(bits &amp; 0xFFFF)},{(s16)((bits >> 32) &amp; 0xFFFF)}} Max={(s16)((bits >> 16) &amp; 0xFFFF)},{(s16)((bits >> 48) &amp; 0xFFFF)}) }}</DisplayString>
+	</Type>
 </AutoVisualizer>

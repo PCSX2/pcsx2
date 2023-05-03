@@ -937,8 +937,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				// Make sure the texture actually is INSIDE the RT, it's possibly not valid if it isn't.
 				// Also check BP >= TBP, create source isn't equpped to expand it backwards and all data comes from the target. (GH3)
 				else if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && psm >= PSMCT32 &&
-						 psm <= PSMCT16S && t->m_TEX0.PSM == psm && (t->Overlaps(bp, bw, psm, r) || t->Wraps()) &&
-						 t->m_age <= 1 && !found_t)
+						 psm <= PSMCT16S && GSUtil::HasCompatibleBits(t->m_TEX0.PSM, psm) && (t->Overlaps(bp, bw, psm, r) || t->Wraps()) &&
+						 t->m_age <= 1 && (!found_t || dst->m_TEX0.TBW < bw))
 				{
 					// PSM equality needed because CreateSource does not handle PSM conversion.
 					// Only inclusive hit to limit false hits.
@@ -3311,7 +3311,7 @@ GSTextureCache::Source* GSTextureCache::CreateMergedSource(GIFRegTEX0 TEX0, GIFR
 		for (auto i = m_dst[RenderTarget].begin(); i != m_dst[RenderTarget].end(); ++i)
 		{
 			Target* const t = *i;
-			if (this_start_block >= t->m_TEX0.TBP0 && this_end_block <= t->m_end_block && t->m_TEX0.PSM == TEX0.PSM)
+			if (this_start_block >= t->m_TEX0.TBP0 && this_end_block <= t->m_end_block && GSUtil::HasCompatibleBits(t->m_TEX0.PSM, TEX0.PSM))
 			{
 				GL_INS("  Candidate at BP %x BW %d PSM %d", t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM);
 
@@ -4221,8 +4221,8 @@ void GSTextureCache::Source::Flush(u32 count, int layer, const GSOffset& off)
 	const SourceRegion region((layer == 0) ? m_region : m_region.AdjustForMipmap(layer));
 
 	// For the invalid tex0 case, the region might be larger than TEX0.TW/TH.
-	const int tw = std::max(region.GetWidth(), 1u << m_TEX0.TW);
-	const int th = std::max(region.GetHeight(), 1u << m_TEX0.TH);
+	const int tw = std::max(region.GetWidth(), 1 << m_TEX0.TW);
+	const int th = std::max(region.GetHeight(), 1 << m_TEX0.TH);
 	const GSVector4i tex_r(region.GetRect(tw, th));
 
 	int pitch = std::max(tw, psm.bs.x) * sizeof(u32);
@@ -5120,12 +5120,12 @@ bool GSTextureCache::SourceRegion::IsFixedTEX0(int tw, int th) const
 
 bool GSTextureCache::SourceRegion::IsFixedTEX0W(int tw) const
 {
-	return (GetMaxX() > static_cast<u32>(tw));
+	return (GetMaxX() > tw);
 }
 
 bool GSTextureCache::SourceRegion::IsFixedTEX0H(int th) const
 {
-	return (GetMaxY() > static_cast<u32>(th));
+	return (GetMaxY() > th);
 }
 
 GSVector2i GSTextureCache::SourceRegion::GetSize(int tw, int th) const
@@ -5140,8 +5140,8 @@ GSVector4i GSTextureCache::SourceRegion::GetRect(int tw, int th) const
 
 GSVector4i GSTextureCache::SourceRegion::GetOffset(int tw, int th) const
 {
-	const int xoffs = (GetMaxX() > static_cast<u32>(tw)) ? static_cast<int>(GetMinX()) : 0;
-	const int yoffs = (GetMaxY() > static_cast<u32>(th)) ? static_cast<int>(GetMinY()) : 0;
+	const int xoffs = (GetMaxX() > tw) ? GetMinX() : 0;
+	const int yoffs = (GetMaxY() > th) ? GetMinY() : 0;
 	return GSVector4i(xoffs, yoffs, xoffs, yoffs);
 }
 
@@ -5151,14 +5151,14 @@ GSTextureCache::SourceRegion GSTextureCache::SourceRegion::AdjustForMipmap(u32 l
 	SourceRegion ret = {};
 	if (HasX())
 	{
-		const u32 new_minx = GetMinX() >> level;
-		const u32 new_maxx = new_minx + std::max(GetWidth() >> level, 1u);
+		const s32 new_minx = GetMinX() >> level;
+		const s32 new_maxx = new_minx + std::max(GetWidth() >> level, 1);
 		ret.SetX(new_minx, new_maxx);
 	}
 	if (HasY())
 	{
-		const u32 new_miny = GetMinY() >> level;
-		const u32 new_maxy = new_miny + std::max(GetHeight() >> level, 1u);
+		const s32 new_miny = GetMinY() >> level;
+		const s32 new_maxy = new_miny + std::max(GetHeight() >> level, 1);
 		ret.SetY(new_miny, new_maxy);
 	}
 	return ret;
