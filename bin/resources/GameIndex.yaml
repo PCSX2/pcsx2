@@ -9959,7 +9959,7 @@ SLED-54401:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    textureInsideRT: 2 # Fixes shadow maps.
+    textureInsideRT: 1 # Fixes shadow maps.
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -17408,7 +17408,7 @@ SLES-53196:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    textureInsideRT: 2 # Fixes shadow maps.
+    textureInsideRT: 1 # Fixes shadow maps.
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -17419,7 +17419,7 @@ SLES-53197:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    textureInsideRT: 2 # Fixes shadow maps.
+    textureInsideRT: 1 # Fixes shadow maps.
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -18651,7 +18651,7 @@ SLES-53641:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    textureInsideRT: 2 # Fixes shadow maps.
+    textureInsideRT: 1 # Fixes shadow maps.
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -20366,7 +20366,7 @@ SLES-54319:
   name: "Biker Mice from Mars"
   region: "PAL-M5"
   gsHWFixes:
-    textureInsideRT: 2 # Fixes shadow maps.
+    textureInsideRT: 1 # Fixes shadow maps.
 SLES-54320:
   name: "Championship Manager 2007"
   region: "PAL-M5"
@@ -20618,7 +20618,7 @@ SLES-54384:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    textureInsideRT: 2 # Fixes shadow maps.
+    textureInsideRT: 1 # Fixes shadow maps.
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -21709,7 +21709,7 @@ SLES-54788:
   name: "Aqua Teen Hunger Force - Zombie Ninja Pro-Am"
   region: "PAL-E"
   gsHWFixes:
-    textureInsideRT: 2 # Fixes shadows.
+    textureInsideRT: 1 # Fixes shadows.
 SLES-54789:
   name: "Beta Bloc"
   region: "PAL-E"
@@ -25739,7 +25739,7 @@ SLPM-55141:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    textureInsideRT: 2 # Fixes shadow maps.
+    textureInsideRT: 1 # Fixes shadow maps.
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -33894,7 +33894,7 @@ SLPM-66430:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    textureInsideRT: 2 # Fixes shadow maps.
+    textureInsideRT: 1 # Fixes shadow maps.
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -46655,7 +46655,7 @@ SLUS-20945:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    textureInsideRT: 2 # Fixes shadow maps.
+    textureInsideRT: 1 # Fixes shadow maps.
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -49510,7 +49510,7 @@ SLUS-21439:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    textureInsideRT: 2 # Fixes shadow maps.
+    textureInsideRT: 1 # Fixes shadow maps.
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -50066,7 +50066,7 @@ SLUS-21578:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    textureInsideRT: 2 # Fixes shadow maps.
+    textureInsideRT: 1 # Fixes shadow maps.
 SLUS-21579:
   name: "Barbie in The 12 Dancing Princesses"
   region: "NTSC-U"
@@ -50375,7 +50375,7 @@ SLUS-21633:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    textureInsideRT: 2 # Fixes shadows.
+    textureInsideRT: 1 # Fixes shadows.
 SLUS-21634:
   name: "Crazy Frog Racer 2"
   region: "NTSC-U"
@@ -52494,7 +52494,7 @@ SLUS-29150:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    textureInsideRT: 2 # Fixes shadow maps.
+    textureInsideRT: 1 # Fixes shadow maps.
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -52693,7 +52693,7 @@ SLUS-29196:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    textureInsideRT: 2 # Fixes shadow maps.
+    textureInsideRT: 1 # Fixes shadow maps.
     roundSprite: 2 # Fixes misaligned bloom.
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
