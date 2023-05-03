@@ -9620,6 +9620,14 @@ SLED-51901:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     recommendedBlendingLevel: 3 # Fixes menu transparency.
+SLED-51975:
+  name: "Need for Speed - Underground [Demo]"
+  region: "PAL-E"
+  gameFixes:
+    - EETimingHack # Fixes broken textures.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned post-processing.
+    PCRTCOverscan: 1 # Fixes image alignment.
 SLED-52326:
   name: "007 - Everything or Nothing [Demo]"
   region: "PAL-E"
@@ -9637,6 +9645,10 @@ SLED-52441:
     - VIFFIFOHack
   speedHacks:
     MTVUSpeedHack: 0
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLED-52473:
   name: "Transformers - Optimus Prime [Demo]"
   region: "PAL-E"
@@ -9644,6 +9656,10 @@ SLED-52473:
     - VIFFIFOHack
   speedHacks:
     MTVUSpeedHack: 0
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLED-52474:
   name: "Transformers - Red Alert [Demo]"
   region: "PAL-E"
@@ -9651,6 +9667,10 @@ SLED-52474:
     - VIFFIFOHack
   speedHacks:
     MTVUSpeedHack: 0
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLED-52476:
   name: "UEFA Euro 2004 - Portugal [Demo]"
   region: "PAL-M5"
@@ -14331,6 +14351,7 @@ SLES-51967:
     - EETimingHack # Fixes broken textures.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned post-processing.
+    PCRTCOverscan: 1 # Fixes image alignment.
 SLES-51968:
   name: "SpongeBob SquarePants - Battle for Bikini Bottom"
   region: "PAL-E"
@@ -15175,6 +15196,10 @@ SLES-52388:
     - VIFFIFOHack
   speedHacks:
     MTVUSpeedHack: 0
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLES-52392:
   name: "Combat Elite - WWII Paratroopers [Preview]"
   region: "PAL-E"
@@ -17437,6 +17462,10 @@ SLES-53309:
     - VIFFIFOHack
   speedHacks:
     MTVUSpeedHack: 0
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLES-53311:
   name: "Graffiti Kingdom"
   region: "PAL-M5"
@@ -24553,6 +24582,14 @@ SLKA-25174:
 SLKA-25175:
   name: "Transformers"
   region: "NTSC-K"
+  gameFixes:
+    - VIFFIFOHack
+  speedHacks:
+    MTVUSpeedHack: 0
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLKA-25176:
   name: "Pump It Up - Exceed"
   region: "NTSC-K"
@@ -45051,6 +45088,10 @@ SLUS-20668:
     - VIFFIFOHack
   speedHacks:
     MTVUSpeedHack: 0
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLUS-20669:
   name: "Resident Evil - Dead Aim"
   region: "NTSC-U"
@@ -51727,6 +51768,10 @@ SLUS-28040:
     - VIFFIFOHack
   speedHacks:
     MTVUSpeedHack: 0
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLUS-28043:
   name: "Test Drive - Eve of Destruction [Trade Demo]"
   region: "NTSC-U"
@@ -52118,6 +52163,10 @@ SLUS-29107:
     - VIFFIFOHack
   speedHacks:
     MTVUSpeedHack: 0
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLUS-29108:
   name: "Def Jam - Fight For NY [Demo]"
   region: "NTSC-U"
