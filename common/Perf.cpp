@@ -177,7 +177,7 @@ namespace Perf
 		iJIT_Method_Load_V2 ml = {};
 		ml.method_id = iJIT_GetNewMethodID();
 		ml.method_name = const_cast<char*>(symbol);
-		ml.method_load_address = ptr;
+		ml.method_load_address = const_cast<void*>(ptr);
 		ml.method_size = static_cast<unsigned int>(size);
 		iJIT_NotifyEvent(iJVM_EVENT_TYPE_METHOD_LOAD_FINISHED_V2, &ml);
 	}
