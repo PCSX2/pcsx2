@@ -193,4 +193,11 @@ public:
 
 	/// Returns true if the specified texture address matches the frame or Z buffer.
 	bool IsTBPFrameOrZ(u32 tbp) const;
+
+	/// Starts a HLE'ed hardware draw, which can be further customized by the caller.
+	GSHWDrawConfig& BeginHLEHardwareDraw(
+		GSTexture* rt, GSTexture* ds, float rt_scale, GSTexture* tex, float tex_scale, const GSVector4i& unscaled_rect);
+
+	/// Submits a previously set up HLE hardware draw, copying any textures as needed if there's hazards.
+	void EndHLEHardwareDraw(bool force_copy_on_hazard = false);
 };

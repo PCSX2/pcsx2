@@ -2581,80 +2581,14 @@ bool GSTextureCache::ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx
 	const bool read_ba = (diff_x < 0);
 	const bool write_rg = (diff_x < 0);
 
-	const GSVector4i bbox(write_rg ? GSVector4i(dx, dy, dx + w, dy + h) : GSVector4i(sx, sy, sx + w, sy + h));
+	const GSVector4i bbox = write_rg ? GSVector4i(dx, dy, dx + w, dy + h) : GSVector4i(sx, sy, sx + w, sy + h);
 
-	GSVertex vertices[4] = {};
-#define V(i, x, y, u, v) \
-	do \
-	{ \
-		vertices[i].XYZ.X = x; \
-		vertices[i].XYZ.Y = y; \
-		vertices[i].U = u; \
-		vertices[i].V = v; \
-	} while (0)
-
-	const GSVector4i bbox_fp(bbox.sll32(4));
-	V(0, bbox_fp.x, bbox_fp.y, bbox_fp.x, bbox_fp.y); // top-left
-	V(1, bbox_fp.z, bbox_fp.y, bbox_fp.z, bbox_fp.y); // top-right
-	V(2, bbox_fp.x, bbox_fp.w, bbox_fp.x, bbox_fp.w); // bottom-left
-	V(3, bbox_fp.z, bbox_fp.w, bbox_fp.z, bbox_fp.w); // bottom-right
-
-#undef V
-
-	static constexpr u16 indices[6] = { 0, 1, 2, 2, 1, 3 };
-
-	// If we ever do this sort of thing somewhere else, extract this to a helper function.
-	GSHWDrawConfig config;
-	config.rt = tgt->m_texture;
-	config.ds = nullptr;
-	config.tex = tgt->m_texture;
-	config.pal = nullptr;
-	config.indices = indices;
-	config.verts = vertices;
-	config.nverts = static_cast<u32>(std::size(vertices));
-	config.nindices = static_cast<u32>(std::size(indices));
-	config.indices_per_prim = 3;
-	config.drawlist = nullptr;
-	config.scissor = GSVector4i(0, 0, tgt->m_texture->GetWidth(), tgt->m_texture->GetHeight());
-	config.drawarea = GSVector4i(GSVector4(bbox) * GSVector4(tgt->m_scale));
-	config.topology = GSHWDrawConfig::Topology::Triangle;
-	config.blend = GSHWDrawConfig::BlendState();
-	config.depth = GSHWDrawConfig::DepthStencilSelector::NoDepth();
-	config.colormask = GSHWDrawConfig::ColorMaskSelector();
+	GSHWDrawConfig& config = GSRendererHW::GetInstance()->BeginHLEHardwareDraw(tgt->m_texture, nullptr, tgt->m_scale, tgt->m_texture, tgt->m_scale, bbox);
 	config.colormask.wrgba = (write_rg ? (1 | 2) : (4 | 8));
-	config.require_one_barrier = !g_gs_device->Features().framebuffer_fetch;
-	config.require_full_barrier = false;
-	config.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Off;
-	config.datm = false;
-	config.line_expand = false;
-	config.separate_alpha_pass = false;
-	config.second_separate_alpha_pass = false;
-	config.alpha_second_pass.enable = false;
-	config.vs.key = 0;
-	config.vs.tme = true;
-	config.vs.iip = true;
-	config.vs.fst = true;
-	config.ps.key_lo = 0;
-	config.ps.key_hi = 0;
 	config.ps.read_ba = read_ba;
 	config.ps.write_rg = write_rg;
 	config.ps.shuffle = true;
-	config.ps.iip = true;
-	config.ps.fst = true;
-	config.ps.tex_is_fb = true;
-	config.ps.tfx = TFX_DECAL;
-
-	const GSVector2i rtsize(tgt->m_texture->GetSize());
-	const float rtscale = tgt->m_scale;
-	config.cb_ps.WH = GSVector4(static_cast<float>(rtsize.x) / rtscale, static_cast<float>(rtsize.y) / rtscale,
-		static_cast<float>(rtsize.x), static_cast<float>(rtsize.y));
-	config.cb_ps.STScale = GSVector2(1.0f);
-
-	config.cb_vs.vertex_scale = GSVector2(2.0f * rtscale / (rtsize.x << 4), 2.0f * rtscale / (rtsize.y << 4));
-	config.cb_vs.vertex_offset = GSVector2(-1.0f / rtsize.x + 1.0f, -1.0f / rtsize.y + 1.0f);
-	config.cb_vs.texture_scale = GSVector2((1.0f / 16.0f) / config.cb_ps.WH.x, (1.0f / 16.0f) / config.cb_ps.WH.y);
-
-	g_gs_device->RenderHW(config);
+	GSRendererHW::GetInstance()->EndHLEHardwareDraw(false);
 	return true;
 }
 
@@ -3869,6 +3803,11 @@ GSTexture* GSTextureCache::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVec
 	}
 
 	return nullptr;
+}
+
+std::shared_ptr<GSTextureCache::Palette> GSTextureCache::LookupPaletteObject(u16 pal, bool need_gs_texture)
+{
+	return m_palette_map.LookupPalette(pal, need_gs_texture);
 }
 
 void GSTextureCache::Read(Target* t, const GSVector4i& r)

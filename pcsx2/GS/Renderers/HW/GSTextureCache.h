@@ -142,6 +142,7 @@ public:
 		bool m_32_bits_fmt = false; // Allow to detect the casting of 32 bits as 16 bits texture
 		bool m_shared_texture = false;
 
+		__fi GSTexture* GetTexture() const { return m_texture; }
 		__fi int GetUnscaledWidth() const { return m_unscaled_size.x; }
 		__fi int GetUnscaledHeight() const { return m_unscaled_size.y; }
 		__fi const GSVector2i& GetUnscaledSize() const { return m_unscaled_size; }
@@ -435,6 +436,7 @@ public:
 	void DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVector4i src_r);
 
 	GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, float* scale, const GSVector2i& size);
+	std::shared_ptr<Palette> LookupPaletteObject(u16 pal, bool need_gs_texture);
 
 	Source* LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const GSVector2i* lod);
 	Source* LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, bool palette = false);
