@@ -974,13 +974,13 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 		std::string current_adapter = Host::GetBaseStringSettingValue("EmuCore/GS", "Adapter", "");
 		m_ui.adapter->clear();
 		m_ui.adapter->setEnabled(!adapters.empty());
-		m_ui.adapter->addItem(tr("(Default)"));
+		m_ui.adapter->addItem(tr(""));
 		m_ui.adapter->setCurrentIndex(0);
 
 		if (m_dialog->isPerGameSettings())
 		{
 			m_ui.adapter->insertItem(
-				0, tr("Use Global Setting [%1]").arg(current_adapter.empty() ? tr("(Default)") : QString::fromStdString(current_adapter)));
+				0, tr("Use Global Setting [%1]").arg(current_adapter.empty() ? tr("") : QString::fromStdString(current_adapter)));
 			if (!m_dialog->getSettingsInterface()->GetStringValue("EmuCore/GS", "Adapter", &current_adapter))
 			{
 				// clear the adapter so we don't set it to the global value
