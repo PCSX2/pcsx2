@@ -16485,6 +16485,7 @@ SLES-52859:
   region: "PAL-E"
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1 # Fixes post processing.
 SLES-52861:
   name: "King Arthur"
   region: "PAL-M5"
@@ -17251,6 +17252,7 @@ SLES-53124:
   gsHWFixes:
     mipmap: 1
     estimateTextureRegion: 1 # Improves performance.
+    textureInsideRT: 1 # Fixes post processing.
 SLES-53125:
   name: "Enthusia - Professional Racing"
   region: "PAL-M5"
@@ -47207,6 +47209,7 @@ SLUS-21037:
   compat: 5
   gsHWFixes:
     mipmap: 1
+    textureInsideRT: 1 # Fixes post processing.
 SLUS-21038:
   name: "Pinball Hall of Fame - The Gottlieb Collection"
   region: "NTSC-U"
@@ -52437,6 +52440,7 @@ SLUS-29131:
   gsHWFixes:
     mipmap: 1
     estimateTextureRegion: 1 # Improves performance.
+    textureInsideRT: 1 # Fixes post processing.
 SLUS-29132:
   name: "S.L.A.I. - Steel Lancer Arena International - Phantom Crash [Public Beta Vol.1.0]"
   region: "NTSC-U"
