@@ -215,46 +215,6 @@ public:
 			ret = (VALUE)cg.getCode();
 
 			m_cgmap[key] = ret;
-
-#ifdef ENABLE_VTUNE
-
-			// vtune method registration
-
-			// if(iJIT_IsProfilingActive()) // always > 0
-			{
-				std::string name = fmt::format("%s<%016llx>()", m_name.c_str(), (u64)key);
-
-				iJIT_Method_Load ml;
-
-				memset(&ml, 0, sizeof(ml));
-
-				ml.method_id = iJIT_GetNewMethodID();
-				ml.method_name = (char*)name.c_str();
-				ml.method_load_address = (void*)cg.getCode();
-				ml.method_size = (unsigned int)cg.getSize();
-
-				iJIT_NotifyEvent(iJVM_EVENT_TYPE_METHOD_LOAD_FINISHED, &ml);
-/*
-				name = format("c:/temp1/%s_%016llx.bin", m_name.c_str(), (u64)key);
-
-				if(FILE* fp = fopen(name.c_str(), "wb"))
-				{
-					fputc(0x0F, fp); fputc(0x0B, fp);
-					fputc(0xBB, fp); fputc(0x6F, fp); fputc(0x00, fp); fputc(0x00, fp); fputc(0x00, fp);
-					fputc(0x64, fp); fputc(0x67, fp); fputc(0x90, fp);
-
-					fwrite(cg.getCode(), cg.getSize(), 1, fp);
-
-					fputc(0xBB, fp); fputc(0xDE, fp); fputc(0x00, fp); fputc(0x00, fp); fputc(0x00, fp);
-					fputc(0x64, fp); fputc(0x67, fp); fputc(0x90, fp);
-					fputc(0x0F, fp); fputc(0x0B, fp);
-
-					fclose(fp);
-				}
-*/
-			}
-
-#endif
 		}
 
 		return ret;
