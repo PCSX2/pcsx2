@@ -2745,29 +2745,7 @@ bool GSRendererHW::TestChannelShuffle(GSTextureCache::Target* src)
 __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only)
 {
 	// First let's check we really have a channel shuffle effect
-	if (m_game.title == CRC::PolyphonyDigitalGames)
-	{
-		// These games appear to grab red and write it to a new page-sized render target, then
-		// grab green and blue, with alpha blending turned on, to accumulate them to the temporary
-		// target, then copy the temporary target back to the main FB. The CLUT is set to an offset
-		// ramp texture, presumably this is for screen brightness.
-		GL_INS("Gran Turismo RGB Channel");
-		if (test_only)
-		{
-			// Since test_only gets executed when creating a source, before target lookup, we can hack
-			// the FBP here to point to the source, which is where it will eventually be copied back to.
-			// We need to force it to PSMCT24, the crossfade draw ends up reading the RT instead of local
-			// memory, which ends up with blue rubbish becuase the shuffle isn't correctly emulated.
-			pxAssertMsg((m_context->TEX0.TBP0 & 31) == 0, "TEX0 should be page aligned");
-			m_cached_ctx.FRAME.FBP = m_context->TEX0.TBP0 >> 5;
-			m_cached_ctx.FRAME.PSM = PSMCT24;
-			return true;
-		}
-
-		m_conf.ps.channel = ChannelFetch_RGB;
-		m_cached_ctx.TEX0.TFX = TFX_DECAL;
-	}
-	else if (m_game.title == CRC::Tekken5)
+	if (m_game.title == CRC::Tekken5)
 	{
 		if (m_cached_ctx.FRAME.FBW == 1)
 		{
@@ -5245,4 +5223,142 @@ bool GSRendererHW::IsConstantDirectWriteMemClear()
 		return true;
 
 	return false;
+}
+
+GSHWDrawConfig& GSRendererHW::BeginHLEHardwareDraw(
+	GSTexture* rt, GSTexture* ds, float rt_scale, GSTexture* tex, float tex_scale, const GSVector4i& unscaled_rect)
+{
+	ResetStates();
+
+	// Bit gross, but really no other way to ensure there's nothing of the last draw left over.
+	GSHWDrawConfig& config = m_conf;
+	std::memset(&config.cb_vs, 0, sizeof(config.cb_vs));
+	std::memset(&config.cb_ps, 0, sizeof(config.cb_ps));
+
+	// Reused between draws, since the draw config is shared, you can't have multiple draws in flight anyway.
+	static GSVertex vertices[4];
+	static constexpr u16 indices[6] = {0, 1, 2, 2, 1, 3};
+
+#define V(i, x, y, u, v) \
+	do \
+	{ \
+		vertices[i].XYZ.X = x; \
+		vertices[i].XYZ.Y = y; \
+		vertices[i].U = u; \
+		vertices[i].V = v; \
+	} while (0)
+
+	const GSVector4i fp_rect = unscaled_rect.sll32(4);
+	V(0, fp_rect.x, fp_rect.y, fp_rect.x, fp_rect.y); // top-left
+	V(1, fp_rect.z, fp_rect.y, fp_rect.z, fp_rect.y); // top-right
+	V(2, fp_rect.x, fp_rect.w, fp_rect.x, fp_rect.w); // bottom-left
+	V(3, fp_rect.z, fp_rect.w, fp_rect.z, fp_rect.w); // bottom-right
+
+#undef V
+
+	GSTexture* rt_or_ds = rt ? rt : ds;
+	config.rt = rt;
+	config.ds = ds;
+	config.tex = tex;
+	config.pal = nullptr;
+	config.indices = indices;
+	config.verts = vertices;
+	config.nverts = static_cast<u32>(std::size(vertices));
+	config.nindices = static_cast<u32>(std::size(indices));
+	config.indices_per_prim = 3;
+	config.drawlist = nullptr;
+	config.scissor = rt_or_ds->GetRect().rintersect(GSVector4i(GSVector4(rt->GetRect()) * tex_scale));
+	config.drawarea = config.scissor;
+	config.topology = GSHWDrawConfig::Topology::Triangle;
+	config.blend = GSHWDrawConfig::BlendState();
+	config.depth = GSHWDrawConfig::DepthStencilSelector::NoDepth();
+	config.colormask = GSHWDrawConfig::ColorMaskSelector();
+	config.colormask.wrgba = 0xf;
+	config.require_one_barrier = false;
+	config.require_full_barrier = false;
+	config.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Off;
+	config.datm = false;
+	config.line_expand = false;
+	config.separate_alpha_pass = false;
+	config.second_separate_alpha_pass = false;
+	config.alpha_second_pass.enable = false;
+	config.vs.key = 0;
+	config.vs.tme = tex != nullptr;
+	config.vs.iip = true;
+	config.vs.fst = true;
+	config.ps.key_lo = 0;
+	config.ps.key_hi = 0;
+	config.ps.tfx = tex ? TFX_DECAL : TFX_NONE;
+	config.ps.iip = true;
+	config.ps.fst = true;
+
+	if (tex)
+	{
+		const GSVector2i texsize = tex->GetSize();
+		config.cb_ps.WH = GSVector4(static_cast<float>(texsize.x) / tex_scale,
+			static_cast<float>(texsize.y) / tex_scale, static_cast<float>(texsize.x), static_cast<float>(texsize.y));
+		config.cb_ps.STScale = GSVector2(1.0f);
+		config.cb_vs.texture_scale = GSVector2((1.0f / 16.0f) / config.cb_ps.WH.x, (1.0f / 16.0f) / config.cb_ps.WH.y);
+	}
+
+	const GSVector2i rtsize = rt_or_ds->GetSize();
+	config.cb_vs.vertex_scale = GSVector2(2.0f * rt_scale / (rtsize.x << 4), 2.0f * rt_scale / (rtsize.y << 4));
+	config.cb_vs.vertex_offset = GSVector2(-1.0f / rtsize.x + 1.0f, -1.0f / rtsize.y + 1.0f);
+
+	return config;
+}
+
+void GSRendererHW::EndHLEHardwareDraw(bool force_copy_on_hazard /* = false */)
+{
+	GSHWDrawConfig& config = m_conf;
+
+	GL_PUSH("HLE hardware draw in %d,%d => %d,%d", config.drawarea.left, config.drawarea.top, config.drawarea.right,
+		config.drawarea.bottom);
+
+	GSTexture* copy = nullptr;
+	if (config.tex && (config.tex == config.rt || config.tex == config.ds))
+	{
+		const GSDevice::FeatureSupport features = g_gs_device->Features();
+
+		if (!force_copy_on_hazard && config.tex == config.rt && features.texture_barrier)
+		{
+			// Sample RT 1:1.
+			config.require_one_barrier = !features.framebuffer_fetch;
+			config.ps.tex_is_fb = true;
+		}
+		else if (!force_copy_on_hazard && config.tex == config.ds && !config.depth.zwe &&
+				 features.test_and_sample_depth)
+		{
+			// Safe to read depth buffer.
+		}
+		else
+		{
+			// Have to copy texture. Assume the whole thing is read, in all the cases this is used, it is.
+			GSTexture* src = (config.tex == config.rt) ? config.rt : config.ds;
+			copy = g_gs_device->CreateTexture(src->GetWidth(), src->GetHeight(), 1, src->GetFormat(), true);
+			if (!copy)
+			{
+				Console.Error("Texture allocation failure in EndHLEHardwareDraw()");
+				return;
+			}
+
+			// DX11 can't partial copy depth textures.
+			const GSVector4i copy_rect = (src->IsDepthStencil() && !features.test_and_sample_depth) ?
+											 src->GetRect() :
+											 config.drawarea.rintersect(src->GetRect());
+			g_gs_device->CopyRect(src, copy, copy_rect - copy_rect.xyxy(), copy_rect.x, copy_rect.y);
+			config.tex = copy;
+		}
+	}
+
+	// Drop color1 if dual-source is not being used.
+	config.ps.no_color = !config.rt;
+	config.ps.no_color1 = !config.rt || !config.blend.enable ||
+						  (!GSDevice::IsDualSourceBlendFactor(config.blend.src_factor) &&
+							  !GSDevice::IsDualSourceBlendFactor(config.blend.dst_factor));
+
+	g_gs_device->RenderHW(m_conf);
+
+	if (copy)
+		g_gs_device->Recycle(copy);
 }

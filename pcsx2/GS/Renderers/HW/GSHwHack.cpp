@@ -771,6 +771,51 @@ bool GSHwHack::GSC_NFSUndercover(GSRendererHW& r, int& skip)
 	return false;
 }
 
+bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
+{
+	// These games appear to grab red and write it to a new page-sized render target, then
+	// grab green and blue, with alpha blending turned on, to accumulate them to the temporary
+	// target, then copy the temporary target back to the main FB. The CLUT is set to an offset
+	// ramp texture, presumably this is for screen brightness.
+
+	const bool is_cs = r.IsPossibleChannelShuffle();
+	if (r.m_channel_shuffle && is_cs)
+	{
+		skip = true;
+		return true;
+	}
+	else if (!is_cs)
+	{
+		return false;
+	}
+
+	GL_PUSH("GSC_PolyphonyDigitalGames(): HLE Gran Turismo RGB channel shuffle");
+
+	GSTextureCache::Target* tex = g_texture_cache->LookupTarget(RTEX0, GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget);
+	if (!tex)
+		return false;
+
+	// have to set up the palette ourselves too, since GSC executes before it does
+	r.m_mem.m_clut.Read32(RTEX0, r.m_draw_env->TEXA);
+	std::shared_ptr<GSTextureCache::Palette> palette =
+		g_texture_cache->LookupPaletteObject(GSLocalMemory::m_psm[RTEX0.PSM].pal, true);
+	if (!palette)
+		return false;
+
+	// skip this draw, and until the end of the CS, ignoring fbmsk and cbp
+	r.m_channel_shuffle = true;
+	skip = 1;
+
+	GSHWDrawConfig& config = r.BeginHLEHardwareDraw(
+		tex->GetTexture(), nullptr, tex->GetScale(), tex->GetTexture(), tex->GetScale(), tex->GetUnscaledRect());
+	config.pal = palette->GetPaletteGSTexture();
+	config.ps.channel = ChannelFetch_RGB;
+	config.colormask.wrgba = 1 | 2 | 4;
+	r.EndHLEHardwareDraw(false);
+
+	return true;
+}
+
 bool GSHwHack::GSC_BlueTongueGames(GSRendererHW& r, int& skip)
 {
 	GSDrawingContext* context = r.m_context;
@@ -1173,6 +1218,7 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_BlueTongueGames, CRCHackLevel::Partial),
 	CRC_F(GSC_Battlefield2, CRCHackLevel::Partial),
 	CRC_F(GSC_NFSUndercover, CRCHackLevel::Partial),
+	CRC_F(GSC_PolyphonyDigitalGames, CRCHackLevel::Partial),
 
 	// Channel Effect
 	CRC_F(GSC_GiTS, CRCHackLevel::Partial),

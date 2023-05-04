@@ -31,42 +31,6 @@ const CRC::Game CRC::m_games[] =
 	{0x5C991F4E, ICO /* EU */},
 	{0x788D8B4F, ICO /* EU */},
 	{0x29C28734, ICO /* CH */},
-	{0x60013EBD, PolyphonyDigitalGames /* EU */}, // Gran Turismo Concept
-	{0x6810C3BC, PolyphonyDigitalGames /* CH */}, // Gran Turismo Concept 2002 Tokyo-Geneva
-	{0x0EEF32A3, PolyphonyDigitalGames /* KO */}, // Gran Turismo Concept 2002 Tokyo-Seoul
-	{0x3E9D448A, PolyphonyDigitalGames /* CH */}, // GT3
-	{0xAD66643C, PolyphonyDigitalGames /* CH */}, // GT3
-	{0x85AE91B3, PolyphonyDigitalGames /* US */}, // GT3
-	{0x8AA991B0, PolyphonyDigitalGames /* US */}, // GT3
-	{0xC220951A, PolyphonyDigitalGames /* JP */}, // GT3
-	{0x9DE5CF65, PolyphonyDigitalGames /* JP */}, // GT3
-	{0x706DFF80, PolyphonyDigitalGames /* JP */}, // GT3 Store Disc Vol. 2
-	{0x55CE5111, PolyphonyDigitalGames /* JP */}, // Gran Turismo 2000 Body Omen
-	{0xE9A7E08D, PolyphonyDigitalGames /* JP */}, // Gran Turismo 2000 Body Omen
-	{0xB590CE04, PolyphonyDigitalGames /* EU */}, // GT3
-	{0xC02C653E, PolyphonyDigitalGames /* CH */}, // GT4
-	{0x7ABDBB5E, PolyphonyDigitalGames /* CH */}, // GT4
-	{0xAEAD1CA3, PolyphonyDigitalGames /* JP */}, // GT4
-	{0xA3AF15A0, PolyphonyDigitalGames /* JP */}, // GT4 PS2 Racing Pack
-	{0xE906EA37, PolyphonyDigitalGames /* JP */}, // GT4 First Preview
-	{0xCA6243B9, PolyphonyDigitalGames /* JP */}, // GT4 Prologue
-	{0xDD764BBE, PolyphonyDigitalGames /* JP */}, // GT4 Prologue
-	{0xE1258846, PolyphonyDigitalGames /* JP */}, // GT4 Prologue
-	{0x27B8F05F, PolyphonyDigitalGames /* JP */}, // GT4 Prius Trial Version
-	{0x30E41D93, PolyphonyDigitalGames /* KO */}, // GT4
-	{0x715CF2EC, PolyphonyDigitalGames /* EU */}, // GT4
-	{0x44A61C8F, PolyphonyDigitalGames /* EU */}, // GT4
-	{0x0086E35B, PolyphonyDigitalGames /* EU */}, // GT4
-	{0x3FB69323, PolyphonyDigitalGames /* EU */}, // GT4 Prologue
-	{0x77E61C8A, PolyphonyDigitalGames /* US */}, // GT4
-	{0x33C6E35E, PolyphonyDigitalGames /* US */}, // GT4
-	{0x70538747, PolyphonyDigitalGames /* US */}, // GT4 Toyota Prius Trial
-	{0x32A1C752, PolyphonyDigitalGames /* US */}, // GT4 Online Beta
-	{0x2A84A1E2, PolyphonyDigitalGames /* US */}, // GT4 Mazda MX-5 Edition
-	{0x0087EEC4, PolyphonyDigitalGames /* NoRegion */}, // GT4 Online Beta, JP and US versions have the same CRC
-	{0x5AC7E79C, PolyphonyDigitalGames /* CH */}, // TouristTrophy
-	{0xFF9C0E93, PolyphonyDigitalGames /* US */}, // TouristTrophy
-	{0xCA9AA903, PolyphonyDigitalGames /* EU */}, // TouristTrophy
 	{0xFC46EA61, Tekken5 /* JP */},
 	{0x1F88EE37, Tekken5 /* EU */},
 	{0x1F88BECD, Tekken5 /* EU */}, // language selector...
