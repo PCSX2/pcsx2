@@ -162,7 +162,7 @@ bool GSRenderer::Merge(int field)
 		if (!curCircuit.enabled || !tex[i])
 			continue;
 
-		GSVector4 scale = GSVector4(tex_scale[i]);
+		const GSVector4 scale = GSVector4(tex_scale[i]);
 
 		// dst is the final destination rect with offset on the screen.
 		dst[i] = scale * GSVector4(curCircuit.displayRect);
@@ -194,7 +194,7 @@ bool GSRenderer::Merge(int field)
 
 	if (feedback_merge && tex[2])
 	{
-		GSVector4 scale = GSVector4(tex_scale[2]);
+		const GSVector4 scale = GSVector4(tex_scale[2]);
 		GSVector4i feedback_rect;
 
 		feedback_rect.left = m_regs->EXTBUF.WDX;
@@ -205,7 +205,7 @@ bool GSRenderer::Merge(int field)
 		dst[2] = GSVector4(scale * GSVector4(feedback_rect.rsize()));
 	}
 
-	GSVector2i resolution = PCRTCDisplays.GetResolution();
+	const GSVector2i resolution = PCRTCDisplays.GetResolution();
 	fs = GSVector2i(static_cast<int>(static_cast<float>(resolution.x) * GetUpscaleMultiplier()),
 		static_cast<int>(static_cast<float>(resolution.y) * GetUpscaleMultiplier()));
 
@@ -220,7 +220,12 @@ bool GSRenderer::Merge(int field)
 		tex[0] = nullptr;
 	}
 
-	GSVector4 c = GSVector4((int)m_regs->BGCOLOR.R, (int)m_regs->BGCOLOR.G, (int)m_regs->BGCOLOR.B, (int)m_regs->PMODE.ALP) / 255;
+	const GSVector4 c = GSVector4(
+							static_cast<int>(m_regs->BGCOLOR.R),
+							static_cast<int>(m_regs->BGCOLOR.G),
+							static_cast<int>(m_regs->BGCOLOR.B),
+							static_cast<int>(m_regs->PMODE.ALP)) /
+						255;
 
 	g_gs_device->Merge(tex, src_gs_read, dst, fs, m_regs->PMODE, m_regs->EXTBUF, c);
 
@@ -322,7 +327,7 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 		// If using Bilinear (Shape) the image will be prescaled to larger than the window, so we need to unscale it.
 		if (GSConfig.LinearPresent == GSPostBilinearMode::BilinearSharp && src_rect.width() > 0 && src_rect.height() > 0)
 		{
-			GSVector2i resolution = g_gs_renderer->PCRTCDisplays.GetResolution();
+			const GSVector2i resolution = g_gs_renderer->PCRTCDisplays.GetResolution();
 			const GSVector2i fs = GSVector2i(static_cast<int>(static_cast<float>(resolution.x) * g_gs_renderer->GetUpscaleMultiplier()),
 				static_cast<int>(static_cast<float>(resolution.y) * g_gs_renderer->GetUpscaleMultiplier()));
 
