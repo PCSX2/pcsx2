@@ -9801,6 +9801,7 @@ SLED-53330:
   region: "PAL"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes reflections.
 SLED-53445:
   name: "Incredible Hulk, The - Ultimate Destruction [Demo]"
   region: "PAL-M3"
@@ -17190,6 +17191,7 @@ SLES-53125:
     vuClampMode: 3 # Stops freezing at race start.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes reflections.
 SLES-53127:
   name: "Teenage Mutant Ninja Turtles - Mutant Melee"
   region: "PAL-M5"
@@ -31885,6 +31887,7 @@ SLPM-65948:
     vuClampMode: 3 # Fixes Freezing at the start of the race.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes reflections.
 SLPM-65949:
   name: "Get Ride! AM Driver - The Truth of Xiangke"
   region: "NTSC-J"
@@ -33116,6 +33119,7 @@ SLPM-66257:
     vuClampMode: 3 # Stops freezing at race start.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes reflections.
 SLPM-66258:
   name: "Magic Teacher Negima - Honor Version [Konami The Best]"
   region: "NTSC-J"
@@ -46652,6 +46656,7 @@ SLUS-20967:
     vuClampMode: 3 # Stops freezing at race start.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes reflections.
 SLUS-20968:
   name: "Karaoke Revolution Volume 2"
   region: "NTSC-U"
