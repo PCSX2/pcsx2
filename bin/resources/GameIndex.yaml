@@ -9620,6 +9620,14 @@ SLED-51901:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     recommendedBlendingLevel: 3 # Fixes menu transparency.
+SLED-51902:
+  name: "True Crime - Streets of L.A."
+  region: "PAL-E"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes licences.
+    halfPixelOffset: 3 # Fixes double image.
+    gpuTargetCLUT: 1 # Fixes sun penetrating buildings.
+    autoFlush: 1 # Fixes sun occlusion.
 SLED-51975:
   name: "Need for Speed - Underground [Demo]"
   region: "PAL-E"
@@ -13771,6 +13779,8 @@ SLES-51753:
   gsHWFixes:
     preloadFrameData: 1 # Fixes licences.
     halfPixelOffset: 3 # Fixes double image.
+    gpuTargetCLUT: 1 # Fixes sun penetrating buildings.
+    autoFlush: 1 # Fixes sun occlusion.
 SLES-51754:
   name: "True Crime - Streets of L.A."
   region: "PAL-M5"
@@ -13778,6 +13788,8 @@ SLES-51754:
   gsHWFixes:
     preloadFrameData: 1 # Fixes licences.
     halfPixelOffset: 3 # Fixes double image.
+    gpuTargetCLUT: 1 # Fixes sun penetrating buildings.
+    autoFlush: 1 # Fixes sun occlusion.
 SLES-51755:
   name: "Disney-Pixar's Finding Nemo"
   region: "PAL-E"
@@ -31073,6 +31085,8 @@ SLPM-65729:
   gsHWFixes:
     preloadFrameData: 1 # Fixes licences.
     halfPixelOffset: 3 # Fixes double image.
+    gpuTargetCLUT: 1 # Fixes sun penetrating buildings.
+    autoFlush: 1 # Fixes sun occlusion.
 SLPM-65730:
   name: "Rockman X8"
   region: "NTSC-J"
@@ -32407,6 +32421,8 @@ SLPM-66098:
   gsHWFixes:
     preloadFrameData: 1 # Fixes licences.
     halfPixelOffset: 3 # Fixes double image.
+    gpuTargetCLUT: 1 # Fixes sun penetrating buildings.
+    autoFlush: 1 # Fixes sun occlusion.
 SLPM-66099:
   name: "Harukanaru Toki no Naka de 3 - Izayoiki [Premium Box-Triple Pack]"
   region: "NTSC-J"
@@ -44511,6 +44527,8 @@ SLUS-20550:
   gsHWFixes:
     preloadFrameData: 1 # Fixes licences.
     halfPixelOffset: 3 # Fixes double image.
+    gpuTargetCLUT: 1 # Fixes sun penetrating buildings.
+    autoFlush: 1 # Fixes sun occlusion.
 SLUS-20552:
   name: "Grand Theft Auto - Vice City"
   region: "NTSC-U"
