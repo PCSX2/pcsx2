@@ -4845,6 +4845,9 @@ SCES-55489:
 SCES-55496:
   name: "Secret Agent Clank"
   region: "PAL-M12"
+  compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom.
 SCES-55510:
   name: "Jak and Daxter - The Lost Frontier"
   region: "PAL-M12"
@@ -9140,6 +9143,8 @@ SCUS-97623:
   name: "Secret Agent Clank"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom.
 SCUS-97625:
   name: "NBA 09 - The Inside"
   region: "NTSC-U"
@@ -23369,6 +23374,9 @@ SLES-55495:
 SLES-55496:
   name: "Secret Agent Clank"
   region: "PAL-Unk"
+  compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom.
 SLES-55499:
   name: "Disney G-Force"
   region: "PAL-M4"
