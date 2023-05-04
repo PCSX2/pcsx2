@@ -1073,10 +1073,52 @@
        </item>
        <item row="8" column="0" colspan="2">
         <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="1">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="disableDepthEmulation">
+           <property name="text">
+            <string>Disable Depth Emulation</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="disablePartialInvalidation">
+           <property name="text">
+            <string>Disable Partial Source Invalidation</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="disableSafeFeatures">
+           <property name="text">
+            <string>Disable Safe Features</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QCheckBox" name="estimateTextureRegion">
+           <property name="text">
+            <string>Estimate Texture Region</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
           <widget class="QCheckBox" name="frameBufferConversion">
            <property name="text">
             <string>Frame Buffer Conversion</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="gpuPaletteConversion">
+           <property name="text">
+            <string>GPU Palette Conversion</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="preloadFrameData">
+           <property name="text">
+            <string>Preload Frame Data</string>
            </property>
           </widget>
          </item>
@@ -1091,48 +1133,6 @@
           <widget class="QCheckBox" name="targetPartialInvalidation">
            <property name="text">
             <string>Target Partial Invalidation</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QCheckBox" name="preloadFrameData">
-           <property name="text">
-            <string>Preload Frame Data</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="disableDepthEmulation">
-           <property name="text">
-            <string>Disable Depth Emulation</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QCheckBox" name="disableSafeFeatures">
-           <property name="text">
-            <string>Disable Safe Features</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QCheckBox" name="disablePartialInvalidation">
-           <property name="text">
-            <string>Disable Partial Source Invalidation</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QCheckBox" name="estimateTextureRegion">
-           <property name="text">
-            <string>Estimate Texture Region</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QCheckBox" name="gpuPaletteConversion">
-           <property name="text">
-            <string>GPU Palette Conversion</string>
            </property>
           </widget>
          </item>
@@ -1251,30 +1251,30 @@
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="QCheckBox" name="wildHack">
-           <property name="text">
-            <string extracomment="Wild Arms: name of a game series. Leave as-is or use an official translation.">Wild Arms Hack</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
           <widget class="QCheckBox" name="bilinearHack">
            <property name="text">
             <string>Bilinear Dirty Upscale</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
+         <item row="2" column="0">
           <widget class="QCheckBox" name="mergeSprite">
            <property name="text">
             <string>Merge Sprite</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item row="0" column="1">
           <widget class="QCheckBox" name="nativePaletteDraw">
            <property name="text">
             <string>Unscaled Palette Texture Draws</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="wildHack">
+           <property name="text">
+            <string extracomment="Wild Arms: name of a game series. Leave as-is or use an official translation.">Wild Arms Hack</string>
            </property>
           </widget>
          </item>
