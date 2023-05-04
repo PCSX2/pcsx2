@@ -78,6 +78,7 @@ bool psxBiosCall()
 
                 u32 data = psxRegs.GPR.n.a1;
                 u32 size = psxRegs.GPR.n.a2;
+                psxout_buf.reserve(size);
                 while (size--)
                     psxout_buf.push_back(iopMemRead8(data++));
                 flush_stdout(false);
