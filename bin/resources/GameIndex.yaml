@@ -9766,6 +9766,11 @@ SLED-53109:
   region: "PAL-M5"
   speedHacks:
     InstantVU1SpeedHack: 0 # Significantly improves game speed.
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes overbrightness.
+    cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    autoFlush: 1 # Fixes headlight brightness.
 SLED-53330:
   name: "Enthusia - Professional Racing [Demo]"
   region: "PAL"
@@ -16974,6 +16979,11 @@ SLES-53044:
   compat: 5
   speedHacks:
     InstantVU1SpeedHack: 0 # Significantly improves game speed.
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes overbrightness.
+    cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    autoFlush: 1 # Fixes headlight brightness.
 SLES-53045:
   name: "Street Racing Syndicate"
   region: "PAL-M5"
@@ -17227,6 +17237,11 @@ SLES-53151:
   region: "PAL-I"
   speedHacks:
     InstantVU1SpeedHack: 0 # Significantly improves game speed.
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes overbrightness.
+    cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    autoFlush: 1 # Fixes headlight brightness.
 SLES-53152:
   name: "Mashed Fully Loaded"
   region: "PAL-M5"
@@ -24953,6 +24968,16 @@ SLKA-25281:
   memcardFilters:
     - "SLKA-25280"
     - "SLKA-25342"
+SLKA-25283:
+  name: "Juiced"
+  region: "NTSC-K"
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Significantly improves game speed.
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes overbrightness.
+    cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    autoFlush: 1 # Fixes headlight brightness.
 SLKA-25284:
   name: "Sakura Taisen 3"
   region: "NTSC-K"
@@ -33194,6 +33219,11 @@ SLPM-66277:
   region: "NTSC-J"
   speedHacks:
     InstantVU1SpeedHack: 0 # Significantly improves game speed.
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes overbrightness.
+    cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    autoFlush: 1 # Fixes headlight brightness.
 SLPM-66278:
   name: "Shin Gouketuji Ichizoku - Bonnou Kaihou"
   region: "NTSC-J"
@@ -46121,6 +46151,11 @@ SLUS-20872:
   compat: 5
   speedHacks:
     InstantVU1SpeedHack: 0 # Significantly improves game speed.
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes overbrightness.
+    cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    autoFlush: 1 # Fixes headlight brightness.
 SLUS-20873:
   name: "Silent Hill 4 - The Room"
   region: "NTSC-U"
@@ -52313,6 +52348,16 @@ SLUS-29141:
 SLUS-29145:
   name: "Final Night - Round 2 [Demo]"
   region: "NTSC-U"
+SLUS-29147:
+  name: "Juiced"
+  region: "NTSC-U"
+  speedHacks:
+    InstantVU1SpeedHack: 0 # Significantly improves game speed.
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes overbrightness.
+    cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    autoFlush: 1 # Fixes headlight brightness.
 SLUS-29148:
   name: "Incredible Hulk, The - Ultimate Destruction [Demo]"
   region: "NTSC-U"
