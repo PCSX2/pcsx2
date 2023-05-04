@@ -18,8 +18,7 @@
 #include "common/Pcsx2Types.h"
 #include <vector>
 
-typedef std::pair<u64,u64> ExpressionPair;
-typedef std::vector<ExpressionPair> PostfixExpression;
+typedef std::vector<std::pair<u64,u64>> PostfixExpression;
 
 enum ExpressionType
 {

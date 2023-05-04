@@ -259,7 +259,7 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 				return false;
 			}
 
-			dest.push_back(ExpressionPair(isFloat?EXCOMM_CONST_FLOAT:EXCOMM_CONST,value));
+			dest.emplace_back(isFloat?EXCOMM_CONST_FLOAT:EXCOMM_CONST,value);
 			lastOpcode = EXOP_NUMBER;
 		} else if ((first >= 'a' && first <= 'z') || first == '@')
 		{
@@ -272,14 +272,14 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 			u64 value;
 			if (funcs->parseReference(subStr,value))
 			{
-				dest.push_back(ExpressionPair(EXCOMM_REF,value));
+				dest.emplace_back(EXCOMM_REF,value);
 				lastOpcode = EXOP_NUMBER;
 				continue;
 			}
 
 			if (funcs->parseSymbol(subStr,value))
 			{
-				dest.push_back(ExpressionPair(EXCOMM_CONST,value));
+				dest.emplace_back(EXCOMM_CONST,value);
 				lastOpcode = EXOP_NUMBER;
 				continue;
 			}
@@ -312,7 +312,7 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 					ExpressionOpcodeType t = opcodeStack[opcodeStack.size()-1];
 					opcodeStack.pop_back();
 					if (t == EXOP_BRACKETL) break;
-					dest.push_back(ExpressionPair(EXCOMM_OP,t));
+					dest.emplace_back(EXCOMM_OP,t);
 				}
 				break;
 			case EXOP_MEMR:
@@ -327,10 +327,10 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 					opcodeStack.pop_back();
 					if (t == EXOP_MEML)
 					{
-						dest.push_back(ExpressionPair(EXCOMM_OP,EXOP_MEM));
+						dest.emplace_back(EXCOMM_OP,EXOP_MEM);
 						break;
 					}
-					dest.push_back(ExpressionPair(EXCOMM_OP,t));
+					dest.emplace_back(EXCOMM_OP,t);
 				}
 				type = EXOP_NUMBER;
 				break;
@@ -351,7 +351,7 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 
 						if (ExpressionOpcodes[t].Priority >= CurrentPriority)
 						{
-							dest.push_back(ExpressionPair(EXCOMM_OP,t));
+							dest.emplace_back(EXCOMM_OP,t);
 						} else {
 							opcodeStack.push_back(t);
 							break;
@@ -376,7 +376,7 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 			sprintf(expressionError,"Parenthesis not closed");
 			return false;
 		}
-		dest.push_back(ExpressionPair(EXCOMM_OP,t));
+		dest.emplace_back(EXCOMM_OP,t);
 	}
 
 #if 0			// only for testing
@@ -468,7 +468,7 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 					valueStack.push_back(val);
 				}
 				break;
-			case EXOP_SIGNPLUS:		// keine aktion nötig
+			case EXOP_SIGNPLUS:		// keine aktion nï¿½tig
 				break;
 			case EXOP_SIGNMINUS:	// -0
 				if (useFloat)

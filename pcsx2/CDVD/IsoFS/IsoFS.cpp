@@ -146,7 +146,7 @@ void IsoDirectory::Init(const IsoFileDescriptor& directoryEntry)
 
 		dataStream.read(b + 1, b[0] - 1);
 
-		files.push_back(IsoFileDescriptor(b, b[0]));
+		files.emplace_back(b, b[0]);
 	}
 
 	b[0] = 0;

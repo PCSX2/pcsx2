@@ -235,7 +235,7 @@ void SymbolMap::AddModule(const char *name, u32 address, u32 size) {
 			// Just reactivate that one.
 			it->start = address;
 			it->size = size;
-			activeModuleEnds.insert(std::make_pair(it->start + it->size, *it));
+			activeModuleEnds.emplace(it->start + it->size, *it);
 			UpdateActiveSymbols();
 			return;
 		}
@@ -249,7 +249,7 @@ void SymbolMap::AddModule(const char *name, u32 address, u32 size) {
 	mod.index = (int)modules.size() + 1;
 
 	modules.push_back(mod);
-	activeModuleEnds.insert(std::make_pair(mod.start + mod.size, mod));
+	activeModuleEnds.emplace(mod.start + mod.size, mod);
 	UpdateActiveSymbols();
 }
 
@@ -351,7 +351,7 @@ void SymbolMap::AddFunction(const char* name, u32 address, u32 size, int moduleI
 		auto active = activeFunctions.find(address);
 		if (active != activeFunctions.end() && active->second.module == moduleIndex) {
 			activeFunctions.erase(active);
-			activeFunctions.insert(std::make_pair(address, existing->second));
+			activeFunctions.emplace(address, existing->second);
 		}
 	} else {
 		FunctionEntry func;
@@ -362,7 +362,7 @@ void SymbolMap::AddFunction(const char* name, u32 address, u32 size, int moduleI
 		functions[symbolKey] = func;
 
 		if (IsModuleActive(moduleIndex)) {
-			activeFunctions.insert(std::make_pair(address, func));
+			activeFunctions.emplace(address, func);
 		}
 	}
 
@@ -446,27 +446,27 @@ void SymbolMap::UpdateActiveSymbols() {
 	for (auto it = functions.begin(), end = functions.end(); it != end; ++it) {
 		const auto mod = activeModuleIndexes.find(it->second.module);
 		if (it->second.module <= 0) {
-			activeFunctions.insert(std::make_pair(it->second.start, it->second));
+			activeFunctions.emplace(it->second.start, it->second);
 		} else if (mod != activeModuleIndexes.end()) {
-			activeFunctions.insert(std::make_pair(mod->second + it->second.start, it->second));
+			activeFunctions.emplace(mod->second + it->second.start, it->second);
 		}
 	}
 
 	for (auto it = labels.begin(), end = labels.end(); it != end; ++it) {
 		const auto mod = activeModuleIndexes.find(it->second.module);
 		if (it->second.module <= 0) {
-			activeLabels.insert(std::make_pair(it->second.addr, it->second));
+			activeLabels.emplace(it->second.addr, it->second);
 		} else if (mod != activeModuleIndexes.end()) {
-			activeLabels.insert(std::make_pair(mod->second + it->second.addr, it->second));
+			activeLabels.emplace(mod->second + it->second.addr, it->second);
 		}
 	}
 
 	for (auto it = data.begin(), end = data.end(); it != end; ++it) {
 		const auto mod = activeModuleIndexes.find(it->second.module);
 		if (it->second.module <= 0) {
-			activeData.insert(std::make_pair(it->second.start, it->second));
+			activeData.emplace(it->second.start, it->second);
 		} else if (mod != activeModuleIndexes.end()) {
-			activeData.insert(std::make_pair(mod->second + it->second.start, it->second));
+			activeData.emplace(mod->second + it->second.start, it->second);
 		}
 	}
 
@@ -546,7 +546,7 @@ void SymbolMap::AddLabel(const char* name, u32 address, int moduleIndex) {
 			auto active = activeLabels.find(address);
 			if (active != activeLabels.end() && active->second.module == moduleIndex) {
 				activeLabels.erase(active);
-				activeLabels.insert(std::make_pair(address, existing->second));
+				activeLabels.emplace(address, existing->second);
 			}
 		}
 	} else {
@@ -558,7 +558,7 @@ void SymbolMap::AddLabel(const char* name, u32 address, int moduleIndex) {
 
 		labels[symbolKey] = label;
 		if (IsModuleActive(moduleIndex)) {
-			activeLabels.insert(std::make_pair(address, label));
+			activeLabels.emplace(address, label);
 		}
 	}
 }
@@ -650,7 +650,7 @@ void SymbolMap::AddData(u32 address, u32 size, DataType type, int moduleIndex) {
 		auto active = activeData.find(address);
 		if (active != activeData.end() && active->second.module == moduleIndex) {
 			activeData.erase(active);
-			activeData.insert(std::make_pair(address, existing->second));
+			activeData.emplace(address, existing->second);
 		}
 	} else {
 		DataEntry entry;
@@ -661,7 +661,7 @@ void SymbolMap::AddData(u32 address, u32 size, DataType type, int moduleIndex) {
 
 		data[symbolKey] = entry;
 		if (IsModuleActive(moduleIndex)) {
-			activeData.insert(std::make_pair(address, entry));
+			activeData.emplace(address, entry);
 		}
 	}
 }
