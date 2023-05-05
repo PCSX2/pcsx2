@@ -21,13 +21,12 @@
 #include "GS/GSUtil.h"
 #include "GS/Renderers/DX11/D3D.h"
 #include "GS/Renderers/DX12/GSDevice12.h"
+#include "GS/Renderers/DX12/D3D12Builders.h"
+#include "GS/Renderers/DX12/D3D12Context.h"
+#include "GS/Renderers/DX12/D3D12ShaderCache.h"
 #include "Host.h"
 #include "ShaderCacheVersion.h"
 
-#include "common/D3D12/Builders.h"
-#include "common/D3D12/Context.h"
-#include "common/D3D12/ShaderCache.h"
-#include "common/D3D12/Util.h"
 #include "common/Align.h"
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
@@ -129,7 +128,7 @@ bool GSDevice12::Create()
 
 	ComPtr<IDXGIAdapter1> dxgi_adapter = D3D::GetAdapterByName(m_dxgi_factory.get(), EmuConfig.GS.Adapter);
 
-	if (!D3D12::Context::Create(m_dxgi_factory.get(), dxgi_adapter.get(), EmuConfig.GS.UseDebugDevice))
+	if (!D3D12Context::Create(m_dxgi_factory.get(), dxgi_adapter.get(), EmuConfig.GS.UseDebugDevice))
 	{
 		Console.Error("Failed to create D3D12 context");
 		return false;
@@ -160,18 +159,8 @@ bool GSDevice12::Create()
 		m_tfx_source = std::move(*shader);
 	}
 
-	if (!GSConfig.DisableShaderCache)
-	{
-		if (!m_shader_cache.Open(EmuFolders::Cache, g_d3d12_context->GetFeatureLevel(), SHADER_CACHE_VERSION, GSConfig.UseDebugDevice))
-		{
-			Console.Warning("Shader cache failed to open.");
-		}
-	}
-	else
-	{
-		m_shader_cache.Open({}, g_d3d12_context->GetFeatureLevel(), SHADER_CACHE_VERSION, GSConfig.UseDebugDevice);
-		Console.WriteLn("Not using shader cache.");
-	}
+	if (!m_shader_cache.Open(g_d3d12_context->GetFeatureLevel(), GSConfig.UseDebugDevice))
+		Console.Warning("Shader cache failed to open.");
 
 	// reset stuff in case it was used by a previous device
 	g_d3d12_context->GetSamplerAllocator().Reset();
@@ -332,7 +321,7 @@ bool GSDevice12::CreateSwapChain()
 
 	// Render a frame as soon as possible to clear out whatever was previously being displayed.
 	EndRenderPass();
-	D3D12::Texture& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
+	D3D12Texture& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
 	ID3D12GraphicsCommandList4* cmdlist = g_d3d12_context->GetCommandList();
 	m_current_swap_chain_buffer = ((m_current_swap_chain_buffer + 1) % static_cast<u32>(m_swap_chain_buffers.size()));
 	swap_chain_buf.TransitionToState(cmdlist, D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -361,7 +350,7 @@ bool GSDevice12::CreateSwapChainRTV()
 			return false;
 		}
 
-		D3D12::Texture tex;
+		D3D12Texture tex;
 		if (!tex.Adopt(std::move(backbuffer), DXGI_FORMAT_UNKNOWN, swap_chain_desc.BufferDesc.Format,
 				DXGI_FORMAT_UNKNOWN, D3D12_RESOURCE_STATE_PRESENT))
 		{
@@ -398,7 +387,7 @@ bool GSDevice12::CreateSwapChainRTV()
 
 void GSDevice12::DestroySwapChainRTVs()
 {
-	for (D3D12::Texture& buffer : m_swap_chain_buffers)
+	for (D3D12Texture& buffer : m_swap_chain_buffers)
 		buffer.Destroy(false);
 	m_swap_chain_buffers.clear();
 	m_current_swap_chain_buffer = 0;
@@ -533,7 +522,7 @@ GSDevice::PresentResult GSDevice12::BeginPresent(bool frame_skip)
 		return PresentResult::FrameSkipped;
 	}
 
-	D3D12::Texture& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
+	D3D12Texture& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
 
 	ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
 	swap_chain_buf.TransitionToState(cmdlist, D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -554,11 +543,11 @@ void GSDevice12::EndPresent()
 {
 	RenderImGui();
 
-	D3D12::Texture& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
+	D3D12Texture& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
 	m_current_swap_chain_buffer = ((m_current_swap_chain_buffer + 1) % static_cast<u32>(m_swap_chain_buffers.size()));
 
 	swap_chain_buf.TransitionToState(g_d3d12_context->GetCommandList(), D3D12_RESOURCE_STATE_PRESENT);
-	if (!g_d3d12_context->ExecuteCommandList(D3D12::Context::WaitType::None))
+	if (!g_d3d12_context->ExecuteCommandList(D3D12Context::WaitType::None))
 	{
 		m_device_lost = true;
 		InvalidateCachedState();
@@ -1115,7 +1104,7 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	const bool feedback_write_2 = PMODE.EN2 && sTex[2] != nullptr && EXTBUF.FBIN == 1;
 	const bool feedback_write_1 = PMODE.EN1 && sTex[2] != nullptr && EXTBUF.FBIN == 0;
 	const bool feedback_write_2_but_blend_bg = feedback_write_2 && PMODE.SLBG == 1;
-	const D3D12::DescriptorHandle& sampler = linear ? m_linear_sampler_cpu : m_point_sampler_cpu;
+	const D3D12DescriptorHandle& sampler = linear ? m_linear_sampler_cpu : m_point_sampler_cpu;
 	// Merge the 2 source textures (sTex[0],sTex[1]). Final results go to dTex. Feedback write will go to sTex[2].
 	// If either 2nd output is disabled or SLBG is 1, a background color will be used.
 	// Note: background color is also used when outside of the unit rectangle area
@@ -1441,8 +1430,8 @@ void GSDevice12::RenderImGui()
 			SetScissor(GSVector4i(clip));
 
 			// Since we don't have the GSTexture...
-			D3D12::Texture* tex = static_cast<D3D12::Texture*>(pcmd->GetTexID());
-			D3D12::DescriptorHandle handle = tex ? tex->GetSRVDescriptor() : m_null_texture.GetSRVDescriptor();
+			D3D12Texture* tex = static_cast<D3D12Texture*>(pcmd->GetTexID());
+			D3D12DescriptorHandle handle = tex ? tex->GetSRVDescriptor() : m_null_texture.GetSRVDescriptor();
 			if (m_utility_texture_cpu != handle)
 			{
 				m_utility_texture_cpu = handle;
@@ -1472,7 +1461,7 @@ bool GSDevice12::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, cons
 
 	GSTexture12* const sTex12 = static_cast<GSTexture12*>(sTex);
 	GSTexture12* const dTex12 = static_cast<GSTexture12*>(dTex);
-	D3D12::DescriptorHandle sTexDH, dTexDH;
+	D3D12DescriptorHandle sTexDH, dTexDH;
 	if (!GetTextureGroupDescriptors(&sTexDH, &sTex12->GetTexture().GetSRVDescriptor(), 1) ||
 		!GetTextureGroupDescriptors(&dTexDH, &dTex12->GetTexture().GetWriteDescriptor(), 1))
 	{
@@ -1573,7 +1562,7 @@ void GSDevice12::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	SetScissor(scissor);
 }
 
-bool GSDevice12::GetSampler(D3D12::DescriptorHandle* cpu_handle, GSHWDrawConfig::SamplerSelector ss)
+bool GSDevice12::GetSampler(D3D12DescriptorHandle* cpu_handle, GSHWDrawConfig::SamplerSelector ss)
 {
 	const auto it = m_samplers.find(ss.key);
 	if (it != m_samplers.end())
@@ -1636,7 +1625,7 @@ void GSDevice12::ClearSamplerCache()
 	m_dirty_flags |= DIRTY_FLAG_TFX_SAMPLERS;
 }
 
-bool GSDevice12::GetTextureGroupDescriptors(D3D12::DescriptorHandle* gpu_handle, const D3D12::DescriptorHandle* cpu_handles, u32 count)
+bool GSDevice12::GetTextureGroupDescriptors(D3D12DescriptorHandle* gpu_handle, const D3D12DescriptorHandle* cpu_handles, u32 count)
 {
 	if (!g_d3d12_context->GetDescriptorAllocator().Allocate(count, gpu_handle))
 		return false;
@@ -2082,7 +2071,7 @@ bool GSDevice12::CompilePostProcessingPipelines()
 
 void GSDevice12::DestroyResources()
 {
-	g_d3d12_context->ExecuteCommandList(D3D12::Context::WaitType::Sleep);
+	g_d3d12_context->ExecuteCommandList(D3D12Context::WaitType::Sleep);
 
 	m_convert_vs.reset();
 
@@ -2370,14 +2359,14 @@ void GSDevice12::InitializeSamplers()
 		pxFailRel("Failed to initialize samplers");
 }
 
-static D3D12::Context::WaitType GetWaitType(bool wait, bool spin)
+static D3D12Context::WaitType GetWaitType(bool wait, bool spin)
 {
 	if (!wait)
-		return D3D12::Context::WaitType::None;
+		return D3D12Context::WaitType::None;
 	if (spin)
-		return D3D12::Context::WaitType::Spin;
+		return D3D12Context::WaitType::Spin;
 	else
-		return D3D12::Context::WaitType::Sleep;
+		return D3D12Context::WaitType::Sleep;
 }
 
 void GSDevice12::ExecuteCommandList(bool wait_for_completion)
@@ -2491,7 +2480,7 @@ void GSDevice12::SetStencilRef(u8 ref)
 
 void GSDevice12::PSSetShaderResource(int i, GSTexture* sr, bool check_state)
 {
-	D3D12::DescriptorHandle handle;
+	D3D12DescriptorHandle handle;
 	if (sr)
 	{
 		GSTexture12* dtex = static_cast<GSTexture12*>(sr);
@@ -2541,9 +2530,9 @@ void GSDevice12::SetUtilityRootSignature()
 	g_d3d12_context->GetCommandList()->SetGraphicsRootSignature(m_utility_root_signature.get());
 }
 
-void GSDevice12::SetUtilityTexture(GSTexture* dtex, const D3D12::DescriptorHandle& sampler)
+void GSDevice12::SetUtilityTexture(GSTexture* dtex, const D3D12DescriptorHandle& sampler)
 {
-	D3D12::DescriptorHandle handle;
+	D3D12DescriptorHandle handle;
 	if (dtex)
 	{
 		GSTexture12* d12tex = static_cast<GSTexture12*>(dtex);
@@ -2611,18 +2600,18 @@ void GSDevice12::UnbindTexture(GSTexture12* tex)
 	}
 }
 
-void GSDevice12::RenderTextureMipmap(const D3D12::Texture& texture,
+void GSDevice12::RenderTextureMipmap(const D3D12Texture& texture,
 	u32 dst_level, u32 dst_width, u32 dst_height, u32 src_level, u32 src_width, u32 src_height)
 {
 	EndRenderPass();
 
 	// we need a temporary SRV and RTV for each mip level
 	// Safe to use the init buffer after exec, because everything will be done with the texture.
-	D3D12::DescriptorHandle rtv_handle;
+	D3D12DescriptorHandle rtv_handle;
 	while (!g_d3d12_context->GetRTVHeapManager().Allocate(&rtv_handle))
 		ExecuteCommandList(false);
 
-	D3D12::DescriptorHandle srv_handle;
+	D3D12DescriptorHandle srv_handle;
 	while (!g_d3d12_context->GetDescriptorHeapManager().Allocate(&srv_handle))
 		ExecuteCommandList(false);
 

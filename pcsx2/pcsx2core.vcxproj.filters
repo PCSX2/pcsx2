@@ -1355,6 +1355,27 @@
     <ClCompile Include="VirtualMemory.cpp">
       <Filter>System</Filter>
     </ClCompile>
+    <ClCompile Include="GS\Renderers\DX11\D3D11ShaderCache.cpp">
+      <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\DX12\D3D12Context.cpp">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\DX12\D3D12DescriptorHeapManager.cpp">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\DX12\D3D12ShaderCache.cpp">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\DX12\D3D12StreamBuffer.cpp">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\DX12\D3D12Texture.cpp">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\DX12\D3D12Builders.cpp">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2254,6 +2275,27 @@
     </ClInclude>
     <ClInclude Include="VirtualMemory.h">
       <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\DX11\D3D11ShaderCache.h">
+      <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\DX12\D3D12Context.h">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\DX12\D3D12DescriptorHeapManager.h">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\DX12\D3D12ShaderCache.h">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\DX12\D3D12StreamBuffer.h">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\DX12\D3D12Texture.h">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\DX12\D3D12Builders.h">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

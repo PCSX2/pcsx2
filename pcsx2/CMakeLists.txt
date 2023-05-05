@@ -644,16 +644,30 @@ if(WIN32)
 
 	list(APPEND pcsx2GSSources
 		GS/Renderers/DX11/D3D.cpp
+		GS/Renderers/DX11/D3D11ShaderCache.cpp
 		GS/Renderers/DX11/GSDevice11.cpp
 		GS/Renderers/DX11/GSTexture11.cpp
 		GS/Renderers/DX11/GSTextureFX11.cpp
+		GS/Renderers/DX12/D3D12Builders.cpp
+		GS/Renderers/DX12/D3D12Context.cpp
+		GS/Renderers/DX12/D3D12DescriptorHeapManager.cpp
+		GS/Renderers/DX12/D3D12ShaderCache.cpp
+		GS/Renderers/DX12/D3D12StreamBuffer.cpp
+		GS/Renderers/DX12/D3D12Texture.cpp
 		GS/Renderers/DX12/GSDevice12.cpp
 		GS/Renderers/DX12/GSTexture12.cpp
 	)
 	list(APPEND pcsx2GSHeaders
 		GS/Renderers/DX11/D3D.h
+		GS/Renderers/DX11/D3D11ShaderCache.h
 		GS/Renderers/DX11/GSDevice11.h
 		GS/Renderers/DX11/GSTexture11.h
+		GS/Renderers/DX12/D3D12Builders.h
+		GS/Renderers/DX12/D3D12Context.h
+		GS/Renderers/DX12/D3D12DescriptorHeapManager.h
+		GS/Renderers/DX12/D3D12ShaderCache.h
+		GS/Renderers/DX12/D3D12StreamBuffer.h
+		GS/Renderers/DX12/D3D12Texture.h
 		GS/Renderers/DX12/GSDevice12.h
 		GS/Renderers/DX12/GSTexture12.h
 	)
@@ -1149,6 +1163,7 @@ if(WIN32)
 		PowrProf.lib
 		d3dcompiler.lib
 		d3d11.lib
+		d3d12.lib
 		dxgi.lib
 		strmiids.lib
 		opengl32.lib
