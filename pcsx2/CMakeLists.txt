@@ -589,18 +589,51 @@ set(pcsx2GSHeaders
 
 if(USE_OPENGL)
 	list(APPEND pcsx2GSSources
+		GS/Renderers/OpenGL/GLContext.cpp
 		GS/Renderers/OpenGL/GLLoader.cpp
+		GS/Renderers/OpenGL/GLProgram.cpp
+		GS/Renderers/OpenGL/GLShaderCache.cpp
 		GS/Renderers/OpenGL/GLState.cpp
+		GS/Renderers/OpenGL/GLStreamBuffer.cpp
 		GS/Renderers/OpenGL/GSDeviceOGL.cpp
 		GS/Renderers/OpenGL/GSTextureOGL.cpp
 	)
 	list(APPEND pcsx2GSHeaders
+		GS/Renderers/OpenGL/GLContext.h
 		GS/Renderers/OpenGL/GLLoader.h
+		GS/Renderers/OpenGL/GLProgram.h
+		GS/Renderers/OpenGL/GLShaderCache.h
 		GS/Renderers/OpenGL/GLState.h
+		GS/Renderers/OpenGL/GLStreamBuffer.h
 		GS/Renderers/OpenGL/GSDeviceOGL.h
 		GS/Renderers/OpenGL/GSTextureOGL.h
 	)
 	target_link_libraries(PCSX2_FLAGS INTERFACE glad)
+
+	if(WIN32)
+		list(APPEND pcsx2GSSources GS/Renderers/OpenGL/GLContextWGL.cpp)
+		list(APPEND pcsx2GSHeaders GS/Renderers/OpenGL/GLContextWGL.h)
+		target_link_libraries(PCSX2_FLAGS INTERFACE opengl32.lib)
+	elseif(APPLE)
+		list(APPEND pcsx2GSSources GS/Renderers/OpenGL/GLContextAGL.cpp)
+		list(APPEND pcsx2GSHeaders GS/Renderers/OpenGL/GLContextAGL.h)
+	else()
+		if(X11_API OR WAYLAND_API)
+			list(APPEND pcsx2GSSources GS/Renderers/OpenGL/GLContextEGL.cpp)
+			list(APPEND pcsx2GSHeaders GS/Renderers/OpenGL/GLContextEGL.h)
+			target_link_libraries(PCSX2_FLAGS INTERFACE PkgConfig::EGL)
+		endif()
+
+		if(X11_API)
+			list(APPEND pcsx2GSSources GS/Renderers/OpenGL/GLContextEGLX11.cpp)
+			list(APPEND pcsx2GSHeaders GS/Renderers/OpenGL/GLContextEGLX11.h)
+		endif()
+
+		if(WAYLAND_API)
+			list(APPEND pcsx2GSSources GS/Renderers/OpenGL/GLContextEGLWayland.cpp)
+			list(APPEND pcsx2GSHeaders GS/Renderers/OpenGL/GLContextEGLWayland.h)
+		endif()
+	endif()
 endif()
 
 if(USE_VULKAN)

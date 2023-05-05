@@ -19,6 +19,8 @@
 #include "Host.h"
 #include "HostSettings.h"
 
+#include "glad.h"
+
 namespace ReplaceGL
 {
 	void APIENTRY ScissorIndexed(GLuint index, GLint left, GLint bottom, GLsizei width, GLsizei height)

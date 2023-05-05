@@ -15,13 +15,13 @@
 
 #include "PrecompiledHeader.h"
 
+#include "GS/Renderers/OpenGL/GLContext.h"
+#include "GS/Renderers/OpenGL/GSDeviceOGL.h"
+#include "GS/Renderers/OpenGL/GLState.h"
 #include "GS/GSState.h"
 #include "GS/GSGL.h"
 #include "GS/GSUtil.h"
-#include "GS/Renderers/OpenGL/GSDeviceOGL.h"
-#include "GS/Renderers/OpenGL/GLState.h"
 #include "Host.h"
-#include "ShaderCacheVersion.h"
 
 #include "common/StringUtil.h"
 
@@ -32,8 +32,6 @@
 #include <fstream>
 #include <sstream>
 
-//#define ONLY_LINES
-
 static constexpr u32 g_vs_cb_index        = 1;
 static constexpr u32 g_ps_cb_index        = 0;
 
@@ -43,7 +41,7 @@ static constexpr u32 VERTEX_UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024;
 static constexpr u32 FRAGMENT_UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024;
 static constexpr u32 TEXTURE_UPLOAD_BUFFER_SIZE = 128 * 1024 * 1024;
 
-static std::unique_ptr<GL::StreamBuffer> s_texture_upload_buffer;
+static std::unique_ptr<GLStreamBuffer> s_texture_upload_buffer;
 
 GSDeviceOGL::GSDeviceOGL() = default;
 
@@ -94,12 +92,7 @@ bool GSDeviceOGL::Create()
 	if (!AcquireWindow(true))
 		return false;
 
-	// We need at least GL3.3.
-	static constexpr const GL::Context::Version version_list[] = {{GL::Context::Profile::Core, 4, 6},
-		{GL::Context::Profile::Core, 4, 5}, {GL::Context::Profile::Core, 4, 4}, {GL::Context::Profile::Core, 4, 3},
-		{GL::Context::Profile::Core, 4, 2}, {GL::Context::Profile::Core, 4, 1}, {GL::Context::Profile::Core, 4, 0},
-		{GL::Context::Profile::Core, 3, 3}};
-	m_gl_context = GL::Context::Create(m_window_info, version_list);
+	m_gl_context = GLContext::Create(m_window_info);
 	if (!m_gl_context)
 	{
 		Console.Error("Failed to create any GL context");
@@ -124,7 +117,7 @@ bool GSDeviceOGL::Create()
 
 	if (!GSConfig.DisableShaderCache)
 	{
-		if (!m_shader_cache.Open(false, EmuFolders::Cache, SHADER_CACHE_VERSION))
+		if (!m_shader_cache.Open())
 			Console.Warning("Shader cache failed to open.");
 	}
 	else
@@ -240,10 +233,10 @@ bool GSDeviceOGL::Create()
 		glGenVertexArrays(1, &m_vao);
 		IASetVAO(m_vao);
 
-		m_vertex_stream_buffer = GL::StreamBuffer::Create(GL_ARRAY_BUFFER, VERTEX_BUFFER_SIZE);
-		m_index_stream_buffer = GL::StreamBuffer::Create(GL_ELEMENT_ARRAY_BUFFER, INDEX_BUFFER_SIZE);
-		m_vertex_uniform_stream_buffer = GL::StreamBuffer::Create(GL_UNIFORM_BUFFER, VERTEX_UNIFORM_BUFFER_SIZE);
-		m_fragment_uniform_stream_buffer = GL::StreamBuffer::Create(GL_UNIFORM_BUFFER, FRAGMENT_UNIFORM_BUFFER_SIZE);
+		m_vertex_stream_buffer = GLStreamBuffer::Create(GL_ARRAY_BUFFER, VERTEX_BUFFER_SIZE);
+		m_index_stream_buffer = GLStreamBuffer::Create(GL_ELEMENT_ARRAY_BUFFER, INDEX_BUFFER_SIZE);
+		m_vertex_uniform_stream_buffer = GLStreamBuffer::Create(GL_UNIFORM_BUFFER, VERTEX_UNIFORM_BUFFER_SIZE);
+		m_fragment_uniform_stream_buffer = GLStreamBuffer::Create(GL_UNIFORM_BUFFER, FRAGMENT_UNIFORM_BUFFER_SIZE);
 		glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &m_uniform_buffer_alignment);
 		if (!m_vertex_stream_buffer || !m_index_stream_buffer || !m_vertex_uniform_stream_buffer || !m_fragment_uniform_stream_buffer)
 		{
@@ -513,7 +506,7 @@ bool GSDeviceOGL::Create()
 	// ****************************************************************
 	if (!GLLoader::buggy_pbo)
 	{
-		s_texture_upload_buffer = GL::StreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, TEXTURE_UPLOAD_BUFFER_SIZE);
+		s_texture_upload_buffer = GLStreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, TEXTURE_UPLOAD_BUFFER_SIZE);
 		if (s_texture_upload_buffer)
 		{
 			// Don't keep it bound, we'll re-bind when we need it.
@@ -582,7 +575,7 @@ bool GSDeviceOGL::CreateTextureFX()
 		m_om_dss[key] = CreateDepthStencil(OMDepthStencilSelector(key));
 	}
 
-	GL::Program::ResetLastProgram();
+	GLProgram::ResetLastProgram();
 	return true;
 }
 
@@ -616,24 +609,24 @@ void GSDeviceOGL::DestroyResources()
 
 	m_shadeboost.ps.Destroy();
 
-	for (GL::Program& prog : m_date.primid_ps)
+	for (GLProgram& prog : m_date.primid_ps)
 		prog.Destroy();
 	delete m_date.dss;
 
 	m_fxaa.ps.Destroy();
 
-	for (GL::Program& prog : m_present)
+	for (GLProgram& prog : m_present)
 		prog.Destroy();
 
-	for (GL::Program& prog : m_convert.ps)
+	for (GLProgram& prog : m_convert.ps)
 		prog.Destroy();
 	delete m_convert.dss;
 	delete m_convert.dss_write;
 
-	for (GL::Program& prog : m_interlace.ps)
+	for (GLProgram& prog : m_interlace.ps)
 		prog.Destroy();
 
-	for (GL::Program& prog : m_merge_obj.ps)
+	for (GLProgram& prog : m_merge_obj.ps)
 		prog.Destroy();
 
 	m_fragment_uniform_stream_buffer.reset();
@@ -718,8 +711,9 @@ std::string GSDeviceOGL::GetDriverInfo() const
 	const char* gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
 	const char* gl_renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
 	const char* gl_version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
-	return StringUtil::StdStringFromFormat(
-		"%s Context:\n%s\n%s %s", m_gl_context->IsGLES() ? "OpenGL ES" : "OpenGL", gl_version, gl_vendor, gl_renderer);
+	const char* gl_shading_language_version = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
+	return fmt::format(
+		"OpenGL Context:\n{}\n{} {}\nGLSL: {}", gl_version, gl_vendor, gl_renderer, gl_shading_language_version);
 }
 
 GSDevice::PresentResult GSDeviceOGL::BeginPresent(bool frame_skip)
@@ -757,10 +751,7 @@ void GSDeviceOGL::EndPresent()
 
 void GSDeviceOGL::CreateTimestampQueries()
 {
-	const bool gles = m_gl_context->IsGLES();
-	const auto GenQueries = gles ? glGenQueriesEXT : glGenQueries;
-
-	GenQueries(static_cast<u32>(m_timestamp_queries.size()), m_timestamp_queries.data());
+	glGenQueries(static_cast<u32>(m_timestamp_queries.size()), m_timestamp_queries.data());
 	KickTimestampQuery();
 }
 
@@ -769,16 +760,10 @@ void GSDeviceOGL::DestroyTimestampQueries()
 	if (m_timestamp_queries[0] == 0)
 		return;
 
-	const bool gles = m_gl_context->IsGLES();
-	const auto DeleteQueries = gles ? glDeleteQueriesEXT : glDeleteQueries;
-
 	if (m_timestamp_query_started)
-	{
-		const auto EndQuery = gles ? glEndQueryEXT : glEndQuery;
-		EndQuery(GL_TIME_ELAPSED);
-	}
+		glEndQuery(GL_TIME_ELAPSED);
 
-	DeleteQueries(static_cast<u32>(m_timestamp_queries.size()), m_timestamp_queries.data());
+	glDeleteQueries(static_cast<u32>(m_timestamp_queries.size()), m_timestamp_queries.data());
 	m_timestamp_queries.fill(0);
 	m_read_timestamp_query = 0;
 	m_write_timestamp_query = 0;
@@ -788,38 +773,16 @@ void GSDeviceOGL::DestroyTimestampQueries()
 
 void GSDeviceOGL::PopTimestampQuery()
 {
-	const bool gles = m_gl_context->IsGLES();
-
-	if (gles)
-	{
-		GLint disjoint = 0;
-		glGetIntegerv(GL_GPU_DISJOINT_EXT, &disjoint);
-		if (disjoint)
-		{
-			DevCon.WriteLn("GPU timing disjoint, resetting.");
-			if (m_timestamp_query_started)
-				glEndQueryEXT(GL_TIME_ELAPSED);
-
-			m_read_timestamp_query = 0;
-			m_write_timestamp_query = 0;
-			m_waiting_timestamp_queries = 0;
-			m_timestamp_query_started = false;
-		}
-	}
-
 	while (m_waiting_timestamp_queries > 0)
 	{
-		const auto GetQueryObjectiv = gles ? glGetQueryObjectivEXT : glGetQueryObjectiv;
-		const auto GetQueryObjectui64v = gles ? glGetQueryObjectui64vEXT : glGetQueryObjectui64v;
-
 		GLint available = 0;
-		GetQueryObjectiv(m_timestamp_queries[m_read_timestamp_query], GL_QUERY_RESULT_AVAILABLE, &available);
+		glGetQueryObjectiv(m_timestamp_queries[m_read_timestamp_query], GL_QUERY_RESULT_AVAILABLE, &available);
 
 		if (!available)
 			break;
 
 		u64 result = 0;
-		GetQueryObjectui64v(m_timestamp_queries[m_read_timestamp_query], GL_QUERY_RESULT, &result);
+		glGetQueryObjectui64v(m_timestamp_queries[m_read_timestamp_query], GL_QUERY_RESULT, &result);
 		m_accumulated_gpu_time += static_cast<float>(static_cast<double>(result) / 1000000.0);
 		m_read_timestamp_query = (m_read_timestamp_query + 1) % NUM_TIMESTAMP_QUERIES;
 		m_waiting_timestamp_queries--;
@@ -827,8 +790,7 @@ void GSDeviceOGL::PopTimestampQuery()
 
 	if (m_timestamp_query_started)
 	{
-		const auto EndQuery = gles ? glEndQueryEXT : glEndQuery;
-		EndQuery(GL_TIME_ELAPSED);
+		glEndQuery(GL_TIME_ELAPSED);
 
 		m_write_timestamp_query = (m_write_timestamp_query + 1) % NUM_TIMESTAMP_QUERIES;
 		m_timestamp_query_started = false;
@@ -841,10 +803,7 @@ void GSDeviceOGL::KickTimestampQuery()
 	if (m_timestamp_query_started || m_waiting_timestamp_queries == NUM_TIMESTAMP_QUERIES)
 		return;
 
-	const bool gles = m_gl_context->IsGLES();
-	const auto BeginQuery = gles ? glBeginQueryEXT : glBeginQuery;
-
-	BeginQuery(GL_TIME_ELAPSED, m_timestamp_queries[m_write_timestamp_query]);
+	glBeginQuery(GL_TIME_ELAPSED, m_timestamp_queries[m_write_timestamp_query]);
 	m_timestamp_query_started = true;
 }
 
@@ -852,9 +811,6 @@ bool GSDeviceOGL::SetGPUTimingEnabled(bool enabled)
 {
 	if (m_gpu_timing_enabled == enabled)
 		return true;
-
-	if (enabled && m_gl_context->IsGLES() && !GLAD_GL_EXT_disjoint_timer_query)
-		return false;
 
 	m_gpu_timing_enabled = enabled;
 	if (m_gpu_timing_enabled)
@@ -1343,7 +1299,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[(int)shader], linear);
 }
 
-void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GL::Program& ps, bool linear)
+void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GLProgram& ps, bool linear)
 {
 	StretchRect(sTex, sRect, dTex, dRect, ps, false, OMColorMaskSelector(), linear);
 }
@@ -1360,7 +1316,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[(int)ShaderConvert::COPY], false, cms, false);
 }
 
-void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GL::Program& ps, bool alpha_blend, OMColorMaskSelector cms, bool linear)
+void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GLProgram& ps, bool alpha_blend, OMColorMaskSelector cms, bool linear)
 {
 	ASSERT(sTex);
 
@@ -1413,7 +1369,7 @@ void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	cb.SetTarget(dRect, ds);
 	cb.SetTime(shaderTime);
 
-	GL::Program& prog = m_present[static_cast<int>(shader)];
+	GLProgram& prog = m_present[static_cast<int>(shader)];
 	prog.Bind();
 	prog.Uniform4fv(0, cb.SourceRect.F32);
 	prog.Uniform4fv(1, cb.TargetRect.F32);
@@ -1444,7 +1400,7 @@ void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 void GSDeviceOGL::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
 {
 	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
-	GL::Program& prog = m_convert.ps[static_cast<int>(shader)];
+	GLProgram& prog = m_convert.ps[static_cast<int>(shader)];
 	prog.Bind();
 	prog.Uniform3ui(0, offsetX, offsetY, dOffset);
 	prog.Uniform1f(1, sScale);
@@ -1464,7 +1420,7 @@ void GSDeviceOGL::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, 
 void GSDeviceOGL::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM)
 {
 	const ShaderConvert shader = ShaderConvert::RGBA_TO_8I;
-	GL::Program& prog = m_convert.ps[static_cast<int>(shader)];
+	GLProgram& prog = m_convert.ps[static_cast<int>(shader)];
 	prog.Bind();
 	prog.Uniform1ui(0, SBW);
 	prog.Uniform1ui(1, DBW);
@@ -1692,7 +1648,7 @@ bool GSDeviceOGL::CompileFXAAProgram()
 	}
 
 	const std::string ps(GetShaderSource("ps_main", GL_FRAGMENT_SHADER, shader->c_str(), fxaa_macro));
-	std::optional<GL::Program> prog = m_shader_cache.GetProgram(m_convert.vs, ps);
+	std::optional<GLProgram> prog = m_shader_cache.GetProgram(m_convert.vs, ps);
 	if (!prog.has_value())
 	{
 		Console.Error("Failed to compile FXAA fragment shader");
@@ -1890,7 +1846,7 @@ bool GSDeviceOGL::CreateCASPrograms()
 		return false;
 	}
 
-	const auto link_uniforms = [](GL::Program& prog) {
+	const auto link_uniforms = [](GLProgram& prog) {
 		prog.RegisterUniform("const0");
 		prog.RegisterUniform("const1");
 		prog.RegisterUniform("srcOffset");
@@ -1903,7 +1859,7 @@ bool GSDeviceOGL::CreateCASPrograms()
 
 bool GSDeviceOGL::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants)
 {
-	const GL::Program& prog = sharpen_only ? m_cas.sharpen_ps : m_cas.upscale_ps;
+	const GLProgram& prog = sharpen_only ? m_cas.sharpen_ps : m_cas.upscale_ps;
 	prog.Bind();
 	prog.Uniform4uiv(0, &constants[0]);
 	prog.Uniform4uiv(1, &constants[4]);
@@ -1929,7 +1885,7 @@ bool GSDeviceOGL::CreateImGuiProgram()
 		return false;
 	}
 
-	std::optional<GL::Program> prog = m_shader_cache.GetProgram(
+	std::optional<GLProgram> prog = m_shader_cache.GetProgram(
 		GetShaderSource("vs_main", GL_VERTEX_SHADER, glsl.value()),
 		GetShaderSource("ps_main", GL_FRAGMENT_SHADER, glsl.value()));
 	if (!prog.has_value())
@@ -2216,7 +2172,7 @@ void GSDeviceOGL::SetScissor(const GSVector4i& scissor)
 	}
 }
 
-__fi static void WriteToStreamBuffer(GL::StreamBuffer* sb, u32 index, u32 align, const void* data, u32 size)
+__fi static void WriteToStreamBuffer(GLStreamBuffer* sb, u32 index, u32 align, const void* data, u32 size)
 {
 	const auto res = sb->Map(align, size);
 	std::memcpy(res.pointer, data, size);
@@ -2237,7 +2193,7 @@ void GSDeviceOGL::SetupPipeline(const ProgramSelector& psel)
 	const std::string vs(GetVSSource(psel.vs));
 	const std::string ps(GetPSSource(psel.ps));
 
-	GL::Program prog;
+	GLProgram prog;
 	m_shader_cache.GetProgram(&prog, vs, ps);
 	it = m_programs.emplace(psel, std::move(prog)).first;
 	it->second.Bind();
@@ -2636,7 +2592,7 @@ void GSDeviceOGL::DebugMessageCallback(GLenum gl_source, GLenum gl_type, GLuint 
 	}
 }
 
-GL::StreamBuffer* GSDeviceOGL::GetTextureUploadBuffer()
+GLStreamBuffer* GSDeviceOGL::GetTextureUploadBuffer()
 {
 	return s_texture_upload_buffer.get();
 }

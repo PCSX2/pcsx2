@@ -1376,6 +1376,21 @@
     <ClCompile Include="GS\Renderers\DX12\D3D12Builders.cpp">
       <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
     </ClCompile>
+    <ClCompile Include="GS\Renderers\OpenGL\GLContextWGL.cpp">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\OpenGL\GLProgram.cpp">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\OpenGL\GLShaderCache.cpp">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\OpenGL\GLStreamBuffer.cpp">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\OpenGL\GLContext.cpp">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2296,6 +2311,21 @@
     </ClInclude>
     <ClInclude Include="GS\Renderers\DX12\D3D12Builders.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\OpenGL\GLContextWGL.h">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\OpenGL\GLProgram.h">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\OpenGL\GLShaderCache.h">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\OpenGL\GLStreamBuffer.h">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\OpenGL\GLContext.h">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

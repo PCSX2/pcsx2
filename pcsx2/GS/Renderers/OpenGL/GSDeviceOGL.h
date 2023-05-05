@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,16 +15,18 @@
 
 #pragma once
 
-#include "common/GL/Context.h"
-#include "common/GL/StreamBuffer.h"
-#include "common/GL/Program.h"
-#include "common/GL/ShaderCache.h"
-#include "common/HashCombine.h"
 #include "GS/Renderers/Common/GSDevice.h"
-#include "GSTextureOGL.h"
-#include "GLState.h"
-#include "GLLoader.h"
+#include "GS/Renderers/OpenGL/GLLoader.h"
+#include "GS/Renderers/OpenGL/GLProgram.h"
+#include "GS/Renderers/OpenGL/GLShaderCache.h"
+#include "GS/Renderers/OpenGL/GLState.h"
+#include "GS/Renderers/OpenGL/GLStreamBuffer.h"
+#include "GS/Renderers/OpenGL/GSTextureOGL.h"
 #include "GS/GS.h"
+
+#include "common/HashCombine.h"
+
+class GLContext;
 
 class GSDepthStencilOGL
 {
@@ -150,77 +152,77 @@ public:
 private:
 	static constexpr u8 NUM_TIMESTAMP_QUERIES = 5;
 
-	std::unique_ptr<GL::Context> m_gl_context;
+	std::unique_ptr<GLContext> m_gl_context;
 
 	GLuint m_fbo = 0; // frame buffer container
 	GLuint m_fbo_read = 0; // frame buffer container only for reading
 	GLuint m_fbo_write = 0;	// frame buffer container only for writing
 
-	std::unique_ptr<GL::StreamBuffer> m_vertex_stream_buffer;
-	std::unique_ptr<GL::StreamBuffer> m_index_stream_buffer;
+	std::unique_ptr<GLStreamBuffer> m_vertex_stream_buffer;
+	std::unique_ptr<GLStreamBuffer> m_index_stream_buffer;
 	GLuint m_expand_ibo = 0;
 	GLuint m_vao = 0;
 	GLuint m_expand_vao = 0;
 	GLenum m_draw_topology = 0;
 
-	std::unique_ptr<GL::StreamBuffer> m_vertex_uniform_stream_buffer;
-	std::unique_ptr<GL::StreamBuffer> m_fragment_uniform_stream_buffer;
+	std::unique_ptr<GLStreamBuffer> m_vertex_uniform_stream_buffer;
+	std::unique_ptr<GLStreamBuffer> m_fragment_uniform_stream_buffer;
 	GLint m_uniform_buffer_alignment = 0;
 
 	struct
 	{
-		GL::Program ps[2]; // program object
+		GLProgram ps[2]; // program object
 	} m_merge_obj;
 
 	struct
 	{
-		GL::Program ps[NUM_INTERLACE_SHADERS]; // program object
+		GLProgram ps[NUM_INTERLACE_SHADERS]; // program object
 	} m_interlace;
 
 	struct
 	{
 		std::string vs;
-		GL::Program ps[static_cast<int>(ShaderConvert::Count)]; // program object
+		GLProgram ps[static_cast<int>(ShaderConvert::Count)]; // program object
 		GLuint ln = 0; // sampler object
 		GLuint pt = 0; // sampler object
 		GSDepthStencilOGL* dss = nullptr;
 		GSDepthStencilOGL* dss_write = nullptr;
 	} m_convert;
 
-	GL::Program m_present[static_cast<int>(PresentShader::Count)];
+	GLProgram m_present[static_cast<int>(PresentShader::Count)];
 
 	struct
 	{
-		GL::Program ps;
+		GLProgram ps;
 	} m_fxaa;
 
 	struct
 	{
 		GSDepthStencilOGL* dss = nullptr;
-		GL::Program primid_ps[2];
+		GLProgram primid_ps[2];
 	} m_date;
 
 	struct
 	{
-		GL::Program ps;
+		GLProgram ps;
 	} m_shadeboost;
 
 	struct
 	{
-		GL::Program upscale_ps;
-		GL::Program sharpen_ps;
+		GLProgram upscale_ps;
+		GLProgram sharpen_ps;
 	} m_cas;
 
 	struct
 	{
-		GL::Program ps;
+		GLProgram ps;
 		GLuint vao = 0;
 	} m_imgui;
 
 	GLuint m_ps_ss[1 << 8];
 	GSDepthStencilOGL* m_om_dss[1 << 5] = {};
-	std::unordered_map<ProgramSelector, GL::Program, ProgramSelectorHash> m_programs;
-	GL::ShaderCache m_shader_cache;
+	std::unordered_map<ProgramSelector, GLProgram, ProgramSelectorHash> m_programs;
+	GLShaderCache m_shader_cache;
 
 	GLuint m_palette_ss = 0;
 
@@ -279,7 +281,7 @@ public:
 	// Used by OpenGL, so the same calling convention is required.
 	static void APIENTRY DebugMessageCallback(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar* gl_message, const void* userParam);
 
-	static GL::StreamBuffer* GetTextureUploadBuffer();
+	static GLStreamBuffer* GetTextureUploadBuffer();
 
 	__fi u32 GetFBORead() const { return m_fbo_read; }
 	__fi u32 GetFBOWrite() const { return m_fbo_write; }
@@ -328,9 +330,9 @@ public:
 	void BlitRect(GSTexture* sTex, const GSVector4i& r, const GSVector2i& dsize, bool at_origin, bool linear);
 
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true) override;
-	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GL::Program& ps, bool linear = true);
+	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GLProgram& ps, bool linear = true);
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha) override;
-	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GL::Program& ps, bool alpha_blend, OMColorMaskSelector cms, bool linear = true);
+	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GLProgram& ps, bool alpha_blend, OMColorMaskSelector cms, bool linear = true);
 	void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear) override;
 	void UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) override;
 	void ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM) override;
