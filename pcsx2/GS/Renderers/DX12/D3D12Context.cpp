@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -13,9 +13,9 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "common/PrecompiledHeader.h"
+#include "PrecompiledHeader.h"
 
-#include "common/D3D12/Context.h"
+#include "GS/Renderers/DX12/D3D12Context.h"
 #include "common/Assertions.h"
 #include "common/General.h"
 #include "common/ScopedGuard.h"
@@ -28,64 +28,20 @@
 #include <queue>
 #include <vector>
 
-std::unique_ptr<D3D12::Context> g_d3d12_context;
+std::unique_ptr<D3D12Context> g_d3d12_context;
 
-using namespace D3D12;
+D3D12Context::D3D12Context() = default;
 
-// Private D3D12 state
-static HMODULE s_d3d12_library;
-static PFN_D3D12_CREATE_DEVICE s_d3d12_create_device;
-static PFN_D3D12_GET_DEBUG_INTERFACE s_d3d12_get_debug_interface;
-static PFN_D3D12_SERIALIZE_ROOT_SIGNATURE s_d3d12_serialize_root_signature;
-
-static bool LoadD3D12Library()
-{
-	if ((s_d3d12_library = LoadLibraryW(L"d3d12.dll")) == nullptr ||
-		(s_d3d12_create_device =
-				reinterpret_cast<PFN_D3D12_CREATE_DEVICE>(GetProcAddress(s_d3d12_library, "D3D12CreateDevice"))) == nullptr ||
-		(s_d3d12_get_debug_interface = reinterpret_cast<PFN_D3D12_GET_DEBUG_INTERFACE>(
-			 GetProcAddress(s_d3d12_library, "D3D12GetDebugInterface"))) == nullptr ||
-		(s_d3d12_serialize_root_signature = reinterpret_cast<PFN_D3D12_SERIALIZE_ROOT_SIGNATURE>(
-			 GetProcAddress(s_d3d12_library, "D3D12SerializeRootSignature"))) == nullptr)
-	{
-		Console.Error("d3d12.dll could not be loaded.");
-		s_d3d12_create_device = nullptr;
-		s_d3d12_get_debug_interface = nullptr;
-		s_d3d12_serialize_root_signature = nullptr;
-		if (s_d3d12_library)
-			FreeLibrary(s_d3d12_library);
-		s_d3d12_library = nullptr;
-		return false;
-	}
-
-	return true;
-}
-
-static void UnloadD3D12Library()
-{
-	s_d3d12_serialize_root_signature = nullptr;
-	s_d3d12_get_debug_interface = nullptr;
-	s_d3d12_create_device = nullptr;
-	if (s_d3d12_library)
-	{
-		FreeLibrary(s_d3d12_library);
-		s_d3d12_library = nullptr;
-	}
-}
-
-Context::Context() = default;
-
-Context::~Context()
+D3D12Context::~D3D12Context()
 {
 	DestroyResources();
 }
 
-Context::ComPtr<ID3DBlob> Context::SerializeRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc)
+D3D12Context::ComPtr<ID3DBlob> D3D12Context::SerializeRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc)
 {
 	ComPtr<ID3DBlob> blob;
 	ComPtr<ID3DBlob> error_blob;
-	const HRESULT hr = s_d3d12_serialize_root_signature(desc, D3D_ROOT_SIGNATURE_VERSION_1, blob.put(),
-		error_blob.put());
+	const HRESULT hr = D3D12SerializeRootSignature(desc, D3D_ROOT_SIGNATURE_VERSION_1, blob.put(), error_blob.put());
 	if (FAILED(hr))
 	{
 		Console.Error("D3D12SerializeRootSignature() failed: %08X", hr);
@@ -98,7 +54,7 @@ Context::ComPtr<ID3DBlob> Context::SerializeRootSignature(const D3D12_ROOT_SIGNA
 	return blob;
 }
 
-D3D12::Context::ComPtr<ID3D12RootSignature> Context::CreateRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc)
+D3D12Context::ComPtr<ID3D12RootSignature> D3D12Context::CreateRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc)
 {
 	ComPtr<ID3DBlob> blob = SerializeRootSignature(desc);
 	if (!blob)
@@ -116,7 +72,7 @@ D3D12::Context::ComPtr<ID3D12RootSignature> Context::CreateRootSignature(const D
 	return rs;
 }
 
-bool Context::SupportsTextureFormat(DXGI_FORMAT format)
+bool D3D12Context::SupportsTextureFormat(DXGI_FORMAT format)
 {
 	constexpr u32 required = D3D12_FORMAT_SUPPORT1_TEXTURE2D | D3D12_FORMAT_SUPPORT1_SHADER_SAMPLE;
 
@@ -125,17 +81,11 @@ bool Context::SupportsTextureFormat(DXGI_FORMAT format)
 		   (support.Support1 & required) == required;
 }
 
-bool Context::Create(IDXGIFactory5* dxgi_factory, IDXGIAdapter1* adapter, bool enable_debug_layer)
+bool D3D12Context::Create(IDXGIFactory5* dxgi_factory, IDXGIAdapter1* adapter, bool enable_debug_layer)
 {
 	pxAssertRel(!g_d3d12_context, "No context exists");
 
-	if (!LoadD3D12Library())
-	{
-		Console.Error("Failed to load D3D12 library");
-		return false;
-	}
-
-	g_d3d12_context.reset(new Context());
+	g_d3d12_context.reset(new D3D12Context());
 	if (!g_d3d12_context->CreateDevice(dxgi_factory, adapter, enable_debug_layer) ||
 		!g_d3d12_context->CreateCommandQueue() || !g_d3d12_context->CreateAllocator() ||
 		!g_d3d12_context->CreateFence() || !g_d3d12_context->CreateDescriptorHeaps() ||
@@ -149,15 +99,13 @@ bool Context::Create(IDXGIFactory5* dxgi_factory, IDXGIAdapter1* adapter, bool e
 	return true;
 }
 
-void Context::Destroy()
+void D3D12Context::Destroy()
 {
 	if (g_d3d12_context)
 		g_d3d12_context.reset();
-
-	UnloadD3D12Library();
 }
 
-u32 Context::GetAdapterVendorID() const
+u32 D3D12Context::GetAdapterVendorID() const
 {
 	if (!m_adapter)
 		return 0;
@@ -169,14 +117,14 @@ u32 Context::GetAdapterVendorID() const
 	return desc.VendorId;
 }
 
-bool Context::CreateDevice(IDXGIFactory5* dxgi_factory, IDXGIAdapter1* adapter, bool enable_debug_layer)
+bool D3D12Context::CreateDevice(IDXGIFactory5* dxgi_factory, IDXGIAdapter1* adapter, bool enable_debug_layer)
 {
 	HRESULT hr;
 
 	// Enabling the debug layer will fail if the Graphics Tools feature is not installed.
 	if (enable_debug_layer)
 	{
-		hr = s_d3d12_get_debug_interface(IID_PPV_ARGS(&m_debug_interface));
+		hr = D3D12GetDebugInterface(IID_PPV_ARGS(&m_debug_interface));
 		if (SUCCEEDED(hr))
 		{
 			m_debug_interface->EnableDebugLayer();
@@ -189,7 +137,7 @@ bool Context::CreateDevice(IDXGIFactory5* dxgi_factory, IDXGIAdapter1* adapter, 
 	}
 
 	// Create the actual device.
-	hr = s_d3d12_create_device(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device));
+	hr = D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device));
 	if (FAILED(hr))
 	{
 		Console.Error("Failed to create D3D12 device: %08X", hr);
@@ -229,21 +177,23 @@ bool Context::CreateDevice(IDXGIFactory5* dxgi_factory, IDXGIAdapter1* adapter, 
 	return true;
 }
 
-bool Context::CreateCommandQueue()
+bool D3D12Context::CreateCommandQueue()
 {
-	const D3D12_COMMAND_QUEUE_DESC queue_desc = {D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_QUEUE_PRIORITY_NORMAL,
-		D3D12_COMMAND_QUEUE_FLAG_NONE};
+	const D3D12_COMMAND_QUEUE_DESC queue_desc = {
+		D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAG_NONE};
 	HRESULT hr = m_device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&m_command_queue));
 	pxAssertRel(SUCCEEDED(hr), "Create command queue");
 	return SUCCEEDED(hr);
 }
 
-bool Context::CreateAllocator()
+bool D3D12Context::CreateAllocator()
 {
 	D3D12MA::ALLOCATOR_DESC allocatorDesc = {};
 	allocatorDesc.pDevice = m_device.get();
 	allocatorDesc.pAdapter = m_adapter.get();
-	allocatorDesc.Flags = D3D12MA::ALLOCATOR_FLAG_SINGLETHREADED | D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED /* | D3D12MA::ALLOCATOR_FLAG_ALWAYS_COMMITTED*/;
+	allocatorDesc.Flags =
+		D3D12MA::ALLOCATOR_FLAG_SINGLETHREADED |
+		D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED /* | D3D12MA::ALLOCATOR_FLAG_ALWAYS_COMMITTED*/;
 
 	const HRESULT hr = D3D12MA::CreateAllocator(&allocatorDesc, m_allocator.put());
 	if (FAILED(hr))
@@ -255,7 +205,7 @@ bool Context::CreateAllocator()
 	return true;
 }
 
-bool Context::CreateFence()
+bool D3D12Context::CreateFence()
 {
 	HRESULT hr = m_device->CreateFence(m_completed_fence_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence));
 	pxAssertRel(SUCCEEDED(hr), "Create fence");
@@ -270,7 +220,7 @@ bool Context::CreateFence()
 	return true;
 }
 
-bool Context::CreateDescriptorHeaps()
+bool D3D12Context::CreateDescriptorHeaps()
 {
 	static constexpr size_t MAX_SRVS = 32768;
 	static constexpr size_t MAX_RTVS = 16384;
@@ -286,8 +236,8 @@ bool Context::CreateDescriptorHeaps()
 	}
 
 	// Allocate null SRV descriptor for unbound textures.
-	constexpr D3D12_SHADER_RESOURCE_VIEW_DESC null_srv_desc = {DXGI_FORMAT_R8G8B8A8_UNORM, D3D12_SRV_DIMENSION_TEXTURE2D,
-		D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING};
+	constexpr D3D12_SHADER_RESOURCE_VIEW_DESC null_srv_desc = {
+		DXGI_FORMAT_R8G8B8A8_UNORM, D3D12_SRV_DIMENSION_TEXTURE2D, D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING};
 
 	if (!m_descriptor_heap_manager.Allocate(&m_null_srv_descriptor))
 	{
@@ -299,7 +249,7 @@ bool Context::CreateDescriptorHeaps()
 	return true;
 }
 
-bool Context::CreateCommandLists()
+bool D3D12Context::CreateCommandLists()
 {
 	static constexpr size_t MAX_GPU_SRVS = 32768;
 	static constexpr size_t MAX_GPU_SAMPLERS = 2048;
@@ -311,15 +261,14 @@ bool Context::CreateCommandLists()
 
 		for (u32 i = 0; i < 2; i++)
 		{
-			hr = m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
-				IID_PPV_ARGS(res.command_allocators[i].put()));
+			hr = m_device->CreateCommandAllocator(
+				D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(res.command_allocators[i].put()));
 			pxAssertRel(SUCCEEDED(hr), "Create command allocator");
 			if (FAILED(hr))
 				return false;
 
-			hr = m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
-				res.command_allocators[i].get(), nullptr,
-				IID_PPV_ARGS(res.command_lists[i].put()));
+			hr = m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, res.command_allocators[i].get(),
+				nullptr, IID_PPV_ARGS(res.command_lists[i].put()));
 			if (FAILED(hr))
 			{
 				Console.Error("Failed to create command list: %08X", hr);
@@ -350,12 +299,12 @@ bool Context::CreateCommandLists()
 	return true;
 }
 
-bool Context::CreateTextureStreamBuffer()
+bool D3D12Context::CreateTextureStreamBuffer()
 {
 	return m_texture_stream_buffer.Create(TEXTURE_UPLOAD_BUFFER_SIZE);
 }
 
-void Context::MoveToNextCommandList()
+void D3D12Context::MoveToNextCommandList()
 {
 	m_current_command_list = (m_current_command_list + 1) % NUM_COMMAND_LISTS;
 	m_current_fence_value++;
@@ -385,7 +334,8 @@ void Context::MoveToNextCommandList()
 		{
 			u64 timestamps[2];
 			std::memcpy(timestamps, static_cast<const u8*>(map) + offset, sizeof(timestamps));
-			m_accumulated_gpu_time += static_cast<float>(static_cast<double>(timestamps[1] - timestamps[0]) / m_timestamp_frequency);
+			m_accumulated_gpu_time +=
+				static_cast<float>(static_cast<double>(timestamps[1] - timestamps[0]) / m_timestamp_frequency);
 
 			const D3D12_RANGE write_range = {};
 			m_timestamp_query_buffer->Unmap(0, &write_range);
@@ -403,13 +353,14 @@ void Context::MoveToNextCommandList()
 			m_current_command_list * NUM_TIMESTAMP_QUERIES_PER_CMDLIST);
 	}
 
-	ID3D12DescriptorHeap* heaps[2] = {res.descriptor_allocator.GetDescriptorHeap(), res.sampler_allocator.GetDescriptorHeap()};
+	ID3D12DescriptorHeap* heaps[2] = {
+		res.descriptor_allocator.GetDescriptorHeap(), res.sampler_allocator.GetDescriptorHeap()};
 	res.command_lists[1]->SetDescriptorHeaps(std::size(heaps), heaps);
 
 	m_allocator->SetCurrentFrameIndex(static_cast<UINT>(m_current_fence_value));
 }
 
-ID3D12GraphicsCommandList4* Context::GetInitCommandList()
+ID3D12GraphicsCommandList4* D3D12Context::GetInitCommandList()
 {
 	CommandListResources& res = m_command_lists[m_current_command_list];
 	if (!res.init_command_list_used)
@@ -425,7 +376,7 @@ ID3D12GraphicsCommandList4* Context::GetInitCommandList()
 	return res.command_lists[0].get();
 }
 
-bool Context::ExecuteCommandList(WaitType wait_for_completion)
+bool D3D12Context::ExecuteCommandList(WaitType wait_for_completion)
 {
 	CommandListResources& res = m_command_lists[m_current_command_list];
 	HRESULT hr;
@@ -480,13 +431,13 @@ bool Context::ExecuteCommandList(WaitType wait_for_completion)
 	return true;
 }
 
-void Context::InvalidateSamplerGroups()
+void D3D12Context::InvalidateSamplerGroups()
 {
 	for (CommandListResources& res : m_command_lists)
 		res.sampler_allocator.InvalidateCache();
 }
 
-void Context::DeferObjectDestruction(ID3D12DeviceChild* resource)
+void D3D12Context::DeferObjectDestruction(ID3D12DeviceChild* resource)
 {
 	if (!resource)
 		return;
@@ -495,7 +446,7 @@ void Context::DeferObjectDestruction(ID3D12DeviceChild* resource)
 	m_command_lists[m_current_command_list].pending_resources.emplace_back(nullptr, resource);
 }
 
-void Context::DeferResourceDestruction(D3D12MA::Allocation* allocation, ID3D12Resource* resource)
+void D3D12Context::DeferResourceDestruction(D3D12MA::Allocation* allocation, ID3D12Resource* resource)
 {
 	if (!resource)
 		return;
@@ -507,21 +458,21 @@ void Context::DeferResourceDestruction(D3D12MA::Allocation* allocation, ID3D12Re
 	m_command_lists[m_current_command_list].pending_resources.emplace_back(allocation, resource);
 }
 
-void Context::DeferDescriptorDestruction(DescriptorHeapManager& manager, u32 index)
+void D3D12Context::DeferDescriptorDestruction(D3D12DescriptorHeapManager& manager, u32 index)
 {
 	m_command_lists[m_current_command_list].pending_descriptors.emplace_back(manager, index);
 }
 
-void Context::DeferDescriptorDestruction(DescriptorHeapManager& manager, DescriptorHandle* handle)
+void D3D12Context::DeferDescriptorDestruction(D3D12DescriptorHeapManager& manager, D3D12DescriptorHandle* handle)
 {
-	if (handle->index == DescriptorHandle::INVALID_INDEX)
+	if (handle->index == D3D12DescriptorHandle::INVALID_INDEX)
 		return;
 
 	m_command_lists[m_current_command_list].pending_descriptors.emplace_back(manager, handle->index);
 	handle->Clear();
 }
 
-void Context::DestroyPendingResources(CommandListResources& cmdlist)
+void D3D12Context::DestroyPendingResources(CommandListResources& cmdlist)
 {
 	for (const auto& dd : cmdlist.pending_descriptors)
 		dd.first.Free(dd.second);
@@ -536,7 +487,7 @@ void Context::DestroyPendingResources(CommandListResources& cmdlist)
 	cmdlist.pending_resources.clear();
 }
 
-void Context::DestroyResources()
+void D3D12Context::DestroyResources()
 {
 	if (m_command_queue)
 	{
@@ -568,7 +519,7 @@ void Context::DestroyResources()
 	m_device.reset();
 }
 
-void Context::WaitForFence(u64 fence, bool spin)
+void D3D12Context::WaitForFence(u64 fence, bool spin)
 {
 	if (m_completed_fence_value >= fence)
 		return;
@@ -607,7 +558,7 @@ void Context::WaitForFence(u64 fence, bool spin)
 	}
 }
 
-void Context::WaitForGPUIdle()
+void D3D12Context::WaitForGPUIdle()
 {
 	u32 index = (m_current_command_list + 1) % NUM_COMMAND_LISTS;
 	for (u32 i = 0; i < (NUM_COMMAND_LISTS - 1); i++)
@@ -617,7 +568,7 @@ void Context::WaitForGPUIdle()
 	}
 }
 
-bool Context::CreateTimestampQuery()
+bool D3D12Context::CreateTimestampQuery()
 {
 	constexpr u32 QUERY_COUNT = NUM_TIMESTAMP_QUERIES_PER_CMDLIST * NUM_COMMAND_LISTS;
 	constexpr u32 BUFFER_SIZE = sizeof(u64) * QUERY_COUNT;
@@ -631,9 +582,8 @@ bool Context::CreateTimestampQuery()
 	}
 
 	const D3D12MA::ALLOCATION_DESC allocation_desc = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_READBACK};
-	const D3D12_RESOURCE_DESC resource_desc = {
-		D3D12_RESOURCE_DIMENSION_BUFFER, 0, BUFFER_SIZE, 1, 1, 1, DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-		D3D12_RESOURCE_FLAG_NONE};
+	const D3D12_RESOURCE_DESC resource_desc = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, BUFFER_SIZE, 1, 1, 1,
+		DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE};
 	hr = m_allocator->CreateResource(&allocation_desc, &resource_desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
 		m_timestamp_query_allocation.put(), IID_PPV_ARGS(m_timestamp_query_buffer.put()));
 	if (FAILED(hr))
@@ -654,35 +604,32 @@ bool Context::CreateTimestampQuery()
 	return true;
 }
 
-float Context::GetAndResetAccumulatedGPUTime()
+float D3D12Context::GetAndResetAccumulatedGPUTime()
 {
 	const float time = m_accumulated_gpu_time;
 	m_accumulated_gpu_time = 0.0f;
 	return time;
 }
 
-void Context::SetEnableGPUTiming(bool enabled)
+void D3D12Context::SetEnableGPUTiming(bool enabled)
 {
 	m_gpu_timing_enabled = enabled;
 }
 
-bool Context::AllocatePreinitializedGPUBuffer(u32 size, ID3D12Resource** gpu_buffer,
+bool D3D12Context::AllocatePreinitializedGPUBuffer(u32 size, ID3D12Resource** gpu_buffer,
 	D3D12MA::Allocation** gpu_allocation, const std::function<void(void*)>& fill_callback)
 {
 	// Try to place the fixed index buffer in GPU local memory.
 	// Use the staging buffer to copy into it.
-	const D3D12_RESOURCE_DESC rd = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, size, 1, 1, 1,
-		DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-		D3D12_RESOURCE_FLAG_NONE};
+	const D3D12_RESOURCE_DESC rd = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, size, 1, 1, 1, DXGI_FORMAT_UNKNOWN, {1, 0},
+		D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE};
 
-	const D3D12MA::ALLOCATION_DESC cpu_ad = {
-		D3D12MA::ALLOCATION_FLAG_NONE,
-		D3D12_HEAP_TYPE_UPLOAD};
+	const D3D12MA::ALLOCATION_DESC cpu_ad = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD};
 
 	ComPtr<ID3D12Resource> cpu_buffer;
 	ComPtr<D3D12MA::Allocation> cpu_allocation;
-	HRESULT hr = m_allocator->CreateResource(&cpu_ad, &rd, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-		cpu_allocation.put(), IID_PPV_ARGS(cpu_buffer.put()));
+	HRESULT hr = m_allocator->CreateResource(
+		&cpu_ad, &rd, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, cpu_allocation.put(), IID_PPV_ARGS(cpu_buffer.put()));
 	pxAssertMsg(SUCCEEDED(hr), "Allocate CPU buffer");
 	if (FAILED(hr))
 		return false;
@@ -697,12 +644,10 @@ bool Context::AllocatePreinitializedGPUBuffer(u32 size, ID3D12Resource** gpu_buf
 	fill_callback(mapped);
 	cpu_buffer->Unmap(0, &write_range);
 
-	const D3D12MA::ALLOCATION_DESC gpu_ad = {
-		D3D12MA::ALLOCATION_FLAG_COMMITTED,
-		D3D12_HEAP_TYPE_DEFAULT};
+	const D3D12MA::ALLOCATION_DESC gpu_ad = {D3D12MA::ALLOCATION_FLAG_COMMITTED, D3D12_HEAP_TYPE_DEFAULT};
 
-	hr = m_allocator->CreateResource(&gpu_ad, &rd, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
-		gpu_allocation, IID_PPV_ARGS(gpu_buffer));
+	hr = m_allocator->CreateResource(
+		&gpu_ad, &rd, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, gpu_allocation, IID_PPV_ARGS(gpu_buffer));
 	pxAssertMsg(SUCCEEDED(hr), "Allocate GPU buffer");
 	if (FAILED(hr))
 		return false;
@@ -719,3 +664,59 @@ bool Context::AllocatePreinitializedGPUBuffer(u32 size, ID3D12Resource** gpu_buf
 	DeferResourceDestruction(cpu_allocation.get(), cpu_buffer.get());
 	return true;
 }
+
+u32 D3D12::GetTexelSize(DXGI_FORMAT format)
+{
+	switch (format)
+	{
+		case DXGI_FORMAT_R32G32B32A32_FLOAT:
+		case DXGI_FORMAT_BC1_UNORM:
+		case DXGI_FORMAT_BC2_UNORM:
+		case DXGI_FORMAT_BC3_UNORM:
+		case DXGI_FORMAT_BC7_UNORM:
+			return 16;
+
+		case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+			return 4;
+
+		case DXGI_FORMAT_R8G8B8A8_UNORM:
+		case DXGI_FORMAT_R8G8B8A8_SNORM:
+		case DXGI_FORMAT_R8G8B8A8_TYPELESS:
+		case DXGI_FORMAT_B8G8R8A8_UNORM:
+		case DXGI_FORMAT_B8G8R8A8_TYPELESS:
+		case DXGI_FORMAT_R32_UINT:
+		case DXGI_FORMAT_R32_SINT:
+			return 4;
+
+		case DXGI_FORMAT_B5G5R5A1_UNORM:
+		case DXGI_FORMAT_B5G6R5_UNORM:
+		case DXGI_FORMAT_R16_UINT:
+		case DXGI_FORMAT_R16_SINT:
+			return 2;
+
+		case DXGI_FORMAT_A8_UNORM:
+		case DXGI_FORMAT_R8_UNORM:
+			return 1;
+
+		default:
+			pxFailRel("Unknown format");
+			return 1;
+	}
+}
+
+#ifdef _DEBUG
+
+void D3D12::SetObjectName(ID3D12Object* object, const char* name)
+{
+	object->SetName(StringUtil::UTF8StringToWideString(name).c_str());
+}
+
+void D3D12::SetObjectNameFormatted(ID3D12Object* object, const char* format, ...)
+{
+	std::va_list ap;
+	va_start(ap, format);
+	SetObjectName(object, StringUtil::StdStringFromFormatV(format, ap).c_str());
+	va_end(ap);
+}
+
+#endif

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -13,22 +13,19 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "common/PrecompiledHeader.h"
+#include "PrecompiledHeader.h"
 
-#include "common/D3D12/DescriptorHeapManager.h"
+#include "GS/Renderers/DX12/D3D12DescriptorHeapManager.h"
 #include "common/Assertions.h"
 
-using namespace D3D12;
+D3D12DescriptorHeapManager::D3D12DescriptorHeapManager() = default;
+D3D12DescriptorHeapManager::~D3D12DescriptorHeapManager() = default;
 
-DescriptorHeapManager::DescriptorHeapManager() = default;
-DescriptorHeapManager::~DescriptorHeapManager() = default;
-
-bool DescriptorHeapManager::Create(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, u32 num_descriptors,
-	bool shader_visible)
+bool D3D12DescriptorHeapManager::Create(
+	ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, u32 num_descriptors, bool shader_visible)
 {
 	D3D12_DESCRIPTOR_HEAP_DESC desc = {type, static_cast<UINT>(num_descriptors),
-		shader_visible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE :
-                         D3D12_DESCRIPTOR_HEAP_FLAG_NONE};
+		shader_visible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE};
 
 	HRESULT hr = device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(m_descriptor_heap.put()));
 	pxAssertRel(SUCCEEDED(hr), "Create descriptor heap");
@@ -52,7 +49,7 @@ bool DescriptorHeapManager::Create(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_T
 	return true;
 }
 
-void DescriptorHeapManager::Destroy()
+void D3D12DescriptorHeapManager::Destroy()
 {
 	for (BitSetType& bs : m_free_slots)
 	{
@@ -68,7 +65,7 @@ void DescriptorHeapManager::Destroy()
 	m_free_slots.clear();
 }
 
-bool DescriptorHeapManager::Allocate(DescriptorHandle* handle)
+bool D3D12DescriptorHeapManager::Allocate(D3D12DescriptorHandle* handle)
 {
 	// Start past the temporary slots, no point in searching those.
 	for (u32 group = 0; group < m_free_slots.size(); group++)
@@ -97,7 +94,7 @@ bool DescriptorHeapManager::Allocate(DescriptorHandle* handle)
 	return false;
 }
 
-void DescriptorHeapManager::Free(u32 index)
+void D3D12DescriptorHeapManager::Free(u32 index)
 {
 	pxAssert(index < m_num_descriptors);
 
@@ -106,23 +103,22 @@ void DescriptorHeapManager::Free(u32 index)
 	m_free_slots[group][bit] = true;
 }
 
-void DescriptorHeapManager::Free(DescriptorHandle* handle)
+void D3D12DescriptorHeapManager::Free(D3D12DescriptorHandle* handle)
 {
-	if (handle->index == DescriptorHandle::INVALID_INDEX)
+	if (handle->index == D3D12DescriptorHandle::INVALID_INDEX)
 		return;
 
 	Free(handle->index);
 	handle->Clear();
 }
 
-DescriptorAllocator::DescriptorAllocator() = default;
-DescriptorAllocator::~DescriptorAllocator() = default;
+D3D12DescriptorAllocator::D3D12DescriptorAllocator() = default;
+D3D12DescriptorAllocator::~D3D12DescriptorAllocator() = default;
 
-bool DescriptorAllocator::Create(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type,
-	u32 num_descriptors)
+bool D3D12DescriptorAllocator::Create(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, u32 num_descriptors)
 {
-	const D3D12_DESCRIPTOR_HEAP_DESC desc = {type, static_cast<UINT>(num_descriptors),
-		D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE};
+	const D3D12_DESCRIPTOR_HEAP_DESC desc = {
+		type, static_cast<UINT>(num_descriptors), D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE};
 	const HRESULT hr = device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_descriptor_heap));
 	pxAssertRel(SUCCEEDED(hr), "Creating descriptor heap for linear allocator");
 	if (FAILED(hr))
@@ -135,7 +131,7 @@ bool DescriptorAllocator::Create(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYP
 	return true;
 }
 
-void DescriptorAllocator::Destroy()
+void D3D12DescriptorAllocator::Destroy()
 {
 	m_descriptor_heap.reset();
 	m_descriptor_increment_size = 0;
@@ -145,21 +141,19 @@ void DescriptorAllocator::Destroy()
 	m_heap_base_gpu = {};
 }
 
-bool DescriptorAllocator::Allocate(u32 num_handles, DescriptorHandle* out_base_handle)
+bool D3D12DescriptorAllocator::Allocate(u32 num_handles, D3D12DescriptorHandle* out_base_handle)
 {
 	if ((m_current_offset + num_handles) > m_num_descriptors)
 		return false;
 
 	out_base_handle->index = m_current_offset;
-	out_base_handle->cpu_handle.ptr =
-		m_heap_base_cpu.ptr + m_current_offset * m_descriptor_increment_size;
-	out_base_handle->gpu_handle.ptr =
-		m_heap_base_gpu.ptr + m_current_offset * m_descriptor_increment_size;
+	out_base_handle->cpu_handle.ptr = m_heap_base_cpu.ptr + m_current_offset * m_descriptor_increment_size;
+	out_base_handle->gpu_handle.ptr = m_heap_base_gpu.ptr + m_current_offset * m_descriptor_increment_size;
 	m_current_offset += num_handles;
 	return true;
 }
 
-void DescriptorAllocator::Reset()
+void D3D12DescriptorAllocator::Reset()
 {
 	m_current_offset = 0;
 }

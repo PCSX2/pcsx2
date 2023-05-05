@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -13,17 +13,21 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "common/PrecompiledHeader.h"
+#include "PrecompiledHeader.h"
 
-#include "common/D3D12/ShaderCache.h"
-#include "common/D3D11/ShaderCompiler.h"
+#include "GS/Renderers/DX12/D3D12ShaderCache.h"
+#include "GS/Renderers/DX11/D3D.h"
+#include "GS/GS.h"
+
+#include "Config.h"
+#include "ShaderCacheVersion.h"
+
 #include "common/FileSystem.h"
 #include "common/Console.h"
 #include "common/MD5Digest.h"
+#include "common/Path.h"
 
 #include <d3dcompiler.h>
-
-using namespace D3D12;
 
 #pragma pack(push, 1)
 struct CacheIndexEntry
@@ -41,60 +45,59 @@ struct CacheIndexEntry
 };
 #pragma pack(pop)
 
-ShaderCache::ShaderCache() = default;
+D3D12ShaderCache::D3D12ShaderCache() = default;
 
-ShaderCache::~ShaderCache()
+D3D12ShaderCache::~D3D12ShaderCache()
 {
 	Close();
 }
 
-bool ShaderCache::CacheIndexKey::operator==(const CacheIndexKey& key) const
+bool D3D12ShaderCache::CacheIndexKey::operator==(const CacheIndexKey& key) const
 {
 	return (source_hash_low == key.source_hash_low && source_hash_high == key.source_hash_high &&
 			macro_hash_low == key.macro_hash_low && macro_hash_high == key.macro_hash_high &&
-			entry_point_low == key.entry_point_low && entry_point_high == key.entry_point_high &&
-			type == key.type && source_length == key.source_length);
+			entry_point_low == key.entry_point_low && entry_point_high == key.entry_point_high && type == key.type &&
+			source_length == key.source_length);
 }
 
-bool ShaderCache::CacheIndexKey::operator!=(const CacheIndexKey& key) const
+bool D3D12ShaderCache::CacheIndexKey::operator!=(const CacheIndexKey& key) const
 {
 	return (source_hash_low != key.source_hash_low || source_hash_high != key.source_hash_high ||
 			macro_hash_low != key.macro_hash_low || macro_hash_high != key.macro_hash_high ||
-			entry_point_low != key.entry_point_low || entry_point_high != key.entry_point_high ||
-			type != key.type || source_length != key.source_length);
+			entry_point_low != key.entry_point_low || entry_point_high != key.entry_point_high || type != key.type ||
+			source_length != key.source_length);
 }
 
-bool ShaderCache::Open(std::string_view base_path, D3D_FEATURE_LEVEL feature_level, u32 version, bool debug)
+bool D3D12ShaderCache::Open(D3D_FEATURE_LEVEL feature_level, bool debug)
 {
-	m_base_path = base_path;
 	m_feature_level = feature_level;
-	m_data_version = version;
 	m_debug = debug;
 
 	bool result = true;
 
-	if (!base_path.empty())
+	if (!GSConfig.DisableShaderCache)
 	{
-		const std::string base_shader_filename = GetCacheBaseFileName(base_path, "shaders", feature_level, debug);
+		const std::string base_shader_filename = GetCacheBaseFileName("shaders", feature_level, debug);
 		const std::string shader_index_filename = base_shader_filename + ".idx";
 		const std::string shader_blob_filename = base_shader_filename + ".bin";
 
-		if (!ReadExisting(shader_index_filename, shader_blob_filename, m_shader_index_file, m_shader_blob_file,
-				m_shader_index))
+		if (!ReadExisting(
+				shader_index_filename, shader_blob_filename, m_shader_index_file, m_shader_blob_file, m_shader_index))
 		{
 			result = CreateNew(shader_index_filename, shader_blob_filename, m_shader_index_file, m_shader_blob_file);
 		}
 
 		if (result)
 		{
-			const std::string base_pipelines_filename = GetCacheBaseFileName(base_path, "pipelines", feature_level, debug);
+			const std::string base_pipelines_filename = GetCacheBaseFileName("pipelines", feature_level, debug);
 			const std::string pipelines_index_filename = base_pipelines_filename + ".idx";
 			const std::string pipelines_blob_filename = base_pipelines_filename + ".bin";
 
-			if (!ReadExisting(pipelines_index_filename, pipelines_blob_filename, m_pipeline_index_file, m_pipeline_blob_file,
-					m_pipeline_index))
+			if (!ReadExisting(pipelines_index_filename, pipelines_blob_filename, m_pipeline_index_file,
+					m_pipeline_blob_file, m_pipeline_index))
 			{
-				result = CreateNew(pipelines_index_filename, pipelines_blob_filename, m_pipeline_index_file, m_pipeline_blob_file);
+				result = CreateNew(
+					pipelines_index_filename, pipelines_blob_filename, m_pipeline_index_file, m_pipeline_blob_file);
 			}
 		}
 	}
@@ -102,7 +105,7 @@ bool ShaderCache::Open(std::string_view base_path, D3D_FEATURE_LEVEL feature_lev
 	return result;
 }
 
-void ShaderCache::Close()
+void D3D12ShaderCache::Close()
 {
 	if (m_pipeline_index_file)
 	{
@@ -124,11 +127,9 @@ void ShaderCache::Close()
 		std::fclose(m_shader_blob_file);
 		m_shader_blob_file = nullptr;
 	}
-
-	m_base_path = {};
 }
 
-void ShaderCache::InvalidatePipelineCache()
+void D3D12ShaderCache::InvalidatePipelineCache()
 {
 	m_pipeline_index.clear();
 	if (m_pipeline_blob_file)
@@ -143,15 +144,17 @@ void ShaderCache::InvalidatePipelineCache()
 		m_pipeline_index_file = nullptr;
 	}
 
-	const std::string base_pipelines_filename =
-		GetCacheBaseFileName(m_base_path, "pipelines", m_feature_level, m_debug);
+	if (GSConfig.DisableShaderCache)
+		return;
+
+	const std::string base_pipelines_filename = GetCacheBaseFileName("pipelines", m_feature_level, m_debug);
 	const std::string pipelines_index_filename = base_pipelines_filename + ".idx";
 	const std::string pipelines_blob_filename = base_pipelines_filename + ".bin";
 	CreateNew(pipelines_index_filename, pipelines_blob_filename, m_pipeline_index_file, m_pipeline_blob_file);
 }
 
-bool ShaderCache::CreateNew(const std::string& index_filename, const std::string& blob_filename, std::FILE*& index_file,
-	std::FILE*& blob_file)
+bool D3D12ShaderCache::CreateNew(
+	const std::string& index_filename, const std::string& blob_filename, std::FILE*& index_file, std::FILE*& blob_file)
 {
 	if (FileSystem::FileExists(index_filename.c_str()))
 	{
@@ -171,9 +174,8 @@ bool ShaderCache::CreateNew(const std::string& index_filename, const std::string
 		return false;
 	}
 
-	const u32 index_version = FILE_VERSION;
-	if (std::fwrite(&index_version, sizeof(index_version), 1, index_file) != 1 ||
-		std::fwrite(&m_data_version, sizeof(m_data_version), 1, index_file) != 1)
+	const u32 file_version = SHADER_CACHE_VERSION;
+	if (std::fwrite(&file_version, sizeof(file_version), 1, index_file) != 1)
 	{
 		Console.Error("Failed to write version to index file '%s'", index_filename.c_str());
 		std::fclose(index_file);
@@ -195,7 +197,7 @@ bool ShaderCache::CreateNew(const std::string& index_filename, const std::string
 	return true;
 }
 
-bool ShaderCache::ReadExisting(const std::string& index_filename, const std::string& blob_filename,
+bool D3D12ShaderCache::ReadExisting(const std::string& index_filename, const std::string& blob_filename,
 	std::FILE*& index_file, std::FILE*& blob_file, CacheIndex& index)
 {
 	index_file = FileSystem::OpenCFile(index_filename.c_str(), "r+b");
@@ -213,9 +215,7 @@ bool ShaderCache::ReadExisting(const std::string& index_filename, const std::str
 	}
 
 	u32 file_version;
-	u32 data_version;
-	if (std::fread(&file_version, sizeof(file_version), 1, index_file) != 1 || file_version != FILE_VERSION ||
-		std::fread(&data_version, sizeof(data_version), 1, index_file) != 1 || data_version != m_data_version)
+	if (std::fread(&file_version, sizeof(file_version), 1, index_file) != 1 || file_version != SHADER_CACHE_VERSION)
 	{
 		Console.Error("Bad file version in '%s'", index_filename.c_str());
 		std::fclose(index_file);
@@ -238,7 +238,8 @@ bool ShaderCache::ReadExisting(const std::string& index_filename, const std::str
 	for (;;)
 	{
 		CacheIndexEntry entry;
-		if (std::fread(&entry, sizeof(entry), 1, index_file) != 1 || (entry.file_offset + entry.blob_size) > blob_file_size)
+		if (std::fread(&entry, sizeof(entry), 1, index_file) != 1 ||
+			(entry.file_offset + entry.blob_size) > blob_file_size)
 		{
 			if (std::feof(index_file))
 				break;
@@ -252,11 +253,9 @@ bool ShaderCache::ReadExisting(const std::string& index_filename, const std::str
 			return false;
 		}
 
-		const CacheIndexKey key{
-			entry.source_hash_low, entry.source_hash_high,
-			entry.macro_hash_low, entry.macro_hash_high,
-			entry.entry_point_low, entry.entry_point_high,
-			entry.source_length, static_cast<EntryType>(entry.shader_type)};
+		const CacheIndexKey key{entry.source_hash_low, entry.source_hash_high, entry.macro_hash_low,
+			entry.macro_hash_high, entry.entry_point_low, entry.entry_point_high, entry.source_length,
+			static_cast<EntryType>(entry.shader_type)};
 		const CacheIndexData data{entry.file_offset, entry.blob_size};
 		index.emplace(key, data);
 	}
@@ -268,11 +267,9 @@ bool ShaderCache::ReadExisting(const std::string& index_filename, const std::str
 	return true;
 }
 
-std::string ShaderCache::GetCacheBaseFileName(const std::string_view& base_path, const std::string_view& type,
-	D3D_FEATURE_LEVEL feature_level, bool debug)
+std::string D3D12ShaderCache::GetCacheBaseFileName(const std::string_view& type, D3D_FEATURE_LEVEL feature_level, bool debug)
 {
-	std::string base_filename(base_path);
-	base_filename += FS_OSPATH_SEPARATOR_STR "d3d12_";
+	std::string base_filename = "d3d12_";
 	base_filename += type;
 	base_filename += "_";
 
@@ -295,7 +292,7 @@ std::string ShaderCache::GetCacheBaseFileName(const std::string_view& base_path,
 	if (debug)
 		base_filename += "_debug";
 
-	return base_filename;
+	return Path::Combine(EmuFolders::Cache, base_filename);
 }
 
 union MD5Hash
@@ -308,8 +305,8 @@ union MD5Hash
 	u8 hash[16];
 };
 
-ShaderCache::CacheIndexKey ShaderCache::GetShaderCacheKey(EntryType type, const std::string_view& shader_code,
-	const D3D_SHADER_MACRO* macros, const char* entry_point)
+D3D12ShaderCache::CacheIndexKey D3D12ShaderCache::GetShaderCacheKey(
+	EntryType type, const std::string_view& shader_code, const D3D_SHADER_MACRO* macros, const char* entry_point)
 {
 	union
 	{
@@ -353,7 +350,7 @@ ShaderCache::CacheIndexKey ShaderCache::GetShaderCacheKey(EntryType type, const 
 	return key;
 }
 
-ShaderCache::CacheIndexKey ShaderCache::GetPipelineCacheKey(const D3D12_GRAPHICS_PIPELINE_STATE_DESC& gpdesc)
+D3D12ShaderCache::CacheIndexKey D3D12ShaderCache::GetPipelineCacheKey(const D3D12_GRAPHICS_PIPELINE_STATE_DESC& gpdesc)
 {
 	MD5Digest digest;
 	u32 length = sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC);
@@ -406,7 +403,7 @@ ShaderCache::CacheIndexKey ShaderCache::GetPipelineCacheKey(const D3D12_GRAPHICS
 	return CacheIndexKey{h.low, h.high, 0, 0, 0, 0, length, EntryType::GraphicsPipeline};
 }
 
-ShaderCache::CacheIndexKey ShaderCache::GetPipelineCacheKey(const D3D12_COMPUTE_PIPELINE_STATE_DESC& gpdesc)
+D3D12ShaderCache::CacheIndexKey D3D12ShaderCache::GetPipelineCacheKey(const D3D12_COMPUTE_PIPELINE_STATE_DESC& gpdesc)
 {
 	MD5Digest digest;
 	u32 length = sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC);
@@ -423,7 +420,7 @@ ShaderCache::CacheIndexKey ShaderCache::GetPipelineCacheKey(const D3D12_COMPUTE_
 	return CacheIndexKey{h.low, h.high, 0, 0, 0, 0, length, EntryType::ComputePipeline};
 }
 
-ShaderCache::ComPtr<ID3DBlob> ShaderCache::GetShaderBlob(EntryType type, std::string_view shader_code,
+D3D12ShaderCache::ComPtr<ID3DBlob> D3D12ShaderCache::GetShaderBlob(EntryType type, std::string_view shader_code,
 	const D3D_SHADER_MACRO* macros /* = nullptr */, const char* entry_point /* = "main" */)
 {
 	const auto key = GetShaderCacheKey(type, shader_code, macros, entry_point);
@@ -443,8 +440,8 @@ ShaderCache::ComPtr<ID3DBlob> ShaderCache::GetShaderBlob(EntryType type, std::st
 	return blob;
 }
 
-ShaderCache::ComPtr<ID3D12PipelineState> ShaderCache::GetPipelineState(ID3D12Device* device,
-	const D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc)
+D3D12ShaderCache::ComPtr<ID3D12PipelineState> D3D12ShaderCache::GetPipelineState(
+	ID3D12Device* device, const D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc)
 {
 	const auto key = GetPipelineCacheKey(desc);
 
@@ -477,8 +474,8 @@ ShaderCache::ComPtr<ID3D12PipelineState> ShaderCache::GetPipelineState(ID3D12Dev
 	return pso;
 }
 
-ShaderCache::ComPtr<ID3D12PipelineState> ShaderCache::GetPipelineState(ID3D12Device* device,
-	const D3D12_COMPUTE_PIPELINE_STATE_DESC& desc)
+D3D12ShaderCache::ComPtr<ID3D12PipelineState> D3D12ShaderCache::GetPipelineState(
+	ID3D12Device* device, const D3D12_COMPUTE_PIPELINE_STATE_DESC& desc)
 {
 	const auto key = GetPipelineCacheKey(desc);
 
@@ -511,21 +508,24 @@ ShaderCache::ComPtr<ID3D12PipelineState> ShaderCache::GetPipelineState(ID3D12Dev
 	return pso;
 }
 
-ShaderCache::ComPtr<ID3DBlob> ShaderCache::CompileAndAddShaderBlob(const CacheIndexKey& key, std::string_view shader_code,
-	const D3D_SHADER_MACRO* macros, const char* entry_point)
+D3D12ShaderCache::ComPtr<ID3DBlob> D3D12ShaderCache::CompileAndAddShaderBlob(
+	const CacheIndexKey& key, std::string_view shader_code, const D3D_SHADER_MACRO* macros, const char* entry_point)
 {
 	ComPtr<ID3DBlob> blob;
 
 	switch (key.type)
 	{
 		case EntryType::VertexShader:
-			blob = D3D11::ShaderCompiler::CompileShader(D3D11::ShaderCompiler::Type::Vertex, m_feature_level, m_debug, shader_code, macros, entry_point);
+			blob =
+				D3D::CompileShader(D3D::ShaderType::Vertex, m_feature_level, m_debug, shader_code, macros, entry_point);
 			break;
 		case EntryType::PixelShader:
-			blob = D3D11::ShaderCompiler::CompileShader(D3D11::ShaderCompiler::Type::Pixel, m_feature_level, m_debug, shader_code, macros, entry_point);
+			blob =
+				D3D::CompileShader(D3D::ShaderType::Pixel, m_feature_level, m_debug, shader_code, macros, entry_point);
 			break;
 		case EntryType::ComputeShader:
-			blob = D3D11::ShaderCompiler::CompileShader(D3D11::ShaderCompiler::Type::Compute, m_feature_level, m_debug, shader_code, macros, entry_point);
+			blob = D3D::CompileShader(
+				D3D::ShaderType::Compute, m_feature_level, m_debug, shader_code, macros, entry_point);
 			break;
 		default:
 			break;
@@ -565,9 +565,8 @@ ShaderCache::ComPtr<ID3DBlob> ShaderCache::CompileAndAddShaderBlob(const CacheIn
 	return blob;
 }
 
-ShaderCache::ComPtr<ID3D12PipelineState>
-ShaderCache::CompileAndAddPipeline(ID3D12Device* device, const CacheIndexKey& key,
-	const D3D12_GRAPHICS_PIPELINE_STATE_DESC& gpdesc)
+D3D12ShaderCache::ComPtr<ID3D12PipelineState> D3D12ShaderCache::CompileAndAddPipeline(
+	ID3D12Device* device, const CacheIndexKey& key, const D3D12_GRAPHICS_PIPELINE_STATE_DESC& gpdesc)
 {
 	ComPtr<ID3D12PipelineState> pso;
 	HRESULT hr = device->CreateGraphicsPipelineState(&gpdesc, IID_PPV_ARGS(pso.put()));
@@ -581,9 +580,8 @@ ShaderCache::CompileAndAddPipeline(ID3D12Device* device, const CacheIndexKey& ke
 	return pso;
 }
 
-ShaderCache::ComPtr<ID3D12PipelineState>
-ShaderCache::CompileAndAddPipeline(ID3D12Device* device, const CacheIndexKey& key,
-	const D3D12_COMPUTE_PIPELINE_STATE_DESC& gpdesc)
+D3D12ShaderCache::ComPtr<ID3D12PipelineState> D3D12ShaderCache::CompileAndAddPipeline(
+	ID3D12Device* device, const CacheIndexKey& key, const D3D12_COMPUTE_PIPELINE_STATE_DESC& gpdesc)
 {
 	ComPtr<ID3D12PipelineState> pso;
 	HRESULT hr = device->CreateComputePipelineState(&gpdesc, IID_PPV_ARGS(pso.put()));
@@ -597,7 +595,7 @@ ShaderCache::CompileAndAddPipeline(ID3D12Device* device, const CacheIndexKey& ke
 	return pso;
 }
 
-bool ShaderCache::AddPipelineToBlob(const CacheIndexKey& key, ID3D12PipelineState* pso)
+bool D3D12ShaderCache::AddPipelineToBlob(const CacheIndexKey& key, ID3D12PipelineState* pso)
 {
 	if (!m_pipeline_blob_file || std::fseek(m_pipeline_blob_file, 0, SEEK_END) != 0)
 		return false;

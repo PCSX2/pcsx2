@@ -154,33 +154,6 @@
     <ClCompile Include="Vulkan\vk_mem_alloc.cpp">
       <Filter>Source Files\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="D3D11\ShaderCache.cpp">
-      <Filter>Source Files\D3D11</Filter>
-    </ClCompile>
-    <ClCompile Include="D3D11\ShaderCompiler.cpp">
-      <Filter>Source Files\D3D11</Filter>
-    </ClCompile>
-    <ClCompile Include="D3D12\Context.cpp">
-      <Filter>Source Files\D3D12</Filter>
-    </ClCompile>
-    <ClCompile Include="D3D12\DescriptorHeapManager.cpp">
-      <Filter>Source Files\D3D12</Filter>
-    </ClCompile>
-    <ClCompile Include="D3D12\ShaderCache.cpp">
-      <Filter>Source Files\D3D12</Filter>
-    </ClCompile>
-    <ClCompile Include="D3D12\StreamBuffer.cpp">
-      <Filter>Source Files\D3D12</Filter>
-    </ClCompile>
-    <ClCompile Include="D3D12\Texture.cpp">
-      <Filter>Source Files\D3D12</Filter>
-    </ClCompile>
-    <ClCompile Include="D3D12\Util.cpp">
-      <Filter>Source Files\D3D12</Filter>
-    </ClCompile>
-    <ClCompile Include="D3D12\Builders.cpp">
-      <Filter>Source Files\D3D12</Filter>
-    </ClCompile>
     <ClCompile Include="StackWalker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -421,35 +394,8 @@
     <ClInclude Include="GL\ShaderCache.h">
       <Filter>Header Files\GL</Filter>
     </ClInclude>
-    <ClInclude Include="D3D11\ShaderCache.h">
-      <Filter>Header Files\D3D11</Filter>
-    </ClInclude>
-    <ClInclude Include="D3D11\ShaderCompiler.h">
-      <Filter>Header Files\D3D11</Filter>
-    </ClInclude>
     <ClInclude Include="ZipHelpers.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D3D12\Context.h">
-      <Filter>Header Files\D3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="D3D12\DescriptorHeapManager.h">
-      <Filter>Header Files\D3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="D3D12\ShaderCache.h">
-      <Filter>Header Files\D3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="D3D12\StreamBuffer.h">
-      <Filter>Header Files\D3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="D3D12\Texture.h">
-      <Filter>Header Files\D3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="D3D12\Util.h">
-      <Filter>Header Files\D3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="D3D12\Builders.h">
-      <Filter>Header Files\D3D12</Filter>
     </ClInclude>
     <ClInclude Include="CrashHandler.h">
       <Filter>Header Files</Filter>
@@ -512,18 +458,6 @@
     </Filter>
     <Filter Include="Header Files\Vulkan">
       <UniqueIdentifier>{46f36c68-0e0e-4acd-a621-3365e3167c4f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\D3D11">
-      <UniqueIdentifier>{f428aac0-c9c5-4b66-b218-9829dce45d13}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\D3D11">
-      <UniqueIdentifier>{764ddf71-77a6-41b8-bc65-1eef94b6997b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\D3D12">
-      <UniqueIdentifier>{96f78eb9-089b-4166-a23e-78c4e7d90b64}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\D3D12">
-      <UniqueIdentifier>{cf37623d-bb05-4c54-8c72-1c20b5331c69}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

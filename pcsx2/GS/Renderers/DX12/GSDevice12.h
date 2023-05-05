@@ -18,8 +18,8 @@
 #include "GS/GSVector.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/Renderers/DX12/GSTexture12.h"
-#include "common/D3D12/ShaderCache.h"
-#include "common/D3D12/StreamBuffer.h"
+#include "GS/Renderers/DX12/D3D12ShaderCache.h"
+#include "GS/Renderers/DX12/D3D12StreamBuffer.h"
 #include "common/HashCombine.h"
 #include <array>
 #include <unordered_map>
@@ -141,7 +141,7 @@ public:
 private:
 	ComPtr<IDXGIFactory5> m_dxgi_factory;
 	ComPtr<IDXGISwapChain1> m_swap_chain;
-	std::vector<D3D12::Texture> m_swap_chain_buffers;
+	std::vector<D3D12Texture> m_swap_chain_buffers;
 	u32 m_current_swap_chain_buffer = 0;
 
 	bool m_allow_tearing_supported = false;
@@ -152,17 +152,17 @@ private:
 	ComPtr<ID3D12RootSignature> m_tfx_root_signature;
 	ComPtr<ID3D12RootSignature> m_utility_root_signature;
 
-	D3D12::StreamBuffer m_vertex_stream_buffer;
-	D3D12::StreamBuffer m_index_stream_buffer;
-	D3D12::StreamBuffer m_vertex_constant_buffer;
-	D3D12::StreamBuffer m_pixel_constant_buffer;
+	D3D12StreamBuffer m_vertex_stream_buffer;
+	D3D12StreamBuffer m_index_stream_buffer;
+	D3D12StreamBuffer m_vertex_constant_buffer;
+	D3D12StreamBuffer m_pixel_constant_buffer;
 	ComPtr<ID3D12Resource> m_expand_index_buffer;
 	ComPtr<D3D12MA::Allocation> m_expand_index_buffer_allocation;
 
-	D3D12::DescriptorHandle m_point_sampler_cpu;
-	D3D12::DescriptorHandle m_linear_sampler_cpu;
+	D3D12DescriptorHandle m_point_sampler_cpu;
+	D3D12DescriptorHandle m_linear_sampler_cpu;
 
-	std::unordered_map<u32, D3D12::DescriptorHandle> m_samplers;
+	std::unordered_map<u32, D3D12DescriptorHandle> m_samplers;
 
 	std::array<ComPtr<ID3D12PipelineState>, static_cast<int>(ShaderConvert::Count)> m_convert{};
 	std::array<ComPtr<ID3D12PipelineState>, static_cast<int>(PresentShader::Count)> m_present{};
@@ -187,7 +187,7 @@ private:
 	GSHWDrawConfig::VSConstantBuffer m_vs_cb_cache;
 	GSHWDrawConfig::PSConstantBuffer m_ps_cb_cache;
 
-	D3D12::ShaderCache m_shader_cache;
+	D3D12ShaderCache m_shader_cache;
 	ComPtr<ID3DBlob> m_convert_vs;
 	std::string m_tfx_source;
 
@@ -208,9 +208,9 @@ private:
 
 	bool DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) final;
 
-	bool GetSampler(D3D12::DescriptorHandle* cpu_handle, GSHWDrawConfig::SamplerSelector ss);
+	bool GetSampler(D3D12DescriptorHandle* cpu_handle, GSHWDrawConfig::SamplerSelector ss);
 	void ClearSamplerCache() final;
-	bool GetTextureGroupDescriptors(D3D12::DescriptorHandle* gpu_handle, const D3D12::DescriptorHandle* cpu_handles, u32 count);
+	bool GetTextureGroupDescriptors(D3D12DescriptorHandle* gpu_handle, const D3D12DescriptorHandle* cpu_handles, u32 count);
 
 	const ID3DBlob* GetTFXVertexShader(GSHWDrawConfig::VSSelector sel);
 	const ID3DBlob* GetTFXPixelShader(const GSHWDrawConfig::PSSelector& sel);
@@ -341,13 +341,13 @@ public:
 	void SetStencilRef(u8 ref);
 
 	void SetUtilityRootSignature();
-	void SetUtilityTexture(GSTexture* tex, const D3D12::DescriptorHandle& sampler);
+	void SetUtilityTexture(GSTexture* tex, const D3D12DescriptorHandle& sampler);
 	void SetUtilityPushConstants(const void* data, u32 size);
 	void UnbindTexture(GSTexture12* tex);
 
 	// Assumes that the previous level has been transitioned to PS resource,
 	// and the current level has been transitioned to RT.
-	void RenderTextureMipmap(const D3D12::Texture& texture,
+	void RenderTextureMipmap(const D3D12Texture& texture,
 		u32 dst_level, u32 dst_width, u32 dst_height, u32 src_level, u32 src_width, u32 src_height);
 
 	// Ends a render pass if we're currently in one.
@@ -436,22 +436,22 @@ private:
 	bool m_in_render_pass = false;
 
 	std::array<D3D12_GPU_VIRTUAL_ADDRESS, NUM_TFX_CONSTANT_BUFFERS> m_tfx_constant_buffers{};
-	std::array<D3D12::DescriptorHandle, NUM_TOTAL_TFX_TEXTURES> m_tfx_textures{};
-	D3D12::DescriptorHandle m_tfx_sampler;
+	std::array<D3D12DescriptorHandle, NUM_TOTAL_TFX_TEXTURES> m_tfx_textures{};
+	D3D12DescriptorHandle m_tfx_sampler;
 	u32 m_tfx_sampler_sel = 0;
-	D3D12::DescriptorHandle m_tfx_textures_handle_gpu;
-	D3D12::DescriptorHandle m_tfx_samplers_handle_gpu;
-	D3D12::DescriptorHandle m_tfx_rt_textures_handle_gpu;
+	D3D12DescriptorHandle m_tfx_textures_handle_gpu;
+	D3D12DescriptorHandle m_tfx_samplers_handle_gpu;
+	D3D12DescriptorHandle m_tfx_rt_textures_handle_gpu;
 
-	D3D12::DescriptorHandle m_utility_texture_cpu;
-	D3D12::DescriptorHandle m_utility_texture_gpu;
-	D3D12::DescriptorHandle m_utility_sampler_cpu;
-	D3D12::DescriptorHandle m_utility_sampler_gpu;
+	D3D12DescriptorHandle m_utility_texture_cpu;
+	D3D12DescriptorHandle m_utility_texture_gpu;
+	D3D12DescriptorHandle m_utility_sampler_cpu;
+	D3D12DescriptorHandle m_utility_sampler_gpu;
 
 	RootSignature m_current_root_signature = RootSignature::Undefined;
 	const ID3D12PipelineState* m_current_pipeline = nullptr;
 
-	D3D12::Texture m_null_texture;
+	D3D12Texture m_null_texture;
 
 	// current pipeline selector - we save this in the struct to avoid re-zeroing it every draw
 	PipelineSelector m_pipeline_selector = {};

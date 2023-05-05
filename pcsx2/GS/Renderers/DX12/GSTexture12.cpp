@@ -14,19 +14,21 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSTexture12.h"
-#include "GSDevice12.h"
-#include "common/Assertions.h"
-#include "common/Align.h"
-#include "common/D3D12/Builders.h"
-#include "common/D3D12/Context.h"
-#include "common/D3D12/Util.h"
-#include "common/StringUtil.h"
-#include "D3D12MemAlloc.h"
+
+#include "GS/Renderers/DX12/GSTexture12.h"
+#include "GS/Renderers/DX12/D3D12Builders.h"
+#include "GS/Renderers/DX12/D3D12Context.h"
+#include "GS/Renderers/DX12/GSDevice12.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSGL.h"
 
-GSTexture12::GSTexture12(Type type, Format format, D3D12::Texture texture)
+#include "common/Assertions.h"
+#include "common/Align.h"
+#include "common/StringUtil.h"
+
+#include "D3D12MemAlloc.h"
+
+GSTexture12::GSTexture12(Type type, Format format, D3D12Texture texture)
 	: m_texture(std::move(texture))
 {
 	m_type = type;
@@ -52,11 +54,11 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, u32 width, u32 heigh
 			// If it's a compressed texture, we won't be generating mips anyway, so this should be fine.
 			const D3D12_RESOURCE_FLAGS flags = (levels > 1 && !IsCompressedFormat(format)) ?
 												   D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET :
-                                                   D3D12_RESOURCE_FLAG_NONE;
+												   D3D12_RESOURCE_FLAG_NONE;
 
-			D3D12::Texture texture;
-			if (!texture.Create(width, height, levels, d3d_format, srv_format,
-					DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN, flags))
+			D3D12Texture texture;
+			if (!texture.Create(
+					width, height, levels, d3d_format, srv_format, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN, flags))
 			{
 				return {};
 			}
@@ -70,9 +72,9 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, u32 width, u32 heigh
 			pxAssert(levels == 1);
 
 			// RT's tend to be larger, so we'll keep them committed for speed.
-			D3D12::Texture texture;
-			if (!texture.Create(width, height, levels, d3d_format, srv_format, rtv_format,
-					DXGI_FORMAT_UNKNOWN, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12MA::ALLOCATION_FLAG_COMMITTED))
+			D3D12Texture texture;
+			if (!texture.Create(width, height, levels, d3d_format, srv_format, rtv_format, DXGI_FORMAT_UNKNOWN,
+					D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12MA::ALLOCATION_FLAG_COMMITTED))
 			{
 				return {};
 			}
@@ -85,10 +87,9 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, u32 width, u32 heigh
 		{
 			pxAssert(levels == 1);
 
-			D3D12::Texture texture;
-			if (!texture.Create(width, height, levels, d3d_format, srv_format,
-					DXGI_FORMAT_UNKNOWN, dsv_format, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL,
-					D3D12MA::ALLOCATION_FLAG_COMMITTED))
+			D3D12Texture texture;
+			if (!texture.Create(width, height, levels, d3d_format, srv_format, DXGI_FORMAT_UNKNOWN, dsv_format,
+					D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL, D3D12MA::ALLOCATION_FLAG_COMMITTED))
 			{
 				return {};
 			}
@@ -101,9 +102,9 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, u32 width, u32 heigh
 		{
 			pxAssert(levels == 1);
 
-			D3D12::Texture texture;
-			if (!texture.Create(width, height, levels, d3d_format, srv_format, DXGI_FORMAT_UNKNOWN,
-					DXGI_FORMAT_UNKNOWN, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12MA::ALLOCATION_FLAG_COMMITTED))
+			D3D12Texture texture;
+			if (!texture.Create(width, height, levels, d3d_format, srv_format, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN,
+					D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12MA::ALLOCATION_FLAG_COMMITTED))
 			{
 				return {};
 			}
@@ -117,7 +118,10 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, u32 width, u32 heigh
 	}
 }
 
-void* GSTexture12::GetNativeHandle() const { return const_cast<D3D12::Texture*>(&m_texture); }
+void* GSTexture12::GetNativeHandle() const
+{
+	return const_cast<D3D12Texture*>(&m_texture);
+}
 
 ID3D12GraphicsCommandList* GSTexture12::GetCommandBufferForUpdate()
 {
@@ -131,18 +135,18 @@ ID3D12GraphicsCommandList* GSTexture12::GetCommandBufferForUpdate()
 	return g_d3d12_context->GetInitCommandList();
 }
 
-ID3D12Resource* GSTexture12::AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 height) const
+ID3D12Resource* GSTexture12::AllocateUploadStagingBuffer(
+	const void* data, u32 pitch, u32 upload_pitch, u32 height) const
 {
 	const u32 buffer_size = CalcUploadSize(height, upload_pitch);
 	wil::com_ptr_nothrow<ID3D12Resource> resource;
 	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation;
 
 	const D3D12MA::ALLOCATION_DESC allocation_desc = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD};
-	const D3D12_RESOURCE_DESC resource_desc = {
-		D3D12_RESOURCE_DIMENSION_BUFFER, 0, buffer_size, 1, 1, 1, DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-		D3D12_RESOURCE_FLAG_NONE};
-	HRESULT hr = g_d3d12_context->GetAllocator()->CreateResource(&allocation_desc, &resource_desc, D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr, allocation.put(), IID_PPV_ARGS(resource.put()));
+	const D3D12_RESOURCE_DESC resource_desc = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, buffer_size, 1, 1, 1,
+		DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE};
+	HRESULT hr = g_d3d12_context->GetAllocator()->CreateResource(&allocation_desc, &resource_desc,
+		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, allocation.put(), IID_PPV_ARGS(resource.put()));
 	if (FAILED(hr))
 	{
 		Console.WriteLn("(AllocateUploadStagingBuffer) CreateCommittedResource() failed with %08X", hr);
@@ -209,7 +213,7 @@ bool GSTexture12::Update(const GSVector4i& r, const void* data, int pitch, int l
 	}
 	else
 	{
-		D3D12::StreamBuffer& sbuffer = g_d3d12_context->GetTextureStreamBuffer();
+		D3D12StreamBuffer& sbuffer = g_d3d12_context->GetTextureStreamBuffer();
 		if (!sbuffer.ReserveMemory(required_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT))
 		{
 			GSDevice12::GetInstance()->ExecuteCommandList(
@@ -272,11 +276,12 @@ bool GSTexture12::Map(GSMap& m, const GSVector4i* r, int layer)
 	m_map_area = r ? *r : GSVector4i(0, 0, m_texture.GetWidth(), m_texture.GetHeight());
 	m_map_level = layer;
 
-	m.pitch = Common::AlignUpPow2(m_map_area.width() * D3D12::GetTexelSize(m_texture.GetFormat()), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+	m.pitch = Common::AlignUpPow2(
+		m_map_area.width() * D3D12::GetTexelSize(m_texture.GetFormat()), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
 
 	// see note in Update() for the reason why.
 	const u32 required_size = CalcUploadSize(m_map_area.height(), m.pitch);
-	D3D12::StreamBuffer& buffer = g_d3d12_context->GetTextureStreamBuffer();
+	D3D12StreamBuffer& buffer = g_d3d12_context->GetTextureStreamBuffer();
 	if (required_size >= (buffer.GetSize() / 2))
 		return false;
 
@@ -301,9 +306,10 @@ void GSTexture12::Unmap()
 	// TODO: non-tightly-packed formats
 	const u32 width = static_cast<u32>(m_map_area.width());
 	const u32 height = static_cast<u32>(m_map_area.height());
-	const u32 pitch = Common::AlignUpPow2(m_map_area.width() * D3D12::GetTexelSize(m_texture.GetFormat()), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+	const u32 pitch = Common::AlignUpPow2(
+		m_map_area.width() * D3D12::GetTexelSize(m_texture.GetFormat()), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
 	const u32 required_size = CalcUploadSize(height, pitch);
-	D3D12::StreamBuffer& buffer = g_d3d12_context->GetTextureStreamBuffer();
+	D3D12StreamBuffer& buffer = g_d3d12_context->GetTextureStreamBuffer();
 	const u32 buffer_offset = buffer.GetCurrentOffset();
 	buffer.CommitMemory(required_size);
 
@@ -315,7 +321,8 @@ void GSTexture12::Unmap()
 	if (m_texture.GetState() == D3D12_RESOURCE_STATE_COMMON)
 		m_texture.TransitionToState(cmdlist, D3D12_RESOURCE_STATE_COPY_DEST);
 	else if (m_texture.GetState() != D3D12_RESOURCE_STATE_COPY_DEST)
-		m_texture.TransitionSubresourceToState(cmdlist, m_map_level, m_texture.GetState(), D3D12_RESOURCE_STATE_COPY_DEST);
+		m_texture.TransitionSubresourceToState(
+			cmdlist, m_map_level, m_texture.GetState(), D3D12_RESOURCE_STATE_COPY_DEST);
 
 	// if we're an rt and have been cleared, and the full rect isn't being uploaded, do the clear
 	if (m_type == Type::RenderTarget)
@@ -345,7 +352,8 @@ void GSTexture12::Unmap()
 	cmdlist->CopyTextureRegion(&dstloc, m_map_area.x, m_map_area.y, 0, &srcloc, &srcbox);
 
 	if (m_texture.GetState() != D3D12_RESOURCE_STATE_COPY_DEST)
-		m_texture.TransitionSubresourceToState(cmdlist, m_map_level, D3D12_RESOURCE_STATE_COPY_DEST, m_texture.GetState());
+		m_texture.TransitionSubresourceToState(
+			cmdlist, m_map_level, D3D12_RESOURCE_STATE_COPY_DEST, m_texture.GetState());
 
 	if (m_type == Type::Texture)
 		m_needs_mipmaps_generated |= (m_map_level == 0);
@@ -363,8 +371,8 @@ void GSTexture12::GenerateMipmap()
 		const int dst_width = std::max<int>(m_size.x >> dst_level, 1);
 		const int dst_height = std::max<int>(m_size.y >> dst_level, 1);
 
-		GSDevice12::GetInstance()->RenderTextureMipmap(m_texture,
-			dst_level, dst_width, dst_height, src_level, src_width, src_height);
+		GSDevice12::GetInstance()->RenderTextureMipmap(
+			m_texture, dst_level, dst_width, dst_height, src_level, src_width, src_height);
 	}
 
 	SetUsedThisCommandBuffer();
@@ -400,7 +408,8 @@ void GSTexture12::CommitClear(ID3D12GraphicsCommandList* cmdlist)
 	if (IsDepthStencil())
 	{
 		m_texture.TransitionToState(cmdlist, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-		cmdlist->ClearDepthStencilView(m_texture.GetWriteDescriptor(), D3D12_CLEAR_FLAG_DEPTH, m_clear_value.depth, 0, 0, nullptr);
+		cmdlist->ClearDepthStencilView(
+			m_texture.GetWriteDescriptor(), D3D12_CLEAR_FLAG_DEPTH, m_clear_value.depth, 0, 0, nullptr);
 	}
 	else
 	{
@@ -432,14 +441,14 @@ std::unique_ptr<GSDownloadTexture12> GSDownloadTexture12::Create(u32 width, u32 
 	D3D12MA::ALLOCATION_DESC allocation_desc = {};
 	allocation_desc.HeapType = D3D12_HEAP_TYPE_READBACK;
 
-	const D3D12_RESOURCE_DESC resource_desc = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, buffer_size, 1, 1, 1, DXGI_FORMAT_UNKNOWN, {1, 0},
-		D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE};
+	const D3D12_RESOURCE_DESC resource_desc = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, buffer_size, 1, 1, 1,
+		DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE};
 
 	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation;
 	wil::com_ptr_nothrow<ID3D12Resource> buffer;
 
-	HRESULT hr = g_d3d12_context->GetAllocator()->CreateResource(
-		&allocation_desc, &resource_desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, allocation.put(), IID_PPV_ARGS(buffer.put()));
+	HRESULT hr = g_d3d12_context->GetAllocator()->CreateResource(&allocation_desc, &resource_desc,
+		D3D12_RESOURCE_STATE_COPY_DEST, nullptr, allocation.put(), IID_PPV_ARGS(buffer.put()));
 	if (FAILED(hr))
 	{
 		Console.Error("(GSDownloadTexture12::Create) CreateResource() failed with HRESULT %08X", hr);
@@ -466,7 +475,8 @@ void GSDownloadTexture12::CopyFromTexture(
 	pxAssert((drc.left == 0 && drc.top == 0) || !use_transfer_pitch);
 
 	u32 copy_offset, copy_size, copy_rows;
-	m_current_pitch = GetTransferPitch(use_transfer_pitch ? static_cast<u32>(drc.width()) : m_width, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+	m_current_pitch = GetTransferPitch(
+		use_transfer_pitch ? static_cast<u32>(drc.width()) : m_width, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
 	GetTransferSize(drc, &copy_offset, &copy_size, &copy_rows);
 
 	g_perfmon.Put(GSPerfMon::Readbacks, 1);
@@ -496,15 +506,17 @@ void GSDownloadTexture12::CopyFromTexture(
 
 	const D3D12_RESOURCE_STATES old_layout = tex12->GetResourceState();
 	if (old_layout != D3D12_RESOURCE_STATE_COPY_SOURCE)
-		tex12->GetTexture().TransitionSubresourceToState(cmdlist, src_level, old_layout, D3D12_RESOURCE_STATE_COPY_SOURCE);
+		tex12->GetTexture().TransitionSubresourceToState(
+			cmdlist, src_level, old_layout, D3D12_RESOURCE_STATE_COPY_SOURCE);
 
 	// TODO: Rules for depth buffers here?
-	const D3D12_BOX srcbox{
-		static_cast<UINT>(src.left), static_cast<UINT>(src.top), 0u, static_cast<UINT>(src.right), static_cast<UINT>(src.bottom), 1u};
+	const D3D12_BOX srcbox{static_cast<UINT>(src.left), static_cast<UINT>(src.top), 0u, static_cast<UINT>(src.right),
+		static_cast<UINT>(src.bottom), 1u};
 	cmdlist->CopyTextureRegion(&dstloc, 0, 0, 0, &srcloc, &srcbox);
 
 	if (old_layout != D3D12_RESOURCE_STATE_COPY_SOURCE)
-		tex12->GetTexture().TransitionSubresourceToState(cmdlist, src_level, D3D12_RESOURCE_STATE_COPY_SOURCE, old_layout);
+		tex12->GetTexture().TransitionSubresourceToState(
+			cmdlist, src_level, D3D12_RESOURCE_STATE_COPY_SOURCE, old_layout);
 
 	m_copy_fence_value = g_d3d12_context->GetCurrentFenceValue();
 	m_needs_flush = true;

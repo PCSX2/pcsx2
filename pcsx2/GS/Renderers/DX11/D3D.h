@@ -20,6 +20,7 @@
 
 #include "pcsx2/Config.h"
 
+#include <d3d11_1.h>
 #include <dxgi1_5.h>
 #include <string>
 #include <string_view>
@@ -67,4 +68,15 @@ namespace D3D
 
 	VendorID GetVendorID(IDXGIAdapter1* adapter);
 	GSRendererType GetPreferredRenderer();
+
+	// D3DCompiler wrapper.
+	enum class ShaderType
+	{
+		Vertex,
+		Pixel,
+		Compute
+	};
+
+	wil::com_ptr_nothrow<ID3DBlob> CompileShader(ShaderType type, D3D_FEATURE_LEVEL feature_level, bool debug,
+		const std::string_view& code, const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main");
 }; // namespace D3D

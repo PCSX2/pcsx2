@@ -21,7 +21,6 @@
 #include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
 #include "Host.h"
-#include "ShaderCacheVersion.h"
 
 #include "common/Align.h"
 #include "common/Path.h"
@@ -168,18 +167,8 @@ bool GSDevice11::Create()
 	level = m_dev->GetFeatureLevel();
 	const bool support_feature_level_11_0 = (level >= D3D_FEATURE_LEVEL_11_0);
 
-	if (!GSConfig.DisableShaderCache)
-	{
-		if (!m_shader_cache.Open(EmuFolders::Cache, m_dev->GetFeatureLevel(), SHADER_CACHE_VERSION, GSConfig.UseDebugDevice))
-		{
-			Console.Warning("Shader cache failed to open.");
-		}
-	}
-	else
-	{
-		m_shader_cache.Open({}, m_dev->GetFeatureLevel(), SHADER_CACHE_VERSION, GSConfig.UseDebugDevice);
-		Console.WriteLn("Not using shader cache.");
-	}
+	if (!m_shader_cache.Open(m_dev->GetFeatureLevel(), GSConfig.UseDebugDevice))
+		Console.Warning("Shader cache failed to open.");
 
 	// Set maximum texture size limit based on supported feature level.
 	if (support_feature_level_11_0)

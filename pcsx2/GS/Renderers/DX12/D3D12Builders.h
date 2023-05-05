@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -22,10 +22,10 @@
 #include <array>
 #include <d3d12.h>
 
+class D3D12ShaderCache;
+
 namespace D3D12
 {
-	class ShaderCache;
-
 	class RootSignatureBuilder
 	{
 	public:
@@ -71,7 +71,8 @@ namespace D3D12
 		void Clear();
 
 		wil::com_ptr_nothrow<ID3D12PipelineState> Create(ID3D12Device* device, bool clear = true);
-		wil::com_ptr_nothrow<ID3D12PipelineState> Create(ID3D12Device* device, ShaderCache& cache, bool clear = true);
+		wil::com_ptr_nothrow<ID3D12PipelineState> Create(
+			ID3D12Device* device, D3D12ShaderCache& cache, bool clear = true);
 
 		void SetRootSignature(ID3D12RootSignature* rs);
 
@@ -83,7 +84,8 @@ namespace D3D12
 		void SetGeometryShader(const ID3DBlob* blob);
 		void SetPixelShader(const ID3DBlob* blob);
 
-		void AddVertexAttribute(const char* semantic_name, u32 semantic_index, DXGI_FORMAT format, u32 buffer, u32 offset);
+		void AddVertexAttribute(
+			const char* semantic_name, u32 semantic_index, DXGI_FORMAT format, u32 buffer, u32 offset);
 
 		void SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE type);
 
@@ -94,7 +96,8 @@ namespace D3D12
 		void SetNoCullRasterizationState();
 
 		void SetDepthState(bool depth_test, bool depth_write, D3D12_COMPARISON_FUNC compare_op);
-		void SetStencilState(bool stencil_test, u8 read_mask, u8 write_mask, const D3D12_DEPTH_STENCILOP_DESC& front, const D3D12_DEPTH_STENCILOP_DESC& back);
+		void SetStencilState(bool stencil_test, u8 read_mask, u8 write_mask, const D3D12_DEPTH_STENCILOP_DESC& front,
+			const D3D12_DEPTH_STENCILOP_DESC& back);
 
 		void SetNoDepthTestState();
 		void SetNoStencilState();
@@ -127,11 +130,13 @@ namespace D3D12
 		void Clear();
 
 		wil::com_ptr_nothrow<ID3D12PipelineState> Create(ID3D12Device* device, bool clear = true);
-		wil::com_ptr_nothrow<ID3D12PipelineState> Create(ID3D12Device* device, ShaderCache& cache, bool clear = true);
+		wil::com_ptr_nothrow<ID3D12PipelineState> Create(
+			ID3D12Device* device, D3D12ShaderCache& cache, bool clear = true);
 
 		void SetRootSignature(ID3D12RootSignature* rs);
 
 		void SetShader(const void* data, u32 data_size);
+
 	private:
 		D3D12_COMPUTE_PIPELINE_STATE_DESC m_desc;
 	};

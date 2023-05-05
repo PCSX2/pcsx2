@@ -18,7 +18,7 @@
 #include "GSTexture11.h"
 #include "GS/GSVector.h"
 #include "GS/Renderers/Common/GSDevice.h"
-#include "common/D3D11/ShaderCache.h"
+#include "GS/Renderers/DX11/D3D11ShaderCache.h"
 #include <unordered_map>
 #include <wil/com.h>
 #include <dxgi1_5.h>
@@ -272,7 +272,7 @@ private:
 	GSHWDrawConfig::VSConstantBuffer m_vs_cb_cache;
 	GSHWDrawConfig::PSConstantBuffer m_ps_cb_cache;
 
-	D3D11::ShaderCache m_shader_cache;
+	D3D11ShaderCache m_shader_cache;
 	std::string m_tfx_source;
 
 public:

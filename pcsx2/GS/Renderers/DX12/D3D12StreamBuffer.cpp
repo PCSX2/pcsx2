@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -13,32 +13,31 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "common/PrecompiledHeader.h"
+#include "PrecompiledHeader.h"
 
-#include "common/D3D12/StreamBuffer.h"
-#include "common/D3D12/Context.h"
+#include "GS/Renderers/DX12/D3D12StreamBuffer.h"
+#include "GS/Renderers/DX12/D3D12Context.h"
+
 #include "common/Align.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
+
 #include "D3D12MemAlloc.h"
 
 #include <algorithm>
 #include <functional>
 
-using namespace D3D12;
+D3D12StreamBuffer::D3D12StreamBuffer() = default;
 
-StreamBuffer::StreamBuffer() = default;
-
-StreamBuffer::~StreamBuffer()
+D3D12StreamBuffer::~D3D12StreamBuffer()
 {
 	Destroy();
 }
 
-bool StreamBuffer::Create(u32 size)
+bool D3D12StreamBuffer::Create(u32 size)
 {
-	const D3D12_RESOURCE_DESC resource_desc = {
-		D3D12_RESOURCE_DIMENSION_BUFFER, 0, size, 1, 1, 1, DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-		D3D12_RESOURCE_FLAG_NONE};
+	const D3D12_RESOURCE_DESC resource_desc = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, size, 1, 1, 1, DXGI_FORMAT_UNKNOWN,
+		{1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE};
 
 	D3D12MA::ALLOCATION_DESC allocationDesc = {};
 	allocationDesc.Flags = D3D12MA::ALLOCATION_FLAG_COMMITTED;
@@ -46,9 +45,8 @@ bool StreamBuffer::Create(u32 size)
 
 	wil::com_ptr_nothrow<ID3D12Resource> buffer;
 	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation;
-	HRESULT hr = g_d3d12_context->GetAllocator()->CreateResource(&allocationDesc,
-		&resource_desc, D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr, allocation.put(), IID_PPV_ARGS(buffer.put()));
+	HRESULT hr = g_d3d12_context->GetAllocator()->CreateResource(&allocationDesc, &resource_desc,
+		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, allocation.put(), IID_PPV_ARGS(buffer.put()));
 	pxAssertMsg(SUCCEEDED(hr), "Allocate buffer");
 	if (FAILED(hr))
 		return false;
@@ -70,7 +68,7 @@ bool StreamBuffer::Create(u32 size)
 	return true;
 }
 
-bool StreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
+bool D3D12StreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
 {
 	const u32 required_bytes = num_bytes + alignment;
 
@@ -139,7 +137,7 @@ bool StreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
 	return false;
 }
 
-void StreamBuffer::CommitMemory(u32 final_num_bytes)
+void D3D12StreamBuffer::CommitMemory(u32 final_num_bytes)
 {
 	pxAssert((m_current_offset + final_num_bytes) <= m_size);
 	pxAssert(final_num_bytes <= m_current_space);
@@ -147,7 +145,7 @@ void StreamBuffer::CommitMemory(u32 final_num_bytes)
 	m_current_space -= final_num_bytes;
 }
 
-void StreamBuffer::Destroy(bool defer)
+void D3D12StreamBuffer::Destroy(bool defer)
 {
 	if (m_host_pointer)
 	{
@@ -167,7 +165,7 @@ void StreamBuffer::Destroy(bool defer)
 	m_tracked_fences.clear();
 }
 
-void StreamBuffer::UpdateCurrentFencePosition()
+void D3D12StreamBuffer::UpdateCurrentFencePosition()
 {
 	// Don't create a tracking entry if the GPU is caught up with the buffer.
 	if (m_current_offset == m_current_gpu_position)
@@ -186,7 +184,7 @@ void StreamBuffer::UpdateCurrentFencePosition()
 	m_tracked_fences.emplace_back(fence, m_current_offset);
 }
 
-void StreamBuffer::UpdateGPUPosition()
+void D3D12StreamBuffer::UpdateGPUPosition()
 {
 	auto start = m_tracked_fences.begin();
 	auto end = start;
@@ -202,7 +200,7 @@ void StreamBuffer::UpdateGPUPosition()
 		m_tracked_fences.erase(start, end);
 }
 
-bool StreamBuffer::WaitForClearSpace(u32 num_bytes)
+bool D3D12StreamBuffer::WaitForClearSpace(u32 num_bytes)
 {
 	u32 new_offset = 0;
 	u32 new_space = 0;
@@ -274,7 +272,8 @@ bool StreamBuffer::WaitForClearSpace(u32 num_bytes)
 
 	// Wait until this fence is signaled. This will fire the callback, updating the GPU position.
 	g_d3d12_context->WaitForFence(iter->first, false);
-	m_tracked_fences.erase(m_tracked_fences.begin(), m_current_offset == iter->second ? m_tracked_fences.end() : ++iter);
+	m_tracked_fences.erase(
+		m_tracked_fences.begin(), m_current_offset == iter->second ? m_tracked_fences.end() : ++iter);
 	m_current_offset = new_offset;
 	m_current_space = new_space;
 	m_current_gpu_position = new_gpu_position;

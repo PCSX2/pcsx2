@@ -34,7 +34,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\d3d12memalloc\include;$(SolutionDir)3rdparty\glad\include;$(SolutionDir)3rdparty\glslang\glslang;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\glad\include;$(SolutionDir)3rdparty\glslang\glslang;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\rapidyaml\rapidyaml\ext\c4core\src\c4\ext\fast_float\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\libpng</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\jpgd</AdditionalIncludeDirectories>
@@ -56,15 +56,6 @@
     <ClCompile Include="AlignedMalloc.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="CrashHandler.cpp" />
-    <ClCompile Include="D3D11\ShaderCache.cpp" />
-    <ClCompile Include="D3D11\ShaderCompiler.cpp" />
-    <ClCompile Include="D3D12\Builders.cpp" />
-    <ClCompile Include="D3D12\Context.cpp" />
-    <ClCompile Include="D3D12\DescriptorHeapManager.cpp" />
-    <ClCompile Include="D3D12\ShaderCache.cpp" />
-    <ClCompile Include="D3D12\StreamBuffer.cpp" />
-    <ClCompile Include="D3D12\Texture.cpp" />
-    <ClCompile Include="D3D12\Util.cpp" />
     <ClCompile Include="DynamicLibrary.cpp" />
     <ClCompile Include="Exceptions.cpp" />
     <ClCompile Include="FastJmp.cpp">
@@ -138,15 +129,6 @@
     <ClInclude Include="AlignedMalloc.h" />
     <ClInclude Include="BitCast.h" />
     <ClInclude Include="CrashHandler.h" />
-    <ClInclude Include="D3D11\ShaderCache.h" />
-    <ClInclude Include="D3D11\ShaderCompiler.h" />
-    <ClInclude Include="D3D12\Builders.h" />
-    <ClInclude Include="D3D12\Context.h" />
-    <ClInclude Include="D3D12\DescriptorHeapManager.h" />
-    <ClInclude Include="D3D12\ShaderCache.h" />
-    <ClInclude Include="D3D12\StreamBuffer.h" />
-    <ClInclude Include="D3D12\Texture.h" />
-    <ClInclude Include="D3D12\Util.h" />
     <ClInclude Include="DynamicLibrary.h" />
     <ClInclude Include="Easing.h" />
     <ClInclude Include="boost_spsc_queue.hpp" />
@@ -230,9 +212,6 @@
     <ClInclude Include="ZipHelpers.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\3rdparty\d3d12memalloc\d3d12memalloc.vcxproj">
-      <Project>{d45cec7a-3171-40dd-975d-e1544cf16139}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\3rdparty\glad\glad.vcxproj">
       <Project>{c0293b32-5acf-40f0-aa6c-e6da6f3bf33a}</Project>
     </ProjectReference>
