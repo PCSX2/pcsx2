@@ -3337,6 +3337,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 		"DisableFramebufferFetch", false);
 	DrawToggleSetting(bsi, "Disable Dual-Source Blending", "Prevents the usage of dual-source blending when supported by host GPU.",
 		"EmuCore/GS", "DisableDualSourceBlend", false);
+	DrawToggleSetting(bsi, "Disable Shader Cache", "Prevents the loading and saving of shaders/pipelines to disk.", "EmuCore/GS",
+		"DisableShaderCache", false);
 
 	EndMenuButtons();
 }
