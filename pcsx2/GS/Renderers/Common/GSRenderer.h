@@ -24,7 +24,7 @@ class GSRenderer : public GSState
 private:
 	bool Merge(int field);
 	bool BeginPresentFrame(bool frame_skip);
-	void EndPresentFrame();
+	void EndPresentFrame(u64 present_time);
 
 	u64 m_shader_time_start = 0;
 
@@ -52,7 +52,7 @@ public:
 
 	virtual void Destroy();
 
-	virtual void VSync(u32 field, bool registers_written, bool idle_frame);
+	virtual void VSync(u32 field, bool registers_written, bool idle_frame, u64 present_time);
 	virtual bool CanUpscale() { return false; }
 	virtual float GetUpscaleMultiplier() { return 1.0f; }
 	virtual float GetTextureScaleFactor() { return 1.0f; }

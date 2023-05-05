@@ -112,7 +112,7 @@ void GSRendererHW::UpdateSettings(const Pcsx2Config::GSOptions& old_config)
 	SetTCOffset();
 }
 
-void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame)
+void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame, u64 present_time)
 {
 	if (m_force_preload > 0)
 	{
@@ -147,7 +147,7 @@ void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame)
 		g_texture_cache->IncAge();
 	}
 
-	GSRenderer::VSync(field, registers_written, idle_frame);
+	GSRenderer::VSync(field, registers_written, idle_frame, present_time);
 
 	if (g_texture_cache->GetHashCacheMemoryUsage() > 1024 * 1024 * 1024)
 	{

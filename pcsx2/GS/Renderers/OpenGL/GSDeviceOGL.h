@@ -301,10 +301,9 @@ public:
 	void SetVSync(VsyncMode mode) override;
 
 	PresentResult BeginPresent(bool frame_skip) override;
-	void EndPresent() override;
+	void EndPresent(u64 present_time) override;
 
 	bool SetGPUTimingEnabled(bool enabled) override;
-	float GetAndResetAccumulatedGPUTime() override;
 
 	void DrawPrimitive();
 	void DrawIndexedPrimitive();

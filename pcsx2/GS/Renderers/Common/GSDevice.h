@@ -860,7 +860,7 @@ public:
 	virtual PresentResult BeginPresent(bool frame_skip) = 0;
 
 	/// Presents the frame to the display.
-	virtual void EndPresent() = 0;
+	virtual void EndPresent(u64 present_time) = 0;
 
 	/// Changes vsync mode for this display.
 	virtual void SetVSync(VsyncMode mode) = 0;
@@ -873,9 +873,6 @@ public:
 
 	/// Enables/disables GPU frame timing.
 	virtual bool SetGPUTimingEnabled(bool enabled) = 0;
-
-	/// Returns the amount of GPU time utilized since the last time this method was called.
-	virtual float GetAndResetAccumulatedGPUTime() = 0;
 
 	virtual void ClearRenderTarget(GSTexture* t, const GSVector4& c) = 0;
 	virtual void ClearRenderTarget(GSTexture* t, u32 c) = 0;

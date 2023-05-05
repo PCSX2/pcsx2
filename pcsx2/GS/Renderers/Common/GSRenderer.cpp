@@ -521,18 +521,18 @@ bool GSRenderer::BeginPresentFrame(bool frame_skip)
 	return false;
 }
 
-void GSRenderer::EndPresentFrame()
+void GSRenderer::EndPresentFrame(u64 present_time)
 {
 	if (GSDumpReplayer::IsReplayingDump())
 		GSDumpReplayer::RenderUI();
 
 	FullscreenUI::Render();
 	ImGuiManager::RenderOSD();
-	g_gs_device->EndPresent();
+	g_gs_device->EndPresent(present_time);
 	ImGuiManager::NewFrame();
 }
 
-void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
+void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame, u64 present_time)
 {
 	Flush(GSFlushReason::VSYNC);
 
@@ -572,6 +572,8 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 		}
 	}
 
+	PerformanceMetrics::OnGSFrame(registers_written, fb_sprite_frame);
+
 	const bool blank_frame = !Merge(field);
 
 	m_last_draw_n = s_n;
@@ -580,9 +582,8 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 	if (skip_frame)
 	{
 		if (BeginPresentFrame(true))
-			EndPresentFrame();
+			EndPresentFrame(present_time);
 
-		PerformanceMetrics::Update(registers_written, fb_sprite_frame, true);
 		return;
 	}
 
@@ -637,13 +638,8 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 				s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent != GSPostBilinearMode::Off);
 		}
 
-		EndPresentFrame();
-
-		if (GSConfig.OsdShowGPU)
-			PerformanceMetrics::OnGPUPresent(g_gs_device->GetAndResetAccumulatedGPUTime());
+		EndPresentFrame(present_time);
 	}
-
-	PerformanceMetrics::Update(registers_written, fb_sprite_frame, false);
 
 	// snapshot
 	if (!m_snapshot.empty())
@@ -860,7 +856,7 @@ void GSRenderer::PresentCurrentFrame()
 				s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent != GSPostBilinearMode::Off);
 		}
 
-		EndPresentFrame();
+		EndPresentFrame(0);
 	}
 }
 

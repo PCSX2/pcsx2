@@ -19,12 +19,16 @@
 #include "GS/Renderers/Vulkan/VKShaderCache.h"
 #include "GS/Renderers/Vulkan/VKSwapChain.h"
 #include "GS/Renderers/Vulkan/VKUtil.h"
+#include "GS/GS.h"
+
+#include "PerformanceMetrics.h"
 
 #include "common/Align.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/General.h"
 #include "common/StringUtil.h"
+#include "common/Threading.h"
 
 #include <algorithm>
 #include <array>
@@ -1032,7 +1036,7 @@ void VKContext::WaitForFenceCounter(u64 fence_counter)
 
 void VKContext::WaitForGPUIdle()
 {
-	WaitForPresentComplete();
+	WaitForSubmitThread(true, true);
 	vkDeviceWaitIdle(m_device);
 }
 
@@ -1103,7 +1107,7 @@ void VKContext::WaitForCommandBufferCompletion(u32 index)
 }
 
 void VKContext::SubmitCommandBuffer(
-	VKSwapChain* present_swap_chain /* = nullptr */, bool submit_on_thread /* = false */)
+	VKSwapChain* present_swap_chain /* = nullptr */, u64 present_time /* = 0 */, bool submit_on_thread /* = false */)
 {
 	FrameResources& resources = m_frame_resources[m_current_frame];
 
@@ -1171,24 +1175,29 @@ void VKContext::SubmitCommandBuffer(
 	if (spin_cycles != 0)
 		WaitForSpinCompletion(m_current_frame);
 
-	std::unique_lock<std::mutex> lock(m_present_mutex);
-	WaitForPresentComplete(lock);
-
 	if (spin_enabled && m_optional_extensions.vk_ext_calibrated_timestamps)
 		resources.submit_timestamp = GetCPUTimestamp();
 
-	if (!submit_on_thread || !m_present_thread.joinable())
+	std::unique_lock<std::mutex> lock(m_present_mutex);
+	if (!submit_on_thread || !m_present_thread.Joinable())
 	{
+		// we can skip the present wait if we're not presenting
+		WaitForSubmitThread(true, (present_swap_chain != nullptr), lock);
 		DoSubmitCommandBuffer(m_current_frame, present_swap_chain, spin_cycles);
 		if (present_swap_chain)
 			DoPresent(present_swap_chain);
 		return;
 	}
 
+	// Need to do both here, because we're writing new variables.
+	// This should only be at the end of the frame, and the previous one should be well done by now.
+	WaitForSubmitThread(true, true, lock);
 	m_queued_present.command_buffer_index = m_current_frame;
 	m_queued_present.swap_chain = present_swap_chain;
 	m_queued_present.spin_cycles = spin_cycles;
-	m_present_done.store(false);
+	m_queued_present.present_time = present_time;
+	m_submit_done = false;
+	m_present_done = (present_swap_chain == nullptr);
 	m_present_queued_cv.notify_one();
 }
 
@@ -1242,6 +1251,11 @@ void VKContext::DoSubmitCommandBuffer(u32 index, VKSwapChain* present_swap_chain
 
 void VKContext::DoPresent(VKSwapChain* present_swap_chain)
 {
+#define LOG_PRESENT_TIMING 1
+#ifdef LOG_PRESENT_TIMING
+	const u64 present_time = GetCPUTicks();
+#endif
+
 	const VkPresentInfoKHR present_info = {VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, nullptr, 1,
 		present_swap_chain->GetRenderingFinishedSemaphorePtr(), 1, present_swap_chain->GetSwapChainPtr(),
 		present_swap_chain->GetCurrentImageIndexPtr(), nullptr};
@@ -1259,68 +1273,149 @@ void VKContext::DoPresent(VKSwapChain* present_swap_chain)
 		return;
 	}
 
+	PerformanceMetrics::OnGPUPresent(GetAndResetAccumulatedGPUTime());
+
+#ifdef LOG_PRESENT_TIMING
+	const u64 acquire_time = GetCPUTicks();
+#endif
+
 	// Grab the next image as soon as possible, that way we spend less time blocked on the next
 	// submission. Don't care if it fails, we'll deal with that at the presentation call site.
 	// Credit to dxvk for the idea.
-	present_swap_chain->AcquireNextImage();
+	if (!present_swap_chain->IsPresentModeSynchronizing())
+		present_swap_chain->AcquireNextImage();
+
+#ifdef LOG_PRESENT_TIMING
+	const u64 ticks = GetCPUTicks();
+	const double div = static_cast<double>(GetTickFrequency()) / 1000.0;
+	DevCon.WriteLn("Present took %.2f ms, acquire next took %.2f ms", (acquire_time - present_time) / div,
+		(GetCPUTicks() - acquire_time) / div);
+#endif
 }
 
-void VKContext::WaitForPresentComplete()
+void VKContext::WaitForSubmitThread(bool submit_done, bool present_done)
 {
-	if (m_present_done.load())
+	// unsynchronized, but okay, since false gets written by the producer thread
+	if ((!submit_done || m_submit_done) && (!present_done || m_present_done))
 		return;
 
 	std::unique_lock<std::mutex> lock(m_present_mutex);
-	WaitForPresentComplete(lock);
+	WaitForSubmitThread(submit_done, present_done, lock);
 }
 
-void VKContext::WaitForPresentComplete(std::unique_lock<std::mutex>& lock)
+void VKContext::WaitForSubmitThread(bool submit_done, bool present_done, std::unique_lock<std::mutex>& lock)
 {
-	if (m_present_done.load())
+	if ((!submit_done || m_submit_done) && (!present_done || m_present_done))
 		return;
 
-	m_present_done_cv.wait(lock, [this]() { return m_present_done.load(); });
+	m_present_done_cv.wait(lock, [this, submit_done, present_done]() {
+		return (!submit_done || m_submit_done) && (!present_done || m_present_done);
+	});
 }
 
 void VKContext::PresentThread()
 {
+	Threading::SetNameOfCurrentThread("Vulkan Submit");
+
 	std::unique_lock<std::mutex> lock(m_present_mutex);
-	while (!m_present_thread_done.load())
+	while (!m_present_thread_done)
 	{
-		m_present_queued_cv.wait(lock, [this]() { return !m_present_done.load() || m_present_thread_done.load(); });
+		m_present_queued_cv.wait(lock, [this]() { return !m_present_done || !m_submit_done || m_present_thread_done; });
+		PresentThreadProcessOne(lock);
+	}
 
-		if (m_present_done.load())
-			continue;
+	if (!m_present_done || !m_submit_done)
+		PresentThreadProcessOne(lock);
+}
 
-		DoSubmitCommandBuffer(
-			m_queued_present.command_buffer_index, m_queued_present.swap_chain, m_queued_present.spin_cycles);
-		if (m_queued_present.swap_chain)
-			DoPresent(m_queued_present.swap_chain);
-		m_present_done.store(true);
+void VKContext::PresentThreadProcessOne(std::unique_lock<std::mutex>& lock)
+{
+#define LOG_ASYNC_PRESENT 1
+#ifdef LOG_ASYNC_PRESENT
+	static u64 last_submit_time = 0;
+	static u64 last_submit_scheduled = 0;
+	const u64 submit_ticks = GetCPUTicks();
+#endif
+
+	if (!m_submit_done)
+	{
+		const u32 cmdbuf_index = m_queued_present.command_buffer_index;
+		const u32 spin_cycles = m_queued_present.spin_cycles;
+		VKSwapChain* swap_chain = m_queued_present.swap_chain;
+
+		lock.unlock();
+
+		DoSubmitCommandBuffer(cmdbuf_index, swap_chain, spin_cycles);
+
+		lock.lock();
+		m_submit_done = true;
+		m_present_done_cv.notify_one();
+	}
+
+#ifdef LOG_ASYNC_PRESENT
+	const u64 present_ticks = GetCPUTicks();
+#endif
+
+	if (!m_present_done)
+	{
+		VKSwapChain* swap_chain = m_queued_present.swap_chain;
+		const u64 present_time = m_queued_present.present_time;
+
+		lock.unlock();
+
+		if (present_time > 0)
+		{
+			const u64 one_ms_at_freq = GetTickFrequency() / 1000;
+			u64 ticks;
+			while ((ticks = GetCPUTicks()) < present_time)
+			{
+				// spin off the last 1ms, hopefully the SleepUntil() will be fairly precise.
+				if ((present_time - ticks) > one_ms_at_freq)
+					Threading::SleepUntil(present_time - one_ms_at_freq);
+				else
+					Threading::SpinWait();
+			}
+		}
+
+		DoPresent(swap_chain);
+
+#ifdef LOG_ASYNC_PRESENT
+		const u64 ticks = GetCPUTicks();
+		const double div = static_cast<double>(GetTickFrequency()) / 1000.0;
+		DevCon.WriteLn(
+			"Submit took %.2f ms, presented %.2f ms after submit, %.2f ms after last, %.2f scheduled after last",
+			(present_ticks - submit_ticks) / div, (ticks - submit_ticks) / div, (ticks - last_submit_time) / div,
+			(present_time - last_submit_scheduled) / div);
+		last_submit_time = ticks;
+		last_submit_scheduled = present_time;
+#endif
+
+		lock.lock();
+		m_present_done = true;
 		m_present_done_cv.notify_one();
 	}
 }
 
 void VKContext::StartPresentThread()
 {
-	pxAssert(!m_present_thread.joinable());
-	m_present_thread_done.store(false);
-	m_present_thread = std::thread(&VKContext::PresentThread, this);
+	pxAssert(!m_present_thread.Joinable());
+	m_present_thread_done = false;
+	m_present_thread.Start(std::bind(&VKContext::PresentThread, this));
 }
 
 void VKContext::StopPresentThread()
 {
-	if (!m_present_thread.joinable())
+	if (!m_present_thread.Joinable())
 		return;
 
 	{
 		std::unique_lock<std::mutex> lock(m_present_mutex);
-		WaitForPresentComplete(lock);
-		m_present_thread_done.store(true);
+		WaitForSubmitThread(true, true, lock);
+		m_present_thread_done = true;
 		m_present_queued_cv.notify_one();
 	}
 
-	m_present_thread.join();
+	m_present_thread.Join();
 }
 
 void VKContext::CommandBufferCompleted(u32 index)
@@ -1379,8 +1474,8 @@ void VKContext::ActivateCommandBuffer(u32 index)
 {
 	FrameResources& resources = m_frame_resources[index];
 
-	if (!m_present_done.load() && m_queued_present.command_buffer_index == index)
-		WaitForPresentComplete();
+	if (!m_submit_done && m_queued_present.command_buffer_index == index)
+		WaitForSubmitThread(true, false);
 
 	// Wait for the GPU to finish with all resources for this command buffer.
 	if (resources.fence_counter > m_completed_fence_counter)

@@ -461,11 +461,11 @@ void GSgifTransfer3(u8* mem, u32 size)
 	}
 }
 
-void GSvsync(u32 field, bool registers_written)
+void GSvsync(u32 field, bool registers_written, u64 present_time)
 {
 	try
 	{
-		g_gs_renderer->VSync(field, registers_written, g_gs_renderer->IsIdleFrame());
+		g_gs_renderer->VSync(field, registers_written, g_gs_renderer->IsIdleFrame(), present_time);
 	}
 	catch (GSRecoverableError)
 	{

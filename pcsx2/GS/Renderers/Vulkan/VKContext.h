@@ -19,6 +19,7 @@
 #include "GS/Renderers/Vulkan/VKStreamBuffer.h"
 
 #include "common/ReadbackSpinManager.h"
+#include "common/Threading.h"
 
 #include <array>
 #include <atomic>
@@ -196,7 +197,8 @@ public:
 	// queued and executed. Do not wait for this fence before the buffer is executed.
 	u64 GetCurrentFenceCounter() const { return m_frame_resources[m_current_frame].fence_counter; }
 
-	void SubmitCommandBuffer(VKSwapChain* present_swap_chain = nullptr, bool submit_on_thread = false);
+	void SubmitCommandBuffer(
+		VKSwapChain* present_swap_chain = nullptr, u64 present_time = 0, bool submit_on_thread = false);
 	void MoveToNextCommandBuffer();
 
 	enum class WaitType
@@ -207,7 +209,7 @@ public:
 	};
 
 	void ExecuteCommandBuffer(WaitType wait_for_completion);
-	void WaitForPresentComplete();
+	void WaitForSubmitThread(bool submit_done, bool present_done);
 
 	// Was the last present submitted to the queue a failure? If so, we must recreate our swapchain.
 	bool CheckLastPresentFail();
@@ -292,8 +294,9 @@ private:
 
 	void DoSubmitCommandBuffer(u32 index, VKSwapChain* present_swap_chain, u32 spin_cycles);
 	void DoPresent(VKSwapChain* present_swap_chain);
-	void WaitForPresentComplete(std::unique_lock<std::mutex>& lock);
+	void WaitForSubmitThread(bool submit_done, bool present_done, std::unique_lock<std::mutex>& lock);
 	void PresentThread();
+	void PresentThreadProcessOne(std::unique_lock<std::mutex>& lock);
 	void StartPresentThread();
 	void StopPresentThread();
 
@@ -383,16 +386,18 @@ private:
 
 	std::atomic_bool m_last_submit_failed{false};
 	std::atomic_bool m_last_present_failed{false};
-	std::atomic_bool m_present_done{true};
-	std::mutex m_present_mutex;
 	std::condition_variable m_present_queued_cv;
 	std::condition_variable m_present_done_cv;
-	std::thread m_present_thread;
-	std::atomic_bool m_present_thread_done{false};
+	std::mutex m_present_mutex;
+	Threading::Thread m_present_thread;
+	bool m_present_done = true;
+	bool m_submit_done = true;
+	bool m_present_thread_done = false;
 
 	struct QueuedPresent
 	{
 		VKSwapChain* swap_chain;
+		u64 present_time;
 		u32 command_buffer_index;
 		u32 spin_cycles;
 	};

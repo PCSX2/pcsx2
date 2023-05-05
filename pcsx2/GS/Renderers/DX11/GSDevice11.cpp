@@ -21,6 +21,7 @@
 #include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
 #include "Host.h"
+#include "PerformanceMetrics.h"
 
 #include "common/Align.h"
 #include "common/Path.h"
@@ -886,7 +887,7 @@ GSDevice::PresentResult GSDevice11::BeginPresent(bool frame_skip)
 	return PresentResult::OK;
 }
 
-void GSDevice11::EndPresent()
+void GSDevice11::EndPresent(u64 present_time)
 {
 	RenderImGui();
 
@@ -899,6 +900,9 @@ void GSDevice11::EndPresent()
 		m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
 	else
 		m_swap_chain->Present(static_cast<UINT>(vsync_on), 0);
+
+	PerformanceMetrics::OnGPUPresent(m_accumulated_gpu_time);
+	m_accumulated_gpu_time = 0.0f;
 
 	if (m_gpu_timing_enabled)
 		KickTimestampQuery();
@@ -1012,13 +1016,6 @@ bool GSDevice11::SetGPUTimingEnabled(bool enabled)
 		DestroyTimestampQueries();
 		return true;
 	}
-}
-
-float GSDevice11::GetAndResetAccumulatedGPUTime()
-{
-	const float value = m_accumulated_gpu_time;
-	m_accumulated_gpu_time = 0.0f;
-	return value;
 }
 
 void GSDevice11::DrawPrimitive()

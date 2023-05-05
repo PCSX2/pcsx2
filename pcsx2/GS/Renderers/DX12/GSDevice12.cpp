@@ -25,6 +25,7 @@
 #include "GS/Renderers/DX12/D3D12Context.h"
 #include "GS/Renderers/DX12/D3D12ShaderCache.h"
 #include "Host.h"
+#include "PerformanceMetrics.h"
 #include "ShaderCacheVersion.h"
 
 #include "common/Align.h"
@@ -546,7 +547,7 @@ GSDevice::PresentResult GSDevice12::BeginPresent(bool frame_skip)
 	return PresentResult::OK;
 }
 
-void GSDevice12::EndPresent()
+void GSDevice12::EndPresent(u64 present_time)
 {
 	RenderImGui();
 
@@ -567,6 +568,8 @@ void GSDevice12::EndPresent()
 	else
 		m_swap_chain->Present(static_cast<UINT>(vsync), 0);
 
+	PerformanceMetrics::OnGPUPresent(g_d3d12_context->GetAndResetAccumulatedGPUTime());
+
 	InvalidateCachedState();
 }
 
@@ -574,11 +577,6 @@ bool GSDevice12::SetGPUTimingEnabled(bool enabled)
 {
 	g_d3d12_context->SetEnableGPUTiming(enabled);
 	return true;
-}
-
-float GSDevice12::GetAndResetAccumulatedGPUTime()
-{
-	return g_d3d12_context->GetAndResetAccumulatedGPUTime();
 }
 
 void GSDevice12::PushDebugGroup(const char* fmt, ...)

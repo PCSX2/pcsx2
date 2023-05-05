@@ -20,6 +20,7 @@
 #include "GS/Renderers/Metal/GSDeviceMTL.h"
 #include "GS/Renderers/Metal/GSTextureMTL.h"
 #include "GS/GSPerfMon.h"
+#include "PerformanceMetrics.h"
 
 #include "imgui.h"
 
@@ -1276,7 +1277,7 @@ GSDevice::PresentResult GSDeviceMTL::BeginPresent(bool frame_skip)
 	return PresentResult::OK;
 }}
 
-void GSDeviceMTL::EndPresent()
+void GSDeviceMTL::EndPresent(u64 present_time)
 { @autoreleasepool {
 	pxAssertDev(m_current_render.encoder && m_current_render_cmdbuf, "BeginPresent cmdbuf was destroyed");
 	ImGui::Render();
@@ -1294,6 +1295,9 @@ void GSDeviceMTL::EndPresent()
 				[drawable present];
 			}];
 	}
+
+	PerformanceMetrics::OnGPUPresent(GetAndResetAccumulatedGPUTime());
+
 	FlushEncoders();
 	FrameCompleted();
 	m_current_drawable = nullptr;

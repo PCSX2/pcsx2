@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
-#include <chrono>
+#include <mutex>
 #include <vector>
 
 #include "common/Timer.h"
@@ -31,6 +31,7 @@
 
 static const float UPDATE_INTERVAL = 0.5f;
 
+static std::mutex s_mutex;
 static float s_vertical_frequency = 0.0f;
 static float s_fps = 0.0f;
 static float s_internal_fps = 0.0f;
@@ -141,23 +142,29 @@ void PerformanceMetrics::Reset()
 		stat.last_cpu_time = stat.handle.GetCPUTime();
 }
 
-void PerformanceMetrics::Update(bool gs_register_write, bool fb_blit, bool is_skipping_present)
+void PerformanceMetrics::OnGSFrame(bool gs_register_write, bool fb_blit)
 {
-	if (!is_skipping_present)
-	{
-		const float frame_time = s_last_frame_time.GetTimeMillisecondsAndReset();
-		s_minimum_frame_time_accumulator = (s_minimum_frame_time_accumulator == 0.0f) ? frame_time : std::min(s_minimum_frame_time_accumulator, frame_time);
-		s_average_frame_time_accumulator += frame_time;
-		s_maximum_frame_time_accumulator = std::max(s_maximum_frame_time_accumulator, frame_time);
-		s_frame_time_history[s_frame_time_history_pos] = frame_time;
-		s_frame_time_history_pos = (s_frame_time_history_pos + 1) % NUM_FRAME_TIME_SAMPLES;
-		s_unskipped_frames_since_last_update++;
-	}
+	std::unique_lock lock(s_mutex);
 
 	s_frames_since_last_update++;
 	s_gs_privileged_register_writes_since_last_update += static_cast<u32>(gs_register_write);
 	s_gs_framebuffer_blits_since_last_update += static_cast<u32>(fb_blit);
 	s_frame_number++;
+}
+
+void PerformanceMetrics::OnGPUPresent(float gpu_time)
+{
+	std::unique_lock lock(s_mutex);
+
+	s_accumulated_gpu_time += gpu_time;
+
+	const float frame_time = s_last_frame_time.GetTimeMillisecondsAndReset();
+	s_minimum_frame_time_accumulator = (s_minimum_frame_time_accumulator == 0.0f) ? frame_time : std::min(s_minimum_frame_time_accumulator, frame_time);
+	s_average_frame_time_accumulator += frame_time;
+	s_maximum_frame_time_accumulator = std::max(s_maximum_frame_time_accumulator, frame_time);
+	s_frame_time_history[s_frame_time_history_pos] = frame_time;
+	s_frame_time_history_pos = (s_frame_time_history_pos + 1) % NUM_FRAME_TIME_SAMPLES;
+	s_presents_since_last_update++;
 
 	const Common::Timer::Value now_ticks = Common::Timer::GetCurrentValue();
 	const Common::Timer::Value ticks_diff = now_ticks - s_last_update_time.GetStartValue();
@@ -167,10 +174,10 @@ void PerformanceMetrics::Update(bool gs_register_write, bool fb_blit, bool is_sk
 
 	s_last_update_time.ResetTo(now_ticks);
 	s_minimum_frame_time = std::exchange(s_minimum_frame_time_accumulator, 0.0f);
-	s_average_frame_time = std::exchange(s_average_frame_time_accumulator, 0.0f) / static_cast<float>(s_unskipped_frames_since_last_update);
+	s_average_frame_time = std::exchange(s_average_frame_time_accumulator, 0.0f) / static_cast<float>(s_presents_since_last_update);
 	s_maximum_frame_time = std::exchange(s_maximum_frame_time_accumulator, 0.0f);
 	s_fps = static_cast<float>(s_frames_since_last_update) / time;
-	s_average_gpu_time = s_accumulated_gpu_time / static_cast<float>(s_unskipped_frames_since_last_update);
+	s_average_gpu_time = s_accumulated_gpu_time / static_cast<float>(s_presents_since_last_update);
 	s_gpu_usage = s_accumulated_gpu_time / (time * 10.0f);
 	s_accumulated_gpu_time = 0.0f;
 
@@ -241,12 +248,6 @@ void PerformanceMetrics::Update(bool gs_register_write, bool fb_blit, bool is_sk
 	s_presents_since_last_update = 0;
 
 	Host::OnPerformanceMetricsUpdated();
-}
-
-void PerformanceMetrics::OnGPUPresent(float gpu_time)
-{
-	s_accumulated_gpu_time += gpu_time;
-	s_presents_since_last_update++;
 }
 
 void PerformanceMetrics::SetCPUThread(Threading::ThreadHandle thread)

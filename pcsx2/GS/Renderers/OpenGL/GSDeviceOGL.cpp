@@ -22,6 +22,7 @@
 #include "GS/GSGL.h"
 #include "GS/GSUtil.h"
 #include "Host.h"
+#include "PerformanceMetrics.h"
 
 #include "common/StringUtil.h"
 
@@ -736,7 +737,7 @@ GSDevice::PresentResult GSDeviceOGL::BeginPresent(bool frame_skip)
 	return PresentResult::OK;
 }
 
-void GSDeviceOGL::EndPresent()
+void GSDeviceOGL::EndPresent(u64 present_time)
 {
 	RenderImGui();
 
@@ -744,6 +745,9 @@ void GSDeviceOGL::EndPresent()
 		PopTimestampQuery();
 
 	m_gl_context->SwapBuffers();
+
+	PerformanceMetrics::OnGPUPresent(m_accumulated_gpu_time);
+	m_accumulated_gpu_time = 0.0f;
 
 	if (m_gpu_timing_enabled)
 		KickTimestampQuery();
@@ -819,13 +823,6 @@ bool GSDeviceOGL::SetGPUTimingEnabled(bool enabled)
 		DestroyTimestampQueries();
 
 	return true;
-}
-
-float GSDeviceOGL::GetAndResetAccumulatedGPUTime()
-{
-	const float value = m_accumulated_gpu_time;
-	m_accumulated_gpu_time = 0.0f;
-	return value;
 }
 
 void GSDeviceOGL::DrawPrimitive()

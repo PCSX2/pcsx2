@@ -317,7 +317,7 @@ void GSDumpReplayerCpuStep()
 			s_dump_frame_number++;
 			GSDumpReplayerUpdateFrameLimit();
 			GSDumpReplayerFrameLimit();
-			GetMTGS().PostVsyncStart(false);
+			GetMTGS().PostVsyncStart(false, 0);
 			VMManager::Internal::VSyncOnCPUThread();
 			if (VMManager::Internal::IsExecutionInterrupted())
 				GSDumpReplayerExitExecution();

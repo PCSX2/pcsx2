@@ -175,7 +175,7 @@ public:
 
 	void Reset(bool hardware_reset) override;
 	void UpdateSettings(const Pcsx2Config::GSOptions& old_config) override;
-	void VSync(u32 field, bool registers_written, bool idle_frame) override;
+	void VSync(u32 field, bool registers_written, bool idle_frame, u64 present_time) override;
 
 	GSTexture* GetOutput(int i, float& scale, int& y_offset) override;
 	GSTexture* GetFeedbackOutput(float& scale) override;

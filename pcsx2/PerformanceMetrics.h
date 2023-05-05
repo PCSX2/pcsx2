@@ -32,7 +32,7 @@ namespace PerformanceMetrics
 
 	void Clear();
 	void Reset();
-	void Update(bool gs_register_write, bool fb_blit, bool is_skipping_present);
+	void OnGSFrame(bool gs_register_write, bool fb_blit);
 	void OnGPUPresent(float gpu_time);
 
 	/// Sets the EE thread for CPU usage calculations.

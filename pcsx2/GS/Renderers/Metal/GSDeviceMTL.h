@@ -396,13 +396,13 @@ public:
 	void UpdateTexture(id<MTLTexture> texture, u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_stride);
 
 	PresentResult BeginPresent(bool frame_skip) override;
-	void EndPresent() override;
+	void EndPresent(u64 present_time) override;
 	void SetVSync(VsyncMode mode) override;
 
 	bool GetHostRefreshRate(float* refresh_rate) override;
 
 	bool SetGPUTimingEnabled(bool enabled) override;
-	float GetAndResetAccumulatedGPUTime() override;
+	float GetAndResetAccumulatedGPUTime();
 	void AccumulateCommandBufferTime(id<MTLCommandBuffer> buffer);
 
 	void ClearRenderTarget(GSTexture* t, const GSVector4& c) override;

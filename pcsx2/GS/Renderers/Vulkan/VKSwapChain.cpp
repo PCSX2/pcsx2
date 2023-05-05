@@ -323,11 +323,11 @@ bool VKSwapChain::CreateSwapChain()
 	}
 
 	// Select number of images in swap chain, we prefer one buffer in the background to work on
-	u32 image_count = std::max(surface_capabilities.minImageCount + 1u, 2u);
-
-	// maxImageCount can be zero, in which case there isn't an upper limit on the number of buffers.
-	if (surface_capabilities.maxImageCount > 0)
-		image_count = std::min(image_count, surface_capabilities.maxImageCount);
+	const u32 image_count = std::clamp(IsPresentModeSynchronizing() ? 2u : 3u, surface_capabilities.minImageCount,
+		(surface_capabilities.maxImageCount == 0) ? std::numeric_limits<uint32_t>::max() :
+													surface_capabilities.maxImageCount);
+	DevCon.WriteLn("(SwapChain) minImageCount=%u, maxImageCount=%u, image_count=%u", surface_capabilities.minImageCount,
+		surface_capabilities.maxImageCount, image_count);
 
 	// Determine the dimensions of the swap chain. Values of -1 indicate the size we specify here
 	// determines window size?

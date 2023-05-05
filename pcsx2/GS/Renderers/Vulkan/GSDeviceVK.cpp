@@ -383,7 +383,7 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 	}
 
 	// Previous frame needs to be presented before we can acquire the swap chain.
-	g_vulkan_context->WaitForPresentComplete();
+	g_vulkan_context->WaitForSubmitThread(true, true);
 
 	// Check if the device was lost.
 	if (g_vulkan_context->CheckLastSubmitFail())
@@ -451,7 +451,7 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 	return PresentResult::OK;
 }
 
-void GSDeviceVK::EndPresent()
+void GSDeviceVK::EndPresent(u64 present_time)
 {
 	RenderImGui();
 
@@ -460,7 +460,7 @@ void GSDeviceVK::EndPresent()
 	m_swap_chain->GetCurrentTexture()->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::PresentSrc);
 	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
-	g_vulkan_context->SubmitCommandBuffer(m_swap_chain.get(), !m_swap_chain->IsPresentModeSynchronizing());
+	g_vulkan_context->SubmitCommandBuffer(m_swap_chain.get(), present_time, true);
 	g_vulkan_context->MoveToNextCommandBuffer();
 
 	InvalidateCachedState();
@@ -469,11 +469,6 @@ void GSDeviceVK::EndPresent()
 bool GSDeviceVK::SetGPUTimingEnabled(bool enabled)
 {
 	return g_vulkan_context->SetEnableGPUTiming(enabled);
-}
-
-float GSDeviceVK::GetAndResetAccumulatedGPUTime()
-{
-	return g_vulkan_context->GetAndResetAccumulatedGPUTime();
 }
 
 #ifdef ENABLE_OGL_DEBUG

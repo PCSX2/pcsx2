@@ -83,7 +83,7 @@ void GSgifTransfer(const u8* mem, u32 size);
 void GSgifTransfer1(u8* mem, u32 addr);
 void GSgifTransfer2(u8* mem, u32 size);
 void GSgifTransfer3(u8* mem, u32 size);
-void GSvsync(u32 field, bool registers_written);
+void GSvsync(u32 field, bool registers_written, u64 present_time);
 int GSfreeze(FreezeAction mode, freezeData* data);
 std::string GSGetBaseSnapshotFilename();
 std::string GSGetBaseVideoFilename();

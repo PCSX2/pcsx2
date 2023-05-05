@@ -404,7 +404,7 @@ public:
 
 	u8* GetDataPacketPtr() const;
 	void SetEvent();
-	void PostVsyncStart(bool registers_written);
+	void PostVsyncStart(bool registers_written, u64 present_time);
 	void InitAndReadFIFO(u8* mem, u32 qwc);
 
 	void RunOnGSThread(AsyncCallType func);
@@ -445,7 +445,7 @@ extern SysMtgsThread& GetMTGS();
 
 extern void gsReset();
 extern void gsSetVideoMode(GS_VideoMode mode);
-extern void gsPostVsyncStart();
+extern void gsPostVsyncStart(u64 present_time);
 extern void gsUpdateFrequency(Pcsx2Config& config);
 
 extern void gsWrite8(u32 mem, u8 value);

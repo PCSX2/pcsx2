@@ -558,9 +558,23 @@ static __fi void VSyncCheckExit()
 		Cpu->ExitExecution();
 }
 
+static __fi u64 getPresentTime()
+{
+	if (EmuConfig.GS.LimitScalar == 0.0f || s_use_vsync_for_timing)
+		return 0;
+
+	const u64 uExpectedEnd = m_iStart + m_iTicks;  // Compute when we would expect this frame to end, assuming everything goes perfectly perfect.
+	const u64 iEnd = GetCPUTicks();                // The current tick we actually stopped on.
+	const s64 sDeltaTime = iEnd - uExpectedEnd;    // The diff between when we stopped and when we expected to.
+	if (sDeltaTime >= m_iTicks)
+		return 0;
+
+	return uExpectedEnd;
+}
+
 // Framelimiter - Measures the delta time between calls and stalls until a
 // certain amount of time passes if such time hasn't passed yet.
-static __fi void frameLimit()
+static __fi void frameLimit(bool spin)
 {
 	// Framelimiter off in settings? Framelimiter go brrr.
 	if (EmuConfig.GS.LimitScalar == 0.0f || s_use_vsync_for_timing)
@@ -578,22 +592,27 @@ static __fi void frameLimit()
 		return;
 	}
 
-	// Conversion of delta from CPU ticks (microseconds) to milliseconds
-	s32 msec = (int) ((sDeltaTime * -1000) / (s64) GetTickFrequency());
-
-	// If any integer value of milliseconds exists, sleep it off.
-	// Prior comments suggested that 1-2 ms sleeps were inaccurate on some OSes;
-	// further testing suggests instead that this was utter bullshit.
-	if (msec > 1)
+	if (spin)
 	{
-		Threading::Sleep(msec - 1);
+		// Conversion of delta from CPU ticks (microseconds) to milliseconds
+		s32 msec = (int)((sDeltaTime * -1000) / (s64)GetTickFrequency());
+
+		// If any integer value of milliseconds exists, sleep it off.
+		// Prior comments suggested that 1-2 ms sleeps were inaccurate on some OSes;
+		// further testing suggests instead that this was utter bullshit.
+		if (msec > 1)
+		{
+			Threading::Sleep(msec - 1);
+		}
+
+		// Conversion to milliseconds loses some precision; after sleeping off whole milliseconds,
+		// spin the thread without sleeping until we finally reach our expected end time.
+		while (GetCPUTicks() < uExpectedEnd)
+			Threading::SpinWait();
 	}
-
-	// Conversion to milliseconds loses some precision; after sleeping off whole milliseconds,
-	// spin the thread without sleeping until we finally reach our expected end time.
-	while (GetCPUTicks() < uExpectedEnd)
+	else
 	{
-		// SKREEEEEEEE
+		Threading::SleepUntil(uExpectedEnd);
 	}
 
 	// Finally, set our next frame start to when this one ends
@@ -602,12 +621,23 @@ static __fi void frameLimit()
 
 static __fi void VSyncStart(u32 sCycle)
 {
+	const bool use_async_present = !EmuConfig.GS.DisableThreadedPresentation && GSConfig.Renderer == GSRendererType::VK;
+
 	// Update vibration at the end of a frame.
 	VSyncUpdateCore();
 	PAD::Update();
 
-	frameLimit(); // limit FPS
-	gsPostVsyncStart(); // MUST be after framelimit; doing so before causes funk with frame times!
+	if (use_async_present)
+		gsPostVsyncStart(getPresentTime());
+
+	frameLimit(!use_async_present); // limit FPS
+
+	if (!use_async_present)
+	{
+		// MUST be after framelimit; doing so before causes funk with frame times!
+		gsPostVsyncStart(0);
+	}
+
 	VSyncCheckExit();
 
 	if(EmuConfig.Trace.Enabled && EmuConfig.Trace.EE.m_EnableAll)
