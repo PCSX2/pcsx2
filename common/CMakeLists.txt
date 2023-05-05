@@ -128,34 +128,6 @@ target_sources(common PRIVATE
 	emitter/x86types.h
 )
 
-if(USE_VULKAN)
-	target_link_libraries(common PUBLIC
-		Vulkan-Headers glslang
-	)
-	target_sources(common PRIVATE
-		Vulkan/ShaderCache.cpp
-		Vulkan/Texture.cpp
-		Vulkan/Loader.cpp
-		Vulkan/ShaderCompiler.cpp
-		Vulkan/Util.cpp
-		Vulkan/SwapChain.cpp
-		Vulkan/StreamBuffer.cpp
-		Vulkan/Context.cpp
-		Vulkan/Builders.cpp
-		Vulkan/vk_mem_alloc.cpp
-		Vulkan/Context.h
-		Vulkan/Texture.h
-		Vulkan/ShaderCompiler.h
-		Vulkan/SwapChain.h
-		Vulkan/Builders.h
-		Vulkan/StreamBuffer.h
-		Vulkan/ShaderCache.h
-		Vulkan/EntryPoints.h
-		Vulkan/Loader.h
-		Vulkan/Util.h
-	)
-endif()
-
 if(USE_VTUNE)
 	target_link_libraries(common PUBLIC Vtune::Vtune)
 endif()
@@ -195,21 +167,6 @@ endif()
 if(X11_API AND TARGET PkgConfig::XRANDR)
 	target_link_libraries(common PRIVATE PkgConfig::XRANDR)
 	target_compile_definitions(common PRIVATE "HAS_XRANDR=1")
-endif()
-
-if(USE_VULKAN)
-	if(APPLE)
-		# Needed for Metal surface creation.
-		target_compile_options(common PRIVATE -fobjc-arc)
-		target_link_options(common PRIVATE -fobjc-link-runtime)
-	elseif(NOT WIN32)
-		if(X11_API)
-			target_compile_definitions(common PUBLIC "VULKAN_USE_X11=1")
-		endif()
-		if(WAYLAND_API)
-			target_compile_definitions(common PUBLIC "VULKAN_USE_WAYLAND=1")
-		endif()
-	endif()
 endif()
 
 if (USE_GCC AND CMAKE_INTERPROCEDURAL_OPTIMIZATION)
