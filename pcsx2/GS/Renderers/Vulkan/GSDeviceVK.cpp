@@ -15,19 +15,18 @@
 
 #include "PrecompiledHeader.h"
 
-#include "GS/GS.h"
 #include "GS/Renderers/Vulkan/GSDeviceVK.h"
+#include "GS/Renderers/Vulkan/VKBuilders.h"
+#include "GS/Renderers/Vulkan/VKShaderCache.h"
+#include "GS/Renderers/Vulkan/VKSwapChain.h"
+#include "GS/Renderers/Vulkan/VKUtil.h"
+#include "GS/GS.h"
 #include "GS/GSGL.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
-#include "Host.h"
-#include "ShaderCacheVersion.h"
 
-#include "common/Vulkan/Builders.h"
-#include "common/Vulkan/Context.h"
-#include "common/Vulkan/ShaderCache.h"
-#include "common/Vulkan/SwapChain.h"
-#include "common/Vulkan/Util.h"
+#include "Host.h"
+
 #include "common/Align.h"
 #include "common/Path.h"
 #include "common/ScopedGuard.h"
@@ -88,7 +87,7 @@ GSDeviceVK::~GSDeviceVK()
 
 static void GPUListToAdapterNames(std::vector<std::string>* dest, VkInstance instance)
 {
-	Vulkan::Context::GPUList gpus = Vulkan::Context::EnumerateGPUs(instance);
+	VKContext::GPUList gpus = VKContext::EnumerateGPUs(instance);
 	dest->clear();
 	dest->reserve(gpus.size());
 	for (auto& [gpu, name] : gpus)
@@ -98,25 +97,17 @@ static void GPUListToAdapterNames(std::vector<std::string>* dest, VkInstance ins
 void GSDeviceVK::GetAdaptersAndFullscreenModes(
 	std::vector<std::string>* adapters, std::vector<std::string>* fullscreen_modes)
 {
-	std::vector<Vulkan::SwapChain::FullscreenModeInfo> fsmodes;
-
 	if (g_vulkan_context)
 	{
 		if (adapters)
 			GPUListToAdapterNames(adapters, g_vulkan_context->GetVulkanInstance());
-
-		if (fullscreen_modes)
-		{
-			fsmodes = Vulkan::SwapChain::GetSurfaceFullscreenModes(
-				g_vulkan_context->GetVulkanInstance(), g_vulkan_context->GetPhysicalDevice(), WindowInfo());
-		}
 	}
 	else
 	{
 		if (Vulkan::LoadVulkanLibrary())
 		{
 			ScopedGuard lib_guard([]() { Vulkan::UnloadVulkanLibrary(); });
-			const VkInstance instance = Vulkan::Context::CreateVulkanInstance(WindowInfo(), false, false);
+			const VkInstance instance = VKContext::CreateVulkanInstance(WindowInfo(), false, false);
 			if (instance != VK_NULL_HANDLE)
 			{
 				if (Vulkan::LoadVulkanInstanceFunctions(instance))
@@ -124,16 +115,6 @@ void GSDeviceVK::GetAdaptersAndFullscreenModes(
 
 				vkDestroyInstance(instance, nullptr);
 			}
-		}
-	}
-
-	if (!fsmodes.empty())
-	{
-		fullscreen_modes->clear();
-		fullscreen_modes->reserve(fsmodes.size());
-		for (const Vulkan::SwapChain::FullscreenModeInfo& fmi : fsmodes)
-		{
-			fullscreen_modes->push_back(GetFullscreenModeString(fmi.width, fmi.height, fmi.refresh_rate));
 		}
 	}
 }
@@ -189,9 +170,6 @@ bool GSDeviceVK::Create()
 
 	if (!CreateDeviceAndSwapChain())
 		return false;
-
-	Vulkan::ShaderCache::Create(GSConfig.DisableShaderCache ? std::string_view() : std::string_view(EmuFolders::Cache),
-		SHADER_CACHE_VERSION, GSConfig.UseDebugDevice);
 
 	if (!CheckFeatures())
 	{
@@ -267,8 +245,7 @@ void GSDeviceVK::Destroy()
 		g_vulkan_context->WaitForGPUIdle();
 		m_swap_chain.reset();
 
-		Vulkan::ShaderCache::Destroy();
-		Vulkan::Context::Destroy();
+		VKContext::Destroy();
 	}
 }
 
@@ -298,7 +275,7 @@ bool GSDeviceVK::UpdateWindow()
 		m_swap_chain.reset();
 	}
 
-	VkSurfaceKHR surface = Vulkan::SwapChain::CreateVulkanSurface(
+	VkSurfaceKHR surface = VKSwapChain::CreateVulkanSurface(
 		g_vulkan_context->GetVulkanInstance(), g_vulkan_context->GetPhysicalDevice(), &m_window_info);
 	if (surface == VK_NULL_HANDLE)
 	{
@@ -306,12 +283,12 @@ bool GSDeviceVK::UpdateWindow()
 		return false;
 	}
 
-	m_swap_chain = Vulkan::SwapChain::Create(m_window_info, surface, GetPreferredPresentModeForVsyncMode(m_vsync_mode),
+	m_swap_chain = VKSwapChain::Create(m_window_info, surface, GetPreferredPresentModeForVsyncMode(m_vsync_mode),
 		Pcsx2Config::GSOptions::TriStateToOptionalBoolean(GSConfig.ExclusiveFullscreenControl));
 	if (!m_swap_chain)
 	{
 		Console.Error("Failed to create swap chain");
-		Vulkan::SwapChain::DestroyVulkanSurface(g_vulkan_context->GetVulkanInstance(), &m_window_info, surface);
+		VKSwapChain::DestroyVulkanSurface(g_vulkan_context->GetVulkanInstance(), &m_window_info, surface);
 		return false;
 	}
 
@@ -422,7 +399,7 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 			if (!m_swap_chain->RecreateSurface(m_window_info))
 			{
 				Console.Error("Failed to recreate surface after loss");
-				g_vulkan_context->ExecuteCommandBuffer(Vulkan::Context::WaitType::None);
+				g_vulkan_context->ExecuteCommandBuffer(VKContext::WaitType::None);
 				return PresentResult::FrameSkipped;
 			}
 
@@ -435,7 +412,7 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 		{
 			// Still submit the command buffer, otherwise we'll end up with several frames waiting.
 			LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR() failed: ");
-			g_vulkan_context->ExecuteCommandBuffer(Vulkan::Context::WaitType::None);
+			g_vulkan_context->ExecuteCommandBuffer(VKContext::WaitType::None);
 			return PresentResult::FrameSkipped;
 		}
 	}
@@ -443,7 +420,7 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 	VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
 
 	// Swap chain images start in undefined
-	Vulkan::Texture& swap_chain_texture = m_swap_chain->GetCurrentTexture();
+	VKTexture& swap_chain_texture = m_swap_chain->GetCurrentTexture();
 	swap_chain_texture.OverrideImageLayout(VK_IMAGE_LAYOUT_UNDEFINED);
 	swap_chain_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
@@ -579,8 +556,7 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	if (!AcquireWindow(true))
 		return false;
 
-	VkInstance instance =
-		Vulkan::Context::CreateVulkanInstance(m_window_info, enable_debug_utils, enable_validation_layer);
+	VkInstance instance = VKContext::CreateVulkanInstance(m_window_info, enable_debug_utils, enable_validation_layer);
 	if (instance == VK_NULL_HANDLE)
 	{
 		if (enable_debug_utils || enable_validation_layer)
@@ -588,8 +564,7 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 			// Try again without the validation layer.
 			enable_debug_utils = false;
 			enable_validation_layer = false;
-			instance =
-				Vulkan::Context::CreateVulkanInstance(m_window_info, enable_debug_utils, enable_validation_layer);
+			instance = VKContext::CreateVulkanInstance(m_window_info, enable_debug_utils, enable_validation_layer);
 			if (instance == VK_NULL_HANDLE)
 			{
 				Host::ReportErrorAsync(
@@ -608,7 +583,7 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 		return false;
 	}
 
-	Vulkan::Context::GPUList gpus = Vulkan::Context::EnumerateGPUs(instance);
+	VKContext::GPUList gpus = VKContext::EnumerateGPUs(instance);
 	if (gpus.empty())
 	{
 		Host::ReportErrorAsync("Error", "No physical devices found. Does your GPU and/or driver support Vulkan?");
@@ -644,12 +619,12 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	};
 	if (m_window_info.type != WindowInfo::Type::Surfaceless)
 	{
-		surface = Vulkan::SwapChain::CreateVulkanSurface(instance, gpus[gpu_index].first, &m_window_info);
+		surface = VKSwapChain::CreateVulkanSurface(instance, gpus[gpu_index].first, &m_window_info);
 		if (surface == VK_NULL_HANDLE)
 			return false;
 	}
 
-	if (!Vulkan::Context::Create(instance, surface, gpus[gpu_index].first, !GSConfig.DisableThreadedPresentation,
+	if (!VKContext::Create(instance, surface, gpus[gpu_index].first, !GSConfig.DisableThreadedPresentation,
 			enable_debug_utils, enable_validation_layer))
 	{
 		Console.Error("Failed to create Vulkan context");
@@ -659,9 +634,8 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	// NOTE: This is assigned afterwards, because some platforms can modify the window info (e.g. Metal).
 	if (surface != VK_NULL_HANDLE)
 	{
-		m_swap_chain =
-			Vulkan::SwapChain::Create(m_window_info, surface, GetPreferredPresentModeForVsyncMode(m_vsync_mode),
-				Pcsx2Config::GSOptions::TriStateToOptionalBoolean(GSConfig.ExclusiveFullscreenControl));
+		m_swap_chain = VKSwapChain::Create(m_window_info, surface, GetPreferredPresentModeForVsyncMode(m_vsync_mode),
+			Pcsx2Config::GSOptions::TriStateToOptionalBoolean(GSConfig.ExclusiveFullscreenControl));
 		if (!m_swap_chain)
 		{
 			Console.Error("Failed to create swap chain");
@@ -1692,8 +1666,8 @@ bool GSDeviceVK::CreateNullTexture()
 	m_null_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	vkCmdClearColorImage(cmdbuf, m_null_texture.GetImage(), m_null_texture.GetLayout(), &ccv, 1, &srr);
 	m_null_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_GENERAL);
-	Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_null_texture.GetImage(), "Null texture");
-	Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_null_texture.GetView(), "Null texture view");
+	Vulkan::SetObjectName(g_vulkan_context->GetDevice(), m_null_texture.GetImage(), "Null texture");
+	Vulkan::SetObjectName(g_vulkan_context->GetDevice(), m_null_texture.GetView(), "Null texture view");
 
 	return true;
 }
@@ -1752,13 +1726,13 @@ bool GSDeviceVK::CreatePipelineLayouts()
 	dslb.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, NUM_CONVERT_SAMPLERS, VK_SHADER_STAGE_FRAGMENT_BIT);
 	if ((m_utility_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
-	Vulkan::Util::SetObjectName(dev, m_utility_ds_layout, "Convert descriptor layout");
+	Vulkan::SetObjectName(dev, m_utility_ds_layout, "Convert descriptor layout");
 
 	plb.AddPushConstants(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, CONVERT_PUSH_CONSTANTS_SIZE);
 	plb.AddDescriptorSet(m_utility_ds_layout);
 	if ((m_utility_pipeline_layout = plb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
-	Vulkan::Util::SetObjectName(dev, m_utility_ds_layout, "Convert pipeline layout");
+	Vulkan::SetObjectName(dev, m_utility_ds_layout, "Convert pipeline layout");
 
 	//////////////////////////////////////////////////////////////////////////
 	// Draw/TFX Pipeline Layout
@@ -1770,24 +1744,24 @@ bool GSDeviceVK::CreatePipelineLayouts()
 		dslb.AddBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
 	if ((m_tfx_ubo_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
-	Vulkan::Util::SetObjectName(dev, m_tfx_ubo_ds_layout, "TFX UBO descriptor layout");
+	Vulkan::SetObjectName(dev, m_tfx_ubo_ds_layout, "TFX UBO descriptor layout");
 	dslb.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	if ((m_tfx_sampler_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
-	Vulkan::Util::SetObjectName(dev, m_tfx_sampler_ds_layout, "TFX sampler descriptor layout");
+	Vulkan::SetObjectName(dev, m_tfx_sampler_ds_layout, "TFX sampler descriptor layout");
 	dslb.AddBinding(0, m_features.texture_barrier ? VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	if ((m_tfx_rt_texture_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
-	Vulkan::Util::SetObjectName(dev, m_tfx_rt_texture_ds_layout, "TFX RT texture descriptor layout");
+	Vulkan::SetObjectName(dev, m_tfx_rt_texture_ds_layout, "TFX RT texture descriptor layout");
 
 	plb.AddDescriptorSet(m_tfx_ubo_ds_layout);
 	plb.AddDescriptorSet(m_tfx_sampler_ds_layout);
 	plb.AddDescriptorSet(m_tfx_rt_texture_ds_layout);
 	if ((m_tfx_pipeline_layout = plb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
-	Vulkan::Util::SetObjectName(dev, m_tfx_pipeline_layout, "TFX pipeline layout");
+	Vulkan::SetObjectName(dev, m_tfx_pipeline_layout, "TFX pipeline layout");
 	return true;
 }
 
@@ -1890,7 +1864,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 	VkShaderModule vs = GetUtilityVertexShader(*shader);
 	if (vs == VK_NULL_HANDLE)
 		return false;
-	ScopedGuard vs_guard([&vs]() { Vulkan::Util::SafeDestroyShaderModule(vs); });
+	ScopedGuard vs_guard([&vs]() { Vulkan::SafeDestroyShaderModule(vs); });
 
 	Vulkan::GraphicsPipelineBuilder gpb;
 	SetPipelineProvokingVertex(m_features, gpb);
@@ -1962,7 +1936,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 		if (ps == VK_NULL_HANDLE)
 			return false;
 
-		ScopedGuard ps_guard([&ps]() { Vulkan::Util::SafeDestroyShaderModule(ps); });
+		ScopedGuard ps_guard([&ps]() { Vulkan::SafeDestroyShaderModule(ps); });
 		gpb.SetFragmentShader(ps);
 
 		m_convert[index] =
@@ -1970,7 +1944,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 		if (!m_convert[index])
 			return false;
 
-		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_convert[index], "Convert pipeline %d", i);
+		Vulkan::SetObjectName(g_vulkan_context->GetDevice(), m_convert[index], "Convert pipeline %d", i);
 
 		if (i == ShaderConvert::COPY)
 		{
@@ -1987,7 +1961,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 				if (!m_color_copy[i])
 					return false;
 
-				Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_color_copy[i],
+				Vulkan::SetObjectName(g_vulkan_context->GetDevice(), m_color_copy[i],
 					"Color copy pipeline (r=%u, g=%u, b=%u, a=%u)", i & 1u, (i >> 1) & 1u, (i >> 2) & 1u,
 					(i >> 3) & 1u);
 			}
@@ -2010,7 +1984,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 					if (!arr[ds][fbl])
 						return false;
 
-					Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), arr[ds][fbl],
+					Vulkan::SetObjectName(g_vulkan_context->GetDevice(), arr[ds][fbl],
 						"HDR %s/copy pipeline (ds=%u, fbl=%u)", is_setup ? "setup" : "finish", i, ds, fbl);
 				}
 			}
@@ -2038,7 +2012,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 		if (ps == VK_NULL_HANDLE)
 			return false;
 
-		ScopedGuard ps_guard([&ps]() { Vulkan::Util::SafeDestroyShaderModule(ps); });
+		ScopedGuard ps_guard([&ps]() { Vulkan::SafeDestroyShaderModule(ps); });
 		gpb.SetPipelineLayout(m_utility_pipeline_layout);
 		gpb.SetFragmentShader(ps);
 		gpb.SetNoDepthTestState();
@@ -2055,7 +2029,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 			if (!m_date_image_setup_pipelines[ds][datm])
 				return false;
 
-			Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_date_image_setup_pipelines[ds][datm],
+			Vulkan::SetObjectName(g_vulkan_context->GetDevice(), m_date_image_setup_pipelines[ds][datm],
 				"DATE image clear pipeline (ds=%u, datm=%u)", ds, datm);
 		}
 	}
@@ -2082,7 +2056,7 @@ bool GSDeviceVK::CompilePresentPipelines()
 	VkShaderModule vs = GetUtilityVertexShader(*shader);
 	if (vs == VK_NULL_HANDLE)
 		return false;
-	ScopedGuard vs_guard([&vs]() { Vulkan::Util::SafeDestroyShaderModule(vs); });
+	ScopedGuard vs_guard([&vs]() { Vulkan::SafeDestroyShaderModule(vs); });
 
 	Vulkan::GraphicsPipelineBuilder gpb;
 	SetPipelineProvokingVertex(m_features, gpb);
@@ -2106,7 +2080,7 @@ bool GSDeviceVK::CompilePresentPipelines()
 		if (ps == VK_NULL_HANDLE)
 			return false;
 
-		ScopedGuard ps_guard([&ps]() { Vulkan::Util::SafeDestroyShaderModule(ps); });
+		ScopedGuard ps_guard([&ps]() { Vulkan::SafeDestroyShaderModule(ps); });
 		gpb.SetFragmentShader(ps);
 
 		m_present[index] =
@@ -2114,7 +2088,7 @@ bool GSDeviceVK::CompilePresentPipelines()
 		if (!m_present[index])
 			return false;
 
-		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_present[index], "Present pipeline %d", i);
+		Vulkan::SetObjectName(g_vulkan_context->GetDevice(), m_present[index], "Present pipeline %d", i);
 	}
 
 	return true;
@@ -2138,7 +2112,7 @@ bool GSDeviceVK::CompileInterlacePipelines()
 	VkShaderModule vs = GetUtilityVertexShader(*shader);
 	if (vs == VK_NULL_HANDLE)
 		return false;
-	ScopedGuard vs_guard([&vs]() { Vulkan::Util::SafeDestroyShaderModule(vs); });
+	ScopedGuard vs_guard([&vs]() { Vulkan::SafeDestroyShaderModule(vs); });
 
 	Vulkan::GraphicsPipelineBuilder gpb;
 	SetPipelineProvokingVertex(m_features, gpb);
@@ -2162,11 +2136,11 @@ bool GSDeviceVK::CompileInterlacePipelines()
 
 		m_interlace[i] =
 			gpb.Create(g_vulkan_context->GetDevice(), g_vulkan_shader_cache->GetPipelineCache(true), false);
-		Vulkan::Util::SafeDestroyShaderModule(ps);
+		Vulkan::SafeDestroyShaderModule(ps);
 		if (!m_interlace[i])
 			return false;
 
-		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_convert[i], "Interlace pipeline %d", i);
+		Vulkan::SetObjectName(g_vulkan_context->GetDevice(), m_convert[i], "Interlace pipeline %d", i);
 	}
 
 	return true;
@@ -2189,7 +2163,7 @@ bool GSDeviceVK::CompileMergePipelines()
 	VkShaderModule vs = GetUtilityVertexShader(*shader);
 	if (vs == VK_NULL_HANDLE)
 		return false;
-	ScopedGuard vs_guard([&vs]() { Vulkan::Util::SafeDestroyShaderModule(vs); });
+	ScopedGuard vs_guard([&vs]() { Vulkan::SafeDestroyShaderModule(vs); });
 
 	Vulkan::GraphicsPipelineBuilder gpb;
 	SetPipelineProvokingVertex(m_features, gpb);
@@ -2213,11 +2187,11 @@ bool GSDeviceVK::CompileMergePipelines()
 			VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
 
 		m_merge[i] = gpb.Create(g_vulkan_context->GetDevice(), g_vulkan_shader_cache->GetPipelineCache(true), false);
-		Vulkan::Util::SafeDestroyShaderModule(ps);
+		Vulkan::SafeDestroyShaderModule(ps);
 		if (!m_merge[i])
 			return false;
 
-		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_convert[i], "Merge pipeline %d", i);
+		Vulkan::SetObjectName(g_vulkan_context->GetDevice(), m_convert[i], "Merge pipeline %d", i);
 	}
 
 	return true;
@@ -2261,8 +2235,8 @@ bool GSDeviceVK::CompilePostProcessingPipelines()
 		VkShaderModule vs = GetUtilityVertexShader(*vshader);
 		VkShaderModule ps = GetUtilityFragmentShader(psource, "ps_main");
 		ScopedGuard shader_guard([&vs, &ps]() {
-			Vulkan::Util::SafeDestroyShaderModule(vs);
-			Vulkan::Util::SafeDestroyShaderModule(ps);
+			Vulkan::SafeDestroyShaderModule(vs);
+			Vulkan::SafeDestroyShaderModule(ps);
 		});
 		if (vs == VK_NULL_HANDLE || ps == VK_NULL_HANDLE)
 			return false;
@@ -2274,7 +2248,7 @@ bool GSDeviceVK::CompilePostProcessingPipelines()
 		if (!m_fxaa_pipeline)
 			return false;
 
-		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_fxaa_pipeline, "FXAA pipeline");
+		Vulkan::SetObjectName(g_vulkan_context->GetDevice(), m_fxaa_pipeline, "FXAA pipeline");
 	}
 
 	{
@@ -2288,8 +2262,8 @@ bool GSDeviceVK::CompilePostProcessingPipelines()
 		VkShaderModule vs = GetUtilityVertexShader(*shader);
 		VkShaderModule ps = GetUtilityFragmentShader(*shader);
 		ScopedGuard shader_guard([&vs, &ps]() {
-			Vulkan::Util::SafeDestroyShaderModule(vs);
-			Vulkan::Util::SafeDestroyShaderModule(ps);
+			Vulkan::SafeDestroyShaderModule(vs);
+			Vulkan::SafeDestroyShaderModule(ps);
 		});
 		if (vs == VK_NULL_HANDLE || ps == VK_NULL_HANDLE)
 			return false;
@@ -2301,7 +2275,7 @@ bool GSDeviceVK::CompilePostProcessingPipelines()
 		if (!m_shadeboost_pipeline)
 			return false;
 
-		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_shadeboost_pipeline, "Shadeboost pipeline");
+		Vulkan::SetObjectName(g_vulkan_context->GetDevice(), m_shadeboost_pipeline, "Shadeboost pipeline");
 	}
 
 	return true;
@@ -2317,13 +2291,13 @@ bool GSDeviceVK::CompileCASPipelines()
 	dslb.AddBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
 	if ((m_cas_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
-	Vulkan::Util::SetObjectName(dev, m_cas_ds_layout, "CAS descriptor layout");
+	Vulkan::SetObjectName(dev, m_cas_ds_layout, "CAS descriptor layout");
 
 	plb.AddPushConstants(VK_SHADER_STAGE_COMPUTE_BIT, 0, NUM_CAS_CONSTANTS * sizeof(u32));
 	plb.AddDescriptorSet(m_cas_ds_layout);
 	if ((m_cas_pipeline_layout = plb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
-	Vulkan::Util::SetObjectName(dev, m_cas_pipeline_layout, "CAS pipeline layout");
+	Vulkan::SetObjectName(dev, m_cas_pipeline_layout, "CAS pipeline layout");
 
 	// we use specialization constants to avoid compiling it twice
 	std::optional<std::string> cas_source(Host::ReadResourceFileToString("shaders/vulkan/cas.glsl"));
@@ -2331,7 +2305,7 @@ bool GSDeviceVK::CompileCASPipelines()
 		return false;
 
 	VkShaderModule mod = g_vulkan_shader_cache->GetComputeShader(cas_source->c_str());
-	ScopedGuard mod_guard = [&mod]() { Vulkan::Util::SafeDestroyShaderModule(mod); };
+	ScopedGuard mod_guard = [&mod]() { Vulkan::SafeDestroyShaderModule(mod); };
 	if (mod == VK_NULL_HANDLE)
 		return false;
 
@@ -2365,7 +2339,7 @@ bool GSDeviceVK::CompileImGuiPipeline()
 		Console.Error("Failed to compile ImGui vertex shader");
 		return false;
 	}
-	ScopedGuard vs_guard([&vs]() { Vulkan::Util::SafeDestroyShaderModule(vs); });
+	ScopedGuard vs_guard([&vs]() { Vulkan::SafeDestroyShaderModule(vs); });
 
 	VkShaderModule ps = GetUtilityFragmentShader(glsl.value(), "ps_main");
 	if (ps == VK_NULL_HANDLE)
@@ -2373,7 +2347,7 @@ bool GSDeviceVK::CompileImGuiPipeline()
 		Console.Error("Failed to compile ImGui pixel shader");
 		return false;
 	}
-	ScopedGuard ps_guard([&ps]() { Vulkan::Util::SafeDestroyShaderModule(ps); });
+	ScopedGuard ps_guard([&ps]() { Vulkan::SafeDestroyShaderModule(ps); });
 
 	Vulkan::GraphicsPipelineBuilder gpb;
 	SetPipelineProvokingVertex(m_features, gpb);
@@ -2400,7 +2374,7 @@ bool GSDeviceVK::CompileImGuiPipeline()
 		return false;
 	}
 
-	Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_imgui_pipeline, "ImGui pipeline");
+	Vulkan::SetObjectName(g_vulkan_context->GetDevice(), m_imgui_pipeline, "ImGui pipeline");
 	return true;
 }
 
@@ -2465,7 +2439,7 @@ void GSDeviceVK::RenderImGui()
 			SetScissor(GSVector4i(clip).max_i32(GSVector4i::zero()));
 
 			// Since we don't have the GSTexture...
-			Vulkan::Texture* tex = static_cast<Vulkan::Texture*>(pcmd->GetTexID());
+			VKTexture* tex = static_cast<VKTexture*>(pcmd->GetTexID());
 			if (m_utility_texture != tex)
 			{
 				m_utility_texture = tex;
@@ -2493,7 +2467,7 @@ void GSDeviceVK::RenderBlankFrame()
 	}
 
 	VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
-	Vulkan::Texture& sctex = m_swap_chain->GetCurrentTexture();
+	VKTexture& sctex = m_swap_chain->GetCurrentTexture();
 	sctex.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
 	constexpr VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
@@ -2576,52 +2550,52 @@ bool GSDeviceVK::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, cons
 
 void GSDeviceVK::DestroyResources()
 {
-	g_vulkan_context->ExecuteCommandBuffer(Vulkan::Context::WaitType::Sleep);
+	g_vulkan_context->ExecuteCommandBuffer(VKContext::WaitType::Sleep);
 	if (m_tfx_descriptor_sets[0] != VK_NULL_HANDLE)
 		g_vulkan_context->FreeGlobalDescriptorSet(m_tfx_descriptor_sets[0]);
 
 	for (auto& it : m_tfx_pipelines)
-		Vulkan::Util::SafeDestroyPipeline(it.second);
+		Vulkan::SafeDestroyPipeline(it.second);
 	for (auto& it : m_tfx_fragment_shaders)
-		Vulkan::Util::SafeDestroyShaderModule(it.second);
+		Vulkan::SafeDestroyShaderModule(it.second);
 	for (auto& it : m_tfx_vertex_shaders)
-		Vulkan::Util::SafeDestroyShaderModule(it.second);
+		Vulkan::SafeDestroyShaderModule(it.second);
 	for (VkPipeline& it : m_interlace)
-		Vulkan::Util::SafeDestroyPipeline(it);
+		Vulkan::SafeDestroyPipeline(it);
 	for (VkPipeline& it : m_merge)
-		Vulkan::Util::SafeDestroyPipeline(it);
+		Vulkan::SafeDestroyPipeline(it);
 	for (VkPipeline& it : m_color_copy)
-		Vulkan::Util::SafeDestroyPipeline(it);
+		Vulkan::SafeDestroyPipeline(it);
 	for (VkPipeline& it : m_present)
-		Vulkan::Util::SafeDestroyPipeline(it);
+		Vulkan::SafeDestroyPipeline(it);
 	for (VkPipeline& it : m_convert)
-		Vulkan::Util::SafeDestroyPipeline(it);
+		Vulkan::SafeDestroyPipeline(it);
 	for (u32 ds = 0; ds < 2; ds++)
 	{
 		for (u32 fbl = 0; fbl < 2; fbl++)
 		{
-			Vulkan::Util::SafeDestroyPipeline(m_hdr_setup_pipelines[ds][fbl]);
-			Vulkan::Util::SafeDestroyPipeline(m_hdr_finish_pipelines[ds][fbl]);
+			Vulkan::SafeDestroyPipeline(m_hdr_setup_pipelines[ds][fbl]);
+			Vulkan::SafeDestroyPipeline(m_hdr_finish_pipelines[ds][fbl]);
 		}
 	}
 	for (u32 ds = 0; ds < 2; ds++)
 	{
 		for (u32 datm = 0; datm < 2; datm++)
 		{
-			Vulkan::Util::SafeDestroyPipeline(m_date_image_setup_pipelines[ds][datm]);
+			Vulkan::SafeDestroyPipeline(m_date_image_setup_pipelines[ds][datm]);
 		}
 	}
-	Vulkan::Util::SafeDestroyPipeline(m_fxaa_pipeline);
-	Vulkan::Util::SafeDestroyPipeline(m_shadeboost_pipeline);
+	Vulkan::SafeDestroyPipeline(m_fxaa_pipeline);
+	Vulkan::SafeDestroyPipeline(m_shadeboost_pipeline);
 
 	for (VkPipeline& it : m_cas_pipelines)
-		Vulkan::Util::SafeDestroyPipeline(it);
-	Vulkan::Util::SafeDestroyPipelineLayout(m_cas_pipeline_layout);
-	Vulkan::Util::SafeDestroyDescriptorSetLayout(m_cas_ds_layout);
-	Vulkan::Util::SafeDestroyPipeline(m_imgui_pipeline);
+		Vulkan::SafeDestroyPipeline(it);
+	Vulkan::SafeDestroyPipelineLayout(m_cas_pipeline_layout);
+	Vulkan::SafeDestroyDescriptorSetLayout(m_cas_ds_layout);
+	Vulkan::SafeDestroyPipeline(m_imgui_pipeline);
 
 	for (auto& it : m_samplers)
-		Vulkan::Util::SafeDestroySampler(it.second);
+		Vulkan::SafeDestroySampler(it.second);
 
 	m_linear_sampler = VK_NULL_HANDLE;
 	m_point_sampler = VK_NULL_HANDLE;
@@ -2646,12 +2620,12 @@ void GSDeviceVK::DestroyResources()
 		m_expand_index_buffer_allocation = VK_NULL_HANDLE;
 	}
 
-	Vulkan::Util::SafeDestroyPipelineLayout(m_tfx_pipeline_layout);
-	Vulkan::Util::SafeDestroyDescriptorSetLayout(m_tfx_rt_texture_ds_layout);
-	Vulkan::Util::SafeDestroyDescriptorSetLayout(m_tfx_sampler_ds_layout);
-	Vulkan::Util::SafeDestroyDescriptorSetLayout(m_tfx_ubo_ds_layout);
-	Vulkan::Util::SafeDestroyPipelineLayout(m_utility_pipeline_layout);
-	Vulkan::Util::SafeDestroyDescriptorSetLayout(m_utility_ds_layout);
+	Vulkan::SafeDestroyPipelineLayout(m_tfx_pipeline_layout);
+	Vulkan::SafeDestroyDescriptorSetLayout(m_tfx_rt_texture_ds_layout);
+	Vulkan::SafeDestroyDescriptorSetLayout(m_tfx_sampler_ds_layout);
+	Vulkan::SafeDestroyDescriptorSetLayout(m_tfx_ubo_ds_layout);
+	Vulkan::SafeDestroyPipelineLayout(m_utility_pipeline_layout);
+	Vulkan::SafeDestroyDescriptorSetLayout(m_utility_ds_layout);
 
 	m_null_texture.Destroy(false);
 }
@@ -2675,7 +2649,7 @@ VkShaderModule GSDeviceVK::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
 
 	VkShaderModule mod = g_vulkan_shader_cache->GetVertexShader(ss.str());
 	if (mod)
-		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), mod, "TFX Vertex %08X", sel.key);
+		Vulkan::SetObjectName(g_vulkan_context->GetDevice(), mod, "TFX Vertex %08X", sel.key);
 
 	m_tfx_vertex_shaders.emplace(sel.key, mod);
 	return mod;
@@ -2745,7 +2719,7 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 
 	VkShaderModule mod = g_vulkan_shader_cache->GetFragmentShader(ss.str());
 	if (mod)
-		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), mod, "TFX Fragment %" PRIX64 "%08X", sel.key_hi, sel.key_lo);
+		Vulkan::SetObjectName(g_vulkan_context->GetDevice(), mod, "TFX Fragment %" PRIX64 "%08X", sel.key_hi, sel.key_lo);
 
 	m_tfx_fragment_shaders.emplace(sel, mod);
 	return mod;
@@ -2868,7 +2842,7 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	VkPipeline pipeline = gpb.Create(g_vulkan_context->GetDevice(), g_vulkan_shader_cache->GetPipelineCache(true));
 	if (pipeline)
 	{
-		Vulkan::Util::SetObjectName(
+		Vulkan::SetObjectName(
 			g_vulkan_context->GetDevice(), pipeline, "TFX Pipeline %08X/%" PRIX64 "%08X", p.vs.key, p.ps.key_hi, p.ps.key_lo);
 	}
 
@@ -2914,10 +2888,10 @@ void GSDeviceVK::InitializeState()
 
 	m_point_sampler = GetSampler(GSHWDrawConfig::SamplerSelector::Point());
 	if (m_point_sampler)
-		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_point_sampler, "Point sampler");
+		Vulkan::SetObjectName(g_vulkan_context->GetDevice(), m_point_sampler, "Point sampler");
 	m_linear_sampler = GetSampler(GSHWDrawConfig::SamplerSelector::Linear());
 	if (m_linear_sampler)
-		Vulkan::Util::SetObjectName(g_vulkan_context->GetDevice(), m_point_sampler, "Linear sampler");
+		Vulkan::SetObjectName(g_vulkan_context->GetDevice(), m_point_sampler, "Linear sampler");
 
 	m_tfx_sampler_sel = GSHWDrawConfig::SamplerSelector::Point().key;
 	m_tfx_sampler = m_point_sampler;
@@ -2944,18 +2918,18 @@ bool GSDeviceVK::CreatePersistentDescriptorSets()
 			m_vertex_stream_buffer.GetBuffer(), 0, VERTEX_BUFFER_SIZE);
 	}
 	dsub.Update(dev);
-	Vulkan::Util::SetObjectName(dev, m_tfx_descriptor_sets[0], "Persistent TFX UBO set");
+	Vulkan::SetObjectName(dev, m_tfx_descriptor_sets[0], "Persistent TFX UBO set");
 	return true;
 }
 
-static Vulkan::Context::WaitType GetWaitType(bool wait, bool spin)
+static VKContext::WaitType GetWaitType(bool wait, bool spin)
 {
 	if (!wait)
-		return Vulkan::Context::WaitType::None;
+		return VKContext::WaitType::None;
 	if (spin)
-		return Vulkan::Context::WaitType::Spin;
+		return VKContext::WaitType::Spin;
 	else
-		return Vulkan::Context::WaitType::Sleep;
+		return VKContext::WaitType::Sleep;
 }
 
 void GSDeviceVK::ExecuteCommandBuffer(bool wait_for_completion)
@@ -3074,7 +3048,7 @@ void GSDeviceVK::SetBlendConstants(u8 color)
 
 void GSDeviceVK::PSSetShaderResource(int i, GSTexture* sr, bool check_state)
 {
-	const Vulkan::Texture* tex;
+	const VKTexture* tex;
 	if (sr)
 	{
 		GSTextureVK* vkTex = static_cast<GSTextureVK*>(sr);
@@ -3117,7 +3091,7 @@ void GSDeviceVK::PSSetSampler(GSHWDrawConfig::SamplerSelector sel)
 
 void GSDeviceVK::SetUtilityTexture(GSTexture* tex, VkSampler sampler)
 {
-	const Vulkan::Texture* vtex;
+	const VKTexture* vtex;
 	if (tex)
 	{
 		GSTextureVK* vkTex = static_cast<GSTextureVK*>(tex);
@@ -3147,7 +3121,7 @@ void GSDeviceVK::SetUtilityPushConstants(const void* data, u32 size)
 
 void GSDeviceVK::UnbindTexture(GSTextureVK* tex)
 {
-	const Vulkan::Texture* vtex = tex->GetTexturePtr();
+	const VKTexture* vtex = tex->GetTexturePtr();
 	for (u32 i = 0; i < NUM_TFX_TEXTURES; i++)
 	{
 		if (m_tfx_textures[i] == vtex)

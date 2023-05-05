@@ -640,11 +640,44 @@ if(USE_VULKAN)
 	list(APPEND pcsx2GSSources
 		GS/Renderers/Vulkan/GSDeviceVK.cpp
 		GS/Renderers/Vulkan/GSTextureVK.cpp
+		GS/Renderers/Vulkan/vk_mem_alloc.cpp
+		GS/Renderers/Vulkan/VKBuilders.cpp
+		GS/Renderers/Vulkan/VKContext.cpp
+		GS/Renderers/Vulkan/VKLoader.cpp
+		GS/Renderers/Vulkan/VKShaderCache.cpp
+		GS/Renderers/Vulkan/VKStreamBuffer.cpp
+		GS/Renderers/Vulkan/VKSwapChain.cpp
+		GS/Renderers/Vulkan/VKTexture.cpp
+		GS/Renderers/Vulkan/VKUtil.cpp
 	)
 	list(APPEND pcsx2GSHeaders
 		GS/Renderers/Vulkan/GSDeviceVK.h
 		GS/Renderers/Vulkan/GSTextureVK.h
+		GS/Renderers/Vulkan/VKBuilders.h
+		GS/Renderers/Vulkan/VKContext.h
+		GS/Renderers/Vulkan/VKEntryPoints.h
+		GS/Renderers/Vulkan/VKEntryPoints.inl
+		GS/Renderers/Vulkan/VKLoader.h
+		GS/Renderers/Vulkan/VKShaderCache.h
+		GS/Renderers/Vulkan/VKStreamBuffer.h
+		GS/Renderers/Vulkan/VKSwapChain.h
+		GS/Renderers/Vulkan/VKTexture.h
+		GS/Renderers/Vulkan/VKUtil.h
 	)
+	target_link_libraries(PCSX2_FLAGS INTERFACE Vulkan-Headers glslang)
+
+	if(APPLE)
+		# Needed for Metal surface creation.
+		target_compile_options(common PRIVATE -fobjc-arc)
+		target_link_options(common PRIVATE -fobjc-link-runtime)
+	elseif(NOT WIN32)
+		if(X11_API)
+			target_compile_definitions(common PUBLIC "VULKAN_USE_X11=1")
+		endif()
+		if(WAYLAND_API)
+			target_compile_definitions(common PUBLIC "VULKAN_USE_WAYLAND=1")
+		endif()
+	endif()
 endif()
 
 set(pcsx2GSMetalShaders

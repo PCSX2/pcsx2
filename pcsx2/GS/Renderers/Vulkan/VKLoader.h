@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -93,7 +93,7 @@
 
 #endif
 
-#include "EntryPoints.h"
+#include "VKEntryPoints.h"
 
 // We include vk_mem_alloc globally, so we don't accidentally include it before the vulkan header somewhere.
 #ifdef __clang__

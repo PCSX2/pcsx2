@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,9 +15,10 @@
 
 #pragma once
 
-#include "common/Pcsx2Defs.h"
+#include "GS/Renderers/Vulkan/VKLoader.h"
+
 #include "common/StringUtil.h"
-#include "common/Vulkan/Loader.h"
+
 #include <algorithm>
 #include <array>
 #include <cstdarg>
@@ -25,38 +26,36 @@
 
 namespace Vulkan
 {
-	namespace Util
-	{
-		bool IsDepthFormat(VkFormat format);
-		bool IsDepthStencilFormat(VkFormat format);
-		VkFormat GetLinearFormat(VkFormat format);
-		u32 GetTexelSize(VkFormat format);
+	bool IsDepthFormat(VkFormat format);
+	bool IsDepthStencilFormat(VkFormat format);
+	VkFormat GetLinearFormat(VkFormat format);
+	u32 GetTexelSize(VkFormat format);
 
-		// Safe destroy helpers
-		void SafeDestroyFramebuffer(VkFramebuffer& fb);
-		void SafeDestroyShaderModule(VkShaderModule& sm);
-		void SafeDestroyPipeline(VkPipeline& p);
-		void SafeDestroyPipelineLayout(VkPipelineLayout& pl);
-		void SafeDestroyDescriptorSetLayout(VkDescriptorSetLayout& dsl);
-		void SafeDestroyBufferView(VkBufferView& bv);
-		void SafeDestroyImageView(VkImageView& iv);
-		void SafeDestroySampler(VkSampler& samp);
-		void SafeDestroySemaphore(VkSemaphore& sem);
-		void SafeFreeGlobalDescriptorSet(VkDescriptorSet& ds);
+	// Safe destroy helpers
+	void SafeDestroyFramebuffer(VkFramebuffer& fb);
+	void SafeDestroyShaderModule(VkShaderModule& sm);
+	void SafeDestroyPipeline(VkPipeline& p);
+	void SafeDestroyPipelineLayout(VkPipelineLayout& pl);
+	void SafeDestroyDescriptorSetLayout(VkDescriptorSetLayout& dsl);
+	void SafeDestroyBufferView(VkBufferView& bv);
+	void SafeDestroyImageView(VkImageView& iv);
+	void SafeDestroySampler(VkSampler& samp);
+	void SafeDestroySemaphore(VkSemaphore& sem);
+	void SafeFreeGlobalDescriptorSet(VkDescriptorSet& ds);
 
-		// Wrapper for creating an barrier on a buffer
-		void BufferMemoryBarrier(VkCommandBuffer command_buffer, VkBuffer buffer, VkAccessFlags src_access_mask,
-			VkAccessFlags dst_access_mask, VkDeviceSize offset, VkDeviceSize size, VkPipelineStageFlags src_stage_mask,
-			VkPipelineStageFlags dst_stage_mask);
+	// Wrapper for creating an barrier on a buffer
+	void BufferMemoryBarrier(VkCommandBuffer command_buffer, VkBuffer buffer, VkAccessFlags src_access_mask,
+		VkAccessFlags dst_access_mask, VkDeviceSize offset, VkDeviceSize size, VkPipelineStageFlags src_stage_mask,
+		VkPipelineStageFlags dst_stage_mask);
 
-		// Adds a structure to a chain.
-		void AddPointerToChain(void* head, const void* ptr);
+	// Adds a structure to a chain.
+	void AddPointerToChain(void* head, const void* ptr);
 
-		const char* VkResultToString(VkResult res);
-		const char* PresentModeToString(VkPresentModeKHR mode);
-		void LogVulkanResult(const char* func_name, VkResult res, const char* msg, ...) /*printflike(4, 5)*/;
+	const char* VkResultToString(VkResult res);
+	const char* PresentModeToString(VkPresentModeKHR mode);
+	void LogVulkanResult(const char* func_name, VkResult res, const char* msg, ...) /*printflike(4, 5)*/;
 
-#define LOG_VULKAN_ERROR(res, ...) ::Vulkan::Util::LogVulkanResult(__func__, res, __VA_ARGS__)
+#define LOG_VULKAN_ERROR(res, ...) ::Vulkan::LogVulkanResult(__func__, res, __VA_ARGS__)
 
 #if defined(_DEBUG)
 
@@ -70,11 +69,11 @@ namespace Vulkan
 
 #ifdef ENABLE_VULKAN_DEBUG_OBJECTS
 
-		// Provides a compile-time mapping between a Vulkan-type into its matching VkObjectType
-		template <typename T>
-		struct VkObjectTypeMap;
+	// Provides a compile-time mapping between a Vulkan-type into its matching VkObjectType
+	template <typename T>
+	struct VkObjectTypeMap;
 
-		// clang-format off
+	// clang-format off
 template<> struct VkObjectTypeMap<VkInstance                > { using type = VkInstance                ; static constexpr VkObjectType value = VK_OBJECT_TYPE_INSTANCE;                   };
 template<> struct VkObjectTypeMap<VkPhysicalDevice          > { using type = VkPhysicalDevice          ; static constexpr VkObjectType value = VK_OBJECT_TYPE_PHYSICAL_DEVICE;            };
 template<> struct VkObjectTypeMap<VkDevice                  > { using type = VkDevice                  ; static constexpr VkObjectType value = VK_OBJECT_TYPE_DEVICE;                     };
@@ -104,36 +103,35 @@ template<> struct VkObjectTypeMap<VkDescriptorUpdateTemplate> { using type = VkD
 template<> struct VkObjectTypeMap<VkSurfaceKHR              > { using type = VkSurfaceKHR              ; static constexpr VkObjectType value = VK_OBJECT_TYPE_SURFACE_KHR;                };
 template<> struct VkObjectTypeMap<VkSwapchainKHR            > { using type = VkSwapchainKHR            ; static constexpr VkObjectType value = VK_OBJECT_TYPE_SWAPCHAIN_KHR;              };
 template<> struct VkObjectTypeMap<VkDebugUtilsMessengerEXT  > { using type = VkDebugUtilsMessengerEXT  ; static constexpr VkObjectType value = VK_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT;  };
-		// clang-format on
+	// clang-format on
 
 #endif
 
-		static inline void SetObjectName(
-			VkDevice device, void* object_handle, VkObjectType object_type, const char* format, va_list ap)
-		{
+	static inline void SetObjectName(
+		VkDevice device, void* object_handle, VkObjectType object_type, const char* format, va_list ap)
+	{
 #ifdef ENABLE_VULKAN_DEBUG_OBJECTS
-			if (!vkSetDebugUtilsObjectNameEXT)
-			{
-				return;
-			}
-
-			const std::string str(StringUtil::StdStringFromFormatV(format, ap));
-			const VkDebugUtilsObjectNameInfoEXT nameInfo{VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT, nullptr,
-				object_type, reinterpret_cast<uint64_t>(object_handle), str.c_str()};
-			vkSetDebugUtilsObjectNameEXT(device, &nameInfo);
-#endif
+		if (!vkSetDebugUtilsObjectNameEXT)
+		{
+			return;
 		}
 
-		template <typename T>
-		static inline void SetObjectName(VkDevice device, T object_handle, const char* format, ...)
-		{
-#ifdef ENABLE_VULKAN_DEBUG_OBJECTS
-			std::va_list ap;
-			va_start(ap, format);
-			SetObjectName(device, reinterpret_cast<void*>((typename VkObjectTypeMap<T>::type)object_handle),
-				VkObjectTypeMap<T>::value, format, ap);
-			va_end(ap);
+		const std::string str(StringUtil::StdStringFromFormatV(format, ap));
+		const VkDebugUtilsObjectNameInfoEXT nameInfo{VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT, nullptr,
+			object_type, reinterpret_cast<uint64_t>(object_handle), str.c_str()};
+		vkSetDebugUtilsObjectNameEXT(device, &nameInfo);
 #endif
-		}
-	} // namespace Util
+	}
+
+	template <typename T>
+	static inline void SetObjectName(VkDevice device, T object_handle, const char* format, ...)
+	{
+#ifdef ENABLE_VULKAN_DEBUG_OBJECTS
+		std::va_list ap;
+		va_start(ap, format);
+		SetObjectName(device, reinterpret_cast<void*>((typename VkObjectTypeMap<T>::type)object_handle),
+			VkObjectTypeMap<T>::value, format, ap);
+		va_end(ap);
+#endif
+	}
 } // namespace Vulkan

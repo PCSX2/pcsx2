@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,8 +14,9 @@
  */
 
 #pragma once
-#include "common/Pcsx2Defs.h"
-#include "common/Vulkan/Loader.h"
+
+#include "GS/Renderers/Vulkan/VKLoader.h"
+
 #include <array>
 
 namespace Vulkan
@@ -230,8 +231,6 @@ namespace Vulkan
 		void Update(VkDevice device, bool clear = true);
 
 		void AddImageDescriptorWrite(VkDescriptorSet set, u32 binding, VkImageView view,
-			VkImageLayout layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		void AddImageDescriptorWrites(VkDescriptorSet set, u32 binding, const VkImageView* views, u32 num_views,
 			VkImageLayout layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		void AddSamplerDescriptorWrite(VkDescriptorSet set, u32 binding, VkSampler sampler);
 		void AddSamplerDescriptorWrites(VkDescriptorSet set, u32 binding, const VkSampler* samplers, u32 num_samplers);
