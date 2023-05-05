@@ -2238,7 +2238,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				if (!draw_rect.rempty())
 				{
 					// The draw rect and read rect overlap somewhat, we should update the target before downloading it.
-					if (!dirty_rect.rintersect(targetr).rempty())
+					if (t->m_TEX0.TBP0 == bp && !dirty_rect.rintersect(targetr).rempty())
 						t->Update(false);
 
 					Read(t, draw_rect);
@@ -2387,7 +2387,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				}
 
 				// The draw rect and read rect overlap somewhat, we should update the target before downloading it.
-				if (!dirty_rect.rintersect(targetr).rempty())
+				if (exact_bp && !dirty_rect.rintersect(targetr).rempty())
 					t->Update(false);
 
 				Read(t, targetr);
