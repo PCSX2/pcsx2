@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,22 +15,19 @@
 
 #pragma once
 
-#include "common/GL/ContextEGL.h"
+#include "GS/Renderers/OpenGL/GLContextEGL.h"
 
-namespace GL
+class GLContextEGLX11 final : public GLContextEGL
 {
-	class ContextEGLX11 final : public ContextEGL
-	{
-	public:
-		ContextEGLX11(const WindowInfo& wi);
-		~ContextEGLX11() override;
+public:
+	GLContextEGLX11(const WindowInfo& wi);
+	~GLContextEGLX11() override;
 
-		static std::unique_ptr<Context> Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try);
+	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try);
 
-		std::unique_ptr<Context> CreateSharedContext(const WindowInfo& wi) override;
-		void ResizeSurface(u32 new_surface_width = 0, u32 new_surface_height = 0) override;
+	std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi) override;
+	void ResizeSurface(u32 new_surface_width = 0, u32 new_surface_height = 0) override;
 
-	protected:
-		EGLNativeWindowType GetNativeWindow(EGLConfig config) override;
-	};
-} // namespace GL
+protected:
+	EGLNativeWindowType GetNativeWindow(EGLConfig config) override;
+};

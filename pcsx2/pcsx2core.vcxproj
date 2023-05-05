@@ -206,6 +206,11 @@
     <ClCompile Include="GS\Renderers\DX12\D3D12ShaderCache.cpp" />
     <ClCompile Include="GS\Renderers\DX12\D3D12StreamBuffer.cpp" />
     <ClCompile Include="GS\Renderers\DX12\D3D12Texture.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GLContext.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GLContextWGL.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GLProgram.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GLShaderCache.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GLStreamBuffer.cpp" />
     <ClCompile Include="INISettingsInterface.cpp" />
     <ClCompile Include="Frontend\InputManager.cpp" />
     <ClCompile Include="Frontend\InputSource.cpp" />
@@ -553,6 +558,11 @@
     <ClInclude Include="GS\Renderers\DX12\D3D12StreamBuffer.h" />
     <ClInclude Include="GS\Renderers\DX12\D3D12Texture.h" />
     <ClInclude Include="GS\Renderers\HW\GSHwHack.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GLContext.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GLContextWGL.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GLProgram.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GLShaderCache.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GLStreamBuffer.h" />
     <ClInclude Include="INISettingsInterface.h" />
     <ClInclude Include="Frontend\InputManager.h" />
     <ClInclude Include="Frontend\InputSource.h" />

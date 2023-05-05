@@ -15,13 +15,6 @@
 
 #pragma once
 
-#define GL_TEX_LEVEL_0 (0)
-#define GL_TEX_LEVEL_1 (1)
-#define GL_FB_DEFAULT (0)
-#define GL_BUFFER_0 (0)
-
-#include "glad.h"
-
 namespace GLLoader
 {
 	bool check_gl_requirements();

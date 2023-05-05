@@ -128,22 +128,6 @@ target_sources(common PRIVATE
 	emitter/x86types.h
 )
 
-if(USE_OPENGL)
-	target_sources(common PRIVATE
-		GL/Context.cpp
-		GL/Program.cpp
-		GL/ShaderCache.cpp
-		GL/StreamBuffer.cpp
-	)
-	target_sources(common PRIVATE
-		GL/Context.h
-		GL/Program.h
-		GL/ShaderCache.h
-		GL/StreamBuffer.h
-	)
-	target_link_libraries(common PUBLIC glad)
-endif()
-
 if(USE_VULKAN)
 	target_link_libraries(common PUBLIC
 		Vulkan-Headers glslang
@@ -208,45 +192,9 @@ if(DBUS_API)
 	target_link_libraries(common PRIVATE ${DBUS_LINK_LIBRARIES})
 endif()
 
-if(USE_OPENGL)
-	if(WIN32)
-		target_sources(common PRIVATE
-			GL/ContextWGL.cpp
-			GL/ContextWGL.h
-		)
-		target_link_libraries(common PUBLIC opengl32.lib)
-	elseif(APPLE)
-		target_sources(common PRIVATE
-			GL/ContextAGL.mm
-			GL/ContextAGL.h
-		)
-	else()
-		if(X11_API OR WAYLAND_API)
-			target_sources(common PRIVATE
-				GL/ContextEGL.cpp
-				GL/ContextEGL.h
-			)
-			target_link_libraries(common PRIVATE PkgConfig::EGL)
-		endif()
-
-		if(X11_API)
-			target_sources(common PRIVATE
-				GL/ContextEGLX11.cpp
-				GL/ContextEGLX11.h
-			)
-			if(TARGET PkgConfig::XRANDR)
-				target_link_libraries(common PRIVATE PkgConfig::XRANDR)
-				target_compile_definitions(common PRIVATE "HAS_XRANDR=1")
-			endif()
-		endif()
-
-		if(WAYLAND_API)
-			target_sources(common PRIVATE
-				GL/ContextEGLWayland.cpp
-				GL/ContextEGLWayland.h
-			)
-		endif()
-	endif()
+if(X11_API AND TARGET PkgConfig::XRANDR)
+	target_link_libraries(common PRIVATE PkgConfig::XRANDR)
+	target_compile_definitions(common PRIVATE "HAS_XRANDR=1")
 endif()
 
 if(USE_VULKAN)

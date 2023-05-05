@@ -185,12 +185,12 @@ void* GSTextureOGL::GetNativeHandle() const
 
 void GSTextureOGL::Clear(const void* data)
 {
-	glClearTexImage(m_texture_id, GL_TEX_LEVEL_0, m_int_format, m_int_type, data);
+	glClearTexImage(m_texture_id, 0, m_int_format, m_int_type, data);
 }
 
 void GSTextureOGL::Clear(const void* data, const GSVector4i& area)
 {
-	glClearTexSubImage(m_texture_id, GL_TEX_LEVEL_0, area.x, area.y, 0, area.width(), area.height(), 1, m_int_format, m_int_type, data);
+	glClearTexSubImage(m_texture_id, 0, area.x, area.y, 0, area.width(), area.height(), 1, m_int_format, m_int_type, data);
 }
 
 bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int layer)
@@ -241,7 +241,7 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int 
 	}
 	else
 	{
-		GL::StreamBuffer* const sb = GSDeviceOGL::GetTextureUploadBuffer();
+		GLStreamBuffer* const sb = GSDeviceOGL::GetTextureUploadBuffer();
 
 		const auto map = sb->Map(TEXTURE_UPLOAD_ALIGNMENT, map_size);
 		StringUtil::StrideMemCpy(map.pointer, preferred_pitch, data, pitch, r.width() << m_int_shift, r.height());
@@ -311,7 +311,7 @@ void GSTextureOGL::Unmap()
 	{
 		const u32 pitch = Common::AlignUpPow2(m_r_w << m_int_shift, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
 		const u32 upload_size = pitch * m_r_h;
-		GL::StreamBuffer* sb = GSDeviceOGL::GetTextureUploadBuffer();
+		GLStreamBuffer* sb = GSDeviceOGL::GetTextureUploadBuffer();
 		sb->Unmap(upload_size);
 		sb->Bind();
 

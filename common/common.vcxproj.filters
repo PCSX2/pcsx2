@@ -94,18 +94,6 @@
     <ClCompile Include="WindowInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GL\ContextWGL.cpp">
-      <Filter>Source Files\GL</Filter>
-    </ClCompile>
-    <ClCompile Include="GL\Context.cpp">
-      <Filter>Source Files\GL</Filter>
-    </ClCompile>
-    <ClCompile Include="GL\StreamBuffer.cpp">
-      <Filter>Source Files\GL</Filter>
-    </ClCompile>
-    <ClCompile Include="FileSystem.cpp">
-      <Filter>Source Files\GL</Filter>
-    </ClCompile>
     <ClCompile Include="StringUtil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -145,12 +133,6 @@
     <ClCompile Include="MD5Digest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GL\Program.cpp">
-      <Filter>Source Files\GL</Filter>
-    </ClCompile>
-    <ClCompile Include="GL\ShaderCache.cpp">
-      <Filter>Source Files\GL</Filter>
-    </ClCompile>
     <ClCompile Include="Vulkan\vk_mem_alloc.cpp">
       <Filter>Source Files\Vulkan</Filter>
     </ClCompile>
@@ -181,7 +163,12 @@
     <ClCompile Include="WAVWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="General.cpp" />
+    <ClCompile Include="FileSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="General.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlignedMalloc.h">
@@ -325,18 +312,6 @@
     <ClInclude Include="BitCast.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GL\Context.h">
-      <Filter>Header Files\GL</Filter>
-    </ClInclude>
-    <ClInclude Include="GL\ContextWGL.h">
-      <Filter>Header Files\GL</Filter>
-    </ClInclude>
-    <ClInclude Include="GL\StreamBuffer.h">
-      <Filter>Header Files\GL</Filter>
-    </ClInclude>
-    <ClInclude Include="FileSystem.h">
-      <Filter>Header Files\GL</Filter>
-    </ClInclude>
     <ClInclude Include="StringUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -388,12 +363,6 @@
     <ClInclude Include="MD5Digest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GL\Program.h">
-      <Filter>Header Files\GL</Filter>
-    </ClInclude>
-    <ClInclude Include="GL\ShaderCache.h">
-      <Filter>Header Files\GL</Filter>
-    </ClInclude>
     <ClInclude Include="ZipHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -439,6 +408,9 @@
     <ClInclude Include="WAVWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FileSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -446,12 +418,6 @@
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{eef579af-e6a8-4d3b-a88e-c0e4cad9e5d8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\GL">
-      <UniqueIdentifier>{92d1bb2d-d172-4356-b9f4-a8fcc8e7fcce}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\GL">
-      <UniqueIdentifier>{5e76b340-cb0e-4946-83ec-7d72e397cac8}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Vulkan">
       <UniqueIdentifier>{94154238-8b02-44f8-a7b8-3612e7bfa33c}</UniqueIdentifier>

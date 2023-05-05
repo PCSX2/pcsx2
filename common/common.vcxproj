@@ -61,13 +61,8 @@
     <ClCompile Include="FastJmp.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="General.cpp" />
-    <ClCompile Include="GL\Context.cpp" />
-    <ClCompile Include="GL\ContextWGL.cpp" />
-    <ClCompile Include="GL\Program.cpp" />
-    <ClCompile Include="GL\ShaderCache.cpp" />
-    <ClCompile Include="GL\StreamBuffer.cpp" />
     <ClCompile Include="FileSystem.cpp" />
+    <ClCompile Include="General.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="HTTPDownloader.cpp" />
     <ClCompile Include="HTTPDownloaderCurl.cpp">
@@ -133,11 +128,6 @@
     <ClInclude Include="Easing.h" />
     <ClInclude Include="boost_spsc_queue.hpp" />
     <ClInclude Include="FastJmp.h" />
-    <ClInclude Include="GL\Context.h" />
-    <ClInclude Include="GL\ContextWGL.h" />
-    <ClInclude Include="GL\Program.h" />
-    <ClInclude Include="GL\ShaderCache.h" />
-    <ClInclude Include="GL\StreamBuffer.h" />
     <ClInclude Include="FileSystem.h" />
     <ClInclude Include="HashCombine.h" />
     <ClInclude Include="HeapArray.h" />
