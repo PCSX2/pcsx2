@@ -9777,6 +9777,8 @@ SLED-53109:
     cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes headlight brightness.
+    cpuCLUTRender: 1 # Fixes broken headlights.
+    minimumBlendingLevel: 3
 SLED-53330:
   name: "Enthusia - Professional Racing [Demo]"
   region: "PAL"
@@ -10286,12 +10288,18 @@ SLES-50134:
 SLES-50136:
   name: "Robot Warlords"
   region: "PAL-E"
+  gsHWFixes:
+    gpuPaletteConversion: 2 # Reduces HC size.
 SLES-50137:
   name: "Robot Warlords"
   region: "PAL-F"
+  gsHWFixes:
+    gpuPaletteConversion: 2 # Reduces HC size.
 SLES-50138:
   name: "Robot Warlords"
   region: "PAL-G"
+  gsHWFixes:
+    gpuPaletteConversion: 2 # Reduces HC size.
 SLES-50155:
   name: "Operation Winback"
   region: "PAL-M3"
@@ -16994,6 +17002,8 @@ SLES-53044:
     cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes headlight brightness.
+    cpuCLUTRender: 1 # Fixes broken headlights.
+    minimumBlendingLevel: 3
 SLES-53045:
   name: "Street Racing Syndicate"
   region: "PAL-M5"
@@ -17252,6 +17262,8 @@ SLES-53151:
     cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes headlight brightness.
+    cpuCLUTRender: 1 # Fixes broken headlights.
+    minimumBlendingLevel: 3
 SLES-53152:
   name: "Mashed Fully Loaded"
   region: "PAL-M5"
@@ -25000,6 +25012,8 @@ SLKA-25283:
     cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes headlight brightness.
+    cpuCLUTRender: 1 # Fixes broken headlights.
+    minimumBlendingLevel: 3
 SLKA-25284:
   name: "Sakura Taisen 3"
   region: "NTSC-K"
@@ -33246,6 +33260,8 @@ SLPM-66277:
     cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes headlight brightness.
+    cpuCLUTRender: 1 # Fixes broken headlights.
+    minimumBlendingLevel: 3
 SLPM-66278:
   name: "Shin Gouketuji Ichizoku - Bonnou Kaihou"
   region: "NTSC-J"
@@ -36763,6 +36779,8 @@ SLPS-20033:
 SLPS-20034:
   name: "Velvet File"
   region: "NTSC-J"
+  gsHWFixes:
+    gpuPaletteConversion: 2 # Reduces HC size.
 SLPS-20035:
   name: "Pro Mahjong Kiwame Next"
   region: "NTSC-J"
@@ -46178,6 +46196,8 @@ SLUS-20872:
     cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes headlight brightness.
+    cpuCLUTRender: 1 # Fixes broken headlights.
+    minimumBlendingLevel: 3
 SLUS-20873:
   name: "Silent Hill 4 - The Room"
   region: "NTSC-U"
@@ -52394,6 +52414,8 @@ SLUS-29147:
     cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 1 # Fixes headlight brightness.
+    cpuCLUTRender: 1 # Fixes broken headlights.
+    minimumBlendingLevel: 3
 SLUS-29148:
   name: "Incredible Hulk, The - Ultimate Destruction [Demo]"
   region: "NTSC-U"
