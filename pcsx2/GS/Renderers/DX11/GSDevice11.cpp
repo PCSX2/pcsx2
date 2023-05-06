@@ -46,6 +46,7 @@ GSDevice11::GSDevice11()
 
 	m_features.primitive_id = true;
 	m_features.texture_barrier = false;
+	m_features.framebuffer_fetch = false;
 	m_features.provoking_vertex_last = false;
 	m_features.point_expand = false;
 	m_features.line_expand = false;
@@ -56,6 +57,7 @@ GSDevice11::GSDevice11()
 	m_features.stencil_buffer = true;
 	m_features.cas_sharpening = true;
 	m_features.test_and_sample_depth = false;
+	m_features.raster_order_view = false;
 }
 
 GSDevice11::~GSDevice11() = default;
@@ -95,10 +97,11 @@ bool GSDevice11::Create()
 
 	wil::com_ptr_nothrow<IDXGIAdapter1> dxgi_adapter = D3D::GetAdapterByName(m_dxgi_factory.get(), GSConfig.Adapter);
 
-	static constexpr std::array<D3D_FEATURE_LEVEL, 2> requested_feature_levels = {{
+	static constexpr const std::array requested_feature_levels = {
+		D3D_FEATURE_LEVEL_11_1,
 		D3D_FEATURE_LEVEL_11_0,
 		D3D_FEATURE_LEVEL_10_0,
-	}};
+	};
 
 	wil::com_ptr_nothrow<ID3D11Device> temp_dev;
 	wil::com_ptr_nothrow<ID3D11DeviceContext> temp_ctx;
@@ -552,6 +555,12 @@ void GSDevice11::Destroy()
 	if (m_state.dsv)
 		m_state.dsv->Release();
 
+	for (ID3D11UnorderedAccessView* uav : m_state.uav)
+	{
+		if (uav)
+			uav->Release();
+	}
+
 	m_shader_cache.Close();
 
 #ifdef REPORT_LEAKED_OBJECTS
@@ -594,6 +603,16 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 			Console.Warning("Disabling VS expand due to potentially buggy NVIDIA driver.");
 			m_features.vs_expand = false;
 		}
+	}
+
+	D3D11_FEATURE_DATA_D3D11_OPTIONS2 opts2 = {};
+	if (m_feature_level >= D3D_FEATURE_LEVEL_11_1 &&
+		SUCCEEDED(m_dev->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS2, &opts2, sizeof(opts2))) &&
+		opts2.ROVsSupported && GSConfig.OverrideRasterizerOrderViews != 0)
+	{
+		DevCon.WriteLn("(GSDevice11) Enabling ROV");
+		m_features.texture_barrier = true;
+		m_features.raster_order_view = true;
 	}
 }
 
@@ -1184,7 +1203,9 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 	switch (type)
 	{
 		case GSTexture::Type::RenderTarget:
-			desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+			desc.BindFlags = m_features.raster_order_view ?
+								 (D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS) :
+                                 (D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE);
 			break;
 		case GSTexture::Type::DepthStencil:
 			desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
@@ -1737,6 +1758,10 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_TEX_IS_FB", sel.tex_is_fb);
 		sm.AddMacro("PS_NO_COLOR", sel.no_color);
 		sm.AddMacro("PS_NO_COLOR1", sel.no_color1);
+		sm.AddMacro("PS_ROV", sel.rov);
+		sm.AddMacro("PS_ZTST", sel.ztst);
+		sm.AddMacro("PS_ZWE", sel.zwe);
+		sm.AddMacro("PS_DATE", sel.date);
 
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "ps_main");
 		i = m_ps.try_emplace(sel, std::move(ps)).first;
@@ -2387,6 +2412,16 @@ void GSDevice11::OMSetBlendState(ID3D11BlendState* bs, u8 bf)
 
 void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor)
 {
+	// squash warnings
+	for (u32 i = 0; i < MAX_TEXTURES; i++)
+	{
+		if ((rt && m_state.ps_sr_views[i] == *(GSTexture11*)rt) || (ds && m_state.ps_sr_views[i] == *(GSTexture11*)ds))
+		{
+			m_state.ps_sr_views[i] = nullptr;
+			m_ctx->PSSetShaderResources(i, 1, &m_state.ps_sr_views[i]);
+		}
+	}
+
 	ID3D11RenderTargetView* rtv = nullptr;
 	ID3D11DepthStencilView* dsv = nullptr;
 
@@ -2401,7 +2436,7 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 		dsv = *static_cast<GSTexture11*>(ds);
 	}
 
-	const bool changed = (m_state.rt_view != rtv || m_state.dsv != dsv);
+	const bool changed = (m_state.rt_view != rtv || m_state.dsv != dsv || m_state.uav[0] || m_state.uav[1]);
 	g_perfmon.Put(GSPerfMon::RenderPasses, static_cast<double>(changed));
 
 	if (m_state.rt_view != rtv)
@@ -2421,7 +2456,27 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 		m_state.dsv = dsv;
 	}
 	if (changed)
-		m_ctx->OMSetRenderTargets(1, &rtv, dsv);
+	{
+		if (m_state.uav[0] || m_state.uav[1])
+		{
+			m_ctx->OMSetRenderTargetsAndUnorderedAccessViews(1, &rtv, dsv,
+				0, 0, nullptr, nullptr);
+			if (m_state.uav[0])
+			{
+				m_state.uav[0]->Release();
+				m_state.uav[0] = nullptr;
+			}
+			if (m_state.uav[1])
+			{
+				m_state.uav[1]->Release();
+				m_state.uav[1] = nullptr;
+			}
+		}
+		else
+		{
+			m_ctx->OMSetRenderTargets(1, &rtv, dsv);
+		}
+	}
 
 	if (rt || ds)
 	{
@@ -2454,6 +2509,83 @@ void GSDevice11::SetScissor(const GSVector4i& scissor)
 	}
 }
 
+void GSDevice11::OMSetUAVs(GSTexture* rt, GSTexture* ds, bool rov_depth, const GSVector4i* scissor)
+{
+	// squash warnings
+	for (u32 i = 0; i < MAX_TEXTURES; i++)
+	{
+		if ((rt && m_state.ps_sr_views[i] == *(GSTexture11*)rt) || (ds && m_state.ps_sr_views[i] == *(GSTexture11*)ds))
+		{
+			m_state.ps_sr_views[i] = nullptr;
+			m_ctx->PSSetShaderResources(i, 1, &m_state.ps_sr_views[i]);
+		}
+	}
+
+	ID3D11DepthStencilView* dsv = nullptr;
+	if (ds && !rov_depth)
+		dsv = *(GSTexture11*)ds;
+
+	std::array<ID3D11UnorderedAccessView*, 2> uavs;
+	uavs[0] = rt ? static_cast<ID3D11UnorderedAccessView*>(*(GSTexture11*)rt) : nullptr;
+	uavs[1] = rov_depth ? static_cast<ID3D11UnorderedAccessView*>(*(GSTexture11*)ds) : nullptr;
+
+	if (m_state.rt_view || m_state.dsv != dsv || m_state.uav != uavs)
+	{
+		if (m_state.rt_view)
+			m_state.rt_view->Release();
+		m_state.rt_view = nullptr;
+
+		if (m_state.dsv != dsv)
+		{
+			if (m_state.dsv)
+				m_state.dsv->Release();
+			if (dsv)
+				dsv->AddRef();
+			m_state.dsv = dsv;
+		}
+
+		for (u32 i = 0; i < uavs.size(); i++)
+		{
+			if (m_state.uav[i] != uavs[i])
+			{
+				if (m_state.uav[i])
+					m_state.uav[i]->Release();
+				m_state.uav[i] = uavs[i];
+				if (uavs[i])
+					uavs[i]->AddRef();
+			}
+		}
+
+		m_ctx->OMSetRenderTargetsAndUnorderedAccessViews(0, nullptr, dsv,
+			0, 2, uavs.data(), nullptr);
+	}
+
+	const GSVector2i size = rt ? rt->GetSize() : ds->GetSize();
+	if (m_state.viewport != size)
+	{
+		m_state.viewport = size;
+
+		D3D11_VIEWPORT vp;
+		memset(&vp, 0, sizeof(vp));
+
+		vp.TopLeftX = 0.0f;
+		vp.TopLeftY = 0.0f;
+		vp.Width = (float)size.x;
+		vp.Height = (float)size.y;
+		vp.MinDepth = 0.0f;
+		vp.MaxDepth = 1.0f;
+
+		m_ctx->RSSetViewports(1, &vp);
+	}
+
+	if (!m_state.scissor.eq(*scissor))
+	{
+		m_state.scissor = *scissor;
+
+		m_ctx->RSSetScissorRects(1, reinterpret_cast<const D3D11_RECT*>(scissor));
+	}
+}
+
 void GSDevice11::ShaderMacro::AddMacro(const char* n, int d)
 {
 	AddMacro(n, std::to_string(d));
@@ -2475,18 +2607,8 @@ D3D_SHADER_MACRO* GSDevice11::ShaderMacro::GetPtr()
 	return (D3D_SHADER_MACRO*)mout.data();
 }
 
-/// Checks that we weren't sent things we declared we don't support
-/// Clears things we don't support that can be quietly disabled
-static void preprocessSel(GSDevice11::PSSelector& sel)
-{
-	pxAssert(sel.write_rg  == 0); // Not supported, shouldn't be sent
-}
-
 void GSDevice11::RenderHW(GSHWDrawConfig& config)
 {
-	pxAssert(!config.require_full_barrier); // We always specify no support so it shouldn't request this
-	preprocessSel(config.ps);
-
 	GSVector2i rtsize = (config.rt ? config.rt : config.ds)->GetSize();
 
 	GSTexture* primid_tex = nullptr;
@@ -2499,7 +2621,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		StretchRect(config.rt, GSVector4(config.drawarea) / GSVector4(rtsize).xyxy(),
 			primid_tex, GSVector4(config.drawarea), m_date.primid_init_ps[static_cast<u8>(config.datm)].get(), nullptr, false);
 	}
-	else if (config.destination_alpha != GSHWDrawConfig::DestinationAlphaMode::Off)
+	else if (config.destination_alpha != GSHWDrawConfig::DestinationAlphaMode::Off && config.destination_alpha != GSHWDrawConfig::DestinationAlphaMode::Full)
 	{
 		const GSVector4 src = GSVector4(config.drawarea) / GSVector4(config.ds->GetSize()).xyxy();
 		const GSVector4 dst = src * 2.0f - 1.0f;
@@ -2585,7 +2707,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	}
 
 	GSTexture* rt_copy = nullptr;
-	if (config.require_one_barrier || (config.tex && config.tex == config.rt)) // Used as "bind rt" flag when texture barrier is unsupported
+	if (!config.ps.rov && (config.require_one_barrier || (config.tex && config.tex == config.rt))) // Used as "bind rt" flag when texture barrier is unsupported
 	{
 		// Bind the RT.This way special effect can use it.
 		// Do not always bind the rt when it's not needed,
@@ -2620,8 +2742,16 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		PSSetShaderResource(3, primid_tex);
 	}
 
-	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
-	OMSetRenderTargets(hdr_rt ? hdr_rt : config.rt, config.ds, &config.scissor);
+	if (config.ps.rov)
+		SetupOM(config.depth, OMBlendSelector(), 0);
+	else
+		SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
+
+	if (config.ps.rov)
+		OMSetUAVs(config.rt, config.ds, config.rov_depth, &config.scissor);
+	else
+		OMSetRenderTargets(hdr_rt ? hdr_rt : config.rt, config.ds, &config.scissor);
+
 	DrawIndexedPrimitive();
 
 	if (config.blend_second_pass.enable)
@@ -2635,7 +2765,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	if (config.alpha_second_pass.enable)
 	{
-		preprocessSel(config.alpha_second_pass.ps);
 		if (config.cb_ps.FogColor_AREF.a != config.alpha_second_pass.ps_aref)
 		{
 			config.cb_ps.FogColor_AREF.a = config.alpha_second_pass.ps_aref;

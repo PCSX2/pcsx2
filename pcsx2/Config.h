@@ -715,6 +715,7 @@ struct Pcsx2Config
 		GSBilinearDirtyMode UserHacks_BilinearHack = GSBilinearDirtyMode::Automatic;
 		TriFiltering TriFilter = TriFiltering::Automatic;
 		s8 OverrideTextureBarriers = -1;
+		s8 OverrideRasterizerOrderViews = -1;
 
 		u8 CAS_Sharpness = 50;
 		u8 ShadeBoost_Brightness = 50;

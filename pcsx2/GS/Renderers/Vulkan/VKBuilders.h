@@ -141,6 +141,10 @@ namespace Vulkan
 
 		void SetProvokingVertex(VkProvokingVertexModeEXT mode);
 
+		void SetDynamicRendering();
+		void AddDynamicRenderingColorAttachment(VkFormat format);
+		void SetDynamicRenderingDepthAttachment(VkFormat depth_format, VkFormat stencil_format);
+
 	private:
 		VkGraphicsPipelineCreateInfo m_ci;
 		std::array<VkPipelineShaderStageCreateInfo, MAX_SHADER_STAGES> m_shader_stages;
@@ -168,6 +172,9 @@ namespace Vulkan
 
 		VkPipelineRasterizationProvokingVertexStateCreateInfoEXT m_provoking_vertex;
 		VkPipelineRasterizationLineStateCreateInfoEXT m_line_rasterization_state;
+
+		VkPipelineRenderingCreateInfoKHR m_rendering;
+		std::array<VkFormat, MAX_ATTACHMENTS> m_rendering_color_formats;
 	};
 
 	class ComputePipelineBuilder
@@ -241,6 +248,7 @@ namespace Vulkan
 			bool clear = true);
 
 		void AddImageDescriptorWrite(VkDescriptorSet set, u32 binding, VkImageView view,
+			VkDescriptorType type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
 			VkImageLayout layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		void AddSamplerDescriptorWrite(VkDescriptorSet set, u32 binding, VkSampler sampler);
 		void AddSamplerDescriptorWrites(VkDescriptorSet set, u32 binding, const VkSampler* samplers, u32 num_samplers);
@@ -252,8 +260,6 @@ namespace Vulkan
 			VkDescriptorSet set, u32 binding, VkDescriptorType dtype, VkBuffer buffer, u32 offset, u32 size);
 		void AddBufferViewDescriptorWrite(VkDescriptorSet set, u32 binding, VkDescriptorType dtype, VkBufferView view);
 		void AddInputAttachmentDescriptorWrite(
-			VkDescriptorSet set, u32 binding, VkImageView view, VkImageLayout layout = VK_IMAGE_LAYOUT_GENERAL);
-		void AddStorageImageDescriptorWrite(
 			VkDescriptorSet set, u32 binding, VkImageView view, VkImageLayout layout = VK_IMAGE_LAYOUT_GENERAL);
 
 	private:

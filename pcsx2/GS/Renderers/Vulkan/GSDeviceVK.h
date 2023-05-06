@@ -43,6 +43,8 @@ public:
 		bool vk_ext_line_rasterization : 1;
 		bool vk_khr_driver_properties : 1;
 		bool vk_khr_shader_non_semantic_info : 1;
+		bool vk_ext_fragment_shader_interlock : 1;
+		bool vk_khr_dynamic_rendering : 1;
 	};
 
 	// Global state accessors
@@ -349,6 +351,7 @@ public:
 
 		__fi bool IsRTFeedbackLoop() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteRT) != 0); }
 		__fi bool IsTestingAndSamplingDepth() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadDS) != 0); }
+		__fi bool IsROV() const { return ps.rov; }
 	};
 	static_assert(sizeof(PipelineSelector) == 24, "Pipeline selector is 24 bytes");
 
@@ -384,7 +387,9 @@ public:
 		TFX_TEXTURE_RT,
 		TFX_TEXTURE_PRIMID,
 
-		NUM_TFX_TEXTURES
+		NUM_TFX_TEXTURES,
+
+		TFX_TEXTURE_DS = TFX_TEXTURE_PRIMID, // Reuse primid slot, we're not going to use primid date with ROV.
 	};
 
 private:
@@ -395,7 +400,9 @@ private:
 
 	VkDescriptorSetLayout m_tfx_ubo_ds_layout = VK_NULL_HANDLE;
 	VkDescriptorSetLayout m_tfx_texture_ds_layout = VK_NULL_HANDLE;
+	VkDescriptorSetLayout m_tfx_rov_ds_layout = VK_NULL_HANDLE;
 	VkPipelineLayout m_tfx_pipeline_layout = VK_NULL_HANDLE;
+	VkPipelineLayout m_tfx_rov_pipeline_layout = VK_NULL_HANDLE;
 
 	VKStreamBuffer m_vertex_stream_buffer;
 	VKStreamBuffer m_index_stream_buffer;
@@ -419,6 +426,7 @@ private:
 	VkPipeline m_hdr_finish_pipelines[2][2] = {}; // [depth][feedback_loop]
 	VkRenderPass m_date_image_setup_render_passes[2][2] = {}; // [depth][clear]
 	VkPipeline m_date_image_setup_pipelines[2][4] = {}; // [depth][datm]
+	VkPipeline m_rov_depth_begin_pipeline = {};
 	VkPipeline m_fxaa_pipeline = {};
 	VkPipeline m_shadeboost_pipeline = {};
 
@@ -606,13 +614,6 @@ public:
 	void ExecuteCommandBufferAndRestartRenderPass(bool wait_for_completion, const char* reason);
 	void ExecuteCommandBufferForReadback();
 
-	/// Set dirty flags on everything to force re-bind at next draw time.
-	void InvalidateCachedState();
-
-	/// Binds all dirty state to the command buffer.
-	bool ApplyUtilityState(bool already_execed = false);
-	bool ApplyTFXState(bool already_execed = false);
-
 	void SetIndexBuffer(VkBuffer buffer);
 	void SetBlendConstants(u8 color);
 	void SetLineWidth(float width);
@@ -624,7 +625,8 @@ public:
 	// Ends a render pass if we're currently in one.
 	// When Bind() is next called, the pass will be restarted.
 	// Calling this function is allowed even if a pass has not begun.
-	bool InRenderPass();
+	bool InRenderPass() { return (m_current_render_pass != VK_NULL_HANDLE); }
+	bool InDynamicRenderPass() const { return (m_current_render_pass == DYNAMIC_RENDERING_RENDER_PASS); }
 	void BeginRenderPass(VkRenderPass rp, const GSVector4i& rect);
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count);
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, u32 clear_color);
@@ -670,14 +672,24 @@ private:
 	{
 		Undefined,
 		TFX,
+		ROVTFX,
 		Utility
 	};
+
+	static const VkRenderPass DYNAMIC_RENDERING_RENDER_PASS;
 
 	void InitializeState();
 	bool CreatePersistentDescriptorSets();
 
+	/// Set dirty flags on everything to force re-bind at next draw time.
+	void InvalidateCachedState();
+
 	void SetInitialState(VkCommandBuffer cmdbuf);
 	void ApplyBaseState(u32 flags, VkCommandBuffer cmdbuf);
+
+	/// Binds all dirty state to the command buffer.
+	bool ApplyUtilityState(bool already_execed = false);
+	bool ApplyTFXState(PipelineLayout layout, bool already_execed = false);
 
 	// Which bindings/state has to be updated before the next draw.
 	u32 m_dirty_flags = 0;
@@ -703,6 +715,7 @@ private:
 	VkDescriptorSet m_tfx_ubo_descriptor_set = VK_NULL_HANDLE;
 	VkDescriptorSet m_tfx_texture_descriptor_set = VK_NULL_HANDLE;
 	VkDescriptorSet m_tfx_rt_descriptor_set = VK_NULL_HANDLE;
+	VkDescriptorSet m_tfx_image_descriptor_set = VK_NULL_HANDLE;
 	std::array<u32, NUM_TFX_DYNAMIC_OFFSETS> m_tfx_dynamic_offsets{};
 
 	const GSTextureVK* m_utility_texture = nullptr;

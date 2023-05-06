@@ -370,6 +370,10 @@ struct alignas(16) GSHWDrawConfig
 
 				// Scan mask
 				u32 scanmsk : 2;
+
+				u32 rov : 1;
+				u32 ztst : 2;
+				u32 zwe : 1;
 			};
 
 			struct
@@ -389,6 +393,17 @@ struct alignas(16) GSHWDrawConfig
 			const u32 sw_blend_bits = blend_a | blend_b | blend_d;
 			const bool sw_blend_needs_rt = (sw_blend_bits != 0 && ((sw_blend_bits | blend_c) & 1u)) || ((a_masked & blend_c) != 0);
 			return tex_is_fb || fbmask || (date > 0 && date != 3) || sw_blend_needs_rt;
+		}
+
+		__fi bool UseROV() const
+		{
+			return IsFeedbackLoop() || afail != 0;
+		}
+
+		__fi bool NeedsROVDepth() const
+		{
+			// DATE, ATST, SCANMSK all discard.
+			return ((date > 0 && date != 3) || atst || scanmsk);
 		}
 
 		/// Disables color output from the pixel shader, this is done when all channels are masked.
@@ -684,6 +699,7 @@ struct alignas(16) GSHWDrawConfig
 	DestinationAlphaMode destination_alpha;
 	SetDATM datm : 2;
 	bool line_expand : 1;
+	bool rov_depth : 1;
 
 	struct AlphaPass
 	{
@@ -750,10 +766,13 @@ public:
 		bool stencil_buffer       : 1; ///< Supports stencil buffer, and can use for DATE.
 		bool cas_sharpening       : 1; ///< Supports sufficient functionality for contrast adaptive sharpening.
 		bool test_and_sample_depth: 1; ///< Supports concurrently binding the depth-stencil buffer for sampling and depth testing.
+		bool raster_order_view    : 1; ///< Supports raster ordered views, can avoid barriers.
 		FeatureSupport()
 		{
 			memset(this, 0, sizeof(*this));
 		}
+
+		__fi bool CanSampleFromFB() const { return texture_barrier || raster_order_view; }
 	};
 
 	struct MultiStretchRect

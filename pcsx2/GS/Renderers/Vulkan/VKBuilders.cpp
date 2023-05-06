@@ -264,6 +264,9 @@ void Vulkan::GraphicsPipelineBuilder::Clear()
 	m_line_rasterization_state = {};
 	m_line_rasterization_state.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_EXT;
 
+	m_rendering = {};
+	m_rendering.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
+
 	// set defaults
 	SetNoCullRasterizationState();
 	SetNoDepthTestState();
@@ -571,6 +574,29 @@ void Vulkan::GraphicsPipelineBuilder::SetProvokingVertex(VkProvokingVertexModeEX
 	m_provoking_vertex.provokingVertexMode = mode;
 }
 
+void Vulkan::GraphicsPipelineBuilder::SetDynamicRendering()
+{
+	AddPointerToChain(&m_ci, &m_rendering);
+}
+
+void Vulkan::GraphicsPipelineBuilder::AddDynamicRenderingColorAttachment(VkFormat format)
+{
+	SetDynamicRendering();
+
+	pxAssert(m_rendering.colorAttachmentCount < MAX_ATTACHMENTS);
+	m_rendering_color_formats[m_rendering.colorAttachmentCount++] = format;
+
+	m_rendering.pColorAttachmentFormats = m_rendering_color_formats.data();
+}
+
+void Vulkan::GraphicsPipelineBuilder::SetDynamicRenderingDepthAttachment(VkFormat depth_format, VkFormat stencil_format)
+{
+	SetDynamicRendering();
+
+	m_rendering.depthAttachmentFormat = depth_format;
+	m_rendering.stencilAttachmentFormat = stencil_format;
+}
+
 Vulkan::ComputePipelineBuilder::ComputePipelineBuilder()
 {
 	Clear();
@@ -728,7 +754,8 @@ void Vulkan::DescriptorSetUpdateBuilder::PushUpdate(
 }
 
 void Vulkan::DescriptorSetUpdateBuilder::AddImageDescriptorWrite(VkDescriptorSet set, u32 binding, VkImageView view,
-	VkImageLayout layout /*= VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL*/)
+	VkDescriptorType type /* = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE */,
+	VkImageLayout layout /* = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL */)
 {
 	pxAssert(m_num_writes < MAX_WRITES && m_num_image_infos < MAX_IMAGE_INFOS);
 
@@ -742,7 +769,7 @@ void Vulkan::DescriptorSetUpdateBuilder::AddImageDescriptorWrite(VkDescriptorSet
 	dw.dstSet = set;
 	dw.dstBinding = binding;
 	dw.descriptorCount = 1;
-	dw.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+	dw.descriptorType = type;
 	dw.pImageInfo = &ii;
 }
 
@@ -875,25 +902,6 @@ void Vulkan::DescriptorSetUpdateBuilder::AddInputAttachmentDescriptorWrite(
 	dw.dstBinding = binding;
 	dw.descriptorCount = 1;
 	dw.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-	dw.pImageInfo = &m_image_infos[m_num_image_infos];
-
-	VkDescriptorImageInfo& ii = m_image_infos[m_num_image_infos++];
-	ii.imageView = view;
-	ii.imageLayout = layout;
-	ii.sampler = VK_NULL_HANDLE;
-}
-
-void Vulkan::DescriptorSetUpdateBuilder::AddStorageImageDescriptorWrite(
-	VkDescriptorSet set, u32 binding, VkImageView view, VkImageLayout layout /*= VK_IMAGE_LAYOUT_GENERAL*/)
-{
-	pxAssert(m_num_writes < MAX_WRITES && m_num_image_infos < MAX_IMAGE_INFOS);
-
-	VkWriteDescriptorSet& dw = m_writes[m_num_writes++];
-	dw.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	dw.dstSet = set;
-	dw.dstBinding = binding;
-	dw.descriptorCount = 1;
-	dw.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 	dw.pImageInfo = &m_image_infos[m_num_image_infos];
 
 	VkDescriptorImageInfo& ii = m_image_infos[m_num_image_infos++];

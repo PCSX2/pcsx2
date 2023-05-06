@@ -295,11 +295,16 @@ void main()
 #define PS_ZCLAMP 0
 #define PS_FEEDBACK_LOOP 0
 #define PS_TEX_IS_FB 0
+#define PS_ROV 0
+#define PS_ZTST 0
+#define PS_ZWE 0
+#define PS_AFAIL 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 #define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
+#define ROV_DEPTH (PS_ZTST != 0 || PS_ZWE != 0)
 
 #define PS_FEEDBACK_LOOP_IS_NEEDED (PS_TEX_IS_FB == 1 || PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW || (PS_DATE >= 5))
 
@@ -348,18 +353,74 @@ layout(set = 1, binding = 0) uniform sampler2D Texture;
 layout(set = 1, binding = 1) uniform texture2D Palette;
 #endif
 
-#if PS_FEEDBACK_LOOP_IS_NEEDED
-	#if defined(DISABLE_TEXTURE_BARRIER)
-		layout(set = 1, binding = 2) uniform texture2D RtSampler;
-		vec4 sample_from_rt() { return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0); }
-	#else
-		layout(input_attachment_index = 0, set = 1, binding = 2) uniform subpassInput RtSampler;
-		vec4 sample_from_rt() { return subpassLoad(RtSampler); }
-	#endif
-#endif
+#if PS_ROV
+	layout(set = 1, binding = 2, rgba8) uniform restrict coherent image2D rovRT;
+	layout(set = 1, binding = 3, r32f) uniform restrict coherent image2D rovDS;
 
-#if PS_DATE > 0
-layout(set = 1, binding = 3) uniform texture2D PrimMinTexture;
+	vec4 rovRTValue;
+	uvec4 rovFbMask;
+	bool rovDiscarded;
+	bool rovDepthWrite;
+
+	// We could use the demote-to-helper extension here I guess...
+	#define DISCARD rovDiscarded = true
+
+	vec4 sample_from_rt()
+	{
+		return rovRTValue;
+	}
+
+	void rov_read_rt()
+	{
+		rovRTValue = imageLoad(rovRT, ivec2(gl_FragCoord.xy));
+		rovDiscarded = gl_HelperInvocation;
+		rovFbMask = FbMask;
+		rovDepthWrite = PS_ZWE != 0;
+	}
+
+	void rov_write_rt(vec4 color)
+	{
+		imageStore(rovRT, ivec2(gl_FragCoord.xy), color);
+	}
+
+	#if ROV_DEPTH
+
+	bool rov_depth_test(float z)
+	{
+		bool zpass = true;
+
+		#if PS_ZTST > 1
+			float ds_z = imageLoad(rovDS, ivec2(gl_FragCoord.xy)).r;
+			#if PS_ZTST == 2
+				zpass = (z >= ds_z);
+			#elif PS_ZTST == 3
+				zpass = (z > ds_z);
+			#endif
+		#endif
+
+		if (zpass && rovDepthWrite)
+			imageStore(rovDS, ivec2(gl_FragCoord.xy), vec4(z));
+
+		return zpass;
+	}
+
+	#endif
+#else
+	#if PS_FEEDBACK_LOOP_IS_NEEDED
+		#if defined(DISABLE_TEXTURE_BARRIER)
+			layout(set = 1, binding = 2) uniform texture2D RtSampler;
+			vec4 sample_from_rt() { return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0); }
+		#else
+			layout(input_attachment_index = 0, set = 1, binding = 2) uniform subpassInput RtSampler;
+			vec4 sample_from_rt() { return subpassLoad(RtSampler); }
+		#endif
+	#endif
+
+	#if PS_DATE > 0
+		layout(set = 1, binding = 3) uniform texture2D PrimMinTexture;
+	#endif
+
+	#define DISCARD discard
 #endif
 
 #if NEEDS_TEX
@@ -978,8 +1039,16 @@ vec4 ps_color()
 void ps_fbmask(inout vec4 C)
 {
 	#if PS_FBMASK
-		vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
-		C = vec4((uvec4(C) & ~FbMask) | (uvec4(RT) & FbMask));
+		#if PS_RTA_CORRECTION
+			vec4 RT = trunc(sample_from_rt() * vec4(255.0f, 255.0f, 255.0f, 128.0f) + 0.1f);
+		#else
+			vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
+		#endif
+		#if PS_ROV
+			C = vec4((uvec4(C) & ~rovFbMask) | (uvec4(RT) & rovFbMask));
+		#else
+			C = vec4((uvec4(C) & ~FbMask) | (uvec4(RT) & FbMask));
+		#endif
 	#endif
 }
 
@@ -1207,13 +1276,27 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 	#endif
 }
 
+#if PS_ROV
+layout(pixel_interlock_ordered) in;
+	#if !ROV_DEPTH
+		layout(early_fragment_tests) in;
+	#endif
+#endif
+
 void main()
 {
+#if PS_ROV
+	// TODO: Delay the interlocked portion if we don't need the RT early.
+	beginInvocationInterlockARB();
+	rov_read_rt();
+#endif
+
 #if PS_SCANMSK & 2
 	// fail depth test on prohibited lines
 	if ((int(gl_FragCoord.y) & 1) == (PS_SCANMSK & 1))
-		discard;
+		DISCARD;
 #endif
+
 #if PS_DATE >= 5
 
 #if PS_WRITE_RG == 1
@@ -1240,7 +1323,7 @@ void main()
 #endif
 
 	if (bad) {
-		discard;
+		DISCARD;
 	}
 
 #endif		// PS_DATE >= 5
@@ -1251,17 +1334,37 @@ void main()
 	// the bad alpha value so we must keep it.
 
 	if (gl_PrimitiveID > stencil_ceil) {
-		discard;
+		DISCARD;
 	}
 #endif
 
 	vec4 C = ps_color();
 	bool atst_pass = atst(C);
 
-#if PS_AFAIL == 0 // KEEP or ATST off
 	if (!atst_pass)
-		discard;
-#endif
+	{
+		#if PS_ROV
+			if (PS_AFAIL == 0)
+			{
+				DISCARD;
+			}
+			else if (PS_AFAIL == 1) // FB_ONLY
+			{
+				rovDepthWrite = false;
+			}
+			else if (PS_AFAIL == 2) // ZB_ONLY
+			{
+				rovFbMask = uvec4(0xFFu);
+			}
+			else if (PS_AFAIL == 3) // RGB_ONLY
+			{
+				rovFbMask.a = 0xFFu;
+				rovDepthWrite = false;
+			}
+		#elif PS_AFAIL == 0 // KEEP or ATST off
+			DISCARD;
+		#endif
+	}
 
 	// Must be done before alpha correction
 
@@ -1400,9 +1503,21 @@ void main()
 		#if !PS_NO_COLOR1
 			o_col1 = alpha_blend;
 		#endif
-	#endif
+	#endif // !PS_NO_COLOR
 
-	#if PS_ZCLAMP
+	#if PS_ROV
+		if (!rovDiscarded)
+		{
+			#if ROV_DEPTH
+				float frag_depth = (PS_ZCLAMP != 0) ? min(gl_FragCoord.z, MaxDepthPS) : gl_FragCoord.z;
+				if (rov_depth_test(frag_depth))
+					rov_write_rt(C / vec4(255.0f, 255.0f, 255.0f, (PS_RTA_CORRECTION != 0) ? 128.0f : 255.0f));
+			#else
+				rov_write_rt(C / vec4(255.0f, 255.0f, 255.0f, (PS_RTA_CORRECTION != 0) ? 128.0f : 255.0f));
+			#endif
+		}
+		endInvocationInterlockARB();
+	#elif PS_ZCLAMP
 		gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);
 	#endif
 
