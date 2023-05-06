@@ -217,8 +217,6 @@ extern std::unique_ptr<D3D12Context> g_d3d12_context;
 
 namespace D3D12
 {
-	u32 GetTexelSize(DXGI_FORMAT format);
-
 #ifdef _DEBUG
 
 	void SetObjectName(ID3D12Object* object, const char* name);

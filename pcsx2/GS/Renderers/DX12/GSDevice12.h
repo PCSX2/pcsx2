@@ -141,7 +141,7 @@ public:
 private:
 	ComPtr<IDXGIFactory5> m_dxgi_factory;
 	ComPtr<IDXGISwapChain1> m_swap_chain;
-	std::vector<D3D12Texture> m_swap_chain_buffers;
+	std::vector<std::unique_ptr<GSTexture12>> m_swap_chain_buffers;
 	u32 m_current_swap_chain_buffer = 0;
 
 	bool m_allow_tearing_supported = false;
@@ -177,7 +177,8 @@ private:
 	ComPtr<ID3D12PipelineState> m_imgui_pipeline;
 
 	std::unordered_map<u32, ComPtr<ID3DBlob>> m_tfx_vertex_shaders;
-	std::unordered_map<GSHWDrawConfig::PSSelector, ComPtr<ID3DBlob>, GSHWDrawConfig::PSSelectorHash> m_tfx_pixel_shaders;
+	std::unordered_map<GSHWDrawConfig::PSSelector, ComPtr<ID3DBlob>, GSHWDrawConfig::PSSelectorHash>
+		m_tfx_pixel_shaders;
 	std::unordered_map<PipelineSelector, ComPtr<ID3D12PipelineState>, PipelineSelectorHash> m_tfx_pipelines;
 
 	ComPtr<ID3D12RootSignature> m_cas_root_signature;
@@ -191,26 +192,31 @@ private:
 	ComPtr<ID3DBlob> m_convert_vs;
 	std::string m_tfx_source;
 
-	void LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format, DXGI_FORMAT* rtv_format, DXGI_FORMAT* dsv_format) const;
+	void LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format,
+		DXGI_FORMAT* rtv_format, DXGI_FORMAT* dsv_format) const;
 
 	bool CreateSwapChain();
 	bool CreateSwapChainRTV();
 	void DestroySwapChainRTVs();
 	void DestroySwapChain();
 
-	GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) override;
+	GSTexture* CreateSurface(
+		GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) override;
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE,
 		const GSRegEXTBUF& EXTBUF, const GSVector4& c, const bool linear) final;
-	void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb) final;
+	void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
+		ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb) final;
 	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) final;
 	void DoFXAA(GSTexture* sTex, GSTexture* dTex) final;
 
-	bool DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) final;
+	bool DoCAS(
+		GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) final;
 
 	bool GetSampler(D3D12DescriptorHandle* cpu_handle, GSHWDrawConfig::SamplerSelector ss);
 	void ClearSamplerCache() final;
-	bool GetTextureGroupDescriptors(D3D12DescriptorHandle* gpu_handle, const D3D12DescriptorHandle* cpu_handles, u32 count);
+	bool GetTextureGroupDescriptors(
+		D3D12DescriptorHandle* gpu_handle, const D3D12DescriptorHandle* cpu_handles, u32 count);
 
 	const ID3DBlob* GetTFXVertexShader(GSHWDrawConfig::VSSelector sel);
 	const ID3DBlob* GetTFXPixelShader(const GSHWDrawConfig::PSSelector& sel);
@@ -289,10 +295,13 @@ public:
 		bool green, bool blue, bool alpha) override;
 	void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 		PresentShader shader, float shaderTime, bool linear) override;
-	void UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) override;
-	void ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM) override;
+	void UpdateCLUTTexture(
+		GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) override;
+	void ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM,
+		GSTexture* dTex, u32 DBW, u32 DPSM) override;
 
-	void DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader) override;
+	void DrawMultiStretchRects(
+		const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader) override;
 	void DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture12* dTex, ShaderConvert shader);
 
 	void BeginRenderPassForStretchRect(
@@ -347,8 +356,8 @@ public:
 
 	// Assumes that the previous level has been transitioned to PS resource,
 	// and the current level has been transitioned to RT.
-	void RenderTextureMipmap(const D3D12Texture& texture,
-		u32 dst_level, u32 dst_width, u32 dst_height, u32 src_level, u32 src_width, u32 src_height);
+	void RenderTextureMipmap(GSTexture12* texture, u32 dst_level, u32 dst_width, u32 dst_height, u32 src_level,
+		u32 src_width, u32 src_height);
 
 	// Ends a render pass if we're currently in one.
 	// When Bind() is next called, the pass will be restarted.
@@ -401,7 +410,8 @@ private:
 						   DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR | DIRTY_FLAG_RENDER_TARGET | DIRTY_FLAG_PIPELINE |
 						   DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_STENCIL_REF,
 
-		DIRTY_TFX_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_TFX_TEXTURES | DIRTY_FLAG_TFX_SAMPLERS | DIRTY_FLAG_TFX_RT_TEXTURES,
+		DIRTY_TFX_STATE =
+			DIRTY_BASE_STATE | DIRTY_FLAG_TFX_TEXTURES | DIRTY_FLAG_TFX_SAMPLERS | DIRTY_FLAG_TFX_RT_TEXTURES,
 		DIRTY_UTILITY_STATE = DIRTY_BASE_STATE,
 		DIRTY_CONSTANT_BUFFER_STATE = DIRTY_FLAG_VS_CONSTANT_BUFFER | DIRTY_FLAG_PS_CONSTANT_BUFFER,
 	};
@@ -451,7 +461,7 @@ private:
 	RootSignature m_current_root_signature = RootSignature::Undefined;
 	const ID3D12PipelineState* m_current_pipeline = nullptr;
 
-	D3D12Texture m_null_texture;
+	std::unique_ptr<GSTexture12> m_null_texture;
 
 	// current pipeline selector - we save this in the struct to avoid re-zeroing it every draw
 	PipelineSelector m_pipeline_selector = {};

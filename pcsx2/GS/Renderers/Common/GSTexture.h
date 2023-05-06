@@ -106,11 +106,13 @@ public:
 
 	static u32 GetCompressedBytesPerBlock(Format format);
 	static u32 GetCompressedBlockSize(Format format);
+	static u32 CalcUploadPitch(Format format, u32 width);
 	static u32 CalcUploadRowLengthFromPitch(Format format, u32 pitch);
 	static u32 CalcUploadSize(Format format, u32 height, u32 pitch);
 
 	u32 GetCompressedBytesPerBlock() const;
 	u32 GetCompressedBlockSize() const;
+	u32 CalcUploadPitch(u32 width) const;
 	u32 CalcUploadRowLengthFromPitch(u32 pitch) const;
 	u32 CalcUploadSize(u32 height, u32 pitch) const;
 

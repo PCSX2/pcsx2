@@ -647,7 +647,6 @@ if(USE_VULKAN)
 		GS/Renderers/Vulkan/VKShaderCache.cpp
 		GS/Renderers/Vulkan/VKStreamBuffer.cpp
 		GS/Renderers/Vulkan/VKSwapChain.cpp
-		GS/Renderers/Vulkan/VKTexture.cpp
 		GS/Renderers/Vulkan/VKUtil.cpp
 	)
 	list(APPEND pcsx2GSHeaders
@@ -661,7 +660,6 @@ if(USE_VULKAN)
 		GS/Renderers/Vulkan/VKShaderCache.h
 		GS/Renderers/Vulkan/VKStreamBuffer.h
 		GS/Renderers/Vulkan/VKSwapChain.h
-		GS/Renderers/Vulkan/VKTexture.h
 		GS/Renderers/Vulkan/VKUtil.h
 	)
 	target_link_libraries(PCSX2_FLAGS INTERFACE Vulkan-Headers glslang)
@@ -706,7 +704,6 @@ if(WIN32)
 		GS/Renderers/DX12/D3D12DescriptorHeapManager.cpp
 		GS/Renderers/DX12/D3D12ShaderCache.cpp
 		GS/Renderers/DX12/D3D12StreamBuffer.cpp
-		GS/Renderers/DX12/D3D12Texture.cpp
 		GS/Renderers/DX12/GSDevice12.cpp
 		GS/Renderers/DX12/GSTexture12.cpp
 	)
@@ -720,7 +717,6 @@ if(WIN32)
 		GS/Renderers/DX12/D3D12DescriptorHeapManager.h
 		GS/Renderers/DX12/D3D12ShaderCache.h
 		GS/Renderers/DX12/D3D12StreamBuffer.h
-		GS/Renderers/DX12/D3D12Texture.h
 		GS/Renderers/DX12/GSDevice12.h
 		GS/Renderers/DX12/GSTexture12.h
 	)

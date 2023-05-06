@@ -404,16 +404,9 @@ bool VKSwapChain::SetupSwapChainImages()
 	{
 		SwapChainImage image;
 		image.image = images[i];
-
-		// Create texture object, which creates a view of the backbuffer
-		if (!image.texture.Adopt(image.image, VK_IMAGE_VIEW_TYPE_2D, m_window_info.surface_width,
-				m_window_info.surface_height, 1, 1, m_surface_format.format, VK_SAMPLE_COUNT_1_BIT))
-		{
-			return false;
-		}
-
-		image.framebuffer = image.texture.CreateFramebuffer(m_load_render_pass);
-		if (image.framebuffer == VK_NULL_HANDLE)
+		image.texture = GSTextureVK::Adopt(images[i], GSTexture::Type::RenderTarget, GSTexture::Format::Color,
+			m_window_info.surface_width, m_window_info.surface_height, 1, m_surface_format.format);
+		if (!image.texture)
 			return false;
 
 		m_images.emplace_back(std::move(image));
@@ -452,8 +445,8 @@ void VKSwapChain::DestroySwapChainImages()
 {
 	for (auto& it : m_images)
 	{
-		// Images themselves are cleaned up by the swap chain object
-		vkDestroyFramebuffer(g_vulkan_context->GetDevice(), it.framebuffer, nullptr);
+		// don't defer view destruction, images are no longer valid
+		it.texture->Destroy(false);
 	}
 	m_images.clear();
 	for (auto& it : m_semaphores)
