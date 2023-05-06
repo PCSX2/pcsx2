@@ -174,23 +174,17 @@ bool VKContext::SelectInstanceExtensions(ExtensionList* extension_list, const Wi
 	if (wi.type == WindowInfo::Type::Wayland && !SupportsExtension(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME, true))
 		return false;
 #endif
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-	if (wi.type == WindowInfo::Type::Android && !SupportsExtension(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME, true))
-		return false;
-#endif
 #if defined(VK_USE_PLATFORM_METAL_EXT)
 	if (wi.type == WindowInfo::Type::MacOS && !SupportsExtension(VK_EXT_METAL_SURFACE_EXTENSION_NAME, true))
-		return false;
-#endif
-
-#if 0
-	if (wi.type == WindowInfo::Type::Display && !SupportsExtension(VK_KHR_DISPLAY_EXTENSION_NAME, true))
 		return false;
 #endif
 
 	// VK_EXT_debug_utils
 	if (enable_debug_utils && !SupportsExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false))
 		Console.Warning("Vulkan: Debug report requested, but extension is not available.");
+
+	// Needed for exclusive fullscreen control.
+	SupportsExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, false);
 
 	return true;
 }
@@ -395,7 +389,6 @@ bool VKContext::SelectDeviceExtensions(ExtensionList* extension_list, bool enabl
 
 #ifdef _WIN32
 	m_optional_extensions.vk_ext_full_screen_exclusive =
-		SupportsExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, false) &&
 		SupportsExtension(VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME, false);
 #endif
 

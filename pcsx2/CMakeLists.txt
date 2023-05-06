@@ -665,19 +665,6 @@ if(USE_VULKAN)
 		GS/Renderers/Vulkan/VKUtil.h
 	)
 	target_link_libraries(PCSX2_FLAGS INTERFACE Vulkan-Headers glslang)
-
-	if(APPLE)
-		# Needed for Metal surface creation.
-		target_compile_options(common PRIVATE -fobjc-arc)
-		target_link_options(common PRIVATE -fobjc-link-runtime)
-	elseif(NOT WIN32)
-		if(X11_API)
-			target_compile_definitions(common PUBLIC "VULKAN_USE_X11=1")
-		endif()
-		if(WAYLAND_API)
-			target_compile_definitions(common PUBLIC "VULKAN_USE_WAYLAND=1")
-		endif()
-	endif()
 endif()
 
 set(pcsx2GSMetalShaders

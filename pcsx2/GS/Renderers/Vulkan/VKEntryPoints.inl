@@ -64,14 +64,6 @@ VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceXlibPresentationSupportKHR, false
 VULKAN_INSTANCE_ENTRY_POINT(vkCreateWaylandSurfaceKHR, false)
 #endif
 
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-VULKAN_INSTANCE_ENTRY_POINT(vkCreateAndroidSurfaceKHR, false)
-#endif
-
-#if defined(VK_USE_PLATFORM_MACOS_MVK)
-VULKAN_INSTANCE_ENTRY_POINT(vkCreateMacOSSurfaceMVK, false)
-#endif
-
 #if defined(VK_USE_PLATFORM_METAL_EXT)
 VULKAN_INSTANCE_ENTRY_POINT(vkCreateMetalSurfaceEXT, false)
 #endif
@@ -243,7 +235,7 @@ VULKAN_DEVICE_ENTRY_POINT(vkGetImageMemoryRequirements2, true)
 VULKAN_DEVICE_ENTRY_POINT(vkBindBufferMemory2, true)
 VULKAN_DEVICE_ENTRY_POINT(vkBindImageMemory2, true)
 
-#ifdef SUPPORTS_VULKAN_EXCLUSIVE_FULLSCREEN
+#ifdef _WIN32
 VULKAN_DEVICE_ENTRY_POINT(vkAcquireFullScreenExclusiveModeEXT, false)
 VULKAN_DEVICE_ENTRY_POINT(vkReleaseFullScreenExclusiveModeEXT, false)
 #endif
