@@ -32,9 +32,9 @@
 
 extern "C" {
 
-#define VULKAN_MODULE_ENTRY_POINT(name, required) PFN_##name pcsx2_##name;
-#define VULKAN_INSTANCE_ENTRY_POINT(name, required) PFN_##name pcsx2_##name;
-#define VULKAN_DEVICE_ENTRY_POINT(name, required) PFN_##name pcsx2_##name;
+#define VULKAN_MODULE_ENTRY_POINT(name, required) PFN_##name name;
+#define VULKAN_INSTANCE_ENTRY_POINT(name, required) PFN_##name name;
+#define VULKAN_DEVICE_ENTRY_POINT(name, required) PFN_##name name;
 #include "VKEntryPoints.inl"
 #undef VULKAN_DEVICE_ENTRY_POINT
 #undef VULKAN_INSTANCE_ENTRY_POINT
@@ -43,9 +43,9 @@ extern "C" {
 
 void Vulkan::ResetVulkanLibraryFunctionPointers()
 {
-#define VULKAN_MODULE_ENTRY_POINT(name, required) pcsx2_##name = nullptr;
-#define VULKAN_INSTANCE_ENTRY_POINT(name, required) pcsx2_##name = nullptr;
-#define VULKAN_DEVICE_ENTRY_POINT(name, required) pcsx2_##name = nullptr;
+#define VULKAN_MODULE_ENTRY_POINT(name, required) name = nullptr;
+#define VULKAN_INSTANCE_ENTRY_POINT(name, required) name = nullptr;
+#define VULKAN_DEVICE_ENTRY_POINT(name, required) name = nullptr;
 #include "VKEntryPoints.inl"
 #undef VULKAN_DEVICE_ENTRY_POINT
 #undef VULKAN_INSTANCE_ENTRY_POINT
@@ -142,23 +142,13 @@ bool Vulkan::LoadVulkanLibrary()
 			if (pos != std::string::npos)
 			{
 				path.erase(pos);
-				path += "/../Frameworks/libvulkan.dylib";
+				path += "/../Frameworks/libMoltenVK.dylib";
 				vulkan_module = dlopen(path.c_str(), RTLD_NOW);
-				if (!vulkan_module)
-				{
-					path.erase(pos);
-					path += "/../Frameworks/libMoltenVK.dylib";
-					vulkan_module = dlopen(path.c_str(), RTLD_NOW);
-				}
 			}
 		}
 	}
 	if (!vulkan_module)
-	{
 		vulkan_module = dlopen("libvulkan.dylib", RTLD_NOW);
-		if (!vulkan_module)
-			vulkan_module = dlopen("libMoltenVK.dylib", RTLD_NOW);
-	}
 #else
 	// Names of libraries to search. Desktop should use libvulkan.so.1 or libvulkan.so.
 	static const char* search_lib_names[] = {"libvulkan.so.1", "libvulkan.so"};

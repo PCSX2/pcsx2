@@ -17,44 +17,28 @@
 
 #define VK_NO_PROTOTYPES
 
-#if defined(WIN32)
-
+#ifdef _WIN32
 #define VK_USE_PLATFORM_WIN32_KHR
-
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
 
 // vulkan.h pulls in windows.h on Windows, so we need to include our replacement header first
 #include "common/RedtapeWindows.h"
-
 #endif
 
-#if defined(VULKAN_USE_X11)
+#if defined(X11_API)
 #define VK_USE_PLATFORM_XLIB_KHR
 #endif
 
-#if defined(VULKAN_USE_WAYLAND)
+#if defined(WAYLAND_API)
 #define VK_USE_PLATFORM_WAYLAND_KHR
 #endif
 
-#if defined(__ANDROID__)
-#define VK_USE_PLATFORM_ANDROID_KHR
-#endif
-
 #if defined(__APPLE__)
-// #define VK_USE_PLATFORM_MACOS_MVK
 #define VK_USE_PLATFORM_METAL_EXT
 #endif
 
 #include "vulkan/vulkan.h"
 
-// Currently, exclusive fullscreen is only supported on Windows.
-#if defined(WIN32)
-#define SUPPORTS_VULKAN_EXCLUSIVE_FULLSCREEN 1
-#endif
-
-#if defined(VULKAN_USE_X11)
+#if defined(X11_API)
 
 // This breaks a bunch of our code. They shouldn't be #defines in the first place.
 #ifdef None

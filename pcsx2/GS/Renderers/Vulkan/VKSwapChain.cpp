@@ -133,22 +133,6 @@ VkSurfaceKHR VKSwapChain::CreateVulkanSurface(VkInstance instance, VkPhysicalDev
 
 		return surface;
 	}
-#elif defined(VK_USE_PLATFORM_MACOS_MVK)
-	if (wi->type == WindowInfo::Type::MacOS)
-	{
-		VkMacOSSurfaceCreateInfoMVK surface_create_info = {
-			VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK, nullptr, 0, wi->window_handle};
-
-		VkSurfaceKHR surface;
-		VkResult res = vkCreateMacOSSurfaceMVK(instance, &surface_create_info, nullptr, &surface);
-		if (res != VK_SUCCESS)
-		{
-			LOG_VULKAN_ERROR(res, "vkCreateMacOSSurfaceMVK failed: ");
-			return VK_NULL_HANDLE;
-		}
-
-		return surface;
-	}
 #endif
 
 	return VK_NULL_HANDLE;
