@@ -76,7 +76,7 @@ u32 GSTexture::GetCompressedBytesPerBlock(Format format)
 		1, // Invalid
 		4, // Color/RGBA8
 		8, // HDRColor/RGBA16
-		32, // DepthStencil
+		4, // DepthStencil
 		1, // UNorm8/R8
 		2, // UInt16/R16UI
 		4, // UInt32/R32UI
@@ -101,6 +101,19 @@ u32 GSTexture::GetCompressedBlockSize(Format format)
 		return 4;
 	else
 		return 1;
+}
+
+u32 GSTexture::CalcUploadPitch(Format format, u32 width)
+{
+	if (format >= Format::BC1 && format <= Format::BC7)
+		width = Common::AlignUpPow2(width, 4) / 4;
+
+	return width * GetCompressedBytesPerBlock(format);
+}
+
+u32 GSTexture::CalcUploadPitch(u32 width) const
+{
+	return CalcUploadPitch(m_format, width);
 }
 
 u32 GSTexture::CalcUploadRowLengthFromPitch(u32 pitch) const

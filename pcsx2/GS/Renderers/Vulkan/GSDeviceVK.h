@@ -87,7 +87,6 @@ public:
 
 	enum : u32
 	{
-		NUM_TFX_DESCRIPTOR_SETS = 3,
 		NUM_TFX_DYNAMIC_OFFSETS = 2,
 		NUM_TFX_DRAW_TEXTURES = 2,
 		NUM_TFX_RT_TEXTURES = 2,
@@ -102,6 +101,14 @@ public:
 		FRAGMENT_UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024,
 
 		NUM_CAS_PIPELINES = 2,
+	};
+	enum TFX_DESCRIPTOR_SET : u32
+	{
+		TFX_DESCRIPTOR_SET_UBO,
+		TFX_DESCRIPTOR_SET_TEXTURES,
+		TFX_DESCRIPTOR_SET_RT,
+
+		NUM_TFX_DESCRIPTOR_SETS,
 	};
 	enum DATE_RENDER_PASS : u32
 	{
@@ -169,8 +176,6 @@ private:
 	GSHWDrawConfig::PSConstantBuffer m_ps_cb_cache;
 
 	std::string m_tfx_source;
-
-	VkFormat LookupNativeFormat(GSTexture::Format format) const;
 
 	GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) override;
 
@@ -317,6 +322,8 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 
 public:
+	VkFormat LookupNativeFormat(GSTexture::Format format) const;
+
 	__fi VkFramebuffer GetCurrentFramebuffer() const { return m_current_framebuffer; }
 
 	/// Ends any render pass, executes the command buffer, and invalidates cached state.
@@ -412,20 +419,22 @@ private:
 	GSVector4i m_scissor = GSVector4i::zero();
 	u8 m_blend_constant_color = 0;
 
-	std::array<const VKTexture*, NUM_TFX_TEXTURES> m_tfx_textures{};
+	std::array<const GSTextureVK*, NUM_TFX_TEXTURES> m_tfx_textures{};
 	VkSampler m_tfx_sampler = VK_NULL_HANDLE;
 	u32 m_tfx_sampler_sel = 0;
-	std::array<VkDescriptorSet, NUM_TFX_DESCRIPTOR_SETS> m_tfx_descriptor_sets{};
+	VkDescriptorSet m_tfx_ubo_descriptor_set = VK_NULL_HANDLE;
+	VkDescriptorSet m_tfx_texture_descriptor_set = VK_NULL_HANDLE;
+	VkDescriptorSet m_tfx_rt_descriptor_set = VK_NULL_HANDLE;
 	std::array<u32, NUM_TFX_DYNAMIC_OFFSETS> m_tfx_dynamic_offsets{};
 
-	const VKTexture* m_utility_texture = nullptr;
+	const GSTextureVK* m_utility_texture = nullptr;
 	VkSampler m_utility_sampler = VK_NULL_HANDLE;
 	VkDescriptorSet m_utility_descriptor_set = VK_NULL_HANDLE;
 
 	PipelineLayout m_current_pipeline_layout = PipelineLayout::Undefined;
 	VkPipeline m_current_pipeline = VK_NULL_HANDLE;
 
-	VKTexture m_null_texture;
+	std::unique_ptr<GSTextureVK> m_null_texture;
 
 	// current pipeline selector - we save this in the struct to avoid re-zeroing it every draw
 	PipelineSelector m_pipeline_selector = {};

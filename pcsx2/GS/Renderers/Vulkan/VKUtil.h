@@ -26,10 +26,7 @@
 
 namespace Vulkan
 {
-	bool IsDepthFormat(VkFormat format);
-	bool IsDepthStencilFormat(VkFormat format);
 	VkFormat GetLinearFormat(VkFormat format);
-	u32 GetTexelSize(VkFormat format);
 
 	// Safe destroy helpers
 	void SafeDestroyFramebuffer(VkFramebuffer& fb);

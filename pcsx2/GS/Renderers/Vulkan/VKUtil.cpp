@@ -24,34 +24,6 @@
 
 #include <cmath>
 
-bool Vulkan::IsDepthFormat(VkFormat format)
-{
-	switch (format)
-	{
-		case VK_FORMAT_D16_UNORM:
-		case VK_FORMAT_D16_UNORM_S8_UINT:
-		case VK_FORMAT_D24_UNORM_S8_UINT:
-		case VK_FORMAT_D32_SFLOAT:
-		case VK_FORMAT_D32_SFLOAT_S8_UINT:
-			return true;
-		default:
-			return false;
-	}
-}
-
-bool Vulkan::IsDepthStencilFormat(VkFormat format)
-{
-	switch (format)
-	{
-		case VK_FORMAT_D16_UNORM_S8_UINT:
-		case VK_FORMAT_D24_UNORM_S8_UINT:
-		case VK_FORMAT_D32_SFLOAT_S8_UINT:
-			return true;
-		default:
-			return false;
-	}
-}
-
 VkFormat Vulkan::GetLinearFormat(VkFormat format)
 {
 	switch (format)
@@ -70,42 +42,6 @@ VkFormat Vulkan::GetLinearFormat(VkFormat format)
 			return VK_FORMAT_B8G8R8A8_UNORM;
 		default:
 			return format;
-	}
-}
-
-u32 Vulkan::GetTexelSize(VkFormat format)
-{
-	// Only contains pixel formats we use.
-	switch (format)
-	{
-		case VK_FORMAT_R8_UNORM:
-			return 1;
-
-		case VK_FORMAT_R5G5B5A1_UNORM_PACK16:
-		case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
-		case VK_FORMAT_R5G6B5_UNORM_PACK16:
-		case VK_FORMAT_B5G6R5_UNORM_PACK16:
-		case VK_FORMAT_R16_UINT:
-			return 2;
-
-		case VK_FORMAT_R8G8B8A8_UNORM:
-		case VK_FORMAT_B8G8R8A8_UNORM:
-		case VK_FORMAT_R32_UINT:
-		case VK_FORMAT_R32_SFLOAT:
-		case VK_FORMAT_D32_SFLOAT:
-			return 4;
-
-		case VK_FORMAT_BC1_RGBA_UNORM_BLOCK:
-			return 8;
-
-		case VK_FORMAT_BC2_UNORM_BLOCK:
-		case VK_FORMAT_BC3_UNORM_BLOCK:
-		case VK_FORMAT_BC7_UNORM_BLOCK:
-			return 16;
-
-		default:
-			pxFailRel("Unhandled pixel format");
-			return 1;
 	}
 }
 

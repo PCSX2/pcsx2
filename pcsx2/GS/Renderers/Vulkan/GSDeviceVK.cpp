@@ -420,19 +420,26 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 	VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
 
 	// Swap chain images start in undefined
-	VKTexture& swap_chain_texture = m_swap_chain->GetCurrentTexture();
-	swap_chain_texture.OverrideImageLayout(VK_IMAGE_LAYOUT_UNDEFINED);
-	swap_chain_texture.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	GSTextureVK* swap_chain_texture = m_swap_chain->GetCurrentTexture();
+	swap_chain_texture->OverrideImageLayout(GSTextureVK::Layout::Undefined);
+	swap_chain_texture->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::ColorAttachment);
+
+	const VkFramebuffer fb = swap_chain_texture->GetFramebuffer(false);
+	if (fb == VK_NULL_HANDLE)
+		return GSDevice::PresentResult::FrameSkipped;
 
 	const VkRenderPassBeginInfo rp = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr,
-		m_swap_chain->GetClearRenderPass(), m_swap_chain->GetCurrentFramebuffer(),
-		{{0, 0}, {swap_chain_texture.GetWidth(), swap_chain_texture.GetHeight()}}, 1u, &s_present_clear_color};
+		g_vulkan_context->GetRenderPass(swap_chain_texture->GetVkFormat(), VK_FORMAT_UNDEFINED,
+			VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE),
+		fb,
+		{{0, 0}, {static_cast<u32>(swap_chain_texture->GetWidth()), static_cast<u32>(swap_chain_texture->GetHeight())}},
+		1u, &s_present_clear_color};
 	vkCmdBeginRenderPass(g_vulkan_context->GetCurrentCommandBuffer(), &rp, VK_SUBPASS_CONTENTS_INLINE);
 
-	const VkViewport vp{0.0f, 0.0f, static_cast<float>(swap_chain_texture.GetWidth()),
-		static_cast<float>(swap_chain_texture.GetHeight()), 0.0f, 1.0f};
+	const VkViewport vp{0.0f, 0.0f, static_cast<float>(swap_chain_texture->GetWidth()),
+		static_cast<float>(swap_chain_texture->GetHeight()), 0.0f, 1.0f};
 	const VkRect2D scissor{
-		{0, 0}, {static_cast<u32>(swap_chain_texture.GetWidth()), static_cast<u32>(swap_chain_texture.GetHeight())}};
+		{0, 0}, {static_cast<u32>(swap_chain_texture->GetWidth()), static_cast<u32>(swap_chain_texture->GetHeight())}};
 	vkCmdSetViewport(g_vulkan_context->GetCurrentCommandBuffer(), 0, 1, &vp);
 	vkCmdSetScissor(g_vulkan_context->GetCurrentCommandBuffer(), 0, 1, &scissor);
 	return PresentResult::OK;
@@ -444,7 +451,7 @@ void GSDeviceVK::EndPresent()
 
 	VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
 	vkCmdEndRenderPass(g_vulkan_context->GetCurrentCommandBuffer());
-	m_swap_chain->GetCurrentTexture().TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	m_swap_chain->GetCurrentTexture()->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::PresentSrc);
 	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
 	g_vulkan_context->SubmitCommandBuffer(m_swap_chain.get(), !m_swap_chain->IsPresentModeSynchronizing());
@@ -811,7 +818,7 @@ void GSDeviceVK::ClearStencil(GSTexture* t, u8 c)
 
 	EndRenderPass();
 
-	static_cast<GSTextureVK*>(t)->TransitionToLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	static_cast<GSTextureVK*>(t)->TransitionToLayout(GSTextureVK::Layout::ClearDst);
 
 	const VkClearDepthStencilValue dsv{0.0f, static_cast<u32>(c)};
 	const VkImageSubresourceRange srr{VK_IMAGE_ASPECT_STENCIL_BIT, 0u, 1u, 0u, 1u};
@@ -819,7 +826,7 @@ void GSDeviceVK::ClearStencil(GSTexture* t, u8 c)
 	vkCmdClearDepthStencilImage(g_vulkan_context->GetCurrentCommandBuffer(), static_cast<GSTextureVK*>(t)->GetImage(),
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &dsv, 1, &srr);
 
-	static_cast<GSTextureVK*>(t)->TransitionToLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+	static_cast<GSTextureVK*>(t)->TransitionToLayout(GSTextureVK::Layout::DepthStencilAttachment);
 }
 
 VkFormat GSDeviceVK::LookupNativeFormat(GSTexture::Format format) const
@@ -849,13 +856,13 @@ GSTexture* GSDeviceVK::CreateSurface(GSTexture::Type type, int width, int height
 	const u32 clamped_width = static_cast<u32>(std::clamp<int>(width, 1, g_vulkan_context->GetMaxImageDimension2D()));
 	const u32 clamped_height = static_cast<u32>(std::clamp<int>(height, 1, g_vulkan_context->GetMaxImageDimension2D()));
 
-	std::unique_ptr<GSTexture> tex(GSTextureVK::Create(type, clamped_width, clamped_height, levels, format, LookupNativeFormat(format)));
+	std::unique_ptr<GSTexture> tex(GSTextureVK::Create(type, format, clamped_width, clamped_height, levels));
 	if (!tex)
 	{
 		// We're probably out of vram, try flushing the command buffer to release pending textures.
 		PurgePool();
 		ExecuteCommandBufferAndRestartRenderPass(true, "Couldn't allocate texture.");
-		tex = GSTextureVK::Create(type, clamped_width, clamped_height, levels, format, LookupNativeFormat(format));
+		tex = GSTextureVK::Create(type, format, clamped_width, clamped_height, levels);
 	}
 
 	return tex.release();
@@ -941,15 +948,15 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 
 	EndRenderPass();
 
-	dTexVK->TransitionToLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	dTexVK->TransitionToLayout(GSTextureVK::Layout::TransferDst);
 	dTexVK->SetUsedThisCommandBuffer();
 
-	sTexVK->TransitionToLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+	sTexVK->TransitionToLayout(GSTextureVK::Layout::TransferSrc);
 	sTexVK->SetUsedThisCommandBuffer();
 
 #ifdef PCSX2_DEVBUILD
 	// ensure we don't leave this bound later on, debug layer gets cranky
-	if (m_tfx_textures[0] == sTexVK->GetTexturePtr())
+	if (m_tfx_textures[0] == sTexVK)
 		PSSetShaderResource(0, nullptr, false);
 #endif
 
@@ -1013,10 +1020,10 @@ void GSDeviceVK::DrawMultiStretchRects(
 	{
 		GSTextureVK* const stex = static_cast<GSTextureVK*>(rects[i].src);
 		stex->CommitClear();
-		if (stex->GetLayout() != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+		if (stex->GetLayout() != GSTextureVK::Layout::ShaderReadOnly)
 		{
 			EndRenderPass();
-			stex->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			stex->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 		}
 	}
 
@@ -1140,7 +1147,7 @@ void GSDeviceVK::BeginRenderPassForStretchRect(
 	else
 	{
 		// integer formats, etc
-		const VkRenderPass rp = g_vulkan_context->GetRenderPass(dTex->GetNativeFormat(), VK_FORMAT_UNDEFINED,
+		const VkRenderPass rp = g_vulkan_context->GetRenderPass(dTex->GetVkFormat(), VK_FORMAT_UNDEFINED,
 			load_op, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 		if (load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
 		{
@@ -1156,11 +1163,11 @@ void GSDeviceVK::BeginRenderPassForStretchRect(
 void GSDeviceVK::DoStretchRect(GSTextureVK* sTex, const GSVector4& sRect, GSTextureVK* dTex, const GSVector4& dRect,
 	VkPipeline pipeline, bool linear, bool allow_discard)
 {
-	if (sTex->GetLayout() != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	if (sTex->GetLayout() != GSTextureVK::Layout::ShaderReadOnly)
 	{
 		// can't transition in a render pass
 		EndRenderPass();
-		sTex->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		sTex->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 	}
 
 	SetUtilityTexture(sTex, linear ? m_linear_sampler : m_point_sampler);
@@ -1220,11 +1227,11 @@ void GSDeviceVK::BlitRect(GSTexture* sTex, const GSVector4i& sRect, u32 sLevel, 
 
 	EndRenderPass();
 
-	sTexVK->TransitionToLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-	dTexVK->TransitionToLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	sTexVK->TransitionToLayout(GSTextureVK::Layout::TransferSrc);
+	dTexVK->TransitionToLayout(GSTextureVK::Layout::TransferDst);
 
 	// ensure we don't leave this bound later on
-	if (m_tfx_textures[0] == sTexVK->GetTexturePtr())
+	if (m_tfx_textures[0] == sTexVK)
 		PSSetShaderResource(0, nullptr, false);
 
 	pxAssert(
@@ -1234,9 +1241,9 @@ void GSDeviceVK::BlitRect(GSTexture* sTex, const GSVector4i& sRect, u32 sLevel, 
 	const VkImageBlit ib{{aspect, sLevel, 0u, 1u}, {{sRect.left, sRect.top, 0}, {sRect.right, sRect.bottom, 1}},
 		{aspect, dLevel, 0u, 1u}, {{dRect.left, dRect.top, 0}, {dRect.right, dRect.bottom, 1}}};
 
-	vkCmdBlitImage(g_vulkan_context->GetCurrentCommandBuffer(), sTexVK->GetTexture().GetImage(),
-		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dTexVK->GetTexture().GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
-		&ib, linear ? VK_FILTER_LINEAR : VK_FILTER_NEAREST);
+	vkCmdBlitImage(g_vulkan_context->GetCurrentCommandBuffer(), sTexVK->GetImage(),
+		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dTexVK->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &ib,
+		linear ? VK_FILTER_LINEAR : VK_FILTER_NEAREST);
 }
 
 void GSDeviceVK::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
@@ -1295,9 +1302,9 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	EndRenderPass();
 
 	// transition everything before starting the new render pass
-	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(GSTextureVK::Layout::ColorAttachment);
 	if (sTex[0])
-		static_cast<GSTextureVK*>(sTex[0])->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		static_cast<GSTextureVK*>(sTex[0])->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 
 	const GSVector2i dsize(dTex->GetSize());
 	const GSVector4i darea(0, 0, dsize.x, dsize.y);
@@ -1308,7 +1315,7 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		// Note: value outside of dRect must contains the background color (c)
 		if (sTex[1]->GetState() == GSTexture::State::Dirty)
 		{
-			static_cast<GSTextureVK*>(sTex[1])->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			static_cast<GSTextureVK*>(sTex[1])->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 			OMSetRenderTargets(dTex, nullptr, darea);
 			SetUtilityTexture(sTex[1], sampler);
 			BeginClearRenderPass(m_utility_color_render_pass_clear, darea, c);
@@ -1341,7 +1348,7 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		if (sTex[0] == sTex[2])
 		{
 			// need a barrier here because of the render pass
-			static_cast<GSTextureVK*>(sTex[2])->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			static_cast<GSTextureVK*>(sTex[2])->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 		}
 	}
 
@@ -1383,12 +1390,12 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 
 	// this texture is going to get used as an input, so make sure we don't read undefined data
 	static_cast<GSTextureVK*>(dTex)->CommitClear();
-	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 }
 
 void GSDeviceVK::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb)
 {
-	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(GSTextureVK::Layout::ColorAttachment);
 
 	const GSVector4i rc = GSVector4i(dRect);
 	const GSVector4i dtex_rc = dTex->GetRect();
@@ -1402,7 +1409,7 @@ void GSDeviceVK::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	DrawStretchRect(sRect, dRect, dTex->GetSize());
 	EndRenderPass();
 
-	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 }
 
 void GSDeviceVK::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4])
@@ -1419,7 +1426,7 @@ void GSDeviceVK::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float para
 	DrawStretchRect(sRect, GSVector4(dRect), dTex->GetSize());
 	EndRenderPass();
 
-	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 }
 
 void GSDeviceVK::DoFXAA(GSTexture* sTex, GSTexture* dTex)
@@ -1435,7 +1442,7 @@ void GSDeviceVK::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	DrawStretchRect(sRect, GSVector4(dRect), dTex->GetSize());
 	EndRenderPass();
 
-	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 }
 
 void GSDeviceVK::IASetVertexBuffer(const void* vertex, size_t stride, size_t count)
@@ -1506,18 +1513,18 @@ void GSDeviceVK::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 		if (vkRt)
 		{
 			vkRt->TransitionToLayout((feedback_loop & FeedbackLoopFlag_ReadAndWriteRT) ?
-										 VK_IMAGE_LAYOUT_GENERAL :
-										 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+				GSTextureVK::Layout::FeedbackLoop :
+										 GSTextureVK::Layout::ColorAttachment);
 		}
 		if (vkDs)
 		{
 			// need to update descriptors to reflect the new layout
-			if ((feedback_loop & FeedbackLoopFlag_ReadDS) && vkDs->GetLayout() != VK_IMAGE_LAYOUT_GENERAL)
+			if ((feedback_loop & FeedbackLoopFlag_ReadDS) && vkDs->GetLayout() != GSTextureVK::Layout::FeedbackLoop)
 				m_dirty_flags |= DIRTY_FLAG_TFX_SAMPLERS_DS;
 
 			vkDs->TransitionToLayout((feedback_loop & FeedbackLoopFlag_ReadDS) ?
-										 VK_IMAGE_LAYOUT_GENERAL :
-										 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+										 GSTextureVK::Layout::FeedbackLoop :
+										 GSTextureVK::Layout::DepthStencilAttachment);
 		}
 	}
 
@@ -1653,21 +1660,18 @@ VkShaderModule GSDeviceVK::GetUtilityFragmentShader(const std::string& source, c
 
 bool GSDeviceVK::CreateNullTexture()
 {
-	if (!m_null_texture.Create(1, 1, 1, 1, VK_FORMAT_R8G8B8A8_UNORM, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_VIEW_TYPE_2D,
-			VK_IMAGE_TILING_OPTIMAL,
-			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT))
-	{
+	m_null_texture = GSTextureVK::Create(GSTexture::Type::RenderTarget, GSTexture::Format::Color, 1, 1, 1);
+	if (!m_null_texture)
 		return false;
-	}
 
 	const VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
 	const VkImageSubresourceRange srr{VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u};
 	const VkClearColorValue ccv{};
-	m_null_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-	vkCmdClearColorImage(cmdbuf, m_null_texture.GetImage(), m_null_texture.GetLayout(), &ccv, 1, &srr);
-	m_null_texture.TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_GENERAL);
-	Vulkan::SetObjectName(g_vulkan_context->GetDevice(), m_null_texture.GetImage(), "Null texture");
-	Vulkan::SetObjectName(g_vulkan_context->GetDevice(), m_null_texture.GetView(), "Null texture view");
+	m_null_texture->TransitionToLayout(cmdbuf, GSTextureVK::Layout::ClearDst);
+	vkCmdClearColorImage(cmdbuf, m_null_texture->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &ccv, 1, &srr);
+	m_null_texture->TransitionToLayout(cmdbuf, GSTextureVK::Layout::General);
+	Vulkan::SetObjectName(g_vulkan_context->GetDevice(), m_null_texture->GetImage(), "Null texture");
+	Vulkan::SetObjectName(g_vulkan_context->GetDevice(), m_null_texture->GetView(), "Null texture view");
 
 	return true;
 }
@@ -2040,9 +2044,8 @@ bool GSDeviceVK::CompileConvertPipelines()
 bool GSDeviceVK::CompilePresentPipelines()
 {
 	// we may not have a swap chain if running in headless mode.
-	m_swap_chain_render_pass = m_swap_chain ?
-								   m_swap_chain->GetClearRenderPass() :
-								   g_vulkan_context->GetRenderPass(VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_UNDEFINED);
+	m_swap_chain_render_pass = g_vulkan_context->GetRenderPass(
+		m_swap_chain ? m_swap_chain->GetTextureFormat() : VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_UNDEFINED);
 	if (m_swap_chain_render_pass == VK_NULL_HANDLE)
 		return false;
 
@@ -2439,12 +2442,9 @@ void GSDeviceVK::RenderImGui()
 			SetScissor(GSVector4i(clip).max_i32(GSVector4i::zero()));
 
 			// Since we don't have the GSTexture...
-			VKTexture* tex = static_cast<VKTexture*>(pcmd->GetTexID());
-			if (m_utility_texture != tex)
-			{
-				m_utility_texture = tex;
-				m_dirty_flags |= DIRTY_FLAG_UTILITY_TEXTURE;
-			}
+			GSTextureVK* tex = static_cast<GSTextureVK*>(pcmd->GetTexID());
+			if (tex)
+				SetUtilityTexture(tex, m_linear_sampler);
 
 			if (ApplyUtilityState())
 			{
@@ -2467,13 +2467,13 @@ void GSDeviceVK::RenderBlankFrame()
 	}
 
 	VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
-	VKTexture& sctex = m_swap_chain->GetCurrentTexture();
-	sctex.TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	GSTextureVK* sctex = m_swap_chain->GetCurrentTexture();
+	sctex->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::TransferDst);
 
 	constexpr VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-	vkCmdClearColorImage(cmdbuffer, sctex.GetImage(), sctex.GetLayout(), &s_present_clear_color.color, 1, &srr);
+	vkCmdClearColorImage(cmdbuffer, sctex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &s_present_clear_color.color, 1, &srr);
 
-	m_swap_chain->GetCurrentTexture().TransitionToLayout(cmdbuffer, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	m_swap_chain->GetCurrentTexture()->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::PresentSrc);
 	g_vulkan_context->SubmitCommandBuffer(m_swap_chain.get(), !m_swap_chain->IsPresentModeSynchronizing());
 	g_vulkan_context->MoveToNextCommandBuffer();
 
@@ -2492,29 +2492,13 @@ bool GSDeviceVK::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, cons
 	GSTextureVK* const dTexVK = static_cast<GSTextureVK*>(dTex);
 	VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
 
-	sTexVK->GetTexture().TransitionToLayout(cmdbuf, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-	// we have to make the barrier explicit here, because there's no free enums for us to use (general already hijacked)
-	const VkImageMemoryBarrier barrier_to_cs = {
-		VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-		nullptr,
-		VK_ACCESS_SHADER_READ_BIT,
-		VK_ACCESS_SHADER_WRITE_BIT,
-		dTexVK->GetLayout(),
-		VK_IMAGE_LAYOUT_GENERAL,
-		VK_QUEUE_FAMILY_IGNORED,
-		VK_QUEUE_FAMILY_IGNORED,
-		dTexVK->GetImage(),
-		{VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u},
-	};
-	vkCmdPipelineBarrier(cmdbuf, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-		0, 0, nullptr, 0, nullptr, 1, &barrier_to_cs);
-	dTexVK->GetTexture().OverrideImageLayout(VK_IMAGE_LAYOUT_GENERAL);
+	sTexVK->TransitionToLayout(cmdbuf, GSTextureVK::Layout::ShaderReadOnly);
+	dTexVK->TransitionToLayout(cmdbuf, GSTextureVK::Layout::ComputeReadWriteImage);
 
 	// only happening once a frame, so the update isn't a huge deal.
 	Vulkan::DescriptorSetUpdateBuilder dsub;
-	dsub.AddImageDescriptorWrite(ds, 0, sTexVK->GetView(), sTexVK->GetLayout());
-	dsub.AddStorageImageDescriptorWrite(ds, 1, dTexVK->GetView(), dTexVK->GetLayout());
+	dsub.AddImageDescriptorWrite(ds, 0, sTexVK->GetView(), sTexVK->GetVkLayout());
+	dsub.AddStorageImageDescriptorWrite(ds, 1, dTexVK->GetView(), dTexVK->GetVkLayout());
 	dsub.Update(g_vulkan_context->GetDevice(), false);
 
 	// the actual meat and potatoes! only four commands.
@@ -2527,22 +2511,7 @@ bool GSDeviceVK::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, cons
 	vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_COMPUTE, m_cas_pipelines[static_cast<u8>(sharpen_only)]);
 	vkCmdDispatch(cmdbuf, dispatchX, dispatchY, 1);
 
-	// and same deal here :(
-	const VkImageMemoryBarrier barrier_to_fs = {
-		VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-		nullptr,
-		VK_ACCESS_SHADER_WRITE_BIT,
-		VK_ACCESS_SHADER_READ_BIT,
-		VK_IMAGE_LAYOUT_GENERAL,
-		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		VK_QUEUE_FAMILY_IGNORED,
-		VK_QUEUE_FAMILY_IGNORED,
-		dTexVK->GetImage(),
-		{VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u},
-	};
-	vkCmdPipelineBarrier(cmdbuf, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		0, 0, nullptr, 0, nullptr, 1, &barrier_to_fs);
-	dTexVK->GetTexture().OverrideImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	dTexVK->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 
 	// all done!
 	return true;
@@ -2551,8 +2520,8 @@ bool GSDeviceVK::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, cons
 void GSDeviceVK::DestroyResources()
 {
 	g_vulkan_context->ExecuteCommandBuffer(VKContext::WaitType::Sleep);
-	if (m_tfx_descriptor_sets[0] != VK_NULL_HANDLE)
-		g_vulkan_context->FreeGlobalDescriptorSet(m_tfx_descriptor_sets[0]);
+	if (m_tfx_ubo_descriptor_set != VK_NULL_HANDLE)
+		g_vulkan_context->FreeGlobalDescriptorSet(m_tfx_ubo_descriptor_set);
 
 	for (auto& it : m_tfx_pipelines)
 		Vulkan::SafeDestroyPipeline(it.second);
@@ -2627,7 +2596,11 @@ void GSDeviceVK::DestroyResources()
 	Vulkan::SafeDestroyPipelineLayout(m_utility_pipeline_layout);
 	Vulkan::SafeDestroyDescriptorSetLayout(m_utility_ds_layout);
 
-	m_null_texture.Destroy(false);
+	if (m_null_texture)
+	{
+		m_null_texture->Destroy(false);
+		m_null_texture.reset();
+	}
 }
 
 VkShaderModule GSDeviceVK::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
@@ -2882,9 +2855,9 @@ void GSDeviceVK::InitializeState()
 	m_current_render_pass = VK_NULL_HANDLE;
 
 	for (u32 i = 0; i < NUM_TFX_TEXTURES; i++)
-		m_tfx_textures[i] = &m_null_texture;
+		m_tfx_textures[i] = m_null_texture.get();
 
-	m_utility_texture = &m_null_texture;
+	m_utility_texture = m_null_texture.get();
 
 	m_point_sampler = GetSampler(GSHWDrawConfig::SamplerSelector::Point());
 	if (m_point_sampler)
@@ -2905,20 +2878,20 @@ bool GSDeviceVK::CreatePersistentDescriptorSets()
 	Vulkan::DescriptorSetUpdateBuilder dsub;
 
 	// Allocate UBO descriptor sets for TFX.
-	m_tfx_descriptor_sets[0] = g_vulkan_context->AllocatePersistentDescriptorSet(m_tfx_ubo_ds_layout);
-	if (m_tfx_descriptor_sets[0] == VK_NULL_HANDLE)
+	m_tfx_ubo_descriptor_set = g_vulkan_context->AllocatePersistentDescriptorSet(m_tfx_ubo_ds_layout);
+	if (m_tfx_ubo_descriptor_set == VK_NULL_HANDLE)
 		return false;
-	dsub.AddBufferDescriptorWrite(m_tfx_descriptor_sets[0], 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+	dsub.AddBufferDescriptorWrite(m_tfx_ubo_descriptor_set, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
 		m_vertex_uniform_stream_buffer.GetBuffer(), 0, sizeof(GSHWDrawConfig::VSConstantBuffer));
-	dsub.AddBufferDescriptorWrite(m_tfx_descriptor_sets[0], 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+	dsub.AddBufferDescriptorWrite(m_tfx_ubo_descriptor_set, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
 		m_fragment_uniform_stream_buffer.GetBuffer(), 0, sizeof(GSHWDrawConfig::PSConstantBuffer));
 	if (m_features.vs_expand)
 	{
-		dsub.AddBufferDescriptorWrite(m_tfx_descriptor_sets[0], 2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+		dsub.AddBufferDescriptorWrite(m_tfx_ubo_descriptor_set, 2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 			m_vertex_stream_buffer.GetBuffer(), 0, VERTEX_BUFFER_SIZE);
 	}
 	dsub.Update(dev);
-	Vulkan::SetObjectName(dev, m_tfx_descriptor_sets[0], "Persistent TFX UBO set");
+	Vulkan::SetObjectName(dev, m_tfx_ubo_descriptor_set, "Persistent TFX UBO set");
 	return true;
 }
 
@@ -3003,16 +2976,16 @@ void GSDeviceVK::InvalidateCachedState()
 		m_dirty_flags |= DIRTY_FLAG_INDEX_BUFFER;
 
 	for (u32 i = 0; i < NUM_TFX_TEXTURES; i++)
-		m_tfx_textures[i] = &m_null_texture;
-	m_utility_texture = &m_null_texture;
+		m_tfx_textures[i] = m_null_texture.get();
+	m_utility_texture = m_null_texture.get();
 	m_current_framebuffer = VK_NULL_HANDLE;
 	m_current_render_target = nullptr;
 	m_current_depth_target = nullptr;
 	m_current_framebuffer_feedback_loop = FeedbackLoopFlag_None;
 
 	m_current_pipeline_layout = PipelineLayout::Undefined;
-	m_tfx_descriptor_sets[1] = VK_NULL_HANDLE;
-	m_tfx_descriptor_sets[2] = VK_NULL_HANDLE;
+	m_tfx_texture_descriptor_set = VK_NULL_HANDLE;
+	m_tfx_rt_descriptor_set = VK_NULL_HANDLE;
 	m_utility_descriptor_set = VK_NULL_HANDLE;
 }
 
@@ -3048,33 +3021,31 @@ void GSDeviceVK::SetBlendConstants(u8 color)
 
 void GSDeviceVK::PSSetShaderResource(int i, GSTexture* sr, bool check_state)
 {
-	const VKTexture* tex;
-	if (sr)
+	GSTextureVK* vkTex = static_cast<GSTextureVK*>(sr);
+	if (vkTex)
 	{
-		GSTextureVK* vkTex = static_cast<GSTextureVK*>(sr);
 		if (check_state)
 		{
-			if (vkTex->GetTexture().GetLayout() != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && InRenderPass())
+			if (vkTex->GetLayout() != GSTextureVK::Layout::ShaderReadOnly && InRenderPass())
 			{
 				GL_INS("Ending render pass due to resource transition");
 				EndRenderPass();
 			}
 
 			vkTex->CommitClear();
-			vkTex->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			vkTex->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 		}
 		vkTex->SetUsedThisCommandBuffer();
-		tex = vkTex->GetTexturePtr();
 	}
 	else
 	{
-		tex = &m_null_texture;
+		vkTex = m_null_texture.get();
 	}
 
-	if (m_tfx_textures[i] == tex)
+	if (m_tfx_textures[i] == vkTex)
 		return;
 
-	m_tfx_textures[i] = tex;
+	m_tfx_textures[i] = vkTex;
 
 	m_dirty_flags |= (i < 2) ? DIRTY_FLAG_TFX_SAMPLERS_DS : DIRTY_FLAG_TFX_RT_TEXTURE_DS;
 }
@@ -3091,24 +3062,22 @@ void GSDeviceVK::PSSetSampler(GSHWDrawConfig::SamplerSelector sel)
 
 void GSDeviceVK::SetUtilityTexture(GSTexture* tex, VkSampler sampler)
 {
-	const VKTexture* vtex;
-	if (tex)
+	GSTextureVK* vkTex = static_cast<GSTextureVK*>(tex);
+	if (vkTex)
 	{
-		GSTextureVK* vkTex = static_cast<GSTextureVK*>(tex);
 		vkTex->CommitClear();
-		vkTex->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		vkTex->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 		vkTex->SetUsedThisCommandBuffer();
-		vtex = vkTex->GetTexturePtr();
 	}
 	else
 	{
-		vtex = &m_null_texture;
+		vkTex = m_null_texture.get();
 	}
 
-	if (m_utility_texture == vtex && m_utility_sampler == sampler)
+	if (m_utility_texture == vkTex && m_utility_sampler == sampler)
 		return;
 
-	m_utility_texture = vtex;
+	m_utility_texture = vkTex;
 	m_utility_sampler = sampler;
 	m_dirty_flags |= DIRTY_FLAG_UTILITY_TEXTURE;
 }
@@ -3121,18 +3090,17 @@ void GSDeviceVK::SetUtilityPushConstants(const void* data, u32 size)
 
 void GSDeviceVK::UnbindTexture(GSTextureVK* tex)
 {
-	const VKTexture* vtex = tex->GetTexturePtr();
 	for (u32 i = 0; i < NUM_TFX_TEXTURES; i++)
 	{
-		if (m_tfx_textures[i] == vtex)
+		if (m_tfx_textures[i] == tex)
 		{
-			m_tfx_textures[i] = &m_null_texture;
+			m_tfx_textures[i] = m_null_texture.get();
 			m_dirty_flags |= (i < 2) ? DIRTY_FLAG_TFX_SAMPLERS_DS : DIRTY_FLAG_TFX_RT_TEXTURE_DS;
 		}
 	}
-	if (m_utility_texture == vtex)
+	if (m_utility_texture == tex)
 	{
-		m_utility_texture = &m_null_texture;
+		m_utility_texture = m_null_texture.get();
 		m_dirty_flags |= DIRTY_FLAG_UTILITY_TEXTURE;
 	}
 	if (m_current_render_target == tex || m_current_depth_target == tex)
@@ -3333,18 +3301,18 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 
 	Vulkan::DescriptorSetUpdateBuilder dsub;
 
-	u32 dirty_descriptor_set_start = NUM_TFX_DESCRIPTOR_SETS;
-	u32 dirty_descriptor_set_end = 0;
+	std::array<VkDescriptorSet, NUM_TFX_DESCRIPTOR_SETS> dsets;
+	u32 num_dsets = 0;
+	u32 start_dset = 0;
+	const bool layout_changed = (m_current_pipeline_layout != PipelineLayout::TFX);
 
-	if (flags & DIRTY_FLAG_TFX_DYNAMIC_OFFSETS)
-	{
-		dirty_descriptor_set_start = 0;
-	}
+	if (!layout_changed && flags & DIRTY_FLAG_TFX_DYNAMIC_OFFSETS)
+		dsets[num_dsets++] = m_tfx_ubo_descriptor_set;
 
-	if ((flags & DIRTY_FLAG_TFX_SAMPLERS_DS) || m_tfx_descriptor_sets[1] == VK_NULL_HANDLE)
+	if ((flags & DIRTY_FLAG_TFX_SAMPLERS_DS) || m_tfx_texture_descriptor_set == VK_NULL_HANDLE)
 	{
-		VkDescriptorSet ds = g_vulkan_context->AllocateDescriptorSet(m_tfx_sampler_ds_layout);
-		if (ds == VK_NULL_HANDLE)
+		m_tfx_texture_descriptor_set = g_vulkan_context->AllocateDescriptorSet(m_tfx_sampler_ds_layout);
+		if (m_tfx_texture_descriptor_set == VK_NULL_HANDLE)
 		{
 			if (already_execed)
 			{
@@ -3356,20 +3324,23 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			return ApplyTFXState(true);
 		}
 
-		dsub.AddCombinedImageSamplerDescriptorWrite(
-			ds, 0, m_tfx_textures[0]->GetView(), m_tfx_sampler, m_tfx_textures[0]->GetLayout());
-		dsub.AddImageDescriptorWrite(ds, 1, m_tfx_textures[1]->GetView(), m_tfx_textures[1]->GetLayout());
+		dsub.AddCombinedImageSamplerDescriptorWrite(m_tfx_texture_descriptor_set, 0, m_tfx_textures[0]->GetView(),
+			m_tfx_sampler, m_tfx_textures[0]->GetVkLayout());
+		dsub.AddImageDescriptorWrite(
+			m_tfx_texture_descriptor_set, 1, m_tfx_textures[1]->GetView(), m_tfx_textures[1]->GetVkLayout());
 		dsub.Update(dev);
 
-		m_tfx_descriptor_sets[1] = ds;
-		dirty_descriptor_set_start = std::min(dirty_descriptor_set_start, 1u);
-		dirty_descriptor_set_end = 1u;
+		if (!layout_changed)
+		{
+			start_dset = (num_dsets == 0) ? TFX_DESCRIPTOR_SET_TEXTURES : start_dset;
+			dsets[num_dsets++] = m_tfx_texture_descriptor_set;
+		}
 	}
 
-	if ((flags & DIRTY_FLAG_TFX_RT_TEXTURE_DS) || m_tfx_descriptor_sets[2] == VK_NULL_HANDLE)
+	if ((flags & DIRTY_FLAG_TFX_RT_TEXTURE_DS) || m_tfx_rt_descriptor_set == VK_NULL_HANDLE)
 	{
-		VkDescriptorSet ds = g_vulkan_context->AllocateDescriptorSet(m_tfx_rt_texture_ds_layout);
-		if (ds == VK_NULL_HANDLE)
+		m_tfx_rt_descriptor_set = g_vulkan_context->AllocateDescriptorSet(m_tfx_rt_texture_ds_layout);
+		if (m_tfx_rt_descriptor_set == VK_NULL_HANDLE)
 		{
 			if (already_execed)
 			{
@@ -3384,35 +3355,45 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 		if (m_features.texture_barrier)
 		{
 			dsub.AddInputAttachmentDescriptorWrite(
-				ds, 0, m_tfx_textures[NUM_TFX_DRAW_TEXTURES]->GetView(), VK_IMAGE_LAYOUT_GENERAL);
+				m_tfx_rt_descriptor_set, 0, m_tfx_textures[NUM_TFX_DRAW_TEXTURES]->GetView(), VK_IMAGE_LAYOUT_GENERAL);
 		}
 		else
 		{
-			dsub.AddImageDescriptorWrite(ds, 0, m_tfx_textures[NUM_TFX_DRAW_TEXTURES]->GetView(),
-				m_tfx_textures[NUM_TFX_DRAW_TEXTURES]->GetLayout());
+			dsub.AddImageDescriptorWrite(m_tfx_rt_descriptor_set, 0, m_tfx_textures[NUM_TFX_DRAW_TEXTURES]->GetView(),
+				m_tfx_textures[NUM_TFX_DRAW_TEXTURES]->GetVkLayout());
 		}
-		dsub.AddImageDescriptorWrite(ds, 1, m_tfx_textures[NUM_TFX_DRAW_TEXTURES + 1]->GetView(),
-			m_tfx_textures[NUM_TFX_DRAW_TEXTURES + 1]->GetLayout());
+		dsub.AddImageDescriptorWrite(m_tfx_rt_descriptor_set, 1, m_tfx_textures[NUM_TFX_DRAW_TEXTURES + 1]->GetView(),
+			m_tfx_textures[NUM_TFX_DRAW_TEXTURES + 1]->GetVkLayout());
 		dsub.Update(dev);
 
-		m_tfx_descriptor_sets[2] = ds;
-		dirty_descriptor_set_start = std::min(dirty_descriptor_set_start, 2u);
-		dirty_descriptor_set_end = 2u;
+		if (!layout_changed)
+		{
+			// need to add textures in, can't leave a gap
+			if (start_dset == TFX_DESCRIPTOR_SET_UBO && num_dsets == 1)
+				dsets[num_dsets++] = m_tfx_texture_descriptor_set;
+			else
+				start_dset = (num_dsets == 0) ? TFX_DESCRIPTOR_SET_RT : start_dset;
+
+			dsets[num_dsets++] = m_tfx_rt_descriptor_set;
+		}
 	}
 
-	if (m_current_pipeline_layout != PipelineLayout::TFX)
+	if (layout_changed)
 	{
 		m_current_pipeline_layout = PipelineLayout::TFX;
 
+		dsets[0] = m_tfx_ubo_descriptor_set;
+		dsets[1] = m_tfx_texture_descriptor_set;
+		dsets[2] = m_tfx_rt_descriptor_set;
+
 		vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_tfx_pipeline_layout, 0,
-			NUM_TFX_DESCRIPTOR_SETS, m_tfx_descriptor_sets.data(), NUM_TFX_DYNAMIC_OFFSETS,
-			m_tfx_dynamic_offsets.data());
+			NUM_TFX_DESCRIPTOR_SETS, dsets.data(), NUM_TFX_DYNAMIC_OFFSETS, m_tfx_dynamic_offsets.data());
 	}
-	else if (dirty_descriptor_set_start <= dirty_descriptor_set_end)
+	else if (num_dsets > 0)
 	{
 		u32 dynamic_count;
 		const u32* dynamic_offsets;
-		if (dirty_descriptor_set_start == 0)
+		if (start_dset == TFX_DESCRIPTOR_SET_UBO)
 		{
 			dynamic_count = NUM_TFX_DYNAMIC_OFFSETS;
 			dynamic_offsets = m_tfx_dynamic_offsets.data();
@@ -3423,13 +3404,9 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			dynamic_offsets = nullptr;
 		}
 
-		const u32 count = dirty_descriptor_set_end - dirty_descriptor_set_start + 1;
-
-		vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_tfx_pipeline_layout,
-			dirty_descriptor_set_start, count, &m_tfx_descriptor_sets[dirty_descriptor_set_start], dynamic_count,
-			dynamic_offsets);
+		vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_tfx_pipeline_layout, start_dset, num_dsets,
+			dsets.data(), dynamic_count, dynamic_offsets);
 	}
-
 
 	ApplyBaseState(flags, cmdbuf);
 	return true;
@@ -3464,7 +3441,7 @@ bool GSDeviceVK::ApplyUtilityState(bool already_execed)
 
 		Vulkan::DescriptorSetUpdateBuilder dsub;
 		dsub.AddCombinedImageSamplerDescriptorWrite(m_utility_descriptor_set, 0, m_utility_texture->GetView(),
-			m_utility_sampler, m_utility_texture->GetLayout());
+			m_utility_sampler, m_utility_texture->GetVkLayout());
 		dsub.Update(dev);
 		rebind = true;
 	}
@@ -3498,7 +3475,7 @@ static void ColorBufferBarrier(GSTextureVK* rt)
 	const VkImageMemoryBarrier barrier = {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr,
 		VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
 		VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED,
-		rt->GetTexture().GetImage(), {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u}};
+		rt->GetImage(), {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u}};
 
 	vkCmdPipelineBarrier(g_vulkan_context->GetCurrentCommandBuffer(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1, &barrier);
@@ -3609,7 +3586,7 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 	config.alpha_second_pass.ps.date = 3;
 
 	// and bind the image to the primitive sampler
-	image->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	image->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 	PSSetShaderResource(3, image, false);
 	return image;
 }
@@ -3715,7 +3692,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		else
 		{
 			hdr_rt->SetState(GSTexture::State::Invalidated);
-			draw_rt->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			draw_rt->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 		}
 
 		// we're not drawing to the RT, so we can use it as a source
@@ -3742,9 +3719,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// clear texture binding when it's bound to RT or DS
-	if (!config.tex &&
-		((!pipe.IsRTFeedbackLoop() && static_cast<GSTextureVK*>(config.rt)->GetTexturePtr() == m_tfx_textures[0]) ||
-			(config.ds && static_cast<GSTextureVK*>(config.ds)->GetTexturePtr() == m_tfx_textures[0])))
+	if (!config.tex && ((!pipe.IsRTFeedbackLoop() && static_cast<GSTextureVK*>(config.rt) == m_tfx_textures[0]) ||
+						   (config.ds && static_cast<GSTextureVK*>(config.ds) == m_tfx_textures[0])))
 	{
 		PSSetShaderResource(0, nullptr, false);
 	}
@@ -3777,7 +3753,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	// We don't need the very first barrier if this is the first draw after switching to feedback loop,
 	// because the layout change in itself enforces the execution dependency. HDR needs a barrier between
 	// setup and the first draw to read it. TODO: Make HDR use subpasses instead.
-	const bool skip_first_barrier = (draw_rt && draw_rt->GetLayout() != VK_IMAGE_LAYOUT_GENERAL && !pipe.ps.hdr);
+	const bool skip_first_barrier = (draw_rt && draw_rt->GetLayout() != GSTextureVK::Layout::FeedbackLoop && !pipe.ps.hdr);
 
 	OMSetRenderTargets(draw_rt, draw_ds, config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
 	if (pipe.IsRTFeedbackLoop())
@@ -3883,7 +3859,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		GL_INS("Blit HDR back to RT");
 
 		EndRenderPass();
-		hdr_rt->TransitionToLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		hdr_rt->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 
 		draw_rt = static_cast<GSTextureVK*>(config.rt);
 		OMSetRenderTargets(draw_rt, draw_ds, config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
