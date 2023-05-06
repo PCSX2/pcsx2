@@ -16,10 +16,13 @@
 #include "PrecompiledHeader.h"
 
 #include "GS/Renderers/DX12/D3D12Context.h"
+
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/General.h"
 #include "common/ScopedGuard.h"
-#include "common/Console.h"
+#include "common/StringUtil.h"
+
 #include "D3D12MemAlloc.h"
 
 #include <algorithm>
