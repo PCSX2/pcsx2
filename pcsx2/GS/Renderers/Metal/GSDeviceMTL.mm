@@ -773,7 +773,7 @@ bool GSDeviceMTL::Create()
 	if (!GSDevice::Create())
 		return false;
 
-	NSString* ns_adapter_name = [NSString stringWithUTF8String:EmuConfig.GS.Adapter.c_str()];
+	NSString* ns_adapter_name = [NSString stringWithUTF8String:GSConfig.Adapter.c_str()];
 	auto devs = MRCTransfer(MTLCopyAllDevices());
 	for (id<MTLDevice> dev in devs.Get())
 	{
@@ -782,8 +782,8 @@ bool GSDeviceMTL::Create()
 	}
 	if (!m_dev.dev)
 	{
-		if (!EmuConfig.GS.Adapter.empty())
-			Console.Warning("Metal: Couldn't find adapter %s, using default", EmuConfig.GS.Adapter.c_str());
+		if (!GSConfig.Adapter.empty())
+			Console.Warning("Metal: Couldn't find adapter %s, using default", GSConfig.Adapter.c_str());
 		m_dev = GSMTLDevice(MRCTransfer(MTLCreateSystemDefaultDevice()));
 		if (!m_dev.dev)
 			Host::ReportErrorAsync("No Metal Devices Available", "No Metal-supporting GPUs were found.  PCSX2 requires a Metal GPU (available on all macs from 2012 onwards).");

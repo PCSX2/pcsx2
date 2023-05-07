@@ -189,7 +189,7 @@ static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail, bool
 		return false;
 	}
 
-	GSConfig.OsdShowGPU = EmuConfig.GS.OsdShowGPU && g_gs_device->SetGPUTimingEnabled(true);
+	GSConfig.OsdShowGPU = GSConfig.OsdShowGPU && g_gs_device->SetGPUTimingEnabled(true);
 
 	Console.WriteLn(Color_StrongGreen, "%s Graphics Driver Info:", GSDevice::RenderAPIToString(new_api));
 	Console.Indent().WriteLn(g_gs_device->GetDriverInfo());
@@ -348,7 +348,7 @@ bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* b
 		Host::ReportErrorAsync(
 			"Error", fmt::format("Failed to create render device. This may be due to your GPU not supporting the "
 								 "chosen renderer ({}), or because your graphics drivers need to be updated.",
-						 Pcsx2Config::GSOptions::GetRendererName(EmuConfig.GS.Renderer)));
+						 Pcsx2Config::GSOptions::GetRendererName(GSConfig.Renderer)));
 		return false;
 	}
 
