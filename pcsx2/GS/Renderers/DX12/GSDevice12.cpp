@@ -122,13 +122,13 @@ bool GSDevice12::Create()
 	if (!GSDevice::Create())
 		return false;
 
-	m_dxgi_factory = D3D::CreateFactory(EmuConfig.GS.UseDebugDevice);
+	m_dxgi_factory = D3D::CreateFactory(GSConfig.UseDebugDevice);
 	if (!m_dxgi_factory)
 		return false;
 
-	ComPtr<IDXGIAdapter1> dxgi_adapter = D3D::GetAdapterByName(m_dxgi_factory.get(), EmuConfig.GS.Adapter);
+	ComPtr<IDXGIAdapter1> dxgi_adapter = D3D::GetAdapterByName(m_dxgi_factory.get(), GSConfig.Adapter);
 
-	if (!D3D12Context::Create(m_dxgi_factory.get(), dxgi_adapter.get(), EmuConfig.GS.UseDebugDevice))
+	if (!D3D12Context::Create(m_dxgi_factory.get(), dxgi_adapter.get(), GSConfig.UseDebugDevice))
 	{
 		Console.Error("Failed to create D3D12 context");
 		return false;
