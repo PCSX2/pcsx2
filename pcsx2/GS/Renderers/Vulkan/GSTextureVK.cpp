@@ -38,6 +38,7 @@ static constexpr std::array<VkImageLayout, static_cast<u32>(GSTextureVK::Layout:
 	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // ClearDst
 	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, // TransferSrc
 	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // TransferDst
+	VK_IMAGE_LAYOUT_GENERAL, // TransferSelf
 	VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, // PresentSrc
 	VK_IMAGE_LAYOUT_GENERAL, // FeedbackLoop
 	VK_IMAGE_LAYOUT_GENERAL, // ReadWriteImage
@@ -647,6 +648,12 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 			srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
 			break;
 
+		case Layout::TransferSelf:
+			// Image was being used as a copy source and destination, ensure all reads and writes have finished.
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
+			srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+			break;
+
 		case Layout::FeedbackLoop:
 			barrier.srcAccessMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT) ?
 										(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
@@ -710,6 +717,11 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 
 		case Layout::TransferDst:
 			barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+			break;
+
+		case Layout::TransferSelf:
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
 			dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
 			break;
 

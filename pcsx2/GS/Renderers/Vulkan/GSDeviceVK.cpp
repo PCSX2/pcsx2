@@ -955,11 +955,12 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 
 	EndRenderPass();
 
-	dTexVK->TransitionToLayout(GSTextureVK::Layout::TransferDst);
-	dTexVK->SetUsedThisCommandBuffer();
-
-	sTexVK->TransitionToLayout(GSTextureVK::Layout::TransferSrc);
 	sTexVK->SetUsedThisCommandBuffer();
+	dTexVK->SetUsedThisCommandBuffer();
+	sTexVK->TransitionToLayout(
+		(dTexVK == sTexVK) ? GSTextureVK::Layout::TransferSelf : GSTextureVK::Layout::TransferSrc);
+	dTexVK->TransitionToLayout(
+		(dTexVK == sTexVK) ? GSTextureVK::Layout::TransferSelf : GSTextureVK::Layout::TransferDst);
 
 #ifdef PCSX2_DEVBUILD
 	// ensure we don't leave this bound later on, debug layer gets cranky
@@ -968,7 +969,7 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 #endif
 
 	vkCmdCopyImage(g_vulkan_context->GetCurrentCommandBuffer(), sTexVK->GetImage(),
-		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dTexVK->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &ic);
+		sTexVK->GetVkLayout(), dTexVK->GetImage(), dTexVK->GetVkLayout(), 1, &ic);
 
 	dTexVK->SetState(GSTexture::State::Dirty);
 }
