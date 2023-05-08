@@ -2600,6 +2600,7 @@ void GSState::UpdateScissor()
 {
 	m_scissor = m_context->scissor.ex;
 	m_ofxy = m_context->scissor.ofxy;
+	m_scissor_invalid = !m_context->scissor.in.gt32(m_context->scissor.in.zwzw()).allfalse();
 }
 
 void GSState::UpdateVertexKick()
@@ -3109,6 +3110,9 @@ __forceinline void GSState::VertexKick(u32 skip)
 
 	if (m < n)
 		return;
+
+	// Skip draws when scissor is out of range (i.e. bottom-right is less than top-left), since everything will get clipped.
+	skip |= static_cast<u32>(m_scissor_invalid);
 
 	if (skip == 0 && (prim != GS_TRIANGLEFAN || m <= 4)) // m_vertex.xy only knows about the last 4 vertices, head could be far behind for fan
 	{
