@@ -35,6 +35,7 @@ public:
 		ClearDst,
 		TransferSrc,
 		TransferDst,
+		TransferSelf,
 		PresentSrc,
 		FeedbackLoop,
 		ReadWriteImage,
