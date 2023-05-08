@@ -373,8 +373,15 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 {
 	EndRenderPass();
 
-	if (frame_skip || !m_swap_chain)
+	if (frame_skip)
 		return PresentResult::FrameSkipped;
+
+	// If we're running surfaceless, kick the command buffer so we don't run out of descriptors.
+	if (!m_swap_chain)
+	{
+		ExecuteCommandBuffer(false);
+		return PresentResult::FrameSkipped;
+	}
 
 	// Previous frame needs to be presented before we can acquire the swap chain.
 	g_vulkan_context->WaitForPresentComplete();
@@ -399,7 +406,7 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 			if (!m_swap_chain->RecreateSurface(m_window_info))
 			{
 				Console.Error("Failed to recreate surface after loss");
-				g_vulkan_context->ExecuteCommandBuffer(VKContext::WaitType::None);
+				ExecuteCommandBuffer(false);
 				return PresentResult::FrameSkipped;
 			}
 
@@ -412,7 +419,7 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 		{
 			// Still submit the command buffer, otherwise we'll end up with several frames waiting.
 			LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR() failed: ");
-			g_vulkan_context->ExecuteCommandBuffer(VKContext::WaitType::None);
+			ExecuteCommandBuffer(false);
 			return PresentResult::FrameSkipped;
 		}
 	}
