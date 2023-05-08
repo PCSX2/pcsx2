@@ -933,6 +933,35 @@ bool VKContext::CreateTextureStreamBuffer()
 	return true;
 }
 
+VkRenderPass VKContext::GetRenderPassForRestarting(VkRenderPass pass)
+{
+	for (const auto& it : m_render_pass_cache)
+	{
+		if (it.second != pass)
+			continue;
+
+		RenderPassCacheKey modified_key;
+		modified_key.key = it.first;
+		if (modified_key.color_load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
+			modified_key.color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
+		if (modified_key.depth_load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
+			modified_key.depth_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
+		if (modified_key.stencil_load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
+			modified_key.stencil_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
+
+		if (modified_key.key == it.first)
+			return pass;
+
+		auto fit = m_render_pass_cache.find(modified_key.key);
+		if (fit != m_render_pass_cache.end())
+			return fit->second;
+
+		return CreateCachedRenderPass(modified_key);
+	}
+
+	return pass;
+}
+
 VkCommandBuffer VKContext::GetCurrentInitCommandBuffer()
 {
 	FrameResources& res = m_frame_resources[m_current_frame];

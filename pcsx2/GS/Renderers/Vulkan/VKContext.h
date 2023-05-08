@@ -157,6 +157,9 @@ public:
 		return CreateCachedRenderPass(key);
 	}
 
+	// Gets a non-clearing version of the specified render pass. Slow, don't call in hot path.
+	VkRenderPass GetRenderPassForRestarting(VkRenderPass pass);
+
 	// These command buffers are allocated per-frame. They are valid until the command buffer
 	// is submitted, after that you should call these functions again.
 	__fi u32 GetCurrentCommandBufferIndex() const { return m_current_frame; }
