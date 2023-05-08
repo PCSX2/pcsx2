@@ -675,14 +675,17 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.framebuffer_fetch = g_vulkan_context->GetOptionalExtensions().vk_ext_rasterization_order_attachment_access && !GSConfig.DisableFramebufferFetch;
 	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0;
 	m_features.broken_point_sampler = isAMD;
+
+	// geometryShader is needed because gl_PrimitiveID is part of the Geometry SPIR-V Execution Model.
+	m_features.primitive_id = g_vulkan_context->GetDeviceFeatures().geometryShader;
+
 #ifdef __APPLE__
 	// On Metal (MoltenVK), primid is sometimes available, but broken on some older GPUs and MacOS versions.
 	// Officially, it's available on GPUs that support barycentric coordinates (Newer AMD and Apple)
 	// Unofficially, it seems to work on older Intel GPUs (but breaks other things on newer Intel GPUs, see GSMTLDeviceInfo.mm for details)
-	m_features.primitive_id = g_vulkan_context->GetOptionalExtensions().vk_khr_fragment_shader_barycentric;
-#else
-	m_features.primitive_id = true;
+	m_features.primitive_id &= g_vulkan_context->GetOptionalExtensions().vk_khr_fragment_shader_barycentric;
 #endif
+
 	m_features.prefer_new_textures = true;
 	m_features.provoking_vertex_last = g_vulkan_context->GetOptionalExtensions().vk_ext_provoking_vertex;
 	m_features.dual_source_blend = features.dualSrcBlend && !GSConfig.DisableDualSourceBlend;
@@ -721,6 +724,10 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.line_expand =
 		(features.wideLines && limits.lineWidthRange[0] <= f_upscale && limits.lineWidthRange[1] >= f_upscale);
 
+	DevCon.WriteLn("Optional features:%s%s%s%s%s%s", m_features.primitive_id ? " primitive_id" : "",
+		m_features.texture_barrier ? " texture_barrier" : "", m_features.framebuffer_fetch ? " framebuffer_fetch" : "",
+		m_features.dual_source_blend ? " dual_source_blend" : "",
+		m_features.provoking_vertex_last ? " provoking_vertex_last" : "", m_features.vs_expand ? " vs_expand" : "");
 	DevCon.WriteLn("Using %s for point expansion and %s for line expansion.",
 		m_features.point_expand ? "hardware" : "vertex expanding",
 		m_features.line_expand ? "hardware" : "vertex expanding");
