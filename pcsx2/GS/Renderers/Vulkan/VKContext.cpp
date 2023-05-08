@@ -389,7 +389,7 @@ bool VKContext::SelectDeviceExtensions(ExtensionList* extension_list, bool enabl
 
 #ifdef _WIN32
 	m_optional_extensions.vk_ext_full_screen_exclusive =
-		SupportsExtension(VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME, false);
+		enable_surface && SupportsExtension(VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME, false);
 #endif
 
 	return true;
@@ -410,6 +410,7 @@ bool VKContext::SelectDeviceFeatures(const VkPhysicalDeviceFeatures* required_fe
 	m_device_features.fragmentStoresAndAtomics = available_features.fragmentStoresAndAtomics;
 	m_device_features.textureCompressionBC = available_features.textureCompressionBC;
 	m_device_features.samplerAnisotropy = available_features.samplerAnisotropy;
+	m_device_features.geometryShader = available_features.geometryShader;
 
 	return true;
 }
