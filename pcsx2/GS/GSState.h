@@ -222,6 +222,7 @@ public:
 	u32 m_crc = 0;
 	CRC::Game m_game = {};
 	std::unique_ptr<GSDumpBase> m_dump;
+	bool m_scissor_invalid = false;
 	bool m_nativeres = false;
 	bool m_mipmap = false;
 	bool m_texflush_flag = false;
