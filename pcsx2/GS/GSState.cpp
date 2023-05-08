@@ -2956,7 +2956,7 @@ __forceinline void GSState::HandleAutoFlush()
 					tex_rect += GSVector4i(0, 0, 0, 1);
 
 				const GSVector2i offset = GSVector2i(m_context->XYOFFSET.OFX, m_context->XYOFFSET.OFY);
-				const GSVector4i scissor = GSVector4i(m_context->scissor.in);
+				const GSVector4i scissor = m_context->scissor.in;
 				GSVector4i old_tex_rect = GSVector4i::zero();
 				int current_draw_end = m_index.tail;
 
@@ -3009,7 +3009,7 @@ __forceinline void GSState::HandleAutoFlush()
 
 					m_vt.Update(m_vertex.buff, m_index.buff, m_vertex.tail - m_vertex.head, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
 
-					GSVector4i area_out = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
+					GSVector4i area_out = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(m_context->scissor.in);
 					area_out = area_out & page_mask;
 					area_out += GSVector4i(0, 0, 1, 1); // Intersect goes on space inside the rect
 					area_out.z += GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.x;
@@ -3333,8 +3333,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 			}
 		}
 
-		const GSVector4i scissor = GSVector4i(m_context->scissor.in);
-		temp_draw_rect = min.upl64(max).rintersect(scissor);
+		temp_draw_rect = min.upl64(max).rintersect(m_context->scissor.in);
 	}
 
 	CLUTAutoFlush(prim);
@@ -3498,7 +3497,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 			// When coordinates are fractional, GS appears to draw to the right/bottom (effectively
 			// taking the ceiling), not to the top/left (taking the floor).
 			const GSVector4i int_rc(m_vt.m_min.p.ceil().xyxy(m_vt.m_max.p.floor()));
-			const GSVector4i scissored_rc(int_rc.rintersect(GSVector4i(m_context->scissor.in)));
+			const GSVector4i scissored_rc(int_rc.rintersect(m_context->scissor.in));
 			if (!int_rc.eq(scissored_rc))
 			{
 				// draw will get scissored, adjust UVs to suit

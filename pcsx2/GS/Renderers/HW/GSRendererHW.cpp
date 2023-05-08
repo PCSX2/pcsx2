@@ -690,11 +690,11 @@ GSVector2i GSRendererHW::GetTargetSize(const GSTextureCache::Source* tex)
 {
 	// Don't blindly expand out to the scissor size if we're not drawing to it.
 	// e.g. Burnout 3, God of War II, etc.
-	int height = std::min<int>(static_cast<int>(m_context->scissor.in.w), m_r.w);
+	int height = std::min<int>(m_context->scissor.in.w, m_r.w);
 
 	// If the draw is less than a page high, FBW=0 is the same as FBW=1.
 	const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM];
-	int width = std::min(std::max<int>(m_cached_ctx.FRAME.FBW, 1) * 64, static_cast<int>(m_context->scissor.in.z));
+	int width = std::min(std::max<int>(m_cached_ctx.FRAME.FBW, 1) * 64, m_context->scissor.in.z);
 	if (m_cached_ctx.FRAME.FBW == 0 && m_r.w > frame_psm.pgs.y)
 	{
 		GL_INS("FBW=0 when drawing more than 1 page in height (PSM %s, PGS %dx%d).", psm_str(m_cached_ctx.FRAME.PSM),
@@ -821,7 +821,7 @@ bool GSRendererHW::IsSplitTextureShuffle()
 	}
 
 	// Matrix Path of Neo draws 512x512 instead of 512x448, then scissors to 512x448.
-	aligned_rc = aligned_rc.rintersect(GSVector4i(m_context->scissor.in));
+	aligned_rc = aligned_rc.rintersect(m_context->scissor.in);
 
 	// We should have the same number of pages in both the position and UV.
 	const u32 pages_high = static_cast<u32>(aligned_rc.height()) / frame_psm.pgs.y;
@@ -865,7 +865,7 @@ bool GSRendererHW::IsSplitTextureShuffle()
 GSVector4i GSRendererHW::GetSplitTextureShuffleDrawRect() const
 {
 	const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM];
-	GSVector4i r = GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p + GSVector4::cxpr(0.5f))).rintersect(GSVector4i(m_context->scissor.in));
+	GSVector4i r = GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p + GSVector4::cxpr(0.5f))).rintersect(m_context->scissor.in);
 
 	// Some games (e.g. Crash Twinsanity) adjust both FBP and TBP0, so the rectangle will be half the size
 	// of the actual shuffle. Others leave the FBP alone, but only adjust TBP0, and offset the draw rectangle
@@ -1574,7 +1574,7 @@ void GSRendererHW::Draw()
 
 	// The rectangle of the draw rounded up.
 	const GSVector4 rect = m_vt.m_min.p.upld(m_vt.m_max.p + GSVector4::cxpr(0.5f));
-	m_r = GSVector4i(rect).rintersect(GSVector4i(context->scissor.in));
+	m_r = GSVector4i(rect).rintersect(context->scissor.in);
 
 	if (!m_channel_shuffle && m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0 &&
 		IsPossibleChannelShuffle())
@@ -1602,7 +1602,7 @@ void GSRendererHW::Draw()
 		m_r = new_r;
 
 		// Adjust the scissor too, if it's in two parts, this will be wrong.
-		m_context->scissor.in = GSVector4(new_r);
+		m_context->scissor.in = new_r;
 
 		// Fudge FRAME and TEX0 to point to the start of the shuffle.
 		m_cached_ctx.TEX0.TBP0 = m_split_texture_shuffle_start_TBP;
@@ -4161,7 +4161,7 @@ void GSRendererHW::ResetStates()
 __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Target* ds, GSTextureCache::Source* tex, const TextureMinMaxResult& tmm)
 {
 #ifdef ENABLE_OGL_DEBUG
-	const GSVector4i area_out = GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
+	const GSVector4i area_out = GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p)).rintersect(m_context->scissor.in);
 	const GSVector4i area_in = GSVector4i(m_vt.m_min.t.upld(m_vt.m_max.t));
 
 	GL_PUSH("GL Draw from (area %d,%d => %d,%d) in (area %d,%d => %d,%d)",
@@ -4511,8 +4511,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	}
 
 	// rs
-	const GSVector4 hacked_scissor(m_channel_shuffle ? GSVector4(0, 0, 1024, 1024) : m_context->scissor.in);
-	const GSVector4i scissor(GSVector4i(GSVector4(rtscale) * hacked_scissor).rintersect(GSVector4i(rtsize).zwxy()));
+	const GSVector4i hacked_scissor = m_channel_shuffle ? GSVector4i::cxpr(0, 0, 1024, 1024) : m_context->scissor.in;
+	const GSVector4i scissor(GSVector4i(GSVector4(rtscale) * GSVector4(hacked_scissor)).rintersect(GSVector4i::loadh(rtsize)));
 
 	m_conf.drawarea = m_channel_shuffle ? scissor : scissor.rintersect(ComputeBoundingBox(rtsize, rtscale));
 	m_conf.scissor = (DATE && !DATE_BARRIER) ? m_conf.drawarea : scissor;
@@ -5060,7 +5060,7 @@ bool GSRendererHW::OI_GsMemClear()
 	if ((PrimitiveCoversWithoutGaps() || ZisFrame) && m_vt.m_eq.rgba == 0xFFFF)
 	{
 		const GSOffset& off = m_context->offset.fb;
-		GSVector4i r = GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
+		GSVector4i r = GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p)).rintersect(m_context->scissor.in);
 
 		if (r.width() == 32 && ZisFrame)
 			r.z += 32;
