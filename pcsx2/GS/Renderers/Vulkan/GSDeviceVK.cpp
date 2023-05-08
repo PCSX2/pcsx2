@@ -962,12 +962,6 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 	dTexVK->TransitionToLayout(
 		(dTexVK == sTexVK) ? GSTextureVK::Layout::TransferSelf : GSTextureVK::Layout::TransferDst);
 
-#ifdef PCSX2_DEVBUILD
-	// ensure we don't leave this bound later on, debug layer gets cranky
-	if (m_tfx_textures[0] == sTexVK)
-		PSSetShaderResource(0, nullptr, false);
-#endif
-
 	vkCmdCopyImage(g_vulkan_context->GetCurrentCommandBuffer(), sTexVK->GetImage(),
 		sTexVK->GetVkLayout(), dTexVK->GetImage(), dTexVK->GetVkLayout(), 1, &ic);
 
@@ -3726,8 +3720,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	// clear texture binding when it's bound to RT or DS
-	if (!config.tex && ((!pipe.IsRTFeedbackLoop() && static_cast<GSTextureVK*>(config.rt) == m_tfx_textures[0]) ||
+	// clear texture binding when it's bound to RT or DS.
+	if (!config.tex && ((config.rt && static_cast<GSTextureVK*>(config.rt) == m_tfx_textures[0]) ||
 						   (config.ds && static_cast<GSTextureVK*>(config.ds) == m_tfx_textures[0])))
 	{
 		PSSetShaderResource(0, nullptr, false);
