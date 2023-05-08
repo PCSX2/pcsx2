@@ -2952,7 +2952,7 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartRenderPass(bool wait_for_completi
 		OMSetRenderTargets(current_rt, current_ds, scissor, current_feedback_loop);
 
 		// restart render pass
-		BeginRenderPass(render_pass, render_pass_area);
+		BeginRenderPass(g_vulkan_context->GetRenderPassForRestarting(render_pass), render_pass_area);
 	}
 }
 
