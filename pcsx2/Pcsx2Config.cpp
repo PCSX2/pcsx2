@@ -631,7 +631,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	GSSettingBool(IntegerScaling);
 	GSSettingBool(UseDebugDevice);
 	GSSettingBool(UseBlitSwapChain);
-	GSSettingBoolEx(DisableShaderCache, "disable_shader_cache");
+	GSSettingBool(DisableShaderCache);
 	GSSettingBool(DisableDualSourceBlend);
 	GSSettingBool(DisableFramebufferFetch);
 	GSSettingBool(DisableThreadedPresentation);
