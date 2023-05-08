@@ -356,8 +356,8 @@ void GSRendererSW::Draw()
 
 	std::memcpy(sd->index, m_index.buff, sizeof(u16) * m_index.tail);
 
-	GSVector4i scissor = GSVector4i(context->scissor.in);
-	GSVector4i bbox = GSVector4i(m_vt.m_min.p.floor().xyxy(m_vt.m_max.p.ceil()));
+	GSVector4i scissor = context->scissor.in;
+	GSVector4i bbox = GSVector4i(m_vt.m_min.p.floor().upld(m_vt.m_max.p.ceil()));
 
 	// points and lines may have zero area bbox (single line: 0, 0 - 256, 0)
 
