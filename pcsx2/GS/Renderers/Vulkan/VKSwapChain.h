@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "Config.h"
 #include "GS/Renderers/Vulkan/GSTextureVK.h"
 
 #include "common/WindowInfo.h"
@@ -35,13 +36,10 @@ public:
 	static void DestroyVulkanSurface(VkInstance instance, WindowInfo* wi, VkSurfaceKHR surface);
 
 	// Create a new swap chain from a pre-existing surface.
-	static std::unique_ptr<VKSwapChain> Create(const WindowInfo& wi, VkSurfaceKHR surface,
-		VkPresentModeKHR preferred_present_mode, std::optional<bool> exclusive_fullscreen_control);
+	static std::unique_ptr<VKSwapChain> Create(
+		const WindowInfo& wi, VkSurfaceKHR surface, VsyncMode vsync, std::optional<bool> exclusive_fullscreen_control);
 
 	__fi VkSurfaceKHR GetSurface() const { return m_surface; }
-	__fi VkSurfaceFormatKHR GetSurfaceFormat() const { return m_surface_format; }
-	__fi VkFormat GetTextureFormat() const { return m_surface_format.format; }
-	__fi VkPresentModeKHR GetPreferredPresentMode() const { return m_preferred_present_mode; }
 	__fi VkSwapchainKHR GetSwapChain() const { return m_swap_chain; }
 	__fi const VkSwapchainKHR* GetSwapChainPtr() const { return &m_swap_chain; }
 	__fi const WindowInfo& GetWindowInfo() const { return m_window_info; }
@@ -51,9 +49,8 @@ public:
 	__fi u32 GetCurrentImageIndex() const { return m_current_image; }
 	__fi const u32* GetCurrentImageIndexPtr() const { return &m_current_image; }
 	__fi u32 GetImageCount() const { return static_cast<u32>(m_images.size()); }
-	__fi VkImage GetCurrentImage() const { return m_images[m_current_image].image; }
-	__fi const GSTextureVK* GetCurrentTexture() const { return m_images[m_current_image].texture.get(); }
-	__fi GSTextureVK* GetCurrentTexture() { return m_images[m_current_image].texture.get(); }
+	__fi const GSTextureVK* GetCurrentTexture() const { return m_images[m_current_image].get(); }
+	__fi GSTextureVK* GetCurrentTexture() { return m_images[m_current_image].get(); }
 	__fi VkSemaphore GetImageAvailableSemaphore() const
 	{
 		return m_semaphores[m_current_semaphore].available_semaphore;
@@ -70,42 +67,34 @@ public:
 	{
 		return &m_semaphores[m_current_semaphore].rendering_finished_semaphore;
 	}
+
+	// Returns true if the current present mode is synchronizing (adaptive or hard).
+	__fi bool IsPresentModeSynchronizing() const { return (m_vsync_mode != VsyncMode::Off); }
+
+	VkFormat GetTextureFormat() const;
 	VkResult AcquireNextImage();
 	void ReleaseCurrentImage();
 
 	bool RecreateSurface(const WindowInfo& new_wi);
 	bool ResizeSwapChain(u32 new_width = 0, u32 new_height = 0, float new_scale = 1.0f);
-	bool RecreateSwapChain();
 
 	// Change vsync enabled state. This may fail as it causes a swapchain recreation.
-	bool SetVSync(VkPresentModeKHR preferred_mode);
-
-	// Returns true if the current present mode is synchronizing (adaptive or hard).
-	bool IsPresentModeSynchronizing() const
-	{
-		return (m_present_mode == VK_PRESENT_MODE_FIFO_KHR || m_present_mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR);
-	}
+	bool SetVSync(VsyncMode mode);
 
 private:
-	VKSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR preferred_present_mode,
-		std::optional<bool> exclusive_fullscreen_control);
+	VKSwapChain(
+		const WindowInfo& wi, VkSurfaceKHR surface, VsyncMode vsync, std::optional<bool> exclusive_fullscreen_control);
 
-	bool SelectSurfaceFormat();
-	bool SelectPresentMode();
+	static std::optional<VkSurfaceFormatKHR> SelectSurfaceFormat(VkSurfaceKHR surface);
+	static std::optional<VkPresentModeKHR> SelectPresentMode(VkSurfaceKHR surface, VsyncMode vsync);
 
 	bool CreateSwapChain();
 	void DestroySwapChain();
 
-	bool SetupSwapChainImages();
+	bool SetupSwapChainImages(VkFormat image_format);
 	void DestroySwapChainImages();
 
 	void DestroySurface();
-
-	struct SwapChainImage
-	{
-		VkImage image;
-		std::unique_ptr<GSTextureVK> texture;
-	};
 
 	struct ImageSemaphores
 	{
@@ -116,18 +105,15 @@ private:
 	WindowInfo m_window_info;
 
 	VkSurfaceKHR m_surface = VK_NULL_HANDLE;
-	VkSurfaceFormatKHR m_surface_format = {};
-	VkPresentModeKHR m_preferred_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
-	VkPresentModeKHR m_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
-
-	VkRenderPass m_load_render_pass = VK_NULL_HANDLE;
-	VkRenderPass m_clear_render_pass = VK_NULL_HANDLE;
-
 	VkSwapchainKHR m_swap_chain = VK_NULL_HANDLE;
-	std::vector<SwapChainImage> m_images;
+
+	std::vector<std::unique_ptr<GSTextureVK>> m_images;
 	std::vector<ImageSemaphores> m_semaphores;
+
+	VsyncMode m_vsync_mode = VsyncMode::Off;
 	u32 m_current_image = 0;
 	u32 m_current_semaphore = 0;
+
 	std::optional<VkResult> m_image_acquire_result;
 	std::optional<bool> m_exclusive_fullscreen_control;
 };

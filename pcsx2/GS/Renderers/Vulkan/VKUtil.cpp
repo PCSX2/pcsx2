@@ -24,27 +24,6 @@
 
 #include <cmath>
 
-VkFormat Vulkan::GetLinearFormat(VkFormat format)
-{
-	switch (format)
-	{
-		case VK_FORMAT_R8_SRGB:
-			return VK_FORMAT_R8_UNORM;
-		case VK_FORMAT_R8G8_SRGB:
-			return VK_FORMAT_R8G8_UNORM;
-		case VK_FORMAT_R8G8B8_SRGB:
-			return VK_FORMAT_R8G8B8_UNORM;
-		case VK_FORMAT_R8G8B8A8_SRGB:
-			return VK_FORMAT_R8G8B8A8_UNORM;
-		case VK_FORMAT_B8G8R8_SRGB:
-			return VK_FORMAT_B8G8R8_UNORM;
-		case VK_FORMAT_B8G8R8A8_SRGB:
-			return VK_FORMAT_B8G8R8A8_UNORM;
-		default:
-			return format;
-	}
-}
-
 void Vulkan::SafeDestroyFramebuffer(VkFramebuffer& fb)
 {
 	if (fb != VK_NULL_HANDLE)
@@ -246,33 +225,6 @@ const char* Vulkan::VkResultToString(VkResult res)
 
 		default:
 			return "UNKNOWN_VK_RESULT";
-	}
-}
-
-const char* Vulkan::PresentModeToString(VkPresentModeKHR mode)
-{
-	switch (mode)
-	{
-		case VK_PRESENT_MODE_IMMEDIATE_KHR:
-			return "VK_PRESENT_MODE_IMMEDIATE_KHR";
-
-		case VK_PRESENT_MODE_MAILBOX_KHR:
-			return "VK_PRESENT_MODE_MAILBOX_KHR";
-
-		case VK_PRESENT_MODE_FIFO_KHR:
-			return "VK_PRESENT_MODE_FIFO_KHR";
-
-		case VK_PRESENT_MODE_FIFO_RELAXED_KHR:
-			return "VK_PRESENT_MODE_FIFO_RELAXED_KHR";
-
-		case VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR:
-			return "VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR";
-
-		case VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR:
-			return "VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR";
-
-		default:
-			return "UNKNOWN_VK_PRESENT_MODE";
 	}
 }
 

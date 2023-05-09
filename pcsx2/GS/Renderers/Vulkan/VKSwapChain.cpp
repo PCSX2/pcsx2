@@ -31,11 +31,11 @@
 #include <X11/Xlib.h>
 #endif
 
-VKSwapChain::VKSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR preferred_present_mode,
-	std::optional<bool> exclusive_fullscreen_control)
+VKSwapChain::VKSwapChain(
+	const WindowInfo& wi, VkSurfaceKHR surface, VsyncMode vsync, std::optional<bool> exclusive_fullscreen_control)
 	: m_window_info(wi)
 	, m_surface(surface)
-	, m_preferred_present_mode(preferred_present_mode)
+	, m_vsync_mode(vsync)
 	, m_exclusive_fullscreen_control(exclusive_fullscreen_control)
 {
 }
@@ -148,40 +148,57 @@ void VKSwapChain::DestroyVulkanSurface(VkInstance instance, WindowInfo* wi, VkSu
 #endif
 }
 
-std::unique_ptr<VKSwapChain> VKSwapChain::Create(const WindowInfo& wi, VkSurfaceKHR surface,
-	VkPresentModeKHR preferred_present_mode, std::optional<bool> exclusive_fullscreen_control)
+std::unique_ptr<VKSwapChain> VKSwapChain::Create(
+	const WindowInfo& wi, VkSurfaceKHR surface, VsyncMode vsync, std::optional<bool> exclusive_fullscreen_control)
 {
-	std::unique_ptr<VKSwapChain> swap_chain = std::unique_ptr<VKSwapChain>(
-		new VKSwapChain(wi, surface, preferred_present_mode, exclusive_fullscreen_control));
-	if (!swap_chain->CreateSwapChain() || !swap_chain->SetupSwapChainImages())
+	std::unique_ptr<VKSwapChain> swap_chain =
+		std::unique_ptr<VKSwapChain>(new VKSwapChain(wi, surface, vsync, exclusive_fullscreen_control));
+	if (!swap_chain->CreateSwapChain())
 		return nullptr;
 
 	return swap_chain;
 }
 
-bool VKSwapChain::SelectSurfaceFormat()
+static VkFormat GetLinearFormat(VkFormat format)
+{
+	switch (format)
+	{
+		case VK_FORMAT_R8_SRGB:
+			return VK_FORMAT_R8_UNORM;
+		case VK_FORMAT_R8G8_SRGB:
+			return VK_FORMAT_R8G8_UNORM;
+		case VK_FORMAT_R8G8B8_SRGB:
+			return VK_FORMAT_R8G8B8_UNORM;
+		case VK_FORMAT_R8G8B8A8_SRGB:
+			return VK_FORMAT_R8G8B8A8_UNORM;
+		case VK_FORMAT_B8G8R8_SRGB:
+			return VK_FORMAT_B8G8R8_UNORM;
+		case VK_FORMAT_B8G8R8A8_SRGB:
+			return VK_FORMAT_B8G8R8A8_UNORM;
+		default:
+			return format;
+	}
+}
+
+std::optional<VkSurfaceFormatKHR> VKSwapChain::SelectSurfaceFormat(VkSurfaceKHR surface)
 {
 	u32 format_count;
 	VkResult res =
-		vkGetPhysicalDeviceSurfaceFormatsKHR(g_vulkan_context->GetPhysicalDevice(), m_surface, &format_count, nullptr);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(g_vulkan_context->GetPhysicalDevice(), surface, &format_count, nullptr);
 	if (res != VK_SUCCESS || format_count == 0)
 	{
 		LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceSurfaceFormatsKHR failed: ");
-		return false;
+		return std::nullopt;
 	}
 
 	std::vector<VkSurfaceFormatKHR> surface_formats(format_count);
 	res = vkGetPhysicalDeviceSurfaceFormatsKHR(
-		g_vulkan_context->GetPhysicalDevice(), m_surface, &format_count, surface_formats.data());
+		g_vulkan_context->GetPhysicalDevice(), surface, &format_count, surface_formats.data());
 	pxAssert(res == VK_SUCCESS);
 
 	// If there is a single undefined surface format, the device doesn't care, so we'll just use RGBA
 	if (surface_formats[0].format == VK_FORMAT_UNDEFINED)
-	{
-		m_surface_format.format = VK_FORMAT_R8G8B8A8_UNORM;
-		m_surface_format.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-		return true;
-	}
+		return VkSurfaceFormatKHR{VK_FORMAT_R8G8B8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
 
 	// Try to find a suitable format.
 	for (const VkSurfaceFormatKHR& surface_format : surface_formats)
@@ -189,30 +206,65 @@ bool VKSwapChain::SelectSurfaceFormat()
 		// Some drivers seem to return a SRGB format here (Intel Mesa).
 		// This results in gamma correction when presenting to the screen, which we don't want.
 		// Use a linear format instead, if this is the case.
-		m_surface_format.format = Vulkan::GetLinearFormat(surface_format.format);
-		m_surface_format.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-		return true;
+		return VkSurfaceFormatKHR{GetLinearFormat(surface_format.format), VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
 	}
 
-	pxFailRel("Failed to find a suitable format for swap chain buffers.");
-	return false;
+	Console.Error("Failed to find a suitable format for swap chain buffers.");
+	return std::nullopt;
 }
 
-bool VKSwapChain::SelectPresentMode()
+static const char* PresentModeToString(VkPresentModeKHR mode)
+{
+	switch (mode)
+	{
+		case VK_PRESENT_MODE_IMMEDIATE_KHR:
+			return "VK_PRESENT_MODE_IMMEDIATE_KHR";
+
+		case VK_PRESENT_MODE_MAILBOX_KHR:
+			return "VK_PRESENT_MODE_MAILBOX_KHR";
+
+		case VK_PRESENT_MODE_FIFO_KHR:
+			return "VK_PRESENT_MODE_FIFO_KHR";
+
+		case VK_PRESENT_MODE_FIFO_RELAXED_KHR:
+			return "VK_PRESENT_MODE_FIFO_RELAXED_KHR";
+
+		case VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR:
+			return "VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR";
+
+		case VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR:
+			return "VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR";
+
+		default:
+			return "UNKNOWN_VK_PRESENT_MODE";
+	}
+}
+
+static VkPresentModeKHR GetPreferredPresentModeForVsyncMode(VsyncMode mode)
+{
+	if (mode == VsyncMode::On)
+		return VK_PRESENT_MODE_FIFO_KHR;
+	else if (mode == VsyncMode::Adaptive)
+		return VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+	else
+		return VK_PRESENT_MODE_IMMEDIATE_KHR;
+}
+
+std::optional<VkPresentModeKHR> VKSwapChain::SelectPresentMode(VkSurfaceKHR surface, VsyncMode vsync)
 {
 	VkResult res;
 	u32 mode_count;
-	res = vkGetPhysicalDeviceSurfacePresentModesKHR(
-		g_vulkan_context->GetPhysicalDevice(), m_surface, &mode_count, nullptr);
+	res =
+		vkGetPhysicalDeviceSurfacePresentModesKHR(g_vulkan_context->GetPhysicalDevice(), surface, &mode_count, nullptr);
 	if (res != VK_SUCCESS || mode_count == 0)
 	{
 		LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceSurfaceFormatsKHR failed: ");
-		return false;
+		return std::nullopt;
 	}
 
 	std::vector<VkPresentModeKHR> present_modes(mode_count);
 	res = vkGetPhysicalDeviceSurfacePresentModesKHR(
-		g_vulkan_context->GetPhysicalDevice(), m_surface, &mode_count, present_modes.data());
+		g_vulkan_context->GetPhysicalDevice(), surface, &mode_count, present_modes.data());
 	pxAssert(res == VK_SUCCESS);
 
 	// Checks if a particular mode is supported, if it is, returns that mode.
@@ -223,40 +275,43 @@ bool VKSwapChain::SelectPresentMode()
 	};
 
 	// Use preferred mode if available.
-	if (CheckForMode(m_preferred_present_mode))
+	const VkPresentModeKHR preferred_mode = GetPreferredPresentModeForVsyncMode(vsync);
+	VkPresentModeKHR selected_mode;
+	if (CheckForMode(preferred_mode))
 	{
-		m_present_mode = m_preferred_present_mode;
-		return true;
+		selected_mode = preferred_mode;
 	}
-
-	// Prefer mailbox over fifo for adaptive vsync/no-vsync.
-	if ((m_preferred_present_mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR ||
-			m_preferred_present_mode == VK_PRESENT_MODE_IMMEDIATE_KHR) &&
-		CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR))
+	else if (vsync != VsyncMode::On && CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR))
 	{
-		m_present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
-		return true;
+		// Prefer mailbox over fifo for adaptive vsync/no-vsync.
+		selected_mode = VK_PRESENT_MODE_MAILBOX_KHR;
 	}
-
-	// Fallback to FIFO if we're using any kind of vsync.
-	if (m_preferred_present_mode == VK_PRESENT_MODE_FIFO_KHR ||
-		m_preferred_present_mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR)
+	else if (vsync != VsyncMode::Off && CheckForMode(VK_PRESENT_MODE_FIFO_KHR))
 	{
+		// Fallback to FIFO if we're using any kind of vsync.
 		// This should never fail, FIFO is mandated.
-		if (CheckForMode(VK_PRESENT_MODE_FIFO_KHR))
-		{
-			m_present_mode = VK_PRESENT_MODE_FIFO_KHR;
-			return true;
-		}
+		selected_mode = VK_PRESENT_MODE_FIFO_KHR;
+	}
+	else
+	{
+		// Fall back to whatever is available.
+		selected_mode = present_modes[0];
 	}
 
-	// Fall back to whatever is available.
-	m_present_mode = present_modes[0];
-	return true;
+	DevCon.WriteLn("(SwapChain) Preferred present mode: %s, selected: %s", PresentModeToString(preferred_mode),
+		PresentModeToString(selected_mode));
+
+	return selected_mode;
 }
 
 bool VKSwapChain::CreateSwapChain()
 {
+	// Select swap chain format and present mode
+	std::optional<VkSurfaceFormatKHR> surface_format = SelectSurfaceFormat(m_surface);
+	std::optional<VkPresentModeKHR> present_mode = SelectPresentMode(m_surface, m_vsync_mode);
+	if (!surface_format.has_value() || !present_mode.has_value())
+		return false;
+
 	// Look up surface properties to determine image count and dimensions
 	VkSurfaceCapabilitiesKHR surface_capabilities;
 	VkResult res = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
@@ -266,13 +321,6 @@ bool VKSwapChain::CreateSwapChain()
 		LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR failed: ");
 		return false;
 	}
-
-	// Select swap chain format and present mode
-	if (!SelectSurfaceFormat() || !SelectPresentMode())
-		return false;
-
-	DevCon.WriteLn("(SwapChain) Preferred present mode: %s, selected: %s",
-		Vulkan::PresentModeToString(m_preferred_present_mode), Vulkan::PresentModeToString(m_present_mode));
 
 	// Select number of images in swap chain, we prefer one buffer in the background to work on
 	u32 image_count = std::max(surface_capabilities.minImageCount + 1u, 2u);
@@ -322,8 +370,8 @@ bool VKSwapChain::CreateSwapChain()
 
 	// Now we can actually create the swap chain
 	VkSwapchainCreateInfoKHR swap_chain_info = {VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR, nullptr, 0, m_surface,
-		image_count, m_surface_format.format, m_surface_format.colorSpace, size, 1u, image_usage,
-		VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, transform, alpha, m_present_mode, VK_TRUE, old_swap_chain};
+		image_count, surface_format->format, surface_format->colorSpace, size, 1u, image_usage,
+		VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, transform, alpha, present_mode.value(), VK_TRUE, old_swap_chain};
 	std::array<uint32_t, 2> indices = {{
 		g_vulkan_context->GetGraphicsQueueFamilyIndex(),
 		g_vulkan_context->GetPresentQueueFamilyIndex(),
@@ -369,15 +417,11 @@ bool VKSwapChain::CreateSwapChain()
 
 	m_window_info.surface_width = std::max(1u, size.width);
 	m_window_info.surface_height = std::max(1u, size.height);
-	return true;
-}
 
-bool VKSwapChain::SetupSwapChainImages()
-{
+	// Get and create images.
 	pxAssert(m_images.empty());
 
-	u32 image_count;
-	VkResult res = vkGetSwapchainImagesKHR(g_vulkan_context->GetDevice(), m_swap_chain, &image_count, nullptr);
+	res = vkGetSwapchainImagesKHR(g_vulkan_context->GetDevice(), m_swap_chain, &image_count, nullptr);
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "vkGetSwapchainImagesKHR failed: ");
@@ -388,28 +432,17 @@ bool VKSwapChain::SetupSwapChainImages()
 	res = vkGetSwapchainImagesKHR(g_vulkan_context->GetDevice(), m_swap_chain, &image_count, images.data());
 	pxAssert(res == VK_SUCCESS);
 
-	m_load_render_pass =
-		g_vulkan_context->GetRenderPass(m_surface_format.format, VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
-	m_clear_render_pass =
-		g_vulkan_context->GetRenderPass(m_surface_format.format, VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_CLEAR);
-	if (m_load_render_pass == VK_NULL_HANDLE || m_clear_render_pass == VK_NULL_HANDLE)
-	{
-		pxFailRel("Failed to get swap chain render passes.");
-		return false;
-	}
-
 	m_images.reserve(image_count);
 	m_current_image = 0;
 	for (u32 i = 0; i < image_count; i++)
 	{
-		SwapChainImage image;
-		image.image = images[i];
-		image.texture = GSTextureVK::Adopt(images[i], GSTexture::Type::RenderTarget, GSTexture::Format::Color,
-			m_window_info.surface_width, m_window_info.surface_height, 1, m_surface_format.format);
-		if (!image.texture)
+		std::unique_ptr<GSTextureVK> texture =
+			GSTextureVK::Adopt(images[i], GSTexture::Type::RenderTarget, GSTexture::Format::Color,
+				m_window_info.surface_width, m_window_info.surface_height, 1, surface_format->format);
+		if (!texture)
 			return false;
 
-		m_images.emplace_back(std::move(image));
+		m_images.push_back(std::move(texture));
 	}
 
 	m_semaphores.reserve(image_count);
@@ -446,7 +479,7 @@ void VKSwapChain::DestroySwapChainImages()
 	for (auto& it : m_images)
 	{
 		// don't defer view destruction, images are no longer valid
-		it.texture->Destroy(false);
+		it->Destroy(false);
 	}
 	m_images.clear();
 	for (auto& it : m_semaphores)
@@ -461,6 +494,8 @@ void VKSwapChain::DestroySwapChainImages()
 
 void VKSwapChain::DestroySwapChain()
 {
+	DestroySwapChainImages();
+
 	if (m_swap_chain == VK_NULL_HANDLE)
 		return;
 
@@ -468,6 +503,14 @@ void VKSwapChain::DestroySwapChain()
 	m_swap_chain = VK_NULL_HANDLE;
 	m_window_info.surface_width = 0;
 	m_window_info.surface_height = 0;
+}
+
+VkFormat VKSwapChain::GetTextureFormat() const
+{
+	if (m_images.empty())
+		return VK_FORMAT_UNDEFINED;
+
+	return m_images[m_current_image]->GetVkFormat();
 }
 
 VkResult VKSwapChain::AcquireNextImage()
@@ -504,9 +547,8 @@ bool VKSwapChain::ResizeSwapChain(u32 new_width, u32 new_height, float new_scale
 
 	m_window_info.surface_scale = new_scale;
 
-	if (!CreateSwapChain() || !SetupSwapChainImages())
+	if (!CreateSwapChain())
 	{
-		DestroySwapChainImages();
 		DestroySwapChain();
 		return false;
 	}
@@ -514,34 +556,28 @@ bool VKSwapChain::ResizeSwapChain(u32 new_width, u32 new_height, float new_scale
 	return true;
 }
 
-bool VKSwapChain::RecreateSwapChain()
+bool VKSwapChain::SetVSync(VsyncMode mode)
 {
-	DestroySwapChainImages();
-
-	if (!CreateSwapChain() || !SetupSwapChainImages())
-	{
-		DestroySwapChainImages();
-		DestroySwapChain();
-		return false;
-	}
-
-	return true;
-}
-
-bool VKSwapChain::SetVSync(VkPresentModeKHR preferred_mode)
-{
-	if (m_preferred_present_mode == preferred_mode)
+	if (m_vsync_mode == mode)
 		return true;
 
+	m_vsync_mode = mode;
+
 	// Recreate the swap chain with the new present mode.
-	m_preferred_present_mode = preferred_mode;
-	return RecreateSwapChain();
+	DevCon.WriteLn("Recreating swap chain to change present mode.");
+	DestroySwapChainImages();
+	if (!CreateSwapChain())
+	{
+		DestroySwapChain();
+		return false;
+	}
+
+	return true;
 }
 
 bool VKSwapChain::RecreateSurface(const WindowInfo& new_wi)
 {
 	// Destroy the old swap chain, images, and surface.
-	DestroySwapChainImages();
 	DestroySwapChain();
 	DestroySurface();
 
@@ -569,11 +605,8 @@ bool VKSwapChain::RecreateSurface(const WindowInfo& new_wi)
 
 	// Finally re-create the swap chain
 	if (!CreateSwapChain())
-		return false;
-	if (!SetupSwapChainImages())
 	{
 		DestroySwapChain();
-		DestroySurface();
 		return false;
 	}
 

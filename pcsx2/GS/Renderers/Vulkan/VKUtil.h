@@ -26,8 +26,6 @@
 
 namespace Vulkan
 {
-	VkFormat GetLinearFormat(VkFormat format);
-
 	// Safe destroy helpers
 	void SafeDestroyFramebuffer(VkFramebuffer& fb);
 	void SafeDestroyShaderModule(VkShaderModule& sm);
@@ -49,7 +47,6 @@ namespace Vulkan
 	void AddPointerToChain(void* head, const void* ptr);
 
 	const char* VkResultToString(VkResult res);
-	const char* PresentModeToString(VkPresentModeKHR mode);
 	void LogVulkanResult(const char* func_name, VkResult res, const char* msg, ...) /*printflike(4, 5)*/;
 
 #define LOG_VULKAN_ERROR(res, ...) ::Vulkan::LogVulkanResult(__func__, res, __VA_ARGS__)

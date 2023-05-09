@@ -59,16 +59,6 @@ static VkAttachmentLoadOp GetLoadOpForTexture(GSTextureVK* tex)
 	// clang-format on
 }
 
-static VkPresentModeKHR GetPreferredPresentModeForVsyncMode(VsyncMode mode)
-{
-	if (mode == VsyncMode::On)
-		return VK_PRESENT_MODE_FIFO_KHR;
-	else if (mode == VsyncMode::Adaptive)
-		return VK_PRESENT_MODE_FIFO_RELAXED_KHR;
-	else
-		return VK_PRESENT_MODE_IMMEDIATE_KHR;
-}
-
 static constexpr VkClearValue s_present_clear_color = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
 
 GSDeviceVK::GSDeviceVK()
@@ -283,7 +273,7 @@ bool GSDeviceVK::UpdateWindow()
 		return false;
 	}
 
-	m_swap_chain = VKSwapChain::Create(m_window_info, surface, GetPreferredPresentModeForVsyncMode(m_vsync_mode),
+	m_swap_chain = VKSwapChain::Create(m_window_info, surface, m_vsync_mode,
 		Pcsx2Config::GSOptions::TriStateToOptionalBoolean(GSConfig.ExclusiveFullscreenControl));
 	if (!m_swap_chain)
 	{
@@ -365,7 +355,16 @@ void GSDeviceVK::SetVSync(VsyncMode mode)
 
 	// This swap chain should not be used by the current buffer, thus safe to destroy.
 	g_vulkan_context->WaitForGPUIdle();
-	m_swap_chain->SetVSync(GetPreferredPresentModeForVsyncMode(mode));
+	if (!m_swap_chain->SetVSync(mode))
+	{
+		// Try switching back to the old mode..
+		if (!m_swap_chain->SetVSync(m_vsync_mode))
+		{
+			pxFailRel("Failed to reset old vsync mode after failure");
+			m_swap_chain.reset();
+		}
+	}
+
 	m_vsync_mode = mode;
 }
 
@@ -648,7 +647,7 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	// NOTE: This is assigned afterwards, because some platforms can modify the window info (e.g. Metal).
 	if (surface != VK_NULL_HANDLE)
 	{
-		m_swap_chain = VKSwapChain::Create(m_window_info, surface, GetPreferredPresentModeForVsyncMode(m_vsync_mode),
+		m_swap_chain = VKSwapChain::Create(m_window_info, surface, m_vsync_mode,
 			Pcsx2Config::GSOptions::TriStateToOptionalBoolean(GSConfig.ExclusiveFullscreenControl));
 		if (!m_swap_chain)
 		{

@@ -52,6 +52,7 @@ public:
 		bool vk_ext_line_rasterization : 1;
 		bool vk_ext_rasterization_order_attachment_access : 1;
 		bool vk_ext_full_screen_exclusive : 1;
+		bool vk_ext_surface_maintenance1 : 1;
 		bool vk_khr_driver_properties : 1;
 		bool vk_khr_fragment_shader_barycentric : 1;
 		bool vk_khr_shader_draw_parameters : 1;
