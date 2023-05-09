@@ -2933,10 +2933,6 @@ SCES-50003:
         comment=Patch by Prafull and kozarovv
         // Fixes game hanging on boot.
         patch=0,EE,002b4c44,word,24060000
-        // Fixes sound.
-        patch=1,IOP,001D77E4,word,27C40010
-        patch=1,IOP,001D77E8,word,0C0032B7
-        patch=1,IOP,001D77EC,word,00000000
 SCES-50004:
   name: "Formula One 2001"
   region: "PAL-M6"
@@ -38150,10 +38146,6 @@ SLPS-25026:
         comment=Patch by Prafull and kozarovv
         // Fixes game hanging on boot.
         patch=1,EE,002B666C,word,24060000
-        // Fixes sound.
-        patch=1,IOP,001D77E4,word,27C40010
-        patch=1,IOP,001D77E8,word,0C0032B7
-        patch=1,IOP,001D77EC,word,00000000
 SLPS-25027:
   name: "Golf Paradise DX"
   region: "NTSC-J"
@@ -42461,10 +42453,6 @@ SLUS-20071:
         comment=Patch by Benji229, Pseudonym, Prafull, kozarovv and refraction
         // Fixes game hanging on boot.
         patch=0,EE,002b06ec,word,24060000
-        // Fixes sound.
-        patch=1,IOP,001D77E4,word,27C40010
-        patch=1,IOP,001D77E8,word,0C0032B7
-        patch=1,IOP,001D77EC,word,00000000
 SLUS-20072:
   name: "MX 2002 - featuring Ricky Carmichael"
   region: "NTSC-U"
