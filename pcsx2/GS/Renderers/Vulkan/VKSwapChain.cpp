@@ -323,7 +323,7 @@ bool VKSwapChain::CreateSwapChain()
 	}
 
 	// Select number of images in swap chain, we prefer one buffer in the background to work on
-	const u32 image_count = std::clamp(IsPresentModeSynchronizing() ? 2u : 3u, surface_capabilities.minImageCount,
+	u32 image_count = std::clamp(IsPresentModeSynchronizing() ? 2u : 3u, surface_capabilities.minImageCount,
 		(surface_capabilities.maxImageCount == 0) ? std::numeric_limits<uint32_t>::max() :
 													surface_capabilities.maxImageCount);
 	DevCon.WriteLn("(SwapChain) minImageCount=%u, maxImageCount=%u, image_count=%u", surface_capabilities.minImageCount,
@@ -471,6 +471,20 @@ bool VKSwapChain::CreateSwapChain()
 		m_semaphores.push_back(sema);
 	}
 
+	// Hopefully only for nvidia: fence to wait on when acquiring image.
+	if (true)
+	{
+		const VkFenceCreateInfo fci = {VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
+		res = vkCreateFence(g_vulkan_context->GetDevice(), &fci, nullptr, &m_image_ready_fence);
+		if (res != VK_SUCCESS)
+		{
+			LOG_VULKAN_ERROR(res, "vkCreateFences for image acquire failed: ");
+			return false;
+		}
+
+		m_image_ready_fence_signaled = false;
+	}
+
 	return true;
 }
 
@@ -499,6 +513,13 @@ void VKSwapChain::DestroySwapChain()
 	if (m_swap_chain == VK_NULL_HANDLE)
 		return;
 
+	if (m_image_ready_fence != VK_NULL_HANDLE)
+	{
+		vkDestroyFence(g_vulkan_context->GetDevice(), m_image_ready_fence, nullptr);
+		m_image_ready_fence = nullptr;
+		m_image_ready_fence_signaled = false;
+	}
+
 	vkDestroySwapchainKHR(g_vulkan_context->GetDevice(), m_swap_chain, nullptr);
 	m_swap_chain = VK_NULL_HANDLE;
 	m_window_info.surface_width = 0;
@@ -524,8 +545,16 @@ VkResult VKSwapChain::AcquireNextImage()
 	// Use a different semaphore for each image.
 	m_current_semaphore = (m_current_semaphore + 1) % static_cast<u32>(m_semaphores.size());
 
+	if (m_image_ready_fence_signaled)
+	{
+		const VkResult res = vkResetFences(g_vulkan_context->GetDevice(), 1, &m_image_ready_fence);
+		if (res != VK_SUCCESS)
+			LOG_VULKAN_ERROR(res, "vkResetFences() for acquire failed: ");
+	}
+
 	const VkResult res = vkAcquireNextImageKHR(g_vulkan_context->GetDevice(), m_swap_chain, UINT64_MAX,
-		m_semaphores[m_current_semaphore].available_semaphore, VK_NULL_HANDLE, &m_current_image);
+		m_semaphores[m_current_semaphore].available_semaphore, m_image_ready_fence, &m_current_image);
+	m_image_ready_fence_signaled = (m_image_ready_fence != VK_NULL_HANDLE && res == VK_SUCCESS);
 	m_image_acquire_result = res;
 	return res;
 }

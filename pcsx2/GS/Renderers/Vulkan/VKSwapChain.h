@@ -67,6 +67,7 @@ public:
 	{
 		return &m_semaphores[m_current_semaphore].rendering_finished_semaphore;
 	}
+	__fi VkFence GetImageAcquireFence() const { return m_image_ready_fence; }
 
 	// Returns true if the current present mode is synchronizing (adaptive or hard).
 	__fi bool IsPresentModeSynchronizing() const { return (m_vsync_mode != VsyncMode::Off); }
@@ -113,6 +114,9 @@ private:
 	VsyncMode m_vsync_mode = VsyncMode::Off;
 	u32 m_current_image = 0;
 	u32 m_current_semaphore = 0;
+
+	VkFence m_image_ready_fence = VK_NULL_HANDLE;
+	bool m_image_ready_fence_signaled = false;
 
 	std::optional<VkResult> m_image_acquire_result;
 	std::optional<bool> m_exclusive_fullscreen_control;

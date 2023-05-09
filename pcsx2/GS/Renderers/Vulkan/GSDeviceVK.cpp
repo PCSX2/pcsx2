@@ -423,6 +423,13 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 		}
 	}
 
+	if (const VkFence fence = m_swap_chain->GetImageAcquireFence(); fence != VK_NULL_HANDLE)
+	{
+		res = vkWaitForFences(g_vulkan_context->GetDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
+		if (res != VK_SUCCESS)
+			LOG_VULKAN_ERROR(res, "vkWaitForFences() for image acquire failed: ");
+	}
+
 	VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
 
 	// Swap chain images start in undefined
@@ -2467,6 +2474,13 @@ void GSDeviceVK::RenderBlankFrame()
 	{
 		Console.Error("Failed to acquire image for blank frame present");
 		return;
+	}
+
+	if (const VkFence fence = m_swap_chain->GetImageAcquireFence(); fence != VK_NULL_HANDLE)
+	{
+		res = vkWaitForFences(g_vulkan_context->GetDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
+		if (res != VK_SUCCESS)
+			LOG_VULKAN_ERROR(res, "vkWaitForFences() for image acquire failed: ");
 	}
 
 	VkCommandBuffer cmdbuffer = g_vulkan_context->GetCurrentCommandBuffer();
