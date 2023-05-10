@@ -10401,6 +10401,8 @@ SLES-50192:
   name: "Army Men - Sarge's Heroes 2"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes broken FMVs.
 SLES-50193:
   name: "Silpheed - The Lost Planet"
   region: "PAL-E"
@@ -10870,6 +10872,7 @@ SLES-50386:
   compat: 5
   gsHWFixes:
     nativePaletteDraw: 1
+    autoFlush: 2 # Fixes refraction effect.
 SLES-50390:
   name: "Driven"
   region: "PAL-M5"
@@ -26643,6 +26646,7 @@ SLPM-62114:
   region: "NTSC-J"
   gsHWFixes:
     nativePaletteDraw: 1
+    autoFlush: 2 # Fixes refraction effect.
 SLPM-62115:
   name: "EX Jinsei Game [Doukonban]"
   region: "NTSC-J"
@@ -28585,11 +28589,13 @@ SLPM-64509:
   region: "NTSC-K"
   gsHWFixes:
     nativePaletteDraw: 1
+    autoFlush: 2 # Fixes refraction effect.
 SLPM-64513:
   name: "Crash Bandicoot - Mawangui Buwhal" # Wrath of Cortex
   region: "NTSC-K"
   gsHWFixes:
     nativePaletteDraw: 1
+    autoFlush: 2 # Fixes refraction effect.
 SLPM-64514:
   name: "Legends of Wrestling"
   region: "NTSC-K"
@@ -30997,6 +31003,7 @@ SLPM-65688:
   gsHWFixes:
     preloadFrameData: 1 # Partially fixes HUD elements.
     halfPixelOffset: 1 # Fixes misaligned blur around objects and enemies.
+    PCRTCOverscan: 1 # Fixes offscreen image.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes subtitles not showing during FMVs.
 SLPM-65689:
@@ -36278,6 +36285,7 @@ SLPM-74003:
   region: "NTSC-J"
   gsHWFixes:
     nativePaletteDraw: 1
+    autoFlush: 2 # Fixes refraction effect.
 SLPM-74004:
   name: "Maximo - Ghosts to Glory [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -42653,6 +42661,8 @@ SLUS-20132:
   name: "Army Men - Sarge's Heroes 2"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes broken FMVs.
 SLUS-20133:
   name: "High Heat Baseball 2002"
   region: "NTSC-U"
@@ -43141,6 +43151,7 @@ SLUS-20238:
   compat: 5
   gsHWFixes:
     nativePaletteDraw: 1
+    autoFlush: 2 # Fixes refraction effect.
 SLUS-20239:
   name: "Driven"
   region: "NTSC-U"
@@ -51999,6 +52010,7 @@ SLUS-29010:
   region: "NTSC-U"
   gsHWFixes:
     nativePaletteDraw: 1
+    autoFlush: 2 # Fixes refraction effect.
 SLUS-29011:
   name: "WWF SmackDown! - Just Bring It [Demo]"
   region: "NTSC-U"
@@ -52928,8 +52940,10 @@ VW067-J1:
   region: "NTSC-J"
   gsHWFixes:
     nativePaletteDraw: 1
+    autoFlush: 2 # Fixes refraction effect.
 VW067-J2:
   name: "Crash Bandicoot 4 - Sakuretsu! Majin Power! [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     nativePaletteDraw: 1
+    autoFlush: 2 # Fixes refraction effect.
