@@ -27,6 +27,12 @@
 
 #include <tuple>
 
+#include <libudev.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <linux/input.h>
+#include "GS/Renderers/Common/GSDevice.h"
+
 namespace usb_lightgun
 {
 	enum : u32
@@ -121,6 +127,7 @@ namespace usb_lightgun
 	struct GunCon2State
 	{
 		explicit GunCon2State(u32 port_);
+	        ~GunCon2State();
 
 		USBDevice dev{};
 		USBDesc desc{};
@@ -160,6 +167,12 @@ namespace usb_lightgun
 		void AutoConfigure();
 
 		std::tuple<s16, s16> CalculatePosition();
+
+		// udev
+		int   udev_fd;
+		float udev_internalGunX;
+		float udev_internalGunY;
+		int   udev_gunMinx, udev_gunMiny, udev_gunMaxx, udev_gunMaxy;
 	};
 
 	static const USBDescStrings desc_strings = {
@@ -221,6 +234,12 @@ namespace usb_lightgun
 		0x08, // Polling interval (frame counts)
 	};
 
+	struct event_udev_entry
+	{
+	  const char *devnode;
+	  struct udev_list_entry *item;
+	};
+
 	static void guncon2_handle_control(
 		USBDevice* dev, USBPacket* p, int request, int value, int index, int length, uint8_t* data)
 	{
@@ -250,9 +269,93 @@ namespace usb_lightgun
 		p->status = USB_RET_STALL;
 	}
 
+	void updateState(GunCon2State* us, u32 bid, bool pressed) {
+	  const u32 bit = 1u << bid;
+	  if (pressed)
+	    us->button_state |= bit;
+	  else
+	    us->button_state &= ~bit;
+	}
+
+	static bool udev_has(GunCon2State* us) {
+	  return us->udev_fd != -1;
+	}
+
+	static void udev_handle_event(GunCon2State* us, input_event* event) {
+	  switch (event->type) {
+	  case EV_KEY:
+	    switch (event->code) {
+	    case BTN_LEFT:
+		updateState(us, BID_TRIGGER, event->value == 1);
+		break;
+	    case BTN_RIGHT:
+		updateState(us, BID_SHOOT_OFFSCREEN, event->value == 1);
+		break;
+	    case BTN_MIDDLE:
+		updateState(us, BID_RECALIBRATE, event->value == 1);
+		break;
+	    case BTN_1:
+		updateState(us, BID_START, event->value == 1);
+		break;
+	    case BTN_2:
+		updateState(us, BID_A, event->value == 1);
+		break;
+	    case BTN_3:
+		updateState(us, BID_B, event->value == 1);
+		break;
+	    case BTN_4:
+		updateState(us, BID_C, event->value == 1);
+		break;
+	    case BTN_5:
+		updateState(us, BID_DPAD_UP, event->value == 1);
+		break;
+	    case BTN_6:
+		updateState(us, BID_DPAD_DOWN, event->value == 1);
+		break;
+	    case BTN_7:
+		updateState(us, BID_DPAD_LEFT, event->value == 1);
+		break;
+	    case BTN_8:
+		updateState(us, BID_DPAD_RIGHT, event->value == 1);
+		break;
+	    case BTN_9:
+		break;
+	    default:
+		break;
+	    }
+	    break;
+
+	  case EV_ABS:
+	    switch (event->code) {
+	    case ABS_X:
+	      us->udev_internalGunX = ((event->value - us->udev_gunMinx) / ((float)(us->udev_gunMaxx - us->udev_gunMinx))) * g_gs_device->GetWindowWidth();
+	      break;
+	    case ABS_Y:
+	      us->udev_internalGunY = ((event->value - us->udev_gunMiny) / ((float)(us->udev_gunMaxy - us->udev_gunMiny))) * g_gs_device->GetWindowHeight();
+	      break;
+	    }
+	    break;
+	  }
+	}
+
+	static void udev_poll_gun(GunCon2State* us) {
+	  struct input_event input_events[32];
+	  int j, len;
+
+	  if(us->udev_fd == -1) return;
+
+	  while ((len = read(us->udev_fd, input_events, sizeof(input_events))) > 0) {
+	    len /= sizeof(*input_events);
+	    for (j = 0; j < len; j++) {
+		udev_handle_event(us, &(input_events[j]));
+	    }
+	  }
+	}
+
 	static void guncon2_handle_data(USBDevice* dev, USBPacket* p)
 	{
 		GunCon2State* const us = USB_CONTAINER_OF(dev, GunCon2State, dev);
+		if(udev_has(us)) udev_poll_gun(us);
 
 		switch (p->pid)
 		{
@@ -327,11 +430,20 @@ namespace usb_lightgun
 	GunCon2State::GunCon2State(u32 port_)
 		: port(port_)
 	{
+	  udev_fd = -1;
+	  udev_internalGunX = 0.0;
+	  udev_internalGunY = 0.0;
+	}
+
+	GunCon2State::~GunCon2State()
+	{
+	  if(udev_fd != -1) close(udev_fd);
 	}
 
 	void GunCon2State::AutoConfigure()
 	{
 		const std::string serial(VMManager::GetGameSerial());
+
 		for (const GameConfig& gc : s_game_config)
 		{
 			if (serial != gc.serial)
@@ -358,7 +470,13 @@ namespace usb_lightgun
 	{
 		float pointer_x, pointer_y;
 		const std::pair<float, float> abs_pos(InputManager::GetPointerAbsolutePosition(0));
-		GSTranslateWindowToDisplayCoordinates(abs_pos.first, abs_pos.second, &pointer_x, &pointer_y);
+
+		if(udev_has(this)) {
+		  GSTranslateWindowToDisplayCoordinates(udev_internalGunX, udev_internalGunY, &pointer_x, &pointer_y);
+		} else {
+		  // basic mouse position
+		  GSTranslateWindowToDisplayCoordinates(abs_pos.first, abs_pos.second, &pointer_x, &pointer_y);
+		}
 
 		s16 pos_x, pos_y;
 		if (pointer_x < 0.0f || pointer_y < 0.0f)
@@ -411,9 +529,148 @@ namespace usb_lightgun
 		return "guncon2";
 	}
 
+	int event_isNumber(const char *s) {
+	  int n;
+
+	  if(strlen(s) == 0) {
+	    return 0;
+	  }
+
+	  for(n=0; n<strlen(s); n++) {
+	    if(!(s[n] == '0' || s[n] == '1' || s[n] == '2' || s[n] == '3' || s[n] == '4' ||
+	         s[n] == '5' || s[n] == '6' || s[n] == '7' || s[n] == '8' || s[n] == '9'))
+	      return 0;
+	  }
+	  return 1;
+	}
+
+	// compare /dev/input/eventX and /dev/input/eventY where X and Y are numbers
+	int event_strcmp_events(const char* x, const char* y) {
+	  // find a common string
+	  int n, common, is_number;
+	  int a, b;
+
+	  n=0;
+	  while(x[n] == y[n] && x[n] != '\0' && y[n] != '\0') {
+	    n++;
+	  }
+	  common = n;
+
+	  // check if remaining string is a number
+	  is_number = 1;
+	  if(event_isNumber(x+common) == 0) is_number = 0;
+	  if(event_isNumber(y+common) == 0) is_number = 0;
+
+	  if(is_number == 1) {
+	    a = atoi(x+common);
+	    b = atoi(y+common);
+
+	    if(a == b) return  0;
+	    if(a < b)  return -1;
+	    return 1;
+	  } else {
+	    return strcmp(x, y);
+	  }
+	}
+
+	/* Used for sorting devnodes to appear in the correct order */
+	int sort_devnodes(const void *a, const void *b)
+	{
+	  const struct event_udev_entry *aa = (const struct event_udev_entry*)a;
+	  const struct event_udev_entry *bb = (const struct event_udev_entry*)b;
+	  return event_strcmp_events(aa->devnode, bb->devnode);
+	}
+
+	void GunCon2Device::udev_open_gun(GunCon2State* us) {
+	  struct udev_enumerate *enumerate;
+	  struct udev_list_entry     *devs = NULL;
+	  struct udev_list_entry     *item = NULL;
+	  unsigned sorted_count = 0;
+	  struct event_udev_entry sorted[8]; // max devices
+	  unsigned int i;
+	  struct udev *udev;
+	  int fd = -1;
+
+	  udev = udev_new();
+	  if(udev == NULL) return;
+
+	  enumerate = udev_enumerate_new(udev);
+
+	  if (enumerate != NULL) {
+	    udev_enumerate_add_match_property(enumerate, "ID_INPUT_GUN", "1");
+	    udev_enumerate_add_match_subsystem(enumerate, "input");
+	    udev_enumerate_scan_devices(enumerate);
+	    devs = udev_enumerate_get_list_entry(enumerate);
+
+	    for (item = devs; item; item = udev_list_entry_get_next(item)) {
+	      const char         *name = udev_list_entry_get_name(item);
+	      struct udev_device  *dev = udev_device_new_from_syspath(udev, name);
+	      const char      *devnode = udev_device_get_devnode(dev);
+
+	      if (devnode != NULL && sorted_count < 8) {
+		sorted[sorted_count].devnode = devnode;
+		sorted[sorted_count].item = item;
+		sorted_count++;
+	      } else {
+		udev_device_unref(dev);
+	      }
+	    }
+
+	    /* Sort the udev entries by devnode name so that they are
+	     * created in the proper order */
+	    qsort(sorted, sorted_count,
+		  sizeof(struct event_udev_entry), sort_devnodes);
+
+	    for (i = 0; i < sorted_count; i++) {
+	      if(i == us->port) {
+		const char *name = udev_list_entry_get_name(sorted[i].item);
+
+		/* Get the filename of the /sys entry for the device
+		 * and create a udev_device object (dev) representing it. */
+		struct udev_device *dev = udev_device_new_from_syspath(udev, name);
+		const char *devnode     = udev_device_get_devnode(dev);
+		char devname[64];
+
+		if (devnode) {
+		  fd = open(devnode, O_RDONLY | O_NONBLOCK);
+		  if (fd != -1) {
+		    if (ioctl(fd, EVIOCGNAME(sizeof(devname)), devname) < 0) {
+		      devname[0] = '\0';
+		    }
+		  }
+		}
+		udev_device_unref(dev);
+	      }
+	    }
+	    udev_enumerate_unref(enumerate);
+	  }
+	  if (udev != NULL) udev_unref(udev);
+
+	  // configure
+	  us->udev_fd = fd;
+	  if(fd != -1) {
+	    udev_configure_gun(us);
+	  }
+	}
+
+  	void GunCon2Device::udev_configure_gun(GunCon2State* us) {
+	  struct input_absinfo absx, absy;
+	  if(ioctl(us->udev_fd, EVIOCGABS(ABS_X), &absx) >= 0) {
+	    if(ioctl(us->udev_fd, EVIOCGABS(ABS_Y), &absy) >= 0) {
+	      us->udev_gunMinx = absx.minimum;
+	      us->udev_gunMaxx = absx.maximum;
+	      us->udev_gunMiny = absy.minimum;
+	      us->udev_gunMaxy = absy.maximum;
+	    }
+	  }
+	}
+
 	USBDevice* GunCon2Device::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
 	{
 		GunCon2State* s = new GunCon2State(port);
+
+		udev_open_gun(s);
+
 		s->desc.full = &s->desc_dev;
 		s->desc.str = desc_strings;
 

@@ -18,6 +18,8 @@
 
 namespace usb_lightgun
 {
+	struct GunCon2State;
+
 	class GunCon2Device final : public DeviceProxy
 	{
 	public:
@@ -30,5 +32,8 @@ namespace usb_lightgun
 		void SetBindingValue(USBDevice* dev, u32 bind_index, float value) const override;
 		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const override;
 		gsl::span<const SettingInfo> Settings(u32 subtype) const override;
+	private:
+		static void udev_open_gun(GunCon2State* us);
+		static void udev_configure_gun(GunCon2State* us);
 	};
 } // namespace usb_lightgun
