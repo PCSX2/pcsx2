@@ -208,7 +208,11 @@ public:
 	{
 	public:
 		const int m_type = 0;
-		bool m_dirty_alpha = true;
+
+		// Valid alpha means "we have rendered to the alpha channel of this target".
+		// A false value means that the alpha in local memory is still valid/up-to-date.
+		bool m_valid_alpha = false;
+
 		bool m_is_frame = false;
 		bool m_used = false;
 		float OffsetHack_modxy = 0.0f;
@@ -232,6 +236,9 @@ public:
 
 		/// Updates the target, if the dirty area intersects with the specified rectangle.
 		void UpdateIfDirtyIntersects(const GSVector4i& rc);
+
+		/// Updates the valid alpha flag, based on PSM and fbmsk.
+		void UpdateValidAlpha(u32 psm, u32 fbmsk);
 
 		/// Resizes target texture, DOES NOT RESCALE.
 		bool ResizeTexture(int new_unscaled_width, int new_unscaled_height, bool recycle_old = true);

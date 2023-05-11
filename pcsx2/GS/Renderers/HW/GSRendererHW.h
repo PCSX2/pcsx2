@@ -76,7 +76,7 @@ private:
 
 	void ResetStates();
 	void SetupIA(float target_scale, float sx, float sy);
-	void EmulateTextureShuffleAndFbmask();
+	void EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt);
 	bool EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only);
 	void EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& blending_alpha_pass);
 
