@@ -24,12 +24,8 @@
 
 #include <dlfcn.h>
 
-#if ! __has_feature(objc_arc)
-#error "Compile this with -fobjc-arc"
-#endif
-
 GLContextAGL::GLContextAGL(const WindowInfo& wi)
-	: Context(wi)
+	: GLContext(wi)
 {
 	m_opengl_module_handle = dlopen("/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL", RTLD_NOW);
 	if (!m_opengl_module_handle)
@@ -45,9 +41,12 @@ GLContextAGL::~GLContextAGL()
 
 	if (m_opengl_module_handle)
 		dlclose(m_opengl_module_handle);
+
+	[m_pixel_format release];
+	[m_context release];
 }
 
-std::unique_ptr<Context> GLContextAGL::Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try)
+std::unique_ptr<GLContext> GLContextAGL::Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try)
 {
 	std::unique_ptr<GLContextAGL> context = std::make_unique<GLContextAGL>(wi);
 	if (!context->Initialize(versions_to_try))
@@ -145,7 +144,7 @@ bool GLContextAGL::SetSwapInterval(s32 interval)
 	return true;
 }
 
-std::unique_ptr<Context> GLContextAGL::CreateSharedContext(const WindowInfo& wi)
+std::unique_ptr<GLContext> GLContextAGL::CreateSharedContext(const WindowInfo& wi)
 {
 	std::unique_ptr<GLContextAGL> context = std::make_unique<GLContextAGL>(wi);
 
@@ -164,8 +163,10 @@ std::unique_ptr<Context> GLContextAGL::CreateSharedContext(const WindowInfo& wi)
 
 bool GLContextAGL::CreateContext(NSOpenGLContext* share_context, int profile, bool make_current)
 {
-	if (m_context)
-		m_context = nullptr;
+	[m_context release];
+	[m_pixel_format release];
+	m_context = nullptr;
+	m_pixel_format = nullptr;
 
 	const NSOpenGLPixelFormatAttribute attribs[] = {
 		NSOpenGLPFADoubleBuffer,
@@ -202,17 +203,7 @@ void GLContextAGL::BindContextToView()
 		return;
 	}
 
-#ifdef PCSX2_CORE
-	m_view = (__bridge NSView*)m_wi.window_handle;
-#else
-	// Drawing to wx's wxView somehow causes fighting between us and wx, resulting in massive CPU usage on the main thread and no image
-	// Avoid that by adding our own subview
-	CleanupView();
-	NSView* const superview = (__bridge NSView*)m_wi.window_handle;
-	m_view = [[NSView alloc] initWithFrame:[superview frame]];
-	[superview addSubview:m_view];
-	[m_view setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
-#endif
+	m_view = [static_cast<NSView*>(m_wi.window_handle) retain];
 	[m_view setWantsBestResolutionOpenGLSurface:YES];
 
 	UpdateDimensions();
@@ -222,15 +213,6 @@ void GLContextAGL::BindContextToView()
 
 void GLContextAGL::CleanupView()
 {
-#ifndef PCSX2_CORE
-	if (![NSThread isMainThread])
-	{
-		dispatch_sync(dispatch_get_main_queue(), [this]{ CleanupView(); });
-		return;
-	}
-
-	if (m_view)
-		[m_view removeFromSuperview];
-#endif
+	[m_view release];
 	m_view = nullptr;
 }
