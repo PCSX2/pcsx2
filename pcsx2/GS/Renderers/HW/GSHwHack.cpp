@@ -542,150 +542,16 @@ bool GSHwHack::GSC_SteambotChronicles(GSRendererHW& r, int& skip)
 	return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Full level, correctly emulated on OpenGL/Vulkan but can be used as potential speed hack
-////////////////////////////////////////////////////////////////////////////////
-
 bool GSHwHack::GSC_GetawayGames(GSRendererHW& r, int& skip)
 {
+	if (GSConfig.AccurateBlendingUnit >= AccBlendLevel::High)
+		return true;
+
 	if (skip == 0)
 	{
 		if ((RFBP == 0 || RFBP == 0x1180 || RFBP == 0x1400) && RTPSM == PSMT8H && RFBMSK == 0)
 		{
 			skip = 1; // Removes fog wall.
-		}
-	}
-
-	return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Aggressive only hack
-////////////////////////////////////////////////////////////////////////////////
-
-bool GSHwHack::GSC_AceCombat4(GSRendererHW& r, int& skip)
-{
-	// Removes clouds for a good speed boost, removes both 3D clouds(invisible with Hardware renderers, but cause slowdown) and 2D background clouds.
-	// Removes blur from player airplane.
-	// This hack also removes rockets, shows explosions(invisible without CRC hack) as garbage data,
-	// causes flickering issues with the HUD, and in some (night) missions removes the HUD altogether.
-
-	if (skip == 0)
-	{
-		if (RTME && RFBP == 0x02a00 && RFPSM == PSMZ24 && RTBP0 == 0x01600 && RTPSM == PSMZ24)
-		{
-			skip = 71; // clouds (z, 16-bit)
-		}
-	}
-
-	return true;
-}
-
-bool GSHwHack::GSC_FFXGames(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		if (RTME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if ((RTPSM == PSMZ32 || RTPSM == PSMZ24 || RTPSM == PSMZ16 || RTPSM == PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(RFBP, RFPSM, RTBP0, RTPSM)))
-			{
-				skip = 1;
-			}
-		}
-	}
-
-	return true;
-}
-
-bool GSHwHack::GSC_Okami(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		if (RTME && RFBP == 0x00e00 && RFPSM == PSMCT32 && RTBP0 == 0x00000 && RTPSM == PSMCT32)
-		{
-			skip = 1000;
-		}
-	}
-	else
-	{
-		if (RTME && RFBP == 0x00e00 && RFPSM == PSMCT32 && RTBP0 == 0x03800 && RTPSM == PSMT4)
-		{
-			skip = 0;
-		}
-	}
-
-	return true;
-}
-
-bool GSHwHack::GSC_RedDeadRevolver(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		if (RFBP == 0x03700 && RFPSM == PSMCT32 && RTPSM == PSMCT24)
-		{
-			skip = 2; // Blur
-		}
-	}
-
-	return true;
-}
-
-bool GSHwHack::GSC_ShinOnimusha(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		if (RTME && RFBP == 0x001000 && (RTBP0 == 0 || RTBP0 == 0x0800) && RTPSM == PSMT8H && RFBMSK == 0x00FFFFFF)
-		{
-			skip = 0; // Water ripple not needed ?
-		}
-		else if (RTPSM == PSMCT24 && RTME && RFBP == 0x01000) // || GSC_FBP == 0x00000
-		{
-			skip = 28; //28 30 56 64
-		}
-		else if (RFBP && RTPSM == PSMT8H && RFBMSK == 0xFFFFFF)
-		{
-			skip = 0; //24 33 40 9
-		}
-		else if (RTPSM == PSMT8H && RFBMSK == 0xFF000000)
-		{
-			skip = 1; // White fog when picking up things
-		}
-		else if (RTME && (RTBP0 == 0x1400 || RTBP0 == 0x1000 || RTBP0 == 0x1200) && (RTPSM == PSMCT32 || RTPSM == PSMCT24))
-		{
-			skip = 1; // Eliminate excessive flooding, water and other light and shadow
-		}
-	}
-
-	return true;
-}
-
-bool GSHwHack::GSC_XenosagaE3(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		if (RTPSM == PSMT8H && RFBMSK >= 0xEFFFFFFF)
-		{
-			skip = 73; // Animation
-		}
-		else if (RTME && RFBP == 0x03800 && RTBP0 && RTPSM == 0 && RFBMSK == 0)
-		{
-			skip = 1; // Ghosting
-		}
-		else
-		{
-			if (RTME)
-			{
-				// depth textures (bully, mgs3s1 intro, Front Mission 5)
-				if ((RTPSM == PSMZ32 || RTPSM == PSMZ24 || RTPSM == PSMZ16 || RTPSM == PSMZ16S) ||
-					// General, often problematic post processing
-					(GSUtil::HasSharedBits(RFBP, RFPSM, RTBP0, RTPSM)))
-				{
-					skip = 1;
-				}
-			}
 		}
 	}
 
@@ -1186,16 +1052,7 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_UltramanFightingEvolution, CRCHackLevel::Partial),
 
 	// Accurate Blending
-	CRC_F(GSC_GetawayGames, CRCHackLevel::Full), // Blending High
-
-	CRC_F(GSC_AceCombat4, CRCHackLevel::Aggressive),
-	CRC_F(GSC_FFXGames, CRCHackLevel::Aggressive),
-	CRC_F(GSC_RedDeadRevolver, CRCHackLevel::Aggressive),
-	CRC_F(GSC_ShinOnimusha, CRCHackLevel::Aggressive),
-	CRC_F(GSC_XenosagaE3, CRCHackLevel::Aggressive),
-
-	// Upscaling issues
-	CRC_F(GSC_Okami, CRCHackLevel::Aggressive),
+	CRC_F(GSC_GetawayGames, CRCHackLevel::Partial),
 };
 
 const GSHwHack::Entry<GSRendererHW::OI_Ptr> GSHwHack::s_before_draw_functions[] = {

@@ -40,12 +40,6 @@ public:
 	static bool GSC_UrbanReign(GSRendererHW& r, int& skip);
 	static bool GSC_SteambotChronicles(GSRendererHW& r, int& skip);
 	static bool GSC_GetawayGames(GSRendererHW& r, int& skip);
-	static bool GSC_AceCombat4(GSRendererHW& r, int& skip);
-	static bool GSC_FFXGames(GSRendererHW& r, int& skip);
-	static bool GSC_Okami(GSRendererHW& r, int& skip);
-	static bool GSC_RedDeadRevolver(GSRendererHW& r, int& skip);
-	static bool GSC_ShinOnimusha(GSRendererHW& r, int& skip);
-	static bool GSC_XenosagaE3(GSRendererHW& r, int& skip);
 	static bool GSC_BlueTongueGames(GSRendererHW& r, int& skip);
 	static bool GSC_Battlefield2(GSRendererHW& r, int& skip);
 	static bool GSC_NFSUndercover(GSRendererHW& r, int& skip);

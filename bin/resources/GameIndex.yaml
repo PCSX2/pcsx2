@@ -788,7 +788,6 @@ SCAJ-20068:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
-    getSkipCount: "GSC_FFXGames"
 SCAJ-20069:
   name: "Gallop Racer - Lucky 7"
   region: "NTSC-Unk"
@@ -1389,7 +1388,6 @@ SCAJ-20172:
   name: "Final Fantasy XII"
   region: "NTSC-Unk"
   gsHWFixes:
-    getSkipCount: "GSC_FFXGames"
     partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20173:
   name: "Ace Combat Zero - The Belkan War"
@@ -1440,7 +1438,6 @@ SCAJ-20179:
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
-    getSkipCount: "GSC_XenosagaE3"
 SCAJ-20180:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 2 of 2]"
   region: "NTSC-Unk"
@@ -1449,7 +1446,6 @@ SCAJ-20180:
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
-    getSkipCount: "GSC_XenosagaE3"
 SCAJ-20181:
   name: "Minna no Tennis"
   region: "NTSC-Unk"
@@ -1475,7 +1471,6 @@ SCAJ-20188:
   name: "Final Fantasy XII - International - Zodiac Job System"
   region: "NTSC-Unk"
   gsHWFixes:
-    getSkipCount: "GSC_FFXGames"
     partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20190:
   name: "God of War II"
@@ -1560,7 +1555,6 @@ SCAJ-25012:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
-    getSkipCount: "GSC_FFXGames"
 SCAJ-25026:
   name: "Kunoichi Shinobi"
   region: "NTSC-Unk"
@@ -1906,7 +1900,6 @@ SCED-50642:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
-    getSkipCount: "GSC_FFXGames"
     beforeDraw: "OI_FFX"
 SCED-50675:
   name: "Official PlayStation 2 Magazine Demo 16"
@@ -1985,7 +1978,6 @@ SCED-50907:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
-    getSkipCount: "GSC_FFXGames"
     beforeDraw: "OI_FFX"
 SCED-50945:
   name: "Official PlayStation 2 Magazine Demo 20"
@@ -3102,7 +3094,6 @@ SCES-50490:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
-    getSkipCount: "GSC_FFXGames"
     beforeDraw: "OI_FFX"
 SCES-50491:
   name: "Final Fantasy X"
@@ -3112,7 +3103,6 @@ SCES-50491:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
-    getSkipCount: "GSC_FFXGames"
     beforeDraw: "OI_FFX"
 SCES-50492:
   name: "Final Fantasy X"
@@ -3123,7 +3113,6 @@ SCES-50492:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters..
-    getSkipCount: "GSC_FFXGames"
     beforeDraw: "OI_FFX"
 SCES-50493:
   name: "Final Fantasy X"
@@ -3133,7 +3122,6 @@ SCES-50493:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
-    getSkipCount: "GSC_FFXGames"
     beforeDraw: "OI_FFX"
 SCES-50494:
   name: "Final Fantasy X"
@@ -3143,7 +3131,6 @@ SCES-50494:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
-    getSkipCount: "GSC_FFXGames"
     beforeDraw: "OI_FFX"
 SCES-50499:
   name: "Ecco the Dolphin - Defender of the Future"
@@ -5450,7 +5437,6 @@ SCKA-20073:
   name: "Final Fantasy XII"
   region: "NTSC-K"
   gsHWFixes:
-    getSkipCount: "GSC_FFXGames"
     partialTargetInvalidation: 1 # Fixes broken textures.
 SCKA-20078:
   name: "Killzone [PlayStation 2 Big Hit Series]"
@@ -5459,7 +5445,6 @@ SCKA-20078:
     vuClampMode: 0 # Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
-    getSkipCount: "GSC_FFXGames"
 SCKA-20079:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "NTSC-K"
@@ -5484,13 +5469,11 @@ SCKA-20086:
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
-    getSkipCount: "GSC_ShinOnimusha"
 SCKA-20087:
   name: "Shin Onimusha - Dawn of Dreams [Disc 2 of 2]"
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
-    getSkipCount: "GSC_ShinOnimusha"
   memcardFilters:
     - "SCKA-20086"
 SCKA-20089:
@@ -5530,7 +5513,6 @@ SCKA-20095:
   region: "NTSC-K"
   gsHWFixes:
     roundSprite: 2 # Reduces misalignment issues but the game is just bad for upscaling.
-    getSkipCount: "GSC_Okami"
 SCKA-20096:
   name: "Barnyard"
   region: "NTSC-K"
@@ -5588,7 +5570,6 @@ SCKA-20138:
   name: "Final Fantasy XII [Ultimate Hits International Zodiac Job System]"
   region: "NTSC-K"
   gsHWFixes:
-    getSkipCount: "GSC_FFXGames"
     partialTargetInvalidation: 1 # Fixes broken textures.
 SCKA-24008:
   name: "SOCOM - U.S. Navy SEALs"
@@ -9304,7 +9285,6 @@ SLAJ-25012:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
-    getSkipCount: "GSC_FFXGames"
 SLAJ-25014:
   name: "Cyber Troopers - Virtual-On Marz"
   region: "NTSC-Unk"
@@ -13986,7 +13966,6 @@ SLES-51815:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
-    getSkipCount: "GSC_FFXGames"
 SLES-51816:
   name: "Final Fantasy X-2"
   region: "PAL-F"
@@ -13994,7 +13973,6 @@ SLES-51816:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
-    getSkipCount: "GSC_FFXGames"
 SLES-51817:
   name: "Final Fantasy X-2"
   region: "PAL-G"
@@ -14003,7 +13981,6 @@ SLES-51817:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
-    getSkipCount: "GSC_FFXGames"
 SLES-51818:
   name: "Final Fantasy X-2"
   region: "PAL-I"
@@ -14011,7 +13988,6 @@ SLES-51818:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
-    getSkipCount: "GSC_FFXGames"
 SLES-51819:
   name: "Final Fantasy X-2"
   region: "PAL-S"
@@ -14020,7 +13996,6 @@ SLES-51819:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
-    getSkipCount: "GSC_FFXGames"
 SLES-51820:
   name: "Sniper Elite"
   region: "PAL-M5"
@@ -15471,8 +15446,6 @@ SLES-52478:
   name: "Red Dead Revolver"
   region: "PAL-M5"
   compat: 4
-  gsHWFixes:
-    getSkipCount: "GSC_RedDeadRevolver"
 SLES-52479:
   name: "Samurai Jack - The Shadow of Aku"
   region: "PAL-M5"
@@ -20498,32 +20471,27 @@ SLES-54354:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_FFXGames"
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-54355:
   name: "Final Fantasy XII"
   region: "PAL-F"
   gsHWFixes:
-    getSkipCount: "GSC_FFXGames"
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-54356:
   name: "Final Fantasy XII"
   region: "PAL-G"
   gsHWFixes:
-    getSkipCount: "GSC_FFXGames"
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-54357:
   name: "Final Fantasy XII"
   region: "PAL-I"
   gsHWFixes:
-    getSkipCount: "GSC_FFXGames"
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-54358:
   name: "Final Fantasy XII"
   region: "PAL-S"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_FFXGames"
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-54359:
   name: "Legend of Spyro, The - A New Beginning"
@@ -20742,7 +20710,6 @@ SLES-54439:
   region: "PAL-M3"
   gsHWFixes:
     roundSprite: 2 # Reduces misalignment issues but the game is just bad for upscaling.
-    getSkipCount: "GSC_Okami"
 SLES-54440:
   name: "GT-R Touring"
   region: "PAL-E"
@@ -24001,14 +23968,12 @@ SLES-82038:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
-    getSkipCount: "GSC_ShinOnimusha"
 SLES-82039:
   name: "Onimusha - Dawn of Dreams [Disc 2 of 2]"
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
-    getSkipCount: "GSC_ShinOnimusha"
   memcardFilters:
     - "SLES-82038"
 SLES-82042:
@@ -24634,7 +24599,6 @@ SLKA-25144:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
-    getSkipCount: "GSC_FFXGames"
 SLKA-25145:
   name: "dot hack  - Outbreak"
   region: "NTSC-K"
@@ -24865,7 +24829,6 @@ SLKA-25214:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
-    getSkipCount: "GSC_FFXGames"
     beforeDraw: "OI_FFX"
 SLKA-25215:
   name: "Shining Wind"
@@ -25538,7 +25501,6 @@ SLPM-55022:
   name: "Final Fantasy XII [Ultimate Hits]"
   region: "NTSC-J"
   gsHWFixes:
-    getSkipCount: "GSC_FFXGames"
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-55024:
   name: "Jikkyou Powerful Pro Yakyuu 15"
@@ -25881,7 +25843,6 @@ SLPM-55210:
   name: "Final Fantasy XII International Zodiac Job System [Ultimate Hits]"
   region: "NTSC-J"
   gsHWFixes:
-    getSkipCount: "GSC_FFXGames"
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-55211:
   name: "Pachislot Higurashi no Naku Koro ni Matsuri"
@@ -26109,7 +26070,6 @@ SLPM-60149:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     gpuTargetCLUT: 1 # Fixes broken sun.
-    getSkipCount: "GSC_AceCombat4"
 SLPM-60172:
   name: "Itadaki Street 3 - Okuman Chouja ni Shiteageru"
   region: "NTSC-J"
@@ -26406,7 +26366,6 @@ SLPM-61147:
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
-    getSkipCount: "GSC_XenosagaE3"
 SLPM-61148:
   name: "Growlanser V - Generations [Taikenban Demo]"
   region: "NTSC-J"
@@ -29152,7 +29111,6 @@ SLPM-65115:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
-    getSkipCount: "GSC_FFXGames"
     beforeDraw: "OI_FFX"
 SLPM-65116:
   name: "Lilie no Atelier Plus - Salburg no Renkinjutsushi 3"
@@ -30385,7 +30343,6 @@ SLPM-65478:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
-    getSkipCount: "GSC_FFXGames"
 SLPM-65479:
   name: "Sims, The - Bustin' Out"
   region: "NTSC-J"
@@ -31683,8 +31640,6 @@ SLPM-65853:
 SLPM-65854:
   name: "Red Dead Revolver"
   region: "NTSC-J"
-  gsHWFixes:
-    getSkipCount: "GSC_RedDeadRevolver"
 SLPM-65855:
   name: "Girls Bravo - Romance 15's [Deluxe Pack]"
   region: "NTSC-J"
@@ -32705,7 +32660,6 @@ SLPM-66124:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
-    getSkipCount: "GSC_FFXGames"
     beforeDraw: "OI_FFX"
 SLPM-66125:
   name: "Final Fantasy X-2 [Ultimate Hits]"
@@ -32714,7 +32668,6 @@ SLPM-66125:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
-    getSkipCount: "GSC_FFXGames"
 SLPM-66129:
   name: "Guilty Gear XX #Reload"
   region: "NTSC-J"
@@ -33316,14 +33269,12 @@ SLPM-66275:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
-    getSkipCount: "GSC_ShinOnimusha"
 SLPM-66276:
   name: "Shin Onimusha - Dawn of Dreams [Disc 2 of 2]"
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
-    getSkipCount: "GSC_ShinOnimusha"
   memcardFilters:
     - "SLPM-66275"
 SLPM-66277:
@@ -33495,7 +33446,6 @@ SLPM-66320:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_FFXGames"
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-66321:
   name: "Kurogane no Houkou - Warship Gunner 2"
@@ -33706,7 +33656,6 @@ SLPM-66375:
   compat: 5
   gsHWFixes:
     roundSprite: 2 # Reduces misalignment issues but the game is just bad for upscaling.
-    getSkipCount: "GSC_Okami"
 SLPM-66376:
   name: "KimiStar - Kimi to Study [BGM Collection Package]"
   region: "NTSC-J"
@@ -34911,7 +34860,6 @@ SLPM-66677:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
-    getSkipCount: "GSC_FFXGames"
     beforeDraw: "OI_FFX"
 SLPM-66678:
   name: "Final Fantasy X-2 - International + Last Mission [Ultimate Hits]"
@@ -34920,7 +34868,6 @@ SLPM-66678:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
-    getSkipCount: "GSC_FFXGames"
 SLPM-66679:
   name: "Devil Summoner - Kuzunoha Raidou tai Abaddon Ou [Plus]"
   region: "NTSC-J"
@@ -35223,7 +35170,6 @@ SLPM-66750:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_FFXGames"
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-66751:
   name: "Mahoroba Stories"
@@ -36159,7 +36105,6 @@ SLPM-67513:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
-    getSkipCount: "GSC_FFXGames"
     beforeDraw: "OI_FFX"
 SLPM-67514:
   name: "Kessen"
@@ -36484,7 +36429,6 @@ SLPM-74232:
     - SoftwareRendererFMVHack # Wrong white textures in FMV.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
-    getSkipCount: "GSC_ShinOnimusha"
   memcardFilters:
     - "SLPM-66275"
 SLPM-74233:
@@ -36492,7 +36436,6 @@ SLPM-74233:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
-    getSkipCount: "GSC_ShinOnimusha"
   memcardFilters:
     - "SLPM-74232"
 SLPM-74234:
@@ -36515,7 +36458,6 @@ SLPM-74239:
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 2 # Reduces misalignment issues but the game is just bad for upscaling.
-    getSkipCount: "GSC_Okami"
 SLPM-74240:
   name: "Tengai Makyou III - Namida [Best Version]"
   region: "NTSC-J"
@@ -36601,7 +36543,6 @@ SLPM-74251:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
-    getSkipCount: "GSC_ShinOnimusha"
   memcardFilters:
     - "SLPM-66275"
 SLPM-74252:
@@ -36609,7 +36550,6 @@ SLPM-74252:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
-    getSkipCount: "GSC_ShinOnimusha"
   memcardFilters:
     - "SLPM-74251"
 SLPM-74253:
@@ -38332,7 +38272,6 @@ SLPS-25050:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
-    getSkipCount: "GSC_FFXGames"
     beforeDraw: "OI_FFX"
 SLPS-25051:
   name: "Missing Blue"
@@ -38347,7 +38286,6 @@ SLPS-25052:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     gpuTargetCLUT: 1 # Fixes broken sun.
-    getSkipCount: "GSC_AceCombat4"
 SLPS-25053:
   name: "Eikan wa Kimi ni - Koushien no Hasha"
   region: "NTSC-J"
@@ -38473,7 +38411,6 @@ SLPS-25088:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
-    getSkipCount: "GSC_FFXGames"
     beforeDraw: "OI_FFX"
 SLPS-25089:
   name: "Salt Lake 2002"
@@ -39032,7 +38969,6 @@ SLPS-25250:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
-    getSkipCount: "GSC_FFXGames"
 SLPS-25251:
   name: "MVP Baseball 2003"
   region: "NTSC-J"
@@ -40472,7 +40408,6 @@ SLPS-25640:
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
-    getSkipCount: "GSC_XenosagaE3"
   memcardFilters: # Allows import of Xenosaga II save data.
     - "SLPS-25640"
     - "SLPS-25368"
@@ -40485,7 +40420,6 @@ SLPS-25641:
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
-    getSkipCount: "GSC_XenosagaE3"
   memcardFilters:
     - "SLPS-25640"
     - "SLPS-25368"
@@ -41661,7 +41595,6 @@ SLPS-72501:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
-    getSkipCount: "GSC_FFXGames"
     beforeDraw: "OI_FFX"
 SLPS-72502:
   name: "Tales of Destiny 2 [Mega Hits]"
@@ -41759,7 +41692,6 @@ SLPS-73205:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     gpuTargetCLUT: 1 # Fixes broken sun.
-    getSkipCount: "GSC_AceCombat4"
 SLPS-73206:
   name: "Super Robot Taisen Alpha 2nd [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -42169,7 +42101,6 @@ SLPS-73410:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     gpuTargetCLUT: 1 # Fixes broken sun.
-    getSkipCount: "GSC_AceCombat4"
 SLPS-73411:
   name: "Armored Core 2 - Another Age [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -42833,7 +42764,6 @@ SLUS-20152:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     gpuTargetCLUT: 1 # Fixes broken sun.
-    getSkipCount: "GSC_AceCombat4"
   patches:
     A32F7CD0:
       content: |-
@@ -43523,7 +43453,6 @@ SLUS-20312:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
-    getSkipCount: "GSC_FFXGames"
     beforeDraw: "OI_FFX"
 SLUS-20313:
   name: "Wave Rally"
@@ -44441,8 +44370,6 @@ SLUS-20500:
   name: "Red Dead Revolver"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    getSkipCount: "GSC_RedDeadRevolver"
 SLUS-20502:
   name: "Colin McRae Rally 3"
   region: "NTSC-U"
@@ -45294,7 +45221,6 @@ SLUS-20672:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
-    getSkipCount: "GSC_FFXGames"
 SLUS-20673:
   name: "Alias"
   region: "NTSC-U"
@@ -46768,7 +46694,6 @@ SLUS-20963:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_FFXGames"
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-20964:
   name: "Devil May Cry 3 - Dante's Awakening"
@@ -47606,7 +47531,6 @@ SLUS-21115:
   compat: 5
   gsHWFixes:
     roundSprite: 2 # Reduces misalignment issues but the game is just bad for upscaling.
-    getSkipCount: "GSC_Okami"
 SLUS-21116:
   name: "187 - Ride or Die"
   region: "NTSC-U"
@@ -47922,7 +47846,6 @@ SLUS-21180:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
-    getSkipCount: "GSC_ShinOnimusha"
 SLUS-21181:
   name: "D.I.C.E. - DNA Integrated Cybernetic Enterprises"
   region: "NTSC-U"
@@ -49055,7 +48978,6 @@ SLUS-21362:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
-    getSkipCount: "GSC_ShinOnimusha"
   memcardFilters:
     - "SLUS-21180"
 SLUS-21363:
@@ -49228,7 +49150,6 @@ SLUS-21389:
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows.
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
-    getSkipCount: "GSC_XenosagaE3"
   memcardFilters: # Allows import of Xenosaga II save data.
     - "SLUS-21389"
     - "SLUS-20892"
@@ -49378,7 +49299,6 @@ SLUS-21417:
     halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows.
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
-    getSkipCount: "GSC_XenosagaE3"
   memcardFilters:
     - "SLUS-21389"
     - "SLUS-20892"
@@ -49709,7 +49629,6 @@ SLUS-21475:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_FFXGames"
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-21476:
   name: "Madden NFL '07"
@@ -52607,7 +52526,6 @@ SLUS-29171:
   name: "Final Fantasy XII [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    getSkipCount: "GSC_FFXGames"
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-29172:
   name: "Battlefield 2 - Modern Combat [Demo]"
