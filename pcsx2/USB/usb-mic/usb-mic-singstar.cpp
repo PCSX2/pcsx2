@@ -85,7 +85,6 @@ namespace usb_mic
 		} f; //freezable
 
 		/* properties */
-		uint32_t debug;
 		std::vector<int16_t> buffer[2];
 		//uint8_t  fifo[2][200]; //on-chip 400byte fifo
 	};
@@ -411,12 +410,6 @@ namespace usb_mic
 				break;
 		}
 
-		if (set_vol)
-		{
-			//if (s->debug) {
-			//}
-		}
-
 		return ret;
 	}
 
@@ -505,9 +498,7 @@ namespace usb_mic
 				ret = usb_audio_get_control(s, request & 0xff, value, index, length, data);
 				if (ret < 0)
 				{
-					//if (s->debug) {
 					Console.Warning("singstar: fail: get control\n");
-					//}
 					goto fail;
 				}
 				p->actual_length = ret;
@@ -520,9 +511,7 @@ namespace usb_mic
 				ret = usb_audio_set_control(s, request & 0xff, value, index, length, data);
 				if (ret < 0)
 				{
-					//if (s->debug) {
 					Console.Warning("singstar: fail: set control\n data:");
-					//}
 					goto fail;
 				}
 				break;
@@ -670,7 +659,7 @@ namespace usb_mic
 					ret = ret * outChns * sizeof(int16_t);
 					p->actual_length = ret;
 
-#if 0 //defined(_DEBUG) && _MSC_VER > 1800
+#if 0 //defined(_DEBUG) && defined(_MSC_VER)
 					if (!file)
 					{
 						char name[1024] = {0};

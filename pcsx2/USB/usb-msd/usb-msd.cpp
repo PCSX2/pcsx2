@@ -75,7 +75,6 @@ namespace usb_msd
 			struct usb_msd_csw csw;
 			enum USBMSDMode mode;
 			uint32_t data_len;
-			uint32_t residue;
 			uint32_t tag;
 			uint32_t file_op_tag; // read from file or buf
 			int32_t result;
