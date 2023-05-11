@@ -33,7 +33,8 @@ namespace usb_lightgun
 	{
 		GUNCON2_FLAG_PROGRESSIVE = 0x0100,
 
-		GUNCON2_CALIBRATION_DELAY = 9
+		GUNCON2_CALIBRATION_DELAY = 12,
+		GUNCON2_CALIBRATION_REPORT_DELAY = 5,
 	};
 
 	enum : u32
@@ -288,7 +289,7 @@ namespace usb_lightgun
 						out.pos_y = us->calibration_pos_y;
 						us->calibration_timer--;
 
-						if (us->calibration_timer == 0)
+						if (us->calibration_timer < GUNCON2_CALIBRATION_REPORT_DELAY)
 						{
 							out.pos_x = 0;
 							out.pos_y = 0;
