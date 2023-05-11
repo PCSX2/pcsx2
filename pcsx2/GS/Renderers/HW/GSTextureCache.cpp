@@ -773,7 +773,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				//    because of the previous draw call format
 				//
 				// Solution: consider the RT as 32 bits if the alpha was used in the past
-				const u32 t_psm = (t->m_dirty_alpha) ? t->m_TEX0.PSM & ~0x1 : t->m_TEX0.PSM;
+				// We can render to the target as C32, but mask alpha, in which case, pretend like it doesn't have any.
+				const u32 t_psm = t->m_valid_alpha ? t->m_TEX0.PSM & ~0x1 : ((t->m_TEX0.PSM == PSMCT32) ? PSMCT24 : t->m_TEX0.PSM);
 				bool rect_clean = GSUtil::HasSameSwizzleBits(psm, t_psm);
 
 				if (rect_clean && bp >= t->m_TEX0.TBP0 && bp < t->UnwrappedEndBlock() && !t->m_dirty.empty() &&
@@ -1316,9 +1317,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			dst->m_scale = scale;
 			dst->m_unscaled_size = new_size;
 		}
-
-		if (!is_frame)
-			dst->m_dirty_alpha |= (psm_s.trbpp == 32 && (fbmask & 0xFF000000) != 0xFF000000) || (psm_s.trbpp == 16);
 	}
 	else if (!is_frame && !GSConfig.UserHacks_DisableDepthSupport)
 	{
@@ -1509,7 +1507,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 	dst->m_used |= used;
 
 	if (is_frame)
-		dst->m_dirty_alpha = false;
+		dst->m_valid_alpha = false;
 
 	dst->readbacks_since_draw = 0;
 
@@ -1938,7 +1936,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 						if (rgba._u32 == 0x8 && t->m_TEX0.PSM == PSMCT32)
 						{
 							t->m_TEX0.PSM = PSMCT24;
-							t->m_dirty_alpha = false;
+							t->m_valid_alpha = false;
 							++i;
 						}
 						else
@@ -1964,7 +1962,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 				// the texture cache. Otherwise it will generate a wrong
 				// hit on the texture cache.
 				// Game: Conflict - Desert Storm (flickering)
-				t->m_dirty_alpha = false;
+				t->m_valid_alpha = false;
 			}
 
 			++i;
@@ -2645,7 +2643,7 @@ GSTextureCache::Target* GSTextureCache::GetTargetWithSharedBits(u32 BP, u32 PSM)
 	for (auto it = rts.begin(); it != rts.end(); ++it) // Iterate targets from MRU to LRU.
 	{
 		Target* t = *it;
-		const u32 t_psm = (t->m_dirty_alpha) ? t->m_TEX0.PSM & ~0x1 : t->m_TEX0.PSM;
+		const u32 t_psm = (t->m_valid_alpha) ? t->m_TEX0.PSM & ~0x1 : t->m_TEX0.PSM;
 		if (GSUtil::HasSharedBits(BP, PSM, t->m_TEX0.TBP0, t_psm))
 			return t;
 	}
@@ -4348,7 +4346,6 @@ GSTextureCache::Target::Target(const GIFRegTEX0& TEX0, const int type)
 {
 	m_TEX0 = TEX0;
 	m_32_bits_fmt |= (GSLocalMemory::m_psm[TEX0.PSM].trbpp != 16);
-	m_dirty_alpha = GSLocalMemory::m_psm[TEX0.PSM].trbpp != 24;
 }
 
 GSTextureCache::Target::~Target()
@@ -4506,6 +4503,13 @@ void GSTextureCache::Target::UpdateIfDirtyIntersects(const GSVector4i& rc)
 		break;
 	}
 }
+
+void GSTextureCache::Target::UpdateValidAlpha(u32 psm, u32 fbmsk)
+{
+	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[psm];
+	m_valid_alpha |= (psm_s.trbpp == 32 && (fbmsk & 0xFF000000) != 0xFF000000) || (psm_s.trbpp == 16);
+}
+
 void GSTextureCache::Target::ResizeDrawn(const GSVector4i& rect)
 {
 	m_drawn_since_read = m_drawn_since_read.rintersect(rect);

@@ -2069,10 +2069,15 @@ void GSRendererHW::Draw()
 				rt->m_TEX0 = FRAME_TEX0;
 				rt->m_TEX0.TBW = std::max(width, FRAME_TEX0.TBW);
 			}
+
+			rt->UpdateValidAlpha(FRAME_TEX0.PSM, fm);
 		}
 
 		if (ds)
+		{
 			ds->m_TEX0 = ZBUF_TEX0;
+			ds->UpdateValidAlpha(ZBUF_TEX0.PSM, zm);
+		}
 	}
 	else if (!m_texture_shuffle)
 	{
@@ -2082,11 +2087,14 @@ void GSRendererHW::Draw()
 		{
 			rt->m_TEX0.TBW = std::max(rt->m_TEX0.TBW, FRAME_TEX0.TBW);
 			rt->m_TEX0.PSM = FRAME_TEX0.PSM;
+
+			rt->UpdateValidAlpha(FRAME_TEX0.PSM, fm);
 		}
 		if (ds)
 		{
 			ds->m_TEX0.TBW = std::max(ds->m_TEX0.TBW, ZBUF_TEX0.TBW);
 			ds->m_TEX0.PSM = ZBUF_TEX0.PSM;
+			ds->UpdateValidAlpha(ZBUF_TEX0.PSM, zm);
 		}
 	}
 	if (rt)
@@ -2581,7 +2589,7 @@ void GSRendererHW::EmulateZbuffer(const GSTextureCache::Target* ds)
 	}
 }
 
-void GSRendererHW::EmulateTextureShuffleAndFbmask()
+void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt)
 {
 	// Uncomment to disable texture shuffle emulation.
 	// m_texture_shuffle = false;
@@ -2712,6 +2720,10 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask()
 		{
 			m_conf.ps.fbmask = 0;
 		}
+
+		// Set dirty alpha on target, but only if we're actually writing to it.
+		if (rt)
+			rt->m_valid_alpha |= m_conf.colormask.wa;
 
 		// Once we draw the shuffle, no more buffering.
 		m_split_texture_shuffle_pages = 0;
@@ -4230,7 +4242,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	else
 		m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 
-	EmulateTextureShuffleAndFbmask();
+	EmulateTextureShuffleAndFbmask(rt);
 
 	// DATE: selection of the algorithm. Must be done before blending because GL42 is not compatible with blending
 	if (DATE)
