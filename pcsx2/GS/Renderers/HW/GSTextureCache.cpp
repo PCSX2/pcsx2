@@ -1291,8 +1291,17 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 
 	if (dst)
 	{
-		GL_CACHE("TC: Lookup %s(%s) %dx%d (0x%x, BW:%u, %s) hit (0x%x, BW:%d, %s)", is_frame ? "Frame" : "Target",
-			to_string(type), size.x, size.y, bp, TEX0.TBW, psm_str(TEX0.PSM), dst->m_TEX0.TBP0, dst->m_TEX0.TBW, psm_str(dst->m_TEX0.PSM));
+		if (type == DepthStencil)
+		{
+			GL_CACHE("TC: Lookup Target(Depth) %dx%d (0x%x, BW:%u, %s) hit (0x%x, BW:%d, %s)", size.x, size.y, bp,
+				TEX0.TBW, psm_str(TEX0.PSM), dst->m_TEX0.TBP0, dst->m_TEX0.TBW, psm_str(dst->m_TEX0.PSM));
+		}
+		else
+		{
+			GL_CACHE("TC: Lookup %s(Color) %dx%d (0x%x, BW:%u, FBMSK %08x, %s) hit (0x%x, BW:%d, %s)",
+				is_frame ? "Frame" : "Target", size.x, size.y, bp, TEX0.TBW, fbmask, psm_str(TEX0.PSM),
+				dst->m_TEX0.TBP0, dst->m_TEX0.TBW, psm_str(dst->m_TEX0.PSM));
+		}
 
 		// Update is done by caller after TEX0 update for non-frame.
 		if (is_frame)
@@ -1355,12 +1364,15 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			const bool fmt_16_bits = (psm_s.bpp == 16 && GSLocalMemory::m_psm[dst_match->m_TEX0.PSM].bpp == 16 && !dst->m_32_bits_fmt);
 			if (type == DepthStencil)
 			{
-				GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, TBW %d, %s was %s)", new_size.x, new_size.y, bp, TEX0.TBW, psm_str(TEX0.PSM), psm_str(dst_match->m_TEX0.PSM));
-				shader = (fmt_16_bits) ? ShaderConvert::RGB5A1_TO_FLOAT16 : (ShaderConvert)(static_cast<int>(ShaderConvert::RGBA8_TO_FLOAT32) + psm_s.fmt);
+				GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, TBW %d, %s was %s)", new_size.x, new_size.y,
+					bp, TEX0.TBW, psm_str(TEX0.PSM), psm_str(dst_match->m_TEX0.PSM));
+				shader = (fmt_16_bits) ? ShaderConvert::RGB5A1_TO_FLOAT16 :
+										 (ShaderConvert)(static_cast<int>(ShaderConvert::RGBA8_TO_FLOAT32) + psm_s.fmt);
 			}
 			else
 			{
-				GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, TBW %d, %s was %s)", new_size.x, new_size.y, bp, TEX0.TBW, psm_str(TEX0.PSM), psm_str(dst_match->m_TEX0.PSM));
+				GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, TBW %d, FBMSK %0x, %s was %s)", new_size.x,
+					new_size.y, bp, TEX0.TBW, fbmask, psm_str(TEX0.PSM), psm_str(dst_match->m_TEX0.PSM));
 				shader = (fmt_16_bits) ? ShaderConvert::FLOAT16_TO_RGB5A1 : ShaderConvert::FLOAT32_TO_RGBA8;
 			}
 
@@ -1391,7 +1403,16 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			return nullptr;
 		}
 
-		GL_CACHE("TC: Lookup %s(%s) %dx%d, miss (0x%x, TBW %d, %s)", is_frame ? "Frame" : "Target", to_string(type), size.x, size.y, bp, TEX0.TBW, psm_str(TEX0.PSM));
+		if (type == DepthStencil)
+		{
+			GL_CACHE("TC: Lookup Target(Depth) %dx%d, miss (0x%x, TBW %d, %s)", size.x, size.y, bp,
+				TEX0.TBW, psm_str(TEX0.PSM));
+		}
+		else
+		{
+			GL_CACHE("TC: Lookup %s(Color) %dx%d FBMSK %08x, miss (0x%x, TBW %d, %s)", is_frame ? "Frame" : "Target",
+				size.x, size.y, fbmask, bp, TEX0.TBW, psm_str(TEX0.PSM));
+		}
 
 		dst = CreateTarget(TEX0, size.x, size.y, scale, type, true);
 		// In theory new textures contain invalidated data. Still in theory a new target

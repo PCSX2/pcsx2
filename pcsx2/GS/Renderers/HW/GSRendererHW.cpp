@@ -758,11 +758,7 @@ GSVector2i GSRendererHW::GetTargetSize(const GSTextureCache::Source* tex)
 		}
 	}
 
-	const GSVector2i size = g_texture_cache->GetTargetSize(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, width, height);
-
-	GL_INS("Target size for %x %u %u: %ux%u", m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, size.x, size.y);
-
-	return size;
+	return g_texture_cache->GetTargetSize(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, width, height);
 }
 
 bool GSRendererHW::IsPossibleChannelShuffle() const
