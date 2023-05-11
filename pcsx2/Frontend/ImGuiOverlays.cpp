@@ -392,8 +392,6 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("AF={} ", EmuConfig.GS.MaxAnisotropy);
 		if (GSConfig.Dithering != 2)
 			APPEND("DI={} ", GSConfig.Dithering);
-		if (EmuConfig.GS.CRCHack != CRCHackLevel::Automatic)
-			APPEND("CRC={} ", static_cast<unsigned>(EmuConfig.GS.CRCHack));
 		if (GSConfig.UserHacks_HalfBottomOverride >= 0)
 			APPEND("HBO={} ", GSConfig.UserHacks_HalfBottomOverride);
 		if (GSConfig.UserHacks_HalfPixelOffset > 0)
@@ -436,6 +434,8 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("TPI ");
 		if (GSConfig.UserHacks_DisableSafeFeatures)
 			APPEND("DSF ");
+		if (GSConfig.UserHacks_DisableRenderFixes)
+			APPEND("DRF ");
 		if (GSConfig.PreloadFrameWithGSData)
 			APPEND("PLFD ");
 		if (GSConfig.UserHacks_EstimateTextureRegion)

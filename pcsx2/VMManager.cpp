@@ -1949,8 +1949,6 @@ void VMManager::WarnAboutUnsafeSettings()
 		messages += ICON_FA_PAGER " Trilinear filtering is not set to automatic. This may break rendering in some games.\n";
 	if (EmuConfig.GS.AccurateBlendingUnit <= AccBlendLevel::Minimum)
 		messages += ICON_FA_BLENDER " Blending is below basic, this may break effects in some games.\n";
-	if (EmuConfig.GS.CRCHack != CRCHackLevel::Automatic)
-		messages += ICON_FA_FIRST_AID " CRC Fix Level is not set to default, this may break effects in some games.\n";
 	if (EmuConfig.GS.HWDownloadMode != GSHardwareDownloadMode::Enabled)
 		messages += ICON_FA_DOWNLOAD " Hardware Download Mode is not set to Accurate, this may break rendering in some games.\n";
 	if (EmuConfig.Cpu.sseMXCSR.GetRoundMode() != SSEround_Chop)

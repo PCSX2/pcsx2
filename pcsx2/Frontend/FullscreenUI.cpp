@@ -3185,9 +3185,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			static constexpr const char* s_auto_flush_options[] = {
 				"Disabled (Default)", "Enabled (Sprites Only)", "Enabled (All Primitives)"};
 
-			DrawIntListSetting(bsi, "CRC Fix Level", "Applies manual fixes to difficult-to-emulate effects in the hardware renderers.",
-				"EmuCore/GS", "crc_hack_level", static_cast<int>(CRCHackLevel::Automatic), s_crc_fix_options, std::size(s_crc_fix_options),
-				-1);
 			DrawIntListSetting(bsi, "Half-Bottom Override", "Control the half-screen fix detection on texture shuffling.", "EmuCore/GS",
 				"UserHacks_Half_Bottom_Override", -1, s_generic_options, std::size(s_generic_options), -1);
 			DrawIntListSetting(bsi, "CPU Sprite Render Size", "Uses software renderer to draw texture decompression-like sprites.",
@@ -3208,6 +3205,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 				"UserHacks_DisableDepthSupport", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, "Disable Safe Features", "This option disables multiple safe features.", "EmuCore/GS",
 				"UserHacks_Disable_Safe_Features", false, manual_hw_fixes);
+			DrawToggleSetting(bsi, "Disable Render Features", "This option disables game-specific render fixes.", "EmuCore/GS",
+				"UserHacks_DisableRenderFixes", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, "Preload Frame", "Uploads GS data when rendering a new frame to reproduce some effects accurately.",
 				"EmuCore/GS", "preload_frame_with_gs_data", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, "Disable Partial Invalidation",
