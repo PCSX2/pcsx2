@@ -61,7 +61,6 @@ public:
 	{
 		const char* name;
 		F ptr;
-		CRCHackLevel level;
 	};
 
 	static const Entry<GSRendererHW::GSC_Ptr> s_get_skip_count_functions[];

@@ -35,7 +35,6 @@ public:
 	static bool HasSameSwizzleBits(u32 spsm, u32 dpsm);
 	static u32 GetChannelMask(u32 spsm);
 
-	static CRCHackLevel GetRecommendedCRCHackLevel(GSRendererType type);
 	static GSRendererType GetPreferredRenderer();
 };
 

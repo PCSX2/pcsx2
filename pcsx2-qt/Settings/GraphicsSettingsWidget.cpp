@@ -181,8 +181,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Renderer Fixes
 	//////////////////////////////////////////////////////////////////////////
-	SettingWidgetBinder::BindWidgetToIntSetting(
-		sif, m_ui.crcFixLevel, "EmuCore/GS", "crc_hack_level", static_cast<int>(CRCHackLevel::Automatic), -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.halfScreenFix, "EmuCore/GS", "UserHacks_Half_Bottom_Override", -1, -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cpuSpriteRenderBW, "EmuCore/GS", "UserHacks_CPUSpriteRenderBW", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cpuSpriteRenderLevel, "EmuCore/GS", "UserHacks_CPUSpriteRenderLevel", 0);
@@ -194,6 +192,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.frameBufferConversion, "EmuCore/GS", "UserHacks_CPU_FB_Conversion", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableDepthEmulation, "EmuCore/GS", "UserHacks_DisableDepthSupport", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableSafeFeatures, "EmuCore/GS", "UserHacks_Disable_Safe_Features", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableRenderFixes, "EmuCore/GS", "UserHacks_DisableRenderFixes", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preloadFrameData, "EmuCore/GS", "preload_frame_with_gs_data", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(
 		sif, m_ui.disablePartialInvalidation, "EmuCore/GS", "UserHacks_DisablePartialInvalidation", false);
@@ -471,9 +470,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			   "Unscaled: Native Dithering / Lowest dithering effect does not increase size of squares when upscaling.<br> "
 			   "Scaled: Upscaling-aware / Highest dithering effect."));
 
-		dialog->registerWidgetHelp(m_ui.crcFixLevel, tr("CRC Fix Level"), tr("Automatic (Default)"),
-			tr("Control the number of Auto-CRC fixes and hacks applied to games."));
-
 		dialog->registerWidgetHelp(m_ui.blending, tr("Blending Accuracy"), tr("Basic (Recommended)"),
 			tr("Control the accuracy level of the GS blending unit emulation.<br> "
 			   "The higher the setting, the more blending is emulated in the shader accurately, and the higher the speed penalty will "
@@ -544,6 +540,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			   "Disables accurate Unscale Point and Line rendering which can help Xenosaga games. "
 			   "Disables accurate GS Memory Clearing to be done on the CPU, and let the GPU handle it, which can help Kingdom Hearts "
 			   "games."));
+
+		dialog->registerWidgetHelp(
+			m_ui.disableRenderFixes, tr("Disable Render Fixes"), tr("Unchecked"), tr("This option disables game-specific render fixes."));
 
 		dialog->registerWidgetHelp(m_ui.disablePartialInvalidation, tr("Disable Partial Source Invalidation"), tr("Unchecked"),
 			tr("By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise. "
@@ -1051,7 +1050,6 @@ void GraphicsSettingsWidget::resetManualHardwareFixes()
 
 		check_bool("EmuCore/GS", "UserHacks", false);
 
-		check_int("EmuCore/GS", "crc_hack_level", static_cast<int>(CRCHackLevel::Automatic));
 		check_int("EmuCore/GS", "UserHacks_Half_Bottom_Override", -1);
 		check_int("EmuCore/GS", "UserHacks_CPUSpriteRenderBW", 0);
 		check_int("EmuCore/GS", "UserHacks_CPUCLUTRender", 0);
@@ -1062,6 +1060,7 @@ void GraphicsSettingsWidget::resetManualHardwareFixes()
 		check_bool("EmuCore/GS", "UserHacks_CPU_FB_Conversion", false);
 		check_bool("EmuCore/GS", "UserHacks_DisableDepthSupport", false);
 		check_bool("EmuCore/GS", "UserHacks_Disable_Safe_Features", false);
+		check_bool("EmuCore/GS", "UserHacks_DisableRenderFixes", false);
 		check_bool("EmuCore/GS", "preload_frame_with_gs_data", false);
 		check_bool("EmuCore/GS", "UserHacks_DisablePartialInvalidation", false);
 		check_int("EmuCore/GS", "UserHacks_TextureInsideRt", static_cast<int>(GSTextureInRtMode::Disabled));

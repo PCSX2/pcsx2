@@ -196,11 +196,6 @@ u32 GSUtil::GetChannelMask(u32 spsm)
 	}
 }
 
-CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)
-{
-	return (type == GSRendererType::DX11 || type == GSRendererType::DX12) ? CRCHackLevel::Full : CRCHackLevel::Partial;
-}
-
 GSRendererType GSUtil::GetPreferredRenderer()
 {
 #if defined(__APPLE__)

@@ -2587,7 +2587,7 @@ void GSState::SetGameCRC(u32 crc)
 
 void GSState::UpdateCRCHacks()
 {
-	m_game = CRC::Lookup((GSConfig.CRCHack != CRCHackLevel::Off) ? m_crc : 0);
+	m_game = CRC::Lookup(GSConfig.UserHacks_DisableRenderFixes ? 0 : m_crc);
 }
 
 //
