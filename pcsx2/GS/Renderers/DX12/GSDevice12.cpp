@@ -610,7 +610,7 @@ bool GSDevice12::CheckFeatures()
 	m_features.clip_control = true;
 	m_features.stencil_buffer = true;
 	m_features.test_and_sample_depth = false;
-	m_features.vs_expand = true;
+	m_features.vs_expand = !GSConfig.DisableVertexShaderExpand;
 
 	m_features.dxt_textures = g_d3d12_context->SupportsTextureFormat(DXGI_FORMAT_BC1_UNORM) &&
 							  g_d3d12_context->SupportsTextureFormat(DXGI_FORMAT_BC2_UNORM) &&

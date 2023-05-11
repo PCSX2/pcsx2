@@ -833,7 +833,7 @@ bool GSDeviceMTL::Create()
 	MTLPixelFormat layer_px_fmt = [m_layer pixelFormat];
 
 	m_features.broken_point_sampler = [[m_dev.dev name] containsString:@"AMD"];
-	m_features.vs_expand = true;
+	m_features.vs_expand = !GSConfig.DisableVertexShaderExpand;
 	m_features.primitive_id = m_dev.features.primid;
 	m_features.texture_barrier = true;
 	m_features.provoking_vertex_last = false;
