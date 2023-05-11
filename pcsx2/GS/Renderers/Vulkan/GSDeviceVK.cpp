@@ -696,7 +696,8 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.provoking_vertex_last = g_vulkan_context->GetOptionalExtensions().vk_ext_provoking_vertex;
 	m_features.dual_source_blend = features.dualSrcBlend && !GSConfig.DisableDualSourceBlend;
 	m_features.clip_control = true;
-	m_features.vs_expand = g_vulkan_context->GetOptionalExtensions().vk_khr_shader_draw_parameters;
+	m_features.vs_expand =
+		!GSConfig.DisableVertexShaderExpand && g_vulkan_context->GetOptionalExtensions().vk_khr_shader_draw_parameters;
 
 	if (!m_features.dual_source_blend)
 		Console.Warning("Vulkan driver is missing dual-source blending. This will have an impact on performance.");

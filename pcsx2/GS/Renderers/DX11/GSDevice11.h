@@ -118,7 +118,7 @@ private:
 		NUM_TIMESTAMP_QUERIES = 5,
 	};
 
-	void SetFeatures();
+	void SetFeatures(IDXGIAdapter1* adapter);
 
 	bool CreateSwapChain();
 	bool CreateSwapChainRTV();

@@ -159,12 +159,20 @@ bool GSDeviceOGL::Create()
 	m_features.stencil_buffer = true;
 	m_features.test_and_sample_depth = m_features.texture_barrier;
 
+	// NVIDIA GPUs prior to Kepler appear to have broken vertex shader buffer loading.
+	// Use bindless textures (introduced in Kepler) to differentiate.
+	const bool buggy_vs_expand =
+		GLLoader::vendor_id_nvidia && (!GLAD_GL_ARB_bindless_texture && !GLAD_GL_NV_bindless_texture);
+	if (buggy_vs_expand)
+		Console.Warning("Disabling vertex shader expand due to broken NVIDIA driver.");
+
 	if (GLAD_GL_ARB_shader_storage_buffer_object)
 	{
 		GLint max_vertex_ssbos = 0;
 		glGetIntegerv(GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS, &max_vertex_ssbos);
 		DevCon.WriteLn("GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS: %d", max_vertex_ssbos);
-		m_features.vs_expand = (max_vertex_ssbos > 0 && GLAD_GL_ARB_gpu_shader5);
+		m_features.vs_expand = (!GSConfig.DisableVertexShaderExpand && !buggy_vs_expand && max_vertex_ssbos > 0 &&
+								GLAD_GL_ARB_gpu_shader5);
 	}
 	if (!m_features.vs_expand)
 		Console.Warning("Vertex expansion is not supported. This will reduce performance.");
