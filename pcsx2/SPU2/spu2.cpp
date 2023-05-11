@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -278,7 +278,9 @@ void SPU2async(u32 cycles)
 u16 SPU2read(u32 rmem)
 {
 	u16 ret = 0xDEAD;
-	u32 core = 0, mem = rmem & 0xFFFF, omem = mem;
+	u32 core = 0;
+	const u32 mem = rmem & 0xFFFF;
+	u32 omem = mem;
 
 	if (mem & 0x400)
 	{

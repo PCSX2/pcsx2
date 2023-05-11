@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -272,7 +272,7 @@ s32 V_Core::EffectsBufferIndexer(s32 offset) const
 	// Need to use modulus here, because games can and will drop the buffer size
 	// without notice, and it leads to offsets several times past the end of the buffer.
 
-	if ((u32)offset >= (u32)EffectsBufferSize)
+	if (static_cast<u32>(offset) >= static_cast<u32>(EffectsBufferSize))
 		return EffectsStartA + (offset % EffectsBufferSize) + (offset < 0 ? EffectsBufferSize : 0);
 	else
 		return EffectsStartA + offset;
@@ -396,7 +396,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 	//  timings from PCSX2), just mix out a little bit, skip the rest, and hope the ship
 	//  "rights" itself later on.
 
-	if (dClocks > (u32)(TickInterval * SanityInterval))
+	if (dClocks > static_cast<u32>(TickInterval * SanityInterval))
 	{
 		if (SPU2::MsgToConsole())
 			SPU2::ConLog(" * SPU2 > TimeUpdate Sanity Check (Tick Delta: %d) (PS2 Ticks: %d)\n", dClocks / TickInterval, cClocks / TickInterval);
@@ -552,7 +552,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 
 __forceinline void UpdateSpdifMode()
 {
-	int OPM = PlayMode;
+	const int OPM = PlayMode;
 
 	if (Spdif.Out & 0x4 && SPU2::MsgToConsole()) // use 24/32bit PCM data streaming
 	{
@@ -586,7 +586,7 @@ __forceinline void UpdateSpdifMode()
 // properly into the lower 16 bits of the value to provide a full spectrum of volumes.
 static s32 GetVol32(u16 src)
 {
-	return (((s32)src) << 16) | ((src << 1) & 0xffff);
+	return ((static_cast<s32>(src)) << 16) | ((src << 1) & 0xffff);
 }
 
 void V_VolumeSlide::RegSet(u16 src)
@@ -610,13 +610,13 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 	pxAssume(Index == 0); // Valid on Core 0 only!
 
 	bool show = true;
-	u32 reg = mem & 0xffff;
+	const u32 reg = mem & 0xffff;
 
 	if ((reg >= 0x1c00) && (reg < 0x1d80))
 	{
 		//voice values
 		u8 voice = ((reg - 0x1c00) >> 4);
-		u8 vval = reg & 0xf;
+		const u8 vval = reg & 0xf;
 		switch (vval)
 		{
 			case 0x0: //VOLL (Volume L)
@@ -951,13 +951,13 @@ u16 V_Core::ReadRegPS1(u32 mem)
 	bool show = true;
 	u16 value = spu2Ru16(mem);
 
-	u32 reg = mem & 0xffff;
+	const u32 reg = mem & 0xffff;
 
 	if ((reg >= 0x1c00) && (reg < 0x1d80))
 	{
 		//voice values
-		u8 voice = ((reg - 0x1c00) >> 4);
-		u8 vval = reg & 0xf;
+		const u8 voice = ((reg - 0x1c00) >> 4);
+		const u8 vval = reg & 0xf;
 		switch (vval)
 		{
 			case 0x0: //VOLL (Volume L)
@@ -1099,19 +1099,6 @@ static __forceinline void SetLoWord(u32& src, u16 value)
 {
 	((u16*)&src)[0] = value;
 }
-
-// Not used
-#if 0
-static __forceinline u16 GetHiWord(u32& src)
-{
-	return ((u16*)&src)[1];
-}
-
-static __forceinline u16 GetLoWord(u32& src)
-{
-	return ((u16*)&src)[0];
-}
-#endif
 
 template <int CoreIdx, int VoiceIdx, int param>
 static void RegWrite_VoiceParams(u16 value)
