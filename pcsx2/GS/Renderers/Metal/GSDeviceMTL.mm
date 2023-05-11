@@ -768,6 +768,56 @@ static MRCOwned<id<MTLBuffer>> CreatePrivateBufferWithContent(
 	return actual;
 }
 
+static MRCOwned<id<MTLSamplerState>> CreateSampler(id<MTLDevice> dev, GSHWDrawConfig::SamplerSelector sel)
+{
+	MRCOwned<MTLSamplerDescriptor*> sdesc = MRCTransfer([MTLSamplerDescriptor new]);
+	const char* minname = sel.biln ? "Ln" : "Pt";
+	const char* magname = minname;
+	[sdesc setMinFilter:sel.biln ? MTLSamplerMinMagFilterLinear : MTLSamplerMinMagFilterNearest];
+	[sdesc setMagFilter:sel.biln ? MTLSamplerMinMagFilterLinear : MTLSamplerMinMagFilterNearest];
+	switch (static_cast<GS_MIN_FILTER>(sel.triln))
+	{
+		case GS_MIN_FILTER::Nearest:
+		case GS_MIN_FILTER::Linear:
+			[sdesc setMipFilter:MTLSamplerMipFilterNotMipmapped];
+			break;
+		case GS_MIN_FILTER::Nearest_Mipmap_Nearest:
+			minname = "PtPt";
+			[sdesc setMinFilter:MTLSamplerMinMagFilterNearest];
+			[sdesc setMipFilter:MTLSamplerMipFilterNearest];
+			break;
+		case GS_MIN_FILTER::Nearest_Mipmap_Linear:
+			minname = "PtLn";
+			[sdesc setMinFilter:MTLSamplerMinMagFilterNearest];
+			[sdesc setMipFilter:MTLSamplerMipFilterLinear];
+			break;
+		case GS_MIN_FILTER::Linear_Mipmap_Nearest:
+			minname = "LnPt";
+			[sdesc setMinFilter:MTLSamplerMinMagFilterLinear];
+			[sdesc setMipFilter:MTLSamplerMipFilterNearest];
+			break;
+		case GS_MIN_FILTER::Linear_Mipmap_Linear:
+			minname = "LnLn";
+			[sdesc setMinFilter:MTLSamplerMinMagFilterLinear];
+			[sdesc setMipFilter:MTLSamplerMipFilterLinear];
+			break;
+	}
+
+	const char* taudesc = sel.tau ? "Repeat" : "Clamp";
+	const char* tavdesc = sel.tav == sel.tau ? "" : sel.tav ? "Repeat" : "Clamp";
+	[sdesc setSAddressMode:sel.tau ? MTLSamplerAddressModeRepeat : MTLSamplerAddressModeClampToEdge];
+	[sdesc setTAddressMode:sel.tav ? MTLSamplerAddressModeRepeat : MTLSamplerAddressModeClampToEdge];
+	[sdesc setRAddressMode:MTLSamplerAddressModeClampToEdge];
+
+	[sdesc setMaxAnisotropy:GSConfig.MaxAnisotropy && sel.aniso ? GSConfig.MaxAnisotropy : 1];
+	[sdesc setLodMaxClamp:(sel.lodclamp || sel.UseMipmapFiltering()) ? 0.25f : FLT_MAX];
+
+	[sdesc setLabel:[NSString stringWithFormat:@"%s%s %s%s", taudesc, tavdesc, magname, minname]];
+	MRCOwned<id<MTLSamplerState>> ret = MRCTransfer([dev newSamplerStateWithDescriptor:sdesc]);
+	pxAssertRel(ret, "Failed to create sampler!");
+	return ret;
+}
+
 bool GSDeviceMTL::Create()
 { @autoreleasepool {
 	if (!GSDevice::Create())
@@ -897,55 +947,8 @@ bool GSDeviceMTL::Create()
 		}
 
 		// Init samplers
-		MTLSamplerDescriptor* sdesc = [[MTLSamplerDescriptor new] autorelease];
-		for (size_t i = 0; i < std::size(m_sampler_hw); i++)
-		{
-			GSHWDrawConfig::SamplerSelector sel;
-			sel.key = i;
-			const char* minname = sel.biln ? "Ln" : "Pt";
-			const char* magname = minname;
-			sdesc.minFilter = sel.biln ? MTLSamplerMinMagFilterLinear : MTLSamplerMinMagFilterNearest;
-			sdesc.magFilter = sel.biln ? MTLSamplerMinMagFilterLinear : MTLSamplerMinMagFilterNearest;
-			switch (static_cast<GS_MIN_FILTER>(sel.triln))
-			{
-				case GS_MIN_FILTER::Nearest:
-				case GS_MIN_FILTER::Linear:
-					sdesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
-					break;
-				case GS_MIN_FILTER::Nearest_Mipmap_Nearest:
-					minname = "PtPt";
-					sdesc.minFilter = MTLSamplerMinMagFilterNearest;
-					sdesc.mipFilter = MTLSamplerMipFilterNearest;
-					break;
-				case GS_MIN_FILTER::Nearest_Mipmap_Linear:
-					minname = "PtLn";
-					sdesc.minFilter = MTLSamplerMinMagFilterNearest;
-					sdesc.mipFilter = MTLSamplerMipFilterLinear;
-					break;
-				case GS_MIN_FILTER::Linear_Mipmap_Nearest:
-					minname = "LnPt";
-					sdesc.minFilter = MTLSamplerMinMagFilterLinear;
-					sdesc.mipFilter = MTLSamplerMipFilterNearest;
-					break;
-				case GS_MIN_FILTER::Linear_Mipmap_Linear:
-					minname = "LnLn";
-					sdesc.minFilter = MTLSamplerMinMagFilterLinear;
-					sdesc.mipFilter = MTLSamplerMipFilterLinear;
-					break;
-			}
-
-			const char* taudesc = sel.tau ? "Repeat" : "Clamp";
-			const char* tavdesc = sel.tav == sel.tau ? "" : sel.tav ? "Repeat" : "Clamp";
-			sdesc.sAddressMode = sel.tau ? MTLSamplerAddressModeRepeat : MTLSamplerAddressModeClampToEdge;
-			sdesc.tAddressMode = sel.tav ? MTLSamplerAddressModeRepeat : MTLSamplerAddressModeClampToEdge;
-			sdesc.rAddressMode = MTLSamplerAddressModeClampToEdge;
-
-			sdesc.maxAnisotropy = GSConfig.MaxAnisotropy && sel.aniso ? GSConfig.MaxAnisotropy : 1;
-			sdesc.lodMaxClamp = sel.lodclamp ? 0.25f : FLT_MAX;
-
-			[sdesc setLabel:[NSString stringWithFormat:@"%s%s %s%s", taudesc, tavdesc, magname, minname]];
-			m_sampler_hw[i] = MRCTransfer([m_dev.dev newSamplerStateWithDescriptor:sdesc]);
-		}
+		m_sampler_hw[SamplerSelector::Linear().key] = CreateSampler(m_dev.dev, SamplerSelector::Linear());
+		m_sampler_hw[SamplerSelector::Point().key] = CreateSampler(m_dev.dev, SamplerSelector::Point());
 
 		// Init depth stencil states
 		MTLDepthStencilDescriptor* dssdesc = [[MTLDepthStencilDescriptor new] autorelease];
@@ -1452,9 +1455,11 @@ std::unique_ptr<GSDownloadTexture> GSDeviceMTL::CreateDownloadTexture(u32 width,
 }
 
 void GSDeviceMTL::ClearSamplerCache()
-{
-	// TODO: Implement me
-}
+{ @autoreleasepool {
+	std::fill(std::begin(m_sampler_hw), std::end(m_sampler_hw), nullptr);
+	m_sampler_hw[SamplerSelector::Linear().key] = CreateSampler(m_dev.dev, SamplerSelector::Linear());
+	m_sampler_hw[SamplerSelector::Point().key] = CreateSampler(m_dev.dev, SamplerSelector::Point());
+}}
 
 void GSDeviceMTL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 { @autoreleasepool {
@@ -1845,6 +1850,8 @@ void GSDeviceMTL::MRESetSampler(SamplerSelector sel)
 {
 	if (m_current_render.has.sampler && m_current_render.sampler_sel.key == sel.key)
 		return;
+	if (unlikely(!m_sampler_hw[sel.key]))
+		m_sampler_hw[sel.key] = CreateSampler(m_dev.dev, sel);
 	[m_current_render.encoder setFragmentSamplerState:m_sampler_hw[sel.key] atIndex:0];
 	m_current_render.sampler_sel = sel;
 	m_current_render.has.sampler = true;
