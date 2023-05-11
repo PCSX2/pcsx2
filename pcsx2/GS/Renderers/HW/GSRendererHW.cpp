@@ -4788,7 +4788,8 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 			if (HasEEUpload(r))
 				return CLUTDrawTestResult::CLUTDrawOnCPU;
 
-			GSTextureCache::Target* tgt = g_texture_cache->GetExactTarget(m_cached_ctx.TEX0.TBP0, m_cached_ctx.TEX0.TBW, m_cached_ctx.TEX0.PSM);
+			GSTextureCache::Target* tgt = g_texture_cache->GetExactTarget(
+				m_cached_ctx.TEX0.TBP0, m_cached_ctx.TEX0.TBW, GSTextureCache::RenderTarget);
 			if (tgt)
 			{
 				bool is_dirty = false;
