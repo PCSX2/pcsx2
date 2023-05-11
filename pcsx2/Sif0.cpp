@@ -95,7 +95,7 @@ static __fi bool ProcessEETag()
 	alignas(16) static u32 tag[4];
 	tDMA_TAG& ptag(*(tDMA_TAG*)tag);
 
-	sif0.fifo.read((u32*)&tag[0], 2); // Tag
+	sif0.fifo.read((u32*)&tag[0], 4); // Tag
 	SIF_LOG("SIF0 EE read tag: %x %x %x %x", tag[0], tag[1], tag[2], tag[3]);
 
 	sif0ch.unsafeTransfer(&ptag);
@@ -133,14 +133,13 @@ static __fi bool ProcessIOPTag()
 	sif0.iop.data = *(sifData *)iopPhysMem(hw_dma9.tadr);
 	sif0.iop.data.words = sif0.iop.data.words;
 
-	// send the EE's side of the DMAtag.  The tag is only 64 bits, with the upper 64 bits
-	// ignored by the EE.
+	// send the EE's side of the DMAtag.  The tag is only 64 bits, with the upper 64 bits being the next IOP tag
+	// ignored by the EE, however required for alignment and used as junk data in small packets.
+	sif0.fifo.write((u32*)iopPhysMem(hw_dma9.tadr + 8), 4);
 
-	sif0.fifo.write((u32*)iopPhysMem(hw_dma9.tadr + 8), 2);
-	//sif0.fifo.writePos = (sif0.fifo.writePos + 2) & (FIFO_SIF_W - 1);		// iggy on the upper 64.
-	//sif0.fifo.size += 2;
-
-	hw_dma9.tadr += 16; ///hw_dma9.madr + 16 + sif0.sifData.words << 2;
+	// I know we just sent 1QW, because of the size of the EE read, but only 64bits was valid
+	// so we advance by 64bits after the EE tag to get the next IOP tag.
+	hw_dma9.tadr += 16;
 
 	// We're only copying the first 24 bits.  Bits 30 and 31 (checked below) are Stop/IRQ bits.
 	hw_dma9.madr = sif0data & 0xFFFFFF;
@@ -148,7 +147,9 @@ static __fi bool ProcessIOPTag()
 	//Maximum transfer amount 1mb-16 also masking out top part which is a "Mode" cache stuff, we don't care :)
 	sif0.iop.counter = sif0words & 0xFFFFF;
 
+	// Save the number of words we need to write to make up 1QW from this packet. (See "Junk data writing" in Sif.h)
 	sif0.iop.writeJunk = (sif0.iop.counter & 0x3) ? (4 - sif0.iop.counter & 0x3) : 0;
+
 	// IOP tags have an IRQ bit and an End of Transfer bit:
 	if (sif0tag.IRQ  || (sif0tag.ID & 4)) sif0.iop.end = true;
 	SIF_LOG("SIF0 IOP Tag: madr=%lx, tadr=%lx, counter=%lx (%08X_%08X) Junk %d", hw_dma9.madr, hw_dma9.tadr, sif0.iop.counter, sif0words, sif0data, sif0.iop.writeJunk);
