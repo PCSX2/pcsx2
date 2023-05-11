@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -43,7 +43,7 @@ static const s32 tbl_XA_Factor[16][2] =
 //
 static __forceinline s32 MulShr32(s32 srcval, s32 mulval)
 {
-	return (s64)srcval * mulval >> 32;
+	return static_cast<s64>(srcval) * mulval >> 32;
 }
 
 __forceinline s32 clamp_mix(s32 x)

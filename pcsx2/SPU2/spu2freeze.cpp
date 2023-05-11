@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -21,11 +21,11 @@
 namespace SPU2Savestate
 {
 	// Arbitrary ID to identify SPU2 saves.
-	static const u32 SAVE_ID = 0x1227521;
+	static constexpr u32 SAVE_ID = 0x1227521;
 
 	// versioning for saves.
 	// Increment this when changes to the savestate system are made.
-	static const u32 SAVE_VERSION = 0x000e;
+	static constexpr u32 SAVE_VERSION = 0x000e;
 
 	static void wipe_the_cache()
 	{

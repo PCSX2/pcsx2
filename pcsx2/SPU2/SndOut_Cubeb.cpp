@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -139,7 +139,7 @@ public:
 	bool Init() override
 	{
 #ifdef _WIN32
-		HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+		const HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 		m_COMInitializedByUs = SUCCEEDED(hr);
 		if (FAILED(hr) && hr != RPC_E_CHANGED_MODE)
 		{
@@ -162,9 +162,6 @@ public:
 
 		switch (EmuConfig.SPU2.SpeakerConfiguration) // speakers = (numSpeakers + 1) *2; ?
 		{
-			case 0:
-				channels = 2;
-				break; // Stereo
 			case 1:
 				channels = 4;
 				break; // Quadrafonic
@@ -176,7 +173,7 @@ public:
 				break; // Surround 7.1
 			default:
 				channels = 2;
-				break;
+				break; // Stereo
 		}
 
 		cubeb_channel_layout layout = CUBEB_LAYOUT_UNDEFINED;
@@ -209,10 +206,6 @@ public:
 			case 7:
 				switch (EmuConfig.SPU2.DplDecodingLevel)
 				{
-					case 0:
-						Console.WriteLn("(Cubeb) 5.1 speaker expansion enabled.");
-						ActualReader = std::make_unique<ConvertedSampleReader<Stereo51Out16>>(&writtenSoFar); //"normal" stereo upmix
-						break;
 					case 1:
 						Console.WriteLn("(Cubeb) 5.1 speaker expansion with basic ProLogic dematrixing enabled.");
 						ActualReader = std::make_unique<ConvertedSampleReader<Stereo51Out16Dpl>>(&writtenSoFar); // basic Dpl decoder without rear stereo balancing
@@ -220,6 +213,10 @@ public:
 					case 2:
 						Console.WriteLn("(Cubeb) 5.1 speaker expansion with experimental ProLogicII dematrixing enabled.");
 						ActualReader = std::make_unique<ConvertedSampleReader<Stereo51Out16DplII>>(&writtenSoFar); //gigas PLII
+						break;
+					default:
+						Console.WriteLn("(Cubeb) 5.1 speaker expansion enabled.");
+						ActualReader = std::make_unique<ConvertedSampleReader<Stereo51Out16>>(&writtenSoFar); //"normal" stereo upmix
 						break;
 				}
 				channels = 6; // we do not support 7.0 or 6.2 configurations, downgrade to 5.1

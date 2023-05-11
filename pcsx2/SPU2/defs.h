@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -523,7 +523,7 @@ struct V_Core
 
 	__forceinline u16 DmaRead()
 	{
-		const u16 ret = (u16)spu2M_Read(ActiveTSA);
+		const u16 ret = static_cast<u16>(spu2M_Read(ActiveTSA));
 		++ActiveTSA;
 		ActiveTSA &= 0xfffff;
 		TSA = ActiveTSA;
@@ -588,16 +588,16 @@ namespace SPU2Savestate
 // The SPU2 has a dynamic memory range which is used for several internal operations, such as
 // registers, CORE 1/2 mixing, AutoDMAs, and some other fancy stuff.  We exclude this range
 // from the cache here:
-static const s32 SPU2_DYN_MEMLINE = 0x2800;
+static constexpr s32 SPU2_DYN_MEMLINE = 0x2800;
 
 // 8 short words per encoded PCM block. (as stored in SPU2 ram)
-static const int pcm_WordsPerBlock = 8;
+static constexpr int pcm_WordsPerBlock = 8;
 
 // number of cachable ADPCM blocks (any blocks above the SPU2_DYN_MEMLINE)
-static const int pcm_BlockCount = 0x100000 / pcm_WordsPerBlock;
+static constexpr int pcm_BlockCount = 0x100000 / pcm_WordsPerBlock;
 
 // 28 samples per decoded PCM block (as stored in our cache)
-static const int pcm_DecodedSamplesPerBlock = 28;
+static constexpr int pcm_DecodedSamplesPerBlock = 28;
 
 struct PcmCacheEntry
 {
