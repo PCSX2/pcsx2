@@ -10140,13 +10140,11 @@ SLES-50053:
   region: "PAL-M5"
   compat: 5
 SLES-50054:
-  name: "Midnight Club"
+  name: "Midnight Club - Street Racing"
   region: "PAL-E"
   memcardFilters: # Reads Smuggler's Run for bonus unlockable.
     - "SLES-50054"
-    - "SLES-50071"
     - "SLES-50055"
-    - "SLES-50061"
 SLES-50055:
   name: "Smuggler's Run"
   region: "PAL-E"
@@ -10192,10 +10190,8 @@ SLES-50071:
   name: "Midnight Club - Street Racing"
   region: "PAL-M5"
   compat: 3
-  memcardFilters:
-    - "SLES-50054"
+  memcardFilters: # Reads Smuggler's Run for bonus unlockable.
     - "SLES-50071"
-    - "SLES-50055"
     - "SLES-50061"
 SLES-50072:
   name: "Street Fighter EX3"
@@ -42420,7 +42416,7 @@ SLUS-20063:
   name: "Midnight Club - Street Racing"
   region: "NTSC-U"
   compat: 5
-  memcardFilters:
+  memcardFilters: # Reads Smuggler's Run for bonus unlockable.
     - "SLUS-20063"
     - "SLUS-20065"
 SLUS-20064:
