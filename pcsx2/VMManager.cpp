@@ -94,7 +94,7 @@ namespace VMManager
 	static bool CheckBIOSAvailability();
 	static void LoadPatches(const std::string& serial, u32 crc,
 		bool show_messages, bool show_messages_when_disabled);
-	static void UpdateRunningGame(bool resetting, bool game_starting);
+	static void UpdateRunningGame(bool resetting, bool game_starting, bool swapping);
 
 	static std::string GetCurrentSaveStateFileName(s32 slot);
 	static bool DoLoadState(const char* filename);
@@ -687,7 +687,7 @@ void VMManager::LoadPatches(const std::string& serial, u32 crc, bool show_messag
 	}
 }
 
-void VMManager::UpdateRunningGame(bool resetting, bool game_starting)
+void VMManager::UpdateRunningGame(bool resetting, bool game_starting, bool swapping_disc)
 {
 	// The CRC can be known before the game actually starts (at the bios), so when
 	// we have the CRC but we're still at the bios and the settings are changed
@@ -749,20 +749,23 @@ void VMManager::UpdateRunningGame(bool resetting, bool game_starting)
 	UpdateGameSettingsLayer();
 	ApplySettings();
 
-	// Clear the memory card eject notification again when booting for the first time, or starting.
-	// Otherwise, games think the card was removed on boot.
-	if (game_starting || resetting)
-		AutoEject::ClearAll();
+	if (!swapping_disc)
+	{
+		// Clear the memory card eject notification again when booting for the first time, or starting.
+		// Otherwise, games think the card was removed on boot.
+		if (game_starting || resetting)
+			AutoEject::ClearAll();
 
-	// Check this here, for two cases: dynarec on, and when enable cheats is set per-game.
-	if (s_patches_crc != s_game_crc)
-		ReloadPatches(game_starting, false);
+		// Check this here, for two cases: dynarec on, and when enable cheats is set per-game.
+		if (s_patches_crc != s_game_crc)
+			ReloadPatches(game_starting, false);
 
 #ifdef ENABLE_ACHIEVEMENTS
-	// Per-game ini enabling of hardcore mode. We need to re-enforce the settings if so.
-	if (game_starting && Achievements::ResetChallengeMode())
-		ApplySettings();
+		// Per-game ini enabling of hardcore mode. We need to re-enforce the settings if so.
+		if (game_starting && Achievements::ResetChallengeMode())
+			ApplySettings();
 #endif
+	}
 
 	GetMTGS().SendGameCRC(new_crc);
 
@@ -1065,7 +1068,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	s_state.store(VMState::Paused, std::memory_order_release);
 	Host::OnVMStarted();
 
-	UpdateRunningGame(true, false);
+	UpdateRunningGame(true, false, false);
 
 	SetEmuThreadAffinities();
 
@@ -1202,7 +1205,7 @@ void VMManager::Reset()
 
 	// gameid change, so apply settings
 	if (game_was_started)
-		UpdateRunningGame(true, false);
+		UpdateRunningGame(true, false, false);
 
 	if (g_InputRecording.isActive())
 	{
@@ -1265,7 +1268,7 @@ bool VMManager::DoLoadState(const char* filename)
 	{
 		Host::OnSaveStateLoading(filename);
 		SaveState_UnzipFromDisk(filename);
-		UpdateRunningGame(false, false);
+		UpdateRunningGame(false, false, false);
 		Host::OnSaveStateLoaded(filename, true);
 		if (g_InputRecording.isActive())
 		{
@@ -1625,9 +1628,14 @@ void VMManager::Internal::EntryPointCompilingOnCPUThread()
 
 void VMManager::Internal::GameStartingOnCPUThread()
 {
-	UpdateRunningGame(false, true);
+	UpdateRunningGame(false, true, false);
 	ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
 	ApplyLoadedPatches(PPT_COMBINED_0_1);
+}
+
+void VMManager::Internal::SwappingGameOnCPUThread()
+{
+	UpdateRunningGame(false, false, true);
 }
 
 void VMManager::Internal::VSyncOnCPUThread()

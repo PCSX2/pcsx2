@@ -1452,7 +1452,7 @@ void cdvdUpdateTrayState()
 					if (g_GameStarted)
 					{
 						cdvdReloadElfInfo();
-						VMManager::Internal::GameStartingOnCPUThread();
+						VMManager::Internal::SwappingGameOnCPUThread();
 					}
 					break;
 				case CDVD_DISC_SEEKING:
