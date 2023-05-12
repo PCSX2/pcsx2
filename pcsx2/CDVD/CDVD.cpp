@@ -18,6 +18,7 @@
 #include "Common.h"
 #include "IopHw.h"
 #include "IopDma.h"
+#include "VMManager.h"
 
 #include <cctype>
 #include <ctime>
@@ -1447,6 +1448,12 @@ void cdvdUpdateTrayState()
 					cdvd.Tray.trayState = CDVD_DISC_SEEKING;
 					cdvdUpdateStatus(CDVD_STATUS_SEEK);
 					cdvd.Tray.cdvdActionSeconds = 2;
+					// If we're swapping disc, reload the elf, patches etc to reflect the new disc.
+					if (g_GameStarted)
+					{
+						cdvdReloadElfInfo();
+						VMManager::Internal::GameStartingOnCPUThread();
+					}
 					break;
 				case CDVD_DISC_SEEKING:
 					cdvd.Spinning = true;
