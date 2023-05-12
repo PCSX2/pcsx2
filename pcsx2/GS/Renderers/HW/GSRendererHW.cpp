@@ -5231,7 +5231,7 @@ bool GSRendererHW::IsBlendedOrOpaque()
 bool GSRendererHW::PrimitiveCoversWithoutGaps() const
 {
 	// Draw shouldn't be offset.
-	if ((m_r.eq32(GSVector4i::zero())).mask() & 0xff00)
+	if (((m_r.eq32(GSVector4i::zero())).mask() & 0xff) != 0xff)
 		return false;
 
 	// This is potentially wrong for fans/strips...
@@ -5248,19 +5248,37 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps() const
 	// the FMV with a sprite at the top and bottom of the framebuffer.
 	const GSVertex* v = &m_vertex.buff[0];
 	const int first_dpY = v[1].XYZ.Y - v[0].XYZ.Y;
-	if ((first_dpY >> 4) != m_r.w)
-		return false;
-
-	// Borrowed from MergeSprite().
 	const int first_dpX = v[1].XYZ.X - v[0].XYZ.X;
-	for (u32 i = 0; i < m_vertex.next; i += 2)
+
+	// Horizontal Match.
+	if ((first_dpX >> 4) == m_r.z)
 	{
-		const int dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
-		if (dpX != first_dpX)
-			return false;
+		// Borrowed from MergeSprite() modified to calculate heights.
+		for (u32 i = 0; i < m_vertex.next; i += 2)
+		{
+			const int dpY = v[i + 1].XYZ.Y - v[i].XYZ.Y;
+			if (dpY != first_dpY)
+				return false;
+		}
+
+		return true;
 	}
 
-	return true;
+	// Vertical Match.
+	if ((first_dpY >> 4) == m_r.w)
+	{
+		// Borrowed from MergeSprite().
+		for (u32 i = 0; i < m_vertex.next; i += 2)
+		{
+			const int dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
+			if (dpX != first_dpX)
+				return false;
+		}
+
+		return true;
+	}
+
+	return false;
 }
 
 bool GSRendererHW::IsConstantDirectWriteMemClear()
