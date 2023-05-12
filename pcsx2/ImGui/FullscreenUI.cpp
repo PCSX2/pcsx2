@@ -3331,6 +3331,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 		"EmuCore/GS", "DisableDualSourceBlend", false);
 	DrawToggleSetting(bsi, "Disable Shader Cache", "Prevents the loading and saving of shaders/pipelines to disk.", "EmuCore/GS",
 		"DisableShaderCache", false);
+	DrawToggleSetting(bsi, "Disable Vertex Shader Expand", "Falls back to the CPU for expanding sprites/lines.", "EmuCore/GS",
+		"DisableVertexShaderExpand", false);
 
 	EndMenuButtons();
 }
