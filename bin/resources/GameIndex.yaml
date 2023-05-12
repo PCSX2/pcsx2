@@ -5825,6 +5825,8 @@ SCPS-15012:
 SCPS-15013:
   name: "Poinie's Poin"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Prevents ingame flicker due to large clears/copies.
   gsHWFixes:
     textureInsideRT: 1 # Fixes text corruption.
 SCPS-15014:
@@ -7157,6 +7159,8 @@ SCPS-55044:
 SCPS-55045:
   name: "Poinie's Poin"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Prevents ingame flicker due to large clears/copies
   gsHWFixes:
     textureInsideRT: 1 # Fixes text corruption.
 SCPS-55046:
