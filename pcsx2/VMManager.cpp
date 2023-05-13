@@ -263,7 +263,6 @@ bool VMManager::Internal::InitializeGlobals()
 	SysLogMachineCaps();
 
 	GSinit();
-	SPU2::Initialize();
 	USBinit();
 
 	return true;
@@ -272,7 +271,6 @@ bool VMManager::Internal::InitializeGlobals()
 void VMManager::Internal::ReleaseGlobals()
 {
 	USBshutdown();
-	SPU2::Shutdown();
 	GSshutdown();
 
 #ifdef _WIN32

@@ -21,17 +21,17 @@
 
 
 #include "PrecompiledHeader.h"
-#include "Global.h"
-#include "Dma.h"
-#include "IopDma.h"
+
 #include "IopCounters.h"
-#include "R3000A.h"
+#include "IopDma.h"
 #include "IopHw.h"
+#include "R3000A.h"
+#include "SPU2/Dma.h"
+#include "SPU2/Global.h"
+#include "SPU2/spu2.h"
 
-#include "spu2.h" // needed until I figure out a nice solution for irqcallback dependencies.
-
-s16* spu2regs = nullptr;
-s16* _spu2mem = nullptr;
+s16 spu2regs[0x010000 / sizeof(s16)];
+s16 _spu2mem[0x200000 / sizeof(s16)];
 
 V_CoreDebug DebugCores[2];
 V_Core Cores[2];

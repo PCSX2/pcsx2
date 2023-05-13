@@ -23,10 +23,6 @@ struct Pcsx2Config;
 
 namespace SPU2
 {
-/// Initialization/cleanup, call at process startup/shutdown.
-void Initialize();
-void Shutdown();
-
 /// Open/close, call at VM startup/shutdown.
 bool Open();
 void Close();
