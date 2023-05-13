@@ -118,7 +118,7 @@
     <ProjectReference Include="$(SolutionDir)common\common.vcxproj">
       <Project>{4639972e-424e-4e13-8b07-ca403c481346}</Project>
     </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)pcsx2\pcsx2core.vcxproj">
+    <ProjectReference Include="$(SolutionDir)pcsx2\pcsx2.vcxproj">
       <Project>{6c7986c4-3e4d-4dcc-b3c6-6bb12b238995}</Project>
     </ProjectReference>
     <ProjectReference Include="$(SolutionDir)3rdparty\glad\glad.vcxproj">

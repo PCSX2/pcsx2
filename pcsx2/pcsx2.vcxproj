@@ -30,9 +30,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <TargetName>pcsx2core</TargetName>
-    <IntDir>$(ProjectDir)pcsx2core\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir>$(ProjectDir)pcsx2core\$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>pcsx2</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
