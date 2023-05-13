@@ -124,11 +124,13 @@ GSTexture* GSRendererSW::GetOutput(int i, float& scale, int& y_offset)
 		constexpr int pitch = 1024 * 4;
 		// Should really be framebufferOffsets rather than framebufferRect but this might be compensated with anti-blur in some games.
 		const int off_x = (framebufferRect.x & 0x7ff) & ~(psm.bs.x-1);
+		const int off_x_end = ((framebufferRect.x & 0x7ff) + (psm.bs.x - 1)) & ~(psm.bs.x - 1);
 		const int off_y = (framebufferRect.y & 0x7ff) & ~(psm.bs.y-1);
+		const int off_y_end = ((framebufferRect.y & 0x7ff) + (psm.bs.y - 1)) & ~(psm.bs.y - 1);
 		const GSVector4i out_r(0, 0, w, h);
-		GSVector4i r(off_x, off_y, w + off_x, h + off_y);
-		GSVector4i rh(off_x, off_y, w + off_x, (h + off_y) & 0x7FF);
-		GSVector4i rw(off_x, off_y, (w + off_x) & 0x7FF, h + off_y);
+		GSVector4i r(off_x, off_y, w + off_x_end, h + off_y_end);
+		GSVector4i rh(off_x, off_y, w + off_x_end, (h + off_y_end) & 0x7FF);
+		GSVector4i rw(off_x, off_y, (w + off_x_end) & 0x7FF, h + off_y_end);
 		bool h_wrap = false;
 		bool w_wrap = false;
 
@@ -155,9 +157,6 @@ GSTexture* GSRendererSW::GetOutput(int i, float& scale, int& y_offset)
 		texa.AEM = 0;
 		texa.TA0 = (curFramebuffer.PSM == PSMCT24 || curFramebuffer.PSM == PSGPU24) ? 0x80 : 0;
 		texa.TA1 = 0x80;
-
-		// Top left rect
-		psm.rtx(m_mem, m_mem.GetOffset(curFramebuffer.Block(), curFramebuffer.FBW, curFramebuffer.PSM), r.ralign<Align_Outside>(psm.bs), m_output, pitch, texa);
 
 		// Top left rect
 		psm.rtx(m_mem, m_mem.GetOffset(curFramebuffer.Block(), curFramebuffer.FBW, curFramebuffer.PSM), r.ralign<Align_Outside>(psm.bs), m_output, pitch, texa);
