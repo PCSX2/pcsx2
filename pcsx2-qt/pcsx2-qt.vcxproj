@@ -63,45 +63,14 @@
     <ProjectReference Include="$(SolutionDir)3rdparty\fmt\fmt.vcxproj">
       <Project>{449ad25e-424a-4714-babc-68706cdcc33b}</Project>
     </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\libjpeg\libjpeg.vcxproj">
-      <Project>{bc236261-77e8-4567-8d09-45cd02965eb6}</Project>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\libpng\projects\vstudio\libpng\libpng.vcxproj">
-      <Project>{d6973076-9317-4ef2-a0b8-b7a18ac0713e}</Project>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\soundtouch\SoundTouch.vcxproj">
-      <Project>{e9b51944-7e6d-4bcd-83f2-7bbd5a46182d}</Project>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\xz\liblzma.vcxproj">
-      <Project>{12728250-16ec-4dc6-94d7-e21dd88947f8}</Project>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\libchdr\libchdr.vcxproj">
-      <Project>{a0d2b3ad-1f72-4ee3-8b5c-f2c358da35f0}</Project>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\zlib\zlib.vcxproj">
-      <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\jpgd\jpgd.vcxproj">
-      <Project>{ed2f21fd-0a36-4a8f-9b90-e7d92a2acb63}</Project>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\imgui\imgui.vcxproj">
-      <Project>{88fb34ec-845e-4f21-a552-f1573b9ed167}</Project>
-    </ProjectReference>
     <ProjectReference Include="$(SolutionDir)common\common.vcxproj">
       <Project>{4639972e-424e-4e13-8b07-ca403c481346}</Project>
     </ProjectReference>
     <ProjectReference Include="$(SolutionDir)pcsx2\pcsx2.vcxproj">
       <Project>{6c7986c4-3e4d-4dcc-b3c6-6bb12b238995}</Project>
     </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\glad\glad.vcxproj">
-      <Project>{c0293b32-5acf-40f0-aa6c-e6da6f3bf33a}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\3rdparty\lzma\lzma.vcxproj">
       <Project>{a4323327-3f2b-4271-83d9-7f9a3c66b6b2}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\3rdparty\zydis\zydis.vcxproj">
-      <Project>{67d0160c-0fe4-44b9-ac2e-82bbcf4104df}</Project>
     </ProjectReference>
     <ProjectReference Include="..\3rdparty\demangler\demangler.vcxproj">
       <Project>{1e3d706c-1d95-4e1b-bdf2-ca3d0007df7f}</Project>

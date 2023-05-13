@@ -24,7 +24,6 @@
 #include "svnrev.h"
 
 #include "pcsx2/CDVD/CDVDcommon.h"
-#include "pcsx2/CommonHost.h"
 #include "pcsx2/Achievements.h"
 #include "pcsx2/CDVD/CDVD.h"
 #include "pcsx2/Counters.h"
@@ -371,7 +370,12 @@ void EmuThread::run()
 	connectSignals();
 
 	// Common host initialization (VM setup, etc).
-	CommonHost::CPUThreadInitialize();
+	if (!VMManager::Internal::CPUThreadInitialize())
+	{
+		VMManager::Internal::CPUThreadShutdown();
+		QMetaObject::invokeMethod(qApp, &QCoreApplication::quit, Qt::QueuedConnection);
+		return;
+	}
 
 	// Start background polling because the VM won't do it for us.
 	createBackgroundControllerPollTimer();
@@ -392,7 +396,7 @@ void EmuThread::run()
 	// Teardown in reverse order.
 	stopBackgroundControllerPollTimer();
 	destroyBackgroundControllerPollTimer();
-	CommonHost::CPUThreadShutdown();
+	VMManager::Internal::CPUThreadShutdown();
 
 	// Move back to the UI thread, since we're no longer running.
 	moveToThread(m_ui_thread);
@@ -566,7 +570,7 @@ void EmuThread::updateEmuFolders()
 		return;
 	}
 
-	Host::Internal::UpdateEmuFolders();
+	VMManager::Internal::UpdateEmuFolders();
 }
 
 void EmuThread::connectSignals()
@@ -582,7 +586,6 @@ void EmuThread::loadSettings(SettingsInterface& si, std::unique_lock<std::mutex>
 
 void Host::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
 {
-	CommonHost::LoadSettings(si, lock);
 	g_emu_thread->loadSettings(si, lock);
 }
 
@@ -606,7 +609,6 @@ void EmuThread::checkForSettingChanges(const Pcsx2Config& old_config)
 
 void Host::CheckForSettingsChanges(const Pcsx2Config& old_config)
 {
-	CommonHost::CheckForSettingsChanges(old_config);
 	g_emu_thread->checkForSettingChanges(old_config);
 }
 
@@ -928,35 +930,29 @@ void Host::RequestResizeHostDisplay(s32 width, s32 height)
 
 void Host::OnVMStarting()
 {
-	CommonHost::OnVMStarting();
 	g_emu_thread->stopBackgroundControllerPollTimer();
 	emit g_emu_thread->onVMStarting();
 }
 
 void Host::OnVMStarted()
 {
-	CommonHost::OnVMStarted();
 	emit g_emu_thread->onVMStarted();
 }
 
 void Host::OnVMDestroyed()
 {
-	CommonHost::OnVMDestroyed();
 	emit g_emu_thread->onVMStopped();
 	g_emu_thread->startBackgroundControllerPollTimer();
 }
 
 void Host::OnVMPaused()
 {
-	CommonHost::OnVMPaused();
 	g_emu_thread->startBackgroundControllerPollTimer();
 	emit g_emu_thread->onVMPaused();
 }
 
 void Host::OnVMResumed()
 {
-	CommonHost::OnVMResumed();
-
 	// exit the event loop when we eventually return
 	g_emu_thread->getEventLoop()->quit();
 	g_emu_thread->stopBackgroundControllerPollTimer();
@@ -971,7 +967,6 @@ void Host::OnVMResumed()
 void Host::OnGameChanged(const std::string& disc_path, const std::string& elf_override, const std::string& game_serial,
 	const std::string& game_name, u32 game_crc)
 {
-	CommonHost::OnGameChanged(disc_path, elf_override, game_serial, game_name, game_crc);
 	emit g_emu_thread->onGameChanged(QString::fromStdString(disc_path), QString::fromStdString(elf_override),
 		QString::fromStdString(game_serial), QString::fromStdString(game_name), game_crc);
 }
@@ -1118,10 +1113,9 @@ void Host::OnAchievementsRefreshed()
 }
 #endif
 
-void Host::CPUThreadVSync()
+void Host::VSyncOnCPUThread()
 {
 	g_emu_thread->getEventLoop()->processEvents(QEventLoop::AllEvents);
-	CommonHost::CPUThreadVSync();
 }
 
 void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false */)
@@ -1197,19 +1191,22 @@ SysMtgsThread& GetMTGS()
 
 bool QtHost::InitializeConfig()
 {
-	if (!CommonHost::InitializeCriticalFolders())
+	if (!EmuFolders::InitializeCriticalFolders())
 	{
 		QMessageBox::critical(nullptr, QStringLiteral("PCSX2"),
 			QStringLiteral("One or more critical directories are missing, your installation may be incomplete."));
 		return false;
 	}
 
+	// Write crash dumps to the data directory, since that'll be accessible for certain.
+	CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
+
 	const std::string path(Path::Combine(EmuFolders::Settings, "PCSX2.ini"));
 	Console.WriteLn("Loading config from %s.", path.c_str());
 
 	s_base_settings_interface = std::make_unique<INISettingsInterface>(std::move(path));
 	Host::Internal::SetBaseSettingsLayer(s_base_settings_interface.get());
-	if (!s_base_settings_interface->Load() || !CommonHost::CheckSettingsVersion())
+	if (!s_base_settings_interface->Load() || !VMManager::Internal::CheckSettingsVersion())
 	{
 		// If the config file doesn't exist, assume this is a new install and don't prompt to overwrite.
 		if (FileSystem::FileExists(s_base_settings_interface->GetFileName().c_str()) &&
@@ -1220,12 +1217,12 @@ bool QtHost::InitializeConfig()
 			return false;
 		}
 
-		CommonHost::SetDefaultSettings(*s_base_settings_interface, true, true, true, true, true);
+		VMManager::SetDefaultSettings(*s_base_settings_interface, true, true, true, true, true);
 		SaveSettings();
 	}
 
-	CommonHost::SetBlockSystemConsole(QtHost::InNoGUIMode());
-	CommonHost::LoadStartupSettings();
+	LogSink::SetBlockSystemConsole(QtHost::InNoGUIMode());
+	VMManager::Internal::LoadStartupSettings();
 	return true;
 }
 
@@ -1308,7 +1305,7 @@ bool Host::RequestResetSettings(bool folders, bool core, bool controllers, bool 
 {
 	{
 		auto lock = Host::GetSettingsLock();
-		CommonHost::SetDefaultSettings(*s_base_settings_interface.get(), folders, core, controllers, hotkeys, ui);
+		VMManager::SetDefaultSettings(*s_base_settings_interface.get(), folders, core, controllers, hotkeys, ui);
 	}
 	Host::CommitBaseSettingChanges();
 
@@ -1513,7 +1510,7 @@ void QtHost::HookSignals()
 
 void QtHost::PrintCommandLineVersion()
 {
-	CommonHost::InitializeEarlyConsole();
+	LogSink::InitializeEarlyConsole();
 	std::fprintf(stderr, "%s\n", (GetAppNameAndVersion() + GetAppConfigSuffix()).toUtf8().constData());
 	std::fprintf(stderr, "https://pcsx2.net/\n");
 	std::fprintf(stderr, "\n");
@@ -1629,7 +1626,7 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 			}
 			else if (CHECK_ARG_PARAM(QStringLiteral("-logfile")))
 			{
-				CommonHost::SetFileLogPath((++it)->toStdString());
+				LogSink::SetFileLogPath((++it)->toStdString());
 				continue;
 			}
 			else if (CHECK_ARG(QStringLiteral("-bios")))
@@ -1650,7 +1647,7 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 			}
 			else if (CHECK_ARG(QStringLiteral("-earlyconsolelog")))
 			{
-				CommonHost::InitializeEarlyConsole();
+				LogSink::InitializeEarlyConsole();
 				continue;
 			}
 			else if (CHECK_ARG(QStringLiteral("-bigpicture")))
@@ -1707,7 +1704,7 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 	// or disc, we don't want to actually start.
 	if (autoboot && !autoboot->source_type.has_value() && autoboot->filename.empty() && autoboot->elf_override.empty())
 	{
-		CommonHost::InitializeEarlyConsole();
+		LogSink::InitializeEarlyConsole();
 		Console.Warning("Skipping autoboot due to no boot parameters.");
 		autoboot.reset();
 	}

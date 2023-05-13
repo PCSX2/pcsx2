@@ -18,7 +18,6 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 
 #include "CDVD/CDVDcommon.h"
-#include "CommonHost.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/Renderers/Common/GSTexture.h"
 #include "Achievements.h"
@@ -652,7 +651,7 @@ void FullscreenUI::OnVMDestroyed()
 	});
 }
 
-void FullscreenUI::OnRunningGameChanged(std::string path, std::string serial, std::string title, u32 crc)
+void FullscreenUI::GameChanged(std::string path, std::string serial, std::string title, u32 crc)
 {
 	if (!IsInitialized())
 		return;
@@ -2180,7 +2179,7 @@ void FullscreenUI::DrawFolderSetting(SettingsInterface* bsi, const char* title, 
 				bsi->SetStringValue(section.c_str(), key.c_str(), relative_path.c_str());
 				SetSettingsChanged(bsi);
 
-				Host::RunOnCPUThread(&Host::Internal::UpdateEmuFolders);
+				Host::RunOnCPUThread(&VMManager::Internal::UpdateEmuFolders);
 				s_cover_image_map.clear();
 
 				CloseFileSelector();
@@ -2209,7 +2208,7 @@ void FullscreenUI::DrawPathSetting(SettingsInterface* bsi, const char* title, co
 			bsi->SetStringValue(section.c_str(), key.c_str(), relative_path.c_str());
 			SetSettingsChanged(bsi);
 
-			Host::RunOnCPUThread(&Host::Internal::UpdateEmuFolders);
+			Host::RunOnCPUThread(&VMManager::Internal::UpdateEmuFolders);
 			s_cover_image_map.clear();
 
 			CloseFileSelector();
@@ -4350,7 +4349,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		if (!s_current_game_serial.empty())
 		{
 			const std::time_t cached_played_time = GameList::GetCachedPlayedTimeForSerial(s_current_game_serial);
-			const std::time_t session_time = static_cast<std::time_t>(CommonHost::GetSessionPlayedTime());
+			const std::time_t session_time = static_cast<std::time_t>(VMManager::GetSessionPlayedTime());
 			const std::string played_time_str(GameList::FormatTimespan(cached_played_time + session_time, true));
 			const std::string session_time_str(GameList::FormatTimespan(session_time, true));
 

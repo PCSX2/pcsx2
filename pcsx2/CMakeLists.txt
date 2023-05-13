@@ -83,7 +83,6 @@ set(pcsx2Sources
 	Cache.cpp
 	COP0.cpp
 	COP2.cpp
-	CommonHost.cpp
 	Counters.cpp
 	Dmac.cpp
 	GameDatabase.cpp
@@ -173,7 +172,6 @@ set(pcsx2Headers
 	AsyncFileReader.h
 	Cache.h
 	Common.h
-	CommonHost.h
 	Config.h
 	COP0.h
 	Counters.h

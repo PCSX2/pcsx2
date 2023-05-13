@@ -17,7 +17,6 @@
 
 #ifdef ENABLE_ACHIEVEMENTS
 
-#include "CommonHost.h"
 #include "Achievements.h"
 #include "CDVD/IsoFS/IsoFS.h"
 #include "CDVD/IsoFS/IsoFSCDVD.h"
@@ -397,10 +396,8 @@ void Achievements::ClearGameInfo(bool clear_achievements, bool clear_leaderboard
 		s_has_rich_presence = false;
 		s_game_id = 0;
 
-#ifdef ENABLE_DISCORD_PRESENCE
 		if (EmuConfig.EnableDiscordPresence)
-			CommonHost::UpdateDiscordPresence(s_rich_presence_string);
-#endif
+			VMManager::UpdateDiscordPresence(s_rich_presence_string);
 	}
 
 	if (had_game)
@@ -877,6 +874,17 @@ const std::string& Achievements::GetUsername()
 const std::string& Achievements::GetRichPresenceString()
 {
 	return s_rich_presence_string;
+}
+
+std::string Achievements::SafeGetRichPresenceString()
+{
+	std::string rich_presence_string;
+	if (IsActive() && EmuConfig.Achievements.RichPresence)
+	{
+		std::unique_lock lock(s_achievements_mutex);
+		rich_presence_string = s_rich_presence_string;
+	}
+	return rich_presence_string;
 }
 
 void Achievements::EnsureCacheDirectoriesExist()
@@ -1550,10 +1558,8 @@ void Achievements::UpdateRichPresence()
 
 	Host::OnAchievementsRefreshed();
 
-#ifdef ENABLE_DISCORD_PRESENCE
 	if (EmuConfig.EnableDiscordPresence)
-		CommonHost::UpdateDiscordPresence(s_rich_presence_string);
-#endif
+		VMManager::UpdateDiscordPresence(s_rich_presence_string);
 }
 
 void Achievements::SendPingCallback(s32 status_code, const std::string& content_type, Common::HTTPDownloader::Request::Data data)

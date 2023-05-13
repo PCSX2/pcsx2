@@ -128,6 +128,9 @@ namespace GameList
 	/// Re-scans a single entry in the game list.
 	bool RescanPath(const std::string& path);
 
+	/// Looks up the serial and CRC for a game in the most efficient manner possible (i.e. cache or scan).
+	bool GetSerialAndCRCForFilename(const char* filename, std::string* serial, u32* crc);
+
 	/// Add played time for the specified serial.
 	void AddPlayedTimeForSerial(const std::string& serial, std::time_t last_time, std::time_t add_time);
 	void ClearPlayedTimeForSerial(const std::string& serial);

@@ -21,7 +21,6 @@
 #include "Settings/ControllerBindingWidgets.h"
 #include "Settings/HotkeySettingsWidget.h"
 
-#include "pcsx2/CommonHost.h"
 #include "pcsx2/INISettingsInterface.h"
 #include "pcsx2/PAD/Host/PAD.h"
 #include "pcsx2/Sio.h"
@@ -208,7 +207,7 @@ void ControllerSettingsDialog::onRestoreDefaultsClicked()
 	// actually restore it
 	{
 		auto lock = Host::GetSettingsLock();
-		CommonHost::SetDefaultSettings(*Host::Internal::GetBaseSettingsLayer(), false, false, true, true, false);
+		VMManager::SetDefaultSettings(*Host::Internal::GetBaseSettingsLayer(), false, false, true, true, false);
 	}
 	Host::CommitBaseSettingChanges();
 

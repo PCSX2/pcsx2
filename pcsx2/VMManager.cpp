@@ -23,15 +23,21 @@
 #include "Elfheader.h"
 #include "FW.h"
 #include "GameDatabase.h"
+#include "GameList.h"
 #include "GS.h"
+#include "GS/Renderers/HW/GSTextureReplacements.h"
 #include "GSDumpReplayer.h"
 #include "Host.h"
+#include "ImGui/FullscreenUI.h"
 #include "INISettingsInterface.h"
+#include "Input/InputManager.h"
 #include "IopBios.h"
+#include "LogSink.h"
 #include "MTVU.h"
 #include "MemoryCardFile.h"
 #include "Patch.h"
 #include "PerformanceMetrics.h"
+#include "PINE.h"
 #include "R5900.h"
 #include "SPU2/spu2.h"
 #include "DEV9/DEV9.h"
@@ -71,6 +77,10 @@
 #include <timeapi.h>
 #endif
 
+#ifdef ENABLE_DISCORD_PRESENCE
+#include "discord_rpc.h"
+#endif
+
 namespace VMManager
 {
 	static void ApplyGameFixes();
@@ -82,6 +92,7 @@ namespace VMManager
 	static void CheckForPatchConfigChanges(const Pcsx2Config& old_config);
 	static void CheckForDEV9ConfigChanges(const Pcsx2Config& old_config);
 	static void CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config);
+	static void CheckForMiscConfigChanges(const Pcsx2Config& old_config);
 	static void EnforceAchievementsChallengeModeSettings();
 	static void LogUnsafeSettingsToConsole(const std::string& messages);
 	static void WarnAboutUnsafeSettings();
@@ -103,11 +114,21 @@ namespace VMManager
 		std::unique_ptr<SaveStateScreenshotData> screenshot, std::string osd_key,
 		std::string filename, s32 slot_for_message);
 
+	static void UpdateInhibitScreensaver(bool allow);
+	static void SaveSessionTime();
+	static void ReloadPINE();
+
 	static void SetTimerResolutionIncreased(bool enabled);
 	static void SetHardwareDependentDefaultSettings(SettingsInterface& si);
 	static void EnsureCPUInfoInitialized();
 	static void SetEmuThreadAffinities();
+
+	static void InitializeDiscordPresence();
+	static void ShutdownDiscordPresence();
+	static void PollDiscordPresence();
 } // namespace VMManager
+
+static constexpr u32 SETTINGS_VERSION = 1;
 
 static std::unique_ptr<SysMainMemory> s_vm_memory;
 static std::unique_ptr<SysCpuProviderPack> s_cpu_provider_pack;
@@ -139,6 +160,17 @@ static u32 s_active_no_interlacing_patches = 0;
 static u32 s_frame_advance_count = 0;
 static u32 s_mxcsr_saved;
 static bool s_gs_open_on_initialize = false;
+
+// Used to track play time. We use a monotonic timer here, in case of clock changes.
+static u64 s_session_start_time = 0;
+
+static bool s_screensaver_inhibited = false;
+
+static PINEServer s_pine_server;
+
+#ifdef ENABLE_DISCORD_PRESENCE
+static bool s_discord_presence_active = false;
+#endif
 
 bool VMManager::PerformEarlyHardwareChecks(const char** error)
 {
@@ -193,6 +225,7 @@ void VMManager::SetState(VMState state)
 			if (THREAD_VU1)
 				vu1Thread.WaitVU();
 			GetMTGS().WaitGS(false);
+			InputManager::PauseVibration();
 		}
 		else
 		{
@@ -200,7 +233,11 @@ void VMManager::SetState(VMState state)
 			frameLimitReset();
 		}
 
-		SPU2::SetOutputPaused(state == VMState::Paused);
+		SPU2::SetOutputPaused(paused);
+		Achievements::OnPaused(paused);
+
+		UpdateInhibitScreensaver(!paused && EmuConfig.InhibitScreensaver);
+
 		if (state == VMState::Paused)
 			Host::OnVMPaused();
 		else
@@ -243,8 +280,11 @@ std::string VMManager::GetGameName()
 	return s_game_name;
 }
 
-bool VMManager::Internal::InitializeGlobals()
+bool VMManager::Internal::CPUThreadInitialize()
 {
+	Threading::SetNameOfCurrentThread("CPU Thread");
+	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle::GetForCallingThread());
+
 	// On Win32, we have a bunch of things which use COM (e.g. SDL, XAudio2, etc).
 	// We need to initialize COM first, before anything else does, because otherwise they might
 	// initialize it in single-threaded/apartment mode, which can't be changed to multithreaded.
@@ -263,34 +303,44 @@ bool VMManager::Internal::InitializeGlobals()
 	x86caps.CalculateMHz();
 	SysLogMachineCaps();
 
+	pxAssert(!s_vm_memory && !s_cpu_provider_pack);
+	s_vm_memory = std::make_unique<SysMainMemory>();
+	s_cpu_provider_pack = std::make_unique<SysCpuProviderPack>();
+	if (!s_vm_memory->Allocate())
+	{
+		Host::ReportErrorAsync("Error", "Failed to allocate VM memory.");
+		return false;
+	}
+
 	GSinit();
 	USBinit();
+
+	// We want settings loaded so we choose the correct renderer for big picture mode.
+	// This also sorts out input sources.
+	LoadSettings();
+
+	if (EmuConfig.Achievements.Enabled)
+		Achievements::Initialize();
+
+	ReloadPINE();
+
+	if (EmuConfig.EnableDiscordPresence)
+		InitializeDiscordPresence();
 
 	return true;
 }
 
-void VMManager::Internal::ReleaseGlobals()
+void VMManager::Internal::CPUThreadShutdown()
 {
-	USBshutdown();
-	GSshutdown();
+	ShutdownDiscordPresence();
 
-#ifdef _WIN32
-	CoUninitialize();
-#endif
-}
+	s_pine_server.Deinitialize();
 
-bool VMManager::Internal::InitializeMemory()
-{
-	pxAssert(!s_vm_memory && !s_cpu_provider_pack);
+	Achievements::Shutdown();
 
-	s_vm_memory = std::make_unique<SysMainMemory>();
-	s_cpu_provider_pack = std::make_unique<SysCpuProviderPack>();
+	InputManager::CloseSources();
+	WaitForSaveStateFlush();
 
-	return s_vm_memory->Allocate();
-}
-
-void VMManager::Internal::ReleaseMemory()
-{
 	std::vector<u8>().swap(s_widescreen_cheats_data);
 	s_widescreen_cheats_loaded = false;
 	std::vector<u8>().swap(s_no_interlacing_cheats_data);
@@ -298,6 +348,15 @@ void VMManager::Internal::ReleaseMemory()
 
 	s_cpu_provider_pack.reset();
 	s_vm_memory.reset();
+
+	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle());
+
+	USBshutdown();
+	GSshutdown();
+
+#ifdef _WIN32
+	CoUninitialize();
+#endif
 }
 
 SysMainMemory& GetVmMemory()
@@ -310,6 +369,55 @@ SysCpuProviderPack& GetCpuProviders()
 	return *s_cpu_provider_pack;
 }
 
+bool VMManager::Internal::CheckSettingsVersion()
+{
+	SettingsInterface* bsi = Host::Internal::GetBaseSettingsLayer();
+
+	uint settings_version;
+	return (bsi->GetUIntValue("UI", "SettingsVersion", &settings_version) && settings_version == SETTINGS_VERSION);
+}
+
+void VMManager::Internal::LoadStartupSettings()
+{
+	SettingsInterface* bsi = Host::Internal::GetBaseSettingsLayer();
+	EmuFolders::LoadConfig(*bsi);
+	EmuFolders::EnsureFoldersExist();
+	LogSink::UpdateLogging(*bsi);
+
+#ifdef ENABLE_RAINTEGRATION
+	// RAIntegration switch must happen before the UI is created.
+	if (Host::GetBaseBoolSettingValue("Achievements", "UseRAIntegration", false))
+		Achievements::SwitchToRAIntegration();
+#endif
+}
+
+void VMManager::SetDefaultSettings(SettingsInterface& si, bool folders, bool core, bool controllers, bool hotkeys, bool ui)
+{
+	if (si.GetUIntValue("UI", "SettingsVersion", 0u) != SETTINGS_VERSION)
+		si.SetUIntValue("UI", "SettingsVersion", SETTINGS_VERSION);
+
+	if (folders)
+		EmuFolders::SetDefaults(si);
+	if (core)
+	{
+		Pcsx2Config temp_config;
+		SettingsSaveWrapper ssw(si);
+		temp_config.LoadSave(ssw);
+
+		// Settings not part of the Pcsx2Config struct.
+		si.SetBoolValue("EmuCore", "EnableFastBoot", true);
+
+		SetHardwareDependentDefaultSettings(si);
+		LogSink::SetDefaultLoggingSettings(si);
+	}
+	if (controllers)
+		PAD::SetDefaultControllerConfig(si);
+	if (hotkeys)
+		PAD::SetDefaultHotkeyConfig(si);
+	if (ui)
+		Host::SetDefaultUISettings(si);
+}
+
 void VMManager::LoadSettings()
 {
 	std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
@@ -318,6 +426,9 @@ void VMManager::LoadSettings()
 	EmuConfig.LoadSave(slw);
 	PAD::LoadConfig(*si);
 	Host::LoadSettings(*si, lock);
+	InputManager::ReloadSources(*si, lock);
+	InputManager::ReloadBindings(*si, *Host::GetSettingsInterfaceForBindings());
+	LogSink::UpdateLogging(*si);
 
 	// Achievements hardcore mode disallows setting some configuration options.
 	EnforceAchievementsChallengeModeSettings();
@@ -394,6 +505,50 @@ std::string VMManager::GetDiscOverrideFromGameSettings(const std::string& elf_pa
 std::string VMManager::GetInputProfilePath(const std::string_view& name)
 {
 	return Path::Combine(EmuFolders::InputProfiles, fmt::format("{}.ini", name));
+}
+
+void VMManager::Internal::UpdateEmuFolders()
+{
+	const std::string old_cheats_directory(EmuFolders::Cheats);
+	const std::string old_cheats_ws_directory(EmuFolders::CheatsWS);
+	const std::string old_cheats_ni_directory(EmuFolders::CheatsNI);
+	const std::string old_memcards_directory(EmuFolders::MemoryCards);
+	const std::string old_textures_directory(EmuFolders::Textures);
+	const std::string old_videos_directory(EmuFolders::Videos);
+
+	auto lock = Host::GetSettingsLock();
+	EmuFolders::LoadConfig(*Host::Internal::GetBaseSettingsLayer());
+	EmuFolders::EnsureFoldersExist();
+
+	if (VMManager::HasValidVM())
+	{
+		if (EmuFolders::Cheats != old_cheats_directory || EmuFolders::CheatsWS != old_cheats_ws_directory ||
+			EmuFolders::CheatsNI != old_cheats_ni_directory)
+		{
+			VMManager::ReloadPatches(true, true);
+		}
+
+		if (EmuFolders::MemoryCards != old_memcards_directory)
+		{
+			FileMcd_EmuClose();
+			FileMcd_EmuOpen();
+			AutoEject::SetAll();
+		}
+
+		if (EmuFolders::Textures != old_textures_directory)
+		{
+			GetMTGS().RunOnGSThread([]() {
+				if (VMManager::HasValidVM())
+					GSTextureReplacements::ReloadReplacementMap();
+			});
+		}
+
+		if (EmuFolders::Videos != old_videos_directory)
+		{
+			if (VMManager::HasValidVM())
+				GetMTGS().RunOnGSThread(&GSEndCapture);
+		}
+	}
 }
 
 void VMManager::RequestDisplaySize(float scale /*= 0.0f*/)
@@ -693,6 +848,7 @@ void VMManager::UpdateRunningGame(bool resetting, bool game_starting, bool swapp
 
 	{
 		std::unique_lock lock(s_info_mutex);
+		SaveSessionTime();
 		s_game_serial = std::move(new_serial);
 		s_game_crc = new_crc;
 		s_game_name.clear();
@@ -740,15 +896,18 @@ void VMManager::UpdateRunningGame(bool resetting, bool game_starting, bool swapp
 		// Check this here, for two cases: dynarec on, and when enable cheats is set per-game.
 		if (s_patches_crc != s_game_crc)
 			ReloadPatches(game_starting, false);
-
-#ifdef ENABLE_ACHIEVEMENTS
-		// Per-game ini enabling of hardcore mode. We need to re-enforce the settings if so.
-		if (game_starting && Achievements::ResetChallengeMode())
-			ApplySettings();
-#endif
 	}
 
+	// Per-game ini enabling of hardcore mode. We need to re-enforce the settings if so.
+	if (game_starting && Achievements::ResetChallengeMode())
+		ApplySettings();
+
 	GetMTGS().SendGameCRC(new_crc);
+
+	FullscreenUI::GameChanged(s_disc_path, s_game_serial, s_game_name, s_game_crc);
+	Achievements::GameChanged(s_game_crc);
+	ReloadPINE();
+	UpdateDiscordPresence(Achievements::GetRichPresenceString());
 
 	Host::OnGameChanged(s_disc_path, s_elf_override, s_game_serial, s_game_name, s_game_crc);
 
@@ -926,6 +1085,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	s_state.store(VMState::Initializing, std::memory_order_release);
 	s_vm_thread_handle = Threading::ThreadHandle::GetForCallingThread();
 	Host::OnVMStarting();
+	VMManager::Internal::ResetVMHotkeyState();
 
 	ScopedGuard close_state = [] {
 		if (GSDumpReplayer::IsReplayingDump())
@@ -1048,6 +1208,8 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	Console.WriteLn("VM subsystems initialized in %.2f ms", init_timer.GetTimeMilliseconds());
 	s_state.store(VMState::Paused, std::memory_order_release);
 	Host::OnVMStarted();
+	FullscreenUI::OnVMStarted();
+	UpdateInhibitScreensaver(EmuConfig.InhibitScreensaver);
 
 	UpdateRunningGame(true, false, false);
 
@@ -1100,12 +1262,16 @@ void VMManager::Shutdown(bool save_resume_state)
 		ElfTextRange = {};
 
 		std::unique_lock lock(s_info_mutex);
+		SaveSessionTime();
 		s_disc_path.clear();
 		s_elf_override.clear();
 		s_game_crc = 0;
 		s_patches_crc = 0;
 		s_game_serial.clear();
 		s_game_name.clear();
+		Achievements::GameChanged(s_game_crc);
+		FullscreenUI::GameChanged(s_disc_path, s_game_serial, s_game_name, 0);
+		UpdateDiscordPresence(Achievements::GetRichPresenceString());
 		Host::OnGameChanged(s_disc_path, s_elf_override, s_game_serial, s_game_name, 0);
 	}
 	s_active_game_fixes = 0;
@@ -1149,6 +1315,8 @@ void VMManager::Shutdown(bool save_resume_state)
 	DEV9shutdown();
 
 	s_state.store(VMState::Shutdown, std::memory_order_release);
+	FullscreenUI::OnVMDestroyed();
+	UpdateInhibitScreensaver(false);
 	Host::OnVMDestroyed();
 }
 
@@ -1222,7 +1390,7 @@ std::string VMManager::GetSaveStateFileName(const char* filename, s32 slot)
 	std::string ret;
 	std::string serial;
 	u32 crc;
-	if (Host::GetSerialAndCRCForFilename(filename, &serial, &crc))
+	if (GameList::GetSerialAndCRCForFilename(filename, &serial, &crc))
 		ret = GetSaveStateFileName(serial.c_str(), crc, slot);
 
 	return ret;
@@ -1637,7 +1805,14 @@ void VMManager::Internal::VSyncOnCPUThread()
 		}
 	}
 
-	Host::CPUThreadVSync();
+	if (Achievements::IsActive())
+		Achievements::VSyncUpdate();
+
+	PollDiscordPresence();
+
+	InputManager::PollSources();
+
+	Host::VSyncOnCPUThread();
 
 	if (EmuConfig.EnableRecordingTools)
 	{
@@ -1790,6 +1965,20 @@ void VMManager::CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config)
 	sioSetGameSerial(sioSerial);
 }
 
+void VMManager::CheckForMiscConfigChanges(const Pcsx2Config& old_config)
+{
+	if (EmuConfig.InhibitScreensaver != old_config.InhibitScreensaver)
+		UpdateInhibitScreensaver(EmuConfig.InhibitScreensaver && VMManager::GetState() == VMState::Running);
+
+	if (EmuConfig.EnableDiscordPresence != old_config.EnableDiscordPresence)
+	{
+		if (EmuConfig.EnableDiscordPresence)
+			InitializeDiscordPresence();
+		else
+			ShutdownDiscordPresence();
+	}
+}
+
 void VMManager::CheckForConfigChanges(const Pcsx2Config& old_config)
 {
 	if (HasValidVM())
@@ -1814,6 +2003,13 @@ void VMManager::CheckForConfigChanges(const Pcsx2Config& old_config)
 	// and we don't update its config when we start the VM.
 	if (HasValidVM() || GetMTGS().IsOpen())
 		CheckForGSConfigChanges(old_config);
+
+	if (EmuConfig.Achievements != old_config.Achievements)
+		Achievements::UpdateSettings(old_config.Achievements);
+
+	FullscreenUI::CheckForConfigChanges(old_config);
+
+	CheckForMiscConfigChanges(old_config);
 
 	Host::CheckForSettingsChanges(old_config);
 }
@@ -1847,20 +2043,6 @@ bool VMManager::ReloadGameSettings()
 
 	ApplySettings();
 	return true;
-}
-
-void VMManager::SetDefaultSettings(SettingsInterface& si)
-{
-	{
-		Pcsx2Config temp_config;
-		SettingsSaveWrapper ssw(si);
-		temp_config.LoadSave(ssw);
-	}
-
-	// Settings not part of the Pcsx2Config struct.
-	si.SetBoolValue("EmuCore", "EnableFastBoot", true);
-
-	SetHardwareDependentDefaultSettings(si);
 }
 
 void VMManager::EnforceAchievementsChallengeModeSettings()
@@ -2011,6 +2193,41 @@ void VMManager::WarnAboutUnsafeSettings()
 	{
 		Host::RemoveKeyedOSDMessage("performance_settings_warning");
 	}
+}
+
+void VMManager::UpdateInhibitScreensaver(bool inhibit)
+{
+	if (s_screensaver_inhibited == inhibit)
+		return;
+
+	WindowInfo wi;
+	auto top_level_wi = Host::GetTopLevelWindowInfo();
+	if (top_level_wi.has_value())
+		wi = top_level_wi.value();
+
+	s_screensaver_inhibited = inhibit;
+	if (!WindowInfo::InhibitScreensaver(wi, inhibit) && inhibit)
+		Console.Warning("Failed to inhibit screen saver.");
+}
+
+void VMManager::SaveSessionTime()
+{
+	const u64 ctime = Common::Timer::GetCurrentValue();
+	if (!s_game_serial.empty() && s_game_crc != 0)
+	{
+		// round up to seconds
+		const std::time_t etime = static_cast<std::time_t>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_session_start_time)));
+		const std::time_t wtime = std::time(nullptr);
+		GameList::AddPlayedTimeForSerial(s_game_serial, wtime, etime);
+	}
+
+	s_session_start_time = ctime;
+}
+
+u64 VMManager::GetSessionPlayedTime()
+{
+	const u64 ctime = Common::Timer::GetCurrentValue();
+	return static_cast<u64>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_session_start_time)));
 }
 
 #ifdef _WIN32
@@ -2248,3 +2465,107 @@ const std::vector<u32>& VMManager::GetSortedProcessorList()
 	EnsureCPUInfoInitialized();
 	return s_processor_list;
 }
+
+void VMManager::ReloadPINE()
+{
+	if (EmuConfig.EnablePINE && (s_pine_server.m_slot != EmuConfig.PINESlot || s_pine_server.m_end))
+	{
+		if (!s_pine_server.m_end)
+		{
+			s_pine_server.Deinitialize();
+		}
+		s_pine_server.Initialize(EmuConfig.PINESlot);
+	}
+	else if ((!EmuConfig.EnablePINE && !s_pine_server.m_end))
+	{
+		s_pine_server.Deinitialize();
+	}
+}
+
+#ifdef ENABLE_DISCORD_PRESENCE
+
+void VMManager::InitializeDiscordPresence()
+{
+	if (s_discord_presence_active)
+		return;
+
+	DiscordEventHandlers handlers = {};
+	Discord_Initialize("1025789002055430154", &handlers, 0, nullptr);
+	s_discord_presence_active = true;
+
+	UpdateDiscordPresence(Achievements::GetRichPresenceString());
+}
+
+void VMManager::ShutdownDiscordPresence()
+{
+	if (!s_discord_presence_active)
+		return;
+
+	Discord_ClearPresence();
+	Discord_RunCallbacks();
+	Discord_Shutdown();
+	s_discord_presence_active = false;
+}
+
+void VMManager::UpdateDiscordPresence(const std::string& rich_presence)
+{
+	if (!s_discord_presence_active)
+		return;
+
+	// https://discord.com/developers/docs/rich-presence/how-to#updating-presence-update-presence-payload-fields
+	DiscordRichPresence rp = {};
+	rp.largeImageKey = "4k-pcsx2";
+	rp.largeImageText = "PCSX2 Emulator";
+	rp.startTimestamp = std::time(nullptr);
+
+	std::string details_string;
+	if (VMManager::HasValidVM())
+		details_string = VMManager::GetGameName();
+	else
+		details_string = "No Game Running";
+	rp.details = details_string.c_str();
+
+	// Trim to 128 bytes as per Discord-RPC requirements
+	std::string state_string;
+	if (rich_presence.length() >= 128)
+	{
+		// 124 characters + 3 dots + null terminator
+		state_string = fmt::format("{}...", std::string_view(rich_presence).substr(0, 124));
+	}
+	else
+	{
+		state_string = rich_presence;
+	}
+	rp.state = state_string.c_str();
+
+	Discord_UpdatePresence(&rp);
+	Discord_RunCallbacks();
+}
+
+void VMManager::PollDiscordPresence()
+{
+	if (!s_discord_presence_active)
+		return;
+
+	Discord_RunCallbacks();
+}
+
+#else // ENABLE_DISCORD_PRESENCE
+
+void VMManager::InitializeDiscordPresence()
+{
+}
+
+void VMManager::ShutdownDiscordPresence()
+{
+}
+
+void VMManager::UpdateDiscordPresence(const std::string& rich_presence)
+{
+}
+
+void VMManager::PollDiscordPresence()
+{
+}
+
+#endif // ENABLE_DISCORD_PRESENCE

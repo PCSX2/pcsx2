@@ -132,6 +132,9 @@ namespace Host
 	/// If an input profile is being used, this will be the input layer, otherwise the layered interface.
 	SettingsInterface* GetSettingsInterfaceForBindings();
 
+	/// Sets host-specific default settings.
+	void SetDefaultUISettings(SettingsInterface& si);
+
 	namespace Internal
 	{
 		/// Retrieves the base settings layer. Must call with lock held.
@@ -151,8 +154,5 @@ namespace Host
 
 		/// Sets the input profile settings layer. Called by VMManager when the game changes.
 		void SetInputSettingsLayer(SettingsInterface* sif);
-
-		/// Updates the variables in the EmuFolders namespace, reloading subsystems if needed. Must call with the lock held.
-		void UpdateEmuFolders();
 	} // namespace Internal
 } // namespace Host
