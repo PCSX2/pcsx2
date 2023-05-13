@@ -635,21 +635,45 @@ public:
 		{
 			if (GSConfig.PCRTCAntiBlur && PCRTCSameSrc && !scanmask)
 			{
-				if (abs(PCRTCDisplays[1].framebufferOffsets.y - PCRTCDisplays[0].framebufferOffsets.y) == 1
+				GSVector2i fb0 = GSVector2i(PCRTCDisplays[0].framebufferOffsets.x, PCRTCDisplays[0].framebufferOffsets.y);
+				GSVector2i fb1 = GSVector2i(PCRTCDisplays[1].framebufferOffsets.x, PCRTCDisplays[1].framebufferOffsets.y);
+
+				if (fb0.x + PCRTCDisplays[0].displayRect.z > 2048)
+				{
+					fb0.x -= 2048;
+					fb0.x = abs(fb0.x);
+				}
+				if (fb0.y + PCRTCDisplays[0].displayRect.w > 2048)
+				{
+					fb0.y -= 2048;
+					fb0.y = abs(fb0.y);
+				}
+				if (fb1.x + PCRTCDisplays[1].displayRect.z > 2048)
+				{
+					fb1.x -= 2048;
+					fb1.x = abs(fb1.x);
+				}
+				if (fb1.y + PCRTCDisplays[1].displayRect.w > 2048)
+				{
+					fb1.y -= 2048;
+					fb1.y = abs(fb1.y);
+				}
+
+				if (abs(fb1.y - fb0.y) == 1
 					&& PCRTCDisplays[0].displayRect.y == PCRTCDisplays[1].displayRect.y)
 				{
-					if (PCRTCDisplays[1].framebufferOffsets.y < PCRTCDisplays[0].framebufferOffsets.y)
-						PCRTCDisplays[0].framebufferOffsets.y = PCRTCDisplays[1].framebufferOffsets.y;
+					if (fb1.y < fb0.y)
+						PCRTCDisplays[0].framebufferOffsets.y = fb1.y;
 					else
-						PCRTCDisplays[1].framebufferOffsets.y = PCRTCDisplays[0].framebufferOffsets.y;
+						PCRTCDisplays[1].framebufferOffsets.y = fb0.y;
 				}
-				if (abs(PCRTCDisplays[1].framebufferOffsets.x - PCRTCDisplays[0].framebufferOffsets.x) == 1
+				if (abs(fb1.x - fb0.x) == 1
 					&& PCRTCDisplays[0].displayRect.x == PCRTCDisplays[1].displayRect.x)
 				{
-					if (PCRTCDisplays[1].framebufferOffsets.x < PCRTCDisplays[0].framebufferOffsets.x)
-						PCRTCDisplays[0].framebufferOffsets.x = PCRTCDisplays[1].framebufferOffsets.x;
+					if (fb1.x < fb0.x)
+						PCRTCDisplays[0].framebufferOffsets.x = fb1.x;
 					else
-						PCRTCDisplays[1].framebufferOffsets.x = PCRTCDisplays[0].framebufferOffsets.x;
+						PCRTCDisplays[1].framebufferOffsets.x = fb0.x;
 				}
 			}
 			PCRTCDisplays[0].framebufferRect.x += PCRTCDisplays[0].framebufferOffsets.x;
