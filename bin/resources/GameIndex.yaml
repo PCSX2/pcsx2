@@ -2034,6 +2034,8 @@ SCED-51351:
 SCED-51352:
   name: "Gran Turismo - Nissan Micra Edition [Demo]"
   region: "PAL-E"
+  gsHWFixes:
+    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCED-51359:
   name: "Official PlayStation 2 Magazine Demo 27"
   region: "PAL-M5"
@@ -3270,10 +3272,14 @@ SCES-50810:
 SCES-50850:
   name: "Gran Turismo - Concept 2002 Tokyo-Geneva"
   region: "PAL-Unk"
+  gsHWFixes:
+    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCES-50858:
   name: "Gran Turismo - Concept 2002 Tokyo-Geneva"
   region: "PAL-M6"
   compat: 5
+  gsHWFixes:
+    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
   memcardFilters:
     - "SCES-50858"
     - "SCES-50294"
@@ -8368,6 +8374,8 @@ SCUS-97383:
 SCUS-97384:
   name: "Gran Turismo Special Edition 2004 Toyota [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCUS-97392:
   name: "NBA '06 featuring The Life Vol.1 [Demo]"
   region: "NTSC-U"
