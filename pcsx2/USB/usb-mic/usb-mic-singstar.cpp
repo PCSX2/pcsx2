@@ -378,13 +378,11 @@ namespace usb_mic
 		uint8_t cn = cscn - 1; /* -1 for the non-present master control */
 		uint32_t aid = ATTRIB_ID(cs, attrib, idif);
 		int ret = USB_RET_STALL;
-		bool set_vol = false;
 
 		switch (aid)
 		{
 			case ATTRIB_ID(AUDIO_MUTE_CONTROL, AUDIO_REQUEST_SET_CUR, 0x0300):
 				s->f.mute = data[0] & 1;
-				set_vol = true;
 				ret = 0;
 				break;
 			case ATTRIB_ID(AUDIO_VOLUME_CONTROL, AUDIO_REQUEST_SET_CUR, 0x0300):
@@ -396,15 +394,11 @@ namespace usb_mic
 					vol -= 0x8000;
 					vol = (vol * 255 + 0x4400) / 0x8800;
 					if (vol > 255)
-					{
 						vol = 255;
-					}
 
 					if (s->f.vol[cn] != vol)
-					{
 						s->f.vol[cn] = (uint8_t)vol;
-						set_vol = true;
-					}
+
 					ret = 0;
 				}
 				break;

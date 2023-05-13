@@ -80,8 +80,8 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, Format format, int w
 	aci.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
 	VkImageViewCreateInfo vci = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, nullptr, 0, VK_NULL_HANDLE,
-		VK_IMAGE_VIEW_TYPE_2D, vk_format, s_identity_swizzle, VK_IMAGE_ASPECT_COLOR_BIT, 0, static_cast<u32>(levels), 0,
-		1};
+		VK_IMAGE_VIEW_TYPE_2D, vk_format, s_identity_swizzle,
+		{VK_IMAGE_ASPECT_COLOR_BIT, 0, static_cast<u32>(levels), 0, 1}};
 
 	switch (type)
 	{
