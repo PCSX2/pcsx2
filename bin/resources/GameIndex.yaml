@@ -977,9 +977,10 @@ SCAJ-20104:
   name: "Ace Combat 5 - The Unsung War"
   region: "NTSC-Unk"
   gsHWFixes:
+    recommendedBlendingLevel: 3
     mipmap: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
-    roundSprite: 2 # Fixes font and HUD artifacts.
+    roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     texturePreloading: 1 # Performs better than full.
@@ -1173,9 +1174,10 @@ SCAJ-20136:
   name: "Ace Combat 5 - The Unsung War [PlayStation 2 The Best]"
   region: "NTSC-Unk"
   gsHWFixes:
+    recommendedBlendingLevel: 3
     mipmap: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
-    roundSprite: 2 # Fixes font and HUD artifacts.
+    roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     texturePreloading: 1 # Performs better than full.
@@ -1393,9 +1395,10 @@ SCAJ-20173:
   name: "Ace Combat Zero - The Belkan War"
   region: "NTSC-Unk"
   gsHWFixes:
+    recommendedBlendingLevel: 3
     mipmap: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
-    roundSprite: 2 # Fixes HUD artifacts.
+    roundSprite: 1 # Fixes HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Better aligns main menu strips, improving font readability.
   memcardFilters:
@@ -2509,6 +2512,30 @@ SCED-53056:
 SCED-53068:
   name: "Official PlayStation 2 Magazine Demo 54" # French
   region: "PAL-M5"
+SCED-53081:
+  name: "Ace Combat - Squadron Leader [Demo]"
+  region: "PAL-E"
+  gsHWFixes:
+    recommendedBlendingLevel: 3
+    mipmap: 1
+    halfPixelOffset: 3 # Fixes ghosting in foggy maps.
+    roundSprite: 1 # Fixes font and HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
+    mergeSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs better than full.
+    cpuCLUTRender: 1 # Fixes sun occlusion.
+SCED-53115:
+  name: "Ace Combat - Squadron Leader [Demo]"
+  region: "PAL-E"
+  gsHWFixes:
+    recommendedBlendingLevel: 3
+    mipmap: 1
+    halfPixelOffset: 3 # Fixes ghosting in foggy maps.
+    roundSprite: 1 # Fixes font and HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
+    mergeSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs better than full.
+    cpuCLUTRender: 1 # Fixes sun occlusion.
 SCED-53122:
   name: "Official PlayStation 2 Magazine Demo 56"
   region: "PAL-M5"
@@ -3069,8 +3096,9 @@ SCES-50410:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 3
     mipmap: 1
-    roundSprite: 2 # Fixes font and HUD artifacts.
+    roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     gpuTargetCLUT: 1 # Fixes broken sun.
@@ -3792,12 +3820,14 @@ SCES-52424:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 3
     mipmap: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
-    roundSprite: 2 # Fixes font and HUD artifacts.
+    roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     texturePreloading: 1 # Performs better than full.
+    cpuCLUTRender: 1 # Fixes sun occlusion.
   patches:
     1D54FEA9:
       content: |-
@@ -4345,11 +4375,12 @@ SCES-54041:
   name: "Ace Combat - The Belkan War"
   region: "PAL-M5"
   gsHWFixes:
+    recommendedBlendingLevel: 3
     mipmap: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
-    roundSprite: 2 # Fixes HUD artifacts.
+    roundSprite: 1 # Fixes HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
-    mergeSprite: 1 # Fixes vertical lines.
+    mergeSprite: 1 # Better aligns main menu strips, improving font readability.
   memcardFilters: # Reads AC4 and 5 saves for bonus unlockables.
     - "SCES-54041"
     - "SCES-50410"
@@ -5236,6 +5267,18 @@ SCKA-20040:
 SCKA-20041:
   name: "EyeToy - Play 2"
   region: "NTSC-K"
+SCKA-20042:
+  name: "Ace Combat 5 - The Unsung War"
+  region: "NTSC-K"
+  gsHWFixes:
+    recommendedBlendingLevel: 3
+    mipmap: 1
+    halfPixelOffset: 3 # Fixes ghosting in foggy maps.
+    roundSprite: 1 # Fixes font and HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
+    mergeSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs better than full.
+    cpuCLUTRender: 1 # Fixes sun occlusion.
 SCKA-20043:
   name: "Magna Carta"
   region: "NTSC-K"
@@ -5414,9 +5457,10 @@ SCKA-20070:
   name: "Ace Combat Zero - The Belkan War"
   region: "NTSC-K"
   gsHWFixes:
+    recommendedBlendingLevel: 3
     mipmap: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
-    roundSprite: 2 # Fixes HUD artifacts.
+    roundSprite: 1 # Fixes HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Better aligns main menu strips, improving font readability.
   patches:
@@ -5464,6 +5508,18 @@ SCKA-20081:
   gsHWFixes:
     alignSprite: 1
     getSkipCount: "GSC_Tekken5"
+SCKA-20082:
+  name: "Ace Combat 5 - The Unsung War [PlayStation 2 Big Hit Series]"
+  region: "NTSC-K"
+  gsHWFixes:
+    recommendedBlendingLevel: 3
+    mipmap: 1
+    halfPixelOffset: 3 # Fixes ghosting in foggy maps.
+    roundSprite: 1 # Fixes font and HUD artifacts.
+    alignSprite: 1 # Fixes vertical lines.
+    mergeSprite: 1 # Fixes vertical lines.
+    texturePreloading: 1 # Performs better than full.
+    cpuCLUTRender: 1 # Fixes sun occlusion.
 SCKA-20086:
   name: "Shin Onimusha - Dawn of Dreams [Disc 1 of 2]"
   region: "NTSC-K"
@@ -26065,8 +26121,9 @@ SLPM-60149:
   name: "Ace Combat 04 - Shattered Skies [Trial]"
   region: "NTSC-J"
   gsHWFixes:
+    recommendedBlendingLevel: 3
     mipmap: 1
-    roundSprite: 2 # Fixes font and HUD artifacts.
+    roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     gpuTargetCLUT: 1 # Fixes broken sun.
@@ -38281,8 +38338,9 @@ SLPS-25052:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 3
     mipmap: 1
-    roundSprite: 2 # Fixes font and HUD artifacts.
+    roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     gpuTargetCLUT: 1 # Fixes broken sun.
@@ -39605,9 +39663,10 @@ SLPS-25418:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 3
     mipmap: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
-    roundSprite: 2 # Fixes font and HUD artifacts.
+    roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     texturePreloading: 1 # Performs better than full.
@@ -40348,9 +40407,10 @@ SLPS-25629:
   name: "Ace Combat Zero - The Belkan War"
   region: "NTSC-J"
   gsHWFixes:
+    recommendedBlendingLevel: 3
     mipmap: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
-    roundSprite: 2 # Fixes HUD artifacts.
+    roundSprite: 1 # Fixes HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Better aligns main menu strips, improving font readability.
   memcardFilters:
@@ -41687,8 +41747,9 @@ SLPS-73205:
   name: "Ace Combat 04 - Shattered Skies [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
+    recommendedBlendingLevel: 3
     mipmap: 1
-    roundSprite: 2 # Fixes font and HUD artifacts.
+    roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     gpuTargetCLUT: 1 # Fixes broken sun.
@@ -41754,9 +41815,10 @@ SLPS-73218:
   name: "Ace Combat 5 - The Unsung War [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
+    recommendedBlendingLevel: 3
     mipmap: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
-    roundSprite: 2 # Fixes font and HUD artifacts.
+    roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     texturePreloading: 1 # Performs better than full.
@@ -41979,9 +42041,10 @@ SLPS-73250:
   name: "Ace Combat Zero - The Belkan War [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
+    recommendedBlendingLevel: 3
     mipmap: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
-    roundSprite: 2 # Fixes HUD artifacts.
+    roundSprite: 1 # Fixes HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Better aligns main menu strips, improving font readability.
   memcardFilters:
@@ -42096,8 +42159,9 @@ SLPS-73410:
   name: "Ace Combat 04 - Shattered Skies [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
+    recommendedBlendingLevel: 3
     mipmap: 1
-    roundSprite: 2 # Fixes font and HUD artifacts.
+    roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     gpuTargetCLUT: 1 # Fixes broken sun.
@@ -42759,8 +42823,9 @@ SLUS-20152:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 3
     mipmap: 1
-    roundSprite: 2 # Fixes font and HUD artifacts.
+    roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     gpuTargetCLUT: 1 # Fixes broken sun.
@@ -46058,9 +46123,10 @@ SLUS-20851:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 3
     mipmap: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
-    roundSprite: 2 # Fixes font and HUD artifacts.
+    roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     texturePreloading: 1 # Performs better than full.
@@ -48863,9 +48929,10 @@ SLUS-21346:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 3
     mipmap: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
-    roundSprite: 2 # Fixes HUD artifacts.
+    roundSprite: 1 # Fixes HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Better aligns main menu strips, improving font readability.
   memcardFilters:
