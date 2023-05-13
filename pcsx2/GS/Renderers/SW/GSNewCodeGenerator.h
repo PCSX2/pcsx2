@@ -15,13 +15,7 @@
 
 #pragma once
 
-#if defined(_MSC_VER) && defined(__clang__)
-#define and and_
-#define or or_
-#define xor xor_
-#define not not_
 #define XBYAK_NO_OP_NAMES
-#endif
 
 #include "xbyak/xbyak.h"
 #include "xbyak/xbyak_util.h"
@@ -259,16 +253,16 @@ public:
 	void vzeroall() { requireAVX(); actual.vzeroall(); }
 
 	FORWARD_OO_OI(add)
-	FORWARD_OO_OI(and)
+	FORWARD_OO_OI(and_)
 	FORWARD_OO_OI(cmp)
-	FORWARD_OO_OI(or)
+	FORWARD_OO_OI(or_)
 	FORWARD_OO_OI(sub)
-	FORWARD_OO_OI(xor)
+	FORWARD_OO_OI(xor_)
 	FORWARD(2, BASE, lea,   const Reg&, const Address&)
 	FORWARD(2, BASE, mov,   const Operand&, size_t)
 	FORWARD(2, BASE, mov,   ARGS_OO)
 	FORWARD(2, BASE, movzx, const Reg&, const Operand&)
-	FORWARD(1, BASE, not,   const Operand&)
+	FORWARD(1, BASE, not_,  const Operand&)
 	FORWARD(1, BASE, pop,   const Operand&)
 	FORWARD(1, BASE, push,  const Operand&)
 	FORWARD(2, BASE, sar,   const Operand&, const Reg8&)
