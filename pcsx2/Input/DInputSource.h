@@ -14,54 +14,37 @@
  */
 
 #pragma once
-#include "Frontend/InputSource.h"
+#define DIRECTINPUT_VERSION 0x0800
 #include "common/RedtapeWindows.h"
-#include <Xinput.h>
+#include "common/RedtapeWilCom.h"
+#include "Input/InputSource.h"
 #include <array>
+#include <dinput.h>
 #include <functional>
 #include <mutex>
 #include <vector>
 
-// SCP XInput extension
-typedef struct
-{
-	float SCP_UP;
-	float SCP_RIGHT;
-	float SCP_DOWN;
-	float SCP_LEFT;
+#include <wil/resource.h>
 
-	float SCP_LX;
-	float SCP_LY;
-
-	float SCP_L1;
-	float SCP_L2;
-	float SCP_L3;
-
-	float SCP_RX;
-	float SCP_RY;
-
-	float SCP_R1;
-	float SCP_R2;
-	float SCP_R3;
-
-	float SCP_T;
-	float SCP_C;
-	float SCP_X;
-	float SCP_S;
-
-	float SCP_SELECT;
-	float SCP_START;
-
-	float SCP_PS;
-} SCP_EXTN;
-
-class SettingsInterface;
-
-class XInputSource final : public InputSource
+class DInputSource final : public InputSource
 {
 public:
-	XInputSource();
-	~XInputSource();
+	enum HAT_DIRECTION : u32
+	{
+		HAT_DIRECTION_UP = 0,
+		HAT_DIRECTION_DOWN = 1,
+		HAT_DIRECTION_LEFT = 2,
+		HAT_DIRECTION_RIGHT = 3,
+		NUM_HAT_DIRECTIONS = 4,
+	};
+
+	enum : u32
+	{
+		MAX_NUM_BUTTONS = 128,
+	};
+
+	DInputSource();
+	~DInputSource() override;
 
 	bool Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) override;
 	void UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) override;
@@ -79,52 +62,33 @@ public:
 	std::string ConvertKeyToString(InputBindingKey key) override;
 
 private:
-	enum : u32
-	{
-		NUM_CONTROLLERS = XUSER_MAX_COUNT, // 4
-		NUM_BUTTONS = 15,
-	};
-
-	enum : u32
-	{
-		AXIS_LEFTX,
-		AXIS_LEFTY,
-		AXIS_RIGHTX,
-		AXIS_RIGHTY,
-		AXIS_LEFTTRIGGER,
-		AXIS_RIGHTTRIGGER,
-		NUM_AXES,
-	};
-
 	struct ControllerData
 	{
-		union
-		{
-			XINPUT_STATE last_state;
-			SCP_EXTN last_state_scp;
-		};
-		XINPUT_VIBRATION last_vibration = {};
-		bool connected = false;
-		bool has_large_motor = false;
-		bool has_small_motor = false;
+		wil::com_ptr_nothrow<IDirectInputDevice8W> device;
+		DIJOYSTATE2 last_state = {};
+		GUID guid = {};
+		std::vector<u32> axis_offsets;
+		u32 num_buttons = 0;
+
+		// NOTE: We expose hats as num_buttons + (hat_index * 4) + direction.
+		u32 num_hats = 0;
+
+		bool needs_poll = true;
 	};
 
-	using ControllerDataArray = std::array<ControllerData, NUM_CONTROLLERS>;
+	using ControllerDataArray = std::vector<ControllerData>;
 
-	void CheckForStateChanges(u32 index, const XINPUT_STATE& new_state);
-	void CheckForStateChangesSCP(u32 index, const SCP_EXTN& new_state);
-	void HandleControllerConnection(u32 index);
-	void HandleControllerDisconnection(u32 index);
+	static std::array<bool, NUM_HAT_DIRECTIONS> GetHatButtons(DWORD hat);
+	static std::string GetDeviceIdentifier(u32 index);
+
+	bool AddDevice(ControllerData& cd, const std::string& name);
+
+	void CheckForStateChanges(size_t index, const DIJOYSTATE2& new_state);
+
+	// Those must go first in the class so they are destroyed last
+	wil::unique_hmodule m_dinput_module;
+	wil::com_ptr_nothrow<IDirectInput8W> m_dinput;
+	HWND m_toplevel_window = nullptr;
 
 	ControllerDataArray m_controllers;
-
-	HMODULE m_xinput_module{};
-	DWORD(WINAPI* m_xinput_get_state)(DWORD, XINPUT_STATE*);
-	DWORD(WINAPI* m_xinput_set_state)(DWORD, XINPUT_VIBRATION*);
-	DWORD(WINAPI* m_xinput_get_capabilities)(DWORD, DWORD, XINPUT_CAPABILITIES*);
-	DWORD(WINAPI* m_xinput_get_extended)(DWORD, SCP_EXTN*);
-
-	static const char* s_axis_names[NUM_AXES];
-	static const char* s_button_names[NUM_BUTTONS];
-	static const u16 s_button_masks[NUM_BUTTONS];
 };

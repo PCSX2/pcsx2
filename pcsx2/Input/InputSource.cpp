@@ -14,7 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "Frontend/InputSource.h"
+#include "Input/InputSource.h"
 #include "common/StringUtil.h"
 
 InputSource::InputSource() = default;

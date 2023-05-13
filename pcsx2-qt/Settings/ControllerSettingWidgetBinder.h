@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,6 +15,11 @@
 
 #pragma once
 
+#include "pcsx2/Host.h"
+
+#include "QtHost.h"
+#include "SettingWidgetBinder.h"
+
 #include <optional>
 #include <type_traits>
 
@@ -26,11 +31,6 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpinBox>
-
-#include "pcsx2/HostSettings.h"
-
-#include "QtHost.h"
-#include "SettingWidgetBinder.h"
 
 /// This nastyness is required because input profiles aren't overlaid settings like the rest of them, it's
 /// input profile *or* global, not both.

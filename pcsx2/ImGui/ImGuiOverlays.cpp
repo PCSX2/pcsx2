@@ -15,6 +15,34 @@
 
 #include "PrecompiledHeader.h"
 
+#include "Config.h"
+#include "Counters.h"
+#include "GS.h"
+#include "GS/GS.h"
+#include "GS/GSCapture.h"
+#include "GS/GSVector.h"
+#include "Host.h"
+#include "IconsFontAwesome5.h"
+#include "ImGui/FullscreenUI.h"
+#include "ImGui/ImGuiFullscreen.h"
+#include "ImGui/ImGuiManager.h"
+#include "ImGui/ImGuiOverlays.h"
+#include "Input/InputManager.h"
+#include "PAD/Host/KeyStatus.h"
+#include "PAD/Host/PAD.h"
+#include "PerformanceMetrics.h"
+#include "USB/USB.h"
+#include "VMManager.h"
+#include "pcsx2/Recording/InputRecording.h"
+
+#include "common/Align.h"
+#include "common/StringUtil.h"
+#include "common/Timer.h"
+
+#include "fmt/core.h"
+#include "gsl/span"
+#include "imgui.h"
+
 #include <array>
 #include <chrono>
 #include <cmath>
@@ -22,35 +50,6 @@
 #include <mutex>
 #include <tuple>
 #include <unordered_map>
-
-#include "gsl/span"
-#include "fmt/core.h"
-
-#include "common/Align.h"
-#include "common/StringUtil.h"
-#include "common/Timer.h"
-#include "imgui.h"
-
-#include "Config.h"
-#include "Counters.h"
-#include "Frontend/FullscreenUI.h"
-#include "Frontend/ImGuiManager.h"
-#include "Frontend/ImGuiFullscreen.h"
-#include "Frontend/ImGuiOverlays.h"
-#include "Frontend/InputManager.h"
-#include "GS.h"
-#include "GS/GS.h"
-#include "GS/GSCapture.h"
-#include "GS/GSVector.h"
-#include "Host.h"
-#include "IconsFontAwesome5.h"
-#include "PerformanceMetrics.h"
-#include "PAD/Host/PAD.h"
-#include "PAD/Host/KeyStatus.h"
-#include "USB/USB.h"
-
-#include "VMManager.h"
-#include "pcsx2/Recording/InputRecording.h"
 
 namespace ImGuiManager
 {

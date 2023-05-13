@@ -60,8 +60,8 @@ if(TARGET SDL2::SDL2 OR TARGET SDL2::SDL2-static)
 		target_link_libraries(PCSX2_FLAGS INTERFACE SDL2::SDL2)
 	endif()
 	target_sources(PCSX2 PRIVATE
-		Frontend/SDLInputSource.cpp
-		Frontend/SDLInputSource.h
+		Input/SDLInputSource.cpp
+		Input/SDLInputSource.h
 	)
 endif()
 
@@ -83,9 +83,11 @@ endif(WIN32)
 
 # Main pcsx2 source
 set(pcsx2Sources
+	Achievements.cpp
 	Cache.cpp
 	COP0.cpp
 	COP2.cpp
+	CommonHost.cpp
 	Counters.cpp
 	Dmac.cpp
 	GameDatabase.cpp
@@ -93,14 +95,20 @@ set(pcsx2Sources
 	FW.cpp
 	FiFo.cpp
 	FPU.cpp
+	GameList.cpp
 	Gif.cpp
 	Gif_Logger.cpp
 	Gif_Unit.cpp
 	GS.cpp
+	GSDumpReplayer.cpp
 	Host.cpp
+	Hotkeys.cpp
 	Hw.cpp
 	HwRead.cpp
 	HwWrite.cpp
+	LayeredSettingsInterface.cpp
+	LogSink.cpp
+	INISettingsInterface.cpp
 	Interpreter.cpp
 	IopBios.cpp
 	IopCounters.cpp
@@ -150,6 +158,7 @@ set(pcsx2Sources
 	Vif_Transfer.cpp
 	Vif_Unpack.cpp
 	VirtualMemory.cpp
+	VMManager.cpp
 	vtlb.cpp
 	VU0.cpp
 	VUmicro.cpp
@@ -159,7 +168,8 @@ set(pcsx2Sources
 	VU1microInterp.cpp
 	VUflags.cpp
 	VUmicroMem.cpp
-	VUops.cpp)
+	VUops.cpp
+)
 
 # Main pcsx2 header
 set(pcsx2Headers
@@ -167,6 +177,7 @@ set(pcsx2Headers
 	AsyncFileReader.h
 	Cache.h
 	Common.h
+	CommonHost.h
 	Config.h
 	COP0.h
 	Counters.h
@@ -174,18 +185,23 @@ set(pcsx2Headers
 	GameDatabase.h
 	Elfheader.h
 	FW.h
+	GameList.h
 	Gif.h
 	Gif_Unit.h
 	GS.h
+	GSDumpReplayer.h
 	Hardware.h
 	Host.h
 	Hw.h
+	INISettingsInterface.h
 	IopBios.h
 	IopCounters.h
 	IopDma.h
 	IopGte.h
 	IopHw.h
 	IopMem.h
+	LayeredSettingsInterface.h
+	LogSink.h
 	PINE.h
 	Mdec.h
 	MTVU.h
@@ -216,6 +232,7 @@ set(pcsx2Headers
 	Vif.h
 	Vif_Unpack.h
 	VirtualMemory.h
+	VMManager.h
 	vtlb.h
 	VUflags.h
 	VUmicro.h
@@ -833,16 +850,27 @@ set(pcsx2DebugToolsHeaders
 	DebugTools/DisVUops.h
 	DebugTools/BiosDebugData.h)
 
-# Frontend sources
-set(pcsx2FrontendSources
-	Frontend/ImGuiManager.cpp
-	Frontend/ImGuiOverlays.cpp
+set(pcsx2ImGuiSources
+	ImGui/FullscreenUI.cpp
+	ImGui/ImGuiFullscreen.cpp
+	ImGui/ImGuiManager.cpp
+	ImGui/ImGuiOverlays.cpp
 )
 
-# Frontend headers
-set(pcsx2FrontendHeaders
-	Frontend/ImGuiManager.h
-	Frontend/ImGuiOverlays.h
+set(pcsx2ImGuiHeaders
+	ImGui/FullscreenUI.h
+	ImGui/ImGuiFullscreen.h
+	ImGui/ImGuiManager.h
+	ImGui/ImGuiOverlays.h
+)
+
+set(pcsx2InputSources
+	Input/InputManager.cpp
+	Input/InputSource.cpp
+)
+set(pcsx2InputHeaders
+	Input/InputManager.h
+	Input/InputSource.h
 )
 
 if(APPLE)
@@ -861,42 +889,7 @@ if(APPLE)
 	)
 endif()
 
-list(APPEND pcsx2FrontendSources
-	Frontend/CommonHost.cpp
-	Frontend/CommonHotkeys.cpp
-	Frontend/FullscreenUI.cpp
-	Frontend/GameList.cpp
-	Frontend/HostSettings.cpp
-	Frontend/ImGuiFullscreen.cpp
-	Frontend/InputManager.cpp
-	Frontend/InputSource.cpp
-	Frontend/LayeredSettingsInterface.cpp
-	Frontend/LogSink.cpp
-	GSDumpReplayer.cpp
-	INISettingsInterface.cpp
-	VMManager.cpp
-)
-list(APPEND pcsx2FrontendHeaders
-	Frontend/CommonHost.h
-	Frontend/FullscreenUI.h
-	Frontend/GameList.h
-	Frontend/ImGuiFullscreen.h
-	Frontend/InputManager.h
-	Frontend/InputSource.h
-	Frontend/LayeredSettingsInterface.h
-	Frontend/LogSink.h
-	GSDumpReplayer.h
-	HostSettings.h
-	INISettingsInterface.h
-	VMManager.h)
-
 if(USE_ACHIEVEMENTS)
-	list(APPEND pcsx2FrontendSources
-		Frontend/Achievements.cpp
-	)
-	list(APPEND pcsx2FrontendHeaders
-		Frontend/Achievements.h
-	)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE
 		ENABLE_ACHIEVEMENTS
 	)
@@ -922,13 +915,13 @@ if(USE_DISCORD_PRESENCE)
 	)
 endif()
 if(WIN32)
-	list(APPEND pcsx2FrontendSources
-		Frontend/DInputSource.cpp
-		Frontend/XInputSource.cpp
+	list(APPEND pcsx2InputSources
+		Input/DInputSource.cpp
+		Input/XInputSource.cpp
 	)
-	list(APPEND pcsx2FrontendHeaders
-		Frontend/DInputSource.h
-		Frontend/XInputSource.h
+	list(APPEND pcsx2InputHeaders
+		Input/DInputSource.h
+		Input/XInputSource.h
 	)
 endif()
 
@@ -1132,8 +1125,10 @@ target_sources(PCSX2 PRIVATE
 	${pcsx2RecordingSources}
 	${pcsx2DebugToolsSources}
 	${pcsx2DebugToolsHeaders}
-	${pcsx2FrontendSources}
-	${pcsx2FrontendHeaders}
+	${pcsx2ImGuiSources}
+	${pcsx2ImGuiHeaders}
+	${pcsx2InputSources}
+	${pcsx2InputHeaders}
 	${pcsx2ps2Sources}
 	${pcsx2ps2Headers}
 )

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -13,9 +13,30 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "PrecompiledHeader.h"
+
+#include "Achievements.h"
+#include "CDVD/CDVD.h"
+#include "COP0.h"
+#include "Cache.h"
+#include "Config.h"
+#include "Counters.h"
+#include "DebugTools/Breakpoints.h"
+#include "Elfheader.h"
+#include "GS.h"
+#include "GS/GS.h"
+#include "Host.h"
+#include "MTVU.h"
+#include "PAD/Host/PAD.h"
+#include "Patch.h"
+#include "R3000A.h"
+#include "SPU2/spu2.h"
 #include "SaveState.h"
+#include "StateWrapper.h"
+#include "USB/USB.h"
+#include "VMManager.h"
+#include "VUmicro.h"
+#include "ps2/BiosTools.h"
 
 #include "common/FileSystem.h"
 #include "common/Path.h"
@@ -23,31 +44,6 @@
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 #include "common/ZipHelpers.h"
-
-#include "ps2/BiosTools.h"
-#include "COP0.h"
-#include "VUmicro.h"
-#include "MTVU.h"
-#include "Cache.h"
-#include "Config.h"
-#include "CDVD/CDVD.h"
-#include "R3000A.h"
-#include "Elfheader.h"
-#include "Counters.h"
-#include "Patch.h"
-#include "DebugTools/Breakpoints.h"
-#include "Host.h"
-#include "GS.h"
-#include "GS/GS.h"
-#include "SPU2/spu2.h"
-#include "StateWrapper.h"
-#include "PAD/Host/PAD.h"
-#include "USB/USB.h"
-#include "VMManager.h"
-
-#ifdef ENABLE_ACHIEVEMENTS
-#include "Frontend/Achievements.h"
-#endif
 
 #include "fmt/core.h"
 

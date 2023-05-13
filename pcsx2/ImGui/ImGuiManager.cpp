@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,34 +15,34 @@
 
 #include "PrecompiledHeader.h"
 
+#include "GS/Renderers/Common/GSDevice.h"
+#include "Config.h"
+#include "Counters.h"
+#include "GS.h"
+#include "GS/GS.h"
+#include "Host.h"
+#include "IconsFontAwesome5.h"
+#include "ImGui/FullscreenUI.h"
+#include "ImGui/ImGuiFullscreen.h"
+#include "ImGui/ImGuiManager.h"
+#include "ImGui/ImGuiOverlays.h"
+#include "Input/InputManager.h"
+#include "PerformanceMetrics.h"
+#include "Recording/InputRecording.h"
+#include "VMManager.h"
+
+#include "common/StringUtil.h"
+#include "common/Timer.h"
+
+#include "fmt/core.h"
+#include "imgui.h"
+#include "imgui_internal.h"
+
 #include <chrono>
 #include <cmath>
 #include <deque>
 #include <mutex>
 #include <unordered_map>
-
-#include "fmt/core.h"
-
-#include "common/StringUtil.h"
-#include "common/Timer.h"
-#include "imgui.h"
-#include "imgui_internal.h"
-
-#include "Config.h"
-#include "Counters.h"
-#include "Frontend/FullscreenUI.h"
-#include "Frontend/ImGuiFullscreen.h"
-#include "Frontend/ImGuiManager.h"
-#include "Frontend/ImGuiOverlays.h"
-#include "Frontend/InputManager.h"
-#include "GS.h"
-#include "GS/GS.h"
-#include "GS/Renderers/Common/GSDevice.h"
-#include "Host.h"
-#include "IconsFontAwesome5.h"
-#include "PerformanceMetrics.h"
-#include "Recording/InputRecording.h"
-#include "VMManager.h"
 
 namespace ImGuiManager
 {

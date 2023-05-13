@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,48 +15,48 @@
 
 #include "PrecompiledHeader.h"
 
-#include "Frontend/Achievements.h"
-#include "Frontend/CommonHost.h"
-#include "Frontend/FullscreenUI.h"
-#include "Frontend/ImGuiFullscreen.h"
-#include "Frontend/ImGuiManager.h"
+#ifdef ENABLE_ACHIEVEMENTS
+
+#include "CommonHost.h"
+#include "Achievements.h"
+#include "CDVD/IsoFS/IsoFS.h"
+#include "CDVD/IsoFS/IsoFSCDVD.h"
+#include "Elfheader.h"
+#include "GS.h"
+#include "Host.h"
+#include "ImGui/FullscreenUI.h"
+#include "ImGui/ImGuiFullscreen.h"
+#include "ImGui/ImGuiManager.h"
+#include "IopMem.h"
+#include "Memory.h"
+#include "VMManager.h"
+#include "svnrev.h"
+#include "vtlb.h"
 
 #include "common/Assertions.h"
-#include "common/FileSystem.h"
-#include "common/HTTPDownloader.h"
 #include "common/Console.h"
+#include "common/FileSystem.h"
 #include "common/General.h"
+#include "common/HTTPDownloader.h"
 #include "common/MD5Digest.h"
 #include "common/Path.h"
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 
+#include "fmt/core.h"
 #include "rc_api_info.h"
 #include "rc_api_request.h"
 #include "rc_api_runtime.h"
 #include "rc_api_user.h"
 #include "rcheevos.h"
-#include "fmt/core.h"
-
-#include "CDVD/IsoFS/IsoFSCDVD.h"
-#include "CDVD/IsoFS/IsoFS.h"
-#include "Elfheader.h"
-#include "GS.h"
-#include "Host.h"
-#include "HostSettings.h"
-#include "IopMem.h"
-#include "Memory.h"
-#include "VMManager.h"
-#include "vtlb.h"
-#include "svnrev.h"
 
 #include <algorithm>
 #include <array>
 #include <cstdarg>
 #include <cstdlib>
-#include <limits>
 #include <functional>
+#include <limits>
 #include <optional>
 #include <string>
 #include <vector>
@@ -2262,4 +2262,6 @@ void Achievements::RAIntegration::RACallbackWriteMemory(unsigned int address, un
 	PokeMemory(address, sizeof(value), nullptr, static_cast<unsigned>(value));
 }
 
-#endif
+#endif // ENABLE_RAINTEGRATION
+
+#endif // ENABLE_ACHIEVEMENTS

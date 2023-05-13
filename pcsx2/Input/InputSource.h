@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "common/Pcsx2Defs.h"
-#include "Frontend/InputManager.h"
+#include "Input/InputManager.h"
 
 class SettingsInterface;
 

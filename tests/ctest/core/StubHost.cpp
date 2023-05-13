@@ -13,18 +13,14 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "pcsx2/Frontend/CommonHost.h"
-#include "pcsx2/Frontend/ImGuiManager.h"
-#include "pcsx2/Frontend/InputManager.h"
+#include "pcsx2/CommonHost.h"
+#include "pcsx2/ImGui/ImGuiManager.h"
+#include "pcsx2/Input/InputManager.h"
 #include "pcsx2/GS.h"
 #include "pcsx2/GS/GS.h"
 #include "pcsx2/Host.h"
-#include "pcsx2/HostSettings.h"
 #include "pcsx2/VMManager.h"
-
-#ifdef ENABLE_ACHIEVEMENTS
-#include "pcsx2/Frontend/Achievements.h"
-#endif
+#include "pcsx2/Achievements.h"
 
 void Host::CommitBaseSettingChanges()
 {

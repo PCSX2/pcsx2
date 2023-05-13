@@ -17,7 +17,7 @@
 
 #include "QtUtils.h"
 
-#include "pcsx2/Frontend/InputManager.h"
+#include "pcsx2/Input/InputManager.h"
 
 #include "common/StringUtil.h"
 

@@ -16,20 +16,6 @@
 #include "PrecompiledHeader.h"
 
 #include "VMManager.h"
-
-#include <atomic>
-#include <sstream>
-#include <mutex>
-
-#include "common/Console.h"
-#include "common/FileSystem.h"
-#include "common/ScopedGuard.h"
-#include "common/StringUtil.h"
-#include "common/SettingsWrapper.h"
-#include "common/Timer.h"
-#include "common/Threading.h"
-#include "fmt/core.h"
-
 #include "Achievements.h"
 #include "Counters.h"
 #include "CDVD/CDVD.h"
@@ -40,7 +26,6 @@
 #include "GS.h"
 #include "GSDumpReplayer.h"
 #include "Host.h"
-#include "HostSettings.h"
 #include "INISettingsInterface.h"
 #include "IopBios.h"
 #include "MTVU.h"
@@ -55,15 +40,26 @@
 #include "Sio.h"
 #include "ps2/BiosTools.h"
 #include "Recording/InputRecordingControls.h"
-
 #include "DebugTools/MIPSAnalyst.h"
 #include "DebugTools/SymbolMap.h"
-
-#include "IconsFontAwesome5.h"
-
 #include "Recording/InputRecording.h"
 
+#include "common/Console.h"
+#include "common/FileSystem.h"
+#include "common/ScopedGuard.h"
+#include "common/StringUtil.h"
+#include "common/SettingsWrapper.h"
+#include "common/Timer.h"
+#include "common/Threading.h"
 #include "common/emitter/tools.h"
+
+#include "IconsFontAwesome5.h"
+#include "fmt/core.h"
+
+#include <atomic>
+#include <sstream>
+#include <mutex>
+
 #ifdef _M_X86
 #include "common/emitter/x86_intrin.h"
 #endif
@@ -266,23 +262,9 @@ bool VMManager::Internal::InitializeGlobals()
 	x86caps.CalculateMHz();
 	SysLogMachineCaps();
 
-	if (GSinit() != 0)
-	{
-		Host::ReportErrorAsync("Error", "Failed to initialize GS (GSinit()).");
-		return false;
-	}
-
-	if (!SPU2::Initialize())
-	{
-		Host::ReportErrorAsync("Error", "Failed to initialize SPU2.");
-		return false;
-	}
-
-	if (USBinit() != 0)
-	{
-		Host::ReportErrorAsync("Error", "Failed to initialize USB (USBinit())");
-		return false;
-	}
+	GSinit();
+	SPU2::Initialize();
+	USBinit();
 
 	return true;
 }

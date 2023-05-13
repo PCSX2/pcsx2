@@ -177,7 +177,7 @@ void SPU2::SetDeviceSampleRateMultiplier(double multiplier)
 	UpdateSampleRate();
 }
 
-bool SPU2::Initialize()
+void SPU2::Initialize()
 {
 	pxAssert(regtable[0x400] == nullptr);
 	spu2regs = (s16*)malloc(0x010000);
@@ -194,8 +194,8 @@ bool SPU2::Initialize()
 
 	if (!spu2regs || !_spu2mem || !pcm_cache_data)
 	{
-		Console.Error("SPU2: Error allocating Memory");
-		return false;
+		// If these memory allocations fail, we have much bigger problems.
+		pxFailRel("Failed to allocate SPU2 memory");
 	}
 
 	// Patch up a copy of regtable that directly maps "nullptrs" to SPU2 memory.
@@ -212,7 +212,6 @@ bool SPU2::Initialize()
 	}
 
 	InitADSR();
-	return true;
 }
 
 

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,11 +15,19 @@
 
 #include "PrecompiledHeader.h"
 
+#include "GameListModel.h"
+#include "GameListRefreshThread.h"
+#include "GameListWidget.h"
+#include "QtHost.h"
+#include "QtUtils.h"
+
+#include "pcsx2/GameList.h"
+#include "pcsx2/Host.h"
+
 #include "common/Assertions.h"
 #include "common/StringUtil.h"
 
-#include "pcsx2/Frontend/GameList.h"
-#include "pcsx2/HostSettings.h"
+#include "fmt/format.h"
 
 #include <QtCore/QSortFilterProxyModel>
 #include <QtGui/QPixmap>
@@ -28,14 +36,6 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QScrollBar>
-
-#include "GameListModel.h"
-#include "GameListRefreshThread.h"
-#include "GameListWidget.h"
-#include "QtHost.h"
-#include "QtUtils.h"
-
-#include "fmt/format.h"
 
 static const char* SUPPORTED_FORMATS_STRING = QT_TRANSLATE_NOOP(GameListWidget,
 	".bin/.iso (ISO Disc Images)\n"

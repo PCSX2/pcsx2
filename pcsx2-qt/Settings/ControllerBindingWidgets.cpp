@@ -25,7 +25,7 @@
 
 #include "common/StringUtil.h"
 
-#include "pcsx2/HostSettings.h"
+#include "pcsx2/Host.h"
 #include "pcsx2/PAD/Host/PAD.h"
 
 #include "Settings/ControllerBindingWidgets.h"

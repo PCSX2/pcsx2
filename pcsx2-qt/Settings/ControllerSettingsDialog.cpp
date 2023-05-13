@@ -21,7 +21,7 @@
 #include "Settings/ControllerBindingWidgets.h"
 #include "Settings/HotkeySettingsWidget.h"
 
-#include "pcsx2/Frontend/CommonHost.h"
+#include "pcsx2/CommonHost.h"
 #include "pcsx2/INISettingsInterface.h"
 #include "pcsx2/PAD/Host/PAD.h"
 #include "pcsx2/Sio.h"

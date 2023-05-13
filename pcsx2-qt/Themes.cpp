@@ -17,7 +17,7 @@
 #include "QtHost.h"
 
 #include "pcsx2/Config.h"
-#include "pcsx2/HostSettings.h"
+#include "pcsx2/Host.h"
 
 #include "common/Path.h"
 

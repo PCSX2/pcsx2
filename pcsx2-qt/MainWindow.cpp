@@ -15,31 +15,6 @@
 
 #include "PrecompiledHeader.h"
 
-#include <QtCore/QDateTime>
-#include <QtGui/QCloseEvent>
-#include <QtWidgets/QFileDialog>
-#include <QtWidgets/QInputDialog>
-#include <QtWidgets/QMessageBox>
-#include <QtWidgets/QProgressBar>
-#include <QtWidgets/QStyle>
-#include <QtWidgets/QStyleFactory>
-
-#include "common/Assertions.h"
-#include "common/CocoaTools.h"
-#include "common/FileSystem.h"
-
-#include "pcsx2/CDVD/CDVDcommon.h"
-#include "pcsx2/CDVD/CDVDdiscReader.h"
-#include "pcsx2/Frontend/GameList.h"
-#include "pcsx2/Frontend/LogSink.h"
-#include "pcsx2/GS.h"
-#include "pcsx2/GS/GS.h"
-#include "pcsx2/GSDumpReplayer.h"
-#include "pcsx2/HostSettings.h"
-#include "pcsx2/PerformanceMetrics.h"
-#include "pcsx2/Recording/InputRecording.h"
-#include "pcsx2/Recording/InputRecordingControls.h"
-
 #include "AboutDialog.h"
 #include "AutoUpdaterDialog.h"
 #include "CoverDownloadDialog.h"
@@ -49,21 +24,43 @@
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtUtils.h"
+#include "SettingWidgetBinder.h"
 #include "Settings/ControllerSettingsDialog.h"
 #include "Settings/GameListSettingsWidget.h"
 #include "Settings/InterfaceSettingsWidget.h"
-#include "SettingWidgetBinder.h"
-#include "svnrev.h"
 #include "Tools/InputRecording/InputRecordingViewer.h"
 #include "Tools/InputRecording/NewInputRecordingDlg.h"
+#include "svnrev.h"
+
+#include "pcsx2/Achievements.h"
+#include "pcsx2/CDVD/CDVDcommon.h"
+#include "pcsx2/CDVD/CDVDdiscReader.h"
+#include "pcsx2/GS.h"
+#include "pcsx2/GS/GS.h"
+#include "pcsx2/GSDumpReplayer.h"
+#include "pcsx2/GameList.h"
+#include "pcsx2/Host.h"
+#include "pcsx2/LogSink.h"
+#include "pcsx2/PerformanceMetrics.h"
+#include "pcsx2/Recording/InputRecording.h"
+#include "pcsx2/Recording/InputRecordingControls.h"
+
+#include "common/Assertions.h"
+#include "common/CocoaTools.h"
+#include "common/FileSystem.h"
+
+#include <QtCore/QDateTime>
+#include <QtGui/QCloseEvent>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QInputDialog>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QProgressBar>
+#include <QtWidgets/QStyle>
+#include <QtWidgets/QStyleFactory>
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
 #include <Dbt.h>
-#endif
-
-#ifdef ENABLE_RAINTEGRATION
-#include "pcsx2/Frontend/Achievements.h"
 #endif
 
 const char* MainWindow::OPEN_FILE_FILTER =

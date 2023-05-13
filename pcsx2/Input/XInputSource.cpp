@@ -14,8 +14,8 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "Frontend/XInputSource.h"
-#include "Frontend/InputManager.h"
+#include "Input/XInputSource.h"
+#include "Input/InputManager.h"
 #include "common/Assertions.h"
 #include "common/StringUtil.h"
 #include "common/Console.h"

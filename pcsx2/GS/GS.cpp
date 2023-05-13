@@ -15,91 +15,67 @@
 
 #include "PrecompiledHeader.h"
 
+#include "Config.h"
+#include "Counters.h"
+#include "ImGui/FullscreenUI.h"
+#include "ImGui/ImGuiManager.h"
 #include "GS.h"
 #include "GSCapture.h"
-#include "GSGL.h"
-#include "GSUtil.h"
 #include "GSExtra.h"
-#include "Renderers/Null/GSRendererNull.h"
-#include "Renderers/HW/GSRendererHW.h"
-#include "Renderers/HW/GSTextureReplacements.h"
+#include "GSGL.h"
 #include "GSLzma.h"
+#include "GSUtil.h"
+#include "Host.h"
+#include "Input/InputManager.h"
 #include "MultiISA.h"
+#include "pcsx2/GS.h"
+#include "GS/Renderers/Null/GSRendererNull.h"
+#include "GS/Renderers/HW/GSRendererHW.h"
+#include "GS/Renderers/HW/GSTextureReplacements.h"
+
+#ifdef ENABLE_OPENGL
+#include "GS/Renderers/OpenGL/GSDeviceOGL.h"
+#endif
+
+#ifdef __APPLE__
+#include "GS/Renderers/Metal/GSMetalCPPAccessible.h"
+#endif
+
+#ifdef ENABLE_VULKAN
+#include "GS/Renderers/Vulkan/GSDeviceVK.h"
+#endif
+
+#ifdef _WIN32
+
+#include "GS/Renderers/DX11/GSDevice11.h"
+#include "GS/Renderers/DX12/GSDevice12.h"
+#include "GS/Renderers/DX11/D3D.h"
+
+#endif
 
 #include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
-#include "pcsx2/Config.h"
-#include "pcsx2/Counters.h"
-#include "pcsx2/Frontend/ImGuiManager.h"
-#include "pcsx2/Host.h"
-#include "pcsx2/HostSettings.h"
-#include "pcsx2/Frontend/FullscreenUI.h"
-#include "pcsx2/Frontend/InputManager.h"
-#include "pcsx2/GS.h"
 
 #include "fmt/format.h"
 
-#ifdef ENABLE_OPENGL
-#include "Renderers/OpenGL/GSDeviceOGL.h"
-#endif
-
-#ifdef __APPLE__
-#include "Renderers/Metal/GSMetalCPPAccessible.h"
-#endif
-
-#ifdef ENABLE_VULKAN
-#include "Renderers/Vulkan/GSDeviceVK.h"
-#endif
-
-#ifdef _WIN32
-
-#include "Renderers/DX11/GSDevice11.h"
-#include "Renderers/DX12/GSDevice12.h"
-#include "GS/Renderers/DX11/D3D.h"
-
-
-static HRESULT s_hr = E_FAIL;
-
-#endif
-
 #include <fstream>
-
-// do NOT undefine this/put it above includes, as x11 people love to redefine
-// things that make obscure compiler bugs, unless you want to run around and
-// debug obscure compiler errors --govanify
-#undef None
 
 Pcsx2Config::GSOptions GSConfig;
 
 static u64 s_next_manual_present_time;
 
-int GSinit()
+void GSinit()
 {
 	GSVertexSW::InitStatic();
 
 	GSUtil::Init();
-
-#ifdef _WIN32
-	s_hr = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
-#endif
-
-	return 0;
 }
 
 void GSshutdown()
 {
 	GSclose();
-
-#ifdef _WIN32
-	if (SUCCEEDED(s_hr))
-	{
-		::CoUninitialize();
-
-		s_hr = E_FAIL;
-	}
-#endif
 
 	// ensure all screenshots have been saved
 	GSJoinSnapshotThreads();

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,16 +15,15 @@
 
 #include "PrecompiledHeader.h"
 
-#include "common/Assertions.h"
-
-#include "pcsx2/Frontend/ImGuiManager.h"
-
 #include "DisplayWidget.h"
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 
 #include "pcsx2/GS/GSIntrin.h" // _BitScanForward
+#include "pcsx2/ImGui/ImGuiManager.h"
+
+#include "common/Assertions.h"
 
 #include <QtCore/QDebug>
 #include <QtGui/QGuiApplication>

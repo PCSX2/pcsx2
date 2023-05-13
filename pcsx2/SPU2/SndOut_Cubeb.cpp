@@ -31,8 +31,6 @@
 #include <objbase.h>
 #endif
 
-#include "HostSettings.h"
-
 class Cubeb : public SndOutModule
 {
 private:

@@ -14,10 +14,14 @@
  */
 
 #include "PrecompiledHeader.h"
+
+#include "Input/InputManager.h"
 #include "USB/usb-pad/usb-pad-sdl-ff.h"
-#include "Frontend/InputManager.h"
+
 #include "common/Console.h"
+
 #include "fmt/format.h"
+
 #include <algorithm>
 
 #ifdef SDL_BUILD

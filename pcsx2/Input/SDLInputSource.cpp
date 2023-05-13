@@ -14,10 +14,9 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "Frontend/SDLInputSource.h"
-#include "Frontend/InputManager.h"
+#include "Input/SDLInputSource.h"
+#include "Input/InputManager.h"
 #include "Host.h"
-#include "HostSettings.h"
 #include "common/Assertions.h"
 #include "common/StringUtil.h"
 #include "common/Console.h"
