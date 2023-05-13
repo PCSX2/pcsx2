@@ -542,16 +542,10 @@ public:
 				GSVector4i out_rect = PCRTCDisplays[display].framebufferRect;
 
 				if (out_rect.z >= 2048)
-				{
-					out_rect.z -= GSConfig.UseHardwareRenderer() ? 2048 : out_rect.x;
-					out_rect.x = 0;
-				}
+					out_rect.z -= out_rect.x;
 
 				if (out_rect.w >= 2048)
-				{
-					out_rect.w -= GSConfig.UseHardwareRenderer() ? 2048 : out_rect.y;
-					out_rect.y = 0;
-				}
+					out_rect.w -= out_rect.y;
 
 				// Cap the framebuffer read to the maximum display height, otherwise the hardware renderer gets messy.
 				const int min_mag = std::max(1, PCRTCDisplays[display].magnification.y);
@@ -565,12 +559,6 @@ public:
 				offset = (max_height / min_mag) - offset;
 				out_rect.w = std::min(out_rect.w, offset);
 
-				// Hardware mode needs a wider framebuffer as it can't offset the read.
-				if (GSConfig.UseHardwareRenderer())
-				{
-					out_rect.z += PCRTCDisplays[display].framebufferOffsets.x;
-					out_rect.w += PCRTCDisplays[display].framebufferOffsets.y;
-				}
 				return GSVector2i(out_rect.z, out_rect.w);
 			}
 		}
@@ -685,11 +673,15 @@ public:
 				{
 					if (PCRTCDisplays[display].framebufferRect.z >= 2048)
 					{
+						PCRTCDisplays[display].displayRect.x += 2048 - PCRTCDisplays[display].framebufferRect.x;
+						PCRTCDisplays[display].displayRect.z += 2048 - PCRTCDisplays[display].framebufferRect.x;
 						PCRTCDisplays[display].framebufferRect.x = 0;
 						PCRTCDisplays[display].framebufferRect.z -= 2048;
 					}
 					if (PCRTCDisplays[display].framebufferRect.w >= 2048)
 					{
+						PCRTCDisplays[display].displayRect.y += 2048 - PCRTCDisplays[display].framebufferRect.y;
+						PCRTCDisplays[display].displayRect.w += 2048 - PCRTCDisplays[display].framebufferRect.y;
 						PCRTCDisplays[display].framebufferRect.y = 0;
 						PCRTCDisplays[display].framebufferRect.w -= 2048;
 					}
