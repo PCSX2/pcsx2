@@ -181,10 +181,6 @@ namespace Perf
 		ml.method_size = static_cast<unsigned int>(size);
 		iJIT_NotifyEvent(iJVM_EVENT_TYPE_METHOD_LOAD_FINISHED_V2, &ml);
 	}
-#else
-	static void RegisterMethod(const void* ptr, size_t size, const char* method)
-	{
-	}
 #endif
 
 #if (defined(__linux__) && (defined(ProfileWithPerf) || defined(ProfileWithPerfJitDump))) || defined(ENABLE_VTUNE)

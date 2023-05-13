@@ -3049,8 +3049,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 		"Nearest", "Bilinear (Forced)", "Bilinear (PS2)", "Bilinear (Forced excluding sprite)"};
 	static constexpr const char* s_trilinear_options[] = {"Automatic (Default)", "Off (None)", "Trilinear (PS2)", "Trilinear (Forced)"};
 	static constexpr const char* s_dithering_options[] = {"Off", "Scaled", "Unscaled (Default)"};
-	static constexpr const char* s_crc_fix_options[] = {
-		"Automatic (Default)", "None (Debug)", "Minimum (Debug)", "Partial (OpenGL)", "Full (Direct3D)", "Aggressive"};
 	static constexpr const char* s_blending_options[] = {
 		"Minimum", "Basic (Recommended)", "Medium", "High", "Full (Slow)", "Maximum (Very Slow)"};
 	static constexpr const char* s_anisotropic_filtering_entries[] = {"Off (Default)", "2x", "4x", "8x", "16x"};
