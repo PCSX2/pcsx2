@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,27 +14,27 @@
  */
 
 #include "PrecompiledHeader.h"
+
 #include "Common.h"
+#include "GS/Renderers/Common/GSFunctionMap.h"
+#include "CDVD/CDVD.h"
+#include "Elfheader.h"
+#include "GSDumpReplayer.h"
+#include "MTVU.h"
 #include "R3000A.h"
 #include "VUmicro.h"
-#include "newVif.h"
-#include "MTVU.h"
-
-#include "Elfheader.h"
+#include "ps2/BiosTools.h"
+#include "svnrev.h"
+#include "x86/newVif.h"
 
 #include "common/Align.h"
 #include "common/MemsetFast.inl"
 #include "common/Perf.h"
 #include "common/StringUtil.h"
-#include "CDVD/CDVD.h"
-#include "ps2/BiosTools.h"
-#include "GS/Renderers/Common/GSFunctionMap.h"
 
+#ifdef _M_X86
 #include "common/emitter/x86_intrin.h"
-
-#include "GSDumpReplayer.h"
-
-#include "svnrev.h"
+#endif
 
 extern R5900cpu GSDumpReplayerCpu;
 

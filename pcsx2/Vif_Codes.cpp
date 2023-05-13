@@ -14,13 +14,14 @@
  */
 
 #include "PrecompiledHeader.h"
+
 #include "Common.h"
 #include "GS.h"
 #include "Gif_Unit.h"
-#include "Vif_Dma.h"
-#include "newVif.h"
-#include "VUmicro.h"
 #include "MTVU.h"
+#include "VUmicro.h"
+#include "Vif_Dma.h"
+#include "x86/newVif.h"
 
 #define vifOp(vifCodeName) _vifT int vifCodeName(int pass, const u32* data)
 #define pass1 if (pass == 0)

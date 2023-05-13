@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
-*  Copyright (C) 2002-2014  PCSX2 Dev Team
+*  Copyright (C) 2002-2023  PCSX2 Dev Team
 *
 *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
 *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,16 +14,15 @@
 */
 
 #include "PrecompiledHeader.h"
+
 #include "AsyncFileReader.h"
 #include "CsoFileReader.h"
+
 #include "common/Pcsx2Types.h"
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
-#ifdef __POSIX__
+
 #include <zlib.h>
-#else
-#include <zlib/zlib.h>
-#endif
 
 // Implementation of CSO compressed ISO reading, based on:
 // https://github.com/unknownbrackets/maxcso/blob/master/README_CSO.md

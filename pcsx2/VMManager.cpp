@@ -37,6 +37,7 @@
 #include "DEV9/DEV9.h"
 #include "USB/USB.h"
 #include "PAD/Host/PAD.h"
+#include "PCSX2Base.h"
 #include "Sio.h"
 #include "ps2/BiosTools.h"
 #include "Recording/InputRecordingControls.h"

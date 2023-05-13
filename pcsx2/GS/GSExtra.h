@@ -131,12 +131,6 @@ __fi static T VectorAlign(T value)
 
 // clang-format off
 
-#ifdef __POSIX__
-	#include <zlib.h>
-#else
-	#include <zlib/zlib.h>
-#endif
-
 #ifdef _MSC_VER
 	#define ALIGN_STACK(n) alignas(n) int dummy__; (void)dummy__;
 #else
@@ -148,18 +142,4 @@ __fi static T VectorAlign(T value)
 		// TODO Check clang behavior
 		#define ALIGN_STACK(n) alignas(n) int dummy__;
 	#endif
-#endif
-
-#ifdef ENABLE_VTUNE
-	#include "jitprofiling.h"
-	#ifdef _WIN32
-		#pragma comment(lib, "jitprofiling.lib")
-	#endif
-#endif
-
-#ifdef _WIN32
-	#define DIRECTORY_SEPARATOR '\\'
-#else
-	#include <sys/stat.h> // mkdir
-	#define DIRECTORY_SEPARATOR '/'
 #endif

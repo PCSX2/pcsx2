@@ -17,7 +17,7 @@
 
 #include "common/StringUtil.h"
 
-#include <jpgd/jpge.h>
+#include "jpge.h"
 #include "videodev.h"
 #include "cam-windows.h"
 #include "usb-eyetoy-webcam.h"
@@ -175,6 +175,8 @@ namespace usb_eyetoy
 			IMoniker* pMoniker = nullptr;
 			while (pEnum->Next(1, &pMoniker, NULL) == S_OK && sourcefilter == nullptr)
 			{
+				LONGLONG start = 0, stop = MAXLONGLONG;
+
 				IPropertyBag* pPropBag = nullptr;
 				hr = pMoniker->BindToStorage(0, 0, IID_PPV_ARGS(&pPropBag));
 				if (FAILED(hr))
@@ -315,7 +317,6 @@ namespace usb_eyetoy
 				}
 
 				// if the stream is started, start capturing immediatly
-				LONGLONG start = 0, stop = MAXLONGLONG;
 				hr = pGraphBuilder->ControlStream(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video, sourcefilter, &start, &stop, 1, 2);
 				if (FAILED(hr))
 				{

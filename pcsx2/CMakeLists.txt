@@ -69,15 +69,11 @@ if(WIN32)
 	set(MIN_WIN32 0x0A00)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE
 		__SSE4_1__
-		DIRECTINPUT_VERSION=0x0800
 		WINVER=${MIN_WIN32}
 		_WIN32_WINNT=${MIN_WIN32}
 		WIN32_LEAN_AND_MEAN
 		LZMA_API_STATIC
 		WIL_SUPPRESS_EXCEPTIONS
-	)
-	target_include_directories(PCSX2_FLAGS INTERFACE
-		../3rdparty # GL headers
 	)
 endif(WIN32)
 
@@ -1227,12 +1223,10 @@ endif()
 
 # additonal include directories
 target_include_directories(PCSX2_FLAGS INTERFACE
-	.
-	x86
-	${CMAKE_BINARY_DIR}/pcsx2
-	${CMAKE_BINARY_DIR}/common/include/
-	"${CMAKE_SOURCE_DIR}/3rdparty/jpgd/"
-	"${CMAKE_SOURCE_DIR}/3rdparty/xbyak/"
+	"${CMAKE_CURRENT_SOURCE_DIR}"
+	"${CMAKE_BINARY_DIR}/pcsx2"
+	"${CMAKE_BINARY_DIR}/common/include"
+	"${CMAKE_SOURCE_DIR}/3rdparty/xbyak"
 	"${FFMPEG_INCLUDE_DIRS}"
 )
 
