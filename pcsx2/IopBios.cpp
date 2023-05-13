@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -13,23 +13,24 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "PrecompiledHeader.h"
-#include "R3000A.h"
+
 #include "Common.h"
-#include "R5900.h" // for g_GameStarted
+#include "DebugTools/SymbolMap.h"
 #include "IopBios.h"
 #include "IopMem.h"
-#include "iR3000A.h"
+#include "R3000A.h"
+#include "R5900.h"
 #include "ps2/BiosTools.h"
-#include "DebugTools/SymbolMap.h"
+#include "x86/iR3000A.h"
 
-#include <ctype.h>
-#include <fmt/format.h>
-#include <string.h>
-#include <sys/stat.h>
 #include "common/FileSystem.h"
 #include "common/Path.h"
+
+#include <cctype>
+#include <cstring>
+#include <fmt/format.h>
+#include <sys/stat.h>
 
 #include <fcntl.h>
 

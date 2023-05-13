@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -18,14 +18,13 @@
 #include "Common.h"
 #include "Memory.h"
 #include "R5900OpcodeTables.h"
-#include "iR5900.h"
-#include "iMMI.h"
-#include "iFPU.h"
-#include "iCOP0.h"
 #include "VU.h"
 #include "VUmicro.h"
-
 #include "vtlb.h"
+#include "x86/iCOP0.h"
+#include "x86/iFPU.h"
+#include "x86/iMMI.h"
+#include "x86/iR5900.h"
 
 using namespace x86Emitter;
 

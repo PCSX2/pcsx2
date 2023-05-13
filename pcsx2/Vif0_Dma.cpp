@@ -17,7 +17,7 @@
 #include "Common.h"
 #include "Vif_Dma.h"
 #include "VUmicro.h"
-#include "newVif.h"
+#include "x86/newVif.h"
 
 u32 g_vif0Cycles = 0;
 

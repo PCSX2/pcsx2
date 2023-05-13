@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -16,23 +16,20 @@
 #include "PrecompiledHeader.h"
 
 #include "Common.h"
+#include "CDVD/CDVD.h"
+#include "DebugTools/Breakpoints.h"
+#include "Elfheader.h"
+#include "GS.h"
 #include "Memory.h"
+#include "Patch.h"
 #include "R3000A.h"
-
 #include "R5900OpcodeTables.h"
-#include "iR5900.h"
-#include "iR5900Analysis.h"
-#include "BaseblockEx.h"
+#include "VMManager.h"
 #include "VirtualMemory.h"
 #include "vtlb.h"
-
-#include "VMManager.h"
-#include "GS.h"
-#include "CDVD/CDVD.h"
-#include "Elfheader.h"
-
-#include "DebugTools/Breakpoints.h"
-#include "Patch.h"
+#include "x86/BaseblockEx.h"
+#include "x86/iR5900.h"
+#include "x86/iR5900Analysis.h"
 
 #include "common/AlignedMalloc.h"
 #include "common/FastJmp.h"

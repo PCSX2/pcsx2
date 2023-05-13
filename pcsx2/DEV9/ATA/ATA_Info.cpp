@@ -99,7 +99,7 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	WriteUInt16(identifyData, &index, sectorSize); //word 5
 	//Default Number of sectors per track (Retired)
 	WriteUInt16(identifyData, &index, defSectors); //word 6
-	//Reserved for assignment by the CompactFlash™ Association
+	//Reserved for assignment by the CompactFlashâ„¢ Association
 	index += 2 * 2; //word 7-8
 	//Retired
 	index += 1 * 2; //word 9
@@ -182,7 +182,7 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	WriteUInt16(identifyData, &index, 0x1F); //word 64 (pio3,4 supported) selection not reported here
 	//Minimum Multiword DMA transfer cycle time per word
 	WriteUInt16(identifyData, &index, 80); //word 65
-	//Manufacturer’s recommended Multiword DMA transfer cycle time
+	//Manufacturerâ€™s recommended Multiword DMA transfer cycle time
 	WriteUInt16(identifyData, &index, 80); //word 66
 	//Minimum PIO transfer cycle time without flow control
 	WriteUInt16(identifyData, &index, 120); //word 67
@@ -307,7 +307,7 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	 */
 	index = 93 * 2;
 	WriteUInt16(identifyData, &index, (u16)(1 | (1 << 14) | 0x2000)); //word 93
-	//Vendor’s recommended acoustic management value.
+	//Vendorâ€™s recommended acoustic management value.
 	//94
 	//Stream Minimum Request Size
 	//95
