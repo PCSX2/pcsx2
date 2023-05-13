@@ -181,27 +181,39 @@ namespace VMManager
 	/// If the scale is set to 0, the internal resolution will be used, otherwise it is treated as a multiplier to 1x.
 	void RequestDisplaySize(float scale = 0.0f);
 
-	/// Initializes default configuration in the specified file.
-	void SetDefaultSettings(SettingsInterface& si);
+	/// Initializes default configuration in the specified file for the specified categories.
+	void SetDefaultSettings(SettingsInterface& si, bool folders, bool core, bool controllers, bool hotkeys, bool ui);
 
 	/// Returns a list of processors in the system, and their corresponding affinity mask.
 	/// This list is ordered by most performant to least performant for pinning threads to.
 	const std::vector<u32>& GetSortedProcessorList();
 
+	/// Returns the time elapsed in the current play session.
+	u64 GetSessionPlayedTime();
+
+	/// Called when the rich presence string, provided by RetroAchievements, changes.
+	void UpdateDiscordPresence(const std::string& rich_presence);
+
 	/// Internal callbacks, implemented in the emu core.
 	namespace Internal
 	{
-		/// Performs early global initialization.
-		bool InitializeGlobals();
+		/// Checks settings version. Call once on startup. If it returns false, you should prompt the user to reset.
+		bool CheckSettingsVersion();
 
-		/// Releases resources allocated in InitializeGlobals().
-		void ReleaseGlobals();
+		/// Loads early settings. Call once on startup.
+		void LoadStartupSettings();
 
-		/// Reserves memory for the virtual machines.
-		bool InitializeMemory();
+		/// Initializes common host state, called on the CPU thread.
+		bool CPUThreadInitialize();
 
-		/// Completely releases all memory for the virtual machine.
-		void ReleaseMemory();
+		/// Cleans up common host state, called on the CPU thread.
+		void CPUThreadShutdown();
+
+		/// Resets any state for hotkey-related VMs, called on VM startup.
+		void ResetVMHotkeyState();
+
+		/// Updates the variables in the EmuFolders namespace, reloading subsystems if needed.
+		void UpdateEmuFolders();
 
 		const std::string& GetElfOverride();
 		bool IsExecutionInterrupted();
@@ -239,10 +251,6 @@ namespace Host
 	/// Called when performance metrics are updated, approximately once a second.
 	void OnPerformanceMetricsUpdated();
 
-	/// Looks up the serial and CRC for a game in the most efficient manner possible.
-	/// Implemented in the host because it may have a game list cache.
-	bool GetSerialAndCRCForFilename(const char* filename, std::string* serial, u32* crc);
-
 	/// Called when a save state is loading, before the file is processed.
 	void OnSaveStateLoading(const std::string_view& filename);
 
@@ -258,5 +266,5 @@ namespace Host
 		const std::string& game_name, u32 game_crc);
 
 	/// Provided by the host; called once per frame at guest vsync.
-	void CPUThreadVSync();
+	void VSyncOnCPUThread();
 } // namespace Host

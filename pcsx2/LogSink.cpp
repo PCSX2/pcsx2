@@ -367,7 +367,7 @@ static void UpdateLoggingSinks(bool system_console, bool file_log)
 		Console_SetActiveHandler(ConsoleWriter_Null);
 }
 
-void CommonHost::SetFileLogPath(std::string path)
+void LogSink::SetFileLogPath(std::string path)
 {
 	if (emuLogName == path)
 		return;
@@ -383,17 +383,17 @@ void CommonHost::SetFileLogPath(std::string path)
 	}
 }
 
-void CommonHost::SetBlockSystemConsole(bool block)
+void LogSink::SetBlockSystemConsole(bool block)
 {
 	s_block_system_console = block;
 }
 
-void CommonHost::InitializeEarlyConsole()
+void LogSink::InitializeEarlyConsole()
 {
 	UpdateLoggingSinks(true, false);
 }
 
-void CommonHost::UpdateLogging(SettingsInterface& si)
+void LogSink::UpdateLogging(SettingsInterface& si)
 {
 	const bool system_console_enabled = !s_block_system_console && si.GetBoolValue("Logging", "EnableSystemConsole", false);
 	const bool file_logging_enabled = si.GetBoolValue("Logging", "EnableFileLogging", false);
@@ -416,7 +416,7 @@ void CommonHost::UpdateLogging(SettingsInterface& si)
 	UpdateLoggingSinks(system_console_enabled, file_logging_enabled);
 }
 
-void CommonHost::SetDefaultLoggingSettings(SettingsInterface& si)
+void LogSink::SetDefaultLoggingSettings(SettingsInterface& si)
 {
 	si.SetBoolValue("Logging", "EnableSystemConsole", false);
 	si.SetBoolValue("Logging", "EnableFileLogging", false);

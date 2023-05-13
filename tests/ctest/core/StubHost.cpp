@@ -13,7 +13,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "pcsx2/CommonHost.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
 #include "pcsx2/Input/InputManager.h"
 #include "pcsx2/GS.h"
@@ -188,7 +187,7 @@ void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool def
 {
 }
 
-void Host::CPUThreadVSync()
+void Host::VSyncOnCPUThread()
 {
 }
 

@@ -154,6 +154,10 @@ if(APPLE)
 	)
 	target_compile_options(common PRIVATE -fobjc-arc)
 	target_link_options(common PRIVATE -fobjc-link-runtime)
+	target_link_libraries(common PRIVATE
+		"-framework Foundation"
+		"-framework IOKit"
+	)
 endif()
 
 if(DBUS_API)

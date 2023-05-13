@@ -1345,6 +1345,9 @@ namespace EmuFolders
 	extern std::string InputProfiles;
 	extern std::string Videos;
 
+	/// Initializes critical folders (AppRoot, DataRoot, Settings). Call once on startup.
+	bool InitializeCriticalFolders();
+
 	// Assumes that AppRoot and DataRoot have been initialized.
 	void SetDefaults(SettingsInterface& si);
 	void LoadConfig(SettingsInterface& si);

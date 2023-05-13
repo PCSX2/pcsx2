@@ -125,6 +125,7 @@ namespace Achievements
 
 	const std::string& GetUsername();
 	const std::string& GetRichPresenceString();
+	std::string SafeGetRichPresenceString();
 
 	bool LoginAsync(const char* username, const char* password);
 	bool Login(const char* username, const char* password);
@@ -185,6 +186,18 @@ namespace Achievements
 // Make noops when compiling without cheevos.
 namespace Achievements
 {
+	static inline void Initialize()
+	{
+	}
+
+	static inline void UpdateSettings(const Pcsx2Config::AchievementsOptions& old_config)
+	{
+	}
+
+	static inline void Shutdown()
+	{
+	}
+
 	static inline bool OnReset()
 	{
 		return true;
@@ -219,6 +232,18 @@ namespace Achievements
 		return true;
 	}
 
+	static inline void OnPaused(bool paused)
+	{
+	}
+
+	static inline void VSyncUpdate()
+	{
+	}
+
+	static std::string SafeGetRichPresenceString()
+	{
+		return {};
+	}
 } // namespace Achievements
 
 #endif

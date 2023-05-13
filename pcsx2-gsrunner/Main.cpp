@@ -37,7 +37,6 @@
 
 #include "pcsx2/PrecompiledHeader.h"
 
-#include "pcsx2/CommonHost.h"
 #include "pcsx2/Achievements.h"
 #include "pcsx2/CDVD/CDVD.h"
 #include "pcsx2/GS.h"
@@ -83,14 +82,14 @@ static u32 s_loop_number = s_loop_count;
 
 bool GSRunner::InitializeConfig()
 {
-	if (!CommonHost::InitializeCriticalFolders())
+	if (!EmuFolders::InitializeCriticalFolders())
 		return false;
 
 	// don't provide an ini path, or bother loading. we'll store everything in memory.
 	MemorySettingsInterface& si = s_settings_interface;
 	Host::Internal::SetBaseSettingsLayer(&si);
 
-	CommonHost::SetDefaultSettings(si, true, true, true, true, true);
+	VMManager::SetDefaultSettings(si, true, true, true, true, true);
 
 	// complete as quickly as possible
 	si.SetBoolValue("EmuCore/GS", "FrameLimitEnable", false);
@@ -127,7 +126,7 @@ bool GSRunner::InitializeConfig()
 		si.SetStringValue("MemoryCards", fmt::format("Slot{}_Filename", i + 1).c_str(), "");
 	}
 
-	CommonHost::LoadStartupSettings();
+	VMManager::Internal::LoadStartupSettings();
 	return true;
 }
 
@@ -138,12 +137,10 @@ void Host::CommitBaseSettingChanges()
 
 void Host::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
 {
-	CommonHost::LoadSettings(si, lock);
 }
 
 void Host::CheckForSettingsChanges(const Pcsx2Config& old_config)
 {
-	CommonHost::CheckForSettingsChanges(old_config);
 }
 
 bool Host::RequestResetSettings(bool folders, bool core, bool controllers, bool hotkeys, bool ui)
@@ -410,7 +407,7 @@ void GSRunner::InitializeConsole()
 	const char* var = std::getenv("PCSX2_NOCONSOLE");
 	s_no_console = (var && StringUtil::FromChars<bool>(var).value_or(false));
 	if (!s_no_console)
-		CommonHost::InitializeEarlyConsole();
+		LogSink::InitializeEarlyConsole();
 }
 
 bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& params)
@@ -536,7 +533,7 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 				{
 					// disable timestamps, since we want to be able to diff the logs
 					Console.WriteLn("Logging to %s...", logfile);
-					CommonHost::SetFileLogPath(logfile);
+					LogSink::SetFileLogPath(logfile);
 					s_settings_interface.SetBoolValue("Logging", "EnableFileLogging", true);
 					s_settings_interface.SetBoolValue("Logging", "EnableTimestamps", false);
 				}
@@ -622,12 +619,8 @@ int main(int argc, char* argv[])
 	if (!GSRunner::ParseCommandLineArgs(argc, argv, params))
 		return EXIT_FAILURE;
 
-	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle::GetForCallingThread());
-	if (!VMManager::Internal::InitializeGlobals() || !VMManager::Internal::InitializeMemory())
-	{
-		Console.Error("Failed to allocate globals/memory.");
+	if (!VMManager::Internal::CPUThreadInitialize())
 		return EXIT_FAILURE;
-	}
 
 	if (s_use_window.value_or(true) && !GSRunner::CreatePlatformWindow())
 	{
@@ -649,16 +642,13 @@ int main(int argc, char* argv[])
 		VMManager::Shutdown(false);
 	}
 
-	InputManager::CloseSources();
-	VMManager::Internal::ReleaseMemory();
-	VMManager::Internal::ReleaseGlobals();
-	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle());
+	VMManager::Internal::CPUThreadShutdown();
 	GSRunner::DestroyPlatformWindow();
 
 	return EXIT_SUCCESS;
 }
 
-void Host::CPUThreadVSync()
+void Host::VSyncOnCPUThread()
 {
 	// update GS thread copy of frame number
 	GetMTGS().RunOnGSThread([frame_number = GSDumpReplayer::GetFrameNumber()]() { s_dump_frame_number = frame_number; });

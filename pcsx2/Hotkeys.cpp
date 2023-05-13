@@ -15,7 +15,6 @@
 
 #include "PrecompiledHeader.h"
 
-#include "CommonHost.h"
 #include "Achievements.h"
 #include "GS.h"
 #include "Host.h"
@@ -33,7 +32,7 @@
 static s32 s_current_save_slot = 1;
 static std::optional<LimiterModeType> s_limiter_mode_prior_to_hold_interaction;
 
-void CommonHost::Internal::ResetVMHotkeyState()
+void VMManager::Internal::ResetVMHotkeyState()
 {
 	s_current_save_slot = 1;
 	s_limiter_mode_prior_to_hold_interaction.reset();

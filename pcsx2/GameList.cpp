@@ -816,6 +816,27 @@ bool GameList::RescanPath(const std::string& path)
 	return true;
 }
 
+bool GameList::GetSerialAndCRCForFilename(const char* filename, std::string* serial, u32* crc)
+{
+	if (const GameList::Entry* entry = GetEntryForPath(filename); entry)
+	{
+		*serial = entry->serial;
+		*crc = entry->crc;
+		return true;
+	}
+
+	// Just scan it.. hopefully it'll come back okay.
+	GameList::Entry temp_entry;
+	if (GameList::PopulateEntryFromPath(filename, &temp_entry))
+	{
+		*serial = std::move(temp_entry.serial);
+		*crc = temp_entry.crc;
+		return true;
+	}
+
+	return false;
+}
+
 std::string GameList::GetPlayedTimeFile()
 {
 	return Path::Combine(EmuFolders::Settings, "playtime.dat");
