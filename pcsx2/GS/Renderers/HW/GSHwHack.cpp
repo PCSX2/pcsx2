@@ -589,14 +589,20 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 	// target, then copy the temporary target back to the main FB. The CLUT is set to an offset
 	// ramp texture, presumably this is for screen brightness.
 
+	// Unfortunately because we're HLE'ing split RGB shuffles into one, and the draws themselves
+	// vary a lot, we can't predetermine a skip number, and because the game changes the CBP,
+	// that's going to break us in the middle off the shuffle... So, just track it ourselves.
+	static bool shuffle_hle_active = false;
+
 	const bool is_cs = r.IsPossibleChannelShuffle();
-	if (r.m_channel_shuffle && is_cs)
+	if (shuffle_hle_active && is_cs)
 	{
-		skip = true;
+		skip = 1;
 		return true;
 	}
 	else if (!is_cs)
 	{
+		shuffle_hle_active = false;
 		return false;
 	}
 
@@ -614,7 +620,7 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 		return false;
 
 	// skip this draw, and until the end of the CS, ignoring fbmsk and cbp
-	r.m_channel_shuffle = true;
+	shuffle_hle_active = true;
 	skip = 1;
 
 	GSHWDrawConfig& config = r.BeginHLEHardwareDraw(
