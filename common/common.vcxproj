@@ -22,7 +22,7 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="vsprops\CommonLibrary.props" />
-    <Import Project="vsprops\3rdpartyDeps.props" />
+    <Import Project="vsprops\common.props" />
     <Import Condition="$(Configuration.Contains(Debug))" Project="vsprops\CodeGen_Debug.props" />
     <Import Condition="$(Configuration.Contains(Devel))" Project="vsprops\CodeGen_Devel.props" />
     <Import Condition="$(Configuration.Contains(Release))" Project="vsprops\CodeGen_Release.props" />
@@ -37,17 +37,10 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\rapidyaml\rapidyaml\ext\c4core\src\c4\ext\fast_float\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\libpng</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\jpgd</AdditionalIncludeDirectories>
-      <ExceptionHandling>Async</ExceptionHandling>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\fmt\fmt\include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <ForcedIncludeFiles>PrecompiledHeader.h</ForcedIncludeFiles>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
-      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="!$(Configuration.Contains(AVX2))">_M_SSE=0x401;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="$(Configuration.Contains(AVX2))">_M_SSE=0x501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <EnableEnhancedInstructionSet Condition="!$(Configuration.Contains(AVX2)) Or $(Configuration.Contains(Clang))">NotSet</EnableEnhancedInstructionSet>
-      <EnableEnhancedInstructionSet Condition="$(Configuration.Contains(AVX2)) And !$(Configuration.Contains(Clang))">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
-      <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And !$(Configuration.Contains(AVX2))"> -march=nehalem %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And $(Configuration.Contains(AVX2))"> -march=haswell %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -180,9 +173,6 @@
     <ClInclude Include="ZipHelpers.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\3rdparty\glad\glad.vcxproj">
-      <Project>{c0293b32-5acf-40f0-aa6c-e6da6f3bf33a}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\3rdparty\jpgd\jpgd.vcxproj">
       <Project>{ed2f21fd-0a36-4a8f-9b90-e7d92a2acb63}</Project>
     </ProjectReference>

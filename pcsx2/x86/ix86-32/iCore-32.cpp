@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,13 +15,14 @@
 
 #include "PrecompiledHeader.h"
 
-#include "System.h"
-#include "iR5900.h"
-#include "Vif.h"
-#include "VU.h"
-#include "common/emitter/x86emitter.h"
 #include "R3000A.h"
+#include "System.h"
+#include "VU.h"
+#include "Vif.h"
 #include "x86/iR3000A.h"
+#include "x86/iR5900.h"
+
+#include "common/emitter/x86emitter.h"
 
 using namespace x86Emitter;
 

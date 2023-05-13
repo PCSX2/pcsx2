@@ -118,8 +118,7 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
 	elseif(NOT DEFINED ARCH_FLAG AND USE_CLANG_CL)
 		set(ARCH_FLAG "-msse4.1")
 	endif()
-	list(APPEND PCSX2_DEFS _ARCH_64=1 _M_X86=1)
-	set(_ARCH_64 1)
+	list(APPEND PCSX2_DEFS _M_X86=1)
 	set(_M_X86 1)
 else()
 	message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
@@ -136,7 +135,13 @@ option(USE_PGO_OPTIMIZE "Enable PGO optimization (use profile)")
 # Note1: Builtin strcmp/memcmp was proved to be slower on Mesa than stdlib version.
 # Note2: float operation SSE is impacted by the PCSX2 SSE configuration. In particular, flush to zero denormal.
 if(MSVC AND NOT USE_CLANG_CL)
-	add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/Zc:externConstexpr>")
+	add_compile_options(
+		"$<$<COMPILE_LANGUAGE:CXX>:/Zc:externConstexpr>"
+		"$<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>"
+		"$<$<COMPILE_LANGUAGE:CXX>:/permissive->"
+		"/Zo"
+		"/utf-8"
+	)
 elseif(NOT MSVC)
 	add_compile_options(-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse)
 endif()

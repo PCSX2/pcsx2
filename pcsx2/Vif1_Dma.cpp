@@ -14,13 +14,14 @@
  */
 
 #include "PrecompiledHeader.h"
+
 #include "Common.h"
-#include "Vif_Dma.h"
 #include "GS.h"
 #include "Gif_Unit.h"
-#include "VUmicro.h"
-#include "newVif.h"
 #include "MTVU.h"
+#include "VUmicro.h"
+#include "Vif_Dma.h"
+#include "x86/newVif.h"
 
 u32 g_vif1Cycles = 0;
 
