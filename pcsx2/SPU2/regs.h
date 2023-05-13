@@ -178,16 +178,3 @@ Core attributes (SD_C)
 #define VOICE_ADDR_LSAX 0x4 // Loop point address
 #define VOICE_ADDR_NAX 0x8  // Waveform data that should be read next
 
-
-
-// --------------------------------------------------------------------------------------
-//  SPU2 Register Table LUT
-// --------------------------------------------------------------------------------------
-
-#define U16P(x) ((u16*)&(x))
-
-// Returns the hiword of a 32 bit integer.
-#define U16P_HI(x) (((u16*)&(x)) + 1)
-
-extern u16* regtable[0x401];
-extern u16 const* const regtable_original[0x401];

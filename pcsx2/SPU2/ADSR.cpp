@@ -14,17 +14,22 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "Global.h"
+
+#include "SPU2/Global.h"
+
 #include "common/Assertions.h"
+
+#include <array>
 
 static constexpr s32 ADSR_MAX_VOL = 0x7fffffff;
 
 static const int InvExpOffsets[] = {0, 4, 6, 8, 9, 10, 11, 12};
-static u32 PsxRates[160];
 
+using PSXRateTable = std::array<u32, 160>;
 
-void InitADSR() // INIT ADSR
+static constexpr PSXRateTable ComputePSXRates()
 {
+	PSXRateTable rates = {};
 	for (int i = 0; i < (32 + 128); i++)
 	{
 		const int shift = (i - 32) >> 2;
@@ -35,9 +40,12 @@ void InitADSR() // INIT ADSR
 			rate <<= shift;
 
 		// Maximum rate is 0x4000.
-		PsxRates[i] = (int)std::min(rate, (s64)0x40000000LL);
+		rates[i] = (int)std::min(rate, (s64)0x40000000LL);
 	}
+	return rates;
 }
+
+static constexpr const PSXRateTable PsxRates = ComputePSXRates();
 
 bool V_ADSR::Calculate()
 {

@@ -16,6 +16,11 @@
 #include "PrecompiledHeader.h"
 #include "Global.h"
 
+#define U16P(x) ((u16*)&(x))
+
+// Returns the hiword of a 32 bit integer.
+#define U16P_HI(x) (((u16*)&(x)) + 1)
+
 #define PCORE(c, p) \
 	U16P(Cores[c].p)
 
@@ -48,10 +53,10 @@
 	PCORE(c, Revb.n) + 1, \
 		PCORE(c, Revb.n)
 
-u16* regtable[0x401];
-
-u16 const* const regtable_original[0x401] =
-	{
+static std::array<u16*, 0x401> ComputeRegTable()
+{
+	static const std::array<u16*, 0x401> orig_table =
+	{{
 		// Voice Params: 8 params, 24 voices = 0x180 bytes
 		PVC(0, 0), PVC(0, 1), PVC(0, 2), PVC(0, 3), PVC(0, 4), PVC(0, 5),
 		PVC(0, 6), PVC(0, 7), PVC(0, 8), PVC(0, 9), PVC(0, 10), PVC(0, 11),
@@ -299,4 +304,19 @@ u16 const* const regtable_original[0x401] =
 		PRAW(0x7F0), PRAW(0x7F2), PRAW(0x7F4), PRAW(0x7F6),
 		PRAW(0x7F8), PRAW(0x7FA), PRAW(0x7FC), PRAW(0x7FE),
 
-		nullptr};
+		nullptr}};
+
+	std::array<u16*, 0x401> table = orig_table;
+	for (uint mem = 0; mem < 0x800; mem++)
+	{
+		u16* ptr = table[mem >> 1];
+		if (!ptr)
+		{
+			table[mem >> 1] = &(spu2Ru16(mem));
+		}
+	}
+
+	return table;
+}
+
+const std::array<u16*, 0x401> regtable = ComputeRegTable();

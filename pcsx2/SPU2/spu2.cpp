@@ -177,44 +177,6 @@ void SPU2::SetDeviceSampleRateMultiplier(double multiplier)
 	UpdateSampleRate();
 }
 
-void SPU2::Initialize()
-{
-	pxAssert(regtable[0x400] == nullptr);
-	spu2regs = (s16*)malloc(0x010000);
-	_spu2mem = (s16*)malloc(0x200000);
-
-	// adpcm decoder cache:
-	//  the cache data size is determined by taking the number of adpcm blocks
-	//  (2MB / 16) and multiplying it by the decoded block size (28 samples).
-	//  Thus: pcm_cache_data = 7,340,032 bytes (ouch!)
-	//  Expanded: 16 bytes expands to 56 bytes [3.5:1 ratio]
-	//    Resulting in 2MB * 3.5.
-
-	pcm_cache_data = (PcmCacheEntry*)calloc(pcm_BlockCount, sizeof(PcmCacheEntry));
-
-	if (!spu2regs || !_spu2mem || !pcm_cache_data)
-	{
-		// If these memory allocations fail, we have much bigger problems.
-		pxFailRel("Failed to allocate SPU2 memory");
-	}
-
-	// Patch up a copy of regtable that directly maps "nullptrs" to SPU2 memory.
-
-	memcpy(regtable, regtable_original, sizeof(regtable));
-
-	for (uint mem = 0; mem < 0x800; mem++)
-	{
-		u16* ptr = regtable[mem >> 1];
-		if (!ptr)
-		{
-			regtable[mem >> 1] = &(spu2Ru16(mem));
-		}
-	}
-
-	InitADSR();
-}
-
-
 bool SPU2::Open()
 {
 #ifdef PCSX2_DEVBUILD
@@ -255,13 +217,6 @@ void SPU2::Close()
 	DoFullDump();
 	CloseFileLog();
 #endif
-}
-
-void SPU2::Shutdown()
-{
-	safe_free(spu2regs);
-	safe_free(_spu2mem);
-	safe_free(pcm_cache_data);
 }
 
 bool SPU2::IsRunningPSXMode()
