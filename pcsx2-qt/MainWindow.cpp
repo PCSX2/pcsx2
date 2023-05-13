@@ -67,9 +67,10 @@
 #endif
 
 const char* MainWindow::OPEN_FILE_FILTER =
-	QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.chd *.cso *.gz *.elf *.irx *.gs *.gs.xz *.gs.zst *.dump);;"
+	QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.gz *.elf *.irx *.gs *.gs.xz *.gs.zst *.dump);;"
 									"Single-Track Raw Images (*.bin *.iso);;"
 									"Cue Sheets (*.cue);;"
+									"Media Descriptor File (*.mdf);;"
 									"MAME CHD Images (*.chd);;"
 									"CSO Images (*.cso);;"
 									"GZ Images (*.gz);;"
@@ -78,9 +79,10 @@ const char* MainWindow::OPEN_FILE_FILTER =
 									"GS Dumps (*.gs *.gs.xz *.gs.zst);;"
 									"Block Dumps (*.dump)");
 
-const char* MainWindow::DISC_IMAGE_FILTER = QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.chd *.cso *.gz *.dump);;"
+const char* MainWindow::DISC_IMAGE_FILTER = QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.gz *.dump);;"
 																			"Single-Track Raw Images (*.bin *.iso);;"
 																			"Cue Sheets (*.cue);;"
+																			"Media Descriptor File (*.mdf);;"
 																			"MAME CHD Images (*.chd);;"
 																			"CSO Images (*.cso);;"
 																			"GZ Images (*.gz);;"

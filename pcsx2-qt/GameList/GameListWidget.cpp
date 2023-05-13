@@ -39,6 +39,7 @@
 
 static const char* SUPPORTED_FORMATS_STRING = QT_TRANSLATE_NOOP(GameListWidget,
 	".bin/.iso (ISO Disc Images)\n"
+	".mdf (Media Descriptor File)\n"
 	".chd (Compressed Hunks of Data)\n"
 	".cso (Compressed ISO)\n"
 	".gz (Gzip Compressed ISO)");
