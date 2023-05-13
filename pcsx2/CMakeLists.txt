@@ -1391,7 +1391,7 @@ function(setup_main_executable target)
 	endif()
 endfunction()
 
-source_groups_from_vcxproj_filters(pcsx2core.vcxproj.filters)
+source_groups_from_vcxproj_filters(pcsx2.vcxproj.filters)
 
 # Unix-only files aren't in the vcxproj.filters
 source_group(System/Ps2/DEV9 REGULAR_EXPRESSION DEV9/*)

@@ -25,7 +25,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jpgd", "3rdparty\jpgd\jpgd.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common", "common\common.vcxproj", "{4639972E-424E-4E13-8B07-CA403C481346}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pcsx2core", "pcsx2\pcsx2core.vcxproj", "{6C7986C4-3E4D-4DCC-B3C6-6BB12B238995}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pcsx2", "pcsx2\pcsx2.vcxproj", "{6C7986C4-3E4D-4DCC-B3C6-6BB12B238995}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glad", "3rdparty\glad\glad.vcxproj", "{C0293B32-5ACF-40F0-AA6C-E6DA6F3BF33A}"
 EndProject
