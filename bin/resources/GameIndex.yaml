@@ -44527,6 +44527,7 @@ SLUS-20535:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fix horizontal and vertical lines when racing.
+    deinterlace: 8 # Fixes misdetection of game deinterlace.
 SLUS-20536:
   name: "NBA Live 2003"
   region: "NTSC-U"
@@ -45614,6 +45615,9 @@ SLUS-20753:
 SLUS-20754:
   name: "NASCAR Thunder 2004"
   region: "NTSC-U"
+  gsHWFixes:
+    roundSprite: 1 # Fix horizontal and vertical lines when racing.
+    deinterlace: 8 # Fixes misdetection of game deinterlace.
   memcardFilters:
     - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20754"
@@ -45944,6 +45948,9 @@ SLUS-20823:
 SLUS-20824:
   name: "NASCAR Thunder 2004"
   region: "NTSC-U"
+  gsHWFixes:
+    roundSprite: 1 # Fix horizontal and vertical lines when racing.
+    deinterlace: 8 # Fixes misdetection of game deinterlace.
   memcardFilters:
     - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20824"
