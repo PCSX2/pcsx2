@@ -139,9 +139,6 @@ if(MSVC AND NOT USE_CLANG_CL)
 	add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/Zc:externConstexpr>")
 elseif(NOT MSVC)
 	add_compile_options(-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse)
-
-	# -fno-operator-names should only be for C++ files, not C files.
-	add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fno-operator-names>)
 endif()
 
 set(CONFIG_REL_NO_DEB $<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>>)
