@@ -102,7 +102,6 @@
     <None Include="..\bin\resources\shaders\dx11\shadeboost.fx" />
     <None Include="..\bin\resources\shaders\dx11\tfx.fx" />
     <None Include="GS\Renderers\Vulkan\VKEntryPoints.inl" />
-    <None Include="Utilities\folderdesc.txt" />
     <None Include="Docs\License.txt" />
     <None Include="ps2\eeHwTraceLog.inl" />
     <None Include="x86\microVU_Alloc.inl" />
@@ -121,6 +120,7 @@
     <!-- Generate Recording GUI Image Headers -->
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Achievements.cpp" />
     <ClCompile Include="CDVD\BlockdumpFileReader.cpp" />
     <ClCompile Include="CDVD\CDVDdiscReader.cpp" />
     <ClCompile Include="CDVD\CDVDdiscThread.cpp" />
@@ -139,6 +139,7 @@
     </ClCompile>
     <ClCompile Include="CDVD\Windows\DriveUtility.cpp" />
     <ClCompile Include="CDVD\Windows\IOCtlSrc.cpp" />
+    <ClCompile Include="CommonHost.cpp" />
     <ClCompile Include="DebugTools\Breakpoints.cpp" />
     <ClCompile Include="DebugTools\DebugInterface.cpp" />
     <ClCompile Include="DebugTools\DisassemblyManager.cpp" />
@@ -193,14 +194,7 @@
     <ClCompile Include="DEV9\sockets.cpp" />
     <ClCompile Include="DEV9\net.cpp" />
     <ClCompile Include="DEV9\Win32\tap-win32.cpp" />
-    <ClCompile Include="Frontend\CommonHost.cpp" />
-    <ClCompile Include="Frontend\CommonHotkeys.cpp" />
-    <ClCompile Include="Frontend\DInputSource.cpp" />
-    <ClCompile Include="Frontend\FullscreenUI.cpp" />
-    <ClCompile Include="Frontend\GameList.cpp" />
-    <ClCompile Include="Frontend\ImGuiFullscreen.cpp" />
-    <ClCompile Include="Frontend\ImGuiManager.cpp" />
-    <ClCompile Include="Frontend\ImGuiOverlays.cpp" />
+    <ClCompile Include="GameList.cpp" />
     <ClCompile Include="GS\Renderers\DX11\D3D11ShaderCache.cpp" />
     <ClCompile Include="GS\Renderers\DX12\D3D12Builders.cpp" />
     <ClCompile Include="GS\Renderers\DX12\D3D12Context.cpp" />
@@ -220,14 +214,12 @@
     <ClCompile Include="GS\Renderers\Vulkan\VKSwapChain.cpp" />
     <ClCompile Include="GS\Renderers\Vulkan\VKUtil.cpp" />
     <ClCompile Include="GS\Renderers\Vulkan\vk_mem_alloc.cpp" />
+    <ClCompile Include="Hotkeys.cpp" />
+    <ClCompile Include="ImGui\FullscreenUI.cpp" />
+    <ClCompile Include="ImGui\ImGuiFullscreen.cpp" />
+    <ClCompile Include="ImGui\ImGuiManager.cpp" />
+    <ClCompile Include="ImGui\ImGuiOverlays.cpp" />
     <ClCompile Include="INISettingsInterface.cpp" />
-    <ClCompile Include="Frontend\InputManager.cpp" />
-    <ClCompile Include="Frontend\InputSource.cpp" />
-    <ClCompile Include="Frontend\LayeredSettingsInterface.cpp" />
-    <ClCompile Include="Frontend\LogSink.cpp" />
-    <ClCompile Include="Frontend\Achievements.cpp" />
-    <ClCompile Include="Frontend\SDLInputSource.cpp" />
-    <ClCompile Include="Frontend\XInputSource.cpp" />
     <ClCompile Include="GameDatabase.cpp" />
     <ClCompile Include="Gif_Logger.cpp" />
     <ClCompile Include="Gif_Unit.cpp" />
@@ -240,8 +232,14 @@
     <ClCompile Include="GS\Renderers\Vulkan\GSDeviceVK.cpp" />
     <ClCompile Include="GS\Renderers\Vulkan\GSTextureVK.cpp" />
     <ClCompile Include="Host.cpp" />
-    <ClCompile Include="Frontend\HostSettings.cpp" />
+    <ClCompile Include="Input\DInputSource.cpp" />
+    <ClCompile Include="Input\InputManager.cpp" />
+    <ClCompile Include="Input\InputSource.cpp" />
+    <ClCompile Include="Input\SDLInputSource.cpp" />
+    <ClCompile Include="Input\XInputSource.cpp" />
     <ClCompile Include="IopGte.cpp" />
+    <ClCompile Include="LayeredSettingsInterface.cpp" />
+    <ClCompile Include="LogSink.cpp" />
     <ClCompile Include="MemoryCardProtocol.cpp" />
     <ClCompile Include="MultitapProtocol.cpp" />
     <ClCompile Include="PAD\Host\KeyStatus.cpp" />
@@ -501,6 +499,7 @@
     <ClInclude Include="CDVD\GzippedFileReader.h" />
     <ClInclude Include="CDVD\ThreadedFileReader.h" />
     <ClInclude Include="CDVD\zlib_indexed.h" />
+    <ClInclude Include="CommonHost.h" />
     <ClInclude Include="DebugTools\Breakpoints.h" />
     <ClInclude Include="DebugTools\DebugInterface.h" />
     <ClInclude Include="DebugTools\DisassemblyManager.h" />
@@ -552,13 +551,7 @@
     <ClInclude Include="DEV9\ThreadSafeMap.h" />
     <ClInclude Include="DEV9\Win32\pcap_io_win32_funcs.h" />
     <ClInclude Include="DEV9\Win32\tap.h" />
-    <ClInclude Include="Frontend\CommonHost.h" />
-    <ClInclude Include="Frontend\DInputSource.h" />
-    <ClInclude Include="Frontend\FullscreenUI.h" />
-    <ClInclude Include="Frontend\GameList.h" />
-    <ClInclude Include="Frontend\ImGuiFullscreen.h" />
-    <ClInclude Include="Frontend\ImGuiManager.h" />
-    <ClInclude Include="Frontend\ImGuiOverlays.h" />
+    <ClInclude Include="GameList.h" />
     <ClInclude Include="GS\Renderers\DX11\D3D11ShaderCache.h" />
     <ClInclude Include="GS\Renderers\DX12\D3D12Builders.h" />
     <ClInclude Include="GS\Renderers\DX12\D3D12Context.h" />
@@ -579,14 +572,11 @@
     <ClInclude Include="GS\Renderers\Vulkan\VKStreamBuffer.h" />
     <ClInclude Include="GS\Renderers\Vulkan\VKSwapChain.h" />
     <ClInclude Include="GS\Renderers\Vulkan\VKUtil.h" />
+    <ClInclude Include="ImGui\FullscreenUI.h" />
+    <ClInclude Include="ImGui\ImGuiFullscreen.h" />
+    <ClInclude Include="ImGui\ImGuiManager.h" />
+    <ClInclude Include="ImGui\ImGuiOverlays.h" />
     <ClInclude Include="INISettingsInterface.h" />
-    <ClInclude Include="Frontend\InputManager.h" />
-    <ClInclude Include="Frontend\InputSource.h" />
-    <ClInclude Include="Frontend\LayeredSettingsInterface.h" />
-    <ClInclude Include="Frontend\LogSink.h" />
-    <ClInclude Include="Frontend\Achievements.h" />
-    <ClInclude Include="Frontend\SDLInputSource.h" />
-    <ClInclude Include="Frontend\XInputSource.h" />
     <ClInclude Include="GameDatabase.h" />
     <ClInclude Include="Gif_Unit.h" />
     <ClInclude Include="GSDumpReplayer.h" />
@@ -597,9 +587,15 @@
     <ClInclude Include="GS\Renderers\Vulkan\GSDeviceVK.h" />
     <ClInclude Include="GS\Renderers\Vulkan\GSTextureVK.h" />
     <ClInclude Include="Host.h" />
-    <ClInclude Include="HostSettings.h" />
+    <ClInclude Include="Input\DInputSource.h" />
+    <ClInclude Include="Input\InputManager.h" />
+    <ClInclude Include="Input\InputSource.h" />
+    <ClInclude Include="Input\SDLInputSource.h" />
+    <ClInclude Include="Input\XInputSource.h" />
     <ClInclude Include="IopGte.h" />
     <ClInclude Include="IPU\mpeg2_vlc.h" />
+    <ClInclude Include="LayeredSettingsInterface.h" />
+    <ClInclude Include="LogSink.h" />
     <ClInclude Include="MemoryCardProtocol.h" />
     <ClInclude Include="MultitapProtocol.h" />
     <ClInclude Include="PAD\Host\Global.h" />

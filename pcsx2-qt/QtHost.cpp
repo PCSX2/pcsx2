@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,8 +15,33 @@
 
 #include "PrecompiledHeader.h"
 
-#include <cmath>
-#include <csignal>
+#include "AutoUpdaterDialog.h"
+#include "DisplayWidget.h"
+#include "GameList/GameListWidget.h"
+#include "MainWindow.h"
+#include "QtHost.h"
+#include "QtUtils.h"
+#include "svnrev.h"
+
+#include "pcsx2/CDVD/CDVDcommon.h"
+#include "pcsx2/CommonHost.h"
+#include "pcsx2/Achievements.h"
+#include "pcsx2/CDVD/CDVD.h"
+#include "pcsx2/Counters.h"
+#include "pcsx2/DebugTools/Debug.h"
+#include "pcsx2/GS.h"
+#include "pcsx2/GS/GS.h"
+#include "pcsx2/GSDumpReplayer.h"
+#include "pcsx2/GameList.h"
+#include "pcsx2/Host.h"
+#include "pcsx2/INISettingsInterface.h"
+#include "pcsx2/ImGui/FullscreenUI.h"
+#include "pcsx2/ImGui/ImGuiManager.h"
+#include "pcsx2/Input/InputManager.h"
+#include "pcsx2/LogSink.h"
+#include "pcsx2/PAD/Host/PAD.h"
+#include "pcsx2/PerformanceMetrics.h"
+#include "pcsx2/VMManager.h"
 
 #include "common/Assertions.h"
 #include "common/Console.h"
@@ -28,25 +53,6 @@
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 
-#include "pcsx2/CDVD/CDVD.h"
-#include "pcsx2/CDVD/CDVDcommon.h"
-#include "pcsx2/Counters.h"
-#include "pcsx2/DebugTools/Debug.h"
-#include "pcsx2/Frontend/CommonHost.h"
-#include "pcsx2/Frontend/FullscreenUI.h"
-#include "pcsx2/Frontend/GameList.h"
-#include "pcsx2/Frontend/InputManager.h"
-#include "pcsx2/Frontend/ImGuiManager.h"
-#include "pcsx2/Frontend/LogSink.h"
-#include "pcsx2/GS.h"
-#include "pcsx2/GS/GS.h"
-#include "pcsx2/GSDumpReplayer.h"
-#include "pcsx2/HostSettings.h"
-#include "pcsx2/INISettingsInterface.h"
-#include "pcsx2/PAD/Host/PAD.h"
-#include "pcsx2/PerformanceMetrics.h"
-#include "pcsx2/VMManager.h"
-
 #include <QtCore/QTimer>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
@@ -55,17 +61,8 @@
 
 #include "fmt/core.h"
 
-#include "AutoUpdaterDialog.h"
-#include "DisplayWidget.h"
-#include "GameList/GameListWidget.h"
-#include "MainWindow.h"
-#include "QtHost.h"
-#include "QtUtils.h"
-#include "svnrev.h"
-
-#ifdef ENABLE_ACHIEVEMENTS
-#include "Frontend/Achievements.h"
-#endif
+#include <cmath>
+#include <csignal>
 
 static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 

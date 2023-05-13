@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,34 +14,177 @@
  */
 
 #pragma once
+
 #include "common/Pcsx2Types.h"
+
+#include "Config.h"
+
+#include <functional>
+#include <mutex>
+#include <optional>
+#include <string>
+#include <tuple>
+#include <utility>
 #include <vector>
+
+#ifdef ENABLE_ACHIEVEMENTS
 
 namespace Achievements
 {
-#ifdef ENABLE_ACHIEVEMENTS
+	enum class AchievementCategory : u8
+	{
+		Local = 0,
+		Core = 3,
+		Unofficial = 5
+	};
 
-	// Implemented in Host.
-	extern bool OnReset();
-	extern void LoadState(const u8* state_data, u32 state_data_size);
-	extern std::vector<u8> SaveState();
-	extern void GameChanged(u32 crc);
+	struct Achievement
+	{
+		u32 id;
+		std::string title;
+		std::string description;
+		std::string memaddr;
+		std::string badge_name;
+
+		// badge paths are mutable because they're resolved when they're needed.
+		mutable std::string locked_badge_path;
+		mutable std::string unlocked_badge_path;
+
+		u32 points;
+		AchievementCategory category;
+		bool locked;
+		bool active;
+		bool primed;
+	};
+
+	struct Leaderboard
+	{
+		u32 id;
+		std::string title;
+		std::string description;
+		int format;
+	};
+
+	struct LeaderboardEntry
+	{
+		std::string user;
+		std::string formatted_score;
+		time_t submitted;
+		u32 rank;
+		bool is_self;
+	};
+
+// RAIntegration only exists for Windows, so no point checking it on other platforms.
+#ifdef ENABLE_RAINTEGRATION
+	bool IsUsingRAIntegration();
+#else
+	__fi static bool IsUsingRAIntegration()
+	{
+		return false;
+	}
+#endif
+
+	bool IsActive();
+	bool IsLoggedIn();
+	bool ChallengeModeActive();
+	bool LeaderboardsActive();
+	bool IsTestModeActive();
+	bool IsUnofficialTestModeActive();
+	bool IsRichPresenceEnabled();
+	bool HasActiveGame();
+
+	u32 GetGameID();
+
+	/// Acquires the achievements lock. Must be held when accessing any achievement state from another thread.
+	std::unique_lock<std::recursive_mutex> GetLock();
+
+	void Initialize();
+	void UpdateSettings(const Pcsx2Config::AchievementsOptions& old_config);
+
+	/// Called when the system is being reset. If it returns false, the reset should be aborted.
+	bool OnReset();
+
+	/// Called when the system is being shut down. If Shutdown() returns false, the shutdown should be aborted.
+	bool Shutdown();
+
+	/// Called when the system is being paused and resumed.
+	void OnPaused(bool paused);
+
+	/// Called once a frame at vsync time on the CPU thread.
+	void VSyncUpdate();
+
+	/// Called to process pending HTTP requests when the VM is paused, because otherwise the vsync event won't fire.
+	void ProcessPendingHTTPRequestsFromGSThread();
+
+	void LoadState(const u8* state_data, u32 state_data_size);
+	std::vector<u8> SaveState();
+
+	/// Returns true if the current game has any achievements or leaderboards.
+	/// Does not need to have the lock held.
+	bool SafeHasAchievementsOrLeaderboards();
+
+	const std::string& GetUsername();
+	const std::string& GetRichPresenceString();
+
+	bool LoginAsync(const char* username, const char* password);
+	bool Login(const char* username, const char* password);
+	void Logout();
+
+	void GameChanged(u32 crc);
+
+	const std::string& GetGameTitle();
+	const std::string& GetGameIcon();
+
+	bool EnumerateAchievements(std::function<bool(const Achievement&)> callback);
+	u32 GetUnlockedAchiementCount();
+	u32 GetAchievementCount();
+	u32 GetMaximumPointsForGame();
+	u32 GetCurrentPointsForGame();
+
+	bool EnumerateLeaderboards(std::function<bool(const Leaderboard&)> callback);
+	std::optional<bool> TryEnumerateLeaderboardEntries(u32 id, std::function<bool(const LeaderboardEntry&)> callback);
+	const Leaderboard* GetLeaderboardByID(u32 id);
+	u32 GetLeaderboardCount();
+	bool IsLeaderboardTimeType(const Leaderboard& leaderboard);
+
+	const Achievement* GetAchievementByID(u32 id);
+	std::pair<u32, u32> GetAchievementProgress(const Achievement& achievement);
+	std::string GetAchievementProgressText(const Achievement& achievement);
+	const std::string& GetAchievementBadgePath(
+		const Achievement& achievement, bool download_if_missing = true, bool force_unlocked_icon = false);
+	std::string GetAchievementBadgeURL(const Achievement& achievement);
+	u32 GetPrimedAchievementCount();
+
+#ifdef ENABLE_RAINTEGRATION
+	void SwitchToRAIntegration();
+
+	namespace RAIntegration
+	{
+		void MainWindowChanged(void* new_handle);
+		void GameChanged();
+		std::vector<std::tuple<int, std::string, bool>> GetMenuItems();
+		void ActivateMenuItem(int item);
+	} // namespace RAIntegration
+#endif
 
 	/// Re-enables hardcode mode if it is enabled in the settings.
-	extern bool ResetChallengeMode();
+	bool ResetChallengeMode();
 
 	/// Forces hardcore mode off until next reset.
-	extern void DisableChallengeMode();
+	void DisableChallengeMode();
 
 	/// Prompts the user to disable hardcore mode, if they agree, returns true.
-	extern bool ConfirmChallengeModeDisable(const char* trigger);
+	bool ConfirmChallengeModeDisable(const char* trigger);
 
 	/// Returns true if features such as save states should be disabled.
-	extern bool ChallengeModeActive();
+	bool ChallengeModeActive();
+} // namespace Achievements
 
 #else
 
-	// Make noops when compiling without cheevos.
+// Make noops when compiling without cheevos.
+namespace Achievements
+{
 	static inline bool OnReset()
 	{
 		return true;
@@ -67,12 +210,22 @@ namespace Achievements
 		return false;
 	}
 
-	static inline void DisableChallengeMode() {}
+	static inline void DisableChallengeMode()
+	{
+	}
 
 	static inline bool ConfirmChallengeModeDisable(const char* trigger)
 	{
 		return true;
 	}
 
-#endif
 } // namespace Achievements
+
+#endif
+
+/// Functions implemented in the frontend.
+namespace Host
+{
+	void OnAchievementsRefreshed();
+	void OnAchievementsChallengeModeChanged();
+} // namespace Host

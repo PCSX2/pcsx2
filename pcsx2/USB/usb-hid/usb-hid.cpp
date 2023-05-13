@@ -24,14 +24,14 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "USB/deviceproxy.h"
-#include "USB/qemu-usb/desc.h"
-#include "USB/qemu-usb/USBinternal.h"
-#include "usb-hid.h"
-#include "USB/USB.h"
-#include "StateWrapper.h"
 
-#include "Frontend/InputManager.h"
+#include "Input/InputManager.h"
+#include "StateWrapper.h"
+#include "USB/USB.h"
+#include "USB/deviceproxy.h"
+#include "USB/qemu-usb/USBinternal.h"
+#include "USB/qemu-usb/desc.h"
+#include "USB/usb-hid/usb-hid.h"
 
 namespace usb_hid
 {

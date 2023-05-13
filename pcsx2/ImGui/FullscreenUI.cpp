@@ -17,13 +17,27 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
-#include "Frontend/CommonHost.h"
-#include "Frontend/FullscreenUI.h"
-#include "Frontend/ImGuiManager.h"
-#include "Frontend/ImGuiFullscreen.h"
-#include "Frontend/InputManager.h"
-#include "Frontend/GameList.h"
-#include "IconsFontAwesome5.h"
+#include "CDVD/CDVDcommon.h"
+#include "CommonHost.h"
+#include "GS/Renderers/Common/GSDevice.h"
+#include "GS/Renderers/Common/GSTexture.h"
+#include "Achievements.h"
+#include "CDVD/CDVDdiscReader.h"
+#include "GS.h"
+#include "GameList.h"
+#include "Host.h"
+#include "INISettingsInterface.h"
+#include "ImGui/FullscreenUI.h"
+#include "ImGui/ImGuiFullscreen.h"
+#include "ImGui/ImGuiManager.h"
+#include "Input/InputManager.h"
+#include "MemoryCardFile.h"
+#include "PAD/Host/PAD.h"
+#include "Sio.h"
+#include "USB/USB.h"
+#include "VMManager.h"
+#include "ps2/BiosTools.h"
+#include "svnrev.h"
 
 #include "common/FileSystem.h"
 #include "common/Console.h"
@@ -34,25 +48,9 @@
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 
-#include "CDVD/CDVDcommon.h"
-#include "CDVD/CDVDdiscReader.h"
-#include "GS.h"
-#include "GS/Renderers/Common/GSDevice.h"
-#include "GS/Renderers/Common/GSTexture.h"
-#include "Host.h"
-#include "HostSettings.h"
-#include "INISettingsInterface.h"
-#include "MemoryCardFile.h"
-#include "PAD/Host/PAD.h"
-#include "ps2/BiosTools.h"
-#include "Sio.h"
-#include "USB/USB.h"
-#include "VMManager.h"
-
-#include "svnrev.h"
-
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "IconsFontAwesome5.h"
 
 #include "fmt/core.h"
 
@@ -61,10 +59,6 @@
 #include <thread>
 #include <utility>
 #include <vector>
-
-#ifdef ENABLE_ACHIEVEMENTS
-#include "Frontend/Achievements.h"
-#endif
 
 using ImGuiFullscreen::g_large_font;
 using ImGuiFullscreen::g_layout_padding_left;

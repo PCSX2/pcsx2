@@ -21,7 +21,7 @@
 #include "SettingsDialog.h"
 #include <QtWidgets/QMessageBox>
 
-#include "pcsx2/HostSettings.h"
+#include "pcsx2/Host.h"
 #include "pcsx2/GS/GS.h"
 #include "pcsx2/GS/GSCapture.h"
 #include "pcsx2/GS/GSUtil.h"

@@ -15,38 +15,34 @@
 
 #include "PrecompiledHeader.h"
 
-#include "common/FileSystem.h"
-#include "common/Path.h"
-#include "common/StringUtil.h"
-
-#include "pcsx2/Frontend/GameList.h"
-#include "pcsx2/HostSettings.h"
-#include "pcsx2/INISettingsInterface.h"
-
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtUtils.h"
+#include "Settings/AchievementSettingsWidget.h"
+#include "Settings/AdvancedSettingsWidget.h"
+#include "Settings/AudioSettingsWidget.h"
+#include "Settings/BIOSSettingsWidget.h"
+#include "Settings/DEV9SettingsWidget.h"
+#include "Settings/DebugSettingsWidget.h"
+#include "Settings/EmulationSettingsWidget.h"
+#include "Settings/FolderSettingsWidget.h"
+#include "Settings/GameFixSettingsWidget.h"
+#include "Settings/GameListSettingsWidget.h"
+#include "Settings/GameSummaryWidget.h"
+#include "Settings/GraphicsSettingsWidget.h"
+#include "Settings/HotkeySettingsWidget.h"
+#include "Settings/InterfaceSettingsWidget.h"
+#include "Settings/MemoryCardSettingsWidget.h"
 #include "SettingsDialog.h"
 
-#include "AdvancedSettingsWidget.h"
-#include "AudioSettingsWidget.h"
-#include "BIOSSettingsWidget.h"
-#include "EmulationSettingsWidget.h"
-#include "GameSummaryWidget.h"
-#include "GameFixSettingsWidget.h"
-#include "GameListSettingsWidget.h"
-#include "GraphicsSettingsWidget.h"
-#include "DEV9SettingsWidget.h"
-#include "FolderSettingsWidget.h"
-#include "HotkeySettingsWidget.h"
-#include "InterfaceSettingsWidget.h"
-#include "MemoryCardSettingsWidget.h"
-#include "DebugSettingsWidget.h"
+#include "pcsx2/Achievements.h"
+#include "pcsx2/GameList.h"
+#include "pcsx2/Host.h"
+#include "pcsx2/INISettingsInterface.h"
 
-#ifdef ENABLE_ACHIEVEMENTS
-#include "AchievementSettingsWidget.h"
-#include "pcsx2/Frontend/Achievements.h"
-#endif
+#include "common/FileSystem.h"
+#include "common/Path.h"
+#include "common/StringUtil.h"
 
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTextEdit>

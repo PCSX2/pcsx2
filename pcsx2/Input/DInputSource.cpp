@@ -17,8 +17,8 @@
 
 #define INITGUID
 
-#include "Frontend/DInputSource.h"
-#include "Frontend/InputManager.h"
+#include "Input/DInputSource.h"
+#include "Input/InputManager.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/StringUtil.h"

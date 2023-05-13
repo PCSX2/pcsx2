@@ -69,7 +69,7 @@ class HostDisplay;
 s16 GSLookupGetSkipCountFunctionId(const std::string_view& name);
 s16 GSLookupBeforeDrawFunctionId(const std::string_view& name);
 
-int GSinit();
+void GSinit();
 void GSshutdown();
 bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* basemem);
 bool GSreopen(bool recreate_device, bool recreate_renderer, const Pcsx2Config::GSOptions& old_config);

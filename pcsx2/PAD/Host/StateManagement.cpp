@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -18,7 +18,7 @@
 #include "PAD/Host/StateManagement.h"
 #include "PAD/Host/KeyStatus.h"
 #include "PAD/Host/PAD.h"
-#include "Frontend/InputManager.h"
+#include "Input/InputManager.h"
 #include "Sio.h"
 
 template <class T>

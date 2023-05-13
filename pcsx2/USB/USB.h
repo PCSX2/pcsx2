@@ -93,7 +93,7 @@ struct WindowInfo;
 
 // ---------------------------------------------------------------------
 
-s32 USBinit();
+void USBinit();
 void USBasync(u32 cycles);
 void USBshutdown();
 void USBclose();

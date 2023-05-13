@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,21 +15,21 @@
 
 #include "PrecompiledHeader.h"
 
-#include "common/StringUtil.h"
-
-#include "Frontend/GameList.h"
-#include "PAD/Host/PAD.h"
-
 #include "GameSummaryWidget.h"
 #include "SettingsDialog.h"
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 
-#include <QtCore/QDir>
-#include <QtWidgets/QFileDialog>
+#include "pcsx2/GameList.h"
+#include "pcsx2/PAD/Host/PAD.h"
+
+#include "common/StringUtil.h"
 
 #include "fmt/format.h"
+
+#include <QtCore/QDir>
+#include <QtWidgets/QFileDialog>
 
 GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsDialog* dialog, QWidget* parent)
 	: m_dialog(dialog)

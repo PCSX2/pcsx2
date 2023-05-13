@@ -19,7 +19,7 @@
 #include <QtWidgets/QFileDialog>
 #include <algorithm>
 
-#include "pcsx2/HostSettings.h"
+#include "pcsx2/Host.h"
 #include "pcsx2/ps2/BiosTools.h"
 
 #include "BIOSSettingsWidget.h"

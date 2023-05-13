@@ -205,9 +205,6 @@
     <Filter Include="System\Ps2\GS\GIF">
       <UniqueIdentifier>{78f5077b-255e-435e-9a51-352171dfaee8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Host">
-      <UniqueIdentifier>{65f21394-287a-471b-a0c1-d8f0d5d95a81}</UniqueIdentifier>
-    </Filter>
     <Filter Include="System\Ps2\GS\Renderers\Vulkan">
       <UniqueIdentifier>{98829aa9-bb81-4564-bd6e-128719c4faa0}</UniqueIdentifier>
     </Filter>
@@ -268,11 +265,14 @@
     <Filter Include="System\Ps2\USB\usb-lightgun">
       <UniqueIdentifier>{b8542664-8208-48ad-bd47-425a316f293c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Misc\Input">
+      <UniqueIdentifier>{aa9a3402-0b59-4e60-8d53-b77f509bf081}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Misc\ImGui">
+      <UniqueIdentifier>{8a23ff29-0a43-4d5b-8c6c-a7722871058a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Utilities\folderdesc.txt">
-      <Filter>Misc</Filter>
-    </None>
     <None Include="Docs\License.txt">
       <Filter>Docs</Filter>
     </None>
@@ -1136,41 +1136,11 @@
     <ClCompile Include="SPU2\SndOut_Cubeb.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
-    <ClCompile Include="Frontend\ImGuiManager.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Host.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
     <ClCompile Include="GS\Renderers\Vulkan\GSTextureVK.cpp">
       <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\Vulkan\GSDeviceVK.cpp">
       <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\GameList.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="INISettingsInterface.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\InputManager.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\InputSource.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\LayeredSettingsInterface.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\SDLInputSource.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\XInputSource.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\HostSettings.cpp">
-      <Filter>Host</Filter>
     </ClCompile>
     <ClCompile Include="VMManager.cpp">
       <Filter>System</Filter>
@@ -1183,9 +1153,6 @@
     </ClCompile>
     <ClCompile Include="PAD\Host\StateManagement.cpp">
       <Filter>System\Ps2\PAD</Filter>
-    </ClCompile>
-    <ClCompile Include="windows\Optimus.cpp">
-      <Filter>Host</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\HW\GSTextureReplacements.cpp">
       <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
@@ -1216,30 +1183,6 @@
     </ClCompile>
     <ClCompile Include="Recording\Utilities\InputRecordingLogger.cpp">
       <Filter>Tools\Input Recording\Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\LogSink.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\ImGuiFullscreen.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\FullscreenUI.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\CommonHost.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\CommonHotkeys.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\Achievements.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\ImGuiOverlays.cpp">
-      <Filter>Host</Filter>
-    </ClCompile>
-    <ClCompile Include="Frontend\DInputSource.cpp">
-      <Filter>Host</Filter>
     </ClCompile>
     <ClCompile Include="MemoryCardProtocol.cpp">
       <Filter>System\Ps2\Iop</Filter>
@@ -1414,6 +1357,60 @@
     </ClCompile>
     <ClCompile Include="PerformanceMetrics.cpp">
       <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\InputSource.cpp">
+      <Filter>Misc\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\SDLInputSource.cpp">
+      <Filter>Misc\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\InputManager.cpp">
+      <Filter>Misc\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\DInputSource.cpp">
+      <Filter>Misc\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\XInputSource.cpp">
+      <Filter>Misc\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Host.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="LogSink.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\Optimus.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="GameList.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="Achievements.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="CommonHost.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="Hotkeys.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="INISettingsInterface.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="LayeredSettingsInterface.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\ImGuiManager.cpp">
+      <Filter>Misc\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\ImGuiOverlays.cpp">
+      <Filter>Misc\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\FullscreenUI.cpp">
+      <Filter>Misc\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\ImGuiFullscreen.cpp">
+      <Filter>Misc\ImGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2089,12 +2086,6 @@
     <ClInclude Include="PerformanceMetrics.h">
       <Filter>System\Include</Filter>
     </ClInclude>
-    <ClInclude Include="Host.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\ImGuiManager.h">
-      <Filter>Host</Filter>
-    </ClInclude>
     <ClInclude Include="GS\Renderers\Vulkan\GSTextureVK.h">
       <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
     </ClInclude>
@@ -2102,30 +2093,6 @@
       <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="GS.h" />
-    <ClInclude Include="Frontend\GameList.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="INISettingsInterface.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\InputManager.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\InputSource.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\LayeredSettingsInterface.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\SDLInputSource.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\XInputSource.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="HostSettings.h">
-      <Filter>Host</Filter>
-    </ClInclude>
     <ClInclude Include="VMManager.h">
       <Filter>System</Filter>
     </ClInclude>
@@ -2168,29 +2135,8 @@
     <ClInclude Include="Recording\Utilities\InputRecordingLogger.h">
       <Filter>Tools\Input Recording\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="Frontend\LogSink.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\ImGuiFullscreen.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\FullscreenUI.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\CommonHost.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\Achievements.h">
-      <Filter>Host</Filter>
-    </ClInclude>
     <ClInclude Include="ShaderCacheVersion.h">
       <Filter>System\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\ImGuiOverlays.h">
-      <Filter>Host</Filter>
-    </ClInclude>
-    <ClInclude Include="Frontend\DInputSource.h">
-      <Filter>Host</Filter>
     </ClInclude>
     <ClInclude Include="SioTypes.h">
       <Filter>System\Ps2\Iop</Filter>
@@ -2371,6 +2317,51 @@
     </ClInclude>
     <ClInclude Include="Achievements.h">
       <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\InputManager.h">
+      <Filter>Misc\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\InputSource.h">
+      <Filter>Misc\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\SDLInputSource.h">
+      <Filter>Misc\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\DInputSource.h">
+      <Filter>Misc\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\XInputSource.h">
+      <Filter>Misc\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Host.h">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="LogSink.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="GameList.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="CommonHost.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="INISettingsInterface.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="LayeredSettingsInterface.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\ImGuiManager.h">
+      <Filter>Misc\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\ImGuiOverlays.h">
+      <Filter>Misc\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\FullscreenUI.h">
+      <Filter>Misc\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\ImGuiFullscreen.h">
+      <Filter>Misc\ImGui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

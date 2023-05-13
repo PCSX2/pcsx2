@@ -19,7 +19,7 @@
 #include <QtWidgets/QMessageBox>
 #include <limits>
 
-#include "pcsx2/HostSettings.h"
+#include "pcsx2/Host.h"
 
 #include "EmulationSettingsWidget.h"
 #include "QtUtils.h"

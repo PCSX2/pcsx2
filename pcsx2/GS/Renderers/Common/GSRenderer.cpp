@@ -15,8 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
-#include "Frontend/FullscreenUI.h"
-#include "Frontend/ImGuiManager.h"
+#include "ImGui/FullscreenUI.h"
+#include "ImGui/ImGuiManager.h"
 #include "GS/Renderers/Common/GSRenderer.h"
 #include "GS/GSCapture.h"
 #include "GS/GSGL.h"
@@ -24,7 +24,6 @@
 #include "Host.h"
 #include "PerformanceMetrics.h"
 #include "pcsx2/Config.h"
-#include "IconsFontAwesome5.h"
 #include "VMManager.h"
 
 #include "common/FileSystem.h"
@@ -34,6 +33,7 @@
 #include "common/Timer.h"
 
 #include "fmt/core.h"
+#include "IconsFontAwesome5.h"
 
 #include <algorithm>
 #include <array>

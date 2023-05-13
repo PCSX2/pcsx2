@@ -21,7 +21,7 @@
 #include "Config.h"
 #include "ChunksCache.h"
 #include "GzippedFileReader.h"
-#include "HostSettings.h"
+#include "Host.h"
 #include "zlib_indexed.h"
 
 #define CLAMP(val, minval, maxval) (std::min(maxval, std::max(minval, val)))

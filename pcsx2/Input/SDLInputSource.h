@@ -14,7 +14,7 @@
  */
 
 #pragma once
-#include "Frontend/InputSource.h"
+#include "Input/InputSource.h"
 #include "SDL.h"
 #include <array>
 #include <functional>

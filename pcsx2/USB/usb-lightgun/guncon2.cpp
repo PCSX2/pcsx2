@@ -14,16 +14,16 @@
  */
 
 #include "PrecompiledHeader.h"
+
+#include "GS/GS.h"
+#include "Input/InputManager.h"
+#include "StateWrapper.h"
+#include "USB/USB.h"
 #include "USB/deviceproxy.h"
+#include "USB/qemu-usb/USBinternal.h"
 #include "USB/qemu-usb/desc.h"
 #include "USB/usb-lightgun/guncon2.h"
-#include "USB/qemu-usb/USBinternal.h"
-#include "USB/USB.h"
-#include "GS/GS.h"
-#include "StateWrapper.h"
 #include "VMManager.h"
-
-#include "Frontend/InputManager.h"
 
 #include <tuple>
 

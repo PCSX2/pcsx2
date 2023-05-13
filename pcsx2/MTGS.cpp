@@ -109,13 +109,6 @@ void SysMtgsThread::ThreadEntryPoint()
 {
 	Threading::SetNameOfCurrentThread("GS");
 
-	if (GSinit() != 0)
-	{
-		Host::ReportErrorAsync("Error", "GSinit() failed.");
-		m_open_or_close_done.Post();
-		return;
-	}
-
 	m_thread_handle = Threading::ThreadHandle::GetForCallingThread();
 
 	for (;;)
