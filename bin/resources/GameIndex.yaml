@@ -32235,6 +32235,8 @@ SLPM-65998:
   name: "Vampire Darkstalkers Collection"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes squares around sprites when upscaling.
 SLPM-65999:
   name: "Drag-on Dragoon 2 - Fuuin no Aka, Haitoku no Kuro"
   region: "NTSC-J"
@@ -34739,6 +34741,8 @@ SLPM-66636:
 SLPM-66637:
   name: "Vampire Darkstalkers Collection [Capcom the Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes squares around sprites when upscaling.
 SLPM-66638:
   name: "Demento [CapKore]"
   region: "NTSC-J"
