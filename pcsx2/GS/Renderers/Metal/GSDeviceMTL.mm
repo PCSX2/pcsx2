@@ -1496,14 +1496,25 @@ void GSDeviceMTL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 	[encoder endEncoding];
 }}
 
+void GSDeviceMTL::BeginStretchRect(NSString* name, GSTexture* dTex, MTLLoadAction action)
+{
+	if (dTex->GetFormat() == GSTexture::Format::DepthStencil)
+		BeginRenderPass(name, nullptr, MTLLoadActionDontCare, dTex, action);
+	else
+		BeginRenderPass(name, dTex, action, nullptr, MTLLoadActionDontCare);
+
+	FlushDebugEntries(m_current_render.encoder);
+	MREClearScissor();
+	DepthStencilSelector dsel = DepthStencilSelector::NoDepth();
+	dsel.zwe = dTex->GetFormat() == GSTexture::Format::DepthStencil;
+	MRESetDSS(dsel);
+}
+
 void GSDeviceMTL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, id<MTLRenderPipelineState> pipeline, bool linear, LoadAction load_action, const void* frag_uniform, size_t frag_uniform_len)
 {
 	FlushClears(sTex);
 
-	GSTextureMTL* sT = static_cast<GSTextureMTL*>(sTex);
-	GSTextureMTL* dT = static_cast<GSTextureMTL*>(dTex);
-
-	GSVector2i ds = dT->GetSize();
+	GSVector2i ds = dTex->GetSize();
 
 	bool covers_target = static_cast<int>(dRect.x) <= 0
 	                  && static_cast<int>(dRect.y) <= 0
@@ -1512,45 +1523,39 @@ void GSDeviceMTL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextu
 	bool dontcare = load_action == LoadAction::DontCare || (load_action == LoadAction::DontCareIfFull && covers_target);
 	MTLLoadAction action = dontcare ? MTLLoadActionDontCare : MTLLoadActionLoad;
 
-	if (dT->GetFormat() == GSTexture::Format::DepthStencil)
-		BeginRenderPass(@"StretchRect", nullptr, MTLLoadActionDontCare, dT, action);
-	else
-		BeginRenderPass(@"StretchRect", dT, action, nullptr, MTLLoadActionDontCare);
-
-	FlushDebugEntries(m_current_render.encoder);
-	MREClearScissor();
-	DepthStencilSelector dsel;
-	dsel.ztst = ZTST_ALWAYS;
-	dsel.zwe = dT->GetFormat() == GSTexture::Format::DepthStencil;
-	MRESetDSS(dsel);
+	BeginStretchRect(@"StretchRect", dTex, action);
 
 	MRESetPipeline(pipeline);
-	MRESetTexture(sT, GSMTLTextureIndexNonHW);
+	MRESetTexture(sTex, GSMTLTextureIndexNonHW);
 
 	if (frag_uniform && frag_uniform_len)
 		[m_current_render.encoder setFragmentBytes:frag_uniform length:frag_uniform_len atIndex:GSMTLBufferIndexUniforms];
 
 	MRESetSampler(linear ? SamplerSelector::Linear() : SamplerSelector::Point());
 
-	DrawStretchRect(sRect, dRect, ds);
+	DrawStretchRect(sRect, dRect, GSVector2(static_cast<float>(ds.x), static_cast<float>(ds.y)));
 }
 
-void GSDeviceMTL::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect, const GSVector2i& ds)
+static std::array<GSVector4, 4> CalcStrechRectPoints(const GSVector4& sRect, const GSVector4& dRect, const GSVector2& ds)
 {
-	float left = dRect.x * 2 / ds.x - 1.0f;
-	float right = dRect.z * 2 / ds.x - 1.0f;
-	float top = 1.0f - dRect.y * 2 / ds.y;
-	float bottom = 1.0f - dRect.w * 2 / ds.y;
-
-	ConvertShaderVertex vertices[] =
-	{
-		{{left,  top},    {sRect.x, sRect.y}},
-		{{right, top},    {sRect.z, sRect.y}},
-		{{left,  bottom}, {sRect.x, sRect.w}},
-		{{right, bottom}, {sRect.z, sRect.w}}
+	static_assert(sizeof(GSDeviceMTL::ConvertShaderVertex) == sizeof(GSVector4), "Using GSVector4 as a ConvertShaderVertex");
+	GSVector4 dst = dRect;
+	dst /= GSVector4(ds.x, ds.y, ds.x, ds.y);
+	dst *= GSVector4(2, -2, 2, -2);
+	dst += GSVector4(-1, 1, -1, 1);
+	return {
+		dst.xyxy(sRect),
+		dst.zyzy(sRect),
+		dst.xwxw(sRect),
+		dst.zwzw(sRect)
 	};
+}
 
-	[m_current_render.encoder setVertexBytes:vertices length:sizeof(vertices) atIndex:GSMTLBufferIndexVertices];
+void GSDeviceMTL::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect, const GSVector2& ds)
+{
+	std::array<GSVector4, 4> vertices = CalcStrechRectPoints(sRect, dRect, ds);
+
+	[m_current_render.encoder setVertexBytes:&vertices length:sizeof(vertices) atIndex:GSMTLBufferIndexVertices];
 
 	[m_current_render.encoder drawPrimitives:MTLPrimitiveTypeTriangleStrip
 	                             vertexStart:0
@@ -1622,8 +1627,67 @@ void GSDeviceMTL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 		[m_current_render.encoder setFragmentSamplerState:m_sampler_hw[linear ? SamplerSelector::Linear().key : SamplerSelector::Point().key] atIndex:0];
 		[m_current_render.encoder setFragmentTexture:static_cast<GSTextureMTL*>(sTex)->GetTexture() atIndex:0];
 		[m_current_render.encoder setFragmentBytes:&cb length:sizeof(cb) atIndex:GSMTLBufferIndexUniforms];
-		DrawStretchRect(sRect, dRect, ds);
+		DrawStretchRect(sRect, dRect, GSVector2(static_cast<float>(ds.x), static_cast<float>(ds.y)));
 	}
+}}
+
+void GSDeviceMTL::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader)
+{ @autoreleasepool {
+	BeginStretchRect(@"MultiStretchRect", dTex, MTLLoadActionLoad);
+
+	id<MTLRenderPipelineState> pipeline = nullptr;
+	GSTexture* sTex = rects[0].src;
+	bool linear = rects[0].linear;
+	u8 wmask = rects[0].wmask.wrgba;
+
+	const GSVector2 ds(static_cast<float>(dTex->GetWidth()), static_cast<float>(dTex->GetHeight()));
+	const Map allocation = Allocate(m_vertex_upload_buf, sizeof(ConvertShaderVertex) * 4 * num_rects);
+	std::array<GSVector4, 4>* write = static_cast<std::array<GSVector4, 4>*>(allocation.cpu_buffer);
+	const id<MTLRenderCommandEncoder> enc = m_current_render.encoder;
+	[enc setVertexBuffer:allocation.gpu_buffer
+	              offset:allocation.gpu_offset
+	             atIndex:GSMTLBufferIndexVertices];
+	u32 start = 0;
+
+	auto flush = [&](u32 i) {
+		const u32 end = i * 4;
+		const u32 vertex_count = end - start;
+		const u32 index_count = vertex_count + (vertex_count >> 1); // 6 indices per 4 vertices
+		id<MTLRenderPipelineState> new_pipeline = wmask == 0xf ? m_convert_pipeline[static_cast<int>(shader)]
+		                                                       : m_convert_pipeline_copy_mask[wmask];
+		if (new_pipeline != pipeline)
+		{
+			pipeline = new_pipeline;
+			pxAssertRel(pipeline, fmt::format("No pipeline for {}", shaderName(shader)).c_str());
+			MRESetPipeline(pipeline);
+		}
+		MRESetSampler(linear ? SamplerSelector::Linear() : SamplerSelector::Point());
+		MRESetTexture(sTex, GSMTLTextureIndexNonHW);
+		[enc drawIndexedPrimitives:MTLPrimitiveTypeTriangle
+		                indexCount:index_count
+		                 indexType:MTLIndexTypeUInt16
+		               indexBuffer:m_expand_index_buffer
+		         indexBufferOffset:0
+		             instanceCount:1
+		                baseVertex:start
+		              baseInstance:0];
+		start = end;
+	};
+
+	for (u32 i = 0; i < num_rects; i++)
+	{
+		const MultiStretchRect& rect = rects[i];
+		if (rect.src != sTex || rect.linear != linear || rect.wmask.wrgba != wmask)
+		{
+			flush(i);
+			sTex = rect.src;
+			linear = rect.linear;
+			wmask = rect.wmask.wrgba;
+		}
+		*write++ = CalcStrechRectPoints(rect.src_rect, rect.dst_rect, ds);
+	}
+
+	flush(num_rects);
 }}
 
 void GSDeviceMTL::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
