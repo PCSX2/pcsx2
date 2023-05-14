@@ -177,6 +177,7 @@ mVUop(mVU_RSQRT)
 		SSE_MULSS(mVU, t2, Fs); \
 		xMOVAPS(t1, t2); \
 		xMUL.SS(t1, ptr32[addr]); \
+		mVU.regAlloc->clearRegClamp(t1.Id); \
 		SSE_ADDSS(mVU, PQ, t1); \
 	}
 
@@ -294,6 +295,7 @@ mVUop(mVU_EATANxz)
 		SSE_MULSS(mVU, t2, Fs); \
 		xMOVAPS(t1, t2); \
 		xMUL.SS(t1, ptr32[addr]); \
+		mVU.regAlloc->clearRegClamp(t1.Id); \
 		SSE_ADDSS(mVU, xmmPQ, t1); \
 	}
 
@@ -321,12 +323,14 @@ mVUop(mVU_EEXP)
 		SSE_MULSS(mVU, t1, Fs);
 		xMOVAPS(t2, t1);
 		xMUL.SS(t1, ptr32[mVUglob.E2]);
+		mVU.regAlloc->clearRegClamp(t1.Id);
 		SSE_ADDSS(mVU, xmmPQ, t1);
 		eexpHelper(&mVUglob.E3);
 		eexpHelper(&mVUglob.E4);
 		eexpHelper(&mVUglob.E5);
 		SSE_MULSS(mVU, t2, Fs);
 		xMUL.SS(t2, ptr32[mVUglob.E6]);
+		mVU.regAlloc->clearRegClamp(t2.Id);
 		SSE_ADDSS(mVU, xmmPQ, t2);
 		SSE_MULSS(mVU, xmmPQ, xmmPQ);
 		SSE_MULSS(mVU, xmmPQ, xmmPQ);
@@ -525,20 +529,24 @@ mVUop(mVU_ESIN)
 		SSE_MULSS(mVU, Fs, xmmPQ); // fs = X^3
 		xMOVAPS       (t2, Fs);    // t2 = X^3
 		xMUL.SS       (Fs, ptr32[mVUglob.S2]); // fs = s2 * X^3
+		mVU.regAlloc->clearRegClamp(Fs.Id);
 		SSE_ADDSS(mVU, xmmPQ, Fs); // pq = X + s2 * X^3
 
 		SSE_MULSS(mVU, t2, t1);    // t2 = X^3 * X^2
 		xMOVAPS       (Fs, t2);    // fs = X^5
 		xMUL.SS       (Fs, ptr32[mVUglob.S3]); // ps = s3 * X^5
+		mVU.regAlloc->clearRegClamp(Fs.Id);
 		SSE_ADDSS(mVU, xmmPQ, Fs); // pq = X + s2 * X^3 + s3 * X^5
 
 		SSE_MULSS(mVU, t2, t1);    // t2 = X^5 * X^2
 		xMOVAPS       (Fs, t2);    // fs = X^7
 		xMUL.SS       (Fs, ptr32[mVUglob.S4]); // fs = s4 * X^7
+		mVU.regAlloc->clearRegClamp(Fs.Id);
 		SSE_ADDSS(mVU, xmmPQ, Fs); // pq = X + s2 * X^3 + s3 * X^5 + s4 * X^7
 
 		SSE_MULSS(mVU, t2, t1);    // t2 = X^7 * X^2
 		xMUL.SS       (t2, ptr32[mVUglob.S5]); // t2 = s5 * X^9
+		mVU.regAlloc->clearRegClamp(t2.Id);
 		SSE_ADDSS(mVU, xmmPQ, t2); // pq = X + s2 * X^3 + s3 * X^5 + s4 * X^7 + s5 * X^9
 		xPSHUF.D      (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip back
 		mVU.regAlloc->clearNeeded(Fs);

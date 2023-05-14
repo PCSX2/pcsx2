@@ -430,6 +430,8 @@ void MIN_MAX_PS(microVU& mVU, const xmm& to, const xmm& from, const xmm& t1in, c
 		xPOR     (to, c1);
 	}
 
+	mVU.regAlloc->mergeRegClamp(to.Id, from.Id);
+
 	if (t1 != t1in) mVU.regAlloc->clearNeeded(t1);
 	if (t2 != t2in) mVU.regAlloc->clearNeeded(t2);
 }
@@ -444,6 +446,7 @@ void MIN_MAX_SS(mV, const xmm& to, const xmm& from, const xmm& t1in, bool min)
 	xPSHUF.D(t1, to, 0xee);
 	if (min) xMIN.PD(to, t1);
 	else	 xMAX.PD(to, t1);
+	mVU.regAlloc->mergeRegClamp(to.Id, from.Id);
 	if (t1 != t1in)
 		mVU.regAlloc->clearNeeded(t1);
 }
@@ -503,6 +506,8 @@ void ADD_SS_Single_Guard_Bit(microVU& mVU, const xmm& to, const xmm& from, const
 	case_end4.SetTarget();
 
 	xADD.SS(to, from);
+	mVU.regAlloc->clearRegClamp(to.Id);
+
 	if (t1 != t1in)
 		mVU.regAlloc->clearNeeded(t1);
 }
@@ -535,6 +540,7 @@ void ADD_SS_TriAceHack(microVU& mVU, const xmm& to, const xmm& from)
 	case_end2.SetTarget();
 
 	xADD.SS(to, from);
+	mVU.regAlloc->clearRegClamp(to.Id);
 }
 
 #define clampOp(opX, isPS) \
@@ -542,6 +548,7 @@ void ADD_SS_TriAceHack(microVU& mVU, const xmm& to, const xmm& from)
 		mVUclamp3(mVU, to, t1, (isPS) ? 0xf : 0x8); \
 		mVUclamp3(mVU, from, t1, (isPS) ? 0xf : 0x8); \
 		opX(to, from); \
+		mVU.regAlloc->clearRegClamp(to.Id); \
 		mVUclamp4(mVU, to, t1, (isPS) ? 0xf : 0x8); \
 	} while (0)
 

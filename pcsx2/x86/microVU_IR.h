@@ -223,6 +223,7 @@ struct microMapXMM
 	int  count;    // Count of when last used
 	bool isNeeded; // Is needed for current instruction
 	bool isZero;   // Register was loaded from VF00 and doesn't need clamping
+	u8 isClamped;  // Clamp state
 };
 
 struct microMapGPR
@@ -402,6 +403,7 @@ public:
 					xmmMap[i].isNeeded = false;
 					xmmMap[i].VFreg = pxmmregs[i].reg;
 					xmmMap[i].xyzw = ((pxmmregs[i].mode & MODE_WRITE) != 0) ? 0xf : 0x0;
+					xmmMap[i].isClamped = 0;
 				}
 			}
 
@@ -592,12 +594,27 @@ public:
 			writeBackReg(xRegister32(i), false);
 	}
 
-	bool checkVFClamp(int regId)
+	bool isClampNeeded(int regId, u8 clampType)
 	{
-		if (regId != xmmPQ.Id && ((xmmMap[regId].VFreg == 33 && !EmuConfig.Gamefixes.IbitHack) || xmmMap[regId].isZero))
+		if (regId != xmmPQ.Id && ((xmmMap[regId].VFreg == 33 && !EmuConfig.Gamefixes.IbitHack) || xmmMap[regId].isZero || xmmMap[regId].isClamped >= clampType))
 			return false;
 		else
 			return true;
+	}
+
+	void setRegClamp(int regId, u8 clampType)
+	{
+		xmmMap[regId].isClamped = clampType;
+	}
+
+	void clearRegClamp(int regId)
+	{
+		setRegClamp(regId, 0);
+	}
+
+	void mergeRegClamp(int to, int from)
+	{
+		xmmMap[to].isClamped = std::min(xmmMap[to].isClamped, xmmMap[from].isClamped);
 	}
 
 	bool checkCachedReg(int regId)
@@ -626,7 +643,7 @@ public:
 			pxmmregs[regId].inuse = false;
 		}
 
-		clear = {-1, 0, 0, false, false};
+		clear = {-1, 0, 0, false, false, 0};
 	}
 
 	void clearRegVF(int VFreg)
@@ -741,6 +758,7 @@ public:
 							mVUmergeRegs(xmm(i), reg, clear.xyzw, true);
 							mapI.xyzw  = 0xf;
 							mapI.count = counter;
+							mapI.isClamped = std::min(mapI.isClamped, xmmMap[reg.Id].isClamped);
 							mergeRegs  = 2;
 							updateCOP2AllocState(i);
 						}
@@ -824,6 +842,7 @@ public:
 					}
 					xmmMap[z].count = counter;
 					xmmMap[z].isNeeded = true;
+					xmmMap[z].isClamped = mapI.isClamped;
 					updateCOP2AllocState(z);
 
 					return xmm::GetInstance(z);
@@ -863,6 +882,7 @@ public:
 		xmmMap[x].isZero = (vfLoadReg == 0);
 		xmmMap[x].count    = counter;
 		xmmMap[x].isNeeded = true;
+		xmmMap[x].isClamped = (vfLoadReg == 0) ? 4 : 0;
 		updateCOP2AllocState(x);
 		return xmmX;
 	}
