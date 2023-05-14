@@ -2480,8 +2480,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	}
 
 	// TODO: In theory we could do channel swapping on the GPU, but we haven't found anything which needs it so far.
-	// Same with SBP == DBP, but this behavior could change based on direction?
-	if (SPSM != DPSM || ((SBP == DBP) && !(GSVector4i(sx, sy, sx + w, sy + h).rintersect(GSVector4i(dx, dy, dx + w, dy + h))).rempty()))
+	if (SPSM != DPSM)
 	{
 		GL_CACHE("Skipping HW move from 0x%X to 0x%X with SPSM=%u DPSM=%u", SBP, DBP, SPSM, DPSM);
 		return false;
@@ -2574,9 +2573,57 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		return false;
 	GL_CACHE("HW Move 0x%x[BW:%u PSM:%s] to 0x%x[BW:%u PSM:%s] <%d,%d->%d,%d> -> <%d,%d->%d,%d>", SBP, SBW,
 		psm_str(SPSM), DBP, DBW, psm_str(DPSM), sx, sy, sx + w, sy + h, dx, dy, dx + w, dy + h);
-	g_gs_device->CopyRect(src->m_texture, dst->m_texture,
-		GSVector4i(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h),
-		scaled_dx, scaled_dy);
+
+	// If the copies overlap, this is a validation error, so we need to copy to a temporary texture first.
+	if ((SBP == DBP) && !(GSVector4i(sx, sy, sx + w, sy + h).rintersect(GSVector4i(dx, dy, dx + w, dy + h))).rempty())
+	{
+		GSTexture* tmp_texture = nullptr;
+		const GSVector4i src_size = GSVector4i(src->m_texture->GetSize()).xyxy();
+		try
+		{
+			tmp_texture = src->m_texture->IsDepthStencil() ?
+				g_gs_device->CreateDepthStencil(src_size.x, src_size.y, src->m_texture->GetFormat(), false) :
+				g_gs_device->CreateRenderTarget(src_size.x, src_size.y, src->m_texture->GetFormat(), false);
+		}
+		catch (const std::bad_alloc&)
+		{
+		}
+
+		if (!tmp_texture)
+		{
+			Console.Error("(HW Move) Failed to allocate temporary %dx%d texture on HW move", w, h);
+			return false;
+		}
+
+		if(tmp_texture->IsDepthStencil())
+		{
+			const GSVector4 src_rect = GSVector4(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h);
+			const GSVector4 tmp_rect = src_rect / GSVector4(src_size);
+			const GSVector4 dst_rect = GSVector4(scaled_dx, scaled_dy, (scaled_dx + scaled_w), (scaled_dy + scaled_h));
+			g_gs_device->StretchRect(src->m_texture, tmp_rect, tmp_texture, src_rect, ShaderConvert::DEPTH_COPY, false);
+			g_gs_device->StretchRect(tmp_texture, tmp_rect, dst->m_texture, dst_rect, ShaderConvert::DEPTH_COPY, false);
+		}
+		else
+		{
+			const GSVector4i src_rect = GSVector4i(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h);
+			// Fast memcpy()-like path for color targets.
+			g_gs_device->CopyRect(src->m_texture, tmp_texture,
+				src_rect,
+				scaled_sx, scaled_sy);
+
+			g_gs_device->CopyRect(tmp_texture, dst->m_texture,
+				src_rect,
+				scaled_dx, scaled_dy);
+		}
+
+		g_gs_device->Recycle(tmp_texture);
+	}
+	else
+	{
+		g_gs_device->CopyRect(src->m_texture, dst->m_texture,
+			GSVector4i(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h),
+			scaled_dx, scaled_dy);
+	}
 
 	dst->UpdateValidity(GSVector4i(dx, dy, dx + w, dy + h));
 	// Invalidate any sources that overlap with the target (since they're now stale).
