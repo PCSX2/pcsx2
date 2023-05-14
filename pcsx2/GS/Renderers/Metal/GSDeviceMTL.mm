@@ -1075,7 +1075,6 @@ bool GSDeviceMTL::Create()
 			NSString* name = [NSString stringWithCString:shaderName(conv) encoding:NSUTF8StringEncoding];
 			switch (conv)
 			{
-				case ShaderConvert::COPY:
 				case ShaderConvert::Count:
 				case ShaderConvert::DATM_0:
 				case ShaderConvert::DATM_1:
@@ -1105,6 +1104,7 @@ bool GSDeviceMTL::Create()
 					pdesc.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
 					pdesc.depthAttachmentPixelFormat = ConvertPixelFormat(GSTexture::Format::DepthStencil);
 					break;
+				case ShaderConvert::COPY:
 				case ShaderConvert::RGBA_TO_8I: // Yes really
 				case ShaderConvert::TRANSPARENCY_FILTER:
 				case ShaderConvert::FLOAT32_TO_RGBA8:
@@ -1124,10 +1124,6 @@ bool GSDeviceMTL::Create()
 			pdesc.colorAttachments[0].pixelFormat = layer_px_fmt;
 			m_present_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), [NSString stringWithFormat:@"present_%s", shaderName(conv) + 3]);
 		}
-		pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
-		m_convert_pipeline_copy[0] = MakePipeline(pdesc, vs_convert, ps_copy, @"copy_color");
-		pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::HDRColor);
-		m_convert_pipeline_copy[1] = MakePipeline(pdesc, vs_convert, ps_copy, @"copy_hdr");
 
 		pdesc.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA8Unorm;
 		for (size_t i = 0; i < std::size(m_convert_pipeline_copy_mask); i++)
@@ -1574,17 +1570,11 @@ void GSDeviceMTL::RenderCopy(GSTexture* sTex, id<MTLRenderPipelineState> pipelin
 
 void GSDeviceMTL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
 { @autoreleasepool {
-	id<MTLRenderPipelineState> pipeline;
 
 	pxAssert(linear ? SupportsBilinear(shader) : SupportsNearest(shader));
 
-	if (shader == ShaderConvert::COPY)
-		pipeline = m_convert_pipeline_copy[dTex->GetFormat() == GSTexture::Format::Color ? 0 : 1];
-	else
-		pipeline = m_convert_pipeline[static_cast<int>(shader)];
-
-	if (!pipeline)
-		[NSException raise:@"StretchRect Missing Pipeline" format:@"No pipeline for %d", static_cast<int>(shader)];
+	id<MTLRenderPipelineState> pipeline = m_convert_pipeline[static_cast<int>(shader)];
+	pxAssertRel(pipeline, fmt::format("No pipeline for {}", shaderName(shader)).c_str());
 
 	DoStretchRect(sTex, sRect, dTex, dRect, pipeline, linear, LoadAction::DontCareIfFull, nullptr, 0);
 }}
