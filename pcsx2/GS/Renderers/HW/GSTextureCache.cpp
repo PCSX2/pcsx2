@@ -2252,8 +2252,9 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 }
 
 // Goal: retrive the data from the GPU to the GS memory.
-// Called each time you want to read from the GS memory
-void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r)
+// Called each time you want to read from the GS memory.
+// full_flush is set when it's a Local->Local stransfer and both src and destination are the same.
+void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r, bool full_flush)
 {
 	const u32 bp = off.bp();
 	const u32 psm = off.psm();
@@ -2306,7 +2307,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				const bool swizzle_match = GSLocalMemory::m_psm[psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
 				// Calculate the rect offset if the BP doesn't match.
 				GSVector4i targetr = {};
-				if (t->readbacks_since_draw > 1)
+				if (full_flush || t->readbacks_since_draw > 1)
 				{
 					targetr = t->m_drawn_since_read;
 				}
@@ -2440,7 +2441,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 			const bool swizzle_match = GSLocalMemory::m_psm[psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
 			// Calculate the rect offset if the BP doesn't match.
 			GSVector4i targetr = {};
-			if (t->readbacks_since_draw > 1)
+			if (full_flush || t->readbacks_since_draw > 1)
 			{
 				targetr = t->m_drawn_since_read;
 			}

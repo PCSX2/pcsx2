@@ -464,7 +464,7 @@ public:
 	void InvalidateVideoMemType(int type, u32 bp);
 	void InvalidateVideoMemSubTarget(GSTextureCache::Target* rt);
 	void InvalidateVideoMem(const GSOffset& off, const GSVector4i& r, bool eewrite = false, bool target = true);
-	void InvalidateLocalMem(const GSOffset& off, const GSVector4i& r);
+	void InvalidateLocalMem(const GSOffset& off, const GSVector4i& r, bool full_flush = false);
 
 	/// Removes any targets overlapping the specified BP and rectangle.
 	void InvalidateVideoMemTargets(int type, u32 bp, u32 bw, u32 psm, const GSVector4i& r);
