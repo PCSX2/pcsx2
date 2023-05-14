@@ -390,12 +390,11 @@ void normBranch(mV, microFlagCycles& mFC)
 	{
 		DevCon.Warning("M-Bit on normal branch, report if broken");
 		u32 tempPC = iPC;
-		u32* cpS = (u32*)&mVUregs;
-		u32* lpS = (u32*)&mVU.prog.lpState;
-		for (size_t i = 0; i < (sizeof(microRegInfo) - 4) / 4; i++, lpS++, cpS++)
-		{
-			xMOV(ptr32[lpS], cpS[0]);
-		}
+
+		memcpy(&mVUpBlock->pStateEnd, &mVUregs, sizeof(microRegInfo));
+		xLoadFarAddr(rax, &mVUpBlock->pStateEnd);
+		xCALL((void*)mVU.copyPLState);
+
 		mVUsetupBranch(mVU, mFC);
 		mVUendProgram(mVU, &mFC, 3);
 		iPC = branchAddr(mVU) / 4;
@@ -486,12 +485,11 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc)
 	if (mVUup.mBit)
 	{
 		u32 tempPC = iPC;
-		u32* cpS = (u32*)&mVUregs;
-		u32* lpS = (u32*)&mVU.prog.lpState;
-		for (size_t i = 0; i < (sizeof(microRegInfo) - 4) / 4; i++, lpS++, cpS++)
-		{
-			xMOV(ptr32[lpS], cpS[0]);
-		}
+
+		memcpy(&mVUpBlock->pStateEnd, &mVUregs, sizeof(microRegInfo));
+		xLoadFarAddr(rax, &mVUpBlock->pStateEnd);
+		xCALL((void*)mVU.copyPLState);
+
 		mVUendProgram(mVU, &mFC, 3);
 		xCMP(ptr16[&mVU.branch], 0);
 		xForwardJump32 dJMP((JccComparisonType)JMPcc);
@@ -554,15 +552,16 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc)
 		{
 			s32* ajmp = xJcc32((JccComparisonType)JMPcc);
 			u32 bPC = iPC; // mVUcompile can modify iPC, mVUpBlock, and mVUregs so back them up
-			microBlock* pBlock = mVUpBlock;
-			memcpy(&pBlock->pStateEnd, &mVUregs, sizeof(microRegInfo));
+
+			microRegInfo regBackup;
+			memcpy(&regBackup, &mVUregs, sizeof(microRegInfo));
 
 			incPC2(1); // Get PC for branch not-taken
 			mVUcompile(mVU, xPC, (uptr)&mVUregs);
 
 			iPC = bPC;
 			incPC(-3); // Go back to branch opcode (to get branch imm addr)
-			uptr jumpAddr = (uptr)mVUblockFetch(mVU, branchAddr(mVU), (uptr)&pBlock->pStateEnd);
+			uptr jumpAddr = (uptr)mVUblockFetch(mVU, branchAddr(mVU), (uptr)&regBackup);
 			*ajmp = (jumpAddr - ((uptr)ajmp + 4));
 		}
 	}

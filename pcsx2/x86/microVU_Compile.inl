@@ -472,31 +472,12 @@ void mVUtestCycles(microVU& mVU, microFlagCycles& mFC)
 
 	xForwardJNS32 skip;
 
-	u8* writeback = x86Ptr;
-	xLoadFarAddr(rax, x86Ptr);
-	xFastCall((void*)mVU.copyPLState);
+	xLoadFarAddr(rax, &mVUpBlock->pState);
+	xCALL((void*)mVU.copyPLState);
 
 	if (EmuConfig.Gamefixes.VUSyncHack || EmuConfig.Gamefixes.FullVU0SyncHack)
 		xMOV(ptr32[&mVU.regs().nextBlockCycles], mVUcycles);
 	mVUendProgram(mVU, &mFC, 0);
-
-	{
-		if(x86caps.hasAVX2)
-			xAlignPtr(32);
-		else
-			xAlignPtr(16);
-
-		u8* curx86Ptr = x86Ptr;
-		x86SetPtr(writeback);
-		xLoadFarAddr(rax, curx86Ptr);
-		x86SetPtr(curx86Ptr);
-
-		static_assert((sizeof(microRegInfo) % 4) == 0);
-		const u32* lpPtr = reinterpret_cast<const u32*>(&mVU.prog.lpState);
-		const u32* lpEnd = lpPtr + (sizeof(microRegInfo) / 4);
-		while (lpPtr != lpEnd)
-			xWrite32(*(lpPtr++));
-	}
 
 	skip.SetTarget();
 
