@@ -42,16 +42,19 @@ GSTextureMTL::~GSTextureMTL()
 void GSTextureMTL::RequestColorClear(GSVector4 color)
 {
 	m_needs_color_clear = true;
+	m_invalidated = false;
 	m_clear_color = color;
 }
 void GSTextureMTL::RequestDepthClear(float depth)
 {
 	m_needs_depth_clear = true;
+	m_invalidated = false;
 	m_clear_depth = depth;
 }
 void GSTextureMTL::RequestStencilClear(int stencil)
 {
 	m_needs_stencil_clear = true;
+	m_invalidated = false;
 	m_clear_stencil = stencil;
 }
 bool GSTextureMTL::GetResetNeedsColorClear(GSVector4& colorOut)
@@ -106,6 +109,12 @@ void GSTextureMTL::InvalidateClears()
 	m_needs_color_clear = false;
 	m_needs_depth_clear = false;
 	m_needs_stencil_clear = false;
+}
+
+void GSTextureMTL::Invalidate()
+{
+	InvalidateClears();
+	m_invalidated = true;
 }
 
 bool GSTextureMTL::Update(const GSVector4i& r, const void* data, int pitch, int layer)

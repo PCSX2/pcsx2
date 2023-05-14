@@ -38,6 +38,7 @@ class GSTextureMTL : public GSTexture
 	bool m_needs_color_clear = false;
 	bool m_needs_depth_clear = false;
 	bool m_needs_stencil_clear = false;
+	bool m_invalidated = false;
 	GSVector4 m_clear_color;
 	float m_clear_depth;
 	int m_clear_stencil;
@@ -67,6 +68,12 @@ public:
 	void FlushClears();
 	/// Marks pending clears as done (e.g. if the whole texture is about to be overwritten)
 	void InvalidateClears();
+	/// Marks the texture as invalid (will load with DontCare)
+	void Invalidate();
+	/// Reads whether the texture has been invalidated, then clears the invalidation
+	bool IsInvalidated() const { return m_invalidated; };
+	/// Clears any invalidation requests
+	void ResetInvalidation() { m_invalidated = false; }
 
 	void* GetNativeHandle() const override;
 	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) override;

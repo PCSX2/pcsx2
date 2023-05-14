@@ -399,9 +399,13 @@ void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadActio
 	bool needs_color_clear = false;
 	bool needs_depth_clear = false;
 	bool needs_stencil_clear = false;
-	if (mc) needs_color_clear   = mc->GetResetNeedsColorClear(color_clear);
-	if (md) needs_depth_clear   = md->GetResetNeedsDepthClear(depth_clear);
-	if (ms) needs_stencil_clear = ms->GetResetNeedsStencilClear(stencil_clear);
+	// Depth and stencil might be the same, so do all invalidation checks before resetting invalidation
+	if (mc && mc->IsInvalidated()) color_load   = MTLLoadActionDontCare;
+	if (md && md->IsInvalidated()) depth_load   = MTLLoadActionDontCare;
+	if (ms && ms->IsInvalidated()) stencil_load = MTLLoadActionDontCare;
+	if (mc) { mc->ResetInvalidation(); needs_color_clear   = mc->GetResetNeedsColorClear(color_clear); }
+	if (md) { md->ResetInvalidation(); needs_depth_clear   = md->GetResetNeedsDepthClear(depth_clear); }
+	if (ms) { ms->ResetInvalidation(); needs_stencil_clear = ms->GetResetNeedsStencilClear(stencil_clear); }
 	if (needs_color_clear   && color_load   != MTLLoadActionDontCare) color_load   = MTLLoadActionClear;
 	if (needs_depth_clear   && depth_load   != MTLLoadActionDontCare) depth_load   = MTLLoadActionClear;
 	if (needs_stencil_clear && stencil_load != MTLLoadActionDontCare) stencil_load = MTLLoadActionClear;
@@ -1446,7 +1450,8 @@ void GSDeviceMTL::ClearStencil(GSTexture* t, uint8 c)
 
 void GSDeviceMTL::InvalidateRenderTarget(GSTexture* t)
 {
-	// TODO: Implement me
+	if (!t) return;
+	static_cast<GSTextureMTL*>(t)->Invalidate();
 }
 
 std::unique_ptr<GSDownloadTexture> GSDeviceMTL::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
