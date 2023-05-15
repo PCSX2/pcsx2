@@ -19822,6 +19822,8 @@ SLES-54084:
 SLES-54085:
   name: "Street Fighter Alpha Anthology"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 1 # Fixes squares around sprites when upscaling.
 SLES-54087:
   name: "Suikoden V"
   region: "PAL-M5"
@@ -33852,6 +33854,8 @@ SLPM-66409:
   name: "Street Fighter Zero - Fighters Generation"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes squares around sprites when upscaling.
 SLPM-66410:
   name: "Brothers In Arms - Meiyo no Daishou"
   region: "NTSC-J"
@@ -35583,6 +35587,8 @@ SLPM-66853:
 SLPM-66854:
   name: "Street Fighter Zero - Fighters Generation [Best Price]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes squares around sprites when upscaling.
 SLPM-66855:
   name: "Togainu no Chi - True Blood [Limited Edition]"
   region: "NTSC-J"
@@ -48769,6 +48775,8 @@ SLUS-21317:
   name: "Street Fighter Alpha Anthology"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 1 # Fixes squares around sprites when upscaling.
 SLUS-21318:
   name: "Call of Duty 2 - Big Red One [Collector's Edition]"
   region: "NTSC-U"
