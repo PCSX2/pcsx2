@@ -543,7 +543,7 @@ SCAJ-20010:
     beforeDraw: "OI_BigMuthaTruckers"
 SCAJ-20011:
   name: "Armored Core 3 - Silent Line"
-  region: "NTSC-HK"
+  region: "NTSC-Unk"
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
@@ -1720,6 +1720,8 @@ SCCS-40010:
 SCCS-40011:
   name: "Armored Core 2 - Another Age"
   region: "NTSC-C"
+  clampModes:
+    eeClampMode: 2 # Fixes Abnormal AI behavior.
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes broken textures.
 SCCS-40014:
@@ -40869,18 +40871,25 @@ SLPS-25730:
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
     cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25731:
   name: "Armored Core 2 [Machine Side Box]"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 2 # Fixes Abnormal AI behavior.
   gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
+    textureInsideRT: 1 # Fixes texture corruption.
 SLPS-25732:
   name: "Armored Core 3 [Machine Side Box]"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes water rendering.
     cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
+    roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25733:
   name: "Super Robot Taisen OG - Original Generations"
