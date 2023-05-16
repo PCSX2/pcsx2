@@ -455,7 +455,7 @@ public:
 	Target* LookupDisplayTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale);
 
 	/// Looks up a target in the cache, and only returns it if the BP/BW match exactly.
-	Target* GetExactTarget(u32 BP, u32 BW, int type);
+	Target* GetExactTarget(u32 BP, u32 BW, int type, u32 end_bp);
 	Target* GetTargetWithSharedBits(u32 BP, u32 PSM) const;
 
 	GSVector2i GetTargetSize(u32 bp, u32 fbw, u32 psm, s32 min_width, s32 min_height);
