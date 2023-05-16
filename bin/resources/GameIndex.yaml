@@ -2341,9 +2341,13 @@ SCED-52377:
 SCED-52390:
   name: "Bonus Demo 6"
   region: "PAL-M5"
+  gameFixes:
+    - XGKickHack # Fixes SPS for Formula One 2003.
 SCED-52391:
   name: "Bonus Demo 6"
   region: "PAL-M5"
+  gameFixes:
+    - XGKickHack # Fixes SPS for Formula One 2003.
 SCED-52436:
   name: "Bonus Demo 7"
   region: "PAL-M5"
