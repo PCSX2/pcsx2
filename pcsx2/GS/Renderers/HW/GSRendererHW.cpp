@@ -1681,12 +1681,23 @@ void GSRendererHW::Draw()
 				m_vertex.buff[1].RGBAQ.U32[0] :
 				(m_vertex.buff[1].RGBAQ.U32[0] & ~0xFF000000)) == 0) && m_cached_ctx.FRAME.FBMSK == 0 && IsBlendedOrOpaque();
 
-			if (is_zero_clear && OI_GsMemClear() && clear_height_valid)
+			const u32 rt_end = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].info.bn(m_r.z - 1, m_r.w - 1, m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW);
+			const bool req_z = m_cached_ctx.FRAME.FBP != m_cached_ctx.ZBUF.ZBP && !m_cached_ctx.ZBUF.ZMSK;
+			bool no_target_found = false;
+
+			// This is behind the if just to reduce lookups.
+			if (is_zero_clear && !clear_height_valid)
+				no_target_found = !g_texture_cache->GetExactTarget(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, GSTextureCache::RenderTarget, rt_end) &&
+								  !g_texture_cache->GetExactTarget(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, GSTextureCache::DepthStencil, rt_end);
+
+			if (is_zero_clear && OI_GsMemClear() && (clear_height_valid || (!req_z && no_target_found)))
 			{
 				GL_INS("Clear draw with mem clear and valid clear height, invalidating.");
 
 				g_texture_cache->InvalidateVideoMem(context->offset.fb, m_r, false, true);
 				g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, m_cached_ctx.FRAME.Block());
+				if(no_target_found)
+					g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, m_cached_ctx.FRAME.Block());
 
 				if (m_cached_ctx.ZBUF.ZMSK == 0)
 				{
@@ -4792,7 +4803,7 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 				return CLUTDrawTestResult::CLUTDrawOnCPU;
 
 			GSTextureCache::Target* tgt = g_texture_cache->GetExactTarget(
-				m_cached_ctx.TEX0.TBP0, m_cached_ctx.TEX0.TBW, GSTextureCache::RenderTarget);
+				m_cached_ctx.TEX0.TBP0, m_cached_ctx.TEX0.TBW, GSTextureCache::RenderTarget, m_cached_ctx.TEX0.TBP0);
 			if (tgt)
 			{
 				bool is_dirty = false;
@@ -5145,19 +5156,18 @@ bool GSRendererHW::OI_GsMemClear()
 		}
 		else if (format == 2)
 		{
-			; // Hack is used for FMV which are likely 24/32 bits. Let's keep the for reference
-#if 0
+			const u16 converted_color = ((vert_color >> 16) & 0x8000) | ((vert_color >> 9) & 0x7C00) | ((vert_color >> 6) & 0x7E0) | ((vert_color >> 3) & 0x1F);
+
 			// Based on WritePixel16
 			for (int y = r.top; y < r.bottom; y++)
 			{
-				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle16).paMulti(m_mem.m_vm16, 0, y);
+				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle16).paMulti(m_mem.vm16(), 0, y);
 
 				for (int x = r.left; x < r.right; x++)
 				{
-					*pa.value(x) = 0; // Here the constant color
+					*pa.value(x) = converted_color; // Here the constant color
 				}
 			}
-#endif
 		}
 
 		return true;

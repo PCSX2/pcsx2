@@ -1174,7 +1174,7 @@ GSTextureCache::Target* GSTextureCache::FindTargetOverlap(u32 bp, u32 end_block,
 	for (auto t : m_dst[type])
 	{
 		// Only checks that the texure starts at the requested bp, which shares data. Size isn't considered.
-		if (t->m_TEX0.TBP0 >= bp && t->m_TEX0.TBP0 < end_block_bp && GSUtil::HasSharedBits(t->m_TEX0.PSM, psm))
+		if (t->m_TEX0.TBP0 >= bp && t->m_TEX0.TBP0 < end_block_bp && GSUtil::HasCompatibleBits(t->m_TEX0.PSM, psm))
 			return t;
 	}
 	return nullptr;
@@ -1524,7 +1524,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 
 				if (!eerect.rempty())
 				{
-					GL_INS("Preloading the RT DATA");
+					GL_INS("Preloading the RT DATA from updated GS Memory");
 					eerect = eerect.rintersect(newrect);
 					AddDirtyRectTarget(dst, eerect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
 				}
@@ -2583,9 +2583,11 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 			return false;
 	}
 
+	const u32 src_end = GSLocalMemory::m_psm[SPSM].info.bn(sx + w - 1, sy + h - 1, SBP, SBW);
+	const u32 dst_end = GSLocalMemory::m_psm[DPSM].info.bn(dx + w - 1, dy + h - 1, DBP, DBW);
 	// Look for an exact match on the targets.
-	GSTextureCache::Target* src = GetExactTarget(SBP, SBW, spsm_s.depth ? DepthStencil : RenderTarget);
-	GSTextureCache::Target* dst = GetExactTarget(DBP, DBW, dpsm_s.depth ? DepthStencil : RenderTarget);
+	GSTextureCache::Target* src = GetExactTarget(SBP, SBW, spsm_s.depth ? DepthStencil : RenderTarget, src_end);
+	GSTextureCache::Target* dst = GetExactTarget(DBP, DBW, dpsm_s.depth ? DepthStencil : RenderTarget, dst_end);
 
 	// Beware of the case where a game might create a larger texture by moving a bunch of chunks around.
 	// We use dx/dy == 0 and the TBW check as a safeguard to make sure these go through to local memory.
@@ -2776,13 +2778,15 @@ bool GSTextureCache::ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx
 	return true;
 }
 
-GSTextureCache::Target* GSTextureCache::GetExactTarget(u32 BP, u32 BW, int type)
+GSTextureCache::Target* GSTextureCache::GetExactTarget(u32 BP, u32 BW, int type, u32 end_bp)
 {
 	auto& rts = m_dst[type];
 	for (auto it = rts.begin(); it != rts.end(); ++it) // Iterate targets from MRU to LRU.
 	{
 		Target* t = *it;
-		if (t->m_TEX0.TBP0 == BP && t->m_TEX0.TBW == BW)
+		const u32 end_block = (t->m_end_block < t->m_TEX0.TBP0) ? t->m_end_block + 0x4000 : t->m_end_block;
+
+		if (t->m_TEX0.TBP0 == BP && t->m_TEX0.TBW == BW && end_block >= end_bp)
 		{
 			rts.MoveFront(it.Index());
 			return t;
