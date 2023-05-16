@@ -16316,11 +16316,21 @@ SLES-52782:
   region: "PAL-E"
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    mipmap: 2 # Mipmap + trilinear, improves shimmering of terrain, matches SW.
+    trilinearFiltering: 1
+  patches:
+    0BC05D02:
+      content: |-
+        // Fixes COP2 CFC2 timing.
+        patch=1,EE,001AB900,word,48488800
+        patch=1,EE,001AB904,word,4A252942
 SLES-52783:
   name: "Call of Duty - Finest Hour"
   region: "PAL-F-S-I"
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    mipmap: 2 # Mipmap + trilinear, improves shimmering of terrain, matches SW.
+    trilinearFiltering: 1
   patches:
     30AE5279:
       content: |-
@@ -16332,6 +16342,14 @@ SLES-52784:
   region: "PAL-G"
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    mipmap: 2 # Mipmap + trilinear, improves shimmering of terrain, matches SW.
+    trilinearFiltering: 1
+  patches:
+    0BC05D02:
+      content: |-
+        // Avoids bad COP2 errors due to the instant nature of the PCSX2's COP2 handling.
+        patch=1,EE,001ab900,word,48488800
+        patch=1,EE,001ab904,word,4A252942
 SLES-52798:
   name: "Vietcong - Purple Haze"
   region: "PAL-M4"
@@ -45565,6 +45583,14 @@ SLUS-20725:
   compat: 5
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
+    mipmap: 2 # Mipmap + trilinear, improves shimmering of terrain, matches SW.
+    trilinearFiltering: 1
+  patches:
+    30AE5278:
+      content: |-
+        // Fixes COP2 CFC2 timing.
+        patch=1,EE,001AB900,word,48488800
+        patch=1,EE,001AB904,word,4A252942
 SLUS-20726:
   name: "ESPN - NBA Basketball"
   region: "NTSC-U"
