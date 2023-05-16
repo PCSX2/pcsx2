@@ -10656,6 +10656,8 @@ SLES-50247:
   name: "Onimusha - Warlords"
   region: "PAL-M3"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flashing FMVs (Req EE cycle rate 50% for them to run).
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
 SLES-50248:
