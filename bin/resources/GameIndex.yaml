@@ -12620,7 +12620,8 @@ SLES-51144:
   region: "PAL-M7"
   compat: 5
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51145:
   name: "Monopoly Party"
   region: "PAL-M5"
@@ -12923,12 +12924,14 @@ SLES-51250:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51251:
   name: "Shox - Rally Reinvented"
   region: "PAL-E"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51252:
   name: "Lord of the Rings, The - The Two Towers"
   region: "PAL-M3"
@@ -28703,6 +28706,12 @@ SLPM-64522:
 SLPM-64523:
   name: "Marvel Vs Capcom 2"
   region: "NTSC-K"
+SLPM-64524:
+  name: "Rally Shox"
+  region: "NTSC-K"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-64525:
   name: "Guilty Gear X Plus 'By Your Side'"
   region: "NTSC-K"
@@ -37393,6 +37402,12 @@ SLPS-20243:
 SLPS-20245:
   name: "Low Rider"
   region: "NTSC-J"
+SLPS-20246:
+  name: "Rally Shox"
+  region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLPS-20250:
   name: "Makai Senki Disgaea [Limited Edition]"
   region: "NTSC-J"
@@ -44599,7 +44614,8 @@ SLUS-20533:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20534:
   name: "Cabela's Big Game Hunter"
   region: "NTSC-U"
