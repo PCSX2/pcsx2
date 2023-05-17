@@ -39,82 +39,19 @@ GSTextureMTL::~GSTextureMTL()
 {
 }
 
-void GSTextureMTL::RequestColorClear(GSVector4 color)
-{
-	m_needs_color_clear = true;
-	m_invalidated = false;
-	m_clear_color = color;
-}
-void GSTextureMTL::RequestDepthClear(float depth)
-{
-	m_needs_depth_clear = true;
-	m_invalidated = false;
-	m_clear_depth = depth;
-}
-void GSTextureMTL::RequestStencilClear(int stencil)
-{
-	m_needs_stencil_clear = true;
-	m_invalidated = false;
-	m_clear_stencil = stencil;
-}
-bool GSTextureMTL::GetResetNeedsColorClear(GSVector4& colorOut)
-{
-	if (m_needs_color_clear)
-	{
-		m_needs_color_clear = false;
-		colorOut = m_clear_color;
-		return true;
-	}
-	return false;
-}
-bool GSTextureMTL::GetResetNeedsDepthClear(float& depthOut)
-{
-	if (m_needs_depth_clear)
-	{
-		m_needs_depth_clear = false;
-		depthOut = m_clear_depth;
-		return true;
-	}
-	return false;
-}
-bool GSTextureMTL::GetResetNeedsStencilClear(int& stencilOut)
-{
-	if (m_needs_stencil_clear)
-	{
-		m_needs_stencil_clear = false;
-		stencilOut = m_clear_stencil;
-		return true;
-	}
-	return false;
-}
-
 void GSTextureMTL::FlushClears()
 {
-	if (!m_needs_color_clear && !m_needs_depth_clear && !m_needs_stencil_clear)
+	if (m_state != GSTexture::State::Cleared)
 		return;
 
 	m_dev->BeginRenderPass(@"Clear",
-		m_needs_color_clear   ? this : nullptr, MTLLoadActionLoad,
-		m_needs_depth_clear   ? this : nullptr, MTLLoadActionLoad,
-		m_needs_stencil_clear ? this : nullptr, MTLLoadActionLoad);
+		!IsDepthStencil() ? this : nullptr, MTLLoadActionLoad,
+		 IsDepthStencil() ? this : nullptr, MTLLoadActionLoad);
 }
 
 void* GSTextureMTL::GetNativeHandle() const
 {
 	return (__bridge void*)m_texture;
-}
-
-void GSTextureMTL::InvalidateClears()
-{
-	m_needs_color_clear = false;
-	m_needs_depth_clear = false;
-	m_needs_stencil_clear = false;
-}
-
-void GSTextureMTL::Invalidate()
-{
-	InvalidateClears();
-	m_invalidated = true;
 }
 
 bool GSTextureMTL::Update(const GSVector4i& r, const void* data, int pitch, int layer)
@@ -151,9 +88,9 @@ void* GSTextureMTL::MapWithPitch(const GSVector4i& r, int pitch, int layer)
 	GSDeviceMTL::Map map;
 
 	bool needs_clear = false;
-	if (m_needs_color_clear)
+	if (m_state == GSTexture::State::Cleared)
 	{
-		m_needs_color_clear = false;
+		m_state = GSTexture::State::Dirty;
 		// Not uploading to full texture
 		needs_clear = r.left > 0 || r.top > 0 || r.right < m_size.x || r.bottom < m_size.y;
 	}
@@ -163,7 +100,7 @@ void* GSTextureMTL::MapWithPitch(const GSVector4i& r, int pitch, int layer)
 	{
 		if (needs_clear)
 		{
-			m_needs_color_clear = true;
+			m_state = GSTexture::State::Cleared;
 			m_dev->BeginRenderPass(@"Pre-Upload Clear", this, MTLLoadActionLoad, nullptr, MTLLoadActionDontCare);
 		}
 		enc = m_dev->GetLateTextureUploadEncoder();
@@ -212,12 +149,6 @@ void GSTextureMTL::Swap(GSTexture* other)
 #define SWAP(x) std::swap(x, mtex->x)
 	SWAP(m_texture);
 	SWAP(m_has_mipmaps);
-	SWAP(m_needs_color_clear);
-	SWAP(m_needs_depth_clear);
-	SWAP(m_needs_stencil_clear);
-	SWAP(m_clear_color);
-	SWAP(m_clear_depth);
-	SWAP(m_clear_stencil);
 #undef SWAP
 }
 

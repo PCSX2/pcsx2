@@ -395,23 +395,36 @@ void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadActio
 	              || stencil != m_current_render.stencil_target;
 	GSVector4 color_clear;
 	float depth_clear;
-	int stencil_clear;
 	bool needs_color_clear = false;
 	bool needs_depth_clear = false;
-	bool needs_stencil_clear = false;
 	// Depth and stencil might be the same, so do all invalidation checks before resetting invalidation
-	if (mc && mc->IsInvalidated()) color_load   = MTLLoadActionDontCare;
-	if (md && md->IsInvalidated()) depth_load   = MTLLoadActionDontCare;
-	if (ms && ms->IsInvalidated()) stencil_load = MTLLoadActionDontCare;
-	if (mc) { mc->ResetInvalidation(); needs_color_clear   = mc->GetResetNeedsColorClear(color_clear); }
-	if (md) { md->ResetInvalidation(); needs_depth_clear   = md->GetResetNeedsDepthClear(depth_clear); }
-	if (ms) { ms->ResetInvalidation(); needs_stencil_clear = ms->GetResetNeedsStencilClear(stencil_clear); }
-	if (needs_color_clear   && color_load   != MTLLoadActionDontCare) color_load   = MTLLoadActionClear;
-	if (needs_depth_clear   && depth_load   != MTLLoadActionDontCare) depth_load   = MTLLoadActionClear;
-	if (needs_stencil_clear && stencil_load != MTLLoadActionDontCare) stencil_load = MTLLoadActionClear;
+#define CHECK_CLEAR(tex, load_action, clear, ClearGetter) \
+	if (tex) \
+	{ \
+		if (tex->GetState() == GSTexture::State::Invalidated) \
+		{ \
+			load_action = MTLLoadActionDontCare; \
+		} \
+		else if (tex->GetState() == GSTexture::State::Cleared && load_action != MTLLoadActionDontCare) \
+		{ \
+			clear = tex->ClearGetter(); \
+			load_action = MTLLoadActionClear; \
+		} \
+	}
+
+	CHECK_CLEAR(mc, color_load, color_clear, GetClearColor)
+	CHECK_CLEAR(md, depth_load, depth_clear, GetClearDepth)
+#undef CHECK_CLEAR
+	// Stencil and depth are one texture, stencil clears aren't supported
+	if (ms && ms->GetState() == GSTexture::State::Invalidated)
+		stencil_load = MTLLoadActionDontCare;
 	needs_new |= mc && color_load   == MTLLoadActionClear;
 	needs_new |= md && depth_load   == MTLLoadActionClear;
-	needs_new |= ms && stencil_load == MTLLoadActionClear;
+
+	// Reset texture state
+	if (mc) mc->SetState(GSTexture::State::Dirty);
+	if (md) md->SetState(GSTexture::State::Dirty);
+	if (ms) ms->SetState(GSTexture::State::Dirty);
 
 	if (!needs_new)
 	{
@@ -457,8 +470,7 @@ void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadActio
 	{
 		ms->m_last_write = m_current_draw;
 		desc.stencilAttachment.texture = ms->GetTexture();
-		if (stencil_load == MTLLoadActionClear)
-			desc.stencilAttachment.clearStencil = stencil_clear;
+		assert(stencil_load != MTLLoadActionClear);
 		desc.stencilAttachment.loadAction = stencil_load;
 	}
 
@@ -1423,7 +1435,7 @@ void GSDeviceMTL::AccumulateCommandBufferTime(id<MTLCommandBuffer> buffer)
 void GSDeviceMTL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 {
 	if (!t) return;
-	static_cast<GSTextureMTL*>(t)->RequestColorClear(c);
+	t->SetClearColor(c);
 }
 
 void GSDeviceMTL::ClearRenderTarget(GSTexture* t, uint32 c)
@@ -1435,13 +1447,13 @@ void GSDeviceMTL::ClearRenderTarget(GSTexture* t, uint32 c)
 void GSDeviceMTL::ClearDepth(GSTexture* t)
 {
 	if (!t) return;
-	static_cast<GSTextureMTL*>(t)->RequestDepthClear(0);
+	t->SetClearDepth(0);
 }
 
 void GSDeviceMTL::InvalidateRenderTarget(GSTexture* t)
 {
 	if (!t) return;
-	static_cast<GSTextureMTL*>(t)->Invalidate();
+	t->SetState(GSTexture::State::Invalidated);
 }
 
 std::unique_ptr<GSDownloadTexture> GSDeviceMTL::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
@@ -1468,7 +1480,7 @@ void GSDeviceMTL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 	if (r.width() < dsize.x || r.height() < dsize.y)
 		dT->FlushClears();
 	else
-		dT->InvalidateClears();
+		dT->SetState(GSTexture::State::Dirty);
 
 	EndRenderPass();
 
