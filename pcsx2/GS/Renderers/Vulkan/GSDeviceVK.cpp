@@ -825,24 +825,6 @@ void GSDeviceVK::ClearDepth(GSTexture* t)
 	static_cast<GSTextureVK*>(t)->SetClearDepth(0.0f);
 }
 
-void GSDeviceVK::ClearStencil(GSTexture* t, u8 c)
-{
-	if (!t)
-		return;
-
-	EndRenderPass();
-
-	static_cast<GSTextureVK*>(t)->TransitionToLayout(GSTextureVK::Layout::ClearDst);
-
-	const VkClearDepthStencilValue dsv{0.0f, static_cast<u32>(c)};
-	const VkImageSubresourceRange srr{VK_IMAGE_ASPECT_STENCIL_BIT, 0u, 1u, 0u, 1u};
-
-	vkCmdClearDepthStencilImage(g_vulkan_context->GetCurrentCommandBuffer(), static_cast<GSTextureVK*>(t)->GetImage(),
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &dsv, 1, &srr);
-
-	static_cast<GSTextureVK*>(t)->TransitionToLayout(GSTextureVK::Layout::DepthStencilAttachment);
-}
-
 VkFormat GSDeviceVK::LookupNativeFormat(GSTexture::Format format) const
 {
 	static constexpr std::array<VkFormat, static_cast<int>(GSTexture::Format::BC7) + 1> s_format_mapping = {{

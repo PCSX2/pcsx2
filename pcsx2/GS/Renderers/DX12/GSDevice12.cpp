@@ -677,19 +677,6 @@ void GSDevice12::ClearDepth(GSTexture* t)
 	static_cast<GSTexture12*>(t)->SetClearDepth(0.0f);
 }
 
-void GSDevice12::ClearStencil(GSTexture* t, u8 c)
-{
-	if (!t)
-		return;
-
-	EndRenderPass();
-
-	GSTexture12* dxt = static_cast<GSTexture12*>(t);
-	dxt->TransitionToState(D3D12_RESOURCE_STATE_DEPTH_WRITE);
-	g_d3d12_context->GetCommandList()->ClearDepthStencilView(
-		dxt->GetWriteDescriptor(), D3D12_CLEAR_FLAG_STENCIL, 0.0f, c, 0, nullptr);
-}
-
 void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format,
 	DXGI_FORMAT* rtv_format, DXGI_FORMAT* dsv_format) const
 {
