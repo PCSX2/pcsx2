@@ -1681,14 +1681,17 @@ void GSRendererHW::Draw()
 				m_vertex.buff[1].RGBAQ.U32[0] :
 				(m_vertex.buff[1].RGBAQ.U32[0] & ~0xFF000000)) == 0) && m_cached_ctx.FRAME.FBMSK == 0 && IsBlendedOrOpaque();
 
-			const u32 rt_end = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].info.bn(m_r.z - 1, m_r.w - 1, m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW);
 			const bool req_z = m_cached_ctx.FRAME.FBP != m_cached_ctx.ZBUF.ZBP && !m_cached_ctx.ZBUF.ZMSK;
 			bool no_target_found = false;
 
 			// This is behind the if just to reduce lookups.
 			if (is_zero_clear && !clear_height_valid)
-				no_target_found = !g_texture_cache->GetExactTarget(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, GSTextureCache::RenderTarget, rt_end) &&
-								  !g_texture_cache->GetExactTarget(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, GSTextureCache::DepthStencil, rt_end);
+			{
+				const u32 target_end = GSLocalMemory::GetEndBlockAddress(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, m_r);
+
+				no_target_found = !g_texture_cache->GetExactTarget(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, GSTextureCache::RenderTarget, target_end) &&
+								  !g_texture_cache->GetExactTarget(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, GSTextureCache::DepthStencil, target_end);
+			}
 
 			if (is_zero_clear && OI_GsMemClear() && (clear_height_valid || (!req_z && no_target_found)))
 			{

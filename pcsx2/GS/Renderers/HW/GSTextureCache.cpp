@@ -2583,11 +2583,9 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 			return false;
 	}
 
-	const u32 src_end = GSLocalMemory::m_psm[SPSM].info.bn(sx + w - 1, sy + h - 1, SBP, SBW);
-	const u32 dst_end = GSLocalMemory::m_psm[DPSM].info.bn(dx + w - 1, dy + h - 1, DBP, DBW);
 	// Look for an exact match on the targets.
-	GSTextureCache::Target* src = GetExactTarget(SBP, SBW, spsm_s.depth ? DepthStencil : RenderTarget, src_end);
-	GSTextureCache::Target* dst = GetExactTarget(DBP, DBW, dpsm_s.depth ? DepthStencil : RenderTarget, dst_end);
+	GSTextureCache::Target* src = GetExactTarget(SBP, SBW, spsm_s.depth ? DepthStencil : RenderTarget, SBP);
+	GSTextureCache::Target* dst = GetExactTarget(DBP, DBW, dpsm_s.depth ? DepthStencil : RenderTarget, DBP);
 
 	// Beware of the case where a game might create a larger texture by moving a bunch of chunks around.
 	// We use dx/dy == 0 and the TBW check as a safeguard to make sure these go through to local memory.
@@ -2784,9 +2782,8 @@ GSTextureCache::Target* GSTextureCache::GetExactTarget(u32 BP, u32 BW, int type,
 	for (auto it = rts.begin(); it != rts.end(); ++it) // Iterate targets from MRU to LRU.
 	{
 		Target* t = *it;
-		const u32 end_block = (t->m_end_block < t->m_TEX0.TBP0) ? t->m_end_block + 0x4000 : t->m_end_block;
 
-		if (t->m_TEX0.TBP0 == BP && t->m_TEX0.TBW == BW && end_block >= end_bp)
+		if (t->m_TEX0.TBP0 == BP && t->m_TEX0.TBW == BW && t->UnwrappedEndBlock() >= end_bp)
 		{
 			rts.MoveFront(it.Index());
 			return t;
@@ -4692,22 +4689,9 @@ void GSTextureCache::Target::ResizeValidity(const GSVector4i& rect)
 	{
 		m_valid = m_valid.rintersect(rect);
 		m_drawn_since_read = m_drawn_since_read.rintersect(rect);
-		m_end_block = GSLocalMemory::m_psm[m_TEX0.PSM].info.bn(m_valid.z - 1, m_valid.w - 1, m_TEX0.TBP0, m_TEX0.TBW); // Valid only for color formats
-		// Because m_end_block, especially on Z is not remotely linear, the end of the block can be near the beginning,
-		// meaning any overlap checks on blocks could fail (FFX with Tex in RT).
-		// So if the coordinates page align, round it up to the next page and minus one.
-		const GSVector2i page_size = GSLocalMemory::m_psm[m_TEX0.PSM].pgs;
-		if ((m_valid.z & (page_size.x - 1)) == 0 && (m_valid.w & (page_size.y - 1)) == 0)
-		{
-			constexpr u32 page_mask = (1 << 5) - 1;
-			m_end_block = (((m_end_block + page_mask) & ~page_mask)) - 1;
-		}
+		m_end_block = GSLocalMemory::GetEndBlockAddress(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM, m_valid);
 	}
-	else
-	{
-		// No valid size, so need to resize down.
-		return;
-	}
+	// Else No valid size, so need to resize down.
 
 	// GL_CACHE("ResizeValidity (0x%x->0x%x) from R:%d,%d Valid: %d,%d", m_TEX0.TBP0, m_end_block, rect.z, rect.w, m_valid.z, m_valid.w);
 }
@@ -4721,16 +4705,7 @@ void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect, bool can_res
 		else
 			m_valid = m_valid.runion(rect);
 
-		m_end_block = GSLocalMemory::m_psm[m_TEX0.PSM].info.bn(m_valid.z - 1, m_valid.w - 1, m_TEX0.TBP0, m_TEX0.TBW); // Valid only for color formats
-		// Because m_end_block, especially on Z is not remotely linear, the end of the block can be near the beginning,
-		// meaning any overlap checks on blocks could fail (FFX with Tex in RT).
-		// So if the coordinates page align, round it up to the next page and minus one.
-		const GSVector2i page_size = GSLocalMemory::m_psm[m_TEX0.PSM].pgs;
-		if ((m_valid.z & (page_size.x - 1)) == 0 && (m_valid.w & (page_size.y - 1)) == 0)
-		{
-			constexpr u32 page_mask = (1 << 5) - 1;
-			m_end_block = (((m_end_block + page_mask) & ~page_mask)) - 1;
-		}
+		m_end_block = GSLocalMemory::GetEndBlockAddress(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM, m_valid);
 	}
 	// GL_CACHE("UpdateValidity (0x%x->0x%x) from R:%d,%d Valid: %d,%d", m_TEX0.TBP0, m_end_block, rect.z, rect.w, m_valid.z, m_valid.w);
 }
