@@ -881,7 +881,6 @@ public:
 	virtual void ClearRenderTarget(GSTexture* t, u32 c) = 0;
 	virtual void InvalidateRenderTarget(GSTexture* t) = 0;
 	virtual void ClearDepth(GSTexture* t) = 0;
-	virtual void ClearStencil(GSTexture* t, u8 c) = 0;
 
 	virtual void PushDebugGroup(const char* fmt, ...) = 0;
 	virtual void PopDebugGroup() = 0;

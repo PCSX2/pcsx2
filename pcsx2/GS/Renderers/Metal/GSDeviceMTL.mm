@@ -1438,12 +1438,6 @@ void GSDeviceMTL::ClearDepth(GSTexture* t)
 	static_cast<GSTextureMTL*>(t)->RequestDepthClear(0);
 }
 
-void GSDeviceMTL::ClearStencil(GSTexture* t, uint8 c)
-{
-	if (!t) return;
-	static_cast<GSTextureMTL*>(t)->RequestStencilClear(c);
-}
-
 void GSDeviceMTL::InvalidateRenderTarget(GSTexture* t)
 {
 	if (!t) return;
