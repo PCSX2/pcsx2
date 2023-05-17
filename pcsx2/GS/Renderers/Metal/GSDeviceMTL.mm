@@ -1924,13 +1924,9 @@ void GSDeviceMTL::MRESetSampler(SamplerSelector sel)
 
 static void textureBarrier(id<MTLRenderCommandEncoder> enc)
 {
-	if (@available(macOS 10.14, *)) {
-		[enc memoryBarrierWithScope:MTLBarrierScopeRenderTargets
-		                afterStages:MTLRenderStageFragment
-		               beforeStages:MTLRenderStageFragment];
-	} else {
-		[enc textureBarrier];
-	}
+	[enc memoryBarrierWithScope:MTLBarrierScopeRenderTargets
+	                afterStages:MTLRenderStageFragment
+	               beforeStages:MTLRenderStageFragment];
 }
 
 void GSDeviceMTL::MRESetTexture(GSTexture* tex, int pos)
