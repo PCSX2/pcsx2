@@ -243,7 +243,44 @@
      </layout>
     </widget>
    </item>
-   <item>
+	<item>
+	 <widget class="QGroupBox" name="patchesGroup">
+	  <property name="title">
+	   <string>Patches</string>
+		</property>
+		 <layout class="QGridLayout" name="gridLayout_6">
+		  <item row="0" column="0">
+			<widget class="QCheckBox" name="widescreenPatches">
+			 <property name="text">
+		    <string>Enable Widescreen Patches</string>
+		  </property>
+		 </widget>
+		</item>
+		  <item row="0" column="1">
+			<widget class="QCheckBox" name="noInterlacingPatches">
+			 <property name="text">
+		    <string>Enable No-Interlacing Patches</string>
+		  </property>
+		 </widget>
+	    </item>
+	    <item row="1" column="0">
+			<widget class="QCheckBox" name="fpsPatches">
+			 <property name="text">
+		    <string>Enable 60FPS Patches</string>
+		  </property>
+		 </widget>
+		</item>
+	    <item row="1" column="1">
+			<widget class="QCheckBox" name="DNASPatches">
+			 <property name="text">
+		    <string>Enable DNAS Patches</string>
+		  </property>
+		 </widget>
+		</item>
+	   </layout>
+	  </widget>	  
+	 </item>
+	<item>
     <widget class="QGroupBox" name="basicGroupBox">
      <property name="title">
       <string>Frame Pacing / Latency Control</string>

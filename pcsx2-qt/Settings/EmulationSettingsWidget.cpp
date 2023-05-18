@@ -123,6 +123,22 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 	dialog->registerWidgetHelp(m_ui.hostFilesystem, tr("Enable Host Filesystem"), tr("Unchecked"),
 		tr("Allows games and homebrew to access files / folders directly on the host computer."));
 
+	
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.widescreenPatches, "EmuCore", "EnableWideScreenPatches", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.noInterlacingPatches, "EmuCore", "EnableNoInterlacingPatches", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fpsPatches, "EmuCore", "Enable60FPSPatches", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.DNASPatches, "EmuCore", "EnableDNASPatches", false);
+
+	dialog->registerWidgetHelp(m_ui.widescreenPatches, tr("Enable Widescreen Patches"), tr("Unchecked"),
+		tr("Automatically loads and applies widescreen patches on game start. Can cause issues."));
+	dialog->registerWidgetHelp(m_ui.noInterlacingPatches, tr("Enable No-Interlacing Patches"), tr("Unchecked"),
+		tr("Automatically loads and applies no-interlacing patches on game start. Can cause issues."));
+	dialog->registerWidgetHelp(m_ui.fpsPatches, tr("Enable 60FPS Patches"), tr("Unchecked"),
+		tr("Automatically loads and applies 60FPS patches on game start. Can cause issues."));
+	dialog->registerWidgetHelp(m_ui.DNASPatches, tr("Enable DNAS Patches"), tr("Unchecked"),
+		tr("Automatically loads and applies DNAS patches on game start. Can cause issues."));
+		
+
 	dialog->registerWidgetHelp(m_ui.optimalFramePacing, tr("Optimal Frame Pacing"), tr("Unchecked"),
 		tr("Sets the VSync queue size to 0, making every frame be completed and presented by the GS before input is polled and the next frame begins. "
 		   "Using this setting can reduce input lag at the cost of measurably higher CPU and GPU requirements."));

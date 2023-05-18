@@ -157,6 +157,12 @@ static std::vector<u8> s_no_interlacing_cheats_data;
 static bool s_no_interlacing_cheats_loaded = false;
 static s32 s_active_widescreen_patches = 0;
 static u32 s_active_no_interlacing_patches = 0;
+static std::vector<u8> s_60fps_cheats_data;
+static bool s_60fps_cheats_loaded = false;
+static std::vector<u8> s_dnas_cheats_data;
+static bool s_dnas_cheats_loaded = false;
+static s32 s_active_60fps_patches = 0;
+static u32 s_active_dnas_patches = 0;
 static u32 s_frame_advance_count = 0;
 static u32 s_mxcsr_saved;
 static bool s_gs_open_on_initialize = false;
@@ -515,6 +521,8 @@ void VMManager::Internal::UpdateEmuFolders()
 	const std::string old_cheats_directory(EmuFolders::Cheats);
 	const std::string old_cheats_ws_directory(EmuFolders::CheatsWS);
 	const std::string old_cheats_ni_directory(EmuFolders::CheatsNI);
+	const std::string old_cheats_60_directory(EmuFolders::Cheats60);
+	const std::string old_cheats_dnas_directory(EmuFolders::CheatsDNAS);
 	const std::string old_memcards_directory(EmuFolders::MemoryCards);
 	const std::string old_textures_directory(EmuFolders::Textures);
 	const std::string old_videos_directory(EmuFolders::Videos);
@@ -526,7 +534,8 @@ void VMManager::Internal::UpdateEmuFolders()
 	if (VMManager::HasValidVM())
 	{
 		if (EmuFolders::Cheats != old_cheats_directory || EmuFolders::CheatsWS != old_cheats_ws_directory ||
-			EmuFolders::CheatsNI != old_cheats_ni_directory)
+			EmuFolders::CheatsNI != old_cheats_ni_directory || EmuFolders::Cheats60 != old_cheats_60_directory ||
+			EmuFolders::CheatsDNAS != old_cheats_dnas_directory)
 		{
 			VMManager::ReloadPatches(true, true);
 		}
@@ -694,6 +703,8 @@ void VMManager::LoadPatches(const std::string& serial, u32 crc, bool show_messag
 	s_patches_crc = crc;
 	s_active_widescreen_patches = 0;
 	s_active_no_interlacing_patches = 0;
+	s_active_60fps_patches = 0;
+	s_active_dnas_patches = 0;
 	ForgetLoadedPatches();
 
 	std::string message;
@@ -812,9 +823,81 @@ void VMManager::LoadPatches(const std::string& serial, u32 crc, bool show_messag
 		s_active_no_interlacing_patches = 0;
 	}
 
+	// 60fps patches
+	if (EmuConfig.Enable60FPSPatches && crc != 0)
+	{
+		if (!Achievements::ChallengeModeActive() && (s_active_60fps_patches = LoadPatchesFromDir(crc_string, EmuFolders::Cheats60, "60FPS patches", false)) > 0)
+		{
+			Console.WriteLn(Color_Gray, "Found 60FPS patches in the cheats_60 folder --> skipping cheats_60.zip");
+		}
+		else
+		{
+			// No 60fps cheat files found at the cheats_60 folder, try the 60fps cheats zip file.
+			if (!s_60fps_cheats_loaded)
+			{
+				s_60fps_cheats_loaded = true;
+
+				std::optional<std::vector<u8>> data = Host::ReadResourceFile("cheats_60.zip");
+				if (data.has_value())
+					s_60fps_cheats_data = std::move(data.value());
+			}
+
+			if (!s_60fps_cheats_data.empty())
+			{
+				s_active_60fps_patches = LoadPatchesFromZip(crc_string, s_60fps_cheats_data.data(), s_60fps_cheats_data.size());
+				PatchesCon->WriteLn(Color_Green, "(60FPS Cheats DB) Patches Loaded: %d", s_active_60fps_patches);
+			}
+		}
+
+		if (s_active_60fps_patches > 0)
+		{
+			fmt::format_to(std::back_inserter(message), "{}{} 60fps patches", (patch_count > 0 || cheat_count > 0 || s_active_widescreen_patches > 0 || s_active_no_interlacing_patches > 0) ? " and " : "", s_active_60fps_patches);
+		}
+	}
+	else
+	{
+		s_active_60fps_patches = 0;
+	}
+
+	// DNAS bypass patches
+	if (EmuConfig.EnableDNASPatches && crc != 0)
+	{
+		if (!Achievements::ChallengeModeActive() && (s_active_dnas_patches = LoadPatchesFromDir(crc_string, EmuFolders::CheatsDNAS, "DNAS patches", false)) > 0)
+		{
+			Console.WriteLn(Color_Gray, "Found DNAS patches in the cheats_dnas folder --> skipping cheats_dnas.zip");
+		}
+		else
+		{
+			// No dnas cheat files found at the cheats_dnas folder, try the dnas cheats zip file.
+			if (!s_dnas_cheats_loaded)
+			{
+				s_dnas_cheats_loaded = true;
+
+				std::optional<std::vector<u8>> data = Host::ReadResourceFile("cheats_dnas.zip");
+				if (data.has_value())
+					s_dnas_cheats_data = std::move(data.value());
+			}
+
+			if (!s_dnas_cheats_data.empty())
+			{
+				s_active_dnas_patches = LoadPatchesFromZip(crc_string, s_dnas_cheats_data.data(), s_dnas_cheats_data.size());
+				PatchesCon->WriteLn(Color_Green, "(DNAS Cheats DB) Patches Loaded: %d", s_active_dnas_patches);
+			}
+		}
+
+		if (s_active_dnas_patches > 0)
+		{
+			fmt::format_to(std::back_inserter(message), "{}{} DNAS patches", (patch_count > 0 || cheat_count > 0 || s_active_widescreen_patches > 0 || s_active_no_interlacing_patches > 0 || s_active_60fps_patches > 0) ? " and " : "", s_active_dnas_patches);
+		}
+	}
+	else
+	{
+		s_active_dnas_patches = 0;
+	}
+
 	if (show_messages)
 	{
-		if (cheat_count > 0 || s_active_widescreen_patches > 0 || s_active_no_interlacing_patches > 0)
+		if (cheat_count > 0 || s_active_widescreen_patches > 0 || s_active_no_interlacing_patches > 0 || s_active_60fps_patches > 0 || s_active_dnas_patches > 0)
 		{
 			message += " are active.";
 			Host::AddIconOSDMessage("LoadPatches", ICON_FA_FILE_CODE, message, Host::OSD_INFO_DURATION);

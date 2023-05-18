@@ -2873,6 +2873,17 @@ void FullscreenUI::DrawEmulationSettingsPage()
 	DrawToggleSetting(bsi, "Enable Host Filesystem", "Enables access to files from the host: namespace in the virtual machine.", "EmuCore",
 		"HostFs", false);
 
+	MenuHeading("Patches");
+	
+	DrawToggleSetting(bsi, "Enable Widescreen Patches", "Enables loading widescreen patches from pnach files.", "EmuCore",
+		"EnableWideScreenPatches", false);
+	DrawToggleSetting(bsi, "Enable No-Interlacing Patches", "Enables loading no-interlacing patches from pnach files.", "EmuCore",
+		"EnableNoInterlacingPatches", false);
+	DrawToggleSetting(bsi, "Enable 60FPS Patches", "Enables loading 60fps patches from pnach files.", "EmuCore",
+		"Enable60FPSPatches", false);
+	DrawToggleSetting(bsi, "Enable DNAS Patches", "Enables loading DNAS patches from pnach files.", "EmuCore",
+		"EnableDNASPatches", false);
+
 	if (IsEditingGameSettings(bsi))
 	{
 		DrawToggleSetting(
@@ -3100,10 +3111,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 		100, 10, 300, "%d%%");
 	DrawIntRectSetting(bsi, "Crop", "Crops the image, while respecting aspect ratio.", "EmuCore/GS", "CropLeft", 0, "CropTop", 0,
 		"CropRight", 0, "CropBottom", 0, 0, 720, 1, "%dpx");
-	DrawToggleSetting(bsi, "Enable Widescreen Patches", "Enables loading widescreen patches from pnach files.", "EmuCore",
-		"EnableWideScreenPatches", false);
-	DrawToggleSetting(bsi, "Enable No-Interlacing Patches", "Enables loading no-interlacing patches from pnach files.", "EmuCore",
-		"EnableNoInterlacingPatches", false);
 	DrawIntListSetting(bsi, "Bilinear Upscaling", "Smooths out the image when upscaling the console to the screen.", "EmuCore/GS",
 		"linear_present_mode", static_cast<int>(GSPostBilinearMode::BilinearSharp), s_bilinear_present_options,
 		std::size(s_bilinear_present_options));
@@ -4098,8 +4105,10 @@ void FullscreenUI::DrawFoldersSettingsPage()
 	DrawFolderSetting(bsi, ICON_FA_WRENCH " Game Settings Directory", "Folders", "GameSettings", EmuFolders::GameSettings);
 	DrawFolderSetting(bsi, ICON_FA_GAMEPAD " Input Profile Directory", "Folders", "InputProfiles", EmuFolders::InputProfiles);
 	DrawFolderSetting(bsi, ICON_FA_FROWN " Cheats Directory", "Folders", "Cheats", EmuFolders::Cheats);
-	DrawFolderSetting(bsi, ICON_FA_TV " Widescreen Cheats Directory", "Folders", "CheatsWS", EmuFolders::CheatsWS);
-	DrawFolderSetting(bsi, ICON_FA_MAGIC " No-Interlace Cheats Directory", "Folders", "CheatsNI", EmuFolders::CheatsNI);
+	DrawFolderSetting(bsi, ICON_FA_TV " Widescreen Patches Directory", "Folders", "CheatsWS", EmuFolders::CheatsWS);
+	DrawFolderSetting(bsi, ICON_FA_MAGIC " No-Interlace Patches Directory", "Folders", "CheatsNI", EmuFolders::CheatsNI);
+	DrawFolderSetting(bsi, ICON_FA_CLOCK " 60FPS Patches Directory", "Folders", "Cheats60", EmuFolders::Cheats60);
+	DrawFolderSetting(bsi, ICON_FA_WIFI " DNAS Patches Directory", "Folders", "CheatsDNAS", EmuFolders::CheatsDNAS);
 	DrawFolderSetting(bsi, ICON_FA_SLIDERS_H "Texture Replacements Directory", "Folders", "Textures", EmuFolders::Textures);
 	DrawFolderSetting(bsi, ICON_FA_SLIDERS_H "Video Dumping Directory", "Folders", "Videos", EmuFolders::Videos);
 
