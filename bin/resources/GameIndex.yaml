@@ -11688,7 +11688,7 @@ SLES-50765:
   region: "PAL-M6"
 SLES-50767:
   name: "V8 Supercars Australia - Race Driver"
-  region: "PAL-E"
+  region: "PAL-A"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines, also works with normal vertex.
     mergeSprite: 1 # Fixes lighting.
@@ -12932,7 +12932,7 @@ SLES-51250:
     trilinearFiltering: 1
 SLES-51251:
   name: "Shox - Rally Reinvented"
-  region: "PAL-E"
+  region: "PAL-A"
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
@@ -20269,7 +20269,7 @@ SLES-54223:
   region: "PAL-E"
 SLES-54224:
   name: "Australian Idol Sing"
-  region: "PAL-E"
+  region: "PAL-A"
 SLES-54225:
   name: "LMA Manager 2007"
   region: "PAL-M5"
@@ -28691,7 +28691,7 @@ SLPM-64501:
     partialTargetInvalidation: 1 # Fixes invisible text.
 SLPM-64502:
   name: "Winback"
-  region: "NTSC-J"
+  region: "NTSC-K"
   clampModes:
     vuClampMode: 3 # Fixes missing 3D polygons when going ingame.
 SLPM-64504:
