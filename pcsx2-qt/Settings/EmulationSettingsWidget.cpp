@@ -84,7 +84,6 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 		m_dialog->setIntSettingValue("EmuCore/Speedhacks", "EECycleRate", value);
 	});
 
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cheats, "EmuCore", "EnableCheats", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hostFilesystem, "EmuCore", "HostFs", false);
 
 	dialog->registerWidgetHelp(m_ui.normalSpeed, tr("Normal Speed"), "100%",
@@ -118,17 +117,17 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 		   "Safe for most games, but a few games may exhibit graphical errors."));
 	dialog->registerWidgetHelp(m_ui.fastCDVD, tr("Enable Fast CDVD"), tr("Unchecked"),
 		tr("Fast disc access, less loading times. Check HDLoader compatibility lists for known games that have issues with this."));
-	dialog->registerWidgetHelp(m_ui.cheats, tr("Enable Cheats"), tr("Unchecked"),
-		tr("Automatically loads and applies cheats on game start."));
 	dialog->registerWidgetHelp(m_ui.hostFilesystem, tr("Enable Host Filesystem"), tr("Unchecked"),
 		tr("Allows games and homebrew to access files / folders directly on the host computer."));
 
-	
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cheats, "EmuCore", "EnableCheats", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.widescreenPatches, "EmuCore", "EnableWideScreenPatches", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.noInterlacingPatches, "EmuCore", "EnableNoInterlacingPatches", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fpsPatches, "EmuCore", "Enable60FPSPatches", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.DNASPatches, "EmuCore", "EnableDNASPatches", false);
 
+	dialog->registerWidgetHelp(m_ui.cheats, tr("Enable Cheats"), tr("Unchecked"),
+		tr("Automatically loads and applies cheats on game start."));
 	dialog->registerWidgetHelp(m_ui.widescreenPatches, tr("Enable Widescreen Patches"), tr("Unchecked"),
 		tr("Automatically loads and applies widescreen patches on game start. Can cause issues."));
 	dialog->registerWidgetHelp(m_ui.noInterlacingPatches, tr("Enable No-Interlacing Patches"), tr("Unchecked"),
