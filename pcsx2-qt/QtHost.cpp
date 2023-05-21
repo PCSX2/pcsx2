@@ -1837,11 +1837,7 @@ int main(int argc, char* argv[])
 		s_base_settings_interface->Save();
 
 	// Ensure emulog is flushed.
-	if (emuLog)
-	{
-		std::fclose(emuLog);
-		emuLog = nullptr;
-	}
+	LogSink::CloseFileLog();
 
 	return result;
 }

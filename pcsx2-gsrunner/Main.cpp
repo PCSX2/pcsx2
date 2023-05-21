@@ -644,6 +644,7 @@ int main(int argc, char* argv[])
 
 	VMManager::Internal::CPUThreadShutdown();
 	GSRunner::DestroyPlatformWindow();
+	LogSink::CloseFileLog();
 
 	return EXIT_SUCCESS;
 }
