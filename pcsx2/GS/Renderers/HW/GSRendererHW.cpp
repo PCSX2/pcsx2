@@ -892,6 +892,112 @@ GSVector4i GSRendererHW::GetSplitTextureShuffleDrawRect() const
 	return r.insert64<0>(0).ralign<Align_Outside>(frame_psm.pgs);
 }
 
+bool GSRendererHW::IsSplitClearActive() const
+{
+	return (m_split_clear_pages != 0);
+}
+
+bool GSRendererHW::IsStartingSplitClear()
+{
+	// Mem clear conditions have already been checked by the caller, except for Z.
+	// We _could_ handle the split for both colour and depth, but nothing I've seen hits it yet.
+	if (!m_cached_ctx.ZBUF.ZMSK)
+		return false;
+
+	u32 pages_covered;
+	if (!CheckNextDrawForSplitClear(m_r, &pages_covered))
+		return false;
+
+	m_split_clear_start = m_cached_ctx.FRAME;
+	m_split_clear_pages = pages_covered;
+	m_split_clear_color = m_vertex.buff[1].RGBAQ.U32[0];
+	if (PRIM->ABE && m_context->ALPHA.IsBlack())
+		m_split_clear_color &= ~0xFF000000;
+
+	GL_INS("Starting split clear at FBP %x FBW %u PSM %s with %dx%d rect covering %u pages",
+		m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, psm_str(m_cached_ctx.FRAME.PSM),
+		m_r.width(), m_r.height(), pages_covered);
+
+	// Remove any targets which are directly at the start.
+	const u32 bp = m_cached_ctx.FRAME.Block();
+	g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, bp);
+	g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, bp);
+
+	return true;
+}
+
+bool GSRendererHW::ContinueSplitClear()
+{
+	// Should be a mem clear type draw.
+	if (!IsConstantDirectWriteMemClear())
+		return false;
+
+	// Shouldn't be writing Z, in theory we could track this too and clear both though.
+	if (!m_cached_ctx.ZBUF.ZMSK)
+		return false;
+
+	// Shouldn't have gaps.
+	if (m_vt.m_eq.rgba != 0xFFFF || !PrimitiveCoversWithoutGaps())
+		return false;
+
+	// Remove any targets which are directly at the start, since we checked this draw in the last.
+	const u32 bp = m_cached_ctx.FRAME.Block();
+	g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, bp);
+	g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, bp);
+
+	// Check next draw.
+	u32 pages_covered;
+	const bool skip = CheckNextDrawForSplitClear(m_r, &pages_covered);
+
+	// We might've found the end, but this draw still counts.
+	m_split_clear_pages += pages_covered;
+	return skip;
+}
+
+bool GSRendererHW::CheckNextDrawForSplitClear(const GSVector4i& r, u32* pages_covered_by_this_draw) const
+{
+	const u32 end_block = GSLocalMemory::GetEndBlockAddress(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, r);
+	if (pages_covered_by_this_draw)
+		*pages_covered_by_this_draw = ((end_block - m_cached_ctx.FRAME.Block()) + (BLOCKS_PER_PAGE)) / BLOCKS_PER_PAGE;
+
+	// must be changing FRAME
+	if (m_backed_up_ctx < 0 || (m_dirty_gs_regs & (1u << DIRTY_REG_FRAME)) == 0)
+		return false;
+
+	// rect width should match the FBW (page aligned)
+	if (r.width() != m_cached_ctx.FRAME.FBW * 64)
+		return false;
+
+	// next FBP should point to the end of the rect
+	const GSDrawingContext& next_ctx = m_env.CTXT[m_backed_up_ctx];
+	if (next_ctx.FRAME.Block() != ((end_block + 1) % MAX_BLOCKS) || next_ctx.FRAME.FBW != m_cached_ctx.FRAME.FBW ||
+		next_ctx.FRAME.PSM != m_cached_ctx.FRAME.PSM)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+void GSRendererHW::FinishSplitClear()
+{
+	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[m_split_clear_start.PSM];
+	const GSOffset clear_off = GSOffset(psm_s.info, m_split_clear_start.Block(), m_split_clear_start.FBW, m_split_clear_start.PSM);
+	const GSVector4i rect = GSVector4i(0, 0, m_split_clear_start.FBW * 64, (m_split_clear_pages * psm_s.pgs.y) / m_split_clear_start.FBW);
+
+	GL_INS("FinishSplitClear(): Start %x FBW %u PSM %s, %u pages, %08X color", m_split_clear_start.Block(), m_split_clear_start.FBW,
+		psm_str(m_split_clear_start.PSM), m_split_clear_pages, m_split_clear_color);
+
+	OI_DoGsMemClear(clear_off, rect, m_split_clear_color);
+
+	// Invalidate any targets in this range.
+	g_texture_cache->InvalidateVideoMem(clear_off, rect, false, true);
+
+	m_split_clear_start.U64 = 0;
+	m_split_clear_pages = 0;
+	m_split_clear_color = 0;
+}
+
 bool GSRendererHW::IsTBPFrameOrZ(u32 tbp) const
 {
 	const bool is_frame = (m_cached_ctx.FRAME.Block() == tbp);
@@ -1600,6 +1706,18 @@ void GSRendererHW::Draw()
 		m_channel_shuffle = true;
 		m_last_channel_shuffle_fbmsk = m_context->FRAME.FBMSK;
 	}
+	else if (IsSplitClearActive())
+	{
+		if (ContinueSplitClear())
+		{
+			GL_INS("Skipping due to continued split clear, FBP %x FBW %u", m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW);
+			return;
+		}
+		else
+		{
+			FinishSplitClear();
+		}
+	}
 
 	m_texture_shuffle = false;
 	m_copy_16bit_to_target_shuffle = false;
@@ -1708,6 +1826,13 @@ void GSRendererHW::Draw()
 					g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, m_cached_ctx.ZBUF.Block());
 				}
 
+				cleanup_draw();
+				return;
+			}
+			else if (!clear_height_valid && is_zero_clear && IsStartingSplitClear())
+			{
+				// Currently we only allow this for zero, because what we clear won't get preloaded back to the RT.
+				// But, if we did, then we could allow it for non-zero clears, also same for the above case.
 				cleanup_draw();
 				return;
 			}
@@ -5118,64 +5243,69 @@ bool GSRendererHW::OI_GsMemClear()
 		if (m_r.width() < ((static_cast<int>(m_cached_ctx.FRAME.FBW) - 1) * 64) || r.height() <= 128)
 			return false;
 
-		GL_INS("OI_GsMemClear (%d,%d => %d,%d)", r.x, r.y, r.z, r.w);
-		const int format = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmt;
-
 		// Take the vertex colour, but check if the blending would make it black.
 		u32 vert_color = m_vertex.buff[1].RGBAQ.U32[0];
 		if (PRIM->ABE && m_context->ALPHA.IsBlack())
 			vert_color &= ~0xFF000000;
 
-		const u32 color = (format == 0) ? vert_color : (vert_color & ~0xFF000000);
-		// FIXME: loop can likely be optimized with AVX/SSE. Pixels aren't
-		// linear but the value will be done for all pixels of a block.
-		// FIXME: maybe we could limit the write to the top and bottom row page.
-		if (format == 0)
-		{
-			// Based on WritePixel32
-			for (int y = r.top; y < r.bottom; y++)
-			{
-				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.vm32(), 0, y);
-
-				for (int x = r.left; x < r.right; x++)
-				{
-					*pa.value(x) = color; // Here the constant color
-				}
-			}
-		}
-		else if (format == 1)
-		{
-			// Based on WritePixel24
-			for (int y = r.top; y < r.bottom; y++)
-			{
-				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.vm32(), 0, y);
-
-				for (int x = r.left; x < r.right; x++)
-				{
-					*pa.value(x) &= 0xff000000; // Clear the color
-					*pa.value(x) |= color; // OR in our constant
-				}
-			}
-		}
-		else if (format == 2)
-		{
-			const u16 converted_color = ((vert_color >> 16) & 0x8000) | ((vert_color >> 9) & 0x7C00) | ((vert_color >> 6) & 0x7E0) | ((vert_color >> 3) & 0x1F);
-
-			// Based on WritePixel16
-			for (int y = r.top; y < r.bottom; y++)
-			{
-				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle16).paMulti(m_mem.vm16(), 0, y);
-
-				for (int x = r.left; x < r.right; x++)
-				{
-					*pa.value(x) = converted_color; // Here the constant color
-				}
-			}
-		}
-
+		OI_DoGsMemClear(off, r, vert_color);
 		return true;
 	}
+
 	return false;
+}
+
+void GSRendererHW::OI_DoGsMemClear(const GSOffset& off, const GSVector4i& r, u32 vert_color)
+{
+	GL_INS("OI_DoGsMemClear (%d,%d => %d,%d)", r.x, r.y, r.z, r.w);
+	const int format = GSLocalMemory::m_psm[off.psm()].fmt;
+
+	const u32 color = (format == 0) ? vert_color : (vert_color & ~0xFF000000);
+	// FIXME: loop can likely be optimized with AVX/SSE. Pixels aren't
+	// linear but the value will be done for all pixels of a block.
+	// FIXME: maybe we could limit the write to the top and bottom row page.
+	if (format == 0)
+	{
+		// Based on WritePixel32
+		for (int y = r.top; y < r.bottom; y++)
+		{
+			auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.vm32(), 0, y);
+
+			for (int x = r.left; x < r.right; x++)
+			{
+				*pa.value(x) = color; // Here the constant color
+			}
+		}
+	}
+	else if (format == 1)
+	{
+		// Based on WritePixel24
+		for (int y = r.top; y < r.bottom; y++)
+		{
+			auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.vm32(), 0, y);
+
+			for (int x = r.left; x < r.right; x++)
+			{
+				*pa.value(x) &= 0xff000000; // Clear the color
+				*pa.value(x) |= color; // OR in our constant
+			}
+		}
+	}
+	else if (format == 2)
+	{
+		const u16 converted_color = ((vert_color >> 16) & 0x8000) | ((vert_color >> 9) & 0x7C00) | ((vert_color >> 6) & 0x7E0) | ((vert_color >> 3) & 0x1F);
+
+		// Based on WritePixel16
+		for (int y = r.top; y < r.bottom; y++)
+		{
+			auto pa = off.assertSizesMatch(GSLocalMemory::swizzle16).paMulti(m_mem.vm16(), 0, y);
+
+			for (int x = r.left; x < r.right; x++)
+			{
+				*pa.value(x) = converted_color; // Here the constant color
+			}
+		}
+	}
 }
 
 bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Source* tex, const GSVector4i& r_draw)

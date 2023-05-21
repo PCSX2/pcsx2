@@ -45,6 +45,7 @@ private:
 	// Require special argument
 	bool OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Source* t, const GSVector4i& r_draw);
 	bool OI_GsMemClear(); // always on
+	void OI_DoGsMemClear(const GSOffset& off, const GSVector4i& r, u32 vert_color);
 	void OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCache::Target*& ds); // always on
 
 	u16 Interpolate_UV(float alpha, int t0, int t1);
@@ -96,6 +97,12 @@ private:
 	bool IsSplitTextureShuffle();
 	GSVector4i GetSplitTextureShuffleDrawRect() const;
 
+	bool IsSplitClearActive() const;
+	bool CheckNextDrawForSplitClear(const GSVector4i& r, u32* pages_covered_by_this_draw) const;
+	bool IsStartingSplitClear();
+	bool ContinueSplitClear();
+	void FinishSplitClear();
+
 	GSVector4i m_r = {};
 	
 	// We modify some of the context registers to optimize away unnecessary operations.
@@ -135,6 +142,10 @@ private:
 	u32 m_split_texture_shuffle_start_TBP = 0;
 
 	u32 m_last_channel_shuffle_fbmsk = 0;
+
+	GIFRegFRAME m_split_clear_start = {};
+	u32 m_split_clear_pages = 0; // if zero, inactive
+	u32 m_split_clear_color = 0;
 
 	bool m_userhacks_tcoffset = false;
 	float m_userhacks_tcoffset_x = 0.0f;
