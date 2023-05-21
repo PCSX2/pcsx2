@@ -12703,7 +12703,8 @@ SLES-51192:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 2 # Fixes blurry textures.
+    recommendedBlendingLevel: 4 # Fixes missing lighting effects.
+    mipmap: 1 # Fixes blurry textures. Full would be ideal here but causes broken face textures on Harry.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
@@ -12713,7 +12714,8 @@ SLES-51193:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 2 # Fixes blurry textures.
+    recommendedBlendingLevel: 4 # Fixes missing lighting effects.
+    mipmap: 1 # Fixes blurry textures. Full would be ideal here but causes broken face textures on Harry.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
@@ -12723,7 +12725,8 @@ SLES-51194:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 2 # Fixes blurry textures.
+    recommendedBlendingLevel: 4 # Fixes missing lighting effects.
+    mipmap: 1 # Fixes blurry textures. Full would be ideal here but causes broken face textures on Harry.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
@@ -12733,7 +12736,8 @@ SLES-51195:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 2 # Fixes blurry textures.
+    recommendedBlendingLevel: 4 # Fixes missing lighting effects.
+    mipmap: 1 # Fixes blurry textures. Full would be ideal here but causes broken face textures on Harry.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
@@ -12743,7 +12747,8 @@ SLES-51196:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 2 # Fixes blurry textures.
+    recommendedBlendingLevel: 4 # Fixes missing lighting effects.
+    mipmap: 1 # Fixes blurry textures. Full would be ideal here but causes broken face textures on Harry.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
@@ -12798,7 +12803,8 @@ SLES-51214:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 2 # Fixes blurry textures.
+    recommendedBlendingLevel: 4 # Fixes missing lighting effects.
+    mipmap: 1 # Fixes blurry textures. Full would be ideal here but causes broken face textures on Harry.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
@@ -12808,7 +12814,8 @@ SLES-51215:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 2 # Fixes blurry textures.
+    recommendedBlendingLevel: 4 # Fixes missing lighting effects.
+    mipmap: 1 # Fixes blurry textures. Full would be ideal here but causes broken face textures on Harry.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
@@ -12818,7 +12825,8 @@ SLES-51216:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 2 # Fixes blurry textures.
+    recommendedBlendingLevel: 4 # Fixes missing lighting effects.
+    mipmap: 1 # Fixes blurry textures. Full would be ideal here but causes broken face textures on Harry.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
@@ -12828,7 +12836,8 @@ SLES-51217:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 2 # Fixes blurry textures.
+    recommendedBlendingLevel: 4 # Fixes missing lighting effects.
+    mipmap: 1 # Fixes blurry textures. Full would be ideal here but causes broken face textures on Harry.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
@@ -12838,7 +12847,8 @@ SLES-51218:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 2 # Fixes blurry textures.
+    recommendedBlendingLevel: 4 # Fixes missing lighting effects.
+    mipmap: 1 # Fixes blurry textures. Full would be ideal here but causes broken face textures on Harry.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
@@ -12848,7 +12858,8 @@ SLES-51219:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 2 # Fixes blurry textures.
+    recommendedBlendingLevel: 4 # Fixes missing lighting effects.
+    mipmap: 1 # Fixes blurry textures. Full would be ideal here but causes broken face textures on Harry.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     texturePreloading: 0 # Performs better on certain areas like mid-game in and around the castle as the hash goes easily to 200 MB.
@@ -27100,7 +27111,8 @@ SLPM-62241:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 2 # Fixes blurry textures.
+    recommendedBlendingLevel: 4 # Fixes missing lighting effects.
+    mipmap: 1 # Fixes blurry textures. Full would be ideal here but causes broken face textures on Harry.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLPM-62244:
@@ -27902,7 +27914,8 @@ SLPM-62513:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 2 # Fixes blurry textures.
+    recommendedBlendingLevel: 4 # Fixes missing lighting effects.
+    mipmap: 1 # Fixes blurry textures. Full would be ideal here but causes broken face textures on Harry.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLPM-62514:
@@ -28749,7 +28762,8 @@ SLPM-64528:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 2 # Fixes blurry textures.
+    recommendedBlendingLevel: 4 # Fixes missing lighting effects.
+    mipmap: 1 # Fixes blurry textures. Full would be ideal here but causes broken face textures on Harry.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLPM-64532:
@@ -36332,7 +36346,8 @@ SLPM-68005:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 2 # Fixes blurry textures.
+    recommendedBlendingLevel: 4 # Fixes missing lighting effects.
+    mipmap: 1 # Fixes blurry textures. Full would be ideal here but causes broken face textures on Harry.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLPM-68017:
@@ -37414,7 +37429,8 @@ SLPS-20234:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 2 # Fixes blurry textures.
+    recommendedBlendingLevel: 4 # Fixes missing lighting effects.
+    mipmap: 1 # Fixes blurry textures. Full would be ideal here but causes broken face textures on Harry.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLPS-20239:
@@ -44872,7 +44888,8 @@ SLUS-20576:
   gameFixes:
     - EETimingHack # Fixes flickering textures.
   gsHWFixes:
-    mipmap: 2 # Fixes blurry textures.
+    recommendedBlendingLevel: 4 # Fixes missing lighting effects.
+    mipmap: 1 # Fixes blurry textures. Full would be ideal here but causes broken face textures on Harry.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
 SLUS-20577:
