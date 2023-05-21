@@ -82,3 +82,5 @@ private:
 
 	std::unique_ptr<DebugServerInterface> m_debugServerInterface;
 };
+
+extern DebugNetworkServer debugNetworkServer;

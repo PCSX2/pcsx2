@@ -16,6 +16,8 @@
 #include "DebugServer.h"
 #include "common/Threading.h"
 
+DebugNetworkServer debugNetworkServer;
+
 #if _WIN32
 #define would_block() (WSAGetLastError() == WSAEWOULDBLOCK)
 #define read_portable(a, b, c) (recv(a, (char*)b, c, 0))
@@ -196,7 +198,7 @@ DebugNetworkServer::reviveConnection()
 	{
 		Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to set socket as non-blocking! Shutting down...");
 		shutdown();
-		return;
+		return false;
 	}
 
 	return true;

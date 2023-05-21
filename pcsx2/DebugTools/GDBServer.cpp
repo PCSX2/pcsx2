@@ -20,31 +20,33 @@
 #undef max
 
 #define GDB_FEATURES \
-"PacketSize=1000"				/* required by GDB stub*/ \
-";Qbtrace:off-"					/* required by GDB stub*/ \
-";Qbtrace:bts-"					/* required by GDB stub*/ \
-";Qbtrace:pt-"					/* required by GDB stub*/ \
-";Qbtrace-conf:bts:size-"		/* required by GDB stub*/ \
-";Qbtrace-conf:pt:size-"		/* required by GDB stub*/ \
-";QCatchSyscalls+" \
-";QPassSignals+" \
-";QStartNoAckMode+" \
-";qXfer:features:read+"\
-";qXfer:libraries:read+"\
-";qXfer:memory-map:read+"\
-";qXfer:sdata:read+"\
-";qXfer:siginfo:read+"\
-";qXfer:threads:read+"\
-";qXfer:traceframe-info:read+"\
-";hwbreak+" \
-";swbreak-" \
-";vContSupported+" \
-";tracenz-" \
-";ConditionalBreakpoints-" \
-";ConditionalTracepoints-" \
-";TracepointSource-" \
-";EnableDisableTracepoints-" \
-";BreakpointCommands+"
+	"PacketSize=1000"               /* required by GDB stub*/ \
+	";Qbtrace:off-"                 /* required by GDB stub*/ \
+	";Qbtrace:bts-"                 /* required by GDB stub*/ \
+	";Qbtrace:pt-"                  /* required by GDB stub*/ \
+	";Qbtrace-conf:bts:size-"       /* required by GDB stub*/ \
+	";Qbtrace-conf:pt:size-"        /* required by GDB stub*/ \
+	";QCatchSyscalls-" \
+	";QPassSignals-" \
+	";QStartNoAckMode+" \
+	";qXfer:features:read+"\
+	";qXfer:threads:read+"\
+	";qXfer:libraries:read-"\
+	";qXfer:memory-map:read-"\
+	";qXfer:sdata:read-"\
+	";qXfer:siginfo:read-"\
+	";qXfer:traceframe-info:read-"\
+	";hwbreak+" \
+	";swbreak+" \
+	";BreakpointCommands+" \
+	";vContSupported+" \
+	";QThreadEvents+" \
+	";memory-tagging-" \
+	";tracenz-" \
+	";ConditionalBreakpoints+" \
+	";ConditionalTracepoints-" \
+	";TracepointSource-" \
+	";EnableDisableTracepoints-" 
 
 constexpr
 u8
@@ -155,6 +157,149 @@ IsSameString(
 	return IsSameString(source.data(), source.size(), compare.data(), compare.size());
 }
 
+inline
+std::size_t
+GetRegisterNumber(DebugInterface* cpuInterface, std::size_t cat, std::size_t idx)
+{
+	for (size_t i = 0; i < cat; i++)
+	{
+		idx += cpuInterface->getRegisterCount(i);
+	}
+
+	return idx;
+}
+
+inline
+bool
+GetRegisterCategoryAndIndex(DebugInterface* cpuInterface, std::size_t number, std::size_t& cat, std::size_t& idx)
+{
+	std::size_t acc = 0;
+	for (; cat < cpuInterface->getRegisterCategoryCount(); cat++)
+	{
+		if (number >= acc && number < acc + cpuInterface->getRegisterCount(cat)) 
+		{
+			break;	
+		}
+
+		acc += cpuInterface->getRegisterCount(cat);
+	}
+
+	if (cat == cpuInterface->getRegisterCategoryCount())
+	{
+		return false;
+	}
+
+	idx = number - acc;
+	return true;
+}
+
+inline
+std::string
+GetFeatureString(DebugInterface* cpuInterface)
+{
+	std::string featureString;
+
+	auto getRegisterType = [](bool isFloat, std::size_t size) {
+		switch (size)
+		{
+			case 8:
+				return " type=\"uint8\"";
+			case 16:
+				return " type=\"uint16\"";
+			case 32:
+				return isFloat ? " type=\"ieee_single\"" : " type=\"uint32\"";
+			case 64:
+				return isFloat ? " type=\"ieee_double\"" : " type=\"uint64\"";
+			case 128:
+				return isFloat ? " type=\"vec128\"" : " type=\"uint128\"";
+			default:
+				return "";
+				break;
+		}
+	};
+
+	featureString += "<?target version=\"1.0\"?>\n";
+	if (cpuInterface->getCpuType() == BREAKPOINT_VU0 || cpuInterface->getCpuType() == BREAKPOINT_VU1)
+	{
+		featureString += "<architecture>sonyvu</architecture>\n";
+		featureString += "<feature name=\"pcsx2.vu\">\n";
+	}
+	else
+	{
+		featureString += "<architecture>mips:sony</architecture>\n";
+		featureString += "<feature name=\"pcsx2.mips\">\n";
+	}
+
+	// add support for 128-bit registers
+	featureString += "<vector id=\"v4f\" type=\"ieee_single\" count=\"4\"/>";
+	featureString += "<vector id=\"v2d\" type=\"ieee_double\" count=\"2\"/>";
+	featureString += "<vector id=\"v16i8\" type=\"int8\" count=\"16\"/>";
+	featureString += "<vector id=\"v8i16\" type=\"int16\" count=\"8\"/>";
+	featureString += "<vector id=\"v4i32\" type=\"int32\" count=\"4\"/>";
+	featureString += "<vector id=\"v2i64\" type=\"int64\" count=\"2\"/>";
+	featureString += "<union id=\"vec128\">\n";
+	featureString += "    <field name=\"v4_float\" type=\"v4f\"/>\n";
+	featureString += "    <field name=\"v2_double\" type=\"v2d\"/>\n";
+	featureString += "    <field name=\"v16_int8\" type=\"v16i8\"/>\n";
+	featureString += "    <field name=\"v8_int16\" type=\"v8i16\"/>\n";
+	featureString += "    <field name=\"v4_int32\" type=\"v4i32\"/>\n";
+	featureString += "    <field name=\"v2_int64\" type=\"v2i64\"/>\n";
+	featureString += "    <field name=\"uint128\" type=\"uint128\"/>\n";
+	featureString += "</union>\n";
+
+	for (std::size_t cat = 0; cat < cpuInterface->getRegisterCategoryCount(); cat++)
+	{
+		std::string group = cpuInterface->getRegisterCategoryName(cat);
+		for (std::size_t i = 0; i < cpuInterface->getRegisterCount(cat); i++)
+		{
+			std::string name = cpuInterface->getRegisterName(cat, i);
+			std::string bitsize = std::to_string(cpuInterface->getRegisterSize(cat));
+			std::string regnum = std::to_string(GetRegisterNumber(cpuInterface, cat, i));
+			featureString += 
+				"<reg name=\"" + name + 
+				"\" bitsize=\"" + bitsize + 
+				"\" regnum=\"" + regnum + 
+				"\" group=\"" + group + 
+				getRegisterType(false, cpuInterface->getRegisterSize(cat)) +
+				"\"/>\n";
+		}
+	}
+
+	featureString += "</feature>\n";
+	featureString += "</target>\n";
+
+	return featureString;
+}
+
+inline
+std::string
+GetCPUThreads(DebugInterface* cpuInterface)
+{
+	bool paused = cpuInterface->isCpuPaused();
+	std::string threadsString;
+	threadsString += "<?target version=\"1.0\"?>\n";
+	threadsString += "<threads>\n";
+
+	if (!paused)
+	{
+		cpuInterface->pauseCpu();
+	}	
+
+	for (const auto& threadHandle : cpuInterface->GetThreadList())
+	{
+		BiosThread* thread = threadHandle.get();
+		threadsString += "<thread id=\"" + std::to_string(thread->TID()) + "\"";
+		threadsString += " name=\"" + std::to_string(thread->EntryPoint()) + "\"";	
+	}
+	
+	if (!paused)
+	{
+		cpuInterface->resumeCpu();
+	}
+
+	threadsString += "</threads>\n";
+}
+
 std::size_t 
 GDBServer::processPacket(
 	const char* inData, 
@@ -248,11 +393,24 @@ GDBServer::processPacket(
 		return std::size_t(-1);
 	}
 
-	auto processXferPacket = [outData, &outSize](std::string_view data) -> bool {
+	auto processXferPacket = [this, outData, &outSize, &writePacketEnd, &writeBaseResponse](std::string_view data) -> bool {
 		if (IsSameString(data, "features"))
 		{
-			
+			std::string featuresString = GetFeatureString(m_debugInterface);
+			writeBaseResponse(featuresString.c_str());
+			return false;
+		}		
+		
+		if (IsSameString(data, "threads"))
+		{
+			std::string threadsString = GetCPUThreads(m_debugInterface);
+			writeBaseResponse(threadsString.c_str());
+			return false;
 		}
+
+		// we don't support other 
+		writePacketEnd(0);
+		return false;
 	};
 
 	// true - continue packets processing
@@ -268,7 +426,7 @@ GDBServer::processPacket(
 		{
 			case 'C': // get current thread
 				break;
-			case 'S': // symbol
+			case 'S':
 				if (IsSameString(data, "Symbol:"))
 				{
 					writeBaseResponse("OK");
@@ -298,6 +456,17 @@ GDBServer::processPacket(
 		}
 
 		// we don't support this command rn
+		writePacketEnd(0);
+		return false;
+	};
+	
+	auto processGeneralPacket = [this, &writePacketEnd, &writeBaseResponse](std::string_view data) -> bool {
+		if (IsSameString(data, "QThreadEvents:"))
+		{
+			const char* eventsEnable = data.data() + 14;
+
+		}
+
 		writePacketEnd(0);
 		return false;
 	};
@@ -368,6 +537,10 @@ GDBServer::processPacket(
 			writeBaseResponse("OK");
 			return packetEnd;
 
+		case 'Q': // general set
+			if (!processGeneralPacket(data))
+				return packetEnd;
+			break;
 		case 'q': // general query
 			offset++;
 			if (!processQueryPacket(data))
