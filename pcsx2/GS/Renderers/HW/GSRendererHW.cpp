@@ -5258,20 +5258,83 @@ bool GSRendererHW::OI_GsMemClear()
 void GSRendererHW::OI_DoGsMemClear(const GSOffset& off, const GSVector4i& r, u32 vert_color)
 {
 	GL_INS("OI_DoGsMemClear (%d,%d => %d,%d)", r.x, r.y, r.z, r.w);
-	const int format = GSLocalMemory::m_psm[off.psm()].fmt;
 
+	const int format = GSLocalMemory::m_psm[off.psm()].fmt;
 	const u32 color = (format == 0) ? vert_color : (vert_color & ~0xFF000000);
-	// FIXME: loop can likely be optimized with AVX/SSE. Pixels aren't
-	// linear but the value will be done for all pixels of a block.
-	// FIXME: maybe we could limit the write to the top and bottom row page.
+
+	const int left = r.left;
+	const int right = r.right;
+	const int bottom = r.bottom;
+	int top = r.top;
+
+	// Process the page aligned region first, then fall back to anything which is not.
+	// Since pages are linear in memory, we can do it basically with a vector memset.
+
+	const GSVector2i& pgs = GSLocalMemory::m_psm[off.psm()].pgs;
+	if (left == 0 && top == 0 && (right & (pgs.x - 1)) == 0)
+	{
+		const u32 pages_wide = r.z / 64;
+		const u32 pixels_per_page = pgs.x * pgs.y;
+		const int page_aligned_bottom = (bottom & ~(pgs.y - 1));
+
+		if (format == 0)
+		{
+			const GSVector4i vcolor = GSVector4i(color);
+			const u32 iterations_per_page = (pages_wide * pixels_per_page) / 4;
+
+			for (; top < page_aligned_bottom; top += pgs.y)
+			{
+				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.vm32(), 0, top);
+				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(pa.value(0));
+				GSVector4i* const ptr_end = reinterpret_cast<GSVector4i*>(pa.value(0)) + iterations_per_page;
+				while (ptr != ptr_end)
+					*(ptr++) = vcolor;
+			}
+		}
+		else if (format == 1)
+		{
+			const GSVector4i mask = GSVector4i::xff000000();
+			const GSVector4i vcolor = GSVector4i(color & 0x00ffffffu);
+			const u32 iterations_per_page = (pages_wide * pixels_per_page) / 4;
+
+			for (; top < page_aligned_bottom; top += pgs.y)
+			{
+				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.vm32(), 0, top);
+				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(pa.value(0));
+				GSVector4i* const ptr_end = reinterpret_cast<GSVector4i*>(pa.value(0)) + iterations_per_page;
+				while (ptr != ptr_end)
+				{
+					*ptr = (*ptr & mask) | vcolor;
+					ptr++;
+				}
+			}
+		}
+		else if (format == 2)
+		{
+			const u16 converted_color = ((vert_color >> 16) & 0x8000) | ((vert_color >> 9) & 0x7C00) | ((vert_color >> 6) & 0x7E0) | ((vert_color >> 3) & 0x1F);
+
+			const GSVector4i vcolor = GSVector4i::broadcast16(converted_color);
+			const u32 iterations_per_page = (pages_wide * pixels_per_page) / 8;
+
+			for (; top < page_aligned_bottom; top += pgs.y)
+			{
+				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle16).paMulti(m_mem.vm16(), 0, top);
+				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(pa.value(0));
+				GSVector4i* const ptr_end = reinterpret_cast<GSVector4i*>(pa.value(0)) + iterations_per_page;
+				while (ptr != ptr_end)
+					*(ptr++) = vcolor;
+			}
+		}
+	}
+
 	if (format == 0)
 	{
 		// Based on WritePixel32
-		for (int y = r.top; y < r.bottom; y++)
+		for (int y = top; y < bottom; y++)
 		{
 			auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.vm32(), 0, y);
 
-			for (int x = r.left; x < r.right; x++)
+			for (int x = left; x < right; x++)
 			{
 				*pa.value(x) = color; // Here the constant color
 			}
@@ -5280,11 +5343,11 @@ void GSRendererHW::OI_DoGsMemClear(const GSOffset& off, const GSVector4i& r, u32
 	else if (format == 1)
 	{
 		// Based on WritePixel24
-		for (int y = r.top; y < r.bottom; y++)
+		for (int y = top; y < bottom; y++)
 		{
 			auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.vm32(), 0, y);
 
-			for (int x = r.left; x < r.right; x++)
+			for (int x = left; x < right; x++)
 			{
 				*pa.value(x) &= 0xff000000; // Clear the color
 				*pa.value(x) |= color; // OR in our constant
@@ -5296,11 +5359,11 @@ void GSRendererHW::OI_DoGsMemClear(const GSOffset& off, const GSVector4i& r, u32
 		const u16 converted_color = ((vert_color >> 16) & 0x8000) | ((vert_color >> 9) & 0x7C00) | ((vert_color >> 6) & 0x7E0) | ((vert_color >> 3) & 0x1F);
 
 		// Based on WritePixel16
-		for (int y = r.top; y < r.bottom; y++)
+		for (int y = top; y < bottom; y++)
 		{
 			auto pa = off.assertSizesMatch(GSLocalMemory::swizzle16).paMulti(m_mem.vm16(), 0, y);
 
-			for (int x = r.left; x < r.right; x++)
+			for (int x = left; x < right; x++)
 			{
 				*pa.value(x) = converted_color; // Here the constant color
 			}
