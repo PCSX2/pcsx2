@@ -22,6 +22,9 @@ namespace LogSink
 	/// Overrides the filename used for the file log.
 	void SetFileLogPath(std::string path);
 
+	/// Ensures file log is flushed and closed.
+	void CloseFileLog();
+
 	/// Prevents the system console from being displayed.
 	void SetBlockSystemConsole(bool block);
 

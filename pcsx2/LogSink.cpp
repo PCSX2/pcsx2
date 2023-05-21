@@ -383,6 +383,15 @@ void LogSink::SetFileLogPath(std::string path)
 	}
 }
 
+void LogSink::CloseFileLog()
+{
+	if (!emuLog)
+		return;
+
+	std::fclose(emuLog);
+	emuLog = nullptr;
+}
+
 void LogSink::SetBlockSystemConsole(bool block)
 {
 	s_block_system_console = block;
