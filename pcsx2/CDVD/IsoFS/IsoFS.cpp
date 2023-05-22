@@ -146,7 +146,20 @@ void IsoDirectory::Init(const IsoFileDescriptor& directoryEntry)
 
 		dataStream.read(b + 1, b[0] - 1);
 
-		files.push_back(IsoFileDescriptor(b, b[0]));
+		auto isoFile = IsoFileDescriptor(b, b[0]);
+
+		files.push_back(isoFile);
+
+		const std::string::size_type semi_pos = isoFile.name.rfind(';');
+		if (semi_pos != std::string::npos && std::string_view(isoFile.name).substr(semi_pos) != ";1")
+		{
+			const std::string origName = isoFile.name;
+			isoFile.name.erase(semi_pos);
+			isoFile.name += ";1";
+			Console.WriteLn("(IsoFS) Non-conforming version suffix (%s) detected. Creating 'hard-linked' entry (%s)",origName.c_str(), isoFile.name.c_str());
+
+			files.push_back(isoFile);
+		}
 	}
 
 	b[0] = 0;
