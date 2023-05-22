@@ -18,6 +18,8 @@
 class GDBServer : public DebugServerInterface
 {
 public:
+	GDBServer(DebugInterface* debugInterface);
+	~GDBServer();
 	std::size_t processPacket(const char* inData, std::size_t inSize, void* outData, std::size_t& outSize) override;
 
 private:

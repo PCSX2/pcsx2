@@ -15,7 +15,10 @@
 #include "PrecompiledHeader.h"
 #include "DebugServer.h"
 
-DebugNetworkServer debugNetworkServer;
+DebugNetworkServer EEDebugNetworkServer;
+DebugNetworkServer IOPDebugNetworkServer;
+DebugNetworkServer VU0DebugNetworkServer;
+DebugNetworkServer VU1DebugNetworkServer;
 
 #if _WIN32
 #define would_block() (WSAGetLastError() == WSAEWOULDBLOCK)
@@ -34,12 +37,6 @@ DebugNetworkServer debugNetworkServer;
 #include <unistd.h>
 #endif
 
-void 
-DebugServerInterface::setDebugInterface(DebugInterface* debugInterface)
-{
-	m_debugInterface = debugInterface;
-}
-
 DebugNetworkServer::DebugNetworkServer()
 {
 
@@ -47,11 +44,13 @@ DebugNetworkServer::DebugNetworkServer()
 
 DebugNetworkServer::~DebugNetworkServer()
 {
+	shutdown();
 }
 
 bool 
 DebugNetworkServer::init(
-	std::unique_ptr<DebugServerInterface>& debugServerInterface,
+	std::string_view name, 
+	std::unique_ptr<DebugServerInterface> debugServerInterface,
 	u16 port,
 	const char* address
 )
@@ -65,57 +64,12 @@ DebugNetworkServer::init(
 	// transfer exclusive pointer
 	m_debugServerInterface = std::move(debugServerInterface);
 
-#ifdef _WIN32
-	WSADATA wsa;
-	struct sockaddr_in server;
-
-	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-	{
-		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot initialize winsock! Shutting down...");
-		return false;
-	}
-	
-	m_sock = socket(AF_INET, SOCK_STREAM, 0);
-	if ((m_sock == INVALID_SOCKET) || port > 65536)
-	{
-		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot open socket! Shutting down...");
-		shutdown();
-		return false;
-	}
-
-	server.sin_family = AF_INET;
-	server.sin_addr.s_addr = inet_addr(address);
-	server.sin_port = htons(port);
-#else
-	struct sockaddr_un server;
-	m_sock = socket(AF_UNIX, SOCK_STREAM, 0);
-	if (m_sock < 0)
-	{
-		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot open socket! Shutting down...");
-		shutdown();
-		return false;
-	}
-	
-	server.sun_family = AF_UNIX;
-	if (bind(m_sock, (struct sockaddr*)&server, sizeof(struct sockaddr_un)))
-	{
-		Console.WriteLn(Color_Red, "DebugNetworkServer: Error while binding to socket! Shutting down...");
-		shutdown();
-		return false;
-	}
-#endif
-	// Don't need more than 5 in this case, GDB or WinDbg can't handle so much packets anyway
-	if (listen(m_sock, 2))
-	{
-		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot listen for connections! Shutting down...");
-		shutdown();
-		return false;
-	}
-
 	m_recv_buffer.resize(MAX_DEBUG_PACKET_SIZE);
 	m_send_buffer.resize(MAX_DEBUG_PACKET_SIZE);
 
 	m_port = port;
+	m_name = name;
+	m_address = address;
 	m_thread = std::thread(&DebugNetworkServer::serverLoop, this);
 	return true;
 }
@@ -125,18 +79,21 @@ DebugNetworkServer::shutdown()
 {
 	m_end.store(true, std::memory_order_release);
 
+	if (std::this_thread::get_id() == m_thread.get_id())
+	{
 #ifdef _WIN32
-	WSACleanup();
+		WSACleanup();
 #else
-	unlink(m_socket_name.c_str());
+		unlink(m_socket_name.c_str());
 #endif
 
-	close_portable(m_sock);
-	close_portable(m_msgsock);
-
-	if (std::this_thread::get_id() != m_thread.get_id() && m_thread.joinable())
+		close_portable(m_sock);
+		close_portable(m_msgsock);
+	} 
+	else
 	{
-		m_thread.join();
+		if (m_thread.joinable())
+			m_thread.join();
 	}
 
 	m_debugServerInterface.reset();
@@ -151,6 +108,12 @@ void DebugNetworkServer::signal(int signal)
 	}
 
 	m_signals[m_signalCount++] = signal;
+}
+
+bool
+DebugNetworkServer::isRunning() const
+{
+	return m_thread.joinable();
 }
 
 int 
@@ -174,26 +137,31 @@ DebugNetworkServer::reviveConnection()
 		m_msgsock = 0;
 	}
 
-	m_msgsock = accept(m_sock, 0, 0);
-
-	if (m_msgsock == -1)
+	Console.WriteLn(Color_Green, "DebugNetworkServer: [%s] waiting for any connection on port %u...", m_name.data(), m_port);
+	do
 	{
-		// everything else is non recoverable in our scope
-		// we also mark as recoverable socket errors where it would block a
-		// non blocking socket, even though our socket is blocking, in case
-		// we ever have to implement a non blocking socket.
-#ifdef _WIN32
-		int errno_w = WSAGetLastError();
-		if (!(errno_w == WSAECONNRESET || errno_w == WSAEINTR || errno_w == WSAEINPROGRESS || errno_w == WSAEMFILE || errno_w == WSAEWOULDBLOCK))
+		if (m_end.load())
 		{
-#else
-		if (!(errno == ECONNABORTED || errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK))
-		{
-#endif
-			  
 			return false;
 		}
-	}
+
+		m_msgsock = accept(m_sock, 0, 0);
+#ifdef _WIN32
+		int errno_w = WSAGetLastError();
+		if (errno_w == WSAECONNRESET || errno_w == WSAEINTR || errno_w == WSAEINPROGRESS || errno_w == WSAEMFILE || errno_w == WSAEWOULDBLOCK)
+		{
+#else
+		if (errno == ECONNABORTED || errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK)
+		{
+#endif
+			Threading::Sleep(1);
+		}
+		else
+		{
+			Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to create socket (internal error)! Shutting down...");
+			return false;
+		}
+	} while (m_msgsock == (u64)-1);
 
 	u_long mode = 1;
 #ifdef _WIN32
@@ -202,8 +170,8 @@ DebugNetworkServer::reviveConnection()
 	if (fcntl(m_msgsock, O_NONBLOCK, &mode) < 0)
 #endif
 	{
+		int errno_w = WSAGetLastError();
 		Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to set socket as non-blocking! Shutting down...");
-		shutdown();
 		return false;
 	}
 
@@ -213,12 +181,78 @@ DebugNetworkServer::reviveConnection()
 void 
 DebugNetworkServer::serverLoop()
 {
+
+#ifdef _WIN32
+	struct sockaddr_in server;
+
+	WSADATA wsa;
+	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+	{
+		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot initialize winsock! Shutting down...");
+		return;
+	}
+
+	m_sock = socket(AF_INET, SOCK_STREAM, 0);
+	if ((m_sock == INVALID_SOCKET) || m_port > 65536)
+	{
+		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot open socket! Shutting down...");
+		shutdown();
+		return;
+	}
+
+	server.sin_family = AF_INET;
+	server.sin_addr.s_addr = m_address.empty() ? 0 : inet_addr(m_address.data());
+	server.sin_port = htons(m_port);
+	if (bind(m_sock, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
+	{
+		Console.WriteLn(Color_Red, "DebugNetworkServer: Error while binding to socket! Shutting down...");
+		shutdown();
+		return;
+	}
+#else
+	struct sockaddr_un server;
+	m_sock = socket(AF_UNIX, SOCK_STREAM, 0);
+	if (m_sock < 0)
+	{
+		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot open socket! Shutting down...");
+		shutdown();
+		return false;
+	}
+
+	server.sun_family = AF_UNIX;
+	if (bind(m_sock, (struct sockaddr*)&server, sizeof(struct sockaddr_un)))
+	{
+		Console.WriteLn(Color_Red, "DebugNetworkServer: Error while binding to socket! Shutting down...");
+		shutdown();
+		return false;
+	}
+#endif
+	u_long mode = 1;
+#ifdef _WIN32
+	if (ioctlsocket(m_sock, FIONBIO, &mode) < 0)
+#else
+	if (fcntl(m_sock, O_NONBLOCK, &mode) < 0)
+#endif
+	{
+		int errno_w = WSAGetLastError();
+		Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to set socket as non-blocking! Shutting down...");
+	}
+
+	// Don't need more than 5 in this case, GDB or WinDbg can't handle so much packets anyway
+	if (listen(m_sock, 5))
+	{
+		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot listen for connections! Shutting down...");
+		shutdown();
+		return;
+	}
+
 	if (!reviveConnection())
 	{
 		shutdown();
 		return;
 	}
 
+	Console.WriteLn(Color_Green, "DebugNetworkServer: connection for %s on port %u has been opened", m_name.data(), m_port);
 	while (!m_end.load(std::memory_order_acquire))
 	{
 		if (!receiveAndSendPacket())
@@ -226,6 +260,8 @@ DebugNetworkServer::serverLoop()
 			break;
 		}
 	}
+
+	shutdown();
 }
 
 bool DebugNetworkServer::receiveAndSendPacket()

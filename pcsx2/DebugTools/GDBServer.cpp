@@ -305,7 +305,16 @@ GetCPUThreads(DebugInterface* cpuInterface)
 	return threadsString;
 }
 
-std::size_t 
+GDBServer::GDBServer(DebugInterface* debugInterface)
+{
+	m_debugInterface = debugInterface;
+}
+
+GDBServer::~GDBServer()
+{
+}
+
+std::size_t
 GDBServer::processPacket(
 	const char* inData, 
 	std::size_t inSize,

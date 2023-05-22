@@ -30,7 +30,6 @@ enum
 class DebugServerInterface
 {
 public:
-	virtual void setDebugInterface(DebugInterface* debugInterface);
 	virtual std::size_t processPacket(const char* inData, std::size_t inSize, void* outData, std::size_t& outSize) = 0;
 
 protected:
@@ -44,13 +43,14 @@ public:
 	~DebugNetworkServer();
 
 public:
-	bool init(std::unique_ptr<DebugServerInterface>& debugServerInterface, u16 port, const char* address);
+	bool init(std::string_view name, std::unique_ptr<DebugServerInterface> debugServerInterface, u16 port, const char* address);
 	void shutdown();
 
 public:
 	void signal(int signal);
 
 public:
+	bool isRunning() const;
 	int getNetworkStatus() const;
 	int getPort() const;
 	
@@ -72,7 +72,6 @@ private:
 	int m_msgsock = 0;
 #endif
 	int m_port = -1;
-	u32 m_listenAddress = 0;
 	u32 m_signalCount = 0;
 	int m_signals[MAX_SIGNALS] = {};
 
@@ -83,7 +82,12 @@ private:
 	std::vector<u8> m_recv_buffer;
 	std::vector<u8> m_send_buffer;
 
+	std::string_view m_name;
+	std::string_view m_address;
 	std::unique_ptr<DebugServerInterface> m_debugServerInterface;
 };
 
-extern DebugNetworkServer debugNetworkServer;
+extern DebugNetworkServer EEDebugNetworkServer;
+extern DebugNetworkServer IOPDebugNetworkServer;
+extern DebugNetworkServer VU0DebugNetworkServer;
+extern DebugNetworkServer VU1DebugNetworkServer;
