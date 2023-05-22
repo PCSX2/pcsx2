@@ -310,6 +310,17 @@ bool DebugNetworkServer::receiveAndSendPacket()
 			return false;
 		}
 
+		if (outSize == 0)
+		{
+			if (!reviveConnection())
+			{
+				shutdown();
+				break;
+			}
+
+			continue;
+		}
+
 		m_send_buffer[outSize] = 0;
 		Console.WriteLn(Color_Orange, "send");
 		Console.WriteLn(Color_Gray, "%s", m_send_buffer.data());

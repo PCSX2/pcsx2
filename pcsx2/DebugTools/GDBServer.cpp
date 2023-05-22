@@ -21,7 +21,7 @@
 
 /*";QStartNoAckMode+" \*/
 #define GDB_FEATURES \
-	"PacketSize=20000"              /* required by GDB stub*/ \
+	"PacketSize=14000"              /* required by GDB stub*/ \
 	";Qbtrace:off-"                 /* required by GDB stub*/ \
 	";Qbtrace:bts-"                 /* required by GDB stub*/ \
 	";Qbtrace:pt-"                  /* required by GDB stub*/ \
@@ -219,34 +219,35 @@ GetFeatureString(DebugInterface* cpuInterface)
 		}
 	};
 
-	featureString += "<?target version=\"1.0\"?>\n";
+	featureString += "l<?target version=\"1.0\"?>";
+	featureString += "<!DOCTYPE target SYSTEM \"gdb-target.dtd\">";
 	if (cpuInterface->getCpuType() == BREAKPOINT_VU0 || cpuInterface->getCpuType() == BREAKPOINT_VU1)
 	{
-		featureString += "<architecture>sonyvu</architecture>\n";
-		featureString += "<feature name=\"pcsx2.vu\">\n";
+		featureString += "<architecture>sonyvu</architecture>";
+		featureString += "<feature name=\"pcsx2.vu\">";
 	}
 	else
 	{
-		featureString += "<architecture>mips:sony</architecture>\n";
-		featureString += "<feature name=\"pcsx2.mips\">\n";
+		featureString += "<architecture>mips:sony</architecture>";
+		featureString += "<feature name=\"pcsx2.mips\">";
 	}
 
 	// adding support for 128-bit registers
-	featureString += "<vector id=\"v4f\" type=\"ieee_single\" count=\"4\"/>\n";
-	featureString += "<vector id=\"v2d\" type=\"ieee_double\" count=\"2\"/>\n";
-	featureString += "<vector id=\"v16i8\" type=\"int8\" count=\"16\"/>\n";
-	featureString += "<vector id=\"v8i16\" type=\"int16\" count=\"8\"/>\n";
-	featureString += "<vector id=\"v4i32\" type=\"int32\" count=\"4\"/>\n";
-	featureString += "<vector id=\"v2i64\" type=\"int64\" count=\"2\"/>\n";
-	featureString += "<union id=\"vec128\">\n";
-	featureString += "    <field name=\"v4_float\" type=\"v4f\"/>\n";
-	featureString += "    <field name=\"v2_double\" type=\"v2d\"/>\n";
-	featureString += "    <field name=\"v16_int8\" type=\"v16i8\"/>\n";
-	featureString += "    <field name=\"v8_int16\" type=\"v8i16\"/>\n";
-	featureString += "    <field name=\"v4_int32\" type=\"v4i32\"/>\n";
-	featureString += "    <field name=\"v2_int64\" type=\"v2i64\"/>\n";
-	featureString += "    <field name=\"uint128\" type=\"uint128\"/>\n";
-	featureString += "</union>\n";
+	featureString += "<vector id=\"v4f\" type=\"ieee_single\" count=\"4\"/>";
+	featureString += "<vector id=\"v2d\" type=\"ieee_double\" count=\"2\"/>";
+	featureString += "<vector id=\"v16i8\" type=\"int8\" count=\"16\"/>";
+	featureString += "<vector id=\"v8i16\" type=\"int16\" count=\"8\"/>";
+	featureString += "<vector id=\"v4i32\" type=\"int32\" count=\"4\"/>";
+	featureString += "<vector id=\"v2i64\" type=\"int64\" count=\"2\"/>";
+	featureString += "<union id=\"vec128\">";
+	featureString +=     "<field name=\"v4_float\" type=\"v4f\"/>";
+	featureString +=     "<field name=\"v2_double\" type=\"v2d\"/>";
+	featureString +=     "<field name=\"v16_int8\" type=\"v16i8\"/>";
+	featureString +=     "<field name=\"v8_int16\" type=\"v8i16\"/>";
+	featureString +=     "<field name=\"v4_int32\" type=\"v4i32\"/>";
+	featureString +=     "<field name=\"v2_int64\" type=\"v2i64\"/>";
+	featureString +=     "<field name=\"uint128\" type=\"uint128\"/>";
+	featureString += "</union>";
 
 	for (std::size_t cat = 0; cat < cpuInterface->getRegisterCategoryCount(); cat++)
 	{
@@ -261,13 +262,13 @@ GetFeatureString(DebugInterface* cpuInterface)
 				"\" bitsize=\"" + bitsize + 
 				"\" regnum=\"" + regnum + 
 				"\" group=\"" + group + 
-				getRegisterType(false, cpuInterface->getRegisterSize(cat)) +
-				"\"/>\n";
+				getRegisterType(cat == EECAT_VU0F ? true : false, cpuInterface->getRegisterSize(cat)) +
+				" />";
 		}
 	}
 
-	featureString += "</feature>\n";
-	featureString += "</target>\n";
+	featureString += "</feature>";
+	featureString += "</target>";
 
 	return featureString;
 }
@@ -352,6 +353,11 @@ GDBServer::processPacket(
 		outSize += stringSize + 3;
 		return true;
 	};
+
+	if (inSize == 1 && (*inData == '+' || *inData == '-'))
+	{
+		return inSize;
+	}
 
 	while (offset < inSize)
 	{
