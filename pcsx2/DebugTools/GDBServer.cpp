@@ -230,7 +230,7 @@ GetFeatureString(DebugInterface* cpuInterface)
 		featureString += "<feature name=\"pcsx2.mips\">\n";
 	}
 
-	// add support for 128-bit registers
+	// adding support for 128-bit registers
 	featureString += "<vector id=\"v4f\" type=\"ieee_single\" count=\"4\"/>";
 	featureString += "<vector id=\"v2d\" type=\"ieee_double\" count=\"2\"/>";
 	featureString += "<vector id=\"v16i8\" type=\"int8\" count=\"16\"/>";
@@ -329,7 +329,7 @@ GDBServer::processPacket(
 			return false;
 		}
 
-		u8* data = (u8*)outData;
+		u8* data = (u8*)outData + outSize;
 		std::memcpy(&data[outSize], writeData, size);
 		outSize += size;
 		return true;
@@ -341,7 +341,7 @@ GDBServer::processPacket(
 			return false;
 		}
 
-		u8* data = (u8*)outData;
+		u8* data = (u8*)outData + outSize;
 		*data++ = '#';
 		*data++ = ValueToASCII(checksum >> 4);
 		*data++ = ValueToASCII(checksum);
@@ -357,7 +357,7 @@ GDBServer::processPacket(
 		}
 
 		const u8 stringChecksum = CalculateChecksum(stringValue, strlen(stringValue));
-		char* data = (char*)outData;
+		char* data = (char*)outData + outSize;
 		for (size_t i = 0; i < stringSize; i++)
 		{
 			*data++ = *stringValue++;
@@ -582,7 +582,6 @@ GDBServer::processPacket(
 			break;
 
 		case 'R':
-			VMManager::Reset();
 			break;
 		case 'c': // continue
 			break;
