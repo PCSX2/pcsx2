@@ -11781,24 +11781,42 @@ SLES-50795:
 SLES-50796:
   name: "2002 FIFA World Cup"
   region: "PAL-E-SW"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-50797:
   name: "Coupe du Monde FIFA 2002"
   region: "PAL-F"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-50798:
   name: "FIFA Fussball Weltmeisterschaft 2002"
   region: "PAL-G"
   compat: 5
   gameFixes:
     - EETimingHack
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-50799:
   name: "Mondiali FIFA 2002"
   region: "PAL-I"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-50800:
   name: "Mundial FIFA 2002"
   region: "PAL-S"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-50801:
   name: "FIFA World Cup 2002"
   region: "PAL-GR"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-50802:
   name: "Knockout Kings 2002"
   region: "PAL-G"
@@ -36222,6 +36240,9 @@ SLPM-67508:
 SLPM-67512:
   name: "2002 FIFA World Cup"
   region: "NTSC-K"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-67513:
   name: "Final Fantasy X International"
   region: "NTSC-K"
@@ -38645,6 +38666,9 @@ SLPS-25117:
 SLPS-25118:
   name: "2002 FIFA World Cup"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPS-25119:
   name: "Galerians 2"
   region: "NTSC-J"
@@ -44028,6 +44052,9 @@ SLUS-20403:
 SLUS-20404:
   name: "2002 FIFA World Cup"
   region: "NTSC-U"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20405:
   name: "Downforce"
   region: "NTSC-U"
