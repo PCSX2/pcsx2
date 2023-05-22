@@ -74,6 +74,9 @@ u32 bufSize = 0;
 unsigned char outBuf[50];
 unsigned char inBuf[50];
 
+int pinePad = 0;
+u8 pineBuf[32];
+
 //		windowThreadId = GetWindowThreadProcessId(hWnd, 0);
 
 #define MODE_PS1_MOUSE 0x12
@@ -371,6 +374,77 @@ void AddForce(ButtonSum* sum, u8 cmd, int delta = 255)
 			sum->sticks[0].horiz -= delta;
 		}
 	}
+}
+
+void AddStickForce(ButtonSum* sum, int stick, u8 value)
+{
+	int id = stick;
+
+	int v = (value - 0x7F);
+	if (v < 0)
+		id += 2;
+
+	AddForce(sum, id, abs(v * 2));
+}
+
+void SetFromPinePad(ButtonSum s[2][4], int port, int slot)
+{
+	if (!pinePad || port != 0 || slot != 0)
+		return;
+
+	--pinePad;
+	ButtonSum* sum = &s[port][slot];
+
+	// right h
+	AddStickForce(sum, 0x25, pineBuf[4]);
+	// right v
+	AddStickForce(sum, 0x24, pineBuf[5]);
+	// left h
+	AddStickForce(sum, 0x21, pineBuf[6]);
+	// left v
+	AddStickForce(sum, 0x20, pineBuf[7]);
+
+	// dpad right
+	AddForce(sum, 0x15, pineBuf[8]);
+	// dpad left
+	AddForce(sum, 0x17, pineBuf[9]);
+	// dpad up
+	AddForce(sum, 0x14, pineBuf[10]);
+	// dpad down
+	AddForce(sum, 0x16, pineBuf[11]);
+
+	// triangle
+	AddForce(sum, 0x1C, pineBuf[12]);
+	// circle
+	AddForce(sum, 0x1D, pineBuf[13]);
+	// cross
+	AddForce(sum, 0x1E, pineBuf[14]);
+	// square
+	AddForce(sum, 0x1F, pineBuf[15]);
+
+	// l1
+	AddForce(sum, 0x1A, pineBuf[16]);
+	// r1
+	AddForce(sum, 0x1B, pineBuf[17]);
+	// l2
+	AddForce(sum, 0x18, pineBuf[18]);
+	// r2
+	AddForce(sum, 0x19, pineBuf[19]);
+
+	// start
+	AddForce(sum, 0x13, pineBuf[20]);
+	// select
+	AddForce(sum, 0x10, pineBuf[21]);
+	// l3
+	AddForce(sum, 0x11, pineBuf[22]);
+	// r3
+	AddForce(sum, 0x12, pineBuf[23]);
+}
+
+void SetPad(int port, int slot, u8* buf)
+{
+	pinePad = 16;
+	memcpy(pineBuf, buf, 32);
 }
 
 void ProcessButtonBinding(Binding* b, ButtonSum* sum, int value)
@@ -729,9 +803,14 @@ void Update(unsigned int port, unsigned int slot)
 						pads[port][slot].lockedState = 0;
 					}
 				}
+			
+				
+
+				SetFromPinePad(s, port, slot);
 			}
 		}
 	}
+
 	for (i = 0; i < 8; i++)
 	{
 		pads[i & 1][i >> 1].sum = s[i & 1][i >> 1];

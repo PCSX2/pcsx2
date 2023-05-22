@@ -363,6 +363,15 @@ bool vtlb_ramWrite(u32 addr, const mem8_t* data, size_t count)
 	return true;
 }
 
+uptr vtlb_getTblPtr(u32 addr)
+{
+	const auto vmv = vtlbdata.vmap[addr >> VTLB_PAGE_BITS];
+	if (vmv.isHandler(addr))
+		return 0;
+
+	return vmv.assumePtr(addr);
+}
+
 template bool vtlb_ramRead<mem8_t>(u32 mem, mem8_t* value);
 template bool vtlb_ramRead<mem16_t>(u32 mem, mem16_t* value);
 template bool vtlb_ramRead<mem32_t>(u32 mem, mem32_t* value);

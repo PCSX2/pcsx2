@@ -44,8 +44,17 @@
 #include "pcsx2/Counters.h"
 #include "pcsx2/Recording/InputRecordingControls.h"
 #include "svnrev.h"
+#include "pcsx2/gui/GSFrame.h"
 #include "PINE.h"
 #include "pcsx2/FrameStep.h"
+#include <GS/Renderers/Common/GSTexture.h>
+#include <GS/Renderers/Common/GSDevice.h>
+
+extern u8 FRAME_BUFFER_COPY[];
+extern int FRAME_BUFFER_COPY_ACTIVE;
+
+void SetPad(int port, int slot, u8* buf);
+uptr vtlb_getTblPtr(u32 addr);
 
 PINEServer::PINEServer(SysCoreThread* vm, unsigned int slot)
 	: pxThread("PINE_Server")
@@ -201,6 +210,7 @@ void PINEServer::ExecuteTaskInThread()
 			if (tmp_length <= 0)
 			{
 				receive_length = 0;
+				ExitProcess(0);
 				if (StartSocket() < 0)
 					return;
 				break;
@@ -234,6 +244,7 @@ void PINEServer::ExecuteTaskInThread()
 			// if we cannot send back our answer restart the socket
 			if (write_portable(m_msgsock, res.buffer, res.size) < 0)
 			{
+				ExitProcess(0);
 				if (StartSocket() < 0)
 					return;
 			}
@@ -567,6 +578,38 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 			ret_cnt += 1;
 			break;
 		}
+		case MsgSetDynamicSetting:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 1, ret_cnt, 1, buf_size))
+				goto error;
+
+			// get args
+			const enum DynamicSettingId settingId = (enum DynamicSettingId)FromArray<u8>(&buf[buf_cnt], 0);
+
+			switch (settingId)
+			{
+				case DynamicSettingFrameSleepWait: // frame sleep wait
+				{
+					const u8 value = FromArray<u8>(&buf[buf_cnt], 1);
+					g_FrameStep.SetSleepWait(value != 0);
+					buf_cnt += 1;
+					break;
+				}
+				default:
+				{
+					break;
+				}
+			}
+
+			buf_cnt += 1;
+
+			u8 res = 1;
+			ToArray(ret_buffer, res, ret_cnt);
+			ret_cnt += 1;
+			break;
+		}
 		case MsgResume:
 		{
 			if (!m_vm->HasActiveMachine())
@@ -603,6 +646,71 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 			u8 res = 1;
 			ToArray(ret_buffer, res, ret_cnt);
 			ret_cnt += 1;
+			break;
+		}
+		case MsgStop:
+		{
+			if (!SafetyChecks(buf_cnt, 0, ret_cnt, 1, buf_size))
+				goto error;
+			g_Conf->EmuOptions.UseBOOT2Injection = true;
+			//CoreThread.ResetQuick();
+
+			if (GSFrame* gsframe = wxGetApp().GetGsFramePtr())
+				gsframe->Show(false);
+
+			//CoreThread.Resume();
+			g_FrameStep.Resume();
+
+			u8 res = 1;
+			ToArray(ret_buffer, res, ret_cnt);
+			ret_cnt += 1;
+			break;
+		}
+		case MsgGetFrameBuffer:
+		{
+			int bitCount = 512 * 448 * 4;
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 0, ret_cnt, bitCount, buf_size))
+				goto error;
+
+			FRAME_BUFFER_COPY_ACTIVE = 3;
+
+			memcpy(ret_buffer + ret_cnt, FRAME_BUFFER_COPY, bitCount);
+			ret_cnt += bitCount;
+			break;
+		}
+		case MsgSetPad:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 36, ret_cnt, 1, buf_size))
+				goto error;
+
+			// get args
+			const u16 port = FromArray<u16>(&buf[buf_cnt], 0);
+			const u16 slot = FromArray<u16>(&buf[buf_cnt], 2);
+			buf_cnt += 4;
+
+			// set pad
+			SetPad(port, slot, (u8*)&buf[buf_cnt]);
+
+			buf_cnt += 32;
+			u8 res = 1;
+			ToArray(ret_buffer, res, ret_cnt);
+			ret_cnt += 1;
+			break;
+		}
+		case MsgGetVmPtr:
+		{
+			if (!m_vm->HasActiveMachine())
+				goto error;
+			if (!SafetyChecks(buf_cnt, 0, ret_cnt, 8, buf_size))
+				goto error;
+
+			uptr res = vtlb_getTblPtr(0x100000);
+			ToArray(ret_buffer, res - 0x100000, ret_cnt);
+			ret_cnt += 8;
 			break;
 		}
 

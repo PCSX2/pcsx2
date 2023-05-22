@@ -24,9 +24,8 @@ void FrameStep::HandlePausing()
 	{
 		emulationCurrentlyPaused = true;
 		while (emulationCurrentlyPaused && !resumeEmulation) {
-			//Sleep(1); // sleep until resumeEmulation is true
-			unsigned volatile char i, j;
-			i++;
+			if (sleepWhileWaiting) Sleep(1); // sleep until resumeEmulation is true
+			// otherwise just eat cycle until we can
 		}
 		resumeEmulation = false;
 		emulationCurrentlyPaused = false;
@@ -55,4 +54,9 @@ void FrameStep::Resume()
 {
 	pauseEmulation = false;
 	resumeEmulation = true;
+}
+
+void FrameStep::SetSleepWait(bool sleep)
+{
+	sleepWhileWaiting = sleep;
 }

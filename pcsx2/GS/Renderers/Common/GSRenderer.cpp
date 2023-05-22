@@ -56,6 +56,9 @@ static std::string GetDumpSerial()
 }
 #endif
 
+u8 FRAME_BUFFER_COPY[512 * 448 * 4];
+int FRAME_BUFFER_COPY_ACTIVE = 0;
+
 static constexpr std::array<PresentShader, 6> s_tv_shader_indices = {
 	PresentShader::COPY, PresentShader::SCANLINE,
 	PresentShader::DIAGONAL_FILTER, PresentShader::TRIANGULAR_FILTER,
@@ -745,6 +748,56 @@ void GSRenderer::VSync(u32 field, bool registers_written)
 				g_gs_device->DownloadTextureComplete();
 			}
 		}
+	}
+	else if (FRAME_BUFFER_COPY_ACTIVE > 0)
+	{
+		if (GSTexture* current = g_gs_device->GetCurrent())
+		{
+			GSVector2i size = GSVector2i(512, 448);
+
+			bool res;
+			GSTexture::GSMap m;
+			if (size == current->GetSize())
+				res = g_gs_device->DownloadTexture(current, GSVector4i(0, 0, size.x, size.y), m);
+			else
+				res = g_gs_device->DownloadTextureConvert(current, GSVector4(0, 0, 1, 1), size, GSTexture::Format::Color, ShaderConvert::COPY, m, true);
+
+			if (res)
+			{
+				const int w = 512;
+				const int h = 448;
+				u8* dst = (u8*)FRAME_BUFFER_COPY;
+				u8* src = (u8*)m.bits;
+				int dstpitch = w * 4;
+				int srcpitch = m.pitch;
+
+				dst += dstpitch * (h - 1);
+				dstpitch = -dstpitch;
+
+				for (int j = 0; j < h; j++, dst += dstpitch, src += srcpitch)
+				{
+					if (!g_gs_device->IsRBSwapped())
+					{
+						GSVector4i* s = (GSVector4i*)src;
+						GSVector4i* d = (GSVector4i*)dst;
+
+						GSVector4i mask(2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15);
+
+						for (int i = 0, w4 = w >> 2; i < w4; i++)
+						{
+							d[i] = s[i].shuffle8(mask);
+						}
+					}
+					else
+					{
+						memcpy(dst, src, w * 4);
+					}
+				}
+				g_gs_device->DownloadTextureComplete();
+			}
+		}
+
+		FRAME_BUFFER_COPY_ACTIVE--;
 	}
 #endif
 }

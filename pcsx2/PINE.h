@@ -68,7 +68,7 @@ protected:
 	  * Maximum memory used by an IPC message reply.
 	  * Equivalent to 50,000 Read64 replies.
 	  */
-#define MAX_IPC_RETURN_SIZE 450000
+#define MAX_IPC_RETURN_SIZE 1000000
 
 	  /**
 	   * IPC return buffer.
@@ -114,7 +114,24 @@ protected:
 		MsgResume = 0x67, /** */
 		MsgPause = 0x68, /** */
 		MsgRestart = 0x69, /** */
+		MsgStop = 0x6A, /** */
+		MsgGetFrameBuffer = 0x6B, /** */
+		MsgSetPad = 0x6C, /** */
+		MsgGetVmPtr = 0x6D, /** */
+		MsgSetDynamicSetting = 0x6E, /** */
 		MsgUnimplemented = 0xFF /**< Unimplemented IPC message. */
+	};
+
+	/**
+	 * IPC Command messages opcodes.
+	 * A list of possible operations possible by the IPC.
+	 * Each one of them is what we call an "opcode" and is the first
+	 * byte sent by the IPC to differentiate between commands.
+	 */
+	enum DynamicSettingId : unsigned char
+	{
+		DynamicSettingFrameSleepWait = 0, /**< If true, FrameStep sleeps while waiting for next frame command. */
+		DynamicSettingIdUnimplemented = 0xFF /**< Unimplemented DynamicSettingId. */
 	};
 
 	/**

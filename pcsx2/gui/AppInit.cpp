@@ -248,6 +248,7 @@ void Pcsx2App::OnInitCmdLine(wxCmdLineParser& parser)
 	parser.AddOption(wxEmptyString, L"cfg", _("specifies the PCSX2 configuration file to use"), wxCMD_LINE_VAL_STRING);
 	parser.AddSwitch(wxEmptyString, L"forcewiz", AddAppName(_("forces %s to start the First-time Wizard")));
 	parser.AddSwitch(wxEmptyString, L"portable", _("enables portable mode operation (requires admin/root access)"));
+	parser.AddOption(wxEmptyString, L"pineslot", _("sets the slot used by PINE"), wxCMD_LINE_VAL_NUMBER);
 
 	parser.AddSwitch(wxEmptyString, L"profiling", _("update options to ease profiling (debug)"));
 
@@ -357,6 +358,12 @@ bool Pcsx2App::OnCmdLineParsed(wxCmdLineParser& parser)
 			path.Normalize();
 			Startup.ElfFile = path.GetFullPath();
 		}
+	}
+
+	long pine_slot;
+	if (parser.Found(L"pineslot", &pine_slot) && pine_slot > 0)
+	{
+		PINESettings::slot = pine_slot;
 	}
 
 	wxString game_args;

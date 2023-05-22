@@ -33,6 +33,7 @@
 #include "Sio.h"
 #include "HostDisplay.h"
 #include "SPU2/spu2.h"
+#include "iR5900.h"
 
 #ifndef PCSX2_CORE
 #include "gui/App.h"
@@ -616,8 +617,6 @@ static __fi void VSyncStart(u32 sCycle)
 		g_InputRecordingControls.HandlePausingAndLocking();
 	}
 
-	g_FrameStep.HandlePausing();
-
 #ifdef PCSX2_CORE
 	// Update vibration at the end of a frame.
 	PAD::Update();
@@ -682,12 +681,10 @@ static __fi void VSyncEnd(u32 sCycle)
 		g_InputRecordingControls.CheckPauseStatus();
 	}
 
-	g_FrameStep.CheckPauseStatus();
 
 	if(EmuConfig.Trace.Enabled && EmuConfig.Trace.EE.m_EnableAll)
 		SysTrace.EE.Counters.Write( "    ================  EE COUNTER VSYNC END (frame: %d)  ================", g_FrameCount );
 
-	g_FrameCount++;
 
 	hwIntcIrq(INTC_VBLANK_E);  // HW Irq
 	psxVBlankEnd(); // psxCounters vBlank End
@@ -752,6 +749,8 @@ __fi void rcntUpdate_vSync()
 	{
 		VSyncEnd(vsyncCounter.sCycle);
 
+		
+		g_FrameCount++;
 		vsyncCounter.sCycle += vSyncInfo.Blank;
 		vsyncCounter.CycleT = vSyncInfo.Render;
 		vsyncCounter.Mode = MODE_VRENDER;
@@ -767,6 +766,9 @@ __fi void rcntUpdate_vSync()
 	else	// VSYNC end / VRENDER begin
 	{
 		VSyncStart(vsyncCounter.sCycle);
+
+		g_FrameStep.CheckPauseStatus();
+		g_FrameStep.HandlePausing();
 
 		vsyncCounter.sCycle += vSyncInfo.Render;
 		vsyncCounter.CycleT = vSyncInfo.GSBlank;

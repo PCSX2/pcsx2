@@ -809,6 +809,7 @@ void GSFrame::CoreThread_OnStopped()
 // overrides base Show behavior.
 bool GSFrame::Show( bool shown )
 {
+	shown &= wxGetApp().HasGUI();
 	if( shown )
 	{
 		GSPanel* gsPanel = GetViewport();

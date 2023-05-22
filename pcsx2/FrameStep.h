@@ -31,6 +31,8 @@ public:
 	void Pause();
 	// Resume emulation when the next pcsx2 App event is handled
 	void Resume();
+	// Whether or not to sleep while waiting for resume or just eat cycles
+	void SetSleepWait(bool sleep);
 
 private:
 	// Indicates if the input recording controls have explicitly paused emulation or not
@@ -38,6 +40,7 @@ private:
 	// Indicates on the next VSync if we are frame advancing, this value
 	// and should be cleared once a single frame has passed
 	bool frameAdvancing = false;
+	bool sleepWhileWaiting = false;
 	u32 frame_advance_frame_counter = 0;
 	u32 frames_per_frame_advance = 1;
 	// Indicates if we intend to call CoreThread.PauseSelf() on the current or next available vsync

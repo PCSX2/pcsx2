@@ -286,8 +286,11 @@ void SysCoreThread::GameStartingInThread()
 	if (EmuConfig.EnablePINE && m_PineState == OFF)
 	{
 		m_PineState = ON;
-		m_pineServer = std::make_unique<PINEServer>(this, PINESettings::slot);
-		m_pineServer2 = std::make_unique<PINEServer>(this, PINESettings::slot+1);
+
+		int slot = PINESettings::slot;
+
+		m_pineServer = std::make_unique<PINEServer>(this, slot);
+		m_pineServer2 = std::make_unique<PINEServer>(this, slot + 1);
 	}
 	if (m_PineState == ON && m_pineServer->m_end)
 		m_pineServer->Start();
