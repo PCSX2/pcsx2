@@ -55,6 +55,7 @@ DebugNetworkServer::init(
 	const char* address
 )
 {
+	m_end.store(false, std::memory_order_release);
 	if (debugServerInterface == nullptr)
 	{
 		Console.WriteLn(Color_Red, "DebugNetworkServer: debug server interface is null! Shutting down...");
@@ -148,12 +149,17 @@ DebugNetworkServer::reviveConnection()
 		m_msgsock = accept(m_sock, 0, 0);
 #ifdef _WIN32
 		int errno_w = WSAGetLastError();
-		if (errno_w == WSAECONNRESET || errno_w == WSAEINTR || errno_w == WSAEINPROGRESS || errno_w == WSAEMFILE || errno_w == WSAEWOULDBLOCK)
-		{
+		bool notFailed = (errno_w == WSAECONNRESET || errno_w == WSAEINTR || errno_w == WSAEINPROGRESS || errno_w == WSAEMFILE || errno_w == WSAEWOULDBLOCK);
 #else
-		if (errno == ECONNABORTED || errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK)
-		{
+		bool notFailed = (errno == ECONNABORTED || errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK);
 #endif
+		if (errno_w == 0)
+		{
+			break;
+		}
+
+		if (notFailed)
+		{
 			Threading::Sleep(1);
 		}
 		else
@@ -161,6 +167,7 @@ DebugNetworkServer::reviveConnection()
 			Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to create socket (internal error)! Shutting down...");
 			return false;
 		}
+
 	} while (m_msgsock == (u64)-1);
 
 	u_long mode = 1;
@@ -266,7 +273,7 @@ DebugNetworkServer::serverLoop()
 
 bool DebugNetworkServer::receiveAndSendPacket()
 {
-	const auto receive_length = read_portable(m_msgsock, &m_recv_buffer[0], MAX_DEBUG_PACKET_SIZE);
+	const auto receive_length = read_portable(m_msgsock, &m_recv_buffer[0], MAX_DEBUG_PACKET_SIZE - 1);
 
 	// we recreate the socket if an error happens
 	if (receive_length <= 0)
@@ -287,6 +294,10 @@ bool DebugNetworkServer::receiveAndSendPacket()
 		return false;
 	}
 
+	m_recv_buffer[receive_length] = 0;
+	Console.WriteLn(Color_Orange, "recv");
+	Console.WriteLn(Color_Gray, "%s", (char*)&m_recv_buffer[0]);
+
 	std::size_t outSize = 0;
 	std::size_t offset = 0;
 	do
@@ -298,6 +309,10 @@ bool DebugNetworkServer::receiveAndSendPacket()
 			shutdown();
 			return false;
 		}
+
+		m_send_buffer[outSize] = 0;
+		Console.WriteLn(Color_Orange, "send");
+		Console.WriteLn(Color_Gray, "%s", m_send_buffer.data());
 
 		offset += localOffset;
 		while (true)

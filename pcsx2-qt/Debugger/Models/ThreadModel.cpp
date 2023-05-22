@@ -38,28 +38,28 @@ int ThreadModel::columnCount(const QModelIndex&) const
 QVariant ThreadModel::data(const QModelIndex& index, int role) const
 {
 	const auto threads = m_cpu.GetThreadList();
-	auto* const thread = threads.at(index.row()).get();
+	const auto& thread = threads.at(index.row());
 
 	if (role == Qt::DisplayRole)
 	{
 		switch (index.column())
 		{
 			case ThreadModel::ID:
-				return thread->TID();
+				return thread.TID();
 			case ThreadModel::PC:
 			{
-				if (thread->Status() == ThreadStatus::THS_RUN)
+				if (thread.Status() == ThreadStatus::THS_RUN)
 					return QtUtils::FilledQStringFromValue(m_cpu.getPC(), 16);
 
-				return QtUtils::FilledQStringFromValue(thread->PC(), 16);
+				return QtUtils::FilledQStringFromValue(thread.PC(), 16);
 			}
 			case ThreadModel::ENTRY:
-				return QtUtils::FilledQStringFromValue(thread->EntryPoint(), 16);
+				return QtUtils::FilledQStringFromValue(thread.EntryPoint(), 16);
 			case ThreadModel::PRIORITY:
-				return QString::number(thread->Priority());
+				return QString::number(thread.Priority());
 			case ThreadModel::STATE:
 			{
-				const auto& state = ThreadStateStrings.find(thread->Status());
+				const auto& state = ThreadStateStrings.find(thread.Status());
 				if (state != ThreadStateStrings.end())
 					return state->second;
 
@@ -67,7 +67,7 @@ QVariant ThreadModel::data(const QModelIndex& index, int role) const
 			}
 			case ThreadModel::WAIT_TYPE:
 			{
-				const auto& waitType = ThreadWaitStrings.find(thread->Wait());
+				const auto& waitType = ThreadWaitStrings.find(thread.Wait());
 				if (waitType != ThreadWaitStrings.end())
 					return waitType->second;
 
@@ -80,22 +80,22 @@ QVariant ThreadModel::data(const QModelIndex& index, int role) const
 		switch (index.column())
 		{
 			case ThreadModel::ID:
-				return thread->TID();
+				return thread.TID();
 			case ThreadModel::PC:
 			{
-				if (thread->Status() == ThreadStatus::THS_RUN)
+				if (thread.Status() == ThreadStatus::THS_RUN)
 					return m_cpu.getPC();
 
-				return thread->PC();
+				return thread.PC();
 			}
 			case ThreadModel::ENTRY:
-				return thread->EntryPoint();
+				return thread.EntryPoint();
 			case ThreadModel::PRIORITY:
-				return thread->Priority();
+				return thread.Priority();
 			case ThreadModel::STATE:
-				return static_cast<u32>(thread->Status());
+				return static_cast<u32>(thread.Status());
 			case ThreadModel::WAIT_TYPE:
-				return static_cast<u32>(thread->Wait());
+				return static_cast<u32>(thread.Wait());
 			default:
 				return QVariant();
 		}

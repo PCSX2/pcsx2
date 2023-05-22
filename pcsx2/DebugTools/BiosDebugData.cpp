@@ -19,9 +19,9 @@
 #include "Memory.h"
 
 
-std::vector<std::unique_ptr<BiosThread>> getEEThreads()
+std::vector<BiosThread> getEEThreads()
 {
-	std::vector<std::unique_ptr<BiosThread>> threads;
+	std::vector<BiosThread> threads;
 
 	if (CurrentBiosInformation.eeThreadListAddr <= 0)
 		return threads;
@@ -30,21 +30,19 @@ std::vector<std::unique_ptr<BiosThread>> getEEThreads()
 
 	for (int tid = 0; tid < 256; tid++)
 	{
-
 		EEInternalThread* internal = static_cast<EEInternalThread*>(PSM(start + tid * sizeof(EEInternalThread)));
 		if (internal->status != (int)ThreadStatus::THS_BAD)
 		{
-			auto thread = std::make_unique<EEThread>(tid, *internal);
-			threads.push_back(std::move(thread));
+			threads.emplace_back(EEThread(tid, *internal));
 		}
 	}
 
 	return threads;
 }
 
-std::vector<std::unique_ptr<BiosThread>> getIOPThreads()
+std::vector<BiosThread> getIOPThreads()
 {
-	std::vector<std::unique_ptr<BiosThread>> threads;
+	std::vector<BiosThread> threads;
 
 	if (CurrentBiosInformation.iopThreadListAddr <= 0)
 		return threads;
@@ -72,9 +70,7 @@ std::vector<std::unique_ptr<BiosThread>> getIOPThreads()
 		data.SavedSP = iopMemRead32(item + 0x10);
 
 		data.PC = iopMemRead32(data.SavedSP + 0x8c);
-
-		auto thread = std::make_unique<IOPThread>(data);
-		threads.push_back(std::move(thread));
+		threads.emplace_back(IOPThread(data));
 
 		item = iopMemRead32(item + 0x24);
 	}

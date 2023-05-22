@@ -103,18 +103,19 @@ class BiosThread
 {
 public:
 	virtual ~BiosThread() = default;
-	[[nodiscard]] virtual u32 TID() const = 0;
-	[[nodiscard]] virtual u32 PC() const = 0;
-	[[nodiscard]] virtual ThreadStatus Status() const = 0;
-	[[nodiscard]] virtual WaitState Wait() const = 0;
-	[[nodiscard]] virtual u32 EntryPoint() const = 0;
-	[[nodiscard]] virtual u32 StackTop() const = 0;
-	[[nodiscard]] virtual u32 Priority() const = 0;
+	[[nodiscard]] virtual u32 TID() const { return u32(-1); };
+	[[nodiscard]] virtual u32 PC() const { return u32(-1); };
+	[[nodiscard]] virtual ThreadStatus Status() const { return ThreadStatus::THS_BAD; };
+	[[nodiscard]] virtual WaitState Wait() const { return WaitState::NONE; };
+	[[nodiscard]] virtual u32 EntryPoint() const { return u32(-1); };
+	[[nodiscard]] virtual u32 StackTop() const { return u32(-1); };
+	[[nodiscard]] virtual u32 Priority() const { return u32(-1); };
 };
 
 class EEThread : public BiosThread
 {
 public:
+	EEThread(EEThread&&) = default;
 	EEThread(int tid, EEInternalThread th)
 		: tid(tid)
 		, data(th)
@@ -190,5 +191,5 @@ private:
 	IOPInternalThread data;
 };
 
-std::vector<std::unique_ptr<BiosThread>> getIOPThreads();
-std::vector<std::unique_ptr<BiosThread>> getEEThreads();
+std::vector<BiosThread> getIOPThreads();
+std::vector<BiosThread> getEEThreads();

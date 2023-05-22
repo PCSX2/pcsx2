@@ -61,7 +61,7 @@ protected:
 	bool receiveAndSendPacket();
 
 private:
-#define MAX_DEBUG_PACKET_SIZE 10240
+#define MAX_DEBUG_PACKET_SIZE 20480
 #define MAX_SIGNALS 16
 
 #ifdef _WIN32

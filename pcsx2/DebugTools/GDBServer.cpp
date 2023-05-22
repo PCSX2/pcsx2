@@ -19,8 +19,9 @@
 #undef min
 #undef max
 
+/*";QStartNoAckMode+" \*/
 #define GDB_FEATURES \
-	"PacketSize=1000"               /* required by GDB stub*/ \
+	"PacketSize=20000"              /* required by GDB stub*/ \
 	";Qbtrace:off-"                 /* required by GDB stub*/ \
 	";Qbtrace:bts-"                 /* required by GDB stub*/ \
 	";Qbtrace:pt-"                  /* required by GDB stub*/ \
@@ -28,7 +29,6 @@
 	";Qbtrace-conf:pt:size-"        /* required by GDB stub*/ \
 	";QCatchSyscalls-" \
 	";QPassSignals-" \
-	";QStartNoAckMode+" \
 	";qXfer:features:read+"\
 	";qXfer:threads:read+"\
 	";qXfer:libraries:read-"\
@@ -87,8 +87,8 @@ EncodeHex(
 {
 	for (size_t i = 0; i < inputSize; i++)
 	{
-		*output++ = ValueToASCII(input[i] >> 4);
-		*output++ = ValueToASCII(input[i]);
+		*output++ = ValueToASCII((input[i]) >> 4);
+		*output++ = ValueToASCII((input[i]) & 0xf);
 	}
 }
 
@@ -121,7 +121,8 @@ CalculateChecksum(
 	return checksum;
 }
 
-constexpr u8
+constexpr 
+u8
 CalculateChecksum(std::string_view data)
 {
 	return CalculateChecksum(data.data(), data.size());
@@ -231,12 +232,12 @@ GetFeatureString(DebugInterface* cpuInterface)
 	}
 
 	// adding support for 128-bit registers
-	featureString += "<vector id=\"v4f\" type=\"ieee_single\" count=\"4\"/>";
-	featureString += "<vector id=\"v2d\" type=\"ieee_double\" count=\"2\"/>";
-	featureString += "<vector id=\"v16i8\" type=\"int8\" count=\"16\"/>";
-	featureString += "<vector id=\"v8i16\" type=\"int16\" count=\"8\"/>";
-	featureString += "<vector id=\"v4i32\" type=\"int32\" count=\"4\"/>";
-	featureString += "<vector id=\"v2i64\" type=\"int64\" count=\"2\"/>";
+	featureString += "<vector id=\"v4f\" type=\"ieee_single\" count=\"4\"/>\n";
+	featureString += "<vector id=\"v2d\" type=\"ieee_double\" count=\"2\"/>\n";
+	featureString += "<vector id=\"v16i8\" type=\"int8\" count=\"16\"/>\n";
+	featureString += "<vector id=\"v8i16\" type=\"int16\" count=\"8\"/>\n";
+	featureString += "<vector id=\"v4i32\" type=\"int32\" count=\"4\"/>\n";
+	featureString += "<vector id=\"v2i64\" type=\"int64\" count=\"2\"/>\n";
 	featureString += "<union id=\"vec128\">\n";
 	featureString += "    <field name=\"v4_float\" type=\"v4f\"/>\n";
 	featureString += "    <field name=\"v2_double\" type=\"v2d\"/>\n";
@@ -291,9 +292,8 @@ GetCPUThreads(DebugInterface* cpuInterface)
 
 	for (const auto& threadHandle : cpuInterface->GetThreadList())
 	{
-		BiosThread* thread = threadHandle.get();
-		threadsString += "<thread id=\"" + std::to_string(thread->TID()) + "\"";
-		threadsString += " name=\"" + std::to_string(thread->EntryPoint()) + "\"";	
+		threadsString += "<thread id=\"" + std::to_string(threadHandle.TID()) + "\"";
+		threadsString += " name=\"" + std::to_string(threadHandle.EntryPoint()) + "\"";	
 	}
 	
 	if (!paused)
@@ -323,47 +323,34 @@ GDBServer::processPacket(
 )
 {
 	std::size_t offset = 0;
-	auto writeData = [outData, &outSize](const char* writeData, std::size_t size) -> bool  {
-		if (outSize + size >= MAX_DEBUG_PACKET_SIZE)
-		{
-			return false;
-		}
-
-		u8* data = (u8*)outData + outSize;
-		std::memcpy(&data[outSize], writeData, size);
-		outSize += size;
-		return true;
-	};
-
-	auto writePacketEnd = [outData, &outSize](u8 checksum) -> bool {
-		if (outSize + 3 >= MAX_DEBUG_PACKET_SIZE)
-		{	
-			return false;
-		}
-
-		u8* data = (u8*)outData + outSize;
-		*data++ = '#';
-		*data++ = ValueToASCII(checksum >> 4);
-		*data++ = ValueToASCII(checksum);
-		outSize += 3;
-		return true;
-	};
-
-	auto writeBaseResponse = [outData, &outSize, &writePacketEnd](const char* stringValue) -> bool {
+	auto writeBaseResponse = [this, outData, &outSize](const char* stringValue) -> bool {
 		const std::size_t stringSize = strlen(stringValue);
-		if (outSize + stringSize >= MAX_DEBUG_PACKET_SIZE)
+		if (outSize + stringSize + 3 >= MAX_DEBUG_PACKET_SIZE)
 		{
 			return false;
 		}
 
 		const u8 stringChecksum = CalculateChecksum(stringValue, strlen(stringValue));
 		char* data = (char*)outData + outSize;
+		if (!connected)
+		{
+			*data++ = '+';
+			outSize++;
+		}
+
+		*data++ = '$';
+		outSize++;
+
 		for (size_t i = 0; i < stringSize; i++)
 		{
 			*data++ = *stringValue++;
 		}
-	
-		return writePacketEnd(stringChecksum);
+
+		*data++ = '#';
+		*data++ = ValueToASCII((stringChecksum >> 4) & 0xf);
+		*data++ = ValueToASCII((stringChecksum)&0xf);
+		outSize += stringSize + 3;
+		return true;
 	};
 
 	while (offset < inSize)
@@ -375,6 +362,7 @@ GDBServer::processPacket(
 	if (offset == inSize)
 	{
 		// Maybe invalid data or something went wrong, don't care at this case
+		Console.WriteLn(Color_StrongOrange, "DebugNetworkServer: invalid GDB packet (no '$' was received).");
 		outSize = 0;
 		return std::size_t(-1);
 	}
@@ -391,7 +379,7 @@ GDBServer::processPacket(
 	{
 		// Final offset + 2 can't be bigger than size so this packet might 
 		// be invalid or doesn't contain any of checksum.
-		Console.WriteLn(Color_StrongOrange, "DebugNetworkServer: invalid GDB packet.");
+		Console.WriteLn(Color_StrongOrange, "DebugNetworkServer: invalid GDB packet (no '#' was received).");
 		return std::size_t(-1);
 	}
 
@@ -407,7 +395,7 @@ GDBServer::processPacket(
 		return std::size_t(-1);
 	}
 
-	auto processXferPacket = [this, outData, &outSize, &writePacketEnd, &writeBaseResponse](std::string_view data) -> bool {
+	auto processXferPacket = [this, outData, &outSize, &writeBaseResponse](std::string_view data) -> bool {
 		if (IsSameString(data, "features"))
 		{
 			std::string featuresString = GetFeatureString(m_debugInterface);
@@ -423,58 +411,58 @@ GDBServer::processPacket(
 		}
 
 		// we don't support other 
-		writePacketEnd(0);
+		writeBaseResponse("");
 		return false;
 	};
 
 	// true - continue packets processing
 	// false - stop and send packet as is
-	auto processQueryPacket = [outData, &outSize, &offset, &writeBaseResponse, &writePacketEnd, &processXferPacket](std::string_view data) -> bool {
+	auto processQueryPacket = [outData, &outSize, &offset, &writeBaseResponse, &processXferPacket](std::string_view data) -> bool {
 		if (data.empty())
 		{
 			writeBaseResponse("E01");
 			return false;
 		}
 
-		switch (data[0])
+		switch (data[1])
 		{
 			case 'C': // get current thread
 				break;
 			case 'S':
-				if (IsSameString(data, "Symbol:"))
+				if (IsSameString(data, "qSymbol:"))
 				{
 					writeBaseResponse("OK");
 					return false;
 				}
 
-				if (IsSameString(data, "Supported"))
+				if (IsSameString(data, "qSupported"))
 				{
 					writeBaseResponse(GDB_FEATURES);
 					return false;
 				}
-				
-				if (IsSameString(data, "Xfer"))
+				break;
+			case 'X':
+				if (IsSameString(data, "qXfer:"))
 				{
-					if (data.size() < 6)
+					if (data.size() < 7)
 					{
 						writeBaseResponse("E01");
 						return false;
 					}
 
-					return processXferPacket(std::string_view(data.data() + 5, data.size() - 5));
+					return processXferPacket(std::string_view(data.data() + 6, data.size() - 6));
 				}
-				break;
 
 			default:
 				break;
 		}
 
 		// we don't support this command rn
-		writePacketEnd(0);
+		writeBaseResponse("");
 		return false;
 	};
 	
-	auto processGeneralPacket = [this, &writePacketEnd, &writeBaseResponse](std::string_view data) -> bool {
+	auto processGeneralPacket = [this,&writeBaseResponse](std::string_view data) -> bool {
 		const std::string_view threadEventsString = "QThreadEvents:";
 		if (IsSameString(data, threadEventsString))
 		{
@@ -489,26 +477,28 @@ GDBServer::processPacket(
 				return false;
 			}
 
-		}
-
-		writePacketEnd(0);
-		return false;
-	};
-
-	auto processMultiLetterPacket = [this, &writePacketEnd, &writeBaseResponse](std::string_view data) -> bool {
-		if (!IsSameString(data, "vMustReplyEmpty"))
-		{
-			writePacketEnd(0);
+			writeBaseResponse("OK");
 			return false;
 		}
 
-		if (!IsSameString(data, "vCtrlC"))
+		writeBaseResponse("");
+		return false;
+	};
+
+	auto processMultiLetterPacket = [this, &writeBaseResponse](std::string_view data) -> bool {
+		if (IsSameString(data, "vMustReplyEmpty"))
+		{
+			writeBaseResponse("");
+			return false;
+		}
+
+		if (IsSameString(data, "vCtrlC"))
 		{
 			writeBaseResponse("OK");
 			return false;
 		}
 
-		if (!IsSameString(data, "vCont"))
+		if (IsSameString(data, "vCont"))
 		{
 			if (data[5] == '?')
 			{
@@ -551,7 +541,7 @@ GDBServer::processPacket(
 		}
 
 		// we don't support this command rn
-		writePacketEnd(0);
+		writeBaseResponse("");
 		return false;
 	};
 
@@ -566,7 +556,6 @@ GDBServer::processPacket(
 				return packetEnd;
 			break;
 		case 'q': // general query
-			offset++;
 			if (!processQueryPacket(data))
 				return packetEnd;
 			break;
@@ -604,13 +593,11 @@ GDBServer::processPacket(
 			break;
 		case 'X': // write binary memory
 			break;
-
 		default:
-			// we can't process this packet so we just push "end of the packet".
-			writePacketEnd(0);
-			return packetEnd;
+			break;
 	}
 
-	writePacketEnd(CalculateChecksum((char*)outData, outSize));
+	// we can't process this packet so we just push "end of the packet".
+	writeBaseResponse("");
 	return packetEnd;
 }
