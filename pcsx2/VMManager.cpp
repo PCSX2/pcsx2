@@ -49,6 +49,9 @@
 #include "USB/USB.h"
 #include "VMManager.h"
 #include "ps2/BiosTools.h"
+#include "DebugTools/MIPSAnalyst.h"
+#include "DebugTools/SymbolMap.h"
+#include "DebugTools/DebugServer.h"
 
 #include "common/Console.h"
 #include "common/FileSystem.h"
@@ -123,6 +126,9 @@ namespace VMManager
 	static void SetHardwareDependentDefaultSettings(SettingsInterface& si);
 	static void EnsureCPUInfoInitialized();
 	static void SetEmuThreadAffinities();
+
+	static void InitializeDebugServer();
+	static void ShutdownDebugServer();
 
 	static void InitializeDiscordPresence();
 	static void ShutdownDiscordPresence();
@@ -317,6 +323,7 @@ bool VMManager::Internal::CPUThreadInitialize()
 	// This also sorts out input sources.
 	LoadSettings();
 
+	InitializeDebugServer();
 	if (EmuConfig.Achievements.Enabled)
 		Achievements::Initialize();
 
@@ -335,6 +342,7 @@ void VMManager::Internal::CPUThreadShutdown()
 	s_pine_server.Deinitialize();
 
 	Achievements::Shutdown();
+	ShutdownDebugServer();
 
 	InputManager::CloseSources();
 	WaitForSaveStateFlush();
@@ -2378,6 +2386,18 @@ void VMManager::ReloadPINE()
 	{
 		s_pine_server.Deinitialize();
 	}
+}
+
+void VMManager::InitializeDebugServer()
+{
+	//if (EmuConfig.EnableGDB && debugNetworkServer.getPort() != EmuConfig.GDBSlot)
+	//{
+	
+	//}
+}
+
+void VMManager::ShutdownDebugServer()
+{
 }
 
 #ifdef ENABLE_DISCORD_PRESENCE

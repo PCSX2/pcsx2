@@ -14,7 +14,6 @@
  */
 #include "PrecompiledHeader.h"
 #include "DebugServer.h"
-#include "common/Threading.h"
 
 DebugNetworkServer debugNetworkServer;
 
@@ -116,6 +115,7 @@ DebugNetworkServer::init(
 	m_recv_buffer.resize(MAX_DEBUG_PACKET_SIZE);
 	m_send_buffer.resize(MAX_DEBUG_PACKET_SIZE);
 
+	m_port = port;
 	m_thread = std::thread(&DebugNetworkServer::serverLoop, this);
 	return true;
 }
@@ -157,6 +157,12 @@ int
 DebugNetworkServer::getNetworkStatus() const
 {
 	return 0;
+}
+
+int 
+DebugNetworkServer::getPort() const
+{
+	return m_port;
 }
 
 bool 

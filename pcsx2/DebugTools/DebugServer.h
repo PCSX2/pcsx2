@@ -14,6 +14,7 @@
  */
 #pragma once
 #include "DebugInterface.h"
+#include "common/Threading.h"
 #include <gsl/span>
 #ifdef _WIN32
 #include <WinSock2.h>
@@ -51,6 +52,7 @@ public:
 
 public:
 	int getNetworkStatus() const;
+	int getPort() const;
 	
 protected:
 	bool reviveConnection();
@@ -69,6 +71,7 @@ private:
 	int m_sock = 0;
 	int m_msgsock = 0;
 #endif
+	int m_port = -1;
 	u32 m_listenAddress = 0;
 	u32 m_signalCount = 0;
 	int m_signals[MAX_SIGNALS] = {};

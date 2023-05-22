@@ -1242,6 +1242,10 @@ struct Pcsx2Config
 		EnablePatches : 1, // enables patch detection and application
 		EnableCheats : 1, // enables cheat detection and application
 		EnablePINE : 1, // enables inter-process communication
+		EEEnableDebugServer : 1,
+		IOPEnableDebugServer : 1,
+		VU0EnableDebugServer : 1,
+		VU1EnableDebugServer : 1,
 		EnableWideScreenPatches : 1,
 		EnableNoInterlacingPatches : 1,
 		// TODO - Vaser - where are these settings exposed in the Qt UI?
@@ -1297,6 +1301,11 @@ struct Pcsx2Config
 	std::string GzipIsoIndexTemplate; // for quick-access index with gzipped ISO
 
 	int PINESlot;
+
+	int EEDebugServerSlot;
+	int IOPDebugServerSlot;
+	int VU0DebugServerSlot;
+	int VU1DebugServerSlot;
 
 	// Set at runtime, not loaded from config.
 	std::string CurrentBlockdump;

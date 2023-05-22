@@ -1329,6 +1329,10 @@ Pcsx2Config::Pcsx2Config()
 
 	GzipIsoIndexTemplate = "$(f).pindex.tmp";
 	PINESlot = 28011;
+	EEDebugServerSlot = 10501;
+	IOPDebugServerSlot = 10502;
+	VU0DebugServerSlot = 10503;
+	VU1DebugServerSlot = 10504;
 }
 
 void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
@@ -1346,6 +1350,10 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(EnablePatches);
 	SettingsWrapBitBool(EnableCheats);
 	SettingsWrapBitBool(EnablePINE);
+	SettingsWrapBitBool(EEEnableDebugServer);
+	SettingsWrapBitBool(IOPEnableDebugServer);
+	SettingsWrapBitBool(VU0EnableDebugServer);
+	SettingsWrapBitBool(VU1EnableDebugServer);
 	SettingsWrapBitBool(EnableWideScreenPatches);
 	SettingsWrapBitBool(EnableNoInterlacingPatches);
 	SettingsWrapBitBool(EnableRecordingTools);
@@ -1383,6 +1391,10 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 
 	SettingsWrapEntry(GzipIsoIndexTemplate);
 	SettingsWrapEntry(PINESlot);
+	SettingsWrapEntry(EEDebugServerSlot);
+	SettingsWrapEntry(IOPDebugServerSlot);
+	SettingsWrapEntry(VU0DebugServerSlot);
+	SettingsWrapEntry(VU1DebugServerSlot);
 
 	// For now, this in the derived config for backwards ini compatibility.
 	SettingsWrapEntryEx(CurrentBlockdump, "BlockDumpSaveDirectory");
@@ -1460,6 +1472,10 @@ bool Pcsx2Config::operator==(const Pcsx2Config& right) const
 		OpEqu(BaseFilenames) &&
 		OpEqu(GzipIsoIndexTemplate) &&
 		OpEqu(PINESlot);
+		OpEqu(EEDebugServerSlot);
+		OpEqu(IOPDebugServerSlot);
+		OpEqu(VU0DebugServerSlot);
+		OpEqu(VU1DebugServerSlot);
 	for (u32 i = 0; i < sizeof(Mcd) / sizeof(Mcd[0]); i++)
 	{
 		equal &= OpEqu(Mcd[i].Enabled);

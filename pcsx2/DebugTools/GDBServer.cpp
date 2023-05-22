@@ -283,6 +283,10 @@ GetCPUThreads(DebugInterface* cpuInterface)
 	if (!paused)
 	{
 		cpuInterface->pauseCpu();
+		while (cpuInterface->isCpuPaused())
+		{
+			Threading::Sleep(1);
+		}
 	}	
 
 	for (const auto& threadHandle : cpuInterface->GetThreadList())
@@ -298,6 +302,7 @@ GetCPUThreads(DebugInterface* cpuInterface)
 	}
 
 	threadsString += "</threads>\n";
+	return threadsString;
 }
 
 std::size_t 
@@ -461,9 +466,19 @@ GDBServer::processPacket(
 	};
 	
 	auto processGeneralPacket = [this, &writePacketEnd, &writeBaseResponse](std::string_view data) -> bool {
-		if (IsSameString(data, "QThreadEvents:"))
+		const std::string_view threadEventsString = "QThreadEvents:";
+		if (IsSameString(data, threadEventsString))
 		{
-			const char* eventsEnable = data.data() + 14;
+			const char* eventsEnableString = data.data() + threadEventsString.size();
+			if (*eventsEnableString == '1')
+				eventsEnabled = true;
+			else if (*eventsEnableString == '0')
+				eventsEnabled = false;
+			else
+			{
+				writeBaseResponse("E01");
+				return false;
+			}
 
 		}
 
@@ -505,16 +520,16 @@ GDBServer::processPacket(
 				{
 					case 'c':
 						writeBaseResponse("E01");
-						break;
+						return false;
 					case 's':
 						writeBaseResponse("E01");
-						break;
+						return false;
 					case 't':
 						writeBaseResponse("E01");
-						break;
+						return false;
 					case 'r':
 						writeBaseResponse("E01");
-						break;
+						return false;
 					default:
 						writeBaseResponse("E01");
 						return false;
