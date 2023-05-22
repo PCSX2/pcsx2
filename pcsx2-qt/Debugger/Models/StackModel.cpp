@@ -118,10 +118,10 @@ void StackModel::refreshData()
 	beginResetModel();
 	for (const auto& thread : m_cpu.GetThreadList())
 	{
-		if (thread.Status() == ThreadStatus::THS_RUN)
+		if (thread->Status() == ThreadStatus::THS_RUN)
 		{
 			m_stackFrames = MipsStackWalk::Walk(&m_cpu, m_cpu.getPC(), m_cpu.getRegister(0, 31), m_cpu.getRegister(0, 29),
-				thread.EntryPoint(), thread.StackTop());
+				thread->EntryPoint(), thread->StackTop());
 			break;
 		}
 	}

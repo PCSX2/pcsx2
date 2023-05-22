@@ -292,8 +292,8 @@ GetCPUThreads(DebugInterface* cpuInterface)
 
 	for (const auto& threadHandle : cpuInterface->GetThreadList())
 	{
-		threadsString += "<thread id=\"" + std::to_string(threadHandle.TID()) + "\"";
-		threadsString += " name=\"" + std::to_string(threadHandle.EntryPoint()) + "\"";	
+		threadsString += "<thread id=\"" + std::to_string(threadHandle->TID()) + "\"";
+		threadsString += " name=\"" + std::to_string(threadHandle->EntryPoint()) + "\"";	
 	}
 	
 	if (!paused)
