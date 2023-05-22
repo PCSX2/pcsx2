@@ -411,7 +411,11 @@ void LogSink::UpdateLogging(SettingsInterface& si)
 
 	const bool any_logging_sinks = system_console_enabled || file_logging_enabled;
 	DevConWriterEnabled = any_logging_sinks && (IsDevBuild || si.GetBoolValue("Logging", "EnableVerbose", false));
-	SysConsole.eeConsole.Enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableEEConsole", false);
+
+	const bool ee_console_enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableEEConsole", false);
+	SysConsole.eeConsole.Enabled = ee_console_enabled;
+	SysConsole.sysoutConsole.Enabled = ee_console_enabled;
+
 	SysConsole.iopConsole.Enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableIOPConsole", false);
 	SysTrace.IOP.R3000A.Enabled = true;
 	SysTrace.IOP.COP2.Enabled = true;
