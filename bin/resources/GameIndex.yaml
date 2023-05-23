@@ -36371,6 +36371,9 @@ SLPM-68005:
     mipmap: 1 # Fixes blurry textures. Full would be ideal here but causes broken face textures on Harry.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+SLPM-68008:
+  name: "Virtua Fighter - 10th Anniversary Edition"
+  region: "NTSC-J"
 SLPM-68017:
   name: "Shin Onimusha - Dawn of Dreams [Saikyou Save Data]"
   region: "NTSC-J"
