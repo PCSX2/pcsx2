@@ -262,15 +262,15 @@ namespace PatchFunc
 
 		std::string_view addr_end, data_end;
 		const std::optional<u32> addr = StringUtil::FromChars<u32>(pieces[2], 16, &addr_end);
-		const std::optional<u32> data = StringUtil::FromChars<u32>(pieces[4], 16, &data_end);
+		const std::optional<u64> data = StringUtil::FromChars<u64>(pieces[4], 16, &data_end);
 		if (!addr.has_value() || !addr_end.empty())
 		{
-			PATCH_ERROR("Malformed address '%.*s', a hex number is expected", static_cast<int>(pieces[2].size()), pieces[2].data());
+			PATCH_ERROR("Malformed address '%.*s', a hex number without prefix (e.g. 0123ABCD) is expected", static_cast<int>(pieces[2].size()), pieces[2].data());
 			return;
 		}
 		else if (!data.has_value() || !data_end.empty())
 		{
-			PATCH_ERROR("Malformed data '%.*s', a hex number is expected", static_cast<int>(pieces[4].size()), pieces[4].data());
+			PATCH_ERROR("Malformed data '%.*s', a hex number without prefix (e.g. 0123ABCD) is expected", static_cast<int>(pieces[4].size()), pieces[4].data());
 			return;
 		}
 
