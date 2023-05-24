@@ -245,21 +245,39 @@ namespace PatchFunc
 			return;
 		}
 
+		std::string_view placetopatch_end;
+		const std::optional<u32> placetopatch = StringUtil::FromChars<u32>(pieces[0], 10, &placetopatch_end);
+
 		IniPatch iPatch = {0};
 		iPatch.enabled = 0;
 		iPatch.placetopatch = StringUtil::FromChars<u32>(pieces[0]).value_or(_PPT_END_MARKER);
 
-		if (iPatch.placetopatch >= _PPT_END_MARKER)
+		if (!placetopatch.has_value() || !placetopatch_end.empty() ||
+			(iPatch.placetopatch = placetopatch.value()) >= _PPT_END_MARKER)
 		{
 			PATCH_ERROR("Invalid 'place' value '%.*s' (0 - once on startup, 1: continuously)",
 				static_cast<int>(pieces[0].size()), pieces[0].data());
 			return;
 		}
 
+		std::string_view addr_end, data_end;
+		const std::optional<u32> addr = StringUtil::FromChars<u32>(pieces[2], 16, &addr_end);
+		const std::optional<u32> data = StringUtil::FromChars<u32>(pieces[4], 16, &data_end);
+		if (!addr.has_value() || !addr_end.empty())
+		{
+			PATCH_ERROR("Malformed address '%.*s', a hex number is expected", static_cast<int>(pieces[2].size()), pieces[2].data());
+			return;
+		}
+		else if (!data.has_value() || !data_end.empty())
+		{
+			PATCH_ERROR("Malformed data '%.*s', a hex number is expected", static_cast<int>(pieces[4].size()), pieces[4].data());
+			return;
+		}
+
 		iPatch.cpu = (patch_cpu_type)PatchTableExecute(pieces[1], std::string_view(), cpuCore);
-		iPatch.addr = StringUtil::FromChars<u32>(pieces[2], 16).value_or(0);
+		iPatch.addr = addr.value();
 		iPatch.type = (patch_data_type)PatchTableExecute(pieces[3], std::string_view(), dataType);
-		iPatch.data = StringUtil::FromChars<u64>(pieces[4], 16).value_or(0);
+		iPatch.data = data.value();
 
 		if (iPatch.cpu == 0)
 		{
