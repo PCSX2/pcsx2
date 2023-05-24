@@ -35,6 +35,9 @@ DebugNetworkServer VU1DebugNetworkServer;
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #endif
 
 DebugNetworkServer::DebugNetworkServer()
@@ -84,8 +87,6 @@ DebugNetworkServer::shutdown()
 	{
 #ifdef _WIN32
 		WSACleanup();
-#else
-		unlink(m_socket_name.c_str());
 #endif
 
 		close_portable(m_sock);
@@ -134,7 +135,7 @@ DebugNetworkServer::reviveConnection()
 {
 	if (m_msgsock != 0)
 	{
-		closesocket(m_msgsock);
+		close_portable(m_msgsock);
 		m_msgsock = 0;
 	}
 
@@ -149,15 +150,14 @@ DebugNetworkServer::reviveConnection()
 		m_msgsock = accept(m_sock, 0, 0);
 #ifdef _WIN32
 		int errno_w = WSAGetLastError();
-		bool notFailed = (errno_w == WSAECONNRESET || errno_w == WSAEINTR || errno_w == WSAEINPROGRESS || errno_w == WSAEMFILE || errno_w == WSAEWOULDBLOCK);
-#else
-		bool notFailed = (errno == ECONNABORTED || errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK);
-#endif
 		if (errno_w == 0)
 		{
 			break;
 		}
-
+		bool notFailed = (errno_w == WSAECONNRESET || errno_w == WSAEINTR || errno_w == WSAEINPROGRESS || errno_w == WSAEMFILE || errno_w == WSAEWOULDBLOCK);
+#else
+		bool notFailed = (errno == ECONNABORTED || errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK);
+#endif
 		if (notFailed)
 		{
 			Threading::Sleep(1);
@@ -170,14 +170,13 @@ DebugNetworkServer::reviveConnection()
 
 	} while (m_msgsock == (u64)-1);
 
-	u_long mode = 1;
 #ifdef _WIN32
+	u_long mode = 1;
 	if (ioctlsocket(m_msgsock, FIONBIO, &mode) < 0)
 #else
-	if (fcntl(m_msgsock, O_NONBLOCK, &mode) < 0)
+	if (fcntl(m_msgsock, F_SETFL, fcntl(m_msgsock, F_GETFL) | O_NONBLOCK) < 0)
 #endif
 	{
-		int errno_w = WSAGetLastError();
 		Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to set socket as non-blocking! Shutting down...");
 		return false;
 	}
@@ -217,31 +216,36 @@ DebugNetworkServer::serverLoop()
 		return;
 	}
 #else
-	struct sockaddr_un server;
-	m_sock = socket(AF_UNIX, SOCK_STREAM, 0);
+	struct sockaddr_in server;
+	m_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (m_sock < 0)
 	{
 		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot open socket! Shutting down...");
 		shutdown();
-		return false;
+		return;
 	}
 
-	server.sun_family = AF_UNIX;
+	server.sin_family = AF_INET;
+	server.sin_addr.s_addr = 0;
+	if (!m_address.empty()) {
+		inet_pton(AF_INET, m_address.data(), &(server.sin_addr));
+	}
+	server.sin_port = htons(m_port);
+
 	if (bind(m_sock, (struct sockaddr*)&server, sizeof(struct sockaddr_un)))
 	{
 		Console.WriteLn(Color_Red, "DebugNetworkServer: Error while binding to socket! Shutting down...");
 		shutdown();
-		return false;
+		return;
 	}
 #endif
-	u_long mode = 1;
 #ifdef _WIN32
+	u_long mode = 1;
 	if (ioctlsocket(m_sock, FIONBIO, &mode) < 0)
 #else
-	if (fcntl(m_sock, O_NONBLOCK, &mode) < 0)
+	if (fcntl(m_msgsock, F_SETFL, fcntl(m_msgsock, F_GETFL) | O_NONBLOCK) < 0)
 #endif
 	{
-		int errno_w = WSAGetLastError();
 		Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to set socket as non-blocking! Shutting down...");
 	}
 

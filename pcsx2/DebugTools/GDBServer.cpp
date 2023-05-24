@@ -219,7 +219,7 @@ GetFeatureString(DebugInterface* cpuInterface)
 		}
 	};
 
-	featureString += "l<?target version=\"1.0\"?>";
+	featureString += "m<?target version=\"1.0\"?>";
 	featureString += "<!DOCTYPE target SYSTEM \"gdb-target.dtd\">";
 	if (cpuInterface->getCpuType() == BREAKPOINT_VU0 || cpuInterface->getCpuType() == BREAKPOINT_VU1)
 	{
@@ -261,7 +261,7 @@ GetFeatureString(DebugInterface* cpuInterface)
 				"<reg name=\"" + name + 
 				"\" bitsize=\"" + bitsize + 
 				"\" regnum=\"" + regnum + 
-				"\" group=\"" + group + 
+				"\" group=\"" + group + "\"" +
 				getRegisterType(cat == EECAT_VU0F ? true : false, cpuInterface->getRegisterSize(cat)) +
 				" />";
 		}
@@ -348,8 +348,8 @@ GDBServer::processPacket(
 		}
 
 		*data++ = '#';
-		*data++ = ValueToASCII((stringChecksum >> 4) & 0xf);
-		*data++ = ValueToASCII((stringChecksum)&0xf);
+		*data++ = ValueToASCII(	(stringChecksum >> 4)	& 0xf);
+		*data++ = ValueToASCII(	(stringChecksum)		& 0xf);
 		outSize += stringSize + 3;
 		return true;
 	};
@@ -458,6 +458,7 @@ GDBServer::processPacket(
 
 					return processXferPacket(std::string_view(data.data() + 6, data.size() - 6));
 				}
+				break;
 
 			default:
 				break;
