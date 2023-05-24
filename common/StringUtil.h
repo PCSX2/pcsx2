@@ -100,10 +100,7 @@ namespace StringUtil
 			return std::nullopt;
 
 		if (endptr)
-		{
-			const size_t remaining_len = end - ptr - 1;
-			*endptr = (remaining_len > 0) ? std::string_view(result.ptr, remaining_len) : std::string_view();
-		}
+			*endptr = (result.ptr < end) ? std::string_view(result.ptr, end - result.ptr) : std::string_view();
 
 		return value;
 	}
@@ -131,10 +128,7 @@ namespace StringUtil
 			return std::nullopt;
 
 		if (endptr)
-		{
-			const size_t remaining_len = end - ptr - 1;
-			*endptr = (remaining_len > 0) ? std::string_view(result.ptr, remaining_len) : std::string_view();
-		}
+			*endptr = (result.ptr < end) ? std::string_view(result.ptr, end - result.ptr) : std::string_view();
 
 		return value;
 	}
