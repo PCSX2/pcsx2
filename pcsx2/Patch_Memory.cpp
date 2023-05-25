@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
+#include "common/ByteSwap.h"
+
 #define _PC_	// disables MIPS opcode macros.
 
 #include "Common.h"
@@ -542,20 +544,20 @@ void _ApplyPatch(IniPatch *p)
 			handle_extended_t(p);
 			break;
 
-		case SHORT_LE_T:
-			ledata = SwapEndian(p->data, 16);
+		case SHORT_BE_T:
+			ledata = ByteSwap(static_cast<u16>(p->data));
 			if (memRead16(p->addr) != (u16)ledata)
 				memWrite16(p->addr, (u16)ledata);
 			break;
 
-		case WORD_LE_T:
-			ledata = SwapEndian(p->data, 32);
+		case WORD_BE_T:
+			ledata = ByteSwap(static_cast<u32>(p->data));
 			if (memRead32(p->addr) != (u32)ledata)
 				memWrite32(p->addr, (u32)ledata);
 			break;
 
-		case DOUBLE_LE_T:
-			ledata = SwapEndian(p->data, 64);
+		case DOUBLE_BE_T:
+			ledata = ByteSwap(p->data);
 			if (memRead64(p->addr) != (u64)ledata)
 				memWrite64(p->addr, (u64)ledata);
 			break;
@@ -605,18 +607,3 @@ void _ApplyDynaPatch(const DynamicPatch& patch, u32 address)
 		memWrite32(address + replacement.offset, replacement.value);
 	}
 }
-
-u64 SwapEndian(u64 InputNum, u8 BitLength)
-{
-	if (BitLength == 64) // DOUBLE_LE_T
-	{
-		InputNum = (InputNum & 0x00000000FFFFFFFF) << 32 | (InputNum & 0xFFFFFFFF00000000) >> 32; //Swaps 4 bytes
-	}
-	if ((BitLength == 32)||(BitLength==64)) // WORD_LE_T
-	{
-		InputNum = (InputNum & 0x0000FFFF0000FFFF) << 16 | (InputNum & 0xFFFF0000FFFF0000) >> 16; // Swaps 2 bytes
-	}
-	InputNum = (InputNum & 0x00FF00FF00FF00FF) << 8 | (InputNum & 0xFF00FF00FF00FF00) >> 8;   // Swaps 1 byte
-	return InputNum;
-}
-

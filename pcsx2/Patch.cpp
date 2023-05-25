@@ -60,9 +60,9 @@ static const PatchTextTable dataType[] =
 		{3, "word", nullptr},
 		{4, "double", nullptr},
 		{5, "extended", nullptr},
-		{6, "leshort", nullptr},
-		{7, "leword", nullptr},
-		{8, "ledouble", nullptr},
+		{6, "beshort", nullptr},
+		{7, "beword", nullptr},
+		{8, "bedouble", nullptr},
 		{0, nullptr, nullptr} // Array Terminator
 };
 
