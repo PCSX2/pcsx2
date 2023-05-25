@@ -395,8 +395,6 @@ void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadActio
 	              || stencil != m_current_render.stencil_target;
 	GSVector4 color_clear;
 	float depth_clear;
-	bool needs_color_clear = false;
-	bool needs_depth_clear = false;
 	// Depth and stencil might be the same, so do all invalidation checks before resetting invalidation
 #define CHECK_CLEAR(tex, load_action, clear, ClearGetter) \
 	if (tex) \
