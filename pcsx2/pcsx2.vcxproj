@@ -259,7 +259,6 @@
     <ClCompile Include="Mdec.cpp" />
     <ClCompile Include="MultipartFileReader.cpp" />
     <ClCompile Include="Patch.cpp" />
-    <ClCompile Include="Patch_Memory.cpp" />
     <ClCompile Include="PrecompiledHeader.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

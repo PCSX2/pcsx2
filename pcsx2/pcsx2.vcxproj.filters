@@ -692,9 +692,6 @@
     <ClCompile Include="GameDatabase.cpp">
       <Filter>Misc</Filter>
     </ClCompile>
-    <ClCompile Include="Patch_Memory.cpp">
-      <Filter>Misc</Filter>
-    </ClCompile>
     <ClCompile Include="IPU\IPUdma.cpp">
       <Filter>System\Ps2\IPU</Filter>
     </ClCompile>

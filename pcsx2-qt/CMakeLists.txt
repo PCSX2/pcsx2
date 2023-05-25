@@ -76,12 +76,19 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/FolderSettingsWidget.cpp
 	Settings/FolderSettingsWidget.h
 	Settings/FolderSettingsWidget.ui
+	Settings/GameCheatSettingsWidget.cpp
+	Settings/GameCheatSettingsWidget.h
+	Settings/GameCheatSettingsWidget.ui
 	Settings/GameFixSettingsWidget.cpp
 	Settings/GameFixSettingsWidget.h
 	Settings/GameFixSettingsWidget.ui
 	Settings/GameListSettingsWidget.cpp
 	Settings/GameListSettingsWidget.h
 	Settings/GameListSettingsWidget.ui
+	Settings/GamePatchDetailsWidget.ui
+	Settings/GamePatchSettingsWidget.cpp
+	Settings/GamePatchSettingsWidget.h
+	Settings/GamePatchSettingsWidget.ui
 	Settings/GameSummaryWidget.cpp
 	Settings/GameSummaryWidget.h
 	Settings/GameSummaryWidget.ui
@@ -116,6 +123,7 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/DEV9UiCommon.h
 	Settings/HddCreateQt.cpp
 	Settings/HddCreateQt.h
+	Settings/PatchDetailsWidget.ui
 	Settings/SettingsDialog.cpp
 	Settings/SettingsDialog.h
 	Settings/SettingsDialog.ui

@@ -84,7 +84,6 @@ namespace QtHost
 //////////////////////////////////////////////////////////////////////////
 // Local variable declarations
 //////////////////////////////////////////////////////////////////////////
-const IConsoleWriter* PatchesCon = &Console;
 static std::unique_ptr<QTimer> s_settings_save_timer;
 static std::unique_ptr<INISettingsInterface> s_base_settings_interface;
 static bool s_batch_mode = false;
@@ -671,7 +670,11 @@ void EmuThread::reloadPatches()
 	if (!VMManager::HasValidVM())
 		return;
 
-	VMManager::ReloadPatches(true, true);
+	Patch::ReloadPatches(true, false, true);
+
+	// Might change widescreen mode.
+	if (Patch::ReloadPatchAffectingOptions())
+		applySettings();
 }
 
 void EmuThread::reloadInputSources()

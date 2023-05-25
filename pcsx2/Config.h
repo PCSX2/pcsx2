@@ -623,6 +623,9 @@ struct Pcsx2Config
 		static constexpr float DEFAULT_FRAME_RATE_NTSC = 59.94f;
 		static constexpr float DEFAULT_FRAME_RATE_PAL = 50.00f;
 
+		static constexpr AspectRatioType DEFAULT_ASPECT_RATIO = AspectRatioType::RAuto4_3_3_2;
+		static constexpr GSInterlaceMode DEFAULT_INTERLACE_MODE = GSInterlaceMode::Automatic;
+
 		static constexpr int DEFAULT_VIDEO_CAPTURE_BITRATE = 6000;
 		static constexpr int DEFAULT_VIDEO_CAPTURE_WIDTH = 640;
 		static constexpr int DEFAULT_VIDEO_CAPTURE_HEIGHT = 480;
@@ -719,9 +722,9 @@ struct Pcsx2Config
 		float FramerateNTSC = DEFAULT_FRAME_RATE_NTSC;
 		float FrameratePAL = DEFAULT_FRAME_RATE_PAL;
 
-		AspectRatioType AspectRatio = AspectRatioType::RAuto4_3_3_2;
+		AspectRatioType AspectRatio = DEFAULT_ASPECT_RATIO;
 		FMVAspectRatioSwitchType FMVAspectRatioSwitch = FMVAspectRatioSwitchType::Off;
-		GSInterlaceMode InterlaceMode = GSInterlaceMode::Automatic;
+		GSInterlaceMode InterlaceMode = DEFAULT_INTERLACE_MODE;
 		GSPostBilinearMode LinearPresent = GSPostBilinearMode::BilinearSmooth;
 
 		float StretchY = 100.0f;
@@ -1306,6 +1309,9 @@ struct Pcsx2Config
 	void LoadSave(SettingsWrapper& wrap);
 	void LoadSaveMemcards(SettingsWrapper& wrap);
 
+	/// Reloads options affected by patches.
+	void ReloadPatchAffectingOptions();
+
 	std::string FullpathToBios() const;
 	std::string FullpathToMcd(uint slot) const;
 
@@ -1335,8 +1341,7 @@ namespace EmuFolders
 	extern std::string Langs;
 	extern std::string Logs;
 	extern std::string Cheats;
-	extern std::string CheatsWS;
-	extern std::string CheatsNI;
+	extern std::string Patches;
 	extern std::string Resources;
 	extern std::string Cache;
 	extern std::string Covers;

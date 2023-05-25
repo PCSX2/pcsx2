@@ -64,9 +64,29 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 				   .arg(m_ui.eeCycleRate->itemText(
 					   std::clamp(Host::GetBaseIntSettingValue("EmuCore/Speedhacks", "EECycleRate", DEFAULT_EE_CYCLE_RATE) - MINIMUM_EE_CYCLE_RATE,
 						   0, MAXIMUM_EE_CYCLE_RATE - MINIMUM_EE_CYCLE_RATE))));
+
+		// Disable cheats, use the cheats panel instead (move fastcvd up in its spot).
+		const int count = m_ui.systemSettingsLayout->count();
+		for (int i = 0; i < count; i++)
+		{
+			QLayoutItem* item = m_ui.systemSettingsLayout->itemAt(i);
+			if (item && item->widget() == m_ui.cheats)
+			{
+				int row, col, rowSpan, colSpan;
+				m_ui.systemSettingsLayout->getItemPosition(i, &row, &col, &rowSpan, &colSpan);
+				delete m_ui.systemSettingsLayout->takeAt(i);
+				m_ui.systemSettingsLayout->removeWidget(m_ui.fastCDVD);
+				m_ui.systemSettingsLayout->addWidget(m_ui.fastCDVD, row, col);
+				delete m_ui.cheats;
+				m_ui.cheats = nullptr;
+				break;
+			}
+		}
 	}
 	else
 	{
+		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cheats, "EmuCore", "EnableCheats", false);
+
 		// Allow for FastCDVD for per-game settings only
 		m_ui.systemSettingsLayout->removeWidget(m_ui.fastCDVD);
 		m_ui.fastCDVD->deleteLater();
@@ -84,7 +104,6 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 		m_dialog->setIntSettingValue("EmuCore/Speedhacks", "EECycleRate", value);
 	});
 
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cheats, "EmuCore", "EnableCheats", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hostFilesystem, "EmuCore", "HostFs", false);
 
 	dialog->registerWidgetHelp(m_ui.normalSpeed, tr("Normal Speed"), "100%",

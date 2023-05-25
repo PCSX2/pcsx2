@@ -107,9 +107,6 @@ namespace VMManager
 	/// Reloads game specific settings, and applys any changes present.
 	bool ReloadGameSettings();
 
-	/// Reloads cheats/patches. If verbose is set, the number of patches loaded will be shown in the OSD.
-	void ReloadPatches(bool verbose, bool show_messages_when_disabled);
-
 	/// Returns the save state filename for the given game serial/crc.
 	std::string GetSaveStateFileName(const char* game_serial, u32 game_crc, s32 slot);
 

@@ -48,7 +48,6 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <PreprocessorDefinitions>LZMA_API_STATIC;BUILD_DX=1;ENABLE_RAINTEGRATION;ENABLE_ACHIEVEMENTS;ENABLE_DISCORD_PRESENCE;ENABLE_OPENGL;ENABLE_VULKAN;SDL_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-
       <!-- Current Qt debug builds assert on RTTI. Remove this once we next build Qt. -->
       <RuntimeTypeInfo Condition="$(Configuration.Contains(Clang)) And $(Configuration.Contains(Debug))">true</RuntimeTypeInfo>
     </ClCompile>
@@ -85,6 +84,8 @@
     <ClCompile Include="QtProgressCallback.cpp" />
     <ClCompile Include="Settings\DebugSettingsWidget.cpp" />
     <ClCompile Include="Settings\FolderSettingsWidget.cpp" />
+    <ClCompile Include="Settings\GameCheatSettingsWidget.cpp" />
+    <ClCompile Include="Settings\GamePatchSettingsWidget.cpp" />
     <ClCompile Include="Settings\MemoryCardConvertWorker.cpp" />
     <ClCompile Include="Themes.cpp" />
     <ClCompile Include="Tools\InputRecording\InputRecordingViewer.cpp" />
@@ -162,6 +163,8 @@
     <ClInclude Include="Settings\ControllerSettingWidgetBinder.h" />
     <QtMoc Include="Settings\FolderSettingsWidget.h" />
     <QtMoc Include="Settings\DebugSettingsWidget.h" />
+    <QtMoc Include="Settings\GameCheatSettingsWidget.h" />
+    <QtMoc Include="Settings\GamePatchSettingsWidget.h" />
     <ClInclude Include="Settings\HddCreateQt.h" />
     <QtMoc Include="Settings\GameSummaryWidget.h" />
     <QtMoc Include="Settings\CreateMemoryCardDialog.h" />
@@ -211,7 +214,9 @@
     <ClCompile Include="$(IntDir)Settings\moc_InterfaceSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_SettingsDialog.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_AdvancedSettingsWidget.cpp" />
+    <ClCompile Include="$(IntDir)Settings\moc_GameCheatSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_GameFixSettingsWidget.cpp" />
+    <ClCompile Include="$(IntDir)Settings\moc_GamePatchSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_HotkeySettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_InputBindingDialog.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_InputBindingWidget.cpp" />
@@ -367,6 +372,12 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Settings\ControllerMouseSettingsDialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Settings\GameCheatSettingsWidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Settings\GamePatchSettingsWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
     <None Include="Settings\USBBindingWidget_DrivingForce.ui" />
