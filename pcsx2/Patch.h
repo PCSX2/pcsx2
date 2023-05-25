@@ -54,9 +54,9 @@ enum patch_data_type {
 	WORD_T,
 	DOUBLE_T,
 	EXTENDED_T,
-	SHORT_LE_T,
-	WORD_LE_T,
-	DOUBLE_LE_T
+	SHORT_BE_T,
+	WORD_BE_T,
+	DOUBLE_BE_T
 };
 
 // "place" is the first number at a pnach line (patch=<place>,...), e.g.:
@@ -146,8 +146,3 @@ extern const IConsoleWriter *PatchesCon;
 // regardless, they don't seem to have an implementation anywhere.
 // extern int  AddPatch(int Mode, int Place, int Address, int Size, u64 data);
 // extern void ResetPatch(void);
-
-// Swaps endianess of InputNum
-// ex. 01020304 -> 04030201
-// BitLength is length of InputNum in bits, ex. double,64  word,32  short,16
-extern u64 SwapEndian(u64 InputNum, u8 BitLength);
