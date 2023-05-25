@@ -64,6 +64,7 @@ target_sources(common PRIVATE
 	AlignedMalloc.h
 	Assertions.h
 	boost_spsc_queue.hpp
+	ByteSwap.h
 	Console.h
 	CrashHandler.h
 	DynamicLibrary.h
