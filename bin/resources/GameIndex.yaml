@@ -13177,6 +13177,17 @@ SLES-51341:
 SLES-51343:
   name: "Galerians - Ash"
   region: "PAL-M5"
+  patches:
+    1AE08CF5:
+      content: |-
+        author=kozarovv
+        // Floats workaround to make HW GSDX mode working.
+        // There is still overflow on GS, but this time GSDX can handle it just fine in HW mode.
+        patch=1,EE,001e7130,word,3c017e00
+        patch=1,EE,001e7138,word,44812800
+        patch=1,EE,001e7150,word,44813000
+        patch=1,EE,001e7160,word,44813800
+        patch=1,EE,001e7170,word,44810000
 SLES-51344:
   name: "Guilty Gear X2"
   region: "PAL-E"
@@ -38675,6 +38686,17 @@ SLPS-25118:
 SLPS-25119:
   name: "Galerians 2"
   region: "NTSC-J"
+  patches:
+    E8E54032:
+      content: |-
+        author=kozarovv, descawed
+        // Floats workaround to make HW GSDX mode working.
+        // There is still overflow on GS, but this time GSDX can handle it just fine in HW mode.
+        patch=1,EE,001da848,word,3c017e00
+        patch=1,EE,001da850,word,44812800
+        patch=1,EE,001da868,word,44813000
+        patch=1,EE,001da878,word,44813800
+        patch=1,EE,001da888,word,44810000
 SLPS-25120:
   name: "Gundam Gihren's Ambition"
   region: "NTSC-J"
