@@ -18,6 +18,7 @@
 #include "Common.h"
 #include "Gif_Unit.h"
 #include "MTVU.h"
+#include "VMManager.h"
 #include "x86/newVif.h"
 
 #include <thread>
@@ -107,6 +108,7 @@ void VU_Thread::Open()
 	Reset();
 	semaEvent.Reset();
 	m_shutdown_flag.store(false, std::memory_order_release);
+	m_thread.SetStackSize(VMManager::EMU_THREAD_STACK_SIZE);
 	m_thread.Start([this]() { ExecuteRingBuffer(); });
 }
 

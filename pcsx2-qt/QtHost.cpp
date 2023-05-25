@@ -116,6 +116,7 @@ void EmuThread::start()
 	pxAssertRel(!g_emu_thread, "Emu thread does not exist");
 
 	g_emu_thread = new EmuThread(QThread::currentThread());
+	g_emu_thread->setStackSize(VMManager::EMU_THREAD_STACK_SIZE);
 	g_emu_thread->QThread::start();
 	g_emu_thread->m_started_semaphore.acquire();
 	g_emu_thread->moveToThread(g_emu_thread);
