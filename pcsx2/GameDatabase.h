@@ -117,7 +117,7 @@ namespace GameDatabaseSchema
 		std::vector<std::pair<GSHWFixId, s32>> gsHWFixes;
 		std::vector<std::string> memcardFilters;
 		std::unordered_map<u32, std::string> patches;
-		std::vector<DynamicPatch> dynaPatches;
+		std::vector<Patch::DynamicPatch> dynaPatches;
 
 		// Returns the list of memory card serials as a `/` delimited string
 		std::string memcardFiltersAsString() const;

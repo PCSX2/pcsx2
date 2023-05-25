@@ -12,7 +12,7 @@
  *  You should have received a copy of the GNU General Public License along with PCSX2.
  *  If not, see <http://www.gnu.org/licenses/>.
  */
-
+	
 #include "PrecompiledHeader.h"
 
 #include "MainWindow.h"
@@ -26,8 +26,10 @@
 #include "Settings/DebugSettingsWidget.h"
 #include "Settings/EmulationSettingsWidget.h"
 #include "Settings/FolderSettingsWidget.h"
+#include "Settings/GameCheatSettingsWidget.h"
 #include "Settings/GameFixSettingsWidget.h"
 #include "Settings/GameListSettingsWidget.h"
+#include "Settings/GamePatchSettingsWidget.h"
 #include "Settings/GameSummaryWidget.h"
 #include "Settings/GraphicsSettingsWidget.h"
 #include "Settings/HotkeySettingsWidget.h"
@@ -106,11 +108,24 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 		tr("<strong>Emulation Settings</strong><hr>These options determine the configuration of frame pacing and game "
 		   "settings.<br><br>Mouse over an option for additional information."));
 
+	if (isPerGameSettings() && game && game->crc != 0)
+	{
+		addWidget(m_game_patch_settings_widget = new GamePatchSettingsWidget(game, this, m_ui.settingsContainer),
+			tr("Patches"), QStringLiteral("tools-line"),
+			tr("<strong>Patches</strong><hr>This section allows you to select optional patches to apply to the game, "
+			   "which may provide performance, visual, or gameplay improvements."));
+		addWidget(m_game_cheat_settings_widget = new GameCheatSettingsWidget(game, this, m_ui.settingsContainer),
+			tr("Cheats"), QStringLiteral("flask-line"),
+			tr("<strong>Cheats</strong><hr>This section allows you to select which cheats you wish to enable. You "
+			   "cannot enable/disable cheats without labels for old-format pnach files, those will automatically "
+			   "activate if the main cheat enable option is checked."));
+	}
+
 	// Only show the game fixes for per-game settings, there's really no reason to be setting them globally.
 	if (show_advanced_settings && isPerGameSettings())
 	{
 		addWidget(m_game_fix_settings_widget = new GameFixSettingsWidget(this, m_ui.settingsContainer), tr("Game Fixes"),
-			QStringLiteral("close-line"),
+			QStringLiteral("hammer-line"),
 			tr("<strong>Game Fixes Settings</strong><hr>Game Fixes can work around incorrect emulation in some titles.<br>However, they can "
 			   "also cause problems in games if used incorrectly.<br>It is best to leave them all disabled unless advised otherwise."));
 	}

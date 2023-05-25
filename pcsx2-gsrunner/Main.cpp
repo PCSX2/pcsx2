@@ -371,7 +371,6 @@ SysMtgsThread& GetMTGS()
 // Interface Stuff
 //////////////////////////////////////////////////////////////////////////
 
-const IConsoleWriter* PatchesCon = &Console;
 BEGIN_HOTKEY_LIST(g_host_hotkeys)
 END_HOTKEY_LIST()
 

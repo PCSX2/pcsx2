@@ -1694,7 +1694,7 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 	int count;
 
 	if (EmuConfig.EnablePatches)
-		ApplyDynamicPatches(pc);
+		Patch::ApplyDynamicPatches(pc);
 
 	// add breakpoint
 	if (!delayslot)

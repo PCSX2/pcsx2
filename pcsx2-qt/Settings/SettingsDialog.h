@@ -33,7 +33,9 @@ class InterfaceSettingsWidget;
 class GameListSettingsWidget;
 class EmulationSettingsWidget;
 class BIOSSettingsWidget;
+class GameCheatSettingsWidget;
 class GameFixSettingsWidget;
+class GamePatchSettingsWidget;
 class GraphicsSettingsWidget;
 class AudioSettingsWidget;
 class MemoryCardSettingsWidget;
@@ -61,7 +63,9 @@ public:
 	__fi GameListSettingsWidget* getGameListSettingsWidget() const { return m_game_list_settings; }
 	__fi BIOSSettingsWidget* getBIOSSettingsWidget() const { return m_bios_settings; }
 	__fi EmulationSettingsWidget* getEmulationSettingsWidget() const { return m_emulation_settings; }
+	__fi GameCheatSettingsWidget* getGameCheatSettingsWidget() const { return m_game_cheat_settings_widget; }
 	__fi GameFixSettingsWidget* getGameFixSettingsWidget() const { return m_game_fix_settings_widget; }
+	__fi GamePatchSettingsWidget* getGamePatchSettingsWidget() const { return m_game_patch_settings_widget; }
 	__fi GraphicsSettingsWidget* getGraphicsSettingsWidget() const { return m_graphics_settings; }
 	__fi AudioSettingsWidget* getAudioSettingsWidget() const { return m_audio_settings; }
 	__fi MemoryCardSettingsWidget* getMemoryCardSettingsWidget() const { return m_memory_card_settings; }
@@ -107,7 +111,7 @@ protected:
 private:
 	enum : u32
 	{
-		MAX_SETTINGS_WIDGETS = 12
+		MAX_SETTINGS_WIDGETS = 13
 	};
 
 	void setupUi(const GameList::Entry* game);
@@ -122,7 +126,9 @@ private:
 	GameListSettingsWidget* m_game_list_settings = nullptr;
 	BIOSSettingsWidget* m_bios_settings = nullptr;
 	EmulationSettingsWidget* m_emulation_settings = nullptr;
+	GameCheatSettingsWidget* m_game_cheat_settings_widget = nullptr;
 	GameFixSettingsWidget* m_game_fix_settings_widget = nullptr;
+	GamePatchSettingsWidget* m_game_patch_settings_widget = nullptr;
 	GraphicsSettingsWidget* m_graphics_settings = nullptr;
 	AudioSettingsWidget* m_audio_settings = nullptr;
 	MemoryCardSettingsWidget* m_memory_card_settings = nullptr;

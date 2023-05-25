@@ -37,6 +37,7 @@
 		<file>icons/black/svg/function-line.svg</file>
 		<file>icons/black/svg/gamepad-line.svg</file>
 		<file>icons/black/svg/global-line.svg</file>
+		<file>icons/black/svg/hammer-line.svg</file>
 		<file>icons/black/svg/hard-drive-2-line.svg</file>
 		<file>icons/black/svg/image-fill.svg</file>
 		<file>icons/black/svg/keyboard-line.svg</file>
@@ -55,6 +56,7 @@
 		<file>icons/black/svg/sd-card-line.svg</file>
 		<file>icons/black/svg/settings-3-line.svg</file>
 		<file>icons/black/svg/shut-down-line.svg</file>
+		<file>icons/black/svg/tools-line.svg</file>
 		<file>icons/black/svg/trophy-line.svg</file>
 		<file>icons/black/svg/tv-2-line.svg</file>
 		<file>icons/black/svg/usb-fill.svg</file>
@@ -101,6 +103,7 @@
 		<file>icons/white/svg/function-line.svg</file>
 		<file>icons/white/svg/gamepad-line.svg</file>
 		<file>icons/white/svg/global-line.svg</file>
+		<file>icons/white/svg/hammer-line.svg</file>
 		<file>icons/white/svg/hard-drive-2-line.svg</file>
 		<file>icons/white/svg/image-fill.svg</file>
 		<file>icons/white/svg/keyboard-line.svg</file>
@@ -119,6 +122,7 @@
 		<file>icons/white/svg/sd-card-line.svg</file>
 		<file>icons/white/svg/settings-3-line.svg</file>
 		<file>icons/white/svg/shut-down-line.svg</file>
+		<file>icons/white/svg/tools-line.svg</file>
 		<file>icons/white/svg/trophy-line.svg</file>
 		<file>icons/white/svg/tv-2-line.svg</file>
 		<file>icons/white/svg/usb-fill.svg</file>
