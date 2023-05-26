@@ -37,7 +37,7 @@ on:
         required: false
         type: string
         default: 3rdparty\qt\6.5.0\msvc2022_64
-      cheats_url:
+      patches_url:
         required: false
         type: string
         default: https://github.com/PCSX2/pcsx2_patches/releases/latest/download
@@ -84,11 +84,11 @@ jobs:
           7z x qt-*-x64.7z
           del qt-*-x64.7z
 
-      - name: Download cheats
+      - name: Download patches
         shell: cmd
         run: |
           cd bin/resources
-          aria2c -Z "${{ inputs.cheats_url }}/cheats_ni.zip" "${{ inputs.cheats_url }}/cheats_ws.zip"
+          aria2c -Z "${{ inputs.patches_url }}/patches.zip"
 
       - name: Generate CMake
         if: inputs.configuration == 'CMake'
