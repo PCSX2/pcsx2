@@ -149,6 +149,30 @@ void GSTextureCache::AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm
 	}
 }
 
+void  GSTextureCache::ResizeTarget(Target* t, GSVector4i rect, u32 tbp, u32 psm, u32 tbw)
+{
+	// Valid area isn't the whole texture anyway, no point in expanding.
+	if (t->m_valid.z < t->m_unscaled_size.x || t->m_valid.w < t->m_unscaled_size.y)
+		return;
+
+	const GSVector2i size_delta = { std::max(0, (rect.z - t->m_valid.z)), std::max(0, (rect.w - t->m_valid.w)) };
+	// If it's 1 row, it's probably the texture bounds accounting for bilinear, ignore it.
+	if (size_delta.x > 1 || size_delta.y > 1)
+	{
+		RGBAMask rgba;
+		rgba._u32 = GSUtil::GetChannelMask(t->m_TEX0.PSM);
+		// Dirty the expanded areas.
+		AddDirtyRectTarget(t, GSVector4i(t->m_valid.x, t->m_valid.w, t->m_valid.z + std::max(0, size_delta.x), t->m_valid.w + std::max(0, size_delta.y)), t->m_TEX0.PSM, t->m_TEX0.TBW, rgba);
+		AddDirtyRectTarget(t, GSVector4i(t->m_valid.z, t->m_valid.y, t->m_valid.z + std::max(0, size_delta.x), t->m_valid.w), t->m_TEX0.PSM, t->m_TEX0.TBW, rgba);
+		const GSVector4i valid_rect = { t->m_valid.x, t->m_valid.y, t->m_valid.z + std::max(0, size_delta.x), t->m_valid.w + std::max(0, size_delta.y) };
+		t->UpdateValidity(valid_rect);
+		t->UpdateValidBits(GSLocalMemory::m_psm[t->m_TEX0.PSM].fmsk);
+		GetTargetSize(tbp, tbw, psm, t->m_valid.z, t->m_valid.w);
+		const int new_w = std::max(t->m_unscaled_size.x, t->m_valid.z);
+		const int new_h = std::max(t->m_unscaled_size.y, t->m_valid.w);
+		t->ResizeTexture(new_w, new_h);
+	}
+}
 
 
 bool GSTextureCache::CanTranslate(u32 bp, u32 bw, u32 spsm, GSVector4i r, u32 dbp, u32 dpsm, u32 dbw)
@@ -550,7 +574,7 @@ __ri static GSTextureCache::Source* FindSourceInMap(const GIFRegTEX0& TEX0, cons
 	return nullptr;
 }
 
-GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, bool palette)
+GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const bool possible_shuffle, bool palette)
 {
 	if (GSConfig.UserHacks_DisableDepthSupport)
 	{
@@ -707,7 +731,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 	else
 	{
 		// This is a bit of a worry, since it could load junk from local memory... but it's better than skipping the draw.
-		return LookupSource(TEX0, TEXA, CLAMP, r, nullptr);
+		return LookupSource(TEX0, TEXA, CLAMP, r, nullptr, possible_shuffle);
 	}
 
 	ASSERT(src->m_texture);
@@ -716,7 +740,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 	return src;
 }
 
-GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const GSVector2i* lod)
+GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const GSVector2i* lod, const bool possible_shuffle)
 {
 	GL_CACHE("TC: Lookup Source <%d,%d => %d,%d> (0x%x, %s, BW: %u, CBP: 0x%x, TW: %d, TH: %d)", r.x, r.y, r.z, r.w, TEX0.TBP0, psm_str(TEX0.PSM), TEX0.TBW, TEX0.CBP, 1 << TEX0.TW, 1 << TEX0.TH);
 
@@ -789,10 +813,11 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				// We can render to the target as C32, but mask alpha, in which case, pretend like it doesn't have any.
 				const u32 t_psm = t->m_valid_alpha ? t->m_TEX0.PSM & ~0x1 : ((t->m_TEX0.PSM == PSMCT32) ? PSMCT24 : t->m_TEX0.PSM);
 				bool rect_clean = GSUtil::HasSameSwizzleBits(psm, t_psm);
-
-				if (rect_clean && bp >= t->m_TEX0.TBP0 && bp < t->UnwrappedEndBlock() && !t->m_dirty.empty() &&
-					(std::max(64U, bw * 64U) >> GSLocalMemory::m_psm[psm].info.pageShiftX()) ==
-						(std::max(64U, t->m_TEX0.TBW * 64U) >> GSLocalMemory::m_psm[t->m_TEX0.PSM].info.pageShiftX()))
+				const bool width_match = (std::max(64U, bw * 64U) >> GSLocalMemory::m_psm[psm].info.pageShiftX()) ==
+										 (std::max(64U, t->m_TEX0.TBW * 64U) >> GSLocalMemory::m_psm[t->m_TEX0.PSM].info.pageShiftX());
+				const bool tex_overlaps = bp >= t->m_TEX0.TBP0 && bp < t->UnwrappedEndBlock();
+				const bool real_fmt_match = (GSLocalMemory::m_psm[psm].trbpp == 16) == (t->m_32_bits_fmt == false);
+				if (rect_clean && tex_overlaps && !t->m_dirty.empty() && width_match)
 				{
 					GSVector4i new_rect = r;
 					bool partial = false;
@@ -871,31 +896,24 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					const u32 channels = t->m_dirty.GetDirtyChannels() & channel_mask;
 
 					// If the source is reading the rt, make sure it's big enough.
-					if (t && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
+					if (!possible_shuffle && t && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM) && real_fmt_match)
 					{
-						const GSVector2i size_delta = { (new_rect.z - t->m_valid.z), (new_rect.w - t->m_valid.w) };
-						if (size_delta.x > 0 || size_delta.y > 0)
-						{
-							RGBAMask rgba;
-							rgba._u32 = GSUtil::GetChannelMask(t->m_TEX0.PSM);
-							// Dirty the expanded areas.
-							AddDirtyRectTarget(t, GSVector4i(t->m_valid.x, t->m_valid.w, t->m_valid.z + std::max(0, size_delta.x), t->m_valid.w + std::max(0, size_delta.y)), t->m_TEX0.PSM, t->m_TEX0.TBW, rgba);
-							AddDirtyRectTarget(t, GSVector4i(t->m_valid.z, t->m_valid.y, t->m_valid.z + std::max(0, size_delta.x), t->m_valid.w + std::max(0, size_delta.y)), t->m_TEX0.PSM, t->m_TEX0.TBW, rgba);
-							const GSVector4i valid_rect = { t->m_valid.x, t->m_valid.y, t->m_valid.z + std::max(0, size_delta.x), t->m_valid.w + std::max(0, size_delta.y) };
-							t->UpdateValidity(valid_rect);
-							t->UpdateValidBits(GSLocalMemory::m_psm[t->m_TEX0.PSM].fmsk);
-							GetTargetSize(TEX0.TBP0, TEX0.TBW, TEX0.PSM, t->m_valid.z, t->m_valid.w);
-							const int new_w = std::max(t->m_unscaled_size.x, t->m_valid.z);
-							const int new_h = std::max(t->m_unscaled_size.y, t->m_valid.w);
-							t->ResizeTexture(new_w, new_h);
-						}
+						if (t->Overlaps(bp, bw, psm, new_rect))
+							ResizeTarget(t, new_rect, bp, psm, bw);
 					}
 					// If not all channels are clean/dirty or only part of the rect is dirty, we need to update the target.
 					if (((channels & channel_mask) != channel_mask || partial))
 						t->Update(false);
 				}
 				else
+				{
 					rect_clean = t->m_dirty.empty();
+					if (!possible_shuffle && rect_clean && bp == t->m_TEX0.TBP0 && t && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM) && width_match && real_fmt_match)
+					{
+						if(t->Overlaps(bp, bw, psm, r))
+							ResizeTarget(t, r, bp, psm, bw);
+					}
+				}
 
 				const bool t_clean = ((t->m_dirty.GetDirtyChannels() & GSUtil::GetChannelMask(psm)) == 0) || rect_clean;
 
@@ -1117,11 +1135,11 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 						GIFRegTEX0 depth_TEX0;
 						depth_TEX0.U32[0] = TEX0.U32[0] | (0x30u << 20u);
 						depth_TEX0.U32[1] = TEX0.U32[1];
-						return LookupDepthSource(depth_TEX0, TEXA, CLAMP, r);
+						return LookupDepthSource(depth_TEX0, TEXA, CLAMP, r, possible_shuffle);
 					}
 					else
 					{
-						return LookupDepthSource(TEX0, TEXA, CLAMP, r, true);
+						return LookupDepthSource(TEX0, TEXA, CLAMP, r, possible_shuffle, true);
 					}
 				}
 			}
