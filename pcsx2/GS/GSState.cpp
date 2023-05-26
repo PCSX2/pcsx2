@@ -3484,6 +3484,12 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 		if (linear)
 		{
 			st += GSVector4(-0.5f, 0.5f).xxyy();
+			
+			// If it's the start of the texture and our little adjustment is all that pushed it over, clamp it to 0.
+			// This stops the border check failing when using repeat but needed less than the full texture
+			// since this was making it take the full texture even though it wasn't needed.
+			if (((m_vt.m_min.t == GSVector4::zero()).mask() & 0x3) == 0x3)
+				st = st.max(GSVector4::zero());
 		}
 		else
 		{
