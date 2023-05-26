@@ -146,8 +146,6 @@ bool DebugNetworkServer::setupSockets()
 
 	if (!m_wsaInited)
 	{
-
-
 		m_wsaInited = true;
 	}
 
@@ -217,11 +215,10 @@ bool DebugNetworkServer::setupSockets()
 bool DebugNetworkServer::reviveConnection()
 {
 	if (m_msgsock != 0)
-	{
 		shutdown();
-		if (!setupSockets())
-			return false;
-	}
+	
+	if (!setupSockets())
+		return false;
 
 	Console.WriteLn(Color_Green, "DebugNetworkServer: [%s] waiting for any connection on port %u...", m_name.data(), m_port);
 	do
