@@ -42,12 +42,22 @@ DebugNetworkServer VU1DebugNetworkServer;
 
 DebugNetworkServer::DebugNetworkServer()
 {
-
+#if _WIN32
+	WSADATA wsa;
+	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+	{
+		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot initialize winsock! Shutting down...");
+	}
+#endif
 }
 
 DebugNetworkServer::~DebugNetworkServer()
 {
 	shutdown();
+
+#if _WIN32
+	WSACleanup();
+#endif
 }
 
 bool 
@@ -86,14 +96,6 @@ DebugNetworkServer::shutdown()
 
 	if (std::this_thread::get_id() == m_thread.get_id())
 	{
-#ifdef _WIN32
-		if (m_wsaInited)
-		{
-			WSACleanup();
-			m_wsaInited = false;
-		}
-#endif
-
 		close_portable(m_sock);
 		close_portable(m_msgsock);
 	} 
@@ -144,12 +146,7 @@ bool DebugNetworkServer::setupSockets()
 
 	if (!m_wsaInited)
 	{
-		WSADATA wsa;
-		if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-		{
-			Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot initialize winsock! Shutting down...");
-			return false;
-		}
+
 
 		m_wsaInited = true;
 	}
@@ -157,7 +154,7 @@ bool DebugNetworkServer::setupSockets()
 	m_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if ((m_sock == INVALID_SOCKET) || m_port > 65536)
 	{
-		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot open socket! Shutting down...");
+		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot open socket (%i)! Shutting down...", WSAGetLastError());
 		shutdown();
 		return false;
 	}
@@ -249,7 +246,7 @@ bool DebugNetworkServer::reviveConnection()
 		}
 		else
 		{
-			Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to create socket (internal error)! Shutting down...");
+			Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to create socket (internal error, %i)! Shutting down...");
 			return false;
 		}
 

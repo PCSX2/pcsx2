@@ -49,6 +49,54 @@
 	";TracepointSource-" \
 	";EnableDisableTracepoints-" 
 
+constexpr const char* mips3000Features = R"(
+<feature name="org.gnu.gdb.mips.cp0">
+  <reg name="status" bitsize="32" regnum="32"/>
+  <reg name="badvaddr" bitsize="32" regnum="35"/>
+  <reg name="cause" bitsize="32" regnum="36"/>
+</feature>
+
+<!-- We don't have an FPU, but gdb hardcodes one, and will choke if this section isn't present. -->
+<feature name="org.gnu.gdb.mips.fpu">
+  <reg name="f0" bitsize="32" type="ieee_single" regnum="38"/>
+  <reg name="f1" bitsize="32" type="ieee_single"/>
+  <reg name="f2" bitsize="32" type="ieee_single"/>
+  <reg name="f3" bitsize="32" type="ieee_single"/>
+  <reg name="f4" bitsize="32" type="ieee_single"/>
+  <reg name="f5" bitsize="32" type="ieee_single"/>
+  <reg name="f6" bitsize="32" type="ieee_single"/>
+  <reg name="f7" bitsize="32" type="ieee_single"/>
+  <reg name="f8" bitsize="32" type="ieee_single"/>
+  <reg name="f9" bitsize="32" type="ieee_single"/>
+  <reg name="f10" bitsize="32" type="ieee_single"/>
+  <reg name="f11" bitsize="32" type="ieee_single"/>
+  <reg name="f12" bitsize="32" type="ieee_single"/>
+  <reg name="f13" bitsize="32" type="ieee_single"/>
+  <reg name="f14" bitsize="32" type="ieee_single"/>
+  <reg name="f15" bitsize="32" type="ieee_single"/>
+  <reg name="f16" bitsize="32" type="ieee_single"/>
+  <reg name="f17" bitsize="32" type="ieee_single"/>
+  <reg name="f18" bitsize="32" type="ieee_single"/>
+  <reg name="f19" bitsize="32" type="ieee_single"/>
+  <reg name="f20" bitsize="32" type="ieee_single"/>
+  <reg name="f21" bitsize="32" type="ieee_single"/>
+  <reg name="f22" bitsize="32" type="ieee_single"/>
+  <reg name="f23" bitsize="32" type="ieee_single"/>
+  <reg name="f24" bitsize="32" type="ieee_single"/>
+  <reg name="f25" bitsize="32" type="ieee_single"/>
+  <reg name="f26" bitsize="32" type="ieee_single"/>
+  <reg name="f27" bitsize="32" type="ieee_single"/>
+  <reg name="f28" bitsize="32" type="ieee_single"/>
+  <reg name="f29" bitsize="32" type="ieee_single"/>
+  <reg name="f30" bitsize="32" type="ieee_single"/>
+  <reg name="f31" bitsize="32" type="ieee_single"/>
+
+  <reg name="fcsr" bitsize="32" group="float"/>
+  <reg name="fir" bitsize="32" group="float"/>
+</feature>
+)";
+
+
 constexpr
 u8
 ASCIIToValue(char symbol)
@@ -217,7 +265,7 @@ GetFeatureString(DebugInterface* cpuInterface)
 				case 64:
 					return isFloat ? " type=\"ieee_double\"" : " type=\"uint64\"";
 				case 128:
-					return isFloat ? " type=\"vec128\"" : " type=\"uint128\"";
+					return /*isFloat ? " type=\"vec128\"" :*/ " type=\"uint128\"";
 				default:
 					return "";
 					break;
@@ -230,16 +278,28 @@ GetFeatureString(DebugInterface* cpuInterface)
 	featureString += "<!DOCTYPE target SYSTEM \"gdb-target.dtd\">" NEW_LINE;
 	featureString += "<target version=\"1.0\">" NEW_LINE;
 	featureString += NEW_LINE;
-	if (cpuInterface->getCpuType() == BREAKPOINT_VU0 || cpuInterface->getCpuType() == BREAKPOINT_VU1)
+
+	switch (cpuInterface->getCpuType())
 	{
-		featureString += "<architecture>sonyvu</architecture>" NEW_LINE;
-		featureString += "<feature name=\"pcsx2.vu\">" NEW_LINE;
+		case BREAKPOINT_EE:
+			featureString += "<architecture>mips:5900</architecture>" NEW_LINE;
+			break;
+		case BREAKPOINT_IOP:
+			featureString += "<architecture>mips:3000</architecture>" NEW_LINE;
+			break;
+		case BREAKPOINT_IOP_AND_EE:
+			featureString += "<architecture>mips</architecture>" NEW_LINE;
+			break;
+		case BREAKPOINT_VU0:
+		case BREAKPOINT_VU1:
+			featureString += "<architecture>mips:vu</architecture>" NEW_LINE;
+			break;
+		default:
+			break;
 	}
-	else
-	{
-		featureString += "<architecture>mips:sony</architecture>" NEW_LINE;
-		featureString += "<feature name=\"org.gnu.gdb.mips.cpu\">" NEW_LINE;
-	}
+
+	featureString += "<osabi>none</osabi>" NEW_LINE;
+	featureString += NEW_LINE;
 
 	// adding support for 128-bit registers
 	featureString += "<vector id=\"v4f\" type=\"ieee_single\" count=\"4\"/>" NEW_LINE;
@@ -249,7 +309,7 @@ GetFeatureString(DebugInterface* cpuInterface)
 	featureString += "<vector id=\"v4i32\" type=\"int32\" count=\"4\"/>" NEW_LINE;
 	featureString += "<vector id=\"v2i64\" type=\"int64\" count=\"2\"/>" NEW_LINE;
 	featureString += NEW_LINE;
-
+	
 	featureString += "<union id=\"vec128\">" NEW_LINE;
 	featureString += "    <field name=\"v4_float\" type=\"v4f\"/>" NEW_LINE;
 	featureString += "    <field name=\"v2_double\" type=\"v2d\"/>" NEW_LINE;
@@ -263,45 +323,80 @@ GetFeatureString(DebugInterface* cpuInterface)
 
 	for (std::size_t cat = 0; cat < cpuInterface->getRegisterCategoryCount(); cat++)
 	{
-		if (cpuInterface->getCpuType() == BREAKPOINT_EE)
+		switch (cpuInterface->getCpuType())
 		{
-			switch (cat)
-			{
-				case EECAT_GPR:
-					featureString += "<feature name=\"org.gnu.gdb.mips.cpu\">" NEW_LINE;
-					break;
-				case EECAT_CP0:
-					featureString += "<feature name=\"org.gnu.gdb.mips.cp0\">" NEW_LINE;
-					break;
-				case EECAT_FPR:
-					featureString += "<feature name=\"org.gnu.gdb.mips.fpu\">" NEW_LINE;
-					break;
-				default:
-					continue;
-			} 
+			case BREAKPOINT_EE:
+				switch (cat)
+				{
+					case EECAT_GPR:
+						featureString += "<feature name=\"org.gnu.gdb.mips.cpu\">" NEW_LINE;
+						break;
+					case EECAT_CP0:
+						featureString += "<feature name=\"org.gnu.gdb.mips.cp0\">" NEW_LINE;
+						break;
+					case EECAT_FPR:
+						featureString += "<feature name=\"org.gnu.gdb.mips.fpu\">" NEW_LINE;
+						break;
+					default:
+						continue;
+				} 
 
-			std::string group = cpuInterface->getRegisterCategoryName(cat);
-			for (std::size_t i = 0; i < cpuInterface->getRegisterCount(cat); i++)
-			{
-				std::string name = cpuInterface->getRegisterName(cat, i);
-				std::string bitsize = std::to_string(cpuInterface->getRegisterSize(cat));
-				std::string regnum = std::to_string(GetRegisterNumber(cpuInterface, cat, i));
-				featureString +=
-					"    <reg name=\"" + name +
-					"\" bitsize=\"" + bitsize +
-					"\" regnum=\"" + regnum +
-					"\" group=\"" + group + "\"" +
-					getRegisterType((cat == EECAT_VU0F || cat == EECAT_FPR) ? true : false, cpuInterface->getRegisterSize(cat)) +
-					" />" NEW_LINE;
-			}
-
-			featureString += "</feature>" NEW_LINE;
-			featureString += NEW_LINE;	
+				break;
+			case BREAKPOINT_IOP:
+				switch (cat) 
+				{
+					case IOPCAT_GPR:
+						featureString += "<feature name=\"org.gnu.gdb.mips.cpu\">" NEW_LINE;
+						break;
+					default:
+						continue;
+				} 
+				break;
+			case BREAKPOINT_IOP_AND_EE:
+				featureString += "<feature name=\"org.gnu.gdb.mips.cpu\">" NEW_LINE;
+				break;
+			case BREAKPOINT_VU0:
+			case BREAKPOINT_VU1:
+				featureString += "<architecture>mips:vu</architecture>" NEW_LINE;
+				break;
+			default:
+				break;
 		}
-		else
-		{
 		
+		std::string group = cpuInterface->getRegisterCategoryName(cat);
+		for (std::size_t i = 0; i < cpuInterface->getRegisterCount(cat); i++)
+		{
+			std::string name = cpuInterface->getRegisterName(cat, i);
+			std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::tolower(c); });
+
+			std::string bitsize = std::to_string(cpuInterface->getRegisterSize(cat));
+			std::string regnum = std::to_string(GetRegisterNumber(cpuInterface, cat, i));
+			featureString +=
+				"    <reg name=\"" + name +
+				"\" bitsize=\"" + bitsize +
+				"\" regnum=\"" + regnum +
+				//"\" group=\"" + group + "\"" +
+				getRegisterType((cat == EECAT_VU0F || cat == EECAT_FPR) ? true : false, cpuInterface->getRegisterSize(cat)) +
+				" />" NEW_LINE;
 		}
+
+		featureString += "</feature>" NEW_LINE;
+		featureString += NEW_LINE;	
+	}
+
+	switch (cpuInterface->getCpuType())
+	{
+		case BREAKPOINT_EE:
+			break;
+		case BREAKPOINT_IOP:
+		case BREAKPOINT_IOP_AND_EE:
+			featureString += mips3000Features;
+			break;
+		case BREAKPOINT_VU0:
+		case BREAKPOINT_VU1:
+			break;
+		default:
+			break;
 	}
 
 	featureString += "</target>" NEW_LINE;	
