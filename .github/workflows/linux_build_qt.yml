@@ -28,7 +28,7 @@ on:
         required: false
         type: string
         default: ""
-      cheats_url:
+      patches_url:
         required: false
         type: string
         default: https://github.com/PCSX2/pcsx2_patches/releases/latest/download
@@ -93,10 +93,10 @@ jobs:
         if: steps.cache-deps.outputs.cache-hit != 'true'
         run: .github/workflows/scripts/linux/build-dependencies-qt.sh
 
-      - name: Download cheats
+      - name: Download patches
         run: |
           cd bin/resources
-          aria2c -Z "${{ inputs.cheats_url }}/cheats_ni.zip" "${{ inputs.cheats_url }}/cheats_ws.zip"
+          aria2c -Z "${{ inputs.patches_url }}/patches.zip"
 
       - name: Generate CMake
         env:
