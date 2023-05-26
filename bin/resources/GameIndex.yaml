@@ -26294,7 +26294,7 @@ SLPM-60255:
     getSkipCount: "GSC_SteambotChronicles" # Causes green (incorrect) water but removes depth and blur issues.
     roundSprite: 1 # Fixes colored 3D anaglyph bleeding effects.
 SLPM-60256:
-  name: "Dengeki D73 demo"
+  name: "Dengeki PS2 PlayStation D73"
   region: "NTSC-J"
 SLPM-60257:
   name: "Death by Degrees"
@@ -26350,6 +26350,9 @@ SLPM-60273:
 SLPM-60274:
   name: "Full House Kiss 2 [Trial]"
   region: "NTSC-J"
+SLPM-60275:
+  name: "Dengeki PS2 - PlayStation 2 Save Data Collection 2006"
+  region: "NTSC-J"
 SLPM-60277:
   name: "Jissen Pachi-Slot Hisshouhou! Hokuto no Ken Special Edition [Trial]"
   region: "NTSC-J"
@@ -26394,6 +26397,9 @@ SLPM-61018:
 SLPM-61035:
   name: "Anubis - Zone of the Enders [Trial]"
   region: "NTSC-J"
+SLPM-61038:
+  name: "Dengeki PS2 PlayStation D57"
+  region: "NTSC-J"
 SLPM-61039:
   name: "Gun Survivor 4 - BioHazard - Heroes Never Die [Demo]"
   region: "NTSC-J"
@@ -26408,7 +26414,10 @@ SLPM-61046:
   gsHWFixes:
     cpuCLUTRender: 2 # Fixes CLUT colours.
 SLPM-61051:
-  name: "Dengeki PS2 D61"
+  name: "Dengeki PS2 PlayStation D61"
+  region: "NTSC-J"
+SLPM-61065:
+  name: "Dengeki PS2 PlayStation D64"
   region: "NTSC-J"
 SLPM-61087:
   name: "Fullmetal Alchemist 2 - Curse of the Crimson Elixir [Trial]"
@@ -26428,6 +26437,9 @@ SLPM-61092:
     autoFlush: 2
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
+SLPM-61113:
+  name: "Dengeki PlayStation D77"
+  region: "NTSC-J"
 SLPM-61117:
   name: "Musashiden II - Blademaster [Trial]"
   region: "NTSC-J"
@@ -26508,6 +26520,9 @@ SLPM-61148:
   region: "NTSC-J"
   gsHWFixes:
     textureInsideRT: 1 # Fixes character layering issue.
+SLPM-61153:
+  name: "Dengeki PS2 PlayStation D92"
+  region: "NTSC-J"
 SLPM-61157:
   name: "Naruto Shippuuden - Narutimate Accel [Trial]"
   region: "NTSC-J"
@@ -26975,6 +26990,9 @@ SLPM-62180:
   name: "Simple 2000 Honkaku Shikou Series Vol. 1 - The Shogi"
   region: "NTSC-J"
   compat: 5
+SLPM-62181:
+  name: "Street Golfer"
+  region: "NTSC-J"
 SLPM-62182:
   name: "Top Gun - Ace of the Sky"
   region: "NTSC-J"
