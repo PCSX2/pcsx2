@@ -55,16 +55,17 @@ public:
 	int getPort() const;
 	
 protected:
+	bool setupSockets();
 	bool reviveConnection();
 	void serverLoop();
 
 	bool receiveAndSendPacket();
 
-private:
-#define MAX_DEBUG_PACKET_SIZE 20480
+#define MAX_DEBUG_PACKET_SIZE 0x47ff
 #define MAX_SIGNALS 16
 
 #ifdef _WIN32
+	bool m_wsaInited = false;
 	SOCKET m_sock = INVALID_SOCKET;
 	SOCKET m_msgsock = INVALID_SOCKET;
 #else

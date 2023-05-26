@@ -18,10 +18,11 @@
 #include "VMManager.h"
 #undef min
 #undef max
+#include <charconv>
 
 /*";QStartNoAckMode+" \*/
 #define GDB_FEATURES \
-	"PacketSize=14000"              /* required by GDB stub*/ \
+	"PacketSize=47ff"               /* required by GDB stub*/ \
 	";Qbtrace:off-"                 /* required by GDB stub*/ \
 	";Qbtrace:bts-"                 /* required by GDB stub*/ \
 	";Qbtrace:pt-"                  /* required by GDB stub*/ \
@@ -194,6 +195,8 @@ GetRegisterCategoryAndIndex(DebugInterface* cpuInterface, std::size_t number, st
 	return true;
 }
 
+#define NEW_LINE "\n"
+
 inline
 std::string
 GetFeatureString(DebugInterface* cpuInterface)
@@ -201,74 +204,107 @@ GetFeatureString(DebugInterface* cpuInterface)
 	std::string featureString;
 
 	auto getRegisterType = [](bool isFloat, std::size_t size) {
-		switch (size)
+		if (isFloat)
 		{
-			case 8:
-				return " type=\"uint8\"";
-			case 16:
-				return " type=\"uint16\"";
-			case 32:
-				return isFloat ? " type=\"ieee_single\"" : " type=\"uint32\"";
-			case 64:
-				return isFloat ? " type=\"ieee_double\"" : " type=\"uint64\"";
-			case 128:
-				return isFloat ? " type=\"vec128\"" : " type=\"uint128\"";
-			default:
-				return "";
-				break;
+			switch (size)
+			{
+				case 8:
+					return " type=\"uint8\"";
+				case 16:
+					return " type=\"uint16\"";
+				case 32:
+					return isFloat ? " type=\"ieee_single\"" : " type=\"uint32\"";
+				case 64:
+					return isFloat ? " type=\"ieee_double\"" : " type=\"uint64\"";
+				case 128:
+					return isFloat ? " type=\"vec128\"" : " type=\"uint128\"";
+				default:
+					return "";
+					break;
+			}
 		}
+		return "";
 	};
 
-	featureString += "m<?target version=\"1.0\"?>";
-	featureString += "<!DOCTYPE target SYSTEM \"gdb-target.dtd\">";
+	featureString += "<?xml version=\"1.0\"?>" NEW_LINE;
+	featureString += "<!DOCTYPE target SYSTEM \"gdb-target.dtd\">" NEW_LINE;
+	featureString += "<target version=\"1.0\">" NEW_LINE;
+	featureString += NEW_LINE;
 	if (cpuInterface->getCpuType() == BREAKPOINT_VU0 || cpuInterface->getCpuType() == BREAKPOINT_VU1)
 	{
-		featureString += "<architecture>sonyvu</architecture>";
-		featureString += "<feature name=\"pcsx2.vu\">";
+		featureString += "<architecture>sonyvu</architecture>" NEW_LINE;
+		featureString += "<feature name=\"pcsx2.vu\">" NEW_LINE;
 	}
 	else
 	{
-		featureString += "<architecture>mips:sony</architecture>";
-		featureString += "<feature name=\"pcsx2.mips\">";
+		featureString += "<architecture>mips:sony</architecture>" NEW_LINE;
+		featureString += "<feature name=\"org.gnu.gdb.mips.cpu\">" NEW_LINE;
 	}
 
 	// adding support for 128-bit registers
-	featureString += "<vector id=\"v4f\" type=\"ieee_single\" count=\"4\"/>";
-	featureString += "<vector id=\"v2d\" type=\"ieee_double\" count=\"2\"/>";
-	featureString += "<vector id=\"v16i8\" type=\"int8\" count=\"16\"/>";
-	featureString += "<vector id=\"v8i16\" type=\"int16\" count=\"8\"/>";
-	featureString += "<vector id=\"v4i32\" type=\"int32\" count=\"4\"/>";
-	featureString += "<vector id=\"v2i64\" type=\"int64\" count=\"2\"/>";
-	featureString += "<union id=\"vec128\">";
-	featureString +=     "<field name=\"v4_float\" type=\"v4f\"/>";
-	featureString +=     "<field name=\"v2_double\" type=\"v2d\"/>";
-	featureString +=     "<field name=\"v16_int8\" type=\"v16i8\"/>";
-	featureString +=     "<field name=\"v8_int16\" type=\"v8i16\"/>";
-	featureString +=     "<field name=\"v4_int32\" type=\"v4i32\"/>";
-	featureString +=     "<field name=\"v2_int64\" type=\"v2i64\"/>";
-	featureString +=     "<field name=\"uint128\" type=\"uint128\"/>";
-	featureString += "</union>";
+	featureString += "<vector id=\"v4f\" type=\"ieee_single\" count=\"4\"/>" NEW_LINE;
+	featureString += "<vector id=\"v2d\" type=\"ieee_double\" count=\"2\"/>" NEW_LINE;
+	featureString += "<vector id=\"v16i8\" type=\"int8\" count=\"16\"/>" NEW_LINE;
+	featureString += "<vector id=\"v8i16\" type=\"int16\" count=\"8\"/>" NEW_LINE;
+	featureString += "<vector id=\"v4i32\" type=\"int32\" count=\"4\"/>" NEW_LINE;
+	featureString += "<vector id=\"v2i64\" type=\"int64\" count=\"2\"/>" NEW_LINE;
+	featureString += NEW_LINE;
+
+	featureString += "<union id=\"vec128\">" NEW_LINE;
+	featureString += "    <field name=\"v4_float\" type=\"v4f\"/>" NEW_LINE;
+	featureString += "    <field name=\"v2_double\" type=\"v2d\"/>" NEW_LINE;
+	featureString += "    <field name=\"v16_int8\" type=\"v16i8\"/>" NEW_LINE;
+	featureString += "    <field name=\"v8_int16\" type=\"v8i16\"/>" NEW_LINE;
+	featureString += "    <field name=\"v4_int32\" type=\"v4i32\"/>" NEW_LINE;
+	featureString += "    <field name=\"v2_int64\" type=\"v2i64\"/>" NEW_LINE;
+	featureString += "    <field name=\"uint128\" type=\"uint128\"/>" NEW_LINE;
+	featureString += "</union>" NEW_LINE;
+	featureString += NEW_LINE;
 
 	for (std::size_t cat = 0; cat < cpuInterface->getRegisterCategoryCount(); cat++)
 	{
-		std::string group = cpuInterface->getRegisterCategoryName(cat);
-		for (std::size_t i = 0; i < cpuInterface->getRegisterCount(cat); i++)
+		if (cpuInterface->getCpuType() == BREAKPOINT_EE)
 		{
-			std::string name = cpuInterface->getRegisterName(cat, i);
-			std::string bitsize = std::to_string(cpuInterface->getRegisterSize(cat));
-			std::string regnum = std::to_string(GetRegisterNumber(cpuInterface, cat, i));
-			featureString += 
-				"<reg name=\"" + name + 
-				"\" bitsize=\"" + bitsize + 
-				"\" regnum=\"" + regnum + 
-				"\" group=\"" + group + "\"" +
-				getRegisterType(cat == EECAT_VU0F ? true : false, cpuInterface->getRegisterSize(cat)) +
-				" />";
+			switch (cat)
+			{
+				case EECAT_GPR:
+					featureString += "<feature name=\"org.gnu.gdb.mips.cpu\">" NEW_LINE;
+					break;
+				case EECAT_CP0:
+					featureString += "<feature name=\"org.gnu.gdb.mips.cp0\">" NEW_LINE;
+					break;
+				case EECAT_FPR:
+					featureString += "<feature name=\"org.gnu.gdb.mips.fpu\">" NEW_LINE;
+					break;
+				default:
+					continue;
+			} 
+
+			std::string group = cpuInterface->getRegisterCategoryName(cat);
+			for (std::size_t i = 0; i < cpuInterface->getRegisterCount(cat); i++)
+			{
+				std::string name = cpuInterface->getRegisterName(cat, i);
+				std::string bitsize = std::to_string(cpuInterface->getRegisterSize(cat));
+				std::string regnum = std::to_string(GetRegisterNumber(cpuInterface, cat, i));
+				featureString +=
+					"    <reg name=\"" + name +
+					"\" bitsize=\"" + bitsize +
+					"\" regnum=\"" + regnum +
+					"\" group=\"" + group + "\"" +
+					getRegisterType((cat == EECAT_VU0F || cat == EECAT_FPR) ? true : false, cpuInterface->getRegisterSize(cat)) +
+					" />" NEW_LINE;
+			}
+
+			featureString += "</feature>" NEW_LINE;
+			featureString += NEW_LINE;	
+		}
+		else
+		{
+		
 		}
 	}
 
-	featureString += "</feature>";
-	featureString += "</target>";
+	featureString += "</target>" NEW_LINE;	
 
 	return featureString;
 }
@@ -309,6 +345,7 @@ GetCPUThreads(DebugInterface* cpuInterface)
 GDBServer::GDBServer(DebugInterface* debugInterface)
 {
 	m_debugInterface = debugInterface;
+	m_featuresString = GetFeatureString(m_debugInterface);
 }
 
 GDBServer::~GDBServer()
@@ -324,38 +361,85 @@ GDBServer::processPacket(
 )
 {
 	std::size_t offset = 0;
-	auto writeBaseResponse = [this, outData, &outSize](const char* stringValue) -> bool {
-		const std::size_t stringSize = strlen(stringValue);
-		if (outSize + stringSize + 3 >= MAX_DEBUG_PACKET_SIZE)
+	auto makeStringView = [](std::string_view data, std::size_t& offset, char symbol, char nextSymbol, bool notEqual = false) -> std::string_view {
+		const std::size_t beginIndex = data.find_first_of(symbol, offset);
+		const std::size_t endIndex = nextSymbol == '\0' ? data.size() : (
+			notEqual ? 
+			data.find_first_not_of(nextSymbol, beginIndex + 1) : 
+			data.find_first_of(nextSymbol, beginIndex + 1)
+		);
+
+		if (beginIndex == std::size_t(-1) || endIndex == std::size_t(-1))
+		{
+			return {};
+		}
+
+		offset = endIndex;
+		return std::string_view(data.data() + beginIndex + 1, endIndex - beginIndex - 1);
+	};
+
+	auto writePacketData = [this, outData, &outSize](const char* data, std::size_t size)->bool {
+		if (outSize + size >= MAX_DEBUG_PACKET_SIZE)
 		{
 			return false;
 		}
 
-		const u8 stringChecksum = CalculateChecksum(stringValue, strlen(stringValue));
-		char* data = (char*)outData + outSize;
-		if (!connected)
+		std::memcpy((char*)outData + outSize, data, size);
+		outSize += size;
+		return true;
+	};
+
+	auto writePacketBegin = [this, outData, &outSize]() -> bool {
+		if (outSize + (m_connected ? 1 : 2) >= MAX_DEBUG_PACKET_SIZE)
 		{
-			*data++ = '+';
-			outSize++;
+			return false;
 		}
 
-		*data++ = '$';
-		outSize++;
-
-		for (size_t i = 0; i < stringSize; i++)
+		char* writeData = reinterpret_cast<char*>(outData) + outSize;
+		if (!m_connected)
 		{
-			*data++ = *stringValue++;
+			writeData[outSize++] = '+';
 		}
 
+		writeData[outSize++] = '$';
+		return true;
+	};
+
+	auto writePacketEnd = [this, outData, &outSize]() -> bool {
+		if (outSize + 3 >= MAX_DEBUG_PACKET_SIZE)
+		{
+			return false;
+		}
+
+		char* data = reinterpret_cast<char*>(outData);
+		const u8 checksum = CalculateChecksum(data + (m_connected ? 1 : 2), outSize - (m_connected ? 1 : 2));
+
+		data += outSize;
 		*data++ = '#';
-		*data++ = ValueToASCII(	(stringChecksum >> 4)	& 0xf);
-		*data++ = ValueToASCII(	(stringChecksum)		& 0xf);
-		outSize += stringSize + 3;
+		*data++ = ValueToASCII((checksum >> 4) & 0xf);
+		*data++ = ValueToASCII((checksum)&0xf);
+		outSize += 3;
+
+		return true;
+	};
+
+	auto writeBaseResponse = [this, outData, &outSize, &writePacketBegin, &writePacketData, &writePacketEnd](std::string_view stringValue) -> bool {
+		if (!writePacketBegin())
+			return false;
+
+		if (!writePacketData(stringValue.data(), stringValue.size()))
+			return false;
+
+		if (!writePacketEnd())
+			return false;
+
 		return true;
 	};
 
 	if (inSize == 1 && (*inData == '+' || *inData == '-'))
 	{
+		char* writeData = reinterpret_cast<char*>(outData);
+		writeData[outSize++] = *inData;
 		return inSize;
 	}
 
@@ -400,9 +484,63 @@ GDBServer::processPacket(
 		Console.WriteLn(Color_StrongOrange, "DebugNetworkServer: invalid GDB checksum (%u != %u).", calculatedChecksum, readedChecksum);
 		return std::size_t(-1);
 	}
+	auto processXferPacket = [this, outData, &outSize, &writeBaseResponse, &writePacketBegin, &writePacketData, &writePacketEnd, makeStringView](std::string_view data) -> bool {
+		std::size_t localOffset = 0;
+		const auto verbString = makeStringView(data, localOffset, ':', ':');
+		const auto sentenceString = std::string_view(data.data(), localOffset - verbString.size() - 1);
+		const auto annexString = makeStringView(data, localOffset, ':', ':');
+		const auto offsetString = makeStringView(data, localOffset, ':', ',');
+		const auto lengthString = makeStringView(data, localOffset, ',', '\0');
+		if (verbString.empty() || annexString.empty() || offsetString.empty() || lengthString.empty())
+		{
+			writeBaseResponse("E01");
+			return false;
+		}
 
-	auto processXferPacket = [this, outData, &outSize, &writeBaseResponse](std::string_view data) -> bool {
-		if (IsSameString(data, "features"))
+		std::size_t offset = 0;
+		std::size_t length = 0;
+		if (std::from_chars(offsetString.data(), offsetString.data() + offsetString.size(), offset, 16).ec != std::errc())
+		{
+			writeBaseResponse("E01");
+			return false;
+		}	
+		
+		if (std::from_chars(lengthString.data(), lengthString.data() + lengthString.size(), length, 16).ec != std::errc())
+		{
+			writeBaseResponse("E01");
+			return false;
+		}
+
+		if (IsSameString(sentenceString, "features"))
+		{
+			char firstSymbol = 'm';
+			if (m_featuresString.size() - offset < length)
+			{
+				offset = std::min(m_featuresString.size() - 1, offset);
+				length = m_featuresString.size() - offset;
+				firstSymbol = 'l';
+			}
+
+			bool success = writePacketBegin();
+			success |= writePacketData(&firstSymbol, 1);
+			success |= writePacketData(m_featuresString.data() + offset, length);
+			success |= writePacketEnd();
+
+			if (!success)
+			{
+				outSize = 0;
+				writeBaseResponse("E01");
+			}
+
+			return false;
+		}
+		
+		if (IsSameString(sentenceString, "threads"))
+		{
+		}
+
+		/*
+		if (IsSameString(data, featuresRequestString))
 		{
 			std::string featuresString = GetFeatureString(m_debugInterface);
 			writeBaseResponse(featuresString.c_str());
@@ -415,6 +553,7 @@ GDBServer::processPacket(
 			writeBaseResponse(threadsString.c_str());
 			return false;
 		}
+		*/
 
 		// we don't support other 
 		writeBaseResponse("");
@@ -475,9 +614,9 @@ GDBServer::processPacket(
 		{
 			const char* eventsEnableString = data.data() + threadEventsString.size();
 			if (*eventsEnableString == '1')
-				eventsEnabled = true;
+				m_eventsEnabled = true;
 			else if (*eventsEnableString == '0')
-				eventsEnabled = false;
+				m_eventsEnabled = false;
 			else
 			{
 				writeBaseResponse("E01");
@@ -509,7 +648,7 @@ GDBServer::processPacket(
 		{
 			if (data[5] == '?')
 			{
-				writeBaseResponse("vCont;c;s;t;r");
+				writeBaseResponse("vCont;c;C;s;S;t");
 				return false;
 			}
 

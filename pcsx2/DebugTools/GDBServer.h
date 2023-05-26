@@ -15,7 +15,7 @@
 #pragma once 
 #include "DebugServer.h"
 
-class GDBServer : public DebugServerInterface
+class GDBServer final : public DebugServerInterface
 {
 public:
 	GDBServer(DebugInterface* debugInterface);
@@ -23,6 +23,7 @@ public:
 	std::size_t processPacket(const char* inData, std::size_t inSize, void* outData, std::size_t& outSize) override;
 
 private:
-	bool eventsEnabled = false;
-	bool connected = false;
+	std::string m_featuresString;
+	bool m_eventsEnabled = false;
+	bool m_connected = false;
 };
