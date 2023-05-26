@@ -50,6 +50,9 @@
 #include <GS/Renderers/Common/GSTexture.h>
 #include <GS/Renderers/Common/GSDevice.h>
 
+#include "GS/Renderers/Common/GSRenderer.h"
+#include <Host.h>
+
 extern u8 FRAME_BUFFER_COPY[];
 extern int FRAME_BUFFER_COPY_ACTIVE;
 
@@ -590,10 +593,28 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 
 			switch (settingId)
 			{
-				case DynamicSettingFrameSleepWait: // frame sleep wait
+				case DynamicSettingFrameSleepWait:
 				{
 					const u8 value = FromArray<u8>(&buf[buf_cnt], 1);
 					g_FrameStep.SetSleepWait(value != 0);
+					buf_cnt += 1;
+					break;
+				}
+				case DynamicSettingDisableRendering:
+				{
+					const u8 value = FromArray<u8>(&buf[buf_cnt], 1);
+
+					// switch if rendering has changed
+					if (g_gs_renderer && ((GSConfig.Renderer == GSRendererType::Null && !value) || (GSConfig.Renderer != GSRendererType::Null && value)))
+					{
+						Console.WriteLn("DynamicSettingDisableRendering changed to %d", value);
+
+						auto renderer = value ? GSRendererType::Null : GSRendererType::Auto;
+						GetMTGS().RunOnGSThread([renderer]() {
+							GSSwitchRenderer(renderer);
+						});
+					}
+
 					buf_cnt += 1;
 					break;
 				}

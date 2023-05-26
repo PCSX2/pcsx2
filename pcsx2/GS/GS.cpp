@@ -882,7 +882,7 @@ void GSSwitchRenderer(GSRendererType new_renderer)
 		existing_api = HostDisplay::RenderAPI::OpenGL;
 
 	const bool is_software_switch = (new_renderer == GSRendererType::SW || GSConfig.Renderer == GSRendererType::SW);
-	const bool recreate_display = (!is_software_switch && existing_api != GetAPIForRenderer(new_renderer));
+	const bool recreate_display = false && (!is_software_switch && existing_api != GetAPIForRenderer(new_renderer));
 	const Pcsx2Config::GSOptions old_config(GSConfig);
 	GSConfig.Renderer = new_renderer;
 	if (!GSreopen(recreate_display, old_config))

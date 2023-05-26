@@ -131,6 +131,7 @@ protected:
 	enum DynamicSettingId : unsigned char
 	{
 		DynamicSettingFrameSleepWait = 0, /**< If true, FrameStep sleeps while waiting for next frame command. */
+		DynamicSettingDisableRendering = 1, /**< If true, Renderer is set to NULL. */
 		DynamicSettingIdUnimplemented = 0xFF /**< Unimplemented DynamicSettingId. */
 	};
 
