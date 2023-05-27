@@ -195,7 +195,7 @@ bool DebugNetworkServer::setupSockets()
 	u_long mode = 1;
 	if (ioctlsocket(m_sock, FIONBIO, &mode) < 0)
 #else
-	if (fcntl(m_msgsock, F_SETFL, fcntl(m_msgsock, F_GETFL) | O_NONBLOCK) < 0)
+	if (fcntl(m_sock, F_SETFL, fcntl(m_sock, F_GETFL) | O_NONBLOCK) < 0)
 #endif
 	{
 		Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to set socket as non-blocking! Shutting down...");
