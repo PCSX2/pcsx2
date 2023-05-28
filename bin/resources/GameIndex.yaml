@@ -1766,6 +1766,8 @@ SCED-50041:
   region: "PAL-E"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    estimateTextureRegion: 1 # Reduces hash cache size and improves performance.
+    gpuPaletteConversion: 2 # Reduces hash cache size and improves performance.
 SCED-50065:
   name: "Official PlayStation 2 Magazine Demo 1"
   region: "PAL-M5"
@@ -2969,6 +2971,8 @@ SCES-50001:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    estimateTextureRegion: 1 # Reduces hash cache size and improves performance.
+    gpuPaletteConversion: 2 # Reduces hash cache size and improves performance.
 SCES-50002:
   name: "FantaVision"
   region: "PAL-M5"
@@ -7297,6 +7301,8 @@ SCPS-56002:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    estimateTextureRegion: 1 # Reduces hash cache size and improves performance.
+    gpuPaletteConversion: 2 # Reduces hash cache size and improves performance.
 SCPS-56003:
   name: "Jak and Daxter - The Precursor Legacy"
   region: "NTSC-K"
@@ -36924,6 +36930,8 @@ SLPS-20015:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    estimateTextureRegion: 1 # Reduces hash cache size and improves performance.
+    gpuPaletteConversion: 2 # Reduces hash cache size and improves performance.
 SLPS-20016:
   name: "Dream Audition"
   region: "NTSC-J"
@@ -41798,6 +41806,8 @@ SLPS-71501:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    estimateTextureRegion: 1 # Reduces hash cache size and improves performance.
+    gpuPaletteConversion: 2 # Reduces hash cache size and improves performance.
 SLPS-72501:
   name: "Final Fantasy X [Mega Hits]"
   region: "NTSC-J"
@@ -41834,6 +41844,8 @@ SLPS-73104:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    estimateTextureRegion: 1 # Reduces hash cache size and improves performance.
+    gpuPaletteConversion: 2 # Reduces hash cache size and improves performance.
 SLPS-73105:
   name: "Kinnikuman Generations [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -42423,6 +42435,8 @@ SLUS-20001:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    estimateTextureRegion: 1 # Reduces hash cache size and improves performance.
+    gpuPaletteConversion: 2 # Reduces hash cache size and improves performance.
 SLUS-20002:
   name: "Ridge Racer V"
   region: "NTSC-U"
