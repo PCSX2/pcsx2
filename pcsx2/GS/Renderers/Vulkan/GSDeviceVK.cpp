@@ -491,7 +491,7 @@ static std::array<float, 3> Palette(float phase, const std::array<float, 3>& a, 
 void GSDeviceVK::PushDebugGroup(const char* fmt, ...)
 {
 #ifdef ENABLE_OGL_DEBUG
-	if (!vkCmdBeginDebugUtilsLabelEXT)
+	if (!vkCmdBeginDebugUtilsLabelEXT || !GSConfig.UseDebugDevice)
 		return;
 
 	std::va_list ap;
@@ -515,7 +515,7 @@ void GSDeviceVK::PushDebugGroup(const char* fmt, ...)
 void GSDeviceVK::PopDebugGroup()
 {
 #ifdef ENABLE_OGL_DEBUG
-	if (!vkCmdEndDebugUtilsLabelEXT)
+	if (!vkCmdEndDebugUtilsLabelEXT || !GSConfig.UseDebugDevice)
 		return;
 
 	s_debug_scope_depth = (s_debug_scope_depth == 0) ? 0 : (s_debug_scope_depth - 1u);
@@ -527,7 +527,7 @@ void GSDeviceVK::PopDebugGroup()
 void GSDeviceVK::InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...)
 {
 #ifdef ENABLE_OGL_DEBUG
-	if (!vkCmdInsertDebugUtilsLabelEXT)
+	if (!vkCmdInsertDebugUtilsLabelEXT || !GSConfig.UseDebugDevice)
 		return;
 
 	std::va_list ap;
