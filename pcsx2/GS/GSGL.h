@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -18,27 +18,27 @@
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/GSExtra.h"
 
-#if !defined(NDEBUG) || defined(_DEBUG) || defined(_DEVEL)
-#define ENABLE_OGL_DEBUG // Create a debug context and check opengl command status. Allow also to dump various textures/states.
-  //#define ENABLE_TRACE_REG // print GS reg write
- //#define ENABLE_EXTRA_LOG // print extra log
+#if defined(_DEBUG) || defined(PCSX2_DEVBUILD)
+#define ENABLE_OGL_DEBUG // enable GS debug logging
+//#define ENABLE_TRACE_REG // print GS reg write
+//#define ENABLE_EXTRA_LOG // print extra log
 #endif
 
 // Note: GL messages are present in common code, so in all renderers.
 
-#if defined(_DEBUG)
+#ifdef ENABLE_OGL_DEBUG
 	#define GL_CACHE(...) g_gs_device->InsertDebugMessage(GSDevice::DebugMessageCategory::Cache, __VA_ARGS__)
 #else
 	#define GL_CACHE(...) (void)(0)
 #endif
 
-#if defined(ENABLE_TRACE_REG) && defined(_DEBUG)
+#if defined(ENABLE_OGL_DEBUG) && defined(ENABLE_TRACE_REG)
 	#define GL_REG(...) g_gs_device->InsertDebugMessage(GSDevice::DebugMessageCategory::Reg, __VA_ARGS__)
 #else
 	#define GL_REG(...) (void)(0)
 #endif
 
-#if defined(ENABLE_EXTRA_LOG) && defined(_DEBUG)
+#if defined(ENABLE_OGL_DEBUG) && defined(_DEBUG)
 	#define GL_DBG(...) g_gs_device->InsertDebugMessage(GSDevice::DebugMessageCategory::Debug, __VA_ARGS__)
 #else
 	#define GL_DBG(...) (void)(0)

@@ -1262,10 +1262,6 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 
 	GL_PUSH("CopyRect from %d to %d", sid, did);
 
-#ifdef ENABLE_OGL_DEBUG
-	PSSetShaderResource(6, sTex);
-#endif
-
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 	if (GLAD_GL_VERSION_4_3 || GLAD_GL_ARB_copy_image)
