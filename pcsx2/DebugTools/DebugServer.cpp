@@ -256,6 +256,9 @@ bool DebugNetworkServer::reviveConnection()
 
 	do 
 	{
+		if (m_end.load())
+			return false;
+			
 		poll(&fd, -1, 1);
 		if (rc < 0)
 			return false;
