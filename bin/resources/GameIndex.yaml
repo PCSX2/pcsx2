@@ -9985,6 +9985,12 @@ SLED-53953:
   region: "PAL-E"
   gameFixes:
     - GIFFIFOHack # Fixes flag corruptions.
+SLED-53980:
+  name: "Urban Chaos - Riot Response [Demo]"
+  region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 1 # Fixes edge garbage and thin lines.
+    autoFlush: 1 # Fixes misaligned lights at native resolution.
 SLED-53983:
   name: "Fight Night Round 3 [Demo]"
   region: "PAL"
@@ -19720,6 +19726,7 @@ SLES-53991:
   region: "PAL-M5"
   gsHWFixes:
     roundSprite: 1 # Fixes edge garbage and thin lines.
+    autoFlush: 1 # Fixes misaligned lights at native resolution.
 SLES-53994:
   name: "50 Cent - Bulletproof"
   region: "PAL-E"
@@ -35400,6 +35407,7 @@ SLPM-66767:
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 1 # Fixes edge garbage and thin lines.
+    autoFlush: 1 # Fixes misaligned lights at native resolution.
 SLPM-66768:
   name: "Missing Parts - The Tantei Stories - Side A [Best Version]"
   region: "NTSC-J"
@@ -49394,6 +49402,7 @@ SLUS-21390:
   compat: 4
   gsHWFixes:
     roundSprite: 1 # Fixes edge garbage and thin lines.
+    autoFlush: 1 # Fixes misaligned lights at native resolution.
 SLUS-21391:
   name: "Nickelodeon SpongeBob SquarePants - Creature from the Krusty Krab"
   region: "NTSC-U"
