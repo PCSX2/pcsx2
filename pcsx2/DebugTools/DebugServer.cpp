@@ -38,6 +38,7 @@ DebugNetworkServer VU1DebugNetworkServer;
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <poll.h>
 #endif
 
 DebugNetworkServer::DebugNetworkServer()
@@ -221,23 +222,20 @@ bool DebugNetworkServer::reviveConnection()
 		return false;
 
 	Console.WriteLn(Color_Green, "DebugNetworkServer: [%s] waiting for any connection on port %u...", m_name.data(), m_port);
+	#ifdef _WIN32
 	do
 	{
 		if (m_end.load())
 			return false;
 
 		m_msgsock = accept(m_sock, 0, 0);
-#ifdef _WIN32
 		int errno_w = WSAGetLastError();
 		if (errno_w == 0)
 		{
 			break;
 		}
-		bool notFailed = (errno_w == WSAECONNRESET || errno_w == WSAEINTR || errno_w == WSAEINPROGRESS || errno_w == WSAEMFILE || errno_w == WSAEWOULDBLOCK);
-#else
-		bool notFailed = (errno == ECONNABORTED || errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK);
-#endif
-		if (notFailed)
+
+		if (errno_w == WSAECONNRESET || errno_w == WSAEINTR || errno_w == WSAEINPROGRESS || errno_w == WSAEMFILE || errno_w == WSAEWOULDBLOCK)
 		{
 			Threading::Sleep(1);
 		}
@@ -248,6 +246,28 @@ bool DebugNetworkServer::reviveConnection()
 		}
 
 	} while (m_msgsock == (u64)-1);
+#else
+	int pd = -1;
+	pollfd fd = {};
+	fd.fd = m_sock;
+	fd.events = POLLIN;
+	int rc = 0;
+	m_msgsock = -1;
+
+	do 
+	{
+		poll(&fd, -1, 1);
+		if (rc < 0)
+			return false;
+
+		if (rc > 0)
+		{
+			m_msgsock = accept(m_sock, 0, 0);
+			if (!(errno == ECONNABORTED || errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK))
+				return false;
+		}
+	} while (m_msgsock < 0);
+#endif
 
 #ifdef _WIN32
 	u_long mode = 1;
@@ -312,7 +332,7 @@ bool DebugNetworkServer::receiveAndSendPacket()
 	Console.WriteLn(Color_Gray, "%s", (char*)&m_recv_buffer[0]);
 
 	std::size_t outSize = 0;
-	std::size_t offset = 0;
+	std::int64_t offset = 0;
 	do
 	{
 		const std::size_t localOffset = m_debugServerInterface->processPacket((char*)&m_recv_buffer.at(offset), receive_length, m_send_buffer.data(), outSize);
