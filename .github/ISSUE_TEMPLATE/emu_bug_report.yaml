@@ -140,7 +140,7 @@ body:
       label: "Logs & Dumps"
       description: |
         Please feel free to attach any logs, block dumps, GSdump, etc here.
-        If PCSX2 crashed, please post crash logs and the .dmp file if appropiate.
+        If PCSX2 crashed, please post crash logs and the .dmp file (in a zip file) if appropriate.
         If your problem is graphical in nature it is highly recommended that you provide a GSdump. [GSdump Guide](https://forums.pcsx2.net/Thread-How-to-create-a-proper-GS-dump)
     validations:
       required: false

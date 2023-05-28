@@ -27,7 +27,6 @@ body:
           - If your bug is the result of upscaling please use the forums or discord for assistance with various upscaling workarounds. Additionally, the unofficial PCSX2 [Wiki](https://wiki.pcsx2.net/Main_Page) often lists various fixes for upscaling issues.
         - We do **not** accept issues relating to Widescreen/no-interlace patches at this time.
           - Any issues pertaining to Widescreen/no-interlace patches please forward them to the [patches repository](https://github.com/PCSX2/pcsx2_patches). 
-        -If PCSX2 crashed, please post crash logs and the .dmp file if appropiate.
 
   - type: textarea
     id: desc
@@ -78,5 +77,14 @@ body:
     attributes:
       label: If Linux - Specify Distro
       placeholder: "Example: Arch"
+    validations:
+      required: false
+  - type: textarea
+    id: logsDumps
+    attributes:
+      label: "Logs & Dumps"
+      description: |
+        Please feel free to attach any logs here.
+        If PCSX2 crashed, please post crash logs and the .dmp file (in a zip file) if appropriate.
     validations:
       required: false
