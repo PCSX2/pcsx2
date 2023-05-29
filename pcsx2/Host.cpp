@@ -167,6 +167,12 @@ bool Host::RemoveBaseValueFromStringList(const char* section, const char* key, c
 		->RemoveFromStringList(section, key, value);
 }
 
+bool Host::ContainsBaseSettingValue(const char* section, const char* key)
+{
+	std::unique_lock lock(s_settings_mutex);
+	return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->ContainsValue(section, key);
+}
+
 void Host::RemoveBaseSettingValue(const char* section, const char* key)
 {
 	std::unique_lock lock(s_settings_mutex);

@@ -57,7 +57,7 @@ Q_SIGNALS:
 	void cardDropped(const QString& newCard);
 
 public:
-	void setCard(const std::optional<std::string>& name);
+	void setCard(const std::optional<std::string>& name, bool inherited);
 
 protected:
 	void dragEnterEvent(QDragEnterEvent* event) override;

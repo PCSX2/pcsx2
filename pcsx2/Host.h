@@ -112,6 +112,7 @@ namespace Host
 	void SetBaseStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values);
 	bool AddBaseValueToStringList(const char* section, const char* key, const char* value);
 	bool RemoveBaseValueFromStringList(const char* section, const char* key, const char* value);
+	bool ContainsBaseSettingValue(const char* section, const char* key);
 	void RemoveBaseSettingValue(const char* section, const char* key);
 	void CommitBaseSettingChanges();
 
