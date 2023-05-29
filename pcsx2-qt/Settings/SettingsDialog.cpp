@@ -122,14 +122,10 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 		tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console.<br><br>Mouse over an option for "
 		   "additional information."));
 
-	// for now, Memory Cards aren't settable per-game
-	if (!isPerGameSettings())
-	{
-		addWidget(m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
-			QStringLiteral("sd-card-line"),
-			tr("<strong>Memory Card Settings</strong><hr>Create and configure Memory Cards here.<br><br>Mouse over an option for "
-			   "additional information."));
-	}
+	addWidget(m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
+		QStringLiteral("sd-card-line"),
+		tr("<strong>Memory Card Settings</strong><hr>Create and configure Memory Cards here.<br><br>Mouse over an option for "
+			  "additional information."));
 
 	addWidget(m_dev9_settings = new DEV9SettingsWidget(this, m_ui.settingsContainer), tr("Network & HDD"), QStringLiteral("dashboard-line"),
 		tr("<strong>Network & HDD Settings</strong><hr>These options control the network connectivity and internal HDD storage of the "
@@ -480,6 +476,14 @@ void SettingsDialog::setStringSettingValue(const char* section, const char* key,
 		Host::CommitBaseSettingChanges();
 		g_emu_thread->applySettings();
 	}
+}
+
+bool SettingsDialog::containsSettingValue(const char* section, const char* key) const
+{
+	if (m_sif)
+		return m_sif->ContainsValue(section, key);
+	else
+		return Host::ContainsBaseSettingValue(section, key);
 }
 
 void SettingsDialog::removeSettingValue(const char* section, const char* key)
