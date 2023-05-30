@@ -27,7 +27,7 @@ ThreadModel::ThreadModel(DebugInterface& cpu, QObject* parent)
 
 int ThreadModel::rowCount(const QModelIndex&) const
 {
-	return m_cpu.GetThreadList().size();
+	return m_cpu.getThreadList().size();
 }
 
 int ThreadModel::columnCount(const QModelIndex&) const
@@ -37,7 +37,7 @@ int ThreadModel::columnCount(const QModelIndex&) const
 
 QVariant ThreadModel::data(const QModelIndex& index, int role) const
 {
-	const auto threads = m_cpu.GetThreadList();
+	const auto threads = m_cpu.getThreadList();
 	const auto& thread = threads.at(index.row());
 
 	if (role == Qt::DisplayRole)

@@ -219,7 +219,7 @@ void DisassemblyWidget::contextAddFunction()
 {
 	// Get current function
 	const u32 curAddress = m_selectedAddressStart;
-	const u32 curFuncAddr = m_cpu->GetSymbolMap().GetFunctionStart(m_selectedAddressStart);
+	const u32 curFuncAddr = m_cpu->getSymbolMap().GetFunctionStart(m_selectedAddressStart);
 	QString optionaldlgText;
 
 	if (curFuncAddr != SymbolMap::INVALID_ADDRESS)
@@ -230,7 +230,7 @@ void DisassemblyWidget::contextAddFunction()
 		}
 		else
 		{
-			const u32 prevSize = m_cpu->GetSymbolMap().GetFunctionSize(curFuncAddr);
+			const u32 prevSize = m_cpu->getSymbolMap().GetFunctionSize(curFuncAddr);
 			u32 newSize = curAddress - curFuncAddr;
 
 			bool ok;
@@ -239,11 +239,11 @@ void DisassemblyWidget::contextAddFunction()
 			if (!ok)
 				return;
 
-			m_cpu->GetSymbolMap().SetFunctionSize(curFuncAddr, newSize); // End the current function to where we selected
+			m_cpu->getSymbolMap().SetFunctionSize(curFuncAddr, newSize); // End the current function to where we selected
 			newSize = prevSize - newSize;
-			m_cpu->GetSymbolMap().AddFunction(funcName.toLocal8Bit().constData(), curAddress, newSize);
-			m_cpu->GetSymbolMap().SortSymbols();
-			m_cpu->GetSymbolMap().UpdateActiveSymbols();
+			m_cpu->getSymbolMap().AddFunction(funcName.toLocal8Bit().constData(), curAddress, newSize);
+			m_cpu->getSymbolMap().SortSymbols();
+			m_cpu->getSymbolMap().UpdateActiveSymbols();
 		}
 	}
 	else
@@ -254,39 +254,39 @@ void DisassemblyWidget::contextAddFunction()
 		if (!ok)
 			return;
 
-		m_cpu->GetSymbolMap().AddFunction(funcName.toLocal8Bit().constData(), m_selectedAddressStart, m_selectedAddressEnd + 4 - m_selectedAddressStart);
-		m_cpu->GetSymbolMap().SortSymbols();
-		m_cpu->GetSymbolMap().UpdateActiveSymbols();
+		m_cpu->getSymbolMap().AddFunction(funcName.toLocal8Bit().constData(), m_selectedAddressStart, m_selectedAddressEnd + 4 - m_selectedAddressStart);
+		m_cpu->getSymbolMap().SortSymbols();
+		m_cpu->getSymbolMap().UpdateActiveSymbols();
 	}
 }
 
 void DisassemblyWidget::contextRemoveFunction()
 {
-	u32 curFuncAddr = m_cpu->GetSymbolMap().GetFunctionStart(m_selectedAddressStart);
+	u32 curFuncAddr = m_cpu->getSymbolMap().GetFunctionStart(m_selectedAddressStart);
 
 	if (curFuncAddr != SymbolMap::INVALID_ADDRESS)
 	{
-		u32 previousFuncAddr = m_cpu->GetSymbolMap().GetFunctionStart(curFuncAddr - 4);
+		u32 previousFuncAddr = m_cpu->getSymbolMap().GetFunctionStart(curFuncAddr - 4);
 		if (previousFuncAddr != SymbolMap::INVALID_ADDRESS)
 		{
 			// Extend the previous function to replace the spot of the function that is going to be removed
-			u32 expandedSize = m_cpu->GetSymbolMap().GetFunctionSize(previousFuncAddr) + m_cpu->GetSymbolMap().GetFunctionSize(curFuncAddr);
-			m_cpu->GetSymbolMap().SetFunctionSize(previousFuncAddr, expandedSize);
+			u32 expandedSize = m_cpu->getSymbolMap().GetFunctionSize(previousFuncAddr) + m_cpu->getSymbolMap().GetFunctionSize(curFuncAddr);
+			m_cpu->getSymbolMap().SetFunctionSize(previousFuncAddr, expandedSize);
 		}
 
-		m_cpu->GetSymbolMap().RemoveFunction(curFuncAddr, true);
-		m_cpu->GetSymbolMap().SortSymbols();
-		m_cpu->GetSymbolMap().UpdateActiveSymbols();
+		m_cpu->getSymbolMap().RemoveFunction(curFuncAddr, true);
+		m_cpu->getSymbolMap().SortSymbols();
+		m_cpu->getSymbolMap().UpdateActiveSymbols();
 	}
 }
 
 void DisassemblyWidget::contextRenameFunction()
 {
-	const u32 curFuncAddress = m_cpu->GetSymbolMap().GetFunctionStart(m_selectedAddressStart);
+	const u32 curFuncAddress = m_cpu->getSymbolMap().GetFunctionStart(m_selectedAddressStart);
 	if (curFuncAddress != SymbolMap::INVALID_ADDRESS)
 	{
 		bool ok;
-		QString funcName = QInputDialog::getText(this, tr("Rename Function"), tr("Function name"), QLineEdit::Normal, m_cpu->GetSymbolMap().GetLabelString(curFuncAddress).c_str(), &ok);
+		QString funcName = QInputDialog::getText(this, tr("Rename Function"), tr("Function name"), QLineEdit::Normal, m_cpu->getSymbolMap().GetLabelString(curFuncAddress).c_str(), &ok);
 		if (!ok)
 			return;
 
@@ -296,9 +296,9 @@ void DisassemblyWidget::contextRenameFunction()
 		}
 		else
 		{
-			m_cpu->GetSymbolMap().SetLabelName(funcName.toLocal8Bit().constData(), curFuncAddress);
-			m_cpu->GetSymbolMap().SortSymbols();
-			m_cpu->GetSymbolMap().UpdateActiveSymbols();
+			m_cpu->getSymbolMap().SetLabelName(funcName.toLocal8Bit().constData(), curFuncAddress);
+			m_cpu->getSymbolMap().SortSymbols();
+			m_cpu->getSymbolMap().UpdateActiveSymbols();
 			this->repaint();
 		}
 	}
@@ -636,7 +636,7 @@ inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFon
 	const bool isCurrentPC = m_cpu->getPC() == address;
 
 	const bool isBreakpoint = CBreakPoints::IsAddressBreakPoint(m_cpu->getCpuType(), address) && !CBreakPoints::IsTempBreakPoint(m_cpu->getCpuType(), address);
-	const std::string addressSymbol = m_cpu->GetSymbolMap().GetLabelString(address);
+	const std::string addressSymbol = m_cpu->getSymbolMap().GetLabelString(address);
 
 	QString lineString("%1 %2  %3 %4  %5 %6");
 
@@ -693,7 +693,7 @@ QColor DisassemblyWidget::GetAddressFunctionColor(u32 address)
 		};
 	}
 
-	const auto funNum = m_cpu->GetSymbolMap().GetFunctionNum(address);
+	const auto funNum = m_cpu->getSymbolMap().GetFunctionNum(address);
 	if (funNum == -1)
 		return this->palette().text().color();
 

@@ -23,7 +23,19 @@ public:
 	std::size_t processPacket(const char* inData, std::size_t inSize, void* outData, std::size_t& outSize) override;
 
 private:
-	std::string m_featuresString;
+	void resumeExecution();
+	void stopExecution();
+	void singleStep();
+	bool addBreakpoint(u32 address);
+	bool removeBreakpoint(u32 address);
+	void updateThreadList();
+
+private:
+	int m_stateThreadCounter = -1;
+	std::vector<std::unique_ptr<BiosThread>> m_stateThreads;
+
+	bool m_align = false;
+	bool m_multiprocess = false;
 	bool m_eventsEnabled = false;
-	bool m_connected = false;
+	bool m_dontReplyAck = false;
 };

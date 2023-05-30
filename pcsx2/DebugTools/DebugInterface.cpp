@@ -117,7 +117,7 @@ public:
 	virtual bool parseSymbol(char* str, u64& symbolValue)
 	{
 		u32 value;
-		bool result = cpu->GetSymbolMap().GetLabelValue(str, value);
+		bool result = cpu->getSymbolMap().GetLabelValue(str, value);
 		symbolValue = value;
 		return result;
 	}
@@ -729,12 +729,17 @@ u32 R5900DebugInterface::getCycles()
 	return cpuRegs.cycle;
 }
 
-SymbolMap& R5900DebugInterface::GetSymbolMap() const
+SymbolMap& R5900DebugInterface::getSymbolMap() const
 {
 	return R5900SymbolMap;
 }
 
-std::vector<std::unique_ptr<BiosThread>> R5900DebugInterface::GetThreadList() const
+std::unique_ptr<BiosThread> R5900DebugInterface::getCurrentThread() const
+{
+	return getCurrentEEThread();
+}
+
+std::vector<std::unique_ptr<BiosThread>> R5900DebugInterface::getThreadList() const
 {
 	return getEEThreads();
 }
@@ -1013,12 +1018,17 @@ u32 R3000DebugInterface::getCycles()
 	return psxRegs.cycle;
 }
 
-SymbolMap& R3000DebugInterface::GetSymbolMap() const
+SymbolMap& R3000DebugInterface::getSymbolMap() const
 {
 	return R3000SymbolMap;
 }
 
-std::vector<std::unique_ptr<BiosThread>> R3000DebugInterface::GetThreadList() const
+std::unique_ptr<BiosThread> R3000DebugInterface::getCurrentThread() const
+{
+	return getCurrentIOPThread();
+}
+
+std::vector<std::unique_ptr<BiosThread>> R3000DebugInterface::getThreadList() const
 {
 	return getIOPThreads();
 }

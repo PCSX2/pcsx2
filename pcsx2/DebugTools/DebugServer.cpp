@@ -45,6 +45,7 @@ DebugNetworkServer::DebugNetworkServer()
 {
 #if _WIN32
 	WSADATA wsa;
+	
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
 	{
 		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot initialize winsock! Shutting down...");
@@ -241,13 +242,12 @@ bool DebugNetworkServer::reviveConnection()
 		}
 		else
 		{
-			Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to create socket (internal error, %i)! Shutting down...");
+			Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to create socket (internal error, %i)! Shutting down...", errno_w);
 			return false;
 		}
 
 	} while (m_msgsock == (u64)-1);
 #else
-	int pd = -1;
 	pollfd fd = {};
 	fd.fd = m_sock;
 	fd.events = POLLIN;
@@ -259,14 +259,17 @@ bool DebugNetworkServer::reviveConnection()
 		if (m_end.load())
 			return false;
 			
-		poll(&fd, -1, 1);
+		rc = poll(&fd, 1, 1);
 		if (rc < 0)
+		{
+			Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to create socket (internal error, %i)! Shutting down...", errno);
 			return false;
+		}
 
 		if (rc > 0)
 		{
 			m_msgsock = accept(m_sock, 0, 0);
-			if (!(errno == ECONNABORTED || errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK))
+			if (errno != 0 && !(errno == ECONNABORTED || errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK))
 				return false;
 		}
 	} while (m_msgsock < 0);
@@ -331,8 +334,8 @@ bool DebugNetworkServer::receiveAndSendPacket()
 	}
 
 	m_recv_buffer[receive_length] = 0;
-	Console.WriteLn(Color_Orange, "recv");
-	Console.WriteLn(Color_Gray, "%s", (char*)&m_recv_buffer[0]);
+	//Console.WriteLn(Color_Orange, "recv");
+	//Console.WriteLn(Color_Gray, "%s", (char*)&m_recv_buffer[0]);
 
 	std::size_t outSize = 0;
 	std::int64_t offset = 0;
@@ -340,13 +343,6 @@ bool DebugNetworkServer::receiveAndSendPacket()
 	{
 		const std::size_t localOffset = m_debugServerInterface->processPacket((char*)&m_recv_buffer.at(offset), receive_length, m_send_buffer.data(), outSize);
 		if (localOffset == std::size_t(-1))
-		{
-			Console.WriteLn(Color_Red, "DebugNetworkServer: invalid packet passed! Shutting down...");
-			shutdown();
-			return false;
-		}
-
-		if (outSize == 0)
 		{
 			if (!reviveConnection())
 			{
@@ -357,9 +353,15 @@ bool DebugNetworkServer::receiveAndSendPacket()
 			continue;
 		}
 
+		if (localOffset == 0 || outSize == 0)
+		{
+			Threading::Sleep(1);
+			continue;
+		}
+
 		m_send_buffer[outSize] = 0;
-		Console.WriteLn(Color_Orange, "send");
-		Console.WriteLn(Color_Gray, "%s", m_send_buffer.data());
+		//Console.WriteLn(Color_Orange, "send");
+		//Console.WriteLn(Color_Gray, "%s", m_send_buffer.data());
 
 		offset += localOffset;
 		while (true)

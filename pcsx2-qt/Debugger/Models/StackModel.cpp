@@ -47,7 +47,7 @@ QVariant StackModel::data(const QModelIndex& index, int role) const
 			case StackModel::ENTRY:
 				return QtUtils::FilledQStringFromValue(stackFrame.entry, 16);
 			case StackModel::ENTRY_LABEL:
-				return m_cpu.GetSymbolMap().GetLabelString(stackFrame.entry).c_str();
+				return m_cpu.getSymbolMap().GetLabelString(stackFrame.entry).c_str();
 			case StackModel::PC:
 				return QtUtils::FilledQStringFromValue(stackFrame.pc, 16);
 			case StackModel::PC_OPCODE:
@@ -66,7 +66,7 @@ QVariant StackModel::data(const QModelIndex& index, int role) const
 			case StackModel::ENTRY:
 				return stackFrame.entry;
 			case StackModel::ENTRY_LABEL:
-				return m_cpu.GetSymbolMap().GetLabelString(stackFrame.entry).c_str();
+				return m_cpu.getSymbolMap().GetLabelString(stackFrame.entry).c_str();
 			case StackModel::PC:
 				return stackFrame.pc;
 			case StackModel::PC_OPCODE:
@@ -116,7 +116,7 @@ void StackModel::refreshData()
 	// Hopefully in the near future we can get a stack frame for
 	// each thread
 	beginResetModel();
-	for (const auto& thread : m_cpu.GetThreadList())
+	for (const auto& thread : m_cpu.getThreadList())
 	{
 		if (thread->Status() == ThreadStatus::THS_RUN)
 		{

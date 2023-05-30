@@ -43,7 +43,7 @@ namespace MipsStackWalk {
 
 	static u32 GuessEntry(DebugInterface* cpu, u32 pc) {
 		SymbolInfo info;
-		if (cpu->GetSymbolMap().GetSymbolInfo(&info, pc)) {
+		if (cpu->getSymbolMap().GetSymbolInfo(&info, pc)) {
 			return info.address;
 		}
 		return INVALIDTARGET;
