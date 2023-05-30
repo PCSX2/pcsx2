@@ -2412,13 +2412,33 @@ void VMManager::InitializeDebugServers()
 		}
 	}
 
-	// #TODO: make debug interfaces for VU0 and VU1
+	// TODO: make debug interfaces for VU0 and VU1
 }
 
 void VMManager::ShutdownDebugServers()
 {
 	IOPDebugNetworkServer.shutdown();
 	EEDebugNetworkServer.shutdown();
+}
+
+bool VMManager::IsEEDebugServerRunning()
+{
+	return EEDebugNetworkServer.isRunning();
+}
+
+bool VMManager::IsIOPDebugServerRunning()
+{
+	return IOPDebugNetworkServer.isRunning();
+}
+
+bool VMManager::IsEEDebugServerConnectionUp()
+{
+	return EEDebugNetworkServer.isConnected();
+}
+
+bool VMManager::IsIOPDebugServerConnectionUp()
+{
+	return IOPDebugNetworkServer.isConnected();
 }
 
 #ifdef ENABLE_DISCORD_PRESENCE

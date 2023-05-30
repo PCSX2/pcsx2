@@ -98,6 +98,7 @@ DebugNetworkServer::shutdown()
 
 	if (std::this_thread::get_id() == m_thread.get_id())
 	{
+		m_connected = false;
 		close_portable(m_sock);
 		close_portable(m_msgsock);
 	} 
@@ -110,15 +111,10 @@ DebugNetworkServer::shutdown()
 	}
 }
 
-void DebugNetworkServer::signal(int signal)
+bool
+DebugNetworkServer::isConnected() const
 {
-	std::scoped_lock<std::mutex> sc(m_debugMutex);
-	if (m_signalCount + 1 == MAX_SIGNALS)
-	{
-		return;
-	}
-
-	m_signals[m_signalCount++] = signal;
+	return m_connected;
 }
 
 bool
@@ -286,6 +282,7 @@ bool DebugNetworkServer::reviveConnection()
 		return false;
 	}
 
+	m_connected = true;
 	return true;
 }
 
@@ -313,75 +310,79 @@ DebugNetworkServer::serverLoop()
 bool DebugNetworkServer::receiveAndSendPacket()
 {
 	const auto receive_length = read_portable(m_msgsock, &m_recv_buffer[0], MAX_DEBUG_PACKET_SIZE - 1);
+	std::size_t outSize = 0;
+	std::int64_t offset = 0;
 
 	// we recreate the socket if an error happens
 	if (receive_length <= 0)
 	{
 		if (would_block())
 		{
-			// that's ok, just wait until our packet is ready
-			Threading::Sleep(1);
+			if (!m_debugServerInterface->replyPacket(m_send_buffer.data(), outSize))
+				return false;
+
+			if (outSize > 0)
+			{
+				while (true)
+				{
+					if (write_portable(m_msgsock, m_send_buffer.data(), outSize) >= 0)
+						break;
+
+					if (would_block())
+					{
+						Threading::Sleep(1);
+						continue;
+					}
+
+					return reviveConnection();
+				}
+			}
+			else
+			{
+				// that's ok, just wait until our packet is ready
+				Threading::Sleep(1);
+			}
+
 			return true;
 		}
 
-		if (!reviveConnection())
-		{
-			shutdown();
-			return true;
-		}
-
-		return false;
+		return reviveConnection();
 	}
 
 	m_recv_buffer[receive_length] = 0;
 	//Console.WriteLn(Color_Orange, "recv");
 	//Console.WriteLn(Color_Gray, "%s", (char*)&m_recv_buffer[0]);
 
-	std::size_t outSize = 0;
-	std::int64_t offset = 0;
-	do
+	const std::size_t localOffset = m_debugServerInterface->processPacket((char*)&m_recv_buffer.at(offset), receive_length, m_send_buffer.data(), outSize);
+	if (localOffset == std::size_t(-1))
 	{
-		const std::size_t localOffset = m_debugServerInterface->processPacket((char*)&m_recv_buffer.at(offset), receive_length, m_send_buffer.data(), outSize);
-		if (localOffset == std::size_t(-1))
-		{
-			if (!reviveConnection())
-			{
-				shutdown();
-				break;
-			}
+		return reviveConnection();
+	}
 
-			continue;
-		}
+	if (localOffset == 0 || outSize == 0)
+	{
+		Threading::Sleep(1);
+		return true;
+	}
 
-		if (localOffset == 0 || outSize == 0)
+	m_send_buffer[outSize] = 0;
+	//Console.WriteLn(Color_Orange, "send");
+	//Console.WriteLn(Color_Gray, "%s", m_send_buffer.data());
+
+	offset += localOffset;
+	while (true)
+	{
+		if (write_portable(m_msgsock, m_send_buffer.data(), outSize) >= 0)
+			break;
+
+		if (would_block())
 		{
 			Threading::Sleep(1);
 			continue;
 		}
 
-		m_send_buffer[outSize] = 0;
-		//Console.WriteLn(Color_Orange, "send");
-		//Console.WriteLn(Color_Gray, "%s", m_send_buffer.data());
-
-		offset += localOffset;
-		while (true)
-		{
-			if (write_portable(m_msgsock, m_send_buffer.data(), outSize) >= 0)
-				break;
-
-			if (would_block())
-			{
-				Threading::Sleep(1);
-				continue;
-			}
-
-			if (!reviveConnection())
-			{
-				shutdown();
-				return false;
-			}
-		}
-	} while (offset < receive_length);
+		return reviveConnection();
+	}
 
 	return true;
 }

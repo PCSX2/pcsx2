@@ -24,202 +24,6 @@
 #include <fstream>
 
 #define DEBUG_WRITE(...) if (IsDebugBuild) { Console.WriteLn(Color_Gray, __VA_ARGS__); }
-
-std::mutex CPUTransaction;
-
-constexpr
-u8
-ASCIIToValue(char symbol)
-{
-	if ((symbol >= '0') && (symbol <= '9'))
-	{
-		return (symbol - '0');
-	}
-	else if ((symbol >= 'a') && (symbol <= 'f'))
-	{
-		return (symbol - 'a' + 0xa);
-	}
-	else if ((symbol >= 'A') && (symbol <= 'F'))
-	{
-		return (symbol - 'A' + 0xa);
-	}
-
-	return 0;
-}
-
-constexpr 
-int
-ValueToASCII(u8 value)
-{
-	constexpr const char* digitsLookup = "0123456789abcdef";
-	return digitsLookup[std::clamp(value, (u8)0, (u8)16)];
-}
-
-template<typename T>
-inline
-bool
-WriteHexValue(char* string, std::size_t& outSize, T value)
-{
-	if (outSize + sizeof(T) * 2 > MAX_DEBUG_PACKET_SIZE)
-		return false;
-	
-	BIG_ENDIFY_IT(value);
-	for (size_t i = 0; i < sizeof(T); i++)
-	{
-		const u8* data = reinterpret_cast<u8*>(&value) + i;
-		string[outSize++] = ValueToASCII((*data) >> 4);
-		string[outSize++] = ValueToASCII((*data) & 0xf);
-	}
-	
-	return true;
-}
-
-template<typename T>
-inline
-std::string
-ValueToHexString(T value)
-{
-	std::string outString;
-	outString.reserve(sizeof(T) * 2);
-
-	BIG_ENDIFY_IT(value);
-	for (size_t i = 0; i < sizeof(T); i++)
-	{
-		const u8* data = reinterpret_cast<u8*>(&value) + i;
-		outString.push_back(ValueToASCII((*data) >> 4));
-		outString.push_back(ValueToASCII((*data) & 0xf));
-	}
-	
-	return outString;
-}
-
-constexpr 
-void
-EncodeHex(
-	const u8* input,
-	std::size_t inputSize,
-	char* output,
-	std::size_t outputSize
-)
-{
-	for (size_t i = 0; i < inputSize; i++)
-	{
-		*output++ = ValueToASCII((input[i]) >> 4);
-		*output++ = ValueToASCII((input[i]) & 0xf);
-	}
-}
-
-constexpr 
-void
-DecodeHex(
-	const char* input,
-	std::size_t inputSize,
-	u8* output,
-	std::size_t outputSize
-)
-{
-	for (size_t i = 0; i < inputSize; i += 2)
-	{
-		*output++ = (ASCIIToValue(input[i]) << 4) | ASCIIToValue(input[i + 1]);
-	}
-}
-
-constexpr
-u8
-CalculateChecksum(
-	const char* data,
-	std::size_t size
-)
-{
-	u8 checksum = 0;
-	for (size_t i = 0; i < size; i++)
-		checksum += data[i];
-
-	return checksum;
-}
-
-constexpr 
-u8
-CalculateChecksum(std::string_view data)
-{
-	return CalculateChecksum(data.data(), data.size());
-}
-
-constexpr
-bool
-IsSameString(
-	const char* source, 
-	std::size_t sourceLength, 
-	const char* compare,
-	std::size_t compareLength
-)
-{
-	for (size_t i = 0; i < std::min(sourceLength, compareLength); i++)
-	{
-		if (source[i] != compare[i])
-		{
-			return false;
-		}
-	}
-
-	return true;
-}
-
-constexpr
-bool
-IsSameString(
-	std::string_view source,
-	std::string_view compare
-)
-{
-	return IsSameString(source.data(), source.size(), compare.data(), compare.size());
-}
-
-// really hacky way to detect endianess
-volatile inline bool IsBigEndian()
-{
-	union {
-		uint32_t i;
-		char c[4];
-    } betest;
-
-	betest.i = 0x01020304;
-    return betest.c[0] == 1;
-}
-
-template<typename T>
-T reverse_bytes(T value)
-{
-	const u8* raw_value = reinterpret_cast<u8*>(&value);
-	if constexpr (sizeof(T) == 8)
-	{
-		return 	(raw_value[0]) | 
-				(raw_value[1] << 8) | 
-				(raw_value[2] << 16) | 
-				(raw_value[3] << 24) |
-				(raw_value[4] << 32) |
-				(raw_value[5] << 40) |
-				(raw_value[6] << 48) |
-				(raw_value[7] << 56);
-	} 
-	else if constexpr (sizeof(T) == 4) 
-	{
-		return 	(raw_value[0]) | 
-				(raw_value[1] << 8) | 
-				(raw_value[2] << 16) | 
-				(raw_value[3] << 24);
-	} 
-	else if constexpr (sizeof(T) == 2)
-	{
-		return 	(raw_value[0]) | 
-				(raw_value[1] << 8);
-	} 
-
-	return value;
-}
-
-#define BIG_ENDIFY_IT(x) do { if (!IsBigEndian()) { x = reverse_bytes(x); } } while(false);
-
 /*";QStartNoAckMode+" \*/
 #define GDB_FEATURES \
 	"PacketSize=47ff"               /* required by GDB stub*/ \
@@ -347,78 +151,248 @@ static const std::string targetEEXML = R"(<?xml version="1.0"?>
 </target>
 )";
 
-/*
-  <reg name="lr0" bitsize="64" regnum="38"/>
-  <reg name="lr1" bitsize="64"/>
-  <reg name="lr2" bitsize="64"/>
-  <reg name="lr3" bitsize="64"/>
-  <reg name="lr4" bitsize="64"/>
-  <reg name="lr5" bitsize="64"/>
-  <reg name="lr6" bitsize="64"/>
-  <reg name="lr7" bitsize="64"/>
-  <reg name="lr8" bitsize="64"/>
-  <reg name="lr9" bitsize="64"/>
-  <reg name="lr10" bitsize="64"/>
-  <reg name="lr11" bitsize="64"/>
-  <reg name="lr12" bitsize="64"/>
-  <reg name="lr13" bitsize="64"/>
-  <reg name="lr14" bitsize="64"/>
-  <reg name="lr15" bitsize="64"/>
-  <reg name="lr16" bitsize="64"/>
-  <reg name="lr17" bitsize="64"/>
-  <reg name="lr18" bitsize="64"/>
-  <reg name="lr19" bitsize="64"/>
-  <reg name="lr20" bitsize="64"/>
-  <reg name="lr21" bitsize="64"/>
-  <reg name="lr22" bitsize="64"/>
-  <reg name="lr23" bitsize="64"/>
-  <reg name="lr24" bitsize="64"/>
-  <reg name="lr25" bitsize="64"/>
-  <reg name="lr26" bitsize="64"/>
-  <reg name="lr27" bitsize="64"/>
-  <reg name="lr28" bitsize="64"/>
-  <reg name="lr29" bitsize="64"/>
-  <reg name="lr30" bitsize="64"/>
-  <reg name="lr31" bitsize="64"/>
+std::mutex CPUTransaction;
 
-  <reg name="hr0" bitsize="64" />
-  <reg name="hr1" bitsize="64"/>
-  <reg name="hr2" bitsize="64"/>
-  <reg name="hr3" bitsize="64"/>
-  <reg name="hr4" bitsize="64"/>
-  <reg name="hr5" bitsize="64"/>
-  <reg name="hr6" bitsize="64"/>
-  <reg name="hr7" bitsize="64"/>
-  <reg name="hr8" bitsize="64"/>
-  <reg name="hr9" bitsize="64"/>
-  <reg name="hr10" bitsize="64"/>
-  <reg name="hr11" bitsize="64"/>
-  <reg name="hr12" bitsize="64"/>
-  <reg name="hr13" bitsize="64"/>
-  <reg name="hr14" bitsize="64"/>
-  <reg name="hr15" bitsize="64"/>
-  <reg name="hr16" bitsize="64"/>
-  <reg name="hr17" bitsize="64"/>
-  <reg name="hr18" bitsize="64"/>
-  <reg name="hr19" bitsize="64"/>
-  <reg name="hr20" bitsize="64"/>
-  <reg name="hr21" bitsize="64"/>
-  <reg name="hr22" bitsize="64"/>
-  <reg name="hr23" bitsize="64"/>
-  <reg name="hr24" bitsize="64"/>
-  <reg name="hr25" bitsize="64"/>
-  <reg name="hr26" bitsize="64"/>
-  <reg name="hr27" bitsize="64"/>
-  <reg name="hr28" bitsize="64"/>
-  <reg name="hr29" bitsize="64"/>
-  <reg name="hr30" bitsize="64"/>
-  <reg name="hr31" bitsize="64"/>
-*/
+inline
+bool 
+ObtainCategoryAndIndex(int id, int& cat, int& idx)
+{
+	if (id < 32)
+	{
+		cat = EECAT_GPR;
+		idx = id;
+		return true;
+	}
+
+	if (id == 32) // status
+	{
+		cat = EECAT_CP0;
+		idx = 12;
+		return true;
+	}
+
+	if (id == 33) // lo
+	{
+		cat = EECAT_GPR;
+		idx = 34;
+		return true;
+	}
+
+	if (id == 34) // hi
+	{
+		cat = EECAT_GPR;
+		idx = 33;
+		return true;
+	}
+
+	if (id == 35) // badvaddr
+	{
+		cat = EECAT_CP0;
+		idx = 8;
+		return true;
+	}
+
+	if (id == 36) // cause
+	{
+		cat = EECAT_CP0;
+		idx = 13;
+		return true;
+	}
+
+	if (id == 37) // pc
+	{
+		cat = EECAT_GPR;
+		idx = 32;
+		return true;
+	}
+
+	if (id >= 38 && id < 70)
+	{
+		cat = EECAT_FPR;
+		idx = id - 38;
+		return true;
+	}
+
+	if (id == 70)
+	{
+		cat = EECAT_FCR;
+		idx = 31;
+		return true;
+	}
+
+	return false;
+}
+
+template<typename T>
+T reverse_bytes(T value)
+{
+	const u8* raw_value = reinterpret_cast<u8*>(&value);
+	if constexpr (sizeof(T) == 4) 
+	{
+		return 	(raw_value[0]) | 
+				(raw_value[1] << 8) | 
+				(raw_value[2] << 16) | 
+				(raw_value[3] << 24);
+	} 
+	else if constexpr (sizeof(T) == 2)
+	{
+		return 	(raw_value[0]) | 
+				(raw_value[1] << 8);
+	} 
+
+	return value;
+}
+
+// really hacky way to detect endianess
+inline bool IsBigEndian()
+{
+	volatile union {
+		uint32_t i;
+		char c[4];
+    } betest;
+
+	betest.i = 0x01020304;
+    return betest.c[0] == 1;
+}
+
+#define BIG_ENDIFY_IT(x) do { if (!IsBigEndian()) { x = reverse_bytes(x); } } while(false);
+
+constexpr
+u8
+ASCIIToValue(char symbol)
+{
+	if ((symbol >= '0') && (symbol <= '9'))
+	{
+		return (symbol - '0');
+	}
+	else if ((symbol >= 'a') && (symbol <= 'f'))
+	{
+		return (symbol - 'a' + 0xa);
+	}
+	else if ((symbol >= 'A') && (symbol <= 'F'))
+	{
+		return (symbol - 'A' + 0xa);
+	}
+
+	return 0;
+}
+
+constexpr 
+int
+ValueToASCII(u8 value)
+{
+	constexpr const char* digitsLookup = "0123456789abcdef";
+	return digitsLookup[std::clamp(value, (u8)0, (u8)16)];
+}
+
+template<typename T>
+inline
+bool
+WriteHexValue(char* string, std::size_t& outSize, T value)
+{
+	if (outSize + sizeof(T) * 2 > MAX_DEBUG_PACKET_SIZE)
+		return false;
+	
+	BIG_ENDIFY_IT(value);
+	for (size_t i = 0; i < sizeof(T); i++)
+	{
+		const u8* data = reinterpret_cast<u8*>(&value) + i;
+		string[outSize++] = ValueToASCII((*data) >> 4);
+		string[outSize++] = ValueToASCII((*data) & 0xf);
+	}
+	
+	return true;
+}
+
+constexpr 
+void
+EncodeHex(
+	const u8* input,
+	std::size_t inputSize,
+	char* output,
+	std::size_t outputSize
+)
+{
+	for (size_t i = 0; i < inputSize; i++)
+	{
+		*output++ = ValueToASCII((input[i]) >> 4);
+		*output++ = ValueToASCII((input[i]) & 0xf);
+	}
+}
+
+constexpr 
+void
+DecodeHex(
+	const char* input,
+	std::size_t inputSize,
+	u8* output,
+	std::size_t outputSize
+)
+{
+	for (size_t i = 0; i < inputSize; i += 2)
+	{
+		u8 value = ASCIIToValue(input[i]) << 4;
+		if (i + 1 < inputSize)
+			value |= ASCIIToValue(input[i + 1]);
+	}
+}
+
+constexpr
+u8
+CalculateChecksum(
+	const char* data,
+	std::size_t size
+)
+{
+	u8 checksum = 0;
+	for (std::size_t i = 0; i < size; i++)
+		checksum += data[i];
+
+	return checksum;
+}
+
+constexpr 
+u8
+CalculateChecksum(std::string_view data)
+{
+	return CalculateChecksum(data.data(), data.size());
+}
+
+constexpr
+bool
+IsSameString(
+	const char* source, 
+	std::size_t sourceLength, 
+	const char* compare,
+	std::size_t compareLength
+)
+{
+	for (size_t i = 0; i < std::min(sourceLength, compareLength); i++)
+	{
+		if (source[i] != compare[i])
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+constexpr
+bool
+IsSameString(
+	std::string_view source,
+	std::string_view compare
+)
+{
+	return IsSameString(source.data(), source.size(), compare.data(), compare.size());
+}
 
 template<typename T>
 void
 ExecuteCPUTask(DebugInterface* cpuInterface, T&& func)
 {
+	std::scoped_lock<std::mutex> sc(CPUTransaction);
 	if (!cpuInterface->isAlive())
 		return;		// just don't execute this
 
@@ -446,6 +420,7 @@ GDBServer::~GDBServer()
 void 
 GDBServer::resumeExecution()
 {
+	std::scoped_lock<std::mutex> sc(CPUTransaction);
 	if (m_debugInterface->isAlive() && m_debugInterface->isCpuPaused())
 		m_debugInterface->resumeCpu();
 }
@@ -453,6 +428,7 @@ GDBServer::resumeExecution()
 void 
 GDBServer::stopExecution()
 {
+	std::scoped_lock<std::mutex> sc(CPUTransaction);
 	if (m_debugInterface->isAlive() && !m_debugInterface->isCpuPaused())
 		m_debugInterface->pauseCpu();
 }
@@ -460,21 +436,26 @@ GDBServer::stopExecution()
 void 
 GDBServer::singleStep()
 {
-	ExecuteCPUTask(m_debugInterface, [this]() {
-		// Allow the cpu to skip this pc if it is a breakpoint
-		CBreakPoints::SetSkipFirst(m_debugInterface->getCpuType(), m_debugInterface->getPC());
-		const u32 pc = m_debugInterface->getPC();
-		const MIPSAnalyst::MipsOpcodeInfo info = MIPSAnalyst::GetOpcodeInfo(m_debugInterface, pc);
+	if (!m_debugInterface->isAlive() || !m_debugInterface->isCpuPaused())
+	{
+		Console.Warning("GDB: trying to single step when cpu is not alive or not paused.");
+		return;
+	}
 
-		u32 breakAddress = pc + 0x4;
-		if (info.isBranch)
-			breakAddress = (info.isConditional ? (info.conditionMet ? info.branchTarget : pc + (2 * 4)) : info.branchTarget);
+	// Allow the cpu to skip this pc if it is a breakpoint
+	CBreakPoints::SetSkipFirst(m_debugInterface->getCpuType(), m_debugInterface->getPC());
+	const u32 pc = m_debugInterface->getPC();
+	const MIPSAnalyst::MipsOpcodeInfo info = MIPSAnalyst::GetOpcodeInfo(m_debugInterface, pc);
 
-		if (info.isSyscall)
-			breakAddress = info.branchTarget; // Syscalls are always taken
+	u32 breakAddress = pc + 0x4;
+	if (info.isBranch)
+		breakAddress = (info.isConditional ? (info.conditionMet ? info.branchTarget : pc + (2 * 4)) : info.branchTarget);
 
-		CBreakPoints::AddBreakPoint(m_debugInterface->getCpuType(), breakAddress, true);
-	});
+	if (info.isSyscall)
+		breakAddress = info.branchTarget; // Syscalls are always taken
+
+	CBreakPoints::AddBreakPoint(m_debugInterface->getCpuType(), breakAddress, true);
+	m_debugInterface->resumeCpu();
 }
 
 bool 
@@ -503,15 +484,161 @@ GDBServer::updateThreadList()
 	ExecuteCPUTask(m_debugInterface, [this]() { m_stateThreads = m_debugInterface->getThreadList(); });
 }
 
-std::size_t 
-GDBServer::processPacket(
-	const char* inData, 
-	std::size_t inSize,
-	void* outData, 
-	std::size_t& outSize
-)
+u32 
+GDBServer::getRegisterSize(int id)
 {
-	std::size_t offset = 0;
+	return 32;
+}
+
+bool 
+GDBServer::readRegister(int threadId, int id, u32& value)
+{
+	if (!m_debugInterface->isAlive() || m_debugInterface->isCpuPaused())
+		return false;
+
+	int cat = 0;
+	int idx = 0;
+	if (!ObtainCategoryAndIndex(id, cat, idx))
+		return false;
+
+	u128 regValue = m_debugInterface->getRegister(cat, idx);
+	value = regValue._u32[0];
+	return true;
+}
+
+bool 
+GDBServer::writeRegister(int threadId, int id, u32 value)
+{
+	if (!m_debugInterface->isAlive() || m_debugInterface->isCpuPaused())
+		return false;
+
+	int cat = 0;
+	int idx = 0;
+	if (!ObtainCategoryAndIndex(id, cat, idx))
+		return false;
+
+	m_debugInterface->setRegister(cat, idx, u128::From32(value));
+	return true;
+}
+
+bool 
+GDBServer::writePacketBegin()
+{
+	std::size_t& outSize = *m_outSize;
+	if (outSize + (m_dontReplyAck ? 1 : 2) >= MAX_DEBUG_PACKET_SIZE)
+		return false;
+
+	char* writeData = reinterpret_cast<char*>(m_outData) + outSize;
+	if (!m_dontReplyAck)
+		writeData[outSize++] = '+';
+
+	writeData[outSize++] = '$';
+	return true;
+}
+
+bool 
+GDBServer::writePacketEnd()
+{
+	std::size_t& outSize = *m_outSize;
+	if (outSize + 3 >= MAX_DEBUG_PACKET_SIZE)
+		return false;
+
+	char* data = reinterpret_cast<char*>(m_outData);
+	const u8 checksum = CalculateChecksum(data + (m_dontReplyAck ? 1 : 2), outSize - (m_dontReplyAck ? 1 : 2));
+
+	data += outSize;
+	*data++ = '#';
+	*data++ = ValueToASCII((checksum >> 4) 	& 0xf);
+	*data++ = ValueToASCII((checksum) 		& 0xf);
+	outSize += 3;
+
+	return true;
+}
+
+bool 
+GDBServer::writePacketData(const char* data, std::size_t size)
+{
+	std::size_t& outSize = *m_outSize;
+	if (outSize + size >= MAX_DEBUG_PACKET_SIZE)
+		return false;
+
+	std::memcpy((char*)m_outData + outSize, data, size);
+	outSize += size;
+	return true;
+}
+
+bool 
+GDBServer::writeBaseResponse(std::string_view data)
+{
+	if (!writePacketBegin())
+		return false;
+
+	if (!writePacketData(data.data(), data.size()))
+		return false;
+
+	if (!writePacketEnd())
+		return false;
+
+	return true;
+}
+
+bool 
+GDBServer::writeThreadId(int threadId, int processId)
+{
+	char threadIdString[16] = {};
+	int charsWritten = 0;
+
+	if (m_multiprocess)
+		charsWritten = snprintf(threadIdString, 16, "%x.%x", processId, threadId);
+	else
+		charsWritten = snprintf(threadIdString, 16, "%x", threadId);
+
+	if (charsWritten < 1)
+		return false;
+
+	return writePacketData(threadIdString, charsWritten);
+}
+
+bool 
+GDBServer::writeRegisterValue(int threadId, int registerNumber)
+{
+	std::size_t& outSize = *m_outSize;
+	const u32 registerSize = getRegisterSize(registerNumber);
+	const std::size_t finalSize = outSize + registerSize;
+	if (outSize + registerSize >= MAX_DEBUG_PACKET_SIZE)
+		return false;
+
+	u32 value = 0;
+	char* buffer = reinterpret_cast<char*>(m_outData);
+	if (readRegister(threadId, registerNumber, value))
+		while (outSize < finalSize)
+			buffer[outSize++] = 'x';
+	else
+		if (!WriteHexValue(buffer, outSize, value))
+			return false;
+
+	return true;
+}
+
+bool 
+GDBServer::writeAllRegisterValues(int threadId)
+{
+	for	(int i = 0; i < 72; i++)
+	{
+		if (!writeRegisterValue(threadId, i))
+		{
+			return false;
+		}
+	}	
+
+	return true;
+}
+
+// true - continue packets processing
+// false - stop and send packet as is
+bool 
+GDBServer::processXferPacket(std::string_view data)
+{
 	auto makeStringView = [](std::string_view data, std::size_t& offset, char symbol, char nextSymbol, bool notEqual = false) -> std::string_view {
 		const std::size_t beginIndex = data.find_first_of(symbol, offset);
 		const std::size_t endIndex = nextSymbol == '\0' ? data.size() : (
@@ -528,474 +655,367 @@ GDBServer::processPacket(
 		offset = endIndex;
 		return std::string_view(data.data() + beginIndex + 1, endIndex - beginIndex - 1);
 	};
-
-	auto writePacketData = [this, outData, &outSize](const char* data, std::size_t size)->bool {
-		if (outSize + size >= MAX_DEBUG_PACKET_SIZE)
-		{
-			return false;
-		}
-
-		std::memcpy((char*)outData + outSize, data, size);
-		outSize += size;
-		return true;
-	};
-
-	auto writePacketBegin = [this, outData, &outSize]() -> bool {
-		if (outSize + (m_dontReplyAck ? 1 : 2) >= MAX_DEBUG_PACKET_SIZE)
-		{
-			return false;
-		}
-
-		char* writeData = reinterpret_cast<char*>(outData) + outSize;
-		if (!m_dontReplyAck)
-		{
-			writeData[outSize++] = '+';
-		}
-
-		writeData[outSize++] = '$';
-		return true;
-	};
-
-	auto writePacketEnd = [this, outData, &outSize]() -> bool {
-		if (outSize + 3 >= MAX_DEBUG_PACKET_SIZE)
-		{
-			return false;
-		}
-
-		char* data = reinterpret_cast<char*>(outData);
-		const u8 checksum = CalculateChecksum(data + (m_dontReplyAck ? 1 : 2), outSize - (m_dontReplyAck ? 1 : 2));
-
-		data += outSize;
-		*data++ = '#';
-		*data++ = ValueToASCII((checksum >> 4) & 0xf);
-		*data++ = ValueToASCII((checksum)&0xf);
-		outSize += 3;
-
-		return true;
-	};
-
-	auto writeBaseResponse = [this, outData, &outSize, &writePacketBegin, &writePacketData, &writePacketEnd](std::string_view stringValue) -> bool {
-		if (!writePacketBegin())
-			return false;
-
-		if (!writePacketData(stringValue.data(), stringValue.size()))
-			return false;
-
-		if (!writePacketEnd())
-			return false;
-
-		return true;
-	};
-
-	auto writeThreadId = [this, outData, &outSize, &writePacketData](int threadId, int processId = 1) -> bool {
-		char threadIdString[16] = {};
-		int charsWritten = 0;
-
-		if (m_multiprocess)
-			charsWritten = snprintf(threadIdString, 16, "%x.%x", processId, threadId);
-		else
-			charsWritten = snprintf(threadIdString, 16, "%x", threadId);
-
-		if (charsWritten < 1)
-			return false;
-
-		return writePacketData(threadIdString, charsWritten);
-	};
-
-	/*
-	auto processCPUThreadsPacket = [this, outData, &outSize]()
+		
+	std::size_t localOffset = 0;
+	const auto verbString = makeStringView(data, localOffset, ':', ':');
+	const auto sentenceString = std::string_view(data.data(), localOffset - verbString.size() - 1);
+	const auto annexString = makeStringView(data, localOffset, ':', ':');
+	const auto offsetString = makeStringView(data, localOffset, ':', ',');
+	const auto lengthString = makeStringView(data, localOffset, ',', '\0');
+	if (verbString.empty() || annexString.empty() || offsetString.empty() || lengthString.empty())
 	{
-		bool paused = m_debugInterface->isCpuPaused();
-		std::string threadsString;
-		threadsString += "<?target version=\"1.0\"?>\n";
-		threadsString += "<threads>\n";
+		Console.Warning("GDB: one of the arguments for Xfer command was empty.");
+		return false;
+	}
 
-		if (!paused)
-		{
-			m_debugInterface->pauseCpu();
-			while (m_debugInterface->isCpuPaused())
-			{
-				Threading::Sleep(1);
-			}
-		}	
-
-		for (const auto& threadHandle : m_debugInterface->getThreadList())
-		{
-			threadsString += "<thread id=\"" + std::to_string(threadHandle->TID()) + "\"";
-			threadsString += " name=\"" + std::to_string(threadHandle->EntryPoint()) + "\"";	
-		}
+	std::size_t offset = 0;
+	std::size_t length = 0;
+	if (std::from_chars(offsetString.data(), offsetString.data() + offsetString.size(), offset, 16).ec != std::errc())
+	{
+		Console.Warning("GDB: failed to convert offset ot integer.");
+		return false;
+	}	
 		
-		if (!paused)
+	if (std::from_chars(lengthString.data(), lengthString.data() + lengthString.size(), length, 16).ec != std::errc())
+	{
+		Console.Warning("GDB: failed to convert length ot integer.");
+		return false;
+	}
+
+	if (IsSameString(sentenceString, "features"))
+	{
+		char firstSymbol = 'm';
+		const std::string& targetXML = (m_debugInterface->getCpuType() == BREAKPOINT_EE) ? targetEEXML : targetIOPXML;
+		if (targetXML.size() - offset < length)
 		{
-			m_debugInterface->resumeCpu();
+			offset = std::min(targetXML.size() - 1, offset);
+			length = targetXML.size() - offset;
+			firstSymbol = 'l';
 		}
 
-		threadsString += "</threads>\n";
-		return threadsString;
+		bool success = writePacketBegin();
+		success |= writePacketData(&firstSymbol, 1);
+		success |= writePacketData(targetXML.data() + offset, length);
+		success |= writePacketEnd();
+
+		DEBUG_WRITE("        features request");
+		return success;
+	}
+		
+	if (IsSameString(sentenceString, "threads"))
+	{
+		DEBUG_WRITE("        threads request");
+		return false;
+	}
+
+	// we don't support other 
+	Console.Warning("GDB: unsupported Xfer packet [%s].", data.data());
+	writeBaseResponse("");
+	return true;
+}
+
+bool 
+GDBServer::processQueryPacket(std::string_view data)
+{
+	auto writeThreadInfo = [this]() -> bool {
+		if (m_stateThreadCounter == -1)
+			return false;
+
+		if (m_stateThreads.size() <= static_cast<std::size_t>(m_stateThreadCounter))
+		{
+			writeBaseResponse("l");
+			DEBUG_WRITE("         thread info end");
+			return true;
+		}
+
+		bool success = writePacketBegin();
+		success |= writePacketData("m", 1);
+		success |= writeThreadId(m_stateThreads.at(m_stateThreadCounter)->TID());
+		success |= writePacketEnd();
+		if (!success)
+			return false;
+
+		DEBUG_WRITE("         thread info %i", m_stateThreadCounter);
+		m_stateThreadCounter++;
+		return true;
 	};
-	*/
 
-	auto processXferPacket = [this, outData, &outSize, &writeBaseResponse, &writePacketBegin, &writePacketData, &writePacketEnd, makeStringView](std::string_view data) -> bool {
-		std::size_t localOffset = 0;
-		const auto verbString = makeStringView(data, localOffset, ':', ':');
-		const auto sentenceString = std::string_view(data.data(), localOffset - verbString.size() - 1);
-		const auto annexString = makeStringView(data, localOffset, ':', ':');
-		const auto offsetString = makeStringView(data, localOffset, ':', ',');
-		const auto lengthString = makeStringView(data, localOffset, ',', '\0');
-		if (verbString.empty() || annexString.empty() || offsetString.empty() || lengthString.empty())
-		{
-			Console.Warning("GDB: one of the arguments for Xfer command was empty.");
-			writeBaseResponse("E01");
-			return false;
-		}
+	auto writeTraceStatus = [this]() -> bool {
+		bool success = writePacketBegin();
+		success |= writePacketData(m_debugInterface->isAlive() ? "T1" : "T0", 2);
+		success |= writePacketEnd();
+		return success;
+	};
 
-		std::size_t offset = 0;
-		std::size_t length = 0;
-		if (std::from_chars(offsetString.data(), offsetString.data() + offsetString.size(), offset, 16).ec != std::errc())
-		{
-			Console.Warning("GDB: failed to convert offset ot integer.");
-			writeBaseResponse("E01");
-			return false;
-		}	
-		
-		if (std::from_chars(lengthString.data(), lengthString.data() + lengthString.size(), length, 16).ec != std::errc())
-		{
-			Console.Warning("GDB: failed to convert length ot integer.");
-			writeBaseResponse("E01");
-			return false;
-		}
+	DEBUG_WRITE("GDB: processing query packet...");
+	if (data.empty())
+		return false;
 
-		if (IsSameString(sentenceString, "features"))
-		{
-			char firstSymbol = 'm';
-			const std::string& targetXML = (m_debugInterface->getCpuType() == BREAKPOINT_EE) ? targetEEXML : targetIOPXML;
-			if (targetXML.size() - offset < length)
+	switch (data[1])
+	{
+		case 'A':
+			if (IsSameString(data, "qAttached"))
 			{
-				offset = std::min(targetXML.size() - 1, offset);
-				length = targetXML.size() - offset;
-				firstSymbol = 'l';
+				DEBUG_WRITE("    attached");
+				writeBaseResponse("1");
+				return true;
 			}
+			break;
+		case 'f':
+			if (IsSameString(&data[2], "ThreadInfo"))
+			{
+				DEBUG_WRITE("    query thread info");
+				m_stateThreadCounter = 0;
+				updateThreadList();
+
+				DEBUG_WRITE("        thread info begin");
+				return writeThreadInfo();
+			}
+			break;
+		case 's':
+			if (IsSameString(&data[2], "ThreadInfo"))
+			{
+				return writeThreadInfo();
+			}
+
+			break;
+
+		case 'C': // get current thread
+		{ 
+			DEBUG_WRITE("    get current thread");
+			const auto currentThread = m_debugInterface->getCurrentThread();
+			if (currentThread == nullptr)
+				return false;
 
 			bool success = writePacketBegin();
-			success |= writePacketData(&firstSymbol, 1);
-			success |= writePacketData(targetXML.data() + offset, length);
+			success |= writePacketData("QC", 2);
+			success |= writeThreadId(currentThread->TID());
 			success |= writePacketEnd();
-
-			if (!success)
-			{
-				outSize = 0;
-				writeBaseResponse("E01");
-				Console.Warning("GDB: failed to write features info .");
-			}
-
-			DEBUG_WRITE("GDB: features request");
-			return false;
+			return success;
 		}
-		
-		if (IsSameString(sentenceString, "threads"))
-		{
-			DEBUG_WRITE("GDB: threads request");
-		}
+		break;
 
-		// we don't support other 
-		Console.Warning("GDB: unsupported Xfer packet [%s].", data.data());
-		writeBaseResponse("");
-		return false;
-	};
-
-	// true - continue packets processing
-	// false - stop and send packet as is
-	auto processQueryPacket = [this, outData, &outSize, &offset, &writePacketBegin, &writePacketData, &writePacketEnd, &writeBaseResponse, &writeThreadId, &processXferPacket](std::string_view data) -> bool {
-		auto writeThreadInfo = [this, outData, &outSize, &writeBaseResponse, &writePacketBegin, &writePacketData, &writePacketEnd, &writeThreadId]() -> bool {
-			if (m_stateThreadCounter == -1)
+		case 'S':
+			if (IsSameString(data, "qSymbol:"))
 			{
-				return false;
-			}
-
-			if (m_stateThreads.size() <= static_cast<std::size_t>(m_stateThreadCounter))
-			{
-				writeBaseResponse("l");
-				DEBUG_WRITE("GDB: thread info enumerate end");
+				DEBUG_WRITE("    symbol request");
+				writeBaseResponse("OK");
 				return true;
 			}
 
-			bool success = writePacketBegin();
-			success |= writePacketData("m", 1);
-			success |= writeThreadId(m_stateThreads.at(m_stateThreadCounter)->TID());
-			//success = WriteHexValue(reinterpret_cast<char*>(outData), outSize, m_stateThreads.at(m_stateThreadCounter)->TID());
-			success |= writePacketEnd();
-			if (!success)
+			if (IsSameString(data, "qSupported"))
 			{
-				outSize = 0;
-				return false;
+				DEBUG_WRITE("    supported features request");
+				writeBaseResponse(GDB_FEATURES);
+				return true;
 			}
-							
-			DEBUG_WRITE("GDB: thread info enumerating");		
-			m_stateThreadCounter++;
-			return true;
-		};
-		
-		if (data.empty())
-		{
-			writeBaseResponse("E01");
-			return false;
-		}
-
-		auto writeTraceStatus = [this, outData, &outSize, &writeBaseResponse, &writePacketBegin, &writePacketData, &writePacketEnd]() -> bool {
-			bool success = writePacketBegin();
-			success |= writePacketData(m_debugInterface->isAlive() ? "T1" : "T0", 2);
-			// TODO: optional fields here
-			success |= writePacketEnd();
-			if (!success)
+			break;
+		case 'T':
+			if (IsSameString(data, "qTStatus"))
 			{
-				outSize = 0;
-				return false;
+				DEBUG_WRITE("    trace status request");
+				return writeTraceStatus();
 			}
 
-			return true;
-		};
-
-		switch (data[1])
-		{
-			case 'A':
-				if (IsSameString(data, "qAttached"))
-				{
-					writeBaseResponse("1");
+			if (IsSameString(data, "qThreadExtraInfo"))
+			{
+				DEBUG_WRITE("    extra thread info request");
+				writeBaseResponse("00");
+				return true;
+			}
+			break;
+		case 'X':
+			if (IsSameString(data, "qXfer:"))
+			{
+				DEBUG_WRITE("    Xfer request");
+				if (data.size() < 7)
 					return false;
-				}
-				break;
-			case 'f':
-				if (IsSameString(&data[2], "ThreadInfo"))
-				{
-					m_stateThreadCounter = 0;
 
-					DEBUG_WRITE("GDB: thread info enumerate begin");
-					updateThreadList();
-					if (!writeThreadInfo())
-					{
-						Console.Warning("GDB: failed to get thread info.");
-						writeBaseResponse("E01");
-					}
-
-					return false;
-				}
-				break;
-			case 's':
-				if (IsSameString(&data[2], "ThreadInfo"))
-				{ 
-					if (!writeThreadInfo())
-					{
-						Console.Warning("GDB: failed to get thread info.");
-						writeBaseResponse("E01");
-					}
-
-					return false;
-				}
-
-				break;
-
-			case 'C': { // get current thread 
-				const auto currentThread = m_debugInterface->getCurrentThread();
-				if (currentThread == nullptr)
-				{
-					writeBaseResponse("E01");
-					return false;
-				}
-
-				bool success = writePacketBegin();
-				success |= writePacketData("QC", 2);
-				success |= writeThreadId(currentThread->TID());
-				success |= writePacketEnd();
-				if (!success)
-				{
-					outSize = 0;
-					writeBaseResponse("E01");
-				}
-
-				return false;
+				processXferPacket(std::string_view(data.data() + 6, data.size() - 6));
+				return true;
 			}
 			break;
 
-			case 'S':
-				if (IsSameString(data, "qSymbol:"))
-				{
-					DEBUG_WRITE("GDB: symbol request");
-					writeBaseResponse("OK");
-					return false;
-				}
+		default:
+			break;
+	}
 
-				if (IsSameString(data, "qSupported"))
-				{
-					DEBUG_WRITE("GDB: supported features");
-					writeBaseResponse(GDB_FEATURES);
-					return false;
-				}
-				break;
-			case 'T':
-				if (IsSameString(data, "qTStatus"))
-				{
-					DEBUG_WRITE("GDB: qTStatus");
-					if (!writeTraceStatus()) 
-					{
-						Console.Warning("GDB: failed to write thread status.");
-						writeBaseResponse("E01");
-					}
-					
-					return false;
-				}
+	// we don't support this command rn
+	Console.Warning("GDB: unknown query operation [%s]", data.data());
+	writeBaseResponse("");
+	return true;
+}
 
-				if (IsSameString(data, "qThreadExtraInfo"))
-				{
-					writeBaseResponse("00");
-					return false;
-				}
-				break;
-			case 'X':
-				if (IsSameString(data, "qXfer:"))
-				{
-					if (data.size() < 7)
-					{
-						Console.Warning("GDB: invalid \"qXfer\" packet.");
-						writeBaseResponse("E01");
-						return false;
-					}
-
-					return processXferPacket(std::string_view(data.data() + 6, data.size() - 6));
-				}
-				break;
-
-			default:
-				break;
+bool 
+GDBServer::processGeneralQueryPacket(std::string_view data)
+{
+	DEBUG_WRITE("GDB: processing general query packet...");
+	const std::string_view threadEventsString = "QThreadEvents:";
+	if (IsSameString(data, threadEventsString))
+	{
+		DEBUG_WRITE("     processing thread events...");
+		const char* eventsEnableString = data.data() + threadEventsString.size();
+		if (*eventsEnableString == '1')
+			m_eventsEnabled = true;
+		else if (*eventsEnableString == '0')
+			m_eventsEnabled = false;
+		else
+		{
+			return false;
 		}
 
-		// we don't support this command rn
-		Console.Warning("GDB: unknown query operation [%s]", data.data());
+		DEBUG_WRITE("    events %s", m_eventsEnabled ? "enabled" : "disabled");
+		writeBaseResponse("OK");
+		return true;
+	}
+
+	Console.Warning("GDB: unknown general operation [%s]", data.data());
+	writeBaseResponse("");
+	return true;
+}
+
+bool 
+GDBServer::processMultiletterPacket(std::string_view data)
+{
+	DEBUG_WRITE("GDB: processing multiletter packet...");
+	if (IsSameString(data, "vMustReplyEmpty"))
+	{
+		DEBUG_WRITE("    must reply empty");
 		writeBaseResponse("");
-		return false;
-	};
-	
-	auto processGeneralPacket = [this,&writeBaseResponse](std::string_view data) -> bool {
-		const std::string_view threadEventsString = "QThreadEvents:";
-		if (IsSameString(data, threadEventsString))
+		return true; 
+	}
+
+	if (IsSameString(data, "vCtrlC"))
+	{
+		DEBUG_WRITE("    ctrl+c interrupt");
+		writeBaseResponse("OK");
+		return true;
+	}
+
+	if (IsSameString(data, "vCont"))
+	{
+		DEBUG_WRITE("    processing vCont packet...");
+		if (data[5] == '?')
 		{
-			const char* eventsEnableString = data.data() + threadEventsString.size();
-			if (*eventsEnableString == '1')
-				m_eventsEnabled = true;
-			else if (*eventsEnableString == '0')
-				m_eventsEnabled = false;
-			else
-			{
-				Console.Warning("GDB: invalid \"QThreadEvents\" packet.");
-				writeBaseResponse("E01");
+			DEBUG_WRITE("        vCont supported features reply");
+			writeBaseResponse("vCont;c;C;s;S;t");
+			return true;
+		}
+
+		if (data[5] == ';')
+		{
+			DEBUG_WRITE("        vCont apply operation [%s]", data.data());
+			if (!m_debugInterface->isAlive())
 				return false;
-			}
 
-			DEBUG_WRITE("GDB: thread events");
-			writeBaseResponse("OK");
 			return false;
 		}
 
-		Console.Warning("GDB: unknown general operation [%s]", data.data());
-		writeBaseResponse("");
+		// invalid packet, don't process it
 		return false;
-	};
+	}
 
-	auto processMultiLetterPacket = [this, &writeBaseResponse](std::string_view data) -> bool {
-		if (IsSameString(data, "vMustReplyEmpty"))
-		{
-			DEBUG_WRITE("GDB: must reply empty");
-			writeBaseResponse("");
-			return false;
-		}
+	// we don't support this command rn
+	Console.Warning("GDB: unknown \"vCont\" operation [%s]", data.data());
+	writeBaseResponse("");
+	return true;
+}
 
-		if (IsSameString(data, "vCtrlC"))
-		{
-			DEBUG_WRITE("GDB: ctrl+c interrupt");
-			writeBaseResponse("OK");
-			return false;
-		}
+bool 
+GDBServer::processThreadPacket(std::string_view data)
+{
+	DEBUG_WRITE("GDB: processing thread packet...");
+	if (data[1] == 'c' || data[1] == 'g')
+	{
+		return writeBaseResponse("OK");
+	}
 
-		if (IsSameString(data, "vCont"))
-		{
-			if (data[5] == '?')
+	/*
+	switch (data[1])
+	{
+		case 'c':
+			DEBUG_WRITE("    thread resume");
+			if (IsSameString(data.data() + 2, 2, "-1", 2))
 			{
-				DEBUG_WRITE("GDB: vCont support");
-				writeBaseResponse("vCont;c;C;s;S;t");
-				return false;
+				resumeExecution();
+				return writeBaseResponse("OK");
 			}
 
-			if (data[5] == ';')
-			{
-				if (!m_debugInterface->isAlive())
-				{
-					writeBaseResponse("E01");
-					return false;
-				}
-
-				// #TODO: 
-				DEBUG_WRITE("GDB: vCont [%s]", data.data());
-				switch (data[6])
-				{
-					case 'c':
-						writeBaseResponse("E01");
-						return false;
-					case 's':
-						writeBaseResponse("E01");
-						return false;
-					case 't':
-						writeBaseResponse("E01");
-						return false;
-					case 'r':
-						writeBaseResponse("E01");
-						return false;
-					default:
-						writeBaseResponse("E01");
-						return false;
-				}
-			}
-
-			// invalid packet, don't process it
-			Console.Warning("GDB: invalid \"vCont\" packet.");
-			writeBaseResponse("E01");
+			Console.Warning("GDB: NOT IMPLEMENTED: continue for thread.");
 			return false;
-		}
+		case 'g':
+			DEBUG_WRITE("    thread read registers");
 
-		// we don't support this command rn
-		Console.Warning("GDB: unknown \"vCont\" operation [%s]", data.data());
-		writeBaseResponse("");
-		return false;
-	};
+			// TODO: make reading registers for other threads
+			bool success = writePacketBegin();
+			success |= writeAllRegisterValues(0);
+			success |= writePacketEnd();
+			return success;
 
-	auto processThreadOperations = [this, &writeBaseResponse](std::string_view data) -> bool {
-		switch (data[1])
-		{
-			case 'c':
-				if (IsSameString(data.data() + 2, 2, "-1", 2))
-				{
-					if (!m_debugInterface->isAlive() || !m_debugInterface->isCpuPaused())	
-					{
-						Console.Warning("GDB: trying to continue cpu execution when it's impossible.");
-						writeBaseResponse("OK");	
-						return false;	
-					}
+		default:
+			break;
+	}
+	*/
 
-					DEBUG_WRITE("GDB: resume cpu");
-					m_debugInterface->resumeCpu();
-					writeBaseResponse("OK");
-					return false;
-				}
-				
-				Console.Warning("GDB: NOT IMPLEMENTED: continue for thread.");
-				writeBaseResponse("E01");	
-				break;
-			default:
-				break;
-		}
+	Console.Warning("GDB: unknown thread operation [%s]", data.data());
+	writeBaseResponse("");
+	return true;
+}
 
-		Console.Warning("GDB: unknown thread operation [%s]", data.data());
-		writeBaseResponse("");
-		return false;
-	};
+/*
+[    3.3770] GDB: processing query packet...
+[    3.3770]      supported features request
+[    4.9174] GDB: processing multiletter packet...
+[    4.9174]      must reply empty
+[    5.5354] GDB: processing thread packet...
+[    5.5354] GDB: unknown thread operation [Hg0#df]
+[    7.1434] GDB: processing query packet...
+[    7.1434]      Xfer request
+[    7.1434]      features request
+[    7.1445] GDB: processing query packet...
+[    7.1445]      trace status request
+[    7.1456] GDB: processing query packet...
+[    7.1456] GDB: unknown query operation [qTfV#81]
+[    7.1477] GDB: processing query packet...
+[    7.1477]      query thread info
+[    7.1477]          thread info begin
+[    7.1477]          thread info end
+[    7.1488] GDB: processing thread packet...
+[    7.1488]     thread resume
+[    7.1498] GDB: processing query packet...
+[    7.1498]      get current thread
+[    7.1498] GDB: failed to process GDB packet [+$qC#b4].
+[    7.1509] GDB: processing query packet...
+[    7.1509]      attached
+[    7.1520] GDB: failed to process GDB packet [+$g#67].
+*/
+
+bool 
+GDBServer::replyPacket(void* outData, std::size_t& outSize)
+{
+	if (CBreakPoints::GetBreakpointTriggered())
+	{
+		CBreakPoints::ClearTemporaryBreakPoints();
+		CBreakPoints::SetBreakpointTriggered(false);
+
+		// Our current PC is on a breakpoint.
+		// When we run the core again, we want to skip this breakpoint and run
+		CBreakPoints::SetSkipFirst(BREAKPOINT_EE, r5900Debug.getPC());
+		CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, r3000Debug.getPC());
+
+		m_outSize = &outSize;
+		m_outData = outData;
+		return writeBaseResponse("T05");	
+	}
+
+	outSize = 0;
+	return true;
+}
+
+std::size_t 
+GDBServer::processPacket(const char* inData, std::size_t inSize, void* outData, std::size_t& outSize)
+{
+	std::size_t offset = 0;
 
 	if (inSize == 1 && (*inData == '+' || *inData == '-'))
 	{
@@ -1044,24 +1064,25 @@ GDBServer::processPacket(
 		return std::size_t(-1);
 	}
 	
+	m_outSize = &outSize;
+	m_outData = outData;
+	bool success = false;
 	switch (inData[offset])
 	{
 		case '!':
-			writeBaseResponse("OK");
-			return packetEnd;
+			success = writeBaseResponse("OK");
+			break;
 
 		case 'Q': // general set
-			if (!processGeneralPacket(data))
-				return packetEnd;
+			success = processGeneralQueryPacket(data);
 			break;
+
 		case 'q': // general query
-			if (!processQueryPacket(data))
-				return packetEnd;
+			success = processQueryPacket(data);
 			break;
 
 		case 'v': // multi-letter named packet
-			if (!processMultiLetterPacket(data))
-				return packetEnd;
+			success = processMultiletterPacket(data);
 			break;
 
 		case 'z': // remove watchpoint (may be breakpoint or memory breal)
@@ -1070,52 +1091,56 @@ GDBServer::processPacket(
 			break;
 
 		case 'H':
-			if (!processThreadOperations(data))
-				return packetEnd;
+			success = processThreadPacket(data);
 			break;
 
 		case 'D':
-			writeBaseResponse("OK");
-			return packetEnd;	
-		case 'R':
+			success = writeBaseResponse("OK");
 			break;
-		case 'C': // continue with signal
-			if (!m_debugInterface->isAlive() || !m_debugInterface->isCpuPaused())	
-			{
-				Console.Warning("GDB: trying to continue cpu execution when it's impossible.");
-				writeBaseResponse("OK");	
-				return packetEnd;	
-			}
-
+			
+		case 'C': 
 			DEBUG_WRITE("GDB: resume cpu");
-			m_debugInterface->resumeCpu();
-			writeBaseResponse("OK");
-			return packetEnd;	
+			resumeExecution();
+			success = true;
+			return 0;
+
 		case 'c': // continue
-			if (!m_debugInterface->isAlive() || !m_debugInterface->isCpuPaused())	
-			{
-				Console.Warning("GDB: trying to continue cpu execution when it's impossible.");
-				writeBaseResponse("OK");	
-				return packetEnd;	
-			}
-
 			DEBUG_WRITE("GDB: resume cpu");
-			m_debugInterface->resumeCpu();
-			writeBaseResponse("OK");
-			return packetEnd;	
+			resumeExecution();
+			success = true;
+			return 0;
+
 		case 's': // step-out
-			break;
+			singleStep();
+			m_waitingForTrap = true;
+			return 0;
+
 		case '?': // signal
-			writeBaseResponse(m_debugInterface->isCpuPaused() ? "S05" : "S00");	
-			return packetEnd;	
+			success = writeBaseResponse(m_debugInterface->isCpuPaused() ? "S05" : "S00");	
 			break;
 
 		case 'g': // read registers
+			success = writePacketBegin();
+			success |= writeAllRegisterValues(0);
+			success |= writePacketEnd();
 			break;
 		case 'G': // write registers
 			break;
 		case 'p': // read register
-			break;
+		{
+			if (data.size() < 3)
+			{
+				success = false;
+				break;
+			}
+
+			u8 registedIdx = (ASCIIToValue(data[1]) << 4) | ASCIIToValue(data[2]);	
+			success = writePacketBegin();
+			success |= writeRegisterValue(0, registedIdx);
+			success |= writePacketEnd();
+		}
+		break;
+
 		case 'P': // write register
 			break;
 		case 'm': // read memory
@@ -1124,12 +1149,17 @@ GDBServer::processPacket(
 			break;
 		case 'X': // write binary memory
 			break;
-		default:
+		default:		
+			success = writeBaseResponse("");
 			break;
 	}
 
-	// we can't process this packet so we just push "end of the packet".
-	Console.Warning("GDB: unknown GDB packet [%s].", inData);
-	writeBaseResponse("");
+	if (!success)
+	{
+		Console.Error("GDB: failed to process GDB packet [%s].", inData);
+		*m_outSize = 0;
+		writeBaseResponse("E00");
+	}
+
 	return packetEnd;
 }

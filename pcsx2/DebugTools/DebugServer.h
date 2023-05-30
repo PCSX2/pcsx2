@@ -30,6 +30,7 @@ enum
 class DebugServerInterface
 {
 public:
+	virtual bool replyPacket(void* outData, std::size_t& outSize) = 0;
 	virtual std::size_t processPacket(const char* inData, std::size_t inSize, void* outData, std::size_t& outSize) = 0;
 
 protected:
@@ -47,9 +48,7 @@ public:
 	void shutdown();
 
 public:
-	void signal(int signal);
-
-public:
+	bool isConnected() const;
 	bool isRunning() const;
 	int getNetworkStatus() const;
 	int getPort() const;
@@ -73,8 +72,7 @@ protected:
 	int m_msgsock = 0;
 #endif
 	int m_port = -1;
-	u32 m_signalCount = 0;
-	int m_signals[MAX_SIGNALS] = {};
+	int m_connected = 0;
 
 	std::mutex m_debugMutex;
 	std::atomic_bool m_end = false;

@@ -89,6 +89,12 @@ void DebuggerWindow::onVMStateChanged()
 		m_actionStepOver->setEnabled(true);
 		m_actionStepOut->setEnabled(true);
 		Host::RunOnCPUThread([] {
+			if (VMManager::IsEEDebugServerConnectionUp() || VMManager::IsIOPDebugServerConnectionUp())
+			{
+				// debug server will clean up all break points
+				return;
+			}
+
 			if (CBreakPoints::GetBreakpointTriggered())
 			{
 				CBreakPoints::ClearTemporaryBreakPoints();

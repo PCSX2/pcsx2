@@ -20,6 +20,8 @@ class GDBServer final : public DebugServerInterface
 public:
 	GDBServer(DebugInterface* debugInterface);
 	~GDBServer();
+
+	bool replyPacket(void* outData, std::size_t& outSize) override;
 	std::size_t processPacket(const char* inData, std::size_t inSize, void* outData, std::size_t& outSize) override;
 
 private:
@@ -31,10 +33,35 @@ private:
 	void updateThreadList();
 
 private:
+	u32 getRegisterSize(int id);
+	bool readRegister(int threadId, int id, u32& value);
+	bool writeRegister(int threadId, int id, u32 value);
+
+private:
+	bool writePacketBegin();
+	bool writePacketEnd();
+	bool writePacketData(const char* data, std::size_t size);
+
+	bool writeBaseResponse(std::string_view data);
+	bool writeThreadId(int threadId, int processId = 1);
+	bool writeRegisterValue(int threadId, int registerNumber);
+	bool writeAllRegisterValues(int threadId);
+
+private:
+	bool processXferPacket(std::string_view data);
+	bool processQueryPacket(std::string_view data);
+	bool processGeneralQueryPacket(std::string_view data);
+	bool processMultiletterPacket(std::string_view data);
+	bool processThreadPacket(std::string_view data);
+
+private:
 	int m_stateThreadCounter = -1;
 	std::vector<std::unique_ptr<BiosThread>> m_stateThreads;
 
-	bool m_align = false;
+	void* m_outData;
+	std::size_t* m_outSize;
+
+	bool m_waitingForTrap = false;
 	bool m_multiprocess = false;
 	bool m_eventsEnabled = false;
 	bool m_dontReplyAck = false;
