@@ -16818,6 +16818,9 @@ SLES-52942:
 SLES-52943:
   name: "ESPN NFL 2K5"
   region: "PAL-E"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
   patches:
     7D5403E1:
       content: |-
@@ -46680,6 +46683,9 @@ SLUS-20919:
   name: "ESPN - NFL 2K5"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
   patches:
     42F9D5AF:
       content: |-
