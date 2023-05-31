@@ -354,7 +354,6 @@ public:
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count);
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, const GSVector4& clear_color);
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, float depth, u8 stencil);
-	bool CheckRenderPassArea(const GSVector4i& rect);
 	void EndRenderPass();
 
 	void SetViewport(const VkViewport& viewport);
