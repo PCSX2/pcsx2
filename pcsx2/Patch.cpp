@@ -479,13 +479,7 @@ u32 Patch::EnablePatches(const PatchList& patches, const EnablePatchList& enable
 			Console.WriteLn(Color_Green, fmt::format("Enabled patch: '{}'", p.name));
 
 		for (const PatchCommand& ip : p.patches)
-		{
-			if (std::none_of(s_active_patches.begin(), s_active_patches.end(),
-					[&ip](const PatchCommand* op) { return (ip == *op); }))
-			{
-				s_active_patches.push_back(&ip);
-			}
-		}
+			s_active_patches.push_back(&ip);
 
 		if (p.override_aspect_ratio.has_value())
 			s_override_aspect_ratio = p.override_aspect_ratio;
