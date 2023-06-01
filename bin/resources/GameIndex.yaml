@@ -976,6 +976,8 @@ SCAJ-20102:
 SCAJ-20104:
   name: "Ace Combat 5 - The Unsung War"
   region: "NTSC-Unk"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -983,7 +985,6 @@ SCAJ-20104:
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
-    texturePreloading: 1 # Performs better than full.
     cpuCLUTRender: 1 # Fixes sun occlusion.
 SCAJ-20105:
   name: "Armored Core - Nine breaker"
@@ -1173,6 +1174,8 @@ SCAJ-20135:
 SCAJ-20136:
   name: "Ace Combat 5 - The Unsung War [PlayStation 2 The Best]"
   region: "NTSC-Unk"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -1180,7 +1183,6 @@ SCAJ-20136:
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
-    texturePreloading: 1 # Performs better than full.
     cpuCLUTRender: 1 # Fixes sun occlusion.
 SCAJ-20137:
   name: "Musashiden II - Blademaster"
@@ -1394,6 +1396,8 @@ SCAJ-20172:
 SCAJ-20173:
   name: "Ace Combat Zero - The Belkan War"
   region: "NTSC-Unk"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -2521,6 +2525,8 @@ SCED-53068:
 SCED-53081:
   name: "Ace Combat - Squadron Leader [Demo]"
   region: "PAL-E"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -2528,11 +2534,12 @@ SCED-53081:
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
-    texturePreloading: 1 # Performs better than full.
     cpuCLUTRender: 1 # Fixes sun occlusion.
 SCED-53115:
   name: "Ace Combat - Squadron Leader [Demo]"
   region: "PAL-E"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -2540,7 +2547,6 @@ SCED-53115:
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
-    texturePreloading: 1 # Performs better than full.
     cpuCLUTRender: 1 # Fixes sun occlusion.
 SCED-53122:
   name: "Official PlayStation 2 Magazine Demo 56"
@@ -3101,6 +3107,8 @@ SCES-50410:
   name: "Ace Combat - Distant Thunder"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -3829,6 +3837,8 @@ SCES-52424:
   name: "Ace Combat - Squadron Leader"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -3836,7 +3846,6 @@ SCES-52424:
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
-    texturePreloading: 1 # Performs better than full.
     cpuCLUTRender: 1 # Fixes sun occlusion.
   patches:
     1D54FEA9:
@@ -4384,6 +4393,8 @@ SCES-54025:
 SCES-54041:
   name: "Ace Combat - The Belkan War"
   region: "PAL-M5"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -5280,6 +5291,8 @@ SCKA-20041:
 SCKA-20042:
   name: "Ace Combat 5 - The Unsung War"
   region: "NTSC-K"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -5287,7 +5300,6 @@ SCKA-20042:
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
-    texturePreloading: 1 # Performs better than full.
     cpuCLUTRender: 1 # Fixes sun occlusion.
 SCKA-20043:
   name: "Magna Carta"
@@ -5466,6 +5478,8 @@ SCKA-20069:
 SCKA-20070:
   name: "Ace Combat Zero - The Belkan War"
   region: "NTSC-K"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -5521,6 +5535,8 @@ SCKA-20081:
 SCKA-20082:
   name: "Ace Combat 5 - The Unsung War [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -5528,7 +5544,6 @@ SCKA-20082:
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
-    texturePreloading: 1 # Performs better than full.
     cpuCLUTRender: 1 # Fixes sun occlusion.
 SCKA-20086:
   name: "Shin Onimusha - Dawn of Dreams [Disc 1 of 2]"
@@ -10922,6 +10937,8 @@ SLES-50358:
 SLES-50362:
   name: "Jonny Moseley Mad Trix"
   region: "PAL-E"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes missing FMVs.
 SLES-50364:
   name: "City Crisis"
   region: "PAL-M4"
@@ -11411,9 +11428,13 @@ SLES-50613:
 SLES-50619:
   name: "Jonny Moseley Mad Trix"
   region: "PAL-F-G"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes missing FMVs.
 SLES-50620:
-  name: "Micro Machines"
+  name: "Jonny Moseley Mad Trix"
   region: "PAL-I-S"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes missing FMVs.
 SLES-50628:
   name: "Simpsons Road Rage"
   region: "PAL-M5"
@@ -26210,6 +26231,8 @@ SLPM-60167:
 SLPM-60149:
   name: "Ace Combat 04 - Shattered Skies [Trial]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -29402,7 +29425,7 @@ SLPM-65161:
   region: "NTSC-J"
 SLPM-65163:
   name: "Zhen San Guo Wu Shuang 2"
-  region: "NTSC-C"
+  region: "NTSC-T"
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes invisible text.
   patches:
@@ -38487,6 +38510,8 @@ SLPS-25052:
   name: "Ace Combat 04 - Shattered Skies"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -39826,6 +39851,8 @@ SLPS-25418:
   name: "Ace Combat 5 - The Unsung War"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -39833,7 +39860,6 @@ SLPS-25418:
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
-    texturePreloading: 1 # Performs better than full.
     cpuCLUTRender: 1 # Fixes sun occlusion.
   patches:
     86089F31:
@@ -40570,6 +40596,8 @@ SLPS-25628:
 SLPS-25629:
   name: "Ace Combat Zero - The Belkan War"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -41910,6 +41938,8 @@ SLPS-73204:
 SLPS-73205:
   name: "Ace Combat 04 - Shattered Skies [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -41978,6 +42008,8 @@ SLPS-73217:
 SLPS-73218:
   name: "Ace Combat 5 - The Unsung War [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -41985,7 +42017,6 @@ SLPS-73218:
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
-    texturePreloading: 1 # Performs better than full.
     cpuCLUTRender: 1 # Fixes sun occlusion.
 SLPS-73219:
   name: "Tales of Destiny 2 [PlayStation 2 The Best]"
@@ -42204,6 +42235,8 @@ SLPS-73249:
 SLPS-73250:
   name: "Ace Combat Zero - The Belkan War [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -42322,6 +42355,8 @@ SLPS-73408:
 SLPS-73410:
   name: "Ace Combat 04 - Shattered Skies [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -42988,6 +43023,8 @@ SLUS-20152:
   name: "Ace Combat 04 - Shattered Skies"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -43339,6 +43376,8 @@ SLUS-20229:
   name: "Jonny Moseley - Mad Trix"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes missing FMVs.
 SLUS-20230:
   name: "Max Payne"
   region: "NTSC-U"
@@ -46301,6 +46340,8 @@ SLUS-20851:
   name: "Ace Combat 5 - The Unsung War"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
@@ -46308,7 +46349,6 @@ SLUS-20851:
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
-    texturePreloading: 1 # Performs better than full.
     cpuCLUTRender: 1 # Fixes sun occlusion.
   patches:
     39B574F0:
@@ -49115,6 +49155,8 @@ SLUS-21346:
   name: "Ace Combat Zero - The Belkan War"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 3
     mipmap: 1
