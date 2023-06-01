@@ -35,9 +35,9 @@
 	";QCatchSyscalls-" \
 	";QPassSignals-" \
 	";qXfer:features:read+"\
-	";qXfer:threads:read-"\
+	";qXfer:threads:read+"\
 	";qXfer:libraries:read-"\
-	";qXfer:memory-map:read-"\
+	";qXfer:memory-map:read+"\
 	";qXfer:sdata:read-"\
 	";qXfer:siginfo:read-"\
 	";qXfer:traceframe-info:read-"\
@@ -48,13 +48,109 @@
 	";QThreadEvents-" \
 	";memory-tagging-" \
 	";tracenz-" \
-	";ConditionalBreakpoints+" \
+	";ConditionalBreakpoints-" \
 	";ConditionalTracepoints-" \
 	";TracepointSource-" \
 	";EnableDisableTracepoints-" 
 
-static const std::string targetIOPXML;
-static const std::string targetEEXML = R"(<?xml version="1.0"?>
+static const std::string_view targetIOPXML = R"(<?xml version="1.0"?>
+<!DOCTYPE feature SYSTEM "gdb-target.dtd">
+<target version="1.0">
+
+<!-- Helping GDB -->
+<architecture>mips:3000</architecture>
+<osabi>none</osabi>
+
+<!-- Mapping ought to be flexible, but there seems to be some
+     hardcoded parts in gdb, so let's use the same mapping. -->
+<feature name="org.gnu.gdb.mips.cpu">
+  <reg name="r0" bitsize="32" regnum="0"/>
+  <reg name="r1" bitsize="32"/>
+  <reg name="r2" bitsize="32"/>
+  <reg name="r3" bitsize="32"/>
+  <reg name="r4" bitsize="32"/>
+  <reg name="r5" bitsize="32"/>
+  <reg name="r6" bitsize="32"/>
+  <reg name="r7" bitsize="32"/>
+  <reg name="r8" bitsize="32"/>
+  <reg name="r9" bitsize="32"/>
+  <reg name="r10" bitsize="32"/>
+  <reg name="r11" bitsize="32"/>
+  <reg name="r12" bitsize="32"/>
+  <reg name="r13" bitsize="32"/>
+  <reg name="r14" bitsize="32"/>
+  <reg name="r15" bitsize="32"/>
+  <reg name="r16" bitsize="32"/>
+  <reg name="r17" bitsize="32"/>
+  <reg name="r18" bitsize="32"/>
+  <reg name="r19" bitsize="32"/>
+  <reg name="r20" bitsize="32"/>
+  <reg name="r21" bitsize="32"/>
+  <reg name="r22" bitsize="32"/>
+  <reg name="r23" bitsize="32"/>
+  <reg name="r24" bitsize="32"/>
+  <reg name="r25" bitsize="32"/>
+  <reg name="r26" bitsize="32"/>
+  <reg name="r27" bitsize="32"/>
+  <reg name="r28" bitsize="32"/>
+  <reg name="r29" bitsize="32"/>
+  <reg name="r30" bitsize="32"/>
+  <reg name="r31" bitsize="32"/>
+
+  <reg name="lo" bitsize="32" regnum="33"/>
+  <reg name="hi" bitsize="32" regnum="34"/>
+  <reg name="pc" bitsize="32" regnum="37"/>
+</feature>
+
+<feature name="org.gnu.gdb.mips.cp0">
+  <reg name="status" bitsize="32" regnum="32"/>
+  <reg name="badvaddr" bitsize="32" regnum="35"/>
+  <reg name="cause" bitsize="32" regnum="36"/>
+</feature>
+
+<!-- We don't have an FPU, but gdb hardcodes one, and will choke
+     if this section isn't present. -->
+<feature name="org.gnu.gdb.mips.fpu">
+  <reg name="f0" bitsize="32" type="ieee_single" regnum="38"/>
+  <reg name="f1" bitsize="32" type="ieee_single"/>
+  <reg name="f2" bitsize="32" type="ieee_single"/>
+  <reg name="f3" bitsize="32" type="ieee_single"/>
+  <reg name="f4" bitsize="32" type="ieee_single"/>
+  <reg name="f5" bitsize="32" type="ieee_single"/>
+  <reg name="f6" bitsize="32" type="ieee_single"/>
+  <reg name="f7" bitsize="32" type="ieee_single"/>
+  <reg name="f8" bitsize="32" type="ieee_single"/>
+  <reg name="f9" bitsize="32" type="ieee_single"/>
+  <reg name="f10" bitsize="32" type="ieee_single"/>
+  <reg name="f11" bitsize="32" type="ieee_single"/>
+  <reg name="f12" bitsize="32" type="ieee_single"/>
+  <reg name="f13" bitsize="32" type="ieee_single"/>
+  <reg name="f14" bitsize="32" type="ieee_single"/>
+  <reg name="f15" bitsize="32" type="ieee_single"/>
+  <reg name="f16" bitsize="32" type="ieee_single"/>
+  <reg name="f17" bitsize="32" type="ieee_single"/>
+  <reg name="f18" bitsize="32" type="ieee_single"/>
+  <reg name="f19" bitsize="32" type="ieee_single"/>
+  <reg name="f20" bitsize="32" type="ieee_single"/>
+  <reg name="f21" bitsize="32" type="ieee_single"/>
+  <reg name="f22" bitsize="32" type="ieee_single"/>
+  <reg name="f23" bitsize="32" type="ieee_single"/>
+  <reg name="f24" bitsize="32" type="ieee_single"/>
+  <reg name="f25" bitsize="32" type="ieee_single"/>
+  <reg name="f26" bitsize="32" type="ieee_single"/>
+  <reg name="f27" bitsize="32" type="ieee_single"/>
+  <reg name="f28" bitsize="32" type="ieee_single"/>
+  <reg name="f29" bitsize="32" type="ieee_single"/>
+  <reg name="f30" bitsize="32" type="ieee_single"/>
+  <reg name="f31" bitsize="32" type="ieee_single"/>
+
+  <reg name="fcsr" bitsize="32" group="float"/>
+  <reg name="fir" bitsize="32" group="float"/>
+</feature>
+</target>
+)";
+
+static const std::string_view targetEEXML = R"(<?xml version="1.0"?>
 <!DOCTYPE feature SYSTEM "gdb-target.dtd">
 <target version="1.0">
 
@@ -149,6 +245,81 @@ static const std::string targetEEXML = R"(<?xml version="1.0"?>
   <reg name="fir" bitsize="32" group="float"/>
 </feature>
 </target>
+)";
+
+/*
+	00000000h  32 MB    Main RAM (first 1 MB reserved for kernel)
+	20000000h  32 MB    Main RAM, uncached
+	30100000h  31 MB    Main RAM, uncached and accelerated
+	10000000h  64 KB    I/O registers
+	11000000h  4 KB     VU0 code memory
+	11004000h  4 KB     VU0 data memory
+	11008000h  16 KB    VU1 code memory
+	1100C000h  16 KB    VU1 data memory
+	12000000h  8 KB     GS privileged registers
+	1C000000h  2 MB     IOP RAM
+	1FC00000h  4 MB     BIOS, uncached (rom0)
+	9FC00000h  4 MB     BIOS, cached (rom09)
+	BFC00000h  4 MB     BIOS, uncached (rom0b)
+	70000000h  16 KB    Scratchpad RAM (only accessible via virtual addressing)
+*/
+static const std::string_view EEMemoryMap = R"(<?xml version="1.0"?>
+<memory-map>
+    <!-- Main memory block -->
+    <memory type="ram" start="0x0000000000000000" length="0x2000000"/>
+    <memory type="ram" start="0x0000000020000000" length="0x2000000"/>
+    <memory type="ram" start="0x0000000030100000" length="0x1f00000"/>
+
+    <!-- I/O registers -->
+    <memory type="ram" start="0x0000000010000000" length="0x0010000"/>
+
+  	<!-- VU memory -->
+    <memory type="ram" start="0x0000000011000000" length="0x0001000"/>
+    <memory type="ram" start="0x0000000011004000" length="0x0001000"/>
+    <memory type="ram" start="0x0000000011008000" length="0x0004000"/>
+    <memory type="ram" start="0x000000001100c000" length="0x0004000"/>
+
+    <!-- GS memory -->
+    <memory type="ram" start="0x0000000012000000" length="0x0002000"/>
+    
+    <!-- IOP memory -->
+	<memory type="ram" start="0x000000001c000000" length="0x0200000"/>
+
+  	<!-- BIOS -->
+	<memory type="rom" start="0x000000001fc00000" length="0x0400000"/>
+	<memory type="rom" start="0x000000009fc00000" length="0x0400000"/>
+	<memory type="rom" start="0x00000000bfc00000" length="0x0400000"/>
+
+    <!-- Scratchpad -->
+	<memory type="ram" start="0x0000000070000000" length="0x0200000"/>
+</memory-map>
+)";
+
+/*
+	KUSEG: 00000000h-7FFFFFFFh User segment
+	KSEG0: 80000000h-9FFFFFFFh Kernel segment 0
+	KSEG1: A0000000h-BFFFFFFFh Kernel segment 1
+	
+	Physical
+	00000000h  2 MB     Main RAM (same as on PSX)
+	1D000000h           SIF registers
+	1F800000h  64 KB    Various I/O registers
+	1F900000h  1 KB     SPU2 registers
+	1FC00000h  4 MB     BIOS (rom0) - Same as EE BIOS
+	
+	FFFE0000h (KSEG2)   Cache control
+*/
+static const std::string_view IOPMemoryMap = R"(<?xml version="1.0"?>
+<memory-map>
+    <!-- Main memory block -->
+	<memory type="ram" start="0x0000000000000000" length="0x2000000"/>
+	<memory type="ram" start="00000000001d000000" length="0x0800000"/>
+	<memory type="ram" start="00000000001f800000" length="0x0010000"/>
+	<memory type="ram" start="00000000001f900000" length="0x0004000"/>
+
+  	<!-- BIOS -->
+	<memory type="rom" start="00000000001fc00000" length="0x0400000"/>
+</memory-map>
 )";
 
 std::mutex CPUTransaction;
@@ -262,17 +433,11 @@ u8
 ASCIIToValue(char symbol)
 {
 	if ((symbol >= '0') && (symbol <= '9'))
-	{
 		return (symbol - '0');
-	}
 	else if ((symbol >= 'a') && (symbol <= 'f'))
-	{
 		return (symbol - 'a' + 0xa);
-	}
 	else if ((symbol >= 'A') && (symbol <= 'F'))
-	{
 		return (symbol - 'A' + 0xa);
-	}
 
 	return 0;
 }
@@ -286,7 +451,6 @@ ValueToASCII(u8 value)
 }
 
 template<typename T>
-inline
 bool
 WriteHexValue(char* string, std::size_t& outSize, T value)
 {
@@ -302,6 +466,25 @@ WriteHexValue(char* string, std::size_t& outSize, T value)
 	}
 	
 	return true;
+}
+
+template<typename T>
+T
+ReadHexValue(const char* string, std::size_t stringSize)
+{
+	T value = 0;
+	for (size_t i = 0; i < stringSize / 2; i++)
+	{
+		u8* writePtr = reinterpret_cast<u8*>(&value) + i;
+		u8 rawValue = ASCIIToValue(string[i * 2]) << 4;
+		if (i * 2 + 1 < stringSize)
+			rawValue |= ASCIIToValue(string[i * 2 + 1]);
+
+		*writePtr = rawValue;
+	}
+
+	BIG_ENDIFY_IT(value);
+	return value;
 }
 
 constexpr 
@@ -334,6 +517,8 @@ DecodeHex(
 		u8 value = ASCIIToValue(input[i]) << 4;
 		if (i + 1 < inputSize)
 			value |= ASCIIToValue(input[i + 1]);
+
+		*output++ = value;
 	}
 }
 
@@ -368,12 +553,8 @@ IsSameString(
 )
 {
 	for (size_t i = 0; i < std::min(sourceLength, compareLength); i++)
-	{
 		if (source[i] != compare[i])
-		{
 			return false;
-		}
-	}
 
 	return true;
 }
@@ -484,6 +665,27 @@ GDBServer::updateThreadList()
 	ExecuteCPUTask(m_debugInterface, [this]() { m_stateThreads = m_debugInterface->getThreadList(); });
 }
 
+void 
+GDBServer::generateThreadListString()
+{
+	updateThreadList();
+
+	m_threadListString = "<?target version=\"1.0\"?>\n";
+	m_threadListString += "<threads>\n";
+	for (const auto& thread : m_stateThreads)
+	{
+		char tempString[64] = {};
+		if (m_multiprocess)
+			snprintf(tempString, 64, "<thread id=\"%x.%x\" />\n", 1, thread->TID() + 1);
+		else
+			snprintf(tempString, 64, "<thread id=\"%x\" />\n", thread->TID() + 1);
+
+		m_threadListString += tempString;
+	}
+
+	m_threadListString += "</threads>\n";
+}
+
 u32 
 GDBServer::getRegisterSize(int id)
 {
@@ -518,6 +720,24 @@ GDBServer::writeRegister(int threadId, int id, u32 value)
 		return false;
 
 	m_debugInterface->setRegister(cat, idx, u128::From32(value));
+	return true;
+}
+
+bool 
+GDBServer::readMemory(u32 address, u32 size)
+{
+	if (!m_debugInterface->isAlive() || m_debugInterface->isCpuPaused())
+		return false;
+
+	return true;
+}
+
+bool 
+GDBServer::writeMemory(u32 address, u32 size)
+{
+	if (!m_debugInterface->isAlive() || m_debugInterface->isCpuPaused())
+		return false;
+
 	return true;
 }
 
@@ -603,7 +823,7 @@ bool
 GDBServer::writeRegisterValue(int threadId, int registerNumber)
 {
 	std::size_t& outSize = *m_outSize;
-	const u32 registerSize = getRegisterSize(registerNumber);
+	const u32 registerSize = getRegisterSize(registerNumber) / 4;
 	const std::size_t finalSize = outSize + registerSize;
 	if (outSize + registerSize >= MAX_DEBUG_PACKET_SIZE)
 		return false;
@@ -611,11 +831,15 @@ GDBServer::writeRegisterValue(int threadId, int registerNumber)
 	u32 value = 0;
 	char* buffer = reinterpret_cast<char*>(m_outData);
 	if (readRegister(threadId, registerNumber, value))
-		while (outSize < finalSize)
-			buffer[outSize++] = 'x';
-	else
+	{
 		if (!WriteHexValue(buffer, outSize, value))
 			return false;
+	}
+	else
+	{
+		while (outSize < finalSize)
+			buffer[outSize++] = '0';
+	}
 
 	return true;
 }
@@ -624,14 +848,27 @@ bool
 GDBServer::writeAllRegisterValues(int threadId)
 {
 	for	(int i = 0; i < 72; i++)
-	{
 		if (!writeRegisterValue(threadId, i))
-		{
 			return false;
-		}
-	}	
 
 	return true;
+}
+
+bool 
+GDBServer::writePaged(std::size_t offset, std::size_t length, const std::string_view& string)
+{
+	const char* firstSymbol = "m";
+	if (string.size() - offset < length)
+	{
+		offset = std::min(string.size() - 1, offset);
+		length = string.size() - offset;
+		firstSymbol = "l";
+	}
+
+	bool success = writePacketBegin();
+	success |= writePacketData(firstSymbol, 1);
+	success |= writePacketData(string.data() + offset, length);
+	success |= writePacketEnd();
 }
 
 // true - continue packets processing
@@ -648,9 +885,7 @@ GDBServer::processXferPacket(std::string_view data)
 		);
 
 		if (beginIndex == std::size_t(-1) || endIndex == std::size_t(-1))
-		{
 			return {};
-		}
 
 		offset = endIndex;
 		return std::string_view(data.data() + beginIndex + 1, endIndex - beginIndex - 1);
@@ -662,11 +897,19 @@ GDBServer::processXferPacket(std::string_view data)
 	const auto annexString = makeStringView(data, localOffset, ':', ':');
 	const auto offsetString = makeStringView(data, localOffset, ':', ',');
 	const auto lengthString = makeStringView(data, localOffset, ',', '\0');
-	if (verbString.empty() || annexString.empty() || offsetString.empty() || lengthString.empty())
+	if (verbString.empty() || offsetString.empty() || lengthString.empty())
 	{
 		Console.Warning("GDB: one of the arguments for Xfer command was empty.");
 		return false;
 	}
+
+	if (!IsSameString(verbString.data(), verbString.size(), "read", 4))
+	{
+		Console.Warning("GDB: only \"read\" operations are supported.");
+		return false;
+	}
+
+	//  [memory-map:read::0,1000#ab].
 
 	std::size_t offset = 0;
 	std::size_t length = 0;
@@ -684,28 +927,23 @@ GDBServer::processXferPacket(std::string_view data)
 
 	if (IsSameString(sentenceString, "features"))
 	{
-		char firstSymbol = 'm';
-		const std::string& targetXML = (m_debugInterface->getCpuType() == BREAKPOINT_EE) ? targetEEXML : targetIOPXML;
-		if (targetXML.size() - offset < length)
-		{
-			offset = std::min(targetXML.size() - 1, offset);
-			length = targetXML.size() - offset;
-			firstSymbol = 'l';
-		}
-
-		bool success = writePacketBegin();
-		success |= writePacketData(&firstSymbol, 1);
-		success |= writePacketData(targetXML.data() + offset, length);
-		success |= writePacketEnd();
-
 		DEBUG_WRITE("        features request");
-		return success;
+		return writePaged(offset, length, (m_debugInterface->getCpuType() == BREAKPOINT_EE) ? targetEEXML : targetIOPXML);
 	}
 		
 	if (IsSameString(sentenceString, "threads"))
 	{
 		DEBUG_WRITE("        threads request");
-		return false;
+		if (m_threadListString.empty())
+			generateThreadListString();
+
+		return writePaged(offset, length, std::string_view(m_threadListString.data(), m_threadListString.size()));
+	}
+
+	if (IsSameString(sentenceString, "memory-map"))
+	{
+		DEBUG_WRITE("        memory map request");
+		return writePaged(offset, length, (m_debugInterface->getCpuType() == BREAKPOINT_EE) ? EEMemoryMap : IOPMemoryMap);
 	}
 
 	// we don't support other 
@@ -785,7 +1023,7 @@ GDBServer::processQueryPacket(std::string_view data)
 			DEBUG_WRITE("    get current thread");
 			const auto currentThread = m_debugInterface->getCurrentThread();
 			if (currentThread == nullptr)
-				return false;
+				return writeBaseResponse(m_multiprocess ? "QCp1.t1" : "QCt1");
 
 			bool success = writePacketBegin();
 			success |= writePacketData("QC", 2);
@@ -930,65 +1168,10 @@ GDBServer::processThreadPacket(std::string_view data)
 		return writeBaseResponse("OK");
 	}
 
-	/*
-	switch (data[1])
-	{
-		case 'c':
-			DEBUG_WRITE("    thread resume");
-			if (IsSameString(data.data() + 2, 2, "-1", 2))
-			{
-				resumeExecution();
-				return writeBaseResponse("OK");
-			}
-
-			Console.Warning("GDB: NOT IMPLEMENTED: continue for thread.");
-			return false;
-		case 'g':
-			DEBUG_WRITE("    thread read registers");
-
-			// TODO: make reading registers for other threads
-			bool success = writePacketBegin();
-			success |= writeAllRegisterValues(0);
-			success |= writePacketEnd();
-			return success;
-
-		default:
-			break;
-	}
-	*/
-
 	Console.Warning("GDB: unknown thread operation [%s]", data.data());
 	writeBaseResponse("");
 	return true;
 }
-
-/*
-[    3.3770] GDB: processing query packet...
-[    3.3770]      supported features request
-[    4.9174] GDB: processing multiletter packet...
-[    4.9174]      must reply empty
-[    5.5354] GDB: processing thread packet...
-[    5.5354] GDB: unknown thread operation [Hg0#df]
-[    7.1434] GDB: processing query packet...
-[    7.1434]      Xfer request
-[    7.1434]      features request
-[    7.1445] GDB: processing query packet...
-[    7.1445]      trace status request
-[    7.1456] GDB: processing query packet...
-[    7.1456] GDB: unknown query operation [qTfV#81]
-[    7.1477] GDB: processing query packet...
-[    7.1477]      query thread info
-[    7.1477]          thread info begin
-[    7.1477]          thread info end
-[    7.1488] GDB: processing thread packet...
-[    7.1488]     thread resume
-[    7.1498] GDB: processing query packet...
-[    7.1498]      get current thread
-[    7.1498] GDB: failed to process GDB packet [+$qC#b4].
-[    7.1509] GDB: processing query packet...
-[    7.1509]      attached
-[    7.1520] GDB: failed to process GDB packet [+$g#67].
-*/
 
 bool 
 GDBServer::replyPacket(void* outData, std::size_t& outSize)
@@ -1003,6 +1186,7 @@ GDBServer::replyPacket(void* outData, std::size_t& outSize)
 		CBreakPoints::SetSkipFirst(BREAKPOINT_EE, r5900Debug.getPC());
 		CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, r3000Debug.getPC());
 
+		m_threadListString.clear();
 		m_outSize = &outSize;
 		m_outData = outData;
 		return writeBaseResponse("T05");	

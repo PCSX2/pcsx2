@@ -350,8 +350,8 @@ bool DebugNetworkServer::receiveAndSendPacket()
 	}
 
 	m_recv_buffer[receive_length] = 0;
-	//Console.WriteLn(Color_Orange, "recv");
-	//Console.WriteLn(Color_Gray, "%s", (char*)&m_recv_buffer[0]);
+	Console.WriteLn(Color_Orange, "recv");
+	Console.WriteLn(Color_Gray, "%s", (char*)&m_recv_buffer[0]);
 
 	const std::size_t localOffset = m_debugServerInterface->processPacket((char*)&m_recv_buffer.at(offset), receive_length, m_send_buffer.data(), outSize);
 	if (localOffset == std::size_t(-1))
@@ -366,8 +366,8 @@ bool DebugNetworkServer::receiveAndSendPacket()
 	}
 
 	m_send_buffer[outSize] = 0;
-	//Console.WriteLn(Color_Orange, "send");
-	//Console.WriteLn(Color_Gray, "%s", m_send_buffer.data());
+	Console.WriteLn(Color_Orange, "send");
+	Console.WriteLn(Color_Gray, "%s", m_send_buffer.data());
 
 	offset += localOffset;
 	while (true)

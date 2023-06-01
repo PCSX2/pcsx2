@@ -31,11 +31,16 @@ private:
 	bool addBreakpoint(u32 address);
 	bool removeBreakpoint(u32 address);
 	void updateThreadList();
+	void generateThreadListString();
 
 private:
 	u32 getRegisterSize(int id);
 	bool readRegister(int threadId, int id, u32& value);
 	bool writeRegister(int threadId, int id, u32 value);
+
+private:
+	bool readMemory(u32 address, u32 size);
+	bool writeMemory(u32 address, u32 size);
 
 private:
 	bool writePacketBegin();
@@ -46,6 +51,7 @@ private:
 	bool writeThreadId(int threadId, int processId = 1);
 	bool writeRegisterValue(int threadId, int registerNumber);
 	bool writeAllRegisterValues(int threadId);
+	bool writePaged(std::size_t offset, std::size_t length, const std::string_view& string);
 
 private:
 	bool processXferPacket(std::string_view data);
@@ -57,6 +63,7 @@ private:
 private:
 	int m_stateThreadCounter = -1;
 	std::vector<std::unique_ptr<BiosThread>> m_stateThreads;
+	std::string m_threadListString;
 
 	void* m_outData;
 	std::size_t* m_outSize;
