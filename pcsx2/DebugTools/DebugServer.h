@@ -30,7 +30,8 @@ enum
 class DebugServerInterface
 {
 public:
-	virtual bool replyPacket(void* outData, std::size_t& outSize) = 0;
+	virtual void clearState() = 0;
+	virtual bool replyPacket(void* outData, std::size_t& outSize, bool& wantsShutdown) = 0;
 	virtual std::size_t processPacket(const char* inData, std::size_t inSize, void* outData, std::size_t& outSize) = 0;
 
 protected:

@@ -21,7 +21,8 @@ public:
 	GDBServer(DebugInterface* debugInterface);
 	~GDBServer();
 
-	bool replyPacket(void* outData, std::size_t& outSize) override;
+	void clearState() override;
+	bool replyPacket(void* outData, std::size_t& outSize, bool& wantsShutdown) override;
 	std::size_t processPacket(const char* inData, std::size_t inSize, void* outData, std::size_t& outSize) override;
 
 private:
@@ -39,19 +40,18 @@ private:
 	bool writeRegister(int threadId, int id, u32 value);
 
 private:
-	bool readMemory(u32 address, u32 size);
-	bool writeMemory(u32 address, u32 size);
+	bool readMemory(u8* data, u32 address, u32 size);
+	bool writeMemory(const u8* data, u32 address, u32 size);
 
 private:
 	bool writePacketBegin();
 	bool writePacketEnd();
 	bool writePacketData(const char* data, std::size_t size);
-
-	bool writeBaseResponse(std::string_view data);
-	bool writeThreadId(int threadId, int processId = 1);
-	bool writeRegisterValue(int threadId, int registerNumber);
-	bool writeAllRegisterValues(int threadId);
-	bool writePaged(std::size_t offset, std::size_t length, const std::string_view& string);
+	bool writePacketBaseResponse(std::string_view data);
+	bool writePacketThreadId(int threadId, int processId = 1);
+	bool writePacketRegisterValue(int threadId, int registerNumber);
+	bool writePacketAllRegisterValues(int threadId);
+	bool writePacketPaged(std::size_t offset, std::size_t length, const std::string_view& string);
 
 private:
 	bool processXferPacket(std::string_view data);
@@ -59,6 +59,14 @@ private:
 	bool processGeneralQueryPacket(std::string_view data);
 	bool processMultiletterPacket(std::string_view data);
 	bool processThreadPacket(std::string_view data);
+
+private:
+	bool processReadRegisterPacket(std::string_view data);
+	bool processWriteRegisterPacket(std::string_view data);
+	bool processReadAllRegistersPacket(std::string_view data);
+	bool processWriteAllRegistersPacket(std::string_view data);
+	bool processReadMemoryPacket(std::string_view data);
+	bool processWriteMemoryPacket(std::string_view data, bool binary);
 
 private:
 	int m_stateThreadCounter = -1;

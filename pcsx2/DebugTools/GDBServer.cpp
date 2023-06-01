@@ -312,8 +312,8 @@ static const std::string_view EEMemoryMap = R"(<?xml version="1.0"?>
 static const std::string_view IOPMemoryMap = R"(<?xml version="1.0"?>
 <memory-map>
     <!-- Main memory block -->
-	<memory type="ram" start="0x0000000000000000" length="0x2000000"/>
-	<memory type="ram" start="00000000001d000000" length="0x0800000"/>
+	<memory type="ram" start="0x0000000000000000" length="0x0200000"/>
+	<memory type="ram" start="00000000001d000000" length="0x0200000"/>
 	<memory type="ram" start="00000000001f800000" length="0x0010000"/>
 	<memory type="ram" start="00000000001f900000" length="0x0004000"/>
 
@@ -723,20 +723,26 @@ GDBServer::writeRegister(int threadId, int id, u32 value)
 	return true;
 }
 
-bool 
-GDBServer::readMemory(u32 address, u32 size)
+bool 	
+GDBServer::readMemory(u8* data, u32 address, u32 size)
 {
 	if (!m_debugInterface->isAlive() || m_debugInterface->isCpuPaused())
 		return false;
+
+	for (size_t i = 0; i < size; i++)
+		data[i] = m_debugInterface->read8(address + i);
 
 	return true;
 }
 
 bool 
-GDBServer::writeMemory(u32 address, u32 size)
+GDBServer::writeMemory(const u8* data, u32 address, u32 size)
 {
 	if (!m_debugInterface->isAlive() || m_debugInterface->isCpuPaused())
 		return false;
+
+	for (size_t i = 0; i < size; i++)
+		m_debugInterface->write8(address + i, data[i]);
 
 	return true;
 }
@@ -788,7 +794,7 @@ GDBServer::writePacketData(const char* data, std::size_t size)
 }
 
 bool 
-GDBServer::writeBaseResponse(std::string_view data)
+GDBServer::writePacketBaseResponse(std::string_view data)
 {
 	if (!writePacketBegin())
 		return false;
@@ -803,7 +809,7 @@ GDBServer::writeBaseResponse(std::string_view data)
 }
 
 bool 
-GDBServer::writeThreadId(int threadId, int processId)
+GDBServer::writePacketThreadId(int threadId, int processId)
 {
 	char threadIdString[16] = {};
 	int charsWritten = 0;
@@ -820,7 +826,7 @@ GDBServer::writeThreadId(int threadId, int processId)
 }
 
 bool 
-GDBServer::writeRegisterValue(int threadId, int registerNumber)
+GDBServer::writePacketRegisterValue(int threadId, int registerNumber)
 {
 	std::size_t& outSize = *m_outSize;
 	const u32 registerSize = getRegisterSize(registerNumber) / 4;
@@ -845,17 +851,17 @@ GDBServer::writeRegisterValue(int threadId, int registerNumber)
 }
 
 bool 
-GDBServer::writeAllRegisterValues(int threadId)
+GDBServer::writePacketAllRegisterValues(int threadId)
 {
 	for	(int i = 0; i < 72; i++)
-		if (!writeRegisterValue(threadId, i))
+		if (!writePacketRegisterValue(threadId, i))
 			return false;
 
 	return true;
 }
 
 bool 
-GDBServer::writePaged(std::size_t offset, std::size_t length, const std::string_view& string)
+GDBServer::writePacketPaged(std::size_t offset, std::size_t length, const std::string_view& string)
 {
 	const char* firstSymbol = "m";
 	if (string.size() - offset < length)
@@ -930,7 +936,7 @@ GDBServer::processXferPacket(std::string_view data)
 	if (IsSameString(sentenceString, "features"))
 	{
 		DEBUG_WRITE("        features request");
-		return writePaged(offset, length, (m_debugInterface->getCpuType() == BREAKPOINT_EE) ? targetEEXML : targetIOPXML);
+		return writePacketPaged(offset, length, (m_debugInterface->getCpuType() == BREAKPOINT_EE) ? targetEEXML : targetIOPXML);
 	}
 		
 	if (IsSameString(sentenceString, "threads"))
@@ -939,18 +945,18 @@ GDBServer::processXferPacket(std::string_view data)
 		if (m_threadListString.empty())
 			generateThreadListString();
 
-		return writePaged(offset, length, std::string_view(m_threadListString.data(), m_threadListString.size()));
+		return writePacketPaged(offset, length, std::string_view(m_threadListString.data(), m_threadListString.size()));
 	}
 
 	if (IsSameString(sentenceString, "memory-map"))
 	{
 		DEBUG_WRITE("        memory map request");
-		return writePaged(offset, length, (m_debugInterface->getCpuType() == BREAKPOINT_EE) ? EEMemoryMap : IOPMemoryMap);
+		return writePacketPaged(offset, length, (m_debugInterface->getCpuType() == BREAKPOINT_EE) ? EEMemoryMap : IOPMemoryMap);
 	}
 
 	// we don't support other 
 	Console.Warning("GDB: unsupported Xfer packet [%s].", data.data());
-	writeBaseResponse("");
+	writePacketBaseResponse("");
 	return true;
 }
 
@@ -963,14 +969,14 @@ GDBServer::processQueryPacket(std::string_view data)
 
 		if (m_stateThreads.size() <= static_cast<std::size_t>(m_stateThreadCounter))
 		{
-			writeBaseResponse("l");
+			writePacketBaseResponse("l");
 			DEBUG_WRITE("         thread info end");
 			return true;
 		}
 
 		bool success = writePacketBegin();
 		success |= writePacketData("m", 1);
-		success |= writeThreadId(m_stateThreads.at(m_stateThreadCounter)->TID());
+		success |= writePacketThreadId(m_stateThreads.at(m_stateThreadCounter)->TID());
 		success |= writePacketEnd();
 		if (!success)
 			return false;
@@ -997,7 +1003,7 @@ GDBServer::processQueryPacket(std::string_view data)
 			if (IsSameString(data, "qAttached"))
 			{
 				DEBUG_WRITE("    attached");
-				writeBaseResponse("1");
+				writePacketBaseResponse("1");
 				return true;
 			}
 			break;
@@ -1025,11 +1031,11 @@ GDBServer::processQueryPacket(std::string_view data)
 			DEBUG_WRITE("    get current thread");
 			const auto currentThread = m_debugInterface->getCurrentThread();
 			if (currentThread == nullptr)
-				return writeBaseResponse(m_multiprocess ? "QCp1.t1" : "QCt1");
+				return writePacketBaseResponse(m_multiprocess ? "QCp1.t1" : "QCt1");
 
 			bool success = writePacketBegin();
 			success |= writePacketData("QC", 2);
-			success |= writeThreadId(currentThread->TID());
+			success |= writePacketThreadId(currentThread->TID());
 			success |= writePacketEnd();
 			return success;
 		}
@@ -1039,14 +1045,14 @@ GDBServer::processQueryPacket(std::string_view data)
 			if (IsSameString(data, "qSymbol:"))
 			{
 				DEBUG_WRITE("    symbol request");
-				writeBaseResponse("OK");
+				writePacketBaseResponse("OK");
 				return true;
 			}
 
 			if (IsSameString(data, "qSupported"))
 			{
 				DEBUG_WRITE("    supported features request");
-				writeBaseResponse(GDB_FEATURES);
+				writePacketBaseResponse(GDB_FEATURES);
 				return true;
 			}
 			break;
@@ -1060,7 +1066,7 @@ GDBServer::processQueryPacket(std::string_view data)
 			if (IsSameString(data, "qThreadExtraInfo"))
 			{
 				DEBUG_WRITE("    extra thread info request");
-				writeBaseResponse("00");
+				writePacketBaseResponse("00");
 				return true;
 			}
 			break;
@@ -1082,7 +1088,7 @@ GDBServer::processQueryPacket(std::string_view data)
 
 	// we don't support this command rn
 	Console.Warning("GDB: unknown query operation [%s]", data.data());
-	writeBaseResponse("");
+	writePacketBaseResponse("");
 	return true;
 }
 
@@ -1105,12 +1111,12 @@ GDBServer::processGeneralQueryPacket(std::string_view data)
 		}
 
 		DEBUG_WRITE("    events %s", m_eventsEnabled ? "enabled" : "disabled");
-		writeBaseResponse("OK");
+		writePacketBaseResponse("OK");
 		return true;
 	}
 
 	Console.Warning("GDB: unknown general operation [%s]", data.data());
-	writeBaseResponse("");
+	writePacketBaseResponse("");
 	return true;
 }
 
@@ -1121,14 +1127,14 @@ GDBServer::processMultiletterPacket(std::string_view data)
 	if (IsSameString(data, "vMustReplyEmpty"))
 	{
 		DEBUG_WRITE("    must reply empty");
-		writeBaseResponse("");
+		writePacketBaseResponse("");
 		return true; 
 	}
 
 	if (IsSameString(data, "vCtrlC"))
 	{
 		DEBUG_WRITE("    ctrl+c interrupt");
-		writeBaseResponse("OK");
+		writePacketBaseResponse("OK");
 		return true;
 	}
 
@@ -1138,7 +1144,7 @@ GDBServer::processMultiletterPacket(std::string_view data)
 		if (data[5] == '?')
 		{
 			DEBUG_WRITE("        vCont supported features reply");
-			writeBaseResponse("vCont;c;C;s;S;t");
+			writePacketBaseResponse("vCont;c;C;s;S;t");
 			return true;
 		}
 
@@ -1157,7 +1163,7 @@ GDBServer::processMultiletterPacket(std::string_view data)
 
 	// we don't support this command rn
 	Console.Warning("GDB: unknown \"vCont\" operation [%s]", data.data());
-	writeBaseResponse("");
+	writePacketBaseResponse("");
 	return true;
 }
 
@@ -1166,25 +1172,79 @@ GDBServer::processThreadPacket(std::string_view data)
 {
 	DEBUG_WRITE("GDB: processing thread packet...");
 	if (data[1] == 'c' || data[1] == 'g')
-	{
-		return writeBaseResponse("OK");
-	}
+		return writePacketBaseResponse("OK");
 
 	Console.Warning("GDB: unknown thread operation [%s]", data.data());
-	writeBaseResponse("");
+	writePacketBaseResponse("");
 	return true;
 }
 
-bool 
-GDBServer::replyPacket(void* outData, std::size_t& outSize)
+bool
+GDBServer::processReadRegisterPacket(std::string_view data)
 {
-	if (m_wantsShutdown)
-	{
-		m_wantsShutdown = false;
+	if (data.size() < 3)
 		return false;
-	}
 
-	if (CBreakPoints::GetBreakpointTriggered())
+	u8 registedIdx = (ASCIIToValue(data[1]) << 4) | ASCIIToValue(data[2]);	
+	bool success = writePacketBegin();
+	success |= writePacketRegisterValue(0, registedIdx);
+	success |= writePacketEnd();
+	return success;
+}
+
+bool 
+GDBServer::processWriteRegisterPacket(std::string_view data)
+{
+	return false;
+}
+
+bool 
+GDBServer::processReadAllRegistersPacket(std::string_view data)
+{
+	bool success = writePacketBegin();
+	success |= writePacketAllRegisterValues(0);
+	success |= writePacketEnd();
+	return success;
+}
+
+bool 
+GDBServer::processWriteAllRegistersPacket(std::string_view data)
+{
+	return false;
+}
+
+bool 
+GDBServer::processReadMemoryPacket(std::string_view data)
+{
+	return false;
+}
+
+bool 
+GDBServer::processWriteMemoryPacket(std::string_view data, bool binary)
+{
+	return false;
+}
+
+void 
+GDBServer::clearState()
+{
+	m_stateThreads.clear();
+	m_threadListString.clear();
+	m_waitingForTrap = false;
+	m_multiprocess = false;
+	m_eventsEnabled = false;
+	m_dontReplyAck = false;
+	m_wantsShutdown = false;
+}
+
+bool 
+GDBServer::replyPacket(void* outData, std::size_t& outSize, bool& wantsShutdown)
+{
+	m_outSize = &outSize;
+	m_outData = outData;
+
+	const bool breakpointTriggered = CBreakPoints::GetBreakpointTriggered();
+	if (breakpointTriggered)
 	{
 		CBreakPoints::ClearTemporaryBreakPoints();
 		CBreakPoints::SetBreakpointTriggered(false);
@@ -1193,11 +1253,24 @@ GDBServer::replyPacket(void* outData, std::size_t& outSize)
 		// When we run the core again, we want to skip this breakpoint and run
 		CBreakPoints::SetSkipFirst(BREAKPOINT_EE, r5900Debug.getPC());
 		CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, r3000Debug.getPC());
+	}
 
-		m_threadListString.clear();
-		m_outSize = &outSize;
-		m_outData = outData;
-		return writeBaseResponse("T05");	
+	if (m_wantsShutdown)
+	{
+		clearState();
+		wantsShutdown = true;
+
+		if (breakpointTriggered)
+			resumeExecution();
+	
+		return writePacketBaseResponse("OK");
+	}
+	
+	wantsShutdown = false;
+	if (breakpointTriggered)
+	{
+		updateThreadList();
+		return writePacketBaseResponse("T05");	
 	}
 
 	outSize = 0;
@@ -1261,8 +1334,15 @@ GDBServer::processPacket(const char* inData, std::size_t inSize, void* outData, 
 	bool success = false;
 	switch (inData[offset])
 	{
-		case '!':
-			success = writeBaseResponse("OK");
+		/*
+		case 'z': // remove watchpoint (may be breakpoint or memory breal)
+			break;
+		case 'Z': // insert watchpoint (may be breakpoint or memory breal)
+			break;
+		*/
+	
+		case '!': // advanced mode
+			success = writePacketBaseResponse("OK");
 			break;
 
 		case 'Q': // general set
@@ -1277,21 +1357,15 @@ GDBServer::processPacket(const char* inData, std::size_t inSize, void* outData, 
 			success = processMultiletterPacket(data);
 			break;
 
-		case 'z': // remove watchpoint (may be breakpoint or memory breal)
-			break;
-		case 'Z': // insert watchpoint (may be breakpoint or memory breal)
-			break;
-
-		case 'H':
+		case 'H': // thread operations
 			success = processThreadPacket(data);
 			break;
 
-		case 'D':
+		case 'D': // detach
 			m_wantsShutdown = true;
-			success = writeBaseResponse("OK");
 			break;
 			
-		case 'C': 
+		case 'C': // continue execution with signal
 			DEBUG_WRITE("GDB: resume cpu");
 			resumeExecution();
 			success = true;
@@ -1309,41 +1383,35 @@ GDBServer::processPacket(const char* inData, std::size_t inSize, void* outData, 
 			return 0;
 
 		case '?': // signal
-			success = writeBaseResponse(m_debugInterface->isCpuPaused() ? "S05" : "S00");	
+			success = writePacketBaseResponse(m_debugInterface->isCpuPaused() ? "S05" : "S00");	
 			break;
 
 		case 'g': // read registers
-			success = writePacketBegin();
-			success |= writeAllRegisterValues(0);
-			success |= writePacketEnd();
+			success = processReadAllRegistersPacket(data);
 			break;
 		case 'G': // write registers
+			success = processWriteAllRegistersPacket(data);
 			break;
 		case 'p': // read register
-		{
-			if (data.size() < 3)
-			{
-				success = false;
-				break;
-			}
-
-			u8 registedIdx = (ASCIIToValue(data[1]) << 4) | ASCIIToValue(data[2]);	
-			success = writePacketBegin();
-			success |= writeRegisterValue(0, registedIdx);
-			success |= writePacketEnd();
-		}
-		break;
-
-		case 'P': // write register
+			success = processReadRegisterPacket(data);
 			break;
+		case 'P': // write register
+			success = processWriteRegisterPacket(data);
+			break;
+
 		case 'm': // read memory
+			success = processReadMemoryPacket(data);
 			break;
 		case 'M': // write memory
+			success = processWriteMemoryPacket(data, false);
 			break;
 		case 'X': // write binary memory
+			success = processWriteMemoryPacket(data, true);
 			break;
+
 		default:		
-			success = writeBaseResponse("");
+			Console.Warning("GDB: unknown packet \"%s\" was passed", inData);
+			success = writePacketBaseResponse("");
 			break;
 	}
 
@@ -1351,7 +1419,7 @@ GDBServer::processPacket(const char* inData, std::size_t inSize, void* outData, 
 	{
 		Console.Error("GDB: failed to process GDB packet [%s].", inData);
 		*m_outSize = 0;
-		writeBaseResponse("E00");
+		writePacketBaseResponse("E00");
 	}
 
 	return packetEnd;

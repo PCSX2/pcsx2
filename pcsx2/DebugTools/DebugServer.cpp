@@ -102,6 +102,7 @@ DebugNetworkServer::shutdown()
 		m_connected = false;
 		close_portable(m_sock);
 		close_portable(m_msgsock);
+		m_debugServerInterface->clearState();
 	} 
 	else
 	{
@@ -310,6 +311,11 @@ DebugNetworkServer::serverLoop()
 
 bool DebugNetworkServer::receiveAndSendPacket()
 {
+	if (!m_connected)
+	{
+		return reviveConnection();
+	}
+
 	const auto receive_length = read_portable(m_msgsock, &m_recv_buffer[0], MAX_DEBUG_PACKET_SIZE - 1);
 	std::size_t outSize = 0;
 	std::int64_t offset = 0;
@@ -318,8 +324,9 @@ bool DebugNetworkServer::receiveAndSendPacket()
 	if (receive_length <= 0)
 	{
 		if (would_block())
-		{
-			if (!m_debugServerInterface->replyPacket(m_send_buffer.data(), outSize))
+		{ 
+			bool wantsShutdown = false;
+			if (!m_debugServerInterface->replyPacket(m_send_buffer.data(), outSize, wantsShutdown))
 			{
 				// this one might be a error or just regular exit request.
 				return false;
@@ -338,6 +345,11 @@ bool DebugNetworkServer::receiveAndSendPacket()
 						continue;
 					}
 
+					return reviveConnection();
+				}
+
+				if (wantsShutdown)
+				{
 					return reviveConnection();
 				}
 			}
