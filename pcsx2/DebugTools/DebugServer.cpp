@@ -96,7 +96,9 @@ DebugNetworkServer::shutdown()
 {
 	m_end.store(true, std::memory_order_release);
 
-	Console.WriteLn(Color_Default, "DebugNetworkServer: [%s] Shutting down connection...", m_name.data());
+	if (!m_name.empty())
+		Console.WriteLn(Color_Default, "DebugNetworkServer: [%s] Shutting down connection...", m_name.data());
+	
 	if (std::this_thread::get_id() == m_thread.get_id())
 	{
 		m_connected = false;
@@ -323,46 +325,46 @@ bool DebugNetworkServer::receiveAndSendPacket()
 	// we recreate the socket if an error happens
 	if (receive_length <= 0)
 	{
-		if (would_block())
-		{ 
-			bool wantsShutdown = false;
-			if (!m_debugServerInterface->replyPacket(m_send_buffer.data(), outSize, wantsShutdown))
-			{
-				// this one might be a error or just regular exit request.
-				return false;
-			}
-
-			if (outSize > 0)
-			{
-				while (true)
-				{
-					if (write_portable(m_msgsock, m_send_buffer.data(), outSize) >= 0)
-						break;
-
-					if (would_block())
-					{
-						Threading::Sleep(1);
-						continue;
-					}
-
-					return reviveConnection();
-				}
-
-				if (wantsShutdown)
-				{
-					return reviveConnection();
-				}
-			}
-			else
-			{
-				// that's ok, just wait until our packet is ready
-				Threading::Sleep(1);
-			}
-
-			return true;
+		if (!would_block())
+		{	
+			return reviveConnection();
 		}
 
-		return reviveConnection();
+		bool wantsShutdown = false;
+		if (!m_debugServerInterface->replyPacket(m_send_buffer.data(), outSize, wantsShutdown))
+		{
+			// this one might be a error or just regular exit request.
+			return false;
+		}
+
+		if (outSize > 0)
+		{
+			while (true)
+			{
+				if (write_portable(m_msgsock, m_send_buffer.data(), outSize) >= 0)
+					break;
+
+				if (would_block())
+				{
+					Threading::Sleep(1);
+					continue;
+				}
+
+				return reviveConnection();
+			}
+
+			if (wantsShutdown)
+			{
+				return reviveConnection();
+			}
+		}
+		else
+		{
+			// that's ok, just wait until our packet is ready
+			Threading::Sleep(1);
+		}
+
+		return true;
 	}
 
 	m_recv_buffer[receive_length] = 0;

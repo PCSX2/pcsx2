@@ -457,6 +457,7 @@ WriteHexValue(char* string, std::size_t& outSize, T value)
 	if (outSize + sizeof(T) * 2 > MAX_DEBUG_PACKET_SIZE)
 		return false;
 	
+	// All hex values in GDB format is big-endian
 	BIG_ENDIFY_IT(value);
 	for (size_t i = 0; i < sizeof(T); i++)
 	{
@@ -473,6 +474,7 @@ T
 ReadHexValue(const char* string, std::size_t stringSize)
 {
 	T value = 0;
+
 	for (size_t i = 0; i < stringSize / 2; i++)
 	{
 		u8* writePtr = reinterpret_cast<u8*>(&value) + i;
@@ -483,6 +485,7 @@ ReadHexValue(const char* string, std::size_t stringSize)
 		*writePtr = rawValue;
 	}
 
+	// All hex values in GDB format is big-endian
 	BIG_ENDIFY_IT(value);
 	return value;
 }
@@ -569,6 +572,7 @@ IsSameString(
 	return IsSameString(source.data(), source.size(), compare.data(), compare.size());
 }
 
+// Executes code only if CPU is paused
 template<typename T>
 void
 ExecuteCPUTask(DebugInterface* cpuInterface, T&& func)
@@ -772,6 +776,7 @@ GDBServer::writePacketEnd()
 	char* data = reinterpret_cast<char*>(m_outData);
 	const u8 checksum = CalculateChecksum(data + (m_dontReplyAck ? 1 : 2), outSize - (m_dontReplyAck ? 1 : 2));
 
+	// Every packet in GDB protocol must be ended with '#' symbol and checksum in hex format.
 	data += outSize;
 	*data++ = '#';
 	*data++ = ValueToASCII((checksum >> 4) 	& 0xf);
@@ -814,6 +819,8 @@ GDBServer::writePacketThreadId(int threadId, int processId)
 	char threadIdString[16] = {};
 	int charsWritten = 0;
 
+	// Thread id in GDB format must be constructed in "AA.BB" format for connection with 
+	// "multiprocess" extension or in "BB" format for other connections.
 	if (m_multiprocess)
 		charsWritten = snprintf(threadIdString, 16, "%x.%x", processId, threadId);
 	else
@@ -1106,9 +1113,7 @@ GDBServer::processGeneralQueryPacket(std::string_view data)
 		else if (*eventsEnableString == '0')
 			m_eventsEnabled = false;
 		else
-		{
 			return false;
-		}
 
 		DEBUG_WRITE("    events %s", m_eventsEnabled ? "enabled" : "disabled");
 		writePacketBaseResponse("OK");
@@ -1172,7 +1177,10 @@ GDBServer::processThreadPacket(std::string_view data)
 {
 	DEBUG_WRITE("GDB: processing thread packet...");
 	if (data[1] == 'c' || data[1] == 'g')
+	{
+		// Deprecated or unsupported right now by stub.
 		return writePacketBaseResponse("OK");
+	}
 
 	Console.Warning("GDB: unknown thread operation [%s]", data.data());
 	writePacketBaseResponse("");
@@ -1257,9 +1265,9 @@ GDBServer::replyPacket(void* outData, std::size_t& outSize, bool& wantsShutdown)
 
 	if (m_wantsShutdown)
 	{
-		clearState();
 		wantsShutdown = true;
 
+		// We want to continue execution of CPU when GDB is detached
 		if (breakpointTriggered)
 			resumeExecution();
 	
@@ -1269,6 +1277,7 @@ GDBServer::replyPacket(void* outData, std::size_t& outSize, bool& wantsShutdown)
 	wantsShutdown = false;
 	if (breakpointTriggered)
 	{
+		// Update thread list on every breakpoint signal
 		updateThreadList();
 		return writePacketBaseResponse("T05");	
 	}
@@ -1282,11 +1291,13 @@ GDBServer::processPacket(const char* inData, std::size_t inSize, void* outData, 
 {
 	std::size_t offset = 0;
 
+	// Ignore all ACK packets from GDB client
 	if (inSize == 1 && (*inData == '+' || *inData == '-'))
 	{
 		return 0;
 	}
 
+	// Skip all symbols until we will not reach the beginning of packet 
 	while (offset < inSize)
 	{
 		if (inData[offset++] == '$')
@@ -1301,6 +1312,7 @@ GDBServer::processPacket(const char* inData, std::size_t inSize, void* outData, 
 		return std::size_t(-1);
 	}
 
+	// Find end of the current packet
 	std::size_t endOffset = offset;
 	while (endOffset < inSize)
 	{
