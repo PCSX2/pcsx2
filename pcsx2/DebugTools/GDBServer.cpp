@@ -22,6 +22,7 @@
 #include <charconv>
 #include <filesystem>
 #include <fstream>
+#include "common/StringUtil.h"
 
 #define DEBUG_WRITE(...) if (IsDebugBuild) { Console.WriteLn(Color_Gray, __VA_ARGS__); }
 /*";QStartNoAckMode+" \*/
@@ -324,9 +325,7 @@ static const std::string_view IOPMemoryMap = R"(<?xml version="1.0"?>
 
 std::mutex CPUTransaction;
 
-inline
-bool 
-ObtainCategoryAndIndex(int id, int& cat, int& idx)
+inline bool ObtainCategoryAndIndex(int id, int& cat, int& idx)
 {
 	if (id < 32)
 	{
@@ -395,7 +394,7 @@ ObtainCategoryAndIndex(int id, int& cat, int& idx)
 }
 
 template<typename T>
-T reverse_bytes(T value)
+T ReverseBytes(T value)
 {
 	const u8* raw_value = reinterpret_cast<u8*>(&value);
 	if constexpr (sizeof(T) == 4) 
@@ -426,11 +425,9 @@ inline bool IsBigEndian()
     return betest.c[0] == 1;
 }
 
-#define BIG_ENDIFY_IT(x) do { if (!IsBigEndian()) { x = reverse_bytes(x); } } while(false);
+#define BIG_ENDIFY_IT(x) do { if (!IsBigEndian()) { x = ReverseBytes(x); } } while(false);
 
-constexpr
-u8
-ASCIIToValue(char symbol)
+constexpr u8 ASCIIToValue(char symbol)
 {
 	if ((symbol >= '0') && (symbol <= '9'))
 		return (symbol - '0');
@@ -442,17 +439,14 @@ ASCIIToValue(char symbol)
 	return 0;
 }
 
-constexpr 
-int
-ValueToASCII(u8 value)
+constexpr int ValueToASCII(u8 value)
 {
 	constexpr const char* digitsLookup = "0123456789abcdef";
 	return digitsLookup[std::clamp(value, (u8)0, (u8)16)];
 }
 
 template<typename T>
-bool
-WriteHexValue(char* string, std::size_t& outSize, T value)
+bool WriteHexValue(char* string, std::size_t& outSize, T value)
 {
 	if (outSize + sizeof(T) * 2 > MAX_DEBUG_PACKET_SIZE)
 		return false;
@@ -470,8 +464,7 @@ WriteHexValue(char* string, std::size_t& outSize, T value)
 }
 
 template<typename T>
-T
-ReadHexValue(const char* string, std::size_t stringSize)
+T ReadHexValue(const char* string, std::size_t stringSize)
 {
 	T value = 0;
 
@@ -490,44 +483,13 @@ ReadHexValue(const char* string, std::size_t stringSize)
 	return value;
 }
 
-constexpr 
-void
-EncodeHex(
-	const u8* input,
-	std::size_t inputSize,
-	char* output,
-	std::size_t outputSize
-)
+template <typename T>
+T ReadHexValue(std::string_view string)
 {
-	for (size_t i = 0; i < inputSize; i++)
-	{
-		*output++ = ValueToASCII((input[i]) >> 4);
-		*output++ = ValueToASCII((input[i]) & 0xf);
-	}
+	return ReadHexValue<T>(string.data(), string.size());
 }
 
-constexpr 
-void
-DecodeHex(
-	const char* input,
-	std::size_t inputSize,
-	u8* output,
-	std::size_t outputSize
-)
-{
-	for (size_t i = 0; i < inputSize; i += 2)
-	{
-		u8 value = ASCIIToValue(input[i]) << 4;
-		if (i + 1 < inputSize)
-			value |= ASCIIToValue(input[i + 1]);
-
-		*output++ = value;
-	}
-}
-
-constexpr
-u8
-CalculateChecksum(
+constexpr u8 CalculateChecksum(
 	const char* data,
 	std::size_t size
 )
@@ -539,21 +501,12 @@ CalculateChecksum(
 	return checksum;
 }
 
-constexpr 
-u8
-CalculateChecksum(std::string_view data)
+constexpr u8 CalculateChecksum(std::string_view data)
 {
 	return CalculateChecksum(data.data(), data.size());
 }
 
-constexpr
-bool
-IsSameString(
-	const char* source, 
-	std::size_t sourceLength, 
-	const char* compare,
-	std::size_t compareLength
-)
+constexpr bool IsSameString(const char* source, std::size_t sourceLength, const char* compare, std::size_t compareLength)
 {
 	for (size_t i = 0; i < std::min(sourceLength, compareLength); i++)
 		if (source[i] != compare[i])
@@ -562,20 +515,36 @@ IsSameString(
 	return true;
 }
 
-constexpr
-bool
-IsSameString(
-	std::string_view source,
-	std::string_view compare
-)
+constexpr bool IsSameString(std::string_view source, std::string_view compare)
 {
 	return IsSameString(source.data(), source.size(), compare.data(), compare.size());
 }
 
+static std::string_view MakeStringView(std::string_view data, std::size_t& offset, char symbol, char nextSymbol, bool notEqual = false)
+{
+	const std::size_t beginIndex = (symbol == '\0' ?
+		offset : 
+		data.find_first_of(symbol, offset)
+	);
+
+	const std::size_t endIndex = (nextSymbol == '\0' ? 
+		data.size() : 
+		(notEqual ? 
+			data.find_first_not_of(nextSymbol, beginIndex + 1) : 
+			data.find_first_of(nextSymbol, beginIndex + 1)
+		)
+	);
+
+	if (beginIndex == std::size_t(-1) || endIndex == std::size_t(-1))
+		return {};
+
+	offset = endIndex;
+	return std::string_view(data.data() + beginIndex + 1, endIndex - beginIndex - 1);
+};
+
 // Executes code only if CPU is paused
 template<typename T>
-void
-ExecuteCPUTask(DebugInterface* cpuInterface, T&& func)
+void ExecuteCPUTask(DebugInterface* cpuInterface, T&& func)
 {
 	std::scoped_lock<std::mutex> sc(CPUTransaction);
 	if (!cpuInterface->isAlive())
@@ -602,24 +571,21 @@ GDBServer::~GDBServer()
 {
 }
 
-void 
-GDBServer::resumeExecution()
+void GDBServer::resumeExecution()
 {
 	std::scoped_lock<std::mutex> sc(CPUTransaction);
 	if (m_debugInterface->isAlive() && m_debugInterface->isCpuPaused())
 		m_debugInterface->resumeCpu();
 }
 
-void 
-GDBServer::stopExecution()
+void GDBServer::stopExecution()
 {
 	std::scoped_lock<std::mutex> sc(CPUTransaction);
 	if (m_debugInterface->isAlive() && !m_debugInterface->isCpuPaused())
 		m_debugInterface->pauseCpu();
 }
 
-void 
-GDBServer::singleStep()
+void GDBServer::singleStep()
 {
 	if (!m_debugInterface->isAlive() || !m_debugInterface->isCpuPaused())
 	{
@@ -643,8 +609,7 @@ GDBServer::singleStep()
 	m_debugInterface->resumeCpu();
 }
 
-bool 
-GDBServer::addBreakpoint(u32 address)
+bool GDBServer::addBreakpoint(u32 address)
 {
 	if (!m_debugInterface->isValidAddress(address))
 		return false;
@@ -653,8 +618,7 @@ GDBServer::addBreakpoint(u32 address)
 	return true;
 }
 
-bool 
-GDBServer::removeBreakpoint(u32 address)
+bool GDBServer::removeBreakpoint(u32 address)
 {
 	if (!m_debugInterface->isValidAddress(address))
 		return false;
@@ -663,14 +627,12 @@ GDBServer::removeBreakpoint(u32 address)
 	return true;
 }
 
-void 
-GDBServer::updateThreadList()
+void GDBServer::updateThreadList()
 {
 	ExecuteCPUTask(m_debugInterface, [this]() { m_stateThreads = m_debugInterface->getThreadList(); });
 }
 
-void 
-GDBServer::generateThreadListString()
+void GDBServer::generateThreadListString()
 {
 	updateThreadList();
 
@@ -690,14 +652,12 @@ GDBServer::generateThreadListString()
 	m_threadListString += "</threads>\n";
 }
 
-u32 
-GDBServer::getRegisterSize(int id)
+u32 GDBServer::getRegisterSize(int id)
 {
 	return 32;
 }
 
-bool 
-GDBServer::readRegister(int threadId, int id, u32& value)
+bool GDBServer::readRegister(int threadId, int id, u32& value)
 {
 	if (!m_debugInterface->isAlive() || m_debugInterface->isCpuPaused())
 		return false;
@@ -712,8 +672,7 @@ GDBServer::readRegister(int threadId, int id, u32& value)
 	return true;
 }
 
-bool 
-GDBServer::writeRegister(int threadId, int id, u32 value)
+bool GDBServer::writeRegister(int threadId, int id, u32 value)
 {
 	if (!m_debugInterface->isAlive() || m_debugInterface->isCpuPaused())
 		return false;
@@ -727,32 +686,29 @@ GDBServer::writeRegister(int threadId, int id, u32 value)
 	return true;
 }
 
-bool 	
-GDBServer::readMemory(u8* data, u32 address, u32 size)
+bool GDBServer::readMemory(u8* data, u32 address, u32 length)
 {
 	if (!m_debugInterface->isAlive() || m_debugInterface->isCpuPaused())
 		return false;
 
-	for (size_t i = 0; i < size; i++)
+	for (size_t i = 0; i < length; i++)
 		data[i] = m_debugInterface->read8(address + i);
 
 	return true;
 }
 
-bool 
-GDBServer::writeMemory(const u8* data, u32 address, u32 size)
+bool GDBServer::writeMemory(const u8* data, u32 address, u32 length)
 {
 	if (!m_debugInterface->isAlive() || m_debugInterface->isCpuPaused())
 		return false;
 
-	for (size_t i = 0; i < size; i++)
+	for (size_t i = 0; i < length; i++)
 		m_debugInterface->write8(address + i, data[i]);
 
 	return true;
 }
 
-bool 
-GDBServer::writePacketBegin()
+bool GDBServer::writePacketBegin()
 {
 	std::size_t& outSize = *m_outSize;
 	if (outSize + (m_dontReplyAck ? 1 : 2) >= MAX_DEBUG_PACKET_SIZE)
@@ -766,8 +722,7 @@ GDBServer::writePacketBegin()
 	return true;
 }
 
-bool 
-GDBServer::writePacketEnd()
+bool GDBServer::writePacketEnd()
 {
 	std::size_t& outSize = *m_outSize;
 	if (outSize + 3 >= MAX_DEBUG_PACKET_SIZE)
@@ -786,8 +741,7 @@ GDBServer::writePacketEnd()
 	return true;
 }
 
-bool 
-GDBServer::writePacketData(const char* data, std::size_t size)
+bool GDBServer::writePacketData(const char* data, std::size_t size)
 {
 	std::size_t& outSize = *m_outSize;
 	if (outSize + size >= MAX_DEBUG_PACKET_SIZE)
@@ -798,8 +752,7 @@ GDBServer::writePacketData(const char* data, std::size_t size)
 	return true;
 }
 
-bool 
-GDBServer::writePacketBaseResponse(std::string_view data)
+bool GDBServer::writePacketBaseResponse(std::string_view data)
 {
 	if (!writePacketBegin())
 		return false;
@@ -813,8 +766,7 @@ GDBServer::writePacketBaseResponse(std::string_view data)
 	return true;
 }
 
-bool 
-GDBServer::writePacketThreadId(int threadId, int processId)
+bool GDBServer::writePacketThreadId(int threadId, int processId)
 {
 	char threadIdString[16] = {};
 	int charsWritten = 0;
@@ -832,8 +784,27 @@ GDBServer::writePacketThreadId(int threadId, int processId)
 	return writePacketData(threadIdString, charsWritten);
 }
 
-bool 
-GDBServer::writePacketRegisterValue(int threadId, int registerNumber)
+bool GDBServer::writePacketMemoryReadValues(u32 address, u32 length)
+{
+	std::size_t& outSize = *m_outSize;
+	char* buffer = reinterpret_cast<char*>(m_outData);
+	if (outSize + length * 2 >= MAX_DEBUG_PACKET_SIZE)
+		return false;
+
+	if (!m_debugInterface->isAlive() || m_debugInterface->isCpuPaused())
+		return false;
+
+	for (size_t i = 0; i < length; i++)
+	{
+		u8 value = m_debugInterface->read8(address + i);
+		buffer[outSize++] = ValueToASCII((value) >> 4);
+		buffer[outSize++] = ValueToASCII((value) & 0xf);
+	}
+
+	return true;
+}
+
+bool GDBServer::writePacketRegisterValue(int threadId, int registerNumber)
 {
 	std::size_t& outSize = *m_outSize;
 	const u32 registerSize = getRegisterSize(registerNumber) / 4;
@@ -857,8 +828,7 @@ GDBServer::writePacketRegisterValue(int threadId, int registerNumber)
 	return true;
 }
 
-bool 
-GDBServer::writePacketAllRegisterValues(int threadId)
+bool GDBServer::writePacketAllRegisterValues(int threadId)
 {
 	for	(int i = 0; i < 72; i++)
 		if (!writePacketRegisterValue(threadId, i))
@@ -867,8 +837,7 @@ GDBServer::writePacketAllRegisterValues(int threadId)
 	return true;
 }
 
-bool 
-GDBServer::writePacketPaged(std::size_t offset, std::size_t length, const std::string_view& string)
+bool GDBServer::writePacketPaged(std::size_t offset, std::size_t length, const std::string_view& string)
 {
 	const char* firstSymbol = "m";
 	if (string.size() - offset < length)
@@ -887,30 +856,18 @@ GDBServer::writePacketPaged(std::size_t offset, std::size_t length, const std::s
 
 // true - continue packets processing
 // false - stop and send packet as is
-bool 
-GDBServer::processXferPacket(std::string_view data)
+bool GDBServer::processXferPacket(std::string_view data)
 {
-	auto makeStringView = [](std::string_view data, std::size_t& offset, char symbol, char nextSymbol, bool notEqual = false) -> std::string_view {
-		const std::size_t beginIndex = data.find_first_of(symbol, offset);
-		const std::size_t endIndex = nextSymbol == '\0' ? data.size() : (
-			notEqual ? 
-			data.find_first_not_of(nextSymbol, beginIndex + 1) : 
-			data.find_first_of(nextSymbol, beginIndex + 1)
-		);
-
-		if (beginIndex == std::size_t(-1) || endIndex == std::size_t(-1))
-			return {};
-
-		offset = endIndex;
-		return std::string_view(data.data() + beginIndex + 1, endIndex - beginIndex - 1);
-	};
+	constexpr u8 featuresChecksum = CalculateChecksum("features");
+	constexpr u8 threadsChecksum = CalculateChecksum("threads");
+	constexpr u8 memoryMapChecksum = CalculateChecksum("memory-map");
 		
 	std::size_t localOffset = 0;
-	const auto verbString = makeStringView(data, localOffset, ':', ':');
+	const auto verbString = MakeStringView(data, localOffset, ':', ':');
 	const auto sentenceString = std::string_view(data.data(), localOffset - verbString.size() - 1);
-	const auto annexString = makeStringView(data, localOffset, ':', ':');
-	const auto offsetString = makeStringView(data, localOffset, ':', ',');
-	const auto lengthString = makeStringView(data, localOffset, ',', '\0');
+	const auto annexString = MakeStringView(data, localOffset, ':', ':');
+	const auto offsetString = MakeStringView(data, localOffset, ':', ',');
+	const auto lengthString = MakeStringView(data, localOffset, ',', '\0');
 	(void)annexString;
 	if (verbString.empty() || offsetString.empty() || lengthString.empty())
 	{
@@ -924,41 +881,29 @@ GDBServer::processXferPacket(std::string_view data)
 		return false;
 	}
 
-	//  [memory-map:read::0,1000#ab].
+	const bool isEE = (m_debugInterface->getCpuType() == BREAKPOINT_EE);
+	const u8 sentenceChecksum = CalculateChecksum(sentenceString.data(), sentenceString.size());
+	const std::size_t offset = ReadHexValue<std::size_t>(offsetString.data(), offsetString.size());
+	const std::size_t length = ReadHexValue<std::size_t>(lengthString.data(), lengthString.size());
+	switch (sentenceChecksum)
+	{
+		case featuresChecksum:
+			DEBUG_WRITE("        features request");
+			return writePacketPaged(offset, length, isEE ? targetEEXML : targetIOPXML);
 
-	std::size_t offset = 0;
-	std::size_t length = 0;
-	if (std::from_chars(offsetString.data(), offsetString.data() + offsetString.size(), offset, 16).ec != std::errc())
-	{
-		Console.Warning("GDB: failed to convert offset ot integer.");
-		return false;
-	}	
-		
-	if (std::from_chars(lengthString.data(), lengthString.data() + lengthString.size(), length, 16).ec != std::errc())
-	{
-		Console.Warning("GDB: failed to convert length ot integer.");
-		return false;
-	}
+		case threadsChecksum:
+			DEBUG_WRITE("        threads request");
+			if (m_threadListString.empty())
+				generateThreadListString();
 
-	if (IsSameString(sentenceString, "features"))
-	{
-		DEBUG_WRITE("        features request");
-		return writePacketPaged(offset, length, (m_debugInterface->getCpuType() == BREAKPOINT_EE) ? targetEEXML : targetIOPXML);
-	}
-		
-	if (IsSameString(sentenceString, "threads"))
-	{
-		DEBUG_WRITE("        threads request");
-		if (m_threadListString.empty())
-			generateThreadListString();
+			return writePacketPaged(offset, length, std::string_view(m_threadListString.data(), m_threadListString.size()));
 
-		return writePacketPaged(offset, length, std::string_view(m_threadListString.data(), m_threadListString.size()));
-	}
+		case memoryMapChecksum:
+			DEBUG_WRITE("        memory map request");
+			return writePacketPaged(offset, length, isEE ? EEMemoryMap : IOPMemoryMap);
 
-	if (IsSameString(sentenceString, "memory-map"))
-	{
-		DEBUG_WRITE("        memory map request");
-		return writePacketPaged(offset, length, (m_debugInterface->getCpuType() == BREAKPOINT_EE) ? EEMemoryMap : IOPMemoryMap);
+		default:
+			break;
 	}
 
 	// we don't support other 
@@ -967,8 +912,7 @@ GDBServer::processXferPacket(std::string_view data)
 	return true;
 }
 
-bool 
-GDBServer::processQueryPacket(std::string_view data)
+bool GDBServer::processQueryPacket(std::string_view data)
 {
 	auto writeThreadInfo = [this]() -> bool {
 		if (m_stateThreadCounter == -1)
@@ -1099,8 +1043,7 @@ GDBServer::processQueryPacket(std::string_view data)
 	return true;
 }
 
-bool 
-GDBServer::processGeneralQueryPacket(std::string_view data)
+bool GDBServer::processGeneralQueryPacket(std::string_view data)
 {
 	DEBUG_WRITE("GDB: processing general query packet...");
 	const std::string_view threadEventsString = "QThreadEvents:";
@@ -1125,8 +1068,7 @@ GDBServer::processGeneralQueryPacket(std::string_view data)
 	return true;
 }
 
-bool 
-GDBServer::processMultiletterPacket(std::string_view data)
+bool GDBServer::processMultiletterPacket(std::string_view data)
 {
 	DEBUG_WRITE("GDB: processing multiletter packet...");
 	if (IsSameString(data, "vMustReplyEmpty"))
@@ -1172,8 +1114,7 @@ GDBServer::processMultiletterPacket(std::string_view data)
 	return true;
 }
 
-bool 
-GDBServer::processThreadPacket(std::string_view data)
+bool GDBServer::processThreadPacket(std::string_view data)
 {
 	DEBUG_WRITE("GDB: processing thread packet...");
 	if (data[1] == 'c' || data[1] == 'g')
@@ -1187,8 +1128,7 @@ GDBServer::processThreadPacket(std::string_view data)
 	return true;
 }
 
-bool
-GDBServer::processReadRegisterPacket(std::string_view data)
+bool GDBServer::processReadRegisterPacket(std::string_view data)
 {
 	if (data.size() < 3)
 		return false;
@@ -1200,14 +1140,12 @@ GDBServer::processReadRegisterPacket(std::string_view data)
 	return success;
 }
 
-bool 
-GDBServer::processWriteRegisterPacket(std::string_view data)
+bool GDBServer::processWriteRegisterPacket(std::string_view data)
 {
 	return false;
 }
 
-bool 
-GDBServer::processReadAllRegistersPacket(std::string_view data)
+bool GDBServer::processReadAllRegistersPacket(std::string_view data)
 {
 	bool success = writePacketBegin();
 	success |= writePacketAllRegisterValues(0);
@@ -1215,26 +1153,88 @@ GDBServer::processReadAllRegistersPacket(std::string_view data)
 	return success;
 }
 
-bool 
-GDBServer::processWriteAllRegistersPacket(std::string_view data)
+bool GDBServer::processWriteAllRegistersPacket(std::string_view data)
 {
 	return false;
 }
 
-bool 
-GDBServer::processReadMemoryPacket(std::string_view data)
+bool GDBServer::processReadMemoryPacket(std::string_view data)
 {
-	return false;
+	std::size_t offset = 1;
+	const auto addressString = MakeStringView(data, offset, '\0', ',');
+	const auto lengthString = MakeStringView(data, offset, ',', ':');
+	if (addressString.empty() || lengthString.empty())
+	{
+		Console.Warning("GDB: one of the fields in read memory packet are invalid.");
+		return false;
+	}
+
+	const u32 address = ReadHexValue<u32>(addressString);
+	const u32 length = ReadHexValue<u32>(lengthString);
+	if (!m_debugInterface->isValidAddress(address))
+	{
+		Console.Warning("GDB: input address in write memory packet is invalid.");
+		return false;
+	}
+
+	if (!m_debugInterface->isValidAddress(address + length - 1))
+	{
+		Console.Warning("GDB: input end address in write memory packet is invalid.");
+		return false;
+	}
+
+	return writePacketMemoryReadValues(address, length);
 }
 
-bool 
-GDBServer::processWriteMemoryPacket(std::string_view data, bool binary)
+bool GDBServer::processWriteMemoryPacket(std::string_view data, bool binary)
 {
-	return false;
+	std::size_t offset = 1;
+	const auto addressString = MakeStringView(data, offset, '\0', ',');
+	const auto lengthString = MakeStringView(data, offset, ',', ':');
+	const auto dataString = MakeStringView(data, offset, ':', '\0');
+	if (addressString.empty() || lengthString.empty() || dataString.empty())
+	{
+		Console.Warning("GDB: one of the fields in write memory packet are invalid.");
+		return false;
+	}
+
+	const u32 address = ReadHexValue<u32>(addressString);
+	const u32 length = ReadHexValue<u32>(lengthString);
+	if (!m_debugInterface->isValidAddress(address))
+	{
+		Console.Warning("GDB: input address in write memory packet is invalid.");
+		return false;
+	}
+
+	if (!m_debugInterface->isValidAddress(address + length - 1))
+	{
+		Console.Warning("GDB: input end address in write memory packet is invalid.");
+		return false;
+	}
+
+	if (dataString.size() / 2 != length)
+	{
+		Console.Warning("GDB: data size in write memory packet is invalid (%i, expected %i).", dataString.size() / 2, length);
+		return false;
+	}
+	
+	const auto decodedData = StringUtil::DecodeHex(dataString);
+	if (!decodedData.has_value())
+	{
+		Console.Warning("GDB: unnable to decode data string in write memory packet.");
+		return false;
+	}
+
+	if (!writeMemory(decodedData->data(), address, decodedData->size()))
+	{
+		Console.Warning("GDB: unnable to write data in write memory packet.");
+		return false;
+	}
+
+	return writePacketBaseResponse("OK");
 }
 
-void 
-GDBServer::clearState()
+void GDBServer::clearState()
 {
 	m_stateThreads.clear();
 	m_threadListString.clear();
@@ -1245,8 +1245,7 @@ GDBServer::clearState()
 	m_wantsShutdown = false;
 }
 
-bool 
-GDBServer::replyPacket(void* outData, std::size_t& outSize, bool& wantsShutdown)
+bool GDBServer::replyPacket(void* outData, std::size_t& outSize, bool& wantsShutdown)
 {
 	m_outSize = &outSize;
 	m_outData = outData;
@@ -1286,8 +1285,7 @@ GDBServer::replyPacket(void* outData, std::size_t& outSize, bool& wantsShutdown)
 	return true;
 }
 
-std::size_t 
-GDBServer::processPacket(const char* inData, std::size_t inSize, void* outData, std::size_t& outSize)
+std::size_t GDBServer::processPacket(const char* inData, std::size_t inSize, void* outData, std::size_t& outSize)
 {
 	std::size_t offset = 0;
 

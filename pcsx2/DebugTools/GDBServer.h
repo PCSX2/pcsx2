@@ -40,8 +40,8 @@ private:
 	bool writeRegister(int threadId, int id, u32 value);
 
 private:
-	bool readMemory(u8* data, u32 address, u32 size);
-	bool writeMemory(const u8* data, u32 address, u32 size);
+	bool readMemory(u8* data, u32 address, u32 length);
+	bool writeMemory(const u8* data, u32 address, u32 length);
 
 private:
 	bool writePacketBegin();
@@ -50,6 +50,7 @@ private:
 	bool writePacketBaseResponse(std::string_view data);
 	bool writePacketThreadId(int threadId, int processId = 1);
 	bool writePacketRegisterValue(int threadId, int registerNumber);
+	bool writePacketMemoryReadValues(u32 address, u32 length);
 	bool writePacketAllRegisterValues(int threadId);
 	bool writePacketPaged(std::size_t offset, std::size_t length, const std::string_view& string);
 
@@ -73,8 +74,8 @@ private:
 	std::vector<std::unique_ptr<BiosThread>> m_stateThreads;
 	std::string m_threadListString;
 
-	void* m_outData;
-	std::size_t* m_outSize;
+	void* m_outData = nullptr;
+	std::size_t* m_outSize = nullptr;
 
 	bool m_waitingForTrap = false;
 	bool m_multiprocess = false;
