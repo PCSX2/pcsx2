@@ -72,4 +72,5 @@ private:
 	bool m_multiprocess = false;
 	bool m_eventsEnabled = false;
 	bool m_dontReplyAck = false;
+	bool m_wantsShutdown = false;
 };

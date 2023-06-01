@@ -48,7 +48,7 @@ DebugNetworkServer::DebugNetworkServer()
 	
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
 	{
-		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot initialize winsock! Shutting down...");
+		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot initialize winsock!");
 	}
 #endif
 }
@@ -74,7 +74,7 @@ DebugNetworkServer::init(
 
 	if (debugServerInterface == nullptr)
 	{
-		Console.WriteLn(Color_Red, "DebugNetworkServer: debug server interface is null! Shutting down...");
+		Console.WriteLn(Color_Red, "DebugNetworkServer: debug server interface is null!");
 		return false;
 	}
 
@@ -96,6 +96,7 @@ DebugNetworkServer::shutdown()
 {
 	m_end.store(true, std::memory_order_release);
 
+	Console.WriteLn(Color_Default, "DebugNetworkServer: [%s] Shutting down connection...", m_name.data());
 	if (std::this_thread::get_id() == m_thread.get_id())
 	{
 		m_connected = false;
@@ -150,7 +151,7 @@ bool DebugNetworkServer::setupSockets()
 	m_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if ((m_sock == INVALID_SOCKET) || m_port > 65536)
 	{
-		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot open socket (%i)! Shutting down...", WSAGetLastError());
+		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot open socket (%i)!", WSAGetLastError());
 		shutdown();
 		return false;
 	}
@@ -160,7 +161,7 @@ bool DebugNetworkServer::setupSockets()
 	server.sin_port = htons(m_port);
 	if (bind(m_sock, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
 	{
-		Console.WriteLn(Color_Red, "DebugNetworkServer: Error while binding to socket! Shutting down...");
+		Console.WriteLn(Color_Red, "DebugNetworkServer: Error while binding to socket!");
 		shutdown();
 		return false;
 	}
@@ -169,7 +170,7 @@ bool DebugNetworkServer::setupSockets()
 	m_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (m_sock < 0)
 	{
-		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot open socket! Shutting down...");
+		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot open socket!");
 		shutdown();
 		return false;
 	}
@@ -184,7 +185,7 @@ bool DebugNetworkServer::setupSockets()
 
 	if (bind(m_sock, (struct sockaddr*)&server, sizeof(struct sockaddr_un)))
 	{
-		Console.WriteLn(Color_Red, "DebugNetworkServer: Error while binding to socket! Shutting down...");
+		Console.WriteLn(Color_Red, "DebugNetworkServer: Error while binding to socket!");
 		shutdown();
 		return false;
 	}
@@ -196,13 +197,13 @@ bool DebugNetworkServer::setupSockets()
 	if (fcntl(m_sock, F_SETFL, fcntl(m_sock, F_GETFL) | O_NONBLOCK) < 0)
 #endif
 	{
-		Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to set socket as non-blocking! Shutting down...");
+		Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to set socket as non-blocking!");
 	}
 
 	// Don't need more than 5 in this case, GDB or WinDbg can't handle so much packets anyway
 	if (listen(m_sock, 5))
 	{
-		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot listen for connections! Shutting down...");
+		Console.WriteLn(Color_Red, "DebugNetworkServer: Cannot listen for connections!");
 		shutdown();
 		return false;
 	}
@@ -238,7 +239,7 @@ bool DebugNetworkServer::reviveConnection()
 		}
 		else
 		{
-			Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to create socket (internal error, %i)! Shutting down...", errno_w);
+			Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to create socket (internal error, %i)!", errno_w);
 			return false;
 		}
 
@@ -258,7 +259,7 @@ bool DebugNetworkServer::reviveConnection()
 		rc = poll(&fd, 1, 1);
 		if (rc < 0)
 		{
-			Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to create socket (internal error, %i)! Shutting down...", errno);
+			Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to create socket (internal error, %i)!", errno);
 			return false;
 		}
 
@@ -278,7 +279,7 @@ bool DebugNetworkServer::reviveConnection()
 	if (fcntl(m_msgsock, F_SETFL, fcntl(m_msgsock, F_GETFL) | O_NONBLOCK) < 0)
 #endif
 	{
-		Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to set socket as non-blocking! Shutting down...");
+		Console.WriteLn(Color_Red, "DebugNetworkServer: unnable to set socket as non-blocking!");
 		return false;
 	}
 
@@ -319,7 +320,10 @@ bool DebugNetworkServer::receiveAndSendPacket()
 		if (would_block())
 		{
 			if (!m_debugServerInterface->replyPacket(m_send_buffer.data(), outSize))
+			{
+				// this one might be a error or just regular exit request.
 				return false;
+			}
 
 			if (outSize > 0)
 			{

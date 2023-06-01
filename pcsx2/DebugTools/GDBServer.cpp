@@ -825,7 +825,7 @@ GDBServer::writeRegisterValue(int threadId, int registerNumber)
 	std::size_t& outSize = *m_outSize;
 	const u32 registerSize = getRegisterSize(registerNumber) / 4;
 	const std::size_t finalSize = outSize + registerSize;
-	if (outSize + registerSize >= MAX_DEBUG_PACKET_SIZE)
+	if (finalSize >= MAX_DEBUG_PACKET_SIZE)
 		return false;
 
 	u32 value = 0;
@@ -869,6 +869,7 @@ GDBServer::writePaged(std::size_t offset, std::size_t length, const std::string_
 	success |= writePacketData(firstSymbol, 1);
 	success |= writePacketData(string.data() + offset, length);
 	success |= writePacketEnd();
+	return success;
 }
 
 // true - continue packets processing
@@ -897,6 +898,7 @@ GDBServer::processXferPacket(std::string_view data)
 	const auto annexString = makeStringView(data, localOffset, ':', ':');
 	const auto offsetString = makeStringView(data, localOffset, ':', ',');
 	const auto lengthString = makeStringView(data, localOffset, ',', '\0');
+	(void)annexString;
 	if (verbString.empty() || offsetString.empty() || lengthString.empty())
 	{
 		Console.Warning("GDB: one of the arguments for Xfer command was empty.");
@@ -1176,6 +1178,12 @@ GDBServer::processThreadPacket(std::string_view data)
 bool 
 GDBServer::replyPacket(void* outData, std::size_t& outSize)
 {
+	if (m_wantsShutdown)
+	{
+		m_wantsShutdown = false;
+		return false;
+	}
+
 	if (CBreakPoints::GetBreakpointTriggered())
 	{
 		CBreakPoints::ClearTemporaryBreakPoints();
@@ -1279,6 +1287,7 @@ GDBServer::processPacket(const char* inData, std::size_t inSize, void* outData, 
 			break;
 
 		case 'D':
+			m_wantsShutdown = true;
 			success = writeBaseResponse("OK");
 			break;
 			
