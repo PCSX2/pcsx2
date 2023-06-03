@@ -618,12 +618,11 @@ void GDBServer::updateThreadList()
 {
 	std::scoped_lock<std::mutex> sc(CPUTransaction);
 	Host::RunOnCPUThread([this] { m_stateThreads = m_debugInterface->getThreadList(); }, true);
+	generateThreadListString();
 }
 
 void GDBServer::generateThreadListString()
 {
-	updateThreadList();
-
 	m_threadListString = "<?target version=\"1.0\"?>\n";
 	m_threadListString += "<threads>\n";
 	for (const auto& thread : m_stateThreads)
@@ -880,7 +879,7 @@ bool GDBServer::processXferPacket(const std::string_view& data)
 		case threadsChecksum:
 			DEBUG_WRITE("        threads request");
 			if (m_threadListString.empty())
-				generateThreadListString();
+				updateThreadList();
 
 			return writePacketPaged(offset, length, std::string_view(m_threadListString.data(), m_threadListString.size()));
 
@@ -1239,6 +1238,7 @@ bool GDBServer::replyPacket(void* outData, std::size_t& outSize, bool& wantsShut
 	const bool breakpointTriggered = CBreakPoints::GetBreakpointTriggered();
 	if (breakpointTriggered)
 	{
+		updateThreadList();
 		Host::RunOnCPUThread([this]() {
 			CBreakPoints::ClearTemporaryBreakPoints();
 			CBreakPoints::SetBreakpointTriggered(false);
