@@ -43,7 +43,7 @@
            <string>Bindings</string>
           </property>
           <property name="icon">
-           <iconset theme="gamepad-line">
+           <iconset theme="controller-line">
             <normaloff>.</normaloff>.</iconset>
           </property>
           <property name="checkable">
@@ -120,7 +120,7 @@
            <string>Automatic Mapping</string>
           </property>
           <property name="icon">
-           <iconset theme="gamepad-line">
+           <iconset theme="controller-line">
             <normaloff>.</normaloff>.</iconset>
           </property>
           <property name="toolButtonStyle">

@@ -788,7 +788,7 @@ ControllerBindingWidget_Base::~ControllerBindingWidget_Base()
 
 QIcon ControllerBindingWidget_Base::getIcon() const
 {
-	return QIcon::fromTheme("artboard-2-line");
+	return QIcon::fromTheme("controller-strike-line");
 }
 
 void ControllerBindingWidget_Base::initBindingWidgets()
@@ -859,7 +859,7 @@ ControllerBindingWidget_DualShock2::~ControllerBindingWidget_DualShock2()
 
 QIcon ControllerBindingWidget_DualShock2::getIcon() const
 {
-	return QIcon::fromTheme("gamepad-line");
+	return QIcon::fromTheme("controller-line");
 }
 
 ControllerBindingWidget_Base* ControllerBindingWidget_DualShock2::createInstance(ControllerBindingWidget* parent)
@@ -1102,9 +1102,7 @@ USBBindingWidget::~USBBindingWidget()
 
 QIcon USBBindingWidget::getIcon() const
 {
-	//return QIcon::fromTheme("gamepad-line");
-
-	return QIcon::fromTheme("artboard-2-line");
+	return QIcon::fromTheme("controller-strike-line");
 }
 
 std::string USBBindingWidget::getBindingKey(const char* binding_name) const

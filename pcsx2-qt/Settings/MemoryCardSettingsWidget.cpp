@@ -402,7 +402,7 @@ static QString getSizeSummary(const AvailableMcdInfo& mcd)
 static QIcon getCardIcon(const AvailableMcdInfo& mcd)
 {
 	if (mcd.type == MemoryCardType::File)
-		return QIcon::fromTheme(QStringLiteral("sd-card-line"));
+		return QIcon::fromTheme(QStringLiteral("memcard-line"));
 	else
 		return QIcon::fromTheme(QStringLiteral("folder-open-line"));
 }

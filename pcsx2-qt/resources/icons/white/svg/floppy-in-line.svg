@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   id="Agrupar_1_copiar"
+   data-name="Agrupar 1 copiar"
+   width="384"
+   height="384"
+   viewBox="0 0 384 384"
+   version="1.1"
+   sodipodi:docname="floppy-in-line.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview11"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#505050"
+     showgrid="false"
+     inkscape:zoom="1.5733333"
+     inkscape:cx="135.06356"
+     inkscape:cy="136.65255"
+     inkscape:window-width="1920"
+     inkscape:window-height="956"
+     inkscape:window-x="0"
+     inkscape:window-y="42"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="Agrupar_1_copiar" />
+  <defs
+     id="defs4">
+    <style
+       id="style2">
+      .cls-1, .cls-2, .cls-3 {
+        fill: none;
+        stroke: #fff;
+        fill-rule: evenodd;
+      }
+
+      .cls-1 {
+        stroke-width: 23px;
+      }
+
+      .cls-2 {
+        stroke-width: 25px;
+      }
+
+      .cls-3 {
+        stroke-width: 33px;
+      }
+    </style>
+  </defs>
+  <path
+     id="Forma_1"
+     data-name="Forma 1"
+     class="cls-1"
+     d="m 325.91068,295.77571 c 0,0 0.24169,10.49815 0.73613,22.57934 0.49445,12.08118 -9.96947,12.17987 -9.96947,12.17987 0,0 -243.07578,-1.34336 -251.339361,-1.10772 -8.263582,0.23564 -8.86175,-9.96443 -8.86175,-9.96443 V 74.766689 c 0,0 1.492399,-7.461996 8.86175,-8.86175 7.36935,-1.399754 214.801761,0 214.801761,0 l 46.50304,46.503041 0.27492,86.6941" />
+  <path
+     id="Forma_2"
+     data-name="Forma 2"
+     class="cls-1"
+     d="m 127.34606,65.908967 1.10771,88.578223 c 0,0 -1.75825,2.69881 5.5386,3.32316 7.29684,0.62435 121.79468,1.10772 121.79468,1.10772 a 5.4681025,5.4681025 0 0 0 3.32316,-5.53859 c -0.0866,-4.38556 0,-88.578232 0,-88.578232" />
+  <path
+     id="Forma_5"
+     data-name="Forma 5"
+     class="cls-2"
+     d="m 224.20196,202.12313 c -0.44409,0.33533 -53.03656,46.50304 -53.03656,46.50304 l 51.02253,47.14954" />
+  <path
+     id="Forma_6"
+     data-name="Forma 6"
+     class="cls-3"
+     d="M 175.86514,248.44591 339.0019,247.43889" />
+</svg>

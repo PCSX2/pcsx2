@@ -2,23 +2,24 @@
 	<qresource>
 		<file>icons/AppIcon.png</file>
 		<file>icons/applications-system-24.png</file>
-		<file>icons/black/32/discord.png</file>
-		<file>icons/black/32/github.png</file>
 		<file>icons/black/index.theme</file>
 		<file>icons/black/svg/arrow-left-right-line.svg</file>
 		<file>icons/black/svg/artboard-2-line.svg</file>
 		<file>icons/black/svg/at.svg</file>
-		<file>icons/black/svg/book-open-line.svg</file>
 		<file>icons/black/svg/brush-line.svg</file>
 		<file>icons/black/svg/checkbox-multiple-blank-line.svg</file>
+		<file>icons/black/svg/chip-line.svg</file>
 		<file>icons/black/svg/close-line.svg</file>
-		<file>icons/black/svg/dashboard-line.svg</file>
+		<file>icons/black/svg/controller-line.svg</file>
+		<file>icons/black/svg/controller-strike-line.svg</file>
 		<file>icons/black/svg/delete-back-2-line.svg</file>
-		<file>icons/black/svg/disc-line.svg</file>
+		<file>icons/black/svg/disc-2-line.svg</file>
+		<file>icons/black/svg/disc-eject-line.svg</file>
+		<file>icons/black/svg/discord.svg</file>
 		<file>icons/black/svg/door-open-line.svg</file>
 		<file>icons/black/svg/download-2-line.svg</file>
-		<file>icons/black/svg/dvd-line.svg</file>
 		<file>icons/black/svg/eject-line.svg</file>
+		<file>icons/black/svg/emulation-line.svg</file>
 		<file>icons/black/svg/file-add-line.svg</file>
 		<file>icons/black/svg/file-line.svg</file>
 		<file>icons/black/svg/file-list-line.svg</file>
@@ -28,24 +29,28 @@
 		<file>icons/black/svg/filter-line.svg</file>
 		<file>icons/black/svg/flashlight-line.svg</file>
 		<file>icons/black/svg/flask-line.svg</file>
+		<file>icons/black/svg/floppy-in-line.svg</file>
+		<file>icons/black/svg/floppy-out-line.svg</file>
 		<file>icons/black/svg/folder-add-line.svg</file>
-		<file>icons/black/svg/folder-download-line.svg</file>
 		<file>icons/black/svg/folder-open-line.svg</file>
 		<file>icons/black/svg/folder-reduce-line.svg</file>
 		<file>icons/black/svg/folder-settings-line.svg</file>
 		<file>icons/black/svg/fullscreen-line.svg</file>
 		<file>icons/black/svg/function-line.svg</file>
-		<file>icons/black/svg/gamepad-line.svg</file>
+		<file>icons/black/svg/github.svg</file>
 		<file>icons/black/svg/global-line.svg</file>
 		<file>icons/black/svg/hammer-line.svg</file>
-		<file>icons/black/svg/hard-drive-2-line.svg</file>
+		<file>icons/black/svg/heart-circle-line.svg</file>
+		<file>icons/black/svg/heart-monitor-line.svg</file>
 		<file>icons/black/svg/image-fill.svg</file>
+		<file>icons/black/svg/interface-line.svg</file>
 		<file>icons/black/svg/keyboard-line.svg</file>
-		<file>icons/black/svg/layout-grid-line.svg</file>
 		<file>icons/black/svg/lightbulb-line.svg</file>
 		<file>icons/black/svg/list-check.svg</file>
 		<file>icons/black/svg/login-box-line.svg</file>
+		<file>icons/black/svg/memcard-line.svg</file>
 		<file>icons/black/svg/mouse-line.svg</file>
+		<file>icons/black/svg/network-line.svg</file>
 		<file>icons/black/svg/pause-line.svg</file>
 		<file>icons/black/svg/play-line.svg</file>
 		<file>icons/black/svg/price-tag-3-line.svg</file>
@@ -53,7 +58,6 @@
 		<file>icons/black/svg/restart-line.svg</file>
 		<file>icons/black/svg/save-3-line.svg</file>
 		<file>icons/black/svg/screenshot-2-line.svg</file>
-		<file>icons/black/svg/sd-card-line.svg</file>
 		<file>icons/black/svg/settings-3-line.svg</file>
 		<file>icons/black/svg/shut-down-line.svg</file>
 		<file>icons/black/svg/tools-line.svg</file>
@@ -61,30 +65,34 @@
 		<file>icons/black/svg/tv-2-line.svg</file>
 		<file>icons/black/svg/usb-fill.svg</file>
 		<file>icons/black/svg/volume-up-line.svg</file>
+		<file>icons/black/svg/warning-line.svg</file>
 		<file>icons/black/svg/window-2-line.svg</file>
+		<file>icons/black/svg/zoom-in-line.svg</file>
+		<file>icons/black/svg/zoom-out-line.svg</file>
 		<file>icons/logo.png</file>
 		<file>icons/media-optical-24.png</file>
 		<file>icons/media-optical-gear-24.png</file>
 		<file>icons/media-optical.png</file>
 		<file>icons/QT.png</file>
 		<file>icons/update.png</file>
-		<file>icons/white/32/discord.png</file>
-		<file>icons/white/32/github.png</file>
 		<file>icons/white/index.theme</file>
 		<file>icons/white/svg/arrow-left-right-line.svg</file>
 		<file>icons/white/svg/artboard-2-line.svg</file>
 		<file>icons/white/svg/at.svg</file>
-		<file>icons/white/svg/book-open-line.svg</file>
 		<file>icons/white/svg/brush-line.svg</file>
 		<file>icons/white/svg/checkbox-multiple-blank-line.svg</file>
+		<file>icons/white/svg/chip-line.svg</file>
 		<file>icons/white/svg/close-line.svg</file>
-		<file>icons/white/svg/dashboard-line.svg</file>
+		<file>icons/white/svg/controller-line.svg</file>
+		<file>icons/white/svg/controller-strike-line.svg</file>
 		<file>icons/white/svg/delete-back-2-line.svg</file>
-		<file>icons/white/svg/disc-line.svg</file>
+		<file>icons/white/svg/disc-2-line.svg</file>
+		<file>icons/white/svg/disc-eject-line.svg</file>
+		<file>icons/white/svg/discord.svg</file>
 		<file>icons/white/svg/door-open-line.svg</file>
 		<file>icons/white/svg/download-2-line.svg</file>
-		<file>icons/white/svg/dvd-line.svg</file>
 		<file>icons/white/svg/eject-line.svg</file>
+		<file>icons/white/svg/emulation-line.svg</file>
 		<file>icons/white/svg/file-add-line.svg</file>
 		<file>icons/white/svg/file-line.svg</file>
 		<file>icons/white/svg/file-list-line.svg</file>
@@ -94,24 +102,28 @@
 		<file>icons/white/svg/filter-line.svg</file>
 		<file>icons/white/svg/flashlight-line.svg</file>
 		<file>icons/white/svg/flask-line.svg</file>
+		<file>icons/white/svg/floppy-in-line.svg</file>
+		<file>icons/white/svg/floppy-out-line.svg</file>
 		<file>icons/white/svg/folder-add-line.svg</file>
-		<file>icons/white/svg/folder-download-line.svg</file>
 		<file>icons/white/svg/folder-open-line.svg</file>
 		<file>icons/white/svg/folder-reduce-line.svg</file>
 		<file>icons/white/svg/folder-settings-line.svg</file>
 		<file>icons/white/svg/fullscreen-line.svg</file>
 		<file>icons/white/svg/function-line.svg</file>
-		<file>icons/white/svg/gamepad-line.svg</file>
+		<file>icons/white/svg/github.svg</file>
 		<file>icons/white/svg/global-line.svg</file>
 		<file>icons/white/svg/hammer-line.svg</file>
-		<file>icons/white/svg/hard-drive-2-line.svg</file>
+		<file>icons/white/svg/heart-circle-line.svg</file>
+		<file>icons/white/svg/heart-monitor-line.svg</file>
 		<file>icons/white/svg/image-fill.svg</file>
+		<file>icons/white/svg/interface-line.svg</file>
 		<file>icons/white/svg/keyboard-line.svg</file>
-		<file>icons/white/svg/layout-grid-line.svg</file>
 		<file>icons/white/svg/lightbulb-line.svg</file>
 		<file>icons/white/svg/list-check.svg</file>
 		<file>icons/white/svg/login-box-line.svg</file>
+		<file>icons/white/svg/memcard-line.svg</file>
 		<file>icons/white/svg/mouse-line.svg</file>
+		<file>icons/white/svg/network-line.svg</file>
 		<file>icons/white/svg/pause-line.svg</file>
 		<file>icons/white/svg/play-line.svg</file>
 		<file>icons/white/svg/price-tag-3-line.svg</file>
@@ -119,7 +131,6 @@
 		<file>icons/white/svg/restart-line.svg</file>
 		<file>icons/white/svg/save-3-line.svg</file>
 		<file>icons/white/svg/screenshot-2-line.svg</file>
-		<file>icons/white/svg/sd-card-line.svg</file>
 		<file>icons/white/svg/settings-3-line.svg</file>
 		<file>icons/white/svg/shut-down-line.svg</file>
 		<file>icons/white/svg/tools-line.svg</file>
@@ -127,7 +138,10 @@
 		<file>icons/white/svg/tv-2-line.svg</file>
 		<file>icons/white/svg/usb-fill.svg</file>
 		<file>icons/white/svg/volume-up-line.svg</file>
+		<file>icons/white/svg/warning-line.svg</file>
 		<file>icons/white/svg/window-2-line.svg</file>
+		<file>icons/white/svg/zoom-in-line.svg</file>
+		<file>icons/white/svg/zoom-out-line.svg</file>
 		<file>images/DrivingForce.png</file>
 		<file>images/dualshock-2.png</file>
 		<file>images/GTForce.png</file>

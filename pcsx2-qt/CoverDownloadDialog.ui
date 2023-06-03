@@ -25,7 +25,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="resources/resources.qrc">:/icons/black/svg/image-fill.svg</pixmap>
+        <pixmap resource="resources/resources.qrc">:/icons/black/svg/artboard-2-line.svg</pixmap>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
