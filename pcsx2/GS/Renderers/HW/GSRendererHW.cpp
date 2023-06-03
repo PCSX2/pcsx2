@@ -5456,18 +5456,21 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps() const
 	// Check that the height matches. Xenosaga 3 draws a letterbox around
 	// the FMV with a sprite at the top and bottom of the framebuffer.
 	const GSVertex* v = &m_vertex.buff[0];
-	const int first_dpY = v[1].XYZ.Y - v[0].XYZ.Y;
-	const int first_dpX = v[1].XYZ.X - v[0].XYZ.X;
+	const u32 first_dpY = v[1].XYZ.Y - v[0].XYZ.Y;
+	const u32 first_dpX = v[1].XYZ.X - v[0].XYZ.X;
 
 	// Horizontal Match.
 	if ((first_dpX >> 4) == m_r.z)
 	{
 		// Borrowed from MergeSprite() modified to calculate heights.
-		for (u32 i = 0; i < m_vertex.next; i += 2)
+		u32 last_pY = v[1].XYZ.Y;
+		for (u32 i = 2; i < m_vertex.next; i += 2)
 		{
-			const int dpY = v[i + 1].XYZ.Y - v[i].XYZ.Y;
-			if (dpY != first_dpY)
+			const u32 dpY = v[i + 1].XYZ.Y - v[i].XYZ.Y;
+			if (dpY != first_dpY || v[i].XYZ.Y != last_pY)
 				return false;
+
+			last_pY = v[i + 1].XYZ.Y;
 		}
 
 		return true;
@@ -5477,11 +5480,14 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps() const
 	if ((first_dpY >> 4) == m_r.w)
 	{
 		// Borrowed from MergeSprite().
-		for (u32 i = 0; i < m_vertex.next; i += 2)
+		u32 last_pX = v[1].XYZ.X;
+		for (u32 i = 2; i < m_vertex.next; i += 2)
 		{
-			const int dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
-			if (dpX != first_dpX)
+			const u32 dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
+			if (dpX != first_dpX || v[i].XYZ.X != last_pX)
 				return false;
+
+			last_pX = v[i + 1].XYZ.X;
 		}
 
 		return true;
