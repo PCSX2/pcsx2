@@ -47,7 +47,7 @@ private:
 	bool writePacketBegin();
 	bool writePacketEnd();
 	bool writePacketData(const char* data, std::size_t size);
-	bool writePacketBaseResponse(std::string_view data);
+	bool writePacketBaseResponse(const std::string_view& data);
 	bool writePacketThreadId(int threadId, int processId = 1);
 	bool writePacketRegisterValue(int threadId, int registerNumber);
 	bool writePacketMemoryReadValues(u32 address, u32 length);
@@ -55,19 +55,19 @@ private:
 	bool writePacketPaged(std::size_t offset, std::size_t length, const std::string_view& string);
 
 private:
-	bool processXferPacket(std::string_view data);
-	bool processQueryPacket(std::string_view data);
-	bool processGeneralQueryPacket(std::string_view data);
-	bool processMultiletterPacket(std::string_view data);
-	bool processThreadPacket(std::string_view data);
+	bool processXferPacket(const std::string_view& data);
+	bool processQueryPacket(const std::string_view& data);
+	bool processGeneralQueryPacket(const std::string_view& data);
+	bool processMultiletterPacket(const std::string_view& data);
+	bool processThreadPacket(const std::string_view& data);
 
 private:
-	bool processReadRegisterPacket(std::string_view data);
-	bool processWriteRegisterPacket(std::string_view data);
-	bool processReadAllRegistersPacket(std::string_view data);
-	bool processWriteAllRegistersPacket(std::string_view data);
-	bool processReadMemoryPacket(std::string_view data);
-	bool processWriteMemoryPacket(std::string_view data, bool binary);
+	bool processReadRegisterPacket(const std::string_view& data);
+	bool processWriteRegisterPacket(const std::string_view& data);
+	bool processReadAllRegistersPacket(const std::string_view& data);
+	bool processWriteAllRegistersPacket(const std::string_view& data);
+	bool processReadMemoryPacket(const std::string_view& data);
+	bool processWriteMemoryPacket(const std::string_view& data, bool binary);
 
 private:
 	int m_stateThreadCounter = -1;

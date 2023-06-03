@@ -17,6 +17,7 @@
 #include "Breakpoints.h"
 #include "VMManager.h"
 #include "MIPSAnalyst.h"
+#include "Host.h"
 #undef min
 #undef max
 #include <charconv>
@@ -489,10 +490,7 @@ T ReadHexValue(std::string_view string)
 	return ReadHexValue<T>(string.data(), string.size());
 }
 
-constexpr u8 CalculateChecksum(
-	const char* data,
-	std::size_t size
-)
+constexpr u8 CalculateChecksum(const char* data, std::size_t size)
 {
 	u8 checksum = 0;
 	for (std::size_t i = 0; i < size; i++)
@@ -542,26 +540,6 @@ static std::string_view MakeStringView(std::string_view data, std::size_t& offse
 	return std::string_view(data.data() + beginIndex + 1, endIndex - beginIndex - 1);
 };
 
-// Executes code only if CPU is paused
-template<typename T>
-void ExecuteCPUTask(DebugInterface* cpuInterface, T&& func)
-{
-	std::scoped_lock<std::mutex> sc(CPUTransaction);
-	if (!cpuInterface->isAlive())
-		return;		// just don't execute this
-
-	const bool beenPaused = cpuInterface->isCpuPaused();
-	if (!beenPaused)
-		cpuInterface->pauseCpu();
-
-	while (!cpuInterface->isCpuPaused())
-		Threading::Sleep(1);
-
-	func();
-	if (!beenPaused)
-		cpuInterface->resumeCpu();
-}
-
 GDBServer::GDBServer(DebugInterface* debugInterface)
 {
 	m_debugInterface = debugInterface;
@@ -575,18 +553,23 @@ void GDBServer::resumeExecution()
 {
 	std::scoped_lock<std::mutex> sc(CPUTransaction);
 	if (m_debugInterface->isAlive() && m_debugInterface->isCpuPaused())
-		m_debugInterface->resumeCpu();
+	{
+		Host::RunOnCPUThread([this]() { m_debugInterface->resumeCpu(); });
+	}
 }
 
 void GDBServer::stopExecution()
 {
 	std::scoped_lock<std::mutex> sc(CPUTransaction);
 	if (m_debugInterface->isAlive() && !m_debugInterface->isCpuPaused())
-		m_debugInterface->pauseCpu();
+	{
+		Host::RunOnCPUThread([this]() { m_debugInterface->pauseCpu(); });
+	}
 }
 
 void GDBServer::singleStep()
 {
+	std::scoped_lock<std::mutex> sc(CPUTransaction);
 	if (!m_debugInterface->isAlive() || !m_debugInterface->isCpuPaused())
 	{
 		Console.Warning("GDB: trying to single step when cpu is not alive or not paused.");
@@ -605,31 +588,36 @@ void GDBServer::singleStep()
 	if (info.isSyscall)
 		breakAddress = info.branchTarget; // Syscalls are always taken
 
-	CBreakPoints::AddBreakPoint(m_debugInterface->getCpuType(), breakAddress, true);
-	m_debugInterface->resumeCpu();
+	Host::RunOnCPUThread([this, breakAddress]() {
+		CBreakPoints::AddBreakPoint(m_debugInterface->getCpuType(), breakAddress, true);
+		m_debugInterface->resumeCpu();
+	});
 }
 
 bool GDBServer::addBreakpoint(u32 address)
 {
+	std::scoped_lock<std::mutex> sc(CPUTransaction);
 	if (!m_debugInterface->isValidAddress(address))
 		return false;
 
-	ExecuteCPUTask(m_debugInterface, [this, address]() { CBreakPoints::AddBreakPoint(m_debugInterface->getCpuType(), address); });
+	Host::RunOnCPUThread([this, address] { CBreakPoints::AddBreakPoint(m_debugInterface->getCpuType(), address); });
 	return true;
 }
 
 bool GDBServer::removeBreakpoint(u32 address)
 {
+	std::scoped_lock<std::mutex> sc(CPUTransaction);
 	if (!m_debugInterface->isValidAddress(address))
 		return false;
 
-	ExecuteCPUTask(m_debugInterface, [this, address]() { CBreakPoints::RemoveBreakPoint(m_debugInterface->getCpuType(), address); });
+	Host::RunOnCPUThread([this, address] { CBreakPoints::RemoveBreakPoint(m_debugInterface->getCpuType(), address); });
 	return true;
 }
 
 void GDBServer::updateThreadList()
 {
-	ExecuteCPUTask(m_debugInterface, [this]() { m_stateThreads = m_debugInterface->getThreadList(); });
+	std::scoped_lock<std::mutex> sc(CPUTransaction);
+	Host::RunOnCPUThread([this] { m_stateThreads = m_debugInterface->getThreadList(); }, true);
 }
 
 void GDBServer::generateThreadListString()
@@ -688,22 +676,20 @@ bool GDBServer::writeRegister(int threadId, int id, u32 value)
 
 bool GDBServer::readMemory(u8* data, u32 address, u32 length)
 {
-	if (!m_debugInterface->isAlive() || m_debugInterface->isCpuPaused())
-		return false;
-
-	for (size_t i = 0; i < length; i++)
-		data[i] = m_debugInterface->read8(address + i);
+	Host::RunOnCPUThread([this, data, address, length] {
+		for (size_t i = 0; i < length; i++)
+			data[i] = m_debugInterface->read8(address + i);
+	}, true);
 
 	return true;
 }
 
 bool GDBServer::writeMemory(const u8* data, u32 address, u32 length)
 {
-	if (!m_debugInterface->isAlive() || m_debugInterface->isCpuPaused())
-		return false;
-
-	for (size_t i = 0; i < length; i++)
-		m_debugInterface->write8(address + i, data[i]);
+	Host::RunOnCPUThread([this, data, address, length] {
+		for (size_t i = 0; i < length; i++)
+			m_debugInterface->write8(address + i, data[i]);
+	});
 
 	return true;
 }
@@ -752,7 +738,7 @@ bool GDBServer::writePacketData(const char* data, std::size_t size)
 	return true;
 }
 
-bool GDBServer::writePacketBaseResponse(std::string_view data)
+bool GDBServer::writePacketBaseResponse(const std::string_view& data)
 {
 	if (!writePacketBegin())
 		return false;
@@ -856,7 +842,7 @@ bool GDBServer::writePacketPaged(std::size_t offset, std::size_t length, const s
 
 // true - continue packets processing
 // false - stop and send packet as is
-bool GDBServer::processXferPacket(std::string_view data)
+bool GDBServer::processXferPacket(const std::string_view& data)
 {
 	constexpr u8 featuresChecksum = CalculateChecksum("features");
 	constexpr u8 threadsChecksum = CalculateChecksum("threads");
@@ -912,7 +898,7 @@ bool GDBServer::processXferPacket(std::string_view data)
 	return true;
 }
 
-bool GDBServer::processQueryPacket(std::string_view data)
+bool GDBServer::processQueryPacket(const std::string_view& data)
 {
 	auto writeThreadInfo = [this]() -> bool {
 		if (m_stateThreadCounter == -1)
@@ -1043,7 +1029,7 @@ bool GDBServer::processQueryPacket(std::string_view data)
 	return true;
 }
 
-bool GDBServer::processGeneralQueryPacket(std::string_view data)
+bool GDBServer::processGeneralQueryPacket(const std::string_view& data)
 {
 	DEBUG_WRITE("GDB: processing general query packet...");
 	const std::string_view threadEventsString = "QThreadEvents:";
@@ -1068,7 +1054,7 @@ bool GDBServer::processGeneralQueryPacket(std::string_view data)
 	return true;
 }
 
-bool GDBServer::processMultiletterPacket(std::string_view data)
+bool GDBServer::processMultiletterPacket(const std::string_view& data)
 {
 	DEBUG_WRITE("GDB: processing multiletter packet...");
 	if (IsSameString(data, "vMustReplyEmpty"))
@@ -1114,7 +1100,7 @@ bool GDBServer::processMultiletterPacket(std::string_view data)
 	return true;
 }
 
-bool GDBServer::processThreadPacket(std::string_view data)
+bool GDBServer::processThreadPacket(const std::string_view& data)
 {
 	DEBUG_WRITE("GDB: processing thread packet...");
 	if (data[1] == 'c' || data[1] == 'g')
@@ -1128,7 +1114,7 @@ bool GDBServer::processThreadPacket(std::string_view data)
 	return true;
 }
 
-bool GDBServer::processReadRegisterPacket(std::string_view data)
+bool GDBServer::processReadRegisterPacket(const std::string_view& data)
 {
 	if (data.size() < 3)
 		return false;
@@ -1140,12 +1126,12 @@ bool GDBServer::processReadRegisterPacket(std::string_view data)
 	return success;
 }
 
-bool GDBServer::processWriteRegisterPacket(std::string_view data)
+bool GDBServer::processWriteRegisterPacket(const std::string_view& data)
 {
 	return false;
 }
 
-bool GDBServer::processReadAllRegistersPacket(std::string_view data)
+bool GDBServer::processReadAllRegistersPacket(const std::string_view& data)
 {
 	bool success = writePacketBegin();
 	success |= writePacketAllRegisterValues(0);
@@ -1153,12 +1139,12 @@ bool GDBServer::processReadAllRegistersPacket(std::string_view data)
 	return success;
 }
 
-bool GDBServer::processWriteAllRegistersPacket(std::string_view data)
+bool GDBServer::processWriteAllRegistersPacket(const std::string_view& data)
 {
 	return false;
 }
 
-bool GDBServer::processReadMemoryPacket(std::string_view data)
+bool GDBServer::processReadMemoryPacket(const std::string_view& data)
 {
 	std::size_t offset = 1;
 	const auto addressString = MakeStringView(data, offset, '\0', ',');
@@ -1186,7 +1172,7 @@ bool GDBServer::processReadMemoryPacket(std::string_view data)
 	return writePacketMemoryReadValues(address, length);
 }
 
-bool GDBServer::processWriteMemoryPacket(std::string_view data, bool binary)
+bool GDBServer::processWriteMemoryPacket(const std::string_view& data, bool binary)
 {
 	std::size_t offset = 1;
 	const auto addressString = MakeStringView(data, offset, '\0', ',');
@@ -1253,13 +1239,15 @@ bool GDBServer::replyPacket(void* outData, std::size_t& outSize, bool& wantsShut
 	const bool breakpointTriggered = CBreakPoints::GetBreakpointTriggered();
 	if (breakpointTriggered)
 	{
-		CBreakPoints::ClearTemporaryBreakPoints();
-		CBreakPoints::SetBreakpointTriggered(false);
+		Host::RunOnCPUThread([this]() {
+			CBreakPoints::ClearTemporaryBreakPoints();
+			CBreakPoints::SetBreakpointTriggered(false);
 
-		// Our current PC is on a breakpoint.
-		// When we run the core again, we want to skip this breakpoint and run
-		CBreakPoints::SetSkipFirst(BREAKPOINT_EE, r5900Debug.getPC());
-		CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, r3000Debug.getPC());
+			// Our current PC is on a breakpoint.
+			// When we run the core again, we want to skip this breakpoint and run
+			CBreakPoints::SetSkipFirst(BREAKPOINT_EE, r5900Debug.getPC());
+			CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, r3000Debug.getPC());
+		});
 	}
 
 	if (m_wantsShutdown)
