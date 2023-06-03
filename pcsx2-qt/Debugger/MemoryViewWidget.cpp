@@ -225,6 +225,25 @@ void MemoryViewTable::InsertIntoSelectedHexView(u8 value)
 		QtHost::RunOnUIThread([this] { parent->update(); });
 	});
 }
+
+void MemoryViewTable::InsertAtCurrentSelection(const QString& text) {
+	if (!m_cpu->isValidAddress(selectedAddress))
+		return;
+
+	// If pasting into the hex view, also decode the input as hex bytes.
+	// This approach prevents one from pasting on a nibble boundary, but that is almost always
+	// user error, and we don't have an undo function in this view, so best to stay conservative.
+	QByteArray input = selectedText ? text.toUtf8() : QByteArray::fromHex(text.toUtf8());
+
+	Host::RunOnCPUThread([this, address = selectedAddress, cpu = m_cpu, inBytes = input] {
+		for (int i = 0; i < inBytes.size(); i++)
+		{
+			cpu->write8(address + i, inBytes[i]);
+		}
+		QtHost::RunOnUIThread([this, inBytes] { UpdateSelectedAddress(selectedAddress + inBytes.size()); parent->update(); });
+	});
+}
+
 // We need both key and keychar because `key` is easy to use, but is case insensitive
 void MemoryViewTable::KeyPress(int key, QChar keychar)
 {
@@ -404,6 +423,10 @@ void MemoryViewWidget::customMenuRequested(QPoint pos)
 		action = new QAction(tr("Copy Character"));
 		m_contextMenu->addAction(action);
 		connect(action, &QAction::triggered, this, [this]() { contextCopyCharacter(); });
+
+		action = new QAction(tr("Paste"));
+		m_contextMenu->addAction(action);
+		connect(action, &QAction::triggered, this, [this]() { contextPaste(); });
 	}
 	const MemoryViewType currentViewType = m_table.GetViewType();
 
@@ -430,6 +453,11 @@ void MemoryViewWidget::contextCopySegment()
 void MemoryViewWidget::contextCopyCharacter()
 {
 	QApplication::clipboard()->setText(QChar::fromLatin1(m_cpu->read8(m_table.selectedAddress)).toUpper());
+}
+
+void MemoryViewWidget::contextPaste()
+{
+	m_table.InsertAtCurrentSelection(QApplication::clipboard()->text());
 }
 
 void MemoryViewWidget::contextGoToAddress()
