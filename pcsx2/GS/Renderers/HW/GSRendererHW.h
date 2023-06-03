@@ -54,7 +54,7 @@ private:
 	void SwSpriteRender();
 	bool CanUseSwSpriteRender();
 	bool IsConstantDirectWriteMemClear();
-	bool IsBlendedOrOpaque();
+	bool IsDiscardingDstColor();
 	bool PrimitiveCoversWithoutGaps() const;
 
 	enum class CLUTDrawTestResult
