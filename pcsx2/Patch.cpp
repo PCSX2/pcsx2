@@ -43,16 +43,14 @@
 
 namespace Patch
 {
-	enum patch_cpu_type
+	enum patch_cpu_type : u8
 	{
-		NO_CPU,
 		CPU_EE,
 		CPU_IOP
 	};
 
-	enum patch_data_type
+	enum patch_data_type : u8
 	{
-		NO_TYPE,
 		BYTE_T,
 		SHORT_T,
 		WORD_T,
@@ -63,18 +61,42 @@ namespace Patch
 		DOUBLE_BE_T
 	};
 
+	static constexpr std::array<const char*, 3> s_place_to_string = {{"0", "1", "2"}};
+	static constexpr std::array<const char*, 2> s_cpu_to_string = {{"EE", "IOP"}};
+	static constexpr std::array<const char*, 8> s_type_to_string = {
+		{"byte", "short", "word", "double", "extended", "beshort", "beword", "bedouble"}};
+
+	template <typename EnumType, class ArrayType>
+	static inline std::optional<EnumType> LookupEnumName(const std::string_view& val, const ArrayType& arr)
+	{
+		for (size_t i = 0; i < arr.size(); i++)
+		{
+			if (val == arr[i])
+				return static_cast<EnumType>(i);
+		}
+		return std::nullopt;
+	}
+
 	struct PatchCommand
 	{
-		patch_data_type type;
+		patch_place_type placetopatch;
 		patch_cpu_type cpu;
-		int placetopatch;
+		patch_data_type type;
 		u32 addr;
 		u64 data;
 
+		PatchCommand() { std::memset(this, 0, sizeof(*this)); }
+
 		bool operator==(const PatchCommand& p) const { return std::memcmp(this, &p, sizeof(*this)) == 0; }
 		bool operator!=(const PatchCommand& p) const { return std::memcmp(this, &p, sizeof(*this)) != 0; }
+
+		std::string ToString() const
+		{
+			return fmt::format("{},{},{},{:08x},{:x}", s_place_to_string[static_cast<u8>(placetopatch)],
+				s_cpu_to_string[static_cast<u8>(cpu)], s_type_to_string[static_cast<u8>(type)], addr, data);
+		}
 	};
-	static_assert(sizeof(PatchCommand) == 24, "IniPatch has no padding");
+	static_assert(sizeof(PatchCommand) == 16, "IniPatch has no padding");
 
 	struct PatchGroup
 	{
@@ -97,8 +119,6 @@ namespace Patch
 
 	namespace PatchFunc
 	{
-		static void author(PatchGroup* group, const std::string_view& cmd, const std::string_view& param);
-		static void comment(PatchGroup* group, const std::string_view& cmd, const std::string_view& param);
 		static void patch(PatchGroup* group, const std::string_view& cmd, const std::string_view& param);
 		static void gsaspectratio(PatchGroup* group, const std::string_view& cmd, const std::string_view& param);
 		static void gsinterlacemode(PatchGroup* group, const std::string_view& cmd, const std::string_view& param);
@@ -150,30 +170,10 @@ namespace Patch
 	static std::optional<GSInterlaceMode> s_override_interlace_mode;
 
 	static const PatchTextTable s_patch_commands[] = {
-		{0, "author", &Patch::PatchFunc::author},
-		{0, "comment", &Patch::PatchFunc::comment},
 		{0, "patch", &Patch::PatchFunc::patch},
 		{0, "gsaspectratio", &Patch::PatchFunc::gsaspectratio},
 		{0, "gsinterlacemode", &Patch::PatchFunc::gsinterlacemode},
 		{0, nullptr, nullptr},
-	};
-
-	static const PatchTextTable s_type_commands[] = {
-		{BYTE_T, "byte", nullptr},
-		{SHORT_T, "short", nullptr},
-		{WORD_T, "word", nullptr},
-		{DOUBLE_T, "double", nullptr},
-		{EXTENDED_T, "extended", nullptr},
-		{SHORT_BE_T, "beshort", nullptr},
-		{WORD_BE_T, "beword", nullptr},
-		{DOUBLE_BE_T, "bedouble", nullptr},
-		{NO_TYPE, nullptr, nullptr},
-	};
-
-	static const PatchTextTable s_cpu_commands[] = {
-		{CPU_EE, "EE", nullptr},
-		{CPU_IOP, "IOP", nullptr},
-		{NO_CPU, nullptr, nullptr},
 	};
 } // namespace Patch
 
@@ -475,11 +475,17 @@ u32 Patch::EnablePatches(const PatchList& patches, const EnablePatchList& enable
 		if (!p.name.empty() && std::find(enable_list.begin(), enable_list.end(), p.name) == enable_list.end())
 			continue;
 
-		if (!p.name.empty())
-			Console.WriteLn(Color_Green, fmt::format("Enabled patch: '{}'", p.name));
+		Console.WriteLn(Color_Green, fmt::format("Enabled patch: {}",
+										 p.name.empty() ? std::string_view("<unknown>") : std::string_view(p.name)));
 
 		for (const PatchCommand& ip : p.patches)
+		{
+			// print the actual patch lines only in verbose mode (even in devel)
+			if (DevConWriterEnabled)
+				DevCon.Indent().WriteLn(ip.ToString());
+
 			s_active_patches.push_back(&ip);
+		}
 
 		if (p.override_aspect_ratio.has_value())
 			s_override_aspect_ratio = p.override_aspect_ratio;
@@ -511,7 +517,7 @@ void Patch::ReloadPatches(std::string serial, u32 crc, bool force_reload_files, 
 			{
 				const u32 patch_count = LoadPatchesFromString(&s_gamedb_patches, *patches);
 				if (patch_count > 0)
-					Console.WriteLn(Color_Green, "(GameDB) Patches Loaded: %d", patch_count);
+					Console.WriteLn(Color_Green, fmt::format("Found {} game patches in GameDB.", patch_count));
 			}
 
 			LoadDynamicPatches(game->dynaPatches);
@@ -530,7 +536,7 @@ void Patch::ReloadPatches(bool force_reload_files, bool reload_enabled_list, boo
 			s_patches_serial, s_patches_crc, false, [](const std::string& filename, const std::string& pnach_data) {
 				const u32 patch_count = LoadPatchesFromString(&s_game_patches, pnach_data);
 				if (patch_count > 0)
-					Console.WriteLn(Color_Green, fmt::format("Loaded {} game patches from {}.", patch_count, filename));
+					Console.WriteLn(Color_Green, fmt::format("Found {} game patches in {}.", patch_count, filename));
 			});
 
 		s_cheat_patches.clear();
@@ -538,7 +544,7 @@ void Patch::ReloadPatches(bool force_reload_files, bool reload_enabled_list, boo
 			s_patches_serial, s_patches_crc, true, [](const std::string& filename, const std::string& pnach_data) {
 				const u32 patch_count = LoadPatchesFromString(&s_cheat_patches, pnach_data);
 				if (patch_count > 0)
-					Console.WriteLn(Color_Green, fmt::format("Loaded {} cheats from {}.", patch_count, filename));
+					Console.WriteLn(Color_Green, fmt::format("Found {} cheats in {}.", patch_count, filename));
 			});
 	}
 
@@ -656,22 +662,8 @@ void Patch::UnloadPatches()
 }
 
 // PatchFunc Functions.
-void Patch::PatchFunc::comment(PatchGroup* group, const std::string_view& cmd, const std::string_view& param)
-{
-	Console.WriteLn(fmt::format("Patch comment: {}", param));
-}
-
-void Patch::PatchFunc::author(PatchGroup* group, const std::string_view& cmd, const std::string_view& param)
-{
-	Console.WriteLn(fmt::format("Patch author: {}", param));
-}
-
 void Patch::PatchFunc::patch(PatchGroup* group, const std::string_view& cmd, const std::string_view& param)
 {
-	// print the actual patch lines only in verbose mode (even in devel)
-	if (DevConWriterEnabled)
-		DevCon.WriteLn(fmt::format("{} {}", cmd, param));
-
 #define PATCH_ERROR(fstring, ...) \
 	Console.Error(fmt::format("(Patch) Error Parsing: {}={}: " fstring, cmd, param, __VA_ARGS__))
 
@@ -683,22 +675,18 @@ void Patch::PatchFunc::patch(PatchGroup* group, const std::string_view& cmd, con
 		return;
 	}
 
-	std::string_view placetopatch_end;
-	const std::optional<u32> placetopatch = StringUtil::FromChars<u32>(pieces[0], 10, &placetopatch_end);
+	std::string_view addr_end, data_end;
+	const std::optional<patch_place_type> placetopatch = LookupEnumName<patch_place_type>(pieces[0], s_place_to_string);
+	const std::optional<patch_cpu_type> cpu = LookupEnumName<patch_cpu_type>(pieces[1], s_cpu_to_string);
+	const std::optional<u32> addr = StringUtil::FromChars<u32>(pieces[2], 16, &addr_end);
+	const std::optional<patch_data_type> type = LookupEnumName<patch_data_type>(pieces[3], s_type_to_string);
+	const std::optional<u64> data = StringUtil::FromChars<u64>(pieces[4], 16, &data_end);
 
-	PatchCommand iPatch;
-	iPatch.placetopatch = StringUtil::FromChars<u32>(pieces[0]).value_or(PPT_END_MARKER);
-
-	if (!placetopatch.has_value() || !placetopatch_end.empty() ||
-		(iPatch.placetopatch = placetopatch.value()) >= PPT_END_MARKER)
+	if (!placetopatch.has_value())
 	{
 		PATCH_ERROR("Invalid 'place' value '{}' (0 - once on startup, 1: continuously)", pieces[0]);
 		return;
 	}
-
-	std::string_view addr_end, data_end;
-	const std::optional<u32> addr = StringUtil::FromChars<u32>(pieces[2], 16, &addr_end);
-	const std::optional<u64> data = StringUtil::FromChars<u64>(pieces[4], 16, &data_end);
 	if (!addr.has_value() || !addr_end.empty())
 	{
 		PATCH_ERROR("Malformed address '{}', a hex number without prefix (e.g. 0123ABCD) is expected", pieces[2]);
@@ -709,24 +697,23 @@ void Patch::PatchFunc::patch(PatchGroup* group, const std::string_view& cmd, con
 		PATCH_ERROR("Malformed data '{}', a hex number without prefix (e.g. 0123ABCD) is expected", pieces[4]);
 		return;
 	}
-
-	iPatch.cpu = (patch_cpu_type)PatchTableExecute(group, pieces[1], std::string_view(), s_cpu_commands);
-	iPatch.addr = addr.value();
-	iPatch.type = (patch_data_type)PatchTableExecute(group, pieces[3], std::string_view(), s_type_commands);
-	iPatch.data = data.value();
-
-	if (iPatch.cpu == 0)
+	if (!cpu.has_value())
 	{
 		PATCH_ERROR("Unrecognized CPU Target: '%.*s'", pieces[1]);
 		return;
 	}
-
-	if (iPatch.type == 0)
+	if (!type.has_value())
 	{
 		PATCH_ERROR("Unrecognized Operand Size: '%.*s'", pieces[3]);
 		return;
 	}
 
+	PatchCommand iPatch;
+	iPatch.placetopatch = placetopatch.value();
+	iPatch.cpu = cpu.value();
+	iPatch.addr = addr.value();
+	iPatch.type = type.value();
+	iPatch.data = data.value();
 	group->patches.push_back(iPatch);
 
 #undef PATCH_ERROR
