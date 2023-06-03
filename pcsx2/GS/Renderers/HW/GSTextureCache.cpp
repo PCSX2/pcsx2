@@ -1199,7 +1199,7 @@ GSTextureCache::Target* GSTextureCache::FindTargetOverlap(u32 bp, u32 end_block,
 }
 
 GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type,
-	bool used, u32 fbmask, bool is_frame, bool is_clear, bool preload)
+	bool used, u32 fbmask, bool is_frame, bool is_clear, bool preload, bool preload_uploads)
 {
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 	const u32 bp = TEX0.TBP0;
@@ -1470,81 +1470,84 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 
 			if (!is_frame && !forced_preload && !preload)
 			{
-				std::vector<GSState::GSUploadQueue>::iterator iter;
-				GSVector4i eerect = GSVector4i::zero();
-
-				for (iter = GSRendererHW::GetInstance()->m_draw_transfers.begin(); iter != GSRendererHW::GetInstance()->m_draw_transfers.end(); )
+				if (preload_uploads)
 				{
-					// If the format, and location doesn't overlap
-					if (iter->blit.DBP >= TEX0.TBP0 && iter->blit.DBP <= rect_end && GSUtil::HasCompatibleBits(iter->blit.DPSM, TEX0.PSM))
-					{
-						GSVector4i targetr = {};
-						const bool can_translate = CanTranslate(iter->blit.DBP, iter->blit.DBW, iter->blit.DPSM, iter->rect, TEX0.TBP0, TEX0.PSM, TEX0.TBW);
-						const bool swizzle_match = GSLocalMemory::m_psm[iter->blit.DPSM].depth == GSLocalMemory::m_psm[TEX0.PSM].depth;
-						if (can_translate)
-						{
-							if (swizzle_match)
-							{
-								targetr = TranslateAlignedRectByPage(dst, iter->blit.DBP, iter->blit.DPSM, iter->blit.DBW, iter->rect, true);
-							}
-							else
-							{
-								// If it's not page aligned, grab the whole pages it covers, to be safe.
-								GSVector4i new_rect = iter->rect;
-								const GSVector2i page_size = GSLocalMemory::m_psm[iter->blit.DPSM].pgs;
+					std::vector<GSState::GSUploadQueue>::iterator iter;
+					GSVector4i eerect = GSVector4i::zero();
 
-								if (GSLocalMemory::m_psm[iter->blit.DPSM].bpp != GSLocalMemory::m_psm[TEX0.PSM].bpp)
+					for (iter = GSRendererHW::GetInstance()->m_draw_transfers.begin(); iter != GSRendererHW::GetInstance()->m_draw_transfers.end(); )
+					{
+						// If the format, and location doesn't overlap
+						if (iter->blit.DBP >= TEX0.TBP0 && iter->blit.DBP <= rect_end && GSUtil::HasCompatibleBits(iter->blit.DPSM, TEX0.PSM))
+						{
+							GSVector4i targetr = {};
+							const bool can_translate = CanTranslate(iter->blit.DBP, iter->blit.DBW, iter->blit.DPSM, iter->rect, TEX0.TBP0, TEX0.PSM, TEX0.TBW);
+							const bool swizzle_match = GSLocalMemory::m_psm[iter->blit.DPSM].depth == GSLocalMemory::m_psm[TEX0.PSM].depth;
+							if (can_translate)
+							{
+								if (swizzle_match)
 								{
-									const GSVector2i dst_page_size = GSLocalMemory::m_psm[iter->blit.DPSM].pgs;
-									new_rect = GSVector4i(new_rect.x / page_size.x, new_rect.y / page_size.y, (new_rect.z + (page_size.x - 1)) / page_size.x, (new_rect.w + (page_size.y - 1)) / page_size.y);
-									new_rect = GSVector4i(new_rect.x * dst_page_size.x, new_rect.y * dst_page_size.y, new_rect.z * dst_page_size.x, new_rect.w * dst_page_size.y);
+									targetr = TranslateAlignedRectByPage(dst, iter->blit.DBP, iter->blit.DPSM, iter->blit.DBW, iter->rect, true);
 								}
 								else
 								{
-									new_rect.x &= ~(page_size.x - 1);
-									new_rect.y &= ~(page_size.y - 1);
-									new_rect.z = (new_rect.z + (page_size.x - 1)) & ~(page_size.x - 1);
-									new_rect.w = (new_rect.w + (page_size.y - 1)) & ~(page_size.y - 1);
+									// If it's not page aligned, grab the whole pages it covers, to be safe.
+									GSVector4i new_rect = iter->rect;
+									const GSVector2i page_size = GSLocalMemory::m_psm[iter->blit.DPSM].pgs;
+
+									if (GSLocalMemory::m_psm[iter->blit.DPSM].bpp != GSLocalMemory::m_psm[TEX0.PSM].bpp)
+									{
+										const GSVector2i dst_page_size = GSLocalMemory::m_psm[iter->blit.DPSM].pgs;
+										new_rect = GSVector4i(new_rect.x / page_size.x, new_rect.y / page_size.y, (new_rect.z + (page_size.x - 1)) / page_size.x, (new_rect.w + (page_size.y - 1)) / page_size.y);
+										new_rect = GSVector4i(new_rect.x * dst_page_size.x, new_rect.y * dst_page_size.y, new_rect.z * dst_page_size.x, new_rect.w * dst_page_size.y);
+									}
+									else
+									{
+										new_rect.x &= ~(page_size.x - 1);
+										new_rect.y &= ~(page_size.y - 1);
+										new_rect.z = (new_rect.z + (page_size.x - 1)) & ~(page_size.x - 1);
+										new_rect.w = (new_rect.w + (page_size.y - 1)) & ~(page_size.y - 1);
+									}
+									targetr = TranslateAlignedRectByPage(dst, iter->blit.DBP & ~((1 << 5) - 1), iter->blit.DPSM, iter->blit.DBW, new_rect, true);
 								}
-								targetr = TranslateAlignedRectByPage(dst, iter->blit.DBP & ~((1 << 5) - 1), iter->blit.DPSM, iter->blit.DBW, new_rect, true);
 							}
+							else
+							{
+								GSTextureCache::SurfaceOffsetKey sok;
+								sok.elems[0].bp = iter->blit.DBP;
+								sok.elems[0].bw = iter->blit.DBW;
+								sok.elems[0].psm = iter->blit.DPSM;
+								sok.elems[0].rect = iter->rect;
+								sok.elems[1].bp = TEX0.TBP0;
+								sok.elems[1].bw = TEX0.TBW;
+								sok.elems[1].psm = TEX0.PSM;
+								sok.elems[1].rect = newrect;
+
+								// Calculate the rect offset if the BP doesn't match.
+								targetr = (iter->blit.DBP == TEX0.TBP0) ? iter->rect : ComputeSurfaceOffset(sok).b2a_offset;
+							}
+
+							if (eerect.rempty())
+								eerect = targetr;
+							else
+								eerect = eerect.runion(targetr);
+
+							iter = GSRendererHW::GetInstance()->m_draw_transfers.erase(iter);
+
+							if (eerect.rintersect(newrect).eq(newrect))
+								break;
+							else
+								continue;
 						}
-						else
-						{
-							GSTextureCache::SurfaceOffsetKey sok;
-							sok.elems[0].bp = iter->blit.DBP;
-							sok.elems[0].bw = iter->blit.DBW;
-							sok.elems[0].psm = iter->blit.DPSM;
-							sok.elems[0].rect = iter->rect;
-							sok.elems[1].bp = TEX0.TBP0;
-							sok.elems[1].bw = TEX0.TBW;
-							sok.elems[1].psm = TEX0.PSM;
-							sok.elems[1].rect = newrect;
-
-							// Calculate the rect offset if the BP doesn't match.
-							targetr = (iter->blit.DBP == TEX0.TBP0) ? iter->rect : ComputeSurfaceOffset(sok).b2a_offset;
-						}
-
-						if (eerect.rempty())
-							eerect = targetr;
-						else
-							eerect = eerect.runion(targetr);
-
-						iter = GSRendererHW::GetInstance()->m_draw_transfers.erase(iter);
-
-						if (eerect.rintersect(newrect).eq(newrect))
-							break;
-						else
-							continue;
+						iter++;
 					}
-					iter++;
-				}
 
-				if (!eerect.rempty())
-				{
-					GL_INS("Preloading the RT DATA from updated GS Memory");
-					eerect = eerect.rintersect(newrect);
-					AddDirtyRectTarget(dst, eerect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
+					if (!eerect.rempty())
+					{
+						GL_INS("Preloading the RT DATA from updated GS Memory");
+						eerect = eerect.rintersect(newrect);
+						AddDirtyRectTarget(dst, eerect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
+					}
 				}
 			}
 			else

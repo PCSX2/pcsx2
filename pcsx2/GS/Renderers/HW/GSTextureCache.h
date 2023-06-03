@@ -452,7 +452,7 @@ public:
 
 	Target* FindTargetOverlap(u32 bp, u32 end_block, int type, int psm);
 	Target* LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type, bool used = true, u32 fbmask = 0,
-		bool is_frame = false, bool is_clear = false, bool preload = GSConfig.PreloadFrameWithGSData);
+		bool is_frame = false, bool is_clear = false, bool preload = GSConfig.PreloadFrameWithGSData, bool preload_uploads = true);
 	Target* LookupDisplayTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale);
 
 	/// Looks up a target in the cache, and only returns it if the BP/BW match exactly.
