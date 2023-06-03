@@ -36,9 +36,6 @@
          <height>48</height>
         </size>
        </property>
-       <property name="pixmap">
-        <pixmap resource="../resources/resources.qrc">:/icons/black/48/sd-card-line.png</pixmap>
-       </property>
       </widget>
      </item>
      <item>

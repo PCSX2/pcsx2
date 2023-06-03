@@ -35,7 +35,7 @@
       <string>Change Disc</string>
      </property>
      <property name="icon">
-      <iconset theme="dvd-line">
+      <iconset theme="disc-eject-line">
        <normaloff>.</normaloff>.</iconset>
      </property>
      <actiongroup name="actionGroupChangeDiscSubImages"/>
@@ -50,7 +50,7 @@
       <string>Load State</string>
      </property>
      <property name="icon">
-      <iconset theme="folder-open-line">
+      <iconset theme="floppy-out-line">
        <normaloff>.</normaloff>.</iconset>
      </property>
     </widget>
@@ -59,7 +59,7 @@
       <string>Save State</string>
      </property>
      <property name="icon">
-      <iconset theme="save-3-line">
+      <iconset theme="floppy-in-line">
        <normaloff>.</normaloff>.</iconset>
      </property>
     </widget>
@@ -126,6 +126,10 @@
      <property name="title">
       <string>Switch Renderer</string>
      </property>
+    <property name="icon">
+    <iconset theme="brush-line">
+     <normaloff>.</normaloff>.</iconset>
+    </property>
     </widget>
     <addaction name="menuDebugSwitchRenderer"/>
     <addaction name="separator"/>
@@ -261,7 +265,7 @@
   </action>
   <action name="actionStartDisc">
    <property name="icon">
-    <iconset theme="disc-line">
+    <iconset theme="disc-2-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -270,7 +274,7 @@
   </action>
   <action name="actionStartBios">
    <property name="icon">
-    <iconset theme="hard-drive-2-line">
+    <iconset theme="chip-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -336,7 +340,7 @@
   </action>
   <action name="actionLoadState">
    <property name="icon">
-    <iconset theme="folder-open-line">
+    <iconset theme="floppy-out-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -345,7 +349,7 @@
   </action>
   <action name="actionSaveState">
    <property name="icon">
-    <iconset theme="save-3-line">
+    <iconset theme="floppy-in-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -363,7 +367,7 @@
   </action>
   <action name="actionBIOSSettings">
    <property name="icon">
-    <iconset theme="hard-drive-2-line">
+    <iconset theme="chip-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -372,7 +376,7 @@
   </action>
   <action name="actionEmulationSettings">
    <property name="icon">
-    <iconset theme="dashboard-line">
+    <iconset theme="emulation-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -381,7 +385,7 @@
   </action>
   <action name="actionControllerSettings">
    <property name="icon">
-    <iconset theme="gamepad-line">
+    <iconset theme="controller-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -399,7 +403,7 @@
   </action>
   <action name="actionGraphicsSettings">
    <property name="icon">
-    <iconset theme="brush-line">
+    <iconset theme="image-fill">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -490,7 +494,7 @@
   </action>
   <action name="actionChangeDisc">
    <property name="icon">
-    <iconset theme="dvd-line">
+    <iconset theme="disc-eject-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -508,7 +512,7 @@
   </action>
   <action name="actionGameListSettings">
    <property name="icon">
-    <iconset theme="folder-settings-line">
+    <iconset theme="folder-open-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -517,7 +521,7 @@
   </action>
   <action name="actionInterfaceSettings">
    <property name="icon">
-    <iconset theme="settings-3-line">
+    <iconset theme="interface-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -593,7 +597,7 @@
   </action>
   <action name="actionMemoryCardSettings">
    <property name="icon">
-    <iconset theme="sd-card-line">
+    <iconset theme="memcard-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -602,7 +606,7 @@
   </action>
   <action name="actionDEV9Settings">
    <property name="icon">
-    <iconset theme="dashboard-line">
+    <iconset theme="network-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -611,7 +615,7 @@
   </action>
   <action name="actionFolderSettings">
    <property name="icon">
-    <iconset theme="folder-open-line">
+    <iconset theme="folder-settings-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -722,6 +726,10 @@
    <property name="shortcut">
     <string>Ctrl++</string>
    </property>
+   <property name="icon">
+    <iconset theme="zoom-in-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
   </action>
   <action name="actionGridViewZoomOut">
    <property name="text">
@@ -730,20 +738,36 @@
    <property name="shortcut">
     <string>Ctrl+-</string>
    </property>
+   <property name="icon">
+    <iconset theme="zoom-out-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
   </action>
   <action name="actionGridViewRefreshCovers">
    <property name="text">
     <string>Refresh &amp;Covers (Grid View)</string>
+   </property>
+   <property name="icon">
+    <iconset theme="refresh-line">
+     <normaloff>.</normaloff>.</iconset>
    </property>
   </action>
   <action name="actionOpen_Memory_Card_Directory">
    <property name="text">
     <string>Open Memory Card Directory...</string>
    </property>
+   <property name="icon">
+    <iconset theme="memcard-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
   </action>
   <action name="actionOpenDataDirectory">
    <property name="text">
     <string>Open Data Directory...</string>
+   </property>
+   <property name="icon">
+    <iconset theme="folder-open-line">
+     <normaloff>.</normaloff>.</iconset>
    </property>
   </action>
   <action name="actionToggleSoftwareRendering">
@@ -754,6 +778,10 @@
   <action name="actionDebugger">
    <property name="text">
     <string>Open Debugger</string>
+   </property>
+   <property name="icon">
+    <iconset theme="heart-circle-line">
+     <normaloff>.</normaloff>.</iconset>
    </property>
   </action>
   <action name="actionReloadPatches">
@@ -904,6 +932,10 @@
   <action name="actionCoverDownloader">
    <property name="text">
     <string>Cover Downloader...</string>
+   </property>
+   <property name="icon">
+    <iconset theme="artboard-2-line">
+     <normaloff>.</normaloff>.</iconset>
    </property>
   </action>
   <action name="actionShowAdvancedSettings">

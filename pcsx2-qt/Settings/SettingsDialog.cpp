@@ -87,7 +87,7 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	}
 
 	addWidget(m_interface_settings = new InterfaceSettingsWidget(this, m_ui.settingsContainer), tr("Interface"),
-		QStringLiteral("settings-3-line"),
+		QStringLiteral("interface-line"),
 		tr("<strong>Interface Settings</strong><hr>These options control how the software looks and behaves.<br><br>Mouse over an option "
 		   "for additional information."));
 
@@ -95,16 +95,16 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	if (!isPerGameSettings())
 	{
 		addWidget(m_game_list_settings = new GameListSettingsWidget(this, m_ui.settingsContainer), tr("Game List"),
-			QStringLiteral("folder-settings-line"),
+			QStringLiteral("folder-open-line"),
 			tr("<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by PCSX2 to populate "
 			   "the game list. Search directories can be added, removed, and switched to recursive/non-recursive."));
-		addWidget(m_bios_settings = new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"), QStringLiteral("hard-drive-2-line"),
+		addWidget(m_bios_settings = new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"), QStringLiteral("chip-line"),
 			tr("<strong>BIOS Settings</strong><hr>Configure your BIOS here.<br><br>Mouse over an option for additional information."));
 	}
 
 	// Common to both per-game and global settings.
 	addWidget(m_emulation_settings = new EmulationSettingsWidget(this, m_ui.settingsContainer), tr("Emulation"),
-		QStringLiteral("dashboard-line"),
+		QStringLiteral("emulation-line"),
 		tr("<strong>Emulation Settings</strong><hr>These options determine the configuration of frame pacing and game "
 		   "settings.<br><br>Mouse over an option for additional information."));
 
@@ -130,7 +130,7 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 			   "also cause problems in games if used incorrectly.<br>It is best to leave them all disabled unless advised otherwise."));
 	}
 
-	addWidget(m_graphics_settings = new GraphicsSettingsWidget(this, m_ui.settingsContainer), tr("Graphics"), QStringLiteral("brush-line"),
+	addWidget(m_graphics_settings = new GraphicsSettingsWidget(this, m_ui.settingsContainer), tr("Graphics"), QStringLiteral("image-fill"),
 		tr("<strong>Graphics Settings</strong><hr>These options determine the configuration of the graphical output.<br><br>Mouse over an "
 		   "option for additional information."));
 	addWidget(m_audio_settings = new AudioSettingsWidget(this, m_ui.settingsContainer), tr("Audio"), QStringLiteral("volume-up-line"),
@@ -138,18 +138,18 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 		   "additional information."));
 
 	addWidget(m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
-		QStringLiteral("sd-card-line"),
+		QStringLiteral("memcard-line"),
 		tr("<strong>Memory Card Settings</strong><hr>Create and configure Memory Cards here.<br><br>Mouse over an option for "
 			  "additional information."));
 
-	addWidget(m_dev9_settings = new DEV9SettingsWidget(this, m_ui.settingsContainer), tr("Network & HDD"), QStringLiteral("dashboard-line"),
+	addWidget(m_dev9_settings = new DEV9SettingsWidget(this, m_ui.settingsContainer), tr("Network & HDD"), QStringLiteral("network-line"),
 		tr("<strong>Network & HDD Settings</strong><hr>These options control the network connectivity and internal HDD storage of the "
 		   "console.<br><br>Mouse over an option for additional information."));
 
 	if (!isPerGameSettings())
 	{
 		addWidget(m_folder_settings = new FolderSettingsWidget(this, m_ui.settingsContainer), tr("Folders"),
-			QStringLiteral("folder-open-line"),
+			QStringLiteral("folder-settings-line"),
 			tr("<strong>Folder Settings</strong><hr>These options control where PCSX2 will save runtime data files."));
 	}
 
@@ -183,11 +183,11 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	if (show_advanced_settings)
 	{
 		addWidget(m_advanced_settings = new AdvancedSettingsWidget(this, m_ui.settingsContainer), tr("Advanced"),
-			QStringLiteral("artboard-2-line"),
+			QStringLiteral("warning-line"),
 			tr("<strong>Advanced Settings</strong><hr>These are advanced options to determine the configuration of the simulated "
 			   "console.<br><br>Mouse over an option for additional information."));
 		addWidget(m_debug_settings = new DebugSettingsWidget(this, m_ui.settingsContainer), tr("Debug"),
-			QStringLiteral("folder-download-line"),
+			QStringLiteral("heart-monitor-line"),
 			tr("<strong>Debug Settings</strong><hr>These are options which can be used to log internal information about the application. "
 			   "<strong>Do not modify unless you know what you are doing</strong>, it will cause significant slowdown, and can waste large "
 			   "amounts of disk space."));
