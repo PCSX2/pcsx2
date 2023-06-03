@@ -58,13 +58,14 @@ namespace Patch
 		EXTENDED_T,
 		SHORT_BE_T,
 		WORD_BE_T,
-		DOUBLE_BE_T
+		DOUBLE_BE_T,
+		BYTES_T
 	};
 
 	static constexpr std::array<const char*, 3> s_place_to_string = {{"0", "1", "2"}};
 	static constexpr std::array<const char*, 2> s_cpu_to_string = {{"EE", "IOP"}};
-	static constexpr std::array<const char*, 8> s_type_to_string = {
-		{"byte", "short", "word", "double", "extended", "beshort", "beword", "bedouble"}};
+	static constexpr std::array<const char*, 9> s_type_to_string = {
+		{"byte", "short", "word", "double", "extended", "beshort", "beword", "bedouble", "bytes"}};
 
 	template <typename EnumType, class ArrayType>
 	static inline std::optional<EnumType> LookupEnumName(const std::string_view& val, const ArrayType& arr)
@@ -84,8 +85,29 @@ namespace Patch
 		patch_data_type type;
 		u32 addr;
 		u64 data;
+		u8* data_ptr;
 
+		// needed because of the pointer
 		PatchCommand() { std::memset(this, 0, sizeof(*this)); }
+		PatchCommand(const PatchCommand& p) = delete;
+		PatchCommand(PatchCommand&& p)
+		{
+			std::memcpy(this, &p, sizeof(*this));
+			p.data_ptr = nullptr;
+		}
+		~PatchCommand()
+		{
+			if (data_ptr)
+				std::free(data_ptr);
+		}
+
+		PatchCommand& operator=(const PatchCommand& p) = delete;
+		PatchCommand& operator=(PatchCommand&& p)
+		{
+			std::memcpy(this, &p, sizeof(*this));
+			p.data_ptr = nullptr;
+			return *this;
+		}
 
 		bool operator==(const PatchCommand& p) const { return std::memcmp(this, &p, sizeof(*this)) == 0; }
 		bool operator!=(const PatchCommand& p) const { return std::memcmp(this, &p, sizeof(*this)) != 0; }
@@ -96,7 +118,7 @@ namespace Patch
 				s_cpu_to_string[static_cast<u8>(cpu)], s_type_to_string[static_cast<u8>(type)], addr, data);
 		}
 	};
-	static_assert(sizeof(PatchCommand) == 16, "IniPatch has no padding");
+	static_assert(sizeof(PatchCommand) == 24, "IniPatch has no padding");
 
 	struct PatchGroup
 	{
@@ -656,9 +678,9 @@ void Patch::UnloadPatches()
 	s_active_dynamic_patches = {};
 	s_enabled_patches = {};
 	s_enabled_cheats = {};
-	s_cheat_patches = {};
-	s_game_patches = {};
-	s_gamedb_patches = {};
+	decltype(s_cheat_patches)().swap(s_cheat_patches);
+	decltype(s_game_patches)().swap(s_game_patches);
+	decltype(s_gamedb_patches)().swap(s_gamedb_patches);
 }
 
 // PatchFunc Functions.
@@ -680,7 +702,8 @@ void Patch::PatchFunc::patch(PatchGroup* group, const std::string_view& cmd, con
 	const std::optional<patch_cpu_type> cpu = LookupEnumName<patch_cpu_type>(pieces[1], s_cpu_to_string);
 	const std::optional<u32> addr = StringUtil::FromChars<u32>(pieces[2], 16, &addr_end);
 	const std::optional<patch_data_type> type = LookupEnumName<patch_data_type>(pieces[3], s_type_to_string);
-	const std::optional<u64> data = StringUtil::FromChars<u64>(pieces[4], 16, &data_end);
+	std::optional<u64> data = StringUtil::FromChars<u64>(pieces[4], 16, &data_end);
+	u8* data_ptr = nullptr;
 
 	if (!placetopatch.has_value())
 	{
@@ -690,11 +713,6 @@ void Patch::PatchFunc::patch(PatchGroup* group, const std::string_view& cmd, con
 	if (!addr.has_value() || !addr_end.empty())
 	{
 		PATCH_ERROR("Malformed address '{}', a hex number without prefix (e.g. 0123ABCD) is expected", pieces[2]);
-		return;
-	}
-	else if (!data.has_value() || !data_end.empty())
-	{
-		PATCH_ERROR("Malformed data '{}', a hex number without prefix (e.g. 0123ABCD) is expected", pieces[4]);
 		return;
 	}
 	if (!cpu.has_value())
@@ -707,6 +725,28 @@ void Patch::PatchFunc::patch(PatchGroup* group, const std::string_view& cmd, con
 		PATCH_ERROR("Unrecognized Operand Size: '%.*s'", pieces[3]);
 		return;
 	}
+	if (type.value() != BYTES_T)
+	{
+		if (!data.has_value() || !data_end.empty())
+		{
+			PATCH_ERROR("Malformed data '{}', a hex number without prefix (e.g. 0123ABCD) is expected", pieces[4]);
+			return;
+		}
+	}
+	else
+	{
+		// bit crappy to copy it, but eh, saves writing a new routine
+		std::optional<std::vector<u8>> bytes = StringUtil::DecodeHex(pieces[4]);
+		if (!bytes.has_value() || bytes->empty())
+		{
+			PATCH_ERROR("Malformed data '{}', a hex string without prefix (e.g. 0123ABCD) is expected", pieces[4]);
+			return;
+		}
+
+		data = bytes->size();
+		data_ptr = static_cast<u8*>(std::malloc(bytes->size()));
+		std::memcpy(data_ptr, bytes->data(), bytes->size());
+	}
 
 	PatchCommand iPatch;
 	iPatch.placetopatch = placetopatch.value();
@@ -714,7 +754,8 @@ void Patch::PatchFunc::patch(PatchGroup* group, const std::string_view& cmd, con
 	iPatch.addr = addr.value();
 	iPatch.type = type.value();
 	iPatch.data = data.value();
-	group->patches.push_back(iPatch);
+	iPatch.data_ptr = data_ptr;
+	group->patches.push_back(std::move(iPatch));
 
 #undef PATCH_ERROR
 }
@@ -769,7 +810,7 @@ void Patch::LoadDynamicPatches(const std::vector<DynamicPatch>& patches)
 }
 
 static u32 SkipCount = 0, IterationCount = 0;
-static u32 IterationIncrement = 0, ValueIncrement = 0;
+static u32 IterationIncrement = 0;
 static u32 PrevCheatType = 0, PrevCheatAddr = 0, LastType = 0;
 
 void Patch::writeCheat()
@@ -1307,6 +1348,14 @@ void Patch::ApplyPatch(const PatchCommand* p)
 						memWrite64(p->addr, (u64)ledata);
 					break;
 
+				case BYTES_T:
+				{
+					// We compare before writing so the rec doesn't get upset and invalidate when there's no change.
+					if (vtlb_memSafeCmpBytes(p->addr, p->data_ptr, static_cast<u32>(p->data)) != 0)
+						vtlb_memSafeWriteBytes(p->addr, p->data_ptr, static_cast<u32>(p->data));
+				}
+				break;
+
 				default:
 					break;
 			}
@@ -1327,6 +1376,13 @@ void Patch::ApplyPatch(const PatchCommand* p)
 					if (iopMemRead32(p->addr) != (u32)p->data)
 						iopMemWrite32(p->addr, (u32)p->data);
 					break;
+				case BYTES_T:
+				{
+					if (iopMemSafeCmpBytes(p->addr, p->data_ptr, static_cast<u32>(p->data)) != 0)
+						iopMemSafeWriteBytes(p->addr, p->data_ptr, static_cast<u32>(p->data));
+				}
+				break;
+
 				default:
 					break;
 			}

@@ -362,6 +362,72 @@ template bool vtlb_ramWrite<mem32_t>(u32 mem, const mem32_t& data);
 template bool vtlb_ramWrite<mem64_t>(u32 mem, const mem64_t& data);
 template bool vtlb_ramWrite<mem128_t>(u32 mem, const mem128_t& data);
 
+int vtlb_memSafeCmpBytes(u32 mem, const void* src, u32 size)
+{
+	// can memcpy so long as pages aren't crossed
+	const u8* sptr = static_cast<const u8*>(src);
+	const u8* const sptr_end = sptr + size;
+	while (sptr != sptr_end)
+	{
+		auto vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
+		if (vmv.isHandler(mem))
+			return -1;
+
+		const size_t remaining_in_page =
+			std::min(VTLB_PAGE_SIZE - (mem & VTLB_PAGE_MASK), static_cast<u32>(sptr_end - sptr));
+		const int res = std::memcmp(sptr, reinterpret_cast<void*>(vmv.assumePtr(mem)), remaining_in_page);
+		if (res != 0)
+			return res;
+
+		sptr += remaining_in_page;
+		mem += remaining_in_page;
+	}
+
+	return 0;
+}
+
+bool vtlb_memSafeReadBytes(u32 mem, void* dst, u32 size)
+{
+	// can memcpy so long as pages aren't crossed
+	u8* dptr = static_cast<u8*>(dst);
+	u8* const dptr_end = dptr + size;
+	while (dptr != dptr_end)
+	{
+		auto vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
+		if (vmv.isHandler(mem))
+			return false;
+
+		const u32 remaining_in_page =
+			std::min(VTLB_PAGE_SIZE - (mem & VTLB_PAGE_MASK), static_cast<u32>(dptr_end - dptr));
+		std::memcpy(dptr, reinterpret_cast<void*>(vmv.assumePtr(mem)), remaining_in_page);
+		dptr += remaining_in_page;
+		mem += remaining_in_page;
+	}
+
+	return true;
+}
+
+bool vtlb_memSafeWriteBytes(u32 mem, const void* src, u32 size)
+{
+	// can memcpy so long as pages aren't crossed
+	const u8* sptr = static_cast<const u8*>(src);
+	const u8* const sptr_end = sptr + size;
+	while (sptr != sptr_end)
+	{
+		auto vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
+		if (vmv.isHandler(mem))
+			return false;
+
+		const size_t remaining_in_page =
+			std::min(VTLB_PAGE_SIZE - (mem & VTLB_PAGE_MASK), static_cast<u32>(sptr_end - sptr));
+		std::memcpy(reinterpret_cast<void*>(vmv.assumePtr(mem)), sptr, remaining_in_page);
+		sptr += remaining_in_page;
+		mem += remaining_in_page;
+	}
+
+	return true;
+}
+
 // --------------------------------------------------------------------------------------
 //  TLB Miss / BusError Handlers
 // --------------------------------------------------------------------------------------

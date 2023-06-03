@@ -493,6 +493,69 @@ void iopMemWrite32(u32 mem, u32 value)
 	}
 }
 
+int iopMemSafeCmpBytes(u32 mem, const void* src, u32 size)
+{
+	// can memcpy so long as pages aren't crossed
+	const u8* sptr = static_cast<const u8*>(src);
+	const u8* const sptr_end = sptr + size;
+	while (sptr != sptr_end)
+	{
+		u8* dst = iopVirtMemW<u8>(mem);
+		if (!dst)
+			return -1;
+
+		const u32 remaining_in_page = std::min(0x1000 - (mem & 0xfff), static_cast<u32>(sptr_end - sptr));
+		const int res = std::memcmp(sptr, dst, remaining_in_page);
+		if (res != 0)
+			return res;
+
+		sptr += remaining_in_page;
+		mem += remaining_in_page;
+	}
+
+	return 0;
+}
+
+bool iopMemSafeReadBytes(u32 mem, void* dst, u32 size)
+{
+	// can memcpy so long as pages aren't crossed
+	u8* dptr = static_cast<u8*>(dst);
+	u8* const dptr_end = dptr + size;
+	while (dptr != dptr_end)
+	{
+		const u8* src = iopVirtMemR<u8>(mem);
+		if (!src)
+			return false;
+
+		const u32 remaining_in_page = std::min(0x1000 - (mem & 0xfff), static_cast<u32>(dptr_end - dptr));
+		std::memcpy(dptr, src, remaining_in_page);
+		dptr += remaining_in_page;
+		mem += remaining_in_page;
+	}
+
+	return true;
+}
+
+bool iopMemSafeWriteBytes(u32 mem, const void* src, u32 size)
+{
+	// can memcpy so long as pages aren't crossed
+	const u8* sptr = static_cast<const u8*>(src);
+	const u8* const sptr_end = sptr + size;
+	while (sptr != sptr_end)
+	{
+		u8* dst = iopVirtMemW<u8>(mem);
+		if (!dst)
+			return false;
+
+		const u32 remaining_in_page = std::min(0x1000 - (mem & 0xfff), static_cast<u32>(sptr_end - sptr));
+		std::memcpy(dst, sptr, remaining_in_page);
+		sptr += remaining_in_page;
+		mem += remaining_in_page;
+	}
+
+	return true;
+}
+
 std::string iopMemReadString(u32 mem, int maxlen)
 {
     std::string ret;
