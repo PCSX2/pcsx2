@@ -5102,7 +5102,7 @@ void GSRendererHW::OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCach
 			// Take the vertex colour, but check if the blending would make it black.
 			u32 vert_color = v[1].RGBAQ.U32[0];
 			if (PRIM->ABE && m_context->ALPHA.IsBlack())
-				vert_color &= ~0xFF000000;
+				vert_color &= 0xFF000000;
 			const u32 color = vert_color;
 			const bool clear_depth = (m_cached_ctx.FRAME.FBP > m_cached_ctx.ZBUF.ZBP);
 
@@ -5246,7 +5246,7 @@ bool GSRendererHW::OI_GsMemClear()
 		// Take the vertex colour, but check if the blending would make it black.
 		u32 vert_color = m_vertex.buff[1].RGBAQ.U32[0];
 		if (PRIM->ABE && m_context->ALPHA.IsBlack())
-			vert_color &= ~0xFF000000;
+			vert_color &= 0xFF000000;
 
 		OI_DoGsMemClear(off, r, vert_color);
 		return true;
