@@ -3847,7 +3847,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		else
 		{
 			BeginRenderPass(GetTFXRenderPass(true, pipe.ds, false, DATE_RENDER_PASS_NONE, pipe.IsRTFeedbackLoop(),
-								pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+								pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_LOAD,
 								pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 				draw_rt->GetRect());
 		}
