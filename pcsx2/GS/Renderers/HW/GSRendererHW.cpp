@@ -1797,7 +1797,7 @@ void GSRendererHW::Draw()
 			// on. So, instead, let the draw go through with the expanded rectangle, and copy color->depth.
 			const bool is_zero_clear = (((GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmt == 0) ?
 				m_vertex.buff[1].RGBAQ.U32[0] :
-				(m_vertex.buff[1].RGBAQ.U32[0] & ~0xFF000000)) == 0) && m_cached_ctx.FRAME.FBMSK == 0 && IsBlendedOrOpaque();
+				(m_vertex.buff[1].RGBAQ.U32[0] & ~0xFF000000)) == 0) && m_cached_ctx.FRAME.FBMSK == 0 && IsDiscardingDstColor();
 
 			const bool req_z = m_cached_ctx.FRAME.FBP != m_cached_ctx.ZBUF.ZBP && !m_cached_ctx.ZBUF.ZMSK;
 			bool no_target_found = false;
@@ -2388,7 +2388,7 @@ void GSRendererHW::Draw()
 		return;
 	}
 
-	if (!GSConfig.UserHacks_DisableSafeFeatures && is_possible_mem_clear && IsBlendedOrOpaque())
+	if (!GSConfig.UserHacks_DisableSafeFeatures && is_possible_mem_clear && IsDiscardingDstColor())
 		OI_DoubleHalfClear(rt, ds);
 
 	// A couple of hack to avoid upscaling issue. So far it seems to impacts mostly sprite
@@ -5432,9 +5432,11 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 	// Nothing to see keep going
 	return true;
 }
-bool GSRendererHW::IsBlendedOrOpaque()
+
+bool GSRendererHW::IsDiscardingDstColor()
 {
-	return (!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsCdOutput());
+	return (!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsBlack()) && !m_cached_ctx.TEST.ATE &&
+		   !m_cached_ctx.TEST.DATE;
 }
 
 bool GSRendererHW::PrimitiveCoversWithoutGaps() const
