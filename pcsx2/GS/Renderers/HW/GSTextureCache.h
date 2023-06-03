@@ -457,9 +457,11 @@ public:
 
 	Target* FindTargetOverlap(u32 bp, u32 end_block, int type, int psm);
 	Target* LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type, bool used = true, u32 fbmask = 0,
-		bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool preload_uploads = true);
+		bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool preserve_target = true,
+		const GSVector4i draw_rc = GSVector4i::zero());
 	Target* CreateTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type, bool used = true, u32 fbmask = 0,
-		bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool preload_uploads = true);
+		bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool preserve_target = true,
+		const GSVector4i draw_rc = GSVector4i::zero());
 	Target* LookupDisplayTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale);
 
 	/// Looks up a target in the cache, and only returns it if the BP/BW match exactly.
@@ -480,6 +482,12 @@ public:
 	/// Replaces a source's texture externally. Required for some CRC hacks.
 	void ReplaceSourceTexture(Source* s, GSTexture* new_texture, float new_scale, const GSVector2i& new_unscaled_size,
 		HashCacheEntry* hc_entry, bool new_texture_is_shared);
+
+	/// Converts single color value to depth using the specified shader expression.
+	static float ConvertColorToDepth(u32 c, ShaderConvert convert);
+
+	/// Converts single depth value to colour using the specified shader expression.
+	static u32 ConvertDepthToColor(float d, ShaderConvert convert);
 
 	bool Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u32 DBW, u32 DPSM, int dx, int dy, int w, int h);
 	bool ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx, int dy, int w, int h);
