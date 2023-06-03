@@ -110,6 +110,11 @@ extern DataType vtlb_ramRead(u32 mem);
 template <typename DataType>
 extern bool vtlb_ramWrite(u32 mem, const DataType& value);
 
+// NOTE: Does not call MMIO handlers.
+extern int vtlb_memSafeCmpBytes(u32 mem, const void* src, u32 size);
+extern bool vtlb_memSafeReadBytes(u32 mem, void* dst, u32 size);
+extern bool vtlb_memSafeWriteBytes(u32 mem, const void* src, u32 size);
+
 using vtlb_ReadRegAllocCallback = int(*)();
 extern int vtlb_DynGenReadNonQuad(u32 bits, bool sign, bool xmm, int addr_reg, vtlb_ReadRegAllocCallback dest_reg_alloc = nullptr);
 extern int vtlb_DynGenReadNonQuad_Const(u32 bits, bool sign, bool xmm, u32 addr_const, vtlb_ReadRegAllocCallback dest_reg_alloc = nullptr);

@@ -83,6 +83,11 @@ extern void iopMemWrite8 (u32 mem, u8 value);
 extern void iopMemWrite16(u32 mem, u16 value);
 extern void iopMemWrite32(u32 mem, u32 value);
 
+// NOTE: Does not call MMIO handlers.
+extern int iopMemSafeCmpBytes(u32 mem, const void* src, u32 size);
+extern bool iopMemSafeReadBytes(u32 mem, void* dst, u32 size);
+extern bool iopMemSafeWriteBytes(u32 mem, const void* src, u32 size);
+
 std::string iopMemReadString(u32 mem, int maxlen = 65536);
 
 namespace IopMemory
