@@ -1199,7 +1199,7 @@ GSTextureCache::Target* GSTextureCache::FindTargetOverlap(u32 bp, u32 end_block,
 }
 
 GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type,
-	bool used, u32 fbmask, bool is_frame, bool preload, bool preload_uploads)
+	bool used, u32 fbmask, bool is_frame, bool preload, bool preserve_target, const GSVector4i draw_rect)
 {
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 	const u32 bp = TEX0.TBP0;
@@ -1354,6 +1354,20 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			dst->m_scale = scale;
 			dst->m_unscaled_size = new_size;
 		}
+
+		// Drop dirty rect if we're overwriting the whole target.
+		if (!preserve_target && draw_rect.rintersect(dst->m_valid).eq(dst->m_valid))
+		{
+			if (!dst->m_dirty.empty())
+			{
+				GL_INS("TC: Clearing dirty list for %s[%x] because we're overwriting the whole target.", to_string(type), dst->m_TEX0.TBP0);
+				dst->m_dirty.clear();
+			}
+
+			// And invalidate the target, we're drawing over it so we don't care what's there.
+			GL_INS("TC: Invalidating target %s[%x] because it's completely overwritten.", to_string(type), dst->m_TEX0.TBP0);
+			g_gs_device->InvalidateRenderTarget(dst->m_texture);
+		}
 	}
 	else if (!is_frame && !GSConfig.UserHacks_DisableDepthSupport)
 	{
@@ -1407,21 +1421,49 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				shader = (fmt_16_bits) ? ShaderConvert::FLOAT16_TO_RGB5A1 : ShaderConvert::FLOAT32_TO_RGBA8;
 			}
 
-			// The old target's going to get invalidated (at least until we handle concurrent frame+depth at the same BP),
-			// so just move the dirty rects across.
-			dst->m_dirty = std::move(dst_match->m_dirty);
-			dst_match->m_dirty = {};
-
-			// Don't bother copying the old target in if the whole thing is dirty.
-			if (dst->m_dirty.empty() || (~dst->m_dirty.GetDirtyChannels() & GSUtil::GetChannelMask(TEX0.PSM)) != 0 ||
-				!dst->m_dirty.GetDirtyRect(0, TEX0, dst->GetUnscaledRect()).eq(dst->GetUnscaledRect()))
+			if (!preserve_target && draw_rect.rintersect(dst_match->m_valid).eq(dst_match->m_valid))
 			{
-				g_gs_device->StretchRect(dst_match->m_texture, sRect, dst->m_texture, dRect, shader, false);
-				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+				GL_INS("TC: Not converting existing %s[%x] because it's fully overwritten.", to_string(!type), dst->m_TEX0.TBP0);
 			}
+			else
+			{
+				// The old target's going to get invalidated (at least until we handle concurrent frame+depth at the same BP),
+				// so just move the dirty rects across.
+				dst->m_dirty = std::move(dst_match->m_dirty);
+				dst_match->m_dirty = {};
 
-			// Now pull in any dirty areas in the new format.
-			dst->Update();
+				// Don't bother copying the old target in if the whole thing is dirty.
+				if (dst->m_dirty.empty() || (~dst->m_dirty.GetDirtyChannels() & GSUtil::GetChannelMask(TEX0.PSM)) != 0 ||
+					!dst->m_dirty.GetDirtyRect(0, TEX0, dst->GetUnscaledRect()).eq(dst->GetUnscaledRect()))
+				{
+					// If the old target was cleared, simply propagate that through.
+					if (dst_match->m_texture->GetState() == GSTexture::State::Cleared)
+					{
+						if (type == DepthStencil)
+						{
+							const u32 cc = dst_match->m_texture->GetClearColor();
+							const float cd = ConvertColorToDepth(cc, shader);
+							GL_INS("TC: Convert clear color[%08X] to depth[%f]", cc, cd);
+							g_gs_device->ClearDepth(dst->m_texture, cd);
+						}
+						else
+						{
+							const float cd = dst_match->m_texture->GetClearDepth();
+							const u32 cc = ConvertDepthToColor(cd, shader);
+							GL_INS("TC: Convert clear depth[%f] to color[%08X]", cd, cc);
+							g_gs_device->ClearRenderTarget(dst->m_texture, cc);
+						}
+					}
+					else if (dst_match->m_texture->GetState() == GSTexture::State::Dirty)
+					{
+						g_gs_device->StretchRect(dst_match->m_texture, sRect, dst->m_texture, dRect, shader, false);
+						g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+					}
+				}
+
+				// Now pull in any dirty areas in the new format.
+				dst->Update();
+			}
 		}
 	}
 
@@ -1441,7 +1483,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 }
 
 GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type,
-	bool used, u32 fbmask, bool is_frame, bool preload, bool preload_uploads)
+	bool used, u32 fbmask, bool is_frame, bool preload, bool preserve_target, const GSVector4i draw_rect)
 {
 	const u32 bp = TEX0.TBP0;
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
@@ -1485,7 +1527,7 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 
 		if (!is_frame && !forced_preload && !preload)
 		{
-			if (preload_uploads)
+			if (preserve_target || !draw_rect.eq(dst->m_valid))
 			{
 				std::vector<GSState::GSUploadQueue>::iterator iter;
 				GSVector4i eerect = GSVector4i::zero();
@@ -1678,6 +1720,50 @@ void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, 
 
 	// Inject the new size back into the cache.
 	GetTargetSize(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, 0, static_cast<u32>(needed_height));
+}
+
+float GSTextureCache::ConvertColorToDepth(u32 c, ShaderConvert convert)
+{
+	const float mult = std::exp2(g_gs_device->Features().clip_control ? -32.0f : -24.0f);
+	switch (convert)
+	{
+		case ShaderConvert::RGB5A1_TO_FLOAT16:
+			return static_cast<float>(((c & 0xF8u) >> 3) | (((c >> 8) & 0xF8u) << 2) | (((c >> 16) & 0xF8u) << 7) |
+									  (((c >> 24) & 0x80u) << 8)) *
+				   mult;
+
+		case ShaderConvert::RGBA8_TO_FLOAT16:
+			return static_cast<float>(c & 0x0000FFFF) * mult;
+
+		case ShaderConvert::RGBA8_TO_FLOAT24:
+			return static_cast<float>(c & 0x00FFFFFF) * mult;
+
+		case ShaderConvert::RGBA8_TO_FLOAT32:
+		default:
+			return static_cast<float>(c) * mult;
+	}
+}
+
+u32 GSTextureCache::ConvertDepthToColor(float d, ShaderConvert convert)
+{
+	const float mult = std::exp2(g_gs_device->Features().clip_control ? 32.0f : 24.0f);
+	switch (convert)
+	{
+		case ShaderConvert::FLOAT16_TO_RGB5A1:
+		{
+			const u32 cc = static_cast<u32>(d * mult);
+
+			// Truely awful.
+			const GSVector4i vcc = GSVector4i(
+				GSVector4(GSVector4i(cc & 0x1Fu, (cc >> 5) & 0x1Fu, (cc >> 10) & 0x1Fu, (cc >> 15) & 0x01u)) *
+				GSVector4::cxpr(255.0f / 31.0f));
+			return (vcc.r | (vcc.g << 8) | (vcc.b << 16) | (vcc.a << 24));
+		}
+
+		case ShaderConvert::FLOAT32_TO_RGBA8:
+		default:
+			return static_cast<u32>(d * mult);
+	}
 }
 
 bool GSTextureCache::PrepareDownloadTexture(u32 width, u32 height, GSTexture::Format format, std::unique_ptr<GSDownloadTexture>* tex)

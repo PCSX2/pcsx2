@@ -44,9 +44,13 @@ private:
 
 	// Require special argument
 	bool OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Source* t, const GSVector4i& r_draw);
-	bool OI_GsMemClear(); // always on
-	void OI_DoGsMemClear(const GSOffset& off, const GSVector4i& r, u32 vert_color);
-	void OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCache::Target*& ds); // always on
+	bool TryGSMemClear(bool no_rt, bool no_ds);
+	void ClearGSLocalMemory(const GSOffset& off, const GSVector4i& r, u32 vert_color);
+	bool DetectDoubleHalfClear(bool& no_rt, bool& no_ds);
+	bool DetectStripedDoubleClear(bool& no_rt, bool& no_ds);
+	bool TryTargetClear(GSTextureCache::Target* rt, GSTextureCache::Target* ds, bool preserve_rt_color, bool preserve_depth);
+	void SetNewFRAME(u32 bp, u32 bw, u32 psm);
+	void SetNewZBUF(u32 bp, u32 psm);
 
 	u16 Interpolate_UV(float alpha, int t0, int t1);
 	float alpha0(int L, int X0, int X1);
@@ -54,6 +58,8 @@ private:
 	void SwSpriteRender();
 	bool CanUseSwSpriteRender();
 	bool IsConstantDirectWriteMemClear();
+	u32 GetConstantDirectWriteMemClearColor() const;
+	bool IsReallyDithered() const;
 	bool IsDiscardingDstColor();
 	bool PrimitiveCoversWithoutGaps();
 
@@ -96,6 +102,9 @@ private:
 	bool IsPossibleChannelShuffle() const;
 	bool IsSplitTextureShuffle();
 	GSVector4i GetSplitTextureShuffleDrawRect() const;
+
+	static GSVector4i GetDrawRectForPages(u32 bw, u32 psm, u32 num_pages);
+	bool TryToResolveSinglePageFramebuffer(GIFRegFRAME& FRAME, bool only_next_draw);
 
 	bool IsSplitClearActive() const;
 	bool CheckNextDrawForSplitClear(const GSVector4i& r, u32* pages_covered_by_this_draw) const;
@@ -144,6 +153,7 @@ private:
 	u32 m_last_channel_shuffle_fbmsk = 0;
 
 	GIFRegFRAME m_split_clear_start = {};
+	GIFRegZBUF m_split_clear_start_Z = {};
 	u32 m_split_clear_pages = 0; // if zero, inactive
 	u32 m_split_clear_color = 0;
 
