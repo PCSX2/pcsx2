@@ -40,109 +40,61 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_4">
 	   <item>
-		   <widget class="QGroupBox" name="cpuGroupBox">
-			   <property name="title">
-			    <string>Debug servers</string>
-			   </property>
-			   <layout class="QFormLayout" name="cpuFormLayout">
-				<item row="0" column="0">
-				 <widget class="QCheckBox" name="EEDebugServerEnabled">
-				  <property name="text">
-				   <string>EE debug server enabled</string>
-				  </property>
-				 </widget>
-				</item>				   
-				<item row="1" column="0">
-				 <widget class="QLabel" name="EEDebugServerSlotText">
-				  <property name="text">
-				   <string>EE debug server port</string>
-				  </property>
-				 </widget>
-				</item>
-			    <item row="1" column="1">
-			     <widget class="QLineEdit" name="EEDebugServerSlot">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                  </widget>
-			   </item>
-			    <item row="2" column="0">
-				 <widget class="QCheckBox" name="IOPDebugServerEnabled">
-				  <property name="text">
-				   <string>IOP debug server enabled</string>
-				  </property>
-				 </widget>
-				</item>				   
-				<item row="3" column="0">
-				 <widget class="QLabel" name="IOPDebugServerSlotText">
-				  <property name="text">
-				   <string>IOP debug server port</string>
-				  </property>
-				 </widget>
-				</item>
-			    <item row="3" column="1">
-			     <widget class="QLineEdit" name="IOPDebugServerSlot">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                  </widget>
-			    </item>
-				<item row="4" column="0">
-				 <widget class="QCheckBox" name="VU0DebugServerEnabled">
-				  <property name="text">
-				   <string>VU0 debug server enabled</string>
-				  </property>
-				 </widget>
-				</item>				   
-				<item row="5" column="0">
-				 <widget class="QLabel" name="VU0DebugServerSlotText">
-				  <property name="text">
-				   <string>VU0 debug server port</string>
-				  </property>
-				 </widget>
-				</item>
-			    <item row="5" column="1">
-			     <widget class="QLineEdit" name="VU0DebugServerSlot">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                  </widget>
-			    </item>
-				<item row="6" column="0">
-				 <widget class="QCheckBox" name="VU1DebugServerEnabled">
-				  <property name="text">
-				   <string>VU1 debug server enabled</string>
-				  </property>
-				 </widget>
-				</item>				   
-				<item row="7" column="0">
-				 <widget class="QLabel" name="VU1DebugServerSlotText">
-				  <property name="text">
-				   <string>VU1 debug server port</string>
-				  </property>
-				 </widget>
-				</item>
-			    <item row="7" column="1">
-			     <widget class="QLineEdit" name="VU1DebugServerSlot">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                  </widget>
-			    </item>
-		      </layout>
-		   </widget>
+        <widget class="QGroupBox" name="cpuGroupBox">
+        <property name="title">
+         <string>Debug servers</string>
+        </property>
+        <layout class="QFormLayout" name="cpuFormLayout">
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="EEDebugServerEnabled">
+          <property name="text">
+           <string>EE debug server enabled</string>
+          </property>
+         </widget>
+        </item>				   
+        <item row="1" column="0">
+         <widget class="QLabel" name="EEDebugServerSlotText">
+          <property name="text">
+           <string>EE debug server port</string>
+          </property>
+         </widget>
+        </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="EEDebugServerSlot">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+            </widget>
+        </item>
+         <item row="2" column="0">
+         <widget class="QCheckBox" name="IOPDebugServerEnabled">
+          <property name="text">
+           <string>IOP debug server enabled</string>
+          </property>
+         </widget>
+        </item>				   
+        <item row="3" column="0">
+         <widget class="QLabel" name="IOPDebugServerSlotText">
+          <property name="text">
+           <string>IOP debug server port</string>
+          </property>
+         </widget>
+        </item>
+         <item row="3" column="1">
+          <widget class="QLineEdit" name="IOPDebugServerSlot">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+            </widget>
+         </item>		   
+        </layout>
+        </widget>
 	   </item>
       </layout>
      </widget>

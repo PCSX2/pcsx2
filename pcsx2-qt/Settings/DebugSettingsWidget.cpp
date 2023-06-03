@@ -39,10 +39,12 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsDialog* dialog, QWidget* parent
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.EEDebugServerSlot, "EmuCore", "EEDebugServerSlot", 10501);		
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.IOPDebugServerEnabled, "EmuCore", "IOPEnableDebugServer", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.IOPDebugServerSlot, "EmuCore", "IOPDebugServerSlot", 10502);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.VU0DebugServerEnabled, "EmuCore", "VU0EnableDebugServer", false);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.VU0DebugServerSlot, "EmuCore", "VU0DebugServerSlot", 10503);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.VU1DebugServerEnabled, "EmuCore", "VU1EnableDebugServer", false);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.VU1DebugServerSlot, "EmuCore", "VU1DebugServerSlot", 10504);
+
+	// vertver: I'll add debug interfaces for VU0 and VU1 in the future
+	//SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.VU0DebugServerEnabled, "EmuCore", "VU0EnableDebugServer", false);
+	//SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.VU0DebugServerSlot, "EmuCore", "VU0DebugServerSlot", 10503);
+	//SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.VU1DebugServerEnabled, "EmuCore", "VU1EnableDebugServer", false);
+	//SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.VU1DebugServerSlot, "EmuCore", "VU1DebugServerSlot", 10504);
 
 	//////////////////////////////////////////////////////////////////////////
 	// GS Settings
