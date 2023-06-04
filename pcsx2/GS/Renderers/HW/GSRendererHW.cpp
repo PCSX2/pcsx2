@@ -1522,6 +1522,7 @@ void GSRendererHW::Draw()
 	m_cached_ctx.TEST = context->TEST;
 	m_cached_ctx.FRAME = context->FRAME;
 	m_cached_ctx.ZBUF = context->ZBUF;
+	m_primitive_covers_without_gaps.reset();
 
 	if (IsBadFrame())
 	{
@@ -5448,21 +5449,36 @@ bool GSRendererHW::IsDiscardingDstColor()
 		   !m_cached_ctx.TEST.DATE;
 }
 
-bool GSRendererHW::PrimitiveCoversWithoutGaps() const
+bool GSRendererHW::PrimitiveCoversWithoutGaps()
 {
+	if (m_primitive_covers_without_gaps.has_value())
+		return m_primitive_covers_without_gaps.value();
+
 	// Draw shouldn't be offset.
 	if (((m_r.eq32(GSVector4i::zero())).mask() & 0xff) != 0xff)
+	{
+		m_primitive_covers_without_gaps = false;
 		return false;
+	}
 
 	// This is potentially wrong for fans/strips...
 	if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
-		return (m_index.tail == 6);
+	{
+		m_primitive_covers_without_gaps = (m_index.tail == 6);
+		return m_primitive_covers_without_gaps.value();
+	}
 	else if (m_vt.m_primclass != GS_SPRITE_CLASS)
+	{
+		m_primitive_covers_without_gaps = false;
 		return false;
+	}
 
 	// Simple case: one sprite.
 	if (m_index.tail == 2)
+	{
+		m_primitive_covers_without_gaps = true;
 		return true;
+	}
 
 	// Check that the height matches. Xenosaga 3 draws a letterbox around
 	// the FMV with a sprite at the top and bottom of the framebuffer.
@@ -5479,7 +5495,10 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps() const
 		{
 			const u32 dpY = v[i + 1].XYZ.Y - v[i].XYZ.Y;
 			if (dpY != first_dpY || v[i].XYZ.Y != last_pY)
+			{
+				m_primitive_covers_without_gaps = false;
 				return false;
+			}
 
 			last_pY = v[i + 1].XYZ.Y;
 		}
@@ -5496,14 +5515,19 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps() const
 		{
 			const u32 dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
 			if (dpX != first_dpX || v[i].XYZ.X != last_pX)
+			{
+				m_primitive_covers_without_gaps = false;
 				return false;
+			}
 
 			last_pX = v[i + 1].XYZ.X;
 		}
 
+		m_primitive_covers_without_gaps = true;
 		return true;
 	}
 
+	m_primitive_covers_without_gaps = false;
 	return false;
 }
 
