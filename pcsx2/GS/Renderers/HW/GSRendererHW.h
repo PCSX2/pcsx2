@@ -55,7 +55,7 @@ private:
 	bool CanUseSwSpriteRender();
 	bool IsConstantDirectWriteMemClear();
 	bool IsDiscardingDstColor();
-	bool PrimitiveCoversWithoutGaps() const;
+	bool PrimitiveCoversWithoutGaps();
 
 	enum class CLUTDrawTestResult
 	{
@@ -147,6 +147,7 @@ private:
 	u32 m_split_clear_pages = 0; // if zero, inactive
 	u32 m_split_clear_color = 0;
 
+	std::optional<bool> m_primitive_covers_without_gaps;
 	bool m_userhacks_tcoffset = false;
 	float m_userhacks_tcoffset_x = 0.0f;
 	float m_userhacks_tcoffset_y = 0.0f;
