@@ -3165,13 +3165,11 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		// propagate clear value through if the hdr render is the first
 		if (draw_rt->GetState() == GSTexture::State::Cleared)
 		{
+			hdr_rt->SetState(GSTexture::State::Cleared);
 			hdr_rt->SetClearColor(draw_rt->GetClearColor());
 		}
-		else
-		{
-			hdr_rt->SetState(GSTexture::State::Invalidated);
-			draw_rt->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-		}
+
+		draw_rt->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 		// we're not drawing to the RT, so we can use it as a source
 		if (config.require_one_barrier)
