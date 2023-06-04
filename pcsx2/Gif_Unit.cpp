@@ -102,8 +102,8 @@ bool Gif_HandlerAD(u8* pMem)
 bool Gif_HandlerAD_MTVU(u8* pMem)
 {
 	// Note: Atomic communication is with MTVU.cpp Get_GSChanges
-	u32 reg = pMem[8];
-	u32* data = (u32*)pMem;
+	const u8 reg = pMem[8] & 0x7f;
+	const u32* data = (u32*)pMem;
 
 	if (reg == GIF_A_D_REG_SIGNAL)
 	{ // SIGNAL
@@ -148,7 +148,7 @@ bool Gif_HandlerAD_MTVU(u8* pMem)
 // Returns true if pcsx2 needed to process the packet...
 bool Gif_HandlerAD_Debug(u8* pMem)
 {
-	u32 reg = pMem[8];
+	const u8 reg = pMem[8] & 0x7f;
 	if (reg == 0x50)
 	{
 		Console.Error("GIF Handler Debug - BITBLTBUF");
