@@ -102,7 +102,10 @@ jobs:
         env:
           COMPILER: ${{ inputs.compiler }}
           ADDITIONAL_CMAKE_ARGS: ${{ inputs.cmakeflags }}
-        run: .github/workflows/scripts/linux/generate-cmake-qt.sh
+          CLANG_PATH: /usr/bin/clang-12
+          CLANGXX_PATH: /usr/bin/clang++-12
+        run: |
+          DEPS_PREFIX="$HOME/deps" .github/workflows/scripts/linux/generate-cmake-qt.sh
 
       - name: Build PCSX2
         working-directory: build
