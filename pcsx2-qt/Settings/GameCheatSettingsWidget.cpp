@@ -167,7 +167,6 @@ void GameCheatSettingsWidget::reloadList()
 		const bool enabled =
 			(std::find(m_enabled_patches.begin(), m_enabled_patches.end(), pi.name) != m_enabled_patches.end());
 
-		const std::string_view name_part = pi.GetNamePart();
 		const std::string_view parent_part = pi.GetNameParentPart();
 
 		QTreeWidgetItem* parent = getTreeWidgetParent(parent_part);
