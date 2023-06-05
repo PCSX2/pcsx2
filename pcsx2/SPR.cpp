@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -179,15 +179,15 @@ int  _SPR0chain()
 
 __fi void SPR0chain()
 {
-	int cycles = _SPR0chain() * BIAS;
+	const int cycles = _SPR0chain() * BIAS;
 	CPU_INT(DMAC_FROM_SPR, cycles);
 }
 
 void _SPR0interleave()
 {
 	int qwc = spr0ch.qwc;
-	int sqwc = dmacRegs.sqwc.SQWC;
 	int tqwc = dmacRegs.sqwc.TQWC;
+	const int sqwc = dmacRegs.sqwc.SQWC;
 	tDMA_TAG *pMem;
 
 	if (tqwc == 0) tqwc = qwc;
@@ -414,8 +414,8 @@ __fi void SPR1chain()
 void _SPR1interleave()
 {
 	int qwc = spr1ch.qwc;
-	int sqwc = dmacRegs.sqwc.SQWC;
 	int tqwc =  dmacRegs.sqwc.TQWC;
+	const int sqwc = dmacRegs.sqwc.SQWC;
 	tDMA_TAG *pMem;
 
 	if (tqwc == 0) tqwc = qwc;
