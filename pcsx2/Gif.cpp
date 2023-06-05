@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -103,7 +103,7 @@ int GIF_Fifo::write_fifo(u32* pMem, int size)
 		return 0;
 	}
 
-	int transferSize = std::min(size, 16 - (int)fifoSize);
+	const int transferSize = std::min(size, 16 - (int)fifoSize);
 
 	int writePos = fifoSize * 4;
 
@@ -144,7 +144,7 @@ int GIF_Fifo::read_fifo()
 	{
 		if (sizeRead > 0)
 		{
-			int copyAmount = fifoSize - sizeRead;
+			const int copyAmount = fifoSize - sizeRead;
 			readpos = sizeRead * 4;
 
 			for (int i = 0; i < copyAmount; i++)
@@ -320,7 +320,7 @@ __fi void gifInterrupt()
 
 static u32 WRITERING_DMA(u32* pMem, u32 qwc)
 {
-	u32 originalQwc = qwc;
+	const u32 originalQwc = qwc;
 
 	if (gifRegs.stat.IMT)
 	{
@@ -370,7 +370,7 @@ static __fi void GIFchain()
 		return;
 	}
 
-	int transferred = WRITERING_DMA((u32*)pMem, gifch.qwc);
+	const int transferred = WRITERING_DMA((u32*)pMem, gifch.qwc);
 	gif.gscycles += transferred * BIAS;
 
 	if (!gifUnit.Path3Masked() || (gif_fifo.fifoSize < 16))
@@ -401,20 +401,6 @@ static __fi tDMA_TAG* ReadTag()
 	gif.gspath3done = hwDmacSrcChainWithStack(gifch, ptag->ID);
 	return ptag;
 }
-
-#if 0
-// Not used
-static __fi tDMA_TAG* ReadTag2()
-{
-	tDMA_TAG* ptag = dmaGetAddr(gifch.tadr, false); // Set memory pointer to TADR
-
-	gifch.unsafeTransfer(ptag);
-	gifch.madr = ptag[1]._u32;
-
-	gif.gspath3done = hwDmacSrcChainWithStack(gifch, ptag->ID);
-	return ptag;
-}
-#endif
 
 void GIFdma()
 {
@@ -544,7 +530,7 @@ static u32 QWCinGIFMFIFO(u32 DrainADDR)
 
 static __fi bool mfifoGIFrbTransfer()
 {
-	u32 qwc = std::min(QWCinGIFMFIFO(gifch.madr), gifch.qwc);
+	const u32 qwc = std::min(QWCinGIFMFIFO(gifch.madr), gifch.qwc);
 
 	if (qwc == 0) // Either gifch.qwc is 0 (shouldn't get here) or the FIFO is empty.
 		return true;
@@ -553,27 +539,23 @@ static __fi bool mfifoGIFrbTransfer()
 	if (src == NULL)
 		return false;
 
-	u32 MFIFOUntilEnd = ((dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16) - gifch.madr) >> 4;
-	bool needWrap = MFIFOUntilEnd < qwc;
-	u32 firstTransQWC = needWrap ? MFIFOUntilEnd : qwc;
-	u32 transferred;
-
-	transferred = WRITERING_DMA((u32*)src, firstTransQWC); // First part
+	const u32 MFIFOUntilEnd = ((dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16) - gifch.madr) >> 4;
+	const bool needWrap = MFIFOUntilEnd < qwc;
+	const u32 firstTransQWC = needWrap ? MFIFOUntilEnd : qwc;
+	const u32 transferred = WRITERING_DMA((u32*)src, firstTransQWC); // First part
 
 	gifch.madr = dmacRegs.rbor.ADDR + (gifch.madr & dmacRegs.rbsr.RMSK);
 	gifch.tadr = dmacRegs.rbor.ADDR + (gifch.tadr & dmacRegs.rbsr.RMSK);
 
 	if (needWrap && transferred == MFIFOUntilEnd)
 	{
-		// Need to do second transfer to wrap around
-		u32 transferred2;
-		uint secondTransQWC = qwc - MFIFOUntilEnd;
-
 		src = (u8*)PSM(dmacRegs.rbor.ADDR);
 		if (src == NULL)
 			return false;
 
-		transferred2 = WRITERING_DMA((u32*)src, secondTransQWC); // Second part
+		// Need to do second transfer to wrap around
+		const uint secondTransQWC = qwc - MFIFOUntilEnd;
+		const u32 transferred2 = WRITERING_DMA((u32*)src, secondTransQWC); // Second part
 
 		gif.mfifocycles += (transferred2 + transferred) * 2;
 	}
@@ -667,7 +649,6 @@ void mfifoGifMaskMem(int id)
 
 void mfifoGIFtransfer()
 {
-	tDMA_TAG* ptag;
 	gif.mfifocycles = 0;
 
 	if (gifRegs.ctrl.PSE)
@@ -691,7 +672,7 @@ void mfifoGIFtransfer()
 			return;
 		}
 
-		ptag = dmaGetAddr(gifch.tadr, false);
+		tDMA_TAG* ptag = dmaGetAddr(gifch.tadr, false);
 		gifch.unsafeTransfer(ptag);
 		gifch.madr = ptag[1]._u32;
 
