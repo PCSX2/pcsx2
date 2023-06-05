@@ -18,6 +18,16 @@ jobs:
       cmakeflags: ""
       buildAppImage: true
     secrets: inherit
+  build_linux_flatpak:
+    if: github.repository == 'PCSX2/pcsx2'
+    name: "Linux"
+    uses: ./.github/workflows/linux_build_flatpak.yml
+    with:
+      jobName: "Flatpak"
+      compiler: clang
+      cmakeflags: ""
+      publish: true
+    secrets: inherit
 
   # Windows
   build_windows_qt:
@@ -45,6 +55,7 @@ jobs:
   upload_artifacts:
     if: github.repository == 'PCSX2/pcsx2'
     needs:
+      - build_linux_flatpak
       - build_linux_qt
       - build_windows_qt
       - build_macos_qt

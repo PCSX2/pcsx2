@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+  <id>net.pcsx2.PCSX2</id>
+  <launchable type="desktop-id">net.pcsx2.PCSX2.desktop</launchable>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0</project_license>
+  <name>PCSX2</name>
+  <developer_name>PCSX2</developer_name>
+  <summary>PlayStation 2 Emulator</summary>
+  <description>
+    <p>PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2's hardware, using a combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.</p>
+    <p>PlayStation 2 and PS2 are registered trademarks of Sony Interactive Entertainment. This application is not affiliated in any way with Sony Interactive Entertainment.</p>
+  </description>
+  <url type="homepage">https://pcsx2.net/</url>
+  <url type="bugtracker">https://github.com/PCSX2/pcsx2/issues</url>
+  <content_rating type="oars-1.1"/>
+  <update_contact>pcsx2_AT_pcsx2.net</update_contact>
+  <releases>
+    <release version="@GIT_VERSION@" date="@GIT_DATE@" />
+  </releases>
+</component>
