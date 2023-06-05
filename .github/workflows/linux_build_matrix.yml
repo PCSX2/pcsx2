@@ -18,3 +18,11 @@ jobs:
       cmakeflags: ""
       buildAppImage: true
     secrets: inherit
+  build_linux_flatpak:
+    name: "Flatpak"
+    uses: ./.github/workflows/linux_build_flatpak.yml
+    with:
+      jobName: "Qt"
+      compiler: clang
+      cmakeflags: ""
+      publish: false

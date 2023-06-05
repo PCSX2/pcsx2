@@ -1,0 +1,45 @@
+{
+  "name": "sdl2",
+  "buildsystem": "autotools",
+  "no-autogen": true,
+  "config-opts": [
+    "--disable-dbus",
+    "--without-x",
+    "--disable-video-opengl",
+    "--disable-video-opengles",
+    "--disable-video-vulkan",
+    "--disable-wayland-shared",
+    "--disable-ime",
+    "--disable-oss",
+    "--disable-alsa",
+    "--disable-jack",
+    "--disable-esd",
+    "--disable-pipewire",
+    "--disable-pulseaudio",
+    "--disable-arts",
+    "--disable-nas",
+    "--disable-sndio",
+    "--disable-fusionsound",
+    "--disable-diskaudio"
+  ],
+  "build-options": {
+    "strip": true
+  },
+  "sources": [
+    {
+      "type": "archive",
+      "url": "https://libsdl.org/release/SDL2-2.26.5.tar.gz",
+      "sha256": "ad8fea3da1be64c83c45b1d363a6b4ba8fd60f5bde3b23ec73855709ec5eabf7"
+    }
+  ],
+  "cleanup": [
+    "/bin",
+    "/include",
+    "/lib/*.a",
+    "/lib/*.la",
+    "/lib/cmake",
+    "/lib/pkgconfig",
+    "/share/aclocal"
+  ]
+}
+

@@ -1,0 +1,90 @@
+name: Flatpak Build Steps
+
+on:
+  workflow_call:
+    inputs:
+      jobName:
+        required: true
+        type: string
+      os:
+        required: false
+        type: string
+        default: ubuntu-22.04
+      platform:
+        required: false
+        type: string
+        default: x64
+      compiler:
+        required: true
+        type: string
+      cmakeflags:
+        required: true
+        type: string
+      publish:
+        required: false
+        type: boolean
+        default: false
+      detail:
+        required: false
+        type: string
+        default: ""
+      patches_url:
+        required: false
+        type: string
+        default: https://github.com/PCSX2/pcsx2_patches/releases/latest/download
+
+jobs:
+  build_linux:
+    name: ${{ inputs.jobName }}
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Prepare Artifact Metadata
+        id: artifact-metadata
+        shell: bash
+        env:
+          OS: linux
+          GUI_FRAMEWORK: QT
+          BUILD_SYSTEM: flatpak
+          ARCH: ${{ inputs.platform }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+        run: ./.github/workflows/scripts/common/name-artifacts.sh
+
+      - name: Install Packages
+        env:
+          COMPILER: ${{ inputs.compiler }}
+        run: .github/workflows/scripts/linux/install-packages-flatpak.sh
+
+      - name: Download patches
+        run: |
+          cd bin/resources
+          aria2c -Z "${{ inputs.patches_url }}/patches.zip"
+
+      - name: Generate AppStream XML
+        run: |
+          ./.github/workflows/scripts/linux/generate-metainfo.sh .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
+          cat .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
+          appstream-util validate .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
+
+      - name: Build Flatpak
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6.1
+        with:
+          bundle: ${{ steps.artifact-metadata.outputs.artifact-name }}.flatpak
+          manifest-path: .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json
+          arch: x86_64
+          build-bundle: true
+          verbose: true
+          cache: true
+          restore-cache: true
+          cache-key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} ${{ inputs.detail }} flatpak ${{ hashFiles('.github/workflows/scripts/linux/flatpak/**/*.json') }}
+
+      # TODO: Push to flathub

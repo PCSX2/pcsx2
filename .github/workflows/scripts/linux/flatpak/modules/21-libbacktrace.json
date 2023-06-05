@@ -1,0 +1,22 @@
+{
+    "name": "libbacktrace",
+    "buildsystem": "autotools",
+    "no-autogen": true,
+    "build-options": {
+      "strip": false,
+      "no-debuginfo": true
+    },
+    "sources": [
+      {
+        "type": "git",
+        "url": "https://github.com/ianlancetaylor/libbacktrace.git",
+        "commit": "ad106d5fdd5d960bd33fae1c48a351af567fd075"
+      }
+    ],
+    "cleanup": [
+      "/include",
+      "/lib/*.a",
+      "/lib/*.la"
+    ]
+  }
+  

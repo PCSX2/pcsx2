@@ -1,0 +1,25 @@
+{
+  "name": "soundtouch",
+  "buildsystem": "cmake-ninja",
+  "build-options": {
+    "strip": true
+  },
+  "sources": [
+    {
+      "type": "git",
+      "url": "https://codeberg.org/soundtouch/soundtouch.git",
+      "tag": "2.3.2",
+      "commit": "29fba832a7920a04eab956b3990c50e13d8c93f9"
+    }
+  ],
+  "cleanup": [
+    "/bin",
+    "/include",
+    "/lib/*.a",
+    "/lib/*.la",
+    "/lib/cmake",
+    "/lib/pkgconfig",
+    "/share/doc"
+  ]
+}
+

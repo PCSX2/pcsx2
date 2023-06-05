@@ -30,7 +30,7 @@ fi
 # Add cmake if used to differentate it from msbuild builds
 # Else the two artifacts will have the same name and the files will be merged
 if [[ ! -z "${BUILD_SYSTEM}" ]]; then
-  if [ "${BUILD_SYSTEM}" == "cmake" ]; then
+  if [[ "${BUILD_SYSTEM}" == "cmake" ]] || [[ "${BUILD_SYSTEM}" == "flatpak" ]]; then
     NAME="${NAME}-${BUILD_SYSTEM}"
   fi
 fi
