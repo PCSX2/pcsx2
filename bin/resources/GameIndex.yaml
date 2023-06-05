@@ -11407,6 +11407,7 @@ SLES-50592:
   name: "No One Lives Forever"
   region: "PAL-M5"
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending and also needs Full Blending to fix the lighting.
 SLES-50606:
@@ -13094,6 +13095,8 @@ SLES-51285:
   name: "Spongebob SquarePants - Revenge of the Flying Dutchman"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes game returning to main menu on selecting new game.
 SLES-51286:
   name: "X-Men 2 - Wolverine's Revenge"
   region: "PAL-E"
@@ -42573,6 +42576,7 @@ SLUS-20028:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending and also needs Full Blending to fix the lighting.
 SLUS-20029:
