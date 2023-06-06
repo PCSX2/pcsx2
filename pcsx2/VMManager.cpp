@@ -86,6 +86,14 @@
 
 namespace VMManager
 {
+	enum class UpdateGameReason
+	{
+		Resetting,
+		GameStarting,
+		LoadingState,
+		SwappingDisc,
+	};
+
 	static void ApplyGameFixes();
 	static bool UpdateGameSettingsLayer();
 	static void CheckForConfigChanges(const Pcsx2Config& old_config);
@@ -103,7 +111,7 @@ namespace VMManager
 	static bool AutoDetectSource(const std::string& filename);
 	static bool ApplyBootParameters(VMBootParameters params, std::string* state_to_load);
 	static bool CheckBIOSAvailability();
-	static void UpdateRunningGame(bool resetting, bool game_starting, bool swapping);
+	static void UpdateRunningGame(UpdateGameReason reason);
 
 	static std::string GetCurrentSaveStateFileName(s32 slot);
 	static bool DoLoadState(const char* filename);
@@ -666,7 +674,7 @@ bool VMManager::UpdateGameSettingsLayer()
 	return true;
 }
 
-void VMManager::UpdateRunningGame(bool resetting, bool game_starting, bool swapping_disc)
+void VMManager::UpdateRunningGame(UpdateGameReason reason)
 {
 	// The CRC can be known before the game actually starts (at the bios), so when
 	// we have the CRC but we're still at the bios and the settings are changed
@@ -686,7 +694,7 @@ void VMManager::UpdateRunningGame(bool resetting, bool game_starting, bool swapp
 		new_serial = GSDumpReplayer::GetDumpSerial();
 	}
 
-	if (!resetting && s_game_crc == new_crc && s_game_serial == new_serial)
+	if (reason != UpdateGameReason::Resetting && s_game_crc == new_crc && s_game_serial == new_serial)
 		return;
 
 	{
@@ -714,7 +722,7 @@ void VMManager::UpdateRunningGame(bool resetting, bool game_starting, bool swapp
 
 		// If we don't reset the timer here, when using folder memcards the reindex will cause an eject,
 		// which a bunch of games don't like since they access the memory card on boot.
-		if (game_starting || resetting)
+		if (reason == UpdateGameReason::GameStarting || reason == UpdateGameReason::Resetting)
 			AutoEject::ClearAll();
 	}
 
@@ -724,7 +732,7 @@ void VMManager::UpdateRunningGame(bool resetting, bool game_starting, bool swapp
 	Console.WriteLn(Color_StrongGreen, fmt::format("  CRC: {:08X}", s_game_crc));
 
 	// When resetting, patches need to get removed here, because there's no entry point being compiled.
-	if (resetting)
+	if (reason == UpdateGameReason::Resetting || reason == UpdateGameReason::LoadingState)
 		Patch::ReloadPatches(s_game_serial, s_game_crc, false, false, false);	
 
 	UpdateGameSettingsLayer();
@@ -735,11 +743,11 @@ void VMManager::UpdateRunningGame(bool resetting, bool game_starting, bool swapp
 
 	ApplySettings();
 
-	if (!swapping_disc)
+	if (reason != UpdateGameReason::LoadingState)
 	{
 		// Clear the memory card eject notification again when booting for the first time, or starting.
 		// Otherwise, games think the card was removed on boot.
-		if (game_starting || resetting)
+		if (reason == UpdateGameReason::GameStarting || reason == UpdateGameReason::Resetting)
 			AutoEject::ClearAll();
 
 		MIPSAnalyst::ScanForFunctions(
@@ -749,7 +757,7 @@ void VMManager::UpdateRunningGame(bool resetting, bool game_starting, bool swapp
 	}
 
 	// Per-game ini enabling of hardcore mode. We need to re-enforce the settings if so.
-	if (game_starting && Achievements::ResetChallengeMode())
+	if (reason == UpdateGameReason::GameStarting && Achievements::ResetChallengeMode())
 		ApplySettings();
 
 	GetMTGS().SendGameCRC(new_crc);
@@ -1051,7 +1059,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	FullscreenUI::OnVMStarted();
 	UpdateInhibitScreensaver(EmuConfig.InhibitScreensaver);
 
-	UpdateRunningGame(true, false, false);
+	UpdateRunningGame(UpdateGameReason::Resetting);
 
 	SetEmuThreadAffinities();
 
@@ -1193,7 +1201,7 @@ void VMManager::Reset()
 
 	// gameid change, so apply settings
 	if (game_was_started)
-		UpdateRunningGame(true, false, false);
+		UpdateRunningGame(UpdateGameReason::Resetting);
 
 	if (g_InputRecording.isActive())
 	{
@@ -1256,7 +1264,7 @@ bool VMManager::DoLoadState(const char* filename)
 	{
 		Host::OnSaveStateLoading(filename);
 		SaveState_UnzipFromDisk(filename);
-		UpdateRunningGame(false, false, false);
+		UpdateRunningGame(UpdateGameReason::LoadingState);
 		Host::OnSaveStateLoaded(filename, true);
 		if (g_InputRecording.isActive())
 		{
@@ -1621,14 +1629,14 @@ void VMManager::Internal::EntryPointCompilingOnCPUThread()
 void VMManager::Internal::GameStartingOnCPUThread()
 {
 	// See note above.
-	UpdateRunningGame(false, true, false);
+	UpdateRunningGame(UpdateGameReason::GameStarting);
 	Patch::ApplyLoadedPatches(Patch::PPT_ONCE_ON_LOAD);
 	Patch::ApplyLoadedPatches(Patch::PPT_COMBINED_0_1);
 }
 
 void VMManager::Internal::SwappingGameOnCPUThread()
 {
-	UpdateRunningGame(false, false, true);
+	UpdateRunningGame(UpdateGameReason::SwappingDisc);
 }
 
 void VMManager::Internal::VSyncOnCPUThread()
