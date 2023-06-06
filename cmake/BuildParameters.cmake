@@ -7,6 +7,7 @@ set(PCSX2_DEFS "")
 option(DISABLE_BUILD_DATE "Disable including the binary compile date")
 option(ENABLE_TESTS "Enables building the unit tests" ON)
 set(USE_SYSTEM_LIBS "AUTO" CACHE STRING "Use system libraries instead of bundled libraries.  ON - Always use system and fail if unavailable, OFF - Always use bundled, AUTO - Use system if available, otherwise use bundled.  Default is AUTO")
+set(DEFAULT_USE_SYSTEM_RYML OFF) # System rapidyaml causes a lot of problems
 optional_system_library(fmt)
 optional_system_library(ryml)
 optional_system_library(zstd)
