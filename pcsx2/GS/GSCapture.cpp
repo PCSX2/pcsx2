@@ -93,9 +93,7 @@ extern "C" {
 	X(av_frame_make_writable) \
 	X(av_strerror) \
 	X(av_reduce) \
-	X(av_dict_get_string) \
 	X(av_dict_parse_string) \
-	X(av_dict_set) \
 	X(av_dict_free) \
 	X(av_opt_set_int) \
 	X(av_opt_set_sample_fmt) \
@@ -139,7 +137,6 @@ namespace GSCapture
 
 	static void LogAVError(int errnum, const char* format, ...);
 	static bool LoadFFmpeg(bool report_errors);
-	static void UnloadFFmpeg(std::unique_lock<std::mutex>& lock);
 	static void UnloadFFmpeg();
 	static std::string GetCaptureTypeForMessage(bool capture_video, bool capture_audio);
 	static void ProcessFramePendingMap(std::unique_lock<std::mutex>& lock);
@@ -198,7 +195,11 @@ namespace GSCapture
 	alignas(64) static u32 s_audio_buffer_read_pos = 0;
 } // namespace GSCapture
 
+#ifndef USE_LINKED_FFMPEG
 #define DECLARE_IMPORT(X) static decltype(X)* wrap_##X;
+#else
+#define DECLARE_IMPORT(X) static constexpr decltype(X)* wrap_##X = X;
+#endif
 VISIT_AVCODEC_IMPORTS(DECLARE_IMPORT);
 VISIT_AVFORMAT_IMPORTS(DECLARE_IMPORT);
 VISIT_AVUTIL_IMPORTS(DECLARE_IMPORT);
@@ -208,6 +209,9 @@ VISIT_SWRESAMPLE_IMPORTS(DECLARE_IMPORT);
 
 // We could refcount this, but really, may as well just load it and pay the cost once.
 // Not like we need to save a few megabytes of memory...
+#ifndef USE_LINKED_FFMPEG
+static void UnloadFFmpegFunctions(std::unique_lock<std::mutex>& lock);
+
 static Common::DynamicLibrary s_avcodec_library;
 static Common::DynamicLibrary s_avformat_library;
 static Common::DynamicLibrary s_avutil_library;
@@ -261,7 +265,7 @@ bool GSCapture::LoadFFmpeg(bool report_errors)
 		return true;
 	}
 
-	UnloadFFmpeg(lock);
+	UnloadFFmpegFunctions(lock);
 	lock.unlock();
 
 	if (report_errors)
@@ -279,7 +283,7 @@ bool GSCapture::LoadFFmpeg(bool report_errors)
 	return false;
 }
 
-void GSCapture::UnloadFFmpeg(std::unique_lock<std::mutex>& lock)
+void UnloadFFmpegFunctions(std::unique_lock<std::mutex>& lock)
 {
 #define CLEAR_IMPORT(X) wrap_##X = nullptr;
 	VISIT_AVCODEC_IMPORTS(CLEAR_IMPORT);
@@ -303,8 +307,21 @@ void GSCapture::UnloadFFmpeg()
 		return;
 
 	s_library_loaded = false;
-	UnloadFFmpeg(lock);
+	UnloadFFmpegFunctions(lock);
 }
+
+#else
+
+bool GSCapture::LoadFFmpeg(bool report_errors)
+{
+	return true;
+}
+
+void GSCapture::UnloadFFmpeg()
+{
+}
+
+#endif
 
 void GSCapture::LogAVError(int errnum, const char* format, ...)
 {

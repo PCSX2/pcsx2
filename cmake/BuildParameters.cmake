@@ -36,6 +36,7 @@ if(UNIX AND NOT APPLE)
 	option(X11_API "Enable X11 support" ON)
 	option(WAYLAND_API "Enable Wayland support" ON)
 	option(DBUS_API "Enable DBus support for screensaver inhibiting" ON)
+	option(USE_LINKED_FFMPEG "Links with ffmpeg instead of using dynamic loading" OFF)
 endif()
 
 if(APPLE)

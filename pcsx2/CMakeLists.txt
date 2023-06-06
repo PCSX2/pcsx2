@@ -51,6 +51,11 @@ if(USE_LEGACY_USER_DIRECTORY)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE USE_LEGACY_USER_DIRECTORY)
 endif()
 
+if(USE_LINKED_FFMPEG)
+	target_compile_definitions(PCSX2_FLAGS INTERFACE USE_LINKED_FFMPEG)
+	target_link_libraries(PCSX2_FLAGS INTERFACE FFMPEG::avcodec FFMPEG::avformat FFMPEG::avutil FFMPEG::swscale FFMPEG::swresample)
+endif()
+
 if(TARGET SDL2::SDL2 OR TARGET SDL2::SDL2-static)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE SDL_BUILD)
 	if ("${SDL2_TYPE}" STREQUAL Bundled)
