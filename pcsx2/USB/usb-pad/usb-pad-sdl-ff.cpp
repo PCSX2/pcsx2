@@ -77,7 +77,7 @@ namespace usb_pad
 		if (supported & SDL_HAPTIC_CONSTANT)
 		{
 			m_constant_effect.type = SDL_HAPTIC_CONSTANT;
-			m_constant_effect.constant.direction.type = SDL_HAPTIC_CARTESIAN;
+			m_constant_effect.constant.direction.type = SDL_HAPTIC_STEERING_AXIS;
 			m_constant_effect.constant.length = length;
 
 			m_constant_effect_id = SDL_HapticNewEffect(m_haptic, &m_constant_effect);
@@ -92,7 +92,7 @@ namespace usb_pad
 		if (supported & SDL_HAPTIC_SPRING)
 		{
 			m_spring_effect.type = SDL_HAPTIC_SPRING;
-			m_spring_effect.condition.direction.type = SDL_HAPTIC_CARTESIAN;
+			m_spring_effect.condition.direction.type = SDL_HAPTIC_STEERING_AXIS;
 			m_spring_effect.condition.length = length;
 
 			m_spring_effect_id = SDL_HapticNewEffect(m_haptic, &m_spring_effect);
@@ -107,7 +107,7 @@ namespace usb_pad
 		if (supported & SDL_HAPTIC_DAMPER)
 		{
 			m_damper_effect.type = SDL_HAPTIC_DAMPER;
-			m_damper_effect.condition.direction.type = SDL_HAPTIC_CARTESIAN;
+			m_damper_effect.condition.direction.type = SDL_HAPTIC_STEERING_AXIS;
 			m_damper_effect.condition.length = length;
 
 			m_damper_effect_id = SDL_HapticNewEffect(m_haptic, &m_damper_effect);
@@ -122,7 +122,7 @@ namespace usb_pad
 		if (supported & SDL_HAPTIC_FRICTION)
 		{
 			m_friction_effect.type = SDL_HAPTIC_FRICTION;
-			m_friction_effect.condition.direction.type = SDL_HAPTIC_CARTESIAN;
+			m_friction_effect.condition.direction.type = SDL_HAPTIC_STEERING_AXIS;
 			m_friction_effect.condition.length = length;
 
 			m_friction_effect_id = SDL_HapticNewEffect(m_haptic, &m_friction_effect);
@@ -211,7 +211,13 @@ namespace usb_pad
 	template <typename T>
 	static u16 ClampU16(T val)
 	{
-		return static_cast<u16>(std::clamp<T>(val, 0, 0xFFFF));
+		return static_cast<u16>(std::clamp<T>(val, 0, 65535));
+	}
+
+	template <typename T>
+	static u16 ClampS16(T val)
+	{
+		return static_cast<s16>(std::clamp<T>(val, -32768, 32767));
 	}
 
 	void SDLFFDevice::SetSpringForce(const parsed_ff_data& ff)
@@ -220,11 +226,11 @@ namespace usb_pad
 			return;
 
 		m_spring_effect.condition.left_sat[0] = ClampU16(ff.u.condition.left_saturation);
-		m_spring_effect.condition.left_coeff[0] = ClampU16(ff.u.condition.left_coeff);
+		m_spring_effect.condition.left_coeff[0] = ClampS16(ff.u.condition.left_coeff);
 		m_spring_effect.condition.right_sat[0] = ClampU16(ff.u.condition.right_saturation);
-		m_spring_effect.condition.right_coeff[0] = ClampU16(ff.u.condition.right_coeff);
+		m_spring_effect.condition.right_coeff[0] = ClampS16(ff.u.condition.right_coeff);
 		m_spring_effect.condition.deadband[0] = ClampU16(ff.u.condition.deadband);
-		m_spring_effect.condition.center[0] = ClampU16(ff.u.condition.center);
+		m_spring_effect.condition.center[0] = ClampS16(ff.u.condition.center);
 
 		if (SDL_HapticUpdateEffect(m_haptic, m_spring_effect_id, &m_spring_effect) != 0)
 			Console.Warning("SDL_HapticUpdateEffect() for spring failed: %s", SDL_GetError());
@@ -244,11 +250,11 @@ namespace usb_pad
 			return;
 
 		m_damper_effect.condition.left_sat[0] = ClampU16(ff.u.condition.left_saturation);
-		m_damper_effect.condition.left_coeff[0] = ClampU16(ff.u.condition.left_coeff);
+		m_damper_effect.condition.left_coeff[0] = ClampS16(ff.u.condition.left_coeff);
 		m_damper_effect.condition.right_sat[0] = ClampU16(ff.u.condition.right_saturation);
-		m_damper_effect.condition.right_coeff[0] = ClampU16(ff.u.condition.right_coeff);
+		m_damper_effect.condition.right_coeff[0] = ClampS16(ff.u.condition.right_coeff);
 		m_damper_effect.condition.deadband[0] = ClampU16(ff.u.condition.deadband);
-		m_damper_effect.condition.center[0] = ClampU16(ff.u.condition.center);
+		m_damper_effect.condition.center[0] = ClampS16(ff.u.condition.center);
 
 		if (SDL_HapticUpdateEffect(m_haptic, m_damper_effect_id, &m_damper_effect) != 0)
 			Console.Warning("SDL_HapticUpdateEffect() for damper failed: %s", SDL_GetError());
@@ -268,11 +274,11 @@ namespace usb_pad
 			return;
 
 		m_friction_effect.condition.left_sat[0] = ClampU16(ff.u.condition.left_saturation);
-		m_friction_effect.condition.left_coeff[0] = ClampU16(ff.u.condition.left_coeff);
+		m_friction_effect.condition.left_coeff[0] = ClampS16(ff.u.condition.left_coeff);
 		m_friction_effect.condition.right_sat[0] = ClampU16(ff.u.condition.right_saturation);
-		m_friction_effect.condition.right_coeff[0] = ClampU16(ff.u.condition.right_coeff);
+		m_friction_effect.condition.right_coeff[0] = ClampS16(ff.u.condition.right_coeff);
 		m_friction_effect.condition.deadband[0] = ClampU16(ff.u.condition.deadband);
-		m_friction_effect.condition.center[0] = ClampU16(ff.u.condition.center);
+		m_friction_effect.condition.center[0] = ClampS16(ff.u.condition.center);
 
 		if (SDL_HapticUpdateEffect(m_haptic, m_friction_effect_id, &m_friction_effect) != 0)
 		{

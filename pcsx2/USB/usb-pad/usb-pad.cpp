@@ -892,7 +892,7 @@ namespace usb_pad
 	void PadDevice::InputDeviceConnected(USBDevice* dev, const std::string_view& identifier) const
 	{
 		PadState* s = USB_CONTAINER_OF(dev, PadState, dev);
-		if (s->mFFdevName == identifier)
+		if (s->mFFdevName == identifier && s->HasFF())
 			s->OpenFFDevice();
 	}
 
