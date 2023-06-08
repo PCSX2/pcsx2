@@ -71,7 +71,7 @@ namespace usb_pad
 
 	void SDLFFDevice::CreateEffects(const std::string_view& device)
 	{
-		constexpr u32 length = 1000; // good enough?
+		constexpr u32 length = 10000; // 10 seconds since NFS games seem to not issue new commands while rotating.
 
 		const unsigned int supported = SDL_HapticQuery(m_haptic);
 		if (supported & SDL_HAPTIC_CONSTANT)
