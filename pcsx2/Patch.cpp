@@ -526,8 +526,8 @@ void Patch::ReloadPatches(std::string serial, u32 crc, bool force_reload_files, 
 	s_patches_crc = crc;
 	s_patches_serial = std::move(serial);
 
-	// Skip reloading gamedb patches if the serial hasn't changed, or the crc is 0.
-	if (serial_changed && (s_patches_crc != 0))
+	// Skip reloading gamedb patches if the serial hasn't changed.
+	if (serial_changed)
 	{
 		s_gamedb_patches.clear();
 
