@@ -707,7 +707,9 @@ void VMManager::UpdateRunningGame(UpdateGameReason reason)
 		std::string memcardFilters;
 
 		if (s_game_crc == 0)
+		{
 			s_game_name = "Booting PS2 BIOS...";
+		}
 		else if (const GameDatabaseSchema::GameEntry* game = GameDatabase::findGame(s_game_serial))
 		{
 			if (!s_elf_override.empty())
@@ -716,6 +718,10 @@ void VMManager::UpdateRunningGame(UpdateGameReason reason)
 				s_game_name = game->name;
 
 			memcardFilters = game->memcardFiltersAsString();
+		}
+		else
+		{
+			Console.Warning(fmt::format("Serial '{}' not found in GameDB.", s_game_serial));
 		}
 
 		sioSetGameSerial(memcardFilters.empty() ? s_game_serial : memcardFilters);
