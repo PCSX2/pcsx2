@@ -2504,6 +2504,7 @@ SCED-52952:
   gsHWFixes:
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
+    recommendedBlendingLevel: 3 # Improves the ammo's glow level to match sw renderer.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
@@ -3915,6 +3916,7 @@ SCES-52460:
   gsHWFixes:
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
+    recommendedBlendingLevel: 3 # Improves the ammo's glow level to match sw renderer.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
@@ -5282,6 +5284,7 @@ SCKA-20040:
   gsHWFixes:
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
+    recommendedBlendingLevel: 3 # Improves the ammo's glow level to match sw renderer.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
@@ -8230,6 +8233,7 @@ SCUS-97330:
   gsHWFixes:
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
+    recommendedBlendingLevel: 3 # Improves the ammo's glow level to match sw renderer.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
@@ -8491,6 +8495,7 @@ SCUS-97412:
   gsHWFixes:
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
+    recommendedBlendingLevel: 3 # Improves the ammo's glow level to match sw renderer.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
@@ -9002,6 +9007,7 @@ SCUS-97516:
   gsHWFixes:
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
+    recommendedBlendingLevel: 3 # Improves the ammo's glow level to match sw renderer.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
