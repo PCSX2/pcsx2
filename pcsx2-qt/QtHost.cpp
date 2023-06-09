@@ -670,7 +670,7 @@ void EmuThread::reloadPatches()
 	if (!VMManager::HasValidVM())
 		return;
 
-	Patch::ReloadPatches(true, false, true);
+	Patch::ReloadPatches(true, false, true, true);
 
 	// Might change widescreen mode.
 	if (Patch::ReloadPatchAffectingOptions())

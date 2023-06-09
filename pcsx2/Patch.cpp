@@ -520,7 +520,7 @@ u32 Patch::EnablePatches(const PatchList& patches, const EnablePatchList& enable
 	return count;
 }
 
-void Patch::ReloadPatches(std::string serial, u32 crc, bool force_reload_files, bool reload_enabled_list, bool verbose)
+void Patch::ReloadPatches(std::string serial, u32 crc, bool force_reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed)
 {
 	const bool serial_changed = (s_patches_serial != serial);
 	s_patches_crc = crc;
@@ -546,10 +546,10 @@ void Patch::ReloadPatches(std::string serial, u32 crc, bool force_reload_files, 
 		}
 	}
 
-	ReloadPatches(serial_changed, reload_enabled_list, verbose);
+	ReloadPatches(serial_changed, reload_enabled_list, verbose, verbose_if_changed);
 }
 
-void Patch::ReloadPatches(bool force_reload_files, bool reload_enabled_list, bool verbose)
+void Patch::ReloadPatches(bool force_reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed)
 {
 	if (force_reload_files)
 	{
@@ -570,7 +570,7 @@ void Patch::ReloadPatches(bool force_reload_files, bool reload_enabled_list, boo
 			});
 	}
 
-	UpdateActivePatches(reload_enabled_list, verbose, false);
+	UpdateActivePatches(reload_enabled_list, verbose, verbose_if_changed);
 }
 
 void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool verbose_if_changed)
