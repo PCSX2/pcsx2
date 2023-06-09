@@ -25991,6 +25991,9 @@ SLPM-55191:
         // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
         // This patch skips over the stack code, allowing the game to boot.
         patch=1,EE,001B4828,word,10000008
+SLPM-55193:
+  name: "Nuga-Cel! Nurture Garment Celebration"
+  region: "NTSC-J"
 SLPM-55202:
   name: "Shuumatsu Shoujo Gensou Alicematic Apocalypse [Russel Games Best]"
   region: "NTSC-J"
