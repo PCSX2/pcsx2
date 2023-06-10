@@ -889,8 +889,13 @@ void SysMtgsThread::Freeze(FreezeAction mode, MTGS_FreezeData& data)
 {
 	pxAssertRel(IsOpen(), "GS thread is open");
 	pxAssertDev(std::this_thread::get_id() != m_thread.get_id(), "This method is only allowed from threads *not* named MTGS.");
+
+	// synchronize regs before loading
+	if (mode == FreezeAction::Load)
+		WaitGS(true);
+
 	SendPointerPacket(GS_RINGTYPE_FREEZE, (int)mode, &data);
-	WaitGS();
+	WaitGS(false);
 }
 
 void SysMtgsThread::RunOnGSThread(AsyncCallType func)
