@@ -31,6 +31,10 @@ namespace usb_pad
 	SDLFFDevice::SDLFFDevice(SDL_Haptic* haptic)
 		: m_haptic(haptic)
 	{
+		std::memset(&m_constant_effect, 0, sizeof(m_constant_effect));
+		std::memset(&m_spring_effect, 0, sizeof(m_spring_effect));
+		std::memset(&m_damper_effect, 0, sizeof(m_damper_effect));
+		std::memset(&m_friction_effect, 0, sizeof(m_friction_effect));
 	}
 
 	SDLFFDevice::~SDLFFDevice()
