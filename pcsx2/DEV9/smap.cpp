@@ -571,15 +571,12 @@ void smap_write8(u32 addr, u8 value)
 			//DevCon.WriteLn("DEV9: SMAP_R_RXFIFO_CTRL 8bit write %x", value);
 			if (value & SMAP_RXFIFO_RESET)
 			{
-				reset_lock.lock(); //lock reset mutex 1st
-				counter_lock.lock();
+				std::scoped_lock lock(reset_lock, counter_lock);
 				dev9.rxbdi = 0;
 				dev9.rxfifo_wr_ptr = 0;
 				dev9Ru8(SMAP_R_RXFIFO_FRAME_CNT) = 0;
 				dev9Ru32(SMAP_R_RXFIFO_RD_PTR) = 0;
 				dev9Ru32(SMAP_R_RXFIFO_SIZE) = 16384;
-				reset_lock.unlock();
-				counter_lock.unlock();
 			}
 			value &= ~SMAP_RXFIFO_RESET;
 			dev9Ru8(addr) = value;
