@@ -204,6 +204,11 @@ public:
 	/// Returns true if the specified texture address matches the frame or Z buffer.
 	bool IsTBPFrameOrZ(u32 tbp) const;
 
+	/// Replaces vertices with the specified fullscreen quad.
+	void ReplaceVerticesWithSprite(const GSVector4i& unscaled_rect, const GSVector4i& unscaled_uv_rect,
+		const GSVector2i& unscaled_size, const GSVector4i& scissor);
+	void ReplaceVerticesWithSprite(const GSVector4i& unscaled_rect, const GSVector2i& unscaled_size);
+
 	/// Starts a HLE'ed hardware draw, which can be further customized by the caller.
 	GSHWDrawConfig& BeginHLEHardwareDraw(
 		GSTexture* rt, GSTexture* ds, float rt_scale, GSTexture* tex, float tex_scale, const GSVector4i& unscaled_rect);
