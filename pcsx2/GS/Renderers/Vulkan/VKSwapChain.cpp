@@ -385,18 +385,28 @@ bool VKSwapChain::CreateSwapChain()
 
 #ifdef _WIN32
 	VkSurfaceFullScreenExclusiveInfoEXT exclusive_info = {VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT};
-	if (g_vulkan_context->GetOptionalExtensions().vk_ext_full_screen_exclusive)
+	VkSurfaceFullScreenExclusiveWin32InfoEXT exclusive_win32_info = {
+		VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_WIN32_INFO_EXT};
+	if (m_exclusive_fullscreen_control.has_value())
 	{
-		exclusive_info.fullScreenExclusive =
-			m_exclusive_fullscreen_control.has_value() ?
+		if (g_vulkan_context->GetOptionalExtensions().vk_ext_full_screen_exclusive)
+		{
+			exclusive_info.fullScreenExclusive =
 				(m_exclusive_fullscreen_control.value() ? VK_FULL_SCREEN_EXCLUSIVE_ALLOWED_EXT :
-														  VK_FULL_SCREEN_EXCLUSIVE_DISALLOWED_EXT) :
-				VK_FULL_SCREEN_EXCLUSIVE_DEFAULT_EXT;
-		Vulkan::AddPointerToChain(&swap_chain_info, &exclusive_info);
-	}
-	else if (m_exclusive_fullscreen_control.has_value())
-	{
-		Console.Error("Exclusive fullscreen control requested, but VK_EXT_full_screen_exclusive is not supported.");
+														  VK_FULL_SCREEN_EXCLUSIVE_DISALLOWED_EXT);
+
+			exclusive_win32_info.hmonitor =
+				MonitorFromWindow(reinterpret_cast<HWND>(m_window_info.window_handle), MONITOR_DEFAULTTONEAREST);
+			if (!exclusive_win32_info.hmonitor)
+				Console.Error("MonitorFromWindow() for exclusive fullscreen exclusive override failed.");
+
+			Vulkan::AddPointerToChain(&swap_chain_info, &exclusive_info);
+			Vulkan::AddPointerToChain(&swap_chain_info, &exclusive_win32_info);
+		}
+		else
+		{
+			Console.Error("Exclusive fullscreen control requested, but VK_EXT_full_screen_exclusive is not supported.");
+		}
 	}
 #else
 	if (m_exclusive_fullscreen_control.has_value())
