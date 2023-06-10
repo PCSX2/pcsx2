@@ -558,6 +558,7 @@ void Achievements::UpdateSettings(const Pcsx2Config::AchievementsOptions& old_co
 	{
 		Shutdown();
 		Initialize();
+		ResetChallengeMode();
 		return;
 	}
 	else if (EmuConfig.Achievements.Leaderboards != old_config.Leaderboards)
