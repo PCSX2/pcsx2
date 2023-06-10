@@ -29704,11 +29704,6 @@ SLPM-65232:
   name: "Devil May Cry 2 [Dante Disc]"
   region: "NTSC-J"
   compat: 5
-  patches:
-    default:
-      content: |-
-        // 08995DEE
-        comment=- This disc has the same CRC as SLUS-20484, the NTSC-U disc.
 SLPM-65233:
   name: "Devil May Cry 2 [Lucia Disc]"
   region: "NTSC-J"
@@ -44568,6 +44563,11 @@ SLUS-20484:
   name: "Devil May Cry 2 [Disc 1 of 2]"
   region: "NTSC-U"
   compat: 5
+  patches:
+    default:
+      content: |-
+        // 08995DEE
+        comment=- This disc has the same CRC as SLUS-20627, [Disc 2 of 2 - Lucia Disc] - 08995DEE.
 SLUS-20485:
   name: "Dino Stalker"
   region: "NTSC-U"
@@ -45276,6 +45276,11 @@ SLUS-20627:
   name: "Devil May Cry 2 [Disc 2 of 2]"
   region: "NTSC-U"
   compat: 5
+  patches:
+    default:
+      content: |-
+        // 08995DEE
+        comment=- This disc has the same CRC as SLUS-20484, [Disc 1 of 2 - Dante Disc] - 08995DEE.
   memcardFilters:
     - "SLUS-20484"
 SLUS-20628:
