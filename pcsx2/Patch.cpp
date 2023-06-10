@@ -157,7 +157,7 @@ namespace Patch
 	static std::vector<std::string> FindPatchFilesOnDisk(const std::string_view& serial, u32 crc, bool cheats);
 
 	template <typename F>
-	static void EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool cheats, const F& f);
+	static void EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool cheats, bool for_ui, const F& f);
 
 	static void ExtractPatchInfo(PatchInfoList* dst, const std::string& pnach_data, u32* num_unlabelled_patches);
 	static void ReloadEnabledLists();
@@ -346,11 +346,11 @@ std::vector<std::string> Patch::FindPatchFilesOnDisk(const std::string_view& ser
 }
 
 template <typename F>
-void Patch::EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool cheats, const F& f)
+void Patch::EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool cheats, bool for_ui, const F& f)
 {
 	// Prefer files on disk over the zip.
 	std::vector<std::string> disk_patch_files;
-	if (cheats || !Achievements::ChallengeModeActive())
+	if (for_ui || !Achievements::ChallengeModeActive())
 		disk_patch_files = FindPatchFilesOnDisk(serial, crc, cheats);
 
 	if (!disk_patch_files.empty())
@@ -451,7 +451,7 @@ Patch::PatchInfoList Patch::GetPatchInfo(const std::string& serial, u32 crc, boo
 	if (num_unlabelled_patches)
 		*num_unlabelled_patches = 0;
 
-	EnumeratePnachFiles(serial, crc, cheats,
+	EnumeratePnachFiles(serial, crc, cheats, true,
 		[&ret, num_unlabelled_patches](const std::string& filename, const std::string& pnach_data) {
 			ExtractPatchInfo(&ret, pnach_data, num_unlabelled_patches);
 		});
@@ -555,7 +555,7 @@ void Patch::ReloadPatches(bool force_reload_files, bool reload_enabled_list, boo
 	{
 		s_game_patches.clear();
 		EnumeratePnachFiles(
-			s_patches_serial, s_patches_crc, false, [](const std::string& filename, const std::string& pnach_data) {
+			s_patches_serial, s_patches_crc, false, false, [](const std::string& filename, const std::string& pnach_data) {
 				const u32 patch_count = LoadPatchesFromString(&s_game_patches, pnach_data);
 				if (patch_count > 0)
 					Console.WriteLn(Color_Green, fmt::format("Found {} game patches in {}.", patch_count, filename));
@@ -563,7 +563,7 @@ void Patch::ReloadPatches(bool force_reload_files, bool reload_enabled_list, boo
 
 		s_cheat_patches.clear();
 		EnumeratePnachFiles(
-			s_patches_serial, s_patches_crc, true, [](const std::string& filename, const std::string& pnach_data) {
+			s_patches_serial, s_patches_crc, true, false, [](const std::string& filename, const std::string& pnach_data) {
 				const u32 patch_count = LoadPatchesFromString(&s_cheat_patches, pnach_data);
 				if (patch_count > 0)
 					Console.WriteLn(Color_Green, fmt::format("Found {} cheats in {}.", patch_count, filename));
