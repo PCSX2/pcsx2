@@ -748,6 +748,41 @@ bool VKContext::CreateAllocator()
 	if (m_optional_extensions.vk_ext_memory_budget)
 		ci.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
 
+	// Limit usage of the DEVICE_LOCAL upload heap when we're using a debug device.
+	// On NVIDIA drivers, it results in frequently running out of device memory when trying to
+	// play back captures in RenderDoc, making life very painful. Re-BAR GPUs should be fine.
+	constexpr VkDeviceSize UPLOAD_HEAP_SIZE_THRESHOLD = 512 * 1024 * 1024;
+	constexpr VkMemoryPropertyFlags UPLOAD_HEAP_PROPERTIES =
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+	std::array<VkDeviceSize, VK_MAX_MEMORY_HEAPS> heap_size_limits;
+	if (GSConfig.UseDebugDevice)
+	{
+		bool has_upload_heap = false;
+		heap_size_limits.fill(VK_WHOLE_SIZE);
+		for (u32 i = 0; i < m_device_memory_properties.memoryTypeCount; i++)
+		{
+			// Look for any memory types which are upload-like.
+			const VkMemoryType& type = m_device_memory_properties.memoryTypes[i];
+			if ((type.propertyFlags & UPLOAD_HEAP_PROPERTIES) != UPLOAD_HEAP_PROPERTIES)
+				continue;
+
+			const VkMemoryHeap& heap = m_device_memory_properties.memoryHeaps[type.heapIndex];
+			if (heap.size >= UPLOAD_HEAP_SIZE_THRESHOLD)
+				continue;
+
+			if (heap_size_limits[type.heapIndex] == VK_WHOLE_SIZE)
+			{
+				Console.Warning("Disabling allocation from upload heap #%u (%.2f MB) due to debug device.",
+					type.heapIndex, static_cast<float>(heap.size) / 1048576.0f);
+				heap_size_limits[type.heapIndex] = 0;
+				has_upload_heap = true;
+			}
+		}
+
+		if (has_upload_heap)
+			ci.pHeapSizeLimit = heap_size_limits.data();
+	}
+
 	VkResult res = vmaCreateAllocator(&ci, &m_allocator);
 	if (res != VK_SUCCESS)
 	{
