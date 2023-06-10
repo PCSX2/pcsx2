@@ -3152,7 +3152,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	{
 		EndRenderPass();
 
-		GL_PUSH_("HDR Render Target Setup");
 		hdr_rt = static_cast<GSTexture12*>(CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::HDRColor, false));
 		if (!hdr_rt)
 		{
@@ -3168,8 +3167,11 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			hdr_rt->SetState(GSTexture::State::Cleared);
 			hdr_rt->SetClearColor(draw_rt->GetClearColor());
 		}
-
-		draw_rt->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		else if (draw_rt->GetState() == GSTexture::State::Dirty)
+		{
+			GL_PUSH_("HDR Render Target Setup");
+			draw_rt->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		}
 
 		// we're not drawing to the RT, so we can use it as a source
 		if (config.require_one_barrier)
@@ -3303,7 +3305,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	// now blit the hdr texture back to the original target
 	if (hdr_rt)
 	{
-		GL_INS("Blit HDR back to RT");
+		GL_PUSH("Blit HDR back to RT");
 
 		EndRenderPass();
 		hdr_rt->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);

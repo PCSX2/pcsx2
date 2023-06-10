@@ -3626,13 +3626,13 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	{
 		EndRenderPass();
 
-		GL_PUSH_("HDR Render Target Setup");
 		hdr_rt = static_cast<GSTextureVK*>(CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::HDRColor, false));
 		if (!hdr_rt)
 		{
 			Console.WriteLn("Failed to allocate HDR render target, aborting draw.");
 			if (date_image)
 				Recycle(date_image);
+			GL_POP();
 			return;
 		}
 
@@ -3642,8 +3642,11 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			hdr_rt->SetState(GSTexture::State::Cleared);
 			hdr_rt->SetClearColor(draw_rt->GetClearColor());
 		}
-
-		draw_rt->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
+		else if (draw_rt->GetState() == GSTexture::State::Dirty)
+		{
+			GL_PUSH_("HDR Render Target Setup");
+			draw_rt->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
+		}
 
 		// we're not drawing to the RT, so we can use it as a source
 		if (config.require_one_barrier && !m_features.texture_barrier)
