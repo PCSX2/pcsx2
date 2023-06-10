@@ -29,7 +29,6 @@ cbuffer cb0 : register(b0)
 	float2 u_source_resolution;
 	float2 u_rcp_source_resolution; // 1 / u_source_resolution
 	float u_time;
-	float3 cb0_pad0;
 };
 
 Texture2D Texture;
