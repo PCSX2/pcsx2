@@ -40,7 +40,6 @@ uniform vec2 u_rcp_target_resolution; // 1 / u_target_resolution
 uniform vec2 u_source_resolution;
 uniform vec2 u_rcp_source_resolution; // 1 / u_source_resolution
 uniform float u_time;
-uniform vec3 cb0_pad0;
 
 in vec4 PSin_p;
 in vec2 PSin_t;
