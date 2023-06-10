@@ -5293,12 +5293,11 @@ void GSRendererHW::OI_DoGsMemClear(const GSOffset& off, const GSVector4i& r, u32
 		{
 			const GSVector4i vcolor = GSVector4i(color);
 			const u32 iterations_per_page = (pages_wide * pixels_per_page) / 4;
-
-			for (; top < page_aligned_bottom; top += pgs.y)
+			pxAssert((off.bp() & (BLOCKS_PER_PAGE - 1)) == 0);
+			for (u32 current_page = off.bp() >> 5; top < page_aligned_bottom; top += pgs.y, current_page += pages_wide)
 			{
-				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.vm32(), 0, top);
-				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(pa.value(0));
-				GSVector4i* const ptr_end = reinterpret_cast<GSVector4i*>(pa.value(0)) + iterations_per_page;
+				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(m_mem.vm8() + current_page * PAGE_SIZE);
+				GSVector4i* const ptr_end = ptr + iterations_per_page;
 				while (ptr != ptr_end)
 					*(ptr++) = vcolor;
 			}
@@ -5308,12 +5307,11 @@ void GSRendererHW::OI_DoGsMemClear(const GSOffset& off, const GSVector4i& r, u32
 			const GSVector4i mask = GSVector4i::xff000000();
 			const GSVector4i vcolor = GSVector4i(color & 0x00ffffffu);
 			const u32 iterations_per_page = (pages_wide * pixels_per_page) / 4;
-
-			for (; top < page_aligned_bottom; top += pgs.y)
+			pxAssert((off.bp() & (BLOCKS_PER_PAGE - 1)) == 0);
+			for (u32 current_page = off.bp() >> 5; top < page_aligned_bottom; top += pgs.y, current_page += pages_wide)
 			{
-				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.vm32(), 0, top);
-				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(pa.value(0));
-				GSVector4i* const ptr_end = reinterpret_cast<GSVector4i*>(pa.value(0)) + iterations_per_page;
+				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(m_mem.vm8() + current_page * PAGE_SIZE);
+				GSVector4i* const ptr_end = ptr + iterations_per_page;
 				while (ptr != ptr_end)
 				{
 					*ptr = (*ptr & mask) | vcolor;
@@ -5323,16 +5321,15 @@ void GSRendererHW::OI_DoGsMemClear(const GSOffset& off, const GSVector4i& r, u32
 		}
 		else if (format == 2)
 		{
-			const u16 converted_color = ((vert_color >> 16) & 0x8000) | ((vert_color >> 9) & 0x7C00) | ((vert_color >> 6) & 0x7E0) | ((vert_color >> 3) & 0x1F);
-
+			const u16 converted_color = ((vert_color >> 16) & 0x8000) | ((vert_color >> 9) & 0x7C00) |
+										((vert_color >> 6) & 0x7E0) | ((vert_color >> 3) & 0x1F);
 			const GSVector4i vcolor = GSVector4i::broadcast16(converted_color);
 			const u32 iterations_per_page = (pages_wide * pixels_per_page) / 8;
-
-			for (; top < page_aligned_bottom; top += pgs.y)
+			pxAssert((off.bp() & (BLOCKS_PER_PAGE - 1)) == 0);
+			for (u32 current_page = off.bp() >> 5; top < page_aligned_bottom; top += pgs.y, current_page += pages_wide)
 			{
-				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle16).paMulti(m_mem.vm16(), 0, top);
-				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(pa.value(0));
-				GSVector4i* const ptr_end = reinterpret_cast<GSVector4i*>(pa.value(0)) + iterations_per_page;
+				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(m_mem.vm8() + current_page * PAGE_SIZE);
+				GSVector4i* const ptr_end = ptr + iterations_per_page;
 				while (ptr != ptr_end)
 					*(ptr++) = vcolor;
 			}
