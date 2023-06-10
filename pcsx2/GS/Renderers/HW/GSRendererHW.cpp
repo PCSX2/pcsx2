@@ -5523,6 +5523,46 @@ bool GSRendererHW::IsConstantDirectWriteMemClear()
 	return false;
 }
 
+void GSRendererHW::ReplaceVerticesWithSprite(const GSVector4i& unscaled_rect, const GSVector4i& unscaled_uv_rect,
+	const GSVector2i& unscaled_size, const GSVector4i& scissor)
+{
+	const GSVector4i fpr = unscaled_rect.sll32(4);
+	const GSVector4i fpuv = unscaled_uv_rect.sll32(4);
+	GSVertex* v = m_vertex.buff;
+
+	v[0].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + fpr.x);
+	v[0].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + fpr.y);
+
+	v[1].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + fpr.z);
+	v[1].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + fpr.w);
+
+	if (PRIM->FST)
+	{
+		v[0].U = fpuv.x;
+		v[0].V = fpuv.y;
+		v[1].U = fpuv.z;
+		v[1].V = fpuv.w;
+	}
+	else
+	{
+		const float th = static_cast<float>(1 << m_cached_ctx.TEX0.TH);
+		const GSVector4 st = GSVector4(unscaled_uv_rect) / GSVector4(GSVector4i(unscaled_size).xyxy());
+		GSVector4::storel(&v[0].ST.S, st);
+		GSVector4::storeh(&v[1].ST.S, st);
+	}
+
+	m_vertex.head = m_vertex.tail = m_vertex.next = 2;
+	m_index.tail = 2;
+
+	m_r = unscaled_rect;
+	m_context->scissor.in = scissor;
+}
+
+void GSRendererHW::ReplaceVerticesWithSprite(const GSVector4i& unscaled_rect, const GSVector2i& unscaled_size)
+{
+	ReplaceVerticesWithSprite(unscaled_rect, unscaled_rect, unscaled_size, unscaled_rect);
+}
+
 GSHWDrawConfig& GSRendererHW::BeginHLEHardwareDraw(
 	GSTexture* rt, GSTexture* ds, float rt_scale, GSTexture* tex, float tex_scale, const GSVector4i& unscaled_rect)
 {
