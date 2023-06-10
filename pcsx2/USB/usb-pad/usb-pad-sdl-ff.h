@@ -45,19 +45,19 @@ namespace usb_pad
 
 		SDL_Haptic* m_haptic = nullptr;
 
-		SDL_HapticEffect m_constant_effect = {};
+		SDL_HapticEffect m_constant_effect;
 		int m_constant_effect_id = -1;
 		bool m_constant_effect_running = false;
 
-		SDL_HapticEffect m_spring_effect = {};
+		SDL_HapticEffect m_spring_effect;
 		int m_spring_effect_id = -1;
 		bool m_spring_effect_running = false;
 
-		SDL_HapticEffect m_damper_effect = {};
+		SDL_HapticEffect m_damper_effect;
 		int m_damper_effect_id = -1;
 		bool m_damper_effect_running = false;
 
-		SDL_HapticEffect m_friction_effect = {};
+		SDL_HapticEffect m_friction_effect;
 		int m_friction_effect_id = -1;
 		bool m_friction_effect_running = false;
 
