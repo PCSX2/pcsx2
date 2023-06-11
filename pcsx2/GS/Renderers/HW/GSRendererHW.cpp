@@ -1715,7 +1715,8 @@ void GSRendererHW::Draw()
 			}
 		}
 	}
-	else if (((fm & fm_mask) != 0) || // Some channels masked
+
+	if (((fm & fm_mask) != 0) || // Some channels masked
 		!IsDiscardingDstColor() || !PrimitiveCoversWithoutGaps() || // Using Dst Color or draw has gaps
 		(process_texture && m_cached_ctx.TEX0.TBP0 >= m_cached_ctx.FRAME.Block() && m_cached_ctx.TEX0.TBP0 < frame_end_bp)) // Tex is RT
 	{
