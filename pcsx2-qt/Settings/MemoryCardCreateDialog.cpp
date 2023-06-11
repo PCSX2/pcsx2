@@ -24,7 +24,7 @@
 
 #include "Settings/MemoryCardCreateDialog.h"
 
-#include "pcsx2/MemoryCardFile.h"
+#include "pcsx2/SIO/Memcard/MemoryCardFile.h"
 #include "pcsx2/System.h"
 
 MemoryCardCreateDialog::MemoryCardCreateDialog(QWidget* parent /* = nullptr */)

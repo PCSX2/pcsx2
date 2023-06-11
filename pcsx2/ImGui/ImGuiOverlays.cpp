@@ -28,12 +28,12 @@
 #include "ImGui/ImGuiManager.h"
 #include "ImGui/ImGuiOverlays.h"
 #include "Input/InputManager.h"
-#include "PAD/Host/KeyStatus.h"
-#include "PAD/Host/PAD.h"
 #include "PerformanceMetrics.h"
 #include "USB/USB.h"
 #include "VMManager.h"
 #include "pcsx2/Recording/InputRecording.h"
+#include "SIO/Pad/PadConfig.h"
+#include "SIO/Pad/PadManager.h"
 
 #include "common/BitUtils.h"
 #include "common/StringUtil.h"
@@ -482,11 +482,21 @@ void ImGuiManager::DrawInputsOverlay()
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
 	u32 num_ports = 0;
-	for (u32 port = 0; port < PAD::NUM_CONTROLLER_PORTS; port++)
+
+	for (u32 slot = 0; slot < Pad::NUM_CONTROLLER_PORTS; slot++)
 	{
-		const PAD::ControllerType ctype = g_key_status.GetType(port);
-		if (ctype != PAD::ControllerType::NotConnected)
-			num_ports++;
+		const std::optional<PadBase*> padOpt = g_PadManager.GetPad(slot);
+
+		if (padOpt.has_value())
+		{
+			PadBase* pad = padOpt.value();
+			const Pad::ControllerType ctype = pad->GetType();
+			
+			if (ctype != Pad::ControllerType::NotConnected)
+			{
+				num_ports++;
+			}
+		}
 	}
 
 	for (u32 port = 0; port < USB::NUM_PORTS; port++)
@@ -503,61 +513,67 @@ void ImGuiManager::DrawInputsOverlay()
 	std::string text;
 	text.reserve(256);
 
-	for (u32 port = 0; port < PAD::NUM_CONTROLLER_PORTS; port++)
+	for (u32 slot = 0; slot < Pad::NUM_CONTROLLER_PORTS; slot++)
 	{
-		const PAD::ControllerType ctype = g_key_status.GetType(port);
-		if (ctype == PAD::ControllerType::NotConnected)
-			continue;
+		const std::optional<PadBase*> padOpt = g_PadManager.GetPad(slot);
 
-		const PAD::ControllerInfo* cinfo = PAD::GetControllerInfo(ctype);
-		if (!cinfo)
-			continue;
-
-		text.clear();
-		fmt::format_to(std::back_inserter(text), "P{} |", port + 1u);
-
-		for (u32 bind = 0; bind < cinfo->num_bindings; bind++)
+		if (padOpt.has_value())
 		{
-			const InputBindingInfo& bi = cinfo->bindings[bind];
-			switch (bi.bind_type)
+			PadBase* pad = padOpt.value();
+			const Pad::ControllerType ctype = pad->GetType();
+			
+			if (ctype == Pad::ControllerType::NotConnected)
+				continue;
+
+			const PadConfig::ControllerInfo* cinfo = g_PadConfig.GetControllerInfo(ctype);
+			
+			if (!cinfo)
+				continue;
+			
+			text.clear();
+			fmt::format_to(std::back_inserter(text), "P{} |", slot + 1u);
+
+			for (u32 bind = 0; bind < cinfo->num_bindings; bind++)
 			{
-				case InputBindingInfo::Type::Axis:
-				case InputBindingInfo::Type::HalfAxis:
+				const InputBindingInfo& bi = cinfo->bindings[bind];
+				switch (bi.bind_type)
 				{
-					// axes are always shown
-					const float value = static_cast<float>(g_key_status.GetRawPressure(port, bind)) * (1.0f / 255.0f);
-					if (value >= (254.0f / 255.0f))
-						fmt::format_to(std::back_inserter(text), " {}", bi.name);
-					else if (value > (1.0f / 255.0f))
-						fmt::format_to(std::back_inserter(text), " {}: {:.2f}", bi.name, value);
-				}
-				break;
-
-				case InputBindingInfo::Type::Button:
-				{
-					// buttons only shown when active
-					const float value = static_cast<float>(g_key_status.GetRawPressure(port, bind)) * (1.0f / 255.0f);
-					if (value == 1.0f)
-						fmt::format_to(std::back_inserter(text), " {}", bi.name);
-					else if (value > 0.0f)
-						fmt::format_to(std::back_inserter(text), " {}: {:.2f}", bi.name, value);
-				}
-				break;
-
-				case InputBindingInfo::Type::Motor:
-				case InputBindingInfo::Type::Macro:
-				case InputBindingInfo::Type::Unknown:
-				default:
+					case InputBindingInfo::Type::Axis:
+					case InputBindingInfo::Type::HalfAxis:
+					{
+						// axes are always shown
+						const float value = static_cast<float>(pad->GetRawInput(bind)) * (1.0f / 255.0f);
+						if (value >= (254.0f / 255.0f))
+							fmt::format_to(std::back_inserter(text), " {}", bi.name);
+						else if (value > (1.0f / 255.0f))
+							fmt::format_to(std::back_inserter(text), " {}: {:.2f}", bi.name, value);
+					}
 					break;
+
+					case InputBindingInfo::Type::Button:
+					{
+						// buttons only shown when active
+						const float value = static_cast<float>(pad->GetRawInput(bind)) * (1.0f / 255.0f);
+						if (value >= 0.5f)
+							fmt::format_to(std::back_inserter(text), " {}", bi.name);
+					}
+					break;
+
+					case InputBindingInfo::Type::Motor:
+					case InputBindingInfo::Type::Macro:
+					case InputBindingInfo::Type::Unknown:
+					default:
+						break;
+				}
 			}
+
+			dl->AddText(font, font->FontSize, ImVec2(current_x + shadow_offset, current_y + shadow_offset), shadow_color, text.c_str(),
+				text.c_str() + text.length(), 0.0f, &clip_rect);
+			dl->AddText(
+				font, font->FontSize, ImVec2(current_x, current_y), text_color, text.c_str(), text.c_str() + text.length(), 0.0f, &clip_rect);
+
+			current_y += font->FontSize + spacing;
 		}
-
-		dl->AddText(font, font->FontSize, ImVec2(current_x + shadow_offset, current_y + shadow_offset), shadow_color, text.c_str(),
-			text.c_str() + text.length(), 0.0f, &clip_rect);
-		dl->AddText(
-			font, font->FontSize, ImVec2(current_x, current_y), text_color, text.c_str(), text.c_str() + text.length(), 0.0f, &clip_rect);
-
-		current_y += font->FontSize + spacing;
 	}
 
 	for (u32 port = 0; port < USB::NUM_PORTS; port++)

@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
-#include "PAD/Host/PAD.h"
+#include "pcsx2/SIO/Pad/PadConfig.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
@@ -414,10 +414,10 @@ void SetupWizardDialog::setupControllerPage()
 		const std::string section = fmt::format("Pad{}", port + 1);
 		const PadWidgets& w = pad_widgets[port];
 
-		for (const auto& [name, display_name] : PAD::GetControllerTypeNames())
+		for (const auto& [name, display_name] : g_PadConfig.GetControllerTypeNames())
 			w.type_combo->addItem(qApp->translate("Pad", display_name), QString::fromStdString(name));
 		ControllerSettingWidgetBinder::BindWidgetToInputProfileString(
-			nullptr, w.type_combo, section, "Type", PAD::GetDefaultPadType(port));
+			nullptr, w.type_combo, section, "Type", g_PadConfig.GetDefaultPadType(port));
 
 		w.mapping_result->setText((port == 0) ? tr("Default (Keyboard)") : tr("Default (None)"));
 
@@ -473,7 +473,7 @@ void SetupWizardDialog::doDeviceAutomaticBinding(u32 port, QLabel* update_label,
 	bool result;
 	{
 		auto lock = Host::GetSettingsLock();
-		result = PAD::MapController(*Host::Internal::GetBaseSettingsLayer(), port, mapping);
+		result = g_PadConfig.MapController(*Host::Internal::GetBaseSettingsLayer(), port, mapping);
 	}
 	if (!result)
 		return;

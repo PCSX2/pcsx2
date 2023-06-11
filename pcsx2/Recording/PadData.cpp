@@ -17,20 +17,21 @@
 
 #include "DebugTools/Debug.h"
 #include "Recording/PadData.h"
+#include "SIO/Pad/PadManager.h"
+#include "SIO/Pad/PadDualshock2Types.h"
+#include "SIO/Sio.h"
 
 #include <fmt/core.h>
-
-#include "PAD/Host/KeyStatus.h"
-#include "Sio.h"
 
 PadData::PadData(const int port, const int slot)
 {
 	m_port = port;
 	m_slot = slot;
 	m_ext_port = sioConvertPortAndSlotToPad(m_port, m_slot);
+	PadBase* pad = g_PadManager.GetPad(m_ext_port);
 	// Get the state of the buttons
 	// TODO - for the new recording file format, allow informing max number of buttons per frame per controller as well (ie. the analog button)
-	const u32 buttons = g_key_status.GetButtons(m_ext_port);
+	const u32 buttons = pad->GetButtons();
 	// - pressed group one
 	//	 - left
 	//	 - down
@@ -52,26 +53,26 @@ PadData::PadData(const int port, const int slot)
 	//	 - l2
 	m_compactPressFlagsGroupTwo = (buttons & 0b11111111);
 	// Get the analog values
-	m_rightAnalog = g_key_status.GetRawRightAnalog(m_ext_port);
-	m_leftAnalog = g_key_status.GetRawLeftAnalog(m_ext_port);
+	m_rightAnalog = pad->GetRawRightAnalog();
+	m_leftAnalog = pad->GetRawLeftAnalog();
 	// Get pressure bytes (12 of them)
-	m_left = {(0b10000000 & m_compactPressFlagsGroupOne) == 0, g_key_status.GetRawPressure(m_ext_port, gamePadValues::PAD_LEFT)};
-	m_down = {(0b01000000 & m_compactPressFlagsGroupOne) == 0, g_key_status.GetRawPressure(m_ext_port, gamePadValues::PAD_DOWN)};
-	m_right = {(0b00100000 & m_compactPressFlagsGroupOne) == 0, g_key_status.GetRawPressure(m_ext_port, gamePadValues::PAD_RIGHT)};
-	m_up = {(0b00010000 & m_compactPressFlagsGroupOne) == 0, g_key_status.GetRawPressure(m_ext_port, gamePadValues::PAD_UP)};
+	m_left = {(0b10000000 & m_compactPressFlagsGroupOne) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_LEFT)};
+	m_down = {(0b01000000 & m_compactPressFlagsGroupOne) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_DOWN)};
+	m_right = {(0b00100000 & m_compactPressFlagsGroupOne) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_RIGHT)};
+	m_up = {(0b00010000 & m_compactPressFlagsGroupOne) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_UP)};
 	m_start = (0b00001000 & m_compactPressFlagsGroupOne) == 0;
 	m_r3 = (0b00000100 & m_compactPressFlagsGroupOne) == 0;
 	m_l3 = (0b00000010 & m_compactPressFlagsGroupOne) == 0;
 	m_select = (0b00000001 & m_compactPressFlagsGroupOne) == 0;
 
-	m_square = {(0b10000000 & m_compactPressFlagsGroupTwo) == 0, g_key_status.GetRawPressure(m_ext_port, gamePadValues::PAD_SQUARE)};
-	m_cross = {(0b01000000 & m_compactPressFlagsGroupTwo) == 0, g_key_status.GetRawPressure(m_ext_port, gamePadValues::PAD_CROSS)};
-	m_circle = {(0b00100000 & m_compactPressFlagsGroupTwo) == 0, g_key_status.GetRawPressure(m_ext_port, gamePadValues::PAD_CIRCLE)};
-	m_triangle = {(0b00010000 & m_compactPressFlagsGroupTwo) == 0, g_key_status.GetRawPressure(m_ext_port, gamePadValues::PAD_TRIANGLE)};
-	m_r1 = {(0b00001000 & m_compactPressFlagsGroupTwo) == 0, g_key_status.GetRawPressure(m_ext_port, gamePadValues::PAD_R1)};
-	m_l1 = {(0b00000100 & m_compactPressFlagsGroupTwo) == 0, g_key_status.GetRawPressure(m_ext_port, gamePadValues::PAD_L1)};
-	m_r2 = {(0b00000010 & m_compactPressFlagsGroupTwo) == 0, g_key_status.GetRawPressure(m_ext_port, gamePadValues::PAD_R2)};
-	m_l2 = {(0b00000001 & m_compactPressFlagsGroupTwo) == 0, g_key_status.GetRawPressure(m_ext_port, gamePadValues::PAD_L2)};
+	m_square = {(0b10000000 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_SQUARE)};
+	m_cross = {(0b01000000 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_CROSS)};
+	m_circle = {(0b00100000 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_CIRCLE)};
+	m_triangle = {(0b00010000 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_TRIANGLE)};
+	m_r1 = {(0b00001000 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_R1)};
+	m_l1 = {(0b00000100 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_L1)};
+	m_r2 = {(0b00000010 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_R2)};
+	m_l2 = {(0b00000001 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_L2)};
 }
 
 PadData::PadData(const int port, const int slot, const std::array<u8, 18> data)
@@ -107,26 +108,27 @@ PadData::PadData(const int port, const int slot, const std::array<u8, 18> data)
 
 void PadData::OverrideActualController() const
 {
-	g_key_status.SetRawAnalogs(m_ext_port, m_leftAnalog, m_rightAnalog);
+	PadBase* pad = g_PadManager.GetPad(m_ext_port);
+	pad->SetRawAnalogs(m_leftAnalog, m_rightAnalog);
 
-	g_key_status.Set(m_ext_port, PAD_RIGHT, std::get<1>(m_right));
-	g_key_status.Set(m_ext_port, PAD_LEFT, std::get<1>(m_left));
-	g_key_status.Set(m_ext_port, PAD_UP, std::get<1>(m_up));
-	g_key_status.Set(m_ext_port, PAD_DOWN, std::get<1>(m_down));
-	g_key_status.Set(m_ext_port, PAD_START, m_start);
-	g_key_status.Set(m_ext_port, PAD_SELECT, m_select);
-	g_key_status.Set(m_ext_port, PAD_R3, m_r3);
-	g_key_status.Set(m_ext_port, PAD_L3, m_l3);
+	pad->Set(Dualshock2::Inputs::PAD_RIGHT, std::get<1>(m_right));
+	pad->Set(Dualshock2::Inputs::PAD_LEFT, std::get<1>(m_left));
+	pad->Set(Dualshock2::Inputs::PAD_UP, std::get<1>(m_up));
+	pad->Set(Dualshock2::Inputs::PAD_DOWN, std::get<1>(m_down));
+	pad->Set(Dualshock2::Inputs::PAD_START, m_start);
+	pad->Set(Dualshock2::Inputs::PAD_SELECT, m_select);
+	pad->Set(Dualshock2::Inputs::PAD_R3, m_r3);
+	pad->Set(Dualshock2::Inputs::PAD_L3, m_l3);
 
-	g_key_status.Set(m_ext_port, PAD_SQUARE, std::get<1>(m_square));
-	g_key_status.Set(m_ext_port, PAD_CROSS, std::get<1>(m_cross));
-	g_key_status.Set(m_ext_port, PAD_CIRCLE, std::get<1>(m_circle));
-	g_key_status.Set(m_ext_port, PAD_TRIANGLE, std::get<1>(m_triangle));
+	pad->Set(Dualshock2::Inputs::PAD_SQUARE, std::get<1>(m_square));
+	pad->Set(Dualshock2::Inputs::PAD_CROSS, std::get<1>(m_cross));
+	pad->Set(Dualshock2::Inputs::PAD_CIRCLE, std::get<1>(m_circle));
+	pad->Set(Dualshock2::Inputs::PAD_TRIANGLE, std::get<1>(m_triangle));
 
-	g_key_status.Set(m_ext_port, PAD_R1, std::get<1>(m_r1));
-	g_key_status.Set(m_ext_port, PAD_L1, std::get<1>(m_l1));
-	g_key_status.Set(m_ext_port, PAD_R2, std::get<1>(m_r2));
-	g_key_status.Set(m_ext_port, PAD_L2, std::get<1>(m_l2));
+	pad->Set(Dualshock2::Inputs::PAD_R1, std::get<1>(m_r1));
+	pad->Set(Dualshock2::Inputs::PAD_L1, std::get<1>(m_l1));
+	pad->Set(Dualshock2::Inputs::PAD_R2, std::get<1>(m_r2));
+	pad->Set(Dualshock2::Inputs::PAD_L2, std::get<1>(m_l2));
 }
 
 void addButtonInfoToString(std::string label, std::string& str, std::tuple<bool, u8> buttonInfo)
@@ -173,6 +175,6 @@ void PadData::LogPadData() const
 	const auto& [right_x, right_y] = m_rightAnalog;
 	const std::string analogs = fmt::format("Left: [{}, {}] | Right: [{}, {}]", left_x, left_y, right_x, right_y);
 
-	const std::string finalLog = fmt::format("[PAD {}:{}:{}]\n\t[Buttons]: {}\n\t[Analogs]: {}\n", m_ext_port, m_port, m_slot, pressedButtons, analogs);
+	const std::string finalLog = fmt::format("[PAD {}:{}]\n\t[Buttons]: {}\n\t[Analogs]: {}\n", m_port, m_slot, pressedButtons, analogs);
 	controlLog(finalLog);
 }

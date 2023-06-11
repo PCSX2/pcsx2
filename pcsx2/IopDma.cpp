@@ -20,7 +20,7 @@
 #include "IopCounters.h"
 #include "IopHw.h"
 #include "IopDma.h"
-#include "Sio.h"
+#include "SIO/Sio2.h"
 
 #include "Sif.h"
 #include "DEV9/DEV9.h"
@@ -232,7 +232,7 @@ void psxDma11(u32 madr, u32 bcr, u32 chcr)
 	PSXDMA_LOG("*** DMA 11 - SIO2 in *** %lx addr = %lx size = %lx", chcr, madr, bcr);
 	// Set dmaBlockSize, so SIO2 knows to count based on the DMA block rather than SEND3 length.
 	// When SEND3 is written, SIO2 will automatically reset this to zero.
-	sio2.dmaBlockSize = (bcr & 0xffff) * 4;
+	g_Sio2.dmaBlockSize = (bcr & 0xffff) * 4;
 
 	if (chcr != 0x01000201)
 	{
@@ -244,7 +244,7 @@ void psxDma11(u32 madr, u32 bcr, u32 chcr)
 		for (j = 0; j < ((bcr & 0xFFFF) * 4); j++)
 		{
 			const u8 data = iopMemRead8(madr);
-			sio2.Write(data);
+			g_Sio2.Write(data);
 			madr++;
 		}
 	}
@@ -276,7 +276,7 @@ void psxDma12(u32 madr, u32 bcr, u32 chcr)
 
 	while (bcr > 0)
 	{
-		const u8 data = sio2.Read();
+		const u8 data = g_Sio2.Read();
 		iopMemWrite8(madr, data);
 		bcr--;
 		madr++;

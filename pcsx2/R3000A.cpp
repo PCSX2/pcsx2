@@ -18,7 +18,7 @@
 #include "R3000A.h"
 #include "Common.h"
 
-#include "Sio.h"
+#include "SIO/Sio0.h"
 #include "Sif.h"
 #include "DebugTools/Breakpoints.h"
 #include "R5900OpcodeTables.h"
@@ -175,7 +175,7 @@ static __fi void Sio0TestEvent(IopEventId n)
 	if (psxTestCycle(psxRegs.sCycle[n], psxRegs.eCycle[n]))
 	{
 		psxRegs.interrupt &= ~(1 << n);
-		sio0.Interrupt(Sio0Interrupt::TEST_EVENT);
+		g_Sio0.Interrupt(Sio0Interrupt::TEST_EVENT);
 	}
 	else
 	{

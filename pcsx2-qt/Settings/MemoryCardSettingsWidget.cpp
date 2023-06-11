@@ -32,7 +32,7 @@
 #include "SettingWidgetBinder.h"
 #include "SettingsDialog.h"
 
-#include "pcsx2/MemoryCardFile.h"
+#include "pcsx2/SIO/Memcard/MemoryCardFile.h"
 
 static constexpr const char* CONFIG_SECTION = "MemoryCards";
 

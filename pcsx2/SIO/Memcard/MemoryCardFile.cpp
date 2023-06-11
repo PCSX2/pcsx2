@@ -14,16 +14,18 @@
  */
 
 #include "PrecompiledHeader.h"
+
+#include "SIO/Memcard/MemoryCardFile.h"
+
+#include "SIO/Memcard/MemoryCardFolder.h"
+#include "SIO/Sio.h"
+
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
 
 #include <array>
 #include <chrono>
-
-#include "MemoryCardFile.h"
-#include "MemoryCardFolder.h"
-#include "Sio.h"
 
 #include "System.h"
 #include "Config.h"
@@ -52,26 +54,26 @@ bool FileMcd_Open = false;
 
 static u32 CalculateECC(u8* buf)
 {
-	const u8 parity_table[256] = {0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0,1,0,0,1,0,1,1,
-	0,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,1,0,1,1,0,1,0,0,1,1,0,0,1,0,
-	1,1,0,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,1,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0,0,1,1,
-	0,1,0,0,1,1,0,0,1,0,1,1,0,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0,0,
-	1,1,0,1,0,0,1,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,
-	0,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,1,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0,1,0,0,1,0,
-	1,1,0,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,1,0,1,1,0,1,0,0,1,1,0,0,
-	1,0,1,1,0};
+	const u8 parity_table[256] = {0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1,
+		0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0,
+		1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1,
+		0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0,
+		1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1,
+		0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0,
+		1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0,
+		1, 0, 1, 1, 0};
 
-	const u8 column_parity_mask[256] = {0,7,22,17,37,34,51,52,52,51,34,37,17,22,
-	7,0,67,68,85,82,102,97,112,119,119,112,97,102,82,85,68,67,82,85,68,67,119,112,
-	97,102,102,97,112,119,67,68,85,82,17,22,7,0,52,51,34,37,37,34,51,52,0,7,22,17,
-	97,102,119,112,68,67,82,85,85,82,67,68,112,119,102,97,34,37,52,51,7,0,17,22,
-	22,17,0,7,51,52,37,34,51,52,37,34,22,17,0,7,7,0,17,22,34,37,52,51,112,119,102,
-	97,85,82,67,68,68,67,82,85,97,102,119,112,112,119,102,97,85,82,67,68,68,67,82,
-	85,97,102,119,112,51,52,37,34,22,17,0,7,7,0,17,22,34,37,52,51,34,37,52,51,7,0,
-	17,22,22,17,0,7,51,52,37,34,97,102,119,112,68,67,82,85,85,82,67,68,112,119,102,
-	97,17,22,7,0,52,51,34,37,37,34,51,52,0,7,22,17,82,85,68,67,119,112,97,102,102,
-	97,112,119,67,68,85,82,67,68,85,82,102,97,112,119,119,112,97,102,82,85,68,67,
-	0,7,22,17,37,34,51,52,52,51,34,37,17,22,7,0};
+	const u8 column_parity_mask[256] = {0, 7, 22, 17, 37, 34, 51, 52, 52, 51, 34, 37, 17, 22,
+		7, 0, 67, 68, 85, 82, 102, 97, 112, 119, 119, 112, 97, 102, 82, 85, 68, 67, 82, 85, 68, 67, 119, 112,
+		97, 102, 102, 97, 112, 119, 67, 68, 85, 82, 17, 22, 7, 0, 52, 51, 34, 37, 37, 34, 51, 52, 0, 7, 22, 17,
+		97, 102, 119, 112, 68, 67, 82, 85, 85, 82, 67, 68, 112, 119, 102, 97, 34, 37, 52, 51, 7, 0, 17, 22,
+		22, 17, 0, 7, 51, 52, 37, 34, 51, 52, 37, 34, 22, 17, 0, 7, 7, 0, 17, 22, 34, 37, 52, 51, 112, 119, 102,
+		97, 85, 82, 67, 68, 68, 67, 82, 85, 97, 102, 119, 112, 112, 119, 102, 97, 85, 82, 67, 68, 68, 67, 82,
+		85, 97, 102, 119, 112, 51, 52, 37, 34, 22, 17, 0, 7, 7, 0, 17, 22, 34, 37, 52, 51, 34, 37, 52, 51, 7, 0,
+		17, 22, 22, 17, 0, 7, 51, 52, 37, 34, 97, 102, 119, 112, 68, 67, 82, 85, 85, 82, 67, 68, 112, 119, 102,
+		97, 17, 22, 7, 0, 52, 51, 34, 37, 37, 34, 51, 52, 0, 7, 22, 17, 82, 85, 68, 67, 119, 112, 97, 102, 102,
+		97, 112, 119, 67, 68, 85, 82, 67, 68, 85, 82, 102, 97, 112, 119, 119, 112, 97, 102, 82, 85, 68, 67,
+		0, 7, 22, 17, 37, 34, 51, 52, 52, 51, 34, 37, 17, 22, 7, 0};
 
 	u8 column_parity = 0x77;
 	u8 line_parity_0 = 0x7F;
@@ -343,14 +345,14 @@ void FileMemoryCard::Open()
 			// Translation note: detailed description should mention that the memory card will be disabled
 			// for the duration of this session.
 			Host::ReportFormattedErrorAsync("Memory Card", "Access denied to memory card: \n\n%s\n\n"
-				"Another instance of PCSX2 may be using this memory card. Close any other instances of PCSX2, or restart your computer.%s",
+														   "Another instance of PCSX2 may be using this memory card. Close any other instances of PCSX2, or restart your computer.%s",
 				fname.c_str(),
 #ifdef WIN32
 				"\n\nIf your memory card is in a write-protected folder such as \"Program Files\" or \"Program Files (x86)\", move it to another folder, such as \"Documents\" or \"Desktop\"."
 #else
 				""
 #endif
-				);
+			);
 		}
 		else // Load checksum
 		{
@@ -445,9 +447,9 @@ s32 FileMemoryCard::IsPresent(uint slot)
 
 void FileMemoryCard::GetSizeInfo(uint slot, McdSizeInfo& outways)
 {
-	outways.SectorSize = 512;             // 0x0200
+	outways.SectorSize = 512; // 0x0200
 	outways.EraseBlockSizeInSectors = 16; // 0x0010
-	outways.Xor = 18;                     // 0x12, XOR 02 00 00 10
+	outways.Xor = 18; // 0x12, XOR 02 00 00 10
 
 	if (pxAssert(m_file[slot]))
 		outways.McdSizeInSectors = static_cast<u32>(FileSystem::FSize64(m_file[slot])) / (outways.SectorSize + outways.EraseBlockSizeInSectors);
@@ -618,7 +620,7 @@ uint FileMcd_ConvertToSlot(uint port, uint slot)
 		return port;
 	if (port == 0)
 		return slot + 1; // multitap 1
-	return slot + 4;     // multitap 2
+	return slot + 4; // multitap 2
 }
 
 void FileMcd_SetType()
@@ -645,10 +647,10 @@ void FileMcd_SetType()
 
 void FileMcd_EmuOpen()
 {
-	if(FileMcd_Open)
+	if (FileMcd_Open)
 		return;
 	FileMcd_Open = true;
-	
+
 
 	Mcd::impl.Open();
 	Mcd::implFolder.SetFiltering(EmuConfig.McdFolderAutoManage);
@@ -657,7 +659,7 @@ void FileMcd_EmuOpen()
 
 void FileMcd_EmuClose()
 {
-	if(!FileMcd_Open)
+	if (!FileMcd_Open)
 		return;
 	FileMcd_Open = false;
 	Mcd::implFolder.Close();
@@ -808,7 +810,7 @@ int FileMcd_ReIndex(uint port, uint slot, const std::string& filter)
 				return -1;
 			break;
 		default:
-				return -1;
+			return -1;
 			break;
 	}
 

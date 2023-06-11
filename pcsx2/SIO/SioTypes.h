@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -31,6 +31,7 @@ namespace SioMode
 	static constexpr u8 MEMCARD = 0x81;
 } // namespace SioMode
 
+/*
 namespace PadCommand
 {
 	static constexpr u8 UNK_0 = 0x40;
@@ -50,6 +51,7 @@ namespace PadCommand
 	static constexpr u8 UNK_E = 0x4e;
 	static constexpr u8 ANALOG = 0x4f;
 } // namespace PadCommand
+*/
 
 namespace MemcardCommand
 {

@@ -15,8 +15,11 @@
 
 #include "PrecompiledHeader.h"
 
-#include "MemoryCardProtocol.h"
-#include "Sio.h"
+#include "SIO/Memcard/MemoryCardProtocol.h"
+
+#include "SIO/Sio.h"
+#include "SIO/Sio2.h"
+#include "SIO/Sio0.h"
 
 #define MC_LOG_ENABLE 0
 #define MC_LOG if (MC_LOG_ENABLE) DevCon
@@ -29,11 +32,11 @@ MemoryCardProtocol g_MemoryCardProtocol;
 // If so, return dead air.
 bool MemoryCardProtocol::PS1Fail()
 {
-	if (mcd->IsPSX() && sio2.commandLength > 0)
+	if (mcd->IsPSX() && g_Sio2.commandLength > 0)
 	{
-		while (fifoOut.size() < sio2.commandLength)
+		while (g_Sio2FifoOut.size() < g_Sio2.commandLength)
 		{
-			fifoOut.push_back(0x00);
+			g_Sio2FifoOut.push_back(0x00);
 		}
 
 		return true;
@@ -46,13 +49,13 @@ bool MemoryCardProtocol::PS1Fail()
 // then end with 0x2b and terminator bytes. This function is a shortcut for that.
 void MemoryCardProtocol::The2bTerminator(size_t length)
 {
-	while (fifoOut.size() < length - 2)
+	while (g_Sio2FifoOut.size() < length - 2)
 	{
-		fifoOut.push_back(0x00);
+		g_Sio2FifoOut.push_back(0x00);
 	}
 
-	fifoOut.push_back(0x2b);
-	fifoOut.push_back(mcd->term);
+	g_Sio2FifoOut.push_back(0x2b);
+	g_Sio2FifoOut.push_back(mcd->term);
 }
 
 // After one read or write, the memcard is almost certainly going to be issued a new read or write
@@ -99,16 +102,16 @@ void MemoryCardProtocol::SetSector()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
-	const u8 sectorLSB = fifoIn.front();
-	fifoIn.pop_front();
-	const u8 sector2nd = fifoIn.front();
-	fifoIn.pop_front();
-	const u8 sector3rd = fifoIn.front();
-	fifoIn.pop_front();
-	const u8 sectorMSB = fifoIn.front();
-	fifoIn.pop_front();
-	const u8 expectedChecksum = fifoIn.front();
-	fifoIn.pop_front();
+	const u8 sectorLSB = g_Sio2FifoIn.front();
+	g_Sio2FifoIn.pop_front();
+	const u8 sector2nd = g_Sio2FifoIn.front();
+	g_Sio2FifoIn.pop_front();
+	const u8 sector3rd = g_Sio2FifoIn.front();
+	g_Sio2FifoIn.pop_front();
+	const u8 sectorMSB = g_Sio2FifoIn.front();
+	g_Sio2FifoIn.pop_front();
+	const u8 expectedChecksum = g_Sio2FifoIn.front();
+	g_Sio2FifoIn.pop_front();
 
 	u8 computedChecksum = sectorLSB ^ sector2nd ^ sector3rd ^ sectorMSB;
 	mcd->goodSector = (computedChecksum == expectedChecksum);
@@ -135,89 +138,89 @@ void MemoryCardProtocol::GetSpecs()
 	//u8 checksum = 0x00;
 	McdSizeInfo info;
 	mcd->GetSizeInfo(info);
-	fifoOut.push_back(0x2b);
+	g_Sio2FifoOut.push_back(0x2b);
 	
 	const u8 sectorSizeLSB = (info.SectorSize & 0xff);
 	//checksum ^= sectorSizeLSB;
-	fifoOut.push_back(sectorSizeLSB);
+	g_Sio2FifoOut.push_back(sectorSizeLSB);
 
 	const u8 sectorSizeMSB = (info.SectorSize >> 8);
 	//checksum ^= sectorSizeMSB;
-	fifoOut.push_back(sectorSizeMSB);
+	g_Sio2FifoOut.push_back(sectorSizeMSB);
 
 	const u8 eraseBlockSizeLSB = (info.EraseBlockSizeInSectors & 0xff);
 	//checksum ^= eraseBlockSizeLSB;
-	fifoOut.push_back(eraseBlockSizeLSB);
+	g_Sio2FifoOut.push_back(eraseBlockSizeLSB);
 
 	const u8 eraseBlockSizeMSB = (info.EraseBlockSizeInSectors >> 8);
 	//checksum ^= eraseBlockSizeMSB;
-	fifoOut.push_back(eraseBlockSizeMSB);
+	g_Sio2FifoOut.push_back(eraseBlockSizeMSB);
 
 	const u8 sectorCountLSB = (info.McdSizeInSectors & 0xff);
 	//checksum ^= sectorCountLSB;
-	fifoOut.push_back(sectorCountLSB);
+	g_Sio2FifoOut.push_back(sectorCountLSB);
 
 	const u8 sectorCount2nd = (info.McdSizeInSectors >> 8);
 	//checksum ^= sectorCount2nd;
-	fifoOut.push_back(sectorCount2nd);
+	g_Sio2FifoOut.push_back(sectorCount2nd);
 
 	const u8 sectorCount3rd = (info.McdSizeInSectors >> 16);
 	//checksum ^= sectorCount3rd;
-	fifoOut.push_back(sectorCount3rd);
+	g_Sio2FifoOut.push_back(sectorCount3rd);
 
 	const u8 sectorCountMSB = (info.McdSizeInSectors >> 24);
 	//checksum ^= sectorCountMSB;
-	fifoOut.push_back(sectorCountMSB);
+	g_Sio2FifoOut.push_back(sectorCountMSB);
 	
-	fifoOut.push_back(info.Xor);
-	fifoOut.push_back(mcd->term);
+	g_Sio2FifoOut.push_back(info.Xor);
+	g_Sio2FifoOut.push_back(mcd->term);
 }
 
 void MemoryCardProtocol::SetTerminator()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
-	const u8 newTerminator = fifoIn.front();
-	fifoIn.pop_front();
+	const u8 newTerminator = g_Sio2FifoIn.front();
+	g_Sio2FifoIn.pop_front();
 	const u8 oldTerminator = mcd->term;
 	mcd->term = newTerminator;
-	fifoOut.push_back(0x00);
-	fifoOut.push_back(0x2b);
-	fifoOut.push_back(oldTerminator);
+	g_Sio2FifoOut.push_back(0x00);
+	g_Sio2FifoOut.push_back(0x2b);
+	g_Sio2FifoOut.push_back(oldTerminator);
 }
 
 void MemoryCardProtocol::GetTerminator()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
-	fifoOut.push_back(0x2b);
-	fifoOut.push_back(mcd->term);
-	fifoOut.push_back(static_cast<u8>(Terminator::DEFAULT));
+	g_Sio2FifoOut.push_back(0x2b);
+	g_Sio2FifoOut.push_back(mcd->term);
+	g_Sio2FifoOut.push_back(static_cast<u8>(Terminator::DEFAULT));
 }
 
 void MemoryCardProtocol::WriteData()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
-	fifoOut.push_back(0x00);
-	fifoOut.push_back(0x2b);
-	const u8 writeLength = fifoIn.front();
-	fifoIn.pop_front();
+	g_Sio2FifoOut.push_back(0x00);
+	g_Sio2FifoOut.push_back(0x2b);
+	const u8 writeLength = g_Sio2FifoIn.front();
+	g_Sio2FifoIn.pop_front();
 	u8 checksum = 0x00;
 	std::vector<u8> buf;
 
 	for (size_t writeCounter = 0; writeCounter < writeLength; writeCounter++)
 	{
-		const u8 writeByte = fifoIn.front();
-		fifoIn.pop_front();
+		const u8 writeByte = g_Sio2FifoIn.front();
+		g_Sio2FifoIn.pop_front();
 		checksum ^= writeByte;
 		buf.push_back(writeByte);
-		fifoOut.push_back(0x00);
+		g_Sio2FifoOut.push_back(0x00);
 	}
 
 	mcd->Write(buf.data(), buf.size());
-	fifoOut.push_back(checksum);
-	fifoOut.push_back(mcd->term);
+	g_Sio2FifoOut.push_back(checksum);
+	g_Sio2FifoOut.push_back(mcd->term);
 
 	ReadWriteIncrement(writeLength);
 }
@@ -226,10 +229,10 @@ void MemoryCardProtocol::ReadData()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
-	const u8 readLength = fifoIn.front();
-	fifoIn.pop_front();
-	fifoOut.push_back(0x00);
-	fifoOut.push_back(0x2b);
+	const u8 readLength = g_Sio2FifoIn.front();
+	g_Sio2FifoIn.pop_front();
+	g_Sio2FifoOut.push_back(0x00);
+	g_Sio2FifoOut.push_back(0x2b);
 	std::vector<u8> buf;
 	buf.resize(readLength);
 	mcd->Read(buf.data(), buf.size());
@@ -238,11 +241,11 @@ void MemoryCardProtocol::ReadData()
 	for (const u8 readByte : buf)
 	{
 		checksum ^= readByte;
-		fifoOut.push_back(readByte);
+		g_Sio2FifoOut.push_back(readByte);
 	}
 
-	fifoOut.push_back(checksum);
-	fifoOut.push_back(mcd->term);
+	g_Sio2FifoOut.push_back(checksum);
+	g_Sio2FifoOut.push_back(mcd->term);
 
 	ReadWriteIncrement(readLength);
 }
@@ -299,10 +302,7 @@ u8 MemoryCardProtocol::PS1Read(u8 data)
 			break;
 	}
 
-	if (sendAck)
-	{
-		sio0.Acknowledge();
-	}
+	g_Sio0.SetAcknowledge(sendAck);
 
 	ps1McState.currentByte++;
 	return ret;
@@ -310,7 +310,7 @@ u8 MemoryCardProtocol::PS1Read(u8 data)
 
 u8 MemoryCardProtocol::PS1State(u8 data)
 {
-	DevCon.Error("%s(%02X) I do not exist, please change that ASAP.", __FUNCTION__, data);
+	Console.Error("%s(%02X) I do not exist, please change that ASAP.", __FUNCTION__, data);
 	assert(false);
 	return 0x00;
 }
@@ -378,10 +378,7 @@ u8 MemoryCardProtocol::PS1Write(u8 data)
 			break;
 	}
 
-	if (sendAck)
-	{
-		sio0.Acknowledge();
-	}
+	g_Sio0.SetAcknowledge(sendAck);
 
 	ps1McState.currentByte++;
 	return ret;
@@ -390,7 +387,7 @@ u8 MemoryCardProtocol::PS1Write(u8 data)
 u8 MemoryCardProtocol::PS1Pocketstation(u8 data)
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
-	sio2.SetRecv1(Recv1::DISCONNECTED);
+	g_Sio0.SetAcknowledge(false);
 	return 0x00;
 }
 
@@ -420,8 +417,8 @@ void MemoryCardProtocol::AuthXor()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
-	const u8 modeByte = fifoIn.front();
-	fifoIn.pop_front();
+	const u8 modeByte = g_Sio2FifoIn.front();
+	g_Sio2FifoIn.pop_front();
 
 	switch (modeByte)
 	{
@@ -435,20 +432,20 @@ void MemoryCardProtocol::AuthXor()
 		case 0x13:
 		{
 			// Long + XOR
-			fifoOut.push_back(0x00);
-			fifoOut.push_back(0x2b);
+			g_Sio2FifoOut.push_back(0x00);
+			g_Sio2FifoOut.push_back(0x2b);
 			u8 xorResult = 0x00;
 
 			for (size_t xorCounter = 0; xorCounter < 8; xorCounter++)
 			{
-				const u8 toXOR = fifoIn.front();
-				fifoIn.pop_front();
+				const u8 toXOR = g_Sio2FifoIn.front();
+				g_Sio2FifoIn.pop_front();
 				xorResult ^= toXOR;
-				fifoOut.push_back(0x00);
+				g_Sio2FifoOut.push_back(0x00);
 			}
 
-			fifoOut.push_back(xorResult);
-			fifoOut.push_back(mcd->term);
+			g_Sio2FifoOut.push_back(xorResult);
+			g_Sio2FifoOut.push_back(mcd->term);
 			break;
 		}
 		// When encountered, the command length in RECV3 is guaranteed to be 5,

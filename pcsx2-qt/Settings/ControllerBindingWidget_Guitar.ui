@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ControllerBindingWidget_Guitar</class>
+ <widget class="QWidget" name="ControllerBindingWidget_Guitar">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1100</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QWidget" name="horizontalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1101</width>
+     <height>322</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QLabel" name="label">
+      <property name="maximumSize">
+       <size>
+        <width>800</width>
+        <height>320</height>
+       </size>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="pixmap">
+       <pixmap resource="../resources/resources.qrc">:/images/guitar.png</pixmap>
+      </property>
+      <property name="scaledContents">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer_2">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="gridLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>320</y>
+     <width>1101</width>
+     <height>181</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="6">
+     <widget class="QGroupBox" name="groupBox_7">
+      <property name="title">
+       <string>Yellow</string>
+      </property>
+      <widget class="InputBindingWidget" name="Yellow">
+       <property name="geometry">
+        <rect>
+         <x>24</x>
+         <y>30</y>
+         <width>90</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>PushButton</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QGroupBox" name="groupBox">
+      <property name="title">
+       <string>Start</string>
+      </property>
+      <widget class="InputBindingWidget" name="Start">
+       <property name="geometry">
+        <rect>
+         <x>24</x>
+         <y>30</y>
+         <width>90</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>PushButton</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item row="0" column="7">
+     <widget class="QGroupBox" name="groupBox_8">
+      <property name="title">
+       <string>Red</string>
+      </property>
+      <widget class="InputBindingWidget" name="Red">
+       <property name="geometry">
+        <rect>
+         <x>24</x>
+         <y>30</y>
+         <width>90</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>PushButton</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item row="0" column="8">
+     <widget class="QGroupBox" name="groupBox_9">
+      <property name="title">
+       <string>Green</string>
+      </property>
+      <widget class="InputBindingWidget" name="Green">
+       <property name="geometry">
+        <rect>
+         <x>24</x>
+         <y>30</y>
+         <width>90</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>PushButton</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item row="0" column="3">
+     <widget class="QGroupBox" name="groupBox_5">
+      <property name="title">
+       <string>Orange</string>
+      </property>
+      <widget class="InputBindingWidget" name="Orange">
+       <property name="geometry">
+        <rect>
+         <x>24</x>
+         <y>30</y>
+         <width>90</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>PushButton</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QGroupBox" name="groupBox_3">
+      <property name="title">
+       <string>Select</string>
+      </property>
+      <widget class="InputBindingWidget" name="Select">
+       <property name="geometry">
+        <rect>
+         <x>24</x>
+         <y>30</y>
+         <width>90</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>PushButton</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="title">
+       <string>Strum Up</string>
+      </property>
+      <widget class="InputBindingWidget" name="Up">
+       <property name="geometry">
+        <rect>
+         <x>24</x>
+         <y>30</y>
+         <width>90</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>PushButton</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QGroupBox" name="groupBox_4">
+      <property name="title">
+       <string>Strum Down</string>
+      </property>
+      <widget class="InputBindingWidget" name="Down">
+       <property name="geometry">
+        <rect>
+         <x>24</x>
+         <y>30</y>
+         <width>90</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>PushButton</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item row="0" column="5">
+     <widget class="QGroupBox" name="groupBox_6">
+      <property name="title">
+       <string>Blue</string>
+      </property>
+      <widget class="InputBindingWidget" name="Blue">
+       <property name="geometry">
+        <rect>
+         <x>24</x>
+         <y>30</y>
+         <width>90</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>PushButton</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QGroupBox" name="groupBox_10">
+      <property name="title">
+       <string>Whammy Bar</string>
+      </property>
+      <widget class="InputBindingWidget" name="Whammy">
+       <property name="geometry">
+        <rect>
+         <x>24</x>
+         <y>30</y>
+         <width>90</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>PushButton</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QGroupBox" name="groupBox_11">
+      <property name="title">
+       <string>Tilt</string>
+      </property>
+      <widget class="InputBindingWidget" name="Tilt">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>30</y>
+         <width>90</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>PushButton</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>InputBindingWidget</class>
+   <extends>QPushButton</extends>
+   <header>Settings/InputBindingWidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../resources/resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

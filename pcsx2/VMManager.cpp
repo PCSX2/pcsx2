@@ -37,8 +37,6 @@
 #include "LogSink.h"
 #include "MTGS.h"
 #include "MTVU.h"
-#include "MemoryCardFile.h"
-#include "PAD/Host/PAD.h"
 #include "PCSX2Base.h"
 #include "PINE.h"
 #include "Patch.h"
@@ -47,7 +45,6 @@
 #include "Recording/InputRecording.h"
 #include "Recording/InputRecordingControls.h"
 #include "SPU2/spu2.h"
-#include "Sio.h"
 #include "USB/USB.h"
 #include "VMManager.h"
 #include "ps2/BiosTools.h"
@@ -61,6 +58,13 @@
 #include "common/Threading.h"
 #include "common/Timer.h"
 #include "common/emitter/tools.h"
+#include "SIO/Sio.h"
+#include "SIO/Sio0.h"
+#include "SIO/Sio2.h"
+#include "SIO/Pad/PadManager.h"
+#include "SIO/Pad/PadConfig.h"
+#include "SIO/Memcard/MemoryCardFile.h"
+
 
 #include "IconsFontAwesome5.h"
 #include "fmt/core.h"
@@ -447,12 +451,10 @@ void VMManager::SetDefaultSettings(
 		LogSink::SetDefaultLoggingSettings(si);
 	}
 	if (controllers)
-	{
-		PAD::SetDefaultControllerConfig(si);
+		g_PadConfig.SetDefaultControllerConfig(si);
 		USB::SetDefaultConfiguration(&si);
-	}
 	if (hotkeys)
-		PAD::SetDefaultHotkeyConfig(si);
+		g_PadConfig.SetDefaultHotkeyConfig(si);
 	if (ui)
 		Host::SetDefaultUISettings(si);
 }
@@ -462,7 +464,7 @@ void VMManager::LoadSettings()
 	std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
 	SettingsInterface* si = Host::GetSettingsInterface();
 	LoadCoreSettings(si);
-	PAD::LoadConfig(*si);
+	g_PadConfig.LoadConfig(*si);
 	Host::LoadSettings(*si, lock);
 	InputManager::ReloadSources(*si, lock);
 	InputManager::ReloadBindings(*si, *Host::GetSettingsInterfaceForBindings());
@@ -1205,15 +1207,35 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	}
 	ScopedGuard close_spu2(&SPU2::Close);
 
-	Console.WriteLn("Opening PAD...");
-	if (PADinit() != 0 || PADopen() != 0)
+	
+	Console.WriteLn("Initializing PAD...");
+	if (!g_PadManager.Initialize())
 	{
-		Host::ReportErrorAsync("Startup Error", "Failed to initialize PAD.");
+		Host::ReportErrorAsync("Startup Error", "Failed to initialize PAD");
 		return false;
 	}
-	ScopedGuard close_pad = []() {
-		PADclose();
-		PADshutdown();
+	ScopedGuard close_pad = [](){
+		g_PadManager.Shutdown();
+	};
+
+	Console.WriteLn("Initializing SIO2...");
+	if (!g_Sio2.Initialize())
+	{
+		Host::ReportErrorAsync("Startup Error", "Failed to initialize SIO2");
+		return false;
+	}
+	ScopedGuard close_sio2 = []() {
+		g_Sio2.Shutdown();
+	};
+
+	Console.WriteLn("Initializing SIO0...");
+	if (!g_Sio0.Initialize())
+	{
+		Host::ReportErrorAsync("Startup Error", "Failed to initialize SIO0");
+		return false;
+	}
+	ScopedGuard close_sio0 = []() {
+		g_Sio0.Shutdown();
 	};
 
 	Console.WriteLn("Opening DEV9...");
@@ -1248,6 +1270,8 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	close_usb.Cancel();
 	close_dev9.Cancel();
 	close_pad.Cancel();
+	close_sio2.Cancel();
+	close_sio0.Cancel();
 	close_spu2.Cancel();
 	close_gs.Cancel();
 	close_memcards.Cancel();
@@ -1344,7 +1368,9 @@ void VMManager::Shutdown(bool save_resume_state)
 	vtlb_Shutdown();
 	USBclose();
 	SPU2::Close();
-	PADclose();
+	g_PadManager.Shutdown();
+	g_Sio2.Shutdown();
+	g_Sio0.Shutdown();
 	DEV9close();
 	DoCDVDclose();
 	FWclose();
@@ -1362,7 +1388,6 @@ void VMManager::Shutdown(bool save_resume_state)
 		MTGS::WaitForClose();
 	}
 
-	PADshutdown();
 	DEV9shutdown();
 
 	if (GSDumpReplayer::IsReplayingDump())

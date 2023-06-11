@@ -28,7 +28,7 @@
 #include "Host.h"
 #include "MTGS.h"
 #include "MTVU.h"
-#include "PAD/Host/PAD.h"
+#include "SIO/Pad/PadManager.h"
 #include "Patch.h"
 #include "R3000A.h"
 #include "SPU2/spu2.h"
@@ -237,8 +237,8 @@ bool SaveStateBase::FreezeInternals()
 	FreezeMem(iopMem->Sif, sizeof(iopMem->Sif));		// iop's sif memory (not really needed, but oh well)
 
 	okay = okay && psxRcntFreeze();
-	okay = okay && sioFreeze();
-	okay = okay && sio2Freeze();
+	okay = okay && Sio0Freeze();
+	okay = okay && Sio2Freeze();
 	okay = okay && cdrFreeze();
 	okay = okay && cdvdFreeze();
 
@@ -314,8 +314,12 @@ static int SysState_MTGSFreeze(FreezeAction mode, freezeData* fP)
 	return sstate.retval;
 }
 
+static bool SysState_PadFreeze(StateWrapper& sw)
+{
+	return g_PadManager.PadFreeze(sw);
+}
+
 static constexpr SysState_Component SPU2_{ "SPU2", SPU2freeze };
-static constexpr SysState_Component PAD_{ "PAD", PADfreeze };
 static constexpr SysState_Component GS{ "GS", SysState_MTGSFreeze };
 
 static bool SysState_ComponentFreezeIn(zip_file_t* zf, SysState_Component comp)
@@ -600,8 +604,8 @@ public:
 	~SavestateEntry_PAD() override = default;
 
 	const char* GetFilename() const override { return "PAD.bin"; }
-	bool FreezeIn(zip_file_t* zf) const override { return SysState_ComponentFreezeIn(zf, PAD_); }
-	bool FreezeOut(SaveStateBase& writer) const override { return SysState_ComponentFreezeOut(writer, PAD_); }
+	bool FreezeIn(zip_file_t* zf) const override { return SysState_ComponentFreezeInNew(zf, "PAD", &SysState_PadFreeze); }
+	bool FreezeOut(SaveStateBase& writer) const override { return SysState_ComponentFreezeOutNew(writer, "PAD", 16 * 1024, &SysState_PadFreeze); }
 	bool IsRequired() const override { return true; }
 };
 

@@ -14,10 +14,11 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "common/Path.h"
 
-#include "MemoryCardFile.h"
-#include "MemoryCardFolder.h"
+#include "SIO/Memcard/MemoryCardFile.h"
+#include "SIO/Memcard/MemoryCardFolder.h"
+
+#include "common/Path.h"
 
 #include "System.h"
 #include "Config.h"
@@ -1914,7 +1915,7 @@ void FolderMemoryCard::DeleteFromIndex(const std::string& filePath, const std::s
 	if (yaml.has_value() && !yaml.value().empty())
 	{
 		ryml::NodeRef index = yaml.value().rootref();
-		
+
 		if (index.has_child(c4::csubstr(entry.data(), entry.length())))
 		{
 			index.remove_child(c4::csubstr(entry.data(), entry.length()));
@@ -2358,7 +2359,6 @@ s32 FolderMemoryCardAggregator::Save(uint slot, const u8* src, u32 adr, int size
 
 			last = std::chrono::system_clock::now();
 		}
-		
 	}
 
 	return saveResult;

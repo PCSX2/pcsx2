@@ -19,8 +19,6 @@
 #include "GS/Renderers/HW/GSTextureReplacements.h"
 #include "Host.h"
 #include "LayeredSettingsInterface.h"
-#include "MemoryCardFile.h"
-#include "Sio.h"
 #include "VMManager.h"
 
 #include "common/Assertions.h"

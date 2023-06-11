@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "PAD/Host/PAD.h"
+#include "pcsx2/SIO/Pad/PadMacros.h"
 
 #include <QtWidgets/QWidget>
 
@@ -23,6 +23,7 @@
 
 #include "ui_ControllerBindingWidget.h"
 #include "ui_ControllerBindingWidget_DualShock2.h"
+#include "ui_ControllerBindingWidget_Guitar.h"
 #include "ui_ControllerMacroWidget.h"
 #include "ui_ControllerMacroEditWidget.h"
 #include "ui_USBDeviceWidget.h"
@@ -91,7 +92,7 @@ public:
 	void updateListItem(u32 index);
 
 private:
-	static constexpr u32 NUM_MACROS = PAD::NUM_MACRO_BUTTONS_PER_CONTROLLER;
+	static constexpr u32 NUM_MACROS = PadMacros::NUM_MACRO_BUTTONS_PER_CONTROLLER;
 
 	void createWidgets(ControllerBindingWidget* parent);
 
@@ -191,6 +192,22 @@ public:
 
 private:
 	Ui::ControllerBindingWidget_DualShock2 m_ui;
+};
+
+class ControllerBindingWidget_Guitar final : public ControllerBindingWidget_Base
+{
+	Q_OBJECT
+
+public:
+	ControllerBindingWidget_Guitar(ControllerBindingWidget* parent);
+	~ControllerBindingWidget_Guitar();
+
+	QIcon getIcon() const override;
+
+	static ControllerBindingWidget_Base* createInstance(ControllerBindingWidget* parent);
+
+private:
+	Ui::ControllerBindingWidget_Guitar m_ui;
 };
 
 //////////////////////////////////////////////////////////////////////////
