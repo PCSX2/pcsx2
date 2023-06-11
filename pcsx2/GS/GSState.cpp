@@ -1646,7 +1646,11 @@ void GSState::FlushPrim()
 
 		try
 		{
-			Draw();
+			// Skip draw if Z test is enabled, but set to fail all pixels.
+			const bool skip_draw = (m_context->TEST.ZTE && m_context->TEST.ZTST == ZTST_NEVER);
+
+			if (!skip_draw)
+				Draw();
 		}
 		catch (GSRecoverableError&)
 		{
