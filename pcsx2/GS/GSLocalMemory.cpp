@@ -453,6 +453,22 @@ bool GSLocalMemory::IsPageAligned(u32 psm, const GSVector4i& rc)
 	return (rc & pgmsk).eq(GSVector4i::zero());
 }
 
+u32 GSLocalMemory::GetStartBlockAddress(u32 bp, u32 bw, u32 psm, GSVector4i rect)
+{
+	u32 result = m_psm[psm].info.bn(rect.x, rect.y, bp, bw); // Valid only for color formats
+
+	// If rect is page aligned, we can assume it's the start of the page. Z formats don't place block 0
+	// in the top-left, so we have to round them down.
+	const GSVector2i page_size = GSLocalMemory::m_psm[psm].pgs;
+	if ((rect.x & (page_size.x - 1)) == 0 && (rect.y & (page_size.y - 1)) == 0)
+	{
+		constexpr u32 page_mask = (1 << 5) - 1;
+		result &= ~page_mask;
+	}
+
+	return result;
+}
+
 u32 GSLocalMemory::GetEndBlockAddress(u32 bp, u32 bw, u32 psm, GSVector4i rect)
 {
 	u32 result = m_psm[psm].info.bn(rect.z - 1, rect.w - 1, bp, bw); // Valid only for color formats

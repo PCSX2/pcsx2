@@ -135,7 +135,7 @@ bool GSHwHack::GSC_SacredBlaze(GSRendererHW& r, int& skip)
 		if ((RFBP == 0x2680 || RFBP == 0x26c0 || RFBP == 0x2780 || RFBP == 0x2880 || RFBP == 0x2a80) && RTPSM == PSMCT32 && RFBW <= 2 &&
 			(!RTME || (RTBP0 == 0x0 || RTBP0 == 0xe00 || RTBP0 == 0x3e00)))
 		{
-			r.SwPrimRender(r, RTBP0 > 0x1000);
+			r.SwPrimRender(r, RTBP0 > 0x1000, false);
 			skip = 1;
 		}
 	}
@@ -253,7 +253,7 @@ bool GSHwHack::GSC_BlackAndBurnoutSky(GSRendererHW& r, int& skip)
 			// the clouds on top of the sky at each frame.
 			// Burnout 3 PAL 50Hz: 0x3ba0 => 0x1e80.
 			GL_INS("OO_BurnoutGames - Readback clouds renderered from TEX0.TBP0 = 0x%04x (TEX0.CBP = 0x%04x) to FBP = 0x%04x", TEX0.TBP0, TEX0.CBP, FRAME.Block());
-			r.SwPrimRender(r, true);
+			r.SwPrimRender(r, true, false);
 			skip = 1;
 		}
 		if (TEX0.TBW == 2 && TEX0.TW == 7 && ((TEX0.PSM == PSMT4 && FRAME.FBW == 3) || (TEX0.PSM == PSMT8 && FRAME.FBW == 2)) && TEX0.TH == 6 && (FRAME.FBMSK & 0xFFFFFF) == 0xFFFFFF)
@@ -261,7 +261,7 @@ bool GSHwHack::GSC_BlackAndBurnoutSky(GSRendererHW& r, int& skip)
 			// Rendering of the glass smashing effect and some chassis decal in to the alpha channel of the FRAME on boot (before the menu).
 			// This gets ejected from the texture cache due to old age, but never gets written back.
 			GL_INS("OO_BurnoutGames - Render glass smash from TEX0.TBP0 = 0x%04x (TEX0.CBP = 0x%04x) to FBP = 0x%04x", TEX0.TBP0, TEX0.CBP, FRAME.Block());
-			r.SwPrimRender(r, true);
+			r.SwPrimRender(r, true, false);
 			skip = 1;
 		}
 	}
@@ -652,7 +652,7 @@ bool GSHwHack::GSC_BlueTongueGames(GSRendererHW& r, int& skip)
 	// Also used for Nicktoons Unite, same engine it appears.
 	if ((context->FRAME.PSM == PSMCT16S || context->FRAME.PSM <= PSMCT24) && context->FRAME.FBW <= 5)
 	{
-		r.SwPrimRender(r, true);
+		r.SwPrimRender(r, true, false);
 		skip = 1;
 		return true;
 	}
@@ -661,7 +661,7 @@ bool GSHwHack::GSC_BlueTongueGames(GSRendererHW& r, int& skip)
 	// rendered on both.
 	if (context->FRAME.FBW == 8 && r.m_index.tail == 32 && r.PRIM->TME && context->TEX0.TBW == 1)
 	{
-		r.SwPrimRender(r, false);
+		r.SwPrimRender(r, false, false);
 		return false;
 	}
 

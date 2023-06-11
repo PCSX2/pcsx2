@@ -547,6 +547,7 @@ public:
 	GSPixelOffset4* GetPixelOffset4(const GIFRegFRAME& FRAME, const GIFRegZBUF& ZBUF);
 	std::vector<GSVector2i>* GetPage2TileMap(const GIFRegTEX0& TEX0);
 	static bool IsPageAligned(u32 psm, const GSVector4i& rc);
+	static u32 GetStartBlockAddress(u32 bp, u32 bw, u32 psm, GSVector4i rect);
 	static u32 GetEndBlockAddress(u32 bp, u32 bw, u32 psm, GSVector4i rect);
 
 	// address

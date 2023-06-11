@@ -21,7 +21,7 @@
 class CURRENT_ISA::GSRendererHWFunctions
 {
 public:
-	static bool SwPrimRender(GSRendererHW& hw, bool invalidate_tc);
+	static bool SwPrimRender(GSRendererHW& hw, bool invalidate_tc, bool add_ee_transfer);
 
 	static void Populate(GSRendererHW& renderer)
 	{
@@ -40,7 +40,7 @@ void CURRENT_ISA::GSRendererHWPopulateFunctions(GSRendererHW& renderer)
 static GSVector4i s_dimx_storage[8];
 static GIFRegDIMX s_last_dimx;
 
-bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
+bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, bool add_ee_transfer)
 {
 	GSVertexTrace& vt = hw.m_vt;
 	const GIFRegPRIM* PRIM = hw.PRIM;
@@ -68,7 +68,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 	GSVertexSW::s_cvb[vt.m_primclass][PRIM->TME][PRIM->FST][q_div](context, data.vertex, hw.m_vertex.buff, hw.m_vertex.next);
 
 	GSVector4i scissor = context->scissor.in;
-	GSVector4i bbox = GSVector4i(vt.m_min.p.floor().xyxy(vt.m_max.p.ceil()));
+	GSVector4i bbox = GSVector4i(vt.m_min.p.floor().xyxy(vt.m_max.p.ceil())).rintersect(scissor);
 
 	// Points and lines may have zero area bbox (single line: 0, 0 - 256, 0)
 
@@ -556,6 +556,19 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 
 	if (invalidate_tc)
 		g_texture_cache->InvalidateVideoMem(context->offset.fb, bbox);
+
+	// Jak does sw prim render, then draws to the same target, and it needs to be uploaded.
+	if (add_ee_transfer)
+	{
+		GSRendererHW::GSUploadQueue uq;
+		uq.blit.U64 = 0;
+		uq.blit.DBP = hw.m_cached_ctx.FRAME.Block();
+		uq.blit.DBW = hw.m_cached_ctx.FRAME.FBW;
+		uq.blit.DPSM = hw.m_cached_ctx.FRAME.PSM;
+		uq.draw = GSState::s_n;
+		uq.rect = bbox;
+		hw.m_draw_transfers.push_back(uq);
+	}
 
 	return true;
 }
