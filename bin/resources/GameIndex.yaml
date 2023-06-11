@@ -1023,6 +1023,8 @@ SCAJ-20111:
   region: "NTSC-Unk"
   gameFixes:
     - XGKickHack # Fixes bad Geometry.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth lines.
 SCAJ-20112:
   name: "Tales of Rebirth"
   region: "NTSC-Unk"
@@ -31674,6 +31676,8 @@ SLPM-65801:
   compat: 5
   gameFixes:
     - XGKickHack # Fixes bad geometry.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth lines.
 SLPM-65802:
   name: "Def Jam - Vendetta [EA Best Hits]"
   region: "NTSC-J"
