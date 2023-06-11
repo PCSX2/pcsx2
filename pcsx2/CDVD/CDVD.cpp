@@ -30,7 +30,7 @@
 #include "IopHw.h"
 #include "IopDma.h"
 #include "VMManager.h"
-#include "Sio.h"
+#include "SIO/Sio.h"
 
 #include "common/Error.h"
 #include "common/FileSystem.h"

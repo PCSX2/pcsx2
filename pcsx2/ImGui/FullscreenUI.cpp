@@ -29,10 +29,7 @@
 #include "ImGui/ImGuiFullscreen.h"
 #include "ImGui/ImGuiManager.h"
 #include "Input/InputManager.h"
-#include "MemoryCardFile.h"
 #include "MTGS.h"
-#include "PAD/Host/PAD.h"
-#include "Sio.h"
 #include "USB/USB.h"
 #include "VMManager.h"
 #include "ps2/BiosTools.h"
@@ -49,6 +46,11 @@
 #include "common/StringUtil.h"
 #include "common/Threading.h"
 #include "common/Timer.h"
+
+#include "SIO/Memcard/MemoryCardFile.h"
+#include "SIO/Pad/PadConfig.h"
+#include "SIO/Pad/PadMacros.h"
+#include "SIO/Sio.h"
 
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -2271,7 +2273,7 @@ void FullscreenUI::StartAutomaticBinding(u32 port)
 					Host::RunOnCPUThread([port, name = std::move(names[index])]() {
 						auto lock = Host::GetSettingsLock();
 						SettingsInterface* bsi = GetEditingSettingsInterface();
-						const bool result = PAD::MapController(*bsi, port, InputManager::GetGenericBindingMapping(name));
+						const bool result = g_PadConfig.MapController(*bsi, port, InputManager::GetGenericBindingMapping(name));
 						SetSettingsChanged(bsi);
 
 
@@ -3648,7 +3650,7 @@ void FullscreenUI::CopyGlobalControllerSettingsToGame()
 	SettingsInterface* dsi = GetEditingSettingsInterface(true);
 	SettingsInterface* ssi = GetEditingSettingsInterface(false);
 
-	PAD::CopyConfiguration(dsi, *ssi, true, true, false);
+	g_PadConfig.CopyConfiguration(dsi, *ssi, true, true, false);
 	USB::CopyConfiguration(dsi, *ssi, true, true);
 	SetSettingsChanged(dsi);
 
@@ -3659,15 +3661,15 @@ void FullscreenUI::ResetControllerSettings()
 {
 	SettingsInterface* dsi = GetEditingSettingsInterface();
 
-	PAD::SetDefaultControllerConfig(*dsi);
-	PAD::SetDefaultHotkeyConfig(*dsi);
+	g_PadConfig.SetDefaultControllerConfig(*dsi);
+	g_PadConfig.SetDefaultHotkeyConfig(*dsi);
 	USB::SetDefaultConfiguration(dsi);
 	ShowToast(std::string(), "Controller settings reset to default.");
 }
 
 void FullscreenUI::DoLoadInputProfile()
 {
-	std::vector<std::string> profiles(PAD::GetInputProfileNames());
+	std::vector<std::string> profiles(g_PadConfig.GetInputProfileNames());
 	if (profiles.empty())
 	{
 		ShowToast(std::string(), "No input profiles available.");
@@ -3693,7 +3695,7 @@ void FullscreenUI::DoLoadInputProfile()
 
 			auto lock = Host::GetSettingsLock();
 			SettingsInterface* dsi = GetEditingSettingsInterface();
-			PAD::CopyConfiguration(dsi, ssi, true, true, IsEditingGameSettings(dsi));
+			g_PadConfig.CopyConfiguration(dsi, ssi, true, true, IsEditingGameSettings(dsi));
 			USB::CopyConfiguration(dsi, ssi, true, true);
 			SetSettingsChanged(dsi);
 			ShowToast(std::string(), fmt::format("Input profile '{}' loaded.", title));
@@ -3707,7 +3709,7 @@ void FullscreenUI::DoSaveInputProfile(const std::string& name)
 
 	auto lock = Host::GetSettingsLock();
 	SettingsInterface* ssi = GetEditingSettingsInterface();
-	PAD::CopyConfiguration(&dsi, *ssi, true, true, IsEditingGameSettings(ssi));
+	g_PadConfig.CopyConfiguration(&dsi, *ssi, true, true, IsEditingGameSettings(ssi));
 	USB::CopyConfiguration(&dsi, *ssi, true, true);
 	if (dsi.Save())
 		ShowToast(std::string(), fmt::format("Input profile '{}' saved.", name));
@@ -3717,7 +3719,7 @@ void FullscreenUI::DoSaveInputProfile(const std::string& name)
 
 void FullscreenUI::DoSaveInputProfile()
 {
-	std::vector<std::string> profiles(PAD::GetInputProfileNames());
+	std::vector<std::string> profiles(g_PadConfig.GetInputProfileNames());
 
 	ImGuiFullscreen::ChoiceDialogOptions coptions;
 	coptions.reserve(profiles.size() + 1);
@@ -3832,8 +3834,8 @@ void FullscreenUI::DrawControllerSettingsPage()
 
 	// we reorder things a little to make it look less silly for mtap
 	static constexpr const std::array<char, 4> mtap_slot_names = {{'A', 'B', 'C', 'D'}};
-	static constexpr const std::array<u32, PAD::NUM_CONTROLLER_PORTS> mtap_port_order = {{0, 2, 3, 4, 1, 5, 6, 7}};
-	static constexpr const std::array<const char*, PAD::NUM_CONTROLLER_PORTS> sections = {
+	static constexpr const std::array<u32, Pad::NUM_CONTROLLER_PORTS> mtap_port_order = {{0, 2, 3, 4, 1, 5, 6, 7}};
+	static constexpr const std::array<const char*, Pad::NUM_CONTROLLER_PORTS> sections = {
 		{"Pad1", "Pad2", "Pad3", "Pad4", "Pad5", "Pad6", "Pad7", "Pad8"}};
 
 	// create the ports
@@ -3851,11 +3853,11 @@ void FullscreenUI::DrawControllerSettingsPage()
 				.c_str());
 
 		const char* section = sections[global_slot];
-		const std::string type(bsi->GetStringValue(section, "Type", PAD::GetDefaultPadType(global_slot)));
-		const PAD::ControllerInfo* ci = PAD::GetControllerInfo(type);
+		const std::string type(bsi->GetStringValue(section, "Type", g_PadConfig.GetDefaultPadType(global_slot)));
+		const PadConfig::ControllerInfo* ci = g_PadConfig.GetControllerInfo(type);
 		if (MenuButton(ICON_FA_GAMEPAD " Controller Type", ci ? ci->display_name : "Unknown"))
 		{
-			const std::vector<std::pair<const char*, const char*>> raw_options = PAD::GetControllerTypeNames();
+			const std::vector<std::pair<const char*, const char*>> raw_options = g_PadConfig.GetControllerTypeNames();
 			ImGuiFullscreen::ChoiceDialogOptions options;
 			options.reserve(raw_options.size());
 			for (auto& it : raw_options)
@@ -3896,9 +3898,9 @@ void FullscreenUI::DrawControllerSettingsPage()
 						 fmt::format(ICON_FA_MICROCHIP " Controller Port {} Macros", mtap_port + 1))
 						.c_str());
 
-		static bool macro_button_expanded[PAD::NUM_CONTROLLER_PORTS][PAD::NUM_MACRO_BUTTONS_PER_CONTROLLER] = {};
+		static bool macro_button_expanded[Pad::NUM_CONTROLLER_PORTS][PadMacros::NUM_MACRO_BUTTONS_PER_CONTROLLER] = {};
 
-		for (u32 macro_index = 0; macro_index < PAD::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
+		for (u32 macro_index = 0; macro_index < PadMacros::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
 		{
 			bool& expanded = macro_button_expanded[global_slot][macro_index];
 			expanded ^= MenuHeadingButton(fmt::format(ICON_FA_MICROCHIP " Macro Button {}", macro_index + 1).c_str(),

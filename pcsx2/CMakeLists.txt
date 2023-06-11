@@ -120,14 +120,10 @@ set(pcsx2Sources
 	PINE.cpp
 	Mdec.cpp
 	Memory.cpp
-	MemoryCardFile.cpp
-	MemoryCardFolder.cpp
-	MemoryCardProtocol.cpp
 	MMI.cpp
 	MTGS.cpp
 	MTVU.cpp
 	MultipartFileReader.cpp
-	MultitapProtocol.cpp
 	Patch.cpp
 	Pcsx2Config.cpp
 	PerformanceMetrics.cpp
@@ -144,7 +140,13 @@ set(pcsx2Sources
 	Sif0.cpp
 	Sif1.cpp
 	sif2.cpp
-	Sio.cpp
+	SIO/Sio.cpp
+	SIO/Sio2.cpp
+	SIO/Sio0.cpp
+	SIO/Multitap/MultitapProtocol.cpp
+	SIO/Memcard/MemoryCardFile.cpp
+	SIO/Memcard/MemoryCardFolder.cpp
+	SIO/Memcard/MemoryCardProtocol.cpp
 	SourceLog.cpp
 	SPR.cpp
 	StateWrapper.cpp
@@ -205,11 +207,7 @@ set(pcsx2Headers
 	MTGS.h
 	MTVU.h
 	Memory.h
-	MemoryCardFile.h
-	MemoryCardFolder.h
-	MemoryCardProtocol.h
 	MemoryTypes.h
-	MultitapProtocol.h
 	Patch.h
 	PCSX2Base.h
 	PerformanceMetrics.h
@@ -222,7 +220,14 @@ set(pcsx2Headers
 	Sifcmd.h
 	Sif.h
 	SingleRegisterTypes.h
-	Sio.h
+	SIO/Sio.h
+	SIO/Sio2.h
+	SIO/Sio0.h
+	SIO/SioTypes.h
+	SIO/Multitap/MultitapProtocol.h
+	SIO/Memcard/MemoryCardFile.h
+	SIO/Memcard/MemoryCardFolder.h
+	SIO/Memcard/MemoryCardProtocol.h
 	SPR.h
 	StateWrapper.h
 	SysForwardDefs.h
@@ -477,15 +482,25 @@ endif()
 
 # Host PAD
 set(pcsx2PADSources
-	PAD/Host/KeyStatus.cpp
-	PAD/Host/PAD.cpp
-	PAD/Host/StateManagement.cpp
+	SIO/Pad/PadBase.cpp
+	SIO/Pad/PadConfig.cpp
+	SIO/Pad/PadDualshock2.cpp
+	SIO/Pad/PadGuitar.cpp
+	SIO/Pad/PadMacros.cpp
+	SIO/Pad/PadManager.cpp
+	SIO/Pad/PadNotConnected.cpp
 )
 set(pcsx2PADHeaders
-	PAD/Host/Global.h
-	PAD/Host/KeyStatus.h
-	PAD/Host/PAD.h
-	PAD/Host/StateManagement.h
+	SIO/Pad/PadBase.h
+	SIO/Pad/PadConfig.h
+	SIO/Pad/PadDualshock2.h
+	SIO/Pad/PadDualshock2Types.h
+	SIO/Pad/PadGuitar.h
+	SIO/Pad/PadGuitarTypes.h
+	SIO/Pad/PadMacros.h
+	SIO/Pad/PadManager.h
+	SIO/Pad/PadNotConnected.h
+	SIO/Pad/PadTypes.h
 )
 
 # GS sources

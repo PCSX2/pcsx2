@@ -306,6 +306,9 @@
     <QtUi Include="Settings\ControllerBindingWidget_DualShock2.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="Settings\ControllerBindingWidget_Guitar.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="Settings\ControllerBindingWidget.ui">
       <FileType>Document</FileType>
     </QtUi>

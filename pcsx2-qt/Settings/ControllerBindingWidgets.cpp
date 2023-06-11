@@ -26,7 +26,7 @@
 #include "common/StringUtil.h"
 
 #include "pcsx2/Host.h"
-#include "pcsx2/PAD/Host/PAD.h"
+#include "pcsx2/SIO/Pad/PadConfig.h"
 
 #include "Settings/ControllerBindingWidgets.h"
 #include "Settings/ControllerSettingsDialog.h"
@@ -52,7 +52,7 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
 	onTypeChanged();
 
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileString(
-		m_dialog->getProfileSettingsInterface(), m_ui.controllerType, m_config_section, "Type", PAD::GetDefaultPadType(port));
+		m_dialog->getProfileSettingsInterface(), m_ui.controllerType, m_config_section, "Type", g_PadConfig.GetDefaultPadType(port));
 
 	connect(m_ui.controllerType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ControllerBindingWidget::onTypeChanged);
 	connect(m_ui.bindings, &QPushButton::clicked, this, &ControllerBindingWidget::onBindingsClicked);
@@ -71,14 +71,14 @@ QIcon ControllerBindingWidget::getIcon() const
 
 void ControllerBindingWidget::populateControllerTypes()
 {
-	for (const auto& [name, display_name] : PAD::GetControllerTypeNames())
+	for (const auto& [name, display_name] : g_PadConfig.GetControllerTypeNames())
 		m_ui.controllerType->addItem(qApp->translate("Pad", display_name), QString::fromStdString(name));
 }
 
 void ControllerBindingWidget::onTypeChanged()
 {
 	const bool is_initializing = (m_ui.stackedWidget->count() == 0);
-	m_controller_type = m_dialog->getStringValue(m_config_section.c_str(), "Type", PAD::GetDefaultPadType(m_port_number));
+	m_controller_type = m_dialog->getStringValue(m_config_section.c_str(), "Type", g_PadConfig.GetDefaultPadType(m_port_number));
 
 	if (m_bindings_widget)
 	{
@@ -99,16 +99,24 @@ void ControllerBindingWidget::onTypeChanged()
 		m_macros_widget = nullptr;
 	}
 
-	const PAD::ControllerInfo* cinfo = PAD::GetControllerInfo(m_controller_type);
+	const PadConfig::ControllerInfo* cinfo = g_PadConfig.GetControllerInfo(m_controller_type);
 	const bool has_settings = (cinfo && cinfo->num_settings > 0);
 	const bool has_macros = (cinfo && cinfo->num_bindings > 0);
 	m_ui.settings->setEnabled(has_settings);
 	m_ui.macros->setEnabled(has_macros);
 
 	if (m_controller_type == "DualShock2")
+	{
 		m_bindings_widget = ControllerBindingWidget_DualShock2::createInstance(this);
+	}
+	else if (m_controller_type == "Guitar")
+	{
+		m_bindings_widget = ControllerBindingWidget_Guitar::createInstance(this);
+	}
 	else
+	{
 		m_bindings_widget = new ControllerBindingWidget_Base(this);
+	}
 
 	m_ui.stackedWidget->addWidget(m_bindings_widget);
 	m_ui.stackedWidget->setCurrentWidget(m_bindings_widget);
@@ -210,13 +218,13 @@ void ControllerBindingWidget::onClearBindingsClicked()
 	{
 		{
 			auto lock = Host::GetSettingsLock();
-			PAD::ClearPortBindings(*Host::Internal::GetBaseSettingsLayer(), m_port_number);
+			g_PadConfig.ClearPortBindings(*Host::Internal::GetBaseSettingsLayer(), m_port_number);
 		}
 		Host::CommitBaseSettingChanges();
 	}
 	else
 	{
-		PAD::ClearPortBindings(*m_dialog->getProfileSettingsInterface(), m_port_number);
+		g_PadConfig.ClearPortBindings(*m_dialog->getProfileSettingsInterface(), m_port_number);
 		m_dialog->getProfileSettingsInterface()->Save();
 	}
 
@@ -240,14 +248,14 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
 	{
 		{
 			auto lock = Host::GetSettingsLock();
-			result = PAD::MapController(*Host::Internal::GetBaseSettingsLayer(), m_port_number, mapping);
+			result = g_PadConfig.MapController(*Host::Internal::GetBaseSettingsLayer(), m_port_number, mapping);
 		}
 		if (result)
 			Host::CommitBaseSettingChanges();
 	}
 	else
 	{
-		result = PAD::MapController(*m_dialog->getProfileSettingsInterface(), m_port_number, mapping);
+		result = g_PadConfig.MapController(*m_dialog->getProfileSettingsInterface(), m_port_number, mapping);
 		if (result)
 		{
 			m_dialog->getProfileSettingsInterface()->Save();
@@ -312,7 +320,7 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
 
 	ControllerSettingsDialog* dialog = m_bwidget->getDialog();
 	const std::string& section = m_bwidget->getConfigSection();
-	const PAD::ControllerInfo* cinfo = PAD::GetControllerInfo(m_bwidget->getControllerType());
+	const PadConfig::ControllerInfo* cinfo = g_PadConfig.GetControllerInfo(m_bwidget->getControllerType());
 	if (!cinfo)
 	{
 		// Shouldn't ever happen.
@@ -423,7 +431,7 @@ void ControllerMacroEditWidget::updateFrequencyText()
 void ControllerMacroEditWidget::updateBinds()
 {
 	ControllerSettingsDialog* dialog = m_bwidget->getDialog();
-	const PAD::ControllerInfo* cinfo = PAD::GetControllerInfo(m_bwidget->getControllerType());
+	const PadConfig::ControllerInfo* cinfo = g_PadConfig.GetControllerInfo(m_bwidget->getControllerType());
 	if (!cinfo)
 		return;
 
@@ -793,7 +801,7 @@ QIcon ControllerBindingWidget_Base::getIcon() const
 
 void ControllerBindingWidget_Base::initBindingWidgets()
 {
-	const PAD::ControllerInfo* cinfo = PAD::GetControllerInfo(getControllerType());
+	const PadConfig::ControllerInfo* cinfo = g_PadConfig.GetControllerInfo(getControllerType());
 	if (!cinfo)
 		return;
 
@@ -820,7 +828,7 @@ void ControllerBindingWidget_Base::initBindingWidgets()
 
 	switch (cinfo->vibration_caps)
 	{
-		case PAD::VibrationCapabilities::LargeSmallMotors:
+		case Pad::VibrationCapabilities::LargeSmallMotors:
 		{
 			InputVibrationBindingWidget* widget = findChild<InputVibrationBindingWidget*>(QStringLiteral("LargeMotor"));
 			if (widget)
@@ -832,7 +840,7 @@ void ControllerBindingWidget_Base::initBindingWidgets()
 		}
 		break;
 
-		case PAD::VibrationCapabilities::SingleMotor:
+		case Pad::VibrationCapabilities::SingleMotor:
 		{
 			InputVibrationBindingWidget* widget = findChild<InputVibrationBindingWidget*>(QStringLiteral("Motor"));
 			if (widget)
@@ -840,7 +848,7 @@ void ControllerBindingWidget_Base::initBindingWidgets()
 		}
 		break;
 
-		case PAD::VibrationCapabilities::NoVibration:
+		case Pad::VibrationCapabilities::NoVibration:
 		default:
 			break;
 	}
@@ -865,6 +873,27 @@ QIcon ControllerBindingWidget_DualShock2::getIcon() const
 ControllerBindingWidget_Base* ControllerBindingWidget_DualShock2::createInstance(ControllerBindingWidget* parent)
 {
 	return new ControllerBindingWidget_DualShock2(parent);
+}
+
+ControllerBindingWidget_Guitar::ControllerBindingWidget_Guitar(ControllerBindingWidget* parent)
+	: ControllerBindingWidget_Base(parent)
+{
+	m_ui.setupUi(this);
+	initBindingWidgets();
+}
+
+ControllerBindingWidget_Guitar::~ControllerBindingWidget_Guitar()
+{
+}
+
+QIcon ControllerBindingWidget_Guitar::getIcon() const
+{
+	return QIcon::fromTheme("guitar-line");
+}
+
+ControllerBindingWidget_Base* ControllerBindingWidget_Guitar::createInstance(ControllerBindingWidget* parent)
+{
+	return new ControllerBindingWidget_Guitar(parent);
 }
 
 //////////////////////////////////////////////////////////////////////////

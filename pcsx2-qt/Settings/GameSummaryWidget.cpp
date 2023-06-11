@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
+#include "pcsx2/SIO/Pad/PadConfig.h"
 #include "GameSummaryWidget.h"
 #include "SettingsDialog.h"
 #include "MainWindow.h"
@@ -25,7 +26,6 @@
 #include "pcsx2/CDVD/IsoHasher.h"
 #include "pcsx2/GameDatabase.h"
 #include "pcsx2/GameList.h"
-#include "pcsx2/PAD/Host/PAD.h"
 
 #include "common/Error.h"
 #include "common/MD5Digest.h"
@@ -69,7 +69,7 @@ GameSummaryWidget::~GameSummaryWidget() = default;
 
 void GameSummaryWidget::populateInputProfiles()
 {
-	for (const std::string& name : PAD::GetInputProfileNames())
+	for (const std::string& name : g_PadConfig.GetInputProfileNames())
 		m_ui.inputProfile->addItem(QString::fromStdString(name));
 }
 

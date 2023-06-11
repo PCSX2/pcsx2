@@ -531,6 +531,9 @@
     <QtUi Include="Settings\ControllerBindingWidget_DualShock2.ui">
       <Filter>Settings</Filter>
     </QtUi>
+    <QtUi Include="Settings\ControllerBindingWidget_Guitar.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
     <QtUi Include="Settings\ControllerBindingWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>

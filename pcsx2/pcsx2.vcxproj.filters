@@ -172,9 +172,6 @@
     <Filter Include="System\Ps2\USB">
       <UniqueIdentifier>{df9de75c-2272-4f73-b2a0-4f9f492ba1e9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="System\Ps2\PAD">
-      <UniqueIdentifier>{e1cbcaf6-9f65-4f14-9e89-27dd0f10e047}</UniqueIdentifier>
-    </Filter>
     <Filter Include="System\Ps2\GS\Shaders">
       <UniqueIdentifier>{38f3b97b-eac6-4085-b6b0-567ec5081242}</UniqueIdentifier>
     </Filter>
@@ -267,6 +264,18 @@
     </Filter>
     <Filter Include="Misc\ImGui">
       <UniqueIdentifier>{8a23ff29-0a43-4d5b-8c6c-a7722871058a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\SIO">
+      <UniqueIdentifier>{2fa4b100-51e1-4315-85b2-402a13136f8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\SIO\Multitap">
+      <UniqueIdentifier>{9cd399c0-6c75-4872-a785-83bcebd4bd0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\SIO\Memcard">
+      <UniqueIdentifier>{d37c74a9-5267-4eed-8356-86720df5beed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\SIO\PAD">
+      <UniqueIdentifier>{2ef3ebf7-d2a3-4b33-8059-a09b82c085ed}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -612,9 +621,6 @@
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
     <ClCompile Include="R3000AOpcodeTables.cpp">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClCompile>
-    <ClCompile Include="Sio.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
     <ClCompile Include="x86\iR3000A.cpp">
@@ -1130,12 +1136,6 @@
     <ClCompile Include="GS\Renderers\DX11\D3D.cpp">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClCompile>
-    <ClCompile Include="MemoryCardFile.cpp">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClCompile>
-    <ClCompile Include="MemoryCardFolder.cpp">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClCompile>
     <ClCompile Include="SPU2\SndOut_Cubeb.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
@@ -1147,15 +1147,6 @@
     </ClCompile>
     <ClCompile Include="VMManager.cpp">
       <Filter>System</Filter>
-    </ClCompile>
-    <ClCompile Include="PAD\Host\KeyStatus.cpp">
-      <Filter>System\Ps2\PAD</Filter>
-    </ClCompile>
-    <ClCompile Include="PAD\Host\PAD.cpp">
-      <Filter>System\Ps2\PAD</Filter>
-    </ClCompile>
-    <ClCompile Include="PAD\Host\StateManagement.cpp">
-      <Filter>System\Ps2\PAD</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\HW\GSTextureReplacements.cpp">
       <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
@@ -1186,12 +1177,6 @@
     </ClCompile>
     <ClCompile Include="Recording\Utilities\InputRecordingLogger.cpp">
       <Filter>Tools\Input Recording\Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="MemoryCardProtocol.cpp">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClCompile>
-    <ClCompile Include="MultitapProtocol.cpp">
-      <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
     <ClCompile Include="USB\USB.cpp">
       <Filter>System\Ps2\USB</Filter>
@@ -1412,6 +1397,48 @@
     <ClCompile Include="CDVD\IsoReader.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
+    <ClCompile Include="SIO\Multitap\MultitapProtocol.cpp">
+      <Filter>System\Ps2\Iop\SIO\Multitap</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Memcard\MemoryCardFile.cpp">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Memcard\MemoryCardFolder.cpp">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Memcard\MemoryCardProtocol.cpp">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Pad\PadBase.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Pad\PadDualshock2.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Pad\PadGuitar.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Pad\PadManager.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Pad\PadNotConnected.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Sio.cpp">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Sio0.cpp">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Sio2.cpp">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Pad\PadMacros.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Pad\PadConfig.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -1580,9 +1607,6 @@
       <Filter>System\Ps2\Iop</Filter>
     </ClInclude>
     <ClInclude Include="R3000A.h">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClInclude>
-    <ClInclude Include="Sio.h">
       <Filter>System\Ps2\Iop</Filter>
     </ClInclude>
     <ClInclude Include="x86\iR3000A.h">
@@ -2053,12 +2077,6 @@
     <ClInclude Include="GS\Renderers\DX11\D3D.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClInclude>
-    <ClInclude Include="MemoryCardFolder.h">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClInclude>
-    <ClInclude Include="MemoryCardFile.h">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClInclude>
     <ClInclude Include="PerformanceMetrics.h">
       <Filter>System\Include</Filter>
     </ClInclude>
@@ -2071,18 +2089,6 @@
     <ClInclude Include="GS.h" />
     <ClInclude Include="VMManager.h">
       <Filter>System</Filter>
-    </ClInclude>
-    <ClInclude Include="PAD\Host\KeyStatus.h">
-      <Filter>System\Ps2\PAD</Filter>
-    </ClInclude>
-    <ClInclude Include="PAD\Host\PAD.h">
-      <Filter>System\Ps2\PAD</Filter>
-    </ClInclude>
-    <ClInclude Include="PAD\Host\StateManagement.h">
-      <Filter>System\Ps2\PAD</Filter>
-    </ClInclude>
-    <ClInclude Include="PAD\Host\Global.h">
-      <Filter>System\Ps2\PAD</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\HW\GSTextureReplacements.h">
       <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
@@ -2113,15 +2119,6 @@
     </ClInclude>
     <ClInclude Include="ShaderCacheVersion.h">
       <Filter>System\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="SioTypes.h">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClInclude>
-    <ClInclude Include="MemoryCardProtocol.h">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClInclude>
-    <ClInclude Include="MultitapProtocol.h">
-      <Filter>System\Ps2\Iop</Filter>
     </ClInclude>
     <ClInclude Include="USB\deviceproxy.h">
       <Filter>System\Ps2\USB</Filter>
@@ -2335,6 +2332,60 @@
     </ClInclude>
     <ClInclude Include="CDVD\IsoReader.h">
       <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Multitap\MultitapProtocol.h">
+      <Filter>System\Ps2\Iop\SIO\Multitap</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Memcard\MemoryCardFile.h">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Memcard\MemoryCardFolder.h">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Memcard\MemoryCardProtocol.h">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadDualshock2Types.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadGuitarTypes.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadBase.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadDualshock2.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadGuitar.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadManager.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadNotConnected.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadTypes.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Sio.h">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Sio0.h">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Sio2.h">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\SioTypes.h">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadMacros.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadConfig.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

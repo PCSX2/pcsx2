@@ -30,9 +30,8 @@
 #include "PerformanceMetrics.h"
 #include "Patch.h"
 #include "ps2/HwInternal.h"
-#include "Sio.h"
+#include "SIO/Sio.h"
 #include "SPU2/spu2.h"
-#include "PAD/Host/PAD.h"
 #include "Recording/InputRecording.h"
 #include "VMManager.h"
 #include "VUmicro.h"
@@ -608,7 +607,6 @@ static __fi void VSyncStart(u32 sCycle)
 {
 	// Update vibration at the end of a frame.
 	VSyncUpdateCore();
-	PAD::Update();
 
 	frameLimit(); // limit FPS
 	gsPostVsyncStart(); // MUST be after framelimit; doing so before causes funk with frame times!
