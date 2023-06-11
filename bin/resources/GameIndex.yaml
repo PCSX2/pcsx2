@@ -30620,10 +30620,8 @@ SLPM-65500:
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-65501:
-  name: "Onimusha [Mega Hits!]"
+  name: "Frogger Rescue"
   region: "NTSC-J"
-  gsHWFixes:
-    texturePreloading: 1 # Performs much better with partial preload.
 SLPM-65502:
   name: "GunGrave [Red Best Collection]"
   region: "NTSC-J"
