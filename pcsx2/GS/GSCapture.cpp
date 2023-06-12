@@ -68,6 +68,7 @@ extern "C" {
 	X(avcodec_send_frame) \
 	X(avcodec_receive_packet) \
 	X(avcodec_parameters_from_context) \
+	X(avcodec_get_hw_config) \
 	X(av_codec_iterate) \
 	X(av_packet_alloc) \
 	X(av_packet_free) \
@@ -100,7 +101,15 @@ extern "C" {
 	X(av_compare_ts) \
 	X(av_get_bytes_per_sample) \
 	X(av_sample_fmt_is_planar) \
-	X(av_d2q)
+	X(av_d2q) \
+	X(av_hwdevice_get_type_name) \
+	X(av_hwdevice_ctx_create) \
+	X(av_hwframe_ctx_alloc) \
+	X(av_hwframe_ctx_init) \
+	X(av_hwframe_transfer_data) \
+	X(av_hwframe_get_buffer) \
+	X(av_buffer_ref) \
+	X(av_buffer_unref)
 
 #define VISIT_SWSCALE_IMPORTS(X) \
 	X(sws_getCachedContext) \
@@ -139,6 +148,7 @@ namespace GSCapture
 	static bool LoadFFmpeg(bool report_errors);
 	static void UnloadFFmpeg();
 	static std::string GetCaptureTypeForMessage(bool capture_video, bool capture_audio);
+	static bool IsUsingHardwareVideoEncoding();
 	static void ProcessFramePendingMap(std::unique_lock<std::mutex>& lock);
 	static void ProcessAllInFlightFrames(std::unique_lock<std::mutex>& lock);
 	static void EncoderThreadEntryPoint();
@@ -161,9 +171,12 @@ namespace GSCapture
 	static AVCodecContext* s_video_codec_context = nullptr;
 	static AVStream* s_video_stream = nullptr;
 	static AVFrame* s_converted_video_frame = nullptr; // YUV
+	static AVFrame* s_hw_video_frame = nullptr;
 	static AVPacket* s_video_packet = nullptr;
 	static SwsContext* s_sws_context = nullptr;
 	static AVDictionary* s_video_codec_arguments = nullptr;
+	static AVBufferRef* s_video_hw_context = nullptr;
+	static AVBufferRef* s_video_hw_frames = nullptr;
 	static s64 s_next_video_pts = 0;
 
 	static AVCodecContext* s_audio_codec_context = nullptr;
@@ -341,6 +354,11 @@ std::string GSCapture::GetCaptureTypeForMessage(bool capture_video, bool capture
 	return capture_video ? (capture_audio ? "capturing audio and video" : "capturing video") : "capturing audio";
 }
 
+bool GSCapture::IsUsingHardwareVideoEncoding()
+{
+	return (s_video_hw_context != nullptr);
+}
+
 bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float aspect, std::string filename)
 {
 	const bool capture_video = GSConfig.EnableVideoCapture;
@@ -416,21 +434,83 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 			static_cast<s64>(static_cast<double>(fps) * 10000.0), std::numeric_limits<s32>::max());
 
 		// Default to YUV 4:2:0 if the codec doesn't specify a pixel format.
-		if (!vcodec->pix_fmts)
-		{
-			s_video_codec_context->pix_fmt = AV_PIX_FMT_YUV420P;
-		}
-		else
+		AVPixelFormat sw_pix_fmt = AV_PIX_FMT_YUV420P;
+		if (vcodec->pix_fmts)
 		{
 			// Prefer YUV420 given the choice, but otherwise fall back to whatever it supports.
-			s_video_codec_context->pix_fmt = vcodec->pix_fmts[0];
+			sw_pix_fmt = vcodec->pix_fmts[0];
 			for (u32 i = 0; vcodec->pix_fmts[i] != AV_PIX_FMT_NONE; i++)
 			{
 				if (vcodec->pix_fmts[i] == AV_PIX_FMT_YUV420P)
 				{
-					s_video_codec_context->pix_fmt = vcodec->pix_fmts[i];
+					sw_pix_fmt = vcodec->pix_fmts[i];
 					break;
 				}
+			}
+		}
+		s_video_codec_context->pix_fmt = sw_pix_fmt;
+
+		// Can we use hardware encoding?
+		const AVCodecHWConfig* hwconfig = wrap_avcodec_get_hw_config(vcodec, 0);
+		if (hwconfig && hwconfig->pix_fmt != AV_PIX_FMT_NONE && hwconfig->pix_fmt != sw_pix_fmt)
+		{
+			// First index isn't our preferred pixel format, try the others, but fall back if one doesn't exist.
+			int index = 1;
+			while (const AVCodecHWConfig* next_hwconfig = wrap_avcodec_get_hw_config(vcodec, index++))
+			{
+				if (next_hwconfig->pix_fmt == sw_pix_fmt)
+				{
+					hwconfig = next_hwconfig;
+					break;
+				}
+			}
+		}
+
+		if (hwconfig)
+		{
+			Console.WriteLn(Color_StrongGreen, fmt::format("Trying to use {} hardware device for video encoding.",
+												   wrap_av_hwdevice_get_type_name(hwconfig->device_type)));
+			res = wrap_av_hwdevice_ctx_create(&s_video_hw_context, hwconfig->device_type, nullptr, nullptr, 0);
+			if (res < 0)
+			{
+				LogAVError(res, "av_hwdevice_ctx_create() failed: ");
+			}
+			else
+			{
+				s_video_hw_frames = wrap_av_hwframe_ctx_alloc(s_video_hw_context);
+				if (!s_video_hw_frames)
+				{
+					Console.Error("s_video_hw_frames() failed");
+					wrap_av_buffer_unref(&s_video_hw_context);
+				}
+				else
+				{
+					AVHWFramesContext* frames_ctx = reinterpret_cast<AVHWFramesContext*>(s_video_hw_frames->data);
+					frames_ctx->format = (hwconfig->pix_fmt != AV_PIX_FMT_NONE) ? hwconfig->pix_fmt : sw_pix_fmt;
+					frames_ctx->sw_format = sw_pix_fmt;
+					frames_ctx->width = s_video_codec_context->width;
+					frames_ctx->height = s_video_codec_context->height;
+					res = wrap_av_hwframe_ctx_init(s_video_hw_frames);
+					if (res < 0)
+					{
+						LogAVError(res, "av_hwframe_ctx_init() failed: ");
+						wrap_av_buffer_unref(&s_video_hw_frames);
+						wrap_av_buffer_unref(&s_video_hw_context);
+					}
+					else
+					{
+						s_video_codec_context->hw_frames_ctx = wrap_av_buffer_ref(s_video_hw_frames);
+						if (hwconfig->pix_fmt != AV_PIX_FMT_NONE)
+							s_video_codec_context->pix_fmt = hwconfig->pix_fmt;
+					}
+				}
+			}
+
+			if (!s_video_hw_context)
+			{
+				Host::AddIconOSDMessage("GSCaptureHWError", ICON_FA_CAMERA,
+					"Failed to create hardware encoder, using software encoding.", Host::OSD_ERROR_DURATION);
+				hwconfig = nullptr;
 			}
 		}
 
@@ -457,14 +537,15 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 		}
 
 		s_converted_video_frame = wrap_av_frame_alloc();
-		if (!s_converted_video_frame)
+		s_hw_video_frame = IsUsingHardwareVideoEncoding() ? wrap_av_frame_alloc() : nullptr;
+		if (!s_converted_video_frame || (IsUsingHardwareVideoEncoding() && !s_hw_video_frame))
 		{
 			LogAVError(AVERROR(ENOMEM), "Failed to allocate frame: ");
 			InternalEndCapture(lock);
 			return false;
 		}
 
-		s_converted_video_frame->format = s_video_codec_context->pix_fmt;
+		s_converted_video_frame->format = sw_pix_fmt;
 		s_converted_video_frame->width = s_video_codec_context->width;
 		s_converted_video_frame->height = s_video_codec_context->height;
 		res = wrap_av_frame_get_buffer(s_converted_video_frame, 0);
@@ -473,6 +554,20 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 			LogAVError(res, "av_frame_get_buffer() for converted frame failed: ");
 			InternalEndCapture(lock);
 			return false;
+		}
+
+		if (IsUsingHardwareVideoEncoding())
+		{
+			s_hw_video_frame->format = s_video_codec_context->pix_fmt;
+			s_hw_video_frame->width = s_video_codec_context->width;
+			s_hw_video_frame->height = s_video_codec_context->height;
+			res = wrap_av_hwframe_get_buffer(s_video_hw_frames, s_hw_video_frame, 0);
+			if (res < 0)
+			{
+				LogAVError(res, "av_frame_get_buffer() for HW frame failed: ");
+				InternalEndCapture(lock);
+				return false;
+			}
 		}
 
 		s_video_stream = wrap_avformat_new_stream(s_format_context, vcodec);
@@ -852,7 +947,7 @@ bool GSCapture::SendFrame(const PendingFrame& pf)
 	wrap_av_frame_make_writable(s_converted_video_frame);
 
 	s_sws_context = wrap_sws_getCachedContext(s_sws_context, source_width, source_height, source_format, s_converted_video_frame->width,
-		s_converted_video_frame->height, s_video_codec_context->pix_fmt, SWS_BICUBIC, nullptr, nullptr, nullptr);
+		s_converted_video_frame->height, static_cast<AVPixelFormat>(s_converted_video_frame->format), SWS_BICUBIC, nullptr, nullptr, nullptr);
 	if (!s_sws_context)
 	{
 		Console.Error("sws_getCachedContext() failed");
@@ -862,9 +957,24 @@ bool GSCapture::SendFrame(const PendingFrame& pf)
 	wrap_sws_scale(s_sws_context, reinterpret_cast<const u8**>(&source_ptr), &source_pitch, 0, source_height, s_converted_video_frame->data,
 		s_converted_video_frame->linesize);
 
-	s_converted_video_frame->pts = pf.pts;
+	AVFrame* frame_to_send = s_converted_video_frame;
+	if (IsUsingHardwareVideoEncoding())
+	{
+		// Need to transfer the frame to hardware.
+		const int res = wrap_av_hwframe_transfer_data(s_hw_video_frame, s_converted_video_frame, 0);
+		if (res < 0)
+		{
+			LogAVError(res, "av_hwframe_transfer_data() failed: ");
+			return false;
+		}
 
-	const int res = wrap_avcodec_send_frame(s_video_codec_context, s_converted_video_frame);
+		frame_to_send = s_hw_video_frame;
+	}
+
+	// Set the correct PTS before handing it off.
+	frame_to_send->pts = pf.pts;
+
+	const int res = wrap_avcodec_send_frame(s_video_codec_context, frame_to_send);
 	if (res < 0)
 	{
 		LogAVError(res, "avcodec_send_frame() failed: ");
@@ -1154,6 +1264,12 @@ void GSCapture::InternalEndCapture(std::unique_lock<std::mutex>& lock)
 		wrap_av_packet_free(&s_video_packet);
 	if (s_converted_video_frame)
 		wrap_av_frame_free(&s_converted_video_frame);
+	if (s_hw_video_frame)
+		wrap_av_frame_free(&s_hw_video_frame);
+	if (s_video_hw_frames)
+		wrap_av_buffer_unref(&s_video_hw_frames);
+	if (s_video_hw_context)
+		wrap_av_buffer_unref(&s_video_hw_context);
 	if (s_video_codec_context)
 		wrap_avcodec_free_context(&s_video_codec_context);
 	s_video_stream = nullptr;
