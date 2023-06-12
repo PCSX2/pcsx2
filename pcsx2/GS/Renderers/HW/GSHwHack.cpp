@@ -737,7 +737,7 @@ bool GSHwHack::OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds
 	{
 		const u32 FBP = r.m_cached_ctx.FRAME.Block();
 		const u32 FBW = r.m_cached_ctx.FRAME.FBW;
-		GL_INS("PointListPalette - m_r = <%d, %d => %d, %d>, n_vertices = %zu, FBP = 0x%x, FBW = %u", r.m_r.x, r.m_r.y, r.m_r.z, r.m_r.w, n_vertices, FBP, FBW);
+		GL_INS("PointListPalette - m_r = <%d, %d => %d, %d>, n_vertices = %u, FBP = 0x%x, FBW = %u", r.m_r.x, r.m_r.y, r.m_r.z, r.m_r.w, n_vertices, FBP, FBW);
 		const GSVertex* RESTRICT v = r.m_vertex.buff;
 		const int ox(r.m_context->XYOFFSET.OFX);
 		const int oy(r.m_context->XYOFFSET.OFY);
