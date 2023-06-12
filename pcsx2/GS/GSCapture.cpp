@@ -966,8 +966,27 @@ bool GSCapture::ProcessAudioPackets(s64 video_pts)
 		if (!s_swr_context)
 		{
 			// No, just copy frames out of staging buffer.
-			std::memcpy(s_converted_audio_frame->data[s_audio_frame_pos * AUDIO_CHANNELS],
-				&s_audio_buffer[s_audio_buffer_read_pos * AUDIO_CHANNELS], this_batch * sizeof(s16) * AUDIO_CHANNELS);
+			if (s_audio_frame_planar)
+			{
+				// This is slow. Hopefully doesn't happen in too many configurations.
+				for (u32 i = 0; i < AUDIO_CHANNELS; i++)
+				{
+					u8* output = s_converted_audio_frame->data[i] + s_audio_frame_pos * s_audio_frame_bps;
+					const u8* input = reinterpret_cast<u8*>(&s_audio_buffer[s_audio_buffer_read_pos * AUDIO_CHANNELS + i]);
+					for (u32 j = 0; j < this_batch; j++)
+					{
+						std::memcpy(output, input, sizeof(s16));
+						input += sizeof(s16) * AUDIO_CHANNELS;
+						output += s_audio_frame_bps;
+					}
+				}
+			}
+			else
+			{
+				// Direct copy - optimal.
+				std::memcpy(s_converted_audio_frame->data[0] + s_audio_frame_pos * s_audio_frame_bps,
+					&s_audio_buffer[s_audio_buffer_read_pos * AUDIO_CHANNELS], this_batch * sizeof(s16) * AUDIO_CHANNELS);
+			}
 		}
 		else
 		{
