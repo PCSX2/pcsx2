@@ -29706,11 +29706,6 @@ SLPM-65232:
   name: "Devil May Cry 2 [Dante Disc]"
   region: "NTSC-J"
   compat: 5
-  patches:
-    default:
-      content: |-
-        // 08995DEE
-        comment=- This disc has the same CRC as SLUS-20484, the NTSC-U disc.
 SLPM-65233:
   name: "Devil May Cry 2 [Lucia Disc]"
   region: "NTSC-J"
