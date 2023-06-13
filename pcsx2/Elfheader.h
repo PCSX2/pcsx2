@@ -122,24 +122,23 @@ class ElfObject
 {
 	private:
 		SafeArray<u8> data;
+		ELF_HEADER& header;
 		ELF_PHR* proghead = nullptr;
 		ELF_SHR* secthead = nullptr;
 		std::string filename;
+		bool isPSXElf;
 
-		void initElfHeaders(bool isPSXElf);
+		void initElfHeaders();
+		bool hasValidPSXHeader();
 		void readIso(IsoFile& file);
 		void readFile();
 		void checkElfSize(s64 elfsize);
 
 	public:
-		ELF_HEADER& header;
+		ElfObject(std::string srcfile, IsoFile& isofile, bool isPSXElf_);
+		ElfObject(std::string srcfile, u32 hdrsize, bool isPSXElf_);
 
-		// Destructor!
-		// C++ does all the cleanup automagically for us.
-		virtual ~ElfObject() = default;
-
-		ElfObject(std::string srcfile, IsoFile& isofile, bool isPSXElf);
-		ElfObject(std::string srcfile, u32 hdrsize, bool isPSXElf);
+		bool IsPSXElf() const { return isPSXElf; }
 
 		void loadProgramHeaders();
 		void loadSectionHeaders();
@@ -150,17 +149,8 @@ class ElfObject
 		bool hasHeaders();
 
 		std::pair<u32,u32> getTextRange();
+		u32 getEntryPoint();
 		u32 getCRC();
 };
 
 //-------------------
-extern void loadElfFile(const std::string& filename);
-extern int  GetPS2ElfName( std::string& dest );
-
-
-extern u32 ElfCRC;
-extern u32 ElfEntry;
-extern std::pair<u32,u32> ElfTextRange;
-extern std::string LastELF;
-extern bool isPSXElf;
-extern std::string ElfVersion;

@@ -79,9 +79,9 @@ static void HotkeyCycleSaveSlot(s32 delta)
 	else
 		s_current_save_slot = (s_current_save_slot % CYCLE_SAVE_STATE_SLOTS) + 1;
 
-	const u32 crc = VMManager::GetGameCRC();
-	const std::string serial(VMManager::GetGameSerial());
-	const std::string filename(VMManager::GetSaveStateFileName(serial.c_str(), crc, s_current_save_slot));
+	const u32 crc = VMManager::GetDiscCRC();
+	const std::string serial = VMManager::GetDiscSerial();
+	const std::string filename = VMManager::GetSaveStateFileName(serial.c_str(), crc, s_current_save_slot);
 	FILESYSTEM_STAT_DATA sd;
 	if (!filename.empty() && FileSystem::StatFile(filename.c_str(), &sd))
 	{
@@ -109,34 +109,21 @@ static void HotkeyCycleSaveSlot(s32 delta)
 
 static void HotkeyLoadStateSlot(s32 slot)
 {
-	const u32 crc = VMManager::GetGameCRC();
-	if (crc == 0)
-	{
-		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE, "Cannot load state from a slot without a game running.",
-			Host::OSD_INFO_DURATION);
-		return;
-	}
+	// Can reapply settings and thus binds, therefore must be deferred.
+	Host::RunOnCPUThread([slot]() {
+		if (!VMManager::HasSaveStateInSlot(VMManager::GetDiscSerial().c_str(), VMManager::GetDiscCRC(), slot))
+		{
+			Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE, fmt::format("No save state found in slot {}.", slot),
+				Host::OSD_INFO_DURATION);
+			return;
+		}
 
-	const std::string serial(VMManager::GetGameSerial());
-	if (!VMManager::HasSaveStateInSlot(serial.c_str(), crc, slot))
-	{
-		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE, fmt::format("No save state found in slot {}.", slot),
-			Host::OSD_INFO_DURATION);
-		return;
-	}
-
-	VMManager::LoadStateFromSlot(slot);
+		VMManager::LoadStateFromSlot(slot);
+	});
 }
 
 static void HotkeySaveStateSlot(s32 slot)
 {
-	if (VMManager::GetGameCRC() == 0)
-	{
-		Host::AddIconOSDMessage("SaveStateToSlot", ICON_FA_EXCLAMATION_TRIANGLE, "Cannot save state to a slot without a game running.",
-			Host::OSD_INFO_DURATION);
-		return;
-	}
-
 	VMManager::SaveStateToSlot(slot);
 }
 

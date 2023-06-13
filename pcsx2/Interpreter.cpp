@@ -513,30 +513,22 @@ static void intCancelInstruction()
 
 static void intExecute()
 {
-	enum ExecuteState {
-		RESET,
-		GAME_LOADING,
-		GAME_RUNNING
-	};
-	ExecuteState state = RESET;
-
 	// This will come back as zero the first time it runs, or on instruction cancel.
 	// It will come back as nonzero when we exit execution.
 	if (fastjmp_set(&intJmpBuf) != 0)
 		return;
 
-	// I hope this doesn't cause issues with the optimizer... infinite loop with a constant expression.
 	for (;;)
 	{
-		// The execution was splited in three parts so it is easier to
-		// resume it after a cancelled instruction.
-		switch (state) {
-		case RESET:
+		if (!VMManager::Internal::HasBootedELF())
+		{
+			// Avoid reloading every instruction.
+			u32 elf_entry_point = VMManager::Internal::GetCurrentELFEntryPoint();
+			u32 eeload_main = g_eeloadMain;
+
+			while (true)
 			{
-				do
-				{
-					execI();
-				} while (cpuRegs.pc != (g_eeloadMain ? g_eeloadMain : EELOAD_START));
+				execI();
 
 				if (cpuRegs.pc == EELOAD_START)
 				{
@@ -544,11 +536,13 @@ static void intExecute()
 					u32 mainjump = memRead32(EELOAD_START + 0x9c);
 					if (mainjump >> 26 == 3) // JAL
 						g_eeloadMain = ((EELOAD_START + 0xa0) & 0xf0000000U) | (mainjump << 2 & 0x0fffffffU);
+
+					eeload_main = g_eeloadMain;
 				}
 				else if (cpuRegs.pc == g_eeloadMain)
 				{
 					eeloadHook();
-					if (g_SkipBiosHack)
+					if (VMManager::Internal::IsFastBootInProgress())
 					{
 						// See comments on this code in iR5900-32.cpp's recRecompile()
 						u32 typeAexecjump = memRead32(EELOAD_START + 0x470);
@@ -562,39 +556,24 @@ static void intExecute()
 						else
 							Console.WriteLn("intExecute: Could not enable launch arguments for fast boot mode; unidentified BIOS version! Please report this to the PCSX2 developers.");
 					}
+
+					elf_entry_point = VMManager::Internal::GetCurrentELFEntryPoint();
 				}
 				else if (cpuRegs.pc == g_eeloadExec)
 				{
 					eeloadHook2();
 				}
-
-				if (!g_GameLoading)
-					break;
-
-				state = GAME_LOADING;
-				[[fallthrough]];
-			}
-
-		case GAME_LOADING:
-			{
-				if (ElfEntry != 0xFFFFFFFF)
+				else if (cpuRegs.pc == elf_entry_point)
 				{
-					do
-					{
-						execI();
-					} while (cpuRegs.pc != ElfEntry);
-					eeGameStarting();
+					VMManager::Internal::EntryPointCompilingOnCPUThread();
+					break;
 				}
-				state = GAME_RUNNING;
-				[[fallthrough]];
 			}
-
-		case GAME_RUNNING:
-			{
-				while (true)
-					execI();
-			}
-			break;
+		}
+		else
+		{
+			while (true)
+				execI();
 		}
 	}
 }

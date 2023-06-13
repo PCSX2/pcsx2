@@ -17,8 +17,11 @@
 
 #include "CDVDcommon.h"
 
+#include <memory>
 #include <string>
 #include <string_view>
+
+class ElfObject;
 
 #define btoi(b) ((b) / 16 * 10 + (b) % 16) /* BCD to u_char */
 #define itob(i) ((i) / 10 * 16 + (i) % 10) /* u_char to BCD */
@@ -74,6 +77,13 @@ struct cdvdRTC
 	u8 day;
 	u8 month;
 	u8 year;
+};
+
+enum class CDVDDiscType : u8
+{
+	Other,
+	PS1Disc,
+	PS2Disc
 };
 
 enum TrayStates
@@ -176,9 +186,11 @@ extern void cdvdNewDiskCB();
 extern u8 cdvdRead(u8 key);
 extern void cdvdWrite(u8 key, u8 rt);
 
-extern void cdvdReloadElfInfo(std::string elfoverride = std::string());
+extern void cdvdGetDiscInfo(std::string* out_serial, std::string* out_elf_path, std::string* out_version, u32* out_crc,
+	CDVDDiscType* out_disc_type);
 extern u32 cdvdGetElfCRC(const std::string& path);
+extern std::unique_ptr<ElfObject> cdvdLoadElf(std::string filename, bool isPSXElf);
+
 extern s32 cdvdCtrlTrayOpen();
 extern s32 cdvdCtrlTrayClose();
 
-extern std::string DiscSerial;

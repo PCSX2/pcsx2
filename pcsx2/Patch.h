@@ -96,8 +96,7 @@ namespace Patch
 	extern PatchInfoList GetPatchInfo(const std::string& serial, u32 crc, bool cheats, u32* num_unlabelled_patches);
 
 	/// Reloads cheats/patches. If verbose is set, the number of patches loaded will be shown in the OSD.
-	extern void ReloadPatches(std::string serial, u32 crc, bool force_reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed);
-	extern void ReloadPatches(bool force_reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed);
+	extern void ReloadPatches(const std::string& serial, u32 crc, bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed);
 
 	extern void UpdateActivePatches(bool reload_enabled_list, bool verbose, bool verbose_if_changed);
 	extern void ApplyPatchSettingOverrides();

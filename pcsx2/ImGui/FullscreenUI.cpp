@@ -200,7 +200,7 @@ namespace FullscreenUI
 	//////////////////////////////////////////////////////////////////////////
 	// Main
 	//////////////////////////////////////////////////////////////////////////
-	static void UpdateGameDetails(std::string path, std::string serial, std::string title, u32 crc);
+	static void UpdateGameDetails(std::string path, std::string serial, std::string title, u32 disc_crc, u32 crc);
 	static void ToggleTheme();
 	static void PauseForMenuOpen();
 	static void ClosePauseMenu();
@@ -229,9 +229,9 @@ namespace FullscreenUI
 	// local copies of the currently-running game
 	static std::string s_current_game_title;
 	static std::string s_current_game_subtitle;
-	static std::string s_current_game_serial;
-	static std::string s_current_game_path;
-	static u32 s_current_game_crc;
+	static std::string s_current_disc_serial;
+	static std::string s_current_disc_path;
+	static u32 s_current_disc_crc;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Resources
@@ -578,7 +578,8 @@ bool FullscreenUI::Initialize()
 
 	if (VMManager::HasValidVM())
 	{
-		UpdateGameDetails(VMManager::GetDiscPath(), VMManager::GetGameSerial(), VMManager::GetGameName(), VMManager::GetGameCRC());
+		UpdateGameDetails(VMManager::GetDiscPath(), VMManager::GetDiscSerial(), VMManager::GetTitle(),
+			VMManager::GetDiscCRC(), VMManager::GetCurrentCRC());
 	}
 	else
 	{
@@ -651,20 +652,21 @@ void FullscreenUI::OnVMDestroyed()
 	});
 }
 
-void FullscreenUI::GameChanged(std::string path, std::string serial, std::string title, u32 crc)
+void FullscreenUI::GameChanged(std::string path, std::string serial, std::string title, u32 disc_crc, u32 crc)
 {
 	if (!IsInitialized())
 		return;
 
-	GetMTGS().RunOnGSThread([path = std::move(path), serial = std::move(serial), title = std::move(title), crc]() {
-		if (!IsInitialized())
-			return;
+	GetMTGS().RunOnGSThread(
+		[path = std::move(path), serial = std::move(serial), title = std::move(title), disc_crc, crc]() {
+			if (!IsInitialized())
+				return;
 
-		UpdateGameDetails(std::move(path), std::move(serial), std::move(title), crc);
-	});
+			UpdateGameDetails(std::move(path), std::move(serial), std::move(title), disc_crc, crc);
+		});
 }
 
-void FullscreenUI::UpdateGameDetails(std::string path, std::string serial, std::string title, u32 crc)
+void FullscreenUI::UpdateGameDetails(std::string path, std::string serial, std::string title, u32 disc_crc, u32 crc)
 {
 	if (!serial.empty())
 		s_current_game_subtitle = fmt::format("{} / {:08X}", serial, crc);
@@ -672,9 +674,9 @@ void FullscreenUI::UpdateGameDetails(std::string path, std::string serial, std::
 		s_current_game_subtitle = {};
 
 	s_current_game_title = std::move(title);
-	s_current_game_serial = std::move(serial);
-	s_current_game_path = std::move(path);
-	s_current_game_crc = crc;
+	s_current_disc_serial = std::move(serial);
+	s_current_disc_path = std::move(path);
+	s_current_disc_crc = disc_crc;
 }
 
 void FullscreenUI::ToggleTheme()
@@ -744,9 +746,9 @@ void FullscreenUI::Shutdown(bool clear_state)
 		s_graphics_adapter_list_cache = {};
 		s_current_game_title = {};
 		s_current_game_subtitle = {};
-		s_current_game_serial = {};
-		s_current_game_path = {};
-		s_current_game_crc = 0;
+		s_current_disc_serial = {};
+		s_current_disc_path = {};
+		s_current_disc_crc = 0;
 
 		s_current_main_window = MainWindowType::None;
 		s_current_pause_submenu = PauseSubMenu::None;
@@ -1053,7 +1055,7 @@ void FullscreenUI::DoChangeDiscFromFile()
 	};
 
 	OpenFileSelector(ICON_FA_COMPACT_DISC " Select Disc Image", false, std::move(callback), GetDiscImageFilters(),
-		std::string(Path::GetDirectory(s_current_game_path)));
+		std::string(Path::GetDirectory(s_current_disc_path)));
 }
 
 void FullscreenUI::DoChangeDisc()
@@ -2333,13 +2335,13 @@ void FullscreenUI::SwitchToGameSettings(const std::string_view& serial, u32 crc)
 
 void FullscreenUI::SwitchToGameSettings()
 {
-	if (s_current_game_serial.empty() || s_current_game_crc == 0)
+	if (s_current_disc_serial.empty() || s_current_disc_crc == 0)
 		return;
 
 	auto lock = GameList::GetLock();
-	const GameList::Entry* entry = GameList::GetEntryForPath(s_current_game_path.c_str());
+	const GameList::Entry* entry = GameList::GetEntryForPath(s_current_disc_path.c_str());
 	if (!entry)
-		entry = GameList::GetEntryBySerialAndCRC(s_current_game_serial.c_str(), s_current_game_crc);
+		entry = GameList::GetEntryBySerialAndCRC(s_current_disc_serial.c_str(), s_current_disc_crc);
 
 	if (entry)
 		SwitchToGameSettings(entry);
@@ -4266,7 +4268,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 
 		const float image_width = has_rich_presence ? 60.0f : 50.0f;
 		const float image_height = has_rich_presence ? 90.0f : 75.0f;
-		const std::string_view path_string(Path::GetFileName(s_current_game_path));
+		const std::string_view path_string(Path::GetFileName(s_current_disc_path));
 		const ImVec2 title_size(
 			g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, s_current_game_title.c_str()));
 		const ImVec2 path_size(path_string.empty() ?
@@ -4345,9 +4347,9 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		const ImVec2 time_pos(display_size.x - LayoutScale(10.0f) - time_size.x, LayoutScale(10.0f));
 		DrawShadowedText(dl, g_large_font, time_pos, IM_COL32(255, 255, 255, 255), buf);
 
-		if (!s_current_game_serial.empty())
+		if (!s_current_disc_serial.empty())
 		{
-			const std::time_t cached_played_time = GameList::GetCachedPlayedTimeForSerial(s_current_game_serial);
+			const std::time_t cached_played_time = GameList::GetCachedPlayedTimeForSerial(s_current_disc_serial);
 			const std::time_t session_time = static_cast<std::time_t>(VMManager::GetSessionPlayedTime());
 			const std::string played_time_str(GameList::FormatTimespan(cached_played_time + session_time, true));
 			const std::string session_time_str(GameList::FormatTimespan(session_time, true));
@@ -4389,7 +4391,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			case PauseSubMenu::None:
 			{
 				// NOTE: Menu close must come first, because otherwise VM destruction options will race.
-				const bool can_load_or_save_state = s_current_game_crc != 0;
+				const bool can_load_or_save_state = s_current_disc_crc != 0;
 
 				if (ActiveButton(ICON_FA_PLAY " Resume Game", false) || WantsToCloseMenu())
 					ClosePauseMenu();
@@ -4614,7 +4616,7 @@ bool FullscreenUI::OpenSaveStateSelector(bool is_loading)
 	s_save_state_selector_game_path = {};
 	s_save_state_selector_loading = is_loading;
 	s_save_state_selector_resuming = false;
-	if (PopulateSaveStateListEntries(s_current_game_title.c_str(), s_current_game_serial.c_str(), s_current_game_crc) > 0)
+	if (PopulateSaveStateListEntries(s_current_game_title.c_str(), s_current_disc_serial.c_str(), s_current_disc_crc) > 0)
 	{
 		s_save_state_selector_open = true;
 		return true;
@@ -5815,7 +5817,7 @@ GSTexture* FullscreenUI::GetCoverForCurrentGame()
 {
 	auto lock = GameList::GetLock();
 
-	const GameList::Entry* entry = GameList::GetEntryForPath(s_current_game_path.c_str());
+	const GameList::Entry* entry = GameList::GetEntryForPath(s_current_disc_path.c_str());
 	if (!entry)
 		return s_fallback_disc_texture.get();
 

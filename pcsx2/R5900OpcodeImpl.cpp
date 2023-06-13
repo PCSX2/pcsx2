@@ -969,7 +969,7 @@ void SYSCALL()
 			AllowParams1 = true;
 			break;
 		case Syscall::GetOsdConfigParam:
-			if(!NoOSD && g_SkipBiosHack && !AllowParams1)
+			if(!NoOSD && !AllowParams1)
 			{
 				u32 memaddr = cpuRegs.GPR.n.a0.UL[0];
 				u8 params[16];
@@ -993,7 +993,7 @@ void SYSCALL()
 			AllowParams2 = true;
 			break;
 		case Syscall::GetOsdConfigParam2:
-			if (!NoOSD && g_SkipBiosHack && !AllowParams2)
+			if (!NoOSD && !AllowParams2)
 			{
 				u32 memaddr = cpuRegs.GPR.n.a0.UL[0];
 				u8 params[16];

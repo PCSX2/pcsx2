@@ -74,14 +74,23 @@ namespace VMManager
 	/// Returns the path of the disc currently running.
 	std::string GetDiscPath();
 
-	/// Returns the crc of the executable currently running.
-	u32 GetGameCRC();
+	/// Returns the serial of the disc currently running.
+	std::string GetDiscSerial();
 
-	/// Returns the serial of the disc/executable currently running.
-	std::string GetGameSerial();
+	/// Returns the path of the main ELF of the disc currently running.
+	std::string GetDiscELF();
 
 	/// Returns the name of the disc/executable currently running.
-	std::string GetGameName();
+	std::string GetTitle();
+
+	/// Returns the CRC for the main ELF of the disc currently running.
+	u32 GetDiscCRC();
+
+	/// Returns the version of the disc currently running.
+	std::string GetDiscVersion();
+
+	/// Returns the crc of the executable currently running.
+	u32 GetCurrentCRC();
 
 	/// Loads global settings (i.e. EmuConfig).
 	void LoadSettings();
@@ -106,6 +115,9 @@ namespace VMManager
 
 	/// Reloads game specific settings, and applys any changes present.
 	bool ReloadGameSettings();
+
+	/// Reloads game patches.
+	void ReloadPatches(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed);
 
 	/// Returns the save state filename for the given game serial/crc.
 	std::string GetSaveStateFileName(const char* game_serial, u32 game_crc, s32 slot);
@@ -215,11 +227,22 @@ namespace VMManager
 		/// Updates the variables in the EmuFolders namespace, reloading subsystems if needed.
 		void UpdateEmuFolders();
 
-		const std::string& GetElfOverride();
+		/// Returns true if fast booting is active (requested but ELF not started).
+		bool IsFastBootInProgress();
+
+		/// Disables fast boot if it was requested, and found to be incompatible.
+		void DisableFastBoot();
+
+		/// Returns true if the current ELF has started executing.
+		bool HasBootedELF();
+
+		/// Returns the PC of the currently-executing ELF's entry point.
+		u32 GetCurrentELFEntryPoint();
+
+		const std::string& GetELFOverride();
 		bool IsExecutionInterrupted();
+		void ELFLoadingOnCPUThread(std::string elf_path);
 		void EntryPointCompilingOnCPUThread();
-		void GameStartingOnCPUThread();
-		void SwappingGameOnCPUThread();
 		void VSyncOnCPUThread();
 	} // namespace Internal
 } // namespace VMManager
@@ -262,8 +285,8 @@ namespace Host
 	void OnSaveStateSaved(const std::string_view& filename);
 
 	/// Provided by the host; called when the running executable changes.
-	void OnGameChanged(const std::string& disc_path, const std::string& elf_override, const std::string& game_serial,
-		const std::string& game_name, u32 game_crc);
+	void OnGameChanged(const std::string& title, const std::string& elf_override, const std::string& disc_path,
+		const std::string& disc_serial, u32 disc_crc, u32 current_crc);
 
 	/// Provided by the host; called once per frame at guest vsync.
 	void VSyncOnCPUThread();

@@ -21,6 +21,7 @@
 #include "Gif_Unit.h"
 #include "Counters.h"
 #include "Config.h"
+#include "VMManager.h"
 
 using namespace Threading;
 using namespace R5900;
@@ -45,7 +46,8 @@ void gsReset()
 
 void gsUpdateFrequency(Pcsx2Config& config)
 {
-	if (config.GS.FrameLimitEnable)
+	if (config.GS.FrameLimitEnable &&
+		(!config.EnableFastBootFastForward || !VMManager::Internal::IsFastBootInProgress()))
 	{
 		switch (config.LimiterMode)
 		{

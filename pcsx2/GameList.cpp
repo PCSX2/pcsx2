@@ -173,19 +173,10 @@ bool GameList::GetIsoSerialAndCRC(const std::string& path, s32* disc_type, std::
 	if (CDVD->open(path.c_str()) != 0)
 		return false;
 
+	// TODO: we could include the version in the game list?
 	*disc_type = DoCDVDdetectDiskType();
-	cdvdReloadElfInfo();
-
-	*serial = DiscSerial;
-	*crc = ElfCRC;
-
+	cdvdGetDiscInfo(serial, nullptr, nullptr, crc, nullptr);
 	DoCDVDclose();
-
-	// TODO(Stenzek): These globals are **awful**. Clean it up.
-	DiscSerial.clear();
-	ElfCRC = 0;
-	ElfEntry = -1;
-	LastELF.clear();
 	return true;
 }
 

@@ -667,7 +667,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			std::string_view compression_str;
 			if (GSConfig.GSDumpCompression == GSDumpCompressionMethod::Uncompressed)
 			{
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpUncompressed(m_snapshot, VMManager::GetGameSerial(), m_crc,
+				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpUncompressed(m_snapshot, VMManager::GetDiscSerial(), m_crc,
 					screenshot_width, screenshot_height,
 					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
 					fd, m_regs));
@@ -675,7 +675,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			}
 			else if (GSConfig.GSDumpCompression == GSDumpCompressionMethod::LZMA)
 			{
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpXz(m_snapshot, VMManager::GetGameSerial(), m_crc,
+				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpXz(m_snapshot, VMManager::GetDiscSerial(), m_crc,
 					screenshot_width, screenshot_height,
 					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
 					fd, m_regs));
@@ -683,7 +683,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			}
 			else
 			{
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpZst(m_snapshot, VMManager::GetGameSerial(), m_crc,
+				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpZst(m_snapshot, VMManager::GetDiscSerial(), m_crc,
 					screenshot_width, screenshot_height,
 					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
 					fd, m_regs));
@@ -780,14 +780,14 @@ static std::string GSGetBaseFilename()
 	std::string filename;
 
 	// append the game serial and title
-	if (std::string name(VMManager::GetGameName()); !name.empty())
+	if (std::string name(VMManager::GetTitle()); !name.empty())
 	{
 		Path::SanitizeFileName(&name);
 		if (name.length() > 219)
 			name.resize(219);
 		filename += name;
 	}
-	if (std::string serial(VMManager::GetGameSerial()); !serial.empty())
+	if (std::string serial = VMManager::GetDiscSerial(); !serial.empty())
 	{
 		Path::SanitizeFileName(&serial);
 		filename += '_';

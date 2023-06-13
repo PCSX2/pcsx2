@@ -437,7 +437,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(gsl::span<u8> buf, std::vector<u8
 			{
 				if (!VMManager::HasValidVM())
 					goto error;
-				const std::string gameName = VMManager::GetGameName();
+				const std::string gameName = VMManager::GetTitle();
 				const u32 size = gameName.size() + 1;
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
 					goto error;
@@ -451,7 +451,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(gsl::span<u8> buf, std::vector<u8
 			{
 				if (!VMManager::HasValidVM())
 					goto error;
-				const std::string gameSerial = VMManager::GetGameSerial();
+				const std::string gameSerial = VMManager::GetDiscSerial();
 				const u32 size = gameSerial.size() + 1;
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
 					goto error;
@@ -465,7 +465,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(gsl::span<u8> buf, std::vector<u8
 			{
 				if (!VMManager::HasValidVM())
 					goto error;
-				const std::string crc(fmt::format("{:08x}", VMManager::GetGameCRC()));
+				const std::string crc = fmt::format("{:08x}", VMManager::GetDiscCRC());
 				const u32 size = crc.size() + 1;
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
 					goto error;
@@ -479,6 +479,8 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(gsl::span<u8> buf, std::vector<u8
 			{
 				if (!VMManager::HasValidVM())
 					goto error;
+
+				const std::string ElfVersion = VMManager::GetDiscVersion();
 				const u32 size = ElfVersion.size() + 1;
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
 					goto error;

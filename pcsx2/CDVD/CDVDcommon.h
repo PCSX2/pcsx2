@@ -158,6 +158,7 @@ extern void CDVDsys_ChangeSource(CDVD_SourceType type);
 extern void CDVDsys_SetFile(CDVD_SourceType srctype, std::string newfile);
 extern const std::string& CDVDsys_GetFile(CDVD_SourceType srctype);
 extern CDVD_SourceType CDVDsys_GetSourceType();
+extern void CDVDsys_ClearFiles();
 
 extern bool DoCDVDopen();
 extern void DoCDVDclose();

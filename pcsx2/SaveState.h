@@ -36,7 +36,7 @@ enum class FreezeAction
 // [SAVEVERSION+]
 // This informs the auto updater that the users savestates will be invalidated.
 
-static const u32 g_SaveVersion = (0x9A36 << 16) | 0x0000;
+static const u32 g_SaveVersion = (0x9A37 << 16) | 0x0000;
 
 
 // the freezing data between submodules and core
@@ -147,6 +147,18 @@ public:
 		}
 	}
 
+	void FreezeString(std::string& s)
+	{
+		// overwritten when loading
+		u32 length = static_cast<u32>(s.length());
+		Freeze(length);
+
+		if (IsLoading())
+			s.resize(length);
+
+		FreezeMem(s.data(), length);
+	}
+
 	uint GetCurrentPos() const
 	{
 		return m_idx;
@@ -189,8 +201,7 @@ public:
 protected:
 	void Init( VmStateBuffer* memblock );
 
-	// Load/Save functions for the various components of our glorious emulator!
-
+	void vmFreeze();
 	void mtvuFreeze();
 	void rcntFreeze();
 	void vuMicroFreeze();

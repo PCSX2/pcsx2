@@ -179,7 +179,8 @@ private Q_SLOTS:
 	void onVMResumed();
 	void onVMStopped();
 
-	void onGameChanged(const QString& path, const QString& elf_override, const QString& serial, const QString& name, quint32 crc);
+	void onGameChanged(const QString& title, const QString& elf_override, const QString& disc_path,
+		const QString& serial, quint32 disc_crc, quint32 crc);
 
 protected:
 	void showEvent(QShowEvent* event) override;
@@ -279,11 +280,12 @@ private:
 
 	QMenu* m_settings_toolbar_menu = nullptr;
 
-	QString m_current_disc_path;
+	QString m_current_title;
 	QString m_current_elf_override;
-	QString m_current_game_serial;
-	QString m_current_game_name;
-	quint32 m_current_game_crc;
+	QString m_current_disc_path;
+	QString m_current_disc_serial;
+	quint32 m_current_disc_crc;
+	quint32 m_current_running_crc;
 
 	bool m_display_created = false;
 	bool m_relative_mouse_mode = false;

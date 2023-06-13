@@ -23,6 +23,7 @@
 #include "R5900.h"
 #include "ps2/BiosTools.h"
 #include "x86/iR3000A.h"
+#include "VMManager.h"
 
 #include "common/FileSystem.h"
 #include "common/Path.h"
@@ -169,6 +170,17 @@ namespace R3000A
 			new_path = std::move(native_path);
 		else if (!hostRoot.empty()) // relative paths
 			new_path = Path::Combine(hostRoot, native_path);
+
+		// Allow opening the ELF override.
+		if (new_path == VMManager::Internal::GetELFOverride())
+			return new_path;
+
+		// Allow nothing if hostfs isn't enabled.
+		if (!EmuConfig.HostFs)
+		{
+			new_path.clear();
+			return new_path;
+		}
 
 		// Double-check that it falls within the directory of the elf.
 		// Not a real sandbox, but emulators shouldn't be treated as such. Don't run untrusted code!
@@ -562,7 +574,7 @@ namespace R3000A
 			if (not_number_pos == std::string::npos)
 				return false;
 
-			return ((!g_GameStarted || EmuConfig.HostFs) && 0 == path.compare(0, 4, "host") && path[not_number_pos] == ':');
+			return (path.compare(0, 4, "host") == 0 && path[not_number_pos] == ':');
 		}
 
 		int open_HLE()

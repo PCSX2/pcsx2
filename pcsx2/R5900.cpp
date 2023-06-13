@@ -51,10 +51,6 @@ alignas(16) fpuRegisters fpuRegs;
 alignas(16) tlbs tlb[48];
 R5900cpu *Cpu = NULL;
 
-bool g_SkipBiosHack; // set at boot if the skip bios hack is on, reset before the game has started
-bool g_GameStarted; // set when we reach the game's entry point or earlier if the entry point cannot be determined
-bool g_GameLoading; // EELOAD has been called to load the game
-
 static const uint eeWaitCycles = 3072;
 
 bool eeEventTestIsActive = false;
@@ -104,24 +100,12 @@ void cpuReset()
 	extern void Deci2Reset();		// lazy, no good header for it yet.
 	Deci2Reset();
 
-	g_SkipBiosHack = EmuConfig.UseBOOT2Injection;
-	AllowParams1 = !g_SkipBiosHack;
-	AllowParams2 = !g_SkipBiosHack;
+	AllowParams1 = !VMManager::Internal::IsFastBootInProgress();
+	AllowParams2 = !VMManager::Internal::IsFastBootInProgress();
 
-	ElfCRC = 0;
-	DiscSerial.clear();
-	ElfEntry = -1;
-	g_GameStarted = false;
-	g_GameLoading = false;
-
-	// FIXME: LastELF should be reset on media changes as well as on CPU resets, in
-	// the very unlikely case that a user swaps to another media source that "looks"
-	// the same (identical ELF names) but is actually different (devs actually could
-	// run into this while testing minor binary hacked changes to ISO images, which
-	// is why I found out about this) --air
-	LastELF.clear();
-
-	g_eeloadMain = 0, g_eeloadExec = 0, g_osdsys_str = 0;
+	g_eeloadMain = 0;
+	g_eeloadExec = 0;
+	g_osdsys_str = 0;
 }
 
 __ri void cpuException(u32 code, u32 bd)
@@ -279,7 +263,7 @@ static __fi void TESTINT( u8 n, void (*callback)() )
 {
 	if( !(cpuRegs.interrupt & (1 << n)) ) return;
 
-	if(!g_GameStarted || CHECK_INSTANTDMAHACK || cpuTestCycle( cpuRegs.sCycle[n], cpuRegs.eCycle[n] ) )
+	if(CHECK_INSTANTDMAHACK || cpuTestCycle( cpuRegs.sCycle[n], cpuRegs.eCycle[n] ) )
 	{
 		cpuClearInt( n );
 		callback();
@@ -416,7 +400,7 @@ __fi void _cpuEventTest_Shared()
 	// where a DMA buffer is overwritten without waiting for the transfer to end, which causes the fonts to get all messed up
 	// so to fix it, we run all the DMA's instantly when in the BIOS.
 	// Only use the lower 17 bits of the cpuRegs.interrupt as the upper bits are for VU0/1 sync which can't be done in a tight loop
-	if ((!g_GameStarted || CHECK_INSTANTDMAHACK) && dmacRegs.ctrl.DMAE && !(psHu8(DMAC_ENABLER + 2) & 1) && (cpuRegs.interrupt & 0x1FFFF))
+	if (CHECK_INSTANTDMAHACK && dmacRegs.ctrl.DMAE && !(psHu8(DMAC_ENABLER + 2) & 1) && (cpuRegs.interrupt & 0x1FFFF))
 	{
 		while ((cpuRegs.interrupt & 0x1FFFF) && _cpuTestInterrupts())
 			;
@@ -568,27 +552,6 @@ __fi void CPU_INT( EE_EventType n, s32 ecycle)
 	cpuSetNextEventDelta(cpuRegs.eCycle[n]);
 }
 
-// Called from recompilers; define is mandatory.
-void eeGameStarting()
-{
-	if (!g_GameStarted)
-	{
-		//Console.WriteLn( Color_Green, "(R5900) ELF Entry point! [addr=0x%08X]", ElfEntry );
-		g_GameStarted = true;
-		g_GameLoading = false;
-
-		// GameStartingInThread may issue a reset of the cpu and/or recompilers.  Check for and
-		// handle such things here:
-		VMManager::Internal::GameStartingOnCPUThread();
-		if (VMManager::Internal::IsExecutionInterrupted())
-			Cpu->ExitExecution();
-	}
-	else
-	{
-		Console.WriteLn( Color_Green, "(R5900) Re-executed ELF Entry point (ignored) [addr=0x%08X]", ElfEntry );
-	}
-}
-
 // Count arguments, save their starting locations, and replace the space separators with null terminators so they're separate strings
 int ParseArgumentString(u32 arg_block)
 {
@@ -635,16 +598,6 @@ int ParseArgumentString(u32 arg_block)
 // Called from recompilers; define is mandatory.
 void eeloadHook()
 {
-	const std::string& elf_override(VMManager::Internal::GetElfOverride());
-
-	if (!elf_override.empty())
-		cdvdReloadElfInfo(StringUtil::StdStringFromFormat("host:%s", elf_override.c_str()));
-	else
-		cdvdReloadElfInfo();
-
-	std::string discelf;
-	int disctype = GetPS2ElfName(discelf);
-
 	std::string elfname;
 	int argc = cpuRegs.GPR.n.a0.SD[0];
 	if (argc) // calls to EELOAD *after* the first one during the startup process will come here
@@ -664,7 +617,7 @@ void eeloadHook()
 		// mode). Then EELOAD is called with the argument "rom0:PS2LOGO". At this point, we do not need any additional tricks
 		// because EELOAD is now ready to accept launch arguments. So in full-boot mode, we simply wait for PS2LOGO to be called,
 		// then we add the desired launch arguments. PS2LOGO passes those on to the game itself as it calls EELOAD a third time.
-		if (!EmuConfig.CurrentGameArgs.empty() && !strcmp(elfname.c_str(), "rom0:PS2LOGO"))
+		if (!EmuConfig.CurrentGameArgs.empty() && elfname == "rom0:PS2LOGO")
 		{
 			const char *argString = EmuConfig.CurrentGameArgs.c_str();
 			Console.WriteLn("eeloadHook: Supplying launch argument(s) '%s' to module '%s'...", argString, elfname.c_str());
@@ -711,24 +664,32 @@ void eeloadHook()
 
 	// If "fast boot" was chosen, then on EELOAD's first call we won't yet know what the game's ELF is. Find the name and write it
 	// into EELOAD's memory.
-	if (g_SkipBiosHack && elfname.empty())
+	if (VMManager::Internal::IsFastBootInProgress() && elfname.empty())
 	{
-		std::string elftoload;
+		const std::string& elf_override = VMManager::Internal::GetELFOverride();
 		if (!elf_override.empty())
 		{
-			elftoload = StringUtil::StdStringFromFormat("host:%s", elf_override.c_str());
+			elfname = fmt::format("host:{}", elf_override);
 		}
 		else
 		{
-			if (disctype == 2)
-				elftoload = discelf;
+			CDVDDiscType disc_type;
+			std::string disc_elf;
+			cdvdGetDiscInfo(nullptr, &disc_elf, nullptr, nullptr, &disc_type);
+			if (disc_type == CDVDDiscType::PS2Disc)
+			{
+				// only allow fast boot for PS2 games
+				elfname = std::move(disc_elf);
+			}
 			else
-				g_SkipBiosHack = false; // We're not fast booting, so disable it (Fixes some weirdness with the BIOS)
+			{
+				Console.Warning(fmt::format("Not allowing fast boot for non-PS2 ELF {}", disc_elf));
+			}
 		}
 
 		// When fast-booting, we insert the game's ELF name into EELOAD so that the game is called instead of the default call of
 		// "rom0:OSDSYS"; any launch arguments supplied by the user will be inserted into EELOAD later by eeloadHook2()
-		if (!elftoload.empty())
+		if (!elfname.empty())
 		{
 			// Find and save location of default/fallback call "rom0:OSDSYS"; to be used later by eeloadHook2()
 			for (g_osdsys_str = EELOAD_START; g_osdsys_str < EELOAD_START + EELOAD_SIZE; g_osdsys_str += 8) // strings are 64-bit aligned
@@ -736,16 +697,20 @@ void eeloadHook()
 				if (!strcmp((char*)PSM(g_osdsys_str), "rom0:OSDSYS"))
 				{
 					// Overwrite OSDSYS with game's ELF name
-					strcpy((char*)PSM(g_osdsys_str), elftoload.c_str());
-					g_GameLoading = true;
-					return;
+					strcpy((char*)PSM(g_osdsys_str), elfname.c_str());
 				}
 			}
 		}
+		else
+		{
+			// Stop fast forwarding if we're doing that for boot.
+			VMManager::Internal::DisableFastBoot();
+			AllowParams1 = true;
+			AllowParams2 = true;
+		}
 	}
 
-	if (!g_GameStarted && ((disctype == 2 && elfname == discelf) || disctype == 1))
-		g_GameLoading = true;
+	VMManager::Internal::ELFLoadingOnCPUThread(std::move(elfname));
 }
 
 // Called from recompilers; define is mandatory.

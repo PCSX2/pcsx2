@@ -62,7 +62,9 @@ namespace Achievements
 		u32 id;
 		std::string title;
 		std::string description;
+		std::string memaddr;
 		int format;
+		bool active;
 	};
 
 	struct LeaderboardEntry
@@ -131,7 +133,7 @@ namespace Achievements
 	bool Login(const char* username, const char* password);
 	void Logout();
 
-	void GameChanged(u32 crc);
+	void GameChanged(u32 disc_crc, u32 crc);
 
 	const std::string& GetGameTitle();
 	const std::string& GetGameIcon();

@@ -70,11 +70,6 @@ private:
 	void initializeState();
 	void setStartingFrame(u32 startingFrame);
 	void closeActiveFile();
-
-private:
-	// Resolve the name and region of the game currently loaded using the GameDB
-	// If the game cannot be found in the DB, the fallback is the ISO filename
-	std::string resolveGameName();
 };
 
 extern InputRecording g_InputRecording;

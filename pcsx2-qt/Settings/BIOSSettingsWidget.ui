@@ -136,11 +136,22 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QCheckBox" name="fastBoot">
-        <property name="text">
-         <string>Fast Boot</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QCheckBox" name="fastBoot">
+          <property name="text">
+           <string>Fast Boot</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="fastBootFastForward">
+          <property name="text">
+           <string>Fast Forward Boot</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>

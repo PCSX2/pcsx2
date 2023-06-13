@@ -52,8 +52,11 @@ private Q_SLOTS:
 	void listItemChanged(const QTreeWidgetItem* current, const QTreeWidgetItem* previous);
 	void listRefreshed(const QVector<BIOSInfo>& items);
 
+	void fastBootChanged();
+
 private:
 	Ui::BIOSSettingsWidget m_ui;
+	SettingsDialog* m_dialog;
 
 	class RefreshThread final : public QThread
 	{
