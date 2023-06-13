@@ -303,7 +303,7 @@ std::string GSTextureReplacements::GetDumpFilename(const TextureName& name, u32 
 
 void GSTextureReplacements::Initialize()
 {
-	s_current_serial = VMManager::GetGameSerial();
+	s_current_serial = VMManager::GetDiscSerial();
 
 	if (GSConfig.DumpReplaceableTextures || GSConfig.LoadTextureReplacements)
 		StartWorkerThread();
@@ -313,7 +313,7 @@ void GSTextureReplacements::Initialize()
 
 void GSTextureReplacements::GameChanged()
 {
-	std::string new_serial(VMManager::GetGameSerial());
+	std::string new_serial = VMManager::GetDiscSerial();
 	if (s_current_serial == new_serial)
 		return;
 

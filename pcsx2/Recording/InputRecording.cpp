@@ -78,7 +78,7 @@ bool InputRecording::create(const std::string& fileName, const bool fromSaveStat
 
 	m_file.setEmulatorVersion();
 	m_file.setAuthor(authorName);
-	m_file.setGameName(resolveGameName());
+	m_file.setGameName(VMManager::GetTitle());
 	m_file.writeHeader();
 	initializeState();
 	InputRec::log("Started new input recording");
@@ -129,9 +129,9 @@ bool InputRecording::play(const std::string& filename)
 	initializeState();
 	InputRec::log("Replaying input recording");
 	m_file.logRecordingMetadata();
-	if (resolveGameName() != m_file.getGameName())
+	if (VMManager::GetTitle() != m_file.getGameName())
 	{
-		InputRec::consoleLog(fmt::format("Input recording was possibly constructed for a different game. Expected: {}, Actual: {}", m_file.getGameName(), resolveGameName()));
+		InputRec::consoleLog(fmt::format("Input recording was possibly constructed for a different game. Expected: {}, Actual: {}", m_file.getGameName(), VMManager::GetTitle()));
 	}
 	return true;
 }
@@ -227,21 +227,6 @@ void InputRecording::processRecordQueue()
 		m_recordingQueue.front()();
 		m_recordingQueue.pop();
 	}
-}
-
-std::string InputRecording::resolveGameName()
-{
-	std::string gameName;
-	const std::string gameKey = SysGetDiscID();
-	if (!gameKey.empty())
-	{
-		auto game = GameDatabase::findGame(gameKey);
-		if (game)
-		{
-			gameName = fmt::format("{} ({})", game->name, game->region);
-		}
-	}
-	return !gameName.empty() ? gameName : VMManager::GetGameName();
 }
 
 void InputRecording::incFrameCounter()

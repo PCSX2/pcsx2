@@ -268,7 +268,7 @@ bool SysMtgsThread::TryOpenGS()
 	if (!GSopen(EmuConfig.GS, EmuConfig.GS.Renderer, RingBuffer.Regs))
 		return false;
 
-	GSSetGameCRC(ElfCRC);
+	GSSetGameCRC(VMManager::GetDiscCRC());
 	return true;
 }
 

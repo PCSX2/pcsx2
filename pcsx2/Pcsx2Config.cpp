@@ -1305,6 +1305,8 @@ Pcsx2Config::Pcsx2Config()
 	McdEnableEjection = true;
 	McdFolderAutoManage = true;
 	EnablePatches = true;
+	EnableFastBoot = true;
+	EnablePerGameSettings = true;
 	EnableRecordingTools = true;
 	EnableGameFixes = true;
 	InhibitScreensaver = true;
@@ -1348,6 +1350,9 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(EnablePINE);
 	SettingsWrapBitBool(EnableWideScreenPatches);
 	SettingsWrapBitBool(EnableNoInterlacingPatches);
+	SettingsWrapBitBool(EnableFastBoot);
+	SettingsWrapBitBool(EnableFastBootFastForward);
+	SettingsWrapBitBool(EnablePerGameSettings);
 	SettingsWrapBitBool(EnableRecordingTools);
 	SettingsWrapBitBool(EnableGameFixes);
 	SettingsWrapBitBool(SaveStateOnShutdown);
@@ -1472,7 +1477,6 @@ bool Pcsx2Config::operator==(const Pcsx2Config& right) const
 void Pcsx2Config::CopyRuntimeConfig(Pcsx2Config& cfg)
 {
 	GS.LimitScalar = cfg.GS.LimitScalar;
-	UseBOOT2Injection = cfg.UseBOOT2Injection;
 	CurrentBlockdump = std::move(cfg.CurrentBlockdump);
 	CurrentIRX = std::move(cfg.CurrentIRX);
 	CurrentGameArgs = std::move(cfg.CurrentGameArgs);

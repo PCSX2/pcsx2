@@ -2220,6 +2220,9 @@ static void recRecompile(const u32 startpc)
 	if (recPtr >= (recMem->GetPtrEnd() - _64kb))
 		eeRecNeedsReset = true;
 
+	if (HWADDR(startpc) == VMManager::Internal::GetCurrentELFEntryPoint())
+		VMManager::Internal::EntryPointCompilingOnCPUThread();
+
 	if (eeRecNeedsReset)
 	{
 		eeRecNeedsReset = false;
@@ -2228,9 +2231,6 @@ static void recRecompile(const u32 startpc)
 
 	xSetPtr(recPtr);
 	recPtr = xGetAlignedCallTarget();
-
-	if (0x8000d618 == startpc)
-		DbgCon.WriteLn("Compiling block @ 0x%08x", startpc);
 
 	s_pCurBlock = PC_GETBLOCK(startpc);
 
@@ -2254,7 +2254,7 @@ static void recRecompile(const u32 startpc)
 	if (g_eeloadMain && HWADDR(startpc) == HWADDR(g_eeloadMain))
 	{
 		xFastCall((void*)eeloadHook);
-		if (g_SkipBiosHack)
+		if (VMManager::Internal::IsFastBootInProgress())
 		{
 			// There are four known versions of EELOAD, identifiable by the location of the 'jal' to the EELOAD function which
 			// calls ExecPS2(). The function itself is at the same address in all BIOSs after v1.00-v1.10.
@@ -2273,14 +2273,6 @@ static void recRecompile(const u32 startpc)
 
 	if (g_eeloadExec && HWADDR(startpc) == HWADDR(g_eeloadExec))
 		xFastCall((void*)eeloadHook2);
-
-	// this is the only way patches get applied, doesn't depend on a hack
-	if (g_GameLoading && HWADDR(startpc) == ElfEntry)
-	{
-		Console.WriteLn("Elf entry point @ 0x%08x about to get recompiled. Load patches first.", startpc);
-		xFastCall((void*)eeGameStarting);
-		VMManager::Internal::EntryPointCompilingOnCPUThread();
-	}
 
 	g_branch = 0;
 

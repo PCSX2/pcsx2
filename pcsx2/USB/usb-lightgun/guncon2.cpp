@@ -332,7 +332,7 @@ namespace usb_lightgun
 
 	void GunCon2State::AutoConfigure()
 	{
-		const std::string serial(VMManager::GetGameSerial());
+		const std::string serial = VMManager::GetDiscSerial();
 		for (const GameConfig& gc : s_game_config)
 		{
 			if (serial != gc.serial)

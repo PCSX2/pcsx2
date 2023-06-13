@@ -92,8 +92,7 @@ namespace Achievements
 	static unsigned PeekMemoryBlock(unsigned address, unsigned char* buffer, unsigned num_bytes);
 	static void PokeMemory(unsigned address, unsigned num_bytes, void* ud, unsigned value);
 	static bool IsMastered();
-	static void ActivateLockedAchievements();
-	static bool ActivateAchievement(Achievement* achievement);
+	static void ActivateAchievementsAndLeaderboards();
 	static void DeactivateAchievement(Achievement* achievement);
 	static void SendPing();
 	static void SendPlaying();
@@ -150,7 +149,8 @@ namespace Achievements
 	static std::string s_username;
 	static std::string s_api_token;
 
-	static u32 s_last_game_crc;
+	static u32 s_last_disc_crc;
+	static u32 s_current_crc;
 	static std::string s_game_path;
 	static std::string s_game_hash;
 	static std::string s_game_title;
@@ -379,7 +379,8 @@ void Achievements::ClearGameInfo(bool clear_achievements, bool clear_leaderboard
 		while (!s_leaderboards.empty())
 		{
 			Leaderboard& lb = s_leaderboards.back();
-			rc_runtime_deactivate_lboard(&s_rcheevos_runtime, lb.id);
+			if (lb.active)
+				rc_runtime_deactivate_lboard(&s_rcheevos_runtime, lb.id);
 			s_leaderboards.pop_back();
 		}
 
@@ -406,7 +407,7 @@ void Achievements::ClearGameInfo(bool clear_achievements, bool clear_leaderboard
 
 void Achievements::ClearGameHash()
 {
-	s_last_game_crc = 0;
+	s_last_disc_crc = 0;
 	std::string().swap(s_game_hash);
 }
 
@@ -515,7 +516,7 @@ void Achievements::Initialize()
 	s_logged_in = (!s_username.empty() && !s_api_token.empty());
 
 	if (VMManager::HasValidVM())
-		GameChanged(VMManager::GetGameCRC());
+		GameChanged(VMManager::GetDiscCRC(), VMManager::GetCurrentCRC());
 }
 
 void Achievements::UpdateSettings(const Pcsx2Config::AchievementsOptions& old_config)
@@ -645,7 +646,13 @@ void Achievements::SetChallengeMode(bool enabled)
 			achievement.locked = true;
 		}
 		for (Leaderboard& leaderboard : s_leaderboards)
-			rc_runtime_deactivate_lboard(&s_rcheevos_runtime, leaderboard.id);
+		{
+			if (leaderboard.active)
+			{
+				rc_runtime_deactivate_lboard(&s_rcheevos_runtime, leaderboard.id);
+				leaderboard.active = false;
+			}
+		}
 	}
 
 	// re-grab unlocks, this will reactivate what's locked in non-hardcore mode later on
@@ -767,8 +774,8 @@ void Achievements::LoadState(const u8* state_data, u32 state_data_size)
 		return;
 
 	// this assumes that the CRC and ELF name has been loaded prior to the cheevos state (it should be).
-	if (ElfCRC != s_last_game_crc)
-		GameChanged(ElfCRC);
+	if (VMManager::GetDiscCRC() != s_last_disc_crc)
+		GameChanged(VMManager::GetDiscCRC(), VMManager::GetCurrentCRC());
 
 #ifdef ENABLE_RAINTEGRATION
 	if (IsUsingRAIntegration())
@@ -1118,7 +1125,7 @@ void Achievements::GetUserUnlocksCallback(s32 status_code, const std::string& co
 	}
 
 	// start scanning for locked achievements
-	ActivateLockedAchievements();
+	ActivateAchievementsAndLeaderboards();
 	DisplayAchievementSummary();
 	SendPlaying();
 	UpdateRichPresence();
@@ -1227,16 +1234,10 @@ void Achievements::GetPatchesCallback(s32 status_code, const std::string& conten
 		lboard.id = defn.id;
 		lboard.title = defn.title;
 		lboard.description = defn.description;
+		lboard.memaddr = defn.definition;
 		lboard.format = defn.format;
+		lboard.active = false;
 		s_leaderboards.push_back(std::move(lboard));
-
-		// Always track the leaderboard, if we don't have leaderboards enabled we just won't submit it.
-		// That way if someone activates them later on, current progress will count.
-		const int err = rc_runtime_activate_lboard(&s_rcheevos_runtime, defn.id, defn.definition, nullptr, 0);
-		if (err != RC_OK)
-			Console.Error("Leaderboard %u memaddr parse error: %s", defn.id, rc_error_str(err));
-		else
-			DevCon.WriteLn("Activated leaderboard %s (%u)", defn.title, defn.id);
 	}
 
 	// Parse rich presence.
@@ -1265,7 +1266,7 @@ void Achievements::GetPatchesCallback(s32 status_code, const std::string& conten
 		}
 		else
 		{
-			ActivateLockedAchievements();
+			ActivateAchievementsAndLeaderboards();
 			DisplayAchievementSummary();
 			Host::OnAchievementsRefreshed();
 		}
@@ -1399,7 +1400,7 @@ std::optional<std::vector<u8>> Achievements::ReadELFFromCurrentDisc(const std::s
 
 std::string Achievements::GetGameHash()
 {
-	const std::string& elf_path = LastELF;
+	const std::string elf_path = VMManager::GetDiscELF();
 	if (elf_path.empty())
 		return {};
 
@@ -1457,15 +1458,21 @@ void Achievements::GetGameIdCallback(s32 status_code, const std::string& content
 	GetPatches(game_id);
 }
 
-void Achievements::GameChanged(u32 crc)
+void Achievements::GameChanged(u32 disc_crc, u32 crc)
 {
 	std::unique_lock lock(s_achievements_mutex);
 	if (!s_active)
 		return;
 
 	// avoid reading+hashing the executable if the crc hasn't changed
-	if (s_last_game_crc == crc)
+	if (s_last_disc_crc == disc_crc)
+	{
+		// but we might've just finished booting the game, in which case we need to activate.
+		if (crc != 0)
+			ActivateAchievementsAndLeaderboards();
+
 		return;
+	}
 
 	std::string game_hash(GetGameHash());
 	if (s_game_hash == game_hash)
@@ -1481,7 +1488,8 @@ void Achievements::GameChanged(u32 crc)
 
 	ClearGameInfo();
 	ClearGameHash();
-	s_last_game_crc = crc;
+	s_last_disc_crc = disc_crc;
+	s_current_crc = crc;
 	s_game_hash = std::move(game_hash);
 
 #ifdef ENABLE_RAINTEGRATION
@@ -1495,13 +1503,14 @@ void Achievements::GameChanged(u32 crc)
 	if (s_game_hash.empty())
 	{
 		// when we're booting the bios, or shutting down, this will fail
-		if (crc != 0)
+		if (disc_crc != 0)
 		{
 			Host::AddKeyedOSDMessage("retroachievements_disc_read_failed", "Failed to read executable from disc. Achievements disabled.",
 				Host::OSD_CRITICAL_ERROR_DURATION);
 		}
 
-		s_last_game_crc = 0;
+		s_last_disc_crc = 0;
+		s_current_crc = crc;
 		return;
 	}
 
@@ -1733,31 +1742,48 @@ bool Achievements::IsMastered()
 	return true;
 }
 
-void Achievements::ActivateLockedAchievements()
+void Achievements::ActivateAchievementsAndLeaderboards()
 {
+	if (!VMManager::Internal::HasBootedELF())
+	{
+		Console.Warning("Deferring achievement activate until ELF has booted.");
+		return;
+	}
+
 	for (Achievement& cheevo : s_achievements)
 	{
-		if (cheevo.locked)
-			ActivateAchievement(&cheevo);
+		if (cheevo.active || !cheevo.locked)
+			continue;
+
+		const int err =
+			rc_runtime_activate_achievement(&s_rcheevos_runtime, cheevo.id, cheevo.memaddr.c_str(), nullptr, 0);
+		if (err != RC_OK)
+		{
+			Console.Error("Achievement %u memaddr parse error: %s", cheevo.id, rc_error_str(err));
+			continue;
+		}
+
+		DevCon.WriteLn("Activated achievement %s (%u)", cheevo.title.c_str(), cheevo.id);
+		cheevo.active = true;
 	}
-}
 
-bool Achievements::ActivateAchievement(Achievement* achievement)
-{
-	if (achievement->active)
-		return true;
-
-	const int err = rc_runtime_activate_achievement(&s_rcheevos_runtime, achievement->id, achievement->memaddr.c_str(), nullptr, 0);
-	if (err != RC_OK)
+	for (Leaderboard& lb : s_leaderboards)
 	{
-		Console.Error("Achievement %u memaddr parse error: %s", achievement->id, rc_error_str(err));
-		return false;
+		// Always track the leaderboard, if we don't have leaderboards enabled we just won't submit it.
+		// That way if someone activates them later on, current progress will count.
+		if (lb.active)
+			continue;
+
+		const int err = rc_runtime_activate_lboard(&s_rcheevos_runtime, lb.id, lb.memaddr.c_str(), nullptr, 0);
+		if (err != RC_OK)
+		{
+			Console.Error("Leaderboard %u memaddr parse error: %s", lb.id, rc_error_str(err));
+			continue;
+		}
+
+		DevCon.WriteLn("Activated leaderboard %s (%u)", lb.title.c_str(), lb.id);
+		lb.active = true;
 	}
-
-	achievement->active = true;
-
-	DevCon.WriteLn("Activated achievement %s (%u)", achievement->title.c_str(), achievement->id);
-	return true;
 }
 
 void Achievements::DeactivateAchievement(Achievement* achievement)
@@ -2249,7 +2275,7 @@ void Achievements::RAIntegration::RACallbackRebuildMenu()
 
 void Achievements::RAIntegration::RACallbackEstimateTitle(char* buf)
 {
-	std::string title(fmt::format("{0} ({1}) [{2:08X}]", VMManager::GetGameName(), VMManager::GetGameSerial(), VMManager::GetGameCRC()));
+	std::string title(fmt::format("{0} ({1}) [{2:08X}]", VMManager::GetTitle(), VMManager::GetDiscSerial(), VMManager::GetDiscCRC()));
 	StringUtil::Strlcpy(buf, title, 256);
 }
 

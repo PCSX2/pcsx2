@@ -174,10 +174,10 @@ SaveStateBase& SaveStateBase::FreezeBios()
 
 SaveStateBase& SaveStateBase::FreezeInternals()
 {
-	const u32 previousCRC = ElfCRC;
-
 	// Print this until the MTVU problem in gifPathFreeze is taken care of (rama)
 	if (THREAD_VU1) Console.Warning("MTVU speedhack is enabled, saved states may not be stable");
+
+	vmFreeze();
 
 	// Second Block - Various CPU Registers and States
 	// -----------------------------------------------
@@ -188,30 +188,7 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	Freeze(tlb);			// tlbs
 	Freeze(AllowParams1);	//OSDConfig written (Fast Boot)
 	Freeze(AllowParams2);
-	Freeze(g_GameStarted);
-	Freeze(g_GameLoading);
-	Freeze(ElfCRC);
-
-	char localDiscSerial[256];
-	StringUtil::Strlcpy(localDiscSerial, DiscSerial.c_str(), sizeof(localDiscSerial));
-	Freeze(localDiscSerial);
-	if (IsLoading())
-	{
-		DiscSerial = localDiscSerial;
-
-		if (ElfCRC != previousCRC)
-		{
-			// HACK: LastELF isn't in the save state... Load it before we go too far into restoring state.
-			// When we next bump save states, we should include it. We need this for achievements, because
-			// we want to load and activate achievements before restoring any of their tracked state.
-			if (const std::string& elf_override = VMManager::Internal::GetElfOverride(); !elf_override.empty())
-				cdvdReloadElfInfo(fmt::format("host:{}", elf_override));
-			else
-				cdvdReloadElfInfo();
-		}
-	}
-
-
+	
 	// Third Block - Cycle Timers and Events
 	// -------------------------------------
 	FreezeTag( "Cycles" );

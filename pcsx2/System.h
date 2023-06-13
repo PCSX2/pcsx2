@@ -144,9 +144,6 @@ extern SysCpuProviderPack& GetCpuProviders();
 extern void SysLogMachineCaps();		// Detects cpu type and fills cpuInfo structs.
 extern void SysClearExecutionCache();	// clears recompiled execution caches!
 
-extern std::string SysGetBiosDiscID();
-extern std::string SysGetDiscID();
-
 extern SysMainMemory& GetVmMemory();
 
 extern void SetCPUState(SSE_MXCSR sseMXCSR, SSE_MXCSR sseVU0MXCSR, SSE_MXCSR sseVU1MXCSR);

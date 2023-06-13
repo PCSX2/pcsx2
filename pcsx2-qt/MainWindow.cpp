@@ -746,9 +746,9 @@ void MainWindow::updateWindowTitle()
 {
 	QString suffix(QtHost::GetAppConfigSuffix());
 	QString main_title(QtHost::GetAppNameAndVersion() + suffix);
-	QString display_title(m_current_game_name + suffix);
+	QString display_title(m_current_title + suffix);
 
-	if (!s_vm_valid || m_current_game_name.isEmpty())
+	if (!s_vm_valid || m_current_title.isEmpty())
 		display_title = main_title;
 	else if (isRenderingToMain())
 		main_title = display_title;
@@ -920,7 +920,7 @@ bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 		return true;
 
 	// If we don't have a crc, we can't save state.
-	allow_save_to_state &= (m_current_game_crc != 0);
+	allow_save_to_state &= (m_current_disc_crc != 0);
 	bool save_state = allow_save_to_state && default_save_to_state;
 
 	// Only confirm on UI thread because we need to display a msgbox.
@@ -1213,15 +1213,15 @@ void MainWindow::onChangeDiscMenuAboutToHide()
 void MainWindow::onLoadStateMenuAboutToShow()
 {
 	m_ui.menuLoadState->clear();
-	updateSaveStateMenusEnableState(!m_current_game_serial.isEmpty());
-	populateLoadStateMenu(m_ui.menuLoadState, m_current_disc_path, m_current_game_serial, m_current_game_crc);
+	updateSaveStateMenusEnableState(!m_current_disc_serial.isEmpty());
+	populateLoadStateMenu(m_ui.menuLoadState, m_current_disc_path, m_current_disc_serial, m_current_disc_crc);
 }
 
 void MainWindow::onSaveStateMenuAboutToShow()
 {
 	m_ui.menuSaveState->clear();
-	updateSaveStateMenusEnableState(!m_current_game_serial.isEmpty());
-	populateSaveStateMenu(m_ui.menuSaveState, m_current_game_serial, m_current_game_crc);
+	updateSaveStateMenusEnableState(!m_current_disc_serial.isEmpty());
+	populateSaveStateMenu(m_ui.menuSaveState, m_current_disc_serial, m_current_disc_crc);
 }
 
 void MainWindow::onViewToolbarActionToggled(bool checked)
@@ -1269,23 +1269,29 @@ void MainWindow::onViewGamePropertiesActionTriggered()
 		return;
 
 	// prefer to use a game list entry, if we have one, that way the summary is populated
-	if (!m_current_disc_path.isEmpty() || !m_current_elf_override.isEmpty())
+	if (!m_current_disc_path.isEmpty() && m_current_elf_override.isEmpty())
 	{
 		auto lock = GameList::GetLock();
-		const GameList::Entry* entry = m_current_elf_override.isEmpty() ?
-										   GameList::GetEntryForPath(m_current_disc_path.toUtf8().constData()) :
-										   GameList::GetEntryForPath(m_current_elf_override.toUtf8().constData());
+		const GameList::Entry* entry = GameList::GetEntryForPath(m_current_disc_path.toUtf8().constData());
 		if (entry)
 		{
-			SettingsDialog::openGamePropertiesDialog(
-				entry, m_current_elf_override.isEmpty() ? std::string_view(entry->serial) : std::string_view(), entry->crc);
+			SettingsDialog::openGamePropertiesDialog(entry, entry->serial, entry->crc);
 			return;
 		}
 	}
 
 	// open properties for the current running file (isn't in the game list)
-	if (m_current_game_crc != 0)
-		SettingsDialog::openGamePropertiesDialog(nullptr, m_current_game_serial.toStdString(), m_current_game_crc);
+	if (m_current_disc_crc == 0)
+	{
+		QMessageBox::critical(this, tr("Game Properties"), tr("Game properties is unavailable for the current game."));
+		return;
+	}
+
+	// can't use serial for ELFs, because they might have a disc set
+	if (m_current_elf_override.isEmpty())
+		SettingsDialog::openGamePropertiesDialog(nullptr, m_current_disc_serial.toStdString(), m_current_disc_crc);
+	else
+		SettingsDialog::openGamePropertiesDialog(nullptr, std::string_view(), m_current_disc_crc);
 }
 
 void MainWindow::onGitHubRepositoryActionTriggered()
@@ -1602,13 +1608,15 @@ void MainWindow::onVMStopped()
 		m_game_list_widget->refresh(false);
 }
 
-void MainWindow::onGameChanged(const QString& path, const QString& elf_override, const QString& serial, const QString& name, quint32 crc)
+void MainWindow::onGameChanged(const QString& title, const QString& elf_override, const QString& disc_path,
+	const QString& serial, quint32 disc_crc, quint32 crc)
 {
-	m_current_disc_path = path;
+	m_current_title = title;
 	m_current_elf_override = elf_override;
-	m_current_game_serial = serial;
-	m_current_game_name = name;
-	m_current_game_crc = crc;
+	m_current_disc_path = disc_path;
+	m_current_disc_serial = serial;
+	m_current_disc_crc = disc_crc;
+	m_current_running_crc = crc;
 	updateWindowTitle();
 	updateSaveStateMenusEnableState(!serial.isEmpty());
 }

@@ -29,7 +29,7 @@ namespace FullscreenUI
 	void CheckForConfigChanges(const Pcsx2Config& old_config);
 	void OnVMStarted();
 	void OnVMDestroyed();
-	void GameChanged(std::string path, std::string serial, std::string title, u32 crc);
+	void GameChanged(std::string title, std::string path, std::string serial, u32 disc_crc, u32 crc);
 	void OpenPauseMenu();
 	void OpenAchievementsWindow();
 	void OpenLeaderboardsWindow();

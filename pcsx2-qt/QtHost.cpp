@@ -667,14 +667,7 @@ void EmuThread::reloadPatches()
 		return;
 	}
 
-	if (!VMManager::HasValidVM())
-		return;
-
-	Patch::ReloadPatches(true, false, true, true);
-
-	// Might change widescreen mode.
-	if (Patch::ReloadPatchAffectingOptions())
-		applySettings();
+	VMManager::ReloadPatches(true, false, true, true);
 }
 
 void EmuThread::reloadInputSources()
@@ -968,11 +961,11 @@ void Host::OnVMResumed()
 	emit g_emu_thread->onVMResumed();
 }
 
-void Host::OnGameChanged(const std::string& disc_path, const std::string& elf_override, const std::string& game_serial,
-	const std::string& game_name, u32 game_crc)
+void Host::OnGameChanged(const std::string& title, const std::string& elf_override, const std::string& disc_path,
+	const std::string& disc_serial, u32 disc_crc, u32 current_crc)
 {
-	emit g_emu_thread->onGameChanged(QString::fromStdString(disc_path), QString::fromStdString(elf_override),
-		QString::fromStdString(game_serial), QString::fromStdString(game_name), game_crc);
+	emit g_emu_thread->onGameChanged(QString::fromStdString(title), QString::fromStdString(elf_override),
+		QString::fromStdString(disc_path), QString::fromStdString(disc_serial), disc_crc, current_crc);
 }
 
 void EmuThread::updatePerformanceMetrics(bool force)
@@ -1124,7 +1117,7 @@ void Host::VSyncOnCPUThread()
 
 void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false */)
 {
-	if (g_emu_thread->isOnEmuThread())
+	if (block && g_emu_thread->isOnEmuThread())
 	{
 		// probably shouldn't ever happen, but just in case..
 		function();

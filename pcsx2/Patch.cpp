@@ -187,7 +187,6 @@ namespace Patch
 	static EnablePatchList s_enabled_cheats;
 	static EnablePatchList s_enabled_patches;
 	static u32 s_patches_crc;
-	static std::string s_patches_serial;
 	static std::optional<AspectRatioType> s_override_aspect_ratio;
 	static std::optional<GSInterlaceMode> s_override_interlace_mode;
 
@@ -520,18 +519,16 @@ u32 Patch::EnablePatches(const PatchList& patches, const EnablePatchList& enable
 	return count;
 }
 
-void Patch::ReloadPatches(std::string serial, u32 crc, bool force_reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed)
+void Patch::ReloadPatches(const std::string& serial, u32 crc, bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed)
 {
-	const bool serial_changed = (s_patches_serial != serial);
+	reload_files |= (s_patches_crc != crc);
 	s_patches_crc = crc;
-	s_patches_serial = std::move(serial);
 
-	// Skip reloading gamedb patches if the serial hasn't changed.
-	if (serial_changed)
+	if (reload_files)
 	{
 		s_gamedb_patches.clear();
 
-		const GameDatabaseSchema::GameEntry* game = GameDatabase::findGame(s_patches_serial);
+		const GameDatabaseSchema::GameEntry* game = GameDatabase::findGame(serial);
 		if (game)
 		{
 			const std::string* patches = game->findPatch(crc);
@@ -544,18 +541,10 @@ void Patch::ReloadPatches(std::string serial, u32 crc, bool force_reload_files, 
 
 			LoadDynamicPatches(game->dynaPatches);
 		}
-	}
 
-	ReloadPatches(serial_changed, reload_enabled_list, verbose, verbose_if_changed);
-}
-
-void Patch::ReloadPatches(bool force_reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed)
-{
-	if (force_reload_files)
-	{
 		s_game_patches.clear();
 		EnumeratePnachFiles(
-			s_patches_serial, s_patches_crc, false, false, [](const std::string& filename, const std::string& pnach_data) {
+			serial, s_patches_crc, false, false, [](const std::string& filename, const std::string& pnach_data) {
 				const u32 patch_count = LoadPatchesFromString(&s_game_patches, pnach_data);
 				if (patch_count > 0)
 					Console.WriteLn(Color_Green, fmt::format("Found {} game patches in {}.", patch_count, filename));
@@ -563,7 +552,7 @@ void Patch::ReloadPatches(bool force_reload_files, bool reload_enabled_list, boo
 
 		s_cheat_patches.clear();
 		EnumeratePnachFiles(
-			s_patches_serial, s_patches_crc, true, false, [](const std::string& filename, const std::string& pnach_data) {
+			serial, s_patches_crc, true, false, [](const std::string& filename, const std::string& pnach_data) {
 				const u32 patch_count = LoadPatchesFromString(&s_cheat_patches, pnach_data);
 				if (patch_count > 0)
 					Console.WriteLn(Color_Green, fmt::format("Found {} cheats in {}.", patch_count, filename));
@@ -584,9 +573,10 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 	s_override_interlace_mode.reset();
 
 	std::string message;
+	u32 gp_count = 0;
 	if (EmuConfig.EnablePatches)
 	{
-		const u32 gp_count = EnablePatches(s_gamedb_patches, EnablePatchList());
+		gp_count = EnablePatches(s_gamedb_patches, EnablePatchList());
 		if (gp_count > 0)
 			fmt::format_to(std::back_inserter(message), "{} GameDB patches", gp_count);
 	}
@@ -600,7 +590,9 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 		fmt::format_to(std::back_inserter(message), "{}{} cheat patches", message.empty() ? "" : ", ", c_count);
 
 	// Display message on first boot when we load patches.
-	if (verbose || (verbose_if_changed && prev_count != s_active_patches.size()))
+	// Except when it's just GameDB.
+	const bool just_gamedb = (p_count == 0 && c_count == 0 && gp_count > 0);
+	if (verbose || (verbose_if_changed && prev_count != s_active_patches.size() && !just_gamedb))
 	{
 		if (!message.empty())
 		{
@@ -673,7 +665,6 @@ void Patch::UnloadPatches()
 	s_override_interlace_mode = {};
 	s_override_aspect_ratio = {};
 	s_patches_crc = 0;
-	s_patches_serial = {};
 	s_active_patches = {};
 	s_active_dynamic_patches = {};
 	s_enabled_patches = {};

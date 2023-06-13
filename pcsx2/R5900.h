@@ -26,10 +26,6 @@ class BaseR5900Exception;
 // them in iR5900.h would mean having to include that into more files than I care to
 // right now, so we're sticking them here for now until a better solution comes along.
 
-extern bool g_SkipBiosHack;
-extern bool g_GameStarted;
-extern bool g_GameLoading;
-
 namespace Exception
 {
 	// Implementation Note: this exception has no meaningful type information and we don't
@@ -276,7 +272,6 @@ const u32 EELOAD_START		= 0x82000;
 const u32 EELOAD_SIZE		= 0x20000; // overestimate for searching
 extern u32 g_eeloadMain, g_eeloadExec;
 
-extern void eeGameStarting();
 extern void eeloadHook();
 extern void eeloadHook2();
 

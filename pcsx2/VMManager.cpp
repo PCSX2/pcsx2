@@ -86,14 +86,6 @@
 
 namespace VMManager
 {
-	enum class UpdateGameReason
-	{
-		Resetting,
-		GameStarting,
-		LoadingState,
-		SwappingDisc,
-	};
-
 	static void ApplyGameFixes();
 	static bool UpdateGameSettingsLayer();
 	static void CheckForConfigChanges(const Pcsx2Config& old_config);
@@ -107,11 +99,16 @@ namespace VMManager
 	static void EnforceAchievementsChallengeModeSettings();
 	static void LogUnsafeSettingsToConsole(const std::string& messages);
 	static void WarnAboutUnsafeSettings();
+	static void ResetFrameLimiterState();
 
 	static bool AutoDetectSource(const std::string& filename);
-	static bool ApplyBootParameters(VMBootParameters params, std::string* state_to_load);
-	static bool CheckBIOSAvailability();
-	static void UpdateRunningGame(UpdateGameReason reason);
+	static void UpdateDiscDetails(bool booting);
+	static void ClearDiscDetails();
+	static void HandleELFChange(bool verbose_patches_if_changed);
+	static void UpdateELFInfo(std::string elf_path);
+	static void ClearELFInfo();
+	static void ReportGameChangeToHost();
+	static bool HasBootedELF();
 
 	static std::string GetCurrentSaveStateFileName(s32 slot);
 	static bool DoLoadState(const char* filename);
@@ -124,7 +121,7 @@ namespace VMManager
 		s32 slot_for_message);
 
 	static void UpdateInhibitScreensaver(bool allow);
-	static void SaveSessionTime();
+	static void SaveSessionTime(const std::string& prev_serial);
 	static void ReloadPINE();
 
 	static void SetTimerResolutionIncreased(bool enabled);
@@ -152,16 +149,22 @@ static std::deque<std::thread> s_save_state_threads;
 static std::mutex s_save_state_threads_mutex;
 
 static std::recursive_mutex s_info_mutex;
-static std::string s_disc_path;
-static u32 s_game_crc;
-static u32 s_patches_crc;
-static std::string s_game_serial;
-static std::string s_game_name;
+static std::string s_disc_serial;
+static std::string s_disc_elf;
+static std::string s_disc_version;
+static std::string s_title;
+static u32 s_disc_crc;
+static u32 s_current_crc;
+static u32 s_elf_entry_point = 0xFFFFFFFFu;
+static std::string s_elf_path;
+static std::pair<u32, u32> s_elf_text_range;
+static bool s_elf_executed = false;
 static std::string s_elf_override;
 static std::string s_input_profile_name;
 static u32 s_active_game_fixes = 0;
 static u32 s_frame_advance_count = 0;
 static u32 s_mxcsr_saved;
+static bool s_fast_boot_requested = false;
 static bool s_gs_open_on_initialize = false;
 
 // Used to track play time. We use a monotonic timer here, in case of clock changes.
@@ -265,25 +268,43 @@ bool VMManager::HasValidVM()
 std::string VMManager::GetDiscPath()
 {
 	std::unique_lock lock(s_info_mutex);
-	return s_disc_path;
+	return CDVDsys_GetFile(CDVDsys_GetSourceType());
 }
 
-u32 VMManager::GetGameCRC()
+std::string VMManager::GetDiscSerial()
 {
 	std::unique_lock lock(s_info_mutex);
-	return s_game_crc;
+	return s_disc_serial;
 }
 
-std::string VMManager::GetGameSerial()
+std::string VMManager::GetDiscELF()
 {
 	std::unique_lock lock(s_info_mutex);
-	return s_game_serial;
+	return s_disc_elf;
 }
 
-std::string VMManager::GetGameName()
+std::string VMManager::GetTitle()
 {
 	std::unique_lock lock(s_info_mutex);
-	return s_game_name;
+	return s_title;
+}
+
+u32 VMManager::GetDiscCRC()
+{
+	std::unique_lock lock(s_info_mutex);
+	return s_disc_crc;
+}
+
+std::string VMManager::GetDiscVersion()
+{
+	std::unique_lock lock(s_info_mutex);
+	return s_disc_version;
+}
+
+u32 VMManager::GetCurrentCRC()
+{
+	std::unique_lock lock(s_info_mutex);
+	return s_current_crc;
 }
 
 bool VMManager::Internal::CPUThreadInitialize()
@@ -455,11 +476,17 @@ void VMManager::LoadSettings()
 void VMManager::ApplyGameFixes()
 {
 	s_active_game_fixes = 0;
+	if (!HasBootedELF())
+	{
+		// Instant DMA needs to be on for this BIOS (font rendering is broken without it, possible cache issues).
+		EmuConfig.Gamefixes.InstantDMAHack = true;
 
-	if (s_game_crc == 0)
+		// Disable user's manual hardware fixes, it might be problematic.
+		EmuConfig.GS.ManualUserHacks = false;
 		return;
+	}
 
-	const GameDatabaseSchema::GameEntry* game = GameDatabase::findGame(s_game_serial);
+	const GameDatabaseSchema::GameEntry* game = GameDatabase::findGame(s_disc_serial);
 	if (!game)
 		return;
 
@@ -513,7 +540,7 @@ void VMManager::Internal::UpdateEmuFolders()
 	if (VMManager::HasValidVM())
 	{
 		if (EmuFolders::Cheats != old_cheats_directory || EmuFolders::Patches != old_patches_directory)
-			Patch::ReloadPatches(s_game_serial, s_game_crc, true, false, true, true);
+			Patch::ReloadPatches(s_disc_serial, s_current_crc, true, false, true, true);
 
 		if (EmuFolders::MemoryCards != old_memcards_directory)
 		{
@@ -589,19 +616,19 @@ std::string VMManager::GetSerialForGameSettings()
 	// If we're running an ELF, we don't want to use the serial for any ISO override
 	// for game settings, since the game settings is where we define the override.
 	std::unique_lock lock(s_info_mutex);
-	return s_elf_override.empty() ? std::string(s_game_serial) : std::string();
+	return s_elf_override.empty() ? std::string(s_disc_serial) : std::string();
 }
 
 bool VMManager::UpdateGameSettingsLayer()
 {
 	std::unique_ptr<INISettingsInterface> new_interface;
-	if (s_game_crc != 0 && Host::GetBaseBoolSettingValue("EmuCore", "EnablePerGameSettings", true))
+	if (s_disc_crc != 0 && EmuConfig.EnablePerGameSettings)
 	{
-		std::string filename(GetGameSettingsPath(GetSerialForGameSettings(), s_game_crc));
+		std::string filename(GetGameSettingsPath(GetSerialForGameSettings(), s_disc_crc));
 		if (!FileSystem::FileExists(filename.c_str()))
 		{
 			// try the legacy format (crc.ini)
-			filename = GetGameSettingsPath({}, s_game_crc);
+			filename = GetGameSettingsPath({}, s_disc_crc);
 		}
 
 		if (FileSystem::FileExists(filename.c_str()))
@@ -673,106 +700,206 @@ bool VMManager::UpdateGameSettingsLayer()
 	return true;
 }
 
-void VMManager::UpdateRunningGame(UpdateGameReason reason)
+void VMManager::UpdateDiscDetails(bool booting)
 {
-	// The CRC can be known before the game actually starts (at the bios), so when
-	// we have the CRC but we're still at the bios and the settings are changed
-	// (e.g. the user presses TAB to speed up emulation), we don't want to apply the
-	// settings as if the game is already running (title, loadeding patches, etc).
-	u32 new_crc;
-	std::string new_serial;
-	if (!GSDumpReplayer::IsReplayingDump())
+	std::string memcardFilters;
 	{
-		const bool ingame = (ElfCRC && (g_GameLoading || g_GameStarted));
-		new_crc = ingame ? ElfCRC : 0;
-		new_serial = ingame ? SysGetDiscID() : SysGetBiosDiscID();
-	}
-	else
-	{
-		new_crc = GSDumpReplayer::GetDumpCRC();
-		new_serial = GSDumpReplayer::GetDumpSerial();
-	}
-
-	if (reason != UpdateGameReason::Resetting && s_game_crc == new_crc && s_game_serial == new_serial)
-		return;
-
-	{
+		// Only need to protect writes with the mutex.
 		std::unique_lock lock(s_info_mutex);
-		SaveSessionTime();
-		s_game_serial = std::move(new_serial);
-		s_game_crc = new_crc;
-		s_game_name.clear();
+		const std::string old_serial = std::move(s_disc_serial);
+		const u32 old_crc = s_disc_crc;
+		bool serial_is_valid = false;
+		std::string title;
 
-		std::string memcardFilters;
-
-		if (s_game_crc == 0)
+		if (GSDumpReplayer::IsReplayingDump())
 		{
-			s_game_name = "Booting PS2 BIOS...";
+			s_disc_serial = GSDumpReplayer::GetDumpSerial();
+			s_disc_crc = GSDumpReplayer::GetDumpCRC();
+			s_disc_elf = {};
+			s_disc_version = {};
+			serial_is_valid = !s_disc_serial.empty();
 		}
-		else if (const GameDatabaseSchema::GameEntry* game = GameDatabase::findGame(s_game_serial))
+		else if (CDVDsys_GetSourceType() != CDVD_SourceType::NoDisc)
 		{
-			if (!s_elf_override.empty())
-				s_game_name = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(s_elf_override));
-			else
-				s_game_name = game->name;
-
-			memcardFilters = game->memcardFiltersAsString();
+			cdvdGetDiscInfo(&s_disc_serial, &s_disc_elf, &s_disc_version, &s_disc_crc, nullptr);
+			serial_is_valid = !s_disc_serial.empty();
+		}
+		else if (!s_elf_override.empty())
+		{
+			s_disc_serial = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(s_elf_override));
+			s_disc_version = {};
+			s_disc_crc = 0; // set below
+			title = s_disc_serial;
 		}
 		else
 		{
-			Console.Warning(fmt::format("Serial '{}' not found in GameDB.", s_game_serial));
+			s_disc_serial = BiosSerial;
+			s_disc_version = {};
+			s_disc_crc = 0;
+			title = fmt::format("PS2 BIOS ({})", BiosZone);
 		}
 
-		sioSetGameSerial(memcardFilters.empty() ? s_game_serial : memcardFilters);
+		// If we're booting an ELF, use its CRC, not the disc (if any).
+		if (!s_elf_override.empty())
+			s_disc_crc = cdvdGetElfCRC(s_elf_override);
 
-		// If we don't reset the timer here, when using folder memcards the reindex will cause an eject,
-		// which a bunch of games don't like since they access the memory card on boot.
-		if (reason == UpdateGameReason::GameStarting || reason == UpdateGameReason::Resetting)
-			AutoEject::ClearAll();
+		if (!booting && s_disc_serial == old_serial && s_disc_crc == old_crc)
+		{
+			Console.WriteLn("Skipping disc details update, no change.");
+			return;
+		}
+
+		SaveSessionTime(old_serial);
+
+		if (serial_is_valid)
+		{
+			if (const GameDatabaseSchema::GameEntry* game = GameDatabase::findGame(s_disc_serial))
+			{
+				// Append the ELF override if we're using it with a disc.
+				if (!s_elf_override.empty())
+				{
+					title = fmt::format(
+						"{} [{}]", game->name, Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(s_elf_override)));
+				}
+				else
+				{
+					title = game->name;
+				}
+
+				memcardFilters = game->memcardFiltersAsString();
+			}
+			else
+			{
+				Console.Warning(fmt::format("Serial '{}' not found in GameDB.", s_disc_serial));
+
+				// Use ELF title, otherwise the serial.
+				if (!s_elf_override.empty())
+				{
+					title = fmt::format("Unknown Game: {} [{}]", s_disc_serial,
+						Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(s_elf_override)));
+				}
+				else
+				{
+					title = fmt::format("Unknown Game: {}", s_disc_serial);
+				}
+			}
+		}
+		else if (title.empty())
+		{
+			title = "Unknown Game";
+		}
+
+		s_title = std::move(title);
 	}
 
-	Console.WriteLn(Color_StrongGreen, "Game Changed:");
-	Console.WriteLn(Color_StrongGreen, fmt::format("  Name: {}", s_game_name));
-	Console.WriteLn(Color_StrongGreen, fmt::format("  Serial: {}", s_game_serial));
-	Console.WriteLn(Color_StrongGreen, fmt::format("  CRC: {:08X}", s_game_crc));
+	Console.WriteLn(Color_StrongGreen,
+		fmt::format("Disc changed to {}.", Path::GetFileName(CDVDsys_GetFile(CDVDsys_GetSourceType()))));
+	Console.WriteLn(Color_StrongGreen, fmt::format("  Name: {}", s_title));
+	Console.WriteLn(Color_StrongGreen, fmt::format("  Serial: {}", s_disc_serial));
+	Console.WriteLn(Color_StrongGreen, fmt::format("  Version: {}", s_disc_version));
+	Console.WriteLn(Color_StrongGreen, fmt::format("  CRC: {:08X}", s_disc_crc));
 
-	// When resetting, patches need to get removed here, because there's no entry point being compiled.
-	if (reason == UpdateGameReason::Resetting || reason == UpdateGameReason::LoadingState)
-		Patch::ReloadPatches(s_game_serial, s_game_crc, false, false, false, false);
+	sioSetGameSerial(memcardFilters.empty() ? s_disc_serial : memcardFilters);
+
+	// If we don't reset the timer here, when using folder memcards the reindex will cause an eject,
+	// which a bunch of games don't like since they access the memory card on boot.
+	if (booting)
+		AutoEject::ClearAll();
 
 	UpdateGameSettingsLayer();
-
-	// Must be done before ApplySettings(), so WS/NI configs are picked up.
-	// Actual patch files get loaded on the entry point compiling.
-	Patch::UpdateActivePatches(true, false, s_game_crc != 0);
-
 	ApplySettings();
 
-	if (reason != UpdateGameReason::LoadingState)
-	{
-		// Clear the memory card eject notification again when booting for the first time, or starting.
-		// Otherwise, games think the card was removed on boot.
-		if (reason == UpdateGameReason::GameStarting || reason == UpdateGameReason::Resetting)
-			AutoEject::ClearAll();
-
-		MIPSAnalyst::ScanForFunctions(
-			R5900SymbolMap, ElfTextRange.first, ElfTextRange.first + ElfTextRange.second, true);
-		R5900SymbolMap.UpdateActiveSymbols();
-		R3000SymbolMap.UpdateActiveSymbols();
-	}
+	// Patches are game-dependent, thus should get applied after game settings ia loaded.
+	Patch::ReloadPatches(s_disc_serial, HasBootedELF() ? s_current_crc : 0, true, true, false, false);
 
 	// Per-game ini enabling of hardcore mode. We need to re-enforce the settings if so.
-	if (reason == UpdateGameReason::GameStarting && Achievements::ResetChallengeMode())
+	if (booting && Achievements::ResetChallengeMode())
 		ApplySettings();
 
-	GetMTGS().SendGameCRC(new_crc);
-
-	FullscreenUI::GameChanged(s_disc_path, s_game_serial, s_game_name, s_game_crc);
-	Achievements::GameChanged(s_game_crc);
+	ReportGameChangeToHost();
+	Achievements::GameChanged(s_disc_crc, s_current_crc);
 	ReloadPINE();
 	UpdateDiscordPresence(Achievements::GetRichPresenceString());
+}
 
-	Host::OnGameChanged(s_disc_path, s_elf_override, s_game_serial, s_game_name, s_game_crc);
+void VMManager::ClearDiscDetails()
+{
+	std::unique_lock lock(s_info_mutex);
+	s_disc_crc = 0;
+	s_title = {};
+	s_disc_version = {};
+	s_disc_elf = {};
+	s_disc_serial = {};
+}
+
+void VMManager::HandleELFChange(bool verbose_patches_if_changed)
+{
+	// Classic chicken and egg problem here. We don't want to update the running game
+	// until the game entry point actually runs, because that can update settings, which
+	// can flush the JIT, etc. But we need to apply patches for games where the entry
+	// point is in the patch (e.g. WRC 4). So. Gross, but the only way to handle it really.
+	const u32 crc_to_report = HasBootedELF() ? s_current_crc : 0;
+
+	ReportGameChangeToHost();
+	Achievements::GameChanged(s_disc_crc, crc_to_report);
+
+	Console.WriteLn(Color_StrongOrange, fmt::format("ELF changed, active CRC {:08X} ({})", crc_to_report, s_elf_path));
+	Patch::ReloadPatches(s_disc_serial, crc_to_report, false, false, false, verbose_patches_if_changed);
+	ApplySettings();
+
+	MIPSAnalyst::ScanForFunctions(
+		R5900SymbolMap, s_elf_text_range.first, s_elf_text_range.first + s_elf_text_range.second, true);
+	R5900SymbolMap.UpdateActiveSymbols();
+	R3000SymbolMap.UpdateActiveSymbols();
+}
+
+void VMManager::UpdateELFInfo(std::string elf_path)
+{
+	try
+	{
+		std::unique_ptr<ElfObject> elfptr = cdvdLoadElf(elf_path, false);
+		elfptr->loadHeaders();
+		s_current_crc = elfptr->getCRC();
+		s_elf_entry_point = elfptr->getEntryPoint();
+		s_elf_text_range = elfptr->getTextRange();
+		s_elf_path = std::move(elf_path);
+		return;
+	}
+	catch ([[maybe_unused]] Exception::FileNotFound& e)
+	{
+	}
+	catch (Exception::BadStream& ex)
+	{
+		Console.Error(ex.FormatDiagnosticMessage());
+	}
+
+	Console.Error(fmt::format("Failed to read ELF being loaded: {}", elf_path));
+	s_elf_path = {};
+	s_elf_text_range = {};
+	s_elf_entry_point = 0xFFFFFFFFu;
+	s_current_crc = 0;
+}
+
+void VMManager::ClearELFInfo()
+{
+	s_current_crc = 0;
+	s_elf_executed = false;
+	s_elf_text_range = {};
+	s_elf_path = {};
+	s_elf_entry_point = 0xFFFFFFFFu;
+}
+
+void VMManager::ReportGameChangeToHost()
+{
+	const std::string& disc_path = CDVDsys_GetFile(CDVDsys_GetSourceType());
+	const u32 crc_to_report = HasBootedELF() ? s_current_crc : 0;
+	FullscreenUI::GameChanged(disc_path, s_disc_serial, s_title, s_disc_crc, crc_to_report);
+	Host::OnGameChanged(s_title, s_elf_override, disc_path, s_disc_serial, s_disc_crc, crc_to_report);
+}
+
+bool VMManager::HasBootedELF()
+{
+	return s_current_crc != 0 && s_elf_executed;
 }
 
 static LimiterModeType GetInitialLimiterMode()
@@ -800,12 +927,11 @@ bool VMManager::AutoDetectSource(const std::string& filename)
 		{
 			// alternative way of booting an elf, change the elf override, and (optionally) use the disc
 			// specified in the game settings.
-			std::string disc_path(GetDiscOverrideFromGameSettings(filename));
+			std::string disc_path = GetDiscOverrideFromGameSettings(filename);
 			if (!disc_path.empty())
 			{
-				CDVDsys_SetFile(CDVD_SourceType::Iso, disc_path);
+				CDVDsys_SetFile(CDVD_SourceType::Iso, std::move(disc_path));
 				CDVDsys_ChangeSource(CDVD_SourceType::Iso);
-				s_disc_path = std::move(disc_path);
 			}
 			else
 			{
@@ -820,7 +946,6 @@ bool VMManager::AutoDetectSource(const std::string& filename)
 			// TODO: Maybe we should check if it's a valid iso here...
 			CDVDsys_SetFile(CDVD_SourceType::Iso, filename);
 			CDVDsys_ChangeSource(CDVD_SourceType::Iso);
-			s_disc_path = filename;
 			return true;
 		}
 	}
@@ -828,104 +953,9 @@ bool VMManager::AutoDetectSource(const std::string& filename)
 	{
 		// make sure we're not fast booting when we have no filename
 		CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
-		EmuConfig.UseBOOT2Injection = false;
+		s_fast_boot_requested = false;
 		return true;
 	}
-}
-
-bool VMManager::ApplyBootParameters(VMBootParameters params, std::string* state_to_load)
-{
-	const bool default_fast_boot = Host::GetBoolSettingValue("EmuCore", "EnableFastBoot", true);
-	EmuConfig.UseBOOT2Injection = params.fast_boot.value_or(default_fast_boot);
-
-	s_elf_override = std::move(params.elf_override);
-	s_disc_path.clear();
-	if (!params.save_state.empty())
-		*state_to_load = std::move(params.save_state);
-
-	// if we're loading an indexed save state, we need to get the serial/crc from the disc.
-	if (params.state_index.has_value())
-	{
-		if (params.filename.empty())
-		{
-			Host::ReportErrorAsync("Error", "Cannot load an indexed save state without a boot filename.");
-			return false;
-		}
-
-		*state_to_load = GetSaveStateFileName(params.filename.c_str(), params.state_index.value());
-		if (state_to_load->empty())
-		{
-			Host::ReportErrorAsync("Error", "Could not resolve path indexed save state load.");
-			return false;
-		}
-	}
-
-#ifdef ENABLE_ACHIEVEMENTS
-	// Check for resuming with hardcore mode.
-	Achievements::ResetChallengeMode();
-	if (!state_to_load->empty() && Achievements::ChallengeModeActive() &&
-		!Achievements::ConfirmChallengeModeDisable("Resuming state"))
-	{
-		return false;
-	}
-#endif
-
-	// resolve source type
-	if (params.source_type.has_value())
-	{
-		if (params.source_type.value() == CDVD_SourceType::Iso && !FileSystem::FileExists(params.filename.c_str()))
-		{
-			Host::ReportErrorAsync("Error", fmt::format("Requested filename '{}' does not exist.", params.filename));
-			return false;
-		}
-
-		// Use specified source type.
-		s_disc_path = std::move(params.filename);
-		CDVDsys_SetFile(params.source_type.value(), s_disc_path);
-		CDVDsys_ChangeSource(params.source_type.value());
-	}
-	else
-	{
-		// Automatic type detection of boot parameter based on filename.
-		if (!AutoDetectSource(params.filename))
-			return false;
-	}
-
-	if (!s_elf_override.empty())
-	{
-		if (!FileSystem::FileExists(s_elf_override.c_str()))
-		{
-			Host::ReportErrorAsync("Error", fmt::format("Requested boot ELF '{}' does not exist.", s_elf_override));
-			return false;
-		}
-
-		Hle_SetElfPath(s_elf_override.c_str());
-		EmuConfig.UseBOOT2Injection = true;
-	}
-	else
-	{
-		Hle_ClearElfPath();
-	}
-
-	return true;
-}
-
-bool VMManager::CheckBIOSAvailability()
-{
-	if (IsBIOSAvailable(EmuConfig.FullpathToBios()))
-		return true;
-
-	// TODO: When we translate core strings, translate this.
-
-	const char* message = "PCSX2 requires a PS2 BIOS in order to run.\n\n"
-						  "For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing "
-						  "doesn't count).\n\n"
-						  "Once dumped, this BIOS image should be placed in the bios folder within the data directory "
-						  "(Tools Menu -> Open Data Directory).\n\n"
-						  "Please consult the FAQs and Guides for further instructions.";
-
-	Host::ReportErrorAsync("Startup Error", message);
-	return false;
 }
 
 bool VMManager::Initialize(VMBootParameters boot_params)
@@ -947,28 +977,135 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		if (GSDumpReplayer::IsReplayingDump())
 			GSDumpReplayer::Shutdown();
 
-		s_vm_thread_handle = {};
+		s_elf_override = {};
+		ClearELFInfo();
+		ClearDiscDetails();
+		UpdateGameSettingsLayer();
 		s_state.store(VMState::Shutdown, std::memory_order_release);
 		Host::OnVMDestroyed();
+		ApplySettings();
 	};
 
 	std::string state_to_load;
-	if (!ApplyBootParameters(std::move(boot_params), &state_to_load))
-		return false;
 
-	EmuConfig.LimiterMode = GetInitialLimiterMode();
+	s_fast_boot_requested = boot_params.fast_boot.value_or(static_cast<bool>(EmuConfig.EnableFastBoot));
 
-	// early out if we don't have a bios
-	if (!GSDumpReplayer::IsReplayingDump() && !CheckBIOSAvailability())
-		return false;
+	s_elf_override = std::move(boot_params.elf_override);
+	if (!boot_params.save_state.empty())
+		state_to_load = std::move(boot_params.save_state);
+
+	// if we're loading an indexed save state, we need to get the serial/crc from the disc.
+	if (boot_params.state_index.has_value())
+	{
+		if (boot_params.filename.empty())
+		{
+			Host::ReportErrorAsync("Error", "Cannot load an indexed save state without a boot filename.");
+			return false;
+		}
+
+		state_to_load = GetSaveStateFileName(boot_params.filename.c_str(), boot_params.state_index.value());
+		if (state_to_load.empty())
+		{
+			Host::ReportErrorAsync("Error", "Could not resolve path indexed save state load.");
+			return false;
+		}
+	}
+
+	// resolve source type
+	if (boot_params.source_type.has_value())
+	{
+		if (boot_params.source_type.value() == CDVD_SourceType::Iso &&
+			!FileSystem::FileExists(boot_params.filename.c_str()))
+		{
+			Host::ReportErrorAsync(
+				"Error", fmt::format("Requested filename '{}' does not exist.", boot_params.filename));
+			return false;
+		}
+
+		// Use specified source type.
+		CDVDsys_SetFile(boot_params.source_type.value(), std::move(boot_params.filename));
+		CDVDsys_ChangeSource(boot_params.source_type.value());
+	}
+	else
+	{
+		// Automatic type detection of boot parameter based on filename.
+		if (!AutoDetectSource(boot_params.filename))
+			return false;
+	}
+
+	ScopedGuard close_cdvd_files = [] {
+		CDVDsys_ClearFiles();
+		if (GSDumpReplayer::IsReplayingDump())
+			GSDumpReplayer::Shutdown();
+	};
+
+	// Playing GS dumps don't need a BIOS.
+	if (!GSDumpReplayer::IsReplayingDump())
+	{
+		Console.WriteLn("Loading BIOS...");
+		if (!LoadBIOS())
+		{
+			// TODO: When we translate core strings, translate this.
+
+			const char* message =
+				"PCSX2 requires a PS2 BIOS in order to run.\n\n"
+				"For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing "
+				"doesn't count).\n\n"
+				"Once dumped, this BIOS image should be placed in the bios folder within the data directory "
+				"(Tools Menu -> Open Data Directory).\n\n"
+				"Please consult the FAQs and Guides for further instructions.";
+
+			Host::ReportErrorAsync("Startup Error", message);
+			return false;
+		}
+	}
 
 	Console.WriteLn("Opening CDVD...");
 	if (!DoCDVDopen())
 	{
 		Host::ReportErrorAsync("Startup Error", "Failed to initialize CDVD.");
+		CDVDsys_ClearFiles();
 		return false;
 	}
-	ScopedGuard close_cdvd = [] { DoCDVDclose(); };
+
+	// Figure out which game we're running! This also loads game settings.
+	UpdateDiscDetails(true);
+
+	if (!s_elf_override.empty())
+	{
+		if (!FileSystem::FileExists(s_elf_override.c_str()))
+		{
+			Host::ReportErrorAsync("Error", fmt::format("Requested boot ELF '{}' does not exist.", s_elf_override));
+			DoCDVDclose();
+			CDVDsys_ClearFiles();
+			return false;
+		}
+
+		Hle_SetElfPath(s_elf_override.c_str());
+		s_fast_boot_requested = true;
+	}
+	else
+	{
+		Hle_ClearElfPath();
+	}
+
+#ifdef ENABLE_ACHIEVEMENTS
+	// Check for resuming with hardcore mode.
+	Achievements::ResetChallengeMode();
+	if (!state_to_load.empty() && Achievements::ChallengeModeActive() &&
+		!Achievements::ConfirmChallengeModeDisable("Resuming state"))
+	{
+		DoCDVDclose();
+		CDVDsys_ClearFiles();
+		return false;
+	}
+#endif
+
+	ScopedGuard close_cdvd = [] {
+		DoCDVDclose();
+		CDVDsys_ClearFiles();
+	};
+	EmuConfig.LimiterMode = GetInitialLimiterMode();
 
 	Console.WriteLn("Opening GS...");
 	s_gs_open_on_initialize = GetMTGS().IsOpen();
@@ -1040,6 +1177,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	close_spu2.Cancel();
 	close_gs.Cancel();
 	close_cdvd.Cancel();
+	close_cdvd_files.Cancel();
 	close_state.Cancel();
 
 #if defined(_M_X86)
@@ -1063,8 +1201,6 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	Host::OnVMStarted();
 	FullscreenUI::OnVMStarted();
 	UpdateInhibitScreensaver(EmuConfig.InhibitScreensaver);
-
-	UpdateRunningGame(UpdateGameReason::Resetting);
 
 	SetEmuThreadAffinities();
 
@@ -1108,26 +1244,19 @@ void VMManager::Shutdown(bool save_resume_state)
 	}
 
 	{
-		LastELF.clear();
-		DiscSerial.clear();
-		ElfCRC = 0;
-		ElfEntry = 0;
-		ElfTextRange = {};
-
 		std::unique_lock lock(s_info_mutex);
-		SaveSessionTime();
-		s_disc_path.clear();
-		s_elf_override.clear();
-		s_game_crc = 0;
-		s_patches_crc = 0;
-		s_game_serial.clear();
-		s_game_name.clear();
-		Achievements::GameChanged(s_game_crc);
-		FullscreenUI::GameChanged(s_disc_path, s_game_serial, s_game_name, 0);
+		SaveSessionTime(s_disc_serial);
+		s_elf_override = {};
+		ClearELFInfo();
+		ClearDiscDetails();
+		CDVDsys_ClearFiles();
+		Achievements::GameChanged(0, 0);
+		FullscreenUI::GameChanged(s_title, std::string(), s_disc_serial, 0, 0);
 		UpdateDiscordPresence(Achievements::GetRichPresenceString());
-		Host::OnGameChanged(s_disc_path, s_elf_override, s_game_serial, s_game_name, 0);
+		Host::OnGameChanged(s_title, std::string(), std::string(), s_disc_serial, 0, 0);
 	}
 	s_active_game_fixes = 0;
+	s_fast_boot_requested = false;
 
 	UpdateGameSettingsLayer();
 
@@ -1194,19 +1323,16 @@ void VMManager::Reset()
 		return;
 #endif
 
-	const bool game_was_started = g_GameStarted;
-
-	s_active_game_fixes = 0;
+	const bool elf_was_changed = (s_current_crc != 0);
+	ClearELFInfo();
+	if (elf_was_changed)
+		HandleELFChange(false);
 
 	SysClearExecutionCache();
 	memBindConditionalHandlers();
 	UpdateVSyncRate(true);
 	frameLimitReset();
 	cpuReset();
-
-	// gameid change, so apply settings
-	if (game_was_started)
-		UpdateRunningGame(UpdateGameReason::Resetting);
 
 	if (g_InputRecording.isActive())
 	{
@@ -1219,10 +1345,43 @@ void VMManager::Reset()
 		s_state.store(VMState::Running, std::memory_order_release);
 }
 
+void SaveStateBase::vmFreeze()
+{
+	const u32 prev_crc = s_current_crc;
+	const std::string prev_elf = s_elf_path;
+	const bool prev_elf_executed = s_elf_executed;
+	Freeze(s_current_crc);
+	FreezeString(s_elf_path);
+	Freeze(s_elf_executed);
+
+	// We have to test all the variables here, because we could be loading a state created during ELF load, after the ELF has loaded.
+	if (IsLoading())
+	{
+		// Might need new ELF info.
+		if (s_elf_path != prev_elf)
+		{
+			if (s_elf_path.empty())
+			{
+				// Shouldn't have executed a non-existant ELF.. unless you load state created from a deleted ELF override I guess.
+				if (s_elf_executed)
+					Console.Error("Somehow executed a non-existant ELF");
+				VMManager::ClearELFInfo();
+			}
+			else
+			{
+				VMManager::UpdateELFInfo(std::move(s_elf_path));
+			}
+		}
+
+		if (s_current_crc != prev_crc || s_elf_path != prev_elf || s_elf_executed != prev_elf_executed)
+			VMManager::HandleELFChange(true);
+	}
+}
+
 std::string VMManager::GetSaveStateFileName(const char* game_serial, u32 game_crc, s32 slot)
 {
 	std::string filename;
-	if (game_crc != 0)
+	if (std::strlen(game_serial) > 0)
 	{
 		if (slot < 0)
 			filename = fmt::format("{} ({:08X}).resume.p2s", game_serial, game_crc);
@@ -1257,7 +1416,7 @@ bool VMManager::HasSaveStateInSlot(const char* game_serial, u32 game_crc, s32 sl
 std::string VMManager::GetCurrentSaveStateFileName(s32 slot)
 {
 	std::unique_lock lock(s_info_mutex);
-	return GetSaveStateFileName(s_game_serial.c_str(), s_game_crc, slot);
+	return GetSaveStateFileName(s_disc_serial.c_str(), s_disc_crc, slot);
 }
 
 bool VMManager::DoLoadState(const char* filename)
@@ -1269,7 +1428,6 @@ bool VMManager::DoLoadState(const char* filename)
 	{
 		Host::OnSaveStateLoading(filename);
 		SaveState_UnzipFromDisk(filename);
-		UpdateRunningGame(UpdateGameReason::LoadingState);
 		Host::OnSaveStateLoaded(filename, true);
 		if (g_InputRecording.isActive())
 		{
@@ -1533,6 +1691,7 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 	}
 	cdvd.Tray.cdvdActionSeconds = 1;
 	cdvd.Tray.trayState = CDVD_DISC_OPEN;
+	UpdateDiscDetails(false);
 	return result;
 }
 
@@ -1611,7 +1770,34 @@ VsyncMode Host::GetEffectiveVSyncMode()
 	return EmuConfig.GS.VsyncEnable;
 }
 
-const std::string& VMManager::Internal::GetElfOverride()
+bool VMManager::Internal::IsFastBootInProgress()
+{
+	return s_fast_boot_requested && !HasBootedELF();
+}
+
+void VMManager::Internal::DisableFastBoot()
+{
+	if (!s_fast_boot_requested)
+		return;
+
+	s_fast_boot_requested = false;
+
+	// Stop fast forwarding boot if enabled.
+	if (EmuConfig.EnableFastBootFastForward && !s_elf_executed)
+		ResetFrameLimiterState();
+}
+
+bool VMManager::Internal::HasBootedELF()
+{
+	return VMManager::HasBootedELF();
+}
+
+u32 VMManager::Internal::GetCurrentELFEntryPoint()
+{
+	return s_elf_entry_point;
+}
+
+const std::string& VMManager::Internal::GetELFOverride()
 {
 	return s_elf_override;
 }
@@ -1621,27 +1807,46 @@ bool VMManager::Internal::IsExecutionInterrupted()
 	return s_state.load(std::memory_order_relaxed) != VMState::Running || s_cpu_implementation_changed;
 }
 
+void VMManager::Internal::ELFLoadingOnCPUThread(std::string elf_path)
+{
+	const bool was_running_bios = (s_current_crc == 0);
+
+	UpdateELFInfo(std::move(elf_path));
+	Console.WriteLn(Color_StrongBlue, fmt::format("ELF Loading: {}, Game CRC = {:08X}, EntryPoint = 0x{:08X}",
+										  s_elf_path, s_current_crc, s_elf_entry_point));
+	s_elf_executed = false;
+
+	// Remove patches, if we're changing games, we don't want to be applying the patch for the old game while it's loading.
+	if (!was_running_bios)
+	{
+		Patch::ReloadPatches(s_disc_serial, 0, false, false, false, true);
+		ApplySettings();
+	}
+}
+
 void VMManager::Internal::EntryPointCompilingOnCPUThread()
 {
-	// Classic chicken and egg problem here. We don't want to update the running game
-	// until the game entry point actually runs, because that can update settings, which
-	// can flush the JIT, etc. But we need to apply patches for games where the entry
-	// point is in the patch (e.g. WRC 4). So. Gross, but the only way to handle it really.
-	Patch::ReloadPatches(SysGetDiscID(), ElfCRC, false, false, false, true);
-	Patch::ApplyLoadedPatches(Patch::PPT_ONCE_ON_LOAD);
-}
+	if (s_elf_executed)
+		return;
 
-void VMManager::Internal::GameStartingOnCPUThread()
-{
-	// See note above.
-	UpdateRunningGame(UpdateGameReason::GameStarting);
-	Patch::ApplyLoadedPatches(Patch::PPT_ONCE_ON_LOAD);
-	Patch::ApplyLoadedPatches(Patch::PPT_COMBINED_0_1);
-}
+	const bool reset_speed_limiter = (EmuConfig.EnableFastBootFastForward && IsFastBootInProgress());
 
-void VMManager::Internal::SwappingGameOnCPUThread()
-{
-	UpdateRunningGame(UpdateGameReason::SwappingDisc);
+	Console.WriteLn(
+		Color_StrongGreen, fmt::format("ELF {} with entry point at 0x{} is executing.", s_elf_path, s_elf_entry_point));
+	s_elf_executed = true;
+
+	if (reset_speed_limiter)
+	{
+		ResetFrameLimiterState();
+		PerformanceMetrics::Reset();
+	}
+
+	HandleELFChange(true);
+
+	Patch::ApplyLoadedPatches(Patch::PPT_ONCE_ON_LOAD);
+
+	// Toss all the recs, we're going to be executing new code.
+	SysClearExecutionCache();
 }
 
 void VMManager::Internal::VSyncOnCPUThread()
@@ -1731,9 +1936,7 @@ void VMManager::CheckForGSConfigChanges(const Pcsx2Config& old_config)
 	if (EmuConfig.GS.FrameLimitEnable != old_config.GS.FrameLimitEnable)
 		EmuConfig.LimiterMode = GetInitialLimiterMode();
 
-	gsUpdateFrequency(EmuConfig);
-	UpdateVSyncRate(true);
-	frameLimitReset();
+	ResetFrameLimiterState();
 	GetMTGS().ApplySettings();
 }
 
@@ -1818,16 +2021,22 @@ void VMManager::CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config)
 	std::string sioSerial;
 	{
 		std::unique_lock lock(s_info_mutex);
-		if (const GameDatabaseSchema::GameEntry* game = GameDatabase::findGame(s_game_serial))
+		if (const GameDatabaseSchema::GameEntry* game = GameDatabase::findGame(s_disc_serial))
 			sioSerial = game->memcardFiltersAsString();
 		if (sioSerial.empty())
-			sioSerial = s_game_serial;
+			sioSerial = s_disc_serial;
 	}
 	sioSetGameSerial(sioSerial);
 }
 
 void VMManager::CheckForMiscConfigChanges(const Pcsx2Config& old_config)
 {
+	if (EmuConfig.EnableFastBootFastForward && !old_config.EnableFastBootFastForward &&
+		VMManager::Internal::IsFastBootInProgress())
+	{
+		ResetFrameLimiterState();
+	}
+
 	if (EmuConfig.InhibitScreensaver != old_config.InhibitScreensaver)
 		UpdateInhibitScreensaver(EmuConfig.InhibitScreensaver && VMManager::GetState() == VMState::Running);
 
@@ -1868,6 +2077,13 @@ void VMManager::CheckForConfigChanges(const Pcsx2Config& old_config)
 	Host::CheckForSettingsChanges(old_config);
 }
 
+void VMManager::ResetFrameLimiterState()
+{
+	gsUpdateFrequency(EmuConfig);
+	UpdateVSyncRate(true);
+	frameLimitReset();
+}
+
 void VMManager::ApplySettings()
 {
 	Console.WriteLn("Applying settings...");
@@ -1899,6 +2115,18 @@ bool VMManager::ReloadGameSettings()
 	Patch::UpdateActivePatches(true, false, true);
 	ApplySettings();
 	return true;
+}
+
+void VMManager::ReloadPatches(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed)
+{
+	if (!HasValidVM())
+		return;
+
+	Patch::ReloadPatches(s_disc_serial, HasBootedELF() ? s_current_crc : 0, reload_files, reload_enabled_list, verbose, verbose_if_changed);
+
+	// Might change widescreen mode.
+	if (Patch::ReloadPatchAffectingOptions())
+		ApplySettings();
 }
 
 void VMManager::EnforceAchievementsChallengeModeSettings()
@@ -2080,16 +2308,20 @@ void VMManager::UpdateInhibitScreensaver(bool inhibit)
 		Console.Warning("Failed to inhibit screen saver.");
 }
 
-void VMManager::SaveSessionTime()
+void VMManager::SaveSessionTime(const std::string& prev_serial)
 {
+	// Don't save time when running dumps, just messes up your list.
+	if (GSDumpReplayer::IsReplayingDump())
+		return;
+
 	const u64 ctime = Common::Timer::GetCurrentValue();
-	if (!s_game_serial.empty() && s_game_crc != 0)
+	if (!prev_serial.empty())
 	{
 		// round up to seconds
 		const std::time_t etime =
 			static_cast<std::time_t>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_session_start_time)));
 		const std::time_t wtime = std::time(nullptr);
-		GameList::AddPlayedTimeForSerial(s_game_serial, wtime, etime);
+		GameList::AddPlayedTimeForSerial(prev_serial, wtime, etime);
 	}
 
 	s_session_start_time = ctime;
@@ -2428,13 +2660,7 @@ void VMManager::UpdateDiscordPresence(const std::string& rich_presence)
 	rp.largeImageKey = "4k-pcsx2";
 	rp.largeImageText = "PCSX2 Emulator";
 	rp.startTimestamp = std::time(nullptr);
-
-	std::string details_string;
-	if (VMManager::HasValidVM())
-		details_string = VMManager::GetGameName();
-	else
-		details_string = "No Game Running";
-	rp.details = details_string.c_str();
+	rp.details = s_title.empty() ? "No Game Running" : s_title.c_str();
 
 	// Trim to 128 bytes as per Discord-RPC requirements
 	std::string state_string;

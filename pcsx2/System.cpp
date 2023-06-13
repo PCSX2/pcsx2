@@ -346,34 +346,3 @@ void SysClearExecutionCache()
 		dVifReset(1);
 	}
 }
-
-// This function returns part of EXTINFO data of the BIOS rom
-// This module contains information about Sony build environment at offst 0x10
-// first 15 symbols is build date/time that is unique per rom and can be used as unique serial
-// Example for romver 0160EC20010704
-// 20010704-160707,ROMconf,PS20160EC20010704.bin,kuma@rom-server/~/f10k/g/app/rom
-// 20010704-160707 can be used as unique ID for Bios
-std::string SysGetBiosDiscID()
-{
-	if (!BiosSerial.empty())
-		return BiosSerial;
-	else
-		return {};
-}
-
-// This function always returns a valid DiscID -- using the Sony serial when possible, and
-// falling back on the CRC checksum of the ELF binary if the PS2 software being run is
-// homebrew or some other serial-less item.
-std::string SysGetDiscID()
-{
-	if (!DiscSerial.empty())
-		return DiscSerial;
-
-	if (!ElfCRC)
-	{
-		// system is currently running the BIOS
-		return SysGetBiosDiscID();
-	}
-
-	return StringUtil::StdStringFromFormat("%08x", ElfCRC);
-}
