@@ -116,9 +116,10 @@ Normally, PCSX2 will launch the PS2 BIOS, which will then launch the game. Some 
 
 Fast Boot will directly mount and launch the game without first launching the PS2 BIOS. On versions 1.6 and below, this may cause some multi-language games to boot into the wrong language.
 
-### Question 18: How do I compile the PCSX2 source code?
-*   [Windows compile guide](https://wiki.pcsx2.net/PCSX2_Documentation/Compiling_on_Windows)
-*   [Linux compile guide](https://wiki.pcsx2.net/PCSX2_Documentation/Compiling_on_Linux)
+### Question 18: How do I build the PCSX2 source code?
+*   [Windows build guide](https://github.com/PCSX2/pcsx2/wiki/Setting-up-the-PCSX2-repository-on-Windows)
+*   [MacOS build guide](https://github.com/PCSX2/pcsx2/wiki/Building-on-MacOS)
+*   [Linux build guide](https://github.com/PCSX2/pcsx2/wiki/Installing-on-Linux)
 
 ### Question 19: When will the next version be released?
 It will be released when it is ready. Please don't waste your time and ours asking when.
