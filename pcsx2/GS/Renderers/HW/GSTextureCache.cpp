@@ -2294,18 +2294,29 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 						}
 						else
 						{
-							i = list.erase(j);
-							GL_CACHE("TC: Tex in RT Remove Target(%s) (0x%x) TPSM %x PSM %x bp 0x%x x %d y %d z %d w %d", to_string(type),
-								t->m_TEX0.TBP0,
-								t->m_TEX0.PSM,
-								psm,
-								bp,
-								r.x,
-								r.y,
-								r.z,
-								r.w);
-							delete t;
-							continue;
+							// Be careful of textures inside RT's which are outside of what's being invalidated. (Indiana Jones Emperor's Tomb)
+							if (can_translate)
+							{
+								DirtyRectByPage(bp, psm, bw, t, r);
+							}
+							else
+							{
+								SurfaceOffsetKey sok;
+								sok.elems[0].bp = bp;
+								sok.elems[0].bw = bw;
+								sok.elems[0].psm = psm;
+								sok.elems[0].rect = r;
+								sok.elems[1].bp = t->m_TEX0.TBP0;
+								sok.elems[1].bw = t->m_TEX0.TBW;
+								sok.elems[1].psm = t->m_TEX0.PSM;
+								sok.elems[1].rect = t->m_valid;
+
+								const SurfaceOffset so = ComputeSurfaceOffset(sok);
+								if (so.is_valid)
+								{
+									AddDirtyRectTarget(t, so.b2a_offset, t->m_TEX0.PSM, t->m_TEX0.TBW, rgba);
+								}
+							}
 						}
 					}
 					else if (can_translate)
