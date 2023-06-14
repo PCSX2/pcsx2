@@ -196,7 +196,6 @@ private:
 #define SafeSysMunmap(ptr, size) \
 	((void)(HostSys::Munmap(ptr, size), (ptr) = 0))
 
-extern void InitCPUTicks();
 extern u64 GetTickFrequency();
 extern u64 GetCPUTicks();
 extern u64 GetPhysicalMemory();

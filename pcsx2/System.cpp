@@ -103,19 +103,17 @@ void SysLogMachineCaps()
 		GetOSVersionString().c_str(),
 		(u32)(GetPhysicalMemory() / _1mb));
 
-	u32 speed = x86caps.CalculateMHz();
 
 	Console.Indent().WriteLn(
 		"CPU name         =  %s\n"
 		"Vendor/Model     =  %s (stepping %02X)\n"
-		"CPU speed        =  %u.%03u ghz (%u logical thread%ls)\n"
+		"Logical Cores    =  %u\n"
 		"x86PType         =  %s\n"
 		"x86Flags         =  %08x %08x\n"
 		"x86EFlags        =  %08x",
 		x86caps.FamilyName,
 		x86caps.VendorName, x86caps.StepID,
-		speed / 1000, speed % 1000,
-		x86caps.LogicalCores, (x86caps.LogicalCores == 1) ? L"" : L"s",
+		x86caps.LogicalCores,
 		x86caps.GetTypeName(),
 		x86caps.Flags, x86caps.Flags2,
 		x86caps.EFlags);

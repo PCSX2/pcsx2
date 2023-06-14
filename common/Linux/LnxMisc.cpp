@@ -47,11 +47,6 @@ u64 GetPhysicalMemory()
 	return pages * getpagesize();
 }
 
-
-void InitCPUTicks()
-{
-}
-
 u64 GetTickFrequency()
 {
 	return 1000000000; // unix measures in nanoseconds

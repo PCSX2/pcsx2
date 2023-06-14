@@ -306,7 +306,6 @@ bool VMManager::Internal::CPUThreadInitialize()
 	x86caps.Identify();
 	x86caps.CountCores();
 	x86caps.SIMD_EstablishMXCSRmask();
-	x86caps.CalculateMHz();
 	SysLogMachineCaps();
 
 	pxAssert(!s_vm_memory && !s_cpu_provider_pack);
