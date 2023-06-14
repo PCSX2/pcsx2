@@ -13,7 +13,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "common/MemcpyFast.h"
 #include "common/General.h"
 #include "common/emitter/tools.h"
 #include "common/emitter/internal.h"

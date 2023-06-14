@@ -134,7 +134,6 @@
     <ClInclude Include="Exceptions.h" />
     <ClInclude Include="General.h" />
     <ClInclude Include="MathUtils.h" />
-    <ClInclude Include="MemcpyFast.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="PrecompiledHeader.h" />
     <ClInclude Include="ReadbackSpinManager.h" />
