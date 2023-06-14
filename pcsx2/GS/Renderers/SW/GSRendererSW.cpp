@@ -580,7 +580,7 @@ void GSRendererSW::Sync(int reason)
 {
 	//printf("sync %d\n", reason);
 
-	u64 t = LOG ? __rdtsc() : 0;
+	u64 t = LOG ? GetCPUTicks() : 0;
 
 	m_rl->Sync();
 
@@ -603,7 +603,7 @@ void GSRendererSW::Sync(int reason)
 		}
 	}
 
-	t = LOG ? (__rdtsc() - t) : 0;
+	t = LOG ? (GetCPUTicks() - t) : 0;
 
 	int pixels = m_rl->GetPixels();
 
@@ -1457,7 +1457,7 @@ GSRendererSW::SharedData::~SharedData()
 	{
 		fprintf(s_fp, "[%d] done t=%lld p=%d | %d %d %d | %08x_%08x\n",
 			counter,
-			__rdtsc() - start, pixels,
+			GetCPUTicks() - start, pixels,
 			primclass, vertex_count, index_count,
 			global.sel.hi, global.sel.lo);
 		fflush(s_fp);

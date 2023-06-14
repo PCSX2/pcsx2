@@ -21,6 +21,7 @@
 #include "GS/GSExtra.h"
 #include "PerformanceMetrics.h"
 #include "common/AlignedMalloc.h"
+#include "common/General.h"
 #include "common/StringUtil.h"
 #include "VMManager.h"
 
@@ -144,7 +145,7 @@ void GSRasterizer::Draw(GSRasterizerData& data)
 	m_primcount = 0;
 
 	if constexpr (ENABLE_DRAW_STATS)
-		data.start = __rdtsc();
+		data.start = GetCPUTicks();
 
 	m_setup_prim = data.setup_prim;
 	m_draw_scanline = data.draw_scanline;
@@ -257,7 +258,7 @@ void GSRasterizer::Draw(GSRasterizerData& data)
 	m_pixels.sum += m_pixels.actual;
 
 	if constexpr (ENABLE_DRAW_STATS)
-		m_ds->UpdateDrawStats(data.frame, __rdtsc() - data.start, m_pixels.actual, m_pixels.total, m_primcount);
+		m_ds->UpdateDrawStats(data.frame, GetCPUTicks() - data.start, m_pixels.actual, m_pixels.total, m_primcount);
 }
 
 template <bool scissor_test>
@@ -1192,7 +1193,9 @@ int GSSingleRasterizer::GetPixels(bool reset /*= true*/)
 
 void GSSingleRasterizer::PrintStats()
 {
+#ifdef ENABLE_DRAW_STATS
 	m_ds.PrintStats();
+#endif
 }
 
 //
