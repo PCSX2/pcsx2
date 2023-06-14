@@ -19,6 +19,7 @@
 
 union RGBAMask
 {
+	u32 _u32;
 	struct
 	{
 		u32 r : 1;
@@ -26,7 +27,6 @@ union RGBAMask
 		u32 b : 1;
 		u32 a : 1;
 	} c;
-	u32 _u32;
 };
 
 class GSDirtyRect

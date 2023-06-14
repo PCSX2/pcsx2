@@ -196,6 +196,16 @@ u32 GSUtil::GetChannelMask(u32 spsm)
 	}
 }
 
+u32 GSUtil::GetChannelMask(u32 spsm, u32 fbmsk)
+{
+	u32 mask = GetChannelMask(spsm);
+	mask &= (fbmsk & 0xFF) ? (~0x1 & 0xf) : 0xf;
+	mask &= (fbmsk & 0xFF00) ? (~0x2 & 0xf) : 0xf;
+	mask &= (fbmsk & 0xFF0000) ? (~0x4 & 0xf) : 0xf;
+	mask &= (fbmsk & 0xFF000000) ? (~0x8 & 0xf) : 0xf;
+	return mask;
+}
+
 GSRendererType GSUtil::GetPreferredRenderer()
 {
 #if defined(__APPLE__)
