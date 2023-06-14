@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,11 +15,13 @@
 
 #pragma once
 
+#include "common/Pcsx2Defs.h"
+
 #include <atomic>
 #include <map>
 #include <memory>
 #include <string>
-#include "common/Pcsx2Defs.h"
+#include <cstring>
 
 // This macro is actually useful for about any and every possible application of C++
 // equality operators.
@@ -195,6 +197,24 @@ private:
 // Safe version of Munmap -- NULLs the pointer variable immediately after free'ing it.
 #define SafeSysMunmap(ptr, size) \
 	((void)(HostSys::Munmap(ptr, size), (ptr) = 0))
+
+// This method can clear any object-like entity -- which is anything that is not a pointer.
+// Structures, static arrays, etc.  No need to include sizeof() crap, this does it automatically
+// for you!
+template <typename T>
+static __fi void memzero(T& object)
+{
+	static_assert(std::is_trivially_copyable_v<T>);
+	std::memset(&object, 0, sizeof(T));
+}
+
+// This method clears an object with the given 8 bit value.
+template <u8 data, typename T>
+static __fi void memset8(T& object)
+{
+	static_assert(std::is_trivially_copyable_v<T>);
+	std::memset(&object, data, sizeof(T));
+}
 
 extern u64 GetTickFrequency();
 extern u64 GetCPUTicks();

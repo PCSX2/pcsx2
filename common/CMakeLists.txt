@@ -80,7 +80,6 @@ target_sources(common PRIVATE
 	LRUCache.h
 	HeapArray.h
 	HTTPDownloader.h
-	MemcpyFast.h
 	MemorySettingsInterface.h
 	MemsetFast.inl
 	MD5Digest.h

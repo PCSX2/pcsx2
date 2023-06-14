@@ -66,7 +66,6 @@
 #include "PCSX2Base.h"
 
 #include "common/Console.h"
-#include "common/MemcpyFast.h"
 #include "common/General.h"
 #include "common/emitter/tools.h"
 
