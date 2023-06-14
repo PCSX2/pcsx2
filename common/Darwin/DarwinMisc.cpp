@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -52,15 +52,12 @@ u64 GetPhysicalMemory()
 	return getmem;
 }
 
-static u64 tickfreq;
 static mach_timebase_info_data_t s_timebase_info;
-
-void InitCPUTicks()
-{
+static const u64 tickfreq = []() {
 	if (mach_timebase_info(&s_timebase_info) != KERN_SUCCESS)
 		abort();
-	tickfreq = (u64)1e9 * (u64)s_timebase_info.denom / (u64)s_timebase_info.numer;
-}
+	return (u64)1e9 * (u64)s_timebase_info.denom / (u64)s_timebase_info.numer;
+}();
 
 // returns the performance-counter frequency: ticks per second (Hz)
 //

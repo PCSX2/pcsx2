@@ -29,7 +29,12 @@
 #include <timeapi.h>
 #include <VersionHelpers.h>
 
-alignas(16) static LARGE_INTEGER lfreq;
+// If anything tries to read this as an initializer, we're in trouble.
+static const LARGE_INTEGER lfreq = []() {
+	LARGE_INTEGER ret = {};
+	QueryPerformanceFrequency(&ret);
+	return ret;
+}();
 
 // This gets leaked... oh well.
 static thread_local HANDLE s_sleep_timer;
@@ -46,11 +51,6 @@ static HANDLE GetSleepTimer()
 		s_sleep_timer = CreateWaitableTimer(nullptr, TRUE, nullptr);
 
 	return s_sleep_timer;
-}
-
-void InitCPUTicks()
-{
-	QueryPerformanceFrequency(&lfreq);
 }
 
 u64 GetTickFrequency()

@@ -116,13 +116,9 @@ public:
 	void CountCores();
 	const char* GetTypeName() const;
 
-	static u32 CachedMHz();
-	u32 CalculateMHz() const;
-
 	void SIMD_EstablishMXCSRmask();
 
 protected:
-	s64 _CPUSpeedHz(u64 time) const;
 	void CountLogicalCores();
 };
 
