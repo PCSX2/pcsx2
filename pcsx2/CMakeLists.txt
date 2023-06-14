@@ -1210,6 +1210,7 @@ if(WIN32)
 		strmiids.lib
 		opengl32.lib
 		comsuppw.lib
+		dwmapi.lib
 		OneCore.lib
 	)
 elseif(APPLE)
