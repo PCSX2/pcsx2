@@ -15,7 +15,7 @@
 
 #include "common/MemcpyFast.h"
 #include "common/General.h"
-#include "common/emitter/cpudetect_internal.h"
+#include "common/emitter/tools.h"
 #include "common/emitter/internal.h"
 #include "common/emitter/x86_intrin.h"
 #include <atomic>

@@ -147,7 +147,6 @@
     <ClInclude Include="Threading.h" />
     <ClInclude Include="emitter\implement\avx.h" />
     <ClInclude Include="emitter\implement\bmi.h" />
-    <ClInclude Include="emitter\cpudetect_internal.h" />
     <ClInclude Include="emitter\instructions.h" />
     <ClInclude Include="emitter\internal.h" />
     <ClInclude Include="emitter\legacy_instructions.h" />

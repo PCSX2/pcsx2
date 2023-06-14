@@ -156,9 +156,6 @@
     <ClInclude Include="Console.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="emitter\cpudetect_internal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="emitter\implement\dwshift.h">
       <Filter>Header Files</Filter>
     </ClInclude>
