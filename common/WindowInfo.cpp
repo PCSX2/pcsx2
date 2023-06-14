@@ -25,34 +25,13 @@
 
 static bool GetRefreshRateFromDWM(HWND hwnd, float* refresh_rate)
 {
-	static HMODULE dwm_module = nullptr;
-	static HRESULT(STDAPICALLTYPE * is_composition_enabled)(BOOL * pfEnabled) = nullptr;
-	static HRESULT(STDAPICALLTYPE * get_timing_info)(HWND hwnd, DWM_TIMING_INFO * pTimingInfo) = nullptr;
-	static bool load_tried = false;
-	if (!load_tried)
-	{
-		load_tried = true;
-		dwm_module = LoadLibraryW(L"dwmapi.dll");
-		if (dwm_module)
-		{
-			std::atexit([]() {
-				FreeLibrary(dwm_module);
-				dwm_module = nullptr;
-			});
-			is_composition_enabled =
-				reinterpret_cast<decltype(is_composition_enabled)>(GetProcAddress(dwm_module, "DwmIsCompositionEnabled"));
-			get_timing_info =
-				reinterpret_cast<decltype(get_timing_info)>(GetProcAddress(dwm_module, "DwmGetCompositionTimingInfo"));
-		}
-	}
-
 	BOOL composition_enabled;
-	if (!is_composition_enabled || FAILED(is_composition_enabled(&composition_enabled) || !get_timing_info))
+	if (FAILED(DwmIsCompositionEnabled(&composition_enabled)))
 		return false;
 
 	DWM_TIMING_INFO ti = {};
 	ti.cbSize = sizeof(ti);
-	HRESULT hr = get_timing_info(nullptr, &ti);
+	HRESULT hr = DwmGetCompositionTimingInfo(nullptr, &ti);
 	if (SUCCEEDED(hr))
 	{
 		if (ti.rateRefresh.uiNumerator == 0 || ti.rateRefresh.uiDenominator == 0)
