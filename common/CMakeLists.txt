@@ -102,7 +102,6 @@ target_sources(common PRIVATE
 	TraceLog.h
 	WAVWriter.h
 	WindowInfo.h
-	emitter/cpudetect_internal.h
 	emitter/implement/dwshift.h
 	emitter/implement/group1.h
 	emitter/implement/group2.h
