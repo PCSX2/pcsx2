@@ -22,6 +22,8 @@
 #include "GS/Renderers/Common/GSDirtyRect.h"
 #include <unordered_set>
 
+class GSHwHack;
+
 // Only for debugging. Reads back every target to local memory after drawing, effectively
 // disabling caching between draws.
 //#define DISABLE_HW_TEXTURE_CACHE
@@ -29,6 +31,8 @@
 class GSTextureCache
 {
 public:
+	friend GSHwHack;
+
 	enum
 	{
 		RenderTarget,
@@ -466,9 +470,6 @@ public:
 	void InvalidateVideoMemSubTarget(GSTextureCache::Target* rt);
 	void InvalidateVideoMem(const GSOffset& off, const GSVector4i& r, bool eewrite = false, bool target = true);
 	void InvalidateLocalMem(const GSOffset& off, const GSVector4i& r, bool full_flush = false);
-
-	/// Removes any targets overlapping the specified BP and rectangle.
-	void InvalidateVideoMemTargets(int type, u32 bp, u32 bw, u32 psm, const GSVector4i& r);
 
 	/// Removes any sources which point to the specified target.
 	void InvalidateSourcesFromTarget(const Target* t);

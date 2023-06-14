@@ -971,12 +971,67 @@ bool GSHwHack::OI_Battlefield2(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GS
 
 bool GSHwHack::OI_HauntingGround(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
-	// Haunting Ground clears two targets by doing a 256x448 direct colour write at 0x3000, covering a target at 0x3380.
-	// This currently isn't handled in our HLE clears, so we need to manually remove the other target.
+	// Haunting Ground clears two targets by doing a direct colour write at 0x3000, covering a target at 0x3380.
+	// To make matters worse, it's masked. This currently isn't handled in our HLE clears, so we need to manually
+	// remove the other target.
 	if (rt && !ds && !t && r.IsConstantDirectWriteMemClear())
 	{
 		GL_CACHE("GSHwHack::OI_HauntingGround()");
-		g_texture_cache->InvalidateVideoMemTargets(GSTextureCache::RenderTarget, RFRAME.Block(), RFRAME.FBW, RFRAME.PSM, r.m_r);
+
+		const u32 bp = RFBP;
+		const u32 bw = RFBW;
+		const u32 psm = RFPSM;
+		const u32 fbmsk = RFBMSK;
+		const GSVector4i rc = r.m_r;
+
+		for (int type = 0; type < 2; type++)
+		{
+			auto& list = g_texture_cache->m_dst[type];
+
+			for (auto i = list.begin(); i != list.end();)
+			{
+				GSTextureCache::Target* t = *i;
+				auto ei = i++;
+
+				// There's two cases we hit here - when we clear 3380 via 3000, and when we overlap 3000 by writing to 3380.
+				// The latter is actually only 256x224, which ends at 337F, but because the game's a pain in the ass, it
+				// shuffles 512x512, causing the target to expand. It'd actually be shuffling junk and wasting draw cycles,
+				// but when did that stop anyone? So, we can get away with just saying "if it's before, ignore".
+				if (t->m_TEX0.TBP0 <= bp)
+				{
+					// don't remove ourself..
+					continue;
+				}
+
+				// Has to intersect.
+				if (!t->Overlaps(bp, bw, psm, rc))
+					continue;
+
+				// Another annoying case. Sometimes it clears with RGB masked, only writing to A. We don't want to kill the
+				// target in this case, so we'll dirty A instead.
+				if (fbmsk != 0)
+				{
+					GL_CACHE("OI_HauntingGround(%x, %u, %s, %d,%d => %d,%d): Dirty target at %x %u %s %08X", bp, bw,
+						psm_str(psm), rc.x, rc.y, rc.z, rc.w, t->m_TEX0.TBP0, t->m_TEX0.TBW, psm_str(t->m_TEX0.PSM),
+						fbmsk);
+
+					g_texture_cache->AddDirtyRectTarget(t, rc, psm, bw, RGBAMask{GSUtil::GetChannelMask(psm, fbmsk)});
+				}
+				else
+				{
+					GL_CACHE("OI_HauntingGround(%x, %u, %s, %d,%d => %d,%d): Removing target at %x %u %s", bp, bw,
+						psm_str(psm), rc.x, rc.y, rc.z, rc.w, t->m_TEX0.TBP0, t->m_TEX0.TBW, psm_str(t->m_TEX0.PSM));
+
+					// Need to also remove any sources which reference this target.
+					g_texture_cache->InvalidateSourcesFromTarget(t);
+
+					list.erase(ei);
+					delete t;
+				}
+			}
+		}
+
+		g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, bp);
 	}
 
 	// Not skipping anything. This is just an invalidation hack.
