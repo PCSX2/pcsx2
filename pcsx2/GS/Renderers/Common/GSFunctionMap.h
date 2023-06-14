@@ -96,7 +96,7 @@ public:
 		}
 	}
 
-	virtual void PrintStats()
+	void PrintStats()
 	{
 		u64 totalTicks = 0;
 
@@ -106,7 +106,7 @@ public:
 			totalTicks += p->ticks;
 		}
 
-		double tick_us = 1.0 / x86capabilities::CachedMHz();
+		double tick_us = 1.0 / GetTickFrequency();
 		double tick_ms = tick_us / 1000;
 		double tick_ns = tick_us * 1000;
 
