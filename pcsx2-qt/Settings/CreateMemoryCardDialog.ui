@@ -18,12 +18,15 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_9">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
      <property name="bottomMargin">
       <number>10</number>
      </property>
+	 <property name="spacing">
+      <number>10</number>
+     </property>
      <item>
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="icon">
        <property name="minimumSize">
         <size>
          <width>48</width>
@@ -35,6 +38,12 @@
          <width>48</width>
          <height>48</height>
         </size>
+       </property>
+	   <property name="pixmap">
+        <pixmap resource="resources/resources.qrc">:/icons/black/svg/memcard-line.svg</pixmap>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
        </property>
       </widget>
      </item>
