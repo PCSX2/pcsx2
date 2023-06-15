@@ -31,6 +31,7 @@ CreateMemoryCardDialog::CreateMemoryCardDialog(QWidget* parent /* = nullptr */)
 	: QDialog(parent)
 {
 	m_ui.setupUi(this);
+	m_ui.icon->setPixmap(QIcon::fromTheme("memcard-line").pixmap(m_ui.icon->width()));
 
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
