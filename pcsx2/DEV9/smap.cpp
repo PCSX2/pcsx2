@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -70,7 +70,7 @@ bool rx_fifo_can_rx()
 		return false;
 
 	//Check if there is space on fifo
-	int rd_ptr = dev9Ru32(SMAP_R_RXFIFO_RD_PTR);
+	const int rd_ptr = dev9Ru32(SMAP_R_RXFIFO_RD_PTR);
 	int space = sizeof(dev9.rxfifo) -
 				((dev9.rxfifo_wr_ptr - rd_ptr) & 16383);
 
@@ -89,7 +89,7 @@ void rx_process(NetPacket* pk)
 {
 	smap_bd_t* pbd = ((smap_bd_t*)&dev9.dev9R[SMAP_BD_RX_BASE & 0xffff]) + dev9.rxbdi;
 
-	int bytes = (pk->size + 3) & (~3);
+	const int bytes = (pk->size + 3) & (~3);
 
 	if (!(pbd->ctrl_stat & SMAP_BD_RX_EMPTY))
 	{
@@ -97,7 +97,7 @@ void rx_process(NetPacket* pk)
 		return;
 	}
 
-	int pstart = (dev9.rxfifo_wr_ptr) & 16383;
+	const int pstart = (dev9.rxfifo_wr_ptr) & 16383;
 	int i = 0;
 	while (i < bytes)
 	{
@@ -134,7 +134,7 @@ u32 wswap(u32 d)
 void tx_process()
 {
 	//we loop based on count ? or just *use* it ?
-	u32 cnt = dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT);
+	const u32 cnt = dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT);
 	//spams// printf("tx_process : %u cnt frames !\n",cnt);
 
 	NetPacket pk;
@@ -159,7 +159,7 @@ void tx_process()
 		}
 		else
 		{
-			u32 base = (pbd->pointer - 0x1000) & 16383;
+			const u32 base = (pbd->pointer - 0x1000) & 16383;
 			DevCon.WriteLn("DEV9: Sending Packet from base %x, size %d", base, pbd->length);
 
 			pk.size = pbd->length;
@@ -277,7 +277,7 @@ void emac3_write(u32 addr)
 				if (value & (SMAP_E3_PHY_READ))
 				{
 					value |= SMAP_E3_PHY_OP_COMP;
-					int reg = value & (SMAP_E3_PHY_REG_ADDR_MSK);
+					const int reg = value & (SMAP_E3_PHY_REG_ADDR_MSK);
 					u16 val = dev9.phyregs[reg];
 					switch (reg)
 					{
@@ -342,7 +342,7 @@ u8 smap_read8(u32 addr)
 
 u16 smap_read16(u32 addr)
 {
-	int rv = dev9Ru16(addr);
+	const int rv = dev9Ru16(addr);
 	if (addr >= SMAP_BD_TX_BASE && addr < (SMAP_BD_TX_BASE + SMAP_BD_SIZE))
 	{
 		if (dev9.bd_swap)
@@ -497,8 +497,8 @@ u32 smap_read32(u32 addr)
 {
 	if (addr >= SMAP_EMAC3_REGBASE && addr < SMAP_EMAC3_REGEND)
 	{
-		u32 hi = smap_read16(addr);
-		u32 lo = smap_read16(addr + 2) << 16;
+		const u32 hi = smap_read16(addr);
+		const u32 lo = smap_read16(addr + 2) << 16;
 		return hi | lo;
 	}
 	switch (addr)
@@ -517,7 +517,7 @@ u32 smap_read32(u32 addr)
 		{
 			int rd_ptr = dev9Ru32(SMAP_R_RXFIFO_RD_PTR) & 16383;
 
-			int rv = *((u32*)(dev9.rxfifo + rd_ptr));
+			const int rv = *((u32*)(dev9.rxfifo + rd_ptr));
 
 			dev9Ru32(SMAP_R_RXFIFO_RD_PTR) = ((rd_ptr + 4) & 16383);
 

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -171,9 +171,7 @@ s32 DEV9init()
 	}
 #endif
 
-	int rxbi;
-
-	for (rxbi = 0; rxbi < (SMAP_BD_SIZE / 8); rxbi++)
+	for (int rxbi = 0; rxbi < (SMAP_BD_SIZE / 8); rxbi++)
 	{
 		smap_bd_t* pbd = (smap_bd_t*)&dev9.dev9R[SMAP_BD_RX_BASE & 0xffff];
 		pbd = &pbd[rxbi];
@@ -309,7 +307,6 @@ u8 DEV9read8(u32 addr)
 	if (!EmuConfig.DEV9.EthEnable && !EmuConfig.DEV9.HddEnable)
 		return 0;
 
-	u8 hard;
 	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
 	{
 		Console.Error("DEV9: ATA does not support 8bit reads %lx", addr);
@@ -322,9 +319,10 @@ u8 DEV9read8(u32 addr)
 	}
 	if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
 	{
-		return (u8)FLASHread32(addr, 1);
+		return static_cast<u8>(FLASHread32(addr, 1));
 	}
 
+	u8 hard = 0;
 	switch (addr)
 	{
 		case SPD_R_PIO_DATA:
@@ -339,9 +337,7 @@ u8 DEV9read8(u32 addr)
 			{
 				if (dev9.eeprom_command == 2) //read
 				{
-					if (dev9.eeprom_bit == 0xFF)
-						hard = 0;
-					else
+					if (dev9.eeprom_bit != 0xFF)
 						hard = ((dev9.eeprom[dev9.eeprom_address] << dev9.eeprom_bit) & 0x8000) >> 11;
 					dev9.eeprom_bit++;
 					if (dev9.eeprom_bit == 16)
@@ -350,11 +346,7 @@ u8 DEV9read8(u32 addr)
 						dev9.eeprom_bit = 0;
 					}
 				}
-				else
-					hard = 0;
 			}
-			else
-				hard = 0;
 			//DevCon.WriteLn("DEV9: SPD_R_PIO_DATA 8bit read %x", hard);
 			return hard;
 
@@ -375,7 +367,6 @@ u16 DEV9read16(u32 addr)
 	if (!EmuConfig.DEV9.EthEnable && !EmuConfig.DEV9.HddEnable)
 		return 0;
 
-	u16 hard;
 	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
 	{
 		return dev9.ata->Read16(addr);
@@ -387,9 +378,10 @@ u16 DEV9read16(u32 addr)
 	}
 	if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
 	{
-		return (u16)FLASHread32(addr, 2);
+		return static_cast<u16>(FLASHread32(addr, 2));
 	}
 
+	u16 hard = 0;
 	switch (addr)
 	{
 		case SPD_R_INTR_STAT:
@@ -412,9 +404,7 @@ u16 DEV9read16(u32 addr)
 			{
 				if (dev9.eeprom_command == 2) //read
 				{
-					if (dev9.eeprom_bit == 0xFF)
-						hard = 0;
-					else
+					if (dev9.eeprom_bit != 0xFF)
 						hard = ((dev9.eeprom[dev9.eeprom_address] << dev9.eeprom_bit) & 0x8000) >> 11;
 					dev9.eeprom_bit++;
 					if (dev9.eeprom_bit == 16)
@@ -423,11 +413,7 @@ u16 DEV9read16(u32 addr)
 						dev9.eeprom_bit = 0;
 					}
 				}
-				else
-					hard = 0;
 			}
-			else
-				hard = 0;
 			//DevCon.WriteLn("DEV9: SPD_R_PIO_DATA 16bit read %x", hard);
 			return hard;
 
@@ -447,7 +433,6 @@ u16 DEV9read16(u32 addr)
 			return hard;
 
 		case SPD_R_REV_3:
-			hard = 0;
 			if (EmuConfig.DEV9.HddEnable)
 				hard |= SPD_CAPS_ATA;
 			if (EmuConfig.DEV9.EthEnable)
@@ -465,7 +450,6 @@ u16 DEV9read16(u32 addr)
 			return dev9.xfr_ctrl;
 		case SPD_R_DBUF_STAT:
 		{
-			hard = 0;
 			if (dev9.if_ctrl & SPD_IF_READ) //Semi async
 			{
 				HDDWriteFIFO(); //Yes this is not a typo
@@ -476,18 +460,18 @@ u16 DEV9read16(u32 addr)
 			}
 			FIFOIntr();
 
-			const u8 count = (u8)((dev9.fifo_bytes_write - dev9.fifo_bytes_read) / 512);
+			const u8 count = static_cast<u8>((dev9.fifo_bytes_write - dev9.fifo_bytes_read) / 512);
 			if (dev9.xfr_ctrl & SPD_XFR_WRITE) //or ifRead?
 			{
-				hard = (u8)(SPD_DBUF_AVAIL_MAX - count);
-				hard |= (count == 0) ? SPD_DBUF_STAT_1 : (u16)0;
-				hard |= (count > 0) ? SPD_DBUF_STAT_2 : (u16)0;
+				hard = static_cast<u8>(SPD_DBUF_AVAIL_MAX - count);
+				hard |= (count == 0) ? SPD_DBUF_STAT_1 : static_cast<u16>(0);
+				hard |= (count > 0) ? SPD_DBUF_STAT_2 : static_cast<u16>(0);
 			}
 			else
 			{
 				hard = count;
-				hard |= (count < SPD_DBUF_AVAIL_MAX) ? SPD_DBUF_STAT_1 : (u16)0;
-				hard |= (count == 0) ? SPD_DBUF_STAT_2 : (u16)0;
+				hard |= (count < SPD_DBUF_AVAIL_MAX) ? SPD_DBUF_STAT_1 : static_cast<u16>(0);
+				hard |= (count == 0) ? SPD_DBUF_STAT_2 : static_cast<u16>(0);
 				//If overflow (HDD->SPEED), set both SPD_DBUF_STAT_2 & SPD_DBUF_STAT_FULL
 				//and overflow INTR set
 			}
@@ -515,7 +499,6 @@ u32 DEV9read32(u32 addr)
 	if (!EmuConfig.DEV9.EthEnable && !EmuConfig.DEV9.HddEnable)
 		return 0;
 
-	u32 hard;
 	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
 	{
 		Console.Error("DEV9: ATA does not support 32bit reads %lx", addr);
@@ -528,10 +511,10 @@ u32 DEV9read32(u32 addr)
 	}
 	if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
 	{
-		return (u32)FLASHread32(addr, 4);
+		return static_cast<u32>(FLASHread32(addr, 4));
 	}
 
-	hard = dev9Ru32(addr);
+	const u32 hard = dev9Ru32(addr);
 	Console.Error("DEV9: Unknown 32bit read at address %lx value %x", addr, hard);
 	return hard;
 }
@@ -556,7 +539,7 @@ void DEV9write8(u32 addr, u8 value)
 	}
 	if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
 	{
-		FLASHwrite32(addr, (u32)value, 1);
+		FLASHwrite32(addr, static_cast<u32>(value), 1);
 		return;
 	}
 
@@ -666,7 +649,7 @@ void DEV9write16(u32 addr, u16 value)
 	}
 	if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
 	{
-		FLASHwrite32(addr, (u32)value, 2);
+		FLASHwrite32(addr, static_cast<u32>(value), 2);
 		return;
 	}
 
@@ -978,7 +961,7 @@ void DEV9write32(u32 addr, u32 value)
 	}
 	if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
 	{
-		FLASHwrite32(addr, (u32)value, 4);
+		FLASHwrite32(addr, static_cast<u32>(value), 4);
 		return;
 	}
 
