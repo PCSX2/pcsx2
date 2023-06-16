@@ -66,8 +66,6 @@ x86capabilities::x86capabilities()
 	, PhysicalCores(0)
 	, LogicalCores(0)
 {
-	memzero(VendorName);
-	memzero(FamilyName);
 }
 #if defined(_MSC_VER)
 #pragma optimize("", on)
@@ -148,7 +146,6 @@ void x86capabilities::Identify()
 	s32 regs[4];
 	u32 cmds;
 
-	memzero(VendorName);
 	cpuid(regs, 0);
 
 	cmds = regs[0];
@@ -201,7 +198,6 @@ void x86capabilities::Identify()
 		EFlags = regs[3];
 	}
 
-	memzero(FamilyName);
 	cpuid((int*)FamilyName, 0x80000002);
 	cpuid((int*)(FamilyName + 16), 0x80000003);
 	cpuid((int*)(FamilyName + 32), 0x80000004);

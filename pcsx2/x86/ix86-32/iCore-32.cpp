@@ -37,7 +37,7 @@ static uint g_x86checknext;
 
 void _initX86regs()
 {
-	memzero(x86regs);
+	std::memset(x86regs, 0, sizeof(x86regs));
 	g_x86AllocCounter = 0;
 	g_x86checknext = 0;
 }

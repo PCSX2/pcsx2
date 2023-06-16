@@ -136,7 +136,7 @@ void psxRcntInit()
 {
 	int i;
 
-	memzero(psxCounters);
+	std::memset(psxCounters, 0, sizeof(psxCounters));
 
 	for (i = 0; i < 3; i++)
 	{

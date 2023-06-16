@@ -29,8 +29,8 @@ alignas(16) vifStruct vif0, vif1;
 void vif0Reset()
 {
 	/* Reset the whole VIF, meaning the internal pcsx2 vars and all the registers */
-	memzero(vif0);
-	memzero(vif0Regs);
+	std::memset(&vif0, 0, sizeof(vif0));
+	std::memset(&vif0Regs, 0, sizeof(vif0Regs));
 
 	resetNewVif(0);
 }
@@ -38,8 +38,8 @@ void vif0Reset()
 void vif1Reset()
 {
 	/* Reset the whole VIF, meaning the internal pcsx2 vars, and all the registers */
-	memzero(vif1);
-	memzero(vif1Regs);
+	std::memset(&vif1, 0, sizeof(vif1));
+	std::memset(&vif1Regs, 0, sizeof(vif1Regs));
 
 	resetNewVif(1);
 }
@@ -127,7 +127,7 @@ __fi void vif0FBRST(u32 value)
 		SaveCol._u64[1] = vif0.MaskCol._u64[1];
 		SaveRow._u64[0] = vif0.MaskRow._u64[0];
 		SaveRow._u64[1] = vif0.MaskRow._u64[1];
-		memzero(vif0);
+		std::memset(&vif0, 0, sizeof(vif0));
 		vif0.MaskCol._u64[0] = SaveCol._u64[0];
 		vif0.MaskCol._u64[1] = SaveCol._u64[1];
 		vif0.MaskRow._u64[0] = SaveRow._u64[0];
@@ -225,7 +225,7 @@ __fi void vif1FBRST(u32 value)
 		SaveRow._u64[0] = vif1.MaskRow._u64[0];
 		SaveRow._u64[1] = vif1.MaskRow._u64[1];
 		u8 mfifo_empty = vif1.inprogress & 0x10;
-		memzero(vif1);
+		std::memset(&vif1, 0, sizeof(vif1));
 		vif1.MaskCol._u64[0] = SaveCol._u64[0];
 		vif1.MaskCol._u64[1] = SaveCol._u64[1];
 		vif1.MaskRow._u64[0] = SaveRow._u64[0];

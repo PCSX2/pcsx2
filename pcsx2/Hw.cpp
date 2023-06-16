@@ -58,7 +58,7 @@ void hwReset()
 {
 	hwInit();
 
-	memzero( eeHw );
+	std::memset(eeHw, 0, sizeof(eeHw));
 
 	psHu32(SBUS_F260) = 0x1D000060;
 

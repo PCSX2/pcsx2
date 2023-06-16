@@ -164,7 +164,7 @@ void rcntInit()
 
 	g_FrameCount = 0;
 
-	memzero(counters);
+	std::memset(counters, 0, sizeof(counters));
 
 	for (i=0; i<4; i++) {
 		counters[i].rate = 2;

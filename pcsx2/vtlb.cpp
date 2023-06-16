@@ -39,7 +39,6 @@
 #include "VMManager.h"
 
 #include "common/Align.h"
-#include "common/MemsetFast.inl"
 
 #include "fmt/core.h"
 
@@ -1215,7 +1214,7 @@ void vtlb_VMapUnmap(u32 vaddr, u32 size)
 void vtlb_Init()
 {
 	vtlbHandlerCount = 0;
-	memzero(vtlbdata.RWFT);
+	std::memset(vtlbdata.RWFT, 0, sizeof(vtlbdata.RWFT));
 
 #define VTLB_BuildUnmappedHandler(baseName) \
 	baseName##ReadSm<mem8_t>, baseName##ReadSm<mem16_t>, baseName##ReadSm<mem32_t>, \
@@ -1420,7 +1419,7 @@ void VtlbMemoryReserve::Assign(VirtualMemoryManagerPtr allocator, size_t offset,
 
 void VtlbMemoryReserve::Reset()
 {
-	memzero_sse_a(GetPtr(), GetSize());
+	std::memset(GetPtr(), 0, GetSize());
 }
 
 
@@ -1577,7 +1576,7 @@ bool vtlb_private::PageFaultHandler(const PageFaultInfo& info)
 void mmap_ResetBlockTracking()
 {
 	//DbgCon.WriteLn( "vtlb/mmap: Block Tracking reset..." );
-	memzero(m_PageProtectInfo);
+	std::memset(m_PageProtectInfo, 0, sizeof(m_PageProtectInfo));
 	if (eeMem)
 		HostSys::MemProtect(eeMem->Main, Ps2MemSize::MainRam, PageAccess_ReadWrite());
 	vtlb_UpdateFastmemProtection(0, Ps2MemSize::MainRam, PageAccess_ReadWrite());

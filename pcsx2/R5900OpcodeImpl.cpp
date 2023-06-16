@@ -154,7 +154,7 @@ void Deci2Reset()
 {
 	deci2handler	= 0;
 	deci2addr		= 0;
-	memzero( deci2buffer );
+	std::memset(deci2buffer, 0, sizeof(deci2buffer));
 }
 
 void SaveStateBase::deci2Freeze()

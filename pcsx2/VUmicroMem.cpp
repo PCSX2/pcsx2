@@ -64,9 +64,9 @@ void vuMemoryReserve::Reset()
 	//memMapVUmicro();
 
 	// === VU0 Initialization ===
-	memzero(VU0.ACC);
-	memzero(VU0.VF);
-	memzero(VU0.VI);
+	std::memset(&VU0.ACC, 0, sizeof(VU0.ACC));
+	std::memset(VU0.VF, 0, sizeof(VU0.VF));
+	std::memset(VU0.VI, 0, sizeof(VU0.VI));
     VU0.VF[0].f.x = 0.0f;
 	VU0.VF[0].f.y = 0.0f;
 	VU0.VF[0].f.z = 0.0f;
@@ -74,9 +74,9 @@ void vuMemoryReserve::Reset()
 	VU0.VI[0].UL = 0;
 
 	// === VU1 Initialization ===
-	memzero(VU1.ACC);
-	memzero(VU1.VF);
-	memzero(VU1.VI);
+	std::memset(&VU1.ACC, 0, sizeof(VU1.ACC));
+	std::memset(VU1.VF, 0, sizeof(VU1.VF));
+	std::memset(VU1.VI, 0, sizeof(VU1.VI));
 	VU1.VF[0].f.x = 0.0f;
 	VU1.VF[0].f.y = 0.0f;
 	VU1.VF[0].f.z = 0.0f;

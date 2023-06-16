@@ -65,7 +65,7 @@ struct Gif_Tag
 		setTag(pMem, analyze);
 	}
 
-	__ri void Reset() { memzero(*this); }
+	__ri void Reset() { std::memset(this, 0, sizeof(*this)); }
 	__ri u8 curReg() { return regs[nRegIdx & 0xf]; }
 
 	__ri void packedStep()
@@ -163,21 +163,21 @@ struct GS_Packet
 	s32 cycles;     // EE Cycles taken to process this GS packet
 	s32 readAmount; // Dummy read-amount data needed for proper buffer calculations
 	GS_Packet() { Reset(); }
-	void Reset() { memzero(*this); }
+	void Reset() { std::memset(this, 0, sizeof(*this)); }
 };
 
 struct GS_SIGNAL
 {
 	u32 data[2];
 	bool queued;
-	void Reset() { memzero(*this); }
+	void Reset() { std::memset(this, 0, sizeof(*this)); }
 };
 
 struct GS_FINISH
 {
 	bool gsFINISHFired;
 
-	void Reset() { memzero(*this); }
+	void Reset() { std::memset(this, 0, sizeof(*this)); }
 };
 
 static __fi void incTag(u32& offset, u32& size, u32 incAmount)

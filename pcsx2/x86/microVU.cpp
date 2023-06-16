@@ -40,7 +40,7 @@ void mVUreserveCache(microVU& mVU)
 // Only run this once per VU! ;)
 void mVUinit(microVU& mVU, uint vuIndex)
 {
-	memzero(mVU.prog);
+	std::memset(&mVU.prog, 0, sizeof(mVU.prog));
 
 	mVU.index        =  vuIndex;
 	mVU.cop2         =  0;
@@ -155,7 +155,7 @@ __fi void mVUclear(mV, u32 addr, u32 size)
 	if (!mVU.prog.cleared)
 	{
 		mVU.prog.cleared = 1; // Next execution searches/creates a new microprogram
-		memzero(mVU.prog.lpState); // Clear pipeline state
+		std::memset(&mVU.prog.lpState, 0, sizeof(mVU.prog.lpState)); // Clear pipeline state
 		for (u32 i = 0; i < (mVU.progSize / 2); i++)
 		{
 			mVU.prog.quick[i].block = NULL; // Clear current quick-reference block

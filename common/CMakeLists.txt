@@ -81,7 +81,6 @@ target_sources(common PRIVATE
 	HeapArray.h
 	HTTPDownloader.h
 	MemorySettingsInterface.h
-	MemsetFast.inl
 	MD5Digest.h
 	MRCHelpers.h
 	Path.h

@@ -46,8 +46,8 @@ public:
 	u32 EFlags2; // Extended Feature Flags pg2
 	u32 SEFlag; // Structured Extended Feature Flags Enumeration
 
-	char VendorName[16]; // Vendor/Creator ID
-	char FamilyName[50]; // the original cpu name
+	char VendorName[16] = {}; // Vendor/Creator ID
+	char FamilyName[50] = {}; // the original cpu name
 
 	// ----------------------------------------------------------------------------
 	//   x86 CPU Capabilities Section (all boolean flags!)
@@ -55,6 +55,8 @@ public:
 
 	union
 	{
+		u64 AllCapabilities = 0;
+
 		struct
 		{
 			u32 hasFloatingPointUnit : 1;
@@ -101,13 +103,11 @@ public:
 			u32 hasAMD64BitArchitecture : 1;
 			u32 hasStreamingSIMD4ExtensionsA : 1;
 		};
-
-		u64 AllCapabilities;
 	};
 
 	// Core Counts!
-	u32 PhysicalCores;
-	u32 LogicalCores;
+	u32 PhysicalCores = 0;
+	u32 LogicalCores = 0;
 
 public:
 	x86capabilities();

@@ -36,9 +36,11 @@
 
 #include <map>
 
-static const int MCD_SIZE = 1024 * 8 * 16; // Legacy PSX card default size
+static constexpr int MCD_SIZE = 1024 * 8 * 16; // Legacy PSX card default size
 
-static const int MC2_MBSIZE = 1024 * 528 * 2; // Size of a single megabyte of card data
+static constexpr int MC2_MBSIZE = 1024 * 528 * 2; // Size of a single megabyte of card data
+
+static constexpr int MC2_ERASE_SIZE = 528 * 16;
 
 static const char* s_folder_mem_card_id_file = "_pcsx2_superblock";
 
@@ -166,17 +168,16 @@ static bool ConvertRAWtoNoECC(const char* file_in, const char* file_out)
 class FileMemoryCard
 {
 protected:
-	std::FILE* m_file[8];
-	std::string m_filenames[8];
-	u8 m_effeffs[528 * 16];
+	std::FILE* m_file[8] = {};
+	std::string m_filenames[8] = {};
 	SafeArray<u8> m_currentdata;
-	u64 m_chksum[8];
-	bool m_ispsx[8];
-	u32 m_chkaddr;
+	u64 m_chksum[8] = {};
+	bool m_ispsx[8] = {};
+	u32 m_chkaddr = 0;
 
 public:
 	FileMemoryCard();
-	virtual ~FileMemoryCard() = default;
+	~FileMemoryCard();
 
 	void Lock();
 	void Unlock();
@@ -257,11 +258,9 @@ std::string FileMcd_GetDefaultName(uint slot)
 		return StringUtil::StdStringFromFormat("Mcd%03u.ps2", slot + 1);
 }
 
-FileMemoryCard::FileMemoryCard()
-	: m_chkaddr(0)
-{
-	memset8<0xff>(m_effeffs);
-}
+FileMemoryCard::FileMemoryCard() = default;
+
+FileMemoryCard::~FileMemoryCard() = default;
 
 void FileMemoryCard::Open()
 {
@@ -431,9 +430,12 @@ bool FileMemoryCard::Create(const char* mcdFile, uint sizeInMB)
 	if (!fp)
 		return false;
 
-	for (uint i = 0; i < (MC2_MBSIZE * sizeInMB) / sizeof(m_effeffs); i++)
+	u8 buf[MC2_ERASE_SIZE];
+	std::memset(buf, 0xff, sizeof(buf));
+
+	for (uint i = 0; i < (MC2_MBSIZE * sizeInMB) / sizeof(buf); i++)
 	{
-		if (std::fwrite(m_effeffs, sizeof(m_effeffs), 1, fp.get()) != 1)
+		if (std::fwrite(buf, sizeof(buf), 1, fp.get()) != 1)
 			return false;
 	}
 	return true;
@@ -556,7 +558,10 @@ s32 FileMemoryCard::EraseBlock(uint slot, u32 adr)
 
 	if (!Seek(mcfp, adr))
 		return 0;
-	return std::fwrite(m_effeffs, sizeof(m_effeffs), 1, mcfp) == 1;
+
+	u8 buf[MC2_ERASE_SIZE];
+	std::memset(buf, 0xff, sizeof(buf));
+	return std::fwrite(buf, sizeof(buf), 1, mcfp) == 1;
 }
 
 u64 FileMemoryCard::GetCRC(uint slot)
@@ -962,13 +967,13 @@ bool FileMcd_CreateNewCard(const std::string_view& name, MemoryCardType type, Me
 			Console.WriteLn("(FileMcd) Creating new PS2 %uMB memory card: '%s'", size / MC2_MBSIZE, full_path.c_str());
 
 			// PS2 Memory Card
-			u8 m_effeffs[528 * 16];
-			memset8<0xff>(m_effeffs);
+			u8 buf[MC2_ERASE_SIZE];
+			std::memset(buf, 0xff, sizeof(buf));
 
-			const u32 count = size / sizeof(m_effeffs);
+			const u32 count = size / sizeof(buf);
 			for (uint i = 0; i < count; i++)
 			{
-				if (std::fwrite(m_effeffs, sizeof(m_effeffs), 1, fp.get()) != 1)
+				if (std::fwrite(buf, sizeof(buf), 1, fp.get()) != 1)
 				{
 					Host::ReportFormattedErrorAsync("Memory Card Creation Failed", "Failed to write file '%s'.", full_path.c_str());
 					return false;
@@ -982,13 +987,13 @@ bool FileMcd_CreateNewCard(const std::string_view& name, MemoryCardType type, Me
 			Console.WriteLn("(FileMcd) Creating new PSX 128 KiB memory card: '%s'", full_path.c_str());
 
 			// PSX Memory Card; 8192 is the size in bytes of a single block of a PSX memory card (8 KiB).
-			u8 m_effeffs_psx[8192];
-			memset8<0xff>(m_effeffs_psx);
+			u8 buf[8192];
+			std::memset(buf, 0xff, sizeof(buf));
 
 			// PSX cards consist of 16 blocks, each 8 KiB in size.
 			for (uint i = 0; i < 16; i++)
 			{
-				if (std::fwrite(m_effeffs_psx, sizeof(m_effeffs_psx), 1, fp.get()) != 1)
+				if (std::fwrite(buf, sizeof(buf), 1, fp.get()) != 1)
 				{
 					Host::ReportFormattedErrorAsync("Memory Card Creation Failed", "Failed to write file '%s'.", full_path.c_str());
 					return false;

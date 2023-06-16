@@ -40,7 +40,7 @@ void gsReset()
 {
 	GetMTGS().ResetGS(true);
 	gsVideoMode = GS_VideoMode::Uninitialized;
-	memzero(g_RealGSMem);
+	std::memset(g_RealGSMem, 0, sizeof(g_RealGSMem));
 	UpdateVSyncRate(true);
 }
 
@@ -85,7 +85,7 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 		gifUnit.gsSIGNAL.queued = false;
 		gifUnit.gsFINISH.gsFINISHFired = true;
 		// Privilage registers also reset.
-		memzero(g_RealGSMem);
+		std::memset(g_RealGSMem, 0, sizeof(g_RealGSMem));
 		GSIMR.reset();
 		CSRreg.Reset();
 		GetMTGS().SendSimplePacket(GS_RINGTYPE_RESET, 0, 0, 0);
