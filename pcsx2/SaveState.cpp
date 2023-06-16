@@ -124,19 +124,19 @@ void SaveStateBase::PrepBlock( int size )
 	}
 }
 
-void SaveStateBase::FreezeTag( const char* src )
+void SaveStateBase::FreezeTag(const char* src)
 {
-	const uint allowedlen = sizeof( m_tagspace )-1;
-	pxAssertDev(strlen(src) < allowedlen, "Tag name exceeds the allowed length");
+	char tagspace[32];
+	pxAssertDev(std::strlen(src) < (sizeof(tagspace) - 1), "Tag name exceeds the allowed length");
 
-	memzero( m_tagspace );
-	strcpy( m_tagspace, src );
-	Freeze( m_tagspace );
+	std::memset(tagspace, 0, sizeof(tagspace));
+	StringUtil::Strlcpy(tagspace, src, sizeof(tagspace));
+	Freeze(tagspace);
 
-	if( strcmp( m_tagspace, src ) != 0 )
+	if (std::strcmp(tagspace, src) != 0)
 	{
 		std::string msg(fmt::format("Savestate data corruption detected while reading tag: {}", src));
-		pxFail( msg.c_str() );
+		pxFail(msg.c_str());
 		throw Exception::SaveStateLoadError().SetDiagMsg(std::move(msg));
 	}
 }
@@ -151,11 +151,11 @@ SaveStateBase& SaveStateBase::FreezeBios()
 
 	u32 bioscheck = BiosChecksum;
 	char biosdesc[256];
-	memzero( biosdesc );
-	memcpy( biosdesc, BiosDescription.c_str(), std::min( sizeof(biosdesc), BiosDescription.length() ) );
+	std::memset(biosdesc, 0, sizeof(biosdesc));
+	StringUtil::Strlcpy(biosdesc, BiosDescription, sizeof(biosdesc));
 
-	Freeze( bioscheck );
-	Freeze( biosdesc );
+	Freeze(bioscheck);
+	Freeze(biosdesc);
 
 	if (bioscheck != BiosChecksum)
 	{

@@ -198,24 +198,6 @@ private:
 #define SafeSysMunmap(ptr, size) \
 	((void)(HostSys::Munmap(ptr, size), (ptr) = 0))
 
-// This method can clear any object-like entity -- which is anything that is not a pointer.
-// Structures, static arrays, etc.  No need to include sizeof() crap, this does it automatically
-// for you!
-template <typename T>
-static __fi void memzero(T& object)
-{
-	static_assert(std::is_trivially_copyable_v<T>);
-	std::memset(&object, 0, sizeof(T));
-}
-
-// This method clears an object with the given 8 bit value.
-template <u8 data, typename T>
-static __fi void memset8(T& object)
-{
-	static_assert(std::is_trivially_copyable_v<T>);
-	std::memset(&object, data, sizeof(T));
-}
-
 extern u64 GetTickFrequency();
 extern u64 GetCPUTicks();
 extern u64 GetPhysicalMemory();

@@ -913,7 +913,7 @@ static uint cdvdBlockReadTime(CDVD_MODE_TYPE mode)
 
 void cdvdReset()
 {
-	memzero(cdvd);
+	std::memset(&cdvd, 0, sizeof(cdvd));
 
 	cdvd.Type = CDVD_TYPE_NODISC;
 	cdvd.Spinning = false;
@@ -1824,7 +1824,7 @@ static void cdvdWrite04(u8 rt)
 			cdvd.SCMDParamC = 0;
 			cdvdUpdateStatus(CDVD_STATUS_STOP);
 			cdvd.Spinning = false;
-			memzero(cdvd.SCMDResult);
+			std::memset(cdvd.SCMDResult, 0, sizeof(cdvd.SCMDResult));
 			cdvdSetIrq();
 			break;
 
@@ -2337,7 +2337,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 		CDVD_LOG("cdvdWrite16: SCMD %s (%x) (ParamP = %x)", sCmdName[rt], rt, cdvd.SCMDParamP);
 
 		cdvd.sCommand = rt;
-		memzero(cdvd.SCMDResult);
+		std::memset(cdvd.SCMDResult, 0, sizeof(cdvd.SCMDResult));
 
 		switch (rt)
 		{

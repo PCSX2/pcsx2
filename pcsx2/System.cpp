@@ -28,7 +28,6 @@
 #include "x86/newVif.h"
 
 #include "common/Align.h"
-#include "common/MemsetFast.inl"
 #include "common/Perf.h"
 #include "common/StringUtil.h"
 

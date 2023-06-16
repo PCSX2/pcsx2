@@ -497,8 +497,8 @@ __fi void startLoop(mV)
 		DevCon.WriteLn(Color_Green, "microVU%d: D-bit set! PC = %x", getIndex, xPC);
 	if (curI & _Tbit_)
 		DevCon.WriteLn(Color_Green, "microVU%d: T-bit set! PC = %x", getIndex, xPC);
-	memzero(mVUinfo);
-	memzero(mVUregsTemp);
+	std::memset(&mVUinfo, 0, sizeof(mVUinfo));
+	std::memset(&mVUregsTemp, 0, sizeof(mVUregsTemp));
 }
 
 // Initialize VI Constants (vi15 propagates through blocks)

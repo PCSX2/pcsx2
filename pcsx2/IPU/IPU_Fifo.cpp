@@ -27,13 +27,13 @@ void IPU_Fifo::init()
 	out.writepos = 0;
 	in.readpos = 0;
 	in.writepos = 0;
-	memzero(in.data);
-	memzero(out.data);
+	std::memset(in.data, 0, sizeof(in.data));
+	std::memset(out.data, 0, sizeof(out.data));
 }
 
 void IPU_Fifo_Input::clear()
 {
-	memzero(data);
+	std::memset(data, 0, sizeof(data));
 	g_BP.IFC = 0;
 	ipuRegs.ctrl.IFC = 0;
 	readpos = 0;
@@ -50,7 +50,7 @@ void IPU_Fifo_Input::clear()
 
 void IPU_Fifo_Output::clear()
 {
-	memzero(data);
+	std::memset(data, 0, sizeof(data));
 	ipuRegs.ctrl.OFC = 0;
 	readpos = 0;
 	writepos = 0;

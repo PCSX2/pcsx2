@@ -48,7 +48,7 @@ alignas(16) psxRegisters psxRegs;
 
 void psxReset()
 {
-	memzero(psxRegs);
+	std::memset(&psxRegs, 0, sizeof(psxRegs));
 
 	psxRegs.pc = 0xbfc00000; // Start in bootstrap
 	psxRegs.CP0.n.Status = 0x10900000; // COP0 enabled | BEV = 1 | TS = 1

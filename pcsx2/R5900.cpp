@@ -77,9 +77,9 @@ void cpuReset()
 
 	GetVmMemory().Reset();
 
-	memzero(cpuRegs);
-	memzero(fpuRegs);
-	memzero(tlb);
+	std::memset(&cpuRegs, 0, sizeof(cpuRegs));
+	std::memset(&fpuRegs, 0, sizeof(fpuRegs));
+	std::memset(&tlb, 0, sizeof(tlb));
 
 	cpuRegs.pc				= 0xbfc00000; //set pc reg to stack
 	cpuRegs.CP0.n.Config	= 0x440;

@@ -129,8 +129,8 @@ void VU_Thread::Reset()
 	m_write_pos = 0;
 	m_ato_read_pos = 0;
 	m_read_pos = 0;
-	memzero(vif);
-	memzero(vifRegs);
+	std::memset(&vif, 0, sizeof(vif));
+	std::memset(&vifRegs, 0, sizeof(vifRegs));
 	for (size_t i = 0; i < 4; ++i)
 		vu1Thread.vuCycles[i] = 0;
 	vu1Thread.mtvuInterrupts = 0;

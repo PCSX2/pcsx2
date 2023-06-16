@@ -78,7 +78,6 @@ class SaveStateBase
 {
 protected:
 	VmStateBuffer* m_memory;
-	char m_tagspace[32];
 
 	u32 m_version;		// version of the savestate being loaded.
 

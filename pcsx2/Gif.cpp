@@ -82,7 +82,7 @@ bool CheckPaths()
 
 void GIF_Fifo::init()
 {
-	memzero(data);
+	std::memset(data, 0, sizeof(data));
 	fifoSize = 0;
 	gifRegs.stat.FQC = 0;
 

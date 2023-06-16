@@ -243,9 +243,9 @@ struct eeProfiler
 
 	void Reset()
 	{
-		memzero(opStats);
-		memzero(memStats);
-		memzero(memStatsConst);
+		std::memset(opStats, 0, sizeof(opStats));
+		std::memset(memStats, 0, sizeof(memStats));
+		std::memset(memStatsConst, 0, sizeof(memStatsConst));
 		memStatsSlow = 0;
 		memStatsFast = 0;
 		memMask = 0xF700FFF0;

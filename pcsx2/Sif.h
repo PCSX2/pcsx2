@@ -141,7 +141,7 @@ struct sifFifo
 	}
 	void clear()
 	{
-		memzero(data);
+		std::memset(data, 0, sizeof(data));
 		readPos = 0;
 		writePos = 0;
 		size = 0;
