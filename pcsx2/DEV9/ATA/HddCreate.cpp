@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -42,7 +42,7 @@ void HddCreate::Start()
 void HddCreate::WriteImage(std::string hddPath, u64 fileBytes, u64 zeroSizeBytes)
 {
 	constexpr int buffsize = 4 * 1024;
-	u8 buff[buffsize] = {0}; // 4kb.
+	const u8 buff[buffsize] = {0}; // 4kb.
 
 	if (FileSystem::FileExists(hddPath.c_str()))
 	{

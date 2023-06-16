@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -46,15 +46,15 @@ void ATA::WritePaddedString(u8* data, int* index, std::string value, u32 len)
 
 void ATA::CreateHDDinfo(u64 sizeSectors)
 {
-	const u16 sectorSize = 512;
+	constexpr u16 sectorSize = 512;
 	DevCon.WriteLn("DEV9: HddSize : %i", sizeSectors * sectorSize / (1024 * 1024));
 	const u64 nbSectors = sizeSectors;
 	DevCon.WriteLn("DEV9: nbSectors : %i", nbSectors);
 
 	memset(&identifyData, 0, sizeof(identifyData));
 	//Defualt CHS translation
-	const u16 defHeads = 16;
-	const u16 defSectors = 63;
+	constexpr u16 defHeads = 16;
+	constexpr u16 defSectors = 63;
 	u64 cylinderslong = std::min<u64>(nbSectors, 16514064) / defHeads / defSectors;
 	const u16 defCylinders = (u16)std::min<u64>(cylinderslong, UINT16_MAX);
 
@@ -94,7 +94,7 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	//Default Num of heads (Retired)
 	WriteUInt16(identifyData, &index, defHeads); //word 3
 	//Number of unformatted bytes per track (Retired)
-	WriteUInt16(identifyData, &index, (u16)(sectorSize * defSectors)); //word 4
+	WriteUInt16(identifyData, &index, static_cast<u16>(sectorSize * defSectors)); //word 4
 	//Number of unformatted bytes per sector (Retired)
 	WriteUInt16(identifyData, &index, sectorSize); //word 5
 	//Default Number of sectors per track (Retired)
@@ -133,7 +133,7 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	//Capabilities (0-Shall be set to one to indicate a device specific Standby timer value minimum)
 	index += 1 * 2; //word 50
 	//PIO data transfer cycle timing mode (Obsolete)
-	WriteUInt16(identifyData, &index, (u8)((pioMode > 2 ? pioMode : 2) << 8)); //word 51
+	WriteUInt16(identifyData, &index, static_cast<u8>((pioMode > 2 ? pioMode : 2) << 8)); //word 51
 	//DMA data transfer cycle timing mode (Obsolete)
 	WriteUInt16(identifyData, &index, 0); //word 52
 	//
@@ -150,23 +150,23 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	//Number of current sectors per track
 	WriteUInt16(identifyData, &index, curSectors); //word 56
 	//Current capacity in sectors
-	WriteUInt32(identifyData, &index, (u32)curOldsize); //word 57-58
+	WriteUInt32(identifyData, &index, static_cast<u32>(curOldsize)); //word 57-58
 	//PIO READ/WRITE Multiple setting
 	/*
 	 * bit 7-0: Current setting for number of logical sectors that shall be transferred per DRQ
 	 *			data block on READ/WRITE Multiple commands
 	 * bit 8: Multiple sector setting is valid
 	 */
-	WriteUInt16(identifyData, &index, (u16)(curMultipleSectorsSetting | (1 << 8))); //word 59
+	WriteUInt16(identifyData, &index, static_cast<u16>(curMultipleSectorsSetting | (1 << 8))); //word 59
 	//Total number of user addressable logical sectors
-	WriteUInt32(identifyData, &index, (u32)(nbSectors < 268435456 ? nbSectors : 268435456)); //word 60-61
+	WriteUInt32(identifyData, &index, static_cast<u32>(nbSectors < 268435456 ? nbSectors : 268435456)); //word 60-61
 	//DMA modes
 	/*
 	 * bits 0-7: Singleword modes supported (0,1,2)
 	 * bits 8-15: Transfer mode active
 	 */
 	if (sdmaMode > 0)
-		WriteUInt16(identifyData, &index, (u16)(0x07 | (1 << (sdmaMode + 8)))); //word 62
+		WriteUInt16(identifyData, &index, static_cast<u16>(0x07 | (1 << (sdmaMode + 8)))); //word 62
 	else
 		WriteUInt16(identifyData, &index, 0x07); //word 62
 	//DMA Modes
@@ -175,7 +175,7 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	 * bits 8-15: Transfer mode active
 	 */
 	if (mdmaMode > 0)
-		WriteUInt16(identifyData, &index, (u16)(0x07 | (1 << (mdmaMode + 8)))); //word 63
+		WriteUInt16(identifyData, &index, static_cast<u16>(0x07 | (1 << (mdmaMode + 8)))); //word 63
 	else
 		WriteUInt16(identifyData, &index, 0x07); //word 63
 	//Bit 0-7-PIO modes supported (0,1,2,3,4)
@@ -220,7 +220,7 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	 * bit 14: NOP
 	 * bit 15: (Obsolete)
 	 */
-	WriteUInt16(identifyData, &index, (u16)((1 << 14) | (1 << 5) | /*(1 << 1) | (1 << 10) |*/ 1)); //word 82
+	WriteUInt16(identifyData, &index, static_cast<u16>((1 << 14) | (1 << 5) | /*(1 << 1) | (1 << 10) |*/ 1)); //word 82
 	//Supported Feature Sets (83)
 	/*
 	 * bit 0: DOWNLOAD MICROCODE
@@ -239,7 +239,7 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	 * bit 13: FLUSH CACHE EXT
 	 * bit 14: 1
 	 */
-	WriteUInt16(identifyData, &index, (u16)((1 << 14) | (1 << 13) | (1 << 12) /*| (1 << 8)*/ | ((lba48Supported ? 1 : 0) << 10))); //word 83
+	WriteUInt16(identifyData, &index, static_cast<u16>((1 << 14) | (1 << 13) | (1 << 12) /*| (1 << 8)*/ | ((lba48Supported ? 1 : 0) << 10))); //word 83
 	//Supported Feature Sets (84)
 	/*
 	 * bit 0: Smart error logging
@@ -256,19 +256,19 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	 * bit 13: IDLE IMMEDIATE with UNLOAD FEATURE
 	 * bit 14: 1
 	 */
-	WriteUInt16(identifyData, &index, (u16)((1 << 14) | (1 << 1) | 1)); //word 84
+	WriteUInt16(identifyData, &index, static_cast<u16>((1 << 14) | (1 << 1) | 1)); //word 84
 	//Command set/feature enabled/supported (See word 82)
-	WriteUInt16(identifyData, &index, (u16)((fetSmartEnabled << 0) | (fetSecurityEnabled << 1) | (fetWriteCacheEnabled << 5) | (fetHostProtectedAreaEnabled << 10) | (1 << 14))); //Fixed      //word 85
+	WriteUInt16(identifyData, &index, static_cast<u16>((fetSmartEnabled << 0) | (fetSecurityEnabled << 1) | (fetWriteCacheEnabled << 5) | (fetHostProtectedAreaEnabled << 10) | (1 << 14))); //Fixed      //word 85
 	//Command set/feature enabled/supported (See word 83)
 	// clang-format off
-	WriteUInt16(identifyData, &index, (u16)(
+	WriteUInt16(identifyData, &index, static_cast<u16>(
 		/*(1 << 8) |						//SET MAX */
 		((lba48Supported ? 1 : 0) << 10) |	//Fixed
 		(1 << 12) |							//Fixed
 		(1 << 13)));						//Fixed      //word 86
 	//Command set/feature enabled/supported (See word 84)
-	WriteUInt16(identifyData, &index, (u16)((1 << 14) | (1 << 1) | 1));
-	WriteUInt16(identifyData, &index, (u16)(
+	WriteUInt16(identifyData, &index, static_cast<u16>((1 << 14) | (1 << 1) | 1));
+	WriteUInt16(identifyData, &index, static_cast<u16>(
 		(1) |								//Fixed
 		((1) << 1)));						//Fixed      //word 87
 	// clang-format on
@@ -278,7 +278,7 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	 * bits 8-15: Transfer mode active
 	 */
 	if (udmaMode > 0)
-		WriteUInt16(identifyData, &index, (u16)(0x7f | (1 << (udmaMode + 8)))); //word 88
+		WriteUInt16(identifyData, &index, static_cast<u16>(0x7f | (1 << (udmaMode + 8)))); //word 88
 	else
 		WriteUInt16(identifyData, &index, 0x7f); //word 88
 	//Time required for security erase unit completion
@@ -306,7 +306,7 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	 * bit 14: 1
 	 */
 	index = 93 * 2;
-	WriteUInt16(identifyData, &index, (u16)(1 | (1 << 14) | 0x2000)); //word 93
+	WriteUInt16(identifyData, &index, static_cast<u16>(1 | (1 << 14) | 0x2000)); //word 93
 	//Vendor’s recommended acoustic management value.
 	//94
 	//Stream Minimum Request Size
@@ -319,7 +319,7 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	//98-99
 	//Total Number of User Addressable Sectors for the 48-bit Address feature set.
 	index = 100 * 2;
-	WriteUInt64(identifyData, &index, (u16)nbSectors);
+	WriteUInt64(identifyData, &index, static_cast<u16>(nbSectors));
 	index -= 2;
 	WriteUInt16(identifyData, &index, 0); //truncate to 48bits
 	//Streaming Transfer Time - PIO
@@ -334,7 +334,7 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	 * bit 14: 1
 	 */
 	index = 106 * 2;
-	WriteUInt16(identifyData, &index, (u16)((1 << 14) | 0));
+	WriteUInt16(identifyData, &index, static_cast<u16>((1 << 14) | 0));
 	//Inter-seek delay for ISO-7779acoustic testing in microseconds
 	//107
 	//WNN
@@ -384,7 +384,7 @@ void ATA::CreateHDDinfoCsum() //Is this correct?
 	counter += 0xA5;
 
 	identifyData[510] = 0xA5;
-	identifyData[511] = (u8)(255 - counter + 1);
+	identifyData[511] = static_cast<u8>(255 - counter + 1);
 	counter = 0;
 
 	for (int i = 0; i < (512); i++)

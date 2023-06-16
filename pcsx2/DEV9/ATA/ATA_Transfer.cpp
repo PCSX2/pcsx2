@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -105,7 +105,7 @@ bool ATA::IO_Write()
 		return false;
 	}
 
-	u64 imagePos = entry.sector * 512;
+	const u64 imagePos = entry.sector * 512;
 	if (FileSystem::FSeek64(hddImage, imagePos, SEEK_SET) != 0)
 	{
 		Console.Error("DEV9: ATA: File seek error");
@@ -209,11 +209,12 @@ void ATA::IO_SparseCacheLoad()
 		memset(&hddSparseBlock[readSize], 0, hddSparseBlockSize - readSize);
 	}
 
-	// Store file pointer.
-	const s64 orgPos = FileSystem::FTell64(hddImage);
-
 	// Flush so that we know what is allocated.
 	std::fflush(hddImage);
+
+	// Store file pointer.
+	const s64 orgPos = FileSystem::FTell64(hddImage);
+	pxAssert(orgPos != -1);
 
 #ifdef _WIN32
 	// FlushFileBuffers is required, hddSparseBlock differs from actual file without it.
@@ -234,11 +235,6 @@ void ATA::IO_SparseCacheLoad()
 		memset(hddSparseBlock.get(), 0, hddSparseBlockSize);
 		hddSparseBlockValid = true;
 #if defined(PCSX2_DEBUG) || defined(PCSX2_DEVBUILD)
-
-		// Store file pointer.
-		const s64 orgPos = FileSystem::FTell64(hddImage);
-		pxAssert(orgPos != -1);
-
 		//Load into check buffer.
 		FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET);
 
@@ -281,11 +277,6 @@ void ATA::IO_SparseCacheLoad()
 			memset(hddSparseBlock.get(), 0, hddSparseBlockSize);
 			hddSparseBlockValid = true;
 #if defined(PCSX2_DEBUG) || defined(PCSX2_DEVBUILD)
-
-			// Store file pointer.
-			const s64 orgPos = FileSystem::FTell64(hddImage);
-			pxAssert(orgPos != -1);
-
 			// Load into check buffer.
 			FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET);
 
@@ -512,8 +503,8 @@ bool ATA::HDD_CanAssessOrSetError()
 	if (!HDD_CanAccess(&nsector))
 	{
 		//Read what we can
-		regStatus |= (u8)ATA_STAT_ERR;
-		regError |= (u8)ATA_ERR_ID;
+		regStatus |= static_cast<u8>(ATA_STAT_ERR);
+		regError |= static_cast<u8>(ATA_ERR_ID);
 		if (nsector == -1)
 		{
 			PostCmdNoData();

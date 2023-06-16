@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -381,35 +381,35 @@ void ATA::Write16(u32 addr, u16 value)
 			//DevCon.WriteLn("DEV9: *ATA_R_FEATURE 16bit write at address %x, value %x", addr, value);
 			ClearHOB();
 			regFeatureHOB = regFeature;
-			regFeature = (u8)value;
+			regFeature = static_cast<u8>(value);
 			break;
 		case ATA_R_NSECTOR:
 			//DevCon.WriteLn("DEV9: *ATA_R_NSECTOR 16bit write at address %x, value %x", addr, value);
 			ClearHOB();
 			regNsectorHOB = regNsector;
-			regNsector = (u8)value;
+			regNsector = static_cast<u8>(value);
 			break;
 		case ATA_R_SECTOR:
 			//DevCon.WriteLn("DEV9: *ATA_R_SECTOR 16bit write at address %x, value %x", addr, value);
 			ClearHOB();
 			regSectorHOB = regSector;
-			regSector = (u8)value;
+			regSector = static_cast<u8>(value);
 			break;
 		case ATA_R_LCYL:
 			//DevCon.WriteLn("DEV9: *ATA_R_LCYL 16bit write at address %x, value %x", addr, value);
 			ClearHOB();
 			regLcylHOB = regLcyl;
-			regLcyl = (u8)value;
+			regLcyl = static_cast<u8>(value);
 			break;
 		case ATA_R_HCYL:
 			//DevCon.WriteLn("DEV9: *ATA_R_HCYL 16bit write at address %x, value %x", addr, value);
 			ClearHOB();
 			regHcylHOB = regHcyl;
-			regHcyl = (u8)value;
+			regHcyl = static_cast<u8>(value);
 			break;
 		case ATA_R_SELECT:
 			//DevCon.WriteLn("DEV9: *ATA_R_SELECT 16bit write at address %x, value %x", addr, value);
-			regSelect = (u8)value;
+			regSelect = static_cast<u8>(value);
 			//bus->ifs[0].select = (val & ~0x10) | 0xa0;
 			//bus->ifs[1].select = (val | 0x10) | 0xa0;
 			break;
@@ -502,18 +502,18 @@ s64 ATA::HDD_GetLBA()
 		}
 		else
 		{
-			return ((s64)regHcylHOB << 40) |
-				   ((s64)regLcylHOB << 32) |
-				   ((s64)regSectorHOB << 24) |
-				   ((s64)regHcyl << 16) |
-				   ((s64)regLcyl << 8) |
+			return (static_cast<s64>(regHcylHOB) << 40) |
+				   (static_cast<s64>(regLcylHOB) << 32) |
+				   (static_cast<s64>(regSectorHOB) << 24) |
+				   (static_cast<s64>(regHcyl) << 16) |
+				   (static_cast<s64>(regLcyl) << 8) |
 				   regSector;
 		}
 	}
 	else
 	{
-		regStatus |= (u8)ATA_STAT_ERR;
-		regError |= (u8)ATA_ERR_ABORT;
+		regStatus |= static_cast<u8>(ATA_STAT_ERR);
+		regError |= static_cast<u8>(ATA_ERR_ABORT);
 
 		Console.Error("DEV9: ATA: Tried to get LBA address while LBA mode disabled");
 		//(c.Nh + h).Ns+(s-1)
@@ -528,19 +528,19 @@ void ATA::HDD_SetLBA(s64 sectorNum)
 	{
 		if (!lba48)
 		{
-			regSelect = (u8)((regSelect & 0xf0) | (int)((sectorNum >> 24) & 0x0f));
-			regHcyl = (u8)(sectorNum >> 16);
-			regLcyl = (u8)(sectorNum >> 8);
-			regSector = (u8)(sectorNum);
+			regSelect = static_cast<u8>((regSelect & 0xf0) | static_cast<int>((sectorNum >> 24) & 0x0f));
+			regHcyl = static_cast<u8>(sectorNum >> 16);
+			regLcyl = static_cast<u8>(sectorNum >> 8);
+			regSector = static_cast<u8>(sectorNum);
 		}
 		else
 		{
-			regSector = (u8)sectorNum;
-			regLcyl = (u8)(sectorNum >> 8);
-			regHcyl = (u8)(sectorNum >> 16);
-			regSectorHOB = (u8)(sectorNum >> 24);
-			regLcylHOB = (u8)(sectorNum >> 32);
-			regHcylHOB = (u8)(sectorNum >> 40);
+			regSector = static_cast<u8>(sectorNum);
+			regLcyl = static_cast<u8>(sectorNum >> 8);
+			regHcyl = static_cast<u8>(sectorNum >> 16);
+			regSectorHOB = static_cast<u8>(sectorNum >> 24);
+			regLcylHOB = static_cast<u8>(sectorNum >> 32);
+			regHcylHOB = static_cast<u8>(sectorNum >> 40);
 		}
 	}
 	else
@@ -560,35 +560,27 @@ bool ATA::HDD_CanSeek()
 
 bool ATA::HDD_CanAccess(int* sectors)
 {
-	s64 lba;
-	s64 posStart;
-	s64 posEnd;
-	s64 maxLBA;
-
-	maxLBA = std::min<s64>(EmuConfig.DEV9.HddSizeSectors, hddImageSize / 512) - 1;
+	s64 maxLBA = std::min<s64>(EmuConfig.DEV9.HddSizeSectors, hddImageSize / 512) - 1;
 	if ((regSelect & 0x40) == 0) //CHS mode
 		maxLBA = std::min<s64>(maxLBA, curCylinders * curHeads * curSectors);
 
-	lba = HDD_GetLBA();
-	if (lba == -1)
+	const s64 posStart = HDD_GetLBA();
+	if (posStart == -1)
 		return false;
 
 	//DevCon.WriteLn("DEV9: LBA :%i", lba);
-	posStart = lba;
-
 	if (posStart > maxLBA)
 	{
 		*sectors = -1;
 		return false;
 	}
 
-	posEnd = posStart + *sectors;
-
+	const s64 posEnd = posStart + *sectors;
 	if (posEnd > maxLBA)
 	{
 		const s64 overshoot = posEnd - maxLBA;
 		s64 space = *sectors - overshoot;
-		*sectors = (int)space;
+		*sectors = static_cast<int>(space);
 		return false;
 	}
 
