@@ -668,6 +668,45 @@ bool GSHwHack::GSC_BlueTongueGames(GSRendererHW& r, int& skip)
 	return false;
 }
 
+bool GSHwHack::GSC_MetalGearSolid3(GSRendererHW& r, int& skip)
+{
+	// MGS3 copies 256x224 in Z24 from 0x2000 to 0x2080 (with a BW of 8, so half the screen), and then uses this as a
+	// Z buffer. So, we effectively have two buffers within one, overlapping, at the 256 pixel point, colour on left,
+	// depth on right. Our texture cache can't handle that, and it thinks it's one big target, so when it does look up
+	// Z at 0x2080, it misses and loads from local memory instead, which of course, is junk. This is for the depth of
+	// field effect (MGS3-DOF.gs).
+
+	// We could fix this up at the time the Z data actually gets used, but that doubles the amount of copies we need to
+	// do, since OI fixes can't access the dirty area. So, instead, we'll just fudge the FBP when it copies 0x2000 to
+	// 0x2080, which normally happens with a 256 pixel offset, so we have to subtract that from the sprite verts too.
+
+	// Drawing with FPSM of Z24 is pretty unlikely, so hopefully this doesn't hit any false positives.
+	if (RFPSM != PSMZ24 || RTPSM != PSMZ24 || !RTME)
+		return false;
+
+	// For some reason, instead of being sensible and masking Z, they set up AFAIL instead.
+	if (!RZMSK)
+	{
+		u32 fm = 0, fm_mask = 0, zm = 0;
+		if (!r.m_cached_ctx.TEST.ATE || !r.TryAlphaTest(fm, fm_mask, zm) || zm == 0)
+			return false;
+	}
+
+	const int w_sub = (RFBW / 2) * 64;
+	const u32 w_sub_fp = w_sub << 4;
+	r.m_cached_ctx.FRAME.FBP += RFBW / 2;
+
+	GL_INS("OI_MetalGearSolid3(): %x -> %x, %dx%d, subtract %d", RFBP, RFBP + (RFBW / 2), r.m_r.width(), r.m_r.height(),
+		w_sub);
+
+	for (u32 i = 0; i < r.m_vertex.next; i++)
+		r.m_vertex.buff[i].XYZ.X -= w_sub_fp;
+
+	// No point adjusting the scissor, it just ends up expanding out anyway.. but we do have to fix up the draw rect.
+	r.m_r -= GSVector4i(w_sub);
+	return true;
+}
+
 bool GSHwHack::OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
 	const u32 n_vertices = r.m_vertex.next;
@@ -1084,6 +1123,7 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	CRC_F(GSC_Battlefield2),
 	CRC_F(GSC_NFSUndercover),
 	CRC_F(GSC_PolyphonyDigitalGames),
+	CRC_F(GSC_MetalGearSolid3),
 
 	// Channel Effect
 	CRC_F(GSC_GiTS),
