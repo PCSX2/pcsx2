@@ -7283,7 +7283,7 @@ SCPS-55901:
         // was simply to exit the game completely.
         comment=Save Point Crash Prevention
         author=pandubz, PSI, turtleli
-        patch=1,EE,00285f44,word,2413001e
+        patch=1,EE,00285f44,word,24130064
         patch=1,EE,00285f48,word,8f85ab00
         patch=1,EE,00285f4c,word,26640000
         patch=1,EE,00285f50,word,0c0935a8
@@ -41781,7 +41781,7 @@ SLPS-29001:
         // was simply to exit the game completely.
         comment=Save Point Crash Prevention
         author=pandubz, PSI, turtleli
-        patch=1,EE,00285f44,word,2413001e
+        patch=1,EE,00285f44,word,24130064
         patch=1,EE,00285f48,word,8f85ab00
         patch=1,EE,00285f4c,word,26640000
         patch=1,EE,00285f50,word,0c0935a8
@@ -41806,7 +41806,7 @@ SLPS-29002:
         // was simply to exit the game completely.
         comment=Save Point Crash Prevention
         author=pandubz, PSI, turtleli
-        patch=1,EE,00285f44,word,2413001e
+        patch=1,EE,00285f44,word,24130064
         patch=1,EE,00285f48,word,8f85ab00
         patch=1,EE,00285f4c,word,26640000
         patch=1,EE,00285f50,word,0c0935a8
@@ -42459,7 +42459,7 @@ SLPS-73901:
         // was simply to exit the game completely.
         comment=Save Point Crash Prevention
         author=pandubz, PSI, turtleli
-        patch=1,EE,00285f44,word,2413001e
+        patch=1,EE,00285f44,word,24130064
         patch=1,EE,00285f48,word,8f85ab00
         patch=1,EE,00285f4c,word,26640000
         patch=1,EE,00285f50,word,0c0935a8
@@ -44499,7 +44499,7 @@ SLUS-20469:
         // was simply to exit the game completely.
         comment=Save Point Crash Prevention
         author=pandubz, PSI, turtleli
-        patch=1,EE,00289dac,word,2413001e
+        patch=1,EE,00289dac,word,24130064
         patch=1,EE,00289db0,word,8f85af40
         patch=1,EE,00289db4,word,26640000
         patch=1,EE,00289db8,word,0c093746
