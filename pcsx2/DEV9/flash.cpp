@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -75,8 +75,6 @@ static const char* getCmdName(u32 cmd)
 
 void FLASHinit()
 {
-	FILE* fd;
-
 	id = FLASH_ID_64MBIT;
 	counter = 0;
 	addrbyte = 0;
@@ -86,12 +84,10 @@ void FLASHinit()
 	calculateECC(data);
 	ctrl = FLASH_PP_READY;
 
-	fd = fopen("flash.dat", "rb");
+	FILE* fd = fopen("flash.dat", "rb");
 	if (fd != NULL)
 	{
-		size_t ret;
-
-		ret = fread(file, 1, CARD_SIZE_ECC, fd);
+		const size_t ret = fread(file, 1, CARD_SIZE_ECC, fd);
 		if (ret != CARD_SIZE_ECC)
 		{
 			DevCon.WriteLn("DEV9: Reading error.");

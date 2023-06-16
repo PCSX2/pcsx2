@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -216,7 +216,7 @@ SocketAdapter::SocketAdapter()
 
 #ifdef _WIN32
 	/* Use the MAKEWORD(lowbyte, highbyte) macro declared in Windef.h */
-	WORD wVersionRequested = MAKEWORD(2, 2);
+	const WORD wVersionRequested = MAKEWORD(2, 2);
 
 	WSADATA wsaData{0};
 	const int err = WSAStartup(wVersionRequested, &wsaData);
@@ -270,7 +270,7 @@ bool SocketAdapter::recv(NetPacket* pkt)
 				EthernetFrame frame(ipPkt);
 				frame.sourceMAC = internalMAC;
 				frame.destinationMAC = ps2MAC;
-				frame.protocol = (u16)EtherType::IPv4;
+				frame.protocol = static_cast<u16>(EtherType::IPv4);
 
 				frame.WritePacket(pkt);
 				InspectRecv(pkt);
@@ -294,8 +294,6 @@ bool SocketAdapter::send(NetPacket* pkt)
 	InspectSend(pkt);
 	if (NetAdapter::send(pkt))
 		return true;
-
-	bool result = false;
 
 	EthernetFrame frame(pkt);
 
@@ -350,7 +348,7 @@ bool SocketAdapter::send(NetPacket* pkt)
 			return false;
 	}
 
-	return result;
+	return false;
 }
 
 void SocketAdapter::reset()
@@ -464,7 +462,7 @@ bool SocketAdapter::SendTCP(ConnectionKey Key, IP_Packet* ipPkt)
 	Key.ps2Port = tcp.sourcePort;
 	Key.srvPort = tcp.destinationPort;
 
-	int res = SendFromConnection(Key, ipPkt);
+	const int res = SendFromConnection(Key, ipPkt);
 	if (res == 1)
 		return true;
 	else if (res == 0)
@@ -561,7 +559,7 @@ int SocketAdapter::SendFromConnection(ConnectionKey Key, IP_Packet* ipPkt)
 
 void SocketAdapter::HandleConnectionClosed(BaseSession* sender)
 {
-	ConnectionKey key = sender->key;
+	const ConnectionKey key = sender->key;
 	connections.Remove(key);
 	//Note, we delete something that is calling us
 	//this is probably going to cause issues
