@@ -27,9 +27,9 @@
      inkscape:deskcolor="#505050"
      inkscape:document-units="px"
      showgrid="false"
-     inkscape:zoom="0.921875"
-     inkscape:cx="326.50847"
-     inkscape:cy="204.47458"
+     inkscape:zoom="2.6074562"
+     inkscape:cx="129.05298"
+     inkscape:cy="350.53321"
      inkscape:window-width="1920"
      inkscape:window-height="956"
      inkscape:window-x="0"
@@ -43,26 +43,26 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:32;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none"
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:35;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none"
        id="rect1182"
-       width="149.52361"
-       height="448.5708"
-       x="130.19135"
-       y="47.429199" />
+       width="123.23695"
+       height="369.71085"
+       x="150.59978"
+       y="71.144577" />
     <rect
-       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:32;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none"
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:35;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none"
        id="rect1184"
-       width="94.811378"
-       height="372.6998"
-       x="279.71497"
-       y="123.3002" />
+       width="78.14328"
+       height="307.17816"
+       x="273.83676"
+       y="133.67725" />
     <path
-       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:24;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none"
-       d="M 380.13092,500 H 482.10899 L 380.1309,398.0219"
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:25;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none"
+       d="m 357.42017,445.85541 h 84.05005 l -84.05007,-84.05007"
        id="path1190" />
     <path
-       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:24;stroke-linecap:square;stroke-linejoin:miter;stroke-dasharray:none"
-       d="M 123.1935,500 H 31.848286 l 83.063924,-81.96772"
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:25;stroke-linecap:square;stroke-linejoin:miter;stroke-dasharray:none"
+       d="M 142.36951,445.85542 H 67.083026 l 68.461054,-67.55757"
        id="path1192" />
   </g>
 </svg>
