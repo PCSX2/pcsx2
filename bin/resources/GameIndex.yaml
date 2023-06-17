@@ -25653,6 +25653,9 @@ SLPM-55005:
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
   speedHacks:
     mvuFlagSpeedHack: 0 # Fixes missing graphical effects.
+SLPM-55006:
+  name: "Akane-iro ni Somaru Saka - Parallel"
+  region: "NTSC-J"
 SLPM-55008:
   name: "Sengoku Basara X"
   region: "NTSC-J"
@@ -48485,6 +48488,7 @@ SLUS-21236:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
+    wildArmsHack: 1 # Fixes double image.
 SLUS-21237:
   name: "AND 1 Streetball"
   region: "NTSC-U"
