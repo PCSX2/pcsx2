@@ -22,8 +22,6 @@ class GSTextureOGL final : public GSTexture
 {
 private:
 	GLuint m_texture_id = 0; // the texture id
-	GLuint m_fbo_read = 0;
-	bool m_clean = false;
 
 	// Avoid alignment constrain
 	//GSVector4i m_r;
@@ -66,13 +64,7 @@ public:
 		return (m_int_type == GL_UNSIGNED_BYTE || m_int_type == GL_UNSIGNED_SHORT || m_int_type == GL_UNSIGNED_INT);
 	}
 
-	u32 GetID() { return m_texture_id; }
-	bool HasBeenCleaned() { return m_clean; }
-	void WasAttached() { m_clean = false; }
-	void WasCleaned() { m_clean = true; }
-
-	void Clear(const void* data);
-	void Clear(const void* data, const GSVector4i& area);
+	__fi u32 GetID() { return m_texture_id; }
 };
 
 class GSDownloadTextureOGL final : public GSDownloadTexture

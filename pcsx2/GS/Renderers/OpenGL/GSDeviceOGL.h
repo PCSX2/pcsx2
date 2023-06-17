@@ -250,7 +250,7 @@ private:
 
 	GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) override;
 
-	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c, const bool linear) override;
+	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const bool linear) override;
 	void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb) override;
 
 	bool CompileFXAAProgram();
@@ -266,8 +266,8 @@ private:
 	void RenderImGui();
 	void RenderBlankFrame();
 
-	void OMAttachRt(GSTextureOGL* rt = nullptr);
-	void OMAttachDs(GSTextureOGL* ds = nullptr);
+	void OMAttachRt(GSTexture* rt = nullptr);
+	void OMAttachDs(GSTexture* ds = nullptr);
 	void OMSetFBO(GLuint fbo);
 
 	void DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect, const GSVector2i& ds);
@@ -285,6 +285,7 @@ public:
 
 	__fi u32 GetFBORead() const { return m_fbo_read; }
 	__fi u32 GetFBOWrite() const { return m_fbo_write; }
+	void CommitClear(GSTexture* t, bool use_write_fbo);
 
 	RenderAPI GetRenderAPI() const override;
 	bool HasSurface() const override;
@@ -310,11 +311,9 @@ public:
 	void DrawIndexedPrimitive();
 	void DrawIndexedPrimitive(int offset, int count);
 
-	void ClearRenderTarget(GSTexture* t, const GSVector4& c) override;
 	void ClearRenderTarget(GSTexture* t, u32 c) override;
 	void InvalidateRenderTarget(GSTexture* t) override;
 	void ClearDepth(GSTexture* t, float d) override;
-	void ClearStencil(GSTexture* t, u8 c);
 
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 

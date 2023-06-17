@@ -410,7 +410,7 @@ void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadActio
 		} \
 	}
 
-	CHECK_CLEAR(mc, color_load, color_clear, GetClearColor)
+	CHECK_CLEAR(mc, color_load, color_clear, GetUNormClearColor)
 	CHECK_CLEAR(md, depth_load, depth_clear, GetClearDepth)
 #undef CHECK_CLEAR
 	// Stencil and depth are one texture, stencil clears aren't supported
@@ -567,7 +567,7 @@ GSTexture* GSDeviceMTL::CreateSurface(GSTexture::Type type, int width, int heigh
 	}
 }}
 
-void GSDeviceMTL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c, const bool linear)
+void GSDeviceMTL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const bool linear)
 { @autoreleasepool {
 	id<MTLCommandBuffer> cmdbuf = GetRenderCmdBuf();
 	GSScopedDebugGroupMTL dbg(cmdbuf, @"DoMerge");
@@ -579,7 +579,8 @@ void GSDeviceMTL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 
 	ClearRenderTarget(dTex, c);
 
-	vector_float4 cb_c = { c.r, c.g, c.b, c.a };
+	const GSVector4 unorm_c = GSVector4::unorm8(c);
+	vector_float4 cb_c = { unorm_c.r, unorm_c.g, unorm_c.b, unorm_c.a };
 	GSMTLConvertPSUniform cb_yuv = {};
 	cb_yuv.emoda = EXTBUF.EMODA;
 	cb_yuv.emodc = EXTBUF.EMODC;
@@ -1430,27 +1431,18 @@ void GSDeviceMTL::AccumulateCommandBufferTime(id<MTLCommandBuffer> buffer)
 #pragma clang diagnostic pop
 }
 
-void GSDeviceMTL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
-{
-	if (!t) return;
-	t->SetClearColor(c);
-}
-
 void GSDeviceMTL::ClearRenderTarget(GSTexture* t, uint32 c)
 {
-	GSVector4 color = GSVector4::rgba32(c) * (1.f / 255.f);
-	ClearRenderTarget(t, color);
+	t->SetClearColor(c);
 }
 
 void GSDeviceMTL::ClearDepth(GSTexture* t, float d)
 {
-	if (!t) return;
 	t->SetClearDepth(d);
 }
 
 void GSDeviceMTL::InvalidateRenderTarget(GSTexture* t)
 {
-	if (!t) return;
 	t->SetState(GSTexture::State::Invalidated);
 }
 

@@ -67,6 +67,7 @@ bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch, int l
 	if (layer >= m_mipmap_levels)
 		return false;
 
+	GSDevice11::GetInstance()->CommitClear(this);
 	g_perfmon.Put(GSPerfMon::TextureUploads, 1);
 
 	const u32 bs = GetCompressedBlockSize();
@@ -82,41 +83,19 @@ bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch, int l
 
 bool GSTexture11::Map(GSMap& m, const GSVector4i* r, int layer)
 {
-	if (r != NULL)
-	{
-		// ASSERT(0); // not implemented
-		return false;
-	}
-
-	if (layer >= m_mipmap_levels)
-		return false;
-
-	if (m_texture && m_desc.Usage == D3D11_USAGE_STAGING)
-	{
-		D3D11_MAPPED_SUBRESOURCE map;
-		UINT subresource = layer;
-
-		if (SUCCEEDED(GSDevice11::GetInstance()->GetD3DContext()->Map(m_texture.get(), subresource, D3D11_MAP_READ_WRITE, 0, &map)))
-		{
-			m.bits = (u8*)map.pData;
-			m.pitch = (int)map.RowPitch;
-			m_mapped_subresource = layer;
-			return true;
-		}
-	}
-
+	// Not supported
 	return false;
 }
 
 void GSTexture11::Unmap()
 {
-	const UINT subresource = m_mapped_subresource;
-	m_needs_mipmaps_generated |= (m_mapped_subresource == 0);
-	GSDevice11::GetInstance()->GetD3DContext()->Unmap(m_texture.get(), subresource);
+	pxFailRel("Should not be called.");
 }
 
 bool GSTexture11::Save(const std::string& fn)
 {
+	GSDevice11::GetInstance()->CommitClear(this);
+
 	D3D11_TEXTURE2D_DESC desc = m_desc;
 	desc.Usage = D3D11_USAGE_STAGING;
 	desc.BindFlags = 0;
@@ -342,6 +321,9 @@ void GSDownloadTexture11::CopyFromTexture(
 	pxAssert(src.z <= stex->GetWidth() && src.w <= stex->GetHeight());
 	pxAssert(static_cast<u32>(drc.z) <= m_width && static_cast<u32>(drc.w) <= m_height);
 	pxAssert(src_level < static_cast<u32>(stex->GetMipmapLevels()));
+
+	GSDevice11::GetInstance()->CommitClear(stex);
+
 	g_perfmon.Put(GSPerfMon::Readbacks, 1);
 
 	if (IsMapped())
