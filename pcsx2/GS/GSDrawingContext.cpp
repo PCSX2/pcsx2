@@ -79,6 +79,44 @@ static int extend(int uv, int size)
 	return size;
 }
 
+GSDrawingContext::GSDrawingContext()
+{
+	std::memset(&offset, 0, sizeof(offset));
+
+	Reset();
+}
+
+void GSDrawingContext::Reset()
+{
+	std::memset(&XYOFFSET, 0, sizeof(XYOFFSET));
+	std::memset(&TEX0, 0, sizeof(TEX0));
+	std::memset(&TEX1, 0, sizeof(TEX1));
+	std::memset(&CLAMP, 0, sizeof(CLAMP));
+	std::memset(&MIPTBP1, 0, sizeof(MIPTBP1));
+	std::memset(&MIPTBP2, 0, sizeof(MIPTBP2));
+	std::memset(&SCISSOR, 0, sizeof(SCISSOR));
+	std::memset(&ALPHA, 0, sizeof(ALPHA));
+	std::memset(&TEST, 0, sizeof(TEST));
+	std::memset(&FBA, 0, sizeof(FBA));
+	std::memset(&FRAME, 0, sizeof(FRAME));
+	std::memset(&ZBUF, 0, sizeof(ZBUF));
+}
+
+void GSDrawingContext::UpdateScissor()
+{
+	// Scissor registers are inclusive of the upper bounds.
+	const GSVector4i rscissor = GSVector4i(static_cast<int>(SCISSOR.SCAX0), static_cast<int>(SCISSOR.SCAY0),
+		static_cast<int>(SCISSOR.SCAX1), static_cast<int>(SCISSOR.SCAY1));
+	scissor.in = rscissor + GSVector4i::cxpr(0, 0, 1, 1);
+
+	// Fixed-point scissor min/max, used for rejecting primitives which are entirely outside.
+	scissor.cull = rscissor.sll32(4);
+
+	// Offset applied to vertices for culling, zw is for native resolution culling
+	// We want to round subpixels down, because at least one pixel gets filled per scanline.
+	scissor.xyof = GSVector4i::loadl(&XYOFFSET.U64).xyxy().sub32(GSVector4i::cxpr(0, 0, 15, 15));
+}
+
 GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4& st, bool linear, bool mipmap) const
 {
 	if (mipmap)

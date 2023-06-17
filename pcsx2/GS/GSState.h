@@ -141,15 +141,17 @@ private:
 protected:
 	GSVertex m_v = {};
 	float m_q = 1.0f;
-	GSVector4i m_scissor = {};
-	GSVector4i m_ofxy = {};
+	GSVector4i m_scissor_cull_min = {};
+	GSVector4i m_scissor_cull_max = {};
+	GSVector4i m_xyof = {};
 
 	struct
 	{
 		GSVertex* buff;
 		u32 head, tail, next, maxcount; // head: first vertex, tail: last vertex + 1, next: last indexed + 1
 		u32 xy_tail;
-		u64 xy[4];
+		GSVector4i xy[4];
+		GSVector4i xyhead;
 	} m_vertex = {};
 
 	struct

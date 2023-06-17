@@ -969,6 +969,11 @@ public:
 		return GSVector4i(_mm_cmpeq_epi32(m, v.m));
 	}
 
+	__forceinline GSVector4i eq64(const GSVector4i& v) const
+	{
+		return GSVector4i(_mm_cmpeq_epi64(m, v.m));
+	}
+
 	__forceinline GSVector4i neq8(const GSVector4i& v) const
 	{
 		return ~eq8(v);
