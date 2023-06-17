@@ -39,8 +39,8 @@ public:
 	struct
 	{
 		GSVector4i in;
-		GSVector4i ex;
-		GSVector4i ofxy;
+		GSVector4i cull;
+		GSVector4i xyof;
 	} scissor;
 
 	struct
@@ -50,50 +50,11 @@ public:
 		GSPixelOffset4* fzb4;
 	} offset;
 
-	GSDrawingContext()
-	{
-		memset(&offset, 0, sizeof(offset));
+	GSDrawingContext();
 
-		Reset();
-	}
+	void Reset();
 
-	void Reset()
-	{
-		memset(&XYOFFSET, 0, sizeof(XYOFFSET));
-		memset(&TEX0, 0, sizeof(TEX0));
-		memset(&TEX1, 0, sizeof(TEX1));
-		memset(&CLAMP, 0, sizeof(CLAMP));
-		memset(&MIPTBP1, 0, sizeof(MIPTBP1));
-		memset(&MIPTBP2, 0, sizeof(MIPTBP2));
-		memset(&SCISSOR, 0, sizeof(SCISSOR));
-		memset(&ALPHA, 0, sizeof(ALPHA));
-		memset(&TEST, 0, sizeof(TEST));
-		memset(&FBA, 0, sizeof(FBA));
-		memset(&FRAME, 0, sizeof(FRAME));
-		memset(&ZBUF, 0, sizeof(ZBUF));
-	}
-
-	void UpdateScissor()
-	{
-		ASSERT(XYOFFSET.OFX <= 0xf800 && XYOFFSET.OFY <= 0xf800);
-
-		scissor.ex.U16[0] = (u16)((SCISSOR.SCAX0 << 4) + XYOFFSET.OFX - 0x8000);
-		scissor.ex.U16[1] = (u16)((SCISSOR.SCAY0 << 4) + XYOFFSET.OFY - 0x8000);
-		scissor.ex.U16[2] = (u16)((SCISSOR.SCAX1 << 4) + XYOFFSET.OFX - 0x8000);
-		scissor.ex.U16[3] = (u16)((SCISSOR.SCAY1 << 4) + XYOFFSET.OFY - 0x8000);
-
-		scissor.in = GSVector4i(
-			(int)SCISSOR.SCAX0,
-			(int)SCISSOR.SCAY0,
-			(int)SCISSOR.SCAX1 + 1,
-			(int)SCISSOR.SCAY1 + 1);
-
-		scissor.ofxy = GSVector4i(
-			0x8000,
-			0x8000,
-			(int)XYOFFSET.OFX - 15,
-			(int)XYOFFSET.OFY - 15);
-	}
+	void UpdateScissor();
 
 	GIFRegTEX0 GetSizeFixedTEX0(const GSVector4& st, bool linear, bool mipmap = false) const;
 
