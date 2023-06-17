@@ -44,7 +44,7 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Checked"),
 		tr("Patches the BIOS to skip the console's boot animation."));
 
-	dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Forward Boot"), tr("Unchecked"),
+	dialog->registerWidgetHelp(m_ui.fastBootFastForward, tr("Fast Forward Boot"), tr("Unchecked"),
 		tr("Removes emulation speed throttle until the game starts to reduce startup time."));
 
 	refreshList();
