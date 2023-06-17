@@ -312,8 +312,8 @@ public:
 		};
 
 		static inline constexpr GSVector4i VideoModeOffsetsOverscan[6] = {
-			GSVector4i::cxpr(711, 243, 498, 12),
-			GSVector4i::cxpr(702, 288, 532, 18),
+			GSVector4i::cxpr(711, 240, 498, 17),
+			GSVector4i::cxpr(711, 288, 532, 21),
 			GSVector4i::cxpr(640, 480, 276, 34),
 			GSVector4i::cxpr(720, 480, 232, 35),
 			GSVector4i::cxpr(1280, 720, 302, 24),
