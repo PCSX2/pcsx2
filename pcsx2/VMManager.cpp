@@ -109,6 +109,7 @@ namespace VMManager
 	static void ClearELFInfo();
 	static void ReportGameChangeToHost();
 	static bool HasBootedELF();
+	static bool HasValidOrInitializingVM();
 
 	static std::string GetCurrentSaveStateFileName(s32 slot);
 	static bool DoLoadState(const char* filename);
@@ -263,6 +264,12 @@ bool VMManager::HasValidVM()
 {
 	const VMState state = s_state.load(std::memory_order_acquire);
 	return (state >= VMState::Running && state <= VMState::Resetting);
+}
+
+bool VMManager::HasValidOrInitializingVM()
+{
+	const VMState state = s_state.load(std::memory_order_acquire);
+	return (state >= VMState::Initializing && state <= VMState::Resetting);
 }
 
 std::string VMManager::GetDiscPath()
@@ -464,7 +471,7 @@ void VMManager::LoadSettings()
 	if (GSDumpReplayer::IsReplayingDump())
 		EmuConfig.Speedhacks.vuThread = false;
 
-	if (HasValidVM())
+	if (HasValidOrInitializingVM())
 	{
 		if (EmuConfig.WarnAboutUnsafeSettings)
 			WarnAboutUnsafeSettings();
@@ -476,7 +483,7 @@ void VMManager::LoadSettings()
 void VMManager::ApplyGameFixes()
 {
 	s_active_game_fixes = 0;
-	if (!HasBootedELF())
+	if (!HasBootedELF() && !GSDumpReplayer::IsReplayingDump())
 	{
 		// Instant DMA needs to be on for this BIOS (font rendering is broken without it, possible cache issues).
 		EmuConfig.Gamefixes.InstantDMAHack = true;
@@ -2089,7 +2096,7 @@ void VMManager::ApplySettings()
 	Console.WriteLn("Applying settings...");
 
 	// if we're running, ensure the threads are synced
-	const bool running = (s_state.load(std::memory_order_acquire) == VMState::Running);
+	const bool running = (GetState() == VMState::Running);
 	if (running)
 	{
 		if (THREAD_VU1)
