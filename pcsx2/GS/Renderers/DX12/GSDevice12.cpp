@@ -639,27 +639,16 @@ void GSDevice12::DrawIndexedPrimitive(int offset, int count)
 	g_d3d12_context->GetCommandList()->DrawIndexedInstanced(count, 1, m_index.start + offset, m_vertex.start, 0);
 }
 
-void GSDevice12::ClearRenderTarget(GSTexture* t, const GSVector4& c)
+void GSDevice12::ClearRenderTarget(GSTexture* t, u32 c)
 {
-	if (!t)
-		return;
-
 	if (m_current_render_target == t)
 		EndRenderPass();
 
-	static_cast<GSTexture12*>(t)->SetClearColor(c);
-}
-
-void GSDevice12::ClearRenderTarget(GSTexture* t, u32 c)
-{
-	ClearRenderTarget(t, GSVector4::rgba32(c) * (1.0f / 255));
+	t->SetClearColor(c);
 }
 
 void GSDevice12::InvalidateRenderTarget(GSTexture* t)
 {
-	if (!t)
-		return;
-
 	if (m_current_render_target == t || m_current_depth_target == t)
 		EndRenderPass();
 
@@ -668,13 +657,10 @@ void GSDevice12::InvalidateRenderTarget(GSTexture* t)
 
 void GSDevice12::ClearDepth(GSTexture* t, float d)
 {
-	if (!t)
-		return;
-
 	if (m_current_depth_target == t)
 		EndRenderPass();
 
-	static_cast<GSTexture12*>(t)->SetClearDepth(d);
+	t->SetClearDepth(d);
 }
 
 void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format,
@@ -771,7 +757,7 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 				{
 					dTexVK->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
 					g_d3d12_context->GetCommandList()->ClearRenderTargetView(
-						dTexVK->GetWriteDescriptor(), sTexVK->GetClearColor().v, 0, nullptr);
+						dTexVK->GetWriteDescriptor(), sTexVK->GetUNormClearColor().v, 0, nullptr);
 				}
 				else
 				{
@@ -1027,19 +1013,17 @@ void GSDevice12::BeginRenderPassForStretchRect(
 
 	if (dTex->GetType() != GSTexture::Type::DepthStencil)
 	{
-		const GSVector4 clear_color(dTex->GetClearColor());
 		BeginRenderPass(load_op, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
 			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-			clear_color);
+			dTex->GetClearColor());
 	}
 	else
 	{
-		const float clear_depth = dTex->GetClearDepth();
 		BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
 			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, load_op, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
 			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-			GSVector4::zero(), clear_depth);
+			0, dTex->GetClearDepth());
 	}
 }
 
@@ -1103,7 +1087,7 @@ void GSDevice12::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect,
 }
 
 void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect,
-	const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c, const bool linear)
+	const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const bool linear)
 {
 	GL_PUSH("DoMerge");
 
@@ -1126,7 +1110,7 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	if (feedback_write_2 || feedback_write_1 || sTex[0])
 	{
 		SetUtilityRootSignature();
-		const MergeConstantBuffer uniforms = {c, EXTBUF.EMODA, EXTBUF.EMODC};
+		const MergeConstantBuffer uniforms = {GSVector4::unorm8(c), EXTBUF.EMODA, EXTBUF.EMODC};
 		SetUtilityPushConstants(&uniforms, sizeof(uniforms));
 	}
 
@@ -2711,8 +2695,7 @@ bool GSDevice12::InRenderPass()
 void GSDevice12::BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE color_begin,
 	D3D12_RENDER_PASS_ENDING_ACCESS_TYPE color_end, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE depth_begin,
 	D3D12_RENDER_PASS_ENDING_ACCESS_TYPE depth_end, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE stencil_begin,
-	D3D12_RENDER_PASS_ENDING_ACCESS_TYPE stencil_end, const GSVector4& clear_color /* = GSVector4::zero() */,
-	float clear_depth /* = 0.0f */, u8 clear_stencil /* = 0 */)
+	D3D12_RENDER_PASS_ENDING_ACCESS_TYPE stencil_end, u32 clear_color, float clear_depth, u8 clear_stencil)
 {
 	if (m_in_render_pass)
 		EndRenderPass();
@@ -2731,7 +2714,8 @@ void GSDevice12::BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE color_b
 		{
 			LookupNativeFormat(m_current_render_target->GetFormat(), nullptr,
 				&rt.BeginningAccess.Clear.ClearValue.Format, nullptr, nullptr);
-			GSVector4::store<false>(rt.BeginningAccess.Clear.ClearValue.Color, clear_color);
+			GSVector4::store<false>(rt.BeginningAccess.Clear.ClearValue.Color,
+				GSVector4::unorm8(clear_color));
 		}
 	}
 
@@ -3026,8 +3010,7 @@ void GSDevice12::SetupDATE(GSTexture* rt, GSTexture* ds, bool datm, const GSVect
 	SetStencilRef(1);
 	BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
-		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, GSVector4::zero(),
-		0.0f, 0);
+		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, 0, 0.0f, 0);
 	if (ApplyUtilityState())
 		DrawPrimitive();
 
@@ -3062,7 +3045,7 @@ GSTexture12* GSDevice12::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 					D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
 		config.ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-		GSVector4::zero(), config.ds ? static_cast<GSTexture12*>(config.ds)->GetClearDepth() : 0.0f);
+		0, config.ds ? config.ds->GetClearDepth() : 0.0f);
 
 	// draw the quad to prefill the image
 	const GSVector4 src = GSVector4(config.drawarea) / GSVector4(rtsize).xyxy();
@@ -3252,7 +3235,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 						   D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
 			stencil_DATE ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD :
 						   D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-			draw_rt ? draw_rt->GetClearColor() : GSVector4::zero(), draw_ds ? draw_ds->GetClearDepth() : 0.0f, 1);
+			draw_rt ? draw_rt->GetClearColor() : 0, draw_ds ? draw_ds->GetClearDepth() : 0.0f, 1);
 	}
 
 	// rt -> hdr blit if enabled

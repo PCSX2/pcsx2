@@ -60,7 +60,7 @@ public:
 
 	union alignas(16) ClearValue
 	{
-		float color[4];
+		u32 color;
 		float depth;
 	};
 
@@ -139,13 +139,14 @@ public:
 	__fi u32 GetLastFrameUsed() const { return m_last_frame_used; }
 	void SetLastFrameUsed(u32 frame) { m_last_frame_used = frame; }
 
-	__fi GSVector4 GetClearColor() const { return GSVector4::load<false>(m_clear_value.color); }
+	__fi u32 GetClearColor() const { return m_clear_value.color; }
 	__fi float GetClearDepth() const { return m_clear_value.depth; }
+	__fi GSVector4 GetUNormClearColor() const { return GSVector4::unorm8(m_clear_value.color); }
 
-	__fi void SetClearColor(const GSVector4& color)
+	__fi void SetClearColor(u32 color)
 	{
 		m_state = State::Cleared;
-		GSVector4::store<false>(m_clear_value.color, color);
+		m_clear_value.color = color;
 	}
 	__fi void SetClearDepth(float depth)
 	{

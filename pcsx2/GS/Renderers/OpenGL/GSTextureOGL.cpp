@@ -183,16 +183,6 @@ void* GSTextureOGL::GetNativeHandle() const
 	return reinterpret_cast<void*>(static_cast<uintptr_t>(m_texture_id));
 }
 
-void GSTextureOGL::Clear(const void* data)
-{
-	glClearTexImage(m_texture_id, 0, m_int_format, m_int_type, data);
-}
-
-void GSTextureOGL::Clear(const void* data, const GSVector4i& area)
-{
-	glClearTexSubImage(m_texture_id, 0, area.x, area.y, 0, area.width(), area.height(), 1, m_int_format, m_int_type, data);
-}
-
 bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
 	ASSERT(m_type != Type::DepthStencil);
@@ -205,8 +195,7 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int 
 	// overflow the pbo buffer
 	// Data upload is rather small typically 64B or 1024B. So don't bother with PBO
 	// and directly send the data to the GL synchronously
-
-	m_clean = false;
+	GSDeviceOGL::GetInstance()->CommitClear(this, true);
 
 	const u32 preferred_pitch = Common::AlignUpPow2(r.width() << m_int_shift, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
 	const u32 map_size = r.height() * preferred_pitch;
@@ -269,6 +258,8 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 	if (layer >= m_mipmap_levels || IsCompressedFormat())
 		return false;
 
+	GSDeviceOGL::GetInstance()->CommitClear(this, true);
+
 	GSVector4i r = _r ? *_r : GSVector4i(0, 0, m_size.x, m_size.y);
 	// Will need some investigation
 	ASSERT(r.width() != 0);
@@ -285,8 +276,6 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 
 		GL_PUSH_("Upload Texture %d", m_texture_id); // POP is in Unmap
 		g_perfmon.Put(GSPerfMon::TextureUploads, 1);
-
-		m_clean = false;
 
 		const auto map = GSDeviceOGL::GetTextureUploadBuffer()->Map(TEXTURE_UPLOAD_ALIGNMENT, upload_size);
 		m.bits = static_cast<u8*>(map.pointer);
@@ -309,6 +298,8 @@ void GSTextureOGL::Unmap()
 {
 	if (m_type == Type::Texture || m_type == Type::RenderTarget)
 	{
+		GSDeviceOGL::GetInstance()->CommitClear(this, true);
+
 		const u32 pitch = Common::AlignUpPow2(m_r_w << m_int_shift, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
 		const u32 upload_size = pitch * m_r_h;
 		GLStreamBuffer* sb = GSDeviceOGL::GetTextureUploadBuffer();
@@ -334,11 +325,14 @@ void GSTextureOGL::Unmap()
 void GSTextureOGL::GenerateMipmap()
 {
 	ASSERT(m_mipmap_levels > 1);
+	GSDeviceOGL::GetInstance()->CommitClear(this, true);
 	glGenerateTextureMipmap(m_texture_id);
 }
 
 bool GSTextureOGL::Save(const std::string& fn)
 {
+	GSDeviceOGL::GetInstance()->CommitClear(this, true);
+
 	// Collect the texture data
 	u32 pitch = 4 * m_size.x;
 	u32 buf_size = pitch * m_size.y * 2; // Note *2 for security (depth/stencil)
@@ -351,7 +345,7 @@ bool GSTextureOGL::Save(const std::string& fn)
 
 	if (IsDepthStencil())
 	{
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, GSDeviceOGL::GetInstance()->GetFBORead());
 
 		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_texture_id, 0);
 		glReadPixels(0, 0, m_size.x, m_size.y, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, image.get());
@@ -369,7 +363,7 @@ bool GSTextureOGL::Save(const std::string& fn)
 	}
 	else
 	{
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, GSDeviceOGL::GetInstance()->GetFBORead());
 
 		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
 
@@ -399,8 +393,6 @@ void GSTextureOGL::Swap(GSTexture* tex)
 	GSTexture::Swap(tex);
 
 	std::swap(m_texture_id, static_cast<GSTextureOGL*>(tex)->m_texture_id);
-	std::swap(m_fbo_read, static_cast<GSTextureOGL*>(tex)->m_fbo_read);
-	std::swap(m_clean, static_cast<GSTextureOGL*>(tex)->m_clean);
 	std::swap(m_r_x, static_cast<GSTextureOGL*>(tex)->m_r_x);
 	std::swap(m_r_x, static_cast<GSTextureOGL*>(tex)->m_r_y);
 	std::swap(m_r_w, static_cast<GSTextureOGL*>(tex)->m_r_w);
@@ -491,6 +483,7 @@ void GSDownloadTextureOGL::CopyFromTexture(
 	const GSVector4i& drc, GSTexture* stex, const GSVector4i& src, u32 src_level, bool use_transfer_pitch)
 {
 	GSTextureOGL* const glTex = static_cast<GSTextureOGL*>(stex);
+	GSDeviceOGL::GetInstance()->CommitClear(glTex, true);
 
 	pxAssert(glTex->GetFormat() == m_format);
 	pxAssert(drc.width() == src.width() && drc.height() == src.height());

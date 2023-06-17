@@ -790,24 +790,16 @@ void GSDeviceVK::DrawIndexedPrimitive(int offset, int count)
 	vkCmdDrawIndexed(g_vulkan_context->GetCurrentCommandBuffer(), count, 1, m_index.start + offset, m_vertex.start, 0);
 }
 
-void GSDeviceVK::ClearRenderTarget(GSTexture* t, const GSVector4& c)
+void GSDeviceVK::ClearRenderTarget(GSTexture* t, u32 c)
 {
-	if (!t)
-		return;
-
 	if (m_current_render_target == t)
 		EndRenderPass();
 
-	static_cast<GSTextureVK*>(t)->SetClearColor(c);
+	t->SetClearColor(c);
 }
-
-void GSDeviceVK::ClearRenderTarget(GSTexture* t, u32 c) { ClearRenderTarget(t, GSVector4::rgba32(c) * (1.0f / 255)); }
 
 void GSDeviceVK::InvalidateRenderTarget(GSTexture* t)
 {
-	if (!t)
-		return;
-
 	if (m_current_render_target == t || m_current_depth_target == t)
 		EndRenderPass();
 
@@ -816,9 +808,6 @@ void GSDeviceVK::InvalidateRenderTarget(GSTexture* t)
 
 void GSDeviceVK::ClearDepth(GSTexture* t, float d)
 {
-	if (!t)
-		return;
-
 	if (m_current_depth_target == t)
 		EndRenderPass();
 
@@ -903,7 +892,7 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 				}
 				else
 				{
-					if ((dTexVK->GetClearColor() == (sTexVK->GetClearColor())).alltrue())
+					if (dTexVK->GetClearColor() == sTexVK->GetClearColor())
 						return;
 				}
 			}
@@ -916,7 +905,7 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 			// so use an attachment clear
 			VkClearAttachment ca;
 			ca.aspectMask = depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-			GSVector4::store<false>(ca.clearValue.color.float32, sTexVK->GetClearColor());
+			GSVector4::store<false>(ca.clearValue.color.float32, sTexVK->GetUNormClearColor());
 			ca.clearValue.depthStencil.depth = sTexVK->GetClearDepth();
 			ca.clearValue.depthStencil.stencil = 0;
 			ca.colorAttachment = 0;
@@ -1277,12 +1266,13 @@ void GSDeviceVK::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offs
 }
 
 void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect,
-	const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c, const bool linear)
+	const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const bool linear)
 {
 	GL_PUSH("DoMerge");
 
 	const GSVector4 full_r(0.0f, 0.0f, 1.0f, 1.0f);
 	const u32 yuv_constants[4] = {EXTBUF.EMODA, EXTBUF.EMODC};
+	const GSVector4 bg_color = GSVector4::unorm8(c);
 	const bool feedback_write_2 = PMODE.EN2 && sTex[2] != nullptr && EXTBUF.FBIN == 1;
 	const bool feedback_write_1 = PMODE.EN1 && sTex[2] != nullptr && EXTBUF.FBIN == 0;
 	const bool feedback_write_2_but_blend_bg = feedback_write_2 && PMODE.SLBG == 1;
@@ -1362,7 +1352,7 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		// 1st output is enabled. It must be blended
 		SetUtilityTexture(sTex[0], sampler);
 		SetPipeline(m_merge[PMODE.MMOD]);
-		SetUtilityPushConstants(&c, sizeof(c));
+		SetUtilityPushConstants(&bg_color, sizeof(bg_color));
 		DrawStretchRect(sRect[0], dRect[0], dTex->GetSize());
 	}
 
@@ -3136,10 +3126,10 @@ void GSDeviceVK::BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, c
 	vkCmdBeginRenderPass(g_vulkan_context->GetCurrentCommandBuffer(), &begin_info, VK_SUBPASS_CONTENTS_INLINE);
 }
 
-void GSDeviceVK::BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, const GSVector4& clear_color)
+void GSDeviceVK::BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, u32 clear_color)
 {
 	alignas(16) VkClearValue cv;
-	GSVector4::store<true>((void*)cv.color.float32, clear_color);
+	GSVector4::store<true>((void*)cv.color.float32, GSVector4::unorm8(clear_color));
 	BeginClearRenderPass(rp, rect, &cv, 1);
 }
 
@@ -3742,7 +3732,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			alignas(16) VkClearValue cvs[2];
 			u32 cv_count = 0;
 			if (draw_rt)
-				GSVector4::store<true>(&cvs[cv_count++].color, draw_rt->GetClearColor());
+				GSVector4::store<true>(&cvs[cv_count++].color, draw_rt->GetUNormClearColor());
 
 			// the only time the stencil value is used here is DATE_one, so setting it to 1 is fine (not used otherwise)
 			if (draw_ds)
@@ -3834,7 +3824,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		{
 			alignas(16) VkClearValue cvs[2];
 			u32 cv_count = 0;
-			GSVector4::store<true>(&cvs[cv_count++].color, draw_rt->GetClearColor());
+			GSVector4::store<true>(&cvs[cv_count++].color, draw_rt->GetUNormClearColor());
 			if (draw_ds)
 				cvs[cv_count++].depthStencil = {draw_ds->GetClearDepth(), 1};
 

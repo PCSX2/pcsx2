@@ -859,132 +859,121 @@ void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 		static_cast<GLint>(m_vertex.start));
 }
 
-void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
+void GSDeviceOGL::CommitClear(GSTexture* t, bool use_write_fbo)
 {
-	if (!t)
-		return;
-
 	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
-	if (T->HasBeenCleaned())
+	if (!T->IsRenderTargetOrDepthStencil() || T->GetState() == GSTexture::State::Dirty)
 		return;
 
-	// Performance note: potentially T->Clear() could be used. Main purpose of
-	// Clear() is to avoid the framebuffer setup cost. However, in this context,
-	// the texture 't' will be set as the render target of the framebuffer and
-	// therefore will require a framebuffer setup.
-
-	// So using the old/standard path is faster/better albeit verbose.
-
-	GL_PUSH("Clear RT %d", T->GetID());
-
-	// TODO: check size of scissor before toggling it
-	glDisable(GL_SCISSOR_TEST);
-
-	const u32 old_color_mask = GLState::wrgba;
-	OMSetColorMaskState();
-
-	OMSetFBO(m_fbo);
-	OMAttachRt(T);
-
-	if (T->IsIntegerFormat())
+	if (use_write_fbo)
 	{
-		if (T->IsUnsignedFormat())
-			glClearBufferuiv(GL_COLOR, 0, c.U32);
-		else
-			glClearBufferiv(GL_COLOR, 0, c.I32);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo_write);
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+			(t->GetType() == GSTexture::Type::RenderTarget) ? static_cast<GSTextureOGL*>(t)->GetID() : 0, 0);
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, m_features.framebuffer_fetch ? GL_DEPTH_ATTACHMENT : GL_DEPTH_STENCIL_ATTACHMENT,
+			GL_TEXTURE_2D, (t->GetType() == GSTexture::Type::DepthStencil) ? static_cast<GSTextureOGL*>(t)->GetID() : 0, 0);
 	}
 	else
 	{
-		glClearBufferfv(GL_COLOR, 0, c.v);
+		OMSetFBO(m_fbo);
+		if (T->GetType() == GSTexture::Type::DepthStencil)
+		{
+			if (GLState::rt && GLState::rt->GetSize() != T->GetSize())
+				OMAttachRt(nullptr);
+			OMAttachDs(T);
+		}
+		else
+		{
+			if (GLState::ds && GLState::ds->GetSize() != T->GetSize())
+				OMAttachDs(nullptr);
+			OMAttachRt(T);
+		}
 	}
 
-	OMSetColorMaskState(OMColorMaskSelector(old_color_mask));
+	if (T->GetState() == GSTexture::State::Invalidated)
+	{
+		if (GLAD_GL_VERSION_4_3)
+		{
+			if (T->GetType() == GSTexture::Type::DepthStencil)
+			{
+				const GLenum attachments[] = {GL_DEPTH_STENCIL_ATTACHMENT};
+				glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, std::size(attachments), attachments);
+			}
+			else
+			{
+				const GLenum attachments[] = {GL_COLOR_ATTACHMENT0};
+				glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, std::size(attachments), attachments);
+			}
+		}
+	}
+	else
+	{
+		glDisable(GL_SCISSOR_TEST);
 
-	glEnable(GL_SCISSOR_TEST);
+		if (T->GetType() == GSTexture::Type::DepthStencil)
+		{
+			const float d = T->GetClearDepth();
+			if (GLState::depth_mask)
+			{
+				glClearBufferfv(GL_DEPTH, 0, &d);
+			}
+			else
+			{
+				glDepthMask(true);
+				glClearBufferfv(GL_DEPTH, 0, &d);
+				glDepthMask(false);
+			}
+		}
+		else
+		{
+			const u32 old_color_mask = GLState::wrgba;
+			OMSetColorMaskState();
 
-	T->WasCleaned();
+			const GSVector4 c_unorm = T->GetUNormClearColor();
+
+			if (T->IsIntegerFormat())
+			{
+				if (T->IsUnsignedFormat())
+					glClearBufferuiv(GL_COLOR, 0, c_unorm.U32);
+				else
+					glClearBufferiv(GL_COLOR, 0, c_unorm.I32);
+			}
+			else
+			{
+				glClearBufferfv(GL_COLOR, 0, c_unorm.v);
+			}
+
+			OMSetColorMaskState(OMColorMaskSelector(old_color_mask));
+		}
+
+		glEnable(GL_SCISSOR_TEST);
+	}
+
+	T->SetState(GSTexture::State::Dirty);
+
+	if (use_write_fbo)
+	{
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,
+			(t->GetType() == GSTexture::Type::RenderTarget) ? GL_COLOR_ATTACHMENT0 :
+															  (m_features.framebuffer_fetch ? GL_DEPTH_ATTACHMENT : GL_DEPTH_STENCIL_ATTACHMENT),
+			GL_TEXTURE_2D, 0, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLState::fbo);
+	}
 }
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, u32 c)
 {
-	if (!t)
-		return;
-
-	const GSVector4 color = GSVector4::rgba32(c) * (1.0f / 255);
-	ClearRenderTarget(t, color);
+	t->SetClearColor(c);
 }
 
 void GSDeviceOGL::InvalidateRenderTarget(GSTexture* t)
 {
-	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
-	if (!T || T->HasBeenCleaned())
-		return;
-
-	if (GLAD_GL_VERSION_4_3 || GLAD_GL_ES_VERSION_3_0)
-	{
-		OMSetFBO(m_fbo);
-
-		if (T->GetType() == GSTexture::Type::DepthStencil)
-		{
-			OMAttachDs(T);
-			const GLenum attachments[] = {GL_DEPTH_STENCIL_ATTACHMENT};
-			glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, std::size(attachments), attachments);
-		}
-		else
-		{
-			OMAttachRt(T);
-			const GLenum attachments[] = {GL_COLOR_ATTACHMENT0};
-			glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, std::size(attachments), attachments);
-		}
-	}
+	t->SetState(GSTexture::State::Invalidated);
 }
 
 void GSDeviceOGL::ClearDepth(GSTexture* t, float d)
 {
-	if (!t)
-		return;
-
-	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
-
-	GL_PUSH("Clear Depth %d", T->GetID());
-
-	OMSetFBO(m_fbo);
-	// RT must be detached, if RT is too small, depth won't be fully cleared
-	// AT tolenico 2 map clip bug
-	OMAttachRt(NULL);
-	OMAttachDs(T);
-
-	// TODO: check size of scissor before toggling it
-	glDisable(GL_SCISSOR_TEST);
-	if (GLState::depth_mask)
-	{
-		glClearBufferfv(GL_DEPTH, 0, &d);
-	}
-	else
-	{
-		glDepthMask(true);
-		glClearBufferfv(GL_DEPTH, 0, &d);
-		glDepthMask(false);
-	}
-	glEnable(GL_SCISSOR_TEST);
-}
-
-void GSDeviceOGL::ClearStencil(GSTexture* t, u8 c)
-{
-	if (!t)
-		return;
-
-	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
-
-	GL_PUSH("Clear Stencil %d", T->GetID());
-
-	// Keep SCISSOR_TEST enabled on purpose to reduce the size
-	// of clean in DATE (impact big upscaling)
-	OMSetFBO(m_fbo);
-	OMAttachDs(T);
-	const GLint color = c;
-
-	glClearBufferiv(GL_STENCIL, 0, &color);
+	t->SetClearDepth(d);
 }
 
 std::unique_ptr<GSDownloadTexture> GSDeviceOGL::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
@@ -1229,6 +1218,8 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 // Copy a sub part of texture (same as below but force a conversion)
 void GSDeviceOGL::BlitRect(GSTexture* sTex, const GSVector4i& r, const GSVector2i& dsize, bool at_origin, bool linear)
 {
+	CommitClear(sTex, true);
+
 	GL_PUSH(fmt::format("CopyRectConv from {}", static_cast<GSTextureOGL*>(sTex)->GetID()).c_str());
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
@@ -1258,6 +1249,8 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 
 	const GLuint& sid = static_cast<GSTextureOGL*>(sTex)->GetID();
 	const GLuint& did = static_cast<GSTextureOGL*>(dTex)->GetID();
+	CommitClear(sTex, false);
+	CommitClear(dTex, false);
 
 	GL_PUSH("CopyRect from %d to %d", sid, did);
 
@@ -1321,7 +1314,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 
 void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GLProgram& ps, bool alpha_blend, OMColorMaskSelector cms, bool linear)
 {
-	ASSERT(sTex);
+	CommitClear(sTex, true);
 
 	const bool draw_in_depth = dTex->IsDepthStencil();
 
@@ -1364,7 +1357,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 
 void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear)
 {
-	ASSERT(sTex);
+	CommitClear(sTex, true);
 
 	const GSVector2i ds(dTex ? dTex->GetSize() : GSVector2i(GetWindowWidth(), GetWindowHeight()));
 	DisplayConstantBuffer cb;
@@ -1402,6 +1395,8 @@ void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 
 void GSDeviceOGL::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
 {
+	CommitClear(sTex, false);
+
 	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
 	GLProgram& prog = m_convert.ps[static_cast<int>(shader)];
 	prog.Bind();
@@ -1422,6 +1417,8 @@ void GSDeviceOGL::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, 
 
 void GSDeviceOGL::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM)
 {
+	CommitClear(sTex, false);
+
 	const ShaderConvert shader = ShaderConvert::RGBA_TO_8I;
 	GLProgram& prog = m_convert.ps[static_cast<int>(shader)];
 	prog.Bind();
@@ -1561,7 +1558,7 @@ void GSDeviceOGL::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rec
 	DrawIndexedPrimitive();
 }
 
-void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c, const bool linear)
+void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const bool linear)
 {
 	GL_PUSH("DoMerge");
 
@@ -1609,7 +1606,7 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 		{
 			// Blend with a constant alpha
 			m_merge_obj.ps[1].Bind();
-			m_merge_obj.ps[1].Uniform4fv(0, c.v);
+			m_merge_obj.ps[1].Uniform4fv(0, GSVector4::unorm8(c).v);
 			StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[1], true, OMColorMaskSelector(), linear);
 		}
 		else
@@ -1719,7 +1716,10 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 
 	// sfex3 (after the capcom logo), vf4 (first menu fading in), ffxii shadows, rumble roses shadows, persona4 shadows
 
-	ClearStencil(ds, 0);
+	OMSetRenderTargets(nullptr, ds, &GLState::scissor);
+
+	const GLint clear_color = 0;
+	glClearBufferiv(GL_STENCIL, 0, &clear_color);
 
 	m_convert.ps[static_cast<int>(datm ? ShaderConvert::DATM_1 : ShaderConvert::DATM_0)].Bind();
 
@@ -1730,7 +1730,6 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 	{
 		glDisable(GL_BLEND);
 	}
-	OMSetRenderTargets(NULL, ds, &GLState::scissor);
 
 	// ia
 
@@ -2014,30 +2013,24 @@ void GSDeviceOGL::RenderBlankFrame()
 	glEnable(GL_SCISSOR_TEST);
 }
 
-void GSDeviceOGL::OMAttachRt(GSTextureOGL* rt)
+void GSDeviceOGL::OMAttachRt(GSTexture* rt)
 {
-	if (rt)
-		rt->WasAttached();
+	if (GLState::rt == rt)
+		return;
 
-	if (GLState::rt != rt)
-	{
-		GLState::rt = rt;
-		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt ? rt->GetID() : 0, 0);
-	}
+	GLState::rt = static_cast<GSTextureOGL*>(rt);
+	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt ? static_cast<GSTextureOGL*>(rt)->GetID() : 0, 0);
 }
 
-void GSDeviceOGL::OMAttachDs(GSTextureOGL* ds)
+void GSDeviceOGL::OMAttachDs(GSTexture* ds)
 {
-	if (ds)
-		ds->WasAttached();
+	if (GLState::ds == ds)
+		return;
 
-	if (GLState::ds != ds)
-	{
-		GLState::ds = ds;
+	GLState::ds = static_cast<GSTextureOGL*>(ds);
 
-		const GLenum target = m_features.framebuffer_fetch ? GL_DEPTH_ATTACHMENT : GL_DEPTH_STENCIL_ATTACHMENT;
-		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, target, GL_TEXTURE_2D, ds ? ds->GetID() : 0, 0);
-	}
+	const GLenum target = m_features.framebuffer_fetch ? GL_DEPTH_ATTACHMENT : GL_DEPTH_STENCIL_ATTACHMENT;
+	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, target, GL_TEXTURE_2D, ds ? static_cast<GSTextureOGL*>(ds)->GetID() : 0, 0);
 }
 
 void GSDeviceOGL::OMSetFBO(GLuint fbo)
@@ -2128,26 +2121,25 @@ void GSDeviceOGL::OMSetBlendState(bool enable, GLenum src_factor, GLenum dst_fac
 
 void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor)
 {
-	GSTextureOGL* RT = static_cast<GSTextureOGL*>(rt);
-	GSTextureOGL* DS = static_cast<GSTextureOGL*>(ds);
+	g_perfmon.Put(GSPerfMon::RenderPasses, static_cast<double>(GLState::rt != rt || GLState::ds != ds));
 
-	g_perfmon.Put(GSPerfMon::RenderPasses, static_cast<double>(GLState::rt != RT || GLState::ds != DS));
+	// Split up to avoid unbind/bind calls when clearing.
 
 	OMSetFBO(m_fbo);
 	if (rt)
-	{
-		OMAttachRt(RT);
-	}
+		OMAttachRt(rt);
 	else
-	{
 		OMAttachRt();
-	}
 
-	// Note: it must be done after OMSetFBO
 	if (ds)
-		OMAttachDs(DS);
+		OMAttachDs(ds);
 	else
 		OMAttachDs();
+
+	if (rt)
+		CommitClear(rt, false);
+	if (ds)
+		CommitClear(ds, false);
 
 	if (rt || ds)
 	{
@@ -2253,7 +2245,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		case GSHWDrawConfig::DestinationAlphaMode::StencilOne:
 			if (m_features.texture_barrier)
 			{
-				ClearStencil(config.ds, 1);
+				// Cleared after RT bind.
 				break;
 			}
 			[[fallthrough]];
@@ -2417,6 +2409,13 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	OMSetRenderTargets(draw_rt, draw_ds, &config.scissor);
 	OMSetColorMaskState(config.colormask);
 	SetupOM(config.depth);
+
+	// Clear stencil as close as possible to the RT bind, to avoid framebuffer swaps.
+	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne && m_features.texture_barrier)
+	{
+		constexpr GLint clear_color = 1;
+		glClearBufferiv(GL_STENCIL, 0, &clear_color);
+	}
 
 	SendHWDraw(config, psel.ps.IsFeedbackLoop());
 
