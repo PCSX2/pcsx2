@@ -24,9 +24,9 @@
      inkscape:deskcolor="#505050"
      inkscape:document-units="px"
      showgrid="false"
-     inkscape:zoom="0.4609375"
-     inkscape:cx="15.186441"
-     inkscape:cy="172.47458"
+     inkscape:zoom="0.921875"
+     inkscape:cx="137.22034"
+     inkscape:cy="262.50847"
      inkscape:window-width="1920"
      inkscape:window-height="956"
      inkscape:window-x="0"
@@ -41,7 +41,7 @@
      id="layer1">
     <path
        sodipodi:type="star"
-       style="fill:none;stroke:#ffffff;stroke-width:32;stroke-linecap:square"
+       style="fill:none;stroke:#ffffff;stroke-width:48.2877;stroke-linecap:square;stroke-dasharray:none"
        id="path234"
        inkscape:flatsided="true"
        sodipodi:sides="3"
@@ -54,33 +54,33 @@
        inkscape:rounded="0"
        inkscape:randomized="0"
        d="M 256.00001,-1.1301575 478.68125,384.56508 33.318748,384.56507 Z"
-       inkscape:transform-center-y="-65.002137"
-       transform="matrix(1.0111942,0,0,1.0111942,-2.8657113,40.287009)"
-       inkscape:transform-center-x="8.2920562e-06" />
+       inkscape:transform-center-y="-58.775808"
+       transform="matrix(0.9143354,0,0,0.9143354,21.93014,85.039564)"
+       inkscape:transform-center-x="8.0278851e-06" />
     <text
        xml:space="preserve"
-       style="font-size:337.064px;fill:#ffffff;stroke:#ffffff;stroke-width:32.3582;stroke-linecap:square"
-       x="256.00003"
-       y="299.15274"
+       style="font-size:304.777px;fill:#ffffff;stroke:#ffffff;stroke-width:29.2588;stroke-linecap:square"
+       x="256.00006"
+       y="300.50647"
        id="text1769"><tspan
          sodipodi:role="line"
          id="tspan1767"
-         style="fill:#000000;stroke:#000000;stroke-width:32.3582"
-         x="256.00003"
-         y="299.15274" /></text>
+         style="fill:#000000;stroke:#000000;stroke-width:29.2588"
+         x="256.00006"
+         y="300.50647" /></text>
     <rect
-       style="fill:#ffffff;stroke:#ffffff;stroke-width:8.18599;stroke-linecap:square;stroke-dasharray:none"
+       style="fill:#ffffff;stroke:#ffffff;stroke-width:11.0378;stroke-linecap:square;stroke-dasharray:none"
        id="rect1913"
-       width="34.098221"
-       height="139.58974"
-       x="238.95088"
-       y="180.13666" />
+       width="30.832071"
+       height="126.2189"
+       x="240.58397"
+       y="192.89055" />
     <ellipse
-       style="fill:#ffffff;stroke:#ffffff;stroke-width:8.18599;stroke-linecap:square;stroke-dasharray:none"
+       style="fill:#ffffff;stroke:#ffffff;stroke-width:11.0378;stroke-linecap:square;stroke-dasharray:none"
        id="path1969"
-       cx="256"
-       cy="366.5817"
-       rx="19.180273"
-       ry="19.446671" />
+       cx="256.00003"
+       cy="361.47668"
+       rx="17.34306"
+       ry="17.583942" />
   </g>
 </svg>

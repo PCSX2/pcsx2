@@ -606,7 +606,7 @@
   </action>
   <action name="actionDEV9Settings">
    <property name="icon">
-    <iconset theme="network-line">
+    <iconset theme="global-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
