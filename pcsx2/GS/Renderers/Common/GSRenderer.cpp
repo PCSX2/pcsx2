@@ -603,7 +603,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 		src_uv = GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy();
 		draw_rect = CalculateDrawDstRect(g_gs_device->GetWindowWidth(), g_gs_device->GetWindowHeight(),
 			src_rect, current->GetSize(), s_display_alignment, g_gs_device->UsesLowerLeftOrigin(),
-			GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets));
+			GetVideoMode() == GSVideoMode::SDTV_480P);
 		s_last_draw_rect = draw_rect;
 
 		if (GSConfig.CASMode != GSCASMode::Disabled)
@@ -850,7 +850,7 @@ void GSRenderer::PresentCurrentFrame()
 			const GSVector4 src_uv(GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy());
 			const GSVector4 draw_rect(CalculateDrawDstRect(g_gs_device->GetWindowWidth(), g_gs_device->GetWindowHeight(),
 				src_rect, current->GetSize(), s_display_alignment, g_gs_device->UsesLowerLeftOrigin(),
-				GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets)));
+				GetVideoMode() == GSVideoMode::SDTV_480P));
 			s_last_draw_rect = draw_rect;
 
 			const u64 current_time = Common::Timer::GetCurrentValue();
@@ -893,7 +893,7 @@ bool GSRenderer::BeginCapture(std::string filename)
 											GSVector2i(GSConfig.VideoCaptureWidth, GSConfig.VideoCaptureHeight));
 
 	return GSCapture::BeginCapture(GetTvRefreshRate(), capture_resolution,
-		GetCurrentAspectRatioFloat(GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets)),
+		GetCurrentAspectRatioFloat(GetVideoMode() == GSVideoMode::SDTV_480P),
 		std::move(filename));
 }
 
@@ -927,7 +927,7 @@ bool GSRenderer::SaveSnapshotToMemory(u32 window_width, u32 window_height, bool 
 	const GSVector4i src_rect(CalculateDrawSrcRect(current));
 	const GSVector4 src_uv(GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy());
 
-	const bool is_progressive = (GetVideoMode() == GSVideoMode::SDTV_480P || (GSConfig.PCRTCOverscan && GSConfig.PCRTCOffsets));
+	const bool is_progressive = (GetVideoMode() == GSVideoMode::SDTV_480P);
 	GSVector4 draw_rect;
 	if (window_width == 0 || window_height == 0)
 	{
