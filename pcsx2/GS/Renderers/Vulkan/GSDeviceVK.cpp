@@ -792,26 +792,17 @@ void GSDeviceVK::DrawIndexedPrimitive(int offset, int count)
 
 void GSDeviceVK::ClearRenderTarget(GSTexture* t, u32 c)
 {
-	if (m_current_render_target == t)
-		EndRenderPass();
-
 	t->SetClearColor(c);
 }
 
 void GSDeviceVK::InvalidateRenderTarget(GSTexture* t)
 {
-	if (m_current_render_target == t || m_current_depth_target == t)
-		EndRenderPass();
-
 	t->SetState(GSTexture::State::Invalidated);
 }
 
 void GSDeviceVK::ClearDepth(GSTexture* t, float d)
 {
-	if (m_current_depth_target == t)
-		EndRenderPass();
-
-	static_cast<GSTextureVK*>(t)->SetClearDepth(d);
+	t->SetClearDepth(d);
 }
 
 VkFormat GSDeviceVK::LookupNativeFormat(GSTexture::Format format) const
@@ -1482,6 +1473,44 @@ void GSDeviceVK::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 		{
 			pxAssert(!(feedback_loop & FeedbackLoopFlag_ReadAndWriteRT));
 			m_current_framebuffer = vkDs->GetLinkedFramebuffer(nullptr, false);
+		}
+	}
+	else if (InRenderPass())
+	{
+		// Framebuffer unchanged, but check for clears
+		// Use an attachment clear to wipe it out without restarting the render pass
+		std::array<VkClearAttachment, 2> cas;
+		u32 num_ca = 0;
+		if (vkRt && vkRt->GetState() != GSTexture::State::Dirty)
+		{
+			if (vkRt->GetState() == GSTexture::State::Cleared)
+			{
+				VkClearAttachment& ca = cas[num_ca++];
+				ca.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				ca.colorAttachment = 0;
+				GSVector4::store<false>(ca.clearValue.color.float32, vkRt->GetUNormClearColor());
+			}
+
+			vkRt->SetState(GSTexture::State::Dirty);
+		}
+		if (vkDs && vkDs->GetState() != GSTexture::State::Dirty)
+		{
+			if (vkDs->GetState() == GSTexture::State::Cleared)
+			{
+				VkClearAttachment& ca = cas[num_ca++];
+				ca.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+				ca.colorAttachment = 1;
+				ca.clearValue.depthStencil = {vkDs->GetClearDepth()};
+			}
+
+			vkDs->SetState(GSTexture::State::Dirty);
+		}
+
+		if (num_ca > 0)
+		{
+			const GSVector2i size = vkRt ? vkRt->GetSize() : vkDs->GetSize();
+			const VkClearRect cr = {{{0, 0}, {static_cast<u32>(size.x), static_cast<u32>(size.y)}}, 0u, 1u};
+			vkCmdClearAttachments(g_vulkan_context->GetCurrentCommandBuffer(), num_ca, cas.data(), 1, &cr);
 		}
 	}
 
