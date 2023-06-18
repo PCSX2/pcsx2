@@ -1245,29 +1245,26 @@ void VMManager::Shutdown(bool save_resume_state)
 		if (!resume_file_name.empty() && !DoSaveState(resume_file_name.c_str(), -1, true, false))
 			Console.Error("Failed to save resume state");
 	}
-	else if (GSDumpReplayer::IsReplayingDump())
-	{
-		GSDumpReplayer::Shutdown();
-	}
+
+	SaveSessionTime(s_disc_serial);
+	s_elf_override = {};
+	ClearELFInfo();
+	CDVDsys_ClearFiles();
 
 	{
 		std::unique_lock lock(s_info_mutex);
-		SaveSessionTime(s_disc_serial);
-		s_elf_override = {};
-		ClearELFInfo();
 		ClearDiscDetails();
-		CDVDsys_ClearFiles();
-		Achievements::GameChanged(0, 0);
-		FullscreenUI::GameChanged(s_title, std::string(), s_disc_serial, 0, 0);
-		UpdateDiscordPresence(Achievements::GetRichPresenceString());
-		Host::OnGameChanged(s_title, std::string(), std::string(), s_disc_serial, 0, 0);
 	}
+
+	Achievements::GameChanged(0, 0);
+	FullscreenUI::GameChanged(s_title, std::string(), s_disc_serial, 0, 0);
+	UpdateDiscordPresence(Achievements::GetRichPresenceString());
+	Host::OnGameChanged(s_title, std::string(), std::string(), s_disc_serial, 0, 0);
+
 	s_active_game_fixes = 0;
 	s_fast_boot_requested = false;
 
 	UpdateGameSettingsLayer();
-
-	std::string().swap(s_elf_override);
 
 #ifdef _M_X86
 	_mm_setcsr(s_mxcsr_saved);
@@ -1300,6 +1297,9 @@ void VMManager::Shutdown(bool save_resume_state)
 
 	PADshutdown();
 	DEV9shutdown();
+
+	if (GSDumpReplayer::IsReplayingDump())
+		GSDumpReplayer::Shutdown();
 
 	s_state.store(VMState::Shutdown, std::memory_order_release);
 	FullscreenUI::OnVMDestroyed();
