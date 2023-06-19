@@ -458,9 +458,9 @@ const PAD::ControllerInfo* PAD::GetControllerInfo(const std::string_view& name)
 	return nullptr;
 }
 
-std::vector<std::pair<std::string, std::string>> PAD::GetControllerTypeNames()
+std::vector<std::pair<const char*, const char*>> PAD::GetControllerTypeNames()
 {
-	std::vector<std::pair<std::string, std::string>> ret;
+	std::vector<std::pair<const char*, const char*>> ret;
 	for (const ControllerInfo& info : s_controller_info)
 		ret.emplace_back(info.name, info.display_name);
 

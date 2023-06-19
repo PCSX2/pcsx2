@@ -3796,12 +3796,12 @@ void FullscreenUI::DrawControllerSettingsPage()
 		const PAD::ControllerInfo* ci = PAD::GetControllerInfo(type);
 		if (MenuButton(ICON_FA_GAMEPAD " Controller Type", ci ? ci->display_name : "Unknown"))
 		{
-			std::vector<std::pair<std::string, std::string>> raw_options(PAD::GetControllerTypeNames());
+			const std::vector<std::pair<const char*, const char*>> raw_options = PAD::GetControllerTypeNames();
 			ImGuiFullscreen::ChoiceDialogOptions options;
 			options.reserve(raw_options.size());
 			for (auto& it : raw_options)
 			{
-				options.emplace_back(std::move(it.second), type == it.first);
+				options.emplace_back(it.second, type == it.first);
 			}
 			OpenChoiceDialog(fmt::format("Port {} Controller Type", global_slot + 1).c_str(), false, std::move(options),
 				[game_settings = IsEditingGameSettings(bsi), section, raw_options = std::move(raw_options)](
@@ -3811,7 +3811,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 
 					auto lock = Host::GetSettingsLock();
 					SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-					bsi->SetStringValue(section, "Type", raw_options[index].first.c_str());
+					bsi->SetStringValue(section, "Type", raw_options[index].first);
 					SetSettingsChanged(bsi);
 					CloseChoiceDialog();
 				});
@@ -3982,12 +3982,12 @@ void FullscreenUI::DrawControllerSettingsPage()
 		const std::string type(USB::GetConfigDevice(*bsi, port));
 		if (MenuButton(ICON_FA_GAMEPAD " Device Type", USB::GetDeviceName(type)))
 		{
-			std::vector<std::pair<std::string, std::string>> raw_options(USB::GetDeviceTypes());
+			const std::vector<std::pair<const char*, const char*>> raw_options = USB::GetDeviceTypes();
 			ImGuiFullscreen::ChoiceDialogOptions options;
 			options.reserve(raw_options.size());
 			for (auto& it : raw_options)
 			{
-				options.emplace_back(std::move(it.second), type == it.first);
+				options.emplace_back(it.second, type == it.first);
 			}
 			OpenChoiceDialog(fmt::format("Port {} Device", port + 1).c_str(), false, std::move(options),
 				[game_settings = IsEditingGameSettings(bsi), raw_options = std::move(raw_options), port](
@@ -3997,7 +3997,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 
 					auto lock = Host::GetSettingsLock();
 					SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-					USB::SetConfigDevice(*bsi, port, raw_options[static_cast<u32>(index)].first.c_str());
+					USB::SetConfigDevice(*bsi, port, raw_options[static_cast<u32>(index)].first);
 					SetSettingsChanged(bsi);
 					CloseChoiceDialog();
 				});

@@ -553,10 +553,10 @@ const char* USB::DeviceTypeIndexToName(s32 device)
 	return proxy ? proxy->TypeName() : "None";
 }
 
-std::vector<std::pair<std::string, std::string>> USB::GetDeviceTypes()
+std::vector<std::pair<const char*, const char*>> USB::GetDeviceTypes()
 {
 	RegisterDevice& rd = RegisterDevice::instance();
-	std::vector<std::pair<std::string, std::string>> ret;
+	std::vector<std::pair<const char*, const char*>> ret;
 	ret.reserve(rd.Map().size() + 1);
 	ret.emplace_back("None", "Not Connected");
 	for (const auto& it : rd.Map())

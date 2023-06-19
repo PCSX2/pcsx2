@@ -38,7 +38,7 @@ namespace USB
 	s32 DeviceTypeNameToIndex(const std::string_view& device);
 	const char* DeviceTypeIndexToName(s32 device);
 
-	std::vector<std::pair<std::string, std::string>> GetDeviceTypes();
+	std::vector<std::pair<const char*, const char*>> GetDeviceTypes();
 	const char* GetDeviceName(const std::string_view& device);
 	const char* GetDeviceSubtypeName(const std::string_view& device, u32 subtype);
 	gsl::span<const char*> GetDeviceSubtypes(const std::string_view& device);
