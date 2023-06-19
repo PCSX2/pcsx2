@@ -72,8 +72,6 @@ namespace Host
 	void AddOSDMessage(std::string message, float duration = 2.0f);
 	void AddKeyedOSDMessage(std::string key, std::string message, float duration = 2.0f);
 	void AddIconOSDMessage(std::string key, const char* icon, const std::string_view& message, float duration = 2.0f);
-	void AddFormattedOSDMessage(float duration, const char* format, ...);
-	void AddKeyedFormattedOSDMessage(std::string key, float duration, const char* format, ...);
 	void RemoveKeyedOSDMessage(std::string key);
 	void ClearOSDMessages();
 
