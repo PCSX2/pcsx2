@@ -126,6 +126,12 @@ bool GSDumpReplayer::ChangeDump(const char* filename)
 {
 	Console.WriteLn("(GSDumpReplayer) Switching to '%s'...", filename);
 
+	if (!VMManager::IsGSDumpFileName(filename))
+	{
+		Host::ReportFormattedErrorAsync("GSDumpReplayer", "'%s' is not a GS dump.", filename);
+		return false;
+	}
+
 	std::unique_ptr<GSDumpFile> new_dump(GSDumpFile::OpenGSDump(filename));
 	if (!new_dump || !new_dump->ReadFile())
 	{

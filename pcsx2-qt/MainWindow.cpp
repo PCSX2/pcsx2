@@ -2452,20 +2452,8 @@ void MainWindow::doStartFile(std::optional<CDVD_SourceType> source, const QStrin
 
 void MainWindow::doDiscChange(CDVD_SourceType source, const QString& path)
 {
-	const bool is_gs_dump = VMManager::IsGSDumpFileName(path.toStdString());
-	if (is_gs_dump != GSDumpReplayer::IsReplayingDump())
-	{
-		QMessageBox::critical(this, tr("Error"), tr("Cannot switch from game to GS dump or vice versa."));
-		return;
-	}
-	else if (is_gs_dump)
-	{
-		Host::RunOnCPUThread([path = path.toStdString()]() { GSDumpReplayer::ChangeDump(path.c_str()); });
-		return;
-	}
-
 	bool reset_system = false;
-	if (!m_was_disc_change_request)
+	if (!m_was_disc_change_request && !GSDumpReplayer::IsReplayingDump())
 	{
 		QMessageBox message(QMessageBox::Question, tr("Confirm Disc Change"),
 			tr("Do you want to swap discs or boot the new image (via system reset)?"), QMessageBox::NoButton, this);
