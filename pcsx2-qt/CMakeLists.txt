@@ -26,6 +26,7 @@ target_sources(pcsx2-qt PRIVATE
 	PrecompiledHeader.h
 	SettingWidgetBinder.h
 	Themes.cpp
+	Translations.cpp
 	QtHost.cpp
 	QtHost.h
 	QtKeyCodes.cpp
@@ -173,6 +174,10 @@ if(USE_ACHIEVEMENTS)
 	)
 endif()
 
+set(TS_FILES
+	Translations/pcsx2-qt_en.ts
+)
+
 target_precompile_headers(pcsx2-qt PRIVATE PrecompiledHeader.h)
 
 target_include_directories(pcsx2-qt PRIVATE
@@ -190,6 +195,24 @@ target_link_libraries(pcsx2-qt PRIVATE
 	Qt6::Widgets
 	Qt6::Network
 )
+
+if(WIN32)
+	set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${CMAKE_SOURCE_DIR}/bin/translations")
+	qt_add_lrelease(pcsx2-qt TS_FILES ${TS_FILES})
+elseif(APPLE)
+	# Hopefully macdeployqt will pick these up.
+	qt_add_lrelease(pcsx2-qt TS_FILES ${TS_FILES})
+else()
+	# TODO: Copy base translations.
+	qt_add_lrelease(pcsx2-qt TS_FILES ${TS_FILES} QM_FILES_OUTPUT_VARIABLE QM_FILES)
+	set(QM_OUTPUT_DIR "$<TARGET_FILE_DIR:pcsx2-qt>/translations")
+	add_custom_command(TARGET pcsx2-qt POST_BUILD COMMAND "${CMAKE_COMMAND}" -E make_directory "${QM_OUTPUT_DIR}")
+	foreach (QM_FILE IN LISTS QM_FILES)
+		get_filename_component(QM_FILE_NAME ${QM_FILE} NAME)
+		add_custom_command(TARGET pcsx2-qt POST_BUILD COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${QM_FILE}" "${QM_OUTPUT_DIR}/${QM_FILE_NAME}")
+	endforeach()
+endif()
+
 
 # Currently, 7z is only needed for the Windows updater.
 if(WIN32)

@@ -191,6 +191,18 @@ void Host::VSyncOnCPUThread()
 {
 }
 
+s32 Host::Internal::GetTranslatedStringImpl(
+	const std::string_view& context, const std::string_view& msg, char* tbuf, size_t tbuf_space)
+{
+	if (msg.size() > tbuf_space)
+		return -1;
+	else if (msg.empty())
+		return 0;
+
+	std::memcpy(tbuf, msg.data(), msg.size());
+	return static_cast<s32>(msg.size());
+}
+
 #ifdef ENABLE_ACHIEVEMENTS
 void Host::OnAchievementsRefreshed()
 {
