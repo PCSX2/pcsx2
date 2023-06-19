@@ -1933,7 +1933,7 @@ void MainWindow::relativeMouseModeRequested(bool enabled)
 		return;
 
 	m_relative_mouse_mode = enabled;
-	if (s_vm_valid && !s_vm_paused)
+	if (m_display_widget && !s_vm_paused)
 		updateDisplayWidgetCursor();
 }
 
@@ -2002,6 +2002,7 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
 
 void MainWindow::updateDisplayWidgetCursor()
 {
+	pxAssertRel(m_display_widget, "Should have a display widget");
 	m_display_widget->updateRelativeMode(s_vm_valid && !s_vm_paused && m_relative_mouse_mode);
 	m_display_widget->updateCursor(s_vm_valid && !s_vm_paused && shouldHideMouseCursor());
 }
