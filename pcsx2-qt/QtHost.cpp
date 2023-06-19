@@ -1179,6 +1179,23 @@ void Host::SetFullscreen(bool enabled)
 	g_emu_thread->setFullscreen(enabled, true);
 }
 
+s32 Host::Internal::GetTranslatedStringImpl(
+	const std::string_view& context, const std::string_view& msg, char* tbuf, size_t tbuf_space)
+{
+	// This is really awful. Thankfully we're caching the results...
+	const std::string temp_context(context);
+	const std::string temp_msg(msg);
+	const QString translated_msg = qApp->translate(temp_context.c_str(), temp_msg.c_str());
+	const QByteArray translated_utf8 = translated_msg.toUtf8();
+	const size_t translated_size = translated_utf8.size();
+	if (translated_size > tbuf_space)
+		return -1;
+	else if (translated_size > 0)
+		std::memcpy(tbuf, translated_utf8.constData(), translated_size);
+
+	return static_cast<s32>(translated_size);
+}
+
 alignas(16) static SysMtgsThread s_mtgs_thread;
 
 SysMtgsThread& GetMTGS()
