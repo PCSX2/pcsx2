@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,6 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "Host.h"
 #include "videodev.h"
 #include "usb-eyetoy-webcam.h"
 #include "ov519.h"
@@ -485,7 +486,7 @@ namespace usb_eyetoy
 
 	const char* EyeToyWebCamDevice::Name() const
 	{
-		return "Webcam (EyeToy)";
+		return TRANSLATE_NOOP("USB", "Webcam (EyeToy)");
 	}
 
 	const char* EyeToyWebCamDevice::TypeName() const
@@ -515,15 +516,17 @@ namespace usb_eyetoy
 
 	gsl::span<const char*> EyeToyWebCamDevice::SubTypes() const
 	{
-		static const char* subtypes[] = {"Sony EyeToy", "Konami Capture Eye"};
+		static const char* subtypes[] = {
+			TRANSLATE_NOOP("USB", "Sony EyeToy"), TRANSLATE_NOOP("USB", "Konami Capture Eye")};
 		return subtypes;
 	}
 
 	gsl::span<const SettingInfo> EyeToyWebCamDevice::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo info[] = {
-			{SettingInfo::Type::StringList, "device_name", "Device Name", "Selects the device to capture images from.", "", nullptr,
-				nullptr, nullptr, nullptr, nullptr, &VideoDevice::GetDeviceList},
+			{SettingInfo::Type::StringList, "device_name", TRANSLATE_NOOP("USB", "Device Name"),
+				TRANSLATE_NOOP("USB", "Selects the device to capture images from."), "", nullptr, nullptr, nullptr,
+				nullptr, nullptr, &VideoDevice::GetDeviceList},
 		};
 		return info;
 	}

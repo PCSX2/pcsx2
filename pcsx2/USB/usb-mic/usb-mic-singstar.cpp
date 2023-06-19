@@ -747,7 +747,8 @@ namespace usb_mic
 
 		if (!s->audsrc[0] && !s->audsrc[1])
 		{
-			Host::AddOSDMessage("USB-Mic: Neither player 1 nor 2 is connected.", Host::OSD_ERROR_DURATION);
+			Host::AddOSDMessage(
+				TRANSLATE_STR("USB", "USB-Mic: Neither player 1 nor 2 is connected."), Host::OSD_ERROR_DURATION);
 			goto fail;
 		}
 
@@ -763,7 +764,9 @@ namespace usb_mic
 				s->buffer[i].resize(BUFFER_FRAMES * s->audsrc[i]->GetChannels());
 				if (!s->audsrc[i]->Start())
 				{
-					Host::AddOSDMessage(fmt::format("USB-Mic: Failed to start player {} audio stream.", i + 1), Host::OSD_ERROR_DURATION);
+					Host::AddOSDMessage(
+						fmt::format(TRANSLATE_SV("USB", "USB-Mic: Failed to start player {} audio stream."), i + 1),
+						Host::OSD_ERROR_DURATION);
 					goto fail;
 				}
 			}
@@ -805,7 +808,7 @@ namespace usb_mic
 
 	const char* SingstarDevice::Name() const
 	{
-		return "Singstar";
+		return TRANSLATE_NOOP("USB", "Singstar");
 	}
 
 	const char* SingstarDevice::TypeName() const
@@ -846,11 +849,14 @@ namespace usb_mic
 	gsl::span<const SettingInfo> SingstarDevice::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo info[] = {
-			{SettingInfo::Type::StringList, "player1_device_name", "Player 1 Device", "Selects the input for the first player.", "",
-				nullptr, nullptr, nullptr, nullptr, nullptr, &AudioDevice::GetInputDeviceList},
-			{SettingInfo::Type::StringList, "player2_device_name", "Player 2 Device", "Selects the input for the second player.", "",
-				nullptr, nullptr, nullptr, nullptr, nullptr, &AudioDevice::GetInputDeviceList},
-			{SettingInfo::Type::Integer, "input_latency", "Input Latency", "Specifies the latency to the host input device.",
+			{SettingInfo::Type::StringList, "player1_device_name", TRANSLATE_NOOP("USB", "Player 1 Device"),
+				TRANSLATE_NOOP("USB", "Selects the input for the first player."), "", nullptr, nullptr, nullptr,
+				nullptr, nullptr, &AudioDevice::GetInputDeviceList},
+			{SettingInfo::Type::StringList, "player2_device_name", TRANSLATE_NOOP("USB", "Player 2 Device"),
+				TRANSLATE_NOOP("USB", "Selects the input for the second player."), "", nullptr, nullptr, nullptr,
+				nullptr, nullptr, &AudioDevice::GetInputDeviceList},
+			{SettingInfo::Type::Integer, "input_latency", TRANSLATE_NOOP("USB", "Input Latency"),
+				TRANSLATE_NOOP("USB", "Specifies the latency to the host input device."),
 				AudioDevice::DEFAULT_LATENCY_STR, "1", "1000", "1", "%dms", nullptr, nullptr, 1.0f},
 		};
 		return info;
@@ -863,15 +869,17 @@ namespace usb_mic
 
 	const char* LogitechMicDevice::Name() const
 	{
-		return "Logitech USB Mic";
+		return TRANSLATE_NOOP("USB", "Logitech USB Mic");
 	}
 
 	gsl::span<const SettingInfo> LogitechMicDevice::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo info[] = {
-			{SettingInfo::Type::StringList, "input_device_name", "Input Device", "Selects the device to read audio from.", "", nullptr,
-				nullptr, nullptr, nullptr, nullptr, &AudioDevice::GetInputDeviceList},
-			{SettingInfo::Type::Integer, "input_latency", "Input Latency", "Specifies the latency to the host input device.",
+			{SettingInfo::Type::StringList, "input_device_name", TRANSLATE_NOOP("USB", "Input Device"),
+				TRANSLATE_NOOP("USB", "Selects the device to read audio from."), "", nullptr, nullptr, nullptr, nullptr,
+				nullptr, &AudioDevice::GetInputDeviceList},
+			{SettingInfo::Type::Integer, "input_latency", TRANSLATE_NOOP("USB", "Input Latency"),
+				TRANSLATE_NOOP("USB", "Specifies the latency to the host input device."),
 				AudioDevice::DEFAULT_LATENCY_STR, "1", "1000", "1", "%dms", nullptr, nullptr, 1.0f},
 		};
 		return info;

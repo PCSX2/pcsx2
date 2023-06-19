@@ -1541,7 +1541,8 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 			if (!FileSystem::RenamePath(filename, backup_filename.c_str()))
 			{
 				Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
-					fmt::format("Failed to back up old save state {}.", Path::GetFileName(filename)),
+					fmt::format(
+						TRANSLATE_SV("VMManager", "Failed to back up old save state {}."), Path::GetFileName(filename)),
 					Host::OSD_ERROR_DURATION);
 			}
 		}
@@ -1564,7 +1565,8 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 	catch (Exception::BaseException& e)
 	{
 		Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
-			fmt::format("Failed to save save state: {}.", e.DiagMsg()), Host::OSD_ERROR_DURATION);
+			fmt::format(TRANSLATE_SV("VMManager", "Failed to save save state: {}."), e.DiagMsg()),
+			Host::OSD_ERROR_DURATION);
 		return false;
 	}
 }
@@ -1578,13 +1580,17 @@ void VMManager::ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,
 	if (SaveState_ZipToDisk(std::move(elist), std::move(screenshot), filename))
 	{
 		if (slot_for_message >= 0 && VMManager::HasValidVM())
+		{
 			Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_SAVE,
-				fmt::format("State saved to slot {}.", slot_for_message), Host::OSD_QUICK_DURATION);
+				fmt::format(TRANSLATE_SV("VMManager", "State saved to slot {}."), slot_for_message),
+				Host::OSD_QUICK_DURATION);
+		}
 	}
 	else
 	{
 		Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
-			fmt::format("Failed to save save state to slot {}.", slot_for_message), Host::OSD_ERROR_DURATION);
+			fmt::format(TRANSLATE_SV("VMManager", "Failed to save save state to slot {}."), slot_for_message,
+				Host::OSD_ERROR_DURATION));
 	}
 
 	DevCon.WriteLn("Zipping save state to '%s' took %.2f ms", filename, timer.GetTimeMilliseconds());
@@ -1670,7 +1676,8 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 	if (filename.empty())
 	{
 		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE,
-			fmt::format("There is no save state in slot {}.", slot), 5.0f);
+			fmt::format(TRANSLATE_SV("VMManager", "There is no save state in slot {}."), slot),
+			Host::OSD_QUICK_DURATION);
 		return false;
 	}
 
@@ -1682,7 +1689,7 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 #endif
 
 	Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN,
-		fmt::format("Loading state from slot {}...", slot), Host::OSD_QUICK_DURATION);
+		fmt::format(TRANSLATE_SV("VMManager", "Loading state from slot {}..."), slot), Host::OSD_QUICK_DURATION);
 	return DoLoadState(filename.c_str());
 }
 
@@ -1698,8 +1705,8 @@ bool VMManager::SaveStateToSlot(s32 slot, bool zip_on_thread)
 		return false;
 
 	// if it takes more than a minute.. well.. wtf.
-	Host::AddIconOSDMessage(
-		fmt::format("SaveStateSlot{}", slot), ICON_FA_SAVE, fmt::format("Saving state to slot {}...", slot), 60.0f);
+	Host::AddIconOSDMessage(fmt::format("SaveStateSlot{}", slot), ICON_FA_SAVE,
+		fmt::format(TRANSLATE_SV("VMManager", "Saving state to slot {}..."), slot), 60.0f);
 	return DoSaveState(filename.c_str(), slot, zip_on_thread, EmuConfig.BackupSavestate);
 }
 
@@ -1760,15 +1767,21 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 	if (result)
 	{
 		if (source == CDVD_SourceType::NoDisc)
-			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC, "Disc removed.", Host::OSD_INFO_DURATION);
+		{
+			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC, TRANSLATE_SV("VMManager", "Disc removed."),
+				Host::OSD_INFO_DURATION);
+		}
 		else
+		{
 			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC,
-				fmt::format("Disc changed to '{}'.", display_name), Host::OSD_INFO_DURATION);
+				fmt::format(TRANSLATE_SV("VMManager", "Disc changed to '{}'."), display_name), Host::OSD_INFO_DURATION);
+		}
 	}
 	else
 	{
 		Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC,
-			fmt::format("Failed to open new disc image '{}'. Reverting to old image.", display_name),
+			fmt::format(
+				TRANSLATE_SV("VMManager", "Failed to open new disc image '{}'. Reverting to old image."), display_name),
 			Host::OSD_ERROR_DURATION);
 		CDVDsys_ChangeSource(old_type);
 		if (!old_path.empty())
@@ -1776,7 +1789,8 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 		if (!DoCDVDopen())
 		{
 			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC,
-				"Failed to switch back to old disc image. Removing disc.", Host::OSD_CRITICAL_ERROR_DURATION);
+				TRANSLATE_SV("VMManager", "Failed to switch back to old disc image. Removing disc."),
+				Host::OSD_CRITICAL_ERROR_DURATION);
 			CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
 			DoCDVDopen();
 		}
@@ -2207,7 +2221,8 @@ void VMManager::EnforceAchievementsChallengeModeSettings()
 	if (EmuConfig.EnableCheats)
 	{
 		Host::AddKeyedOSDMessage("ChallengeDisableCheats",
-			"Cheats have been disabled due to achievements hardcore mode.", Host::OSD_WARNING_DURATION);
+			TRANSLATE_STR("VMManager", "Cheats have been disabled due to achievements hardcore mode."),
+			Host::OSD_WARNING_DURATION);
 		EmuConfig.EnableCheats = false;
 	}
 
@@ -2251,52 +2266,95 @@ void VMManager::WarnAboutUnsafeSettings()
 		return;
 
 	std::string messages;
+	auto append = [&messages](const char* icon, const std::string_view& msg)
+	{
+		messages += icon;
+		messages += ' ';
+		messages += msg;
+		messages += '\n';
+	};
 
 	if (EmuConfig.Speedhacks.fastCDVD)
-		messages += ICON_FA_COMPACT_DISC " Fast CDVD is enabled, this may break games.\n";
+		append(ICON_FA_COMPACT_DISC, TRANSLATE_SV("VMManager", "Fast CDVD is enabled, this may break games."));
 	if (EmuConfig.Speedhacks.EECycleRate != 0 || EmuConfig.Speedhacks.EECycleSkip != 0)
-		messages +=
-			ICON_FA_TACHOMETER_ALT " Cycle rate/skip is not at default, this may crash or make games run too slow.\n";
+	{
+		append(ICON_FA_TACHOMETER_ALT,
+			TRANSLATE_SV("VMManager", "Cycle rate/skip is not at default, this may crash or make games run too slow."));
+	}
 	if (EmuConfig.SPU2.SynchMode == Pcsx2Config::SPU2Options::SynchronizationMode::ASync)
-		messages += ICON_FA_VOLUME_MUTE " Audio is using async mix, expect desynchronization in FMVs.\n";
+	{
+		append(ICON_FA_VOLUME_MUTE,
+			TRANSLATE_SV("VMManager", "Audio is using async mix, expect desynchronization in FMVs."));
+	}
 	if (EmuConfig.GS.UpscaleMultiplier < 1.0f)
-		messages += ICON_FA_TV " Upscale multiplier is below native, this will break rendering.\n";
+		append(ICON_FA_TV, TRANSLATE_SV("VMManager", "Upscale multiplier is below native, this will break rendering."));
 	if (EmuConfig.GS.HWMipmap != HWMipmapLevel::Automatic)
-		messages += ICON_FA_IMAGES " Mipmapping is not set to automatic. This may break rendering in some games.\n";
+	{
+		append(ICON_FA_IMAGES,
+			TRANSLATE_SV("VMManager", "Mipmapping is not set to automatic. This may break rendering in some games."));
+	}
 	if (EmuConfig.GS.TextureFiltering != BiFiltering::PS2)
-		messages += ICON_FA_FILTER
-			" Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.\n";
+	{
+		append(ICON_FA_FILTER,
+			TRANSLATE_SV("VMManager",
+				"Texture filtering is not set to Bilinear (PS2). This will break rendering in some games."));
+	}
 	if (EmuConfig.GS.TriFilter != TriFiltering::Automatic)
-		messages +=
-			ICON_FA_PAGER " Trilinear filtering is not set to automatic. This may break rendering in some games.\n";
+	{
+		append(
+			ICON_FA_PAGER, TRANSLATE_SV("VMManager",
+							   "Trilinear filtering is not set to automatic. This may break rendering in some games."));
+	}
 	if (EmuConfig.GS.AccurateBlendingUnit <= AccBlendLevel::Minimum)
-		messages += ICON_FA_BLENDER " Blending is below basic, this may break effects in some games.\n";
+	{
+		append(ICON_FA_BLENDER,
+			TRANSLATE_SV("VMManager", "Blending is below basic, this may break effects in some games."));
+	}
 	if (EmuConfig.GS.HWDownloadMode != GSHardwareDownloadMode::Enabled)
-		messages += ICON_FA_DOWNLOAD
-			" Hardware Download Mode is not set to Accurate, this may break rendering in some games.\n";
+	{
+		append(ICON_FA_DOWNLOAD,
+			TRANSLATE_SV(
+				"VMManager", "Hardware Download Mode is not set to Accurate, this may break rendering in some games."));
+	}
 	if (EmuConfig.Cpu.sseMXCSR.GetRoundMode() != SSEround_Chop)
-		messages += ICON_FA_MICROCHIP " EE FPU Round Mode is not set to default, this may break some games.\n";
+	{
+		append(ICON_FA_MICROCHIP,
+			TRANSLATE_SV("VMManager", "EE FPU Round Mode is not set to default, this may break some games."));
+	}
 	if (!EmuConfig.Cpu.Recompiler.fpuOverflow || EmuConfig.Cpu.Recompiler.fpuExtraOverflow ||
 		EmuConfig.Cpu.Recompiler.fpuFullMode)
-		messages += ICON_FA_MICROCHIP " EE FPU Clamp Mode is not set to default, this may break some games.\n";
+	{
+		append(ICON_FA_MICROCHIP,
+			TRANSLATE_SV("VMManager", "EE FPU Clamp Mode is not set to default, this may break some games."));
+	}
 	if (EmuConfig.Cpu.sseVU0MXCSR.GetRoundMode() != SSEround_Chop ||
 		EmuConfig.Cpu.sseVU1MXCSR.GetRoundMode() != SSEround_Chop)
-		messages += ICON_FA_MICROCHIP " VU Round Mode is not set to default, this may break some games.\n";
+	{
+		append(ICON_FA_MICROCHIP,
+			TRANSLATE_SV("VMManager", "VU Round Mode is not set to default, this may break some games."));
+	}
 	if (!EmuConfig.Cpu.Recompiler.vu0Overflow || EmuConfig.Cpu.Recompiler.vu0ExtraOverflow ||
 		EmuConfig.Cpu.Recompiler.vu0SignOverflow || !EmuConfig.Cpu.Recompiler.vu1Overflow ||
 		EmuConfig.Cpu.Recompiler.vu1ExtraOverflow || EmuConfig.Cpu.Recompiler.vu1SignOverflow)
 	{
-		messages += ICON_FA_MICROCHIP " VU Clamp Mode is not set to default, this may break some games.\n";
+		append(ICON_FA_MICROCHIP,
+			TRANSLATE_SV("VMManager", "VU Clamp Mode is not set to default, this may break some games."));
 	}
 	if (!EmuConfig.EnableGameFixes)
-		messages += ICON_FA_GAMEPAD " Game Fixes are not enabled. Compatibility with some games may be affected.\n";
+	{
+		append(ICON_FA_GAMEPAD,
+			TRANSLATE_SV("VMManager", "Game Fixes are not enabled. Compatibility with some games may be affected."));
+	}
 	if (!EmuConfig.EnablePatches)
-		messages +=
-			ICON_FA_GAMEPAD " Compatibility Patches are not enabled. Compatibility with some games may be affected.\n";
+	{
+		append(ICON_FA_GAMEPAD,
+			TRANSLATE_SV(
+				"VMManager", "Compatibility Patches are not enabled. Compatibility with some games may be affected."));
+	}
 	if (EmuConfig.GS.FramerateNTSC != Pcsx2Config::GSOptions::DEFAULT_FRAME_RATE_NTSC)
-		messages += ICON_FA_TV " Frame rate for NTSC is not default. This may break some games.\n";
+		append(ICON_FA_TV, TRANSLATE_SV("VMManager", "Frame rate for NTSC is not default. This may break some games."));
 	if (EmuConfig.GS.FrameratePAL != Pcsx2Config::GSOptions::DEFAULT_FRAME_RATE_PAL)
-		messages += ICON_FA_TV " Frame rate for PAL is not default. This may break some games.\n";
+		append(ICON_FA_TV, TRANSLATE_SV("VMManager", "Frame rate for PAL is not default. This may break some games."));
 
 	if (!messages.empty())
 	{
@@ -2313,33 +2371,65 @@ void VMManager::WarnAboutUnsafeSettings()
 
 	messages.clear();
 	if (!EmuConfig.Cpu.Recompiler.EnableEE)
-		messages +=
-			ICON_FA_EXCLAMATION_CIRCLE " EE Recompiler is not enabled, this will significantly reduce performance.\n";
+	{
+		append(ICON_FA_EXCLAMATION_CIRCLE,
+			TRANSLATE_SV("VMManager", "EE Recompiler is not enabled, this will significantly reduce performance."));
+	}
 	if (!EmuConfig.Cpu.Recompiler.EnableVU0)
-		messages +=
-			ICON_FA_EXCLAMATION_CIRCLE " VU0 Recompiler is not enabled, this will significantly reduce performance.\n";
+	{
+		append(ICON_FA_EXCLAMATION_CIRCLE,
+			TRANSLATE_SV("VMManager", "VU0 Recompiler is not enabled, this will significantly reduce performance."));
+	}
 	if (!EmuConfig.Cpu.Recompiler.EnableVU1)
-		messages +=
-			ICON_FA_EXCLAMATION_CIRCLE " VU1 Recompiler is not enabled, this will significantly reduce performance.\n";
+	{
+		append(ICON_FA_EXCLAMATION_CIRCLE,
+			TRANSLATE_SV("VMManager", "VU1 Recompiler is not enabled, this will significantly reduce performance."));
+	}
 	if (!EmuConfig.Cpu.Recompiler.EnableIOP)
-		messages +=
-			ICON_FA_EXCLAMATION_CIRCLE " IOP Recompiler is not enabled, this will significantly reduce performance.\n";
+	{
+		append(ICON_FA_EXCLAMATION_CIRCLE,
+			TRANSLATE_SV("VMManager", "IOP Recompiler is not enabled, this will significantly reduce performance."));
+	}
 	if (EmuConfig.Cpu.Recompiler.EnableEECache)
-		messages += ICON_FA_EXCLAMATION_CIRCLE " EE Cache is enabled, this will significantly reduce performance.\n";
+	{
+		append(ICON_FA_EXCLAMATION_CIRCLE,
+			TRANSLATE_SV("VMManager", "EE Cache is enabled, this will significantly reduce performance."));
+	}
 	if (!EmuConfig.Speedhacks.WaitLoop)
-		messages += ICON_FA_EXCLAMATION_CIRCLE " EE Wait Loop Detection is not enabled, this may reduce performance.\n";
+	{
+		append(ICON_FA_EXCLAMATION_CIRCLE,
+			TRANSLATE_SV("VMManager", "EE Wait Loop Detection is not enabled, this may reduce performance."));
+	}
 	if (!EmuConfig.Speedhacks.IntcStat)
-		messages += ICON_FA_EXCLAMATION_CIRCLE " INTC Spin Detection is not enabled, this may reduce performance.\n";
+	{
+		append(ICON_FA_EXCLAMATION_CIRCLE,
+			TRANSLATE_SV("VMManager", "INTC Spin Detection is not enabled, this may reduce performance."));
+	}
 	if (!EmuConfig.Speedhacks.vu1Instant)
-		messages += ICON_FA_EXCLAMATION_CIRCLE " Instant VU1 is disabled, this may reduce performance.\n";
+	{
+		append(ICON_FA_EXCLAMATION_CIRCLE,
+			TRANSLATE_SV("VMManager", "Instant VU1 is disabled, this may reduce performance."));
+	}
 	if (!EmuConfig.Speedhacks.vuFlagHack)
-		messages += ICON_FA_EXCLAMATION_CIRCLE " mVU Flag Hack is not enabled, this may reduce performance.\n";
+	{
+		append(ICON_FA_EXCLAMATION_CIRCLE,
+			TRANSLATE_SV("VMManager", "mVU Flag Hack is not enabled, this may reduce performance."));
+	}
 	if (EmuConfig.GS.GPUPaletteConversion)
-		messages += ICON_FA_EXCLAMATION_CIRCLE " GPU Palette Conversion is enabled, this may reduce performance.\n";
+	{
+		append(ICON_FA_EXCLAMATION_CIRCLE,
+			TRANSLATE_SV("VMManager", "GPU Palette Conversion is enabled, this may reduce performance."));
+	}
 	if (EmuConfig.GS.TexturePreloading != TexturePreloadingLevel::Full)
-		messages += ICON_FA_EXCLAMATION_CIRCLE " Texture Preloading is not Full, this may reduce performance.\n";
+	{
+		append(ICON_FA_EXCLAMATION_CIRCLE,
+			TRANSLATE_SV("VMManager", "Texture Preloading is not Full, this may reduce performance."));
+	}
 	if (EmuConfig.GS.UserHacks_EstimateTextureRegion)
-		messages += ICON_FA_EXCLAMATION_CIRCLE " Estimate texture region is enabled, this may reduce performance.\n";
+	{
+		append(ICON_FA_EXCLAMATION_CIRCLE,
+			TRANSLATE_SV("VMManager", "Estimate texture region is enabled, this may reduce performance."));
+	}
 
 	if (!messages.empty())
 	{

@@ -1053,23 +1053,23 @@ void Achievements::DisplayAchievementSummary()
 	{
 		std::string title = s_game_title;
 		if (ChallengeModeActive())
-			title += " (Hardcore Mode)";
+			title += TRANSLATE_SV("Achievements", " (Hardcore Mode)");
 
 		std::string summary;
 		if (GetAchievementCount() > 0)
 		{
-			summary = StringUtil::StdStringFromFormat("You have earned %u of %u achievements, and %u of %u points.",
+			summary = fmt::format(TRANSLATE_SV("Achievements", "You have earned {0} of {1} achievements, and {2} of {3} points."),
 				GetUnlockedAchiementCount(), GetAchievementCount(), GetCurrentPointsForGame(), GetMaximumPointsForGame());
 		}
 		else
 		{
-			summary = "This game has no achievements.";
+			summary = TRANSLATE_SV("Achievements", "This game has no achievements.");
 		}
 		if (GetLeaderboardCount() > 0)
 		{
 			summary.push_back('\n');
 			if (LeaderboardsActive())
-				summary.append("Leaderboard submission is enabled.");
+				summary.append(TRANSLATE_SV("Achievements", "Leaderboard submission is enabled."));
 		}
 
 		GetMTGS().RunOnGSThread([title = std::move(title), summary = std::move(summary), icon = s_game_icon]() {
@@ -1505,7 +1505,8 @@ void Achievements::GameChanged(u32 disc_crc, u32 crc)
 		// when we're booting the bios, or shutting down, this will fail
 		if (disc_crc != 0)
 		{
-			Host::AddKeyedOSDMessage("retroachievements_disc_read_failed", "Failed to read executable from disc. Achievements disabled.",
+			Host::AddKeyedOSDMessage("retroachievements_disc_read_failed",
+				TRANSLATE_STR("Achievements", "Failed to read executable from disc. Achievements disabled."),
 				Host::OSD_CRITICAL_ERROR_DURATION);
 		}
 

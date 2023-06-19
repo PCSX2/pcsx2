@@ -265,8 +265,9 @@ bool GSreopen(bool recreate_device, bool recreate_renderer, const Pcsx2Config::G
 		if (!OpenGSDevice(GSConfig.Renderer, false, recreate_window) ||
 			(recreate_renderer && !OpenGSRenderer(GSConfig.Renderer, basemem)))
 		{
-			Host::AddKeyedOSDMessage(
-				"GSReopenFailed", "Failed to reopen, restoring old configuration.", Host::OSD_CRITICAL_ERROR_DURATION);
+			Host::AddKeyedOSDMessage("GSReopenFailed",
+				TRANSLATE_STR("GS", "Failed to reopen, restoring old configuration."),
+				Host::OSD_CRITICAL_ERROR_DURATION);
 
 			CloseGSDevice(false);
 
@@ -965,7 +966,8 @@ void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
 static void HotkeyAdjustUpscaleMultiplier(s32 delta)
 {
 	const u32 new_multiplier = static_cast<u32>(std::clamp(static_cast<s32>(EmuConfig.GS.UpscaleMultiplier) + delta, 1, 8));
-	Host::AddKeyedFormattedOSDMessage("UpscaleMultiplierChanged", Host::OSD_QUICK_DURATION, "Upscale multiplier set to %ux.", new_multiplier);
+	Host::AddKeyedOSDMessage("UpscaleMultiplierChanged",
+		fmt::format(TRANSLATE_SV("GS", "Upscale multiplier set to {}x."), new_multiplier), Host::OSD_QUICK_DURATION);
 	EmuConfig.GS.UpscaleMultiplier = new_multiplier;
 
 	// this is pretty slow. we only really need to flush the TC and recompile shaders.
@@ -973,144 +975,174 @@ static void HotkeyAdjustUpscaleMultiplier(s32 delta)
 	GetMTGS().ApplySettings();
 }
 
-BEGIN_HOTKEY_LIST(g_gs_hotkeys)
-	{"Screenshot", "Graphics", "Save Screenshot", [](s32 pressed) {
+BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+	TRANSLATE_NOOP("Hotkeys", "Save Screenshot"),
+	[](s32 pressed) {
 		if (!pressed)
 		{
-			GetMTGS().RunOnGSThread([]() {
-				GSQueueSnapshot(std::string(), 0);
-			});
+			GetMTGS().RunOnGSThread([]() { GSQueueSnapshot(std::string(), 0); });
 		}
 	}},
-	{"ToggleVideoCapture", "Graphics", "Toggle Video Capture", [](s32 pressed) {
-		 if (!pressed)
-		 {
-			 if (GSCapture::IsCapturing())
-			 {
-				 GetMTGS().RunOnGSThread([]() { g_gs_renderer->EndCapture(); });
-				 GetMTGS().WaitGS(false, false, false);
-				 return;
-			 }
+	{"ToggleVideoCapture", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle Video Capture"),
+		[](s32 pressed) {
+			if (!pressed)
+			{
+				if (GSCapture::IsCapturing())
+				{
+					GetMTGS().RunOnGSThread([]() { g_gs_renderer->EndCapture(); });
+					GetMTGS().WaitGS(false, false, false);
+					return;
+				}
 
-			 GetMTGS().RunOnGSThread([]() {
-				 std::string filename(fmt::format("{}.{}", GSGetBaseVideoFilename(), GSConfig.CaptureContainer));
-				 g_gs_renderer->BeginCapture(std::move(filename));
-			 });
+				GetMTGS().RunOnGSThread([]() {
+					std::string filename(fmt::format("{}.{}", GSGetBaseVideoFilename(), GSConfig.CaptureContainer));
+					g_gs_renderer->BeginCapture(std::move(filename));
+				});
 
-			 // Sync GS thread. We want to start adding audio at the same time as video.
-			 GetMTGS().WaitGS(false, false, false);
-		 }
-	 }},
-	{"GSDumpSingleFrame", "Graphics", "Save Single Frame GS Dump", [](s32 pressed) {
-		if (!pressed)
-		{
-			GetMTGS().RunOnGSThread([]() {
-				GSQueueSnapshot(std::string(), 1);
+				// Sync GS thread. We want to start adding audio at the same time as video.
+				GetMTGS().WaitGS(false, false, false);
+			}
+		}},
+	{"GSDumpSingleFrame", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Save Single Frame GS Dump"),
+		[](s32 pressed) {
+			if (!pressed)
+			{
+				GetMTGS().RunOnGSThread([]() { GSQueueSnapshot(std::string(), 1); });
+			}
+		}},
+	{"GSDumpMultiFrame", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Save Multi Frame GS Dump"),
+		[](s32 pressed) {
+			GetMTGS().RunOnGSThread([pressed]() {
+				if (pressed > 0)
+					GSQueueSnapshot(std::string(), std::numeric_limits<u32>::max());
+				else
+					GSStopGSDump();
 			});
-		}
-	}},
-	{"GSDumpMultiFrame", "Graphics", "Save Multi Frame GS Dump", [](s32 pressed) {
-		GetMTGS().RunOnGSThread([pressed]() {
-			if (pressed > 0)
-				GSQueueSnapshot(std::string(), std::numeric_limits<u32>::max());
-			else
-				GSStopGSDump();
-		});
-	}},
-	{"ToggleSoftwareRendering", "Graphics", "Toggle Software Rendering", [](s32 pressed) {
-		if (!pressed)
-			GetMTGS().ToggleSoftwareRendering();
-	}},
-	{"IncreaseUpscaleMultiplier", "Graphics", "Increase Upscale Multiplier", [](s32 pressed) {
-		 if (!pressed)
-			 HotkeyAdjustUpscaleMultiplier(1);
-	 }},
-	{"DecreaseUpscaleMultiplier", "Graphics", "Decrease Upscale Multiplier", [](s32 pressed) {
-		 if (!pressed)
-			 HotkeyAdjustUpscaleMultiplier(-1);
-	 }},
-	{"CycleAspectRatio", "Graphics", "Cycle Aspect Ratio", [](s32 pressed) {
-		 if (pressed)
-			 return;
+		}},
+	{"ToggleSoftwareRendering", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+		TRANSLATE_NOOP("Hotkeys", "Toggle Software Rendering"),
+		[](s32 pressed) {
+			if (!pressed)
+				GetMTGS().ToggleSoftwareRendering();
+		}},
+	{"IncreaseUpscaleMultiplier", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+		TRANSLATE_NOOP("Hotkeys", "Increase Upscale Multiplier"),
+		[](s32 pressed) {
+			if (!pressed)
+				HotkeyAdjustUpscaleMultiplier(1);
+		}},
+	{"DecreaseUpscaleMultiplier", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+		TRANSLATE_NOOP("Hotkeys", "Decrease Upscale Multiplier"),
+		[](s32 pressed) {
+			if (!pressed)
+				HotkeyAdjustUpscaleMultiplier(-1);
+		}},
+	{"CycleAspectRatio", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Cycle Aspect Ratio"),
+		[](s32 pressed) {
+			if (pressed)
+				return;
 
-		 // technically this races, but the worst that'll happen is one frame uses the old AR.
-		 EmuConfig.CurrentAspectRatio = static_cast<AspectRatioType>((static_cast<int>(EmuConfig.CurrentAspectRatio) + 1) % static_cast<int>(AspectRatioType::MaxCount));
-		 Host::AddKeyedFormattedOSDMessage("CycleAspectRatio", Host::OSD_QUICK_DURATION, "Aspect ratio set to '%s'.", Pcsx2Config::GSOptions::AspectRatioNames[static_cast<int>(EmuConfig.CurrentAspectRatio)]);
-	 }},
-	{"CycleMipmapMode", "Graphics", "Cycle Hardware Mipmapping", [](s32 pressed) {
-		 if (pressed)
-			 return;
+			// technically this races, but the worst that'll happen is one frame uses the old AR.
+			EmuConfig.CurrentAspectRatio = static_cast<AspectRatioType>(
+				(static_cast<int>(EmuConfig.CurrentAspectRatio) + 1) % static_cast<int>(AspectRatioType::MaxCount));
+			Host::AddKeyedOSDMessage("CycleAspectRatio",
+				fmt::format(TRANSLATE_SV("Hotkeys", "Aspect ratio set to '{}'."),
+					Pcsx2Config::GSOptions::AspectRatioNames[static_cast<int>(EmuConfig.CurrentAspectRatio)]),
+				Host::OSD_QUICK_DURATION);
+		}},
+	{"CycleMipmapMode", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Cycle Hardware Mipmapping"),
+		[](s32 pressed) {
+			if (pressed)
+				return;
 
-		 static constexpr s32 CYCLE_COUNT = 4;
-		 static constexpr std::array<const char*, CYCLE_COUNT> option_names = {{"Automatic", "Off", "Basic (Generated)", "Full (PS2)"}};
+			static constexpr s32 CYCLE_COUNT = 4;
+			static constexpr std::array<const char*, CYCLE_COUNT> option_names = {
+				{"Automatic", "Off", "Basic (Generated)", "Full (PS2)"}};
 
-		 const HWMipmapLevel new_level = static_cast<HWMipmapLevel>(((static_cast<s32>(EmuConfig.GS.HWMipmap) + 2) % CYCLE_COUNT) - 1);
-		 Host::AddKeyedFormattedOSDMessage("CycleMipmapMode", Host::OSD_QUICK_DURATION, "Hardware mipmapping set to '%s'.", option_names[static_cast<s32>(new_level) + 1]);
-		 EmuConfig.GS.HWMipmap = new_level;
+			const HWMipmapLevel new_level =
+				static_cast<HWMipmapLevel>(((static_cast<s32>(EmuConfig.GS.HWMipmap) + 2) % CYCLE_COUNT) - 1);
+			Host::AddKeyedOSDMessage("CycleMipmapMode",
+				fmt::format(TRANSLATE_SV("Hotkeys", "Hardware mipmapping set to '{}'."),
+					option_names[static_cast<s32>(new_level) + 1]),
+				Host::OSD_QUICK_DURATION);
+			EmuConfig.GS.HWMipmap = new_level;
 
-		 GetMTGS().RunOnGSThread([new_level]() {
-			 GSConfig.HWMipmap = new_level;
-			 g_gs_renderer->PurgeTextureCache();
-			 g_gs_renderer->PurgePool();
-		 });
-	 }},
-	{"CycleInterlaceMode", "Graphics", "Cycle Deinterlace Mode", [](s32 pressed) {
-		 if (pressed)
-			 return;
+			GetMTGS().RunOnGSThread([new_level]() {
+				GSConfig.HWMipmap = new_level;
+				g_gs_renderer->PurgeTextureCache();
+				g_gs_renderer->PurgePool();
+			});
+		}},
+	{"CycleInterlaceMode", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Cycle Deinterlace Mode"),
+		[](s32 pressed) {
+			if (pressed)
+				return;
 
-		 static constexpr std::array<const char*, static_cast<int>(GSInterlaceMode::Count)> option_names = {{
-			 "Automatic",
-			 "Off",
-			 "Weave (Top Field First)",
-			 "Weave (Bottom Field First)",
-			 "Bob (Top Field First)",
-			 "Bob (Bottom Field First)",
-			 "Blend (Top Field First)",
-			 "Blend (Bottom Field First)",
-			 "Adaptive (Top Field First)",
-			 "Adaptive (Bottom Field First)",
-		 }};
+			static constexpr std::array<const char*, static_cast<int>(GSInterlaceMode::Count)> option_names = {{
+				"Automatic",
+				"Off",
+				"Weave (Top Field First)",
+				"Weave (Bottom Field First)",
+				"Bob (Top Field First)",
+				"Bob (Bottom Field First)",
+				"Blend (Top Field First)",
+				"Blend (Bottom Field First)",
+				"Adaptive (Top Field First)",
+				"Adaptive (Bottom Field First)",
+			}};
 
-		 const GSInterlaceMode new_mode = static_cast<GSInterlaceMode>((static_cast<s32>(EmuConfig.GS.InterlaceMode) + 1) % static_cast<s32>(GSInterlaceMode::Count));
-		 Host::AddKeyedFormattedOSDMessage("CycleInterlaceMode", Host::OSD_QUICK_DURATION, "Deinterlace mode set to '%s'.", option_names[static_cast<s32>(new_mode)]);
-		 EmuConfig.GS.InterlaceMode = new_mode;
+			const GSInterlaceMode new_mode = static_cast<GSInterlaceMode>(
+				(static_cast<s32>(EmuConfig.GS.InterlaceMode) + 1) % static_cast<s32>(GSInterlaceMode::Count));
+			Host::AddKeyedOSDMessage("CycleInterlaceMode",
+				fmt::format(
+					TRANSLATE_SV("Hotkeys", "Deinterlace mode set to '{}'."), option_names[static_cast<s32>(new_mode)]),
+				Host::OSD_QUICK_DURATION);
+			EmuConfig.GS.InterlaceMode = new_mode;
 
-		 GetMTGS().RunOnGSThread([new_mode]() { GSConfig.InterlaceMode = new_mode; });
-	 }},
-	{"ToggleTextureDumping", "Graphics", "Toggle Texture Dumping", [](s32 pressed) {
-		 if (!pressed)
-		 {
-			 EmuConfig.GS.DumpReplaceableTextures = !EmuConfig.GS.DumpReplaceableTextures;
-			 Host::AddKeyedOSDMessage("ToggleTextureReplacements",
-				 EmuConfig.GS.DumpReplaceableTextures ? "Texture dumping is now enabled." : "Texture dumping is now disabled.",
-				 Host::OSD_INFO_DURATION);
-			 GetMTGS().ApplySettings();
-		 }
-	 }},
-	{"ToggleTextureReplacements", "Graphics", "Toggle Texture Replacements", [](s32 pressed) {
-		 if (!pressed)
-		 {
-			 EmuConfig.GS.LoadTextureReplacements = !EmuConfig.GS.LoadTextureReplacements;
-			 Host::AddKeyedOSDMessage("ToggleTextureReplacements",
-				 EmuConfig.GS.LoadTextureReplacements ? "Texture replacements are now enabled." : "Texture replacements are now disabled.",
-				 Host::OSD_INFO_DURATION);
-			 GetMTGS().ApplySettings();
-		 }
-	 }},
-	{"ReloadTextureReplacements", "Graphics", "Reload Texture Replacements", [](s32 pressed) {
-		 if (!pressed)
-		 {
-			 if (!EmuConfig.GS.LoadTextureReplacements)
-			 {
-				 Host::AddKeyedOSDMessage("ReloadTextureReplacements", "Texture replacements are not enabled.", Host::OSD_INFO_DURATION);
-			 }
-			 else
-			 {
-				 Host::AddKeyedOSDMessage("ReloadTextureReplacements", "Reloading texture replacements...", Host::OSD_INFO_DURATION);
-				 GetMTGS().RunOnGSThread([]() {
-					 GSTextureReplacements::ReloadReplacementMap();
-				 });
-			 }
-		 }
-	 }},
-END_HOTKEY_LIST()
+			GetMTGS().RunOnGSThread([new_mode]() { GSConfig.InterlaceMode = new_mode; });
+		}},
+	{"ToggleTextureDumping", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle Texture Dumping"),
+		[](s32 pressed) {
+			if (!pressed)
+			{
+				EmuConfig.GS.DumpReplaceableTextures = !EmuConfig.GS.DumpReplaceableTextures;
+				Host::AddKeyedOSDMessage("ToggleTextureReplacements",
+					EmuConfig.GS.DumpReplaceableTextures ? TRANSLATE_STR("Hotkeys", "Texture dumping is now enabled.") :
+														   TRANSLATE_STR("Hotkeys", "Texture dumping is now disabled."),
+					Host::OSD_INFO_DURATION);
+				GetMTGS().ApplySettings();
+			}
+		}},
+	{"ToggleTextureReplacements", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+		TRANSLATE_NOOP("Hotkeys", "Toggle Texture Replacements"),
+		[](s32 pressed) {
+			if (!pressed)
+			{
+				EmuConfig.GS.LoadTextureReplacements = !EmuConfig.GS.LoadTextureReplacements;
+				Host::AddKeyedOSDMessage("ToggleTextureReplacements",
+					EmuConfig.GS.LoadTextureReplacements ?
+						TRANSLATE_STR("Hotkeys", "Texture replacements are now enabled.") :
+						TRANSLATE_STR("Hotkeys", "Texture replacements are now disabled."),
+					Host::OSD_INFO_DURATION);
+				GetMTGS().ApplySettings();
+			}
+		}},
+	{"ReloadTextureReplacements", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+		TRANSLATE_NOOP("Hotkeys", "Reload Texture Replacements"),
+		[](s32 pressed) {
+			if (!pressed)
+			{
+				if (!EmuConfig.GS.LoadTextureReplacements)
+				{
+					Host::AddKeyedOSDMessage("ReloadTextureReplacements",
+						TRANSLATE_STR("Hotkeys", "Texture replacements are not enabled."), Host::OSD_INFO_DURATION);
+				}
+				else
+				{
+					Host::AddKeyedOSDMessage("ReloadTextureReplacements",
+						TRANSLATE_STR("Hotkeys", "Reloading texture replacements..."), Host::OSD_INFO_DURATION);
+					GetMTGS().RunOnGSThread([]() { GSTextureReplacements::ReloadReplacementMap(); });
+				}
+			}
+		}},
+	END_HOTKEY_LIST()

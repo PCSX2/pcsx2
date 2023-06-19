@@ -425,22 +425,30 @@ static void CompressAndWriteScreenshot(std::string filename, u32 width, u32 heig
 
 	std::string key(fmt::format("GSScreenshot_{}", filename));
 
-	if(!GSDumpReplayer::IsRunner())
-		Host::AddIconOSDMessage(key, ICON_FA_CAMERA, fmt::format("Saving screenshot to '{}'.", Path::GetFileName(filename)), 60.0f);
+	if (!GSDumpReplayer::IsRunner())
+	{
+		Host::AddIconOSDMessage(key, ICON_FA_CAMERA,
+			fmt::format(TRANSLATE_SV("GS", "Saving screenshot to '{}'."), Path::GetFileName(filename)), 60.0f);
+	}
 
 	// maybe std::async would be better here.. but it's definitely worth threading, large screenshots take a while to compress.
 	std::unique_lock lock(s_screenshot_threads_mutex);
-	s_screenshot_threads.emplace_back([key = std::move(key), filename = std::move(filename), image = std::move(image), quality = GSConfig.ScreenshotQuality]() {
+	s_screenshot_threads.emplace_back([key = std::move(key), filename = std::move(filename), image = std::move(image),
+										  quality = GSConfig.ScreenshotQuality]() {
 		if (image.SaveToFile(filename.c_str(), quality))
 		{
-			if(!GSDumpReplayer::IsRunner())
+			if (!GSDumpReplayer::IsRunner())
+			{
 				Host::AddIconOSDMessage(std::move(key), ICON_FA_CAMERA,
-					fmt::format("Saved screenshot to '{}'.", Path::GetFileName(filename)), Host::OSD_INFO_DURATION);
+					fmt::format(TRANSLATE_SV("GS", "Saved screenshot to '{}'."), Path::GetFileName(filename)),
+					Host::OSD_INFO_DURATION);
+			}
 		}
 		else
 		{
 			Host::AddIconOSDMessage(std::move(key), ICON_FA_CAMERA,
-				fmt::format("Failed to save screenshot to '{}'.", Path::GetFileName(filename), Host::OSD_ERROR_DURATION));
+				fmt::format(TRANSLATE_SV("GS", "Failed to save screenshot to '{}'."), Path::GetFileName(filename),
+					Host::OSD_ERROR_DURATION));
 		}
 
 		// remove ourselves from the list, if the GS thread is waiting for us, we won't be in there
@@ -510,7 +518,7 @@ bool GSRenderer::BeginPresentFrame(bool frame_skip)
 
 	// First frame after reopening is definitely going to be trash, so skip it.
 	Host::AddIconOSDMessage("GSDeviceLost", ICON_FA_EXCLAMATION_TRIANGLE,
-		"Host GPU device encountered an error and was recovered. This may have broken rendering.",
+		TRANSLATE_SV("GS", "Host GPU device encountered an error and was recovered. This may have broken rendering."),
 		Host::OSD_CRITICAL_ERROR_DURATION);
 	return false;
 }
@@ -614,7 +622,9 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			else if (!cas_log_once)
 			{
 				Host::AddIconOSDMessage("CASUnsupported", ICON_FA_EXCLAMATION_TRIANGLE,
-					"CAS is not available, your graphics driver does not support the required functionality.", 10.0f);
+					TRANSLATE_SV("GS",
+						"CAS is not available, your graphics driver does not support the required functionality."),
+					10.0f);
 				cas_log_once = true;
 			}
 		}
@@ -686,9 +696,11 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 
 			delete[] fd.data;
 
-			Host::AddKeyedOSDMessage("GSDump", fmt::format("Saving {0} GS dump {1} to '{2}'",
-				(m_dump_frames == 1) ? "single frame" : "multi-frame", compression_str,
-				Path::GetFileName(m_dump->GetPath())), Host::OSD_INFO_DURATION);
+			Host::AddKeyedOSDMessage("GSDump",
+				fmt::format(TRANSLATE_SV("GS", "Saving {0} GS dump {1} to '{2}'"),
+					(m_dump_frames == 1) ? "single frame" : "multi-frame", compression_str,
+					Path::GetFileName(m_dump->GetPath())),
+				Host::OSD_INFO_DURATION);
 		}
 
 		const bool internal_resolution = (GSConfig.ScreenshotSize >= GSScreenshotSize::InternalResolution);
@@ -705,7 +717,8 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 		}
 		else
 		{
-			Host::AddIconOSDMessage("GSScreenshot", ICON_FA_CAMERA, "Failed to render/download screenshot.", Host::OSD_ERROR_DURATION);
+			Host::AddIconOSDMessage("GSScreenshot", ICON_FA_CAMERA,
+				TRANSLATE_SV("GS", "Failed to render/download screenshot."), Host::OSD_ERROR_DURATION);
 		}
 
 		m_snapshot = {};
@@ -715,7 +728,9 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 		const bool last = (m_dump_frames == 0);
 		if (m_dump->VSync(field, last, m_regs))
 		{
-			Host::AddKeyedOSDMessage("GSDump", fmt::format("Saved GS dump to '{}'.", Path::GetFileName(m_dump->GetPath())), Host::OSD_INFO_DURATION);
+			Host::AddKeyedOSDMessage("GSDump",
+				fmt::format(TRANSLATE_SV("GS", "Saved GS dump to '{}'."), Path::GetFileName(m_dump->GetPath())),
+				Host::OSD_INFO_DURATION);
 			m_dump.reset();
 		}
 		else if (!last)

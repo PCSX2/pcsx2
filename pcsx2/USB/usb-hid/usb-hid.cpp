@@ -25,6 +25,7 @@
 
 #include "PrecompiledHeader.h"
 
+#include "Host.h"
 #include "Input/InputManager.h"
 #include "StateWrapper.h"
 #include "USB/USB.h"
@@ -939,7 +940,7 @@ namespace usb_hid
 
 	const char* HIDKbdDevice::Name() const
 	{
-		return "HID Keyboard";
+		return TRANSLATE_NOOP("USB", "HID Keyboard");
 	}
 
 	const char* HIDKbdDevice::TypeName() const
@@ -950,7 +951,7 @@ namespace usb_hid
 	gsl::span<const InputBindingInfo> HIDKbdDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo info[] = {
-			{"Keyboard", "Keyboard", InputBindingInfo::Type::Keyboard, 0, GenericInputBinding::Unknown},
+			{"Keyboard", TRANSLATE_NOOP("USB", "Keyboard"), InputBindingInfo::Type::Keyboard, 0, GenericInputBinding::Unknown},
 		};
 		return info;
 	}
@@ -1013,7 +1014,7 @@ namespace usb_hid
 
 	const char* HIDMouseDevice::Name() const
 	{
-		return "HID Mouse";
+		return TRANSLATE_NOOP("USB", "HID Mouse");
 	}
 
 	const char* HIDMouseDevice::TypeName() const
@@ -1043,10 +1044,10 @@ namespace usb_hid
 	gsl::span<const InputBindingInfo> HIDMouseDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo info[] = {
-			{"Pointer", "Pointer", InputBindingInfo::Type::Pointer, INPUT_BUTTON__MAX, GenericInputBinding::Unknown},
-			{"LeftButton", "Left Button", InputBindingInfo::Type::Button, INPUT_BUTTON_LEFT, GenericInputBinding::Unknown},
-			{"RightButton", "Right Button", InputBindingInfo::Type::Button, INPUT_BUTTON_RIGHT, GenericInputBinding::Unknown},
-			{"MiddleButton", "Middle Button", InputBindingInfo::Type::Button, INPUT_BUTTON_MIDDLE, GenericInputBinding::Unknown},
+			{"Pointer", TRANSLATE_NOOP("USB", "Pointer"), InputBindingInfo::Type::Pointer, INPUT_BUTTON__MAX, GenericInputBinding::Unknown},
+			{"LeftButton", TRANSLATE_NOOP("USB", "Left Button"), InputBindingInfo::Type::Button, INPUT_BUTTON_LEFT, GenericInputBinding::Unknown},
+			{"RightButton", TRANSLATE_NOOP("USB", "Right Button"), InputBindingInfo::Type::Button, INPUT_BUTTON_RIGHT, GenericInputBinding::Unknown},
+			{"MiddleButton", TRANSLATE_NOOP("USB", "Middle Button"), InputBindingInfo::Type::Button, INPUT_BUTTON_MIDDLE, GenericInputBinding::Unknown},
 		};
 		return info;
 	}
@@ -1124,7 +1125,7 @@ namespace usb_hid
 
 	const char* BeatManiaDevice::Name() const
 	{
-		return "BeatMania Da Da Da!! Keyboard";
+		return TRANSLATE_NOOP("USB", "BeatMania Da Da Da!! Keyboard");
 	}
 
 	const char* BeatManiaDevice::TypeName() const

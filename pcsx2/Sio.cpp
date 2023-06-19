@@ -208,12 +208,10 @@ void Sio0::SetTxData(u8 value)
 
 						if (mcd->autoEjectTicks == 0)
 						{
-							Host::AddKeyedFormattedOSDMessage(
-								StringUtil::StdStringFromFormat("AutoEjectSlotClear%u%u", port, slot),
-								10.0f,
-								"Memory card in port %d / slot %d reinserted",
-								port + 1,
-								slot + 1);
+							Host::AddKeyedOSDMessage(fmt::format("AutoEjectSlotClear{}{}", port, slot),
+								fmt::format(TRANSLATE_SV("MemoryCard", "Memory card in port %d / slot %d reinserted"),
+									port + 1, slot + 1),
+								Host::OSD_INFO_DURATION);
 						}
 
 						return;
@@ -591,12 +589,10 @@ void Sio2::Memcard()
 
 		if (mcd->autoEjectTicks == 0)
 		{
-			Host::AddKeyedFormattedOSDMessage(
-				StringUtil::StdStringFromFormat("AutoEjectSlotClear%u%u", port, slot),
-				10.0f,
-				"Memory card in port %d / slot %d reinserted",
-				port + 1,
-				slot + 1);
+			Host::AddKeyedOSDMessage(fmt::format("AutoEjectSlotClear{}{}", port, slot),
+				fmt::format(
+					TRANSLATE_SV("MemoryCard", "Memory card in port {} / slot {} reinserted."), port + 1, slot + 1),
+				Host::OSD_INFO_DURATION);
 		}
 
 		return;
@@ -934,7 +930,8 @@ void AutoEject::Clear(size_t port, size_t slot)
 
 void AutoEject::SetAll()
 {
-	Host::AddIconOSDMessage("AutoEjectAllSet", ICON_FA_SD_CARD, "Force ejecting all memory cards.", Host::OSD_INFO_DURATION);
+	Host::AddIconOSDMessage("AutoEjectAllSet", ICON_FA_SD_CARD,
+		TRANSLATE_SV("MemoryCard", "Force ejecting all memory cards."), Host::OSD_INFO_DURATION);
 
 	for (size_t port = 0; port < SIO::PORTS; port++)
 	{
