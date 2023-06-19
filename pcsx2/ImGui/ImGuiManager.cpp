@@ -535,24 +535,6 @@ void Host::AddIconOSDMessage(std::string key, const char* icon, const std::strin
 	s_osd_posted_messages.push_back(std::move(msg));
 }
 
-void Host::AddFormattedOSDMessage(float duration, const char* format, ...)
-{
-	std::va_list ap;
-	va_start(ap, format);
-	std::string ret = StringUtil::StdStringFromFormatV(format, ap);
-	va_end(ap);
-	return AddKeyedOSDMessage(std::string(), std::move(ret), duration);
-}
-
-void Host::AddKeyedFormattedOSDMessage(std::string key, float duration, const char* format, ...)
-{
-	std::va_list ap;
-	va_start(ap, format);
-	std::string ret = StringUtil::StdStringFromFormatV(format, ap);
-	va_end(ap);
-	return AddKeyedOSDMessage(std::move(key), std::move(ret), duration);
-}
-
 void Host::RemoveKeyedOSDMessage(std::string key)
 {
 	OSDMessage msg;
