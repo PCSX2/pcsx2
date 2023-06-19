@@ -66,6 +66,10 @@ struct SettingInfo
 	float FloatMinValue() const;
 	float FloatMaxValue() const;
 	float FloatStepValue() const;
+
+	void SetDefaultValue(SettingsInterface* si, const char* section, const char* key) const;
+	void CopyValue(SettingsInterface* dest_si, const SettingsInterface& src_si,
+		const char* section, const char* key) const;
 };
 
 enum class GenericInputBinding : u8;

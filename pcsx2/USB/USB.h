@@ -70,6 +70,13 @@ namespace USB
 	/// Clears all bindings for a given port.
 	void ClearPortBindings(SettingsInterface& si, u32 port);
 
+	/// Copies configuration between two profiles.
+	void CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_si, bool copy_devices = true,
+		bool copy_bindings = true);
+
+	/// Resets configuration for all ports.
+	void SetDefaultConfiguration(SettingsInterface* si);
+
 	/// Identifies any device/subtype changes and recreates devices.
 	void CheckForConfigChanges(const Pcsx2Config& old_config);
 
