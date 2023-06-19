@@ -443,7 +443,10 @@ void VMManager::SetDefaultSettings(
 		LogSink::SetDefaultLoggingSettings(si);
 	}
 	if (controllers)
+	{
 		PAD::SetDefaultControllerConfig(si);
+		USB::SetDefaultConfiguration(&si);
+	}
 	if (hotkeys)
 		PAD::SetDefaultHotkeyConfig(si);
 	if (ui)

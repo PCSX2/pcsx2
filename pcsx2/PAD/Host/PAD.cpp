@@ -287,26 +287,7 @@ void PAD::SetDefaultControllerConfig(SettingsInterface& si)
 			for (u32 i = 0; i < ci->num_settings; i++)
 			{
 				const SettingInfo& csi = ci->settings[i];
-				switch (csi.type)
-				{
-					case SettingInfo::Type::Boolean:
-						si.SetBoolValue(section.c_str(), csi.name, csi.BooleanDefaultValue());
-						break;
-					case SettingInfo::Type::Integer:
-					case SettingInfo::Type::IntegerList:
-						si.SetIntValue(section.c_str(), csi.name, csi.IntegerDefaultValue());
-						break;
-					case SettingInfo::Type::Float:
-						si.SetFloatValue(section.c_str(), csi.name, csi.FloatDefaultValue());
-						break;
-					case SettingInfo::Type::String:
-					case SettingInfo::Type::StringList:
-					case SettingInfo::Type::Path:
-						si.SetStringValue(section.c_str(), csi.name, csi.StringDefaultValue());
-						break;
-					default:
-						break;
-				}
+				csi.SetDefaultValue(&si, section.c_str(), csi.name);
 			}
 		}
 	}
@@ -583,26 +564,7 @@ void PAD::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 			for (u32 i = 0; i < info->num_settings; i++)
 			{
 				const SettingInfo& csi = info->settings[i];
-				switch (csi.type)
-				{
-					case SettingInfo::Type::Boolean:
-						dest_si->CopyBoolValue(src_si, section.c_str(), csi.name);
-						break;
-					case SettingInfo::Type::Integer:
-					case SettingInfo::Type::IntegerList:
-						dest_si->CopyIntValue(src_si, section.c_str(), csi.name);
-						break;
-					case SettingInfo::Type::Float:
-						dest_si->CopyFloatValue(src_si, section.c_str(), csi.name);
-						break;
-					case SettingInfo::Type::String:
-					case SettingInfo::Type::StringList:
-					case SettingInfo::Type::Path:
-						dest_si->CopyStringValue(src_si, section.c_str(), csi.name);
-						break;
-					default:
-						break;
-				}
+				csi.CopyValue(dest_si, src_si, section.c_str(), csi.name);
 			}
 		}
 	}

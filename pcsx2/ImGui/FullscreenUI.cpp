@@ -3590,6 +3590,7 @@ void FullscreenUI::CopyGlobalControllerSettingsToGame()
 	SettingsInterface* ssi = GetEditingSettingsInterface(false);
 
 	PAD::CopyConfiguration(dsi, *ssi, true, true, false);
+	USB::CopyConfiguration(dsi, *ssi, true, true);
 	SetSettingsChanged(dsi);
 
 	ShowToast(std::string(), "Per-game controller configuration initialized with global settings.");
@@ -3601,6 +3602,7 @@ void FullscreenUI::ResetControllerSettings()
 
 	PAD::SetDefaultControllerConfig(*dsi);
 	PAD::SetDefaultHotkeyConfig(*dsi);
+	USB::SetDefaultConfiguration(dsi);
 	ShowToast(std::string(), "Controller settings reset to default.");
 }
 
@@ -3633,6 +3635,7 @@ void FullscreenUI::DoLoadInputProfile()
 			auto lock = Host::GetSettingsLock();
 			SettingsInterface* dsi = GetEditingSettingsInterface();
 			PAD::CopyConfiguration(dsi, ssi, true, true, IsEditingGameSettings(dsi));
+			USB::CopyConfiguration(dsi, ssi, true, true);
 			SetSettingsChanged(dsi);
 			ShowToast(std::string(), fmt::format("Input profile '{}' loaded.", title));
 			CloseChoiceDialog();
@@ -3646,6 +3649,7 @@ void FullscreenUI::DoSaveInputProfile(const std::string& name)
 	auto lock = Host::GetSettingsLock();
 	SettingsInterface* ssi = GetEditingSettingsInterface();
 	PAD::CopyConfiguration(&dsi, *ssi, true, true, IsEditingGameSettings(ssi));
+	USB::CopyConfiguration(&dsi, *ssi, true, true);
 	if (dsi.Save())
 		ShowToast(std::string(), fmt::format("Input profile '{}' saved.", name));
 	else

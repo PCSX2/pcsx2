@@ -128,6 +128,7 @@ void ControllerSettingsDialog::onNewProfileClicked()
 			// from global
 			auto lock = Host::GetSettingsLock();
 			PAD::CopyConfiguration(&temp_si, *Host::Internal::GetBaseSettingsLayer(), true, true, false);
+			USB::CopyConfiguration(&temp_si, *Host::Internal::GetBaseSettingsLayer(), true, true);
 		}
 		else
 		{
@@ -135,6 +136,7 @@ void ControllerSettingsDialog::onNewProfileClicked()
 			const bool copy_hotkey_bindings = m_profile_interface->GetBoolValue("Pad", "UseProfileHotkeyBindings", false);
 			temp_si.SetBoolValue("Pad", "UseProfileHotkeyBindings", copy_hotkey_bindings);
 			PAD::CopyConfiguration(&temp_si, *m_profile_interface, true, true, copy_hotkey_bindings);
+			USB::CopyConfiguration(&temp_si, *m_profile_interface, true, true);
 		}
 	}
 
@@ -163,6 +165,7 @@ void ControllerSettingsDialog::onLoadProfileClicked()
 	{
 		auto lock = Host::GetSettingsLock();
 		PAD::CopyConfiguration(Host::Internal::GetBaseSettingsLayer(), *m_profile_interface, true, true, false);
+		USB::CopyConfiguration(Host::Internal::GetBaseSettingsLayer(), *m_profile_interface, true, true);
 	}
 	Host::CommitBaseSettingChanges();
 
