@@ -72,7 +72,7 @@ QIcon ControllerBindingWidget::getIcon() const
 void ControllerBindingWidget::populateControllerTypes()
 {
 	for (const auto& [name, display_name] : PAD::GetControllerTypeNames())
-		m_ui.controllerType->addItem(QString::fromStdString(display_name), QString::fromStdString(name));
+		m_ui.controllerType->addItem(qApp->translate("Pad", display_name), QString::fromStdString(name));
 }
 
 void ControllerBindingWidget::onTypeChanged()
@@ -902,7 +902,7 @@ QIcon USBDeviceWidget::getIcon() const
 void USBDeviceWidget::populateDeviceTypes()
 {
 	for (const auto& [name, display_name] : USB::GetDeviceTypes())
-		m_ui.deviceType->addItem(QString::fromStdString(display_name), QString::fromStdString(name));
+		m_ui.deviceType->addItem(qApp->translate("USB", display_name), QString::fromUtf8(name));
 }
 
 void USBDeviceWidget::populatePages()

@@ -103,7 +103,7 @@ namespace PAD
 	void Update();
 
 	/// Returns a list of controller type names. Pair of [name, display name].
-	std::vector<std::pair<std::string, std::string>> GetControllerTypeNames();
+	std::vector<std::pair<const char*, const char*>> GetControllerTypeNames();
 
 	/// Returns the list of binds for the specified controller type.
 	std::vector<std::string> GetControllerBinds(const std::string_view& type);
