@@ -995,8 +995,6 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 
 	std::string state_to_load;
 
-	s_fast_boot_requested = boot_params.fast_boot.value_or(static_cast<bool>(EmuConfig.EnableFastBoot));
-
 	s_elf_override = std::move(boot_params.elf_override);
 	if (!boot_params.save_state.empty())
 		state_to_load = std::move(boot_params.save_state);
@@ -1077,6 +1075,12 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 
 	// Figure out which game we're running! This also loads game settings.
 	UpdateDiscDetails(true);
+
+	// Read fast boot setting late so it can be overridden per-game.
+	// ELFs must be fast booted, and GS dumps are never fast booted.
+	s_fast_boot_requested =
+		(boot_params.fast_boot.value_or(static_cast<bool>(EmuConfig.EnableFastBoot)) || !s_elf_override.empty()) &&
+		!GSDumpReplayer::IsReplayingDump();
 
 	if (!s_elf_override.empty())
 	{
