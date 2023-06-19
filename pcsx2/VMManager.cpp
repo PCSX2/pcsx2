@@ -121,6 +121,9 @@ namespace VMManager
 		std::unique_ptr<SaveStateScreenshotData> screenshot, std::string osd_key, std::string filename,
 		s32 slot_for_message);
 
+	static void LoadSettings();
+	static void LoadCoreSettings(SettingsInterface* si);
+	static void ApplyCoreSettings();
 	static void UpdateInhibitScreensaver(bool allow);
 	static void SaveSessionTime(const std::string& prev_serial);
 	static void ReloadPINE();
@@ -451,14 +454,25 @@ void VMManager::LoadSettings()
 {
 	std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
 	SettingsInterface* si = Host::GetSettingsInterface();
-	SettingsLoadWrapper slw(*si);
-	EmuConfig.LoadSave(slw);
+	LoadCoreSettings(si);
 	PAD::LoadConfig(*si);
 	Host::LoadSettings(*si, lock);
 	InputManager::ReloadSources(*si, lock);
 	InputManager::ReloadBindings(*si, *Host::GetSettingsInterfaceForBindings());
 	LogSink::UpdateLogging(*si);
 	Patch::ApplyPatchSettingOverrides();
+
+	if (HasValidOrInitializingVM())
+	{
+		WarnAboutUnsafeSettings();
+		ApplyGameFixes();
+	}
+}
+
+void VMManager::LoadCoreSettings(SettingsInterface* si)
+{
+	SettingsLoadWrapper slw(*si);
+	EmuConfig.LoadSave(slw);
 
 	// Achievements hardcore mode disallows setting some configuration options.
 	EnforceAchievementsChallengeModeSettings();
@@ -470,14 +484,6 @@ void VMManager::LoadSettings()
 	// Force MTVU off when playing back GS dumps, it doesn't get used.
 	if (GSDumpReplayer::IsReplayingDump())
 		EmuConfig.Speedhacks.vuThread = false;
-
-	if (HasValidOrInitializingVM())
-	{
-		if (EmuConfig.WarnAboutUnsafeSettings)
-			WarnAboutUnsafeSettings();
-
-		ApplyGameFixes();
-	}
 }
 
 void VMManager::ApplyGameFixes()
@@ -499,6 +505,68 @@ void VMManager::ApplyGameFixes()
 
 	s_active_game_fixes += game->applyGameFixes(EmuConfig, EmuConfig.EnableGameFixes);
 	s_active_game_fixes += game->applyGSHardwareFixes(EmuConfig.GS);
+}
+
+void VMManager::ApplySettings()
+{
+	Console.WriteLn("Applying settings...");
+
+	// If we're running, ensure the threads are synced.
+	if (GetState() == VMState::Running)
+	{
+		if (THREAD_VU1)
+			vu1Thread.WaitVU();
+		GetMTGS().WaitGS(false);
+	}
+
+	// Reset to a clean Pcsx2Config. Otherwise things which are optional (e.g. gamefixes)
+	// do not use the correct default values when loading.
+	Pcsx2Config old_config(std::move(EmuConfig));
+	EmuConfig = Pcsx2Config();
+	EmuConfig.CopyRuntimeConfig(old_config);
+	LoadSettings();
+	CheckForConfigChanges(old_config);
+}
+
+void VMManager::ApplyCoreSettings()
+{
+	// Lightweight version of above, called when ELF changes. This should not get called without an active VM.
+	pxAssertRel(HasValidOrInitializingVM(), "Reloading core settings requires a valid VM.");
+	Console.WriteLn("Applying core settings...");
+
+	// If we're running, ensure the threads are synced.
+	if (GetState() == VMState::Running)
+	{
+		if (THREAD_VU1)
+			vu1Thread.WaitVU();
+		GetMTGS().WaitGS(false);
+	}
+
+	// Reset to a clean Pcsx2Config. Otherwise things which are optional (e.g. gamefixes)
+	// do not use the correct default values when loading.
+	Pcsx2Config old_config(std::move(EmuConfig));
+	EmuConfig = Pcsx2Config();
+	EmuConfig.CopyRuntimeConfig(old_config);
+
+	{
+		std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
+		LoadCoreSettings(Host::GetSettingsInterface());
+		WarnAboutUnsafeSettings();
+		ApplyGameFixes();
+	}
+
+	CheckForConfigChanges(old_config);
+}
+
+bool VMManager::ReloadGameSettings()
+{
+	if (!UpdateGameSettingsLayer())
+		return false;
+
+	// Patches must come first, because they can affect aspect ratio/interlacing.
+	Patch::UpdateActivePatches(true, false, true);
+	ApplySettings();
+	return true;
 }
 
 std::string VMManager::GetGameSettingsPath(const std::string_view& game_serial, u32 game_crc)
@@ -852,7 +920,7 @@ void VMManager::HandleELFChange(bool verbose_patches_if_changed)
 
 	Console.WriteLn(Color_StrongOrange, fmt::format("ELF changed, active CRC {:08X} ({})", crc_to_report, s_elf_path));
 	Patch::ReloadPatches(s_disc_serial, crc_to_report, false, false, false, verbose_patches_if_changed);
-	ApplySettings();
+	ApplyCoreSettings();
 
 	MIPSAnalyst::ScanForFunctions(
 		R5900SymbolMap, s_elf_text_range.first, s_elf_text_range.first + s_elf_text_range.second, true);
@@ -1845,7 +1913,7 @@ void VMManager::Internal::ELFLoadingOnCPUThread(std::string elf_path)
 	if (!was_running_bios)
 	{
 		Patch::ReloadPatches(s_disc_serial, 0, false, false, false, true);
-		ApplySettings();
+		ApplyCoreSettings();
 	}
 }
 
@@ -2109,39 +2177,6 @@ void VMManager::ResetFrameLimiterState()
 	frameLimitReset();
 }
 
-void VMManager::ApplySettings()
-{
-	Console.WriteLn("Applying settings...");
-
-	// if we're running, ensure the threads are synced
-	const bool running = (GetState() == VMState::Running);
-	if (running)
-	{
-		if (THREAD_VU1)
-			vu1Thread.WaitVU();
-		GetMTGS().WaitGS(false);
-	}
-
-	// Reset to a clean Pcsx2Config. Otherwise things which are optional (e.g. gamefixes)
-	// do not use the correct default values when loading.
-	Pcsx2Config old_config(std::move(EmuConfig));
-	EmuConfig = Pcsx2Config();
-	EmuConfig.CopyRuntimeConfig(old_config);
-	LoadSettings();
-	CheckForConfigChanges(old_config);
-}
-
-bool VMManager::ReloadGameSettings()
-{
-	if (!UpdateGameSettingsLayer())
-		return false;
-
-	// Patches must come first, because they can affect aspect ratio/interlacing.
-	Patch::UpdateActivePatches(true, false, true);
-	ApplySettings();
-	return true;
-}
-
 void VMManager::ReloadPatches(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed)
 {
 	if (!HasValidVM())
@@ -2151,7 +2186,7 @@ void VMManager::ReloadPatches(bool reload_files, bool reload_enabled_list, bool 
 
 	// Might change widescreen mode.
 	if (Patch::ReloadPatchAffectingOptions())
-		ApplySettings();
+		ApplyCoreSettings();
 }
 
 void VMManager::EnforceAchievementsChallengeModeSettings()
@@ -2213,6 +2248,9 @@ void VMManager::LogUnsafeSettingsToConsole(const std::string& messages)
 
 void VMManager::WarnAboutUnsafeSettings()
 {
+	if (!EmuConfig.WarnAboutUnsafeSettings)
+		return;
+
 	std::string messages;
 
 	if (EmuConfig.Speedhacks.fastCDVD)

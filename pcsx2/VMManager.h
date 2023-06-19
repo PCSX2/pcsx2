@@ -92,9 +92,6 @@ namespace VMManager
 	/// Returns the crc of the executable currently running.
 	u32 GetCurrentCRC();
 
-	/// Loads global settings (i.e. EmuConfig).
-	void LoadSettings();
-
 	/// Initializes all system components.
 	bool Initialize(VMBootParameters boot_params);
 
