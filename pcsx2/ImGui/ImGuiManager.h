@@ -26,6 +26,12 @@ enum class GenericInputBinding : u8;
 
 namespace ImGuiManager
 {
+	/// Sets the path to the font to use. Empty string means to use the default.
+	void SetFontPath(std::string path);
+
+	/// Sets the glyph range to use when loading fonts.
+	void SetFontRange(const u16* range);
+
 	/// Initializes ImGui, creates fonts, etc.
 	bool Initialize();
 
@@ -106,4 +112,4 @@ namespace Host
 
 	/// Called by ImGuiManager when the cursor leaves a text field.
 	void EndTextInput();
-}
+} // namespace Host
