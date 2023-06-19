@@ -1663,6 +1663,20 @@ void VMManager::FrameAdvance(u32 num_frames /*= 1*/)
 
 bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 {
+	if (GSDumpReplayer::IsReplayingDump())
+	{
+		if (!GSDumpReplayer::ChangeDump(path.c_str()))
+			return false;
+
+		UpdateDiscDetails(false);
+		return true;
+	}
+	else if (IsGSDumpFileName(path))
+	{
+		Host::ReportErrorAsync("Error", "Cannot change from game to GS dump without shutting down first.");
+		return false;
+	}
+
 	const CDVD_SourceType old_type = CDVDsys_GetSourceType();
 	const std::string old_path(CDVDsys_GetFile(old_type));
 
