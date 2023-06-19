@@ -31,6 +31,7 @@
 #include "Recording/InputRecording.h"
 #include "VMManager.h"
 
+#include "common/FileSystem.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 
@@ -60,6 +61,9 @@ namespace ImGuiManager
 
 static float s_global_scale = 1.0f;
 
+static std::string s_font_path;
+static const ImWchar* s_font_range = nullptr;
+
 static ImFont* s_standard_font;
 static ImFont* s_fixed_font;
 static ImFont* s_medium_font;
@@ -81,6 +85,18 @@ static std::unordered_map<u32, ImGuiKey> s_imgui_key_map;
 
 // need to keep track of this, so we can reinitialize on renderer switch
 static bool s_fullscreen_ui_was_initialized = false;
+
+void ImGuiManager::SetFontPath(std::string path)
+{
+	s_font_path = std::move(path);
+	s_standard_font_data = {};
+}
+
+void ImGuiManager::SetFontRange(const u16* range)
+{
+	s_font_range = range;
+	s_standard_font_data = {};
+}
 
 bool ImGuiManager::Initialize()
 {
@@ -333,7 +349,9 @@ bool ImGuiManager::LoadFontData()
 {
 	if (s_standard_font_data.empty())
 	{
-		std::optional<std::vector<u8>> font_data = Host::ReadResourceFile("fonts/Roboto-Regular.ttf");
+		std::optional<std::vector<u8>> font_data = s_font_path.empty() ?
+													   Host::ReadResourceFile("fonts/Roboto-Regular.ttf") :
+													   FileSystem::ReadBinaryFile(s_font_path.c_str());
 		if (!font_data.has_value())
 			return false;
 
@@ -393,7 +411,7 @@ ImFont* ImGuiManager::AddTextFont(float size)
 	ImFontConfig cfg;
 	cfg.FontDataOwnedByAtlas = false;
 	return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
-		s_standard_font_data.data(), static_cast<int>(s_standard_font_data.size()), size, &cfg, default_ranges);
+		s_standard_font_data.data(), static_cast<int>(s_standard_font_data.size()), size, &cfg, s_font_range ? s_font_range : default_ranges);
 }
 
 ImFont* ImGuiManager::AddFixedFont(float size)
