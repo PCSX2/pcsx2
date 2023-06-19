@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "GS/GS.h"
+#include "Host.h"
 #include "Input/InputManager.h"
 #include "StateWrapper.h"
 #include "USB/USB.h"
@@ -404,7 +405,7 @@ namespace usb_lightgun
 
 	const char* GunCon2Device::Name() const
 	{
-		return "GunCon 2";
+		return TRANSLATE_NOOP("USB", "GunCon 2");
 	}
 
 	const char* GunCon2Device::TypeName() const
@@ -481,21 +482,21 @@ namespace usb_lightgun
 	{
 		static constexpr const InputBindingInfo bindings[] = {
 			//{"pointer", "Pointer/Aiming", InputBindingInfo::Type::Pointer, BID_POINTER_X, GenericInputBinding::Unknown},
-			{"Up", "D-Pad Up", InputBindingInfo::Type::Button, BID_DPAD_UP, GenericInputBinding::DPadUp},
-			{"Down", "D-Pad Down", InputBindingInfo::Type::Button, BID_DPAD_DOWN, GenericInputBinding::DPadDown},
-			{"Left", "D-Pad Left", InputBindingInfo::Type::Button, BID_DPAD_LEFT, GenericInputBinding::DPadLeft},
-			{"Right", "D-Pad Right", InputBindingInfo::Type::Button, BID_DPAD_RIGHT,
+			{"Up", TRANSLATE_NOOP("USB", "D-Pad Up"), InputBindingInfo::Type::Button, BID_DPAD_UP, GenericInputBinding::DPadUp},
+			{"Down", TRANSLATE_NOOP("USB", "D-Pad Down"), InputBindingInfo::Type::Button, BID_DPAD_DOWN, GenericInputBinding::DPadDown},
+			{"Left", TRANSLATE_NOOP("USB", "D-Pad Left"), InputBindingInfo::Type::Button, BID_DPAD_LEFT, GenericInputBinding::DPadLeft},
+			{"Right", TRANSLATE_NOOP("USB", "D-Pad Right"), InputBindingInfo::Type::Button, BID_DPAD_RIGHT,
 				GenericInputBinding::DPadRight},
-			{"Trigger", "Trigger", InputBindingInfo::Type::Button, BID_TRIGGER, GenericInputBinding::R2},
-			{"ShootOffscreen", "Shoot Offscreen", InputBindingInfo::Type::Button, BID_SHOOT_OFFSCREEN,
+			{"Trigger", TRANSLATE_NOOP("USB", "Trigger"), InputBindingInfo::Type::Button, BID_TRIGGER, GenericInputBinding::R2},
+			{"ShootOffscreen", TRANSLATE_NOOP("USB", "Shoot Offscreen"), InputBindingInfo::Type::Button, BID_SHOOT_OFFSCREEN,
 				GenericInputBinding::R1},
-			{"Recalibrate", "Calibration Shot", InputBindingInfo::Type::Button, BID_RECALIBRATE,
+			{"Recalibrate", TRANSLATE_NOOP("USB", "Calibration Shot"), InputBindingInfo::Type::Button, BID_RECALIBRATE,
 				GenericInputBinding::Unknown},
-			{"A", "A", InputBindingInfo::Type::Button, BID_A, GenericInputBinding::Cross},
-			{"B", "B", InputBindingInfo::Type::Button, BID_B, GenericInputBinding::Circle},
-			{"C", "C", InputBindingInfo::Type::Button, BID_C, GenericInputBinding::Triangle},
-			{"Select", "Select", InputBindingInfo::Type::Button, BID_SELECT, GenericInputBinding::Select},
-			{"Start", "Start", InputBindingInfo::Type::Button, BID_START, GenericInputBinding::Start},
+			{"A", TRANSLATE_NOOP("USB", "A"), InputBindingInfo::Type::Button, BID_A, GenericInputBinding::Cross},
+			{"B", TRANSLATE_NOOP("USB", "B"), InputBindingInfo::Type::Button, BID_B, GenericInputBinding::Circle},
+			{"C", TRANSLATE_NOOP("USB", "C"), InputBindingInfo::Type::Button, BID_C, GenericInputBinding::Triangle},
+			{"Select", TRANSLATE_NOOP("USB", "Select"), InputBindingInfo::Type::Button, BID_SELECT, GenericInputBinding::Select},
+			{"Start", TRANSLATE_NOOP("USB", "Start"), InputBindingInfo::Type::Button, BID_START, GenericInputBinding::Start},
 		};
 
 		return bindings;
@@ -504,23 +505,28 @@ namespace usb_lightgun
 	gsl::span<const SettingInfo> GunCon2Device::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo info[] = {
-			{SettingInfo::Type::Boolean, "custom_config", "Manual Screen Configuration",
-				"Forces the use of the screen parameters below, instead of automatic parameters if available.",
+			{SettingInfo::Type::Boolean, "custom_config", TRANSLATE_NOOP("USB", "Manual Screen Configuration"),
+				TRANSLATE_NOOP("USB",
+					"Forces the use of the screen parameters below, instead of automatic parameters if available."),
 				"false"},
-			{SettingInfo::Type::Float, "scale_x", "X Scale (Sensitivity)",
+			{SettingInfo::Type::Float, "scale_x", TRANSLATE_NOOP("USB", "X Scale (Sensitivity)"),
 				"Scales the position to simulate CRT curvature.", "100", "0", "200", "0.1", "%.2f%%", nullptr, nullptr,
 				1.0f},
-			{SettingInfo::Type::Float, "scale_y", "Y Scale (Sensitivity)",
+			{SettingInfo::Type::Float, "scale_y", TRANSLATE_NOOP("USB", "Y Scale (Sensitivity)"),
 				"Scales the position to simulate CRT curvature.", "100", "0", "200", "0.1", "%.2f%%", nullptr, nullptr,
 				1.0f},
-			{SettingInfo::Type::Float, "center_x", "Center X", "Sets the horizontal center position of the simulated screen.",
-				"320", "0", "1024", "1", "%.0fpx", nullptr, nullptr, 1.0f},
-			{SettingInfo::Type::Float, "center_y", "Center Y", "Sets the vertical center position of the simulated screen.",
-				"120", "0", "1024", "1", "%.0fpx", nullptr, nullptr, 1.0f},
-			{SettingInfo::Type::Integer, "screen_width", "Screen Width", "Sets the width of the simulated screen.",
-				"640", "1", "1024", "1", "%dpx", nullptr, nullptr, 1.0f},
-			{SettingInfo::Type::Integer, "screen_height", "Screen Height", "Sets the height of the simulated screen.",
-				"240", "1", "1024", "1", "%dpx", nullptr, nullptr, 1.0f},
+			{SettingInfo::Type::Float, "center_x", TRANSLATE_NOOP("USB", "Center X"),
+				TRANSLATE_NOOP("USB", "Sets the horizontal center position of the simulated screen."), "320", "0",
+				"1024", "1", "%.0fpx", nullptr, nullptr, 1.0f},
+			{SettingInfo::Type::Float, "center_y", TRANSLATE_NOOP("USB", "Center Y"),
+				TRANSLATE_NOOP("USB", "Sets the vertical center position of the simulated screen."), "120", "0", "1024",
+				"1", "%.0fpx", nullptr, nullptr, 1.0f},
+			{SettingInfo::Type::Integer, "screen_width", TRANSLATE_NOOP("USB", "Screen Width"),
+				TRANSLATE_NOOP("USB", "Sets the width of the simulated screen."), "640", "1", "1024", "1", "%dpx",
+				nullptr, nullptr, 1.0f},
+			{SettingInfo::Type::Integer, "screen_height", TRANSLATE_NOOP("USB", "Screen Height"),
+				TRANSLATE_NOOP("USB", "Sets the height of the simulated screen."), "240", "1", "1024", "1", "%dpx",
+				nullptr, nullptr, 1.0f},
 		};
 		return info;
 	}

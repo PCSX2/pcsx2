@@ -292,7 +292,9 @@ public:
 				if (!selected_device)
 				{
 					Host::AddIconOSDMessage("CubebDeviceNotFound", ICON_FA_VOLUME_MUTE,
-						fmt::format("Requested audio output device '{}' not found, using default.", selected_device_name),
+						fmt::format(
+							TRANSLATE_SV("SPU2", "Requested audio output device '{}' not found, using default."),
+							selected_device_name),
 						Host::OSD_WARNING_DURATION);
 				}
 			}

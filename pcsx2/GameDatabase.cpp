@@ -868,11 +868,14 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 				if (value >= 0 && value <= static_cast<int>(AccBlendLevel::Maximum) && static_cast<int>(EmuConfig.GS.AccurateBlendingUnit) < value)
 				{
 					Host::AddKeyedOSDMessage("HWBlendingWarning",
-						fmt::format(ICON_FA_PAINT_BRUSH " Current Blending Accuracy is {}.\n"
-														"Recommended Blending Accuracy for this game is {}.\n"
-														"You can adjust the blending level in Game Properties to improve\n"
-														"graphical quality, but this will increase system requirements.",
-							Pcsx2Config::GSOptions::BlendingLevelNames[static_cast<int>(EmuConfig.GS.AccurateBlendingUnit)],
+						fmt::format(TRANSLATE_SV("GameDatabase",
+										"{0} Current Blending Accuracy is {1}.\n"
+										"Recommended Blending Accuracy for this game is {2}.\n"
+										"You can adjust the blending level in Game Properties to improve\n"
+										"graphical quality, but this will increase system requirements."),
+							ICON_FA_PAINT_BRUSH,
+							Pcsx2Config::GSOptions::BlendingLevelNames[static_cast<int>(
+								EmuConfig.GS.AccurateBlendingUnit)],
 							Pcsx2Config::GSOptions::BlendingLevelNames[value]),
 						Host::OSD_WARNING_DURATION);
 				}
@@ -905,8 +908,9 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 	if (!disabled_fixes.empty())
 	{
 		Host::AddKeyedOSDMessage("HWFixesWarning",
-			fmt::format(ICON_FA_MAGIC " Manual GS hardware renderer fixes are enabled, automatic fixes were not applied:\n{}",
-				disabled_fixes),
+			fmt::format(ICON_FA_MAGIC " {}\n{}",
+				TRANSLATE_SV("Manual GS hardware renderer fixes are enabled, automatic fixes were not applied:",
+					disabled_fixes)),
 			Host::OSD_ERROR_DURATION);
 	}
 	else

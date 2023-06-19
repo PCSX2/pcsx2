@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,6 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "Host.h"
 #include "USB/usb-pad/usb-pad.h"
 #include "USB/qemu-usb/desc.h"
 #include "USB/usb-mic/usb-mic-singstar.h"
@@ -344,7 +345,7 @@ namespace usb_pad
 
 	const char* SeamicDevice::Name() const
 	{
-		return "Sega Seamic";
+		return TRANSLATE_NOOP("USB", "Sega Seamic");
 	}
 
 	const char* SeamicDevice::TypeName() const
@@ -361,24 +362,24 @@ namespace usb_pad
 	{
 		// TODO: This is likely wrong. Someone who cares can fix it.
 		static constexpr const InputBindingInfo bindings[] = {
-			{"StickLeft", "Stick Left", InputBindingInfo::Type::HalfAxis, CID_STEERING_L, GenericInputBinding::LeftStickLeft},
-			{"StickRight", "Stick Right", InputBindingInfo::Type::HalfAxis, CID_STEERING_R, GenericInputBinding::LeftStickRight},
-			{"StickUp", "Stick Up", InputBindingInfo::Type::HalfAxis, CID_THROTTLE, GenericInputBinding::LeftStickUp},
-			{"StickDown", "Stick Down", InputBindingInfo::Type::HalfAxis, CID_BRAKE, GenericInputBinding::LeftStickDown},
-			{"A", "A", InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Cross},
-			{"B", "B", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Circle},
-			{"C", "C", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::R2},
-			{"X", "X", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Square},
-			{"Y", "Y", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::Triangle},
-			{"Z", "Z", InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::L2},
-			{"L", "L", InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::L1},
-			{"R", "R", InputBindingInfo::Type::Button, CID_BUTTON7, GenericInputBinding::R1},
-			{"Select", "Select", InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Select},
-			{"Start", "Start", InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Start},
-			{"DPadUp", "D-Pad Up", InputBindingInfo::Type::Button, CID_DPAD_UP, GenericInputBinding::DPadUp},
-			{"DPadDown", "D-Pad Down", InputBindingInfo::Type::Button, CID_DPAD_DOWN, GenericInputBinding::DPadDown},
-			{"DPadLeft", "D-Pad Left", InputBindingInfo::Type::Button, CID_DPAD_LEFT, GenericInputBinding::DPadLeft},
-			{"DPadRight", "D-Pad Right", InputBindingInfo::Type::Button, CID_DPAD_RIGHT, GenericInputBinding::DPadRight},
+			{"StickLeft", TRANSLATE_NOOP("USB", "Stick Left"), InputBindingInfo::Type::HalfAxis, CID_STEERING_L, GenericInputBinding::LeftStickLeft},
+			{"StickRight", TRANSLATE_NOOP("USB", "Stick Right"), InputBindingInfo::Type::HalfAxis, CID_STEERING_R, GenericInputBinding::LeftStickRight},
+			{"StickUp", TRANSLATE_NOOP("USB", "Stick Up"), InputBindingInfo::Type::HalfAxis, CID_THROTTLE, GenericInputBinding::LeftStickUp},
+			{"StickDown", TRANSLATE_NOOP("USB", "Stick Down"), InputBindingInfo::Type::HalfAxis, CID_BRAKE, GenericInputBinding::LeftStickDown},
+			{"A", TRANSLATE_NOOP("USB", "A"), InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Cross},
+			{"B", TRANSLATE_NOOP("USB", "B"), InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Circle},
+			{"C", TRANSLATE_NOOP("USB", "C"), InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::R2},
+			{"X", TRANSLATE_NOOP("USB", "X"), InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Square},
+			{"Y", TRANSLATE_NOOP("USB", "Y"), InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::Triangle},
+			{"Z", TRANSLATE_NOOP("USB", "Z"), InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::L2},
+			{"L", TRANSLATE_NOOP("USB", "L"), InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::L1},
+			{"R", TRANSLATE_NOOP("USB", "R"), InputBindingInfo::Type::Button, CID_BUTTON7, GenericInputBinding::R1},
+			{"Select", TRANSLATE_NOOP("USB", "Select"), InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Select},
+			{"Start", TRANSLATE_NOOP("USB", "Start"), InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Start},
+			{"DPadUp", TRANSLATE_NOOP("USB", "D-Pad Up"), InputBindingInfo::Type::Button, CID_DPAD_UP, GenericInputBinding::DPadUp},
+			{"DPadDown", TRANSLATE_NOOP("USB", "D-Pad Down"), InputBindingInfo::Type::Button, CID_DPAD_DOWN, GenericInputBinding::DPadDown},
+			{"DPadLeft", TRANSLATE_NOOP("USB", "D-Pad Left"), InputBindingInfo::Type::Button, CID_DPAD_LEFT, GenericInputBinding::DPadLeft},
+			{"DPadRight", TRANSLATE_NOOP("USB", "D-Pad Right"), InputBindingInfo::Type::Button, CID_DPAD_RIGHT, GenericInputBinding::DPadRight},
 		};
 
 		return bindings;
@@ -387,9 +388,11 @@ namespace usb_pad
 	gsl::span<const SettingInfo> SeamicDevice::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo info[] = {
-			{SettingInfo::Type::StringList, "input_device_name", "Input Device", "Selects the device to read audio from.", "", nullptr,
-				nullptr, nullptr, nullptr, nullptr, &AudioDevice::GetInputDeviceList},
-			{SettingInfo::Type::Integer, "input_latency", "Input Latency", "Specifies the latency to the host input device.",
+			{SettingInfo::Type::StringList, "input_device_name", TRANSLATE_NOOP("USB", "Input Device"),
+				TRANSLATE_NOOP("USB", "Selects the device to read audio from."), "", nullptr, nullptr, nullptr, nullptr,
+				nullptr, &AudioDevice::GetInputDeviceList},
+			{SettingInfo::Type::Integer, "input_latency", TRANSLATE_NOOP("USB", "Input Latency"),
+				TRANSLATE_NOOP("USB", "Specifies the latency to the host input device."),
 				AudioDevice::DEFAULT_LATENCY_STR, "1", "1000", "1", "%dms", nullptr, nullptr, 1.0f},
 		};
 		return info;

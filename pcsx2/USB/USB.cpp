@@ -550,7 +550,7 @@ const char* USB::DeviceTypeIndexToName(s32 device)
 {
 	RegisterDevice& rd = RegisterDevice::instance();
 	const DeviceProxy* proxy = (device != DEVTYPE_NONE) ? rd.Device(device) : nullptr;
-	return proxy ? proxy->TypeName() : "None";
+	return proxy ? proxy->TypeName() : TRANSLATE("USB", "None");
 }
 
 std::vector<std::pair<const char*, const char*>> USB::GetDeviceTypes()
@@ -558,7 +558,7 @@ std::vector<std::pair<const char*, const char*>> USB::GetDeviceTypes()
 	RegisterDevice& rd = RegisterDevice::instance();
 	std::vector<std::pair<const char*, const char*>> ret;
 	ret.reserve(rd.Map().size() + 1);
-	ret.emplace_back("None", "Not Connected");
+	ret.emplace_back("None", TRANSLATE("USB", "Not Connected"));
 	for (const auto& it : rd.Map())
 		ret.emplace_back(it.second->TypeName(), it.second->Name());
 	return ret;
@@ -567,7 +567,7 @@ std::vector<std::pair<const char*, const char*>> USB::GetDeviceTypes()
 const char* USB::GetDeviceName(const std::string_view& device)
 {
 	const DeviceProxy* dev = RegisterDevice::instance().Device(device);
-	return dev ? dev->Name() : "Not Connected";
+	return dev ? dev->Name() : TRANSLATE("USB", "Not Connected");
 }
 
 const char* USB::GetDeviceSubtypeName(const std::string_view& device, u32 subtype)

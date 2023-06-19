@@ -297,7 +297,8 @@ bool Patch::OpenPatchesZip()
 		if (!warning_shown)
 		{
 			Host::AddIconOSDMessage("PatchesZipOpenWarning", ICON_FA_MICROCHIP,
-				fmt::format("Failed to open {}. Built-in game patches are not available.", PATCHES_ZIP_NAME),
+				fmt::format(TRANSLATE_SV("Patch", "Failed to open {}. Built-in game patches are not available."),
+					PATCHES_ZIP_NAME),
 				Host::OSD_ERROR_DURATION);
 			warning_shown = true;
 		}
@@ -519,7 +520,8 @@ u32 Patch::EnablePatches(const PatchList& patches, const EnablePatchList& enable
 	return count;
 }
 
-void Patch::ReloadPatches(const std::string& serial, u32 crc, bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed)
+void Patch::ReloadPatches(const std::string& serial, u32 crc, bool reload_files, bool reload_enabled_list, bool verbose,
+	bool verbose_if_changed)
 {
 	reload_files |= (s_patches_crc != crc);
 	s_patches_crc = crc;
@@ -578,16 +580,22 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 	{
 		gp_count = EnablePatches(s_gamedb_patches, EnablePatchList());
 		if (gp_count > 0)
-			fmt::format_to(std::back_inserter(message), "{} GameDB patches", gp_count);
+			fmt::format_to(std::back_inserter(message), TRANSLATE_SV("Patch", "{} GameDB patches"), gp_count);
 	}
 
 	const u32 p_count = EnablePatches(s_game_patches, s_enabled_patches);
 	if (p_count > 0)
-		fmt::format_to(std::back_inserter(message), "{}{} game patches", message.empty() ? "" : ", ", p_count);
+	{
+		fmt::format_to(std::back_inserter(message), TRANSLATE_SV("Patch", "{}{} game patches"),
+			message.empty() ? "" : ", ", p_count);
+	}
 
 	const u32 c_count = EmuConfig.EnableCheats ? EnablePatches(s_cheat_patches, s_enabled_cheats) : 0;
 	if (c_count > 0)
-		fmt::format_to(std::back_inserter(message), "{}{} cheat patches", message.empty() ? "" : ", ", c_count);
+	{
+		fmt::format_to(std::back_inserter(message), TRANSLATE_SV("Patch", "{}{} cheat patches"),
+			message.empty() ? "" : ", ", c_count);
+	}
 
 	// Display message on first boot when we load patches.
 	// Except when it's just GameDB.
@@ -596,13 +604,14 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 	{
 		if (!message.empty())
 		{
-			fmt::format_to(std::back_inserter(message), " are active.");
-			Host::AddIconOSDMessage("LoadPatches", ICON_FA_FILE_CODE, std::move(message), Host::OSD_INFO_DURATION);
+			Host::AddIconOSDMessage("LoadPatches", ICON_FA_FILE_CODE,
+				fmt::format(TRANSLATE_SV("{} are active.", message)), Host::OSD_INFO_DURATION);
 		}
 		else
 		{
 			Host::AddIconOSDMessage("LoadPatches", ICON_FA_FILE_CODE,
-				"No cheats or patches (widescreen, compatibility or others) are found / enabled.",
+				TRANSLATE_STR(
+					"Patch", "No cheats or patches (widescreen, compatibility or others) are found / enabled."),
 				Host::OSD_INFO_DURATION);
 		}
 	}

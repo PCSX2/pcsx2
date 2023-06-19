@@ -25,6 +25,7 @@
 // Most stuff is based on Qemu 1.7 USB soundcard passthrough code.
 
 #include "PrecompiledHeader.h"
+#include "Host.h"
 #include "USB/qemu-usb/qusb.h"
 #include "USB/qemu-usb/desc.h"
 #include "USB/qemu-usb/USBinternal.h"
@@ -957,7 +958,7 @@ namespace usb_mic
 
 	const char* HeadsetDevice::Name() const
 	{
-		return "Logitech USB Headset";
+		return TRANSLATE_NOOP("USB", "Logitech USB Headset");
 	}
 
 	bool HeadsetDevice::Freeze(USBDevice* dev, StateWrapper& sw) const
@@ -996,14 +997,18 @@ namespace usb_mic
 	gsl::span<const SettingInfo> HeadsetDevice::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo info[] = {
-			{SettingInfo::Type::StringList, "input_device_name", "Input Device", "Selects the device to read audio from.", "", nullptr,
-				nullptr, nullptr, nullptr, nullptr, &AudioDevice::GetInputDeviceList},
-			{SettingInfo::Type::StringList, "output_device_name", "Output Device", "Selects the device to output audio to.", "", nullptr,
-				nullptr, nullptr, nullptr, nullptr, &AudioDevice::GetOutputDeviceList},
-			{SettingInfo::Type::Integer, "input_latency", "Input Latency", "Specifies the latency to the host input device.", AudioDevice::DEFAULT_LATENCY_STR, "1",
-				"1000", "1", "%dms", nullptr, nullptr, 1.0f},
-			{SettingInfo::Type::Integer, "output_latency", "Output Latency", "Specifies the latency to the host output device.", AudioDevice::DEFAULT_LATENCY_STR, "1",
-				"1000", "1", "%dms", nullptr, nullptr, 1.0f},
+			{SettingInfo::Type::StringList, "input_device_name", TRANSLATE_NOOP("USB", "Input Device"),
+				TRANSLATE_NOOP("USB", "Selects the device to read audio from."), "", nullptr, nullptr, nullptr, nullptr,
+				nullptr, &AudioDevice::GetInputDeviceList},
+			{SettingInfo::Type::StringList, "output_device_name", TRANSLATE_NOOP("USB", "Output Device"),
+				TRANSLATE_NOOP("USB", "Selects the device to output audio to."), "", nullptr, nullptr, nullptr, nullptr,
+				nullptr, &AudioDevice::GetOutputDeviceList},
+			{SettingInfo::Type::Integer, "input_latency", TRANSLATE_NOOP("USB", "Input Latency"),
+				TRANSLATE_NOOP("USB", "Specifies the latency to the host input device."),
+				AudioDevice::DEFAULT_LATENCY_STR, "1", "1000", "1", "%dms", nullptr, nullptr, 1.0f},
+			{SettingInfo::Type::Integer, "output_latency", TRANSLATE_NOOP("USB", "Output Latency"),
+				TRANSLATE_NOOP("USB", "Specifies the latency to the host output device."),
+				AudioDevice::DEFAULT_LATENCY_STR, "1", "1000", "1", "%dms", nullptr, nullptr, 1.0f},
 		};
 		return info;
 	}
