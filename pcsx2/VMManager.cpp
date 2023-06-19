@@ -1136,6 +1136,8 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		}
 	}
 
+	FileMcd_EmuOpen();
+
 	Console.WriteLn("Opening CDVD...");
 	if (!DoCDVDopen())
 	{
@@ -1248,8 +1250,6 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		return false;
 	}
 	ScopedGuard close_fw = []() { FWclose(); };
-
-	FileMcd_EmuOpen();
 
 	// Don't close when we return
 	close_fw.Cancel();
