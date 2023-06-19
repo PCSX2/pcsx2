@@ -1394,6 +1394,12 @@ void MainWindow::updateTheme()
 	m_game_list_widget->refreshImages();
 }
 
+void MainWindow::updateLanguage()
+{
+	QtHost::InstallTranslator();
+	recreate();
+}
+
 void MainWindow::onInputRecNewActionTriggered()
 {
 	const bool wasPaused = s_vm_paused;
@@ -2064,6 +2070,11 @@ SettingsDialog* MainWindow::getSettingsDialog()
 	{
 		m_settings_dialog = new SettingsDialog(this);
 		connect(m_settings_dialog->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::themeChanged, this, &MainWindow::updateTheme);
+		connect(m_settings_dialog->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::languageChanged, this, [this]() {
+			// reopen settings dialog after it applies
+			updateLanguage();
+			g_main_window->doSettings("Interface");
+		});
 	}
 
 	return m_settings_dialog;

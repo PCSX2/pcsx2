@@ -25,6 +25,9 @@
     <Filter Include="Debugger\Models">
       <UniqueIdentifier>{f4084ca0-d9d5-4584-b9d2-063db9f67de2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Translations">
+      <UniqueIdentifier>{ad04f939-64a0-4039-97aa-a38b8aa46855}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\pcsx2\windows\PCSX2.rc" />
@@ -328,6 +331,7 @@
     <ClCompile Include="$(IntDir)Settings\moc_GameCheatSettingsWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="Translations.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest">
@@ -618,5 +622,10 @@
     <None Include="Settings\USBBindingWidget_DrivingForce.ui">
       <Filter>Settings</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <QtTs Include="Translations\pcsx2-qt_en.ts">
+      <Filter>Translations</Filter>
+    </QtTs>
   </ItemGroup>
 </Project>

@@ -216,6 +216,9 @@ namespace QtHost
 	/// Default theme name for the platform.
 	const char* GetDefaultThemeName();
 
+	/// Default language for the platform.
+	const char* GetDefaultLanguage();
+
 	/// Sets application theme according to settings.
 	void UpdateApplicationTheme();
 
@@ -233,6 +236,12 @@ namespace QtHost
 
 	/// Executes a function on the UI thread.
 	void RunOnUIThread(const std::function<void()>& func, bool block = false);
+
+	/// Returns a list of supported languages and codes (suffixes for translation files).
+	std::vector<std::pair<QString, QString>> GetAvailableLanguageList();
+
+	/// Call when the language changes.
+	void InstallTranslator();
 
 	/// Returns the application name and version, optionally including debug/devel config indicator.
 	QString GetAppNameAndVersion();

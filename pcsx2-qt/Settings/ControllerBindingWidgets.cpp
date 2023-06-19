@@ -116,8 +116,8 @@ void ControllerBindingWidget::onTypeChanged()
 	if (has_settings)
 	{
 		const gsl::span<const SettingInfo> settings(cinfo->settings, cinfo->num_settings);
-		m_settings_widget =
-			new ControllerCustomSettingsWidget(settings, m_config_section, std::string(), cinfo->name, getDialog(), m_ui.stackedWidget);
+		m_settings_widget = new ControllerCustomSettingsWidget(
+			settings, m_config_section, std::string(), "Pad", getDialog(), m_ui.stackedWidget);
 		m_ui.stackedWidget->addWidget(m_settings_widget);
 	}
 
@@ -343,7 +343,7 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
 			continue;
 
 		QListWidgetItem* item = new QListWidgetItem();
-		item->setText(QString::fromUtf8(bi.display_name));
+		item->setText(qApp->translate("Pad", bi.display_name));
 		item->setCheckState((std::find(m_binds.begin(), m_binds.end(), &bi) != m_binds.end()) ? Qt::Checked : Qt::Unchecked);
 		m_ui.bindList->addItem(item);
 	}
@@ -374,7 +374,7 @@ QString ControllerMacroEditWidget::getSummary() const
 	{
 		if (!str.isEmpty())
 			str += static_cast<QChar>('/');
-		str += QString::fromUtf8(bi->name);
+		str += qApp->translate("Pad", bi->display_name);
 	}
 	return str.isEmpty() ? tr("Not Configured") : str;
 }
@@ -950,7 +950,7 @@ void USBDeviceWidget::populatePages()
 	if (!settings.empty())
 	{
 		m_settings_widget = new ControllerCustomSettingsWidget(
-			settings, m_config_section, m_device_type + "_", m_device_type.c_str(), m_dialog, m_ui.stackedWidget);
+			settings, m_config_section, m_device_type + "_", "USB", m_dialog, m_ui.stackedWidget);
 		m_ui.stackedWidget->addWidget(m_settings_widget);
 	}
 

@@ -167,20 +167,25 @@
     />
   </Target>
   
-  <!--Copies base translation files-->
+  <!--Copies base translation files, need to rename them from qtbase_ to qt_ -->
   <ItemGroup>
     <BaseTsFiles Include="$(QtTranslationsDir)\*.qm" />
   </ItemGroup>
   <Target Name="QtCopyBaseTranslations"
     AfterTargets="Build"
     Inputs="@(BaseTsFiles)"
-    Outputs="@(BaseTsFiles -> '$(QtTsOutDir)%(RecursiveDir)%(Filename)%(Extension)')">
+    Outputs="@(BaseTsFiles -> '$(QtTsOutDir)%(RecursiveDir)%(Filename.Replace('qtbase_', 'qt_'))%(Extension)')">
+	<!-- https://stackoverflow.com/a/15379344 -->
+	<ItemGroup>
+	  <TempItems Include="@(BaseTsFiles->'%(Filename)%(Extension)'->Replace('qtbase_', 'qt_'))">
+	    <OriginalPath>%(Identity)</OriginalPath>
+	    <SavedRecursiveDir>%(RecursiveDir)</SavedRecursiveDir>
+	  </TempItems>
+	</ItemGroup>
     <Message Text="Copying base translation files" Importance="High" />
-    <Copy
-      SourceFiles="@(BaseTsFiles)"
-      DestinationFolder="$(QtTsOutDir)"
-      SkipUnchangedFiles="true"
-    />
+	<Copy SourceFiles="@(TempItems->'%(OriginalPath)')"
+		  DestinationFiles="@(TempItems->'$(QtTsOutDir)%(SavedRecursiveDir)%(Identity)')"
+	      SkipUnchangedFiles="true" />
   </Target>
 
   <!--Compiles all translation files-->
