@@ -5572,7 +5572,6 @@ void GSRendererHW::ReplaceVerticesWithSprite(const GSVector4i& unscaled_rect, co
 	}
 	else
 	{
-		const float th = static_cast<float>(1 << m_cached_ctx.TEX0.TH);
 		const GSVector4 st = GSVector4(unscaled_uv_rect) / GSVector4(GSVector4i(unscaled_size).xyxy());
 		GSVector4::storel(&v[0].ST.S, st);
 		GSVector4::storeh(&v[1].ST.S, st);
