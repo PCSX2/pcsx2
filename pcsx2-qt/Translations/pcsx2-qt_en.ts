@@ -3796,6 +3796,11 @@ You can adjust the blending level in Game Properties to improve
 graphical quality, but this will increase system requirements.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="912"/>
+        <source>Manual GS hardware renderer fixes are enabled, automatic fixes were not applied:</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>GameFixSettingsWidget</name>
@@ -9106,6 +9111,11 @@ This action cannot be reversed, and you will lose any saves on the card.</source
     <message>
         <location filename="../../pcsx2/Patch.cpp" line="596"/>
         <source>{}{} cheat patches</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Patch.cpp" line="608"/>
+        <source>{} are active.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

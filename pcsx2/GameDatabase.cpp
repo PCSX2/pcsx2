@@ -909,8 +909,8 @@ u32 GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions& 
 	{
 		Host::AddKeyedOSDMessage("HWFixesWarning",
 			fmt::format(ICON_FA_MAGIC " {}\n{}",
-				TRANSLATE_SV("Manual GS hardware renderer fixes are enabled, automatic fixes were not applied:",
-					disabled_fixes)),
+				TRANSLATE_SV("GameDatabase", "Manual GS hardware renderer fixes are enabled, automatic fixes were not applied:"),
+					disabled_fixes),
 			Host::OSD_ERROR_DURATION);
 	}
 	else
