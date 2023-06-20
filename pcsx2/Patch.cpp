@@ -605,7 +605,7 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 		if (!message.empty())
 		{
 			Host::AddIconOSDMessage("LoadPatches", ICON_FA_FILE_CODE,
-				fmt::format(TRANSLATE_SV("{} are active.", message)), Host::OSD_INFO_DURATION);
+				fmt::format(TRANSLATE_SV("Patch", "{} are active."), message), Host::OSD_INFO_DURATION);
 		}
 		else
 		{
