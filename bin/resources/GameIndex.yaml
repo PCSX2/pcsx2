@@ -4984,6 +4984,8 @@ SCES-55571:
 SCES-55573:
   name: "MotorStorm - Arctic Edge"
   region: "PAL-M14"
+  clampModes:
+    vu1ClampMode: 3 # Fixes bad polys in menu.
 SCES-55591:
   name: "Street Cricket Champions"
   region: "PAL-IN"
@@ -9330,9 +9332,11 @@ SCUS-97653:
   region: "NTSC-U"
   compat: 5
 SCUS-97654:
-  name: "MotorStorm Arctic Edge"
+  name: "MotorStorm - Arctic Edge"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vu1ClampMode: 3 # Fixes bad polys in menu.
 SCUS-97657:
   name: "MLB 11 - The Show"
   region: "NTSC-U"
@@ -23757,8 +23761,10 @@ SLES-55572:
   gameFixes:
     - EETimingHack # Broken textures.
 SLES-55573:
-  name: "MotorStorm Arctic Edge"
+  name: "MotorStorm - Arctic Edge"
   region: "PAL-M14"
+  clampModes:
+    vu1ClampMode: 3 # Fixes bad polys in menu.
 SLES-55574:
   name: "Lord of the Rings, The - Aragorn's Quest"
   region: "PAL-M6"
