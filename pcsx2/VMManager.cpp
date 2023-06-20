@@ -1109,11 +1109,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 			return false;
 	}
 
-	ScopedGuard close_cdvd_files = [] {
-		CDVDsys_ClearFiles();
-		if (GSDumpReplayer::IsReplayingDump())
-			GSDumpReplayer::Shutdown();
-	};
+	ScopedGuard close_cdvd_files(&CDVDsys_ClearFiles);
 
 	// Playing GS dumps don't need a BIOS.
 	if (!GSDumpReplayer::IsReplayingDump())
@@ -1136,15 +1132,21 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		}
 	}
 
-	FileMcd_EmuOpen();
-
 	Console.WriteLn("Opening CDVD...");
 	if (!DoCDVDopen())
 	{
 		Host::ReportErrorAsync("Startup Error", "Failed to initialize CDVD.");
-		CDVDsys_ClearFiles();
 		return false;
 	}
+	ScopedGuard close_cdvd(&DoCDVDclose);
+
+	// Must be before updating serial because of folder memcards.
+	if (!GSDumpReplayer::IsReplayingDump())
+	{
+		Console.WriteLn("Opening memory cards...");
+		FileMcd_EmuOpen();
+	}
+	ScopedGuard close_memcards(&FileMcd_EmuClose);
 
 	// Figure out which game we're running! This also loads game settings.
 	UpdateDiscDetails(true);
@@ -1161,7 +1163,6 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		{
 			Host::ReportErrorAsync("Error", fmt::format("Requested boot ELF '{}' does not exist.", s_elf_override));
 			DoCDVDclose();
-			CDVDsys_ClearFiles();
 			return false;
 		}
 
@@ -1179,16 +1180,10 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	if (!state_to_load.empty() && Achievements::ChallengeModeActive() &&
 		!Achievements::ConfirmChallengeModeDisable("Resuming state"))
 	{
-		DoCDVDclose();
-		CDVDsys_ClearFiles();
 		return false;
 	}
 #endif
 
-	ScopedGuard close_cdvd = [] {
-		DoCDVDclose();
-		CDVDsys_ClearFiles();
-	};
 	EmuConfig.LimiterMode = GetInitialLimiterMode();
 
 	Console.WriteLn("Opening GS...");
@@ -1258,6 +1253,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	close_pad.Cancel();
 	close_spu2.Cancel();
 	close_gs.Cancel();
+	close_memcards.Cancel();
 	close_cdvd.Cancel();
 	close_cdvd_files.Cancel();
 	close_state.Cancel();
