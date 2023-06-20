@@ -463,7 +463,6 @@ void VMManager::LoadSettings()
 	InputManager::ReloadSources(*si, lock);
 	InputManager::ReloadBindings(*si, *Host::GetSettingsInterfaceForBindings());
 	LogSink::UpdateLogging(*si);
-	Patch::ApplyPatchSettingOverrides();
 
 	if (HasValidOrInitializingVM())
 	{
@@ -476,6 +475,7 @@ void VMManager::LoadCoreSettings(SettingsInterface* si)
 {
 	SettingsLoadWrapper slw(*si);
 	EmuConfig.LoadSave(slw);
+	Patch::ApplyPatchSettingOverrides();
 
 	// Achievements hardcore mode disallows setting some configuration options.
 	EnforceAchievementsChallengeModeSettings();
