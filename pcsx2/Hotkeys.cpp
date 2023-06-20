@@ -41,7 +41,8 @@ void VMManager::Internal::ResetVMHotkeyState()
 static void HotkeyAdjustTargetSpeed(double delta)
 {
 	const double min_speed = Achievements::ChallengeModeActive() ? 1.0 : 0.1;
-	EmuConfig.Framerate.NominalScalar = std::max(min_speed, EmuConfig.GS.LimitScalar + delta);
+	EmuConfig.Framerate.NominalScalar = std::max(min_speed, EmuConfig.Framerate.NominalScalar + delta);
+	EmuConfig.LimiterMode = LimiterModeType::Unlimited; // force update
 	VMManager::SetLimiterMode(LimiterModeType::Nominal);
 	Host::AddIconOSDMessage("SpeedChanged", ICON_FA_CLOCK,
 		fmt::format("Target speed set to {:.0f}%.", std::round(EmuConfig.Framerate.NominalScalar * 100.0)), Host::OSD_QUICK_DURATION);
