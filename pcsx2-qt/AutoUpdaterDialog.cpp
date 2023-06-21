@@ -804,7 +804,8 @@ bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data, QProgressDi
 		}
 		QDir(QString::fromStdString(*trashed_path)).removeRecursively();
 	}
-	if (!CocoaTools::LaunchApplication(open_path.toStdString()))
+	// For some reason if I use QProcess the shell gets killed immediately with SIGKILL, but NSTask is fine...
+	if (!CocoaTools::DelayedLaunch(open_path.toStdString()))
 	{
 		reportError("Failed to start new application");
 		return false;
