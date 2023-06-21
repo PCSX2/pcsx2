@@ -24387,6 +24387,8 @@ SLKA-15032:
 SLKA-15033:
   name: "Princess Maker 2"
   region: "NTSC-K"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes full screen C32->C16 frame invalidation.
 SLKA-15043:
   name: "Super Puzzle Bobble Collection Vol 1"
   region: "NTSC-K"
@@ -28599,6 +28601,8 @@ SLPM-62700:
 SLPM-62701:
   name: "Princess Maker 2 [Best Hit Selection]"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes full screen C32->C16 frame invalidation.
 SLPM-62702:
   name: "Momotaro Densetsu 15"
   region: "NTSC-J"
@@ -37936,6 +37940,8 @@ SLPS-20392:
 SLPS-20393:
   name: "Princess Maker 2"
   region: "NTSC-J"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes full screen C32->C16 frame invalidation.
 SLPS-20394:
   name: "Suki na Mono wa Sukida Rashouganai + White Flower + Sukisyo!"
   region: "NTSC-J"
