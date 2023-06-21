@@ -26,6 +26,7 @@
 #include <iomanip> // Dump Verticles
 
 int GSState::s_n = 0;
+int GSState::s_last_transfer_draw_n = 0;
 int GSState::s_transfer_n = 0;
 
 static __fi bool IsAutoFlushEnabled()
@@ -1780,6 +1781,7 @@ void GSState::Write(const u8* mem, int len)
 		r.right = r.left + m_env.TRXREG.RRW;
 		r.bottom = r.top + m_env.TRXREG.RRH;
 
+		s_last_transfer_draw_n = s_n;
 		// Store the transfer for preloading new RT's.
 		if ((m_draw_transfers.size() > 0 && blit.DBP == m_draw_transfers.back().blit.DBP))
 		{
@@ -1982,6 +1984,8 @@ void GSState::Move()
 	r.top = m_env.TRXPOS.DSAY;
 	r.right = r.left + m_env.TRXREG.RRW;
 	r.bottom = r.top + m_env.TRXREG.RRH;
+
+	s_last_transfer_draw_n = s_n;
 	// Store the transfer for preloading new RT's.
 	if ((m_draw_transfers.size() > 0 && m_env.BITBLTBUF.DBP == m_draw_transfers.back().blit.DBP))
 	{
