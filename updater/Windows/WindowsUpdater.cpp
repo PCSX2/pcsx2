@@ -445,7 +445,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	if (argc != 5)
 	{
 		progress.ModalError("Expected 4 arguments: parent process id, output directory, update zip, program to "
-							"launch.\n\nThis program is not intended to be run manually, please use the Qt frontend and "
+							"launch.\n\nThis program is not intended to be run manually, please use the main PCSX2 application and "
 							"click Help->Check for Updates.");
 		return 1;
 	}
