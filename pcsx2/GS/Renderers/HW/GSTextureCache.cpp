@@ -903,7 +903,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					}
 					// If not all channels are clean/dirty or only part of the rect is dirty, we need to update the target.
 					if (((channels & channel_mask) != channel_mask || partial))
-						t->Update(false);
+						t->Update();
 				}
 				else
 				{
@@ -1028,7 +1028,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 								{
 									// Only update if the rect isn't empty
 									if (!dirty_rect.rempty())
-										t->Update(false);
+										t->Update();
 								}
 								else
 									continue;
@@ -1334,10 +1334,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				dst->m_TEX0.TBP0, dst->m_TEX0.TBW, psm_str(dst->m_TEX0.PSM));
 		}
 
-		// Update is done by caller after TEX0 update for non-frame.
-		if (is_frame)
-			dst->Update(old_found == dst);
-
 		if (dst->m_scale != scale)
 		{
 			calcRescale(dst);
@@ -1421,7 +1417,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			}
 
 			// Now pull in any dirty areas in the new format.
-			dst->Update(true);
+			dst->Update();
 		}
 	}
 
@@ -1709,7 +1705,7 @@ void GSTextureCache::InvalidateVideoMemType(int type, u32 bp)
 
 // Goal: invalidate data sent to the GPU when the source (GS memory) is modified
 // Called each time you want to write to the GS memory
-void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& rect, bool eewrite, bool target)
+void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& rect, bool target)
 {
 	const u32 bp = off.bp();
 	const u32 bw = off.bw();
@@ -1876,9 +1872,6 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 						continue;
 					}
 
-					if (eewrite)
-						t->m_age = 0;
-
 					i++;
 					continue;
 				}
@@ -1949,9 +1942,6 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 										continue;
 									}
 
-									if (eewrite)
-										t->m_age = 0;
-
 									can_erase = t->m_dirty.GetTotalRect(t->m_TEX0, GSVector2i(t->m_valid.z, t->m_valid.w)).eq(t->m_valid);
 								}
 								else
@@ -1981,9 +1971,6 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 										delete t;
 										continue;
 									}
-
-									if (eewrite)
-										t->m_age = 0;
 
 									can_erase = t->m_dirty.GetTotalRect(t->m_TEX0, GSVector2i(t->m_valid.z, t->m_valid.w)).eq(t->m_valid);
 								}
@@ -2044,8 +2031,6 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					}
 					else
 					{
-						if (eewrite)
-							t->m_age = 0;
 						++i;
 					}
 					continue;
@@ -2111,9 +2096,6 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 								delete t;
 							}
 
-							if (t && eewrite)
-								t->m_age = 0;
-
 							continue;
 						}
 					}
@@ -2149,9 +2131,6 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 								t->m_TEX0.TBP0);
 							delete t;
 						}
-
-						if (t && eewrite)
-							t->m_age = 0;
 
 						continue;
 					}
@@ -2229,9 +2208,6 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 								delete t;
 								continue;
 							}
-
-							if (eewrite)
-								t->m_age = 0;
 						}
 						else
 						{
@@ -2243,9 +2219,6 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 							new_rect.w = (r.w + (page_size.y - 1)) & ~(page_size.y - 1);
 
 							DirtyRectByPage(bp & ~((1 << 5) - 1), psm, bw, t, new_rect);
-
-							if (eewrite)
-								t->m_age = 0;
 						}
 					}
 					else
@@ -2283,9 +2256,6 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 								delete t;
 								continue;
 							}
-
-							if (eewrite)
-								t->m_age = 0;
 						}
 					}
 				}
@@ -2420,7 +2390,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				{
 					// The draw rect and read rect overlap somewhat, we should update the target before downloading it.
 					if (t->m_TEX0.TBP0 == bp && !dirty_rect.rintersect(targetr).rempty())
-						t->Update(false);
+						t->Update();
 
 					Read(t, draw_rect);
 
@@ -2569,7 +2539,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 
 				// The draw rect and read rect overlap somewhat, we should update the target before downloading it.
 				if (exact_bp && !dirty_rect.rintersect(targetr).rempty())
-					t->Update(false);
+					t->Update();
 
 				Read(t, targetr);
 
@@ -2674,7 +2644,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 
 	// The main point of HW moves is so GPU data can get used as sources. If we don't flush all writes,
 	// we're not going to be able to use it as a source.
-	dst->Update(true);
+	dst->Update();
 
 	// Expand the target when we used a more conservative size.
 	const int required_dh = scaled_dy + scaled_h;
@@ -2759,7 +2729,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 
 	dst->UpdateValidity(GSVector4i(dx, dy, dx + w, dy + h));
 	// Invalidate any sources that overlap with the target (since they're now stale).
-	InvalidateVideoMem(g_gs_renderer->m_mem.GetOffset(DBP, DBW, DPSM), GSVector4i(dx, dy, dx + w, dy + h), false, false);
+	InvalidateVideoMem(g_gs_renderer->m_mem.GetOffset(DBP, DBW, DPSM), GSVector4i(dx, dy, dx + w, dy + h), false);
 	return true;
 }
 
@@ -3282,7 +3252,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		src->m_valid_rect = dst->m_valid;
 		src->m_end_block = dst->m_end_block;
 
-		dst->Update(true);
+		dst->Update();
 
 		// Rounding up should never exceed the texture size (since it itself should be rounded up), but just in case.
 		GSVector2i new_size(
@@ -4653,10 +4623,9 @@ GSTextureCache::Target::~Target()
 #endif
 }
 
-void GSTextureCache::Target::Update(bool reset_age)
+void GSTextureCache::Target::Update()
 {
-	if (reset_age)
-		m_age = 0;
+	m_age = 0;
 
 	// FIXME: the union of the rects may also update wrong parts of the render target (but a lot faster :)
 	// GH: it must be doable
@@ -4779,7 +4748,7 @@ void GSTextureCache::Target::UpdateIfDirtyIntersects(const GSVector4i& rc)
 		// but, to keep things simple, just update the whole thing
 		GL_CACHE("TC: Update dirty rectangle [%d,%d,%d,%d] due to intersection with [%d,%d,%d,%d]",
 			dirty_rc.x, dirty_rc.y, dirty_rc.z, dirty_rc.w, rc.x, rc.y, rc.z, rc.w);
-		Update(true);
+		Update();
 		break;
 	}
 }
