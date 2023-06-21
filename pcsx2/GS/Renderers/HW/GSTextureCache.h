@@ -236,7 +236,7 @@ public:
 		void UpdateValidity(const GSVector4i& rect, bool can_resize = true);
 		void UpdateValidBits(u32 bits_written);
 
-		void Update(bool reset_age);
+		void Update();
 
 		/// Updates the target, if the dirty area intersects with the specified rectangle.
 		void UpdateIfDirtyIntersects(const GSVector4i& rc);
@@ -468,7 +468,7 @@ public:
 
 	void InvalidateVideoMemType(int type, u32 bp);
 	void InvalidateVideoMemSubTarget(GSTextureCache::Target* rt);
-	void InvalidateVideoMem(const GSOffset& off, const GSVector4i& r, bool eewrite = false, bool target = true);
+	void InvalidateVideoMem(const GSOffset& off, const GSVector4i& r, bool target = true);
 	void InvalidateLocalMem(const GSOffset& off, const GSVector4i& r, bool full_flush = false);
 
 	/// Removes any sources which point to the specified target.
