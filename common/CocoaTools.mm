@@ -175,27 +175,16 @@ std::optional<std::string> CocoaTools::MoveToTrash(std::string_view file)
 	return std::string([new_url fileSystemRepresentation]);
 }
 
-bool CocoaTools::LaunchApplication(std::string_view file)
+bool CocoaTools::DelayedLaunch(std::string_view file)
 {
-	NSURL* url = [NSURL fileURLWithPath:[[NSString alloc] initWithBytes:file.data() length:file.size() encoding:NSUTF8StringEncoding]];
-	if (@available(macOS 10.15, *))
-	{
-		// replacement api is async which isn't great for us
-		std::mutex done;
-		bool output;
-		done.lock();
-		NSWorkspaceOpenConfiguration* config = [NSWorkspaceOpenConfiguration new];
-		[config setCreatesNewApplicationInstance:YES];
-		[[NSWorkspace sharedWorkspace] openApplicationAtURL:url configuration:config completionHandler:[&](NSRunningApplication*_Nullable app, NSError*_Nullable error) {
-			output = app != nullptr;
-			done.unlock();
+	@autoreleasepool {
+		NSTask* task = [NSTask new];
+		[task setExecutableURL:[NSURL fileURLWithPath:@"/bin/sh"]];
+		[task setEnvironment:@{
+			@"WAITPID": [NSString stringWithFormat:@"%d", [[NSProcessInfo processInfo] processIdentifier]],
+			@"LAUNCHAPP": [[NSString alloc] initWithBytes:file.data() length:file.size() encoding:NSUTF8StringEncoding],
 		}];
-		done.lock();
-		done.unlock();
-		return output;
-	}
-	else
-	{
-		return [[NSWorkspace sharedWorkspace] launchApplicationAtURL:url options:NSWorkspaceLaunchNewInstance configuration:@{} error:nil];
+		[task setArguments:@[@"-c", @"while /bin/ps -p $WAITPID > /dev/null; do /bin/sleep 0.1; done; exec /usr/bin/open \"$LAUNCHAPP\";"]];
+		return [task launchAndReturnError:nil];
 	}
 }
