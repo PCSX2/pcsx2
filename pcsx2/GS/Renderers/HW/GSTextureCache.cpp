@@ -99,7 +99,7 @@ bool GSTextureCache::FullRectDirty(Target* target)
 	RGBAMask rgba;
 	rgba._u32 = GSUtil::GetChannelMask(target->m_TEX0.PSM);
 	// One complete dirty rect, not pieces (Add dirty rect function should be able to join these all together).
-	if (target->m_age > 2 && target->m_dirty.size() == 1 && rgba._u32 == target->m_dirty[0].rgba._u32 && target->m_valid.rintersect(target->m_dirty[0].r).eq(target->m_valid))
+	if (target->m_age != 0 && target->m_dirty.size() == 1 && rgba._u32 == target->m_dirty[0].rgba._u32 && target->m_valid.rintersect(target->m_dirty[0].r).eq(target->m_valid))
 	{
 		return true;
 	}

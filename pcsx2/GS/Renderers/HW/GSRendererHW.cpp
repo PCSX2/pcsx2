@@ -130,8 +130,25 @@ void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame)
 			}
 		}
 	}
-	else
-		m_draw_transfers.clear();
+	else if (!idle_frame)
+	{
+		// If it did draws very recently, we should keep the recent stuff in case it hasn't been preloaded/used yet.
+		// Rocky Legend does this with the main menu FMV's.
+		if (s_last_transfer_draw_n == s_n)
+		{
+			for (auto iter = m_draw_transfers.begin(); iter != m_draw_transfers.end();)
+			{
+				if ((s_n - iter->draw) > 5)
+					iter = m_draw_transfers.erase(iter);
+				else
+				{
+					iter++;
+				}
+			}
+		}
+		else
+			m_draw_transfers.clear();
+	}
 
 	if (GSConfig.LoadTextureReplacements)
 		GSTextureReplacements::ProcessAsyncLoadedTextures();
