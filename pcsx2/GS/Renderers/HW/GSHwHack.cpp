@@ -814,7 +814,7 @@ bool GSHwHack::OI_FFX(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCa
 	const u32 ZBP = RZBUF.Block();
 	const u32 TBP = RTEX0.TBP0;
 
-	if ((FBP == 0x00d00 || FBP == 0x00000) && ZBP == 0x02100 && RPRIM->TME && TBP == 0x01a00 && RTEX0.PSM == PSMCT16S)
+	if (ds && (FBP == 0x00d00 || FBP == 0x00000) && ZBP == 0x02100 && RPRIM->TME && TBP == 0x01a00 && RTEX0.PSM == PSMCT16S)
 	{
 		// random battle transition (z buffer written directly, clear it now)
 		GL_INS("OI_FFX ZB clear");
@@ -887,12 +887,15 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 	Frame.TBP0 = RFRAME.Block();
 	Frame.PSM = RFRAME.PSM;
 
-	if ((!RPRIM->TME) || (GSLocalMemory::m_psm[Texture.PSM].bpp != 16) || (GSLocalMemory::m_psm[Frame.PSM].bpp != 16) || (Texture.TBP0 == Frame.TBP0) || (Frame.TBW != 16 && Texture.TBW != 16))
+	if ((!rt) || (!RPRIM->TME) || (GSLocalMemory::m_psm[Texture.PSM].bpp != 16) || (GSLocalMemory::m_psm[Frame.PSM].bpp != 16) || (Texture.TBP0 == Frame.TBP0) || (Frame.TBW != 16 && Texture.TBW != 16))
 		return true;
 
 	GL_INS("OI_SonicUnleashed replace draw by a copy");
 
 	GSTextureCache::Target* src = g_texture_cache->LookupTarget(Texture, GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget);
+
+	if (!src)
+		return true;
 
 	const GSVector2i src_size(src->m_texture->GetSize());
 	GSVector2i rt_size(rt->GetSize());
