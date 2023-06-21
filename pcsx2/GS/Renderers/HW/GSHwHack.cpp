@@ -215,7 +215,7 @@ bool GSHwHack::GSC_Tekken5(GSRendererHW& r, int& skip)
 
 bool GSHwHack::GSC_BurnoutGames(GSRendererHW& r, int& skip)
 {
-	if (RFBW == 2 && std::abs(static_cast<int>(RFBP) - static_cast<int>(RZBP)) <= static_cast<int>(BLOCKS_PER_PAGE))
+	if (RFBW == 2 && std::abs(static_cast<int>(RFBP) - static_cast<int>(RZBP)) <= static_cast<int>(BLOCKS_PER_PAGE) && (!RTME || RTPSM != PSMT8))
 	{
 		skip = 2;
 		return true;
