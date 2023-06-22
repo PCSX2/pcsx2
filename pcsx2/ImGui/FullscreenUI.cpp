@@ -3421,7 +3421,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 	DrawToggleSetting(bsi, ICON_FA_SEARCH " Folder Memory Card Filter",
 		"Simulates a larger memory card by filtering saves only to the current game.", "EmuCore", "McdFolderAutoManage", true);
 	DrawToggleSetting(bsi, ICON_FA_MAGIC " Auto Eject When Loading",
-		"Automatically ejects memory cards when they differ after loading a state.", "EmuCore", "McdEnableEjection", true);
+		"Automatically ejects Memory Cards when they differ after loading a state.", "EmuCore", "McdEnableEjection", true);
 
 	for (u32 port = 0; port < NUM_MEMORY_CARD_PORTS; port++)
 	{
@@ -3514,7 +3514,7 @@ void FullscreenUI::DrawCreateMemoryCardWindow()
 	if (ImGui::BeginPopupModal("Create Memory Card", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
 	{
 		ImGui::TextWrapped("Enter the name of the memory card you wish to create, and choose a size. We recommend either using 8MB memory "
-						   "cards, or folder memory cards for best compatibility.");
+						   "cards, or folder Memory Cards for best compatibility.");
 		ImGui::NewLine();
 
 		static char memcard_name[256] = {};
@@ -3550,7 +3550,7 @@ void FullscreenUI::DrawCreateMemoryCardWindow()
 				const auto& [type_title, type, file_type] = memcard_types[memcard_type];
 				if (FileMcd_CreateNewCard(real_card_name, type, file_type))
 				{
-					ShowToast(std::string(), fmt::format("Memory card '{}' created.", real_card_name));
+					ShowToast(std::string(), fmt::format("Memory Card '{}' created.", real_card_name));
 
 					std::memset(memcard_name, 0, sizeof(memcard_name));
 					memcard_type = 0;

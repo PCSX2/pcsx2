@@ -237,7 +237,7 @@
        <item row="6" column="1">
         <widget class="QSpinBox" name="stretchY">
          <property name="suffix">
-          <string extracomment="Percentage sign that shows next to a value. You might want to add a space before if you language requires it.">%</string>
+          <string extracomment="Percentage sign that shows next to a value. You might want to add a space before if your language requires it.">%</string>
          </property>
          <property name="minimum">
           <number>1</number>
