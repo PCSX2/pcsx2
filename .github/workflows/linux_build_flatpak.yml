@@ -83,8 +83,14 @@ jobs:
           arch: x86_64
           build-bundle: true
           verbose: true
+          mirror-screenshots-url: https://dl.flathub.org/repo/screenshots
+          branch: stable
           cache: true
           restore-cache: true
           cache-key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} ${{ inputs.detail }} flatpak ${{ hashFiles('.github/workflows/scripts/linux/flatpak/**/*.json') }}
+
+      - name: Commit screenshots to OSTree
+        run: |
+          ostree commit --repo=repo --canonical-permissions --branch=screenshots/x86_64 .github/workflows/scripts/linux/flatpak/screenshots
 
       # TODO: Push to flathub
