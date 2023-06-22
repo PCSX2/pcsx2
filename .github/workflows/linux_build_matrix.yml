@@ -2,8 +2,8 @@ name: 🐧 Linux Builds
 
 on:
   push:
-    branches:
-      - '*'
+    branches-ignore:
+      - "l10n_master"
   pull_request:
     branches:
       - master

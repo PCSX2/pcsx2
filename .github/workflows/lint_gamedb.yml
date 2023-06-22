@@ -2,8 +2,8 @@ name: 📝 Validate GameDB
 
 on:
   push:
-    branches:
-      - master
+    branches-ignore:
+      - "l10n_master"
     paths:
       - '**/GameIndex.yaml'
   pull_request:
