@@ -2050,15 +2050,21 @@ void GSRendererHW::Draw()
 		const bool is_square = (t_size.y == t_size.x) && m_r.w >= 1023 && PrimitiveCoversWithoutGaps();
 		const bool is_clear = is_possible_mem_clear && is_square;
 		rt = g_texture_cache->LookupTarget(FRAME_TEX0, t_size, target_scale, GSTextureCache::RenderTarget, true,
-			fm, false, is_clear, force_preload, preload_uploads);
+			fm, false, force_preload, preload_uploads);
 
 		// Draw skipped because it was a clear and there was no target.
 		if (!rt)
 		{
-			GL_INS("Clear draw with no target, skipping.");
-			cleanup_cancelled_draw();
-			OI_GsMemClear();
-			return;
+			if (is_clear)
+			{
+				GL_INS("Clear draw with no target, skipping.");
+				cleanup_cancelled_draw();
+				OI_GsMemClear();
+				return;
+			}
+
+			rt = g_texture_cache->CreateTarget(FRAME_TEX0, t_size, target_scale, GSTextureCache::RenderTarget, true,
+				fm, false, force_preload, preload_uploads);
 		}
 	}
 
@@ -2072,7 +2078,12 @@ void GSRendererHW::Draw()
 		ZBUF_TEX0.PSM = m_cached_ctx.ZBUF.PSM;
 
 		ds = g_texture_cache->LookupTarget(ZBUF_TEX0, t_size, target_scale, GSTextureCache::DepthStencil,
-			m_cached_ctx.DepthWrite(), 0, false, false, force_preload);
+			m_cached_ctx.DepthWrite(), 0, false, force_preload);
+		if (!ds)
+		{
+			ds = g_texture_cache->CreateTarget(ZBUF_TEX0, t_size, target_scale, GSTextureCache::DepthStencil,
+				m_cached_ctx.DepthWrite(), 0, false, force_preload);
+		}
 	}
 
 	if (process_texture)

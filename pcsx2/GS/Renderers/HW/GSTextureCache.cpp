@@ -1199,7 +1199,7 @@ GSTextureCache::Target* GSTextureCache::FindTargetOverlap(u32 bp, u32 end_block,
 }
 
 GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type,
-	bool used, u32 fbmask, bool is_frame, bool is_clear, bool preload, bool preload_uploads)
+	bool used, u32 fbmask, bool is_frame, bool preload, bool preload_uploads)
 {
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 	const u32 bp = TEX0.TBP0;
@@ -1226,6 +1226,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 	auto& list = m_dst[type];
 	Target* old_found = nullptr;
 
+	// TODO: Move all frame stuff to its own routine too.
 	if (!is_frame)
 	{
 		for (auto i = list.begin(); i != list.end(); ++i)
@@ -1421,139 +1422,150 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 		}
 	}
 
-	if (!dst)
+	if (dst)
 	{
-		// Skip full screen clears from making massive targets.
-		if (is_clear)
-		{
-			GL_CACHE("TC: Create RT skipped on clear draw");
-			return nullptr;
-		}
+		dst->m_used |= used;
 
-		if (type == DepthStencil)
-		{
-			GL_CACHE("TC: Lookup Target(Depth) %dx%d, miss (0x%x, TBW %d, %s)", size.x, size.y, bp,
-				TEX0.TBW, psm_str(TEX0.PSM));
-		}
-		else
-		{
-			GL_CACHE("TC: Lookup %s(Color) %dx%d FBMSK %08x, miss (0x%x, TBW %d, %s)", is_frame ? "Frame" : "Target",
-				size.x, size.y, fbmask, bp, TEX0.TBW, psm_str(TEX0.PSM));
-		}
+		if (is_frame)
+			dst->m_valid_alpha = false;
 
-		dst = CreateTarget(TEX0, size.x, size.y, scale, type, true);
-		// In theory new textures contain invalidated data. Still in theory a new target
-		// must contains the content of the GS memory.
-		// In practice, TC will wrongly invalidate some RT. For example due to write on the alpha
-		// channel but colors is still valid. Unfortunately TC doesn't support the upload of data
-		// in target.
-		//
-		// Cleaning the code here will likely break several games. However it might reduce
-		// the noise in draw call debugging. It is the main reason to enable it on debug build.
-		//
-		// From a performance point of view, it might cost a little on big upscaling
-		// but normally few RT are miss so it must remain reasonable.
-		const bool supported_fmt = !GSConfig.UserHacks_DisableDepthSupport || psm_s.depth == 0;
+		dst->readbacks_since_draw = 0;
 
-		if (TEX0.TBW > 0 && supported_fmt)
+		assert(dst && dst->m_texture && dst->m_scale == scale);
+	}
+
+	return dst;
+}
+
+GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type,
+	bool used, u32 fbmask, bool is_frame, bool preload, bool preload_uploads)
+{
+	const u32 bp = TEX0.TBP0;
+	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
+
+	if (type == DepthStencil)
+	{
+		GL_CACHE("TC: Lookup Target(Depth) %dx%d, miss (0x%x, TBW %d, %s)", size.x, size.y, bp,
+			TEX0.TBW, psm_str(TEX0.PSM));
+	}
+	else
+	{
+		GL_CACHE("TC: Lookup %s(Color) %dx%d FBMSK %08x, miss (0x%x, TBW %d, %s)", is_frame ? "Frame" : "Target",
+			size.x, size.y, fbmask, bp, TEX0.TBW, psm_str(TEX0.PSM));
+	}
+
+	Target* dst = CreateTarget(TEX0, size.x, size.y, scale, type, true);
+	// In theory new textures contain invalidated data. Still in theory a new target
+	// must contains the content of the GS memory.
+	// In practice, TC will wrongly invalidate some RT. For example due to write on the alpha
+	// channel but colors is still valid. Unfortunately TC doesn't support the upload of data
+	// in target.
+	//
+	// Cleaning the code here will likely break several games. However it might reduce
+	// the noise in draw call debugging. It is the main reason to enable it on debug build.
+	//
+	// From a performance point of view, it might cost a little on big upscaling
+	// but normally few RT are miss so it must remain reasonable.
+	const bool supported_fmt = !GSConfig.UserHacks_DisableDepthSupport || psm_s.depth == 0;
+
+	if (TEX0.TBW > 0 && supported_fmt)
+	{
+		const bool forced_preload = GSRendererHW::GetInstance()->m_force_preload > 0;
+		const GSVector4i newrect = GSVector4i::loadh(size);
+		const u32 rect_end = GSLocalMemory::m_psm[TEX0.PSM].info.bn(newrect.z - 1, newrect.w - 1, TEX0.TBP0, TEX0.TBW);
+		RGBAMask rgba;
+		rgba._u32 = GSUtil::GetChannelMask(TEX0.PSM);
+		dst->UpdateValidity(newrect);
+
+		if (!is_frame && !forced_preload && !preload)
 		{
-			const bool forced_preload = GSRendererHW::GetInstance()->m_force_preload > 0;
-			const GSVector4i newrect = GSVector4i::loadh(size);
-			const u32 rect_end = GSLocalMemory::m_psm[TEX0.PSM].info.bn(newrect.z - 1, newrect.w - 1, TEX0.TBP0, TEX0.TBW);
-			RGBAMask rgba;
-			rgba._u32 = GSUtil::GetChannelMask(TEX0.PSM);
-			dst->UpdateValidity(newrect);
-
-			if (!is_frame && !forced_preload && !preload)
+			if (preload_uploads)
 			{
-				if (preload_uploads)
-				{
-					std::vector<GSState::GSUploadQueue>::iterator iter;
-					GSVector4i eerect = GSVector4i::zero();
+				std::vector<GSState::GSUploadQueue>::iterator iter;
+				GSVector4i eerect = GSVector4i::zero();
 
-					for (iter = GSRendererHW::GetInstance()->m_draw_transfers.begin(); iter != GSRendererHW::GetInstance()->m_draw_transfers.end(); )
+				for (iter = GSRendererHW::GetInstance()->m_draw_transfers.begin(); iter != GSRendererHW::GetInstance()->m_draw_transfers.end(); )
+				{
+					// If the format, and location doesn't overlap
+					if (iter->blit.DBP >= TEX0.TBP0 && iter->blit.DBP <= rect_end && GSUtil::HasCompatibleBits(iter->blit.DPSM, TEX0.PSM))
 					{
-						// If the format, and location doesn't overlap
-						if (iter->blit.DBP >= TEX0.TBP0 && iter->blit.DBP <= rect_end && GSUtil::HasCompatibleBits(iter->blit.DPSM, TEX0.PSM))
+						GSVector4i targetr = {};
+						const bool can_translate = CanTranslate(iter->blit.DBP, iter->blit.DBW, iter->blit.DPSM, iter->rect, TEX0.TBP0, TEX0.PSM, TEX0.TBW);
+						const bool swizzle_match = GSLocalMemory::m_psm[iter->blit.DPSM].depth == GSLocalMemory::m_psm[TEX0.PSM].depth;
+						if (can_translate)
 						{
-							GSVector4i targetr = {};
-							const bool can_translate = CanTranslate(iter->blit.DBP, iter->blit.DBW, iter->blit.DPSM, iter->rect, TEX0.TBP0, TEX0.PSM, TEX0.TBW);
-							const bool swizzle_match = GSLocalMemory::m_psm[iter->blit.DPSM].depth == GSLocalMemory::m_psm[TEX0.PSM].depth;
-							if (can_translate)
+							if (swizzle_match)
 							{
-								if (swizzle_match)
+								targetr = TranslateAlignedRectByPage(dst, iter->blit.DBP, iter->blit.DPSM, iter->blit.DBW, iter->rect, true);
+							}
+							else
+							{
+								// If it's not page aligned, grab the whole pages it covers, to be safe.
+								GSVector4i new_rect = iter->rect;
+								const GSVector2i page_size = GSLocalMemory::m_psm[iter->blit.DPSM].pgs;
+
+								if (GSLocalMemory::m_psm[iter->blit.DPSM].bpp != GSLocalMemory::m_psm[TEX0.PSM].bpp)
 								{
-									targetr = TranslateAlignedRectByPage(dst, iter->blit.DBP, iter->blit.DPSM, iter->blit.DBW, iter->rect, true);
+									const GSVector2i dst_page_size = GSLocalMemory::m_psm[iter->blit.DPSM].pgs;
+									new_rect = GSVector4i(new_rect.x / page_size.x, new_rect.y / page_size.y, (new_rect.z + (page_size.x - 1)) / page_size.x, (new_rect.w + (page_size.y - 1)) / page_size.y);
+									new_rect = GSVector4i(new_rect.x * dst_page_size.x, new_rect.y * dst_page_size.y, new_rect.z * dst_page_size.x, new_rect.w * dst_page_size.y);
 								}
 								else
 								{
-									// If it's not page aligned, grab the whole pages it covers, to be safe.
-									GSVector4i new_rect = iter->rect;
-									const GSVector2i page_size = GSLocalMemory::m_psm[iter->blit.DPSM].pgs;
-
-									if (GSLocalMemory::m_psm[iter->blit.DPSM].bpp != GSLocalMemory::m_psm[TEX0.PSM].bpp)
-									{
-										const GSVector2i dst_page_size = GSLocalMemory::m_psm[iter->blit.DPSM].pgs;
-										new_rect = GSVector4i(new_rect.x / page_size.x, new_rect.y / page_size.y, (new_rect.z + (page_size.x - 1)) / page_size.x, (new_rect.w + (page_size.y - 1)) / page_size.y);
-										new_rect = GSVector4i(new_rect.x * dst_page_size.x, new_rect.y * dst_page_size.y, new_rect.z * dst_page_size.x, new_rect.w * dst_page_size.y);
-									}
-									else
-									{
-										new_rect.x &= ~(page_size.x - 1);
-										new_rect.y &= ~(page_size.y - 1);
-										new_rect.z = (new_rect.z + (page_size.x - 1)) & ~(page_size.x - 1);
-										new_rect.w = (new_rect.w + (page_size.y - 1)) & ~(page_size.y - 1);
-									}
-									targetr = TranslateAlignedRectByPage(dst, iter->blit.DBP & ~((1 << 5) - 1), iter->blit.DPSM, iter->blit.DBW, new_rect, true);
+									new_rect.x &= ~(page_size.x - 1);
+									new_rect.y &= ~(page_size.y - 1);
+									new_rect.z = (new_rect.z + (page_size.x - 1)) & ~(page_size.x - 1);
+									new_rect.w = (new_rect.w + (page_size.y - 1)) & ~(page_size.y - 1);
 								}
+								targetr = TranslateAlignedRectByPage(dst, iter->blit.DBP & ~((1 << 5) - 1), iter->blit.DPSM, iter->blit.DBW, new_rect, true);
 							}
-							else
-							{
-								GSTextureCache::SurfaceOffsetKey sok;
-								sok.elems[0].bp = iter->blit.DBP;
-								sok.elems[0].bw = iter->blit.DBW;
-								sok.elems[0].psm = iter->blit.DPSM;
-								sok.elems[0].rect = iter->rect;
-								sok.elems[1].bp = TEX0.TBP0;
-								sok.elems[1].bw = TEX0.TBW;
-								sok.elems[1].psm = TEX0.PSM;
-								sok.elems[1].rect = newrect;
-
-								// Calculate the rect offset if the BP doesn't match.
-								targetr = (iter->blit.DBP == TEX0.TBP0) ? iter->rect : ComputeSurfaceOffset(sok).b2a_offset;
-							}
-
-							if (eerect.rempty())
-								eerect = targetr;
-							else
-								eerect = eerect.runion(targetr);
-
-							iter = GSRendererHW::GetInstance()->m_draw_transfers.erase(iter);
-
-							if (eerect.rintersect(newrect).eq(newrect))
-								break;
-							else
-								continue;
 						}
-						iter++;
-					}
+						else
+						{
+							GSTextureCache::SurfaceOffsetKey sok;
+							sok.elems[0].bp = iter->blit.DBP;
+							sok.elems[0].bw = iter->blit.DBW;
+							sok.elems[0].psm = iter->blit.DPSM;
+							sok.elems[0].rect = iter->rect;
+							sok.elems[1].bp = TEX0.TBP0;
+							sok.elems[1].bw = TEX0.TBW;
+							sok.elems[1].psm = TEX0.PSM;
+							sok.elems[1].rect = newrect;
 
-					if (!eerect.rempty())
-					{
-						GL_INS("Preloading the RT DATA from updated GS Memory");
-						eerect = eerect.rintersect(newrect);
-						AddDirtyRectTarget(dst, eerect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
+							// Calculate the rect offset if the BP doesn't match.
+							targetr = (iter->blit.DBP == TEX0.TBP0) ? iter->rect : ComputeSurfaceOffset(sok).b2a_offset;
+						}
+
+						if (eerect.rempty())
+							eerect = targetr;
+						else
+							eerect = eerect.runion(targetr);
+
+						iter = GSRendererHW::GetInstance()->m_draw_transfers.erase(iter);
+
+						if (eerect.rintersect(newrect).eq(newrect))
+							break;
+						else
+							continue;
 					}
+					iter++;
+				}
+
+				if (!eerect.rempty())
+				{
+					GL_INS("Preloading the RT DATA from updated GS Memory");
+					eerect = eerect.rintersect(newrect);
+					AddDirtyRectTarget(dst, eerect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
 				}
 			}
-			else
-			{
-				GL_INS("Preloading the RT DATA");
-				AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
-			}
 		}
-		dst->m_is_frame = is_frame;
+		else
+		{
+			GL_INS("Preloading the RT DATA");
+			AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
+		}
 	}
+	dst->m_is_frame = is_frame;
 
 	dst->m_used |= used;
 
@@ -1568,7 +1580,11 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 
 GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale)
 {
-	return LookupTarget(TEX0, size, scale, RenderTarget, true, 0, true);
+	Target* dst = LookupTarget(TEX0, size, scale, RenderTarget, true, 0, true);
+	if (dst)
+		return dst;
+
+	return CreateTarget(TEX0, size, scale, RenderTarget, true, 0, true);
 }
 
 void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, int real_w, int real_h)
@@ -2649,11 +2665,13 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 
 		const GSVector2i target_size = GetTargetSize(DBP, DBW, DPSM, Common::AlignUpPow2(w, 64), h);
 		dst = LookupTarget(new_TEX0, target_size, src->m_scale, src->m_type);
-		if (dst)
-		{
-			dst->UpdateValidity(GSVector4i(dx, dy, dx + w, dy + h));
-			dst->OffsetHack_modxy = src->OffsetHack_modxy;
-		}
+		if (!dst)
+			dst = CreateTarget(new_TEX0, target_size, src->m_scale, src->m_type);
+		if (!dst)
+			return false;
+
+		dst->UpdateValidity(GSVector4i(dx, dy, dx + w, dy + h));
+		dst->OffsetHack_modxy = src->OffsetHack_modxy;
 	}
 
 	if (!src || !dst || src->m_scale != dst->m_scale)
