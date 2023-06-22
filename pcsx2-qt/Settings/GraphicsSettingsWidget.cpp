@@ -678,7 +678,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Displays various settings and the current values of those settings, useful for debugging."));
 
 		dialog->registerWidgetHelp(m_ui.osdShowInputs, tr("Show Inputs"), tr("Unchecked"),
-			tr("Shows the current controler state of the system in the bottom left corner of the display."));
+			tr("Shows the current controller state of the system in the bottom left corner of the display."));
 
 		dialog->registerWidgetHelp(
 			m_ui.osdShowFrameTimes, tr("Show Frame Times"), tr("Unchecked"), tr("Displays a graph showing the average frametimes."));

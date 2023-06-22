@@ -2481,7 +2481,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <location filename="../Settings/CreateMemoryCardDialog.ui" line="169"/>
-        <source>Low compatiblity warning: yes, it&apos;s very big, but may not work with many games.</source>
+        <source>Low compatibility warning: yes, it&apos;s very big, but may not work with many games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4617,7 +4617,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../Settings/GraphicsSettingsWidget.ui" line="1413"/>
         <location filename="../Settings/GraphicsSettingsWidget.ui" line="1598"/>
         <source>%</source>
-        <extracomment>Percentage sign that shows next to a value. You might want to add a space before if you language requires it.
+        <extracomment>Percentage sign that shows next to a value. You might want to add a space before if your language requires it.
 ----------
 Percentage sign that will appear next to a number. Add a space or whatever is needed before depending on your language.</extracomment>
         <translation type="unfinished"></translation>
@@ -5981,7 +5981,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="681"/>
-        <source>Shows the current controler state of the system in the bottom left corner of the display.</source>
+        <source>Shows the current controller state of the system in the bottom left corner of the display.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -8320,22 +8320,22 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../../pcsx2/MemoryCardFile.cpp" line="538"/>
         <location filename="../../pcsx2/MemoryCardFolder.cpp" line="2362"/>
-        <source>Memory card &apos;{}&apos; was saved to storage.</source>
+        <source>Memory Card &apos;{}&apos; was saved to storage.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/Sio.cpp" line="212"/>
-        <source>Memory card in port %d / slot %d reinserted</source>
+        <source>Memory Card in port %d / slot %d reinserted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/Sio.cpp" line="594"/>
-        <source>Memory card in port {} / slot {} reinserted.</source>
+        <source>Memory Card in port {} / slot {} reinserted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/Sio.cpp" line="934"/>
-        <source>Force ejecting all memory cards.</source>
+        <source>Force ejecting all Memory Cards.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

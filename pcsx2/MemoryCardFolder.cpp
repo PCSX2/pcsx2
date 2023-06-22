@@ -1777,7 +1777,7 @@ void FolderMemoryCard::AttemptToRecreateIndexFile(const std::string& directory) 
 
 std::string FolderMemoryCard::GetDisabledMessage(uint slot) const
 {
-	return fmt::format("The PS2-slot {} has been automatically disabled.  You can correct the problem\nand re-enable it at any time using Config:Memory cards from the main menu.", slot); //TODO: translate internal slot index to human-readable slot description
+	return fmt::format("The PS2-slot {} has been automatically disabled.  You can correct the problem\nand re-enable it at any time using Config:Memory Cards from the main menu.", slot); //TODO: translate internal slot index to human-readable slot description
 }
 
 std::string FolderMemoryCard::GetCardFullMessage(const std::string& filePath) const
@@ -2359,7 +2359,7 @@ s32 FolderMemoryCardAggregator::Save(uint slot, const u8* src, u32 adr, int size
 		{
 			const std::string_view filename = Path::GetFileName(m_cards[slot].GetFolderName());
 			Host::AddIconOSDMessage(fmt::format("MemoryCardSave{}", slot), ICON_FA_SD_CARD,
-				fmt::format(TRANSLATE_SV("MemoryCard", "Memory card '{}' was saved to storage."), filename),
+				fmt::format(TRANSLATE_SV("MemoryCard", "Memory Card '{}' was saved to storage."), filename),
 				Host::OSD_INFO_DURATION);
 
 			last = std::chrono::system_clock::now();

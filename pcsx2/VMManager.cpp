@@ -1143,7 +1143,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	// Must be before updating serial because of folder memcards.
 	if (!GSDumpReplayer::IsReplayingDump())
 	{
-		Console.WriteLn("Opening memory cards...");
+		Console.WriteLn("Opening Memory cards...");
 		FileMcd_EmuOpen();
 	}
 	ScopedGuard close_memcards(&FileMcd_EmuClose);

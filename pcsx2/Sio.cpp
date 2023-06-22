@@ -209,7 +209,7 @@ void Sio0::SetTxData(u8 value)
 						if (mcd->autoEjectTicks == 0)
 						{
 							Host::AddKeyedOSDMessage(fmt::format("AutoEjectSlotClear{}{}", port, slot),
-								fmt::format(TRANSLATE_SV("MemoryCard", "Memory card in port %d / slot %d reinserted"),
+								fmt::format(TRANSLATE_SV("MemoryCard", "Memory Card in port %d / slot %d reinserted"),
 									port + 1, slot + 1),
 								Host::OSD_INFO_DURATION);
 						}
@@ -591,7 +591,7 @@ void Sio2::Memcard()
 		{
 			Host::AddKeyedOSDMessage(fmt::format("AutoEjectSlotClear{}{}", port, slot),
 				fmt::format(
-					TRANSLATE_SV("MemoryCard", "Memory card in port {} / slot {} reinserted."), port + 1, slot + 1),
+					TRANSLATE_SV("MemoryCard", "Memory Card in port {} / slot {} reinserted."), port + 1, slot + 1),
 				Host::OSD_INFO_DURATION);
 		}
 
@@ -931,7 +931,7 @@ void AutoEject::Clear(size_t port, size_t slot)
 void AutoEject::SetAll()
 {
 	Host::AddIconOSDMessage("AutoEjectAllSet", ICON_FA_SD_CARD,
-		TRANSLATE_SV("MemoryCard", "Force ejecting all memory cards."), Host::OSD_INFO_DURATION);
+		TRANSLATE_SV("MemoryCard", "Force ejecting all Memory Cards."), Host::OSD_INFO_DURATION);
 
 	for (size_t port = 0; port < SIO::PORTS; port++)
 	{
