@@ -13,6 +13,14 @@
   </description>
   <url type="homepage">https://pcsx2.net/</url>
   <url type="bugtracker">https://github.com/PCSX2/pcsx2/issues</url>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/PCSX2/pcsx2/master/.github/workflows/scripts/linux/flatpak/screenshots/screenshot1.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/PCSX2/pcsx2/master/.github/workflows/scripts/linux/flatpak/screenshots/screenshot2.png</image>
+    </screenshot>
+  </screenshots>
   <content_rating type="oars-1.1"/>
   <update_contact>pcsx2_AT_pcsx2.net</update_contact>
   <releases>
