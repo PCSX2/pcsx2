@@ -222,6 +222,9 @@ private:
 	bool IO_SparseZero(u64 byteOffset, u64 byteSize);
 	void IO_SparseCacheUpdateLocation(u64 Offset);
 	void IO_SparseCacheLoad();
+#if defined(PCSX2_DEBUG) || defined(PCSX2_DEVBUILD)
+	void IO_SparseCacheAssertFileZeros(u64 hddSparseBlockSizeReadable);
+#endif
 	bool IsAllZero(const void* data, size_t len);
 	void HDD_ReadAsync(void (ATA::*drqCMD)());
 	void HDD_ReadSync(void (ATA::*drqCMD)());

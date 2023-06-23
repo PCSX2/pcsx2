@@ -214,7 +214,6 @@ void ATA::IO_SparseCacheLoad()
 
 	// Store file pointer.
 	const s64 orgPos = FileSystem::FTell64(hddImage);
-	pxAssert(orgPos != -1);
 
 #ifdef _WIN32
 	// FlushFileBuffers is required, hddSparseBlock differs from actual file without it.
@@ -235,31 +234,7 @@ void ATA::IO_SparseCacheLoad()
 		memset(hddSparseBlock.get(), 0, hddSparseBlockSize);
 		hddSparseBlockValid = true;
 #if defined(PCSX2_DEBUG) || defined(PCSX2_DEVBUILD)
-		//Load into check buffer.
-		FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET);
-
-		std::unique_ptr<u8[]> temp = std::make_unique<u8[]>(hddSparseBlockSize);
-		memset(temp.get(), 0, hddSparseBlockSize);
-
-		if (FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET) != 0 ||
-			std::fread((char*)hddSparseBlock.get(), readSize, 1, hddImage) != 1)
-			pxAssert(false);
-
-		// Restore file pointer.
-		if (FileSystem::FSeek64(hddImage, orgPos, SEEK_SET) != 0)
-			pxAssert(false);
-
-		// Check if file is actully zeros.
-		if (memcmp(hddSparseBlock.get(), temp.get(), hddSparseBlockSize) != 0)
-		{
-			Console.WriteLn("DEV9: ATA: Sparse area not sparse, BlockStart: %s, BlockEnd: %s",
-				std::to_string(HddSparseStart).c_str(), std::to_string(HddSparseStart + hddSparseBlockSize).c_str());
-		}
-		else
-			Console.WriteLn("DEV9: ATA: Sparse area is sparse (Yay), BlockStart: %s, BlockEnd: %s",
-				std::to_string(HddSparseStart).c_str(), std::to_string(HddSparseStart + hddSparseBlockSize).c_str());
-
-		pxAssert(memcmp(hddSparseBlock.get(), temp.get(), hddSparseBlockSize) == 0);
+		ATA::IO_SparseCacheAssertFileZeros(readSize);
 #endif
 		return;
 	}
@@ -277,31 +252,7 @@ void ATA::IO_SparseCacheLoad()
 			memset(hddSparseBlock.get(), 0, hddSparseBlockSize);
 			hddSparseBlockValid = true;
 #if defined(PCSX2_DEBUG) || defined(PCSX2_DEVBUILD)
-			// Load into check buffer.
-			FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET);
-
-			std::unique_ptr<u8[]> temp = std::make_unique<u8[]>(hddSparseBlockSize);
-			memset(temp.get(), 0, hddSparseBlockSize);
-
-			if (FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET) != 0 ||
-				std::fread((char*)hddSparseBlock.get(), readSize, 1, hddImage) != 1)
-				pxAssert(false);
-
-			// Restore file pointer.
-			if (FileSystem::FSeek64(hddImage, orgPos, SEEK_SET) != 0)
-				pxAssert(false);
-
-			// Check if file is actully zeros.
-			if (memcmp(hddSparseBlock.get(), temp.get(), hddSparseBlockSize) != 0)
-			{
-				Console.WriteLn("DEV9: ATA: Sparse area not sparse, BlockStart: %s, BlockEnd: %s",
-					std::to_string(HddSparseStart).c_str(), std::to_string(HddSparseStart + hddSparseBlockSize).c_str());
-			}
-			else
-				Console.WriteLn("DEV9: ATA: Sparse area is sparse (Yay), BlockStart: %s, BlockEnd: %s",
-					std::to_string(HddSparseStart).c_str(), std::to_string(HddSparseStart + hddSparseBlockSize).c_str());
-
-			pxAssert(memcmp(hddSparseBlock.get(), temp.get(), hddSparseBlockSize) == 0);
+			ATA::IO_AssertSparseFileZeros(readSize);
 #endif
 			return;
 		}
@@ -322,6 +273,44 @@ void ATA::IO_SparseCacheLoad()
 
 	hddSparseBlockValid = true;
 }
+
+#if defined(PCSX2_DEBUG) || defined(PCSX2_DEVBUILD)
+// Asserts that the region of file indicated by HddSparseStart & hddSparseBlockSizeReadable is all zeros
+// Used by IO_SparseCacheLoad to ensure the sparse/allocated apis and FileSystem apis are in sync
+void ATA::IO_SparseCacheAssertFileZeros(u64 hddSparseBlockSizeReadable)
+{
+	const s64 orgPos = FileSystem::FTell64(hddImage);
+	pxAssert(orgPos != -1);
+
+	// Load into check buffer.
+	FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET);
+
+	std::unique_ptr<u8[]> temp = std::make_unique<u8[]>(hddSparseBlockSize);
+	memset(temp.get(), 0, hddSparseBlockSize);
+
+	if (FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET) != 0 ||
+		std::fread((char*)hddSparseBlock.get(), hddSparseBlockSizeReadable, 1, hddImage) != 1)
+		pxAssert(false);
+
+	// Restore file pointer.
+	if (FileSystem::FSeek64(hddImage, orgPos, SEEK_SET) != 0)
+		pxAssert(false);
+
+	bool regionIsZeros = memcmp(hddSparseBlock.get(), temp.get(), hddSparseBlockSize) == 0;
+
+	// Check if file is actully zeros.
+	if (!regionIsZeros)
+	{
+		Console.WriteLn("DEV9: ATA: Sparse area not sparse, BlockStart: %s, BlockEnd: %s",
+			std::to_string(HddSparseStart).c_str(), std::to_string(HddSparseStart + hddSparseBlockSize).c_str());
+	}
+	else
+		Console.WriteLn("DEV9: ATA: Sparse area is sparse (Yay), BlockStart: %s, BlockEnd: %s",
+			std::to_string(HddSparseStart).c_str(), std::to_string(HddSparseStart + hddSparseBlockSize).c_str());
+
+	pxAssert(regionIsZeros);
+}
+#endif
 
 void ATA::IO_SparseCacheUpdateLocation(u64 byteOffset)
 {
