@@ -32009,7 +32009,7 @@ SLPM-65889:
   name: "Kazoku Keikaku - Kokoro no Kizuna"
   region: "NTSC-J"
   gsHWFixes:
-    beforeDraw: "OI_PointListPalette"
+    gpuTargetCLUT: 1 # Fixes broken colors.
 SLPM-65890:
   name: "Shin Sangoku Musou 4"
   region: "NTSC-J"
