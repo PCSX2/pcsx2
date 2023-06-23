@@ -102,8 +102,8 @@ jobs:
         env:
           COMPILER: ${{ inputs.compiler }}
           ADDITIONAL_CMAKE_ARGS: ${{ inputs.cmakeflags }}
-          CLANG_PATH: /usr/bin/clang-12
-          CLANGXX_PATH: /usr/bin/clang++-12
+          CLANG_PATH: /usr/bin/clang-16
+          CLANGXX_PATH: /usr/bin/clang++-16
         run: |
           DEPS_PREFIX="$HOME/deps" .github/workflows/scripts/linux/generate-cmake-qt.sh
 

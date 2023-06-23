@@ -67,7 +67,13 @@ declare -a PCSX2_PACKAGES=(
 if [ "${COMPILER}" = "gcc" ]; then
 	BUILD_PACKAGES+=("g++-10")
 else
-	BUILD_PACKAGES+=("llvm-12" "lld-12" "clang-12")
+	BUILD_PACKAGES+=("llvm-16" "lld-16" "clang-16")
+
+	# Ubuntu 20.04 doesn't ship with LLVM 16, so we need to pull it from the llvm.org repos.
+	retry_command wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+	sudo apt-add-repository -n 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main'
+	retry_command sudo apt-get update
+	retry_command sudo apt-get install clang-16 lld-16
 fi
 
 retry_command sudo apt-get -qq update && break
