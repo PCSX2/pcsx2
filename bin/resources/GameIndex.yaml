@@ -39533,6 +39533,8 @@ SLPS-25330:
 SLPS-25332:
   name: "Snow [First Limited Edition]"
   region: "NTSC-J"
+  gsHWFixes:
+    minimumBlendingLevel: 4 # Fixes transparancy.
 SLPS-25333:
   name: "Gallop Racer Lucky 7"
   region: "NTSC-J"
@@ -39597,6 +39599,8 @@ SLPS-25341:
 SLPS-25342:
   name: "Snow"
   region: "NTSC-J"
+  gsHWFixes:
+    minimumBlendingLevel: 4 # Fixes transparancy.
 SLPS-25343:
   name: "Gunslinger Girl Vol.1"
   region: "NTSC-J"
