@@ -47,6 +47,8 @@ extern std::string FileMcd_GetDefaultName(uint slot);
 uint FileMcd_ConvertToSlot(uint port, uint slot);
 void FileMcd_EmuOpen();
 void FileMcd_EmuClose();
+void FileMcd_CancelEject();
+void FileMcd_Reopen(std::string new_serial);
 s32 FileMcd_IsPresent(uint port, uint slot);
 void FileMcd_GetSizeInfo(uint port, uint slot, McdSizeInfo* outways);
 bool FileMcd_IsPSX(uint port, uint slot);
@@ -55,7 +57,7 @@ s32 FileMcd_Save(uint port, uint slot, const u8* src, u32 adr, int size);
 s32 FileMcd_EraseBlock(uint port, uint slot, u32 adr);
 u64 FileMcd_GetCRC(uint port, uint slot);
 void FileMcd_NextFrame(uint port, uint slot);
-bool FileMcd_ReIndex(uint port, uint slot, const std::string& filter);
+int FileMcd_ReIndex(uint port, uint slot, const std::string& filter);
 
 std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_cards);
 std::optional<AvailableMcdInfo> FileMcd_GetCardInfo(const std::string_view& name);

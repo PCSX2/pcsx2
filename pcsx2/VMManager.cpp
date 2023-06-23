@@ -627,9 +627,16 @@ void VMManager::Internal::UpdateEmuFolders()
 
 		if (EmuFolders::MemoryCards != old_memcards_directory)
 		{
-			FileMcd_EmuClose();
-			FileMcd_EmuOpen();
+			std::string memcardFilters = "";
+			if (const GameDatabaseSchema::GameEntry* game = GameDatabase::findGame(s_disc_serial))
+			{
+				memcardFilters = game->memcardFiltersAsString();
+			}
+
 			AutoEject::SetAll();
+
+			if(!GSDumpReplayer::IsReplayingDump())
+				FileMcd_Reopen(memcardFilters.empty() ? s_disc_serial : memcardFilters);
 		}
 
 		if (EmuFolders::Textures != old_textures_directory)
@@ -882,13 +889,6 @@ void VMManager::UpdateDiscDetails(bool booting)
 	Console.WriteLn(Color_StrongGreen, fmt::format("  Version: {}", s_disc_version));
 	Console.WriteLn(Color_StrongGreen, fmt::format("  CRC: {:08X}", s_disc_crc));
 
-	sioSetGameSerial(memcardFilters.empty() ? s_disc_serial : memcardFilters);
-
-	// If we don't reset the timer here, when using folder memcards the reindex will cause an eject,
-	// which a bunch of games don't like since they access the memory card on boot.
-	if (booting)
-		AutoEject::ClearAll();
-
 	UpdateGameSettingsLayer();
 	ApplySettings();
 
@@ -903,6 +903,9 @@ void VMManager::UpdateDiscDetails(bool booting)
 	Achievements::GameChanged(s_disc_crc, s_current_crc);
 	ReloadPINE();
 	UpdateDiscordPresence(Achievements::GetRichPresenceString());
+
+	if (!GSDumpReplayer::IsReplayingDump())
+		FileMcd_Reopen(memcardFilters.empty() ? s_disc_serial : memcardFilters);
 }
 
 void VMManager::ClearDiscDetails()
@@ -1145,16 +1148,10 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	}
 	ScopedGuard close_cdvd(&DoCDVDclose);
 
-	// Must be before updating serial because of folder memcards.
-	if (!GSDumpReplayer::IsReplayingDump())
-	{
-		Console.WriteLn("Opening Memory cards...");
-		FileMcd_EmuOpen();
-	}
-	ScopedGuard close_memcards(&FileMcd_EmuClose);
-
 	// Figure out which game we're running! This also loads game settings.
 	UpdateDiscDetails(true);
+
+	ScopedGuard close_memcards(&FileMcd_EmuClose);
 
 	// Read fast boot setting late so it can be overridden per-game.
 	// ELFs must be fast booted, and GS dumps are never fast booted.
@@ -1958,7 +1955,9 @@ void VMManager::Internal::EntryPointCompilingOnCPUThread()
 	HandleELFChange(true);
 
 	Patch::ApplyLoadedPatches(Patch::PPT_ONCE_ON_LOAD);
-
+	// If the config changes at this point, it's a reset, so the game doesn't currently know about the memcard
+	// so there's no need to leave the eject running.
+	FileMcd_CancelEject();
 	// Toss all the recs, we're going to be executing new code.
 	SysClearExecutionCache();
 }
@@ -2113,9 +2112,6 @@ void VMManager::CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config)
 
 	Console.WriteLn("Updating memory card configuration");
 
-	FileMcd_EmuClose();
-	FileMcd_EmuOpen();
-
 	// force card eject when files change
 	for (u32 port = 0; port < 2; port++)
 	{
@@ -2130,7 +2126,6 @@ void VMManager::CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config)
 			}
 		}
 	}
-
 	// force reindexing, mc folder code is janky
 	std::string sioSerial;
 	{
@@ -2140,7 +2135,9 @@ void VMManager::CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config)
 		if (sioSerial.empty())
 			sioSerial = s_disc_serial;
 	}
-	sioSetGameSerial(sioSerial);
+
+	if (!GSDumpReplayer::IsReplayingDump())
+		FileMcd_Reopen(sioSerial);
 }
 
 void VMManager::CheckForMiscConfigChanges(const Pcsx2Config& old_config)

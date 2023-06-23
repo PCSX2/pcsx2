@@ -99,7 +99,7 @@ struct _mcd
 		FileMcd_NextFrame( port, slot );
 	}
 
-	bool ReIndex(const std::string& filter) {
+	int ReIndex(const std::string& filter) {
 		return FileMcd_ReIndex(port, slot, filter);
 	}
 };
@@ -243,6 +243,7 @@ extern void sioSetGameSerial(const std::string& serial);
 
 namespace AutoEject
 {
+	extern void CountDownTicks();
 	extern void Set(size_t port, size_t slot);
 	extern void Clear(size_t port, size_t slot);
 	extern void SetAll();

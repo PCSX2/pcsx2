@@ -24,6 +24,7 @@
 
 #include "MemoryCardFile.h"
 #include "MemoryCardFolder.h"
+#include "Sio.h"
 
 #include "System.h"
 #include "Config.h"
@@ -292,14 +293,11 @@ void FileMemoryCard::Open()
 			cont = true;
 		}
 
-		if (EmuConfig.Mcd[slot].Type != MemoryCardType::File)
-		{
-			str = "[is not memcard file]";
+		if (EmuConfig.Mcd[slot].Type == MemoryCardType::File)
+			Console.WriteLn(cont ? Color_Gray : Color_Green, fmt::format("McdSlot {} [File]: {}", slot, str));
+		else
 			cont = true;
-		}
 
-		Console.WriteLn(cont ? Color_Gray : Color_Green, "McdSlot %u [File]: %.*s", slot,
-			static_cast<int>(str.size()), str.data());
 		if (cont)
 			continue;
 
@@ -660,6 +658,20 @@ void FileMcd_EmuClose()
 	Mcd::impl.Close();
 }
 
+void FileMcd_CancelEject()
+{
+	AutoEject::ClearAll();
+}
+
+void FileMcd_Reopen(std::string new_serial)
+{
+	Console.WriteLn("Reopening memory cards...");
+	FileMcd_EmuClose();
+	FileMcd_EmuOpen();
+
+	sioSetGameSerial(new_serial);
+}
+
 s32 FileMcd_IsPresent(uint port, uint slot)
 {
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
@@ -776,20 +788,25 @@ void FileMcd_NextFrame(uint port, uint slot)
 	}
 }
 
-bool FileMcd_ReIndex(uint port, uint slot, const std::string& filter)
+int FileMcd_ReIndex(uint port, uint slot, const std::string& filter)
 {
-	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
+	const int combinedSlot = FileMcd_ConvertToSlot(port, slot);
+
 	switch (EmuConfig.Mcd[combinedSlot].Type)
 	{
 		//case MemoryCardType::File:
 		//	return Mcd::impl.ReIndex( combinedSlot, filter );
 		//	break;
 		case MemoryCardType::Folder:
-			return Mcd::implFolder.ReIndex(combinedSlot, EmuConfig.McdFolderAutoManage, filter);
+			if (!Mcd::implFolder.ReIndex(combinedSlot, EmuConfig.McdFolderAutoManage, filter))
+				return -1;
 			break;
 		default:
-			return false;
+				return -1;
+			break;
 	}
+
+	return combinedSlot;
 }
 
 // --------------------------------------------------------------------------------------
