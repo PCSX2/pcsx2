@@ -1798,9 +1798,9 @@ void GSState::Write(const u8* mem, int len)
 		}
 
 		GL_CACHE("Write! %u ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d)", s_transfer_n,
-			blit.DBP, blit.DBW, psm_str(blit.DPSM),
-			m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
-			m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, w, h);
+				blit.DBP, blit.DBW, psm_str(blit.DPSM),
+				m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
+				m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, w, h);
 
 		if (len >= m_tr.total)
 		{

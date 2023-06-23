@@ -2617,7 +2617,6 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		if (dst)
 		{
 			dst->UpdateValidity(GSVector4i(dx, dy, dx + w, dy + h));
-			dst->m_valid_bits = src->m_valid_bits;
 			dst->OffsetHack_modxy = src->OffsetHack_modxy;
 		}
 	}
@@ -2727,7 +2726,12 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 			scaled_dx, scaled_dy);
 	}
 
+	// You'd think we'd update to use the source valid bits, but it's not, because it might be copying some data which was uploaded and dirtied the target.
+	// An example of this is Cross Channel - To All People where it renders a picture with 0x7f000000 FBMSK at 0x1180, which was all cleared to black on boot,
+	// Then it moves it to 0x2e80, where some garbage has been loaded underneath, so we can't assume that's the only valid data.
+	dst->UpdateValidBits(GSLocalMemory::m_psm[DPSM].fmsk);
 	dst->UpdateValidity(GSVector4i(dx, dy, dx + w, dy + h));
+	dst->UpdateDrawn(GSVector4i(dx, dy, dx + w, dy + h));
 	// Invalidate any sources that overlap with the target (since they're now stale).
 	InvalidateVideoMem(g_gs_renderer->m_mem.GetOffset(DBP, DBW, DPSM), GSVector4i(dx, dy, dx + w, dy + h), false);
 	return true;
