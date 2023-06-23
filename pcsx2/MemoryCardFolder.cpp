@@ -1585,7 +1585,7 @@ bool FolderMemoryCard::WriteToFile(const u8* src, u32 adr, u32 dataLength)
 	return false;
 }
 
-std::string FolderMemoryCard::GetFolderName()
+const std::string& FolderMemoryCard::GetFolderName()
 {
 	return m_folderName;
 }
