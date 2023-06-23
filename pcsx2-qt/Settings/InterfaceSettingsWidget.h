@@ -40,4 +40,8 @@ private:
 	void populateLanguages();
 
 	Ui::InterfaceSettingsWidget m_ui;
+
+public:
+	static const char* THEME_NAMES[];
+	static const char* THEME_VALUES[];
 };
