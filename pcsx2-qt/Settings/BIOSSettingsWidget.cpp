@@ -79,10 +79,16 @@ void BIOSSettingsWidget::refreshList()
 
 void BIOSSettingsWidget::listRefreshed(const QVector<BIOSInfo>& items)
 {
+	QSignalBlocker sb(m_ui.fileList);
+	populateList(m_ui.fileList, items);
+	m_ui.fileList->setEnabled(true);
+}
+
+void BIOSSettingsWidget::populateList(QTreeWidget* list, const QVector<BIOSInfo>& items)
+{
 	const std::string selected_bios(Host::GetBaseStringSettingValue("Filenames", "BIOS"));
 	const QString res_path(QtHost::GetResourcesBasePath());
 
-	QSignalBlocker sb(m_ui.fileList);
 	for (const BIOSInfo& bi : items)
 	{
 		QTreeWidgetItem* item = new QTreeWidgetItem();
@@ -129,12 +135,14 @@ void BIOSSettingsWidget::listRefreshed(const QVector<BIOSInfo>& items)
 				break;
 		}
 
-		m_ui.fileList->addTopLevelItem(item);
+		list->addTopLevelItem(item);
 
 		if (bi.filename == selected_bios)
+		{
+			list->selectionModel()->setCurrentIndex(list->indexFromItem(item), QItemSelectionModel::Select);
 			item->setSelected(true);
+		}
 	}
-	m_ui.fileList->setEnabled(true);
 }
 
 void BIOSSettingsWidget::listItemChanged(const QTreeWidgetItem* current, const QTreeWidgetItem* previous)
@@ -151,9 +159,8 @@ void BIOSSettingsWidget::fastBootChanged()
 	m_ui.fastBootFastForward->setEnabled(enabled);
 }
 
-BIOSSettingsWidget::RefreshThread::RefreshThread(BIOSSettingsWidget* parent, const QString& directory)
+BIOSSettingsWidget::RefreshThread::RefreshThread(QWidget* parent, const QString& directory)
 	: QThread(parent)
-	, m_parent(parent)
 	, m_directory(directory)
 {
 }
@@ -179,5 +186,5 @@ void BIOSSettingsWidget::RefreshThread::run()
 		}
 	}
 
-	QMetaObject::invokeMethod(m_parent, "listRefreshed", Qt::QueuedConnection, Q_ARG(const QVector<BIOSInfo>&, items));
+	QMetaObject::invokeMethod(parent(), "listRefreshed", Qt::QueuedConnection, Q_ARG(const QVector<BIOSInfo>&, items));
 }

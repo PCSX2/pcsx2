@@ -25,6 +25,9 @@ target_sources(pcsx2-qt PRIVATE
 	PrecompiledHeader.cpp
 	PrecompiledHeader.h
 	SettingWidgetBinder.h
+	SetupWizardDialog.cpp
+	SetupWizardDialog.h
+	SetupWizardDialog.ui
 	Themes.cpp
 	Translations.cpp
 	QtHost.cpp

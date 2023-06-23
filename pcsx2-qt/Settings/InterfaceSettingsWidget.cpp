@@ -22,7 +22,7 @@
 #include "SettingsDialog.h"
 #include "QtHost.h"
 
-static const char* THEME_NAMES[] = {
+const char* InterfaceSettingsWidget::THEME_NAMES[] = {
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Native"),
 	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Fusion [Light/Dark]"),
@@ -52,7 +52,7 @@ static const char* THEME_NAMES[] = {
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Custom.qss [Drop in PCSX2 Folder]"),
 	nullptr};
 
-static const char* THEME_VALUES[] = {
+const char* InterfaceSettingsWidget::THEME_VALUES[] = {
 	"",
 	"fusion",
 	"darkfusion",
