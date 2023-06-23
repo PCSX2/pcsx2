@@ -204,15 +204,6 @@ void Sio0::SetTxData(u8 value)
 					if (mcd->autoEjectTicks)
 					{
 						SetRxData(0x00);
-						mcd->autoEjectTicks--;
-
-						if (mcd->autoEjectTicks == 0)
-						{
-							Host::AddKeyedOSDMessage(fmt::format("AutoEjectSlotClear{}{}", port, slot),
-								fmt::format(TRANSLATE_SV("MemoryCard", "Memory Card in port %d / slot %d reinserted"),
-									port + 1, slot + 1),
-								Host::OSD_INFO_DURATION);
-						}
 
 						return;
 					}
@@ -585,16 +576,6 @@ void Sio2::Memcard()
 			fifoOut.push_back(0x00);
 		}
 
-		mcd->autoEjectTicks--;
-
-		if (mcd->autoEjectTicks == 0)
-		{
-			Host::AddKeyedOSDMessage(fmt::format("AutoEjectSlotClear{}{}", port, slot),
-				fmt::format(
-					TRANSLATE_SV("MemoryCard", "Memory Card in port {} / slot {} reinserted."), port + 1, slot + 1),
-				Host::OSD_INFO_DURATION);
-		}
-
 		return;
 	}
 
@@ -833,7 +814,8 @@ void sioNextFrame() {
 void sioSetGameSerial( const std::string& serial ) {
 	for ( uint port = 0; port < 2; ++port ) {
 		for ( uint slot = 0; slot < 4; ++slot ) {
-			if ( mcds[port][slot].ReIndex( serial ) ) {
+			if ( int index = mcds[port][slot].ReIndex( serial ) >= 0 ) {
+				Console.WriteLn("Ejecting Memory Card %u (port %u slot %u) due to source change. Reinsert in 1 second.", index, port, slot);
 				AutoEject::Set( port, slot );
 			}
 		}
@@ -915,11 +897,33 @@ bool sioPortAndSlotIsMultitap(u32 port, u32 slot)
 	return (slot != 0);
 }
 
+void AutoEject::CountDownTicks()
+{
+	bool reinserted = false;
+	for (size_t port = 0; port < SIO::PORTS; port++)
+	{
+		for (size_t slot = 0; slot < SIO::SLOTS; slot++)
+		{
+			if (mcds[port][slot].autoEjectTicks > 0)
+			{
+				if (--mcds[port][slot].autoEjectTicks == 0)
+				{
+					Host::AddKeyedOSDMessage(fmt::format("AutoEjectSlotClear{}{}", port, slot),
+						fmt::format(TRANSLATE_SV("MemoryCard", "Memory card in port {} / slot {} reinserted"),
+							port + 1, slot + 1),
+						Host::OSD_INFO_DURATION);
+				}
+			}
+		}
+	}
+}
+
 void AutoEject::Set(size_t port, size_t slot)
 {
-	if (EmuConfig.McdEnableEjection)
+	if (EmuConfig.McdEnableEjection && mcds[port][slot].autoEjectTicks == 0)
 	{
-		mcds[port][slot].autoEjectTicks = 60;
+		mcds[port][slot].autoEjectTicks = 1; // 1 second is enough.
+		mcds[port][slot].term = 0x55; // Reset terminator to default (0x55), forces the PS2 to recheck the memcard.
 	}
 }
 
@@ -931,7 +935,7 @@ void AutoEject::Clear(size_t port, size_t slot)
 void AutoEject::SetAll()
 {
 	Host::AddIconOSDMessage("AutoEjectAllSet", ICON_FA_SD_CARD,
-		TRANSLATE_SV("MemoryCard", "Force ejecting all Memory Cards."), Host::OSD_INFO_DURATION);
+		TRANSLATE_SV("MemoryCard", "Force ejecting all Memory Cards. Reinserting in 1 second."), Host::OSD_INFO_DURATION);
 
 	for (size_t port = 0; port < SIO::PORTS; port++)
 	{

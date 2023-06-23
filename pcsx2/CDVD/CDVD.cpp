@@ -19,6 +19,7 @@
 #include "IopHw.h"
 #include "IopDma.h"
 #include "VMManager.h"
+#include "Sio.h"
 
 #include <cctype>
 #include <ctime>
@@ -1528,6 +1529,7 @@ void cdvdVsync()
 	cdvd.RTCcount = 0;
 
 	cdvdUpdateTrayState();
+	AutoEject::CountDownTicks();
 
 	cdvd.RTC.second++;
 	if (cdvd.RTC.second < 60)
