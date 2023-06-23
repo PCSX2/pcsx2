@@ -11,6 +11,7 @@ on:
 jobs:
   build_macos_qt:
     name: "Defaults"
+    if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
     uses: ./.github/workflows/macos_build.yml
     with:
       jobName: "Qt"
