@@ -86,15 +86,18 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 	outputModuleChanged();
 
 	m_ui.volume->setValue(m_dialog->getEffectiveIntValue("SPU2/Mixing", "FinalVolume", DEFAULT_VOLUME));
-	m_ui.volume->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(m_ui.volume, &QSlider::valueChanged, this, &AudioSettingsWidget::volumeChanged);
-	connect(m_ui.volume, &QSlider::customContextMenuRequested, this, &AudioSettingsWidget::volumeContextMenuRequested);
 	updateVolumeLabel();
-	if (sif && sif->ContainsValue("SPU2/Mixing", "FinalVolume"))
+	if (dialog->isPerGameSettings())
 	{
-		QFont bold_font(m_ui.volume->font());
-		bold_font.setBold(true);
-		m_ui.volumeLabel->setFont(bold_font);
+		connect(m_ui.volume, &QSlider::customContextMenuRequested, this, &AudioSettingsWidget::volumeContextMenuRequested);
+		m_ui.volume->setContextMenuPolicy(Qt::CustomContextMenu);
+		if (sif->ContainsValue("SPU2/Mixing", "FinalVolume"))
+		{
+			QFont bold_font(m_ui.volume->font());
+			bold_font.setBold(true);
+			m_ui.volumeLabel->setFont(bold_font);
+		}
 	}
 
 	SettingWidgetBinder::BindSliderToIntSetting(sif, m_ui.sequenceLength, m_ui.sequenceLengthLabel, tr(" ms"), "Soundtouch",
@@ -284,7 +287,7 @@ void AudioSettingsWidget::volumeContextMenuRequested(const QPoint& pt)
 	m_ui.volume->connect(menu.addAction(qApp->translate("SettingWidgetBinder", "Reset")), &QAction::triggered, this, [this]() {
 		const s32 global_value = Host::GetBaseIntSettingValue("SPU2/Mixing", "FinalVolume", DEFAULT_VOLUME);
 		{
-			QSignalBlocker sb(m_ui.volumeLabel);
+			QSignalBlocker sb(m_ui.volume);
 			m_ui.volume->setValue(global_value);
 			updateVolumeLabel();
 		}
