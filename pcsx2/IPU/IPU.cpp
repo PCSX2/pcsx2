@@ -94,6 +94,13 @@ __fi void IPUProcessInterrupt()
 {
 	if (ipuRegs.ctrl.BUSY && !CommandExecuteQueued)
 		IPUWorker();
+
+	if (ipuRegs.ctrl.BUSY)
+	{
+		CPU_INT(IPU_PROCESS, ProcessedData ? ProcessedData : 64);
+	}
+	else
+		ProcessedData = 0;
 }
 
 /////////////////////////////////////////////////////////
@@ -460,7 +467,7 @@ __fi void IPUCMD_WRITE(u32 val)
 {
 	// don't process anything if currently busy
 	//if (ipuRegs.ctrl.BUSY) Console.WriteLn("IPU BUSY!"); // wait for thread
-
+	ProcessedData = 0;
 	ipuRegs.ctrl.ECD = 0;
 	ipuRegs.ctrl.SCD = 0;
 	ipu_cmd.clear();

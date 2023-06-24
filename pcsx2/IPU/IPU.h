@@ -294,6 +294,7 @@ extern bool EnableFMV;
 alignas(16) extern tIPU_cmd ipu_cmd;
 extern uint eecount_on_last_vdec;
 extern bool CommandExecuteQueued;
+extern u32 ProcessedData;
 
 extern void ipuReset();
 

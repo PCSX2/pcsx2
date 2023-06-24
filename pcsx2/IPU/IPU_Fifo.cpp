@@ -184,7 +184,7 @@ void WriteFIFO_IPUin(const mem128_t* value)
 		if (ipuRegs.ctrl.BUSY && !CommandExecuteQueued)
 		{
 			CommandExecuteQueued = true;
-			CPU_INT(IPU_PROCESS, 1 * BIAS);
+			CPU_INT(IPU_PROCESS, 8);
 		}
 	}
 }
