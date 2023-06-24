@@ -177,9 +177,7 @@ if(USE_ACHIEVEMENTS)
 	)
 endif()
 
-set(TS_FILES
-	Translations/pcsx2-qt_en.ts
-)
+file(GLOB TS_FILES ${CMAKE_CURRENT_SOURCE_DIR}/Translations/*.ts)
 
 target_precompile_headers(pcsx2-qt PRIVATE PrecompiledHeader.h)
 
