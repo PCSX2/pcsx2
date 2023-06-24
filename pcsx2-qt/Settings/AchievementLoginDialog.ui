@@ -10,19 +10,19 @@
     <x>0</x>
     <y>0</y>
     <width>410</width>
-    <height>190</height>
+    <height>215</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>410</width>
-    <height>190</height>
+    <height>215</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>410</width>
-    <height>190</height>
+    <height>215</height>
    </size>
   </property>
   <property name="windowTitle">
