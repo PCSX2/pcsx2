@@ -21,12 +21,14 @@
 
 IPUStatus IPU1Status;
 bool CommandExecuteQueued;
+u32 ProcessedData;
 
 void ipuDmaReset()
 {
 	IPU1Status.InProgress	= false;
 	IPU1Status.DMAFinished	= true;
 	CommandExecuteQueued	= false;
+	ProcessedData			= 0;
 }
 
 void SaveStateBase::ipuDmaFreeze()
@@ -199,7 +201,7 @@ void IPU0dma()
 	{
 		CommandExecuteQueued = true;
 		CPU_SET_DMASTALL(DMAC_FROM_IPU, true);
-		CPU_INT(IPU_PROCESS, 4);
+		CPU_INT(IPU_PROCESS, readsize * BIAS);
 	}
 }
 
@@ -281,6 +283,7 @@ __fi void dmaIPU1() // toIPU
 void ipuCMDProcess()
 {
 	CommandExecuteQueued = false;
+	ProcessedData = 0;
 	IPUProcessInterrupt();
 }
 
