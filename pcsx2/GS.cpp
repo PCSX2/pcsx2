@@ -14,17 +14,15 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "Common.h"
 
-#include <list>
-
-#include "Gif_Unit.h"
 #include "Counters.h"
+#include "Common.h"
 #include "Config.h"
+#include "Gif_Unit.h"
+#include "MTGS.h"
 #include "VMManager.h"
 
-using namespace Threading;
-using namespace R5900;
+#include <list>
 
 alignas(16) u8 g_RealGSMem[Ps2MemSize::GSregs];
 static bool s_GSRegistersWritten = false;
@@ -38,7 +36,7 @@ void gsSetVideoMode(GS_VideoMode mode)
 // Make sure framelimiter options are in sync with GS capabilities.
 void gsReset()
 {
-	GetMTGS().ResetGS(true);
+	MTGS::ResetGS(true);
 	gsVideoMode = GS_VideoMode::Uninitialized;
 	std::memset(g_RealGSMem, 0, sizeof(g_RealGSMem));
 	UpdateVSyncRate(true);
@@ -72,7 +70,7 @@ void gsUpdateFrequency(Pcsx2Config& config)
 		config.GS.LimitScalar = 0.0f;
 	}
 
-	GetMTGS().UpdateVSyncMode();
+	MTGS::UpdateVSyncMode();
 	UpdateVSyncRate(true);
 }
 
@@ -88,7 +86,7 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 		std::memset(g_RealGSMem, 0, sizeof(g_RealGSMem));
 		GSIMR.reset();
 		CSRreg.Reset();
-		GetMTGS().SendSimplePacket(GS_RINGTYPE_RESET, 0, 0, 0);
+		MTGS::SendSimplePacket(MTGS::Command::Reset, 0, 0, 0);
 	}
 
 	if(csr.FLUSH)
@@ -371,7 +369,7 @@ void gsPostVsyncStart()
 
 	const bool registers_written = s_GSRegistersWritten;
 	s_GSRegistersWritten = false;
-	GetMTGS().PostVsyncStart(registers_written);
+	MTGS::PostVsyncStart(registers_written);
 }
 
 void SaveStateBase::gsFreeze()

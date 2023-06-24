@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -18,8 +18,8 @@
 #include "SPU2/Debug.h"
 #include "SPU2/spu2.h"
 #include "SPU2/Dma.h"
-#include "GS.h"
 #include "GS/GSCapture.h"
+#include "MTGS.h"
 #include "R3000A.h"
 
 namespace SPU2
@@ -134,8 +134,8 @@ void SPU2::UpdateSampleRate()
 	// Can't be capturing when the sample rate changes.
 	if (IsAudioCaptureActive())
 	{
-		GetMTGS().RunOnGSThread(&GSEndCapture);
-		GetMTGS().WaitGS(false, false, false);
+		MTGS::RunOnGSThread(&GSEndCapture);
+		MTGS::WaitGS(false, false, false);
 	}
 }
 

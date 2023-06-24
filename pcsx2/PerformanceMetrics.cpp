@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -26,6 +26,7 @@
 
 #include "GS.h"
 #include "GS/GSCapture.h"
+#include "MTGS.h"
 #include "MTVU.h"
 #include "VMManager.h"
 
@@ -132,7 +133,7 @@ void PerformanceMetrics::Reset()
 	s_last_frame_time.Reset();
 
 	s_last_cpu_time = s_cpu_thread_handle.GetCPUTime();
-	s_last_gs_time = GetMTGS().GetThreadHandle().GetCPUTime();
+	s_last_gs_time = MTGS::GetThreadHandle().GetCPUTime();
 	s_last_vu_time = THREAD_VU1 ? vu1Thread.GetThreadHandle().GetCPUTime() : 0;
 	s_last_ticks = GetCPUTicks();
 	s_last_capture_time = GSCapture::IsCapturing() ? GSCapture::GetEncoderThreadHandle().GetCPUTime() : 0;
@@ -205,7 +206,7 @@ void PerformanceMetrics::Update(bool gs_register_write, bool fb_blit, bool is_sk
 								(1.0 / static_cast<double>(s_frames_since_last_update));
 
 	const u64 cpu_time = s_cpu_thread_handle.GetCPUTime();
-	const u64 gs_time = GetMTGS().GetThreadHandle().GetCPUTime();
+	const u64 gs_time = MTGS::GetThreadHandle().GetCPUTime();
 	const u64 vu_time = THREAD_VU1 ? vu1Thread.GetThreadHandle().GetCPUTime() : 0;
 	const u64 capture_time = GSCapture::IsCapturing() ? GSCapture::GetEncoderThreadHandle().GetCPUTime() : 0;
 

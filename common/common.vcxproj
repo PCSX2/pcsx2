@@ -169,6 +169,7 @@
     <ClInclude Include="emitter\implement\simd_helpers.h" />
     <ClInclude Include="emitter\implement\simd_moremovs.h" />
     <ClInclude Include="emitter\implement\simd_shufflepack.h" />
+    <ClInclude Include="WrappedMemCopy.h" />
     <ClInclude Include="ZipHelpers.h" />
   </ItemGroup>
   <ItemGroup>

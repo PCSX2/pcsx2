@@ -100,6 +100,7 @@ target_sources(common PRIVATE
 	TraceLog.h
 	WAVWriter.h
 	WindowInfo.h
+	WrappedMemCopy.h
 	emitter/implement/dwshift.h
 	emitter/implement/group1.h
 	emitter/implement/group2.h

@@ -26,6 +26,7 @@
 #include "GS.h"
 #include "GS/GS.h"
 #include "Host.h"
+#include "MTGS.h"
 #include "MTVU.h"
 #include "PAD/Host/PAD.h"
 #include "Patch.h"
@@ -59,7 +60,7 @@ static void PreLoadPrep()
 	// ensure everything is in sync before we start overwriting stuff.
 	if (THREAD_VU1)
 		vu1Thread.WaitVU();
-	GetMTGS().WaitGS(false);
+	MTGS::WaitGS(false);
 
 	// backup current TLBs, since we're going to overwrite them all
 	std::memcpy(s_tlb_backup, tlb, sizeof(s_tlb_backup));
@@ -322,8 +323,8 @@ struct SysState_Component
 
 static int SysState_MTGSFreeze(FreezeAction mode, freezeData* fP)
 {
-	MTGS_FreezeData sstate = { fP, 0 };
-	GetMTGS().Freeze(mode, sstate);
+	MTGS::FreezeData sstate = { fP, 0 };
+	MTGS::Freeze(mode, sstate);
 	return sstate.retval;
 }
 
@@ -709,7 +710,7 @@ std::unique_ptr<SaveStateScreenshotData> SaveState_SaveScreenshot()
 
 	u32 width, height;
 	std::vector<u32> pixels;
-	if (!GetMTGS().SaveMemorySnapshot(SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT, true, false, &width, &height, &pixels))
+	if (!MTGS::SaveMemorySnapshot(SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT, true, false, &width, &height, &pixels))
 	{
 		// saving failed for some reason, device lost?
 		return nullptr;

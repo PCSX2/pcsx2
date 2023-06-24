@@ -22,6 +22,8 @@
 #include "USB/USB.h"
 #include "x86/newVif.h"
 
+#include "common/WrappedMemCopy.h"
+
 #include "fmt/core.h"
 
 using namespace R5900;
