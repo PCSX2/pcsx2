@@ -525,6 +525,7 @@ static void intExecute()
 			// Avoid reloading every instruction.
 			u32 elf_entry_point = VMManager::Internal::GetCurrentELFEntryPoint();
 			u32 eeload_main = g_eeloadMain;
+			u32 eeload_exec = g_eeloadExec;
 
 			while (true)
 			{
@@ -539,7 +540,7 @@ static void intExecute()
 
 					eeload_main = g_eeloadMain;
 				}
-				else if (cpuRegs.pc == g_eeloadMain)
+				else if (cpuRegs.pc == eeload_main)
 				{
 					eeloadHook();
 					if (VMManager::Internal::IsFastBootInProgress())
@@ -555,11 +556,13 @@ static void intExecute()
 							g_eeloadExec = EELOAD_START + 0x170;
 						else
 							Console.WriteLn("intExecute: Could not enable launch arguments for fast boot mode; unidentified BIOS version! Please report this to the PCSX2 developers.");
+
+						eeload_exec = g_eeloadExec;
 					}
 
 					elf_entry_point = VMManager::Internal::GetCurrentELFEntryPoint();
 				}
-				else if (cpuRegs.pc == g_eeloadExec)
+				else if (cpuRegs.pc == eeload_exec)
 				{
 					eeloadHook2();
 				}
