@@ -444,7 +444,7 @@ std::string_view Patch::PatchInfo::GetNameParentPart() const
 	return ret;
 }
 
-Patch::PatchInfoList Patch::GetPatchInfo(const std::string& serial, u32 crc, bool cheats, u32* num_unlabelled_patches)
+Patch::PatchInfoList Patch::GetPatchInfo(const std::string_view& serial, u32 crc, bool cheats, u32* num_unlabelled_patches)
 {
 	PatchInfoList ret;
 
