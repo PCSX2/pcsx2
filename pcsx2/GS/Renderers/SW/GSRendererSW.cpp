@@ -616,7 +616,7 @@ void GSRendererSW::Sync(int reason)
 	g_perfmon.Put(GSPerfMon::Fillrate, pixels);
 }
 
-void GSRendererSW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool eewrite)
+void GSRendererSW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)
 {
 	if (LOG)
 	{

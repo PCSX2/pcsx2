@@ -918,7 +918,7 @@ public:
 	virtual void PurgePool();
 	virtual void PurgeTextureCache();
 	virtual void ReadbackTextureCache();
-	virtual void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool eewrite = false) {}
+	virtual void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r) {}
 	virtual void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false) {}
 
 	virtual void Move();
