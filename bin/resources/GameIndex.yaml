@@ -17949,11 +17949,17 @@ SLES-53393:
   compat: 5
   gameFixes:
     - EETimingHack # Fixes garbage textures flashing on the character model.
+  gsHWFixes:
+    autoFlush: 1 # Fixes missing post processing.
+    halfPixelOffset: 1 # Aligns post processing.
 SLES-53396:
   name: "Spartan - Total Warrior"
   region: "PAL-M3"
   gameFixes:
     - EETimingHack # Fixes garbage textures flashing on the character model.
+  gsHWFixes:
+    autoFlush: 1 # Fixes missing post processing.
+    halfPixelOffset: 1 # Aligns post processing.
 SLES-53398:
   name: "Zombie Zone"
   region: "PAL-E"
@@ -26233,6 +26239,9 @@ SLPM-60109:
     roundSprite: 1 # Fixes ui and hud alignment.
     gpuPaletteConversion: 2 # Lots of CLUTs in large textures.
     cpuCLUTRender: 1 # Fixes car textures.
+SLPM-60114:
+  name: "Magical Sports - 2000 Koushien [Trial]"
+  region: "NTSC-J"
 SLPM-60122:
   name: "Ring of Red [Taikenban trial]"
   region: "NTSC-J"
@@ -34167,10 +34176,13 @@ SLPM-66443:
   gameFixes:
     - GIFFIFOHack # Fixes flag corruptions.
 SLPM-66444:
-  name: "Spartan - Total Warrior"
+  name: "Spartan - Kodai Greece Eiyuuden"
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Fixes garbage textures flashing on the character model.
+  gsHWFixes:
+    autoFlush: 1 # Fixes missing post processing.
+    halfPixelOffset: 1 # Aligns post processing.
 SLPM-66445:
   name: "Persona 3"
   region: "NTSC-J"
@@ -37593,6 +37605,9 @@ SLPS-20240:
   region: "NTSC-J"
 SLPS-20243:
   name: "New Price Go Go Golf"
+  region: "NTSC-J"
+SLPS-20244:
+  name: "Magical Sports - 2000 Koushien [NewPrice]"
   region: "NTSC-J"
 SLPS-20245:
   name: "Low Rider"
@@ -48378,6 +48393,9 @@ SLUS-21212:
   compat: 5
   gameFixes:
     - EETimingHack # Fixes garbage textures flashing on the character model.
+  gsHWFixes:
+    autoFlush: 1 # Fixes missing post processing.
+    halfPixelOffset: 1 # Aligns post processing.
 SLUS-21213:
   name: "Madden NFL '06"
   region: "NTSC-U"
