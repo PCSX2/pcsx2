@@ -234,6 +234,7 @@ void FolderMemoryCard::Close(bool flush)
 	m_oldDataCache.clear();
 	m_lastAccessedFile.CloseAll();
 	m_fileMetadataQuickAccess.clear();
+	m_isEnabled = false;
 }
 
 bool FolderMemoryCard::ReIndex(bool enableFiltering, const std::string& filter)
@@ -2394,5 +2395,7 @@ bool FolderMemoryCardAggregator::ReIndex(uint slot, const bool enableFiltering, 
 		return true;
 	}
 
+	SetFiltering(enableFiltering);
+	m_lastKnownFilter = filter;
 	return false;
 }
