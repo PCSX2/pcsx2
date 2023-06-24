@@ -123,7 +123,7 @@ void IPU1dma()
 		totalqwc += IPU1chain();
 
 	//Do this here to prevent double settings on Chain DMA's
-	if(totalqwc == 0 || (IPU1Status.DMAFinished && !IPU1Status.InProgress))
+	if((totalqwc == 0 && g_BP.IFC < 8) || (IPU1Status.DMAFinished && !IPU1Status.InProgress))
 	{
 		totalqwc = std::max(4, totalqwc) + tagcycles;
 		IPU_INT_TO(totalqwc * BIAS);
