@@ -165,7 +165,6 @@ static std::pair<u32, u32> s_elf_text_range;
 static bool s_elf_executed = false;
 static std::string s_elf_override;
 static std::string s_input_profile_name;
-static u32 s_active_game_fixes = 0;
 static u32 s_frame_advance_count = 0;
 static u32 s_mxcsr_saved;
 static bool s_fast_boot_requested = false;
@@ -491,7 +490,6 @@ void VMManager::LoadCoreSettings(SettingsInterface* si)
 
 void VMManager::ApplyGameFixes()
 {
-	s_active_game_fixes = 0;
 	if (!HasBootedELF() && !GSDumpReplayer::IsReplayingDump())
 	{
 		// Instant DMA needs to be on for this BIOS (font rendering is broken without it, possible cache issues).
@@ -506,8 +504,12 @@ void VMManager::ApplyGameFixes()
 	if (!game)
 		return;
 
-	s_active_game_fixes += game->applyGameFixes(EmuConfig, EmuConfig.EnableGameFixes);
-	s_active_game_fixes += game->applyGSHardwareFixes(EmuConfig.GS);
+	game->applyGameFixes(EmuConfig, EmuConfig.EnableGameFixes);
+	game->applyGSHardwareFixes(EmuConfig.GS);
+	
+	// Re-remove upscaling fixes, make sure they don't apply at native res.
+	// We do this in LoadCoreSettings(), but game fixes get applied afterwards because of the unsafe warning.
+	EmuConfig.GS.MaskUpscalingHacks();
 }
 
 void VMManager::ApplySettings()
@@ -1332,7 +1334,6 @@ void VMManager::Shutdown(bool save_resume_state)
 	UpdateDiscordPresence(Achievements::GetRichPresenceString());
 	Host::OnGameChanged(s_title, std::string(), std::string(), s_disc_serial, 0, 0);
 
-	s_active_game_fixes = 0;
 	s_fast_boot_requested = false;
 
 	UpdateGameSettingsLayer();
