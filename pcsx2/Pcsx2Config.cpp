@@ -874,7 +874,7 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 
 void Pcsx2Config::GSOptions::MaskUpscalingHacks()
 {
-	if (UpscaleMultiplier > 1.0f && ManualUserHacks)
+	if (UpscaleMultiplier > 1.0f)
 		return;
 
 	UserHacks_AlignSpriteX = false;

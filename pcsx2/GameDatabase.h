@@ -124,11 +124,11 @@ namespace GameDatabaseSchema
 		const std::string* findPatch(u32 crc) const;
 		const char* compatAsString() const;
 
-		/// Applies Core game fixes to an existing config. Returns the number of applied fixes.
-		u32 applyGameFixes(Pcsx2Config& config, bool applyAuto) const;
+		/// Applies Core game fixes to an existing config.
+		void applyGameFixes(Pcsx2Config& config, bool applyAuto) const;
 
-		/// Applies GS hardware fixes to an existing config. Returns the number of applied fixes.
-		u32 applyGSHardwareFixes(Pcsx2Config::GSOptions& config) const;
+		/// Applies GS hardware fixes to an existing config.
+		void applyGSHardwareFixes(Pcsx2Config::GSOptions& config) const;
 
 		/// Returns true if the current config value for the specified hw fix id matches the value.
 		static bool configMatchesHWFix(const Pcsx2Config::GSOptions& config, GSHWFixId id, int value);
