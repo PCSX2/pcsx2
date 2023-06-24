@@ -28,6 +28,7 @@
 #include "Host.h"
 #include "Input/InputManager.h"
 #include "MultiISA.h"
+#include "MTGS.h"
 #include "pcsx2/GS.h"
 #include "GS/Renderers/Null/GSRendererNull.h"
 #include "GS/Renderers/HW/GSRendererHW.h"
@@ -972,7 +973,7 @@ static void HotkeyAdjustUpscaleMultiplier(s32 delta)
 
 	// this is pretty slow. we only really need to flush the TC and recompile shaders.
 	// TODO(Stenzek): Make it faster at some point in the future.
-	GetMTGS().ApplySettings();
+	MTGS::ApplySettings();
 }
 
 BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphics"),
@@ -980,7 +981,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 	[](s32 pressed) {
 		if (!pressed)
 		{
-			GetMTGS().RunOnGSThread([]() { GSQueueSnapshot(std::string(), 0); });
+			MTGS::RunOnGSThread([]() { GSQueueSnapshot(std::string(), 0); });
 		}
 	}},
 	{"ToggleVideoCapture", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle Video Capture"),
@@ -989,30 +990,30 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 			{
 				if (GSCapture::IsCapturing())
 				{
-					GetMTGS().RunOnGSThread([]() { g_gs_renderer->EndCapture(); });
-					GetMTGS().WaitGS(false, false, false);
+					MTGS::RunOnGSThread([]() { g_gs_renderer->EndCapture(); });
+					MTGS::WaitGS(false, false, false);
 					return;
 				}
 
-				GetMTGS().RunOnGSThread([]() {
+				MTGS::RunOnGSThread([]() {
 					std::string filename(fmt::format("{}.{}", GSGetBaseVideoFilename(), GSConfig.CaptureContainer));
 					g_gs_renderer->BeginCapture(std::move(filename));
 				});
 
 				// Sync GS thread. We want to start adding audio at the same time as video.
-				GetMTGS().WaitGS(false, false, false);
+				MTGS::WaitGS(false, false, false);
 			}
 		}},
 	{"GSDumpSingleFrame", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Save Single Frame GS Dump"),
 		[](s32 pressed) {
 			if (!pressed)
 			{
-				GetMTGS().RunOnGSThread([]() { GSQueueSnapshot(std::string(), 1); });
+				MTGS::RunOnGSThread([]() { GSQueueSnapshot(std::string(), 1); });
 			}
 		}},
 	{"GSDumpMultiFrame", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Save Multi Frame GS Dump"),
 		[](s32 pressed) {
-			GetMTGS().RunOnGSThread([pressed]() {
+			MTGS::RunOnGSThread([pressed]() {
 				if (pressed > 0)
 					GSQueueSnapshot(std::string(), std::numeric_limits<u32>::max());
 				else
@@ -1023,7 +1024,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 		TRANSLATE_NOOP("Hotkeys", "Toggle Software Rendering"),
 		[](s32 pressed) {
 			if (!pressed)
-				GetMTGS().ToggleSoftwareRendering();
+				MTGS::ToggleSoftwareRendering();
 		}},
 	{"IncreaseUpscaleMultiplier", TRANSLATE_NOOP("Hotkeys", "Graphics"),
 		TRANSLATE_NOOP("Hotkeys", "Increase Upscale Multiplier"),
@@ -1067,7 +1068,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 				Host::OSD_QUICK_DURATION);
 			EmuConfig.GS.HWMipmap = new_level;
 
-			GetMTGS().RunOnGSThread([new_level]() {
+			MTGS::RunOnGSThread([new_level]() {
 				GSConfig.HWMipmap = new_level;
 				g_gs_renderer->PurgeTextureCache();
 				g_gs_renderer->PurgePool();
@@ -1099,7 +1100,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 				Host::OSD_QUICK_DURATION);
 			EmuConfig.GS.InterlaceMode = new_mode;
 
-			GetMTGS().RunOnGSThread([new_mode]() { GSConfig.InterlaceMode = new_mode; });
+			MTGS::RunOnGSThread([new_mode]() { GSConfig.InterlaceMode = new_mode; });
 		}},
 	{"ToggleTextureDumping", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle Texture Dumping"),
 		[](s32 pressed) {
@@ -1110,7 +1111,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 					EmuConfig.GS.DumpReplaceableTextures ? TRANSLATE_STR("Hotkeys", "Texture dumping is now enabled.") :
 														   TRANSLATE_STR("Hotkeys", "Texture dumping is now disabled."),
 					Host::OSD_INFO_DURATION);
-				GetMTGS().ApplySettings();
+				MTGS::ApplySettings();
 			}
 		}},
 	{"ToggleTextureReplacements", TRANSLATE_NOOP("Hotkeys", "Graphics"),
@@ -1124,7 +1125,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 						TRANSLATE_STR("Hotkeys", "Texture replacements are now enabled.") :
 						TRANSLATE_STR("Hotkeys", "Texture replacements are now disabled."),
 					Host::OSD_INFO_DURATION);
-				GetMTGS().ApplySettings();
+				MTGS::ApplySettings();
 			}
 		}},
 	{"ReloadTextureReplacements", TRANSLATE_NOOP("Hotkeys", "Graphics"),
@@ -1141,7 +1142,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 				{
 					Host::AddKeyedOSDMessage("ReloadTextureReplacements",
 						TRANSLATE_STR("Hotkeys", "Reloading texture replacements..."), Host::OSD_INFO_DURATION);
-					GetMTGS().RunOnGSThread([]() { GSTextureReplacements::ReloadReplacementMap(); });
+					MTGS::RunOnGSThread([]() { GSTextureReplacements::ReloadReplacementMap(); });
 				}
 			}
 		}},

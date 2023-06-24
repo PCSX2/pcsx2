@@ -39,6 +39,7 @@
 #include "pcsx2/ImGui/ImGuiManager.h"
 #include "pcsx2/Input/InputManager.h"
 #include "pcsx2/LogSink.h"
+#include "pcsx2/MTGS.h"
 #include "pcsx2/PAD/Host/PAD.h"
 #include "pcsx2/PerformanceMetrics.h"
 #include "pcsx2/VMManager.h"
@@ -190,7 +191,7 @@ void EmuThread::startFullscreenUI(bool fullscreen)
 		return;
 	}
 
-	if (VMManager::HasValidVM() || GetMTGS().IsOpen())
+	if (VMManager::HasValidVM() || MTGS::IsOpen())
 		return;
 
 	// this should just set the flag so it gets automatically started
@@ -199,7 +200,7 @@ void EmuThread::startFullscreenUI(bool fullscreen)
 	m_is_rendering_to_main = shouldRenderToMain();
 	m_is_fullscreen = fullscreen;
 
-	if (!GetMTGS().WaitForOpen())
+	if (!MTGS::WaitForOpen())
 	{
 		m_run_fullscreen_ui = false;
 		return;
@@ -217,18 +218,18 @@ void EmuThread::stopFullscreenUI()
 		QMetaObject::invokeMethod(this, &EmuThread::stopFullscreenUI, Qt::QueuedConnection);
 
 		// wait until the host display is gone
-		while (GetMTGS().IsOpen())
+		while (MTGS::IsOpen())
 			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
 
 		return;
 	}
 
-	if (!GetMTGS().IsOpen())
+	if (!MTGS::IsOpen())
 		return;
 
 	pxAssertRel(!VMManager::HasValidVM(), "VM is not valid at FSUI shutdown time");
 	m_run_fullscreen_ui = false;
-	GetMTGS().WaitForClose();
+	MTGS::WaitForClose();
 }
 
 void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
@@ -509,14 +510,14 @@ void EmuThread::setFullscreen(bool fullscreen, bool allow_render_to_main)
 		return;
 	}
 
-	if (!GetMTGS().IsOpen() || m_is_fullscreen == fullscreen)
+	if (!MTGS::IsOpen() || m_is_fullscreen == fullscreen)
 		return;
 
 	// This will call back to us on the MTGS thread.
 	m_is_fullscreen = fullscreen;
 	m_is_rendering_to_main = allow_render_to_main && shouldRenderToMain();
-	GetMTGS().UpdateDisplayWindow();
-	GetMTGS().WaitGS();
+	MTGS::UpdateDisplayWindow();
+	MTGS::WaitGS();
 
 	// If we're using exclusive fullscreen, the refresh rate may have changed.
 	UpdateVSyncRate(true);
@@ -530,17 +531,17 @@ void EmuThread::setSurfaceless(bool surfaceless)
 		return;
 	}
 
-	if (!GetMTGS().IsOpen() || m_is_surfaceless == surfaceless)
+	if (!MTGS::IsOpen() || m_is_surfaceless == surfaceless)
 		return;
 
 	// If we went surfaceless and were running the fullscreen UI, stop MTGS running idle.
 	// Otherwise, we'll keep trying to present to nothing.
-	GetMTGS().SetRunIdle(!surfaceless && m_run_fullscreen_ui);
+	MTGS::SetRunIdle(!surfaceless && m_run_fullscreen_ui);
 
 	// This will call back to us on the MTGS thread.
 	m_is_surfaceless = surfaceless;
-	GetMTGS().UpdateDisplayWindow();
-	GetMTGS().WaitGS();
+	MTGS::UpdateDisplayWindow();
+	MTGS::WaitGS();
 }
 
 void EmuThread::applySettings()
@@ -601,14 +602,14 @@ void EmuThread::checkForSettingChanges(const Pcsx2Config& old_config)
 		updatePerformanceMetrics(true);
 	}
 
-	if (GetMTGS().IsOpen())
+	if (MTGS::IsOpen())
 	{
 		const bool render_to_main = shouldRenderToMain();
 		if (!m_is_fullscreen && m_is_rendering_to_main != render_to_main)
 		{
 			m_is_rendering_to_main = render_to_main;
-			GetMTGS().UpdateDisplayWindow();
-			GetMTGS().WaitGS();
+			MTGS::UpdateDisplayWindow();
+			MTGS::WaitGS();
 		}
 	}
 }
@@ -634,7 +635,7 @@ void EmuThread::toggleSoftwareRendering()
 	if (!VMManager::HasValidVM())
 		return;
 
-	GetMTGS().ToggleSoftwareRendering();
+	MTGS::ToggleSoftwareRendering();
 }
 
 void EmuThread::switchRenderer(GSRendererType renderer)
@@ -648,7 +649,7 @@ void EmuThread::switchRenderer(GSRendererType renderer)
 	if (!VMManager::HasValidVM())
 		return;
 
-	GetMTGS().SwitchRenderer(renderer);
+	MTGS::SwitchRenderer(renderer);
 }
 
 void EmuThread::changeDisc(CDVD_SourceType source, const QString& path)
@@ -792,10 +793,10 @@ void EmuThread::connectDisplaySignals(DisplayWidget* widget)
 
 void EmuThread::onDisplayWindowResized(int width, int height, float scale)
 {
-	if (!GetMTGS().IsOpen())
+	if (!MTGS::IsOpen())
 		return;
 
-	GetMTGS().ResizeDisplayWindow(width, height, scale);
+	MTGS::ResizeDisplayWindow(width, height, scale);
 }
 
 void EmuThread::onApplicationStateChanged(Qt::ApplicationState state)
@@ -841,7 +842,7 @@ void EmuThread::redrawDisplayWindow()
 	if (!VMManager::HasValidVM() || VMManager::GetState() == VMState::Running)
 		return;
 
-	GetMTGS().PresentCurrentFrame();
+	MTGS::PresentCurrentFrame();
 }
 
 void EmuThread::runOnCPUThread(const std::function<void()>& func)
@@ -860,7 +861,7 @@ void EmuThread::queueSnapshot(quint32 gsdump_frames)
 	if (!VMManager::HasValidVM())
 		return;
 
-	GetMTGS().RunOnGSThread([gsdump_frames]() { GSQueueSnapshot(std::string(), gsdump_frames); });
+	MTGS::RunOnGSThread([gsdump_frames]() { GSQueueSnapshot(std::string(), gsdump_frames); });
 }
 
 void EmuThread::beginCapture(const QString& path)
@@ -874,13 +875,13 @@ void EmuThread::beginCapture(const QString& path)
 	if (!VMManager::HasValidVM())
 		return;
 
-	GetMTGS().RunOnGSThread([path = path.toStdString()]() {
+	MTGS::RunOnGSThread([path = path.toStdString()]() {
 		GSBeginCapture(std::move(path));
 	});
 
 	// Sync GS thread. We want to start adding audio at the same time as video.
 	// TODO: This could be up to 64 frames behind... use the pts to adjust it.
-	GetMTGS().WaitGS(false, false, false);
+	MTGS::WaitGS(false, false, false);
 }
 
 void EmuThread::endCapture()
@@ -894,7 +895,7 @@ void EmuThread::endCapture()
 	if (!VMManager::HasValidVM())
 		return;
 
-	GetMTGS().RunOnGSThread(&GSEndCapture);
+	MTGS::RunOnGSThread(&GSEndCapture);
 }
 
 std::optional<WindowInfo> EmuThread::acquireRenderWindow(bool recreate_window)
@@ -1183,13 +1184,6 @@ bool Host::IsFullscreen()
 void Host::SetFullscreen(bool enabled)
 {
 	g_emu_thread->setFullscreen(enabled, true);
-}
-
-alignas(16) static SysMtgsThread s_mtgs_thread;
-
-SysMtgsThread& GetMTGS()
-{
-	return s_mtgs_thread;
 }
 
 bool QtHost::InitializeConfig()

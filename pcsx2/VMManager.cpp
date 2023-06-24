@@ -34,6 +34,7 @@
 #include "Input/InputManager.h"
 #include "IopBios.h"
 #include "LogSink.h"
+#include "MTGS.h"
 #include "MTVU.h"
 #include "MemoryCardFile.h"
 #include "PAD/Host/PAD.h"
@@ -236,7 +237,7 @@ void VMManager::SetState(VMState state)
 		{
 			if (THREAD_VU1)
 				vu1Thread.WaitVU();
-			GetMTGS().WaitGS(false);
+			MTGS::WaitGS(false);
 			InputManager::PauseVibration();
 		}
 		else
@@ -384,6 +385,8 @@ void VMManager::Internal::CPUThreadShutdown()
 	USBshutdown();
 	GSshutdown();
 
+	MTGS::ShutdownThread();
+
 #ifdef _WIN32
 	CoUninitialize();
 #endif
@@ -521,7 +524,7 @@ void VMManager::ApplySettings()
 	{
 		if (THREAD_VU1)
 			vu1Thread.WaitVU();
-		GetMTGS().WaitGS(false);
+		MTGS::WaitGS(false);
 	}
 
 	// Reset to a clean Pcsx2Config. Otherwise things which are optional (e.g. gamefixes)
@@ -544,7 +547,7 @@ void VMManager::ApplyCoreSettings()
 	{
 		if (THREAD_VU1)
 			vu1Thread.WaitVU();
-		GetMTGS().WaitGS(false);
+		MTGS::WaitGS(false);
 	}
 
 	// Reset to a clean Pcsx2Config. Otherwise things which are optional (e.g. gamefixes)
@@ -631,7 +634,7 @@ void VMManager::Internal::UpdateEmuFolders()
 
 		if (EmuFolders::Textures != old_textures_directory)
 		{
-			GetMTGS().RunOnGSThread([]() {
+			MTGS::RunOnGSThread([]() {
 				if (VMManager::HasValidVM())
 					GSTextureReplacements::ReloadReplacementMap();
 			});
@@ -640,7 +643,7 @@ void VMManager::Internal::UpdateEmuFolders()
 		if (EmuFolders::Videos != old_videos_directory)
 		{
 			if (VMManager::HasValidVM())
-				GetMTGS().RunOnGSThread(&GSEndCapture);
+				MTGS::RunOnGSThread(&GSEndCapture);
 		}
 	}
 }
@@ -1189,8 +1192,8 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	EmuConfig.LimiterMode = GetInitialLimiterMode();
 
 	Console.WriteLn("Opening GS...");
-	s_gs_open_on_initialize = GetMTGS().IsOpen();
-	if (!s_gs_open_on_initialize && !GetMTGS().WaitForOpen())
+	s_gs_open_on_initialize = MTGS::IsOpen();
+	if (!s_gs_open_on_initialize && !MTGS::WaitForOpen())
 	{
 		// we assume GS is going to report its own error
 		Console.WriteLn("Failed to open GS.");
@@ -1199,7 +1202,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 
 	ScopedGuard close_gs = []() {
 		if (!s_gs_open_on_initialize)
-			GetMTGS().WaitForClose();
+			MTGS::WaitForClose();
 	};
 
 	Console.WriteLn("Opening SPU2...");
@@ -1310,7 +1313,7 @@ void VMManager::Shutdown(bool save_resume_state)
 	// sync everything
 	if (THREAD_VU1)
 		vu1Thread.WaitVU();
-	GetMTGS().WaitGS();
+	MTGS::WaitGS();
 
 	if (!GSDumpReplayer::IsReplayingDump() && save_resume_state)
 	{
@@ -1359,12 +1362,12 @@ void VMManager::Shutdown(bool save_resume_state)
 	// so that the texture cache and targets are all cleared.
 	if (s_gs_open_on_initialize)
 	{
-		GetMTGS().WaitGS(false, false, false);
-		GetMTGS().ResetGS(true);
+		MTGS::WaitGS(false, false, false);
+		MTGS::ResetGS(true);
 	}
 	else
 	{
-		GetMTGS().WaitForClose();
+		MTGS::WaitForClose();
 	}
 
 	PADshutdown();
@@ -1402,6 +1405,10 @@ void VMManager::Reset()
 		return;
 #endif
 
+	vu1Thread.WaitVU();
+	vu1Thread.Reset();
+	MTGS::WaitGS();
+
 	const bool elf_was_changed = (s_current_crc != 0);
 	ClearELFInfo();
 	if (elf_was_changed)
@@ -1416,7 +1423,7 @@ void VMManager::Reset()
 	if (g_InputRecording.isActive())
 	{
 		g_InputRecording.handleReset();
-		GetMTGS().PresentCurrentFrame();
+		MTGS::PresentCurrentFrame();
 	}
 
 	// If we were paused, state won't be resetting, so don't flip back to running.
@@ -1511,7 +1518,7 @@ bool VMManager::DoLoadState(const char* filename)
 		if (g_InputRecording.isActive())
 		{
 			g_InputRecording.handleLoadingSavestate();
-			GetMTGS().PresentCurrentFrame();
+			MTGS::PresentCurrentFrame();
 		}
 		return true;
 	}
@@ -2044,7 +2051,7 @@ void VMManager::CheckForGSConfigChanges(const Pcsx2Config& old_config)
 		EmuConfig.LimiterMode = GetInitialLimiterMode();
 
 	ResetFrameLimiterState();
-	GetMTGS().ApplySettings();
+	MTGS::ApplySettings();
 }
 
 void VMManager::CheckForFramerateConfigChanges(const Pcsx2Config& old_config)
@@ -2073,7 +2080,7 @@ void VMManager::CheckForPatchConfigChanges(const Pcsx2Config& old_config)
 	// This is a bit messy, because the patch config update happens after the settings are loaded,
 	// if we disable widescreen patches, we have to reload the original settings again.
 	if (Patch::ReloadPatchAffectingOptions())
-		GetMTGS().ApplySettings();
+		MTGS::ApplySettings();
 }
 
 void VMManager::CheckForDEV9ConfigChanges(const Pcsx2Config& old_config)
@@ -2171,7 +2178,7 @@ void VMManager::CheckForConfigChanges(const Pcsx2Config& old_config)
 
 	// For the big picture UI, we still need to update GS settings, since it's running,
 	// and we don't update its config when we start the VM.
-	if (HasValidVM() || GetMTGS().IsOpen())
+	if (HasValidVM() || MTGS::IsOpen())
 		CheckForGSConfigChanges(old_config);
 
 	if (EmuConfig.Achievements != old_config.Achievements)
@@ -2705,7 +2712,7 @@ void VMManager::SetEmuThreadAffinities()
 		if (EmuConfig.Cpu.AffinityControlMode != 0)
 			Console.Error("Insufficient processors for affinity control.");
 
-		GetMTGS().GetThreadHandle().SetAffinity(0);
+		MTGS::GetThreadHandle().SetAffinity(0);
 		vu1Thread.GetThreadHandle().SetAffinity(0);
 		s_vm_thread_handle.SetAffinity(0);
 		return;
@@ -2748,7 +2755,7 @@ void VMManager::SetEmuThreadAffinities()
 
 	const u64 gs_affinity = static_cast<u64>(1) << gs_index;
 	Console.WriteLn(Color_StrongGreen, "GS thread is on processor %u (0x%llx)", gs_index, gs_affinity);
-	GetMTGS().GetThreadHandle().SetAffinity(gs_affinity);
+	MTGS::GetThreadHandle().SetAffinity(gs_affinity);
 }
 
 void VMManager::SetHardwareDependentDefaultSettings(SettingsInterface& si)

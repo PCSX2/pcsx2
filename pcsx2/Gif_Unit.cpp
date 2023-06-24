@@ -195,42 +195,6 @@ void Gif_FinishIRQ()
 	}
 }
 
-// Used in MTVU mode... MTVU will later complete a real packet
-void Gif_AddGSPacketMTVU(GS_Packet& gsPack, GIF_PATH path)
-{
-	GetMTGS().SendSimpleGSPacket(GS_RINGTYPE_MTVU_GSPACKET, 0, 0, path);
-}
-
-void Gif_AddCompletedGSPacket(GS_Packet& gsPack, GIF_PATH path)
-{
-	//DevCon.WriteLn("Adding Completed Gif Packet [size=%x]", gsPack.size);
-	if (COPY_GS_PACKET_TO_MTGS)
-	{
-		GetMTGS().PrepDataPacket(path, gsPack.size / 16);
-		MemCopy_WrappedDest((u128*)&gifUnit.gifPath[path].buffer[gsPack.offset], RingBuffer.m_Ring,
-							GetMTGS().m_packet_writepos, RingBufferSize, gsPack.size / 16);
-		GetMTGS().SendDataPacket();
-	}
-	else
-	{
-		pxAssertDev(!gsPack.readAmount, "Gif Unit - gsPack.readAmount only valid for MTVU path 1!");
-		gifUnit.gifPath[path].readAmount.fetch_add(gsPack.size);
-		GetMTGS().SendSimpleGSPacket(GS_RINGTYPE_GSPACKET, gsPack.offset, gsPack.size, path);
-	}
-}
-
-void Gif_AddBlankGSPacket(u32 size, GIF_PATH path)
-{
-	//DevCon.WriteLn("Adding Blank Gif Packet [size=%x]", size);
-	gifUnit.gifPath[path].readAmount.fetch_add(size);
-	GetMTGS().SendSimpleGSPacket(GS_RINGTYPE_GSPACKET, ~0u, size, path);
-}
-
-void Gif_MTGS_Wait(bool isMTVU)
-{
-	GetMTGS().WaitGS(false, true, isMTVU);
-}
-
 void SaveStateBase::gifPathFreeze(u32 path)
 {
 
@@ -262,7 +226,7 @@ void SaveStateBase::gifFreeze()
 {
 	bool mtvuMode = THREAD_VU1;
 	pxAssert(vu1Thread.IsDone());
-	GetMTGS().WaitGS();
+	MTGS::WaitGS();
 	FreezeTag("Gif Unit");
 	Freeze(mtvuMode);
 	Freeze(gifUnit.stat);

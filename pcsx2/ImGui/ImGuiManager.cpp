@@ -18,7 +18,6 @@
 #include "GS/Renderers/Common/GSDevice.h"
 #include "Config.h"
 #include "Counters.h"
-#include "GS.h"
 #include "GS/GS.h"
 #include "Host.h"
 #include "IconsFontAwesome5.h"
@@ -27,6 +26,7 @@
 #include "ImGui/ImGuiManager.h"
 #include "ImGui/ImGuiOverlays.h"
 #include "Input/InputManager.h"
+#include "MTGS.h"
 #include "PerformanceMetrics.h"
 #include "Recording/InputRecording.h"
 #include "VMManager.h"
@@ -713,7 +713,7 @@ void ImGuiManager::AddTextInput(std::string str)
 
 	// Has to go through the CPU -> GS thread :(
 	Host::RunOnCPUThread([str = std::move(str)]() {
-		GetMTGS().RunOnGSThread([str = std::move(str)]() {
+		MTGS::RunOnGSThread([str = std::move(str)]() {
 			if (!ImGui::GetCurrentContext())
 				return;
 
@@ -737,7 +737,7 @@ bool ImGuiManager::ProcessPointerButtonEvent(InputBindingKey key, float value)
 		return false;
 
 	// still update state anyway
-	GetMTGS().RunOnGSThread([button = key.data, down = (value != 0.0f)]() { ImGui::GetIO().AddMouseButtonEvent(button, down); });
+	MTGS::RunOnGSThread([button = key.data, down = (value != 0.0f)]() { ImGui::GetIO().AddMouseButtonEvent(button, down); });
 
 	return s_imgui_wants_mouse.load(std::memory_order_acquire);
 }
@@ -749,7 +749,7 @@ bool ImGuiManager::ProcessPointerAxisEvent(InputBindingKey key, float value)
 
 	// still update state anyway
 	const bool horizontal = (key.data == static_cast<u32>(InputPointerAxis::WheelX));
-	GetMTGS().RunOnGSThread([wheel_x = horizontal ? value : 0.0f, wheel_y = horizontal ? 0.0f : value]() {
+	MTGS::RunOnGSThread([wheel_x = horizontal ? value : 0.0f, wheel_y = horizontal ? 0.0f : value]() {
 		ImGui::GetIO().AddMouseWheelEvent(wheel_x, wheel_y);
 	});
 
@@ -763,7 +763,7 @@ bool ImGuiManager::ProcessHostKeyEvent(InputBindingKey key, float value)
 		return false;
 
 	// still update state anyway
-	GetMTGS().RunOnGSThread([imkey = iter->second, down = (value != 0.0f)]() { ImGui::GetIO().AddKeyEvent(imkey, down); });
+	MTGS::RunOnGSThread([imkey = iter->second, down = (value != 0.0f)]() { ImGui::GetIO().AddKeyEvent(imkey, down); });
 
 	return s_imgui_wants_keyboard.load(std::memory_order_acquire);
 }
@@ -805,7 +805,7 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
 	if (static_cast<u32>(key) >= std::size(key_map) || key_map[static_cast<u32>(key)] == ImGuiKey_None)
 		return false;
 
-	GetMTGS().RunOnGSThread(
+	MTGS::RunOnGSThread(
 		[key = key_map[static_cast<u32>(key)], value]() { ImGui::GetIO().AddKeyAnalogEvent(key, (value > 0.0f), value); });
 
 	return true;

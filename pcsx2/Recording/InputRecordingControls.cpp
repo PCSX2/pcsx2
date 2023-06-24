@@ -22,7 +22,7 @@
 #include "InputRecordingControls.h"
 #include "Utilities/InputRecordingLogger.h"
 
-#include "GS.h"
+#include "MTGS.h"
 #include "VMManager.h"
 
 void InputRecordingControls::toggleRecordMode()
@@ -43,7 +43,7 @@ void InputRecordingControls::setRecordMode(bool waitForFrameToEnd)
 	{
 		m_state = Mode::Recording;
 		InputRec::log("Record mode ON");
-		GetMTGS().PresentCurrentFrame();
+		MTGS::PresentCurrentFrame();
 	}
 	else
 	{
@@ -60,7 +60,7 @@ void InputRecordingControls::setReplayMode(bool waitForFrameToEnd)
 	{
 		m_state = Mode::Replaying;
 		InputRec::log("Replay mode ON");
-		GetMTGS().PresentCurrentFrame();
+		MTGS::PresentCurrentFrame();
 	}
 	else
 	{
@@ -86,7 +86,7 @@ void InputRecordingControls::processControlQueue()
 			m_controlQueue.front()();
 			m_controlQueue.pop();
 		}
-		GetMTGS().PresentCurrentFrame();
+		MTGS::PresentCurrentFrame();
 	}
 }
 

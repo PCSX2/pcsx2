@@ -213,8 +213,8 @@ static void GSDumpReplayerLoadInitialState()
 	// load GS state
 	freezeData fd = {static_cast<int>(s_dump_file->GetStateData().size()),
 		const_cast<u8*>(s_dump_file->GetStateData().data())};
-	MTGS_FreezeData mfd = {&fd, 0};
-	GetMTGS().Freeze(FreezeAction::Load, mfd);
+	MTGS::FreezeData mfd = {&fd, 0};
+	MTGS::Freeze(FreezeAction::Load, mfd);
 	if (mfd.retval != 0)
 		Host::ReportFormattedErrorAsync("GSDumpReplayer", "Failed to load GS state.");
 }
@@ -317,7 +317,7 @@ void GSDumpReplayerCpuStep()
 			s_dump_frame_number++;
 			GSDumpReplayerUpdateFrameLimit();
 			GSDumpReplayerFrameLimit();
-			GetMTGS().PostVsyncStart(false);
+			MTGS::PostVsyncStart(false);
 			VMManager::Internal::VSyncOnCPUThread();
 			if (VMManager::Internal::IsExecutionInterrupted())
 				GSDumpReplayerExitExecution();
@@ -331,7 +331,7 @@ void GSDumpReplayerCpuStep()
 
 			// Allocate an extra quadword, some transfers write too much (e.g. Lego Racers 2 with Z24 downloads).
 			std::unique_ptr<u8[]> arr(new u8[(size + 1) * 16]);
-			GetMTGS().InitAndReadFIFO(arr.get(), size);
+			MTGS::InitAndReadFIFO(arr.get(), size);
 		}
 		break;
 

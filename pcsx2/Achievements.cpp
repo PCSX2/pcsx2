@@ -21,13 +21,13 @@
 #include "CDVD/IsoFS/IsoFS.h"
 #include "CDVD/IsoFS/IsoFSCDVD.h"
 #include "Elfheader.h"
-#include "GS.h"
 #include "Host.h"
 #include "ImGui/FullscreenUI.h"
 #include "ImGui/ImGuiFullscreen.h"
 #include "ImGui/ImGuiManager.h"
 #include "IopMem.h"
 #include "Memory.h"
+#include "MTGS.h"
 #include "VMManager.h"
 #include "svnrev.h"
 #include "vtlb.h"
@@ -426,7 +426,7 @@ std::string Achievements::GetUserAgent()
 
 void Achievements::BeginLoadingScreen(const char* text, bool* was_running_idle)
 {
-	GetMTGS().RunOnGSThread(&ImGuiManager::InitializeFullscreenUI);
+	MTGS::RunOnGSThread(&ImGuiManager::InitializeFullscreenUI);
 	ImGuiFullscreen::OpenBackgroundProgressDialog("achievements_loading", text, 0, 0, 0);
 }
 
@@ -1041,7 +1041,7 @@ void Achievements::DownloadImage(std::string url, std::string cache_filename)
 			return;
 		}
 
-		GetMTGS().RunOnGSThread([cache_filename]() { ImGuiFullscreen::InvalidateCachedTexture(cache_filename); });
+		MTGS::RunOnGSThread([cache_filename]() { ImGuiFullscreen::InvalidateCachedTexture(cache_filename); });
 	};
 
 	s_http_downloader->CreateRequest(std::move(url), std::move(callback));
@@ -1072,7 +1072,7 @@ void Achievements::DisplayAchievementSummary()
 				summary.append(TRANSLATE_SV("Achievements", "Leaderboard submission is enabled."));
 		}
 
-		GetMTGS().RunOnGSThread([title = std::move(title), summary = std::move(summary), icon = s_game_icon]() {
+		MTGS::RunOnGSThread([title = std::move(title), summary = std::move(summary), icon = s_game_icon]() {
 			if (FullscreenUI::IsInitialized())
 				ImGuiFullscreen::AddNotification(10.0f, std::move(title), std::move(summary), std::move(icon));
 		});
@@ -1092,7 +1092,7 @@ void Achievements::DisplayMasteredNotification()
 	std::string message(fmt::format(
 		"{} achievements, {} points{}", GetAchievementCount(), GetCurrentPointsForGame(), s_challenge_mode ? " (Hardcore Mode)" : ""));
 
-	GetMTGS().RunOnGSThread([title = std::move(title), message = std::move(message), icon = s_game_icon]() {
+	MTGS::RunOnGSThread([title = std::move(title), message = std::move(message), icon = s_game_icon]() {
 		if (FullscreenUI::IsInitialized())
 			ImGuiFullscreen::AddNotification(20.0f, std::move(title), std::move(message), std::move(icon));
 	});
@@ -1157,7 +1157,7 @@ void Achievements::GetPatchesCallback(s32 status_code, const std::string& conten
 		return;
 
 	// ensure fullscreen UI is ready
-	GetMTGS().RunOnGSThread(&ImGuiManager::InitializeFullscreenUI);
+	MTGS::RunOnGSThread(&ImGuiManager::InitializeFullscreenUI);
 
 	s_game_id = response.id;
 	s_game_title = response.title;
@@ -1847,7 +1847,7 @@ void Achievements::SubmitLeaderboardCallback(s32 status_code, const std::string&
 	std::string summary = fmt::format(
 		"Your Score: {} (Best: {})\nLeaderboard Position: {} of {}", submitted_score, best_score, response.new_rank, response.num_entries);
 
-	GetMTGS().RunOnGSThread([title = lb->title, summary = std::move(summary), icon = s_game_icon]() {
+	MTGS::RunOnGSThread([title = lb->title, summary = std::move(summary), icon = s_game_icon]() {
 		if (FullscreenUI::IsInitialized())
 			ImGuiFullscreen::AddNotification(10.0f, std::move(title), std::move(summary), std::move(icon));
 	});
@@ -1890,7 +1890,7 @@ void Achievements::UnlockAchievement(u32 achievement_id, bool add_notification /
 				break;
 		}
 
-		GetMTGS().RunOnGSThread(
+		MTGS::RunOnGSThread(
 			[title = std::move(title), description = achievement->description, icon = GetAchievementBadgePath(*achievement)]() {
 				ImGuiFullscreen::AddNotification(15.0f, std::move(title), std::move(description), std::move(icon));
 			});

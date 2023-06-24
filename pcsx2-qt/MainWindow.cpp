@@ -41,6 +41,7 @@
 #include "pcsx2/GameList.h"
 #include "pcsx2/Host.h"
 #include "pcsx2/LogSink.h"
+#include "pcsx2/MTGS.h"
 #include "pcsx2/PerformanceMetrics.h"
 #include "pcsx2/Recording/InputRecording.h"
 #include "pcsx2/Recording/InputRecordingControls.h"
@@ -709,7 +710,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool stoppi
 void MainWindow::updateDisplayRelatedActions(bool has_surface, bool render_to_main, bool fullscreen)
 {
 	// rendering to main, or switched to gamelist/grid
-	m_ui.actionViewSystemDisplay->setEnabled((has_surface && render_to_main) || (!has_surface && GetMTGS().IsOpen()));
+	m_ui.actionViewSystemDisplay->setEnabled((has_surface && render_to_main) || (!has_surface && MTGS::IsOpen()));
 	m_ui.menuWindowSize->setEnabled(has_surface && !fullscreen);
 	m_ui.actionFullscreen->setEnabled(has_surface);
 
@@ -821,7 +822,7 @@ bool MainWindow::isShowingGameList() const
 
 bool MainWindow::isRenderingFullscreen() const
 {
-	if (!GetMTGS().IsOpen() || !m_display_widget)
+	if (!MTGS::IsOpen() || !m_display_widget)
 		return false;
 
 	return getDisplayContainer()->isFullScreen();

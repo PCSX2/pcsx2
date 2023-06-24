@@ -202,6 +202,7 @@ set(pcsx2Headers
 	LogSink.h
 	PINE.h
 	Mdec.h
+	MTGS.h
 	MTVU.h
 	Memory.h
 	MemoryCardFile.h

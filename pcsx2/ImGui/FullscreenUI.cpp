@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -22,7 +22,6 @@
 #include "GS/Renderers/Common/GSTexture.h"
 #include "Achievements.h"
 #include "CDVD/CDVDdiscReader.h"
-#include "GS.h"
 #include "GameList.h"
 #include "Host.h"
 #include "INISettingsInterface.h"
@@ -31,6 +30,7 @@
 #include "ImGui/ImGuiManager.h"
 #include "Input/InputManager.h"
 #include "MemoryCardFile.h"
+#include "MTGS.h"
 #include "PAD/Host/PAD.h"
 #include "Sio.h"
 #include "USB/USB.h"
@@ -574,7 +574,7 @@ bool FullscreenUI::Initialize()
 
 	s_initialized = true;
 	s_hotkey_list_cache = InputManager::GetHotkeyList();
-	GetMTGS().SetRunIdle(true);
+	MTGS::SetRunIdle(true);
 
 	if (VMManager::HasValidVM())
 	{
@@ -613,13 +613,13 @@ void FullscreenUI::CheckForConfigChanges(const Pcsx2Config& old_config)
 	if (old_config.Achievements.Enabled && !EmuConfig.Achievements.Enabled)
 	{
 		// So, wait just in case.
-		GetMTGS().RunOnGSThread([]() {
+		MTGS::RunOnGSThread([]() {
 			if (s_current_main_window == MainWindowType::Achievements || s_current_main_window == MainWindowType::Leaderboards)
 			{
 				ReturnToMainWindow();
 			}
 		});
-		GetMTGS().WaitGS(false, false, false);
+		MTGS::WaitGS(false, false, false);
 	}
 #endif
 }
@@ -629,7 +629,7 @@ void FullscreenUI::OnVMStarted()
 	if (!IsInitialized())
 		return;
 
-	GetMTGS().RunOnGSThread([]() {
+	MTGS::RunOnGSThread([]() {
 		if (!IsInitialized())
 			return;
 
@@ -643,7 +643,7 @@ void FullscreenUI::OnVMDestroyed()
 	if (!IsInitialized())
 		return;
 
-	GetMTGS().RunOnGSThread([]() {
+	MTGS::RunOnGSThread([]() {
 		if (!IsInitialized())
 			return;
 
@@ -657,7 +657,7 @@ void FullscreenUI::GameChanged(std::string path, std::string serial, std::string
 	if (!IsInitialized())
 		return;
 
-	GetMTGS().RunOnGSThread(
+	MTGS::RunOnGSThread(
 		[path = std::move(path), serial = std::move(serial), title = std::move(title), disc_crc, crc]() {
 			if (!IsInitialized())
 				return;
@@ -701,7 +701,7 @@ void FullscreenUI::OpenPauseMenu()
 	if (!VMManager::HasValidVM())
 		return;
 
-	GetMTGS().RunOnGSThread([]() {
+	MTGS::RunOnGSThread([]() {
 		if (!ImGuiManager::InitializeFullscreenUI() || s_current_main_window != MainWindowType::None)
 			return;
 
@@ -851,7 +851,7 @@ void FullscreenUI::InvalidateCoverCache()
 	if (!IsInitialized())
 		return;
 
-	GetMTGS().RunOnGSThread([]() { s_cover_image_map.clear(); });
+	MTGS::RunOnGSThread([]() { s_cover_image_map.clear(); });
 }
 
 void FullscreenUI::ReturnToMainWindow()
@@ -1015,7 +1015,7 @@ void FullscreenUI::DoToggleSoftwareRenderer()
 		if (!VMManager::HasValidVM())
 			return;
 
-		GetMTGS().ToggleSoftwareRendering();
+		MTGS::ToggleSoftwareRendering();
 	});
 }
 
@@ -2229,7 +2229,7 @@ void FullscreenUI::StartAutomaticBinding(u32 port)
 	// messy because the enumeration has to happen on the input thread
 	Host::RunOnCPUThread([port]() {
 		std::vector<std::pair<std::string, std::string>> devices(InputManager::EnumerateDevices());
-		GetMTGS().RunOnGSThread([port, devices = std::move(devices)]() {
+		MTGS::RunOnGSThread([port, devices = std::move(devices)]() {
 			if (devices.empty())
 			{
 				ShowToast({}, "Automatic binding failed, no devices are available.");
@@ -2259,7 +2259,7 @@ void FullscreenUI::StartAutomaticBinding(u32 port)
 
 
 						// and the toast needs to happen on the UI thread.
-						GetMTGS().RunOnGSThread([result, name = std::move(name)]() {
+						MTGS::RunOnGSThread([result, name = std::move(name)]() {
 							ShowToast({}, result ? fmt::format("Automatic mapping completed for {}.", name) :
 												   fmt::format("Automatic mapping failed for {}.", name));
 						});
@@ -5750,7 +5750,7 @@ void FullscreenUI::DrawCoverDownloaderWindow()
 					GameList::DownloadCovers(urls, use_serial_names, progress, [](const GameList::Entry* entry, std::string save_path) {
 						// cache the cover path on our side once it's saved
 						Host::RunOnCPUThread([path = entry->path, save_path = std::move(save_path)]() {
-							GetMTGS().RunOnGSThread([path = std::move(path), save_path = std::move(save_path)]() {
+							MTGS::RunOnGSThread([path = std::move(path), save_path = std::move(save_path)]() {
 								s_cover_image_map[std::move(path)] = std::move(save_path);
 							});
 						});
@@ -6027,7 +6027,7 @@ void FullscreenUI::OpenAchievementsWindow()
 	if (!VMManager::HasValidVM() || !Achievements::IsActive())
 		return;
 
-	GetMTGS().RunOnGSThread([]() {
+	MTGS::RunOnGSThread([]() {
 		if (!ImGuiManager::InitializeFullscreenUI())
 			return;
 
@@ -6417,7 +6417,7 @@ void FullscreenUI::OpenLeaderboardsWindow()
 	if (!VMManager::HasValidVM() || !Achievements::IsActive())
 		return;
 
-	GetMTGS().RunOnGSThread([]() {
+	MTGS::RunOnGSThread([]() {
 		if (!ImGuiManager::InitializeFullscreenUI())
 			return;
 

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -13,13 +13,12 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "pcsx2/Achievements.h"
+#include "pcsx2/GS.h"
+#include "pcsx2/Host.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
 #include "pcsx2/Input/InputManager.h"
-#include "pcsx2/GS.h"
-#include "pcsx2/GS/GS.h"
-#include "pcsx2/Host.h"
 #include "pcsx2/VMManager.h"
-#include "pcsx2/Achievements.h"
 
 void Host::CommitBaseSettingChanges()
 {
@@ -219,15 +218,5 @@ std::optional<std::string> InputManager::ConvertHostKeyboardCodeToString(u32 cod
 	return std::nullopt;
 }
 
-SysMtgsThread& GetMTGS()
-{
-	throw std::exception();
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Interface Stuff
-//////////////////////////////////////////////////////////////////////////
-
-const IConsoleWriter* PatchesCon = &Console;
 BEGIN_HOTKEY_LIST(g_host_hotkeys)
 END_HOTKEY_LIST()
