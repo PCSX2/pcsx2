@@ -119,15 +119,19 @@ void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame)
 		m_force_preload--;
 		if (m_force_preload == 0)
 		{
-			for (auto iter = m_draw_transfers.begin(); iter != m_draw_transfers.end();)
+			for (auto iter = m_draw_transfers.rbegin(); iter != m_draw_transfers.rend(); iter++)
 			{
 				if ((s_n - iter->draw) > 5)
-					iter = m_draw_transfers.erase(iter);
-				else
+					break;
+				else // Keep the last 5 draws worth of transfers.
 				{
-					iter++;
+					GSUploadQueue transfer = *iter;
+					m_draw_transfers_double_buff.push_back(transfer);
 				}
 			}
+			m_draw_transfers.clear();
+			// Flip EE queue.
+			m_draw_transfers.swap(m_draw_transfers_double_buff);
 		}
 	}
 	else if (!idle_frame)
@@ -136,18 +140,20 @@ void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame)
 		// Rocky Legend does this with the main menu FMV's.
 		if (s_last_transfer_draw_n == s_n)
 		{
-			for (auto iter = m_draw_transfers.begin(); iter != m_draw_transfers.end();)
+			for (auto iter = m_draw_transfers.rbegin(); iter != m_draw_transfers.rend(); iter++)
 			{
 				if ((s_n - iter->draw) > 5)
-					iter = m_draw_transfers.erase(iter);
-				else
+					break;
+				else // Keep the last 5 draws worth of transfers.
 				{
-					iter++;
+					GSUploadQueue transfer = *iter;
+					m_draw_transfers_double_buff.push_back(transfer);
 				}
 			}
 		}
-		else
-			m_draw_transfers.clear();
+		m_draw_transfers.clear();
+		// Flip EE queue.
+		m_draw_transfers.swap(m_draw_transfers_double_buff);
 	}
 
 	if (GSConfig.LoadTextureReplacements)

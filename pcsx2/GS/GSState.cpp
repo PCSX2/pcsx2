@@ -113,6 +113,7 @@ GSState::GSState()
 	GrowVertexBuffer();
 
 	m_draw_transfers.clear();
+	m_draw_transfers_double_buff.clear();
 
 	PRIM = &m_env.PRIM;
 	//CSR->rREV = 0x20;
