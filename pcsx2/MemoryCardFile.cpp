@@ -620,11 +620,8 @@ uint FileMcd_ConvertToSlot(uint port, uint slot)
 	return slot + 4;     // multitap 2
 }
 
-void FileMcd_EmuOpen()
+void FileMcd_SetType()
 {
-	if(FileMcd_Open)
-		return;
-	FileMcd_Open = true;
 	// detect inserted memory card types
 	for (uint slot = 0; slot < 8; ++slot)
 	{
@@ -643,6 +640,14 @@ void FileMcd_EmuOpen()
 			EmuConfig.Mcd[slot].Type = type;
 		}
 	}
+}
+
+void FileMcd_EmuOpen()
+{
+	if(FileMcd_Open)
+		return;
+	FileMcd_Open = true;
+	
 
 	Mcd::impl.Open();
 	Mcd::implFolder.SetFiltering(EmuConfig.McdFolderAutoManage);
@@ -667,9 +672,9 @@ void FileMcd_Reopen(std::string new_serial)
 {
 	Console.WriteLn("Reopening memory cards...");
 	FileMcd_EmuClose();
-	FileMcd_EmuOpen();
-
+	FileMcd_SetType();
 	sioSetGameSerial(new_serial);
+	FileMcd_EmuOpen();
 }
 
 s32 FileMcd_IsPresent(uint port, uint slot)

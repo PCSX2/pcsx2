@@ -45,6 +45,7 @@ extern bool FileMcd_IsMultitapSlot(uint slot);
 extern std::string FileMcd_GetDefaultName(uint slot);
 
 uint FileMcd_ConvertToSlot(uint port, uint slot);
+void FileMcd_SetType();
 void FileMcd_EmuOpen();
 void FileMcd_EmuClose();
 void FileMcd_CancelEject();
