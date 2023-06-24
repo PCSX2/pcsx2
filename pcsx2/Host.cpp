@@ -143,6 +143,14 @@ std::string Host::TranslateToString(const std::string_view& context, const std::
 	return std::string(TranslateToStringView(context, msg));
 }
 
+void Host::ClearTranslationCache()
+{
+	s_translation_string_mutex.lock();
+	s_translation_string_map.clear();
+	s_translation_string_cache_pos = 0;
+	s_translation_string_mutex.unlock();
+}
+
 void Host::ReportFormattedErrorAsync(const std::string_view& title, const char* format, ...)
 {
 	std::va_list ap;

@@ -63,10 +63,8 @@ namespace Host
 	/// Returns a localized version of the specified string within the specified context.
 	std::string TranslateToString(const std::string_view& context, const std::string_view& msg);
 
-	/// Returns a localized version of the specified string, after formatting.
-
-	template<typename... T>
-	std::string TranslateAndFmt(const std::string_view& context, const std::string_view& format, T&&... args);
+	/// Clears the translation cache. All previously used strings should be considered invalid.
+	void ClearTranslationCache();
 
 	/// Adds OSD messages, duration is in seconds.
 	void AddOSDMessage(std::string message, float duration = 2.0f);
