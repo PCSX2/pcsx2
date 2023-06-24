@@ -252,7 +252,7 @@ void ATA::IO_SparseCacheLoad()
 			memset(hddSparseBlock.get(), 0, hddSparseBlockSize);
 			hddSparseBlockValid = true;
 #if defined(PCSX2_DEBUG) || defined(PCSX2_DEVBUILD)
-			ATA::IO_AssertSparseFileZeros(readSize);
+			ATA::IO_SparseCacheAssertFileZeros(readSize);
 #endif
 			return;
 		}
