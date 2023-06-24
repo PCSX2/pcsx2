@@ -36,6 +36,7 @@
 #include "USB/USB.h"
 #include "VMManager.h"
 #include "ps2/BiosTools.h"
+#include "Patch.h"
 #include "svnrev.h"
 
 #include "common/FileSystem.h"
@@ -175,6 +176,8 @@ namespace FullscreenUI
 		Achievements,
 		Folders,
 		Advanced,
+		Patches,
+		Cheats,
 		GameFixes,
 		Count
 	};
@@ -295,6 +298,7 @@ namespace FullscreenUI
 	static void DrawFoldersSettingsPage();
 	static void DrawAchievementsLoginWindow();
 	static void DrawAdvancedSettingsPage();
+	static void DrawPatchesOrCheatsSettingsPage(bool cheats);
 	static void DrawGameFixesSettingsPage();
 
 	static bool IsEditingGameSettings(SettingsInterface* bsi);
@@ -358,6 +362,7 @@ namespace FullscreenUI
 	static void DrawClampingModeSetting(SettingsInterface* bsi, const char* title, const char* summary, int vunum);
 	static void PopulateGraphicsAdapterList();
 	static void PopulateGameListDirectoryCache(SettingsInterface* si);
+	static void PopulatePatchesAndCheatsList(const std::string_view& serial, u32 crc);
 	static void BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const std::string_view& section,
 		const std::string_view& key, const std::string_view& display_name);
 	static void DrawInputBindingWindow();
@@ -373,6 +378,11 @@ namespace FullscreenUI
 	static std::vector<std::pair<std::string, bool>> s_game_list_directories_cache;
 	static std::vector<std::string> s_graphics_adapter_list_cache;
 	static std::vector<std::string> s_fullscreen_mode_list_cache;
+	static Patch::PatchInfoList s_game_patch_list;
+	static std::vector<std::string> s_enabled_game_patch_cache;
+	static Patch::PatchInfoList s_game_cheats_list;
+	static std::vector<std::string> s_enabled_game_cheat_cache;
+	static u32 s_game_cheat_unlabelled_count = 0;
 	static std::vector<const HotkeyInfo*> s_hotkey_list_cache;
 	static std::atomic_bool s_settings_changed{false};
 	static std::atomic_bool s_game_settings_changed{false};
@@ -742,6 +752,11 @@ void FullscreenUI::Shutdown(bool clear_state)
 		s_cover_image_map.clear();
 		s_game_list_sorted_entries = {};
 		s_game_list_directories_cache = {};
+		s_game_cheat_unlabelled_count = 0;
+		s_enabled_game_cheat_cache = {};
+		s_game_cheats_list = {};
+		s_enabled_game_patch_cache = {};
+		s_game_patch_list = {};
 		s_fullscreen_mode_list_cache = {};
 		s_graphics_adapter_list_cache = {};
 		s_current_game_title = {};
@@ -2317,6 +2332,10 @@ void FullscreenUI::SwitchToSettings()
 {
 	s_game_settings_entry.reset();
 	s_game_settings_interface.reset();
+	s_game_patch_list = {};
+	s_enabled_game_patch_cache = {};
+	s_game_cheats_list = {};
+	s_enabled_game_cheat_cache = {};
 	PopulateGraphicsAdapterList();
 
 	s_current_main_window = MainWindowType::Settings;
@@ -2328,6 +2347,7 @@ void FullscreenUI::SwitchToGameSettings(const std::string_view& serial, u32 crc)
 	s_game_settings_entry.reset();
 	s_game_settings_interface = std::make_unique<INISettingsInterface>(VMManager::GetGameSettingsPath(serial, crc));
 	s_game_settings_interface->Load();
+	PopulatePatchesAndCheatsList(serial, crc);
 	s_current_main_window = MainWindowType::Settings;
 	s_settings_page = SettingsPage::Summary;
 	QueueResetFocus();
@@ -2373,6 +2393,25 @@ void FullscreenUI::PopulateGameListDirectoryCache(SettingsInterface* si)
 		s_game_list_directories_cache.emplace_back(std::move(dir), false);
 	for (std::string& dir : si->GetStringList("GameList", "RecursivePaths"))
 		s_game_list_directories_cache.emplace_back(std::move(dir), true);
+}
+
+void FullscreenUI::PopulatePatchesAndCheatsList(const std::string_view& serial, u32 crc)
+{
+	constexpr auto sort_patches = [](Patch::PatchInfoList& list) {
+		std::sort(list.begin(), list.end(),
+			[](const Patch::PatchInfo& lhs, const Patch::PatchInfo& rhs) { return lhs.name < rhs.name; });
+	};
+
+	s_game_patch_list = Patch::GetPatchInfo(serial, crc, false, nullptr);
+	sort_patches(s_game_patch_list);
+	s_game_cheats_list = Patch::GetPatchInfo(serial, crc, true, &s_game_cheat_unlabelled_count);
+	sort_patches(s_game_cheats_list);
+
+	pxAssert(s_game_settings_interface);
+	s_enabled_game_patch_cache =
+		s_game_settings_interface->GetStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY);
+	s_enabled_game_cheat_cache =
+		s_game_settings_interface->GetStringList(Patch::CHEATS_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY);
 }
 
 void FullscreenUI::DoCopyGameSettings()
@@ -2424,18 +2463,21 @@ void FullscreenUI::DrawSettingsWindow()
 	{
 		static constexpr float ITEM_WIDTH = 25.0f;
 
-		static constexpr const char* global_icons[] = {ICON_FA_WINDOW_MAXIMIZE, ICON_FA_MICROCHIP, ICON_FA_SLIDERS_H, ICON_FA_MAGIC,
-			ICON_FA_HEADPHONES, ICON_FA_SD_CARD, ICON_FA_GAMEPAD, ICON_FA_KEYBOARD, ICON_FA_TROPHY, ICON_FA_FOLDER_OPEN, ICON_FA_COGS};
-		static constexpr const char* per_game_icons[] = {
-			ICON_FA_PARAGRAPH, ICON_FA_SLIDERS_H, ICON_FA_MAGIC, ICON_FA_HEADPHONES, ICON_FA_SD_CARD, ICON_FA_GAMEPAD, ICON_FA_BAN};
-		static constexpr SettingsPage global_pages[] = {SettingsPage::Interface, SettingsPage::BIOS, SettingsPage::Emulation,
-			SettingsPage::Graphics, SettingsPage::Audio, SettingsPage::MemoryCard, SettingsPage::Controller, SettingsPage::Hotkey,
-			SettingsPage::Achievements, SettingsPage::Folders, SettingsPage::Advanced};
-		static constexpr SettingsPage per_game_pages[] = {SettingsPage::Summary, SettingsPage::Emulation, SettingsPage::Graphics,
-			SettingsPage::Audio, SettingsPage::MemoryCard, SettingsPage::Controller, SettingsPage::GameFixes};
+		static constexpr const char* global_icons[] = {ICON_FA_WINDOW_MAXIMIZE, ICON_FA_MICROCHIP, ICON_FA_SLIDERS_H,
+			ICON_FA_MAGIC, ICON_FA_HEADPHONES, ICON_FA_SD_CARD, ICON_FA_GAMEPAD, ICON_FA_KEYBOARD, ICON_FA_TROPHY,
+			ICON_FA_FOLDER_OPEN, ICON_FA_COGS};
+		static constexpr const char* per_game_icons[] = {ICON_FA_PARAGRAPH, ICON_FA_SLIDERS_H, ICON_FA_MICROCHIP,
+			ICON_FA_FROWN, ICON_FA_MAGIC, ICON_FA_HEADPHONES, ICON_FA_SD_CARD, ICON_FA_GAMEPAD, ICON_FA_BAN};
+		static constexpr SettingsPage global_pages[] = {SettingsPage::Interface, SettingsPage::BIOS,
+			SettingsPage::Emulation, SettingsPage::Graphics, SettingsPage::Audio, SettingsPage::MemoryCard,
+			SettingsPage::Controller, SettingsPage::Hotkey, SettingsPage::Achievements, SettingsPage::Folders,
+			SettingsPage::Advanced};
+		static constexpr SettingsPage per_game_pages[] = {SettingsPage::Summary, SettingsPage::Emulation,
+			SettingsPage::Patches, SettingsPage::Cheats, SettingsPage::Graphics, SettingsPage::Audio,
+			SettingsPage::MemoryCard, SettingsPage::Controller, SettingsPage::GameFixes};
 		static constexpr const char* titles[] = {"Summary", "Interface Settings", "BIOS Settings", "Emulation Settings",
 			"Graphics Settings", "Audio Settings", "Memory Card Settings", "Controller Settings", "Hotkey Settings",
-			"Achievements Settings", "Folder Settings", "Advanced Settings", "Game Fixes"};
+			"Achievements Settings", "Folder Settings", "Advanced Settings", "Patches", "Cheats", "Game Fixes"};
 
 		SettingsInterface* bsi = GetEditingSettingsInterface();
 		const bool game_settings = IsEditingGameSettings(bsi);
@@ -2550,6 +2592,14 @@ void FullscreenUI::DrawSettingsWindow()
 
 			case SettingsPage::Folders:
 				DrawFoldersSettingsPage();
+				break;
+
+			case SettingsPage::Patches:
+				DrawPatchesOrCheatsSettingsPage(false);
+				break;
+
+			case SettingsPage::Cheats:
+				DrawPatchesOrCheatsSettingsPage(true);
 				break;
 
 			case SettingsPage::Advanced:
@@ -4196,6 +4246,94 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 		MenuHeading("Graphics");
 		DrawToggleSetting(
 			bsi, "Use Debug Device", "Enables API-level validation of graphics commands", "EmuCore/GS", "UseDebugDevice", false);
+	}
+
+	EndMenuButtons();
+}
+
+void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
+{
+	SettingsInterface* bsi = GetEditingSettingsInterface();
+
+	const Patch::PatchInfoList& patch_list = cheats ? s_game_cheats_list : s_game_patch_list;
+	std::vector<std::string>& enable_list = cheats ? s_enabled_game_cheat_cache : s_enabled_game_patch_cache;
+	const char* section = cheats ? Patch::CHEATS_CONFIG_SECTION : Patch::PATCHES_CONFIG_SECTION;
+	const bool master_enable = cheats ? GetEffectiveBoolSetting(bsi, "EmuCore", "EnableCheats", false) : true;
+
+	BeginMenuButtons();
+
+	if (cheats)
+	{
+		MenuHeading("Settings");
+		DrawToggleSetting(
+			bsi, "Enable Cheats", "Enables loading cheats from pnach files.", "EmuCore", "EnableCheats", false);
+
+		if (patch_list.empty())
+		{
+			ActiveButton("No cheats are available for this game.", false, false,
+				ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+		}
+		else
+		{
+			MenuHeading("Cheat Codes");
+		}
+	}
+	else
+	{
+		if (patch_list.empty())
+		{
+			ActiveButton("No patches are available for this game.", false, false,
+				ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+		}
+		else
+		{
+			MenuHeading("Game Patches");
+		}
+	}
+
+	for (const Patch::PatchInfo& pi : patch_list)
+	{
+		const auto enable_it = std::find(enable_list.begin(), enable_list.end(), pi.name);
+
+		bool state = (enable_it != enable_list.end());
+		if (ToggleButton(pi.name.c_str(), pi.description.c_str(), &state, master_enable))
+		{
+			if (state)
+			{
+				bsi->AddToStringList(section, Patch::PATCH_ENABLE_CONFIG_KEY, pi.name.c_str());
+				enable_list.push_back(pi.name);
+			}
+			else
+			{
+				bsi->RemoveFromStringList(section, Patch::PATCH_ENABLE_CONFIG_KEY, pi.name.c_str());
+				enable_list.erase(enable_it);
+			}
+
+			SetSettingsChanged(bsi);
+		}
+	}
+
+	if (cheats && s_game_cheat_unlabelled_count > 0)
+	{
+		ActiveButton(
+			master_enable ?
+				fmt::format("{} unlabelled patch codes will automatically activate.", s_game_cheat_unlabelled_count)
+					.c_str() :
+				fmt::format("{} unlabelled patch codes found but not enabled.", s_game_cheat_unlabelled_count).c_str(),
+			false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+	}
+
+	if (!patch_list.empty() || (cheats && s_game_cheat_unlabelled_count > 0))
+	{
+		ActiveButton(
+			cheats ?
+				"Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games." :
+				"Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved "
+				"games.",
+			false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+		ActiveButton("Use patches at your own risk, the PCSX2 team will provide no support for users who have enabled "
+					 "game patches.",
+			false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 	}
 
 	EndMenuButtons();
