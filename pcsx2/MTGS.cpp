@@ -69,6 +69,7 @@ namespace MTGS
 	static void PrepDataPacket(GIF_PATH pathidx, u32 size);
 	static void SendDataPacket();
 
+	static void SendSimplePacket(Command type, int data0, int data1, int data2);
 	static void SendSimpleGSPacket(Command type, u32 offset, u32 size, GIF_PATH path);
 	static void SendPointerPacket(Command type, u32 data0, void* data1);
 	static void _FinishSimplePacket();
@@ -206,20 +207,23 @@ void MTGS::ThreadEntryPoint()
 
 void MTGS::ResetGS(bool hardware_reset)
 {
-	pxAssertDev(!IsOpen() || (s_ReadPos == s_WritePos), "Must close or terminate the GS thread prior to gsReset.");
-
 	// MTGS Reset process:
 	//  * clear the ringbuffer.
 	//  * Signal a reset.
 	//  * clear the path and byRegs structs (used by GIFtagDummy)
 
-	s_ReadPos = s_WritePos.load();
-	s_QueuedFrameCount = 0;
-	s_VsyncSignalListener = 0;
+	if (hardware_reset)
+	{
+		s_ReadPos = s_WritePos.load();
+		s_QueuedFrameCount = 0;
+		s_VsyncSignalListener = 0;
+	}
 
 	MTGS_LOG("MTGS: Sending Reset...");
 	SendSimplePacket(Command::Reset, static_cast<int>(hardware_reset), 0, 0);
-	SetEvent();
+
+	if (hardware_reset)
+		SetEvent();
 }
 
 struct RingCmdPacket_Vsync

@@ -86,7 +86,7 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 		std::memset(g_RealGSMem, 0, sizeof(g_RealGSMem));
 		GSIMR.reset();
 		CSRreg.Reset();
-		MTGS::SendSimplePacket(MTGS::Command::Reset, 0, 0, 0);
+		MTGS::ResetGS(false);
 	}
 
 	if(csr.FLUSH)

@@ -74,8 +74,6 @@ namespace MTGS
 	void WaitForClose();
 	void Freeze(FreezeAction mode, FreezeData& data);
 
-	void SendSimplePacket(Command type, int data0, int data1, int data2);
-
 	void PostVsyncStart(bool registers_written);
 	void InitAndReadFIFO(u8* mem, u32 qwc);
 
