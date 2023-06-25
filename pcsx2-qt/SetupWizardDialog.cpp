@@ -169,9 +169,9 @@ void SetupWizardDialog::confirmCancel()
 
 void SetupWizardDialog::setupUi()
 {
-	setWindowIcon(QIcon(QStringLiteral("%1/icons/AppIconLarge.png").arg(QtHost::GetResourcesBasePath())));
-
 	m_ui.setupUi(this);
+
+	m_ui.logo->setPixmap(QPixmap(QStringLiteral("%1/icons/AppIconLarge.png").arg(QtHost::GetResourcesBasePath())));
 
 	m_ui.pages->setCurrentIndex(0);
 

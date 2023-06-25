@@ -16,6 +16,11 @@
   <property name="windowTitle">
    <string>PCSX2</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normalon>:/icons/AppIcon64.png</normalon>
+   </iconset>
+  </property>
   <widget class="QStackedWidget" name="mainContainer"/>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -126,10 +131,10 @@
      <property name="title">
       <string>Switch Renderer</string>
      </property>
-    <property name="icon">
-    <iconset theme="brush-line">
-     <normaloff>.</normaloff>.</iconset>
-    </property>
+     <property name="icon">
+      <iconset theme="brush-line">
+       <normaloff>.</normaloff>.</iconset>
+     </property>
     </widget>
     <addaction name="menuDebugSwitchRenderer"/>
     <addaction name="separator"/>
@@ -484,12 +489,12 @@
    </property>
   </action>
   <action name="actionAbout">
-   <property name="text">
-    <string>&amp;About PCSX2...</string>
-   </property>
    <property name="icon">
     <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/AppIcon.png</normaloff>:/icons/AppIcon.png</iconset>
+     <normaloff>:/icons/AppIcon64.png</normaloff>:/icons/AppIcon64.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;About PCSX2...</string>
    </property>
   </action>
   <action name="actionChangeDisc">
