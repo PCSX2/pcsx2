@@ -2025,6 +2025,13 @@ SCED-51262:
 SCED-51279:
   name: "Official PlayStation 2 Magazine Demo 25"
   region: "PAL-M5"
+SCED-51305:
+  name: "WRC II Extreme [Press Kit]"
+  region: "PAL-E"
+  gameFixes:
+    - XGKickHack # Fixes SPS.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes texture misalignment.
 SCED-51319:
   name: "Official PlayStation 2 Magazine Demo 27" # German
   region: "PAL-E-G"
@@ -2160,6 +2167,13 @@ SCED-51573:
 SCED-51575:
   name: "Official PlayStation 2 Magazine Demo 40" # German
   region: "PAL-E-G"
+SCED-51632:
+  name: "WRC II Extreme [Special Demo]"
+  region: "PAL-E"
+  gameFixes:
+    - XGKickHack # Fixes SPS.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes texture misalignment.
 SCED-51657:
   name: "Official PlayStation Magazine Demo 33"
   region: "PAL-Unk"
@@ -29948,6 +29962,8 @@ SLPM-65284:
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes SPS.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes texture misalignment.
 SLPM-65285:
   name: "Love Hina Gorgeous [First Limited Edition]"
   region: "NTSC-J"
@@ -30889,6 +30905,8 @@ SLPM-65573:
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes SPS.
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes texture misalignment.
 SLPM-65574:
   name: "Silent Hill 4 - The Room"
   region: "NTSC-J"
