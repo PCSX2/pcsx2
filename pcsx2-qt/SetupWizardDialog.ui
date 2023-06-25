@@ -13,6 +13,11 @@
   <property name="windowTitle">
    <string>PCSX2 Setup Wizard</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normalon>:/icons/AppIcon64.png</normalon>
+   </iconset>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="horizontalSpacing">
     <number>10</number>
@@ -20,7 +25,7 @@
    <item row="0" column="0">
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="logo">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -33,11 +38,14 @@
          <height>128</height>
         </size>
        </property>
+       <property name="maximumSize">
+        <size>
+         <width>128</width>
+         <height>128</height>
+        </size>
+       </property>
        <property name="text">
         <string/>
-       </property>
-       <property name="pixmap">
-        <pixmap resource="resources/resources.qrc">:/icons/AppIcon.png</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>

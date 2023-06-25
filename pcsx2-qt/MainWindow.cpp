@@ -183,7 +183,6 @@ void MainWindow::setupAdditionalUi()
 {
 	const bool show_advanced_settings = QtHost::ShouldShowAdvancedSettings();
 
-	setWindowIcon(QIcon(QStringLiteral("%1/icons/AppIconLarge.png").arg(QtHost::GetResourcesBasePath())));
 	makeIconsMasks(menuBar());
 
 	m_ui.menuDebug->menuAction()->setVisible(show_advanced_settings);
