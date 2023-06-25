@@ -32983,8 +32983,10 @@ SLPM-66136:
   name: "SuperLite 2000 Vol. 34 - Akai Ito"
   region: "NTSC-J"
 SLPM-66137:
-  name: "Clover Heart's Looking for Happiness [The Best]"
+  name: "Clover Heart's - Looking for Happiness [The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    minimumBlendingLevel: 4 # Fixes transparancy.
 SLPM-66138:
   name: "Desire [Best Version]"
   region: "NTSC-J"
@@ -33676,7 +33678,8 @@ SLPM-66302:
   name: "Clannad"
   region: "NTSC-J"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes colours.
+    gpuTargetCLUT: 1 # Fixes colours.
+    minimumBlendingLevel: 4 # Fixes transparancy.
 SLPM-66307:
   name: "Sengoku Musou 2"
   region: "NTSC-J"
@@ -39842,11 +39845,15 @@ SLPS-25389:
   name: "Gundam Seed - Never Ending Tomorrow"
   region: "NTSC-J"
 SLPS-25390:
-  name: "Clover's Heart - Looking for Happiness [Limited Edition]"
+  name: "Clover Heart's - Looking for Happiness [Limited Edition]"
   region: "NTSC-J"
+  gsHWFixes:
+    minimumBlendingLevel: 4 # Fixes transparancy.
 SLPS-25391:
-  name: "Clover's Heart - Looking for Happiness"
+  name: "Clover Heart's - Looking for Happiness"
   region: "NTSC-J"
+  gsHWFixes:
+    minimumBlendingLevel: 4 # Fixes transparancy.
 SLPS-25392:
   name: "Desire"
   region: "NTSC-J"
