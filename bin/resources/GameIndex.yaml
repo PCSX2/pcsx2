@@ -2289,9 +2289,17 @@ SCED-52092:
 SCED-52120:
   name: "Official PlayStation 2 Magazine Demo 55" # German
   region: "PAL-E-G"
+SCED-52137:
+  name: "WRC 3 [Demo]"
+  region: "PAL-E"
+  gameFixes:
+    - XGKickHack # Fixes SPS.
+  gsHWFixes:
+    roundSprite: 2 # Correct misaligned font, better aligns car shadow.
+    autoFlush: 2 # Fixes sun luminosity.
 SCED-52141:
   name: "WRC 3 [Demo]"
-  region: "NTSC-J"
+  region: "PAL-E"
   compat: 5
   gameFixes:
     - XGKickHack # Fixes SPS.
