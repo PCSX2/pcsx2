@@ -1975,12 +1975,22 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 									can_erase = t->m_dirty.GetTotalRect(t->m_TEX0, GSVector2i(t->m_valid.z, t->m_valid.w)).eq(t->m_valid);
 								}
 							}
+							else if (GSLocalMemory::IsPageAligned(psm, r))
+							{
+								// Dirty individual pages.
+								GL_PUSH("TC: Dirty pages in target %x TBW %u PSM %s", t->m_TEX0.TBP0, t->m_TEX0.TBW, psm_str(t->m_TEX0.PSM));
+								off.loopPages(r, [this, psm, rgba, t](u32 page) {
+									const GSVector4i page_rc = GSLocalMemory::GetRectForPageOffset(t->m_TEX0.TBP0, page * BLOCKS_PER_PAGE, t->m_TEX0.TBW, t->m_TEX0.PSM);
+									GL_INS("TC: Dirty BP %x rect (%d,%d=>%d,%d)", page * BLOCKS_PER_PAGE, page_rc.x, page_rc.y, page_rc.z, page_rc.w);
+									AddDirtyRectTarget(t, page_rc, t->m_TEX0.PSM, t->m_TEX0.TBW, rgba, false);
+								});
+
+								can_erase = t->m_dirty.GetTotalRect(t->m_TEX0, GSVector2i(t->m_valid.z, t->m_valid.w)).eq(t->m_valid);
+							}
 							else
 							{
-								const GSLocalMemory::psm_t& t_psm_s = GSLocalMemory::m_psm[psm];
-								const u32 bp_end = t_psm_s.info.bn(r.z - 1, r.w - 1, bp, bw);
 								if (GSLocalMemory::m_psm[psm].bpp == GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp ||
-									((100.0f / static_cast<float>(t->m_end_block - t->m_TEX0.TBP0)) * static_cast<float>(bp_end - bp)) < 20.0f)
+									((100.0f / static_cast<float>(t->m_end_block - t->m_TEX0.TBP0)) * static_cast<float>(end_bp - bp)) < 20.0f)
 								{
 									SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
 									if (so.is_valid)
@@ -2531,6 +2541,30 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 
 			if (!targetr.rempty())
 			{
+				// We can skip the download if all pages that are read from are not dirty.
+				if (!t->m_dirty.empty())
+				{
+					bool only_in_dirty_area = true;
+					off.pageLooperForRect(r).loopPagesWithBreak([t, &dirty_rect, &only_in_dirty_area](u32 page) {
+						const GSVector4i page_rect = GSLocalMemory::GetRectForPageOffset(t->m_TEX0.TBP0,
+							page * BLOCKS_PER_PAGE, t->m_TEX0.TBW, t->m_TEX0.PSM);
+						if (!dirty_rect.rintersect(page_rect).eq(page_rect))
+						{
+							only_in_dirty_area = false;
+							return false;
+						}
+						return true;
+					});
+
+					if (only_in_dirty_area)
+					{
+						if (exact_bp)
+							return;
+						else
+							continue;
+					}
+				}
+
 				if (GSConfig.HWDownloadMode != GSHardwareDownloadMode::Enabled)
 				{
 					DevCon.Error("Skipping depth readback of %ux%u @ %u,%u", targetr.width(), targetr.height(), targetr.left, targetr.top);
@@ -2582,16 +2616,17 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		return true;
 
 	// TODO: In theory we could do channel swapping on the GPU, but we haven't found anything which needs it so far.
-	if (SPSM != DPSM)
+	// Not even going to go down the rabbit hole of palette formats on the GPU.. We shouldn't have any targets with P4/P8 anyway.
+	const GSLocalMemory::psm_t& spsm_s = GSLocalMemory::m_psm[SPSM];
+	const GSLocalMemory::psm_t& dpsm_s = GSLocalMemory::m_psm[DPSM];
+	if (SPSM != DPSM || (spsm_s.pal + dpsm_s.pal) != 0)
 	{
-		GL_CACHE("Skipping HW move from 0x%X to 0x%X with SPSM=%u DPSM=%u", SBP, DBP, SPSM, DPSM);
+		GL_CACHE("Skipping HW move from 0x%X to 0x%X with SPSM=%s DPSM=%s", SBP, DBP, psm_str(SPSM), psm_str(DPSM));
 		return false;
 	}
 
 	// DX11/12 is a bit lame and can't partial copy depth targets. We could do this with a blit instead,
 	// but so far haven't seen anything which needs it.
-	const GSLocalMemory::psm_t& spsm_s = GSLocalMemory::m_psm[SPSM];
-	const GSLocalMemory::psm_t& dpsm_s = GSLocalMemory::m_psm[DPSM];
 	if (GSConfig.Renderer == GSRendererType::DX11 || GSConfig.Renderer == GSRendererType::DX12)
 	{
 		if (spsm_s.depth || dpsm_s.depth)

@@ -485,6 +485,16 @@ u32 GSLocalMemory::GetEndBlockAddress(u32 bp, u32 bw, u32 psm, GSVector4i rect)
 	return result;
 }
 
+GSVector4i GSLocalMemory::GetRectForPageOffset(u32 base_bp, u32 offset_bp, u32 bw, u32 psm)
+{
+	pxAssert((base_bp % BLOCKS_PER_PAGE) == 0 && (offset_bp % BLOCKS_PER_PAGE) == 0);
+
+	const u32 page_offset = (offset_bp - base_bp) >> 5;
+	const GSVector2i& pgs = m_psm[psm].pgs;
+	const GSVector2i page_offset_xy = GSVector2i(page_offset % bw, page_offset / bw);
+	return GSVector4i(pgs * page_offset_xy).xyxy() + GSVector4i::loadh(pgs);
+}
+
 ///////////////////
 
 void GSLocalMemory::ReadTexture(const GSOffset& off, const GSVector4i& r, u8* dst, int dstpitch, const GIFRegTEXA& TEXA)
