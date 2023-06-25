@@ -9,7 +9,7 @@ on:
       os:
         required: false
         type: string
-        default: ubuntu-20.04
+        default: ubuntu-22.04
       platform:
         required: false
         type: string
@@ -120,9 +120,9 @@ jobs:
         env:
           NAME: ${{ steps.artifact-metadata.outputs.artifact-name }}
         run: |
-                .github/workflows/scripts/linux/appimage-qt.sh "$(realpath .)" "$(realpath ./build)" "$HOME/deps" "$NAME"
-                mkdir -p "$GITHUB_WORKSPACE"/ci-artifacts/
-                mv "${NAME}.AppImage" "$GITHUB_WORKSPACE"/ci-artifacts/
+          .github/workflows/scripts/linux/appimage-qt.sh "$(realpath .)" "$(realpath ./build)" "$HOME/deps" "$NAME"
+          mkdir -p "$GITHUB_WORKSPACE"/ci-artifacts/
+          mv "${NAME}.AppImage" "$GITHUB_WORKSPACE"/ci-artifacts/
 
       - name: Upload artifact
         if: inputs.buildAppImage == true
