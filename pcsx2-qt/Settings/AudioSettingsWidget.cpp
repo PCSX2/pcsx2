@@ -39,12 +39,12 @@ static constexpr s32 DEFAULT_SOUNDTOUCH_SEQUENCE_LENGTH = 30;
 static constexpr s32 DEFAULT_SOUNDTOUCH_SEEK_WINDOW = 20;
 static constexpr s32 DEFAULT_SOUNDTOUCH_OVERLAP = 10;
 
-static const char* s_output_module_entries[] = {QT_TRANSLATE_NOOP("AudioSettingsWidget", "No Sound (Emulate SPU2 only)"),
+static const char* s_output_module_entries[] = {QT_TRANSLATE_NOOP("AudioSettingsWidget", "tr(No Sound (Emulate SPU2 only))"),
 	//: Cubeb is an audio engine name. Leave as-is.
-	QT_TRANSLATE_NOOP("AudioSettingsWidget", "Cubeb (Cross-platform)"),
+	QT_TRANSLATE_NOOP("AudioSettingsWidget", "tr(Cubeb (Cross-platform))"),
 #ifdef _WIN32
 	//: XAudio2 is an audio engine name. Leave as-is.
-	QT_TRANSLATE_NOOP("AudioSettingsWidget", "XAudio2"),
+	QT_TRANSLATE_NOOP("AudioSettingsWidget", "tr(XAudio2)"),
 #endif
 	nullptr};
 static const char* s_output_module_values[] = {"nullout", "cubeb",
