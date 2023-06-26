@@ -5318,11 +5318,13 @@ void GSRendererHW::OI_DoGsMemClear(const GSOffset& off, const GSVector4i& r, u32
 
 	// Process the page aligned region first, then fall back to anything which is not.
 	// Since pages are linear in memory, we can do it basically with a vector memset.
+	// If the draw area is greater than the FBW.. I don't want to deal with that here..
 
+	const u32 fbw = m_cached_ctx.FRAME.FBW;
+	const u32 pages_wide = r.z / 64u;
 	const GSVector2i& pgs = GSLocalMemory::m_psm[off.psm()].pgs;
-	if (left == 0 && top == 0 && (right & (pgs.x - 1)) == 0)
+	if (left == 0 && top == 0 && (right & (pgs.x - 1)) == 0 && pages_wide <= fbw)
 	{
-		const u32 pages_wide = r.z / 64;
 		const u32 pixels_per_page = pgs.x * pgs.y;
 		const int page_aligned_bottom = (bottom & ~(pgs.y - 1));
 
@@ -5331,7 +5333,7 @@ void GSRendererHW::OI_DoGsMemClear(const GSOffset& off, const GSVector4i& r, u32
 			const GSVector4i vcolor = GSVector4i(color);
 			const u32 iterations_per_page = (pages_wide * pixels_per_page) / 4;
 			pxAssert((off.bp() & (BLOCKS_PER_PAGE - 1)) == 0);
-			for (u32 current_page = off.bp() >> 5; top < page_aligned_bottom; top += pgs.y, current_page += pages_wide)
+			for (u32 current_page = off.bp() >> 5; top < page_aligned_bottom; top += pgs.y, current_page += fbw)
 			{
 				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(m_mem.vm8() + current_page * PAGE_SIZE);
 				GSVector4i* const ptr_end = ptr + iterations_per_page;
@@ -5345,7 +5347,7 @@ void GSRendererHW::OI_DoGsMemClear(const GSOffset& off, const GSVector4i& r, u32
 			const GSVector4i vcolor = GSVector4i(color & 0x00ffffffu);
 			const u32 iterations_per_page = (pages_wide * pixels_per_page) / 4;
 			pxAssert((off.bp() & (BLOCKS_PER_PAGE - 1)) == 0);
-			for (u32 current_page = off.bp() >> 5; top < page_aligned_bottom; top += pgs.y, current_page += pages_wide)
+			for (u32 current_page = off.bp() >> 5; top < page_aligned_bottom; top += pgs.y, current_page += fbw)
 			{
 				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(m_mem.vm8() + current_page * PAGE_SIZE);
 				GSVector4i* const ptr_end = ptr + iterations_per_page;
@@ -5363,7 +5365,7 @@ void GSRendererHW::OI_DoGsMemClear(const GSOffset& off, const GSVector4i& r, u32
 			const GSVector4i vcolor = GSVector4i::broadcast16(converted_color);
 			const u32 iterations_per_page = (pages_wide * pixels_per_page) / 8;
 			pxAssert((off.bp() & (BLOCKS_PER_PAGE - 1)) == 0);
-			for (u32 current_page = off.bp() >> 5; top < page_aligned_bottom; top += pgs.y, current_page += pages_wide)
+			for (u32 current_page = off.bp() >> 5; top < page_aligned_bottom; top += pgs.y, current_page += fbw)
 			{
 				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(m_mem.vm8() + current_page * PAGE_SIZE);
 				GSVector4i* const ptr_end = ptr + iterations_per_page;
