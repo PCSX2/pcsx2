@@ -39,20 +39,6 @@ static constexpr s32 DEFAULT_SOUNDTOUCH_SEQUENCE_LENGTH = 30;
 static constexpr s32 DEFAULT_SOUNDTOUCH_SEEK_WINDOW = 20;
 static constexpr s32 DEFAULT_SOUNDTOUCH_OVERLAP = 10;
 
-static const char* s_output_module_entries[] = {QT_TRANSLATE_NOOP("AudioSettingsWidget", "No Sound (Emulate SPU2 only)"),
-	//: Cubeb is an audio engine name. Leave as-is.
-	QT_TRANSLATE_NOOP("AudioSettingsWidget", "Cubeb (Cross-platform)"),
-#ifdef _WIN32
-	//: XAudio2 is an audio engine name. Leave as-is.
-	QT_TRANSLATE_NOOP("AudioSettingsWidget", "XAudio2"),
-#endif
-	nullptr};
-static const char* s_output_module_values[] = {"nullout", "cubeb",
-#ifdef _WIN32
-	"xaudio2",
-#endif
-	nullptr};
-
 AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	: QWidget(parent)
 	, m_dialog(dialog)
@@ -60,6 +46,7 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 	SettingsInterface* sif = dialog->getSettingsInterface();
 
 	m_ui.setupUi(this);
+	populateOutputModules();
 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.syncMode, "SPU2/Output", "SynchMode", DEFAULT_SYNCHRONIZATION_MODE);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.expansionMode, "SPU2/Output", "SpeakerConfiguration", DEFAULT_EXPANSION_MODE);
@@ -69,8 +56,7 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent
 	updateTargetLatencyRange();
 	expansionModeChanged();
 
-	SettingWidgetBinder::BindWidgetToEnumSetting(
-		sif, m_ui.outputModule, "SPU2/Output", "OutputModule", s_output_module_entries, s_output_module_values, DEFAULT_OUTPUT_MODULE);
+	SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.outputModule, "SPU2/Output", "OutputModule", DEFAULT_OUTPUT_MODULE);
 	SettingWidgetBinder::BindSliderToIntSetting(
 		//: Measuring unit that will appear after the number selected in its option. Adapt the space depending on your language's rules.
 		sif, m_ui.targetLatency, m_ui.targetLatencyLabel, tr(" ms"), "SPU2/Output", "Latency", DEFAULT_TARGET_LATENCY);
@@ -154,6 +140,12 @@ void AudioSettingsWidget::expansionModeChanged()
 {
 	const bool expansion51 = m_dialog->getEffectiveIntValue("SPU2/Output", "SpeakerConfiguration", 0) == 2;
 	m_ui.dplLevel->setDisabled(!expansion51);
+}
+
+void AudioSettingsWidget::populateOutputModules()
+{
+	for (const SndOutModule* mod : GetSndOutModules())
+		m_ui.outputModule->addItem(qApp->translate("SPU2", mod->GetDisplayName()), QString::fromUtf8(mod->GetIdent()));
 }
 
 void AudioSettingsWidget::outputModuleChanged()

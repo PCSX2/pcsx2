@@ -19,6 +19,7 @@
 #include "SPU2/spu2.h"
 #include "GS/GSCapture.h"
 #include "GS/GSVector.h"
+#include "Host.h"
 
 #include "common/Assertions.h"
 #include "common/Timer.h"
@@ -48,6 +49,11 @@ namespace
 			return "nullout";
 		}
 
+		const char* GetDisplayName() const override
+		{
+			return TRANSLATE_NOOP("SPU2", "No Sound (Emulate SPU2 only)");
+		}
+
 		const char* const* GetBackendNames() const override
 		{
 			return nullptr;
@@ -63,6 +69,13 @@ namespace
 static NullOutModule s_NullOut;
 static SndOutModule* NullOut = &s_NullOut;
 
+#ifdef _WIN32
+extern SndOutModule* XAudio2Out;
+#endif
+#if defined(SPU2X_CUBEB)
+extern SndOutModule* CubebOut;
+#endif
+
 static SndOutModule* mods[] =
 	{
 		NullOut,
@@ -75,6 +88,11 @@ static SndOutModule* mods[] =
 };
 
 static SndOutModule* s_output_module;
+
+gsl::span<SndOutModule*> GetSndOutModules()
+{
+	return mods;
+}
 
 static SndOutModule* FindOutputModule(const char* name)
 {

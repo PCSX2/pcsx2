@@ -14,7 +14,10 @@
  */
 
 #include "PrecompiledHeader.h"
+
 #include "SPU2/Global.h"
+#include "Host.h"
+
 #include "common/Console.h"
 #include "common/RedtapeWindows.h"
 #include "common/RedtapeWilCom.h"
@@ -354,6 +357,12 @@ public:
 	const char* GetIdent() const override
 	{
 		return "xaudio2";
+	}
+
+	const char* GetDisplayName() const override
+	{
+		//: XAudio2 is an audio engine name. Leave as-is.
+		return TRANSLATE_NOOP("SPU2", "XAudio2");
 	}
 
 	const char* const* GetBackendNames() const override

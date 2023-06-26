@@ -42,6 +42,7 @@ private Q_SLOTS:
 	void resetTimestretchDefaults();
 
 private:
+	void populateOutputModules();
 	void updateVolumeLabel();
 
 	SettingsDialog* m_dialog;
