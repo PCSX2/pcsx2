@@ -2052,9 +2052,20 @@ SCED-51352:
 SCED-51359:
   name: "Official PlayStation 2 Magazine Demo 27"
   region: "PAL-M5"
+SCED-51366:
+  name: "Ape Escape 2 [Demo]"
+  region: "PAL-M5"
+  gsHWFixes:
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCED-51376:
   name: "Official PlayStation 2 Magazine Demo 28" # German
   region: "PAL-E-G"
+SCED-51380:
+  name: "Zone of the Enders - The 2nd Runner [Demo]"
+  region: "PAL-M5"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SCED-51384:
   name: "Official PlayStation 2 Magazine Demo 29"
   region: "PAL-M5"
@@ -9743,6 +9754,11 @@ SLED-50884:
 SLED-50895:
   name: "Medal of Honor - Frontline [Demo]"
   region: "PAL-E"
+SLED-51012:
+  name: "Stuntman [Demo]"
+  region: "PAL-E"
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes textures.
 SLED-51062:
   name: "Fireblade [Demo]"
   region: "PAL-E"
@@ -9988,6 +10004,17 @@ SLED-53719:
 SLED-53723:
   name: "Peter Jackson's King Kong [Demo]"
   region: "PAL-E"
+SLED-53731:
+  name: "Battlefield 2 - Modern Combat [Demo]"
+  region: "PAL-E"
+  gsHWFixes:
+    autoFlush: 2 # Post-processing.
+    halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Spikes all over the place otherwise.
+    textureInsideRT: 1 # Fixes light shinging through objects.
+    cpuCLUTRender: 1 # Fixes light shining through objects.
+    getSkipCount: "GSC_Battlefield2" # Depth clear.
+    beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLED-53732:
   name: "Spartan - Total Warrior [Demo]"
   region: "PAL"
@@ -14688,6 +14715,9 @@ SLES-52011:
   name: "Tak and The Power of Juju"
   region: "PAL-E"
   compat: 5
+SLES-52014:
+  name: "XIII"
+  region: "PAL"
 SLES-52015:
   name: "Chevaliers de Baphomet, Les - Le Manuscrit de Voynich"
   region: "PAL-F"
