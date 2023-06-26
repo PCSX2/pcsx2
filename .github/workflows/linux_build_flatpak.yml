@@ -84,7 +84,7 @@ jobs:
           build-bundle: true
           verbose: true
           mirror-screenshots-url: https://dl.flathub.org/repo/screenshots
-          branch: stable
+          branch: beta
           cache: true
           restore-cache: true
           cache-key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} ${{ inputs.detail }} flatpak ${{ hashFiles('.github/workflows/scripts/linux/flatpak/**/*.json') }}
@@ -93,4 +93,10 @@ jobs:
         run: |
           ostree commit --repo=repo --canonical-permissions --branch=screenshots/x86_64 .github/workflows/scripts/linux/flatpak/screenshots
 
-      # TODO: Push to flathub
+      - name: Push to Flathub
+        if: inputs.publish == true
+        uses: flatpak/flatpak-github-actions/flat-manager@v6.1
+        with:
+          flat-manager-url: https://hub.flathub.org/
+          repository: beta
+          token: ${{ secrets.FLATHUB_BETA_TOKEN }}
