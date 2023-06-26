@@ -9,7 +9,7 @@ on:
       os:
         required: false
         type: string
-        default: macos-11.0
+        default: macos-13
       platform:
         required: false
         type: string
@@ -41,6 +41,9 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
+
+      - name: Use Xcode 14.3.1
+        run: sudo xcode-select -s /Applications/Xcode_14.3.1.app
 
       - name: Prepare Artifact Metadata
         id: artifact-metadata
