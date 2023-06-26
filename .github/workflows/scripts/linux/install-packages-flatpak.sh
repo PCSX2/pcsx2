@@ -8,12 +8,21 @@ set -e
 ARCH=x86_64
 KDE_BRANCH=6.5
 BRANCH=22.08
+FLAT_MANAGER_CLIENT_DIR="$HOME/.local/bin"
 
-# Build packages.
+# Build packages. Mostly needed for flat-manager-client.
 declare -a BUILD_PACKAGES=(
   "flatpak"
   "flatpak-builder"
   "appstream-util"
+  "python3-aiohttp"
+  "python3-tenacity"
+  "python3-gi"
+  "gobject-introspection"
+  "libappstream-glib8"
+  "libappstream-glib-dev"
+  "libappstream-dev"
+  "gir1.2-ostree-1.0"
 )
 
 # Flatpak runtimes and SDKs.
@@ -36,3 +45,10 @@ sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub
 echo "Will install the following packages for building - ${FLATPAK_PACKAGES[*]}"
 retry_command sudo flatpak -y install "${FLATPAK_PACKAGES[@]}"
 
+echo "Downloading flat-manager-client"
+mkdir -p "$FLAT_MANAGER_CLIENT_DIR"
+pushd "$FLAT_MANAGER_CLIENT_DIR"
+aria2c -Z "https://raw.githubusercontent.com/flatpak/flat-manager/master/flat-manager-client"
+chmod +x flat-manager-client
+echo "$FLAT_MANAGER_CLIENT_DIR" >> $GITHUB_PATH
+popd
