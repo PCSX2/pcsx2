@@ -2470,16 +2470,8 @@ SCED-52869:
         // I wrote a small runtime that moves unpacker higher right after emulator boot.
         // Seems little bit extensive, but there is no way to make it smaller.
         // Solves TLB miss errors which prevented the game from booting.
-        patch=0,EE,0040000C,double,3c0500603cc70054
-        patch=0,EE,00400014,double,24a5001024840010
-        patch=0,EE,0040001C,double,7ca6000078860000
-        patch=0,EE,00400024,double,000000001487fffb
-        patch=0,EE,0040002c,double,000000000817fff5
-        patch=0,EE,005fffd4,double,3c1c70003c040060
-        patch=0,EE,005fffdc,double,3c0700003c067000
-        patch=0,EE,005fffe4,double,279c000024840800
-        patch=0,EE,005fffec,double,24e7100024c60080
-        patch=0,EE,005ffff4,double,00c7e8200818000c
+        patch=0,EE,0040000c,bytes,5400c73c6000053c100084241000a524000086780000a67cfbff871400000000f5ff170800000000
+        patch=0,EE,005fffd4,bytes,6000043c00701c3c0070063c0000073c0008842400009c278000c6240010e7240c00180820e8c700
   gsHWFixes:
     autoFlush: 2 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
@@ -2491,6 +2483,16 @@ SCED-52880:
   region: "PAL-E"
   gameFixes:
     - XGKickHack # Fixes SPS.
+  patches:
+    default:
+      content: |-
+        author=kozarovv
+        // Proper patch for WRC 4. CRC independent.
+        // I wrote a small runtime that moves unpacker higher right after emulator boot.
+        // Seems little bit extensive, but there is no way to make it smaller.
+        // Solves TLB miss errors which prevented the game from booting.
+        patch=0,EE,0040000c,bytes,5400c73c6000053c100084241000a524000086780000a67cfbff871400000000f5ff170800000000
+        patch=0,EE,005fffd4,bytes,6000043c00701c3c0070063c0000073c0008842400009c278000c6240010e7240c00180820e8c700
   gsHWFixes:
     autoFlush: 2 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
@@ -2517,6 +2519,16 @@ SCED-52945:
   region: "PAL-E"
   gameFixes:
     - XGKickHack # Fixes SPS.
+  patches:
+    default:
+      content: |-
+        author=kozarovv
+        // Proper patch for WRC 4. CRC independent.
+        // I wrote a small runtime that moves unpacker higher right after emulator boot.
+        // Seems little bit extensive, but there is no way to make it smaller.
+        // Solves TLB miss errors which prevented the game from booting.
+        patch=0,EE,0040000c,bytes,5400c73c6000053c100084241000a524000086780000a67cfbff871400000000f5ff170800000000
+        patch=0,EE,005fffd4,bytes,6000043c00701c3c0070063c0000073c0008842400009c278000c6240010e7240c00180820e8c700
   gsHWFixes:
     autoFlush: 2 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
@@ -3836,16 +3848,8 @@ SCES-52389:
         // I wrote a small runtime that moves unpacker higher right after emulator boot.
         // Seems little bit extensive, but there is no way to make it smaller.
         // Solves TLB miss errors which prevented the game from booting.
-        patch=0,EE,0040000C,double,3c0500603cc70054
-        patch=0,EE,00400014,double,24a5001024840010
-        patch=0,EE,0040001C,double,7ca6000078860000
-        patch=0,EE,00400024,double,000000001487fffb
-        patch=0,EE,0040002c,double,000000000817fff5
-        patch=0,EE,005fffd4,double,3c1c70003c040060
-        patch=0,EE,005fffdc,double,3c0700003c067000
-        patch=0,EE,005fffe4,double,279c000024840800
-        patch=0,EE,005fffec,double,24e7100024c60080
-        patch=0,EE,005ffff4,double,00c7e8200818000c
+        patch=0,EE,0040000c,bytes,5400c73c6000053c100084241000a524000086780000a67cfbff871400000000f5ff170800000000
+        patch=0,EE,005fffd4,bytes,6000043c00701c3c0070063c0000073c0008842400009c278000c6240010e7240c00180820e8c700
   gsHWFixes:
     autoFlush: 2 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
@@ -32382,16 +32386,8 @@ SLPM-65975:
         // I wrote a small runtime that moves unpacker higher right after emulator boot.
         // Seems little bit extensive, but there is no way to make it smaller.
         // Solves TLB miss errors which prevented the game from booting.
-        patch=0,EE,0040000C,double,3c0500603cc70054
-        patch=0,EE,00400014,double,24a5001024840010
-        patch=0,EE,0040001C,double,7ca6000078860000
-        patch=0,EE,00400024,double,000000001487fffb
-        patch=0,EE,0040002c,double,000000000817fff5
-        patch=0,EE,005fffd4,double,3c1c70003c040060
-        patch=0,EE,005fffdc,double,3c0700003c067000
-        patch=0,EE,005fffe4,double,279c000024840800
-        patch=0,EE,005fffec,double,24e7100024c60080
-        patch=0,EE,005ffff4,double,00c7e8200818000c
+        patch=0,EE,0040000c,bytes,5400c73c6000053c100084241000a524000086780000a67cfbff871400000000f5ff170800000000
+        patch=0,EE,005fffd4,bytes,6000043c00701c3c0070063c0000073c0008842400009c278000c6240010e7240c00180820e8c700
   gsHWFixes:
     autoFlush: 2 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
@@ -33838,16 +33834,8 @@ SLPM-66334:
         // I wrote a small runtime that moves unpacker higher right after emulator boot.
         // Seems little bit extensive, but there is no way to make it smaller.
         // Solves TLB miss errors which prevented the game from booting.
-        patch=0,EE,0040000C,double,3c0500603cc70054
-        patch=0,EE,00400014,double,24a5001024840010
-        patch=0,EE,0040001C,double,7ca6000078860000
-        patch=0,EE,00400024,double,000000001487fffb
-        patch=0,EE,0040002c,double,000000000817fff5
-        patch=0,EE,005fffd4,double,3c1c70003c040060
-        patch=0,EE,005fffdc,double,3c0700003c067000
-        patch=0,EE,005fffe4,double,279c000024840800
-        patch=0,EE,005fffec,double,24e7100024c60080
-        patch=0,EE,005ffff4,double,00c7e8200818000c
+        patch=0,EE,0040000c,bytes,5400c73c6000053c100084241000a524000086780000a67cfbff871400000000f5ff170800000000
+        patch=0,EE,005fffd4,bytes,6000043c00701c3c0070063c0000073c0008842400009c278000c6240010e7240c00180820e8c700
   gsHWFixes:
     autoFlush: 2 # Fixes sun luminosity and car shadows.
     roundSprite: 1 # Fixes misaligned text.
