@@ -150,8 +150,7 @@ public:
 		cubeb_set_log_callback(CUBEB_LOG_NORMAL, LogCallback);
 #endif
 
-		const std::string backend(Host::GetStringSettingValue("SPU2/Output", "BackendName", ""));
-		int rv = cubeb_init(&m_context, "PCSX2", backend.empty() ? nullptr : backend.c_str());
+		int rv = cubeb_init(&m_context, "PCSX2", EmuConfig.SPU2.BackendName.empty() ? nullptr : EmuConfig.SPU2.BackendName.c_str());
 		if (rv != CUBEB_OK)
 		{
 			Host::ReportFormattedErrorAsync("Cubeb Error", "Could not initialize cubeb context: %d", rv);
@@ -373,6 +372,12 @@ public:
 	const char* GetIdent() const override
 	{
 		return "cubeb";
+	}
+
+	const char* GetDisplayName() const override
+	{
+		//: Cubeb is an audio engine name. Leave as-is.
+		return TRANSLATE_NOOP("SPU2", "Cubeb (Cross-platform)");
 	}
 
 	const char* const* GetBackendNames() const override
