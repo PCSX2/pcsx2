@@ -67,9 +67,9 @@ jobs:
           brew unlink libjpeg || true # Conflicts with our self-built dependencies
           brew unlink libpng || true
           # Unlike other packages, brew's MoltenVK build uses MoltenVK's minimum macOS version of 10.13 so we can use it
-          if ! brew install molten-vk ccache; then
+          if ! brew install molten-vk ccache nasm; then
             brew update
-            brew install molten-vk ccache
+            brew install molten-vk ccache nasm
           fi
 
       - name: Cache Dependencies
@@ -109,6 +109,7 @@ jobs:
                 -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
                 -DUSE_SYSTEM_LIBS=OFF \
                 -DUSE_SYSTEM_SDL2=ON \
+                -DUSE_LINKED_FFMPEG=ON \
                 -DCMAKE_C_COMPILER_LAUNCHER=ccache \
                 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
                 -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \

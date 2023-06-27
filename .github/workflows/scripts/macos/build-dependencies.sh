@@ -10,6 +10,7 @@ SDL=SDL2-2.28.1
 PNG=1.6.37
 JPG=9e
 SOUNDTOUCH=soundtouch-2.3.1
+FFMPEG=6.0
 QT=6.4.3
 
 mkdir deps-build
@@ -25,6 +26,7 @@ cat > SHASUMS <<EOF
 505e70834d35383537b6491e7ae8641f1a4bed1876dbfe361201fc80868d88ca  libpng-$PNG.tar.xz
 4077d6a6a75aeb01884f708919d25934c93305e49f7e3f36db9129320e6f4f3d  jpegsrc.v$JPG.tar.gz
 6900996607258496ce126924a19fe9d598af9d892cf3f33d1e4daaa9b42ae0b1  $SOUNDTOUCH.tar.gz
+57be87c22d9b49c112b6d24bc67d42508660e6b718b3db89c44e47e289137082  ffmpeg-$FFMPEG.tar.xz
 5087c9e5b0165e7bc3c1a4ab176b35d0cd8f52636aea903fa377bdba00891a60  qtbase-everywhere-src-$QT.tar.xz
 88315f886cf81898705e487cedba6e6160724359d23c518c92c333c098879a4a  qtsvg-everywhere-src-$QT.tar.xz
 867df829cd5cd3ae8efe62e825503123542764b13c96953511e567df70c5a091  qttools-everywhere-src-$QT.tar.xz
@@ -36,6 +38,7 @@ curl -L \
 	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$PNG/libpng-$PNG.tar.xz" \
 	-O "https://www.ijg.org/files/jpegsrc.v$JPG.tar.gz" \
 	-O "https://www.surina.net/soundtouch/$SOUNDTOUCH.tar.gz" \
+	-O "https://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
@@ -75,6 +78,18 @@ make -C build "-j$NPROCS"
 make -C build install
 cd ..
 
+echo "Installing FFmpeg..."
+tar xf "ffmpeg-$FFMPEG.tar.xz"
+cd "ffmpeg-$FFMPEG"
+./configure --prefix="$INSTALLDIR" --disable-all --disable-autodetect --disable-static --enable-shared \
+	--enable-avcodec --enable-avformat --enable-avutil --enable-swresample --enable-swscale \
+	--enable-audiotoolbox --enable-videotoolbox \
+	--enable-encoder=ffv1,qtrle,pcm_s16be,pcm_s16le,*_at,*_videotoolbox \
+	--enable-muxer=avi,matroska,mov,mp3,mp4,wav \
+	--enable-protocol=file
+make "-j$NPROCS"
+make install
+cd ..
 
 echo "Installing Qt Base..."
 tar xf "qtbase-everywhere-src-$QT.tar.xz"
