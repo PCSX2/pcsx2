@@ -210,10 +210,10 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(Target* t, u32 sbp, u32 sp
 {
 	const GSVector2i src_page_size = GSLocalMemory::m_psm[spsm].pgs;
 	const GSVector2i dst_page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
-	const u32 src_bw = std::max(1U, sbw) * 64;
-	const u32 dst_bw = std::max(1U, t->m_TEX0.TBW) * 64;
-	const u32 src_pgw = std::max(1U, src_bw / src_page_size.x);
-	const u32 dst_pgw = std::max(1U, dst_bw / dst_page_size.x);
+	const int src_bw = static_cast<int>(std::max(1U, sbw) * 64);
+	const int dst_bw = static_cast<int>(std::max(1U, t->m_TEX0.TBW) * 64);
+	const int src_pgw = std::max(1, src_bw / src_page_size.x);
+	const int dst_pgw = std::max(1, dst_bw / dst_page_size.x);
 	GSVector4i in_rect = src_r;
 
 	if (sbp < t->m_end_block && t->m_end_block < t->m_TEX0.TBP0)
@@ -265,8 +265,8 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(Target* t, u32 sbp, u32 sp
 		else if (static_cast<int>(src_pgw) == rect_pages.width())
 		{
 
-			const u32 totalpages = rect_pages.width() * rect_pages.height();
-			const bool full_rows = in_rect.width() == static_cast<int>(src_pgw * src_page_size.x);
+			const int totalpages = rect_pages.width() * rect_pages.height();
+			const bool full_rows = in_rect.width() == (src_pgw * src_page_size.x);
 			const bool single_row = in_rect.x == 0 && in_rect.y == 0 && totalpages <= dst_pgw;
 			const bool uneven_pages = (horizontal_offset || (totalpages % dst_pgw) != 0) && !single_row;
 
@@ -327,7 +327,7 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(Target* t, u32 sbp, u32 sp
 			new_rect = in_rect;
 			// The width is mismatched to the page.
 			// Kinda scary but covering the whole row and the next one should be okay? :/ (Check with MVP 07, sbp == 0x39a0)
-			if (rect_pages.z > static_cast<int>(dst_pgw))
+			if (rect_pages.z > dst_pgw)
 			{
 				if (!is_invalidation)
 					return GSVector4i::zero();
@@ -1472,7 +1472,10 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 	{
 		const bool forced_preload = GSRendererHW::GetInstance()->m_force_preload > 0;
 		const GSVector4i newrect = GSVector4i::loadh(size);
-		const u32 rect_end = GSLocalMemory::m_psm[TEX0.PSM].info.bn(newrect.z - 1, newrect.w - 1, TEX0.TBP0, TEX0.TBW);
+		u32 rect_end = GSLocalMemory::GetEndBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, newrect);
+		if (rect_end < TEX0.TBP0)
+			rect_end += MAX_BLOCKS;
+
 		RGBAMask rgba;
 		rgba._u32 = GSUtil::GetChannelMask(TEX0.PSM);
 		dst->UpdateValidity(newrect);
@@ -1486,8 +1489,12 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 
 				for (iter = GSRendererHW::GetInstance()->m_draw_transfers.begin(); iter != GSRendererHW::GetInstance()->m_draw_transfers.end(); )
 				{
+					u32 transfer_end = GSLocalMemory::GetEndBlockAddress(iter->blit.DBP, iter->blit.DBW, iter->blit.DPSM, iter->rect);
+					if (transfer_end < iter->blit.DBP)
+						transfer_end += MAX_BLOCKS;
+
 					// If the format, and location doesn't overlap
-					if (iter->blit.DBP >= TEX0.TBP0 && iter->blit.DBP <= rect_end && GSUtil::HasCompatibleBits(iter->blit.DPSM, TEX0.PSM))
+					if (transfer_end >= TEX0.TBP0 && iter->blit.DBP <= rect_end && GSUtil::HasCompatibleBits(iter->blit.DPSM, TEX0.PSM))
 					{
 						GSVector4i targetr = {};
 						const bool can_translate = CanTranslate(iter->blit.DBP, iter->blit.DBW, iter->blit.DPSM, iter->rect, TEX0.TBP0, TEX0.PSM, TEX0.TBW);
@@ -1541,14 +1548,18 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 						else
 							eerect = eerect.runion(targetr);
 
-						iter = GSRendererHW::GetInstance()->m_draw_transfers.erase(iter);
+						if (iter->blit.DBP == TEX0.TBP0 && transfer_end == rect_end)
+						{
+							iter = GSRendererHW::GetInstance()->m_draw_transfers.erase(iter);
+						}
+						else
+							++iter;
 
 						if (eerect.rintersect(newrect).eq(newrect))
 							break;
-						else
-							continue;
 					}
-					++iter;
+					else
+						++iter;
 				}
 
 				if (!eerect.rempty())
