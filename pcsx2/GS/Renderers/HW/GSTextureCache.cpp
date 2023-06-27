@@ -1548,7 +1548,7 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 						else
 							continue;
 					}
-					iter++;
+					++iter;
 				}
 
 				if (!eerect.rempty())
