@@ -461,6 +461,7 @@ const char* Pcsx2Config::GSOptions::BlendingLevelNames[] = {
 const char* Pcsx2Config::GSOptions::CaptureContainers[] = {
 	"mp4",
 	"mkv",
+	"mov",
 	"avi",
 	"wav",
 	"mp3",
