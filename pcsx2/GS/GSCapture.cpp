@@ -1114,7 +1114,7 @@ bool GSCapture::ProcessAudioPackets(s64 video_pts)
 			else
 			{
 				// Direct copy - optimal.
-				std::memcpy(s_converted_audio_frame->data[0] + s_audio_frame_pos * s_audio_frame_bps,
+				std::memcpy(s_converted_audio_frame->data[0] + s_audio_frame_pos * s_audio_frame_bps * AUDIO_CHANNELS,
 					&s_audio_buffer[s_audio_buffer_read_pos * AUDIO_CHANNELS], this_batch * sizeof(s16) * AUDIO_CHANNELS);
 			}
 		}
