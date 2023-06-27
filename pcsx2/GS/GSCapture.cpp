@@ -95,6 +95,7 @@ extern "C" {
 	X(av_strerror) \
 	X(av_reduce) \
 	X(av_dict_parse_string) \
+	X(av_dict_get) \
 	X(av_dict_free) \
 	X(av_opt_set_int) \
 	X(av_opt_set_sample_fmt) \
@@ -528,6 +529,8 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 		if (output_format->flags & AVFMT_GLOBALHEADER)
 			s_video_codec_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
+		bool has_pixel_format_override = wrap_av_dict_get(s_video_codec_arguments, "pixel_format", nullptr, 0);
+
 		res = wrap_avcodec_open2(s_video_codec_context, vcodec, &s_video_codec_arguments);
 		if (res < 0)
 		{
@@ -535,6 +538,10 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 			InternalEndCapture(lock);
 			return false;
 		}
+
+		// If the user overrode the pixel format, get that now
+		if (has_pixel_format_override)
+			sw_pix_fmt = s_video_codec_context->pix_fmt;
 
 		s_converted_video_frame = wrap_av_frame_alloc();
 		s_hw_video_frame = IsUsingHardwareVideoEncoding() ? wrap_av_frame_alloc() : nullptr;
