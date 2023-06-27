@@ -554,8 +554,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			   "Helps Harry Potter and Stuntman games. It has a big impact on performance."));
 
 		dialog->registerWidgetHelp(m_ui.preloadFrameData, tr("Preload Frame Data"), tr("Unchecked"),
-			tr("Uploads GS data when rendering a new frame to reproduce some effects accurately. "
-			   "Fixes black screen issues in games like Armored Core: Last Raven."));
+			tr("Uploads GS data when rendering a new frame to reproduce some effects accurately. "));
 
 		dialog->registerWidgetHelp(m_ui.textureInsideRt, tr("Texture Inside RT"), tr("Disabled"),
 			tr("Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer."));
