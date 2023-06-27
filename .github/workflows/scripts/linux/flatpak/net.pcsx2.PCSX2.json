@@ -56,7 +56,7 @@
         "cd build && ninja unittests && cd .."
       ],
       "post-install": [
-        "install -Dm644 bin/resources/icons/AppIconLarge.png ${FLATPAK_DEST}/share/icons/hicolor/256x256/apps/net.pcsx2.PCSX2.png",
+        "install -Dm644 bin/resources/icons/AppIconLarge.png ${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/net.pcsx2.PCSX2.png",
         "install -Dm644 .github/workflows/scripts/linux/pcsx2-qt.desktop ${FLATPAK_DEST}/share/applications/net.pcsx2.PCSX2.desktop",
         "desktop-file-edit --set-key=Icon --set-value=net.pcsx2.PCSX2 ${FLATPAK_DEST}/share/applications/net.pcsx2.PCSX2.desktop",
         "install -Dm644 .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml ${FLATPAK_DEST}/share/metainfo/net.pcsx2.PCSX2.metainfo.xml"
