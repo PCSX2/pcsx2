@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -43,7 +43,7 @@ static void intEventTest();
 
 void intBreakpoint(bool memcheck)
 {
-	u32 pc = cpuRegs.pc;
+	const u32 pc = cpuRegs.pc;
  	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_EE, pc) != 0)
 		return;
 
@@ -63,13 +63,13 @@ void intMemcheck(u32 op, u32 bits, bool store)
 {
 	// compute accessed address
 	u32 start = cpuRegs.GPR.r[(op >> 21) & 0x1F].UD[0];
-	if ((s16)op != 0)
-		start += (s16)op;
+	if (static_cast<s16>(op) != 0)
+		start += static_cast<s16>(op);
 	if (bits == 128)
 		start &= ~0x0F;
 
 	start = standardizeBreakpointAddress(start);
-	u32 end = start + bits/8;
+	const u32 end = start + bits/8;
 
 	auto checks = CBreakPoints::GetMemChecks(BREAKPOINT_EE);
 	for (size_t i = 0; i < checks.size(); i++)
@@ -90,32 +90,32 @@ void intMemcheck(u32 op, u32 bits, bool store)
 
 void intCheckMemcheck()
 {
-	u32 pc = cpuRegs.pc;
-	int needed = isMemcheckNeeded(pc);
+	const u32 pc = cpuRegs.pc;
+	const int needed = isMemcheckNeeded(pc);
 	if (needed == 0)
 		return;
 
-	u32 op = memRead32(needed == 2 ? pc+4 : pc);
+	const u32 op = memRead32(needed == 2 ? pc + 4 : pc);
 	const OPCODE& opcode = GetInstruction(op);
 
-	bool store = (opcode.flags & IS_STORE) != 0;
+	const bool store = (opcode.flags & IS_STORE) != 0;
 	switch (opcode.flags & MEMTYPE_MASK)
 	{
-	case MEMTYPE_BYTE:
-		intMemcheck(op,8,store);
-		break;
-	case MEMTYPE_HALF:
-		intMemcheck(op,16,store);
-		break;
-	case MEMTYPE_WORD:
-		intMemcheck(op,32,store);
-		break;
-	case MEMTYPE_DWORD:
-		intMemcheck(op,64,store);
-		break;
-	case MEMTYPE_QWORD:
-		intMemcheck(op,128,store);
-		break;
+		case MEMTYPE_BYTE:
+			intMemcheck(op, 8, store);
+			break;
+		case MEMTYPE_HALF:
+			intMemcheck(op, 16, store);
+			break;
+		case MEMTYPE_WORD:
+			intMemcheck(op, 32, store);
+			break;
+		case MEMTYPE_DWORD:
+			intMemcheck(op, 64, store);
+			break;
+		case MEMTYPE_QWORD:
+			intMemcheck(op, 128, store);
+			break;
 	}
 }
 
@@ -135,7 +135,7 @@ static void execI()
 	intCheckMemcheck();
 #endif
 
-	u32 pc = cpuRegs.pc;
+	const u32 pc = cpuRegs.pc;
 	// We need to increase the pc before executing the memRead32. An exception could appears
 	// and it expects the PC counter to be pre-incremented
 	cpuRegs.pc += 4;
@@ -148,8 +148,12 @@ static void execI()
 	static long int runs = 0;
 	//use this to find out what opcodes your game uses. very slow! (rama)
 	runs++;
-	if (runs > 1599999999){ //leave some time to startup the testgame
-		if (opcode.Name[0] == 'L') { //find all opcodes beginning with "L"
+	 //leave some time to startup the testgame
+	if (runs > 1599999999)
+	{
+		 //find all opcodes beginning with "L"
+		if (opcode.Name[0] == 'L')
+		{
 			Console.WriteLn ("Load %s", opcode.Name);
 		}
 	}
@@ -160,10 +164,12 @@ static void execI()
 	// Based on cycle
 	// if( cpuRegs.cycle > 0x4f24d714 )
 	// Or dump from a particular PC (useful to debug handler/syscall)
-	if (pc == 0x80000000) {
+	if (pc == 0x80000000)
+	{
 		print_me = 2000;
 	}
-	if (print_me) {
+	if (print_me)
+	{
 		print_me--;
 		disOut.clear();
 		disR5900Fasm(disOut, cpuRegs.code, pc);
@@ -449,7 +455,7 @@ void JR()
 {
 	// 0x33ad48 and 0x35060c are the return address of the function (0x356250) that populate the TLB cache
 	if (EmuConfig.Gamefixes.GoemonTlbHack) {
-		u32 add = cpuRegs.GPR.r[_Rs_].UL[0];
+		const u32 add = cpuRegs.GPR.r[_Rs_].UL[0];
 		if (add == 0x33ad48 || add == 0x35060c)
 			GoemonPreloadTlb();
 	}
@@ -458,7 +464,7 @@ void JR()
 
 void JALR()
 {
-	u32 temp = cpuRegs.GPR.r[_Rs_].UL[0];
+	const u32 temp = cpuRegs.GPR.r[_Rs_].UL[0];
 
 	if (_Rd_)  _SetLink(_Rd_);
 
@@ -534,7 +540,7 @@ static void intExecute()
 				if (cpuRegs.pc == EELOAD_START)
 				{
 					// The EELOAD _start function is the same across all BIOS versions afaik
-					u32 mainjump = memRead32(EELOAD_START + 0x9c);
+					const u32 mainjump = memRead32(EELOAD_START + 0x9c);
 					if (mainjump >> 26 == 3) // JAL
 						g_eeloadMain = ((EELOAD_START + 0xa0) & 0xf0000000U) | (mainjump << 2 & 0x0fffffffU);
 
@@ -546,10 +552,10 @@ static void intExecute()
 					if (VMManager::Internal::IsFastBootInProgress())
 					{
 						// See comments on this code in iR5900-32.cpp's recRecompile()
-						u32 typeAexecjump = memRead32(EELOAD_START + 0x470);
-						u32 typeBexecjump = memRead32(EELOAD_START + 0x5B0);
-						u32 typeCexecjump = memRead32(EELOAD_START + 0x618);
-						u32 typeDexecjump = memRead32(EELOAD_START + 0x600);
+						const u32 typeAexecjump = memRead32(EELOAD_START + 0x470);
+						const u32 typeBexecjump = memRead32(EELOAD_START + 0x5B0);
+						const u32 typeCexecjump = memRead32(EELOAD_START + 0x618);
+						const u32 typeDexecjump = memRead32(EELOAD_START + 0x600);
 						if ((typeBexecjump >> 26 == 3) || (typeCexecjump >> 26 == 3) || (typeDexecjump >> 26 == 3)) // JAL to 0x822B8
 							g_eeloadExec = EELOAD_START + 0x2B8;
 						else if (typeAexecjump >> 26 == 3) // JAL to 0x82170
