@@ -1179,7 +1179,7 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	cpuinfo
 	zydis
 	ZLIB::ZLIB
-	PkgConfig::SOUNDTOUCH
+	SoundTouch::SoundTouch
 	PNG::PNG
 	LibLZMA::LibLZMA
 	Zstd::Zstd

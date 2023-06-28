@@ -9,7 +9,6 @@ if (WIN32)
 	add_subdirectory(3rdparty/zlib EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/libpng EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/libjpeg EXCLUDE_FROM_ALL)
-	add_subdirectory(3rdparty/soundtouch EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/wil EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/xz EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/D3D12MemAlloc EXCLUDE_FROM_ALL)
@@ -73,8 +72,6 @@ else()
 			endif()
 		endif()
 	endif()
-
-	check_lib(SOUNDTOUCH SoundTouch SoundTouch.h PATH_SUFFIXES soundtouch)
 
 	if(NOT QT_BUILD)
 		find_optional_system_library(SDL2 3rdparty/sdl2 2.0.12)
@@ -165,6 +162,7 @@ endif()
 
 add_subdirectory(3rdparty/lzma EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/libchdr EXCLUDE_FROM_ALL)
+add_subdirectory(3rdparty/soundtouch EXCLUDE_FROM_ALL)
 
 # rapidyaml includes fast_float as a submodule, saves us pulling it in directly.
 # Normally, we'd just pull in the cmake project, and link to it, but... it seems to enable
