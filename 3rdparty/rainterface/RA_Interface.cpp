@@ -989,11 +989,11 @@ void RA_Shutdown()
     //	Call shutdown on toolchain
     if (_RA_Shutdown != nullptr)
     {
-#ifdef __cplusplus
+#if defined(__cplusplus) && _HAS_EXCEPTIONS
         try {
 #endif
             _RA_Shutdown();
-#ifdef __cplusplus
+#if defined(__cplusplus) && _HAS_EXCEPTIONS
         }
         catch (std::runtime_error&) {
         }
