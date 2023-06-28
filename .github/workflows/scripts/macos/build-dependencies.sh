@@ -79,6 +79,90 @@ cd ..
 echo "Installing Qt Base..."
 tar xf "qtbase-everywhere-src-$QT.tar.xz"
 cd "qtbase-everywhere-src-$QT"
+# Qt's panel:shouldEnableURL: implementation does a whole bunch of things that activate macOS's sandbox permissions dialog
+# Since this is called on every file being displayed in the open/save panel, that spams users with permissions dialogs
+# Simple solution: Hopefully no one needs any filters that aren't simple file extension filters, remove all other handling
+patch -u src/plugins/platforms/cocoa/qcocoafiledialoghelper.mm <<EOF
+--- src/plugins/platforms/cocoa/qcocoafiledialoghelper.mm
++++ src/plugins/platforms/cocoa/qcocoafiledialoghelper.mm
+@@ -133,7 +133,5 @@
+     NSURL *url = [NSURL fileURLWithPath:filepath isDirectory:info.isDir()];
+-    bool selectable = (m_options->acceptMode() == QFileDialogOptions::AcceptSave)
+-        || [self panel:m_panel shouldEnableURL:url];
+ 
+     m_panel.directoryURL = [NSURL fileURLWithPath:m_currentDirectory];
+-    m_panel.nameFieldStringValue = selectable ? info.fileName().toNSString() : @"";
++    m_panel.nameFieldStringValue = info.fileName().toNSString();
+ 
+@@ -203,61 +201,2 @@
+     return hidden;
+-}
+-
+-- (BOOL)panel:(id)sender shouldEnableURL:(NSURL *)url
+-{
+-    Q_UNUSED(sender);
+-
+-    NSString *filename = url.path;
+-    if (!filename.length)
+-        return NO;
+-
+-    // Always accept directories regardless of their names (unless it is a bundle):
+-    NSFileManager *fm = NSFileManager.defaultManager;
+-    NSDictionary *fileAttrs = [fm attributesOfItemAtPath:filename error:nil];
+-    if (!fileAttrs)
+-        return NO; // Error accessing the file means 'no'.
+-    NSString *fileType = fileAttrs.fileType;
+-    bool isDir = [fileType isEqualToString:NSFileTypeDirectory];
+-    if (isDir) {
+-        if (!m_panel.treatsFilePackagesAsDirectories) {
+-            if ([NSWorkspace.sharedWorkspace isFilePackageAtPath:filename] == NO)
+-                return YES;
+-        }
+-    }
+-
+-    // Treat symbolic links and aliases to directories like directories
+-    QFileInfo fileInfo(QString::fromNSString(filename));
+-    if (fileInfo.isSymLink() && QFileInfo(fileInfo.symLinkTarget()).isDir())
+-        return YES;
+-
+-    QString qtFileName = fileInfo.fileName();
+-    // No filter means accept everything
+-    bool nameMatches = m_selectedNameFilter->isEmpty();
+-    // Check if the current file name filter accepts the file:
+-    for (int i = 0; !nameMatches && i < m_selectedNameFilter->size(); ++i) {
+-        if (QDir::match(m_selectedNameFilter->at(i), qtFileName))
+-            nameMatches = true;
+-    }
+-    if (!nameMatches)
+-        return NO;
+-
+-    QDir::Filters filter = m_options->filter();
+-    if ((!(filter & (QDir::Dirs | QDir::AllDirs)) && isDir)
+-        || (!(filter & QDir::Files) && [fileType isEqualToString:NSFileTypeRegular])
+-        || ((filter & QDir::NoSymLinks) && [fileType isEqualToString:NSFileTypeSymbolicLink]))
+-        return NO;
+-
+-    bool filterPermissions = ((filter & QDir::PermissionMask)
+-                              && (filter & QDir::PermissionMask) != QDir::PermissionMask);
+-    if (filterPermissions) {
+-        if ((!(filter & QDir::Readable) && [fm isReadableFileAtPath:filename])
+-            || (!(filter & QDir::Writable) && [fm isWritableFileAtPath:filename])
+-            || (!(filter & QDir::Executable) && [fm isExecutableFileAtPath:filename]))
+-            return NO;
+-    }
+-    if (!(filter & QDir::Hidden)
+-        && (qtFileName.startsWith(u'.') || [self isHiddenFileAtURL:url]))
+-            return NO;
+-
+-    return YES;
+ }
+@@ -406,5 +345,2 @@
+ {
+-    if (m_options->acceptMode() != QFileDialogOptions::AcceptSave)
+-        return nil; // panel:shouldEnableURL: does the file filtering for NSOpenPanel
+-
+     QStringList fileTypes;
+EOF
 cmake -B build -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release -DFEATURE_optimize_size=ON -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF
 make -C build "-j$NPROCS"
 make -C build install
