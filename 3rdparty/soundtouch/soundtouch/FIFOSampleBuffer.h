@@ -91,7 +91,7 @@ public:
                      );
 
     /// destructor
-    ~FIFOSampleBuffer();
+    ~FIFOSampleBuffer() override;
 
     /// Returns a pointer to the beginning of the output samples. 
     /// This function is provided for accessing the output samples directly. 
@@ -100,7 +100,7 @@ public:
     /// When using this function to output samples, also remember to 'remove' the
     /// output samples from the buffer by calling the 
     /// 'receiveSamples(numSamples)' function
-    virtual SAMPLETYPE *ptrBegin();
+    virtual SAMPLETYPE *ptrBegin() override;
 
     /// Returns a pointer to the end of the used part of the sample buffer (i.e. 
     /// where the new samples are to be inserted). This function may be used for 
@@ -121,7 +121,7 @@ public:
     /// the sample buffer.
     virtual void putSamples(const SAMPLETYPE *samples,  ///< Pointer to samples.
                             uint numSamples                         ///< Number of samples to insert.
-                            );
+                            ) override;
 
     /// Adjusts the book-keeping to increase number of samples in the buffer without 
     /// copying any actual samples.
@@ -139,7 +139,7 @@ public:
     /// \return Number of samples returned.
     virtual uint receiveSamples(SAMPLETYPE *output, ///< Buffer where to copy output samples.
                                 uint maxSamples                 ///< How many samples to receive at max.
-                                );
+                                ) override;
 
     /// Adjusts book-keeping so that given number of samples are removed from beginning of the 
     /// sample buffer without copying them anywhere. 
@@ -147,10 +147,10 @@ public:
     /// Used to reduce the number of samples in the buffer when accessing the sample buffer directly
     /// with 'ptrBegin' function.
     virtual uint receiveSamples(uint maxSamples   ///< Remove this many samples from the beginning of pipe.
-                                );
+                                ) override;
 
     /// Returns number of samples currently available.
-    virtual uint numSamples() const;
+    virtual uint numSamples() const override;
 
     /// Sets number of channels, 1 = mono, 2 = stereo.
     void setChannels(int numChannels);
@@ -162,14 +162,14 @@ public:
     }
 
     /// Returns nonzero if there aren't any samples available for outputting.
-    virtual int isEmpty() const;
+    virtual int isEmpty() const override;
 
     /// Clears all the samples.
-    virtual void clear();
+    virtual void clear() override;
 
     /// allow trimming (downwards) amount of samples in pipeline.
     /// Returns adjusted amount of samples
-    uint adjustAmountOfSamples(uint numSamples);
+    uint adjustAmountOfSamples(uint numSamples) override;
 
     /// Add silence to end of buffer
     void addSilent(uint nSamples);
