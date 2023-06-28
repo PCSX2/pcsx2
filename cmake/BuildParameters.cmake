@@ -134,8 +134,6 @@ add_compile_options("${ARCH_FLAG_LIST}")
 option(USE_PGO_GENERATE "Enable PGO optimization (generate profile)")
 option(USE_PGO_OPTIMIZE "Enable PGO optimization (use profile)")
 
-# Note1: Builtin strcmp/memcmp was proved to be slower on Mesa than stdlib version.
-# Note2: float operation SSE is impacted by the PCSX2 SSE configuration. In particular, flush to zero denormal.
 if(MSVC AND NOT USE_CLANG_CL)
 	add_compile_options(
 		"$<$<COMPILE_LANGUAGE:CXX>:/Zc:externConstexpr>"
@@ -153,7 +151,7 @@ if(MSVC)
 	# Disable Exceptions
 	string(REPLACE "/EHsc" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 else()
-	add_compile_options(-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse)
+	add_compile_options(-pipe -fvisibility=hidden -pthread)
 	add_compile_options(
 		"$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>"
 		"$<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>"
