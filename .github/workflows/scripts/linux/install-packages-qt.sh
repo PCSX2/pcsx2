@@ -52,7 +52,6 @@ declare -a PCSX2_PACKAGES=(
 	"libpulse-dev"
 	"librsvg2-dev"
 	"libsamplerate0-dev"
-	"libsoundtouch-dev"
 	"libudev-dev"
 	"libx11-xcb-dev"
 	"libavcodec-dev"

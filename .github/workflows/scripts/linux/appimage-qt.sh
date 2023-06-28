@@ -61,7 +61,6 @@ declare -a SYSLIBS=(
 	"libwrap.so.0"
 	"libharfbuzz.so.0"
 	"libFLAC.so.8"
-	"libSoundTouch.so.1"
 	"libXau.so.6"
 	"libXcomposite.so.1"
 	"libXcursor.so.1"
