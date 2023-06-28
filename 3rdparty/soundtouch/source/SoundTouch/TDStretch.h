@@ -165,7 +165,7 @@ protected:
     
 public:
     TDStretch();
-    virtual ~TDStretch();
+    virtual ~TDStretch() override;
 
     /// Operator 'new' is overloaded so that it automatically creates a suitable instance 
     /// depending on if we've a MMX/SSE/etc-capable CPU available or not.
@@ -187,7 +187,7 @@ public:
     void setTempo(double newTempo);
 
     /// Returns nonzero if there aren't any samples available for outputting.
-    virtual void clear();
+    virtual void clear() override;
 
     /// Clears the input buffer
     void clearInput();
@@ -227,7 +227,7 @@ public:
             const SAMPLETYPE *samples,  ///< Input sample data
             uint numSamples                         ///< Number of samples in 'samples' so that one sample
                                                     ///< contains both channels if stereo
-            );
+            ) override;
 
     /// return nominal input sample requirement for triggering a processing batch
     int getInputSampleReq() const
@@ -256,10 +256,10 @@ public:
     class TDStretchMMX : public TDStretch
     {
     protected:
-        double calcCrossCorr(const short *mixingPos, const short *compare, double &norm);
-        double calcCrossCorrAccumulate(const short *mixingPos, const short *compare, double &norm);
-        virtual void overlapStereo(short *output, const short *input) const;
-        virtual void clearCrossCorrState();
+        double calcCrossCorr(const short *mixingPos, const short *compare, double &norm) override;
+        double calcCrossCorrAccumulate(const short *mixingPos, const short *compare, double &norm) override;
+        virtual void overlapStereo(short *output, const short *input) const override;
+        virtual void clearCrossCorrState() override;
     };
 #endif /// SOUNDTOUCH_ALLOW_MMX
 
@@ -269,8 +269,8 @@ public:
     class TDStretchSSE : public TDStretch
     {
     protected:
-        double calcCrossCorr(const float *mixingPos, const float *compare, double &norm);
-        double calcCrossCorrAccumulate(const float *mixingPos, const float *compare, double &norm);
+        double calcCrossCorr(const float *mixingPos, const float *compare, double &norm) override;
+        double calcCrossCorrAccumulate(const float *mixingPos, const float *compare, double &norm) override;
     };
 
 #endif /// SOUNDTOUCH_ALLOW_SSE
