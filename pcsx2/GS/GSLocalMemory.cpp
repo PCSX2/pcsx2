@@ -65,7 +65,7 @@ GSLocalMemory::GSLocalMemory()
 {
 	m_vm8 = (u8*)GSAllocateWrappedMemory(m_vmsize, 4);
 	if (!m_vm8)
-		throw std::bad_alloc();
+		pxFailRel("Failed to allocate GS memory storage.");
 
 	memset(m_vm8, 0, m_vmsize);
 

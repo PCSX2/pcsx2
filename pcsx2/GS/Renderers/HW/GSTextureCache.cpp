@@ -579,7 +579,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 	if (GSConfig.UserHacks_DisableDepthSupport)
 	{
 		GL_CACHE("LookupDepthSource not supported (0x%x, F:0x%x)", TEX0.TBP0, TEX0.PSM);
-		throw GSRecoverableError();
+		return nullptr;
 	}
 
 	GL_CACHE("TC: Lookup Depth Source <%d,%d => %d,%d> (0x%x, %s, BW: %u, CBP: 0x%x, TW: %d, TH: %d)", r.x, r.y, r.z,
@@ -756,7 +756,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	if ((TEX0.TW > 10 && !region.HasX()) || (TEX0.TH > 10 && !region.HasY()))
 	{
 		GL_CACHE("Invalid TEX0 size %ux%u without region, aborting draw.", TEX0.TW, TEX0.TH);
-		throw GSRecoverableError();
+		return nullptr;
 	}
 
 	const GSVector2i compare_lod(lod ? *lod : GSVector2i(0, 0));
@@ -1382,7 +1382,10 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 		if (dst_match)
 		{
 			calcRescale(dst_match);
-			dst = CreateTarget(TEX0, new_size.x, new_size.y, scale, type, clear);
+			dst = Target::Create(TEX0, new_size.x, new_size.y, scale, type, clear);
+			if (!dst)
+				return nullptr;
+
 			dst->m_32_bits_fmt = dst_match->m_32_bits_fmt;
 			dst->OffsetHack_modxy = dst_match->OffsetHack_modxy;
 
@@ -1454,7 +1457,7 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 			size.x, size.y, fbmask, bp, TEX0.TBW, psm_str(TEX0.PSM));
 	}
 
-	Target* dst = CreateTarget(TEX0, size.x, size.y, scale, type, true);
+	Target* dst = Target::Create(TEX0, size.x, size.y, scale, type, true);
 	// In theory new textures contain invalidated data. Still in theory a new target
 	// must contains the content of the GS memory.
 	// In practice, TC will wrongly invalidate some RT. For example due to write on the alpha
@@ -2731,18 +2734,9 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	// If the copies overlap, this is a validation error, so we need to copy to a temporary texture first.
 	if ((SBP == DBP) && !(GSVector4i(sx, sy, sx + w, sy + h).rintersect(GSVector4i(dx, dy, dx + w, dy + h))).rempty())
 	{
-		GSTexture* tmp_texture = nullptr;
-		const GSVector4i src_size = GSVector4i(src->m_texture->GetSize()).xyxy();
-		try
-		{
-			tmp_texture = src->m_texture->IsDepthStencil() ?
-				g_gs_device->CreateDepthStencil(src_size.x, src_size.y, src->m_texture->GetFormat(), false) :
-				g_gs_device->CreateRenderTarget(src_size.x, src_size.y, src->m_texture->GetFormat(), false);
-		}
-		catch (const std::bad_alloc&)
-		{
-		}
-
+		GSTexture* tmp_texture = src->m_texture->IsDepthStencil() ?
+									 g_gs_device->CreateDepthStencil(src->m_texture->GetWidth(), src->m_texture->GetHeight(), src->m_texture->GetFormat(), false) :
+									 g_gs_device->CreateRenderTarget(src->m_texture->GetWidth(), src->m_texture->GetHeight(), src->m_texture->GetFormat(), false);
 		if (!tmp_texture)
 		{
 			Console.Error("(HW Move) Failed to allocate temporary %dx%d texture on HW move", w, h);
@@ -2752,7 +2746,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		if(tmp_texture->IsDepthStencil())
 		{
 			const GSVector4 src_rect = GSVector4(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h);
-			const GSVector4 tmp_rect = src_rect / GSVector4(src_size);
+			const GSVector4 tmp_rect = src_rect / (GSVector4(tmp_texture->GetSize()).xyxy());
 			const GSVector4 dst_rect = GSVector4(scaled_dx, scaled_dy, (scaled_dx + scaled_w), (scaled_dy + scaled_h));
 			g_gs_device->StretchRect(src->m_texture, tmp_rect, tmp_texture, src_rect, ShaderConvert::DEPTH_COPY, false);
 			g_gs_device->StretchRect(tmp_texture, tmp_rect, dst->m_texture, dst_rect, ShaderConvert::DEPTH_COPY, false);
@@ -4050,35 +4044,25 @@ void GSTextureCache::AgeHashCache()
 	}
 }
 
-GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int w, int h, float scale, int type, const bool clear)
+GSTextureCache::Target* GSTextureCache::Target::Create(GIFRegTEX0 TEX0, int w, int h, float scale, int type, bool clear)
 {
 	ASSERT(type == RenderTarget || type == DepthStencil);
 
 	const int scaled_w = static_cast<int>(std::ceil(static_cast<float>(w) * scale));
 	const int scaled_h = static_cast<int>(std::ceil(static_cast<float>(h) * scale));
+	GSTexture* texture = (type == RenderTarget) ?
+		g_gs_device->CreateRenderTarget(scaled_w, scaled_h, GSTexture::Format::Color, clear) :
+		g_gs_device->CreateDepthStencil(scaled_w, scaled_h, GSTexture::Format::DepthStencil, clear);
+	if (!texture)
+		return nullptr;
 
-	// TODO: This leaks if memory allocation fails. Use a unique_ptr so it gets freed, but these
-	// exceptions really need to get lost.
-	std::unique_ptr<Target> t = std::make_unique<Target>(TEX0, type);
-	t->m_unscaled_size = GSVector2i(w, h);
-	t->m_scale = scale;
+	Target* t = new Target(TEX0, type, GSVector2i(w, h), scale, texture);
 
-	if (type == RenderTarget)
-	{
-		t->m_texture = g_gs_device->CreateRenderTarget(scaled_w, scaled_h, GSTexture::Format::Color, clear);
+	g_texture_cache->m_target_memory_usage += t->m_texture->GetMemUsage();
 
-		t->m_used = true; // FIXME
-	}
-	else if (type == DepthStencil)
-	{
-		t->m_texture = g_gs_device->CreateDepthStencil(scaled_w, scaled_h, GSTexture::Format::DepthStencil, clear);
-	}
+	g_texture_cache->m_dst[type].push_front(t);
 
-	m_target_memory_usage += t->m_texture->GetMemUsage();
-
-	m_dst[type].push_front(t.get());
-
-	return t.release();
+	return t;
 }
 
 GSTexture* GSTextureCache::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, float* scale, const GSVector2i& size)
@@ -4646,12 +4630,15 @@ bool GSTextureCache::Source::ClutMatch(const PaletteKey& palette_key)
 
 // GSTextureCache::Target
 
-GSTextureCache::Target::Target(const GIFRegTEX0& TEX0, const int type)
+GSTextureCache::Target::Target(GIFRegTEX0 TEX0, int type, const GSVector2i& unscaled_size, float scale, GSTexture* texture)
 	: m_type(type)
-	, m_used(false)
+	, m_used(type == RenderTarget) // FIXME
 	, m_valid(GSVector4i::zero())
 {
 	m_TEX0 = TEX0;
+	m_unscaled_size = unscaled_size;
+	m_scale = scale;
+	m_texture = texture;
 	m_32_bits_fmt |= (GSLocalMemory::m_psm[TEX0.PSM].trbpp != 16);
 }
 
@@ -4876,19 +4863,9 @@ bool GSTextureCache::Target::ResizeTexture(int new_unscaled_width, int new_unsca
 	const int new_height = static_cast<int>(std::ceil(new_unscaled_height) * m_scale);
 	const bool clear = (new_width > width || new_height > height);
 
-	// These exceptions *really* need to get lost. This gets called outside of draws, which just crashes
-	// when it tries to propagate the exception back.
-	GSTexture* tex = nullptr;
-	try
-	{
-		tex = m_texture->IsDepthStencil() ?
-				  g_gs_device->CreateDepthStencil(new_width, new_height, m_texture->GetFormat(), clear) :
-				  g_gs_device->CreateRenderTarget(new_width, new_height, m_texture->GetFormat(), clear);
-	}
-	catch (const std::bad_alloc&)
-	{
-	}
-
+	GSTexture* tex = m_texture->IsDepthStencil() ?
+						 g_gs_device->CreateDepthStencil(new_width, new_height, m_texture->GetFormat(), clear) :
+						 g_gs_device->CreateRenderTarget(new_width, new_height, m_texture->GetFormat(), clear);
 	if (!tex)
 	{
 		Console.Error("(ResizeTexture) Failed to allocate %dx%d texture from %dx%d texture", new_width, new_height, width, height);

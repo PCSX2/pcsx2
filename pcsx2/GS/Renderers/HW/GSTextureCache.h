@@ -227,8 +227,10 @@ public:
 		int readbacks_since_draw = 0;
 
 	public:
-		Target(const GIFRegTEX0& TEX0, const int type);
+		Target(GIFRegTEX0 TEX0, int type, const GSVector2i& unscaled_size, float scale, GSTexture* texture);
 		~Target();
+
+		static Target* Create(GIFRegTEX0 TEX0, int w, int h, float scale, int type, bool clear);
 
 		void ResizeDrawn(const GSVector4i& rect);
 		void UpdateDrawn(const GSVector4i& rect, bool can_resize = true);
@@ -406,7 +408,6 @@ protected:
 	std::unique_ptr<GSDownloadTexture> m_uint32_download_texture;
 
 	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t, bool half_right, int x_offset, int y_offset, const GSVector2i* lod, const GSVector4i* src_range, GSTexture* gpu_clut, SourceRegion region);
-	Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, float scale, int type, const bool clear);
 
 	/// Expands a target when the block pointer for a display framebuffer is within another target, but the read offset
 	/// plus the height is larger than the current size of the target.

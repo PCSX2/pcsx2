@@ -2004,6 +2004,12 @@ void GSRendererHW::Draw()
 		const bool possible_shuffle = m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0 || IsPossibleChannelShuffle();
 		src = tex_psm.depth ? g_texture_cache->LookupDepthSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, possible_shuffle) :
 								g_texture_cache->LookupSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, (GSConfig.HWMipmap >= HWMipmapLevel::Basic || GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr, possible_shuffle);
+		if (unlikely(!src))
+		{
+			GL_INS("ERROR: Source lookup failed, skipping.");
+			cleanup_cancelled_draw();
+			return;
+		}
 	}
 
 	// Estimate size based on the scissor rectangle and height cache.
@@ -2059,6 +2065,12 @@ void GSRendererHW::Draw()
 
 			rt = g_texture_cache->CreateTarget(FRAME_TEX0, t_size, target_scale, GSTextureCache::RenderTarget, true,
 				fm, false, force_preload, preload_uploads);
+			if (unlikely(!rt))
+			{
+				GL_INS("ERROR: Failed to create FRAME target, skipping.");
+				cleanup_cancelled_draw();
+				return;
+			}
 		}
 	}
 
@@ -2077,6 +2089,12 @@ void GSRendererHW::Draw()
 		{
 			ds = g_texture_cache->CreateTarget(ZBUF_TEX0, t_size, target_scale, GSTextureCache::DepthStencil,
 				m_cached_ctx.DepthWrite(), 0, false, force_preload);
+			if (unlikely(!ds))
+			{
+				GL_INS("ERROR: Failed to create ZBUF target, skipping.");
+				cleanup_cancelled_draw();
+				return;
+			}
 		}
 	}
 
@@ -5168,23 +5186,10 @@ void GSRendererHW::OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCach
 			// If some of the channels are masked, we need to keep them.
 			if (!clear_depth && m_cached_ctx.FRAME.FBMSK != 0)
 			{
-				GSTexture* tex = nullptr;
 				GSTextureCache::Target* target = clear_depth ? ds : rt;
-				const GSVector2 size = GSVector2(static_cast<float>(target->GetUnscaledWidth()) * target->m_scale, static_cast<float>(target->GetUnscaledHeight()) * target->m_scale);
-				pxAssert(!target->m_texture->IsDepthStencil());
-				try
-				{
-					tex = g_gs_device->CreateRenderTarget(size.x, size.y, target->m_texture->GetFormat(), false);
-				}
-				catch (const std::bad_alloc&)
-				{
-				}
-
+				GSTexture* tex = g_gs_device->CreateRenderTarget(target->m_texture->GetWidth(), target->m_texture->GetHeight(), target->m_texture->GetFormat(), false);
 				if (!tex)
-				{
-					Console.Error("(ResizeTexture) Failed to allocate %dx%d texture", size.x, size.y);
 					return;
-				}
 
 				if (clear_depth)
 				{
@@ -5240,22 +5245,10 @@ void GSRendererHW::OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCach
 		// If some of the channels are masked, we need to keep them.
 		if (m_cached_ctx.FRAME.FBMSK != 0)
 		{
-			GSTexture* tex = nullptr;
 			GSTextureCache::Target* target = rt;
-			const GSVector2 size = GSVector2(static_cast<float>(target->GetUnscaledWidth()) * target->m_scale, static_cast<float>(target->GetUnscaledHeight()) * target->m_scale);
-			try
-			{
-				tex = g_gs_device->CreateRenderTarget(size.x, size.y, target->m_texture->GetFormat(), true);
-			}
-			catch (const std::bad_alloc&)
-			{
-			}
-
+			GSTexture* tex = g_gs_device->CreateRenderTarget(target->m_texture->GetWidth(), target->m_texture->GetHeight(), target->m_texture->GetFormat(), true);
 			if (!tex)
-			{
-				Console.Error("(ResizeTexture) Failed to allocate %dx%d texture", size.x, size.y);
 				return;
-			}
 
 			g_gs_device->ClearRenderTarget(tex, color);
 

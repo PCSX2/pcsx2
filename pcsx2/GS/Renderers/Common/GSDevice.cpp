@@ -306,7 +306,15 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 		{
 			t = CreateSurface(type, width, height, levels, format);
 			if (!t)
-				throw std::bad_alloc();
+			{
+				Console.Error("GS: Memory allocation failure for %dx%d texture. Purging pool and retrying.", width, height);
+				PurgePool();
+				if (!t)
+				{
+					Console.Error("GS: Memory allocation failure for %dx%d texture after purging pool.", width, height);
+					return nullptr;
+				}
+			}
 		}
 	}
 
@@ -607,13 +615,9 @@ bool GSDevice::ResizeRenderTarget(GSTexture** t, int w, int h, bool preserve_con
 		return true;
 	}
 
-	GSTexture* new_tex;
-	try
-	{
-		const GSTexture::Format fmt = orig_tex ? orig_tex->GetFormat() : GSTexture::Format::Color;
-		new_tex = FetchSurface(GSTexture::Type::RenderTarget, w, h, 1, fmt, !preserve_contents, true);
-	}
-	catch (std::bad_alloc&)
+	const GSTexture::Format fmt = orig_tex ? orig_tex->GetFormat() : GSTexture::Format::Color;
+	GSTexture* new_tex = FetchSurface(GSTexture::Type::RenderTarget, w, h, 1, fmt, !preserve_contents, true);
+	if (!new_tex)
 	{
 		Console.WriteLn("%dx%d texture allocation failed in ResizeTexture()", w, h);
 		return false;

@@ -1643,24 +1643,11 @@ void GSState::FlushPrim()
 
 		m_vt.Update(m_vertex.buff, m_index.buff, m_vertex.tail, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
 
-		try
-		{
-			// Skip draw if Z test is enabled, but set to fail all pixels.
-			const bool skip_draw = (m_context->TEST.ZTE && m_context->TEST.ZTST == ZTST_NEVER);
+		// Skip draw if Z test is enabled, but set to fail all pixels.
+		const bool skip_draw = (m_context->TEST.ZTE && m_context->TEST.ZTST == ZTST_NEVER);
 
-			if (!skip_draw)
-				Draw();
-		}
-		catch (GSRecoverableError&)
-		{
-			// could be an unsupported draw call
-		}
-		catch (const std::bad_alloc&)
-		{
-			// Texture Out Of Memory
-			PurgePool();
-			Console.Error("GS: Memory allocation failure.");
-		}
+		if (!skip_draw)
+			Draw();
 
 		g_perfmon.Put(GSPerfMon::Draw, 1);
 		g_perfmon.Put(GSPerfMon::Prim, m_index.tail / GSUtil::GetVertexCount(PRIM->PRIM));
@@ -2706,8 +2693,7 @@ void GSState::GrowVertexBuffer()
 
 		Console.Error("GS: failed to allocate %zu bytes for vertices and %zu for indices.",
 			vert_byte_count, idx_byte_count);
-
-		throw GSError();
+		pxFailRel("Memory allocation failed");
 	}
 
 	if (m_vertex.buff)

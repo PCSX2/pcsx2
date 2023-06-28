@@ -2212,6 +2212,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
 	{
 		primid_tex = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::PrimID, false);
+		if (!primid_tex)
+			return;
+
 		StretchRect(config.rt, GSVector4(config.drawarea) / GSVector4(rtsize).xyxy(),
 			primid_tex, GSVector4(config.drawarea), m_date.primid_init_ps[config.datm].get(), nullptr, false);
 	}
@@ -2237,6 +2240,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		const GSVector4 dRect(config.drawarea);
 		const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
 		hdr_rt = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::HDRColor);
+		if (!hdr_rt)
+			return;
+
 		// Warning: StretchRect must be called before BeginScene otherwise
 		// vertices will be overwritten. Trust me you don't want to do that.
 		StretchRect(config.rt, sRect, hdr_rt, dRect, ShaderConvert::HDR_INIT, false);
