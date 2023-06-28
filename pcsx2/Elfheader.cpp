@@ -188,7 +188,7 @@ u32 ElfObject::getEntryPoint()
 
 std::pair<u32,u32> ElfObject::getTextRange()
 {
-	if (isPSXElf && hasProgramHeaders())
+	if (!isPSXElf && hasProgramHeaders())
 	{
 		for (int i = 0; i < header.e_phnum; i++)
 		{
