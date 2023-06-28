@@ -1170,10 +1170,7 @@ struct Pcsx2Config
 	// ------------------------------------------------------------------------
 	struct USBOptions
 	{
-		enum : u32
-		{
-			NUM_PORTS = 2
-		};
+		static constexpr u32 NUM_PORTS = 2;
 
 		struct Port
 		{

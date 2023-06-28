@@ -28,6 +28,7 @@
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 
+namespace {
 #pragma pack(push, 1)
 struct CacheIndexEntry
 {
@@ -42,6 +43,7 @@ struct CacheIndexEntry
 	u32 blob_format;
 };
 #pragma pack(pop)
+}
 
 GLShaderCache::GLShaderCache() = default;
 

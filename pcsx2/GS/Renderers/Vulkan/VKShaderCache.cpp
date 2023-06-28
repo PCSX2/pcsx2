@@ -44,6 +44,7 @@
 
 std::unique_ptr<VKShaderCache> g_vulkan_shader_cache;
 
+namespace {
 #pragma pack(push, 4)
 struct VK_PIPELINE_CACHE_HEADER
 {
@@ -64,6 +65,7 @@ struct CacheIndexEntry
 	u32 blob_size;
 };
 #pragma pack(pop)
+}
 
 static bool ValidatePipelineCacheHeader(const VK_PIPELINE_CACHE_HEADER& header)
 {
