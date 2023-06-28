@@ -907,14 +907,15 @@ void AutoEject::CountDownTicks()
 			if (mcds[port][slot].autoEjectTicks > 0)
 			{
 				if (--mcds[port][slot].autoEjectTicks == 0)
-				{
-					Host::AddKeyedOSDMessage(fmt::format("AutoEjectSlotClear{}{}", port, slot),
-						fmt::format(TRANSLATE_SV("MemoryCard", "Memory card in port {} / slot {} reinserted"),
-							port + 1, slot + 1),
-						Host::OSD_INFO_DURATION);
-				}
+					reinserted |= EmuConfig.Mcd[sioConvertPortAndSlotToPad(port, slot)].Enabled;
 			}
 		}
+	}
+
+	if (reinserted)
+	{
+		Host::AddIconOSDMessage("AutoEjectAllSet", ICON_FA_SD_CARD,
+			TRANSLATE_SV("MemoryCard", "Memory Cards reinserted."), Host::OSD_INFO_DURATION);
 	}
 }
 
