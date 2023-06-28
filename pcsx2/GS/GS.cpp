@@ -342,52 +342,24 @@ void GSclose()
 
 void GSreset(bool hardware_reset)
 {
-	try
-	{
-		g_gs_renderer->Reset(hardware_reset);
-	}
-	catch (GSRecoverableError)
-	{
-	}
+	g_gs_renderer->Reset(hardware_reset);
 }
 
 void GSgifSoftReset(u32 mask)
 {
-	try
-	{
-		g_gs_renderer->SoftReset(mask);
-	}
-	catch (GSRecoverableError)
-	{
-	}
+	g_gs_renderer->SoftReset(mask);
 }
 
 void GSwriteCSR(u32 csr)
 {
-	try
-	{
-		g_gs_renderer->WriteCSR(csr);
-	}
-	catch (GSRecoverableError)
-	{
-	}
+	g_gs_renderer->WriteCSR(csr);
 }
 
 void GSInitAndReadFIFO(u8* mem, u32 size)
 {
 	GL_PERF("Init and read FIFO %u qwc", size);
-	try
-	{
-		g_gs_renderer->InitReadFIFO(mem, size);
-		g_gs_renderer->ReadFIFO(mem, size);
-	}
-	catch (GSRecoverableError)
-	{
-	}
-	catch (const std::bad_alloc&)
-	{
-		fprintf(stderr, "GS: Memory allocation error\n");
-	}
+	g_gs_renderer->InitReadFIFO(mem, size);
+	g_gs_renderer->ReadFIFO(mem, size);
 }
 
 void GSReadLocalMemoryUnsync(u8* mem, u32 qwc, u64 BITBLITBUF, u64 TRXPOS, u64 TRXREG)
@@ -397,89 +369,47 @@ void GSReadLocalMemoryUnsync(u8* mem, u32 qwc, u64 BITBLITBUF, u64 TRXPOS, u64 T
 
 void GSgifTransfer(const u8* mem, u32 size)
 {
-	try
-	{
-		g_gs_renderer->Transfer<3>(mem, size);
-	}
-	catch (GSRecoverableError)
-	{
-	}
+	g_gs_renderer->Transfer<3>(mem, size);
 }
 
 void GSgifTransfer1(u8* mem, u32 addr)
 {
-	try
-	{
-		g_gs_renderer->Transfer<0>(const_cast<u8*>(mem) + addr, (0x4000 - addr) / 16);
-	}
-	catch (GSRecoverableError)
-	{
-	}
+	g_gs_renderer->Transfer<0>(const_cast<u8*>(mem) + addr, (0x4000 - addr) / 16);
 }
 
 void GSgifTransfer2(u8* mem, u32 size)
 {
-	try
-	{
-		g_gs_renderer->Transfer<1>(const_cast<u8*>(mem), size);
-	}
-	catch (GSRecoverableError)
-	{
-	}
+	g_gs_renderer->Transfer<1>(const_cast<u8*>(mem), size);
 }
 
 void GSgifTransfer3(u8* mem, u32 size)
 {
-	try
-	{
-		g_gs_renderer->Transfer<2>(const_cast<u8*>(mem), size);
-	}
-	catch (GSRecoverableError)
-	{
-	}
+	g_gs_renderer->Transfer<2>(const_cast<u8*>(mem), size);
 }
 
 void GSvsync(u32 field, bool registers_written)
 {
-	try
-	{
-		g_gs_renderer->VSync(field, registers_written, g_gs_renderer->IsIdleFrame());
-	}
-	catch (GSRecoverableError)
-	{
-	}
-	catch (const std::bad_alloc&)
-	{
-		fprintf(stderr, "GS: Memory allocation error\n");
-	}
+	g_gs_renderer->VSync(field, registers_written, g_gs_renderer->IsIdleFrame());
 }
 
 int GSfreeze(FreezeAction mode, freezeData* data)
 {
-	try
+	if (mode == FreezeAction::Save)
 	{
-		if (mode == FreezeAction::Save)
-		{
-			return g_gs_renderer->Freeze(data, false);
-		}
-		else if (mode == FreezeAction::Size)
-		{
-			return g_gs_renderer->Freeze(data, true);
-		}
-		else if (mode == FreezeAction::Load)
-		{
-			// Since Defrost doesn't do a hardware reset (since it would be clearing
-			// local memory just before it's overwritten), we have to manually wipe
-			// out the current textures.
-			g_gs_device->ClearCurrent();
-			return g_gs_renderer->Defrost(data);
-		}
+		return g_gs_renderer->Freeze(data, false);
 	}
-	catch (GSRecoverableError)
+	else if (mode == FreezeAction::Size)
 	{
+		return g_gs_renderer->Freeze(data, true);
 	}
-
-	return 0;
+	else // if (mode == FreezeAction::Load)
+	{
+		// Since Defrost doesn't do a hardware reset (since it would be clearing
+		// local memory just before it's overwritten), we have to manually wipe
+		// out the current textures.
+		g_gs_device->ClearCurrent();
+		return g_gs_renderer->Defrost(data);
+	}
 }
 
 void GSQueueSnapshot(const std::string& path, u32 gsdump_frames)

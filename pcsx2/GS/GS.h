@@ -119,13 +119,6 @@ bool GSSaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspe
 	u32* width, u32* height, std::vector<u32>* pixels);
 void GSJoinSnapshotThreads();
 
-struct GSError
-{
-};
-struct GSRecoverableError : GSError
-{
-};
-
 namespace Host
 {
 	/// Called when the GS is creating a render device.

@@ -20,6 +20,7 @@
 #include "xbyak/xbyak.h"
 #include "xbyak/xbyak_util.h"
 #include "GS/MultiISA.h"
+#include "common/Assertions.h"
 
 /// Code generator that automatically selects between SSE and AVX, x86 and x64 so you don't have to
 /// Should make combined SSE and AVX codegen much easier
@@ -38,45 +39,11 @@ public:
 	using Ymm = Xbyak::Ymm;
 	using Zmm = Xbyak::Zmm;
 
-	class Error : public std::exception
-	{
-	public:
-		enum Value
-		{
-			ERR_64_BIT_REG_IN_32,
-			ERR_64_INSTR_IN_32,
-			ERR_SSE_INSTR_IN_AVX,
-			ERR_AVX_INSTR_IN_SSE,
-		};
-
-		Value value;
-
-		Error(Value value) : value(value) {}
-
-		const char* what() const noexcept
-		{
-			static const char* tbl[] = {
-				"used 64-bit register in 32-bit code",
-				"used 64-bit only instruction in 32-bit code",
-				"used SSE instruction in AVX code",
-				"used AVX instruction in SSE code",
-			};
-			if (static_cast<u32>(value) < (sizeof(tbl) / sizeof(*tbl)))
-			{
-				return tbl[value];
-			}
-			else
-			{
-				return "GSNewCodeGenerator Unknown Error";
-			}
-		}
-	};
-
 private:
 	void requireAVX()
 	{
 		if (!hasAVX)
-			throw Error(Error::ERR_AVX_INSTR_IN_SSE);
+			pxFailRel("used AVX instruction in SSE code");
 	}
 
 public:
@@ -141,7 +108,7 @@ public:
 
 #define ACTUAL_FORWARD_SSEONLY(name, ...) \
 	if (hasAVX) \
-		throw Error(Error::ERR_SSE_INSTR_IN_AVX); \
+		pxFailRel("used SSE instruction in AVX code"); \
 	else \
 		actual.name(__VA_ARGS__);
 
@@ -149,19 +116,19 @@ public:
 	if (hasAVX) \
 		actual.name(__VA_ARGS__); \
 	else \
-		throw Error(Error::ERR_AVX_INSTR_IN_SSE);
+		pxFailRel("used AVX instruction in SSE code");
 
 #define ACTUAL_FORWARD_AVX2(name, ...) \
 	if (hasAVX2) \
 		actual.name(__VA_ARGS__); \
 	else \
-		throw Error(Error::ERR_AVX_INSTR_IN_SSE);
+		pxFailRel("used AVX instruction in SSE code");
 
 #define ACTUAL_FORWARD_FMA(name, ...) \
 	if (hasFMA) \
 		actual.name(__VA_ARGS__); \
 	else \
-		throw Error(Error::ERR_AVX_INSTR_IN_SSE);
+		pxFailRel("used AVX instruction in SSE code");
 
 #define FORWARD1(category, name, type) \
 	void name(type a) \

@@ -1066,6 +1066,8 @@ GSTexture* GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& are
 	const GSVector2i& rtsize = rt->GetSize();
 
 	GSTexture* tex = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::PrimID, false);
+	if (!tex)
+		return nullptr;
 
 	GL_PUSH("PrimID Destination Alpha Clear");
 	StretchRect(rt, GSVector4(area) / GSVector4(rtsize).xyxy(), tex, GSVector4(area), m_date.primid_ps[datm], false);
