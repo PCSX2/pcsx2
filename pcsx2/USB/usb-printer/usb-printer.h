@@ -120,10 +120,6 @@ namespace usb_printer
 		},
 	};
 
-	static const char* sPrinterNames[] = {
-		"Sony DPP-MP1",
-	};
-
 	class PrinterDevice final : public DeviceProxy
 	{
 	public:
