@@ -145,7 +145,7 @@ void psxBreakpoint(bool memcheck)
 
 	CBreakPoints::SetBreakpointTriggered(true);
 	VMManager::SetPaused(true);
-	throw Exception::ExitCpuExecute();
+	Cpu->ExitExecution();
 }
 
 void psxMemcheck(u32 op, u32 bits, bool store)
@@ -274,22 +274,14 @@ static s32 intExecuteBlock( s32 eeCycles )
 	psxRegs.iopBreak = 0;
 	psxRegs.iopCycleEE = eeCycles;
 
-	try
+	while (psxRegs.iopCycleEE > 0)
 	{
-		while (psxRegs.iopCycleEE > 0) {
-			if ((psxHu32(HW_ICFG) & 8) && ((psxRegs.pc & 0x1fffffffU) == 0xa0 || (psxRegs.pc & 0x1fffffffU) == 0xb0 || (psxRegs.pc & 0x1fffffffU) == 0xc0))
-				psxBiosCall();
+		if ((psxHu32(HW_ICFG) & 8) && ((psxRegs.pc & 0x1fffffffU) == 0xa0 || (psxRegs.pc & 0x1fffffffU) == 0xb0 || (psxRegs.pc & 0x1fffffffU) == 0xc0))
+			psxBiosCall();
 
-			branch2 = 0;
-			while (!branch2) {
-				execI();
-			}
-		}
-	}
-	catch (Exception::ExitCpuExecute&)
-	{
-		// Get out of the EE too, regardless of whether it's int or rec.
-		Cpu->ExitExecution();
+		branch2 = 0;
+		while (!branch2)
+			execI();
 	}
 
 	return psxRegs.iopBreak + psxRegs.iopCycleEE;
