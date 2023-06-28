@@ -2061,11 +2061,6 @@ SCED-51366:
 SCED-51376:
   name: "Official PlayStation 2 Magazine Demo 28" # German
   region: "PAL-E-G"
-SCED-51380:
-  name: "Zone of the Enders - The 2nd Runner [Demo]"
-  region: "PAL-M5"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SCED-51384:
   name: "Official PlayStation 2 Magazine Demo 29"
   region: "PAL-M5"
@@ -5152,7 +5147,7 @@ SCKA-20011:
     mipmap: 1
     partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCKA-20012:
-  name: "Arc the Lad - Jeong Ryeo Hui Hwang Ho"
+  name: "Arc the Lad - Jeongryeongui Hwanghon"
   region: "NTSC-K"
 SCKA-20014:
   name: "Dark Cloud 2"
@@ -9792,6 +9787,11 @@ SLED-51342:
     vuClampMode: 2 # Missing geometry with microVU.
   gsHWFixes:
     mipmap: 1 # Fixes broken player textures.
+SLED-51380:
+  name: "Zone of the Enders - The 2nd Runner [Demo]"
+  region: "PAL"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLED-51676:
   name: "Warhammer 40,000 - Fire Warrior [Demo]"
   region: "PAL"
@@ -9821,6 +9821,9 @@ SLED-51975:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned post-processing.
     PCRTCOverscan: 1 # Fixes image alignment.
+SLED-52014:
+  name: "XIII [Demo]"
+  region: "PAL-E"
 SLED-52326:
   name: "007 - Everything or Nothing [Demo]"
   region: "PAL-E"
@@ -14719,9 +14722,6 @@ SLES-52011:
   name: "Tak and The Power of Juju"
   region: "PAL-E"
   compat: 5
-SLES-52014:
-  name: "XIII"
-  region: "PAL"
 SLES-52015:
   name: "Chevaliers de Baphomet, Les - Le Manuscrit de Voynich"
   region: "PAL-F"
@@ -24460,7 +24460,7 @@ SLKA-15043:
   name: "Super Puzzle Bobble Collection Vol 1"
   region: "NTSC-K"
 SLKA-15044:
-  name: "Super Puzzle Bobble 2"
+  name: "Super Puzzle Bobble Collection Vol 2"
   region: "NTSC-K"
 SLKA-25002:
   name: "Energy Airforce"
@@ -24597,7 +24597,7 @@ SLKA-25049:
   gsHWFixes:
     gpuPaletteConversion: 2 # Stops excessive VRAM usage with preloading on.
 SLKA-25050:
-  name: "Shin Sangoku Musou 3"
+  name: "Jin Samguk Mussang 3"
   region: "NTSC-K"
 SLKA-25051:
   name: "Clock Tower 3"
@@ -24701,7 +24701,7 @@ SLKA-25084:
     wildArmsHack: 1 # Improves visual clarity whilst upscaling.
     roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
 SLKA-25085:
-  name: "Shin Sangoku Musou 3 - Mushouden"
+  name: "Jin Samguk Mussang 3 - Maengjangjeon"
   region: "NTSC-K"
 SLKA-25086:
   name: "NBA Live 2004"
@@ -24863,7 +24863,7 @@ SLKA-25144:
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
 SLKA-25145:
-  name: "dot hack  - Outbreak"
+  name: "dot hack - Outbreak"
   region: "NTSC-K"
 SLKA-25146:
   name: "Kaido Battle 2 - Chain Reaction"
@@ -24989,7 +24989,7 @@ SLKA-25186:
   name: "King of Fighters, The - Maximum Impact [Limited Edition]"
   region: "NTSC-K"
 SLKA-25187:
-  name: "Shin Sangoku Musou 3 - Empires"
+  name: "Jin Samguk Mussang 3 - Empires"
   region: "NTSC-K"
 SLKA-25196:
   name: "Driv3r"
@@ -25319,7 +25319,7 @@ SLKA-25287:
   name: "Metal Slug 4&5"
   region: "NTSC-K"
 SLKA-25289:
-  name: "Shin Sangoku Musou 4"
+  name: "Jin Samguk Mussang 4"
   region: "NTSC-K"
 SLKA-25290:
   name: "Super Monkey Ball Deluxe"
@@ -25457,7 +25457,7 @@ SLKA-25328:
     - "SLKA-25328"
     - "SLKA-25082"
 SLKA-25329:
-  name: "Shin Sangoku Musou 4 - Mushoden"
+  name: "Jin Samguk Mussang 4 - Maengjangjeon"
   region: "NTSC-K"
   gsHWFixes:
     autoFlush: 2 # Fixes sun luminosity.
@@ -25617,7 +25617,7 @@ SLKA-25389:
   clampModes:
     eeClampMode: 3 # Otherwise freezes in some spot.
 SLKA-25390:
-  name: "Shin Sangoku Musou 4 - Empires"
+  name: "Jin Samguk Mussang 4 - Empires"
   region: "NTSC-K"
 SLKA-25396:
   name: "FIFA '07"
@@ -25710,7 +25710,7 @@ SLKA-35004:
   gsHWFixes:
     getSkipCount: "GSC_SakuraWarsSoLongMyLove"
 SLKA-35005:
-  name: "Shin Sangoku Musou 5 Special"
+  name: "Jin Samguk Mussang 5 - Special"
   region: "NTSC-K"
 SLPM-20391:
   name: "Saiyuki Gunlock"
@@ -28979,6 +28979,9 @@ SLPM-64544:
   region: "NTSC-K"
 SLPM-64549:
   name: "Siksin-ui Seong"
+  region: "NTSC-K"
+SLPM-64550:
+  name: "Super Puzzle Bobble 2"
   region: "NTSC-K"
 SLPM-64552:
   name: "Silent Scope 3"
@@ -36462,7 +36465,7 @@ SLPM-67522:
   name: "Sangokushi Senki"
   region: "NTSC-K"
 SLPM-67523:
-  name: "Shin Sangoku Musou 2"
+  name: "Jin Samguk Mussang 2"
   region: "NTSC-K"
 SLPM-67524:
   name: "Armored Core 3"
@@ -36510,8 +36513,8 @@ SLPM-67531:
         patch=1,EE,00166CD0,word,48438800
         patch=1,EE,00166CDC,word,4BE521AC
 SLPM-67535:
-  name: "Memories Of"
-  region: "NTSC-J-K"
+  name: "Memories Off"
+  region: "NTSC-K"
 SLPM-67536:
   name: "Bongsin Yeonui 2"
   region: "NTSC-K"
@@ -36537,7 +36540,7 @@ SLPM-67546:
   clampModes:
     vuClampMode: 3 # Fix white shiny weapons.
 SLPM-67550:
-  name: "Shin Sangoku Musou 2 - Mushouden"
+  name: "Jin Samguk Mussang 2 - Maengjangjeon"
   region: "NTSC-K"
 SLPM-67552:
   name: "Tomak - Save the Earth Again [Complete Edition]"
