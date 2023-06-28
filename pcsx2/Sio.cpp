@@ -899,6 +899,7 @@ bool sioPortAndSlotIsMultitap(u32 port, u32 slot)
 
 void AutoEject::CountDownTicks()
 {
+	bool reinserted = false;
 	for (size_t port = 0; port < SIO::PORTS; port++)
 	{
 		for (size_t slot = 0; slot < SIO::SLOTS; slot++)
