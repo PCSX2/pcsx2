@@ -409,8 +409,14 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 					fmt::format("Video codec {} not found, using default.", GSConfig.VideoCaptureCodec), Host::OSD_ERROR_DURATION);
 			}
 		}
+
+		// FFmpeg decides whether mp4, mkv, etc should use h264 or mpeg4 as their default codec by whether x264 was enabled
+		// But there's a lot of other h264 encoders (e.g. hardware encoders) we may want to use instead
+		if (!vcodec && wrap_avformat_query_codec(output_format, AV_CODEC_ID_H264, FF_COMPLIANCE_NORMAL))
+			vcodec = wrap_avcodec_find_encoder(AV_CODEC_ID_H264);
 		if (!vcodec)
 			vcodec = wrap_avcodec_find_encoder(output_format->video_codec);
+
 		if (!vcodec)
 		{
 			Host::AddIconOSDMessage("GSCaptureError", ICON_FA_CAMERA, "Failed to find video encoder.", Host::OSD_ERROR_DURATION);
