@@ -668,14 +668,15 @@ void GSTextureReplacements::DumpTexture(const GSTextureCache::HashCacheKey& hash
 
 	// use per-texture buffer so we can compress the texture asynchronously and not block the GS thread
 	// must be 32 byte aligned for ReadTexture().
-	AlignedBuffer<u8, 32> buffer(pitch * static_cast<u32>(read_height));
-	psm.rtx(mem, mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM), block_rect, buffer.GetPtr(), pitch, TEXA);
+	u8* buffer = static_cast<u8*>(_aligned_malloc(pitch * static_cast<u32>(read_height), 32));
+	psm.rtx(mem, mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM), block_rect, buffer, pitch, TEXA);
 
 	// okay, now we can actually dump it
 	const u32 buffer_offset = ((rect.top - block_rect.top) * pitch) + ((rect.left - block_rect.left) * sizeof(u32));
-	QueueWorkerThreadItem([filename = std::move(filename), tw, th, pitch, buffer = std::move(buffer), buffer_offset]() {
-		if (!SavePNGImage(filename.c_str(), tw, th, buffer.GetPtr() + buffer_offset, pitch))
-			Console.Error("Failed to dump texture to '%s'.", filename.c_str());
+	QueueWorkerThreadItem([filename = std::move(filename), tw, th, pitch, buffer, buffer_offset]() {
+		if (!SavePNGImage(filename.c_str(), tw, th, buffer + buffer_offset, pitch))
+			Console.Error(fmt::format("Failed to dump texture to '{}'.", filename));
+		_aligned_free(buffer);
 	});
 }
 
