@@ -42,7 +42,6 @@
 #include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
-#include "common/SafeArray.inl"
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 #include "common/ZipHelpers.h"
@@ -95,40 +94,28 @@ static void PostLoadPrep()
 // --------------------------------------------------------------------------------------
 //  SaveStateBase  (implementations)
 // --------------------------------------------------------------------------------------
-SaveStateBase::SaveStateBase( SafeArray<u8>& memblock )
+SaveStateBase::SaveStateBase(VmStateBuffer& memblock)
+	: m_memory(memblock)
+	, m_version(g_SaveVersion)
 {
-	Init( &memblock );
 }
 
-SaveStateBase::SaveStateBase( SafeArray<u8>* memblock )
+void SaveStateBase::PrepBlock(int size)
 {
-	Init( memblock );
-}
-
-void SaveStateBase::Init( SafeArray<u8>* memblock )
-{
-	m_memory	= memblock;
-	m_version	= g_SaveVersion;
-	m_idx		= 0;
-	m_error = false;
-}
-
-void SaveStateBase::PrepBlock( int size )
-{
-	pxAssertDev( m_memory, "Savestate memory/buffer pointer is null!" );
 	if (m_error)
 		return;
 
-	const int end = m_idx+size;
+	const int end = m_idx + size;
 	if (IsSaving())
 	{
-		m_memory->MakeRoomFor(end);
+		if (static_cast<u32>(end) >= m_memory.size())
+			m_memory.resize(static_cast<u32>(end));
 	}
 	else
 	{
-		if (m_memory->GetSizeInBytes() < end)
+		if (m_memory.size() < static_cast<u32>(end))
 		{
-			Console.Error("(SaveStateBase) Buffer overflow in PrepBlock(), expected %d got %d", end, m_memory->GetSizeInBytes());
+			Console.Error("(SaveStateBase) Buffer overflow in PrepBlock(), expected %d got %zu", end, m_memory.size());
 			m_error = true;
 		}
 	}
@@ -270,44 +257,29 @@ bool SaveStateBase::FreezeInternals()
 // --------------------------------------------------------------------------------------
 // uncompressed to/from memory state saves implementation
 
-memSavingState::memSavingState( SafeArray<u8>& save_to )
-	: SaveStateBase( save_to )
-{
-}
-
-memSavingState::memSavingState( SafeArray<u8>* save_to )
-	: SaveStateBase( save_to )
+memSavingState::memSavingState(VmStateBuffer& save_to)
+	: SaveStateBase(save_to)
 {
 }
 
 // Saving of state data
-void memSavingState::FreezeMem( void* data, int size )
+void memSavingState::FreezeMem(void* data, int size)
 {
 	if (!size) return;
 
-	m_memory->MakeRoomFor( m_idx + size );
-	memcpy( m_memory->GetPtr(m_idx), data, size );
+	const int new_size = m_idx + size;
+	if (static_cast<u32>(new_size) > m_memory.size())
+		m_memory.resize(static_cast<u32>(new_size));
+
+	std::memcpy(&m_memory[m_idx], data, size);
 	m_idx += size;
-}
-
-void memSavingState::MakeRoomForData()
-{
-	pxAssertDev( m_memory, "Savestate memory/buffer pointer is null!" );
-
-	m_memory->ChunkSize = ReallocThreshold;
-	m_memory->MakeRoomFor( m_idx + MemoryBaseAllocSize );
 }
 
 // --------------------------------------------------------------------------------------
 //  memLoadingState  (implementations)
 // --------------------------------------------------------------------------------------
-memLoadingState::memLoadingState( const SafeArray<u8>& load_from )
-	: SaveStateBase( const_cast<SafeArray<u8>&>(load_from) )
-{
-}
-
-memLoadingState::memLoadingState( const SafeArray<u8>* load_from )
-	: SaveStateBase( const_cast<SafeArray<u8>*>(load_from) )
+memLoadingState::memLoadingState(const VmStateBuffer& load_from)
+	: SaveStateBase(const_cast<VmStateBuffer&>(load_from))
 {
 }
 
@@ -320,13 +292,10 @@ void memLoadingState::FreezeMem( void* data, int size )
 		return;
 	}
 
-	const u8* const src = m_memory->GetPtr(m_idx);
+	const u8* const src = &m_memory[m_idx];
 	m_idx += size;
-	memcpy( data, src, size );
+	std::memcpy(data, src, size);
 }
-
-// Used to hold the current state backup (fullcopy of PS2 memory and subcomponents states).
-//static VmStateBuffer state_buffer( L"Public Savestate Buffer" );
 
 static const char* EntryFilename_StateVersion = "PCSX2 Savestate Version.id";
 static const char* EntryFilename_Screenshot = "Screenshot.png";
@@ -716,7 +685,8 @@ static const std::unique_ptr<BaseSavestateEntry> SavestateEntries[] = {
 
 std::unique_ptr<ArchiveEntryList> SaveState_DownloadState(Error* error)
 {
-	std::unique_ptr<ArchiveEntryList> destlist = std::make_unique<ArchiveEntryList>(new VmStateBuffer("Zippable Savestate"));
+	std::unique_ptr<ArchiveEntryList> destlist = std::make_unique<ArchiveEntryList>();
+	destlist->GetBuffer().resize(1024 * 1024 * 64);
 
 	memSavingState saveme(destlist->GetBuffer());
 	ArchiveEntry internals(EntryFilename_InternalStructures);
@@ -1073,8 +1043,8 @@ static bool LoadInternalStructuresState(zip_t* zf, s64 index)
 	if (!zff)
 		return false;
 
-	VmStateBuffer buffer(static_cast<int>(zst.size), "StateBuffer_UnzipFromDisk"); // start with an 8 meg buffer to avoid frequent reallocation.
-	if (zip_fread(zff.get(), buffer.GetPtr(), buffer.GetSizeInBytes()) != buffer.GetSizeInBytes())
+	std::vector<u8> buffer(zst.size);
+	if (zip_fread(zff.get(), buffer.data(), buffer.size()) != buffer.size())
 		return false;
 
 	memLoadingState state(buffer);

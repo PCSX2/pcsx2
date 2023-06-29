@@ -34,6 +34,7 @@
 
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
+#include "common/Threading.h"
 #include "common/Timer.h"
 
 #include <atomic>

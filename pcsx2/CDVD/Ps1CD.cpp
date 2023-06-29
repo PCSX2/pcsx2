@@ -22,6 +22,8 @@
 #include "IopHw.h"
 #include "IopDma.h"
 
+#include "common/Threading.h"
+
 //THIS ALL IS FOR THE CDROM REGISTERS HANDLING
 
 enum cdrom_registers

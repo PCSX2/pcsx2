@@ -15,7 +15,6 @@
 
 #include "PrecompiledHeader.h"
 #include "common/FileSystem.h"
-#include "common/SafeArray.inl"
 #include "common/Path.h"
 #include "common/StringUtil.h"
 
@@ -171,7 +170,7 @@ class FileMemoryCard
 protected:
 	std::FILE* m_file[8] = {};
 	std::string m_filenames[8] = {};
-	SafeArray<u8> m_currentdata;
+	std::vector<u8> m_currentdata;
 	u64 m_chksum[8] = {};
 	bool m_ispsx[8] = {};
 	u32 m_chkaddr = 0;
@@ -490,7 +489,8 @@ s32 FileMemoryCard::Save(uint slot, const u8* src, u32 adr, int size)
 
 	if (m_ispsx[slot])
 	{
-		m_currentdata.MakeRoomFor(size);
+		if (static_cast<int>(m_currentdata.size()) < size)
+			m_currentdata.resize(size);
 		for (int i = 0; i < size; i++)
 			m_currentdata[i] = src[i];
 	}
@@ -498,9 +498,10 @@ s32 FileMemoryCard::Save(uint slot, const u8* src, u32 adr, int size)
 	{
 		if (!Seek(mcfp, adr))
 			return 0;
-		m_currentdata.MakeRoomFor(size);
+		if (static_cast<int>(m_currentdata.size()) < size)
+			m_currentdata.resize(size);
 
-		const size_t read_result = std::fread(m_currentdata.GetPtr(), size, 1, mcfp);
+		const size_t read_result = std::fread(m_currentdata.data(), size, 1, mcfp);
 		if (read_result == 0)
 			Host::ReportFormattedErrorAsync("Memory Card", "Error reading memcard.\n");
 
@@ -527,7 +528,7 @@ s32 FileMemoryCard::Save(uint slot, const u8* src, u32 adr, int size)
 	if (!Seek(mcfp, adr))
 		return 0;
 
-	if (std::fwrite(m_currentdata.GetPtr(), size, 1, mcfp) == 1)
+	if (std::fwrite(m_currentdata.data(), size, 1, mcfp) == 1)
 	{
 		static auto last = std::chrono::time_point<std::chrono::system_clock>();
 
