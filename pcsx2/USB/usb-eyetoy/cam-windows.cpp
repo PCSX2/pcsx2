@@ -29,6 +29,9 @@
 #pragma clang diagnostic ignored "-Wmicrosoft-goto"
 #endif
 
+#define safe_release(ptr) \
+	((void)((((ptr) != NULL) && ((ptr)->Release(), !!0)), (ptr) = NULL))
+
 namespace usb_eyetoy
 {
 	namespace windows_api

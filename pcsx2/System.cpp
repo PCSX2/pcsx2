@@ -25,6 +25,7 @@
 #include "VUmicro.h"
 #include "ps2/BiosTools.h"
 #include "svnrev.h"
+#include "SysForwardDefs.h"
 #include "x86/newVif.h"
 
 #include "common/Align.h"

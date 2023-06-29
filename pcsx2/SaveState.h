@@ -77,19 +77,21 @@ extern bool SaveState_UnzipFromDisk(const std::string& filename, Error* error);
 // states), and memLoadingState, memSavingState (uncompressed memory states).
 class SaveStateBase
 {
+public:
+	using VmStateBuffer = std::vector<u8>;
+
 protected:
-	VmStateBuffer* m_memory;
+	VmStateBuffer& m_memory;
 
-	u32 m_version;		// version of the savestate being loaded.
+	u32 m_version = 0;		// version of the savestate being loaded.
 
-	int m_idx;			// current read/write index of the allocation
+	int m_idx = 0;			// current read/write index of the allocation
 
-	bool m_error; // error occurred while reading/writing
+	bool m_error = false; // error occurred while reading/writing
 
 public:
-	SaveStateBase( VmStateBuffer& memblock );
-	SaveStateBase( VmStateBuffer* memblock );
-	virtual ~SaveStateBase() { }
+	SaveStateBase(VmStateBuffer& memblock);
+	virtual ~SaveStateBase() = default;
 
 	__fi bool HasError() const { return m_error; }
 	__fi bool IsOkay() const { return !m_error; }
@@ -171,12 +173,7 @@ public:
 
 	u8* GetBlockPtr()
 	{
-		return m_memory->GetPtr(m_idx);
-	}
-
-	u8* GetPtrEnd() const
-	{
-		return m_memory->GetPtrEnd();
+		return &m_memory[m_idx];
 	}
 
 	void CommitBlock( int size )
@@ -204,8 +201,6 @@ public:
 	bool gsFreeze();
 
 protected:
-	void Init( VmStateBuffer* memblock );
-
 	bool vmFreeze();
 	bool mtvuFreeze();
 	bool rcntFreeze();
@@ -241,7 +236,7 @@ protected:
 // --------------------------------------------------------------------------------------
 //  ArchiveEntry
 // --------------------------------------------------------------------------------------
-class ArchiveEntry
+class ArchiveEntry final
 {
 protected:
 	std::string	m_filename;
@@ -256,7 +251,7 @@ public:
 		m_datasize = 0;
 	}
 
-	virtual ~ArchiveEntry() = default;
+	~ArchiveEntry() = default;
 
 	ArchiveEntry& SetDataIndex(uptr idx)
 	{
@@ -286,52 +281,41 @@ public:
 	}
 };
 
-typedef SafeArray< u8 > ArchiveDataBuffer;
-
 // --------------------------------------------------------------------------------------
 //  ArchiveEntryList
 // --------------------------------------------------------------------------------------
-class ArchiveEntryList
+class ArchiveEntryList final
 {
+public:
+	using VmStateBuffer = std::vector<u8>;
 	DeclareNoncopyableObject(ArchiveEntryList);
 
 protected:
 	std::vector<ArchiveEntry> m_list;
-	std::unique_ptr<ArchiveDataBuffer> m_data;
+	VmStateBuffer m_data;
 
 public:
-	virtual ~ArchiveEntryList() = default;
+	ArchiveEntryList() = default;
+	~ArchiveEntryList() = default;
 
-	ArchiveEntryList() {}
-
-	ArchiveEntryList(ArchiveDataBuffer* data)
-		: m_data(data)
+	const VmStateBuffer& GetBuffer() const
 	{
+		return m_data;
 	}
 
-	ArchiveEntryList(ArchiveDataBuffer& data)
-		: m_data(&data)
+	VmStateBuffer& GetBuffer()
 	{
-	}
-
-	const VmStateBuffer* GetBuffer() const
-	{
-		return m_data.get();
-	}
-
-	VmStateBuffer* GetBuffer()
-	{
-		return m_data.get();
+		return m_data;
 	}
 
 	u8* GetPtr(uint idx)
 	{
-		return &(*m_data)[idx];
+		return &m_data[idx];
 	}
 
 	const u8* GetPtr(uint idx) const
 	{
-		return &(*m_data)[idx];
+		return &m_data[idx];
 	}
 
 	ArchiveEntryList& Add(const ArchiveEntry& src)
@@ -360,36 +344,24 @@ public:
 //  Saving and Loading Specialized Implementations...
 // --------------------------------------------------------------------------------------
 
-class memSavingState : public SaveStateBase
+class memSavingState final : public SaveStateBase
 {
 	typedef SaveStateBase _parent;
 
-protected:
-	static const int ReallocThreshold		= _1mb / 4;		// 256k reallocation block size.
-	static const int MemoryBaseAllocSize	= _8mb;			// 8 meg base alloc when PS2 main memory is excluded
-
 public:
-	virtual ~memSavingState() = default;
-	memSavingState( VmStateBuffer& save_to );
-	memSavingState( VmStateBuffer* save_to );
+	memSavingState(VmStateBuffer& save_to);
+	~memSavingState() override = default;
 
-	void MakeRoomForData();
-
-	void FreezeMem( void* data, int size );
-
-	bool IsSaving() const { return true; }
+	void FreezeMem(void* data, int size) override;
+	bool IsSaving() const override { return true; }
 };
 
-class memLoadingState : public SaveStateBase
+class memLoadingState final : public SaveStateBase
 {
 public:
-	virtual ~memLoadingState() = default;
+	memLoadingState(const VmStateBuffer& load_from);
+	~memLoadingState() override = default;
 
-	memLoadingState( const VmStateBuffer& load_from );
-	memLoadingState( const VmStateBuffer* load_from );
-
-	void FreezeMem( void* data, int size );
-
-	bool IsSaving() const { return false; }
-	bool IsFinished() const { return m_idx >= m_memory->GetSizeInBytes(); }
+	void FreezeMem(void* data, int size) override;
+	bool IsSaving() const override { return false; }
 };

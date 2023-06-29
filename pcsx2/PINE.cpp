@@ -39,6 +39,7 @@
 #include "Elfheader.h"
 #include "pcsx2/VMManager.h"
 #include "svnrev.h"
+#include "SysForwardDefs.h"
 #include "PINE.h"
 
 PINEServer::PINEServer() {}

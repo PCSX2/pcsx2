@@ -11,7 +11,6 @@ add_library(common)
 target_sources(common PRIVATE
 	AlignedMalloc.cpp
 	Assertions.cpp
-	SafeArray.inl
 	Console.cpp
 	CrashHandler.cpp
 	DynamicLibrary.cpp
@@ -90,7 +89,6 @@ target_sources(common PRIVATE
 	ReadbackSpinManager.h
 	RedtapeWilCom.h
 	RedtapeWindows.h
-	SafeArray.h
 	ScopedGuard.h
 	SettingsInterface.h
 	SettingsWrapper.h

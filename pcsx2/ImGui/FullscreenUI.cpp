@@ -38,6 +38,7 @@
 #include "ps2/BiosTools.h"
 #include "Patch.h"
 #include "svnrev.h"
+#include "SysForwardDefs.h"
 
 #include "common/FileSystem.h"
 #include "common/Console.h"
@@ -46,6 +47,7 @@
 #include "common/SettingsInterface.h"
 #include "common/SettingsWrapper.h"
 #include "common/StringUtil.h"
+#include "common/Threading.h"
 #include "common/Timer.h"
 
 #include "imgui.h"

@@ -30,6 +30,7 @@
 #include "MTGS.h"
 #include "VMManager.h"
 #include "svnrev.h"
+#include "SysForwardDefs.h"
 #include "vtlb.h"
 
 #include "common/Assertions.h"
