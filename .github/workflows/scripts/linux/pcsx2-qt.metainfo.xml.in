@@ -22,8 +22,11 @@
     </screenshot>
   </screenshots>
   <content_rating type="oars-1.1"/>
-  <update_contact>pcsx2_AT_pcsx2.net</update_contact>
+  <update_contact>stenzek_AT_gmail.com</update_contact>
   <releases>
     <release version="@GIT_VERSION@" date="@GIT_DATE@" />
   </releases>
+  <custom>
+    <value key="flathub::manifest">https://raw.githubusercontent.com/PCSX2/pcsx2/@GIT_HASH@/.github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json</value>
+  </custom>
 </component>

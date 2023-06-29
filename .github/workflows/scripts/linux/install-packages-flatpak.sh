@@ -31,6 +31,7 @@ declare -a FLATPAK_PACKAGES=(
   "org.kde.Sdk/${ARCH}/${KDE_BRANCH}"
   "org.freedesktop.Platform.ffmpeg-full/${ARCH}/${BRANCH}"
   "org.freedesktop.Sdk.Extension.llvm16/${ARCH}/${BRANCH}"
+  "org.freedesktop.appstream-glib/${ARCH}/stable"
 )
 
 retry_command sudo apt-get -qq update
