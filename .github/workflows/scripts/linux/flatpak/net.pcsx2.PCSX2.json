@@ -6,11 +6,12 @@
   "sdk-extensions": [
     "org.freedesktop.Sdk.Extension.llvm16"
   ],
-  "add-build-extensions": {
+  "add-extensions": {
     "org.freedesktop.Platform.ffmpeg-full": {
       "directory": "lib/ffmpeg",
       "version": "22.08",
-      "add-ld-path": "."
+      "add-ld-path": ".",
+      "autodownload": true
     }
   },
   "command": "pcsx2-qt",
