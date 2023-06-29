@@ -2210,7 +2210,10 @@ void VMManager::ReloadPatches(bool reload_files, bool reload_enabled_list, bool 
 void VMManager::EnforceAchievementsChallengeModeSettings()
 {
 	if (!Achievements::ChallengeModeActive())
+	{
+		Host::RemoveKeyedOSDMessage("ChallengeDisableCheats");
 		return;
+	}
 
 	static constexpr auto ClampSpeed = [](float& rate) {
 		if (rate > 0.0f && rate < 1.0f)
