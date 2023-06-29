@@ -28,3 +28,4 @@ jobs:
       compiler: clang
       cmakeflags: ""
       publish: false
+    secrets: inherit

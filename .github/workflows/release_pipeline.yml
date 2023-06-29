@@ -26,7 +26,8 @@ jobs:
       jobName: "Flatpak"
       compiler: clang
       cmakeflags: ""
-      publish: true
+      branch: "stable"
+      publish: false
     secrets: inherit
 
   # Windows

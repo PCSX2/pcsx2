@@ -20,6 +20,10 @@ on:
       cmakeflags:
         required: true
         type: string
+      branch:
+        required: false
+        type: string
+        default: "stable"
       publish:
         required: false
         type: boolean
@@ -84,7 +88,7 @@ jobs:
           build-bundle: true
           verbose: true
           mirror-screenshots-url: https://dl.flathub.org/repo/screenshots
-          branch: beta
+          branch: ${{ inputs.branch }}
           cache: true
           restore-cache: true
           cache-key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} ${{ inputs.detail }} flatpak ${{ hashFiles('.github/workflows/scripts/linux/flatpak/**/*.json') }}
@@ -93,10 +97,19 @@ jobs:
         run: |
           ostree commit --repo=repo --canonical-permissions --branch=screenshots/x86_64 .github/workflows/scripts/linux/flatpak/screenshots
 
-      - name: Push to Flathub
-        if: inputs.publish == true
+      - name: Push to Flathub beta
+        if: inputs.publish == true && inputs.branch == 'beta'
         uses: flatpak/flatpak-github-actions/flat-manager@v6.1
         with:
           flat-manager-url: https://hub.flathub.org/
           repository: beta
           token: ${{ secrets.FLATHUB_BETA_TOKEN }}
+
+      - name: Push to Flathub stable
+        if: inputs.publish == true && inputs.branch == 'stable'
+        uses: flatpak/flatpak-github-actions/flat-manager@v6.1
+        with:
+          flat-manager-url: https://hub.flathub.org/
+          repository: stable
+          token: ${{ secrets.FLATHUB_TOKEN }}
+
