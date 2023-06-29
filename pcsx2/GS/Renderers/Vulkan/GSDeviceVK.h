@@ -340,6 +340,7 @@ public:
 	void SetVertexBuffer(VkBuffer buffer, VkDeviceSize offset);
 	void SetIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType type);
 	void SetBlendConstants(u8 color);
+	void SetLineWidth(float width);
 
 	void SetUtilityTexture(GSTexture* tex, VkSampler sampler);
 	void SetUtilityPushConstants(const void* data, u32 size);
@@ -367,16 +368,17 @@ private:
 		DIRTY_FLAG_TFX_DYNAMIC_OFFSETS = (1 << 2),
 		DIRTY_FLAG_UTILITY_TEXTURE = (1 << 3),
 		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 4),
-		DIRTY_FLAG_VERTEX_BUFFER = (1 << 5),
-		DIRTY_FLAG_INDEX_BUFFER = (1 << 6),
-		DIRTY_FLAG_VIEWPORT = (1 << 7),
-		DIRTY_FLAG_SCISSOR = (1 << 8),
-		DIRTY_FLAG_PIPELINE = (1 << 9),
-		DIRTY_FLAG_VS_CONSTANT_BUFFER = (1 << 10),
-		DIRTY_FLAG_PS_CONSTANT_BUFFER = (1 << 11),
+		DIRTY_FLAG_LINE_WIDTH = (1 << 5),
+		DIRTY_FLAG_VERTEX_BUFFER = (1 << 6),
+		DIRTY_FLAG_INDEX_BUFFER = (1 << 7),
+		DIRTY_FLAG_VIEWPORT = (1 << 8),
+		DIRTY_FLAG_SCISSOR = (1 << 9),
+		DIRTY_FLAG_PIPELINE = (1 << 10),
+		DIRTY_FLAG_VS_CONSTANT_BUFFER = (1 << 11),
+		DIRTY_FLAG_PS_CONSTANT_BUFFER = (1 << 12),
 
 		DIRTY_BASE_STATE = DIRTY_FLAG_VERTEX_BUFFER | DIRTY_FLAG_INDEX_BUFFER | DIRTY_FLAG_PIPELINE |
-						   DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR | DIRTY_FLAG_BLEND_CONSTANTS,
+						   DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR | DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_LINE_WIDTH,
 		DIRTY_TFX_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_TFX_SAMPLERS_DS | DIRTY_FLAG_TFX_RT_TEXTURE_DS,
 		DIRTY_UTILITY_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_UTILITY_TEXTURE,
 		DIRTY_CONSTANT_BUFFER_STATE = DIRTY_FLAG_VS_CONSTANT_BUFFER | DIRTY_FLAG_PS_CONSTANT_BUFFER,
@@ -412,8 +414,9 @@ private:
 	VkRenderPass m_current_render_pass = VK_NULL_HANDLE;
 	GSVector4i m_current_render_pass_area = GSVector4i::zero();
 
-	VkViewport m_viewport = {0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
 	GSVector4i m_scissor = GSVector4i::zero();
+	VkViewport m_viewport = {0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
+	float m_current_line_width = -1.0f;
 	u8 m_blend_constant_color = 0;
 
 	std::array<const GSTextureVK*, NUM_TFX_TEXTURES> m_tfx_textures{};
