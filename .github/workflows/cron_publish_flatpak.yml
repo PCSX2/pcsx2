@@ -1,8 +1,8 @@
 name: 📦 Publish Flathub Release
 
 on:
-  #schedule:
-  #  - cron: "0 0 * * *" # Every day at 12am UTC.
+  schedule:
+    - cron: "0 0 * * *" # Every day at 12am UTC.
   workflow_dispatch: # As well as manually.
 
 jobs:
@@ -36,6 +36,6 @@ jobs:
       compiler: clang
       cmakeflags: ""
       publish: true
-      branch: beta
+      branch: stable
     secrets: inherit
 
