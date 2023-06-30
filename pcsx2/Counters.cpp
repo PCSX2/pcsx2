@@ -811,6 +811,7 @@ static __fi void _cpuTestOverflow( int i )
 // well forceinline it!
 __fi void rcntUpdate()
 {
+	rcntUpdate_hScanline();
 	rcntUpdate_vSync();
 
 	// Update counters so that we can perform overflow and target tests.
