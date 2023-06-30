@@ -156,7 +156,9 @@ static __fi void cpuRcntSet()
 		_rcntSet( i );
 
 	// sanity check!
-	if( nextCounter < 0 ) nextCounter = 0;
+	if (nextCounter < 0)
+		nextCounter = 0;
+
 	cpuSetNextEvent(nextsCounter, nextCounter); // Need to update on counter resets/target changes
 }
 
@@ -811,8 +813,9 @@ static __fi void _cpuTestOverflow( int i )
 // well forceinline it!
 __fi void rcntUpdate()
 {
-	rcntUpdate_hScanline();
 	rcntUpdate_vSync();
+	// HBlank after as VSync can do error compensation
+	rcntUpdate_hScanline();
 
 	// Update counters so that we can perform overflow and target tests.
 
@@ -835,8 +838,9 @@ __fi void rcntUpdate()
 			counters[i].sCycleT = cpuRegs.cycle - change;
 
 			// Check Counter Targets and Overflows:
-			_cpuTestTarget( i );
+			// Check Overflow first, in case the target is 0
 			_cpuTestOverflow( i );
+			_cpuTestTarget(i);
 		}
 		else counters[i].sCycleT = cpuRegs.cycle;
 	}
@@ -886,8 +890,8 @@ static __fi void rcntStartGate(bool isVblank, u32 sCycle)
 			// currectly by rcntUpdate (since it's not being scheduled for these counters)
 
 			counters[i].count += HBLANK_COUNTER_SPEED;
+			_cpuTestOverflow(i);
 			_cpuTestTarget( i );
-			_cpuTestOverflow( i );
 		}
 
 		if (!(gates & (1<<i))) continue;
