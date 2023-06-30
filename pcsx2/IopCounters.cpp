@@ -258,8 +258,8 @@ static __fi void _rcntTestOverflow(int i)
 	// (high bit of the target gets set by rcntWtarget when the target is behind
 	// the counter value, and thus should not be flagged until after an overflow)
 
+	psxCounters[i].count -= maxTarget + 1;
 	psxCounters[i].target &= maxTarget;
-	psxCounters[i].count -= maxTarget;
 }
 
 /*
