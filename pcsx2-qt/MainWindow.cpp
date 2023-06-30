@@ -293,7 +293,6 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionStartFile, &QAction::triggered, this, &MainWindow::onStartFileActionTriggered);
 	connect(m_ui.actionStartDisc, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
 	connect(m_ui.actionStartBios, &QAction::triggered, this, &MainWindow::onStartBIOSActionTriggered);
-	connect(m_ui.actionChangeDisc, &QAction::triggered, [this] { m_ui.menuChangeDisc->exec(QCursor::pos()); });
 	connect(m_ui.actionChangeDiscFromFile, &QAction::triggered, this, &MainWindow::onChangeDiscFromFileActionTriggered);
 	connect(m_ui.actionChangeDiscFromDevice, &QAction::triggered, this, &MainWindow::onChangeDiscFromDeviceActionTriggered);
 	connect(m_ui.actionChangeDiscFromGameList, &QAction::triggered, this, &MainWindow::onChangeDiscFromGameListActionTriggered);
@@ -302,14 +301,22 @@ void MainWindow::connectSignals()
 	connect(m_ui.menuChangeDisc, &QMenu::aboutToHide, this, &MainWindow::onChangeDiscMenuAboutToHide);
 	connect(m_ui.actionPowerOff, &QAction::triggered, this, [this]() { requestShutdown(true, true, EmuConfig.SaveStateOnShutdown); });
 	connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, this, [this]() { requestShutdown(false, false, false); });
-	connect(m_ui.actionLoadState, &QAction::triggered, this, [this]() { m_ui.menuLoadState->exec(QCursor::pos()); });
-	connect(m_ui.actionSaveState, &QAction::triggered, this, [this]() { m_ui.menuSaveState->exec(QCursor::pos()); });
+	connect(m_ui.actionToolbarStartFile, &QAction::triggered, this, &MainWindow::onStartFileActionTriggered);
+	connect(m_ui.actionToolbarStartDisc, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
+	connect(m_ui.actionToolbarStartBios, &QAction::triggered, this, &MainWindow::onStartBIOSActionTriggered);
+	connect(m_ui.actionToolbarChangeDisc, &QAction::triggered, [this] { m_ui.menuChangeDisc->exec(QCursor::pos()); });
+	connect(m_ui.actionToolbarPowerOff, &QAction::triggered, this, [this]() { requestShutdown(true, true, EmuConfig.SaveStateOnShutdown); });
+	connect(m_ui.actionToolbarLoadState, &QAction::triggered, this, [this]() { m_ui.menuLoadState->exec(QCursor::pos()); });
+	connect(m_ui.actionToolbarSaveState, &QAction::triggered, this, [this]() { m_ui.menuSaveState->exec(QCursor::pos()); });
+	connect(m_ui.actionToolbarSettings, &QAction::triggered, this, &MainWindow::onSettingsTriggeredFromToolbar);
+	connect(m_ui.actionToolbarControllerSettings, &QAction::triggered,
+		[this]() { doControllerSettings(ControllerSettingsDialog::Category::GlobalSettings); });
+	connect(m_ui.actionToolbarScreenshot, &QAction::triggered, this, &MainWindow::onScreenshotActionTriggered);
 	connect(m_ui.actionExit, &QAction::triggered, this, &MainWindow::close);
 	connect(m_ui.actionScreenshot, &QAction::triggered, this, &MainWindow::onScreenshotActionTriggered);
 	connect(m_ui.menuLoadState, &QMenu::aboutToShow, this, &MainWindow::onLoadStateMenuAboutToShow);
 	connect(m_ui.menuSaveState, &QMenu::aboutToShow, this, &MainWindow::onSaveStateMenuAboutToShow);
 	connect(m_ui.actionSettings, &QAction::triggered, [this]() { doSettings(); });
-	connect(m_ui.actionSettings2, &QAction::triggered, this, &MainWindow::onSettingsTriggeredFromToolbar);
 	connect(m_ui.actionInterfaceSettings, &QAction::triggered, [this]() { doSettings("Interface"); });
 	connect(m_ui.actionGameListSettings, &QAction::triggered, [this]() { doSettings("Game List"); });
 	connect(m_ui.actionEmulationSettings, &QAction::triggered, [this]() { doSettings("Emulation"); });
@@ -402,7 +409,7 @@ void MainWindow::connectSignals()
 void MainWindow::connectVMThreadSignals(EmuThread* thread)
 {
 	connect(m_ui.actionStartFullscreenUI, &QAction::triggered, thread, &EmuThread::startFullscreenUI);
-	connect(m_ui.actionStartFullscreenUI2, &QAction::triggered, thread, &EmuThread::startFullscreenUI);
+	connect(m_ui.actionToolbarStartFullscreenUI, &QAction::triggered, thread, &EmuThread::startFullscreenUI);
 	connect(thread, &EmuThread::messageConfirmed, this, &MainWindow::confirmMessage, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onAcquireRenderWindowRequested, this, &MainWindow::acquireRenderWindow, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onReleaseRenderWindowRequested, this, &MainWindow::releaseRenderWindow, Qt::BlockingQueuedConnection);
@@ -418,6 +425,9 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 	connect(m_ui.actionReset, &QAction::triggered, thread, &EmuThread::resetVM);
 	connect(m_ui.actionPause, &QAction::toggled, thread, &EmuThread::setVMPaused);
 	connect(m_ui.actionFullscreen, &QAction::triggered, thread, &EmuThread::toggleFullscreen);
+	connect(m_ui.actionToolbarReset, &QAction::triggered, thread, &EmuThread::resetVM);
+	connect(m_ui.actionToolbarPause, &QAction::toggled, thread, &EmuThread::setVMPaused);
+	connect(m_ui.actionToolbarFullscreen, &QAction::triggered, thread, &EmuThread::toggleFullscreen);
 	connect(m_ui.actionToggleSoftwareRendering, &QAction::triggered, thread, &EmuThread::toggleSoftwareRendering);
 	connect(m_ui.actionDebugger, &QAction::triggered, this, &MainWindow::openDebugger);
 	connect(m_ui.actionReloadPatches, &QAction::triggered, thread, &EmuThread::reloadPatches);
@@ -672,17 +682,24 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool stoppi
 	m_ui.actionStartFile->setDisabled(starting_or_running || stopping);
 	m_ui.actionStartDisc->setDisabled(starting_or_running || stopping);
 	m_ui.actionStartBios->setDisabled(starting_or_running || stopping);
+	m_ui.actionToolbarStartFile->setDisabled(starting_or_running || stopping);
+	m_ui.actionToolbarStartDisc->setDisabled(starting_or_running || stopping);
+	m_ui.actionToolbarStartBios->setDisabled(starting_or_running || stopping);
 
 	m_ui.actionPowerOff->setEnabled(running);
 	m_ui.actionPowerOffWithoutSaving->setEnabled(running);
 	m_ui.actionReset->setEnabled(running);
 	m_ui.actionPause->setEnabled(running);
-	m_ui.actionChangeDisc->setEnabled(running);
 	m_ui.actionScreenshot->setEnabled(running);
 	m_ui.menuChangeDisc->setEnabled(running);
-
-	m_ui.actionSaveState->setEnabled(running);
 	m_ui.menuSaveState->setEnabled(running);
+
+	m_ui.actionToolbarPowerOff->setEnabled(running);
+	m_ui.actionToolbarReset->setEnabled(running);
+	m_ui.actionToolbarPause->setEnabled(running);
+	m_ui.actionToolbarScreenshot->setEnabled(running);
+	m_ui.actionToolbarChangeDisc->setEnabled(running);
+	m_ui.actionToolbarSaveState->setEnabled(running);
 
 	m_ui.actionViewGameProperties->setEnabled(running);
 
@@ -697,8 +714,15 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool stoppi
 
 	if (!starting && !running)
 	{
-		QSignalBlocker sb(m_ui.actionPause);
-		m_ui.actionPause->setChecked(false);
+		{
+			QSignalBlocker sb(m_ui.actionPause);
+			m_ui.actionPause->setChecked(false);
+		}
+
+		{
+			QSignalBlocker sb(m_ui.actionToolbarPause);
+			m_ui.actionToolbarPause->setChecked(false);
+		}
 	}
 
 	// scanning needs to be disabled while running
@@ -712,10 +736,16 @@ void MainWindow::updateDisplayRelatedActions(bool has_surface, bool render_to_ma
 	m_ui.actionViewSystemDisplay->setEnabled((has_surface && render_to_main) || (!has_surface && MTGS::IsOpen()));
 	m_ui.menuWindowSize->setEnabled(has_surface && !fullscreen);
 	m_ui.actionFullscreen->setEnabled(has_surface);
+	m_ui.actionToolbarFullscreen->setEnabled(has_surface);
 
 	{
 		QSignalBlocker blocker(m_ui.actionFullscreen);
 		m_ui.actionFullscreen->setChecked(fullscreen);
+	}
+
+	{
+		QSignalBlocker blocker(m_ui.actionToolbarFullscreen);
+		m_ui.actionToolbarFullscreen->setChecked(fullscreen);
 	}
 }
 
@@ -1423,6 +1453,7 @@ void MainWindow::onInputRecNewActionTriggered()
 						m_ui.actionInputRecNew->setEnabled(false);
 						m_ui.actionInputRecStop->setEnabled(true);
 						m_ui.actionReset->setEnabled(!g_InputRecording.isTypeSavestate());
+						m_ui.actionToolbarReset->setEnabled(!g_InputRecording.isTypeSavestate());
 					});
 				}
 			});
@@ -1475,6 +1506,7 @@ void MainWindow::onInputRecPlayActionTriggered()
 					m_ui.actionInputRecNew->setEnabled(false);
 					m_ui.actionInputRecStop->setEnabled(true);
 					m_ui.actionReset->setEnabled(!g_InputRecording.isTypeSavestate());
+					m_ui.actionToolbarReset->setEnabled(!g_InputRecording.isTypeSavestate());
 				});
 			}
 		});
@@ -1491,6 +1523,7 @@ void MainWindow::onInputRecStopActionTriggered()
 				m_ui.actionInputRecNew->setEnabled(true);
 				m_ui.actionInputRecStop->setEnabled(false);
 				m_ui.actionReset->setEnabled(true);
+				m_ui.actionToolbarReset->setEnabled(true);
 			});
 		});
 	}
@@ -1554,6 +1587,10 @@ void MainWindow::onVMPaused()
 		QSignalBlocker sb(m_ui.actionPause);
 		m_ui.actionPause->setChecked(true);
 	}
+	{
+		QSignalBlocker sb(m_ui.actionToolbarPause);
+		m_ui.actionToolbarPause->setChecked(true);
+	}
 
 	s_vm_paused = true;
 	updateWindowTitle();
@@ -1570,6 +1607,10 @@ void MainWindow::onVMResumed()
 	{
 		QSignalBlocker sb(m_ui.actionPause);
 		m_ui.actionPause->setChecked(false);
+	}
+	{
+		QSignalBlocker sb(m_ui.actionToolbarPause);
+		m_ui.actionToolbarPause->setChecked(false);
 	}
 
 	s_vm_paused = false;
@@ -1832,7 +1873,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
 	updateWindowState();
 
 	m_ui.actionStartFullscreenUI->setEnabled(false);
-	m_ui.actionStartFullscreenUI2->setEnabled(false);
+	m_ui.actionToolbarStartFullscreenUI->setEnabled(false);
 
 	updateDisplayWidgetCursor();
 	m_display_widget->setFocus();
@@ -1952,7 +1993,7 @@ void MainWindow::releaseRenderWindow()
 	m_ui.actionViewSystemDisplay->setEnabled(false);
 	m_ui.actionFullscreen->setEnabled(false);
 	m_ui.actionStartFullscreenUI->setEnabled(true);
-	m_ui.actionStartFullscreenUI2->setEnabled(true);
+	m_ui.actionToolbarStartFullscreenUI->setEnabled(true);
 }
 
 void MainWindow::destroyDisplayWidget(bool show_game_list)
@@ -2432,9 +2473,9 @@ void MainWindow::updateSaveStateMenusEnableState(bool enable)
 	const bool load_enabled = enable;
 	const bool save_enabled = enable && s_vm_valid;
 	m_ui.menuLoadState->setEnabled(load_enabled);
-	m_ui.actionLoadState->setEnabled(load_enabled);
+	m_ui.actionToolbarLoadState->setEnabled(load_enabled);
 	m_ui.menuSaveState->setEnabled(save_enabled);
-	m_ui.actionSaveState->setEnabled(save_enabled);
+	m_ui.actionToolbarSaveState->setEnabled(save_enabled);
 }
 
 void MainWindow::doStartFile(std::optional<CDVD_SourceType> source, const QString& path)
