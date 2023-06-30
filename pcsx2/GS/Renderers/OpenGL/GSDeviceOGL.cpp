@@ -2360,11 +2360,14 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			glDisable(GL_PROGRAM_POINT_SIZE);
 		GLState::point_size = point_size_enabled;
 	}
-	const float line_width = config.line_expand ? static_cast<float>(GSConfig.UpscaleMultiplier) : 1.0f;
-	if (GLState::line_width != line_width)
+	if (config.topology == GSHWDrawConfig::Topology::Line)
 	{
-		GLState::line_width = line_width;
-		glLineWidth(line_width);
+		const float line_width = config.line_expand ? config.cb_ps.ScaleFactor.z : 1.0f;
+		if (GLState::line_width != line_width)
+		{
+			GLState::line_width = line_width;
+			glLineWidth(line_width);
+		}
 	}
 
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
