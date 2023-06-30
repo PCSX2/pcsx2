@@ -379,16 +379,16 @@ void psxCheckStartGate16(int i)
 			(psxCounters[1].mode & stoppedGateCheck) == altSourceCheck)
 		{
 			psxCounters[1].count++;
-			_rcntTestTarget(1);
 			_rcntTestOverflow(1);
+			_rcntTestTarget(1);
 		}
 
 		if ((psxCounters[3].mode & altSourceCheck) == IOPCNT_ALT_SOURCE ||
 			(psxCounters[3].mode & stoppedGateCheck) == altSourceCheck)
 		{
 			psxCounters[3].count++;
-			_rcntTestTarget(3);
 			_rcntTestOverflow(3);
+			_rcntTestTarget(3);
 		}
 	}
 
@@ -488,8 +488,8 @@ void psxRcntUpdate()
 		if (psxCounters[i].mode & IOPCNT_STOPPED)
 			continue;
 
-		_rcntTestTarget(i);
 		_rcntTestOverflow(i);
+		_rcntTestTarget(i);
 
 		// perform second target test because if we overflowed above it's possible we
 		// already shot past our target if it was very near zero.
