@@ -416,7 +416,7 @@ private:
 
 	GSVector4i m_scissor = GSVector4i::zero();
 	VkViewport m_viewport = {0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
-	float m_current_line_width = -1.0f;
+	float m_current_line_width = 1.0f;
 	u8 m_blend_constant_color = 0;
 
 	std::array<const GSTextureVK*, NUM_TFX_TEXTURES> m_tfx_textures{};

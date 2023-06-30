@@ -3617,7 +3617,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	if (config.blend.constant_enable)
 		SetBlendConstants(config.blend.constant);
 
-	if (config.line_expand)
+	if (config.topology == GSHWDrawConfig::Topology::Line)
 		SetLineWidth(config.cb_ps.ScaleFactor.z);
 
 	// Primitive ID tracking DATE setup.
