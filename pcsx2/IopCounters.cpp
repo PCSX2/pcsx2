@@ -438,8 +438,6 @@ void psxRcntUpdate()
 {
 	int i;
 
-	psxRegs.iopNextEventCycle = psxRegs.cycle + 32;
-
 	psxNextCounter = 0x7fffffff;
 	psxNextsCounter = psxRegs.cycle;
 

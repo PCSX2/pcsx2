@@ -119,7 +119,7 @@ struct psxRegisters {
 	// cycles can be accounted for later.
 	s32 iopBreak;
 
-	// tracks the IOP's current sync status with the EE.  When it dips below zero,
+	// Tracks current number of cycles IOP can run in EE cycles. When it dips below zero,
 	// control is returned to the EE.
 	s32 iopCycleEE;
 
