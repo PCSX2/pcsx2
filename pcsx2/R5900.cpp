@@ -51,7 +51,7 @@ alignas(16) fpuRegisters fpuRegs;
 alignas(16) tlbs tlb[48];
 R5900cpu *Cpu = NULL;
 
-static const uint eeWaitCycles = 3072;
+static constexpr uint eeWaitCycles = 3072;
 
 bool eeEventTestIsActive = false;
 EE_intProcessStatus eeRunInterruptScan = INT_NOT_RUNNING;
@@ -453,7 +453,9 @@ __fi void _cpuEventTest_Shared()
 
 	// ---- Schedule Next Event Test --------------
 
-	if (EEsCycle > 192)
+	const int nextIopEventDeta = ((psxRegs.iopNextEventCycle - psxRegs.cycle) * 8);
+	// 8 or more cycles behind and there's an event scheduled
+	if (EEsCycle >= nextIopEventDeta)
 	{
 		// EE's running way ahead of the IOP still, so we should branch quickly to give the
 		// IOP extra timeslices in short order.
@@ -463,8 +465,7 @@ __fi void _cpuEventTest_Shared()
 	}
 	else
 	{
-		// The IOP could be running ahead/behind of us, so adjust the iop's next branch by its
-		// relative position to the EE (via EEsCycle)
+		// Otherwise IOP is caught up/not doing anything so we can wait for the next event.
 		cpuSetNextEventDelta(((psxRegs.iopNextEventCycle - psxRegs.cycle) * 8) - EEsCycle);
 	}
 
