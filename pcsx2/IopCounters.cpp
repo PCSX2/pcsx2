@@ -100,6 +100,8 @@ static void _rcntSet(int cntidx)
 	if (counter.mode & IOPCNT_STOPPED || counter.rate == PSXHBLANK)
 		return;
 
+	if (!(counter.mode & (IOPCNT_INT_TARGET | IOPCNT_INT_OVERFLOW)))
+		return;
 	// check for special cases where the overflow or target has just passed
 	// (we probably missed it because we're doing/checking other things)
 	if (counter.count > overflowCap || counter.count > counter.target)
