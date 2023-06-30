@@ -54,6 +54,7 @@ R5900cpu *Cpu = NULL;
 static const uint eeWaitCycles = 3072;
 
 bool eeEventTestIsActive = false;
+EE_intProcessStatus eeRunInterruptScan = INT_NOT_RUNNING;
 
 u32 g_eeloadMain = 0, g_eeloadExec = 0, g_osdsys_str = 0;
 
@@ -277,36 +278,49 @@ static __fi bool _cpuTestInterrupts()
 		//Console.Write("DMAC Disabled or suspended");
 		return false;
 	}
-	/* These are 'pcsx2 interrupts', they handle asynchronous stuff
-	   that depends on the cycle timings */
-	TESTINT(VU_MTVU_BUSY,	MTVUInterrupt);
-	TESTINT(DMAC_VIF1,		vif1Interrupt);
-	TESTINT(DMAC_GIF,		gifInterrupt);
-	TESTINT(DMAC_SIF0,		EEsif0Interrupt);
-	TESTINT(DMAC_SIF1,		EEsif1Interrupt);
-	// Profile-guided Optimization (sorta)
-	// The following ints are rarely called.  Encasing them in a conditional
-	// as follows helps speed up most games.
 
-	if (cpuRegs.interrupt & ((1 << DMAC_VIF0) | (1 << DMAC_FROM_IPU) | (1 << DMAC_TO_IPU)
-		| (1 << DMAC_FROM_SPR) | (1 << DMAC_TO_SPR) | (1 << DMAC_MFIFO_VIF) | (1 << DMAC_MFIFO_GIF)
-		| (1 << VIF_VU0_FINISH) | (1 << VIF_VU1_FINISH) | (1 << IPU_PROCESS)))
+	eeRunInterruptScan = INT_RUNNING;
+
+	while (eeRunInterruptScan == INT_RUNNING)
 	{
-		TESTINT(DMAC_VIF0,		vif0Interrupt);
+		/* These are 'pcsx2 interrupts', they handle asynchronous stuff
+		   that depends on the cycle timings */
+		TESTINT(VU_MTVU_BUSY, MTVUInterrupt);
+		TESTINT(DMAC_VIF1, vif1Interrupt);
+		TESTINT(DMAC_GIF, gifInterrupt);
+		TESTINT(DMAC_SIF0, EEsif0Interrupt);
+		TESTINT(DMAC_SIF1, EEsif1Interrupt);
+		// Profile-guided Optimization (sorta)
+		// The following ints are rarely called.  Encasing them in a conditional
+		// as follows helps speed up most games.
 
-		TESTINT(DMAC_FROM_IPU,	ipu0Interrupt);
-		TESTINT(DMAC_TO_IPU,	ipu1Interrupt);
-		TESTINT(IPU_PROCESS,	ipuCMDProcess);
+		if (cpuRegs.interrupt & ((1 << DMAC_VIF0) | (1 << DMAC_FROM_IPU) | (1 << DMAC_TO_IPU)
+			| (1 << DMAC_FROM_SPR) | (1 << DMAC_TO_SPR) | (1 << DMAC_MFIFO_VIF) | (1 << DMAC_MFIFO_GIF)
+			| (1 << VIF_VU0_FINISH) | (1 << VIF_VU1_FINISH) | (1 << IPU_PROCESS)))
+		{
+			TESTINT(DMAC_VIF0, vif0Interrupt);
 
-		TESTINT(DMAC_FROM_SPR,	SPRFROMinterrupt);
-		TESTINT(DMAC_TO_SPR,	SPRTOinterrupt);
+			TESTINT(DMAC_FROM_IPU, ipu0Interrupt);
+			TESTINT(DMAC_TO_IPU, ipu1Interrupt);
+			TESTINT(IPU_PROCESS, ipuCMDProcess);
 
-		TESTINT(DMAC_MFIFO_VIF, vifMFIFOInterrupt);
-		TESTINT(DMAC_MFIFO_GIF, gifMFIFOInterrupt);
+			TESTINT(DMAC_FROM_SPR, SPRFROMinterrupt);
+			TESTINT(DMAC_TO_SPR, SPRTOinterrupt);
 
-		TESTINT(VIF_VU0_FINISH, vif0VUFinish);
-		TESTINT(VIF_VU1_FINISH, vif1VUFinish);
+			TESTINT(DMAC_MFIFO_VIF, vifMFIFOInterrupt);
+			TESTINT(DMAC_MFIFO_GIF, gifMFIFOInterrupt);
+
+			TESTINT(VIF_VU0_FINISH, vif0VUFinish);
+			TESTINT(VIF_VU1_FINISH, vif1VUFinish);
+		}
+
+		if (eeRunInterruptScan == INT_REQ_LOOP)
+			eeRunInterruptScan = INT_RUNNING;
+		else
+			break;
 	}
+
+	eeRunInterruptScan = INT_NOT_RUNNING;
 
 	if ((cpuRegs.interrupt & 0x1FFFF) & ~cpuRegs.dmastall)
 		return true;
@@ -391,17 +405,20 @@ __fi void _cpuEventTest_Shared()
 	// These are basically just DMAC-related events, which also piggy-back the same bits as
 	// the PS2's own DMA channel IRQs and IRQ Masks.
 
-	// This is a BIOS hack because the coding in the BIOS is terrible but the bug is masked by Data Cache
-	// where a DMA buffer is overwritten without waiting for the transfer to end, which causes the fonts to get all messed up
-	// so to fix it, we run all the DMA's instantly when in the BIOS.
-	// Only use the lower 17 bits of the cpuRegs.interrupt as the upper bits are for VU0/1 sync which can't be done in a tight loop
-	if (CHECK_INSTANTDMAHACK && dmacRegs.ctrl.DMAE && !(psHu8(DMAC_ENABLER + 2) & 1) && (cpuRegs.interrupt & 0x1FFFF))
+	if (cpuRegs.interrupt)
 	{
-		while ((cpuRegs.interrupt & 0x1FFFF) && _cpuTestInterrupts())
-			;
+		// This is a BIOS hack because the coding in the BIOS is terrible but the bug is masked by Data Cache
+		// where a DMA buffer is overwritten without waiting for the transfer to end, which causes the fonts to get all messed up
+		// so to fix it, we run all the DMA's instantly when in the BIOS.
+		// Only use the lower 17 bits of the cpuRegs.interrupt as the upper bits are for VU0/1 sync which can't be done in a tight loop
+		if (CHECK_INSTANTDMAHACK && dmacRegs.ctrl.DMAE && !(psHu8(DMAC_ENABLER + 2) & 1) && (cpuRegs.interrupt & 0x1FFFF))
+		{
+			while ((cpuRegs.interrupt & 0x1FFFF) && _cpuTestInterrupts())
+				;
+		}
+		else
+			_cpuTestInterrupts();
 	}
-	else
-		_cpuTestInterrupts();
 
 	// ---- IOP -------------
 	// * It's important to run a iopEventTest before calling ExecuteBlock. This
@@ -523,6 +540,17 @@ __fi void CPU_SET_DMASTALL(EE_EventType n, bool set)
 
 __fi void CPU_INT( EE_EventType n, s32 ecycle)
 {
+	// If it's retunning too quick, just rerun the DMA, there's no point in running the EE for < 4 cycles.
+	// This causes a huge uplift in performance for ONI FMV's.
+	if (ecycle < 4 && !(cpuRegs.dmastall & (1 << n)) && eeRunInterruptScan != INT_NOT_RUNNING)
+	{
+		eeRunInterruptScan = INT_REQ_LOOP;
+		cpuRegs.interrupt |= 1 << n;
+		cpuRegs.sCycle[n] = cpuRegs.cycle;
+		cpuRegs.eCycle[n] = 0;
+		return;
+	}
+
 	// EE events happen 8 cycles in the future instead of whatever was requested.
 	// This can be used on games with PATH3 masking issues for example, or when
 	// some FMV look bad.

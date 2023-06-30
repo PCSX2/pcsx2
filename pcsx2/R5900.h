@@ -333,6 +333,13 @@ extern R5900cpu *Cpu;
 extern R5900cpu intCpu;
 extern R5900cpu recCpu;
 
+enum EE_intProcessStatus
+{
+	INT_NOT_RUNNING = 0,
+	INT_RUNNING,
+	INT_REQ_LOOP
+};
+
 enum EE_EventType
 {
 	DMAC_VIF0	= 0,
