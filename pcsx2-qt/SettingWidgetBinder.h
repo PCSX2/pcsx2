@@ -931,14 +931,18 @@ namespace SettingWidgetBinder
 
 	template <typename WidgetType>
 	static inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
-		const char** enum_names, const char** enum_values, const char* default_value)
+		const char** enum_names, const char** enum_values, const char* default_value, const char* translation_ctx = nullptr)
 	{
 		using Accessor = SettingAccessor<WidgetType>;
 
 		const std::string value = Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value);
 
 		for (int i = 0; enum_names[i] != nullptr; i++)
-			widget->addItem(QString::fromUtf8(enum_names[i]));
+		{
+			widget->addItem(translation_ctx ?
+								qApp->translate(translation_ctx, enum_names[i]) :
+								QString::fromUtf8(enum_names[i]));
+		}
 
 		int enum_index = -1;
 		for (int i = 0; enum_values[i] != nullptr; i++)
