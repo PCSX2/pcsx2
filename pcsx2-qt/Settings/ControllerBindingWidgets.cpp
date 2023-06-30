@@ -1027,7 +1027,7 @@ void USBDeviceWidget::onAutomaticBindingClicked()
 void USBDeviceWidget::onClearBindingsClicked()
 {
 	if (QMessageBox::question(QtUtils::GetRootWidget(this), tr("Clear Bindings"),
-			tr("Are you sure you want to clear all bindings for this controller? This action cannot be undone.")) != QMessageBox::Yes)
+			tr("Are you sure you want to clear all bindings for this device? This action cannot be undone.")) != QMessageBox::Yes)
 	{
 		return;
 	}

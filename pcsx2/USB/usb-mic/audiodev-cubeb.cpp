@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,6 +15,7 @@
 
 #include "USB/usb-mic/audiodev-cubeb.h"
 #include "USB/USB.h"
+#include "Host.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
 
@@ -117,8 +118,8 @@ namespace usb_mic
 		std::vector<std::pair<std::string, std::string>> CubebAudioDevice::GetDeviceList(bool input)
 		{
 			std::vector<std::pair<std::string, std::string>> ret;
-			ret.emplace_back("", "Not Connected");
-			ret.emplace_back("cubeb_default", input ? "Default Input Device" : "Default Output Device");
+			ret.emplace_back("", TRANSLATE_SV("USB", "Not Connected"));
+			ret.emplace_back("cubeb_default", input ? TRANSLATE_SV("USB", "Default Input Device") : TRANSLATE_SV("USB", "Default Output Device"));
 			if (GetCubebContext())
 			{
 				const cubeb_device_collection& col = input ? s_cubeb_input_devices : s_cubeb_output_devices;
