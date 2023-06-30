@@ -30,6 +30,13 @@ MemoryCardConvertDialog::MemoryCardConvertDialog(QWidget* parent, QString select
 	: QDialog(parent)
 {
 	m_ui.setupUi(this);
+
+	// For some reason, setting these in the .ui doesn't work..
+	m_ui.conversionTypeDescription->setFrameStyle(QFrame::Sunken);
+	m_ui.conversionTypeDescription->setFrameShape(QFrame::WinPanel);
+	m_ui.note->setFrameStyle(QFrame::Sunken);
+	m_ui.note->setFrameShape(QFrame::WinPanel);
+
 	m_selectedCard = selectedCard;
 	std::optional<AvailableMcdInfo> srcCardInfo = FileMcd_GetCardInfo(m_selectedCard.toStdString());
 
@@ -49,22 +56,22 @@ MemoryCardConvertDialog::MemoryCardConvertDialog(QWidget* parent, QString select
 			switch (m_srcCardInfo.type)
 			{
 				case MemoryCardType::File:
-					SetType(MemoryCardType::Folder, MemoryCardFileType::Unknown, "Uses a folder on your PC filesystem, instead of a file. Infinite capacity, while keeping the same compatibility as an 8 MB Memory Card.");
+					SetType(MemoryCardType::Folder, MemoryCardFileType::Unknown, tr("Uses a folder on your PC filesystem, instead of a file. Infinite capacity, while keeping the same compatibility as an 8 MB Memory Card."));
 					break;
 				case MemoryCardType::Folder:
 					switch (m_ui.conversionTypeSelect->currentData().toInt())
 					{
 						case 8:
-							SetType(MemoryCardType::File, MemoryCardFileType::PS2_8MB, "A standard, 8 MB Memory Card. Most compatible, but smallest capacity.");
+							SetType(MemoryCardType::File, MemoryCardFileType::PS2_8MB, tr("A standard, 8 MB Memory Card. Most compatible, but smallest capacity."));
 							break;
 						case 16:
-							SetType(MemoryCardType::File, MemoryCardFileType::PS2_16MB, "2x larger than a standard Memory Card. May have some compatibility issues.");
+							SetType(MemoryCardType::File, MemoryCardFileType::PS2_16MB, tr("2x larger than a standard Memory Card. May have some compatibility issues."));
 							break;
 						case 32:
-							SetType(MemoryCardType::File, MemoryCardFileType::PS2_32MB, "4x larger than a standard Memory Card. Likely to have compatibility issues.");
+							SetType(MemoryCardType::File, MemoryCardFileType::PS2_32MB, tr("4x larger than a standard Memory Card. Likely to have compatibility issues."));
 							break;
 						case 64:
-							SetType(MemoryCardType::File, MemoryCardFileType::PS2_64MB, "8x larger than a standard Memory Card. Likely to have compatibility issues.");
+							SetType(MemoryCardType::File, MemoryCardFileType::PS2_64MB, tr("8x larger than a standard Memory Card. Likely to have compatibility issues."));
 							break;
 						default:
 							//: MemoryCardType should be left as-is.
@@ -153,7 +160,7 @@ bool MemoryCardConvertDialog::SetupPicklist()
 	{
 		case MemoryCardType::File:
 			m_ui.conversionTypeSelect->addItems({"Folder"});
-			SetType(MemoryCardType::Folder, MemoryCardFileType::Unknown, "Uses a folder on your PC filesystem, instead of a file. Infinite capacity, while keeping the same compatibility as an 8 MB Memory Card.");
+			SetType(MemoryCardType::Folder, MemoryCardFileType::Unknown, tr("Uses a folder on your PC filesystem, instead of a file. Infinite capacity, while keeping the same compatibility as an 8 MB Memory Card."));
 			break;
 		case MemoryCardType::Folder:
 			// Compute which file types should be allowed.
@@ -183,7 +190,7 @@ bool MemoryCardConvertDialog::SetupPicklist()
 
 			if (sizeBytes < CardCapacity::_8_MB)
 			{
-				m_ui.conversionTypeSelect->addItem("8 MB File", 8);
+				m_ui.conversionTypeSelect->addItem(tr("8 MB File"), 8);
 				
 				if (!typeSet)
 				{
@@ -194,7 +201,7 @@ bool MemoryCardConvertDialog::SetupPicklist()
 
 			if (sizeBytes < CardCapacity::_16_MB)
 			{
-				m_ui.conversionTypeSelect->addItem("16 MB File", 16);
+				m_ui.conversionTypeSelect->addItem(tr("16 MB File"), 16);
 				
 				if (!typeSet)
 				{
@@ -205,7 +212,7 @@ bool MemoryCardConvertDialog::SetupPicklist()
 
 			if (sizeBytes < CardCapacity::_32_MB)
 			{
-				m_ui.conversionTypeSelect->addItem("32 MB File", 32);
+				m_ui.conversionTypeSelect->addItem(tr("32 MB File"), 32);
 				
 				if (!typeSet)
 				{
@@ -216,7 +223,7 @@ bool MemoryCardConvertDialog::SetupPicklist()
 
 			if (sizeBytes < CardCapacity::_64_MB)
 			{
-				m_ui.conversionTypeSelect->addItem("64 MB File", 64);
+				m_ui.conversionTypeSelect->addItem(tr("64 MB File"), 64);
 				
 				if (!typeSet)
 				{
@@ -284,30 +291,30 @@ void MemoryCardConvertDialog::SetType(MemoryCardType type, MemoryCardFileType fi
 {
 	m_type = type;
 	m_fileType = fileType;
-	m_ui.conversionTypeDescription->setPlainText(description);	
+	m_ui.conversionTypeDescription->setText(QStringLiteral("<center>%1</center>").arg(description));
 }
 
 void MemoryCardConvertDialog::SetType_8()
 {
-	SetType(MemoryCardType::File, MemoryCardFileType::PS2_8MB, "A standard, 8 MB Memory Card. Most compatible, but smallest capacity.");
+	SetType(MemoryCardType::File, MemoryCardFileType::PS2_8MB, tr("A standard, 8 MB Memory Card. Most compatible, but smallest capacity."));
 }
 
 void MemoryCardConvertDialog::SetType_16()
 {
-	SetType(MemoryCardType::File, MemoryCardFileType::PS2_16MB, "2x larger as a standard Memory Card. May have some compatibility issues.");
+	SetType(MemoryCardType::File, MemoryCardFileType::PS2_16MB, tr("2x larger as a standard Memory Card. May have some compatibility issues."));
 }
 
 void MemoryCardConvertDialog::SetType_32()
 {
-	SetType(MemoryCardType::File, MemoryCardFileType::PS2_32MB, "4x larger than a standard Memory Card. Likely to have compatibility issues.");
+	SetType(MemoryCardType::File, MemoryCardFileType::PS2_32MB, tr("4x larger than a standard Memory Card. Likely to have compatibility issues."));
 }
 
 void MemoryCardConvertDialog::SetType_64()
 {
-	SetType(MemoryCardType::File, MemoryCardFileType::PS2_64MB, "8x larger than a standard Memory Card. Likely to have compatibility issues.");
+	SetType(MemoryCardType::File, MemoryCardFileType::PS2_64MB, tr("8x larger than a standard Memory Card. Likely to have compatibility issues."));
 }
 
 void MemoryCardConvertDialog::SetType_Folder()
 {
-	SetType(MemoryCardType::Folder, MemoryCardFileType::Unknown, "Uses a folder on your PC filesystem, instead of a file. Infinite capacity, while keeping the same compatibility as an 8 MB Memory Card.");
+	SetType(MemoryCardType::Folder, MemoryCardFileType::Unknown, tr("Uses a folder on your PC filesystem, instead of a file. Infinite capacity, while keeping the same compatibility as an 8 MB Memory Card."));
 }
