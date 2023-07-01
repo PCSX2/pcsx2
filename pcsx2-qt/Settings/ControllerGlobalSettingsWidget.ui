@@ -26,7 +26,7 @@
    <property name="bottomMargin">
     <number>0</number>
    </property>
-   <item row="5" column="0">
+   <item row="6" column="0">
     <widget class="QGroupBox" name="profileSettings">
      <property name="title">
       <string>Profile Settings</string>
@@ -146,7 +146,7 @@
      </layout>
     </widget>
    </item>
-   <item row="4" column="0">
+   <item row="5" column="0">
     <widget class="QGroupBox" name="multitapGroup">
      <property name="title">
       <string>Controller Multitap</string>
@@ -231,6 +231,32 @@
     </widget>
    </item>
    <item row="3" column="0">
+    <widget class="QGroupBox" name="ds3inputGroup">
+     <property name="title">
+      <string>DualShock 3 Input Source</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_7">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_10">
+         <property name="text">
+         <string>The DualShock 3 input source provides native support for DualShock 3 controllers. (Requires Official Sony DualShock 3 Driver)</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="enableDS3Source">
+        <property name="text">
+         <string>Enable DualShock 3 Input Source</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="4" column="0">
     <widget class="QGroupBox" name="mouseGroup">
      <property name="title">
       <string>Mouse/Pointer Source</string>

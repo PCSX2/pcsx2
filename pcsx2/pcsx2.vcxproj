@@ -217,9 +217,11 @@
     <ClCompile Include="GS\Renderers\Vulkan\GSTextureVK.cpp" />
     <ClCompile Include="Host.cpp" />
     <ClCompile Include="Input\DInputSource.cpp" />
+    <ClCompile Include="Input\DualShock3InputSource.cpp" />
     <ClCompile Include="Input\InputManager.cpp" />
     <ClCompile Include="Input\InputSource.cpp" />
     <ClCompile Include="Input\SDLInputSource.cpp" />
+    <ClCompile Include="Input\WindowsHIDUtility.cpp" />
     <ClCompile Include="Input\XInputSource.cpp" />
     <ClCompile Include="IopGte.cpp" />
     <ClCompile Include="LayeredSettingsInterface.cpp" />
@@ -570,9 +572,11 @@
     <ClInclude Include="GS\Renderers\Vulkan\GSTextureVK.h" />
     <ClInclude Include="Host.h" />
     <ClInclude Include="Input\DInputSource.h" />
+    <ClInclude Include="Input\DualShock3InputSource.h" />
     <ClInclude Include="Input\InputManager.h" />
     <ClInclude Include="Input\InputSource.h" />
     <ClInclude Include="Input\SDLInputSource.h" />
+    <ClInclude Include="Input\WindowsHIDUtility.h" />
     <ClInclude Include="Input\XInputSource.h" />
     <ClInclude Include="IopGte.h" />
     <ClInclude Include="IPU\mpeg2_vlc.h" />

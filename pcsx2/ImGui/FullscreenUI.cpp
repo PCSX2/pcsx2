@@ -3814,6 +3814,8 @@ void FullscreenUI::DrawControllerSettingsPage()
 #ifdef _WIN32
 	DrawToggleSetting(bsi, ICON_FA_COG " Enable XInput Input Source",
 		"The XInput source provides support for XBox 360/XBox One/XBox Series controllers.", "InputSources", "XInput", false, true, false);
+	DrawToggleSetting(bsi, ICON_FA_COG " Enable DualShock 3 Input Source",
+		"The DualShock 3 input source provides native support for DualShock 3 controllers. (Requires Official Sony DualShock 3 Driver)", "InputSources", "DS3Input", false, true, false);
 #endif
 
 	MenuHeading("Multitap");

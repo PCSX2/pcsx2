@@ -96,6 +96,7 @@ bool GSRunner::InitializeConfig()
 	// ensure all input sources are disabled, we're not using them
 	si.SetBoolValue("InputSources", "SDL", false);
 	si.SetBoolValue("InputSources", "XInput", false);
+	si.SetBoolValue("InputSources", "DS3Input", false);
 
 	// we don't need any sound output
 	si.SetStringValue("SPU2/Output", "OutputModule", "nullout");
