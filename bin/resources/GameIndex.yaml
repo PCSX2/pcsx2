@@ -547,8 +547,6 @@ SCAJ-20011:
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
@@ -826,8 +824,7 @@ SCAJ-20076:
   name: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-Unk"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
@@ -840,8 +837,7 @@ SCAJ-20077:
   name: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-Unk"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
@@ -990,8 +986,7 @@ SCAJ-20105:
   name: "Armored Core - Nine breaker"
   region: "NTSC-Unk"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20107:
   name: "Bakufuu Slash! Kizna Arashi"
@@ -1079,8 +1074,7 @@ SCAJ-20121:
   name: "Armored Core - Formula Front"
   region: "NTSC-Unk"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20122:
   name: "Swords of Destiny"
@@ -1215,7 +1209,7 @@ SCAJ-20143:
   name: "Armored Core - Last Raven"
   region: "NTSC-Unk"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
+    cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
@@ -5355,8 +5349,7 @@ SCKA-20047:
   name: "Armored Core - Nine Breaker"
   region: "NTSC-K"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCKA-20047"
@@ -7128,8 +7121,6 @@ SCPS-55014:
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
@@ -13466,8 +13457,6 @@ SLES-51399:
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
@@ -15063,8 +15052,6 @@ SLES-52203:
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
@@ -19404,8 +19391,7 @@ SLES-53819:
   name: "Armored Core - Nine Breaker"
   region: "PAL-E"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLES-53819"
@@ -19415,7 +19401,7 @@ SLES-53820:
   name: "Armored Core - Last Raven"
   region: "PAL-E"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
+    cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
@@ -24208,8 +24194,7 @@ SLES-82036:
   name: "Armored Core - Nexus [Disc 1]"
   region: "PAL-M5"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLES-82036"
@@ -24218,8 +24203,7 @@ SLES-82037:
   name: "Armored Core - Nexus [Disc 2]"
   region: "PAL-M5"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLES-82036"
@@ -24575,8 +24559,6 @@ SLKA-25041:
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
@@ -25031,8 +25013,7 @@ SLKA-25201:
   name: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-K"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLKA-25201"
@@ -25041,8 +25022,7 @@ SLKA-25202:
   name: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-K"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLKA-25201"
@@ -25283,8 +25263,7 @@ SLKA-25270:
   name: "Armored Core - Formula Front"
   region: "NTSC-K"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLKA-25274:
   name: "Princess Maker 4"
@@ -26605,7 +26584,7 @@ SLPM-61118:
   name: "Armored Core - Last Raven [Famitsu Special Trial Version]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
+    cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
@@ -26613,7 +26592,7 @@ SLPM-61119:
   name: "Armored Core - Last Raven [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
+    cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
@@ -36486,8 +36465,6 @@ SLPM-67524:
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
@@ -36616,7 +36593,7 @@ SLPM-68520:
   name: "Armored Core - Last Raven [Monthly Champion magazine Special Edition]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
+    cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
@@ -38856,8 +38833,6 @@ SLPS-25112:
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
@@ -39075,8 +39050,6 @@ SLPS-25169:
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
@@ -39644,8 +39617,7 @@ SLPS-25338:
   name: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
@@ -39658,8 +39630,7 @@ SLPS-25339:
   name: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
@@ -39955,8 +39926,7 @@ SLPS-25408:
   name: "Armored Core - Nine Breaker"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLPS-25408"
@@ -40159,14 +40129,13 @@ SLPS-25461:
   name: "Armored Core - Formula Front"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25462:
   name: "Armored Core - Last Raven"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
+    cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
@@ -41184,7 +41153,7 @@ SLPS-25730:
   name: "Armored Core - Last Raven [Machine Side Box]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
+    cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25731:
@@ -41196,8 +41165,6 @@ SLPS-25732:
   name: "Armored Core 3 [Machine Side Box]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25733:
   name: "Super Robot Taisen OG - Original Generations"
@@ -42049,8 +42016,7 @@ SLPS-73202:
   name: "Armored Core - Nexus [Disc 1] [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
@@ -42063,8 +42029,7 @@ SLPS-73203:
   name: "Armored Core - Nexus [Disc 2] [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
@@ -42355,7 +42320,7 @@ SLPS-73247:
   name: "Armored Core - Last Raven [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
+    cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
@@ -42537,8 +42502,6 @@ SLPS-73417:
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
@@ -42558,8 +42521,6 @@ SLPS-73420:
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
@@ -44467,8 +44428,6 @@ SLUS-20435:
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
@@ -45496,14 +45455,12 @@ SLUS-20643BD:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLUS-20644:
-  name: "Armored Core - Silent Line"
+  name: "Armored Core 3 - Silent Line"
   region: "NTSC-U"
   compat: 5
   roundModes:
     eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters: # Can import data from AC3.
@@ -47272,8 +47229,7 @@ SLUS-20986:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLUS-20986"
@@ -47788,8 +47744,7 @@ SLUS-21079:
   name: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-U"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLUS-20986"
@@ -48386,8 +48341,7 @@ SLUS-21200:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 1 # Fixes misaligned blur..
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters: # Can import data from AC:Nexus.
     - "SLUS-21200"
@@ -49265,7 +49219,7 @@ SLUS-21338:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes water rendering.
+    cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
