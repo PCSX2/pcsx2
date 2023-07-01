@@ -4401,7 +4401,7 @@ SCES-53925:
   compat: 5
 SCES-53926:
   name: "Buzz! The Big Quiz"
-  region: "PAL-M3"
+  region: "PAL-SC"
 SCES-53927:
   name: "Buzz! The Big Quiz"
   region: "PAL-FI"
@@ -4536,7 +4536,7 @@ SCES-54265:
   region: "PAL-M3"
 SCES-54266:
   name: "Buzz! The Sports Quiz"
-  region: "PAL-M3"
+  region: "PAL-SC"
 SCES-54267:
   name: "Buzz! The Sports Quiz"
   region: "PAL-FI"
@@ -9792,6 +9792,9 @@ SLED-51380:
   region: "PAL"
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes cutscene blur effects.
+SLED-51645:
+  name: "Def Jam - Vendetta [Demo]"
+  region: "PAL-E"
 SLED-51676:
   name: "Warhammer 40,000 - Fire Warrior [Demo]"
   region: "PAL"
@@ -10064,6 +10067,16 @@ SLED-53953:
   region: "PAL-E"
   gameFixes:
     - GIFFIFOHack # Fixes flag corruptions.
+SLED-53954:
+  name: "Driver - Parallel Lines [Demo]"
+  region: "PAL-E"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes some bad textures.
+    cpuCLUTRender: 1 # Fixes the rest of the bad textures.
+    roundSprite: 1 # Reduces misaligned bloom.
+    mergeSprite: 1 # Removes bloom explosion around electrical lights and other light sources such as moon/sun.
 SLED-53980:
   name: "Urban Chaos - Riot Response [Demo]"
   region: "PAL-E"
@@ -21766,7 +21779,7 @@ SLES-54735:
     autoFlush: 2 # Fixes glows.
 SLES-54736:
   name: "Disney-Pixar Ratatouille"
-  region: "PAL-SCA"
+  region: "PAL-SC"
   compat: 5
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
@@ -22329,7 +22342,7 @@ SLES-54943:
   region: "PAL-D-N"
 SLES-54944:
   name: "Disney Princess - Enchanted Journey"
-  region: "PAL-FI-SW"
+  region: "PAL-SC"
 SLES-54945:
   name: "Dragon Ball Z Budokai Tenkaichi 3"
   region: "PAL-M6"
@@ -22738,8 +22751,8 @@ SLES-55076:
   name: "Saint & Sinner"
   region: "PAL-E"
 SLES-55078:
-  name: "NHL 07"
-  region: "PAL-R"
+  name: "Juiced 2 - Hot Import Nights"
+  region: "PAL-PL"
 SLES-55079:
   name: "CID the Dummy"
   region: "PAL-M5"
@@ -23163,7 +23176,7 @@ SLES-55245:
     halfPixelOffset: 2 # Reduces blurriness.
 SLES-55246:
   name: "FIFA 09"
-  region: "PAL-SCA"
+  region: "PAL-SC"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
 SLES-55247:
@@ -23384,7 +23397,7 @@ SLES-55351:
     getSkipCount: "GSC_NFSUndercover"
 SLES-55352:
   name: "Need for Speed - Undercover"
-  region: "PAL-SCA"
+  region: "PAL-SC"
   compat: 5
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
@@ -23922,7 +23935,7 @@ SLES-55609:
   region: "PAL-M5"
 SLES-55610:
   name: "Springdale"
-  region: "PAL-SCA"
+  region: "PAL-SC"
   gsHWFixes:
     halfPixelOffset: 1 # Reduces the ghosting effect.
 SLES-55622:
