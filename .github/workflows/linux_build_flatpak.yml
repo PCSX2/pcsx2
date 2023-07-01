@@ -102,7 +102,7 @@ jobs:
 
       - name: Commit screenshots to OSTree
         run: |
-          ostree commit --repo=repo --canonical-permissions --branch=screenshots/x86_64 .github/workflows/scripts/linux/flatpak/screenshots
+          ostree commit --repo=repo --canonical-permissions --branch=screenshots/x86_64 flatpak_app/screenshots
 
       - name: Push to Flathub beta
         if: inputs.publish == true && inputs.branch == 'beta'
