@@ -49,6 +49,13 @@ jobs:
         with:
           submodules: recursive
 
+      # Hackity hack. When running the workflow on a schedule, we don't have the tag,
+      # it doesn't fetch tags, therefore we don't get a version. So grab them manually.
+      - name: Fetch tags
+        if: inputs.publish == true
+        id: fetch-tags
+        run: git fetch --tags --no-recurse-submodules
+
       - name: Prepare Artifact Metadata
         id: artifact-metadata
         shell: bash
