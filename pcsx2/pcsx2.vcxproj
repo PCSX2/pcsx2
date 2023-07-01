@@ -341,6 +341,7 @@
     <ClCompile Include="USB\usb-pad\usb-pad-sdl-ff.cpp" />
     <ClCompile Include="USB\usb-pad\usb-pad.cpp" />
     <ClCompile Include="USB\usb-pad\usb-seamic.cpp" />
+    <ClCompile Include="USB\usb-pad\usb-turntable.cpp" />
     <ClCompile Include="USB\usb-printer\usb-printer.cpp" />
     <ClCompile Include="USB\USB.cpp" />
     <ClCompile Include="VirtualMemory.cpp" />
@@ -698,6 +699,7 @@
     <ClInclude Include="USB\usb-pad\lg\lg_ff.h" />
     <ClInclude Include="USB\usb-pad\usb-pad-sdl-ff.h" />
     <ClInclude Include="USB\usb-pad\usb-pad.h" />
+    <ClInclude Include="USB\usb-pad\usb-turntable.h" />
     <ClInclude Include="USB\usb-printer\usb-printer.h" />
     <ClInclude Include="USB\USB.h" />
     <ClInclude Include="Utilities\AsciiFile.h" />

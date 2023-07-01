@@ -1244,6 +1244,9 @@
     <ClCompile Include="USB\usb-pad\usb-seamic.cpp">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClCompile>
+    <ClCompile Include="USB\usb-pad\usb-turntable.cpp">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClCompile>
     <ClCompile Include="USB\usb-pad\usb-pad-ff.cpp">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClCompile>
@@ -2208,6 +2211,9 @@
       <Filter>System\Ps2\USB\usb-hid</Filter>
     </ClInclude>
     <ClInclude Include="USB\usb-pad\usb-pad.h">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-pad\usb-turntable.h">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClInclude>
     <ClInclude Include="USB\usb-pad\lg\lg_ff.h">

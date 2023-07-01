@@ -437,6 +437,7 @@ set(pcsx2USBSources
 	USB/usb-pad/usb-pad-ff.cpp
 	USB/usb-pad/usb-pad.cpp
 	USB/usb-pad/usb-seamic.cpp
+	USB/usb-pad/usb-turntable.cpp
 	USB/usb-printer/usb-printer.cpp
 )
 
