@@ -270,6 +270,11 @@
      </item>
      <item>
       <property name="text">
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-PL (Poland)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string extracomment="Leave the code as-is, translate the country's name.">PAL-R (Russia)</string>
       </property>
      </item>

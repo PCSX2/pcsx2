@@ -68,6 +68,7 @@ namespace GameList
 		PAL_NL,
 		PAL_NO,
 		PAL_P,
+		PAL_PL,
 		PAL_R,
 		PAL_S,
 		PAL_SC,
