@@ -5239,17 +5239,20 @@ void GSRendererHW::SetNewZBUF(u32 bp, u32 psm)
 
 bool GSRendererHW::DetectStripedDoubleClear(bool& no_rt, bool& no_ds)
 {
-	const bool ZisFrame = m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP && !m_cached_ctx.ZBUF.ZMSK &&
-						  (m_cached_ctx.FRAME.PSM & 0x30) != (m_cached_ctx.ZBUF.PSM & 0x30) &&
-						  (m_cached_ctx.FRAME.PSM & 0xF) == (m_cached_ctx.ZBUF.PSM & 0xF) && m_vt.m_eq.z == 1 &&
-						  m_vertex.buff[1].XYZ.Z == m_vertex.buff[1].RGBAQ.U32[0];
+	const bool ZisFrame =
+		(m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP ||
+			(m_cached_ctx.FRAME.FBW > 1 && (std::min(m_cached_ctx.FRAME.FBP, m_cached_ctx.ZBUF.ZBP) + 1) ==
+											   std::max(m_cached_ctx.FRAME.FBP, m_cached_ctx.ZBUF.ZBP))) && // GT4O Public Beta
+			!m_cached_ctx.ZBUF.ZMSK && (m_cached_ctx.FRAME.PSM & 0x30) != (m_cached_ctx.ZBUF.PSM & 0x30) &&
+			(m_cached_ctx.FRAME.PSM & 0xF) == (m_cached_ctx.ZBUF.PSM & 0xF) && m_vt.m_eq.z == 1 &&
+			m_vertex.buff[1].XYZ.Z == m_vertex.buff[1].RGBAQ.U32[0];
 
 	// Z and color must be constant and the same
 	if (!ZisFrame || m_vt.m_eq.rgba != 0xFFFF)
 		return false;
 
 	// Half a page extra width is written through Z.
-	m_r.z += 32;
+	m_r.z += (m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP) ? 32 : 64;
 	m_context->scissor.in = m_r;
 
 	GL_INS("DetectStripedDoubleClear(): %d,%d => %d,%d @ FBP %x FBW %u ZBP %x", m_r.x, m_r.y, m_r.z, m_r.w,
