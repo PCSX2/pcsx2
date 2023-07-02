@@ -48,7 +48,7 @@ namespace GameList
 	enum : u32
 	{
 		GAME_LIST_CACHE_SIGNATURE = 0x45434C47,
-		GAME_LIST_CACHE_VERSION = 32,
+		GAME_LIST_CACHE_VERSION = 33,
 
 
 		PLAYED_TIME_SERIAL_LENGTH = 32,
@@ -117,7 +117,7 @@ const char* GameList::RegionToString(Region region)
 {
 	static std::array<const char*, static_cast<int>(Region::Count)> names = {{"NTSC-B", "NTSC-C", "NTSC-HK", "NTSC-J", "NTSC-K", "NTSC-T",
 		"NTSC-U", "Other", "PAL-A", "PAL-AF", "PAL-AU", "PAL-BE", "PAL-E", "PAL-F", "PAL-FI", "PAL-G", "PAL-GR", "PAL-I", "PAL-IN", "PAL-M",
-		"PAL-NL", "PAL-NO", "PAL-P", "PAL-R", "PAL-S", "PAL-SC", "PAL-SW", "PAL-SWI", "PAL-UK"}};
+		"PAL-NL", "PAL-NO", "PAL-P", "PAL-PL", "PAL-R", "PAL-S", "PAL-SC", "PAL-SW", "PAL-SWI", "PAL-UK"}};
 
 	return names[static_cast<int>(region)];
 }
@@ -266,6 +266,8 @@ GameList::Region GameList::ParseDatabaseRegion(const std::string_view& db_region
 		return Region::PAL_NL;
 	else if (StringUtil::StartsWith(db_region, "PAL-NO"))
 		return Region::PAL_NO;
+	else if (StringUtil::StartsWith(db_region, "PAL-PL"))
+		return Region::PAL_PL;
 	else if (StringUtil::StartsWith(db_region, "PAL-P"))
 		return Region::PAL_P;
 	else if (StringUtil::StartsWith(db_region, "PAL-R"))
