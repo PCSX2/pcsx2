@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "MainWindow.h"
+#include "MouseWheelFilter.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "Settings/AchievementSettingsWidget.h"
@@ -206,6 +207,9 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 			   "<strong>Do not modify unless you know what you are doing</strong>, it will cause significant slowdown, and can waste large "
 			   "amounts of disk space."));
 	}
+
+	MouseWheelFilter* wf = new MouseWheelFilter(this);
+	wf->install(this);
 
 	m_ui.settingsCategory->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	m_ui.settingsCategory->setCurrentRow(0);

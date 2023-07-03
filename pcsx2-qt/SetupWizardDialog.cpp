@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "pcsx2/SIO/Pad/Pad.h"
+#include "MouseWheelFilter.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
@@ -189,6 +190,9 @@ void SetupWizardDialog::setupUi()
 	setupBIOSPage();
 	setupGameListPage();
 	setupControllerPage();
+	
+	MouseWheelFilter* wf = new MouseWheelFilter(this);
+	wf->install(this);
 }
 
 void SetupWizardDialog::setupLanguagePage()

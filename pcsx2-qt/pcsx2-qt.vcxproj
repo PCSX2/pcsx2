@@ -137,6 +137,7 @@
     <ClCompile Include="DisplayWidget.cpp" />
     <ClCompile Include="QtHost.cpp" />
     <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="MouseWheelFilter.cpp" />
     <ClCompile Include="PrecompiledHeader.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -201,6 +202,7 @@
     <QtMoc Include="AutoUpdaterDialog.h" />
     <QtMoc Include="CoverDownloadDialog.h" />
     <QtMoc Include="MainWindow.h" />
+    <QtMoc Include="MouseWheelFilter.h" />
     <QtMoc Include="DisplayWidget.h" />
   </ItemGroup>
   <ItemGroup>
@@ -255,6 +257,7 @@
     <ClCompile Include="$(IntDir)moc_CoverDownloadDialog.cpp" />
     <ClCompile Include="$(IntDir)moc_DisplayWidget.cpp" />
     <ClCompile Include="$(IntDir)moc_MainWindow.cpp" />
+    <ClCompile Include="$(IntDir)moc_MouseWheelFilter.cpp" />
     <ClCompile Include="$(IntDir)moc_QtHost.cpp" />
     <ClCompile Include="$(IntDir)moc_QtProgressCallback.cpp" />
     <ClCompile Include="$(IntDir)moc_SetupWizardDialog.cpp" />

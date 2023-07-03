@@ -22,6 +22,7 @@
 #include "GameList/GameListRefreshThread.h"
 #include "GameList/GameListWidget.h"
 #include "MainWindow.h"
+#include "MouseWheelFilter.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
@@ -287,6 +288,8 @@ void MainWindow::setupAdditionalUi()
 		m_ui.menu_Tools->insertMenu(m_ui.menuInput_Recording->menuAction(), raMenu);
 	}
 #endif
+	MouseWheelFilter* wf = new MouseWheelFilter(this);
+	wf->install(this);
 }
 
 void MainWindow::connectSignals()

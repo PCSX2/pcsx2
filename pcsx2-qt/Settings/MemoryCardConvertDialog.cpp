@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "MemoryCardConvertDialog.h"
+#include "MouseWheelFilter.h"
 
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
@@ -30,6 +31,8 @@ MemoryCardConvertDialog::MemoryCardConvertDialog(QWidget* parent, QString select
 	: QDialog(parent)
 {
 	m_ui.setupUi(this);
+	MouseWheelFilter* wf = new MouseWheelFilter(this);
+	wf->install(this);
 
 	// For some reason, setting these in the .ui doesn't work..
 	m_ui.conversionTypeDescription->setFrameStyle(QFrame::Sunken);

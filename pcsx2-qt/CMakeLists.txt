@@ -44,6 +44,8 @@ target_sources(pcsx2-qt PRIVATE
 	GameList/GameListRefreshThread.h
 	GameList/GameListWidget.cpp
 	GameList/GameListWidget.h
+	MouseWheelFilter.cpp
+	MouseWheelFilter.h
 	Settings/AdvancedSettingsWidget.cpp
 	Settings/AdvancedSettingsWidget.h
 	Settings/AdvancedSettingsWidget.ui

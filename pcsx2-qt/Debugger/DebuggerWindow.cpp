@@ -22,6 +22,7 @@
 #include "VMManager.h"
 #include "QtHost.h"
 #include "MainWindow.h"
+#include "MouseWheelFilter.h"
 
 DebuggerWindow::DebuggerWindow(QWidget* parent)
 	: QMainWindow(parent)
@@ -61,6 +62,9 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 
 	m_ui.cpuTabs->addTab(m_cpuWidget_r5900, "R5900");
 	m_ui.cpuTabs->addTab(m_cpuWidget_r3000, "R3000");
+
+	MouseWheelFilter* wf = new MouseWheelFilter(this);
+	wf->install(this);
 
 	CBreakPoints::SetUpdateHandler(std::bind(&DebuggerWindow::onBreakpointsChanged, this));
 

@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
+#include "MouseWheelFilter.h"
 #include "QtHost.h"
 #include "Settings/ControllerSettingsDialog.h"
 #include "Settings/ControllerGlobalSettingsWidget.h"
@@ -442,6 +443,9 @@ void ControllerSettingsDialog::createWidgets()
 		m_hotkey_settings = new HotkeySettingsWidget(m_ui.settingsContainer, this);
 		m_ui.settingsContainer->addWidget(m_hotkey_settings);
 	}
+
+	MouseWheelFilter* wf = new MouseWheelFilter(this);
+	wf->install(this);
 
 	m_ui.loadProfile->setEnabled(isEditingProfile());
 	m_ui.deleteProfile->setEnabled(isEditingProfile());

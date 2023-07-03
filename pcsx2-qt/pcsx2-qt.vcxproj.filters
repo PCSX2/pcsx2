@@ -46,6 +46,10 @@
     <ClCompile Include="$(IntDir)moc_DisplayWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="MouseWheelFilter.cpp" />
+    <ClCompile Include="$(IntDir)moc_MouseWheelFilter.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
     <ClCompile Include="QtUtils.cpp" />
     <ClCompile Include="$(IntDir)moc_QtHost.cpp">
       <Filter>moc</Filter>
@@ -359,6 +363,7 @@
   <ItemGroup>
     <QtMoc Include="MainWindow.h" />
     <QtMoc Include="DisplayWidget.h" />
+    <QtMoc Include="MouseWheelFilter.h" />
     <QtMoc Include="Settings\BIOSSettingsWidget.h">
       <Filter>Settings</Filter>
     </QtMoc>
