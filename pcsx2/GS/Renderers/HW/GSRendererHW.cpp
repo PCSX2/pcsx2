@@ -5619,11 +5619,54 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps()
 		return false;
 	}
 
-	// This is potentially wrong for fans/strips...
-	if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
+	if (m_vt.m_primclass == GS_POINT_CLASS)
 	{
-		m_primitive_covers_without_gaps = (m_index.tail == 6);
-		return m_primitive_covers_without_gaps.value();
+		m_primitive_covers_without_gaps = true;
+		return true;
+	}
+	else if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
+	{
+		if (m_index.tail != 6)
+		{
+			m_primitive_covers_without_gaps = false;
+			return false;
+		}
+
+		// If this is a quad, there should only be two distinct values for both X and Y, which
+		// also happen to be the minimum/maximum bounds of the primitive.
+		const GSVertex* const v = m_vertex.buff;
+		const u16* const i = m_index.buff;
+		u16 distinct_x_values[2] = {v[i[0]].XYZ.X};
+		u16 distinct_y_values[2] = {v[i[0]].XYZ.Y};
+		u32 num_distinct_x_values = 1, num_distinct_y_values = 1;
+		for (u32 j = 1; j < 6; j++)
+		{
+			const GSVertex& jv = v[i[j]];
+			if (jv.XYZ.X != distinct_x_values[0] && jv.XYZ.X != distinct_x_values[1])
+			{
+				if (num_distinct_x_values > 1)
+				{
+					m_primitive_covers_without_gaps = false;
+					return false;
+				}
+
+				distinct_x_values[num_distinct_x_values++] = jv.XYZ.X;
+			}
+
+			if (jv.XYZ.Y != distinct_y_values[0] && jv.XYZ.Y != distinct_y_values[1])
+			{
+				if (num_distinct_y_values > 1)
+				{
+					m_primitive_covers_without_gaps = false;
+					return false;
+				}
+
+				distinct_y_values[num_distinct_y_values++] = jv.XYZ.Y;
+			}
+		}
+
+		m_primitive_covers_without_gaps = true;
+		return true;
 	}
 	else if (m_vt.m_primclass != GS_SPRITE_CLASS)
 	{
