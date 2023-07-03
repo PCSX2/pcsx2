@@ -5278,11 +5278,18 @@ bool GSRendererHW::DetectStripedDoubleClear(bool& no_rt, bool& no_ds)
 
 bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 {
-	if (m_cached_ctx.FRAME.FBMSK != 0 || m_cached_ctx.TEST.ZTST != ZTST_ALWAYS || m_cached_ctx.ZBUF.ZMSK)
+	if (m_cached_ctx.TEST.ZTST != ZTST_ALWAYS || m_cached_ctx.ZBUF.ZMSK)
+		return false;
+
+	// Block when any bits are masked. Too many false positives if we don't.
+	// Siren does a C32+Z24 clear with A masked, GTA:LCS does C32+Z24 but doesn't set FBMSK, leaving half
+	// of the alpha channel untouched (no effect because it uses Z24 elsewhere).
+	const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM];
+	const GSLocalMemory::psm_t& zbuf_psm = GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM];
+	if (((m_cached_ctx.FRAME.FBMSK & frame_psm.fmsk) != 0 && (m_cached_ctx.FRAME.FBMSK & zbuf_psm.fmsk) != 0))
 		return false;
 
 	// Z and color must be constant and the same
-	// TODO: move covers check to caller
 	GSVertex* v = &m_vertex.buff[0];
 	if (m_vt.m_eq.rgba != 0xFFFF || !m_vt.m_eq.z || v[1].XYZ.Z != v[1].RGBAQ.U32[0])
 		return false;
@@ -5293,7 +5300,6 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	const u32 half = clear_depth ? m_cached_ctx.FRAME.FBP : m_cached_ctx.ZBUF.ZBP;
 
 	// Size of the current draw
-	const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM];
 	const u32 w_pages = static_cast<u32>(roundf(m_vt.m_max.p.x / frame_psm.pgs.x));
 	const u32 h_pages = static_cast<u32>(roundf(m_vt.m_max.p.y / frame_psm.pgs.y));
 	const u32 written_pages = w_pages * h_pages;
@@ -5304,9 +5310,19 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 
 	// Try peeking ahead to confirm whether this is a "normal" clear, where the two buffers just happen to be
 	// bang up next to each other, or a double half clear. The two are really difficult to differentiate.
-	if (m_backed_up_ctx >= 0 && m_env.CTXT[m_backed_up_ctx].FRAME.FBW == m_cached_ctx.FRAME.FBW &&
-		((m_env.CTXT[m_backed_up_ctx].FRAME.FBP == base && m_env.CTXT[m_backed_up_ctx].ZBUF.ZBP != half) ||
-			(m_env.CTXT[m_backed_up_ctx].ZBUF.ZBP == base && m_env.CTXT[m_backed_up_ctx].FRAME.FBP != half)))
+	// Have to check both contexts, because God of War 2 likes to do this in-between setting TRXDIR, which
+	// causes a flush, and we don't have the next context backed up index set.
+	bool horizontal = false;
+	if ((m_env.CTXT[0].FRAME.FBW == m_cached_ctx.FRAME.FBW &&
+			((m_env.CTXT[0].FRAME.FBP == base &&
+				 (!m_env.CTXT[0].ZBUF.ZMSK || (m_env.CTXT[0].TEST.ZTE && m_env.CTXT[0].TEST.ZTST >= ZTST_GEQUAL)) &&
+				 m_env.CTXT[0].ZBUF.ZBP != half) ||
+				(m_env.CTXT[0].ZBUF.ZBP == base && m_env.CTXT[0].FRAME.FBP != half))) ||
+		m_env.CTXT[1].FRAME.FBW == m_cached_ctx.FRAME.FBW &&
+			((m_env.CTXT[1].FRAME.FBP == base && m_env.CTXT[1].ZBUF.ZBP != half) ||
+				(m_env.CTXT[1].ZBUF.ZBP == base &&
+					(!m_env.CTXT[1].ZBUF.ZMSK || (m_env.CTXT[1].TEST.ZTE && m_env.CTXT[1].TEST.ZTST >= ZTST_GEQUAL)) &&
+					m_env.CTXT[1].FRAME.FBP != half)))
 	{
 		// Needed for Spider-Man 2 (target was previously half size, double half cleared at new size).
 		GL_INS("Confirmed double-half clear by next FBP/ZBP");
@@ -5315,49 +5331,60 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	{
 		// Check for a target matching the starting point. It might be in Z or FRAME...
 		GSTextureCache::Target* tgt = g_texture_cache->GetTargetWithSharedBits(
-			base << 5, clear_depth ? m_cached_ctx.ZBUF.PSM : m_cached_ctx.FRAME.PSM);
+			base * BLOCKS_PER_PAGE, clear_depth ? m_cached_ctx.ZBUF.PSM : m_cached_ctx.FRAME.PSM);
 		if (!tgt)
 		{
 			tgt = g_texture_cache->GetTargetWithSharedBits(
-				base << 5, clear_depth ? m_cached_ctx.FRAME.PSM : m_cached_ctx.ZBUF.PSM);
+				base * BLOCKS_PER_PAGE, clear_depth ? m_cached_ctx.FRAME.PSM : m_cached_ctx.ZBUF.PSM);
 		}
 
 		// Are we clearing over the middle of this target?
-		if (!tgt || (((half + written_pages) << 5) - 1) > tgt->m_end_block)
+		if (!tgt || (((half + written_pages) * BLOCKS_PER_PAGE) - 1) > tgt->m_end_block)
 			return false;
+
+		// Siren double half clears horizontally with half FBW instead of vertically.
+		// We could use the FBW here, but using the rectangle seems a bit safer, because changing FBW
+		// from one RT to another isn't uncommon.
+		horizontal = (m_r.w >= tgt->m_valid.w);
 	}
 
 	GL_INS("DetectDoubleHalfClear(): Clearing %s, fbp=%x, zbp=%x, pages=%u, base=%x, half=%x, rect=(%d,%d=>%d,%d)",
 		clear_depth ? "depth" : "color", m_cached_ctx.FRAME.Block(), m_cached_ctx.ZBUF.Block(), written_pages,
-		base << 5, half << 5, m_r.x, m_r.y, m_r.z, m_r.w);
+		base * BLOCKS_PER_PAGE, half * BLOCKS_PER_PAGE, m_r.x, m_r.y, m_r.z, m_r.w);
+
+	// Warn, but not fatal if the clear is inconsistent across FRAME and Z pages.
+	if (frame_psm.fmt != zbuf_psm.fmt && m_cached_ctx.FRAME.FBMSK != ((zbuf_psm.fmt == 1) ? 0xFF000000u : 0))
+	{
+		GL_INS("Inconsistent FRAME [%s, %08x] and ZBUF [%s] formats in double-half clear.",
+			psm_str(m_cached_ctx.FRAME.PSM), m_cached_ctx.FRAME.FBMSK, psm_str(m_cached_ctx.ZBUF.PSM));
+	}
 
 	// Double the clear rect.
-	m_r.w += m_r.y + m_r.height();
+	if (horizontal)
+		m_r.z += m_r.x + m_r.width();
+	else
+		m_r.w += m_r.y + m_r.height();
 	ReplaceVerticesWithSprite(m_r, GSVector2i(1, 1));
 
 	// Prevent wasting time looking up and creating the target which is getting blown away.
 	if (!clear_depth)
 	{
-		SetNewFRAME(base << 5, m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM);
+		SetNewFRAME(base * BLOCKS_PER_PAGE, m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM);
 		m_cached_ctx.ZBUF.ZMSK = true;
 		no_rt = false;
 		no_ds = true;
 	}
 	else
 	{
-		SetNewZBUF(base << 5, m_cached_ctx.ZBUF.PSM);
+		SetNewZBUF(base * BLOCKS_PER_PAGE, m_cached_ctx.ZBUF.PSM);
 		m_cached_ctx.FRAME.FBMSK = 0xFFFFFFFF;
 		no_rt = true;
 		no_ds = false;
 	}
 
 	// Remove any targets at the half-buffer point, they're getting overwritten.
-	g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, half);
-	g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, half);
-
-	// TODO HACK: REMOVE ME
-	m_primitive_covers_without_gaps = true;
-
+	g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, half * BLOCKS_PER_PAGE);
+	g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, half * BLOCKS_PER_PAGE);
 	return true;
 }
 
@@ -5704,6 +5731,7 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps()
 			last_pY = v[i + 1].XYZ.Y;
 		}
 
+		m_primitive_covers_without_gaps = true;
 		return true;
 	}
 
