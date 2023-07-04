@@ -128,6 +128,9 @@ public:
 		return m_device_properties.limits.maxImageDimension2D;
 	}
 
+	/// Returns true if running on an NVIDIA GPU.
+	__fi bool IsDeviceNVIDIA() const { return (m_device_properties.vendorID == 0x10DE); }
+
 	// Creates a simple render pass.
 	__ri VkRenderPass GetRenderPass(VkFormat color_format, VkFormat depth_format,
 		VkAttachmentLoadOp color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,

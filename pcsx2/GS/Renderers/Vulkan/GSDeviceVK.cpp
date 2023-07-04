@@ -1521,6 +1521,14 @@ void GSDeviceVK::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	{
 		if (vkRt)
 		{
+			// NVIDIA drivers appear to return random garbage when sampling the RT via a feedback loop, if the load op for
+			// the render pass is CLEAR. Using vkCmdClearAttachments() doesn't work, so we have to clear the image instead.
+			if (feedback_loop & FeedbackLoopFlag_ReadAndWriteRT && vkRt->GetState() == GSTexture::State::Cleared &&
+				g_vulkan_context->IsDeviceNVIDIA())
+			{
+				vkRt->CommitClear();
+			}
+
 			vkRt->TransitionToLayout((feedback_loop & FeedbackLoopFlag_ReadAndWriteRT) ?
 				GSTextureVK::Layout::FeedbackLoop :
 										 GSTextureVK::Layout::ColorAttachment);
