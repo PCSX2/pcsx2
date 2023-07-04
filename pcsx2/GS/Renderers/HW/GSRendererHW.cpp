@@ -3141,6 +3141,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 				return false;
 
 			m_channel_shuffle = false;
+			return false;
 		}
 	}
 	else if ((src->m_texture->GetType() == GSTexture::Type::DepthStencil) && !src->m_32_bits_fmt)
@@ -3179,6 +3180,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 			return false;
 
 		m_channel_shuffle = false;
+		return false;
 	}
 	else if (m_cached_ctx.CLAMP.WMS == 3 && ((m_cached_ctx.CLAMP.MAXU & 0x8) == 8))
 	{
@@ -3257,15 +3259,51 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 	}
 	else
 	{
-		GL_INS("Channel not supported");
-		if (test_only)
-			return false;
+		// We can use the minimum UV to work out which channel it's grabbing.
+		// Used by Ape Escape 2, Everybody's Tennis/Golf, Okage, and Valkyrie Profile 2.
+		// Page align test to limit false detections (there is a few).
+		const GSVector4i min_uv = GSVector4i(m_vt.m_min.t.upld(GSVector4::zero()));
+		ChannelFetch channel = ChannelFetch_NONE;
+		if (GSLocalMemory::IsPageAligned(src->m_TEX0.PSM, m_r) &&
+			m_r.upl64(GSVector4i::zero()).eq(GSVector4i::zero()))
+		{
+			if (min_uv.eq(GSVector4i::cxpr(0, 0, 0, 0)))
+				channel = ChannelFetch_RED;
+			else if (min_uv.eq(GSVector4i::cxpr(0, 2, 0, 0)))
+				channel = ChannelFetch_GREEN;
+			else if (min_uv.eq(GSVector4i::cxpr(8, 0, 0, 0)))
+				channel = ChannelFetch_BLUE;
+			else if (min_uv.eq(GSVector4i::cxpr(8, 2, 0, 0)))
+				channel = ChannelFetch_ALPHA;
+		}
 
-		m_channel_shuffle = false;
+		if (channel != ChannelFetch_NONE)
+		{
+#ifdef ENABLE_OGL_DEBUG
+			static constexpr const char* channel_names[] = { "Red", "Green", "Blue", "Alpha" };
+			GL_INS("%s channel from min UV: r={%d,%d=>%d,%d} min uv = %d,%d", channel_names[static_cast<u32>(channel - 1)],
+				m_r.x, m_r.y, m_r.z, m_r.w, min_uv.x, min_uv.y);
+#endif
+
+			if (test_only)
+				return true;
+
+			m_conf.ps.channel = channel;
+		}
+		else
+		{
+			GL_INS("Channel not supported r={%d,%d=>%d,%d} min uv = %d,%d",
+				m_r.x, m_r.y, m_r.z, m_r.w, min_uv.x, min_uv.y);
+
+			if (test_only)
+				return false;
+
+			m_channel_shuffle = false;
+			return false;
+		}
 	}
 
-	if (!m_channel_shuffle)
-		return false;
+	pxAssert(m_channel_shuffle);
 
 	// Effect is really a channel shuffle effect so let's cheat a little
 	m_conf.tex = src->m_texture;
