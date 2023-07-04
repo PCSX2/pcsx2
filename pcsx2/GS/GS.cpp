@@ -389,6 +389,9 @@ void GSgifTransfer3(u8* mem, u32 size)
 
 void GSvsync(u32 field, bool registers_written)
 {
+	// Do not move the flush into the VSync() method. It's here because EE transfers
+	// get cleared in HW VSync, and may be needed for a buffered draw (FFX FMVs).
+	g_gs_renderer->Flush(GSState::VSYNC);
 	g_gs_renderer->VSync(field, registers_written, g_gs_renderer->IsIdleFrame());
 }
 
