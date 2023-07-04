@@ -650,7 +650,7 @@ bool D3D12Context::AllocatePreinitializedGPUBuffer(u32 size, ID3D12Resource** gp
 	const D3D12MA::ALLOCATION_DESC gpu_ad = {D3D12MA::ALLOCATION_FLAG_COMMITTED, D3D12_HEAP_TYPE_DEFAULT};
 
 	hr = m_allocator->CreateResource(
-		&gpu_ad, &rd, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, gpu_allocation, IID_PPV_ARGS(gpu_buffer));
+		&gpu_ad, &rd, D3D12_RESOURCE_STATE_COMMON, nullptr, gpu_allocation, IID_PPV_ARGS(gpu_buffer));
 	pxAssertMsg(SUCCEEDED(hr), "Allocate GPU buffer");
 	if (FAILED(hr))
 		return false;
@@ -660,7 +660,7 @@ bool D3D12Context::AllocatePreinitializedGPUBuffer(u32 size, ID3D12Resource** gp
 	D3D12_RESOURCE_BARRIER rb = {D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE};
 	rb.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	rb.Transition.pResource = *gpu_buffer;
-	rb.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+	rb.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST; // COMMON -> COPY_DEST at first use.
 	rb.Transition.StateAfter = D3D12_RESOURCE_STATE_INDEX_BUFFER;
 	GetInitCommandList()->ResourceBarrier(1, &rb);
 
