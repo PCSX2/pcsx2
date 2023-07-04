@@ -1222,6 +1222,8 @@ else()
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		OpenGL::GL
 		PCAP::PCAP
+		Wayland::Client
+		Wayland::Egl
 	)
 endif()
 
