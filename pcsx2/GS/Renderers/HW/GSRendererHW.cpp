@@ -914,7 +914,7 @@ GSVector4i GSRendererHW::GetSplitTextureShuffleDrawRect() const
 GSVector4i GSRendererHW::GetDrawRectForPages(u32 bw, u32 psm, u32 num_pages)
 {
 	const GSVector2i& pgs = GSLocalMemory::m_psm[psm].pgs;
-	const GSVector2i size = GSVector2i(static_cast<int>(bw) * pgs.x, static_cast<int>(num_pages / bw) * pgs.y);
+	const GSVector2i size = GSVector2i(static_cast<int>(bw) * pgs.x, static_cast<int>(num_pages / std::max(1U, bw)) * pgs.y);
 	return GSVector4i::loadh(size);
 }
 
