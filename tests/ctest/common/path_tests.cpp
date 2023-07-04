@@ -41,6 +41,29 @@ TEST(FileSystem, ToNativePath)
 #endif
 }
 
+TEST(FileSystem, IsValidFileName)
+{
+#if defined(_WIN32) || defined(__APPLE__)
+	ASSERT_FALSE(Path::IsValidFileName("foo:bar", false));
+	ASSERT_FALSE(Path::IsValidFileName("baz\\foo:bar", false));
+	ASSERT_FALSE(Path::IsValidFileName("baz/foo:bar", false));
+	ASSERT_FALSE(Path::IsValidFileName("baz\\foo:bar", true));
+	ASSERT_FALSE(Path::IsValidFileName("baz/foo:bar", true));
+#endif
+#ifdef _WIN32
+	ASSERT_TRUE(Path::IsValidFileName("baz\\foo", true));
+	ASSERT_FALSE(Path::IsValidFileName("baz\\foo", false));
+	ASSERT_FALSE(Path::IsValidFileName("foo.", true));
+	ASSERT_FALSE(Path::IsValidFileName("foo\\.", true));
+#else
+	ASSERT_FALSE(Path::IsValidFileName("foo\\*", true));
+	ASSERT_FALSE(Path::IsValidFileName("foo*", true));
+#endif
+
+	ASSERT_TRUE(Path::IsValidFileName("baz/foo", true));
+	ASSERT_FALSE(Path::IsValidFileName("baz/foo", false));
+}
+
 TEST(FileSystem, IsAbsolute)
 {
 	ASSERT_FALSE(Path::IsAbsolute(""));
