@@ -50,7 +50,7 @@ namespace GameList
 	enum : u32
 	{
 		GAME_LIST_CACHE_SIGNATURE = 0x45434C47,
-		GAME_LIST_CACHE_VERSION = 33,
+		GAME_LIST_CACHE_VERSION = 34,
 
 
 		PLAYED_TIME_SERIAL_LENGTH = 32,
@@ -340,6 +340,8 @@ bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 	if (const GameDatabaseSchema::GameEntry* db_entry = GameDatabase::findGame(entry->serial))
 	{
 		entry->title = std::move(db_entry->name);
+		entry->title_sort = std::move(db_entry->name_sort);
+		entry->title_en = std::move(db_entry->name_en);
 		entry->compatibility_rating = db_entry->compat;
 		entry->region = ParseDatabaseRegion(db_entry->region);
 	}
@@ -443,10 +445,11 @@ bool GameList::LoadEntriesFromCache(std::FILE* stream)
 		u8 compatibility_rating;
 		u64 last_modified_time;
 
-		if (!ReadString(stream, &path) || !ReadString(stream, &ge.serial) || !ReadString(stream, &ge.title) || !ReadU8(stream, &type) ||
-			!ReadU8(stream, &region) || !ReadU64(stream, &ge.total_size) || !ReadU64(stream, &last_modified_time) ||
-			!ReadU32(stream, &ge.crc) || !ReadU8(stream, &compatibility_rating) || region >= static_cast<u8>(Region::Count) ||
-			type >= static_cast<u8>(EntryType::Count) || compatibility_rating > static_cast<u8>(CompatibilityRating::Perfect))
+		if (!ReadString(stream, &path) || !ReadString(stream, &ge.serial) || !ReadString(stream, &ge.title) || !ReadString(stream, &ge.title_sort) ||
+			!ReadString(stream, &ge.title_en) || !ReadU8(stream, &type) || !ReadU8(stream, &region) || !ReadU64(stream, &ge.total_size) ||
+			!ReadU64(stream, &last_modified_time) || !ReadU32(stream, &ge.crc) || !ReadU8(stream, &compatibility_rating) ||
+			region >= static_cast<u8>(Region::Count) || type >= static_cast<u8>(EntryType::Count) ||
+			compatibility_rating > static_cast<u8>(CompatibilityRating::Perfect))
 		{
 			Console.Warning("Game list cache entry is corrupted");
 			return false;
@@ -538,6 +541,8 @@ bool GameList::WriteEntryToCache(const Entry* entry)
 	result &= WriteString(s_cache_write_stream, entry->path);
 	result &= WriteString(s_cache_write_stream, entry->serial);
 	result &= WriteString(s_cache_write_stream, entry->title);
+	result &= WriteString(s_cache_write_stream, entry->title_sort);
+	result &= WriteString(s_cache_write_stream, entry->title_en);
 	result &= WriteU8(s_cache_write_stream, static_cast<u8>(entry->type));
 	result &= WriteU8(s_cache_write_stream, static_cast<u8>(entry->region));
 	result &= WriteU64(s_cache_write_stream, entry->total_size);

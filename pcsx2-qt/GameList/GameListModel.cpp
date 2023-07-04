@@ -341,7 +341,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 
 				case Column_Title:
 				case Column_Cover:
-					return QString::fromStdString(ge->title);
+					return QString::fromStdString(ge->GetTitleSort());
 
 				case Column_FileTitle:
 					return QtUtils::StringViewToQString(Path::GetFileTitle(ge->path));
@@ -438,7 +438,7 @@ bool GameListModel::titlesLessThan(int left_row, int right_row) const
 
 	const GameList::Entry* left = GameList::GetEntryByIndex(left_row);
 	const GameList::Entry* right = GameList::GetEntryByIndex(right_row);
-	return (StringUtil::Strcasecmp(left->title.c_str(), right->title.c_str()) < 0);
+	return (StringUtil::Strcasecmp(left->GetTitleSort().c_str(), right->GetTitleSort().c_str()) < 0);
 }
 
 bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column) const

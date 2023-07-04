@@ -90,10 +90,15 @@ namespace GameList
 		std::string path;
 		std::string serial;
 		std::string title;
+		std::string title_sort;
+		std::string title_en;
 		u64 total_size = 0;
 		std::time_t last_modified_time = 0;
 		std::time_t last_played_time = 0;
 		std::time_t total_played_time = 0;
+
+		const std::string& GetTitleEN() const { return title_en.empty() ? title : title_en; }
+		const std::string& GetTitleSort() const { return title_sort.empty() ? title : title_sort; }
 
 		u32 crc = 0;
 

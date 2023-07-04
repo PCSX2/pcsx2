@@ -103,6 +103,14 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 	{
 		node["name"] >> gameEntry.name;
 	}
+	if (node.has_child("name-sort"))
+	{
+		node["name-sort"] >> gameEntry.name_sort;
+	}
+	if (node.has_child("name-en"))
+	{
+		node["name-en"] >> gameEntry.name_en;
+	}
 	if (node.has_child("region"))
 	{
 		node["region"] >> gameEntry.region;
