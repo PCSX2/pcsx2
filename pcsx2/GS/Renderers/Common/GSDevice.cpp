@@ -228,6 +228,21 @@ bool GSDevice::GetHostRefreshRate(float* refresh_rate)
 	return WindowInfo::QueryRefreshRateForWindow(m_window_info, refresh_rate);
 }
 
+void GSDevice::ClearRenderTarget(GSTexture* t, u32 c)
+{
+	t->SetClearColor(c);
+}
+
+void GSDevice::ClearDepth(GSTexture* t, float d)
+{
+	t->SetClearDepth(d);
+}
+
+void GSDevice::InvalidateRenderTarget(GSTexture* t)
+{
+	t->SetState(GSTexture::State::Invalidated);
+}
+
 bool GSDevice::UpdateImGuiFontTexture()
 {
 	ImGuiIO& io = ImGui::GetIO();
