@@ -105,7 +105,7 @@
     <ClCompile Include="Settings\BIOSSettingsWidget.cpp" />
     <ClCompile Include="Settings\ControllerBindingWidgets.cpp" />
     <ClCompile Include="Settings\ControllerGlobalSettingsWidget.cpp" />
-    <ClCompile Include="Settings\CreateMemoryCardDialog.cpp" />
+    <ClCompile Include="Settings\MemoryCardCreateDialog.cpp" />
     <ClCompile Include="Settings\EmulationSettingsWidget.cpp" />
     <ClCompile Include="Settings\GameListSettingsWidget.cpp" />
     <ClCompile Include="Settings\GraphicsSettingsWidget.cpp" />
@@ -172,7 +172,7 @@
     <QtMoc Include="Settings\GamePatchSettingsWidget.h" />
     <ClInclude Include="Settings\HddCreateQt.h" />
     <QtMoc Include="Settings\GameSummaryWidget.h" />
-    <QtMoc Include="Settings\CreateMemoryCardDialog.h" />
+    <QtMoc Include="Settings\MemoryCardCreateDialog.h" />
     <QtMoc Include="Settings\AchievementLoginDialog.h" />
     <QtMoc Include="Settings\AchievementSettingsWidget.h" />
     <QtMoc Include="GameList\GameListModel.h" />
@@ -212,7 +212,7 @@
     <ClCompile Include="$(IntDir)Settings\moc_ControllerBindingWidgets.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_ControllerGlobalSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_ControllerSettingsDialog.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_CreateMemoryCardDialog.cpp" />
+    <ClCompile Include="$(IntDir)Settings\moc_MemoryCardCreateDialog.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_EmulationSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_GameListSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_GraphicsSettingsWidget.cpp" />
@@ -312,7 +312,7 @@
     <QtUi Include="Settings\ControllerGlobalSettingsWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="Settings\CreateMemoryCardDialog.ui">
+    <QtUi Include="Settings\MemoryCardCreateDialog.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Settings\AudioSettingsWidget.ui">

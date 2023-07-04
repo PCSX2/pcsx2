@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CreateMemoryCardDialog</class>
- <widget class="QDialog" name="CreateMemoryCardDialog">
+ <class>MemoryCardCreateDialog</class>
+ <widget class="QDialog" name="MemoryCardCreateDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -285,7 +285,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>CreateMemoryCardDialog</receiver>
+   <receiver>MemoryCardCreateDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -301,7 +301,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>CreateMemoryCardDialog</receiver>
+   <receiver>MemoryCardCreateDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
