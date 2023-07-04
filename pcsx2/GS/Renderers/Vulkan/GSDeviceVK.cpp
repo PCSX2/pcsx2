@@ -790,21 +790,6 @@ void GSDeviceVK::DrawIndexedPrimitive(int offset, int count)
 	vkCmdDrawIndexed(g_vulkan_context->GetCurrentCommandBuffer(), count, 1, m_index.start + offset, m_vertex.start, 0);
 }
 
-void GSDeviceVK::ClearRenderTarget(GSTexture* t, u32 c)
-{
-	t->SetClearColor(c);
-}
-
-void GSDeviceVK::InvalidateRenderTarget(GSTexture* t)
-{
-	t->SetState(GSTexture::State::Invalidated);
-}
-
-void GSDeviceVK::ClearDepth(GSTexture* t, float d)
-{
-	t->SetClearDepth(d);
-}
-
 VkFormat GSDeviceVK::LookupNativeFormat(GSTexture::Format format) const
 {
 	static constexpr std::array<VkFormat, static_cast<int>(GSTexture::Format::BC7) + 1> s_format_mapping = {{

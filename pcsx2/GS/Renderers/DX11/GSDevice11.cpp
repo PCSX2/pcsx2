@@ -1057,21 +1057,6 @@ void GSDevice11::DrawIndexedPrimitive(int offset, int count)
 	m_ctx->DrawIndexed(count, m_index.start + offset, m_vertex.start);
 }
 
-void GSDevice11::ClearRenderTarget(GSTexture* t, u32 c)
-{
-	t->SetClearColor(c);
-}
-
-void GSDevice11::InvalidateRenderTarget(GSTexture* t)
-{
-	t->SetState(GSTexture::State::Invalidated);
-}
-
-void GSDevice11::ClearDepth(GSTexture* t, float d)
-{
-	t->SetClearDepth(d);
-}
-
 void GSDevice11::CommitClear(GSTexture* t)
 {
 	GSTexture11* T = static_cast<GSTexture11*>(t);

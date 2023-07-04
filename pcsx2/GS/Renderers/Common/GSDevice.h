@@ -877,9 +877,9 @@ public:
 	/// Returns the amount of GPU time utilized since the last time this method was called.
 	virtual float GetAndResetAccumulatedGPUTime() = 0;
 
-	virtual void ClearRenderTarget(GSTexture* t, u32 c) = 0;
-	virtual void InvalidateRenderTarget(GSTexture* t) = 0;
-	virtual void ClearDepth(GSTexture* t, float d) = 0;
+	void ClearRenderTarget(GSTexture* t, u32 c);
+	void ClearDepth(GSTexture* t, float d);
+	void InvalidateRenderTarget(GSTexture* t);
 
 	virtual void PushDebugGroup(const char* fmt, ...) = 0;
 	virtual void PopDebugGroup() = 0;

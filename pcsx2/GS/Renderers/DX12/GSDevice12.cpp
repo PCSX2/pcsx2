@@ -639,30 +639,6 @@ void GSDevice12::DrawIndexedPrimitive(int offset, int count)
 	g_d3d12_context->GetCommandList()->DrawIndexedInstanced(count, 1, m_index.start + offset, m_vertex.start, 0);
 }
 
-void GSDevice12::ClearRenderTarget(GSTexture* t, u32 c)
-{
-	if (m_current_render_target == t)
-		EndRenderPass();
-
-	t->SetClearColor(c);
-}
-
-void GSDevice12::InvalidateRenderTarget(GSTexture* t)
-{
-	if (m_current_render_target == t || m_current_depth_target == t)
-		EndRenderPass();
-
-	t->SetState(GSTexture::State::Invalidated);
-}
-
-void GSDevice12::ClearDepth(GSTexture* t, float d)
-{
-	if (m_current_depth_target == t)
-		EndRenderPass();
-
-	t->SetClearDepth(d);
-}
-
 void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format,
 	DXGI_FORMAT* rtv_format, DXGI_FORMAT* dsv_format) const
 {

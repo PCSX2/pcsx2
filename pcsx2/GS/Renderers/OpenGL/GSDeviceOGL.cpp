@@ -961,21 +961,6 @@ void GSDeviceOGL::CommitClear(GSTexture* t, bool use_write_fbo)
 	}
 }
 
-void GSDeviceOGL::ClearRenderTarget(GSTexture* t, u32 c)
-{
-	t->SetClearColor(c);
-}
-
-void GSDeviceOGL::InvalidateRenderTarget(GSTexture* t)
-{
-	t->SetState(GSTexture::State::Invalidated);
-}
-
-void GSDeviceOGL::ClearDepth(GSTexture* t, float d)
-{
-	t->SetClearDepth(d);
-}
-
 std::unique_ptr<GSDownloadTexture> GSDeviceOGL::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
 {
 	return GSDownloadTextureOGL::Create(width, height, format);

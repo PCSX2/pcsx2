@@ -1424,21 +1424,6 @@ void GSDeviceMTL::AccumulateCommandBufferTime(id<MTLCommandBuffer> buffer)
 #pragma clang diagnostic pop
 }
 
-void GSDeviceMTL::ClearRenderTarget(GSTexture* t, uint32 c)
-{
-	t->SetClearColor(c);
-}
-
-void GSDeviceMTL::ClearDepth(GSTexture* t, float d)
-{
-	t->SetClearDepth(d);
-}
-
-void GSDeviceMTL::InvalidateRenderTarget(GSTexture* t)
-{
-	t->SetState(GSTexture::State::Invalidated);
-}
-
 std::unique_ptr<GSDownloadTexture> GSDeviceMTL::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
 {
 	return GSDownloadTextureMTL::Create(this, width, height, format);

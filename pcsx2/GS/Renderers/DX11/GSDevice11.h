@@ -309,10 +309,6 @@ public:
 	void DrawIndexedPrimitive();
 	void DrawIndexedPrimitive(int offset, int count);
 
-	void ClearRenderTarget(GSTexture* t, u32 c) override;
-	void InvalidateRenderTarget(GSTexture* t) override;
-	void ClearDepth(GSTexture* t, float v) override;
-
 	void PushDebugGroup(const char* fmt, ...) override;
 	void PopDebugGroup() override;
 	void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) override;

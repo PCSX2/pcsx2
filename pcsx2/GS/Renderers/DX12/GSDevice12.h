@@ -279,10 +279,6 @@ public:
 	void DrawIndexedPrimitive();
 	void DrawIndexedPrimitive(int offset, int count);
 
-	void ClearRenderTarget(GSTexture* t, u32 c) override;
-	void InvalidateRenderTarget(GSTexture* t) override;
-	void ClearDepth(GSTexture* t, float d) override;
-
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) override;
