@@ -536,8 +536,6 @@ void GSRenderer::EndPresentFrame()
 
 void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 {
-	Flush(GSFlushReason::VSYNC);
-
 	if (GSConfig.DumpGSData && s_n >= GSConfig.SaveN)
 	{
 		m_regs->Dump(GetDrawDumpPath("vsync_%05d_f%lld_gs_reg.txt", s_n, g_perfmon.GetFrame()));
