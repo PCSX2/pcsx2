@@ -491,7 +491,8 @@ GSVector4i GSLocalMemory::GetRectForPageOffset(u32 base_bp, u32 offset_bp, u32 b
 
 	const u32 page_offset = (offset_bp - base_bp) >> 5;
 	const GSVector2i& pgs = m_psm[psm].pgs;
-	const GSVector2i page_offset_xy = GSVector2i(page_offset % bw, page_offset / std::max(1U, bw));
+	const u32 valid_bw = std::max(1U, bw);
+	const GSVector2i page_offset_xy = GSVector2i(page_offset % valid_bw, page_offset / std::max(1U, valid_bw));
 	return GSVector4i(pgs * page_offset_xy).xyxy() + GSVector4i::loadh(pgs);
 }
 
