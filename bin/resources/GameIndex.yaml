@@ -2417,6 +2417,9 @@ SCED-52681:
 SCED-52687:
   name: "Formula One 04 [Demo]"
   region: "PAL-M11"
+SCED-52723:
+  name: "DJ - Decks & FX [Demo]"
+  region: "PAL-M5"
 SCED-52728:
   name: "Official PlayStation 2 Magazine Demo 49"
   region: "PAL-M5"
@@ -2992,6 +2995,9 @@ SCED-55119:
 SCED-55120:
   name: "Official PlayStation 2 Magazine Demo 101"
   region: "PAL-NL"
+SCED-55432:
+  name: "Buzz! Junior - Ace Racers [Demo]"
+  region: "PAL-M15"
 SCES-50000:
   name: "Ridge Racer V"
   region: "PAL-M5"
@@ -9752,9 +9758,12 @@ SLED-51012:
 SLED-51062:
   name: "Fireblade [Demo]"
   region: "PAL-E"
+SLED-51186:
+  name: "Mat Hoffman's Pro BMX 2 [Demo]"
+  region: "PAL-M5"
 SLED-51211:
   name: "Burnout 2 - Point of Impact [Demo]"
-  region: "PAL-Unk"
+  region: "PAL-E"
   roundModes:
     vu1RoundMode: 1 # Bright lights in cars.
 SLED-51212:
@@ -9876,6 +9885,16 @@ SLED-52488:
   region: "PAL-E"
   speedHacks:
     InstantVU1SpeedHack: 1 # Fixes SPS.
+SLED-52506:
+  name: "Mashed - Drive to Survive [Demo]"
+  region: "PAL-F"
+SLED-52574:
+  name: "Crash Twinsanity & Spyro - A Hero's Tail [Demo]"
+  region: "PAL-E"
+  gameFixes:
+    - XGKickHack # Fixes bad geometry.
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes depth lines.
 SLED-52597:
   name: "Burnout 3 - Takedown [Demo]"
   region: "PAL-E"
@@ -9950,12 +9969,24 @@ SLED-53109:
     autoFlush: 1 # Fixes headlight brightness.
     cpuCLUTRender: 1 # Fixes broken headlights.
     minimumBlendingLevel: 3
+SLED-53327:
+  name: "Cold Winter [Demo]"
+  region: "PAL-E"
+  clampModes:
+    vuClampMode: 2 # Fixes rainbow graphics.
 SLED-53330:
   name: "Enthusia - Professional Racing [Demo]"
   region: "PAL"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes reflections.
+SLED-53442:
+  name: "Crash Tag Team Racing [Demo]"
+  region: "PAL-E"
+  gameFixes:
+    - IbitHack # Fixes constant recompilation problems.
+  gsHWFixes:
+    PCRTCOverscan: 1 # Fixes offscreen image.
 SLED-53445:
   name: "Incredible Hulk, The - Ultimate Destruction [Demo]"
   region: "PAL-M3"
@@ -15921,13 +15952,6 @@ SLES-52573:
   region: "PAL-M5"
   roundModes:
     eeRoundMode: 2 # Fixes abnormal character behaviour.
-SLED-52574:
-  name: "Crash Twinsanity & Spyro - A Hero's Tail [Demo]"
-  region: "PAL-E"
-  gameFixes:
-    - XGKickHack # Fixes bad geometry.
-  gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth lines.
 SLES-52576:
   name: "Yu-Gi-Oh! Capsule Monster Coliseum"
   region: "PAL-M5"
