@@ -5785,6 +5785,8 @@ SCPS-11008:
   name: "Boku to Mao"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Depth of field blur is incorrect without it.
 SCPS-11009:
   name: "Ka"
   region: "NTSC-J"
@@ -6594,6 +6596,8 @@ SCPS-19101:
 SCPS-19102:
   name: "Boku to Maou [PlayStation 2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Depth of field blur is incorrect without it.
 SCPS-19103:
   name: "ICO [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -7570,6 +7574,8 @@ SCUS-97129:
   name: "Okage - Shadow King"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Depth of field blur is incorrect without it.
 SCUS-97130:
   name: "Hot Shots Golf 3"
   region: "NTSC-U"
