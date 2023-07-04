@@ -41,6 +41,9 @@ namespace Path
 	std::string SanitizeFileName(const std::string_view& str, bool strip_slashes = true);
 	void SanitizeFileName(std::string* str, bool strip_slashes = true);
 
+	/// Returns true if the specified filename is valid on this operating system.
+	bool IsValidFileName(const std::string_view& str, bool allow_slashes = false);
+
 	/// Returns true if the specified path is an absolute path (C:\Path on Windows or /path on Unix).
 	bool IsAbsolute(const std::string_view& path);
 

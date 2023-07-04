@@ -190,6 +190,27 @@ void Path::SanitizeFileName(std::string* str, bool strip_slashes /* = true */)
 #endif
 }
 
+bool Path::IsValidFileName(const std::string_view& str, bool allow_slashes)
+{
+	const size_t len = str.length();
+	size_t pos = 0;
+	while (pos < len)
+	{
+		char32_t ch;
+		pos += StringUtil::DecodeUTF8(str.data() + pos, pos - len, &ch);
+		if (!FileSystemCharacterIsSane(ch, !allow_slashes))
+			return false;
+	}
+
+#ifdef _WIN32
+	// Windows: Can't end filename with a period.
+	if (len > 0 && str.back() == '.')
+		return false;
+#endif
+
+	return true;
+}
+
 bool Path::IsAbsolute(const std::string_view& path)
 {
 #ifdef _WIN32
