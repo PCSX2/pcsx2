@@ -12,6 +12,14 @@
           "type": "string",
           "description": "The name of the game, an arbitrary string"
         },
+        "name-sort": {
+          "type": "string",
+          "description": "The name of the game for use in sorting, an arbitrary string"
+        },
+        "name-en": {
+          "type": "string",
+          "description": "The name of the game in ASCII, an arbitrary string"
+        },
         "region": {
           "type": "string",
           "description": "The region code for the game, for example NTSC-U",
