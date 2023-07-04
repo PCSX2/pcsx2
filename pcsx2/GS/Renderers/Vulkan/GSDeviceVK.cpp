@@ -1274,9 +1274,23 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	EndRenderPass();
 
 	// transition everything before starting the new render pass
-	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(GSTextureVK::Layout::ColorAttachment);
-	if (sTex[0])
+	const bool has_input_0 =
+		(sTex[0] && (sTex[0]->GetState() == GSTexture::State::Dirty ||
+						(sTex[0]->GetState() == GSTexture::State::Cleared || sTex[0]->GetClearColor() != 0)));
+	const bool has_input_1 = (PMODE.SLBG == 0 || feedback_write_2_but_blend_bg) && sTex[1] &&
+							 (sTex[1]->GetState() == GSTexture::State::Dirty ||
+								 (sTex[1]->GetState() == GSTexture::State::Cleared || sTex[1]->GetClearColor() != 0));
+	if (has_input_0)
+	{
+		static_cast<GSTextureVK*>(sTex[0])->CommitClear();
 		static_cast<GSTextureVK*>(sTex[0])->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
+	}
+	if (has_input_1)
+	{
+		static_cast<GSTextureVK*>(sTex[1])->CommitClear();
+		static_cast<GSTextureVK*>(sTex[1])->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
+	}
+	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(GSTextureVK::Layout::ColorAttachment);
 
 	const GSVector2i dsize(dTex->GetSize());
 	const GSVector4i darea(0, 0, dsize.x, dsize.y);
