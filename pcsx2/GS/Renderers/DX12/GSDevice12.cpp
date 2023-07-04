@@ -1102,9 +1102,23 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	EndRenderPass();
 
 	// transition everything before starting the new render pass
-	static_cast<GSTexture12*>(dTex)->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
-	if (sTex[0])
+	const bool has_input_0 =
+		(sTex[0] && (sTex[0]->GetState() == GSTexture::State::Dirty ||
+						(sTex[0]->GetState() == GSTexture::State::Cleared || sTex[0]->GetClearColor() != 0)));
+	const bool has_input_1 = (PMODE.SLBG == 0 || feedback_write_2_but_blend_bg) && sTex[1] &&
+							 (sTex[1]->GetState() == GSTexture::State::Dirty ||
+								 (sTex[1]->GetState() == GSTexture::State::Cleared || sTex[1]->GetClearColor() != 0));
+	if (has_input_0)
+	{
+		static_cast<GSTexture12*>(sTex[0])->CommitClear();
 		static_cast<GSTexture12*>(sTex[0])->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	}
+	if (has_input_1)
+	{
+		static_cast<GSTexture12*>(sTex[1])->CommitClear();
+		static_cast<GSTexture12*>(sTex[1])->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	}
+	static_cast<GSTexture12*>(dTex)->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 	// Upload constant to select YUV algo, but skip constant buffer update if we don't need it
 	if (feedback_write_2 || feedback_write_1 || sTex[0])
@@ -1117,25 +1131,21 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	const GSVector2i dsize(dTex->GetSize());
 	const GSVector4i darea(0, 0, dsize.x, dsize.y);
 	bool dcleared = false;
-	if (sTex[1] && (PMODE.SLBG == 0 || feedback_write_2_but_blend_bg))
+	if (has_input_1 && (PMODE.SLBG == 0 || feedback_write_2_but_blend_bg))
 	{
 		// 2nd output is enabled and selected. Copy it to destination so we can blend it with 1st output
 		// Note: value outside of dRect must contains the background color (c)
-		if (sTex[1]->GetState() == GSTexture::State::Dirty)
-		{
-			static_cast<GSTexture12*>(sTex[1])->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-			OMSetRenderTargets(dTex, nullptr, darea);
-			SetUtilityTexture(sTex[1], sampler);
-			BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR,
-				D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
-				D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
-				D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, c);
-			SetUtilityRootSignature();
-			SetPipeline(m_convert[static_cast<int>(ShaderConvert::COPY)].get());
-			DrawStretchRect(sRect[1], PMODE.SLBG ? dRect[2] : dRect[1], dsize);
-			dTex->SetState(GSTexture::State::Dirty);
-			dcleared = true;
-		}
+		OMSetRenderTargets(dTex, nullptr, darea);
+		SetUtilityTexture(sTex[1], sampler);
+		BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR,
+			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
+			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
+			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, c);
+		SetUtilityRootSignature();
+		SetPipeline(m_convert[static_cast<int>(ShaderConvert::COPY)].get());
+		DrawStretchRect(sRect[1], PMODE.SLBG ? dRect[2] : dRect[1], dsize);
+		dTex->SetState(GSTexture::State::Dirty);
+		dcleared = true;
 	}
 
 	// Upload constant to select YUV algo
@@ -1182,7 +1192,7 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE);
 	}
 
-	if (sTex[0] && sTex[0]->GetState() == GSTexture::State::Dirty)
+	if (has_input_0)
 	{
 		// 1st output is enabled. It must be blended
 		SetUtilityRootSignature();
