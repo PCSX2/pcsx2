@@ -3579,9 +3579,9 @@ void FullscreenUI::DrawCreateMemoryCardWindow()
 
 		static constexpr std::tuple<const char*, MemoryCardType, MemoryCardFileType> memcard_types[] = {
 			{"8 MB [Most Compatible]", MemoryCardType::File, MemoryCardFileType::PS2_8MB},
-			{"16 MB", MemoryCardType::File, MemoryCardFileType::PS2_8MB},
-			{"32 MB", MemoryCardType::File, MemoryCardFileType::PS2_8MB},
-			{"64 MB", MemoryCardType::File, MemoryCardFileType::PS2_8MB},
+			{"16 MB", MemoryCardType::File, MemoryCardFileType::PS2_16MB},
+			{"32 MB", MemoryCardType::File, MemoryCardFileType::PS2_32MB},
+			{"64 MB", MemoryCardType::File, MemoryCardFileType::PS2_64MB},
 			{"Folder [Recommended]", MemoryCardType::Folder, MemoryCardFileType::PS2_8MB},
 			{"128 KB [PS1]", MemoryCardType::File, MemoryCardFileType::PS1},
 		};
@@ -3598,8 +3598,13 @@ void FullscreenUI::DrawCreateMemoryCardWindow()
 
 		if (ActiveButton(ICON_FA_FOLDER_OPEN " Create", false, create_enabled) && std::strlen(memcard_name) > 0)
 		{
-			const std::string real_card_name(fmt::format("{}.ps2", memcard_name));
-			if (!FileMcd_GetCardInfo(real_card_name).has_value())
+			const std::string real_card_name = fmt::format("{}.{}", memcard_name,
+				(std::get<2>(memcard_types[memcard_type]) == MemoryCardFileType::PS1 ? "mcr" : "ps2"));
+			if (!Path::IsValidFileName(real_card_name, false))
+			{
+				ShowToast(std::string(), fmt::format("Memory card name '{}' is not valid.", real_card_name));
+			}
+			else if (!FileMcd_GetCardInfo(real_card_name).has_value())
 			{
 				const auto& [type_title, type, file_type] = memcard_types[memcard_type];
 				if (FileMcd_CreateNewCard(real_card_name, type, file_type))

@@ -106,28 +106,25 @@ void MemoryCardCreateDialog::updateState()
 
 void MemoryCardCreateDialog::createCard()
 {
-	QString name(m_ui.name->text());
-	std::string nameStr;
-
-	if (m_fileType == MemoryCardFileType::PS1)
+	const QString name = m_ui.name->text();
+	const std::string name_str = QStringLiteral("%1.%2").arg(name)
+		.arg((m_fileType == MemoryCardFileType::PS1) ? QStringLiteral("mcr") : QStringLiteral("ps2"))
+							   .toStdString();
+	if (!Path::IsValidFileName(name_str, false))
 	{
-		name += QStringLiteral(".mcr");
-	}
-	else
-	{
-		name += QStringLiteral(".ps2");
+		QMessageBox::critical(this, tr("Create Memory Card"),
+			tr("Failed to create the Memory Card, because the name '%1' contains one or more invalid characters.").arg(name));
+		return;
 	}
 
-	nameStr = name.toStdString();
-
-	if (FileMcd_GetCardInfo(nameStr).has_value())
+	if (FileMcd_GetCardInfo(name_str).has_value())
 	{
 		QMessageBox::critical(this, tr("Create Memory Card"),
 			tr("Failed to create the Memory Card, because another card with the name '%1' already exists.").arg(name));
 		return;
 	}
 
-	if (!FileMcd_CreateNewCard(nameStr, m_type, m_fileType))
+	if (!FileMcd_CreateNewCard(name_str, m_type, m_fileType))
 	{
 		QMessageBox::critical(this, tr("Create Memory Card"),
 			tr("Failed to create the Memory Card, the log may contain more information."));
@@ -137,7 +134,7 @@ void MemoryCardCreateDialog::createCard()
 #ifdef  _WIN32
 	if (m_ui.ntfsCompression->isChecked() && m_type == MemoryCardType::File)
 	{
-		const std::string fullPath(Path::Combine(EmuFolders::MemoryCards, nameStr));
+		const std::string fullPath(Path::Combine(EmuFolders::MemoryCards, name_str));
 		FileSystem::SetPathCompression(fullPath.c_str(), true);
 	}
 #endif
