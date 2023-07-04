@@ -2401,108 +2401,6 @@ You cannot undo this action.</source>
     </message>
 </context>
 <context>
-    <name>CreateMemoryCardDialog</name>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.ui" line="14"/>
-        <location filename="../Settings/CreateMemoryCardDialog.cpp" line="125"/>
-        <location filename="../Settings/CreateMemoryCardDialog.cpp" line="132"/>
-        <location filename="../Settings/CreateMemoryCardDialog.cpp" line="145"/>
-        <source>Create Memory Card</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.ui" line="53"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Create Memory Card&lt;/span&gt;&lt;br /&gt;Enter the name of the Memory Card you wish to create, and choose a size. We recommend either using 8MB Memory Cards, or folder Memory Cards for best compatibility.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.ui" line="73"/>
-        <source>Memory Card Name:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.ui" line="87"/>
-        <source>8 MB [Most Compatible]</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.ui" line="97"/>
-        <source>This is the standard Sony-provisioned size, and is supported by all games and BIOS versions.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.ui" line="114"/>
-        <source>16 MB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.ui" line="121"/>
-        <location filename="../Settings/CreateMemoryCardDialog.ui" line="145"/>
-        <source>A typical size for third-party Memory Cards which should work with most games.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.ui" line="193"/>
-        <source>Store Memory Card contents in the host filesystem instead of a file.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.ui" line="217"/>
-        <source>This is the standard Sony-provisioned size PS1 Memory Card, and only compatible with PS1 games.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.ui" line="244"/>
-        <source>NTFS compression is built-in, fast, and completely reliable. Typically compresses Memory Cards (highly recommended).</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.ui" line="138"/>
-        <source>32 MB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.ui" line="162"/>
-        <source>64 MB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.ui" line="169"/>
-        <source>Low compatibility warning: yes, it&apos;s very big, but may not work with many games.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.ui" line="186"/>
-        <source>Folder [Recommended]</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.ui" line="210"/>
-        <source>128 KB (PS1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.ui" line="234"/>
-        <source>Use NTFS Compression</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.cpp" line="126"/>
-        <source>Failed to create the Memory Card, because another card with the name &apos;%1&apos; already exists.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.cpp" line="133"/>
-        <source>Failed to create the Memory Card, the log may contain more information.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/CreateMemoryCardDialog.cpp" line="145"/>
-        <source>Memory Card &apos;%1&apos; created.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DEV9DnsHostDialog</name>
     <message>
         <location filename="../Settings/DEV9DnsHostDialog.ui" line="14"/>
@@ -3655,7 +3553,7 @@ Achievements: %5 (%6)
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="901"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="904"/>
         <source>Upscale multiplier set to {}x.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3680,22 +3578,22 @@ Achievements: %5 (%6)
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="625"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="623"/>
         <source>CAS is not available, your graphics driver does not support the required functionality.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="700"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="698"/>
         <source>Saving {0} GS dump {1} to &apos;{2}&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="721"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="719"/>
         <source>Failed to render/download screenshot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="732"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="730"/>
         <source>Saved GS dump to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3715,7 +3613,7 @@ Achievements: %5 (%6)
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2947"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2983"/>
         <source>Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4305,103 +4203,109 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../Settings/GameSummaryWidget.ui" line="273"/>
-        <source>PAL-R (Russia)</source>
+        <source>PAL-PL (Poland)</source>
         <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GameSummaryWidget.ui" line="278"/>
-        <source>PAL-S (Spain)</source>
+        <source>PAL-R (Russia)</source>
         <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GameSummaryWidget.ui" line="283"/>
-        <source>PAL-SC (Scandinavia)</source>
+        <source>PAL-S (Spain)</source>
         <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GameSummaryWidget.ui" line="288"/>
-        <source>PAL-SW (Sweden)</source>
+        <source>PAL-SC (Scandinavia)</source>
         <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GameSummaryWidget.ui" line="293"/>
-        <source>PAL-SWI (Switzerland)</source>
+        <source>PAL-SW (Sweden)</source>
         <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GameSummaryWidget.ui" line="298"/>
+        <source>PAL-SWI (Switzerland)</source>
+        <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GameSummaryWidget.ui" line="303"/>
         <source>PAL-UK (United Kingdom)</source>
         <extracomment>Leave the code as-is, translate the country&apos;s name.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.ui" line="306"/>
+        <location filename="../Settings/GameSummaryWidget.ui" line="311"/>
         <source>Compatibility:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.ui" line="326"/>
+        <location filename="../Settings/GameSummaryWidget.ui" line="331"/>
         <source>Unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.ui" line="331"/>
+        <location filename="../Settings/GameSummaryWidget.ui" line="336"/>
         <source>Not Bootable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.ui" line="336"/>
+        <location filename="../Settings/GameSummaryWidget.ui" line="341"/>
         <source>Reaches Intro</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.ui" line="341"/>
+        <location filename="../Settings/GameSummaryWidget.ui" line="346"/>
         <source>Reaches Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.ui" line="346"/>
+        <location filename="../Settings/GameSummaryWidget.ui" line="351"/>
         <source>In-Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.ui" line="351"/>
+        <location filename="../Settings/GameSummaryWidget.ui" line="356"/>
         <source>Playable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.ui" line="356"/>
+        <location filename="../Settings/GameSummaryWidget.ui" line="361"/>
         <source>Perfect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.ui" line="364"/>
+        <location filename="../Settings/GameSummaryWidget.ui" line="369"/>
         <source>Input Profile:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.ui" line="378"/>
+        <location filename="../Settings/GameSummaryWidget.ui" line="383"/>
         <source>Shared</source>
         <extracomment>Refers to the shared settings profile.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.ui" line="386"/>
+        <location filename="../Settings/GameSummaryWidget.ui" line="391"/>
         <source>Disc Path:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.ui" line="398"/>
+        <location filename="../Settings/GameSummaryWidget.ui" line="403"/>
         <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameSummaryWidget.ui" line="405"/>
+        <location filename="../Settings/GameSummaryWidget.ui" line="410"/>
         <source>Clear</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6534,129 +6438,129 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
 <context>
     <name>Hotkeys</name>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="909"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="917"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="937"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="944"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="953"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="959"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="965"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="971"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="984"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1007"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1035"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1047"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1061"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="912"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="920"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="940"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="947"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="956"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="962"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="968"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="974"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="987"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1010"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1038"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1050"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1064"/>
         <source>Graphics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="910"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="913"/>
         <source>Save Screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="917"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="920"/>
         <source>Toggle Video Capture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="937"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="940"/>
         <source>Save Single Frame GS Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="944"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="947"/>
         <source>Save Multi Frame GS Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="954"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="957"/>
         <source>Toggle Software Rendering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="960"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="963"/>
         <source>Increase Upscale Multiplier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="966"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="969"/>
         <source>Decrease Upscale Multiplier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="971"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="974"/>
         <source>Cycle Aspect Ratio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="980"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="983"/>
         <source>Aspect ratio set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="984"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="987"/>
         <source>Cycle Hardware Mipmapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="996"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="999"/>
         <source>Hardware mipmapping set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1007"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1010"/>
         <source>Cycle Deinterlace Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1029"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1032"/>
         <source>Deinterlace mode set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1035"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1038"/>
         <source>Toggle Texture Dumping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1041"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1044"/>
         <source>Texture dumping is now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1042"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1045"/>
         <source>Texture dumping is now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1048"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1051"/>
         <source>Toggle Texture Replacements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1055"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1058"/>
         <source>Texture replacements are now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1056"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1059"/>
         <source>Texture replacements are now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1062"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1065"/>
         <source>Reload Texture Replacements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1069"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1072"/>
         <source>Texture replacements are not enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1074"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1077"/>
         <source>Reloading texture replacements...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8486,6 +8390,114 @@ The saves will not be recoverable.</source>
     </message>
 </context>
 <context>
+    <name>MemoryCardCreateDialog</name>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.ui" line="14"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="115"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="122"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="129"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="142"/>
+        <source>Create Memory Card</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.ui" line="53"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Create Memory Card&lt;/span&gt;&lt;br /&gt;Enter the name of the Memory Card you wish to create, and choose a size. We recommend either using 8MB Memory Cards, or folder Memory Cards for best compatibility.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.ui" line="73"/>
+        <source>Memory Card Name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.ui" line="87"/>
+        <source>8 MB [Most Compatible]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.ui" line="97"/>
+        <source>This is the standard Sony-provisioned size, and is supported by all games and BIOS versions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.ui" line="114"/>
+        <source>16 MB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.ui" line="121"/>
+        <location filename="../Settings/MemoryCardCreateDialog.ui" line="145"/>
+        <source>A typical size for third-party Memory Cards which should work with most games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.ui" line="138"/>
+        <source>32 MB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.ui" line="162"/>
+        <source>64 MB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.ui" line="169"/>
+        <source>Low compatibility warning: yes, it&apos;s very big, but may not work with many games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.ui" line="186"/>
+        <source>Folder [Recommended]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.ui" line="193"/>
+        <source>Store Memory Card contents in the host filesystem instead of a file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.ui" line="210"/>
+        <source>128 KB (PS1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.ui" line="217"/>
+        <source>This is the standard Sony-provisioned size PS1 Memory Card, and only compatible with PS1 games.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.ui" line="234"/>
+        <source>Use NTFS Compression</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.ui" line="244"/>
+        <source>NTFS compression is built-in, fast, and completely reliable. Typically compresses Memory Cards (highly recommended).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="116"/>
+        <source>Failed to create the Memory Card, because the name &apos;%1&apos; contains one or more invalid characters.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="123"/>
+        <source>Failed to create the Memory Card, because another card with the name &apos;%1&apos; already exists.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="130"/>
+        <source>Failed to create the Memory Card, the log may contain more information.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="142"/>
+        <source>Memory Card &apos;%1&apos; created.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MemoryCardListWidget</name>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="473"/>
@@ -10146,6 +10158,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="96"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="124"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="379"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="436"/>
         <source>D-Pad Up</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10154,6 +10167,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="97"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="125"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="380"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="437"/>
         <source>D-Pad Down</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10162,6 +10176,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="98"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="126"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="381"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="438"/>
         <source>D-Pad Left</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10170,6 +10185,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="99"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="127"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="382"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="439"/>
         <source>D-Pad Right</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10215,6 +10231,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="955"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1087"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="377"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="444"/>
         <source>Select</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10225,6 +10242,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="956"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="1086"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="378"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="445"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10439,18 +10457,21 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="100"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="128"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="441"/>
         <source>Cross</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="101"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="129"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="440"/>
         <source>Square</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="102"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="130"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="442"/>
         <source>Circle</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10930,6 +10951,96 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../pcsx2/USB/usb-mic/audiodev-cubeb.cpp" line="122"/>
         <source>Default Output Device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="244"/>
+        <source>DJ Hero Turntable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="443"/>
+        <source>Triangle / Euphoria</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="446"/>
+        <source>Cross Fader Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="447"/>
+        <source>Cross Fader Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="448"/>
+        <source>Effects Knob Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="449"/>
+        <source>Effects Knob Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="450"/>
+        <source>Left Turntable Up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="451"/>
+        <source>Left Turntable Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="452"/>
+        <source>Right Turntable Up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="453"/>
+        <source>Right Turntable Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="454"/>
+        <source>Right Green</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="455"/>
+        <source>Right Red</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="456"/>
+        <source>Right Blue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="457"/>
+        <source>Left Green</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="458"/>
+        <source>Left Red</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="459"/>
+        <source>Left Blue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="469"/>
+        <source>Turntable Multiplier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-turntable.cpp" line="470"/>
+        <source>Multiplies the turntable rotation speed by a constant. Useful for using Xbox 360 turntables.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
