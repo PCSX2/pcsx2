@@ -17,17 +17,17 @@
 
 #include <QtWidgets/QDialog>
 
-#include "ui_CreateMemoryCardDialog.h"
+#include "ui_MemoryCardCreateDialog.h"
 
 #include "pcsx2/Config.h"
 
-class CreateMemoryCardDialog final : public QDialog
+class MemoryCardCreateDialog final : public QDialog
 {
 	Q_OBJECT
 
 public:
-	explicit CreateMemoryCardDialog(QWidget* parent = nullptr);
-	~CreateMemoryCardDialog();
+	explicit MemoryCardCreateDialog(QWidget* parent = nullptr);
+	~MemoryCardCreateDialog();
 
 private Q_SLOTS:
 	void nameTextChanged();
@@ -38,7 +38,7 @@ private:
 	void restoreDefaults();
 	void updateState();
 
-	Ui::CreateMemoryCardDialog m_ui;
+	Ui::MemoryCardCreateDialog m_ui;
 
 	MemoryCardType m_type = MemoryCardType::File;
 	MemoryCardFileType m_fileType = MemoryCardFileType::PS2_8MB;

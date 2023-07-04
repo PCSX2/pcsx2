@@ -68,9 +68,6 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/ControllerSettingsDialog.h
 	Settings/ControllerSettingsDialog.ui
 	Settings/ControllerSettingWidgetBinder.h
-	Settings/CreateMemoryCardDialog.cpp
-	Settings/CreateMemoryCardDialog.h
-	Settings/CreateMemoryCardDialog.ui
 	Settings/DebugSettingsWidget.cpp
 	Settings/DebugSettingsWidget.h
 	Settings/DebugSettingsWidget.ui
@@ -114,6 +111,9 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/MemoryCardConvertDialog.ui
 	Settings/MemoryCardConvertWorker.cpp
 	Settings/MemoryCardConvertWorker.h
+	Settings/MemoryCardCreateDialog.cpp
+	Settings/MemoryCardCreateDialog.h
+	Settings/MemoryCardCreateDialog.ui
 	Settings/MemoryCardSettingsWidget.cpp
 	Settings/MemoryCardSettingsWidget.h
 	Settings/MemoryCardSettingsWidget.ui

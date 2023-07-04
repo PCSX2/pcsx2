@@ -24,8 +24,8 @@
 
 #include "common/StringUtil.h"
 
-#include "CreateMemoryCardDialog.h"
 #include "MemoryCardConvertDialog.h"
+#include "MemoryCardCreateDialog.h"
 #include "MemoryCardSettingsWidget.h"
 #include "QtHost.h"
 #include "QtUtils.h"
@@ -186,7 +186,7 @@ void MemoryCardSettingsWidget::ejectSlot(u32 slot)
 
 void MemoryCardSettingsWidget::createCard()
 {
-	CreateMemoryCardDialog dialog(QtUtils::GetRootWidget(this));
+	MemoryCardCreateDialog dialog(QtUtils::GetRootWidget(this));
 	if (dialog.exec() == QDialog::Accepted)
 		refresh();
 }

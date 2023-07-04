@@ -22,12 +22,12 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
 
-#include "Settings/CreateMemoryCardDialog.h"
+#include "Settings/MemoryCardCreateDialog.h"
 
 #include "pcsx2/MemoryCardFile.h"
 #include "pcsx2/System.h"
 
-CreateMemoryCardDialog::CreateMemoryCardDialog(QWidget* parent /* = nullptr */)
+MemoryCardCreateDialog::MemoryCardCreateDialog(QWidget* parent /* = nullptr */)
 	: QDialog(parent)
 {
 	m_ui.setupUi(this);
@@ -35,7 +35,7 @@ CreateMemoryCardDialog::CreateMemoryCardDialog(QWidget* parent /* = nullptr */)
 
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-	connect(m_ui.name, &QLineEdit::textChanged, this, &CreateMemoryCardDialog::nameTextChanged);
+	connect(m_ui.name, &QLineEdit::textChanged, this, &MemoryCardCreateDialog::nameTextChanged);
 
 	connect(m_ui.size8MB, &QRadioButton::clicked, this, [this]() { setType(MemoryCardType::File, MemoryCardFileType::PS2_8MB); });
 	connect(m_ui.size16MB, &QRadioButton::clicked, this, [this]() { setType(MemoryCardType::File, MemoryCardFileType::PS2_16MB); });
@@ -46,9 +46,9 @@ CreateMemoryCardDialog::CreateMemoryCardDialog(QWidget* parent /* = nullptr */)
 
 	disconnect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, nullptr);
 
-	connect(m_ui.buttonBox->button(QDialogButtonBox::Ok), &QPushButton::clicked, this, &CreateMemoryCardDialog::createCard);
-	connect(m_ui.buttonBox->button(QDialogButtonBox::Cancel), &QPushButton::clicked, this, &CreateMemoryCardDialog::close);
-	connect(m_ui.buttonBox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this, &CreateMemoryCardDialog::restoreDefaults);
+	connect(m_ui.buttonBox->button(QDialogButtonBox::Ok), &QPushButton::clicked, this, &MemoryCardCreateDialog::createCard);
+	connect(m_ui.buttonBox->button(QDialogButtonBox::Cancel), &QPushButton::clicked, this, &MemoryCardCreateDialog::close);
+	connect(m_ui.buttonBox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this, &MemoryCardCreateDialog::restoreDefaults);
 
 #ifndef _WIN32
 	m_ui.ntfsCompression->setEnabled(false);
@@ -57,9 +57,9 @@ CreateMemoryCardDialog::CreateMemoryCardDialog(QWidget* parent /* = nullptr */)
 	updateState();
 }
 
-CreateMemoryCardDialog::~CreateMemoryCardDialog() = default;
+MemoryCardCreateDialog::~MemoryCardCreateDialog() = default;
 
-void CreateMemoryCardDialog::nameTextChanged()
+void MemoryCardCreateDialog::nameTextChanged()
 {
 	QString controlName(m_ui.name->text());
 	const int cursorPos = m_ui.name->cursorPosition();
@@ -76,14 +76,14 @@ void CreateMemoryCardDialog::nameTextChanged()
 	updateState();
 }
 
-void CreateMemoryCardDialog::setType(MemoryCardType type, MemoryCardFileType fileType)
+void MemoryCardCreateDialog::setType(MemoryCardType type, MemoryCardFileType fileType)
 {
 	m_type = type;
 	m_fileType = fileType;
 	updateState();
 }
 
-void CreateMemoryCardDialog::restoreDefaults()
+void MemoryCardCreateDialog::restoreDefaults()
 {
 	setType(MemoryCardType::File, MemoryCardFileType::PS2_8MB);
 	m_ui.size8MB->setChecked(true);
@@ -94,7 +94,7 @@ void CreateMemoryCardDialog::restoreDefaults()
 	m_ui.sizeFolder->setChecked(false);
 }
 
-void CreateMemoryCardDialog::updateState()
+void MemoryCardCreateDialog::updateState()
 {
 	const bool okay = (m_ui.name->text().length() > 0);
 
@@ -104,7 +104,7 @@ void CreateMemoryCardDialog::updateState()
 #endif
 }
 
-void CreateMemoryCardDialog::createCard()
+void MemoryCardCreateDialog::createCard()
 {
 	QString name(m_ui.name->text());
 	std::string nameStr;
