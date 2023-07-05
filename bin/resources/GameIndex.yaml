@@ -824,7 +824,7 @@ SCAJ-20076:
   name: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-Unk"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
@@ -837,7 +837,7 @@ SCAJ-20077:
   name: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-Unk"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
@@ -986,8 +986,9 @@ SCAJ-20105:
   name: "Armored Core - Nine breaker"
   region: "NTSC-Unk"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level brightness.
 SCAJ-20107:
   name: "Bakufuu Slash! Kizna Arashi"
   region: "NTSC-Unk"
@@ -1074,7 +1075,7 @@ SCAJ-20121:
   name: "Armored Core - Formula Front"
   region: "NTSC-Unk"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20122:
   name: "Swords of Destiny"
@@ -1213,6 +1214,7 @@ SCAJ-20143:
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SCAJ-20144:
   name: "Zhuo Hou La 3"
   region: "NTSC-Ch"
@@ -5355,8 +5357,9 @@ SCKA-20047:
   name: "Armored Core - Nine Breaker"
   region: "NTSC-K"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCKA-20047"
     - "SLKA-25201"
@@ -19421,8 +19424,9 @@ SLES-53819:
   name: "Armored Core - Nine Breaker"
   region: "PAL-E"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLES-53819"
     - "SLES-82036"
@@ -19435,6 +19439,7 @@ SLES-53820:
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLES-53821:
   name: "Radio Helicopter II"
   region: "PAL-E"
@@ -24224,7 +24229,7 @@ SLES-82036:
   name: "Armored Core - Nexus [Disc 1]"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLES-82036"
@@ -24233,7 +24238,7 @@ SLES-82037:
   name: "Armored Core - Nexus [Disc 2]"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLES-82036"
@@ -25043,7 +25048,7 @@ SLKA-25201:
   name: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-K"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLKA-25201"
@@ -25052,7 +25057,7 @@ SLKA-25202:
   name: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-K"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLKA-25201"
@@ -25293,7 +25298,7 @@ SLKA-25270:
   name: "Armored Core - Formula Front"
   region: "NTSC-K"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLKA-25274:
   name: "Princess Maker 4"
@@ -26618,6 +26623,7 @@ SLPM-61118:
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLPM-61119:
   name: "Armored Core - Last Raven [Trial]"
   region: "NTSC-J"
@@ -26626,6 +26632,7 @@ SLPM-61119:
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLPM-61120:
   name: "Drag-on Dragoon 2 - Fuuin no Aka, Haitoku no Kuro [Trial Version]"
   region: "NTSC-J"
@@ -36627,6 +36634,7 @@ SLPM-68520:
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLPM-68521:
   name: "Dot Hack Fraegment [Senkou Release-ban]"
   region: "NTSC-J"
@@ -39647,7 +39655,7 @@ SLPS-25338:
   name: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
@@ -39660,7 +39668,7 @@ SLPS-25339:
   name: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
@@ -39956,8 +39964,9 @@ SLPS-25408:
   name: "Armored Core - Nine Breaker"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLPS-25408"
     - "SCAJ-20076"
@@ -40159,7 +40168,7 @@ SLPS-25461:
   name: "Armored Core - Formula Front"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25462:
   name: "Armored Core - Last Raven"
@@ -40169,6 +40178,7 @@ SLPS-25462:
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
   memcardFilters:
     - "SLPS-25338"
     - "SLPS-25339"
@@ -41185,7 +41195,9 @@ SLPS-25730:
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLPS-25731:
   name: "Armored Core 2 [Machine Side Box]"
   region: "NTSC-J"
@@ -42046,7 +42058,7 @@ SLPS-73202:
   name: "Armored Core - Nexus [Disc 1] [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
@@ -42059,7 +42071,7 @@ SLPS-73203:
   name: "Armored Core - Nexus [Disc 2] [PlayStation 2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCAJ-20076"
@@ -42354,6 +42366,7 @@ SLPS-73247:
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
   memcardFilters:
     - "SLPS-25338"
     - "SLPS-25339"
@@ -47259,7 +47272,7 @@ SLUS-20986:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLUS-20986"
@@ -47774,7 +47787,7 @@ SLUS-21079:
   name: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-U"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SLUS-20986"
@@ -48371,8 +48384,9 @@ SLUS-21200:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned blur..
+    halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters: # Can import data from AC:Nexus.
     - "SLUS-21200"
     - "SLUS-20986"
@@ -49253,6 +49267,7 @@ SLUS-21338:
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLUS-21339:
   name: "Puzzle Collection - Crosswords & More!"
   region: "NTSC-U"
