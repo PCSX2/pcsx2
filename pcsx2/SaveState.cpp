@@ -1044,7 +1044,7 @@ static bool LoadInternalStructuresState(zip_t* zf, s64 index)
 		return false;
 
 	std::vector<u8> buffer(zst.size);
-	if (zip_fread(zff.get(), buffer.data(), buffer.size()) != buffer.size())
+	if (zip_fread(zff.get(), buffer.data(), buffer.size()) != static_cast<zip_int64_t>(buffer.size()))
 		return false;
 
 	memLoadingState state(buffer);
