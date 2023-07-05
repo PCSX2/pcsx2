@@ -1102,9 +1102,8 @@ bool GSRendererHW::CheckNextDrawForSplitClear(const GSVector4i& r, u32* pages_co
 
 void GSRendererHW::FinishSplitClear()
 {
-	const u32 start_bp = m_split_clear_start.Block();
-	GL_INS("FinishSplitClear(): Start %x FBW %u PSM %s, %u pages, %08X color", start_bp, m_split_clear_start.FBW,
-		psm_str(m_split_clear_start.PSM), m_split_clear_pages, m_split_clear_color);
+	GL_INS("FinishSplitClear(): Start %x FBW %u PSM %s, %u pages, %08X color", m_split_clear_start.Block(),
+		m_split_clear_start.FBW, psm_str(m_split_clear_start.PSM), m_split_clear_pages, m_split_clear_color);
 
 	// If this was a tall single-page draw, try to get a better BW from somewhere.
 	if (m_split_clear_start.FBW <= 1 && m_split_clear_pages >= 16) // 1024 high
