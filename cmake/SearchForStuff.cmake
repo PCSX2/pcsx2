@@ -82,7 +82,9 @@ else()
 		make_imported_target_if_missing(X11::X11 X11)
 
 		if(WAYLAND_API)
-			find_package(Wayland REQUIRED)
+			find_package(ECM REQUIRED NO_MODULE)
+			list(APPEND CMAKE_MODULE_PATH "${ECM_MODULE_PATH}")
+			find_package(Wayland REQUIRED Egl)
 		endif()
 
 		find_package(Libbacktrace)

@@ -649,6 +649,10 @@ if(USE_OPENGL)
 		if(WAYLAND_API)
 			list(APPEND pcsx2GSSources GS/Renderers/OpenGL/GLContextEGLWayland.cpp)
 			list(APPEND pcsx2GSHeaders GS/Renderers/OpenGL/GLContextEGLWayland.h)
+
+			# We load the Wayland libraries dynamically to avoid a runtime dependency.
+			# So, only add the headers, don't link.
+			target_include_directories(PCSX2_FLAGS INTERFACE ${Wayland_INCLUDE_DIRS})
 		endif()
 	endif()
 endif()
