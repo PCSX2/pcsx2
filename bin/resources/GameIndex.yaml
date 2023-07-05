@@ -826,6 +826,7 @@ SCAJ-20076:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCAJ-20076"
     - "SCAJ-20077"
@@ -839,6 +840,7 @@ SCAJ-20077:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCAJ-20076"
     - "SCAJ-20077"
@@ -1077,6 +1079,8 @@ SCAJ-20121:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    cpuSpriteRenderBW: 1 # Fixes broken shadow caused by HPO 1.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCAJ-20122:
   name: "Swords of Destiny"
   region: "NTSC-Unk"
@@ -24235,6 +24239,7 @@ SLES-82036:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLES-82036"
     - "SLES-82037"
@@ -24244,6 +24249,7 @@ SLES-82037:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLES-82036"
     - "SLES-82037"
@@ -25054,6 +25060,7 @@ SLKA-25201:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLKA-25201"
     - "SLKA-25202"
@@ -25063,6 +25070,7 @@ SLKA-25202:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLKA-25201"
     - "SLKA-25202"
@@ -25304,6 +25312,8 @@ SLKA-25270:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    cpuSpriteRenderBW: 1 # Fixes broken shadow caused by HPO 1.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLKA-25274:
   name: "Princess Maker 4"
   region: "NTSC-K"
@@ -39663,6 +39673,7 @@ SLPS-25338:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCAJ-20076"
     - "SCAJ-20077"
@@ -39676,6 +39687,7 @@ SLPS-25339:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCAJ-20076"
     - "SCAJ-20077"
@@ -40176,6 +40188,8 @@ SLPS-25461:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    cpuSpriteRenderBW: 1 # Fixes broken shadow caused by HPO 1.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLPS-25462:
   name: "Armored Core - Last Raven"
   region: "NTSC-J"
@@ -42066,6 +42080,7 @@ SLPS-73202:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCAJ-20076"
     - "SCAJ-20077"
@@ -42079,6 +42094,7 @@ SLPS-73203:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCAJ-20076"
     - "SCAJ-20077"
@@ -47280,6 +47296,7 @@ SLUS-20986:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLUS-20986"
     - "SLUS-21079"
@@ -47795,6 +47812,7 @@ SLUS-21079:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
     partialTargetInvalidation: 1 # Fixes broken textures.
+    recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLUS-20986"
     - "SLUS-21079"
