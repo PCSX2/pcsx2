@@ -162,7 +162,7 @@ void RingBuffer::write(size_t bytes)
 
 	// push m_begin forward if m_end overlaps it
 	if ((m_end < m_begin && m_end + bytes > m_begin) ||
-		m_end + bytes > m_begin + m_capacity)
+		m_end + bytes >= m_begin + m_capacity)
 	{
 		m_overrun = true;
 		m_begin = (m_end + bytes) % m_capacity;
