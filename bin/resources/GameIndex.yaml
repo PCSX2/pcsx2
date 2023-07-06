@@ -16455,6 +16455,8 @@ SLES-52761:
   name: "Rocky - Legends"
   region: "PAL-M3"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes background FMV flicker.
 SLES-52766:
   name: "Godzilla - Save The Earth"
   region: "PAL-M5"
@@ -46736,6 +46738,8 @@ SLUS-20890:
   name: "Rocky - Legends"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes background FMV flicker.
 SLUS-20891:
   name: "Star Ocean 3 - Till the End of Time [Disc 2 of 2]"
   region: "NTSC-U"
