@@ -158,6 +158,10 @@ Q_SIGNALS:
 	/// Called when achievements are reloaded/refreshed (e.g. game change, login, option change).
 	void onAchievementsRefreshed(quint32 id, const QString& game_info_string, quint32 total, quint32 points);
 
+	/// Called when video capture starts/stops.
+	void onCaptureStarted(const QString& filename);
+	void onCaptureStopped();
+
 protected:
 	void run();
 

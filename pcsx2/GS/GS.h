@@ -139,4 +139,8 @@ namespace Host
 
 	/// Returns the desired vsync mode, depending on the runtime environment.
 	VsyncMode GetEffectiveVSyncMode();
+
+	/// Called when video capture starts or stops. Called on the MTGS thread.
+	void OnCaptureStarted(const std::string& filename);
+	void OnCaptureStopped();
 }

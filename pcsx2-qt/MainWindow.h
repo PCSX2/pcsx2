@@ -183,6 +183,9 @@ private Q_SLOTS:
 	void onGameChanged(const QString& title, const QString& elf_override, const QString& disc_path,
 		const QString& serial, quint32 disc_crc, quint32 crc);
 
+	void onCaptureStarted(const QString& filename);
+	void onCaptureStopped();
+
 protected:
 	void showEvent(QShowEvent* event) override;
 	void closeEvent(QCloseEvent* event) override;

@@ -794,6 +794,9 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 
 	s_capturing.store(true, std::memory_order_release);
 	StartEncoderThread();
+
+	lock.unlock();
+	Host::OnCaptureStarted(s_filename);
 	return true;
 }
 
@@ -1300,8 +1303,12 @@ void GSCapture::InternalEndCapture(std::unique_lock<std::mutex>& lock)
 
 void GSCapture::EndCapture()
 {
-	std::unique_lock<std::mutex> lock(s_lock);
-	InternalEndCapture(lock);
+	{
+		std::unique_lock<std::mutex> lock(s_lock);
+		InternalEndCapture(lock);
+	}
+
+	Host::OnCaptureStopped();
 }
 
 bool GSCapture::IsCapturing()

@@ -178,6 +178,14 @@ void Host::SetFullscreen(bool enabled)
 {
 }
 
+void Host::OnCaptureStarted(const std::string& filename)
+{
+}
+
+void Host::OnCaptureStopped()
+{
+}
+
 void Host::RequestExit(bool save_state_if_running)
 {
 }

@@ -1186,6 +1186,16 @@ void Host::SetFullscreen(bool enabled)
 	g_emu_thread->setFullscreen(enabled, true);
 }
 
+void Host::OnCaptureStarted(const std::string& filename)
+{
+	emit g_emu_thread->onCaptureStarted(QString::fromStdString(filename));
+}
+
+void Host::OnCaptureStopped()
+{
+	emit g_emu_thread->onCaptureStopped();
+}
+
 bool QtHost::InitializeConfig()
 {
 	if (!EmuFolders::InitializeCriticalFolders())
