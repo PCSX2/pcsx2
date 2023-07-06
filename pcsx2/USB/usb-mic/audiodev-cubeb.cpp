@@ -150,20 +150,21 @@ namespace usb_mic
 			params.prefs = CUBEB_STREAM_PREF_NONE;
 
 			// Prefer minimum latency, reduces the chance of dropped samples due to the extra buffer.
-			u32 streamLatency;
-			if (cubeb_get_min_latency(mContext, &params, &streamLatency) != CUBEB_OK)
-				streamLatency = mLatency;
+			if (cubeb_get_min_latency(mContext, &params, &mStreamLatency) != CUBEB_OK)
+				mStreamLatency = (mLatency * mSampleRate) / 1000u;
 
 			const bool input = (mAudioDir == AUDIODIR_SOURCE);
 			int res = cubeb_stream_init(mContext, &mStream, fmt::format("{}", (void*)this).c_str(),
 				input ? mDeviceId : nullptr, input ? &params : nullptr, input ? nullptr : mDeviceId,
-				input ? nullptr : &params, (streamLatency * mSampleRate) / 1000u,
+				input ? nullptr : &params, mStreamLatency,
 				&CubebAudioDevice::DataCallback, &CubebStateCallback, this);
 			if (res != CUBEB_OK)
 			{
 				Console.Error("(audiodev_cubeb) cubeb_stream_init() failed: %d", res);
 				return false;
 			}
+
+			ResetBuffers();
 
 			res = cubeb_stream_start(mStream);
 			if (res != CUBEB_OK)
@@ -174,7 +175,6 @@ namespace usb_mic
 				return false;
 			}
 
-			ResetBuffers();
 			return true;
 		}
 
@@ -252,9 +252,8 @@ namespace usb_mic
 
 		void CubebAudioDevice::ResetBuffers()
 		{
-			// TODO: Do we want to make the buffer size adjustable? Currently 100ms max.
 			std::lock_guard<std::mutex> lk(mMutex);
-			const u32 samples = ((mSampleRate * mChannels) * mLatency) / 1000u;
+			const u32 samples = std::max(((mSampleRate * mChannels) * mLatency) / 1000u, mStreamLatency * mChannels);
 			mBuffer.reserve(sizeof(u16) * samples);
 		}
 

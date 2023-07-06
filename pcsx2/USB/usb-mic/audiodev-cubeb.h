@@ -51,6 +51,7 @@ namespace usb_mic
 
 			u32 mSampleRate = 48000;
 			u32 mLatency = 50;
+			u32 mStreamLatency = 0;
 			cubeb* mContext;
 			cubeb_stream* mStream = nullptr;
 			std::string mDeviceName;
