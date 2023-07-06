@@ -1329,6 +1329,61 @@ GSVector2i GSCapture::GetSize()
 	return s_size;
 }
 
+std::string GSCapture::GetNextCaptureFileName()
+{
+	std::string ret;
+	if (!IsCapturing())
+		return ret;
+
+	const std::string_view ext = Path::GetExtension(s_filename);
+	std::string_view name = Path::GetFileTitle(s_filename);
+
+	// Should end with a number.
+	int partnum = 2;
+	std::string_view::size_type pos = name.rfind("_part");
+	if (pos >= 0)
+	{
+		std::string_view::size_type cpos = pos + 5;
+		for (; cpos < name.length(); cpos++)
+		{
+			if (name[cpos] < '0' || name[cpos] > '9')
+				break;
+		}
+		if (cpos == name.length())
+		{
+			// Has existing part number, so add to it.
+			partnum = StringUtil::FromChars<int>(name.substr(pos + 5)).value_or(1) + 1;
+			name = name.substr(0, pos);
+		}
+	}
+
+	// If we haven't started a new file previously, add "_part2".
+	ret = Path::BuildRelativePath(s_filename, fmt::format("{}_part{:03d}.{}", name, partnum, ext));
+	return ret;
+}
+
+void GSCapture::Flush()
+{
+	std::unique_lock<std::mutex> lock(s_lock);
+
+	if (s_encoding_error)
+		return;
+
+	ProcessAllInFlightFrames(lock);
+
+	if (IsCapturingAudio())
+	{
+		// Clear any buffered audio frames out, we don't want to delay the CPU thread.
+		const u32 audio_frames = s_audio_buffer_size.load(std::memory_order_acquire);
+		if (audio_frames > 0)
+			Console.Warning("Dropping %u audio frames on for buffer clear.", audio_frames);
+
+		s_audio_buffer_read_pos = 0;
+		s_audio_buffer_write_pos = 0;
+		s_audio_buffer_size.store(0, std::memory_order_release);
+	}
+}
+
 GSCapture::CodecList GSCapture::GetCodecListForContainer(const char* container, AVMediaType type)
 {
 	CodecList ret;

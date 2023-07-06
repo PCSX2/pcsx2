@@ -227,6 +227,16 @@ bool GSreopen(bool recreate_device, bool recreate_renderer, const Pcsx2Config::G
 	if (GSConfig.UserHacks_ReadTCOnClose)
 		g_gs_renderer->ReadbackTextureCache();
 
+	std::string capture_filename;
+	GSVector2i capture_size;
+	if (GSCapture::IsCapturing() && (recreate_renderer || recreate_device))
+	{
+		capture_filename = GSCapture::GetNextCaptureFileName();
+		capture_size = GSCapture::GetSize();
+		Console.Warning(fmt::format("Restarting video capture to {}.", capture_filename));
+		g_gs_renderer->EndCapture();
+	}
+
 	u8* basemem = g_gs_renderer->GetRegsMem();
 	const u32 gamecrc = g_gs_renderer->GetGameCRC();
 
@@ -301,6 +311,9 @@ bool GSreopen(bool recreate_device, bool recreate_renderer, const Pcsx2Config::G
 
 		g_gs_renderer->SetGameCRC(gamecrc);
 	}
+
+	if (!capture_filename.empty())
+		g_gs_renderer->BeginCapture(std::move(capture_filename), capture_size);
 
 	return true;
 }
@@ -411,6 +424,12 @@ int GSfreeze(FreezeAction mode, freezeData* data)
 		// local memory just before it's overwritten), we have to manually wipe
 		// out the current textures.
 		g_gs_device->ClearCurrent();
+
+		// Dump audio frames in video capture if it's been started, otherwise we get
+		// a buildup of audio frames from the CPU thread.
+		if (GSCapture::IsCapturing())
+			GSCapture::Flush();
+
 		return g_gs_renderer->Defrost(data);
 	}
 }
