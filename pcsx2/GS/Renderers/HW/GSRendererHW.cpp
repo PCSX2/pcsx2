@@ -5263,35 +5263,39 @@ void GSRendererHW::SetNewZBUF(u32 bp, u32 psm)
 
 bool GSRendererHW::DetectStripedDoubleClear(bool& no_rt, bool& no_ds)
 {
-	const bool ZisFrame =
-		(m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP ||
-			(m_cached_ctx.FRAME.FBW > 1 && (std::min(m_cached_ctx.FRAME.FBP, m_cached_ctx.ZBUF.ZBP) + 1) ==
-											   std::max(m_cached_ctx.FRAME.FBP, m_cached_ctx.ZBUF.ZBP))) && // GT4O Public Beta
-			!m_cached_ctx.ZBUF.ZMSK && (m_cached_ctx.FRAME.PSM & 0x30) != (m_cached_ctx.ZBUF.PSM & 0x30) &&
-			(m_cached_ctx.FRAME.PSM & 0xF) == (m_cached_ctx.ZBUF.PSM & 0xF) && m_vt.m_eq.z == 1 &&
-			m_vertex.buff[1].XYZ.Z == m_vertex.buff[1].RGBAQ.U32[0];
+	const bool single_page_offset =
+		std::abs(static_cast<int>(m_cached_ctx.FRAME.FBP) - static_cast<int>(m_cached_ctx.ZBUF.ZBP)) == 1;
+	const bool z_is_frame = (m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP ||
+								(m_cached_ctx.FRAME.FBW > 1 && single_page_offset)) && // GT4O Public Beta
+							!m_cached_ctx.ZBUF.ZMSK &&
+							(m_cached_ctx.FRAME.PSM & 0x30) != (m_cached_ctx.ZBUF.PSM & 0x30) &&
+							(m_cached_ctx.FRAME.PSM & 0xF) == (m_cached_ctx.ZBUF.PSM & 0xF) && m_vt.m_eq.z == 1 &&
+							m_vertex.buff[1].XYZ.Z == m_vertex.buff[1].RGBAQ.U32[0];
 
-	// Z and color must be constant and the same
-	if (!ZisFrame || m_vt.m_eq.rgba != 0xFFFF)
+	const GSVector2i page_size = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs;
+	const int vertex_offset =
+		(single_page_offset && m_vertex.tail > 2) ?
+			((m_vertex.buff[2].XYZ.X - m_vertex.buff[1].XYZ.X) >> 4) : // FBP & ZBP off by 1 expect 1 page offset.
+			(((m_vertex.buff[1].XYZ.X - m_vertex.buff[0].XYZ.X) + 0xF) >> 4); // FBP == ZBP (maybe) expect 1/2 page offset.
+	const bool is_strips = vertex_offset == ((single_page_offset) ? page_size.x : (page_size.x / 2));
+
+	// Z and color must be constant and the same and must be drawing strips.
+	if (!z_is_frame || !is_strips || m_vt.m_eq.rgba != 0xFFFF)
 		return false;
 
 	// Half a page extra width is written through Z.
-	m_r.z += (m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP) ? 32 : 64;
-	m_context->scissor.in = m_r;
+	// When the FRAME is lower or the same and including offset matches the frame width, it will be set back 64/32 pixels.
+	// When the FRAME is higher, that means ZBUF is ahead behind 1 page, so the beginning will be 1 page in
+	if (m_cached_ctx.FRAME.FBP < m_cached_ctx.ZBUF.ZBP || m_r.x == 0)
+		m_r.z += vertex_offset;
+	else
+		m_r.x -= vertex_offset;
 
 	GL_INS("DetectStripedDoubleClear(): %d,%d => %d,%d @ FBP %x FBW %u ZBP %x", m_r.x, m_r.y, m_r.z, m_r.w,
 		m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.ZBUF.Block());
 
 	// And replace the vertex with a fullscreen quad.
-	GSVertex* const v = &m_vertex.buff[0];
-	const GSVector4i fpr = m_r.sll32(4);
-	v[0].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + fpr.x);
-	v[0].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + fpr.y);
-	v[1].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + fpr.z);
-	v[1].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + fpr.w);
-	m_vertex.head = m_vertex.tail = m_vertex.next = 2;
-	m_index.tail = 2;
-	m_primitive_covers_without_gaps = true;
+	ReplaceVerticesWithSprite(m_r, GSVector2i(1, 1));
 
 	// Remove Z, we'll write it through colour.
 	m_cached_ctx.ZBUF.ZMSK = true;
