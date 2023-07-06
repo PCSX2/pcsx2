@@ -421,6 +421,8 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 	connect(thread, &EmuThread::onVMResumed, this, &MainWindow::onVMResumed);
 	connect(thread, &EmuThread::onVMStopped, this, &MainWindow::onVMStopped);
 	connect(thread, &EmuThread::onGameChanged, this, &MainWindow::onGameChanged);
+	connect(thread, &EmuThread::onCaptureStarted, this, &MainWindow::onCaptureStarted);
+	connect(thread, &EmuThread::onCaptureStopped, this, &MainWindow::onCaptureStopped);
 
 	connect(m_ui.actionReset, &QAction::triggered, thread, &EmuThread::resetVM);
 	connect(m_ui.actionPause, &QAction::toggled, thread, &EmuThread::setVMPaused);
@@ -586,6 +588,10 @@ void MainWindow::onToolsVideoCaptureToggled(bool checked)
 	if (!s_vm_valid)
 		return;
 
+	// Reset the checked state, we'll get updated by the GS thread.
+	QSignalBlocker sb(m_ui.actionToolsVideoCapture);
+	m_ui.actionToolsVideoCapture->setChecked(!checked);
+
 	if (!checked)
 	{
 		g_emu_thread->endCapture();
@@ -599,13 +605,27 @@ void MainWindow::onToolsVideoCaptureToggled(bool checked)
 	QString path(QStringLiteral("%1.%2").arg(QString::fromStdString(GSGetBaseVideoFilename())).arg(container));
 	path = QFileDialog::getSaveFileName(this, tr("Video Capture"), path, filter);
 	if (path.isEmpty())
-	{
-		QSignalBlocker sb(m_ui.actionToolsVideoCapture);
-		m_ui.actionToolsVideoCapture->setChecked(false);
 		return;
-	}
 
 	g_emu_thread->beginCapture(path);
+}
+
+void MainWindow::onCaptureStarted(const QString& filename)
+{
+	if (!s_vm_valid)
+		return;
+
+	QSignalBlocker sb(m_ui.actionToolsVideoCapture);
+	m_ui.actionToolsVideoCapture->setChecked(true);
+}
+
+void MainWindow::onCaptureStopped()
+{
+	if (!s_vm_valid)
+		return;
+
+	QSignalBlocker sb(m_ui.actionToolsVideoCapture);
+	m_ui.actionToolsVideoCapture->setChecked(false);
 }
 
 void MainWindow::onSettingsTriggeredFromToolbar()
