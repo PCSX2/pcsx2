@@ -40,6 +40,8 @@ namespace GSCapture
 	bool IsCapturingAudio();
 	const Threading::ThreadHandle& GetEncoderThreadHandle();
 	GSVector2i GetSize();
+	std::string GetNextCaptureFileName();
+	void Flush();
 
 	using CodecName = std::pair<std::string, std::string>; // shortname,longname
 	using CodecList = std::vector<CodecName>;

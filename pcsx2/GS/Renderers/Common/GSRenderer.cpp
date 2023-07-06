@@ -71,11 +71,22 @@ GSRenderer::~GSRenderer() = default;
 
 void GSRenderer::Reset(bool hardware_reset)
 {
-	// clear the current display texture
+	// Clear the current display texture.
 	if (hardware_reset)
 		g_gs_device->ClearCurrent();
 
 	GSState::Reset(hardware_reset);
+
+	// Restart video capture if it's been started.
+	// Otherwise we get a buildup of audio frames from the CPU thread.
+	if (hardware_reset && GSCapture::IsCapturing())
+	{
+		std::string next_filename = GSCapture::GetNextCaptureFileName();
+		const GSVector2i size = GSCapture::GetSize();
+		Console.Warning(fmt::format("Restarting video capture to {}.", next_filename));
+		EndCapture();
+		BeginCapture(std::move(next_filename), size);
+	}
 }
 
 void GSRenderer::Destroy()
@@ -545,7 +556,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 	const bool fb_sprite_frame = (fb_sprite_blits > 0);
 
 	bool skip_frame = false;
-	if (GSConfig.SkipDuplicateFrames)
+	if (GSConfig.SkipDuplicateFrames && !GSCapture::IsCapturingVideo())
 	{
 		bool is_unique_frame;
 		switch (PerformanceMetrics::GetInternalFPSMethod())
@@ -740,10 +751,9 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 	// capture
 	if (GSCapture::IsCapturingVideo())
 	{
+		const GSVector2i size = GSCapture::GetSize();
 		if (GSTexture* current = g_gs_device->GetCurrent())
 		{
-			const GSVector2i size(GSCapture::GetSize());
-
 			// TODO: Maybe avoid this copy in the future? We can use swscale to fix it up on the dumping thread..
 			if (current->GetSize() != size)
 			{
@@ -758,6 +768,17 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			else
 			{
 				GSCapture::DeliverVideoFrame(current);
+			}
+		}
+		else
+		{
+			// Bit janky, but unless we want to make variable frame rate files, we need to deliver *a* frame to
+			// the video file, so just grab a blank RT.
+			GSTexture* temp = g_gs_device->CreateRenderTarget(size.x, size.y, GSTexture::Format::Color, true);
+			if (temp)
+			{
+				GSCapture::DeliverVideoFrame(temp);
+				g_gs_device->Recycle(temp);
 			}
 		}
 	}
@@ -893,11 +914,13 @@ void GSSetDisplayAlignment(GSDisplayAlignment alignment)
 	s_display_alignment = alignment;
 }
 
-bool GSRenderer::BeginCapture(std::string filename)
+bool GSRenderer::BeginCapture(std::string filename, const GSVector2i& size)
 {
-	const GSVector2i capture_resolution(GSConfig.VideoCaptureAutoResolution ?
-											GetInternalResolution() :
-											GSVector2i(GSConfig.VideoCaptureWidth, GSConfig.VideoCaptureHeight));
+	const GSVector2i capture_resolution = (size.x != 0 && size.y != 0) ?
+											  size :
+											  (GSConfig.VideoCaptureAutoResolution ?
+													  GetInternalResolution() :
+													  GSVector2i(GSConfig.VideoCaptureWidth, GSConfig.VideoCaptureHeight));
 
 	return GSCapture::BeginCapture(GetTvRefreshRate(), capture_resolution,
 		GetCurrentAspectRatioFloat(GetVideoMode() == GSVideoMode::SDTV_480P),

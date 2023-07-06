@@ -70,7 +70,7 @@ public:
 	void StopGSDump();
 	void PresentCurrentFrame();
 
-	bool BeginCapture(std::string filename);
+	bool BeginCapture(std::string filename, const GSVector2i& size = GSVector2i(0, 0));
 	void EndCapture();
 };
 
