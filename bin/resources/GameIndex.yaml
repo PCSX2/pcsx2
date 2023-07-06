@@ -7333,9 +7333,13 @@ SCPS-55901:
 SCPS-55902:
   name: "Gran Turismo - Concept 2002 Tokyo-Geneva"
   region: "NTSC-J"
+  gsHWFixes:
+    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCPS-55903:
   name: "Gran Turismo - Concept 2002 Tokyo-Geneva"
   region: "NTSC-J"
+  gsHWFixes:
+    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCPS-56001:
   name: "ICO"
   region: "NTSC-K"
@@ -9896,7 +9900,7 @@ SLED-52488:
     InstantVU1SpeedHack: 1 # Fixes SPS.
 SLED-52506:
   name: "Mashed - Drive to Survive [Demo]"
-  region: "PAL-F"
+  region: "PAL-M5"
 SLED-52574:
   name: "Crash Twinsanity & Spyro - A Hero's Tail [Demo]"
   region: "PAL-E"
@@ -28173,8 +28177,10 @@ SLPM-62525:
   region: "NTSC-J"
   compat: 5
 SLPM-62526:
-  name: "Giant Robo - The Animation"
+  name: "Giant Robo - The Animation - Chikyuu ga Seishi suru Hi"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes blackscreen.
 SLPM-62528:
   name: "Karaoke Revolution - Kazoku Idol Sengen [with Microphone]"
   region: "NTSC-J"
