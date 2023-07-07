@@ -38,10 +38,10 @@ namespace usb_pad
 		CID_DJ_CROSSFADER_RIGHT,
 		CID_DJ_EFFECTSKNOB_LEFT,
 		CID_DJ_EFFECTSKNOB_RIGHT,
-		CID_DJ_LEFT_TURNTABLE_UP,
-		CID_DJ_LEFT_TURNTABLE_DOWN,
-		CID_DJ_RIGHT_TURNTABLE_UP,
-		CID_DJ_RIGHT_TURNTABLE_DOWN,
+		CID_DJ_LEFT_TURNTABLE_CW,
+		CID_DJ_LEFT_TURNTABLE_CCW,
+		CID_DJ_RIGHT_TURNTABLE_CW,
+		CID_DJ_RIGHT_TURNTABLE_CCW,
 		CID_DJ_DPAD_UP,
 		CID_DJ_DPAD_DOWN,
 		CID_DJ_DPAD_LEFT,
@@ -70,7 +70,7 @@ namespace usb_pad
 		USBDesc desc{};
 		USBDescDevice desc_dev{};
 
-		u16 turntable_multiplier = 1;
+		float turntable_multiplier = 1;
 
 		struct
 		{
@@ -79,10 +79,10 @@ namespace usb_pad
 			s16 crossfader_right;
 			s16 effectsknob_left;
 			s16 effectsknob_right;
-			s16 left_turntable_up;
-			s16 left_turntable_down;
-			s16 right_turntable_up;
-			s16 right_turntable_down;
+			s16 left_turntable_cw;
+			s16 left_turntable_ccw;
+			s16 right_turntable_cw;
+			s16 right_turntable_ccw;
 			bool hat_left : 1;
 			bool hat_right : 1;
 			bool hat_up : 1;
