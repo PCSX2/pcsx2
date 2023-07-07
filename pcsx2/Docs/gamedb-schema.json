@@ -317,6 +317,11 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 1
+            },
+            "eeCycleRate": {
+              "type": "integer",
+              "minimum": -3,
+              "maximum": 3
             }
           },
           "additionalProperties": false
