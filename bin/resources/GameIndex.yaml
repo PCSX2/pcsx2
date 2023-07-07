@@ -10248,6 +10248,9 @@ SLES-50031:
   name: "X-Squad"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-50032:
   name: "Theme Park World"
   region: "PAL-M3"
@@ -26341,6 +26344,12 @@ SLPM-60109:
 SLPM-60114:
   name: "Magical Sports - 2000 Koushien [Trial]"
   region: "NTSC-J"
+SLPM-60119:
+  name: "Cross Fire [Trial]"
+  region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-60122:
   name: "Ring of Red [Taikenban trial]"
   region: "NTSC-J"
@@ -37153,6 +37162,9 @@ SLPS-20022:
 SLPS-20023:
   name: "Cross Fire"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLPS-20024:
   name: "Hresvelgr"
   region: "NTSC-J"
@@ -42994,6 +43006,9 @@ SLUS-20093:
 SLUS-20094:
   name: "X Squad"
   region: "NTSC-U"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20095:
   name: "SSX"
   region: "NTSC-U"
