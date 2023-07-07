@@ -303,17 +303,17 @@
         "speedHacks": {
           "type": "object",
           "properties": {
-            "mvuFlagSpeedHack": {
+            "mvuFlag": {
               "type": "integer",
               "minimum": 0,
               "maximum": 1
             },
-            "InstantVU1SpeedHack": {
+            "instantVU1": {
               "type": "integer",
               "minimum": 0,
               "maximum": 1
             },
-            "MTVUSpeedHack": {
+            "mtvu": {
               "type": "integer",
               "minimum": 0,
               "maximum": 1

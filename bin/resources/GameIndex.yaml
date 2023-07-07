@@ -854,8 +854,8 @@ SCAJ-20078:
   roundModes:
     eeRoundMode: 0 # Fixes Sugoroku mini-game.
   speedHacks:
-    InstantVU1SpeedHack: 1 # This option enabled brings about 15% more FPS when I tested it, *your experience may differ.
-    MTVUSpeedHack: 0 # For some reason this games halves the internal game FPS with this option.
+    instantVU1: 1 # This option enabled brings about 15% more FPS when I tested it, *your experience may differ.
+    mtvu: 0 # For some reason this games halves the internal game FPS with this option.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting.
     preloadFrameData: 1 # Fixes red cracklines on walls.
@@ -868,7 +868,7 @@ SCAJ-20079:
   clampModes:
     vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
+    mvuFlag: 0 # Fixes performance and falling through floor and other gameplay.
 SCAJ-20080:
   name: "Kaena"
   region: "NTSC-Unk"
@@ -1163,7 +1163,7 @@ SCAJ-20135:
   clampModes:
     vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
+    mvuFlag: 0 # Fixes performance and falling through floor and other gameplay.
   memcardFilters:
     - "SCAJ-20135"
     - "SLPS-25467"
@@ -3143,8 +3143,8 @@ SCES-50408:
   region: "PAL-M5"
   compat: 5
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes noodles.
-    MTVUSpeedHack: 0
+    instantVU1: 0 # Fixes noodles.
+    mtvu: 0
   gsHWFixes:
     mipmap: 2 # Fixes missing floor texture.
     trilinearFiltering: 1 # Fixes fog effect.
@@ -3173,8 +3173,8 @@ SCES-50459:
   region: "PAL-M5"
   compat: 2
   speedHacks:
-    InstantVU1SpeedHack: 0
-    MTVUSpeedHack: 0
+    instantVU1: 0
+    mtvu: 0
 SCES-50490:
   name: "Final Fantasy X"
   region: "PAL-E"
@@ -3997,7 +3997,7 @@ SCES-52677:
   region: "PAL-M7"
   compat: 5
   speedHacks:
-    InstantVU1SpeedHack: 1 # Fixes not rendered most of the screen.
+    instantVU1: 1 # Fixes not rendered most of the screen.
 SCES-52748:
   name: "EyeToy - Play 2"
   region: "PAL-M12"
@@ -5230,7 +5230,7 @@ SCKA-20025:
   clampModes:
     vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
+    mvuFlag: 0 # Fixes performance and falling through floor and other gameplay.
 SCKA-20026:
   name: "Gungrave O.D."
   region: "NTSC-K"
@@ -5397,7 +5397,7 @@ SCKA-20051:
   clampModes:
     vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
+    mvuFlag: 0 # Fixes performance and falling through floor and other gameplay.
   memcardFilters:
     - "SCKA-20051"
     - "SCKA-20025"
@@ -5968,8 +5968,8 @@ SCPS-15017:
   name: "PaRappa the Rapper 2"
   region: "NTSC-J"
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes noodles.
-    MTVUSpeedHack: 0
+    instantVU1: 0 # Fixes noodles.
+    mtvu: 0
   gsHWFixes:
     mipmap: 2 # Fixes missing floor texture.
     trilinearFiltering: 1 # Fixes fog effect.
@@ -6507,7 +6507,7 @@ SCPS-15114:
   name: "Kikou Souhei Armodyne"
   region: "NTSC-J"
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes bad graphics.
+    mvuFlag: 0 # Fixes bad graphics.
 SCPS-15115:
   name: "Saru Get You - Million Monkeys"
   region: "NTSC-J"
@@ -6641,8 +6641,8 @@ SCPS-19201:
   name: "PaRappa the Rapper 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes noodles.
-    MTVUSpeedHack: 0
+    instantVU1: 0 # Fixes noodles.
+    mtvu: 0
   gsHWFixes:
     mipmap: 2 # Fixes missing floor texture.
     trilinearFiltering: 1 # Fixes fog effect.
@@ -7740,8 +7740,8 @@ SCUS-97167:
   region: "NTSC-U"
   compat: 5
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes noodles.
-    MTVUSpeedHack: 0
+    instantVU1: 0 # Fixes noodles.
+    mtvu: 0
   gsHWFixes:
     mipmap: 2 # Fixes missing floor texture.
     trilinearFiltering: 1 # Fixes fog effect.
@@ -7883,8 +7883,8 @@ SCUS-97208:
   name: "Hot Shots Golf 3 & PaRappa the Rapper 2 [Demo]"
   region: "NTSC-U"
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes noodles on Parappa 2.
-    MTVUSpeedHack: 0
+    instantVU1: 0 # Fixes noodles on Parappa 2.
+    mtvu: 0
   gsHWFixes:
     mipmap: 1
     trilinearFiltering: 1
@@ -8498,7 +8498,7 @@ SCUS-97405:
   region: "NTSC-U"
   compat: 5
   speedHacks:
-    MTVUSpeedHack: 0 # Increases FPS drastically.
+    mtvu: 0 # Increases FPS drastically.
 SCUS-97406:
   name: "Jampack Demo Disc Vol.10 - Summer 2004 [M-Rated]"
   region: "NTSC-U"
@@ -8660,7 +8660,7 @@ SCUS-97437:
   name: "ATV Offroad Fury 3 [Demo]"
   region: "NTSC-U"
   speedHacks:
-    MTVUSpeedHack: 0 # Increases FPS drastically.
+    mtvu: 0 # Increases FPS drastically.
 SCUS-97438:
   name: "EyeToy - Antigrav [Demo]"
   region: "NTSC-U"
@@ -9037,7 +9037,7 @@ SCUS-97514:
   name: "ATV Offroad Fury 3 [Greatest Hits]"
   region: "NTSC-U"
   speedHacks:
-    MTVUSpeedHack: 0 # Increases FPS drastically.
+    mtvu: 0 # Increases FPS drastically.
 SCUS-97515:
   name: "Hot Shots Golf FORE! [Greatest Hits]"
   region: "NTSC-U"
@@ -9860,7 +9860,7 @@ SLED-52441:
   gameFixes:
     - VIFFIFOHack
   speedHacks:
-    MTVUSpeedHack: 0
+    mtvu: 0
   gsHWFixes:
     cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -9871,7 +9871,7 @@ SLED-52473:
   gameFixes:
     - VIFFIFOHack
   speedHacks:
-    MTVUSpeedHack: 0
+    mtvu: 0
   gsHWFixes:
     cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -9882,7 +9882,7 @@ SLED-52474:
   gameFixes:
     - VIFFIFOHack
   speedHacks:
-    MTVUSpeedHack: 0
+    mtvu: 0
   gsHWFixes:
     cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -9901,7 +9901,7 @@ SLED-52488:
   name: "Suffering, The [Demo]"
   region: "PAL-E"
   speedHacks:
-    InstantVU1SpeedHack: 1 # Fixes SPS.
+    instantVU1: 1 # Fixes SPS.
 SLED-52506:
   name: "Mashed - Drive to Survive [Demo]"
   region: "PAL-M5"
@@ -9978,7 +9978,7 @@ SLED-53109:
   name: "Juiced [Demo]"
   region: "PAL-M5"
   speedHacks:
-    InstantVU1SpeedHack: 0 # Significantly improves game speed.
+    instantVU1: 0 # Significantly improves game speed.
   gsHWFixes:
     preloadFrameData: 1 # Fixes overbrightness.
     cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
@@ -10747,7 +10747,7 @@ SLES-50224:
   region: "PAL-M3"
   compat: 5
   speedHacks:
-    MTVUSpeedHack: 0 # Prevents broken textures and graphics.
+    mtvu: 0 # Prevents broken textures and graphics.
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-50225:
@@ -11091,8 +11091,8 @@ SLES-50382:
   region: "PAL-M6"
   compat: 5
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes hang on FMV's when CDVD timing is accurate.
-    MTVUSpeedHack: 0
+    instantVU1: 0 # Fixes hang on FMV's when CDVD timing is accurate.
+    mtvu: 0
 SLES-50383:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-M3"
@@ -11247,8 +11247,8 @@ SLES-50446:
   gameFixes:
     - EETimingHack # Fixes cutscene freezes.
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes SPS.
-    MTVUSpeedHack: 0
+    instantVU1: 0 # Fixes SPS.
+    mtvu: 0
 SLES-50447:
   name: "All-Star Baseball 2003 featuring Derek Jeter"
   region: "PAL-E"
@@ -11536,8 +11536,8 @@ SLES-50608:
   gameFixes:
     - EETimingHack # Fixes cutscene freezes.
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes SPS.
-    MTVUSpeedHack: 0
+    instantVU1: 0 # Fixes SPS.
+    mtvu: 0
 SLES-50613:
   name: "Woody Woodpecker"
   region: "PAL-M5"
@@ -12168,7 +12168,7 @@ SLES-50848:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom.
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes graphical corruption.
+    instantVU1: 0 # Fixes graphical corruption.
   patches:
     4C133D9D:
       content: |-
@@ -12433,13 +12433,13 @@ SLES-50984:
   region: "PAL-E"
   compat: 5
   speedHacks:
-    MTVUSpeedHack: 0 # Stops crashing and terrible speeds.
+    mtvu: 0 # Stops crashing and terrible speeds.
 SLES-50985:
   name: "Gumball 3000"
   region: "PAL-M5"
   compat: 5
   speedHacks:
-    MTVUSpeedHack: 0 # Stops crashing and terrible speeds.
+    mtvu: 0 # Stops crashing and terrible speeds.
 SLES-50986:
   name: "Twin Caliber"
   region: "PAL-M4"
@@ -12581,7 +12581,7 @@ SLES-51058:
   name: "Maken Shao - Demon Sword"
   region: "PAL-E"
   speedHacks:
-    mvuFlagSpeedHack: 0
+    mvuFlag: 0
 SLES-51060:
   name: "Butt-Ugly Martians - Zoom or Doom!"
   region: "PAL-M5"
@@ -12818,8 +12818,8 @@ SLES-51156:
   region: "PAL-M5"
   compat: 5
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes hang on FMV's when CDVD timing is accurate.
-    MTVUSpeedHack: 0
+    instantVU1: 0 # Fixes hang on FMV's when CDVD timing is accurate.
+    mtvu: 0
 SLES-51157:
   name: "Silent Scope 3"
   region: "PAL-M5"
@@ -13153,7 +13153,7 @@ SLES-51257:
   region: "PAL-M6"
   compat: 3
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-51258:
   name: "007 - Nightfire"
   region: "PAL-M5"
@@ -13956,27 +13956,27 @@ SLES-51686:
   region: "PAL-E"
   compat: 4
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-51687:
   name: "Pitfall - The Lost Expedition"
   region: "PAL-F"
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-51688:
   name: "Pitfall - The Lost Expedition"
   region: "PAL-G"
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-51689:
   name: "Pitfall - The Lost Expedition"
   region: "PAL-I"
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-51690:
   name: "Pitfall - The Lost Expedition"
   region: "PAL-S"
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-51693:
   name: "Suffering, The"
   region: "PAL-E-F-G"
@@ -14122,7 +14122,7 @@ SLES-51756:
   name: "Batman - Rise of Sin Tzu"
   region: "PAL-M5"
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes hang on final boss.
+    instantVU1: 0 # Fixes hang on final boss.
 SLES-51757:
   name: "Dancing Stage Fever"
   region: "PAL-M5"
@@ -14132,7 +14132,7 @@ SLES-51758:
   region: "PAL-M5"
   compat: 5
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes SPS.
+    mvuFlag: 0 # Fixes SPS.
 SLES-51759:
   name: "Maximo vs. Army of Zin"
   region: "PAL-M5"
@@ -15122,15 +15122,15 @@ SLES-52219:
   region: "PAL-M3"
   compat: 5
   speedHacks:
-    InstantVU1SpeedHack: 1 # Increases FPS drastically.
-    MTVUSpeedHack: 0
+    instantVU1: 1 # Increases FPS drastically.
+    mtvu: 0
   gsHWFixes:
     halfPixelOffset: 3 # Reduces ghosting.
 SLES-52230:
   name: "Muppets Party Cruise"
   region: "PAL-E-F"
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes bad graphics.
+    mvuFlag: 0 # Fixes bad graphics.
   gameFixes:
     - OPHFlagHack # Fixes some hanging throughout the game.
 SLES-52237:
@@ -15522,7 +15522,7 @@ SLES-52388:
   gameFixes:
     - VIFFIFOHack
   speedHacks:
-    MTVUSpeedHack: 0
+    mtvu: 0
   gsHWFixes:
     cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -15616,7 +15616,7 @@ SLES-52445:
   region: "PAL-M5"
   compat: 5
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
+    mvuFlag: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes dark sides.
 SLES-52446:
@@ -15827,7 +15827,7 @@ SLES-52531:
   name: "Suffering, The"
   region: "PAL-G"
   speedHacks:
-    InstantVU1SpeedHack: 1 # Fixes SPS.
+    instantVU1: 1 # Fixes SPS.
 SLES-52532:
   name: "Aces of War"
   region: "PAL-E"
@@ -15850,17 +15850,17 @@ SLES-52536:
   region: "PAL-E"
   compat: 2
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-52537:
   name: "Shark Tale"
   region: "PAL-M3"
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-52539:
   name: "Shark Tale"
   region: "PAL-I"
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-52541:
   name: "Grand Theft Auto - San Andreas"
   region: "PAL-M5"
@@ -16878,7 +16878,7 @@ SLES-52915:
   name: "Shark Tale"
   region: "PAL-SW"
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-52917:
   name: "Scaler"
   region: "PAL-E-F"
@@ -17302,7 +17302,7 @@ SLES-53044:
   region: "PAL-M4"
   compat: 5
   speedHacks:
-    InstantVU1SpeedHack: 0 # Significantly improves game speed.
+    instantVU1: 0 # Significantly improves game speed.
   gsHWFixes:
     preloadFrameData: 1 # Fixes overbrightness.
     cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
@@ -17454,7 +17454,7 @@ SLES-53099:
   roundModes:
     vu1RoundMode: 0 # Fixes shadow rendering.
   speedHacks:
-    InstantVU1SpeedHack: 0 # Improves speed by a moderate amount.
+    instantVU1: 0 # Improves speed by a moderate amount.
 SLES-53100:
   name: "Scooby-Doo! Unmasked"
   region: "PAL-M4"
@@ -17480,7 +17480,7 @@ SLES-53114:
   name: "Full Spectrum Warrior"
   region: "PAL-M5"
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes bad graphics.
+    mvuFlag: 0 # Fixes bad graphics.
 SLES-53119:
   name: "Kessen III"
   region: "PAL-E"
@@ -17521,7 +17521,7 @@ SLES-53131:
   name: "Full Spectrum Warrior"
   region: "PAL-E"
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes bad graphics.
+    mvuFlag: 0 # Fixes bad graphics.
 SLES-53138:
   name: "Outlaw Volleyball - Remixed"
   region: "PAL-M4"
@@ -17564,7 +17564,7 @@ SLES-53151:
   name: "Juiced"
   region: "PAL-I"
   speedHacks:
-    InstantVU1SpeedHack: 0 # Significantly improves game speed.
+    instantVU1: 0 # Significantly improves game speed.
   gsHWFixes:
     preloadFrameData: 1 # Fixes overbrightness.
     cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
@@ -17823,7 +17823,7 @@ SLES-53309:
   gameFixes:
     - VIFFIFOHack
   speedHacks:
-    MTVUSpeedHack: 0
+    mtvu: 0
   gsHWFixes:
     cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -18109,8 +18109,8 @@ SLES-53411:
   roundModes:
     eeRoundMode: 0 # Fixes Sugoroku mini-game.
   speedHacks:
-    InstantVU1SpeedHack: 1 # This option enabled brings about 15% more FPS when I tested it, *your experience may differ.
-    MTVUSpeedHack: 0 # For some reason this games halves the internal game FPS with this option.
+    instantVU1: 1 # This option enabled brings about 15% more FPS when I tested it, *your experience may differ.
+    mtvu: 0 # For some reason this games halves the internal game FPS with this option.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting.
     preloadFrameData: 1 # Fixes red cracklines on walls.
@@ -18954,7 +18954,7 @@ SLES-53656:
   name: "Full Spectrum Warrior - Ten Hammers"
   region: "PAL-M4"
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes bad graphics.
+    mvuFlag: 0 # Fixes bad graphics.
 SLES-53657:
   name: "Shrek - Super Slam"
   region: "PAL-E"
@@ -19271,7 +19271,7 @@ SLES-53754:
   name: "ATV Offroad Fury 3"
   region: "PAL-M6"
   speedHacks:
-    MTVUSpeedHack: 0 # Increases FPS drastically.
+    mtvu: 0 # Increases FPS drastically.
 SLES-53755:
   name: "Castlevania - Curse of Darkness"
   region: "PAL-M5"
@@ -19479,7 +19479,7 @@ SLES-53828:
   clampModes:
     vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
+    mvuFlag: 0 # Fixes performance and falling through floor and other gameplay.
 SLES-53829:
   name: "Raiden III"
   region: "PAL-E"
@@ -19561,7 +19561,7 @@ SLES-53866:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes fog line.
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-53867:
   name: "Ski Alpin 2006"
   region: "PAL-E-G"
@@ -19666,7 +19666,7 @@ SLES-53909:
   name: "Full Spectrum Warrior - Ten Hammers"
   region: "PAL-G"
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes bad graphics.
+    mvuFlag: 0 # Fixes bad graphics.
 SLES-53910:
   name: "Agent Hugo"
   region: "PAL-R"
@@ -19845,26 +19845,26 @@ SLES-53986:
   name: "gang del bosco, La"
   region: "PAL-I"
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-53987:
   name: "Vecinos Invasores"
   region: "PAL-S"
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-53988:
   name: "Over the Hedge"
   region: "PAL-E-G"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes fog line.
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-53989:
   name: "Over the Hedge"
   region: "PAL-NL"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes fog line.
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-53991:
   name: "Urban Chaos - Riot Response"
   region: "PAL-M5"
@@ -20321,7 +20321,7 @@ SLES-54173:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes fog line.
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLES-54174:
   name: "ZooCube"
   region: "PAL-E"
@@ -20895,7 +20895,7 @@ SLES-54388:
   name: "Kim Possible - What's the Switch"
   region: "PAL-M3"
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes extreme EE and VU usage.
+    instantVU1: 0 # Fixes extreme EE and VU usage.
 SLES-54389:
   name: "Tony Hawk's Project 8"
   region: "PAL-E"
@@ -23453,7 +23453,7 @@ SLES-55355:
   name: "Guitar Hero - World Tour"
   region: "PAL-M5"
   speedHacks:
-    InstantVU1SpeedHack: 0 # Corrects note board position.
+    instantVU1: 0 # Corrects note board position.
   roundModes:
     vu1RoundMode: 0 # Fixes graphical issues ingame.
 SLES-55356:
@@ -24918,7 +24918,7 @@ SLKA-25149:
   region: "NTSC-K"
   compat: 5
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
+    mvuFlag: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes dark sides.
 SLKA-25150:
@@ -24971,8 +24971,8 @@ SLKA-25171:
   roundModes:
     eeRoundMode: 0 # Fixes Sugoroku mini-game.
   speedHacks:
-    InstantVU1SpeedHack: 1 # This option enabled brings about 15% more FPS when I tested it, *your experience may differ.
-    MTVUSpeedHack: 0 # For some reason this games halves the internal game FPS with this option.
+    instantVU1: 1 # This option enabled brings about 15% more FPS when I tested it, *your experience may differ.
+    mtvu: 0 # For some reason this games halves the internal game FPS with this option.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting.
     preloadFrameData: 1 # Fixes red cracklines on walls.
@@ -24993,7 +24993,7 @@ SLKA-25175:
   gameFixes:
     - VIFFIFOHack
   speedHacks:
-    MTVUSpeedHack: 0
+    mtvu: 0
   gsHWFixes:
     cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -25293,7 +25293,7 @@ SLKA-25264:
   name: "Full Spectrum Warrior"
   region: "NTSC-K"
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes bad graphics.
+    mvuFlag: 0 # Fixes bad graphics.
 SLKA-25265:
   name: "Devil May Cry 3"
   region: "NTSC-K"
@@ -25346,7 +25346,7 @@ SLKA-25283:
   name: "Juiced"
   region: "NTSC-K"
   speedHacks:
-    InstantVU1SpeedHack: 0 # Significantly improves game speed.
+    instantVU1: 0 # Significantly improves game speed.
   gsHWFixes:
     preloadFrameData: 1 # Fixes overbrightness.
     cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
@@ -25791,7 +25791,7 @@ SLPM-55005:
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes missing graphical effects.
+    mvuFlag: 0 # Fixes missing graphical effects.
 SLPM-55006:
   name: "Akane-iro ni Somaru Saka - Parallel"
   region: "NTSC-J"
@@ -25971,7 +25971,7 @@ SLPM-55114:
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes missing graphical effects.
+    mvuFlag: 0 # Fixes missing graphical effects.
 SLPM-55117:
   name: "beatmania IIDX 15 DJ TROOPERS"
   region: "NTSC-J"
@@ -26011,7 +26011,7 @@ SLPM-55140:
   name: "Silent Hill 4 - The Room [Konami Dendou Selection]"
   region: "NTSC-J"
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
+    mvuFlag: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes dark sides.
 SLPM-55141:
@@ -26362,7 +26362,7 @@ SLPM-60127:
   name: "Kurikuri Mix [Taikenban trial]"
   region: "NTSC-J"
   speedHacks:
-    MTVUSpeedHack: 0 # Prevents broken textures and graphics.
+    mtvu: 0 # Prevents broken textures and graphics.
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-60138:
@@ -26433,7 +26433,7 @@ SLPM-60239:
   clampModes:
     vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay problems.
+    mvuFlag: 0 # Fixes performance and falling through floor and other gameplay problems.
 SLPM-60243:
   name: "Full House Kiss [Trial]"
   region: "NTSC-J"
@@ -26554,7 +26554,7 @@ SLPM-61007:
   name: "Maken Shao [Trial]"
   region: "NTSC-J"
   speedHacks:
-    mvuFlagSpeedHack: 0
+    mvuFlag: 0
 SLPM-61008:
   name: "Devil May Cry [Trial]"
   region: "NTSC-J"
@@ -26564,8 +26564,8 @@ SLPM-61009:
   name: "Silent Hill 2 (Red Ribbon) [Trial]"
   region: "NTSC-J"
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes hang on FMV's when CDVD timing is accurate.
-    MTVUSpeedHack: 0
+    instantVU1: 0 # Fixes hang on FMV's when CDVD timing is accurate.
+    mtvu: 0
 SLPM-61010:
   name: "Devil May Cry [Trial Version]"
   region: "NTSC-J"
@@ -26575,8 +26575,8 @@ SLPM-61011:
   name: "Silent Hill 2 (Black Ribbon) [Video Trial]"
   region: "NTSC-J"
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes hang on FMV's when CDVD timing is accurate.
-    MTVUSpeedHack: 0
+    instantVU1: 0 # Fixes hang on FMV's when CDVD timing is accurate.
+    mtvu: 0
 SLPM-61018:
   name: "Abarenbou Princess [Trial]"
   region: "NTSC-J"
@@ -29020,7 +29020,7 @@ SLPM-64540:
   name: "Sims, The"
   region: "NTSC-K"
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLPM-64544:
   name: "Tetsu 1 - Densha de Battle! World Grand Prix"
   region: "NTSC-K"
@@ -29251,8 +29251,8 @@ SLPM-65051:
   region: "NTSC-J"
   compat: 5
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes hang on FMV's when CDVD timing is accurate.
-    MTVUSpeedHack: 0
+    instantVU1: 0 # Fixes hang on FMV's when CDVD timing is accurate.
+    mtvu: 0
 SLPM-65052:
   name: "GUITAR FREAKS 4thMIX & drummania 3rdMIX"
   region: "NTSC-J"
@@ -29433,8 +29433,8 @@ SLPM-65098:
   region: "NTSC-J"
   compat: 5
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes hang on FMV's when CDVD timing is accurate.
-    MTVUSpeedHack: 0
+    instantVU1: 0 # Fixes hang on FMV's when CDVD timing is accurate.
+    mtvu: 0
 SLPM-65100:
   name: "Onimusha 2"
   region: "NTSC-J"
@@ -29549,7 +29549,7 @@ SLPM-65144:
   name: "Maken Shao"
   region: "NTSC-J"
   speedHacks:
-    mvuFlagSpeedHack: 0
+    mvuFlag: 0
 SLPM-65148:
   name: "Densha de Go! Ryojou-hen"
   region: "NTSC-J"
@@ -30254,8 +30254,8 @@ SLPM-65341:
   name: "Silent Hill 2 - Saigo No Uta [Konami The Best]"
   region: "NTSC-J"
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes hang on FMV's when CDVD timing is accurate.
-    MTVUSpeedHack: 0
+    instantVU1: 0 # Fixes hang on FMV's when CDVD timing is accurate.
+    mtvu: 0
 SLPM-65342:
   name: "Kyoufu Shinbun (Heisei) Kaiki! Shinrei File"
   region: "NTSC-J"
@@ -30343,8 +30343,8 @@ SLPM-65374:
   name: "Energy Airforce - Aim Strike!"
   region: "NTSC-J"
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes hanging while going ingame.
-    MTVUSpeedHack: 0
+    instantVU1: 0 # Fixes hanging while going ingame.
+    mtvu: 0
   gsHWFixes:
     autoFlush: 2 # Corrects post-processing effect on jet exhausts.
 SLPM-65375:
@@ -31004,7 +31004,7 @@ SLPM-65574:
   region: "NTSC-J"
   compat: 5
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
+    mvuFlag: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes dark sides.
 SLPM-65575:
@@ -31198,8 +31198,8 @@ SLPM-65631:
   name: "Silent Hill 2 [Konami The Best]"
   region: "NTSC-J"
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes hang on FMV's when CDVD timing is accurate.
-    MTVUSpeedHack: 0
+    instantVU1: 0 # Fixes hang on FMV's when CDVD timing is accurate.
+    mtvu: 0
 SLPM-65632:
   name: "Virtua Fighter Cyber Generation - Ambition of the Judgement Six"
   region: "NTSC-J"
@@ -32171,7 +32171,7 @@ SLPM-65901:
   name: "Shark Tale"
   region: "NTSC-J"
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLPM-65902:
   name: "Memories Off - After Rain Vol.2 Souen [Special Edition]"
   region: "NTSC-J"
@@ -32651,7 +32651,7 @@ SLPM-66032:
   name: "Silent Hill 4 [Konami The Best]"
   region: "NTSC-J"
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
+    mvuFlag: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes dark sides.
 SLPM-66033:
@@ -33593,7 +33593,7 @@ SLPM-66263:
   name: "Full Spectrum Warrior"
   region: "NTSC-J"
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes bad graphics.
+    mvuFlag: 0 # Fixes bad graphics.
 SLPM-66264:
   name: "Canvas 2 - Nijiiro no Sketch [DX Pack]"
   region: "NTSC-J"
@@ -33648,7 +33648,7 @@ SLPM-66277:
   name: "Juiced"
   region: "NTSC-J"
   speedHacks:
-    InstantVU1SpeedHack: 0 # Significantly improves game speed.
+    instantVU1: 0 # Significantly improves game speed.
   gsHWFixes:
     preloadFrameData: 1 # Fixes overbrightness.
     cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
@@ -34206,7 +34206,7 @@ SLPM-66427:
   name: "Full Spectrum Warrior - Ten Hammers"
   region: "NTSC-J"
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes bad graphics.
+    mvuFlag: 0 # Fixes bad graphics.
 SLPM-66429:
   name: "Special Forces - Fire for Effect"
   region: "NTSC-J"
@@ -37233,7 +37233,7 @@ SLPS-20050:
   name: "Happy! Happy!! Boarders in Hokkaidou Rusutsu Resort"
   region: "NTSC-J"
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes graphical issues.
+    mvuFlag: 0 # Fixes graphical issues.
 SLPS-20051:
   name: "Hissatsu Pachinko Station V"
   region: "NTSC-J"
@@ -38495,7 +38495,7 @@ SLPS-25013:
   name: "Kurikuri Mix"
   region: "NTSC-J"
   speedHacks:
-    MTVUSpeedHack: 0 # Prevents broken textures and graphics.
+    mtvu: 0 # Prevents broken textures and graphics.
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25014:
@@ -38633,12 +38633,12 @@ SLPS-25042:
   name: "Maken Shao [Limited Edition]"
   region: "NTSC-J"
   speedHacks:
-    mvuFlagSpeedHack: 0
+    mvuFlag: 0
 SLPS-25043:
   name: "Maken Shao"
   region: "NTSC-J"
   speedHacks:
-    mvuFlagSpeedHack: 0
+    mvuFlag: 0
 SLPS-25044:
   name: "Evergrace 2"
   region: "NTSC-J"
@@ -39628,8 +39628,8 @@ SLPS-25329:
   roundModes:
     eeRoundMode: 0 # Fixes Sugoroku mini-game.
   speedHacks:
-    InstantVU1SpeedHack: 1 # This option enabled brings about 15% more FPS when I tested it, *your experience may differ.
-    MTVUSpeedHack: 0 # For some reason this games halves the internal game FPS with this option.
+    instantVU1: 1 # This option enabled brings about 15% more FPS when I tested it, *your experience may differ.
+    mtvu: 0 # For some reason this games halves the internal game FPS with this option.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting.
     preloadFrameData: 1 # Fixes red cracklines on walls.
@@ -39775,7 +39775,7 @@ SLPS-25360:
   clampModes:
     vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
+    mvuFlag: 0 # Fixes performance and falling through floor and other gameplay.
 SLPS-25361:
   name: "Smash Court Professional Tournament 2"
   region: "NTSC-J"
@@ -40230,7 +40230,7 @@ SLPS-25467:
   clampModes:
     vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
+    mvuFlag: 0 # Fixes performance and falling through floor and other gameplay.
   memcardFilters:
     - "SCAJ-20135"
     - "SLPS-25467"
@@ -42145,7 +42145,7 @@ SLPS-73210:
   clampModes:
     vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
+    mvuFlag: 0 # Fixes performance and falling through floor and other gameplay.
 SLPS-73211:
   name: "Summon Night 3 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -42346,7 +42346,7 @@ SLPS-73240:
   clampModes:
     vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
+    mvuFlag: 0 # Fixes performance and falling through floor and other gameplay.
 SLPS-73241:
   name: "Minna Daisuki Katamari Damacy [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -42355,7 +42355,7 @@ SLPS-73241:
   clampModes:
     vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
+    mvuFlag: 0 # Fixes performance and falling through floor and other gameplay.
   memcardFilters:
     - "SCAJ-20135"
     - "SLPS-25467"
@@ -43276,7 +43276,7 @@ SLUS-20170:
   region: "NTSC-U"
   compat: 5
   speedHacks:
-    MTVUSpeedHack: 0 # Prevents broken textures and graphics.
+    mtvu: 0 # Prevents broken textures and graphics.
 SLUS-20171:
   name: "Motor Mayhem - Vehicular Combat League"
   region: "NTSC-U"
@@ -43542,8 +43542,8 @@ SLUS-20228:
   region: "NTSC-U"
   compat: 5
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes hang on FMV's when CDVD timing is accurate.
-    MTVUSpeedHack: 0
+    instantVU1: 0 # Fixes hang on FMV's when CDVD timing is accurate.
+    mtvu: 0
 SLUS-20229:
   name: "Jonny Moseley - Mad Trix"
   region: "NTSC-U"
@@ -44351,7 +44351,7 @@ SLUS-20408:
   region: "NTSC-U"
   compat: 4
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLUS-20409:
   name: "Total Immersion Racing"
   region: "NTSC-U"
@@ -44377,8 +44377,8 @@ SLUS-20413:
   gameFixes:
     - EETimingHack # Fixes cutscene freezes.
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes SPS.
-    MTVUSpeedHack: 0
+    instantVU1: 0 # Fixes SPS.
+    mtvu: 0
 SLUS-20414:
   name: "Legaia 2 - Duel Saga"
   region: "NTSC-U"
@@ -44612,8 +44612,8 @@ SLUS-20463:
   region: "NTSC-U"
   compat: 2
   speedHacks:
-    InstantVU1SpeedHack: 0
-    MTVUSpeedHack: 0
+    instantVU1: 0
+    mtvu: 0
 SLUS-20464:
   name: "Fugitive Hunter - War on Terror"
   region: "NTSC-U"
@@ -45173,7 +45173,7 @@ SLUS-20573:
   region: "NTSC-U"
   compat: 4
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLUS-20574:
   name: "NCAA March Madness 2003"
   region: "NTSC-U"
@@ -45232,7 +45232,7 @@ SLUS-20584:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom.
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes graphical corruption.
+    instantVU1: 0 # Fixes graphical corruption.
   patches:
     C90920FC:
       content: |-
@@ -45473,7 +45473,7 @@ SLUS-20635:
   region: "NTSC-U"
   compat: 5
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes bad graphics.
+    mvuFlag: 0 # Fixes bad graphics.
   gameFixes:
     - OPHFlagHack # Fixes some hanging throughout the game.
 SLUS-20636:
@@ -45623,7 +45623,7 @@ SLUS-20668:
   gameFixes:
     - VIFFIFOHack
   speedHacks:
-    MTVUSpeedHack: 0
+    mtvu: 0
   gsHWFixes:
     cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -45834,7 +45834,7 @@ SLUS-20709:
   region: "NTSC-U"
   compat: 5
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes hang on final boss.
+    instantVU1: 0 # Fixes hang on final boss.
 SLUS-20710:
   name: "Onimusha - Blade Warriors"
   region: "NTSC-U"
@@ -46245,7 +46245,7 @@ SLUS-20786:
   gameFixes:
     - EETimingHack # Texture flicker.
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes SPS.
+    mvuFlag: 0 # Fixes SPS.
 SLUS-20787:
   name: "WWE SmackDown! Here Comes the Pain"
   region: "NTSC-U"
@@ -46563,8 +46563,8 @@ SLUS-20858:
   region: "NTSC-U"
   compat: 5
   speedHacks:
-    InstantVU1SpeedHack: 1 # Increases FPS drastically.
-    MTVUSpeedHack: 0
+    instantVU1: 1 # Increases FPS drastically.
+    mtvu: 0
   gsHWFixes:
     halfPixelOffset: 3 # Reduces ghosting.
 SLUS-20859:
@@ -46645,7 +46645,7 @@ SLUS-20872:
   region: "NTSC-U"
   compat: 5
   speedHacks:
-    InstantVU1SpeedHack: 0 # Significantly improves game speed.
+    instantVU1: 0 # Significantly improves game speed.
   gsHWFixes:
     preloadFrameData: 1 # Fixes overbrightness.
     cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
@@ -46658,7 +46658,7 @@ SLUS-20873:
   region: "NTSC-U"
   compat: 5
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
+    mvuFlag: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes dark sides.
 SLUS-20874:
@@ -46957,7 +46957,7 @@ SLUS-20925:
   region: "NTSC-U"
   compat: 2
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLUS-20926:
   name: "Harry Potter and the Prisoner of Azkaban"
   region: "NTSC-U"
@@ -47431,8 +47431,8 @@ SLUS-21007:
   roundModes:
     eeRoundMode: 0 # Fixes Sugoroku mini-game.
   speedHacks:
-    InstantVU1SpeedHack: 1 # This option enabled brings about 15% more FPS when I tested it, *your experience may differ.
-    MTVUSpeedHack: 0 # For some reason this games halves the internal game FPS with this option.
+    instantVU1: 1 # This option enabled brings about 15% more FPS when I tested it, *your experience may differ.
+    mtvu: 0 # For some reason this games halves the internal game FPS with this option.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting.
     preloadFrameData: 1 # Fixes red cracklines on walls.
@@ -47446,7 +47446,7 @@ SLUS-21008:
   clampModes:
     vuClampMode: 3 # Fixes SPS.
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
+    mvuFlag: 0 # Fixes performance and falling through floor and other gameplay.
 SLUS-21009:
   name: "Sega Classics Collection"
   region: "NTSC-U"
@@ -48143,7 +48143,7 @@ SLUS-21145:
   region: "NTSC-U"
   compat: 5
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes bad graphics.
+    mvuFlag: 0 # Fixes bad graphics.
 SLUS-21146:
   name: "Far East of Eden"
   region: "NTSC-U"
@@ -48348,7 +48348,7 @@ SLUS-21189:
   region: "NTSC-U"
   compat: 5
   speedHacks:
-    InstantVU1SpeedHack: 1 # Fixes SPS.
+    instantVU1: 1 # Fixes SPS.
   gsHWFixes:
     autoFlush: 2 # Fixes debris and blending on lower part of screen during monster transformation.
     mipmap: 2
@@ -48598,7 +48598,7 @@ SLUS-21230:
   clampModes:
     vu1ClampMode: 3 # Fixes SPS.
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes performance and falling through floor and other gameplay.
+    mvuFlag: 0 # Fixes performance and falling through floor and other gameplay.
   memcardFilters: # Allows import of constellations from Katamari Damacy.
     - "SLUS-21230"
     - "SLUS-21008"
@@ -48748,7 +48748,7 @@ SLUS-21250:
   region: "NTSC-U"
   compat: 5
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes bad graphics.
+    mvuFlag: 0 # Fixes bad graphics.
 SLUS-21251:
   name: "FlatOut 2"
   region: "NTSC-U"
@@ -49065,7 +49065,7 @@ SLUS-21300:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes fog line.
   speedHacks:
-    MTVUSpeedHack: 0 # Fixes bad graphics due to bad T-Bit handling.
+    mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
 SLUS-21301:
   name: "World Series of Poker"
   region: "NTSC-U"
@@ -49912,7 +49912,7 @@ SLUS-21437:
   name: "Disney's Kim Possible - What's the Switch"
   region: "NTSC-U"
   speedHacks:
-    InstantVU1SpeedHack: 0 # Fixes extreme EE and VU usage.
+    instantVU1: 0 # Fixes extreme EE and VU usage.
 SLUS-21438:
   name: "Cartoon Network Racing"
   region: "NTSC-U"
@@ -51511,7 +51511,7 @@ SLUS-21781:
   region: "NTSC-U"
   compat: 5
   speedHacks:
-    InstantVU1SpeedHack: 0 # Corrects note board position.
+    instantVU1: 0 # Corrects note board position.
   roundModes:
     vu1RoundMode: 0 # Fixes graphical issues ingame.
 SLUS-21782:
@@ -51976,7 +51976,7 @@ SLUS-21890:
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes missing graphical effects.
+    mvuFlag: 0 # Fixes missing graphical effects.
 SLUS-21891:
   name: "G-Force"
   region: "NTSC-U"
@@ -52361,7 +52361,7 @@ SLUS-28040:
   gameFixes:
     - VIFFIFOHack
   speedHacks:
-    MTVUSpeedHack: 0
+    mtvu: 0
   gsHWFixes:
     cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -52678,7 +52678,7 @@ SLUS-29081:
   gameFixes:
     - EETimingHack # Texture flicker.
   speedHacks:
-    mvuFlagSpeedHack: 0 # Fixes SPS.
+    mvuFlag: 0 # Fixes SPS.
 SLUS-29082:
   name: "Beyond Good and Evil [Demo]"
   region: "NTSC-U"
@@ -52760,7 +52760,7 @@ SLUS-29107:
   gameFixes:
     - VIFFIFOHack
   speedHacks:
-    MTVUSpeedHack: 0
+    mtvu: 0
   gsHWFixes:
     cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
     cpuSpriteRenderLevel: 2 # Needed for above.
@@ -52890,7 +52890,7 @@ SLUS-29147:
   name: "Juiced"
   region: "NTSC-U"
   speedHacks:
-    InstantVU1SpeedHack: 0 # Significantly improves game speed.
+    instantVU1: 0 # Significantly improves game speed.
   gsHWFixes:
     preloadFrameData: 1 # Fixes overbrightness.
     cpuSpriteRenderBW: 1 # Fixes broken window and shadow rendering.
@@ -53152,7 +53152,7 @@ SLUS-97405:
   name: "ATV Offroad Fury 3 [Greatest Hits]"
   region: "NTSC-U"
   speedHacks:
-    MTVUSpeedHack: 0 # Increases FPS drastically.
+    mtvu: 0 # Increases FPS drastically.
 SLUS-97657:
   name: "MLB 11 - The Show"
   region: "NTSC-U"
