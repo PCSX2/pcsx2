@@ -729,6 +729,8 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 				// otherwise we need to do an attachment clear
 				EndRenderPass();
 
+				dTexVK->SetState(GSTexture::State::Dirty);
+
 				if (dTexVK->GetType() != GSTexture::Type::DepthStencil)
 				{
 					dTexVK->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -1522,6 +1524,25 @@ void GSDevice12::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	{
 		// framebuffer change
 		EndRenderPass();
+	}
+	else if (InRenderPass())
+	{
+		// Framebuffer unchanged, but check for clears. Have to restart render pass, unlike Vulkan.
+		// We'll take care of issuing the actual clear there, because we have to start one anyway.
+		if (vkRt && vkRt->GetState() != GSTexture::State::Dirty)
+		{
+			if (vkRt->GetState() == GSTexture::State::Cleared)
+				EndRenderPass();
+			else
+				vkRt->SetState(GSTexture::State::Dirty);
+		}
+		if (vkDs && vkDs->GetState() != GSTexture::State::Dirty)
+		{
+			if (vkDs->GetState() == GSTexture::State::Cleared)
+				EndRenderPass();
+			else
+				vkDs->SetState(GSTexture::State::Dirty);
+		}
 	}
 
 	m_current_render_target = vkRt;
