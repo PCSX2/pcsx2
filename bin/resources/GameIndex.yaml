@@ -32716,7 +32716,7 @@ SLPM-66050:
   name: "Daisan Teikoku Koubouki II - Aufstieg und Fall des Dritten Reich"
   region: "NTSC-J"
 SLPM-66051:
-  name: "Need for Speed Underground 2 [EA Best Hits]"
+  name: "Need for Speed Underground 2 - SHA_DO"
   region: "NTSC-J"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
