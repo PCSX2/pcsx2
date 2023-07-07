@@ -5331,15 +5331,34 @@ bool GSRendererHW::DetectStripedDoubleClear(bool& no_rt, bool& no_ds)
 							(m_cached_ctx.FRAME.PSM & 0xF) == (m_cached_ctx.ZBUF.PSM & 0xF) && m_vt.m_eq.z == 1 &&
 							m_vertex.buff[1].XYZ.Z == m_vertex.buff[1].RGBAQ.U32[0];
 
-	const GSVector2i page_size = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs;
-	const int vertex_offset =
-		(single_page_offset && m_vertex.tail > 2) ?
-			((m_vertex.buff[2].XYZ.X - m_vertex.buff[1].XYZ.X) >> 4) : // FBP & ZBP off by 1 expect 1 page offset.
-			(((m_vertex.buff[1].XYZ.X - m_vertex.buff[0].XYZ.X) + 0xF) >> 4); // FBP == ZBP (maybe) expect 1/2 page offset.
-	const bool is_strips = vertex_offset == ((single_page_offset) ? page_size.x : (page_size.x / 2));
-
 	// Z and color must be constant and the same and must be drawing strips.
-	if (!z_is_frame || !is_strips || m_vt.m_eq.rgba != 0xFFFF)
+	if (!z_is_frame || m_vt.m_eq.rgba != 0xFFFF)
+		return false;
+
+	const GSVector2i page_size = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs;
+	const int strip_size = ((single_page_offset) ? page_size.x : (page_size.x / 2));
+
+	// Find the biggest gap out of all the verts, most of the time games are nice and do strips,
+	// however Lord of the Rings - The Third Age draws the strips 8x8 per sprite, until it makes up 32x8, then does the next 32x8 below.
+	// I know, unneccesary, but that's what they did. But this loop should calculate the largest gap, then we can confirm it.
+	// LOTR has 4096 verts, so this isn't going to be super fast on that game, most games will be just 16 verts so they should be ok,
+	// and I could cheat and stop when we get a size that matches, but that might be a lucky misdetection, I don't wanna risk it.
+	int vertex_offset = 0;
+	int last_vertex = m_vertex.buff[0].XYZ.X;
+
+	for (u32 i = 1; i < m_vertex.tail; i++)
+	{
+		vertex_offset = std::max(static_cast<int>((m_vertex.buff[i].XYZ.X - last_vertex) >> 4), vertex_offset);
+		last_vertex = m_vertex.buff[i].XYZ.X;
+
+		// Found a gap which is much bigger, no point continuing to scan.
+		if (vertex_offset > strip_size)
+			break;
+	}
+
+	const bool is_strips = vertex_offset == strip_size;
+
+	if (!is_strips)
 		return false;
 
 	// Half a page extra width is written through Z.
