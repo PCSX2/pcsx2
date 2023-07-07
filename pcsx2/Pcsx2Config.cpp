@@ -181,6 +181,7 @@ static constexpr const char* s_speed_hack_names[] = {
 	"mvuFlag",
 	"instantVU1",
 	"mtvu",
+	"eeCycleRate",
 };
 
 const char* Pcsx2Config::SpeedhackOptions::GetSpeedHackName(SpeedHack id)
@@ -214,6 +215,9 @@ void Pcsx2Config::SpeedhackOptions::Set(SpeedHack id, int value)
 			break;
 		case SpeedHack::MTVU:
 			vuThread = (value != 0);
+			break;
+		case SpeedHack::EECycleRate:
+			EECycleRate = static_cast<int>(std::clamp<int>(value, MIN_EE_CYCLE_RATE, MAX_EE_CYCLE_RATE));
 			break;
 			jNO_DEFAULT
 	}

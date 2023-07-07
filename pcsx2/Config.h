@@ -175,6 +175,7 @@ enum class SpeedHack
 	MVUFlag,
 	InstantVU1,
 	MTVU,
+	EECycleRate,
 	MaxCount,
 };
 
