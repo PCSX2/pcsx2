@@ -5253,7 +5253,7 @@ SCKA-20028:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
 SCKA-20029:
-  name: "Gran Turismo Concept 2002 Tokyo-Seoul [PlayStation 2 Big Hit Series]"
+  name: "Gran Turismo - Concept 2002 Tokyo-Seoul [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
   gsHWFixes:
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
@@ -7372,7 +7372,7 @@ SCPS-56004:
   name: "Otostaz"
   region: "NTSC-K"
 SCPS-56005:
-  name: "Gran Turismo Concept 2002 Tokyo-Seoul"
+  name: "Gran Turismo - Concept 2002 Tokyo-Seoul"
   region: "NTSC-K"
   gsHWFixes:
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
@@ -31138,7 +31138,7 @@ SLPM-65613:
   name: "Yu-Gi-Oh! Capsule Monster Coliseum"
   region: "NTSC-J"
 SLPM-65614:
-  name: "Need for Speed Underground [EA Best Hits]"
+  name: "Need for Speed - Underground J"
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Broken textures.
@@ -31701,7 +31701,7 @@ SLPM-65765:
   name: "Men at Work! 3"
   region: "NTSC-J"
 SLPM-65766:
-  name: "Need for Speed Underground 2"
+  name: "Need for Speed - Underground 2"
   region: "NTSC-J"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
@@ -37099,7 +37099,7 @@ SLPS-20006:
   name: "A-Train 6"
   region: "NTSC-J"
 SLPS-20007:
-  name: "Driving Emotion Type S"
+  name: "Driving Emotion Type-S"
   region: "NTSC-J"
   compat: 5
   clampModes:
@@ -43078,7 +43078,7 @@ SLUS-20112:
   region: "NTSC-U"
   compat: 5
 SLUS-20113:
-  name: "Driving Emotion Type S"
+  name: "Driving Emotion Type-S"
   region: "NTSC-U"
   compat: 4
   gsHWFixes:
@@ -49784,7 +49784,7 @@ SLUS-21415:
   region: "NTSC-U"
   compat: 5
 SLUS-21416:
-  name: "D1 Grand Prix"
+  name: "D1 Grand Prix Series - Professional Drift"
   region: "NTSC-U"
   compat: 5
   clampModes:
