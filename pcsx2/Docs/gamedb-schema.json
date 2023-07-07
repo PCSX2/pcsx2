@@ -287,6 +287,9 @@
             },
             "beforeDraw": {
               "type": "string"
+            },
+            "moveHandler": {
+              "type": "string"
             }
           },
           "additionalProperties": false

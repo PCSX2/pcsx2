@@ -1105,6 +1105,131 @@ bool GSHwHack::OI_HauntingGround(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#define RBITBLTBUF r.m_env.BITBLTBUF
+#define RSBP r.m_env.BITBLTBUF.SBP
+#define RSBW r.m_env.BITBLTBUF.SBW
+#define RSPSM r.m_env.BITBLTBUF.SPSM
+#define RDBP r.m_env.BITBLTBUF.DBP
+#define RDBW r.m_env.BITBLTBUF.DBW
+#define RDPSM r.m_env.BITBLTBUF.DPSM
+#define RWIDTH r.m_env.TRXREG.RRW
+#define RHEIGHT r.m_env.TRXREG.RRH
+#define RSX r.m_env.TRXPOS.SSAX
+#define RSY r.m_env.TRXPOS.SSAY
+#define RDX r.m_env.TRXPOS.DSAX
+#define RDY r.m_env.TRXPOS.DSAY
+
+static bool GetMoveTargetPair(GSRendererHW& r, GSTextureCache::Target** src, GIFRegTEX0 src_desc,
+	GSTextureCache::Target** dst, GIFRegTEX0 dst_desc, bool req_target, bool preserve_target)
+{
+	// The source needs to exist.
+	const int src_type =
+		GSLocalMemory::m_psm[src_desc.PSM].depth ? GSTextureCache::DepthStencil : GSTextureCache::RenderTarget;
+	GSTextureCache::Target* tsrc =
+		g_texture_cache->LookupTarget(src_desc, GSVector2i(1, 1), r.GetTextureScaleFactor(), src_type);
+	if (!src)
+		return false;
+
+	// The target might not.
+	const int dst_type =
+		GSLocalMemory::m_psm[dst_desc.PSM].depth ? GSTextureCache::DepthStencil : GSTextureCache::RenderTarget;
+	GSTextureCache::Target* tdst = g_texture_cache->LookupTarget(dst_desc, tsrc->GetUnscaledSize(), tsrc->GetScale(),
+		dst_type, true, 0, false, false, preserve_target, tsrc->GetUnscaledRect());
+	if (!tdst)
+	{
+		if (req_target)
+			return false;
+
+		tdst = g_texture_cache->CreateTarget(dst_desc, tsrc->GetUnscaledSize(), tsrc->GetScale(), dst_type, true, 0,
+			false, false, true, tsrc->GetUnscaledRect());
+		if (!tdst)
+			return false;
+	}
+
+	if (!preserve_target)
+	{
+		g_texture_cache->InvalidateVideoMemType(
+			(dst_type == GSTextureCache::RenderTarget) ? GSTextureCache::DepthStencil : GSTextureCache::RenderTarget,
+			dst_desc.TBP0);
+
+		GL_INS("GetMoveTargetPair(): Clearing dirty list.");
+		tdst->m_dirty.clear();
+	}
+	else
+	{
+		tdst->Update();
+	}
+
+	*src = tsrc;
+	*dst = tdst;
+	return true;
+}
+
+#if 0
+// Disabled to avoid compiler warnings, enable when it is needed.
+static bool GetMoveTargetPair(GSRendererHW& r, GSTextureCache::Target** src, GSTextureCache::Target** dst,
+	bool req_target = false, bool preserve_target = false)
+{
+	return GetMoveTargetPair(r, src, GIFRegTEX0::Create(RSBP, RSBW, RSPSM), dst, GIFRegTEX0::Create(RDBP, RDBW, RDPSM),
+		req_target, preserve_target);
+}
+#endif
+
+bool GSHwHack::MV_Growlanser(GSRendererHW& r)
+{
+	// Growlanser games have precomputed backgrounds and depth buffers, then draw the characters over the top. But
+	// instead of pre-swizzling it, or doing a large 512x448 move, they draw each page of depth to a temporary buffer
+	// (FBP 0), then move it, one quadrant (of a page) at a time to 0x1C00, in C32 format. Why they didn't just use a
+	// C32->Z32 move is beyond me... Anyway, since we don't swizzle targets in VRAM, the first move would need to
+	// readback (slow), and lose upscaling. The real issue is that because we don't preload depth targets, even with
+	// EE writes, the depth buffer gets cleared, and the background never occludes the foreground. So, we'll intercept
+	// the first move, prefill the depth buffer at 0x1C00, and skip the rest of them, so it's ready for the game.
+
+	// Only 32x16 moves in C32.
+	if (RWIDTH != 32 || RHEIGHT != 16 || RSPSM != PSMCT32 || RDPSM != PSMCT32)
+		return false;
+
+	// All the moves happen inbetween two draws, so we can take advantage of that to know when to stop.
+	static int last_hacked_move_n = 0;
+	if (r.s_n == last_hacked_move_n)
+		return true;
+
+	GSTextureCache::Target *src, *dst;
+	if (!GetMoveTargetPair(
+			r, &src, GIFRegTEX0::Create(RSBP, RSBW, RSPSM), &dst, GIFRegTEX0::Create(RDBP, RDBW, PSMZ32), false, false))
+	{
+		return false;
+	}
+
+	const GSVector4i rc = src->GetUnscaledRect().rintersect(dst->GetUnscaledRect());
+	dst->m_TEX0.TBW = src->m_TEX0.TBW;
+	dst->UpdateValidity(rc);
+
+	GL_INS("MV_Growlanser: %x -> %x %dx%d", RSBP, RDBP, src->GetUnscaledWidth(), src->GetUnscaledHeight());
+
+	g_gs_device->StretchRect(src->GetTexture(), GSVector4(rc) / GSVector4(src->GetUnscaledSize()).xyxy(),
+		dst->GetTexture(), GSVector4(rc) * GSVector4(dst->GetScale()), ShaderConvert::RGBA8_TO_FLOAT32, false);
+
+	last_hacked_move_n = r.s_n;
+	return true;
+}
+
+#undef RBITBLTBUF
+#undef RSBP
+#undef RSBW
+#undef RSPSM
+#undef RDBP
+#undef RDBW
+#undef RDPSM
+#undef RWIDTH
+#undef RHEIGHT
+#undef RSX
+#undef RSY
+#undef RDX
+#undef RDY
+
+////////////////////////////////////////////////////////////////////////////////
+
 #define CRC_F(name) { #name, &GSHwHack::name }
 
 const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_functions[] = {
@@ -1159,7 +1284,11 @@ const GSHwHack::Entry<GSRendererHW::OI_Ptr> GSHwHack::s_before_draw_functions[] 
 	CRC_F(OI_ArTonelico2),
 	CRC_F(OI_BurnoutGames),
 	CRC_F(OI_Battlefield2),
-	CRC_F(OI_HauntingGround)
+	CRC_F(OI_HauntingGround),
+};
+
+const GSHwHack::Entry<GSRendererHW::MV_Ptr> GSHwHack::s_move_handler_functions[] = {
+	CRC_F(MV_Growlanser),
 };
 
 #undef CRC_F
@@ -1186,6 +1315,17 @@ s16 GSLookupBeforeDrawFunctionId(const std::string_view& name)
 	return -1;
 }
 
+s16 GSLookupMoveHandlerFunctionId(const std::string_view& name)
+{
+	for (u32 i = 0; i < std::size(GSHwHack::s_move_handler_functions); i++)
+	{
+		if (name == GSHwHack::s_move_handler_functions[i].name)
+			return static_cast<s16>(i);
+	}
+
+	return -1;
+}
+
 void GSRendererHW::UpdateCRCHacks()
 {
 	GSRenderer::UpdateCRCHacks();
@@ -1195,6 +1335,7 @@ void GSRendererHW::UpdateCRCHacks()
 
 	m_gsc = nullptr;
 	m_oi = nullptr;
+	m_mv = nullptr;
 
 	if (!GSConfig.UserHacks_DisableRenderFixes)
 	{
@@ -1208,6 +1349,12 @@ void GSRendererHW::UpdateCRCHacks()
 			static_cast<size_t>(GSConfig.BeforeDrawFunctionId) < std::size(GSHwHack::s_before_draw_functions))
 		{
 			m_oi = GSHwHack::s_before_draw_functions[GSConfig.BeforeDrawFunctionId].ptr;
+		}
+
+		if (GSConfig.MoveHandlerFunctionId >= 0 &&
+			static_cast<size_t>(GSConfig.MoveHandlerFunctionId) < std::size(GSHwHack::s_move_handler_functions))
+		{
+			m_mv = GSHwHack::s_move_handler_functions[GSConfig.MoveHandlerFunctionId].ptr;
 		}
 	}
 }

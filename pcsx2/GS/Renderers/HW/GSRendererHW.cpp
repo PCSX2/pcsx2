@@ -1219,6 +1219,12 @@ void GSRendererHW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 
 void GSRendererHW::Move()
 {
+	if (m_mv && m_mv(*this))
+	{
+		// Handled by HW hack.
+		return;
+	}
+
 	const int sx = m_env.TRXPOS.SSAX;
 	const int sy = m_env.TRXPOS.SSAY;
 	const int dx = m_env.TRXPOS.DSAX;

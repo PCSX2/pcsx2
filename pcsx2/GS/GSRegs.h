@@ -836,6 +836,15 @@ REG_END2
 		// The recast of TBW seems useless but it avoid tons of warning from GCC...
 		return ((u32)TBW << 6u) < (1u << TW);
 	}
+
+	__forceinline static GIFRegTEX0 Create(u32 bp, u32 bw, u32 psm)
+	{
+		GIFRegTEX0 ret = {};
+		ret.TBP0 = bp;
+		ret.TBW = bw;
+		ret.PSM = psm;
+		return ret;
+	}
 REG_END2
 
 REG64_(GIFReg, TEX1)

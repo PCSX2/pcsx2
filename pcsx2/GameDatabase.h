@@ -96,6 +96,7 @@ namespace GameDatabaseSchema
 		RecommendedBlendingLevel,
 		GetSkipCount,
 		BeforeDraw,
+		MoveHandler,
 
 		Count
 	};

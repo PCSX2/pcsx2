@@ -609,6 +609,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(TVShader) &&
 		OpEqu(GetSkipCountFunctionId) &&
 		OpEqu(BeforeDrawFunctionId) &&
+		OpEqu(MoveHandlerFunctionId) &&
 		OpEqu(SkipDrawEnd) &&
 		OpEqu(SkipDrawStart) &&
 
