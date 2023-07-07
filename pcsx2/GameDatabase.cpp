@@ -200,33 +200,25 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 		}
 	}
 
-	// Validate speed hacks, invalid ones will be dropped!
 	if (node.has_child("speedHacks") && node["speedHacks"].has_children())
 	{
 		for (const auto& n : node["speedHacks"].children())
 		{
-			bool speedHackValidated = false;
-			auto speedHack = std::string(n.key().str, n.key().len);
+			const std::string_view id_view = std::string_view(n.key().str, n.key().len);
+			const std::string_view value_view = std::string_view(n.val().str, n.val().len);
+			const std::optional<SpeedHack> id = Pcsx2Config::SpeedhackOptions::ParseSpeedHackName(id_view);
+			const std::optional<int> value = StringUtil::FromChars<int>(value_view);
 
-			// Same deal with SpeedHacks
-			if (StringUtil::EndsWith(speedHack, "SpeedHack"))
+			if (id.has_value() && value.has_value() &&
+				std::none_of(gameEntry.speedHacks.begin(), gameEntry.speedHacks.end(),
+					[&id](const auto& it) { return it.first == id.value(); }))
 			{
-				speedHack.erase(speedHack.size() - 9);
-				for (SpeedhackId id = SpeedhackId_FIRST; id < pxEnumEnd; ++id)
-				{
-					if (speedHack.compare(EnumToString(id)) == 0 &&
-						std::none_of(gameEntry.speedHacks.begin(), gameEntry.speedHacks.end(), [id](const auto& it) { return it.first == id; }))
-					{
-						gameEntry.speedHacks.emplace_back(id, std::atoi(n.val().str));
-						speedHackValidated = true;
-						break;
-					}
-				}
+				gameEntry.speedHacks.emplace_back(id.value(), value.value());
 			}
-
-			if (!speedHackValidated)
+			else
 			{
-				Console.Error(fmt::format("[GameDB] Invalid speedhack: '{}', specified for serial: '{}'. Dropping!", speedHack.c_str(), serial));
+				Console.Error(fmt::format("[GameDB] Invalid speedhack: '{}={}', specified for serial: '{}'. Dropping!",
+					id_view, value_view, serial));
 			}
 		}
 	}
@@ -507,16 +499,17 @@ void GameDatabaseSchema::GameEntry::applyGameFixes(Pcsx2Config& config, bool app
 	// TODO - config - this could be simplified with maps instead of bitfields and enums
 	for (const auto& it : speedHacks)
 	{
-		const bool mode = it.second != 0;
 		if (!applyAuto)
 		{
-			Console.Warning("[GameDB] Skipping setting Speedhack '%s' to [mode=%d]", EnumToString(it.first), mode);
+			Console.Warning("[GameDB] Skipping setting Speedhack '%s' to [mode=%d]",
+				Pcsx2Config::SpeedhackOptions::GetSpeedHackName(it.first), it.second);
 			continue;
 		}
 		// Legacy note - speedhacks are setup in the GameDB as integer values, but
 		// are effectively booleans like the gamefixes
-		config.Speedhacks.Set(it.first, mode);
-		Console.WriteLn("(GameDB) Setting Speedhack '%s' to [mode=%d]", EnumToString(it.first), mode);
+		config.Speedhacks.Set(it.first, it.second);
+		Console.WriteLn("(GameDB) Setting Speedhack '%s' to [mode=%d]",
+			Pcsx2Config::SpeedhackOptions::GetSpeedHackName(it.first), it.second);
 	}
 
 	// TODO - config - this could be simplified with maps instead of bitfields and enums

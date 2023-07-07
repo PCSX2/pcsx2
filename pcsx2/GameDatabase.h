@@ -24,7 +24,6 @@
 #include <vector>
 
 enum GamefixId;
-enum SpeedhackId;
 
 namespace GameDatabaseSchema
 {
@@ -113,7 +112,7 @@ namespace GameDatabaseSchema
 		ClampMode vu0ClampMode = ClampMode::Undefined;
 		ClampMode vu1ClampMode = ClampMode::Undefined;
 		std::vector<GamefixId> gameFixes;
-		std::vector<std::pair<SpeedhackId, int>> speedHacks;
+		std::vector<std::pair<SpeedHack, int>> speedHacks;
 		std::vector<std::pair<GSHWFixId, s32>> gsHWFixes;
 		std::vector<std::string> memcardFilters;
 		std::unordered_map<u32, std::string> patches;
