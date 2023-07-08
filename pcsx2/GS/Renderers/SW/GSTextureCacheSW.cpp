@@ -16,6 +16,8 @@
 #include "PrecompiledHeader.h"
 #include "GS/Renderers/SW/GSTextureCacheSW.h"
 #include "GS/GSExtra.h"
+#include "GS/GSPerfMon.h"
+#include "GS/GSUtil.h"
 
 GSTextureCacheSW::GSTextureCacheSW() = default;
 

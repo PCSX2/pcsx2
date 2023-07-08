@@ -17,6 +17,7 @@
 #include "GS/Renderers/HW/GSRendererHW.h"
 #include "GS/Renderers/HW/GSHwHack.h"
 #include "GS/GSGL.h"
+#include "GS/GSUtil.h"
 
 static bool s_nativeres;
 
