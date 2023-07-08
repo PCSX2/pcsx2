@@ -225,15 +225,15 @@ void SDLInputSource::SetHints()
 bool SDLInputSource::LoadControllerDB()
 {
 	Error error;
-	std::FILE* fp =
-		FileSystem::OpenCFile(Path::Combine(EmuFolders::Resources, CONTROLLER_DB_FILENAME).c_str(), "rb", &error);
-	if (!fp)
+	auto fp = FileSystem::OpenManagedCFile(Path::Combine(EmuFolders::Resources, CONTROLLER_DB_FILENAME).c_str(), "rb", &error);
+	std::optional<std::string> data;
+	if (!fp || !(data = FileSystem::ReadFileToString(fp.get())))
 	{
 		Console.Error(fmt::format("SDLInputSource: Failed to open controller database: {}", error.GetDescription()));
 		return false;
 	}
 
-	if (SDL_GameControllerAddMappingsFromRW(SDL_RWFromFP(fp, SDL_TRUE), SDL_TRUE) < 0)
+	if (SDL_GameControllerAddMappingsFromRW(SDL_RWFromConstMem(data->c_str(), data->length()), SDL_TRUE) < 0)
 	{
 		Console.Error(fmt::format("SDLInputSource: SDL_GameControllerAddMappingsFromRW() failed: {}", SDL_GetError()));
 		return false;
