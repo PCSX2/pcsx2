@@ -1402,6 +1402,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 
 			dst->m_32_bits_fmt = dst_match->m_32_bits_fmt;
 			dst->OffsetHack_modxy = dst_match->OffsetHack_modxy;
+			dst->m_end_block = dst_match->m_end_block; // If we're copying the size, we need to keep the end block.
 
 			ShaderConvert shader;
 			// m_32_bits_fmt gets set on a shuffle or if the format isn't 16bit.
@@ -1431,6 +1432,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				// so just move the dirty rects across.
 				dst->m_dirty = std::move(dst_match->m_dirty);
 				dst_match->m_dirty = {};
+				dst->m_alpha_max = dst_match->m_alpha_max;
+				dst->m_alpha_min = dst_match->m_alpha_min;
 
 				// Don't bother copying the old target in if the whole thing is dirty.
 				if (dst->m_dirty.empty() || (~dst->m_dirty.GetDirtyChannels() & GSUtil::GetChannelMask(TEX0.PSM)) != 0 ||
@@ -2875,6 +2878,8 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	dst->UpdateValidBits(GSLocalMemory::m_psm[DPSM].fmsk);
 	dst->UpdateValidity(GSVector4i(dx, dy, dx + w, dy + h));
 	dst->UpdateDrawn(GSVector4i(dx, dy, dx + w, dy + h));
+	dst->m_alpha_max = src->m_alpha_max;
+	dst->m_alpha_min = src->m_alpha_min;
 	// Invalidate any sources that overlap with the target (since they're now stale).
 	InvalidateVideoMem(g_gs_renderer->m_mem.GetOffset(DBP, DBW, DPSM), GSVector4i(dx, dy, dx + w, dy + h), false);
 	return true;
@@ -4735,6 +4740,8 @@ GSTextureCache::Target::Target(GIFRegTEX0 TEX0, int type, const GSVector2i& unsc
 	m_unscaled_size = unscaled_size;
 	m_scale = scale;
 	m_texture = texture;
+	m_alpha_min = 0;
+	m_alpha_max = 0;
 	m_32_bits_fmt |= (GSLocalMemory::m_psm[TEX0.PSM].trbpp != 16);
 }
 
@@ -4871,7 +4878,9 @@ void GSTextureCache::Target::Update()
 	}
 
 	UpdateValidity(total_rect);
-
+	// We don't know what the dirty alpha is gonna be, so assume max.
+	m_alpha_min = 0;
+	m_alpha_max = 255;
 	g_gs_device->Recycle(t);
 	m_dirty.clear();
 }
