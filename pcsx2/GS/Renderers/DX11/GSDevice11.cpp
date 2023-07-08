@@ -1282,17 +1282,13 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 	// ps
 
-	PSSetShaderResources(sTex, nullptr);
+	PSSetShaderResource(0, sTex);
 	PSSetSamplerState(linear ? m_convert.ln.get() : m_convert.pt.get());
 	PSSetShader(ps, ps_cb);
 
 	//
 
 	DrawPrimitive();
-
-	//
-
-	PSSetShaderResources(nullptr, nullptr);
 }
 
 void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear)
@@ -1350,17 +1346,13 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 	// ps
 
-	PSSetShaderResources(sTex, nullptr);
+	PSSetShaderResource(0, sTex);
 	PSSetSamplerState(linear ? m_convert.ln.get() : m_convert.pt.get());
 	PSSetShader(m_present.ps[static_cast<u32>(shader)].get(), m_present.ps_cb.get());
 
 	//
 
 	DrawPrimitive();
-
-	//
-
-	PSSetShaderResources(nullptr, nullptr);
 }
 
 void GSDevice11::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
@@ -1813,7 +1805,7 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 	VSSetShader(m_convert.vs.get(), nullptr);
 
 	// ps
-	PSSetShaderResources(rt, nullptr);
+	PSSetShaderResource(0, rt);
 	PSSetSamplerState(m_convert.pt.get());
 	PSSetShader(m_convert.ps[static_cast<int>(datm ? ShaderConvert::DATM_1 : ShaderConvert::DATM_0)].get(), nullptr);
 
@@ -1993,16 +1985,9 @@ void GSDevice11::VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb)
 	}
 }
 
-void GSDevice11::PSSetShaderResources(GSTexture* sr0, GSTexture* sr1)
-{
-	PSSetShaderResource(0, sr0);
-	PSSetShaderResource(1, sr1);
-	PSSetShaderResource(2, nullptr);
-}
-
 void GSDevice11::PSSetShaderResource(int i, GSTexture* sr)
 {
-	m_state.ps_sr_views[i] = sr ? static_cast<ID3D11ShaderResourceView*>(*static_cast<GSTexture11*>(sr)) : nullptr;
+	m_state.ps_sr_views[i] = *static_cast<GSTexture11*>(sr);
 }
 
 void GSDevice11::PSSetSamplerState(ID3D11SamplerState* ss0)
@@ -2277,7 +2262,16 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	}
 	IASetPrimitiveTopology(topology);
 
-	PSSetShaderResources(config.tex, config.pal);
+	if (config.tex)
+	{
+		CommitClear(config.tex);
+		PSSetShaderResource(0, config.tex);
+	}
+	if (config.pal)
+	{
+		CommitClear(config.pal);
+		PSSetShaderResource(1, config.pal);
+	}
 
 	GSTexture* rt_copy = nullptr;
 	if (config.require_one_barrier || (config.tex && config.tex == config.rt)) // Used as "bind rt" flag when texture barrier is unsupported
