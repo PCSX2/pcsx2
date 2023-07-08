@@ -2116,6 +2116,9 @@ void GSRendererHW::Draw()
 			cleanup_cancelled_draw();
 			return;
 		}
+
+		if (src->m_target)
+			CalcAlphaMinMax(src->m_from_target->m_alpha_min, src->m_from_target->m_alpha_max);
 	}
 
 	// Estimate size based on the scissor rectangle and height cache.
@@ -4736,6 +4739,52 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	}
 
 	// Blend
+	if (rt)
+	{
+		if (!m_channel_shuffle && !m_texture_shuffle)
+		{
+			const int fba_value = m_prev_env.CTXT[m_prev_env.PRIM.CTXT].FBA.FBA * 128;
+			if ((m_cached_ctx.FRAME.FBMSK & 0xff000000) == 0)
+			{
+				if (rt->m_valid.rintersect(m_r).eq(rt->m_valid) && PrimitiveCoversWithoutGaps() && !(m_cached_ctx.TEST.DATE || m_cached_ctx.TEST.ATE || m_cached_ctx.TEST.ZTST != ZTST_ALWAYS))
+				{
+					rt->m_alpha_max = GetAlphaMinMax().max | fba_value;
+					rt->m_alpha_min = GetAlphaMinMax().min | fba_value;
+				}
+				else
+				{
+					rt->m_alpha_max = std::max(GetAlphaMinMax().max | fba_value, rt->m_alpha_max);
+					rt->m_alpha_min = std::min(GetAlphaMinMax().min | fba_value, rt->m_alpha_min);
+				}
+			}
+			else if ((m_cached_ctx.FRAME.FBMSK & 0xff000000) != 0xff000000) // We can't be sure of the alpha if it's partially masked.
+			{
+				rt->m_alpha_max |= std::max(GetAlphaMinMax().max | fba_value, rt->m_alpha_max);
+				rt->m_alpha_min = std::min(GetAlphaMinMax().min | fba_value, rt->m_alpha_min);
+			}
+			else
+			{
+				// If both are zero then we probably don't know what the alpha is.
+				if (rt->m_alpha_max == 0 && rt->m_alpha_min == 0)
+				{
+					rt->m_alpha_max = 255;
+					rt->m_alpha_min = 0;
+				}
+			}
+		}
+		else if ((m_texture_shuffle && m_conf.ps.write_rg == false) || m_channel_shuffle)
+		{
+			rt->m_alpha_max = 255;
+			rt->m_alpha_min = 0;
+		}
+	}
+
+	// Not gonna spend too much time with this, it's not likely to be used much, can't be less accurate than it was.
+	if (ds)
+	{
+		ds->m_alpha_max = std::max(ds->m_alpha_max, static_cast<int>(m_vt.m_max.p.z) >> 24);
+		ds->m_alpha_min = std::min(ds->m_alpha_min, static_cast<int>(m_vt.m_min.p.z) >> 24);
+	}
 
 	bool blending_alpha_pass = false;
 	if ((!IsOpaque() || m_context->ALPHA.IsBlack()) && rt && (m_conf.colormask.wrgba & 0x7))
@@ -5511,6 +5560,8 @@ bool GSRendererHW::TryTargetClear(GSTextureCache::Target* rt, GSTextureCache::Ta
 			const u32 c = GetConstantDirectWriteMemClearColor();
 			GL_INS("TryTargetClear(): RT at %x <= %08X", rt->m_TEX0.TBP0, c);
 			g_gs_device->ClearRenderTarget(rt->m_texture, c);
+			rt->m_alpha_max = c >> 24;
+			rt->m_alpha_min = c >> 24;
 		}
 		else
 		{
@@ -5527,6 +5578,8 @@ bool GSRendererHW::TryTargetClear(GSTextureCache::Target* rt, GSTextureCache::Ta
 			const float d = static_cast<float>(z) * (g_gs_device->Features().clip_control ? 0x1p-32f : 0x1p-24f);
 			GL_INS("TryTargetClear(): DS at %x <= %f", ds->m_TEX0.TBP0, d);
 			g_gs_device->ClearDepth(ds->m_texture, d);
+			ds->m_alpha_max = z >> 24;
+			ds->m_alpha_min = z >> 24;
 		}
 		else
 		{

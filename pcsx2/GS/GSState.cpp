@@ -3669,12 +3669,13 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 	return { vr, uses_border };
 }
 
-void GSState::CalcAlphaMinMax()
+void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)
 {
-	if (m_vt.m_alpha.valid)
+	if (m_vt.m_alpha.valid && tex_alpha_min == 0 && tex_alpha_max == 255)
 		return;
 
-	int min = 0, max = 0;
+	// We wanted to force an update as we now know the alpha of the non-indexed texture.
+	int min = tex_alpha_min, max = tex_alpha_max;
 
 	if (IsCoverageAlpha())
 	{
@@ -3692,8 +3693,8 @@ void GSState::CalcAlphaMinMax()
 			switch (GSLocalMemory::m_psm[context->TEX0.PSM].fmt)
 			{
 				case 0:
-					a.y = 0;
-					a.w = 0xff;
+					a.y = min;
+					a.w = max;
 					break;
 				case 1:
 					a.y = env.TEXA.AEM ? 0 : env.TEXA.TA0;

@@ -134,9 +134,6 @@ private:
 
 	} m_tr;
 
-private:
-	void CalcAlphaMinMax();
-
 protected:
 	GSVertex m_v = {};
 	float m_q = 1.0f;
@@ -179,7 +176,7 @@ protected:
 	GSVertexTrace::VertexAlpha& GetAlphaMinMax()
 	{
 		if (!m_vt.m_alpha.valid)
-			CalcAlphaMinMax();
+			CalcAlphaMinMax(0, 255);
 		return m_vt.m_alpha;
 	}
 	struct TextureMinMaxResult
@@ -202,6 +199,7 @@ protected:
 	bool IsMipMapDraw();
 	bool IsMipMapActive();
 	bool IsCoverageAlpha();
+	void CalcAlphaMinMax(const int tex_min, const int tex_max);
 
 public:
 	struct GSUploadQueue
