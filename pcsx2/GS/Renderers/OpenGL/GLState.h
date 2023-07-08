@@ -15,7 +15,6 @@
 
 #pragma once
 
-#include "GS/Renderers/OpenGL/GLLoader.h"
 #include "GS/GSVector.h"
 
 #include "glad.h"
