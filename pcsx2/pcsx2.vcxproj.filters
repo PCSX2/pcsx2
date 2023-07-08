@@ -1034,9 +1034,6 @@
     <ClCompile Include="GS\Renderers\DX11\GSTextureFX11.cpp">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClCompile>
-    <ClCompile Include="GS\Renderers\OpenGL\GLLoader.cpp">
-      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="GS\Renderers\OpenGL\GSDeviceOGL.cpp">
       <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
     </ClCompile>
@@ -1980,9 +1977,6 @@
     </ClInclude>
     <ClInclude Include="GS\Renderers\DX11\GSTexture11.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
-    </ClInclude>
-    <ClInclude Include="GS\Renderers\OpenGL\GLLoader.h">
-      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\OpenGL\GSDeviceOGL.h">
       <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>

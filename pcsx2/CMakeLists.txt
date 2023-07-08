@@ -607,7 +607,6 @@ set(pcsx2GSHeaders
 if(USE_OPENGL)
 	list(APPEND pcsx2GSSources
 		GS/Renderers/OpenGL/GLContext.cpp
-		GS/Renderers/OpenGL/GLLoader.cpp
 		GS/Renderers/OpenGL/GLProgram.cpp
 		GS/Renderers/OpenGL/GLShaderCache.cpp
 		GS/Renderers/OpenGL/GLState.cpp
@@ -617,7 +616,6 @@ if(USE_OPENGL)
 	)
 	list(APPEND pcsx2GSHeaders
 		GS/Renderers/OpenGL/GLContext.h
-		GS/Renderers/OpenGL/GLLoader.h
 		GS/Renderers/OpenGL/GLProgram.h
 		GS/Renderers/OpenGL/GLShaderCache.h
 		GS/Renderers/OpenGL/GLState.h

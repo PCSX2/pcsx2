@@ -267,7 +267,6 @@
     <ClCompile Include="Dmac.cpp" />
     <ClCompile Include="ShiftJisToUnicode.cpp" />
     <ClCompile Include="sif2.cpp" />
-    <ClCompile Include="GS\Renderers\OpenGL\GLLoader.cpp" />
     <ClCompile Include="GS\Renderers\OpenGL\GLState.cpp" />
     <ClCompile Include="GS\GS.cpp" />
     <ClCompile Include="GS\GSAlignedClass.cpp" />
@@ -607,7 +606,6 @@
     <ClInclude Include="SPU2\regs.h" />
     <ClInclude Include="SPU2\Mixer.h" />
     <ClInclude Include="SPU2\spu2.h" />
-    <ClInclude Include="GS\Renderers\OpenGL\GLLoader.h" />
     <ClInclude Include="GS\Renderers\OpenGL\GLState.h" />
     <ClInclude Include="GS\GS.h" />
     <ClInclude Include="GS\GSExtra.h" />
