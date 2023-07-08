@@ -86,7 +86,7 @@ private:
 	void SetupIA(float target_scale, float sx, float sy);
 	void EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt);
 	bool EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only);
-	void EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& blending_alpha_pass);
+	void EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DATE_PRIMID, bool& DATE_BARRIER, bool& blending_alpha_pass);
 
 	void EmulateTextureSampler(const GSTextureCache::Target* rt, const GSTextureCache::Target* ds,
 		GSTextureCache::Source* tex, const TextureMinMaxResult& tmm, GSTexture*& src_copy);
