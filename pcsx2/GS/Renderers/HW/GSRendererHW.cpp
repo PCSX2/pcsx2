@@ -4428,7 +4428,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 }
 
 bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextureCache::Source* tex,
-	const TextureMinMaxResult& tmm) const
+	const TextureMinMaxResult& tmm)
 {
 	// Minimum blending or no barriers -> we can't use tex-is-fb.
 	if (GSConfig.AccurateBlendingUnit == AccBlendLevel::Minimum || !g_gs_device->Features().texture_barrier)
@@ -4476,21 +4476,8 @@ bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextu
 
 	// Texture is actually the frame buffer. Stencil emulation to compute shadow (Jak series/tri-ace game)
 	// Will hit the "m_ps_sel.tex_is_fb = 1" path in the draw
-	if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
-	{
-		// This pattern is used by several games to emulate a stencil (shadow)
-		// Ratchet & Clank, Jak do alpha integer multiplication (tfx) which is mostly equivalent to +1/-1
-		// Tri-Ace (Star Ocean 3/RadiataStories/VP2) uses a palette to handle the +1/-1
-		if (m_cached_ctx.FRAME.FBMSK == 0x00FFFFFF)
-		{
-			GL_CACHE("Tex-is-fb hack for Jak");
-			return true;
-		}
-
-		GL_CACHE("Triangle draw, not using tex-is-fb");
-		return false;
-	}
-	else if (m_vt.m_primclass == GS_SPRITE_CLASS)
+	const bool is_quads = (m_vt.m_primclass == GS_SPRITE_CLASS || m_prim_overlap == PRIM_OVERLAP_NO);
+	if (is_quads)
 	{
 		// No bilinear for tex-is-fb.
 		if (m_vt.IsLinear())
@@ -4520,6 +4507,21 @@ bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextu
 		}
 
 		GL_CACHE("Coord diff too large, not using tex-is-fb.");
+		return false;
+	}
+
+	if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
+	{
+		// This pattern is used by several games to emulate a stencil (shadow)
+		// Ratchet & Clank, Jak do alpha integer multiplication (tfx) which is mostly equivalent to +1/-1
+		// Tri-Ace (Star Ocean 3/RadiataStories/VP2) uses a palette to handle the +1/-1
+		if (m_cached_ctx.FRAME.FBMSK == 0x00FFFFFF)
+		{
+			GL_CACHE("Tex-is-fb hack for Jak");
+			return true;
+		}
+
+		GL_CACHE("Triangle draw, not using tex-is-fb");
 		return false;
 	}
 
@@ -5813,52 +5815,13 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps()
 
 	if (m_vt.m_primclass == GS_POINT_CLASS)
 	{
-		m_primitive_covers_without_gaps = true;
-		return true;
+		m_primitive_covers_without_gaps = (m_vertex.next < 2);
+		return m_primitive_covers_without_gaps.value();
 	}
 	else if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
 	{
-		if (m_index.tail != 6)
-		{
-			m_primitive_covers_without_gaps = false;
-			return false;
-		}
-
-		// If this is a quad, there should only be two distinct values for both X and Y, which
-		// also happen to be the minimum/maximum bounds of the primitive.
-		const GSVertex* const v = m_vertex.buff;
-		const u16* const i = m_index.buff;
-		u16 distinct_x_values[2] = {v[i[0]].XYZ.X};
-		u16 distinct_y_values[2] = {v[i[0]].XYZ.Y};
-		u32 num_distinct_x_values = 1, num_distinct_y_values = 1;
-		for (u32 j = 1; j < 6; j++)
-		{
-			const GSVertex& jv = v[i[j]];
-			if (jv.XYZ.X != distinct_x_values[0] && jv.XYZ.X != distinct_x_values[1])
-			{
-				if (num_distinct_x_values > 1)
-				{
-					m_primitive_covers_without_gaps = false;
-					return false;
-				}
-
-				distinct_x_values[num_distinct_x_values++] = jv.XYZ.X;
-			}
-
-			if (jv.XYZ.Y != distinct_y_values[0] && jv.XYZ.Y != distinct_y_values[1])
-			{
-				if (num_distinct_y_values > 1)
-				{
-					m_primitive_covers_without_gaps = false;
-					return false;
-				}
-
-				distinct_y_values[num_distinct_y_values++] = jv.XYZ.Y;
-			}
-		}
-
-		m_primitive_covers_without_gaps = true;
-		return true;
+		m_primitive_covers_without_gaps = (m_index.tail == 6 && TrianglesAreQuads());
+		return m_primitive_covers_without_gaps.value();
 	}
 	else if (m_vt.m_primclass != GS_SPRITE_CLASS)
 	{

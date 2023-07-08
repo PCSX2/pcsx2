@@ -419,6 +419,7 @@ public:
 
 	void DumpVertices(const std::string& filename);
 
+	bool TrianglesAreQuads() const;
 	PRIM_OVERLAP PrimitiveOverlap();
 	GIFRegTEX0 GetTex0Layer(u32 lod);
 };
