@@ -18,6 +18,7 @@
 #include "GS/GSExtra.h"
 #include "GS/GSLocalMemory.h"
 #include "GS/GSGL.h"
+#include "GS/GSUtil.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/Renderers/Common/GSRenderer.h"
 #include "common/AlignedMalloc.h"

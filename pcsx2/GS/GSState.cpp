@@ -14,16 +14,18 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSState.h"
-#include "GSGL.h"
-#include "GSUtil.h"
+#include "GS/GSState.h"
+#include "GS/GSDump.h"
+#include "GS/GSGL.h"
+#include "GS/GSPerfMon.h"
+#include "GS/GSUtil.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
 
-#include <algorithm> // clamp
-#include <cfloat> // FLT_MAX
+#include <algorithm>
+#include <cfloat>
 #include <fstream>
-#include <iomanip> // Dump Verticles
+#include <iomanip>
 
 int GSState::s_n = 0;
 int GSState::s_last_transfer_draw_n = 0;

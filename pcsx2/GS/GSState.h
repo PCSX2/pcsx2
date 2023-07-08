@@ -15,19 +15,18 @@
 
 #pragma once
 
-#include "GS.h"
-#include "GSLocalMemory.h"
-#include "GSDrawingContext.h"
-#include "GSDrawingEnvironment.h"
-#include "Renderers/Common/GSVertex.h"
-#include "Renderers/Common/GSVertexTrace.h"
-#include "GSUtil.h"
-#include "GSPerfMon.h"
-#include "GSVector.h"
-#include "Renderers/Common/GSDevice.h"
+#include "GS/GS.h"
+#include "GS/GSLocalMemory.h"
+#include "GS/GSDrawingContext.h"
+#include "GS/GSDrawingEnvironment.h"
+#include "GS/Renderers/Common/GSVertex.h"
+#include "GS/Renderers/Common/GSVertexTrace.h"
+#include "GS/Renderers/Common/GSDevice.h"
+#include "GS/GSVector.h"
 #include "GSCrc.h"
 #include "GSAlignedClass.h"
-#include "GSDump.h"
+
+class GSDumpBase;
 
 class GSState : public GSAlignedClass<32>
 {

@@ -20,6 +20,7 @@
 #include "GS/Renderers/OpenGL/GLState.h"
 #include "GS/GSState.h"
 #include "GS/GSGL.h"
+#include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
 #include "Host.h"
 

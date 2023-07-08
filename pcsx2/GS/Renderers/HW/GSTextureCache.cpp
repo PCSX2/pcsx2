@@ -20,6 +20,7 @@
 #include "GS/GSState.h"
 #include "GS/GSGL.h"
 #include "GS/GSIntrin.h"
+#include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
 #include "GS/GSXXH.h"
 #include "common/Align.h"
