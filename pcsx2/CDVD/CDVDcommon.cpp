@@ -75,7 +75,7 @@ static int CheckDiskTypeFS(int baseType)
 	IsoDirectory rootdir(isofs);
 	if (rootdir.OpenRootDirectory())
 	{
-		if (IsoFile file(isofs); file.open(rootdir, "SYSTEM.CNF;1"))
+		if (IsoFile file(isofs); file.open(rootdir, "SYSTEM.CNF"))
 		{
 			const int size = file.getLength();
 			const std::unique_ptr<char[]> buffer = std::make_unique<char[]>(size + 1);
@@ -95,13 +95,13 @@ static int CheckDiskTypeFS(int baseType)
 		}
 
 		// PS2 Linux disc 2, doesn't have a System.CNF or a normal ELF
-		if (rootdir.Exists("P2L_0100.02;1"))
+		if (rootdir.Exists("P2L_0100.02"))
 			return CDVD_TYPE_PS2DVD;
 
-		if (rootdir.Exists("PSX.EXE;1"))
+		if (rootdir.Exists("PSX.EXE"))
 			return CDVD_TYPE_PSCD;
 
-		if (rootdir.Exists("VIDEO_TS/VIDEO_TS.IFO;1"))
+		if (rootdir.Exists("VIDEO_TS/VIDEO_TS.IFO"))
 			return CDVD_TYPE_DVDV;
 	}
 
