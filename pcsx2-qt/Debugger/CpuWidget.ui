@@ -231,6 +231,11 @@
                  <string>String</string>
                 </property>
                </item>
+               <item>
+                <property name="text">
+                 <string>Array of byte</string>
+                </property>
+               </item>
               </widget>
              </item>
              <item row="1" column="2">
