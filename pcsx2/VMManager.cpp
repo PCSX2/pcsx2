@@ -1126,17 +1126,14 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		Console.WriteLn("Loading BIOS...");
 		if (!LoadBIOS())
 		{
-			// TODO: When we translate core strings, translate this.
-
-			const char* message =
-				"PCSX2 requires a PS2 BIOS in order to run.\n\n"
-				"For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing "
-				"doesn't count).\n\n"
-				"Once dumped, this BIOS image should be placed in the bios folder within the data directory "
-				"(Tools Menu -> Open Data Directory).\n\n"
-				"Please consult the FAQs and Guides for further instructions.";
-
-			Host::ReportErrorAsync("Startup Error", message);
+			Host::ReportErrorAsync(TRANSLATE_SV("VMManager", "Error"),
+				TRANSLATE_SV("VMManager",
+					"PCSX2 requires a PS2 BIOS in order to run.\n\n"
+					"For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing "
+					"doesn't count).\n\n"
+					"Once dumped, this BIOS image should be placed in the bios folder within the data directory "
+					"(Tools Menu -> Open Data Directory).\n\n"
+					"Please consult the FAQs and Guides for further instructions."));
 			return false;
 		}
 	}
