@@ -312,7 +312,16 @@ bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 
 		case CDVD_TYPE_ILLEGAL:
 		default:
-			return false;
+		{
+			// Create empty invalid entry, so we don't repeatedly scan it every time.
+			entry->type = EntryType::Invalid;
+			entry->path = path;
+			entry->total_size = 0;
+			entry->compatibility_rating = CompatibilityRating::Unknown;
+			entry->title.clear();
+			entry->region = Region::Other;
+			return true;
+		}
 	}
 
 	entry->path = path;
@@ -624,6 +633,10 @@ bool GameList::AddFileFromCache(const std::string& path, std::time_t timestamp, 
 	if (!GetGameListEntryFromCache(path, &entry) || entry.last_modified_time != timestamp)
 		return false;
 
+	// Skip over invalid entries.
+	if (entry.type == EntryType::Invalid)
+		return true;
+
 	auto iter = UnorderedStringMapFind(played_time_map, entry.serial);
 	if (iter != played_time_map.end())
 	{
@@ -647,13 +660,19 @@ bool GameList::ScanFile(
 	if (!PopulateEntryFromPath(path, &entry))
 		return false;
 
-	entry.path = std::move(path);
 	entry.last_modified_time = timestamp;
 
 	if (s_cache_write_stream || OpenCacheForWriting())
 	{
 		if (!WriteEntryToCache(&entry))
 			Console.Warning("Failed to write entry '%s' to cache", entry.path.c_str());
+	}
+
+	if (entry.type == EntryType::Invalid)
+	{
+		// don't add invalid entries to list
+		lock.lock();
+		return true;
 	}
 
 	auto iter = UnorderedStringMapFind(played_time_map, entry.serial);
