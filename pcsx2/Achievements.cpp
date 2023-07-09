@@ -19,8 +19,6 @@
 
 #include "Achievements.h"
 #include "CDVD/CDVD.h"
-#include "CDVD/IsoFS/IsoFS.h"
-#include "CDVD/IsoFS/IsoFSCDVD.h"
 #include "Elfheader.h"
 #include "Host.h"
 #include "ImGui/FullscreenUI.h"
@@ -37,6 +35,7 @@
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/FileSystem.h"
+#include "common/Error.h"
 #include "common/General.h"
 #include "common/HTTPDownloader.h"
 #include "common/MD5Digest.h"

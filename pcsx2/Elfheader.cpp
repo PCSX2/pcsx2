@@ -14,13 +14,15 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "Common.h"
+
+#include "Elfheader.h"
+#include "CDVD/IsoReader.h"
+#include "DebugTools/Debug.h"
+#include "DebugTools/SymbolMap.h"
+
+#include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
-
-#include "GS.h"			// for sending game crc to mtgs
-#include "Elfheader.h"
-#include "DebugTools/SymbolMap.h"
 
 #pragma pack(push, 1)
 struct PSXEXEHeader
@@ -47,20 +49,17 @@ ElfObject::ElfObject() = default;
 
 ElfObject::~ElfObject() = default;
 
-bool ElfObject::OpenIsoFile(std::string srcfile, IsoFile& isofile, bool isPSXElf_, Error* error)
+bool ElfObject::OpenIsoFile(std::string srcfile, IsoReader& isor, bool isPSXElf_, Error* error)
 {
-	const u32 length = isofile.getLength();
-	if (!CheckElfSize(length, error))
+	const auto de = isor.LocateFile(srcfile, error);
+	if (!de)
 		return false;
 
-	data.resize(length);
-
-	const s32 rsize = isofile.read(data.data(), static_cast<s32>(length));
-	if (rsize < static_cast<s32>(length))
-	{
-		Error::SetString(error, "Failed to read ELF from ISO");
+	if (!CheckElfSize(de->length_le, error))
 		return false;
-	}
+
+	if (!isor.ReadFile(de.value(), &data, error))
+		return false;
 
 	filename = std::move(srcfile);
 	isPSXElf = isPSXElf_;

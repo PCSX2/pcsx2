@@ -247,6 +247,7 @@ set(pcsx2CDVDSources
 	CDVD/CDVDisoReader.cpp
 	CDVD/CDVDdiscThread.cpp
 	CDVD/InputIsoFile.cpp
+	CDVD/IsoReader.cpp
 	CDVD/OutputIsoFile.cpp
 	CDVD/ChunksCache.cpp
 	CDVD/CompressedFileReader.cpp
@@ -254,9 +255,6 @@ set(pcsx2CDVDSources
 	CDVD/CsoFileReader.cpp
 	CDVD/GzippedFileReader.cpp
 	CDVD/ThreadedFileReader.cpp
-	CDVD/IsoFS/IsoFile.cpp
-	CDVD/IsoFS/IsoFSCDVD.cpp
-	CDVD/IsoFS/IsoFS.cpp
 	)
 
 # CDVD headers
@@ -273,12 +271,7 @@ set(pcsx2CDVDHeaders
 	CDVD/GzippedFileReader.h
 	CDVD/ThreadedFileReader.h
 	CDVD/IsoFileFormats.h
-	CDVD/IsoFS/IsoDirectory.h
-	CDVD/IsoFS/IsoFileDescriptor.h
-	CDVD/IsoFS/IsoFile.h
-	CDVD/IsoFS/IsoFSCDVD.h
-	CDVD/IsoFS/IsoFS.h
-	CDVD/IsoFS/SectorSource.h
+	CDVD/IsoReader.h
 	CDVD/zlib_indexed.h
 	)
 

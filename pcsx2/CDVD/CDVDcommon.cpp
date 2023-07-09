@@ -16,29 +16,29 @@
 
 #include "PrecompiledHeader.h"
 
-#define ENABLE_TIMESTAMPS
-
-#include <ctype.h>
-#include <time.h>
-#include <exception>
-#include <memory>
-
-#include "fmt/core.h"
-
-#include "IsoFS/IsoFS.h"
-#include "IsoFS/IsoFSCDVD.h"
-#include "IsoFileFormats.h"
-
-#include "common/Assertions.h"
-#include "common/FileSystem.h"
-#include "common/Path.h"
-#include "common/StringUtil.h"
+#include "CDVD/CDVDcommon.h"
+#include "CDVD/IsoReader.h"
+#include "CDVD/IsoFileFormats.h"
 #include "DebugTools/SymbolMap.h"
 #include "Config.h"
 #include "Host.h"
 #include "IconsFontAwesome5.h"
 
-CDVD_API* CDVD = NULL;
+#include "common/Assertions.h"
+#include "common/FileSystem.h"
+#include "common/Path.h"
+#include "common/StringUtil.h"
+
+#include <ctype.h>
+#include <exception>
+#include <memory>
+#include <time.h>
+
+#include "fmt/core.h"
+
+#define ENABLE_TIMESTAMPS
+
+CDVD_API* CDVD = nullptr;
 
 // ----------------------------------------------------------------------------
 // diskTypeCached
@@ -71,37 +71,35 @@ static void CheckNullCDVD()
 //
 static int CheckDiskTypeFS(int baseType)
 {
-	IsoFSCDVD isofs;
-	IsoDirectory rootdir(isofs);
-	if (rootdir.OpenRootDirectory())
+	IsoReader isor;
+	if (isor.Open())
 	{
-		if (IsoFile file(isofs); file.open(rootdir, "SYSTEM.CNF"))
+		std::vector<u8> data;
+		if (isor.ReadFile("SYSTEM.CNF", &data))
 		{
-			const int size = file.getLength();
-			const std::unique_ptr<char[]> buffer = std::make_unique<char[]>(size + 1);
-			file.read(buffer.get(), size);
-			buffer[size] = '\0';
-
-			char* pos = strstr(buffer.get(), "BOOT2");
-			if (pos == NULL)
+			if (StringUtil::ContainsSubString(data, "BOOT2"))
 			{
-				pos = strstr(buffer.get(), "BOOT");
-				if (pos == NULL)
-					return CDVD_TYPE_ILLEGAL;
+				// PS2 DVD/CD.
+				return (baseType == CDVD_TYPE_DETCTCD) ? CDVD_TYPE_PS2CD : CDVD_TYPE_PS2DVD;
+			}
+
+			if (StringUtil::ContainsSubString(data, "BOOT"))
+			{
+				// PSX CD.
 				return CDVD_TYPE_PSCD;
 			}
 
-			return (baseType == CDVD_TYPE_DETCTCD) ? CDVD_TYPE_PS2CD : CDVD_TYPE_PS2DVD;
+			return CDVD_TYPE_ILLEGAL;
 		}
 
 		// PS2 Linux disc 2, doesn't have a System.CNF or a normal ELF
-		if (rootdir.Exists("P2L_0100.02"))
+		if (isor.FileExists("P2L_0100.02"))
 			return CDVD_TYPE_PS2DVD;
 
-		if (rootdir.Exists("PSX.EXE"))
+		if (isor.FileExists("PSX.EXE"))
 			return CDVD_TYPE_PSCD;
 
-		if (rootdir.Exists("VIDEO_TS/VIDEO_TS.IFO"))
+		if (isor.FileExists("VIDEO_TS/VIDEO_TS.IFO"))
 			return CDVD_TYPE_DVDV;
 	}
 
