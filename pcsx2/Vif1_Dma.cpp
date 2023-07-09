@@ -170,6 +170,7 @@ __fi void vif1SetupTransfer()
 			//DevCon.Warning("VIF1 DMA Stall");
 			// stalled
 			hwDmacIrq(DMAC_STALL_SIS);
+			CPU_SET_DMASTALL(DMAC_VIF1, true);
 			return;
 		}
 	}
