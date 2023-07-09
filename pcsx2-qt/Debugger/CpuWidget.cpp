@@ -625,6 +625,8 @@ std::vector<u32> startWorker(DebugInterface* cpu, int type, u32 start, u32 end, 
 			return searchWorker<double>(cpu, start, end, value.toDouble());
 		case 6:
 			return searchWorkerString(cpu, start, end, value.toStdString());
+		case 7:
+			return searchWorkerString(cpu, start, end, QByteArray::fromHex(value.toUtf8()).toStdString());
 		default:
 			Console.Error("Debugger: Unknown type when doing memory search!");
 			break;
@@ -667,13 +669,24 @@ void CpuWidget::onSearchButtonClicked()
 
 	unsigned long long value;
 
-	if (searchType < 4)
+	switch (searchType)
 	{
-		value = searchValue.toULongLong(&ok, searchHex ? 16 : 10);
-	}
-	else if (searchType != 6)
-	{
-		searchValue.toDouble(&ok);
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+			value = searchValue.toULongLong(&ok, searchHex ? 16 : 10);
+			break;
+		case 4:
+		case 5:
+			searchValue.toDouble(&ok);
+			break;
+		case 6:
+			ok = !searchValue.isEmpty();
+			break;
+		case 7:
+			ok = !searchValue.trimmed().isEmpty();
+			break;
 	}
 
 	if (!ok)
@@ -684,6 +697,7 @@ void CpuWidget::onSearchButtonClicked()
 
 	switch (searchType)
 	{
+		case 7:
 		case 6:
 		case 5:
 		case 4:
