@@ -10106,6 +10106,8 @@ SLED-53953:
   region: "PAL-E"
   gameFixes:
     - GIFFIFOHack # Fixes flag corruptions.
+  speedHacks:
+    eeCycleRate: 3 # Fixes corrupted graphics.
 SLED-53954:
   name: "Driver - Parallel Lines [Demo]"
   region: "PAL-E"
@@ -10800,6 +10802,8 @@ SLES-50247:
     - SoftwareRendererFMVHack # Fixes flashing FMVs (Req EE cycle rate 50% for them to run).
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
+  speedHacks:
+    eeCycleRate: -3 # Fixes FMV playback.
 SLES-50248:
   name: "MDK 2 - Armageddon"
   region: "PAL-M5"
@@ -19383,11 +19387,15 @@ SLES-53796:
   compat: 5
   gameFixes:
     - GIFFIFOHack # Fixes flag corruptions.
+  speedHacks:
+    eeCycleRate: 3 # Fixes corrupted graphics.
 SLES-53797:
   name: "FIFA Street 2"
   region: "PAL-M6"
   gameFixes:
     - GIFFIFOHack # Fixes flag corruptions.
+  speedHacks:
+    eeCycleRate: 3 # Fixes corrupted graphics.
 SLES-53799:
   name: "Matrix, The - Path of Neo"
   region: "PAL-M4"
@@ -25630,6 +25638,8 @@ SLKA-25374:
   region: "NTSC-K"
   gameFixes:
     - GIFFIFOHack # Fixes flag corruptions.
+  speedHacks:
+    eeCycleRate: 3 # Fixes corrupted graphics.
 SLKA-25375:
   name: "Transformers - The Game"
   region: "NTSC-K"
@@ -34281,6 +34291,8 @@ SLPM-66443:
   region: "NTSC-J"
   gameFixes:
     - GIFFIFOHack # Fixes flag corruptions.
+  speedHacks:
+    eeCycleRate: 3 # Fixes corrupted graphics.
 SLPM-66444:
   name: "Spartan - Kodai Greece Eiyuuden"
   region: "NTSC-J"
@@ -49506,6 +49518,8 @@ SLUS-21369:
   compat: 5
   gameFixes:
     - GIFFIFOHack # Fixes flag corruptions.
+  speedHacks:
+    eeCycleRate: 3 # Fixes corrupted graphics.
 SLUS-21370:
   name: "Mega Man X Collection"
   region: "NTSC-U"
