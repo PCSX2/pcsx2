@@ -51,6 +51,8 @@
 #include <tuple>
 #include <unordered_map>
 
+float position_y = 0;
+
 namespace ImGuiManager
 {
 	static void FormatProcessorStat(std::string& text, double usage, double time);
@@ -103,7 +105,6 @@ void ImGuiManager::DrawPerformanceOverlay()
 	const float shadow_offset = std::ceil(1.0f * scale);
 	const float margin = std::ceil(10.0f * scale);
 	const float spacing = std::ceil(5.0f * scale);
-	float position_y = margin;
 
 	ImFont* const fixed_font = ImGuiManager::GetFixedFont();
 	ImFont* const standard_font = ImGuiManager::GetStandardFont();
@@ -621,7 +622,7 @@ void ImGuiManager::DrawInputRecordingOverlay()
 	const float shadow_offset = std::ceil(1.0f * scale);
 	const float margin = std::ceil(10.0f * scale);
 	const float spacing = std::ceil(5.0f * scale);
-	float position_y = margin;
+	position_y = margin;
 
 	ImFont* const fixed_font = ImGuiManager::GetFixedFont();
 	ImFont* const standard_font = ImGuiManager::GetStandardFont();
@@ -666,8 +667,8 @@ void ImGuiManager::DrawInputRecordingOverlay()
 
 void ImGuiManager::RenderOverlays()
 {
-	DrawPerformanceOverlay();
 	DrawInputRecordingOverlay();
+	DrawPerformanceOverlay();
 	DrawSettingsOverlay();
 	DrawInputsOverlay();
 }
