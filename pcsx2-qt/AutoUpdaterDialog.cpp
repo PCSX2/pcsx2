@@ -224,7 +224,6 @@ void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
 						bool is_symbols = false;
 						bool is_avx2 = false;
 						bool is_sse4 = false;
-						bool is_qt_asset = false;
 						bool is_perfect_match = false;
 						for (const QJsonValue& additional_tag : additional_tags_array)
 						{
@@ -234,12 +233,6 @@ void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
 								// we're not interested in symbols downloads
 								is_symbols = true;
 								break;
-							}
-							else if (additional_tag_str.startsWith(QStringLiteral("Qt")))
-							{
-								// found a qt build
-								// Note: The website improperly parses macOS file names, and gives them the tag "Qt.tar" instead of "Qt"
-								is_qt_asset = true;
 							}
 							else if (additional_tag_str == QStringLiteral("SSE4"))
 							{
@@ -258,7 +251,7 @@ void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
 #endif
 						}
 
-						if (!is_qt_asset || is_symbols || (!x86caps.hasAVX2 && is_avx2))
+						if (is_symbols || (!x86caps.hasAVX2 && is_avx2))
 						{
 							// skip this asset
 							continue;
