@@ -433,7 +433,8 @@ bool GSTextureReplacements::HasReplacementTextureWithOtherPalette(const GSTextur
 	return s_replacement_textures_without_clut_hash.find(name) != s_replacement_textures_without_clut_hash.end();
 }
 
-GSTexture* GSTextureReplacements::LookupReplacementTexture(const GSTextureCache::HashCacheKey& hash, bool mipmap, bool* pending)
+GSTexture* GSTextureReplacements::LookupReplacementTexture(const GSTextureCache::HashCacheKey& hash, bool mipmap,
+	bool* pending, std::pair<u8, u8>* alpha_minmax)
 {
 	const TextureName name(CreateTextureName(hash, 0));
 	*pending = false;
@@ -450,6 +451,7 @@ GSTexture* GSTextureReplacements::LookupReplacementTexture(const GSTextureCache:
 		if (it != s_replacement_texture_cache.end())
 		{
 			// replacement is cached, can immediately upload to host GPU
+			*alpha_minmax = it->second.alpha_minmax;
 			return CreateReplacementTexture(it->second, mipmap);
 		}
 	}
@@ -476,6 +478,7 @@ GSTexture* GSTextureReplacements::LookupReplacementTexture(const GSTextureCache:
 		const ReplacementTexture& rtex = s_replacement_texture_cache.emplace(name, std::move(replacement.value())).first->second;
 
 		// and upload to gpu
+		*alpha_minmax = rtex.alpha_minmax;
 		return CreateReplacementTexture(rtex, mipmap);
 	}
 }
@@ -489,6 +492,8 @@ std::optional<GSTextureReplacements::ReplacementTexture> GSTextureReplacements::
 	ReplacementTexture rtex;
 	if (!loader(filename.c_str(), &rtex, only_base_image))
 		return std::nullopt;
+
+	rtex.alpha_minmax = GSGetRGBA8AlphaMinMax(rtex.data.data(), rtex.width, rtex.height, rtex.pitch);
 
 	return rtex;
 }
@@ -632,7 +637,7 @@ void GSTextureReplacements::ProcessAsyncLoadedTextures()
 		// upload and inject into TC
 		GSTexture* tex = CreateReplacementTexture(it->second, mipmap);
 		if (tex)
-			g_texture_cache->InjectHashCacheTexture(HashCacheKeyFromTextureName(name), tex);
+			g_texture_cache->InjectHashCacheTexture(HashCacheKeyFromTextureName(name), tex, it->second.alpha_minmax);
 	}
 	s_async_loaded_textures.clear();
 }

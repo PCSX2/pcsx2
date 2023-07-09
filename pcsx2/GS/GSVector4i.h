@@ -394,6 +394,30 @@ public:
 		return GSVector4i(_mm_max_epu32(m, a));
 	}
 
+	__forceinline u32 minv_s32() const
+	{
+		const __m128i vmin = _mm_min_epi32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
+		return std::min<s32>(_mm_extract_epi32(vmin, 0), _mm_extract_epi32(vmin, 1));
+	}
+
+	__forceinline u32 minv_u32() const
+	{
+		const __m128i vmin = _mm_min_epu32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
+		return std::min<u32>(_mm_extract_epi32(vmin, 0), _mm_extract_epi32(vmin, 1));
+	}
+
+	__forceinline u32 maxv_s32() const
+	{
+		const __m128i vmax = _mm_max_epi32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
+		return std::max<s32>(_mm_extract_epi32(vmax, 0), _mm_extract_epi32(vmax, 1));
+	}
+
+	__forceinline u32 maxv_u32() const
+	{
+		const __m128i vmax = _mm_max_epu32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
+		return std::max<u32>(_mm_extract_epi32(vmax, 0), _mm_extract_epi32(vmax, 1));
+	}
+
 	__forceinline static int min_i16(int a, int b)
 	{
 		return store(load(a).min_i16(load(b)));

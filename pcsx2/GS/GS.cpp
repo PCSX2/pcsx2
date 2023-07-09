@@ -918,6 +918,62 @@ void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
 
 #endif
 
+std::pair<u8, u8> GSGetRGBA8AlphaMinMax(const void* data, u32 width, u32 height, u32 stride)
+{
+	GSVector4i minc = GSVector4i::xffffffff();
+	GSVector4i maxc = GSVector4i::zero();
+
+	const u8* ptr = static_cast<const u8*>(data);
+	if ((width % 4) == 0)
+	{
+		for (u32 r = 0; r < height; r++)
+		{
+			const u8* rptr = ptr;
+			for (u32 c = 0; c < width; c += 4)
+			{
+				const GSVector4i v = GSVector4i::load<true>(rptr);
+				rptr += sizeof(GSVector4i);
+				minc = minc.min_u32(v);
+				maxc = maxc.max_u32(v);
+			}
+
+			ptr += stride;
+		}
+	}
+	else
+	{
+		const u32 aligned_width = Common::AlignDownPow2(width, 4);
+		static constexpr const GSVector4i masks[3][2] = {
+			{GSVector4i::cxpr(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0), GSVector4i::cxpr(0, 0, 0, 0xFFFFFFFF)},
+			{GSVector4i::cxpr(0xFFFFFFFF, 0xFFFFFFFF, 0, 0), GSVector4i::cxpr(0, 0, 0xFFFFFFFF, 0xFFFFFFFF)},
+			{GSVector4i::cxpr(0xFFFFFFFF, 0, 0, 0), GSVector4i::cxpr(0, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF)},
+		};
+		const GSVector4i last_mask_and = masks[(width & 3) - 1][0];
+		const GSVector4i last_mask_or = masks[(width & 3) - 1][1];
+
+		for (u32 r = 0; r < height; r++)
+		{
+			const u8* rptr = ptr;
+			for (u32 c = 0; c < aligned_width; c += 4)
+			{
+				const GSVector4i v = GSVector4i::load<true>(rptr);
+				rptr += sizeof(GSVector4i);
+				minc = minc.min_u32(v);
+				maxc = maxc.max_u32(v);
+			}
+
+			const GSVector4i v = GSVector4i::load<true>(rptr);
+			minc = minc.min_u32(v | last_mask_or);
+			maxc = maxc.max_u32(v & last_mask_and);
+
+			ptr += stride;
+		}
+	}
+
+	return std::make_pair<u8, u8>(static_cast<u8>(minc.minv_u32() >> 24),
+		static_cast<u8>(maxc.maxv_u32() >> 24));
+}
+
 static void HotkeyAdjustUpscaleMultiplier(s32 delta)
 {
 	const u32 new_multiplier = static_cast<u32>(std::clamp(static_cast<s32>(EmuConfig.GS.UpscaleMultiplier) + delta, 1, 8));

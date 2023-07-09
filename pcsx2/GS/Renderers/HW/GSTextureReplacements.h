@@ -17,6 +17,8 @@
 
 #include "GS/Renderers/HW/GSTextureCache.h"
 
+#include <utility>
+
 namespace GSTextureReplacements
 {
 	struct ReplacementTexture
@@ -24,6 +26,7 @@ namespace GSTextureReplacements
 		u32 width;
 		u32 height;
 		GSTexture::Format format;
+		std::pair<u8, u8> alpha_minmax;
 
 		u32 pitch;
 		std::vector<u8> data;
@@ -48,7 +51,7 @@ namespace GSTextureReplacements
 
 	bool HasAnyReplacementTextures();
 	bool HasReplacementTextureWithOtherPalette(const GSTextureCache::HashCacheKey& hash);
-	GSTexture* LookupReplacementTexture(const GSTextureCache::HashCacheKey& hash, bool mipmap, bool* pending);
+	GSTexture* LookupReplacementTexture(const GSTextureCache::HashCacheKey& hash, bool mipmap, bool* pending, std::pair<u8, u8>* alpha_minmax);
 	GSTexture* CreateReplacementTexture(const ReplacementTexture& rtex, bool mipmap);
 	void ProcessAsyncLoadedTextures();
 
