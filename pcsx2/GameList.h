@@ -40,6 +40,7 @@ namespace GameList
 		PS2Disc,
 		PS1Disc,
 		ELF,
+		Invalid,
 		Count
 	};
 
