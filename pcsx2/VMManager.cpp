@@ -949,9 +949,11 @@ void VMManager::UpdateELFInfo(std::string elf_path)
 {
 	Error error;
 	ElfObject elfo;
-	if (!cdvdLoadElf(&elfo, elf_path, false, &error))
+	if (elf_path.empty() || !cdvdLoadElf(&elfo, elf_path, false, &error))
 	{
-		Console.Error(fmt::format("Failed to read ELF being loaded: {}: {}", elf_path, error.GetDescription()));
+		if (!elf_path.empty())
+			Console.Error(fmt::format("Failed to read ELF being loaded: {}: {}", elf_path, error.GetDescription()));
+
 		s_elf_path = {};
 		s_elf_text_range = {};
 		s_elf_entry_point = 0xFFFFFFFFu;
@@ -1039,7 +1041,6 @@ bool VMManager::AutoDetectSource(const std::string& filename)
 	{
 		// make sure we're not fast booting when we have no filename
 		CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
-		s_fast_boot_requested = false;
 		return true;
 	}
 }
@@ -1157,6 +1158,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	// ELFs must be fast booted, and GS dumps are never fast booted.
 	s_fast_boot_requested =
 		(boot_params.fast_boot.value_or(static_cast<bool>(EmuConfig.EnableFastBoot)) || !s_elf_override.empty()) &&
+		(CDVDsys_GetSourceType() != CDVD_SourceType::NoDisc || !s_elf_override.empty()) &&
 		!GSDumpReplayer::IsReplayingDump();
 
 	if (!s_elf_override.empty())
@@ -1169,7 +1171,6 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		}
 
 		Hle_SetElfPath(s_elf_override.c_str());
-		s_fast_boot_requested = true;
 	}
 	else
 	{

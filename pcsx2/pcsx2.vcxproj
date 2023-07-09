@@ -114,6 +114,7 @@
     <ClCompile Include="CDVD\CompressedFileReader.cpp" />
     <ClCompile Include="CDVD\CsoFileReader.cpp" />
     <ClCompile Include="CDVD\GzippedFileReader.cpp" />
+    <ClCompile Include="CDVD\IsoReader.cpp" />
     <ClCompile Include="CDVD\OutputIsoFile.cpp" />
     <ClCompile Include="CDVD\ThreadedFileReader.cpp" />
     <ClCompile Include="CDVD\Linux\DriveUtility.cpp">
@@ -466,9 +467,6 @@
     </ClCompile>
     <ClCompile Include="x86\ix86-32\iCore-32.cpp" />
     <ClCompile Include="x86\iCore.cpp" />
-    <ClCompile Include="CDVD\IsoFS\IsoFile.cpp" />
-    <ClCompile Include="CDVD\IsoFS\IsoFS.cpp" />
-    <ClCompile Include="CDVD\IsoFS\IsoFSCDVD.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Achievements.h" />
@@ -480,6 +478,7 @@
     <ClInclude Include="CDVD\CsoFileReader.h" />
     <ClInclude Include="CDVD\ChdFileReader.h" />
     <ClInclude Include="CDVD\GzippedFileReader.h" />
+    <ClInclude Include="CDVD\IsoReader.h" />
     <ClInclude Include="CDVD\ThreadedFileReader.h" />
     <ClInclude Include="CDVD\zlib_indexed.h" />
     <ClInclude Include="DebugTools\Breakpoints.h" />
@@ -802,12 +801,6 @@
     <ClInclude Include="ps2\BiosTools.h" />
     <ClInclude Include="MemoryTypes.h" />
     <ClInclude Include="x86\iCore.h" />
-    <ClInclude Include="CDVD\IsoFS\IsoDirectory.h" />
-    <ClInclude Include="CDVD\IsoFS\IsoFile.h" />
-    <ClInclude Include="CDVD\IsoFS\IsoFileDescriptor.h" />
-    <ClInclude Include="CDVD\IsoFS\IsoFS.h" />
-    <ClInclude Include="CDVD\IsoFS\IsoFSCDVD.h" />
-    <ClInclude Include="CDVD\IsoFS\SectorSource.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(SolutionDir)3rdparty\fmt\fmt.vcxproj">

@@ -680,15 +680,6 @@
     <ClCompile Include="x86\iCore.cpp">
       <Filter>System\Ps2\iCore</Filter>
     </ClCompile>
-    <ClCompile Include="CDVD\IsoFS\IsoFile.cpp">
-      <Filter>System\IsoFS</Filter>
-    </ClCompile>
-    <ClCompile Include="CDVD\IsoFS\IsoFS.cpp">
-      <Filter>System\IsoFS</Filter>
-    </ClCompile>
-    <ClCompile Include="CDVD\IsoFS\IsoFSCDVD.cpp">
-      <Filter>System\IsoFS</Filter>
-    </ClCompile>
     <ClCompile Include="GameDatabase.cpp">
       <Filter>Misc</Filter>
     </ClCompile>
@@ -1406,6 +1397,7 @@
     <ClCompile Include="ImGui\ImGuiFullscreen.cpp">
       <Filter>Misc\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="CDVD\IsoReader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -1635,24 +1627,6 @@
     </ClInclude>
     <ClInclude Include="x86\iCore.h">
       <Filter>System\Ps2\iCore</Filter>
-    </ClInclude>
-    <ClInclude Include="CDVD\IsoFS\IsoDirectory.h">
-      <Filter>System\IsoFS</Filter>
-    </ClInclude>
-    <ClInclude Include="CDVD\IsoFS\IsoFile.h">
-      <Filter>System\IsoFS</Filter>
-    </ClInclude>
-    <ClInclude Include="CDVD\IsoFS\IsoFileDescriptor.h">
-      <Filter>System\IsoFS</Filter>
-    </ClInclude>
-    <ClInclude Include="CDVD\IsoFS\IsoFS.h">
-      <Filter>System\IsoFS</Filter>
-    </ClInclude>
-    <ClInclude Include="CDVD\IsoFS\IsoFSCDVD.h">
-      <Filter>System\IsoFS</Filter>
-    </ClInclude>
-    <ClInclude Include="CDVD\IsoFS\SectorSource.h">
-      <Filter>System\IsoFS</Filter>
     </ClInclude>
     <ClInclude Include="GameDatabase.h">
       <Filter>Misc</Filter>
@@ -2354,6 +2328,7 @@
     <ClInclude Include="ImGui\ImGuiFullscreen.h">
       <Filter>Misc\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="CDVD\IsoReader.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="rdebug\deci2.h">
