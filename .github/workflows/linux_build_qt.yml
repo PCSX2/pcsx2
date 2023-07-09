@@ -57,7 +57,6 @@ jobs:
         shell: bash
         env:
           OS: linux
-          GUI_FRAMEWORK: QT
           ARCH: ${{ inputs.platform }}
           EVENT_NAME: ${{ github.event_name }}
           PR_TITLE: ${{ github.event.pull_request.title }}
@@ -87,7 +86,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/deps
-          key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.gui }} deps ${{ hashFiles('.github/workflows/scripts/linux/build-dependencies-qt.sh') }}
+          key: ${{ inputs.os }} ${{ inputs.platform }} deps ${{ hashFiles('.github/workflows/scripts/linux/build-dependencies-qt.sh') }}
 
       - name: Build Dependencies
         if: steps.cache-deps.outputs.cache-hit != 'true'

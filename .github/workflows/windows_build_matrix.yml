@@ -26,7 +26,7 @@ jobs:
     if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
     uses: ./.github/workflows/windows_build_qt.yml
     with:
-      jobName: Qt
+      jobName: "MSVC SSE4"
       configuration: Release
       simd: "SSE4"
     secrets: inherit
@@ -37,7 +37,7 @@ jobs:
     if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
     uses: ./.github/workflows/windows_build_qt.yml
     with:
-      jobName: Qt
+      jobName: "MSVC AVX2"
       configuration: Release AVX2
     secrets: inherit
 
@@ -46,7 +46,7 @@ jobs:
     if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
     uses: ./.github/workflows/windows_build_qt.yml
     with:
-      jobName: Qt
+      jobName: "CMake MSVC"
       configuration: CMake
       buildSystem: cmake
     secrets: inherit
@@ -57,7 +57,7 @@ jobs:
     if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
     uses: ./.github/workflows/windows_build_qt.yml
     with:
-      jobName: Qt Clang
+      jobName: "Clang SSE4"
       configuration: Release Clang
       simd: "SSE4"
     secrets: inherit
@@ -68,7 +68,7 @@ jobs:
     if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
     uses: ./.github/workflows/windows_build_qt.yml
     with:
-      jobName: Qt Clang
+      jobName: "Clang AVX2"
       configuration: Release Clang AVX2
     secrets: inherit
 
@@ -77,7 +77,7 @@ jobs:
     if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
     uses: ./.github/workflows/windows_build_qt.yml
     with:
-      jobName: Qt Clang
+      jobName: "CMake Clang"
       configuration: CMake
       buildSystem: cmake
       cmakeFlags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DPCSX2_EXE_NAME=pcsx2-qt-clang

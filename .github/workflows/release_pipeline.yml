@@ -13,7 +13,7 @@ jobs:
     name: "Linux"
     uses: ./.github/workflows/linux_build_qt.yml
     with:
-      jobName: "Qt"
+      jobName: "AppImage Build"
       compiler: clang
       cmakeflags: ""
       buildAppImage: true
@@ -23,7 +23,7 @@ jobs:
     name: "Linux"
     uses: ./.github/workflows/linux_build_flatpak.yml
     with:
-      jobName: "Flatpak"
+      jobName: "Flatpak Build"
       compiler: clang
       cmakeflags: ""
       branch: "stable"
@@ -36,7 +36,7 @@ jobs:
     name: "Windows"
     uses: ./.github/workflows/windows_build_qt.yml
     with:
-      jobName: Qt
+      jobName: "Windows Build"
       configuration: CMake
       buildSystem: cmake
       cmakeFlags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
@@ -48,8 +48,7 @@ jobs:
     name: "MacOS"
     uses: ./.github/workflows/macos_build.yml
     with:
-      jobName: "Qt"
-      gui: "Qt"
+      jobName: "MacOS Build"
     secrets: inherit
 
   # Upload the Artifacts

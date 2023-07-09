@@ -13,11 +13,11 @@ for dir_name in os.listdir(scan_dir):
     asset_name += "-macos"
   elif "linux" in dir_name.lower():
     if "flatpak" in dir_name.lower():
-      asset_name += "-linux-Flatpak-64bit"
+      asset_name += "-linux-flatpak-x64"
     else:
-      asset_name += "-linux-AppImage-64bit"
+      asset_name += "-linux-appimage-x64"
   elif "windows" in dir_name.lower():
-    asset_name += "-windows-64bit"
+    asset_name += "-windows-x64"
   else:
     continue;
 
@@ -25,8 +25,6 @@ for dir_name in os.listdir(scan_dir):
     asset_name += "-AVX2"
   elif "sse4" in dir_name.lower():
     asset_name += "-SSE4"
-
-  asset_name += "-Qt"
 
   if "symbols" in dir_name.lower():
     asset_name += "-symbols"
