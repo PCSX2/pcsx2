@@ -2088,8 +2088,8 @@ void GSRendererHW::Draw()
 			return;
 		}
 
-		if (src->m_target)
-			CalcAlphaMinMax(src->m_from_target->m_alpha_min, src->m_from_target->m_alpha_max);
+		if(GSLocalMemory::m_psm[src->m_TEX0.PSM].pal == 0)
+			CalcAlphaMinMax(src->m_alpha_minmax.first, src->m_alpha_minmax.second);
 	}
 
 	// Estimate size based on the scissor rectangle and height cache.

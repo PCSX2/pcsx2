@@ -15,12 +15,13 @@
 
 #pragma once
 
-#include <limits>
-
 #include "GS/Renderers/Common/GSRenderer.h"
 #include "GS/Renderers/Common/GSFastList.h"
 #include "GS/Renderers/Common/GSDirtyRect.h"
+
 #include <unordered_set>
+#include <utility>
+#include <limits>
 
 class GSHwHack;
 
@@ -124,6 +125,7 @@ public:
 		GSTexture* texture;
 		u32 refcount;
 		u16 age;
+		std::pair<u8, u8> alpha_minmax;
 		bool is_replacement;
 	};
 
@@ -174,12 +176,15 @@ public:
 	{
 	private:
 		u32* m_clut;
-		u16 m_pal;
 		GSTexture* m_tex_palette;
+		u16 m_pal;
+		std::pair<u8, u8> m_alpha_minmax;
 
 	public:
 		Palette(u16 pal, bool need_gs_texture);
 		~Palette();
+
+		__fi std::pair<u8, u8> GetAlphaMinMax() const { return m_alpha_minmax; }
 
 		// Disable copy constructor and copy operator
 		Palette(const Palette&) = delete;
@@ -277,6 +282,7 @@ public:
 		u8 m_complete_layers = 0;
 		bool m_target = false;
 		bool m_repeating = false;
+		std::pair<u8, u8> m_alpha_minmax = {0u, 255u};
 		std::vector<GSVector2i>* m_p2t = nullptr;
 		// Keep a trace of the target origin. There is no guarantee that pointer will
 		// still be valid on future. However it ought to be good when the source is created
@@ -296,10 +302,12 @@ public:
 
 		__fi bool CanPreload() const { return CanPreloadTextureSize(m_TEX0.TW, m_TEX0.TH); }
 		__fi bool IsFromTarget() const { return m_target; }
+		bool IsPaletteFormat() const;
 
 		__fi const SourceRegion& GetRegion() const { return m_region; }
 		__fi GSVector2i GetRegionSize() const { return m_region.GetSize(m_unscaled_size.x, m_unscaled_size.y); }
 		__fi GSVector4i GetRegionRect() const { return m_region.GetRect(m_unscaled_size.x, m_unscaled_size.y); }
+		__fi const std::pair<u8, u8> GetAlphaMinMax() const { return m_alpha_minmax; }
 
 		void SetPages();
 
@@ -422,7 +430,7 @@ protected:
 	void RemoveFromHashCache(HashCacheMap::iterator it);
 	void AgeHashCache();
 
-	static void PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, SourceRegion region, GSLocalMemory& mem, bool paltex, GSTexture* tex, u32 level);
+	static void PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, SourceRegion region, GSLocalMemory& mem, bool paltex, GSTexture* tex, u32 level, std::pair<u8, u8>* alpha_minmax);
 	static HashType HashTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, SourceRegion region);
 
 	// TODO: virtual void Write(Source* s, const GSVector4i& r) = 0;
@@ -514,7 +522,7 @@ public:
 	void InvalidateTemporarySource();
 
 	/// Injects a texture into the hash cache, by using GSTexture::Swap(), transitively applying to all sources. Ownership of tex is transferred.
-	void InjectHashCacheTexture(const HashCacheKey& key, GSTexture* tex);
+	void InjectHashCacheTexture(const HashCacheKey& key, GSTexture* tex, const std::pair<u8, u8>& alpha_minmax);
 };
 
 extern std::unique_ptr<GSTextureCache> g_texture_cache;
