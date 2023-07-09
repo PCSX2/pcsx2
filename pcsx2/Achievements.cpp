@@ -18,6 +18,7 @@
 #ifdef ENABLE_ACHIEVEMENTS
 
 #include "Achievements.h"
+#include "CDVD/CDVD.h"
 #include "CDVD/IsoFS/IsoFS.h"
 #include "CDVD/IsoFS/IsoFSCDVD.h"
 #include "Elfheader.h"
@@ -121,7 +122,6 @@ namespace Achievements
 	static void GetLbInfoCallback(s32 status_code, const std::string& content_type, Common::HTTPDownloader::Request::Data data);
 	static void GetPatches(u32 game_id);
 	static std::string_view GetELFNameForHash(const std::string& elf_path);
-	static std::optional<std::vector<u8>> ReadELFFromCurrentDisc(const std::string& elf_path);
 	static std::string GetGameHash();
 	static void SetChallengeMode(bool enabled);
 	static void SendGetGameId();
@@ -1356,47 +1356,6 @@ std::string_view Achievements::GetELFNameForHash(const std::string& elf_path)
 	return std::string_view(elf_path).substr(start, end - start);
 }
 
-std::optional<std::vector<u8>> Achievements::ReadELFFromCurrentDisc(const std::string& elf_path)
-{
-	std::optional<std::vector<u8>> ret;
-
-	// ELF suffix hack. Taken from CDVD::loadElf
-	// MLB2k6 has an elf whose suffix is actually ;2
-	std::string filepath(elf_path);
-	const std::string::size_type semi_pos = filepath.rfind(';');
-	if (semi_pos != std::string::npos && std::string_view(filepath).substr(semi_pos) != ";1")
-	{
-		Console.Warning(fmt::format("(Achievements) Non-conforming version suffix ({}) detected and replaced.", elf_path));
-		filepath.erase(semi_pos);
-		filepath += ";1";
-	}
-
-	IsoFSCDVD isofs;
-	IsoFile file(isofs);
-	Error error;
-	if (!file.open(filepath, &error))
-	{
-		Console.Error(fmt::format("(Achievements) Failed to open ELF '{}' on disc: {}", elf_path, error.GetDescription()));
-		return ret;
-	}
-
-	const u32 size = file.getLength();
-	ret = std::vector<u8>();
-	ret->resize(size);
-
-	if (size > 0)
-	{
-		const s32 bytes_read = file.read(ret->data(), static_cast<s32>(size));
-		if (bytes_read != static_cast<s32>(size))
-		{
-			Console.Error(fmt::format("(Achievements) Only read {} of {} bytes of ELF '{}'", bytes_read, size, elf_path));
-			ret.reset();
-		}
-	}
-
-	return ret;
-}
-
 std::string Achievements::GetGameHash()
 {
 	const std::string elf_path = VMManager::GetDiscELF();
@@ -1404,34 +1363,37 @@ std::string Achievements::GetGameHash()
 		return {};
 
 	// this.. really shouldn't be invalid
-	const std::string_view name_for_hash(GetELFNameForHash(elf_path));
+	const std::string_view name_for_hash = GetELFNameForHash(elf_path);
 	if (name_for_hash.empty())
 		return {};
 
-	std::optional<std::vector<u8>> elf_data(ReadELFFromCurrentDisc(elf_path));
-	if (!elf_data.has_value())
+	ElfObject elfo;
+	Error error;
+	if (!cdvdLoadElf(&elfo, elf_path, false, &error))
+	{
+		Console.Error(fmt::format("(Achievements) Failed to read ELF '{}' on disc: {}", elf_path, error.GetDescription()));
 		return {};
+	}
 
 	// See rcheevos hash.c - rc_hash_ps2().
 	const u32 MAX_HASH_SIZE = 64 * 1024 * 1024;
-	const u32 hash_size = std::min<u32>(static_cast<u32>(elf_data->size()), MAX_HASH_SIZE);
-	pxAssert(hash_size <= elf_data->size());
+	const u32 hash_size = std::min<u32>(elfo.GetSize(), MAX_HASH_SIZE);
+	pxAssert(hash_size <= elfo.GetSize());
 
 	MD5Digest digest;
 	if (!name_for_hash.empty())
 		digest.Update(name_for_hash.data(), static_cast<u32>(name_for_hash.size()));
 	if (hash_size > 0)
-		digest.Update(elf_data->data(), hash_size);
+		digest.Update(elfo.GetData().data(), hash_size);
 
 	u8 hash[16];
 	digest.Final(hash);
 
-	std::string hash_str(
+	const std::string hash_str =
 		StringUtil::StdStringFromFormat("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x", hash[0], hash[1], hash[2],
-			hash[3], hash[4], hash[5], hash[6], hash[7], hash[8], hash[9], hash[10], hash[11], hash[12], hash[13], hash[14], hash[15]));
+			hash[3], hash[4], hash[5], hash[6], hash[7], hash[8], hash[9], hash[10], hash[11], hash[12], hash[13], hash[14], hash[15]);
 
-	Console.WriteLn("Hash for '%.*s' (%zu bytes, %u bytes hashed): %s", static_cast<int>(name_for_hash.size()), name_for_hash.data(),
-		elf_data->size(), hash_size, hash_str.c_str());
+	Console.WriteLn(fmt::format("Hash for '{}' ({} bytes, {} bytes hashed): {}", name_for_hash, elfo.GetSize(), hash_size, hash_str));
 	return hash_str;
 }
 

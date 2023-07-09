@@ -130,7 +130,7 @@ bool IsoDirectory::Open(const IsoFileDescriptor& directoryEntry, Error* error /*
 
 	files.clear();
 
-	uint remainingSize = directoryEntry.size;
+	u32 remainingSize = directoryEntry.size;
 
 	u8 b[257];
 
@@ -145,25 +145,12 @@ bool IsoDirectory::Open(const IsoFileDescriptor& directoryEntry, Error* error /*
 
 		remainingSize -= b[0];
 
-		dataStream.read(b + 1, b[0] - 1);
+		if (dataStream.read(b + 1, static_cast<s32>(b[0] - 1)) != static_cast<s32>(b[0] - 1))
+			break;
 
-		auto isoFile = IsoFileDescriptor(b, b[0]);
-
-		files.push_back(isoFile);
-
-		const std::string::size_type semi_pos = isoFile.name.rfind(';');
-		if (semi_pos != std::string::npos && std::string_view(isoFile.name).substr(semi_pos) != ";1")
-		{
-			const std::string origName = isoFile.name;
-			isoFile.name.erase(semi_pos);
-			isoFile.name += ";1";
-			Console.WriteLn("(IsoFS) Non-conforming version suffix (%s) detected. Creating 'hard-linked' entry (%s)",origName.c_str(), isoFile.name.c_str());
-
-			files.push_back(isoFile);
-		}
+		files.emplace_back(b, b[0]);
 	}
 
-	b[0] = 0;
 	return true;
 }
 
@@ -194,19 +181,13 @@ std::optional<IsoFileDescriptor> IsoDirectory::FindFile(const std::string_view& 
 	const IsoDirectory* dir = this;
 	IsoDirectory subdir(internalReader);
 
-	// walk through path ("." and ".." entries are in the directories themselves, so even if the
-	// path included . and/or .., it still works)
-
-	// ignore the device (cdrom0:\)
-	const bool has_device = (parts.front().back() == ':');
-
-	for (size_t index = has_device ? 1 : 0; index < (parts.size() - 1); index++)
+	for (size_t index = 0; index < (parts.size() - 1); index++)
 	{
-		const int subdir_index = GetIndexOf(parts[index]);
+		const int subdir_index = dir->GetIndexOf(parts[index]);
 		if (subdir_index < 0)
 			return std::nullopt;
 
-		const IsoFileDescriptor& subdir_entry = GetEntry(static_cast<size_t>(index));
+		const IsoFileDescriptor& subdir_entry = GetEntry(static_cast<size_t>(subdir_index));
 		if (subdir_entry.IsFile() || !subdir.Open(subdir_entry, nullptr))
 			return std::nullopt;
 
@@ -217,7 +198,7 @@ std::optional<IsoFileDescriptor> IsoDirectory::FindFile(const std::string_view& 
 	if (file_index < 0)
 		return std::nullopt;
 
-	return GetEntry(static_cast<size_t>(file_index));
+	return dir->GetEntry(static_cast<size_t>(file_index));
 }
 
 bool IsoDirectory::Exists(const std::string_view& filePath) const
@@ -293,9 +274,9 @@ void IsoFileDescriptor::Load(const u8* data, int length)
 
 	flags = data[25];
 
-	int fileNameLength = data[32];
+	int file_name_length = data[32];
 
-	if (fileNameLength == 1)
+	if (file_name_length == 1)
 	{
 		u8 c = data[33];
 
@@ -314,9 +295,16 @@ void IsoFileDescriptor::Load(const u8* data, int length)
 	}
 	else
 	{
-		// copy string and up-convert from ascii to wxChar
-
 		const u8* fnsrc = data + 33;
-		name.assign(reinterpret_cast<const char*>(fnsrc), fileNameLength);
+
+		// Strip any version information like the PS2 BIOS does.
+		int length_without_version = 0;
+		for (; length_without_version < file_name_length; length_without_version++)
+		{
+			if (fnsrc[length_without_version] == ';' || fnsrc[length_without_version] == '\0')
+				break;
+		}
+
+		name.assign(reinterpret_cast<const char*>(fnsrc), length_without_version);
 	}
 }

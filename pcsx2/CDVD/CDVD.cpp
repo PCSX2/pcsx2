@@ -383,46 +383,58 @@ s32 cdvdWriteConfig(const u8* config)
 	return 0;
 }
 
-bool cdvdLoadElf(ElfObject* elfo, std::string elfpath, bool isPSXElf, Error* error)
+bool cdvdLoadElf(ElfObject* elfo, const std::string_view& elfpath, bool isPSXElf, Error* error)
 {
 	if (StringUtil::StartsWith(elfpath, "host:"))
 	{
 		std::string host_filename(elfpath.substr(5));
-		if (!elfo->OpenFile(host_filename, isPSXElf, error))
-			return false;
+		return elfo->OpenFile(host_filename, isPSXElf, error);
 	}
-	else
+	else if (StringUtil::StartsWith(elfpath, "cdrom:") || StringUtil::StartsWith(elfpath, "cdrom0:"))
 	{
-		// Mimic PS2 behavior!
-		// Much trial-and-error with changing the ISOFS and BOOT2 contents of an image have shown that
-		// the PS2 BIOS performs the peculiar task of *ignoring* the version info from the parsed BOOT2
-		// filename *and* the ISOFS, when loading the game's ELF image.  What this means is:
-		//
-		//   1. a valid PS2 ELF can have any version (ISOFS), and the version need not match the one in SYSTEM.CNF.
-		//   2. the version info on the file in the BOOT2 parameter of SYSTEM.CNF can be missing, 10 chars long,
-		//      or anything else.  Its all ignored.
-		//   3. Games loading their own files do *not* exhibit this behavior; likely due to using newer IOP modules
-		//      or lower level filesystem APIs (fortunately that doesn't affect us).
-		//
-		// FIXME: Properly mimicing this behavior is troublesome since we need to add support for "ignoring"
-		// version information when doing file searches.  I'll add this later.  For now, assuming a ;1 should
-		// be sufficient (no known games have their ELF binary as anything but version ;1)
-		const std::string::size_type semi_pos = elfpath.rfind(';');
-		if (semi_pos != std::string::npos && std::string_view(elfpath).substr(semi_pos) != ";1")
-		{
-			Console.WriteLn(Color_Blue, "(LoadELF) Non-conforming version suffix (%s) detected and replaced.", elfpath.c_str());
-			elfpath.erase(semi_pos);
-			elfpath += ";1";
-		}
+		// Strip out cdrom: prefix, and any leading slashes.
+		size_t start_pos = (elfpath[5] == '0') ? 7 : 6;
+		while (start_pos < elfpath.size() && (elfpath[start_pos] == '\\' || elfpath[start_pos] == '/'))
+			start_pos++;
 
-		// Fix cdrom:path, the iso reader doesn't like it.
-		if (StringUtil::StartsWith(elfpath, "cdrom:") && elfpath[6] != '\\' && elfpath[6] != '/')
-			elfpath.insert(6, 1, '\\');
+		// Strip out any version information. Some games use ;2 (MLB2k6), others put multiple versions in
+		// (Syphon Filter Omega Strain). The PS2 BIOS appears to ignore the suffix entirely, so we'll do
+		// the same, and hope that no games actually have multiple ELFs with different versions.
+		// Previous notes:
+		//   Mimic PS2 behavior!
+		//   Much trial-and-error with changing the ISOFS and BOOT2 contents of an image have shown that
+		//   the PS2 BIOS performs the peculiar task of *ignoring* the version info from the parsed BOOT2
+		//   filename *and* the ISOFS, when loading the game's ELF image.  What this means is:
+		//
+		//     1. a valid PS2 ELF can have any version (ISOFS), and the version need not match the one in SYSTEM.CNF.
+		//     2. the version info on the file in the BOOT2 parameter of SYSTEM.CNF can be missing, 10 chars long,
+		//        or anything else.  Its all ignored.
+		//     3. Games loading their own files do *not* exhibit this behavior; likely due to using newer IOP modules
+		//        or lower level filesystem APIs (fortunately that doesn't affect us).
+		//
+		size_t length = elfpath.length() - start_pos;
+		const size_t semi_pos = elfpath.find(';', start_pos);
+		if (semi_pos != std::string::npos)
+			length = semi_pos - start_pos;
+
+		std::string iso_filename(elfpath.substr(start_pos, length));
+		DevCon.WriteLn(fmt::format("cvdLoadElf(): '{}' -> '{}' in ISO.", elfpath, iso_filename));
+		if (iso_filename.empty())
+		{
+			Error::SetString(error, "ISO filename is empty.");
+			return false;
+		}
 
 		IsoFSCDVD isofs;
 		IsoFile file(isofs);
-		if (!file.open(elfpath, error) || !elfo->OpenIsoFile(elfpath, file, isPSXElf, error))
+		if (!file.open(iso_filename, error))
 			return false;
+
+		return elfo->OpenIsoFile(std::move(iso_filename), file, isPSXElf, error);
+	}
+	else
+	{
+		Console.Error(fmt::format("cdvdLoadElf(): Unknown device in ELF path '{}'", elfpath));
 	}
 
 	return true;
@@ -446,7 +458,7 @@ static CDVDDiscType GetPS2ElfName(std::string* name, std::string* version)
 	Error error;
 	IsoFSCDVD isofs;
 	IsoFile file(isofs);
-	if (!file.open("SYSTEM.CNF;1", &error))
+	if (!file.open("SYSTEM.CNF", &error))
 	{
 		Console.Error(fmt::format("(GetElfName) Failed to open SYSTEM.CNF: {}", error.GetDescription()));
 		return CDVDDiscType::Other;
