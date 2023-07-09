@@ -63,7 +63,6 @@ jobs:
         env:
           OS: windows
           BUILD_SYSTEM: ${{ inputs.buildSystem }}
-          GUI_FRAMEWORK: Qt
           ARCH: ${{ inputs.platform }}
           SIMD: ${{ inputs.simd }}
           EVENT_NAME: ${{ github.event_name }}

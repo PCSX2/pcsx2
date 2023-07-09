@@ -28,10 +28,6 @@ on:
         required: false
         type: boolean
         default: false
-      detail:
-        required: false
-        type: string
-        default: ""
       patches_url:
         required: false
         type: string
@@ -61,7 +57,6 @@ jobs:
         shell: bash
         env:
           OS: linux
-          GUI_FRAMEWORK: QT
           BUILD_SYSTEM: flatpak
           ARCH: ${{ inputs.platform }}
           EVENT_NAME: ${{ github.event_name }}
@@ -98,7 +93,7 @@ jobs:
           branch: ${{ inputs.branch }}
           cache: true
           restore-cache: true
-          cache-key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} ${{ inputs.detail }} flatpak ${{ hashFiles('.github/workflows/scripts/linux/flatpak/**/*.json') }}
+          cache-key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} flatpak ${{ hashFiles('.github/workflows/scripts/linux/flatpak/**/*.json') }}
 
       - name: Commit screenshots to OSTree
         run: |
