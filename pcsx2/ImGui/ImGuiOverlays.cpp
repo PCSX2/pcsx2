@@ -620,7 +620,7 @@ void ImGuiManager::DrawInputRecordingOverlay(float& position_y)
 	const float shadow_offset = std::ceil(1.0f * scale);
 	const float margin = std::ceil(10.0f * scale);
 	const float spacing = std::ceil(5.0f * scale);
-	position_y = margin;
+	position_y += margin;
 
 	ImFont* const fixed_font = ImGuiManager::GetFixedFont();
 	ImFont* const standard_font = ImGuiManager::GetStandardFont();
@@ -665,7 +665,7 @@ void ImGuiManager::DrawInputRecordingOverlay(float& position_y)
 
 void ImGuiManager::RenderOverlays()
 {
-	float position_y;
+	float position_y = 0;
 	DrawInputRecordingOverlay(position_y);
 	DrawPerformanceOverlay(position_y);
 	DrawSettingsOverlay();
