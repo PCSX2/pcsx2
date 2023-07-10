@@ -386,6 +386,8 @@ bool VKContext::SelectDeviceExtensions(ExtensionList* extension_list, bool enabl
 		SupportsExtension(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME, false);
 	m_optional_extensions.vk_khr_shader_draw_parameters =
 		SupportsExtension(VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME, false);
+	m_optional_extensions.vk_ext_attachment_feedback_loop_layout =
+		SupportsExtension(VK_EXT_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_EXTENSION_NAME, false);
 
 #ifdef _WIN32
 	m_optional_extensions.vk_ext_full_screen_exclusive =
@@ -581,6 +583,8 @@ bool VKContext::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer,
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
 	VkPhysicalDeviceLineRasterizationFeaturesEXT line_rasterization_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT};
+	VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT attachment_feedback_loop_feature = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT};
 
 	if (m_optional_extensions.vk_ext_provoking_vertex)
 	{
@@ -596,6 +600,11 @@ bool VKContext::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer,
 	{
 		rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess = VK_TRUE;
 		Vulkan::AddPointerToChain(&device_info, &rasterization_order_access_feature);
+	}
+	if (m_optional_extensions.vk_ext_attachment_feedback_loop_layout)
+	{
+		attachment_feedback_loop_feature.attachmentFeedbackLoopLayout = VK_TRUE;
+		Vulkan::AddPointerToChain(&device_info, &attachment_feedback_loop_feature);
 	}
 
 	VkResult res = vkCreateDevice(m_physical_device, &device_info, nullptr, &m_device);
@@ -661,6 +670,8 @@ void VKContext::ProcessDeviceExtensions()
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT};
 	VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
+	VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT attachment_feedback_loop_feature = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT};
 
 	// add in optional feature structs
 	if (m_optional_extensions.vk_ext_provoking_vertex)
@@ -669,6 +680,8 @@ void VKContext::ProcessDeviceExtensions()
 		Vulkan::AddPointerToChain(&features2, &line_rasterization_feature);
 	if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
 		Vulkan::AddPointerToChain(&features2, &rasterization_order_access_feature);
+	if (m_optional_extensions.vk_ext_attachment_feedback_loop_layout)
+		Vulkan::AddPointerToChain(&features2, &attachment_feedback_loop_feature);
 
 	// query
 	vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
@@ -678,6 +691,8 @@ void VKContext::ProcessDeviceExtensions()
 	m_optional_extensions.vk_ext_rasterization_order_attachment_access &=
 		(rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
 	m_optional_extensions.vk_ext_line_rasterization &= (line_rasterization_feature.bresenhamLines == VK_TRUE);
+	m_optional_extensions.vk_ext_attachment_feedback_loop_layout &=
+		(attachment_feedback_loop_feature.attachmentFeedbackLoopLayout == VK_TRUE);
 
 	VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
 	void** pNext = &properties2.pNext;
@@ -734,6 +749,8 @@ void VKContext::ProcessDeviceExtensions()
 		m_optional_extensions.vk_ext_calibrated_timestamps ? "supported" : "NOT supported");
 	Console.WriteLn("VK_EXT_rasterization_order_attachment_access is %s",
 		m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "supported" : "NOT supported");
+	Console.WriteLn("VK_EXT_attachment_feedback_loop_layout is %s",
+		m_optional_extensions.vk_ext_attachment_feedback_loop_layout ? "supported" : "NOT supported");
 }
 
 bool VKContext::CreateAllocator()
@@ -966,6 +983,30 @@ bool VKContext::CreateTextureStreamBuffer()
 	}
 
 	return true;
+}
+
+VkRenderPass VKContext::GetRenderPass(VkFormat color_format, VkFormat depth_format, VkAttachmentLoadOp color_load_op,
+	VkAttachmentStoreOp color_store_op, VkAttachmentLoadOp depth_load_op, VkAttachmentStoreOp depth_store_op,
+	VkAttachmentLoadOp stencil_load_op, VkAttachmentStoreOp stencil_store_op, bool color_feedback_loop,
+	bool depth_sampling)
+{
+	RenderPassCacheKey key = {};
+	key.color_format = color_format;
+	key.depth_format = depth_format;
+	key.color_load_op = color_load_op;
+	key.color_store_op = color_store_op;
+	key.depth_load_op = depth_load_op;
+	key.depth_store_op = depth_store_op;
+	key.stencil_load_op = stencil_load_op;
+	key.stencil_store_op = stencil_store_op;
+	key.color_feedback_loop = color_feedback_loop;
+	key.depth_sampling = depth_sampling;
+
+	auto it = m_render_pass_cache.find(key.key);
+	if (it != m_render_pass_cache.end())
+		return it->second;
+
+	return CreateCachedRenderPass(key);
 }
 
 VkRenderPass VKContext::GetRenderPassForRestarting(VkRenderPass pass)
@@ -1640,23 +1681,27 @@ VkRenderPass VKContext::CreateCachedRenderPass(RenderPassCacheKey key)
 	u32 num_attachments = 0;
 	if (key.color_format != VK_FORMAT_UNDEFINED)
 	{
+		const VkImageLayout layout =
+			key.color_feedback_loop ? (UseFeedbackLoopLayout() ? VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT :
+																 VK_IMAGE_LAYOUT_GENERAL) :
+									  VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		attachments[num_attachments] = {0, static_cast<VkFormat>(key.color_format), VK_SAMPLE_COUNT_1_BIT,
 			static_cast<VkAttachmentLoadOp>(key.color_load_op), static_cast<VkAttachmentStoreOp>(key.color_store_op),
-			VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
-			key.color_feedback_loop ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-			key.color_feedback_loop ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+			VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, layout, layout};
 		color_reference.attachment = num_attachments;
-		color_reference.layout =
-			key.color_feedback_loop ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		color_reference.layout = layout;
 		color_reference_ptr = &color_reference;
 
 		if (key.color_feedback_loop)
 		{
-			input_reference.attachment = num_attachments;
-			input_reference.layout = VK_IMAGE_LAYOUT_GENERAL;
-			input_reference_ptr = &input_reference;
+			if (!UseFeedbackLoopLayout())
+			{
+				input_reference.attachment = num_attachments;
+				input_reference.layout = layout;
+				input_reference_ptr = &input_reference;
+			}
 
-			if (!g_vulkan_context->GetOptionalExtensions().vk_ext_rasterization_order_attachment_access)
+			if (!m_optional_extensions.vk_ext_rasterization_order_attachment_access)
 			{
 				// don't need the framebuffer-local dependency when we have rasterization order attachment access
 				subpass_dependency.srcSubpass = 0;
@@ -1665,8 +1710,11 @@ VkRenderPass VKContext::CreateCachedRenderPass(RenderPassCacheKey key)
 				subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 				subpass_dependency.srcAccessMask =
 					VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-				subpass_dependency.dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-				subpass_dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+				subpass_dependency.dstAccessMask =
+					UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT : VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+				subpass_dependency.dependencyFlags =
+					UseFeedbackLoopLayout() ? (VK_DEPENDENCY_BY_REGION_BIT | VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT) :
+											  VK_DEPENDENCY_BY_REGION_BIT;
 				subpass_dependency_ptr = &subpass_dependency;
 			}
 		}
@@ -1675,8 +1723,9 @@ VkRenderPass VKContext::CreateCachedRenderPass(RenderPassCacheKey key)
 	}
 	if (key.depth_format != VK_FORMAT_UNDEFINED)
 	{
-		const VkImageLayout layout =
-			key.depth_sampling ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		const VkImageLayout layout = key.depth_sampling ? (UseFeedbackLoopLayout() ? VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT :
+															VK_IMAGE_LAYOUT_GENERAL) :
+										 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		attachments[num_attachments] = {0, static_cast<VkFormat>(key.depth_format), VK_SAMPLE_COUNT_1_BIT,
 			static_cast<VkAttachmentLoadOp>(key.depth_load_op), static_cast<VkAttachmentStoreOp>(key.depth_store_op),
 			static_cast<VkAttachmentLoadOp>(key.stencil_load_op),
@@ -1688,8 +1737,7 @@ VkRenderPass VKContext::CreateCachedRenderPass(RenderPassCacheKey key)
 	}
 
 	const VkSubpassDescriptionFlags subpass_flags =
-		(key.color_feedback_loop &&
-			g_vulkan_context->GetOptionalExtensions().vk_ext_rasterization_order_attachment_access) ?
+		(key.color_feedback_loop && m_optional_extensions.vk_ext_rasterization_order_attachment_access) ?
 			VK_SUBPASS_DESCRIPTION_RASTERIZATION_ORDER_ATTACHMENT_COLOR_ACCESS_BIT_EXT :
 			0;
 	const VkSubpassDescription subpass = {subpass_flags, VK_PIPELINE_BIND_POINT_GRAPHICS, input_reference_ptr ? 1u : 0u,

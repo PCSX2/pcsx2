@@ -336,12 +336,12 @@ layout(set = 1, binding = 1) uniform texture2D Palette;
 #endif
 
 #if PS_FEEDBACK_LOOP_IS_NEEDED
-	#ifndef DISABLE_TEXTURE_BARRIER
-		layout(input_attachment_index = 0, set = 2, binding = 0) uniform subpassInput RtSampler;
-		vec4 sample_from_rt() { return subpassLoad(RtSampler); }
-	#else
+	#if defined(DISABLE_TEXTURE_BARRIER) || defined(HAS_FEEDBACK_LOOP_LAYOUT)
 		layout(set = 2, binding = 0) uniform texture2D RtSampler;
 		vec4 sample_from_rt() { return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0); }
+	#else
+		layout(input_attachment_index = 0, set = 2, binding = 0) uniform subpassInput RtSampler;
+		vec4 sample_from_rt() { return subpassLoad(RtSampler); }
 	#endif
 #endif
 
@@ -1218,7 +1218,7 @@ void main()
 #endif
 
 #if (SW_AD_TO_HW)
-	vec4 RT = trunc(subpassLoad(RtSampler) * 255.0f + 0.1f);
+	vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
 	vec4 alpha_blend = vec4(RT.a / 128.0f);
 #else
 	vec4 alpha_blend = vec4(C.a / 128.0f);

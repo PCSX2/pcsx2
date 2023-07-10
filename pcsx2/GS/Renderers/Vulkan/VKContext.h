@@ -51,6 +51,7 @@ public:
 		bool vk_ext_calibrated_timestamps : 1;
 		bool vk_ext_line_rasterization : 1;
 		bool vk_ext_rasterization_order_attachment_access : 1;
+		bool vk_ext_attachment_feedback_loop_layout : 1;
 		bool vk_ext_full_screen_exclusive : 1;
 		bool vk_khr_driver_properties : 1;
 		bool vk_khr_fragment_shader_barycentric : 1;
@@ -98,6 +99,13 @@ public:
 	__fi const VkPhysicalDeviceDriverProperties& GetDeviceDriverProperties() const { return m_device_driver_properties; }
 	__fi const OptionalExtensions& GetOptionalExtensions() const { return m_optional_extensions; }
 
+	// The interaction between raster order attachment access and fbfetch is unclear.
+	__fi bool UseFeedbackLoopLayout() const
+	{
+		return (m_optional_extensions.vk_ext_attachment_feedback_loop_layout &&
+				!m_optional_extensions.vk_ext_rasterization_order_attachment_access);
+	}
+
 	// Helpers for getting constants
 	__fi u32 GetUniformBufferAlignment() const
 	{
@@ -132,33 +140,14 @@ public:
 	__fi bool IsDeviceNVIDIA() const { return (m_device_properties.vendorID == 0x10DE); }
 
 	// Creates a simple render pass.
-	__ri VkRenderPass GetRenderPass(VkFormat color_format, VkFormat depth_format,
+	VkRenderPass GetRenderPass(VkFormat color_format, VkFormat depth_format,
 		VkAttachmentLoadOp color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
 		VkAttachmentStoreOp color_store_op = VK_ATTACHMENT_STORE_OP_STORE,
 		VkAttachmentLoadOp depth_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
 		VkAttachmentStoreOp depth_store_op = VK_ATTACHMENT_STORE_OP_STORE,
 		VkAttachmentLoadOp stencil_load_op = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 		VkAttachmentStoreOp stencil_store_op = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-		bool color_feedback_loop = false, bool depth_sampling = false)
-	{
-		RenderPassCacheKey key = {};
-		key.color_format = color_format;
-		key.depth_format = depth_format;
-		key.color_load_op = color_load_op;
-		key.color_store_op = color_store_op;
-		key.depth_load_op = depth_load_op;
-		key.depth_store_op = depth_store_op;
-		key.stencil_load_op = stencil_load_op;
-		key.stencil_store_op = stencil_store_op;
-		key.color_feedback_loop = color_feedback_loop;
-		key.depth_sampling = depth_sampling;
-
-		auto it = m_render_pass_cache.find(key.key);
-		if (it != m_render_pass_cache.end())
-			return it->second;
-
-		return CreateCachedRenderPass(key);
-	}
+		bool color_feedback_loop = false, bool depth_sampling = false);
 
 	// Gets a non-clearing version of the specified render pass. Slow, don't call in hot path.
 	VkRenderPass GetRenderPassForRestarting(VkRenderPass pass);

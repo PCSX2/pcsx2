@@ -29,22 +29,33 @@
 static constexpr const VkComponentMapping s_identity_swizzle{VK_COMPONENT_SWIZZLE_IDENTITY,
 	VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
 
-static constexpr std::array<VkImageLayout, static_cast<u32>(GSTextureVK::Layout::Count)> s_vk_layout_mapping = {{
-	VK_IMAGE_LAYOUT_UNDEFINED, // Undefined
-	VK_IMAGE_LAYOUT_PREINITIALIZED, // Preinitialized
-	VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // ColorAttachment
-	VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, // DepthStencilAttachment
-	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, // ShaderReadOnly
-	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // ClearDst
-	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, // TransferSrc
-	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // TransferDst
-	VK_IMAGE_LAYOUT_GENERAL, // TransferSelf
-	VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, // PresentSrc
-	VK_IMAGE_LAYOUT_GENERAL, // FeedbackLoop
-	VK_IMAGE_LAYOUT_GENERAL, // ReadWriteImage
-	VK_IMAGE_LAYOUT_GENERAL, // ComputeReadWriteImage
-	VK_IMAGE_LAYOUT_GENERAL, // General
-}};
+static VkImageLayout GetVkImageLayout(GSTextureVK::Layout layout)
+{
+	static constexpr std::array<VkImageLayout, static_cast<u32>(GSTextureVK::Layout::Count)> s_vk_layout_mapping = {{
+		VK_IMAGE_LAYOUT_UNDEFINED, // Undefined
+		VK_IMAGE_LAYOUT_PREINITIALIZED, // Preinitialized
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // ColorAttachment
+		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, // DepthStencilAttachment
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, // ShaderReadOnly
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // ClearDst
+		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, // TransferSrc
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // TransferDst
+		VK_IMAGE_LAYOUT_GENERAL, // TransferSelf
+		VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, // PresentSrc
+		VK_IMAGE_LAYOUT_GENERAL, // FeedbackLoop
+		VK_IMAGE_LAYOUT_GENERAL, // ReadWriteImage
+		VK_IMAGE_LAYOUT_GENERAL, // ComputeReadWriteImage
+		VK_IMAGE_LAYOUT_GENERAL, // General
+	}};
+	return (layout == GSTextureVK::Layout::FeedbackLoop && g_vulkan_context->UseFeedbackLoopLayout()) ?
+			   VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT :
+			   s_vk_layout_mapping[static_cast<u32>(layout)];
+}
+
+static VkAccessFlagBits GetFeedbackLoopInputAccessBits()
+{
+	return g_vulkan_context->UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT : VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+}
 
 GSTextureVK::GSTextureVK(Type type, Format format, int width, int height, int levels, VkImage image,
 	VmaAllocation allocation, VkImageView view, VkFormat vk_format)
@@ -104,15 +115,18 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, Format format, int w
 			pxAssert(levels == 1);
 			ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
 						VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
-						VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+						(g_vulkan_context->UseFeedbackLoopLayout() ? VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT :
+																	 VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
 		}
 		break;
 
 		case Type::DepthStencil:
 		{
 			pxAssert(levels == 1);
-			ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-						VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+			ici.usage =
+				VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+				(g_vulkan_context->UseFeedbackLoopLayout() ? VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT : 0);
 			vci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 		}
 		break;
@@ -264,7 +278,7 @@ void GSTextureVK::Destroy(bool defer)
 
 VkImageLayout GSTextureVK::GetVkLayout() const
 {
-	return s_vk_layout_mapping[static_cast<u32>(m_layout)];
+	return GetVkImageLayout(m_layout);
 }
 
 void* GSTextureVK::GetNativeHandle() const
@@ -589,9 +603,8 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 		aspect = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
 
-	VkImageMemoryBarrier barrier = {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr, 0, 0,
-		s_vk_layout_mapping[static_cast<u32>(old_layout)], s_vk_layout_mapping[static_cast<u32>(new_layout)],
-		VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, m_image,
+	VkImageMemoryBarrier barrier = {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr, 0, 0, GetVkImageLayout(old_layout),
+		GetVkImageLayout(new_layout), VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, m_image,
 		{aspect, static_cast<u32>(start_level), static_cast<u32>(num_levels), 0u, 1u}};
 
 	// srcStageMask -> Stages that must complete before the barrier
@@ -657,7 +670,7 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 		case Layout::FeedbackLoop:
 			barrier.srcAccessMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT) ?
 										(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-											VK_ACCESS_INPUT_ATTACHMENT_READ_BIT) :
+											GetFeedbackLoopInputAccessBits()) :
 										(VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
 											VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT);
 			srcStageMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT) ?
@@ -733,7 +746,7 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 		case Layout::FeedbackLoop:
 			barrier.dstAccessMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT) ?
 										(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-											VK_ACCESS_INPUT_ATTACHMENT_READ_BIT) :
+											GetFeedbackLoopInputAccessBits()) :
 										(VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
 											VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT);
 			dstStageMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT) ?
