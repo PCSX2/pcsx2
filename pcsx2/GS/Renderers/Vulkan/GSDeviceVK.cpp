@@ -662,6 +662,8 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	instance_cleanup.Cancel();
 	library_cleanup.Cancel();
 
+	m_has_feedback_loop_layout = g_vulkan_context->UseFeedbackLoopLayout();
+
 	// Render a frame as soon as possible to clear out whatever was previously being displayed.
 	if (m_window_info.type != WindowInfo::Type::Surfaceless)
 		RenderBlankFrame();
@@ -1622,6 +1624,8 @@ static void AddShaderHeader(std::stringstream& ss)
 		ss << "#define DISABLE_TEXTURE_BARRIER 1\n";
 	if (!features.dual_source_blend)
 		ss << "#define DISABLE_DUAL_SOURCE 1\n";
+	if (features.texture_barrier && g_vulkan_context->UseFeedbackLoopLayout())
+		ss << "#define HAS_FEEDBACK_LOOP_LAYOUT 1\n";
 }
 
 static void AddShaderStageMacro(std::stringstream& ss, bool vs, bool gs, bool fs)
@@ -1771,7 +1775,10 @@ bool GSDeviceVK::CreatePipelineLayouts()
 	if ((m_tfx_sampler_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
 	Vulkan::SetObjectName(dev, m_tfx_sampler_ds_layout, "TFX sampler descriptor layout");
-	dslb.AddBinding(0, m_features.texture_barrier ? VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	dslb.AddBinding(0,
+		(m_features.texture_barrier && !m_has_feedback_loop_layout) ? VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT :
+																	  VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+		1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(1, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	if ((m_tfx_rt_texture_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
@@ -3367,7 +3374,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			return ApplyTFXState(true);
 		}
 
-		if (m_features.texture_barrier)
+		if (m_features.texture_barrier && !m_has_feedback_loop_layout)
 		{
 			dsub.AddInputAttachmentDescriptorWrite(
 				m_tfx_rt_descriptor_set, 0, m_tfx_textures[NUM_TFX_DRAW_TEXTURES]->GetView(), VK_IMAGE_LAYOUT_GENERAL);
@@ -3483,17 +3490,6 @@ void GSDeviceVK::SetPSConstantBuffer(const GSHWDrawConfig::PSConstantBuffer& cb)
 {
 	if (m_ps_cb_cache.Update(cb))
 		m_dirty_flags |= DIRTY_FLAG_PS_CONSTANT_BUFFER;
-}
-
-static void ColorBufferBarrier(GSTextureVK* rt)
-{
-	const VkImageMemoryBarrier barrier = {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr,
-		VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
-		VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED,
-		rt->GetImage(), {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u}};
-
-	vkCmdPipelineBarrier(g_vulkan_context->GetCurrentCommandBuffer(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
 void GSDeviceVK::SetupDATE(GSTexture* rt, GSTexture* ds, bool datm, const GSVector4i& bbox)
@@ -3952,15 +3948,35 @@ void GSDeviceVK::UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config)
 	}
 }
 
+VkImageMemoryBarrier GSDeviceVK::GetColorBufferBarrier(GSTextureVK* rt) const
+{
+	const VkImageLayout layout =
+		m_has_feedback_loop_layout ? VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT : VK_IMAGE_LAYOUT_GENERAL;
+	const VkAccessFlags dst_access =
+		m_has_feedback_loop_layout ? VK_ACCESS_SHADER_READ_BIT : VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+	return {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr,
+		VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, dst_access, layout, layout,
+		VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, rt->GetImage(), {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u}};
+}
+
+VkDependencyFlags GSDeviceVK::GetColorBufferBarrierFlags() const
+{
+	return m_has_feedback_loop_layout ? (VK_DEPENDENCY_BY_REGION_BIT | VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT) :
+										VK_DEPENDENCY_BY_REGION_BIT;
+}
+
 void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, bool skip_first_barrier)
 {
 	if (config.drawlist)
 	{
 		GL_PUSH("Split the draw (SPRITE)");
-		g_perfmon.Put(GSPerfMon::Barriers, static_cast<u32>(config.drawlist->size()) - static_cast<u32>(skip_first_barrier));
+		g_perfmon.Put(
+			GSPerfMon::Barriers, static_cast<u32>(config.drawlist->size()) - static_cast<u32>(skip_first_barrier));
 
 		const u32 indices_per_prim = config.indices_per_prim;
 		const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
+		const VkImageMemoryBarrier barrier = GetColorBufferBarrier(draw_rt);
+		const VkDependencyFlags barrier_flags = GetColorBufferBarrierFlags();
 		u32 p = 0;
 		u32 n = 0;
 
@@ -3974,8 +3990,11 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 
 		for (; n < draw_list_size; n++)
 		{
+			vkCmdPipelineBarrier(g_vulkan_context->GetCurrentCommandBuffer(),
+				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, barrier_flags, 0,
+				nullptr, 0, nullptr, 1, &barrier);
+
 			const u32 count = (*config.drawlist)[n] * indices_per_prim;
-			ColorBufferBarrier(draw_rt);
 			DrawIndexedPrimitive(p, count);
 			p += count;
 		}
@@ -3985,12 +4004,16 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 
 	if (m_features.texture_barrier && m_pipeline_selector.ps.IsFeedbackLoop())
 	{
+		const VkImageMemoryBarrier barrier = GetColorBufferBarrier(draw_rt);
+		const VkDependencyFlags barrier_flags = GetColorBufferBarrierFlags();
+
 		if (config.require_full_barrier)
 		{
 			const u32 indices_per_prim = config.indices_per_prim;
 
 			GL_PUSH("Split single draw in %d draw", config.nindices / indices_per_prim);
-			g_perfmon.Put(GSPerfMon::Barriers, (config.nindices / indices_per_prim) - static_cast<u32>(skip_first_barrier));
+			g_perfmon.Put(
+				GSPerfMon::Barriers, (config.nindices / indices_per_prim) - static_cast<u32>(skip_first_barrier));
 
 			u32 p = 0;
 			if (skip_first_barrier)
@@ -4001,7 +4024,10 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 
 			for (; p < config.nindices; p += indices_per_prim)
 			{
-				ColorBufferBarrier(draw_rt);
+				vkCmdPipelineBarrier(g_vulkan_context->GetCurrentCommandBuffer(),
+					VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, barrier_flags,
+					0, nullptr, 0, nullptr, 1, &barrier);
+
 				DrawIndexedPrimitive(p, indices_per_prim);
 			}
 
@@ -4011,7 +4037,9 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 		if (config.require_one_barrier && !skip_first_barrier)
 		{
 			g_perfmon.Put(GSPerfMon::Barriers, 1);
-			ColorBufferBarrier(draw_rt);
+			vkCmdPipelineBarrier(g_vulkan_context->GetCurrentCommandBuffer(),
+				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, barrier_flags, 0,
+				nullptr, 0, nullptr, 1, &barrier);
 		}
 	}
 
