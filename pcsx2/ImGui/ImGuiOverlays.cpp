@@ -51,15 +51,13 @@
 #include <tuple>
 #include <unordered_map>
 
-float position_y = 0;
-
 namespace ImGuiManager
 {
 	static void FormatProcessorStat(std::string& text, double usage, double time);
-	static void DrawPerformanceOverlay();
+	static void DrawPerformanceOverlay(float& position_y);
 	static void DrawSettingsOverlay();
 	static void DrawInputsOverlay();
-	static void DrawInputRecordingOverlay();
+	static void DrawInputRecordingOverlay(float& position_y);
 } // namespace ImGuiManager
 
 static std::tuple<float, float> GetMinMax(gsl::span<const float> values)
@@ -99,7 +97,7 @@ void ImGuiManager::FormatProcessorStat(std::string& text, double usage, double t
 		fmt::format_to(std::back_inserter(text), "{:.1f}% ({:.2f}ms)", usage, time);
 }
 
-void ImGuiManager::DrawPerformanceOverlay()
+void ImGuiManager::DrawPerformanceOverlay(float& position_y)
 {
 	const float scale = ImGuiManager::GetGlobalScale();
 	const float shadow_offset = std::ceil(1.0f * scale);
@@ -616,7 +614,7 @@ void ImGuiManager::DrawInputsOverlay()
 	}
 }
 
-void ImGuiManager::DrawInputRecordingOverlay()
+void ImGuiManager::DrawInputRecordingOverlay(float& position_y)
 {
 	const float scale = ImGuiManager::GetGlobalScale();
 	const float shadow_offset = std::ceil(1.0f * scale);
@@ -667,8 +665,9 @@ void ImGuiManager::DrawInputRecordingOverlay()
 
 void ImGuiManager::RenderOverlays()
 {
-	DrawInputRecordingOverlay();
-	DrawPerformanceOverlay();
+	float position_y;
+	DrawInputRecordingOverlay(position_y);
+	DrawPerformanceOverlay(position_y);
 	DrawSettingsOverlay();
 	DrawInputsOverlay();
 }
