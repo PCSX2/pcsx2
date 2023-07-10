@@ -4291,7 +4291,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 	if (m_conf.tex == m_conf.rt)
 	{
 		// Can we read the framebuffer directly? (i.e. sample location matches up).
-		if (CanUseTexIsFB(rt, tex))
+		if (CanUseTexIsFB(rt, tex, tmm))
 		{
 			m_conf.tex = nullptr;
 			m_conf.ps.tex_is_fb = true;
@@ -4438,7 +4438,8 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 	m_conf.tex = src_copy;
 }
 
-bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextureCache::Source* tex) const
+bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextureCache::Source* tex,
+	const TextureMinMaxResult& tmm) const
 {
 	// Minimum blending or no barriers -> we can't use tex-is-fb.
 	if (GSConfig.AccurateBlendingUnit == AccBlendLevel::Minimum || !g_gs_device->Features().texture_barrier)
@@ -4452,6 +4453,36 @@ bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextu
 	{
 		GL_CACHE("Activating tex-is-fb for %s shuffle.", m_texture_shuffle ? "texture" : "channel");
 		return true;
+	}
+
+	static constexpr auto check_clamp = [](u32 clamp, u32 min, u32 max, s32 tmin, s32 tmax) {
+		if (clamp == CLAMP_REGION_CLAMP)
+		{
+			if (tmin < static_cast<s32>(min) || tmax > static_cast<s32>(max + 1))
+			{
+				GL_CACHE("Can't use tex-is-fb because of REGION_CLAMP [%d, %d] with TMM of [%d, %d]", min, max, tmin, tmax);
+				return false;
+			}
+		}
+		else if (clamp == CLAMP_REGION_REPEAT)
+		{
+			const u32 req_tbits = (tmax > 1) ? static_cast<u32>(Common::NextPow2(tmax - 1) - 1) : 0x1;
+			if ((min & req_tbits) != req_tbits)
+			{
+				GL_CACHE("Can't use tex-is-fb because of REGION_REPEAT [%d, %d] with TMM of [%d, %d] and tbits of %d",
+					min, max, tmin, tmax, req_tbits);
+				return false;
+			}
+		}
+
+		return true;
+	};
+	if (!check_clamp(
+			m_cached_ctx.CLAMP.WMS, m_cached_ctx.CLAMP.MINU, m_cached_ctx.CLAMP.MAXU, tmm.coverage.x, tmm.coverage.z) ||
+		!check_clamp(
+			m_cached_ctx.CLAMP.WMT, m_cached_ctx.CLAMP.MINV, m_cached_ctx.CLAMP.MAXV, tmm.coverage.y, tmm.coverage.w))
+	{
+		return false;
 	}
 
 	// Texture is actually the frame buffer. Stencil emulation to compute shadow (Jak series/tri-ace game)
