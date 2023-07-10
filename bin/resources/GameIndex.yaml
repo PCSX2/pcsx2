@@ -375,7 +375,7 @@ PCPX-96321:
   name: "SkyGunner [Trial]"
   region: "NTSC-J"
 PCPX-96322:
-  name: "ICO [Trial]"
+  name: "Ico [Trial]"
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
@@ -950,7 +950,7 @@ SCAJ-20098:
   name: "EyeToy - Oosawagi! Ukkiiuki Game Tenkomori!!"
   region: "NTSC-Unk"
 SCAJ-20099:
-  name: "ICO"
+  name: "Ico"
   region: "NTSC-Unk"
   compat: 5
   clampModes:
@@ -1702,7 +1702,7 @@ SCCS-40004:
   name: "XIGO - Zuihou de Touzi"
   region: "NTSC-C"
 SCCS-40005:
-  name: "ICO"
+  name: "Ico"
   region: "NTSC-C"
   compat: 5
   clampModes:
@@ -1829,11 +1829,17 @@ SCED-50153:
 SCED-50154:
   name: "Official PlayStation 2 Magazine Demo 19"
   region: "PAL-M5"
+SCED-50161:
+  name: "Official PlayStation 2 Magazine-UK Greatest Hits Volume 1 - Special Edition - Buyers Guide"
+  region: "PAL-M5"
 SCED-50162:
-  name: "Official PS2 Magazine UK Greatest Hits Vol 2 - Special Ed - A-Z of PS2"
+  name: "Official PlayStation 2 Magazine-UK Greatest Hits Volume 2 - Special Edition - A-Z of PS2"
   region: "PAL-M5"
 SCED-50163:
-  name: "PlayStation 2 Greatest Hits Vol.3 [Demo]"
+  name: "Official PlayStation 2 Magazine-UK Greatest Hits Volume 3 - Special Edition - Players Guide"
+  region: "PAL-M5"
+SCED-50164:
+  name: "Official PlayStation 2 Magazine-UK Greatest Hits Volume 4 - Special Edition - Yearbook 2001"
   region: "PAL-M5"
 SCED-50254:
   name: "Official Review of the 2000 FIA Formula 1 World Championship [Formula One 2001 Bonus Disc]"
@@ -1878,6 +1884,9 @@ SCED-50520:
 SCED-50543:
   name: "Official PlayStation 2 Magazine Demo 12" # French
   region: "PAL-M5"
+SCED-50569:
+  name: "Play PlayStation 2 Demo Disc playable demos and videos Sept - Oct - Nov 2001"
+  region: "PAL-E"
 SCED-50593:
   name: "Official PlayStation 2 Magazine Demo 13" # French
   region: "PAL-M5"
@@ -1895,6 +1904,9 @@ SCED-50614:
     trilinearFiltering: 1 # Fixes water textures.
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
+SCED-50615:
+  name: "Official Demo Disc 1 - Retail Edition November 01"
+  region: "PAL-E"
 SCED-50622:
   name: "Official PlayStation 2 Magazine Demo 14" # German
   region: "PAL-E-G"
@@ -1910,6 +1922,12 @@ SCED-50642:
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
     beforeDraw: "OI_FFX"
+SCED-50660:
+  name: "Dropship - United Peace Force"
+  region: "PAL-A"
+  speedHacks:
+    instantVU1: 0 # Fixes corrupted textures.
+    mtvu: 0 # Fixes corrupted textures.
 SCED-50675:
   name: "Official PlayStation 2 Magazine Demo 16"
   region: "PAL-M5"
@@ -1931,6 +1949,9 @@ SCED-50700:
 SCED-50701:
   name: "Official PlayStation 2 Magazine Demo 22" # German
   region: "PAL-E-G"
+SCED-50733:
+  name: "Play PlayStation 2 Demo Disc playable demos and videos Jan - Feb 2002"
+  region: "PAL-E"
 SCED-50734:
   name: "PS2 Bonus Demo Jan 2002"
   region: "PAL-M5"
@@ -1964,11 +1985,17 @@ SCED-50749:
 SCED-50750:
   name: "Official PlayStation 2 Magazine Demo 28"
   region: "PAL-M5"
+SCED-50761:
+  name: "Sega Cubed Demo"
+  region: "PAL-E"
 SCED-50768:
   name: "Wipeout Fusion"
   region: "PAL-E"
   gsHWFixes:
     PCRTCOffsets: 1 # Fixes viewport shaking.
+SCED-50780:
+  name: "Official PlayStation 2 Magazine Germany Special Edition 1"
+  region: "PAL-G"
 SCED-50781:
   name: "Destruction Derby Arenas [Beta]"
   region: "PAL-M5"
@@ -1976,9 +2003,33 @@ SCED-50781:
     vu1RoundMode: 0 # Fixes tyre textures.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects shadow position.
+SCED-50783:
+  name: "Official PlayStation 2 Magazine-UK Greatest Hits Volume 6 - Special Edition - Awards 2002"
+  region: "PAL-M5"
+SCED-50784:
+  name: "Official PlayStation 2 Magazine-UK Greatest Hits Volume 5 - Special Edition - Action Heroes"
+  region: "PAL-M5"
+SCED-50785:
+  name: "Official PlayStation 2 Magazine-UK Greatest Hits Volume 7 - Special Edition - Sports Games"
+  region: "PAL-M5"
+SCED-50786:
+  name: "Official PlayStation 2 Magazine-UK Greatest Hits Volume 8 - Special Edition - Racing Games"
+  region: "PAL-M5"
+SCED-50811:
+  name: "Selector Demo 01"
+  region: "PAL-M5"
 SCED-50825:
   name: "Official PlayStation 2 Magazine Demo 18"
   region: "PAL-M5"
+SCED-50844:
+  name: "Ico [Demo]"
+  region: "PAL-M5"
+  clampModes:
+    eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
+    vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
+  gsHWFixes:
+    mipmap: 1
+    halfPixelOffset: 1 # Fixes effect misalignment.
 SCED-50907:
   name: "Final Fantasy X [Bonus Disc - Beyond Final Fantasy]"
   region: "PAL-Unk"
@@ -1988,12 +2039,26 @@ SCED-50907:
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
     beforeDraw: "OI_FFX"
+SCED-50916:
+  name: "Ratchet & Clank [Demo]"
+  region: "PAL-M5"
+  gameFixes:
+    - EETimingHack # Fixes SPR errors while going in-game.
+  gsHWFixes:
+    mipmap: 1
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
+SCED-50932:
+  name: "Smash Court Tennis - Pro Tournament [Demo]"
+  region: "PAL-M5"
 SCED-50945:
   name: "Official PlayStation 2 Magazine Demo 20"
   region: "PAL-M5"
 SCED-50989:
   name: "Official PlayStation 2 Magazine Demo 21"
   region: "PAL-M5"
+SCED-50990:
+  name: "Frequency [Demo]"
+  region: "PAL-E"
 SCED-51016:
   name: "Official PlayStation 2 Magazine Demo 22-23"
   region: "PAL-M5"
@@ -2007,6 +2072,14 @@ SCED-51075:
   gsHWFixes:
     mipmap: 1
     partialTargetInvalidation: 1 # Fixes broken pause screen.
+SCED-51111:
+  name: "Magazine Ufficiale PlayStation 2 Demo Italia 08-02"
+  region: "PAL-M5"
+SCED-51120:
+  name: "Tekken 4 [Demo]"
+  region: "PAL-E"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SCED-51140:
   name: "PS2 Bonus Demo 03"
   region: "PAL-M5"
@@ -3173,8 +3246,8 @@ SCES-50459:
   region: "PAL-M5"
   compat: 2
   speedHacks:
-    instantVU1: 0
-    mtvu: 0
+    instantVU1: 0 # Fixes corrupted textures.
+    mtvu: 0 # Fixes corrupted textures.
 SCES-50490:
   name: "Final Fantasy X"
   region: "PAL-E"
@@ -3305,7 +3378,7 @@ SCES-50759:
   region: "PAL-M5"
   compat: 5
 SCES-50760:
-  name: "ICO"
+  name: "Ico"
   region: "PAL-M5"
   compat: 5
   clampModes:
@@ -5243,7 +5316,7 @@ SCKA-20027:
     mergeSprite: 1 # Fixes most vertical lines and lighting misalignment.
     getSkipCount: "GSC_GiTS"
 SCKA-20028:
-  name: "ICO [PlayStation2 Big Hit Series]"
+  name: "Ico [PlayStation2 Big Hit Series]"
   region: "NTSC-K"
   compat: 5
   clampModes:
@@ -5765,7 +5838,7 @@ SCPS-11002:
   region: "NTSC-J"
   compat: 5
 SCPS-11003:
-  name: "ICO"
+  name: "Ico"
   region: "NTSC-J"
   compat: 5
   clampModes:
@@ -6606,7 +6679,7 @@ SCPS-19102:
   gsHWFixes:
     autoFlush: 1 # Depth of field blur is incorrect without it.
 SCPS-19103:
-  name: "ICO [PlayStation 2 The Best]"
+  name: "Ico [PlayStation 2 The Best]"
   region: "NTSC-J"
   compat: 5
   clampModes:
@@ -6622,7 +6695,7 @@ SCPS-19105:
   name: "Bravo Music [PlayStation 2 The Best]"
   region: "NTSC-J"
 SCPS-19151:
-  name: "ICO [PlayStation 2 The Best]"
+  name: "Ico [PlayStation 2 The Best]"
   region: "NTSC-J"
   compat: 5
   clampModes:
@@ -7071,7 +7144,7 @@ SCPS-51016:
   clampModes:
     vuClampMode: 3 # Fixes SPS and bad textures.
 SCPS-55001:
-  name: "ICO"
+  name: "Ico"
   region: "NTSC-J"
   compat: 5
   clampModes:
@@ -7345,7 +7418,7 @@ SCPS-55903:
   gsHWFixes:
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCPS-56001:
-  name: "ICO"
+  name: "Ico"
   region: "NTSC-K"
   compat: 5
   clampModes:
@@ -7520,7 +7593,7 @@ SCUS-97112:
   gameFixes:
     - SoftwareRendererFMVHack # Black FMV.
 SCUS-97113:
-  name: "ICO"
+  name: "Ico"
   region: "NTSC-U"
   compat: 5
   clampModes:
@@ -7705,7 +7778,7 @@ SCUS-97158:
   name: "Official U.S. PlayStation Magazine Demo Disc 049"
   region: "NTSC-U"
 SCUS-97159:
-  name: "ICO [Demo]"
+  name: "Ico [Demo]"
   region: "NTSC-U"
   compat: 5
   clampModes:
@@ -11529,7 +11602,7 @@ SLES-50591:
   name: "Guilty Gear X"
   region: "PAL-E"
 SLES-50592:
-  name: "No One Lives Forever"
+  name: "Operative, The - No One Lives Forever"
   region: "PAL-M5"
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting.
@@ -14405,6 +14478,8 @@ SLES-51861:
 SLES-51862:
   name: "Bass Master Fishing"
   region: "PAL-E"
+  gsHWFixes:
+    deinterlace: 7 # Fixes flashing FMVs.
 SLES-51863:
   name: "Maze Action"
   region: "PAL-E"
@@ -15526,7 +15601,7 @@ SLES-52387:
   name: "Spy Hunter 2"
   region: "PAL-M5"
 SLES-52388:
-  name: "Transformers Armada - Prelude to Energon [Special Edition]"
+  name: "Transformers [Special Edition]"
   region: "PAL-M5"
   compat: 5
   gameFixes:
@@ -27131,6 +27206,8 @@ SLPM-62147:
 SLPM-62150:
   name: "Simple 2000 Series Vol. 3 - The Bass Fishing"
   region: "NTSC-J"
+  gsHWFixes:
+    deinterlace: 7 # Fixes flashing FMVs.
 SLPM-62151:
   name: "Live GI Stable 2"
   region: "NTSC-J"
@@ -42768,7 +42845,7 @@ SLUS-20024:
   gsHWFixes:
     mipmap: 1 # Fixes glitching textures.
 SLUS-20028:
-  name: "No One Lives Forever"
+  name: "Operative, The - No One Lives Forever"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
@@ -44478,6 +44555,8 @@ SLUS-20428:
   name: "Fisherman's Bass Club"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    deinterlace: 7 # Fixes flashing FMVs.
 SLUS-20429:
   name: "Riding Spirits"
   region: "NTSC-U"
@@ -44643,8 +44722,8 @@ SLUS-20463:
   region: "NTSC-U"
   compat: 2
   speedHacks:
-    instantVU1: 0
-    mtvu: 0
+    instantVU1: 0 # Fixes corrupted textures.
+    mtvu: 0 # Fixes corrupted textures.
 SLUS-20464:
   name: "Fugitive Hunter - War on Terror"
   region: "NTSC-U"
