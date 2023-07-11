@@ -931,7 +931,7 @@ std::pair<u8, u8> GSGetRGBA8AlphaMinMax(const void* data, u32 width, u32 height,
 			const u8* rptr = ptr;
 			for (u32 c = 0; c < width; c += 4)
 			{
-				const GSVector4i v = GSVector4i::load<true>(rptr);
+				const GSVector4i v = GSVector4i::load<false>(rptr);
 				rptr += sizeof(GSVector4i);
 				minc = minc.min_u32(v);
 				maxc = maxc.max_u32(v);
@@ -956,13 +956,13 @@ std::pair<u8, u8> GSGetRGBA8AlphaMinMax(const void* data, u32 width, u32 height,
 			const u8* rptr = ptr;
 			for (u32 c = 0; c < aligned_width; c += 4)
 			{
-				const GSVector4i v = GSVector4i::load<true>(rptr);
+				const GSVector4i v = GSVector4i::load<false>(rptr);
 				rptr += sizeof(GSVector4i);
 				minc = minc.min_u32(v);
 				maxc = maxc.max_u32(v);
 			}
 
-			const GSVector4i v = GSVector4i::load<true>(rptr);
+			const GSVector4i v = GSVector4i::load<false>(rptr);
 			minc = minc.min_u32(v | last_mask_or);
 			maxc = maxc.max_u32(v & last_mask_and);
 
