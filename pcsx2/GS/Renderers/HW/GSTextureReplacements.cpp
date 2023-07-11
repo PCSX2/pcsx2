@@ -21,6 +21,7 @@
 #include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/ScopedGuard.h"
+#include "common/TextureDecompress.h"
 
 #include "Config.h"
 #include "Host.h"
@@ -116,6 +117,7 @@ namespace GSTextureReplacements
 	static std::optional<TextureName> ParseReplacementName(const std::string& filename);
 	static std::string GetGameTextureDirectory();
 	static std::string GetDumpFilename(const TextureName& name, u32 level);
+	static void SetReplacementTextureAlphaMinMax(ReplacementTexture& rtex);
 	static std::optional<ReplacementTexture> LoadReplacementTexture(const TextureName& name, const std::string& filename, bool only_base_image);
 	static void QueueAsyncReplacementTextureLoad(const TextureName& name, const std::string& filename, bool mipmap, bool cache_only);
 	static void PrecacheReplacementTextures();
@@ -483,6 +485,64 @@ GSTexture* GSTextureReplacements::LookupReplacementTexture(const GSTextureCache:
 	}
 }
 
+void GSTextureReplacements::SetReplacementTextureAlphaMinMax(ReplacementTexture& rtex)
+{
+	if (rtex.format >= GSTexture::Format::BC1 && rtex.format <= GSTexture::Format::BC7)
+	{
+		constexpr u32 BC_BLOCK_SIZE = 4;
+		constexpr u32 BC_BLOCK_BYTES = 16;
+
+		const u32 blocks_wide = (rtex.width + (BC_BLOCK_SIZE - 1)) / BC_BLOCK_SIZE;
+		const u32 blocks_high = (rtex.height + (BC_BLOCK_SIZE - 1)) / BC_BLOCK_SIZE;
+
+		GSVector4i minc = GSVector4i::xffffffff();
+		GSVector4i maxc = GSVector4i::zero();
+
+		for (u32 y = 0; y < blocks_high; y++)
+		{
+			const u8* block_in = rtex.data.data() + y * rtex.pitch;
+			alignas(16) u8 block_pixels_out[BC_BLOCK_SIZE * BC_BLOCK_SIZE * sizeof(u32)];
+
+			for (u32 x = 0; x < blocks_wide; x++, block_in += BC_BLOCK_BYTES)
+			{
+				switch (rtex.format)
+				{
+					case GSTexture::Format::BC1:
+						DecompressBlockBC1(0, 0, sizeof(u32) * BC_BLOCK_SIZE, block_in, block_pixels_out);
+						break;
+					case GSTexture::Format::BC2:
+						DecompressBlockBC2(0, 0, sizeof(u32) * BC_BLOCK_SIZE, block_in, block_pixels_out);
+						break;
+					case GSTexture::Format::BC3:
+						DecompressBlockBC3(0, 0, sizeof(u32) * BC_BLOCK_SIZE, block_in, block_pixels_out);
+						break;
+
+					case GSTexture::Format::BC7:
+						bc7decomp::unpack_bc7(block_in, reinterpret_cast<bc7decomp::color_rgba*>(block_pixels_out));
+						break;
+				}
+
+				const u8* out_ptr = block_pixels_out;
+				for (u32 i = 0; i < ((BC_BLOCK_SIZE * BC_BLOCK_SIZE * sizeof(u32)) / sizeof(GSVector4i)); i++)
+				{
+					const GSVector4i v = GSVector4i::load<true>(out_ptr);
+					out_ptr += sizeof(GSVector4i);
+					minc = minc.min_u32(v);
+					maxc = maxc.max_u32(v);
+				}
+			}
+		}
+
+		rtex.alpha_minmax =
+			std::make_pair<u8, u8>(static_cast<u8>(minc.minv_u32() >> 24), static_cast<u8>(maxc.maxv_u32() >> 24));
+	}
+	else
+	{
+		pxAssert(rtex.format == GSTexture::Format::Color);
+		rtex.alpha_minmax = GSGetRGBA8AlphaMinMax(rtex.data.data(), rtex.width, rtex.height, rtex.pitch);
+	}
+}
+
 std::optional<GSTextureReplacements::ReplacementTexture> GSTextureReplacements::LoadReplacementTexture(const TextureName& name, const std::string& filename, bool only_base_image)
 {
 	ReplacementTextureLoader loader = GetLoader(filename);
@@ -491,9 +551,12 @@ std::optional<GSTextureReplacements::ReplacementTexture> GSTextureReplacements::
 
 	ReplacementTexture rtex;
 	if (!loader(filename.c_str(), &rtex, only_base_image))
+	{
+		Console.Warning("Failed to load replacement texture %s", filename.c_str());
 		return std::nullopt;
+	}
 
-	rtex.alpha_minmax = GSGetRGBA8AlphaMinMax(rtex.data.data(), rtex.width, rtex.height, rtex.pitch);
+	SetReplacementTextureAlphaMinMax(rtex);
 
 	return rtex;
 }

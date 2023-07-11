@@ -69,6 +69,7 @@
     <ClCompile Include="StackWalker.cpp" />
     <ClCompile Include="StringUtil.cpp" />
     <ClCompile Include="SettingsWrapper.cpp" />
+    <ClCompile Include="TextureDecompress.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="WAVWriter.cpp" />
     <ClCompile Include="WindowInfo.cpp" />
@@ -141,6 +142,7 @@
     <ClInclude Include="RedtapeWindows.h" />
     <ClInclude Include="SafeArray.h" />
     <ClInclude Include="ThreadPool.h" />
+    <ClInclude Include="TextureDecompress.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="WAVWriter.h" />
     <ClInclude Include="WindowInfo.h" />

@@ -30,6 +30,7 @@ target_sources(common PRIVATE
 	Semaphore.cpp
 	SettingsWrapper.cpp
 	StringUtil.cpp
+	TextureDecompress.cpp
 	Timer.cpp
 	ThreadPool.cpp
 	WAVWriter.cpp
@@ -94,6 +95,7 @@ target_sources(common PRIVATE
 	SettingsWrapper.h
 	StringUtil.h
 	Timer.h
+	TextureDecompress.h
 	Threading.h
 	ThreadPool.h
 	TraceLog.h
