@@ -1,7 +1,7 @@
 import os
 import shutil
 
-tag = os.environ['TAG'].split("refs/tags/")[1]
+tag = os.environ['TAG_VAL']
 scan_dir = os.environ['SCAN_DIR']
 output_dir = os.environ['OUT_DIR']
 accepted_exts = ["AppImage", "flatpak", "tar.xz", "7z"]
