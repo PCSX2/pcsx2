@@ -57,6 +57,10 @@ jobs:
         with:
           submodules: recursive
 
+      # actions/checkout elides tags, fetch them primarily for releases
+      - name: Fetch Tags
+        run: git fetch --tags --no-recurse-submodules
+
       - name: Prepare Artifact Metadata
         id: artifact-metadata
         shell: bash

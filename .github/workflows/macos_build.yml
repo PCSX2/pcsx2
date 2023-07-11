@@ -35,6 +35,10 @@ jobs:
         with:
           submodules: recursive
 
+      # actions/checkout elides tags, fetch them primarily for releases
+      - name: Fetch Tags
+        run: git fetch --tags --no-recurse-submodules
+
       - name: Use Xcode 14.3.1
         run: sudo xcode-select -s /Applications/Xcode_14.3.1.app
 

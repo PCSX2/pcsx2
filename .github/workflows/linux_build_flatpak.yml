@@ -47,8 +47,8 @@ jobs:
 
       # Hackity hack. When running the workflow on a schedule, we don't have the tag,
       # it doesn't fetch tags, therefore we don't get a version. So grab them manually.
+      # actions/checkout elides tags, fetch them primarily for releases
       - name: Fetch tags
-        if: inputs.publish == true
         id: fetch-tags
         run: git fetch --tags --no-recurse-submodules
 
