@@ -17452,9 +17452,11 @@ SLES-53073:
         comment=Rearranging code to avoid reading vf30 before VU0 program finish.
         // Fixes falling through the floor in library.
         patch=1,EE,0015d1f8,word,48481001
-        patch=1,EE,0015d208,word,f85e0000
+        patch=1,EE,0015d204,word,f85e0000
+        patch=1,EE,0015d208,word,c7a1003c
         patch=1,EE,0015d61c,word,48481001
-        patch=1,EE,0015d62c,word,f85e0000
+        patch=1,EE,0015d628,word,f85e0000
+        patch=1,EE,0015d62c,word,c7a2004c
 SLES-53074:
   name: "Soccer Life"
   region: "PAL-M5"
