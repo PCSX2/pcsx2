@@ -62,16 +62,16 @@ GSVector4i GSDirtyRectList::GetTotalRect(GIFRegTEX0 TEX0, const GSVector2i& size
 {
 	if (!empty())
 	{
-		GSVector4i r(INT_MAX, INT_MAX, 0, 0);
+		GSVector4i r = GSVector4i::cxpr(INT_MAX, INT_MAX, 0, 0);
 
 		for (auto& dirty_rect : *this)
 		{
 			r = r.runion(dirty_rect.GetDirtyRect(TEX0));
 		}
 
-		const GSVector2i bs = GSLocalMemory::m_psm[TEX0.PSM].bs;
+		const GSVector2i& bs = GSLocalMemory::m_psm[TEX0.PSM].bs;
 
-		return r.ralign<Align_Outside>(bs).rintersect(GSVector4i(0, 0, size.x, size.y));
+		return r.ralign<Align_Outside>(bs).rintersect(GSVector4i::loadh(size));
 	}
 
 	return GSVector4i::zero();
