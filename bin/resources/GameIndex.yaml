@@ -22976,6 +22976,7 @@ SLES-55135:
   region: "PAL-M6"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes ghosting on objects and people.
+    halfPixelOffset: 2 # Fixes depth line. HPO Normal required if not using CLUT Renderer.
 SLES-55136:
   name: "Let's Ride! Silver Buckle Stables"
   region: "PAL-M4"
@@ -41924,6 +41925,7 @@ SLPS-25908:
   region: "NTSC-J"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes ghosting on objects and people.
+    halfPixelOffset: 2 # Fixes depth line. HPO Normal required if not using CLUT Renderer.
 SLPS-25909:
   name: "Hisshou Pachinko Pachi-Slot Kouryaku Series Vol. 13 - Shin Seiki Evangelion - Yakusoku no Toki"
   region: "NTSC-J"
@@ -51647,6 +51649,7 @@ SLUS-21785:
   compat: 5
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes ghosting on objects and people.
+    halfPixelOffset: 2 # Fixes depth line. HPO Normal required if not using CLUT Renderer.
 SLUS-21786:
   name: "Summer Athletics - The Ultimate Challenge"
   region: "NTSC-U"
