@@ -2274,7 +2274,7 @@ void GSRendererHW::Draw()
 		const bool is_square = (t_size.y == t_size.x) && m_r.w >= 1023 && PrimitiveCoversWithoutGaps();
 		const bool is_clear = is_possible_mem_clear && is_square;
 		rt = g_texture_cache->LookupTarget(FRAME_TEX0, t_size, target_scale, GSTextureCache::RenderTarget, true,
-			fm, false, force_preload, preserve_rt_rgb, preserve_rt_alpha, unclamped_draw_rect);
+			fm, false, force_preload, preserve_rt_rgb, preserve_rt_alpha, unclamped_draw_rect, IsPossibleChannelShuffle());
 
 		// Draw skipped because it was a clear and there was no target.
 		if (!rt)
@@ -2588,9 +2588,10 @@ void GSRendererHW::Draw()
 				rt->ResizeDrawn(rt->GetUnscaledRect());
 			}
 
+			const GSVector4i update_rect = m_r.rintersect(GSVector4i::loadh(new_size));
 			// Limit to 2x the vertical height of the resolution (for double buffering)
-			rt->UpdateValidity(m_r, can_update_size || (m_r.w <= (resolution.y * 2) && !m_texture_shuffle));
-			rt->UpdateDrawn(m_r, can_update_size || (m_r.w <= (resolution.y * 2) && !m_texture_shuffle));
+			rt->UpdateValidity(update_rect, can_update_size || (m_r.w <= (resolution.y * 2) && !m_texture_shuffle));
+			rt->UpdateDrawn(update_rect, can_update_size || (m_r.w <= (resolution.y * 2) && !m_texture_shuffle));
 			// Probably changing to double buffering, so invalidate any old target that was next to it.
 			// This resolves an issue where the PCRTC will find the old target in FMV's causing flashing.
 			// Grandia Xtreme, Onimusha Warlord.
@@ -2781,7 +2782,11 @@ void GSRendererHW::Draw()
 	// Temporary source *must* be invalidated before normal, because otherwise it'll be double freed.
 	g_texture_cache->InvalidateTemporarySource();
 
-	//
+	// Set the RT format back to 32bits after the shuffle.
+	if (rt && m_texture_shuffle && rt->m_32_bits_fmt)
+	{
+		rt->m_TEX0.PSM = PSMCT32;
+	}
 
 	// Invalidation of old targets when changing to double-buffering.
 	if (old_rt)
@@ -5670,6 +5675,7 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	const u32 base = clear_depth ? m_cached_ctx.ZBUF.ZBP : m_cached_ctx.FRAME.FBP;
 	const u32 half = clear_depth ? m_cached_ctx.FRAME.FBP : m_cached_ctx.ZBUF.ZBP;
 	const bool enough_bits = clear_depth ? (frame_psm.trbpp >= zbuf_psm.trbpp) : (zbuf_psm.trbpp >= frame_psm.trbpp);
+
 	// Size of the current draw
 	const u32 w_pages = (m_r.z + (frame_psm.pgs.x - 1)) / frame_psm.pgs.x;
 	const u32 h_pages = (m_r.w + (frame_psm.pgs.y - 1)) / frame_psm.pgs.y;
