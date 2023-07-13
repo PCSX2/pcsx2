@@ -32,7 +32,7 @@ class VKShaderCache
 public:
 	~VKShaderCache();
 
-	static bool Create();
+	static void Create();
 	static void Destroy();
 
 	/// Returns a handle to the pipeline cache. Set set_dirty to true if you are planning on writing to it externally.

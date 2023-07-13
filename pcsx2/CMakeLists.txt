@@ -654,25 +654,21 @@ if(USE_VULKAN)
 		GS/Renderers/Vulkan/GSTextureVK.cpp
 		GS/Renderers/Vulkan/vk_mem_alloc.cpp
 		GS/Renderers/Vulkan/VKBuilders.cpp
-		GS/Renderers/Vulkan/VKContext.cpp
 		GS/Renderers/Vulkan/VKLoader.cpp
 		GS/Renderers/Vulkan/VKShaderCache.cpp
 		GS/Renderers/Vulkan/VKStreamBuffer.cpp
 		GS/Renderers/Vulkan/VKSwapChain.cpp
-		GS/Renderers/Vulkan/VKUtil.cpp
 	)
 	list(APPEND pcsx2GSHeaders
 		GS/Renderers/Vulkan/GSDeviceVK.h
 		GS/Renderers/Vulkan/GSTextureVK.h
 		GS/Renderers/Vulkan/VKBuilders.h
-		GS/Renderers/Vulkan/VKContext.h
 		GS/Renderers/Vulkan/VKEntryPoints.h
 		GS/Renderers/Vulkan/VKEntryPoints.inl
 		GS/Renderers/Vulkan/VKLoader.h
 		GS/Renderers/Vulkan/VKShaderCache.h
 		GS/Renderers/Vulkan/VKStreamBuffer.h
 		GS/Renderers/Vulkan/VKSwapChain.h
-		GS/Renderers/Vulkan/VKUtil.h
 	)
 	target_link_libraries(PCSX2_FLAGS INTERFACE Vulkan-Headers glslang)
 endif()
