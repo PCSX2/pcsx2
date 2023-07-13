@@ -708,7 +708,6 @@ if(WIN32)
 		GS/Renderers/DX11/GSTexture11.cpp
 		GS/Renderers/DX11/GSTextureFX11.cpp
 		GS/Renderers/DX12/D3D12Builders.cpp
-		GS/Renderers/DX12/D3D12Context.cpp
 		GS/Renderers/DX12/D3D12DescriptorHeapManager.cpp
 		GS/Renderers/DX12/D3D12ShaderCache.cpp
 		GS/Renderers/DX12/D3D12StreamBuffer.cpp
@@ -721,7 +720,6 @@ if(WIN32)
 		GS/Renderers/DX11/GSDevice11.h
 		GS/Renderers/DX11/GSTexture11.h
 		GS/Renderers/DX12/D3D12Builders.h
-		GS/Renderers/DX12/D3D12Context.h
 		GS/Renderers/DX12/D3D12DescriptorHeapManager.h
 		GS/Renderers/DX12/D3D12ShaderCache.h
 		GS/Renderers/DX12/D3D12StreamBuffer.h

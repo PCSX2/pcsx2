@@ -141,4 +141,15 @@ namespace D3D12
 		D3D12_COMPUTE_PIPELINE_STATE_DESC m_desc;
 	};
 
+#ifdef _DEBUG
+	void SetObjectName(ID3D12Object* object, const char* name);
+	void SetObjectNameFormatted(ID3D12Object* object, const char* format, ...);
+#else
+	static inline void SetObjectName(ID3D12Object* object, const char* name)
+	{
+	}
+	static inline void SetObjectNameFormatted(ID3D12Object* object, const char* format, ...)
+	{
+	}
+#endif
 } // namespace D3D12
