@@ -17,7 +17,6 @@
 
 #include "GS/GS.h"
 #include "GS/Renderers/Common/GSTexture.h"
-#include "GS/Renderers/DX12/D3D12Context.h"
 #include "GS/Renderers/DX12/D3D12DescriptorHeapManager.h"
 
 #include "common/RedtapeWilCom.h"
@@ -67,7 +66,7 @@ public:
 		D3D12_RESOURCE_STATES after_state) const;
 
 	// Call when the texture is bound to the pipeline, or read from in a copy.
-	__fi void SetUsedThisCommandBuffer() { m_use_fence_counter = g_d3d12_context->GetCurrentFenceValue(); }
+	__fi void SetUseFenceCounter(u64 val) { m_use_fence_counter = val; }
 
 private:
 	enum class WriteDescriptorType : u8
