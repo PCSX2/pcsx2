@@ -192,12 +192,10 @@
     <ClCompile Include="GS\Renderers\OpenGL\GLShaderCache.cpp" />
     <ClCompile Include="GS\Renderers\OpenGL\GLStreamBuffer.cpp" />
     <ClCompile Include="GS\Renderers\Vulkan\VKBuilders.cpp" />
-    <ClCompile Include="GS\Renderers\Vulkan\VKContext.cpp" />
     <ClCompile Include="GS\Renderers\Vulkan\VKLoader.cpp" />
     <ClCompile Include="GS\Renderers\Vulkan\VKShaderCache.cpp" />
     <ClCompile Include="GS\Renderers\Vulkan\VKStreamBuffer.cpp" />
     <ClCompile Include="GS\Renderers\Vulkan\VKSwapChain.cpp" />
-    <ClCompile Include="GS\Renderers\Vulkan\VKUtil.cpp" />
     <ClCompile Include="GS\Renderers\Vulkan\vk_mem_alloc.cpp" />
     <ClCompile Include="Hotkeys.cpp" />
     <ClCompile Include="ImGui\FullscreenUI.cpp" />
@@ -546,13 +544,11 @@
     <ClInclude Include="GS\Renderers\OpenGL\GLShaderCache.h" />
     <ClInclude Include="GS\Renderers\OpenGL\GLStreamBuffer.h" />
     <ClInclude Include="GS\Renderers\Vulkan\VKBuilders.h" />
-    <ClInclude Include="GS\Renderers\Vulkan\VKContext.h" />
     <ClInclude Include="GS\Renderers\Vulkan\VKEntryPoints.h" />
     <ClInclude Include="GS\Renderers\Vulkan\VKLoader.h" />
     <ClInclude Include="GS\Renderers\Vulkan\VKShaderCache.h" />
     <ClInclude Include="GS\Renderers\Vulkan\VKStreamBuffer.h" />
     <ClInclude Include="GS\Renderers\Vulkan\VKSwapChain.h" />
-    <ClInclude Include="GS\Renderers\Vulkan\VKUtil.h" />
     <ClInclude Include="ImGui\FullscreenUI.h" />
     <ClInclude Include="ImGui\ImGuiFullscreen.h" />
     <ClInclude Include="ImGui\ImGuiManager.h" />

@@ -15,9 +15,9 @@
 
 #include "PrecompiledHeader.h"
 
+#include "GS/Renderers/Vulkan/GSDeviceVK.h"
 #include "GS/Renderers/Vulkan/VKSwapChain.h"
-#include "GS/Renderers/Vulkan/VKContext.h"
-#include "GS/Renderers/Vulkan/VKUtil.h"
+#include "GS/Renderers/Vulkan/VKBuilders.h"
 
 #include "common/Assertions.h"
 #include "common/CocoaTools.h"
@@ -140,7 +140,7 @@ VkSurfaceKHR VKSwapChain::CreateVulkanSurface(VkInstance instance, VkPhysicalDev
 
 void VKSwapChain::DestroyVulkanSurface(VkInstance instance, WindowInfo* wi, VkSurfaceKHR surface)
 {
-	vkDestroySurfaceKHR(g_vulkan_context->GetVulkanInstance(), surface, nullptr);
+	vkDestroySurfaceKHR(GSDeviceVK::GetInstance()->GetVulkanInstance(), surface, nullptr);
 
 #if defined(__APPLE__)
 	if (wi->type == WindowInfo::Type::MacOS && wi->surface_handle)
@@ -184,7 +184,7 @@ std::optional<VkSurfaceFormatKHR> VKSwapChain::SelectSurfaceFormat(VkSurfaceKHR 
 {
 	u32 format_count;
 	VkResult res =
-		vkGetPhysicalDeviceSurfaceFormatsKHR(g_vulkan_context->GetPhysicalDevice(), surface, &format_count, nullptr);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(GSDeviceVK::GetInstance()->GetPhysicalDevice(), surface, &format_count, nullptr);
 	if (res != VK_SUCCESS || format_count == 0)
 	{
 		LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceSurfaceFormatsKHR failed: ");
@@ -193,7 +193,7 @@ std::optional<VkSurfaceFormatKHR> VKSwapChain::SelectSurfaceFormat(VkSurfaceKHR 
 
 	std::vector<VkSurfaceFormatKHR> surface_formats(format_count);
 	res = vkGetPhysicalDeviceSurfaceFormatsKHR(
-		g_vulkan_context->GetPhysicalDevice(), surface, &format_count, surface_formats.data());
+		GSDeviceVK::GetInstance()->GetPhysicalDevice(), surface, &format_count, surface_formats.data());
 	pxAssert(res == VK_SUCCESS);
 
 	// If there is a single undefined surface format, the device doesn't care, so we'll just use RGBA
@@ -255,7 +255,7 @@ std::optional<VkPresentModeKHR> VKSwapChain::SelectPresentMode(VkSurfaceKHR surf
 	VkResult res;
 	u32 mode_count;
 	res =
-		vkGetPhysicalDeviceSurfacePresentModesKHR(g_vulkan_context->GetPhysicalDevice(), surface, &mode_count, nullptr);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(GSDeviceVK::GetInstance()->GetPhysicalDevice(), surface, &mode_count, nullptr);
 	if (res != VK_SUCCESS || mode_count == 0)
 	{
 		LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceSurfaceFormatsKHR failed: ");
@@ -264,7 +264,7 @@ std::optional<VkPresentModeKHR> VKSwapChain::SelectPresentMode(VkSurfaceKHR surf
 
 	std::vector<VkPresentModeKHR> present_modes(mode_count);
 	res = vkGetPhysicalDeviceSurfacePresentModesKHR(
-		g_vulkan_context->GetPhysicalDevice(), surface, &mode_count, present_modes.data());
+		GSDeviceVK::GetInstance()->GetPhysicalDevice(), surface, &mode_count, present_modes.data());
 	pxAssert(res == VK_SUCCESS);
 
 	// Checks if a particular mode is supported, if it is, returns that mode.
@@ -315,7 +315,7 @@ bool VKSwapChain::CreateSwapChain()
 	// Look up surface properties to determine image count and dimensions
 	VkSurfaceCapabilitiesKHR surface_capabilities;
 	VkResult res = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-		g_vulkan_context->GetPhysicalDevice(), m_surface, &surface_capabilities);
+		GSDeviceVK::GetInstance()->GetPhysicalDevice(), m_surface, &surface_capabilities);
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR failed: ");
@@ -373,10 +373,10 @@ bool VKSwapChain::CreateSwapChain()
 		image_count, surface_format->format, surface_format->colorSpace, size, 1u, image_usage,
 		VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, transform, alpha, present_mode.value(), VK_TRUE, old_swap_chain};
 	std::array<uint32_t, 2> indices = {{
-		g_vulkan_context->GetGraphicsQueueFamilyIndex(),
-		g_vulkan_context->GetPresentQueueFamilyIndex(),
+		GSDeviceVK::GetInstance()->GetGraphicsQueueFamilyIndex(),
+		GSDeviceVK::GetInstance()->GetPresentQueueFamilyIndex(),
 	}};
-	if (g_vulkan_context->GetGraphicsQueueFamilyIndex() != g_vulkan_context->GetPresentQueueFamilyIndex())
+	if (GSDeviceVK::GetInstance()->GetGraphicsQueueFamilyIndex() != GSDeviceVK::GetInstance()->GetPresentQueueFamilyIndex())
 	{
 		swap_chain_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 		swap_chain_info.queueFamilyIndexCount = 2;
@@ -389,7 +389,7 @@ bool VKSwapChain::CreateSwapChain()
 		VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_WIN32_INFO_EXT};
 	if (m_exclusive_fullscreen_control.has_value())
 	{
-		if (g_vulkan_context->GetOptionalExtensions().vk_ext_full_screen_exclusive)
+		if (GSDeviceVK::GetInstance()->GetOptionalExtensions().vk_ext_full_screen_exclusive)
 		{
 			exclusive_info.fullScreenExclusive =
 				(m_exclusive_fullscreen_control.value() ? VK_FULL_SCREEN_EXCLUSIVE_ALLOWED_EXT :
@@ -413,7 +413,7 @@ bool VKSwapChain::CreateSwapChain()
 		Console.Error("Exclusive fullscreen control requested, but is not supported on this platform.");
 #endif
 
-	res = vkCreateSwapchainKHR(g_vulkan_context->GetDevice(), &swap_chain_info, nullptr, &m_swap_chain);
+	res = vkCreateSwapchainKHR(GSDeviceVK::GetInstance()->GetDevice(), &swap_chain_info, nullptr, &m_swap_chain);
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "vkCreateSwapchainKHR failed: ");
@@ -423,7 +423,7 @@ bool VKSwapChain::CreateSwapChain()
 	// Now destroy the old swap chain, since it's been recreated.
 	// We can do this immediately since all work should have been completed before calling resize.
 	if (old_swap_chain != VK_NULL_HANDLE)
-		vkDestroySwapchainKHR(g_vulkan_context->GetDevice(), old_swap_chain, nullptr);
+		vkDestroySwapchainKHR(GSDeviceVK::GetInstance()->GetDevice(), old_swap_chain, nullptr);
 
 	m_window_info.surface_width = std::max(1u, size.width);
 	m_window_info.surface_height = std::max(1u, size.height);
@@ -431,7 +431,7 @@ bool VKSwapChain::CreateSwapChain()
 	// Get and create images.
 	pxAssert(m_images.empty());
 
-	res = vkGetSwapchainImagesKHR(g_vulkan_context->GetDevice(), m_swap_chain, &image_count, nullptr);
+	res = vkGetSwapchainImagesKHR(GSDeviceVK::GetInstance()->GetDevice(), m_swap_chain, &image_count, nullptr);
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "vkGetSwapchainImagesKHR failed: ");
@@ -439,7 +439,7 @@ bool VKSwapChain::CreateSwapChain()
 	}
 
 	std::vector<VkImage> images(image_count);
-	res = vkGetSwapchainImagesKHR(g_vulkan_context->GetDevice(), m_swap_chain, &image_count, images.data());
+	res = vkGetSwapchainImagesKHR(GSDeviceVK::GetInstance()->GetDevice(), m_swap_chain, &image_count, images.data());
 	pxAssert(res == VK_SUCCESS);
 
 	m_images.reserve(image_count);
@@ -462,7 +462,7 @@ bool VKSwapChain::CreateSwapChain()
 		ImageSemaphores sema;
 
 		const VkSemaphoreCreateInfo semaphore_info = {VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, nullptr, 0};
-		res = vkCreateSemaphore(g_vulkan_context->GetDevice(), &semaphore_info, nullptr, &sema.available_semaphore);
+		res = vkCreateSemaphore(GSDeviceVK::GetInstance()->GetDevice(), &semaphore_info, nullptr, &sema.available_semaphore);
 		if (res != VK_SUCCESS)
 		{
 			LOG_VULKAN_ERROR(res, "vkCreateSemaphore failed: ");
@@ -470,11 +470,11 @@ bool VKSwapChain::CreateSwapChain()
 		}
 
 		res = vkCreateSemaphore(
-			g_vulkan_context->GetDevice(), &semaphore_info, nullptr, &sema.rendering_finished_semaphore);
+			GSDeviceVK::GetInstance()->GetDevice(), &semaphore_info, nullptr, &sema.rendering_finished_semaphore);
 		if (res != VK_SUCCESS)
 		{
 			LOG_VULKAN_ERROR(res, "vkCreateSemaphore failed: ");
-			vkDestroySemaphore(g_vulkan_context->GetDevice(), sema.available_semaphore, nullptr);
+			vkDestroySemaphore(GSDeviceVK::GetInstance()->GetDevice(), sema.available_semaphore, nullptr);
 			return false;
 		}
 
@@ -494,8 +494,8 @@ void VKSwapChain::DestroySwapChainImages()
 	m_images.clear();
 	for (auto& it : m_semaphores)
 	{
-		vkDestroySemaphore(g_vulkan_context->GetDevice(), it.rendering_finished_semaphore, nullptr);
-		vkDestroySemaphore(g_vulkan_context->GetDevice(), it.available_semaphore, nullptr);
+		vkDestroySemaphore(GSDeviceVK::GetInstance()->GetDevice(), it.rendering_finished_semaphore, nullptr);
+		vkDestroySemaphore(GSDeviceVK::GetInstance()->GetDevice(), it.available_semaphore, nullptr);
 	}
 	m_semaphores.clear();
 
@@ -509,7 +509,7 @@ void VKSwapChain::DestroySwapChain()
 	if (m_swap_chain == VK_NULL_HANDLE)
 		return;
 
-	vkDestroySwapchainKHR(g_vulkan_context->GetDevice(), m_swap_chain, nullptr);
+	vkDestroySwapchainKHR(GSDeviceVK::GetInstance()->GetDevice(), m_swap_chain, nullptr);
 	m_swap_chain = VK_NULL_HANDLE;
 	m_window_info.surface_width = 0;
 	m_window_info.surface_height = 0;
@@ -534,7 +534,7 @@ VkResult VKSwapChain::AcquireNextImage()
 	// Use a different semaphore for each image.
 	m_current_semaphore = (m_current_semaphore + 1) % static_cast<u32>(m_semaphores.size());
 
-	const VkResult res = vkAcquireNextImageKHR(g_vulkan_context->GetDevice(), m_swap_chain, UINT64_MAX,
+	const VkResult res = vkAcquireNextImageKHR(GSDeviceVK::GetInstance()->GetDevice(), m_swap_chain, UINT64_MAX,
 		m_semaphores[m_current_semaphore].available_semaphore, VK_NULL_HANDLE, &m_current_image);
 	m_image_acquire_result = res;
 	return res;
@@ -594,14 +594,14 @@ bool VKSwapChain::RecreateSurface(const WindowInfo& new_wi)
 	// Re-create the surface with the new native handle
 	m_window_info = new_wi;
 	m_surface = CreateVulkanSurface(
-		g_vulkan_context->GetVulkanInstance(), g_vulkan_context->GetPhysicalDevice(), &m_window_info);
+		GSDeviceVK::GetInstance()->GetVulkanInstance(), GSDeviceVK::GetInstance()->GetPhysicalDevice(), &m_window_info);
 	if (m_surface == VK_NULL_HANDLE)
 		return false;
 
 	// The validation layers get angry at us if we don't call this before creating the swapchain.
 	VkBool32 present_supported = VK_TRUE;
-	VkResult res = vkGetPhysicalDeviceSurfaceSupportKHR(g_vulkan_context->GetPhysicalDevice(),
-		g_vulkan_context->GetPresentQueueFamilyIndex(), m_surface, &present_supported);
+	VkResult res = vkGetPhysicalDeviceSurfaceSupportKHR(GSDeviceVK::GetInstance()->GetPhysicalDevice(),
+		GSDeviceVK::GetInstance()->GetPresentQueueFamilyIndex(), m_surface, &present_supported);
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceSurfaceSupportKHR failed: ");
@@ -628,6 +628,6 @@ void VKSwapChain::DestroySurface()
 	if (m_surface == VK_NULL_HANDLE)
 		return;
 
-	DestroyVulkanSurface(g_vulkan_context->GetVulkanInstance(), &m_window_info, m_surface);
+	DestroyVulkanSurface(GSDeviceVK::GetInstance()->GetVulkanInstance(), &m_window_info, m_surface);
 	m_surface = VK_NULL_HANDLE;
 }
