@@ -74,9 +74,14 @@ void InputBindingWidget::initialize(
 
 void InputBindingWidget::updateText()
 {
+	const QString binding_tip(tr("\n\nLeft click to assign a new button\nShift + left click for additional bindings"));
+	const QString binding_clear_tip(tr("\nRight click to clear binding"));
+
 	if (m_bindings.empty())
 	{
 		setText(QString());
+
+		setToolTip(tr("No bindings registered") + binding_tip);
 	}
 	else if (m_bindings.size() > 1)
 	{
@@ -93,12 +98,12 @@ void InputBindingWidget::updateText()
 				ss << "\n";
 			ss << binding;
 		}
-		setToolTip(QString::fromStdString(ss.str()));
+		setToolTip(QString::fromStdString(ss.str()) + binding_tip + binding_clear_tip);
 	}
 	else
 	{
 		QString binding_text(QString::fromStdString(m_bindings[0]));
-		setToolTip(binding_text);
+		setToolTip(binding_text + binding_tip + binding_clear_tip);
 
 		// fix up accelerators, and if it's too long, ellipsise it
 		if (binding_text.contains('&'))
