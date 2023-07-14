@@ -22,7 +22,8 @@
     "--socket=fallback-x11",
     "--socket=wayland",
     "--socket=pulseaudio",
-    "--filesystem=host:ro"
+    "--filesystem=host:ro",
+    "--talk-name=org.freedesktop.ScreenSaver"
   ],
   "modules": [
     "modules/10-libpcap.json",
