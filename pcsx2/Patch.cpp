@@ -153,8 +153,9 @@ namespace Patch
 	static u32 LoadPatchesFromString(PatchList* patch_list, const std::string& patch_file);
 	static bool OpenPatchesZip();
 	static std::string GetPnachTemplate(
-		const std::string_view& serial, u32 crc, bool include_serial, bool add_wildcard);
-	static std::vector<std::string> FindPatchFilesOnDisk(const std::string_view& serial, u32 crc, bool cheats);
+		const std::string_view& serial, u32 crc, bool include_serial, bool add_wildcard, bool all_crcs);
+	static std::vector<std::string> FindPatchFilesOnDisk(
+		const std::string_view& serial, u32 crc, bool cheats, bool all_crcs);
 
 	template <typename F>
 	static void EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool cheats, bool for_ui, const F& f);
@@ -313,20 +314,23 @@ bool Patch::OpenPatchesZip()
 	return true;
 }
 
-std::string Patch::GetPnachTemplate(const std::string_view& serial, u32 crc, bool include_serial, bool add_wildcard)
+std::string Patch::GetPnachTemplate(const std::string_view& serial, u32 crc, bool include_serial, bool add_wildcard, bool all_crcs)
 {
-	if (include_serial)
+	pxAssert(!all_crcs || (include_serial && add_wildcard));
+	if (all_crcs)
+		return fmt::format("{}_*.pnach", serial);
+	else if (include_serial)
 		return fmt::format("{}_{:08X}{}.pnach", serial, crc, add_wildcard ? "*" : "");
 	else
 		return fmt::format("{:08X}{}.pnach", crc, add_wildcard ? "*" : "");
 }
 
-std::vector<std::string> Patch::FindPatchFilesOnDisk(const std::string_view& serial, u32 crc, bool cheats)
+std::vector<std::string> Patch::FindPatchFilesOnDisk(const std::string_view& serial, u32 crc, bool cheats, bool all_crcs)
 {
 	FileSystem::FindResultsArray files;
 	FileSystem::FindFiles(cheats ? EmuFolders::Cheats.c_str() : EmuFolders::Patches.c_str(),
-		GetPnachTemplate(serial, crc, true, true).c_str(), FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES,
-		&files);
+		GetPnachTemplate(serial, crc, true, true, all_crcs).c_str(),
+		FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &files);
 
 	std::vector<std::string> ret;
 	ret.reserve(files.size());
@@ -336,7 +340,7 @@ std::vector<std::string> Patch::FindPatchFilesOnDisk(const std::string_view& ser
 
 	// and patches without serials
 	FileSystem::FindFiles(cheats ? EmuFolders::Cheats.c_str() : EmuFolders::Patches.c_str(),
-		GetPnachTemplate(serial, crc, false, true).c_str(), FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES,
+		GetPnachTemplate(serial, crc, false, true, false).c_str(), FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES,
 		&files);
 	ret.reserve(ret.size() + files.size());
 	for (FILESYSTEM_FIND_DATA& fd : files)
@@ -351,7 +355,7 @@ void Patch::EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool ch
 	// Prefer files on disk over the zip.
 	std::vector<std::string> disk_patch_files;
 	if (for_ui || !Achievements::ChallengeModeActive())
-		disk_patch_files = FindPatchFilesOnDisk(serial, crc, cheats);
+		disk_patch_files = FindPatchFilesOnDisk(serial, crc, cheats, for_ui);
 
 	if (!disk_patch_files.empty())
 	{
@@ -370,11 +374,11 @@ void Patch::EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool ch
 		return;
 
 	// Prefer filename with serial.
-	std::string zip_filename = GetPnachTemplate(serial, crc, true, false);
+	std::string zip_filename = GetPnachTemplate(serial, crc, true, false, false);
 	std::optional<std::string> pnach_data(ReadFileInZipToString(s_patches_zip, zip_filename.c_str()));
 	if (!pnach_data.has_value())
 	{
-		zip_filename = GetPnachTemplate(serial, crc, false, false);
+		zip_filename = GetPnachTemplate(serial, crc, false, false, false);
 		pnach_data = ReadFileInZipToString(s_patches_zip, zip_filename.c_str());
 	}
 	if (pnach_data.has_value())
@@ -398,7 +402,11 @@ void Patch::ExtractPatchInfo(PatchInfoList* dst, const std::string& pnach_data, 
 		{
 			if (has_patch)
 			{
-				dst->push_back(std::move(current_patch));
+				if (std::none_of(dst->begin(), dst->end(),
+						[&current_patch](const PatchInfo& pi) { return (pi.name == current_patch.name); }))
+				{
+					dst->push_back(std::move(current_patch));
+				}
 				current_patch = {};
 			}
 
@@ -422,8 +430,12 @@ void Patch::ExtractPatchInfo(PatchInfoList* dst, const std::string& pnach_data, 
 	}
 
 	// Last one.
-	if (!current_patch.name.empty())
+	if (!current_patch.name.empty() && std::none_of(dst->begin(), dst->end(), [&current_patch](const PatchInfo& pi) {
+			return (pi.name == current_patch.name);
+		}))
+	{
 		dst->push_back(std::move(current_patch));
+	}
 }
 
 std::string_view Patch::PatchInfo::GetNamePart() const
