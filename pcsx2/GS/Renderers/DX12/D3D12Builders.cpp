@@ -364,6 +364,7 @@ u32 D3D12::RootSignatureBuilder::AddDescriptorTable(
 }
 
 #ifdef _DEBUG
+#include "common/StringUtil.h"
 
 void D3D12::SetObjectName(ID3D12Object* object, const char* name)
 {
