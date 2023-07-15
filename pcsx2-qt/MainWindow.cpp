@@ -2134,7 +2134,11 @@ SettingsDialog* MainWindow::getSettingsDialog()
 		connect(m_settings_dialog->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::languageChanged, this, [this]() {
 			// reopen settings dialog after it applies
 			updateLanguage();
-			g_main_window->doSettings("Interface");
+			// If you doSettings now, on macOS, the window will somehow end up underneath the main window that was created above
+			// Delay it slightly...
+			QtHost::RunOnUIThread([]{
+				g_main_window->doSettings("Interface");
+			});
 		});
 	}
 
@@ -2144,7 +2148,11 @@ SettingsDialog* MainWindow::getSettingsDialog()
 void MainWindow::doSettings(const char* category /* = nullptr */)
 {
 	SettingsDialog* dlg = getSettingsDialog();
-	if (!dlg->isVisible())
+	if (dlg->isVisible())
+	{
+		dlg->raise();
+	}
+	else
 	{
 		dlg->setModal(false);
 		dlg->show();
