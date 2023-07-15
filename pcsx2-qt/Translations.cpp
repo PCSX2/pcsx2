@@ -59,6 +59,34 @@ namespace QtHost
 
 static std::vector<QTranslator*> s_translators;
 
+static QString getSystemLanguage() {
+	std::vector<std::pair<QString, QString>> available = QtHost::GetAvailableLanguageList();
+	QString locale = QLocale::system().name();
+	locale.replace('_', '-');
+	// Can we find an exact match?
+	for (const std::pair<QString, QString>& entry : available)
+	{
+		if (entry.second == locale)
+			return locale;
+	}
+	// How about a partial match?
+	QStringView lang = QStringView(locale);
+	lang = lang.left(lang.indexOf('-'));
+	for (const std::pair<QString, QString>& entry : available)
+	{
+		QStringView avail = QStringView(entry.second);
+		avail = avail.left(avail.indexOf('-'));
+		if (avail == lang) {
+			Console.Warning("Couldn't find translation for system language %s, using %s instead",
+			                locale.toStdString().c_str(), entry.second.toStdString().c_str());
+			return entry.second;
+		}
+	}
+	// No matches :(
+	Console.Warning("Couldn't find translation for system language %s, using en instead", locale.toStdString().c_str());
+	return QStringLiteral("en");
+}
+
 void QtHost::InstallTranslator()
 {
 	for (QTranslator* translator : s_translators)
@@ -68,8 +96,10 @@ void QtHost::InstallTranslator()
 	}
 	s_translators.clear();
 
-	const QString language =
+	QString language =
 		QString::fromStdString(Host::GetBaseStringSettingValue("UI", "Language", GetDefaultLanguage()));
+	if (language == QStringLiteral("system"))
+		language = getSystemLanguage();
 
 	// Install the base qt translation first.
 #ifdef __APPLE__
@@ -171,7 +201,7 @@ static std::string QtHost::GetFontPath(const GlyphInfo* gi)
 
 const char* QtHost::GetDefaultLanguage()
 {
-	return "en";
+	return "system";
 }
 
 s32 Host::Internal::GetTranslatedStringImpl(
@@ -194,6 +224,7 @@ s32 Host::Internal::GetTranslatedStringImpl(
 std::vector<std::pair<QString, QString>> QtHost::GetAvailableLanguageList()
 {
 	return {
+		{QCoreApplication::translate("InterfaceSettingsWidget", "System Language [Default]"), QStringLiteral("system")},
 		{QStringLiteral("Afrikaans (af-ZA)"), QStringLiteral("af-ZA")},
 		{QStringLiteral("عربي (ar-SA)"), QStringLiteral("ar-SA")},
 		{QStringLiteral("Català (ca-ES)"), QStringLiteral("ca-ES")},
@@ -201,7 +232,7 @@ std::vector<std::pair<QString, QString>> QtHost::GetAvailableLanguageList()
 		{QStringLiteral("Dansk (da-DK)"), QStringLiteral("da-DK")},
 		{QStringLiteral("Deutsch (de-DE)"), QStringLiteral("de-DE")},
 		{QStringLiteral("Ελληνικά (el-GR)"), QStringLiteral("el-GR")},
-		{QStringLiteral("English (en) [Default]"), QStringLiteral("en")},
+		{QStringLiteral("English (en)"), QStringLiteral("en")},
 		{QStringLiteral("Español (Hispanoamérica) (es-419)"), QStringLiteral("es-419")},
 		{QStringLiteral("Español (España) (es-ES)"), QStringLiteral("es-ES")},
 		{QStringLiteral("فارسی (fa-IR)"), QStringLiteral("fa-IR")},
