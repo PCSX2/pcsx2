@@ -46,7 +46,7 @@ void main()
 	AU2 gxy = ARmp8x8(gl_LocalInvocationID.x)+AU2(gl_WorkGroupID.x<<4u,gl_WorkGroupID.y<<4u);
 
 	// Filter.
-	AF4 c;
+	AF4 c = vec4(0.0f);
 	CasFilter(c.r, c.g, c.b, gxy, const0, const1, CAS_SHARPEN_ONLY);
 	imageStore(imgDst, ASU2(gxy), c);
 	gxy.x += 8u;
