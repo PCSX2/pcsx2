@@ -111,11 +111,11 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	if (isPerGameSettings() && game && game->crc != 0)
 	{
 		addWidget(m_game_patch_settings_widget = new GamePatchSettingsWidget(game, this, m_ui.settingsContainer),
-			tr("Patches"), QStringLiteral("tools-line"),
+			tr("Patches"), QStringLiteral("band-aid-line"),
 			tr("<strong>Patches</strong><hr>This section allows you to select optional patches to apply to the game, "
 			   "which may provide performance, visual, or gameplay improvements."));
 		addWidget(m_game_cheat_settings_widget = new GameCheatSettingsWidget(game, this, m_ui.settingsContainer),
-			tr("Cheats"), QStringLiteral("flask-line"),
+			tr("Cheats"), QStringLiteral("cheats-line"),
 			tr("<strong>Cheats</strong><hr>This section allows you to select which cheats you wish to enable. You "
 			   "cannot enable/disable cheats without labels for old-format pnach files, those will automatically "
 			   "activate if the main cheat enable option is checked."));
@@ -125,7 +125,7 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	if (show_advanced_settings && isPerGameSettings())
 	{
 		addWidget(m_game_fix_settings_widget = new GameFixSettingsWidget(this, m_ui.settingsContainer), tr("Game Fixes"),
-			QStringLiteral("hammer-line"),
+			QStringLiteral("tools-line"),
 			tr("<strong>Game Fixes Settings</strong><hr>Game Fixes can work around incorrect emulation in some titles.<br>However, they can "
 			   "also cause problems in games if used incorrectly.<br>It is best to leave them all disabled unless advised otherwise."));
 	}
