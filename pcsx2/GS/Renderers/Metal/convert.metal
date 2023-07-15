@@ -321,7 +321,7 @@ fragment float4 ps_yuv(ConvertShaderData data [[stage_in]], ConvertPSRes res,
 	constant GSMTLConvertPSUniform& uniform [[buffer(GSMTLBufferIndexUniforms)]])
 {
 	float4 i = res.sample(data.t);
-	float4 o;
+	float4 o = float4(0);
 
 	// Value from GS manual
 	const float3x3 rgb2yuv =
