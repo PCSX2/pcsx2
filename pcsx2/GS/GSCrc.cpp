@@ -46,14 +46,6 @@ const CRC::Game CRC::m_games[] =
 	{0x47BA9034, SMTNocturne /* JP */}, // SMTNocturne Maniacs Chronicle
 	{0xD3FFC263, SMTNocturne /* KO */},
 	{0x84D1A8DA, SMTNocturne /* KO */},
-	{0xE21404E2, GetawayGames /* US */}, // Getaway
-	{0xE8249852, GetawayGames /* JP */}, // Getaway
-	{0x458485EF, GetawayGames /* EU */}, // Getaway
-	{0x5DFBE144, GetawayGames /* EU */}, // Getaway
-	{0xE78971DF, GetawayGames /* US */}, // GetawayBlackMonday
-	{0x342D97FA, GetawayGames /* US */}, // GetawayBlackMonday Demo
-	{0xE8C0AD1A, GetawayGames /* JP */}, // GetawayBlackMonday
-	{0x09C3DF79, GetawayGames /* EU */}, // GetawayBlackMonday
 };
 
 const CRC::Game& CRC::Lookup(u32 crc)

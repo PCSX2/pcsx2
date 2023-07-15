@@ -485,6 +485,12 @@ u32 GSLocalMemory::GetEndBlockAddress(u32 bp, u32 bw, u32 psm, GSVector4i rect)
 	return result;
 }
 
+u32 GSLocalMemory::GetUnwrappedEndBlockAddress(u32 bp, u32 bw, u32 psm, GSVector4i rect)
+{
+	const u32 result = GetEndBlockAddress(bp, bw, psm, rect);
+	return (result < bp) ? (result + MAX_BLOCKS) : result;
+}
+
 GSVector4i GSLocalMemory::GetRectForPageOffset(u32 base_bp, u32 offset_bp, u32 bw, u32 psm)
 {
 	pxAssert((base_bp % BLOCKS_PER_PAGE) == 0 && (offset_bp % BLOCKS_PER_PAGE) == 0);
