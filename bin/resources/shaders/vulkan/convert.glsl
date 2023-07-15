@@ -348,7 +348,7 @@ layout(push_constant) uniform cb10
 void ps_yuv()
 {
 	vec4 i = sample_c(v_tex);
-	vec4 o;
+	vec4 o = vec4(0.0f);
 
 	mat3 rgb2yuv;
 	rgb2yuv[0] = vec3(0.587, -0.311, -0.419);
@@ -361,7 +361,8 @@ void ps_yuv()
 	float Cr = float(0xE0)/255.0f * yuv.y + float(0x80)/255.0f;
 	float Cb = float(0xE0)/255.0f * yuv.z + float(0x80)/255.0f;
 
-	switch(EMODA) {
+	switch(EMODA)
+	{
 		case 0:
 			o.a = i.a;
 			break;
@@ -376,7 +377,8 @@ void ps_yuv()
 			break;
 	}
 
-	switch(EMODC) {
+	switch(EMODC)
+	{
 		case 0:
 			o.rgb = i.rgb;
 			break;
