@@ -72,7 +72,11 @@ void QtHost::InstallTranslator()
 		QString::fromStdString(Host::GetBaseStringSettingValue("UI", "Language", GetDefaultLanguage()));
 
 	// Install the base qt translation first.
+#ifdef __APPLE__
+	const QString base_dir = QStringLiteral("%1/../Resources/translations").arg(qApp->applicationDirPath());
+#else
 	const QString base_dir = QStringLiteral("%1/translations").arg(qApp->applicationDirPath());
+#endif
 	QString base_path = QStringLiteral("%1/qt_%2.qm").arg(base_dir).arg(language);
 	bool has_base_ts = QFile::exists(base_path);
 	if (!has_base_ts)

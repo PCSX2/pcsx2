@@ -204,8 +204,11 @@ if(WIN32)
 	set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${CMAKE_SOURCE_DIR}/bin/translations")
 	qt_add_lrelease(pcsx2-qt TS_FILES ${TS_FILES})
 elseif(APPLE)
-	# Hopefully macdeployqt will pick these up.
-	qt_add_lrelease(pcsx2-qt TS_FILES ${TS_FILES})
+	qt_add_lrelease(pcsx2-qt TS_FILES ${TS_FILES} QM_FILES_OUTPUT_VARIABLE QM_FILES)
+	foreach (QM_FILE IN LISTS QM_FILES)
+		target_sources(pcsx2-qt PRIVATE ${QM_FILE})
+		set_source_files_properties(${QM_FILE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/translations/)
+	endforeach()
 else()
 	# TODO: Copy base translations.
 	qt_add_lrelease(pcsx2-qt TS_FILES ${TS_FILES} QM_FILES_OUTPUT_VARIABLE QM_FILES)
