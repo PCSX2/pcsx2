@@ -14089,6 +14089,8 @@ SLES-51704:
 SLES-51705:
   name: "Ford Racing 2"
   region: "PAL-M5"
+  gsHWFixes:
+    autoFlush: 1 # Fixes missing sun.
 SLES-51707:
   name: "Secret Weapons Over Normandy"
   region: "PAL-E"
@@ -41614,8 +41616,10 @@ SLPS-25815:
   gsHWFixes:
     beforeDraw: "OI_DBZBTGames"
 SLPS-25816:
-  name: "Yamasa Digi World - Collaboration SP Pachi-Slot Ridge Racer"
+  name: "Yamasa Digi World Collaboration SP - Pachi-Slot Ridge Racer"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
 SLPS-25817:
   name: "Bakumatsu Renka - Karyuu Kenshiden [Genteiban]"
   region: "NTSC-J"
@@ -46368,6 +46372,8 @@ SLUS-20788:
   name: "Ford Racing 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes missing sun.
 SLUS-20789:
   name: "Jeopardy!"
   region: "NTSC-U"
