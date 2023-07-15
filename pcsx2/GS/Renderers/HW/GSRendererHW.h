@@ -195,6 +195,7 @@ public:
 	GSVector4i ComputeBoundingBox(const GSVector2i& rtsize, float rtscale);
 	void MergeSprite(GSTextureCache::Source* tex);
 	float GetTextureScaleFactor() override;
+	GSVector2i GetValidSize(const GSTextureCache::Source* tex = nullptr);
 	GSVector2i GetTargetSize(const GSTextureCache::Source* tex = nullptr);
 
 	void Reset(bool hardware_reset) override;
