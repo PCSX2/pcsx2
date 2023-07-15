@@ -1142,7 +1142,7 @@ static bool GetMoveTargetPair(GSRendererHW& r, GSTextureCache::Target** src, GIF
 		if (req_target)
 			return false;
 
-		tdst = g_texture_cache->CreateTarget(dst_desc, tsrc->GetUnscaledSize(), tsrc->GetScale(), dst_type, true, 0,
+		tdst = g_texture_cache->CreateTarget(dst_desc, tsrc->GetUnscaledSize(), tsrc->GetUnscaledSize(), tsrc->GetScale(), dst_type, true, 0,
 			false, false, true, tsrc->GetUnscaledRect());
 		if (!tdst)
 			return false;

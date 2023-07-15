@@ -113,6 +113,9 @@ void GSTextureCache::AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm
 	bool skipdirty = false;
 	bool canskip = true;
 
+	if (rect.rempty())
+		return;
+
 	std::vector<GSDirtyRect>::iterator it = target->m_dirty.end();
 	while (it != target->m_dirty.begin())
 	{
@@ -359,6 +362,9 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(Target* t, u32 sbp, u32 sp
 
 void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVector4i src_r)
 {
+	if (src_r.rempty())
+		return;
+
 	const GSVector2i src_page_size = GSLocalMemory::m_psm[spsm].pgs;
 	const GSVector2i dst_page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
 	const u32 src_bw = std::max(1U, sbw) * 64;
@@ -1404,6 +1410,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			dst->m_32_bits_fmt = dst_match->m_32_bits_fmt;
 			dst->OffsetHack_modxy = dst_match->OffsetHack_modxy;
 			dst->m_end_block = dst_match->m_end_block; // If we're copying the size, we need to keep the end block.
+			dst->m_valid = dst_match->m_valid;
 
 			ShaderConvert shader;
 			// m_32_bits_fmt gets set on a shuffle or if the format isn't 16bit.
@@ -1486,7 +1493,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 	return dst;
 }
 
-GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type,
+GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVector2i& size, const GSVector2i& valid_size, float scale, int type,
 	bool used, u32 fbmask, bool is_frame, bool preload, bool preserve_target, const GSVector4i draw_rect)
 {
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
@@ -1526,7 +1533,7 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 
 		RGBAMask rgba;
 		rgba._u32 = GSUtil::GetChannelMask(TEX0.PSM);
-		dst->UpdateValidity(newrect);
+		dst->UpdateValidity(GSVector4i::loadh(valid_size));
 
 		if (!is_frame && !forced_preload && !preload)
 		{
@@ -1624,6 +1631,9 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 			AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
 		}
 	}
+	else
+		dst->UpdateValidity(GSVector4i::loadh(valid_size));
+
 	dst->m_is_frame = is_frame;
 
 	dst->m_used |= used;
@@ -1643,7 +1653,7 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 	if (dst)
 		return dst;
 
-	return CreateTarget(TEX0, size, scale, RenderTarget, true, 0, true);
+	return CreateTarget(TEX0, size, size, scale, RenderTarget, true, 0, true);
 }
 
 void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, int real_w, int real_h)
@@ -2769,7 +2779,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		const GSVector2i target_size = GetTargetSize(DBP, DBW, DPSM, Common::AlignUpPow2(w, 64), h);
 		dst = LookupTarget(new_TEX0, target_size, src->m_scale, src->m_type);
 		if (!dst)
-			dst = CreateTarget(new_TEX0, target_size, src->m_scale, src->m_type);
+			dst = CreateTarget(new_TEX0, target_size, target_size, src->m_scale, src->m_type);
 		if (!dst)
 			return false;
 
