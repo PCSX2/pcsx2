@@ -485,6 +485,14 @@ void Vulkan::GraphicsPipelineBuilder::SetBlendAttachment(u32 attachment, bool bl
 	}
 }
 
+void Vulkan::GraphicsPipelineBuilder::SetColorWriteMask(u32 attachment, VkColorComponentFlags write_mask)
+{
+	pxAssert(attachment < MAX_ATTACHMENTS);
+
+	VkPipelineColorBlendAttachmentState& bs = m_blend_attachments[attachment];
+	bs.colorWriteMask = write_mask;
+}
+
 void Vulkan::GraphicsPipelineBuilder::AddBlendFlags(u32 flags)
 {
 	m_blend_state.flags |= flags;

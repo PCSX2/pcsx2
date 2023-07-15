@@ -222,7 +222,9 @@ public:
 
 		// Valid alpha means "we have rendered to the alpha channel of this target".
 		// A false value means that the alpha in local memory is still valid/up-to-date.
-		bool m_valid_alpha = false;
+		bool m_valid_alpha_low = false;
+		bool m_valid_alpha_high = false;
+		bool m_valid_rgb = false;
 
 		bool m_is_frame = false;
 		bool m_used = false;
@@ -230,7 +232,6 @@ public:
 		GSDirtyRectList m_dirty;
 		GSVector4i m_valid{};
 		GSVector4i m_drawn_since_read{};
-		u32 m_valid_bits = 0;
 		int readbacks_since_draw = 0;
 
 	public:
@@ -239,11 +240,13 @@ public:
 
 		static Target* Create(GIFRegTEX0 TEX0, int w, int h, float scale, int type, bool clear);
 
+		__fi bool HasValidAlpha() const { return (m_valid_alpha_low | m_valid_alpha_high); }
+		bool HasValidBitsForFormat(u32 psm) const;
+
 		void ResizeDrawn(const GSVector4i& rect);
 		void UpdateDrawn(const GSVector4i& rect, bool can_resize = true);
 		void ResizeValidity(const GSVector4i& rect);
 		void UpdateValidity(const GSVector4i& rect, bool can_resize = true);
-		void UpdateValidBits(u32 bits_written);
 
 		void Update();
 
@@ -251,7 +254,7 @@ public:
 		void UpdateIfDirtyIntersects(const GSVector4i& rc);
 
 		/// Updates the valid alpha flag, based on PSM and fbmsk.
-		void UpdateValidAlpha(u32 psm, u32 fbmsk);
+		void UpdateValidChannels(u32 psm, u32 fbmsk);
 
 		/// Resizes target texture, DOES NOT RESCALE.
 		bool ResizeTexture(int new_unscaled_width, int new_unscaled_height, bool recycle_old = true);
@@ -419,6 +422,12 @@ protected:
 
 	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t, bool half_right, int x_offset, int y_offset, const GSVector2i* lod, const GSVector4i* src_range, GSTexture* gpu_clut, SourceRegion region);
 
+	void PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, const GSVector2i& valid_size, bool is_frame,
+		bool preload, bool preserve_target, const GSVector4i draw_rect, Target* dst);
+
+	// Returns scaled texture size.
+	static GSVector2i ScaleRenderTargetSize(const GSVector2i& sz, float scale);
+
 	/// Expands a target when the block pointer for a display framebuffer is within another target, but the read offset
 	/// plus the height is larger than the current size of the target.
 	void ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, int real_w, int real_h);
@@ -454,7 +463,8 @@ public:
 	void ReadbackAll();
 	void AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw, RGBAMask rgba, bool req_linear = false);
 	void ResizeTarget(Target* t, GSVector4i rect, u32 tbp, u32 psm, u32 tbw);
-	bool FullRectDirty(Target* target);
+	static bool FullRectDirty(Target* target, u32 rgba_mask);
+	static bool FullRectDirty(Target* target);
 	bool CanTranslate(u32 bp, u32 bw, u32 spsm, GSVector4i r, u32 dbp, u32 dpsm, u32 dbw);
 	GSVector4i TranslateAlignedRectByPage(Target* t, u32 sbp, u32 spsm, u32 sbw, GSVector4i src_r, bool is_invalidation = false);
 	void DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVector4i src_r);
@@ -481,7 +491,8 @@ public:
 	GSVector2i GetTargetSize(u32 bp, u32 fbw, u32 psm, s32 min_width, s32 min_height);
 	bool Has32BitTarget(u32 bp);
 
-	void InvalidateVideoMemType(int type, u32 bp);
+	void InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 write_psm = PSMCT32);
+	void InvalidateVideoMemType(int type, u32 bp, u32 write_psm = PSMCT32, u32 write_fbmsk = 0);
 	void InvalidateVideoMemSubTarget(GSTextureCache::Target* rt);
 	void InvalidateVideoMem(const GSOffset& off, const GSVector4i& r, bool target = true);
 	void InvalidateLocalMem(const GSOffset& off, const GSVector4i& r, bool full_flush = false);
@@ -498,6 +509,9 @@ public:
 
 	/// Converts single depth value to colour using the specified shader expression.
 	static u32 ConvertDepthToColor(float d, ShaderConvert convert);
+
+	/// Copies RGB channels from depth target to a color target.
+	bool CopyRGBFromDepthToColor(Target* dst, Target* depth_src);
 
 	bool Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u32 DBW, u32 DPSM, int dx, int dy, int w, int h);
 	bool ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx, int dy, int w, int h);

@@ -105,6 +105,7 @@ namespace D3D12
 		void SetBlendState(u32 rt, bool blend_enable, D3D12_BLEND src_factor, D3D12_BLEND dst_factor, D3D12_BLEND_OP op,
 			D3D12_BLEND alpha_src_factor, D3D12_BLEND alpha_dst_factor, D3D12_BLEND_OP alpha_op,
 			u8 write_mask = D3D12_COLOR_WRITE_ENABLE_ALL);
+		void SetColorWriteMask(u32 rt, u8 write_mask = D3D12_COLOR_WRITE_ENABLE_ALL);
 
 		void SetNoBlendingState();
 

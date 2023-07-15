@@ -2867,7 +2867,8 @@ void GSDeviceVK::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 		int(dRect.right - dRect.left), int(dRect.bottom - dRect.top));
 
 	DoStretchRect(static_cast<GSTextureVK*>(sTex), sRect, static_cast<GSTextureVK*>(dTex), dRect,
-		dTex ? m_convert[static_cast<int>(shader)] : m_present[static_cast<int>(shader)], linear, true);
+		dTex ? m_convert[static_cast<int>(shader)] : m_present[static_cast<int>(shader)], linear,
+		ShaderConvertWriteMask(shader) == 0xf);
 }
 
 void GSDeviceVK::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red,
@@ -3902,6 +3903,8 @@ bool GSDeviceVK::CompileConvertPipelines()
 			gpb.SetDepthState(depth, depth, VK_COMPARE_OP_ALWAYS);
 			gpb.SetNoStencilState();
 		}
+
+		gpb.SetColorWriteMask(0, ShaderConvertWriteMask(i));
 
 		VkShaderModule ps = GetUtilityFragmentShader(*shader, shaderName(i));
 		if (ps == VK_NULL_HANDLE)

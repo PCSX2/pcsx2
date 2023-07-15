@@ -83,6 +83,16 @@ public:
 	{
 		return { x / v.x, y / v.y };
 	}
+
+	GSVector2T min(const GSVector2T& v) const
+	{
+		return { std::min(x, v.x), std::min(y, v.y) };
+	}
+
+	GSVector2T max(const GSVector2T& v) const
+	{
+		return { std::max(x, v.x), std::max(y, v.y) };
+	}
 };
 
 typedef GSVector2T<float> GSVector2;

@@ -1341,7 +1341,8 @@ void GSDevice12::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 		int(dRect.right - dRect.left), int(dRect.bottom - dRect.top));
 
 	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, static_cast<GSTexture12*>(dTex), dRect,
-		dTex ? m_convert[static_cast<int>(shader)].get() : m_present[static_cast<int>(shader)].get(), linear, true);
+		dTex ? m_convert[static_cast<int>(shader)].get() : m_present[static_cast<int>(shader)].get(), linear,
+		ShaderConvertWriteMask(shader) == 0xf);
 }
 
 void GSDevice12::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red,
@@ -2375,6 +2376,8 @@ bool GSDevice12::CompileConvertPipelines()
 			gpb.SetDepthState(depth, depth, D3D12_COMPARISON_FUNC_ALWAYS);
 			gpb.SetNoStencilState();
 		}
+
+		gpb.SetColorWriteMask(0, ShaderConvertWriteMask(i));
 
 		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, shaderName(i)));
 		if (!ps)

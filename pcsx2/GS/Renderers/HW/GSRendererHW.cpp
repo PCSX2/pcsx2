@@ -920,6 +920,18 @@ GSVector4i GSRendererHW::GetSplitTextureShuffleDrawRect() const
 	return r.insert64<0>(0).ralign<Align_Outside>(frame_psm.pgs);
 }
 
+u32 GSRendererHW::GetEffectiveTextureShuffleFbmsk() const
+{
+	pxAssert(m_texture_shuffle);
+	const u32 m = m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk;
+	const u32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
+	const u32 rb_mask = fbmask & 0xFF;
+	const u32 ga_mask = (fbmask >> 8) & 0xFF;
+	const u32 eff_mask =
+		((rb_mask == 0xFF && ga_mask == 0xFF) ? 0x00FFFFFFu : 0) | ((ga_mask == 0xFF) ? 0xFF000000u : 0);
+	return eff_mask;
+}
+
 GSVector4i GSRendererHW::GetDrawRectForPages(u32 bw, u32 psm, u32 num_pages)
 {
 	const GSVector2i& pgs = GSLocalMemory::m_psm[psm].pgs;
@@ -1038,8 +1050,8 @@ bool GSRendererHW::IsStartingSplitClear()
 	if (IsDiscardingDstColor())
 	{
 		const u32 bp = m_cached_ctx.FRAME.Block();
-		g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, bp);
-		g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, bp);
+		g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, bp, m_cached_ctx.FRAME.PSM);
+		g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, bp, m_cached_ctx.FRAME.PSM);
 	}
 
 	return true;
@@ -1059,8 +1071,8 @@ bool GSRendererHW::ContinueSplitClear()
 	if (IsDiscardingDstColor())
 	{
 		const u32 bp = m_cached_ctx.FRAME.Block();
-		g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, bp);
-		g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, bp);
+		g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, bp, m_cached_ctx.FRAME.PSM);
+		g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, bp, m_cached_ctx.FRAME.PSM);
 	}
 
 	// Check next draw.
@@ -1954,22 +1966,22 @@ void GSRendererHW::Draw()
 		// If clearing to zero, don't bother creating the target. Games tend to clear more than they use, wasting VRAM/bandwidth.
 		if (is_zero_clear || height_invalid)
 		{
+			const u32 rt_end_bp = GSLocalMemory::GetUnwrappedEndBlockAddress(
+				m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, m_r);
+			const u32 ds_end_bp = GSLocalMemory::GetUnwrappedEndBlockAddress(
+				m_cached_ctx.ZBUF.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.ZBUF.PSM, m_r);
 			// If this is a partial clear of a larger buffer, we can't invalidate the target, since we'll be losing data
 			// which only existed on the GPU. Assume a BW change is a new target, though. Test case: Persona 3 shadows.
 			GSTextureCache::Target* tgt;
 			const bool overwriting_whole_rt =
 				(no_rt || height_invalid ||
 					(tgt = g_texture_cache->GetExactTarget(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW,
-						 GSTextureCache::RenderTarget,
-						 GSLocalMemory::GetEndBlockAddress(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW,
-							 m_cached_ctx.FRAME.PSM, m_r))) == nullptr ||
+						 GSTextureCache::RenderTarget, rt_end_bp)) == nullptr ||
 					m_r.rintersect(tgt->m_valid).eq(tgt->m_valid));
 			const bool overwriting_whole_ds =
 				(no_ds || height_invalid ||
 					(tgt = g_texture_cache->GetExactTarget(m_cached_ctx.ZBUF.Block(), m_cached_ctx.FRAME.FBW,
-						 GSTextureCache::DepthStencil,
-						 GSLocalMemory::GetEndBlockAddress(m_cached_ctx.ZBUF.Block(), m_cached_ctx.FRAME.FBW,
-							 m_cached_ctx.ZBUF.PSM, m_r))) == nullptr ||
+						 GSTextureCache::DepthStencil, ds_end_bp)) == nullptr ||
 					m_r.rintersect(tgt->m_valid).eq(tgt->m_valid));
 
 			if (overwriting_whole_rt && overwriting_whole_ds && TryGSMemClear())
@@ -1979,16 +1991,20 @@ void GSRendererHW::Draw()
 
 				if (!no_rt)
 				{
-					g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, m_cached_ctx.FRAME.Block());
-					g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, m_cached_ctx.FRAME.Block());
-					g_texture_cache->InvalidateVideoMem(m_context->offset.fb, m_r, true);
+					g_texture_cache->InvalidateVideoMem(m_context->offset.fb, m_r, false);
+					g_texture_cache->InvalidateContainedTargets(
+						GSLocalMemory::GetStartBlockAddress(
+							m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, m_r),
+						rt_end_bp, m_cached_ctx.FRAME.PSM);
 				}
 
 				if (!no_ds && m_cached_ctx.ZBUF.ZMSK == 0)
 				{
-					g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, m_cached_ctx.ZBUF.Block());
-					g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, m_cached_ctx.ZBUF.Block());
-					g_texture_cache->InvalidateVideoMem(m_context->offset.zb, m_r, true);
+					g_texture_cache->InvalidateVideoMem(m_context->offset.zb, m_r, false);
+					g_texture_cache->InvalidateContainedTargets(
+						GSLocalMemory::GetStartBlockAddress(
+							m_cached_ctx.ZBUF.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.ZBUF.PSM, m_r),
+						ds_end_bp, m_cached_ctx.ZBUF.PSM);
 				}
 
 				cleanup_draw();
@@ -2397,15 +2413,10 @@ void GSRendererHW::Draw()
 				rt->m_TEX0 = FRAME_TEX0;
 				rt->m_TEX0.TBW = std::max(width, FRAME_TEX0.TBW);
 			}
-
-			rt->UpdateValidAlpha(FRAME_TEX0.PSM, fm);
 		}
 
 		if (ds)
-		{
 			ds->m_TEX0 = ZBUF_TEX0;
-			ds->UpdateValidAlpha(ZBUF_TEX0.PSM, zm);
-		}
 	}
 	else if (!m_texture_shuffle)
 	{
@@ -2415,16 +2426,20 @@ void GSRendererHW::Draw()
 		{
 			rt->m_TEX0.TBW = std::max(rt->m_TEX0.TBW, FRAME_TEX0.TBW);
 			rt->m_TEX0.PSM = FRAME_TEX0.PSM;
-
-			rt->UpdateValidAlpha(FRAME_TEX0.PSM, fm);
 		}
 		if (ds)
 		{
 			ds->m_TEX0.TBW = std::max(ds->m_TEX0.TBW, ZBUF_TEX0.TBW);
 			ds->m_TEX0.PSM = ZBUF_TEX0.PSM;
-			ds->UpdateValidAlpha(ZBUF_TEX0.PSM, zm);
 		}
 	}
+
+	// Figure out which channels we're writing.
+	if (rt)
+		rt->UpdateValidChannels(rt->m_TEX0.PSM, m_texture_shuffle ? GetEffectiveTextureShuffleFbmsk() : fm);
+	if (ds)
+		ds->UpdateValidChannels(ZBUF_TEX0.PSM, zm);
+
 	if (rt)
 		rt->Update();
 	if (ds)
@@ -2656,21 +2671,17 @@ void GSRendererHW::Draw()
 	if (old_ds)
 		g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, old_ds->m_TEX0.TBP0);
 
-	// Make sure they aren't the same source (double half clear), we don't want to invalidate the texture.
-	const bool can_invalidate = (m_cached_ctx.FRAME.Block() != m_cached_ctx.ZBUF.Block()) || !rt || !ds;
-
 	if ((fm & fm_mask) != fm_mask && rt)
 	{
 		//rt->m_valid = rt->m_valid.runion(r);
 		// Limit to 2x the vertical height of the resolution (for double buffering)
 		rt->UpdateValidity(m_r, can_update_size || m_r.w <= (resolution.y * 2));
 
-		rt->UpdateValidBits(~fm & fm_mask);
-
 		g_texture_cache->InvalidateVideoMem(context->offset.fb, m_r, false);
 
-		if (can_invalidate)
-			g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, m_cached_ctx.FRAME.Block());
+		// Remove overwritten Zs at the FBP.
+		g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, m_cached_ctx.FRAME.Block(),
+			m_cached_ctx.FRAME.PSM, m_texture_shuffle ? GetEffectiveTextureShuffleFbmsk() : fm);
 	}
 
 	if (zm != 0xffffffff && ds)
@@ -2679,12 +2690,11 @@ void GSRendererHW::Draw()
 		// Limit to 2x the vertical height of the resolution (for double buffering)
 		ds->UpdateValidity(m_r, can_update_size || m_r.w <= (resolution.y * 2));
 
-		ds->UpdateValidBits(GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].fmsk);
-
 		g_texture_cache->InvalidateVideoMem(context->offset.zb, m_r, false);
 
-		if (can_invalidate)
-			g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, m_cached_ctx.ZBUF.Block());
+		// Remove overwritten RTs at the ZBP.
+		g_texture_cache->InvalidateVideoMemType(
+			GSTextureCache::RenderTarget, m_cached_ctx.ZBUF.Block(), m_cached_ctx.ZBUF.PSM, zm);
 	}
 
 	//
@@ -3060,7 +3070,10 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt)
 
 		// Set dirty alpha on target, but only if we're actually writing to it.
 		if (rt)
-			rt->m_valid_alpha |= m_conf.colormask.wa;
+		{
+			rt->m_valid_alpha_low |= m_conf.colormask.wa;
+			rt->m_valid_alpha_high |= m_conf.colormask.wa;
+		}
 
 		// Once we draw the shuffle, no more buffering.
 		m_split_texture_shuffle_pages = 0;
@@ -5512,24 +5525,35 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 		}
 
 		// Are we clearing over the middle of this target?
-		if (!tgt || (((half + written_pages) * BLOCKS_PER_PAGE) - 1) > tgt->m_end_block)
+		if (!tgt || (((half + written_pages) * BLOCKS_PER_PAGE) - 1) >
+						GSLocalMemory::GetUnwrappedEndBlockAddress(
+							tgt->m_TEX0.TBP0, tgt->m_TEX0.TBW, tgt->m_TEX0.PSM, tgt->GetUnscaledRect()))
+		{
 			return false;
+		}
 
 		// Siren double half clears horizontally with half FBW instead of vertically.
 		// We could use the FBW here, but using the rectangle seems a bit safer, because changing FBW
 		// from one RT to another isn't uncommon.
-		horizontal = (m_r.w >= tgt->m_valid.w);
+		const GSVector4 vr = GSVector4(m_r.rintersect(tgt->m_valid)) / GSVector4(tgt->m_valid);
+		horizontal = (vr.z < vr.w);
 	}
 
-	GL_INS("DetectDoubleHalfClear(): Clearing %s, fbp=%x, zbp=%x, pages=%u, base=%x, half=%x, rect=(%d,%d=>%d,%d)",
-		clear_depth ? "depth" : "color", m_cached_ctx.FRAME.Block(), m_cached_ctx.ZBUF.Block(), written_pages,
-		base * BLOCKS_PER_PAGE, half * BLOCKS_PER_PAGE, m_r.x, m_r.y, m_r.z, m_r.w);
+	GL_INS("DetectDoubleHalfClear(): Clearing %s %s, fbp=%x, zbp=%x, pages=%u, base=%x, half=%x, rect=(%d,%d=>%d,%d)",
+		clear_depth ? "depth" : "color", horizontal ? "horizontally" : "vertically", m_cached_ctx.FRAME.Block(),
+		m_cached_ctx.ZBUF.Block(), written_pages, base * BLOCKS_PER_PAGE, half * BLOCKS_PER_PAGE, m_r.x, m_r.y, m_r.z,
+		m_r.w);
 
 	// Double the clear rect.
 	if (horizontal)
+	{
+		m_cached_ctx.FRAME.FBW *= 2;
 		m_r.z += m_r.x + m_r.width();
+	}
 	else
+	{
 		m_r.w += m_r.y + m_r.height();
+	}
 	ReplaceVerticesWithSprite(m_r, GSVector2i(1, 1));
 
 	// Prevent wasting time looking up and creating the target which is getting blown away.

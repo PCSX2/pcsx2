@@ -104,6 +104,7 @@ private:
 	bool IsPossibleChannelShuffle() const;
 	bool IsSplitTextureShuffle();
 	GSVector4i GetSplitTextureShuffleDrawRect() const;
+	u32 GetEffectiveTextureShuffleFbmsk() const;
 
 	static GSVector4i GetDrawRectForPages(u32 bw, u32 psm, u32 num_pages);
 	bool TryToResolveSinglePageFramebuffer(GIFRegFRAME& FRAME, bool only_next_draw);

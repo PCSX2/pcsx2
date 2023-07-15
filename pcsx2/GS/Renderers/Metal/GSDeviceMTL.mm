@@ -1117,14 +1117,23 @@ bool GSDeviceMTL::Create()
 			case ShaderConvert::RGBA_TO_8I: // Yes really
 			case ShaderConvert::TRANSPARENCY_FILTER:
 			case ShaderConvert::FLOAT32_TO_RGBA8:
+			case ShaderConvert::FLOAT32_TO_RGB8:
 			case ShaderConvert::FLOAT16_TO_RGB5A1:
 			case ShaderConvert::YUV:
 				pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
 				pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
 				break;
 		}
+		const u32 scmask = ShaderConvertWriteMask(conv);
+		MTLColorWriteMask mask = MTLColorWriteMaskNone;
+		if (scmask & 1) mask |= MTLColorWriteMaskRed;
+		if (scmask & 2) mask |= MTLColorWriteMaskGreen;
+		if (scmask & 4) mask |= MTLColorWriteMaskBlue;
+		if (scmask & 8) mask |= MTLColorWriteMaskAlpha;
+		pdesc.colorAttachments[0].writeMask = mask;
 		m_convert_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), name);
 	}
+	pdesc.colorAttachments[0].writeMask = MTLColorWriteMaskAll;
 	pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
 	for (size_t i = 0; i < std::size(m_present_pipeline); i++)
 	{
