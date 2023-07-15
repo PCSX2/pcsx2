@@ -41,5 +41,10 @@
 	<true/>
 	<key>LSApplicationCategoryType</key> 
 	<string>public.app-category.games</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleLocalizations</key>
+	<array>${PCSX2_MACOS_LOCALIZATIONS}
+	</array>
 </dict>
 </plist>
