@@ -101,7 +101,10 @@ void ControllerSettingsDialog::onCurrentProfileChanged(int index)
 
 void ControllerSettingsDialog::onNewProfileClicked()
 {
-	const QString profile_name(QInputDialog::getText(this, tr("Create Input Profile"), tr("Enter the name for the new input profile:")));
+	const QString profile_name(QInputDialog::getText(this, tr("Create Input Profile"), 
+	tr("Custom input profiles are used to override the Shared input profile for specific games.\n"
+	"To apply a custom input profile to a game, go to its Game Properties, then change the 'Input Profile' on the Summary tab.\n\n"
+	"Enter the name for the new input profile:")));
 	if (profile_name.isEmpty())
 		return;
 
