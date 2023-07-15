@@ -6,7 +6,9 @@
 		<file>icons/black/svg/arrow-left-right-line.svg</file>
 		<file>icons/black/svg/artboard-2-line.svg</file>
 		<file>icons/black/svg/at.svg</file>
+		<file>icons/black/svg/band-aid-line.svg</file>
 		<file>icons/black/svg/brush-line.svg</file>
+		<file>icons/black/svg/cheats-line.svg</file>
 		<file>icons/black/svg/checkbox-multiple-blank-line.svg</file>
 		<file>icons/black/svg/chip-line.svg</file>
 		<file>icons/black/svg/close-line.svg</file>
@@ -28,7 +30,6 @@
 		<file>icons/black/svg/file-settings-line.svg</file>
 		<file>icons/black/svg/filter-line.svg</file>
 		<file>icons/black/svg/flashlight-line.svg</file>
-		<file>icons/black/svg/flask-line.svg</file>
 		<file>icons/black/svg/floppy-in-line.svg</file>
 		<file>icons/black/svg/floppy-out-line.svg</file>
 		<file>icons/black/svg/folder-add-line.svg</file>
@@ -39,7 +40,6 @@
 		<file>icons/black/svg/function-line.svg</file>
 		<file>icons/black/svg/github.svg</file>
 		<file>icons/black/svg/global-line.svg</file>
-		<file>icons/black/svg/hammer-line.svg</file>
 		<file>icons/black/svg/heart-circle-line.svg</file>
 		<file>icons/black/svg/heart-monitor-line.svg</file>
 		<file>icons/black/svg/image-fill.svg</file>
@@ -78,7 +78,9 @@
 		<file>icons/white/svg/arrow-left-right-line.svg</file>
 		<file>icons/white/svg/artboard-2-line.svg</file>
 		<file>icons/white/svg/at.svg</file>
+		<file>icons/white/svg/band-aid-line.svg</file>
 		<file>icons/white/svg/brush-line.svg</file>
+		<file>icons/white/svg/cheats-line.svg</file>
 		<file>icons/white/svg/checkbox-multiple-blank-line.svg</file>
 		<file>icons/white/svg/chip-line.svg</file>
 		<file>icons/white/svg/close-line.svg</file>
@@ -100,7 +102,6 @@
 		<file>icons/white/svg/file-settings-line.svg</file>
 		<file>icons/white/svg/filter-line.svg</file>
 		<file>icons/white/svg/flashlight-line.svg</file>
-		<file>icons/white/svg/flask-line.svg</file>
 		<file>icons/white/svg/floppy-in-line.svg</file>
 		<file>icons/white/svg/floppy-out-line.svg</file>
 		<file>icons/white/svg/folder-add-line.svg</file>
@@ -111,7 +112,6 @@
 		<file>icons/white/svg/function-line.svg</file>
 		<file>icons/white/svg/github.svg</file>
 		<file>icons/white/svg/global-line.svg</file>
-		<file>icons/white/svg/hammer-line.svg</file>
 		<file>icons/white/svg/heart-circle-line.svg</file>
 		<file>icons/white/svg/heart-monitor-line.svg</file>
 		<file>icons/white/svg/image-fill.svg</file>
