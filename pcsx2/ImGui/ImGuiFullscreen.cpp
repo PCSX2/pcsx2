@@ -510,11 +510,12 @@ void ImGuiFullscreen::PushResetLayout()
 	ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, UIPrimaryColor);
 	ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabHovered, UIPrimaryLightColor);
 	ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabActive, UIPrimaryDarkColor);
+	ImGui::PushStyleColor(ImGuiCol_PopupBg, ModAlpha(UIBackgroundColor, 0.95f));
 }
 
 void ImGuiFullscreen::PopResetLayout()
 {
-	ImGui::PopStyleColor(10);
+	ImGui::PopStyleColor(11);
 	ImGui::PopStyleVar(12);
 }
 

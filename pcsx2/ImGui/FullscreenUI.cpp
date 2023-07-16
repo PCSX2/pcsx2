@@ -4407,7 +4407,8 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 {
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 	const ImVec2 display_size(ImGui::GetIO().DisplaySize);
-	dl->AddRectFilled(ImVec2(0.0f, 0.0f), display_size, IM_COL32(0x21, 0x21, 0x21, 200));
+	const ImU32 text_color = IM_COL32(UIBackgroundTextColor.x * 255, UIBackgroundTextColor.y * 255, UIBackgroundTextColor.z * 255, 255);
+	dl->AddRectFilled(ImVec2(0.0f, 0.0f), display_size, IM_COL32(UIBackgroundColor.x * 255, UIBackgroundColor.y * 255, UIBackgroundColor.z * 255, 200));
 
 	// title info
 	{
@@ -4438,13 +4439,13 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 
 		float rp_height = 0.0f;
 
-		DrawShadowedText(dl, g_large_font, title_pos, IM_COL32(255, 255, 255, 255), s_current_game_title.c_str());
+		DrawShadowedText(dl, g_large_font, title_pos, text_color, s_current_game_title.c_str());
 		if (!path_string.empty())
 		{
 			DrawShadowedText(
-				dl, g_medium_font, path_pos, IM_COL32(255, 255, 255, 255), path_string.data(), path_string.data() + path_string.length());
+				dl, g_medium_font, path_pos, text_color, path_string.data(), path_string.data() + path_string.length());
 		}
-		DrawShadowedText(dl, g_medium_font, subtitle_pos, IM_COL32(255, 255, 255, 255), s_current_game_subtitle.c_str());
+		DrawShadowedText(dl, g_medium_font, subtitle_pos, text_color, s_current_game_subtitle.c_str());
 
 #ifdef ENABLE_ACHIEVEMENTS
 		if (has_rich_presence)
@@ -4467,7 +4468,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 				path_pos.y -= rp_height;
 				subtitle_pos.y -= rp_height;
 
-				DrawShadowedText(dl, g_medium_font, rp_pos, IM_COL32(255, 255, 255, 255), rp.data(), rp.data() + rp.size(), wrap_width);
+				DrawShadowedText(dl, g_medium_font, rp_pos, text_color, rp.data(), rp.data() + rp.size(), wrap_width);
 			}
 		}
 #endif
@@ -4496,7 +4497,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 
 		const ImVec2 time_size(g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, buf));
 		const ImVec2 time_pos(display_size.x - LayoutScale(10.0f) - time_size.x, LayoutScale(10.0f));
-		DrawShadowedText(dl, g_large_font, time_pos, IM_COL32(255, 255, 255, 255), buf);
+		DrawShadowedText(dl, g_large_font, time_pos, text_color, buf);
 
 		if (!s_current_disc_serial.empty())
 		{
@@ -4509,13 +4510,13 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			const ImVec2 session_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f, buf));
 			const ImVec2 session_pos(
 				display_size.x - LayoutScale(10.0f) - session_size.x, time_pos.y + g_large_font->FontSize + LayoutScale(4.0f));
-			DrawShadowedText(dl, g_medium_font, session_pos, IM_COL32(255, 255, 255, 255), buf);
+			DrawShadowedText(dl, g_medium_font, session_pos, text_color, buf);
 
 			std::snprintf(buf, std::size(buf), "All Time: %s", played_time_str.c_str());
 			const ImVec2 total_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f, buf));
 			const ImVec2 total_pos(
 				display_size.x - LayoutScale(10.0f) - total_size.x, session_pos.y + g_medium_font->FontSize + LayoutScale(4.0f));
-			DrawShadowedText(dl, g_medium_font, total_pos, IM_COL32(255, 255, 255, 255), buf);
+			DrawShadowedText(dl, g_medium_font, total_pos, text_color, buf);
 		}
 	}
 
