@@ -2512,7 +2512,6 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 		return false;
 	}
 
-	u32 gpu_index = 0;
 	if (!GSConfig.Adapter.empty())
 	{
 		u32 gpu_index = 0;
