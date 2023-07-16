@@ -5369,8 +5369,8 @@ void GSTextureCache::InjectHashCacheTexture(const HashCacheKey& key, GSTexture* 
 // GSTextureCache::Palette
 
 GSTextureCache::Palette::Palette(u16 pal, bool need_gs_texture)
-	: m_pal(pal)
-	, m_tex_palette(nullptr)
+	: m_tex_palette(nullptr)
+	, m_pal(pal)
 {
 	const u16 palette_size = pal * sizeof(u32);
 	m_clut = (u32*)_aligned_malloc(palette_size, 64);
