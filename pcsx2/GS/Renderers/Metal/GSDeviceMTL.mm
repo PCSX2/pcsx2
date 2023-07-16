@@ -2407,6 +2407,8 @@ void GSDeviceMTL::RenderImGui(ImDrawData* data)
 		{
 			if (cmd.UserCallback)
 				[NSException raise:@"Unimplemented" format:@"UserCallback not implemented"];
+			if (!cmd.ElemCount)
+				continue;
 
 			simd::float4 clip_rect = (ToSimd(cmd.ClipRect) - clip_off.xyxy) * clip_scale.xyxy;
 			simd::float2 clip_min = clip_rect.xy;
