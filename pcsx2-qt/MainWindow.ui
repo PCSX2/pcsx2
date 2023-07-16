@@ -274,7 +274,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string comment="In Toolbar">Start &amp;File...</string>
+    <string comment="In Toolbar">Start File</string>
    </property>
   </action>
   <action name="actionStartDisc">
@@ -292,7 +292,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string comment="In Toolbar">Start &amp;Disc...</string>
+    <string comment="In Toolbar">Start Disc</string>
    </property>
   </action>
   <action name="actionStartBios">
@@ -310,7 +310,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string comment="In Toolbar">Start &amp;BIOS</string>
+    <string comment="In Toolbar">Start BIOS</string>
    </property>
   </action>
   <action name="actionScanForNewGames">
@@ -346,7 +346,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string comment="In Toolbar">Shut &amp;Down</string>
+    <string comment="In Toolbar">Shut Down</string>
    </property>
   </action>
   <action name="actionPowerOffWithoutSaving">
@@ -373,7 +373,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string comment="In Toolbar">&amp;Reset</string>
+    <string comment="In Toolbar">Reset</string>
    </property>
   </action>
   <action name="actionPause">
@@ -397,7 +397,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string comment="In Toolbar">&amp;Pause</string>
+    <string comment="In Toolbar">Pause</string>
    </property>
   </action>
   <action name="actionToolbarLoadState">
@@ -406,7 +406,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string comment="In Toolbar">&amp;Load State</string>
+    <string comment="In Toolbar">Load State</string>
    </property>
   </action>
   <action name="actionToolbarSaveState">
@@ -415,7 +415,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string comment="In Toolbar">&amp;Save State</string>
+    <string comment="In Toolbar">Save State</string>
    </property>
   </action>
   <action name="actionExit">
@@ -460,7 +460,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string comment="In Toolbar">&amp;Controllers</string>
+    <string comment="In Toolbar">Controllers</string>
    </property>
   </action>
   <action name="actionHotkeySettings">
@@ -635,7 +635,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string comment="In Toolbar">&amp;Settings</string>
+    <string comment="In Toolbar">Settings</string>
    </property>
    <property name="menuRole">
     <enum>QAction::PreferencesRole</enum>
@@ -681,7 +681,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string comment="In Toolbar">&amp;Screenshot</string>
+    <string comment="In Toolbar">Screenshot</string>
    </property>
   </action>
   <action name="actionMemoryCardSettings">
