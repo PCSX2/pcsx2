@@ -23804,6 +23804,8 @@ SLES-55481:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
   gsHWFixes:
     cpuCLUTRender: 1 # Reduces the bloomy blur of characters.
+  clampModes:
+    vu1ClampMode: 3 # Fixes SPS on characters.
 SLES-55482:
   name: "Naruto Shippuden - Ultimate Ninja 4"
   region: "PAL-G-I-S"
@@ -23811,6 +23813,8 @@ SLES-55482:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
   gsHWFixes:
     cpuCLUTRender: 1 # Reduces the bloomy blur of characters.
+  clampModes:
+    vu1ClampMode: 3 # Fixes SPS on characters.
 SLES-55483:
   name: "Guilty Gear XX Accent Core Plus"
   region: "PAL-E"
@@ -24055,6 +24059,8 @@ SLES-55605:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
   gsHWFixes:
     halfPixelOffset: 1 # Corrects post processing position.
+  clampModes:
+    vu1ClampMode: 3 # Fixes SPS on characters.
 SLES-55609:
   name: "Scooby-Doo! and the Spooky Swamp"
   region: "PAL-M5"
@@ -26819,6 +26825,10 @@ SLPM-61157:
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
+  gsHWFixes:
+    cpuCLUTRender: 1 # Reduces the bloomy blur of characters.
+  clampModes:
+    vu1ClampMode: 3 # Fixes SPS on characters.
 SLPM-62001:
   name: "Drum Mania"
   region: "NTSC-J"
@@ -36728,6 +36738,8 @@ SLPM-68019:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
   gsHWFixes:
     halfPixelOffset: 1 # Corrects post processing position.
+  clampModes:
+    vu1ClampMode: 3 # Fixes SPS on characters.
 SLPM-68503:
   name: "Metal Gear Solid 2 - Sons of Liberty [Shareholder Edition]"
   region: "NTSC-J"
@@ -41464,6 +41476,10 @@ SLPS-25768:
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
+  gsHWFixes:
+    cpuCLUTRender: 1 # Reduces the bloomy blur of characters.
+  clampModes:
+    vu1ClampMode: 3 # Fixes SPS on characters.
 SLPS-25769:
   name: "Netsu Chu! Pro Baseball 2007"
   region: "NTSC-J"
@@ -41701,6 +41717,8 @@ SLPS-25837:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
   gsHWFixes:
     halfPixelOffset: 1 # Corrects post processing position.
+  clampModes:
+    vu1ClampMode: 3 # Fixes SPS on characters.
 SLPS-25838:
   name: "Taiheiyou no Arashi - Senkan Yamato, Akatsuki ni Shutsugeki su"
   region: "NTSC-J"
@@ -51967,6 +51985,8 @@ SLUS-21862:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
   gsHWFixes:
     cpuCLUTRender: 1 # Reduces the bloomy blur of characters.
+  clampModes:
+    vu1ClampMode: 3 # Fixes SPS on characters.
 SLUS-21863:
   name: "Suzuki TT Superbikes - Real Road Racing Championship"
   region: "NTSC-U"
