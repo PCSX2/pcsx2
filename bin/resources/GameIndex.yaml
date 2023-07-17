@@ -13351,6 +13351,9 @@ SLES-51302:
 SLES-51303:
   name: "LEGO Dome Racers"
   region: "PAL-M8"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes black screen in races.
+    autoFlush: 1 # Fixes shadow rendering.
 SLES-51307:
   name: "Wild ARMs 3"
   region: "PAL-E"
@@ -45334,6 +45337,9 @@ SLUS-20577:
   name: "Drome Racers"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes black screen in races.
+    autoFlush: 1 # Fixes shadow rendering.
 SLUS-20578:
   name: "Lord of the Rings, The - The Two Towers"
   region: "NTSC-U"
