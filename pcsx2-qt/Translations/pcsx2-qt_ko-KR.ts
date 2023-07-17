@@ -6,43 +6,43 @@
     <message>
       <location filename="../AboutDialog.ui" line="14"/>
       <source>About PCSX2</source>
-      <translation type="unfinished">About PCSX2</translation>
+      <translation>PCSX2 정보</translation>
     </message>
     <message>
       <location filename="../AboutDialog.ui" line="69"/>
       <source>SCM Version</source>
       <extracomment>SCM= Source Code Management</extracomment>
-      <translation type="unfinished">SCM Version</translation>
+      <translation>SCM 버전</translation>
     </message>
     <message>
       <location filename="../AboutDialog.ui" line="79"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2&apos;s hardware, using a combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2&apos;s hardware, using a combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2는 무료 오픈 소스 플레이스테이션 2(PS2) 에뮬레이터입니다. 이 에뮬레이터의 목적은 하드웨어 상태와 PS2 시스템 메모리를 관리하는 MIPS CPU 인터프리터, 리컴파일러 및 가상 머신의 조합을 사용하여 PS2의 하드웨어를 에뮬레이션하는 것입니다. 이를 통해 PC에서 PS2 게임을 플레이할 수 있으며 많은 추가 기능과 이점이 있습니다.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
       <location filename="../AboutDialog.ui" line="105"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PlayStation 2 and PS2 are registered trademarks of Sony Interactive Entertainment. This application is not affiliated in any way with Sony Interactive Entertainment.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PlayStation 2 and PS2 are registered trademarks of Sony Interactive Entertainment. This application is not affiliated in any way with Sony Interactive Entertainment.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PlayStation 2 및 PS2는 소니 인터랙티브 엔터테인먼트의 등록 상표입니다. 이 애플리케이션은 소니 인터랙티브 엔터테인먼트와 어떠한 방식으로도 제휴하지 않습니다.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
       <location filename="../AboutDialog.cpp" line="42"/>
       <source>Website</source>
-      <translation type="unfinished">Website</translation>
+      <translation>웹사이트</translation>
     </message>
     <message>
       <location filename="../AboutDialog.cpp" line="44"/>
       <source>Support Forums</source>
-      <translation type="unfinished">Support Forums</translation>
+      <translation>지원 포럼</translation>
     </message>
     <message>
       <location filename="../AboutDialog.cpp" line="46"/>
       <source>GitHub Repository</source>
-      <translation type="unfinished">GitHub Repository</translation>
+      <translation>GitHub 저장소</translation>
     </message>
     <message>
       <location filename="../AboutDialog.cpp" line="48"/>
       <source>License</source>
-      <translation type="unfinished">License</translation>
+      <translation>라이센스</translation>
     </message>
   </context>
   <context>
@@ -51,58 +51,58 @@
       <location filename="../Settings/AchievementLoginDialog.ui" line="29"/>
       <source>RetroAchievements Login</source>
       <comment>Window title</comment>
-      <translation type="unfinished">RetroAchievements Login</translation>
+      <translation>레트로어치브먼트 로그인</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.ui" line="56"/>
       <source>RetroAchievements Login</source>
       <comment>Header text</comment>
-      <translation type="unfinished">RetroAchievements Login</translation>
+      <translation>레트로어치브먼트 로그인</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.ui" line="68"/>
       <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in PCSX2, an access token will be generated and used instead.</source>
-      <translation type="unfinished">Please enter user name and password for retroachievements.org below. Your password will not be saved in PCSX2, an access token will be generated and used instead.</translation>
+      <translation>아래에 retroachievements.org의 사용자 이름과 비밀번호를 입력하세요. 비밀번호는 PCSX2에 저장되지 않으며, 대신 액세스 토큰이 생성되어 사용됩니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.ui" line="93"/>
       <source>User Name:</source>
-      <translation type="unfinished">User Name:</translation>
+      <translation>사용자명 :</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.ui" line="103"/>
       <source>Password:</source>
-      <translation type="unfinished">Password:</translation>
+      <translation>비밀번호 :</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.ui" line="121"/>
       <source>Ready...</source>
-      <translation type="unfinished">Ready...</translation>
+      <translation>준비...</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="32"/>
       <source>&amp;Login</source>
-      <translation type="unfinished">&amp;Login</translation>
+      <translation>&amp;로그인</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="45"/>
       <source>Logging in...</source>
-      <translation type="unfinished">Logging in...</translation>
+      <translation>로그인 중...</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="63"/>
       <source>Login Error</source>
-      <translation type="unfinished">Login Error</translation>
+      <translation>로그인 에러</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="64"/>
       <source>Login failed. Please check your username and password, and try again.</source>
-      <translation type="unfinished">Login failed. Please check your username and password, and try again.</translation>
+      <translation>로그인에 실패했습니다. 사용자 아이디와 비밀번호를 확인한 후 다시 시도하세요.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="65"/>
       <source>Login failed.</source>
-      <translation type="unfinished">Login failed.</translation>
+      <translation>로그인 실패.</translation>
     </message>
   </context>
   <context>
@@ -110,88 +110,88 @@
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="32"/>
       <source>Global Settings</source>
-      <translation type="unfinished">Global Settings</translation>
+      <translation>전역 설정</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="38"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="51"/>
       <source>Enable Achievements</source>
-      <translation type="unfinished">Enable Achievements</translation>
+      <translation>도전과제 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="45"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="70"/>
       <source>Show Challenge Indicators</source>
-      <translation type="unfinished">Show Challenge Indicators</translation>
+      <translation>도전과제표 표시</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="52"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="59"/>
       <source>Enable RA&apos;s Rich Presence</source>
       <extracomment>This &quot;Rich Presence&quot; is not Discord&apos;s, but rather RetroAchivements own system.</extracomment>
-      <translation type="unfinished">Enable RA&apos;s Rich Presence</translation>
+      <translation>RA의 풍부한 존재감 구현</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="59"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="61"/>
       <source>Enable Hardcore Mode</source>
-      <translation type="unfinished">Enable Hardcore Mode</translation>
+      <translation>하드코어 모드 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="66"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="63"/>
       <source>Enable Leaderboards</source>
-      <translation type="unfinished">Enable Leaderboards</translation>
+      <translation>순위표 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="73"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="56"/>
       <source>Test Unofficial Achievements</source>
-      <translation type="unfinished">Test Unofficial Achievements</translation>
+      <translation>비공식 도전과제 테스트</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="80"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="53"/>
       <source>Enable Test Mode</source>
-      <translation type="unfinished">Enable Test Mode</translation>
+      <translation>테스트 모드 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="87"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="68"/>
       <source>Enable Sound Effects</source>
-      <translation type="unfinished">Enable Sound Effects</translation>
+      <translation>음향 효과 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="94"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="66"/>
       <source>Show Notifications</source>
-      <translation type="unfinished">Show Notifications</translation>
+      <translation>알림 표시</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="104"/>
       <source>Account</source>
-      <translation type="unfinished">Account</translation>
+      <translation>계정</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="119"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="161"/>
       <source>Login...</source>
-      <translation type="unfinished">Login...</translation>
+      <translation>로그인...</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="126"/>
       <source>View Profile...</source>
-      <translation type="unfinished">View Profile...</translation>
+      <translation>프로필 보기...</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="144"/>
       <source>Game Info</source>
-      <translation type="unfinished">Game Info</translation>
+      <translation>게임 정보</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="160"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2 uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#4169e1;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2 uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#4169e1;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2는 도전과제 데이터베이스와 진행 상황 추적을 위해 레트로어치브먼트를 사용합니다. 도전과제를 사용하려면 &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#4169e1;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;에서 계정을 등록하세요. 게임 내에서 도전과제 목록을 보려면 &lt;span style=&quot; font-weight:600;&quot;&gt;일시정지 메뉴 열기&lt;/span&gt; 단축키를 누르고 메뉴에서 &lt;span style=&quot; font-weight:600;&quot;&gt;도전과제&lt;/span&gt;를 선택하세요.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="51"/>
@@ -200,32 +200,32 @@
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="59"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="61"/>
       <source>Unchecked</source>
-      <translation type="unfinished">Unchecked</translation>
+      <translation>선택 안 함</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="52"/>
       <source>When enabled and logged in, PCSX2 will scan for achievements on game load.</source>
-      <translation type="unfinished">When enabled and logged in, PCSX2 will scan for achievements on game load.</translation>
+      <translation>이 기능을 활성화하고 로그인하면 PCSX2가 게임 로딩 시, 도전 과제를 검색합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="54"/>
       <source>When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server.</source>
-      <translation type="unfinished">When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server.</translation>
+      <translation>활성화하면 PCSX2는 모든 도전 과제가 잠긴 것으로 간주하고 잠금 해제 알림을 서버로 보내지 않습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="57"/>
       <source>When enabled, PCSX2 will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-      <translation type="unfinished">When enabled, PCSX2 will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</translation>
+      <translation>이 옵션을 활성화하면 PCSX2는 비공식 세트의 도전과제를 나열합니다. 이러한 도전과제는 레트로어치브먼트에서 추적되지 않으므로 매번 잠금 해제됩니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="60"/>
       <source>When enabled, rich presence information will be collected and sent to the RetroAchievements servers where supported.</source>
-      <translation type="unfinished">When enabled, rich presence information will be collected and sent to the RetroAchievements servers where supported.</translation>
+      <translation>활성화하면 풍부한 프레즌스 정보가 수집되어 지원되는 경우 레트로어치브먼트 서버로 전송됩니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="62"/>
       <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
-      <translation type="unfinished">&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</translation>
+      <translation>순위표 추적을 포함한 도전 과제를 위한 &quot;도전&quot; 모드. 저장 상태, 치트, 속도 저하 기능을 비활성화합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="63"/>
@@ -233,55 +233,55 @@
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="68"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="70"/>
       <source>Checked</source>
-      <translation type="unfinished">Checked</translation>
+      <translation>확인</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="64"/>
       <source>Enables tracking and submission of leaderboards in supported games. If leaderboards are disabled, you will still be able to view the leaderboard and scores, but no scores will be uploaded.</source>
-      <translation type="unfinished">Enables tracking and submission of leaderboards in supported games. If leaderboards are disabled, you will still be able to view the leaderboard and scores, but no scores will be uploaded.</translation>
+      <translation>지원되는 게임에서 순위표를 추적하고 제출할 수 있습니다. 순위표가 비활성화되어 있어도 순위표와 점수는 계속 볼 수 있지만 점수는 업로드되지 않습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="67"/>
       <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
-      <translation type="unfinished">Displays popup messages on events such as achievement unlocks and leaderboard submissions.</translation>
+      <translation>도전과제 잠금 해제 및 리더보드 제출과 같은 이벤트에 대한 팝업 메시지를 표시합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="69"/>
       <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
-      <translation type="unfinished">Plays sound effects for events such as achievement unlocks and leaderboard submissions.</translation>
+      <translation>도전과제 잠금 해제 및 순위표 제출과 같은 이벤트에서 음향 효과를 재생합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="71"/>
       <source>Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
-      <translation type="unfinished">Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.</translation>
+      <translation>도전과제/프라임 도전 과제가 활성화되어 있으면 화면 오른쪽 하단에 아이콘이 표시됩니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="133"/>
       <source>Reset System</source>
-      <translation type="unfinished">Reset System</translation>
+      <translation>시스템 초기화</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="134"/>
       <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
-      <translation type="unfinished">Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</translation>
+      <translation>하드코어 모드는 시스템을 초기화할 때까지 활성화되지 않습니다. 지금 시스템을 초기화하시겠습니까?</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="153"/>
       <source>Username: %1
 Login token generated on %2.</source>
       <extracomment>Variable %1 is an username, variable %2 is a timestamp.</extracomment>
-      <translation type="unfinished">Username: %1
-Login token generated on %2.</translation>
+      <translation>사용자명 : %1
+로그인 토큰이 생성된 %2.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="156"/>
       <source>Logout</source>
-      <translation type="unfinished">Logout</translation>
+      <translation>로그아웃</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="160"/>
       <source>Not Logged In.</source>
-      <translation type="unfinished">Not Logged In.</translation>
+      <translation>로그인하지 않음.</translation>
     </message>
   </context>
   <context>
@@ -289,27 +289,27 @@ Login token generated on %2.</translation>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1056"/>
       <source> (Hardcore Mode)</source>
-      <translation type="unfinished"> (Hardcore Mode)</translation>
+      <translation> (하드코어 모드)</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1061"/>
       <source>You have earned {0} of {1} achievements, and {2} of {3} points.</source>
-      <translation type="unfinished">You have earned {0} of {1} achievements, and {2} of {3} points.</translation>
+      <translation>{1}개의 도전과제 중 {0}개를 달성했으며, {3} 포인트 중 {2}개를 획득했습니다.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1066"/>
       <source>This game has no achievements.</source>
-      <translation type="unfinished">This game has no achievements.</translation>
+      <translation>이 게임에는 도전과제가 없습니다.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1072"/>
       <source>Leaderboard submission is enabled.</source>
-      <translation type="unfinished">Leaderboard submission is enabled.</translation>
+      <translation>순위표 제출이 활성화되었습니다.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1509"/>
       <source>Failed to read executable from disc. Achievements disabled.</source>
-      <translation type="unfinished">Failed to read executable from disc. Achievements disabled.</translation>
+      <translation>디스크에서 실행 파일을 읽지 못했습니다. 도전과제가 비활성화 되었습니다.</translation>
     </message>
   </context>
   <context>
@@ -319,37 +319,37 @@ Login token generated on %2.</translation>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="52"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="53"/>
       <source>Use Global Setting [%1]</source>
-      <translation type="unfinished">Use Global Setting [%1]</translation>
+      <translation>전역 설정 사용 [%1]</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="73"/>
       <source>Rounding Mode</source>
-      <translation type="unfinished">Rounding Mode</translation>
+      <translation>라운딩 모드</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="73"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="99"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="100"/>
       <source>Chop / Zero (Default)</source>
-      <translation type="unfinished">Chop / Zero (Default)</translation>
+      <translation>잘라내기/제로(기본값)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="75"/>
       <source>Clamping Mode</source>
-      <translation type="unfinished">Clamping Mode</translation>
+      <translation>클램핑 모드</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="75"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="102"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="103"/>
       <source>Normal (Default)</source>
-      <translation type="unfinished">Normal (Default)</translation>
+      <translation>일반(기본값)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="77"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="115"/>
       <source>Enable Recompiler</source>
-      <translation type="unfinished">Enable Recompiler</translation>
+      <translation>리컴파일러 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="77"/>
@@ -363,149 +363,149 @@ Login token generated on %2.</translation>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="118"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="121"/>
       <source>Checked</source>
-      <translation type="unfinished">Checked</translation>
+      <translation>확인</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="78"/>
       <source>Performs just-in-time binary translation of 64-bit MIPS-IV machine code to x86.</source>
-      <translation type="unfinished">Performs just-in-time binary translation of 64-bit MIPS-IV machine code to x86.</translation>
+      <translation>64비트 MIPS-IV 머신 코드를 x86으로 적시 바이너리 변환을 수행합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="81"/>
       <source>Wait Loop Detection</source>
       <extracomment>Wait loop: When the game makes the CPU do nothing (loop/spin) while it waits for something to happen (usually an interrupt).</extracomment>
-      <translation type="unfinished">Wait Loop Detection</translation>
+      <translation>지연 루프 감지</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="82"/>
       <source>Moderate speedup for some games, with no known side effects.</source>
-      <translation type="unfinished">Moderate speedup for some games, with no known side effects.</translation>
+      <translation>알려진 부작용 없이 일부 게임의 속도가 약간 향상됩니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="84"/>
       <source>Enable Cache (Slow)</source>
-      <translation type="unfinished">Enable Cache (Slow)</translation>
+      <translation>캐시 활성화(느림)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="84"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="94"/>
       <source>Unchecked</source>
-      <translation type="unfinished">Unchecked</translation>
+      <translation>선택 안 함</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="84"/>
       <source>Interpreter only, provided for diagnostic.</source>
-      <translation type="unfinished">Interpreter only, provided for diagnostic.</translation>
+      <translation>진단용으로 제공되는 통역 전용입니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="87"/>
       <source>INTC Spin Detection</source>
       <extracomment>INTC = Name of a PS2 register, leave as-is. &quot;spin&quot; = to make a cpu (or gpu) actively do nothing while you wait for something. Like spinning in a circle, you&apos;re moving but not actually going anywhere.</extracomment>
-      <translation type="unfinished">INTC Spin Detection</translation>
+      <translation>INTC 회전 감지</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="88"/>
       <source>Huge speedup for some games, with almost no compatibility side effects.</source>
-      <translation type="unfinished">Huge speedup for some games, with almost no compatibility side effects.</translation>
+      <translation>별다른 호환성 부작용 없이 일부 게임의 속도가 크게 향상되었습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="90"/>
       <source>Enable Fast Memory Access</source>
-      <translation type="unfinished">Enable Fast Memory Access</translation>
+      <translation>고속 메모리 액세스 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="92"/>
       <source>Uses backpatching to avoid register flushing on every memory access.</source>
       <extracomment>&quot;Backpatching&quot; = To edit previously generated code to change what it does (in this case, we generate direct memory accesses, then backpatch them to jump to a fancier handler function when we realize they need the fancier handler function)</extracomment>
-      <translation type="unfinished">Uses backpatching to avoid register flushing on every memory access.</translation>
+      <translation>역패치를 사용하여 모든 메모리 액세스에서 레지스터 플러싱을 방지합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="94"/>
       <source>Pause On TLB Miss</source>
-      <translation type="unfinished">Pause On TLB Miss</translation>
+      <translation>TLB 실패 시, 일시정지</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="95"/>
       <source>Pauses the virtual machine when a TLB miss occurs, instead of ignoring it and continuing. Note that the VM will pause after the end of the block, not on the instruction which caused the exception. Refer to the console to see the address where the invalid access occurred.</source>
-      <translation type="unfinished">Pauses the virtual machine when a TLB miss occurs, instead of ignoring it and continuing. Note that the VM will pause after the end of the block, not on the instruction which caused the exception. Refer to the console to see the address where the invalid access occurred.</translation>
+      <translation>TLB 누락 발생 시, 이를 무시하고 계속 진행하는 대신 가상 머신을 일시 중지합니다. 가상 머신은 예외를 발생시킨 명령이 아니라 블록이 종료된 후에 일시 중지됩니다. 잘못된 액세스가 발생한 주소를 확인하려면 콘솔을 참조하세요.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="99"/>
       <source>VU0 Rounding Mode</source>
-      <translation type="unfinished">VU0 Rounding Mode</translation>
+      <translation>VU0 라운딩 모드</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="100"/>
       <source>VU1 Rounding Mode</source>
-      <translation type="unfinished">VU1 Rounding Mode</translation>
+      <translation>VU1 라운딩 모드</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="102"/>
       <source>VU0 Clamping Mode</source>
-      <translation type="unfinished">VU0 Clamping Mode</translation>
+      <translation>VU0 클램핑 모드</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="103"/>
       <source>VU1 Clamping Mode</source>
-      <translation type="unfinished">VU1 Clamping Mode</translation>
+      <translation>VU1 클램핑 모드</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="106"/>
       <source>Enable VU0 Recompiler (Micro Mode)</source>
       <extracomment>VU0 = Vector Unit 0. One of the PS2&apos;s processors.</extracomment>
-      <translation type="unfinished">Enable VU0 Recompiler (Micro Mode)</translation>
+      <translation>VU0 리컴파일러 활성화(마이크로 모드)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="106"/>
       <source>Enables VU0 Recompiler.</source>
-      <translation type="unfinished">Enables VU0 Recompiler.</translation>
+      <translation>VU0 리컴파일러를 활성화합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="109"/>
       <source>Enable VU1 Recompiler</source>
       <extracomment>VU1 = Vector Unit 1. One of the PS2&apos;s processors.</extracomment>
-      <translation type="unfinished">Enable VU1 Recompiler</translation>
+      <translation>VU1 리컴파일러 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="109"/>
       <source>Enables VU1 Recompiler.</source>
-      <translation type="unfinished">Enables VU1 Recompiler.</translation>
+      <translation>VU1 리컴파일러 활성화합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="113"/>
       <source>mVU Flag Hack</source>
       <extracomment>mVU = PCSX2&apos;s recompiler for VU (Vector Unit) code (full name: microVU)</extracomment>
-      <translation type="unfinished">mVU Flag Hack</translation>
+      <translation>mVU 플래그 핵</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="113"/>
       <source>Good speedup and high compatibility, may cause graphical errors.</source>
-      <translation type="unfinished">Good speedup and high compatibility, may cause graphical errors.</translation>
+      <translation>속도 향상 및 호환성이 우수하지만 그래픽 오류가 발생할 수 있습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="116"/>
       <source>Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86.</source>
-      <translation type="unfinished">Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86.</translation>
+      <translation>32비트 MIPS-I 머신 코드를 x86으로 적시 바이너리 변환을 수행합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="118"/>
       <source>Enable Game Fixes</source>
-      <translation type="unfinished">Enable Game Fixes</translation>
+      <translation>게임 수정 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="119"/>
       <source>Automatically loads and applies fixes to known problematic games on game start.</source>
-      <translation type="unfinished">Automatically loads and applies fixes to known problematic games on game start.</translation>
+      <translation>게임 시작 시, 문제가 있는 것으로 알려진 게임에 대한 수정 사항을 자동으로 로드하고 적용합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="121"/>
       <source>Enable Compatibility Patches</source>
-      <translation type="unfinished">Enable Compatibility Patches</translation>
+      <translation>호환성 패치 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="122"/>
       <source>Automatically loads and applies compatibility patches to known problematic games.</source>
-      <translation type="unfinished">Automatically loads and applies compatibility patches to known problematic games.</translation>
+      <translation>문제가 있는 것으로 알려진 게임에 호환성 패치를 자동으로 로드하고 적용합니다.</translation>
     </message>
   </context>
   <context>
@@ -513,72 +513,72 @@ Login token generated on %2.</translation>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="56"/>
       <source>Changing these options may cause games to become non-functional. Modify at your own risk, the PCSX2 team will not provide support for configurations with these settings changed.</source>
-      <translation type="unfinished">Changing these options may cause games to become non-functional. Modify at your own risk, the PCSX2 team will not provide support for configurations with these settings changed.</translation>
+      <translation>이러한 옵션을 변경하면 게임이 작동하지 않을 수 있습니다. 이러한 설정을 변경한 구성에 대해서는 PCSX2 팀에서 지원을 제공하지 않으므로 사용자 책임 하에 수정하시기 바랍니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="66"/>
       <source>EmotionEngine (MIPS-IV)</source>
       <extracomment>Emotion Engine = Commercial name of one of PS2&apos;s processors. Leave as-is unless there&apos;s an official name (like for Japanese).</extracomment>
-      <translation type="unfinished">EmotionEngine (MIPS-IV)</translation>
+      <translation>이모션엔진(MIPS-IV)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="72"/>
       <source>Rounding Mode:</source>
       <extracomment>Rounding refers here to the mathematical term.</extracomment>
-      <translation type="unfinished">Rounding Mode:</translation>
+      <translation>라운딩 모드 :</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="80"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="197"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="291"/>
       <source>Nearest</source>
-      <translation type="unfinished">Nearest</translation>
+      <translation>근접</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="85"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="202"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="296"/>
       <source>Negative</source>
-      <translation type="unfinished">Negative</translation>
+      <translation>부정</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="90"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="207"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="301"/>
       <source>Positive</source>
-      <translation type="unfinished">Positive</translation>
+      <translation>긍정</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="95"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="212"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="306"/>
       <source>Chop / Zero (Default)</source>
-      <translation type="unfinished">Chop / Zero (Default)</translation>
+      <translation>잘라내기/제로(기본값)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="103"/>
       <source>Clamping Mode:</source>
       <extracomment>Clamping: Forcing out of bounds things in bounds by changing them to the closest possible value.  In this case, this refers to clamping large PS2 floating point values (which map to infinity or NaN in PCs&apos; IEEE754 floats) to non-infinite ones.</extracomment>
-      <translation type="unfinished">Clamping Mode:</translation>
+      <translation>클램핑 모드 :</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="246"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="315"/>
       <source>None</source>
-      <translation type="unfinished">None</translation>
+      <translation>없음</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="116"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="251"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="320"/>
       <source>Normal (Default)</source>
-      <translation type="unfinished">Normal (Default)</translation>
+      <translation>일반(기본값)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="111"/>
       <source>None</source>
       <comment>ClampMode</comment>
-      <translation type="unfinished">None</translation>
+      <translation>없음</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="121"/>
@@ -586,147 +586,147 @@ Login token generated on %2.</translation>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="330"/>
       <source>Extra + Preserve Sign</source>
       <extracomment>Sign: refers here to the mathematical meaning (plus/minus).</extracomment>
-      <translation type="unfinished">Extra + Preserve Sign</translation>
+      <translation>추가 + 보존 기호</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="126"/>
       <source>Full</source>
-      <translation type="unfinished">Full</translation>
+      <translation>가득참</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="136"/>
       <source>Wait Loop Detection</source>
-      <translation type="unfinished">Wait Loop Detection</translation>
+      <translation>지연 루프 감지</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="143"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="347"/>
       <source>Enable Recompiler</source>
-      <translation type="unfinished">Enable Recompiler</translation>
+      <translation>리컴파일러 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="150"/>
       <source>Enable Fast Memory Access</source>
-      <translation type="unfinished">Enable Fast Memory Access</translation>
+      <translation>고속 메모리 액세스 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="157"/>
       <source>Enable Cache (Slow)</source>
-      <translation type="unfinished">Enable Cache (Slow)</translation>
+      <translation>캐시 활성화(느림)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="164"/>
       <source>INTC Spin Detection</source>
-      <translation type="unfinished">INTC Spin Detection</translation>
+      <translation>INTC 회전 감지</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="171"/>
       <source>Pause On TLB Miss</source>
-      <translation type="unfinished">Pause On TLB Miss</translation>
+      <translation>TLB 실패 시, 일시정지</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="183"/>
       <source>Vector Units (VU)</source>
       <extracomment>Vector Unit/VU: refers to two of PS2&apos;s processors. Do not translate the full text or do so as a comment. Leave the acronym as-is.</extracomment>
-      <translation type="unfinished">Vector Units (VU)</translation>
+      <translation>벡터 단위(VU)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="189"/>
       <source>VU1 Rounding Mode:</source>
-      <translation type="unfinished">VU1 Rounding Mode:</translation>
+      <translation>VU1 라운딩 모드 :</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="222"/>
       <source>mVU Flag Hack</source>
-      <translation type="unfinished">mVU Flag Hack</translation>
+      <translatio>mVU 플래그 핵</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="229"/>
       <source>Enable VU1 Recompiler</source>
-      <translation type="unfinished">Enable VU1 Recompiler</translation>
+      <translation>VU1 리컴파일러 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="236"/>
       <source>Enable VU0 Recompiler (Micro Mode)</source>
-      <translation type="unfinished">Enable VU0 Recompiler (Micro Mode)</translation>
+      <translation>VU0 리컴파일러(마이크로 모드) 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="256"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="325"/>
       <source>Extra</source>
-      <translation type="unfinished">Extra</translation>
+      <translation>추가 정보</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="269"/>
       <source>VU0 Clamping Mode:</source>
-      <translation type="unfinished">VU0 Clamping Mode:</translation>
+      <translation>VU0 클램핑 모드 :</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="276"/>
       <source>VU0 Rounding Mode:</source>
-      <translation type="unfinished">VU0 Rounding Mode:</translation>
+      <translation>VU0 라운딩 모드 :</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="283"/>
       <source>VU1 Clamping Mode:</source>
-      <translation type="unfinished">VU1 Clamping Mode:</translation>
+      <translation>VU1 클램핑 모드 :</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="341"/>
       <source>I/O Processor (IOP, MIPS-I)</source>
-      <translation type="unfinished">I/O Processor (IOP, MIPS-I)</translation>
+      <translation>입출력 프로세서(IOP, MIPS-I)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="357"/>
       <source>Game Settings</source>
-      <translation type="unfinished">Game Settings</translation>
+      <translation>게임 설정</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="363"/>
       <source>Enable Game Fixes</source>
-      <translation type="unfinished">Enable Game Fixes</translation>
+      <translation>게임 수정 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="370"/>
       <source>Enable Compatibility Patches</source>
-      <translation type="unfinished">Enable Compatibility Patches</translation>
+      <translation>호환성 패치 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="380"/>
       <source>Frame Rate Control</source>
-      <translation type="unfinished">Frame Rate Control</translation>
+      <translation>프레임 속도 설정</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="386"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="396"/>
       <source> hz</source>
       <extracomment>hz=Hertz, as in the measuring unit. Shown after the corresponding number. Those languages who&apos;d need to remove the space or do something in between should do so.</extracomment>
-      <translation type="unfinished"> hz</translation>
+      <translation> 헤르츠</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="406"/>
       <source>PAL Frame Rate:</source>
-      <translation type="unfinished">PAL Frame Rate:</translation>
+      <translation>PAL 프레임 속도 :</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="413"/>
       <source>NTSC Frame Rate:</source>
-      <translation type="unfinished">NTSC Frame Rate:</translation>
+      <translation>NTSC 프레임 속도 :</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="423"/>
       <source>PINE Settings</source>
-      <translation type="unfinished">PINE Settings</translation>
+      <translation>PINE 설정</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="445"/>
       <source>Slot:</source>
-      <translation type="unfinished">Slot:</translation>
+      <translation>슬롯 :</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="452"/>
       <source>Enable</source>
-      <translation type="unfinished">Enable</translation>
+      <translation>활성화</translation>
     </message>
   </context>
   <context>
@@ -734,200 +734,200 @@ Login token generated on %2.</translation>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="32"/>
       <source>Timestretch Settings</source>
-      <translation type="unfinished">Timestretch Settings</translation>
+      <translation>시간 연장 설정</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="38"/>
       <source>Sequence Length:</source>
-      <translation type="unfinished">Sequence Length:</translation>
+      <translation>시퀀스 길이 :</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="69"/>
       <source>30</source>
-      <translation type="unfinished">30</translation>
+      <translation>30</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="78"/>
       <source>Seekwindow Size:</source>
-      <translation type="unfinished">Seekwindow Size:</translation>
+      <translation>탐색창 크기 :</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="109"/>
       <source>20</source>
-      <translation type="unfinished">20</translation>
+      <translation>20</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="118"/>
       <source>Overlap:</source>
-      <translation type="unfinished">Overlap:</translation>
+      <translation>중첩 :</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="149"/>
       <source>10</source>
-      <translation type="unfinished">10</translation>
+      <translation>10</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="179"/>
       <source>Restore Defaults</source>
-      <translation type="unfinished">Restore Defaults</translation>
+      <translation>기본값 복구</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="193"/>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="144"/>
       <source>Volume</source>
-      <translation type="unfinished">Volume</translation>
+      <translation>음량</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="236"/>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="144"/>
       <source>100%</source>
-      <translation type="unfinished">100%</translation>
+      <translation>100%</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="277"/>
       <source>Mixing Settings</source>
-      <translation type="unfinished">Mixing Settings</translation>
+      <translation>혼합 설정</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="283"/>
       <source>Synchronization:</source>
-      <translation type="unfinished">Synchronization:</translation>
+      <translation>동기화 :</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="291"/>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="114"/>
       <source>TimeStretch (Recommended)</source>
-      <translation type="unfinished">TimeStretch (Recommended)</translation>
+      <translation>시간 연장(권장)</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="296"/>
       <source>Async Mix (Breaks some games!)</source>
-      <translation type="unfinished">Async Mix (Breaks some games!)</translation>
+      <translation>비동기 혼합(일부 게임 중단!)</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="301"/>
       <source>None (Audio can skip.)</source>
-      <translation type="unfinished">None (Audio can skip.)</translation>
+      <translation>없음(오디오 건너뛰기 가능)</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="309"/>
       <source>Expansion:</source>
-      <translation type="unfinished">Expansion:</translation>
+      <translation>확장 :</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="317"/>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="117"/>
       <source>Stereo (None, Default)</source>
-      <translation type="unfinished">Stereo (None, Default)</translation>
+      <translation>스테레오(없음, 기본값)</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="322"/>
       <source>Quadrafonic</source>
-      <translation type="unfinished">Quadrafonic</translation>
+      <translation>쿼드러포닉</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="327"/>
       <source>Surround 5.1</source>
-      <translation type="unfinished">Surround 5.1</translation>
+      <translation>서라운드 5.1</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="332"/>
       <source>Surround 7.1</source>
-      <translation type="unfinished">Surround 7.1</translation>
+      <translation>서라운드 7.1</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="340"/>
       <source>ProLogic Level:</source>
       <extracomment>ProLogic is a Dolby brand. Leave the name as-is unless there is an official translation for your language.</extracomment>
-      <translation type="unfinished">ProLogic Level:</translation>
+      <translation>프로로직 레벨 :</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="348"/>
       <source>None (Default)</source>
-      <translation type="unfinished">None (Default)</translation>
+      <translation>없음(기본값)</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="353"/>
       <source>ProLogic Decoding (basic)</source>
       <extracomment>ProLogic is a Dolby brand. Leave the name as-is unless there is an official translation for your language.</extracomment>
-      <translation type="unfinished">ProLogic Decoding (basic)</translation>
+      <translation>프로로직 디코딩(기본)</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="358"/>
       <source>ProLogic II Decoding (gigaherz)</source>
       <extracomment>ProLogic II is a Dolby brand. Leave the name as-is unless there is an official translation for your language. gigaherz is the nickname of one of PCSX2&apos;s developers. Leave as-is.</extracomment>
-      <translation type="unfinished">ProLogic II Decoding (gigaherz)</translation>
+      <translation>프로로직 II 디코딩(기가헤르츠)</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="366"/>
       <source>Target Latency:</source>
-      <translation type="unfinished">Target Latency:</translation>
+      <translation>목표 지연 시간 :</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="397"/>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="130"/>
       <source>60 ms</source>
-      <translation type="unfinished">60 ms</translation>
+      <translation>60 밀리초</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="409"/>
       <source>Output Settings</source>
-      <translation type="unfinished">Output Settings</translation>
+      <translation>출력 설정</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="415"/>
       <source>Output Module:</source>
-      <translation type="unfinished">Output Module:</translation>
+      <translation>출력 모듈 :</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="425"/>
       <source>Output Latency:</source>
-      <translation type="unfinished">Output Latency:</translation>
+      <translation>출력 지연 시간 :</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="456"/>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="133"/>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="140"/>
       <source>20 ms</source>
-      <translation type="unfinished">20 ms</translation>
+      <translation>20 밀리초</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="463"/>
       <source>Minimal</source>
-      <translation type="unfinished">Minimal</translation>
+      <translation>최소</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="472"/>
       <source>Output Backend:</source>
-      <translation type="unfinished">Output Backend:</translation>
+      <translation>출력 백엔드 :</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="482"/>
       <source>Maximum Latency:</source>
-      <translation type="unfinished">Maximum Latency:</translation>
+      <translation>최대 지연 시간 :</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.ui" line="492"/>
       <source>Output Device:</source>
-      <translation type="unfinished">Output Device:</translation>
+      <translation>출력 장치 :</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="42"/>
       <source>No Sound (Emulate SPU2 only)</source>
-      <translation type="unfinished">No Sound (Emulate SPU2 only)</translation>
+      <translation>사운드 없음(SPU2 에뮬레이션만 해당)</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="44"/>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="121"/>
       <source>Cubeb (Cross-platform)</source>
       <extracomment>Cubeb is an audio engine name. Leave as-is.</extracomment>
-      <translation type="unfinished">Cubeb (Cross-platform)</translation>
+      <translation>Cubeb(크로스 플랫폼)</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="47"/>
       <source>XAudio2</source>
       <extracomment>XAudio2 is an audio engine name. Leave as-is.</extracomment>
-      <translation type="unfinished">XAudio2</translation>
+      <translation>XAudio2</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="76"/>
@@ -937,43 +937,43 @@ Login token generated on %2.</translation>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="105"/>
       <source> ms</source>
       <extracomment>Measuring unit that will appear after the number selected in its option. Adapt the space depending on your language&apos;s rules.</extracomment>
-      <translation type="unfinished"> ms</translation>
+      <translation> 밀리초</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="114"/>
       <source>Synchronization</source>
-      <translation type="unfinished">Synchronization</translation>
+      <translation>동기화</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="115"/>
       <source>When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast-forward/slowdown audio.</source>
-      <translation type="unfinished">When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast-forward/slowdown audio.</translation>
+      <translation>100% 속도를 벗어나 실행할 때 프레임을 떨어뜨리는 대신 오디오의 템포를 조정합니다. 훨씬 더 멋진 빨리 감기/느리게 감기 오디오를 생성합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="117"/>
       <source>Expansion</source>
-      <translation type="unfinished">Expansion</translation>
+      <translation>확장</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="118"/>
       <source>Determines how the stereo output from the emulated system is upmixed into a greater number of the output speakers.</source>
-      <translation type="unfinished">Determines how the stereo output from the emulated system is upmixed into a greater number of the output speakers.</translation>
+      <translation>에뮬레이트된 시스템의 스테레오 출력이 더 많은 수의 출력 스피커로 업믹스되는 방식을 결정합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="121"/>
       <source>Output Module</source>
       <extracomment>Cubeb is an audio engine name. Leave as-is.</extracomment>
-      <translation type="unfinished">Output Module</translation>
+      <translation>출력 모듈</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="122"/>
       <source>Selects the library to be used for audio output.</source>
-      <translation type="unfinished">Selects the library to be used for audio output.</translation>
+      <translation>오디오 출력에 사용할 라이브러리를 선택합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="124"/>
       <source>Output Backend</source>
-      <translation type="unfinished">Output Backend</translation>
+      <translation>출력 백엔드</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="124"/>
@@ -982,105 +982,105 @@ Login token generated on %2.</translation>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="173"/>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="225"/>
       <source>Default</source>
-      <translation type="unfinished">Default</translation>
+      <translation>기본값</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="125"/>
       <source>When the sound output module supports multiple audio backends, determines the API to be used for audio output to the system.</source>
-      <translation type="unfinished">When the sound output module supports multiple audio backends, determines the API to be used for audio output to the system.</translation>
+      <translation>사운드 출력 모듈이 여러 오디오 백엔드를 지원하는 경우 시스템에 대한 오디오 출력에 사용할 API를 결정합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="127"/>
       <source>Output Device</source>
-      <translation type="unfinished">Output Device</translation>
+      <translation>출력 장치</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="128"/>
       <source>Determines which audio device to output the sound to.</source>
-      <translation type="unfinished">Determines which audio device to output the sound to.</translation>
+      <translation>사운드를 출력할 오디오 장치를 결정합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="130"/>
       <source>Target Latency</source>
-      <translation type="unfinished">Target Latency</translation>
+      <translation>목표 지연 시간</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="131"/>
       <source>Determines the buffer size which the time stretcher will try to keep filled. It effectively selects the average latency, as audio will be stretched/shrunk to keep the buffer size within check.</source>
-      <translation type="unfinished">Determines the buffer size which the time stretcher will try to keep filled. It effectively selects the average latency, as audio will be stretched/shrunk to keep the buffer size within check.</translation>
+      <translation>타임 스트레처가 계속 채우려고 시도하는 버퍼 크기를 결정합니다. 버퍼 크기를 유지하기 위해 오디오가 늘어나거나 줄어들기 때문에 평균 지연 시간을 효과적으로 선택합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="133"/>
       <source>Output Latency</source>
-      <translation type="unfinished">Output Latency</translation>
+      <translation>출력 지연 시간</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="134"/>
       <source>Determines the latency from the buffer to the host audio output. This can be set lower than the target latency to reduce audio delay.</source>
-      <translation type="unfinished">Determines the latency from the buffer to the host audio output. This can be set lower than the target latency to reduce audio delay.</translation>
+      <translation>버퍼에서 호스트 오디오 출력까지의 지연 시간을 결정합니다. 오디오 지연을 줄이기 위해 목표 지연 시간보다 낮게 설정할 수 있습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="137"/>
       <source>Sequence Length</source>
-      <translation type="unfinished">Sequence Length</translation>
+      <translation>시퀀스 길이</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="137"/>
       <source>30 ms</source>
-      <translation type="unfinished">30 ms</translation>
+      <translation>30 밀리초</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="140"/>
       <source>Seek Window Size</source>
       <extracomment>Seek Window: the region of samples (window) the audio stretching algorithm is allowed to search.</extracomment>
-      <translation type="unfinished">Seek Window Size</translation>
+      <translation>탐색 창 크기</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="142"/>
       <source>Overlap</source>
-      <translation type="unfinished">Overlap</translation>
+      <translation>중첩</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="142"/>
       <source>10 ms</source>
-      <translation type="unfinished">10 ms</translation>
+      <translation>10 밀리초</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="145"/>
       <source>Pre-applies a volume modifier to the game&apos;s audio output before forwarding it to your computer.</source>
-      <translation type="unfinished">Pre-applies a volume modifier to the game&apos;s audio output before forwarding it to your computer.</translation>
+      <translation>게임 오디오 출력을 컴퓨터로 전달하기 전에 음량 조절기를 미리 적용합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="169"/>
       <source>Use Global Setting [%1]</source>
-      <translation type="unfinished">Use Global Setting [%1]</translation>
+      <translation>전역 설정 사용 [%1]</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="313"/>
       <source>%1%</source>
       <extracomment>Variable value that indicates a percentage. Preserve the %1 variable, adapt the latter % (and/or any possible spaces) to your language&apos;s ruleset.</extracomment>
-      <translation type="unfinished">%1%</translation>
+      <translation>%1%</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="332"/>
       <source>N/A</source>
       <extracomment>Preserve the %1 variable, adapt the latter ms (and/or any possible spaces in between) to your language&apos;s ruleset.</extracomment>
-      <translation type="unfinished">N/A</translation>
+      <translation>해당 없음</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="332"/>
       <source>%1 ms</source>
-      <translation type="unfinished">%1 ms</translation>
+      <translation>%1 밀리초</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="339"/>
       <source>Average Latency: %1 ms (%2 ms buffer + %3 ms output)</source>
-      <translation type="unfinished">Average Latency: %1 ms (%2 ms buffer + %3 ms output)</translation>
+      <translation>평균 지연 시간 : %1 밀리초 (%2 밀리초 버퍼 + %3 밀리초 출력)</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="346"/>
       <source>Average Latency: %1 ms (minimum output latency unknown)</source>
-      <translation type="unfinished">Average Latency: %1 ms (minimum output latency unknown)</translation>
+      <translation>평균 지연 시간: %1 밀리초(최소 출력 지연 시간 알 수 없음)</translation>
     </message>
   </context>
   <context>
@@ -1090,87 +1090,87 @@ Login token generated on %2.</translation>
       <location filename="../AutoUpdaterDialog.cpp" line="426"/>
       <location filename="../AutoUpdaterDialog.cpp" line="489"/>
       <source>Automatic Updater</source>
-      <translation type="unfinished">Automatic Updater</translation>
+      <translation>자동 업데이터</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.ui" line="59"/>
       <source>Update Available</source>
-      <translation type="unfinished">Update Available</translation>
+      <translation>업데이트 가능</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.ui" line="68"/>
       <source>Current Version: </source>
-      <translation type="unfinished">Current Version: </translation>
+      <translation>현재 버전 : </translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.ui" line="75"/>
       <source>New Version: </source>
-      <translation type="unfinished">New Version: </translation>
+      <translation>새 버전 : </translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.ui" line="103"/>
       <source>Download and Install...</source>
-      <translation type="unfinished">Download and Install...</translation>
+      <translation>내려받기 및 설치...</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.ui" line="110"/>
       <source>Skip This Update</source>
-      <translation type="unfinished">Skip This Update</translation>
+      <translation>이 업데이트 건너뛰기</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.ui" line="117"/>
       <source>Remind Me Later</source>
-      <translation type="unfinished">Remind Me Later</translation>
+      <translation>나중에 알림</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="172"/>
       <source>Updater Error</source>
-      <translation type="unfinished">Updater Error</translation>
+      <translation>업데이터 오류</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="353"/>
       <source>&lt;h2&gt;Changes:&lt;/h2&gt;</source>
-      <translation type="unfinished">&lt;h2&gt;Changes:&lt;/h2&gt;</translation>
+      <translation>&lt;h2&gt;변경 사항 :&lt;/h2&gt;</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="387"/>
       <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to a Memory Card before installing this update or you will lose progress.&lt;/p&gt;</source>
-      <translation type="unfinished">&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to a Memory Card before installing this update or you will lose progress.&lt;/p&gt;</translation>
+      <translation>&lt;h2&lt;저장 상태 경고&lt;/h2&lt;&lt;p&gt;이 업데이트를 설치하면 저장 상태가 호환되지 않게 됩니다&lt;b&gt;/b&gt. 이 업데이트를 설치하기 전에 게임을 메모리 카드에 저장했는지 확인하십시오. 그렇지 않으면 진행 상황이 손실됩니다.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="395"/>
       <source>&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</source>
-      <translation type="unfinished">&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</translation>
+      <translation>&lt;h2&gt;설정 경고&lt;/h2&gt;&lt;p&gt;이 업데이트를 설치하면 프로그램 구성이 초기화됩니다. 이 업데이트 후에는 설정을 다시 구성해야 한다는 점에 유의하세요.&lt;/p&gt;</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="425"/>
       <source>Downloading %1...</source>
-      <translation type="unfinished">Downloading %1...</translation>
+      <translation>내려받기 중 %1...</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="425"/>
       <source>Cancel</source>
-      <translation type="unfinished">Cancel</translation>
+      <translation>취소</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="490"/>
       <source>No updates are currently available. Please try again later.</source>
-      <translation type="unfinished">No updates are currently available. Please try again later.</translation>
+      <translation>현재 사용 가능한 업데이트가 없습니다. 나중에 다시 시도해 주십시오.</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="508"/>
       <source>Current Version: %1 (%2)</source>
-      <translation type="unfinished">Current Version: %1 (%2)</translation>
+      <translation>현재 버전 : %1 (%2)</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="509"/>
       <source>New Version: %1 (%2)</source>
-      <translation type="unfinished">New Version: %1 (%2)</translation>
+      <translation>새 버전 : %1 (%2)</translation>
     </message>
     <message>
       <location filename="../AutoUpdaterDialog.cpp" line="510"/>
       <source>Loading...</source>
-      <translation type="unfinished">Loading...</translation>
+      <translation>로드 중...</translation>
     </message>
   </context>
   <context>
@@ -1178,84 +1178,84 @@ Login token generated on %2.</translation>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="32"/>
       <source>BIOS Directory</source>
-      <translation type="unfinished">BIOS Directory</translation>
+      <translation>BIOS 디렉토리</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="38"/>
       <source>PCSX2 will search for BIOS images in this directory.</source>
-      <translation type="unfinished">PCSX2 will search for BIOS images in this directory.</translation>
+      <translation>PCSX2는 이 디렉토리에서 BIOS 이미지를 찾습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="53"/>
       <source>Browse...</source>
-      <translation type="unfinished">Browse...</translation>
+      <translation>찾아보기...</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="60"/>
       <source>Reset</source>
-      <translation type="unfinished">Reset</translation>
+      <translation>초기화</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="72"/>
       <source>BIOS Selection</source>
-      <translation type="unfinished">BIOS Selection</translation>
+      <translation>BIOS 선택</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="93"/>
       <source>Open in Explorer...</source>
-      <translation type="unfinished">Open in Explorer...</translation>
+      <translation>탐색기에서 열기...</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="100"/>
       <source>Refresh List</source>
-      <translation type="unfinished">Refresh List</translation>
+      <translation>목록 새로 고침</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="119"/>
       <source>Filename</source>
-      <translation type="unfinished">Filename</translation>
+      <translation>파일명</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="124"/>
       <source>Version</source>
-      <translation type="unfinished">Version</translation>
+      <translation>버전</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="135"/>
       <source>Options and Patches</source>
-      <translation type="unfinished">Options and Patches</translation>
+      <translation>옵션 및 패치</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="143"/>
       <location filename="../Settings/BIOSSettingsWidget.cpp" line="44"/>
       <source>Fast Boot</source>
-      <translation type="unfinished">Fast Boot</translation>
+      <translation>고속 부팅</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.ui" line="150"/>
       <location filename="../Settings/BIOSSettingsWidget.cpp" line="47"/>
       <source>Fast Forward Boot</source>
-      <translation type="unfinished">Fast Forward Boot</translation>
+      <translation>빨리 감기 부팅</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.cpp" line="44"/>
       <source>Checked</source>
-      <translation type="unfinished">Checked</translation>
+      <translation>확인됨</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.cpp" line="45"/>
       <source>Patches the BIOS to skip the console&apos;s boot animation.</source>
-      <translation type="unfinished">Patches the BIOS to skip the console&apos;s boot animation.</translation>
+      <translation>콘솔의 부트 애니메이션을 건너뛰도록 BIOS를 패치합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.cpp" line="47"/>
       <source>Unchecked</source>
-      <translation type="unfinished">Unchecked</translation>
+      <translation>선택 안 함</translation>
     </message>
     <message>
       <location filename="../Settings/BIOSSettingsWidget.cpp" line="48"/>
       <source>Removes emulation speed throttle until the game starts to reduce startup time.</source>
-      <translation type="unfinished">Removes emulation speed throttle until the game starts to reduce startup time.</translation>
+      <translation>게임이 시작될 때까지 에뮬레이션 속도 스로틀을 제거하여 시작 시간을 줄입니다.</translation>
     </message>
   </context>
   <context>
@@ -1263,74 +1263,74 @@ Login token generated on %2.</translation>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="41"/>
       <source>Create / Modify Breakpoint</source>
-      <translation type="unfinished">Create / Modify Breakpoint</translation>
+      <translation>브레이크포인트 생성/수정</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="78"/>
       <source>Type</source>
-      <translation type="unfinished">Type</translation>
+      <translation>유형</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="84"/>
       <location filename="../Debugger/BreakpointDialog.ui" line="236"/>
       <source>Execute</source>
-      <translation type="unfinished">Execute</translation>
+      <translation>실행</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="91"/>
       <location filename="../Debugger/BreakpointDialog.ui" line="157"/>
       <source>Memory</source>
-      <translation type="unfinished">Memory</translation>
+      <translation>메모리</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="116"/>
       <source>Address</source>
-      <translation type="unfinished">Address</translation>
+      <translation>주소</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="138"/>
       <source>0</source>
-      <translation type="unfinished">0</translation>
+      <translation>0</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="165"/>
       <source>Read</source>
-      <translation type="unfinished">Read</translation>
+      <translation>읽기</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="175"/>
       <source>Write</source>
-      <translation type="unfinished">Write</translation>
+      <translation>쓰기</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="185"/>
       <source>Change</source>
-      <translation type="unfinished">Change</translation>
+      <translation>변경</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="196"/>
       <source>Size</source>
-      <translation type="unfinished">Size</translation>
+      <translation>크기</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="215"/>
       <source>1</source>
-      <translation type="unfinished">1</translation>
+      <translation>1</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="242"/>
       <source>Condition</source>
-      <translation type="unfinished">Condition</translation>
+      <translation>조건</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="270"/>
       <source>Log</source>
-      <translation type="unfinished">Log</translation>
+      <translation>기록</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.ui" line="280"/>
       <source>Enable</source>
-      <translation type="unfinished">Enable</translation>
+      <translation>활성화</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.cpp" line="111"/>
@@ -1338,23 +1338,23 @@ Login token generated on %2.</translation>
       <location filename="../Debugger/BreakpointDialog.cpp" line="143"/>
       <location filename="../Debugger/BreakpointDialog.cpp" line="151"/>
       <source>Error</source>
-      <translation type="unfinished">Error</translation>
+      <translation>오류</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.cpp" line="111"/>
       <location filename="../Debugger/BreakpointDialog.cpp" line="143"/>
       <source>Invalid address &quot;%1&quot;</source>
-      <translation type="unfinished">Invalid address &quot;%1&quot;</translation>
+      <translation>잘못된 주소 &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.cpp" line="126"/>
       <source>Invalid condition &quot;%1&quot;</source>
-      <translation type="unfinished">Invalid condition &quot;%1&quot;</translation>
+      <translation>유효하지 않은 조건 &quot;%1&quot;</translation>
     </message>
     <message>
       <location filename="../Debugger/BreakpointDialog.cpp" line="151"/>
       <source>Invalid size &quot;%1&quot;</source>
-      <translation type="unfinished">Invalid size &quot;%1&quot;</translation>
+      <translation>잘못된 크기 &quot;%1&quot;</translation>
     </message>
   </context>
   <context>
@@ -1362,89 +1362,89 @@ Login token generated on %2.</translation>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="57"/>
       <source>Execute</source>
-      <translation type="unfinished">Execute</translation>
+      <translation>실행</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="66"/>
       <source>No Condition</source>
-      <translation type="unfinished">No Condition</translation>
+      <translation>조건 없음</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="68"/>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="91"/>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="93"/>
       <source>--</source>
-      <translation type="unfinished">--</translation>
+      <translation>--</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="70"/>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="97"/>
       <source>Enabled</source>
-      <translation type="unfinished">Enabled</translation>
+      <translation>활성화</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="70"/>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="97"/>
       <source>Disabled</source>
-      <translation type="unfinished">Disabled</translation>
+      <translation>비활성화</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="80"/>
       <source>Read</source>
-      <translation type="unfinished">Read</translation>
+      <translation>읽기</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="83"/>
       <source>Write(C)</source>
       <extracomment>(C) = changes, as in &quot;look for changes&quot;.</extracomment>
-      <translation type="unfinished">Write(C)</translation>
+      <translation>쓰기(C)</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="83"/>
       <source>Write</source>
-      <translation type="unfinished">Write</translation>
+      <translation>쓰기</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="174"/>
       <source>TYPE</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
-      <translation type="unfinished">TYPE</translation>
+      <translation>유형</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="177"/>
       <source>OFFSET</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
-      <translation type="unfinished">OFFSET</translation>
+      <translation>오프셋</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="180"/>
       <source>SIZE / LABEL</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
-      <translation type="unfinished">SIZE / LABEL</translation>
+      <translation>크기/라벨</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="183"/>
       <source>INSTRUCTION</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
-      <translation type="unfinished">INSTRUCTION</translation>
+      <translation>지침</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="186"/>
       <source>CONDITION</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
-      <translation type="unfinished">CONDITION</translation>
+      <translation>조건</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="189"/>
       <source>HITS</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
-      <translation type="unfinished">HITS</translation>
+      <translation>조회수</translation>
     </message>
     <message>
       <location filename="../Debugger/Models/BreakpointModel.cpp" line="192"/>
       <source>ENABLED</source>
       <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
-      <translation type="unfinished">ENABLED</translation>
+      <translation>사용 가능</translation>
     </message>
   </context>
   <context>
@@ -1452,12 +1452,12 @@ Login token generated on %2.</translation>
     <message>
       <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="318"/>
       <source>Game disc location is on a removable drive, performance issues such as jittering and freezing may occur.</source>
-      <translation type="unfinished">Game disc location is on a removable drive, performance issues such as jittering and freezing may occur.</translation>
+      <translation>게임 디스크 위치가 이동식 드라이브에 있는 경우 지터링 및 멈춤과 같은 성능 문제가 발생할 수 있습니다.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/CDVD/CDVDcommon.cpp" line="428"/>
       <source>Saving CDVD block dump to &apos;{}&apos;.</source>
-      <translation type="unfinished">Saving CDVD block dump to &apos;{}&apos;.</translation>
+      <translation>CDVD 블록 덤프 저장 위치 &apos;{}&apos;.</translation>
     </message>
   </context>
   <context>
@@ -1465,7 +1465,7 @@ Login token generated on %2.</translation>
     <message>
       <location filename="../ColorPickerButton.cpp" line="55"/>
       <source>Select LED Color</source>
-      <translation type="unfinished">Select LED Color</translation>
+      <translation>LED 색상 선택</translation>
     </message>
   </context>
   <context>
@@ -1473,64 +1473,64 @@ Login token generated on %2.</translation>
     <message>
       <location filename="../Settings/ControllerBindingWidget.ui" line="32"/>
       <source>Virtual Controller Type</source>
-      <translation type="unfinished">Virtual Controller Type</translation>
+      <translation>가상 컨트롤러 유형</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget.ui" line="43"/>
       <source>Bindings</source>
-      <translation type="unfinished">Bindings</translation>
+      <translation>연동</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget.ui" line="63"/>
       <source>Settings</source>
-      <translation type="unfinished">Settings</translation>
+      <translation>설정</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget.ui" line="83"/>
       <source>Macros</source>
-      <translation type="unfinished">Macros</translation>
+      <translation>매크로</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget.ui" line="120"/>
       <source>Automatic Mapping</source>
-      <translation type="unfinished">Automatic Mapping</translation>
+      <translation>자동 매핑</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget.ui" line="134"/>
       <source>Clear Mapping</source>
-      <translation type="unfinished">Clear Mapping</translation>
+      <translation>매핑 지우기</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidgets.cpp" line="49"/>
       <source>Controller Port %1</source>
-      <translation type="unfinished">Controller Port %1</translation>
+      <translation>컨트롤러 포트 %1</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidgets.cpp" line="192"/>
       <source>No devices available</source>
-      <translation type="unfinished">No devices available</translation>
+      <translation>사용 가능한 장치 없음</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidgets.cpp" line="202"/>
       <source>Clear Bindings</source>
       <extracomment>Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).</extracomment>
-      <translation type="unfinished">Clear Bindings</translation>
+      <translation>연동 삭제</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidgets.cpp" line="204"/>
       <source>Are you sure you want to clear all bindings for this controller? This action cannot be undone.</source>
       <extracomment>Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).</extracomment>
-      <translation type="unfinished">Are you sure you want to clear all bindings for this controller? This action cannot be undone.</translation>
+      <translation>이 컨트롤러에 대한 모든 연동을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidgets.cpp" line="233"/>
       <source>Automatic Binding</source>
-      <translation type="unfinished">Automatic Binding</translation>
+      <translation>자동 연동</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidgets.cpp" line="234"/>
       <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-      <translation type="unfinished">No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</translation>
+      <translation>장치 &apos;%1&apos;에 대한 일반 연동이 생성되지 않았습니다. 컨트롤러/소스가 자동 매핑을 지원하지 않을 수 있습니다.</translation>
     </message>
   </context>
   <context>
@@ -1539,145 +1539,145 @@ Login token generated on %2.</translation>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="46"/>
       <source>D-Pad</source>
       <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-      <translation type="unfinished">D-Pad</translation>
+      <translation>십자 패드</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="52"/>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="221"/>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="864"/>
       <source>Down</source>
-      <translation type="unfinished">Down</translation>
+      <translation>하</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="92"/>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="261"/>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="824"/>
       <source>Left</source>
-      <translation type="unfinished">Left</translation>
+      <translation>좌</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="132"/>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="301"/>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="944"/>
       <source>Up</source>
-      <translation type="unfinished">Up</translation>
+      <translation>상</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="172"/>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="341"/>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="904"/>
       <source>Right</source>
-      <translation type="unfinished">Right</translation>
+      <translation>우</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="215"/>
       <source>Left Analog</source>
       <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-      <translation type="unfinished">Left Analog</translation>
+      <translation>좌측 아날로그</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="384"/>
       <source>Large Motor</source>
-      <translation type="unfinished">Large Motor</translation>
+      <translation>대형 모터</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="441"/>
       <source>L2</source>
       <extracomment>Leave this button name as-is.</extracomment>
-      <translation type="unfinished">L2</translation>
+      <translation>L2</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="475"/>
       <source>R2</source>
       <extracomment>Leave this button name as-is.</extracomment>
-      <translation type="unfinished">R2</translation>
+      <translation>R2</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="509"/>
       <source>L1</source>
       <extracomment>Leave this button name as-is.</extracomment>
-      <translation type="unfinished">L1</translation>
+      <translation>L1</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="543"/>
       <source>R1</source>
       <extracomment>Leave this button name as-is.</extracomment>
-      <translation type="unfinished">R1</translation>
+      <translation>R1</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="577"/>
       <source>Start</source>
       <extracomment>Leave this button name as-is or uppercase it entirely.</extracomment>
-      <translation type="unfinished">Start</translation>
+      <translation>시작</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="611"/>
       <source>Select</source>
       <extracomment>Leave this button name as-is or uppercase it entirely.</extracomment>
-      <translation type="unfinished">Select</translation>
+      <translation>선택</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="649"/>
       <source>Face Buttons</source>
       <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-      <translation type="unfinished">Face Buttons</translation>
+      <translation>페이스 버튼</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="655"/>
       <source>Cross</source>
       <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-      <translation type="unfinished">Cross</translation>
+      <translation>✕</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="695"/>
       <source>Square</source>
       <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-      <translation type="unfinished">Square</translation>
+      <translation>□</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="735"/>
       <source>Triangle</source>
       <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-      <translation type="unfinished">Triangle</translation>
+      <translation>△</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="775"/>
       <source>Circle</source>
       <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-      <translation type="unfinished">Circle</translation>
+      <translation>◯</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="818"/>
       <source>Right Analog</source>
       <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-      <translation type="unfinished">Right Analog</translation>
+      <translation>우측 아날로그</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="987"/>
       <source>Small Motor</source>
-      <translation type="unfinished">Small Motor</translation>
+      <translation>소형 모터</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="1112"/>
       <source>L3</source>
       <extracomment>Leave this button name as-is.</extracomment>
-      <translation type="unfinished">L3</translation>
+      <translation>L3</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="1152"/>
       <source>R3</source>
       <extracomment>Leave this button name as-is.</extracomment>
-      <translation type="unfinished">R3</translation>
+      <translation>R3</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="1192"/>
       <source>Pressure Modifier</source>
-      <translation type="unfinished">Pressure Modifier</translation>
+      <translation>압력 조절기</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="1226"/>
       <source>Analog</source>
-      <translation type="unfinished">Analog</translation>
+      <translation>아날로그</translation>
     </message>
   </context>
   <context>
@@ -1685,17 +1685,17 @@ Login token generated on %2.</translation>
     <message>
       <location filename="../Settings/ControllerBindingWidgets.cpp" line="693"/>
       <source>Restore Default Settings</source>
-      <translation type="unfinished">Restore Default Settings</translation>
+      <translation>기본 설정 복구</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidgets.cpp" line="665"/>
       <source>Browse...</source>
-      <translation type="unfinished">Browse...</translation>
+      <translation>찾아보기...</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidgets.cpp" line="669"/>
       <source>Select File</source>
-      <translation type="unfinished">Select File</translation>
+      <translation>파일 선택</translation>
     </message>
   </context>
   <context>
@@ -1703,123 +1703,123 @@ Login token generated on %2.</translation>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="58"/>
       <source>SDL Input Source</source>
-      <translation type="unfinished">SDL Input Source</translation>
+      <translation>SDL 입력 소스</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="71"/>
       <source>The SDL input source supports most controllers, and provides advanced functionality for DualShock 4 / DualSense pads in Bluetooth mode (Vibration / LED Control).</source>
-      <translation type="unfinished">The SDL input source supports most controllers, and provides advanced functionality for DualShock 4 / DualSense pads in Bluetooth mode (Vibration / LED Control).</translation>
+      <translation>SDL 입력 소스는 대부분의 컨트롤러를 지원하며 블루투스 모드에서 듀얼쇼크 4/듀얼센스 패드를 위한 고급 기능(진동/LED 제어)을 지원합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="64"/>
       <source>Enable SDL Input Source</source>
-      <translation type="unfinished">Enable SDL Input Source</translation>
+      <translation>SDL 입력 소스 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="83"/>
       <source>DualShock 4 / DualSense Enhanced Mode</source>
-      <translation type="unfinished">DualShock 4 / DualSense Enhanced Mode</translation>
+      <translation>듀얼 쇼크 4/듀얼 센스 강화 모드</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="126"/>
       <source>XInput Source</source>
-      <translation type="unfinished">XInput Source</translation>
+      <translation>XInput 소스</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="142"/>
       <source>Enable XInput Input Source</source>
-      <translation type="unfinished">Enable XInput Input Source</translation>
+      <translation>XInput 소스 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="210"/>
       <source>DInput Source</source>
-      <translation type="unfinished">DInput Source</translation>
+      <translation>DInput 소스</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="216"/>
       <source>The DInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL instead is recommended, but DirectInput can be used if they are not compatible with SDL.</source>
-      <translation type="unfinished">The DInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL instead is recommended, but DirectInput can be used if they are not compatible with SDL.</translation>
+      <translation>DInput 소스는 XInput을 지원하지 않는 레거시 컨트롤러에 대한 지원을 제공합니다. 대신 SDL을 통해 이러한 컨트롤러에 액세스하는 것이 좋지만, SDL과 호환되지 않는 경우 DirectInput을 사용할 수 있습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="226"/>
-      <source>Enable DInput Input Source</source>
-      <translation type="unfinished">Enable DInput Input Source</translation>
+      <source>DInput Input Source</source>
+      <translation>DInput 입력 소스</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="32"/>
       <source>Profile Settings</source>
-      <translation type="unfinished">Profile Settings</translation>
+      <translation>프로필 설정</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="38"/>
       <source>When this option is enabled, hotkeys can be set in this input profile, and will be used instead of the global hotkeys. By default, hotkeys are always shared between all profiles.</source>
-      <translation type="unfinished">When this option is enabled, hotkeys can be set in this input profile, and will be used instead of the global hotkeys. By default, hotkeys are always shared between all profiles.</translation>
+      <translation>이 옵션을 활성화하면 이 입력 프로필에 단축키를 설정할 수 있으며, 전역 단축키 대신 이 단축키가 사용됩니다. 기본적으로 단축키는 항상 모든 프로필 간에 공유됩니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="48"/>
       <source>Use Per-Profile Hotkeys</source>
-      <translation type="unfinished">Use Per-Profile Hotkeys</translation>
+      <translation>프로필별 단축키 사용</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="90"/>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="261"/>
       <source>Controller LED Settings</source>
-      <translation type="unfinished">Controller LED Settings</translation>
+      <translation>컨트롤러 LED 설정</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="103"/>
       <source>Enable SDL Raw Input</source>
-      <translation type="unfinished">Enable SDL Raw Input</translation>
+      <translation>SDL Raw 입력 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="132"/>
       <source>The XInput source provides support for Xbox 360 / Xbox One / Xbox Series controllers, and third party controllers which implement the XInput protocol.</source>
-      <translation type="unfinished">The XInput source provides support for Xbox 360 / Xbox One / Xbox Series controllers, and third party controllers which implement the XInput protocol.</translation>
+      <translation>XInput 소스는 Xbox 360/Xbox One/Xbox 시리즈 컨트롤러 및 XInput 프로토콜을 구현하는 타사 컨트롤러를 지원합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="152"/>
       <source>Controller Multitap</source>
-      <translation type="unfinished">Controller Multitap</translation>
+      <translation>컨트롤러 멀티탭</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="158"/>
       <source>The multitap enables up to 8 controllers to be connected to the console. Each multitap provides 4 ports. Multitap is not supported by all games.</source>
-      <translation type="unfinished">The multitap enables up to 8 controllers to be connected to the console. Each multitap provides 4 ports. Multitap is not supported by all games.</translation>
+      <translation>멀티탭을 사용하면 최대 8대의 컨트롤러를 콘솔에 연결할 수 있습니다. 각 멀티탭은 4개의 포트를 제공합니다. 멀티탭은 일부 게임에서 지원되지 않습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="168"/>
       <source>Multitap on Console Port 1</source>
-      <translation type="unfinished">Multitap on Console Port 1</translation>
+      <translation>콘솔 포트 1의 멀티탭</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="175"/>
       <source>Multitap on Console Port 2</source>
-      <translation type="unfinished">Multitap on Console Port 2</translation>
+      <translation>콘솔 포트 2의 멀티탭</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="236"/>
       <source>Mouse/Pointer Source</source>
-      <translation type="unfinished">Mouse/Pointer Source</translation>
+      <translation>마우스/포인터 소스</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="242"/>
       <source>PCSX2 allows you to use your mouse to simulate analog stick movement.</source>
-      <translation type="unfinished">PCSX2 allows you to use your mouse to simulate analog stick movement.</translation>
+      <translation>PCSX2를 사용하면 마우스로 아날로그 스틱의 움직임을 시뮬레이션할 수 있습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="264"/>
       <source>Settings...</source>
-      <translation type="unfinished">Settings...</translation>
+      <translation>설정...</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="254"/>
       <source>Enable Mouse Mapping</source>
-      <translation type="unfinished">Enable Mouse Mapping</translation>
+      <translation>마우스 매핑 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="185"/>
       <source>Detected Devices</source>
-      <translation type="unfinished">Detected Devices</translation>
+      <translation>감지된 장치</translation>
     </message>
   </context>
   <context>
@@ -1827,27 +1827,27 @@ Login token generated on %2.</translation>
     <message>
       <location filename="../Settings/ControllerLEDSettingsDialog.ui" line="14"/>
       <source>Controller LED Settings</source>
-      <translation type="unfinished">Controller LED Settings</translation>
+      <translation>컨트롤러 LED 설정</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerLEDSettingsDialog.ui" line="20"/>
       <source>SDL-0 LED</source>
-      <translation type="unfinished">SDL-0 LED</translation>
+      <translation>SDL-0 LED</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerLEDSettingsDialog.ui" line="32"/>
       <source>SDL-1 LED</source>
-      <translation type="unfinished">SDL-1 LED</translation>
+      <translation>SDL-1 LED</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerLEDSettingsDialog.ui" line="44"/>
       <source>SDL-2 LED</source>
-      <translation type="unfinished">SDL-2 LED</translation>
+      <translation>SDL-2 LED</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerLEDSettingsDialog.ui" line="56"/>
       <source>SDL-3 LED</source>
-      <translation type="unfinished">SDL-3 LED</translation>
+      <translation>SDL-3 LED</translation>
     </message>
   </context>
   <context>
@@ -1855,82 +1855,82 @@ Login token generated on %2.</translation>
     <message>
       <location filename="../Settings/ControllerMacroEditWidget.ui" line="32"/>
       <source>Binds/Buttons</source>
-      <translation type="unfinished">Binds/Buttons</translation>
+      <translation>연동/버튼</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMacroEditWidget.ui" line="41"/>
       <source>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</source>
-      <translation type="unfinished">Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</translation>
+      <translation>이 매크로로 트리거할 버튼을 선택합니다. 모든 버튼이 동시에 활성화됩니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMacroEditWidget.ui" line="54"/>
       <source>Pressure</source>
-      <translation type="unfinished">Pressure</translation>
+      <translation>압력</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMacroEditWidget.ui" line="60"/>
       <source>For buttons which are pressure sensitive, this slider controls how much force will be simulated when the macro is active.</source>
-      <translation type="unfinished">For buttons which are pressure sensitive, this slider controls how much force will be simulated when the macro is active.</translation>
+      <translation>압력에 민감한 버튼의 경우 이 슬라이더는 매크로가 활성화될 때 시뮬레이션할 출력을 제어합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMacroEditWidget.ui" line="91"/>
       <source>100%</source>
-      <translation type="unfinished">100%</translation>
+      <translation>100%</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMacroEditWidget.ui" line="103"/>
       <source>Trigger</source>
-      <translation type="unfinished">Trigger</translation>
+      <translation>트리거</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMacroEditWidget.ui" line="109"/>
       <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-      <translation type="unfinished">Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</translation>
+      <translation>이 매크로를 활성화할 트리거를 선택합니다. 단일 버튼 또는 버튼의 조합(코드)일 수 있습니다. 여러 트리거를 사용하려면 Shift 키를 클릭합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMacroEditWidget.ui" line="132"/>
       <source>Frequency</source>
-      <translation type="unfinished">Frequency</translation>
+      <translation>주파수</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMacroEditWidget.ui" line="140"/>
       <source>Macro will toggle every N frames.</source>
-      <translation type="unfinished">Macro will toggle every N frames.</translation>
+      <translation>매크로는 N 프레임마다 토글됩니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMacroEditWidget.ui" line="147"/>
       <source>Set...</source>
-      <translation type="unfinished">Set...</translation>
+      <translation>설정...</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidgets.cpp" line="379"/>
       <source>Not Configured</source>
-      <translation type="unfinished">Not Configured</translation>
+      <translation>구성되지 않음</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidgets.cpp" line="384"/>
       <source>%1%</source>
-      <translation type="unfinished">%1%</translation>
+      <translation>%1%</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidgets.cpp" line="391"/>
       <source>Set Frequency</source>
-      <translation type="unfinished">Set Frequency</translation>
+      <translation>주파수 설정</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidgets.cpp" line="391"/>
       <source>Frequency: </source>
-      <translation type="unfinished">Frequency: </translation>
+      <translation>주파수 : </translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidgets.cpp" line="418"/>
       <source>Macro will not repeat.</source>
-      <translation type="unfinished">Macro will not repeat.</translation>
+      <translation>매크로는 반복되지 않습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidgets.cpp" line="420"/>
       <source>Macro will toggle buttons every %1 frames.</source>
-      <translation type="unfinished">Macro will toggle buttons every %1 frames.</translation>
+      <translation>매크로는 %1 프레임마다 버튼을 토글합니다.</translation>
     </message>
   </context>
   <context>
@@ -1938,7 +1938,7 @@ Login token generated on %2.</translation>
     <message>
       <location filename="../Settings/ControllerBindingWidgets.cpp" line="272"/>
       <source>Controller Port %1 Macros</source>
-      <translation type="unfinished">Controller Port %1 Macros</translation>
+      <translation>컨트롤러 포트 %1 매크로</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerBindingWidgets.cpp" line="281"/>
@@ -1948,7 +1948,7 @@ Login token generated on %2.</translation>
 
 Macro 1
 Not Configured/Buttons configured</extracomment>
-      <translation type="unfinished">Macro %1
+      <translation>매크로 %1
 %2</translation>
     </message>
   </context>
@@ -1957,12 +1957,12 @@ Not Configured/Buttons configured</extracomment>
     <message>
       <location filename="../Settings/ControllerMouseSettingsDialog.ui" line="14"/>
       <source>Mouse Mapping Settings</source>
-      <translation type="unfinished">Mouse Mapping Settings</translation>
+      <translation>마우스 매핑 설정</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMouseSettingsDialog.ui" line="41"/>
       <source>Y Speed</source>
-      <translation type="unfinished">Y Speed</translation>
+      <translation>Y 속도</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMouseSettingsDialog.ui" line="85"/>
@@ -1971,32 +1971,32 @@ Not Configured/Buttons configured</extracomment>
       <location filename="../Settings/ControllerMouseSettingsDialog.ui" line="338"/>
       <location filename="../Settings/ControllerMouseSettingsDialog.ui" line="405"/>
       <source>10</source>
-      <translation type="unfinished">10</translation>
+      <translation>10</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMouseSettingsDialog.ui" line="108"/>
       <source>X Speed</source>
-      <translation type="unfinished">X Speed</translation>
+      <translation>X 속도</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMouseSettingsDialog.ui" line="182"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Mouse Mapping Settings&lt;/span&gt;&lt;br/&gt;These settings fine-tune the behavior when mapping a mouse to the emulated controller.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Mouse Mapping Settings&lt;/span&gt;&lt;br/&gt;These settings fine-tune the behavior when mapping a mouse to the emulated controller.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Mouse Mapping Settings&lt;/span&gt;&lt;br/&gt;이 설정은 마우스를 에뮬레이션 컨트롤러에 매핑할 때 동작을 미세 조정합니다.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMouseSettingsDialog.ui" line="227"/>
       <source>Inertia</source>
-      <translation type="unfinished">Inertia</translation>
+      <translation>관성</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMouseSettingsDialog.ui" line="294"/>
       <source>X Dead Zone</source>
-      <translation type="unfinished">X Dead Zone</translation>
+      <translation>X 데드 존</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerMouseSettingsDialog.ui" line="361"/>
       <source>Y Dead Zone</source>
-      <translation type="unfinished">Y Dead Zone</translation>
+      <translation>Y 데드 존</translation>
     </message>
   </context>
   <context>
@@ -2004,44 +2004,44 @@ Not Configured/Buttons configured</extracomment>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.ui" line="23"/>
       <source>PCSX2 Controller Settings</source>
-      <translation type="unfinished">PCSX2 Controller Settings</translation>
+      <translation>PCSX2 컨트롤러 설정</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.ui" line="71"/>
       <source>Editing Profile:</source>
-      <translation type="unfinished">Editing Profile:</translation>
+      <translation>프로필 편집 :</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.ui" line="94"/>
       <source>New Profile</source>
-      <translation type="unfinished">New Profile</translation>
+      <translation>새 프로필</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.ui" line="105"/>
       <source>Load Profile</source>
-      <translation type="unfinished">Load Profile</translation>
+      <translation>프로필 불러오기</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.ui" line="116"/>
       <source>Delete Profile</source>
-      <translation type="unfinished">Delete Profile</translation>
+      <translation>프로필 삭제</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.ui" line="127"/>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="202"/>
       <source>Restore Defaults</source>
-      <translation type="unfinished">Restore Defaults</translation>
+      <translation>기본값 복구</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="104"/>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="115"/>
       <source>Create Input Profile</source>
-      <translation type="unfinished">Create Input Profile</translation>
+      <translation>입력 프로필 생성</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="104"/>
       <source>Enter the name for the new input profile:</source>
-      <translation type="unfinished">Enter the name for the new input profile:</translation>
+      <translation>새 입력 프로필 이름 입력 :</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="111"/>
@@ -2049,27 +2049,27 @@ Not Configured/Buttons configured</extracomment>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="191"/>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="519"/>
       <source>Error</source>
-      <translation type="unfinished">Error</translation>
+      <translation>오류</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="111"/>
       <source>A profile with the name &apos;%1&apos; already exists.</source>
-      <translation type="unfinished">A profile with the name &apos;%1&apos; already exists.</translation>
+      <translation>&apos;%1&apos;이라는 이름의 프로필이 이미 존재합니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="116"/>
       <source>Do you want to copy all bindings from the currently-selected profile to the new profile? Selecting No will create a completely empty profile.</source>
-      <translation type="unfinished">Do you want to copy all bindings from the currently-selected profile to the new profile? Selecting No will create a completely empty profile.</translation>
+      <translation>현재 선택한 프로필의 모든 바인딩을 새 프로필로 복사하시겠습니까? 아니요를 선택하면 완전히 빈 프로필이 생성됩니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="146"/>
       <source>Failed to save the new profile to &apos;%1&apos;.</source>
-      <translation type="unfinished">Failed to save the new profile to &apos;%1&apos;.</translation>
+      <translation>새 프로필을 &apos;%1&apos;에 저장하지 못했습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="156"/>
       <source>Load Input Profile</source>
-      <translation type="unfinished">Load Input Profile</translation>
+      <translation>입력 프로필 불러오기</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="157"/>
@@ -2078,30 +2078,30 @@ Not Configured/Buttons configured</extracomment>
 All current global bindings will be removed, and the profile bindings loaded.
 
 You cannot undo this action.</source>
-      <translation type="unfinished">Are you sure you want to load the input profile named &apos;%1&apos;?
+      <translation>&apos;%1&apos;(이)라는 입력 프로필을 로드하시겠습니까?
 
-All current global bindings will be removed, and the profile bindings loaded.
+현재 모든 글로벌 바인딩이 제거되고 프로필 바인딩이 로드됩니다.
 
-You cannot undo this action.</translation>
+이 작업은 실행 취소할 수 없습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="180"/>
       <source>Delete Input Profile</source>
-      <translation type="unfinished">Delete Input Profile</translation>
+      <translation>입력 프로필 삭제</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="181"/>
       <source>Are you sure you want to delete the input profile named &apos;%1&apos;?
 
 You cannot undo this action.</source>
-      <translation type="unfinished">Are you sure you want to delete the input profile named &apos;%1&apos;?
+      <translation>&apos;%1&apos;(이)라는 입력 프로필을 삭제하시겠습니까?
 
-You cannot undo this action.</translation>
+이 작업은 실행 취소할 수 없습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="191"/>
       <source>Failed to delete &apos;%1&apos;.</source>
-      <translation type="unfinished">Failed to delete &apos;%1&apos;.</translation>
+      <translation>&apos;%1&apos;을(를) 삭제하지 못했습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="203"/>
@@ -2110,16 +2110,16 @@ You cannot undo this action.</translation>
 All shared bindings and configuration will be lost, but your input profiles will remain.
 
 You cannot undo this action.</source>
-      <translation type="unfinished">Are you sure you want to restore the default controller configuration?
+      <translation>기본 컨트롤러 구성을 복원하시겠습니까?
 
-All shared bindings and configuration will be lost, but your input profiles will remain.
+모든 공유 바인딩 및 구성은 손실되지만 입력 프로필은 그대로 유지됩니다.
 
-You cannot undo this action.</translation>
+이 작업은 실행 취소할 수 없습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="375"/>
       <source>Global Settings</source>
-      <translation type="unfinished">Global Settings</translation>
+      <translation>전역 설정</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="408"/>
@@ -2127,7 +2127,7 @@ You cannot undo this action.</translation>
       <source>Controller Port %1%2
 %3</source>
       <extracomment>Controller Port is an official term from Sony. Find the official translation for your language inside the console&apos;s manual.</extracomment>
-      <translation type="unfinished">Controller Port %1%2
+      <translation>컨트롤러 포트 %1%2
 %3</translation>
     </message>
     <message>
@@ -2136,7 +2136,7 @@ You cannot undo this action.</translation>
       <source>Controller Port %1
 %2</source>
       <extracomment>Controller Port is an official term from Sony. Find the official translation for your language inside the console&apos;s manual.</extracomment>
-      <translation type="unfinished">Controller Port %1
+      <translation>컨트롤러 포트 %1
 %2</translation>
     </message>
     <message>
@@ -2144,24 +2144,24 @@ You cannot undo this action.</translation>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="483"/>
       <source>USB Port %1
 %2</source>
-      <translation type="unfinished">USB Port %1
+      <translation>USB 포트 %1
 %2</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="436"/>
       <source>Hotkeys</source>
-      <translation type="unfinished">Hotkeys</translation>
+      <translation>단축키</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="497"/>
       <source>Shared</source>
       <extracomment>&quot;Shared&quot; refers here to the shared input profile.</extracomment>
-      <translation type="unfinished">Shared</translation>
+      <translation>공유</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerSettingsDialog.cpp" line="519"/>
       <source>The input profile named &apos;%1&apos; cannot be found.</source>
-      <translation type="unfinished">The input profile named &apos;%1&apos; cannot be found.</translation>
+      <translation>&apos;%1&apos;(이)라는 입력 프로필을 찾을 수 없습니다.</translation>
     </message>
   </context>
   <context>
@@ -2169,53 +2169,53 @@ You cannot undo this action.</translation>
     <message>
       <location filename="../CoverDownloadDialog.ui" line="14"/>
       <source>Download Covers</source>
-      <translation type="unfinished">Download Covers</translation>
+      <translation>표지 내려받기</translation>
     </message>
     <message>
       <location filename="../CoverDownloadDialog.ui" line="38"/>
       <source>PCSX2 can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-      <translation type="unfinished">PCSX2 can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</translation>
+      <translation>PCSX2는 현재 커버 세트가 없는 게임의 커버를 자동으로 내려받기할 수 있습니다. 저희는 어떠한 표지 이미지도 호스팅하지 않으며, 사용자가 직접 이미지 소스를 제공해야 합니다.</translation>
     </message>
     <message>
       <location filename="../CoverDownloadDialog.ui" line="50"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>&lt;html&gt;&lt;head/&lt;&lt;body&gt;&lt;p&gt;아래 상자에 표지를 다운로드할 URL을 한 줄당 하나의 템플릿 URL로 지정합니다. 다음 변수를 사용할 수 있습니다. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&lt;&gt;${title}:&lt;/span&gt; 게임 제목.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&lt;&gt;${filetitle}:&lt;/span&gt; 이름 요소의 파일명 &apos;의 파일 이름. &lt;br/&lt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; 게임의 시리얼.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
       <location filename="../CoverDownloadDialog.ui" line="63"/>
       <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-      <translation type="unfinished">By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</translation>
+      <translation>기본적으로 다운로드한 커버는 게임 제목과 함께 저장됩니다. 이를 원하지 않는 경우 아래의 &quot;시리얼 파일 이름 사용&quot; 확인란을 선택하면 됩니다. 게임 제목 대신 시리얼을 사용하면 동일한 게임의 여러 지역을 사용할 때 충돌을 방지할 수 있습니다.</translation>
     </message>
     <message>
       <location filename="../CoverDownloadDialog.ui" line="73"/>
       <source>Use Serial File Names</source>
-      <translation type="unfinished">Use Serial File Names</translation>
+      <translation>시리얼 파일 이름 사용</translation>
     </message>
     <message>
       <location filename="../CoverDownloadDialog.ui" line="80"/>
       <source>Waiting to start...</source>
-      <translation type="unfinished">Waiting to start...</translation>
+      <translation>시작 지연 중...</translation>
     </message>
     <message>
       <location filename="../CoverDownloadDialog.ui" line="95"/>
       <location filename="../CoverDownloadDialog.cpp" line="100"/>
       <source>Start</source>
-      <translation type="unfinished">Start</translation>
+      <translation>시작</translation>
     </message>
     <message>
       <location filename="../CoverDownloadDialog.ui" line="105"/>
       <source>Close</source>
-      <translation type="unfinished">Close</translation>
+      <translation>닫기</translation>
     </message>
     <message>
       <location filename="../CoverDownloadDialog.cpp" line="78"/>
       <source>Download complete.</source>
-      <translation type="unfinished">Download complete.</translation>
+      <translation>내려받기 완료.</translation>
     </message>
     <message>
       <location filename="../CoverDownloadDialog.cpp" line="100"/>
       <source>Stop</source>
-      <translation type="unfinished">Stop</translation>
+      <translation>정지</translation>
     </message>
   </context>
   <context>
@@ -2223,175 +2223,175 @@ You cannot undo this action.</translation>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="42"/>
       <source>Registers</source>
-      <translation type="unfinished">Registers</translation>
+      <translation>등록</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="100"/>
       <source>Functions</source>
-      <translation type="unfinished">Functions</translation>
+      <translation>함수</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="130"/>
       <source>Refresh</source>
-      <translation type="unfinished">Refresh</translation>
+      <translation>새로 고침</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="137"/>
       <source>Filter</source>
-      <translation type="unfinished">Filter</translation>
+      <translation>필터</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="147"/>
       <source>Memory Search</source>
-      <translation type="unfinished">Memory Search</translation>
+      <translation>메모리 검색</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="155"/>
       <source>End</source>
-      <translation type="unfinished">End</translation>
+      <translation>종료</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="169"/>
       <source>Value</source>
-      <translation type="unfinished">Value</translation>
+      <translation>값</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="179"/>
       <source>Start</source>
-      <translation type="unfinished">Start</translation>
+      <translation>시작</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="193"/>
       <source>Type</source>
-      <translation type="unfinished">Type</translation>
+      <translation>유형</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="201"/>
       <source>1 Byte (8 bits)</source>
-      <translation type="unfinished">1 Byte (8 bits)</translation>
+      <translation>1 Byte (8 bits)</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="206"/>
       <source>2 Bytes (16 bits)</source>
-      <translation type="unfinished">2 Bytes (16 bits)</translation>
+      <translation>2바이트(16비트)</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="211"/>
       <source>4 Bytes (32 bits)</source>
-      <translation type="unfinished">4 Bytes (32 bits)</translation>
+      <translation>4바이트(32비트)</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="216"/>
       <source>8 Bytes (64 bits)</source>
-      <translation type="unfinished">8 Bytes (64 bits)</translation>
+      <translation>8바이트(64비트)</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="221"/>
       <source>Float</source>
-      <translation type="unfinished">Float</translation>
+      <translation>플로트</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="226"/>
       <source>Double</source>
-      <translation type="unfinished">Double</translation>
+      <translation>더블</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="231"/>
       <source>String</source>
-      <translation type="unfinished">String</translation>
+      <translation>문자열</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="239"/>
       <source>Hex</source>
-      <translation type="unfinished">Hex</translation>
+      <translation>16진수</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="256"/>
       <source>Search</source>
-      <translation type="unfinished">Search</translation>
+      <translation>검색</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="335"/>
       <source>Memory</source>
-      <translation type="unfinished">Memory</translation>
+      <translation>메모리</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="390"/>
       <source>Breakpoints</source>
-      <translation type="unfinished">Breakpoints</translation>
+      <translation>브레이크포인트</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="422"/>
       <source>Threads</source>
-      <translation type="unfinished">Threads</translation>
+      <translation>스레드</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.ui" line="460"/>
       <source>Active Call Stack</source>
-      <translation type="unfinished">Active Call Stack</translation>
+      <translation>활성 통화 스택</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.cpp" line="257"/>
       <source>Breakpoint List Context Menu</source>
-      <translation type="unfinished">Breakpoint List Context Menu</translation>
+      <translation>브레이크포인트 목록 컨텍스트 메뉴</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.cpp" line="259"/>
       <source>New</source>
-      <translation type="unfinished">New</translation>
+      <translation>새로</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.cpp" line="267"/>
       <source>Edit</source>
-      <translation type="unfinished">Edit</translation>
+      <translation>편집</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.cpp" line="273"/>
       <location filename="../Debugger/CpuWidget.cpp" line="386"/>
       <location filename="../Debugger/CpuWidget.cpp" line="489"/>
       <source>Copy</source>
-      <translation type="unfinished">Copy</translation>
+      <translation>복사</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.cpp" line="278"/>
       <source>Delete</source>
-      <translation type="unfinished">Delete</translation>
+      <translation>삭제</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.cpp" line="384"/>
       <source>Thread List Context Menu</source>
-      <translation type="unfinished">Thread List Context Menu</translation>
+      <translation>스레드 목록 컨텍스트 메뉴</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.cpp" line="422"/>
       <source>Demangle Symbols</source>
       <extracomment>&quot;Demangling&quot; is the opposite of &quot;Name mangling&quot;, which is a process where a compiler takes function names and combines them with other characteristics of the function (e.g. what types of data it accepts) to ensure they stay unique even when multiple functions exist with the same name (but different inputs / const-ness). See here: https://en.wikipedia.org/wiki/Name_mangling#C++</extracomment>
-      <translation type="unfinished">Demangle Symbols</translation>
+      <translation>분할 해제 기호</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.cpp" line="433"/>
       <source>Copy Function Name</source>
-      <translation type="unfinished">Copy Function Name</translation>
+      <translation>함수명 복사</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.cpp" line="444"/>
       <source>Copy Function Address</source>
-      <translation type="unfinished">Copy Function Address</translation>
+      <translation>기능 주소 복사</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.cpp" line="454"/>
       <source>Go to in Disassembly</source>
-      <translation type="unfinished">Go to in Disassembly</translation>
+      <translation>디스어셈블리로 이동</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.cpp" line="461"/>
       <source>Go to in Memory View</source>
-      <translation type="unfinished">Go to in Memory View</translation>
+      <translation>메모리 보기로 이동</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.cpp" line="487"/>
       <source>Stack List Context Menu</source>
-      <translation type="unfinished">Stack List Context Menu</translation>
+      <translation>스택 목록 컨텍스트 메뉴</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.cpp" line="648"/>
@@ -2400,32 +2400,32 @@ You cannot undo this action.</translation>
       <location filename="../Debugger/CpuWidget.cpp" line="681"/>
       <location filename="../Debugger/CpuWidget.cpp" line="704"/>
       <source>Debugger</source>
-      <translation type="unfinished">Debugger</translation>
+      <translation>디버거</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.cpp" line="648"/>
       <source>Invalid start address</source>
-      <translation type="unfinished">Invalid start address</translation>
+      <translation>잘못된 시작 주소</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.cpp" line="656"/>
       <source>Invalid end address</source>
-      <translation type="unfinished">Invalid end address</translation>
+      <translation>잘못된 종료 주소</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.cpp" line="662"/>
       <source>Start address can&apos;t be equal to or greater than the end address</source>
-      <translation type="unfinished">Start address can&apos;t be equal to or greater than the end address</translation>
+      <translation>시작 주소는 끝 주소보다 크거나 같을 수 없음</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.cpp" line="681"/>
       <source>Invalid search value</source>
-      <translation type="unfinished">Invalid search value</translation>
+      <translation>잘못된 검색 값</translation>
     </message>
     <message>
       <location filename="../Debugger/CpuWidget.cpp" line="704"/>
       <source>Value is larger than type</source>
-      <translation type="unfinished">Value is larger than type</translation>
+      <translation>값이 유형보다 큰 경우</translation>
     </message>
   </context>
   <context>
@@ -2436,98 +2436,98 @@ You cannot undo this action.</translation>
       <location filename="../Settings/CreateMemoryCardDialog.cpp" line="132"/>
       <location filename="../Settings/CreateMemoryCardDialog.cpp" line="145"/>
       <source>Create Memory Card</source>
-      <translation type="unfinished">Create Memory Card</translation>
+      <translation>메모리 카드 생성</translation>
     </message>
     <message>
       <location filename="../Settings/CreateMemoryCardDialog.ui" line="53"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Create Memory Card&lt;/span&gt;&lt;br /&gt;Enter the name of the Memory Card you wish to create, and choose a size. We recommend either using 8MB Memory Cards, or folder Memory Cards for best compatibility.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Create Memory Card&lt;/span&gt;&lt;br /&gt;Enter the name of the Memory Card you wish to create, and choose a size. We recommend either using 8MB Memory Cards, or folder Memory Cards for best compatibility.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;메모리 카드 만들기&lt;/span&gt;&lt;br /&gt;만들려는 메모리 카드의 이름을 입력하고 크기를 선택하세요. 최상의 호환성을 위해 8MB 메모리 카드 또는 폴더 메모리 카드를 사용하는 것이 좋습니다.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
       <location filename="../Settings/CreateMemoryCardDialog.ui" line="73"/>
       <source>Memory Card Name:</source>
-      <translation type="unfinished">Memory Card Name:</translation>
+      <translation>메모리 카드 이름 :</translation>
     </message>
     <message>
       <location filename="../Settings/CreateMemoryCardDialog.ui" line="87"/>
       <source>8 MB [Most Compatible]</source>
-      <translation type="unfinished">8 MB [Most Compatible]</translation>
+      <translation>8MB [최고의 호환성]</translation>
     </message>
     <message>
       <location filename="../Settings/CreateMemoryCardDialog.ui" line="97"/>
       <source>This is the standard Sony-provisioned size, and is supported by all games and BIOS versions.</source>
-      <translation type="unfinished">This is the standard Sony-provisioned size, and is supported by all games and BIOS versions.</translation>
+      <translation>이 크기는 소니에서 프로비저닝한 표준 크기이며 모든 게임 및 BIOS 버전에서 지원됩니다.</translation>
     </message>
     <message>
       <location filename="../Settings/CreateMemoryCardDialog.ui" line="114"/>
       <source>16 MB</source>
-      <translation type="unfinished">16 MB</translation>
+      <translation>16 MB</translation>
     </message>
     <message>
       <location filename="../Settings/CreateMemoryCardDialog.ui" line="121"/>
       <location filename="../Settings/CreateMemoryCardDialog.ui" line="145"/>
       <source>A typical size for third-party Memory Cards which should work with most games.</source>
-      <translation type="unfinished">A typical size for third-party Memory Cards which should work with most games.</translation>
+      <translation>대부분의 게임에서 작동하는 타사 메모리 카드의 일반적인 크기입니다.</translation>
     </message>
     <message>
       <location filename="../Settings/CreateMemoryCardDialog.ui" line="193"/>
       <source>Store Memory Card contents in the host filesystem instead of a file.</source>
-      <translation type="unfinished">Store Memory Card contents in the host filesystem instead of a file.</translation>
+      <translation>메모리 카드 콘텐츠를 파일 대신 호스트 파일 시스템에 저장합니다..</translation>
     </message>
     <message>
       <location filename="../Settings/CreateMemoryCardDialog.ui" line="217"/>
       <source>This is the standard Sony-provisioned size PS1 Memory Card, and only compatible with PS1 games.</source>
-      <translation type="unfinished">This is the standard Sony-provisioned size PS1 Memory Card, and only compatible with PS1 games.</translation>
+      <translation>소니에서 제공하는 표준 사이즈의 PS1 메모리 카드로, PS1 게임과만 호환됩니다.</translation>
     </message>
     <message>
       <location filename="../Settings/CreateMemoryCardDialog.ui" line="244"/>
       <source>NTFS compression is built-in, fast, and completely reliable. Typically compresses Memory Cards (highly recommended).</source>
-      <translation type="unfinished">NTFS compression is built-in, fast, and completely reliable. Typically compresses Memory Cards (highly recommended).</translation>
+      <translation>NTFS 압축은 기본으로 제공되며 빠르고 안정적입니다. 일반적으로 메모리 카드를 압축합니다(적극 권장).</translation>
     </message>
     <message>
       <location filename="../Settings/CreateMemoryCardDialog.ui" line="138"/>
       <source>32 MB</source>
-      <translation type="unfinished">32 MB</translation>
+      <translation>32 MB</translation>
     </message>
     <message>
       <location filename="../Settings/CreateMemoryCardDialog.ui" line="162"/>
       <source>64 MB</source>
-      <translation type="unfinished">64 MB</translation>
+      <translation>64 MB</translation>
     </message>
     <message>
       <location filename="../Settings/CreateMemoryCardDialog.ui" line="169"/>
       <source>Low compatibility warning: yes, it&apos;s very big, but may not work with many games.</source>
-      <translation type="unfinished">Low compatibility warning: yes, it&apos;s very big, but may not work with many games.</translation>
+      <translation>저조한 호환성 경고 : 예, 매우 크지만 많은 게임에서 작동하지 않을 수 있습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/CreateMemoryCardDialog.ui" line="186"/>
       <source>Folder [Recommended]</source>
-      <translation type="unfinished">Folder [Recommended]</translation>
+      <translation>폴더 [권장]</translation>
     </message>
     <message>
       <location filename="../Settings/CreateMemoryCardDialog.ui" line="210"/>
       <source>128 KB (PS1)</source>
-      <translation type="unfinished">128 KB (PS1)</translation>
+      <translation>128 KB (PS1)</translation>
     </message>
     <message>
       <location filename="../Settings/CreateMemoryCardDialog.ui" line="234"/>
       <source>Use NTFS Compression</source>
-      <translation type="unfinished">Use NTFS Compression</translation>
+      <translation>NTFS 압축 사용</translation>
     </message>
     <message>
       <location filename="../Settings/CreateMemoryCardDialog.cpp" line="126"/>
       <source>Failed to create the Memory Card, because another card with the name &apos;%1&apos; already exists.</source>
-      <translation type="unfinished">Failed to create the Memory Card, because another card with the name &apos;%1&apos; already exists.</translation>
+      <translation>이름이 &apos;%1&apos; 인 다른 카드가 이미 있기 때문에 메모리 카드를 만들지 못했습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/CreateMemoryCardDialog.cpp" line="133"/>
       <source>Failed to create the Memory Card, the log may contain more information.</source>
-      <translation type="unfinished">Failed to create the Memory Card, the log may contain more information.</translation>
+      <translation>메모리 카드를 만들지 못했습니다. 로그에 자세한 정보가 포함될 수 있습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/CreateMemoryCardDialog.cpp" line="145"/>
       <source>Memory Card &apos;%1&apos; created.</source>
-      <translation type="unfinished">Memory Card &apos;%1&apos; created.</translation>
+      <translation>메모리 카드 &apos;%1&apos;을(를) 생성했습니다.</translation>
     </message>
   </context>
   <context>
@@ -2535,47 +2535,47 @@ You cannot undo this action.</translation>
     <message>
       <location filename="../Settings/DEV9DnsHostDialog.ui" line="14"/>
       <source>Network DNS Hosts Import/Export</source>
-      <translation type="unfinished">Network DNS Hosts Import/Export</translation>
+      <translation>네트워크 DNS 호스트 가져오기/내보내기</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9DnsHostDialog.ui" line="20"/>
       <source>Select Hosts</source>
-      <translation type="unfinished">Select Hosts</translation>
+      <translation>호스트 선택</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9DnsHostDialog.ui" line="52"/>
       <source>OK</source>
-      <translation type="unfinished">OK</translation>
+      <translation>확인</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9DnsHostDialog.ui" line="59"/>
       <source>Cancel</source>
-      <translation type="unfinished">Cancel</translation>
+      <translation>취소</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9DnsHostDialog.cpp" line="45"/>
       <source>Selected</source>
-      <translation type="unfinished">Selected</translation>
+      <translation>선택됨</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9DnsHostDialog.cpp" line="46"/>
       <source>Name</source>
-      <translation type="unfinished">Name</translation>
+      <translation>이름</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9DnsHostDialog.cpp" line="47"/>
       <source>Url</source>
-      <translation type="unfinished">Url</translation>
+      <translation>URL</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9DnsHostDialog.cpp" line="48"/>
       <source>Address</source>
-      <translation type="unfinished">Address</translation>
+      <translation>주소</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9DnsHostDialog.cpp" line="49"/>
       <source>Enabled</source>
-      <translation type="unfinished">Enabled</translation>
+      <translation>사용 가능</translation>
     </message>
   </context>
   <context>
@@ -2583,220 +2583,220 @@ You cannot undo this action.</translation>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="32"/>
       <source>Ethernet</source>
-      <translation type="unfinished">Ethernet</translation>
+      <translation>이더넷</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="41"/>
       <source>Ethernet Device:</source>
-      <translation type="unfinished">Ethernet Device:</translation>
+      <translation>이더넷 장치 :</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="48"/>
       <source>Ethernet Device Type:</source>
-      <translation type="unfinished">Ethernet Device Type:</translation>
+      <translation>이더넷 장치 유형 :</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="62"/>
       <source>Intercept DHCP</source>
-      <translation type="unfinished">Intercept DHCP</translation>
+      <translation>DHCP 인터셉트</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="233"/>
       <source>Enabled</source>
-      <translation type="unfinished">Enabled</translation>
+      <translation>사용 가능</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="71"/>
       <source>Enabled</source>
       <comment>InterceptDHCP</comment>
-      <translation type="unfinished">Enabled</translation>
+      <translation>사용 가능</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="88"/>
       <source>Subnet Mask:</source>
-      <translation type="unfinished">Subnet Mask:</translation>
+      <translation>서브넷 마스크 :</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="95"/>
       <source>Gateway Address:</source>
-      <translation type="unfinished">Gateway Address:</translation>
+      <translation>게이트웨이 주소 :</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="102"/>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="123"/>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="54"/>
       <source>Auto</source>
-      <translation type="unfinished">Auto</translation>
+      <translation>자동/translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="109"/>
       <source>Intercept DHCP:</source>
-      <translation type="unfinished">Intercept DHCP:</translation>
+      <translation>DHCP 인터셉트 :</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="130"/>
       <source>PS2 Address:</source>
-      <translation type="unfinished">PS2 Address:</translation>
+      <translation>PS2 주소 :</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="144"/>
       <source>DNS1 Address:</source>
-      <translation type="unfinished">DNS1 Address:</translation>
+      <translation>DNS1 주소 :</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="158"/>
       <source>DNS2 Address:</source>
-      <translation type="unfinished">DNS2 Address:</translation>
+      <translation>DNS2 주소 :</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="176"/>
       <source>Internal DNS</source>
-      <translation type="unfinished">Internal DNS</translation>
+      <translation>내부 DNS</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="184"/>
       <source>Add</source>
-      <translation type="unfinished">Add</translation>
+      <translation>추가</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="191"/>
       <source>Delete</source>
-      <translation type="unfinished">Delete</translation>
+      <translation>삭제</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="198"/>
       <source>Export</source>
-      <translation type="unfinished">Export</translation>
+      <translation>내보내기</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="205"/>
       <source>Import</source>
-      <translation type="unfinished">Import</translation>
+      <translation>가져오기</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="212"/>
       <source>Per game</source>
-      <translation type="unfinished">Per game</translation>
+      <translation>게임별</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="234"/>
       <source>Internal DNS can be selected using the DNS1/2 dropdowns, or by setting them to 192.0.2.1</source>
-      <translation type="unfinished">Internal DNS can be selected using the DNS1/2 dropdowns, or by setting them to 192.0.2.1</translation>
+      <translation>내부 DNS는 DNS1/2 드롭다운을 사용하거나 192.0.2.1로 설정하여 선택할 수 있습니다.</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="264"/>
       <source>Enabled</source>
       <comment>InternalDNSTable</comment>
-      <translation type="unfinished">Enabled</translation>
+      <translation>사용 가능</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="277"/>
       <source>Hard Disk Drive</source>
-      <translation type="unfinished">Hard Disk Drive</translation>
+      <translation>하드 디스크 드라이브</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="283"/>
       <source>HDD File:</source>
-      <translation type="unfinished">HDD File:</translation>
+      <translation>HDD 파일 :</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="292"/>
       <source>40</source>
-      <translation type="unfinished">40</translation>
+      <translation>40</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="321"/>
       <source>120</source>
-      <translation type="unfinished">120</translation>
+      <translation>120</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="340"/>
       <source>HDD Size (GiB):</source>
-      <translation type="unfinished">HDD Size (GiB):</translation>
+      <translation>HDD 크기(GB) :</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="347"/>
       <source>Enabled</source>
       <comment>HDD</comment>
-      <translation type="unfinished">Enabled</translation>
+      <translation>사용 가능</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="357"/>
       <source>Browse</source>
-      <translation type="unfinished">Browse</translation>
+      <translation>찾아보기</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="367"/>
       <source>Create Image</source>
-      <translation type="unfinished">Create Image</translation>
+      <translation>이미지 생성</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="44"/>
       <source> </source>
-      <translation type="unfinished"> </translation>
+      <translation> </translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="45"/>
       <source>PCAP Bridged</source>
-      <translation type="unfinished">PCAP Bridged</translation>
+      <translation>PCAP 연결</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="46"/>
       <source>PCAP Switched</source>
-      <translation type="unfinished">PCAP Switched</translation>
+      <translation>PCAP 전환</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="47"/>
       <source>TAP</source>
-      <translation type="unfinished">TAP</translation>
+      <translation>TAP</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="48"/>
       <source>Sockets</source>
-      <translation type="unfinished">Sockets</translation>
+      <translation>소켓</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="53"/>
       <source>Manual</source>
-      <translation type="unfinished">Manual</translation>
+      <translation>수동</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="55"/>
       <source>Internal</source>
-      <translation type="unfinished">Internal</translation>
+      <translation>내부</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="137"/>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="342"/>
       <source>Use Global Setting [%1]</source>
-      <translation type="unfinished">Use Global Setting [%1]</translation>
+      <translation>전역 설정 사용 [%1]</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="230"/>
       <source>Name</source>
-      <translation type="unfinished">Name</translation>
+      <translation>이름</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="231"/>
       <source>Url</source>
-      <translation type="unfinished">Url</translation>
+      <translation>URL</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="232"/>
       <source>Address</source>
-      <translation type="unfinished">Address</translation>
+      <translation>주소</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="525"/>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="559"/>
       <source>Hosts File</source>
-      <translation type="unfinished">Hosts File</translation>
+      <translation>호스트 파일</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="526"/>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="560"/>
       <source>ini (*.ini)</source>
-      <translation type="unfinished">ini (*.ini)</translation>
+      <translation>ini (*.ini)</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="549"/>
@@ -2804,87 +2804,87 @@ You cannot undo this action.</translation>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="598"/>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="619"/>
       <source>DNS Hosts</source>
-      <translation type="unfinished">DNS Hosts</translation>
+      <translation>DNS 호스트</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="550"/>
       <source>Exported Successfully</source>
-      <translation type="unfinished">Exported Successfully</translation>
+      <translation>내보내기 성공</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="570"/>
       <source>Failed to open file</source>
-      <translation type="unfinished">Failed to open file</translation>
+      <translation>파일 열기 실패</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="599"/>
       <source>No Hosts in file</source>
-      <translation type="unfinished">No Hosts in file</translation>
+      <translation>파일에 호스트 없음</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="620"/>
       <source>Imported Successfully</source>
-      <translation type="unfinished">Imported Successfully</translation>
+      <translation>가져오기 성공</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="629"/>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="657"/>
       <source>Per Game Host list</source>
-      <translation type="unfinished">Per Game Host list</translation>
+      <translation>게임별 호스트 목록</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="630"/>
       <source>Copy global settings?</source>
-      <translation type="unfinished">Copy global settings?</translation>
+      <translation>전역 설정을 복사하시겠습니까?</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="658"/>
       <source>Delete per game host list?</source>
-      <translation type="unfinished">Delete per game host list?</translation>
+      <translation>게임별 호스트 목록을 삭제하시겠습니까?</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="714"/>
       <source>HDD Image File</source>
-      <translation type="unfinished">HDD Image File</translation>
+      <translation>HDD 이미지 파일</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="716"/>
       <source>HDD (*.raw)</source>
-      <translation type="unfinished">HDD (*.raw)</translation>
+      <translation>HDD (*.raw)</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="827"/>
       <source>Overwrite File?</source>
-      <translation type="unfinished">Overwrite File?</translation>
+      <translation>파일 덮어쓰기?</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="828"/>
       <source>HDD image &quot;%1&quot; already exists?
 
 Do you want to overwrite?</source>
-      <translation type="unfinished">HDD image &quot;%1&quot; already exists?
+      <translation>HDD 이미지 &"%1&"이(가) 이미 있습니까?
 
-Do you want to overwrite?</translation>
+덮어쓰시겠습니까?</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="845"/>
       <source>HDD Creator</source>
-      <translation type="unfinished">HDD Creator</translation>
+      <translation>HDD 크리에이터</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="846"/>
       <source>HDD image created</source>
-      <translation type="unfinished">HDD image created</translation>
+      <translation>HDD 이미지 생성됨</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="933"/>
       <source>Use Global</source>
-      <translation type="unfinished">Use Global</translation>
+      <translation>전역 사용</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.cpp" line="939"/>
       <source>Override</source>
-      <translation type="unfinished">Override</translation>
+      <translation>오버라이드</translation>
     </message>
   </context>
   <context>
@@ -2892,69 +2892,69 @@ Do you want to overwrite?</translation>
     <message>
       <location filename="../Settings/DebugSettingsWidget.ui" line="39"/>
       <source>GS</source>
-      <translation type="unfinished">GS</translation>
+      <translation>GS</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.ui" line="45"/>
       <source>Draw Dumping</source>
-      <translation type="unfinished">Draw Dumping</translation>
+      <translation>덤핑 그리기</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.ui" line="53"/>
       <source>Dump GS Draws</source>
-      <translation type="unfinished">Dump GS Draws</translation>
+      <translation>GS 드로우 덤프</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.ui" line="60"/>
       <source>Save RT</source>
-      <translation type="unfinished">Save RT</translation>
+      <translation>RT 저장</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.ui" line="67"/>
       <source>Save Frame</source>
-      <translation type="unfinished">Save Frame</translation>
+      <translation>프레임 저장</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.ui" line="74"/>
       <source>Save Texture</source>
-      <translation type="unfinished">Save Texture</translation>
+      <translation>텍스처 저장</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.ui" line="81"/>
       <source>Save Depth</source>
-      <translation type="unfinished">Save Depth</translation>
+      <translation>깊이 저장</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.ui" line="90"/>
       <source>Start Draw Number:</source>
-      <translation type="unfinished">Start Draw Number:</translation>
+      <translation>추첨 번호 시작 :</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.ui" line="104"/>
       <source>Draw Dump Count:</source>
-      <translation type="unfinished">Draw Dump Count:</translation>
+      <translation>덤프 횟수 그리기 :</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.ui" line="121"/>
       <source>Hardware Dump Directory:</source>
-      <translation type="unfinished">Hardware Dump Directory:</translation>
+      <translation>하드웨어 덤프 디렉토리 :</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.ui" line="128"/>
       <source>Software Dump Directory:</source>
-      <translation type="unfinished">Software Dump Directory:</translation>
+      <translation>소프트웨어 덤프 디렉토리 :</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.ui" line="140"/>
       <location filename="../Settings/DebugSettingsWidget.ui" line="161"/>
       <source>Browse...</source>
-      <translation type="unfinished">Browse...</translation>
+      <translation>찾아보기...</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.ui" line="147"/>
       <location filename="../Settings/DebugSettingsWidget.ui" line="168"/>
       <source>Open...</source>
-      <translation type="unfinished">Open...</translation>
+      <translation>열기...</translation>
     </message>
   </context>
   <context>
@@ -2962,34 +2962,34 @@ Do you want to overwrite?</translation>
     <message>
       <location filename="../Debugger/DebuggerWindow.ui" line="14"/>
       <source>PCSX2 Debugger</source>
-      <translation type="unfinished">PCSX2 Debugger</translation>
+      <translation>PCSX2 디버거</translation>
     </message>
     <message>
       <location filename="../Debugger/DebuggerWindow.ui" line="35"/>
       <location filename="../Debugger/DebuggerWindow.cpp" line="39"/>
       <location filename="../Debugger/DebuggerWindow.cpp" line="87"/>
       <source>Run</source>
-      <translation type="unfinished">Run</translation>
+      <translation>실행</translation>
     </message>
     <message>
       <location filename="../Debugger/DebuggerWindow.cpp" line="40"/>
       <source>Step Into</source>
-      <translation type="unfinished">Step Into</translation>
+      <translation>단계 진입</translation>
     </message>
     <message>
       <location filename="../Debugger/DebuggerWindow.cpp" line="41"/>
       <source>Step Over</source>
-      <translation type="unfinished">Step Over</translation>
+      <translation>단계 통과</translation>
     </message>
     <message>
       <location filename="../Debugger/DebuggerWindow.cpp" line="42"/>
       <source>Step Out</source>
-      <translation type="unfinished">Step Out</translation>
+      <translation>단계 도출</translation>
     </message>
     <message>
       <location filename="../Debugger/DebuggerWindow.cpp" line="79"/>
       <source>Pause</source>
-      <translation type="unfinished">Pause</translation>
+      <translation>일시 중지</translation>
     </message>
   </context>
   <context>
@@ -2997,154 +2997,154 @@ Do you want to overwrite?</translation>
     <message>
       <location filename="../Debugger/DisassemblyWidget.ui" line="14"/>
       <source>Disassembly</source>
-      <translation type="unfinished">Disassembly</translation>
+      <translation>디스어셈블리</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="53"/>
       <source>Copy Address</source>
-      <translation type="unfinished">Copy Address</translation>
+      <translation>주소 복사</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="55"/>
       <source>Copy Instruction Hex</source>
-      <translation type="unfinished">Copy Instruction Hex</translation>
+      <translation>16진수 명령어 복사</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="57"/>
       <source>Copy Instruction Text</source>
-      <translation type="unfinished">Copy Instruction Text</translation>
+      <translation>지침문 복사</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="61"/>
       <source>Assemble new Instruction(s)</source>
-      <translation type="unfinished">Assemble new Instruction(s)</translation>
+      <translation>새 인스트럭션 조립</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="63"/>
       <source>NOP Instruction(s)</source>
-      <translation type="unfinished">NOP Instruction(s)</translation>
+      <translation>NOP 명령어</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="66"/>
       <source>Run to Cursor</source>
-      <translation type="unfinished">Run to Cursor</translation>
+      <translation>커서로 실행</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="68"/>
       <source>Jump to Cursor</source>
-      <translation type="unfinished">Jump to Cursor</translation>
+      <translation>커서로 이동</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="70"/>
       <source>Toggle Breakpoint</source>
-      <translation type="unfinished">Toggle Breakpoint</translation>
+      <translation>브레이크포인트 전환</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="72"/>
       <source>Follow Branch</source>
-      <translation type="unfinished">Follow Branch</translation>
+      <translation>분기 팔로우</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="75"/>
       <source>Go to Address</source>
-      <translation type="unfinished">Go to Address</translation>
+      <translation>주소로 이동하기</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="77"/>
       <source>Go to in Memory View</source>
-      <translation type="unfinished">Go to in Memory View</translation>
+      <translation>메모리 보기로 이동하기</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="80"/>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="237"/>
       <source>Add Function</source>
-      <translation type="unfinished">Add Function</translation>
+      <translation>함수 추가</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="82"/>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="289"/>
       <source>Rename Function</source>
-      <translation type="unfinished">Rename Function</translation>
+      <translation>함수 이름 바꾸기</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="84"/>
       <source>Remove Function</source>
-      <translation type="unfinished">Remove Function</translation>
+      <translation>함수 제거</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="107"/>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="126"/>
       <source>Assemble Error</source>
-      <translation type="unfinished">Assemble Error</translation>
+      <translation>어셈블리 오류</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="107"/>
       <source>Unable to change assembly while core is running</source>
-      <translation type="unfinished">Unable to change assembly while core is running</translation>
+      <translation>코어가 실행 중인 동안 어셈블리를 변경할 수 없음</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="114"/>
       <source>Assemble Instruction</source>
-      <translation type="unfinished">Assemble Instruction</translation>
+      <translation>어셈블리 인스트럭션</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="201"/>
       <source>Go to address</source>
-      <translation type="unfinished">Go to address</translation>
+      <translation>주소로 이동하기</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="211"/>
       <source>Go to address error</source>
-      <translation type="unfinished">Go to address error</translation>
+      <translation>주소 오류로 이동하기</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="211"/>
       <source>Invalid address</source>
-      <translation type="unfinished">Invalid address</translation>
+      <translation>잘못된 주소</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="229"/>
       <source>Add Function Error</source>
-      <translation type="unfinished">Add Function Error</translation>
+      <translation>함수 오류 추가</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="229"/>
       <source>A function entry point already exists here. Consider renaming instead.</source>
-      <translation type="unfinished">A function entry point already exists here. Consider renaming instead.</translation>
+      <translation>여기에 함수 진입점이 이미 존재합니다. 대신 이름을 바꾸는 것을 고려하세요.</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="238"/>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="253"/>
       <source>Function will be (0x%1) instructions long.
 Enter function name</source>
-      <translation type="unfinished">Function will be (0x%1) instructions long.
-Enter function name</translation>
+      <translation>함수는 (0x%1) 명령어 길이입니다.
+함수 이름 입력</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="289"/>
       <source>Function name</source>
-      <translation type="unfinished">Function name</translation>
+      <translation>함수 이름</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="295"/>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="307"/>
       <source>Rename Function Error</source>
-      <translation type="unfinished">Rename Function Error</translation>
+      <translation>함수 이름 바꾸기 오류</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="295"/>
       <source>Function name cannot be nothing.</source>
-      <translation type="unfinished">Function name cannot be nothing.</translation>
+      <translation>함수 이름은 아무 것도 될 수 없습니다.</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="307"/>
       <source>No function / symbol is currently selected.</source>
-      <translation type="unfinished">No function / symbol is currently selected.</translation>
+      <translation>현재 선택된 기능/기호가 없습니다.</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyWidget.cpp" line="630"/>
       <source>%1 NOT VALID ADDRESS</source>
-      <translation type="unfinished">%1 NOT VALID ADDRESS</translation>
+      <translation>%1 올바르지 않은 주소</translation>
     </message>
   </context>
   <context>
@@ -3152,17 +3152,17 @@ Enter function name</translation>
     <message>
       <location filename="../GameList/EmptyGameListWidget.ui" line="33"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;No games in supported formats were found.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Please add a directory with games to begin.&lt;/p&gt;&lt;p&gt;Game dumps in the following formats will be scanned and listed:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;No games in supported formats were found.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Please add a directory with games to begin.&lt;/p&gt;&lt;p&gt;Game dumps in the following formats will be scanned and listed:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;지원되는 형식의 게임을 찾지 못했습니다.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;시작하려면 게임이 있는 디렉토리를 추가하세요.&lt;/p&gt;&lt;p&gt;다음 형식의 게임 덤프가 검색되어 나열됩니다:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
       <location filename="../GameList/EmptyGameListWidget.ui" line="68"/>
       <source>Add Game Directory...</source>
-      <translation type="unfinished">Add Game Directory...</translation>
+      <translation>게임 디렉토리 추가...</translation>
     </message>
     <message>
       <location filename="../GameList/EmptyGameListWidget.ui" line="105"/>
       <source>Scan For New Games</source>
-      <translation type="unfinished">Scan For New Games</translation>
+      <translation>새로운 게임 검색</translation>
     </message>
   </context>
   <context>
@@ -3170,17 +3170,17 @@ Enter function name</translation>
     <message>
       <location filename="../QtHost.cpp" line="1032"/>
       <source>%1x%2</source>
-      <translation type="unfinished">%1x%2</translation>
+      <translation>%1x%2</translation>
     </message>
     <message>
       <location filename="../QtHost.cpp" line="1040"/>
       <source>Game: %1 FPS</source>
-      <translation type="unfinished">Game: %1 FPS</translation>
+      <translation>게임 : %1 FPS</translation>
     </message>
     <message>
       <location filename="../QtHost.cpp" line="1047"/>
       <source>Video: %1 FPS (%2%)</source>
-      <translation type="unfinished">Video: %1 FPS (%2%)</translation>
+      <translation>비디오 : %1 FPS (%2%)</translation>
     </message>
     <message>
       <location filename="../QtHost.cpp" line="1090"/>
@@ -3189,28 +3189,28 @@ Game Title: %2
 Achievements: %5 (%6)
 
 </source>
-      <translation type="unfinished">Game ID: %1
-Game Title: %2
-Achievements: %5 (%6)
+      <translation>게임 ID : %1
+게임명 : %2
+도전과제 : %5 (%6)
 
 </translation>
     </message>
     <message numerus="yes">
       <location filename="../QtHost.cpp" line="1096"/>
       <source>%n points</source>
-      <translation type="unfinished">
-        <numerusform>%n points</numerusform>
+      <translation>
+        <numerusform>%n 점</numerusform>
       </translation>
     </message>
     <message>
       <location filename="../QtHost.cpp" line="1102"/>
       <source>Rich presence inactive or unsupported.</source>
-      <translation type="unfinished">Rich presence inactive or unsupported.</translation>
+      <translation>리치 프레즌스가 비활성 상태이거나 지원되지 않습니다.</translation>
     </message>
     <message>
       <location filename="../QtHost.cpp" line="1106"/>
       <source>Game not loaded or no RetroAchievements available.</source>
-      <translation type="unfinished">Game not loaded or no RetroAchievements available.</translation>
+      <translation>게임이 로드되지 않았거나 레트로 도전과제를 사용할 수 없습니다.</translation>
     </message>
   </context>
   <context>
@@ -3218,66 +3218,66 @@ Achievements: %5 (%6)
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="32"/>
       <source>Speed Control</source>
-      <translation type="unfinished">Speed Control</translation>
+      <translation>속도 조절</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="47"/>
       <source>Normal Speed:</source>
-      <translation type="unfinished">Normal Speed:</translation>
+      <translation>일반 속도 :</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="68"/>
       <source>Enable Speed Limiter</source>
-      <translation type="unfinished">Enable Speed Limiter</translation>
+      <translation>속도 제한기 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="78"/>
       <source>System Settings</source>
-      <translation type="unfinished">System Settings</translation>
+      <translation>시스템 설정</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="86"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="135"/>
       <source>Enable Instant VU1</source>
-      <translation type="unfinished">Enable Instant VU1</translation>
+      <translation>인스턴트 VU1 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="93"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="140"/>
       <source>Enable Cheats</source>
-      <translation type="unfinished">Enable Cheats</translation>
+      <translation>치트 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="54"/>
       <source>Slow-Motion Speed:</source>
-      <translation type="unfinished">Slow-Motion Speed:</translation>
+      <translation>슬로우 모션 속도 :</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="61"/>
       <source>Fast-Forward Speed:</source>
-      <translation type="unfinished">Fast-Forward Speed:</translation>
+      <translation>빨리 감기 속도 :</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="100"/>
       <source>Enable Multithreaded VU1 (MTVU)</source>
-      <translation type="unfinished">Enable Multithreaded VU1 (MTVU)</translation>
+      <translation>멀티스레드 VU1(MTVU) 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="107"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="142"/>
       <source>Enable Host Filesystem</source>
-      <translation type="unfinished">Enable Host Filesystem</translation>
+      <translation>호스트 파일시스템 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="114"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="138"/>
       <source>Enable Fast CDVD</source>
-      <translation type="unfinished">Enable Fast CDVD</translation>
+      <translation>고속 CDVD 활성화</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="123"/>
       <source>EE Cycle Skipping:</source>
-      <translation type="unfinished">EE Cycle Skipping:</translation>
+      <translation>EE 사이클 건너뛰기 :</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="131"/>
@@ -3285,136 +3285,136 @@ Achievements: %5 (%6)
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="124"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="128"/>
       <source>Disabled</source>
-      <translation type="unfinished">Disabled</translation>
+      <translation>비활성화</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="136"/>
       <source>Mild Underclock</source>
-      <translation type="unfinished">Mild Underclock</translation>
+      <translation>가벼운 언더클럭</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="141"/>
       <source>Moderate Underclock</source>
-      <translation type="unfinished">Moderate Underclock</translation>
+      <translation>적당한 언더클럭</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="146"/>
       <source>Maximum Underclock</source>
-      <translation type="unfinished">Maximum Underclock</translation>
+      <translation>최대 언더클럭</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="154"/>
       <source>EE Cycle Rate:</source>
-      <translation type="unfinished">EE Cycle Rate:</translation>
+      <translation>EE 주기율 :</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="162"/>
       <source>50% (Underclock)</source>
-      <translation type="unfinished">50% (Underclock)</translation>
+      <translation>50%(언더클럭)</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="167"/>
       <source>60% (Underclock)</source>
-      <translation type="unfinished">60% (Underclock)</translation>
+      <translation>60%(언더클럭)</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="172"/>
       <source>75% (Underclock)</source>
-      <translation type="unfinished">75% (Underclock)</translation>
+      <translation>75%(언더클럭)</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="177"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="121"/>
       <source>100% (Normal Speed)</source>
-      <translation type="unfinished">100% (Normal Speed)</translation>
+      <translation>100%(일반 속도)</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="182"/>
       <source>130% (Overclock)</source>
-      <translation type="unfinished">130% (Overclock)</translation>
+      <translation>130%(오버클럭)</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="187"/>
       <source>180% (Overclock)</source>
-      <translation type="unfinished">180% (Overclock)</translation>
+      <translation>180%(오버클럭)</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="192"/>
       <source>300% (Overclock)</source>
-      <translation type="unfinished">300% (Overclock)</translation>
+      <translation>300%(오버클럭)</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="200"/>
       <source>Affinity Control:</source>
-      <translation type="unfinished">Affinity Control:</translation>
+      <translation>선호도 제어 :</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="213"/>
       <source>EE &gt; VU &gt; GS</source>
-      <translation type="unfinished">EE &gt; VU &gt; GS</translation>
+      <translation>EE &gt; VU &gt; GS</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="218"/>
       <source>EE &gt; GS &gt; VU</source>
-      <translation type="unfinished">EE &gt; GS &gt; VU</translation>
+      <translation>EE &gt; GS &gt; VU</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="223"/>
       <source>VU &gt; EE &gt; GS</source>
-      <translation type="unfinished">VU &gt; EE &gt; GS</translation>
+      <translation>VU &gt; EE &gt; GS</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="228"/>
       <source>VU &gt; GS &gt; EE</source>
-      <translation type="unfinished">VU &gt; GS &gt; EE</translation>
+      <translation>VU &gt; GS &gt; EE</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="233"/>
       <source>GS &gt; EE &gt; VU</source>
-      <translation type="unfinished">GS &gt; EE &gt; VU</translation>
+      <translation>GS &gt; EE &gt; VU</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="238"/>
       <source>GS &gt; VU &gt; EE</source>
-      <translation type="unfinished">GS &gt; VU &gt; EE</translation>
+      <translation>GS &gt; VU &gt; EE</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="249"/>
       <source>Frame Pacing / Latency Control</source>
-      <translation type="unfinished">Frame Pacing / Latency Control</translation>
+      <translation>프레임 속도/지연 시간 제어</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="255"/>
       <source> frames</source>
       <extracomment>This string will appear next to the amount of frames selected, in a dropdown box.</extracomment>
-      <translation type="unfinished"> frames</translation>
+      <translation> 프레임</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="268"/>
       <source>Maximum Frame Latency:</source>
-      <translation type="unfinished">Maximum Frame Latency:</translation>
+      <translation>최대 프레임 지연 시간 :</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="277"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="145"/>
       <source>Optimal Frame Pacing</source>
-      <translation type="unfinished">Optimal Frame Pacing</translation>
+      <translation>최적의 프레임 속도</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="284"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="151"/>
       <source>Scale To Host Refresh Rate</source>
-      <translation type="unfinished">Scale To Host Refresh Rate</translation>
+      <translation>호스트 새로고침 속도에 따라 확장</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="63"/>
       <source>Use Global Setting [%1]</source>
-      <translation type="unfinished">Use Global Setting [%1]</translation>
+      <translation>전역 설정 사용 [%1]</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="109"/>
       <source>Normal Speed</source>
-      <translation type="unfinished">Normal Speed</translation>
+      <translation>일반 속도</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="110"/>
