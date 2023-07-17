@@ -85,8 +85,8 @@ using ImGuiFullscreen::UIPrimaryLightColor;
 using ImGuiFullscreen::UIPrimaryLineColor;
 using ImGuiFullscreen::UIPrimaryTextColor;
 using ImGuiFullscreen::UISecondaryColor;
-using ImGuiFullscreen::UISecondaryDarkColor;
-using ImGuiFullscreen::UISecondaryLightColor;
+using ImGuiFullscreen::UISecondaryWeakColor;
+using ImGuiFullscreen::UISecondaryStrongColor;
 using ImGuiFullscreen::UISecondaryTextColor;
 using ImGuiFullscreen::UITextHighlightColor;
 
