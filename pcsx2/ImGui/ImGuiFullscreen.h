@@ -136,8 +136,6 @@ namespace ImGuiFullscreen
 
 	void PushPrimaryColor();
 	void PopPrimaryColor();
-	void PushSecondaryColor();
-	void PopSecondaryColor();
 
 	void DrawWindowTitle(const char* title);
 
