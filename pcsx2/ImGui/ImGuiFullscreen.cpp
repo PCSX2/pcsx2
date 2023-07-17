@@ -578,20 +578,6 @@ void ImGuiFullscreen::PopPrimaryColor()
 	ImGui::PopStyleColor(5);
 }
 
-void ImGuiFullscreen::PushSecondaryColor()
-{
-	ImGui::PushStyleColor(ImGuiCol_Text, UISecondaryTextColor);
-	ImGui::PushStyleColor(ImGuiCol_Button, UISecondaryDarkColor);
-	ImGui::PushStyleColor(ImGuiCol_ButtonActive, UISecondaryColor);
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, UISecondaryLightColor);
-	ImGui::PushStyleColor(ImGuiCol_Border, UISecondaryLightColor);
-}
-
-void ImGuiFullscreen::PopSecondaryColor()
-{
-	ImGui::PopStyleColor(5);
-}
-
 bool ImGuiFullscreen::BeginFullscreenColumns(const char* title, float pos_y, bool expand_to_screen_width)
 {
 	ImGui::SetNextWindowPos(ImVec2(expand_to_screen_width ? 0.0f : g_layout_padding_left, pos_y));
