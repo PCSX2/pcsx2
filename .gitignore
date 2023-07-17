@@ -1,7 +1,3 @@
-.*.swp
-.*.swn
-.*.swo
-
 *.suo
 *.ncb
 *.sdf
@@ -38,7 +34,6 @@ svnrev.h
 /obj-*
 *.obj
 
-.DS_Store
 Thumbs.db
 
 Debug.txt
@@ -60,7 +55,6 @@ oprofile_data/
 # Visual Studio upgrades
 /Backup*
 /UpgradeLog*.htm
-/.vscode*
 
 /bin/**/*.dll
 /bin/**/*.dmp
@@ -87,13 +81,21 @@ oprofile_data/
 /bin/translations
 /bin/inputprofiles
 /deps
+/deps-build
 /ipch
 
 !/3rdparty/libjpeg/change.log
 /tools/bin
-.vs
 
 /out/build/x64-Debug (default)
 CMakeSettings.json
 /ci-artifacts/
 /out/
+
+.*
+!.github
+!.clang-format
+!.codacy.yaml
+!.gitattributes
+!.gitmodules
+!.prettierrc.yaml
