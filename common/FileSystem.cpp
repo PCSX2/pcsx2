@@ -38,6 +38,7 @@
 
 #if defined(_WIN32)
 #include "RedtapeWindows.h"
+#include <io.h>
 #include <winioctl.h>
 #include <share.h>
 #include <shlobj.h>
@@ -747,6 +748,13 @@ s64 FileSystem::FTell64(std::FILE* fp)
 
 s64 FileSystem::FSize64(std::FILE* fp)
 {
+#ifdef _WIN32
+	const int fd = _fileno(fp);
+	if (fd >= 0)
+	{
+		return _filelengthi64(fd);
+	}
+#else
 	const s64 pos = FTell64(fp);
 	if (pos >= 0)
 	{
@@ -757,6 +765,7 @@ s64 FileSystem::FSize64(std::FILE* fp)
 				return size;
 		}
 	}
+#endif
 
 	return -1;
 }
@@ -781,12 +790,11 @@ std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(const char* filename)
 
 std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(std::FILE* fp)
 {
-	std::fseek(fp, 0, SEEK_END);
-	const long size = std::ftell(fp);
-	std::fseek(fp, 0, SEEK_SET);
+	const s64 size = FSize64(fp);
 	if (size < 0)
 		return std::nullopt;
 
+	std::fseek(fp, 0, SEEK_SET);
 	std::vector<u8> res(static_cast<size_t>(size));
 	if (size > 0 && std::fread(res.data(), 1u, static_cast<size_t>(size), fp) != static_cast<size_t>(size))
 		return std::nullopt;
@@ -805,12 +813,11 @@ std::optional<std::string> FileSystem::ReadFileToString(const char* filename)
 
 std::optional<std::string> FileSystem::ReadFileToString(std::FILE* fp)
 {
-	std::fseek(fp, 0, SEEK_END);
-	const long size = std::ftell(fp);
-	std::fseek(fp, 0, SEEK_SET);
+	const s64 size = FSize64(fp);
 	if (size < 0)
 		return std::nullopt;
 
+	std::fseek(fp, 0, SEEK_SET);
 	std::string res;
 	res.resize(static_cast<size_t>(size));
 	// NOTE - assumes mode 'rb', for example, this will fail over missing Windows carriage return bytes
