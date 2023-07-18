@@ -1140,6 +1140,11 @@
            <string>Special (Texture - Aggressive)</string>
           </property>
          </item>
+          <item>
+            <property name="text">
+              <string>Bilinear Scaled (Vertex)</string>
+            </property>
+          </item>
         </widget>
        </item>
        <item row="1" column="0">

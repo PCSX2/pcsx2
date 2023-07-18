@@ -3225,7 +3225,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			static constexpr const char* s_cpu_clut_render_options[] = {"0 (Disabled)", "1 (Normal)", "2 (Aggressive)"};
 			static constexpr const char* s_texture_inside_rt_options[] = {"Disabled", "Inside Target", "Merge Targets"};
 			static constexpr const char* s_half_pixel_offset_options[] = {
-				"Off (Default)", "Normal (Vertex)", "Special (Texture)", "Special (Texture - Aggressive)"};
+				"Off (Default)", "Normal (Vertex)", "Special (Texture)", "Special (Texture - Aggressive)", "Bilinear Scaled (Vertex)"};
 			static constexpr const char* s_round_sprite_options[] = {"Off (Default)", "Half", "Full"};
 			static constexpr const char* s_auto_flush_options[] = {
 				"Disabled (Default)", "Enabled (Sprites Only)", "Enabled (All Primitives)"};

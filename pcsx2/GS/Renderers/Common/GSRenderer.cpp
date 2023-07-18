@@ -272,7 +272,27 @@ float GSRenderer::GetModXYOffset()
 {
 	float mod_xy = 0.0f;
 
-	if (GSConfig.UserHacks_HalfPixelOffset == 1)
+	// Scaled Bilinear HPO depending on the gradient.
+	if (GSConfig.UserHacks_HalfPixelOffset == 4)
+	{
+		const GSVector2 pos_range(m_vt.m_max.p.x - m_vt.m_min.p.x, m_vt.m_max.p.y - m_vt.m_min.p.y);
+		const GSVector2 uv_range(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
+		const GSVector2 grad(uv_range / pos_range);
+		const float avg_grad = (grad.x + grad.y) / 2;
+
+		if (avg_grad >= 0.5f && m_draw_env->CTXT[m_draw_env->PRIM.CTXT].TEX1.MMIN == 1)
+		{
+			mod_xy = GetUpscaleMultiplier();
+			switch (static_cast<int>(std::round(mod_xy)))
+			{
+				case 2: case 4: case 6: case 8: mod_xy += (mod_xy / 2.0f) * avg_grad; break;
+				case 3: case 7:                 mod_xy += (mod_xy / 2.0f) * avg_grad; break;
+				case 5:                         mod_xy += (mod_xy / 2.0f) * avg_grad; break;
+				default:                        mod_xy = 0.0f; break;
+			}
+		}
+	}
+	else if (GSConfig.UserHacks_HalfPixelOffset == 1)
 	{
 		mod_xy = GetUpscaleMultiplier();
 		switch (static_cast<int>(std::round(mod_xy)))
