@@ -672,7 +672,7 @@ int FileSystem::OpenFDFile(const char* filename, int flags, int mode, Error* err
 
 FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFile(const char* filename, const char* mode, Error* error)
 {
-	return ManagedCFilePtr(OpenCFile(filename, mode, error), [](std::FILE* fp) { std::fclose(fp); });
+	return ManagedCFilePtr(OpenCFile(filename, mode, error));
 }
 
 std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode, Error* error)
@@ -717,7 +717,7 @@ std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, F
 
 FileSystem::ManagedCFilePtr FileSystem::OpenManagedSharedCFile(const char* filename, const char* mode, FileShareMode share_mode, Error* error)
 {
-	return ManagedCFilePtr(OpenSharedCFile(filename, mode, share_mode, error), [](std::FILE* fp) { std::fclose(fp); });
+	return ManagedCFilePtr(OpenSharedCFile(filename, mode, share_mode, error));
 }
 
 int FileSystem::FSeek64(std::FILE* fp, s64 offset, int whence)

@@ -102,8 +102,17 @@ namespace FileSystem
 	/// Rename file
 	bool RenamePath(const char* OldPath, const char* NewPath);
 
+	/// Deleter functor for managed file pointers
+	struct FileDeleter
+	{
+		void operator()(std::FILE* fp)
+		{
+			std::fclose(fp);
+		}
+	};
+
 	/// open files
-	using ManagedCFilePtr = std::unique_ptr<std::FILE, void (*)(std::FILE*)>;
+	using ManagedCFilePtr = std::unique_ptr<std::FILE, FileDeleter>;
 	ManagedCFilePtr OpenManagedCFile(const char* filename, const char* mode, Error* error = nullptr);
 	std::FILE* OpenCFile(const char* filename, const char* mode, Error* error = nullptr);
 	int FSeek64(std::FILE* fp, s64 offset, int whence);
