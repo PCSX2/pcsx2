@@ -10072,6 +10072,8 @@ SLED-53330:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes reflections.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes upscale lines in FMVs.
 SLED-53442:
   name: "Crash Tag Team Racing [Demo]"
   region: "PAL-E"
@@ -13354,6 +13356,7 @@ SLES-51303:
   gsHWFixes:
     textureInsideRT: 1 # Fixes black screen in races.
     autoFlush: 1 # Fixes shadow rendering.
+    roundSprite: 1 # Fixes depth line.
 SLES-51307:
   name: "Wild ARMs 3"
   region: "PAL-E"
@@ -17599,6 +17602,8 @@ SLES-53125:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes reflections.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes upscale lines in FMVs.
 SLES-53127:
   name: "Teenage Mutant Ninja Turtles - Mutant Melee"
   region: "PAL-M5"
@@ -22170,6 +22175,8 @@ SLES-54820:
   compat: 5
   gameFixes:
     - VIFFIFOHack
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misalignment.
 SLES-54822:
   name: "Atelier Iris 3 - Grand Phantasm"
   region: "PAL-E"
@@ -26510,6 +26517,9 @@ SLPM-60149:
 SLPM-60172:
   name: "Itadaki Street 3 - Okuman Chouja ni Shiteageru"
   region: "NTSC-J"
+SLPM-60175:
+  name: "Wangan Midnight [Taikenban]"
+  region: "NTSC-J"
 SLPM-60180:
   name: "Disney Golf Classics [Trial]"
   region: "NTSC-J"
@@ -26737,6 +26747,17 @@ SLPM-61092:
     autoFlush: 2
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
+SLPM-61110:
+  name: "Enthusia - Professional Racing [Trial]"
+  region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Corrects crazy car AI and prevents crash.
+    vuClampMode: 3 # Stops freezing at race start.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes reflections.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes upscale lines in FMVs.
 SLPM-61113:
   name: "Dengeki PlayStation D77"
   region: "NTSC-J"
@@ -32454,6 +32475,8 @@ SLPM-65948:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes reflections.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes upscale lines in FMVs.
 SLPM-65949:
   name: "Get Ride! AM Driver - The Truth of Xiangke"
   region: "NTSC-J"
@@ -33691,6 +33714,8 @@ SLPM-66257:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes reflections.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes upscale lines in FMVs.
 SLPM-66258:
   name: "Magic Teacher Negima - Honor Version [Konami The Best]"
   region: "NTSC-J"
@@ -36201,6 +36226,8 @@ SLPM-66910:
   region: "NTSC-J"
   gameFixes:
     - VIFFIFOHack
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misalignment.
 SLPM-66911:
   name: "Finalist [Princess Soft Collection]"
   region: "NTSC-J"
@@ -36768,6 +36795,17 @@ SLPM-68516:
     halfPixelOffset: 2 # Fixes blurriness.
     autoFlush: 2 # Fixes lens flare.
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
+SLPM-68519:
+  name: "Enthusia Professional Racing - Subaru Impreza WRX STI"
+  region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Corrects crazy car AI and prevents crash.
+    vuClampMode: 3 # Stops freezing at race start.
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
+    textureInsideRT: 1 # Fixes reflections.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes upscale lines in FMVs.
 SLPM-68520:
   name: "Armored Core - Last Raven [Monthly Champion magazine Special Edition]"
   region: "NTSC-J"
@@ -45342,6 +45380,7 @@ SLUS-20577:
   gsHWFixes:
     textureInsideRT: 1 # Fixes black screen in races.
     autoFlush: 1 # Fixes shadow rendering.
+    roundSprite: 1 # Fixes depth line.
 SLUS-20578:
   name: "Lord of the Rings, The - The Two Towers"
   region: "NTSC-U"
@@ -47346,6 +47385,8 @@ SLUS-20967:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes reflections.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes upscale lines in FMVs.
 SLUS-20968:
   name: "Karaoke Revolution Volume 2"
   region: "NTSC-U"
@@ -50902,6 +50943,8 @@ SLUS-21626:
   compat: 5
   gameFixes:
     - VIFFIFOHack
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misalignment.
 SLUS-21627:
   name: "Jackass - The Game"
   region: "NTSC-U"
