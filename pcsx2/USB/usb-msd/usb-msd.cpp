@@ -971,7 +971,7 @@ namespace usb_msd
 		std::string path(USB::GetConfigString(si, port, TypeName(), "ImagePath"));
 		if (path.empty() || !(s->file = FileSystem::OpenCFile(path.c_str(), "r+b")))
 		{
-			Host::AddOSDMessage(fmt::format(TRANSLATE_SV("USB", "usb-msd: Could not open image file '{}'"), path),
+			Host::AddOSDMessage(fmt::format(TRANSLATE_FS("USB", "usb-msd: Could not open image file '{}'"), path),
 				Host::OSD_ERROR_DURATION);
 			goto fail;
 		}

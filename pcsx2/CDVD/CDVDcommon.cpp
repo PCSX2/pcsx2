@@ -395,7 +395,7 @@ bool DoCDVDopen()
 	CDVD->getTD(0, &td);
 
 	Host::AddKeyedOSDMessage("BlockDumpCreate",
-		fmt::format(TRANSLATE_SV("CDVD", "Saving CDVD block dump to '{}'."), temp), Host::OSD_INFO_DURATION);
+		fmt::format(TRANSLATE_FS("CDVD", "Saving CDVD block dump to '{}'."), temp), Host::OSD_INFO_DURATION);
 
 	if (blockDumpFile.Create(std::move(temp), 2))
 	{

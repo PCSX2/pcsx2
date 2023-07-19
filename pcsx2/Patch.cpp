@@ -298,7 +298,7 @@ bool Patch::OpenPatchesZip()
 		if (!warning_shown)
 		{
 			Host::AddIconOSDMessage("PatchesZipOpenWarning", ICON_FA_MICROCHIP,
-				fmt::format(TRANSLATE_SV("Patch", "Failed to open {}. Built-in game patches are not available."),
+				fmt::format(TRANSLATE_FS("Patch", "Failed to open {}. Built-in game patches are not available."),
 					PATCHES_ZIP_NAME),
 				Host::OSD_ERROR_DURATION);
 			warning_shown = true;
@@ -592,20 +592,20 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 	{
 		gp_count = EnablePatches(s_gamedb_patches, EnablePatchList());
 		if (gp_count > 0)
-			fmt::format_to(std::back_inserter(message), TRANSLATE_SV("Patch", "{} GameDB patches"), gp_count);
+			fmt::format_to(std::back_inserter(message), TRANSLATE_FS("Patch", "{} GameDB patches"), gp_count);
 	}
 
 	const u32 p_count = EnablePatches(s_game_patches, s_enabled_patches);
 	if (p_count > 0)
 	{
-		fmt::format_to(std::back_inserter(message), TRANSLATE_SV("Patch", "{}{} game patches"),
+		fmt::format_to(std::back_inserter(message), TRANSLATE_FS("Patch", "{}{} game patches"),
 			message.empty() ? "" : ", ", p_count);
 	}
 
 	const u32 c_count = EmuConfig.EnableCheats ? EnablePatches(s_cheat_patches, s_enabled_cheats) : 0;
 	if (c_count > 0)
 	{
-		fmt::format_to(std::back_inserter(message), TRANSLATE_SV("Patch", "{}{} cheat patches"),
+		fmt::format_to(std::back_inserter(message), TRANSLATE_FS("Patch", "{}{} cheat patches"),
 			message.empty() ? "" : ", ", c_count);
 	}
 
@@ -617,12 +617,12 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 		if (!message.empty())
 		{
 			Host::AddIconOSDMessage("LoadPatches", ICON_FA_FILE_CODE,
-				fmt::format(TRANSLATE_SV("Patch", "{} are active."), message), Host::OSD_INFO_DURATION);
+				fmt::format(TRANSLATE_FS("Patch", "{} are active."), message), Host::OSD_INFO_DURATION);
 		}
 		else
 		{
 			Host::AddIconOSDMessage("LoadPatches", ICON_FA_FILE_CODE,
-				TRANSLATE_STR(
+				TRANSLATE_SV(
 					"Patch", "No cheats or patches (widescreen, compatibility or others) are found / enabled."),
 				Host::OSD_INFO_DURATION);
 		}

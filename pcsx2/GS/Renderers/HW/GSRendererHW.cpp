@@ -171,7 +171,7 @@ void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame)
 	if (g_texture_cache->GetHashCacheMemoryUsage() > 1024 * 1024 * 1024)
 	{
 		Host::AddKeyedOSDMessage("HashCacheOverflow",
-			fmt::format(TRANSLATE_SV("GS", "Hash cache has used {:.2f} MB of VRAM, disabling."),
+			fmt::format(TRANSLATE_FS("GS", "Hash cache has used {:.2f} MB of VRAM, disabling."),
 				static_cast<float>(g_texture_cache->GetHashCacheMemoryUsage()) / 1048576.0f),
 			Host::OSD_ERROR_DURATION);
 		g_texture_cache->RemoveAll();

@@ -765,7 +765,7 @@ namespace usb_mic
 				if (!s->audsrc[i]->Start())
 				{
 					Host::AddOSDMessage(
-						fmt::format(TRANSLATE_SV("USB", "USB-Mic: Failed to start player {} audio stream."), i + 1),
+						fmt::format(TRANSLATE_FS("USB", "USB-Mic: Failed to start player {} audio stream."), i + 1),
 						Host::OSD_ERROR_DURATION);
 					goto fail;
 				}

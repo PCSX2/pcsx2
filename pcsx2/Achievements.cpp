@@ -1058,7 +1058,7 @@ void Achievements::DisplayAchievementSummary()
 		std::string summary;
 		if (GetAchievementCount() > 0)
 		{
-			summary = fmt::format(TRANSLATE_SV("Achievements", "You have earned {0} of {1} achievements, and {2} of {3} points."),
+			summary = fmt::format(TRANSLATE_FS("Achievements", "You have earned {0} of {1} achievements, and {2} of {3} points."),
 				GetUnlockedAchiementCount(), GetAchievementCount(), GetCurrentPointsForGame(), GetMaximumPointsForGame());
 		}
 		else
@@ -1758,7 +1758,7 @@ void Achievements::DeactivateAchievement(Achievement* achievement)
 	if (achievement->primed)
 	{
 		achievement->primed = false;
-		s_primed_achievement_count.fetch_sub(std::memory_order_acq_rel);
+		s_primed_achievement_count.fetch_sub(1, std::memory_order_acq_rel);
 	}
 
 	DevCon.WriteLn("Deactivated achievement %s (%u)", achievement->title.c_str(), achievement->id);
@@ -1891,7 +1891,7 @@ void Achievements::AchievementPrimed(u32 achievement_id)
 		return;
 
 	achievement->primed = true;
-	s_primed_achievement_count.fetch_add(std::memory_order_acq_rel);
+	s_primed_achievement_count.fetch_add(1, std::memory_order_acq_rel);
 }
 
 void Achievements::AchievementUnprimed(u32 achievement_id)
@@ -1902,7 +1902,7 @@ void Achievements::AchievementUnprimed(u32 achievement_id)
 		return;
 
 	achievement->primed = false;
-	s_primed_achievement_count.fetch_sub(std::memory_order_acq_rel);
+	s_primed_achievement_count.fetch_sub(1, std::memory_order_acq_rel);
 }
 
 void Achievements::SubmitLeaderboard(u32 leaderboard_id, int value)

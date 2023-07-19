@@ -30,7 +30,7 @@
 #define CARD_SIZE_ECC (1024 * BLOCK_SIZE_ECC)
 
 
-static volatile u32 ctrl, cmd = (u32)-1, address, id, counter, addrbyte;
+static u32 ctrl, cmd = (u32)-1, address, id, counter, addrbyte;
 static u8 data[PAGE_SIZE_ECC], file[CARD_SIZE_ECC];
 
 static void xfromman_call20_calculateXors(unsigned char buffer[128], unsigned char blah[4]);

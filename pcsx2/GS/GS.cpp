@@ -989,7 +989,7 @@ static void HotkeyAdjustUpscaleMultiplier(s32 delta)
 {
 	const u32 new_multiplier = static_cast<u32>(std::clamp(static_cast<s32>(EmuConfig.GS.UpscaleMultiplier) + delta, 1, 8));
 	Host::AddKeyedOSDMessage("UpscaleMultiplierChanged",
-		fmt::format(TRANSLATE_SV("GS", "Upscale multiplier set to {}x."), new_multiplier), Host::OSD_QUICK_DURATION);
+		fmt::format(TRANSLATE_FS("GS", "Upscale multiplier set to {}x."), new_multiplier), Host::OSD_QUICK_DURATION);
 	EmuConfig.GS.UpscaleMultiplier = new_multiplier;
 
 	// this is pretty slow. we only really need to flush the TC and recompile shaders.
@@ -1068,7 +1068,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 			EmuConfig.CurrentAspectRatio = static_cast<AspectRatioType>(
 				(static_cast<int>(EmuConfig.CurrentAspectRatio) + 1) % static_cast<int>(AspectRatioType::MaxCount));
 			Host::AddKeyedOSDMessage("CycleAspectRatio",
-				fmt::format(TRANSLATE_SV("Hotkeys", "Aspect ratio set to '{}'."),
+				fmt::format(TRANSLATE_FS("Hotkeys", "Aspect ratio set to '{}'."),
 					Pcsx2Config::GSOptions::AspectRatioNames[static_cast<int>(EmuConfig.CurrentAspectRatio)]),
 				Host::OSD_QUICK_DURATION);
 		}},
@@ -1084,7 +1084,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 			const HWMipmapLevel new_level =
 				static_cast<HWMipmapLevel>(((static_cast<s32>(EmuConfig.GS.HWMipmap) + 2) % CYCLE_COUNT) - 1);
 			Host::AddKeyedOSDMessage("CycleMipmapMode",
-				fmt::format(TRANSLATE_SV("Hotkeys", "Hardware mipmapping set to '{}'."),
+				fmt::format(TRANSLATE_FS("Hotkeys", "Hardware mipmapping set to '{}'."),
 					option_names[static_cast<s32>(new_level) + 1]),
 				Host::OSD_QUICK_DURATION);
 			EmuConfig.GS.HWMipmap = new_level;
@@ -1117,7 +1117,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 				(static_cast<s32>(EmuConfig.GS.InterlaceMode) + 1) % static_cast<s32>(GSInterlaceMode::Count));
 			Host::AddKeyedOSDMessage("CycleInterlaceMode",
 				fmt::format(
-					TRANSLATE_SV("Hotkeys", "Deinterlace mode set to '{}'."), option_names[static_cast<s32>(new_mode)]),
+					TRANSLATE_FS("Hotkeys", "Deinterlace mode set to '{}'."), option_names[static_cast<s32>(new_mode)]),
 				Host::OSD_QUICK_DURATION);
 			EmuConfig.GS.InterlaceMode = new_mode;
 
