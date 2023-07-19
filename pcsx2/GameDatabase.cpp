@@ -857,7 +857,7 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 				if (value >= 0 && value <= static_cast<int>(AccBlendLevel::Maximum) && static_cast<int>(EmuConfig.GS.AccurateBlendingUnit) < value)
 				{
 					Host::AddKeyedOSDMessage("HWBlendingWarning",
-						fmt::format(TRANSLATE_SV("GameDatabase",
+						fmt::format(TRANSLATE_FS("GameDatabase",
 										"{0} Current Blending Accuracy is {1}.\n"
 										"Recommended Blending Accuracy for this game is {2}.\n"
 										"You can adjust the blending level in Game Properties to improve\n"

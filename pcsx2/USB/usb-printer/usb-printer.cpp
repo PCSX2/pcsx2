@@ -101,13 +101,13 @@ namespace usb_printer
 		if (!s->print_file)
 		{
 			Host::AddIconOSDMessage("USBPrinterOpen", ICON_FA_EXCLAMATION_TRIANGLE,
-				fmt::format(TRANSLATE_SV("USB", "Failed to open '{}' for printing."), s->print_filename),
+				fmt::format(TRANSLATE_FS("USB", "Failed to open '{}' for printing."), s->print_filename),
 				Host::OSD_ERROR_DURATION);
 			return;
 		}
 
 		Host::AddIconOSDMessage("USBPrinterOpen", ICON_FA_SAVE,
-			fmt::format(TRANSLATE_SV("USB", "Printer saving to '{}'..."), Path::GetFileName(s->print_filename)),
+			fmt::format(TRANSLATE_FS("USB", "Printer saving to '{}'..."), Path::GetFileName(s->print_filename)),
 			Host::OSD_INFO_DURATION);
 
 		BMPHeader header = {0};

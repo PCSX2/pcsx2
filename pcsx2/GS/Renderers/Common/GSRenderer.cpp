@@ -432,7 +432,7 @@ static void CompressAndWriteScreenshot(std::string filename, u32 width, u32 heig
 	if (!GSDumpReplayer::IsRunner())
 	{
 		Host::AddIconOSDMessage(key, ICON_FA_CAMERA,
-			fmt::format(TRANSLATE_SV("GS", "Saving screenshot to '{}'."), Path::GetFileName(filename)), 60.0f);
+			fmt::format(TRANSLATE_FS("GS", "Saving screenshot to '{}'."), Path::GetFileName(filename)), 60.0f);
 	}
 
 	// maybe std::async would be better here.. but it's definitely worth threading, large screenshots take a while to compress.
@@ -444,14 +444,14 @@ static void CompressAndWriteScreenshot(std::string filename, u32 width, u32 heig
 			if (!GSDumpReplayer::IsRunner())
 			{
 				Host::AddIconOSDMessage(std::move(key), ICON_FA_CAMERA,
-					fmt::format(TRANSLATE_SV("GS", "Saved screenshot to '{}'."), Path::GetFileName(filename)),
+					fmt::format(TRANSLATE_FS("GS", "Saved screenshot to '{}'."), Path::GetFileName(filename)),
 					Host::OSD_INFO_DURATION);
 			}
 		}
 		else
 		{
 			Host::AddIconOSDMessage(std::move(key), ICON_FA_CAMERA,
-				fmt::format(TRANSLATE_SV("GS", "Failed to save screenshot to '{}'."), Path::GetFileName(filename),
+				fmt::format(TRANSLATE_FS("GS", "Failed to save screenshot to '{}'."), Path::GetFileName(filename),
 					Host::OSD_ERROR_DURATION));
 		}
 
@@ -699,7 +699,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			delete[] fd.data;
 
 			Host::AddKeyedOSDMessage("GSDump",
-				fmt::format(TRANSLATE_SV("GS", "Saving {0} GS dump {1} to '{2}'"),
+				fmt::format(TRANSLATE_FS("GS", "Saving {0} GS dump {1} to '{2}'"),
 					(m_dump_frames == 1) ? "single frame" : "multi-frame", compression_str,
 					Path::GetFileName(m_dump->GetPath())),
 				Host::OSD_INFO_DURATION);
@@ -731,7 +731,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 		if (m_dump->VSync(field, last, m_regs))
 		{
 			Host::AddKeyedOSDMessage("GSDump",
-				fmt::format(TRANSLATE_SV("GS", "Saved GS dump to '{}'."), Path::GetFileName(m_dump->GetPath())),
+				fmt::format(TRANSLATE_FS("GS", "Saved GS dump to '{}'."), Path::GetFileName(m_dump->GetPath())),
 				Host::OSD_INFO_DURATION);
 			m_dump.reset();
 		}

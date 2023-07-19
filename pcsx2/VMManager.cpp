@@ -1538,7 +1538,7 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 	if (!elist)
 	{
 		Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
-			fmt::format(TRANSLATE_SV("VMManager", "Failed to save save state: {}."), error.GetDescription()),
+			fmt::format(TRANSLATE_FS("VMManager", "Failed to save save state: {}."), error.GetDescription()),
 			Host::OSD_ERROR_DURATION);
 		return false;
 	}
@@ -1553,7 +1553,7 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 		{
 			Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
 				fmt::format(
-					TRANSLATE_SV("VMManager", "Failed to back up old save state {}."), Path::GetFileName(filename)),
+					TRANSLATE_FS("VMManager", "Failed to back up old save state {}."), Path::GetFileName(filename)),
 				Host::OSD_ERROR_DURATION);
 		}
 	}
@@ -1585,14 +1585,14 @@ void VMManager::ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,
 		if (slot_for_message >= 0 && VMManager::HasValidVM())
 		{
 			Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_SAVE,
-				fmt::format(TRANSLATE_SV("VMManager", "State saved to slot {}."), slot_for_message),
+				fmt::format(TRANSLATE_FS("VMManager", "State saved to slot {}."), slot_for_message),
 				Host::OSD_QUICK_DURATION);
 		}
 	}
 	else
 	{
 		Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
-			fmt::format(TRANSLATE_SV("VMManager", "Failed to save save state to slot {}."), slot_for_message,
+			fmt::format(TRANSLATE_FS("VMManager", "Failed to save save state to slot {}."), slot_for_message,
 				Host::OSD_ERROR_DURATION));
 	}
 
@@ -1679,7 +1679,7 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 	if (filename.empty())
 	{
 		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE,
-			fmt::format(TRANSLATE_SV("VMManager", "There is no save state in slot {}."), slot),
+			fmt::format(TRANSLATE_FS("VMManager", "There is no save state in slot {}."), slot),
 			Host::OSD_QUICK_DURATION);
 		return false;
 	}
@@ -1692,7 +1692,7 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 #endif
 
 	Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN,
-		fmt::format(TRANSLATE_SV("VMManager", "Loading state from slot {}..."), slot), Host::OSD_QUICK_DURATION);
+		fmt::format(TRANSLATE_FS("VMManager", "Loading state from slot {}..."), slot), Host::OSD_QUICK_DURATION);
 	return DoLoadState(filename.c_str());
 }
 
@@ -1709,7 +1709,7 @@ bool VMManager::SaveStateToSlot(s32 slot, bool zip_on_thread)
 
 	// if it takes more than a minute.. well.. wtf.
 	Host::AddIconOSDMessage(fmt::format("SaveStateSlot{}", slot), ICON_FA_SAVE,
-		fmt::format(TRANSLATE_SV("VMManager", "Saving state to slot {}..."), slot), 60.0f);
+		fmt::format(TRANSLATE_FS("VMManager", "Saving state to slot {}..."), slot), 60.0f);
 	return DoSaveState(filename.c_str(), slot, zip_on_thread, EmuConfig.BackupSavestate);
 }
 
@@ -1777,14 +1777,14 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 		else
 		{
 			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC,
-				fmt::format(TRANSLATE_SV("VMManager", "Disc changed to '{}'."), display_name), Host::OSD_INFO_DURATION);
+				fmt::format(TRANSLATE_FS("VMManager", "Disc changed to '{}'."), display_name), Host::OSD_INFO_DURATION);
 		}
 	}
 	else
 	{
 		Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC,
 			fmt::format(
-				TRANSLATE_SV("VMManager", "Failed to open new disc image '{}'. Reverting to old image."), display_name),
+				TRANSLATE_FS("VMManager", "Failed to open new disc image '{}'. Reverting to old image."), display_name),
 			Host::OSD_ERROR_DURATION);
 		CDVDsys_ChangeSource(old_type);
 		if (!old_path.empty())
