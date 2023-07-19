@@ -78,10 +78,6 @@ else()
 		endif()
 	endif()
 
-	if(NOT QT_BUILD)
-		find_optional_system_library(SDL2 3rdparty/sdl2 2.0.12)
-	endif()
-
 	if(UNIX AND NOT APPLE)
 		find_package(X11 REQUIRED)
 		make_imported_target_if_missing(X11::X11 X11)
@@ -98,6 +94,9 @@ endif(WIN32)
 
 # Require threads on all OSes.
 find_package(Threads REQUIRED)
+
+# Also need SDL2.
+find_package(SDL2 2.28.2 REQUIRED)
 
 set(ACTUALLY_ENABLE_TESTS ${ENABLE_TESTS})
 if(ENABLE_TESTS)
@@ -135,9 +134,6 @@ if(QT_BUILD)
 			set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
 		endif()
 	endif()
-
-	# We use the bundled (latest) SDL version for Qt.
-	find_optional_system_library(SDL2 3rdparty/sdl2 2.0.22)
 
 	# rcheevos backend for RetroAchievements.
 	if(USE_ACHIEVEMENTS)
