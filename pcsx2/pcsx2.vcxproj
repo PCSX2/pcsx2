@@ -21,6 +21,7 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(SolutionDir)common\vsprops\common.props" />
     <Import Project="$(SolutionDir)common\vsprops\GenerateSCMVersion.props" />
+    <Import Project="$(SolutionDir)common\vsprops\SDL2Compile.props" />
     <Import Condition="$(Configuration.Contains(Debug))" Project="$(SolutionDir)common\vsprops\CodeGen_Debug.props" />
     <Import Condition="$(Configuration.Contains(Devel))" Project="$(SolutionDir)common\vsprops\CodeGen_Devel.props" />
     <Import Condition="$(Configuration.Contains(Release))" Project="$(SolutionDir)common\vsprops\CodeGen_Release.props" />
@@ -863,9 +864,6 @@
     </ProjectReference>
     <ProjectReference Include="..\3rdparty\rcheevos\rcheevos.vcxproj">
       <Project>{6d5b5ad9-1525-459b-939f-a5e1082af6b3}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\3rdparty\sdl2\SDL.vcxproj">
-      <Project>{812b4434-fd6b-4cb2-8865-5fd8eb34b046}</Project>
     </ProjectReference>
     <ProjectReference Include="..\common\common.vcxproj">
       <Project>{4639972e-424e-4e13-8b07-ca403c481346}</Project>
