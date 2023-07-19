@@ -181,7 +181,7 @@ public:
 		std::pair<u8, u8> m_alpha_minmax;
 
 	public:
-		Palette(u16 pal, bool need_gs_texture);
+		Palette(const u32* clut, u16 pal, bool need_gs_texture);
 		~Palette();
 
 		__fi std::pair<u8, u8> GetAlphaMinMax() const { return m_alpha_minmax; }
@@ -335,6 +335,7 @@ public:
 
 		// Retrieves a shared pointer to a valid Palette from m_maps or creates a new one adding it to the data structure
 		std::shared_ptr<Palette> LookupPalette(u16 pal, bool need_gs_texture);
+		std::shared_ptr<Palette> LookupPalette(const u32* clut, u16 pal, bool need_gs_texture);
 
 		void Clear(); // Clears m_maps, thus deletes Palette objects
 	};
@@ -470,7 +471,7 @@ public:
 	void DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVector4i src_r);
 
 	GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, float* scale, const GSVector2i& size);
-	std::shared_ptr<Palette> LookupPaletteObject(u16 pal, bool need_gs_texture);
+	std::shared_ptr<Palette> LookupPaletteObject(const u32* clut, u16 pal, bool need_gs_texture);
 
 	Source* LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const GSVector2i* lod, const bool possible_shuffle);
 	Source* LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const bool possible_shuffle, bool palette = false);

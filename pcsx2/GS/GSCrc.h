@@ -23,7 +23,6 @@ public:
 	enum Title : u32
 	{
 		NoTitle,
-		ICO,
 		SMTNocturne,
 		Tekken5,
 		TitleCount,
