@@ -3,17 +3,18 @@
 set -e
 
 INSTALLDIR="$HOME/deps"
+# In-tree:
+LIBBACKTRACE_PATH="$PWD/3rdparty/libbacktrace/libbacktrace"
+# To be downloaded:
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
 SDL=SDL2-2.28.1
 QT=6.5.0
-LIBBACKTRACE=ad106d5fdd5d960bd33fae1c48a351af567fd075
 
 mkdir -p deps-build
 cd deps-build
 
 cat > SHASUMS <<EOF
 4977ceba5c0054dbe6c2f114641aced43ce3bf2b41ea64b6a372d6ba129cb15d  $SDL.tar.gz
-fd6f417fe9e3a071cf1424a5152d926a34c4a3c5070745470be6cf12a404ed79  $LIBBACKTRACE.zip
 fde1aa7b4fbe64ec1b4fc576a57f4688ad1453d2fab59cbadd948a10a6eaf5ef  qtbase-everywhere-src-$QT.tar.xz
 64ca7e61f44d51e28bcbb4e0509299b53a9a7e38879e00a7fe91643196067a4f  qtsvg-everywhere-src-$QT.tar.xz
 49c33d96b0a44988be954269b8ce3d1a495b439726e03a6be7c0d50a686369c4  qttools-everywhere-src-$QT.tar.xz
@@ -23,7 +24,6 @@ EOF
 
 curl -L \
 	-O "https://libsdl.org/release/$SDL.tar.gz" \
-	-O "https://github.com/ianlancetaylor/libbacktrace/archive/$LIBBACKTRACE.zip" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
@@ -41,12 +41,11 @@ make install
 cd ..
 
 echo "Building libbacktrace..."
-unzip "$LIBBACKTRACE.zip"
-cd "libbacktrace-$LIBBACKTRACE"
+cd "$LIBBACKTRACE_PATH"
 ./configure --prefix="$HOME/deps"
 make
 make install
-cd ..
+cd -
 
 # Couple notes:
 # -fontconfig is needed otherwise Qt Widgets render only boxes.

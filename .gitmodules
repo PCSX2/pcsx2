@@ -36,3 +36,6 @@
 [submodule "3rdparty/rcheevos/rcheevos"]
 	path = 3rdparty/rcheevos/rcheevos
 	url = https://github.com/RetroAchievements/rcheevos.git
+[submodule "3rdparty/libbacktrace/libbacktrace"]
+	path = 3rdparty/libbacktrace/libbacktrace
+	url = https://github.com/ianlancetaylor/libbacktrace.git
