@@ -4574,9 +4574,6 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 		return;
 	}
 
-	// Yes lots of logging, but I'm not confident with this code
-	GL_PUSH("Texture Cache Read. Format(0x%x)", TEX0.PSM);
-
 	GL_PERF("TC: Read Back Target: (0x%x)[fmt: 0x%x]. Size %dx%d", TEX0.TBP0, TEX0.PSM, r.width(), r.height());
 
 	const GSVector4 src(GSVector4(r) * GSVector4(t->m_scale) / GSVector4(t->m_texture->GetSize()).xyxy());
