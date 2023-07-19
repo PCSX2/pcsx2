@@ -23,13 +23,6 @@
 *.VC.db
 *.VC.VC.opendb
 
-**/Win32/Release*
-**/Win32/Debug*
-**/Win32/Devel*
-**/x64/Release*
-**/x64/Debug*
-**/x64/Devel*
-
 _ReSharper.*
 pcsx2.snapshot_*
 svnrev.h
