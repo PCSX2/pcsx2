@@ -4494,9 +4494,9 @@ GSTexture* GSTextureCache::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVec
 	return nullptr;
 }
 
-std::shared_ptr<GSTextureCache::Palette> GSTextureCache::LookupPaletteObject(u16 pal, bool need_gs_texture)
+std::shared_ptr<GSTextureCache::Palette> GSTextureCache::LookupPaletteObject(const u32* clut, u16 pal, bool need_gs_texture)
 {
-	return m_palette_map.LookupPalette(pal, need_gs_texture);
+	return m_palette_map.LookupPalette(clut, pal, need_gs_texture);
 }
 
 void GSTextureCache::Read(Target* t, const GSVector4i& r)
@@ -5615,13 +5615,13 @@ void GSTextureCache::InjectHashCacheTexture(const HashCacheKey& key, GSTexture* 
 
 // GSTextureCache::Palette
 
-GSTextureCache::Palette::Palette(u16 pal, bool need_gs_texture)
+GSTextureCache::Palette::Palette(const u32* clut, u16 pal, bool need_gs_texture)
 	: m_tex_palette(nullptr)
 	, m_pal(pal)
 {
 	const u16 palette_size = pal * sizeof(u32);
 	m_clut = (u32*)_aligned_malloc(palette_size, 64);
-	memcpy(m_clut, (const u32*)g_gs_renderer->m_mem.m_clut, palette_size);
+	memcpy(m_clut, clut, palette_size);
 	if (need_gs_texture)
 	{
 		InitializeTexture();
@@ -5700,14 +5700,17 @@ GSTextureCache::PaletteMap::PaletteMap()
 
 std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalette(u16 pal, bool need_gs_texture)
 {
+	return LookupPalette(g_gs_renderer->m_mem.m_clut, pal, need_gs_texture);
+}
+
+std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalette(const u32* clut, u16 pal, bool need_gs_texture)
+{
 	ASSERT(pal == 16 || pal == 256);
 
 	// Choose which hash map search into:
 	//    pal == 16  : index 0
 	//    pal == 256 : index 1
 	auto& map = m_maps[pal == 16 ? 0 : 1];
-
-	const u32* clut = (const u32*)g_gs_renderer->m_mem.m_clut;
 
 	// Create PaletteKey for searching into map (clut is actually not copied, so do not store this key into the map)
 	const PaletteKey palette_key = {clut, pal};
@@ -5763,7 +5766,7 @@ std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalet
 		}
 	}
 
-	std::shared_ptr<Palette> palette = std::make_shared<Palette>(pal, need_gs_texture);
+	std::shared_ptr<Palette> palette = std::make_shared<Palette>(clut, pal, need_gs_texture);
 
 	map.emplace(palette->GetPaletteKey(), palette);
 

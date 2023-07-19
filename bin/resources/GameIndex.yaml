@@ -383,6 +383,7 @@ PCPX-96322:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
+    moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 PCPX-96328:
   name: "3 Title Special Disc (Saru! Get You! 2 - PoPoLoCrois: Hajimari no Bouken - Boku no Natsuyasumi 2)"
   region: "NTSC-J"
@@ -959,6 +960,7 @@ SCAJ-20099:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
+    moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 SCAJ-20100:
   name: "Tenchu Kurenai"
   region: "NTSC-Ch-J"
@@ -1711,6 +1713,7 @@ SCCS-40005:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
+    moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 SCCS-40006:
   name: "Zhen Sanguo Wushuang 2"
   region: "NTSC-C"
@@ -2030,6 +2033,7 @@ SCED-50844:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
+    moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 SCED-50907:
   name: "Final Fantasy X [Bonus Disc - Beyond Final Fantasy]"
   region: "PAL-Unk"
@@ -3387,6 +3391,7 @@ SCES-50760:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
+    moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 SCES-50781:
   name: "Destruction Derby Arenas [Beta, Promo, & Full Retail]"
   region: "PAL-M6"
@@ -5325,6 +5330,7 @@ SCKA-20028:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
+    moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 SCKA-20029:
   name: "Gran Turismo - Concept 2002 Tokyo-Seoul [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
@@ -5847,6 +5853,7 @@ SCPS-11003:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
+    moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 SCPS-11004:
   name: "Bikkuri Mouse"
   region: "NTSC-J"
@@ -6688,6 +6695,7 @@ SCPS-19103:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
+    moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 SCPS-19104:
   name: "Pipo Saru 2001 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -6704,6 +6712,7 @@ SCPS-19151:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
+    moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 SCPS-19152:
   name: "Saru Get You! 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -7155,6 +7164,7 @@ SCPS-55001:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
+    moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 SCPS-55002:
   name: "Zero"
   region: "NTSC-J"
@@ -7427,6 +7437,7 @@ SCPS-56001:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
+    moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 SCPS-56002:
   name: "Tekken Tag Tournament"
   region: "NTSC-K"
@@ -7602,6 +7613,7 @@ SCUS-97113:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
+    moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 SCUS-97114:
   name: "NBA ShootOut 2001"
   region: "NTSC-U"
@@ -7787,6 +7799,7 @@ SCUS-97159:
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes effect misalignment.
+    moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 SCUS-97160:
   name: "Extermination [Demo]"
   region: "NTSC-U"

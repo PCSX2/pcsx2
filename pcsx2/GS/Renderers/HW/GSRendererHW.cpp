@@ -3972,40 +3972,6 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		m_conf.tex = tex->m_texture;
 	m_conf.pal = tex->m_palette;
 
-	if (m_game.title == CRC::ICO)
-	{
-		const GSVertex* v = &m_vertex.buff[0];
-		const GSVideoMode mode = GetVideoMode();
-		if (tex && m_vt.m_primclass == GS_SPRITE_CLASS && m_vertex.next == 2 && PRIM->ABE && // Blend texture
-			((v[1].U == 8200 && v[1].V == 7176 && mode == GSVideoMode::NTSC) || // at display resolution 512x448
-			(v[1].U == 8200 && v[1].V == 8200 && mode == GSVideoMode::PAL)) && // at display resolution 512x512
-			tex->m_TEX0.PSM == PSMT8H) // i.e. read the alpha channel of a 32 bits texture
-		{
-			// Note potentially we can limit to TBP0:0x2800
-
-			// Depth buffer was moved so GS will invalide it which means a
-			// downscale. ICO uses the MSB depth bits as the texture alpha
-			// channel.  However this depth of field effect requires
-			// texel:pixel mapping accuracy.
-			//
-			// Use an HLE shader to sample depth directly as the alpha channel
-			GL_INS("ICO sample depth as alpha");
-			m_conf.require_full_barrier = true;
-			// Extract the depth as palette index
-			m_conf.ps.depth_fmt = 1;
-			m_conf.ps.channel = ChannelFetch_BLUE;
-			m_conf.tex = ds->m_texture;
-
-			// We need the palette to convert the depth to the correct alpha value.
-			if (!tex->m_palette)
-			{
-				const u16 pal = GSLocalMemory::m_psm[tex->m_TEX0.PSM].pal;
-				g_texture_cache->AttachPaletteToSource(tex, pal, true);
-				m_conf.pal = tex->m_palette;
-			}
-		}
-	}
-
 	// Hazard handling (i.e. reading from the current RT/DS).
 	GSTextureCache::SourceRegion source_region = tex->GetRegion();
 	bool target_region = (tex->IsFromTarget() && source_region.HasEither());

@@ -616,7 +616,7 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 	// have to set up the palette ourselves too, since GSC executes before it does
 	r.m_mem.m_clut.Read32(RTEX0, r.m_draw_env->TEXA);
 	std::shared_ptr<GSTextureCache::Palette> palette =
-		g_texture_cache->LookupPaletteObject(GSLocalMemory::m_psm[RTEX0.PSM].pal, true);
+		g_texture_cache->LookupPaletteObject(r.m_mem.m_clut, GSLocalMemory::m_psm[RTEX0.PSM].pal, true);
 	if (!palette)
 		return false;
 
@@ -1167,7 +1167,6 @@ static bool GetMoveTargetPair(GSRendererHW& r, GSTextureCache::Target** src, GIF
 	return true;
 }
 
-#if 0
 // Disabled to avoid compiler warnings, enable when it is needed.
 static bool GetMoveTargetPair(GSRendererHW& r, GSTextureCache::Target** src, GSTextureCache::Target** dst,
 	bool req_target = false, bool preserve_target = false)
@@ -1175,7 +1174,8 @@ static bool GetMoveTargetPair(GSRendererHW& r, GSTextureCache::Target** src, GST
 	return GetMoveTargetPair(r, src, GIFRegTEX0::Create(RSBP, RSBW, RSPSM), dst, GIFRegTEX0::Create(RDBP, RDBW, RDPSM),
 		req_target, preserve_target);
 }
-#endif
+
+static int s_last_hacked_move_n = 0;
 
 bool GSHwHack::MV_Growlanser(GSRendererHW& r)
 {
@@ -1192,8 +1192,7 @@ bool GSHwHack::MV_Growlanser(GSRendererHW& r)
 		return false;
 
 	// All the moves happen inbetween two draws, so we can take advantage of that to know when to stop.
-	static int last_hacked_move_n = 0;
-	if (r.s_n == last_hacked_move_n)
+	if (r.s_n == s_last_hacked_move_n)
 		return true;
 
 	GSTextureCache::Target *src, *dst;
@@ -1212,7 +1211,53 @@ bool GSHwHack::MV_Growlanser(GSRendererHW& r)
 	g_gs_device->StretchRect(src->GetTexture(), GSVector4(rc) / GSVector4(src->GetUnscaledSize()).xyxy(),
 		dst->GetTexture(), GSVector4(rc) * GSVector4(dst->GetScale()), ShaderConvert::RGBA8_TO_FLOAT32, false);
 
-	last_hacked_move_n = r.s_n;
+	s_last_hacked_move_n = r.s_n;
+	return true;
+}
+
+bool GSHwHack::MV_Ico(GSRendererHW& r)
+{
+	// Ico unswizzles the depth buffer (usually) 0x1800 to (usually) 0x2800 with a Z32->C32 move.
+	// Then it does a bunch of P4 moves to shift the bits in the blue channel to the alpha channel.
+	// The shifted target then gets used as a P8H texture, basically mapping depth bits 16..24 to a LUT.
+	// We can't currently HLE that in the usual move handler, so instead, emulate it with a channel shuffle.
+
+	// If we've started skipping moves (i.e. HLE'ed the first one), skip the others.
+	if (r.s_n == s_last_hacked_move_n && RSPSM == PSMT4 && RDPSM == PSMT4)
+		return true;
+
+	// 512x448 moves from C32->Z32.
+	if (RSPSM != PSMZ32 || RDPSM != PSMCT32 || RWIDTH < 512 || RHEIGHT < 448)
+		return false;
+
+	GL_PUSH("MV_Ico: %x -> %x %dx%d", RSBP, RDBP, RWIDTH, RHEIGHT);
+
+	GSTextureCache::Target *src, *dst;
+	if (!GetMoveTargetPair(r, &src, &dst, false, false))
+		return false;
+
+	// Store B -> A using a channel shuffle.
+	u32 pal[256];
+	for (u32 i = 0; i < std::size(pal); i++)
+		pal[i] = i << 24;	
+	std::shared_ptr<GSTextureCache::Palette> palette = g_texture_cache->LookupPaletteObject(pal, 256, true);
+	if (!palette)
+		return false;
+
+	const GSVector4i draw_rc = GSVector4i(0, 0, RWIDTH, RHEIGHT);
+	dst->UpdateValidChannels(PSMCT32, 0);
+	dst->UpdateValidity(draw_rc);
+
+	GSHWDrawConfig& config = GSRendererHW::GetInstance()->BeginHLEHardwareDraw(dst->GetTexture(), nullptr,
+		dst->GetScale(), src->GetTexture(), src->GetScale(), draw_rc);
+	config.pal = palette->GetPaletteGSTexture();
+	config.ps.channel = ChannelFetch_BLUE;
+	config.ps.depth_fmt = 1;
+	config.ps.tfx = TFX_DECAL; // T -> A.
+	config.ps.tcc = true;
+	GSRendererHW::GetInstance()->EndHLEHardwareDraw(false);
+
+	s_last_hacked_move_n = r.s_n;
 	return true;
 }
 
@@ -1291,6 +1336,7 @@ const GSHwHack::Entry<GSRendererHW::OI_Ptr> GSHwHack::s_before_draw_functions[] 
 
 const GSHwHack::Entry<GSRendererHW::MV_Ptr> GSHwHack::s_move_handler_functions[] = {
 	CRC_F(MV_Growlanser),
+	CRC_F(MV_Ico),
 };
 
 #undef CRC_F
