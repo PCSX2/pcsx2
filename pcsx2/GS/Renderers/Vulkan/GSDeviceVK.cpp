@@ -4555,9 +4555,12 @@ void GSDeviceVK::DestroyResources()
 		if (it != VK_NULL_HANDLE)
 			vkDestroyPipeline(m_device, it, nullptr);
 	}
-	vkDestroyPipelineLayout(m_device, m_cas_pipeline_layout, nullptr);
-	vkDestroyDescriptorSetLayout(m_device, m_cas_ds_layout, nullptr);
-	vkDestroyPipeline(m_device, m_imgui_pipeline, nullptr);
+	if (m_cas_pipeline_layout != VK_NULL_HANDLE)
+		vkDestroyPipelineLayout(m_device, m_cas_pipeline_layout, nullptr);
+	if (m_cas_ds_layout != VK_NULL_HANDLE)
+		vkDestroyDescriptorSetLayout(m_device, m_cas_ds_layout, nullptr);
+	if (m_imgui_pipeline != VK_NULL_HANDLE)
+		vkDestroyPipeline(m_device, m_imgui_pipeline, nullptr);
 
 	for (const auto& it : m_samplers)
 	{
