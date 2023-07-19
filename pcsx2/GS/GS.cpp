@@ -357,6 +357,17 @@ void GSclose()
 void GSreset(bool hardware_reset)
 {
 	g_gs_renderer->Reset(hardware_reset);
+
+	// Restart video capture if it's been started.
+	// Otherwise we get a buildup of audio frames from the CPU thread.
+	if (hardware_reset && GSCapture::IsCapturing())
+	{
+		std::string next_filename = GSCapture::GetNextCaptureFileName();
+		const GSVector2i size = GSCapture::GetSize();
+		Console.Warning(fmt::format("Restarting video capture to {}.", next_filename));
+		g_gs_renderer->EndCapture();
+		g_gs_renderer->BeginCapture(std::move(next_filename), size);
+	}
 }
 
 void GSgifSoftReset(u32 mask)
