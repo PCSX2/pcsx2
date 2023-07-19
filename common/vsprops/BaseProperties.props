@@ -2,6 +2,6 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <OutDir>$(SolutionDir)bin\</OutDir>
-    <IntDir>$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Platform)'=='ARM64'">$(SolutionDir)bin-arm64\</OutDir>
   </PropertyGroup>
 </Project>
