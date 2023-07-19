@@ -80,17 +80,6 @@ void GSRenderer::Reset(bool hardware_reset)
 		g_gs_device->ClearCurrent();
 
 	GSState::Reset(hardware_reset);
-
-	// Restart video capture if it's been started.
-	// Otherwise we get a buildup of audio frames from the CPU thread.
-	if (hardware_reset && GSCapture::IsCapturing())
-	{
-		std::string next_filename = GSCapture::GetNextCaptureFileName();
-		const GSVector2i size = GSCapture::GetSize();
-		Console.Warning(fmt::format("Restarting video capture to {}.", next_filename));
-		EndCapture();
-		BeginCapture(std::move(next_filename), size);
-	}
 }
 
 void GSRenderer::Destroy()
