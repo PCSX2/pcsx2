@@ -134,6 +134,10 @@ add_compile_options("${ARCH_FLAG_LIST}")
 option(USE_PGO_GENERATE "Enable PGO optimization (generate profile)")
 option(USE_PGO_OPTIMIZE "Enable PGO optimization (use profile)")
 
+# Require C++20.
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 if(MSVC AND NOT USE_CLANG_CL)
 	add_compile_options(
 		"$<$<COMPILE_LANGUAGE:CXX>:/Zc:externConstexpr>"
@@ -270,18 +274,7 @@ if(NOT CMAKE_GENERATOR MATCHES "Xcode")
 	# Assume Xcode builds aren't being used for distribution
 	# Helpful because Xcode builds don't build multiple metallibs for different macOS versions
 	# Also helpful because Xcode's interactive shader debugger requires apps be built for the latest macOS
-	if (QT_BUILD)
-		set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14)
-	else()
-		set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
-	endif()
-endif()
-
-if (APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET AND "${CMAKE_OSX_DEPLOYMENT_TARGET}" VERSION_LESS 10.14 AND NOT ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 9)
-	# Older versions of the macOS stdlib don't have operator new(size_t, align_val_t)
-	# Disable use of them with this flag
-	# Not great, but also no worse that what we were getting before we turned on C++17
-	add_compile_options(-fno-aligned-allocation)
+	set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14)
 endif()
 
 # CMake defaults the suffix for modules to .so on macOS but wx tells us that the
