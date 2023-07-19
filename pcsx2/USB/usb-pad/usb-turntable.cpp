@@ -430,7 +430,7 @@ namespace usb_pad
 		}
 	}
 
-	gsl::span<const InputBindingInfo> DJTurntableDevice::Bindings(u32 subtype) const
+	std::span<const InputBindingInfo> DJTurntableDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo bindings[] = {
 			{"DPadUp", TRANSLATE_NOOP("USB", "D-Pad Up"), InputBindingInfo::Type::Button, CID_DJ_DPAD_UP, GenericInputBinding::DPadUp},
@@ -463,7 +463,7 @@ namespace usb_pad
 		return bindings;
 	}
 
-	gsl::span<const SettingInfo> DJTurntableDevice::Settings(u32 subtype) const
+	std::span<const SettingInfo> DJTurntableDevice::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo info[] = {
 			{SettingInfo::Type::Float, "TurntableMultiplier", TRANSLATE_NOOP("USB", "Turntable Multiplier"),

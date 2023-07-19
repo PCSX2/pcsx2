@@ -22,8 +22,8 @@
 #include "glad_wgl.h"
 #include "glad.h"
 
-#include <gsl/span>
 #include <optional>
+#include <span>
 
 class GLContextWGL final : public GLContext
 {
@@ -31,7 +31,7 @@ public:
 	GLContextWGL(const WindowInfo& wi);
 	~GLContextWGL() override;
 
-	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try);
+	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try);
 
 	void* GetProcAddress(const char* name) override;
 	bool ChangeSurface(const WindowInfo& new_wi) override;
@@ -47,7 +47,7 @@ private:
 
 	HDC GetDCAndSetPixelFormat(HWND hwnd);
 
-	bool Initialize(gsl::span<const Version> versions_to_try);
+	bool Initialize(std::span<const Version> versions_to_try);
 	bool InitializeDC();
 	void ReleaseDC();
 	bool CreatePBuffer();

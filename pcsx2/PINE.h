@@ -29,7 +29,7 @@
 #include <string>
 #include <vector>
 #include <atomic>
-#include <gsl/span>
+#include <span>
 #ifdef _WIN32
 #include <WinSock2.h>
 #include <windows.h>
@@ -152,7 +152,7 @@ protected:
 	 * return value: IPCBuffer containing a buffer with the result
 	 *               of the command and its size.
 	 */
-	IPCBuffer ParseCommand(gsl::span<u8> buf, std::vector<u8>& ret_buffer, u32 buf_size);
+	IPCBuffer ParseCommand(std::span<u8> buf, std::vector<u8>& ret_buffer, u32 buf_size);
 
 	/**
 	 * Formats an IPC buffer
@@ -190,7 +190,7 @@ protected:
 	 * NB: implicitely inlined
 	 */
 	template <typename T>
-	static T FromSpan(gsl::span<u8> span, int i)
+	static T FromSpan(std::span<u8> span, int i)
 	{
 		return *(T*)(&span[i]);
 	}

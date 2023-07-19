@@ -353,12 +353,12 @@ namespace usb_pad
 		return "seamic";
 	}
 
-	gsl::span<const char*> SeamicDevice::SubTypes() const
+	std::span<const char*> SeamicDevice::SubTypes() const
 	{
 		return {};
 	}
 
-	gsl::span<const InputBindingInfo> SeamicDevice::Bindings(u32 subtype) const
+	std::span<const InputBindingInfo> SeamicDevice::Bindings(u32 subtype) const
 	{
 		// TODO: This is likely wrong. Someone who cares can fix it.
 		static constexpr const InputBindingInfo bindings[] = {
@@ -385,7 +385,7 @@ namespace usb_pad
 		return bindings;
 	}
 
-	gsl::span<const SettingInfo> SeamicDevice::Settings(u32 subtype) const
+	std::span<const SettingInfo> SeamicDevice::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo info[] = {
 			{SettingInfo::Type::StringList, "input_device_name", TRANSLATE_NOOP("USB", "Input Device"),

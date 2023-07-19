@@ -25,7 +25,7 @@ GLContextEGLX11::GLContextEGLX11(const WindowInfo& wi)
 }
 GLContextEGLX11::~GLContextEGLX11() = default;
 
-std::unique_ptr<GLContext> GLContextEGLX11::Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try)
+std::unique_ptr<GLContext> GLContextEGLX11::Create(const WindowInfo& wi, std::span<const Version> versions_to_try)
 {
 	std::unique_ptr<GLContextEGLX11> context = std::make_unique<GLContextEGLX11>(wi);
 	if (!context->Initialize(versions_to_try))

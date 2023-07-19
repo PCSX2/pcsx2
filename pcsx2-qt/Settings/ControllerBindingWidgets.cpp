@@ -115,7 +115,7 @@ void ControllerBindingWidget::onTypeChanged()
 
 	if (has_settings)
 	{
-		const gsl::span<const SettingInfo> settings(cinfo->settings, cinfo->num_settings);
+		const std::span<const SettingInfo> settings(cinfo->settings, cinfo->num_settings);
 		m_settings_widget = new ControllerCustomSettingsWidget(
 			settings, m_config_section, std::string(), "Pad", getDialog(), m_ui.stackedWidget);
 		m_ui.stackedWidget->addWidget(m_settings_widget);
@@ -471,7 +471,7 @@ void ControllerMacroEditWidget::updateBinds()
 
 //////////////////////////////////////////////////////////////////////////
 
-ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(gsl::span<const SettingInfo> settings, std::string config_section,
+ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(std::span<const SettingInfo> settings, std::string config_section,
 	std::string config_prefix, const char* translation_ctx, ControllerSettingsDialog* dialog, QWidget* parent_widget)
 	: QWidget(parent_widget)
 	, m_settings(settings)
@@ -932,8 +932,8 @@ void USBDeviceWidget::populatePages()
 		m_settings_widget = nullptr;
 	}
 
-	const gsl::span<const InputBindingInfo> bindings(USB::GetDeviceBindings(m_device_type, m_device_subtype));
-	const gsl::span<const SettingInfo> settings(USB::GetDeviceSettings(m_device_type, m_device_subtype));
+	const std::span<const InputBindingInfo> bindings(USB::GetDeviceBindings(m_device_type, m_device_subtype));
+	const std::span<const SettingInfo> settings(USB::GetDeviceSettings(m_device_type, m_device_subtype));
 	m_ui.bindings->setEnabled(!bindings.empty());
 	m_ui.settings->setEnabled(!settings.empty());
 
@@ -1110,7 +1110,7 @@ std::string USBBindingWidget::getBindingKey(const char* binding_name) const
 	return USB::GetConfigSubKey(getDeviceType(), binding_name);
 }
 
-void USBBindingWidget::createWidgets(gsl::span<const InputBindingInfo> bindings)
+void USBBindingWidget::createWidgets(std::span<const InputBindingInfo> bindings)
 {
 	QGroupBox* axis_gbox = nullptr;
 	QGridLayout* axis_layout = nullptr;
@@ -1199,7 +1199,7 @@ void USBBindingWidget::createWidgets(gsl::span<const InputBindingInfo> bindings)
 }
 
 
-void USBBindingWidget::bindWidgets(gsl::span<const InputBindingInfo> bindings)
+void USBBindingWidget::bindWidgets(std::span<const InputBindingInfo> bindings)
 {
 	SettingsInterface* sif = getDialog()->getProfileSettingsInterface();
 
@@ -1222,7 +1222,7 @@ void USBBindingWidget::bindWidgets(gsl::span<const InputBindingInfo> bindings)
 }
 
 USBBindingWidget* USBBindingWidget::createInstance(
-	const std::string& type, u32 subtype, gsl::span<const InputBindingInfo> bindings, USBDeviceWidget* parent)
+	const std::string& type, u32 subtype, std::span<const InputBindingInfo> bindings, USBDeviceWidget* parent)
 {
 	USBBindingWidget* widget = new USBBindingWidget(parent);
 	bool has_template = false;

@@ -846,7 +846,7 @@ namespace usb_mic
 		// TODO: Reload devices.
 	}
 
-	gsl::span<const SettingInfo> SingstarDevice::Settings(u32 subtype) const
+	std::span<const SettingInfo> SingstarDevice::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo info[] = {
 			{SettingInfo::Type::StringList, "player1_device_name", TRANSLATE_NOOP("USB", "Player 1 Device"),
@@ -872,7 +872,7 @@ namespace usb_mic
 		return TRANSLATE_NOOP("USB", "Logitech USB Mic");
 	}
 
-	gsl::span<const SettingInfo> LogitechMicDevice::Settings(u32 subtype) const
+	std::span<const SettingInfo> LogitechMicDevice::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo info[] = {
 			{SettingInfo::Type::StringList, "input_device_name", TRANSLATE_NOOP("USB", "Input Device"),

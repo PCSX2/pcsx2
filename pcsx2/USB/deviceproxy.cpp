@@ -29,17 +29,17 @@ RegisterDevice* RegisterDevice::registerDevice = nullptr;
 
 DeviceProxy::~DeviceProxy() = default;
 
-gsl::span<const char*> DeviceProxy::SubTypes() const
+std::span<const char*> DeviceProxy::SubTypes() const
 {
 	return {};
 }
 
-gsl::span<const InputBindingInfo> DeviceProxy::Bindings(u32 subtype) const
+std::span<const InputBindingInfo> DeviceProxy::Bindings(u32 subtype) const
 {
 	return {};
 }
 
-gsl::span<const SettingInfo> DeviceProxy::Settings(u32 subtype) const
+std::span<const SettingInfo> DeviceProxy::Settings(u32 subtype) const
 {
 	return {};
 }

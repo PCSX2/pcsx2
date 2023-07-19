@@ -1053,7 +1053,7 @@ namespace usb_msd
 		// TODO: Handle changes to path.
 	}
 
-	gsl::span<const SettingInfo> MsdDevice::Settings(u32 subtype) const
+	std::span<const SettingInfo> MsdDevice::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo settings[] = {
 			{SettingInfo::Type::Path, "ImagePath", TRANSLATE_NOOP("USB", "Image Path"),

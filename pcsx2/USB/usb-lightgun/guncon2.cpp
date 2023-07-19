@@ -478,7 +478,7 @@ namespace usb_lightgun
 			s->button_state &= ~bit;
 	}
 
-	gsl::span<const InputBindingInfo> GunCon2Device::Bindings(u32 subtype) const
+	std::span<const InputBindingInfo> GunCon2Device::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo bindings[] = {
 			//{"pointer", "Pointer/Aiming", InputBindingInfo::Type::Pointer, BID_POINTER_X, GenericInputBinding::Unknown},
@@ -502,7 +502,7 @@ namespace usb_lightgun
 		return bindings;
 	}
 
-	gsl::span<const SettingInfo> GunCon2Device::Settings(u32 subtype) const
+	std::span<const SettingInfo> GunCon2Device::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo info[] = {
 			{SettingInfo::Type::Boolean, "custom_config", TRANSLATE_NOOP("USB", "Manual Screen Configuration"),

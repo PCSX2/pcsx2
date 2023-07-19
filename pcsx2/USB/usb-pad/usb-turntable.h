@@ -101,8 +101,8 @@ namespace usb_pad
 		float GetBindingValue(const USBDevice* dev, u32 bind_index) const override;
 		void SetBindingValue(USBDevice* dev, u32 bind_index, float value) const override;
 		void UpdateSettings(USBDevice* dev, SettingsInterface& si) const override;
-		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const override;
-		gsl::span<const SettingInfo> Settings(u32 subtype) const override;
+		std::span<const InputBindingInfo> Bindings(u32 subtype) const override;
+		std::span<const SettingInfo> Settings(u32 subtype) const override;
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
 	};
 

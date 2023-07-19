@@ -948,7 +948,7 @@ namespace usb_hid
 		return "hidkbd";
 	}
 
-	gsl::span<const InputBindingInfo> HIDKbdDevice::Bindings(u32 subtype) const
+	std::span<const InputBindingInfo> HIDKbdDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo info[] = {
 			{"Keyboard", TRANSLATE_NOOP("USB", "Keyboard"), InputBindingInfo::Type::Keyboard, 0, GenericInputBinding::Unknown},
@@ -1041,7 +1041,7 @@ namespace usb_hid
 		return !sw.HasError();
 	}
 
-	gsl::span<const InputBindingInfo> HIDMouseDevice::Bindings(u32 subtype) const
+	std::span<const InputBindingInfo> HIDMouseDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo info[] = {
 			{"Pointer", TRANSLATE_NOOP("USB", "Pointer"), InputBindingInfo::Type::Pointer, INPUT_BUTTON__MAX, GenericInputBinding::Unknown},

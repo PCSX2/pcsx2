@@ -40,7 +40,6 @@
 #include "common/Timer.h"
 
 #include "fmt/core.h"
-#include "gsl/span"
 #include "imgui.h"
 
 #include <array>
@@ -48,6 +47,7 @@
 #include <cmath>
 #include <deque>
 #include <mutex>
+#include <span>
 #include <tuple>
 #include <unordered_map>
 
@@ -60,7 +60,7 @@ namespace ImGuiManager
 	static void DrawInputRecordingOverlay(float& position_y);
 } // namespace ImGuiManager
 
-static std::tuple<float, float> GetMinMax(gsl::span<const float> values)
+static std::tuple<float, float> GetMinMax(std::span<const float> values)
 {
 	GSVector4 vmin(GSVector4::load<false>(values.data()));
 	GSVector4 vmax(vmin);
@@ -565,7 +565,7 @@ void ImGuiManager::DrawInputsOverlay()
 		if (EmuConfig.USB.Ports[port].DeviceType < 0)
 			continue;
 
-		const gsl::span<const InputBindingInfo> bindings(USB::GetDeviceBindings(port));
+		const std::span<const InputBindingInfo> bindings(USB::GetDeviceBindings(port));
 		if (bindings.empty())
 			continue;
 

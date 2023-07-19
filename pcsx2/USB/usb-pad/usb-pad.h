@@ -91,9 +91,9 @@ namespace usb_pad
 		void SetBindingValue(USBDevice* dev, u32 bind_index, float value) const override;
 		void InputDeviceConnected(USBDevice* dev, const std::string_view& identifier) const override;
 		void InputDeviceDisconnected(USBDevice* dev, const std::string_view& identifier) const override;
-		gsl::span<const char*> SubTypes() const override;
-		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const override;
-		gsl::span<const SettingInfo> Settings(u32 subtype) const override;
+		std::span<const char*> SubTypes() const override;
+		std::span<const InputBindingInfo> Bindings(u32 subtype) const override;
+		std::span<const SettingInfo> Settings(u32 subtype) const override;
 	};
 
 	class RBDrumKitDevice final : public PadDevice
@@ -101,9 +101,9 @@ namespace usb_pad
 	public:
 		const char* Name() const override;
 		const char* TypeName() const override;
-		gsl::span<const char*> SubTypes() const override;
-		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const override;
-		gsl::span<const SettingInfo> Settings(u32 subtype) const override;
+		std::span<const char*> SubTypes() const override;
+		std::span<const InputBindingInfo> Bindings(u32 subtype) const override;
+		std::span<const SettingInfo> Settings(u32 subtype) const override;
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
 	};
 
@@ -112,9 +112,9 @@ namespace usb_pad
 	public:
 		const char* Name() const;
 		const char* TypeName() const;
-		gsl::span<const char*> SubTypes() const;
-		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const;
-		gsl::span<const SettingInfo> Settings(u32 subtype) const;
+		std::span<const char*> SubTypes() const;
+		std::span<const InputBindingInfo> Bindings(u32 subtype) const;
+		std::span<const SettingInfo> Settings(u32 subtype) const;
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const;
 	};
 
@@ -123,9 +123,9 @@ namespace usb_pad
 	public:
 		const char* Name() const;
 		const char* TypeName() const;
-		gsl::span<const char*> SubTypes() const;
-		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const;
-		gsl::span<const SettingInfo> Settings(u32 subtype) const;
+		std::span<const char*> SubTypes() const;
+		std::span<const InputBindingInfo> Bindings(u32 subtype) const;
+		std::span<const SettingInfo> Settings(u32 subtype) const;
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const;
 		bool Freeze(USBDevice* dev, StateWrapper& sw) const;
 	};
@@ -135,9 +135,9 @@ namespace usb_pad
 	public:
 		const char* Name() const;
 		const char* TypeName() const;
-		gsl::span<const char*> SubTypes() const;
-		gsl::span<const InputBindingInfo> Bindings(u32 subtype) const;
-		gsl::span<const SettingInfo> Settings(u32 subtype) const;
+		std::span<const char*> SubTypes() const;
+		std::span<const InputBindingInfo> Bindings(u32 subtype) const;
+		std::span<const SettingInfo> Settings(u32 subtype) const;
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const;
 	};
 

@@ -514,14 +514,14 @@ namespace usb_eyetoy
 		// TODO: Update device name
 	}
 
-	gsl::span<const char*> EyeToyWebCamDevice::SubTypes() const
+	std::span<const char*> EyeToyWebCamDevice::SubTypes() const
 	{
 		static const char* subtypes[] = {
 			TRANSLATE_NOOP("USB", "Sony EyeToy"), TRANSLATE_NOOP("USB", "Konami Capture Eye")};
 		return subtypes;
 	}
 
-	gsl::span<const SettingInfo> EyeToyWebCamDevice::Settings(u32 subtype) const
+	std::span<const SettingInfo> EyeToyWebCamDevice::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo info[] = {
 			{SettingInfo::Type::StringList, "device_name", TRANSLATE_NOOP("USB", "Device Name"),

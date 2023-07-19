@@ -576,32 +576,32 @@ const char* USB::GetDeviceSubtypeName(const std::string_view& device, u32 subtyp
 	if (!dev)
 		return "Unknown";
 
-	const gsl::span<const char*> subtypes(dev->SubTypes());
+	const std::span<const char*> subtypes(dev->SubTypes());
 	if (subtypes.empty() || subtype >= subtypes.size())
 		return "";
 
 	return subtypes[subtype];
 }
 
-gsl::span<const char*> USB::GetDeviceSubtypes(const std::string_view& device)
+std::span<const char*> USB::GetDeviceSubtypes(const std::string_view& device)
 {
 	const DeviceProxy* dev = RegisterDevice::instance().Device(device);
-	return dev ? dev->SubTypes() : gsl::span<const char*>();
+	return dev ? dev->SubTypes() : std::span<const char*>();
 }
 
-gsl::span<const InputBindingInfo> USB::GetDeviceBindings(const std::string_view& device, u32 subtype)
+std::span<const InputBindingInfo> USB::GetDeviceBindings(const std::string_view& device, u32 subtype)
 {
 	const DeviceProxy* dev = RegisterDevice::instance().Device(device);
-	return dev ? dev->Bindings(subtype) : gsl::span<const InputBindingInfo>();
+	return dev ? dev->Bindings(subtype) : std::span<const InputBindingInfo>();
 }
 
-gsl::span<const SettingInfo> USB::GetDeviceSettings(const std::string_view& device, u32 subtype)
+std::span<const SettingInfo> USB::GetDeviceSettings(const std::string_view& device, u32 subtype)
 {
 	const DeviceProxy* dev = RegisterDevice::instance().Device(device);
-	return dev ? dev->Settings(subtype) : gsl::span<const SettingInfo>();
+	return dev ? dev->Settings(subtype) : std::span<const SettingInfo>();
 }
 
-gsl::span<const InputBindingInfo> USB::GetDeviceBindings(u32 port)
+std::span<const InputBindingInfo> USB::GetDeviceBindings(u32 port)
 {
 	pxAssert(port < NUM_PORTS);
 	if (s_usb_device_proxy[port])

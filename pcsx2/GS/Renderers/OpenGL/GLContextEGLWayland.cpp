@@ -36,7 +36,7 @@ GLContextEGLWayland::~GLContextEGLWayland()
 		dlclose(m_wl_module);
 }
 
-std::unique_ptr<GLContext> GLContextEGLWayland::Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try)
+std::unique_ptr<GLContext> GLContextEGLWayland::Create(const WindowInfo& wi, std::span<const Version> versions_to_try)
 {
 	std::unique_ptr<GLContextEGLWayland> context = std::make_unique<GLContextEGLWayland>(wi);
 	if (!context->LoadModule() || !context->Initialize(versions_to_try))
