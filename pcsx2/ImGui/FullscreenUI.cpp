@@ -4069,7 +4069,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 		}
 
 		const u32 subtype = USB::GetConfigSubType(*bsi, port, type);
-		const gsl::span<const char*> subtypes(USB::GetDeviceSubtypes(type));
+		const std::span<const char*> subtypes(USB::GetDeviceSubtypes(type));
 		if (!subtypes.empty())
 		{
 			const char* subtype_name = USB::GetDeviceSubtypeName(type, subtype);
@@ -4094,7 +4094,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 			}
 		}
 
-		const gsl::span<const InputBindingInfo> bindings(USB::GetDeviceBindings(type, subtype));
+		const std::span<const InputBindingInfo> bindings(USB::GetDeviceBindings(type, subtype));
 		if (!bindings.empty())
 		{
 			MenuHeading(fmt::format(ICON_FA_KEYBOARD " {} Bindings", USB::GetDeviceName(type)).c_str());
@@ -4110,7 +4110,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 				DrawInputBindingButton(bsi, bi.bind_type, section.c_str(), USB::GetConfigSubKey(type, bi.name).c_str(), bi.display_name);
 		}
 
-		const gsl::span<const SettingInfo> settings(USB::GetDeviceSettings(type, subtype));
+		const std::span<const SettingInfo> settings(USB::GetDeviceSettings(type, subtype));
 		if (!settings.empty())
 		{
 			MenuHeading(fmt::format(ICON_FA_SLIDERS_H " {} Settings", USB::GetDeviceName(type)).c_str());

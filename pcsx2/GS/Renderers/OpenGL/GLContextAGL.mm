@@ -46,7 +46,7 @@ GLContextAGL::~GLContextAGL()
 	[m_context release];
 }
 
-std::unique_ptr<GLContext> GLContextAGL::Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try)
+std::unique_ptr<GLContext> GLContextAGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try)
 {
 	std::unique_ptr<GLContextAGL> context = std::make_unique<GLContextAGL>(wi);
 	if (!context->Initialize(versions_to_try))
@@ -55,7 +55,7 @@ std::unique_ptr<GLContext> GLContextAGL::Create(const WindowInfo& wi, gsl::span<
 	return context;
 }
 
-bool GLContextAGL::Initialize(gsl::span<const Version> versions_to_try)
+bool GLContextAGL::Initialize(std::span<const Version> versions_to_try)
 {
 	for (const Version& cv : versions_to_try)
 	{

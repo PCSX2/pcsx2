@@ -16,12 +16,11 @@
 #pragma once
 
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
-
-#include "gsl/span"
 
 #include "Config.h"
 
@@ -41,11 +40,11 @@ namespace USB
 	std::vector<std::pair<const char*, const char*>> GetDeviceTypes();
 	const char* GetDeviceName(const std::string_view& device);
 	const char* GetDeviceSubtypeName(const std::string_view& device, u32 subtype);
-	gsl::span<const char*> GetDeviceSubtypes(const std::string_view& device);
-	gsl::span<const InputBindingInfo> GetDeviceBindings(const std::string_view& device, u32 subtype);
-	gsl::span<const SettingInfo> GetDeviceSettings(const std::string_view& device, u32 subtype);
+	std::span<const char*> GetDeviceSubtypes(const std::string_view& device);
+	std::span<const InputBindingInfo> GetDeviceBindings(const std::string_view& device, u32 subtype);
+	std::span<const SettingInfo> GetDeviceSettings(const std::string_view& device, u32 subtype);
 
-	gsl::span<const InputBindingInfo> GetDeviceBindings(u32 port);
+	std::span<const InputBindingInfo> GetDeviceBindings(u32 port);
 	float GetDeviceBindValue(u32 port, u32 bind_index);
 	void SetDeviceBindValue(u32 port, u32 bind_index, float value);
 

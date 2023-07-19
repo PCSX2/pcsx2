@@ -89,7 +89,7 @@ static SndOutModule* mods[] =
 
 static SndOutModule* s_output_module;
 
-gsl::span<SndOutModule*> GetSndOutModules()
+std::span<SndOutModule*> GetSndOutModules()
 {
 	return mods;
 }

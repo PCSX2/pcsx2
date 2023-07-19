@@ -19,7 +19,7 @@
 
 #include "glad.h"
 
-#include <gsl/span>
+#include <span>
 
 #if defined(__APPLE__) && defined(__OBJC__)
 #import <AppKit/AppKit.h>
@@ -35,7 +35,7 @@ public:
 	GLContextAGL(const WindowInfo& wi);
 	~GLContextAGL() override;
 
-	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try);
+	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try);
 
 	void* GetProcAddress(const char* name) override;
 	bool ChangeSurface(const WindowInfo& new_wi) override;
@@ -47,7 +47,7 @@ public:
 	std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi) override;
 
 private:
-	bool Initialize(gsl::span<const Version> versions_to_try);
+	bool Initialize(std::span<const Version> versions_to_try);
 	bool CreateContext(NSOpenGLContext* share_context, int profile, bool make_current);
 	void BindContextToView();
 	void CleanupView();

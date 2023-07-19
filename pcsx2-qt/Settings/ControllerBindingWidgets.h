@@ -19,7 +19,7 @@
 
 #include <QtWidgets/QWidget>
 
-#include "gsl/span"
+#include <span>
 
 #include "ui_ControllerBindingWidget.h"
 #include "ui_ControllerBindingWidget_DualShock2.h"
@@ -139,7 +139,7 @@ class ControllerCustomSettingsWidget : public QWidget
 	Q_OBJECT
 
 public:
-	ControllerCustomSettingsWidget(gsl::span<const SettingInfo> settings, std::string config_section, std::string config_prefix,
+	ControllerCustomSettingsWidget(std::span<const SettingInfo> settings, std::string config_section, std::string config_prefix,
 		const char* translation_ctx, ControllerSettingsDialog* dialog, QWidget* parent_widget);
 	~ControllerCustomSettingsWidget();
 
@@ -149,7 +149,7 @@ private Q_SLOTS:
 private:
 	void createSettingWidgets(const char* translation_ctx, QWidget* widget_parent, QGridLayout* layout);
 
-	gsl::span<const SettingInfo> m_settings;
+	std::span<const SettingInfo> m_settings;
 	std::string m_config_section;
 	std::string m_config_prefix;
 	ControllerSettingsDialog* m_dialog;
@@ -252,11 +252,11 @@ public:
 
 	QIcon getIcon() const;
 
-	static USBBindingWidget* createInstance(const std::string& type, u32 subtype, gsl::span<const InputBindingInfo> bindings, USBDeviceWidget* parent);
+	static USBBindingWidget* createInstance(const std::string& type, u32 subtype, std::span<const InputBindingInfo> bindings, USBDeviceWidget* parent);
 
 protected:
 	std::string getBindingKey(const char* binding_name) const;
 
-	void createWidgets(gsl::span<const InputBindingInfo> bindings);
-	void bindWidgets(gsl::span<const InputBindingInfo> bindings);
+	void createWidgets(std::span<const InputBindingInfo> bindings);
+	void bindWidgets(std::span<const InputBindingInfo> bindings);
 };

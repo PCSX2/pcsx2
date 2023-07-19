@@ -368,7 +368,7 @@ namespace usb_printer
 		return true;
 	}
 
-	gsl::span<const char*> PrinterDevice::SubTypes() const
+	std::span<const char*> PrinterDevice::SubTypes() const
 	{
 		return sPrinterNames;
 	}

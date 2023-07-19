@@ -82,7 +82,7 @@ namespace usb_pad
 		return exponent;
 	}
 
-	static gsl::span<const InputBindingInfo> GetWheelBindings(PS2WheelTypes wt)
+	static std::span<const InputBindingInfo> GetWheelBindings(PS2WheelTypes wt)
 	{
 		switch (wt)
 		{
@@ -169,7 +169,7 @@ namespace usb_pad
 		}
 	}
 
-	static gsl::span<const SettingInfo> GetWheelSettings(PS2WheelTypes wt)
+	static std::span<const SettingInfo> GetWheelSettings(PS2WheelTypes wt)
 	{
 		if (wt <= WT_GT_FORCE)
 		{
@@ -874,7 +874,7 @@ namespace usb_pad
 		s->SetBindValue(bind_index, value);
 	}
 
-	gsl::span<const char*> PadDevice::SubTypes() const
+	std::span<const char*> PadDevice::SubTypes() const
 	{
 		static const char* subtypes[] = {TRANSLATE_NOOP("USB", "Driving Force"),
 			TRANSLATE_NOOP("USB", "Driving Force Pro"), TRANSLATE_NOOP("USB", "Driving Force Pro (rev11.02)"),
@@ -882,12 +882,12 @@ namespace usb_pad
 		return subtypes;
 	}
 
-	gsl::span<const InputBindingInfo> PadDevice::Bindings(u32 subtype) const
+	std::span<const InputBindingInfo> PadDevice::Bindings(u32 subtype) const
 	{
 		return GetWheelBindings(static_cast<PS2WheelTypes>(subtype));
 	}
 
-	gsl::span<const SettingInfo> PadDevice::Settings(u32 subtype) const
+	std::span<const SettingInfo> PadDevice::Settings(u32 subtype) const
 	{
 		return GetWheelSettings(static_cast<PS2WheelTypes>(subtype));
 	}
@@ -939,12 +939,12 @@ namespace usb_pad
 		return nullptr;
 	}
 
-	gsl::span<const char*> RBDrumKitDevice::SubTypes() const
+	std::span<const char*> RBDrumKitDevice::SubTypes() const
 	{
 		return {};
 	}
 
-	gsl::span<const InputBindingInfo> RBDrumKitDevice::Bindings(u32 subtype) const
+	std::span<const InputBindingInfo> RBDrumKitDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo bindings[] = {
 			{"Blue", TRANSLATE_NOOP("USB", "Blue"), InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::R1},
@@ -959,7 +959,7 @@ namespace usb_pad
 		return bindings;
 	}
 
-	gsl::span<const SettingInfo> RBDrumKitDevice::Settings(u32 subtype) const
+	std::span<const SettingInfo> RBDrumKitDevice::Settings(u32 subtype) const
 	{
 		return {};
 	}
@@ -976,12 +976,12 @@ namespace usb_pad
 		return "BuzzDevice";
 	}
 
-	gsl::span<const char*> BuzzDevice::SubTypes() const
+	std::span<const char*> BuzzDevice::SubTypes() const
 	{
 		return {};
 	}
 
-	gsl::span<const InputBindingInfo> BuzzDevice::Bindings(u32 subtype) const
+	std::span<const InputBindingInfo> BuzzDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo bindings[] = {
 			{"Red1", TRANSLATE_NOOP("USB", "Player 1 Red"), InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Circle},
@@ -1012,7 +1012,7 @@ namespace usb_pad
 		return bindings;
 	}
 
-	gsl::span<const SettingInfo> BuzzDevice::Settings(u32 subtype) const
+	std::span<const SettingInfo> BuzzDevice::Settings(u32 subtype) const
 	{
 		return {};
 	}
@@ -1050,12 +1050,12 @@ namespace usb_pad
 		return "Keyboardmania";
 	}
 
-	gsl::span<const char*> KeyboardmaniaDevice::SubTypes() const
+	std::span<const char*> KeyboardmaniaDevice::SubTypes() const
 	{
 		return {};
 	}
 
-	gsl::span<const InputBindingInfo> KeyboardmaniaDevice::Bindings(u32 subtype) const
+	std::span<const InputBindingInfo> KeyboardmaniaDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo bindings[] = {
 			{"C1", TRANSLATE_NOOP("USB", "C 1"), InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Unknown},
@@ -1092,7 +1092,7 @@ namespace usb_pad
 		return bindings;
 	}
 
-	gsl::span<const SettingInfo> KeyboardmaniaDevice::Settings(u32 subtype) const
+	std::span<const SettingInfo> KeyboardmaniaDevice::Settings(u32 subtype) const
 	{
 		return {};
 	}

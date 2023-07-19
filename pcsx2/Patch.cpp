@@ -33,11 +33,11 @@
 
 #include "IconsFontAwesome5.h"
 #include "fmt/format.h"
-#include "gsl/span"
 
 #include <algorithm>
 #include <cstring>
 #include <memory>
+#include <span>
 #include <sstream>
 #include <vector>
 
@@ -148,7 +148,7 @@ namespace Patch
 
 	static void TrimPatchLine(std::string& buffer);
 	static int PatchTableExecute(PatchGroup* group, const std::string_view& lhs, const std::string_view& rhs,
-		const gsl::span<const PatchTextTable>& Table);
+		const std::span<const PatchTextTable>& Table);
 	static void LoadPatchLine(PatchGroup* group, const std::string_view& line);
 	static u32 LoadPatchesFromString(PatchList* patch_list, const std::string& patch_file);
 	static bool OpenPatchesZip();
@@ -215,7 +215,7 @@ void Patch::TrimPatchLine(std::string& buffer)
 }
 
 int Patch::PatchTableExecute(PatchGroup* group, const std::string_view& lhs, const std::string_view& rhs,
-	const gsl::span<const PatchTextTable>& Table)
+	const std::span<const PatchTextTable>& Table)
 {
 	int i = 0;
 
