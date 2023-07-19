@@ -42,7 +42,7 @@ protected:
 	virtual bool SetDisplay();
 	virtual EGLNativeWindowType GetNativeWindow(EGLConfig config);
 
-	bool Initialize(gsl::span<const Version> versions_to_try);
+	bool Initialize(std::span<const Version> versions_to_try);
 	bool CreateDisplay();
 	bool CreateContext(const Version& version, EGLContext share_context);
 	bool CreateContextAndSurface(const Version& version, EGLContext share_context, bool make_current);

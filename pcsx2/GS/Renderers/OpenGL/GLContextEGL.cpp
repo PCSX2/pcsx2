@@ -44,7 +44,7 @@ std::unique_ptr<GLContext> GLContextEGL::Create(const WindowInfo& wi, std::span<
 	return context;
 }
 
-bool GLContextEGL::Initialize(gsl::span<const Version> versions_to_try)
+bool GLContextEGL::Initialize(std::span<const Version> versions_to_try)
 {
 	if (!gladLoadEGL())
 	{
