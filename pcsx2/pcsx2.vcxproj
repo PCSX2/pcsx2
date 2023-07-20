@@ -70,9 +70,14 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="..\bin\resources\shaders\opengl\imgui.glsl" />
+    <None Include="..\bin\resources\shaders\opengl\present.glsl" />
     <None Include="..\bin\resources\shaders\vulkan\convert.glsl" />
+    <None Include="..\bin\resources\shaders\vulkan\imgui.glsl" />
     <None Include="..\bin\resources\shaders\vulkan\interlace.glsl" />
     <None Include="..\bin\resources\shaders\vulkan\merge.glsl" />
+    <None Include="..\bin\resources\shaders\vulkan\present.glsl" />
+    <None Include="..\bin\resources\shaders\vulkan\shadeboost.glsl" />
     <None Include="..\bin\resources\shaders\vulkan\tfx.glsl" />
     <None Include="..\bin\resources\shaders\opengl\convert.glsl" />
     <None Include="..\bin\resources\shaders\opengl\interlace.glsl" />
@@ -86,6 +91,8 @@
     <None Include="..\bin\resources\shaders\dx11\merge.fx" />
     <None Include="..\bin\resources\shaders\dx11\shadeboost.fx" />
     <None Include="..\bin\resources\shaders\dx11\tfx.fx" />
+    <None Include="..\bin\resources\shaders\dx11\imgui.fx" />
+    <None Include="..\bin\resources\shaders\dx11\present.fx" />
     <None Include="GS\Renderers\Vulkan\VKEntryPoints.inl" />
     <None Include="Docs\License.txt" />
     <None Include="ps2\eeHwTraceLog.inl" />
