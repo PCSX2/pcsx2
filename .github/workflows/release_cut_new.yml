@@ -68,6 +68,7 @@ jobs:
           draft: true
           prerelease: true
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
+
   # Build Everything
   # Linux
   build_linux_qt:
@@ -81,6 +82,7 @@ jobs:
       compiler: clang
       cmakeflags: ""
       buildAppImage: true
+      fetchTags: true
     secrets: inherit
 
   build_linux_flatpak:
@@ -95,6 +97,7 @@ jobs:
       cmakeflags: ""
       branch: "stable"
       publish: false
+      fetchTags: true
     secrets: inherit
 
   # Windows
@@ -109,6 +112,7 @@ jobs:
       configuration: CMake
       buildSystem: cmake
       cmakeFlags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
+      fetchTags: true
     secrets: inherit
 
   # MacOS
@@ -120,6 +124,7 @@ jobs:
     uses: ./.github/workflows/macos_build.yml
     with:
       jobName: "MacOS Build"
+      fetchTags: true
     secrets: inherit
 
   # Upload the Artifacts

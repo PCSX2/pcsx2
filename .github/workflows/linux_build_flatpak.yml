@@ -28,10 +28,14 @@ on:
         required: false
         type: boolean
         default: false
-      patches_url:
+      patchesUrl:
         required: false
         type: string
         default: https://github.com/PCSX2/pcsx2_patches/releases/latest/download
+      fetchTags:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build_linux:
@@ -49,7 +53,7 @@ jobs:
       # it doesn't fetch tags, therefore we don't get a version. So grab them manually.
       # actions/checkout elides tags, fetch them primarily for releases
       - name: Fetch tags
-        id: fetch-tags
+        if: ${{ inputs.fetchTags }}
         run: git fetch --tags --no-recurse-submodules
 
       - name: Prepare Artifact Metadata
@@ -73,7 +77,7 @@ jobs:
       - name: Download patches
         run: |
           cd bin/resources
-          aria2c -Z "${{ inputs.patches_url }}/patches.zip"
+          aria2c -Z "${{ inputs.patchesUrl }}/patches.zip"
 
       - name: Generate AppStream XML
         run: |

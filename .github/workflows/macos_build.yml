@@ -10,10 +10,14 @@ on:
         required: false
         type: string
         default: macos-13
-      patches_url:
+      patchesUrl:
         required: false
         type: string
         default: https://github.com/PCSX2/pcsx2_patches/releases/latest/download
+      fetchTags:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build_macos:
@@ -37,6 +41,7 @@ jobs:
 
       # actions/checkout elides tags, fetch them primarily for releases
       - name: Fetch Tags
+        if: ${{ inputs.fetchTags }}
         run: git fetch --tags --no-recurse-submodules
 
       - name: Use Xcode 14.3.1
@@ -81,7 +86,7 @@ jobs:
       - name: Download patches
         run: |
           cd bin/resources
-          aria2c -Z "${{ inputs.patches_url }}/patches.zip"
+          aria2c -Z "${{ inputs.patchesUrl }}/patches.zip"
 
       # -- SETUP CCACHE - https://cristianadam.eu/20200113/speeding-up-c-plus-plus-github-actions-using-ccache/
       - name: Prepare ccache timestamp
