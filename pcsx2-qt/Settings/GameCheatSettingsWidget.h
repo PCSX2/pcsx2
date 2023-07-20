@@ -39,7 +39,7 @@ class GameCheatSettingsWidget : public QWidget
 	Q_OBJECT
 
 public:
-	GameCheatSettingsWidget(const GameList::Entry* entry, SettingsDialog* dialog, QWidget* parent);
+	GameCheatSettingsWidget(SettingsDialog* dialog, QWidget* parent);
 	~GameCheatSettingsWidget();
 
 private Q_SLOTS:
@@ -58,9 +58,6 @@ private:
 
 	Ui::GameCheatSettingsWidget m_ui;
 	SettingsDialog* m_dialog;
-
-	std::string m_serial;
-	u32 m_crc;
 
 	UnorderedStringMap<QTreeWidgetItem*> m_parent_map;
 	std::vector<Patch::PatchInfo> m_patches;

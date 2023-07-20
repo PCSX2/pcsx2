@@ -1126,8 +1126,9 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		if (action->isEnabled())
 		{
 			connect(action, &QAction::triggered, [entry]() {
-				SettingsDialog::openGamePropertiesDialog(
-					entry, (entry->type != GameList::EntryType::ELF) ? std::string_view(entry->serial) : std::string_view(), entry->crc);
+				SettingsDialog::openGamePropertiesDialog(entry, entry->title,
+					(entry->type != GameList::EntryType::ELF) ? entry->serial : std::string(),
+					entry->crc);
 			});
 		}
 
@@ -1319,13 +1320,15 @@ void MainWindow::onViewGamePropertiesActionTriggered()
 		return;
 
 	// prefer to use a game list entry, if we have one, that way the summary is populated
-	if (!m_current_disc_path.isEmpty() && m_current_elf_override.isEmpty())
+	if (!m_current_disc_path.isEmpty() || !m_current_elf_override.isEmpty())
 	{
 		auto lock = GameList::GetLock();
-		const GameList::Entry* entry = GameList::GetEntryForPath(m_current_disc_path.toUtf8().constData());
+		const QString& path = (m_current_elf_override.isEmpty() ? m_current_disc_path : m_current_elf_override);
+		const GameList::Entry* entry = GameList::GetEntryForPath(path.toUtf8().constData());
 		if (entry)
 		{
-			SettingsDialog::openGamePropertiesDialog(entry, entry->serial, entry->crc);
+			SettingsDialog::openGamePropertiesDialog(
+				entry, entry->title, m_current_elf_override.isEmpty() ? entry->serial : std::string(), entry->crc);
 			return;
 		}
 	}
@@ -1339,9 +1342,15 @@ void MainWindow::onViewGamePropertiesActionTriggered()
 
 	// can't use serial for ELFs, because they might have a disc set
 	if (m_current_elf_override.isEmpty())
-		SettingsDialog::openGamePropertiesDialog(nullptr, m_current_disc_serial.toStdString(), m_current_disc_crc);
+	{
+		SettingsDialog::openGamePropertiesDialog(
+			nullptr, m_current_title.toStdString(), m_current_disc_serial.toStdString(), m_current_disc_crc);
+	}
 	else
-		SettingsDialog::openGamePropertiesDialog(nullptr, std::string_view(), m_current_disc_crc);
+	{
+		SettingsDialog::openGamePropertiesDialog(
+			nullptr, m_current_title.toStdString(), std::string(), m_current_disc_crc);
+	}
 }
 
 void MainWindow::onGitHubRepositoryActionTriggered()
