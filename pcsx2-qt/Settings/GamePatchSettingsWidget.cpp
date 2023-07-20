@@ -59,10 +59,8 @@ void GamePatchDetailsWidget::onEnabledStateChanged(int state)
 	g_emu_thread->reloadGameSettings();
 }
 
-GamePatchSettingsWidget::GamePatchSettingsWidget(const GameList::Entry* entry, SettingsDialog* dialog, QWidget* parent)
+GamePatchSettingsWidget::GamePatchSettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	: m_dialog(dialog)
-	, m_serial(entry->serial)
-	, m_crc(entry->crc)
 {
 	m_ui.setupUi(this);
 	m_ui.scrollArea->setFrameShape(QFrame::WinPanel);
@@ -86,7 +84,7 @@ void GamePatchSettingsWidget::onReloadClicked()
 void GamePatchSettingsWidget::reloadList()
 {
 	// Patches shouldn't have any unlabelled patch groups, because they're new.
-	std::vector<Patch::PatchInfo> patches = Patch::GetPatchInfo(m_serial, m_crc, false, nullptr);
+	std::vector<Patch::PatchInfo> patches = Patch::GetPatchInfo(m_dialog->getSerial(), m_dialog->getDiscCRC(), false, nullptr);
 	std::vector<std::string> enabled_list =
 		m_dialog->getSettingsInterface()->GetStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY);
 

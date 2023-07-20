@@ -53,15 +53,17 @@ static QList<SettingsDialog*> s_open_game_properties_dialogs;
 
 SettingsDialog::SettingsDialog(QWidget* parent)
 	: QDialog(parent)
-	, m_game_crc(0)
+	, m_disc_crc(0)
 {
 	setupUi(nullptr);
 }
 
-SettingsDialog::SettingsDialog(QWidget* parent, std::unique_ptr<SettingsInterface> sif, const GameList::Entry* game, u32 game_crc)
+SettingsDialog::SettingsDialog(QWidget* parent, std::unique_ptr<SettingsInterface> sif, const GameList::Entry* game,
+	std::string serial, u32 disc_crc)
 	: QDialog(parent)
 	, m_sif(std::move(sif))
-	, m_game_crc(game_crc)
+	, m_serial(std::move(serial))
+	, m_disc_crc(disc_crc)
 {
 	setupUi(game);
 
@@ -77,10 +79,19 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 
 	if (isPerGameSettings())
 	{
+		QString summary = tr("<strong>Summary</strong><hr>Eventually this will be where we can see patches and compute "
+							 "hashes/verify dumps/etc.");
 		if (game)
 		{
-			addWidget(new GameSummaryWidget(game, this, m_ui.settingsContainer), tr("Summary"), QStringLiteral("file-list-line"),
-				tr("<strong>Summary</strong><hr>Eventually this will be where we can see patches and compute hashes/verify dumps/etc."));
+			addWidget(new GameSummaryWidget(game, this, m_ui.settingsContainer), tr("Summary"),
+				QStringLiteral("file-list-line"), std::move(summary));
+		}
+		else
+		{
+			QLabel* placeholder_label =
+				new QLabel(tr("Summary is unavailable for files not present in game list."), m_ui.settingsContainer);
+			placeholder_label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+			addWidget(placeholder_label, tr("Summary"), QStringLiteral("file-list-line"), std::move(summary));
 		}
 
 		m_ui.restoreDefaultsButton->setVisible(false);
@@ -108,13 +119,13 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 		tr("<strong>Emulation Settings</strong><hr>These options determine the configuration of frame pacing and game "
 		   "settings.<br><br>Mouse over an option for additional information."));
 
-	if (isPerGameSettings() && game && game->crc != 0)
+	if (isPerGameSettings())
 	{
-		addWidget(m_game_patch_settings_widget = new GamePatchSettingsWidget(game, this, m_ui.settingsContainer),
+		addWidget(m_game_patch_settings_widget = new GamePatchSettingsWidget(this, m_ui.settingsContainer),
 			tr("Patches"), QStringLiteral("band-aid-line"),
 			tr("<strong>Patches</strong><hr>This section allows you to select optional patches to apply to the game, "
 			   "which may provide performance, visual, or gameplay improvements."));
-		addWidget(m_game_cheat_settings_widget = new GameCheatSettingsWidget(game, this, m_ui.settingsContainer),
+		addWidget(m_game_cheat_settings_widget = new GameCheatSettingsWidget(this, m_ui.settingsContainer),
 			tr("Cheats"), QStringLiteral("cheats-line"),
 			tr("<strong>Cheats</strong><hr>This section allows you to select which cheats you wish to enable. You "
 			   "cannot enable/disable cheats without labels for old-format pnach files, those will automatically "
@@ -517,12 +528,12 @@ void SettingsDialog::removeSettingValue(const char* section, const char* key)
 	}
 }
 
-void SettingsDialog::openGamePropertiesDialog(const GameList::Entry* game, const std::string_view& serial, u32 crc)
+void SettingsDialog::openGamePropertiesDialog(const GameList::Entry* game, const std::string_view& title, std::string serial, u32 disc_crc)
 {
 	// check for an existing dialog with this crc
 	for (SettingsDialog* dialog : s_open_game_properties_dialogs)
 	{
-		if (dialog->m_game_crc == crc)
+		if (dialog->m_disc_crc == disc_crc)
 		{
 			dialog->show();
 			dialog->setFocus();
@@ -530,16 +541,16 @@ void SettingsDialog::openGamePropertiesDialog(const GameList::Entry* game, const
 		}
 	}
 
-	std::string filename(VMManager::GetGameSettingsPath(serial, crc));
+	std::string filename(VMManager::GetGameSettingsPath(serial, disc_crc));
 	std::unique_ptr<INISettingsInterface> sif = std::make_unique<INISettingsInterface>(std::move(filename));
 	if (FileSystem::FileExists(sif->GetFileName().c_str()))
 		sif->Load();
 
 	const QString window_title(tr("%1 [%2]")
-								   .arg(game ? QtUtils::StringViewToQString(game->title) : QStringLiteral("<UNKNOWN>"))
+								   .arg(QtUtils::StringViewToQString(title))
 								   .arg(QtUtils::StringViewToQString(Path::GetFileName(sif->GetFileName()))));
 
-	SettingsDialog* dialog = new SettingsDialog(g_main_window, std::move(sif), game, crc);
+	SettingsDialog* dialog = new SettingsDialog(g_main_window, std::move(sif), game, std::move(serial), disc_crc);
 	dialog->setWindowTitle(window_title);
 	dialog->setModal(false);
 	dialog->show();
