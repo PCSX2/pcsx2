@@ -39,6 +39,36 @@ def compare_frames(path1, path2):
         return False
 
 
+def extract_stats(file):
+    stats = {}
+    try:
+        with open(file, "r") as f:
+            for line in f.readlines():
+                m = re.match(".*@HWSTAT@ ([^:]+): (.*) \(avg ([^)]+)\)$", line)
+                if m is None:
+                    continue
+                stats[m[1]] = int(m[3])
+    except FileNotFoundError:
+        pass
+    except IOError:
+        pass
+    return stats
+
+
+def compare_stats(baselinedir, testdir):
+    stats1 = extract_stats(os.path.join(baselinedir, "emulog.txt"))
+    stats2 = extract_stats(os.path.join(testdir, "emulog.txt"))
+    res = []
+    for statname in stats1.keys():
+        if statname not in stats2 or stats1[statname] == stats2[statname]:
+            continue
+        v2 = stats2[statname]
+        v1 = stats1[statname]
+        delta = v2 - v1
+        res.append("%s: %s%d [%d=>%d]" % (statname, "+" if delta > 0 else "", delta, v1, v2))
+    return res
+
+
 def check_regression_test(baselinedir, testdir, name):
     #print("Checking '%s'..." % name)
 
@@ -51,6 +81,7 @@ def check_regression_test(baselinedir, testdir, name):
     images = glob.glob(os.path.join(dir1, "*_frame*.png"))
     diff_frames = []
     first_fail = True
+    stats = compare_stats(dir1, dir2)
 
     for imagepath in images:
         imagename = Path(imagepath).name
@@ -85,9 +116,15 @@ def check_regression_test(baselinedir, testdir, name):
         write("</table>")
         write("<pre>Difference in frames [%s] for %s</pre>" % (",".join(map(str, diff_frames)), name))
         print("*** Difference in frames [%s] for %s" % (",".join(map(str, diff_frames)), name))
-        return False
+        if len(stats) > 0:
+            write("<pre>%s</pre>" % "\n".join(stats))
+            print(stats)
+    elif len(stats) > 0:
+        write("<h1>{}</h1>".format(name))
+        write("<pre>%s</pre>" % "\n".join(stats))
+        print(name, stats)
 
-    return True
+    return len(diff_frames) == 0
 
 
 def check_regression_tests(baselinedir, testdir):
@@ -103,6 +140,8 @@ def check_regression_tests(baselinedir, testdir):
         else:
             failure += 1
 
+    print("%d dumps unchanged" % success)
+    print("%d dumps changed" % failure)
     return (failure == 0)
 
 
