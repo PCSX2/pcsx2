@@ -24,6 +24,8 @@ def run_regression_test(runner, dumpdir, renderer, upscale, renderhacks, paralle
     real_dumpdir = os.path.join(dumpdir, gsname).strip()
     if not os.path.exists(real_dumpdir):
         os.mkdir(real_dumpdir)
+    else:
+        return
 
     if renderer is not None:
         args.extend(["-renderer", renderer])

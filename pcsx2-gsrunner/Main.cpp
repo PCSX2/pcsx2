@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <atomic>
 #include <chrono>
 #include <csignal>
 #include <cstdlib>
@@ -39,6 +40,7 @@
 #include "pcsx2/Achievements.h"
 #include "pcsx2/CDVD/CDVD.h"
 #include "pcsx2/GS.h"
+#include "pcsx2/GS/GSPerfMon.h"
 #include "pcsx2/GSDumpReplayer.h"
 #include "pcsx2/Host.h"
 #include "pcsx2/INISettingsInterface.h"
@@ -57,6 +59,7 @@ namespace GSRunner
 	static void InitializeConsole();
 	static bool InitializeConfig();
 	static bool ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& params);
+	static void DumpStats();
 
 	static bool CreatePlatformWindow();
 	static void DestroyPlatformWindow();
@@ -77,6 +80,12 @@ static bool s_no_console = false;
 // Owned by the GS thread.
 static u32 s_dump_frame_number = 0;
 static u32 s_loop_number = s_loop_count;
+static u64 s_total_draws = 0;
+static u64 s_total_render_passes = 0;
+static u64 s_total_barriers = 0;
+static u64 s_total_copies = 0;
+static u64 s_total_uploads = 0;
+static u32 s_total_frames = 0;
 
 bool GSRunner::InitializeConfig()
 {
@@ -264,6 +273,17 @@ void Host::BeginPresentFrame()
 		// queue dumping of this frame
 		std::string dump_path(fmt::format("{}_frame{}.png", s_output_prefix, s_dump_frame_number));
 		GSQueueSnapshot(dump_path);
+	}
+
+	if (GSConfig.UseHardwareRenderer())
+	{
+		s_total_draws += static_cast<u64>(g_perfmon.GetCounter(GSPerfMon::DrawCalls));
+		s_total_render_passes += static_cast<u64>(g_perfmon.GetCounter(GSPerfMon::RenderPasses));
+		s_total_barriers += static_cast<u64>(g_perfmon.GetCounter(GSPerfMon::Barriers));
+		s_total_copies += static_cast<u64>(g_perfmon.GetCounter(GSPerfMon::TextureCopies));
+		s_total_uploads += static_cast<u64>(g_perfmon.GetCounter(GSPerfMon::TextureUploads));
+		s_total_frames++;
+		std::atomic_thread_fence(std::memory_order_release);
 	}
 }
 
@@ -601,6 +621,18 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 	return true;
 }
 
+void GSRunner::DumpStats()
+{
+	std::atomic_thread_fence(std::memory_order_acquire);
+	Console.WriteLn(fmt::format("======= HW STATISTICS FOR {} FRAMES ========", s_total_frames));
+	Console.WriteLn(fmt::format("@HWSTAT@ Draw Calls: {} (avg {})", s_total_draws, static_cast<u64>(std::ceil(s_total_draws / static_cast<double>(s_total_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Render Passes: {} (avg {})", s_total_render_passes, static_cast<u64>(std::ceil(s_total_render_passes / static_cast<double>(s_total_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Barriers: {} (avg {})", s_total_barriers, static_cast<u64>(std::ceil(s_total_barriers / static_cast<double>(s_total_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Copies: {} (avg {})", s_total_copies, static_cast<u64>(std::ceil(s_total_copies / static_cast<double>(s_total_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Uploads: {} (avg {})", s_total_uploads, static_cast<u64>(std::ceil(s_total_uploads / static_cast<double>(s_total_frames)))));
+	Console.WriteLn("============================================");
+}
+
 int main(int argc, char* argv[])
 {
 	GSRunner::InitializeConsole();
@@ -636,6 +668,7 @@ int main(int argc, char* argv[])
 		while (VMManager::GetState() == VMState::Running)
 			VMManager::Execute();
 		VMManager::Shutdown(false);
+		GSRunner::DumpStats();
 	}
 
 	VMManager::Internal::CPUThreadShutdown();
