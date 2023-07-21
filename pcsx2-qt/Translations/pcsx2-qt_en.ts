@@ -3561,47 +3561,47 @@ Achievements: %5 (%6)
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="981"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="992"/>
         <source>Upscale multiplier set to {}x.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="446"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="435"/>
         <source>Saving screenshot to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="458"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="447"/>
         <source>Saved screenshot to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="465"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="454"/>
         <source>Failed to save screenshot to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="536"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="525"/>
         <source>Host GPU device encountered an error and was recovered. This may have broken rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="638"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="627"/>
         <source>CAS is not available, your graphics driver does not support the required functionality.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="713"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="702"/>
         <source>Saving {0} GS dump {1} to &apos;{2}&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="734"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="723"/>
         <source>Failed to render/download screenshot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="745"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="734"/>
         <source>Saved GS dump to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3621,7 +3621,7 @@ Achievements: %5 (%6)
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="4982"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="4988"/>
         <source>Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6456,129 +6456,129 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
 <context>
     <name>Hotkeys</name>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="989"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="997"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1017"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1024"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1033"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1039"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1045"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1051"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1064"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1087"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1115"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1127"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1141"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1000"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1008"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1028"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1035"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1044"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1050"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1056"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1062"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1075"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1098"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1126"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1138"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1152"/>
         <source>Graphics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="990"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1001"/>
         <source>Save Screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="997"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1008"/>
         <source>Toggle Video Capture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1017"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1028"/>
         <source>Save Single Frame GS Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1024"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1035"/>
         <source>Save Multi Frame GS Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1034"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1045"/>
         <source>Toggle Software Rendering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1040"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1051"/>
         <source>Increase Upscale Multiplier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1046"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1057"/>
         <source>Decrease Upscale Multiplier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1051"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1062"/>
         <source>Cycle Aspect Ratio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1060"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1071"/>
         <source>Aspect ratio set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1064"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1075"/>
         <source>Cycle Hardware Mipmapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1076"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1087"/>
         <source>Hardware mipmapping set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1087"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1098"/>
         <source>Cycle Deinterlace Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1109"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1120"/>
         <source>Deinterlace mode set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1115"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1126"/>
         <source>Toggle Texture Dumping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1121"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1132"/>
         <source>Texture dumping is now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1122"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1133"/>
         <source>Texture dumping is now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1128"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1139"/>
         <source>Toggle Texture Replacements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1135"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1146"/>
         <source>Texture replacements are now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1136"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1147"/>
         <source>Texture replacements are now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1142"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1153"/>
         <source>Reload Texture Replacements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1149"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1160"/>
         <source>Texture replacements are not enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1154"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1165"/>
         <source>Reloading texture replacements...</source>
         <translation type="unfinished"></translation>
     </message>
