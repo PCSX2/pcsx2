@@ -80,6 +80,11 @@ static bool s_no_console = false;
 // Owned by the GS thread.
 static u32 s_dump_frame_number = 0;
 static u32 s_loop_number = s_loop_count;
+static double s_last_draws = 0;
+static double s_last_render_passes = 0;
+static double s_last_barriers = 0;
+static double s_last_copies = 0;
+static double s_last_uploads = 0;
 static u64 s_total_draws = 0;
 static u64 s_total_render_passes = 0;
 static u64 s_total_barriers = 0;
@@ -277,11 +282,17 @@ void Host::BeginPresentFrame()
 
 	if (GSConfig.UseHardwareRenderer())
 	{
-		s_total_draws += static_cast<u64>(g_perfmon.GetCounter(GSPerfMon::DrawCalls));
-		s_total_render_passes += static_cast<u64>(g_perfmon.GetCounter(GSPerfMon::RenderPasses));
-		s_total_barriers += static_cast<u64>(g_perfmon.GetCounter(GSPerfMon::Barriers));
-		s_total_copies += static_cast<u64>(g_perfmon.GetCounter(GSPerfMon::TextureCopies));
-		s_total_uploads += static_cast<u64>(g_perfmon.GetCounter(GSPerfMon::TextureUploads));
+		static constexpr auto update_stat = [](GSPerfMon::counter_t counter, u64& dst, double& last) {
+			// perfmon resets every 30 frames to zero
+			const double val = g_perfmon.GetCounter(counter);
+			dst += static_cast<u64>((val < last) ? val : (val - last));
+			last = val;
+		};
+		update_stat(GSPerfMon::DrawCalls, s_total_draws, s_last_draws);
+		update_stat(GSPerfMon::RenderPasses, s_total_render_passes, s_last_render_passes);
+		update_stat(GSPerfMon::Barriers, s_total_barriers, s_last_barriers);
+		update_stat(GSPerfMon::TextureCopies, s_total_copies, s_last_copies);
+		update_stat(GSPerfMon::TextureUploads, s_total_uploads, s_last_uploads);
 		s_total_frames++;
 		std::atomic_thread_fence(std::memory_order_release);
 	}
