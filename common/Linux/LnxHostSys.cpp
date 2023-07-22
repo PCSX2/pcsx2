@@ -108,7 +108,8 @@ static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void* ctx)
 	void* const exception_pc = nullptr;
 #endif
 
-	const PageFaultInfo pfi{(uptr)exception_pc, (uptr)siginfo->si_addr & ~__pagemask};
+	const PageFaultInfo pfi{
+		reinterpret_cast<uptr>(exception_pc), reinterpret_cast<uptr>(siginfo->si_addr) & ~static_cast<uptr>(__pagemask)};
 
 	s_in_exception_handler = true;
 

@@ -78,6 +78,7 @@ namespace Common
 	template <typename T>
 	static constexpr T PageAlign(T size)
 	{
+		static_assert(std::has_single_bit(__pagesize), "Page size is a power of 2");
 		return Common::AlignUpPow2(size, __pagesize);
 	}
 

@@ -81,10 +81,9 @@
 
 // Defines the memory page size for the target platform at compilation.  All supported platforms
 // (which means Intel only right now) have a 4k granularity.
-#define PCSX2_PAGESIZE 0x1000
-static constexpr int __pagesize = PCSX2_PAGESIZE;
-static constexpr int __pageshift = 12;
-static constexpr size_t __pagemask = PCSX2_PAGESIZE - 1;
+static constexpr unsigned int __pagesize = 0x1000;
+static constexpr unsigned int __pageshift = 12;
+static constexpr unsigned int __pagemask = __pagesize - 1;
 
 // --------------------------------------------------------------------------------------
 //  Microsoft Visual Studio
