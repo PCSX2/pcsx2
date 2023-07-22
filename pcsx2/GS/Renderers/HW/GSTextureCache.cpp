@@ -1222,14 +1222,13 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	return src;
 }
 
-GSTextureCache::Target* GSTextureCache::FindTargetOverlap(u32 bp, u32 end_block, int type, int psm)
+GSTextureCache::Target* GSTextureCache::FindTargetOverlap(Target* target, int type, int psm)
 {
-	u32 end_block_bp = end_block < bp ? (MAX_BP + 1) : end_block;
-
 	for (auto t : m_dst[type])
 	{
 		// Only checks that the texure starts at the requested bp, which shares data. Size isn't considered.
-		if (t->m_TEX0.TBP0 >= bp && t->m_TEX0.TBP0 < end_block_bp && GSUtil::HasCompatibleBits(t->m_TEX0.PSM, psm))
+		if (t != target && t->m_TEX0.TBW == target->m_TEX0.TBW && t->m_TEX0.TBP0 >= target->m_TEX0.TBP0 &&
+			t->UnwrappedEndBlock() <= target->UnwrappedEndBlock() && GSUtil::HasCompatibleBits(t->m_TEX0.PSM, psm))
 			return t;
 	}
 	return nullptr;
@@ -1745,6 +1744,29 @@ void GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 	else
 	{
 		dst->UpdateValidity(GSVector4i::loadh(valid_size));
+	}
+	
+	for (int type = 0; type < 2; type++)
+	{
+		auto& list = m_dst[type];
+		for (auto i = list.begin(); i != list.end();)
+		{
+			auto j = i;
+			Target* t = *j;
+
+			// could be overwriting a double buffer, so if it's the second half of it, just reduce the size down to half.
+			if (dst != t && t->m_TEX0.TBW == dst->m_TEX0.TBW &&
+				t->m_TEX0.PSM == dst->m_TEX0.PSM &&
+				((((t->m_end_block + 1) - t->m_TEX0.TBP0) >> 1) + t->m_TEX0.TBP0) == dst->m_TEX0.TBP0)
+			{
+				//DevCon.Warning("Found one %x->%x BW %d PSM %x (new target %x->%x BW %d PSM %x)", t->m_TEX0.TBP0, t->m_end_block, t->m_TEX0.TBW, t->m_TEX0.PSM, dst->m_TEX0.TBP0, dst->m_end_block, dst->m_TEX0.TBW, dst->m_TEX0.PSM);
+				GSVector4i new_valid = t->m_valid;
+				new_valid.w /= 2;
+				t->ResizeValidity(new_valid);
+				return;
+			}
+			i++;
+		}
 	}
 }
 
@@ -2958,7 +2980,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 						t->m_drawn_since_read.z = targetr.x;
 				}
 
-				if (exact_bp)
+				if (exact_bp && read_end <= t->m_end_block)
 					return;
 			}
 		}
@@ -5149,8 +5171,6 @@ void GSTextureCache::Target::Update()
 		g_gs_device->DrawMultiStretchRects(drects, ndrects, m_texture, shader);
 	}
 
-	UpdateValidity(total_rect);
-	// We don't know what the dirty alpha is gonna be, so assume max.
 	m_alpha_min = 0;
 	m_alpha_max = 255;
 	g_gs_device->Recycle(t);
