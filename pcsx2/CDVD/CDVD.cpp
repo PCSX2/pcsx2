@@ -412,7 +412,7 @@ static bool cdvdUncheckedLoadDiscElf(ElfObject* elfo, IsoReader& isor, const std
 		length = semi_pos - start_pos;
 
 	std::string iso_filename(elfpath.substr(start_pos, length));
-	DevCon.WriteLn(fmt::format("cvdLoadElf(): '{}' -> '{}' in ISO.", elfpath, iso_filename));
+	DevCon.WriteLn(fmt::format("cdvdLoadElf(): '{}' -> '{}' in ISO.", elfpath, iso_filename));
 	if (iso_filename.empty())
 	{
 		Error::SetString(error, "ISO filename is empty.");
