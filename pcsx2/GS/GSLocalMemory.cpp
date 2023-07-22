@@ -737,10 +737,7 @@ GSOffset::PageLooper GSOffset::pageLooperForRect(const GSVector4i& rect) const
 	//   e.g. if bp is 1 on PSMCT32, the top left tile uses page 1 if the rect covers the bottom right block, and uses page 0 if the rect covers any block other than the bottom right
 	// - Center tiles (ones that aren't first or last) cover all blocks that the first and last do in a row
 	//   Therefore, if the first tile in a row touches the higher of its two pages, subsequent non-last tiles will at least touch the higher of their pages as well (and same for center to last, etc)
-	//   Therefore, with the exception of row covering two pages in a z swizzle (which could touch e.g. pages 1 and 3 but not 2), all rows touch contiguous pages
-	//   For now, we won't deal with that case as it's rare (only possible with a thin, unaligned rect on an unaligned bp on a z swizzle), and the worst issue looping too many pages could cause is unneccessary cache invalidation
-	//   If code is added later to deal with the case, you'll need to change loopPagesWithBreak's block deduplication code, as it currently works by forcing the page number to increase monotonically which could cause blocks to be missed if e.g. the first row touches 1 and 3, and the second row touches 2 and 4
-	// - Based on the above assumption, we calculate the range of pages a row could touch with full coverage, then add one to the start if the first tile doesn't touch its lower page, and subtract one from the end if the last tile doesn't touch its upper page
+	// - Based on the above, we calculate the range of pages a row could touch with full coverage, then add one to the start if the first tile doesn't touch its lower page, and subtract one from the end if the last tile doesn't touch its upper page
 	// - This is done separately for the first and last rows in the y axis, as they may not have the same coverage as a row in the middle
 
 	PageLooper out;
