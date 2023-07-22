@@ -78,6 +78,22 @@ OUTDIR=$(realpath "./$APPDIRNAME")
 SCRIPTDIR=$(dirname "${BASH_SOURCE[0]}")
 rm -fr "$OUTDIR"
 
+# Why the nastyness? linuxdeploy strips our main binary, and there's no option to turn it off.
+# It also doesn't strip the Qt libs. We can't strip them after running linuxdeploy, because
+# patchelf corrupts the libraries (but they still work), but patchelf+strip makes them crash
+# on load. So, make a backup copy, strip the original (since that's where linuxdeploy finds
+# the libs to copy), then swap them back after we're done.
+# Isn't Linux packaging amazing?
+
+rm -fr "$DEPSDIR.bak"
+cp -a "$DEPSDIR" "$DEPSDIR.bak"
+IFS="
+"
+for i in $(find "$DEPSDIR" -iname '*.so'); do
+  echo "Stripping deps library ${i}"
+  strip "$i"
+done
+
 echo "Copying desktop file..."
 cp "$PCSX2DIR/.github/workflows/scripts/linux/pcsx2-qt.desktop" .
 cp "$PCSX2DIR/bin/resources/icons/AppIconLarge.png" "PCSX2.png"
@@ -86,6 +102,7 @@ echo "Running linuxdeploy to create AppDir..."
 EXTRA_QT_PLUGINS="core;gui;network;svg;waylandclient;widgets;xcbqpa" \
 EXTRA_PLATFORM_PLUGINS="libqwayland-egl.so;libqwayland-generic.so" \
 QMAKE="$DEPSDIR/bin/qmake" \
+NO_STRIP="1" \
 $LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/pcsx2-qt" \
 --desktop-file="pcsx2-qt.desktop" --icon-file="PCSX2.png"
 
@@ -100,7 +117,6 @@ for lib in "${MANUAL_QT_LIBS[@]}"; do
 	echo "  $srcpath -> $dstpath"
 	cp "$srcpath" "$dstpath"
 	$PATCHELF --set-rpath '$ORIGIN' "$dstpath"
-	$STRIP "$dstpath"
 done
 
 # .. and plugins.
@@ -118,9 +134,12 @@ for GROUP in "${MANUAL_QT_PLUGINS[@]}"; do
 		echo "    $srcsopath -> $dstsopath"
 		cp "$srcsopath" "$dstsopath"
 		$PATCHELF --set-rpath '$ORIGIN/../../lib:$ORIGIN' "$dstsopath"
-		$STRIP "$dstsopath"
 	done
 done
+
+# Restore unstripped deps (for cache).
+rm -fr "$DEPSDIR"
+mv "$DEPSDIR.bak" "$DEPSDIR"
 
 # Fix up translations.
 rm -fr "$OUTDIR/usr/bin/translations"
