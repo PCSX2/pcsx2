@@ -2052,7 +2052,7 @@ void GSState::Move()
 		m_draw_transfers.push_back(new_transfer);
 	}
 
-	auto genericCopy = [=](const GSOffset& dpo, const GSOffset& spo, auto&& getPAHelper, auto&& pxCopyFn)
+	auto copy = [=](const GSOffset& dpo, const GSOffset& spo, auto&& pxCopyFn)
 	{
 		int _sy = sy, _dy = dy; // Faster with local copied variables, compiler optimizations are dumb
 		if (xinc > 0)
@@ -2083,21 +2083,21 @@ void GSState::Move()
 
 				for (int y = starty; y != endy; y+= y_inc, _sy += y_inc, _dy += y_inc)
 				{
-					auto s = getPAHelper(spo, 0, _sy);
-					auto d = getPAHelper(dpo, 0, _dy);
+					GSOffset::PAHelper s = spo.paMulti(0, _sy);
+					GSOffset::PAHelper d = dpo.paMulti(0, _dy);
 
 					if (((sx < dx) && ((xpage + page_width) > dx)))
 					{
 						for (int x = w - 1; x >= 0; x--)
 						{
-							pxCopyFn(d, s, (dx + x) & 2047, (sx + x) & 2047);
+							pxCopyFn(d.value((dx + x) & 2047), s.value((sx + x) & 2047));
 						}
 					}
 					else
 					{
 						for (int x = 0; x < w; x++)
 						{
-							pxCopyFn(d, s, (dx + x) & 2047, (sx + x) & 2047);
+							pxCopyFn(d.value((dx + x) & 2047), s.value((sx + x) & 2047));
 						}
 					}
 				}
@@ -2106,12 +2106,12 @@ void GSState::Move()
 			{
 				for (int y = 0; y < h; y++, _sy += yinc, _dy += yinc)
 				{
-					auto s = getPAHelper(spo, 0, _sy);
-					auto d = getPAHelper(dpo, 0, _dy);
+					GSOffset::PAHelper s = spo.paMulti(0, _sy);
+					GSOffset::PAHelper d = dpo.paMulti(0, _dy);
 
 					for (int x = 0; x < w; x++)
 					{
-						pxCopyFn(d, s, (dx + x) & 2047, (sx + x) & 2047);
+						pxCopyFn(d.value((dx + x) & 2047), s.value((sx + x) & 2047));
 					}
 				}
 			}
@@ -2120,66 +2120,50 @@ void GSState::Move()
 		{
 			for (int y = 0; y < h; y++, _sy += yinc, _dy += yinc)
 			{
-				auto s = getPAHelper(spo, 0, _sy);
-				auto d = getPAHelper(dpo, 0, _dy);
+				GSOffset::PAHelper s = spo.paMulti(0, _sy);
+				GSOffset::PAHelper d = dpo.paMulti(0, _dy);
 
 				for (int x = 0; x < w; x++)
 				{
-					pxCopyFn(d, s, (dx - x) & 2047, (sx - x) & 2047);
+					pxCopyFn(d.value((dx - x) & 2047), s.value((sx - x) & 2047));
 				}
 			}
 		}
-	};
-
-	auto copy = [=](const GSOffset& dpo, const GSOffset& spo, auto&& pxCopyFn)
-	{
-		genericCopy(dpo, spo,
-			[](const GSOffset& o, int x, int y) { return o.paMulti(x, y); },
-			[=](const GSOffset::PAHelper& d, const GSOffset::PAHelper& s, int dx, int sx)
-			{
-				return pxCopyFn(d.value(dx), s.value(sx));
-			});
-	};
-
-	auto copyFast = [=](auto* vm, const GSOffset& dpo, const GSOffset& spo, auto&& pxCopyFn)
-	{
-		genericCopy(dpo, spo,
-			[=](const GSOffset& o, int x, int y) { return o.paMulti(vm, x, y); },
-			[=](const auto& d, const auto& s, int dx, int sx)
-			{
-				return pxCopyFn(d.value(dx), s.value(sx));
-			});
 	};
 
 	if (spsm.trbpp == dpsm.trbpp && spsm.trbpp >= 16)
 	{
 		if (spsm.trbpp == 32)
 		{
-			copyFast(m_mem.vm32(), dpo.assertSizesMatch(GSLocalMemory::swizzle32), spo.assertSizesMatch(GSLocalMemory::swizzle32), [](u32* d, u32* s)
+			u32* vm = m_mem.vm32();
+			copy(dpo.assertSizesMatch(GSLocalMemory::swizzle32), spo.assertSizesMatch(GSLocalMemory::swizzle32), [vm](u32 doff, u32 soff)
 			{
-				*d = *s;
+				vm[doff] = vm[soff];
 			});
 		}
 		else if (spsm.trbpp == 24)
 		{
-			copyFast(m_mem.vm32(), dpo.assertSizesMatch(GSLocalMemory::swizzle32), spo.assertSizesMatch(GSLocalMemory::swizzle32), [](u32* d, u32* s)
+			u32* vm = m_mem.vm32();
+			copy(dpo.assertSizesMatch(GSLocalMemory::swizzle32), spo.assertSizesMatch(GSLocalMemory::swizzle32), [vm](u32 doff, u32 soff)
 			{
-				*d = (*d & 0xff000000) | (*s & 0x00ffffff);
+				vm[doff] = (vm[doff] & 0xff000000) | (vm[soff] & 0x00ffffff);
 			});
 		}
 		else // if(spsm.trbpp == 16)
 		{
-			copyFast(m_mem.vm16(), dpo.assertSizesMatch(GSLocalMemory::swizzle16), spo.assertSizesMatch(GSLocalMemory::swizzle16), [](u16* d, u16* s)
+			u16* vm = m_mem.vm16();
+			copy(dpo.assertSizesMatch(GSLocalMemory::swizzle16), spo.assertSizesMatch(GSLocalMemory::swizzle16), [vm](u32 doff, u32 soff)
 			{
-				*d = *s;
+				vm[doff] = vm[soff];
 			});
 		}
 	}
 	else if (m_env.BITBLTBUF.SPSM == PSMT8 && m_env.BITBLTBUF.DPSM == PSMT8)
 	{
-		copyFast(m_mem.m_vm8, GSOffset::fromKnownPSM(dbp, dbw, PSMT8), GSOffset::fromKnownPSM(sbp, sbw, PSMT8), [](u8* d, u8* s)
+		u8* vm = m_mem.m_vm8;
+		copy(GSOffset::fromKnownPSM(dbp, dbw, PSMT8), GSOffset::fromKnownPSM(sbp, sbw, PSMT8), [vm](u32 doff, u32 soff)
 		{
-			*d = *s;
+			vm[doff] = vm[soff];
 		});
 	}
 	else if (m_env.BITBLTBUF.SPSM == PSMT4 && m_env.BITBLTBUF.DPSM == PSMT4)

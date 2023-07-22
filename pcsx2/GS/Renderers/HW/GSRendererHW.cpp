@@ -1399,22 +1399,23 @@ void GSRendererHW::SwSpriteRender()
 
 	for (int y = 0; y < h; y++, ++sy, ++dy)
 	{
-		const auto& spa = spo.paMulti(m_mem.vm32(), sx, sy);
-		const auto& dpa = dpo.paMulti(m_mem.vm32(), dx, dy);
+		u32* vm = m_mem.vm32();
+		const GSOffset::PAHelper spa = spo.paMulti(sx, sy);
+		const GSOffset::PAHelper dpa = dpo.paMulti(dx, dy);
 
 		ASSERT(w % 2 == 0);
 
 		for (int x = 0; x < w; x += 2)
 		{
-			u32* di = dpa.value(x);
-			ASSERT(di + 1 == dpa.value(x + 1)); // Destination pixel pair is adjacent in memory
+			u32* di = &vm[dpa.value(x)];
+			ASSERT(di + 1 == &vm[dpa.value(x + 1)]); // Destination pixel pair is adjacent in memory
 
 			GSVector4i sc = {};
 			if (texture_mapping_enabled)
 			{
-				const u32* si = spa.value(x);
+				const u32* si = &vm[spa.value(x)];
 				// Read 2 source pixel colors
-				ASSERT(si + 1 == spa.value(x + 1)); // Source pixel pair is adjacent in memory
+				ASSERT(si + 1 == &vm[spa.value(x + 1)]); // Source pixel pair is adjacent in memory
 				sc = GSVector4i::loadl(si).u8to16(); // 0x00AA00BB00GG00RR00aa00bb00gg00rr
 
 				// Apply TFX
@@ -1444,10 +1445,11 @@ void GSRendererHW::SwSpriteRender()
 				// Blending
 				const GSVector4i A = alpha_a == 0 ? sc : alpha_a == 1 ? dc0 : GSVector4i::zero();
 				const GSVector4i B = alpha_b == 0 ? sc : alpha_b == 1 ? dc0 : GSVector4i::zero();
-				const GSVector4i C = alpha_c == 2 ? GSVector4i(alpha_fix).xxxx().ps32() : (alpha_c == 0 ? sc : dc0).yyww() // 0x00AA00BB00AA00BB00aa00bb00aa00bb
-																							  .srl32(16) // 0x000000AA000000AA000000aa000000aa
-																							  .ps32() // 0x00AA00AA00aa00aa00AA00AA00aa00aa
-																							  .xxyy(); // 0x00AA00AA00AA00AA00aa00aa00aa00aa
+				const GSVector4i C = alpha_c == 2 ? GSVector4i(alpha_fix).xxxx().ps32()
+				                                  : (alpha_c == 0 ? sc : dc0).yyww()    // 0x00AA00BB00AA00BB00aa00bb00aa00bb
+				                                                             .srl32(16) // 0x000000AA000000AA000000aa000000aa
+				                                                             .ps32()    // 0x00AA00AA00aa00aa00AA00AA00aa00aa
+				                                                             .xxyy();   // 0x00AA00AA00AA00AA00aa00aa00aa00aa
 				const GSVector4i D = alpha_d == 0 ? sc : alpha_d == 1 ? dc0 : GSVector4i::zero();
 				dc = A.sub16(B).mul16l(C).sra16(7).add16(D); // (((A - B) * C) >> 7) + D, must use sra16 due to signed 16 bit values.
 				// dc alpha channels (dc.u16[3], dc.u16[7]) dirty
@@ -5962,24 +5964,26 @@ void GSRendererHW::ClearGSLocalMemory(const GSOffset& off, const GSVector4i& r, 
 	if (format == 0)
 	{
 		// Based on WritePixel32
+		u32* vm = m_mem.vm32();
 		for (int y = top; y < bottom; y++)
 		{
-			auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.vm32(), 0, y);
+			GSOffset::PAHelper pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(0, y);
 
 			for (int x = left; x < right; x++)
-				*pa.value(x) = vert_color;
+				vm[pa.value(x)] = vert_color;
 		}
 	}
 	else if (format == 1)
 	{
 		// Based on WritePixel24
+		u32* vm = m_mem.vm32();
 		const u32 write_color = vert_color & 0xffffffu;
 		for (int y = top; y < bottom; y++)
 		{
-			auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.vm32(), 0, y);
+			GSOffset::PAHelper pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(0, y);
 
 			for (int x = left; x < right; x++)
-				*pa.value(x) = (*pa.value(x) & 0xff000000u) | write_color;
+				vm[pa.value(x)] = (vm[pa.value(x)] & 0xff000000u) | write_color;
 		}
 	}
 	else if (format == 2)
@@ -5987,12 +5991,13 @@ void GSRendererHW::ClearGSLocalMemory(const GSOffset& off, const GSVector4i& r, 
 		const u16 converted_color = ((vert_color >> 16) & 0x8000) | ((vert_color >> 9) & 0x7C00) | ((vert_color >> 6) & 0x7E0) | ((vert_color >> 3) & 0x1F);
 
 		// Based on WritePixel16
+		u16* vm = m_mem.vm16();
 		for (int y = top; y < bottom; y++)
 		{
-			auto pa = off.assertSizesMatch(GSLocalMemory::swizzle16).paMulti(m_mem.vm16(), 0, y);
+			GSOffset::PAHelper pa = off.assertSizesMatch(GSLocalMemory::swizzle16).paMulti(0, y);
 
 			for (int x = left; x < right; x++)
-				*pa.value(x) = converted_color;
+				vm[pa.value(x)] = converted_color;
 		}
 	}
 }

@@ -250,30 +250,6 @@ public:
 		}
 	};
 
-	/// Helper class for efficiently getting the addresses of multiple pixels in a line (along the x axis)
-	/// Slightly more efficient than PAHelper by pre-adding the base offset to the VM pointer
-	template <typename VM>
-	class PAPtrHelper
-	{
-		/// Pixel swizzle array
-		const int* m_pixelSwizzleRow;
-		VM* m_base;
-
-	public:
-		PAPtrHelper() = default;
-		PAPtrHelper(const GSOffset& off, VM* vm, int x, int y)
-		{
-			m_pixelSwizzleRow = off.m_pixelSwizzleRow[y & off.m_pixelRowMask]->value + x;
-			m_base = &vm[off.pixelAddressZeroX(y)];
-		}
-
-		/// Get pixel reference for the given x offset from the one used to create the PAPtrHelper
-		VM* value(int x) const
-		{
-			return m_base + m_pixelSwizzleRow[x];
-		}
-	};
-
 	/// Get the address of the given pixel
 	u32 pa(int x, int y) const
 	{
@@ -286,13 +262,6 @@ public:
 		return PAHelper(*this, x, y);
 	}
 
-	/// Get a helper class for efficiently calculating multiple pixel addresses in a line (along the x axis)
-	template <typename VM>
-	PAPtrHelper<VM> paMulti(VM* vm, int x, int y) const
-	{
-		return PAPtrHelper(*this, vm, x, y);
-	}
-
 	/// Loop over the pixels in the given rectangle
 	/// Fn should be void(*)(VM*, Src*)
 	template <typename VM, typename Src, typename Fn>
@@ -302,10 +271,10 @@ public:
 
 		for (int y = r.top; y < r.bottom; y++, px = reinterpret_cast<Src*>(reinterpret_cast<u8*>(px) + pitch))
 		{
-			PAPtrHelper<VM> pa = paMulti(vm, 0, y);
+			PAHelper pa = paMulti(0, y);
 			for (int x = r.left; x < r.right; x++)
 			{
-				fn(pa.value(x), px + x);
+				fn(&vm[pa.value(x)], px + x);
 			}
 		}
 	}
