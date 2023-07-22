@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -22,6 +22,7 @@
 #include "Host.h"
 #include "common/BitUtils.h"
 #include "common/StringUtil.h"
+#include <bit>
 
 GSRendererHW::GSRendererHW()
 	: GSRenderer()
@@ -4455,7 +4456,7 @@ bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextu
 		}
 		else if (clamp == CLAMP_REGION_REPEAT)
 		{
-			const u32 req_tbits = (tmax > 1) ? static_cast<u32>(Common::NextPow2(tmax - 1) - 1) : 0x1;
+			const u32 req_tbits = (tmax > 1) ? std::bit_ceil(static_cast<u32>(tmax - 1) - 1) : 0x1;
 			if ((min & req_tbits) != req_tbits)
 			{
 				GL_CACHE("Can't use tex-is-fb because of REGION_REPEAT [%d, %d] with TMM of [%d, %d] and tbits of %d",
