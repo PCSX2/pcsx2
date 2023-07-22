@@ -26,9 +26,8 @@
 #include "common/Path.h"
 #include "common/StringUtil.h"
 
+#include <bit>
 #include <cmath>
-
-#include "GS/GSIntrin.h" // _BitScanForward
 
 static constexpr const char* CONTROLLER_DB_FILENAME = "game_controller_db.txt";
 
@@ -776,16 +775,14 @@ bool SDLInputSource::HandleJoystickHatEvent(const SDL_JoyHatEvent* ev)
 	if (it == m_controllers.end() || ev->hat >= it->last_hat_state.size())
 		return false;
 
-	const unsigned long last_direction = it->last_hat_state[ev->hat];
+	const u8 last_direction = it->last_hat_state[ev->hat];
 	it->last_hat_state[ev->hat] = ev->value;
 
-	unsigned long changed_direction = last_direction ^ ev->value;
+	u8 changed_direction = last_direction ^ ev->value;
 	while (changed_direction != 0)
 	{
-		unsigned long pos;
-		_BitScanForward(&pos, changed_direction);
-
-		const unsigned long mask = (1u << pos);
+		const u8 pos = std::countr_zero(changed_direction);
+		const u8 mask = (1u << pos);
 		changed_direction &= ~mask;
 
 		const InputBindingKey key(

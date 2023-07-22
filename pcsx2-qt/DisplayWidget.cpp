@@ -20,7 +20,6 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 
-#include "pcsx2/GS/GSIntrin.h" // _BitScanForward
 #include "pcsx2/ImGui/ImGuiManager.h"
 
 #include "common/Assertions.h"
@@ -32,6 +31,8 @@
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
 #include <QtGui/QWindowStateChangeEvent>
+
+#include <bit>
 #include <cmath>
 
 #if defined(_WIN32)
@@ -301,11 +302,12 @@ bool DisplayWidget::event(QEvent* event)
 		case QEvent::MouseButtonDblClick:
 		case QEvent::MouseButtonRelease:
 		{
-			unsigned long button_index;
-			if (_BitScanForward(&button_index, static_cast<u32>(static_cast<const QMouseEvent*>(event)->button())))
+			if (const u32 button_mask = static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()))
 			{
-				Host::RunOnCPUThread([button_index, pressed = (event->type() != QEvent::MouseButtonRelease)]() {
-					InputManager::InvokeEvents(InputManager::MakePointerButtonKey(0, button_index), static_cast<float>(pressed));
+				Host::RunOnCPUThread([button_index = std::countr_zero(button_mask),
+										 pressed = (event->type() != QEvent::MouseButtonRelease)]() {
+					InputManager::InvokeEvents(
+						InputManager::MakePointerButtonKey(0, button_index), static_cast<float>(pressed));
 				});
 			}
 
