@@ -95,7 +95,7 @@ for i in $(find "$DEPSDIR" -iname '*.so'); do
 done
 
 echo "Copying desktop file..."
-cp "$PCSX2DIR/.github/workflows/scripts/linux/pcsx2-qt.desktop" .
+cp "$PCSX2DIR/.github/workflows/scripts/linux/pcsx2-qt.desktop" "net.pcsx2.PCSX2.desktop"
 cp "$PCSX2DIR/bin/resources/icons/AppIconLarge.png" "PCSX2.png"
 
 echo "Running linuxdeploy to create AppDir..."
@@ -104,7 +104,7 @@ EXTRA_PLATFORM_PLUGINS="libqwayland-egl.so;libqwayland-generic.so" \
 QMAKE="$DEPSDIR/bin/qmake" \
 NO_STRIP="1" \
 $LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/pcsx2-qt" \
---desktop-file="pcsx2-qt.desktop" --icon-file="PCSX2.png"
+--desktop-file="net.pcsx2.PCSX2.desktop" --icon-file="PCSX2.png"
 
 echo "Copying resources into AppDir..."
 cp -a "$BUILDDIR/bin/resources" "$OUTDIR/usr/bin"
@@ -145,6 +145,11 @@ mv "$DEPSDIR.bak" "$DEPSDIR"
 rm -fr "$OUTDIR/usr/bin/translations"
 mv "$OUTDIR/usr/translations" "$OUTDIR/usr/bin"
 cp -a "$BUILDDIR/bin/translations" "$OUTDIR/usr/bin"
+
+# Generate AppStream meta-info.
+echo "Generating AppStream metainfo..."
+mkdir -p "$OUTDIR/usr/share/metainfo"
+"$SCRIPTDIR/generate-metainfo.sh" "$OUTDIR/usr/share/metainfo/net.pcsx2.PCSX2.appdata.xml"
 
 echo "Generating AppImage..."
 rm -f "$NAME.AppImage"
