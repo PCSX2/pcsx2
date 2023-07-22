@@ -11,7 +11,7 @@ PNG=1.6.37
 JPG=9e
 SOUNDTOUCH=soundtouch-2.3.1
 FFMPEG=6.0
-QT=6.4.3
+QT=6.4.3 # Currently stuck on Qt 6.4 due to 6.5 requiring macOS 11.0.
 
 mkdir deps-build
 cd deps-build
@@ -28,6 +28,7 @@ cat > SHASUMS <<EOF
 6900996607258496ce126924a19fe9d598af9d892cf3f33d1e4daaa9b42ae0b1  $SOUNDTOUCH.tar.gz
 57be87c22d9b49c112b6d24bc67d42508660e6b718b3db89c44e47e289137082  ffmpeg-$FFMPEG.tar.xz
 5087c9e5b0165e7bc3c1a4ab176b35d0cd8f52636aea903fa377bdba00891a60  qtbase-everywhere-src-$QT.tar.xz
+0aff58062e74b84617c5da8325d8cdad5368d8f4d2a11ceafcd58329fe99b798  qtimageformats-everywhere-src-$QT.tar.xz
 88315f886cf81898705e487cedba6e6160724359d23c518c92c333c098879a4a  qtsvg-everywhere-src-$QT.tar.xz
 867df829cd5cd3ae8efe62e825503123542764b13c96953511e567df70c5a091  qttools-everywhere-src-$QT.tar.xz
 79e56b7800d49649a8a8010818538c367a829e0b7a09d5f60bd3aecf5abe972c  qttranslations-everywhere-src-$QT.tar.xz
@@ -40,6 +41,7 @@ curl -L \
 	-O "https://www.surina.net/soundtouch/$SOUNDTOUCH.tar.gz" \
 	-O "https://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
+	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtimageformats-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
@@ -185,6 +187,13 @@ cd ..
 echo "Installing Qt SVG..."
 tar xf "qtsvg-everywhere-src-$QT.tar.xz"
 cd "qtsvg-everywhere-src-$QT"
+cmake -B build -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=MinSizeRel
+make -C build "-j$NPROCS"
+make -C build install
+cd ..
+echo "Installing Qt Image Formats..."
+tar xf "qtimageformats-everywhere-src-$QT.tar.xz"
+cd "qtimageformats-everywhere-src-$QT"
 cmake -B build -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=MinSizeRel
 make -C build "-j$NPROCS"
 make -C build install
