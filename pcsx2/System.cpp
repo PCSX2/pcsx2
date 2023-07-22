@@ -28,7 +28,7 @@
 #include "SysForwardDefs.h"
 #include "x86/newVif.h"
 
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/Perf.h"
 #include "common/StringUtil.h"
 

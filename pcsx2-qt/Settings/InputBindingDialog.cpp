@@ -27,8 +27,7 @@
 
 #include "fmt/format.h"
 
-// _BitScanForward()
-#include "pcsx2/GS/GSIntrin.h"
+#include <bit>
 
 InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name,
 	std::string key_name, std::vector<std::string> bindings, QWidget* parent)

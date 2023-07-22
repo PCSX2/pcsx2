@@ -21,7 +21,7 @@
 #include "GS/GSPerfMon.h"
 #include "GS/GSGL.h"
 
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/Assertions.h"
 
 static constexpr const VkComponentMapping s_identity_swizzle{VK_COMPONENT_SWIZZLE_IDENTITY,

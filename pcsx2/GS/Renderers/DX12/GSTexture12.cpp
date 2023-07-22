@@ -22,7 +22,7 @@
 #include "GS/GSGL.h"
 
 #include "common/Assertions.h"
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/StringUtil.h"
 
 #include "D3D12MemAlloc.h"

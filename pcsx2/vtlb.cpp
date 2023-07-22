@@ -38,7 +38,7 @@
 #include "Host.h"
 #include "VMManager.h"
 
-#include "common/Align.h"
+#include "common/BitUtils.h"
 
 #include "fmt/core.h"
 

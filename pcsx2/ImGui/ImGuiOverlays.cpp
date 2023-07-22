@@ -35,7 +35,7 @@
 #include "VMManager.h"
 #include "pcsx2/Recording/InputRecording.h"
 
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 

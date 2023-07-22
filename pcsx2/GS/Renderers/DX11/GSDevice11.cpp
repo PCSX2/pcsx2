@@ -22,7 +22,7 @@
 #include "GS/GSUtil.h"
 #include "Host.h"
 
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
 

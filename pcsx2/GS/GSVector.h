@@ -13,11 +13,19 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "PrecompiledHeader.h"
-#include "GSIntrin.h"
-#include <cstring>
-
 #pragma once
+
+#include "PrecompiledHeader.h"
+
+#include <xmmintrin.h>
+#include <emmintrin.h>
+#include <tmmintrin.h>
+#include <smmintrin.h>
+#if _M_SSE >= 0x500
+#include <immintrin.h>
+#endif
+
+#include <cstring>
 
 #ifdef _WIN32
 	#define gsforceinline __forceinline

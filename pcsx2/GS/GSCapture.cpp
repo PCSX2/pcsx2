@@ -25,7 +25,7 @@
 #include "Host.h"
 #include "IconsFontAwesome5.h"
 #include "common/Assertions.h"
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/DynamicLibrary.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"

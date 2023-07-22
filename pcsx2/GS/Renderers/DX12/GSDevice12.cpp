@@ -26,7 +26,7 @@
 #include "Host.h"
 #include "ShaderCacheVersion.h"
 
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 
