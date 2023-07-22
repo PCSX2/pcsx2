@@ -11598,9 +11598,26 @@ SLES-50578:
 SLES-50579:
   name: "Kessen II"
   region: "PAL-F"
+  patches:
+    FD4E2837:
+      content: |-
+        comment=COP2 flag instance patch by refraction
+        // A mac flag check just after a vsub which gets in the way, rearranging.
+         patch=0,EE,00171190,word,48438800
+         patch=0,EE,00171194,word,4BE521AC
+         patch=0,EE,00171198,word,30848000
 SLES-50580:
   name: "Kessen II"
   region: "PAL-G"
+  patches:
+    33611180:
+      content: |-
+        comment=COP2 flag instance patch by refraction
+        // A mac flag check just after a vsub which gets in the way, rearranging.
+         patch=0,EE,001710e0,word,48438800
+         patch=0,EE,001710e4,word,4BE521AC
+         patch=0,EE,001710e8,word,30848000
+         patch=0,EE,001710ec,word,4BE72B3C
 SLES-50584:
   name: "G1 Jockey"
   region: "PAL-M3"
