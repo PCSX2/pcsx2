@@ -12643,6 +12643,7 @@ SLES-51043:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
+    recommendedBlendingLevel: 3 # Fixes gem reflections.
 SLES-51044:
   name: "Burnout 2 - Point of Impact"
   region: "PAL-M5"
@@ -44120,6 +44121,7 @@ SLUS-20315:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
+    recommendedBlendingLevel: 3 # Fixes gem reflections.
 SLUS-20316:
   name: "WWF SmackDown! - Just Bring It!"
   region: "NTSC-U"
