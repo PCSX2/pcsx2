@@ -26,7 +26,6 @@
 #include "DebugTools/Breakpoints.h"
 #include "DebugTools/BiosDebugData.h"
 #include "DebugTools/MipsStackWalk.h"
-#include "common/BitCast.h"
 
 #include "QtUtils.h"
 #include <QtGui/QClipboard>
@@ -539,7 +538,7 @@ static std::vector<u32> searchWorker(DebugInterface* cpu, u32 start, u32 end, T 
 				{
 					const float fTop = value + 0.00001f;
 					const float fBottom = value - 0.00001f;
-					const float memValue = bit_cast<float, u32>(cpu->read32(addr));
+					const float memValue = std::bit_cast<float, u32>(cpu->read32(addr));
 					if (fBottom < memValue && memValue < fTop)
 					{
 						hitAddresses.emplace_back(addr);
@@ -556,7 +555,7 @@ static std::vector<u32> searchWorker(DebugInterface* cpu, u32 start, u32 end, T 
 				{
 					const double dTop = value + 0.00001f;
 					const double dBottom = value - 0.00001f;
-					const double memValue = bit_cast<double, u64>(cpu->read64(addr));
+					const double memValue = std::bit_cast<double, u64>(cpu->read64(addr));
 					if (dBottom < memValue && memValue < dTop)
 					{
 						hitAddresses.emplace_back(addr);
@@ -588,7 +587,7 @@ static std::vector<u32> searchWorkerByteArray(DebugInterface* cpu, u32 start, u3
 	for (u32 addr = start; addr < end; addr += 1)
 	{
 		bool hit = true;
-		for (size_t i = 0; i < value.length(); i++)
+		for (qsizetype i = 0; i < value.length(); i++)
 		{
 			if (cpu->read8(addr + i) != value[i])
 			{
