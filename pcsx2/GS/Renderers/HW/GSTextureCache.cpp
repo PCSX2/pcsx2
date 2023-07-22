@@ -19,11 +19,10 @@
 #include "GSRendererHW.h"
 #include "GS/GSState.h"
 #include "GS/GSGL.h"
-#include "GS/GSIntrin.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
 #include "GS/GSXXH.h"
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/HashCombine.h"
 
 #ifdef __APPLE__

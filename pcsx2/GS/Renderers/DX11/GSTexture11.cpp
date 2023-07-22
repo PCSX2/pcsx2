@@ -18,7 +18,7 @@
 #include "GSTexture11.h"
 #include "GS/GSPng.h"
 #include "GS/GSPerfMon.h"
-#include "common/Align.h"
+#include "common/BitUtils.h"
 
 GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, const D3D11_TEXTURE2D_DESC& desc,
 	GSTexture::Type type, GSTexture::Format format)

@@ -61,10 +61,10 @@ target_sources(common PRIVATE
 
 # x86emitter headers
 target_sources(common PRIVATE
-	Align.h
 	AlignedMalloc.h
 	Assertions.h
 	boost_spsc_queue.hpp
+	BitUtils.h
 	ByteSwap.h
 	Console.h
 	CrashHandler.h

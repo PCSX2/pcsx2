@@ -19,7 +19,7 @@
 #include "GS/Renderers/Vulkan/VKStreamBuffer.h"
 #include "GS/Renderers/Vulkan/VKBuilders.h"
 
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
 

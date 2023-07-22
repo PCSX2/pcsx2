@@ -17,7 +17,7 @@
 
 #include "VirtualMemory.h"
 
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/Console.h"
 #include "common/Perf.h"
 

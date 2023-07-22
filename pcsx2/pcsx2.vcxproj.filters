@@ -1880,9 +1880,6 @@
     <ClInclude Include="GS\GSExtra.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
-    <ClInclude Include="GS\GSIntrin.h">
-      <Filter>System\Ps2\GS</Filter>
-    </ClInclude>
     <ClInclude Include="GS\GSGL.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>

@@ -18,7 +18,7 @@
 #include "GS/Renderers/DX12/D3D12StreamBuffer.h"
 #include "GS/Renderers/DX12/GSDevice12.h"
 
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
 

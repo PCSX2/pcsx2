@@ -15,7 +15,7 @@
 
 #if defined(_WIN32)
 
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/RedtapeWindows.h"
 #include "common/Console.h"
 #include "common/General.h"

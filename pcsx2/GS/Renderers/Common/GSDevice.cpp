@@ -20,7 +20,7 @@
 #include "GS/GS.h"
 #include "Host.h"
 
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/StringUtil.h"
 
 #include "imgui.h"

@@ -25,7 +25,7 @@
 #include "R5900OpcodeTables.h"
 #include "iR5900.h"
 #include "iMMI.h"
-#include "common/MathUtils.h"
+#include "common/BitUtils.h"
 
 using namespace x86Emitter;
 
@@ -73,8 +73,8 @@ void recPLZCW()
 		GPR_SET_CONST(_Rd_);
 
 		// Return the leading sign bits, excluding the original bit
-		g_cpuConstRegs[_Rd_].UL[0] = count_leading_sign_bits(g_cpuConstRegs[_Rs_].SL[0]) - 1;
-		g_cpuConstRegs[_Rd_].UL[1] = count_leading_sign_bits(g_cpuConstRegs[_Rs_].SL[1]) - 1;
+		g_cpuConstRegs[_Rd_].UL[0] = Common::CountLeadingSignBits(g_cpuConstRegs[_Rs_].SL[0]) - 1;
+		g_cpuConstRegs[_Rd_].UL[1] = Common::CountLeadingSignBits(g_cpuConstRegs[_Rs_].SL[1]) - 1;
 
 		return;
 	}
