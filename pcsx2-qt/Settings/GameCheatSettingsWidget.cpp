@@ -192,7 +192,7 @@ QTreeWidgetItem* GameCheatSettingsWidget::getTreeWidgetParent(const std::string_
 	if (parent.empty())
 		return nullptr;
 
-	auto it = UnorderedStringMapFind(m_parent_map, parent);
+	auto it = m_parent_map.find(parent);
 	if (it != m_parent_map.end())
 		return it->second;
 
