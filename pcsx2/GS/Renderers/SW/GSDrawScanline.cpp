@@ -1749,11 +1749,11 @@ __ri static void FillRect(const GSOffset& off, const GSVector4i& r, u32 c, u32 m
 
 	for (int y = r.y; y < r.w; y++)
 	{
-		auto pa = off.paMulti(vm, 0, y);
+		GSOffset::PAHelper pa = off.paMulti(0, y);
 
 		for (int x = r.x; x < r.z; x++)
 		{
-			T& d = *pa.value(x);
+			T& d = vm[pa.value(x)];
 			d = (T)(!masked ? c : (c | (d & m)));
 		}
 	}
@@ -1799,11 +1799,11 @@ __ri static void FillBlock(const GSOffset& off, const GSVector4i& r, const GSVec
 
 	for (int y = r.y; y < r.w; y += 8)
 	{
-		auto pa = off.paMulti(vm, 0, y);
+		GSOffset::PAHelper pa = off.paMulti(0, y);
 
 		for (int x = r.x; x < r.z; x += 8 * 4 / sizeof(T))
 		{
-			GSVector4i* RESTRICT p = (GSVector4i*)pa.value(x);
+			GSVector4i* RESTRICT p = (GSVector4i*)&vm[pa.value(x)];
 
 			for (int i = 0; i < 16; i += 4)
 			{
