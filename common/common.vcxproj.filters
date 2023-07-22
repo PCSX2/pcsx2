@@ -276,9 +276,6 @@
     <ClInclude Include="WindowInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BitCast.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="StringUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>

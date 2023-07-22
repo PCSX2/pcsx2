@@ -105,7 +105,6 @@
   <ItemGroup>
     <ClInclude Include="Align.h" />
     <ClInclude Include="AlignedMalloc.h" />
-    <ClInclude Include="BitCast.h" />
     <ClInclude Include="ByteSwap.h" />
     <ClInclude Include="CrashHandler.h" />
     <ClInclude Include="DynamicLibrary.h" />

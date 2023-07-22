@@ -17,8 +17,6 @@
 
 #include "MemoryViewWidget.h"
 
-#include "common/BitCast.h"
-
 #include "QtHost.h"
 #include "QtUtils.h"
 #include <QtGui/QMouseEvent>
