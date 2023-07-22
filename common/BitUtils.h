@@ -76,45 +76,8 @@ namespace Common
 	}
 
 	template <typename T>
-	static constexpr __fi bool IsPow2(T value)
-	{
-		return (value & (value - 1)) == 0;
-	}
-
-	template <typename T>
-	static constexpr __fi T PreviousPow2(T value)
-	{
-		if (value == static_cast<T>(0))
-			return 0;
-
-		value |= (value >> 1);
-		value |= (value >> 2);
-		value |= (value >> 4);
-		value |= (value >> 8);
-		value |= (value >> 16);
-		return value - (value >> 1);
-	}
-
-	template<typename T>
-	static constexpr __fi T NextPow2(T value)
-	{
-		if (value == static_cast<T>(0))
-			return 0;
-
-		value--;
-		value |= value >> 1;
-		value |= value >> 2;
-		value |= value >> 4;
-		value |= value >> 8;
-		value |= value >> 16;
-		value++;
-		return value;
-	}
-
-	template <typename T>
 	static constexpr T PageAlign(T size)
 	{
-		static_assert(Common::IsPow2(__pagesize), "Page size is a power of 2");
 		return Common::AlignUpPow2(size, __pagesize);
 	}
 
