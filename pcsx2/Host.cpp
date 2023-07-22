@@ -68,12 +68,12 @@ std::pair<const char*, u32> Host::LookupTranslationString(const std::string_view
 	}
 
 	s_translation_string_mutex.lock_shared();
-	ctx_it = UnorderedStringMapFind(s_translation_string_map, context);
+	ctx_it = s_translation_string_map.find(context);
 
 	if (unlikely(ctx_it == s_translation_string_map.end()))
 		goto add_string;
 
-	msg_it = UnorderedStringMapFind(ctx_it->second, msg);
+	msg_it = ctx_it->second.find(msg);
 	if (unlikely(msg_it == ctx_it->second.end()))
 		goto add_string;
 
