@@ -134,6 +134,7 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/SettingsDialog.ui
 	Settings/USBBindingWidget_DrivingForce.ui
 	Settings/USBBindingWidget_GTForce.ui
+	Settings/USBBindingWidget_GunCon2.ui
 	Debugger/CpuWidget.cpp
 	Debugger/CpuWidget.h
 	Debugger/CpuWidget.ui

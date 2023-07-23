@@ -38,6 +38,7 @@
 
 #include "ui_USBBindingWidget_DrivingForce.h"
 #include "ui_USBBindingWidget_GTForce.h"
+#include "ui_USBBindingWidget_GunCon2.h"
 
 ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSettingsDialog* dialog, u32 port)
 	: QWidget(parent)
@@ -1274,6 +1275,11 @@ USBBindingWidget* USBBindingWidget::createInstance(
 			Ui::USBBindingWidget_GTForce().setupUi(widget);
 			has_template = true;
 		}
+	}
+	else if (type == "guncon2")
+	{
+		Ui::USBBindingWidget_GunCon2().setupUi(widget);
+		has_template = true;
 	}
 
 	if (has_template)
