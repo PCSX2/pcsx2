@@ -119,7 +119,7 @@ Q_SIGNALS:
 	std::optional<WindowInfo> onAcquireRenderWindowRequested(bool recreate_window, bool fullscreen, bool render_to_main, bool surfaceless);
 	void onResizeRenderWindowRequested(qint32 width, qint32 height);
 	void onReleaseRenderWindowRequested();
-	void onRelativeMouseModeRequested(bool enabled);
+	void onMouseModeRequested(bool relative_mode, bool hide_cursor);
 
 	/// Called when the VM is starting initialization, but has not been completed yet.
 	void onVMStarting();

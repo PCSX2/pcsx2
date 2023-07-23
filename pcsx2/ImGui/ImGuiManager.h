@@ -102,6 +102,14 @@ namespace ImGuiManager
 
 	/// Called on the CPU thread when any input event fires. Allows imgui to take over controller navigation.
 	bool ProcessGenericInputEvent(GenericInputBinding key, float value);
+
+	/// Sets an image and scale for a software cursor. Software cursors can be used for things like crosshairs.
+	void SetSoftwareCursor(u32 index, std::string image_path, float image_scale, u32 multiply_color = 0xFFFFFF);
+	bool HasSoftwareCursor(u32 index);
+	void ClearSoftwareCursor(u32 index);
+
+	/// Sets the position of a software cursor, used when we have relative coordinates such as controllers.
+	void SetSoftwareCursorPosition(u32 index, float pos_x, float pos_y);
 } // namespace ImGuiManager
 
 namespace Host

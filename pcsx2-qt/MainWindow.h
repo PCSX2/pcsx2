@@ -124,7 +124,7 @@ private Q_SLOTS:
 
 	std::optional<WindowInfo> acquireRenderWindow(bool recreate_window, bool fullscreen, bool render_to_main, bool surfaceless);
 	void displayResizeRequested(qint32 width, qint32 height);
-	void relativeMouseModeRequested(bool enabled);
+	void mouseModeRequested(bool relative_mode, bool hide_cursor);
 	void releaseRenderWindow();
 	void focusDisplayWidget();
 
@@ -293,6 +293,7 @@ private:
 
 	bool m_display_created = false;
 	bool m_relative_mouse_mode = false;
+	bool m_hide_mouse_cursor = false;
 	bool m_was_paused_on_surface_loss = false;
 	bool m_was_disc_change_request = false;
 	bool m_is_closing = false;

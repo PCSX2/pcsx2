@@ -1469,9 +1469,9 @@ void Host::OnInputDeviceDisconnected(const std::string_view& identifier)
 	emit g_emu_thread->onInputDeviceDisconnected(identifier.empty() ? QString() : QString::fromUtf8(identifier.data(), identifier.size()));
 }
 
-void Host::SetRelativeMouseMode(bool enabled)
+void Host::SetMouseMode(bool relative_mode, bool hide_cursor)
 {
-	emit g_emu_thread->onRelativeMouseModeRequested(enabled);
+	emit g_emu_thread->onMouseModeRequested(relative_mode, hide_cursor);
 }
 
 //////////////////////////////////////////////////////////////////////////
