@@ -148,6 +148,8 @@ public:
 	IsoReader();
 	~IsoReader();
 
+	static std::string_view RemoveVersionIdentifierFromPath(const std::string_view& path);
+
 	const ISOPrimaryVolumeDescriptor& GetPVD() const { return m_pvd; }
 
 	// TODO: Eventually we'll want to pass a handle to the currently-open file here.
