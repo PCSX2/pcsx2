@@ -154,4 +154,10 @@ namespace GameList
 	/// the use_serial parameter. save_callback optionall takes the entry and the path the new cover is saved to.
 	bool DownloadCovers(const std::vector<std::string>& url_templates, bool use_serial = false, ProgressCallback* progress = nullptr,
 		std::function<void(const Entry*, std::string)> save_callback = {});
+
+	// Custom properties support
+	void CheckCustomAttributesForPath(const std::string& path, bool& has_custom_title, bool& has_custom_region);
+	void SaveCustomTitleForPath(const std::string& path, const std::string& custom_title);
+	void SaveCustomRegionForPath(const std::string& path, int custom_region);
+	std::string GetCustomTitleForPath(const std::string& path);
 } // namespace GameList

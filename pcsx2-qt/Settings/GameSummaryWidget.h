@@ -47,6 +47,10 @@ private:
 	void populateDiscPath(const GameList::Entry* entry);
 	void populateTrackList(const GameList::Entry* entry);
 	void setVerifyResult(QString error);
+	void repopulateCurrentDetails();
+
+	void setCustomTitle(const std::string& text);
+	void setCustomRegion(int region);
 
 	Ui::GameSummaryWidget m_ui;
 	SettingsDialog* m_dialog;

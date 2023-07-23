@@ -51,7 +51,7 @@ class SettingsDialog final : public QDialog
 
 public:
 	explicit SettingsDialog(QWidget* parent);
-	SettingsDialog(QWidget* parent, std::unique_ptr<SettingsInterface> sif, const GameList::Entry* game, std::string serial, u32 disc_crc);
+	SettingsDialog(QWidget* parent, std::unique_ptr<SettingsInterface> sif, const GameList::Entry* game, std::string serial, u32 disc_crc, QString filename = QString());
 	~SettingsDialog();
 
 	static void openGamePropertiesDialog(const GameList::Entry* game, const std::string_view& title, std::string serial, u32 disc_crc);
@@ -78,6 +78,8 @@ public:
 
 	void registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text);
 	bool eventFilter(QObject* object, QEvent* event) override;
+
+	void setWindowTitle(const QString& title);
 
 	QString getCategory() const;
 	void setCategory(const char* category);
@@ -144,6 +146,8 @@ private:
 
 	QObject* m_current_help_widget = nullptr;
 	QMap<QObject*, QString> m_widget_help_text_map;
+
+	QString m_filename;
 
 	std::string m_serial;
 	u32 m_disc_crc;

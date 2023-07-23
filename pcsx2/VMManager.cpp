@@ -849,19 +849,22 @@ void VMManager::UpdateDiscDetails(bool booting)
 
 		SaveSessionTime(old_serial);
 
+		std::string custom_title = GameList::GetCustomTitleForPath(CDVDsys_GetFile(CDVDsys_GetSourceType()));
 		if (serial_is_valid)
 		{
 			if (const GameDatabaseSchema::GameEntry* game = GameDatabase::findGame(s_disc_serial))
 			{
+				std::string game_title = custom_title.empty() ? game->name : std::move(custom_title);
+
 				// Append the ELF override if we're using it with a disc.
 				if (!s_elf_override.empty())
 				{
 					title = fmt::format(
-						"{} [{}]", game->name, Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(s_elf_override)));
+						"{} [{}]", game_title, Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(s_elf_override)));
 				}
 				else
 				{
-					title = game->name;
+					title = std::move(game_title);
 				}
 
 				memcardFilters = game->memcardFiltersAsString();
@@ -870,6 +873,11 @@ void VMManager::UpdateDiscDetails(bool booting)
 			{
 				Console.Warning(fmt::format("Serial '{}' not found in GameDB.", s_disc_serial));
 			}
+		}
+
+		if (title.empty())
+		{
+			title = std::move(custom_title);
 		}
 
 		if (title.empty())
