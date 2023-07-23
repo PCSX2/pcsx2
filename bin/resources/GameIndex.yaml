@@ -16074,7 +16074,7 @@ SLES-52569:
   region: "PAL-M6"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned bloom effects that streak on-screen, causes occasional trash shadows at places.
+    halfPixelOffset: 2 # Fixes misaligned bloom effects that streak on-screen, causes occasional trash shadows at places.
 SLES-52570:
   name: "Area 51"
   region: "PAL-M5"
@@ -46928,7 +46928,7 @@ SLUS-20884:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned bloom effects that streak on-screen, causes occasional trash shadows at places.
+    halfPixelOffset: 2 # Fixes misaligned bloom effects that streak on-screen, causes occasional trash shadows at places.
 SLUS-20885:
   name: "Red Star, The"
   region: "NTSC-U"
