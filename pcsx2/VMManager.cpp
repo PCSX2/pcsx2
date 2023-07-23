@@ -17,6 +17,7 @@
 
 #include "Achievements.h"
 #include "CDVD/CDVD.h"
+#include "CDVD/IsoReader.h"
 #include "Counters.h"
 #include "DEV9/DEV9.h"
 #include "DebugTools/MIPSAnalyst.h"
@@ -825,14 +826,13 @@ void VMManager::UpdateDiscDetails(bool booting)
 			s_disc_serial = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(s_elf_override));
 			s_disc_version = {};
 			s_disc_crc = 0; // set below
-			title = s_disc_serial;
 		}
 		else
 		{
 			s_disc_serial = BiosSerial;
 			s_disc_version = {};
 			s_disc_crc = 0;
-			title = fmt::format("PS2 BIOS ({})", BiosZone);
+			title = fmt::format(TRANSLATE_FS("VMManager", "PS2 BIOS ({})"), BiosZone);
 		}
 
 		// If we're booting an ELF, use its CRC, not the disc (if any).
@@ -867,22 +867,17 @@ void VMManager::UpdateDiscDetails(bool booting)
 			else
 			{
 				Console.Warning(fmt::format("Serial '{}' not found in GameDB.", s_disc_serial));
-
-				// Use ELF title, otherwise the serial.
-				if (!s_elf_override.empty())
-				{
-					title = fmt::format("Unknown Game: {} [{}]", s_disc_serial,
-						Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(s_elf_override)));
-				}
-				else
-				{
-					title = fmt::format("Unknown Game: {}", s_disc_serial);
-				}
 			}
 		}
-		else if (title.empty())
+
+		if (title.empty())
 		{
-			title = "Unknown Game";
+			if (!s_disc_serial.empty())
+				title = fmt::format("{} [?]", s_disc_serial);
+			else if (!s_disc_elf.empty())
+				title = fmt::format("{} [?]", Path::GetFileName(IsoReader::RemoveVersionIdentifierFromPath(s_disc_elf)));
+			else
+				title = TRANSLATE_STR("VMManager", "Unknown Game");
 		}
 
 		s_title = std::move(title);

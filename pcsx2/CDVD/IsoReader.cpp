@@ -30,6 +30,12 @@ IsoReader::IsoReader() = default;
 
 IsoReader::~IsoReader() = default;
 
+std::string_view IsoReader::RemoveVersionIdentifierFromPath(const std::string_view& path)
+{
+	const std::string_view::size_type pos = path.find(';');
+	return (pos != std::string_view::npos) ? path.substr(0, pos) : path;
+}
+
 bool IsoReader::Open(Error* error)
 {
 	if (!ReadPVD(error))
