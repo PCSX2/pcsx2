@@ -18368,6 +18368,8 @@ SLES-53439:
     - IbitHack # Fixes constant recompilation problems.
   gsHWFixes:
     PCRTCOverscan: 1 # Fixes offscreen image.
+    nativePaletteDraw: 1 # Fixes the look of screen effects.
+    halfPixelOffset: 2 # Corrects the alignment of screen effects.
 SLES-53441:
   name: "Heroes of the Pacific"
   region: "PAL-M5"
@@ -33112,6 +33114,8 @@ SLPM-66090:
   region: "NTSC-J"
   gsHWFixes:
     PCRTCOverscan: 1 # Fixes offscreen image.
+    nativePaletteDraw: 1 # Fixes the look of screen effects.
+    halfPixelOffset: 2 # Corrects the alignment of screen effects.
 SLPM-66091:
   name: "Shinobido Imashime"
   region: "NTSC-J"
@@ -48752,6 +48756,8 @@ SLUS-21191:
     - IbitHack # Fixes constant recompilation problems.
   gsHWFixes:
     PCRTCOverscan: 1 # Fixes offscreen image.
+    nativePaletteDraw: 1 # Fixes the look of screen effects.
+    halfPixelOffset: 2 # Corrects the alignment of screen effects.
 SLUS-21192:
   name: "Cabela's Outdoor Adventures 2006"
   region: "NTSC-U"
