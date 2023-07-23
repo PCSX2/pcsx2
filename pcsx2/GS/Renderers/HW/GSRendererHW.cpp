@@ -4456,7 +4456,7 @@ bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextu
 		}
 		else if (clamp == CLAMP_REGION_REPEAT)
 		{
-			const u32 req_tbits = (tmax > 1) ? std::bit_ceil(static_cast<u32>(tmax - 1) - 1) : 0x1;
+			const u32 req_tbits = (tmax > 1) ? (std::bit_ceil(static_cast<u32>(tmax - 1)) - 1) : 0x1;
 			if ((min & req_tbits) != req_tbits)
 			{
 				GL_CACHE("Can't use tex-is-fb because of REGION_REPEAT [%d, %d] with TMM of [%d, %d] and tbits of %d",
