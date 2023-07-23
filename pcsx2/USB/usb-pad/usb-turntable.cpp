@@ -282,6 +282,17 @@ namespace usb_pad
 		return nullptr;
 	}
 
+	bool DJTurntableDevice::Freeze(USBDevice* dev, StateWrapper& sw) const
+	{
+		TurntableState* s = USB_CONTAINER_OF(dev, TurntableState, dev);
+		
+		if (!sw.DoMarker("DJTurntableDevice"))
+			return false;
+
+		sw.Do(&s->data.euphoria_led_state);
+		return !sw.HasError();
+	}
+
 	void DJTurntableDevice::UpdateSettings(USBDevice* dev, SettingsInterface& si) const
 	{
 		USB_CONTAINER_OF(dev, TurntableState, dev)->UpdateSettings(si, TypeName());
