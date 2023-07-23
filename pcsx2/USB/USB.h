@@ -79,6 +79,9 @@ namespace USB
 	/// Identifies any device/subtype changes and recreates devices.
 	void CheckForConfigChanges(const Pcsx2Config& old_config);
 
+	/// Returns true if a device-specific configuration key exists.
+	bool ConfigKeyExists(SettingsInterface& si, u32 port, const char* devname, const char* key);
+
 	/// Reads a device-specific configuration boolean.
 	bool GetConfigBool(SettingsInterface& si, u32 port, const char* devname, const char* key, bool default_value);
 
