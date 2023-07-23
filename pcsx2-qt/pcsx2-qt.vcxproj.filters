@@ -621,15 +621,18 @@
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="SetupWizardDialog.ui" />
+    <QtUi Include="Settings\USBBindingWidget_DrivingForce.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\USBBindingWidget_GTForce.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\USBBindingWidget_GunCon2.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
   </ItemGroup>
   <ItemGroup>
     <None Include="Settings\FolderSettingsWidget.ui">
-      <Filter>Settings</Filter>
-    </None>
-    <None Include="Settings\USBBindingWidget_GTForce.ui">
-      <Filter>Settings</Filter>
-    </None>
-    <None Include="Settings\USBBindingWidget_DrivingForce.ui">
       <Filter>Settings</Filter>
     </None>
   </ItemGroup>
