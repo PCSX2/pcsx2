@@ -19,6 +19,7 @@
 #include "Elfheader.h"
 #include "GameList.h"
 #include "Host.h"
+#include "INISettingsInterface.h"
 #include "VMManager.h"
 
 #include "common/Assertions.h"
@@ -75,10 +76,10 @@ namespace GameList
 
 	static bool GetGameListEntryFromCache(const std::string& path, GameList::Entry* entry);
 	static void ScanDirectory(const char* path, bool recursive, bool only_cache, const std::vector<std::string>& excluded_paths,
-		const PlayedTimeMap& played_time_map, ProgressCallback* progress);
+		const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini, ProgressCallback* progress);
 	static bool AddFileFromCache(const std::string& path, std::time_t timestamp, const PlayedTimeMap& played_time_map);
-	static bool ScanFile(
-		std::string path, std::time_t timestamp, std::unique_lock<std::recursive_mutex>& lock, const PlayedTimeMap& played_time_map);
+	static bool ScanFile(std::string path, std::time_t timestamp, std::unique_lock<std::recursive_mutex>& lock,
+		const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini);
 
 	static void LoadCache();
 	static bool LoadEntriesFromCache(std::FILE* stream);
@@ -94,6 +95,8 @@ namespace GameList
 	static PlayedTimeMap LoadPlayedTimeMap(const std::string& path);
 	static PlayedTimeEntry UpdatePlayedTimeFile(
 		const std::string& path, const std::string& serial, std::time_t last_time, std::time_t add_time);
+
+	static std::string GetCustomPropertiesFile();
 } // namespace GameList
 
 static std::vector<GameList::Entry> s_entries;
@@ -586,7 +589,7 @@ static bool IsPathExcluded(const std::vector<std::string>& excluded_paths, const
 }
 
 void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, const std::vector<std::string>& excluded_paths,
-	const PlayedTimeMap& played_time_map, ProgressCallback* progress)
+	const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini, ProgressCallback* progress)
 {
 	Console.WriteLn("Scanning %s%s", path, recursive ? " (recursively)" : "");
 
@@ -619,7 +622,7 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, 
 		}
 
 		progress->SetFormattedStatusText("Scanning '%s'...", FileSystem::GetDisplayNameFromPath(ffd.FileName).c_str());
-		ScanFile(std::move(ffd.FileName), ffd.ModificationTime, lock, played_time_map);
+		ScanFile(std::move(ffd.FileName), ffd.ModificationTime, lock, played_time_map, custom_attributes_ini);
 		progress->SetProgressValue(files_scanned);
 	}
 
@@ -648,8 +651,8 @@ bool GameList::AddFileFromCache(const std::string& path, std::time_t timestamp, 
 	return true;
 }
 
-bool GameList::ScanFile(
-	std::string path, std::time_t timestamp, std::unique_lock<std::recursive_mutex>& lock, const PlayedTimeMap& played_time_map)
+bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_lock<std::recursive_mutex>& lock,
+	const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini)
 {
 	// don't block UI while scanning
 	lock.unlock();
@@ -675,11 +678,26 @@ bool GameList::ScanFile(
 		return true;
 	}
 
-	auto iter = played_time_map.find(entry.serial);
+	const auto iter = played_time_map.find(entry.serial);
 	if (iter != played_time_map.end())
 	{
 		entry.last_played_time = iter->second.last_played_time;
 		entry.total_played_time = iter->second.total_played_time;
+	}
+
+	auto custom_title = custom_attributes_ini.GetOptionalStringValue(entry.path.c_str(), "Title");
+	if (custom_title)
+	{
+		entry.title = std::move(custom_title.value());
+	}
+	const auto custom_region = custom_attributes_ini.GetOptionalIntValue(entry.path.c_str(), "Region");
+	if (custom_region)
+	{
+		const int custom_region_value = custom_region.value();
+		if (custom_region_value >= 0 && custom_region_value < static_cast<int>(Region::Count))
+		{
+			entry.region = static_cast<Region>(custom_region_value);
+		}
 	}
 
 	lock.lock();
@@ -764,6 +782,8 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
 	const std::vector<std::string> dirs(Host::GetBaseStringListSetting("GameList", "Paths"));
 	const std::vector<std::string> recursive_dirs(Host::GetBaseStringListSetting("GameList", "RecursivePaths"));
 	const PlayedTimeMap played_time(LoadPlayedTimeMap(GetPlayedTimeFile()));
+	INISettingsInterface custom_attributes_ini(GetCustomPropertiesFile());
+	custom_attributes_ini.Load();
 
 	if (!dirs.empty() || !recursive_dirs.empty())
 	{
@@ -777,7 +797,7 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
 			if (progress->IsCancelled())
 				break;
 
-			ScanDirectory(dir.c_str(), false, only_cache, excluded_paths, played_time, progress);
+			ScanDirectory(dir.c_str(), false, only_cache, excluded_paths, played_time, custom_attributes_ini, progress);
 			progress->SetProgressValue(++directory_counter);
 		}
 		for (const std::string& dir : recursive_dirs)
@@ -785,7 +805,7 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
 			if (progress->IsCancelled())
 				break;
 
-			ScanDirectory(dir.c_str(), true, only_cache, excluded_paths, played_time, progress);
+			ScanDirectory(dir.c_str(), true, only_cache, excluded_paths, played_time, custom_attributes_ini, progress);
 			progress->SetProgressValue(++directory_counter);
 		}
 	}
@@ -804,6 +824,8 @@ bool GameList::RescanPath(const std::string& path)
 	std::unique_lock lock(s_mutex);
 
 	const PlayedTimeMap played_time(LoadPlayedTimeMap(GetPlayedTimeFile()));
+	INISettingsInterface custom_attributes_ini(GetCustomPropertiesFile());
+	custom_attributes_ini.Load();
 
 	{
 		// cancel if excluded
@@ -813,7 +835,7 @@ bool GameList::RescanPath(const std::string& path)
 	}
 
 	// re-scan!
-	if (!ScanFile(path, sd.ModificationTime, lock, played_time))
+	if (!ScanFile(path, sd.ModificationTime, lock, played_time, custom_attributes_ini))
 		return true;
 
 	// update cache.. this is far from ideal, but since everything's variable length, all we can do.
@@ -1318,4 +1340,75 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
 	}
 
 	return true;
+}
+
+std::string GameList::GetCustomPropertiesFile()
+{
+	return Path::Combine(EmuFolders::Settings, "custom_properties.ini");
+}
+
+void GameList::CheckCustomAttributesForPath(const std::string& path, bool& has_custom_title, bool& has_custom_region)
+{
+	INISettingsInterface names(GetCustomPropertiesFile());
+	if (names.Load())
+	{
+		has_custom_title = names.ContainsValue(path.c_str(), "Title");
+		has_custom_region = names.ContainsValue(path.c_str(), "Region");
+	}
+}
+
+void GameList::SaveCustomTitleForPath(const std::string& path, const std::string& custom_title)
+{
+	INISettingsInterface names(GetCustomPropertiesFile());
+	names.Load();
+
+	if (!custom_title.empty())
+	{
+		names.SetStringValue(path.c_str(), "Title", custom_title.c_str());
+	}
+	else
+	{
+		names.DeleteValue(path.c_str(), "Title");
+	}
+
+	if (names.Save())
+	{
+		// Let the cache update by rescanning
+		RescanPath(path);
+	}
+}
+
+void GameList::SaveCustomRegionForPath(const std::string& path, int custom_region)
+{
+	INISettingsInterface names(GetCustomPropertiesFile());
+	names.Load();
+
+	if (custom_region >= 0)
+	{
+		names.SetIntValue(path.c_str(), "Region", custom_region);
+	}
+	else
+	{
+		names.DeleteValue(path.c_str(), "Region");
+	}
+
+	if (names.Save())
+	{
+		// Let the cache update by rescanning
+		RescanPath(path);
+	}
+}
+
+std::string GameList::GetCustomTitleForPath(const std::string& path)
+{
+	std::string ret;
+
+	std::unique_lock lock(s_mutex);
+	const GameList::Entry* entry = GetEntryForPath(path.c_str());
+	if (entry)
+	{
+		ret = entry->title;
+	}
+
+	return ret;
 }

@@ -12,7 +12,7 @@
  *  You should have received a copy of the GNU General Public License along with PCSX2.
  *  If not, see <http://www.gnu.org/licenses/>.
  */
-	
+
 #include "PrecompiledHeader.h"
 
 #include "MainWindow.h"
@@ -59,11 +59,12 @@ SettingsDialog::SettingsDialog(QWidget* parent)
 }
 
 SettingsDialog::SettingsDialog(QWidget* parent, std::unique_ptr<SettingsInterface> sif, const GameList::Entry* game,
-	std::string serial, u32 disc_crc)
+	std::string serial, u32 disc_crc, QString filename)
 	: QDialog(parent)
 	, m_sif(std::move(sif))
 	, m_serial(std::move(serial))
 	, m_disc_crc(disc_crc)
+	, m_filename(std::move(filename))
 {
 	setupUi(game);
 
@@ -80,9 +81,9 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	if (isPerGameSettings())
 	{
 		QString summary = tr("<strong>Summary</strong><hr>This page shows details about the selected game. Changing the Input "
-			   "Profile will set the controller binding scheme for this game to whichever profile is chosen, instead "
-			   "of the default (Shared) configuration. The track list and dump verification can be used to determine "
-			   "if your disc image matches a known good dump. If it does not match, the game may be broken.");
+							 "Profile will set the controller binding scheme for this game to whichever profile is chosen, instead "
+							 "of the default (Shared) configuration. The track list and dump verification can be used to determine "
+							 "if your disc image matches a known good dump. If it does not match, the game may be broken.");
 		if (game)
 		{
 			addWidget(new GameSummaryWidget(game, this, m_ui.settingsContainer), tr("Summary"),
@@ -153,7 +154,7 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	addWidget(m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
 		QStringLiteral("memcard-line"),
 		tr("<strong>Memory Card Settings</strong><hr>Create and configure Memory Cards here.<br><br>Mouse over an option for "
-			  "additional information."));
+		   "additional information."));
 
 	addWidget(m_dev9_settings = new DEV9SettingsWidget(this, m_ui.settingsContainer), tr("Network & HDD"), QStringLiteral("global-line"),
 		tr("<strong>Network & HDD Settings</strong><hr>These options control the network connectivity and internal HDD storage of the "
@@ -328,6 +329,18 @@ bool SettingsDialog::eventFilter(QObject* object, QEvent* event)
 	}
 
 	return QDialog::eventFilter(object, event);
+}
+
+void SettingsDialog::setWindowTitle(const QString& title)
+{
+	if (m_filename.isEmpty())
+	{
+		QDialog::setWindowTitle(title);
+	}
+	else
+	{
+		QDialog::setWindowTitle(QStringLiteral("%1 [%2]").arg(title, m_filename));
+	}
 }
 
 bool SettingsDialog::getEffectiveBoolValue(const char* section, const char* key, bool default_value) const
@@ -544,16 +557,12 @@ void SettingsDialog::openGamePropertiesDialog(const GameList::Entry* game, const
 	}
 
 	std::string filename(VMManager::GetGameSettingsPath(serial, disc_crc));
-	std::unique_ptr<INISettingsInterface> sif = std::make_unique<INISettingsInterface>(std::move(filename));
+	std::unique_ptr<INISettingsInterface> sif = std::make_unique<INISettingsInterface>(filename);
 	if (FileSystem::FileExists(sif->GetFileName().c_str()))
 		sif->Load();
 
-	const QString window_title(tr("%1 [%2]")
-								   .arg(QtUtils::StringViewToQString(title))
-								   .arg(QtUtils::StringViewToQString(Path::GetFileName(sif->GetFileName()))));
-
-	SettingsDialog* dialog = new SettingsDialog(g_main_window, std::move(sif), game, std::move(serial), disc_crc);
-	dialog->setWindowTitle(window_title);
+	SettingsDialog* dialog = new SettingsDialog(g_main_window, std::move(sif), game, std::move(serial), disc_crc, QtUtils::StringViewToQString(Path::GetFileName(filename)));
+	dialog->setWindowTitle(QtUtils::StringViewToQString(title));
 	dialog->setModal(false);
 	dialog->show();
 }
