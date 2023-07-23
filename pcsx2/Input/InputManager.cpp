@@ -1309,6 +1309,11 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 	for (u32 port = 0; port < USB::NUM_PORTS; port++)
 		AddUSBBindings(binding_si, port);
 
+	UpdateHostMouseMode();
+}
+
+void InputManager::UpdateHostMouseMode()
+{
 	// Check for relative mode bindings, and enable if there's anything using it.
 	bool has_relative_mode_bindings = !s_pointer_move_callbacks.empty();
 	if (!has_relative_mode_bindings)
@@ -1324,7 +1329,9 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 			}
 		}
 	}
-	Host::SetRelativeMouseMode(has_relative_mode_bindings);
+
+	const bool has_software_cursor = ImGuiManager::HasSoftwareCursor(0);
+	Host::SetMouseMode(has_relative_mode_bindings, has_relative_mode_bindings || has_software_cursor);
 }
 
 // ------------------------------------------------------------------------

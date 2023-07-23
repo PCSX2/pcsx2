@@ -414,7 +414,7 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 	connect(thread, &EmuThread::onAcquireRenderWindowRequested, this, &MainWindow::acquireRenderWindow, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onReleaseRenderWindowRequested, this, &MainWindow::releaseRenderWindow, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onResizeRenderWindowRequested, this, &MainWindow::displayResizeRequested);
-	connect(thread, &EmuThread::onRelativeMouseModeRequested, this, &MainWindow::relativeMouseModeRequested);
+	connect(thread, &EmuThread::onMouseModeRequested, this, &MainWindow::mouseModeRequested);
 	connect(thread, &EmuThread::onVMStarting, this, &MainWindow::onVMStarting);
 	connect(thread, &EmuThread::onVMStarted, this, &MainWindow::onVMStarted);
 	connect(thread, &EmuThread::onVMPaused, this, &MainWindow::onVMPaused);
@@ -887,7 +887,8 @@ bool MainWindow::isRenderingToMain() const
 
 bool MainWindow::shouldHideMouseCursor() const
 {
-	return (isRenderingFullscreen() && Host::GetBoolSettingValue("UI", "HideMouseCursor", false)) || m_relative_mouse_mode;
+	return ((isRenderingFullscreen() && Host::GetBoolSettingValue("UI", "HideMouseCursor", false)) ||
+			m_relative_mouse_mode || m_hide_mouse_cursor);
 }
 
 bool MainWindow::shouldHideMainWindow() const
@@ -2003,12 +2004,13 @@ void MainWindow::displayResizeRequested(qint32 width, qint32 height)
 	QtUtils::ResizePotentiallyFixedSizeWindow(this, width, height + extra_height);
 }
 
-void MainWindow::relativeMouseModeRequested(bool enabled)
+void MainWindow::mouseModeRequested(bool relative_mode, bool hide_cursor)
 {
-	if (m_relative_mouse_mode == enabled)
+	if (m_relative_mouse_mode == relative_mode && m_hide_mouse_cursor == hide_cursor)
 		return;
 
-	m_relative_mouse_mode = enabled;
+	m_relative_mouse_mode = relative_mode;
+	m_hide_mouse_cursor = hide_cursor;
 	if (m_display_widget && !s_vm_paused)
 		updateDisplayWidgetCursor();
 }

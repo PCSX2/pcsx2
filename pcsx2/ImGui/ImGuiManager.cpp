@@ -38,6 +38,7 @@
 #include "fmt/core.h"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "common/Image.h"
 
 #include <chrono>
 #include <cmath>
@@ -47,6 +48,17 @@
 
 namespace ImGuiManager
 {
+	struct SoftwareCursor
+	{
+		std::string image_path;
+		std::unique_ptr<GSTexture> texture;
+		u32 color;
+		float scale;
+		float extent_x;
+		float extent_y;
+		std::pair<float, float> pos;
+	};
+
 	static void SetStyle();
 	static void SetKeyMap();
 	static bool LoadFontData();
@@ -57,6 +69,11 @@ namespace ImGuiManager
 	static bool AddIconFonts(float size);
 	static void AcquirePendingOSDMessages();
 	static void DrawOSDMessages();
+	static void CreateSoftwareCursorTextures();
+	static void UpdateSoftwareCursorTexture(u32 index);
+	static void DestroySoftwareCursorTextures();
+	static void DrawSoftwareCursor(const SoftwareCursor& sc, const std::pair<float, float>& pos);
+	static void DrawSoftwareCursors();
 } // namespace ImGuiManager
 
 static float s_global_scale = 1.0f;
@@ -85,6 +102,8 @@ static std::unordered_map<u32, ImGuiKey> s_imgui_key_map;
 
 // need to keep track of this, so we can reinitialize on renderer switch
 static bool s_fullscreen_ui_was_initialized = false;
+
+static std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> s_software_cursors = {};
 
 void ImGuiManager::SetFontPath(std::string path)
 {
@@ -146,6 +165,7 @@ bool ImGuiManager::Initialize()
 	if (add_fullscreen_fonts)
 		InitializeFullscreenUI();
 
+	CreateSoftwareCursorTextures();
 	return true;
 }
 
@@ -157,6 +177,8 @@ bool ImGuiManager::InitializeFullscreenUI()
 
 void ImGuiManager::Shutdown(bool clear_state)
 {
+	DestroySoftwareCursorTextures();
+
 	FullscreenUI::Shutdown(clear_state);
 	ImGuiFullscreen::SetFonts(nullptr, nullptr, nullptr);
 	if (clear_state)
@@ -672,6 +694,7 @@ void ImGuiManager::RenderOSD()
 
 	AcquirePendingOSDMessages();
 	DrawOSDMessages();
+	DrawSoftwareCursors();
 }
 
 float ImGuiManager::GetGlobalScale()
@@ -809,4 +832,113 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
 		[key = key_map[static_cast<u32>(key)], value]() { ImGui::GetIO().AddKeyAnalogEvent(key, (value > 0.0f), value); });
 
 	return true;
+}
+
+void ImGuiManager::CreateSoftwareCursorTextures()
+{
+	for (u32 i = 0; i < InputManager::MAX_POINTER_DEVICES; i++)
+	{
+		if (!s_software_cursors[i].image_path.empty())
+			UpdateSoftwareCursorTexture(i);
+	}
+}
+
+void ImGuiManager::DestroySoftwareCursorTextures()
+{
+	for (u32 i = 0; i < InputManager::MAX_POINTER_DEVICES; i++)
+	{
+		s_software_cursors[i].texture.reset();
+	}
+}
+
+void ImGuiManager::UpdateSoftwareCursorTexture(u32 index)
+{
+	SoftwareCursor& sc = s_software_cursors[index];
+	if (sc.image_path.empty())
+	{
+		sc.texture.reset();
+		return;
+	}
+
+	Common::RGBA8Image image;
+	if (!image.LoadFromFile(sc.image_path.c_str()))
+	{
+		Console.Error("Failed to load software cursor %u image '%s'", index, sc.image_path.c_str());
+		return;
+	}
+	sc.texture = std::unique_ptr<GSTexture>(g_gs_device->CreateTexture(image.GetWidth(), image.GetHeight(), 1, GSTexture::Format::Color));
+	if (!sc.texture)
+	{
+		Console.Error(
+			"Failed to upload %ux%u software cursor %u image '%s'", image.GetWidth(), image.GetHeight(), index, sc.image_path.c_str());
+		return;
+	}
+	sc.texture->Update(GSVector4i(0, 0, image.GetWidth(), image.GetHeight()), image.GetPixels(), image.GetByteStride(), 0);
+
+	sc.extent_x = std::ceil(static_cast<float>(image.GetWidth()) * sc.scale * s_global_scale) / 2.0f;
+	sc.extent_y = std::ceil(static_cast<float>(image.GetHeight()) * sc.scale * s_global_scale) / 2.0f;
+}
+
+void ImGuiManager::DrawSoftwareCursor(const SoftwareCursor& sc, const std::pair<float, float>& pos)
+{
+	if (!sc.texture)
+		return;
+
+	const ImVec2 min(pos.first - sc.extent_x, pos.second - sc.extent_y);
+	const ImVec2 max(pos.first + sc.extent_x, pos.second + sc.extent_y);
+
+	ImDrawList* dl = ImGui::GetForegroundDrawList();
+
+	dl->AddImage(
+		reinterpret_cast<ImTextureID>(sc.texture.get()->GetNativeHandle()), min, max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), sc.color);
+}
+
+void ImGuiManager::DrawSoftwareCursors()
+{
+	// This one's okay to race, worst that happens is we render the wrong number of cursors for a frame.
+	const u32 pointer_count = InputManager::MAX_POINTER_DEVICES;
+	for (u32 i = 0; i < pointer_count; i++)
+		DrawSoftwareCursor(s_software_cursors[i], InputManager::GetPointerAbsolutePosition(i));
+
+	for (u32 i = InputManager::MAX_POINTER_DEVICES; i < InputManager::MAX_SOFTWARE_CURSORS; i++)
+		DrawSoftwareCursor(s_software_cursors[i], s_software_cursors[i].pos);
+}
+
+void ImGuiManager::SetSoftwareCursor(u32 index, std::string image_path, float image_scale, u32 multiply_color)
+{
+	MTGS::RunOnGSThread([index, image_path = std::move(image_path), image_scale, multiply_color]() {
+		pxAssert(index < std::size(s_software_cursors));
+		SoftwareCursor& sc = s_software_cursors[index];
+		sc.color = multiply_color | 0xFF000000;
+		if (sc.image_path == image_path && sc.scale == image_scale)
+			return;
+
+		const bool is_hiding_or_showing = (image_path.empty() != sc.image_path.empty());
+		sc.image_path = std::move(image_path);
+		sc.scale = image_scale;
+		if (MTGS::IsOpen())
+			UpdateSoftwareCursorTexture(index);
+
+		// Hide the system cursor when we activate a software cursor.
+		if (is_hiding_or_showing && index == 0)
+			Host::RunOnCPUThread(&InputManager::UpdateHostMouseMode);
+	});
+}
+
+bool ImGuiManager::HasSoftwareCursor(u32 index)
+{
+	return (index < s_software_cursors.size() && !s_software_cursors[index].image_path.empty());
+}
+
+void ImGuiManager::ClearSoftwareCursor(u32 index)
+{
+	SetSoftwareCursor(index, std::string(), 0.0f, 0);
+}
+
+void ImGuiManager::SetSoftwareCursorPosition(u32 index, float pos_x, float pos_y)
+{
+	pxAssert(index >= InputManager::MAX_POINTER_DEVICES);
+	SoftwareCursor& sc = s_software_cursors[index];
+	sc.pos.first = pos_x;
+	sc.pos.second = pos_y;
 }
