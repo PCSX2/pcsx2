@@ -95,15 +95,11 @@ float GSRendererHW::GetUpscaleMultiplier()
 
 void GSRendererHW::Reset(bool hardware_reset)
 {
-	// Force targets to preload for 2 frames (for 30fps games).
-	static constexpr u8 TARGET_PRELOAD_FRAMES = 2;
-
 	// Read back on CSR Reset, conditional downloading on render swap etc handled elsewhere.
 	if (!hardware_reset)
 		g_texture_cache->ReadbackAll();
 
 	g_texture_cache->RemoveAll();
-	m_force_preload = TARGET_PRELOAD_FRAMES;
 
 	GSRenderer::Reset(hardware_reset);
 }
@@ -117,22 +113,10 @@ void GSRendererHW::UpdateSettings(const Pcsx2Config::GSOptions& old_config)
 
 void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame)
 {
-	if (m_force_preload > 0)
-	{
-		m_force_preload--;
-		if (m_force_preload == 0)
-		{
-			for (auto iter = m_draw_transfers.rbegin(); iter != m_draw_transfers.rend(); iter++)
-			{
-				if ((s_n - iter->draw) > 5)
-				{
-					m_draw_transfers.erase(m_draw_transfers.begin(), std::next(iter).base());
-					break;
-				}
-			}
-		}
-	}
-	else if (!idle_frame)
+	if (GSConfig.LoadTextureReplacements)
+		GSTextureReplacements::ProcessAsyncLoadedTextures();
+
+	if (!idle_frame)
 	{
 		// If it did draws very recently, we should keep the recent stuff in case it hasn't been preloaded/used yet.
 		// Rocky Legend does this with the main menu FMV's.
@@ -151,23 +135,15 @@ void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame)
 		{
 			m_draw_transfers.clear();
 		}
-	}
 
-	if (GSConfig.LoadTextureReplacements)
-		GSTextureReplacements::ProcessAsyncLoadedTextures();
-
-	// Don't age the texture cache when no draws or EE writes have occurred.
-	// Xenosaga needs its targets kept around while it's loading, because it uses them for a fade transition.
-	if (idle_frame)
-	{
-		GL_INS("No draws or transfers, not aging TC");
+		g_texture_cache->IncAge();
 	}
 	else
 	{
-		g_texture_cache->IncAge();
+		// Don't age the texture cache when no draws or EE writes have occurred.
+		// Xenosaga needs its targets kept around while it's loading, because it uses them for a fade transition.
+		GL_INS("No draws or transfers, not aging TC");
 	}
-
-	GSRenderer::VSync(field, registers_written, idle_frame);
 
 	if (g_texture_cache->GetHashCacheMemoryUsage() > 1024 * 1024 * 1024)
 	{
@@ -182,6 +158,8 @@ void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame)
 
 	m_skip = 0;
 	m_skip_offset = 0;
+
+	GSRenderer::VSync(field, registers_written, idle_frame);
 }
 
 GSTexture* GSRendererHW::GetOutput(int i, float& scale, int& y_offset)

@@ -1639,7 +1639,6 @@ void GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 
 	if (TEX0.TBW > 0 && supported_fmt)
 	{
-		const bool forced_preload = GSRendererHW::GetInstance()->m_force_preload > 0;
 		const GSVector4i newrect = GSVector4i::loadh(size);
 		const u32 rect_end = GSLocalMemory::GetUnwrappedEndBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, newrect);
 
@@ -1647,7 +1646,7 @@ void GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 		rgba._u32 = GSUtil::GetChannelMask(TEX0.PSM);
 		dst->UpdateValidity(GSVector4i::loadh(valid_size));
 
-		if (!is_frame && !forced_preload && !preload)
+		if (!is_frame && !preload)
 		{
 			if (preserve_target || !draw_rect.eq(dst->m_valid))
 			{
