@@ -10305,6 +10305,9 @@ SLES-50021:
   region: "PAL-E"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-50022:
   name: "NBA Live 2001"
   region: "PAL-E"
@@ -10573,9 +10576,15 @@ SLES-50115:
 SLES-50118:
   name: "Tiger Woods PGA Tour 2001"
   region: "PAL-E"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-50119:
   name: "Tiger Woods PGA Tour 2001"
   region: "PAL-A"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-50120:
   name: "Rumble Racing"
   region: "PAL-M3"
@@ -11268,6 +11277,9 @@ SLES-50422:
   region: "PAL-E"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-50423:
   name: "F1 2001"
   region: "PAL-M4"
@@ -11606,6 +11618,7 @@ SLES-50579:
          patch=0,EE,00171190,word,48438800
          patch=0,EE,00171194,word,4BE521AC
          patch=0,EE,00171198,word,30848000
+         patch=0,EE,0017119c,word,4BE72B3C
 SLES-50580:
   name: "Kessen II"
   region: "PAL-G"
@@ -11887,11 +11900,17 @@ SLES-50728:
   region: "PAL-M3"
   gameFixes:
     - VUSyncHack # Fixes the inverted legs.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-50729:
   name: "Tiger Woods USA Tour 2002"
   region: "PAL-A"
   gameFixes:
     - VUSyncHack # Fixes the inverted legs.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-50730:
   name: "VIP"
   region: "PAL-M5"
@@ -12928,6 +12947,9 @@ SLES-51154:
   region: "PAL-E"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51156:
   name: "Silent Hill 2 - Director's Cut"
   region: "PAL-M5"
@@ -13316,6 +13338,9 @@ SLES-51275:
 SLES-51282:
   name: "Tiger Woods PGA Tour 2003"
   region: "PAL-E"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51283:
   name: "WWE SmackDown! Shut Your Mouth"
   region: "PAL-E"
@@ -14305,6 +14330,9 @@ SLES-51797:
   region: "PAL-E"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51798:
   name: "NHL 2004"
   region: "PAL-M5"
@@ -14596,6 +14624,9 @@ SLES-51887:
   region: "PAL-E"
   clampModes:
     vuClampMode: 2 # Fixes black textures on characters.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51888:
   name: "RTL Ski Jumping 2004"
   region: "PAL-E-G"
@@ -15889,6 +15920,9 @@ SLES-52509:
   region: "PAL-M4"
   clampModes:
     vuClampMode: 2 # Fix black textures on characters.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-52510:
   name: "Neo Contra"
   region: "PAL-M3"
@@ -16104,6 +16138,9 @@ SLES-52581:
   region: "PAL-E"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-52584:
   name: "Burnout 3 - Takedown"
   region: "PAL-M4"
@@ -18547,6 +18584,9 @@ SLES-53510:
   region: "PAL-E"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53518:
   name: "Castle Shikigami II"
   region: "PAL-E"
@@ -18725,6 +18765,9 @@ SLES-53541:
   region: "PAL-M4"
   clampModes:
     vuClampMode: 3 # Fix black textures on characters.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53542:
   name: "Shadow the Hedgehog"
   region: "PAL-M5"
@@ -20684,6 +20727,9 @@ SLES-54248:
   region: "PAL-E"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54250:
   name: "NBA Live '07"
   region: "PAL-F"
@@ -20698,6 +20744,9 @@ SLES-54253:
   region: "PAL-E"
   clampModes:
     vuClampMode: 2 # Fix black textures on characters.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54254:
   name: "Evolution GT"
   region: "PAL-PL"
@@ -22156,6 +22205,9 @@ SLES-54812:
   region: "PAL-E"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54813:
   name: "NASCAR 08"
   region: "PAL-A-E"
@@ -22287,6 +22339,9 @@ SLES-54867:
   region: "PAL-E-F"
   clampModes:
     vuClampMode: 2 # Fix black textures on characters.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54870:
   name: "FIFA '08"
   region: "PAL-E"
@@ -23260,6 +23315,11 @@ SLES-55216:
 SLES-55218:
   name: "Tiger Woods PGA Tour 09"
   region: "PAL-E"
+  clampModes:
+    vuClampMode: 2 # Fixes black textures on characters.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-55219:
   name: "Hasbro Family Game Night"
   region: "PAL-M4"
@@ -23312,6 +23372,11 @@ SLES-55237:
 SLES-55238:
   name: "Madden NFL 09"
   region: "PAL-E"
+  clampModes:
+    vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-55239:
   name: "Hasbro Family Game Night"
   region: "PAL-I"
@@ -23956,6 +24021,11 @@ SLES-55526:
 SLES-55528:
   name: "Tiger Woods PGA Tour 10"
   region: "PAL-A"
+  clampModes:
+    vuClampMode: 2 # Fixes black textures on characters.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-55529:
   name: "Germany's Next Topmodel"
   region: "PAL-G"
@@ -24928,6 +24998,22 @@ SLKA-25093:
     halfPixelOffset: 2 # Fixes ghosting.
     roundSprite: 2 # Fixes various lines / reduces bars on right edge.
     disablePartialInvalidation: 1 # Fixes textureless graphics ingame.
+SLKA-25095:
+  name: "Madden NFL 2004"
+  region: "NTSC-K"
+  clampModes:
+    vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
+SLKA-25097:
+  name: "Tiger Woods PGA Tour 2004"
+  region: "NTSC-K"
+  clampModes:
+    vuClampMode: 2 # Fixes black textures on characters.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLKA-25098:
   name: "Lord of the Rings, The - The Return of the King"
   region: "NTSC-K"
@@ -31984,6 +32070,9 @@ SLPM-65798:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-65799:
   name: "New Jinsei Game"
   region: "NTSC-J"
@@ -33464,6 +33553,9 @@ SLPM-66191:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 3 # Fixes black textures on characters.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-66192:
   name: "Izumo 2"
   region: "NTSC-J"
@@ -33499,6 +33591,9 @@ SLPM-66204:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-66205:
   name: "Front Mission 5 - Scars of the War"
   region: "NTSC-J"
@@ -35082,6 +35177,9 @@ SLPM-66600:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-66601:
   name: "SSX On Tour [EA Best Hits]"
   region: "NTSC-J"
@@ -35381,6 +35479,9 @@ SLPM-66674:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Fixes black textures on characters.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-66675:
   name: "Kingdom Hearts II - Final Mix +"
   region: "NTSC-J"
@@ -36009,6 +36110,9 @@ SLPM-66837:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-66838:
   name: "Fantastic Fortune 2 - Triple Star [Best Hit Selection]"
   region: "NTSC-J"
@@ -37479,6 +37583,9 @@ SLPS-20065:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPS-20066:
   name: "Rhapsody 3 - Tenshi no Present - The Marl Kingdom Stories"
   region: "NTSC-J"
@@ -37542,6 +37649,9 @@ SLPS-20091:
 SLPS-20092:
   name: "Tiger Woods PGA Tour 2001"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPS-20094:
   name: "Shinseiki Evangelion - Typing Project-E [TVware Information Revolution Series]"
   region: "NTSC-J"
@@ -38982,6 +39092,9 @@ SLPS-25079:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPS-25080:
   name: "Uchuu Senkan Yamato - Iscandar he no Tsuioku [Special Edition]"
   region: "NTSC-J"
@@ -39203,6 +39316,9 @@ SLPS-25142:
   region: "NTSC-J"
   gameFixes:
     - VUSyncHack # Fixes the inverted legs.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPS-25143:
   name: "dot hack - Mutation Part 2"
   region: "NTSC-J"
@@ -39259,6 +39375,9 @@ SLPS-25157:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPS-25158:
   name: "dot hack - Outbreak Part 3"
   region: "NTSC-J"
@@ -43196,6 +43315,9 @@ SLUS-20093:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20094:
   name: "X Squad"
   region: "NTSC-U"
@@ -43248,6 +43370,9 @@ SLUS-20104:
   name: "Tiger Woods PGA Tour 2001"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20105:
   name: "MDK 2 - Armageddon"
   region: "NTSC-U"
@@ -43809,6 +43934,9 @@ SLUS-20241:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20242:
   name: "Legends of Wrestling"
   region: "NTSC-U"
@@ -43883,6 +44011,9 @@ SLUS-20263:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20264:
   name: "F1 2001"
   region: "NTSC-U"
@@ -44344,6 +44475,9 @@ SLUS-20364:
   region: "NTSC-U"
   gameFixes:
     - VUSyncHack # Fixes the inverted legs.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20365:
   name: "Pirates - Legend of Black Kat"
   region: "NTSC-U"
@@ -45147,11 +45281,17 @@ SLUS-20529:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20530:
   name: "NCAA Football 2003"
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20531:
   name: "NHL 2003"
   region: "NTSC-U"
@@ -45379,6 +45519,9 @@ SLUS-20572:
   name: "Tiger Woods PGA Tour 2003"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20573:
   name: "Sims, The"
   region: "NTSC-U"
@@ -46087,6 +46230,9 @@ SLUS-20719:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
   memcardFilters:
     - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20719"
@@ -46271,6 +46417,9 @@ SLUS-20752:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
   memcardFilters:
     - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20752"
@@ -46309,6 +46458,9 @@ SLUS-20757:
   compat: 5
   clampModes:
     vuClampMode: 2 # Fixes black textures on characters.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
   memcardFilters:
     - "PSCD10088" # Enables EA Sports BIO.
     - "SLUS-20757"
@@ -47545,6 +47697,9 @@ SLUS-20991:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20992:
   name: "Catwoman"
   region: "NTSC-U"
@@ -47581,6 +47736,9 @@ SLUS-21000:
   compat: 5
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21001:
   name: "NHL 2005"
   region: "NTSC-U"
@@ -47590,6 +47748,9 @@ SLUS-21002:
   compat: 5
   clampModes:
     vuClampMode: 2 # Fixes black textures on characters.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21003:
   name: "NASCAR 2005 - Chase for the Cup"
   region: "NTSC-U"
@@ -47738,6 +47899,9 @@ SLUS-21025:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21026:
   name: "Battlefield 2 - Modern Combat"
   region: "NTSC-U"
@@ -48715,11 +48879,17 @@ SLUS-21213:
   compat: 5
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21214:
   name: "NCAA Football 2006"
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21215:
   name: "Warriors, The"
   region: "NTSC-U"
@@ -49052,6 +49222,9 @@ SLUS-21264:
   compat: 5
   clampModes:
     vuClampMode: 3 # Fix black textures on characters.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21265:
   name: "Sims 2, The"
   region: "NTSC-U"
@@ -50262,6 +50435,9 @@ SLUS-21459:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21460:
   name: "NBA Live '07"
   region: "NTSC-U"
@@ -50343,11 +50519,17 @@ SLUS-21476:
   compat: 5
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21477:
   name: "Madden NFL '07 [Hall of Fame Edition]"
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21478:
   name: "Pirates - Legend of the Black Buccaneer"
   region: "NTSC-U"
@@ -50388,6 +50570,9 @@ SLUS-21483:
   compat: 5
   clampModes:
     vuClampMode: 2 # Fix black textures on characters.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21484:
   name: "Flushed Away"
   region: "NTSC-U"
@@ -50944,6 +51129,9 @@ SLUS-21620:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21621:
   name: "Shin Megami Tensei - Persona 3 FES"
   region: "NTSC-U"
@@ -51044,6 +51232,9 @@ SLUS-21638:
   compat: 5
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21639:
   name: "NASCAR '08"
   region: "NTSC-U"
@@ -51086,6 +51277,9 @@ SLUS-21646:
   compat: 5
   clampModes:
     vuClampMode: 2 # Fix black textures on characters.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21647:
   name: "NHL '08"
   region: "NTSC-U"
@@ -51344,8 +51538,13 @@ SLUS-21704:
   region: "NTSC-U"
   compat: 3
 SLUS-21705:
-  name: "Madden NFL 08"
+  name: "Madden NFL 08 en Español"
   region: "NTSC-U"
+  clampModes:
+    vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21706:
   name: "Alvin and the Chipmunks"
   region: "NTSC-U"
@@ -51587,6 +51786,9 @@ SLUS-21752:
   compat: 5
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21753:
   name: "Monopoly"
   region: "NTSC-U"
@@ -51677,6 +51879,9 @@ SLUS-21770:
   compat: 5
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21771:
   name: "NHL 2009"
   region: "NTSC-U"
@@ -51687,6 +51892,9 @@ SLUS-21772:
   compat: 5
   clampModes:
     vuClampMode: 2 # Fixes black textures on characters.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21773:
   name: "PDC World Championship Darts 2008"
   region: "NTSC-U"
@@ -52139,6 +52347,9 @@ SLUS-21877:
   compat: 5
   clampModes:
     vuClampMode: 2 # Fixes black textures on characters.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21878:
   name: "Ice Age 3 - Dawn of the Dinosaurs"
   region: "NTSC-U"
@@ -52214,12 +52425,18 @@ SLUS-21892:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21893:
   name: "Madden NFL 10"
   region: "NTSC-U"
   compat: 5
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21895:
   name: "Astro Boy - The Video Game"
   region: "NTSC-U"
@@ -52385,6 +52602,9 @@ SLUS-21932:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21933:
   name: "Despicable Me"
   region: "NTSC-U"
@@ -52404,6 +52624,9 @@ SLUS-21937:
   compat: 5
   clampModes:
     vuClampMode: 3 # Shows the crowd in the back.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21938:
   name: "Ben 10 Ultimate Alien - Cosmic Destruction"
   region: "NTSC-U"
@@ -52444,6 +52667,9 @@ SLUS-21946:
   compat: 5
   clampModes:
     vuClampMode: 3 # Missing geometry with microVU.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21947:
   name: "FIFA Soccer 12"
   region: "NTSC-U"
