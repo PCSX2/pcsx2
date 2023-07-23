@@ -644,6 +644,11 @@ void GSRunner::DumpStats()
 	Console.WriteLn("============================================");
 }
 
+#ifdef _WIN32
+// We can't handle unicode in filenames if we don't use wmain on Win32.
+#define main real_main
+#endif
+
 int main(int argc, char* argv[])
 {
 	GSRunner::InitializeConsole();
@@ -806,6 +811,22 @@ void GSRunner::PumpPlatformMessages()
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	return DefWindowProcW(hwnd, msg, wParam, lParam);
+}
+
+int wmain(int argc, wchar_t** argv)
+{
+	std::vector<std::string> u8_args;
+	u8_args.reserve(static_cast<size_t>(argc));
+	for (int i = 0; i < argc; i++)
+		u8_args.push_back(StringUtil::WideStringToUTF8String(argv[i]));
+	
+	std::vector<char*> u8_argptrs;
+	u8_argptrs.reserve(u8_args.size());
+	for (int i = 0; i < argc; i++)
+		u8_argptrs.push_back(u8_args[i].data());
+	u8_argptrs.push_back(nullptr);
+
+	return real_main(argc, u8_argptrs.data());
 }
 
 #endif // _WIN32
