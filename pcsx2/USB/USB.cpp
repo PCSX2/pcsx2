@@ -671,6 +671,12 @@ std::string USB::GetConfigSubKey(const std::string_view& device, const std::stri
 	return fmt::format("{}_{}", device, bind_name);
 }
 
+bool USB::ConfigKeyExists(SettingsInterface& si, u32 port, const char* devname, const char* key)
+{
+	const std::string real_key(fmt::format("{}_{}", devname, key));
+	return si.ContainsValue(GetConfigSection(port).c_str(), real_key.c_str());
+}
+
 bool USB::GetConfigBool(SettingsInterface& si, u32 port, const char* devname, const char* key, bool default_value)
 {
 	const std::string real_key(fmt::format("{}_{}", devname, key));
