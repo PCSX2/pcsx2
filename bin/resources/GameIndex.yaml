@@ -44409,6 +44409,15 @@ SLUS-20347:
     eeClampMode: 3 # Fixes invisible characters in various scenes.
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes black screens on judgement wheel.
+  patches:
+    default:
+      content: |-
+        author=refraction
+        // Fixes bad clip flag arrangement
+        patch=1,EE,00249e10,word,48509000
+        patch=1,EE,00249e14,word,4BDD69FF
+        patch=1,EE,00249e9c,word,48509000
+        patch=1,EE,00249ea0,word,4BDD69FF
 SLUS-20348:
   name: "Monopoly Party"
   region: "NTSC-U"
