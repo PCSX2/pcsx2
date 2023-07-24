@@ -49,7 +49,7 @@ retry_command sudo flatpak -y install "${FLATPAK_PACKAGES[@]}"
 echo "Downloading flat-manager-client"
 mkdir -p "$FLAT_MANAGER_CLIENT_DIR"
 pushd "$FLAT_MANAGER_CLIENT_DIR"
-aria2c -Z "https://raw.githubusercontent.com/flatpak/flat-manager/master/flat-manager-client"
+aria2c -Z "https://raw.githubusercontent.com/flatpak/flat-manager/9401efbdc0d6bd489507d8401c567ba219d735d5/flat-manager-client"
 chmod +x flat-manager-client
 echo "$FLAT_MANAGER_CLIENT_DIR" >> $GITHUB_PATH
 popd
