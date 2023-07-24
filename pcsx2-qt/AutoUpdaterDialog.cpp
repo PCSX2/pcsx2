@@ -380,6 +380,8 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
 				changes_html.prepend(tr("<h2>Save State Warning</h2><p>Installing this update will make your save states "
 										"<b>incompatible</b>. Please ensure you have saved your games to a Memory Card "
 										"before installing this update or you will lose progress.</p>"));
+
+				m_update_will_break_save_states = true;
 			}
 
 			if (update_increases_settings_version)
@@ -407,6 +409,23 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
 
 void AutoUpdaterDialog::downloadUpdateClicked()
 {
+	if (m_update_will_break_save_states)
+	{
+		QMessageBox msgbox;
+		msgbox.setIcon(QMessageBox::Critical);
+		msgbox.setWindowTitle(tr("Savestate Warning"));
+		msgbox.setText(tr("<h1>WARNING</h1><p style='font-size:12pt;'>Installing this update will make your <b>save states incompatible</b>.</p><p>Do you wish to continue?</p>"));
+		msgbox.addButton(QMessageBox::Yes);
+		msgbox.addButton(QMessageBox::No);
+		msgbox.setDefaultButton(QMessageBox::No);
+		// This makes the box wider, for some reason sizing boxes in Qt is hard - Source: The internet.
+		QSpacerItem* horizontalSpacer = new QSpacerItem(500, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+		QGridLayout* layout = (QGridLayout*)msgbox.layout();
+		layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+		if (msgbox.exec() != QMessageBox::Yes)
+			return;
+	}
+
 	m_display_messages = true;
 	QUrl url(m_download_url);
 	QNetworkRequest request(url);
