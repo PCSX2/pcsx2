@@ -184,6 +184,10 @@
      <property name="title">
       <string>Input Recording</string>
      </property>
+     <property name="icon">
+      <iconset theme="keyboard-line">
+      <normaloff>.</normaloff>.</iconset>
+     </property>
      <addaction name="actionInputRecNew"/>
      <addaction name="actionInputRecPlay"/>
      <addaction name="actionInputRecStop"/>
@@ -863,6 +867,10 @@
    <property name="text">
     <string>Toggle Software Rendering</string>
    </property>
+   <property name="icon">
+    <iconset theme="brush-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
   </action>
   <action name="actionDebugger">
    <property name="icon">
@@ -876,6 +884,10 @@
   <action name="actionReloadPatches">
    <property name="text">
     <string>Reload Cheats/Patches</string>
+   </property>
+   <property name="icon">
+    <iconset theme="refresh-line">
+     <normaloff>.</normaloff>.</iconset>
    </property>
   </action>
   <action name="actionEnableSystemConsole">
@@ -913,6 +925,10 @@
   <action name="actionSaveGSDump">
    <property name="text">
     <string>Save Single Frame GS Dump</string>
+   </property>
+   <property name="icon">
+    <iconset theme="save-3-line">
+     <normaloff>.</normaloff>.</iconset>
    </property>
   </action>
   <action name="actionInputRecNew">
