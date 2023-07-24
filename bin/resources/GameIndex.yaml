@@ -25854,6 +25854,8 @@ SLKA-25359:
 SLKA-25361:
   name: "Keroro Gunsou MeroMero Battle Royale Z"
   region: "NTSC-K"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes invisible text.
 SLKA-25363:
   name: "Guitar Hero III - Legends of Rock"
   region: "NTSC-K"
@@ -40910,6 +40912,8 @@ SLPS-25567:
 SLPS-25568:
   name: "Keroro Gunsou - Mero Mero Battle Royale [Bandai The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes invisible text.
 SLPS-25569:
   name: "Kidou Senshi Gundam SEED - Rengou vs. Z.A.F.T."
   region: "NTSC-J"
@@ -40936,6 +40940,8 @@ SLPS-25575:
   name: "Keroro Gunsou - Mero Mero Battle Royale Z"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes invisible text.
 SLPS-25576:
   name: "One Piece - Pirates Carnival"
   region: "NTSC-J"
