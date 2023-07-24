@@ -231,14 +231,25 @@ u8 PadDualshock2::Constant1(u8 commandByte)
 		case 3:
 			stage = commandByte;
 			return 0x00;
+		case 5:
+			return 0x01;
 		case 6:
 			if (stage)
 			{
-				return 0x00;
+				return 0x01;
 			}
 			else
 			{
 				return 0x02;
+			}
+		case 7:
+			if (stage)
+			{
+				return 0x01;
+			}
+			else
+			{
+				return 0x00;
 			}
 		case 8:
 			g_Sio0.SetAcknowledge(false);
