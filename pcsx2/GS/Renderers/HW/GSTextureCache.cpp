@@ -1353,12 +1353,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				}
 			}
 		}
-
-		if (dst)
-		{
-			dst->m_TEX0.TBW = TEX0.TBW; // Fix Jurassic Park - Operation Genesis loading disk logo.
-			dst->m_is_frame |= is_frame; // Nicktoons Unite tries to change the width from 10 to 8 and breaks FMVs.
-		}
 	}
 
 	if (dst)
