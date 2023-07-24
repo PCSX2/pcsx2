@@ -722,6 +722,48 @@ bool GSHwHack::GSC_BlueTongueGames(GSRendererHW& r, int& skip)
 {
 	GSDrawingContext* context = r.m_context;
 
+	// Nicktoons does its weird dithered depth pattern during FMV's also, which really screws the frame width up, which is wider for FMV's
+	// and so fails to work correctly in the HW renderer and makes a mess of the width, so let's expand the draw to match the proper width.
+	if (RPRIM->TME && RTEX0.TW == 3 && RTEX0.TH == 3 && RTEX0.PSM == 0 && RFRAME.FBMSK == 0x00FFFFFF && RFRAME.FBW == 8 && r.PCRTCDisplays.GetResolution().x > 512)
+	{
+		// Check we are drawing stripes
+		for (int i = 1; i < r.m_vertex.tail; i+=2)
+		{
+			int value = (((r.m_vertex.buff[i].XYZ.X - r.m_vertex.buff[i - 1].XYZ.X) + 8) >> 4);
+			if (value != 32)
+				return false;
+		}
+
+		r.m_r.x = r.m_vt.m_min.p.x;
+		r.m_r.y = r.m_vt.m_min.p.y;
+		r.m_r.z = r.PCRTCDisplays.GetResolution().x;
+		r.m_r.w = r.m_vt.m_max.p.y;
+
+		for (int vert = 32; vert < 40; vert+=2)
+		{
+			r.m_vertex.buff[vert].XYZ.X = context->XYOFFSET.OFX + (((vert * 16) << 4) - 8);
+			r.m_vertex.buff[vert].XYZ.Y = context->XYOFFSET.OFY;
+			r.m_vertex.buff[vert].U = (vert * 16) << 4;
+			r.m_vertex.buff[vert].V = 0;
+			r.m_vertex.buff[vert+1].XYZ.X = context->XYOFFSET.OFX + ((((vert * 16) + 32) << 4) - 8);
+			r.m_vertex.buff[vert+1].XYZ.Y = context->XYOFFSET.OFY + 8184; //511.5
+			r.m_vertex.buff[vert+1].U = ((vert * 16) + 32) << 4;
+			r.m_vertex.buff[vert+1].V = 512 << 4;
+		}
+
+		/*r.m_vertex.head = r.m_vertex.tail = r.m_vertex.next = 2;
+		r.m_index.tail = 2;*/
+
+		r.m_vt.m_max.p.x = r.m_r.z;
+		r.m_vt.m_max.p.y = r.m_r.w;
+		r.m_vt.m_max.t.x = r.m_r.z;
+		r.m_vt.m_max.t.y = r.m_r.w;
+		context->scissor.in.z = r.m_r.z;
+		context->scissor.in.w = r.m_r.w;
+
+		RFRAME.FBW = 10;
+	}
+
 	// Whoever wrote this was kinda nuts. They draw a stipple/dither pattern to a framebuffer, then reuse that as
 	// the depth buffer. Textures are then drawn repeatedly on top of one another, each with a slight offset.
 	// Depth testing is enabled, and that determines which pixels make it into the final texture. Kinda like an

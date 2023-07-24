@@ -2381,25 +2381,12 @@ void GSRendererHW::Draw()
 	const bool can_update_size = !is_possible_mem_clear && !m_texture_shuffle && !m_channel_shuffle;
 	if (!m_texture_shuffle && !m_channel_shuffle)
 	{
-		if (rt)
+		if (rt && (!is_possible_mem_clear || rt->m_TEX0.PSM != FRAME_TEX0.PSM))
 		{
-			// Nicktoons Unite tries to change the width from 640 to 512 and breaks FMVs.
-			// Haunting ground has some messed textures if you don't modify the rest.
-			// Champions of Norrath expands the width from 512 to 1024, picture cut in half if you don't.
-			// The safest option is to probably let it expand but not retract.
-			if (!rt->m_is_frame || rt->m_TEX0.TBW < FRAME_TEX0.TBW)
-			{
-				rt->m_TEX0 = FRAME_TEX0;
-			}
-			else
-			{
-				const u32 width = rt->m_TEX0.TBW;
-				rt->m_TEX0 = FRAME_TEX0;
-				rt->m_TEX0.TBW = std::max(width, FRAME_TEX0.TBW);
-			}
+			rt->m_TEX0 = FRAME_TEX0;
 		}
 
-		if (ds)
+		if (ds && (!is_possible_mem_clear || ds->m_TEX0.PSM != ZBUF_TEX0.PSM))
 			ds->m_TEX0 = ZBUF_TEX0;
 	}
 	else if (!m_texture_shuffle)
