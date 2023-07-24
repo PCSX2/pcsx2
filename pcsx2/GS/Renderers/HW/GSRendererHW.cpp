@@ -2383,6 +2383,15 @@ void GSRendererHW::Draw()
 	{
 		if (rt && (!is_possible_mem_clear || rt->m_TEX0.PSM != FRAME_TEX0.PSM))
 		{
+			if (rt->m_TEX0.TBW != FRAME_TEX0.TBW && !m_cached_ctx.ZBUF.ZMSK && (m_cached_ctx.FRAME.FBMSK & 0xFF000000))
+			{
+				// Alpha could be a font, and since the width is changing it's no longer valid.
+				// Be careful of downsize copies or other effects, checking Z MSK should hopefully be enough.. (Okami).
+				if (m_cached_ctx.FRAME.FBMSK & 0x0F000000)
+					rt->m_valid_alpha_low = false;
+				if (m_cached_ctx.FRAME.FBMSK & 0xF0000000)
+					rt->m_valid_alpha_high = false;
+			}
 			rt->m_TEX0 = FRAME_TEX0;
 		}
 
