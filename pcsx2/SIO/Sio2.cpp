@@ -143,7 +143,7 @@ void Sio2::SetRecv1(u32 value)
 void Sio2::Pad()
 {
 	// Send PAD our current port, and get back whatever it says the first response byte should be.
-	std::optional<PadBase*> padPtr = g_PadManager.GetPad(port, slot);
+	PadBase* pad = g_PadManager.GetPad(port, slot);
 
 	// RECV1 is set once per DMA; if any device is present at all, it should be set to connected.
 	// For now, we will always report connected for pads.
@@ -151,17 +151,14 @@ void Sio2::Pad()
 	g_Sio2FifoOut.push_back(0xff);
 
 	// Then for every byte in g_Sio2FifoIn, pass to PAD and see what it kicks back to us.
-	if (padPtr.has_value())
-	{
-		padPtr.value()->SoftReset();
+	pad->SoftReset();
 
-		while (!g_Sio2FifoIn.empty())
-		{
-			const u8 commandByte = g_Sio2FifoIn.front();
-			g_Sio2FifoIn.pop_front();
-			const u8 responseByte = padPtr.value()->SendCommandByte(commandByte);
-			g_Sio2FifoOut.push_back(responseByte);
-		}
+	while (!g_Sio2FifoIn.empty())
+	{
+		const u8 commandByte = g_Sio2FifoIn.front();
+		g_Sio2FifoIn.pop_front();
+		const u8 responseByte = pad->SendCommandByte(commandByte);
+		g_Sio2FifoOut.push_back(responseByte);
 	}
 }
 
