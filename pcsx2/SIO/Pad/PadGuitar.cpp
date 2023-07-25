@@ -49,11 +49,8 @@ static const SettingInfo s_settings[] = {
 		nullptr, nullptr, 100.0f},
 };
 
-const Pad::ControllerInfo PadGuitar::ControllerInfo = {
-	Pad::ControllerType::Guitar, "Guitar", TRANSLATE_NOOP("Pad", "Guitar"),
-	s_bindings, std::size(s_bindings),
-	s_settings, std::size(s_settings),
-	Pad::VibrationCapabilities::NoVibration};
+const Pad::ControllerInfo PadGuitar::ControllerInfo = {Pad::ControllerType::Guitar, "Guitar",
+	TRANSLATE_NOOP("Pad", "Guitar"), s_bindings, s_settings, Pad::VibrationCapabilities::NoVibration};
 
 u8 PadGuitar::Mystery(u8 commandByte)
 {

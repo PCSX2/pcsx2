@@ -139,9 +139,8 @@ void Pad::SetDefaultControllerConfig(SettingsInterface& si)
 		const ControllerInfo* ci = GetControllerInfo(type);
 		if (ci)
 		{
-			for (u32 i = 0; i < ci->num_settings; i++)
+			for (const SettingInfo& csi : ci->settings)
 			{
-				const SettingInfo& csi = ci->settings[i];
 				switch (csi.type)
 				{
 					case SettingInfo::Type::Boolean:
@@ -269,13 +268,12 @@ std::vector<std::string> Pad::GetControllerBinds(const std::string_view& type)
 	const ControllerInfo* info = GetControllerInfo(type);
 	if (info)
 	{
-		for (u32 i = 0; i < info->num_bindings; i++)
+		for (const InputBindingInfo& bi : info->bindings)
 		{
-			const InputBindingInfo& bi = info->bindings[i];
 			if (bi.bind_type == InputBindingInfo::Type::Unknown || bi.bind_type == InputBindingInfo::Type::Motor)
 				continue;
 
-			ret.emplace_back(info->bindings[i].name);
+			ret.emplace_back(bi.name);
 		}
 	}
 
@@ -291,8 +289,8 @@ void Pad::ClearPortBindings(SettingsInterface& si, u32 port)
 	if (!info)
 		return;
 
-	for (u32 i = 0; i < info->num_bindings; i++)
-		si.DeleteValue(section.c_str(), info->bindings[i].name);
+	for (const InputBindingInfo& bi : info->bindings)
+		si.DeleteValue(section.c_str(), bi.name);
 }
 
 void Pad::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_si,
@@ -329,11 +327,8 @@ void Pad::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 
 		if (copy_pad_bindings)
 		{
-			for (u32 i = 0; i < info->num_bindings; i++)
-			{
-				const InputBindingInfo& bi = info->bindings[i];
+			for (const InputBindingInfo& bi : info->bindings)
 				dest_si->CopyStringListValue(src_si, section.c_str(), bi.name);
-			}
 
 			for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
 			{
@@ -353,9 +348,8 @@ void Pad::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 				dest_si->CopyFloatValue(src_si, section.c_str(), "SmallMotorScale");
 			}
 
-			for (u32 i = 0; i < info->num_settings; i++)
+			for (const SettingInfo& csi : info->settings)
 			{
-				const SettingInfo& csi = info->settings[i];
 				switch (csi.type)
 				{
 					case SettingInfo::Type::Boolean:
@@ -427,9 +421,8 @@ bool Pad::MapController(SettingsInterface& si, u32 controller,
 		return false;
 
 	u32 num_mappings = 0;
-	for (u32 i = 0; i < info->num_bindings; i++)
+	for (const InputBindingInfo& bi : info->bindings)
 	{
-		const InputBindingInfo& bi = info->bindings[i];
 		if (bi.generic_mapping == GenericInputBinding::Unknown)
 			continue;
 

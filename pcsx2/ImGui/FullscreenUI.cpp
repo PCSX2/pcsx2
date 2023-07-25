@@ -3878,7 +3878,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 				});
 		}
 
-		if (!ci || ci->num_bindings == 0)
+		if (!ci || ci->bindings.empty())
 		{
 			ImGui::PopID();
 			continue;
@@ -3887,11 +3887,8 @@ void FullscreenUI::DrawControllerSettingsPage()
 		if (MenuButton(ICON_FA_MAGIC " Automatic Mapping", "Attempts to map the selected port to a chosen controller."))
 			StartAutomaticBinding(global_slot);
 
-		for (u32 i = 0; i < ci->num_bindings; i++)
-		{
-			const InputBindingInfo& bi = ci->bindings[i];
+		for (const InputBindingInfo& bi : ci->bindings)
 			DrawInputBindingButton(bsi, bi.bind_type, section, bi.name, Host::TranslateToCString("Pad", bi.display_name), true);
-		}
 
 		MenuHeading((mtap_enabled[mtap_port] ?
 						 fmt::format(ICON_FA_MICROCHIP " Controller Port {}{} Macros", mtap_port + 1, mtap_slot_names[mtap_slot]) :
@@ -3916,9 +3913,8 @@ void FullscreenUI::DrawControllerSettingsPage()
 			{
 				std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
 				ImGuiFullscreen::ChoiceDialogOptions options;
-				for (u32 i = 0; i < ci->num_bindings; i++)
+				for (const InputBindingInfo& bi : ci->bindings)
 				{
-					const InputBindingInfo& bi = ci->bindings[i];
 					if (bi.bind_type != InputBindingInfo::Type::Button && bi.bind_type != InputBindingInfo::Type::Axis &&
 						bi.bind_type != InputBindingInfo::Type::HalfAxis)
 					{
@@ -3932,9 +3928,8 @@ void FullscreenUI::DrawControllerSettingsPage()
 					[section, macro_index, ci](s32 index, const std::string& title, bool checked) {
 						// convert display name back to bind name
 						std::string_view to_modify;
-						for (u32 j = 0; j < ci->num_bindings; j++)
+						for (const InputBindingInfo& bi : ci->bindings)
 						{
-							const InputBindingInfo& bi = ci->bindings[j];
 							if (bi.display_name == title)
 							{
 								to_modify = bi.name;
@@ -4018,18 +4013,15 @@ void FullscreenUI::DrawControllerSettingsPage()
 			ImGui::PopFont();
 		}
 
-		if (ci->num_settings > 0)
+		if (!ci->settings.empty())
 		{
 			MenuHeading((mtap_enabled[mtap_port] ?
 							 fmt::format(ICON_FA_SLIDERS_H " Controller Port {}{} Settings", mtap_port + 1, mtap_slot_names[mtap_slot]) :
 							 fmt::format(ICON_FA_SLIDERS_H " Controller Port {} Settings", mtap_port + 1))
 							.c_str());
 
-			for (u32 i = 0; i < ci->num_settings; i++)
-			{
-				const SettingInfo& si = ci->settings[i];
+			for (const SettingInfo& si : ci->settings)
 				DrawSettingInfoSetting(bsi, section, si.name, si);
-			}
 		}
 
 		ImGui::PopID();

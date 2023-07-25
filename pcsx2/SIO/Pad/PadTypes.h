@@ -15,12 +15,9 @@
 
 #pragma once
 
-#include "common/Pcsx2Defs.h"
+#include "Config.h"
 
 #include <span>
-
-struct InputBindingInfo;
-struct SettingInfo;
 
 namespace Pad
 {
@@ -94,10 +91,8 @@ namespace Pad
 		ControllerType type;
 		const char* name;
 		const char* display_name;
-		const InputBindingInfo* bindings;
-		u32 num_bindings;
-		const SettingInfo* settings;
-		u32 num_settings;
+		std::span<const InputBindingInfo> bindings;
+		std::span<const SettingInfo> settings;
 		VibrationCapabilities vibration_caps;
 
 		// Returns localized controller type name.

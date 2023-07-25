@@ -638,10 +638,8 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 	if (!cinfo)
 		return;
 
-	for (u32 i = 0; i < cinfo->num_bindings; i++)
+	for (const InputBindingInfo& bi : cinfo->bindings)
 	{
-		const InputBindingInfo& bi = cinfo->bindings[i];
-
 		switch (bi.bind_type)
 		{
 			case InputBindingInfo::Type::Button:

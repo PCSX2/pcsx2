@@ -516,7 +516,7 @@ void ImGuiManager::DrawInputsOverlay()
 		text.clear();
 		fmt::format_to(std::back_inserter(text), "P{} |", slot + 1u);
 
-		for (u32 bind = 0; bind < cinfo->num_bindings; bind++)
+		for (u32 bind = 0; bind < static_cast<u32>(cinfo->bindings.size()); bind++)
 		{
 			const InputBindingInfo& bi = cinfo->bindings[bind];
 			switch (bi.bind_type)

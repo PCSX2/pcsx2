@@ -100,8 +100,8 @@ void ControllerBindingWidget::onTypeChanged()
 	}
 
 	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(m_controller_type);
-	const bool has_settings = (cinfo && cinfo->num_settings > 0);
-	const bool has_macros = (cinfo && cinfo->num_bindings > 0);
+	const bool has_settings = (cinfo && !cinfo->settings.empty());
+	const bool has_macros = (cinfo && !cinfo->bindings.empty());
 	m_ui.settings->setEnabled(has_settings);
 	m_ui.macros->setEnabled(has_macros);
 
@@ -123,9 +123,8 @@ void ControllerBindingWidget::onTypeChanged()
 
 	if (has_settings)
 	{
-		const std::span<const SettingInfo> settings(cinfo->settings, cinfo->num_settings);
 		m_settings_widget = new ControllerCustomSettingsWidget(
-			settings, m_config_section, std::string(), "Pad", getDialog(), m_ui.stackedWidget);
+			cinfo->settings, m_config_section, std::string(), "Pad", getDialog(), m_ui.stackedWidget);
 		m_ui.stackedWidget->addWidget(m_settings_widget);
 	}
 
@@ -333,20 +332,19 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
 
 	for (const std::string_view& button : buttons_split)
 	{
-		for (u32 i = 0; i < cinfo->num_bindings; i++)
+		for (const InputBindingInfo& bi : cinfo->bindings)
 		{
-			if (button == cinfo->bindings[i].name)
+			if (button == bi.name)
 			{
-				m_binds.push_back(&cinfo->bindings[i]);
+				m_binds.push_back(&bi);
 				break;
 			}
 		}
 	}
 
 	// populate list view
-	for (u32 i = 0; i < cinfo->num_bindings; i++)
+	for (const InputBindingInfo& bi : cinfo->bindings)
 	{
-		const InputBindingInfo& bi = cinfo->bindings[i];
 		if (bi.bind_type == InputBindingInfo::Type::Motor)
 			continue;
 
@@ -436,7 +434,7 @@ void ControllerMacroEditWidget::updateBinds()
 		return;
 
 	std::vector<const InputBindingInfo*> new_binds;
-	for (u32 i = 0, bind_index = 0; i < cinfo->num_bindings; i++)
+	for (u32 i = 0, bind_index = 0; i < static_cast<u32>(cinfo->bindings.size()); i++)
 	{
 		const InputBindingInfo& bi = cinfo->bindings[i];
 		if (bi.bind_type == InputBindingInfo::Type::Motor)
@@ -808,9 +806,8 @@ void ControllerBindingWidget_Base::initBindingWidgets()
 	const std::string& config_section = getConfigSection();
 	SettingsInterface* sif = getDialog()->getProfileSettingsInterface();
 
-	for (u32 i = 0; i < cinfo->num_bindings; i++)
+	for (const InputBindingInfo& bi : cinfo->bindings)
 	{
-		const InputBindingInfo& bi = cinfo->bindings[i];
 		if (bi.bind_type == InputBindingInfo::Type::Axis || bi.bind_type == InputBindingInfo::Type::HalfAxis ||
 			bi.bind_type == InputBindingInfo::Type::Button || bi.bind_type == InputBindingInfo::Type::Pointer ||
 			bi.bind_type == InputBindingInfo::Type::Device)

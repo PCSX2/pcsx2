@@ -94,8 +94,7 @@ static const SettingInfo s_settings[] = {
 };
 
 const Pad::ControllerInfo PadDualshock2::ControllerInfo = {Pad::ControllerType::DualShock2, "DualShock2",
-	TRANSLATE_NOOP("Pad", "DualShock 2"), s_bindings, std::size(s_bindings), s_settings, std::size(s_settings),
-	Pad::VibrationCapabilities::LargeSmallMotors};
+	TRANSLATE_NOOP("Pad", "DualShock 2"), s_bindings, s_settings, Pad::VibrationCapabilities::LargeSmallMotors};
 
 u8 PadDualshock2::Mystery(u8 commandByte)
 {
