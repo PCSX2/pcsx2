@@ -22,6 +22,8 @@
 #include "SIO/Pad/PadDualshock2Types.h"
 #include "SIO/Pad/PadGuitarTypes.h"
 
+#include "Host.h"
+
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
@@ -33,6 +35,11 @@ PadConfig g_PadConfig;
 
 PadConfig::PadConfig() = default;
 PadConfig::~PadConfig() = default;
+
+const char* PadConfig::ControllerInfo::GetLocalizedName() const
+{
+	return Host::TranslateToCString("Pad", display_name);
+}
 
 void PadConfig::LoadConfig(const SettingsInterface& si)
 {
@@ -217,15 +224,15 @@ void PadConfig::SetDefaultHotkeyConfig(SettingsInterface& si)
 
 
 static const PadConfig::ControllerInfo s_controller_info[] = {
-	{Pad::ControllerType::NotConnected, "None", "Not Connected",
+	{Pad::ControllerType::NotConnected, "None", TRANSLATE_NOOP("Pad", "Not Connected"),
 		nullptr, 0,
 		nullptr, 0,
 		Pad::VibrationCapabilities::NoVibration},
-	{Pad::ControllerType::DualShock2, "DualShock2", "DualShock 2",
+	{Pad::ControllerType::DualShock2, "DualShock2", TRANSLATE_NOOP("Pad", "DualShock 2"),
 		Dualshock2::defaultBindings, std::size(Dualshock2::defaultBindings),
 		Dualshock2::defaultSettings, std::size(Dualshock2::defaultSettings),
 		Pad::VibrationCapabilities::LargeSmallMotors},
-	{Pad::ControllerType::Guitar, "Guitar", "Guitar",
+	{Pad::ControllerType::Guitar, "Guitar", TRANSLATE_NOOP("Pad", "Guitar"),
 		Guitar::defaultBindings, std::size(Guitar::defaultBindings),
 		Guitar::defaultSettings, std::size(Guitar::defaultSettings),
 		Pad::VibrationCapabilities::NoVibration},
@@ -251,6 +258,13 @@ const PadConfig::ControllerInfo* PadConfig::GetControllerInfo(const std::string_
 	}
 
 	return nullptr;
+}
+
+const char* PadConfig::GetControllerTypeName(Pad::ControllerType type)
+{
+	// Not localized, because it should never happen.
+	const ControllerInfo* ci = GetControllerInfo(type);
+	return ci ? ci->GetLocalizedName() : "UNKNOWN";
 }
 
 const std::vector<std::pair<const char*, const char*>> PadConfig::GetControllerTypeNames()

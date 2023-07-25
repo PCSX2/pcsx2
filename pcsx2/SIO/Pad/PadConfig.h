@@ -35,6 +35,9 @@ public: // Constants
 		const SettingInfo* settings;
 		u32 num_settings;
 		Pad::VibrationCapabilities vibration_caps;
+
+		// Returns localized controller type name.
+		const char* GetLocalizedName() const;
 	};
 
 public: // Public members
@@ -60,6 +63,7 @@ public: // Public members
 	// Returns general information for the specified controller type.
 	const ControllerInfo* GetControllerInfo(Pad::ControllerType type);
 	const ControllerInfo* GetControllerInfo(const std::string_view& name);
+	const char* GetControllerTypeName(Pad::ControllerType type);
 	// Performs automatic controller mapping with the provided list of generic mappings.
 	bool MapController(SettingsInterface& si, u32 controller,
 		const std::vector<std::pair<GenericInputBinding, std::string>>& mapping);
