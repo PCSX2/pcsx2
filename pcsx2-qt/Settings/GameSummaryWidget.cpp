@@ -69,7 +69,7 @@ GameSummaryWidget::~GameSummaryWidget() = default;
 
 void GameSummaryWidget::populateInputProfiles()
 {
-	for (const std::string& name : g_PadConfig.GetInputProfileNames())
+	for (const std::string& name : Pad::GetInputProfileNames())
 		m_ui.inputProfile->addItem(QString::fromStdString(name));
 }
 

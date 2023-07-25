@@ -634,7 +634,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 	if (type.empty() || type == "None")
 		return;
 
-	const PadConfig::ControllerInfo* cinfo = g_PadConfig.GetControllerInfo(type);
+	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(type);
 	if (!cinfo)
 		return;
 
@@ -1293,7 +1293,7 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 	// If there's an input profile, we load pad bindings from it alone, rather than
 	// falling back to the base configuration.
 	for (u32 pad = 0; pad < Pad::NUM_CONTROLLER_PORTS; pad++)
-		AddPadBindings(binding_si, pad, g_PadConfig.GetDefaultPadType(pad));
+		AddPadBindings(binding_si, pad, Pad::GetDefaultPadType(pad));
 
 	constexpr float ui_ctrl_range = 100.0f;
 	constexpr float pointer_sensitivity = 0.05f;

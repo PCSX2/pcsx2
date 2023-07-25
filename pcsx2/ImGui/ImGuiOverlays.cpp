@@ -510,7 +510,7 @@ void ImGuiManager::DrawInputsOverlay()
 		if (ctype == Pad::ControllerType::NotConnected)
 			continue;
 
-		const PadConfig::ControllerInfo* cinfo = g_PadConfig.GetControllerInfo(ctype);
+		const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(ctype);
 		pxAssert(cinfo);
 			
 		text.clear();

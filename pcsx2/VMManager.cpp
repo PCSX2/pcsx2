@@ -451,10 +451,12 @@ void VMManager::SetDefaultSettings(
 		LogSink::SetDefaultLoggingSettings(si);
 	}
 	if (controllers)
-		g_PadConfig.SetDefaultControllerConfig(si);
+	{
+		Pad::SetDefaultControllerConfig(si);
 		USB::SetDefaultConfiguration(&si);
+	}
 	if (hotkeys)
-		g_PadConfig.SetDefaultHotkeyConfig(si);
+		Pad::SetDefaultHotkeyConfig(si);
 	if (ui)
 		Host::SetDefaultUISettings(si);
 }
@@ -464,7 +466,7 @@ void VMManager::LoadSettings()
 	std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
 	SettingsInterface* si = Host::GetSettingsInterface();
 	LoadCoreSettings(si);
-	g_PadConfig.LoadConfig(*si);
+	Pad::LoadConfig(*si);
 	Host::LoadSettings(*si, lock);
 	InputManager::ReloadSources(*si, lock);
 	InputManager::ReloadBindings(*si, *Host::GetSettingsInterfaceForBindings());

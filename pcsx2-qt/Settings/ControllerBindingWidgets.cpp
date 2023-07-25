@@ -52,7 +52,7 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
 	onTypeChanged();
 
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileString(
-		m_dialog->getProfileSettingsInterface(), m_ui.controllerType, m_config_section, "Type", g_PadConfig.GetDefaultPadType(port));
+		m_dialog->getProfileSettingsInterface(), m_ui.controllerType, m_config_section, "Type", Pad::GetDefaultPadType(port));
 
 	connect(m_ui.controllerType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ControllerBindingWidget::onTypeChanged);
 	connect(m_ui.bindings, &QPushButton::clicked, this, &ControllerBindingWidget::onBindingsClicked);
@@ -71,14 +71,14 @@ QIcon ControllerBindingWidget::getIcon() const
 
 void ControllerBindingWidget::populateControllerTypes()
 {
-	for (const auto& [name, display_name] : g_PadConfig.GetControllerTypeNames())
-		m_ui.controllerType->addItem(qApp->translate("Pad", display_name), QString::fromStdString(name));
+	for (const auto& [name, display_name] : Pad::GetControllerTypeNames())
+		m_ui.controllerType->addItem(QString::fromUtf8(display_name), QString::fromUtf8(name));
 }
 
 void ControllerBindingWidget::onTypeChanged()
 {
 	const bool is_initializing = (m_ui.stackedWidget->count() == 0);
-	m_controller_type = m_dialog->getStringValue(m_config_section.c_str(), "Type", g_PadConfig.GetDefaultPadType(m_port_number));
+	m_controller_type = m_dialog->getStringValue(m_config_section.c_str(), "Type", Pad::GetDefaultPadType(m_port_number));
 
 	if (m_bindings_widget)
 	{
@@ -99,7 +99,7 @@ void ControllerBindingWidget::onTypeChanged()
 		m_macros_widget = nullptr;
 	}
 
-	const PadConfig::ControllerInfo* cinfo = g_PadConfig.GetControllerInfo(m_controller_type);
+	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(m_controller_type);
 	const bool has_settings = (cinfo && cinfo->num_settings > 0);
 	const bool has_macros = (cinfo && cinfo->num_bindings > 0);
 	m_ui.settings->setEnabled(has_settings);
@@ -218,13 +218,13 @@ void ControllerBindingWidget::onClearBindingsClicked()
 	{
 		{
 			auto lock = Host::GetSettingsLock();
-			g_PadConfig.ClearPortBindings(*Host::Internal::GetBaseSettingsLayer(), m_port_number);
+			Pad::ClearPortBindings(*Host::Internal::GetBaseSettingsLayer(), m_port_number);
 		}
 		Host::CommitBaseSettingChanges();
 	}
 	else
 	{
-		g_PadConfig.ClearPortBindings(*m_dialog->getProfileSettingsInterface(), m_port_number);
+		Pad::ClearPortBindings(*m_dialog->getProfileSettingsInterface(), m_port_number);
 		m_dialog->getProfileSettingsInterface()->Save();
 	}
 
@@ -248,14 +248,14 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
 	{
 		{
 			auto lock = Host::GetSettingsLock();
-			result = g_PadConfig.MapController(*Host::Internal::GetBaseSettingsLayer(), m_port_number, mapping);
+			result = Pad::MapController(*Host::Internal::GetBaseSettingsLayer(), m_port_number, mapping);
 		}
 		if (result)
 			Host::CommitBaseSettingChanges();
 	}
 	else
 	{
-		result = g_PadConfig.MapController(*m_dialog->getProfileSettingsInterface(), m_port_number, mapping);
+		result = Pad::MapController(*m_dialog->getProfileSettingsInterface(), m_port_number, mapping);
 		if (result)
 		{
 			m_dialog->getProfileSettingsInterface()->Save();
@@ -320,7 +320,7 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
 
 	ControllerSettingsDialog* dialog = m_bwidget->getDialog();
 	const std::string& section = m_bwidget->getConfigSection();
-	const PadConfig::ControllerInfo* cinfo = g_PadConfig.GetControllerInfo(m_bwidget->getControllerType());
+	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(m_bwidget->getControllerType());
 	if (!cinfo)
 	{
 		// Shouldn't ever happen.
@@ -431,7 +431,7 @@ void ControllerMacroEditWidget::updateFrequencyText()
 void ControllerMacroEditWidget::updateBinds()
 {
 	ControllerSettingsDialog* dialog = m_bwidget->getDialog();
-	const PadConfig::ControllerInfo* cinfo = g_PadConfig.GetControllerInfo(m_bwidget->getControllerType());
+	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(m_bwidget->getControllerType());
 	if (!cinfo)
 		return;
 
@@ -801,7 +801,7 @@ QIcon ControllerBindingWidget_Base::getIcon() const
 
 void ControllerBindingWidget_Base::initBindingWidgets()
 {
-	const PadConfig::ControllerInfo* cinfo = g_PadConfig.GetControllerInfo(getControllerType());
+	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(getControllerType());
 	if (!cinfo)
 		return;
 

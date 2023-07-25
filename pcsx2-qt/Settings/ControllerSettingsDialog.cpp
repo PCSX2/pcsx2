@@ -130,7 +130,7 @@ void ControllerSettingsDialog::onNewProfileClicked()
 		{
 			// from global
 			auto lock = Host::GetSettingsLock();
-			g_PadConfig.CopyConfiguration(&temp_si, *Host::Internal::GetBaseSettingsLayer(), true, true, false);
+			Pad::CopyConfiguration(&temp_si, *Host::Internal::GetBaseSettingsLayer(), true, true, false);
 			USB::CopyConfiguration(&temp_si, *Host::Internal::GetBaseSettingsLayer(), true, true);
 		}
 		else
@@ -138,7 +138,7 @@ void ControllerSettingsDialog::onNewProfileClicked()
 			// from profile
 			const bool copy_hotkey_bindings = m_profile_interface->GetBoolValue("Pad", "UseProfileHotkeyBindings", false);
 			temp_si.SetBoolValue("Pad", "UseProfileHotkeyBindings", copy_hotkey_bindings);
-			g_PadConfig.CopyConfiguration(&temp_si, *m_profile_interface, true, true, copy_hotkey_bindings);
+			Pad::CopyConfiguration(&temp_si, *m_profile_interface, true, true, copy_hotkey_bindings);
 			USB::CopyConfiguration(&temp_si, *m_profile_interface, true, true);
 		}
 	}
@@ -167,7 +167,7 @@ void ControllerSettingsDialog::onLoadProfileClicked()
 
 	{
 		auto lock = Host::GetSettingsLock();
-		g_PadConfig.CopyConfiguration(Host::Internal::GetBaseSettingsLayer(), *m_profile_interface, true, true, false);
+		Pad::CopyConfiguration(Host::Internal::GetBaseSettingsLayer(), *m_profile_interface, true, true, false);
 		USB::CopyConfiguration(Host::Internal::GetBaseSettingsLayer(), *m_profile_interface, true, true);
 	}
 	Host::CommitBaseSettingChanges();
@@ -403,8 +403,8 @@ void ControllerSettingsDialog::createWidgets()
 		m_port_bindings[global_slot] = new ControllerBindingWidget(m_ui.settingsContainer, this, global_slot);
 		m_ui.settingsContainer->addWidget(m_port_bindings[global_slot]);
 
-		const PadConfig::ControllerInfo* ci = g_PadConfig.GetControllerInfo(m_port_bindings[global_slot]->getControllerType());
-		const QString display_name(ci ? qApp->translate("Pad", ci->display_name) : QStringLiteral("Unknown"));
+		const Pad::ControllerInfo* ci = Pad::GetControllerInfo(m_port_bindings[global_slot]->getControllerType());
+		const QString display_name(QString::fromUtf8(ci ? ci->GetLocalizedName() : "Unknown"));
 
 		QListWidgetItem* item = new QListWidgetItem();
 		//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
@@ -459,8 +459,8 @@ void ControllerSettingsDialog::updateListDescription(u32 global_slot, Controller
 			const auto [port, slot] = sioConvertPadToPortAndSlot(global_slot);
 			const bool mtap_enabled = getBoolValue("Pad", (port == 0) ? "MultitapPort1" : "MultitapPort2", false);
 
-			const PadConfig::ControllerInfo* ci = g_PadConfig.GetControllerInfo(widget->getControllerType());
-			const QString display_name(ci ? qApp->translate("Pad", ci->display_name) : QStringLiteral("Unknown"));
+			const Pad::ControllerInfo* ci = Pad::GetControllerInfo(widget->getControllerType());
+			const QString display_name = QString::fromUtf8(ci ? ci->GetLocalizedName() : "Unknown");
 
 			//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
 			item->setText(mtap_enabled ? (tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot]).arg(display_name)) :
@@ -492,7 +492,7 @@ void ControllerSettingsDialog::updateListDescription(u32 port, USBDeviceWidget* 
 
 void ControllerSettingsDialog::refreshProfileList()
 {
-	const std::vector<std::string> names(g_PadConfig.GetInputProfileNames());
+	const std::vector<std::string> names = Pad::GetInputProfileNames();
 
 	QSignalBlocker sb(m_ui.currentProfile);
 	m_ui.currentProfile->clear();

@@ -31,17 +31,12 @@
 
 #include "Input/InputManager.h"
 
-PadConfig g_PadConfig;
-
-PadConfig::PadConfig() = default;
-PadConfig::~PadConfig() = default;
-
-const char* PadConfig::ControllerInfo::GetLocalizedName() const
+const char* Pad::ControllerInfo::GetLocalizedName() const
 {
 	return Host::TranslateToCString("Pad", display_name);
 }
 
-void PadConfig::LoadConfig(const SettingsInterface& si)
+void Pad::LoadConfig(const SettingsInterface& si)
 {
 	g_PadMacros.ClearMacros();
 
@@ -106,12 +101,12 @@ void PadConfig::LoadConfig(const SettingsInterface& si)
 	}
 }
 
-const char* PadConfig::GetDefaultPadType(u32 pad)
+const char* Pad::GetDefaultPadType(u32 pad)
 {
 	return (pad == 0) ? "DualShock2" : "None";
 }
 
-void PadConfig::SetDefaultControllerConfig(SettingsInterface& si)
+void Pad::SetDefaultControllerConfig(SettingsInterface& si)
 {
 	si.ClearSection("InputSources");
 	si.ClearSection("Hotkeys");
@@ -175,7 +170,7 @@ void PadConfig::SetDefaultControllerConfig(SettingsInterface& si)
 	MapController(si, 0, InputManager::GetGenericBindingMapping("Keyboard"));
 }
 
-void PadConfig::SetDefaultHotkeyConfig(SettingsInterface& si)
+void Pad::SetDefaultHotkeyConfig(SettingsInterface& si)
 {
 	// PCSX2 Controller Settings - Hotkeys
 
@@ -223,7 +218,7 @@ void PadConfig::SetDefaultHotkeyConfig(SettingsInterface& si)
 }
 
 
-static const PadConfig::ControllerInfo s_controller_info[] = {
+static const Pad::ControllerInfo s_controller_info[] = {
 	{Pad::ControllerType::NotConnected, "None", TRANSLATE_NOOP("Pad", "Not Connected"),
 		nullptr, 0,
 		nullptr, 0,
@@ -238,7 +233,7 @@ static const PadConfig::ControllerInfo s_controller_info[] = {
 		Pad::VibrationCapabilities::NoVibration},
 };
 
-const PadConfig::ControllerInfo* PadConfig::GetControllerInfo(Pad::ControllerType type)
+const Pad::ControllerInfo* Pad::GetControllerInfo(Pad::ControllerType type)
 {
 	for (const ControllerInfo& info : s_controller_info)
 	{
@@ -249,7 +244,7 @@ const PadConfig::ControllerInfo* PadConfig::GetControllerInfo(Pad::ControllerTyp
 	return nullptr;
 }
 
-const PadConfig::ControllerInfo* PadConfig::GetControllerInfo(const std::string_view& name)
+const Pad::ControllerInfo* Pad::GetControllerInfo(const std::string_view& name)
 {
 	for (const ControllerInfo& info : s_controller_info)
 	{
@@ -260,23 +255,23 @@ const PadConfig::ControllerInfo* PadConfig::GetControllerInfo(const std::string_
 	return nullptr;
 }
 
-const char* PadConfig::GetControllerTypeName(Pad::ControllerType type)
+const char* Pad::GetControllerTypeName(Pad::ControllerType type)
 {
 	// Not localized, because it should never happen.
 	const ControllerInfo* ci = GetControllerInfo(type);
 	return ci ? ci->GetLocalizedName() : "UNKNOWN";
 }
 
-const std::vector<std::pair<const char*, const char*>> PadConfig::GetControllerTypeNames()
+const std::vector<std::pair<const char*, const char*>> Pad::GetControllerTypeNames()
 {
 	std::vector<std::pair<const char*, const char*>> ret;
 	for (const ControllerInfo& info : s_controller_info)
-		ret.emplace_back(info.name, info.display_name);
+		ret.emplace_back(info.name, info.GetLocalizedName());
 
 	return ret;
 }
 
-std::vector<std::string> PadConfig::GetControllerBinds(const std::string_view& type)
+std::vector<std::string> Pad::GetControllerBinds(const std::string_view& type)
 {
 	std::vector<std::string> ret;
 
@@ -296,7 +291,7 @@ std::vector<std::string> PadConfig::GetControllerBinds(const std::string_view& t
 	return ret;
 }
 
-void PadConfig::ClearPortBindings(SettingsInterface& si, u32 port)
+void Pad::ClearPortBindings(SettingsInterface& si, u32 port)
 {
 	const std::string section(StringUtil::StdStringFromFormat("Pad%u", port + 1));
 	const std::string type(si.GetStringValue(section.c_str(), "Type", GetDefaultPadType(port)));
@@ -309,7 +304,7 @@ void PadConfig::ClearPortBindings(SettingsInterface& si, u32 port)
 		si.DeleteValue(section.c_str(), info->bindings[i].name);
 }
 
-void PadConfig::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_si,
+void Pad::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_si,
 	bool copy_pad_config, bool copy_pad_bindings, bool copy_hotkey_bindings)
 {
 	if (copy_pad_config)
@@ -431,7 +426,7 @@ static u32 TryMapGenericMapping(SettingsInterface& si, const std::string& sectio
 }
 
 
-bool PadConfig::MapController(SettingsInterface& si, u32 controller,
+bool Pad::MapController(SettingsInterface& si, u32 controller,
 	const std::vector<std::pair<GenericInputBinding, std::string>>& mapping)
 {
 	const std::string section(StringUtil::StdStringFromFormat("Pad%u", controller + 1));
@@ -465,7 +460,7 @@ bool PadConfig::MapController(SettingsInterface& si, u32 controller,
 	return (num_mappings > 0);
 }
 
-std::vector<std::string> PadConfig::GetInputProfileNames()
+std::vector<std::string> Pad::GetInputProfileNames()
 {
 	FileSystem::FindResultsArray results;
 	FileSystem::FindFiles(EmuFolders::InputProfiles.c_str(), "*.ini",
@@ -479,12 +474,12 @@ std::vector<std::string> PadConfig::GetInputProfileNames()
 	return ret;
 }
 
-std::string PadConfig::GetConfigSection(u32 pad_index)
+std::string Pad::GetConfigSection(u32 pad_index)
 {
 	return fmt::format("Pad{}", pad_index + 1);
 }
 
-void PadConfig::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const std::string_view& type, const std::string& section)
+void Pad::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const std::string_view& type, const std::string& section)
 {
 	// lazily initialized
 	std::vector<std::string> binds;

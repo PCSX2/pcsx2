@@ -114,8 +114,8 @@ bool Pad::Freeze(StateWrapper& sw)
 									"Controller port {}, slot {} has a {} connected, but the save state has a "
 									"{}.\nLeaving the original controller type connected, but this may cause issues."),
 						port, slot,
-						g_PadConfig.GetControllerTypeName(pad ? pad->GetType() : Pad::ControllerType::NotConnected),
-						g_PadConfig.GetControllerTypeName(type)));
+						Pad::GetControllerTypeName(pad ? pad->GetType() : Pad::ControllerType::NotConnected),
+						Pad::GetControllerTypeName(type)));
 
 				// Reset the transfer etc state of the pad, at least it has a better chance of surviving.
 				pad->SoftReset();

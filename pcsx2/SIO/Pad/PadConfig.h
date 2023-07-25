@@ -22,27 +22,22 @@
 class SettingsInterface;
 enum class GenericInputBinding : u8;
 
-class PadConfig
+namespace Pad
 {
-public: // Constants
 	struct ControllerInfo
 	{
-		Pad::ControllerType type;
+		ControllerType type;
 		const char* name;
 		const char* display_name;
 		const InputBindingInfo* bindings;
 		u32 num_bindings;
 		const SettingInfo* settings;
 		u32 num_settings;
-		Pad::VibrationCapabilities vibration_caps;
+		VibrationCapabilities vibration_caps;
 
 		// Returns localized controller type name.
 		const char* GetLocalizedName() const;
 	};
-
-public: // Public members
-	PadConfig();
-	~PadConfig();
 
 	// Returns the default type for the specified port.
 	const char* GetDefaultPadType(u32 pad);
@@ -72,5 +67,3 @@ public: // Public members
 	std::string GetConfigSection(u32 pad_index);
 	void LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const std::string_view& type, const std::string& section);
 };
-
-extern PadConfig g_PadConfig;
