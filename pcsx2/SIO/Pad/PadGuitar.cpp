@@ -231,7 +231,7 @@ void PadGuitar::Init()
 	this->whammyDeadzone = 0.0f;
 }
 
-Pad::ControllerType PadGuitar::GetType()
+Pad::ControllerType PadGuitar::GetType() const
 {
 	return Pad::ControllerType::Guitar;
 }
@@ -309,7 +309,7 @@ void PadGuitar::SetTriggerScale(float deadzone, float scale)
 
 }
 
-float PadGuitar::GetVibrationScale(u32 motor)
+float PadGuitar::GetVibrationScale(u32 motor) const
 {
 	return 0;
 }
@@ -318,7 +318,7 @@ void PadGuitar::SetVibrationScale(u32 motor, float scale)
 {
 }
 
-float PadGuitar::GetPressureModifier()
+float PadGuitar::GetPressureModifier() const
 {
 	return 0;
 }
@@ -340,32 +340,30 @@ void PadGuitar::SetAnalogInvertR(bool x, bool y)
 {
 }
 
-u8 PadGuitar::GetRawInput(u32 index)
+u8 PadGuitar::GetRawInput(u32 index) const
 {
-	return this->rawInputs[index];
+	return rawInputs[index];
 }
 
-std::tuple<u8, u8> PadGuitar::GetRawLeftAnalog()
-{
-	return std::tuple<u8, u8>{0x7f, 0x7f};
-}
-
-std::tuple<u8, u8> PadGuitar::GetRawRightAnalog()
+std::tuple<u8, u8> PadGuitar::GetRawLeftAnalog() const
 {
 	return std::tuple<u8, u8>{0x7f, 0x7f};
 }
 
-u32 PadGuitar::GetButtons()
+std::tuple<u8, u8> PadGuitar::GetRawRightAnalog() const
 {
-	return this->buttons;
+	return std::tuple<u8, u8>{0x7f, 0x7f};
 }
 
-u8 PadGuitar::GetPressure(u32 index)
+u32 PadGuitar::GetButtons() const
+{
+	return buttons;
+}
+
+u8 PadGuitar::GetPressure(u32 index) const
 {
 	if (index == Guitar::Inputs::WHAMMY)
-	{
-		return this->whammy;
-	}
+		return whammy;
 	
 	return 0;
 }

@@ -392,7 +392,7 @@ void PadDualshock2::Init()
 	this->buttonDeadzone = 0.0f;
 }
 
-Pad::ControllerType PadDualshock2::GetType() 
+Pad::ControllerType PadDualshock2::GetType() const
 {
 	return Pad::ControllerType::DualShock2;
 }
@@ -600,7 +600,7 @@ void PadDualshock2::SetTriggerScale(float deadzone, float scale)
 	this->triggerScale = scale;
 }
 
-float PadDualshock2::GetVibrationScale(u32 motor)
+float PadDualshock2::GetVibrationScale(u32 motor) const
 {
 	return this->vibrationScale[motor];
 }
@@ -610,7 +610,7 @@ void PadDualshock2::SetVibrationScale(u32 motor, float scale)
 	this->vibrationScale[motor] = scale;
 }
 
-float PadDualshock2::GetPressureModifier()
+float PadDualshock2::GetPressureModifier() const
 {
 	return this->pressureModifier;
 }
@@ -637,27 +637,27 @@ void PadDualshock2::SetAnalogInvertR(bool x, bool y)
 	this->analogs.ryInvert = y;
 }
 
-u8 PadDualshock2::GetRawInput(u32 index)
+u8 PadDualshock2::GetRawInput(u32 index) const
 {
-	return this->rawInputs[index];
+	return rawInputs[index];
 }
 
-std::tuple<u8, u8> PadDualshock2::GetRawLeftAnalog()
+std::tuple<u8, u8> PadDualshock2::GetRawLeftAnalog() const
 {
-	return {this->analogs.lx, this->analogs.ly};
+	return {analogs.lx, analogs.ly};
 }
 
-std::tuple<u8, u8> PadDualshock2::GetRawRightAnalog()
+std::tuple<u8, u8> PadDualshock2::GetRawRightAnalog() const
 {
-	return {this->analogs.rx, this->analogs.ry};
+	return {analogs.rx, analogs.ry};
 }
 
-u32 PadDualshock2::GetButtons()
+u32 PadDualshock2::GetButtons() const
 {
-	return this->buttons;
+	return buttons;
 }
 
-u8 PadDualshock2::GetPressure(u32 index)
+u8 PadDualshock2::GetPressure(u32 index) const
 {
 	switch (index)
 	{

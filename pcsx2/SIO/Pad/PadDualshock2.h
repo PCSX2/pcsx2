@@ -35,7 +35,7 @@ static inline bool IsTriggerKey(int index)
 	return (index == Dualshock2::Inputs::PAD_L2 || index == Dualshock2::Inputs::PAD_R2);
 }
 
-class PadDualshock2 : public PadBase
+class PadDualshock2 final : public PadBase
 {
 private:
 	u32 buttons;
@@ -75,26 +75,26 @@ private:
 
 public:
 	PadDualshock2(u8 unifiedSlot);
-	virtual ~PadDualshock2();
+	~PadDualshock2() override;
 
 	void Init() override;
-	Pad::ControllerType GetType() override;
+	Pad::ControllerType GetType() const override;
 	void Set(u32 index, float value) override;
 	void SetRawAnalogs(const std::tuple<u8, u8> left, const std::tuple<u8, u8> right) override;
 	void SetAxisScale(float deadzone, float scale) override;
 	void SetTriggerScale(float deadzone, float scale) override;
-	float GetVibrationScale(u32 motor) override;
+	float GetVibrationScale(u32 motor) const override;
 	void SetVibrationScale(u32 motor, float scale) override;
-	float GetPressureModifier() override;
+	float GetPressureModifier() const override;
 	void SetPressureModifier(float mod) override;
 	void SetButtonDeadzone(float deadzone) override;
 	void SetAnalogInvertL(bool x, bool y) override;
 	void SetAnalogInvertR(bool x, bool y) override;
-	u8 GetRawInput(u32 index) override;
-	std::tuple<u8, u8> GetRawLeftAnalog() override;
-	std::tuple<u8, u8> GetRawRightAnalog() override;
-	u32 GetButtons() override;
-	u8 GetPressure(u32 index) override;
+	u8 GetRawInput(u32 index) const override;
+	std::tuple<u8, u8> GetRawLeftAnalog() const override;
+	std::tuple<u8, u8> GetRawRightAnalog() const override;
+	u32 GetButtons() const override;
+	u8 GetPressure(u32 index) const override;
 
 	bool Freeze(StateWrapper& sw) override;
 
