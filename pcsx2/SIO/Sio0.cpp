@@ -15,17 +15,16 @@
 
 #include "PrecompiledHeader.h"
 
-#include "SIO/Sio0.h"
-
-#include "SIO/Sio.h"
+#include "Common.h"
+#include "IopDma.h"
+#include "IopHw.h"
+#include "R3000A.h"
+#include "SIO/Memcard/MemoryCardProtocol.h"
 #include "SIO/Pad/Pad.h"
 #include "SIO/Pad/PadBase.h"
-#include "SIO/Memcard/MemoryCardProtocol.h"
-
-#include "Common.h"
-#include "IopHw.h"
-#include "IopDma.h"
-#include "R3000A.h"
+#include "SIO/Sio.h"
+#include "SIO/Sio0.h"
+#include "StateWrapper.h"
 
 #define SIO0LOG_ENABLE 0
 #define Sio0Log if (SIO0LOG_ENABLE) DevCon
@@ -316,9 +315,25 @@ u8 Sio0::Memcard(u8 value)
 	return 0xff;
 }
 
-bool SaveStateBase::Sio0Freeze()
+bool Sio0::DoState(StateWrapper& sw)
 {
-	FreezeTag("sio0");
-	Freeze(g_Sio0);
-	return true;
+	if (!sw.DoMarker("Sio0"))
+		return false;
+
+	sw.Do(&txData);
+	sw.Do(&rxData);
+	sw.Do(&stat);
+	sw.Do(&mode);
+	sw.Do(&ctrl);
+	sw.Do(&baud);
+	sw.Do(&flag);
+	sw.Do(&sioStage);
+	sw.Do(&sioMode);
+	sw.Do(&sioCommand);
+	sw.Do(&padStarted);
+	sw.Do(&rxDataSet);
+	sw.Do(&port);
+	sw.Do(&slot);
+
+	return sw.IsGood();
 }

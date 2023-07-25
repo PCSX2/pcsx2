@@ -107,6 +107,7 @@ public:
 
 	IStream* GetStream() const { return m_stream; }
 	bool HasError() const { return m_error; }
+	bool IsGood() const { return !m_error; }
 	bool IsReading() const { return (m_mode == Mode::Read); }
 	bool IsWriting() const { return (m_mode == Mode::Write); }
 	Mode GetMode() const { return m_mode; }
@@ -226,8 +227,8 @@ public:
 		}
 		else
 		{
-			for (u32 i = 0; i < length; i++)
-				Do(&data[i]);
+			for (T& ch : *data)
+				Do(&ch);
 		}
 	}
 

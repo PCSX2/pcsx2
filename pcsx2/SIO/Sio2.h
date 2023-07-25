@@ -17,6 +17,8 @@
 
 #include <array>
 
+class StateWrapper;
+
 class Sio2
 {
 public:
@@ -53,11 +55,6 @@ public:
 	size_t dmaBlockSize = 0;
 	bool send3Complete = false;
 
-	std::unique_ptr<u8[]> fifoInBackup;
-	size_t fifoInBackupSize;
-	std::unique_ptr<u8[]> fifoOutBackup;
-	size_t fifoOutBackupSize;
-
 	Sio2();
 	~Sio2();
 
@@ -65,6 +62,7 @@ public:
 	bool Shutdown();
 
 	void SoftReset();
+	bool DoState(StateWrapper& sw);
 
 	void Interrupt();
 
