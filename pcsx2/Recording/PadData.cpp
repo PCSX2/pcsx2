@@ -81,29 +81,29 @@ PadData::PadData(const int port, const int slot, const std::array<u8, 18> data)
 	m_slot = slot;
 	m_ext_port = sioConvertPortAndSlotToPad(m_port, m_slot);
 
-	m_compactPressFlagsGroupOne = data.at(0);
-	m_compactPressFlagsGroupTwo = data.at(1);
+	m_compactPressFlagsGroupOne = data[0];
+	m_compactPressFlagsGroupTwo = data[1];
 
-	m_rightAnalog = {data.at(2), data.at(3)};
-	m_leftAnalog = {data.at(4), data.at(5)};
+	m_rightAnalog = {data[2], data[3]};
+	m_leftAnalog = {data[4], data[5]};
 
-	m_left = {(0b10000000 & m_compactPressFlagsGroupOne) == 0, data.at(7)};
-	m_down = {(0b01000000 & m_compactPressFlagsGroupOne) == 0, data.at(9)};
-	m_right = {(0b00100000 & m_compactPressFlagsGroupOne) == 0, data.at(6)};
-	m_up = {(0b00010000 & m_compactPressFlagsGroupOne) == 0, data.at(8)};
+	m_left = {(0b10000000 & m_compactPressFlagsGroupOne) == 0, data[7]};
+	m_down = {(0b01000000 & m_compactPressFlagsGroupOne) == 0, data[9]};
+	m_right = {(0b00100000 & m_compactPressFlagsGroupOne) == 0, data[6]};
+	m_up = {(0b00010000 & m_compactPressFlagsGroupOne) == 0, data[8]};
 	m_start = (0b00001000 & m_compactPressFlagsGroupOne) == 0;
 	m_r3 = (0b00000100 & m_compactPressFlagsGroupOne) == 0;
 	m_l3 = (0b00000010 & m_compactPressFlagsGroupOne) == 0;
 	m_select = (0b00000001 & m_compactPressFlagsGroupOne) == 0;
 
-	m_square = {(0b10000000 & m_compactPressFlagsGroupTwo) == 0, data.at(13)};
-	m_cross = {(0b01000000 & m_compactPressFlagsGroupTwo) == 0, data.at(12)};
-	m_circle = {(0b00100000 & m_compactPressFlagsGroupTwo) == 0, data.at(11)};
-	m_triangle = {(0b00010000 & m_compactPressFlagsGroupTwo) == 0, data.at(10)};
-	m_r1 = {(0b00001000 & m_compactPressFlagsGroupTwo) == 0, data.at(15)};
-	m_l1 = {(0b00000100 & m_compactPressFlagsGroupTwo) == 0, data.at(14)};
-	m_r2 = {(0b00000010 & m_compactPressFlagsGroupTwo) == 0, data.at(17)};
-	m_l2 = {(0b00000001 & m_compactPressFlagsGroupTwo) == 0, data.at(16)};
+	m_square = {(0b10000000 & m_compactPressFlagsGroupTwo) == 0, data[13]};
+	m_cross = {(0b01000000 & m_compactPressFlagsGroupTwo) == 0, data[12]};
+	m_circle = {(0b00100000 & m_compactPressFlagsGroupTwo) == 0, data[11]};
+	m_triangle = {(0b00010000 & m_compactPressFlagsGroupTwo) == 0, data[10]};
+	m_r1 = {(0b00001000 & m_compactPressFlagsGroupTwo) == 0, data[15]};
+	m_l1 = {(0b00000100 & m_compactPressFlagsGroupTwo) == 0, data[14]};
+	m_r2 = {(0b00000010 & m_compactPressFlagsGroupTwo) == 0, data[17]};
+	m_l2 = {(0b00000001 & m_compactPressFlagsGroupTwo) == 0, data[16]};
 }
 
 void PadData::OverrideActualController() const

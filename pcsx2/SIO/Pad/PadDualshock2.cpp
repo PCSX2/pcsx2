@@ -62,13 +62,13 @@ u8 PadDualshock2::Poll(u8 commandByte)
 	switch (commandBytesReceived)
 	{
 		case 3:
-			this->vibrationMotors.at(0) = commandByte;
+			this->vibrationMotors[0] = commandByte;
 			return (buttons >> 8) & 0xff;
 		case 4:
-			this->vibrationMotors.at(1) = commandByte;
+			this->vibrationMotors[1] = commandByte;
 			InputManager::SetPadVibrationIntensity(this->unifiedSlot,
-				std::min(static_cast<float>(this->vibrationMotors.at(0)) * GetVibrationScale(0) * (1.0f / 255.0f), 1.0f),
-				std::min(static_cast<float>(this->vibrationMotors.at(1)) * GetVibrationScale(1) * (1.0f / 255.0f), 1.0f)
+				std::min(static_cast<float>(this->vibrationMotors[0]) * GetVibrationScale(0) * (1.0f / 255.0f), 1.0f),
+				std::min(static_cast<float>(this->vibrationMotors[1]) * GetVibrationScale(1) * (1.0f / 255.0f), 1.0f)
 			);
 
 			// PS1 mode: If the controller is still in digital mode, it is time to stop acknowledging.
@@ -374,19 +374,19 @@ void PadDualshock2::Init()
 
 	for (u8 i = 0; i < this->rawInputs.size(); i++)
 	{
-		this->rawInputs.at(i) = 0;
+		this->rawInputs[i] = 0;
 	}
 
 	for (u8 i = 0; i < this->pressures.size(); i++)
 	{
-		this->pressures.at(i) = 0;
+		this->pressures[i] = 0;
 	}
 
 	this->axisScale = 1.0f;
 	this->axisDeadzone = 0.0f;
 	
-	this->vibrationScale.at(0) = 0.0f;
-	this->vibrationScale.at(1) = 1.0f;
+	this->vibrationScale[0] = 0.0f;
+	this->vibrationScale[1] = 1.0f;
 
 	this->pressureModifier = 0.5f;
 	this->buttonDeadzone = 0.0f;
@@ -674,7 +674,7 @@ u8 PadDualshock2::GetPressure(u32 index)
 		case Dualshock2::Inputs::PAD_L_UP:
 			return this->analogs.ly;
 		default:
-			return this->rawInputs.at(index);
+			return this->rawInputs[index];
 	}
 }
 

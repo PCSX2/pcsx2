@@ -436,7 +436,7 @@ mem32_t iopHwRead32_Page8( u32 addr )
 		if( masked_addr < 0x240 )
 		{
 			const int parm = (masked_addr-0x200) / 4;
-			ret = g_Sio2.send3.at(parm);
+			ret = g_Sio2.send3[parm];
 			Sio2Log.WriteLn("%s(%08X) SIO2 SEND3 Read (%08X)", __FUNCTION__, addr, ret);
 		}
 		else if( masked_addr < 0x260 )
@@ -444,7 +444,7 @@ mem32_t iopHwRead32_Page8( u32 addr )
 			// SIO2 Send commands alternate registers.  First reg maps to Send1, second
 			// to Send2, third to Send1, etc.  And the following clever code does this:
 			const int parm = (masked_addr-0x240) / 8;
-			ret = (masked_addr & 4) ? g_Sio2.send2.at(parm) : g_Sio2.send1.at(parm);
+			ret = (masked_addr & 4) ? g_Sio2.send2[parm] : g_Sio2.send1[parm];
 			Sio2Log.WriteLn("%s(%08X) SIO2 SEND1/2 Read (%08X)", __FUNCTION__, addr, ret);
 		}
 		else if( masked_addr <= 0x280 )

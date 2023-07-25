@@ -32,7 +32,7 @@ void PadMacros::ClearMacros()
 
 PadMacros::MacroButton& PadMacros::GetMacroButton(u32 pad, u32 index)
 {
-	return this->s_macro_buttons.at(pad).at(index);
+	return this->s_macro_buttons[pad][index];
 }
 
 void PadMacros::SetMacroButtonState(u32 pad, u32 index, bool state)

@@ -45,13 +45,13 @@ bool Sio2::Initialize()
 
 	for (size_t i = 0; i < send3.size(); i++)
 	{
-		send3.at(i) = 0;
+		send3[i] = 0;
 	}
 
 	for (size_t i = 0; i < send1.size(); i++)
 	{
-		send1.at(i) = 0;
-		send2.at(i) = 0;
+		send1[i] = 0;
+		send2[i] = 0;
 	}
 
 	dataIn = 0;
@@ -127,7 +127,7 @@ void Sio2::SetCtrl(u32 value)
 
 void Sio2::SetSend3(size_t position, u32 value)
 {
-	this->send3.at(position) = value;
+	this->send3[position] = value;
 
 	if (position == 0)
 	{
@@ -355,7 +355,7 @@ void Sio2::Write(u8 data)
 			return;
 		}
 
-		const u32 currentSend3 = send3.at(send3Position);
+		const u32 currentSend3 = send3[send3Position];
 		port = currentSend3 & Send3::PORT;
 		commandLength = (currentSend3 >> 8) & Send3::COMMAND_LENGTH_MASK;
 		send3Read = true;

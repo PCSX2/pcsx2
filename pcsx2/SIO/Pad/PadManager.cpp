@@ -62,7 +62,7 @@ bool PadManager::Shutdown()
 {
 	for (u8 i = 0; i < 8; i++)
 	{
-		this->ps2Controllers.at(i) = nullptr;
+		this->ps2Controllers[i] = nullptr;
 	}
 
 	return true;
@@ -83,19 +83,19 @@ std::unique_ptr<PadBase> PadManager::CreatePad(u8 unifiedSlot, Pad::ControllerTy
 
 PadBase* PadManager::ChangePadType(u8 unifiedSlot, Pad::ControllerType controllerType)
 {
-	this->ps2Controllers.at(unifiedSlot) = CreatePad(unifiedSlot, controllerType);
-	return this->ps2Controllers.at(unifiedSlot).get();
+	this->ps2Controllers[unifiedSlot] = CreatePad(unifiedSlot, controllerType);
+	return this->ps2Controllers[unifiedSlot].get();
 }
 
 PadBase* PadManager::GetPad(u8 port, u8 slot)
 {
 	const u8 unifiedSlot = this->GetUnifiedSlot(port, slot);
-	return this->ps2Controllers.at(unifiedSlot).get();
+	return this->ps2Controllers[unifiedSlot].get();
 }
 
 PadBase* PadManager::GetPad(const u8 unifiedSlot)
 {
-	return this->ps2Controllers.at(unifiedSlot).get();
+	return this->ps2Controllers[unifiedSlot].get();
 }
 
 void PadManager::SetControllerState(u32 controller, u32 bind, float value)

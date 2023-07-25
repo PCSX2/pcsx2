@@ -615,12 +615,12 @@ void iopHwWrite32_Page8( u32 addr, mem32_t val )
 			if (masked_addr & 4)
 			{
 				Sio2Log.WriteLn("%s(%08X, %08X) SIO2 SEND2 Write", __FUNCTION__, addr, val);
-				g_Sio2.send2.at(parm) = val;
+				g_Sio2.send2[parm] = val;
 			}
 			else
 			{
 				Sio2Log.WriteLn("%s(%08X, %08X) SIO2 SEND1 Write", __FUNCTION__, addr, val);
-				g_Sio2.send1.at(parm) = val;
+				g_Sio2.send1[parm] = val;
 			}
 		}
 		else if( masked_addr <= 0x280 )
