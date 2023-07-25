@@ -46,6 +46,7 @@ private:
 	// We track here if it is currently held down, to avoid flipping in
 	// and out of analog mode every frame.
 	bool analogPressed = false;
+	bool commandStage = false;
 	u32 responseBytes;
 	std::array<u8, Dualshock2::PRESSURE_BUTTONS> pressures;
 	std::array<u8, Dualshock2::VIBRATION_MOTORS> vibrationMotors;

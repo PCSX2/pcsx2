@@ -223,17 +223,15 @@ u8 PadDualshock2::StatusInfo(u8 commandByte)
 
 u8 PadDualshock2::Constant1(u8 commandByte)
 {
-	static bool stage;
-
 	switch (commandBytesReceived)
 	{
 		case 3:
-			stage = commandByte;
+			commandStage = commandByte != 0;
 			return 0x00;
 		case 5:
 			return 0x01;
 		case 6:
-			if (stage)
+			if (commandStage)
 			{
 				return 0x01;
 			}
@@ -242,7 +240,7 @@ u8 PadDualshock2::Constant1(u8 commandByte)
 				return 0x02;
 			}
 		case 7:
-			if (stage)
+			if (commandStage)
 			{
 				return 0x01;
 			}
@@ -252,7 +250,7 @@ u8 PadDualshock2::Constant1(u8 commandByte)
 			}
 		case 8:
 			g_Sio0.SetAcknowledge(false);
-			return (stage ? 0x14 : 0x0a);
+			return (commandStage ? 0x14 : 0x0a);
 		default:
 			return 0x00;
 	}
@@ -274,15 +272,13 @@ u8 PadDualshock2::Constant2(u8 commandByte)
 
 u8 PadDualshock2::Constant3(u8 commandByte)
 {
-	static bool stage;
-
 	switch (commandBytesReceived)
 	{
 		case 3:
-			stage = commandByte;
+			commandStage = (commandByte != 0);
 			return 0x00;
 		case 6:
-			if (stage)
+			if (commandStage)
 			{
 				return 0x07;
 			}
@@ -698,6 +694,7 @@ void PadDualshock2::Freeze(StateWrapper& sw)
 	sw.Do(&analogLight);
 	sw.Do(&analogLocked);
 	sw.Do(&analogPressed);
+	sw.Do(&commandStage);
 	sw.Do(&responseBytes);
 	sw.Do(&pressures);
 	sw.Do(&vibrationMotors);

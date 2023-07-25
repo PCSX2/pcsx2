@@ -27,6 +27,7 @@ private:
 	bool analogLight = false;
 	// Guitars are also instructed to "lock" their "analog light", despite not having one.
 	bool analogLocked = false;
+	bool commandStage = false;
 	float whammyAxisScale; // Guitars only have 1 axis on the whammy bar.
 	float whammyDeadzone;
 	float buttonDeadzone; // Button deadzone is still a good idea, in case a host analog stick is bound to a guitar button

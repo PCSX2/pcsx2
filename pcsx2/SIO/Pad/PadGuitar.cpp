@@ -162,21 +162,19 @@ u8 PadGuitar::StatusInfo(u8 commandByte)
 
 u8 PadGuitar::Constant1(u8 commandByte)
 {
-	static bool stage;
-
 	switch (this->commandBytesReceived)
 	{
 		case 3:
-			stage = commandByte;
+			commandStage = (commandByte != 0);
 			return 0x00;
 		case 5:
 			return 0x01;
 		case 6:
-			return (!stage ? 0x02 : 0x01);
+			return (!commandStage ? 0x02 : 0x01);
 		case 7:
-			return (!stage ? 0x00 : 0x01);
+			return (!commandStage ? 0x00 : 0x01);
 		case 8:
-			return (stage ? 0x0a : 0x14);
+			return (commandStage ? 0x0a : 0x14);
 		default:
 			return 0x00;
 	}
@@ -197,15 +195,13 @@ u8 PadGuitar::Constant2(u8 commandByte)
 
 u8 PadGuitar::Constant3(u8 commandByte)
 {
-	static bool stage;
-
 	switch (this->commandBytesReceived)
 	{
 		case 3:
-			stage = commandByte;
+			commandStage = (commandByte != 0);
 			return 0x00;
 		case 6:
-			return (!stage ? 0x04 : 0x07);
+			return (!commandStage ? 0x04 : 0x07);
 		default:
 			return 0x00;
 	}
@@ -389,6 +385,7 @@ void PadGuitar::Freeze(StateWrapper& sw)
 	sw.Do(&whammy);
 	sw.Do(&analogLight);
 	sw.Do(&analogLocked);
+	sw.Do(&commandStage);
 	sw.Do(&whammyAxisScale);
 	sw.Do(&whammyDeadzone);
 	sw.Do(&buttonDeadzone);
