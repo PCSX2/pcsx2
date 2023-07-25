@@ -16,6 +16,7 @@
 #pragma once
 
 #include "Config.h"
+#include "Host.h"
 
 namespace Dualshock2
 {
@@ -66,34 +67,34 @@ namespace Dualshock2
 	};
 
 	static const InputBindingInfo defaultBindings[] = {
-		{"Up", "D-Pad Up", InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_UP, GenericInputBinding::DPadUp},
-		{"Right", "D-Pad Right", InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_RIGHT, GenericInputBinding::DPadRight},
-		{"Down", "D-Pad Down", InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_DOWN, GenericInputBinding::DPadDown},
-		{"Left", "D-Pad Left", InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_LEFT, GenericInputBinding::DPadLeft},
-		{"Triangle", "Triangle", InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_TRIANGLE, GenericInputBinding::Triangle},
-		{"Circle", "Circle", InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_CIRCLE, GenericInputBinding::Circle},
-		{"Cross", "Cross", InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_CROSS, GenericInputBinding::Cross},
-		{"Square", "Square", InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_SQUARE, GenericInputBinding::Square},
-		{"Select", "Select", InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_SELECT, GenericInputBinding::Select},
-		{"Start", "Start", InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_START, GenericInputBinding::Start},
-		{"L1", "L1 (Left Bumper)", InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_L1, GenericInputBinding::L1},
-		{"L2", "L2 (Left Trigger)", InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_L2, GenericInputBinding::L2},
-		{"R1", "R1 (Right Bumper)", InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_R1, GenericInputBinding::R1},
-		{"R2", "R2 (Right Trigger)", InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_R2, GenericInputBinding::R2},
-		{"L3", "L3 (Left Stick Button)", InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_L3, GenericInputBinding::L3},
-		{"R3", "R3 (Right Stick Button)", InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_R3, GenericInputBinding::R3},
-		{"Analog", "Analog Toggle", InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_ANALOG, GenericInputBinding::System},
-		{"Pressure", "Apply Pressure", InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_PRESSURE, GenericInputBinding::Unknown},
-		{"LUp", "Left Stick Up", InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_L_UP, GenericInputBinding::LeftStickUp},
-		{"LRight", "Left Stick Right", InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_L_RIGHT, GenericInputBinding::LeftStickRight},
-		{"LDown", "Left Stick Down", InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_L_DOWN, GenericInputBinding::LeftStickDown},
-		{"LLeft", "Left Stick Left", InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_L_LEFT, GenericInputBinding::LeftStickLeft},
-		{"RUp", "Right Stick Up", InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_R_UP, GenericInputBinding::RightStickUp},
-		{"RRight", "Right Stick Right", InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_R_RIGHT, GenericInputBinding::RightStickRight},
-		{"RDown", "Right Stick Down", InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_R_DOWN, GenericInputBinding::RightStickDown},
-		{"RLeft", "Right Stick Left", InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_R_LEFT, GenericInputBinding::RightStickLeft},
-		{"LargeMotor", "Large (Low Frequency) Motor", InputBindingInfo::Type::Motor, 0, GenericInputBinding::LargeMotor},
-		{"SmallMotor", "Small (High Frequency) Motor", InputBindingInfo::Type::Motor, 0, GenericInputBinding::SmallMotor},
+		{"Up", TRANSLATE_NOOP("Pad", "D-Pad Up"), InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_UP, GenericInputBinding::DPadUp},
+		{"Right", TRANSLATE_NOOP("Pad", "D-Pad Right"), InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_RIGHT, GenericInputBinding::DPadRight},
+		{"Down", TRANSLATE_NOOP("Pad", "D-Pad Down"), InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_DOWN, GenericInputBinding::DPadDown},
+		{"Left", TRANSLATE_NOOP("Pad", "D-Pad Left"), InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_LEFT, GenericInputBinding::DPadLeft},
+		{"Triangle", TRANSLATE_NOOP("Pad", "Triangle"), InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_TRIANGLE, GenericInputBinding::Triangle},
+		{"Circle", TRANSLATE_NOOP("Pad", "Circle"), InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_CIRCLE, GenericInputBinding::Circle},
+		{"Cross", TRANSLATE_NOOP("Pad", "Cross"), InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_CROSS, GenericInputBinding::Cross},
+		{"Square", TRANSLATE_NOOP("Pad", "Square"), InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_SQUARE, GenericInputBinding::Square},
+		{"Select", TRANSLATE_NOOP("Pad", "Select"), InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_SELECT, GenericInputBinding::Select},
+		{"Start", TRANSLATE_NOOP("Pad", "Start"), InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_START, GenericInputBinding::Start},
+		{"L1", TRANSLATE_NOOP("Pad", "L1 (Left Bumper)"), InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_L1, GenericInputBinding::L1},
+		{"L2", TRANSLATE_NOOP("Pad", "L2 (Left Trigger)"), InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_L2, GenericInputBinding::L2},
+		{"R1", TRANSLATE_NOOP("Pad", "R1 (Right Bumper)"), InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_R1, GenericInputBinding::R1},
+		{"R2", TRANSLATE_NOOP("Pad", "R2 (Right Trigger)"), InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_R2, GenericInputBinding::R2},
+		{"L3", TRANSLATE_NOOP("Pad", "L3 (Left Stick Button)"), InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_L3, GenericInputBinding::L3},
+		{"R3", TRANSLATE_NOOP("Pad", "R3 (Right Stick Button)"), InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_R3, GenericInputBinding::R3},
+		{"Analog", TRANSLATE_NOOP("Pad", "Analog Toggle"), InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_ANALOG, GenericInputBinding::System},
+		{"Pressure", TRANSLATE_NOOP("Pad", "Apply Pressure"), InputBindingInfo::Type::Button, Dualshock2::Inputs::PAD_PRESSURE, GenericInputBinding::Unknown},
+		{"LUp", TRANSLATE_NOOP("Pad", "Left Stick Up"), InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_L_UP, GenericInputBinding::LeftStickUp},
+		{"LRight", TRANSLATE_NOOP("Pad", "Left Stick Right"), InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_L_RIGHT, GenericInputBinding::LeftStickRight},
+		{"LDown", TRANSLATE_NOOP("Pad", "Left Stick Down"), InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_L_DOWN, GenericInputBinding::LeftStickDown},
+		{"LLeft", TRANSLATE_NOOP("Pad", "Left Stick Left"), InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_L_LEFT, GenericInputBinding::LeftStickLeft},
+		{"RUp", TRANSLATE_NOOP("Pad", "Right Stick Up"), InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_R_UP, GenericInputBinding::RightStickUp},
+		{"RRight", TRANSLATE_NOOP("Pad", "Right Stick Right"), InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_R_RIGHT, GenericInputBinding::RightStickRight},
+		{"RDown", TRANSLATE_NOOP("Pad", "Right Stick Down"), InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_R_DOWN, GenericInputBinding::RightStickDown},
+		{"RLeft", TRANSLATE_NOOP("Pad", "Right Stick Left"), InputBindingInfo::Type::HalfAxis, Dualshock2::Inputs::PAD_R_LEFT, GenericInputBinding::RightStickLeft},
+		{"LargeMotor", TRANSLATE_NOOP("Pad", "Large (Low Frequency) Motor"), InputBindingInfo::Type::Motor, 0, GenericInputBinding::LargeMotor},
+		{"SmallMotor", TRANSLATE_NOOP("Pad", "Small (High Frequency) Motor"), InputBindingInfo::Type::Motor, 0, GenericInputBinding::SmallMotor},
 	};
 
 	static const char* invertOptions[] = {
@@ -104,30 +105,30 @@ namespace Dualshock2
 		nullptr};
 
 	static const SettingInfo defaultSettings[] = {
-		{SettingInfo::Type::IntegerList, "InvertL", "Invert Left Stick",
-			"Inverts the direction of the left analog stick.",
+		{SettingInfo::Type::IntegerList, "InvertL", TRANSLATE_NOOP("Pad", "Invert Left Stick"),
+			TRANSLATE_NOOP("Pad", "Inverts the direction of the left analog stick."),
 			"0", "0", "3", nullptr, nullptr, invertOptions, nullptr, 0.0f},
-		{SettingInfo::Type::IntegerList, "InvertR", "Invert Right Stick",
-			"Inverts the direction of the right analog stick.",
+		{SettingInfo::Type::IntegerList, "InvertR", TRANSLATE_NOOP("Pad", "Invert Right Stick"),
+			TRANSLATE_NOOP("Pad", "Inverts the direction of the right analog stick."),
 			"0", "0", "3", nullptr, nullptr, invertOptions, nullptr, 0.0f},
-		{SettingInfo::Type::Float, "Deadzone", "Analog Deadzone",
-			"Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.",
+		{SettingInfo::Type::Float, "Deadzone", TRANSLATE_NOOP("Pad", "Analog Deadzone"),
+			TRANSLATE_NOOP("Pad", "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
 			"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
-		{SettingInfo::Type::Float, "AxisScale", "Analog Sensitivity",
-			"Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
-			"controllers, e.g. DualShock 4, Xbox One Controller.",
+		{SettingInfo::Type::Float, "AxisScale", TRANSLATE_NOOP("Pad", "Analog Sensitivity"),
+			TRANSLATE_NOOP("Pad", "Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
+			"controllers, e.g. DualShock 4, Xbox One Controller."),
 			"1.33", "0.01", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
-		{SettingInfo::Type::Float, "LargeMotorScale", "Large Motor Vibration Scale",
-			"Increases or decreases the intensity of low frequency vibration sent by the game.",
+		{SettingInfo::Type::Float, "LargeMotorScale", TRANSLATE_NOOP("Pad", "Large Motor Vibration Scale"),
+			TRANSLATE_NOOP("Pad", "Increases or decreases the intensity of low frequency vibration sent by the game."),
 			"1.00", "0.00", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
-		{SettingInfo::Type::Float, "SmallMotorScale", "Small Motor Vibration Scale",
-			"Increases or decreases the intensity of high frequency vibration sent by the game.",
+		{SettingInfo::Type::Float, "SmallMotorScale", TRANSLATE_NOOP("Pad", "Small Motor Vibration Scale"),
+			TRANSLATE_NOOP("Pad", "Increases or decreases the intensity of high frequency vibration sent by the game."),
 			"1.00", "0.00", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
-		{SettingInfo::Type::Float, "ButtonDeadzone", "Button/Trigger Deadzone",
-			"Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored.",
+		{SettingInfo::Type::Float, "ButtonDeadzone", TRANSLATE_NOOP("Pad", "Button/Trigger Deadzone"),
+			TRANSLATE_NOOP("Pad", "Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored."),
 			"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
-		{SettingInfo::Type::Float, "PressureModifier", "Modifier Pressure",
-			"Sets the pressure when the modifier button is held.",
+		{SettingInfo::Type::Float, "PressureModifier", TRANSLATE_NOOP("Pad", "Modifier Pressure"),
+			TRANSLATE_NOOP("Pad", "Sets the pressure when the modifier button is held."),
 			"0.50", "0.01", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
 	};
 } // namespace Dualshock2

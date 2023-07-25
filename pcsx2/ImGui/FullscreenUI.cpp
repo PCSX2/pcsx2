@@ -3890,7 +3890,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 		for (u32 i = 0; i < ci->num_bindings; i++)
 		{
 			const InputBindingInfo& bi = ci->bindings[i];
-			DrawInputBindingButton(bsi, bi.bind_type, section, bi.name, bi.display_name, true);
+			DrawInputBindingButton(bsi, bi.bind_type, section, bi.name, Host::TranslateToCString("Pad", bi.display_name), true);
 		}
 
 		MenuHeading((mtap_enabled[mtap_port] ?
@@ -3924,8 +3924,8 @@ void FullscreenUI::DrawControllerSettingsPage()
 					{
 						continue;
 					}
-					options.emplace_back(bi.display_name, std::any_of(buttons_split.begin(), buttons_split.end(),
-															  [bi](const std::string_view& it) { return (it == bi.name); }));
+					options.emplace_back(Host::TranslateToCString("Pad", bi.display_name), std::any_of(buttons_split.begin(), buttons_split.end(),
+																							   [bi](const std::string_view& it) { return (it == bi.name); }));
 				}
 
 				OpenChoiceDialog(fmt::format("Select Macro {} Binds", macro_index + 1).c_str(), true, std::move(options),
@@ -4109,7 +4109,10 @@ void FullscreenUI::DrawControllerSettingsPage()
 
 			const std::string section(USB::GetConfigSection(port));
 			for (const InputBindingInfo& bi : bindings)
-				DrawInputBindingButton(bsi, bi.bind_type, section.c_str(), USB::GetConfigSubKey(type, bi.name).c_str(), bi.display_name);
+			{
+				DrawInputBindingButton(bsi, bi.bind_type, section.c_str(), USB::GetConfigSubKey(type, bi.name).c_str(),
+					Host::TranslateToCString("USB", bi.display_name));
+			}
 		}
 
 		const std::span<const SettingInfo> settings(USB::GetDeviceSettings(type, subtype));

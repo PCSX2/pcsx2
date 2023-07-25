@@ -16,6 +16,7 @@
 #pragma once
 
 #include "Config.h"
+#include "Host.h"
 
 namespace Guitar
 {
@@ -38,25 +39,25 @@ namespace Guitar
 	// The generic input bindings on this might seem bizarre, but they are intended to match what DS2 buttons
 	// would do what actions, if you played Guitar Hero on a PS2 with a DS2 instead of a controller.
 	static const InputBindingInfo defaultBindings[] = {
-		{"Up", "Strum Up", InputBindingInfo::Type::Button, Guitar::Inputs::STRUM_UP, GenericInputBinding::DPadUp},
-		{"Down", "Strum Down", InputBindingInfo::Type::Button, Guitar::Inputs::STRUM_DOWN, GenericInputBinding::DPadDown},
-		{"Select", "Select", InputBindingInfo::Type::Button, Guitar::Inputs::SELECT, GenericInputBinding::Select},
-		{"Start", "Start", InputBindingInfo::Type::Button, Guitar::Inputs::START, GenericInputBinding::Start},
-		{"Green", "Green Fret", InputBindingInfo::Type::Button, Guitar::Inputs::GREEN, GenericInputBinding::R2},
-		{"Red", "Red Fret", InputBindingInfo::Type::Button, Guitar::Inputs::RED, GenericInputBinding::Circle},
-		{"Yellow", "Yellow Fret", InputBindingInfo::Type::Button, Guitar::Inputs::YELLOW, GenericInputBinding::Triangle},
-		{"Blue", "Blue Fret", InputBindingInfo::Type::Button, Guitar::Inputs::BLUE, GenericInputBinding::Cross},
-		{"Orange", "Orange Fret", InputBindingInfo::Type::Button, Guitar::Inputs::ORANGE, GenericInputBinding::Square},
-		{"Whammy", "Whammy Bar", InputBindingInfo::Type::HalfAxis, Guitar::Inputs::WHAMMY, GenericInputBinding::LeftStickUp},
-		{"Tilt", "Tilt Up", InputBindingInfo::Type::Button, Guitar::Inputs::TILT, GenericInputBinding::L2},
+		{"Up", TRANSLATE_NOOP("Pad", "Strum Up"), InputBindingInfo::Type::Button, Guitar::Inputs::STRUM_UP, GenericInputBinding::DPadUp},
+		{"Down", TRANSLATE_NOOP("Pad", "Strum Down"), InputBindingInfo::Type::Button, Guitar::Inputs::STRUM_DOWN, GenericInputBinding::DPadDown},
+		{"Select", TRANSLATE_NOOP("Pad", "Select"), InputBindingInfo::Type::Button, Guitar::Inputs::SELECT, GenericInputBinding::Select},
+		{"Start", TRANSLATE_NOOP("Pad", "Start"), InputBindingInfo::Type::Button, Guitar::Inputs::START, GenericInputBinding::Start},
+		{"Green", TRANSLATE_NOOP("Pad", "Green Fret"), InputBindingInfo::Type::Button, Guitar::Inputs::GREEN, GenericInputBinding::R2},
+		{"Red", TRANSLATE_NOOP("Pad", "Red Fret"), InputBindingInfo::Type::Button, Guitar::Inputs::RED, GenericInputBinding::Circle},
+		{"Yellow", TRANSLATE_NOOP("Pad", "Yellow Fret"), InputBindingInfo::Type::Button, Guitar::Inputs::YELLOW, GenericInputBinding::Triangle},
+		{"Blue", TRANSLATE_NOOP("Pad", "Blue Fret"), InputBindingInfo::Type::Button, Guitar::Inputs::BLUE, GenericInputBinding::Cross},
+		{"Orange", TRANSLATE_NOOP("Pad", "Orange Fret"), InputBindingInfo::Type::Button, Guitar::Inputs::ORANGE, GenericInputBinding::Square},
+		{"Whammy", TRANSLATE_NOOP("Pad", "Whammy Bar"), InputBindingInfo::Type::HalfAxis, Guitar::Inputs::WHAMMY, GenericInputBinding::LeftStickUp},
+		{"Tilt", TRANSLATE_NOOP("Pad", "Tilt Up"), InputBindingInfo::Type::Button, Guitar::Inputs::TILT, GenericInputBinding::L2},
 	};
 
 	static const SettingInfo defaultSettings[] = {
-		{SettingInfo::Type::Float, "Deadzone", "Whammy Bar Deadzone",
-			"Sets the whammy bar deadzone. Inputs below this value will not be sent to the PS2.",
+		{SettingInfo::Type::Float, "Deadzone", TRANSLATE_NOOP("Pad", "Whammy Bar Deadzone"),
+			TRANSLATE_NOOP("Pad", "Sets the whammy bar deadzone. Inputs below this value will not be sent to the PS2."),
 			"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
-		{SettingInfo::Type::Float, "AxisScale", "Whammy Bar Sensitivity",
-			"Sets the whammy bar axis scaling factor.",
+		{SettingInfo::Type::Float, "AxisScale", TRANSLATE_NOOP("Pad", "Whammy Bar Sensitivity"),
+			TRANSLATE_NOOP("Pad", "Sets the whammy bar axis scaling factor."),
 			"1.0", "0.01", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
 	};
 } // namespace Guitar
