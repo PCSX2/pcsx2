@@ -670,7 +670,9 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 		const std::vector<std::string> bindings(si.GetStringList(section.c_str(), fmt::format("Macro{}", macro_button_index + 1).c_str()));
 		if (!bindings.empty())
 		{
-			AddBindings(bindings, InputButtonEventHandler{[pad_index, macro_button_index](bool state) {
+			const float deadzone = si.GetFloatValue(section.c_str(), fmt::format("Macro{}Deadzone", macro_button_index + 1).c_str(), 0.0f);
+			AddBindings(bindings, InputAxisEventHandler{[pad_index, macro_button_index, deadzone](float value) {
+				const bool state = (value > deadzone);
 				Pad::SetMacroButtonState(pad_index, macro_button_index, state);
 			}});
 		}

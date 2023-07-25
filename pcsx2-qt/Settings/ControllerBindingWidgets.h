@@ -115,6 +115,7 @@ public:
 
 private Q_SLOTS:
 	void onPressureChanged();
+	void onDeadzoneChanged();
 	void onSetFrequencyClicked();
 	void updateBinds();
 
