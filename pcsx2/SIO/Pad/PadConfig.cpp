@@ -478,6 +478,8 @@ void Pad::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const std:
 		if (binds.empty())
 			binds = GetControllerBinds(type);
 
+		const float pressure = si.GetFloatValue(section.c_str(), fmt::format("Macro{}Pressure", i + 1).c_str(), 1.0f);
+
 		// convert binds
 		std::vector<u32> bind_indices;
 		std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
@@ -500,5 +502,6 @@ void Pad::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const std:
 		MacroButton& macro = Pad::GetMacroButton(pad, i);
 		macro.buttons = std::move(bind_indices);
 		macro.toggle_frequency = frequency;
+		macro.pressure = pressure;
 	}
 }

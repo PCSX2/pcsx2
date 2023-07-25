@@ -25,6 +25,7 @@ namespace Pad
 	struct MacroButton
 	{
 		std::vector<u32> buttons; ///< Buttons to activate.
+		float pressure; ///< Pressure to apply when macro is active.
 		u32 toggle_frequency; ///< Interval at which the buttons will be toggled, if not 0.
 		u32 toggle_counter; ///< When this counter reaches zero, buttons will be toggled.
 		bool toggle_state; ///< Current state for turbo.

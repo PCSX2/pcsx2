@@ -55,7 +55,7 @@ void Pad::SetMacroButtonState(u32 pad, u32 index, bool state)
 
 void Pad::ApplyMacroButton(u32 controller, const Pad::MacroButton& mb)
 {
-	const float value = mb.toggle_state ? 1.0f : 0.0f;
+	const float value = mb.toggle_state ? mb.pressure : 0.0f;
 	PadBase* const pad = Pad::GetPad(controller);
 
 	for (const u32 btn : mb.buttons)
