@@ -114,9 +114,12 @@ bool PadManager::PadFreeze(StateWrapper& sw)
 		{
 			Pad::ControllerType type;
 			sw.Do(&type);
+			if (sw.HasError())
+				return false;
 
 			PadBase* pad = this->ChangePadType(unifiedSlot, type);
-			pad->Freeze(sw);
+			if (!pad->Freeze(sw))
+				return false;
 		}
 	}
 	else 
@@ -131,9 +134,10 @@ bool PadManager::PadFreeze(StateWrapper& sw)
 			PadBase* pad = this->GetPad(unifiedSlot);
 			Pad::ControllerType type = pad->GetType();
 			sw.Do(&type);
-			pad->Freeze(sw);
+			if (sw.HasError() || !pad->Freeze(sw))
+				return false;
 		}
 	}
 
-	return true;
+	return !sw.HasError();
 }

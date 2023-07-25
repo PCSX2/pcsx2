@@ -678,15 +678,10 @@ u8 PadDualshock2::GetPressure(u32 index)
 	}
 }
 
-void PadDualshock2::Freeze(StateWrapper& sw)
+bool PadDualshock2::Freeze(StateWrapper& sw)
 {
-	// Protected PadBase members
-	sw.Do(&rawInputs);
-	sw.Do(&unifiedSlot);
-	sw.Do(&isInConfig);
-	sw.Do(&currentMode);
-	sw.Do(&currentCommand);
-	sw.Do(&commandBytesReceived);
+	if (!PadBase::Freeze(sw) || !sw.DoMarker("PadDualshock2"))
+		return false;
 
 	// Private PadDualshock2 members
 	sw.Do(&buttons);
@@ -705,6 +700,7 @@ void PadDualshock2::Freeze(StateWrapper& sw)
 	sw.Do(&vibrationScale);
 	sw.Do(&pressureModifier);
 	sw.Do(&buttonDeadzone);
+	return !sw.HasError();
 }
 
 u8 PadDualshock2::SendCommandByte(u8 commandByte)

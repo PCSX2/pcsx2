@@ -370,15 +370,10 @@ u8 PadGuitar::GetPressure(u32 index)
 	return 0;
 }
 
-void PadGuitar::Freeze(StateWrapper& sw)
+bool PadGuitar::Freeze(StateWrapper& sw)
 {
-	// Protected PadBase members
-	sw.Do(&rawInputs);
-	sw.Do(&unifiedSlot);
-	sw.Do(&isInConfig);
-	sw.Do(&currentMode);
-	sw.Do(&currentCommand);
-	sw.Do(&commandBytesReceived);
+	if (!PadBase::Freeze(sw) || !sw.DoMarker("PadGuitar"))
+		return false;
 
 	// Private PadGuitar members
 	sw.Do(&buttons);
@@ -389,6 +384,7 @@ void PadGuitar::Freeze(StateWrapper& sw)
 	sw.Do(&whammyAxisScale);
 	sw.Do(&whammyDeadzone);
 	sw.Do(&buttonDeadzone);
+	return !sw.HasError();
 }
 
 u8 PadGuitar::SendCommandByte(u8 commandByte)

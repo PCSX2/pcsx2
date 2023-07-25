@@ -42,7 +42,5 @@ public:
 	u32 GetButtons();
 	u8 GetPressure(u32 index);
 
-	void Freeze(StateWrapper& sw) override;
-
 	u8 SendCommandByte(u8 commandByte) override;
 };

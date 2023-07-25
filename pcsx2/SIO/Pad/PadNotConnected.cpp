@@ -115,17 +115,6 @@ u8 PadNotConnected::GetPressure(u32 index)
 	return 0;
 }
 
-void PadNotConnected::Freeze(StateWrapper& sw)
-{
-	// Protected PadBase members
-	sw.Do(&rawInputs);
-	sw.Do(&unifiedSlot);
-	sw.Do(&isInConfig);
-	sw.Do(&currentMode);
-	sw.Do(&currentCommand);
-	sw.Do(&commandBytesReceived);
-}
-
 u8 PadNotConnected::SendCommandByte(u8 commandByte)
 {
 	return 0xff;

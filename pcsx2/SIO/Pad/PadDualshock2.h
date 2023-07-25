@@ -96,7 +96,7 @@ public:
 	u32 GetButtons() override;
 	u8 GetPressure(u32 index) override;
 
-	void Freeze(StateWrapper& sw) override;
+	bool Freeze(StateWrapper& sw) override;
 
 	u8 SendCommandByte(u8 commandByte) override;
 };

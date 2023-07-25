@@ -57,7 +57,7 @@ public: // Public members
 	virtual u32 GetButtons() = 0;
 	virtual u8 GetPressure(u32 index) = 0;
 
-	virtual void Freeze(StateWrapper& sw) = 0;
+	virtual bool Freeze(StateWrapper& sw);
 
 	virtual u8 SendCommandByte(u8 commandByte) = 0;
 };
