@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "pcsx2/SIO/Pad/PadMacros.h"
+#include "pcsx2/SIO/Pad/PadTypes.h"
 
 #include <QtWidgets/QWidget>
 

@@ -19,7 +19,8 @@
 
 #include "SIO/Sio.h"
 #include "SIO/SioTypes.h"
-#include "SIO/Pad/PadManager.h"
+#include "SIO/Pad/Pad.h"
+#include "SIO/Pad/PadBase.h"
 #include "SIO/Memcard/MemoryCardProtocol.h"
 #include "SIO/Multitap/MultitapProtocol.h"
 

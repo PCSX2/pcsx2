@@ -22,7 +22,7 @@
 #include "Settings/HotkeySettingsWidget.h"
 
 #include "pcsx2/INISettingsInterface.h"
-#include "pcsx2/SIO/Pad/PadConfig.h"
+#include "pcsx2/SIO/Pad/Pad.h"
 #include "pcsx2/SIO/Sio.h"
 #include "pcsx2/VMManager.h"
 

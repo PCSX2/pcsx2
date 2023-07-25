@@ -18,7 +18,8 @@
 #include "SIO/Sio0.h"
 
 #include "SIO/Sio.h"
-#include "SIO/Pad/PadManager.h"
+#include "SIO/Pad/Pad.h"
+#include "SIO/Pad/PadBase.h"
 #include "SIO/Memcard/MemoryCardProtocol.h"
 
 #include "Common.h"

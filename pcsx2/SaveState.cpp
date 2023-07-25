@@ -28,7 +28,7 @@
 #include "Host.h"
 #include "MTGS.h"
 #include "MTVU.h"
-#include "SIO/Pad/PadManager.h"
+#include "SIO/Pad/Pad.h"
 #include "Patch.h"
 #include "R3000A.h"
 #include "SPU2/spu2.h"

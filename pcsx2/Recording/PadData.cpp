@@ -17,7 +17,7 @@
 
 #include "DebugTools/Debug.h"
 #include "Recording/PadData.h"
-#include "SIO/Pad/PadManager.h"
+#include "SIO/Pad/Pad.h"
 #include "SIO/Pad/PadDualshock2.h"
 #include "SIO/Sio.h"
 

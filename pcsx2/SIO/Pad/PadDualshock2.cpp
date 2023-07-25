@@ -16,8 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "SIO/Pad/PadDualshock2.h"
-
-#include "SIO/Pad/PadManager.h"
+#include "SIO/Pad/Pad.h"
 #include "SIO/Sio.h"
 #include "SIO/Sio0.h"
 

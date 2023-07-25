@@ -243,11 +243,9 @@
     <ClCompile Include="SIO\Memcard\MemoryCardProtocol.cpp" />
     <ClCompile Include="SIO\Multitap\MultitapProtocol.cpp" />
     <ClCompile Include="SIO\Pad\PadBase.cpp" />
-    <ClCompile Include="SIO\Pad\PadConfig.cpp" />
+    <ClCompile Include="SIO\Pad\Pad.cpp" />
     <ClCompile Include="SIO\Pad\PadDualshock2.cpp" />
     <ClCompile Include="SIO\Pad\PadGuitar.cpp" />
-    <ClCompile Include="SIO\Pad\PadMacros.cpp" />
-    <ClCompile Include="SIO\Pad\PadManager.cpp" />
     <ClCompile Include="SIO\Pad\PadNotConnected.cpp" />
     <ClCompile Include="SIO\Sio.cpp" />
     <ClCompile Include="SIO\Sio0.cpp" />
@@ -600,11 +598,9 @@
     <ClInclude Include="SIO\Memcard\MemoryCardProtocol.h" />
     <ClInclude Include="SIO\Multitap\MultitapProtocol.h" />
     <ClInclude Include="SIO\Pad\PadBase.h" />
-    <ClInclude Include="SIO\Pad\PadConfig.h" />
+    <ClInclude Include="SIO\Pad\Pad.h" />
     <ClInclude Include="SIO\Pad\PadDualshock2.h" />
     <ClInclude Include="SIO\Pad\PadGuitar.h" />
-    <ClInclude Include="SIO\Pad\PadMacros.h" />
-    <ClInclude Include="SIO\Pad\PadManager.h" />
     <ClInclude Include="SIO\Pad\PadNotConnected.h" />
     <ClInclude Include="SIO\Pad\PadTypes.h" />
     <ClInclude Include="SIO\Sio.h" />

@@ -29,11 +29,11 @@
 #include "ImGui/ImGuiOverlays.h"
 #include "Input/InputManager.h"
 #include "PerformanceMetrics.h"
+#include "Recording/InputRecording.h"
+#include "SIO/Pad/Pad.h"
+#include "SIO/Pad/PadBase.h"
 #include "USB/USB.h"
 #include "VMManager.h"
-#include "pcsx2/Recording/InputRecording.h"
-#include "SIO/Pad/PadConfig.h"
-#include "SIO/Pad/PadManager.h"
 
 #include "common/BitUtils.h"
 #include "common/StringUtil.h"
@@ -509,16 +509,14 @@ void ImGuiManager::DrawInputsOverlay()
 		const Pad::ControllerType ctype = pad->GetType();
 		if (ctype == Pad::ControllerType::NotConnected)
 			continue;
-
-		const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(ctype);
-		pxAssert(cinfo);
-			
+	
 		text.clear();
 		fmt::format_to(std::back_inserter(text), "P{} |", slot + 1u);
 
-		for (u32 bind = 0; bind < static_cast<u32>(cinfo->bindings.size()); bind++)
+		const Pad::ControllerInfo& cinfo = pad->GetInfo();
+		for (u32 bind = 0; bind < static_cast<u32>(cinfo.bindings.size()); bind++)
 		{
-			const InputBindingInfo& bi = cinfo->bindings[bind];
+			const InputBindingInfo& bi = cinfo.bindings[bind];
 			switch (bi.bind_type)
 			{
 				case InputBindingInfo::Type::Axis:

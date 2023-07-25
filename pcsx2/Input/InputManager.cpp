@@ -18,9 +18,7 @@
 #include "ImGui/ImGuiManager.h"
 #include "Input/InputManager.h"
 #include "Input/InputSource.h"
-#include "SIO/Pad/PadConfig.h"
-#include "SIO/Pad/PadMacros.h"
-#include "SIO/Pad/PadManager.h"
+#include "SIO/Pad/Pad.h"
 #include "USB/USB.h"
 #include "VMManager.h"
 

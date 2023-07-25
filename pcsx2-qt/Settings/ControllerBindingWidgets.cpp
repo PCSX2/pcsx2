@@ -26,7 +26,7 @@
 #include "common/StringUtil.h"
 
 #include "pcsx2/Host.h"
-#include "pcsx2/SIO/Pad/PadConfig.h"
+#include "pcsx2/SIO/Pad/Pad.h"
 
 #include "Settings/ControllerBindingWidgets.h"
 #include "Settings/ControllerSettingsDialog.h"

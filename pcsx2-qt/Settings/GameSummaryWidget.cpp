@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
-#include "pcsx2/SIO/Pad/PadConfig.h"
+#include "pcsx2/SIO/Pad/Pad.h"
 #include "GameSummaryWidget.h"
 #include "SettingsDialog.h"
 #include "MainWindow.h"

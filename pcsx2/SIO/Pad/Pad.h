@@ -15,40 +15,69 @@
 
 #pragma once
 
+#include "Config.h"
 #include "SIO/Pad/PadTypes.h"
 
-#include "Config.h"
+#include <memory>
 
-class SettingsInterface;
+class PadBase;
+
 enum class GenericInputBinding : u8;
+class SettingsInterface;
+class StateWrapper;
 
 namespace Pad
 {
+	bool Initialize();
+	void Shutdown();
+
 	// Returns the default type for the specified port.
 	const char* GetDefaultPadType(u32 pad);
+
 	// Reloads configuration.
 	void LoadConfig(const SettingsInterface& si);
+
 	// Restores default configuration.
 	void SetDefaultControllerConfig(SettingsInterface& si);
 	void SetDefaultHotkeyConfig(SettingsInterface& si);
+
 	// Clears all bindings for a given port.
 	void ClearPortBindings(SettingsInterface& si, u32 port);
+
 	// Copies pad configuration from one interface (ini) to another.
-	void CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_si,
-		bool copy_pad_config = true, bool copy_pad_bindings = true, bool copy_hotkey_bindings = true);
+	void CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_si, bool copy_pad_config = true,
+		bool copy_pad_bindings = true, bool copy_hotkey_bindings = true);
+
 	// Returns a list of controller type names. Pair of [name, display name].
 	const std::vector<std::pair<const char*, const char*>> GetControllerTypeNames();
+
 	// Returns the list of binds for the specified controller type.
 	std::vector<std::string> GetControllerBinds(const std::string_view& type);
+
 	// Returns general information for the specified controller type.
 	const ControllerInfo* GetControllerInfo(Pad::ControllerType type);
 	const ControllerInfo* GetControllerInfo(const std::string_view& name);
 	const char* GetControllerTypeName(Pad::ControllerType type);
+
 	// Performs automatic controller mapping with the provided list of generic mappings.
-	bool MapController(SettingsInterface& si, u32 controller,
-		const std::vector<std::pair<GenericInputBinding, std::string>>& mapping);
+	bool MapController(
+		SettingsInterface& si, u32 controller, const std::vector<std::pair<GenericInputBinding, std::string>>& mapping);
+
 	// Returns a list of input profiles available.
 	std::vector<std::string> GetInputProfileNames();
 	std::string GetConfigSection(u32 pad_index);
-	void LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const std::string_view& type, const std::string& section);
-};
+
+	bool HasConnectedPad(u8 unifiedSlot);
+
+	PadBase* GetPad(u8 port, u8 slot);
+	PadBase* GetPad(const u8 unifiedSlot);
+
+	// Sets the specified bind on a controller to the specified pressure (normalized to 0..1).
+	void SetControllerState(u32 controller, u32 bind, float value);
+
+	bool Freeze(StateWrapper& sw);
+
+	// Sets the state of the specified macro button.
+	void SetMacroButtonState(u32 pad, u32 index, bool state);
+	void UpdateMacroButtons();
+}; // namespace Pad

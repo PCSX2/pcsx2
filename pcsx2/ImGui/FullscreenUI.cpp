@@ -48,8 +48,7 @@
 #include "common/Timer.h"
 
 #include "SIO/Memcard/MemoryCardFile.h"
-#include "SIO/Pad/PadConfig.h"
-#include "SIO/Pad/PadMacros.h"
+#include "SIO/Pad/Pad.h"
 #include "SIO/Sio.h"
 
 #include "imgui.h"

@@ -110,4 +110,7 @@ namespace Pad
 	static constexpr float DEFAULT_MOTOR_SCALE = 1.0f;
 	static constexpr float DEFAULT_PRESSURE_MODIFIER = 0.5f;
 	static constexpr float DEFAULT_BUTTON_DEADZONE = 0.0f;
+
+	// Number of macro buttons per controller.
+	static constexpr u32 NUM_MACRO_BUTTONS_PER_CONTROLLER = 16;
 } // namespace Pad
