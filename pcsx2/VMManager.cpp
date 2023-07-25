@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -44,6 +44,13 @@
 #include "R5900.h"
 #include "Recording/InputRecording.h"
 #include "Recording/InputRecordingControls.h"
+#include "SIO/Memcard/MemoryCardFile.h"
+#include "SIO/Pad/PadConfig.h"
+#include "SIO/Pad/PadMacros.h"
+#include "SIO/Pad/PadManager.h"
+#include "SIO/Sio.h"
+#include "SIO/Sio0.h"
+#include "SIO/Sio2.h"
 #include "SPU2/spu2.h"
 #include "USB/USB.h"
 #include "VMManager.h"
@@ -58,13 +65,6 @@
 #include "common/Threading.h"
 #include "common/Timer.h"
 #include "common/emitter/tools.h"
-#include "SIO/Sio.h"
-#include "SIO/Sio0.h"
-#include "SIO/Sio2.h"
-#include "SIO/Pad/PadManager.h"
-#include "SIO/Pad/PadConfig.h"
-#include "SIO/Memcard/MemoryCardFile.h"
-
 
 #include "IconsFontAwesome5.h"
 #include "fmt/core.h"
@@ -1984,7 +1984,8 @@ void VMManager::Internal::EntryPointCompilingOnCPUThread()
 
 void VMManager::Internal::VSyncOnCPUThread()
 {
-	// TODO: Move frame limiting here to reduce CPU usage after sleeping...
+	Pad::UpdateMacroButtons();
+
 	Patch::ApplyLoadedPatches(Patch::PPT_CONTINUOUSLY);
 	Patch::ApplyLoadedPatches(Patch::PPT_COMBINED_0_1);
 

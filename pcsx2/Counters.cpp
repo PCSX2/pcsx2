@@ -547,20 +547,6 @@ static __fi void DoFMVSwitch()
 		RendererSwitched = false;
 }
 
-// Convenience function to update UI thread and set patches. 
-static __fi void VSyncUpdateCore()
-{
-	DoFMVSwitch();
-
-	VMManager::Internal::VSyncOnCPUThread();
-}
-
-static __fi void VSyncCheckExit()
-{
-	if (VMManager::Internal::IsExecutionInterrupted())
-		Cpu->ExitExecution();
-}
-
 // Framelimiter - Measures the delta time between calls and stalls until a
 // certain amount of time passes if such time hasn't passed yet.
 static __fi void frameLimit()
@@ -605,13 +591,13 @@ static __fi void frameLimit()
 
 static __fi void VSyncStart(u32 sCycle)
 {
-	// Update vibration at the end of a frame.
-	VSyncUpdateCore();
+	// End-of-frame tasks.
+	DoFMVSwitch();
+	VMManager::Internal::VSyncOnCPUThread();
 
 	frameLimit(); // limit FPS
 	gsPostVsyncStart(); // MUST be after framelimit; doing so before causes funk with frame times!
-	VSyncCheckExit();
-
+	
 	if(EmuConfig.Trace.Enabled && EmuConfig.Trace.EE.m_EnableAll)
 		SysTrace.EE.Counters.Write( "    ================  EE COUNTER VSYNC START (frame: %d)  ================", g_FrameCount );
 
@@ -642,6 +628,10 @@ static __fi void VSyncStart(u32 sCycle)
 	// Therefore, there needs to be some delay in order for it to see the interrupt flag before the interrupt is acknowledged, likely helped on real hardware by the pipelines.
 	// Without the patch and fixing this, the games have other issues, so I'm not going to rush to fix it.
 	// Refraction
+
+	// Bail out before the next frame starts if we're paused, or the CPU has changed
+	if (VMManager::Internal::IsExecutionInterrupted())
+		Cpu->ExitExecution();
 }
 
 static __fi void GSVSync()
