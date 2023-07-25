@@ -1208,15 +1208,13 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	ScopedGuard close_spu2(&SPU2::Close);
 
 	
-	Console.WriteLn("Initializing PAD...");
-	if (!g_PadManager.Initialize())
+	Console.WriteLn("Initializing Pad...");
+	if (!Pad::Initialize())
 	{
 		Host::ReportErrorAsync("Startup Error", "Failed to initialize PAD");
 		return false;
 	}
-	ScopedGuard close_pad = [](){
-		g_PadManager.Shutdown();
-	};
+	ScopedGuard close_pad = &Pad::Shutdown;
 
 	Console.WriteLn("Initializing SIO2...");
 	if (!g_Sio2.Initialize())
@@ -1368,7 +1366,7 @@ void VMManager::Shutdown(bool save_resume_state)
 	vtlb_Shutdown();
 	USBclose();
 	SPU2::Close();
-	g_PadManager.Shutdown();
+	Pad::Shutdown();
 	g_Sio2.Shutdown();
 	g_Sio0.Shutdown();
 	DEV9close();

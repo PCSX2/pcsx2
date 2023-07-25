@@ -28,7 +28,7 @@ PadData::PadData(const int port, const int slot)
 	m_port = port;
 	m_slot = slot;
 	m_ext_port = sioConvertPortAndSlotToPad(m_port, m_slot);
-	PadBase* pad = g_PadManager.GetPad(m_ext_port);
+	PadBase* pad = Pad::GetPad(m_ext_port);
 	// Get the state of the buttons
 	// TODO - for the new recording file format, allow informing max number of buttons per frame per controller as well (ie. the analog button)
 	const u32 buttons = pad->GetButtons();
@@ -108,7 +108,7 @@ PadData::PadData(const int port, const int slot, const std::array<u8, 18> data)
 
 void PadData::OverrideActualController() const
 {
-	PadBase* pad = g_PadManager.GetPad(m_ext_port);
+	PadBase* pad = Pad::GetPad(m_ext_port);
 	pad->SetRawAnalogs(m_leftAnalog, m_rightAnalog);
 
 	pad->Set(Dualshock2::Inputs::PAD_RIGHT, std::get<1>(m_right));

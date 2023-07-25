@@ -314,11 +314,6 @@ static int SysState_MTGSFreeze(FreezeAction mode, freezeData* fP)
 	return sstate.retval;
 }
 
-static bool SysState_PadFreeze(StateWrapper& sw)
-{
-	return g_PadManager.PadFreeze(sw);
-}
-
 static constexpr SysState_Component SPU2_{ "SPU2", SPU2freeze };
 static constexpr SysState_Component GS{ "GS", SysState_MTGSFreeze };
 
@@ -604,8 +599,8 @@ public:
 	~SavestateEntry_PAD() override = default;
 
 	const char* GetFilename() const override { return "PAD.bin"; }
-	bool FreezeIn(zip_file_t* zf) const override { return SysState_ComponentFreezeInNew(zf, "PAD", &SysState_PadFreeze); }
-	bool FreezeOut(SaveStateBase& writer) const override { return SysState_ComponentFreezeOutNew(writer, "PAD", 16 * 1024, &SysState_PadFreeze); }
+	bool FreezeIn(zip_file_t* zf) const override { return SysState_ComponentFreezeInNew(zf, "PAD", &Pad::Freeze); }
+	bool FreezeOut(SaveStateBase& writer) const override { return SysState_ComponentFreezeOutNew(writer, "PAD", 16 * 1024, &Pad::Freeze); }
 	bool IsRequired() const override { return true; }
 };
 

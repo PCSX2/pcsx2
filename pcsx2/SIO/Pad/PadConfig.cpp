@@ -54,18 +54,18 @@ void PadConfig::LoadConfig(const SettingsInterface& si)
 		const std::string section(GetConfigSection(i));
 		const std::string type(si.GetStringValue(section.c_str(), "Type", GetDefaultPadType(i)));
 		const ControllerInfo* ci = GetControllerInfo(type);
-		PadBase* pad = g_PadManager.GetPad(i);
+		PadBase* pad = Pad::GetPad(i);
 
 		// If a pad is not yet constructed, at minimum place a NotConnected pad in the slot.
 		// Do not abort the for loop - If there pad settings, we want those to be applied to the slot.
 		if (!pad)
 		{
-			pad = g_PadManager.ChangePadType(i, Pad::ControllerType::NotConnected);
+			pad = Pad::ChangePadType(i, Pad::ControllerType::NotConnected);
 		}
 
 		if (!ci)
 		{
-			pad = g_PadManager.ChangePadType(i, Pad::ControllerType::NotConnected);
+			pad = Pad::ChangePadType(i, Pad::ControllerType::NotConnected);
 			continue;
 		}
 
@@ -74,7 +74,7 @@ void PadConfig::LoadConfig(const SettingsInterface& si)
 
 		if (ci->type != oldType)
 		{
-			pad = g_PadManager.ChangePadType(i, ci->type);
+			pad = Pad::ChangePadType(i, ci->type);
 		}
 
 		const float axis_deadzone = si.GetFloatValue(section.c_str(), "Deadzone", Pad::DEFAULT_STICK_DEADZONE);

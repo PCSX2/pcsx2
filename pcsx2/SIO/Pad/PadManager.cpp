@@ -15,11 +15,11 @@
 
 #include "PrecompiledHeader.h"
 
-#include "SIO/Pad/PadManager.h"
 #include "SIO/Pad/PadConfig.h"
-#include "SIO/Pad/PadNotConnected.h"
 #include "SIO/Pad/PadDualshock2.h"
 #include "SIO/Pad/PadGuitar.h"
+#include "SIO/Pad/PadManager.h"
+#include "SIO/Pad/PadNotConnected.h"
 #include "SIO/Sio.h"
 
 #include "Host.h"
@@ -27,66 +27,67 @@
 
 #include "fmt/format.h"
 
-PadManager g_PadManager;
+namespace Pad
+{
+	static std::array<std::unique_ptr<PadBase>, NUM_CONTROLLER_PORTS> s_controllers;
+}
 
-PadManager::PadManager() = default;
-PadManager::~PadManager() = default;
-
-bool PadManager::Initialize()
+bool Pad::Initialize()
 {
 	return true;
 }
 
-bool PadManager::Shutdown()
+void Pad::Shutdown()
 {
-	for (u8 i = 0; i < 8; i++)
-	{
-		this->ps2Controllers[i] = nullptr;
-	}
-
-	return true;
+	for (auto& port : s_controllers)
+		port.reset();
 }
 
-std::unique_ptr<PadBase> PadManager::CreatePad(u8 unifiedSlot, Pad::ControllerType controllerType)
+std::unique_ptr<PadBase> Pad::CreatePad(u8 unifiedSlot, ControllerType controllerType)
 {
 	switch (controllerType)
 	{
-		case Pad::ControllerType::DualShock2:
+		case ControllerType::DualShock2:
 			return std::make_unique<PadDualshock2>(unifiedSlot);
-		case Pad::ControllerType::Guitar:
+		case ControllerType::Guitar:
 			return std::make_unique<PadGuitar>(unifiedSlot);
 		default:
 			return std::make_unique<PadNotConnected>(unifiedSlot);
 	}
 }
 
-PadBase* PadManager::ChangePadType(u8 unifiedSlot, Pad::ControllerType controllerType)
+PadBase* Pad::ChangePadType(u8 unifiedSlot, ControllerType controllerType)
 {
-	this->ps2Controllers[unifiedSlot] = CreatePad(unifiedSlot, controllerType);
-	return this->ps2Controllers[unifiedSlot].get();
+	s_controllers[unifiedSlot] = CreatePad(unifiedSlot, controllerType);
+	return s_controllers[unifiedSlot].get();
 }
 
-PadBase* PadManager::GetPad(u8 port, u8 slot)
+bool Pad::HasConnectedPad(u8 unifiedSlot)
+{
+	return (
+		unifiedSlot < NUM_CONTROLLER_PORTS && s_controllers[unifiedSlot]->GetType() != ControllerType::NotConnected);
+}
+
+PadBase* Pad::GetPad(u8 port, u8 slot)
 {
 	const u8 unifiedSlot = sioConvertPortAndSlotToPad(port, slot);
-	return this->ps2Controllers[unifiedSlot].get();
+	return s_controllers[unifiedSlot].get();
 }
 
-PadBase* PadManager::GetPad(const u8 unifiedSlot)
+PadBase* Pad::GetPad(const u8 unifiedSlot)
 {
-	return this->ps2Controllers[unifiedSlot].get();
+	return s_controllers[unifiedSlot].get();
 }
 
-void PadManager::SetControllerState(u32 controller, u32 bind, float value)
+void Pad::SetControllerState(u32 controller, u32 bind, float value)
 {
-	if (controller >= Pad::NUM_CONTROLLER_PORTS)
+	if (controller >= NUM_CONTROLLER_PORTS)
 		return;
 
-	PadBase* pad = g_PadManager.GetPad(controller);
-	pad->Set(bind, value);
+	s_controllers[controller]->Set(bind, value);
 }
 
-bool PadManager::PadFreeze(StateWrapper& sw)
+bool Pad::Freeze(StateWrapper& sw)
 {
 	if (sw.IsReading())
 	{
@@ -96,9 +97,9 @@ bool PadManager::PadFreeze(StateWrapper& sw)
 			return false;
 		}
 
-		for (u32 unifiedSlot = 0; unifiedSlot < Pad::NUM_CONTROLLER_PORTS; unifiedSlot++)
+		for (u32 unifiedSlot = 0; unifiedSlot < NUM_CONTROLLER_PORTS; unifiedSlot++)
 		{
-			Pad::ControllerType type;
+			ControllerType type;
 			sw.Do(&type);
 			if (sw.HasError())
 				return false;
@@ -131,14 +132,12 @@ bool PadManager::PadFreeze(StateWrapper& sw)
 	else
 	{
 		if (!sw.DoMarker("PAD"))
-		{
 			return false;
-		}
 
-		for (u32 unifiedSlot = 0; unifiedSlot < Pad::NUM_CONTROLLER_PORTS; unifiedSlot++)
+		for (u32 unifiedSlot = 0; unifiedSlot < NUM_CONTROLLER_PORTS; unifiedSlot++)
 		{
-			PadBase* pad = this->GetPad(unifiedSlot);
-			Pad::ControllerType type = pad->GetType();
+			PadBase* pad = GetPad(unifiedSlot);
+			ControllerType type = pad->GetType();
 			sw.Do(&type);
 			if (sw.HasError() || !pad->Freeze(sw))
 				return false;

@@ -143,7 +143,7 @@ void Sio2::SetRecv1(u32 value)
 void Sio2::Pad()
 {
 	// Send PAD our current port, and get back whatever it says the first response byte should be.
-	PadBase* pad = g_PadManager.GetPad(port, slot);
+	PadBase* pad = Pad::GetPad(port, slot);
 
 	// RECV1 is set once per DMA; if any device is present at all, it should be set to connected.
 	// For now, we will always report connected for pads.

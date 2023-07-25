@@ -656,7 +656,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 					const float deadzone = si.GetFloatValue(section.c_str(), fmt::format("{}Deadzone", bi.name).c_str(), 0.0f);
 					AddBindings(
 						bindings, InputAxisEventHandler{[pad_index, bind_index = bi.bind_index, sensitivity, deadzone](float value) {
-							g_PadManager.SetControllerState(pad_index, bind_index, ApplySingleBindingScale(sensitivity, deadzone, value));
+							Pad::SetControllerState(pad_index, bind_index, ApplySingleBindingScale(sensitivity, deadzone, value));
 						}});
 				}
 			}

@@ -19,27 +19,20 @@
 
 #include <array>
 
-class PadManager
+namespace Pad
 {
-private:
-	std::array<std::unique_ptr<PadBase>, 8> ps2Controllers;
-	
-public:
-	PadManager();
-	~PadManager();
-	
 	bool Initialize();
-	bool Shutdown();
+	void Shutdown();
 	
 	std::unique_ptr<PadBase> CreatePad(u8 unifiedSlot, Pad::ControllerType controllerType);
 	PadBase* ChangePadType(u8 unifiedSlot, Pad::ControllerType controllerType);
+	bool HasConnectedPad(u8 unifiedSlot);
+
 	PadBase* GetPad(u8 port, u8 slot);
 	PadBase* GetPad(const u8 unifiedSlot);
 
 	// Sets the specified bind on a controller to the specified pressure (normalized to 0..1).
 	void SetControllerState(u32 controller, u32 bind, float value);
 	
-	bool PadFreeze(StateWrapper& sw);
+	bool Freeze(StateWrapper& sw);
 };
-
-extern PadManager g_PadManager;

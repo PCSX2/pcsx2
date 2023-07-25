@@ -485,18 +485,8 @@ void ImGuiManager::DrawInputsOverlay()
 
 	for (u32 slot = 0; slot < Pad::NUM_CONTROLLER_PORTS; slot++)
 	{
-		const std::optional<PadBase*> padOpt = g_PadManager.GetPad(slot);
-
-		if (padOpt.has_value())
-		{
-			PadBase* pad = padOpt.value();
-			const Pad::ControllerType ctype = pad->GetType();
-			
-			if (ctype != Pad::ControllerType::NotConnected)
-			{
-				num_ports++;
-			}
-		}
+		if (Pad::HasConnectedPad(slot))
+			num_ports++;
 	}
 
 	for (u32 port = 0; port < USB::NUM_PORTS; port++)
@@ -515,65 +505,57 @@ void ImGuiManager::DrawInputsOverlay()
 
 	for (u32 slot = 0; slot < Pad::NUM_CONTROLLER_PORTS; slot++)
 	{
-		const std::optional<PadBase*> padOpt = g_PadManager.GetPad(slot);
+		const PadBase* const pad = Pad::GetPad(slot);
+		const Pad::ControllerType ctype = pad->GetType();
+		if (ctype == Pad::ControllerType::NotConnected)
+			continue;
 
-		if (padOpt.has_value())
+		const PadConfig::ControllerInfo* cinfo = g_PadConfig.GetControllerInfo(ctype);
+		pxAssert(cinfo);
+			
+		text.clear();
+		fmt::format_to(std::back_inserter(text), "P{} |", slot + 1u);
+
+		for (u32 bind = 0; bind < cinfo->num_bindings; bind++)
 		{
-			PadBase* pad = padOpt.value();
-			const Pad::ControllerType ctype = pad->GetType();
-			
-			if (ctype == Pad::ControllerType::NotConnected)
-				continue;
-
-			const PadConfig::ControllerInfo* cinfo = g_PadConfig.GetControllerInfo(ctype);
-			
-			if (!cinfo)
-				continue;
-			
-			text.clear();
-			fmt::format_to(std::back_inserter(text), "P{} |", slot + 1u);
-
-			for (u32 bind = 0; bind < cinfo->num_bindings; bind++)
+			const InputBindingInfo& bi = cinfo->bindings[bind];
+			switch (bi.bind_type)
 			{
-				const InputBindingInfo& bi = cinfo->bindings[bind];
-				switch (bi.bind_type)
+				case InputBindingInfo::Type::Axis:
+				case InputBindingInfo::Type::HalfAxis:
 				{
-					case InputBindingInfo::Type::Axis:
-					case InputBindingInfo::Type::HalfAxis:
-					{
-						// axes are always shown
-						const float value = static_cast<float>(pad->GetRawInput(bind)) * (1.0f / 255.0f);
-						if (value >= (254.0f / 255.0f))
-							fmt::format_to(std::back_inserter(text), " {}", bi.name);
-						else if (value > (1.0f / 255.0f))
-							fmt::format_to(std::back_inserter(text), " {}: {:.2f}", bi.name, value);
-					}
-					break;
-
-					case InputBindingInfo::Type::Button:
-					{
-						// buttons only shown when active
-						const float value = static_cast<float>(pad->GetRawInput(bind)) * (1.0f / 255.0f);
-						if (value >= 0.5f)
-							fmt::format_to(std::back_inserter(text), " {}", bi.name);
-					}
-					break;
-
-					case InputBindingInfo::Type::Motor:
-					case InputBindingInfo::Type::Macro:
-					case InputBindingInfo::Type::Unknown:
-					default:
-						break;
+					// axes are always shown
+					const float value = static_cast<float>(pad->GetRawInput(bind)) * (1.0f / 255.0f);
+					if (value >= (254.0f / 255.0f))
+						fmt::format_to(std::back_inserter(text), " {}", bi.name);
+					else if (value > (1.0f / 255.0f))
+						fmt::format_to(std::back_inserter(text), " {}: {:.2f}", bi.name, value);
 				}
+				break;
+
+				case InputBindingInfo::Type::Button:
+				{
+					// buttons only shown when active
+					const float value = static_cast<float>(pad->GetRawInput(bind)) * (1.0f / 255.0f);
+					if (value >= 0.5f)
+						fmt::format_to(std::back_inserter(text), " {}", bi.name);
+				}
+				break;
+
+				case InputBindingInfo::Type::Motor:
+				case InputBindingInfo::Type::Macro:
+				case InputBindingInfo::Type::Unknown:
+				default:
+					break;
 			}
-
-			dl->AddText(font, font->FontSize, ImVec2(current_x + shadow_offset, current_y + shadow_offset), shadow_color, text.c_str(),
-				text.c_str() + text.length(), 0.0f, &clip_rect);
-			dl->AddText(
-				font, font->FontSize, ImVec2(current_x, current_y), text_color, text.c_str(), text.c_str() + text.length(), 0.0f, &clip_rect);
-
-			current_y += font->FontSize + spacing;
 		}
+
+		dl->AddText(font, font->FontSize, ImVec2(current_x + shadow_offset, current_y + shadow_offset), shadow_color, text.c_str(),
+			text.c_str() + text.length(), 0.0f, &clip_rect);
+		dl->AddText(
+			font, font->FontSize, ImVec2(current_x, current_y), text_color, text.c_str(), text.c_str() + text.length(), 0.0f, &clip_rect);
+
+		current_y += font->FontSize + spacing;
 	}
 
 	for (u32 port = 0; port < USB::NUM_PORTS; port++)
