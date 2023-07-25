@@ -2345,12 +2345,6 @@
     <ClInclude Include="SIO\Memcard\MemoryCardProtocol.h">
       <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
     </ClInclude>
-    <ClInclude Include="SIO\Pad\PadDualshock2Types.h">
-      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
-    </ClInclude>
-    <ClInclude Include="SIO\Pad\PadGuitarTypes.h">
-      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
-    </ClInclude>
     <ClInclude Include="SIO\Pad\PadBase.h">
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClInclude>

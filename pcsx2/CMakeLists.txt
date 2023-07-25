@@ -494,9 +494,7 @@ set(pcsx2PADHeaders
 	SIO/Pad/PadBase.h
 	SIO/Pad/PadConfig.h
 	SIO/Pad/PadDualshock2.h
-	SIO/Pad/PadDualshock2Types.h
 	SIO/Pad/PadGuitar.h
-	SIO/Pad/PadGuitarTypes.h
 	SIO/Pad/PadMacros.h
 	SIO/Pad/PadManager.h
 	SIO/Pad/PadNotConnected.h

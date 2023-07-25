@@ -18,10 +18,42 @@
 #include "SIO/Pad/PadGuitar.h"
 
 #include "SIO/Pad/PadManager.h"
-#include "SIO/Pad/PadGuitarTypes.h"
 #include "SIO/Sio.h"
 
-#include "Common.h"
+#include "Host.h"
+
+// The generic input bindings on this might seem bizarre, but they are intended to match what DS2 buttons
+// would do what actions, if you played Guitar Hero on a PS2 with a DS2 instead of a controller.
+static const InputBindingInfo s_bindings[] = {
+	// clang-format off
+	{"Up", TRANSLATE_NOOP("Pad", "Strum Up"), InputBindingInfo::Type::Button, PadGuitar::Inputs::STRUM_UP, GenericInputBinding::DPadUp},
+	{"Down", TRANSLATE_NOOP("Pad", "Strum Down"), InputBindingInfo::Type::Button, PadGuitar::Inputs::STRUM_DOWN, GenericInputBinding::DPadDown},
+	{"Select", TRANSLATE_NOOP("Pad", "Select"), InputBindingInfo::Type::Button, PadGuitar::Inputs::SELECT, GenericInputBinding::Select},
+	{"Start", TRANSLATE_NOOP("Pad", "Start"), InputBindingInfo::Type::Button, PadGuitar::Inputs::START, GenericInputBinding::Start},
+	{"Green", TRANSLATE_NOOP("Pad", "Green Fret"), InputBindingInfo::Type::Button, PadGuitar::Inputs::GREEN, GenericInputBinding::R2},
+	{"Red", TRANSLATE_NOOP("Pad", "Red Fret"), InputBindingInfo::Type::Button, PadGuitar::Inputs::RED, GenericInputBinding::Circle},
+	{"Yellow", TRANSLATE_NOOP("Pad", "Yellow Fret"), InputBindingInfo::Type::Button, PadGuitar::Inputs::YELLOW, GenericInputBinding::Triangle},
+	{"Blue", TRANSLATE_NOOP("Pad", "Blue Fret"), InputBindingInfo::Type::Button, PadGuitar::Inputs::BLUE, GenericInputBinding::Cross},
+	{"Orange", TRANSLATE_NOOP("Pad", "Orange Fret"), InputBindingInfo::Type::Button, PadGuitar::Inputs::ORANGE, GenericInputBinding::Square},
+	{"Whammy", TRANSLATE_NOOP("Pad", "Whammy Bar"), InputBindingInfo::Type::HalfAxis, PadGuitar::Inputs::WHAMMY, GenericInputBinding::LeftStickUp},
+	{"Tilt", TRANSLATE_NOOP("Pad", "Tilt Up"), InputBindingInfo::Type::Button, PadGuitar::Inputs::TILT, GenericInputBinding::L2},
+	// clang-format on
+};
+
+static const SettingInfo s_settings[] = {
+	{SettingInfo::Type::Float, "Deadzone", TRANSLATE_NOOP("Pad", "Whammy Bar Deadzone"),
+		TRANSLATE_NOOP("Pad", "Sets the whammy bar deadzone. Inputs below this value will not be sent to the PS2."),
+		"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
+	{SettingInfo::Type::Float, "AxisScale", TRANSLATE_NOOP("Pad", "Whammy Bar Sensitivity"),
+		TRANSLATE_NOOP("Pad", "Sets the whammy bar axis scaling factor."), "1.0", "0.01", "2.00", "0.01", "%.0f%%",
+		nullptr, nullptr, 100.0f},
+};
+
+const Pad::ControllerInfo PadGuitar::ControllerInfo = {
+	Pad::ControllerType::Guitar, "Guitar", TRANSLATE_NOOP("Pad", "Guitar"),
+	s_bindings, std::size(s_bindings),
+	s_settings, std::size(s_settings),
+	Pad::VibrationCapabilities::NoVibration};
 
 u8 PadGuitar::Mystery(u8 commandByte)
 {
@@ -69,7 +101,7 @@ u8 PadGuitar::Poll(u8 commandByte)
 		case 7:
 			return 0x7f;
 		case 8:
-			return GetPressure(Guitar::Inputs::WHAMMY);
+			return GetPressure(Inputs::WHAMMY);
 	}
 
 	Console.Warning("%s(%02X) Did not reach a valid return path! Returning zero as a failsafe!", __FUNCTION__, commandByte);
@@ -97,11 +129,11 @@ u8 PadGuitar::Config(u8 commandByte)
 			{
 				this->isInConfig = false;
 				const auto [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
-				Console.WriteLn(StringUtil::StdStringFromFormat("[Pad] Game finished pad setup for port %d / slot %d - Analogs: %s - Analog Button: %s - Pressure: Not available on guitars",
+				Console.WriteLn("[Pad] Game finished pad setup for port %d / slot %d - Analogs: %s - Analog Button: %s - Pressure: Not available on guitars",
 					port + 1,
 					slot + 1,
 					(this->analogLight ? "On" : "Off"),
-					(this->analogLocked ? "Locked" : "Usable")));
+					(this->analogLocked ? "Locked" : "Usable"));
 			}
 			else
 			{
@@ -236,9 +268,14 @@ Pad::ControllerType PadGuitar::GetType() const
 	return Pad::ControllerType::Guitar;
 }
 
+const Pad::ControllerInfo& PadGuitar::GetInfo() const
+{
+	return ControllerInfo;
+}
+
 void PadGuitar::Set(u32 index, float value)
 {
-	if (index > Guitar::Inputs::LENGTH)
+	if (index > Inputs::LENGTH)
 	{
 		return;
 	}
@@ -246,7 +283,7 @@ void PadGuitar::Set(u32 index, float value)
 	// The whammy bar is a special kind of weird in that rather than resting at 0 and going to 255,
 	// they chose to rest it at 127 like a normal analog, but then also make its full press 0, as if
 	// it were the negative Y component of a normal analog. Fun!
-	if (index == Guitar::Inputs::WHAMMY)
+	if (index == Inputs::WHAMMY)
 	{
 		this->whammy = static_cast<u8>(std::clamp(127 - (value * this->whammyAxisScale) * 255.0f, 0.0f, 127.0f));
 
@@ -270,7 +307,7 @@ void PadGuitar::Set(u32 index, float value)
 		this->rawInputs[index] = static_cast<u8>(std::clamp(dzValue * 255.0f, 0.0f, 255.0f));
 
 		// Since we reordered the buttons for better UI, we need to remap them here.
-		static constexpr std::array<u8, Guitar::Inputs::LENGTH> bitmaskMapping = {{
+		static constexpr std::array<u8, Inputs::LENGTH> bitmaskMapping = {{
 			12, // STRUM_UP
 			14, // STRUM_DOWN
 			8, // SELECT
@@ -362,7 +399,7 @@ u32 PadGuitar::GetButtons() const
 
 u8 PadGuitar::GetPressure(u32 index) const
 {
-	if (index == Guitar::Inputs::WHAMMY)
+	if (index == Inputs::WHAMMY)
 		return whammy;
 	
 	return 0;

@@ -15,6 +15,13 @@
 
 #pragma once
 
+#include "common/Pcsx2Defs.h"
+
+#include <span>
+
+struct InputBindingInfo;
+struct SettingInfo;
+
 namespace Pad
 {
 	enum class Command : u8
@@ -80,6 +87,21 @@ namespace Pad
 		LargeSmallMotors,
 		SingleMotor,
 		Count
+	};
+
+	struct ControllerInfo
+	{
+		ControllerType type;
+		const char* name;
+		const char* display_name;
+		const InputBindingInfo* bindings;
+		u32 num_bindings;
+		const SettingInfo* settings;
+		u32 num_settings;
+		VibrationCapabilities vibration_caps;
+
+		// Returns localized controller type name.
+		const char* GetLocalizedName() const;
 	};
 
 	// Total number of pad ports, across both multitaps.

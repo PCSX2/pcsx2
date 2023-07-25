@@ -24,21 +24,6 @@ enum class GenericInputBinding : u8;
 
 namespace Pad
 {
-	struct ControllerInfo
-	{
-		ControllerType type;
-		const char* name;
-		const char* display_name;
-		const InputBindingInfo* bindings;
-		u32 num_bindings;
-		const SettingInfo* settings;
-		u32 num_settings;
-		VibrationCapabilities vibration_caps;
-
-		// Returns localized controller type name.
-		const char* GetLocalizedName() const;
-	};
-
 	// Returns the default type for the specified port.
 	const char* GetDefaultPadType(u32 pad);
 	// Reloads configuration.

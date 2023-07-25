@@ -40,6 +40,8 @@ public: // Public members
 
 	virtual void Init() = 0;
 	virtual Pad::ControllerType GetType() const = 0;
+	virtual const Pad::ControllerInfo& GetInfo() const = 0;
+
 	virtual void Set(u32 index, float value) = 0;
 	virtual void SetRawAnalogs(const std::tuple<u8, u8> left, const std::tuple<u8, u8> right) = 0;
 	virtual void SetAxisScale(float deadzone, float scale) = 0;

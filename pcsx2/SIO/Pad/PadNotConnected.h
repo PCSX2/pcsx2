@@ -25,6 +25,7 @@ public:
 
 	void Init() override;
 	Pad::ControllerType GetType() const override;
+	const Pad::ControllerInfo& GetInfo() const override;
 	void Set(u32 index, float value) override;
 	void SetRawAnalogs(const std::tuple<u8, u8> left, const std::tuple<u8, u8> right) override;
 	void SetAxisScale(float deadzone, float scale) override;
@@ -43,4 +44,6 @@ public:
 	u8 GetPressure(u32 index) const override;
 
 	u8 SendCommandByte(u8 commandByte) override;
+
+	static const Pad::ControllerInfo ControllerInfo;
 };

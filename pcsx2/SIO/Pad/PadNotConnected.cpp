@@ -17,6 +17,11 @@
 
 #include "SIO/Pad/PadNotConnected.h"
 
+#include "Host.h"
+
+const Pad::ControllerInfo PadNotConnected::ControllerInfo = {Pad::ControllerType::NotConnected, "None",
+	TRANSLATE_NOOP("Pad", "Not Connected"), nullptr, 0, nullptr, 0, Pad::VibrationCapabilities::NoVibration};
+
 PadNotConnected::PadNotConnected(u8 unifiedSlot)
 	: PadBase(unifiedSlot)
 {
@@ -33,6 +38,11 @@ void PadNotConnected::Init()
 Pad::ControllerType PadNotConnected::GetType() const
 {
 	return Pad::ControllerType::NotConnected;
+}
+
+const Pad::ControllerInfo& PadNotConnected::GetInfo() const
+{
+	return ControllerInfo;
 }
 
 void PadNotConnected::Set(u32 index, float value)

@@ -19,8 +19,9 @@
 
 #include "SIO/Pad/PadManager.h"
 #include "SIO/Pad/PadMacros.h"
-#include "SIO/Pad/PadDualshock2Types.h"
-#include "SIO/Pad/PadGuitarTypes.h"
+#include "SIO/Pad/PadNotConnected.h"
+#include "SIO/Pad/PadDualshock2.h"
+#include "SIO/Pad/PadGuitar.h"
 
 #include "Host.h"
 
@@ -217,28 +218,18 @@ void Pad::SetDefaultHotkeyConfig(SettingsInterface& si)
 	si.SetStringValue("Hotkeys", "HoldTurbo", "Keyboard/Period");
 }
 
-
-static const Pad::ControllerInfo s_controller_info[] = {
-	{Pad::ControllerType::NotConnected, "None", TRANSLATE_NOOP("Pad", "Not Connected"),
-		nullptr, 0,
-		nullptr, 0,
-		Pad::VibrationCapabilities::NoVibration},
-	{Pad::ControllerType::DualShock2, "DualShock2", TRANSLATE_NOOP("Pad", "DualShock 2"),
-		Dualshock2::defaultBindings, std::size(Dualshock2::defaultBindings),
-		Dualshock2::defaultSettings, std::size(Dualshock2::defaultSettings),
-		Pad::VibrationCapabilities::LargeSmallMotors},
-	{Pad::ControllerType::Guitar, "Guitar", TRANSLATE_NOOP("Pad", "Guitar"),
-		Guitar::defaultBindings, std::size(Guitar::defaultBindings),
-		Guitar::defaultSettings, std::size(Guitar::defaultSettings),
-		Pad::VibrationCapabilities::NoVibration},
+static const Pad::ControllerInfo* s_controller_info[] = {
+	&PadNotConnected::ControllerInfo,
+	&PadDualshock2::ControllerInfo,
+	&PadGuitar::ControllerInfo,
 };
 
 const Pad::ControllerInfo* Pad::GetControllerInfo(Pad::ControllerType type)
 {
-	for (const ControllerInfo& info : s_controller_info)
+	for (const ControllerInfo* info : s_controller_info)
 	{
-		if (type == info.type)
-			return &info;
+		if (type == info->type)
+			return info;
 	}
 
 	return nullptr;
@@ -246,10 +237,10 @@ const Pad::ControllerInfo* Pad::GetControllerInfo(Pad::ControllerType type)
 
 const Pad::ControllerInfo* Pad::GetControllerInfo(const std::string_view& name)
 {
-	for (const ControllerInfo& info : s_controller_info)
+	for (const ControllerInfo* info : s_controller_info)
 	{
-		if (name == info.name)
-			return &info;
+		if (name == info->name)
+			return info;
 	}
 
 	return nullptr;
@@ -265,8 +256,8 @@ const char* Pad::GetControllerTypeName(Pad::ControllerType type)
 const std::vector<std::pair<const char*, const char*>> Pad::GetControllerTypeNames()
 {
 	std::vector<std::pair<const char*, const char*>> ret;
-	for (const ControllerInfo& info : s_controller_info)
-		ret.emplace_back(info.name, info.GetLocalizedName());
+	for (const ControllerInfo* info : s_controller_info)
+		ret.emplace_back(info->name, info->GetLocalizedName());
 
 	return ret;
 }

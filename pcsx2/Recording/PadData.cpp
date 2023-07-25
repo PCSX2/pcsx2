@@ -18,7 +18,7 @@
 #include "DebugTools/Debug.h"
 #include "Recording/PadData.h"
 #include "SIO/Pad/PadManager.h"
-#include "SIO/Pad/PadDualshock2Types.h"
+#include "SIO/Pad/PadDualshock2.h"
 #include "SIO/Sio.h"
 
 #include <fmt/core.h>
@@ -56,23 +56,23 @@ PadData::PadData(const int port, const int slot)
 	m_rightAnalog = pad->GetRawRightAnalog();
 	m_leftAnalog = pad->GetRawLeftAnalog();
 	// Get pressure bytes (12 of them)
-	m_left = {(0b10000000 & m_compactPressFlagsGroupOne) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_LEFT)};
-	m_down = {(0b01000000 & m_compactPressFlagsGroupOne) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_DOWN)};
-	m_right = {(0b00100000 & m_compactPressFlagsGroupOne) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_RIGHT)};
-	m_up = {(0b00010000 & m_compactPressFlagsGroupOne) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_UP)};
+	m_left = {(0b10000000 & m_compactPressFlagsGroupOne) == 0, pad->GetRawInput(PadDualshock2::Inputs::PAD_LEFT)};
+	m_down = {(0b01000000 & m_compactPressFlagsGroupOne) == 0, pad->GetRawInput(PadDualshock2::Inputs::PAD_DOWN)};
+	m_right = {(0b00100000 & m_compactPressFlagsGroupOne) == 0, pad->GetRawInput(PadDualshock2::Inputs::PAD_RIGHT)};
+	m_up = {(0b00010000 & m_compactPressFlagsGroupOne) == 0, pad->GetRawInput(PadDualshock2::Inputs::PAD_UP)};
 	m_start = (0b00001000 & m_compactPressFlagsGroupOne) == 0;
 	m_r3 = (0b00000100 & m_compactPressFlagsGroupOne) == 0;
 	m_l3 = (0b00000010 & m_compactPressFlagsGroupOne) == 0;
 	m_select = (0b00000001 & m_compactPressFlagsGroupOne) == 0;
 
-	m_square = {(0b10000000 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_SQUARE)};
-	m_cross = {(0b01000000 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_CROSS)};
-	m_circle = {(0b00100000 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_CIRCLE)};
-	m_triangle = {(0b00010000 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_TRIANGLE)};
-	m_r1 = {(0b00001000 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_R1)};
-	m_l1 = {(0b00000100 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_L1)};
-	m_r2 = {(0b00000010 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_R2)};
-	m_l2 = {(0b00000001 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(Dualshock2::Inputs::PAD_L2)};
+	m_square = {(0b10000000 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(PadDualshock2::Inputs::PAD_SQUARE)};
+	m_cross = {(0b01000000 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(PadDualshock2::Inputs::PAD_CROSS)};
+	m_circle = {(0b00100000 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(PadDualshock2::Inputs::PAD_CIRCLE)};
+	m_triangle = {(0b00010000 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(PadDualshock2::Inputs::PAD_TRIANGLE)};
+	m_r1 = {(0b00001000 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(PadDualshock2::Inputs::PAD_R1)};
+	m_l1 = {(0b00000100 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(PadDualshock2::Inputs::PAD_L1)};
+	m_r2 = {(0b00000010 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(PadDualshock2::Inputs::PAD_R2)};
+	m_l2 = {(0b00000001 & m_compactPressFlagsGroupTwo) == 0, pad->GetRawInput(PadDualshock2::Inputs::PAD_L2)};
 }
 
 PadData::PadData(const int port, const int slot, const std::array<u8, 18> data)
@@ -111,24 +111,24 @@ void PadData::OverrideActualController() const
 	PadBase* pad = Pad::GetPad(m_ext_port);
 	pad->SetRawAnalogs(m_leftAnalog, m_rightAnalog);
 
-	pad->Set(Dualshock2::Inputs::PAD_RIGHT, std::get<1>(m_right));
-	pad->Set(Dualshock2::Inputs::PAD_LEFT, std::get<1>(m_left));
-	pad->Set(Dualshock2::Inputs::PAD_UP, std::get<1>(m_up));
-	pad->Set(Dualshock2::Inputs::PAD_DOWN, std::get<1>(m_down));
-	pad->Set(Dualshock2::Inputs::PAD_START, m_start);
-	pad->Set(Dualshock2::Inputs::PAD_SELECT, m_select);
-	pad->Set(Dualshock2::Inputs::PAD_R3, m_r3);
-	pad->Set(Dualshock2::Inputs::PAD_L3, m_l3);
+	pad->Set(PadDualshock2::Inputs::PAD_RIGHT, std::get<1>(m_right));
+	pad->Set(PadDualshock2::Inputs::PAD_LEFT, std::get<1>(m_left));
+	pad->Set(PadDualshock2::Inputs::PAD_UP, std::get<1>(m_up));
+	pad->Set(PadDualshock2::Inputs::PAD_DOWN, std::get<1>(m_down));
+	pad->Set(PadDualshock2::Inputs::PAD_START, m_start);
+	pad->Set(PadDualshock2::Inputs::PAD_SELECT, m_select);
+	pad->Set(PadDualshock2::Inputs::PAD_R3, m_r3);
+	pad->Set(PadDualshock2::Inputs::PAD_L3, m_l3);
 
-	pad->Set(Dualshock2::Inputs::PAD_SQUARE, std::get<1>(m_square));
-	pad->Set(Dualshock2::Inputs::PAD_CROSS, std::get<1>(m_cross));
-	pad->Set(Dualshock2::Inputs::PAD_CIRCLE, std::get<1>(m_circle));
-	pad->Set(Dualshock2::Inputs::PAD_TRIANGLE, std::get<1>(m_triangle));
+	pad->Set(PadDualshock2::Inputs::PAD_SQUARE, std::get<1>(m_square));
+	pad->Set(PadDualshock2::Inputs::PAD_CROSS, std::get<1>(m_cross));
+	pad->Set(PadDualshock2::Inputs::PAD_CIRCLE, std::get<1>(m_circle));
+	pad->Set(PadDualshock2::Inputs::PAD_TRIANGLE, std::get<1>(m_triangle));
 
-	pad->Set(Dualshock2::Inputs::PAD_R1, std::get<1>(m_r1));
-	pad->Set(Dualshock2::Inputs::PAD_L1, std::get<1>(m_l1));
-	pad->Set(Dualshock2::Inputs::PAD_R2, std::get<1>(m_r2));
-	pad->Set(Dualshock2::Inputs::PAD_L2, std::get<1>(m_l2));
+	pad->Set(PadDualshock2::Inputs::PAD_R1, std::get<1>(m_r1));
+	pad->Set(PadDualshock2::Inputs::PAD_L1, std::get<1>(m_l1));
+	pad->Set(PadDualshock2::Inputs::PAD_R2, std::get<1>(m_r2));
+	pad->Set(PadDualshock2::Inputs::PAD_L2, std::get<1>(m_l2));
 }
 
 void addButtonInfoToString(std::string label, std::string& str, std::tuple<bool, u8> buttonInfo)

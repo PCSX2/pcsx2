@@ -19,6 +19,23 @@
 
 class PadGuitar final : public PadBase
 {
+public:
+	enum Inputs
+	{
+		STRUM_UP, // Strum bar
+		STRUM_DOWN, // Strum bar down
+		SELECT, // Select button
+		START, // Start button
+		GREEN, // Green fret
+		RED, // Red fret
+		YELLOW, // Yellow fret
+		BLUE, // Blue fret
+		ORANGE, // Orange fret
+		WHAMMY, // Whammy bar axis
+		TILT, // Tilt sensor
+		LENGTH,
+	};
+
 private:
 	u32 buttons;
 	u8 whammy;
@@ -49,6 +66,7 @@ public:
 
 	void Init() override;
 	Pad::ControllerType GetType() const override;
+	const Pad::ControllerInfo& GetInfo() const override;
 	void Set(u32 index, float value) override;
 	void SetRawAnalogs(const std::tuple<u8, u8> left, const std::tuple<u8, u8> right) override;
 	void SetAxisScale(float deadzone, float scale) override;
@@ -69,4 +87,6 @@ public:
 	bool Freeze(StateWrapper& sw) override;
 
 	u8 SendCommandByte(u8 commandByte) override;
+
+	static const Pad::ControllerInfo ControllerInfo;
 };

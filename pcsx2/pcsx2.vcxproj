@@ -599,8 +599,6 @@
     <ClInclude Include="SIO\Memcard\MemoryCardFolder.h" />
     <ClInclude Include="SIO\Memcard\MemoryCardProtocol.h" />
     <ClInclude Include="SIO\Multitap\MultitapProtocol.h" />
-    <ClInclude Include="SIO\Pad\PadDualshock2Types.h" />
-    <ClInclude Include="SIO\Pad\PadGuitarTypes.h" />
     <ClInclude Include="SIO\Pad\PadBase.h" />
     <ClInclude Include="SIO\Pad\PadConfig.h" />
     <ClInclude Include="SIO\Pad\PadDualshock2.h" />
