@@ -5241,12 +5241,12 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 			if (HasEEUpload(r))
 				return CLUTDrawTestResult::CLUTDrawOnCPU;
 
-			GSTextureCache::Target* tgt = g_texture_cache->GetExactTarget(
-				m_cached_ctx.TEX0.TBP0, m_cached_ctx.TEX0.TBW, GSTextureCache::RenderTarget, m_cached_ctx.TEX0.TBP0);
+			const GSTextureCache::Target* tgt = g_texture_cache->FindOverlappingTarget(
+				m_cached_ctx.TEX0.TBP0, m_cached_ctx.TEX0.TBW, m_cached_ctx.TEX0.PSM, r);
 			if (tgt)
 			{
 				bool is_dirty = false;
-				for (GSDirtyRect& rc : tgt->m_dirty)
+				for (const GSDirtyRect& rc : tgt->m_dirty)
 				{
 					if (!rc.GetDirtyRect(m_cached_ctx.TEX0).rintersect(r).rempty())
 					{
