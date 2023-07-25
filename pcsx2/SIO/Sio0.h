@@ -17,6 +17,8 @@
 
 #include "SIO/SioTypes.h"
 
+class StateWrapper;
+
 class Sio0
 {
 private:
@@ -48,6 +50,7 @@ public:
 	bool Shutdown();
 
 	void SoftReset();
+	bool DoState(StateWrapper& sw);
 
 	void SetAcknowledge(bool ack);
 	void Interrupt(Sio0Interrupt sio0Interrupt);

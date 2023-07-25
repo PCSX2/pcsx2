@@ -37,7 +37,7 @@ enum class FreezeAction
 // [SAVEVERSION+]
 // This informs the auto updater that the users savestates will be invalidated.
 
-static const u32 g_SaveVersion = (0x9A3A << 16) | 0x0000;
+static const u32 g_SaveVersion = (0x9A3B << 16) | 0x0000;
 
 
 // the freezing data between submodules and core
@@ -222,8 +222,6 @@ protected:
 	bool cdvdFreeze();
 	bool psxRcntFreeze();
 	bool deci2Freeze();
-	bool Sio0Freeze();
-	bool Sio2Freeze();
 
 	// Save or load PCSX2's global frame counter (g_FrameCount) along with each savestate
 	//

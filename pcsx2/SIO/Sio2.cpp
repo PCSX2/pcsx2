@@ -15,19 +15,18 @@
 
 #include "PrecompiledHeader.h"
 
-#include "SIO/Sio2.h"
-
-#include "SIO/Sio.h"
-#include "SIO/SioTypes.h"
-#include "SIO/Pad/Pad.h"
-#include "SIO/Pad/PadBase.h"
-#include "SIO/Memcard/MemoryCardProtocol.h"
-#include "SIO/Multitap/MultitapProtocol.h"
-
 #include "Common.h"
+#include "Host.h"
 #include "IopDma.h"
 #include "Recording/InputRecording.h"
-#include "Host.h"
+#include "SIO/Memcard/MemoryCardProtocol.h"
+#include "SIO/Multitap/MultitapProtocol.h"
+#include "SIO/Pad/Pad.h"
+#include "SIO/Pad/PadBase.h"
+#include "SIO/Sio.h"
+#include "SIO/Sio2.h"
+#include "SIO/SioTypes.h"
+#include "StateWrapper.h"
 
 #define SIO2LOG_ENABLE 0
 #define Sio2Log if (SIO2LOG_ENABLE) DevCon
@@ -451,62 +450,39 @@ u8 Sio2::Read()
 	return ret;
 }
 
-bool SaveStateBase::Sio2Freeze()
+bool Sio2::DoState(StateWrapper& sw)
 {
-	FreezeTag("sio2");
+	if (!sw.DoMarker("Sio2"))
+		return false;
 
-	if (IsSaving())
-	{
-		std::deque<u8>::iterator iter;
-		size_t backupSize;
+	sw.Do(&send3);
+	sw.Do(&send1);
+	sw.Do(&send2);
+	sw.Do(&dataIn);
+	sw.Do(&dataOut);
+	sw.Do(&ctrl);
+	sw.Do(&recv1);
+	sw.Do(&recv2);
+	sw.Do(&recv3);
+	sw.Do(&unknown1);
+	sw.Do(&unknown2);
+	sw.Do(&iStat);
+	sw.Do(&port);
+	sw.Do(&slot);
+	sw.Do(&send3Read);
+	sw.Do(&send3Position);
+	sw.Do(&commandLength);
+	sw.Do(&processedLength);
+	sw.Do(&dmaBlockSize);
+	sw.Do(&send3Complete);
 
-		// Copy g_Sio2FifoIn
-		if (g_Sio2FifoIn.size())
-		{
-			g_Sio2.fifoInBackup = std::make_unique<u8[]>(g_Sio2FifoIn.size());
-			iter = g_Sio2FifoIn.begin();
-			backupSize = 0;
-
-			while (iter != g_Sio2FifoIn.end())
-			{
-				const u8 val = *iter++;
-				g_Sio2.fifoInBackup.get()[backupSize++] = val;
-			}
-
-			g_Sio2.fifoInBackupSize = backupSize;
-		}
-		else
-		{
-			g_Sio2.fifoInBackupSize = 0;
-		}
-
-		// Copy g_Sio2FifoOut
-		if (g_Sio2FifoOut.size())
-		{
-			g_Sio2.fifoOutBackup = std::make_unique<u8[]>(g_Sio2FifoOut.size());
-			iter = g_Sio2FifoOut.begin();
-			backupSize = 0;
-
-			while (iter != g_Sio2FifoOut.end())
-			{
-				const u8 val = *iter++;
-				g_Sio2.fifoOutBackup.get()[backupSize++] = val;
-			}
-
-			g_Sio2.fifoOutBackupSize = backupSize;
-		}
-		else
-		{
-			g_Sio2.fifoOutBackupSize = 0;
-		}
-	}
-
-	Freeze(g_Sio2);
+	sw.Do(&g_Sio2FifoIn);
+	sw.Do(&g_Sio2FifoOut);
 
 	// CRCs for memory cards.
 	// If the memory card hasn't changed when loading state, we can safely skip ejecting it.
 	u64 mcdCrcs[SIO::PORTS][SIO::SLOTS];
-	if (IsSaving())
+	if (sw.IsWriting())
 	{
 		for (u32 port = 0; port < SIO::PORTS; port++)
 		{
@@ -514,9 +490,9 @@ bool SaveStateBase::Sio2Freeze()
 				mcdCrcs[port][slot] = mcds[port][slot].GetChecksum();
 		}
 	}
-	Freeze(mcdCrcs);
+	sw.DoBytes(mcdCrcs, sizeof(mcdCrcs));
 
-	if (IsLoading())
+	if (sw.IsReading())
 	{
 		bool ejected = false;
 		for (u32 port = 0; port < SIO::PORTS && !ejected; port++)
@@ -531,29 +507,7 @@ bool SaveStateBase::Sio2Freeze()
 				}
 			}
 		}
-
-		// Restore g_Sio2FifoIn
-		g_Sio2FifoIn.clear();
-
-		if (g_Sio2.fifoInBackupSize)
-		{
-			for (size_t i = 0; i < g_Sio2.fifoInBackupSize; i++)
-			{
-				g_Sio2FifoIn.push_back(g_Sio2.fifoInBackup.get()[i]);
-			}
-		}
-
-		// Restore g_Sio2FifoOut
-		g_Sio2FifoOut.clear();
-
-		if (g_Sio2.fifoOutBackupSize)
-		{
-			for (size_t j = 0; j < g_Sio2.fifoOutBackupSize; j++)
-			{
-				g_Sio2FifoOut.push_back(g_Sio2.fifoOutBackup.get()[j]);
-			}
-		}
 	}
 
-	return true;
+	return sw.IsGood();
 }
