@@ -163,7 +163,7 @@ void Sio0::SetTxData(u8 cmd)
 	stat |= SIO0_STAT::TX_READY | SIO0_STAT::TX_EMPTY;
 	stat |= (SIO0_STAT::RX_FIFO_NOT_EMPTY);
 
-	if (!ctrl & SIO0_CTRL::TX_ENABLE)
+	if (!(ctrl & SIO0_CTRL::TX_ENABLE))
 	{
 		Console.Warning("%s(%02X) CTRL in illegal state, exiting instantly", __FUNCTION__, cmd);
 		return;
