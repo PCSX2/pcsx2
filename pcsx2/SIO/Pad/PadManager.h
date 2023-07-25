@@ -33,6 +33,7 @@ public:
 	bool Initialize();
 	bool Shutdown();
 	
+	std::unique_ptr<PadBase> CreatePad(u8 unifiedSlot, Pad::ControllerType controllerType);
 	PadBase* ChangePadType(u8 unifiedSlot, Pad::ControllerType controllerType);
 	PadBase* GetPad(u8 port, u8 slot);
 	PadBase* GetPad(const u8 unifiedSlot);

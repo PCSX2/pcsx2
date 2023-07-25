@@ -16,10 +16,16 @@
 #include "PrecompiledHeader.h"
 
 #include "SIO/Pad/PadManager.h"
-
+#include "SIO/Pad/PadConfig.h"
 #include "SIO/Pad/PadNotConnected.h"
 #include "SIO/Pad/PadDualshock2.h"
 #include "SIO/Pad/PadGuitar.h"
+#include "SIO/Sio.h"
+
+#include "Host.h"
+#include "IconsFontAwesome5.h"
+
+#include "fmt/format.h"
 
 PadManager g_PadManager;
 
@@ -62,21 +68,22 @@ bool PadManager::Shutdown()
 	return true;
 }
 
-PadBase* PadManager::ChangePadType(u8 unifiedSlot, Pad::ControllerType controllerType)
+std::unique_ptr<PadBase> PadManager::CreatePad(u8 unifiedSlot, Pad::ControllerType controllerType)
 {
 	switch (controllerType)
 	{
 		case Pad::ControllerType::DualShock2:
-			this->ps2Controllers.at(unifiedSlot) = std::make_unique<PadDualshock2>(unifiedSlot);
-			break;
+			return std::make_unique<PadDualshock2>(unifiedSlot);
 		case Pad::ControllerType::Guitar:
-			this->ps2Controllers.at(unifiedSlot) = std::make_unique<PadGuitar>(unifiedSlot);
-			break;
+			return std::make_unique<PadGuitar>(unifiedSlot);
 		default:
-			this->ps2Controllers.at(unifiedSlot) = std::make_unique<PadNotConnected>(unifiedSlot);
-			break;
+			return std::make_unique<PadNotConnected>(unifiedSlot);
 	}
+}
 
+PadBase* PadManager::ChangePadType(u8 unifiedSlot, Pad::ControllerType controllerType)
+{
+	this->ps2Controllers.at(unifiedSlot) = CreatePad(unifiedSlot, controllerType);
 	return this->ps2Controllers.at(unifiedSlot).get();
 }
 
@@ -117,12 +124,32 @@ bool PadManager::PadFreeze(StateWrapper& sw)
 			if (sw.HasError())
 				return false;
 
-			PadBase* pad = this->ChangePadType(unifiedSlot, type);
+			std::unique_ptr<PadBase> tempPad;
+			PadBase* pad = GetPad(unifiedSlot);
+			if (!pad || pad->GetType() != type)
+			{
+				const auto& [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
+				Host::AddIconOSDMessage(fmt::format("UnfreezePad{}Changed", unifiedSlot), ICON_FA_GAMEPAD,
+					fmt::format(TRANSLATE_FS("Pad",
+									"Controller port {}, slot {} has a {} connected, but the save state has a "
+									"{}.\nLeaving the original controller type connected, but this may cause issues."),
+						port, slot,
+						g_PadConfig.GetControllerTypeName(pad ? pad->GetType() : Pad::ControllerType::NotConnected),
+						g_PadConfig.GetControllerTypeName(type)));
+
+				// Reset the transfer etc state of the pad, at least it has a better chance of surviving.
+				pad->SoftReset();
+
+				// But we still need to pull the data from the state..
+				tempPad = CreatePad(unifiedSlot, type);
+				pad = tempPad.get();
+			}
+
 			if (!pad->Freeze(sw))
 				return false;
 		}
 	}
-	else 
+	else
 	{
 		if (!sw.DoMarker("PAD"))
 		{
