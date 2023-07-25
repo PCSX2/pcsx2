@@ -175,7 +175,7 @@
             "bilinearUpscale": {
               "type": "integer",
               "minimum": 0,
-              "maximum": 1
+              "maximum": 2
             },
             "nativePaletteDraw": {
               "type": "integer",

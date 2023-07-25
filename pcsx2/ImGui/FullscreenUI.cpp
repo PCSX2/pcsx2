@@ -3228,6 +3228,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			static constexpr const char* s_half_pixel_offset_options[] = {
 				"Off (Default)", "Normal (Vertex)", "Special (Texture)", "Special (Texture - Aggressive)"};
 			static constexpr const char* s_round_sprite_options[] = {"Off (Default)", "Half", "Full"};
+			static constexpr const char* s_bilinear_dirty_options[] = {"Automatic (Default)", "Force Bilinear", "Force Nearest"};
 			static constexpr const char* s_auto_flush_options[] = {
 				"Disabled (Default)", "Enabled (Sprites Only)", "Enabled (All Primitives)"};
 
@@ -3280,6 +3281,10 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 				"UserHacks_HalfPixelOffset", 0, s_half_pixel_offset_options, std::size(s_half_pixel_offset_options));
 			DrawIntListSetting(bsi, "Round Sprite", "Adjusts sprite coordinates.", "EmuCore/GS", "UserHacks_round_sprite_offset", 0,
 				s_round_sprite_options, std::size(s_round_sprite_options));
+			DrawIntListSetting(bsi, "Bilinear Upscale",
+				"Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare.", "EmuCore/GS",
+				"UserHacks_BilinearHack", static_cast<int>(GSBilinearDirtyMode::Automatic),
+				s_bilinear_dirty_options, std::size(s_bilinear_dirty_options));
 			DrawIntSpinBoxSetting(
 				bsi, "TC Offset X", "Adjusts target texture offsets.", "EmuCore/GS", "UserHacks_TCOffsetX", 0, -4096, 4096, 1);
 			DrawIntSpinBoxSetting(
@@ -3290,10 +3295,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 				"UserHacks_merge_pp_sprite", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, "Wild Arms Hack",
 				"Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games.", "EmuCore/GS",
-				"UserHacks_WildHack", false, manual_hw_fixes);
-			DrawToggleSetting(bsi, "Bilinear Upscale",
-				"Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare.", "EmuCore/GS",
-				"UserHacks_BilinearHack", false, manual_hw_fixes);
+				"UserHacks_WildHack", false, manual_hw_fixes);			
 			DrawToggleSetting(bsi, "Unscaled Palette Texture Draws", "Can fix some broken effects which rely on pixel perfect precision.",
 				"EmuCore/GS", "UserHacks_NativePaletteDraw", false, manual_hw_fixes);
 		}
