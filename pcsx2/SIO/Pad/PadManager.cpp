@@ -29,27 +29,6 @@
 
 PadManager g_PadManager;
 
-// Convert the PS2's port/slot addressing to a single value.
-// Physical ports 0 and 1 still correspond to unified slots 0 and 1.
-// The remaining unified slots are for multitapped slots.
-// Port 0's three multitap slots then occupy unified slots 2, 3 and 4.
-// Port 1's three multitap slots then occupy unified slots 5, 6 and 7.
-u8 PadManager::GetUnifiedSlot(u8 port, u8 slot)
-{
-	if (slot == 0)
-	{
-		return port;
-	}
-	else if (port == 0) // slot=[0,1]
-	{
-		return slot + 1;
-	}
-	else
-	{
-		return slot + 4;
-	}
-}
-
 PadManager::PadManager() = default;
 PadManager::~PadManager() = default;
 
@@ -89,7 +68,7 @@ PadBase* PadManager::ChangePadType(u8 unifiedSlot, Pad::ControllerType controlle
 
 PadBase* PadManager::GetPad(u8 port, u8 slot)
 {
-	const u8 unifiedSlot = this->GetUnifiedSlot(port, slot);
+	const u8 unifiedSlot = sioConvertPortAndSlotToPad(port, slot);
 	return this->ps2Controllers[unifiedSlot].get();
 }
 

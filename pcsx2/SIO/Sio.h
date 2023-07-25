@@ -109,7 +109,11 @@ extern void sioNextFrame();
 /// Converts a global pad index to a multitap port and slot.
 extern std::tuple<u32, u32> sioConvertPadToPortAndSlot(u32 index);
 
-/// Converts a multitap port and slot to a global pad index.
+/// Convert the PS2's port/slot addressing to a single value.
+/// Physical ports 0 and 1 still correspond to unified slots 0 and 1.
+/// The remaining unified slots are for multitapped slots.
+/// Port 0's three multitap slots then occupy unified slots 2, 3 and 4.
+/// Port 1's three multitap slots then occupy unified slots 5, 6 and 7.
 extern u32 sioConvertPortAndSlotToPad(u32 port, u32 slot);
 
 /// Returns true if the given pad index is a multitap slot.

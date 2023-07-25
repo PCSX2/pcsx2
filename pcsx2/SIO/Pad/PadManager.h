@@ -24,8 +24,6 @@ class PadManager
 private:
 	std::array<std::unique_ptr<PadBase>, 8> ps2Controllers;
 	
-	u8 GetUnifiedSlot(u8 port, u8 slot);
-
 public:
 	PadManager();
 	~PadManager();
