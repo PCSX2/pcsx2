@@ -92,31 +92,31 @@ public:
 		return value;
 	}
 
-	__fi std::optional<int> GetOptionalIntValue(const char* section, const char* key, std::optional<int> default_value = std::nullopt)
+	__fi std::optional<int> GetOptionalIntValue(const char* section, const char* key, std::optional<int> default_value = std::nullopt) const
 	{
 		int ret;
 		return GetIntValue(section, key, &ret) ? std::optional<int>(ret) : default_value;
 	}
 
-	__fi std::optional<uint> GetOptionalUIntValue(const char* section, const char* key, std::optional<uint> default_value = std::nullopt)
+	__fi std::optional<uint> GetOptionalUIntValue(const char* section, const char* key, std::optional<uint> default_value = std::nullopt) const
 	{
 		uint ret;
 		return GetUIntValue(section, key, &ret) ? std::optional<uint>(ret) : default_value;
 	}
 
-	__fi std::optional<float> GetOptionalFloatValue(const char* section, const char* key, std::optional<float> default_value = std::nullopt)
+	__fi std::optional<float> GetOptionalFloatValue(const char* section, const char* key, std::optional<float> default_value = std::nullopt) const
 	{
 		float ret;
 		return GetFloatValue(section, key, &ret) ? std::optional<float>(ret) : default_value;
 	}
 
-	__fi std::optional<double> GetOptionalDoubleValue(const char* section, const char* key, std::optional<double> default_value = std::nullopt)
+	__fi std::optional<double> GetOptionalDoubleValue(const char* section, const char* key, std::optional<double> default_value = std::nullopt) const
 	{
 		double ret;
 		return GetDoubleValue(section, key, &ret) ? std::optional<double>(ret) : default_value;
 	}
 
-	__fi std::optional<bool> GetOptionalBoolValue(const char* section, const char* key, std::optional<bool> default_value = std::nullopt)
+	__fi std::optional<bool> GetOptionalBoolValue(const char* section, const char* key, std::optional<bool> default_value = std::nullopt) const
 	{
 		bool ret;
 		return GetBoolValue(section, key, &ret) ? std::optional<bool>(ret) : default_value;
