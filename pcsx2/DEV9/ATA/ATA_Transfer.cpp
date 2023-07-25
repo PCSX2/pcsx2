@@ -512,5 +512,6 @@ void ATA::HDD_SetErrorAtTransferEnd()
 		//Write errored sector to LBA
 		currSect++;
 		HDD_SetLBA(currSect);
+		Console.Error("DEV9: ATA: Transfer from invalid LBA %lu", currSect);
 	}
 }
