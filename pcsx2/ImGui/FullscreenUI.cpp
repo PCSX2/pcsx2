@@ -48,8 +48,7 @@
 #include "common/Timer.h"
 
 #include "SIO/Memcard/MemoryCardFile.h"
-#include "SIO/Pad/PadConfig.h"
-#include "SIO/Pad/PadMacros.h"
+#include "SIO/Pad/Pad.h"
 #include "SIO/Sio.h"
 
 #include "imgui.h"
@@ -2273,7 +2272,7 @@ void FullscreenUI::StartAutomaticBinding(u32 port)
 					Host::RunOnCPUThread([port, name = std::move(names[index])]() {
 						auto lock = Host::GetSettingsLock();
 						SettingsInterface* bsi = GetEditingSettingsInterface();
-						const bool result = g_PadConfig.MapController(*bsi, port, InputManager::GetGenericBindingMapping(name));
+						const bool result = Pad::MapController(*bsi, port, InputManager::GetGenericBindingMapping(name));
 						SetSettingsChanged(bsi);
 
 
@@ -3650,7 +3649,7 @@ void FullscreenUI::CopyGlobalControllerSettingsToGame()
 	SettingsInterface* dsi = GetEditingSettingsInterface(true);
 	SettingsInterface* ssi = GetEditingSettingsInterface(false);
 
-	g_PadConfig.CopyConfiguration(dsi, *ssi, true, true, false);
+	Pad::CopyConfiguration(dsi, *ssi, true, true, false);
 	USB::CopyConfiguration(dsi, *ssi, true, true);
 	SetSettingsChanged(dsi);
 
@@ -3661,15 +3660,15 @@ void FullscreenUI::ResetControllerSettings()
 {
 	SettingsInterface* dsi = GetEditingSettingsInterface();
 
-	g_PadConfig.SetDefaultControllerConfig(*dsi);
-	g_PadConfig.SetDefaultHotkeyConfig(*dsi);
+	Pad::SetDefaultControllerConfig(*dsi);
+	Pad::SetDefaultHotkeyConfig(*dsi);
 	USB::SetDefaultConfiguration(dsi);
 	ShowToast(std::string(), "Controller settings reset to default.");
 }
 
 void FullscreenUI::DoLoadInputProfile()
 {
-	std::vector<std::string> profiles(g_PadConfig.GetInputProfileNames());
+	std::vector<std::string> profiles = Pad::GetInputProfileNames();
 	if (profiles.empty())
 	{
 		ShowToast(std::string(), "No input profiles available.");
@@ -3695,7 +3694,7 @@ void FullscreenUI::DoLoadInputProfile()
 
 			auto lock = Host::GetSettingsLock();
 			SettingsInterface* dsi = GetEditingSettingsInterface();
-			g_PadConfig.CopyConfiguration(dsi, ssi, true, true, IsEditingGameSettings(dsi));
+			Pad::CopyConfiguration(dsi, ssi, true, true, IsEditingGameSettings(dsi));
 			USB::CopyConfiguration(dsi, ssi, true, true);
 			SetSettingsChanged(dsi);
 			ShowToast(std::string(), fmt::format("Input profile '{}' loaded.", title));
@@ -3709,7 +3708,7 @@ void FullscreenUI::DoSaveInputProfile(const std::string& name)
 
 	auto lock = Host::GetSettingsLock();
 	SettingsInterface* ssi = GetEditingSettingsInterface();
-	g_PadConfig.CopyConfiguration(&dsi, *ssi, true, true, IsEditingGameSettings(ssi));
+	Pad::CopyConfiguration(&dsi, *ssi, true, true, IsEditingGameSettings(ssi));
 	USB::CopyConfiguration(&dsi, *ssi, true, true);
 	if (dsi.Save())
 		ShowToast(std::string(), fmt::format("Input profile '{}' saved.", name));
@@ -3719,7 +3718,7 @@ void FullscreenUI::DoSaveInputProfile(const std::string& name)
 
 void FullscreenUI::DoSaveInputProfile()
 {
-	std::vector<std::string> profiles(g_PadConfig.GetInputProfileNames());
+	std::vector<std::string> profiles = Pad::GetInputProfileNames();
 
 	ImGuiFullscreen::ChoiceDialogOptions coptions;
 	coptions.reserve(profiles.size() + 1);
@@ -3853,11 +3852,11 @@ void FullscreenUI::DrawControllerSettingsPage()
 				.c_str());
 
 		const char* section = sections[global_slot];
-		const std::string type(bsi->GetStringValue(section, "Type", g_PadConfig.GetDefaultPadType(global_slot)));
-		const PadConfig::ControllerInfo* ci = g_PadConfig.GetControllerInfo(type);
+		const std::string type(bsi->GetStringValue(section, "Type", Pad::GetDefaultPadType(global_slot)));
+		const Pad::ControllerInfo* ci = Pad::GetControllerInfo(type);
 		if (MenuButton(ICON_FA_GAMEPAD " Controller Type", ci ? ci->display_name : "Unknown"))
 		{
-			const std::vector<std::pair<const char*, const char*>> raw_options = g_PadConfig.GetControllerTypeNames();
+			const std::vector<std::pair<const char*, const char*>> raw_options = Pad::GetControllerTypeNames();
 			ImGuiFullscreen::ChoiceDialogOptions options;
 			options.reserve(raw_options.size());
 			for (auto& it : raw_options)
@@ -3878,7 +3877,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 				});
 		}
 
-		if (!ci || ci->num_bindings == 0)
+		if (!ci || ci->bindings.empty())
 		{
 			ImGui::PopID();
 			continue;
@@ -3887,20 +3886,17 @@ void FullscreenUI::DrawControllerSettingsPage()
 		if (MenuButton(ICON_FA_MAGIC " Automatic Mapping", "Attempts to map the selected port to a chosen controller."))
 			StartAutomaticBinding(global_slot);
 
-		for (u32 i = 0; i < ci->num_bindings; i++)
-		{
-			const InputBindingInfo& bi = ci->bindings[i];
-			DrawInputBindingButton(bsi, bi.bind_type, section, bi.name, bi.display_name, true);
-		}
+		for (const InputBindingInfo& bi : ci->bindings)
+			DrawInputBindingButton(bsi, bi.bind_type, section, bi.name, Host::TranslateToCString("Pad", bi.display_name), true);
 
 		MenuHeading((mtap_enabled[mtap_port] ?
 						 fmt::format(ICON_FA_MICROCHIP " Controller Port {}{} Macros", mtap_port + 1, mtap_slot_names[mtap_slot]) :
 						 fmt::format(ICON_FA_MICROCHIP " Controller Port {} Macros", mtap_port + 1))
 						.c_str());
 
-		static bool macro_button_expanded[Pad::NUM_CONTROLLER_PORTS][PadMacros::NUM_MACRO_BUTTONS_PER_CONTROLLER] = {};
+		static bool macro_button_expanded[Pad::NUM_CONTROLLER_PORTS][Pad::NUM_MACRO_BUTTONS_PER_CONTROLLER] = {};
 
-		for (u32 macro_index = 0; macro_index < PadMacros::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
+		for (u32 macro_index = 0; macro_index < Pad::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
 		{
 			bool& expanded = macro_button_expanded[global_slot][macro_index];
 			expanded ^= MenuHeadingButton(fmt::format(ICON_FA_MICROCHIP " Macro Button {}", macro_index + 1).c_str(),
@@ -3916,25 +3912,23 @@ void FullscreenUI::DrawControllerSettingsPage()
 			{
 				std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
 				ImGuiFullscreen::ChoiceDialogOptions options;
-				for (u32 i = 0; i < ci->num_bindings; i++)
+				for (const InputBindingInfo& bi : ci->bindings)
 				{
-					const InputBindingInfo& bi = ci->bindings[i];
 					if (bi.bind_type != InputBindingInfo::Type::Button && bi.bind_type != InputBindingInfo::Type::Axis &&
 						bi.bind_type != InputBindingInfo::Type::HalfAxis)
 					{
 						continue;
 					}
-					options.emplace_back(bi.display_name, std::any_of(buttons_split.begin(), buttons_split.end(),
-															  [bi](const std::string_view& it) { return (it == bi.name); }));
+					options.emplace_back(Host::TranslateToCString("Pad", bi.display_name), std::any_of(buttons_split.begin(), buttons_split.end(),
+																							   [bi](const std::string_view& it) { return (it == bi.name); }));
 				}
 
 				OpenChoiceDialog(fmt::format("Select Macro {} Binds", macro_index + 1).c_str(), true, std::move(options),
 					[section, macro_index, ci](s32 index, const std::string& title, bool checked) {
 						// convert display name back to bind name
 						std::string_view to_modify;
-						for (u32 j = 0; j < ci->num_bindings; j++)
+						for (const InputBindingInfo& bi : ci->bindings)
 						{
-							const InputBindingInfo& bi = ci->bindings[j];
 							if (bi.display_name == title)
 							{
 								to_modify = bi.name;
@@ -3984,6 +3978,10 @@ void FullscreenUI::DrawControllerSettingsPage()
 			DrawFloatSpinBoxSetting(bsi, ICON_FA_ARROW_DOWN " Pressure", "Determines how much pressure is simulated when macro is active.",
 				section, pressure_key.c_str(), 1.0f, 0.01f, 1.0f, 0.01f, 100.0f, "%.0f%%");
 
+			const std::string deadzone_key(fmt::format("Macro{}Deadzone", macro_index + 1));
+			DrawFloatSpinBoxSetting(bsi, ICON_FA_ARROW_DOWN " Pressure", "Determines the pressure required to activate the macro.",
+				section, deadzone_key.c_str(), 0.0f, 0.00f, 1.0f, 0.01f, 100.0f, "%.0f%%");
+
 			ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
 			ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
@@ -4018,18 +4016,15 @@ void FullscreenUI::DrawControllerSettingsPage()
 			ImGui::PopFont();
 		}
 
-		if (ci->num_settings > 0)
+		if (!ci->settings.empty())
 		{
 			MenuHeading((mtap_enabled[mtap_port] ?
 							 fmt::format(ICON_FA_SLIDERS_H " Controller Port {}{} Settings", mtap_port + 1, mtap_slot_names[mtap_slot]) :
 							 fmt::format(ICON_FA_SLIDERS_H " Controller Port {} Settings", mtap_port + 1))
 							.c_str());
 
-			for (u32 i = 0; i < ci->num_settings; i++)
-			{
-				const SettingInfo& si = ci->settings[i];
+			for (const SettingInfo& si : ci->settings)
 				DrawSettingInfoSetting(bsi, section, si.name, si);
-			}
 		}
 
 		ImGui::PopID();
@@ -4109,7 +4104,10 @@ void FullscreenUI::DrawControllerSettingsPage()
 
 			const std::string section(USB::GetConfigSection(port));
 			for (const InputBindingInfo& bi : bindings)
-				DrawInputBindingButton(bsi, bi.bind_type, section.c_str(), USB::GetConfigSubKey(type, bi.name).c_str(), bi.display_name);
+			{
+				DrawInputBindingButton(bsi, bi.bind_type, section.c_str(), USB::GetConfigSubKey(type, bi.name).c_str(),
+					Host::TranslateToCString("USB", bi.display_name));
+			}
 		}
 
 		const std::span<const SettingInfo> settings(USB::GetDeviceSettings(type, subtype));

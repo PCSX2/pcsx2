@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "pcsx2/SIO/Pad/PadMacros.h"
+#include "pcsx2/SIO/Pad/PadTypes.h"
 
 #include <QtWidgets/QWidget>
 
@@ -92,7 +92,7 @@ public:
 	void updateListItem(u32 index);
 
 private:
-	static constexpr u32 NUM_MACROS = PadMacros::NUM_MACRO_BUTTONS_PER_CONTROLLER;
+	static constexpr u32 NUM_MACROS = Pad::NUM_MACRO_BUTTONS_PER_CONTROLLER;
 
 	void createWidgets(ControllerBindingWidget* parent);
 
@@ -115,6 +115,7 @@ public:
 
 private Q_SLOTS:
 	void onPressureChanged();
+	void onDeadzoneChanged();
 	void onSetFrequencyClicked();
 	void updateBinds();
 

@@ -34,3 +34,18 @@ void PadBase::FullReset()
 	this->isInConfig = false;
 	this->currentMode = Pad::Mode::DIGITAL;
 }
+
+bool PadBase::Freeze(StateWrapper& sw)
+{
+	if (!sw.DoMarker("PadBase"))
+		return false;
+
+	// Protected PadBase members
+	sw.Do(&rawInputs);
+	sw.Do(&unifiedSlot);
+	sw.Do(&isInConfig);
+	sw.Do(&currentMode);
+	sw.Do(&currentCommand);
+	sw.Do(&commandBytesReceived);
+	return !sw.HasError();
+}

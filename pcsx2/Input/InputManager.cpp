@@ -18,9 +18,7 @@
 #include "ImGui/ImGuiManager.h"
 #include "Input/InputManager.h"
 #include "Input/InputSource.h"
-#include "SIO/Pad/PadConfig.h"
-#include "SIO/Pad/PadMacros.h"
-#include "SIO/Pad/PadManager.h"
+#include "SIO/Pad/Pad.h"
 #include "USB/USB.h"
 #include "VMManager.h"
 
@@ -634,14 +632,12 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 	if (type.empty() || type == "None")
 		return;
 
-	const PadConfig::ControllerInfo* cinfo = g_PadConfig.GetControllerInfo(type);
+	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(type);
 	if (!cinfo)
 		return;
 
-	for (u32 i = 0; i < cinfo->num_bindings; i++)
+	for (const InputBindingInfo& bi : cinfo->bindings)
 	{
-		const InputBindingInfo& bi = cinfo->bindings[i];
-
 		switch (bi.bind_type)
 		{
 			case InputBindingInfo::Type::Button:
@@ -656,7 +652,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 					const float deadzone = si.GetFloatValue(section.c_str(), fmt::format("{}Deadzone", bi.name).c_str(), 0.0f);
 					AddBindings(
 						bindings, InputAxisEventHandler{[pad_index, bind_index = bi.bind_index, sensitivity, deadzone](float value) {
-							g_PadManager.SetControllerState(pad_index, bind_index, ApplySingleBindingScale(sensitivity, deadzone, value));
+							Pad::SetControllerState(pad_index, bind_index, ApplySingleBindingScale(sensitivity, deadzone, value));
 						}});
 				}
 			}
@@ -669,13 +665,15 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 		}
 	}
 
-	for (u32 macro_button_index = 0; macro_button_index < PadMacros::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_button_index++)
+	for (u32 macro_button_index = 0; macro_button_index < Pad::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_button_index++)
 	{
 		const std::vector<std::string> bindings(si.GetStringList(section.c_str(), fmt::format("Macro{}", macro_button_index + 1).c_str()));
 		if (!bindings.empty())
 		{
-			AddBindings(bindings, InputButtonEventHandler{[pad_index, macro_button_index](bool state) {
-				g_PadMacros.SetMacroButtonState(pad_index, macro_button_index, state);
+			const float deadzone = si.GetFloatValue(section.c_str(), fmt::format("Macro{}Deadzone", macro_button_index + 1).c_str(), 0.0f);
+			AddBindings(bindings, InputAxisEventHandler{[pad_index, macro_button_index, deadzone](float value) {
+				const bool state = (value > deadzone);
+				Pad::SetMacroButtonState(pad_index, macro_button_index, state);
 			}});
 		}
 	}
@@ -1293,7 +1291,7 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 	// If there's an input profile, we load pad bindings from it alone, rather than
 	// falling back to the base configuration.
 	for (u32 pad = 0; pad < Pad::NUM_CONTROLLER_PORTS; pad++)
-		AddPadBindings(binding_si, pad, g_PadConfig.GetDefaultPadType(pad));
+		AddPadBindings(binding_si, pad, Pad::GetDefaultPadType(pad));
 
 	constexpr float ui_ctrl_range = 100.0f;
 	constexpr float pointer_sensitivity = 0.05f;

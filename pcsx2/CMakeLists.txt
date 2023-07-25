@@ -482,23 +482,17 @@ endif()
 
 # Host PAD
 set(pcsx2PADSources
+	SIO/Pad/Pad.cpp
 	SIO/Pad/PadBase.cpp
-	SIO/Pad/PadConfig.cpp
 	SIO/Pad/PadDualshock2.cpp
 	SIO/Pad/PadGuitar.cpp
-	SIO/Pad/PadMacros.cpp
-	SIO/Pad/PadManager.cpp
 	SIO/Pad/PadNotConnected.cpp
 )
 set(pcsx2PADHeaders
+	SIO/Pad/Pad.h
 	SIO/Pad/PadBase.h
-	SIO/Pad/PadConfig.h
 	SIO/Pad/PadDualshock2.h
-	SIO/Pad/PadDualshock2Types.h
 	SIO/Pad/PadGuitar.h
-	SIO/Pad/PadGuitarTypes.h
-	SIO/Pad/PadMacros.h
-	SIO/Pad/PadManager.h
 	SIO/Pad/PadNotConnected.h
 	SIO/Pad/PadTypes.h
 )

@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
-#include "pcsx2/SIO/Pad/PadConfig.h"
+#include "pcsx2/SIO/Pad/Pad.h"
 #include "GameSummaryWidget.h"
 #include "SettingsDialog.h"
 #include "MainWindow.h"
@@ -69,7 +69,7 @@ GameSummaryWidget::~GameSummaryWidget() = default;
 
 void GameSummaryWidget::populateInputProfiles()
 {
-	for (const std::string& name : g_PadConfig.GetInputProfileNames())
+	for (const std::string& name : Pad::GetInputProfileNames())
 		m_ui.inputProfile->addItem(QString::fromStdString(name));
 }
 

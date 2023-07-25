@@ -15,28 +15,67 @@
 
 #include "PrecompiledHeader.h"
 
-#include "SIO/Pad/PadConfig.h"
+#include "Host.h"
+#include "Input/InputManager.h"
+#include "SIO/Pad/Pad.h"
+#include "SIO/Pad/PadDualshock2.h"
+#include "SIO/Pad/PadGuitar.h"
+#include "SIO/Pad/PadNotConnected.h"
+#include "SIO/Sio.h"
 
-#include "SIO/Pad/PadManager.h"
-#include "SIO/Pad/PadMacros.h"
-#include "SIO/Pad/PadDualshock2Types.h"
-#include "SIO/Pad/PadGuitarTypes.h"
+#include "IconsFontAwesome5.h"
 
 #include "common/FileSystem.h"
 #include "common/Path.h"
-#include "common/StringUtil.h"
 #include "common/SettingsInterface.h"
+#include "common/StringUtil.h"
 
-#include "Input/InputManager.h"
+#include "fmt/format.h"
 
-PadConfig g_PadConfig;
+#include <vector>
 
-PadConfig::PadConfig() = default;
-PadConfig::~PadConfig() = default;
-
-void PadConfig::LoadConfig(const SettingsInterface& si)
+namespace Pad
 {
-	g_PadMacros.ClearMacros();
+	struct MacroButton
+	{
+		std::vector<u32> buttons; ///< Buttons to activate.
+		float pressure; ///< Pressure to apply when macro is active.
+		u32 toggle_frequency; ///< Interval at which the buttons will be toggled, if not 0.
+		u32 toggle_counter; ///< When this counter reaches zero, buttons will be toggled.
+		bool toggle_state; ///< Current state for turbo.
+		bool trigger_state; ///< Whether the macro button is active.
+	};
+
+	static std::unique_ptr<PadBase> CreatePad(u8 unifiedSlot, Pad::ControllerType controllerType);
+	static PadBase* ChangePadType(u8 unifiedSlot, Pad::ControllerType controllerType);
+
+	void LoadMacroButtonConfig(
+		const SettingsInterface& si, u32 pad, const std::string_view& type, const std::string& section);
+	static void ApplyMacroButton(u32 controller, const MacroButton& mb);
+
+	static std::array<std::array<MacroButton, NUM_MACRO_BUTTONS_PER_CONTROLLER>, NUM_CONTROLLER_PORTS> s_macro_buttons;
+	static std::array<std::unique_ptr<PadBase>, NUM_CONTROLLER_PORTS> s_controllers;
+}
+
+bool Pad::Initialize()
+{
+	return true;
+}
+
+void Pad::Shutdown()
+{
+	for (auto& port : s_controllers)
+		port.reset();
+}
+
+const char* Pad::ControllerInfo::GetLocalizedName() const
+{
+	return Host::TranslateToCString("Pad", display_name);
+}
+
+void Pad::LoadConfig(const SettingsInterface& si)
+{
+	s_macro_buttons = {};
 
 	EmuConfig.MultitapPort0_Enabled = si.GetBoolValue("Pad", "MultitapPort1", false);
 	EmuConfig.MultitapPort1_Enabled = si.GetBoolValue("Pad", "MultitapPort2", false);
@@ -47,18 +86,18 @@ void PadConfig::LoadConfig(const SettingsInterface& si)
 		const std::string section(GetConfigSection(i));
 		const std::string type(si.GetStringValue(section.c_str(), "Type", GetDefaultPadType(i)));
 		const ControllerInfo* ci = GetControllerInfo(type);
-		PadBase* pad = g_PadManager.GetPad(i);
+		PadBase* pad = Pad::GetPad(i);
 
 		// If a pad is not yet constructed, at minimum place a NotConnected pad in the slot.
 		// Do not abort the for loop - If there pad settings, we want those to be applied to the slot.
 		if (!pad)
 		{
-			pad = g_PadManager.ChangePadType(i, Pad::ControllerType::NotConnected);
+			pad = Pad::ChangePadType(i, Pad::ControllerType::NotConnected);
 		}
 
 		if (!ci)
 		{
-			pad = g_PadManager.ChangePadType(i, Pad::ControllerType::NotConnected);
+			pad = Pad::ChangePadType(i, Pad::ControllerType::NotConnected);
 			continue;
 		}
 
@@ -67,7 +106,7 @@ void PadConfig::LoadConfig(const SettingsInterface& si)
 
 		if (ci->type != oldType)
 		{
-			pad = g_PadManager.ChangePadType(i, ci->type);
+			pad = Pad::ChangePadType(i, ci->type);
 		}
 
 		const float axis_deadzone = si.GetFloatValue(section.c_str(), "Deadzone", Pad::DEFAULT_STICK_DEADZONE);
@@ -94,17 +133,16 @@ void PadConfig::LoadConfig(const SettingsInterface& si)
 		const int invert_r = si.GetIntValue(section.c_str(), "InvertR", 0);
 		pad->SetAnalogInvertL((invert_l & 1) != 0, (invert_l & 2) != 0);
 		pad->SetAnalogInvertR((invert_r & 1) != 0, (invert_r & 2) != 0);
-
 		LoadMacroButtonConfig(si, i, type, section);
 	}
 }
 
-const char* PadConfig::GetDefaultPadType(u32 pad)
+const char* Pad::GetDefaultPadType(u32 pad)
 {
 	return (pad == 0) ? "DualShock2" : "None";
 }
 
-void PadConfig::SetDefaultControllerConfig(SettingsInterface& si)
+void Pad::SetDefaultControllerConfig(SettingsInterface& si)
 {
 	si.ClearSection("InputSources");
 	si.ClearSection("Hotkeys");
@@ -136,9 +174,8 @@ void PadConfig::SetDefaultControllerConfig(SettingsInterface& si)
 		const ControllerInfo* ci = GetControllerInfo(type);
 		if (ci)
 		{
-			for (u32 i = 0; i < ci->num_settings; i++)
+			for (const SettingInfo& csi : ci->settings)
 			{
-				const SettingInfo& csi = ci->settings[i];
 				switch (csi.type)
 				{
 					case SettingInfo::Type::Boolean:
@@ -168,7 +205,7 @@ void PadConfig::SetDefaultControllerConfig(SettingsInterface& si)
 	MapController(si, 0, InputManager::GetGenericBindingMapping("Keyboard"));
 }
 
-void PadConfig::SetDefaultHotkeyConfig(SettingsInterface& si)
+void Pad::SetDefaultHotkeyConfig(SettingsInterface& si)
 {
 	// PCSX2 Controller Settings - Hotkeys
 
@@ -215,74 +252,70 @@ void PadConfig::SetDefaultHotkeyConfig(SettingsInterface& si)
 	si.SetStringValue("Hotkeys", "HoldTurbo", "Keyboard/Period");
 }
 
-
-static const PadConfig::ControllerInfo s_controller_info[] = {
-	{Pad::ControllerType::NotConnected, "None", "Not Connected",
-		nullptr, 0,
-		nullptr, 0,
-		Pad::VibrationCapabilities::NoVibration},
-	{Pad::ControllerType::DualShock2, "DualShock2", "DualShock 2",
-		Dualshock2::defaultBindings, std::size(Dualshock2::defaultBindings),
-		Dualshock2::defaultSettings, std::size(Dualshock2::defaultSettings),
-		Pad::VibrationCapabilities::LargeSmallMotors},
-	{Pad::ControllerType::Guitar, "Guitar", "Guitar",
-		Guitar::defaultBindings, std::size(Guitar::defaultBindings),
-		Guitar::defaultSettings, std::size(Guitar::defaultSettings),
-		Pad::VibrationCapabilities::NoVibration},
+static const Pad::ControllerInfo* s_controller_info[] = {
+	&PadNotConnected::ControllerInfo,
+	&PadDualshock2::ControllerInfo,
+	&PadGuitar::ControllerInfo,
 };
 
-const PadConfig::ControllerInfo* PadConfig::GetControllerInfo(Pad::ControllerType type)
+const Pad::ControllerInfo* Pad::GetControllerInfo(Pad::ControllerType type)
 {
-	for (const ControllerInfo& info : s_controller_info)
+	for (const ControllerInfo* info : s_controller_info)
 	{
-		if (type == info.type)
-			return &info;
+		if (type == info->type)
+			return info;
 	}
 
 	return nullptr;
 }
 
-const PadConfig::ControllerInfo* PadConfig::GetControllerInfo(const std::string_view& name)
+const Pad::ControllerInfo* Pad::GetControllerInfo(const std::string_view& name)
 {
-	for (const ControllerInfo& info : s_controller_info)
+	for (const ControllerInfo* info : s_controller_info)
 	{
-		if (name == info.name)
-			return &info;
+		if (name == info->name)
+			return info;
 	}
 
 	return nullptr;
 }
 
-const std::vector<std::pair<const char*, const char*>> PadConfig::GetControllerTypeNames()
+const char* Pad::GetControllerTypeName(Pad::ControllerType type)
+{
+	// Not localized, because it should never happen.
+	const ControllerInfo* ci = GetControllerInfo(type);
+	return ci ? ci->GetLocalizedName() : "UNKNOWN";
+}
+
+const std::vector<std::pair<const char*, const char*>> Pad::GetControllerTypeNames()
 {
 	std::vector<std::pair<const char*, const char*>> ret;
-	for (const ControllerInfo& info : s_controller_info)
-		ret.emplace_back(info.name, info.display_name);
+	for (const ControllerInfo* info : s_controller_info)
+		ret.emplace_back(info->name, info->GetLocalizedName());
 
 	return ret;
 }
 
-std::vector<std::string> PadConfig::GetControllerBinds(const std::string_view& type)
+std::vector<std::string> Pad::GetControllerBinds(const std::string_view& type)
 {
 	std::vector<std::string> ret;
 
 	const ControllerInfo* info = GetControllerInfo(type);
 	if (info)
 	{
-		for (u32 i = 0; i < info->num_bindings; i++)
+		for (const InputBindingInfo& bi : info->bindings)
 		{
-			const InputBindingInfo& bi = info->bindings[i];
 			if (bi.bind_type == InputBindingInfo::Type::Unknown || bi.bind_type == InputBindingInfo::Type::Motor)
 				continue;
 
-			ret.emplace_back(info->bindings[i].name);
+			ret.emplace_back(bi.name);
 		}
 	}
 
 	return ret;
 }
 
-void PadConfig::ClearPortBindings(SettingsInterface& si, u32 port)
+void Pad::ClearPortBindings(SettingsInterface& si, u32 port)
 {
 	const std::string section(StringUtil::StdStringFromFormat("Pad%u", port + 1));
 	const std::string type(si.GetStringValue(section.c_str(), "Type", GetDefaultPadType(port)));
@@ -291,11 +324,11 @@ void PadConfig::ClearPortBindings(SettingsInterface& si, u32 port)
 	if (!info)
 		return;
 
-	for (u32 i = 0; i < info->num_bindings; i++)
-		si.DeleteValue(section.c_str(), info->bindings[i].name);
+	for (const InputBindingInfo& bi : info->bindings)
+		si.DeleteValue(section.c_str(), bi.name);
 }
 
-void PadConfig::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_si,
+void Pad::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_si,
 	bool copy_pad_config, bool copy_pad_bindings, bool copy_hotkey_bindings)
 {
 	if (copy_pad_config)
@@ -329,15 +362,14 @@ void PadConfig::CopyConfiguration(SettingsInterface* dest_si, const SettingsInte
 
 		if (copy_pad_bindings)
 		{
-			for (u32 i = 0; i < info->num_bindings; i++)
-			{
-				const InputBindingInfo& bi = info->bindings[i];
+			for (const InputBindingInfo& bi : info->bindings)
 				dest_si->CopyStringListValue(src_si, section.c_str(), bi.name);
-			}
 
-			for (u32 i = 0; i < PadMacros::NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
+			for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
 			{
 				dest_si->CopyStringListValue(src_si, section.c_str(), fmt::format("Macro{}", i + 1).c_str());
+				dest_si->CopyFloatValue(src_si, section.c_str(), fmt::format("Macro{}Pressure", i + 1).c_str());
+				dest_si->CopyFloatValue(src_si, section.c_str(), fmt::format("Macro{}Deadzone", i + 1).c_str());
 				dest_si->CopyStringValue(src_si, section.c_str(), fmt::format("Macro{}Binds", i + 1).c_str());
 				dest_si->CopyUIntValue(src_si, section.c_str(), fmt::format("Macro{}Frequency", i + 1).c_str());
 			}
@@ -353,9 +385,8 @@ void PadConfig::CopyConfiguration(SettingsInterface* dest_si, const SettingsInte
 				dest_si->CopyFloatValue(src_si, section.c_str(), "SmallMotorScale");
 			}
 
-			for (u32 i = 0; i < info->num_settings; i++)
+			for (const SettingInfo& csi : info->settings)
 			{
-				const SettingInfo& csi = info->settings[i];
 				switch (csi.type)
 				{
 					case SettingInfo::Type::Boolean:
@@ -417,7 +448,7 @@ static u32 TryMapGenericMapping(SettingsInterface& si, const std::string& sectio
 }
 
 
-bool PadConfig::MapController(SettingsInterface& si, u32 controller,
+bool Pad::MapController(SettingsInterface& si, u32 controller,
 	const std::vector<std::pair<GenericInputBinding, std::string>>& mapping)
 {
 	const std::string section(StringUtil::StdStringFromFormat("Pad%u", controller + 1));
@@ -427,9 +458,8 @@ bool PadConfig::MapController(SettingsInterface& si, u32 controller,
 		return false;
 
 	u32 num_mappings = 0;
-	for (u32 i = 0; i < info->num_bindings; i++)
+	for (const InputBindingInfo& bi : info->bindings)
 	{
-		const InputBindingInfo& bi = info->bindings[i];
 		if (bi.generic_mapping == GenericInputBinding::Unknown)
 			continue;
 
@@ -451,7 +481,7 @@ bool PadConfig::MapController(SettingsInterface& si, u32 controller,
 	return (num_mappings > 0);
 }
 
-std::vector<std::string> PadConfig::GetInputProfileNames()
+std::vector<std::string> Pad::GetInputProfileNames()
 {
 	FileSystem::FindResultsArray results;
 	FileSystem::FindFiles(EmuFolders::InputProfiles.c_str(), "*.ini",
@@ -465,17 +495,123 @@ std::vector<std::string> PadConfig::GetInputProfileNames()
 	return ret;
 }
 
-std::string PadConfig::GetConfigSection(u32 pad_index)
+std::string Pad::GetConfigSection(u32 pad_index)
 {
 	return fmt::format("Pad{}", pad_index + 1);
 }
 
-void PadConfig::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const std::string_view& type, const std::string& section)
+std::unique_ptr<PadBase> Pad::CreatePad(u8 unifiedSlot, ControllerType controllerType)
+{
+	switch (controllerType)
+	{
+		case ControllerType::DualShock2:
+			return std::make_unique<PadDualshock2>(unifiedSlot);
+		case ControllerType::Guitar:
+			return std::make_unique<PadGuitar>(unifiedSlot);
+		default:
+			return std::make_unique<PadNotConnected>(unifiedSlot);
+	}
+}
+
+PadBase* Pad::ChangePadType(u8 unifiedSlot, ControllerType controllerType)
+{
+	s_controllers[unifiedSlot] = CreatePad(unifiedSlot, controllerType);
+	return s_controllers[unifiedSlot].get();
+}
+
+bool Pad::HasConnectedPad(u8 unifiedSlot)
+{
+	return (
+		unifiedSlot < NUM_CONTROLLER_PORTS && s_controllers[unifiedSlot]->GetType() != ControllerType::NotConnected);
+}
+
+PadBase* Pad::GetPad(u8 port, u8 slot)
+{
+	const u8 unifiedSlot = sioConvertPortAndSlotToPad(port, slot);
+	return s_controllers[unifiedSlot].get();
+}
+
+PadBase* Pad::GetPad(const u8 unifiedSlot)
+{
+	return s_controllers[unifiedSlot].get();
+}
+
+void Pad::SetControllerState(u32 controller, u32 bind, float value)
+{
+	if (controller >= NUM_CONTROLLER_PORTS)
+		return;
+
+	s_controllers[controller]->Set(bind, value);
+}
+
+bool Pad::Freeze(StateWrapper& sw)
+{
+	if (sw.IsReading())
+	{
+		if (!sw.DoMarker("PAD"))
+		{
+			Console.Error("PAD state is invalid! Leaving the current state in place.");
+			return false;
+		}
+
+		for (u32 unifiedSlot = 0; unifiedSlot < NUM_CONTROLLER_PORTS; unifiedSlot++)
+		{
+			ControllerType type;
+			sw.Do(&type);
+			if (sw.HasError())
+				return false;
+
+			std::unique_ptr<PadBase> tempPad;
+			PadBase* pad = GetPad(unifiedSlot);
+			if (!pad || pad->GetType() != type)
+			{
+				const auto& [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
+				Host::AddIconOSDMessage(fmt::format("UnfreezePad{}Changed", unifiedSlot), ICON_FA_GAMEPAD,
+					fmt::format(TRANSLATE_FS("Pad",
+									"Controller port {}, slot {} has a {} connected, but the save state has a "
+									"{}.\nLeaving the original controller type connected, but this may cause issues."),
+						port, slot,
+						Pad::GetControllerTypeName(pad ? pad->GetType() : Pad::ControllerType::NotConnected),
+						Pad::GetControllerTypeName(type)));
+
+				// Reset the transfer etc state of the pad, at least it has a better chance of surviving.
+				if (pad)
+					pad->SoftReset();
+
+				// But we still need to pull the data from the state..
+				tempPad = CreatePad(unifiedSlot, type);
+				pad = tempPad.get();
+			}
+
+			if (!pad->Freeze(sw))
+				return false;
+		}
+	}
+	else
+	{
+		if (!sw.DoMarker("PAD"))
+			return false;
+
+		for (u32 unifiedSlot = 0; unifiedSlot < NUM_CONTROLLER_PORTS; unifiedSlot++)
+		{
+			PadBase* pad = GetPad(unifiedSlot);
+			ControllerType type = pad->GetType();
+			sw.Do(&type);
+			if (sw.HasError() || !pad->Freeze(sw))
+				return false;
+		}
+	}
+
+	return !sw.HasError();
+}
+
+
+void Pad::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const std::string_view& type, const std::string& section)
 {
 	// lazily initialized
 	std::vector<std::string> binds;
 
-	for (u32 i = 0; i < PadMacros::NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
+	for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
 	{
 		std::string binds_string;
 		if (!si.GetStringValue(section.c_str(), StringUtil::StdStringFromFormat("Macro%uBinds", i + 1).c_str(), &binds_string))
@@ -484,6 +620,8 @@ void PadConfig::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, cons
 		const u32 frequency = si.GetUIntValue(section.c_str(), StringUtil::StdStringFromFormat("Macro%uFrequency", i + 1).c_str(), 0u);
 		if (binds.empty())
 			binds = GetControllerBinds(type);
+
+		const float pressure = si.GetFloatValue(section.c_str(), fmt::format("Macro{}Pressure", i + 1).c_str(), 1.0f);
 
 		// convert binds
 		std::vector<u32> bind_indices;
@@ -504,8 +642,63 @@ void PadConfig::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, cons
 		if (bind_indices.empty())
 			continue;
 
-		PadMacros::MacroButton& macro = g_PadMacros.GetMacroButton(pad, i);
+		MacroButton& macro = s_macro_buttons[pad][i];
 		macro.buttons = std::move(bind_indices);
 		macro.toggle_frequency = frequency;
+		macro.pressure = pressure;
+	}
+}
+
+void Pad::SetMacroButtonState(u32 pad, u32 index, bool state)
+{
+	if (pad >= Pad::NUM_CONTROLLER_PORTS || index >= NUM_MACRO_BUTTONS_PER_CONTROLLER)
+		return;
+
+	MacroButton& mb = s_macro_buttons[pad][index];
+	if (mb.buttons.empty() || mb.trigger_state == state)
+		return;
+
+	mb.toggle_counter = mb.toggle_frequency;
+	mb.trigger_state = state;
+	if (mb.toggle_state != state)
+	{
+		mb.toggle_state = state;
+		ApplyMacroButton(pad, mb);
+	}
+}
+
+void Pad::ApplyMacroButton(u32 controller, const Pad::MacroButton& mb)
+{
+	const float value = mb.toggle_state ? mb.pressure : 0.0f;
+	PadBase* const pad = Pad::GetPad(controller);
+
+	for (const u32 btn : mb.buttons)
+		pad->Set(btn, value);
+}
+
+void Pad::UpdateMacroButtons()
+{
+	for (u32 pad = 0; pad < Pad::NUM_CONTROLLER_PORTS; pad++)
+	{
+		for (u32 index = 0; index < NUM_MACRO_BUTTONS_PER_CONTROLLER; index++)
+		{
+			Pad::MacroButton& mb = s_macro_buttons[pad][index];
+
+			if (!mb.trigger_state || mb.toggle_frequency == 0)
+			{
+				continue;
+			}
+
+			mb.toggle_counter--;
+
+			if (mb.toggle_counter > 0)
+			{
+				continue;
+			}
+
+			mb.toggle_counter = mb.toggle_frequency;
+			mb.toggle_state = !mb.toggle_state;
+			ApplyMacroButton(pad, mb);
+		}
 	}
 }

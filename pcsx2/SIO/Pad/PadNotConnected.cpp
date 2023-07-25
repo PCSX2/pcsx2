@@ -17,6 +17,11 @@
 
 #include "SIO/Pad/PadNotConnected.h"
 
+#include "Host.h"
+
+const Pad::ControllerInfo PadNotConnected::ControllerInfo = {Pad::ControllerType::NotConnected, "None",
+	TRANSLATE_NOOP("Pad", "Not Connected"), {}, {}, Pad::VibrationCapabilities::NoVibration };
+
 PadNotConnected::PadNotConnected(u8 unifiedSlot)
 	: PadBase(unifiedSlot)
 {
@@ -30,9 +35,14 @@ void PadNotConnected::Init()
 
 }
 
-Pad::ControllerType PadNotConnected::GetType()
+Pad::ControllerType PadNotConnected::GetType() const
 {
 	return Pad::ControllerType::NotConnected;
+}
+
+const Pad::ControllerInfo& PadNotConnected::GetInfo() const
+{
+	return ControllerInfo;
 }
 
 void PadNotConnected::Set(u32 index, float value)
@@ -55,7 +65,7 @@ void PadNotConnected::SetTriggerScale(float deadzone, float scale)
 
 }
 
-float PadNotConnected::GetVibrationScale(u32 motor)
+float PadNotConnected::GetVibrationScale(u32 motor) const
 {
 	return 0;
 }
@@ -65,7 +75,7 @@ void PadNotConnected::SetVibrationScale(u32 motor, float scale)
 
 }
 
-float PadNotConnected::GetPressureModifier()
+float PadNotConnected::GetPressureModifier() const
 {
 	return 0;
 }
@@ -90,40 +100,29 @@ void PadNotConnected::SetAnalogInvertR(bool x, bool y)
 
 }
 
-u8 PadNotConnected::GetRawInput(u32 index)
+u8 PadNotConnected::GetRawInput(u32 index) const
 {
 	return 0;
 }
 
-std::tuple<u8, u8> PadNotConnected::GetRawLeftAnalog()
+std::tuple<u8, u8> PadNotConnected::GetRawLeftAnalog() const
 {
 	return std::tuple<u8, u8>{0, 0};
 }
 
-std::tuple<u8, u8> PadNotConnected::GetRawRightAnalog()
+std::tuple<u8, u8> PadNotConnected::GetRawRightAnalog() const
 {
 	return std::tuple<u8, u8>{0, 0};
 }
 
-u32 PadNotConnected::GetButtons()
+u32 PadNotConnected::GetButtons() const
 {
 	return 0;
 }
 
-u8 PadNotConnected::GetPressure(u32 index)
+u8 PadNotConnected::GetPressure(u32 index) const
 {
 	return 0;
-}
-
-void PadNotConnected::Freeze(StateWrapper& sw)
-{
-	// Protected PadBase members
-	sw.Do(&rawInputs);
-	sw.Do(&unifiedSlot);
-	sw.Do(&isInConfig);
-	sw.Do(&currentMode);
-	sw.Do(&currentCommand);
-	sw.Do(&commandBytesReceived);
 }
 
 u8 PadNotConnected::SendCommandByte(u8 commandByte)

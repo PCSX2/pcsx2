@@ -17,32 +17,33 @@
 
 #include "SIO/Pad/PadBase.h"
 
-class PadNotConnected : public PadBase
+class PadNotConnected final : public PadBase
 {
 public:
 	PadNotConnected(u8 unifiedSlot);
-	virtual ~PadNotConnected();
+	~PadNotConnected() override;
 
-	void Init();
-	Pad::ControllerType GetType();
-	void Set(u32 index, float value);
-	void SetRawAnalogs(const std::tuple<u8, u8> left, const std::tuple<u8, u8> right);
-	void SetAxisScale(float deadzone, float scale);
+	void Init() override;
+	Pad::ControllerType GetType() const override;
+	const Pad::ControllerInfo& GetInfo() const override;
+	void Set(u32 index, float value) override;
+	void SetRawAnalogs(const std::tuple<u8, u8> left, const std::tuple<u8, u8> right) override;
+	void SetAxisScale(float deadzone, float scale) override;
 	void SetTriggerScale(float deadzone, float scale) override;
-	float GetVibrationScale(u32 motor);
-	void SetVibrationScale(u32 motor, float scale);
-	float GetPressureModifier();
-	void SetPressureModifier(float mod);
-	void SetButtonDeadzone(float deadzone);
-	void SetAnalogInvertL(bool x, bool y);
-	void SetAnalogInvertR(bool x, bool y);
-	u8 GetRawInput(u32 index);
-	std::tuple<u8, u8> GetRawLeftAnalog();
-	std::tuple<u8, u8> GetRawRightAnalog();
-	u32 GetButtons();
-	u8 GetPressure(u32 index);
-
-	void Freeze(StateWrapper& sw) override;
+	float GetVibrationScale(u32 motor) const override;
+	void SetVibrationScale(u32 motor, float scale) override;
+	float GetPressureModifier() const override;
+	void SetPressureModifier(float mod) override;
+	void SetButtonDeadzone(float deadzone) override;
+	void SetAnalogInvertL(bool x, bool y) override;
+	void SetAnalogInvertR(bool x, bool y) override;
+	u8 GetRawInput(u32 index) const override;
+	std::tuple<u8, u8> GetRawLeftAnalog() const override;
+	std::tuple<u8, u8> GetRawRightAnalog() const override;
+	u32 GetButtons() const override;
+	u8 GetPressure(u32 index) const override;
 
 	u8 SendCommandByte(u8 commandByte) override;
+
+	static const Pad::ControllerInfo ControllerInfo;
 };

@@ -297,7 +297,7 @@ u8 MemoryCardProtocol::PS1Read(u8 data)
 			mcd->Read(ps1McState.buf.data(), ps1McState.buf.size());
 			[[fallthrough]];
 		default:
-			ret = ps1McState.buf.at(ps1McState.currentByte - 10);
+			ret = ps1McState.buf[ps1McState.currentByte - 10];
 			ps1McState.checksum ^= ret;
 			break;
 	}
@@ -372,7 +372,7 @@ u8 MemoryCardProtocol::PS1Write(u8 data)
 			ps1McState.checksum = ps1McState.sectorAddrMSB ^ ps1McState.sectorAddrLSB;
 			[[fallthrough]];
 		default:
-			ps1McState.buf.at(ps1McState.currentByte - 6) = data;
+			ps1McState.buf[ps1McState.currentByte - 6] = data;
 			ps1McState.checksum ^= data;
 			ret = 0x00;
 			break;

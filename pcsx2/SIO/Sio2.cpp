@@ -19,7 +19,8 @@
 
 #include "SIO/Sio.h"
 #include "SIO/SioTypes.h"
-#include "SIO/Pad/PadManager.h"
+#include "SIO/Pad/Pad.h"
+#include "SIO/Pad/PadBase.h"
 #include "SIO/Memcard/MemoryCardProtocol.h"
 #include "SIO/Multitap/MultitapProtocol.h"
 
@@ -45,13 +46,13 @@ bool Sio2::Initialize()
 
 	for (size_t i = 0; i < send3.size(); i++)
 	{
-		send3.at(i) = 0;
+		send3[i] = 0;
 	}
 
 	for (size_t i = 0; i < send1.size(); i++)
 	{
-		send1.at(i) = 0;
-		send2.at(i) = 0;
+		send1[i] = 0;
+		send2[i] = 0;
 	}
 
 	dataIn = 0;
@@ -127,7 +128,7 @@ void Sio2::SetCtrl(u32 value)
 
 void Sio2::SetSend3(size_t position, u32 value)
 {
-	this->send3.at(position) = value;
+	this->send3[position] = value;
 
 	if (position == 0)
 	{
@@ -143,7 +144,7 @@ void Sio2::SetRecv1(u32 value)
 void Sio2::Pad()
 {
 	// Send PAD our current port, and get back whatever it says the first response byte should be.
-	std::optional<PadBase*> padPtr = g_PadManager.GetPad(port, slot);
+	PadBase* pad = Pad::GetPad(port, slot);
 
 	// RECV1 is set once per DMA; if any device is present at all, it should be set to connected.
 	// For now, we will always report connected for pads.
@@ -151,17 +152,14 @@ void Sio2::Pad()
 	g_Sio2FifoOut.push_back(0xff);
 
 	// Then for every byte in g_Sio2FifoIn, pass to PAD and see what it kicks back to us.
-	if (padPtr.has_value())
-	{
-		padPtr.value()->SoftReset();
+	pad->SoftReset();
 
-		while (!g_Sio2FifoIn.empty())
-		{
-			const u8 commandByte = g_Sio2FifoIn.front();
-			g_Sio2FifoIn.pop_front();
-			const u8 responseByte = padPtr.value()->SendCommandByte(commandByte);
-			g_Sio2FifoOut.push_back(responseByte);
-		}
+	while (!g_Sio2FifoIn.empty())
+	{
+		const u8 commandByte = g_Sio2FifoIn.front();
+		g_Sio2FifoIn.pop_front();
+		const u8 responseByte = pad->SendCommandByte(commandByte);
+		g_Sio2FifoOut.push_back(responseByte);
 	}
 }
 
@@ -355,7 +353,7 @@ void Sio2::Write(u8 data)
 			return;
 		}
 
-		const u32 currentSend3 = send3.at(send3Position);
+		const u32 currentSend3 = send3[send3Position];
 		port = currentSend3 & Send3::PORT;
 		commandLength = (currentSend3 >> 8) & Send3::COMMAND_LENGTH_MASK;
 		send3Read = true;

@@ -26,7 +26,7 @@
 #include "common/StringUtil.h"
 
 #include "pcsx2/Host.h"
-#include "pcsx2/SIO/Pad/PadConfig.h"
+#include "pcsx2/SIO/Pad/Pad.h"
 
 #include "Settings/ControllerBindingWidgets.h"
 #include "Settings/ControllerSettingsDialog.h"
@@ -52,7 +52,7 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
 	onTypeChanged();
 
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileString(
-		m_dialog->getProfileSettingsInterface(), m_ui.controllerType, m_config_section, "Type", g_PadConfig.GetDefaultPadType(port));
+		m_dialog->getProfileSettingsInterface(), m_ui.controllerType, m_config_section, "Type", Pad::GetDefaultPadType(port));
 
 	connect(m_ui.controllerType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ControllerBindingWidget::onTypeChanged);
 	connect(m_ui.bindings, &QPushButton::clicked, this, &ControllerBindingWidget::onBindingsClicked);
@@ -71,14 +71,14 @@ QIcon ControllerBindingWidget::getIcon() const
 
 void ControllerBindingWidget::populateControllerTypes()
 {
-	for (const auto& [name, display_name] : g_PadConfig.GetControllerTypeNames())
-		m_ui.controllerType->addItem(qApp->translate("Pad", display_name), QString::fromStdString(name));
+	for (const auto& [name, display_name] : Pad::GetControllerTypeNames())
+		m_ui.controllerType->addItem(QString::fromUtf8(display_name), QString::fromUtf8(name));
 }
 
 void ControllerBindingWidget::onTypeChanged()
 {
 	const bool is_initializing = (m_ui.stackedWidget->count() == 0);
-	m_controller_type = m_dialog->getStringValue(m_config_section.c_str(), "Type", g_PadConfig.GetDefaultPadType(m_port_number));
+	m_controller_type = m_dialog->getStringValue(m_config_section.c_str(), "Type", Pad::GetDefaultPadType(m_port_number));
 
 	if (m_bindings_widget)
 	{
@@ -99,9 +99,9 @@ void ControllerBindingWidget::onTypeChanged()
 		m_macros_widget = nullptr;
 	}
 
-	const PadConfig::ControllerInfo* cinfo = g_PadConfig.GetControllerInfo(m_controller_type);
-	const bool has_settings = (cinfo && cinfo->num_settings > 0);
-	const bool has_macros = (cinfo && cinfo->num_bindings > 0);
+	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(m_controller_type);
+	const bool has_settings = (cinfo && !cinfo->settings.empty());
+	const bool has_macros = (cinfo && !cinfo->bindings.empty());
 	m_ui.settings->setEnabled(has_settings);
 	m_ui.macros->setEnabled(has_macros);
 
@@ -123,9 +123,8 @@ void ControllerBindingWidget::onTypeChanged()
 
 	if (has_settings)
 	{
-		const std::span<const SettingInfo> settings(cinfo->settings, cinfo->num_settings);
 		m_settings_widget = new ControllerCustomSettingsWidget(
-			settings, m_config_section, std::string(), "Pad", getDialog(), m_ui.stackedWidget);
+			cinfo->settings, m_config_section, std::string(), "Pad", getDialog(), m_ui.stackedWidget);
 		m_ui.stackedWidget->addWidget(m_settings_widget);
 	}
 
@@ -218,13 +217,13 @@ void ControllerBindingWidget::onClearBindingsClicked()
 	{
 		{
 			auto lock = Host::GetSettingsLock();
-			g_PadConfig.ClearPortBindings(*Host::Internal::GetBaseSettingsLayer(), m_port_number);
+			Pad::ClearPortBindings(*Host::Internal::GetBaseSettingsLayer(), m_port_number);
 		}
 		Host::CommitBaseSettingChanges();
 	}
 	else
 	{
-		g_PadConfig.ClearPortBindings(*m_dialog->getProfileSettingsInterface(), m_port_number);
+		Pad::ClearPortBindings(*m_dialog->getProfileSettingsInterface(), m_port_number);
 		m_dialog->getProfileSettingsInterface()->Save();
 	}
 
@@ -248,14 +247,14 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
 	{
 		{
 			auto lock = Host::GetSettingsLock();
-			result = g_PadConfig.MapController(*Host::Internal::GetBaseSettingsLayer(), m_port_number, mapping);
+			result = Pad::MapController(*Host::Internal::GetBaseSettingsLayer(), m_port_number, mapping);
 		}
 		if (result)
 			Host::CommitBaseSettingChanges();
 	}
 	else
 	{
-		result = g_PadConfig.MapController(*m_dialog->getProfileSettingsInterface(), m_port_number, mapping);
+		result = Pad::MapController(*m_dialog->getProfileSettingsInterface(), m_port_number, mapping);
 		if (result)
 		{
 			m_dialog->getProfileSettingsInterface()->Save();
@@ -320,7 +319,7 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
 
 	ControllerSettingsDialog* dialog = m_bwidget->getDialog();
 	const std::string& section = m_bwidget->getConfigSection();
-	const PadConfig::ControllerInfo* cinfo = g_PadConfig.GetControllerInfo(m_bwidget->getControllerType());
+	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(m_bwidget->getControllerType());
 	if (!cinfo)
 	{
 		// Shouldn't ever happen.
@@ -333,20 +332,19 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
 
 	for (const std::string_view& button : buttons_split)
 	{
-		for (u32 i = 0; i < cinfo->num_bindings; i++)
+		for (const InputBindingInfo& bi : cinfo->bindings)
 		{
-			if (button == cinfo->bindings[i].name)
+			if (button == bi.name)
 			{
-				m_binds.push_back(&cinfo->bindings[i]);
+				m_binds.push_back(&bi);
 				break;
 			}
 		}
 	}
 
 	// populate list view
-	for (u32 i = 0; i < cinfo->num_bindings; i++)
+	for (const InputBindingInfo& bi : cinfo->bindings)
 	{
-		const InputBindingInfo& bi = cinfo->bindings[i];
 		if (bi.bind_type == InputBindingInfo::Type::Motor)
 			continue;
 
@@ -358,8 +356,12 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
 
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(
 		dialog->getProfileSettingsInterface(), m_ui.pressure, section, fmt::format("Macro{}Pressure", index + 1u), 100.0f, 1.0f);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(
+		dialog->getProfileSettingsInterface(), m_ui.deadzone, section, fmt::format("Macro{}Deadzone", index + 1u), 100.0f, 0.0f);
 	connect(m_ui.pressure, &QSlider::valueChanged, this, &ControllerMacroEditWidget::onPressureChanged);
+	connect(m_ui.deadzone, &QSlider::valueChanged, this, &ControllerMacroEditWidget::onDeadzoneChanged);
 	onPressureChanged();
+	onDeadzoneChanged();
 
 	m_frequency = dialog->getIntValue(section.c_str(), fmt::format("Macro{}Frequency", index + 1u).c_str(), 0);
 	updateFrequencyText();
@@ -390,6 +392,11 @@ QString ControllerMacroEditWidget::getSummary() const
 void ControllerMacroEditWidget::onPressureChanged()
 {
 	m_ui.pressureValue->setText(tr("%1%").arg(m_ui.pressure->value()));
+}
+
+void ControllerMacroEditWidget::onDeadzoneChanged()
+{
+	m_ui.deadzoneValue->setText(tr("%1%").arg(m_ui.deadzone->value()));
 }
 
 void ControllerMacroEditWidget::onSetFrequencyClicked()
@@ -431,12 +438,12 @@ void ControllerMacroEditWidget::updateFrequencyText()
 void ControllerMacroEditWidget::updateBinds()
 {
 	ControllerSettingsDialog* dialog = m_bwidget->getDialog();
-	const PadConfig::ControllerInfo* cinfo = g_PadConfig.GetControllerInfo(m_bwidget->getControllerType());
+	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(m_bwidget->getControllerType());
 	if (!cinfo)
 		return;
 
 	std::vector<const InputBindingInfo*> new_binds;
-	for (u32 i = 0, bind_index = 0; i < cinfo->num_bindings; i++)
+	for (u32 i = 0, bind_index = 0; i < static_cast<u32>(cinfo->bindings.size()); i++)
 	{
 		const InputBindingInfo& bi = cinfo->bindings[i];
 		if (bi.bind_type == InputBindingInfo::Type::Motor)
@@ -801,16 +808,15 @@ QIcon ControllerBindingWidget_Base::getIcon() const
 
 void ControllerBindingWidget_Base::initBindingWidgets()
 {
-	const PadConfig::ControllerInfo* cinfo = g_PadConfig.GetControllerInfo(getControllerType());
+	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(getControllerType());
 	if (!cinfo)
 		return;
 
 	const std::string& config_section = getConfigSection();
 	SettingsInterface* sif = getDialog()->getProfileSettingsInterface();
 
-	for (u32 i = 0; i < cinfo->num_bindings; i++)
+	for (const InputBindingInfo& bi : cinfo->bindings)
 	{
-		const InputBindingInfo& bi = cinfo->bindings[i];
 		if (bi.bind_type == InputBindingInfo::Type::Axis || bi.bind_type == InputBindingInfo::Type::HalfAxis ||
 			bi.bind_type == InputBindingInfo::Type::Button || bi.bind_type == InputBindingInfo::Type::Pointer ||
 			bi.bind_type == InputBindingInfo::Type::Device)

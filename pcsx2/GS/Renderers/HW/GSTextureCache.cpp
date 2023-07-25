@@ -5823,8 +5823,8 @@ bool GSTextureCache::SurfaceOffsetKeyEqual::operator()(const GSTextureCache::Sur
 {
 	for (size_t i = 0; i < lhs.elems.size(); ++i)
 	{
-		const SurfaceOffsetKeyElem& lhs_elem = lhs.elems.at(i);
-		const SurfaceOffsetKeyElem& rhs_elem = rhs.elems.at(i);
+		const SurfaceOffsetKeyElem& lhs_elem = lhs.elems[i];
+		const SurfaceOffsetKeyElem& rhs_elem = rhs.elems[i];
 		if (lhs_elem.bp != rhs_elem.bp
 			|| lhs_elem.bw != rhs_elem.bw
 			|| lhs_elem.psm != rhs_elem.psm

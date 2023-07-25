@@ -18,7 +18,8 @@
 #include "SIO/Sio0.h"
 
 #include "SIO/Sio.h"
-#include "SIO/Pad/PadManager.h"
+#include "SIO/Pad/Pad.h"
+#include "SIO/Pad/PadBase.h"
 #include "SIO/Memcard/MemoryCardProtocol.h"
 
 #include "Common.h"
@@ -162,7 +163,7 @@ void Sio0::SetTxData(u8 cmd)
 	stat |= SIO0_STAT::TX_READY | SIO0_STAT::TX_EMPTY;
 	stat |= (SIO0_STAT::RX_FIFO_NOT_EMPTY);
 
-	if (!ctrl & SIO0_CTRL::TX_ENABLE)
+	if (!(ctrl & SIO0_CTRL::TX_ENABLE))
 	{
 		Console.Warning("%s(%02X) CTRL in illegal state, exiting instantly", __FUNCTION__, cmd);
 		return;
@@ -176,13 +177,13 @@ void Sio0::SetTxData(u8 cmd)
 	{
 		case SioMode::NOT_SET:
 			sioMode = cmd;
-			currentPad = g_PadManager.GetPad(port, slot);
+			currentPad = Pad::GetPad(port, slot);
 			currentPad->SoftReset();
 			mcd = &mcds[port][slot];
 			SetAcknowledge(true);
 			break;
 		case SioMode::PAD:
-			currentPad = g_PadManager.GetPad(port, slot);
+			currentPad = Pad::GetPad(port, slot);
 			pxAssertMsg(currentPad != nullptr, "Got nullptr when looking up pad");
 			// Set ACK in advance of sending the command to the pad.
 			// The pad will, if the command is done, set ACK to false.
