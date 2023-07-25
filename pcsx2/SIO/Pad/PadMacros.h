@@ -20,9 +20,8 @@
 #include <vector>
 #include <array>
 
-class PadMacros
+namespace Pad
 {
-public: // Constants
 	struct MacroButton
 	{
 		std::vector<u32> buttons; ///< Buttons to activate.
@@ -35,19 +34,10 @@ public: // Constants
 	// Number of macro buttons per controller.
 	static constexpr u32 NUM_MACRO_BUTTONS_PER_CONTROLLER = 16;
 
-private: // Private members
-	std::array<std::array<PadMacros::MacroButton, PadMacros::NUM_MACRO_BUTTONS_PER_CONTROLLER>, Pad::NUM_CONTROLLER_PORTS> s_macro_buttons;
-
-public: // Public members
-	PadMacros();
-	~PadMacros();
-
 	// Sets the state of the specified macro button.
 	void ClearMacros();
-	PadMacros::MacroButton& GetMacroButton(u32 pad, u32 index);
+	MacroButton& GetMacroButton(u32 pad, u32 index);
 	void SetMacroButtonState(u32 pad, u32 index, bool state);
-	void ApplyMacroButton(u32 controller, const PadMacros::MacroButton& mb);
+	void ApplyMacroButton(u32 controller, const MacroButton& mb);
 	void UpdateMacroButtons();
 };
-
-extern PadMacros g_PadMacros;

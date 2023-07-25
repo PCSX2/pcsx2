@@ -20,27 +20,27 @@
 #include "SIO/Pad/PadManager.h"
 #include "SIO/Pad/PadBase.h"
 
-PadMacros g_PadMacros;
-
-PadMacros::PadMacros() = default;
-PadMacros::~PadMacros() = default;
-
-void PadMacros::ClearMacros()
+namespace Pad
 {
-	this->s_macro_buttons = {};
+std::array<std::array<MacroButton, NUM_MACRO_BUTTONS_PER_CONTROLLER>, NUM_CONTROLLER_PORTS> s_macro_buttons;
 }
 
-PadMacros::MacroButton& PadMacros::GetMacroButton(u32 pad, u32 index)
+void Pad::ClearMacros()
 {
-	return this->s_macro_buttons[pad][index];
+	s_macro_buttons = {};
 }
 
-void PadMacros::SetMacroButtonState(u32 pad, u32 index, bool state)
+Pad::MacroButton& Pad::GetMacroButton(u32 pad, u32 index)
+{
+	return s_macro_buttons[pad][index];
+}
+
+void Pad::SetMacroButtonState(u32 pad, u32 index, bool state)
 {
 	if (pad >= Pad::NUM_CONTROLLER_PORTS || index >= NUM_MACRO_BUTTONS_PER_CONTROLLER)
 		return;
 
-	PadMacros::MacroButton& mb = s_macro_buttons[pad][index];
+	MacroButton& mb = s_macro_buttons[pad][index];
 	if (mb.buttons.empty() || mb.trigger_state == state)
 		return;
 
@@ -53,7 +53,7 @@ void PadMacros::SetMacroButtonState(u32 pad, u32 index, bool state)
 	}
 }
 
-void PadMacros::ApplyMacroButton(u32 controller, const PadMacros::MacroButton& mb)
+void Pad::ApplyMacroButton(u32 controller, const Pad::MacroButton& mb)
 {
 	const float value = mb.toggle_state ? 1.0f : 0.0f;
 	PadBase* const pad = Pad::GetPad(controller);
@@ -62,13 +62,13 @@ void PadMacros::ApplyMacroButton(u32 controller, const PadMacros::MacroButton& m
 		pad->Set(btn, value);
 }
 
-void PadMacros::UpdateMacroButtons()
+void Pad::UpdateMacroButtons()
 {
 	for (u32 pad = 0; pad < Pad::NUM_CONTROLLER_PORTS; pad++)
 	{
 		for (u32 index = 0; index < NUM_MACRO_BUTTONS_PER_CONTROLLER; index++)
 		{
-			PadMacros::MacroButton& mb = this->s_macro_buttons[pad][index];
+			Pad::MacroButton& mb = s_macro_buttons[pad][index];
 
 			if (!mb.trigger_state || mb.toggle_frequency == 0)
 			{

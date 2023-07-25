@@ -3898,9 +3898,9 @@ void FullscreenUI::DrawControllerSettingsPage()
 						 fmt::format(ICON_FA_MICROCHIP " Controller Port {} Macros", mtap_port + 1))
 						.c_str());
 
-		static bool macro_button_expanded[Pad::NUM_CONTROLLER_PORTS][PadMacros::NUM_MACRO_BUTTONS_PER_CONTROLLER] = {};
+		static bool macro_button_expanded[Pad::NUM_CONTROLLER_PORTS][Pad::NUM_MACRO_BUTTONS_PER_CONTROLLER] = {};
 
-		for (u32 macro_index = 0; macro_index < PadMacros::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
+		for (u32 macro_index = 0; macro_index < Pad::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
 		{
 			bool& expanded = macro_button_expanded[global_slot][macro_index];
 			expanded ^= MenuHeadingButton(fmt::format(ICON_FA_MICROCHIP " Macro Button {}", macro_index + 1).c_str(),

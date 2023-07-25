@@ -38,7 +38,7 @@ const char* Pad::ControllerInfo::GetLocalizedName() const
 
 void Pad::LoadConfig(const SettingsInterface& si)
 {
-	g_PadMacros.ClearMacros();
+	ClearMacros();
 
 	EmuConfig.MultitapPort0_Enabled = si.GetBoolValue("Pad", "MultitapPort1", false);
 	EmuConfig.MultitapPort1_Enabled = si.GetBoolValue("Pad", "MultitapPort2", false);
@@ -344,7 +344,7 @@ void Pad::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 				dest_si->CopyStringListValue(src_si, section.c_str(), bi.name);
 			}
 
-			for (u32 i = 0; i < PadMacros::NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
+			for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
 			{
 				dest_si->CopyStringListValue(src_si, section.c_str(), fmt::format("Macro{}", i + 1).c_str());
 				dest_si->CopyStringValue(src_si, section.c_str(), fmt::format("Macro{}Binds", i + 1).c_str());
@@ -484,7 +484,7 @@ void Pad::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const std:
 	// lazily initialized
 	std::vector<std::string> binds;
 
-	for (u32 i = 0; i < PadMacros::NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
+	for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
 	{
 		std::string binds_string;
 		if (!si.GetStringValue(section.c_str(), StringUtil::StdStringFromFormat("Macro%uBinds", i + 1).c_str(), &binds_string))
@@ -513,7 +513,7 @@ void Pad::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const std:
 		if (bind_indices.empty())
 			continue;
 
-		PadMacros::MacroButton& macro = g_PadMacros.GetMacroButton(pad, i);
+		MacroButton& macro = Pad::GetMacroButton(pad, i);
 		macro.buttons = std::move(bind_indices);
 		macro.toggle_frequency = frequency;
 	}
