@@ -57,8 +57,7 @@ u8 PadDualshock2::ButtonQuery(u8 commandByte)
 
 u8 PadDualshock2::Poll(u8 commandByte)
 {
-	PadBase* pad = g_PadManager.GetPad(this->unifiedSlot);
-	const u32 buttons = pad->GetButtons();
+	const u32 buttons = GetButtons();
 
 	switch (commandBytesReceived)
 	{
@@ -80,40 +79,40 @@ u8 PadDualshock2::Poll(u8 commandByte)
 
 			return buttons & 0xff;
 		case 5:
-			return pad->GetPressure(Dualshock2::Inputs::PAD_R_RIGHT);
+			return GetPressure(Dualshock2::Inputs::PAD_R_RIGHT);
 		case 6:
-			return pad->GetPressure(Dualshock2::Inputs::PAD_R_UP);
+			return GetPressure(Dualshock2::Inputs::PAD_R_UP);
 		case 7:
-			return pad->GetPressure(Dualshock2::Inputs::PAD_L_RIGHT);
+			return GetPressure(Dualshock2::Inputs::PAD_L_RIGHT);
 		case 8:
 			// PS1 mode: If the controller reaches this byte, it is in analog mode and has irrefutably reached the last byte.
 			// There's simply nothing to check, we know it's done and time to stop acknowledgements.
 			g_Sio0.SetAcknowledge(false);
-			return pad->GetPressure(Dualshock2::Inputs::PAD_L_UP);
+			return GetPressure(Dualshock2::Inputs::PAD_L_UP);
 		case 9:
-			return IsButtonBitSet(buttons, 13) ? pad->GetPressure(Dualshock2::Inputs::PAD_RIGHT) : 0;
+			return IsButtonBitSet(buttons, 13) ? GetPressure(Dualshock2::Inputs::PAD_RIGHT) : 0;
 		case 10:
-			return IsButtonBitSet(buttons, 15) ? pad->GetPressure(Dualshock2::Inputs::PAD_LEFT) : 0;
+			return IsButtonBitSet(buttons, 15) ? GetPressure(Dualshock2::Inputs::PAD_LEFT) : 0;
 		case 11:
-			return IsButtonBitSet(buttons, 12) ? pad->GetPressure(Dualshock2::Inputs::PAD_UP) : 0;
+			return IsButtonBitSet(buttons, 12) ? GetPressure(Dualshock2::Inputs::PAD_UP) : 0;
 		case 12:
-			return IsButtonBitSet(buttons, 14) ? pad->GetPressure(Dualshock2::Inputs::PAD_DOWN) : 0;
+			return IsButtonBitSet(buttons, 14) ? GetPressure(Dualshock2::Inputs::PAD_DOWN) : 0;
 		case 13:
-			return IsButtonBitSet(buttons, 4) ? pad->GetPressure(Dualshock2::Inputs::PAD_TRIANGLE) : 0;
+			return IsButtonBitSet(buttons, 4) ? GetPressure(Dualshock2::Inputs::PAD_TRIANGLE) : 0;
 		case 14:
-			return IsButtonBitSet(buttons, 5) ? pad->GetPressure(Dualshock2::Inputs::PAD_CIRCLE) : 0;
+			return IsButtonBitSet(buttons, 5) ? GetPressure(Dualshock2::Inputs::PAD_CIRCLE) : 0;
 		case 15:
-			return IsButtonBitSet(buttons, 6) ? pad->GetPressure(Dualshock2::Inputs::PAD_CROSS) : 0;
+			return IsButtonBitSet(buttons, 6) ? GetPressure(Dualshock2::Inputs::PAD_CROSS) : 0;
 		case 16:
-			return IsButtonBitSet(buttons, 7) ? pad->GetPressure(Dualshock2::Inputs::PAD_SQUARE) : 0;
+			return IsButtonBitSet(buttons, 7) ? GetPressure(Dualshock2::Inputs::PAD_SQUARE) : 0;
 		case 17:
-			return IsButtonBitSet(buttons, 2) ? pad->GetPressure(Dualshock2::Inputs::PAD_L1) : 0;
+			return IsButtonBitSet(buttons, 2) ? GetPressure(Dualshock2::Inputs::PAD_L1) : 0;
 		case 18:
-			return IsButtonBitSet(buttons, 3) ? pad->GetPressure(Dualshock2::Inputs::PAD_R1) : 0;
+			return IsButtonBitSet(buttons, 3) ? GetPressure(Dualshock2::Inputs::PAD_R1) : 0;
 		case 19:
-			return IsButtonBitSet(buttons, 0) ? pad->GetPressure(Dualshock2::Inputs::PAD_L2) : 0;
+			return IsButtonBitSet(buttons, 0) ? GetPressure(Dualshock2::Inputs::PAD_L2) : 0;
 		case 20:
-			return IsButtonBitSet(buttons, 1) ? pad->GetPressure(Dualshock2::Inputs::PAD_R2) : 0;
+			return IsButtonBitSet(buttons, 1) ? GetPressure(Dualshock2::Inputs::PAD_R2) : 0;
 	}
 	
 	Console.Warning("%s(%02X) Did not reach a valid return path! Returning zero as a failsafe!", __FUNCTION__, commandByte);

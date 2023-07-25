@@ -54,8 +54,7 @@ u8 PadGuitar::ButtonQuery(u8 commandByte)
 
 u8 PadGuitar::Poll(u8 commandByte)
 {
-	PadBase* pad = g_PadManager.GetPad(this->unifiedSlot);
-	const u32 buttons = pad->GetButtons();
+	const u32 buttons = GetButtons();
 
 	switch (this->commandBytesReceived)
 	{
@@ -70,7 +69,7 @@ u8 PadGuitar::Poll(u8 commandByte)
 		case 7:
 			return 0x7f;
 		case 8:
-			return pad->GetPressure(Guitar::Inputs::WHAMMY);
+			return GetPressure(Guitar::Inputs::WHAMMY);
 	}
 
 	Console.Warning("%s(%02X) Did not reach a valid return path! Returning zero as a failsafe!", __FUNCTION__, commandByte);
@@ -214,11 +213,7 @@ u8 PadGuitar::Constant3(u8 commandByte)
 
 u8 PadGuitar::VibrationMap(u8 commandByte)
 {
-	switch (this->commandBytesReceived)
-	{
-		default:
-			return 0xff;
-	}
+	return 0xff;
 }
 
 PadGuitar::PadGuitar(u8 unifiedSlot)
