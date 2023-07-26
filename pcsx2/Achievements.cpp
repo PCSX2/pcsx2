@@ -634,7 +634,7 @@ void Achievements::SetChallengeMode(bool enabled)
 	s_challenge_mode = enabled;
 
 	if (HasActiveGame())
-		ImGuiFullscreen::ShowToast(std::string(), enabled ? "Hardcore mode is now enabled." : "Hardcore mode is now disabled.", 10.0f);
+		ImGuiFullscreen::ShowToast(std::string(), enabled ? TRANSLATE("Achievements", "Hardcore mode is now enabled.") : TRANSLATE("Achievements", "Hardcore mode is now disabled."), 10.0f);
 
 	if (HasActiveGame() && !IsTestModeActive())
 	{
