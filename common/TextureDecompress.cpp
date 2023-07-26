@@ -643,7 +643,9 @@ bool unpack_bc7_mode0_2(uint32_t mode, const uint64_t* data_chunks, color_rgba* 
 	const uint32_t ENDPOINT_BITS = (mode == 0) ? 4 : 5;
 	const uint32_t ENDPOINT_MASK = (1 << ENDPOINT_BITS) - 1;
 	const uint32_t PBITS = (mode == 0) ? 6 : 0;
+#ifndef BC7DECOMP_USE_SSE2
 	const uint32_t WEIGHT_VALS = 1 << WEIGHT_BITS;
+#endif
 	const uint32_t PART_BITS = (mode == 0) ? 4 : 6;
 	const uint32_t PART_MASK = (1 << PART_BITS) - 1;
 
@@ -740,7 +742,9 @@ bool unpack_bc7_mode1_3_7(uint32_t mode, const uint64_t* data_chunks, color_rgba
 	const uint32_t ENDPOINT_MASK = (1 << ENDPOINT_BITS) - 1;
 	const uint32_t PBITS = (mode == 1) ? 2 : 4;
 	const uint32_t SHARED_PBITS = (mode == 1) ? true : false;
+#ifndef BC7DECOMP_USE_SSE2
 	const uint32_t WEIGHT_VALS = 1 << WEIGHT_BITS;
+#endif
 
 	const uint64_t low_chunk = data_chunks[0];
 	const uint64_t high_chunk = data_chunks[1];
