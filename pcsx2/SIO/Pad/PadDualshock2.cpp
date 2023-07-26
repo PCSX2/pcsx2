@@ -110,18 +110,32 @@ u8 PadDualshock2::Mystery(u8 commandByte)
 
 u8 PadDualshock2::ButtonQuery(u8 commandByte)
 {
-	switch (commandBytesReceived)
+	switch (this->currentMode)
 	{
-		case 3:
-		case 4:
-			return 0xff;
-		case 5:
-			return 0x03;
-		case 8:
-			g_Sio0.SetAcknowledge(false);
-			return 0x5a;
+		case Pad::Mode::DUALSHOCK2:
+		case Pad::Mode::ANALOG:
+			switch (commandBytesReceived)
+			{
+				case 3:
+				case 4:
+					return 0xff;
+				case 5:
+					return 0x03;
+				case 8:
+					g_Sio0.SetAcknowledge(false);
+					return 0x5a;
+				default:
+					return 0x00;
+			}
 		default:
-			return 0x00;
+			switch (commandBytesReceived)
+			{
+				case 8:
+					g_Sio0.SetAcknowledge(false);
+					return 0x5a;
+				default:
+					return 0x00;
+			}
 	}
 }
 
