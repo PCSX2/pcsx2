@@ -14020,6 +14020,8 @@ SLES-51630:
 SLES-51633:
   name: "Racing Simulation 3"
   region: "PAL-M5"
+  gsHWFixes:
+    partialTargetInvalidation: 1 # Fixes crash during loading screen due to bad download.
 SLES-51636:
   name: "XGRA - Extreme G Racing Association"
   region: "PAL-M5"
