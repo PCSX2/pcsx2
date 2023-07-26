@@ -1200,7 +1200,7 @@ const GameDatabase::HashDatabaseEntry* GameDatabase::lookupHash(
 		if (getTrackIndex(candidate->tracks.data(), candidate->tracks.size(), tracks[track]) != track)
 		{
 			fmt::format_to(std::back_inserter(*match_error),
-				TRANSLATE_FS("GameDatabase", "Track {} with hash {} does not match database track..\n"), track + 1,
+				TRANSLATE_FS("GameDatabase", "Track {} with hash {} does not match database track.\n"), track + 1,
 				tracks[track].toString());
 			tracks_matched[track] = false;
 			all_okay = false;
