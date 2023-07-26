@@ -409,7 +409,7 @@ void ImGuiManager::DrawSettingsOverlay()
 		if (GSConfig.UserHacks_TextureInsideRt != GSTextureInRtMode::Disabled)
 			APPEND("TexRT={} ", static_cast<unsigned>(GSConfig.UserHacks_TextureInsideRt));
 		if (GSConfig.UserHacks_BilinearHack != GSBilinearDirtyMode::Automatic)
-			APPEND("BLU={}", static_cast<unsigned>(GSConfig.UserHacks_BilinearHack));
+			APPEND("BLU={} ", static_cast<unsigned>(GSConfig.UserHacks_BilinearHack));
 		if (GSConfig.UserHacks_WildHack)
 			APPEND("WA ");
 		if (GSConfig.UserHacks_NativePaletteDraw)
