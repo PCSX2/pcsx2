@@ -2837,7 +2837,9 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 
 					Read(t, draw_rect);
 
-					z_found = read_start >= t->m_TEX0.TBP0 && read_end <= t->m_end_block;
+					// Getaway (J) stores a Z texture at 0x2800 which it uses and the next frame it stores the reflection map in
+					// 0x2800, so this will misdetect. So if it's not expecting a Z, check for RT's too.
+					z_found = read_start >= t->m_TEX0.TBP0 && read_end <= t->m_end_block && GSLocalMemory::m_psm[psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
 
 					if (draw_rect.rintersect(t->m_drawn_since_read).eq(t->m_drawn_since_read))
 						t->m_drawn_since_read = GSVector4i::zero();
