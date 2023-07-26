@@ -1587,6 +1587,8 @@ SCAJ-25045:
 SCAJ-25047:
   name: "Dororo"
   region: "NTSC-Unk"
+  gsHWFixes:
+    minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SCAJ-30001:
   name: "Xenosaga - Episode I - Der Wille zur Macht [PlayStation 2 The Best]"
   region: "NTSC-Unk"
@@ -3225,6 +3227,8 @@ SCES-50408:
   gsHWFixes:
     mipmap: 2 # Fixes missing floor texture.
     trilinearFiltering: 1 # Fixes fog effect.
+    wildArmsHack: 1 # Fixes misaligment depth of field effect.
+    roundSprite: 2 # Fixes misaligment depth of field effect even more.
 SCES-50409:
   name: "MotoGP 2"
   region: "PAL-M5"
@@ -4252,6 +4256,9 @@ SCES-53300:
   region: "PAL-M5"
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
+  gsHWFixes:
+    minimumBlendingLevel: 4 # Mitigates grayer text font in bottom left.
+    partialTargetInvalidation: 1 # Fixes loading screen picture.
 SCES-53304:
   name: "Buzz! The Music Quiz"
   region: "PAL-E"
@@ -4666,6 +4673,9 @@ SCES-54477:
   compat: 5
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Mitigates grayer text font in bottom left but stuff in front can lower or increase opacity.
+    partialTargetInvalidation: 1 # Fixes loading screen picture.
 SCES-54496:
   name: "Buzz! The Mega Quiz"
   region: "PAL-E"
@@ -5569,6 +5579,9 @@ SCKA-20064:
   region: "NTSC-K"
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
+  gsHWFixes:
+    minimumBlendingLevel: 4 # Mitigates grayer text font in bottom left.
+    partialTargetInvalidation: 1 # Fixes loading screen picture.
 SCKA-20065:
   name: "Urban Reign"
   region: "NTSC-K"
@@ -6053,6 +6066,8 @@ SCPS-15017:
   gsHWFixes:
     mipmap: 2 # Fixes missing floor texture.
     trilinearFiltering: 1 # Fixes fog effect.
+    wildArmsHack: 1 # Fixes misaligment depth of field effect.
+    roundSprite: 2 # Fixes misaligment depth of field effect even more.
 SCPS-15018:
   name: "Train Simulator Real, The - Yamanote Sen"
   region: "NTSC-J"
@@ -6728,6 +6743,8 @@ SCPS-19201:
   gsHWFixes:
     mipmap: 2 # Fixes missing floor texture.
     trilinearFiltering: 1 # Fixes fog effect.
+    wildArmsHack: 1 # Fixes misaligment depth of field effect.
+    roundSprite: 2 # Fixes misaligment depth of field effect even more.
 SCPS-19202:
   name: "Extermination [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -7832,6 +7849,8 @@ SCUS-97167:
   gsHWFixes:
     mipmap: 2 # Fixes missing floor texture.
     trilinearFiltering: 1 # Fixes fog effect.
+    wildArmsHack: 1 # Fixes misaligment depth of field effect.
+    roundSprite: 2 # Fixes misaligment depth of field effect even more.
 SCUS-97169:
   name: "Drakan - The Ancients' Gates [Demo]"
   region: "NTSC-U"
@@ -8892,6 +8911,9 @@ SCUS-97474:
   compat: 5
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
+  gsHWFixes:
+    minimumBlendingLevel: 4 # Mitigates grayer text font in bottom left.
+    partialTargetInvalidation: 1 # Fixes loading screen picture.
   patches:
     75ED4282:
       content: |-
@@ -8905,6 +8927,9 @@ SCUS-97475:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
+  gsHWFixes:
+    minimumBlendingLevel: 4 # Mitigates grayer text font in bottom left.
+    partialTargetInvalidation: 1 # Fixes loading screen picture.
   patches:
     314F0905:
       content: |-
@@ -9007,6 +9032,9 @@ SCUS-97489:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
+  gsHWFixes:
+    minimumBlendingLevel: 4 # Mitigates grayer text font in bottom left.
+    partialTargetInvalidation: 1 # Fixes loading screen picture.
 SCUS-97490:
   name: "Rogue Galaxy"
   region: "NTSC-U"
@@ -9234,6 +9262,9 @@ SCUS-97545:
   compat: 5
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Mitigates grayer text font in bottom left but stuff in front can lower or increase opacity.
+    partialTargetInvalidation: 1 # Fixes loading screen picture.
   patches:
     D7CFDCCF:
       content: |-
@@ -9279,6 +9310,9 @@ SCUS-97560:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Mitigates grayer text font in bottom left but stuff in front can lower or increase opacity.
+    partialTargetInvalidation: 1 # Fixes loading screen picture.
 SCUS-97564:
   name: "Jampack Demo Disc Vol.15 [T-Rated]"
   region: "NTSC-U"
@@ -9575,6 +9609,8 @@ SLAJ-25046:
 SLAJ-25047:
   name: "Dororo"
   region: "NTSC-Ch-J"
+  gsHWFixes:
+    minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SLAJ-25048:
   name: "Sengoku Musou Mushoden"
   region: "NTSC-Unk"
@@ -11144,6 +11180,8 @@ SLES-50341:
 SLES-50350:
   name: "Disney's Tarzan - Freeride"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes blurriness and misaligned shadows.
 SLES-50351:
   name: "Lake Masters EX"
   region: "PAL-M3"
@@ -11547,6 +11585,8 @@ SLES-50545:
   region: "PAL-M3"
   roundModes:
     eeRoundMode: 0 # Fixes riders vanish into the floor.
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLES-50546:
   name: "LMA Manager 2002"
   region: "PAL-E"
@@ -13297,7 +13337,7 @@ SLES-51256:
     vuClampMode: 3 # Fix white shiny weapons.
 SLES-51257:
   name: "Sims, The"
-  region: "PAL-M6"
+  region: "PAL-M8"
   compat: 3
   speedHacks:
     mtvu: 0 # Fixes bad graphics due to bad T-Bit handling.
@@ -14148,6 +14188,7 @@ SLES-51697:
   gsHWFixes:
     textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
     halfPixelOffset: 2 # Fixes depth lines.
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLES-51698:
   name: "Mobile Light Force 2"
   region: "PAL-M5"
@@ -16600,6 +16641,8 @@ SLES-52746:
 SLES-52747:
   name: "Dukes of Hazzard, The - The Return of General Lee"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned post-processing.
 SLES-52749:
   name: "Habitrail - Hamster Ball"
   region: "PAL-E"
@@ -16623,6 +16666,8 @@ SLES-52754:
 SLES-52755:
   name: "Blood Will Tell - Tezuka Osamu's Dororo"
   region: "PAL-M5"
+  gsHWFixes:
+    minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SLES-52760:
   name: "Pro Evolution Soccer 4"
   region: "PAL-M4"
@@ -16973,6 +17018,8 @@ SLES-52888:
 SLES-52889:
   name: "Disney's Winnie the Pooh Rumbly Tumbly Adventure"
   region: "PAL-M6"
+  gsHWFixes:
+    autoFlush: 1 # Fixes bloomlike-offsets.
 SLES-52894:
   name: "Bard's Tale, The"
   region: "PAL-E"
@@ -17991,6 +18038,9 @@ SLES-53300:
   region: "PAL-Unk"
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
+  gsHWFixes:
+    minimumBlendingLevel: 4 # Mitigates grayer text font in bottom left.
+    partialTargetInvalidation: 1 # Fixes loading screen picture.
 SLES-53301:
   name: "Bomberman Hardball"
   region: "PAL-E"
@@ -18099,6 +18149,8 @@ SLES-53350:
 SLES-53351:
   name: "SSX On Tour"
   region: "PAL-E"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLES-53353:
   name: "Shounen Jump's Shaman King - Power of Spirit"
   region: "PAL-M3"
@@ -18353,6 +18405,8 @@ SLES-53419:
 SLES-53420:
   name: "Winnie the Pooh's Rumbly Tumbly Adventure"
   region: "PAL-PL"
+  gsHWFixes:
+    autoFlush: 1 # Fixes bloomlike-offsets.
 SLES-53424:
   name: "Dead to Rights 2"
   region: "PAL-M4"
@@ -18817,9 +18871,13 @@ SLES-53548:
 SLES-53551:
   name: "SSX On Tour"
   region: "PAL-E"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLES-53552:
   name: "SSX On Tour"
   region: "PAL-M8"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLES-53553:
   name: "007 - From Russia with Love"
   region: "PAL-M7"
@@ -20474,6 +20532,8 @@ SLES-54164:
 SLES-54165:
   name: "One Piece - Grand Adventure"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes character outlines, shadow misaligment and more.
 SLES-54166:
   name: "Call of Duty 3"
   region: "PAL-E"
@@ -21448,7 +21508,7 @@ SLES-54519:
   region: "PAL-A"
 SLES-54520:
   name: "Agent Hugo - RoboRumble"
-  region: "PAL"
+  region: "PAL-PL"
 SLES-54521:
   name: "Nickelodeon SpongeBob and Friends - Battle for Volcano Island"
   region: "PAL-M5"
@@ -23337,6 +23397,7 @@ SLES-55215:
   compat: 5
   gsHWFixes:
     moveHandler: "MV_Growlanser" # Fixes precomputed depth buffer.
+    textureInsideRT: 1 # Fixes character layering issue.
 SLES-55216:
   name: "Baroque"
   region: "PAL-E"
@@ -24139,6 +24200,7 @@ SLES-55579:
     vu0ClampMode: 0 # Fixes black textures and SPS.
   gsHWFixes:
     deinterlace: 8 # Game requires AdaptiveTFF de-interlacing when auto for the (starter) FMVs.
+    minimumBlendingLevel: 3 # Fixes missing colortints like on faces and models being too dark.
 SLES-55581:
   name: "FIFA 10"
   region: "PAL-M5"
@@ -25091,6 +25153,7 @@ SLKA-25118:
   gsHWFixes:
     textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
     halfPixelOffset: 2 # Fixes depth lines.
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLKA-25120:
   name: "Prince of Persia - The Sands of Time"
   region: "NTSC-K"
@@ -25318,6 +25381,7 @@ SLKA-25200:
   gsHWFixes:
     textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
     halfPixelOffset: 2 # Fixes depth lines.
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLKA-25201:
   name: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-K"
@@ -25449,6 +25513,8 @@ SLKA-25225:
   name: "Dororo"
   region: "NTSC-K"
   compat: 5
+  gsHWFixes:
+    minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SLKA-25226:
   name: "Incredibles, The"
   region: "NTSC-K"
@@ -25743,9 +25809,13 @@ SLKA-25322:
 SLKA-25323:
   name: "SSX On Tour"
   region: "NTSC-J"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLKA-25325:
   name: "SSX On Tour"
   region: "NTSC-K"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLKA-25327:
   name: "Harry Potter and the Goblet of Fire"
   region: "NTSC-K"
@@ -25919,6 +25989,8 @@ SLKA-25388:
   name: "One Piece - Grand Adventure"
   region: "NTSC-K"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes character outlines, shadow misaligment and more.
 SLKA-25389:
   name: "Shinobido Imashime"
   region: "NTSC-K"
@@ -27004,6 +27076,7 @@ SLPM-61148:
   region: "NTSC-J"
   gsHWFixes:
     moveHandler: "MV_Growlanser" # Fixes precomputed depth buffer.
+    textureInsideRT: 1 # Fixes character layering issue.
 SLPM-61153:
   name: "Dengeki PS2 PlayStation D92"
   region: "NTSC-J"
@@ -30919,6 +30992,7 @@ SLPM-65449:
   gsHWFixes:
     textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
     halfPixelOffset: 2 # Fixes depth lines.
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLPM-65450:
   name: "Tantei Gakuen Q - Kiokan no Satsui [First Limited Edition]"
   region: "NTSC-J"
@@ -31161,6 +31235,8 @@ SLPM-65525:
 SLPM-65526:
   name: "Dororo"
   region: "NTSC-J"
+  gsHWFixes:
+    minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SLPM-65527:
   name: "FIFA Total Football"
   region: "NTSC-J"
@@ -32088,6 +32164,7 @@ SLPM-65793:
   gsHWFixes:
     textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
     halfPixelOffset: 2 # Fixes depth lines.
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLPM-65794:
   name: "Capcom Fighting Jam"
   region: "NTSC-J"
@@ -33595,6 +33672,8 @@ SLPM-66187:
 SLPM-66189:
   name: "SSX On Tour"
   region: "NTSC-J"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLPM-66190:
   name: "Star Wars Battlefront II"
   region: "NTSC-J"
@@ -33666,6 +33745,8 @@ SLPM-66206:
 SLPM-66207:
   name: "Dororo [Sega the Best 2800]"
   region: "NTSC-J"
+  gsHWFixes:
+    minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SLPM-66208:
   name: "Sakura Taisen V - Episode 0 - Samurai Girl of Wild [Sega the Best]"
   region: "NTSC-J"
@@ -33868,6 +33949,7 @@ SLPM-66249:
   compat: 5
   gsHWFixes:
     moveHandler: "MV_Growlanser" # Fixes precomputed depth buffer.
+    textureInsideRT: 1 # Fixes character layering issue.
 SLPM-66250:
   name: "Choro Q HG 4 [Takara Best]"
   region: "NTSC-J"
@@ -34494,6 +34576,7 @@ SLPM-66418:
   compat: 5
   gsHWFixes:
     moveHandler: "MV_Growlanser" # Fixes precomputed depth buffer.
+    textureInsideRT: 1 # Fixes character layering issue.
 SLPM-66419:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "NTSC-J"
@@ -35235,6 +35318,8 @@ SLPM-66600:
 SLPM-66601:
   name: "SSX On Tour [EA Best Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLPM-66602:
   name: "Ryu ga Gotoku 2 [Disc 1 of 2]"
   region: "NTSC-J"
@@ -35723,6 +35808,7 @@ SLPM-66716:
   compat: 5
   gsHWFixes:
     moveHandler: "MV_Growlanser" # Fixes precomputed depth buffer.
+    textureInsideRT: 1 # Fixes character layering issue.
 SLPM-66717:
   name: "Standard Daisenryaku - Dengekisen [Sega the Best]"
   region: "NTSC-J"
@@ -36785,6 +36871,8 @@ SLPM-67504:
   region: "NTSC-K"
   roundModes:
     eeRoundMode: 0 # Fixes riders vanish into the floor.
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLPM-67505:
   name: "007 - Agent Under Fire"
   region: "NTSC-K"
@@ -36844,6 +36932,11 @@ SLPM-67519:
   region: "NTSC-K"
   roundModes:
     eeRoundMode: 0 # Fixes game hanging in the "Clark running away" ingame cutscene.
+SLPM-67520:
+  name: "Disney's Tarzan - Freeride"
+  region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes blurriness and misaligned shadows.
 SLPM-67521:
   name: "E.O.E. - Eve of Extinction"
   region: "NTSC-K"
@@ -37848,6 +37941,11 @@ SLPS-20150:
 SLPS-20158:
   name: "Yamasa Digi World 2 LCD Edition - Time Cross, Qlogos, Trigger Zone"
   region: "NTSC-J"
+SLPS-20160:
+  name: "Disney's Tarzan - Freeride"
+  region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes blurriness and misaligned shadows.
 SLPS-20161:
   name: "Saikyou Toudai Shogi Special"
   region: "NTSC-J"
@@ -39143,6 +39241,8 @@ SLPS-25078:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Fixes riders vanish into the floor.
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLPS-25079:
   name: "Madden NFL 2002"
   region: "NTSC-J"
@@ -43296,9 +43396,11 @@ SLUS-20075:
   region: "NTSC-U"
   compat: 5
 SLUS-20076:
-  name: "Disney's Tarzan Untamed"
+  name: "Disney's Tarzan - Untamed"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes blurriness and misaligned shadows.
 SLUS-20077:
   name: "Donald Duck Goin' Quackers"
   region: "NTSC-U"
@@ -44365,6 +44467,8 @@ SLUS-20326:
   compat: 5
   roundModes:
     eeRoundMode: 0 # Fixes riders vanish into the floor.
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLUS-20327:
   name: "Aggressive Inline"
   region: "NTSC-U"
@@ -46632,6 +46736,7 @@ SLUS-20772:
   gsHWFixes:
     textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
     halfPixelOffset: 2 # Fixes depth lines.
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLUS-20773:
   name: "Legacy of Kain - Defiance"
   region: "NTSC-U"
@@ -46669,6 +46774,8 @@ SLUS-20782:
   name: "Blood Will Tell"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SLUS-20784:
   name: "Italian Job, The"
   region: "NTSC-U"
@@ -47573,6 +47680,8 @@ SLUS-20959:
   name: "Dukes of Hazzard, The - Return of the General Lee"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned post-processing.
 SLUS-20960:
   name: "Mega Man X8"
   region: "NTSC-U"
@@ -48300,6 +48409,8 @@ SLUS-21083:
 SLUS-21084:
   name: "Winnie the Pooh's Rumbly Tumbly Adventure"
   region: "NTSC-U"
+  gsHWFixes:
+    autoFlush: 1 # Fixes bloomlike-offsets.
 SLUS-21086:
   name: "Big Mutha Truckers 2"
   region: "NTSC-U"
@@ -49404,9 +49515,11 @@ SLUS-21277:
     autoFlush: 2 # Needed for recursive mipmap rendering.
     getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SLUS-21278:
-  name: "SSX on Tour"
+  name: "SSX On Tour"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLUS-21279:
   name: "NBA Live '06"
   region: "NTSC-U"
@@ -50376,6 +50489,8 @@ SLUS-21435:
   name: "One Piece - Grand Adventure"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes character outlines, shadow misaligment and more.
 SLUS-21436:
   name: "Just Cause"
   region: "NTSC-U"
@@ -50938,6 +51053,7 @@ SLUS-21571:
   compat: 5
   gsHWFixes:
     moveHandler: "MV_Growlanser" # Fixes precomputed depth buffer.
+    textureInsideRT: 1 # Fixes character layering issue.
 SLUS-21572:
   name: "Surf's Up"
   region: "NTSC-U"
@@ -52560,6 +52676,7 @@ SLUS-21902:
     vu0ClampMode: 0 # Fixes black textures and SPS.
   gsHWFixes:
     deinterlace: 8 # Game requires AdaptiveTFF de-interlacing when auto for the (starter) FMVs.
+    minimumBlendingLevel: 3 # Fixes missing colortints like on faces and models being too dark.
 SLUS-21904:
   name: "Teenage Mutant Ninja Turtles - Smash-Up"
   region: "NTSC-U"
@@ -53512,6 +53629,8 @@ SLUS-29160:
 SLUS-29161:
   name: "SSX On Tour [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLUS-29162:
   name: "NBA Live '06 [Demo]"
   region: "NTSC-U"
