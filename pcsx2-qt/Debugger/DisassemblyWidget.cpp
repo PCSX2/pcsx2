@@ -151,9 +151,10 @@ void DisassemblyWidget::contextNoopInstruction()
 
 void DisassemblyWidget::contextRunToCursor()
 {
-	Host::RunOnCPUThread([&] { CBreakPoints::AddBreakPoint(m_cpu->getCpuType(), m_selectedAddressStart); });
-
-	m_cpu->resumeCpu();
+	Host::RunOnCPUThread([&] {
+		CBreakPoints::AddBreakPoint(m_cpu->getCpuType(), m_selectedAddressStart, true);
+		m_cpu->resumeCpu();
+	});
 }
 
 void DisassemblyWidget::contextJumpToCursor()
