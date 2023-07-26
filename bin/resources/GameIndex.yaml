@@ -9642,6 +9642,7 @@ SLAJ-25066:
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
   memcardFilters:
@@ -9776,6 +9777,7 @@ SLAJ-25094:
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLAJ-25095:
@@ -10115,6 +10117,7 @@ SLED-53512:
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLED-53537:
@@ -16122,7 +16125,7 @@ SLES-52570:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned lighting and other effects.
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects, needs Special otherwise lights flicker.
 SLES-52571:
   name: "Pacific Air Warriors 2 - Dogfight"
   region: "PAL-E"
@@ -17553,7 +17556,7 @@ SLES-53075:
   name: "Area 51"
   region: "PAL-M5"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned lighting and other effects.
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects, needs Special otherwise lights flicker.
 SLES-53076:
   name: "Triggerman"
   region: "PAL-M5"
@@ -18558,6 +18561,7 @@ SLES-53506:
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
   memcardFilters:
@@ -18579,6 +18583,7 @@ SLES-53507:
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
   memcardFilters:
@@ -18708,6 +18713,7 @@ SLES-53534:
     trilinearFiltering: 1
     wildArmsHack: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
+    autoFlush: 1 # Improves post-processing rendering.
 SLES-53535:
   name: "Tony Hawk's American Wasteland"
   region: "PAL-M4"
@@ -18719,6 +18725,7 @@ SLES-53535:
     trilinearFiltering: 1
     wildArmsHack: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
+    autoFlush: 1 # Improves post-processing rendering.
 SLES-53536:
   name: "London Racer - Police Madness"
   region: "PAL-M3"
@@ -21692,6 +21699,7 @@ SLES-54627:
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLES-54628:
@@ -21872,6 +21880,7 @@ SLES-54681:
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLES-54683:
@@ -25674,6 +25683,7 @@ SLKA-25304:
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLKA-25307:
@@ -26044,6 +26054,7 @@ SLPM-55004:
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLPM-55005:
@@ -26095,6 +26106,7 @@ SLPM-55036:
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLPM-55039:
@@ -33232,6 +33244,7 @@ SLPM-66108:
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
   memcardFilters:
@@ -34703,7 +34716,7 @@ SLPM-66468:
   name: "Area 51"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned lighting and other effects.
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects, needs Special otherwise lights flicker.
 SLPM-66469:
   name: "Love-Com - Punch de Court [Limited Edition]"
   region: "NTSC-J"
@@ -35421,6 +35434,7 @@ SLPM-66652:
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
   memcardFilters:
@@ -35809,6 +35823,7 @@ SLPM-66739:
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLPM-66740:
@@ -45700,7 +45715,7 @@ SLUS-20595:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes misaligned lighting and other effects.
+    halfPixelOffset: 2 # Fixes misaligned lighting and other effects, needs Special otherwise lights flicker.
 SLUS-20596:
   name: "UFC - Ultimate Fighting Championship - Sudden Impact"
   region: "NTSC-U"
@@ -48912,6 +48927,7 @@ SLUS-21208:
     trilinearFiltering: 1
     wildArmsHack: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
+    autoFlush: 1 # Improves post-processing rendering.
 SLUS-21209:
   name: "Urban Reign"
   region: "NTSC-U"
@@ -49139,6 +49155,7 @@ SLUS-21242:
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
   memcardFilters: # Reads Burnout 3 and NFL 06 saves for unlockables.
@@ -49488,6 +49505,7 @@ SLUS-21295:
     trilinearFiltering: 1
     wildArmsHack: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
+    autoFlush: 1 # Improves post-processing rendering.
   memcardFilters: # Game saves use the normal edition serial.
     - "SLUS-21208"
 SLUS-21296:
@@ -51036,6 +51054,7 @@ SLUS-21596:
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLUS-21597:
@@ -53454,6 +53473,7 @@ SLUS-29153:
     mipmap: 2 # Fixes over sharpening.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLUS-29154:
