@@ -88,6 +88,7 @@ namespace Achievements
 
 	bool IsActive();
 	bool IsLoggedIn();
+	bool HasSavedCredentials();
 	bool ChallengeModeActive();
 	bool LeaderboardsActive();
 	bool IsTestModeActive();
@@ -131,6 +132,7 @@ namespace Achievements
 
 	bool LoginAsync(const char* username, const char* password);
 	bool Login(const char* username, const char* password);
+	bool LoginWithTokenAsync(const char* username, const char* api_token);
 	void Logout();
 
 	void GameChanged(u32 disc_crc, u32 crc);

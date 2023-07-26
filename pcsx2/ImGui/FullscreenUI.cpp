@@ -6990,7 +6990,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 			Achievements::ProcessPendingHTTPRequestsFromGSThread();
 
 		MenuHeading("Account");
-		if (Achievements::IsLoggedIn())
+		if (Achievements::HasSavedCredentials())
 		{
 			ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
 			ActiveButton(fmt::format(ICON_FA_USER "  Username: {}", Achievements::GetUsername()).c_str(), false, false,
