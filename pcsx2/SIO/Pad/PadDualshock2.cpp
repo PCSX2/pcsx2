@@ -132,7 +132,7 @@ u8 PadDualshock2::ButtonQuery(u8 commandByte)
 			{
 				case 8:
 					g_Sio0.SetAcknowledge(false);
-					return 0x5a;
+					return 0x00;
 				default:
 					return 0x00;
 			}
@@ -346,6 +346,8 @@ u8 PadDualshock2::Constant2(u8 commandByte)
 	{
 		case 5:
 			return 0x02;
+		case 7:
+			return 0x01;
 		case 8:
 			g_Sio0.SetAcknowledge(false);
 			return 0x00;
@@ -382,10 +384,6 @@ u8 PadDualshock2::VibrationMap(u8 commandByte)
 {
 	switch (commandBytesReceived)
 	{
-		case 3:
-			return 0x00;
-		case 4:
-			return 0x01;
 		case 8:
 			g_Sio0.SetAcknowledge(false);
 			return 0xff;
