@@ -281,7 +281,7 @@ bool GSHwHack::GSC_BurnoutGames(GSRendererHW& r, int& skip)
 
 		case 2: // downsample
 		{
-			const GSVector4i downsample_rect = GSVector4i(0, 0, main_fb_size.x / 2, main_fb_size.y / 2);
+			const GSVector4i downsample_rect = GSVector4i(0, 0, ((main_fb_size.x / 2) - 1), ((main_fb_size.y / 2) - 1));
 			r.ReplaceVerticesWithSprite(downsample_rect, GSVector4i::loadh(main_fb_size), main_fb_size, downsample_rect);
 			downsample_fb = GIFRegTEX0::Create(RFBP, RFBW, RFPSM);
 			state = 3;
