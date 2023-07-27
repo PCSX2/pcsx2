@@ -173,7 +173,7 @@ void AchievementSettingsWidget::onLoginLogoutPressed()
 		return;
 	}
 
-	AchievementLoginDialog login(this);
+	AchievementLoginDialog login(this, Achievements::LoginRequestReason::UserInitiated);
 	int res = login.exec();
 	if (res != 0)
 		return;

@@ -18,12 +18,17 @@
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QPushButton>
 
+namespace Achievements
+{
+	enum class LoginRequestReason;
+}
+
 class AchievementLoginDialog : public QDialog
 {
 	Q_OBJECT
 
 public:
-	AchievementLoginDialog(QWidget* parent);
+	AchievementLoginDialog(QWidget* parent, Achievements::LoginRequestReason reason);
 	~AchievementLoginDialog();
 
 private Q_SLOTS:
@@ -38,4 +43,5 @@ private:
 
 	Ui::AchievementLoginDialog m_ui;
 	QPushButton* m_login;
+	Achievements::LoginRequestReason m_reason;
 };

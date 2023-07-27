@@ -39,6 +39,11 @@ class ControllerSettingsDialog;
 
 class EmuThread;
 
+namespace Achievements
+{
+	enum class LoginRequestReason;
+}
+
 namespace GameList
 {
 	struct Entry;
@@ -185,6 +190,8 @@ private Q_SLOTS:
 
 	void onCaptureStarted(const QString& filename);
 	void onCaptureStopped();
+
+	void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
 
 protected:
 	void showEvent(QShowEvent* event) override;

@@ -966,7 +966,9 @@ void Achievements::LoginWithTokenCallback(s32 status_code, const std::string& co
 	RAPIResponse<rc_api_login_response_t, rc_api_process_login_response, rc_api_destroy_login_response> response(status_code, data);
 	if (!response)
 	{
-		FormattedError("Login failed. Please check your user name and password, and try again.");
+		lock.unlock();
+		Logout();
+		Host::OnAchievementsLoginRequested(LoginRequestReason::TokenInvalid);
 		return;
 	}
 

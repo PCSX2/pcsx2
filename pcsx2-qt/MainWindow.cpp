@@ -25,6 +25,7 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
+#include "Settings/AchievementLoginDialog.h"
 #include "Settings/ControllerSettingsDialog.h"
 #include "Settings/GameListSettingsWidget.h"
 #include "Settings/InterfaceSettingsWidget.h"
@@ -423,6 +424,7 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 	connect(thread, &EmuThread::onGameChanged, this, &MainWindow::onGameChanged);
 	connect(thread, &EmuThread::onCaptureStarted, this, &MainWindow::onCaptureStarted);
 	connect(thread, &EmuThread::onCaptureStopped, this, &MainWindow::onCaptureStopped);
+	connect(thread, &EmuThread::onAchievementsLoginRequested, this, &MainWindow::onAchievementsLoginRequested);
 
 	connect(m_ui.actionReset, &QAction::triggered, thread, &EmuThread::resetVM);
 	connect(m_ui.actionPause, &QAction::toggled, thread, &EmuThread::setVMPaused);
@@ -626,6 +628,14 @@ void MainWindow::onCaptureStopped()
 
 	QSignalBlocker sb(m_ui.actionToolsVideoCapture);
 	m_ui.actionToolsVideoCapture->setChecked(false);
+}
+
+void MainWindow::onAchievementsLoginRequested(Achievements::LoginRequestReason reason)
+{
+	auto lock = pauseAndLockVM();
+
+	AchievementLoginDialog dlg(this, reason);
+	dlg.exec();
 }
 
 void MainWindow::onSettingsTriggeredFromToolbar()
