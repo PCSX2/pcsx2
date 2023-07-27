@@ -78,7 +78,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				{
 					QString type("");
 					type += (mc->cond & MEMCHECK_READ) ? tr("Read") : "";
-					type += ((mc->cond & MEMCHECK_BOTH) == MEMCHECK_BOTH) ? ", " : " ";
+					type += ((mc->cond & MEMCHECK_READWRITE) == MEMCHECK_READWRITE) ? ", " : " ";
 					//: (C) = changes, as in "look for changes".
 					type += (mc->cond & MEMCHECK_WRITE) ? (mc->cond & MEMCHECK_WRITE_ONCHANGE) ? tr("Write(C)") : tr("Write") : "";
 					return type;
