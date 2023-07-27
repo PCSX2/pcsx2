@@ -727,7 +727,7 @@ bool GSHwHack::GSC_BlueTongueGames(GSRendererHW& r, int& skip)
 	if (RPRIM->TME && RTEX0.TW == 3 && RTEX0.TH == 3 && RTEX0.PSM == 0 && RFRAME.FBMSK == 0x00FFFFFF && RFRAME.FBW == 8 && r.PCRTCDisplays.GetResolution().x > 512)
 	{
 		// Check we are drawing stripes
-		for (int i = 1; i < r.m_vertex.tail; i+=2)
+		for (u32 i = 1; i < r.m_vertex.tail; i+=2)
 		{
 			int value = (((r.m_vertex.buff[i].XYZ.X - r.m_vertex.buff[i - 1].XYZ.X) + 8) >> 4);
 			if (value != 32)

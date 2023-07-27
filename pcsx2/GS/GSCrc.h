@@ -23,7 +23,6 @@ public:
 	enum Title : u32
 	{
 		NoTitle,
-		SMTNocturne,
 		Tekken5,
 		TitleCount,
 	};

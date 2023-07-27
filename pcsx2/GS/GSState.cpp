@@ -1696,28 +1696,6 @@ void GSState::Write(const u8* mem, int len)
 	GIFRegBITBLTBUF& blit = m_tr.m_blit;
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[blit.DPSM];
 
-	// The game uses a resolution of 512x244. RT is located at 0x700 and depth at 0x0
-	//
-	// #Bug number 1. (bad top bar)
-	// The game saves the depth buffer in the EE but with a resolution of
-	// 512x255. So it is ending to 0x7F8, ouch it saves the top of the RT too.
-	//
-	// #Bug number 2. (darker screen)
-	// The game will restore the previously saved buffer at position 0x0 to
-	// 0x7F8.  Because of the extra RT pixels, GS will partialy invalidate
-	// the texture located at 0x700. Next access will generate a cache miss
-	//
-	// The no-solution: instead to handle garbage (aka RT) at the end of the
-	// depth buffer. Let's reduce the size of the transfer
-	if (m_game.title == CRC::SMTNocturne) // TODO: hack
-	{
-		if (blit.DBP == 0 && blit.DPSM == PSMZ32 && w == 512 && h > 224)
-		{
-			h = 224;
-			m_env.TRXREG.RRH = 224;
-		}
-	}
-
 	if (!m_tr.Update(w, h, psm.trbpp, len))
 		return;
 

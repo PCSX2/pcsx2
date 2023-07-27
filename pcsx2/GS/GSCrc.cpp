@@ -31,14 +31,6 @@ const CRC::Game CRC::m_games[] =
 	{0x1F88BECD, Tekken5 /* EU */}, // language selector...
 	{0x652050D2, Tekken5 /* US */},
 	{0xEA64EF39, Tekken5 /* KO */},
-	{0xE8FCF8EC, SMTNocturne /* US */},
-	{0xF0A31EE3, SMTNocturne /* EU */}, // SMTNocturne (Lucifers Call in EU)
-	{0xAE0DE7B7, SMTNocturne /* EU */}, // SMTNocturne (Lucifers Call in EU)
-	{0xD60DA6D4, SMTNocturne /* JP */}, // SMTNocturne
-	{0x0E762E8D, SMTNocturne /* JP */}, // SMTNocturne Maniacs
-	{0x47BA9034, SMTNocturne /* JP */}, // SMTNocturne Maniacs Chronicle
-	{0xD3FFC263, SMTNocturne /* KO */},
-	{0x84D1A8DA, SMTNocturne /* KO */},
 };
 
 const CRC::Game& CRC::Lookup(u32 crc)
