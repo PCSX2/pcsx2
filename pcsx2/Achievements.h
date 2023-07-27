@@ -31,6 +31,12 @@
 
 namespace Achievements
 {
+	enum class LoginRequestReason
+	{
+		UserInitiated,
+		TokenInvalid,
+	};
+
 	enum class AchievementCategory : u8
 	{
 		Local = 0,
@@ -255,6 +261,6 @@ namespace Achievements
 /// Functions implemented in the frontend.
 namespace Host
 {
+	void OnAchievementsLoginRequested(Achievements::LoginRequestReason reason);
 	void OnAchievementsRefreshed();
-	void OnAchievementsChallengeModeChanged();
 } // namespace Host

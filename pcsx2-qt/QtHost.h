@@ -41,11 +41,17 @@ struct VMBootParameters;
 
 enum class CDVD_SourceType : uint8_t;
 
+namespace Achievements
+{
+	enum class LoginRequestReason;
+}
+
 Q_DECLARE_METATYPE(std::shared_ptr<VMBootParameters>);
 Q_DECLARE_METATYPE(std::optional<bool>);
 Q_DECLARE_METATYPE(GSRendererType);
 Q_DECLARE_METATYPE(InputBindingKey);
 Q_DECLARE_METATYPE(CDVD_SourceType);
+Q_DECLARE_METATYPE(Achievements::LoginRequestReason);
 
 class EmuThread : public QThread
 {
@@ -154,6 +160,9 @@ Q_SIGNALS:
 	/// Called when a save state is being created/saved. The compression/write to disk is asynchronous, so this callback
 	/// just signifies that the save has started, not necessarily completed.
 	void onSaveStateSaved(const QString& path);
+
+	/// Called when achievements login is requested.
+	void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
 
 	/// Called when achievements are reloaded/refreshed (e.g. game change, login, option change).
 	void onAchievementsRefreshed(quint32 id, const QString& game_info_string, quint32 total, quint32 points);

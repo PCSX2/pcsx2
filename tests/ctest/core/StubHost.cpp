@@ -210,11 +210,13 @@ s32 Host::Internal::GetTranslatedStringImpl(
 	return static_cast<s32>(msg.size());
 }
 
-#ifdef ENABLE_ACHIEVEMENTS
+void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
+{
+}
+
 void Host::OnAchievementsRefreshed()
 {
 }
-#endif
 
 std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view& str)
 {

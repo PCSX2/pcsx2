@@ -1079,6 +1079,11 @@ void Host::OnSaveStateSaved(const std::string_view& filename)
 }
 
 #ifdef ENABLE_ACHIEVEMENTS
+void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
+{
+	emit g_emu_thread->onAchievementsLoginRequested(reason);
+}
+
 void Host::OnAchievementsRefreshed()
 {
 	u32 game_id = 0;
@@ -1778,6 +1783,7 @@ void QtHost::RegisterTypes()
 	qRegisterMetaType<InputBindingKey>();
 	qRegisterMetaType<CDVD_SourceType>();
 	qRegisterMetaType<const GameList::Entry*>();
+	qRegisterMetaType<Achievements::LoginRequestReason>();
 }
 
 bool QtHost::RunSetupWizard()
