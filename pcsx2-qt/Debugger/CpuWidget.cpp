@@ -589,7 +589,7 @@ static std::vector<u32> searchWorkerByteArray(DebugInterface* cpu, u32 start, u3
 		bool hit = true;
 		for (qsizetype i = 0; i < value.length(); i++)
 		{
-			if (cpu->read8(addr + i) != value[i])
+			if (static_cast<char>(cpu->read8(addr + i)) != value[i])
 			{
 				hit = false;
 				break;
