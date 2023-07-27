@@ -617,7 +617,7 @@ namespace usb_lightgun
 				TRANSLATE_NOOP("USB", "Scales the crosshair image set above."), "1", "0.01", "10", "0.01", "%.0f%%",
 				nullptr, nullptr, 100.0f},
 			{SettingInfo::Type::String, "cursor_color", TRANSLATE_NOOP("USB", "Cursor Color"),
-				TRANSLATE_NOOP("USB", "Applys a color to the chosen crosshair images, can be used for multiple "
+				TRANSLATE_NOOP("USB", "Applies a color to the chosen crosshair images, can be used for multiple "
 									  "players. Specify in HTML/CSS format (e.g. #aabbcc)"),
 				"#ffffff"},
 			{SettingInfo::Type::Boolean, "custom_config", TRANSLATE_NOOP("USB", "Manual Screen Configuration"),
