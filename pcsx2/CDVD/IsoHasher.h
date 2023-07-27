@@ -42,7 +42,7 @@ public:
 
 	static std::string_view GetTrackTypeString(u32 type);
 
-	const u32 GetTrackCount() const { return static_cast<u32>(m_tracks.size()); }
+	u32 GetTrackCount() const { return static_cast<u32>(m_tracks.size()); }
 	const Track& GetTrack(u32 n) const { return m_tracks.at(n); }
 	const std::vector<Track>& GetTracks() const { return m_tracks; }
 	bool IsCD() const { return m_is_cd; }
