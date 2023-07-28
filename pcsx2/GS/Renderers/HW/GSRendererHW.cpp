@@ -4933,8 +4933,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		const bool commutative_depth = (m_conf.depth.ztst == ZTST_GEQUAL && m_vt.m_eq.z) || (m_conf.depth.ztst == ZTST_ALWAYS);
 		const bool commutative_alpha = (m_context->ALPHA.C != 1); // when either Alpha Src or a constant
 
-		ate_RGBA_then_Z = (m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY) && commutative_depth;
-		ate_RGB_then_ZA = (m_cached_ctx.TEST.AFAIL == AFAIL_RGB_ONLY) && commutative_depth && commutative_alpha;
+		ate_RGBA_then_Z = m_cached_ctx.TEST.GetAFAIL(m_cached_ctx.FRAME.PSM) == AFAIL_FB_ONLY && commutative_depth;
+		ate_RGB_then_ZA = m_cached_ctx.TEST.GetAFAIL(m_cached_ctx.FRAME.PSM) == AFAIL_RGB_ONLY && commutative_depth && commutative_alpha;
 	}
 
 	if (ate_RGBA_then_Z)
@@ -5030,8 +5030,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		bool g = m_conf.colormask.wg;
 		bool b = m_conf.colormask.wb;
 		bool a = m_conf.colormask.wa;
-
-		switch (m_cached_ctx.TEST.AFAIL)
+		const int fail_type = m_cached_ctx.TEST.GetAFAIL(m_cached_ctx.FRAME.PSM);
+		switch (fail_type)
 		{
 			case AFAIL_KEEP: z = r = g = b = a = false; break; // none
 			case AFAIL_FB_ONLY: z = false; break; // rgba
@@ -5159,7 +5159,7 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 		return CLUTDrawTestResult::NotCLUTDraw;
 
 	// Keep the draws simple, no alpha testing, blending, mipmapping, Z writes, and make sure it's flat.
-	const bool fb_only = m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.AFAIL == 1 && m_cached_ctx.TEST.ATST == ATST_NEVER;
+	const bool fb_only = m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.GetAFAIL(m_cached_ctx.FRAME.PSM) == AFAIL_FB_ONLY && m_cached_ctx.TEST.ATST == ATST_NEVER;
 
 	// No Z writes, unless it's points, then it's quite likely to be a palette and they left it on.
 	if (!m_cached_ctx.ZBUF.ZMSK && !fb_only && !(m_vt.m_primclass == GS_POINT_CLASS))

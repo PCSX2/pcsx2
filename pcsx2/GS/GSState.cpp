@@ -3788,9 +3788,10 @@ bool GSState::TryAlphaTest(u32& fm, const u32 fm_mask, u32& zm)
 
 	const u32 framemask = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
 	const u32 framemaskalpha = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk & 0xFF000000;
+	const u32 fail_type = m_context->TEST.GetAFAIL(m_context->FRAME.PSM);
 	// Alpha test can only control the write of some channels. If channels are already masked
 	// the alpha test is therefore a nop.
-	switch (m_context->TEST.AFAIL)
+	switch (fail_type)
 	{
 		case AFAIL_KEEP:
 			break;
@@ -3803,7 +3804,7 @@ bool GSState::TryAlphaTest(u32& fm, const u32 fm_mask, u32& zm)
 				return true;
 			break;
 		case AFAIL_RGB_ONLY:
-			if (zm == 0xFFFFFFFF && ((fm & framemaskalpha) == framemaskalpha || GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 1))
+			if (zm == 0xFFFFFFFF && (fm & framemaskalpha) == framemaskalpha)
 				return true;
 			break;
 		default:
@@ -3887,7 +3888,7 @@ bool GSState::TryAlphaTest(u32& fm, const u32 fm_mask, u32& zm)
 
 	if (!pass)
 	{
-		switch (m_context->TEST.AFAIL)
+		switch (fail_type)
 		{
 			case AFAIL_KEEP:
 				fm = zm = 0xffffffff;
