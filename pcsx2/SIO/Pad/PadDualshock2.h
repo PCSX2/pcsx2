@@ -96,6 +96,10 @@ private:
 	// a way to simulate pressure sensitive controls.
 	float pressureModifier;
 	float buttonDeadzone;
+	// Used to store the last vibration mapping request the PS2 made for the small motor.
+	u8 smallMotorLastConfig = 0xff;
+	// Used to store the last vibration mapping request the PS2 made for the large motor.
+	u8 largeMotorLastConfig = 0xff;
 
 	u8 Mystery(u8 commandByte);
 	u8 ButtonQuery(u8 commandByte);
