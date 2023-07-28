@@ -2276,6 +2276,9 @@ SCED-51700:
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     autoFlush: 2 # Fixes lighting.
+SCED-51728:
+  name: "EverQuest - Online Adventures [Demo]"
+  region: "PAL-E"
 SCED-51899:
   name: "PlayStation Experience [Demo]"
   region: "PAL-E"
@@ -9959,6 +9962,11 @@ SLED-51902:
     halfPixelOffset: 3 # Fixes double image.
     gpuTargetCLUT: 1 # Fixes sun penetrating buildings.
     autoFlush: 1 # Fixes sun occlusion.
+SLED-51961:
+  name: "Prince of Persia - The Sands of Time [Demo]"
+  region: "PAL-E"
+  gsHWFixes:
+    autoFlush: 2 # Reduces post-processing misalignment.
 SLED-51975:
   name: "Need for Speed - Underground [Demo]"
   region: "PAL-E"
@@ -10162,6 +10170,9 @@ SLED-53537:
   gsHWFixes:
     autoFlush: 2 # Softens bloom on objects and cars.
     halfPixelOffset: 2 # Fixes misaligned bloom on objects and cars.
+SLED-53591:
+  name: "Fahrenheit [Demo]"
+  region: "PAL-E"
 SLED-53650:
   name: "Need for Speed - Most Wanted"
   region: "PAL-E"
@@ -10286,6 +10297,9 @@ SLED-54401:
     mergeSprite: 1 # Fixes misaligned bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Fixes sun occlusion and brightness.
+SLED-54445:
+  name: "Pro Evolution Soccer 6 [Demo]"
+  region: "PAL-M5"
 SLED-54509:
   name: "Guitar Hero II [Demo]"
   region: "PAL-M5"
