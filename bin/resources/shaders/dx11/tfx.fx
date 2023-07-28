@@ -661,7 +661,7 @@ float4 sample_color(float2 st, float uv_w)
 float4 tfx(float4 T, float4 C)
 {
 	float4 C_out;
-	float4 FxT = trunc(trunc(C) * T / 128.0f);
+	float4 FxT = trunc((C * T) / 128.0f);
 
 #if (PS_TFX == 0)
 	C_out = FxT;
