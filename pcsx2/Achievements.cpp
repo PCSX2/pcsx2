@@ -130,7 +130,7 @@ namespace Achievements
 	static void UpdateRichPresence();
 	static void SendPingCallback(s32 status_code, const std::string& content_type, Common::HTTPDownloader::Request::Data data);
 	static void UnlockAchievementCallback(s32 status_code, const std::string& content_type, Common::HTTPDownloader::Request::Data data);
-	static void SubmitLeaderboardCallback(s32 status_code, const std::string& content_type, Common::HTTPDownloader::Request::Data data);
+	static void SubmitLeaderboardCallback(s32 status_code, const std::string& content_type, Common::HTTPDownloader::Request::Data data, u32 lboard_id);
 
 	static bool s_active = false;
 	static bool s_logged_in = false;
@@ -165,7 +165,6 @@ namespace Achievements
 	static Common::Timer s_last_ping_time;
 
 	static u32 s_last_queried_lboard = 0;
-	static u32 s_submitting_lboard_id = 0;
 	static std::optional<std::vector<Achievements::LeaderboardEntry>> s_lboard_entries;
 
 	template <typename T>
@@ -1817,7 +1816,7 @@ void Achievements::UnlockAchievementCallback(s32 status_code, const std::string&
 	Console.WriteLn("Successfully unlocked achievement %u, new score %u", response.awarded_achievement_id, response.new_player_score);
 }
 
-void Achievements::SubmitLeaderboardCallback(s32 status_code, const std::string& content_type, Common::HTTPDownloader::Request::Data data)
+void Achievements::SubmitLeaderboardCallback(s32 status_code, const std::string& content_type, Common::HTTPDownloader::Request::Data data, u32 lboard_id)
 {
 	if (!VMManager::HasValidVM())
 		return;
@@ -1831,11 +1830,7 @@ void Achievements::SubmitLeaderboardCallback(s32 status_code, const std::string&
 	// Force the next leaderboard query to repopulate everything, just in case the user wants to see their new score
 	s_last_queried_lboard = 0;
 
-	// RA API doesn't send us the leaderboard ID back.. hopefully we don't submit two at once :/
-	if (s_submitting_lboard_id == 0)
-		return;
-
-	const Leaderboard* lb = GetLeaderboardByID(std::exchange(s_submitting_lboard_id, 0u));
+	const Leaderboard* lb = GetLeaderboardByID(lboard_id);
 	if (!lb || !FullscreenUI::IsInitialized() || !EmuConfig.Achievements.Notifications)
 		return;
 
@@ -1965,16 +1960,15 @@ void Achievements::SubmitLeaderboard(u32 leaderboard_id, int value)
 		return;
 	}
 
-	std::unique_lock lock(s_achievements_mutex);
-	s_submitting_lboard_id = leaderboard_id;
-
 	RAPIRequest<rc_api_submit_lboard_entry_request_t, rc_api_init_submit_lboard_entry_request> request;
 	request.username = s_username.c_str();
 	request.api_token = s_api_token.c_str();
 	request.game_hash = s_game_hash.c_str();
 	request.leaderboard_id = leaderboard_id;
 	request.score = value;
-	request.Send(SubmitLeaderboardCallback);
+	request.Send([leaderboard_id](s32 status_code, const std::string& content_type, Common::HTTPDownloader::Request::Data data) {
+		SubmitLeaderboardCallback(status_code, content_type, std::move(data), leaderboard_id);
+	});
 
 	// Technically not going through the resource API, but since we're passing this to something else, we can't.
 	if (EmuConfig.Achievements.SoundEffects)
