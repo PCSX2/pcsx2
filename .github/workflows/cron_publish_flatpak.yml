@@ -37,5 +37,6 @@ jobs:
       cmakeflags: ""
       publish: true
       branch: stable
+      fetchTags: true
     secrets: inherit
 
