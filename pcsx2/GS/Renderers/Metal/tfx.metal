@@ -730,7 +730,7 @@ struct PSMain
 	float4 tfx(float4 T, float4 C)
 	{
 		float4 C_out;
-		float4 FxT = trunc(trunc(C) * T / 128.f);
+		float4 FxT = trunc((C * T) / 128.f);
 		if (PS_TFX == 0)
 			C_out = FxT;
 		else if (PS_TFX == 1)

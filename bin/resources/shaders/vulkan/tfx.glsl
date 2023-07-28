@@ -849,7 +849,7 @@ vec4 sample_color(vec2 st)
 vec4 tfx(vec4 T, vec4 C)
 {
 	vec4 C_out;
-	vec4 FxT = trunc(trunc(C) * T / 128.0f);
+	vec4 FxT = trunc((C * T) / 128.0f);
 
 #if (PS_TFX == 0)
 	C_out = FxT;
