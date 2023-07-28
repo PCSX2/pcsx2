@@ -990,7 +990,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 		if (!TryAlphaTest(fm, fm_mask, zm))
 		{
 			gd.sel.atst = context->TEST.ATST;
-			gd.sel.afail = context->TEST.AFAIL;
+			gd.sel.afail = context->TEST.GetAFAIL(context->FRAME.PSM);
 
 			gd.aref = GSVector4i((int)context->TEST.AREF);
 
