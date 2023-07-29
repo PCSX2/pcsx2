@@ -2187,11 +2187,6 @@ void GSState::ReadLocalMemoryUnsync(u8* mem, int qwc, GIFRegBITBLTBUF BITBLTBUF,
 	}
 }
 
-void GSState::PurgePool()
-{
-	g_gs_device->PurgePool();
-}
-
 void GSState::PurgeTextureCache()
 {
 }
@@ -2608,17 +2603,6 @@ int GSState::Defrost(const freezeData* fd)
 	ResetPCRTC();
 
 	return 0;
-}
-
-void GSState::SetGameCRC(u32 crc)
-{
-	m_crc = crc;
-	UpdateCRCHacks();
-}
-
-void GSState::UpdateCRCHacks()
-{
-	m_game = CRC::Lookup(GSConfig.UserHacks_DisableRenderFixes ? 0 : m_crc);
 }
 
 //

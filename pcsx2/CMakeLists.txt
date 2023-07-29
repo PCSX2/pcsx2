@@ -518,7 +518,6 @@ set(pcsx2GSSources
 	GS/GSAlignedClass.cpp
 	GS/GSCapture.cpp
 	GS/GSClut.cpp
-	GS/GSCrc.cpp
 	GS/GSDrawingContext.cpp
 	GS/GSDump.cpp
 	GS/GSLocalMemory.cpp
@@ -554,7 +553,6 @@ set(pcsx2GSHeaders
 	GS/GSBlock.h
 	GS/GSCapture.h
 	GS/GSClut.h
-	GS/GSCrc.h
 	GS/GSDrawingContext.h
 	GS/GSDrawingEnvironment.h
 	GS/GSDump.h

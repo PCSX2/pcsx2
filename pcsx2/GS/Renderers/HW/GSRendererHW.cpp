@@ -76,13 +76,6 @@ GSTexture* GSRendererHW::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVecto
 	return g_texture_cache->LookupPaletteSource(CBP, CPSM, CBW, offset, scale, size);
 }
 
-void GSRendererHW::SetGameCRC(u32 crc)
-{
-	GSRenderer::SetGameCRC(crc);
-
-	GSTextureReplacements::GameChanged();
-}
-
 bool GSRendererHW::CanUpscale()
 {
 	return GSConfig.UpscaleMultiplier != 1.0f;

@@ -202,6 +202,7 @@ static bool OpenGSRenderer(GSRendererType renderer, u8* basemem)
 
 	g_gs_renderer->SetRegsMem(basemem);
 	g_gs_renderer->ResetPCRTC();
+	g_gs_renderer->UpdateRenderFixes();
 	g_perfmon.Reset();
 	return true;
 }
@@ -239,7 +240,6 @@ bool GSreopen(bool recreate_device, bool recreate_renderer, const Pcsx2Config::G
 	}
 
 	u8* basemem = g_gs_renderer->GetRegsMem();
-	const u32 gamecrc = g_gs_renderer->GetGameCRC();
 
 	freezeData fd = {};
 	std::unique_ptr<u8[]> fd_data;
@@ -309,8 +309,6 @@ bool GSreopen(bool recreate_device, bool recreate_renderer, const Pcsx2Config::G
 			Console.Error("(GSreopen) Failed to defrost");
 			return false;
 		}
-
-		g_gs_renderer->SetGameCRC(gamecrc);
 	}
 
 	if (!capture_filename.empty())
@@ -504,9 +502,10 @@ void GSThrottlePresentation()
 	Threading::SleepUntil(s_next_manual_present_time);
 }
 
-void GSSetGameCRC(u32 crc)
+void GSGameChanged()
 {
-	g_gs_renderer->SetGameCRC(crc);
+	if (GSConfig.UseHardwareRenderer())
+		GSTextureReplacements::GameChanged();
 }
 
 void GSResizeDisplayWindow(int width, int height, float scale)
@@ -731,7 +730,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		GSConfig.BeforeDrawFunctionId != old_config.BeforeDrawFunctionId ||
 		GSConfig.MoveHandlerFunctionId != old_config.MoveHandlerFunctionId)
 	{
-		g_gs_renderer->UpdateCRCHacks();
+		g_gs_renderer->UpdateRenderFixes();
 	}
 
 	// renderer-specific options (e.g. auto flush, TC offset)
