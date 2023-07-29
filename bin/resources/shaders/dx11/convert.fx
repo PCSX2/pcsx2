@@ -13,8 +13,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef SHADER_MODEL // make safe to include in resource file to enforce dependency
-
 struct VS_INPUT
 {
 	float4 p : POSITION;
@@ -413,5 +411,3 @@ float ps_stencil_image_init_1(PS_INPUT input) : SV_Target
 		c = float(0x7FFFFFFF);
 	return c;
 }
-
-#endif

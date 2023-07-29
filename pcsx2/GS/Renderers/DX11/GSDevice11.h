@@ -102,10 +102,9 @@ public:
 		std::vector<mcstr> mout;
 
 	public:
-		ShaderMacro(D3D_FEATURE_LEVEL fl);
 		void AddMacro(const char* n, int d);
 		void AddMacro(const char* n, std::string d);
-		D3D_SHADER_MACRO* GetPtr(void);
+		D3D_SHADER_MACRO* GetPtr();
 	};
 
 private:
@@ -156,7 +155,6 @@ private:
 	u32 m_vb_pos = 0; // bytes
 	u32 m_ib_pos = 0; // indices/sizeof(u32)
 	u32 m_structured_vb_pos = 0; // bytes
-	int m_d3d_texsize = 0;
 
 	bool m_allow_tearing_supported = false;
 	bool m_using_flip_model_swap_chain = true;

@@ -1809,7 +1809,7 @@ bool GSDeviceOGL::CompileFXAAProgram()
 		return false;
 	}
 
-	const std::string ps(GetShaderSource("ps_main", GL_FRAGMENT_SHADER, shader->c_str(), fxaa_macro));
+	const std::string ps(GetShaderSource("main", GL_FRAGMENT_SHADER, shader->c_str(), fxaa_macro));
 	std::optional<GLProgram> prog = m_shader_cache.GetProgram(m_convert.vs, ps);
 	if (!prog.has_value())
 	{

@@ -13,12 +13,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef SHADER_MODEL // make safe to include in resource file to enforce dependency
-
-#ifndef PS_SCALE_FACTOR
-#define PS_SCALE_FACTOR 1
-#endif
-
 struct VS_INPUT
 {
 	float4 p : POSITION;
@@ -451,5 +445,3 @@ PS_OUTPUT ps_automagical_supersampling(PS_INPUT input)
 	output.c = float4(col / div, 1);
 	return output;
 }
-
-#endif
