@@ -72,12 +72,6 @@ static constexpr sampler MAIN_SAMPLER(coord::normalized, address::clamp_to_edge,
                              [FXAA CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-// We don't use gather4 for alpha/luminance because it would require an additional
-// pass to compute the values, which would be slower than the extra shader loads.
-#if (FXAA_HLSL_5 == 1 || FXAA_GLSL_130 == 1 || FXAA_GLSL_VK == 1) || !defined(__METAL_VERSION__)
-#define FXAA_GATHER4_ALPHA 0
-#endif
-
 #if (FXAA_HLSL_5 == 1)
 struct FxaaTex { SamplerState smpl; Texture2D tex; };
 #define FxaaTexTop(t, p) t.tex.SampleLevel(t.smpl, p, 0.0)
@@ -97,12 +91,6 @@ struct FxaaTex { SamplerState smpl; Texture2D tex; };
 #define FxaaTex sampler2D
 #define FxaaTexTop(t, p) textureLod(t, p, 0.0)
 #define FxaaTexOff(t, p, o, r) textureLodOffset(t, p, 0.0, o)
-
-#if (FXAA_GATHER4_ALPHA == 1)
-// use #extension GL_ARB_gpu_shader5 : enable
-#define FxaaTexAlpha4(t, p) textureGather(t, p, 3)
-#define FxaaTexOffAlpha4(t, p, o) textureGatherOffset(t, p, o, 3)
-#endif
 
 #elif defined(__METAL_VERSION__)
 #define FxaaTex texture2d<float>
@@ -192,21 +180,6 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	posM.x = pos.x;
 	posM.y = pos.y;
 
-	#if (FXAA_GATHER4_ALPHA == 1)
-	float4 rgbyM = FxaaTexTop(tex, posM);
-	float4 luma4A = FxaaTexAlpha4(tex, posM);
-	float4 luma4B = FxaaTexOffAlpha4(tex, posM, int2(-1, -1));
-	rgbyM.w = RGBLuminance(rgbyM.xyz);
-
-	#define lumaM rgbyM.w
-	#define lumaE luma4A.z
-	#define lumaS luma4A.x
-	#define lumaSE luma4A.y
-	#define lumaNW luma4B.w
-	#define lumaN luma4B.z
-	#define lumaW luma4B.x
-
-	#else
 	float4 rgbyM = FxaaTexTop(tex, posM);
 	rgbyM.w = RGBLuminance(rgbyM.xyz);
 	#define lumaM rgbyM.w
@@ -215,7 +188,6 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	float lumaE = FxaaLuma(FxaaTexOff(tex, posM, int2( 1, 0), fxaaRcpFrame.xy));
 	float lumaN = FxaaLuma(FxaaTexOff(tex, posM, int2( 0,-1), fxaaRcpFrame.xy));
 	float lumaW = FxaaLuma(FxaaTexOff(tex, posM, int2(-1, 0), fxaaRcpFrame.xy));
-	#endif
 
 	float maxSM = max(lumaS, lumaM);
 	float minSM = min(lumaS, lumaM);
@@ -235,15 +207,10 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	if(earlyExit) { return rgbyM; }
 	#endif
 
-	#if (FXAA_GATHER4_ALPHA == 0)
 	float lumaNW = FxaaLuma(FxaaTexOff(tex, posM, int2(-1,-1), fxaaRcpFrame.xy));
 	float lumaSE = FxaaLuma(FxaaTexOff(tex, posM, int2( 1, 1), fxaaRcpFrame.xy));
 	float lumaNE = FxaaLuma(FxaaTexOff(tex, posM, int2( 1,-1), fxaaRcpFrame.xy));
 	float lumaSW = FxaaLuma(FxaaTexOff(tex, posM, int2(-1, 1), fxaaRcpFrame.xy));
-	#else
-	float lumaNE = FxaaLuma(FxaaTexOff(tex, posM, int2( 1,-1), fxaaRcpFrame.xy));
-	float lumaSW = FxaaLuma(FxaaTexOff(tex, posM, int2(-1, 1), fxaaRcpFrame.xy));
-	#endif
 
 	float lumaNS = lumaN + lumaS;
 	float lumaWE = lumaW + lumaE;
