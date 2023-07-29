@@ -835,7 +835,7 @@ void MainWindow::updateWindowState(bool force_visible)
 	const bool has_window = s_vm_valid || m_display_widget;
 
 	// Need to test both valid and display widget because of startup (vm invalid while window is created).
-	const bool visible = force_visible || !hide_window || !has_window;
+	const bool visible = (force_visible || !hide_window || !has_window) && !QtHost::InNoGUIMode();
 	if (isVisible() != visible)
 		setVisible(visible);
 
@@ -1925,7 +1925,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 {
 	// If we're rendering to main and were hidden (e.g. coming back from fullscreen),
 	// make sure we're visible before trying to add ourselves. Otherwise Wayland breaks.
-	if (!fullscreen && render_to_main && !isVisible())
+	if (!fullscreen && render_to_main && !isVisible() && !QtHost::InNoGUIMode())
 	{
 		setVisible(true);
 		QGuiApplication::sync();

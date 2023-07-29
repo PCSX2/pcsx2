@@ -622,7 +622,7 @@ void Host::CheckForSettingsChanges(const Pcsx2Config& old_config)
 
 bool EmuThread::shouldRenderToMain() const
 {
-	return !Host::GetBoolSettingValue("UI", "RenderToSeparateWindow", false) && !QtHost::InNoGUIMode();
+	return true; // !Host::GetBoolSettingValue("UI", "RenderToSeparateWindow", false) && !QtHost::InNoGUIMode();
 }
 
 void EmuThread::toggleSoftwareRendering()
