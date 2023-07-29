@@ -601,8 +601,6 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 		}
 		case MsgSetDynamicSetting:
 		{
-			if (!VMManager::HasValidVM())
-				goto error;
 			if (!SafetyChecks(buf_cnt, 1, ret_cnt, 1, buf_size))
 				goto error;
 
@@ -621,6 +619,9 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				case DynamicSettingDisableRendering:
 				{
 					const u8 value = FromSpan<u8>(buf, buf_cnt + 1);
+
+					if (!VMManager::HasValidVM())
+						goto error;
 
 					// switch if rendering has changed
 					if (g_gs_renderer && ((GSConfig.Renderer == GSRendererType::Null && !value) || (GSConfig.Renderer != GSRendererType::Null && value)))
