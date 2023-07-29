@@ -3137,37 +3137,7 @@ bool GSRendererHW::TestChannelShuffle(GSTextureCache::Target* src)
 
 __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only)
 {
-	// First let's check we really have a channel shuffle effect
-	if (m_game.title == CRC::Tekken5)
-	{
-		if (m_cached_ctx.FRAME.FBW == 1)
-		{
-			// Used in stages: Secret Garden, Acid Rain, Moonlit Wilderness
-			GL_INS("Tekken5 RGB Channel");
-			if (test_only)
-			{
-				pxAssertMsg((m_context->TEX0.TBP0 & 31) == 0, "TEX0 should be page aligned");
-				m_cached_ctx.FRAME.FBP = m_context->TEX0.TBP0 >> 5;
-				return true;
-			}
-
-			m_conf.ps.channel = ChannelFetch_RGB;
-			m_cached_ctx.FRAME.FBMSK = 0xFF000000;
-			// 12 pages: 2 calls by channel, 3 channels, 1 blit
-			// Minus current draw call
-			m_skip = 12 * (3 + 3 + 1) - 1;
-		}
-		else
-		{
-			// Could skip model drawing if wrongly detected
-			if (test_only)
-				return false;
-
-			m_channel_shuffle = false;
-			return false;
-		}
-	}
-	else if ((src->m_texture->GetType() == GSTexture::Type::DepthStencil) && !src->m_32_bits_fmt)
+	if ((src->m_texture->GetType() == GSTexture::Type::DepthStencil) && !src->m_32_bits_fmt)
 	{
 		// So far 2 games hit this code path. Urban Chaos and Tales of Abyss
 		// UC: will copy depth to green channel
