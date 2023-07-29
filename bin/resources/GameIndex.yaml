@@ -18833,26 +18833,36 @@ SLES-53028:
   region: "PAL-E"
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
+  gsHWFixes:
+    getSkipCount: "GSC_HitmanBloodMoney"
 SLES-53029:
   name: "Hitman - Blood Money"
   region: "PAL-F"
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
+  gsHWFixes:
+    getSkipCount: "GSC_HitmanBloodMoney"
 SLES-53030:
   name: "Hitman - Blood Money"
   region: "PAL-G"
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
+  gsHWFixes:
+    getSkipCount: "GSC_HitmanBloodMoney"
 SLES-53031:
   name: "Hitman - Blood Money"
   region: "PAL-I"
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
+  gsHWFixes:
+    getSkipCount: "GSC_HitmanBloodMoney"
 SLES-53032:
   name: "Hitman - Blood Money"
   region: "PAL-S"
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
+  gsHWFixes:
+    getSkipCount: "GSC_HitmanBloodMoney"
 SLES-53035:
   name: "Masters of the Universe - He-Man - Defender of Greyskull"
   region: "PAL-E"
