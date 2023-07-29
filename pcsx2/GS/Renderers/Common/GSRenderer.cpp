@@ -47,6 +47,7 @@
 
 u8 FRAME_BUFFER_COPY[512 * 448 * 4];
 int FRAME_BUFFER_COPY_ACTIVE = 0;
+GSTexture* FRAME_BUFFER_RT_TEXTURE;
 
 static constexpr std::array<PresentShader, 8> s_tv_shader_indices = {
 	PresentShader::COPY, PresentShader::SCANLINE,
@@ -73,6 +74,7 @@ GSRenderer::GSRenderer()
 	: m_shader_time_start(Common::Timer::GetCurrentValue())
 {
 	s_last_draw_rect = GSVector4::zero();
+	FRAME_BUFFER_RT_TEXTURE = g_gs_device->CreateRenderTarget(512, 448, GSTexture::Format::Color, false);
 }
 
 GSRenderer::~GSRenderer() = default;
@@ -781,55 +783,57 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 	}
 	else if (FRAME_BUFFER_COPY_ACTIVE > 0)
 	{
-		if (GSTexture* current = g_gs_device->GetCurrent())
+		if (current)
 		{
-			GSVector2i size = GSVector2i(512, 448);
-
-			bool res;
-			GSTexture::GSMap m;
-			if (size == current->GetSize())
-				res = g_gs_device->DownloadTexture(current, GSVector4i(0, 0, size.x, size.y), m);
-			else
-				res = g_gs_device->DownloadTextureConvert(current, GSVector4(0, 0, 1, 1), size, GSTexture::Format::Color, ShaderConvert::COPY, m, true);
-
-			if (res)
+			// We're not expecting screenshots to be fast, so just allocate a download texture on demand.
+			if (FRAME_BUFFER_RT_TEXTURE)
 			{
-				const int w = 512;
-				const int h = 448;
-				u8* dst = (u8*)FRAME_BUFFER_COPY;
-				u8* src = (u8*)m.bits;
-				int dstpitch = w * 4;
-				int srcpitch = m.pitch;
-
-				dst += dstpitch * (h - 1);
-				dstpitch = -dstpitch;
-
-				for (int j = 0; j < h; j++, dst += dstpitch, src += srcpitch)
+				std::unique_ptr<GSDownloadTexture> dl(g_gs_device->CreateDownloadTexture(512, 448, GSTexture::Format::Color));
+				if (dl)
 				{
-					if (!g_gs_device->IsRBSwapped())
+					const GSVector4i rc(0, 0, 512, 448);
+					g_gs_device->StretchRect(current, src_uv, FRAME_BUFFER_RT_TEXTURE, GSVector4(rc), ShaderConvert::TRANSPARENCY_FILTER);
+					dl->CopyFromTexture(rc, FRAME_BUFFER_RT_TEXTURE, rc, 0);
+					dl->Flush();
+
+					if (dl->Map(rc))
 					{
-						GSVector4i* s = (GSVector4i*)src;
-						GSVector4i* d = (GSVector4i*)dst;
+						const int w = 512;
+						const int h = 448;
+						u8* dst = (u8*)FRAME_BUFFER_COPY;
+						u8* src = (u8*)dl->GetMapPointer();
+						int dstpitch = w * 4;
+						int srcpitch = dl->GetMapPitch();
 
-						GSVector4i mask(2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15);
+						dst += dstpitch * (h - 1);
+						dstpitch = -dstpitch;
 
-						for (int i = 0, w4 = w >> 2; i < w4; i++)
+						for (int j = 0; j < h; j++, dst += dstpitch, src += srcpitch)
 						{
-							d[i] = s[i].shuffle8(mask);
+							if (!g_gs_device->IsRBSwapped())
+							{
+								GSVector4i* s = (GSVector4i*)src;
+								GSVector4i* d = (GSVector4i*)dst;
+
+								GSVector4i mask(2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15);
+
+								for (int i = 0, w4 = w >> 2; i < w4; i++)
+								{
+									d[i] = s[i].shuffle8(mask);
+								}
+							}
+							else
+							{
+								memcpy(dst, src, w * 4);
+							}
 						}
 					}
-					else
-					{
-						memcpy(dst, src, w * 4);
-					}
 				}
-				g_gs_device->DownloadTextureComplete();
 			}
 		}
 
 		FRAME_BUFFER_COPY_ACTIVE--;
 	}
-#endif
 }
 
 void GSRenderer::QueueSnapshot(const std::string& path, u32 gsdump_frames)

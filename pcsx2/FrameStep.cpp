@@ -3,8 +3,10 @@
 #include "Counters.h"
 #include "DebugTools/Debug.h"
 #include "MemoryTypes.h"
-#include "gui/MainFrame.h"
 #include "FrameStep.h"
+#include "VMManager.h"
+#include "Host.h"
+#include <common/Threading.h>
 
 FrameStep g_FrameStep;
 
@@ -21,11 +23,11 @@ void FrameStep::CheckPauseStatus()
 
 void FrameStep::HandlePausing()
 {
-	if (pauseEmulation && GetCoreThread().IsOpen() && GetCoreThread().IsRunning())
+	if (pauseEmulation && VMManager::GetState() == VMState::Running)
 	{
 		emulationCurrentlyPaused = true;
 		while (emulationCurrentlyPaused && !resumeEmulation) {
-			if (sleepWhileWaiting) Sleep(1); // sleep until resumeEmulation is true
+			if (sleepWhileWaiting) Threading::Sleep(1); // sleep until resumeEmulation is true
 			// otherwise just eat cycle until we can
 			//volatile int i = 0;
 			//i++;

@@ -1,0 +1,128 @@
+SymInit: Symbol-SearchPath: '.', symOptions: 530, UserName: 'dna11'
+OS-Version: 10.0.22621 () 0x100-0x1
+M:\VS\pcsx2-emuinterop\bin\pcsx2-qtx64-avx2-dbg.exe:pcsx2-qtx64-avx2-dbg.exe (00007FF619B20000), size: 387198976 (result: 0), SymType: 'PDB', PDB: 'M:\VS\pcsx2-emuinterop\bin\pcsx2-qtx64-avx2-dbg.pdb', fileVersion: 1.7.0.0
+C:\Windows\SYSTEM32\ntdll.dll:ntdll.dll (00007FFCDD730000), size: 2179072 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\ntdll.dll', fileVersion: 10.0.22621.1928
+C:\Windows\System32\KERNEL32.DLL:KERNEL32.DLL (00007FFCDBFB0000), size: 794624 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\KERNEL32.DLL', fileVersion: 10.0.22621.1928
+C:\Windows\System32\KERNELBASE.dll:KERNELBASE.dll (00007FFCDAFD0000), size: 3813376 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\KERNELBASE.dll', fileVersion: 10.0.22621.1928
+C:\Windows\System32\USER32.dll:USER32.dll (00007FFCDD0C0000), size: 1744896 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\USER32.dll', fileVersion: 10.0.22621.1928
+C:\Windows\System32\win32u.dll:win32u.dll (00007FFCDAE80000), size: 155648 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\win32u.dll', fileVersion: 10.0.22621.1992
+C:\Windows\System32\GDI32.dll:GDI32.dll (00007FFCDC130000), size: 167936 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\GDI32.dll', fileVersion: 10.0.22621.1778
+C:\Windows\System32\gdi32full.dll:gdi32full.dll (00007FFCDB380000), size: 1150976 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\gdi32full.dll', fileVersion: 10.0.22621.1778
+M:\VS\pcsx2-emuinterop\bin\Qt6Cored.dll:Qt6Cored.dll (00007FFBF5740000), size: 15458304 (result: 0), SymType: '-exported-', PDB: 'M:\VS\pcsx2-emuinterop\bin\Qt6Cored.dll', fileVersion: 6.5.0.0
+C:\Windows\System32\msvcp_win.dll:msvcp_win.dll (00007FFCDAB30000), size: 630784 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\msvcp_win.dll', fileVersion: 10.0.22621.608
+M:\VS\pcsx2-emuinterop\bin\Qt6Widgetsd.dll:Qt6Widgetsd.dll (00007FFBF47D0000), size: 16158720 (result: 0), SymType: '-exported-', PDB: 'M:\VS\pcsx2-emuinterop\bin\Qt6Widgetsd.dll', fileVersion: 6.5.0.0
+M:\VS\pcsx2-emuinterop\bin\Qt6Guid.dll:Qt6Guid.dll (00007FFBE2EA0000), size: 22691840 (result: 0), SymType: '-exported-', PDB: 'M:\VS\pcsx2-emuinterop\bin\Qt6Guid.dll', fileVersion: 6.5.0.0
+C:\Windows\System32\ucrtbase.dll:ucrtbase.dll (00007FFCDAEB0000), size: 1118208 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\ucrtbase.dll', fileVersion: 10.0.22621.608
+C:\Windows\System32\ole32.dll:ole32.dll (00007FFCDBB30000), size: 1687552 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\ole32.dll', fileVersion: 10.0.22621.1702
+C:\Windows\System32\combase.dll:combase.dll (00007FFCDC160000), size: 3706880 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\combase.dll', fileVersion: 10.0.22621.1485
+C:\Windows\System32\ADVAPI32.dll:ADVAPI32.dll (00007FFCDB510000), size: 712704 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\ADVAPI32.dll', fileVersion: 10.0.22621.1485
+C:\Windows\System32\RPCRT4.dll:RPCRT4.dll (00007FFCDBE90000), size: 1142784 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\RPCRT4.dll', fileVersion: 10.0.22621.1992
+C:\Windows\System32\msvcrt.dll:msvcrt.dll (00007FFCDCFC0000), size: 684032 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\msvcrt.dll', fileVersion: 7.0.22621.608
+C:\Windows\System32\SHELL32.dll:SHELL32.dll (00007FFCDC7C0000), size: 8359936 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\SHELL32.dll', fileVersion: 10.0.22621.1992
+C:\Windows\System32\sechost.dll:sechost.dll (00007FFCDC080000), size: 671744 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\sechost.dll', fileVersion: 10.0.22621.1635
+C:\Windows\System32\WS2_32.dll:WS2_32.dll (00007FFCDC6B0000), size: 462848 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\WS2_32.dll', fileVersion: 10.0.22621.1
+M:\VS\pcsx2-emuinterop\bin\Qt6Networkd.dll:Qt6Networkd.dll (00007FFBFADB0000), size: 4329472 (result: 0), SymType: '-exported-', PDB: 'M:\VS\pcsx2-emuinterop\bin\Qt6Networkd.dll', fileVersion: 6.5.0.0
+C:\Windows\System32\OLEAUT32.dll:OLEAUT32.dll (00007FFCDD280000), size: 880640 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\OLEAUT32.dll', fileVersion: 10.0.22621.1992
+C:\Windows\System32\IMM32.dll:IMM32.dll (00007FFCDD6B0000), size: 200704 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\IMM32.dll', fileVersion: 10.0.22621.1344
+C:\Windows\SYSTEM32\USERENV.dll:USERENV.dll (00007FFCDA130000), size: 180224 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\USERENV.dll', fileVersion: 10.0.22621.1928
+C:\Windows\System32\SETUPAPI.dll:SETUPAPI.dll (00007FFCDB620000), size: 4669440 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\SETUPAPI.dll', fileVersion: 10.0.22621.1778
+C:\Windows\SYSTEM32\MPR.dll:MPR.dll (00007FFCB9270000), size: 122880 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\MPR.dll', fileVersion: 10.0.22621.1
+C:\Windows\SYSTEM32\dwmapi.dll:dwmapi.dll (00007FFCD7F90000), size: 176128 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\dwmapi.dll', fileVersion: 10.0.22621.1635
+C:\Windows\SYSTEM32\UxTheme.dll:UxTheme.dll (00007FFCD7D10000), size: 700416 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\UxTheme.dll', fileVersion: 10.0.22621.1635
+C:\Windows\SYSTEM32\d3d11.dll:d3d11.dll (00007FFCD67E0000), size: 2453504 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\d3d11.dll', fileVersion: 10.0.22621.1928
+C:\Windows\SYSTEM32\MSVCP140D.dll:MSVCP140D.dll (00007FFBFB920000), size: 925696 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\MSVCP140D.dll', fileVersion: 14.34.31938.0
+C:\Windows\SYSTEM32\MSVCP140_1D.dll:MSVCP140_1D.dll (00007FFC037A0000), size: 40960 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\MSVCP140_1D.dll', fileVersion: 14.34.31938.0
+C:\Windows\SYSTEM32\VCRUNTIME140D.dll:VCRUNTIME140D.dll (00007FFBFF2A0000), size: 176128 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\VCRUNTIME140D.dll', fileVersion: 14.34.31938.0
+C:\Windows\SYSTEM32\dxgi.dll:dxgi.dll (00007FFCD7E80000), size: 1007616 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\dxgi.dll', fileVersion: 10.0.22621.1485
+C:\Windows\SYSTEM32\VCRUNTIME140_1D.dll:VCRUNTIME140_1D.dll (00007FFC03400000), size: 61440 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\VCRUNTIME140_1D.dll', fileVersion: 14.34.31938.0
+C:\Windows\SYSTEM32\ucrtbased.dll:ucrtbased.dll (00007FFBFAB80000), size: 2232320 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\ucrtbased.dll', fileVersion: 10.0.22621.755
+C:\Windows\SYSTEM32\dcomp.dll:dcomp.dll (00007FFCD7170000), size: 2367488 (result: 0), SymType: '-nosymbols-', PDB: 'C:\Windows\SYSTEM32\dcomp.dll', fileVersion: 10.0.22621.1928
+C:\Windows\SYSTEM32\VERSION.dll:VERSION.dll (00007FFCD3B80000), size: 40960 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\VERSION.dll', fileVersion: 10.0.22621.1
+C:\Windows\SYSTEM32\D3DCOMPILER_47.dll:D3DCOMPILER_47.dll (00007FFCD6180000), size: 4087808 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\D3DCOMPILER_47.dll', fileVersion: 10.0.22621.608
+C:\Windows\SYSTEM32\d3d12.dll:d3d12.dll (00007FFCD5A90000), size: 143360 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\d3d12.dll', fileVersion: 10.0.22621.1635
+C:\Windows\SYSTEM32\OPENGL32.dll:OPENGL32.dll (00007FFCA83D0000), size: 1048576 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\OPENGL32.dll', fileVersion: 10.0.22621.1635
+C:\Windows\SYSTEM32\WINMM.dll:WINMM.dll (00007FFCD46A0000), size: 212992 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\WINMM.dll', fileVersion: 10.0.22621.1635
+C:\Windows\SYSTEM32\DWrite.dll:DWrite.dll (00007FFCD6570000), size: 2519040 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\DWrite.dll', fileVersion: 10.0.22621.1635
+C:\Windows\SYSTEM32\MSVCP140_2D.dll:MSVCP140_2D.dll (00007FFBFB8C0000), size: 393216 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\MSVCP140_2D.dll', fileVersion: 14.34.31938.0
+C:\Windows\SYSTEM32\AUTHZ.dll:AUTHZ.dll (00007FFCD97F0000), size: 319488 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\AUTHZ.dll', fileVersion: 10.0.22621.1485
+C:\Windows\SYSTEM32\NETAPI32.dll:NETAPI32.dll (00007FFCCABD0000), size: 102400 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\NETAPI32.dll', fileVersion: 10.0.22621.674
+C:\Windows\SYSTEM32\IPHLPAPI.DLL:IPHLPAPI.DLL (00007FFCD9680000), size: 184320 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\IPHLPAPI.DLL', fileVersion: 10.0.22621.1
+C:\Windows\SYSTEM32\DNSAPI.dll:DNSAPI.dll (00007FFCD96B0000), size: 995328 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\DNSAPI.dll', fileVersion: 10.0.22621.1778
+C:\Windows\SYSTEM32\Secur32.dll:Secur32.dll (00007FFCBD770000), size: 49152 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\Secur32.dll', fileVersion: 10.0.22621.1
+C:\Windows\SYSTEM32\WINHTTP.dll:WINHTTP.dll (00007FFCD4510000), size: 1273856 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\WINHTTP.dll', fileVersion: 10.0.22621.1635
+C:\Windows\SYSTEM32\AVRT.dll:AVRT.dll (00007FFCD4BC0000), size: 45056 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\AVRT.dll', fileVersion: 10.0.22621.608
+C:\Windows\SYSTEM32\bcrypt.dll:bcrypt.dll (00007FFCDA4E0000), size: 163840 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\bcrypt.dll', fileVersion: 10.0.22621.1992
+C:\Windows\SYSTEM32\kernel.appcore.dll:kernel.appcore.dll (00007FFCD9C20000), size: 98304 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\kernel.appcore.dll', fileVersion: 10.0.22621.1
+C:\Windows\SYSTEM32\CRYPTSP.dll:CRYPTSP.dll (00007FFCDA3B0000), size: 110592 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\CRYPTSP.dll', fileVersion: 10.0.22621.1
+C:\Windows\SYSTEM32\GLU32.dll:GLU32.dll (00007FFCBCD40000), size: 184320 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\GLU32.dll', fileVersion: 10.0.22621.608
+C:\Windows\SYSTEM32\dxcore.dll:dxcore.dll (00007FFCD8000000), size: 229376 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\dxcore.dll', fileVersion: 10.0.22621.1778
+C:\Windows\SYSTEM32\SSPICLI.DLL:SSPICLI.DLL (00007FFCD9E80000), size: 270336 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\SSPICLI.DLL', fileVersion: 10.0.22621.1635
+C:\Windows\SYSTEM32\CRYPTBASE.DLL:CRYPTBASE.DLL (00007FFCDA390000), size: 49152 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\CRYPTBASE.DLL', fileVersion: 10.0.22621.1
+C:\Windows\SYSTEM32\SRVCLI.DLL:SRVCLI.DLL (00007FFCCA5A0000), size: 167936 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\SRVCLI.DLL', fileVersion: 10.0.22621.1928
+C:\Windows\SYSTEM32\NETUTILS.DLL:NETUTILS.DLL (00007FFCD9670000), size: 49152 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\NETUTILS.DLL', fileVersion: 10.0.22621.674
+C:\Windows\SYSTEM32\cfgmgr32.DLL:cfgmgr32.DLL (00007FFCDA820000), size: 319488 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\cfgmgr32.DLL', fileVersion: 10.0.22621.1344
+C:\Windows\System32\bcryptPrimitives.dll:bcryptPrimitives.dll (00007FFCDAE00000), size: 499712 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\bcryptPrimitives.dll', fileVersion: 10.0.22621.1928
+C:\Windows\System32\NSI.dll:NSI.dll (00007FFCDD070000), size: 36864 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\NSI.dll', fileVersion: 10.0.22621.1
+C:\Windows\System32\shcore.dll:shcore.dll (00007FFCDC500000), size: 987136 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\shcore.dll', fileVersion: 10.0.22621.1928
+C:\Windows\SYSTEM32\dbghelp.dll:dbghelp.dll (00007FFCD8740000), size: 2285568 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\dbghelp.dll', fileVersion: 10.0.22621.1
+C:\Windows\SYSTEM32\windows.storage.dll:windows.storage.dll (00007FFCD8970000), size: 9232384 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\windows.storage.dll', fileVersion: 10.0.22621.1992
+C:\Windows\SYSTEM32\wintypes.dll:wintypes.dll (00007FFCD9280000), size: 1302528 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\wintypes.dll', fileVersion: 10.0.22621.1485
+C:\Windows\System32\shlwapi.dll:shlwapi.dll (00007FFCDD650000), size: 385024 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\shlwapi.dll', fileVersion: 10.0.22621.1635
+C:\Windows\SYSTEM32\profapi.dll:profapi.dll (00007FFCDAA60000), size: 155648 (result: 0), SymType: '-nosymbols-', PDB: 'C:\Windows\SYSTEM32\profapi.dll', fileVersion: 10.0.22621.1928
+M:\VS\pcsx2-emuinterop\bin\QtPlugins\platforms\qwindowsd.dll:qwindowsd.dll (00007FFBFA820000), size: 3530752 (result: 0), SymType: '-exported-', PDB: 'M:\VS\pcsx2-emuinterop\bin\QtPlugins\platforms\qwindowsd.dll', fileVersion: 6.5.0.0
+C:\Windows\System32\COMDLG32.dll:COMDLG32.dll (00007FFCDD360000), size: 1011712 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\COMDLG32.dll', fileVersion: 10.0.22621.1344
+C:\Windows\SYSTEM32\WTSAPI32.dll:WTSAPI32.dll (00007FFCD7C90000), size: 81920 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\WTSAPI32.dll', fileVersion: 10.0.22621.1
+C:\Windows\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_5.82.22621.608_none_fb280a3c7926c2cc\COMCTL32.dll:COMCTL32.dll (00007FFCCD590000), size: 733184 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_5.82.22621.608_none_fb280a3c7926c2cc\COMCTL32.dll', fileVersion: 5.82.22621.608
+C:\Windows\SYSTEM32\d3d9.dll:d3d9.dll (00007FFC94610000), size: 1740800 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\d3d9.dll', fileVersion: 10.0.22621.1635
+C:\Windows\SYSTEM32\powrprof.dll:powrprof.dll (00007FFCD99F0000), size: 315392 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\powrprof.dll', fileVersion: 10.0.22621.1344
+C:\Windows\SYSTEM32\UMPDC.dll:UMPDC.dll (00007FFCD99D0000), size: 77824 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\UMPDC.dll', fileVersion: 10.0.22621.1
+C:\Windows\System32\MSCTF.dll:MSCTF.dll (00007FFCDD520000), size: 1208320 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\MSCTF.dll', fileVersion: 10.0.22621.1928
+C:\Windows\System32\clbcatq.dll:clbcatq.dll (00007FFCDC600000), size: 720896 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\clbcatq.dll', fileVersion: 2001.12.10941.16384
+C:\Windows\System32\Windows.UI.dll:Windows.UI.dll (00007FFCC0ED0000), size: 1523712 (result: 0), SymType: '-nosymbols-', PDB: 'C:\Windows\System32\Windows.UI.dll', fileVersion: 10.0.22621.1928
+C:\Windows\System32\Windows.UI.Immersive.dll:Windows.UI.Immersive.dll (00007FFCB6820000), size: 1527808 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\Windows.UI.Immersive.dll', fileVersion: 10.0.22621.1635
+M:\VS\pcsx2-emuinterop\bin\QtPlugins\styles\qwindowsvistastyled.dll:qwindowsvistastyled.dll (00007FFBFB850000), size: 421888 (result: 0), SymType: '-exported-', PDB: 'M:\VS\pcsx2-emuinterop\bin\QtPlugins\styles\qwindowsvistastyled.dll', fileVersion: 6.5.0.0
+M:\VS\pcsx2-emuinterop\bin\QtPlugins\imageformats\qgifd.dll:qgifd.dll (00007FFBFB820000), size: 163840 (result: 0), SymType: '-exported-', PDB: 'M:\VS\pcsx2-emuinterop\bin\QtPlugins\imageformats\qgifd.dll', fileVersion: 6.5.0.0
+M:\VS\pcsx2-emuinterop\bin\QtPlugins\imageformats\qicnsd.dll:qicnsd.dll (00007FFBFB7F0000), size: 188416 (result: 0), SymType: '-exported-', PDB: 'M:\VS\pcsx2-emuinterop\bin\QtPlugins\imageformats\qicnsd.dll', fileVersion: 6.5.0.0
+M:\VS\pcsx2-emuinterop\bin\QtPlugins\imageformats\qicod.dll:qicod.dll (00007FFBFB7C0000), size: 167936 (result: 0), SymType: '-exported-', PDB: 'M:\VS\pcsx2-emuinterop\bin\QtPlugins\imageformats\qicod.dll', fileVersion: 6.5.0.0
+M:\VS\pcsx2-emuinterop\bin\QtPlugins\imageformats\qjpegd.dll:qjpegd.dll (00007FFBFA710000), size: 1077248 (result: 0), SymType: '-exported-', PDB: 'M:\VS\pcsx2-emuinterop\bin\QtPlugins\imageformats\qjpegd.dll', fileVersion: 6.5.0.0
+M:\VS\pcsx2-emuinterop\bin\QtPlugins\imageformats\qsvgd.dll:qsvgd.dll (00007FFBFE740000), size: 126976 (result: 0), SymType: '-exported-', PDB: 'M:\VS\pcsx2-emuinterop\bin\QtPlugins\imageformats\qsvgd.dll', fileVersion: 6.5.0.0
+M:\VS\pcsx2-emuinterop\bin\Qt6Svgd.dll:Qt6Svgd.dll (00007FFBFA600000), size: 1081344 (result: 0), SymType: '-exported-', PDB: 'M:\VS\pcsx2-emuinterop\bin\Qt6Svgd.dll', fileVersion: 6.5.0.0
+M:\VS\pcsx2-emuinterop\bin\QtPlugins\imageformats\qtgad.dll:qtgad.dll (00007FFBFE550000), size: 131072 (result: 0), SymType: '-exported-', PDB: 'M:\VS\pcsx2-emuinterop\bin\QtPlugins\imageformats\qtgad.dll', fileVersion: 6.5.0.0
+M:\VS\pcsx2-emuinterop\bin\QtPlugins\imageformats\qtiffd.dll:qtiffd.dll (00007FFBFA4F0000), size: 1073152 (result: 0), SymType: '-exported-', PDB: 'M:\VS\pcsx2-emuinterop\bin\QtPlugins\imageformats\qtiffd.dll', fileVersion: 6.5.0.0
+M:\VS\pcsx2-emuinterop\bin\QtPlugins\imageformats\qwbmpd.dll:qwbmpd.dll (00007FFBFB7A0000), size: 122880 (result: 0), SymType: '-exported-', PDB: 'M:\VS\pcsx2-emuinterop\bin\QtPlugins\imageformats\qwbmpd.dll', fileVersion: 6.5.0.0
+M:\VS\pcsx2-emuinterop\bin\QtPlugins\imageformats\qwebpd.dll:qwebpd.dll (00007FFBF69C0000), size: 1433600 (result: 0), SymType: '-exported-', PDB: 'M:\VS\pcsx2-emuinterop\bin\QtPlugins\imageformats\qwebpd.dll', fileVersion: 6.5.0.0
+C:\Windows\SYSTEM32\TextShaping.dll:TextShaping.dll (00007FFCB8E30000), size: 720896 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\TextShaping.dll', fileVersion: 10.0.22621.1635
+C:\Windows\SYSTEM32\textinputframework.dll:textinputframework.dll (00007FFCCB670000), size: 1232896 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\textinputframework.dll', fileVersion: 10.0.22621.1928
+C:\Windows\SYSTEM32\msasn1.dll:msasn1.dll (00007FFCDA7D0000), size: 73728 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\msasn1.dll', fileVersion: 10.0.22621.819
+C:\Windows\SYSTEM32\cryptnet.dll:cryptnet.dll (00007FFCD2FA0000), size: 204800 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\cryptnet.dll', fileVersion: 10.0.22621.1
+C:\Windows\System32\CRYPT32.dll:CRYPT32.dll (00007FFCDABD0000), size: 1470464 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\CRYPT32.dll', fileVersion: 10.0.22621.1992
+C:\Windows\System32\WINTRUST.DLL:WINTRUST.DLL (00007FFCDB4A0000), size: 438272 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\WINTRUST.DLL', fileVersion: 10.0.22621.1928
+C:\Windows\System32\imagehlp.dll:imagehlp.dll (00007FFCDD080000), size: 126976 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\System32\imagehlp.dll', fileVersion: 10.0.22621.1
+C:\Windows\system32\rsaenh.dll:rsaenh.dll (00007FFCD9B90000), size: 217088 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\system32\rsaenh.dll', fileVersion: 10.0.22621.1
+C:\Windows\SYSTEM32\directxdatabasehelper.dll:directxdatabasehelper.dll (00007FFCD4650000), size: 294912 (result: 0), SymType: '-nosymbols-', PDB: 'C:\Windows\SYSTEM32\directxdatabasehelper.dll', fileVersion: 10.0.22621.1635
+C:\Windows\system32\dataexchange.dll:dataexchange.dll (00007FFCAC5A0000), size: 385024 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\system32\dataexchange.dll', fileVersion: 10.0.22621.608
+C:\Windows\system32\twinapi.appcore.dll:twinapi.appcore.dll (00007FFCD17A0000), size: 2547712 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\system32\twinapi.appcore.dll', fileVersion: 10.0.22621.1928
+C:\Windows\system32\explorerframe.dll:explorerframe.dll (00007FFCAC300000), size: 2703360 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\system32\explorerframe.dll', fileVersion: 10.0.22621.1928
+M:\VS\pcsx2-emuinterop\bin\QtPlugins\iconengines\qsvgicond.dll:qsvgicond.dll (00007FFBFB220000), size: 200704 (result: 0), SymType: '-exported-', PDB: 'M:\VS\pcsx2-emuinterop\bin\QtPlugins\iconengines\qsvgicond.dll', fileVersion: 6.5.0.0
+C:\Windows\SYSTEM32\CoreMessaging.dll:CoreMessaging.dll (00007FFCD77F0000), size: 1257472 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\CoreMessaging.dll', fileVersion: 10.0.22621.1635
+C:\Windows\SYSTEM32\CoreUIComponents.dll:CoreUIComponents.dll (00007FFCD3BB0000), size: 3588096 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\CoreUIComponents.dll', fileVersion: 10.0.22621.1635
+C:\Windows\SYSTEM32\dbgcore.DLL:dbgcore.DLL (00007FFCC20E0000), size: 204800 (result: 0), SymType: '-exported-', PDB: 'C:\Windows\SYSTEM32\dbgcore.DLL', fileVersion: 10.0.22621.1
+M:\VS\pcsx2-emuinterop\common\StackWalker.cpp (844): StackWalker::ShowCallstack
+M:\VS\pcsx2-emuinterop\common\CrashHandler.cpp (145): WriteMinidumpAndCallstack
+M:\VS\pcsx2-emuinterop\common\CrashHandler.cpp (201): CrashHandler::WriteDumpForCaller
+M:\VS\pcsx2-emuinterop\common\Assertions.cpp (123): pxOnAssertFail
+M:\VS\pcsx2-emuinterop\pcsx2\VirtualMemory.cpp (176): VirtualMemoryManager::Alloc
+M:\VS\pcsx2-emuinterop\pcsx2\VirtualMemory.cpp (316): RecompiledCodeReserve::Assign
+M:\VS\pcsx2-emuinterop\pcsx2\x86\microVU.cpp (37): mVUreserveCache
+M:\VS\pcsx2-emuinterop\pcsx2\x86\microVU.cpp (59): mVUinit
+M:\VS\pcsx2-emuinterop\pcsx2\x86\microVU.cpp (367): recMicroVU0::Reserve
+M:\VS\pcsx2-emuinterop\pcsx2\System.cpp (271): SysCpuProviderPack::SysCpuProviderPack
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.35.32215\include\memory (3393): std::make_unique<SysCpuProviderPack,0>
+M:\VS\pcsx2-emuinterop\pcsx2\VMManager.cpp (349): VMManager::Internal::CPUThreadInitialize
+M:\VS\pcsx2-emuinterop\pcsx2-qt\QtHost.cpp (379): EmuThread::run
+ERROR: SymGetLineFromAddr64, GetLastError: 487 (Address: 00007FFBF5D11740)
+00007FFBF5D11740 (Qt6Cored): (filename not available): QFileInfo::filePath
+ERROR: SymGetLineFromAddr64, GetLastError: 487 (Address: 00007FFCDBFC26AD)
+00007FFCDBFC26AD (KERNEL32): (filename not available): BaseThreadInitThunk
+ERROR: SymGetLineFromAddr64, GetLastError: 487 (Address: 00007FFCDD78AA68)
+00007FFCDD78AA68 (ntdll): (filename not available): RtlUserThreadStart

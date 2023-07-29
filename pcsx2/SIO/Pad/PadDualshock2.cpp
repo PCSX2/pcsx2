@@ -24,6 +24,9 @@
 #include "Input/InputManager.h"
 #include "Host.h"
 
+int pinePad = 0;
+u8 pineBuf[32];
+
 static const InputBindingInfo s_bindings[] = {
 	// clang-format off
 	{"Up", TRANSLATE_NOOP("Pad", "D-Pad Up"), InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_UP, GenericInputBinding::DPadUp},

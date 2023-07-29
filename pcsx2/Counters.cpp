@@ -32,7 +32,6 @@
 #include "ps2/HwInternal.h"
 #include "SIO/Sio.h"
 #include "SPU2/spu2.h"
-#include "iR5900.h"
 #include "Recording/InputRecording.h"
 #include "VMManager.h"
 #include "VUmicro.h"
@@ -662,7 +661,7 @@ static __fi void VSyncEnd(u32 sCycle)
 {
 	if (EmuConfig.EnableRecordingTools)
 	{
-		g_InputRecordingControls.CheckPauseStatus();
+		//g_InputRecordingControls.CheckPauseStatus();
 	}
 
 

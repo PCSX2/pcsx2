@@ -64,6 +64,8 @@
 #include <cmath>
 #include <csignal>
 
+extern int g_pine_slot;
+
 static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 
 EmuThread* g_emu_thread = nullptr;
@@ -1690,6 +1692,11 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 			else if (CHECK_ARG(QStringLiteral("-debugger")))
 			{
 				s_boot_and_debug = true;
+				continue;
+			}
+			else if (CHECK_ARG(QStringLiteral("-pineslot")))
+			{
+				g_pine_slot = (++it)->toInt();
 				continue;
 			}
 			else if (CHECK_ARG(QStringLiteral("-updatecleanup")))

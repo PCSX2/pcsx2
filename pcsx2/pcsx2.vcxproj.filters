@@ -2373,7 +2373,7 @@
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClInclude>
     <ClInclude Include="FrameStep.h">
-      <Filter>System\Include</Filter>
+      <Filter>System</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

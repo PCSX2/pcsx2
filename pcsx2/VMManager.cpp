@@ -181,6 +181,7 @@ static u64 s_session_start_time = 0;
 static bool s_screensaver_inhibited = false;
 
 static PINEServer s_pine_server;
+static PINEServer s_pine_server2;
 
 #ifdef ENABLE_DISCORD_PRESENCE
 static bool s_discord_presence_active = false;
@@ -375,6 +376,7 @@ void VMManager::Internal::CPUThreadShutdown()
 	ShutdownDiscordPresence();
 
 	s_pine_server.Deinitialize();
+	s_pine_server2.Deinitialize();
 
 	Achievements::Shutdown();
 
@@ -2790,17 +2792,23 @@ const std::vector<u32>& VMManager::GetSortedProcessorList()
 
 void VMManager::ReloadPINE()
 {
-	if (EmuConfig.EnablePINE && (s_pine_server.m_slot != EmuConfig.PINESlot || s_pine_server.m_end))
+	if (EmuConfig.EnablePINE && (s_pine_server.m_slot != g_pine_slot || s_pine_server.m_end))
 	{
 		if (!s_pine_server.m_end)
 		{
 			s_pine_server.Deinitialize();
 		}
-		s_pine_server.Initialize(EmuConfig.PINESlot);
+		if (!s_pine_server2.m_end)
+		{
+			s_pine_server2.Deinitialize();
+		}
+		s_pine_server.Initialize(g_pine_slot);
+		s_pine_server2.Initialize(g_pine_slot + 1);
 	}
 	else if ((!EmuConfig.EnablePINE && !s_pine_server.m_end))
 	{
 		s_pine_server.Deinitialize();
+		s_pine_server2.Deinitialize();
 	}
 }
 

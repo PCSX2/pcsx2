@@ -733,6 +733,10 @@ void eeloadHook()
 		}
 	}
 
+
+	// map extra 96mb
+	vtlb_VMap(0x02000000, 0x02000000, 0x06000000);
+
 	VMManager::Internal::ELFLoadingOnCPUThread(std::move(elfname));
 }
 

@@ -18,8 +18,6 @@
 
 #pragma once
 
-#ifndef PCSX2_CORE
-
   // PINE uses a concept of "slot" to be able to communicate with multiple
   // emulators at the same time, each slot should be unique to each emulator to
   // allow PnP and configurable by the end user so that several runs don't
@@ -36,6 +34,8 @@
 #include <WinSock2.h>
 #include <windows.h>
 #endif
+
+extern int g_pine_slot;
 
 
 class PINEServer
@@ -247,3 +247,4 @@ public:
 	void Deinitialize();
 
 }; // class SocketIPC
+

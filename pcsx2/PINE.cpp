@@ -34,25 +34,30 @@
 #include <unistd.h>
 #endif
 
+#include "MTGS.h"
 #include "Common.h"
 #include "Memory.h"
-#include "gui/AppSaveStates.h"
-#include "gui/AppCoreThread.h"
-#include "gui/SysThreads.h"
 #include "pcsx2/Counters.h"
 #include "pcsx2/Recording/InputRecordingControls.h"
+#include "pcsx2/VMManager.h"
 #include "svnrev.h"
-#include "pcsx2/gui/GSFrame.h"
+#include "SysForwardDefs.h"
 #include "PINE.h"
 #include "pcsx2/FrameStep.h"
 #include <GS/Renderers/Common/GSTexture.h>
 #include <GS/Renderers/Common/GSDevice.h>
+
+#include "SIO/Pad/Pad.h"
+#include "SIO/Pad/PadDualshock2.h"
+#include "SIO/Sio.h"
 
 #include "GS/Renderers/Common/GSRenderer.h"
 #include <Host.h>
 
 extern u8 FRAME_BUFFER_COPY[];
 extern int FRAME_BUFFER_COPY_ACTIVE;
+
+int g_pine_slot = 0;
 
 void SetPad(int port, int slot, u8* buf);
 uptr vtlb_getTblPtr(u32 addr);
@@ -311,249 +316,249 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 		// reply: XX ZZ ZZ ZZ ZZ
 		switch ((IPCCommand)buf[buf_cnt - 1])
 		{
-		case MsgRead8:
-		{
-			if (!m_vm->HasActiveMachine())
-				goto error;
-			if (!SafetyChecks(buf_cnt, 4, ret_cnt, 1, buf_size))
-				goto error;
-			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-			const u8 res = memRead8(a);
-			ToArray(ret_buffer, res, ret_cnt);
-			ret_cnt += 1;
-			buf_cnt += 4;
-			break;
-		}
+			case MsgRead8:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 1, buf_size))
+					goto error;
+				const u32 a = FromSpan<u32>(buf, buf_cnt);
+				const u8 res = memRead8(a);
+				ToResultVector(ret_buffer, res, ret_cnt);
+				ret_cnt += 1;
+				buf_cnt += 4;
+				break;
+			}
 		case MsgRead16:
-		{
-			if (!m_vm->HasActiveMachine())
-				goto error;
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
 			if (!SafetyChecks(buf_cnt, 4, ret_cnt, 2, buf_size))
 				goto error;
-			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+			const u32 a = FromSpan<u32>(buf, buf_cnt);
 			const u16 res = memRead16(a);
-			ToArray(ret_buffer, res, ret_cnt);
+			ToResultVector(ret_buffer, res, ret_cnt);
 			ret_cnt += 2;
 			buf_cnt += 4;
 			break;
 		}
 		case MsgRead32:
-		{
-			if (!m_vm->HasActiveMachine())
-				goto error;
-			if (!SafetyChecks(buf_cnt, 4, ret_cnt, 4, buf_size))
-				goto error;
-			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-			const u32 res = memRead32(a);
-			ToArray(ret_buffer, res, ret_cnt);
-			ret_cnt += 4;
-			buf_cnt += 4;
-			break;
-		}
-		case MsgRead64:
-		{
-			if (!m_vm->HasActiveMachine())
-				goto error;
-			if (!SafetyChecks(buf_cnt, 4, ret_cnt, 8, buf_size))
-				goto error;
-			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-			u64 res = 0;
-			memRead64(a, &res);
-			ToArray(ret_buffer, res, ret_cnt);
-			ret_cnt += 8;
-			buf_cnt += 4;
-			break;
-		}
-		case MsgWrite8:
-		{
-			if (!m_vm->HasActiveMachine())
-				goto error;
-			if (!SafetyChecks(buf_cnt, 1 + 4, ret_cnt, 0, buf_size))
-				goto error;
-			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-			memWrite8(a, FromArray<u8>(&buf[buf_cnt], 4));
-			buf_cnt += 5;
-			break;
-		}
-		case MsgWrite16:
-		{
-			if (!m_vm->HasActiveMachine())
-				goto error;
-			if (!SafetyChecks(buf_cnt, 2 + 4, ret_cnt, 0, buf_size))
-				goto error;
-			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-			memWrite16(a, FromArray<u16>(&buf[buf_cnt], 4));
-			buf_cnt += 6;
-			break;
-		}
-		case MsgWrite32:
-		{
-			if (!m_vm->HasActiveMachine())
-				goto error;
-			if (!SafetyChecks(buf_cnt, 4 + 4, ret_cnt, 0, buf_size))
-				goto error;
-			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-			memWrite32(a, FromArray<u32>(&buf[buf_cnt], 4));
-			buf_cnt += 8;
-			break;
-		}
-		case MsgWrite64:
-		{
-			if (!m_vm->HasActiveMachine())
-				goto error;
-			if (!SafetyChecks(buf_cnt, 8 + 4, ret_cnt, 0, buf_size))
-				goto error;
-			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-			memWrite64(a, FromArray<u64>(&buf[buf_cnt], 4));
-			buf_cnt += 12;
-			break;
-		}
-		case MsgVersion:
-		{
-			if (!m_vm->HasActiveMachine())
-				goto error;
-			char version[256] = {};
-			if (GIT_TAGGED_COMMIT) // Nightly builds
 			{
-				// tagged commit - more modern implementation of dev build versioning
-				// - there is no need to include the commit - that is associated with the tag, git is implied
-				sprintf(version, "PCSX2 Nightly - %s", GIT_TAG);
+				if (!VMManager::HasValidVM())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 4, buf_size))
+					goto error;
+				const u32 a = FromSpan<u32>(buf, buf_cnt);
+				const u32 res = memRead32(a);
+				ToResultVector(ret_buffer, res, ret_cnt);
+				ret_cnt += 4;
+				buf_cnt += 4;
+				break;
 			}
-			else
+			case MsgRead64:
 			{
-				sprintf(version, "PCSX2 %u.%u.%u-%lld", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo, SVN_REV);
+				if (!VMManager::HasValidVM())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 8, buf_size))
+					goto error;
+				const u32 a = FromSpan<u32>(buf, buf_cnt);
+				const u64 res = memRead64(a);
+				ToResultVector(ret_buffer, res, ret_cnt);
+				ret_cnt += 8;
+				buf_cnt += 4;
+				break;
 			}
-			const u32 size = strlen(version) + 1;
-			version[size] = 0x00;
-			if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
-				goto error;
-			ToArray(ret_buffer, size, ret_cnt);
-			ret_cnt += 4;
-			memcpy(&ret_buffer[ret_cnt], version, size);
-			ret_cnt += size;
-			break;
-		}
-		case MsgSaveState:
-		{
-			if (!m_vm->HasActiveMachine())
-				goto error;
-			if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size))
-				goto error;
-			StateCopy_SaveToSlot(FromArray<u8>(&buf[buf_cnt], 0));
-			buf_cnt += 1;
-			break;
-		}
-		case MsgLoadState:
-		{
-			if (!m_vm->HasActiveMachine())
-				goto error;
-			if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size))
-				goto error;
-			StateCopy_LoadFromSlot(FromArray<u8>(&buf[buf_cnt], 0), false);
-			buf_cnt += 1;
-			break;
-		}
-		case MsgTitle:
-		{
-			if (!m_vm->HasActiveMachine())
-				goto error;
-			char* title = new char[GameInfo::gameName.size() + 1];
-			sprintf(title, "%s", GameInfo::gameName.ToUTF8().data());
-			const u32 size = strlen(title) + 1;
-			title[size] = 0x00;
-			if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
-				goto error;
-			ToArray(ret_buffer, size, ret_cnt);
-			ret_cnt += 4;
-			memcpy(&ret_buffer[ret_cnt], title, size);
-			ret_cnt += size;
-			delete[] title;
-			break;
-		}
-		case MsgID:
-		{
-			if (!m_vm->HasActiveMachine())
-				goto error;
-			char* title = new char[GameInfo::gameSerial.size() + 1];
-			sprintf(title, "%s", GameInfo::gameSerial.ToUTF8().data());
-			const u32 size = strlen(title) + 1;
-			title[size] = 0x00;
-			if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
-				goto error;
-			ToArray(ret_buffer, size, ret_cnt);
-			ret_cnt += 4;
-			memcpy(&ret_buffer[ret_cnt], title, size);
-			ret_cnt += size;
-			delete[] title;
-			break;
-		}
-		case MsgUUID:
-		{
-			if (!m_vm->HasActiveMachine())
-				goto error;
-			char* title = new char[GameInfo::gameCRC.size() + 1];
-			sprintf(title, "%s", GameInfo::gameCRC.ToUTF8().data());
-			const u32 size = strlen(title) + 1;
-			title[size] = 0x00;
-			if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
-				goto error;
-			ToArray(ret_buffer, size, ret_cnt);
-			ret_cnt += 4;
-			memcpy(&ret_buffer[ret_cnt], title, size);
-			ret_cnt += size;
-			delete[] title;
-			break;
-		}
-		case MsgGameVersion:
-		{
-			if (!m_vm->HasActiveMachine())
-				goto error;
-			char* title = new char[GameInfo::gameVersion.size() + 1];
-			sprintf(title, "%s", GameInfo::gameVersion.ToUTF8().data());
-			const u32 size = strlen(title) + 1;
-			title[size] = 0x00;
-			if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
-				goto error;
-			ToArray(ret_buffer, size, ret_cnt);
-			ret_cnt += 4;
-			memcpy(&ret_buffer[ret_cnt], title, size);
-			ret_cnt += size;
-			delete[] title;
-			break;
-		}
+			case MsgWrite8:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 1 + 4, ret_cnt, 0, buf_size))
+					goto error;
+				const u32 a = FromSpan<u32>(buf, buf_cnt);
+				memWrite8(a, FromSpan<u8>(buf, buf_cnt + 4));
+				buf_cnt += 5;
+				break;
+			}
+			case MsgWrite16:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 2 + 4, ret_cnt, 0, buf_size))
+					goto error;
+				const u32 a = FromSpan<u32>(buf, buf_cnt);
+				memWrite16(a, FromSpan<u16>(buf, buf_cnt + 4));
+				buf_cnt += 6;
+				break;
+			}
+			case MsgWrite32:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 4 + 4, ret_cnt, 0, buf_size))
+					goto error;
+				const u32 a = FromSpan<u32>(buf, buf_cnt);
+				memWrite32(a, FromSpan<u32>(buf, buf_cnt + 4));
+				buf_cnt += 8;
+				break;
+			}
+			case MsgWrite64:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 8 + 4, ret_cnt, 0, buf_size))
+					goto error;
+				const u32 a = FromSpan<u32>(buf, buf_cnt);
+				memWrite64(a, FromSpan<u64>(buf, buf_cnt + 4));
+				buf_cnt += 12;
+				break;
+			}
+			case MsgVersion:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+				std::string version;
+				if (GIT_TAGGED_COMMIT) // Nightly builds
+				{
+					// tagged commit - more modern implementation of dev build versioning
+					// - there is no need to include the commit - that is associated with the tag, git is implied
+					version = fmt::format("PCSX2 Nightly - {}", GIT_TAG);
+				}
+				else
+				{
+					version = fmt::format("PCSX2 {}.{}.{}-{}", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo, SVN_REV);
+				}
+				const u32 size = version.size() + 1;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
+					goto error;
+				ToResultVector(ret_buffer, size, ret_cnt);
+				ret_cnt += 4;
+				memcpy(&ret_buffer[ret_cnt], version.c_str(), size);
+				ret_cnt += size;
+				break;
+			}
+			case MsgSaveState:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size))
+					goto error;
+				VMManager::SaveStateToSlot(FromSpan<u8>(buf, buf_cnt));
+				buf_cnt += 1;
+				break;
+			}
+			case MsgLoadState:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size))
+					goto error;
+				VMManager::LoadStateFromSlot(FromSpan<u8>(buf, buf_cnt));
+				buf_cnt += 1;
+				break;
+			}
+			case MsgTitle:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+				const std::string gameName = VMManager::GetTitle();
+				const u32 size = gameName.size() + 1;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
+					goto error;
+				ToResultVector(ret_buffer, size, ret_cnt);
+				ret_cnt += 4;
+				memcpy(&ret_buffer[ret_cnt], gameName.c_str(), size);
+				ret_cnt += size;
+				break;
+			}
+			case MsgID:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+				const std::string gameSerial = VMManager::GetDiscSerial();
+				const u32 size = gameSerial.size() + 1;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
+					goto error;
+				ToResultVector(ret_buffer, size, ret_cnt);
+				ret_cnt += 4;
+				memcpy(&ret_buffer[ret_cnt], gameSerial.c_str(), size);
+				ret_cnt += size;
+				break;
+			}
+			case MsgUUID:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+				const std::string crc = fmt::format("{:08x}", VMManager::GetDiscCRC());
+				const u32 size = crc.size() + 1;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
+					goto error;
+				ToResultVector(ret_buffer, size, ret_cnt);
+				ret_cnt += 4;
+				memcpy(&ret_buffer[ret_cnt], crc.c_str(), size);
+				ret_cnt += size;
+				break;
+			}
+			case MsgGameVersion:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+
+				const std::string ElfVersion = VMManager::GetDiscVersion();
+				const u32 size = ElfVersion.size() + 1;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
+					goto error;
+				ToResultVector(ret_buffer, size, ret_cnt);
+				ret_cnt += 4;
+				memcpy(&ret_buffer[ret_cnt], ElfVersion.c_str(), size);
+				ret_cnt += size;
+				break;
+			}
 		case MsgStatus:
 		{
 			if (!SafetyChecks(buf_cnt, 0, ret_cnt, 8, buf_size))
 				goto error;
 			EmuStatus status;
-			if (m_vm->HasActiveMachine())
+
+			if (VMManager::HasValidVM())
 			{
-				if (GetCoreThread().IsClosing() || g_InputRecordingControls.IsPaused() || g_FrameStep.IsPaused())
+				if (g_FrameStep.IsPaused())
 					status = Paused;
 				else
-					status = Running;
+				{
+					switch (VMManager::GetState())
+					{
+						case VMState::Running:
+							status = EmuStatus::Running;
+							break;
+						case VMState::Paused:
+							status = EmuStatus::Paused;
+							break;
+						default:
+							status = EmuStatus::Shutdown;
+							break;
+					}
+				}
 			}
 			else
 			{
 				status = Shutdown;
 			}
-			ToArray(ret_buffer, status, ret_cnt);
-			ToArray(ret_buffer, g_FrameCount, ret_cnt + 4);
+
+			ToResultVector(ret_buffer, status, ret_cnt);
+			ToResultVector(ret_buffer, g_FrameCount, ret_cnt + 4);
 			ret_cnt += 8;
 			break;
 		}
 
 		case MsgReadN:
 		{
-			if (!m_vm->HasActiveMachine())
+			if (!VMManager::HasValidVM())
 				goto error;
 			if (!SafetyChecks(buf_cnt, 6, ret_cnt, 1, buf_size))
 				goto error;
 
-
-
-			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-			const u16 l = FromArray<u16>(&buf[buf_cnt], 4);
+			const u32 a = FromSpan<u32>(buf, buf_cnt);
+			const u16 l = FromSpan<u16>(buf, buf_cnt + 4);
 			if (!SafetyChecks(buf_cnt, 6, ret_cnt, l, buf_size))
 				goto error;
 			if (!vtlb_ramRead(a, reinterpret_cast<mem8_t*>(&ret_buffer[ret_cnt]), (u32)l))
@@ -564,12 +569,13 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 		}
 		case MsgWriteN:
 		{
-			if (!m_vm->HasActiveMachine())
+			if (!VMManager::HasValidVM())
 				goto error;
 			if (!SafetyChecks(buf_cnt, 6, ret_cnt, 1, buf_size))
 				goto error;
-			const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-			const u16 c = FromArray<u16>(&buf[buf_cnt], 4);
+
+			const u32 a = FromSpan<u32>(buf, buf_cnt);
+			const u32 c = FromSpan<u16>(buf, buf_cnt + 4);
 			if (!SafetyChecks(buf_cnt, c + 6, ret_cnt, 0, buf_size))
 				goto error;
 			buf_cnt += 6;
@@ -577,44 +583,44 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				goto error;
 			buf_cnt += c;
 			u8 res = 1;
-			ToArray(ret_buffer, res, ret_cnt);
+			ToResultVector(ret_buffer, res, ret_cnt);
 			ret_cnt += 1;
 			break;
 		}
 		case MsgFrameAdvance:
 		{
-			if (!m_vm->HasActiveMachine())
+			if (!VMManager::HasValidVM())
 				goto error;
 			if (!SafetyChecks(buf_cnt, 0, ret_cnt, 1, buf_size))
 				goto error;
 			g_FrameStep.FrameAdvance();
 			u8 res = 1;
-			ToArray(ret_buffer, res, ret_cnt);
+			ToResultVector(ret_buffer, res, ret_cnt);
 			ret_cnt += 1;
 			break;
 		}
 		case MsgSetDynamicSetting:
 		{
-			if (!m_vm->HasActiveMachine())
+			if (!VMManager::HasValidVM())
 				goto error;
 			if (!SafetyChecks(buf_cnt, 1, ret_cnt, 1, buf_size))
 				goto error;
 
 			// get args
-			const enum DynamicSettingId settingId = (enum DynamicSettingId)FromArray<u8>(&buf[buf_cnt], 0);
+			const enum DynamicSettingId settingId = (enum DynamicSettingId)FromSpan<u8>(buf, buf_cnt);
 
 			switch (settingId)
 			{
 				case DynamicSettingFrameSleepWait:
 				{
-					const u8 value = FromArray<u8>(&buf[buf_cnt], 1);
+					const u8 value = FromSpan<u8>(buf, buf_cnt + 1);
 					g_FrameStep.SetSleepWait(value != 0);
 					buf_cnt += 1;
 					break;
 				}
 				case DynamicSettingDisableRendering:
 				{
-					const u8 value = FromArray<u8>(&buf[buf_cnt], 1);
+					const u8 value = FromSpan<u8>(buf, buf_cnt + 1);
 
 					// switch if rendering has changed
 					if (g_gs_renderer && ((GSConfig.Renderer == GSRendererType::Null && !value) || (GSConfig.Renderer != GSRendererType::Null && value)))
@@ -622,7 +628,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 						Console.WriteLn("DynamicSettingDisableRendering changed to %d", value);
 
 						auto renderer = value ? GSRendererType::Null : GSRendererType::Auto;
-						GetMTGS().RunOnGSThread([renderer]() {
+						MTGS::RunOnGSThread([renderer]() {
 							GSSwitchRenderer(renderer);
 						});
 					}
@@ -639,45 +645,46 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 			buf_cnt += 1;
 
 			u8 res = 1;
-			ToArray(ret_buffer, res, ret_cnt);
+			ToResultVector(ret_buffer, res, ret_cnt);
 			ret_cnt += 1;
 			break;
 		}
 		case MsgResume:
 		{
-			if (!m_vm->HasActiveMachine())
+			if (!VMManager::HasValidVM())
 				goto error;
 			if (!SafetyChecks(buf_cnt, 0, ret_cnt, 1, buf_size))
 				goto error;
 			g_FrameStep.Resume();
 			u8 res = 1;
-			ToArray(ret_buffer, res, ret_cnt);
+			ToResultVector(ret_buffer, res, ret_cnt);
 			ret_cnt += 1;
 			break;
 		}
 		case MsgPause:
 		{
-			if (!m_vm->HasActiveMachine())
+			if (!VMManager::HasValidVM())
 				goto error;
 			if (!SafetyChecks(buf_cnt, 0, ret_cnt, 1, buf_size))
 				goto error;
 			g_FrameStep.Pause();
 			u8 res = 1;
-			ToArray(ret_buffer, res, ret_cnt);
+			ToResultVector(ret_buffer, res, ret_cnt);
 			ret_cnt += 1;
 			break;
 		}
 		case MsgRestart:
 		{
-			if (!SafetyChecks(buf_cnt, 0, ret_cnt, 1, buf_size))
+			if (!VMManager::HasValidVM())
 				goto error;
-			g_Conf->EmuOptions.UseBOOT2Injection = true;
-			CoreThread.ResetQuick();
-			CoreThread.Resume();
+			//g_Conf->EmuOptions.UseBOOT2Injection = true;
+			VMManager::Reset();
+			//CoreThread.ResetQuick();
+			//CoreThread.Resume();
 			g_FrameStep.Resume();
 
 			u8 res = 1;
-			ToArray(ret_buffer, res, ret_cnt);
+			ToResultVector(ret_buffer, res, ret_cnt);
 			ret_cnt += 1;
 			break;
 		}
@@ -685,44 +692,47 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 		{
 			if (!SafetyChecks(buf_cnt, 0, ret_cnt, 1, buf_size))
 				goto error;
-			g_Conf->EmuOptions.UseBOOT2Injection = true;
+			//g_Conf->EmuOptions.UseBOOT2Injection = true;
 			//CoreThread.ResetQuick();
 
-			if (GSFrame* gsframe = wxGetApp().GetGsFramePtr())
-				gsframe->Show(false);
+
+			VMManager::Shutdown(false);
+
+			//if (GSFrame* gsframe = wxGetApp().GetGsFramePtr())
+			//	gsframe->Show(false);
 
 			//CoreThread.Resume();
 			g_FrameStep.Resume();
 
 			u8 res = 1;
-			ToArray(ret_buffer, res, ret_cnt);
+			ToResultVector(ret_buffer, res, ret_cnt);
 			ret_cnt += 1;
 			break;
 		}
 		case MsgGetFrameBuffer:
 		{
 			int bitCount = 512 * 448 * 4;
-			if (!m_vm->HasActiveMachine())
+			if (!VMManager::HasValidVM())
 				goto error;
 			if (!SafetyChecks(buf_cnt, 0, ret_cnt, bitCount, buf_size))
 				goto error;
 
 			FRAME_BUFFER_COPY_ACTIVE = 3;
 
-			memcpy(ret_buffer + ret_cnt, FRAME_BUFFER_COPY, bitCount);
+			memcpy(&ret_buffer[ret_cnt], FRAME_BUFFER_COPY, bitCount);
 			ret_cnt += bitCount;
 			break;
 		}
 		case MsgSetPad:
 		{
-			if (!m_vm->HasActiveMachine())
+			if (!VMManager::HasValidVM())
 				goto error;
 			if (!SafetyChecks(buf_cnt, 36, ret_cnt, 1, buf_size))
 				goto error;
 
 			// get args
-			const u16 port = FromArray<u16>(&buf[buf_cnt], 0);
-			const u16 slot = FromArray<u16>(&buf[buf_cnt], 2);
+			const u16 port = FromSpan<u16>(buf, buf_cnt);
+			const u16 slot = FromSpan<u16>(buf, buf_cnt + 2);
 			buf_cnt += 4;
 
 			// set pad
@@ -730,23 +740,23 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 
 			buf_cnt += 32;
 			u8 res = 1;
-			ToArray(ret_buffer, res, ret_cnt);
+			ToResultVector(ret_buffer, res, ret_cnt);
 			ret_cnt += 1;
 			break;
 		}
 		case MsgGetVmPtr:
 		{
-			if (!m_vm->HasActiveMachine())
+			if (!VMManager::HasValidVM())
 				goto error;
 			if (!SafetyChecks(buf_cnt, 0, ret_cnt, 8, buf_size))
 				goto error;
 
 			uptr res = vtlb_getTblPtr(0x100000);
-			ToArray(ret_buffer, res - 0x100000, ret_cnt);
+			ToResultVector(ret_buffer, res - 0x100000, ret_cnt);
 			ret_cnt += 8;
 
 			res = (uptr)&g_EEMemBackBuffer;
-			ToArray(ret_buffer, res, ret_cnt);
+			ToResultVector(ret_buffer, res, ret_cnt);
 			ret_cnt += 8;
 			break;
 		}
@@ -761,4 +771,27 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 	return IPCBuffer{ (int)ret_cnt, MakeOkIPC(ret_buffer, ret_cnt) };
 }
 
-#endif
+void SetPad(int port, int slot, u8* buf)
+{
+	PadBase* pad = Pad::GetPad(port);
+	pad->SetRawAnalogs(std::tuple<u8, u8>(buf[6], buf[7]), std::tuple<u8, u8>(buf[4], buf[5]));
+
+	pad->Set(PadDualshock2::Inputs::PAD_RIGHT, buf[8]);
+	pad->Set(PadDualshock2::Inputs::PAD_LEFT, buf[9]);
+	pad->Set(PadDualshock2::Inputs::PAD_UP, buf[10]);
+	pad->Set(PadDualshock2::Inputs::PAD_DOWN, buf[11]);
+	pad->Set(PadDualshock2::Inputs::PAD_START, buf[20]);
+	pad->Set(PadDualshock2::Inputs::PAD_SELECT, buf[21]);
+	pad->Set(PadDualshock2::Inputs::PAD_R3, buf[23]);
+	pad->Set(PadDualshock2::Inputs::PAD_L3, buf[22]);
+
+	pad->Set(PadDualshock2::Inputs::PAD_SQUARE, buf[15]);
+	pad->Set(PadDualshock2::Inputs::PAD_CROSS, buf[14]);
+	pad->Set(PadDualshock2::Inputs::PAD_CIRCLE, buf[13]);
+	pad->Set(PadDualshock2::Inputs::PAD_TRIANGLE, buf[12]);
+
+	pad->Set(PadDualshock2::Inputs::PAD_R1, buf[17]);
+	pad->Set(PadDualshock2::Inputs::PAD_L1, buf[16]);
+	pad->Set(PadDualshock2::Inputs::PAD_R2, buf[19]);
+	pad->Set(PadDualshock2::Inputs::PAD_L2, buf[18]);
+}

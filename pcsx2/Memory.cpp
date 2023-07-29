@@ -194,7 +194,7 @@ void memMapKernelMem()
 	//0x8* mirror
 	vtlb_VMap(0x80000000, 0x00000000, _1mb*512);
 	//0xa* mirror
-	vtlb_VMap(0xA0000000, 0x00000000, _1mb*512);
+	vtlb_VMap(0xA0000000, 0x00000000, _1mb * 512);
 }
 
 //what do do with these ?

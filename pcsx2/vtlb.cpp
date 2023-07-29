@@ -388,14 +388,9 @@ bool vtlb_ramWrite(u32 addr, const mem8_t* data, size_t count)
 		while (i < count)
 		{
 			auto delta = count - i;
-			if (delta >= 16)
+			if (delta >= 8)
 			{
-				vmv.assumeHandler<128, true>()(paddr, reinterpret_cast<const mem128_t*>(&data[i]));
-				i += 16;
-			}
-			else if (delta >= 8)
-			{
-				vmv.assumeHandler<64, true>()(paddr, reinterpret_cast<const mem64_t*>(&data[i]));
+				vmv.assumeHandler<64, true>()(paddr, *reinterpret_cast<const mem64_t*>(&data[i]));
 				i += 8;
 			}
 			else if (delta >= 4)
