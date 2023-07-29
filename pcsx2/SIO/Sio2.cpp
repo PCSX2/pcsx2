@@ -166,7 +166,7 @@ void Sio2::Multitap()
 {
 	g_Sio2FifoOut.push_back(0x00);
 
-	const bool multitapEnabled = (port == 0 && EmuConfig.MultitapPort0_Enabled) || (port == 1 && EmuConfig.MultitapPort1_Enabled);
+	const bool multitapEnabled = EmuConfig.Pad.IsMultitapPortEnabled(port);
 	SetRecv1(multitapEnabled ? Recv1::CONNECTED : Recv1::DISCONNECTED);
 
 	if (multitapEnabled)

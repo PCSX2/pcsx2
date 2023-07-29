@@ -27,6 +27,11 @@ class SettingsWrapper;
 
 enum class CDVD_SourceType : uint8_t;
 
+namespace Pad
+{
+enum class ControllerType : u8;
+}
+
 /// Generic setting information which can be reused in multiple components.
 struct SettingInfo
 {
@@ -1197,6 +1202,39 @@ struct Pcsx2Config
 	};
 
 	// ------------------------------------------------------------------------
+	struct PadOptions
+	{
+		static constexpr u32 NUM_PORTS = 8;
+
+		struct Port
+		{
+			Pad::ControllerType Type;
+
+			bool operator==(const PadOptions::Port& right) const;
+			bool operator!=(const PadOptions::Port& right) const;
+		};
+
+		std::array<Port, NUM_PORTS> Ports;
+
+		BITFIELD32()
+		bool
+			MultitapPort0_Enabled : 1,
+			MultitapPort1_Enabled;
+		BITFIELD_END
+
+		PadOptions();
+		void LoadSave(SettingsWrapper& wrap);
+
+		bool IsMultitapPortEnabled(u32 port) const
+		{
+			return (port == 0) ? MultitapPort0_Enabled : MultitapPort1_Enabled;
+		}
+
+		bool operator==(const PadOptions& right) const;
+		bool operator!=(const PadOptions& right) const;
+	};
+
+	// ------------------------------------------------------------------------
 	// Options struct for each memory card.
 	//
 	struct McdOptions
@@ -1266,10 +1304,6 @@ struct Pcsx2Config
 		McdEnableEjection : 1,
 		McdFolderAutoManage : 1,
 
-		MultitapPort0_Enabled : 1,
-		MultitapPort1_Enabled : 1,
-
-		ConsoleToStdio : 1,
 		HostFs : 1,
 
 		WarnAboutUnsafeSettings : 1;
@@ -1290,6 +1324,7 @@ struct Pcsx2Config
 	SPU2Options SPU2;
 	DEV9Options DEV9;
 	USBOptions USB;
+	PadOptions Pad;
 
 	TraceLogFilters Trace;
 
@@ -1322,8 +1357,6 @@ struct Pcsx2Config
 
 	std::string FullpathToBios() const;
 	std::string FullpathToMcd(uint slot) const;
-
-	bool MultitapEnabled(uint port) const;
 
 	bool operator==(const Pcsx2Config& right) const;
 	bool operator!=(const Pcsx2Config& right) const

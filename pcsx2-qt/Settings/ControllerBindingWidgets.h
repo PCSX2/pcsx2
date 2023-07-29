@@ -49,7 +49,7 @@ public:
 
 	__fi ControllerSettingsDialog* getDialog() const { return m_dialog; }
 	__fi const std::string& getConfigSection() const { return m_config_section; }
-	__fi const std::string& getControllerType() const { return m_controller_type; }
+	__fi Pad::ControllerType getControllerType() const { return m_controller_type; }
 	__fi u32 getPortNumber() const { return m_port_number; }
 
 private Q_SLOTS:
@@ -70,7 +70,7 @@ private:
 	ControllerSettingsDialog* m_dialog;
 
 	std::string m_config_section;
-	std::string m_controller_type;
+	Pad::ControllerType m_controller_type;
 	u32 m_port_number;
 
 	ControllerBindingWidget_Base* m_bindings_widget = nullptr;
@@ -170,7 +170,7 @@ public:
 
 	__fi ControllerSettingsDialog* getDialog() const { return static_cast<ControllerBindingWidget*>(parent())->getDialog(); }
 	__fi const std::string& getConfigSection() const { return static_cast<ControllerBindingWidget*>(parent())->getConfigSection(); }
-	__fi const std::string& getControllerType() const { return static_cast<ControllerBindingWidget*>(parent())->getControllerType(); }
+	__fi Pad::ControllerType getControllerType() const { return static_cast<ControllerBindingWidget*>(parent())->getControllerType(); }
 	__fi u32 getPortNumber() const { return static_cast<ControllerBindingWidget*>(parent())->getPortNumber(); }
 
 	virtual QIcon getIcon() const;

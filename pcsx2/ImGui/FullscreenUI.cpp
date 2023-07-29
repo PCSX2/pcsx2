@@ -3854,17 +3854,14 @@ void FullscreenUI::DrawControllerSettingsPage()
 				.c_str());
 
 		const char* section = sections[global_slot];
-		const std::string type(bsi->GetStringValue(section, "Type", Pad::GetDefaultPadType(global_slot)));
-		const Pad::ControllerInfo* ci = Pad::GetControllerInfo(type);
+		const Pad::ControllerInfo* ci = Pad::GetConfigControllerType(*bsi, section, global_slot);
 		if (MenuButton(ICON_FA_GAMEPAD " Controller Type", ci ? ci->display_name : "Unknown"))
 		{
 			const std::vector<std::pair<const char*, const char*>> raw_options = Pad::GetControllerTypeNames();
 			ImGuiFullscreen::ChoiceDialogOptions options;
 			options.reserve(raw_options.size());
 			for (auto& it : raw_options)
-			{
-				options.emplace_back(it.second, type == it.first);
-			}
+				options.emplace_back(it.second, (ci && ci->name == it.first));
 			OpenChoiceDialog(fmt::format("Port {} Controller Type", global_slot + 1).c_str(), false, std::move(options),
 				[game_settings = IsEditingGameSettings(bsi), section, raw_options = std::move(raw_options)](
 					s32 index, const std::string& title, bool checked) {

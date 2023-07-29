@@ -32,7 +32,7 @@ namespace Pad
 	void Shutdown();
 
 	// Returns the default type for the specified port.
-	const char* GetDefaultPadType(u32 pad);
+	Pad::ControllerType GetDefaultPadType(u32 pad);
 
 	// Reloads configuration.
 	void LoadConfig(const SettingsInterface& si);
@@ -51,13 +51,13 @@ namespace Pad
 	// Returns a list of controller type names. Pair of [name, display name].
 	const std::vector<std::pair<const char*, const char*>> GetControllerTypeNames();
 
-	// Returns the list of binds for the specified controller type.
-	std::vector<std::string> GetControllerBinds(const std::string_view& type);
-
 	// Returns general information for the specified controller type.
 	const ControllerInfo* GetControllerInfo(Pad::ControllerType type);
-	const ControllerInfo* GetControllerInfo(const std::string_view& name);
-	const char* GetControllerTypeName(Pad::ControllerType type);
+	const ControllerInfo* GetControllerInfoByName(const std::string_view& name);
+
+	// Returns controller info based on the type in the config.
+	// Needed because we can't just read EmuConfig when altering input profiles.
+	const ControllerInfo* GetConfigControllerType(const SettingsInterface& si, const char* section, u32 port);
 
 	// Performs automatic controller mapping with the provided list of generic mappings.
 	bool MapController(
