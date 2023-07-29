@@ -94,7 +94,7 @@ bool GSBeginCapture(std::string filename);
 void GSEndCapture();
 void GSPresentCurrentFrame();
 void GSThrottlePresentation();
-void GSSetGameCRC(u32 crc);
+void GSGameChanged();
 void GSSetDisplayAlignment(GSDisplayAlignment alignment);
 void GSResizeDisplayWindow(int width, int height, float scale);
 void GSUpdateDisplayWindow();

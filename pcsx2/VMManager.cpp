@@ -905,7 +905,7 @@ void VMManager::UpdateDiscDetails(bool booting)
 	ReportGameChangeToHost();
 	Achievements::GameChanged(s_disc_crc, s_current_crc);
 	if (MTGS::IsOpen())
-		MTGS::SendGameCRC(s_disc_crc);
+		MTGS::GameChanged();
 	ReloadPINE();
 	UpdateDiscordPresence(Achievements::GetRichPresenceString());
 

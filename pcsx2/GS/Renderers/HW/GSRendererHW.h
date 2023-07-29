@@ -183,8 +183,7 @@ public:
 
 	void Destroy() override;
 
-	void SetGameCRC(u32 crc) override;
-	void UpdateCRCHacks() override;
+	void UpdateRenderFixes() override;
 
 	bool CanUpscale() override;
 	float GetUpscaleMultiplier() override;
