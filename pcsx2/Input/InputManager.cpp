@@ -19,6 +19,7 @@
 #include "Input/InputManager.h"
 #include "Input/InputSource.h"
 #include "SIO/Pad/Pad.h"
+#include "SIO/Sio.h"
 #include "USB/USB.h"
 #include "VMManager.h"
 
@@ -628,10 +629,17 @@ void InputManager::AddHotkeyBindings(SettingsInterface& si)
 void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index)
 {
 	const Pad::ControllerType type = EmuConfig.Pad.Ports[pad_index].Type;
+
+	// Don't bother checking macros/vibration if it's not a connected type.
 	if (type == Pad::ControllerType::NotConnected)
-	{
-		// Don't bother checking macros/vibration if it's not a connected type.
 		return;
+
+	// Or if it's a multitap port, and this multitap isn't enabled.
+	if (sioPadIsMultitapSlot(pad_index))
+	{
+		const auto& [mt_port, mt_slot] = sioConvertPadToPortAndSlot(pad_index);
+		if (EmuConfig.Pad.IsMultitapPortEnabled(mt_port))
+			return;
 	}
 
 	const std::string section = Pad::GetConfigSection(pad_index);
