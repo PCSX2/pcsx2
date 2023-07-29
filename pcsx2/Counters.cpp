@@ -751,11 +751,11 @@ __fi void rcntUpdate_vSync()
 		g_FrameStep.HandlePausing();
 
 		// copy to backbuffer
-		int bufIdx = (g_FrameCount + 1) % 2;
-		if (!vtlb_ramRead(eeMemBackBufferStart, reinterpret_cast<mem8_t*>(g_EEMemBackBuffer[bufIdx] + eeMemBackBufferStart), (u32)(EEMEM_BACKBUFFER_SIZE - eeMemBackBufferStart)))
-		{
-			Console.WriteLn(" back buffer miss");
-		}
+		//int bufIdx = (g_FrameCount + 1) % 2;
+		//if (!vtlb_ramRead(eeMemBackBufferStart, reinterpret_cast<mem8_t*>(g_EEMemBackBuffer[bufIdx] + eeMemBackBufferStart), (u32)(EEMEM_BACKBUFFER_SIZE - eeMemBackBufferStart)))
+		//{
+		//	Console.WriteLn(" back buffer miss");
+		//}
 
 		g_FrameStep.CheckPauseStatus();
 		g_FrameCount++;
