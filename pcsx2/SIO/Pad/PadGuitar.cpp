@@ -328,10 +328,15 @@ void PadGuitar::SetRawAnalogs(const std::tuple<u8, u8> left, const std::tuple<u8
 {
 }
 
-void PadGuitar::SetAxisScale(float deadzone, float scale)
+void PadGuitar::SetAxisScale(bool linear_dz, bool linear_adz, float deadzone, float antideadzone, float scale)
 {
 	this->whammyDeadzone = deadzone;
 	this->whammyAxisScale = scale;
+}
+
+void PadGuitar::SetTriggerScale(float deadzone, float antideadzone, float scale)
+{
+
 }
 
 float PadGuitar::GetVibrationScale(u32 motor) const

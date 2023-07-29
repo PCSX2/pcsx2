@@ -107,10 +107,17 @@ void Pad::LoadConfig(const SettingsInterface& si)
 			pxAssert(pad);
 		}
 
+		const bool axis_linear_dz = si.GetBoolValue(section.c_str(), "LinearDZ", false);
+		const bool axis_linear_adz = si.GetBoolValue(section.c_str(), "LinearADZ", false);
 		const float axis_deadzone = si.GetFloatValue(section.c_str(), "Deadzone", Pad::DEFAULT_STICK_DEADZONE);
+		const float axis_antideadzone = si.GetFloatValue(section.c_str(), "Antideadzone", Pad::DEFAULT_STICK_DEADZONE);
 		const float axis_scale = si.GetFloatValue(section.c_str(), "AxisScale", Pad::DEFAULT_STICK_SCALE);
+		const float trigger_deadzone = si.GetFloatValue(section.c_str(), "TriggerDeadzone", Pad::DEFAULT_TRIGGER_DEADZONE);
+		const float trigger_antideadzone = si.GetFloatValue(section.c_str(), "TriggerAntideadzone", DEFAULT_TRIGGER_DEADZONE);
+		const float trigger_scale = si.GetFloatValue(section.c_str(), "TriggerScale", Pad::DEFAULT_TRIGGER_SCALE);
 		const float button_deadzone = si.GetFloatValue(section.c_str(), "ButtonDeadzone", Pad::DEFAULT_BUTTON_DEADZONE);
-		pad->SetAxisScale(axis_deadzone, axis_scale);
+		pad->SetAxisScale(axis_linear_dz, axis_linear_adz, axis_deadzone, axis_antideadzone, axis_scale);
+		pad->SetTriggerScale(trigger_deadzone, trigger_antideadzone, trigger_scale);
 		pad->SetButtonDeadzone(button_deadzone);
 
 		if (ci->vibration_caps != Pad::VibrationCapabilities::NoVibration)

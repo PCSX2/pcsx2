@@ -58,6 +58,7 @@ public:
 		LENGTH,
 	};
 
+	static constexpr u8 PRESSURE_BUTTONS = 12;
 	static constexpr u8 VIBRATION_MOTORS = 2;
 
 private:
@@ -83,9 +84,16 @@ private:
 	bool analogPressed = false;
 	bool commandStage = false;
 	u32 responseBytes = 0;
+	std::array<u8, PRESSURE_BUTTONS> pressures = {};
 	std::array<u8, VIBRATION_MOTORS> vibrationMotors = {};
+	bool axisLinearDZ = false;
+	bool axisLinearADZ = false;
 	float axisScale = 1.0f;
 	float axisDeadzone = 0.0f;
+	float axisAntideadzone = 0.0f;
+	float triggerScale = 1.0f;
+	float triggerDeadzone = 0.0f;
+	float triggerAntideadzone = 0.0f;
 	std::array<float, 2> vibrationScale = {1.0f, 1.0f};
 	// When the pressure modifier binding is activated, this is multiplied against
 	// all values in pressures, to artificially reduce pressures and give players
@@ -129,7 +137,8 @@ public:
 	const Pad::ControllerInfo& GetInfo() const override;
 	void Set(u32 index, float value) override;
 	void SetRawAnalogs(const std::tuple<u8, u8> left, const std::tuple<u8, u8> right) override;
-	void SetAxisScale(float deadzone, float scale) override;
+	void SetAxisScale(bool linear_dz, bool linear_adz, float deadzone, float antideadzone, float scale) override;
+	void SetTriggerScale(float deadzone, float antideadzone, float scale) override;
 	float GetVibrationScale(u32 motor) const override;
 	void SetVibrationScale(u32 motor, float scale) override;
 	float GetPressureModifier() const override;

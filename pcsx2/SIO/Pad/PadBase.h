@@ -25,6 +25,7 @@ class PadBase
 {
 protected:
 	std::array<u8, 32> rawInputs = {};
+	std::array<float, 8> axisValue;
 	u8 unifiedSlot;
 	bool isInConfig = false;
 	Pad::Mode currentMode = Pad::Mode::NOT_SET;
@@ -43,7 +44,8 @@ public: // Public members
 
 	virtual void Set(u32 index, float value) = 0;
 	virtual void SetRawAnalogs(const std::tuple<u8, u8> left, const std::tuple<u8, u8> right) = 0;
-	virtual void SetAxisScale(float deadzone, float scale) = 0;
+	virtual void SetAxisScale(bool linear_dz, bool linear_adz, float deadzone, float antideadzone, float scale) = 0;
+	virtual void SetTriggerScale(float deadzone, float antideadzone, float scale) = 0;
 	virtual float GetVibrationScale(u32 motor) const = 0;
 	virtual void SetVibrationScale(u32 motor, float scale) = 0;
 	virtual float GetPressureModifier() const = 0;

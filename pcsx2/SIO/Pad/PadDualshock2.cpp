@@ -68,15 +68,38 @@ static const SettingInfo s_settings[] = {
 	{SettingInfo::Type::IntegerList, "InvertR", TRANSLATE_NOOP("Pad", "Invert Right Stick"),
 		TRANSLATE_NOOP("Pad", "Inverts the direction of the right analog stick."), "0", "0", "3", nullptr, nullptr,
 		s_invert_options, nullptr, 0.0f},
+	{SettingInfo::Type::Boolean, "LinearDZ", TRANSLATE_NOOP("Pad", "Linear Deadzone"),
+		TRANSLATE_NOOP("Pad",
+			"If enabled, analog deadzone is calculated per axis instead of per stick."),
+		"0", "0", "0", nullptr, nullptr, nullptr, nullptr, 0},
 	{SettingInfo::Type::Float, "Deadzone", TRANSLATE_NOOP("Pad", "Analog Deadzone"),
 		TRANSLATE_NOOP(
 			"Pad", "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
+		"0.00", "0.00", "1.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
+	{SettingInfo::Type::Boolean, "LinearADZ", TRANSLATE_NOOP("Pad", "Linear Anti-Deadzone"),
+		TRANSLATE_NOOP("Pad",
+			"If enabled, analog anti-deadzone is calculated per axis instead of per stick."),
+		"0", "0", "0", nullptr, nullptr, nullptr, nullptr, 0},
+	{SettingInfo::Type::Float, "Antideadzone", TRANSLATE_NOOP("Pad", "Analog Anti-Deadzone"),
+		TRANSLATE_NOOP("Pad",
+			"Sets the analog stick anti-deadzone, i.e. the fraction of the analog stick movement to be added to overcome a game's deadzone."),
 		"0.00", "0.00", "1.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "AxisScale", TRANSLATE_NOOP("Pad", "Analog Sensitivity"),
 		TRANSLATE_NOOP("Pad",
 			"Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
 			"controllers, e.g. DualShock 4, Xbox One Controller."),
 		"1.33", "0.01", "2.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
+	{SettingInfo::Type::Float, "TriggerDeadzone", TRANSLATE_NOOP("Pad", "Trigger Deadzone"),
+		TRANSLATE_NOOP("Pad",
+			"Sets the deadzone for activating triggers, i.e. the fraction of the trigger press which will be ignored."),
+		"0.00", "0.00", "1.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
+	{SettingInfo::Type::Float, "TriggerAntideadzone", TRANSLATE_NOOP("Pad", "Trigger Anti-Deadzone"),
+		TRANSLATE_NOOP("Pad",
+			"Sets the anti-deadzone for triggers, i.e. the fraction of the trigger press to be added to overcome a game's deadzone."),
+		"0.00", "0.00", "1.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
+	{SettingInfo::Type::Float, "TriggerScale", TRANSLATE_NOOP("Pad", "Trigger Sensitivity"),
+		TRANSLATE_NOOP("Pad", "Sets the trigger scaling factor."), "1.00", "0.01", "2.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr,
+		nullptr, 100.0f},
 	{SettingInfo::Type::Float, "LargeMotorScale", TRANSLATE_NOOP("Pad", "Large Motor Vibration Scale"),
 		TRANSLATE_NOOP("Pad", "Increases or decreases the intensity of low frequency vibration sent by the game."),
 		"1.00", "0.00", "2.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
@@ -597,85 +620,115 @@ void PadDualshock2::Set(u32 index, float value)
 
 	if (IsAnalogKey(index))
 	{
-		this->rawInputs[index] = static_cast<u8>(std::clamp(value * this->axisScale * 255.0f, 0.0f, 255.0f));
+		float pos_x, pos_y;
+		this->axisValue[index - PAD_L_UP] = value * this->axisScale;
 
 		//                          Left -> -- -> Right
 		// Value range :        FFFF8002 -> 0  -> 7FFE
-		// Force range :			  80 -> 0  -> 7F
+		// Force range :              80 -> 0  -> 7F
 		// Normal mode : expect value 0  -> 80 -> FF
 		// Reverse mode: expect value FF -> 7F -> 0
 
 		// merge left/right or up/down into rx or ry
-
-#define MERGE(pos, neg) ((this->rawInputs[pos] != 0) ? (127u + ((this->rawInputs[pos] + 1u) / 2u)) : (127u - (this->rawInputs[neg] / 2u)))
-		if (index <= Inputs::PAD_L_LEFT)
+#define MERGE_F(pos, neg) (this->axisValue[pos - PAD_L_UP] - this->axisValue[neg - PAD_L_UP])
+		if (index <= PAD_L_LEFT)
 		{
-			// Left Stick
-			this->analogs.lx = this->analogs.lxInvert ? MERGE(Inputs::PAD_L_LEFT, Inputs::PAD_L_RIGHT) : MERGE(Inputs::PAD_L_RIGHT, Inputs::PAD_L_LEFT);
-			this->analogs.ly = this->analogs.lyInvert ? MERGE(Inputs::PAD_L_UP, Inputs::PAD_L_DOWN) : MERGE(Inputs::PAD_L_DOWN, Inputs::PAD_L_UP);
+			pos_x = this->analogs.lxInvert ? MERGE_F(PAD_L_LEFT, PAD_L_RIGHT) : MERGE_F(PAD_L_RIGHT, PAD_L_LEFT);
+			pos_y = this->analogs.lyInvert ? MERGE_F(PAD_L_UP, PAD_L_DOWN) : MERGE_F(PAD_L_DOWN, PAD_L_UP);
 		}
 		else
 		{
-			// Right Stick
-			this->analogs.rx = this->analogs.rxInvert ? MERGE(Inputs::PAD_R_LEFT, Inputs::PAD_R_RIGHT) : MERGE(Inputs::PAD_R_RIGHT, Inputs::PAD_R_LEFT);
-			this->analogs.ry = this->analogs.ryInvert ? MERGE(Inputs::PAD_R_UP, Inputs::PAD_R_DOWN) : MERGE(Inputs::PAD_R_DOWN, Inputs::PAD_R_UP);
+			pos_x = this->analogs.rxInvert ? MERGE_F(PAD_R_LEFT, PAD_R_RIGHT) : MERGE_F(PAD_R_RIGHT, PAD_R_LEFT);
+			pos_y = this->analogs.ryInvert ? MERGE_F(PAD_R_UP, PAD_R_DOWN) : MERGE_F(PAD_R_DOWN, PAD_R_UP);
 		}
 #undef MERGE
 
-		// Deadzone computation.
-		const float dz = this->axisDeadzone;
+		float sign_x = pos_x < 0 ? -1.0f : 1.0f;
+		float sign_y = pos_y < 0 ? -1.0f : 1.0f;
+
+		pos_x *= sign_x;
+		pos_y *= sign_y;
+
+		bool force_linear = pos_x == 0 || pos_y == 0;
+
+		float dz = this->axisDeadzone;
+		float adz = this->axisAntideadzone;
 
 		if (dz > 0.0f)
 		{
-#define MERGE_F(pos, neg) ((this->rawInputs[pos] != 0) ? (static_cast<float>(this->rawInputs[pos]) / 255.0f) : (static_cast<float>(this->rawInputs[neg]) / -255.0f))
-			float posX, posY;
-			if (index <= Inputs::PAD_L_LEFT)
+#define DZ_CHECK(x) (x < dz ? 0.0f : (x - dz) / (1.0f - dz))
+			if (force_linear || this->axisLinearDZ)
 			{
-				posX = this->analogs.lxInvert ? MERGE_F(Inputs::PAD_L_LEFT, Inputs::PAD_L_RIGHT) : MERGE_F(Inputs::PAD_L_RIGHT, Inputs::PAD_L_LEFT);
-				posY = this->analogs.lyInvert ? MERGE_F(Inputs::PAD_L_UP, Inputs::PAD_L_DOWN) : MERGE_F(Inputs::PAD_L_DOWN, Inputs::PAD_L_UP);
+				pos_x = DZ_CHECK(pos_x);
+				pos_y = DZ_CHECK(pos_y);
 			}
 			else
 			{
-				posX = this->analogs.rxInvert ? MERGE_F(Inputs::PAD_R_LEFT, Inputs::PAD_R_RIGHT) : MERGE_F(Inputs::PAD_R_RIGHT, Inputs::PAD_R_LEFT);
-				posY = this->analogs.ryInvert ? MERGE_F(Inputs::PAD_R_UP, Inputs::PAD_R_DOWN) : MERGE_F(Inputs::PAD_R_DOWN, Inputs::PAD_R_UP);
-			}
+				float radius = sqrt(pos_x * pos_x + pos_y * pos_y);
 
-			// No point checking if we're at dead center (usually keyboard with no buttons pressed).
-			if (posX != 0.0f || posY != 0.0f)
+				pos_x /= radius;
+				pos_y /= radius;
+
+				radius = DZ_CHECK(radius);
+
+				pos_x *= radius;
+				pos_y *= radius;
+			}
+#undef DZ_CHECK
+		}
+
+		if (adz > 0.0f)
+		{
+#define ADZ_CHECK(x) (x > 0.0f ? adz + x * (1.0f - adz) : 0.0f)
+			if (force_linear || this->axisLinearADZ)
 			{
-				// Compute the angle at the given position in the stick's square bounding box.
-				const float theta = std::atan2(posY, posX);
-
-				// Compute the position that the edge of the circle would be at, given the angle.
-				const float dzX = std::cos(theta) * dz;
-				const float dzY = std::sin(theta) * dz;
-
-				// We're in the deadzone if our position is less than the circle edge.
-				const bool inX = (posX < 0.0f) ? (posX > dzX) : (posX <= dzX);
-				const bool inY = (posY < 0.0f) ? (posY > dzY) : (posY <= dzY);
-				
-				if (inX && inY)
-				{
-					// In deadzone. Set to 127 (center).
-					if (index <= Inputs::PAD_L_LEFT)
-					{
-						this->analogs.lx = this->analogs.ly = 127;
-					}
-					else
-					{
-						this->analogs.rx = this->analogs.ry = 127;
-					}	
-				}
+				pos_x = ADZ_CHECK(pos_x);
+				pos_y = ADZ_CHECK(pos_y);
 			}
-#undef MERGE_F
+			else
+			{
+				float radius = sqrt(pos_x * pos_x + pos_y * pos_y);
+
+				pos_x /= radius;
+				pos_y /= radius;
+
+				radius = ADZ_CHECK(radius);
+
+				pos_x *= radius;
+				pos_y *= radius;
+			}
+#undef ADZ_CHECK
+		}
+
+		pos_x = std::clamp(pos_x, 0.0f, 1.0f) * sign_x + 1.0f;
+		pos_y = std::clamp(pos_y, 0.0f, 1.0f) * sign_y + 1.0f;
+
+		if (index <= PAD_L_LEFT)
+		{
+			this->analogs.lx = static_cast<u8>(pos_x * 127.5);
+			this->analogs.ly = static_cast<u8>(pos_y * 127.5);
+		}
+		else
+		{
+			this->analogs.rx = static_cast<u8>(pos_x * 127.5);
+			this->analogs.ry = static_cast<u8>(pos_y * 127.5);
 		}
 	}
 	else if (IsTriggerKey(index))
 	{
-		const float s_value = std::clamp(value, 0.0f, 1.0f);
-		const float dz_value = (this->buttonDeadzone > 0.0f && s_value < this->buttonDeadzone) ? 0.0f : s_value;
-		this->rawInputs[index] = static_cast<u8>(dz_value * 255.0f);
-		if (dz_value > 0.0f)
+		float svalue = value * this->triggerScale;
+		float dz =this->triggerDeadzone;
+		float adz = this->triggerAntideadzone;
+
+		if (dz > 0.0f && svalue < dz)
+			svalue = 0;
+
+		if (adz > 0.0f && svalue > 0.0f)
+			svalue = adz + svalue * (1.0f - adz);
+
+		svalue = std::clamp(svalue, 0.0f, 1.0f);
+		this->rawInputs[index] = static_cast<u8>(svalue * 255.0f);
+		if (svalue > 0.0f)
 			this->buttons &= ~(1u << bitmaskMapping[index]);
 		else
 			this->buttons |= (1u << bitmaskMapping[index]);
@@ -754,10 +807,20 @@ void PadDualshock2::SetRawAnalogs(const std::tuple<u8, u8> left, const std::tupl
 	this->analogs.ry = std::get<1>(right);
 }
 
-void PadDualshock2::SetAxisScale(float deadzone, float scale)
+void PadDualshock2::SetAxisScale(bool linear_dz, bool linear_adz, float deadzone, float antideadzone, float scale)
 {
+	this->axisLinearDZ = linear_dz;
+	this->axisLinearADZ = linear_adz;
 	this->axisDeadzone = deadzone;
+	this->axisAntideadzone = antideadzone;
 	this->axisScale = scale;
+}
+
+void PadDualshock2::SetTriggerScale(float deadzone, float antideadzone, float scale)
+{
+	this->triggerDeadzone = deadzone;
+	this->triggerAntideadzone = antideadzone;
+	this->triggerScale = scale;
 }
 
 float PadDualshock2::GetVibrationScale(u32 motor) const
