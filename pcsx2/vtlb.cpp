@@ -355,12 +355,59 @@ bool vtlb_ramRead(u32 addr, mem8_t* value, size_t count)
 
 bool vtlb_ramWrite(u32 addr, const mem8_t* data, size_t count)
 {
-	const auto vmv = vtlbdata.vmap[addr >> VTLB_PAGE_BITS];
-	if (vmv.isHandler(addr))
-		return false;
+	auto vmv = vtlbdata.vmap[addr >> VTLB_PAGE_BITS];
+	if (!vmv.isHandler(addr))
+	{
+		if (!CHECK_EEREC)
+		{
+			if (CHECK_CACHE && CheckCache(addr))
+			{
+				writeCache(addr, data, count);
+				return true;
+			}
+		}
 
-	std::memcpy(reinterpret_cast<mem8_t*>(vmv.assumePtr(addr)), data, count);
-	return true;
+		std::memcpy(reinterpret_cast<mem8_t*>(vmv.assumePtr(addr)), data, count);
+		return true;
+	}
+	else
+	{
+		//has to: translate, find function, call function
+		u32 paddr = vmv.assumeHandlerGetPAddr(addr);
+
+		size_t i = 0;
+		while (i < count)
+		{
+			auto delta = count - i;
+			if (delta >= 16)
+			{
+				vmv.assumeHandler<128, true>()(paddr, reinterpret_cast<const mem128_t*>(&data[i]));
+				i += 16;
+			}
+			else if (delta >= 8)
+			{
+				vmv.assumeHandler<64, true>()(paddr, reinterpret_cast<const mem64_t*>(&data[i]));
+				i += 8;
+			}
+			else if (delta >= 4)
+			{
+				vmv.assumeHandler<32, true>()(paddr, *reinterpret_cast<const mem32_t*>(&data[i]));
+				i += 4;
+			}
+			else if (delta >= 2)
+			{
+				vmv.assumeHandler<16, true>()(paddr, *reinterpret_cast<const mem16_t*>(&data[i]));
+				i += 2;
+			}
+			else
+			{
+				vmv.assumeHandler<8, true>()(paddr, data[i]);
+				i += 1;
+			}
+		}
+
+		return true;
+	}
 }
 
 uptr vtlb_getTblPtr(u32 addr)

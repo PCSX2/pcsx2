@@ -732,6 +732,10 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 			uptr res = vtlb_getTblPtr(0x100000);
 			ToArray(ret_buffer, res - 0x100000, ret_cnt);
 			ret_cnt += 8;
+
+			res = (uptr)&g_EEMemBackBuffer;
+			ToArray(ret_buffer, res, ret_cnt);
+			ret_cnt += 8;
 			break;
 		}
 

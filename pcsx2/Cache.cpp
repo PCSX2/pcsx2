@@ -263,6 +263,15 @@ void writeCache128(u32 mem, const mem128_t* value)
 	*reinterpret_cast<mem128_t*>(addr) = *value;
 }
 
+void writeCache(u32 mem, const mem8_t* data, u32 count)
+{
+	int way, idx;
+	void* addr = prepareCacheAccess<true, sizeof(mem8_t)>(mem, &way, &idx);
+
+	CACHE_LOG("writeCache %8.8x adding to %d, way %x, lo %llx, hi %llx", mem, idx, way, count);
+	std::memcpy(reinterpret_cast<mem8_t*>(addr), data, count);
+}
+
 template <typename Int>
 Int readCache(u32 mem)
 {

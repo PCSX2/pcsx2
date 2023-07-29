@@ -54,6 +54,9 @@ static bool s_use_vsync_for_timing = false;
 
 uint g_FrameCount = 0;
 
+const u32 eeMemBackBufferStart = 0x80000;
+u8 g_EEMemBackBuffer[2][EEMEM_BACKBUFFER_SIZE];
+
 // Counter 4 takes care of scanlines - hSync/hBlanks
 // Counter 5 takes care of vSync/vBlanks
 Counter counters[4];
@@ -741,6 +744,8 @@ __fi void rcntUpdate_hScanline()
 	}
 }
 
+uptr vtlb_getTblPtr(u32 addr);
+
 __fi void rcntUpdate_vSync()
 {
 	if (!cpuTestCycle(vsyncCounter.sCycle, vsyncCounter.CycleT)) return;
@@ -749,8 +754,6 @@ __fi void rcntUpdate_vSync()
 	{
 		VSyncEnd(vsyncCounter.sCycle);
 
-		
-		g_FrameCount++;
 		vsyncCounter.sCycle += vSyncInfo.Blank;
 		vsyncCounter.CycleT = vSyncInfo.Render;
 		vsyncCounter.Mode = MODE_VRENDER;
@@ -765,10 +768,19 @@ __fi void rcntUpdate_vSync()
 	}
 	else	// VSYNC end / VRENDER begin
 	{
-		VSyncStart(vsyncCounter.sCycle);
+		g_FrameStep.HandlePausing();
+
+		// copy to backbuffer
+		int bufIdx = (g_FrameCount + 1) % 2;
+		if (!vtlb_ramRead(eeMemBackBufferStart, reinterpret_cast<mem8_t*>(g_EEMemBackBuffer[bufIdx] + eeMemBackBufferStart), (u32)(EEMEM_BACKBUFFER_SIZE - eeMemBackBufferStart)))
+		{
+			Console.WriteLn(" back buffer miss");
+		}
 
 		g_FrameStep.CheckPauseStatus();
-		g_FrameStep.HandlePausing();
+		g_FrameCount++;
+
+		VSyncStart(vsyncCounter.sCycle);
 
 		vsyncCounter.sCycle += vSyncInfo.Render;
 		vsyncCounter.CycleT = vSyncInfo.GSBlank;

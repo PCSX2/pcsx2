@@ -781,7 +781,6 @@ void Dialogs::GSDumpDialog::ProcessDumpEvent(const GSDumpFile::GSData& event, u8
 		case GSType::VSync:
 		{
 			GSvsync((*((int*)(regs + 4096)) & 0x2000) > 0 ? (u8)0 : (u8)1, false);
-			g_FrameCount++;
 			break;
 		}
 		case GSType::ReadFIFO2:

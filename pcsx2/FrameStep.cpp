@@ -15,6 +15,7 @@ void FrameStep::CheckPauseStatus()
 	{
 		frameAdvancing = false;
 		pauseEmulation = true;
+		resumeEmulation = false;
 	}
 }
 
@@ -26,6 +27,8 @@ void FrameStep::HandlePausing()
 		while (emulationCurrentlyPaused && !resumeEmulation) {
 			if (sleepWhileWaiting) Sleep(1); // sleep until resumeEmulation is true
 			// otherwise just eat cycle until we can
+			//volatile int i = 0;
+			//i++;
 		}
 		resumeEmulation = false;
 		emulationCurrentlyPaused = false;
