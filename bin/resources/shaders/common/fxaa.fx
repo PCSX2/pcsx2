@@ -13,14 +13,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(SHADER_MODEL) || defined(FXAA_GLSL_130) || defined(FXAA_GLSL_VK) || defined(__METAL_VERSION__)
-
-#ifndef SHADER_MODEL
-    #define SHADER_MODEL 0
-#endif
-#ifndef FXAA_HLSL_4
-    #define FXAA_HLSL_4 0
-#endif
 #ifndef FXAA_HLSL_5
     #define FXAA_HLSL_5 0
 #endif
@@ -51,7 +43,7 @@ layout(location = 0) in vec2 PSin_t;
 layout(location = 0) out vec4 SV_Target0;
 layout(set = 0, binding = 0) uniform sampler2D TextureSampler;
 
-#elif (SHADER_MODEL >= 0x400)
+#elif (FXAA_HLSL_5 == 1)
 Texture2D Texture : register(t0);
 SamplerState TextureSampler : register(s0);
 
@@ -82,21 +74,7 @@ static constexpr sampler MAIN_SAMPLER(coord::normalized, address::clamp_to_edge,
 
 // We don't use gather4 for alpha/luminance because it would require an additional
 // pass to compute the values, which would be slower than the extra shader loads.
-
-#if (SHADER_MODEL >= 0x500)
-#undef FXAA_HLSL_5
-#define FXAA_HLSL_5 1
-#define FXAA_GATHER4_ALPHA 0
-
-#elif (SHADER_MODEL >= 0x400)
-#undef FXAA_HLSL_4
-#define FXAA_HLSL_4 1
-#define FXAA_GATHER4_ALPHA 0
-
-#elif (FXAA_GLSL_130 == 1 || FXAA_GLSL_VK == 1)
-#define FXAA_GATHER4_ALPHA 0
-
-#elif defined(__METAL_VERSION__)
+#if (FXAA_HLSL_5 == 1 || FXAA_GLSL_130 == 1 || FXAA_GLSL_VK == 1) || !defined(__METAL_VERSION__)
 #define FXAA_GATHER4_ALPHA 0
 #endif
 
@@ -106,13 +84,6 @@ struct FxaaTex { SamplerState smpl; Texture2D tex; };
 #define FxaaTexOff(t, p, o, r) t.tex.SampleLevel(t.smpl, p, 0.0, o)
 #define FxaaTexAlpha4(t, p) t.tex.GatherAlpha(t.smpl, p)
 #define FxaaTexOffAlpha4(t, p, o) t.tex.GatherAlpha(t.smpl, p, o)
-#define FxaaDiscard clip(-1)
-#define FxaaSat(x) saturate(x)
-
-#elif (FXAA_HLSL_4 == 1)
-struct FxaaTex { SamplerState smpl; Texture2D tex; };
-#define FxaaTexTop(t, p) t.tex.SampleLevel(t.smpl, p, 0.0)
-#define FxaaTexOff(t, p, o, r) t.tex.SampleLevel(t.smpl, p, 0.0, o)
 #define FxaaDiscard clip(-1)
 #define FxaaSat(x) saturate(x)
 
@@ -518,14 +489,14 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 
 #if (FXAA_GLSL_130 == 1 || FXAA_GLSL_VK == 1)
 float4 FxaaPass(float4 FxaaColor, float2 uv0)
-#elif (SHADER_MODEL >= 0x400)
+#elif (FXAA_HLSL_5 == 1)
 float4 FxaaPass(float4 FxaaColor : COLOR0, float2 uv0 : TEXCOORD0)
 #elif defined(__METAL_VERSION__)
 float4 FxaaPass(float4 FxaaColor, float2 uv0, texture2d<float> tex)
 #endif
 {
 
-	#if (SHADER_MODEL >= 0x400)
+	#if (FXAA_HLSL_5 == 1)
 	FxaaTex tex;
 	tex.tex = Texture;
 	tex.smpl = TextureSampler;
@@ -559,8 +530,8 @@ void main()
 	SV_Target0 = float4(color.rgb, 1.0);
 }
 
-#elif (SHADER_MODEL >= 0x400)
-PS_OUTPUT ps_main(VS_OUTPUT input)
+#elif (FXAA_HLSL_5 == 1)
+PS_OUTPUT main(VS_OUTPUT input)
 {
 	PS_OUTPUT output;
 
@@ -575,6 +546,4 @@ PS_OUTPUT ps_main(VS_OUTPUT input)
 }
 
 // Metal main function in in fxaa.metal
-#endif
-
 #endif
