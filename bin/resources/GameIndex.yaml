@@ -40642,7 +40642,7 @@ SLPS-25453:
   name: "Digimon World X"
   region: "NTSC-J"
 SLPS-25454:
-  name: "Daisenryaku VII Exceed"
+  name: "Yoshitsune Eiyuuden - The Story of Hero Yoshitsune"
   region: "NTSC-J"
   gsHWFixes:
     partialTargetInvalidation: 1 # Fixes broken textures.
