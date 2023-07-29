@@ -1832,11 +1832,14 @@ void GSRendererHW::Draw()
 
 	const bool process_texture = PRIM->TME && !(PRIM->ABE && m_context->ALPHA.IsBlack() && !m_cached_ctx.TEX0.TCC);
 	const u32 frame_end_bp = GSLocalMemory::GetUnwrappedEndBlockAddress(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, m_r);
-	bool preserve_rt_color =
-		((!no_rt && (!IsDiscardingDstColor() || !PrimitiveCoversWithoutGaps() || !all_depth_tests_pass)) || // Using Dst Color or draw has gaps
-			(process_texture && m_cached_ctx.TEX0.TBP0 >= m_cached_ctx.FRAME.Block() &&
-				m_cached_ctx.TEX0.TBP0 < frame_end_bp)); // Tex is RT
-	bool preserve_depth = preserve_rt_color || (!no_ds && (!all_depth_tests_pass || !m_cached_ctx.DepthWrite()));
+	const bool tex_is_rt = (process_texture && m_cached_ctx.TEX0.TBP0 >= m_cached_ctx.FRAME.Block() &&
+		m_cached_ctx.TEX0.TBP0 < frame_end_bp);
+	const bool not_writing_to_all = (!PrimitiveCoversWithoutGaps() || !all_depth_tests_pass);
+	const bool preserve_rt_rgb = (!no_rt && (!IsDiscardingDstRGB() || not_writing_to_all));
+	const bool preserve_rt_alpha = (!no_rt && (!IsDiscardingDstAlpha() || not_writing_to_all));
+	bool preserve_rt_color = preserve_rt_rgb || preserve_rt_alpha;
+	bool preserve_depth =
+		preserve_rt_color || (!no_ds && (!all_depth_tests_pass || !m_cached_ctx.DepthWrite() || m_cached_ctx.TEST.ATE));
 
 	// SW CLUT Render enable.
 	bool force_preload = GSConfig.PreloadFrameWithGSData;
@@ -2133,6 +2136,7 @@ void GSRendererHW::Draw()
 	const GSVector4i t_size_rect = GSVector4i::loadh(t_size);
 
 	// Ensure draw rect is clamped to framebuffer size. Necessary for updating valid area.
+	const GSVector4i unclamped_draw_rect = m_r;
 	m_r = m_r.rintersect(t_size_rect);
 
 	float target_scale = GetTextureScaleFactor();
@@ -2163,7 +2167,7 @@ void GSRendererHW::Draw()
 		const bool is_square = (t_size.y == t_size.x) && m_r.w >= 1023 && PrimitiveCoversWithoutGaps();
 		const bool is_clear = is_possible_mem_clear && is_square;
 		rt = g_texture_cache->LookupTarget(FRAME_TEX0, t_size, target_scale, GSTextureCache::RenderTarget, true,
-			fm, false, force_preload, preserve_rt_color, m_r);
+			fm, false, force_preload, preserve_rt_rgb, preserve_rt_alpha, unclamped_draw_rect);
 
 		// Draw skipped because it was a clear and there was no target.
 		if (!rt)
@@ -2197,7 +2201,7 @@ void GSRendererHW::Draw()
 		ZBUF_TEX0.PSM = m_cached_ctx.ZBUF.PSM;
 
 		ds = g_texture_cache->LookupTarget(ZBUF_TEX0, t_size, target_scale, GSTextureCache::DepthStencil,
-			m_cached_ctx.DepthWrite(), 0, false, force_preload, preserve_depth, m_r);
+			m_cached_ctx.DepthWrite(), 0, false, force_preload, preserve_depth, preserve_depth, unclamped_draw_rect);
 		if (!ds)
 		{
 			ds = g_texture_cache->CreateTarget(ZBUF_TEX0, t_size, GetValidSize(src), target_scale, GSTextureCache::DepthStencil,
@@ -5814,7 +5818,25 @@ bool GSRendererHW::IsDiscardingDstColor()
 		(!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsBlack()) && // no blending or writing black
 		!m_cached_ctx.TEST.ATE && // not testing alpha (might discard some pixels)
 		!m_cached_ctx.TEST.DATE && // not reading alpha
-		(m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) == 0); // no channels masked
+			(m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) == 0); // no channels masked
+}
+
+bool GSRendererHW::IsDiscardingDstRGB()
+{
+	return ((!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsBlack()) && // no blending or writing black
+			!m_cached_ctx.TEST.ATE && // not testing alpha (might discard some pixels)
+			!m_cached_ctx.TEST.DATE && // not reading alpha
+			((m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) & 0xFFFFFFu) ==
+				0); // RGB isn't masked
+}
+
+bool GSRendererHW::IsDiscardingDstAlpha()
+{
+	return ((!PRIM->ABE || m_context->ALPHA.C != 1) && // not using Ad
+			!m_cached_ctx.TEST.ATE && // not testing alpha (might discard some pixels)
+			!m_cached_ctx.TEST.DATE && // not reading alpha
+			((m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) & 0xFF000000u) ==
+				0); // alpha isn't masked
 }
 
 bool GSRendererHW::PrimitiveCoversWithoutGaps()

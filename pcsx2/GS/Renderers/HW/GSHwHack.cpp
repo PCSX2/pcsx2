@@ -1264,7 +1264,7 @@ static bool GetMoveTargetPair(GSRendererHW& r, GSTextureCache::Target** src, GIF
 	const int dst_type =
 		GSLocalMemory::m_psm[dst_desc.PSM].depth ? GSTextureCache::DepthStencil : GSTextureCache::RenderTarget;
 	GSTextureCache::Target* tdst = g_texture_cache->LookupTarget(dst_desc, tsrc->GetUnscaledSize(), tsrc->GetScale(),
-		dst_type, true, 0, false, false, preserve_target, tsrc->GetUnscaledRect());
+		dst_type, true, 0, false, false, preserve_target, preserve_target, tsrc->GetUnscaledRect());
 	if (!tdst)
 	{
 		if (req_target)

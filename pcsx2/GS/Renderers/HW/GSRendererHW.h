@@ -62,6 +62,8 @@ private:
 	u32 GetConstantDirectWriteMemClearColor() const;
 	bool IsReallyDithered() const;
 	bool IsDiscardingDstColor();
+	bool IsDiscardingDstRGB();
+	bool IsDiscardingDstAlpha();
 	bool PrimitiveCoversWithoutGaps();
 
 	enum class CLUTDrawTestResult
