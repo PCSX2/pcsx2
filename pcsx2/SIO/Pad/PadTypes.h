@@ -17,6 +17,7 @@
 
 #include "Config.h"
 
+#include <optional>
 #include <span>
 
 namespace Pad
@@ -95,12 +96,15 @@ namespace Pad
 		std::span<const SettingInfo> settings;
 		VibrationCapabilities vibration_caps;
 
-		// Returns localized controller type name.
+		/// Returns localized controller type name.
 		const char* GetLocalizedName() const;
+
+		/// Returns the index of the specified binding point, by name.
+		std::optional<u32> GetBindIndex(const std::string_view& name) const;
 	};
 
 	// Total number of pad ports, across both multitaps.
-	static constexpr u32 NUM_CONTROLLER_PORTS = 8;
+	static constexpr u32 NUM_CONTROLLER_PORTS = Pcsx2Config::PadOptions::NUM_PORTS;
 
 	// Default stick deadzone/sensitivity.
 	static constexpr float DEFAULT_STICK_DEADZONE = 0.0f;

@@ -52,8 +52,8 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
 	populateControllerTypes();
 	onTypeChanged();
 
-	ControllerSettingWidgetBinder::BindWidgetToInputProfileString(
-		m_dialog->getProfileSettingsInterface(), m_ui.controllerType, m_config_section, "Type", Pad::GetDefaultPadType(port));
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileString(m_dialog->getProfileSettingsInterface(),
+		m_ui.controllerType, m_config_section, "Type", Pad::GetControllerInfo(Pad::GetDefaultPadType(port))->name);
 
 	connect(m_ui.controllerType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ControllerBindingWidget::onTypeChanged);
 	connect(m_ui.bindings, &QPushButton::clicked, this, &ControllerBindingWidget::onBindingsClicked);
@@ -79,7 +79,15 @@ void ControllerBindingWidget::populateControllerTypes()
 void ControllerBindingWidget::onTypeChanged()
 {
 	const bool is_initializing = (m_ui.stackedWidget->count() == 0);
-	m_controller_type = m_dialog->getStringValue(m_config_section.c_str(), "Type", Pad::GetDefaultPadType(m_port_number));
+	const std::string type_name = m_dialog->getStringValue(
+		m_config_section.c_str(), "Type", Pad::GetControllerInfo(Pad::GetDefaultPadType(m_port_number))->name);
+	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfoByName(type_name);
+	if (!cinfo)
+	{
+		Console.Error(fmt::format("Invalid controller type name '{}' in config, ignoring.", type_name));
+		cinfo = Pad::GetControllerInfo(Pad::ControllerType::NotConnected);
+	}
+	m_controller_type = cinfo->type;
 
 	if (m_bindings_widget)
 	{
@@ -100,17 +108,16 @@ void ControllerBindingWidget::onTypeChanged()
 		m_macros_widget = nullptr;
 	}
 
-	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(m_controller_type);
-	const bool has_settings = (cinfo && !cinfo->settings.empty());
-	const bool has_macros = (cinfo && !cinfo->bindings.empty());
+	const bool has_settings = (!cinfo->settings.empty());
+	const bool has_macros = (!cinfo->bindings.empty());
 	m_ui.settings->setEnabled(has_settings);
 	m_ui.macros->setEnabled(has_macros);
 
-	if (m_controller_type == "DualShock2")
+	if (cinfo->type == Pad::ControllerType::DualShock2)
 	{
 		m_bindings_widget = ControllerBindingWidget_DualShock2::createInstance(this);
 	}
-	else if (m_controller_type == "Guitar")
+	else if (cinfo->type == Pad::ControllerType::Guitar)
 	{
 		m_bindings_widget = ControllerBindingWidget_Guitar::createInstance(this);
 	}
