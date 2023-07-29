@@ -1433,6 +1433,9 @@
     <ClCompile Include="SIO\Pad\Pad.cpp">
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClCompile>
+    <ClCompile Include="FrameStep.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2368,6 +2371,9 @@
     </ClInclude>
     <ClInclude Include="SIO\Pad\Pad.h">
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameStep.h">
+      <Filter>System\Include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

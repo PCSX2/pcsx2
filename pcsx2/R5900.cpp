@@ -41,6 +41,8 @@
 #include "DebugTools/SymbolMap.h"
 #include "R5900OpcodeTables.h"
 
+#include "pcsx2/FrameStep.h"
+
 using namespace R5900;	// for R5900 disasm tools
 
 s32 EEsCycle;		// used to sync the IOP to the EE

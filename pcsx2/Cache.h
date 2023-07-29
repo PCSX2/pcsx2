@@ -24,6 +24,7 @@ void writeCache16(u32 mem, u16 value);
 void writeCache32(u32 mem, u32 value);
 void writeCache64(u32 mem, const u64 value);
 void writeCache128(u32 mem, const mem128_t* value);
+void writeCache(u32 mem, const mem8_t* data, u32 count);
 u8 readCache8(u32 mem);
 u16 readCache16(u32 mem);
 u32 readCache32(u32 mem);

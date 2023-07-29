@@ -110,6 +110,9 @@ extern DataType vtlb_ramRead(u32 mem);
 template <typename DataType>
 extern bool vtlb_ramWrite(u32 mem, const DataType& value);
 
+extern bool vtlb_ramRead(u32 addr, mem8_t* value, size_t count);
+extern bool vtlb_ramWrite(u32 addr, const mem8_t* data, size_t count);
+
 // NOTE: Does not call MMIO handlers.
 extern int vtlb_memSafeCmpBytes(u32 mem, const void* src, u32 size);
 extern bool vtlb_memSafeReadBytes(u32 mem, void* dst, u32 size);

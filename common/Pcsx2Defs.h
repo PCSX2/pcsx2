@@ -305,6 +305,7 @@ static constexpr s64 _8mb = _1mb * 8;
 static constexpr s64 _16mb = _1mb * 16;
 static constexpr s64 _32mb = _1mb * 32;
 static constexpr s64 _64mb = _1mb * 64;
+static constexpr s64 _128mb = _1mb * 128;
 static constexpr s64 _256mb = _1mb * 256;
 static constexpr s64 _1gb = _1mb * 1024;
 static constexpr s64 _4gb = _1gb * 4;

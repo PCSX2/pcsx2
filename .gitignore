@@ -97,3 +97,6 @@ oprofile_data/
 CMakeSettings.json
 /ci-artifacts/
 /out/
+
+/pcsx2/crash-*.dmp
+/pcsx2/crash-*.txt

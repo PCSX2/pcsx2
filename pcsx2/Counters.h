@@ -126,6 +126,9 @@ struct SyncCounter
 #define MODE_HRENDER	0x0		//Set for ~5/6 of 1 Scanline
 #define MODE_HBLANK		0x1		//Set for the remaining ~1/6 of 1 Scanline
 
+
+#define EEMEM_BACKBUFFER_SIZE (0x02200000)
+
 extern const char* ReportVideoMode();
 extern const char* ReportInterlaceMode();
 extern Counter counters[4];
@@ -135,6 +138,8 @@ extern SyncCounter vsyncCounter;
 extern s32 nextCounter;		// delta until the next counter event (must be signed)
 extern u32 nextsCounter;
 extern uint g_FrameCount;
+
+extern u8 g_EEMemBackBuffer[2][EEMEM_BACKBUFFER_SIZE];
 
 extern void rcntUpdate_hScanline();
 extern void rcntUpdate_vSync();

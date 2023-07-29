@@ -32,9 +32,13 @@
 #include "ps2/HwInternal.h"
 #include "SIO/Sio.h"
 #include "SPU2/spu2.h"
+#include "iR5900.h"
 #include "Recording/InputRecording.h"
 #include "VMManager.h"
 #include "VUmicro.h"
+
+#include "Recording/InputRecordingControls.h"
+#include "pcsx2/FrameStep.h"
 
 using namespace Threading;
 
@@ -44,6 +48,9 @@ static int gates = 0;
 static bool s_use_vsync_for_timing = false;
 
 uint g_FrameCount = 0;
+
+const u32 eeMemBackBufferStart = 0x80000;
+u8 g_EEMemBackBuffer[2][EEMEM_BACKBUFFER_SIZE];
 
 // Counter 4 takes care of scanlines - hSync/hBlanks
 // Counter 5 takes care of vSync/vBlanks
@@ -653,10 +660,15 @@ static __fi void GSVSync()
 
 static __fi void VSyncEnd(u32 sCycle)
 {
+	if (EmuConfig.EnableRecordingTools)
+	{
+		g_InputRecordingControls.CheckPauseStatus();
+	}
+
+
 	if(EmuConfig.Trace.Enabled && EmuConfig.Trace.EE.m_EnableAll)
 		SysTrace.EE.Counters.Write( "    ================  EE COUNTER VSYNC END (frame: %d)  ================", g_FrameCount );
 
-	g_FrameCount++;
 
 	hwIntcIrq(INTC_VBLANK_E);  // HW Irq
 	psxVBlankEnd(); // psxCounters vBlank End
@@ -713,6 +725,8 @@ __fi void rcntUpdate_hScanline()
 	}
 }
 
+uptr vtlb_getTblPtr(u32 addr);
+
 __fi void rcntUpdate_vSync()
 {
 	if (!cpuTestCycle(vsyncCounter.sCycle, vsyncCounter.CycleT)) return;
@@ -735,6 +749,18 @@ __fi void rcntUpdate_vSync()
 	}
 	else	// VSYNC end / VRENDER begin
 	{
+		g_FrameStep.HandlePausing();
+
+		// copy to backbuffer
+		int bufIdx = (g_FrameCount + 1) % 2;
+		if (!vtlb_ramRead(eeMemBackBufferStart, reinterpret_cast<mem8_t*>(g_EEMemBackBuffer[bufIdx] + eeMemBackBufferStart), (u32)(EEMEM_BACKBUFFER_SIZE - eeMemBackBufferStart)))
+		{
+			Console.WriteLn(" back buffer miss");
+		}
+
+		g_FrameStep.CheckPauseStatus();
+		g_FrameCount++;
+
 		VSyncStart(vsyncCounter.sCycle);
 
 		vsyncCounter.sCycle += vSyncInfo.Render;

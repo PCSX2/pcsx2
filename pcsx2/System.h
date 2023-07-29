@@ -35,16 +35,17 @@ namespace HostMemoryMap
 	//////////////////////////////////////////////////////////////////////////
 	// Main
 	//////////////////////////////////////////////////////////////////////////
-	static const u32 MainSize = 0x14000000;
+	static constexpr u32 _128mbOffset = 0x6000000;
+	static const u32 MainSize = 0x14000000 + _128mbOffset;
 
 	// PS2 main memory, SPR, and ROMs (approximately 40.5MB, but we round up to 64MB for simplicity).
 	static const u32 EEmemOffset   = 0x00000000;
 
 	// IOP main memory and ROMs
-	static const u32 IOPmemOffset  = 0x04000000;
+	static constexpr u32 IOPmemOffset  = 0x04000000 + _128mbOffset;
 
 	// VU0 and VU1 memory.
-	static const u32 VUmemOffset   = 0x08000000;
+	static constexpr u32 VUmemOffset   = 0x08000000 + _128mbOffset;
 
 	// Bump allocator for any other small allocations
 	// size: Difference between it and HostMemoryMap::Size, so nothing should allocate higher than it!

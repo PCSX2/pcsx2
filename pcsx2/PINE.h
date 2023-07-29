@@ -13,15 +13,17 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* A reference client implementation for interfacing with PINE is available
- * here: https://code.govanify.com/govanify/pine/ */
+ /* A reference client implementation for interfacing with PINE is available
+  * here: https://code.govanify.com/govanify/pine/ */
 
 #pragma once
 
-// PINE uses a concept of "slot" to be able to communicate with multiple
-// emulators at the same time, each slot should be unique to each emulator to
-// allow PnP and configurable by the end user so that several runs don't
-// conflict with each others
+#ifndef PCSX2_CORE
+
+  // PINE uses a concept of "slot" to be able to communicate with multiple
+  // emulators at the same time, each slot should be unique to each emulator to
+  // allow PnP and configurable by the end user so that several runs don't
+  // conflict with each others
 #define PINE_DEFAULT_SLOT 28011
 #define PINE_EMULATOR_NAME "pcsx2"
 
@@ -62,11 +64,11 @@ protected:
 	 */
 #define MAX_IPC_SIZE 650000
 
-	/**
-	 * Maximum memory used by an IPC message reply.
-	 * Equivalent to 50,000 Read64 replies.
-	 */
-#define MAX_IPC_RETURN_SIZE 450000
+	 /**
+	  * Maximum memory used by an IPC message reply.
+	  * Equivalent to 50,000 Read64 replies.
+	  */
+#define MAX_IPC_RETURN_SIZE 1000000
 
 	/**
 	 * IPC return buffer.
@@ -105,7 +107,32 @@ protected:
 		MsgUUID = 0xD, /**< Returns the game UUID. */
 		MsgGameVersion = 0xE, /**< Returns the game verion. */
 		MsgStatus = 0xF, /**< Returns the emulator status. */
+
+		MsgReadN = 0x64, /** */
+		MsgWriteN = 0x65, /** */
+		MsgFrameAdvance = 0x66, /** */
+		MsgResume = 0x67, /** */
+		MsgPause = 0x68, /** */
+		MsgRestart = 0x69, /** */
+		MsgStop = 0x6A, /** */
+		MsgGetFrameBuffer = 0x6B, /** */
+		MsgSetPad = 0x6C, /** */
+		MsgGetVmPtr = 0x6D, /** */
+		MsgSetDynamicSetting = 0x6E, /** */
 		MsgUnimplemented = 0xFF /**< Unimplemented IPC message. */
+	};
+
+	/**
+	 * IPC Command messages opcodes.
+	 * A list of possible operations possible by the IPC.
+	 * Each one of them is what we call an "opcode" and is the first
+	 * byte sent by the IPC to differentiate between commands.
+	 */
+	enum DynamicSettingId : unsigned char
+	{
+		DynamicSettingFrameSleepWait = 0, /**< If true, FrameStep sleeps while waiting for next frame command. */
+		DynamicSettingDisableRendering = 1, /**< If true, Renderer is set to NULL. */
+		DynamicSettingIdUnimplemented = 0xFF /**< Unimplemented DynamicSettingId. */
 	};
 
 	/**
