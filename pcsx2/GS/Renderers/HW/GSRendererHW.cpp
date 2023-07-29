@@ -2436,14 +2436,6 @@ void GSRendererHW::Draw()
 		// We still need to make sure the dimensions of the targets match.
 		const int new_w = std::max(t_size.x, std::max(rt ? rt->m_unscaled_size.x : 0, ds ? ds->m_unscaled_size.x : 0));
 		const int new_h = std::max(t_size.y, std::max(rt ? rt->m_unscaled_size.y : 0, ds ? ds->m_unscaled_size.y : 0));
-
-		// Expanding the target means we can't fast clear anymore.
-		const bool growing = (new_w > m_r.z || new_h > m_r.w);
-		if ((!preserve_rt_color || !preserve_depth) && growing)
-			GL_INS("Preserving target due to draw being %dx%d and target being %dx%d", m_r.z, m_r.w, new_w, new_h);
-		preserve_rt_color |= growing;
-		preserve_depth |= growing;
-
 		if (rt)
 		{
 			const u32 old_end_block = rt->m_end_block;
@@ -2452,6 +2444,8 @@ void GSRendererHW::Draw()
 			const int old_height = rt->m_texture->GetHeight();
 
 			pxAssert(rt->GetScale() == target_scale);
+			if (rt->GetUnscaledWidth() != new_w || rt->GetUnscaledHeight() != new_h)
+				GL_INS("Resize RT from %dx%d to %dx%d", rt->GetUnscaledWidth(), rt->GetUnscaledHeight(), new_w, new_h);
 			rt->ResizeTexture(new_w, new_h);
 
 			if (!m_texture_shuffle && !m_channel_shuffle)
@@ -2474,9 +2468,11 @@ void GSRendererHW::Draw()
 				{
 					const int copy_width = (old_rt->m_texture->GetWidth()) > (rt->m_texture->GetWidth()) ? (rt->m_texture->GetWidth()) : old_rt->m_texture->GetWidth();
 					const int copy_height = (old_rt->m_texture->GetHeight()) > (rt->m_texture->GetHeight() - old_height) ? (rt->m_texture->GetHeight() - old_height) : old_rt->m_texture->GetHeight();
+					GL_INS("RT double buffer copy from FBP 0x%x, %dx%d => %d,%d", old_rt->m_TEX0.TBP0, copy_width, copy_height, 0, old_height);
 
 					// Invalidate has been moved to after DrawPrims(), because we might kill the current sources' backing.
 					g_gs_device->CopyRect(old_rt->m_texture, rt->m_texture, GSVector4i(0, 0, copy_width, copy_height), 0, old_height);
+					preserve_rt_color = true;
 				}
 				else
 				{
@@ -2492,6 +2488,8 @@ void GSRendererHW::Draw()
 			const int old_height = ds->m_texture->GetHeight();
 
 			pxAssert(ds->GetScale() == target_scale);
+			if (ds->GetUnscaledWidth() != new_w || ds->GetUnscaledHeight() != new_h)
+				GL_INS("Resize DS from %dx%d to %dx%d", ds->GetUnscaledWidth(), ds->GetUnscaledHeight(), new_w, new_h);
 			ds->ResizeTexture(new_w, new_h);
 
 			if (!m_texture_shuffle && !m_channel_shuffle)
@@ -2512,8 +2510,10 @@ void GSRendererHW::Draw()
 				{
 					const int copy_width = (old_ds->m_texture->GetWidth()) > (ds->m_texture->GetWidth()) ? (ds->m_texture->GetWidth()) : old_ds->m_texture->GetWidth();
 					const int copy_height = (old_ds->m_texture->GetHeight()) > (ds->m_texture->GetHeight() - old_height) ? (ds->m_texture->GetHeight() - old_height) : old_ds->m_texture->GetHeight();
+					GL_INS("DS double buffer copy from FBP 0x%x, %dx%d => %d,%d", old_rt->m_TEX0.TBP0, copy_width, copy_height, 0, old_height);
 
 					g_gs_device->CopyRect(old_ds->m_texture, ds->m_texture, GSVector4i(0, 0, copy_width, copy_height), 0, old_height);
+					preserve_depth = true;
 				}
 				else
 				{
