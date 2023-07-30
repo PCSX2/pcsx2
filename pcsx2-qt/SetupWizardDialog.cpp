@@ -151,7 +151,7 @@ void SetupWizardDialog::updatePageLabels(int prev_page)
 void SetupWizardDialog::updatePageButtons()
 {
 	const int page = m_ui.pages->currentIndex();
-	m_ui.next->setText((page == Page_Complete) ? "&Finish" : "&Next");
+	m_ui.next->setText((page == Page_Complete) ? tr("&Finish") : tr("&Next"));
 	m_ui.back->setEnabled(page > 0);
 }
 
