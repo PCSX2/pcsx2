@@ -2285,7 +2285,8 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
 	if (filename.isEmpty())
 		return;
 
-	if (!GameList::GetCoverImagePathForEntry(entry).empty())
+	const QString old_filename = QString::fromStdString(GameList::GetCoverImagePathForEntry(entry));
+	if (!old_filename.isEmpty())
 	{
 		if (QMessageBox::question(this, tr("Cover Already Exists"),
 				tr("A cover image for this game already exists, do you wish to replace it?"), QMessageBox::Yes,
@@ -2308,6 +2309,12 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
 	if (!QFile::copy(filename, new_filename))
 	{
 		QMessageBox::critical(this, tr("Copy Error"), tr("Failed to copy '%1' to '%2'").arg(filename).arg(new_filename));
+		return;
+	}
+
+	if (!old_filename.isEmpty() && old_filename != new_filename && !QFile::remove(old_filename))
+	{
+		QMessageBox::critical(this, tr("Copy Error"), tr("Failed to remove '%1'").arg(old_filename));
 		return;
 	}
 
