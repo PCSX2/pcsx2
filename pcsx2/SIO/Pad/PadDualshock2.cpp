@@ -132,7 +132,7 @@ u8 PadDualshock2::ButtonQuery(u8 commandByte)
 			{
 				case 8:
 					g_Sio0.SetAcknowledge(false);
-					return 0x5a;
+					return 0x00;
 				default:
 					return 0x00;
 			}
@@ -142,6 +142,8 @@ u8 PadDualshock2::ButtonQuery(u8 commandByte)
 u8 PadDualshock2::Poll(u8 commandByte)
 {
 	const u32 buttons = GetButtons();
+	u8 largeMotor = 0x00;
+	u8 smallMotor = 0x00;
 
 	switch (commandBytesReceived)
 	{
@@ -150,12 +152,38 @@ u8 PadDualshock2::Poll(u8 commandByte)
 			return (buttons >> 8) & 0xff;
 		case 4:
 			this->vibrationMotors[1] = commandByte;
+
+			// Apply the vibration mapping to the motors
+			switch (this->largeMotorLastConfig)
+			{
+				case 0x00:
+					largeMotor = this->vibrationMotors[0];
+					break;
+				case 0x01:
+					largeMotor = this->vibrationMotors[1];
+					break;
+				default:
+					break;
+			}
+
+			switch (this->smallMotorLastConfig)
+			{
+				case 0x00:
+					smallMotor = this->vibrationMotors[0];
+					break;
+				case 0x01:
+					smallMotor = this->vibrationMotors[1];
+					break;
+				default:
+					break;
+			}
+
 			// Order is reversed here - SetPadVibrationIntensity takes large motor first, then small. PS2 orders small motor first, large motor second.
 			InputManager::SetPadVibrationIntensity(this->unifiedSlot,
-				std::min(static_cast<float>(this->vibrationMotors[1]) * GetVibrationScale(1) * (1.0f / 255.0f), 1.0f),
+				std::min(static_cast<float>(largeMotor) * GetVibrationScale(1) * (1.0f / 255.0f), 1.0f),
 				// Small motor on the PS2 is either on full power or zero power, it has no variable speed. If the game supplies any value here at all,
 				// the pad in turn supplies full power to the motor, or no power at all if zero.
-				std::min(static_cast<float>((this->vibrationMotors[0] ? 0xff : 0)) * GetVibrationScale(0) * (1.0f / 255.0f), 1.0f)
+				std::min(static_cast<float>((smallMotor ? 0xff : 0)) * GetVibrationScale(0) * (1.0f / 255.0f), 1.0f)
 			);
 
 			// PS1 mode: If the controller is still in digital mode, it is time to stop acknowledging.
@@ -349,6 +377,8 @@ u8 PadDualshock2::Constant2(u8 commandByte)
 	{
 		case 5:
 			return 0x02;
+		case 7:
+			return 0x01;
 		case 8:
 			g_Sio0.SetAcknowledge(false);
 			return 0x00;
