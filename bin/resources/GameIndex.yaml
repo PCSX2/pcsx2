@@ -128,12 +128,18 @@ PAPX-90206:
 PAPX-90207:
   name: "Gran Turismo 3 - A-Spec - Autobacs Gentei Replay Theater"
   region: "NTSC-J"
+  gsHWFixes:
+    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 PAPX-90208:
   name: "Gran Turismo 3 - A-Spec - Replay Theater"
   region: "NTSC-J"
+  gsHWFixes:
+    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 PAPX-90209:
   name: "Gran Turismo 3 - A-Spec - Netz Toyota - Replay Theater Disc"
   region: "NTSC-J"
+  gsHWFixes:
+    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 PAPX-90210:
   name: "Yappa RPG desho."
   region: "NTSC-J"
@@ -400,6 +406,8 @@ PBPX-95501:
 PBPX-95502:
   name: "Gran Turismo 3 - A-Spec"
   region: "NTSC-J"
+  gsHWFixes:
+    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 PBPX-95503:
   name: "Gran Turismo 3 - A-Spec [PS2 Bundle]"
   region: "NTSC-U"
@@ -531,6 +539,8 @@ PCPX-96311:
 PCPX-96312:
   name: "Gran Turismo 3 - A-Spec - Autobacs Tentou Shiyuu Disc"
   region: "NTSC-J"
+  gsHWFixes:
+    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 PCPX-96314:
   name: "The Sky Odyssey"
   region: "NTSC-J"
@@ -600,6 +610,8 @@ PCPX-96608:
 PCPX-96609:
   name: "Gran Turismo 3 - A-Spec - Tentou Shiyuu Disc Vol. 2"
   region: "NTSC-J"
+  gsHWFixes:
+    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 PCPX-96610:
   name: "MiruMiru 2001-nen 2-gatsudo Juchuugou"
   region: "NTSC-J"
@@ -1975,7 +1987,6 @@ SCAJ-30008:
   region: "NTSC-Unk"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # Comments from old GameIndex.dbf for this Game.
     # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
@@ -3017,6 +3028,8 @@ SCED-52452:
 SCED-52455:
   name: "Gran Turismo Special Edition 2004 Geneva Version"
   region: "PAL-Unk"
+  gsHWFixes:
+    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCED-52461:
   name: "SingStar [Press Kit]"
   region: "PAL-E"
@@ -3098,6 +3111,14 @@ SCED-52846:
 SCED-52847:
   name: "Ratchet & Clank 3"
   region: "PAL-Unk"
+  gameFixes:
+    - EETimingHack # Fixes SPR errors while going in-game.
+  gsHWFixes:
+    mipmap: 1 # Fixes garbage textures in the distance.
+    disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    partialTargetInvalidation: 1 # Fixes broken pause screen.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 SCED-52848:
   name: "Ratchet & Clank 3 + Sly 2 - Band of Thieves"
   region: "PAL-Unk"
@@ -6733,6 +6754,8 @@ SCPM-85303:
 SCPM-85304:
   name: "Gran Turismo 4 - First Preview"
   region: "NTSC-J"
+  gsHWFixes:
+    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCPN-60101:
   name: "PlayStation BB Navigator - Version 0.10 [Prerelease] [Disc 1]"
   region: "NTSC-J"
@@ -8457,6 +8480,8 @@ SCPS-56016:
 SCPS-72001:
   name: "Gran Turismo 3 - A-Spec"
   region: "NTSC-J"
+  gsHWFixes:
+    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCPS-72002:
   name: "Minna no Golf 3"
   region: "NTSC-J"
@@ -8498,6 +8523,14 @@ SCUS-90174:
 SCUS-90682:
   name: "Gran Turismo 4"
   region: "NTSC-U"
+  clampModes:
+    vuClampMode: 2 # Text in GT mode works.
+    # eeClampMode = 3  Text in races works.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCUS-94346:
   name: "SingStar Latino"
   region: "NTSC-U"
@@ -18645,36 +18678,26 @@ SLES-53028:
   region: "PAL-E"
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
-  gsHWFixes:
-    getSkipCount: "GSC_HitmanBloodMoney"
 SLES-53029:
   name: "Hitman - Blood Money"
   region: "PAL-F"
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
-  gsHWFixes:
-    getSkipCount: "GSC_HitmanBloodMoney"
 SLES-53030:
   name: "Hitman - Blood Money"
   region: "PAL-G"
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
-  gsHWFixes:
-    getSkipCount: "GSC_HitmanBloodMoney"
 SLES-53031:
   name: "Hitman - Blood Money"
   region: "PAL-I"
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
-  gsHWFixes:
-    getSkipCount: "GSC_HitmanBloodMoney"
 SLES-53032:
   name: "Hitman - Blood Money"
   region: "PAL-S"
   clampModes:
     vuClampMode: 0 # Fixes bump mapping issues.
-  gsHWFixes:
-    getSkipCount: "GSC_HitmanBloodMoney"
 SLES-53035:
   name: "Masters of the Universe - He-Man - Defender of Greyskull"
   region: "PAL-E"
