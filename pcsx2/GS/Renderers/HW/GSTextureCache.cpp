@@ -1571,14 +1571,6 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 	if (dst)
 	{
 		dst->m_used |= used;
-
-		if (is_frame)
-		{
-			// TODO: Why are we doing this?!
-			dst->m_valid_alpha_low = false;
-			dst->m_valid_alpha_high = false;
-		}
-
 		dst->readbacks_since_draw = 0;
 
 		assert(dst && dst->m_texture && dst->m_scale == scale);
@@ -1980,6 +1972,7 @@ bool GSTextureCache::CopyRGBFromDepthToColor(Target* dst, Target* depth_src)
 
 	dst->m_unscaled_size = new_size;
 	dst->m_valid_rgb = true;
+	dst->m_32_bits_fmt = true;
 	return true;
 }
 
