@@ -291,37 +291,37 @@ Login token generated on %2.</source>
 <context>
     <name>Achievements</name>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="643"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="642"/>
         <source>Hardcore mode is now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="643"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="642"/>
         <source>Hardcore mode is now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1094"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1093"/>
         <source> (Hardcore Mode)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1099"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1098"/>
         <source>You have earned {0} of {1} achievements, and {2} of {3} points.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1104"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1103"/>
         <source>This game has no achievements.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1110"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1109"/>
         <source>Leaderboard submission is enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1507"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1506"/>
         <source>Failed to read executable from disc. Achievements disabled.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3062,13 +3062,13 @@ Do you want to overwrite?</source>
     </message>
     <message>
         <location filename="../Debugger/DisassemblyWidget.cpp" line="80"/>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="237"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="238"/>
         <source>Add Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Debugger/DisassemblyWidget.cpp" line="82"/>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="289"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="290"/>
         <source>Rename Function</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3094,60 +3094,60 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="201"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="202"/>
         <source>Go to address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="211"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="212"/>
         <source>Go to address error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="211"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="212"/>
         <source>Invalid address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="229"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="230"/>
         <source>Add Function Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="229"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="230"/>
         <source>A function entry point already exists here. Consider renaming instead.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="238"/>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="253"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="239"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="254"/>
         <source>Function will be (0x%1) instructions long.
 Enter function name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="289"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="290"/>
         <source>Function name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="295"/>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="307"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="296"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="308"/>
         <source>Rename Function Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="295"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="296"/>
         <source>Function name cannot be nothing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="307"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="308"/>
         <source>No function / symbol is currently selected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyWidget.cpp" line="630"/>
+        <location filename="../Debugger/DisassemblyWidget.cpp" line="631"/>
         <source>%1 NOT VALID ADDRESS</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8622,11 +8622,6 @@ The saves will not be recoverable.</source>
         <source>Force ejecting all Memory Cards. Reinserting in 1 second.</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location filename="../../pcsx2/SIO/Sio2.cpp" line="220"/>
-        <source>Memory card in port {} / slot {} reinserted</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>MemoryCardConvertDialog</name>
@@ -9449,12 +9444,12 @@ This action cannot be reversed, and you will lose any saves on the card.</source
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="658"/>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="674"/>
         <source>Analog light is now on for port {} / slot {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="659"/>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="675"/>
         <source>Analog light is now off for port {} / slot {}</source>
         <translation type="unfinished"></translation>
     </message>
