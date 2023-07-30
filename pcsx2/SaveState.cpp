@@ -1065,10 +1065,10 @@ static bool CheckVersion(const std::string& filename, zip_t* zf, Error* error)
 	// than the emulator recognizes.  99% chance that trying to load it will just corrupt emulation or crash.
 	if (savever > g_SaveVersion || (savever >> 16) != (g_SaveVersion >> 16))
 	{
-		Error::SetString(error, fmt::format("The state is an unsupported version. (PCSX2 ver={:x}, state ver={:x}).\n"
-											"Option 1: Download PCSX2 {} from pcsx2.net and make a memcard save like on the physical PS2.\n"
-											"Option 2: Delete the savestates.",
-									g_SaveVersion, savever, version_string));
+		Error::SetString(error, fmt::format(TRANSLATE_FS("SaveState","This savestate is an unsupported version and cannot be used.\n\n"
+											"You can download PCSX2 {} from pcsx2.net and make a normal memory card save.\n"
+											"Otherwise delete the savestate and do a fresh boot."),
+											version_string));
 		return false;
 	}
 
