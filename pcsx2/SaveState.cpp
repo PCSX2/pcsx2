@@ -40,6 +40,7 @@
 #include "VMManager.h"
 #include "VUmicro.h"
 #include "ps2/BiosTools.h"
+#include "svnrev.h"
 
 #include "common/Error.h"
 #include "common/FileSystem.h"
@@ -336,6 +337,7 @@ void memLoadingState::FreezeMem( void* data, int size )
 static const char* EntryFilename_StateVersion = "PCSX2 Savestate Version.id";
 static const char* EntryFilename_Screenshot = "Screenshot.png";
 static const char* EntryFilename_InternalStructures = "PCSX2 Internal Structures.dat";
+static constexpr u32 STATE_PCSX2_VERSION_SIZE = 32;
 
 struct SysState_Component
 {
@@ -938,9 +940,26 @@ static bool SaveState_AddToZip(zip_t* zf, ArchiveEntryList* srclist, SaveStateSc
 
 	// version indicator
 	{
-		zip_source_t* const zs = zip_source_buffer(zf, &g_SaveVersion, sizeof(g_SaveVersion), 0);
+		struct VersionIndicator
+		{
+			u32 save_version;
+			char version[STATE_PCSX2_VERSION_SIZE];
+		};
+
+		VersionIndicator* vi = static_cast<VersionIndicator*>(std::malloc(sizeof(VersionIndicator)));
+		vi->save_version = g_SaveVersion;
+#if GIT_TAGGED_COMMIT
+		StringUtil::Strlcpy(vi->version, GIT_TAG, std::size(vi->version));
+#else
+		StringUtil::Strlcpy(vi->version, "Unknown", std::size(vi->version));
+#endif
+
+		zip_source_t* const zs = zip_source_buffer(zf, vi, sizeof(*vi), 1);
 		if (!zs)
+		{
+			std::free(vi);
 			return false;
+		}
 
 		// NOTE: Source should not be freed if successful.
 		const s64 fi = zip_file_add(zf, EntryFilename_StateVersion, zs, ZIP_FL_ENC_UTF_8);
@@ -1034,6 +1053,12 @@ static bool CheckVersion(const std::string& filename, zip_t* zf, Error* error)
 		return false;
 	}
 
+	char version_string[STATE_PCSX2_VERSION_SIZE];
+	if (zip_fread(zff.get(), version_string, STATE_PCSX2_VERSION_SIZE) == STATE_PCSX2_VERSION_SIZE)
+		version_string[STATE_PCSX2_VERSION_SIZE - 1] = 0;
+	else
+		StringUtil::Strlcpy(version_string, "Unknown", std::size(version_string));
+
 	// Major version mismatch.  Means we can't load this savestate at all.  Support for it
 	// was removed entirely.
 	// check for a "minor" version incompatibility; which happens if the savestate being loaded is a newer version
@@ -1041,9 +1066,9 @@ static bool CheckVersion(const std::string& filename, zip_t* zf, Error* error)
 	if (savever > g_SaveVersion || (savever >> 16) != (g_SaveVersion >> 16))
 	{
 		Error::SetString(error, fmt::format("The state is an unsupported version. (PCSX2 ver={:x}, state ver={:x}).\n"
-											"Option 1: Download an older PCSX2 version from pcsx2.net and make a memcard save like on the physical PS2.\n"
+											"Option 1: Download PCSX2 {} from pcsx2.net and make a memcard save like on the physical PS2.\n"
 											"Option 2: Delete the savestates.",
-									g_SaveVersion, savever));
+									g_SaveVersion, savever, version_string));
 		return false;
 	}
 
