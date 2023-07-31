@@ -3689,7 +3689,8 @@ void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)
 		return;
 
 	// We wanted to force an update as we now know the alpha of the non-indexed texture.
-	int min = tex_alpha_min, max = tex_alpha_max;
+	// Limit max to 255 as we send 500 when we don't know, makes calculating 16bit easier.
+	int min = tex_alpha_min, max = std::min(tex_alpha_max, 255);
 
 	if (IsCoverageAlpha())
 	{
@@ -3715,8 +3716,10 @@ void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)
 					a.w = env.TEXA.TA0;
 					break;
 				case 2:
-					a.y = env.TEXA.AEM ? 0 : std::min(env.TEXA.TA0, env.TEXA.TA1);
-					a.w = std::max(env.TEXA.TA0, env.TEXA.TA1);
+					// If we're using the alpha from the texture, not the whole range, we can just use tex_alpha_min/max.
+					// TA0/TA1 is precomputed with GSBlock::ReadAndExpandBlock16, so already worked out for tex_alpha.
+					a.y = (tex_alpha_max < 500) ? min : (env.TEXA.AEM ? 0 : std::min(env.TEXA.TA0, env.TEXA.TA1));
+					a.w = (tex_alpha_max < 500) ? max : std::max(env.TEXA.TA0, env.TEXA.TA1);
 					break;
 				case 3:
 					m_mem.m_clut.GetAlphaMinMax32(a.y, a.w);
