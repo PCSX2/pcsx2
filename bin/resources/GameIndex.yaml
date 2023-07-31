@@ -27107,10 +27107,10 @@ SLKA-25322:
   name: "Guilty Gear XX - Slash"
   region: "NTSC-K"
 SLKA-25323:
-  name: "SSX On Tour"
-  region: "NTSC-J"
+  name: "FIFA '06"
+  region: "NTSC-K"
   gsHWFixes:
-    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
+    halfPixelOffset: 2 # Reduces blurriness.
 SLKA-25325:
   name: "SSX On Tour"
   region: "NTSC-K"
