@@ -1139,7 +1139,7 @@ bool GSRendererHW::IsTBPFrameOrZ(u32 tbp) const
 
 	const u32 max_z = (0xFFFFFFFF >> (GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].fmt * 8));
 	const bool no_rt = (m_context->ALPHA.IsCd() && PRIM->ABE && (m_cached_ctx.FRAME.PSM == 1))
-		|| (!m_cached_ctx.TEST.DATE && (m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) == GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk);
+		|| (!m_cached_ctx.TEST.DATE && (fm & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) == GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk);
 	const bool no_ds = (
 		// Depth is always pass/fail (no read) and write are discarded.
 		(zm != 0 && m_cached_ctx.TEST.ZTST <= ZTST_ALWAYS) ||
@@ -1768,7 +1768,7 @@ void GSRendererHW::Draw()
 	// Note: FF DoC has both buffer at same location but disable the depth test (write?) with ZTE = 0
 	const u32 max_z = (0xFFFFFFFF >> (GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].fmt * 8));
 	bool no_rt = (context->ALPHA.IsCd() && PRIM->ABE && (m_cached_ctx.FRAME.PSM == 1))
-						|| (!m_cached_ctx.TEST.DATE && (m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) == GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk);
+						|| (!m_cached_ctx.TEST.DATE && (fm & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) == GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk);
 	const bool all_depth_tests_pass =
 		// Depth is always pass/fail (no read) and write are discarded.
 		(!m_cached_ctx.TEST.ZTE || m_cached_ctx.TEST.ZTST <= ZTST_ALWAYS) ||
@@ -2129,8 +2129,32 @@ void GSRendererHW::Draw()
 			return;
 		}
 
-		if(GSLocalMemory::m_psm[src->m_TEX0.PSM].pal == 0)
+		// We don't know the alpha range of direct sources when we first tried to optimize the alpha test.
+		// Moving the texture lookup before the ATST optimization complicates things a lot, so instead,
+		// recompute it, and everything derived from it again if it changes.
+		if (GSLocalMemory::m_psm[src->m_TEX0.PSM].pal == 0)
+		{
 			CalcAlphaMinMax(src->m_alpha_minmax.first, src->m_alpha_minmax.second);
+
+			u32 new_fm = m_context->FRAME.FBMSK;
+			u32 new_zm = m_context->ZBUF.ZMSK || m_context->TEST.ZTE == 0 ? 0xffffffff : 0;
+			if (m_cached_ctx.TEST.ATE && GSRenderer::TryAlphaTest(new_fm, fm_mask, new_zm))
+			{
+				m_cached_ctx.TEST.ATE = false;
+				m_cached_ctx.FRAME.FBMSK = new_fm;
+				m_cached_ctx.ZBUF.ZMSK = (new_zm != 0);
+				fm = new_fm;
+				zm = new_zm;
+				no_rt = no_rt || (!m_cached_ctx.TEST.DATE && (fm & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) == GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk);
+				no_ds = no_ds || (zm != 0 && all_depth_tests_pass);
+				if (no_rt && no_ds)
+				{
+					GL_INS("Late draw cancel because no pixels pass alpha test.");
+					cleanup_cancelled_draw();
+					return;
+				}
+			}
+		}
 	}
 
 	// Estimate size based on the scissor rectangle and height cache.
