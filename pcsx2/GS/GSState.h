@@ -176,7 +176,7 @@ protected:
 	GSVertexTrace::VertexAlpha& GetAlphaMinMax()
 	{
 		if (!m_vt.m_alpha.valid)
-			CalcAlphaMinMax(0, 255);
+			CalcAlphaMinMax(0, 500);
 		return m_vt.m_alpha;
 	}
 	struct TextureMinMaxResult
