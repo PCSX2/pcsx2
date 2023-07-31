@@ -13957,6 +13957,8 @@ SLES-51054:
 SLES-51055:
   name: "Go Go Golf"
   region: "PAL-E"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves brightness on terrain textures.
 SLES-51056:
   name: "Fighting Fury"
   region: "PAL-E"
@@ -28331,8 +28333,10 @@ SLPM-60115:
   name: "Super Puzzle Bobble"
   region: "NTSC-J"
 SLPM-60116:
-  name: "Magical Sports GoGoGolf"
+  name: "Magical Sports Go Go Golf [Taikenban]"
   region: "NTSC-J"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves brightness on terrain textures.
 SLPM-60117:
   name: "Shin Sangoku Musou"
   region: "NTSC-J"
@@ -40516,6 +40520,8 @@ SLPS-20036:
 SLPS-20037:
   name: "Magical Sports - Go Go Golf"
   region: "NTSC-J"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves brightness on terrain textures.
 SLPS-20038:
   name: "Grappler Baki - Baki Saidai no Tournament"
   region: "NTSC-J"
@@ -41134,8 +41140,10 @@ SLPS-20242:
   name: "Tomak - Save the Earth - Love Story"
   region: "NTSC-J"
 SLPS-20243:
-  name: "New Price Go Go Golf"
+  name: "Magical Sports Go Go Golf [NewPrice]"
   region: "NTSC-J"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves brightness on terrain textures.
 SLPS-20244:
   name: "Magical Sports - 2000 Koushien [NewPrice]"
   region: "NTSC-J"
