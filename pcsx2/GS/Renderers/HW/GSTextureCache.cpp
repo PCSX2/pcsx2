@@ -3646,17 +3646,25 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		src->m_target = true;
 		src->m_from_target = dst;
 		src->m_from_target_TEX0 = dst->m_TEX0;
-		src->m_alpha_minmax.first = dst->m_alpha_min;
-		src->m_alpha_minmax.second = dst->m_alpha_max;
 
-		// This is a bit rough, since if AEM is on, without rescanning the whole texture, we don't know if anything is transparent, so just go the hard way.
-		if (!dst->m_32_bits_fmt)
+		if ((src->m_TEX0.PSM & 0xf) == PSMCT24)
 		{
-			const bool using_both = (src->m_alpha_minmax.first ^ src->m_alpha_minmax.second) & 128;
-			const bool using_ta1 = (src->m_alpha_minmax.second & 128);
+			src->m_alpha_minmax.first = TEXA.AEM ? 0 : TEXA.TA0;
+			src->m_alpha_minmax.second = TEXA.TA0;
+		}
+		else
+		{
+			src->m_alpha_minmax.first = dst->m_alpha_min;
+			src->m_alpha_minmax.second = dst->m_alpha_max;
 
-			src->m_alpha_minmax.first = TEXA.AEM ? 0 : (using_both ? std::min(TEXA.TA1, TEXA.TA0) : (using_ta1 ? TEXA.TA1 : TEXA.TA0));
-			src->m_alpha_minmax.second = (using_both ? std::max(TEXA.TA1, TEXA.TA0) : (using_ta1 ? TEXA.TA1 : TEXA.TA0));
+			if (!dst->m_32_bits_fmt)
+			{
+				const bool using_both = (src->m_alpha_minmax.first ^ src->m_alpha_minmax.second) & 128;
+				const bool using_ta1 = (src->m_alpha_minmax.second & 128);
+
+				src->m_alpha_minmax.first = TEXA.AEM ? 0 : (using_both ? std::min(TEXA.TA1, TEXA.TA0) : (using_ta1 ? TEXA.TA1 : TEXA.TA0));
+				src->m_alpha_minmax.second = (using_both ? std::max(TEXA.TA1, TEXA.TA0) : (using_ta1 ? TEXA.TA1 : TEXA.TA0));
+			}
 		}
 
 		if (psm.pal > 0)
@@ -3698,17 +3706,25 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		src->m_from_target_TEX0 = dst->m_TEX0;
 		src->m_valid_rect = dst->m_valid;
 		src->m_end_block = dst->m_end_block;
-		src->m_alpha_minmax.first = dst->m_alpha_min;
-		src->m_alpha_minmax.second = dst->m_alpha_max;
 
-		// This is a bit rough, since if AEM is on, without rescanning the whole texture, we don't know if anything is transparent, so just go the hard way.
-		if (!dst->m_32_bits_fmt)
+		if ((src->m_TEX0.PSM & 0xf) == PSMCT24)
 		{
-			const bool using_both = (src->m_alpha_minmax.first ^ src->m_alpha_minmax.second) & 128;
-			const bool using_ta1 = (src->m_alpha_minmax.second & 128);
+			src->m_alpha_minmax.first = TEXA.AEM ? 0 : TEXA.TA0;
+			src->m_alpha_minmax.second = TEXA.TA0;
+		}
+		else
+		{
+			src->m_alpha_minmax.first = dst->m_alpha_min;
+			src->m_alpha_minmax.second = dst->m_alpha_max;
 
-			src->m_alpha_minmax.first = TEXA.AEM ? 0 : (using_both ? std::min(TEXA.TA1, TEXA.TA0) : (using_ta1 ? TEXA.TA1 : TEXA.TA0));
-			src->m_alpha_minmax.second = (using_both ? std::max(TEXA.TA1, TEXA.TA0) : (using_ta1 ? TEXA.TA1 : TEXA.TA0));
+			if (!dst->m_32_bits_fmt)
+			{
+				const bool using_both = (src->m_alpha_minmax.first ^ src->m_alpha_minmax.second) & 128;
+				const bool using_ta1 = (src->m_alpha_minmax.second & 128);
+
+				src->m_alpha_minmax.first = TEXA.AEM ? 0 : (using_both ? std::min(TEXA.TA1, TEXA.TA0) : (using_ta1 ? TEXA.TA1 : TEXA.TA0));
+				src->m_alpha_minmax.second = (using_both ? std::max(TEXA.TA1, TEXA.TA0) : (using_ta1 ? TEXA.TA1 : TEXA.TA0));
+			}
 		}
 
 		dst->Update();
@@ -5210,8 +5226,16 @@ void GSTextureCache::Target::Update()
 		g_gs_device->DrawMultiStretchRects(drects, ndrects, m_texture, shader);
 	}
 
-	m_alpha_min = 0;
-	m_alpha_max = m_32_bits_fmt ? 255 : 128;
+	if ((m_TEX0.PSM & 0xf) == PSMCT24)
+	{
+		m_alpha_min = 128;
+		m_alpha_max = 128;
+	}
+	else
+	{
+		m_alpha_min = 0;
+		m_alpha_max = m_32_bits_fmt ? 255 : 128;
+	}
 	g_gs_device->Recycle(t);
 	m_dirty.clear();
 }
