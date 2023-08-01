@@ -380,7 +380,7 @@ void InputManager::AddBinding(const std::string_view& binding, const InputEventH
 
 		if (ibinding->num_keys == MAX_KEYS_PER_BINDING)
 		{
-			Console.WriteLn(fmt::format("Too many chord parts, max is {} ({})", MAX_KEYS_PER_BINDING, binding));
+			Console.WriteLn(fmt::format("Too many chord parts, max is {} ({})", static_cast<u32>(MAX_KEYS_PER_BINDING), binding));
 			ibinding.reset();
 			break;
 		}
