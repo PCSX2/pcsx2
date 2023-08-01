@@ -5779,16 +5779,17 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 
 bool GSRendererHW::IsDiscardingDstColor()
 {
-	return (
-		(!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsBlack()) && // no blending or writing black
-		!m_cached_ctx.TEST.ATE && // not testing alpha (might discard some pixels)
-		!m_cached_ctx.TEST.DATE && // not reading alpha
+	return ((!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsBlack()) && // no blending or writing black
+			!(m_draw_env->SCANMSK.MSK & 2) && // not skipping rows
+			!m_cached_ctx.TEST.ATE && // not testing alpha (might discard some pixels)
+			!m_cached_ctx.TEST.DATE && // not reading alpha
 			(m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) == 0); // no channels masked
 }
 
 bool GSRendererHW::IsDiscardingDstRGB()
 {
 	return ((!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsBlack()) && // no blending or writing black
+			!(m_draw_env->SCANMSK.MSK & 2) && // not skipping rows
 			!m_cached_ctx.TEST.ATE && // not testing alpha (might discard some pixels)
 			!m_cached_ctx.TEST.DATE && // not reading alpha
 			((m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) & 0xFFFFFFu) ==
@@ -5798,6 +5799,7 @@ bool GSRendererHW::IsDiscardingDstRGB()
 bool GSRendererHW::IsDiscardingDstAlpha()
 {
 	return ((!PRIM->ABE || m_context->ALPHA.C != 1) && // not using Ad
+			!(m_draw_env->SCANMSK.MSK & 2) && // not skipping rows
 			!m_cached_ctx.TEST.ATE && // not testing alpha (might discard some pixels)
 			!m_cached_ctx.TEST.DATE && // not reading alpha
 			((m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) & 0xFF000000u) ==
