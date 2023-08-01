@@ -548,7 +548,7 @@
     <ClCompile Include="x86\ir5900tables.cpp">
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
     </ClCompile>
-    <ClCompile Include="x86\ix86-32\iR5900-32.cpp">
+    <ClCompile Include="x86\ix86-32\iR5900.cpp">
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec\ix86-32</Filter>
     </ClCompile>
     <ClCompile Include="x86\ix86-32\iR5900Arit.cpp">
@@ -698,7 +698,7 @@
     <ClCompile Include="rdebug\deci2_ttyp.cpp">
       <Filter>System\Ps2\Debug\rdebug</Filter>
     </ClCompile>
-    <ClCompile Include="x86\ix86-32\iCore-32.cpp">
+    <ClCompile Include="x86\ix86-32\iCore.cpp">
       <Filter>System\Ps2\iCore</Filter>
     </ClCompile>
     <ClCompile Include="x86\iCore.cpp">

@@ -595,7 +595,7 @@ static void recAlloc()
 		s_nInstCacheSize = 128;
 		s_pInstCache = (EEINST*)malloc(sizeof(EEINST) * s_nInstCacheSize);
 		if (!s_pInstCache)
-			pxFailRel("Failed to allocate R5900-32 InstCache array");
+			pxFailRel("Failed to allocate R5900 InstCache array");
 	}
 
 	// No errors.. Proceed with initialization:
@@ -609,7 +609,7 @@ alignas(16) static u8 manual_counter[Ps2MemSize::MainRam >> 12];
 ////////////////////////////////////////////////////
 static void recResetRaw()
 {
-	Console.WriteLn(Color_StrongBlack, "EE/iR5900-32 Recompiler Reset");
+	Console.WriteLn(Color_StrongBlack, "EE/iR5900 Recompiler Reset");
 
 	EE::Profiler.Reset();
 

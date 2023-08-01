@@ -551,7 +551,7 @@ static void intExecute()
 					eeloadHook();
 					if (VMManager::Internal::IsFastBootInProgress())
 					{
-						// See comments on this code in iR5900-32.cpp's recRecompile()
+						// See comments on this code in iR5900.cpp's recRecompile()
 						const u32 typeAexecjump = memRead32(EELOAD_START + 0x470);
 						const u32 typeBexecjump = memRead32(EELOAD_START + 0x5B0);
 						const u32 typeCexecjump = memRead32(EELOAD_START + 0x618);
