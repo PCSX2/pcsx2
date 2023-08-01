@@ -4809,6 +4809,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			blend_alpha_min = std::min(blend_alpha_min, rt->m_alpha_min);
 			blend_alpha_max = std::max(blend_alpha_max, rt->m_alpha_max);
 		}
+
+		if (!rt->m_32_bits_fmt)
+		{
+			rt->m_alpha_max &= 128;
+			rt->m_alpha_min &= 128;
+		}
 	}
 
 	// Not gonna spend too much time with this, it's not likely to be used much, can't be less accurate than it was.
@@ -4817,6 +4823,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		ds->m_alpha_max = std::max(ds->m_alpha_max, static_cast<int>(m_vt.m_max.p.z) >> 24);
 		ds->m_alpha_min = std::min(ds->m_alpha_min, static_cast<int>(m_vt.m_min.p.z) >> 24);
 		GL_INS("New DS Alpha Range: %d-%d", ds->m_alpha_min, ds->m_alpha_max);
+
+		if (GSLocalMemory::m_psm[ds->m_TEX0.PSM].bpp == 16)
+		{
+			ds->m_alpha_max &= 128;
+			ds->m_alpha_min &= 128;
+		}
 	}
 
 	bool blending_alpha_pass = false;
@@ -5607,6 +5619,12 @@ bool GSRendererHW::TryTargetClear(GSTextureCache::Target* rt, GSTextureCache::Ta
 			g_gs_device->ClearRenderTarget(rt->m_texture, c);
 			rt->m_alpha_max = c >> 24;
 			rt->m_alpha_min = c >> 24;
+
+			if (!rt->m_32_bits_fmt)
+			{
+				rt->m_alpha_max &= 128;
+				rt->m_alpha_min &= 128;
+			}
 		}
 		else
 		{
@@ -5625,6 +5643,12 @@ bool GSRendererHW::TryTargetClear(GSTextureCache::Target* rt, GSTextureCache::Ta
 			g_gs_device->ClearDepth(ds->m_texture, d);
 			ds->m_alpha_max = z >> 24;
 			ds->m_alpha_min = z >> 24;
+
+			if (GSLocalMemory::m_psm[ds->m_TEX0.PSM].bpp == 16)
+			{
+				ds->m_alpha_max &= 128;
+				ds->m_alpha_min &= 128;
+			}
 		}
 		else
 		{

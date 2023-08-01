@@ -5211,7 +5211,7 @@ void GSTextureCache::Target::Update()
 	}
 
 	m_alpha_min = 0;
-	m_alpha_max = 255;
+	m_alpha_max = m_32_bits_fmt ? 255 : 128;
 	g_gs_device->Recycle(t);
 	m_dirty.clear();
 }
