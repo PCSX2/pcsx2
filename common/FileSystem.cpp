@@ -748,13 +748,6 @@ s64 FileSystem::FTell64(std::FILE* fp)
 
 s64 FileSystem::FSize64(std::FILE* fp)
 {
-#ifdef _WIN32
-	const int fd = _fileno(fp);
-	if (fd >= 0)
-	{
-		return _filelengthi64(fd);
-	}
-#else
 	const s64 pos = FTell64(fp);
 	if (pos >= 0)
 	{
@@ -765,7 +758,6 @@ s64 FileSystem::FSize64(std::FILE* fp)
 				return size;
 		}
 	}
-#endif
 
 	return -1;
 }
