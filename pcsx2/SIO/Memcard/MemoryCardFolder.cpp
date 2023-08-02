@@ -2021,6 +2021,7 @@ std::FILE* FileAccessHelper::Open(const std::string_view& folderName, MemoryCard
 	MemoryCardFileHandleStructure handleStruct;
 	handleStruct.fileHandle = file;
 	handleStruct.fileRef = fileRef;
+	handleStruct.hostFilePath = std::move(filename);
 	m_files.emplace(std::move(internalPath), std::move(handleStruct));
 
 	if (writeMetadata)
