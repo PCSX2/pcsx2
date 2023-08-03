@@ -1416,7 +1416,7 @@ void GSState::GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r)
 {
 	GL_REG("TRXDIR = 0x%x_%x", r->U32[1], r->U32[0]);
 
-	Flush(GSFlushReason::GSTRANSFER);
+	FlushWrite();
 
 	m_env.TRXDIR = r->TRXDIR;
 
@@ -1429,6 +1429,7 @@ void GSState::GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r)
 			m_tr.Init(m_env.TRXPOS.SSAX, m_env.TRXPOS.SSAY, m_env.BITBLTBUF, false);
 			break;
 		case 2: // local -> local
+			CheckWriteOverlap(true, true);
 			Move();
 			break;
 		default: // 3 deactivated as stated by manual. Tested on hardware and no transfers happen.
@@ -1476,6 +1477,7 @@ void GSState::Flush(GSFlushReason reason)
 		}
 
 		m_dirty_gs_regs = 0;
+		temp_draw_rect = GSVector4i::zero();
 	}
 
 	m_state_flush_reason = GSFlushReason::UNKNOWN;
@@ -1508,6 +1510,8 @@ void GSState::FlushWrite()
 
 	g_perfmon.Put(GSPerfMon::Swizzle, len);
 	s_transfer_n++;
+	if (m_tr.start >= m_tr.total)
+		m_env.TRXDIR.XDIR = 3;
 }
 
 // This function decides if the context has changed in a way which warrants flushing the draw.
@@ -1687,59 +1691,148 @@ void GSState::FlushPrim()
 		}
 	}
 }
+GSVector4i GSState::GetTEX0Rect()
+{
+	GSVector4i ret = GSVector4i::zero();
+	const GSDrawingContext& prev_ctx = m_prev_env.CTXT[m_prev_env.PRIM.CTXT];
+
+	if (prev_ctx.CLAMP.WMS <= 1) // CLAMP/REPEAT
+	{
+		ret.x = 0;
+		ret.z = 1 << prev_ctx.TEX0.TW;
+	}
+	else if (prev_ctx.CLAMP.WMS == 3) // REGION_REPEAT
+	{
+		ret.x = prev_ctx.CLAMP.MAXU;
+		ret.z = prev_ctx.CLAMP.MAXU | prev_ctx.CLAMP.MINU;
+	}
+	else // 2 REGION_CLAMP
+	{
+		ret.x = prev_ctx.CLAMP.MINU;
+		ret.z = prev_ctx.CLAMP.MAXU;
+	}
+
+	if (prev_ctx.CLAMP.WMT <= 1) // CLAMP/REPEAT
+	{
+		ret.y = 0;
+		ret.w = 1 << prev_ctx.TEX0.TH;
+	}
+	else if (prev_ctx.CLAMP.WMT == 3) // REGION_REPEAT
+	{
+		ret.y = prev_ctx.CLAMP.MAXV;
+		ret.w = prev_ctx.CLAMP.MAXV | prev_ctx.CLAMP.MINV;
+	}
+	else // 2 REGION_CLAMP
+	{
+		ret.y = prev_ctx.CLAMP.MINV;
+		ret.w = prev_ctx.CLAMP.MAXV;
+	}
+
+	return ret;
+}
+
+void GSState::CheckWriteOverlap(bool req_write, bool req_read)
+{
+	const int w = m_env.TRXREG.RRW;
+	const int h = m_env.TRXREG.RRH;
+	const GIFRegBITBLTBUF& blit = m_env.BITBLTBUF;
+
+	const GSDrawingContext& prev_ctx = m_prev_env.CTXT[m_prev_env.PRIM.CTXT];
+	const GSVector4i write_rect = GSVector4i(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.TRXPOS.DSAX + w, m_env.TRXPOS.DSAY + h);
+	const u32 write_start_bp = GSLocalMemory::GetStartBlockAddress(blit.DBP, blit.DBW, blit.DPSM, write_rect);
+	const u32 write_end_bp = ((GSLocalMemory::GetEndBlockAddress(blit.DBP, blit.DBW, blit.DPSM, write_rect) + 1) + (BLOCKS_PER_PAGE - 1)) & ~(BLOCKS_PER_PAGE - 1);
+	const GSVector4i tex_rect = m_prev_env.PRIM.TME ? GetTEX0Rect() : GSVector4i::zero();
+
+	if (m_index.tail > 0)
+	{
+		// Only flush on a NEW transfer if a pending one is using the same address or overlap.
+		// Check Fast & Furious (Hardare mode) and Assault Suits Valken (either renderer) and Tomb Raider - Angel of Darkness menu (TBP != DBP but overlaps).
+		// Cartoon Network overwrites its own Z buffer in the middle of a draw.
+		// Alias wraps its transfers, so be careful
+		const GSVector4i read_rect = GSVector4i(m_env.TRXPOS.SSAX, m_env.TRXPOS.SSAY, m_env.TRXPOS.SSAX + w, m_env.TRXPOS.SSAY + h);
+
+		if (req_write && m_prev_env.PRIM.TME)
+		{
+			if (GSLocalMemory::HasOverlap(blit.DBP, blit.DBW, blit.DPSM, write_rect, prev_ctx.TEX0.TBP0, prev_ctx.TEX0.TBW, prev_ctx.TEX0.PSM, tex_rect))
+			{
+				
+				Flush(GSFlushReason::UPLOADDIRTYTEX);
+			}
+			if (prev_ctx.TEX1.MXL > 0 && prev_ctx.TEX1.MMIN >= 2 && prev_ctx.TEX1.MMIN <= 5)
+			{
+				switch (prev_ctx.TEX1.MXL)
+				{
+					case 6:
+						if (GSLocalMemory::HasOverlap(blit.DBP, blit.DBW, blit.DPSM, write_rect, prev_ctx.MIPTBP2.TBP6, prev_ctx.MIPTBP2.TBW6, prev_ctx.TEX0.PSM, GSVector4i(tex_rect.x >> 6, tex_rect.y >> 6, tex_rect.z >> 6, tex_rect.w >> 6)))
+							Flush(GSFlushReason::UPLOADDIRTYTEX);
+						[[fallthrough]];
+					case 5:
+						if (GSLocalMemory::HasOverlap(blit.DBP, blit.DBW, blit.DPSM, write_rect, prev_ctx.MIPTBP2.TBP5, prev_ctx.MIPTBP2.TBW5, prev_ctx.TEX0.PSM, GSVector4i(tex_rect.x >> 5, tex_rect.y >> 5, tex_rect.z >> 5, tex_rect.w >> 5)))
+							Flush(GSFlushReason::UPLOADDIRTYTEX);
+						[[fallthrough]];
+					case 4:
+						if (GSLocalMemory::HasOverlap(blit.DBP, blit.DBW, blit.DPSM, write_rect, prev_ctx.MIPTBP2.TBP4, prev_ctx.MIPTBP2.TBW4, prev_ctx.TEX0.PSM, GSVector4i(tex_rect.x >> 4, tex_rect.y >> 4, tex_rect.z >> 4, tex_rect.w >> 4)))
+							Flush(GSFlushReason::UPLOADDIRTYTEX);
+						[[fallthrough]];
+					case 3:
+						if (GSLocalMemory::HasOverlap(blit.DBP, blit.DBW, blit.DPSM, write_rect, prev_ctx.MIPTBP1.TBP3, prev_ctx.MIPTBP1.TBW3, prev_ctx.TEX0.PSM, GSVector4i(tex_rect.x >> 3, tex_rect.y >> 3, tex_rect.z >> 3, tex_rect.w >> 3)))
+							Flush(GSFlushReason::UPLOADDIRTYTEX);
+						[[fallthrough]];
+					case 2:
+						if (GSLocalMemory::HasOverlap(blit.DBP, blit.DBW, blit.DPSM, write_rect, prev_ctx.MIPTBP1.TBP2, prev_ctx.MIPTBP1.TBW2, prev_ctx.TEX0.PSM, GSVector4i(tex_rect.x >> 2, tex_rect.y >> 2, tex_rect.z >> 2, tex_rect.w >> 2)))
+							Flush(GSFlushReason::UPLOADDIRTYTEX);
+						[[fallthrough]];
+					case 1:
+						if (GSLocalMemory::HasOverlap(blit.DBP, blit.DBW, blit.DPSM, write_rect, prev_ctx.MIPTBP1.TBP1, prev_ctx.MIPTBP1.TBW1, prev_ctx.TEX0.PSM, GSVector4i(tex_rect.x >> 1, tex_rect.y >> 1, tex_rect.z >> 1, tex_rect.w >> 1)))
+							Flush(GSFlushReason::UPLOADDIRTYTEX);
+						break;
+				}
+			}
+		}
+
+		const u32 frame_mask = GSLocalMemory::m_psm[prev_ctx.FRAME.PSM].fmsk;
+		const bool frame_required = (!(prev_ctx.TEST.ATE && prev_ctx.TEST.ATST == 0 && (prev_ctx.TEST.AFAIL == 2 || prev_ctx.TEST.AFAIL == 0)) && ((prev_ctx.FRAME.FBMSK & frame_mask) != frame_mask)) || prev_ctx.TEST.DATE;
+		if (frame_required)
+		{
+			if ((req_write && GSLocalMemory::HasOverlap(blit.DBP, blit.DBW, blit.DPSM, write_rect, prev_ctx.FRAME.Block(), prev_ctx.FRAME.FBW, prev_ctx.FRAME.PSM, temp_draw_rect)) || 
+				(req_read && GSLocalMemory::HasOverlap(blit.SBP, blit.SBW, blit.SPSM, read_rect, prev_ctx.FRAME.Block(), prev_ctx.FRAME.FBW, prev_ctx.FRAME.PSM, temp_draw_rect)))
+				Flush(GSFlushReason::UPLOADDIRTYFRAME);
+		}
+
+		const bool zbuf_required = (!(prev_ctx.TEST.ATE && prev_ctx.TEST.ATST == 0 && prev_ctx.TEST.AFAIL != 2) && !prev_ctx.ZBUF.ZMSK) || (prev_ctx.TEST.ZTE && prev_ctx.TEST.ZTST > ZTST_ALWAYS);
+		if (zbuf_required)
+		{
+			if ((req_write && GSLocalMemory::HasOverlap(blit.DBP, blit.DBW, blit.DPSM, write_rect, prev_ctx.ZBUF.Block(), prev_ctx.FRAME.FBW, prev_ctx.ZBUF.PSM, temp_draw_rect)) ||
+				(req_read && GSLocalMemory::HasOverlap(blit.SBP, blit.SBW, blit.SPSM, read_rect, prev_ctx.ZBUF.Block(), prev_ctx.FRAME.FBW, prev_ctx.ZBUF.PSM, temp_draw_rect)))
+				Flush(GSFlushReason::UPLOADDIRTYZBUF);
+		}
+	}
+
+	// Invalid the CLUT if it crosses paths.
+	m_mem.m_clut.InvalidateRange(write_start_bp, write_end_bp);
+}
 
 void GSState::Write(const u8* mem, int len)
 {
+	if (m_env.TRXDIR.XDIR == 3)
+		return;
+
 	const int w = m_env.TRXREG.RRW;
-	int h = m_env.TRXREG.RRH;
+	const int h = m_env.TRXREG.RRH;
+
+	CheckWriteOverlap(true, false);
+
+	if (!m_tr.Update(w, h, GSLocalMemory::m_psm[m_env.BITBLTBUF.DPSM].trbpp, len))
+	{
+		m_env.TRXDIR.XDIR = 3;
+		return;
+	}
 
 	GIFRegBITBLTBUF& blit = m_tr.m_blit;
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[blit.DPSM];
 
-	if (!m_tr.Update(w, h, psm.trbpp, len))
-		return;
-
 	if (m_tr.end == 0)
 	{
-		const GSDrawingContext& prev_ctx = m_prev_env.CTXT[m_prev_env.PRIM.CTXT];
-		const u32 write_start_bp = m_mem.m_psm[blit.DPSM].info.bn(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, blit.DBP, blit.DBW);
-		const u32 write_end_bp = m_mem.m_psm[blit.DPSM].info.bn(m_env.TRXPOS.DSAX + w - 1, m_env.TRXPOS.DSAY + h - 1, blit.DBP, blit.DBW);
-
-		// Only flush on a NEW transfer if a pending one is using the same address or overlap.
-		// Check Fast & Furious (Hardare mode) and Assault Suits Valken (either renderer) and Tomb Raider - Angel of Darkness menu (TBP != DBP but overlaps).
-		if (m_index.tail > 0)
-		{
-			const u32 tex_end_bp = m_mem.m_psm[prev_ctx.TEX0.PSM].info.bn((1 << prev_ctx.TEX0.TW) - 1, (1 << prev_ctx.TEX0.TH) - 1, prev_ctx.TEX0.TBP0, prev_ctx.TEX0.TBW);
-
-			if (m_prev_env.PRIM.TME && write_end_bp > prev_ctx.TEX0.TBP0 && write_start_bp <= tex_end_bp)
-				Flush(GSFlushReason::UPLOADDIRTYTEX);
-			else
-			{
-				const u32 frame_mask = GSLocalMemory::m_psm[prev_ctx.FRAME.PSM].fmsk;
-				const bool frame_required = (!(prev_ctx.TEST.ATE && prev_ctx.TEST.ATST == 0 && prev_ctx.TEST.AFAIL == 2) && ((prev_ctx.FRAME.FBMSK & frame_mask) != frame_mask)) || (prev_ctx.TEST.ATE && prev_ctx.TEST.ATST > ATST_ALWAYS);
-				if (frame_required)
-				{
-					const u32 draw_start_bp = m_mem.m_psm[prev_ctx.FRAME.PSM].info.bn(temp_draw_rect.x, temp_draw_rect.y, prev_ctx.FRAME.Block(), prev_ctx.FRAME.FBW);
-					const u32 draw_end_bp = m_mem.m_psm[prev_ctx.FRAME.PSM].info.bn(temp_draw_rect.z - 1, temp_draw_rect.w - 1, prev_ctx.FRAME.Block(), prev_ctx.FRAME.FBW);
-
-					if (write_end_bp > draw_start_bp && write_start_bp <= draw_end_bp)
-						Flush(GSFlushReason::UPLOADDIRTYFRAME);
-				}
-
-				const bool zbuf_required = (!(prev_ctx.TEST.ATE && prev_ctx.TEST.ATST == 0 && prev_ctx.TEST.AFAIL != 2) && !prev_ctx.ZBUF.ZMSK) || (prev_ctx.TEST.ZTE && prev_ctx.TEST.ZTST > ZTST_ALWAYS);
-				if (zbuf_required)
-				{
-					const u32 draw_start_bp = m_mem.m_psm[prev_ctx.ZBUF.PSM].info.bn(temp_draw_rect.x, temp_draw_rect.y, prev_ctx.ZBUF.Block(), prev_ctx.FRAME.FBW);
-					const u32 draw_end_bp = m_mem.m_psm[prev_ctx.ZBUF.PSM].info.bn(temp_draw_rect.z - 1, temp_draw_rect.w - 1, prev_ctx.ZBUF.Block(), prev_ctx.FRAME.FBW);
-
-					if (write_end_bp > draw_start_bp && write_start_bp <= draw_end_bp)
-						Flush(GSFlushReason::UPLOADDIRTYZBUF);
-				}
-			}
-		}
-		// Invalid the CLUT if it crosses paths.
-		m_mem.m_clut.InvalidateRange(write_start_bp, write_end_bp);
-
 		GSVector4i r;
 
 		r.left = m_env.TRXPOS.DSAX;
@@ -1780,7 +1873,7 @@ void GSState::Write(const u8* mem, int len)
 
 			g_perfmon.Put(GSPerfMon::Swizzle, len);
 			s_transfer_n++;
-
+			m_env.TRXDIR.XDIR = 3;
 			return;
 		}
 	}
@@ -1799,10 +1892,15 @@ void GSState::InitReadFIFO(u8* mem, int len)
 	if (len <= 0 || m_tr.total != 0)
 		return;
 
+	if (m_env.TRXDIR.XDIR == 3)
+		return;
+
 	const int w = m_env.TRXREG.RRW;
 	const int h = m_env.TRXREG.RRH;
 
 	const u16 bpp = GSLocalMemory::m_psm[m_env.BITBLTBUF.SPSM].trbpp;
+
+	CheckWriteOverlap(false, true);
 
 	if (!m_tr.Update(w, h, bpp, len))
 		return;
@@ -1834,12 +1932,23 @@ void GSState::Read(u8* mem, int len)
 	if (len <= 0 || m_tr.total == 0)
 		return;
 
+	if (m_env.TRXDIR.XDIR == 3)
+		return;
+
 	const int w = m_env.TRXREG.RRW;
 	const int h = m_env.TRXREG.RRH;
 	const u16 bpp = GSLocalMemory::m_psm[m_env.BITBLTBUF.SPSM].trbpp;
 
+	CheckWriteOverlap(false, true);
+
 	if (!m_tr.Update(w, h, bpp, len))
 		return;
+
+	const u32 draw = s_n;
+
+
+	if (draw != s_n)
+		DevCon.Warning("Warning! Possible incorrect data download");
 
 	// If it wraps memory, we need to break it up so we don't read out of bounds.
 	if ((m_tr.end + len) > m_mem.m_vmsize)
@@ -1856,6 +1965,9 @@ void GSState::Read(u8* mem, int len)
 		memcpy(mem, &m_tr.buff[m_tr.end], len);
 		m_tr.end += len;
 	}
+
+	if(m_tr.end >= m_tr.total)
+		m_env.TRXDIR.XDIR = 3;
 }
 
 void GSState::Move()
@@ -1863,6 +1975,9 @@ void GSState::Move()
 	// ffxii uses this to move the top/bottom of the scrolling menus offscreen and then blends them back over the text to create a shading effect
 	// guitar hero copies the far end of the board to do a similar blend too
 	s_transfer_n++;
+
+	if (m_env.TRXDIR.XDIR == 3)
+		return;
 
 	int sx = m_env.TRXPOS.SSAX;
 	int sy = m_env.TRXPOS.SSAY;
@@ -1909,43 +2024,6 @@ void GSState::Move()
 	const GSOffset spo = m_mem.GetOffset(sbp, sbw, m_env.BITBLTBUF.SPSM);
 	const GSOffset dpo = m_mem.GetOffset(dbp, dbw, m_env.BITBLTBUF.DPSM);
 
-	const GSDrawingContext& prev_ctx = m_prev_env.CTXT[m_prev_env.PRIM.CTXT];
-	const u32 write_start_bp = m_mem.m_psm[m_env.BITBLTBUF.DPSM].info.bn(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, dbp, dbw);
-	const u32 write_end_bp = m_mem.m_psm[m_env.BITBLTBUF.DPSM].info.bn(m_env.TRXPOS.DSAX + w - 1, m_env.TRXPOS.DSAY + h - 1, dbp, dbw);
-
-	// Only flush on a NEW transfer if a pending one is using the same address or overlap.
-	// Unknown if games use this one, but best to be safe.
-	if (m_index.tail > 0)
-	{
-		const u32 tex_end_bp = m_mem.m_psm[prev_ctx.TEX0.PSM].info.bn((1 << prev_ctx.TEX0.TW) - 1, (1 << prev_ctx.TEX0.TH) - 1, prev_ctx.TEX0.TBP0, prev_ctx.TEX0.TBW);
-
-		if (m_prev_env.PRIM.TME && write_end_bp >= prev_ctx.TEX0.TBP0 && write_start_bp <= tex_end_bp)
-			Flush(GSFlushReason::LOCALTOLOCALMOVE);
-		else
-		{
-			const u32 frame_mask = GSLocalMemory::m_psm[prev_ctx.FRAME.PSM].fmsk;
-			const bool frame_required = (!(prev_ctx.TEST.ATE && prev_ctx.TEST.ATST == 0 && prev_ctx.TEST.AFAIL == 2) && ((prev_ctx.FRAME.FBMSK & frame_mask) != frame_mask)) || (prev_ctx.TEST.ATE && prev_ctx.TEST.ATST > ATST_ALWAYS);
-			if (frame_required)
-			{
-				const u32 draw_start_bp = m_mem.m_psm[prev_ctx.FRAME.PSM].info.bn(temp_draw_rect.x, temp_draw_rect.y, prev_ctx.FRAME.Block(), prev_ctx.FRAME.FBW);
-				const u32 draw_end_bp = m_mem.m_psm[prev_ctx.FRAME.PSM].info.bn(temp_draw_rect.z - 1, temp_draw_rect.w - 1, prev_ctx.FRAME.Block(), prev_ctx.FRAME.FBW);
-
-				if (write_end_bp > draw_start_bp && write_start_bp <= draw_end_bp)
-					Flush(GSFlushReason::UPLOADDIRTYFRAME);
-			}
-
-			const bool zbuf_required = (!(prev_ctx.TEST.ATE && prev_ctx.TEST.ATST == 0 && prev_ctx.TEST.AFAIL != 2) && !prev_ctx.ZBUF.ZMSK) || (prev_ctx.TEST.ZTE && prev_ctx.TEST.ZTST > ZTST_ALWAYS);
-			if (zbuf_required)
-			{
-				const u32 draw_start_bp = m_mem.m_psm[prev_ctx.ZBUF.PSM].info.bn(temp_draw_rect.x, temp_draw_rect.y, prev_ctx.ZBUF.Block(), prev_ctx.FRAME.FBW);
-				const u32 draw_end_bp = m_mem.m_psm[prev_ctx.ZBUF.PSM].info.bn(temp_draw_rect.z - 1, temp_draw_rect.w - 1, prev_ctx.ZBUF.Block(), prev_ctx.FRAME.FBW);
-
-				if (write_end_bp > draw_start_bp && write_start_bp <= draw_end_bp)
-					Flush(GSFlushReason::UPLOADDIRTYZBUF);
-			}
-		}
-	}
-
 	GSVector4i r;
 	r.left = m_env.TRXPOS.DSAX;
 	r.top = m_env.TRXPOS.DSAY;
@@ -1968,9 +2046,6 @@ void GSState::Move()
 		GSUploadQueue new_transfer = { m_env.BITBLTBUF, r, s_n };
 		m_draw_transfers.push_back(new_transfer);
 	}
-
-	// Invalid the CLUT if it crosses paths.
-	m_mem.m_clut.InvalidateRange(write_start_bp, write_end_bp);
 
 	auto genericCopy = [=](const GSOffset& dpo, const GSOffset& spo, auto&& getPAHelper, auto&& pxCopyFn)
 	{
@@ -2116,6 +2191,8 @@ void GSState::Move()
 			(m_mem.*dpsm.wpa)(doff, (m_mem.*spsm.rpa)(soff));
 		});
 	}
+
+	m_env.TRXDIR.XDIR = 3;
 }
 
 void GSState::SoftReset(u32 mask)
@@ -2139,8 +2216,6 @@ void GSState::SoftReset(u32 mask)
 
 void GSState::ReadFIFO(u8* mem, int size)
 {
-	Flush(GSFlushReason::DOWNLOADFIFO);
-
 	size *= 16;
 
 	Read(mem, size);
