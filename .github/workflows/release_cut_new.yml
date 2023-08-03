@@ -184,3 +184,15 @@ jobs:
           TAG_VAL=$(git tag --points-at HEAD)
           echo "TAG_VAL=${TAG_VAL}"
           gh release edit ${TAG_VAL} --draft=false --repo PCSX2/pcsx2
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Announce Release
+        env:
+          DISCORD_BUILD_WEBHOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}
+        run: |
+          cd ./.github/workflows/scripts/releases/announce-release
+          npm ci
+          node index.js
