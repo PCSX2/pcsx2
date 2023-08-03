@@ -10905,9 +10905,8 @@ SLAJ-25080:
   name: "Godfather, The"
   region: "NTSC-Unk"
   gsHWFixes:
-    gpuTargetCLUT: 1 # Fixes light occlusion.
-    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
-    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    textureInsideRT: 1 # Required for complex offset shuffles.
+    halfPixelOffset: 2 # Fixes center line in post processing.
 SLAJ-25081:
   name: "FIFA World Cup - Germany 2006"
   region: "NTSC-Unk"
@@ -21415,37 +21414,32 @@ SLES-53967:
   name: "Godfather, The"
   region: "PAL-M6"
   gsHWFixes:
-    gpuTargetCLUT: 1 # Fixes light occlusion.
-    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
-    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    textureInsideRT: 1 # Required for complex offset shuffles.
+    halfPixelOffset: 2 # Fixes center line in post processing.
 SLES-53968:
   name: "Parrain, Le"
   region: "PAL-F"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes light occlusion.
-    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
-    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    textureInsideRT: 1 # Required for complex offset shuffles.
+    halfPixelOffset: 2 # Fixes center line in post processing.
 SLES-53969:
   name: "Pate, Der"
   region: "PAL-G"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes light occlusion.
-    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
-    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    textureInsideRT: 1 # Required for complex offset shuffles.
+    halfPixelOffset: 2 # Fixes center line in post processing.
 SLES-53970:
   name: "Padrino, Il"
   region: "PAL-I"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes light occlusion.
-    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
-    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    textureInsideRT: 1 # Required for complex offset shuffles.
+    halfPixelOffset: 2 # Fixes center line in post processing.
 SLES-53971:
   name: "Padrino, El"
   region: "PAL-S"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes light occlusion.
-    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
-    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    textureInsideRT: 1 # Required for complex offset shuffles.
+    halfPixelOffset: 2 # Fixes center line in post processing.
 SLES-53972:
   name: "Stock Car Crash"
   region: "PAL-E"
@@ -27517,9 +27511,8 @@ SLKA-25338:
   name: "Godfather, The"
   region: "NTSC-K"
   gsHWFixes:
-    gpuTargetCLUT: 1 # Fixes light occlusion.
-    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
-    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    textureInsideRT: 1 # Required for complex offset shuffles.
+    halfPixelOffset: 2 # Fixes center line in post processing.
 SLKA-25339:
   name: "Jin Samguk Mussang 4"
   region: "NTSC-K"
@@ -39049,9 +39042,8 @@ SLPM-66710:
   name: "Godfather, The"
   region: "NTSC-J"
   gsHWFixes:
-    gpuTargetCLUT: 1 # Fixes light occlusion.
-    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
-    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    textureInsideRT: 1 # Required for complex offset shuffles.
+    halfPixelOffset: 2 # Fixes center line in post processing.
 SLPM-66712:
   name: "Rozen Maiden - Geppetto Garden [Limited Edition]"
   region: "NTSC-J"
@@ -39991,9 +39983,8 @@ SLPM-66966:
   name: "Godfather, The [EA-SY! 1980]"
   region: "NTSC-J"
   gsHWFixes:
-    gpuTargetCLUT: 1 # Fixes light occlusion.
-    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
-    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    textureInsideRT: 1 # Required for complex offset shuffles.
+    halfPixelOffset: 2 # Fixes center line in post processing.
 SLPM-66967:
   name: "Aria - The Natural - Tooi Yume no Mirage [Alchemist Best Collection]"
   region: "NTSC-J"
@@ -54162,9 +54153,8 @@ SLUS-21385:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    gpuTargetCLUT: 1 # Fixes light occlusion.
-    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
-    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    textureInsideRT: 1 # Required for complex offset shuffles.
+    halfPixelOffset: 2 # Fixes center line in post processing.
 SLUS-21386:
   name: "Tales of the Abyss"
   region: "NTSC-U"
@@ -54277,9 +54267,8 @@ SLUS-21406:
   name: "Godfather, The - Collector's Edition"
   region: "NTSC-U"
   gsHWFixes:
-    gpuTargetCLUT: 1 # Fixes light occlusion.
-    skipDrawStart: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
-    skipDrawEnd: 1 # Removes mono-colored sepia bottom and vertical sepia bars on top.
+    textureInsideRT: 1 # Required for complex offset shuffles.
+    halfPixelOffset: 2 # Fixes center line in post processing.
 SLUS-21407:
   name: "NFL Head Coach"
   region: "NTSC-U"
