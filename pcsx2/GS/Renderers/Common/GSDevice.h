@@ -316,6 +316,7 @@ struct alignas(16) GSHWDrawConfig
 				u32 ltf : 1;
 				// Shuffle and fbmask effect
 				u32 shuffle  : 1;
+				u32 shuffle_same : 1;
 				u32 real16src: 1;
 				u32 read_ba  : 1;
 				u32 write_rg : 1;

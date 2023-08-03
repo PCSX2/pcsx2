@@ -41,6 +41,7 @@ constant bool PS_ADJS               [[function_constant(GSMTLConstantIndex_PS_AD
 constant bool PS_ADJT               [[function_constant(GSMTLConstantIndex_PS_ADJT)]];
 constant bool PS_LTF                [[function_constant(GSMTLConstantIndex_PS_LTF)]];
 constant bool PS_SHUFFLE            [[function_constant(GSMTLConstantIndex_PS_SHUFFLE)]];
+constant bool PS_SHUFFLE_SAME       [[function_constant(GSMTLConstantIndex_PS_SHUFFLE_SAME)]];
 constant bool PS_READ_BA            [[function_constant(GSMTLConstantIndex_PS_READ_BA)]];
 constant bool PS_READ16_SRC         [[function_constant(GSMTLConstantIndex_PS_READ16_SRC)]];
 constant bool PS_WRITE_RG           [[function_constant(GSMTLConstantIndex_PS_WRITE_RG)]];
@@ -1021,21 +1022,37 @@ struct PSMain
 			uint4 denorm_c = uint4(C);
 			uint2 denorm_TA = uint2(cb.ta * 255.5f);
 
-			if (PS_READ16_SRC)
+			if (PS_SHUFFLE_SAME)
 			{
-				C.rb = (denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5);
-				if (denorm_c.a & 0x80)
-					C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80);
+				if (PS_READ_BA)
+				{
+					C.ga = (denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80);
+					C.rb = C.ga;
+				}
 				else
-					C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80);
+				{
+					C.ga = C.rg;
+					C.rb = C.ga;
+				}
 			}
 			else
 			{
-				C.rb = PS_READ_BA ? C.bb : C.rr;
-				if (PS_READ_BA)
-					C.ga = (denorm_c.a & 0x7F) | (denorm_c.a & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
+				if (PS_READ16_SRC)
+				{
+					C.rb = (denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5);
+					if (denorm_c.a & 0x80)
+						C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80);
+					else
+						C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80);
+				}
 				else
-					C.ga = (denorm_c.g & 0x7F) | (denorm_c.g & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
+				{
+					C.rb = PS_READ_BA ? C.bb : C.rr;
+					if (PS_READ_BA)
+						C.ga = (denorm_c.a & 0x7F) | (denorm_c.a & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
+					else
+						C.ga = (denorm_c.g & 0x7F) | (denorm_c.g & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
+				}
 			}
 		}
 
